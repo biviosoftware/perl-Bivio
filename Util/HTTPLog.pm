@@ -11,7 +11,7 @@ Bivio::Util::HTTPLog - manipulates HTTP logs
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 
@@ -74,17 +74,17 @@ my($_CFG) = {
     email => 'root',
     pager_email => '',
     error_count_for_page => 3,
+    ignore_list => Bivio::IO::Config->REQUIRED,
+    error_list => Bivio::IO::Config->REQUIRED,
+    critical_list => Bivio::IO::Config->REQUIRED,
 };
 Bivio::IO::Config->register($_CFG);
 my($_RECORD_PREFIX) = '^(?:\[('
-	._clean_regex(Bivio::Type::DateTime->REGEX_CTIME)
-        .')\]|(?:\[\d+\])?('
-	._clean_regex(Bivio::Type::DateTime->REGEX_ALERT)
-	.'))';
-my($_IGNORE_REGEX);
-my($_ERROR_REGEX);
-my($_CRITICAL_REGEX);
-_initialize();
+    . _clean_regexp(Bivio::Type::DateTime->REGEX_CTIME)
+    . ')\]|(?:\[\d+\])?('
+    . _clean_regexp(Bivio::Type::DateTime->REGEX_ALERT)
+    . '))';
+my($_REGEXP);
 
 =head1 METHODS
 
@@ -94,21 +94,44 @@ _initialize();
 
 =head2 static handle_config(hash cfg)
 
+Make sure regexps (error_list, etc.) are unique, e.g. have a '::' in them.
+This avoids misidentification of messages which contain user data, but are
+critical or errors.
+
 =over 4
+
+=item critical_list : array_ref (required)
+
+List of regexps which will cause the to be sent to I<pager_email>.  The
+matching value will be sent to the I<pager_email>, not the entire line
 
 =item email : string [root]
 
-Where to send mail to.  ShellUtil -email flag overrides this value
-if it is defined.
+Where to send mail to.  L<Bivio::ShellUtil|Bivio::ShellUtil> -email flag
+overrides this value if it is defined.
 
 =item error_count_for_page : int [3]
 
-How many $_ERROR_REGEX messages in an interval are required before
-a pager message is sent?
+How many error_list messages in an interval are required before
+the message is critical?
 
 =item error_file : string [/var/log/httpd/error.log || /var/log/httpd/error_log]
 
 File where errors are writted by httpd.
+
+=item error_list : array_ref (required)
+
+List of regexps which which will be emailed always.  Also see
+I<error_count_for_page>.
+
+=item ignore_list : array_ref (required)
+
+List of regexps which will be thrown away.
+
+=item pager_email : string ['']
+
+Email addresses separated by commas which get pager messages.  See
+I<critical_list> and I<error_count_for_page>.
 
 =back
 
@@ -117,6 +140,10 @@ File where errors are writted by httpd.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
+    $_REGEXP = {};
+    foreach my $r (qw(ignore critical error)) {
+	$_REGEXP->{$r} = qr/(@{[join('|', @{$cfg->{"${r}_list"}})]})/;
+    }
     return;
 }
 
@@ -135,7 +162,8 @@ I<interval_minutes> must match the execute time in cron.
 
 sub parse_errors {
     my($self, $interval_minutes) = _parse_errors_init(@_);
-    return _parse_errors_complete($self) unless $interval_minutes;
+    return _parse_errors_complete($self)
+	unless $interval_minutes;
     my($fields) = $self->[$_IDI];
     my($start) = Bivio::Type::DateTime->add_seconds(
 	    Bivio::Type::DateTime->now, -$interval_minutes * 60);
@@ -149,23 +177,23 @@ sub parse_errors {
 		    if Bivio::Type::DateTime->compare($start, $date) >= 0;
 	    $in_interval = 1;
 	}
-	if ($record =~ /($_IGNORE_REGEX)/o) {
+	if ($record =~ $_REGEXP->{ignore}) {
 	    _trace('ignoring: ', $1) if $_TRACE;
 	    next RECORD;
 	}
 	# Critical already avoids dups, so put before time check after.
-	if ($record =~ /($_CRITICAL_REGEX)/o) {
+	if ($record =~ $_REGEXP->{critical}) {
 	    _pager_report($self, $1);
 	    $record =~ s/^/***CRITICAL*** /;
 	}
-	if ($record =~ /($_ERROR_REGEX)/o) {
-	    # Certain error messages don't pass the $_ERROR_REGEX on the first
-	    # output.  die message comes out first and it's what we want in the
-	    # email.  However, we need to count the error regex on the second
-	    # message.  This code does this correctly.  We don't recount
-	    # ERROR_REGEXs output at the same time.
+	if ($record =~ $_REGEXP->{error}) {
+	    # Certain error messages don't pass the $_REGEXP->{error} on the
+	    # first output.  die message comes out first and it's what we want
+	    # in the email.  However, we need to count the error regexp on the
+	    # second message.  This code does this correctly.  We don't recount
+	    # error REGEXPs output at the same time.
 	    _pager_report($self, $1)
-		    if !$error_times{$date}++ && --$error_countdown == 0;
+		if !$error_times{$date}++ && --$error_countdown == 0;
 	}
 	# Avoid duplicate error messages by checking $last_error
 	if (Bivio::Type::DateTime->compare($last_error, $date) == 0) {
@@ -181,118 +209,14 @@ sub parse_errors {
 
 #=PRIVATE METHODS
 
-# _clean_regex(string regex) : string
+# _clean_regexp(string regexp) : string
 #
 # Makes sure parethesizes regexes don't match anything
 #
-sub _clean_regex {
+sub _clean_regexp {
     my($value) = @_;
     $value =~ s/\(([^?])/\(?:$1/g;
     return $value;
-}
-
-# _initialize() : array
-#
-# Initialize the regex arrays
-#
-sub _initialize {
-    # Initialize regexs.  Make sure regexs are unique, e.g. have a
-    # '::' in them.  This avoids ignoring messages which contain
-    # user data, but are critical or errors.
-    $_IGNORE_REGEX = join('|',
-	# Skip non-warnings
-	'Server configured -- resuming normal operations',
-	'Restart successful',
-	'httpd: caught SIGTERM, shutting down',
-	'SIGHUP received.  Attempting to restart',
-	'\[(?:info|notice|debug)\]',
-	'child process \d+ still did not exit',
-	'created shared memory segment',
-	'read request (?:line|headers) timed out for',
-	'(?:read|send) timed out for',
-        'buffer undefined after read',
-	# Front-end and SSL
-	'mod_ssl: SSL handshake interrupted',
-	'mod_ssl: SSL handshake timed out',
-	'System: Connection reset by peer',
-	'System: Broken pipe',
-	'\[error\].*File does not exist:',
-	# Skip regular Bivio messages
-	'Agent::Job::Dispatcher:.*JOB_(?:START|END)',
-	'SQL::Connection::_get_connection.*reconnecting',
-	'OpenSSL: error',
-	'SSL handshake (?:failed|timed out)',
-	'SSL error on reading data',
-	'_vti_inf.html',
-	'_vti_rpc',
-	'HTTP::Cookie::.*invalid (?:volatile|persistent) cookie:',
-	'Bivio::DieCode::MISSING_COOKIES',
-	'visitor invalid, deleting from cookie',
-	'Unable to parse address',
-	'and logging as new user',
-	'UI::HTML::Common::SearchList::execute:\d+ phrase',
-	'\[error\].*client sent HTTP/1.1 request without hostname',
-	# Operational: form_errors, not found and forbidden
-	'form_errors=\{',
-	'Bivio::DieCode::NOT_FOUND',
-	'Bivio::DieCode::FORBIDDEN',
-	'Bivio::DieCode::CORRUPT_QUERY',
-	'Bivio::Biz::FormContext::_parse_error',
-	'HTTP::Query::_correct.*correcting query',
-	'Bivio::Biz::Model::F1065List::_calculate_income',
-	'Error in hidden value\(s\), refreshing',
-	'request aborted, rolling back',
-	'attempt to delete missing entry',
-	'Premature (?:end|padding) of base64',
-	'ListFormModel Bivio::DieCode::UPDATE_COLLISION',
-	'Bivio::DieCode::TOO_MANY:.*::Biz::Model::FileTreeList',
-	"can't login as offline user",
-	'Bivio::Data::EW::ClubImporter::_parse_tax_id.*changed to',
-	"MemberAllocationList.*report_date isn't on year-end",
-	'warn:.*incorrect imported allocations',
-	"::_create_stock_transfer_entry.*Couldn't find related stock",
-	'HTTP::Form::parse.*unknown form Content-Type: <undef>',
-	'::warn:\d+ large audit, \d+ entries',
-	'Accounting::Util::.* Creat(?:ed|ing) /home/account_sync',
-	'::UPDATE_COLLISION: list_attrs=>',
-	'::warn:\d+ adjusting allocations',
-	'HTTP::Form::_parse_header:\d+ unexpected field',
-	'::warn:\d+ not importing data - transactions already exist',
-	'::warn:\d+ Message very similar to (?:earlier one|parent)',
-	'::warn:\d+ blocking mail with executable content',
-	'::HomePage::execute:.*Both <FRAMESET> and <BODY> tags found',
-	'::HomePage::execute:.*Neither <FRAMESET> or <BODY> tags found',
-        '::Message::_parse_date:727 timezone.* unknown',
-        'confirm delete with not txns, aborting',
-        'unsupported encoding \'iso-8859-1\': using \'binary\'',
-        '::VERSION_MISMATCH: actual=..undef.',
-        # AccountSync errors and warnings
-        '::AccountScraper::unhandled_row',
-        '::InstrumentLookup::find',
-        '::get_balance.* balance not available',
-        '::Schwab::pre_parse_html',
-        'E*TRADE temporarily unavailable',
-        '::SimpleBase::bad_field_in_raw_row',
-        '::Data::AccountScraper.* Bivio::DieCode::CLIENT_ERROR',
-        '_process_sell: no lots owned',
-        '_process_sell: can\'t process sale, oversold',
-        '::DIE: couldn\'t parse instrument name/symbol',
-        '::get_balance.* balance parse failed',
-        'ETRADE::.*unknown SX entry:',
-        'CSFB::get_balance:.*money market parse failed',
-    );
-    # Value is sent to the pager if error_count is exceeded
-    $_ERROR_REGEX = join('|',
-	'Bivio::DieCode::DIE',
-	'Bivio::DieCode::CONFIG_ERROR',
-	'Connection refused: proxy connect to .* port .* failed',
-	'exit signal Segmentation fault (11)',
-    );
-    # Value is sent to pager
-    $_CRITICAL_REGEX = join('|',
-	'Bivio::DieCode::DB_ERROR',
-    );
-    return;
 }
 
 # _pager_report(self, arg, ....)
@@ -347,7 +271,7 @@ sub _parse_errors_init {
 	fh => IO::File->new,
     };
     unless ($fields->{fh}->open($_CFG->{error_file})) {
-	my($err) = $_CFG->{error_file}.": $!";
+	my($err) = "$_CFG->{error_file}: $!";
 	_pager_report($self, $err);
 	_report($self, $err);
 	return ($self, 0);
