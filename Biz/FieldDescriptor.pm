@@ -272,9 +272,9 @@ sub get_size {
     return $fields->{size};
 }
 
-=for html <a name="getype"></a>
+=for html <a name="get_type"></a>
 
-=head2 getype() : int
+=head2 get_type() : int
 
 Returns the field type. See the constants section for possible
 values.
