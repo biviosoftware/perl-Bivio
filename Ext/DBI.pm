@@ -47,9 +47,9 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_ORACLE_HOME);
 Bivio::IO::Config->register({
-    'oracle_home' => $ENV{ORACLE_HOME} || Bivio::IO::Config->REQUIRED,
+    'oracle_home' => $ENV{ORACLE_HOME},
     Bivio::IO::Config->NAMED => {
-	database => $ENV{ORACLE_SID} || Bivio::IO::Config->REQUIRED,
+	database => $ENV{DBI_DATABASE} || Bivio::IO::Config->REQUIRED,
 	user => $ENV{DBI_USER} || Bivio::IO::Config->REQUIRED,
 	password => $ENV{DBI_PASS} || Bivio::IO::Config->REQUIRED,
 	is_read_only => 0,
@@ -123,13 +123,13 @@ sub get_config {
 
 =over 4
 
-=item database : string [$ENV{ORACLE_SID} || required]
+=item database : string [$ENV{DBI_DATABASE} || required]
 
 Database to connect to (named configuration)
 
-=item oracle_home : string [$ENV{ORACLE_HOME} || required]
+=item oracle_home : string [$ENV{ORACLE_HOME}]
 
-Where oracle resides
+Where oracle resides (optional).
 
 =item password : string [$ENV{DBI_PASS} || required]
 
