@@ -18,7 +18,7 @@ print STDERR "\n";
 Bivio::IO::Alert->warn("this is a warning");
 
 eval {
-    Bivio::IO::Alert->die("bye");
+    Bivio::IO::Alert->bootstrap_die("bye");
 };
 
 print "ok 2\n";
