@@ -639,7 +639,11 @@ sub _parse_addr {
 	    # $a is an address, no further parsing necessary
 	    return ($a, length($n) ? &_clean_comment($n) : $n);
 	}
-	# $_822_MAILBOX: My Comment complex@addr
+	# $_822_MAILBOX: <complex@addr>
+	if (($a) = /^($_822_ROUTE_ADDR)/) {
+	    return (&_clean_route_addr($a), undef);
+	}
+	# $_822_MAILBOX: My Comment <complex@addr>
 	if (($n, $a) = /^($_822_PHRASE)\s+($_822_ROUTE_ADDR)/) {
 	    return (&_clean_route_addr($a), $n);
 	}
