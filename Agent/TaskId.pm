@@ -385,7 +385,6 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/investment/detail
-        Bivio::Biz::Model::InstrumentSummaryList
         Bivio::UI::HTML::Club::InstrumentDetail
     )],
     [qw(
@@ -462,12 +461,11 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
     )],
     [qw(
-        CLUB_ACCOUNTING_INVESTMENT_BUY
+        CLUB_ACCOUNTING_INVESTMENT_DETAIL_BUY
         49
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/buy
-        Bivio::Biz::Model::InstrumentSummaryList
+        _/accounting/investment/detail/buy
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -690,6 +688,27 @@ my(@_CFG) = (
         Bivio::Biz::Model::CommForm
         Bivio::UI::HTML::User::EditComm
         next=USER_ADMIN_INFO
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_LOOKUP
+        74
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/lookup
+        Bivio::Biz::Model::InstrumentLookupForm
+        Bivio::Biz::Model::InstrumentLookupList
+        Bivio::UI::HTML::Club::InstrumentLookup
+        next=CLUB_ACCOUNTING_INVESTMENT_LOOKUP
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_BUY
+        75
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/buy
+        Bivio::Biz::Model::InstrumentBuyForm
+        Bivio::UI::HTML::Club::InstrumentBuy
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
        );
 
