@@ -48,16 +48,9 @@ Creates an instrument valuation form.
 sub new {
     my($self) = &Bivio::Biz::FormModel::new(@_);
     $self->{$_PACKAGE} = {};
-
 #TODO: rework when defaults available
     my($properties) = $self->internal_get;
-    # default date_time to now
-    $properties->{'RealmInstrumentValuation.date_time'} =
-	    Bivio::UI::HTML::Format::Date->get_widget_value(
-		    Bivio::Type::Date->now());
-
     $properties->{page} = 1;
-
     return $self;
 }
 
