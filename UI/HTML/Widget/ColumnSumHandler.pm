@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget>
+L<Bivio::UI::HTML::Widget::MathHandlerBase>
 
 =cut
 
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::ColumnSumHandler::ISA = ('Bivio::UI::Widget');
+use Bivio::UI::HTML::Widget::MathHandlerBase;
+@Bivio::UI::HTML::Widget::ColumnSumHandler::ISA = ('Bivio::UI::HTML::Widget::MathHandlerBase');
 
 =head1 DESCRIPTION
 
@@ -54,36 +54,8 @@ The name of the field that holds the sum.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::Widget::JavaScript;
 
 #=VARIABLES
-my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
-
-// Normalize the number and calculate the grand total
-
-// Converts the value to a rounded d+.dd form if possible
-function csh_norm(field)
-{
-  // numeric coercion
-  field.value = parseFloat(field.value);
-  if (isNaN(field.value)) {
-    field.value = '';
-    return;
-  }
-
-  // round to the penny
-  field.value = Math.round(field.value * 100) / 100;
-
-  // add trailing and leading 0 if necessary
-  dotIndex = field.value.indexOf('.');
-  if (dotIndex == -1)
-    field.value += ".00";
-  else if (field.value.length - dotIndex == 2)
-    field.value += "0";
-  if (dotIndex == 0)
-    field.value = "0" + field.value;
-}
-EOF
 
 =head1 METHODS
 
@@ -113,6 +85,7 @@ widget values.
 
 sub render {
     my($self, $source, $buffer) = @_;
+    $self->SUPER::render($source, $buffer);
     return if Bivio::UI::HTML::Widget::JavaScript
 	->has_been_rendered($source, _function_name($self, $source));
     my($req) = $source->get_request;
@@ -123,13 +96,11 @@ sub render {
     $prefix =~ s/(?<=_)0$//
 	or die($prefix, ': not well formed html field for ', $self->ancestral_get('field'));
     Bivio::UI::HTML::Widget::JavaScript->render(
-	$source, $buffer, 'csh_norm', $_FUNCS);
-    Bivio::UI::HTML::Widget::JavaScript->render(
 	$source, $buffer, _function_name($self, $source), <<"EOF"
 
 function @{[_function_name($self, $source)]}(field)
 {
-    csh_norm(field);
+    @{[$self->MATH_ROUND]}(field);
     $total.value =
 EOF
         # uses a double negative for addition to avoid string concatenation
@@ -139,7 +110,7 @@ EOF
 		"$prefix$_.value";
 	    } 0..($source->get_result_set_size - 1))
 	) . <<"EOF"
-    ;csh_norm($total);
+    ;@{[$self->MATH_ROUND]}($total);
 }
 EOF
     );
