@@ -26,10 +26,10 @@ The Management',
 	    String('Account Information:', 'page_heading',
 		{cell_colspan => 2}),
 	], [
+	    vs_form_field('UserAccountForm.Email.email'),
+	], [
 	    vs_form_field('UserAccountForm.RealmOwner.password', {},
 		['!', $edit_mode_condition]),
-	], [
-	    vs_form_field('UserAccountForm.Email.email'),
 	], [
 	    String('Address:', 'page_heading', {cell_colspan => 2}),
 	], [

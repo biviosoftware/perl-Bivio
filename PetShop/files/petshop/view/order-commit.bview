@@ -31,8 +31,8 @@ view_put(menu_content => Grid([
 	]),
     ], [
 	Join([
-	    String('Account: ', 'page_heading'),
-	    String(['auth_user', 'name']),
+	    String('Email: ', 'page_heading'),
+	    String(['Model.Email', 'email']),
 	    '<br>',
 	]),
     ], [
