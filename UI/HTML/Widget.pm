@@ -1168,7 +1168,7 @@ sub page_heading_banner_ad {
 #	    $proto->image('promote_stop_small'), 'hm/account-sync')
 #	    ->put(control => $proto->html_value('want_ads'));
     return $proto->link_goto(
-	$proto->image('ml_onyourown_230x33_4k_NL',
+	$proto->image('ad_mld_onyourown_230x33_4k_NL',
 		'Enroll with Merrill Lynch and get $100'),
 	'http://www.mldirect.ml.com/publish/public/offer.asp?medium=BIV0001')
 	->put(control => $proto->html_value('want_ads'));

@@ -289,16 +289,31 @@ my($_SELF) = __PACKAGE__->new({
 		$fc->group('mail_home_list_'.$r =>
 			$_W->load_and_new('MailHomeList', {realm_name => $r}));
 	    }
+	    my($mld_alt) = 'Enroll with Merrill Lynch and get $100';
 	    my($mld_uri) = 'http://www.mldirect.ml.com/publish/public/'
 		    .'offer.asp?medium=BIV0001';
-	    my($mld_alt) = 'Enroll with Merrill Lynch and get $100';
+	    my($buyandhold_uri) = 'http://www.buyandhold.com/'
+		    .'Buy?request=rr.refBy&ref=BIVIO'
+		    .'&dest=/bh/en/advert/closed/bivio/bivio.html';
 	    $fc->group(north_banner_widget =>
 		    $_W->load_and_new('Advertizement', {
 			values => [
 			    # weight icon alt uri
-			    [1, 'mld_2_468x60', $mld_alt, $mld_uri],
-			    [1, 'mld_3_468x60', $mld_alt, $mld_uri],
-			    [1, 'mld_4_468x60_', $mld_alt, $mld_uri],
+			    [1, 'ad_mld_2_468x60', $mld_alt, $mld_uri],
+			    [1, 'ad_mld_3_468x60', $mld_alt, $mld_uri],
+			    [1, 'ad_mld_4_468x60', $mld_alt, $mld_uri],
+			    [1, 'ad_buyandhold_468x60_facedrip',
+				'BUYandHOLD', $buyandhold_uri],
+			    [1, 'ad_buyandhold_468x60_drips1',
+				'BUYandHOLD', $buyandhold_uri],
+			    [1, 'ad_investware_tk4banner4', 'InvestWare',
+				'http://investware.com/tk4pro.stm'],
+			    [1, 'ad_investware_databanner', 'InvestWare',
+				'http://www.investware.com/data.stm'],
+			    [1, 'ad_bivio_cfo', 'Learn about AccountKeeper',
+				'/hm/account-keeper.html'],
+			    [1, 'ad_bivio_stop', 'Learn about AccountSync',
+				'/hm/account-sync.html'],
 			]}));
 
 	    # Home page widgets
