@@ -100,6 +100,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         /*
 	Bivio::Biz::Action::HTTPDocument
+        want_query=0
     )],
 #TODO: MY_CLUB_SITE isn't right if user not part of club.
 #      Need a redirect to club or to user's home.
@@ -111,6 +112,7 @@ my(@_CFG) = (
         my-club-site/*:pub/my_club_site
         Bivio::Biz::Action::MyRedirect->execute_club_site
         next=CLUB_INTRO
+        want_query=0
     )],
     [qw(
 	LOGIN
@@ -2917,7 +2919,8 @@ my(@_CFG) = (
         Bivio::Biz::Model::PasswordRequest->execute_load_from_query
         Bivio::Biz::Model::PasswordForm
         Bivio::UI::HTML::User::EditPassword
-        next=CLUB_INTRO
+        next=MY_CLUB_SITE
+        cancel=HTTP_DOCUMENT
         NOT_FOUND=PASSWORD_REQUEST_NOT_FOUND
         require_context=0
     )],
