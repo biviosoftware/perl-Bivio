@@ -34,24 +34,44 @@ define what you want to test very succinctly.  Here's an example:
     Bivio::Test->run([
         Bivio::Type::Integer => [
             from_literal => [
-	        ['1' => 1],
-	        ['x', => [undef, Bivio::TypeError->INTEGER]],
+	        [1] => [1],
+	        [x] => [undef, Bivio::TypeError->INTEGER],
             ],
         ],
     ]);
 
 You declare the class or instance you are testing followed by a list of tests.
 Each test is a method name followed by a list of cases.  Each case is a tuple
-of parameter(s) and return value(s).  If a parameter is a single value, you
-don't need to wrap it in an array_ref unless it is an array_ref itself.  The
-same is of the return values.  If there is no return value, specify C<undef>.
-That's what the method should return if it doesn't return anything.  (All perl
-subs return C<undef> implicitly.  To ignore the return result, don't specify
-it, i.e. the test case tuple should only include the parameter(s).
+of parameter(s) and return value(s).
+
+If there is no return value, specify C<[undef]>.  That's what the method should
+return if it doesn't return anything.  (All perl subs return C<undef>
+implicitly.
+
+To ignore the return result, specify C<undef> (as a scalar, not wrapped in an
+array_ref), i.e. the test case tuple should only include the parameter(s).
+Here's an example:
+
+    do_something => [
+        [1, 2, 3] => undef,
+    ],
+
+The result of the call to the method C<do_something> will not be checked.
+
+If the expected return value is an array_ref, it will be compared with the
+actual return value.  If the result is an array_ref, you'll need to wrap
+it one more time in an array_ref, e.g.
+
+    make_array_ref => [
+        [1, 2, 3] => [[1, 2, 3]],
+    ]
+
+Here C<make_array_ref> is a routine to test which returns an array_ref of
+its arguments.
 
 If the expected (declared) return value is an unblessed code_ref (subroutine)
 specified as a simple value, it will be executed to evaluate the return result.
-See L<handle_result|"handle_result"> for a description of this interface.
+See L<result_ok|"result_ok"> for a description of this interface.
 
 If the expected (declared) return value is a L<Bivio::DieCode|Bivio::DieCode>,
 an exception will be expected.
@@ -67,23 +87,25 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="handle_result"></a>
+=for html <a name="result_ok"></a>
 
-=head2 abstract sub handle_result(any proto, string method, array_ref params, array_ref result) : boolean
+=head2 abstract sub result_ok(any proto, string method, array_ref params, array_ref result) : boolean
 
-=head2 abstract sub handle_result(any proto, string method, array_ref params, Bivio::Die die) : boolean
+=head2 abstract sub result_ok(any proto, string method, array_ref params, Bivio::Die die) : boolean
 
 I<proto> is the instance or class which was executed.  I<method> was called
-with I<params>.  The result is either a I<die> or I<result>.
+with I<params>.  The result is either a I<die> (get I<die.code> for the
+exception) or I<result>.
 
-The handler returns true on success, i.e. I<die> or I<result> as expected.
+The sub returns true if the test passed, i.e. I<die> or I<result> was
+as expected.
 
-The handler is called as a subroutine.
+B<Called as a I<sub>, not a method>.
 
 =cut
 
 $_ = <<'}'; # emacs
-sub handle_result {
+sub result_ok {
 }
 
 =for html <a name="run"></a>
@@ -101,22 +123,111 @@ front-end to C<Test::Harness>.
 
 sub run {
     my($proto, $tests) = @_;
-    _assert_even($tests, 'tests');
-    return;
+    my($die) = Bivio::Die->catch(sub {_compile($tests)});
+    return $die->as_string;
 }
 
 #=PRIVATE METHODS
 
-# _assert_even(array_ref value, string name)
+# _assert_array(any value, string name)
+#
+# Asserts value is an array_ref.
+#
+sub _assert_array {
+    my($value, $name) = @_;
+    _die($name, ': must be an array_ref')
+	unless ref($value) eq 'ARRAY';
+    return;
+}
+
+# _assert_even(any value, string name)
 #
 # Asserts value is an even length array_ref.
 #
 sub _assert_even {
     my($value, $name) = @_;
     _assert_array($value, $name);
-    _die($name, '
-    Bivio::Die->die($name,
-     int(@$value) % 2 == 0;
+    _die($name, ': uneven elements in array')
+	unless int(@$value) % 2 == 0;
+    _die($name, ': no elements in array')
+	unless int(@$value);
+    return;
+}
+
+# _compile(array_ref tests) : array_ref
+#
+# Compiles @$tests into a linear list of tuples.
+#
+sub _compile {
+    my($tests) = @_;
+    _assert_even($tests, 'tests');
+    my(@tests) = @$tests;
+    my(@result);
+    my($t) = 0;
+    while (@tests) {
+	$t++;
+	my($proto, $group) = splice(@tests, 0, 2);
+	$proto = Bivio::IO::ClassLoader->simple_require($proto)
+	    unless ref($proto);
+	my($proto_name) = (ref($proto) || $proto).'#'.$t;
+	_die($proto_name, ': not a blessed reference')
+	    unless UNIVERSAL::isa($proto, 'UNIVERSAL');
+	_assert_even($group, $proto_name);
+	my(@group) = @$group;
+	my($g) = 0;
+	while (@group) {
+	    $g++;
+	    my($method, $cases) = splice(@group, 0, 2);
+	    my($group_name) = $proto_name.'->'.$method.'#'.$g;
+	    _assert_even($cases, $group_name);
+	    _die($proto_name, ': does not implement method ', $method)
+		unless UNIVERSAL::can($proto, $method);
+	    my(@cases) = @$cases;
+	    my($c) = 0;
+	    while (@cases) {
+		$c++;
+		my($params, $expected) = splice(@cases, 0, 2);
+		my($case_name) = $group_name."(case#".$c.")";
+		_assert_array($params, $case_name);
+		_die($case_name, ": expected result must be undef, array_ref, "
+			." code_ref (sub), or Bivio::DieCode")
+		    unless !defined($expected) || ref($expected)
+			&& (ref($expected) eq 'CODE'
+			    || ref($expected) eq 'ARRAY'
+			    || UNIVERSAL::isa($expected, 'Bivio::DieCode'));
+		push(@result, {
+		    proto_name => $proto_name
+		    proto => $proto,
+		    group_name => $group_name,
+		    method => $method,
+		    case_name => $case_name,
+		    params => $params,
+		    expected => $expected,
+		});
+	    }
+	}
+    }
+    return \@result;
+}
+
+# _die(array msg)
+#
+# Calls die for now.  Eventually, will tell more.
+#
+sub _die {
+    my(@msg) = @_;
+    Bivio::Die->die(@msg);
+    # DOES NOT RETURN
+}
+
+# _result_ok(any proto, string method, array_ref params, any expected, any actual) : boolean
+#
+# Default result_ok handler.
+#
+sub _result_ok {
+    my($proto, $method, $params, $expected, $actual) = @_;
+    # Make sure actual equal expected
+    return;
 }
 
 =head1 COPYRIGHT
