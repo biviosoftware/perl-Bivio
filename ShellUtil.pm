@@ -462,6 +462,24 @@ sub is_loadavg_ok {
     return $load[0] < 4 ? 1 : 0;
 }
 
+=for html <a name="lock_realm"></a>
+
+=head2 lock_realm()
+
+Locks the current realm.  Dies if general realm is auth_realm.
+
+=cut
+
+sub lock_realm {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    Bivio::Die->die("can't lock general realm")
+	    if $req->get('auth_realm')->get('type')
+		    == Bivio::Auth::RealmType::GENERAL();
+    Bivio::Biz::Model->get_instance('Lock')->execute($req);
+    return;
+}
+
 =for html <a name="main"></a>
 
 =head2 static main(array argv)
