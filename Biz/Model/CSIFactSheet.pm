@@ -156,7 +156,16 @@ sub _sync_instrument_models {
     my($self, $values, $type) = @_;
     my($req) = $self->get_request;
     my($inst) = Bivio::Biz::Model::Instrument->new($req);
-    unless ($inst->unsafe_load(ticker_symbol => $values->{ticker_symbol})) {
+    if ($inst->unsafe_load(ticker_symbol => $values->{ticker_symbol})) {
+        # Rename ticker symbol so it can be re-used later
+#TODO: Should move code into Model::Instrument?
+        $inst->update({
+            ticker_symbol => $values->{ticker_symbol}.'-D'
+            .Bivio::Type::Date->to_file_name($values->{fact_date}),
+        }) if $values->{fact_function}
+                eq Bivio::Data::CSI::FactSheetFunction::DELETE();
+    }
+    else {
         $inst->create({
             name => $values->{name},
             ticker_symbol => $values->{ticker_symbol},
