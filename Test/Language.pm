@@ -104,7 +104,7 @@ sub AUTOLOAD {
     my($func) = $AUTOLOAD;
     $func =~ s/.*:://;
     my($self) = _assert_in_eval($func);
-    _die($self, "function $func: ", _check_autoload($self, $func))
+    _die($self, " function $func: ", _check_autoload($self, $func))
 	if _check_autoload($self, $func);
     _trace($func, ' called with ', \@args) if $_TRACE;
     my($td) = $self->unsafe_get('test_deviance');
@@ -113,9 +113,9 @@ sub AUTOLOAD {
     my($die) = Bivio::Die->catch(sub {
 	return $self->$func(@args);
     });
-    _die($self, 'deviance call failed to die: ', $func, \@args)
+    _die($self, ' deviance call failed to die: ', $func, \@args)
 	unless $die;
-    _die($self, 'deviance call to ', $func, \@args, ' failed with "',
+    _die($self, ' deviance call to ', $func, \@args, ' failed with "',
 	$die, '" but did not match pattern: ', $td)
 	unless $die->as_string =~ $td;
     return;
