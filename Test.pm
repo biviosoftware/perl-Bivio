@@ -109,10 +109,10 @@ as long as it implements C<new>.  Here's an example at instantiation:
     Bivio::Test->new->({
         class_name => 'Bivio::Math::EMA',
 	check_return => sub {
-	    my($case, $expect, $expect) = @_;
+	    my($case, $actual, $expect) = @_;
             # Round to 6 decimal places
 	    $case->actual_return(
-                [POSIX::floor($expect->[0] * 1000000 + 0.5) / 1000000]);
+                [POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000]);
             return $expect;
 	},
     })->unit([
@@ -133,9 +133,9 @@ as in:
             class_name => 'Bivio::Math::EMA',
 	    object => 30,
             check_return => sub {
-                my($case, $expect, $expect) = @_;
+                my($case, $actual, $expect) = @_;
                 $case->actual_return(
-                    [POSIX::floor($expect->[0] * 1000000 + 0.5) / 1000000];
+                    [POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000];
                 return $expect;
 	    },
         } => [
@@ -829,15 +829,17 @@ sub _eval_result {
     my($case, $actual) = @_;
     my($custom);
     my($show);
-    my($result, $which) = ref($actual) eq 'Bivio::Die'
+    my($result, $actual_which) = ref($actual) eq 'Bivio::Die'
 	? ($actual->get('code'), 'die_code') : ($actual, 'return');
+    my($expect_which) = UNIVERSAL::isa($case->get('expect'), 'Bivio::DieCode')
+	? 'die_code' : 'return';
     if (ref($case->get('expect')) eq 'CODE') {
 	# Only on success do we eval a case-specific check_return
 	$custom = 'expect'
 	    if ref($result) eq 'ARRAY';
     }
     else {
-	$custom = "check_$which";
+	$custom = "check_$expect_which";
 	$custom = undef
 	    unless $case->unsafe_get($custom);
     }
@@ -859,8 +861,9 @@ sub _eval_result {
 	}
 	else {
 	    return $res ? undef
-		: "check_$which returned false for result: "
-		    . Bivio::IO::Ref->to_short_string($case->get($which));
+		: "check_$expect_which returned false for result: "
+		    . Bivio::IO::Ref->to_short_string(
+			$case->get($actual_which));
 
 	}
     }
@@ -876,7 +879,8 @@ sub _eval_result {
     return "expected != actual:\n"
 	. Bivio::IO::Ref->to_short_string($case->get('expect'))
 	.' != '
-	. ($show ? $$show : Bivio::IO::Ref->to_short_string($case->get($which)));
+	. ($show ? $$show : Bivio::IO::Ref->to_short_string(
+	    $case->get($actual_which)));
 }
 
 # _eval_result_regexp(Bivio::Test::Case case, any result, string_ref show) : boolean
