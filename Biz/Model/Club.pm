@@ -285,8 +285,6 @@ sub internal_initialize {
 	table_name => 'club_t',
 	columns => {
             club_id => ['PrimaryId', 'PRIMARY_KEY'],
-            kbytes_in_use => ['Integer', 'NOT_NULL'],
-            max_storage_kbytes => ['Integer', 'NOT_NULL'],
 	    start_date => ['Date', 'NONE'],
         },
 	auth_id => 'club_id',
