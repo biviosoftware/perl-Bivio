@@ -347,7 +347,7 @@ _compile(
 
     # Announcements
     CALLING_ALL_CLUBS => ['Calling All Clubs!'],
-    YAHOO_20000713 => ["Meet bivio's CEO (Again!)"],
+    YAHOO_20000713 => ['Yahoo! Live Webcast'],
     COMPUFEST_2000 => ['CompuFest 2000'],
     ABOUT_COM_GUIDE => ['About.com Guide Wanted'],
 );
