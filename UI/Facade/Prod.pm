@@ -34,6 +34,7 @@ C<Bivio::UI::Facade::Prod> is the main production and default Facade.
 #=VARIABLES
 __PACKAGE__->new({
     clone => undef,
+    is_production => 1,
     'Bivio::UI::Color' => {
 	initialize => sub {
 	    my($comp) = @_;
