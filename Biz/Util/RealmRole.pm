@@ -55,6 +55,7 @@ Returns:
 	list [role] -- lists permissions for this realm and role or all
 	list_all [realm_type] -- lists permissions for all realms of realm_type
 	set_same old new - copies permission old to new for ALL realms
+        setup_fund -- creates permissions for a fund
 
 =cut
 
@@ -68,6 +69,7 @@ commands:
     list [role] -- lists permissions for this realm and role or all
     list_all [realm_type] -- lists permissions for all realms of realm_type
     set_same old new - copies permission old to new for ALL realms
+    setup_fund -- creates permissions for a fund
 EOF
 }
 
@@ -284,6 +286,24 @@ sub set_same {
     return;
 }
 
+=for html <a name="setup_fund"></a>
+
+=head2 setup_fund()
+
+Sets the permissions for the current realm to be like a fund.
+
+=cut
+
+sub setup_fund {
+    my($self) = @_;
+    my(@p) = qw(-MEMBER_READ -DOCUMENT_WRITE -ADMIN_READ);
+    $self->edit('GUEST', @p);
+    $self->edit('MEMBER', @p, '+PRO_FUND_INVESTOR');
+    $self->edit('ACCOUNTANT', '+PRO_FUND_MANAGER');
+    $self->edit('ADMINISTRATOR', '+PRO_FUND_MANAGER');
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _get_permission_set(self, string realm_id, Bivio::Auth::Role role, boolean dont_die) : string
@@ -415,25 +435,43 @@ __DATA__
 #
 # GENERAL Permissions
 #
-b-realm-role -r general edit ANONYMOUS - \
-    +LOGIN \
+b-realm-role -r GENERAL edit ANONYMOUS - \
     +DOCUMENT_READ \
+    +LOGIN \
     +MAIL_WRITE
-b-realm-role -r general edit USER - \
+b-realm-role -r GENERAL edit USER - \
     +ANONYMOUS \
     +ANY_USER \
     +MAIL_FORWARD \
     +MAIL_RECEIVE
-b-realm-role -r general edit WITHDRAWN - \
+b-realm-role -r GENERAL edit WITHDRAWN - \
     +USER
-b-realm-role -r general edit GUEST - \
+b-realm-role -r GENERAL edit GUEST - \
     +WITHDRAWN \
     +ANY_REALM_USER
-b-realm-role -r general edit MEMBER - \
+b-realm-role -r GENERAL edit MEMBER - \
     +GUEST
-b-realm-role -r general edit ACCOUNTANT - \
+b-realm-role -r GENERAL edit ACCOUNTANT - \
     +MEMBER
-b-realm-role -r general edit ADMINISTRATOR +
+b-realm-role -r GENERAL edit ADMINISTRATOR - \
+    +ACCOUNTANT \
+    +ACCOUNTING_READ \
+    +ACCOUNTING_WRITE \
+    +ACCOUNT_READ \
+    +ADMIN_READ \
+    +ADMIN_WRITE \
+    +DEBUG_ACTION \
+    +DOCUMENT_WRITE \
+    +FILE_ADMIN \
+    +INVESTMENT_READ \
+    +MAIL_ADMIN \
+    +MAIL_READ \
+    +MEMBER_READ \
+    +MEMBER_WRITE \
+    +MOTION_READ \
+    +MOTION_WRITE \
+    +REALM_PUBLICIZE \
+    +UNKNOWN
 
 #
 # USER Permissions
@@ -443,17 +481,38 @@ b-realm-role -r user edit ANONYMOUS - \
     +MAIL_WRITE
 b-realm-role -r user edit USER - \
     +ANONYMOUS \
-    +ANY_USER
+    +ANY_USER \
+    +MAIL_FORWARD
 b-realm-role -r user edit WITHDRAWN - \
     +USER
 b-realm-role -r user edit GUEST - \
     +WITHDRAWN \
+    +ANY_REALM_USER \
     +DOCUMENT_READ
 b-realm-role -r user edit MEMBER - \
     +GUEST
 b-realm-role -r user edit ACCOUNTANT - \
     +MEMBER
-b-realm-role -r user edit ADMINISTRATOR +
+b-realm-role -r user edit ADMINISTRATOR - \
+    +ACCOUNTANT \
+    +ACCOUNTING_READ \
+    +ACCOUNTING_WRITE \
+    +ACCOUNT_READ \
+    +ADMIN_READ \
+    +ADMIN_WRITE \
+    +DEBUG_ACTION \
+    +DOCUMENT_WRITE \
+    +FILE_ADMIN \
+    +INVESTMENT_READ \
+    +MAIL_ADMIN \
+    +MAIL_READ \
+    +MAIL_RECEIVE \
+    +MEMBER_READ \
+    +MEMBER_WRITE \
+    +MOTION_READ \
+    +MOTION_WRITE \
+    +REALM_PUBLICIZE \
+    +UNKNOWN
 
 #
 # CLUB Permissions
@@ -469,43 +528,57 @@ b-realm-role -r club edit WITHDRAWN - \
     +USER
 b-realm-role -r club edit GUEST - \
     +WITHDRAWN \
-    +ADMIN_READ \
     +ACCOUNTING_READ \
+    +ACCOUNT_READ \
+    +ADMIN_READ \
     +ANY_REALM_USER \
     +DOCUMENT_READ \
-    +FINANCIAL_DATA_READ \
+    +INVESTMENT_READ \
     +MAIL_READ \
     +MEMBER_READ \
     +MOTION_READ
-#TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
 b-realm-role -r club edit MEMBER - \
     +GUEST \
     +DOCUMENT_WRITE \
     +MAIL_RECEIVE
-b-realm-role -r club edit ACCOUNTANT +
-b-realm-role -r club edit ADMINISTRATOR +
+b-realm-role -r club edit ACCOUNTANT - \
+    +MEMBER \
+    +ACCOUNTING_WRITE \
+    +ADMIN_WRITE \
+    +DEBUG_ACTION \
+    +FILE_ADMIN \
+    +MAIL_ADMIN \
+    +MEMBER_WRITE \
+    +MOTION_WRITE \
+    +REALM_PUBLICIZE \
+    +UNKNOWN
+b-realm-role -r club edit ADMINISTRATOR - \
+    +ACCOUNTANT
 #END DEFAULTS -- this tag is used by init_defaults()
 
 #
 # Demo Club Permissions, everybody is like a GUEST of a normal club
 #
 b-realm-role -r demo_club edit ANONYMOUS - \
-    +LOGIN \
-    +ANY_USER \
-    +ADMIN_READ \
     +ACCOUNTING_READ \
+    +ACCOUNT_READ \
+    +ADMIN_READ \
+    +ANY_REALM_USER \
+    +ANY_USER \
     +DOCUMENT_READ \
-    +FINANCIAL_DATA_READ \
+    +INVESTMENT_READ \
+    +LOGIN \
     +MAIL_READ \
     +MEMBER_READ \
     +MOTION_READ
 b-realm-role -r demo_club edit USER - \
     +ANONYMOUS
 b-realm-role -r demo_club edit WITHDRAWN - \
-    +USER
+    +USER \
+    +MAIL_FORWARD \
+    +MAIL_WRITE
 b-realm-role -r demo_club edit GUEST - \
     +WITHDRAWN
-#TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
 b-realm-role -r demo_club edit MEMBER - \
     +GUEST
 b-realm-role -r demo_club edit ACCOUNTANT - \
@@ -516,26 +589,45 @@ b-realm-role -r demo_club edit ADMINISTRATOR - \
 #
 # club_index Permissions: anonymous can look at all investment things
 #
-b-realm-role demo_club ANONYMOUS - \
-    +LOGIN \
-    +ANY_USER \
-    +ADMIN_READ \
+b-realm-role -r club_index edit ANONYMOUS - \
     +ACCOUNTING_READ \
+    +ACCOUNT_READ \
+    +INVESTMENT_READ \
+    +LOGIN \
+    +MAIL_WRITE
+b-realm-role -r club_index edit USER - \
+    +ANONYMOUS \
+    +ANY_USER \
+    +MAIL_FORWARD
+b-realm-role -r club_index edit WITHDRAWN - \
+    +ANY_USER \
+    +LOGIN \
+    +MAIL_FORWARD \
+    +MAIL_WRITE
+b-realm-role -r club_index edit GUEST - \
+    +WITHDRAWN \
+    +ACCOUNTING_READ \
+    +ACCOUNT_READ \
+    +ADMIN_READ \
+    +ANY_REALM_USER \
     +DOCUMENT_READ \
-    +FINANCIAL_DATA_READ \
+    +INVESTMENT_READ \
     +MAIL_READ \
     +MEMBER_READ \
     +MOTION_READ
-b-realm-role demo_club USER - \
-    +ANONYMOUS
-b-realm-role demo_club WITHDRAWN - \
-    +USER
-b-realm-role demo_club GUEST - \
-    +WITHDRAWN
-#TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
-b-realm-role demo_club MEMBER - \
-    +GUEST
-b-realm-role demo_club ACCOUNTANT - \
-    +MEMBER
-b-realm-role demo_club ADMINISTRATOR - \
+b-realm-role -r club_index edit MEMBER - \
+    +GUEST \
+    +DOCUMENT_WRITE \
+    +MAIL_RECEIVE
+b-realm-role -r club_index edit ACCOUNTANT - \
+    +MEMBER \
+    +ACCOUNTING_WRITE \
+    +ADMIN_WRITE \
+    +DEBUG_ACTION \
+    +MAIL_ADMIN \
+    +MEMBER_WRITE \
+    +MOTION_WRITE \
+    +REALM_PUBLICIZE \
+    +UNKNOWN
+b-realm-role -r club_index edit ADMINISTRATOR - \
     +ACCOUNTANT
