@@ -15,8 +15,14 @@ Bivio::UI::FacadeComponent - maps logical names to facade-specific values
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::UI::FacadeComponent::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::UI::WidgetValueSource>
+
+=cut
+
+use Bivio::UI::WidgetValueSource;
+@Bivio::UI::FacadeComponent::ISA = ('Bivio::UI::WidgetValueSource');
 
 =head1 DESCRIPTION
 
@@ -233,21 +239,6 @@ Returns the Facade to which this instance belongs.
 
 sub get_facade {
     return shift->{$_PACKAGE}->{facade};
-}
-
-=for html <a name="get_widget_value"></a>
-
-=head2 get_widget_value(string method) : any
-
-Calls I<method> on I<self>.
-
-=cut
-
-sub get_widget_value {
-    my($self, $method) = (shift, shift);
-    # Delete leading -> for compatibility with "standard" get_widget_value
-    $method =~ s/^\-\>//;
-    return $self->$method(@_);
 }
 
 =for html <a name="group"></a>
