@@ -124,15 +124,16 @@ sub SEPARATOR {
     return '.';
 }
 
-=for html <a name="UNDEF_CONFIG"></a>
+=for html <a name="UNDEF_VALUE"></a>
 
-=head2 UNDEF_CONFIG() : any
+=head2 UNDEF_VALUE : string
 
-Returns the string "TEXT-ERR".
+Returns the string "TEXT-ERR", the string returned if a value
+cannot be found.
 
 =cut
 
-sub UNDEF_CONFIG {
+sub UNDEF_VALUE {
     return 'TEXT-ERR';
 }
 
@@ -203,16 +204,16 @@ from the request's facade will be retrieved and used to get the value.
 
 I<tag_part>'s are case insensitive.
 
-If I<tag_part> does
-not identify a group (top-level tag part), returns a warning and prints
-L<UNDEF_CONFIG|"UNDEF_CONFIG">..
+If I<tag_part> does not identify a group (top-level tag part), indicates an
+error (which may cause a die, see FacadeComponent) and returns
+L<UNDEF_CONFIG|"UNDEF_CONFIG">
 
 =cut
 
 sub get_value {
-    my($self, @tag_part) = @_;
+    my($proto, @tag_part) = @_;
     my($req_or_facade) = ref(@tag_part->[$#tag_part]) ? pop(@tag_part) : undef;
-    $self = $self->internal_get_self($req_or_facade);
+    my($self) = $proto->internal_get_self($req_or_facade);
     my($tag) = _join_tag(\@tag_part);
     # We search a diagonal matrix.  We iterate over the $tag until we
     # find a match.  Chops off front component each time, if not found.
@@ -224,7 +225,7 @@ sub get_value {
 	# is bad so can't be found.
 	last unless $tag =~ s/^\w+($_SEP_PAT)?//g;
     }
-    return $self->internal_warn_not_found(\@tag_part)->{value};
+    return $self->get_error(\@tag_part)->{value};
 }
 
 =for html <a name="get_widget_value"></a>
@@ -289,16 +290,22 @@ sub handle_register {
 
 =head2 internal_initialize_value(hash_ref value)
 
-The value must be a string.
+Initializes a value.  The group management has already taken place
+(see L<group|"group">.
 
 =cut
 
 sub internal_initialize_value {
     my($self, $value) = @_;
     my($v) = $value->{config};
-    $self->die($value, 'expecting a string, not a reference') if ref($v);
-    # Undefined is err
-    $value->{value} = defined($v) ? $v : UNDEF_CONFIG();
+    if (ref($v)) {
+	# This shouldn't happen, but good to check
+	$self->initialization_error(
+		$value, 'expecting a string, not a reference');
+	$v = undef;
+    }
+    # Undefined is error
+    $value->{value} = defined($v) ? $v : UNDEF_VALUE();
     return;
 }
 
