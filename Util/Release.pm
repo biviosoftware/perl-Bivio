@@ -414,7 +414,8 @@ Case is ignored on the match.
 
 sub list_installed {
     my($self, $match) = @_;
-    return join('', grep(/$match/i, split(/(?=\n)/,
+    $match = '.' unless defined($match);
+    return join('', grep(/$match/i, split(/(?<=\n)/,
 	`rpm -qa --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE} \%{GROUP} %{BUILDHOST}\\n'`
        )));
 }
