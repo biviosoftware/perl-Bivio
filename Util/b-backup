@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# $Id$
+#
+
+export PATH="/usr/local/bin:$PATH"
+
+. /etc/ssh2/ssh2_agent
+
+ts=$(date +%Y%m%d%H%M%S)
+cd /home/bkp
+mkdir $ts
+cd $ts
+
+# DON'T backup lock_t, because it is temporal.
+# Consistent
+echo Exporting realm tables
+/usr/local/oracle/product/8.1.5/bin/exp 'bivio/bivio@jump_PROD' grants=n compress=y indexes=n rows=y constraints=n direct=y statistics=none feedback=0 consistent=y file=./$ts-realm.dmp 'tables=(ACCOUNTING_IMPORT_T,ADDRESS_T,CLUB_T,CONNECT_SURVEY_T,DB_UPGRADE_T,EMAIL_T,ENTRY_T,FILE_QUOTA_T,FILE_T,INSTITUTION_T,INSTRUMENT_T,JAPAN_SURVEY_T,MAIL_MESSAGE_T,MEMBER_ENTRY_T,PHONE_T,REALM_ACCOUNT_ENTRY_T,REALM_ACCOUNT_T,REALM_INSTRUMENT_ENTRY_T,REALM_INSTRUMENT_T,REALM_INSTRUMENT_VALUATION_T,REALM_INVITE_T,REALM_OWNER_T,REALM_ROLE_T,REALM_TRANSACTION_T,REALM_USER_T,USER_T,TAX_ID_T)'
+
+# Is consistent with above, but we might lose the last messages not
+# in the database.  Easy to check.
+echo jump:/home/httpd/data
+ssh jump tar czf - /home/httpd/data > $ts-data.tgz
+
+# Not consistent, because we only update once per day
+echo Exporting mgfs tables
+/usr/local/oracle/product/8.1.5/bin/exp 'bivio/bivio@jump_PROD' grants=n compress=y indexes=n rows=y constraints=n direct=y statistics=none feedback=0 consistent=n file=./$ts-mgfs.dmp 'tables=(MGFS_BALANCE_SHEET_T,MGFS_CASH_FLOW_T,MGFS_COMPANY_BOARD_T,MGFS_COMPANY_SEGMENT_T,MGFS_COMPANY_T,MGFS_DAILY_QUOTE_T,MGFS_DOWNLOAD_T,MGFS_FUNDAMENTAL_T,MGFS_INCOME_STATEMENT_T,MGFS_INSTRUMENT_T,MGFS_SECONDARY_SIC_T,MGFS_SIC_CODE_T,MGFS_SPLIT_T,MGFS_SP_INDUSTRY_T,INSTRUMENT_T)'
+
+echo carve:/usr/local/reqng
+tar czf $ts-reqng.tgz /usr/local/reqng
+echo carve:/home/httpd
+tar czf $ts-carve-httpd.tgz /home/httpd
+
+cd ..
+echo Writing to tape
+tar cbf 200b /dev/tape $ts
+echo "$(date +"%m/%d/%y") tar 200b $ts (before gzip)" >> TAPE
+cp TAPE $ts
+cd $ts
+echo Compressing *mgfs.dmp
+gzip *mgfs.dmp
+echo Compressing *realm.dmp
+gzip *realm.dmp
+
+echo Copying backup files over to pass:/home/bkp/prod
+scp * pass:/home/bkp/prod

@@ -1,0 +1,119 @@
+#!/usr/bin/perl
+#
+# $Id$
+#
+
+use strict;
+use Net::DNS;
+
+my %dig = ();       # DNS cache: key = IP#, value = FQ host name
+my $res = new Net::DNS::Resolver;
+
+sub check_httpd_logs {
+    my($interval) = @_;
+    my %host_problems;  # HTTP errors: key = host IP#, value = requests
+    my @type_problems;  # HTTP errors: key = error code, value = requests
+    my %file_not_found; # key = filename, value = no of occurences
+    my($date);
+    while (<>){
+        /^\s*$/ && next;
+        (/Server configured -- resuming normal operations/ ||
+                /Restart successful/ ||
+                /httpd: caught SIGTERM, shutting down/ ||
+                /SIGHUP received.  Attempting to restart/ ||
+                /\[NOT AUTHORIZED\]/ ||
+                /reason: File does not exist/ ||
+                /reason: script not found or unable to stat/ ||
+                /(Timed out when reading request|Connection interrupted)/ ||
+                /lost connection to client (.+)/ ||
+                /send script output (timed out) for (.+)$/ ||
+                /copy script args (timed out) for (.+)$/ ||
+                /send body timed out for/ ||
+                /\[(info|notice)\]/ ||
+                /Server built:/ ||
+                /child process \d+ still did not exit/ ||
+                /created shared memory segment/ ||
+                /read request (line|headers) timed out for/ ||
+                /(read|send) timed out for (.+)/) && next;
+        #
+        (/^\s*(Bivio::|eval)/) && next;
+        #
+        if (!/^\[([^\[]+)\] (.+)$/) {
+            push(@type_problems, "    $_");
+            next;
+        }
+        ($date, $_) = ($1, $2);
+        if (/access to (.+) failed for (.+), reason:/) {
+            $host_problems{$2} .= "    $date $_\n";
+        } elsif( /File does not exist: (.+)/ ) {
+            $file_not_found{$1}++;
+        } else {
+            push(@type_problems, "    $_\n");
+        }
+    }
+
+    # Print results
+    my($name, $type, $file);
+    if( %file_not_found ) {
+        warn "FILE NOT FOUND ERRORS:\n";
+        foreach $file (sort { $file_not_found{$b} <=> $file_not_found{$a}; } keys %file_not_found) {
+            printf STDERR "%4d %s\n", $file_not_found{$file}, $file;
+        }
+        warn "\n";
+    }
+    if(@type_problems) {
+        warn "REQUEST ERRORS:\n", @type_problems, "\n";
+    }
+    foreach my $host (keys(%host_problems)) {
+        $name = &dig($host);
+        warn "HOST [$host]", $name ne $host ? " $name" : '', " ERRORS\n";
+        warn $host_problems{$host}, "\n";
+    }
+}
+
+sub main {
+    my(@argv) = @_;
+    my($arg, $debug);
+    my($interval) = 0;
+    while ($arg = shift) {
+        if ($arg eq '-debug') {
+            $debug++;
+        } elsif ($arg eq '-help') {
+            &usage();
+        } elsif ($arg eq '-interval') {
+            $interval = shift || &usage("-internal: need argument");
+        } else {
+            &usage("$arg: Unknown or misplaced option");
+        }
+    }
+    &check_httpd_logs($interval);
+}
+
+# dig($ip_addr) -> $hostname
+#   Convert an Internet decimal address to a name (if possible)
+#   Uses global DNS resolver object $res and hostname cache %dig
+sub dig {
+    my($addr) = @_;
+    defined($dig{$addr}) && return $dig{$addr}; # cache hit
+    $dig{$addr} = $addr; # in case DNS lookup fails
+    my $query = $res->query($addr); # Use global DNS resolver object $res
+    if (defined($query)) { 
+        my @rr = $query->answer;
+       my $rec;
+        foreach $rec (@rr) {
+            $rec->type eq 'PTR' && ($dig{$addr} = $rec->ptrdname, last);
+        }
+    }
+    return $dig{$addr};
+}
+
+sub usage {
+    warn "$0: @_\n" if @_;
+    warn <<"EOF";
+Usage: b-check-logs [-debug]
+    Pass log files on stdin.
+EOF
+    exit(@_ ? 1:0);
+}
+
+&main(@ARGV);

@@ -1,0 +1,271 @@
+#!/usr/bin/perl
+#
+# @(#) $Id$
+#
+use strict;
+
+my($prog);
+($prog = $0) =~ s,.*/,,;
+
+require 'timelocal.pl';
+
+my %mmap = ('Jan', 0, 'Feb', 1, 'Mar', 2, 'Apr', 3, 'May',  4, 'Jun',  5,
+            'Jul', 6, 'Aug', 7, 'Sep', 8, 'Oct', 9, 'Nov', 10, 'Dec', 11);
+my($host);
+chomp($host = `hostname`);
+my($log_dir) = '/var/log';
+my($interval) = 24; # hours, assuming we run every $interval
+my(@levels);
+
+# These two associative arrays keep the messages appearing in the log
+# files. %msgs keeps _all_ unknown messages while %problems maintains a
+# reference count for each message because the same message can occur in
+# more than just one log file.
+my(%msgs);     # key: level,   value: <msg>\n<msg>\n
+my(%problems); # key: <msg>\n, value: # of occurences in all log files
+
+my($arg, $recipient, $debug);
+while ($arg = shift) {
+    if ($arg eq '-help') { &usage; }
+    elsif ($arg eq '-debug') { $debug++; }
+    elsif ($arg eq '-interval') { $interval = shift || &usage('missing arg'); }
+    else { &usage("unexpected option '$arg'"); }
+}
+
+&checkdiskuse;
+&checkraid;
+&check_messages;
+%msgs && &send_notice;
+exit(0);
+
+sub send_notice {
+    my($level, $first_problem);
+    foreach $level (@levels) {
+        $msgs{$level} || next;
+        $first_problem = 1;
+        foreach (split("\n", $msgs{$level})) {
+            defined($problems{$_}) || next; # message handled already?
+            if ($first_problem) { # write out header only once
+                print "Syslog \"$level\" messages:\n";
+                $first_problem--;
+            }
+            print $_, "\n";
+            undef($problems{$_}); # don't mention message again in other levels
+        }
+    }
+}
+
+sub check_messages {
+    # Get all the log files in $log_dir ending in ".log"
+    chdir($log_dir) || die("$log_dir: $!\n");
+    opendir(LOGDIR, $log_dir) || die("$log_dir: $!\n");
+    my(%tmp) = ();
+    my(@known_levels) = ('maillog', 'messages', 'secure');
+    foreach (@known_levels, grep(/\.log$/, readdir(LOGDIR))) {
+        push(@levels, $_) unless defined $tmp{$_};
+        $tmp{$_}++;
+    }
+    closedir(LOGDIR);
+    $debug && print "Processing log files: ", join(',', @levels), "\n";
+
+    my($now) = time;
+    my($month, $year) = (localtime($now))[4,5];
+    my($sec_per_interval) = $interval * 60 * 60 + 360; # add 10 minutes slack
+
+    my($level, $line);
+    foreach $level (@levels) {
+        $debug && print "Opening $level file\n";
+        open(LOGFILE, "<$level") || 
+            (&add_problem($level, "$level: $!"), next);
+        $line = 0;
+        while (<LOGFILE>) {
+            $line++; chop;
+
+            /last message repeated \d+ time/ && next;
+            /syslogd: going down on signal 15/ && next;
+            /syslogd \S+: restart/ && next;
+
+            /^(\w\w\w)\s+(\d+) (\d\d):(\d\d):(\d\d) \S+\s+(\S+): (.*)$/ || 
+                (&add_problem($level, "CAN'T PARSE: '$_'"), next);
+            
+            defined($mmap{$1}) || # Sanity check: complain if month is unknown
+                (&add_problem($level, "CAN'T PARSE MONTH: '$_'"), next);
+            # Check current month greater or equal, otherwise last year msg
+            my($happened) = $now - &timelocal($5, $4, $3, $2, $mmap{$1},
+                                          $mmap{$1} > $month ? $year -1:$year);
+            # skip message if older than given interval
+            ($happened <= $sec_per_interval) || next;
+
+            # START OF FILTERING KNOWN MESSAGES
+
+            /'su \S+' (succeeded|failed) for \S+/ && next;
+            /login: ROOT LOGIN (console|tty|\/dev\/pts)/ && next;
+
+            /(halt|reboot): (halted|rebooted) by root$/ && next;
+
+            /sendmail\[\d+\]: alias database.*(auto|)rebuilt by \S+$/ && next;
+            /sendmail\[\d+\]: rebuilding alias database/ && next;
+            /sendmail\[\d+\]: \/etc\/aliases: \d+ aliases/ && next;
+
+            /ssh\[\d+\]: connect\(\) from \S+ to \S+/ && next;
+            /sshd2\[\d+\]: log:/ && next;
+            /sshd2\[\d+\]: Remote TCP\/IP forwarding request/ && next;
+            /sshd2\[\d+\]: Port \d+ set up for remote forwarding/ && next;
+            /sshd2\[\d+\]: fatal: Connection closed by remote host/ && next;
+            /sshd2\[\d+\]: Remote host disconnected/ && next;
+            /sshd2\[\d+\]: connection (lost:|from)/ && next;
+            /sshd2\[\d+\]: Connection to forwarded port/ && next;
+            /sshd2\[\d+\]: Starting daemon in inetd mode/ && next;
+            /sshd2\[\d+\]: Daemon is running/ && next;
+            /sshd2\[\d+\]: User \S+ local password accepted/ && next;
+            /sshd2\[\d+\]: User \S+, coming from \S+, authenticated/ && next;
+            /sshd2\[\d+\]: Password authentication for user \S+ accepted/ && next;
+
+            /xntpd\[\d+\]: offset [-\d.]+ freq [-\d.]+ comp \d/ && next;
+            /xntpd\[\d+\]: Previous time adjustment/ && next;
+            /xntpd\[\d+\]: peer \S+ event \d+ status/ && next;
+            /xntpd\[\d+\]: NTP statistics file: / && next;
+            /xntpd\[\d+\]: adjust: STEP dropped/ && next;
+            /xntpd\[\d+\]: adjust: STEP \S+ offset \S+$/ && next;
+            /xntpd\[\d+\]: system event \d+ status \S+$/ && next;
+            /xntpd\[\d+\]: sendto\(.+\): Network is unreachable/ && next;
+            /xntpd\[\d+\]: xntpd / && next;
+            /xntpd\[\d+\]: time reset/ && next;
+            /xntpd\[\d+\]: synchronisation lost/ && next;
+            /xntpd\[\d+\]: synchronized to/ && next;
+            /xntpd\[\d+\]: precision =/ && next;
+            /xntpd\[\d+\]: read drift of/ && next;
+            /xntpd\[\d+\]: tickadj =/ && next;
+            /xntpd\[\d+\]: kernel pll status/ && next;
+
+            /popper\[\d+\]: \(.+\) (Servicing|Ending) request from / && next;
+            /popper\[\d+\]: .+ -ERR Unknown command: "(xsender|auth)"/ && next;
+            /popper\[\d+\]: .+ -ERR POP EOF received"/ && next;
+            /ipop3d\[\d+\]: (Auth|Logout|Login|Autologout) user( |=)\S+ host( |=)\S+/ && next;
+            /ipop3d\[\d+\]: connect from/ && next;
+            /ipop3d\[\d+\]: port 110 service init from/ && next;
+            /ipop3d\[\d+\]: Moved \d+ bytes of new mail/ && next;
+
+            /imapd\[\d+\]: (Autologout|Logout|Login) user( |=)\S+/ && next;
+            /imapd\[\d+\]: connect from/ && next;
+            /imapd\[\d+\]: imap service init from/ && next;
+            /imapd\[\d+\]: Authenticated user=/ && next;
+
+            /sslwrap\[\d+\]: connect from/ && next;
+
+	    /sendmail\[\d+\]: [A-Z]{3}[0-9]{5}: (message\-id|from|to)=/ && next;
+	    /sendmail\[\d+\]: [A-Z]{3}[0-9]{5}: locked/ && next;
+	    /sendmail\[\d+\]: \d+ aliases, longest/ && next;
+	    /sendmail\[\d+\]: \S+: clone \S+, owner=/ && next;
+
+            /ftpd\[\d+\]: connection from/ && next;
+            /ftpd\[\d+\]: (|ANONYMOUS )FTP LOGIN FROM/ && next;
+            /ftpd\[\d+\]: FTP session closed/ && next;
+            /ftpd\[\d+\]: User ftp timed out after/ && next;
+            /ftpd\[\d+\]: morgans of \S+ \S+ deleted \/morgans/ && next;
+
+            /named\[\d+\]: Cleaned cache/ && next;
+            /named\[\d+\]: (USAGE|NSTATS|XSTATS) / && next;
+            /named\[\d+\]: rcvd NOTIFY/ && next;
+            /named\[\d+\]: (master|slave) zone/ && next;
+            /named\[\d+\]: sysquery: query/ && next;
+            /named\[\d+\]: zone transfer/ && next;
+            /named\[\d+\]: approved AXFR from/ && next;
+            /named-xfer\[\d+\]: send AXFR query/ && next;
+
+            /cvs\[\d+\]: connect from/ && next;
+            
+            /tcp-env\[\d+\]: connect / && next;
+            /qmail: \d+\.\d+ (new|info|starting|status|delivery|end)/ && next;
+            /qmail: \d+\.\d+\+/ && next;
+
+            /rdistd\[\d+\]: / && next;
+
+            /PAM_pwdb\[\d+\]: \(su\) session (opened|closed) for user/ && next;
+            
+            /httpd: httpd startup succeeded/ && next;
+            
+	    # END OF FILTERING KNOWN MESSAGES
+            &add_problem($level, $_);
+        }
+        close(LOGFILE);
+    }
+
+}
+
+sub add_problem {
+    my($level, $message) = @_;
+    $problems{$message}++;
+    defined $msgs{$level} ? ($msgs{$level} .= "$message\n")
+			  : ($msgs{$level} = "$message\n");
+}
+
+sub checkdiskuse {
+    # Capacity limits
+    my($max_cap_dflt) =	90;	# default fs capacity limit
+    my(%max_cap_fs) = (		# custom limits for specific fs's
+        '/usr',		90,	# key: regular expresssion
+        '/db\d',		95,
+        '/mnt',		99,
+    );
+    my($max_iused_dflt) =	90;	# default inode capacity limit
+    my(%max_iused_fs) = (		# custom limits for specific fs's
+        '/usr',		90,
+    );
+
+    my($cmd) = 'df -k -t ext2';
+    my(@out) = `$cmd`;
+    my($err);
+    $? && (warn("problem executing '$cmd'"), $err = 1);
+    foreach (@out) {
+        # Filesystem            kbytes    used   avail capacity  Mounted on
+        # /dev/sd0a               7255    3764    2765    58%    /
+        m!^/dev! || next;
+        my($dev, $cap, $mount) = (split)[0, 4, 5];
+        chop($cap);
+        my($max_cap) = $max_cap_dflt;
+        foreach (sort(keys(%max_cap_fs))) {
+            $mount =~ m!^$_$! && ($max_cap = $max_cap_fs{$_}, last);
+        }
+        if ($cap > $max_cap) {
+            warn("WARNING: $mount ($dev) is over $max_cap% full ($cap%)\n");
+            $err = 1;
+        }
+    }
+
+    # Check inode use
+    $cmd = 'df -i -t ext2';
+    @out = `$cmd`;
+    $? && (warn("problem executing '$cmd'"), $err = 1);
+    foreach (@out) {
+        # Filesystem            Inodes   IUsed   IFree IUse% Mounted on
+        # /dev/sda6            1660928   54301 1606627    3% /home
+        m!^/dev! || next;
+        my($dev, $iused, $mount) = (split)[0, 4, 5];
+        chop($iused);
+        my($max_iused) = (defined $max_iused_fs{$mount}
+                      ? $max_iused_fs{$mount} : $max_iused_dflt);
+        if ($iused > $max_iused) {
+            warn("WARNING: $mount ($dev) inodes are over $max_iused% used ($iused%)\n");
+            $err = 1;
+        }
+    }
+}
+
+sub checkraid {
+    my($mdfile) = '/proc/mdstat';
+    if (open(F, $mdfile)) {
+        while(<F>) {
+            /^md\d+.+_/ && warn("WARNING: $mdfile: $_");
+        }
+        close(F);
+    }
+}
+
+sub usage {
+    print "$prog: @_\n" if @_;
+    print <<EOF;
+Usage: $prog [-help] [-debug] [-interval <hours>]
+EOF
+    exit(@_ ? 1:0);
+}

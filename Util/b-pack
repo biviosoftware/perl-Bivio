@@ -1,0 +1,575 @@
+#!perl -w
+# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# $Id$
+use strict;
+use diagnostics;
+
+=head1 NAME
+
+b-bap - build, package and manage software snapshots
+
+=head1 SYNOPSIS
+
+  b-bap -b cvs-tag [-g grade-level] rpm-spec
+  b-bap -l pkg-name
+  b-bap -g grade-level pkg-name-version
+  b-bap -i grade-level [--force] [--nodeps] pkg-name
+
+=head1 DESCRIPTION
+
+B<b-bap> is used to build, package and manage software snapshots.
+        
+ B<b-bap> -b creates a snapshot of a software package using a RPM spec file.
+ B<b-bap> -g grades an existing snapshot to a specific grade level.
+ B<b-bap> -i installs a package, using the version with the given grade level.
+ B<b-bap> -l lists currently available package snapshots.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-b>
+
+Creates a package snapshot using a RPM spec file and the corresponding
+source files which match the given CVS tag. The snapshot is given a version
+number which is the current date and time, eg. 20000207_134531.
+The snapshot consists of a RPM file (containing all the files and pre-post-
+action scripts) and a HTML file (containing a manifest of all the source
+files used). Those two files are then put into the package repository.
+The command needs to be run on the server holding this repository
+which currently is locker.bivio.com.
+
+=item B<cvs-tag>
+
+Uses this CVS tag to checkout the required sources.
+"HEAD" will retrieve the most current file versions. "DEV" can be used
+to get the latest versions that were approved by the developers.
+
+=item B<rpm-spec>
+
+Uses this name to find the RPM spec file to build the snapshot.
+All spec files for the packages live in the CVS directory "pkgs" and
+have the file suffix ".spec".
+
+=item B<-g>
+
+Grades an existing snapshot. Grading a snapshot means assigning it
+a confidence or quality level. 
+There are currently three grade levels of increasing confidence
+available: play, test, prod.
+"prod" has the highest confidence level and can be used for
+production system. 
+
+=item B<version>
+
+Specifies the exact version of the package snapshot to be graded.
+
+=item B<-i>
+
+Installs a package snapshot on the server. You need to provide the grade level
+that's acceptable for this server. The RPM snapshot is fetched via http
+from the repository server and installed on the local host.
+
+=back
+
+=cut
+
+#=IMPORTS
+use Cwd;
+use LWP::UserAgent;
+use HTTP::Request;
+
+#=VARIABLES
+my($cvs_root) = $ENV{'CVSROOT'} || die("CVSROOT: not set");
+$cvs_root =~ s/.+://;
+my($cvs_co_pat) = 'checkout \('.$cvs_root.'\/([^,]+),v, ([\d\.]+),';
+
+my($tmp_dir) = "/var/tmp/b-bap-$$";
+my(@n) = localtime;
+my($date_tag) = sprintf("%4d%02d%02d_%02d%02d%02d", 1900+$n[5], 1+$n[4],
+        $n[3], $n[2], $n[1], $n[0]);
+
+my($rpm_arch) = 'i386';
+
+my($repo_host) = 'locker.bivio.com';
+my($repo_port) = 60000;
+my($repo_dir) = '/dip/rpms/';
+my($repo_home) = '/home' . $repo_dir;
+my($cvs_web) = 'https://locker.bivio.com/cvsweb';
+
+my($debug, $verbose);
+my(@actions) = ('build', 'grade', 'install', 'list');
+my(@grades) = ('play', 'test', 'prod');
+my($grade) = $grades[0]; # play is default grade
+
+=head1 METHODS
+
+sub action_b {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return;
+}
+
+=cut
+
+=for html <a name="main"></a>
+
+=head2 main(array @args) : 
+
+=cut
+
+sub main {
+    exists($ENV{'REQUEST_METHOD'}) && return &cgi_handler();
+
+    my($arg, @args, @rpm_opts, $action);
+    while ($arg = shift(@_)) {
+        if ($arg =~ /^-([bgil])$/) {
+            $action || ($action = $1, next);
+            if ($action eq 'b' && $1 eq 'g') {
+                $grade = shift || &usage("-g: missing argument");
+                next;
+            }
+            &usage("Only one of -b, -l, -g, -i allowed");
+        } elsif ($arg eq '-v') {
+            $verbose++;
+        } elsif ($arg eq '-d') {
+            $debug++;
+        } elsif ($arg =~ /^--(force|nodeps)$/) {
+            push(@rpm_opts, $arg);
+        } else {
+            push(@args, $arg);
+        }
+    }
+    $action || &usage("Need one of -b, -l, -g, -i");
+    my($call) = 'action_' . $action;
+    eval("&$call(\@args, @rpm_opts); 1") || die($@);
+}
+
+#=PRIVATE METHODS
+
+=cut
+
+=for html <a name="action_b"></a>
+
+=head2 action_b() : 
+
+
+=cut
+
+sub action_b {
+    my($cvs_tag, $spec_in) = @_;
+    local($_);
+    $cvs_tag || &usage("Build stage needs a CVS tag");
+    $spec_in || &usage("Build stage needs a RPM spec file");
+
+    my $run_dir = cwd;
+    system("rm -rf $tmp_dir; mkdir $tmp_dir");
+    chdir($tmp_dir) || die("chdir($tmp_dir): $!\n");
+
+    # Store all file with their revision numbers in %cvs_rev
+    my(%cvs_rev);
+    $spec_in =~ /\.spec$/ || ($spec_in = 'pkgs/' . $spec_in . '.spec');
+    open(CVS, "cvs -t checkout -f -r $cvs_tag $spec_in 2>&1|");
+    my(@cvs_out);
+    while(<CVS>) {
+        /^cvs/ && push(@cvs_out, $_);
+        m:$cvs_co_pat: && ($cvs_rev{$1} = $2);
+    }
+    close(CVS);
+    $? && die(@cvs_out);
+
+    open(IN, $spec_in) || die("$spec_in: $!");
+    my(@spec_in) = <IN>;
+    close(IN);
+
+    # Create a new RPM so we can add a few things
+    my($spec_out) = "$spec_in-b-bap";
+    open(SPECOUT, ">$spec_out") || die("$spec_out: $!");
+    print SPECOUT <<"EOF";
+%define _topdir .
+%define _builddir .
+%define _sourcedir .
+%define _rpmdir .
+%define _srcrpmdir .
+%define cvs cvs -t checkout -f -r $cvs_tag
+EOF
+
+    my($name, $rel, $version);
+    grep(/^Name: (.+)/ && ($name = $1), @spec_in)
+            || die("$spec_in: Missing Name: tag!");
+    if(!grep(/^Release: (.+)/i && ($rel = $1), @spec_in)) {
+        print SPECOUT "Release: $cvs_tag\n";
+        $rel = $cvs_tag;
+    }
+    if(!grep(/^Version: (.+)/i && ($version = $1), @spec_in)) {
+        print SPECOUT "Version: $date_tag\n";
+        $version = $date_tag;
+    }
+    grep(/^Copyright:/i, @spec_in) || print SPECOUT "Copyright: Bivio\n";
+    my($line, $build_root, $source);
+    for $line (@spec_in) {
+        if($line =~ /^buildroot: (.+)$/i) {
+            $build_root = $1;
+            $build_root =~ m,^/, || ($build_root = cwd . '/'. $build_root);
+            print SPECOUT "BuildRoot: ", $build_root, "\n";
+            print SPECOUT "%define allfiles cd $build_root; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\.//'\n";
+            print SPECOUT "%define allcfgs cd $build_root; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\./%config /'\n";
+
+            next;
+        } elsif($line =~ /^source: (.+)$/i) {
+            $source = $1;
+            $source =~ m,^/, || ($source = $run_dir . '/'. $source);
+            system("ln -s $source");
+        }
+        print SPECOUT $line;
+    }
+    close(SPECOUT);
+
+    if ($debug) {
+        warn("Run command : rpm -bb $spec_out\n");
+        warn("in directory: $tmp_dir\n");
+        return;
+    }
+    -e $rpm_arch || system("ln -s . $rpm_arch");
+    open(RPM, "exec rpm -bb $spec_out 2>&1|");
+    my(@rpm_out);
+    while(<RPM>) {
+        push(@rpm_out, $_);
+        m:$cvs_co_pat: && ($cvs_rev{$1} = $2);
+    }
+    close(RPM);
+    if($?) {
+        warn("system(rpm -bb $spec_out) failed (rc=$?):\n");
+        die(@rpm_out);
+    }
+    my($rpm_name) = "$name-$version-$rel";
+    my($rpm_base) = "$rpm_name.$rpm_arch";
+    my($rpm_file) = "$rpm_arch/$rpm_base.rpm";
+    -f $rpm_file || die("RPM output: $rpm_file: $!");
+            
+    my($rpm_rev) = &create_html($rpm_base, %cvs_rev);
+    if(-d $repo_home) {
+        print "Installing $rpm_base.* in $repo_home\n";
+        system("chown httpd.httpd $rpm_file $rpm_rev");
+        system("cp -p $rpm_file $rpm_rev $repo_home");
+    } else {
+        print "Copying $rpm_base.* to $run_dir\n";
+        system("cp -p $rpm_file $rpm_rev $run_dir");
+    }
+    unlink("$spec_out");
+    chdir($run_dir);
+    system("rm -rf $tmp_dir");
+
+    &cvs_tag_files($cvs_tag, $rpm_name, keys(%cvs_rev));
+    &action_g($grade, $rpm_name);
+    return 1;
+}
+
+=cut
+
+=for html <a name="action_g"></a>
+
+=head2 action_g() : 
+
+Grade a package snapshot by (re-)creating a link with
+the name pkgname-grade.rpm
+
+=cut
+
+sub action_g {
+    my($grade, $pkg) = @_;
+    &check_grade($grade);
+    my($name, $version, $rel) = $pkg =~ /^(.+)-([^-]+)-([^-]+)$/;
+    $name && $version && $rel
+            || &usage("$pkg: incomplete, must be name-version-release");
+
+    -d $repo_home || ($repo_home = '.');
+    my($rpm_file) = "$repo_home/$pkg.$rpm_arch.rpm";
+    -f $rpm_file || die("$rpm_file: $!\n");
+    
+    # Find all snapshots
+    opendir(D, $repo_home);
+    my(@snaps) = grep(/^$name-/, readdir(D));
+    closedir(D);
+    @snaps || die("$name: no RPM files found under this name\n");
+    # (re)create grade link
+    my($link) = "$repo_home/$name-$grade.rpm";
+    unlink($link);
+    symlink("$pkg.$rpm_arch.rpm", $link);
+# TODO: Need to check grades are in correct order.
+#       play-version >= test-version >= prod-version
+    return 1;
+}
+
+=cut
+
+=for html <a name="cvs_tag_files"></a>
+
+=head2 cvs_tag_files($cur_tag: string, $new_tag: string, @f: array) : 
+
+Applies tag $new_tag to files (@f) whose revision is either HEAD or $cur_tag.
+
+=cut
+
+sub cvs_tag_files {
+    my($cur_tag, $new_tag, @f) = @_;
+    my($f);
+    my($l) = join(' ', @f);
+    $new_tag =~ s/\./_/g; # chars $,.:;@ must not occur in CVS tags
+    system("cvs rtag -f -r $cur_tag $new_tag $l");
+}
+
+=cut
+
+=for html <a name="create_html"></a>
+
+=head2 create_html($base: string, %rev: hash ) : string
+
+Create a $base.html file containing a table of files and
+its revision as passed in by %rev.
+
+=cut
+
+sub create_html {
+    my($base, %rev) = @_;
+    my($file) = $base . '.html';
+    open(OUT, ">$file") || die("open($file): $!");
+    print OUT <<EOF;
+<html>
+<title>RPM package $base</title>
+</head>
+<body bgcolor="#ffffff">
+<H1>RPM package $base</H1>
+<TABLE border=0 cellspacing=1 cellpadding=2>
+<tr><th align=left>File</th><th align=left>Rev.</th></tr>
+EOF
+    my($f, $r);
+    foreach $f (sort(keys(%rev))) {
+        $r = $rev{$f};
+        print OUT "<tr>\n";
+        print OUT "<td><a href=\"$cvs_web/$f\">$f</a></td>\n";
+        print OUT "<td><a href=\"$cvs_web/$f?rev=$r\">$r</a></td>\n";
+        print OUT "</tr>\n";
+    }
+    print OUT <<EOF;
+</table>
+</body></html>
+EOF
+    close(OUT);
+    return $file;
+}
+
+=cut
+
+=for html <a name="action_i"></a>
+
+=head2 action_i() : 
+
+
+=cut
+
+sub action_i {
+    my($grade, $pkg, @rpm_opts) = @_;
+    $grade || &usage("Need to specify a grade to install a package");
+    $pkg || &usage("Need a package name to install");
+    my($proxy) = '';
+    if(defined($ENV{'http_proxy'})
+            && $ENV{'http_proxy'} =~ m!^http://([^:]+):(\d+)!) {
+        $proxy = "--httpproxy $1 --httpport $2";
+    }
+    $pkg .= "-$grade.rpm" unless $pkg =~ /\.rpm$/;
+    my($url) = &create_url($pkg);
+    $debug && push(@rpm_opts, '--test');
+    $verbose && print("rpm -Uvh @rpm_opts $proxy $url\n");
+    system("rpm -Uvh @rpm_opts $proxy $url");
+    return 1;
+}
+
+=cut
+
+=for html <a name="check_grade"></a>
+
+=head2 check_grade($grade: string) : 
+
+Checks $grade is one of @grades
+
+=cut
+
+sub check_grade {
+    my($grade) = @_;
+    grep($_ eq $grade, @grades) || &usage("$grade: unknown grade");
+}
+
+=cut
+
+=for html <a name="cgi_handler"></a>
+
+=head2 cgi_handler() : 
+
+Called through a web server, so returns an HTML page showing
+all packages and its snapshots. Creates links to the .html files
+which contain the snapshot CVS manifest.
+
+=cut
+
+sub cgi_handler {
+    my($req) = $ENV{'REQUEST_METHOD'};
+    my($path) = $ENV{'PATH_INFO'};
+    my($query) = $ENV{'QUERY_STRING'};
+    print <<EOF;
+<html><head><title>Bivio RPM packages</title></head>
+<body bgcolor="#ffffff">
+<H1>Bivio RPM packages</H1>
+<DL COMPACT>
+EOF
+    my(@snaps) = &get_list_local($repo_home);
+    my($s, $name, $pkg);
+    for $s (@snaps) {
+        $s =~ /^(.+)-([^-]+)-([^-]+)\.$rpm_arch\.rpm/
+            || die("$s: unknown format");
+        $pkg eq $1 || ($pkg = $1);
+        print "<DT><B>$pkg</B>\n";
+    }
+    print <<EOF;
+</DL>
+</table></body></html>
+EOF
+}
+
+=cut
+
+=for html <a name="action_l"></a>
+
+=head2 action_l($pkg: string) : array
+
+Do a http directory request on the repository server
+and return the list of .rpm files which match the $pkg- prefix.
+
+=cut
+
+sub action_l {
+    my($pkg) = @_;
+    $pkg || ($pkg = '.*');
+    my(@snaps) = &get_list_http($repo_dir);
+    defined(@snaps) || return undef;
+    my($s);
+    for $s (sort(@snaps)) {
+        $s =~ /^$pkg\-/ && print "$s\n";
+    }
+    return @snaps;
+}
+
+=cut
+
+=for html <a name="get_list_local"></a>
+
+=head2 get_list_local($directory: string) : array
+
+Return the list of files with a .rpm suffix residing
+in the repository home directory
+
+=cut
+
+sub get_list_local {
+    -d $_[0] || die("$_[0]: $!");
+    opendir(REPO, $_[0]);
+    my(@ls) = sort(readdir(REPO));
+    closedir(REPO);
+    return grep(/\.rpm$/, @ls);
+}
+
+=cut
+
+=for html <a name="get_list_http"></a>
+
+=head2 get_list_http($directory: string) : array
+
+Do a http directory request to get a listing of all
+.rpm files on the repository server
+
+=cut
+
+sub get_list_http {
+    my($url) = &create_url($_[0]);
+    my($req) = new HTTP::Request('GET', $url);
+    my($ua) = new LWP::UserAgent;
+    $ua->env_proxy();
+    my($reply) = $ua->request($req);
+    my(@snaps);
+    if($reply->is_success) {
+        my(@l) = split("\n", $reply->content);
+        my($l);
+        for $l (@l) {
+            $l =~ /\">\s*(\S+\.rpm)<\/A>/ && push(@snaps, $1);
+        }
+        return @snaps;
+    } else {
+        warn $url, ": ", $reply->status_line, "\n";
+    }
+    return undef;
+}
+
+=cut
+
+=for html <a name="create_url"></a>
+
+=head2 create_url($partial_url: string) : string
+
+Given a partial URL, create a complete one for the repository server
+
+=cut
+
+sub create_url {
+    my($name) = @_;
+    if ($name =~ /^http:/) {
+        return $name;
+    } elsif ($name =~ m:^/:) {
+        return "http://$repo_host:$repo_port$name";
+    } else {
+        return "http://$repo_host:$repo_port.$repo_dir$name";
+    }
+}
+
+=cut
+
+=for html <a name="usage"></a>
+
+=head2 usage($msg: string) : 
+
+
+=cut
+
+sub usage {
+    my($msg) = @_;
+    $msg && warn("b-bap: $msg\n");
+    warn <<EOF;
+Usage:
+    b-bap -b cvs-tag [-g grade-level] rpm-spec
+    b-bap -l pkg-name
+    b-bap -g grade-level pkg-name-version
+    b-bap -i grade-level [--force] [--nodeps] pkg-name 
+EOF
+    exit(1);
+}
+
+#=MAIN
+
+&main(@ARGV);
+
+=head1 SEE ALSO
+
+rpm(1)
+
+=head1 COPYRIGHT
+
+Copyright (c) 2000 bivio, Inc.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
