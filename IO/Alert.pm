@@ -58,7 +58,9 @@ BEGIN {
 #=IMPORTS
 use Bivio::IO::Config;
 use Carp ();
-use Sys::Syslog ();
+# TODO: Commented out because it's causing an ugly warning message
+#       Might be ok in a future version of Perl libraries
+#use Sys::Syslog ();
 
 #=VARIABLES
 # Normalize error messages
