@@ -119,7 +119,7 @@ Options FollowSymLinks
 Allow from all
 </Directory>
 
-<LocationMatch "^/[a-z]{4}>
+<LocationMatch "^/\w{4,}($|/)">
 AuthName xbivio
 AuthType Basic
 SetHandler perl-script
