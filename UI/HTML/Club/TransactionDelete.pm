@@ -70,11 +70,10 @@ sub create_fields {
 	    'Type',
 	    'Tax',
 	    'Amount',
-	    'Remark',
 	],
 	cells => [
 	    Bivio::UI::HTML::Widget::String->new({
-		value => ['Entry.class', '->get_short_desc']
+		value => ['remark'],
 	    }),
 	    Bivio::UI::HTML::Widget::String->new({
 		value => ['Entry.entry_type', '->get_short_desc'],
@@ -93,16 +92,6 @@ sub create_fields {
 	    }),
 	    Bivio::UI::HTML::Widget::AmountCell->new({
 		field => 'Entry.amount',
-	    }),
-	    Bivio::UI::HTML::Widget::Director->new({
-		control => ['Entry.remark'],
-		values => {},
-		default_value => Bivio::UI::HTML::Widget::String->new({
-		    value => ['Entry.remark'],
-		}),
-		undef_value => Bivio::UI::HTML::Widget::Join->new({
-		    values => ['&nbsp;']
-		}),
 	    }),
 	],
     });
@@ -185,9 +174,13 @@ sub execute {
 
     my($tran) = Bivio::Biz::Model::RealmTransaction->new($req);
     $tran->load(realm_transaction_id => $entry->get('realm_transaction_id'));
+    my($tran_user_realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    # need to unauth_load so the current club realm isn't used instead
+    $tran_user_realm->unauth_load(realm_id =>
+	    $tran->get_model('User')->get('user_id'));
     $req->put('RealmTransaction.date_time' => $tran->get('date_time'),
-	   'RealmTransaction.user_name' =>
-	    $tran->get_model('User')->format_full_name,
+	    'RealmTransaction.user_name' =>
+	    $tran_user_realm->get('display_name'),
 	    'RealmTransaction.remark' => $tran->get('remark'));
 
     $req->put(page_content => $self);
