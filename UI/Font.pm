@@ -117,6 +117,7 @@ _compile([
     LABEL_IN_TEXT => [undef, undef, 'b'],
     CHECKED_ICON => [$_SANS_SERIF, 'page_heading', 'small'],
     ERROR_ICON => [$_SANS_SERIF, 'error', 'big', 'strong'],
+    REPORT_FOOTER => [$_SANS_SERIF, undef, 'small'],
 ]);
 
 =head1 METHODS
