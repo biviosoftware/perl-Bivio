@@ -124,7 +124,7 @@ It is assumed STDERR is set up for autoflushing.
 =cut
 
 sub are_you_sure {
-    my($prompt) = @_;
+    my($proto, $prompt) = @_;
 
     # Not a tty?
     return unless -t STDIN;
