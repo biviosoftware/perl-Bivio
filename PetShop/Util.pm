@@ -259,10 +259,12 @@ sub _init_demo_users {
 	    'RealmOwner.password' => 'password',
 	    force_create => 1,
 	});
-	# demo accounts have real names, for ease of logging in
+	# test accounts have real names, for ease of logging in
 	$req->get('auth_user')->update({
 	    name => $u,
 	});
+	Bivio::Biz::Util::RealmRole->make_super_user
+	    if $u eq 'root';
     }
     return;
 }
