@@ -798,6 +798,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         pub/join
         Bivio::Biz::Model::RealmInvite->execute_accept
+        Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
         Bivio::Biz::Model::RealmInviteAcceptForm
         Bivio::UI::HTML::General::InviteAccept
         cancel=HTTP_DOCUMENT
@@ -1382,16 +1383,16 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MultipleFee
         next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
-    [qw(
-        TEST_JOB
-        132
-        CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
-        %/test_job
-        Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
-        Bivio::Biz::Action::TestJob
-        next=CLUB_HOME
-    )],
+#    [qw(
+#        TEST_JOB
+#        132
+#        CLUB
+#        ACCOUNTING_WRITE&MEMBER_WRITE
+#        %/test_job
+#        Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
+#        Bivio::Biz::Action::TestJob
+#        next=CLUB_HOME
+#    )],
     [qw(
         CLUB_LEGACY_UPLOAD
         133
@@ -1400,7 +1401,7 @@ my(@_CFG) = (
         %/legacy/upload2
         Bivio::Biz::Model::LegacyClubUploadForm
         Bivio::UI::HTML::Club::LegacyClubUpload
-        next=CLUB_LEGACY_SECURITY_RECONCILLIATION
+        next=CLUB_LEGACY_SECURITY_RECONCILIATION
         cancel=CLUB_HOME
     )],
     [qw(
@@ -1415,7 +1416,7 @@ my(@_CFG) = (
         next=CLUB_HOME
     )],
     [qw(
-        CLUB_LEGACY_SECURITY_RECONCILLIATION
+        CLUB_LEGACY_SECURITY_RECONCILIATION
         135
         CLUB
         ADMIN_WRITE
@@ -1435,6 +1436,15 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::ConfirmUpload
         next=CLUB_LEGACY_UPLOAD
         cancel=CLUB_HOME
+    )],
+    [qw(
+        CLUB_LEGACY_UPLOAD_PROCESSOR
+        137
+        CLUB
+        ADMIN_WRITE
+        !
+        Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
+        Bivio::Biz::Action::AccountingImport
     )],
 );
 
