@@ -319,17 +319,27 @@ sub get_model {
 Adds this instance to the request, stored with the key
 'Model.<simple package name>'.
 
+=head2 put_on_request(boolean durable)
+
+Adds the model to the request as a durable attribute. The model will
+survive server redirects.
+
 =cut
 
 sub put_on_request {
-    my($self) = @_;
+    my($self, $durable) = @_;
     my($req) = $self->unsafe_get_request;
     return unless $req;
 
-    $req->put('Model.'.$self->simple_package_name => $self);
-
-    # for backward compatibility
-    $req->put(ref($self) => $self);
+    # ref($self) for backward compatibility
+    foreach my $key ('Model.'.$self->simple_package_name, ref($self)) {
+	if ($durable) {
+	    $req->put_durable($key => $self);
+	}
+	else {
+	    $req->put($key => $self);
+	}
+    }
     return;
 }
 
