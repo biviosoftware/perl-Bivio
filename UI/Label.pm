@@ -174,6 +174,7 @@ _compile(
     BASIS_WITHDRAWN => ['(B)  Total'],
     WITHDRAWAL_REALIZED_GAIN => ["Gain/(Loss) Realized on Withdrawal (B)-(A)"],
     BASIS_AFTER_WITHDRAWAL => ["Member's Basis After Withdrawal"],
+    IRR_DATE => ['IRR Date'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
