@@ -113,6 +113,10 @@ Bivio::Test->unit([
             'rhn_up2date_param', ['pkgSkipList', ''] => [
 		['etc/sysconfig/rhn/up2date', 'pkgSkipList=;'],
 	    ],
+	], [
+            'rhn_up2date_param', ['pkgSkipList', 'apache*'] => [
+		['etc/sysconfig/rhn/up2date', 'pkgSkipList=apache\*;'],
+	    ],
 	]),
 	rename_rpmnew => [
 	    ['/etc/logrotate.conf.rpmnew'] => [
