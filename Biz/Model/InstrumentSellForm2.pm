@@ -96,7 +96,7 @@ sub execute_input {
     my($realm_inst_id) = $realm_inst->get('realm_instrument_id');
 
     my($total_amount) = Bivio::Type::Amount->sub(
-	    $properties->{'Entry.amount'}, $properties->{commission});
+	    $properties->{'Entry.amount'}, $properties->{commission} || 0);
     my($shares) = $properties->{'RealmInstrumentEntry.count'};
     # value of the share at sale including commission
     my($share_value) = Bivio::Type::Amount->div(
