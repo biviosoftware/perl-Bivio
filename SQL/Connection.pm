@@ -21,8 +21,9 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::SQL::Connection> is a collection of static methods used
-to transact with the database. Connection maintains one connection
-to the database at all times.
+to transact with the database. This module maintains one connection
+to the database at all times.  It will reset the connection if the
+database the connection is lost.
 
 B<Bivio::Agent::Task depends on the fact that this the only module
 which modifies the database.>
@@ -42,6 +43,12 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_CONNECTION);
+# Set to the pid that creates the connection.  Ensures all children
+# use a different connection.
+my($_CONNECTION_PID) = 0;
+# If there is an error, this will be true.  _get_connection checks the
+# connection with a ping to make sure it is still alive.
+my($_NEED_PING) = 0;
 my($_NEED_COMMIT) = 0;
 my($_DB_TIME) = 0;
 my(%_ERR_TO_DIE_CODE) = (
@@ -92,7 +99,7 @@ sub execute {
     my($self, $sql, $params, $die) = @_;
 
     my($statement);
-    eval {
+    Bivio::Die->eval(sub {
 	_trace_sql($sql, $params) if $_TRACE;
 	my($start_time) = Bivio::Util::gettimeofday();
 #TODO: Need to investigate problems and performance of cached statements
@@ -103,9 +110,12 @@ sub execute {
 	ref($params) ? $statement->execute(@$params)
 		: $statement->execute();
 	$self->increment_db_time($start_time);
-    };
+    });
     return $statement unless $@;
 
+    # If we get an error, it may be a timed-out connection.  We'll
+    # check the connection the next time through.
+    $_NEED_PING = 1;
     my($err) = $statement ? $statement->err : 0;
     my($attrs) = {
 	message => $@,
@@ -114,14 +124,21 @@ sub execute {
 	sql => $sql,
 	sql_params => $params,
     };
-    eval {
+    Bivio::Die->eval(sub {
 	# Clean up just in case statement is cached
 	$statement->finish if $statement;
-    };
+    });
 #TODO: add more application error processing here
 #TODO: Add reply processingn
-    my($die_code) = defined($err) && defined($_ERR_TO_DIE_CODE{$err})
-	    ? $_ERR_TO_DIE_CODE{$err} : Bivio::DieCode::UNKNOWN;
+    my($die_code);
+    if (defined($err) && defined($_ERR_TO_DIE_CODE{$err})) {
+	$err = $_ERR_TO_DIE_CODE{$err};
+    }
+    else {
+	$attrs->{program_error} = 1;
+	# Unexpected oracle error is treated as an assertion fault
+	$die_code = Bivio::DieCode::DIE();
+    }
     $die ||= 'Bivio::Die';
     $die->die($die_code, $attrs, caller);
 }
@@ -178,12 +195,39 @@ sub rollback {
 
 # static _get_connection() : connection
 #
-# Returns a cached database connection.
+# Returns a cached database connection for this process.  Checks the
+# connection for validity.
 #
 sub _get_connection {
-    if (!$_CONNECTION) {
-	&_trace('creating connection') if $_TRACE;
+    if ($_CONNECTION_PID != $$) {
+	if ($_CONNECTION) {
+	    # This disconnects the parent process'.  Make sure we rollback
+	    # any pending transactions.  By default, disconnect commits
+	    Bivio::Die->eval(sub {
+		$_CONNECTION->ping && $_CONNECTION->rollback});
+	    Bivio::Die->eval(sub {$_CONNECTION->disconnect});
+	    # Make sure we don't enter this code again.
+	    $_CONNECTION = undef;
+	}
+	&_trace("creating connection: pid=$$") if $_TRACE;
 	$_CONNECTION = Bivio::Ext::DBI->connect();
+	# Got a connection which will be reused on next call.  We don't
+	# need to ping it (just in case parent process had an error on
+	# the connection).
+	$_CONNECTION_PID = $$;
+	$_NEED_PING = 0;
+    }
+    elsif ($_NEED_PING) {
+	# Got an error on a previous use of this connection.  Make
+	# sure is still valid.
+	$_NEED_PING = 0;
+	unless (Bivio::Die->eval(sub {$_CONNECTION->ping})) {
+	    # Just in case, rollback any pending actions
+	    # be executed.  Caller will reset $_CONNECTION
+	    $_CONNECTION_PID = 0;
+	    return _get_connection();
+	}
+	# Current connection is valid
     }
     return $_CONNECTION;
 }
