@@ -27,7 +27,6 @@ ie date, string, currency, ...
 
 =head1 CONSTANTS
 
-
 =cut
 
 =for html <a name="BOOLEAN"></a>
@@ -70,7 +69,8 @@ sub DATE {
 
 =head2 EMAIL_REF : int
 
-An email reference compound type.
+An email reference compound type. An email ref is made up of
+(name, address, subject) parts.
 
 =cut
 
@@ -106,7 +106,7 @@ sub GENDER {
 
 =head2 HTML_REF : int
 
-An HTML reference compound type.
+An HTML reference compound type. An html ref is made up of (link, text) parts.
 
 =cut
 
@@ -118,7 +118,7 @@ sub HTML_REF {
 
 =head2 MODEL_REF : int
 
-A model reference compound type.
+A model reference compound type. A model ref is made up of (id, text) parts.
 
 =cut
 
@@ -221,7 +221,7 @@ and decimal digits.
 sub lookup {
     my($proto, $type_name, $size, $decimal_digits) = @_;
 
-    #lookup name constant, makes code look nicer
+    # lookup named constant, makes code look nicer
     my($type) = eval("$type_name()");
     $type || Carp::croak("invalid type $type_name");
 

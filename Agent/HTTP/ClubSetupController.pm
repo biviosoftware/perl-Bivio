@@ -8,13 +8,6 @@ $Bivio::Agent::HTTP::ClubSetupController::VERSION = sprintf('%d.%02d', q$Revisio
 
 Bivio::Agent::HTTP::ClubSetupController - club setup controller
 
-=head1 SYNOPSIS
-
-    use Bivio::Agent::HTTP::ClubSetupController;
-    Bivio::Agent::HTTP::ClubSetupController->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::Agent::Controller>
@@ -26,11 +19,8 @@ use Bivio::Agent::Controller;
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::HTTP::ClubSetupController>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::Agent::HTTP::ClubSetupController> handles the bivio.com/club/setup
+domain.
 
 =cut
 
@@ -128,7 +118,6 @@ sub handle_request {
 	&_trace('couldn\'t find view '.$req->get_view_name());
     }
 }
-
 
 #=PRIVATE METHODS
 

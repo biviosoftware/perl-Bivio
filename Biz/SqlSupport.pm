@@ -10,8 +10,15 @@ Bivio::Biz::SqlSupport - sql support for Models
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::SqlSupport;
-    Bivio::Biz::SqlSupport->new();
+    package MyModel;
+
+    my($support) = Bivio::Biz::SqlSupport->new('user_', {
+        id => 'id',
+        name => 'name',
+        password => 'password'
+        });
+    $support->create($self, $self->internal_get_fields(),
+        {id => 100, foo => 'xxx'});
 
 =cut
 
@@ -20,11 +27,12 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::SqlSupport>
+C<Bivio::Biz::SqlSupport> is SQL transaction support for
+L<Bivio::Biz::PropertyModel>s. PropertyModel life-cycle methods are
+supported throught L<"find">, L<"create">, L<"delete">, and L<"update">.
 
-=cut
-
-=head1 CONSTANTS
+SqlSupport uses the L<Bivio::Biz:SqlConnection> for connections and
+statement execution.
 
 =cut
 
@@ -105,7 +113,9 @@ sub new {
 
 =head2 create(Model model, hash properties, hash new_values) : boolean
 
-Inserts a new record into to database and loads the model's properties.
+Inserts a new record into to database and loads the model's properties. If
+successful, the properties hash will contain the new values. Otherwise
+the model's L<Bivio::Biz::Status> will contain error messages.
 
 =cut
 
@@ -151,7 +161,8 @@ sub create {
 =head2 delete(Model m, string where_clause, string value, ...) : boolean
 
 Removes the row with identified by the specified parameterized where_clause
-and substitution values.
+and substitution values. If an error occurs during the delete, the
+model's L<Bivio::Biz::Status> will contain the error messages.
 
 =cut
 
@@ -184,6 +195,8 @@ sub delete {
 =head2 initialize()
 
 Gets type information from the database. Executed only once per instance.
+This method must be called after the constructor, before any other method
+is invoked.
 
 =cut
 
@@ -229,7 +242,9 @@ sub initialize {
 =head2 find(PropertyModel model, hash properties, string where_clause, string value, ...) : boolean
 
 Loads the specified properties with data using the parameterized where_clause
-and substitution values.
+and substitution values. If successful, the properties hash will contain the
+new values. Otherwise the model's L<Bivio::Biz::Status> will contain error
+messages.
 
 =cut
 
@@ -276,7 +291,9 @@ sub find {
 
 =head2 update(Model model, hash properties, hash new_values, string where_clause, string value, ...) : boolean
 
-Updates the database fields for the specified model.
+Updates the database fields for the specified model. If successful, values
+will be mapped into the specified properties hash. Otherwise the model's
+L<Bivio::Biz::Statis> will contain any error messages.
 
 =cut
 

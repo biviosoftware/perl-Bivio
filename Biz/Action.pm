@@ -25,7 +25,8 @@ L<"can_unexecute">.
 
 An action embodies a complete transactions against a model. During execution,
 the action either completes successful and commits all data to storage, or
-fails and rolls back changes.
+fails and rolls back changes. Actions should wrap their execution in
+exception handling to properly rollback from a software crash.
 
 Generally there will be at most one action executed when processing a
 request. Actions should work with models only and not do any view

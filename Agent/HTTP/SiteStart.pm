@@ -17,15 +17,16 @@ Bivio::Agent::HTTP::SiteStart - web site initialization
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::HTTP::SiteStart>
+C<Bivio::Agent::HTTP::SiteStart> is the startup file for bivio HTTP
+handling. It creates and arranges the views.
 
 =cut
 
 #=IMPORTS
-#use Bivio::Agent::Dispatcher;
 use Bivio::Agent::HTTP::AdminController;
 use Bivio::Agent::HTTP::ClubSetupController;
 use Bivio::Agent::HTTP::MessageController;
+use Bivio::Biz::TestModel;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::UI::Admin::UserListView;

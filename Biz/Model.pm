@@ -10,8 +10,20 @@ Bivio::Biz::Model - a business object
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::Model;
-    Bivio::Biz::Model->new();
+    my($model) = ...;
+
+    # load a model with data
+    $model->find(Bivio::Biz::FindParams->new({id => 100}));
+
+    # execute an action
+    $model->get_action('<action-name>')->execute($model, $req);
+
+    # check for errors
+    if (! $model->get_status()->is_OK()) {
+        foreach (@{$model->get_status()->get_errors())) {
+            print($_.get_message());
+        }
+    }
 
 =cut
 
@@ -20,11 +32,13 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::Biz::Model> is more interface than implementation, it provides
+a common set of methods for L<Bivio::Biz::PropertyModel> and
+L<Bivio::Biz::PropertyModel>. Models provide methods to access display
+heading and titles as well as lookup for L<Bivio::Biz::Action>s. During
+action invocation, a model may be set into an error state. Check for
+errors using the L<Bivio::Biz::Status> instance returned from
+L<Bivio::Biz::Model/"get_status">.
 
 =cut
 
@@ -42,7 +56,8 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static new(string name) : Bivio::Biz::Model
 
-Creates a new model with the specified class name.
+Creates a new model with the specified class name. The name should be
+unique across all models types.
 
 =cut
 
@@ -65,7 +80,8 @@ sub new {
 =head2 abstract find(FindParams fp) : boolean
 
 Loads the model using values from the specified search parameters.
-Returns 1 if successful, or 0 if no data was loaded.
+Returns 1 if successful, or 0 if no data was loaded. See
+L<Bivio::Biz::FindParams>.
 
 =cut
 
@@ -78,7 +94,7 @@ sub find {
 =head2 get_action(string name) : Action
 
 Returns the named action or undef if no action exists for
-that name.
+that name. See L<Bivio::Biz::Action>.
 
 =cut
 
@@ -129,7 +145,7 @@ sub get_name {
 
 =head2 get_status() : Status
 
-Returns the current status of the model.
+Returns the current status of the model. See L<Bivio::Biz::Status>.
 
 =cut
 

@@ -93,16 +93,25 @@ sub find {
 
     if ($fp->get('club')) {
 
-	# default order to user name
-	my ($order_by) = $self->get_order_by($fp) || ' order by user_.name';
-
 	# club users, max 1000?
 	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 0, 1000,
 		'where club_user.club=? and club_user.user_=user_.id'
-		.$order_by, $fp->get('club'));
+		.$self->get_order_by($fp), $fp->get('club'));
     }
 
     return 1;
+}
+
+=for html <a name="get_default_sort_key"></a>
+
+=head2 get_default_sort_key() : string
+
+Returns the sort key to use if no other sorting is specified.
+
+=cut
+
+sub get_default_sort_key {
+    return 'name';
 }
 
 =for html <a name="get_heading"></a>

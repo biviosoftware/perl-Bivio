@@ -140,7 +140,7 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->get('club') && $fp->get('user')) {
+    if ($fp->has_keys('club', 'user')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
 		'where club=? and user_=?', $fp->get('club'),
 		$fp->get('user'));

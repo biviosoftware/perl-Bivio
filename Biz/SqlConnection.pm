@@ -11,7 +11,16 @@ Bivio::Biz::SqlConnection - a database connection manager
 =head1 SYNOPSIS
 
     use Bivio::Biz::SqlConnection;
-    Bivio::Biz::SqlConnection->new();
+
+    my($con) = Bivio::Biz::SqlConnection->get_connection();
+    my($statement) = $conn->prepare('update user_ set name=?');
+    Bivio::Biz::SqlConnection->execute($statement, $model, 'foo');
+    if ($model->get_status()->is_OK()) {
+        Bivio::Biz::SqlConnection->commit();
+    }
+    else {
+        Bivio::Biz::SqlConnection->rollback();
+    }
 
 =cut
 
@@ -20,11 +29,9 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::SqlConnection>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::Biz::SqlConnection> is a collection of static methods used
+to transact with the database. SqlConnection maintains one connection
+to the database at all times.
 
 =cut
 
@@ -48,7 +55,7 @@ my($_DB_TIME) = 0;
 
 =head2 commit()
 
-Commits the current transaction.
+Commits all open transactions.
 
 =cut
 
@@ -151,7 +158,7 @@ sub increment_db_time {
 
 =head2 rollback()
 
-Rolls back the current transaction.
+Rolls back all open transactions.
 
 =cut
 

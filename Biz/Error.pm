@@ -8,22 +8,12 @@ $Bivio::Biz::Error::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::Biz::Error - An error message
 
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Error;
-    Bivio::Biz::Error->new();
-
-=cut
-
 @Bivio::Biz::Error::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Error>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::Biz::Error> describes a validation or processing error for a model
+action.
 
 =cut
 

@@ -83,9 +83,10 @@ sub handle_request {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($ret, $club, $club_user) = &_authorize_member($req);
+    my($club, $club_user) =
+	    Bivio::Agent::HTTP::Auth->authorize_club_user($req);
 
-    if (! $ret) {
+    if (! $club) {
 	$req->set_state(Bivio::Agent::Request::AUTH_REQUIRED);
 	return;
     }
@@ -96,53 +97,21 @@ sub handle_request {
     }
     my($view) = $self->get_view($req->get_view_name());
 
-    if (defined($view)) {
+    # get a model from the view,
+    # load it with data from the request,
+    # show the view of it
+
+    if ($view) {
 	my($model) = $view->get_default_model();
 	my($fp) = $req->get_model_args();
 	$fp->put('club', $club->get('id'));
-	$model->find($fp);
+	$model->find($fp); # error handling done by view
 	$view->activate()->render($model, $req);
 	$req->set_state(Bivio::Agent::Request::OK);
     }
 }
 
 #=PRIVATE METHODS
-
-# _authorize_member(Request req) : (boolean, Club, ClubUser)
-#
-# Determines if the request is an authorized club member.
-# Returns (1, club, club_user) if successful, (0) otherwise.
-
-sub _authorize_member {
-    my($req) = @_;
-
-    my($user) = $req->get_user();
-
-    # has the user logged in?
-    return (0) if ! $user;
-
-    # do the passwords match?
-    unless($req->get_password()
-	    && $req->get_password() eq $user->get('password')) {
-	return (0);
-    }
-
-    my($club) = Bivio::Biz::Club->new();
-    $club->find(Bivio::Biz::FindParams->new(
-	    {name => $req->get_target_name()}));
-
-    # does the club exist?
-    return (0) if ! $club->get_status()->is_OK();
-
-    my($club_user) = Bivio::Biz::ClubUser->new();
-    $club_user->find(Bivio::Biz::FindParams->new(
-	    {club => $club->get('id'), user => $user->get('id')}));
-
-    # is the user a member of the club?
-    return (0) if ! $club_user->get_status()->is_OK();
-
-    return (1, $club, $club_user);
-}
 
 =head1 COPYRIGHT
 

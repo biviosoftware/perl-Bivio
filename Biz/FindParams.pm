@@ -214,7 +214,7 @@ sub remove {
 
 =head2 to_string() : string
 
-Overrides Bivio::Universal::to_string() to return the uri value. See
+Overrides Bivio::Universal::to_string() to return the URI value. See
 from_string() for the format.
 
 =cut

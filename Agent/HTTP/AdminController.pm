@@ -8,13 +8,6 @@ $Bivio::Agent::HTTP::AdminController::VERSION = sprintf('%d.%02d', q$Revision$ =
 
 Bivio::Agent::HTTP::AdminController - club administration controller
 
-=head1 SYNOPSIS
-
-    use Bivio::Agent::HTTP::AdminController;
-    Bivio::Agent::HTTP::AdminController->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::Agent::Controller>
@@ -30,16 +23,9 @@ C<Bivio::Agent::HTTP::AdminController>
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
 #=IMPORTS
 use Bivio::Agent::Request;
-use Bivio::Biz::Club;
-use Bivio::Biz::ClubUser;
-use Bivio::Biz::FindParams;
-use Bivio::Biz::User;
+use Bivio::Agent::HTTP::Auth;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -86,9 +72,9 @@ sub handle_request {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($ret, $club, $club_user) = &_authorize_admin($req);
+    my($club, $club_user) = Bivio::Agent::HTTP::Auth->authorize_admin($req);
 
-    if (! $ret) {
+    if (! $club) {
 	$req->set_state(Bivio::Agent::Request::AUTH_REQUIRED);
 	return;
     }
@@ -99,7 +85,7 @@ sub handle_request {
     }
     my($view) = $self->get_view($req->get_view_name());
 
-    if (defined($view)) {
+    if ($view) {
 
 	my($model) = $view->get_default_model();
 	my($fp) = $req->get_model_args();
@@ -135,45 +121,6 @@ sub handle_request {
 }
 
 #=PRIVATE METHODS
-
-# _authorize_admin(Request req) : (boolean, Club, ClubUser)
-#
-# Determines if the request is the authorized club administrator.
-# Returns (1, club, club_user) if successful, (0) otherwise.
-
-sub _authorize_admin {
-    my($req) = @_;
-
-    my($user) = $req->get_user();
-
-    # has the user logged in?
-    return (0) if ! $user;
-
-    # do the password's match?
-    unless($req->get_password()
-	    && $req->get_password() eq $user->get('password')) {
-	return (0);
-    }
-
-    my($club) = Bivio::Biz::Club->new();
-    $club->find(Bivio::Biz::FindParams->new(
-	    {name => $req->get_target_name()}));
-
-    # does the club exist?
-    return (0) if ! $club->get_status()->is_OK();
-
-    my($club_user) = Bivio::Biz::ClubUser->new();
-    $club_user->find(Bivio::Biz::FindParams->new(
-	    {club => $club->get('id'), user => $user->get('id')}));
-
-    # is the user a member of the club?
-    return (0) if ! $club_user->get_status()->is_OK();
-
-    # is the user an admin of the club?
-    return (0) if $club_user->get('role') != 0;
-
-    return (1, $club, $club_user);
-}
 
 =head1 COPYRIGHT
 

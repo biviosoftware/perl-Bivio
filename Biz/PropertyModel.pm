@@ -10,8 +10,17 @@ Bivio::Biz::PropertyModel - An abstract model with a set of named elements
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::PropertyModel;
-    Bivio::Biz::PropertyModel->new();
+    my($model) = ...;
+
+    if ($model->find(Bivio::Biz::FindParams->new({id => 500}))) {
+        for (@{$model->get_field_names()}) {
+            print($_.' = '.$model->get($_)."\n");
+        }
+    }
+
+    for (0..100) {
+        $model->create({id => $_, foo => 'xxx'});
+    }
 
 =cut
 
@@ -21,20 +30,26 @@ L<Bivio::Biz::Model>
 
 =cut
 
+use Bivio::Biz::Model;
 @Bivio::Biz::PropertyModel::ISA = qw(Bivio::Biz::Model);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::PropertyModel>
+C<Bivio::Biz::PropertyModel> is the complement to L<Bivio::Biz::ListModel>
+and represents a row of data from storage. Each field is accessed by
+name using the L<"get"> method. Field type information is available
+by invoking L<"get_field_descriptor">. PropertyModel has serveral abstract
+lifecycle methods for interacting with storage: L<"create">, L<"delete">,
+and L<"update">.
 
-=cut
-
-=head1 CONSTANTS
+In general a new instance of a PropertyModel is uninitialized until a
+subsequent L<Bivio::Biz:Model/"find"> or L<"create"> is invoked. This
+allows for a single instance of a model to be reused with different
+data.
 
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Model;
 use Carp;
 
 #=VARIABLES
@@ -56,14 +71,14 @@ property_info should have the format:
     }
 
     ex.
-	{
-	    id => ['Internal ID',
-		    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-	    name => ['User ID',
-		    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
-	    password => ['Password',
-		    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
-	}
+    {
+	id => ['Internal ID',
+	      Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
+	name => ['User ID',
+	      Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
+	password => ['Password',
+	      Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
+    }
 
 =cut
 
@@ -90,7 +105,8 @@ sub new {
 =head2 abstract create(hash new_values) : boolean
 
 Creates a new model in the database with the specified value. After creation,
-this instance has the same values. Returns 1 if successful, 0 otherwise.
+this instance has the same values. Returns 1 if successful, 0 otherwise. If
+creation fails, then L<Bivio::Biz::Model/"get_status"> should return errors.
 
 =cut
 
@@ -113,10 +129,11 @@ sub delete {
 
 =for html <a name="get"></a>
 
-=head2 get(string name) : scalar or CompoundField
+=head2 get(string name) : scalar or array
 
 Returns the value of the named property. This value may be a scalar for
-simple types, or and instance or CompoundField for complex types.
+simple types, or array for complex types. Property names are exported
+throught the L<"get_field_names"> method.
 
 =cut
 
@@ -146,7 +163,7 @@ sub get_field_caption {
 
 =head2 get_field_descriptor(string name) : FieldDescriptor
 
-Returns the descriptor for the named field.
+Returns the descriptor for the named field. See L<Bivio::Biz::FieldDescriptor>.
 
 =cut
 
@@ -192,6 +209,7 @@ sub internal_get_fields {
 =head2 abstract update(hash new_values) : boolean
 
 Updates the current model's values. Returns 1 if successful 0 otherwise.
+Errors are stored in the Model's status.
 
 =cut
 
@@ -205,7 +223,7 @@ sub update {
 #
 # Returns the value at the specified index of the named property's
 # configuration
-#
+
 sub _get_property_info_value {
     my($self, $name, $index) = @_;
     my($fields) = $self->{$_PACKAGE};

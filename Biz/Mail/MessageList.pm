@@ -105,18 +105,8 @@ sub find {
 	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
 		'where club=?', $fp->get('club'));
 
-	# default order date descending unless specified
-	my($order_by) = $self->get_order_by($fp);
-	if (! $order_by) {
-	    $order_by = ' order by dttm desc';
-	}
-	elsif ($order_by =~ /dttm/) {
-	}
-	else {
-	    $order_by .= ', dttm desc';
-	}
 	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
-		$fields->{index}, 15, 'where club=?'.$order_by,
+		$fields->{index}, 15, 'where club=?'.$self->get_order_by($fp),
 		$fp->get('club'));
     }
 
@@ -134,6 +124,18 @@ sub find {
     &_create_model_references($self, $fp);
 
     return $self->get_status()->is_OK();
+}
+
+=for html <a name="get_default_sort_key"></a>
+
+=head2 get_default_sort_key() : string
+
+Returns the sort key to use if no other sorting is specified.
+
+=cut
+
+sub get_default_sort_key {
+    return 'dttm desc';
 }
 
 =for html <a name="get_heading"></a>

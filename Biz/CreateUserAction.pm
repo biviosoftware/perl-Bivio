@@ -6,14 +6,7 @@ $Bivio::Biz::CreateUserAction::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g
 
 =head1 NAME
 
-Bivio::Biz::CreateUserAction - creates a new user record
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::CreateUserAction;
-    Bivio::Biz::CreateUserAction->new();
-
-=cut
+Bivio::Biz::CreateUserAction - creates a new user
 
 =head1 EXTENDS
 
@@ -27,10 +20,6 @@ use Bivio::Biz::Action;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::CreateUserAction>
-
-=cut
-
-=head1 CONSTANTS
 
 =cut
 
@@ -92,71 +81,81 @@ sub execute {
 	return 0;
     }
 
-    my($values) = &_create_field_map($user, $req);
+    eval {
+	my($values) = &_create_field_map($user, $req);
 
-    #TODO: need to have the db assign the id as a sequence
-    $values->{'id'} = int(rand(9999999999999998)) + 1;
-    $user->create($values);
-    if ($user->get_status()->is_OK()) {
-
-	$req->put_arg('user', $user->get('id'));
-	my($demographics) = Bivio::Biz::UserDemographics->new();
-	$values = &_create_field_map($demographics, $req);
-
-	$demographics->create($values);
-
-	# need to add errors to user, it is what is sent through the system
-	foreach (@{$demographics->get_status()->get_errors()}) {
-	    $user->get_status()->add_error($_);
-	}
-
+	#TODO: need to have the db assign the id as a sequence
+	$values->{'id'} = int(rand(9999999999999998)) + 1;
+	$user->create($values);
 	if ($user->get_status()->is_OK()) {
-	    # the same for email
-	    my($email) = Bivio::Biz::UserEmail->new();
-	    $values = &_create_field_map($email, $req);
 
-	    $email->create($values);
+	    $req->put_arg('user', $user->get('id'));
+	    my($demographics) = Bivio::Biz::UserDemographics->new();
+	    $values = &_create_field_map($demographics, $req);
 
-	    foreach (@{$email->get_status()->get_errors()}) {
+	    $demographics->create($values);
+
+	    # need to add errors to user, it is what is sent through the system
+	    foreach (@{$demographics->get_status()->get_errors()}) {
 		$user->get_status()->add_error($_);
 	    }
-	}
 
-	#HACK: ignoring for club setup
-	# add the user to the club if necessary
-	if ($user->get_status()->is_OK()
-		&& $req->get_target_name() ne 'club') {
+	    if ($user->get_status()->is_OK()) {
+		# the same for email
+		my($email) = Bivio::Biz::UserEmail->new();
+		$values = &_create_field_map($email, $req);
 
-	    #TODO: need cache of club, but where?
-	    my($club) = Bivio::Biz::Club->new();
-	    $club->find(Bivio::Biz::FindParams->new(
-		    {name => $req->get_target_name()}));
+		$email->create($values);
 
-	    # not checking find result, should have succeeded or
-	    # it wouldn't be this far
-	    my($club_user) = Bivio::Biz::ClubUser->new();
+		foreach (@{$email->get_status()->get_errors()}) {
+		    $user->get_status()->add_error($_);
+		}
+	    }
 
-	    $club_user->create({
-		club => $club->get('id'),
-		user => $user->get('id'),
-		role => $req->get_arg('role'),
-		email_mode => 1
+	    #HACK: ignoring for club setup
+	    # add the user to the club if necessary
+	    if ($user->get_status()->is_OK()
+		    && $req->get_target_name() ne 'club') {
+
+		#TODO: need cache of club, but where?
+		my($club) = Bivio::Biz::Club->new();
+		$club->find(Bivio::Biz::FindParams->new(
+			{name => $req->get_target_name()}));
+
+		# not checking find result, should have succeeded or
+		# it wouldn't be this far
+		my($club_user) = Bivio::Biz::ClubUser->new();
+
+		$club_user->create({
+		    club => $club->get('id'),
+		    user => $user->get('id'),
+		    role => $req->get_arg('role'),
+		    email_mode => 1
 		});
 
-	    foreach (@{$club_user->get_status()->get_errors()}) {
-		$user->get_status()->add_error($_);
+		foreach (@{$club_user->get_status()->get_errors()}) {
+		    $user->get_status()->add_error($_);
+		}
 	    }
 	}
+    };
+
+    # check for exceptions
+    if ($@) {
+	Bivio::Biz::SqlConnection->rollback();
+	&_trace($@);
+
+	# probably want to raise an alert - something crashed.
+	return 0;
     }
 
     if ($user->get_status()->is_OK()) {
 	Bivio::Biz::SqlConnection->commit();
 	return 1;
     }
-    else {
-	Bivio::Biz::SqlConnection->rollback();
-	return 0;
-    }
+
+    Bivio::Biz::SqlConnection->rollback();
+    return 0;
 }
 
 #=PRIVATE METHODS

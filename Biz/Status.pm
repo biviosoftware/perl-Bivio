@@ -11,19 +11,24 @@ Bivio::Biz::Status - A collection of errors.
 =head1 SYNOPSIS
 
     use Bivio::Biz::Status;
-    Bivio::Biz::Status->new();
+    my($status) = Bivio::Biz::Status->new();
+
+    print($status->is_OK());
+    $status->add_error(Bivio::Biz::Error->new("foo"));
+    print($status->is_OK());
+    $status->clear();
+    print($status->is_OK());
 
 =cut
 
+use Bivio::UNIVERSAL;
 @Bivio::Biz::Status::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Status>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::Biz::Status> is a L<Bivio::Biz::Error> holder.
+L<Bivio::Biz::Model>s use a Status instance to track errors which
+occur as they are abused.
 
 =cut
 
@@ -79,14 +84,16 @@ Removes all errors.
 sub clear {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{errors} = [];
+
+    my(@a) = @{$fields->{errors}};
+    $#a = 0;
 }
 
 =for html <a name="get_errors"></a>
 
 =head2 get_errors() : array
 
-Returns an array of Errors associated with the status.
+Returns an array of L<Model::Biz::Error>s associated with the status.
 
 =cut
 
@@ -98,7 +105,7 @@ sub get_errors {
 
 =for html <a name="is_OK"></a>
 
-=head2 is_OK() : 
+=head2 is_OK() : boolean
 
 Returns > 0 if there are no errors.
 

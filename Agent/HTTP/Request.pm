@@ -211,6 +211,34 @@ sub log_error {
     $fields->{r}->log_error($message);
 }
 
+=for html <a name="make_path"></a>
+
+=head2 make_path() : string
+
+Creates a path URI to the location of the current request.
+
+=head2 make_path(string view_name) : string
+
+Creates a path URI to the location of the current controller and the
+specified view.
+
+=head2 make_path(string view_name, string controller_name) : string
+
+Creates a path URI to the location of the specified controller and view.
+
+=cut
+
+sub make_path {
+    my($self, $view_name, $controller_name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    $view_name ||= $self->get_view_name();
+    $controller_name ||= $self->get_controller_name();
+
+    return '/'.$self->get_target_name().'/'.$controller_name
+	    .'/'.$view_name.'/';
+}
+
 =for html <a name="print"></a>
 
 =head2 print(string str)

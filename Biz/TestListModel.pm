@@ -187,7 +187,7 @@ sub get_title {
 
 =for html <a name="get_value_at"></a>
 
-=head2 get_value_at(int row, int col) : scalar or CompoundField
+=head2 get_value_at(int row, int col) : scalar or array
 
 Returns the value at the specified row, col cooridate.
 

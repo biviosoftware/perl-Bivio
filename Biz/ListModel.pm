@@ -10,8 +10,19 @@ Bivio::Biz::ListModel - An abstract model of multi row values.
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::ListModel;
-    Bivio::Biz::ListModel->new();
+    my($list) = ...;
+
+    # print the page range
+    print($list->get_index().' - '
+            .$list->get_index() + $list->get_row_count() - 1
+            .' / '.$list->get_result_set_size()."\n");
+
+    # print the page data
+    for (my($row) = 0; $row < $list->get_row_count(); $row++) {
+        for (my($col) = 0; $col < $list->get_column_count(); $col++) {
+            print($list->get_value_at($row, $col)."\n");
+        }
+    }
 
 =cut
 
@@ -26,11 +37,12 @@ use Bivio::Biz::Model;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::ListModel>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::Biz::ListModel> is a holder for multi row data sets. It provides
+an interface for returning large data sets in mulitple pages. Subclasses
+can override L<"get_sort_key"> and L<"get_default_sort_key"> to provide
+column sorting information for L<Bivio::UI::HTML::ListView>. ListModels
+export column information in the form of L<Bivio::Biz::FieldDescriptor>
+through the method L<"get_column_descriptor">.
 
 =cut
 
@@ -113,6 +125,21 @@ sub get_column_heading {
     return $fields->{column_info}->[$col][0];
 }
 
+=for html <a name="get_default_sort_key"></a>
+
+=head2 get_default_sort_key() : string
+
+Returns the sort key to use if no other is specified. This method should
+be overridden by subclasses for default sorting in the order by clause.
+By default this method returns undef, indicating that no default sorting
+exists.
+
+=cut
+
+sub get_default_sort_key {
+    return undef;
+}
+
 =for html <a name="get_index"></a>
 
 =head2 get_index() : int
@@ -132,8 +159,8 @@ sub get_index {
 =head2 get_order_by(FindParams fp) : string
 
 Returns the 'order by' clause based on the sort argument in the FindParams.
-The sort param must be of the form: sort(a|d<col>). If the specified column
-doesn't support sorting, then '' is returned.
+The sort param must be of the form: sort(a|d<col>). If the model doesn't
+support sorting, then '' is returned.
 
 =cut
 
@@ -142,13 +169,25 @@ sub get_order_by {
 
     my($order_by) = '';
     my($sort) = $fp->get('sort') || '';
+    my($default_key) = $self->get_default_sort_key() || '';
 
     # make sure it is in correct form and col is in range
     if ($sort =~ /(a|d)(\d+)/ and $2 >= 0 and $2 < $self->get_column_count()) {
-	if ($self->get_sort_key($2)) {
-	    $order_by = ' order by '.$self->get_sort_key($2);
+	my($key) = $self->get_sort_key($2);
+	if ($key) {
+	    $order_by = ' order by '.$key;
 	    $order_by .= ' desc' if $1 eq 'd';
+
+	    # add the default key if it isn't already present
+	    if ($default_key =~ /^$key/ ) {
+	    }
+	    else {
+		$order_by .= ','.$default_key;
+	    }
 	}
+    }
+    if ($order_by eq '' and $default_key) {
+	$order_by = ' order by '.$self->get_default_sort_key();
     }
     return $order_by;
 }
@@ -202,7 +241,7 @@ sub get_sort_key {
 
 =for html <a name="get_value_at"></a>
 
-=head2 get_value_at(int row, int col) : scalar or CompoundField
+=head2 get_value_at(int row, int col) : scalar or array
 
 Returns the simple or complex value at the specified coordinates.
 

@@ -10,8 +10,15 @@ Bivio::Biz::SqlListSupport - sql support for ListModels
 
 =head1 SYNOPSIS
 
+    package MyListModel;
+
     use Bivio::Biz::SqlListSupport;
-    Bivio::Biz::SqlListSupport->new();
+    my($support) = Bivio::Biz::SqlListSupport->new('email_message',
+	['id,subject', 'from_name,from_email,subject', 'dttm']);
+
+    support->find($self, $self->internal_get_rows()
+        $fields->{index}, 15, 'where club=?'.$self->get_order_by($fp),
+	$fp->get('club'));
 
 =cut
 
@@ -20,11 +27,11 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::SqlListSupport>
+C<Bivio::Biz::SqlListSupport> provides SQL database access for
+L<Bivio::Biz::ListModel>s.
 
-=cut
-
-=head1 CONSTANTS
+SqlListSupport uses the L<Bivio::Biz:SqlConnection> for connections and
+statement execution.
 
 =cut
 
@@ -48,7 +55,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static new(string table_name, array col_map) : Bivio::Biz::SqlListSupport
 
-Creates a SQL list support instance. col_map should be an array or sql
+Creates a SQL list support instance. col_map should be an array of sql
 column names for loading data.
 
 =cut
@@ -96,8 +103,6 @@ sub find {
     my($col_field_count) = $fields->{col_field_count};
 
     # clear the result set
-#    $#{@$rows} = 0; 	# doesn't work
-#    0 while (pop(@$rows)); #works
     my(@a) = @$rows;
     $#a = 0;
 
@@ -113,6 +118,7 @@ sub find {
     my($count) = 0;
     while ($row = $statement->fetchrow_arrayref()) {
 
+	# advance to the start index
 	if ($count++ < $index) {
 	    next;
 	}
@@ -132,6 +138,7 @@ sub find {
 	    $rows->[$i]->[$j] = $val;
 	}
 
+	# check if page is loaded
 	if (++$i >= $max) {
 	    last;
 	}

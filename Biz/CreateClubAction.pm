@@ -8,13 +8,6 @@ $Bivio::Biz::CreateClubAction::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g
 
 Bivio::Biz::CreateClubAction - creates a new bivio club
 
-=head1 SYNOPSIS
-
-    use Bivio::Biz::CreateClubAction;
-    Bivio::Biz::CreateClubAction->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::Biz::Action>
@@ -26,11 +19,7 @@ use Bivio::Biz::Action;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::CreateClubAction>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::Biz::CreateClubAction> creates a club and its administrator.
 
 =cut
 
@@ -57,7 +46,6 @@ Creates an action for creating a bivio club.
 
 sub new {
     my($self) = &Bivio::Biz::Action::new(@_);
-    $self->{$_PACKAGE} = {};
     return $self;
 }
 
@@ -78,57 +66,52 @@ sub execute {
     my($self, $club, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($values) = &_create_field_map($club, $req);
+    eval {
+	my($values) = &_create_field_map($club, $req);
 
-    #TODO: need to have the db assign the id as a sequence
-    $values->{'id'} = int(rand(9999999999999998)) + 1;
-    $values->{'bytes_in_use'} = 0;
-    $values->{'bytes_max'} = 8 * 1024 * 1024;
-    $club->create($values);
+	#TODO: need to have the db assign the id as a sequence
+	$values->{'id'} = int(rand(9999999999999998)) + 1;
+	$values->{'bytes_in_use'} = 0;
+	$values->{'bytes_max'} = 8 * 1024 * 1024;
+	$club->create($values);
 
-    if ($club->get_status()->is_OK()) {
+	if ($club->get_status()->is_OK()) {
 
-	# create the club's admin user
-	if ($req->get_arg('admin')) {
-	    my($club_user) = Bivio::Biz::ClubUser->new();
-	    $club_user->create({
-		club => $club->get('id'),
-		user => $req->get_arg('admin'),
-		role => 0,
-		email_mode => 1
+	    # create the club's admin user
+	    if ($req->get_arg('admin')) {
+		my($club_user) = Bivio::Biz::ClubUser->new();
+		$club_user->create({
+		    club => $club->get('id'),
+		    user => $req->get_arg('admin'),
+		    role => 0,
+		    email_mode => 1
 		});
 
-	    # need to add errors to club, it is what is sent through the system
-	    foreach (@{$club_user->get_status()->get_errors()}) {
-		$club->get_status()->add_error($_);
+		# need to add errors to club, it is what is sent through
+		# the system
+		foreach (@{$club_user->get_status()->get_errors()}) {
+		    $club->get_status()->add_error($_);
+		}
 	    }
 	}
+    };
 
-=pod
+    # check for exceptions
+    if ($@) {
+	Bivio::Biz::SqlConnection->rollback();
+	&_trace($@);
 
-	$req->put_arg('club', $club->get('id'));
-	my($preferences) = Bivio::Biz::ClubPreferences->new();
-	$values = &_create_field_map($preferences, $req);
-
-	$preferences->create($values);
-
-	# need to add errors to club, it is what is sent through the system
-	foreach (@{$preferences->get_status()->get_errors()}) {
-	    $club->get_status()->add_error($_);
-	}
-
-=cut
-
+	# probably want to raise an alert - something crashed.
+	return 0;
     }
 
     if ($club->get_status()->is_OK()) {
 	Bivio::Biz::SqlConnection->commit();
 	return 1;
     }
-    else {
-	Bivio::Biz::SqlConnection->rollback();
-	return 0;
-    }
+
+    Bivio::Biz::SqlConnection->rollback();
+    return 0;
 }
 
 #=PRIVATE METHODS
