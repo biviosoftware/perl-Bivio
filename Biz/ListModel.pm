@@ -1259,7 +1259,7 @@ sub prev_row {
 
 =head2 reset_cursor() : self
 
-Places the cursor at the start of the list.
+Places the cursor before the start of the list.
 
 =cut
 
