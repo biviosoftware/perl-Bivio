@@ -269,6 +269,21 @@ ALTER TABLE file_t add unique(directory_id, name_sort)
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
 /
 
+CREATE INDEX file_directory_i ON file_t (
+  directory_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+
+CREATE INDEX file_realm_volume_i ON file_t (
+  realm_id,
+  volume
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+
 CREATE sequence file_s
   minvalue 100011 maxvalue 999999999999999999
   nocycle cache 10 increment BY 100000
@@ -285,9 +300,9 @@ EOF
     while ($realms->next_row) {
 	# May have multiple administrators
 	next if $realm_id eq $realms->get('RealmOwner.realm_id');
-	my($realm_id) = $realms->get('RealmOwner.realm_id');
+	$realm_id = $realms->get('RealmOwner.realm_id');
 	die('failed to load realm ', $realm_id)
-		unless $realm->unauth_load($realm_id);
+		unless $realm->unauth_load(realm_id => $realm_id);
 	Bivio::Biz::Model::File->create_initial($realm,
 		$realms->get('RealmUser.user_id'));
     }
