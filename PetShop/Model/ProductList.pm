@@ -53,6 +53,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
+	can_iterate => 1,
 
 	# List of fields which uniquely identify each row in this list
 	primary_key => [
