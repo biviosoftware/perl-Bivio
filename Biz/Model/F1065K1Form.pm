@@ -403,7 +403,7 @@ sub _get_percentage {
 	$date = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year($date);
     }
     my($ownership) = Bivio::Biz::Accounting::ClubOwnership->new(
-	    $self->get_request->get('auth_realm')->get('owner'), $date);
+	    $self->get_request, $date);
     my($date_own) = $ownership->get_ownership($date);
     return 0 unless exists($date_own->{$user->get('realm_id')});
 
