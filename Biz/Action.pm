@@ -15,22 +15,10 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Action> describes a interaction which can be performed on
-Models. Actions may be done, and undone. At any time it may not be possible
-to (un)execute an action depending on the state of the model it relates
-to. Actions can be queried as to whether they can be performed using the
-L<"can_execute"> and L<"can_unexecute">.
-
-Actions get the models they operate on via the L<Bivio::Biz::Request>
-they are executed with.
-
-During execution, the action either completes successfully or dies.  Actions
-must be called via an L<Bivio::Die::catch|Bivio::Die/"catch"> to allow the
-Action to catch exceptions and transform errors appropriately.
-
-There may be more than one action executed when processing a
-request.  A "main" action may call subordinate actions.
-
+C<Bivio::Biz::Action> defines the interface for "pure" business logic,
+i.e. not directly associated with any one model.  Actions usually
+appear as executable items of L<Bivio::Agent::Task|Bivio::Agent::Task>,
+but they may be called directly.
 
 =cut
 
@@ -47,22 +35,29 @@ my(%_CLASS_TO_SINGLETON);
 
 =head2 static get_instance(string class) : Bivio::Biz::Action
 
-Returns the singleton for I<class> or I<proto>.
+Returns the singleton for I<class> or I<proto>.  If I<class> is supplied, it
+may be just the simple name or a fully qualified class name.  It will be loaded
+with L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Action> map.
+
+Otherwise, a singleton for the Action will be returned.  If the
+action's class has yet to be instantiated, it will be and stored
+internally in a singleton cache.
+
+Always returns the same instance (never a class name) for
+the specified Action.
 
 =cut
 
 sub get_instance {
     my($proto, $class) = @_;
     if (defined($class)) {
-	$class = ref($class) if ref($class);
-	$class = 'Bivio::Biz::Action::'.$class unless $class =~ /::/;
-	# First time, make sure the class is loaded.
-	Bivio::IO::ClassLoader->simple_require($class)
-		    unless $_CLASS_TO_SINGLETON{$class};
+	$class = Bivio::IO::ClassLoader->map_require('Action',
+		ref($class) ? ref($class) : $class);
     }
     else {
-	$class = ref($proto) || $proto;
+	$class = ref($proto) ? ref($proto) : $proto;
     }
+
     $_CLASS_TO_SINGLETON{$class} = $class->new
 	    unless $_CLASS_TO_SINGLETON{$class};
     return $_CLASS_TO_SINGLETON{$class};
@@ -74,15 +69,17 @@ sub get_instance {
 
 =for html <a name="execute"></a>
 
-=head2 abstract execute(Bivio::Biz::Request req) : boolean
+=head2 abstract execute(Bivio::Agent::Request req) : boolean
 
-=head2 static execute(Bivio::Biz::Request req, string class) : boolean
+Perform an action on I<req>.  Usually modifies state of I<req>.
 
-Call this method to perform the action on I<req>.  The form and
-query associated with the request will be used to find the models
-to act on.
+B<Subclasses must override this method>.
 
-If I<class> is supplied, will be loaded first.
+=head2 static execute(Bivio::Agent::Request req, string class) : boolean
+
+If I<class> is supplied, will be loaded with
+L<get_instance|"get_instance"> and that instance's execute
+method will be called without a I<class> argument.
 
 =cut
 
