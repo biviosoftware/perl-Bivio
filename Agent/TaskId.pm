@@ -855,6 +855,18 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
     )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_INCOME
+        89
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/income
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::Biz::Model::InstrumentIncomeForm
+        Bivio::UI::HTML::Club::InstrumentIncome
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+    )],
        );
 
 __PACKAGE__->compile(
