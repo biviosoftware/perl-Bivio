@@ -73,7 +73,8 @@ sub parse {
     my($r) = $req->get('r');
 
     # Only accept forms via POST
-    return undef unless $r->method_number() eq Bivio::Ext::ApacheConstants::M_POST();
+    return undef unless $r->method_number()
+        eq Bivio::Ext::ApacheConstants::M_POST();
 
     # Check content type
     my($ct) = $r->header_in('Content-Type');
@@ -326,14 +327,19 @@ sub _parse_header {
 		    unless $h =~ /^(?:8bit|binary)\b/i;
 	    _trace('Content-Transfer-Encoding: ', $h) if $_TRACE;
 	}
+        elsif ($h =~ /^Content-Length:/i) {
+            # ignore this, included by HTTP::Request only
+            # the content is being parsed using the boundary
+        }
 	else {
 	    Bivio::IO::Alert->warn('unexpected field: ', $h);
 	}
     }
 
-    $req->throw_die('CORRUPT_FORM', {message => 'field missing "name" attribute',
-	field => $field})
-	    unless defined($field->{name});
+    $req->throw_die('CORRUPT_FORM', {
+        message => 'field missing "name" attribute',
+	field => $field,
+    }) unless defined($field->{name});
     return $field;
 }
 
@@ -381,6 +387,7 @@ sub _read {
     $req->throw_die('CLIENT_ERROR', 'buffer undefined after read')
 	    unless defined($$buf);
     $$len -= $read_bytes;
+    return;
 }
 
 =head1 SEE ALSO
