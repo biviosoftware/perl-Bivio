@@ -101,9 +101,17 @@ Bivio::Test->new({
 	    ['Tables', 'item', 'rows', 0, 1] => ['18.50'],
 	],
     ], [
-	'as-blacklists' => [
+	'as-blacklist-summary' => [
 	    ['Tables', 'IP Address', 'rows', 0, 2] => ['0'],
 	    ['Tables', 'IP Address', 'rows', 1, 2] => ['2'],
+	    ['Links', '06/11/2003 GMT', 'href']
+	        => ['/demo/blacklists/detail?p=10400025'],
+	    ['Links', '06/11/2003 GMT_1', 'href']
+	        => ['/demo/blacklists/detail?p=10300025'],
+	],
+    ], [
+	'as-blacklist-detail' => [
+	    ['Tables', 'Server', 'rows', 2, 2] => ['request removal, website'],
 	],
     ]),
     ['login', 'Forms'] => [
