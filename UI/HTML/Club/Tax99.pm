@@ -154,9 +154,9 @@ EOF
 	    [
 		$self->join(
 		    $self->string('
-To property view the PDF tax forms requires the free Adobe Acrobat Reader version 4.0 or greater. Download the latest Acrobat Reader '),
+To properly view and print the PDF tax forms requires the free Adobe Acrobat Reader version 4.0 or greater. Download the latest Acrobat Reader '),
 		    Bivio::UI::HTML::Widget::Link->new({
-			value => $self->string('here'),
+			value => $self->string('at the Adobe web site'),
 			href =>
 			'http://www.adobe.com/products/acrobat/readstep.html',
 		    }),
