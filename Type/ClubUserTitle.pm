@@ -32,11 +32,19 @@ Titles always map to a role.  See L<get_role|"get_role">.
 
 =over 4
 
-=item UNKNOWN
+=item TREASURER
 
-=item FEMALE
+=item PRESIDENT
 
-=item MALE
+=item VICE_PRESIDENT
+
+=item SECRETARY
+
+=item ADMINISTRATOR
+
+=item MEMBER
+
+=item GUEST
 
 =back
 
