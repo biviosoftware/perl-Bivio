@@ -407,7 +407,7 @@ sub _upgrade_infinite_clubs {
     $ec_util->put(req => $req);
     my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
 
-    foreach my $name (Bivio::Type::RealmName->CELEBRITY_CLUBS, qw(
+    foreach my $name (qw(
 	a_finance
 	account_sync_log
 	administrare
