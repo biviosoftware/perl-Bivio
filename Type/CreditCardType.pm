@@ -70,12 +70,13 @@ __PACKAGE__->compile([
 
 =head2 get_by_number(string number) : Bivio::Type::CreditCard
 
-Given a card I<number>, return its type
+Given a card I<number>, return its type  Handles C<undef> as unknown.
 
 =cut
 
 sub get_by_number {
     my($proto, $number) = @_;
+    return Bivio::Type::CreditCardType::UNKNOWN() unless defined($number);
     $number =~ s/\s+//g;
     return Bivio::Type::CreditCardType::UNKNOWN()
             if $number =~ /\D/;
