@@ -150,6 +150,15 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	],
+	other => [
+	    {
+		# Set this if you want to avoid problems with
+		# _is_editing().  See Petshop::Util for an example.
+		name => 'force_create',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+        ],
     };
     return $self->merge_initialize_info(
 	    $self->SUPER::internal_initialize, $info);
@@ -249,6 +258,7 @@ sub _create_user {
 #
 sub _is_editing {
     my($self) = @_;
+    return 0 if $self->unsafe_get('force_create');
     my($s) = $self->get_request->unsafe_get('user_state');
     return $s && $s == Bivio::Type::UserState->LOGGED_IN;
 }
