@@ -245,8 +245,9 @@ sub delete_all {
     my($params) = [];
     my($first_col) = 1;
     foreach my $col (sort(keys(%$values))) {
-	$sql .= ($first_col ? '' : ' and ').$col.'=?';
-	push(@$params, $values->{$col});
+	my($info) = $self->get_column_info($col);
+	$sql .= ($first_col ? '' : ' and ').$col.'='.$info->{sql_pos_param};
+	push(@$params, $info->{type}->to_sql_param($values->{$col}));
 	$first_col = 0;
     }
     my($sth) = Bivio::SQL::Connection->execute($sql, $params, $die);
