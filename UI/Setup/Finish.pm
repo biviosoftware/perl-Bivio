@@ -97,7 +97,7 @@ sub render {
     $req->print('Congratulations, club setup is completed. After
 pressing "next", enter your user name and password and you will be
 directed to the club user list screen. From there you can add additional
-club members.');
+club members.<p><img src="/i/test/painted.gif">');
     $req->print('<p><input type="submit" value="Next">');
 
     $req->print('</form></td></tr></table>');
