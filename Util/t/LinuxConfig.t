@@ -1,18 +1,17 @@
 # Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
 use strict;
-my($_tmp);
-BEGIN {
-    use Bivio::IO::Config;
-    $_tmp = "$ENV{PWD}/LinuxConfig.tmp";
-    Bivio::IO::Config->introduce_values({
-	'Bivio::Util::LinuxConfig' => {
-	    root_prefix => "$ENV{PWD}/LinuxConfig.tmp",
-	},
-    });
-}
 use Bivio::Test;
 use Bivio::Util::LinuxConfig;
+my($_tmp) = "$ENV{PWD}/LinuxConfig.tmp";
+Bivio::IO::Config->introduce_values({
+    'Bivio::Util::LinuxConfig' => {
+	root_prefix => "$ENV{PWD}/LinuxConfig.tmp",
+    },
+    'Bivio::IO::Config' => {
+	trace => 1,
+    },
+});
 CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -a LinuxConfig/* $_tmp");
 
 Bivio::Test->unit([
