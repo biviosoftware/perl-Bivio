@@ -69,6 +69,7 @@ sub new {
 	    $_COLUMN_INFO);
 
     $self->{$_PACKAGE} = {};
+    $_SQL_SUPPORT->initialize();
     return $self;
 }
 

@@ -72,6 +72,7 @@ sub new {
 	index => 0,
 	size => 0
 	};
+    $_SQL_SUPPORT->initialize();
     return $self;
 }
 
