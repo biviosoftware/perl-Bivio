@@ -44,6 +44,10 @@ Attributes for the editable field widget.
 
 Full name of the form field. ex. 'LoginForm.RealmOwner.name'
 
+=item form_field_label : string [field]
+
+Value of the field label to be looked up in Facade.
+
 =item row_control : array_ref
 
 Widget value boolean which dynamically determines if the row should render.
@@ -168,12 +172,11 @@ sub _get_field_name {
 #
 sub _get_label_value {
     my($self) = @_;
-
-    my($label_name) = $self->get('field');
+    my($default_field) = $self->get('field');
     # strip out any suffix, not used for label lookup
-    $label_name =~ s/_\d+(\.\w+)$/$1/;
+    $default_field =~ s/_\d+(\.\w+)$/$1/;
     return [['->get_request'], 'Bivio::UI::Facade', 'Text',
-	'->get_value', $label_name];
+	'->get_value', $self->get_or_default('form_field_label', $default_field)];
 }
 
 =head1 COPYRIGHT
