@@ -130,16 +130,15 @@ B<DOES NOT RETURN.>
 sub client_redirect {
     my($self, $new_task, $new_realm) = @_;
 
-#HACK
 #TODO: need a better way to determine whether to use https
     my($host) = $self->SUPER::get_http_host;
     my($uri);
-#    if ($host =~ /\:/) {
-#	$uri = 'http://'.$host;
-#    }
-#    else {
+    if ($host =~ /\:/) {
+	$uri = 'http://'.$host;
+    }
+    else {
 	$uri = 'https://'.$host;
-#    }
+    }
 
     $self->SUPER::internal_redirect_realm($new_task, $new_realm);
     $uri .= $self->format_uri($new_task, undef);
