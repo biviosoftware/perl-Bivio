@@ -8,6 +8,10 @@ $Bivio::Mail::Incoming::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Mail::Incoming - parses an incoming mail message
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Mail::Incoming;
