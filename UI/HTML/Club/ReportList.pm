@@ -116,7 +116,7 @@ sub _create_bullet_link {
 
     return '<li><a href="'.Bivio::Agent::HTTP::Location->format($task_id,
 	    Bivio::Agent::Request->get_current()->get('auth_realm'))
-	    .'" target="_blank">'.$text."</a></li>\n";
+	    .'">'.$text."</a></li>\n";
 }
 
 # _create_report_links() : string
