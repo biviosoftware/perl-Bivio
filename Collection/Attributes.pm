@@ -164,7 +164,7 @@ sub dump {
 
     if ($_TRACE) {
 	my($dump) = "\n";
-	foreach my $k (@{$self->get_keys}) {
+	foreach my $k (sort(@{$self->get_keys})) {
 	    my($value) = $self->get($k);
 	    $dump .= "\t$k => ".(defined($value) ? $value : 'undef')."\n";
 	}
