@@ -50,6 +50,10 @@ Name of the field to render.
 
 Number of spaces to pad to left (same as String's pad_left).
 
+=item want_parens : boolean [true]
+
+Should negative numbers be expressed with parens
+
 =item zero_as_blank : boolean [false]
 
 If true, renders the value 0 as ' '.
@@ -100,8 +104,10 @@ sub initialize {
     return if $fields->{initialized};
     $self->put(
 	    value => [$self->get('field'), 'HTMLFormat.Amount',
-		$self->get_or_default('decimals', 2), 1,
-		$self->get_or_default('zero_as_blank', 0)],
+		$self->get_or_default('decimals', 2),
+		$self->get_or_default('want_parens', 1),
+		$self->get_or_default('zero_as_blank', 0),
+	    ],
 	    column_align => $self->get_or_default('column_align', 'E'),
 	    pad_left => $self->get_or_default('pad_left', 1),
 	    column_nowrap => 1,
