@@ -416,7 +416,7 @@ sub _init_from_clone {
     return unless $clone;
     my($clone_fields) = $clone->{$_PACKAGE};
     _init_from_clone($self, $clone_fields->{clone});
-    &{$clone_fields->{initialize}}($self);
+    &{$clone_fields->{initialize}}($self) if $clone_fields->{initialize};
     return;
 }
 
