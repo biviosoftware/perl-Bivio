@@ -126,6 +126,8 @@ sub client_redirect {
     my($uri);
     if (ref($_[0])) {
 	my($new_task, $new_realm, $new_query) = @_;
+	# use previous query if not specifed, maintains state across pages
+	$new_query ||= $self->get('query');
 	$self->SUPER::server_redirect($new_task, $new_realm, $new_query)
 		if $new_task eq $self->get('task_id');
 	$self->internal_redirect_realm($new_task, $new_realm);
