@@ -654,7 +654,7 @@ Returns C<undef> if the query is empty.
 
 sub get_query_as_hash {
     my($self) = shift;
-    # Easier to do this way that to try to modularize the code for
+    # Easier to do this way than to try to modularize the code for
     # this one case.  Typical case is that the string is empty.
     # If there is one element, it's easy, too.
     my($s) = $self->format_query(@_);
