@@ -105,7 +105,7 @@ sub execute {
 	$filename = '/'.$club_name.'/messages/html/'.$attachment_id;
 	die("couldn't get mime  body for $attachment_id. Error: $body")
 	    unless $_FILE_CLIENT->get($filename, \$body);
-#	$s = _numparts(\$s); 
+
 	my $ctypestr = _content_type(\$body);
 	if($ctypestr =~ 'text/plain'){$esc = 1;}
 	#everything we get from the file server should be text/html
@@ -120,8 +120,6 @@ sub execute {
 		value => $s,
 	        escape_text => $esc
 	    });
-#	$req->put(body => $s);
-#	$fields->{content}->put( body => $s);
 	$fields->{content}->put(value => $str);
 	$str->initialize();
     }
