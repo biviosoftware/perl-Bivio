@@ -36,6 +36,7 @@ you to define what you want to test very succinctly.  Here's an example:
     #!perl -w
     use strict;
     use Bivio::TypeError;
+    use Bivio::Test;
     use Bivio::Type::Integer;
     Bivio::Test->unit([
         Bivio::Type::Integer => [
