@@ -61,7 +61,7 @@ sub create_content {
     $mode_map{0} = $self->form('MailPostForm', [
     # ['field', 'label', 'description', 'example text', options]
 	['to', 'MAIL_TO', undef, undef, {widget => $to_chooser}],
-	['from', 'MAIL_FROM', undef, undef, {size => 60}],
+	['from', 'MAIL_FROM', undef, 'mary@aol.com', {size => 60}],
 	['subject', 'MAIL_SUBJECT', undef, undef, {size => 60}],
 	['text', 'MAIL_TEXT', undef, undef, {cols => 60, label_align => 'NE'}],
     ]);
