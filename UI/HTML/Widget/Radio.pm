@@ -11,18 +11,17 @@ Bivio::UI::HTML::Widget::Radio - a radio input field
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Radio;
-    Bivio::UI::HTML::Widget::Radio->new($attrs);
 
 =cut
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::HTML::Widget::AbstractControl>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Radio::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::HTML::Widget::AbstractControl;
+@Bivio::UI::HTML::Widget::Radio::ISA = ('Bivio::UI::HTML::Widget::AbstractControl');
 
 =head1 DESCRIPTION
 
@@ -32,6 +31,14 @@ It always has a label, but the label may be a string or widget.
 =head1 ATTRIBUTES
 
 =over 4
+
+=item auto_submit : boolean [0]
+
+Should the a click submit the form?
+
+=item control : any
+
+See L<Bivio::UI::HTML::Widget::AbstractControl|Bivio::UI::HTML::Widget::AbstractControl>.
 
 =item field : string (required)
 
@@ -48,10 +55,6 @@ String label to use.
 =item value : Bivio::Type::Enum (required)
 
 Value of button.
-
-=item auto_submit : boolean [0]
-
-Should the a click submit the form?
 
 =back
 
@@ -77,7 +80,7 @@ Creates a Radio widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::HTML::Widget::AbstractControl::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -85,6 +88,45 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="control_on_render"></a>
+
+=head2 control_on_render(any source, string_ref buffer)
+
+Draws the date field on the specified buffer.
+
+=cut
+
+sub control_on_render {
+    my($self, $source, $buffer) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($req) = $source->get_request;
+    my($form) = $req->get_widget_value(@{$fields->{model}});
+    my($field) = $fields->{field};
+    my($value) = $fields->{value};
+
+    # first render initialization
+    unless ($fields->{initialized}) {
+	$fields->{initialized} = 1;
+	$fields->{prefix} = '<input name=';
+	$fields->{suffix} = ' type=radio value="'
+		.$value->to_html($value)
+		."\""
+		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
+		.">&nbsp;";
+    }
+
+    my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
+
+    $$buffer .= $fields->{prefix}
+	    .$form->get_field_name_for_html($field)
+#TODO: is_equal?
+	    .(defined($form->get($field))
+		    && $value eq $form->get($field) ? ' checked' : '')
+	    .$fields->{suffix}
+	    .$p.Bivio::HTML->escape($self->get('label')).$s;
+    return;
+}
 
 =for html <a name="initialize"></a>
 
@@ -102,48 +144,7 @@ sub initialize {
     $fields->{field} = $self->get('field');
     $fields->{value} = $self->get('value');
     $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
-    return;
-}
-
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-Draws the date field on the specified buffer.
-
-=cut
-
-sub render {
-    my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($req) = $source->get_request;
-    my($form) = $req->get_widget_value(@{$fields->{model}});
-    my($field) = $fields->{field};
-    my($value) = $fields->{value};
-
-    # first render initialization
-    unless ($fields->{initialized}) {
-	$fields->{initialized} = 1;
-#	my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
-	$fields->{prefix} = '<input name=';
-	$fields->{suffix} = ' type=radio value="'
-		.$value->to_html($value)
-		."\""
-		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
-		.">&nbsp;";
-#		.$p. Bivio::HTML->escape($self->get('label')).$s;
-    }
-
-    my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
-
-    $$buffer .= $fields->{prefix}
-	    .$form->get_field_name_for_html($field)
-#TODO: is_equal?
-	    .(defined($form->get($field))
-		    && $value eq $form->get($field) ? ' checked' : '')
-	    .$fields->{suffix}
-	    .$p.Bivio::HTML->escape($self->get('label')).$s;
-    return;
+    return $self->SUPER::initialize();
 }
 
 #=PRIVATE METHODS
