@@ -844,6 +844,11 @@ __PACKAGE__->compile(
 	undef,
 	'this transaction may only be entered on a date after the investment was acquired',
     ],
+    USER_ALREADY_WITHDRAWN => [
+	113,
+	undef,
+	'the user has already withdrawn from the club',
+    ],
 );
 
 #=PRIVATE METHODS
