@@ -517,7 +517,7 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
             realm_type => ['Bivio::Auth::RealmType',
     		Bivio::SQL::Constraint::NOT_NULL()],
-	    display_name => ['Bivio::Type::Name',
+	    display_name => ['Bivio::Type::Line',
     		Bivio::SQL::Constraint::NOT_NULL()],
 	    creation_date_time => ['Bivio::Type::DateTime',
 		Bivio::SQL::Constraint::NOT_NULL()],
