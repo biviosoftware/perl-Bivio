@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Reply;
 use strict;
 $Bivio::Agent::HTTP::Reply::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$_ = $Bivio::Agent::HTTP::Reply::VERSION;
 
 =head1 NAME
 
@@ -230,6 +231,20 @@ sub set_cache_private {
     return;
 }
 
+=for html <a name="set_expire_immediately"></a>
+
+=head2 set_expire_immediately()
+
+Set the page so it will expire immediately.
+
+=cut
+
+sub set_expire_immediately {
+    my($self) = @_;
+    $self->set_header(Expires => 'Tue, 01 Apr 1980 05:00:00 GMT');
+    return;
+}
+
 =for html <a name="set_header"></a>
 
 =head2 set_header(string name, string value)
@@ -402,7 +417,7 @@ sub _send_http_header {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
