@@ -326,7 +326,6 @@ sub set_headers_for_list_send {
 	delete $headers->{$name};
     }
     my($sender) = "$list_name-owner";
-    $headers->{precedence} = "Precedence: list\n";
     $headers->{sender} = "Sender: $sender\n";
     $self->set_envelope_from($sender);
     $reply_to_list &&
