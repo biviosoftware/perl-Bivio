@@ -31,10 +31,17 @@ C<Bivio::Biz::Model::F1065ParametersForm> IRS 1065 parameters
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::Address;
 use Bivio::Biz::Model::Tax1065;
+use Bivio::Biz::Model::TaxId;
+use Bivio::SQL::Connection;
 use Bivio::Type::Date;
+use Bivio::Type::DateTime;
+use Bivio::Type::F1065Partner;
 use Bivio::Type::F1065Partnership;
 use Bivio::Type::F1065Return;
+use Bivio::Type::Location;
+use Bivio::TypeError;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -53,21 +60,26 @@ Loads current settings.
 
 sub execute_empty {
     my($self) = @_;
+    my($req) = $self->get_request;
     my($properties) = $self->internal_get;
     my($end_date) = Bivio::Biz::Accounting::Tax->get_last_tax_year;
+#TODO: hacked in for Bivio::UI::HTML::Format::USTaxId
+    $req->put(target_realm_owner => $req->get('auth_realm')->get('owner'));
 
-    my($tax) = Bivio::Biz::Model::Tax1065->new($self->get_request);
+    my($tax) = Bivio::Biz::Model::Tax1065->new($req);
     unless ($tax->unsafe_load(fiscal_end_date => $end_date)) {
 	$tax->create_default($end_date);
     }
 
-    # copy values into properties
-    foreach my $field (@{$tax->get_keys}) {
-	my($form_field) = 'Tax1065.'.$field;
-	if ($self->has_keys($form_field)) {
-	    $properties->{$form_field} = $tax->get($field);
-	}
-    }
+    $properties->{'Tax1065.realm_id'} = $req->get('auth_id');
+    $properties->{'Tax1065.fiscal_end_date'} = $end_date;
+    $properties->{'Address.location'} = Bivio::Type::Location::HOME();
+#    $properties->{'Club.club_id'} = $req->get('auth_id');
+    $self->load_from_model_properties('Tax1065');
+    $self->load_from_model_properties('Address');
+    $self->load_from_model_properties('TaxId');
+    $self->load_from_model_properties('Club');
+
     return;
 }
 
@@ -81,6 +93,7 @@ Saves new settings.
 
 sub execute_input {
     my($self) = @_;
+    my($req) = $self->get_request;
     my($values) = $self->get_model_properties('Tax1065');
     my($end_date) = Bivio::Biz::Accounting::Tax->get_last_tax_year;
 
@@ -89,9 +102,20 @@ sub execute_input {
     $values->{partner_is_partnership} ||= 0;
     $values->{consolidated_audit} ||= 0;
 
-    my($tax) = Bivio::Biz::Model::Tax1065->new($self->get_request);
+    my($tax) = Bivio::Biz::Model::Tax1065->new($req);
     $tax->load(fiscal_end_date => $end_date);
     $tax->update($values);
+
+#TODO: couldn't get get_model() to work...
+    my($address) = Bivio::Biz::Model::Address->new($req);
+    $address->load(location => Bivio::Type::Location::HOME());
+    $address->update($self->get_model_properties('Address'));
+    my($tax_id) = Bivio::Biz::Model::TaxId->new($req);
+    $tax_id->load;
+    $tax_id->update($self->get_model_properties('TaxId'));
+    my($club) = Bivio::Biz::Model::Club->new($req);
+    $club->load;
+    $club->update($self->get_model_properties('Club'));
 
     return;
 }
@@ -126,10 +150,24 @@ sub internal_initialize {
 		type => 'Boolean',
 		constraint => 'NONE',
 	    },
-	],
-	auth_id => [
-	    'Tax1065.realm_id',
-	],
+	    # this is required for taxes
+	    {
+		name => 'Club.start_date',
+		type => 'Date',
+		constraint => 'NOT_NULL',
+	    },
+	    qw(
+	    Tax1065.irs_center
+	    Address.street1
+	    Address.street2
+	    Address.city
+	    Address.state
+	    Address.zip
+	    TaxId.tax_id
+	)],
+	auth_id => [qw(
+	    Tax1065.realm_id Address.realm_id TaxId.realm_id Club.club_id
+	)],
 	primary_key => [
 	    'Tax1065.realm_id',
 	    'Tax1065.fiscal_end_date',
@@ -147,8 +185,35 @@ Ensures fields are valid.
 
 sub validate {
     my($self) = @_;
+    my($req) = $self->get_request;
 
-#TODO: partnership_type can't be general if a non general partner exists
+#TODO: hacked in for Bivio::UI::HTML::Format::USTaxId
+    $req->put(target_realm_owner => $req->get('auth_realm')->get('owner'));
+
+    if ($self->get('Tax1065.partnership_type')
+	    == Bivio::Type::F1065Partnership::GENERAL()) {
+
+	# general partnerships can have only general partners
+
+	my($end_date) = Bivio::Biz::Accounting::Tax->get_last_tax_year;
+	my($sql_date) = Bivio::Type::DateTime->to_sql_value('?');
+	my($sth) = Bivio::SQL::Connection->execute("
+                SELECT COUNT(*)
+                FROM tax_k1_t
+                WHERE partner_type != ?
+                AND fiscal_end_date = $sql_date
+                AND realm_id=?",
+		[Bivio::Type::F1065Partner->GENERAL->as_int,
+			$end_date, $req->get('auth_id')]);
+	my($count) = 0;
+	while (my $row = $sth->fetchrow_arrayref) {
+	    $count = $row->[0];
+	}
+#TODO: total hack, errors don't show up on radio lists, put on irs center
+#	$self->internal_put_error('Tax1065.partner_type',
+	$self->internal_put_error('Tax1065.irs_center',
+		Bivio::TypeError::INVALID_PARTNERSHIP_TYPE()) if $count;
+    }
 
     return;
 }
