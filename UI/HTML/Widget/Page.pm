@@ -72,31 +72,21 @@ L<Bivio::UI::HTML::Widget::Title|Bivio::UI::HTML::Widget::Title>.
 
 Facade color for active links.
 
-=back
-
 =item page_bgcolor : string
 
 Facade color for the page background.
-
-=back
 
 =item page_link_color : string
 
 Facade color for links.
 
-=back
-
 =item page_text_color : string
 
 Facade color for text.
 
-=back
-
 =item page_vlink_color : string
 
 Facade color for visited links.
-
-=back
 
 =item style : Bivio::UI::Widget
 
