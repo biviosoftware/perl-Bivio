@@ -54,6 +54,7 @@ PDFFont attributes may be the following
  family=font-name
  color=color-name
  size=string
+ line_spacing=string
  underline
  overline
  strikeout
@@ -146,7 +147,7 @@ sub set_font {
     if ($value->{line_spacing}) {
         $pdf->set_value(leading => $value->{size} + $value->{line_spacing});
     }
-    $pdf->setcolor('both', 'rgb', @{$value->{color}}, 0);
+    $pdf->setcolor('fill', 'rgb', @{$value->{color}}, 0);
     return;
 }
 
@@ -189,7 +190,8 @@ sub _initialize {
 
     # copy in the default values
     foreach my $key (keys(%$default)) {
-        $value->{$key} ||= $default->{$key};
+        next if defined($value->{$key});
+        $value->{$key} = $default->{$key};
     }
     $value->{color} ||= [0, 0, 0];
     return;
