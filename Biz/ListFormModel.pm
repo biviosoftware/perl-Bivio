@@ -292,6 +292,25 @@ sub get_result_set_size {
     return shift->get_list_model->get_result_set_size;
 }
 
+=for html <a name="has_fields"></a>
+
+=head2 has_fields(string name, ...) : boolean
+
+Does the model have these fields?  This means does it have the
+possibility of having these fields, not whether they are in the list.
+
+=cut
+
+sub has_fields {
+    my($self) = shift;
+    my(@args) = map {
+	my($x) = $_;
+	$x =~ s/$_SEP\d+$//o;
+	$x;
+    } @_;
+    return $self->SUPER::has_fields(@args);
+}
+
 =for html <a name="internal_clear_error"></a>
 
 =head2 internal_clear_error(string property)

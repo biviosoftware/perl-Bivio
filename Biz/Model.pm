@@ -353,6 +353,19 @@ sub get_request {
     return $req;
 }
 
+=for html <a name="has_fields"></a>
+
+=head2 has_fields(string name, ...) : boolean
+
+Does the model have these fields?
+
+=cut
+
+sub has_fields {
+    return shift->{$_PACKAGE}->{class_info}->{sql_support}
+	    ->has_columns(@_);
+}
+
 =for html <a name="internal_clear_model_cache"></a>
 
 =head2 internal_clear_model_cache()
