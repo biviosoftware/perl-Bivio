@@ -108,7 +108,7 @@ sub handler {
 	    Bivio::IO::Alert->warn('[', $req->unsafe_get('client_addr'),
 		    '] request aborted, rolling back ',
 		    $req->unsafe_get('task_id'));
-	    Bivio::Agent::Task->rollback;
+	    Bivio::Agent::Task->rollback($req);
 	    Bivio::Agent::Request->clear_current;
 	}
 	return Bivio::Ext::ApacheConstants::OK();
