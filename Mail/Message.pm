@@ -659,9 +659,9 @@ sub _parse_date {
 
     my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
 
-    # Make upper-case and remove quotes
+    # Make upper-case and remove quotes or parentheses
     $tz = uc($tz);
-    $tz =~ s/"//g;
+    $tz =~ s/["\(\)]+//g;
 
     if (defined(Bivio::Mail::RFC822::TIME_ZONES->{$tz})) {
         $tz = Bivio::Mail::RFC822::TIME_ZONES->{$tz};
