@@ -321,6 +321,24 @@ sub execute_unauth_delete_this {
     return;
 }
 
+=for html <a name="execute_unauth_load_this"></a>
+
+=head2 static execute_unauth_load_this(Bivio::Agent::Request req) : boolean
+
+Loads a new instance of this class using the request using
+the "this" on the request.
+See L<unauth_load_this_from_request|"unauth_load_this_from_request">
+
+=cut
+
+sub execute_unauth_load_this {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    $self->throw_die('NOT_FOUND')
+	unless $self->unauth_load_this_from_request;
+    return 0;
+}
+
 =for html <a name="format_query_for_parent"></a>
 
 =head2 format_query_for_parent() : string
