@@ -309,7 +309,7 @@ Returns the enum for this integer.  If not an integer, throws an exception.
 sub from_literal {
     my($proto, $value) = @_;
     return undef unless defined($value);
-    return (undef, Bivio::TypeError::ENUM()) unless $value =~ /^\d+$/;
+    return (undef, Bivio::TypeError::ENUM()) unless $value =~ /^-?\d+$/;
     my($info) = _get_info($proto, $value, 1);
     return (undef, Bivio::TypeError::NOT_FOUND()) unless $info;
     return $info->[5];
