@@ -81,6 +81,14 @@ my(@_CFG) = (
         next=CLUB_COMMUNICATIONS_MESSAGE_LIST
     )],
     [qw(
+	LOGIN
+	5
+        ANY_USER
+        USER
+        login
+	Bivio::Biz::Action::Login
+    )],
+    [qw(
         CLUB_ACCOUNTING_ACCOUNT_LIST
         9
         CLUB
