@@ -57,7 +57,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 execute(Bivio::Agent::Request req)
 
-Uses the 'source', 'target_name', and 'target_full_name' request
+Uses the 'source', 'target_name', and 'target_display_name' request
 parameters to copy club data.
 
 =cut
@@ -68,14 +68,13 @@ sub execute {
     my($source) = $req->get('source');
     my($source_id) = $source->get('realm_id');
     my($name) = $req->get('target_name');
-    my($full_name) = $req->get('target_full_name');
+    my($display_name) = $req->get('target_display_name');
 
     my($old_club) = Bivio::Biz::Model::Club->new($req);
     $old_club->unauth_load(club_id => $source_id)
 	    || die("can't load source club $source_id");
     my($new_club) = Bivio::Biz::Model::Club->new($req);
     $new_club->create({
-	full_name => $full_name,
 	kbytes_in_use => $old_club->get('kbytes_in_use'),
 	max_storage_kbytes => $old_club->get('max_storage_kbytes')
     });
@@ -83,7 +82,8 @@ sub execute {
     $new_realm->create({
 	realm_id => $new_club->get('club_id'),
 	name => $name,
-	realm_type => Bivio::Auth::RealmType::CLUB()
+	realm_type => Bivio::Auth::RealmType::CLUB(),
+	display_name => $display_name,
     });
 
     my($id_map) = {$source_id => $new_realm->get('realm_id')};
@@ -144,6 +144,8 @@ sub execute {
 # Copies all the entries with the parent keys of the 'key_map' to a
 # new Model. Returns a set of ids for the source models.
 #
+# Special case: realm_user.creation_date_time is set to "now" and
+#
 sub _copy {
     my($id_map, $table_base, $key_map, $model, $extra_field) = @_;
 
@@ -160,12 +162,16 @@ sub _copy {
     my($sth) = Bivio::SQL::Connection->execute($select, \@values);
     my($result) = [];
     my($row);
-
+    my($now) = $table_base eq 'realm_user' ? Bivio::Type::DateTime->now()
+	    : undef;
     while ($row = $sth->fetchrow_arrayref) {
 	my($properties) = {};
 	for (my($i) = 0; $i < int(@$fields); $i++ ) {
 	    $properties->{$fields->[$i]} = $row->[$i];
 	}
+	# Can't have "now" be before club creation date
+	$properties->{creation_date_time} = $now if $now;
+
 	my($source_id) = $properties->{$table_base."_id"};
 	if (defined($source_id)) {
 	    push(@$result, $source_id);
