@@ -880,6 +880,11 @@ __PACKAGE__->compile([
 	undef,
 	"the selected account doesn't allow equally allocated expenses",
     ],
+    START_DATE_LESS_THAN_FIRST_MEMBER_ENTRY_DATE => [
+	120,
+	undef,
+	'the start date may not be less than the first member transaction date',
+    ],
 ]);
 
 #=PRIVATE METHODS
