@@ -79,6 +79,7 @@ my($_SELF) = __PACKAGE__->new({
 		    celebrity_disclaimer
 		    decor_disclaimer
 		    tax_disclaimer
+                    home_login_box
             )],
 	       0x009999);
 
@@ -116,7 +117,12 @@ my($_SELF) = __PACKAGE__->new({
             $fc->group(line_above_menu => 0x006666);
 	    $fc->group(stripe_above_menu => 0x009999);
 	    $fc->group(image_menu_separator => 0xFFFFFF);
-            $fc->group(['image_menu_bg', 'text_menu_line'] => 0xFFCC33);
+            $fc->group([qw(
+                  image_menu_bg
+                  text_menu_line
+                  home_login_bg
+            )],
+		    0xFFCC33);
 	    return;
 	},
     },
@@ -213,6 +219,7 @@ my($_SELF) = __PACKAGE__->new({
                     link
             )],
 		   []);
+	    $fc->group(home_login_field_label => ['size=1']);
 	    return;
 	}
     },
