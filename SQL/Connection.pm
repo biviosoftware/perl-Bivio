@@ -212,12 +212,11 @@ sub execute {
  TRY: {
 	# Execute the statement
 	my($start_time) = Bivio::Type::DateTime->gettimeofday();
-	my($ok) = Bivio::Die->eval(sub {
+	my($die) = Bivio::Die->catch(sub {
         	_execute_helper($self, $sql, $params, $has_blob, \$statement);
-		return 1;
 	    });
 	$self->increment_db_time($start_time);
-	return $statement if $ok;
+	return $statement unless $die;
 
 	# Extract the errors
 	$err = $statement && $statement->err ? $statement->err + 0 : 0;
