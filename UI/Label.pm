@@ -287,6 +287,7 @@ _compile(
     HELP => ['Help'],
     HTTP_DOCUMENT => ['Home Page'],
     LOGOUT => ['Logout'],
+    USER_ADMIN_PREFERENCES_EDIT => ['Change Preferences'],
     USER_AGREEMENT_TEXT => ['Terms of Service'],
     USER_HOME => ['My Site'],
 
@@ -417,8 +418,8 @@ _compile(
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    ANNOUNCE_NYT =>['The New York Times'],
-    ANNOUNCE_ADJUSTMENTS => ['Negative Adjustments'],
+    ANNOUNCE_EDITING =>['Edit Transactions'],
+    ANNOUNCE_FRACTIONAL => ['Cash in Lieu'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
