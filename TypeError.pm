@@ -629,6 +629,11 @@ __PACKAGE__->compile(
 	undef,
 	'this member has already been reconciled with existing data',
     ],
+    TICKER_NOT_UNIQUE => [
+	71,
+	undef,
+	'this value clashes with a ticker symbol in the bivio database',
+    ],
 );
 
 #=PRIVATE METHODS
