@@ -86,16 +86,11 @@ sub main {
     if ($execute) {
         -f 'httpd.pid' && (kill('TERM', `cat httpd.pid`), sleep(5));
 	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
-        unless (-f 'html/index.html') {
-            system('cd ../.. && cvs checkout html && cd html/societas && make')
-                    && die('Could not create static pages');
-        }
 	&symlink('.', 'logs');
     }
     else {
 	print <<"EOF";
 rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem
-cvs checkout html/i
 ln -s . logs
 EOF
     }
@@ -123,7 +118,7 @@ EOF
 		RewriteLog rewrite.log
 		RewriteLogLevel 0
 
-		RewriteRule ^/./ - [NS,L]
+#		RewriteRule ^/./ - [NS,L]
 		RewriteRule ^(.*) /*$facade\$1 [NS,PT]
 
 		<LocationMatch "^/(index.html|[*a-zA-Z0-9_\-]{2,}(\$|/))">
@@ -219,13 +214,6 @@ starting the server for testing your own copy.  See L<"FILES">.
 
 =over 4
 
-=item html/index.html
-
-=item html/societas
-
-The command "cvs checkout html/societas" will be executed in directory ../..
-and the static site will be built, if the index.html doesn't already exist.
-
 =item httpd.lock.*
 
 is removed and rewritten with new pid
@@ -298,7 +286,8 @@ MaxRequestsPerChild 100000
 LimitRequestBody 4194304
 
 ServerRoot <$pwd>
-DocumentRoot <$pwd>/html
+# This is technically incorrect.
+DocumentRoot <$pwd>/files/www/plain
 PidFile httpd.pid
 ErrorLog <$log>
 # Possible values include: debug, info, notice, warn, error, crit,
@@ -331,15 +320,6 @@ NameVirtualHost <$hostip>:<$port>
         SetHandler perl-script
         PerlHandler <$handler>
     </LocationMatch>
-</VirtualHost>
-
-<VirtualHost <$hostip>:<$port>>
-    ServerName net.<$hostname>
-    DocumentRoot <$pwd>/html/net
-    <Directory />
-        AllowOverride None
-        Options FollowSymLinks
-    </Directory>
 </VirtualHost>
 
 <$facades>
