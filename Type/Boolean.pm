@@ -173,7 +173,8 @@ Returns '0' or '1' for false (or undef) and true.
 
 sub to_sql_param {
     shift;
-    return shift(@_) ? '1' : '0';
+    my($v) = shift;
+    return !defined($v) ? undef : $v ? '1' : '0';
 }
 
 #=PRIVATE METHODS
