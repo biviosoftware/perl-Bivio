@@ -275,8 +275,8 @@ sub set_http_status {
     # It is error prone keeping a list up to date, so we just check
     # a reasonable range.
     Bivio::Die->die($status, ': unknown HTTP status')
-		unless defined($status) && $status =~ /^\d+$/
-			&& 100 <= $status && $status < 600;
+	    unless defined($status) && $status =~ /^\d+$/
+		&& (!$status || 100 <= $status && $status < 600);
     $fields->{status} = $status;
     return;
 }
