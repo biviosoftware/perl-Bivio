@@ -108,7 +108,8 @@ creates the initial application files. "Company" is hard coded for now :-)
 
 sub create {
     my($self, $appname, $dbname, $facade) = @_;
-    $facade = $dbname unless $facade;
+    $dbname = lc($appname) unless $dbname;
+    $facade = lc($appname) unless $facade;
     print "\nCreating directories for " . $appname;
     _system("mkdir -p $_SRC_PATH/$appname/Facade");
     map({
@@ -123,7 +124,6 @@ sub create {
     map({
 	_system("touch $_SRC_PATH/$appname/files/ddl/$facade-$_.sql");
     } qw(tables constraints sequences));
-    _system("cp $_SRC_PATH/Bivio/Template/files/plain/i/* $_SRC_PATH/$appname/files/plain/i/");
     print "\nCreating ddl files for " . $appname;
     _create_ddl_files($appname);
     print "\nCreating boilerplate code... ";
@@ -136,7 +136,7 @@ sub create {
 	} (
 	    ["Util/SQL.pm", 'Bivio::Template::Util::SQL'],
 	    ["Facade/$appname.pm", 'Bivio::Template::Facade'],
-	    ["Facade/BConf.pm", 'Bivio::Template::BConf'],
+	    ["/BConf.pm", 'Bivio::Template::BConf'],
 	    ["TaskId.pm", 'Bivio::Template::TaskId'],
 	    ["TypeError.pm", 'Bivio::Template::TypeError'],
 	    ["Action/MySiteRedirect.pm", 'Bivio::Template::MySiteRedirect'],
@@ -145,6 +145,9 @@ sub create {
        );
     print "\nCreating developer bconf for " . $appname;
     _make_bconf("$HOME/bconf/$appname.bconf", $appname, $dbname);
+    map({
+	_system("cp $_SRC_PATH/Bivio/Template/files/plain/i/*$_ $_SRC_PATH/$appname/files/plain/i/");
+    } qw(gif));
     print "\nDone\n";
     return;
 }
@@ -188,9 +191,9 @@ sub _system {
 	return;
     });
     return unless $die;
-    Bivio::IO::Alert->print_literally(
-	$$output . ${$die->get('attrs')->{output}});
-    $die->throw;
+#    Bivio::IO::Alert->print_literally(
+#	$$output . ${$die->get('attrs')->{output}});
+#    $die->throw;
     # DOES NOT RETURN
 }
 
