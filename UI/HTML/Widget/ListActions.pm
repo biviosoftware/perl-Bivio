@@ -42,6 +42,7 @@ An array_ref of array_refs where the order is the order of the
 actions to appear.
 
 The first element of sub-array_ref is the name of the action.
+It may also be a widget.
 
 The second element is the task name.
 
@@ -108,7 +109,7 @@ sub initialize {
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
-	    label => Bivio::HTML->escape($v->[0]),
+	    label => _init_label($self, $v->[0]),
 	    ref($v->[2]) eq 'ARRAY' ? (format_uri => $v->[2])
 	    : (method => Bivio::Biz::QueryType->from_any(
 		    $v->[2] || 'THIS_DETAIL')),
@@ -161,13 +162,26 @@ sub render {
 		($v2->{format_uri}
 			? $source->get_widget_value(@{$v2->{format_uri}})
 			: $source->format_uri($v2->{method}, $v->{uri}))
-		.'">'.$p.$v2->{label}.$s."</a>";
+		.'">'.$p;
+	ref($v2->{label}) ? $v2->{label}->render($source, $buffer)
+		: ($$buffer .= $v2->{label});
+	$$buffer .= $s."</a>";
 	$sep = ",\n";
     }
     return;
 }
 
 #=PRIVATE METHODS
+
+# _init_label(self, any label) : any
+#
+# Returns the label value.  Initializing appropriately.
+#
+sub _init_label {
+    my($self, $label) = @_;
+    return ref($label) ? $label->put_and_initialize(parent => $self)
+	    : Bivio::HTML->escape($label);
+}
 
 =head1 COPYRIGHT
 
