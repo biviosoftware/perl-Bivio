@@ -113,7 +113,7 @@ sub initialize {
     my($sep) = "</td>\n<td>".Bivio::UI::HTML::Widget->clear_dot_as_html(8);
     $fields->{selected} = Bivio::UI::HTML::Widget->join(
 	    '<tr><td align=right>',
-	    Bivio::UI::HTML::Widget->image('arrow'),
+	    Bivio::UI::HTML::Widget->image('arrow', ''),
 	    $sep,
 	    Bivio::UI::HTML::Widget->string([$_STRING], 'left_menu_selected'),
 	    "</td>\n</tr>",

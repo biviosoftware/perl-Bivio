@@ -49,7 +49,7 @@ Simple grid.
 sub create_content {
     my($self) = @_;
     return $self->join(
-	    $self->image('quote')->put(align => 'nw', hspace => 4),
+	    $self->image('quote', '')->put(align => 'nw', hspace => 4),
 	    $self->page_text(<<'EOF'),
 Want to pool your financial resources and brainpower and become an investor?
 Investment clubs may be your answer

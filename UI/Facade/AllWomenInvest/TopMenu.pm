@@ -83,7 +83,7 @@ sub initialize {
 	   )->put_and_initialize(parent => $self);
 
     $fields->{sub_selected} = Bivio::UI::HTML::Widget->join(
-	    Bivio::UI::HTML::Widget->image('menu_arrow')->put(
+	    Bivio::UI::HTML::Widget->image('menu_arrow', '')->put(
 		    align => 'sw'),
 	    Bivio::UI::HTML::Widget->link(
 		    Bivio::UI::HTML::Widget->string([$_STRING],

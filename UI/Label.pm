@@ -526,6 +526,14 @@ _compile([
     MAIL => ['Mail'],
     PROFILE => ['Profile'],
     PREFERENCES => ['Preferences'],
+
+    # Image alt tags
+    LOGOUT_OFF_ALT => ['Sign off from bivio', undef, 'LOGOUT_R_OFF_ALT'],
+    LOGIN_OFF_ALT => ['Sign on to bivio', undef,
+	'LOGIN_SQUARE_OFF_ALT', 'LOGIN_R_OFF_ALT'],
+    HELP_OFF_ALT => ['Get help using bivio'],
+    REGISTER_R_OFF_ALT => ['Become a bivio user'],
+    BIVIO_POWER_ALT => ['Powered by bivio'],
 ]);
 
 =head1 METHODS
