@@ -79,6 +79,13 @@ sub new {
 	is_secure => $ENV{HTTPS} || is_https_port($r)
 	? 1 : 0,
     });
+    $self->put_durable(
+	    start_time => $self->get('$start_time'),
+	    reply => $self->get('reply'),
+	    r => $self->get('r'),
+	    client_addr => $self->get('client_addr'),
+	    is_secure => $self->get('is_secure'),
+	   );
 
     Bivio::Type::UserAgent->put_on_request(
 	    $r->header_in('user-agent') || '', $self);
@@ -86,7 +93,7 @@ sub new {
     # Cookie parsed first, so referral and log code works properly.
     my($cookie) = Bivio::Agent::HTTP::Cookie->new($self, $r);
     # We must put the cookie now, because it may be used below.
-    $self->put(cookie => $cookie);
+    $self->put_durable(cookie => $cookie);
 
     # Task next, because may not be found or task may want
     # to clear 'auth_user_id'.
@@ -116,7 +123,7 @@ sub new {
     #       be a query or form field called "auth_id".
     delete($query->{auth_id}) if $query;
 
-    $self->put(
+    $self->put_durable(
 	    uri => $uri,
 	    query => $query,
 	    path_info => $path_info,
