@@ -17,12 +17,12 @@ Bivio::Biz::Model::F1065K1Form - IRS 1065 K-1 fields
 
 =head1 EXTENDS
 
-L<Bivio::Biz::FormModel>
+L<Bivio::Biz::ListModel>
 
 =cut
 
-use Bivio::Biz::FormModel;
-@Bivio::Biz::Model::F1065K1Form::ISA = ('Bivio::Biz::FormModel');
+use Bivio::Biz::ListModel;
+@Bivio::Biz::Model::F1065K1Form::ISA = ('Bivio::Biz::ListModel');
 
 =head1 DESCRIPTION
 
@@ -57,131 +57,6 @@ my($math) = 'Bivio::Type::Amount';
 
 =cut
 
-=for html <a name="execute_empty"></a>
-
-=head2 execute_empty()
-
-Loads the form values.
-
-  1065 schedule K-1
-
-  Partner
-  id      User.TaxId.tax_id
-  name    User.RealmOwner.display_name
-  address User.Address.street1
-          User.Address.street2
-          User.Address.city
-          User.Address.state
-          User.Address.zip
-
-  Partnership
-  id      Club.TaxId.tax_id
-  name    Club.RealmOwner.display_name
-  address Club.Address.street1
-          Club.Address.street2
-          Club.Address.city
-          Club.Address.state
-          Club.Address.zip
-
-  A       F1065K1Form.partner_type
-  B       F1065K1Form.entity_type
-  C       F1065K1Form.foreign
-  D(i)    F1065K1Form.percentage_start
-  D(ii)   F1065K1Form.percentage_end
-  E       F1065K1Form.irs_center
-  I       F1065K1Form.return_type
-
-   4a     F1065K1Form.interest_income
-   4b     F1065K1Form.dividend_income
-   4d     F1065K1Form.net_stcg
-   4e(2)  F1065K1Form.net_ltcg
-   4f     F1065K1Form.other_portfolio_income
-  10      F1065K1Form.portfolio_deductions
-  14b(1)  F1065K1Form.investment_income
-  14b(2)  F1065K1Form.investment_expenses
-  17a     F1065K1Form.foreign_income_type
-  17b     F1065K1Form.foreign_income_country
-  17c     F1065K1Form.foreign_income
-  17e     F1065K1Form.foreign_tax_type
-  17e     F1065K1Form.foreign_tax
-  19      F1065K1Form.tax_exempt_interest
-  22      F1065K1Form.cash_distribution
-  23      F1065K1Form.property_distribution
-
-=cut
-
-sub execute_empty {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE} = {};
-    my($req) = $self->get_request;
-    my($properties) = $self->internal_get;
-
-    my($date) = $req->get('report_date');
-    my($tax) = 'Bivio::Type::TaxCategory';
-
-    # Get the target user
-#    my($user) = $req->get('target_realm_owner');
-    my($realm_user) = $req->get('Bivio::Biz::Model::RealmUser');
-    my($user) = Bivio::Biz::Model::RealmOwner->new($req);
-    $user->unauth_load_or_die(realm_id => $realm_user->get('user_id'));
-
-    my($taxk1) = Bivio::Biz::Model::TaxK1->new($req);
-    $taxk1->load_or_default($user->get('realm_id'), $date);
-
-    my($tax1065) = Bivio::Biz::Model::Tax1065->new($req);
-    $tax1065->load_or_default($date);
-
-    my($allocations) = _get_user_allocations($self, $user, $date);
-
-    $properties->{partner_type} = $taxk1->get('partner_type');
-    $properties->{entity_type} = $taxk1->get('entity_type');
-    $properties->{foreign} = $taxk1->get('foreign_partner');
-    $properties->{percentage_start} = _get_percentage($self, $user, $date, 1);
-    $properties->{percentage_end} = _get_percentage($self, $user, $date, 0);
-    $properties->{irs_center} = $tax1065->get('irs_center');
-    $properties->{return_type} = _get_return_type($self, $user, $date);
-
-    $properties->{interest_income} = $allocations->get_or_default(
-	$tax->INTEREST->get_short_desc, 0);
-    $properties->{dividend_income} = $allocations->get_or_default(
-	$tax->DIVIDEND->get_short_desc, 0);
-    $properties->{net_stcg} = $allocations->get_or_default(
-	$tax->SHORT_TERM_CAPITAL_GAIN->get_short_desc, 0);
-    $properties->{net_ltcg} = $allocations->get_or_default(
-	$tax->LONG_TERM_CAPITAL_GAIN->get_short_desc, 0);
-    $properties->{other_portfolio_income} = $allocations->get_or_default(
-	$tax->MISC_INCOME->get_short_desc, 0);
-    $properties->{portfolio_deductions} = $math->neg(
-	    $allocations->get_or_default($tax->MISC_EXPENSE->get_short_desc,
-		    0));
-
-    $properties->{investment_income} = Bivio::Biz::Model::F1065Form
-	    ->get_investment_income($properties);
-    $properties->{investment_expenses} = $properties->{portfolio_deductions};
-
-    $properties->{foreign_tax} = $math->neg(
-	    $allocations->get_or_default($tax->FOREIGN_TAX->get_short_desc,
-		    0));
-    $properties->{foreign_income} = _get_foreign_income($self,
-	    $properties->{foreign_tax}, $date);
-    $properties->{foreign_income_country} = '';
-    $properties->{foreign_income_type} = $properties->{foreign_tax} == 0
-	    ? '' : 'Passive';
-    $properties->{foreign_tax_type} = $properties->{foreign_tax} == 0
-	    ? Bivio::Type::F1065ForeignTax->UNKNOWN
-	    : Bivio::Type::F1065ForeignTax->PAID;
-    $properties->{tax_exempt_interest} = $allocations->get_or_default(
-	    $tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc, 0);
-    $properties->{cash_distribution} =
-	    _get_cash_withdrawal_amount($self, $user, $date);
-    $properties->{property_distribution} =
-	    _get_stock_withdrawal_amount($self, $user, $date);
-    $properties->{draft} = $tax1065->get('draft');
-
-    Bivio::Biz::Accounting::Tax->round_all($self, $properties);
-    return;
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref;
@@ -193,7 +68,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
-	hidden => [
+	other => [
 	    {
 		name => 'partner_type',
 		type => 'F1065Partner',
@@ -316,6 +191,132 @@ sub internal_initialize {
 	    },
 	],
     };
+}
+
+=for html <a name="internal_load_rows"></a>
+
+=head2 internal_load_rows(Bivio::SQL::ListQuery query, string where, array_ref params, Bivio::SQL::ListSupport sql_support) : array_ref
+
+Returns a single row with calculated values.
+
+  1065 schedule K-1
+
+  Partner
+  id      User.TaxId.tax_id
+  name    User.RealmOwner.display_name
+  address User.Address.street1
+          User.Address.street2
+          User.Address.city
+          User.Address.state
+          User.Address.zip
+
+  Partnership
+  id      Club.TaxId.tax_id
+  name    Club.RealmOwner.display_name
+  address Club.Address.street1
+          Club.Address.street2
+          Club.Address.city
+          Club.Address.state
+          Club.Address.zip
+
+  A       F1065K1Form.partner_type
+  B       F1065K1Form.entity_type
+  C       F1065K1Form.foreign
+  D(i)    F1065K1Form.percentage_start
+  D(ii)   F1065K1Form.percentage_end
+  E       F1065K1Form.irs_center
+  I       F1065K1Form.return_type
+
+   4a     F1065K1Form.interest_income
+   4b     F1065K1Form.dividend_income
+   4d     F1065K1Form.net_stcg
+   4e(2)  F1065K1Form.net_ltcg
+   4f     F1065K1Form.other_portfolio_income
+  10      F1065K1Form.portfolio_deductions
+  14b(1)  F1065K1Form.investment_income
+  14b(2)  F1065K1Form.investment_expenses
+  17a     F1065K1Form.foreign_income_type
+  17b     F1065K1Form.foreign_income_country
+  17c     F1065K1Form.foreign_income
+  17e     F1065K1Form.foreign_tax_type
+  17e     F1065K1Form.foreign_tax
+  19      F1065K1Form.tax_exempt_interest
+  22      F1065K1Form.cash_distribution
+  23      F1065K1Form.property_distribution
+
+=cut
+
+sub internal_load_rows {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE} = {};
+    my($req) = $self->get_request;
+    my($properties) = {};
+
+    my($date) = $req->get('report_date');
+    my($tax) = 'Bivio::Type::TaxCategory';
+
+    # Get the target user
+#    my($user) = $req->get('target_realm_owner');
+    my($realm_user) = $req->get('Bivio::Biz::Model::RealmUser');
+    my($user) = Bivio::Biz::Model::RealmOwner->new($req);
+    $user->unauth_load_or_die(realm_id => $realm_user->get('user_id'));
+
+    my($taxk1) = Bivio::Biz::Model::TaxK1->new($req);
+    $taxk1->load_or_default($user->get('realm_id'), $date);
+
+    my($tax1065) = Bivio::Biz::Model::Tax1065->new($req);
+    $tax1065->load_or_default($date);
+
+    my($allocations) = _get_user_allocations($self, $user, $date);
+
+    $properties->{partner_type} = $taxk1->get('partner_type');
+    $properties->{entity_type} = $taxk1->get('entity_type');
+    $properties->{foreign} = $taxk1->get('foreign_partner');
+    $properties->{percentage_start} = _get_percentage($self, $user, $date, 1);
+    $properties->{percentage_end} = _get_percentage($self, $user, $date, 0);
+    $properties->{irs_center} = $tax1065->get('irs_center');
+    $properties->{return_type} = _get_return_type($self, $user, $date);
+
+    $properties->{interest_income} = $allocations->get_or_default(
+	$tax->INTEREST->get_short_desc, 0);
+    $properties->{dividend_income} = $allocations->get_or_default(
+	$tax->DIVIDEND->get_short_desc, 0);
+    $properties->{net_stcg} = $allocations->get_or_default(
+	$tax->SHORT_TERM_CAPITAL_GAIN->get_short_desc, 0);
+    $properties->{net_ltcg} = $allocations->get_or_default(
+	$tax->LONG_TERM_CAPITAL_GAIN->get_short_desc, 0);
+    $properties->{other_portfolio_income} = $allocations->get_or_default(
+	$tax->MISC_INCOME->get_short_desc, 0);
+    $properties->{portfolio_deductions} = $math->neg(
+	    $allocations->get_or_default($tax->MISC_EXPENSE->get_short_desc,
+		    0));
+
+    $properties->{investment_income} = Bivio::Biz::Model::F1065Form
+	    ->get_investment_income($properties);
+    $properties->{investment_expenses} = $properties->{portfolio_deductions};
+
+    $properties->{foreign_tax} = $math->neg(
+	    $allocations->get_or_default($tax->FOREIGN_TAX->get_short_desc,
+		    0));
+    $properties->{foreign_income} = _get_foreign_income($self,
+	    $properties->{foreign_tax}, $date);
+    $properties->{foreign_income_country} = '';
+    $properties->{foreign_income_type} = $properties->{foreign_tax} == 0
+	    ? '' : 'Passive';
+    $properties->{foreign_tax_type} = $properties->{foreign_tax} == 0
+	    ? Bivio::Type::F1065ForeignTax->UNKNOWN
+	    : Bivio::Type::F1065ForeignTax->PAID;
+    $properties->{tax_exempt_interest} = $allocations->get_or_default(
+	    $tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc, 0);
+    $properties->{cash_distribution} =
+	    _get_cash_withdrawal_amount($self, $user, $date);
+    $properties->{property_distribution} =
+	    _get_stock_withdrawal_amount($self, $user, $date);
+    $properties->{draft} = $tax1065->get('draft');
+
+    Bivio::Biz::Accounting::Tax->round_all($self, $properties);
+
+    return [$properties];
 }
 
 #=PRIVATE METHODS
