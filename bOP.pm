@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Util lists failed tests before FAILED line;  Also,
+    allows passing an explicit file name that is not .t or
+    .btest--needed for the unit test.
+
+  Revision 2.28  2004/08/24 18:42:24  nagler
+  * Bivio::SQL::PropertySupport->unsafe_load and iterate_start support
+    mapping undef to IS NULL for query values
   * Bivio::UI::HTML::Widget::Grid.style is a verbatim attribute for
     style values
   * Bivio::Test::Language::HTTP->verify_title is case sensitive
