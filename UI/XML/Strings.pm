@@ -6,7 +6,7 @@ $Bivio::UI::XML::Strings::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::XML::Strings - 
+Bivio::UI::XML::Strings - strings
 
 =head1 SYNOPSIS
 
