@@ -238,6 +238,7 @@ sub _initialize {
 	    "MemberAllocationList.*report_date isn't on year-end",
 	    'EW::ClubImporter::.*incorrect imported allocations',
 	    "Request::warn.*couldn't adjust, difference too great,",
+	    "::_create_stock_transfer_entry.*Couldn't find related stock",
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
