@@ -177,7 +177,7 @@ sub append_empty_rows {
     }
     # give each key a bogus value
     foreach my $key (@{$self->get_info('primary_key_names')}) {
-	$empty_row->{$key} = EMPTY_KEY_VALUE();
+	$empty_row->{$key} = $self->EMPTY_KEY_VALUE();
     }
 
     while ($count--) {
