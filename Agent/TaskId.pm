@@ -46,14 +46,16 @@ tasks defined in this module is:
 =item SETUP_USER_CREATE
 
 =item SETUP_USER_EDIT
-=
-item SETUP_CLUB_CREATE
+
+=item SETUP_CLUB_CREATE
 
 =item SETUP_INTRO
 
 =item CLUB_MAIL_FORWARD
 
 =item USER_MAIL_FORWARD
+
+=item VALUATION_STATEMENT
 
 =back
 
@@ -197,6 +199,15 @@ my(@_CFG) = (
         MEMBER
         _/redirect
 	Bivio::Biz::Action::ClubTestRedirect
+    )],
+    [qw(
+	VALUATION_STATEMENT
+	17
+        CLUB
+        MEMBER
+        _/valuation
+	Bivio::Biz::ListModel::InstrumentValuationList
+	Bivio::UI::HTML::Club::ValuationStatement
     )],
 );
 
