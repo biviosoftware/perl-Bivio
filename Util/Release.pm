@@ -193,10 +193,10 @@ Returns information about the commands executed.
 
 sub build {
     my($self, @packages) = @_;
-    $self->usage_error("Missing spec file") unless @packages;
-    $self->usage_error("Must be run as root") unless $> == 0;
+    $self->usage_error("Missing spec file\n") unless @packages;
+    $self->usage_error("Must be run as root\n") unless $> == 0;
     my($rpm_stage) = $self->get('build_stage');
-    $self->usage_error("Invalid build_stage ", $rpm_stage)
+    $self->usage_error("Invalid build_stage ", $rpm_stage, "\n")
 	    unless $rpm_stage =~ /^[pcib]$/;
 
     # validate configuration
@@ -213,9 +213,6 @@ sub build {
     _system("ln -s . $arch", \$output) unless -e $arch;
 
     for my $specin (@packages) {
-	unless ($specin =~ /\.spec$/) {
-	    $specin = "$_CVS_RPM_SPEC_DIR/$specin.spec";
-	}
 	my($specout, $base, $fullname) = _create_rpm_spec($self, $specin,
 	       \$output);
 
@@ -377,7 +374,10 @@ sub _create_rpm_spec {
     my($self, $specin, $output) = @_;
     my($version) = $self->get('version');
 
-    _system("cvs checkout -f -r $version $specin", $output);
+    unless ($specin =~ /\.spec$/) {
+        $specin = "$_CVS_RPM_SPEC_DIR/$specin.spec";
+        _system("cvs checkout -f -r $version $specin", $output);
+    }
     my($base_spec) = _read_all("<$specin");
     my($release) = _search('release', $base_spec) || _get_date_format();
 #    $version = _search('version', $base_spec) || $version;
