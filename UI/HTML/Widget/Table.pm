@@ -537,10 +537,13 @@ sub render {
     _initialize_row_prefixes($state);
 
     # Row counting
-    my($list_size) = $self->get_or_default('repeat_headings', 0)
-	    ? $req->get_user_pref(
-		    Bivio::Type::UserPreference::PAGE_SIZE())
-	    : $_INFINITY_ROWS;
+    my($list_size) = $_INFINITY_ROWS;
+    if ($self->get_or_default('repeat_headings', 0)
+	    && Bivio::IO::ClassLoader->is_class_loaded(
+		    'Bivio::Biz::Model::Preferences')) {
+	$list_size = Bivio::Biz::Model::Preferences->get_user_pref(
+		$req, 'PAGE_SIZE');
+    }
     my($max_rows) = $req->unsafe_get($state->{list_name}.'.table_max_rows');
     $max_rows = $_INFINITY_ROWS unless $max_rows && $max_rows > 0;
     my($row_count) = 0;
