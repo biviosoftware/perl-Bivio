@@ -113,6 +113,7 @@ use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
+use Bivio::Biz::Action::CreateDemoClub;
 use Bivio::Biz::Model::UserRealmList;
 use Bivio::Die;
 use Bivio::IO::Config;
@@ -172,6 +173,20 @@ sub clear_current {
     defined($_CURRENT) && $_CURRENT->delete_all;
     $_CURRENT = undef;
     return;
+}
+
+=for html <a name="client_redirect"></a>
+
+=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm)
+
+Redirects the client to the location of the specified new_task. By default,
+this uses L<redirect|"redirect">, but subclasses (HTTP) should override this
+to force a hard redirect.
+
+=cut
+
+sub client_redirect {
+    return redirect(@_);
 }
 
 =for html <a name="die"></a>
@@ -377,6 +392,18 @@ sub get_field {
     return ref($attr) ? $attr->{$name} : undef;
 }
 
+=for html <a name="get_http_host"></a>
+
+=head2 get_http_host() : string
+
+Returns the http host name used for configuration.
+
+=cut
+
+sub get_http_host {
+    return $_HTTP_HOST;
+}
+
 =for html <a name="get_reply"></a>
 
 =head2 get_reply() : Bivio::Agent::Reply;
@@ -413,6 +440,58 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_HTTP_HOST = $cfg->{http_host};
     $_MAIL_HOST = $cfg->{mail_host};
+    return;
+}
+
+=for html <a name="internal_get_realm_for_task"></a>
+
+=head2 internal_redirect_realm(TaskId new_task, Realm new_realm) : Realm
+
+Changes the current realm if required by the new task.
+
+=cut
+
+sub internal_redirect_realm {
+    my($self, $new_task, $new_realm) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($task) = Bivio::Agent::Task->get_by_id($new_task);
+
+    my($trt) = $task->get('realm_type');
+    if ($new_realm) {
+	# Assert param
+	my($nrt) = $new_realm->get_type;
+	Carp::croak($new_task->as_string, 'realm_type mismatch (',
+		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
+    }
+    else {
+	# Only set realm if type is different
+	my($ar) = $self->get('auth_realm');
+	unless ($ar->get_type eq $trt) {
+	    $new_realm = _get_realm($self, $trt, $new_task);
+	    # No new realm, do something reasonable
+	    unless (defined($new_realm)) {
+		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
+		    # Club not found.  Try to redirect to MY_CLUB_NOT_FOUND
+		    # which must be in GENERAL domain
+		    my($auth_user) = $self->unsafe_get('auth_user');
+		    if (defined($auth_user)) {
+			CORE::die('misconfiguration of MY_CLUB_NOT_FOUND task')
+				if Bivio::Agent::TaskId::MY_CLUB_NOT_FOUND()
+					eq $new_task;
+			$self->client_redirect(
+				Bivio::Agent::TaskId::MY_CLUB_NOT_FOUND());
+		    }
+		}
+		Bivio::Die->die('AUTH_REQUIRED', {
+		    auth_user => undef,
+		    entity => Bivio::Auth::RealmType::USER(),
+		    auth_role => undef,
+		    operation => $new_task});
+	    }
+	}
+    }
+    # Change realms before formatting uri
+    $self->set_realm($new_realm) if $new_realm;
     return;
 }
 
@@ -466,43 +545,7 @@ B<DOES NOT RETURN.>
 
 sub redirect {
     my($self, $new_task, $new_realm) = @_;
-    my($task) = Bivio::Agent::Task->get_by_id($new_task);
-    my($trt) = $task->get('realm_type');
-    if ($new_realm) {
-	# Assert param
-	my($nrt) = $new_realm->get_type;
-	Carp::croak($new_task->as_string, 'realm_type mismatch (',
-		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
-    }
-    else {
-	# Only set realm if type is different
-	my($ar) = $self->get('auth_realm');
-	unless ($ar->get_type eq $trt) {
-	    $new_realm = _get_realm($self, $trt, $new_task);
-	    # No new realm, do something reasonable
-	    unless (defined($new_realm)) {
-		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
-		    # Club not found.  Try to redirect to MY_CLUB_NOT_FOUND
-		    # which must be in GENERAL domain
-		    my($auth_user) = $self->unsafe_get('auth_user');
-		    if (defined($auth_user)) {
-			CORE::die('misconfiguration of MY_CLUB_NOT_FOUND task')
-				if Bivio::Agent::TaskId::MY_CLUB_NOT_FOUND()
-					eq $new_task;
-			$self->redirect(
-				Bivio::Agent::TaskId::MY_CLUB_NOT_FOUND());
-		    }
-		}
-		Bivio::Die->die('AUTH_REQUIRED', {
-		    auth_user => undef,
-		    entity => Bivio::Auth::RealmType::USER(),
-		    auth_role => undef,
-		    operation => $new_task});
-	    }
-	}
-    }
-    # Change realms before formatting uri
-    $self->set_realm($new_realm) if $new_realm;
+    $self->internal_redirect_realm($new_task, $new_realm);
 #TODO: should we be clearing the query?
     # Need to set the uri, but the query is cleared
     $self->put(uri => $self->format_uri($new_task, undef));
@@ -569,6 +612,7 @@ sub _get_realm {
     if ($realm_type eq Bivio::Auth::RealmType::CLUB()) {
 #TODO: This is wrong; need to allow user to go to club, from user realm
 	&_trace($task_id, ': for club realm, but no club specified');
+	my($demo_suffix) = Bivio::Biz::Action::CreateDemoClub::DEMO_SUFFIX();
 	my($user_realms) = $self->get('user_realms');
 	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
 	foreach my $r (values(%$user_realms)) {
@@ -576,6 +620,7 @@ sub _get_realm {
 		    eq Bivio::Auth::RealmType::CLUB();
 	    my($rr) = $r->{'RealmUser.role'}->as_int;
 	    next unless  $rr > $role;
+	    next if $r->{'RealmOwner.name'} =~ /$demo_suffix/x;
 	    $realm_id = $r->{'RealmUser.realm_id'};
 	    $role = $rr;
 	}
