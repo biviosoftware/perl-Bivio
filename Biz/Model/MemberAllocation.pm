@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::MemberAllocation;
 use strict;
 $Bivio::Biz::Model::MemberAllocation::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::MemberAllocation::VERSION;
 
 =head1 NAME
 
@@ -104,8 +105,8 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'member_allocation_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
-            user_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+            user_id => ['RealmUser.user_id', 'PRIMARY_KEY'],
 	    allocation_date => ['Date', 'PRIMARY_KEY'],
             tax_category => ['TaxCategory', 'PRIMARY_KEY'],
 	    allocation_type => ['Allocation', 'PRIMARY_KEY'],

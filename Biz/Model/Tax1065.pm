@@ -77,7 +77,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'tax_1065_t',
 	columns => {
-	    realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+	    realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    fiscal_end_date => ['Date', 'PRIMARY_KEY'],
 	    partnership_type => ['F1065Partnership', 'NOT_NULL'],
 	    partner_is_partnership => ['Boolean', 'NOT_NULL'],

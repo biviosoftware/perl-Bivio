@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::RealmInstrumentEntry;
 use strict;
 $Bivio::Biz::Model::RealmInstrumentEntry::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::RealmInstrumentEntry::VERSION;
 
 =head1 NAME
 
@@ -92,9 +93,10 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_instrument_entry_t',
 	columns => {
-            entry_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
-            realm_instrument_id => ['PrimaryId', 'NOT_NULL'],
+            entry_id => ['Entry.entry_id', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+            realm_instrument_id => ['RealmInstrument.realm_instrument_id',
+		'NOT_NULL'],
             count => ['Amount', 'NOT_NULL'],
             external_identifier => ['Name', 'NOT_NULL'],
 	    acquisition_date => ['Date', 'NONE'],

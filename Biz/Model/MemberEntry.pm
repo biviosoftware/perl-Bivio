@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::MemberEntry;
 use strict;
 $Bivio::Biz::Model::MemberEntry::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::MemberEntry::VERSION;
 
 =head1 NAME
 
@@ -96,14 +97,13 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'member_entry_t',
 	columns => {
-            entry_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
-            user_id => ['PrimaryId', 'NOT_NULL'],
+            entry_id => ['Entry.entry_id', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+            user_id => ['RealmUser.user_id', 'NOT_NULL'],
             units => ['Amount', 'NOT_NULL'],
 	    valuation_date => ['Date', 'NONE'],
         },
 	auth_id => 'realm_id',
-#TODO: SECURITY: Not authenticated, but ok to load other models?
 	other => [
 	    [qw(entry_id Entry.entry_id)],
 	    [qw(user_id User.user_id)],

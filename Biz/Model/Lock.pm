@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::Lock;
 use strict;
 $Bivio::Biz::Model::Lock::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::Lock::VERSION;
 
 =head1 NAME
 
@@ -136,7 +137,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'lock_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	},
 	auth_id => 'realm_id',
     };

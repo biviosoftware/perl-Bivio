@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::RealmAccountEntry;
 use strict;
 $Bivio::Biz::Model::RealmAccountEntry::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::RealmAccountEntry::VERSION;
 
 =head1 NAME
 
@@ -99,9 +100,9 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_account_entry_t',
 	columns => {
-            entry_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
-            realm_account_id => ['PrimaryId', 'NOT_NULL'],
+            entry_id => ['Entry.entry_id', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+            realm_account_id => ['RealmAccount.realm_account_id', 'NOT_NULL'],
         },
 	other => [
 	    [qw(entry_id Entry.entry_id)],

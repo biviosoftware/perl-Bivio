@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::Preferences;
 use strict;
 $Bivio::Biz::Model::Preferences::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::Preferences::VERSION;
 
 =head1 NAME
 
@@ -148,7 +149,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'preferences_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             perl => ['BLOB', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',

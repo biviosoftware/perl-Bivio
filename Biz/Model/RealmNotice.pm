@@ -74,7 +74,7 @@ sub internal_initialize {
 	table_name => 'realm_notice_t',
 	columns => {
             realm_notice_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
             at_least_role => ['Bivio::Auth::Role', 'NOT_ZERO_ENUM'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
             realm_notice_type => ['RealmNotice', 'NOT_ZERO_ENUM'],

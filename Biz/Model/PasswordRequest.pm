@@ -146,7 +146,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'password_request_t',
 	columns => {
-	    realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+	    realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    authorization_code => ['AuthorizationCode', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
 	},

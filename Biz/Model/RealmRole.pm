@@ -187,7 +187,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_role_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             role => ['Bivio::Auth::Role', 'PRIMARY_KEY'],
             permission_set => ['Bivio::Auth::PermissionSet',  'NOT_NULL'],
         },

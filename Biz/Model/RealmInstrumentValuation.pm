@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::RealmInstrumentValuation;
 use strict;
 $Bivio::Biz::Model::RealmInstrumentValuation::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::RealmInstrumentValuation::VERSION;
 
 =head1 NAME
 
@@ -35,10 +36,6 @@ and delete interface to the C<realm_instrument_valuation_t> table.
 
 #=IMPORTS
 use Bivio::Agent::Request;
-use Bivio::SQL::Constraint;
-use Bivio::Type::Amount;
-use Bivio::Type::DateTime;
-use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 
@@ -94,16 +91,12 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_instrument_valuation_t',
 	columns => {
-            realm_instrument_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            date_time => ['Bivio::Type::DateTime',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            price_per_share => ['Bivio::Type::Amount',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+            realm_instrument_id => ['RealmInstrument.realm_instrument_id',
+		'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+            date_time => ['DateTime', 'PRIMARY_KEY'],
+            price_per_share => ['Amount', 'NOT_NULL'],
         },
-#TODO: SECURITY: Not authenticated, but ok to load other models?
 	other => [
 	    [qw(realm_instrument_id RealmInstrument.realm_instrument_id)],
 	],

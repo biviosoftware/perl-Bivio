@@ -180,7 +180,7 @@ sub internal_initialize {
 	table_name => 'realm_account_t',
 	columns => {
             realm_account_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
             name => ['Line', 'NOT_NULL'],
             tax_free => ['Boolean', 'NOT_NULL'],
             in_valuation => ['Boolean', 'NOT_NULL'],

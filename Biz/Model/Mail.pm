@@ -415,7 +415,8 @@ sub internal_initialize {
 	table_name => 'mail_t',
 	columns => {
             mail_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+#TODO: need to change the database constraint to point to realm_owner_t
+            realm_id => ['Club.club_id', 'NOT_NULL'],
             message_id => ['Line', 'NOT_NULL_UNIQUE'],
             date_time => ['DateTime', 'NOT_NULL'],
             from_name => ['Line', 'NOT_NULL'],
@@ -428,8 +429,8 @@ sub internal_initialize {
             num_replies => ['Integer', 'NOT_NULL'],
             thread_root_id => ['PrimaryId', 'NONE'],
             thread_parent_id => ['PrimaryId', 'NONE'],
-            rfc822_file_id => ['PrimaryId', 'NONE'],
-            cache_file_id => ['PrimaryId', 'NONE'],
+            rfc822_file_id => ['File.file_id', 'NONE'],
+            cache_file_id => ['File.file_id', 'NONE'],
             bytes => ['Integer', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',

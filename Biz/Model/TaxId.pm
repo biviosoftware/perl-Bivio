@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::TaxId;
 use strict;
 $Bivio::Biz::Model::TaxId::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::TaxId::VERSION;
 
 =head1 NAME
 
@@ -32,8 +33,6 @@ and delete interface to the C<tax_id_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::Type::USTaxId;
-use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 
@@ -52,7 +51,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'tax_id_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    # We currently only allow SSNs and EINs, but we could
 	    # change this type dynamically.
             tax_id => ['USTaxId', 'NONE'],
