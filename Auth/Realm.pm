@@ -237,6 +237,7 @@ sub _initialize {
     my($rr) = Bivio::Biz::Model::RealmRole->new();
     my(@roles) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
 	    Bivio::Auth::Role->get_list);
+#DBCACHE: realm_role_t
     foreach my $t ('GENERAL', 'USER', 'CLUB') {
 	my($rt) = Bivio::Auth::RealmType->$t();
 	my($rti) = $rt->as_int;
