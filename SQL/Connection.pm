@@ -37,6 +37,21 @@ which modifies the database.
 
 =cut
 
+=for html <a name="MAX_BLOB"></a>
+
+=head2 MAX_BLOB : int
+
+Maximum length of a blob.  You cannot retrieve blobs larger than this.
+You can only have one blob per record.
+
+Returns 0x400_000
+
+=cut
+
+sub MAX_BLOB {
+    return 0x400_000;
+}
+
 =for html <a name="MAX_PARAMETERS"></a>
 
 =head2 MAX_PARAMETERS : int
@@ -71,6 +86,7 @@ my($_CONNECTIONS) = {};
 my($_DEFAULT_DBI_NAME);
 # Number of times we retry a single statement.
 my($_MAX_RETRIES) = 3;
+my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
 
 =head1 FACTORIES
 
@@ -439,6 +455,38 @@ sub internal_get_error_code {
     $die_attrs->{program_error} = 1;
     # Unexpected error is treated as an assertion fault
     return Bivio::DieCode::DB_ERROR();
+}
+
+=for html <a name="internal_execute_blob"></a>
+
+=head2 internal_prepare_blob(boolean is_select, array_ref params, scalar_ref statement) : array_ref
+
+Prepares a query or update of a blob field..
+Returns the altered statement params.
+
+=cut
+
+sub internal_prepare_blob {
+    my($self, $is_select, $params, $statement) = @_;
+
+    if ($is_select) {
+	# Returns a value.  For older DBD::Oracle implementations, we
+	# need to set the value on every $statement.  Newer imps,
+	# set it once per connection.
+	$$statement->{LongReadLen} = $_MAX_BLOB;
+	$$statement->{LongTruncOk} = 0;
+	return $params;
+    }
+
+    # Passing a value, possibly
+    my($i) = 1;
+    foreach my $p (@$params) {
+	$$statement->bind_param($i++, $p), next unless ref($p);
+	# I wonder if it stores a reference or a copy?
+	$$statement->bind_param($i++,  $$p, $self->internal_get_blob_type);
+    }
+    # Parameters are bound, so don't pass them on
+    return undef;
 }
 
 =for html <a name="internal_get_retry_sleep"></a>
