@@ -33,6 +33,7 @@ a date/time string.  May consult user preferences.
 
 #=IMPORTS
 use Bivio::Type::DateTime;
+use Bivio::UI::DateTimeMode;
 
 #=VARIABLES
 
