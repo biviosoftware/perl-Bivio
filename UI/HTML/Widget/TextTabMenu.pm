@@ -203,9 +203,9 @@ sub render {
     }
     $$buffer .= "<table border=0 cellpadding=2 cellspacing=0><tr>\n";
     $$buffer .= $th == 0 ? $labels
-	    : $fields->{up} ? ($labels."</tr><tr>\n".$fields->{spacer}."\n")
-	    : ($fields->{spacer}."\n</tr><tr>\n".$labels);
-    $$buffer .= "</tr></table>\n";
+	    : $fields->{up} ? ($labels."</tr>\n<tr>".$fields->{spacer})
+	    : ($fields->{spacer}."</tr>\n<tr>".$labels);
+    $$buffer .= "</tr>\n</table>";
     return;
 }
 
@@ -222,3 +222,4 @@ $Id$
 =cut
 
 1;
+
