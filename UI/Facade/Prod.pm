@@ -76,6 +76,7 @@ my($_SELF) = __PACKAGE__->new({
 	            description_label
             )],
 	       0x006666);
+
 	    # Disclaimers are brighter
 	    $fc->group([qw(
 		    celebrity_disclaimer
@@ -87,6 +88,7 @@ my($_SELF) = __PACKAGE__->new({
 
 	    $fc->group(['error', 'warning', 'realm_notice_list'] => 0x990000);
             $fc->group(['realm_name'] => 0xFF6633);
+
 	    # These are links, so don't set the color
 	    $fc->group([qw(
 		    footer_menu
@@ -95,6 +97,7 @@ my($_SELF) = __PACKAGE__->new({
 	            task_list_label_link
             )],
 		    -1);
+
 	    # Not really used
             $fc->group(icon_text_ia => 0xEEEEEE);
 
@@ -112,6 +115,13 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(list_form_odd_row_bg => -1);
 	    $fc->group(table_separator => 0x000000);
             $fc->group(summary_line => 0x66CC66);
+
+	    # Home page shading
+            $fc->group([qw(
+		    mail_home_list_odd_bg
+		    mail_home_list_even_bg
+	    )],
+	       0xFFEEEE);
 
 	    #
 	    # Image menu in header
@@ -246,7 +256,7 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(club_index_change_plus => ['size=x-small']);
 	    $fc->group(club_index_change_zero => ['size=x-small']);
 	    $fc->group(club_index_change_minus => ['size=x-small']);
-	    $fc->group(mail_home_list_cell => ['size=xx-small']);
+	    $fc->group(mail_home_list_cell => ['size=x-small']);
 	    return;
 	}
     },
