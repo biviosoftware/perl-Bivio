@@ -57,14 +57,14 @@ club's space at the following URL:
     $url
 
 Your club's area is accessible only to members and guests of your
-club.  Your area provides your with a host of functions including:
+club.  Your area provides you with a host of functions including:
 revise and view your books, send to and view your club's message
 board, and download financial data.
 
 In addition, you can reach your club members by mailing to the
 following address:
 
-    mailto:$recipient
+    $recipient
 
 Messages sent to this address will also appear in your club's
 message board.
