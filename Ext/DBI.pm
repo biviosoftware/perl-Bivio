@@ -49,10 +49,11 @@ my($_ORACLE_HOME);
 Bivio::IO::Config->register({
     'oracle_home' => $ENV{ORACLE_HOME} || Bivio::IO::Config->REQUIRED,
     Bivio::IO::Config->NAMED => {
-	'database' => $ENV{ORACLE_SID} || Bivio::IO::Config->REQUIRED,
-	'user' => $ENV{DBI_USER} || Bivio::IO::Config->REQUIRED,
-	'password' => $ENV{DBI_PASS} || Bivio::IO::Config->REQUIRED,
+	database => $ENV{ORACLE_SID} || Bivio::IO::Config->REQUIRED,
+	user => $ENV{DBI_USER} || Bivio::IO::Config->REQUIRED,
+	password => $ENV{DBI_PASS} || Bivio::IO::Config->REQUIRED,
 	is_read_only => 0,
+	connection => Bivio::IO::Config->REQUIRED,
     },
 });
 my($_DEFAULT_OPTIONS) = {
@@ -87,8 +88,10 @@ sub connect {
 	    $cfg->{user}, '/', $cfg->{password},
 	    ':', $_DEFAULT_OPTIONS) if $_TRACE;
     Bivio::IO::Alert->warn('DATABASE IS READ ONLY') if $cfg->{is_read_only};
-    my($self) = DBI->connect("dbi:Oracle:$cfg->{database}",
-	    $cfg->{user}, $cfg->{password}, $_DEFAULT_OPTIONS);
+
+    my($self) = DBI->connect($cfg->{connection}->get_dbi_prefix($cfg)
+	    .$cfg->{database}, $cfg->{user}, $cfg->{password},
+	    $_DEFAULT_OPTIONS);
     return $self;
 }
 
@@ -135,6 +138,10 @@ Password to use (named configuration)
 =item user : string [$ENV{DBI_USER} || required]
 
 User to log in as (named configuration)
+
+=item connection : string (Bivio::SQL::OracleConnection)
+
+The database connection implementation.
 
 =back
 
