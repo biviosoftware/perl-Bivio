@@ -444,7 +444,7 @@ _compile(\%_MAP, [
 	'' => 'Edit Opening Balances',
 	HELP_TOPIC => 'Editing Opening Balances',
     ],
-    DEMO_REDIRECT => 'Demo Club',
+    DEMO_REDIRECT => 'My Demo Club',
     GENERAL_PRIVACY => 'Safe and Private',
     HELP => 'Help',
     HTTP_DOCUMENT => 'Home Page',
