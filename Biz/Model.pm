@@ -205,6 +205,26 @@ sub delete {
     die('not supported');
 }
 
+=for html <a name="delete_from_request"></a>
+
+=head2 delete_from_request()
+
+Deletes I<self> from request.  Reverses L<put_on_request|"put_on_request">.
+
+=cut
+
+sub delete_from_request {
+    my($self) = @_;
+    my($req) = $self->unsafe_get_request;
+    return unless $req;
+
+    # ref($self) for backward compatibility
+    foreach my $key ('Model.'.$self->simple_package_name, ref($self)) {
+	$req->delete($key => $self);
+    }
+    return;
+}
+
 =for html <a name="die"></a>
 
 =head2 die(string arg1, ...)
