@@ -59,21 +59,25 @@ sub main {
 	next if $hdr{Merged};
 	my($z) = $hdr{Date} =~ /\((\d+)/;
 	my(undef, undef, undef, $d, $m, $y) = localtime($z);
+	$y += 1900;
+	$m++;
 	$hdr{Date} = sprintf('%02d/%02d/%02d', $m, $d, $y);
 	$buffer .= "\"".join('","', map {$hdr{$_}} @_FIELDS)."\"\n";
     }
     my(undef, undef, undef, $d, $m, $y) = localtime(time);
+    $y += 1900;
+    $m++;
     my($date) = sprintf('%02d/%02d/%02d', $m, $d, $y);
     my($title) = "ReqTrack Active List ($date)";
     if ($mail) {
-	my($name) = sprintf('reqtrack-%04d%02d%02d.csv', $y + 1900, $m, $d);
+	my($name) = sprintf('reqtrack-%04d%02d%02d.csv', $y, $m, $d);
 	Bivio::Mail::send(undef, $mail, "$title", '', [], [{
 	    content_type => 'application/x-unknown-content-type-Excel.CSV',
 	    name => $name,
 	    value => $buffer,
 	    value_type => 'binary',
 	}]);
-	print "Sent ", $title, " to ", $mail, "\n";
+	print "Sent ", $name, " to ", $mail, "\n";
     }
     else {
 	print $title, "\n\n", $buffer;
