@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Type::DateTime->english_month3_to_int converts Jan, Feb, ...
+    to 1, 2, ...
+  * Bivio::Type::Number->div dies if dividing by 0 (was returning "inf")
+
+  Revision 2.49  2005/01/11 21:44:04  nagler
+  * Unit and acceptance tests have been released in "tests" directory.
+    Please read the README.
+  * Bivio::Util::Release->build supports recursive _b_release_include
   * Bivio::XML::DocBook->to_pdf indents examples by 2 and fixed some
     font problems.  Still problems with margins and some example
     indentation.
