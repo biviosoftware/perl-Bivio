@@ -389,6 +389,7 @@ sub _parse_end_a {
 	}
 	if (defined ($fields->{currenttable})) {
 	    $fields->{currenttable}->{links}->{$text} = $href;
+	    $fields->{currenttable}->{link_count}++;
 	}
 	if (defined ($fields->{currentrow})) {
 	    $fields->{currentrow}->{links}->{$text} = $href;
@@ -413,6 +414,7 @@ sub _parse_end_a {
 	}
 	if (defined ($fields->{currenttable})) {
 	   $fields->{currenttable}->{links}->{$img_base} = $href;
+	   $fields->{currenttable}->{link_count}++;
        }
 	if (defined ($fields->{currentrow})) {
 	    $fields->{currentrow}->{links}->{$img_base} = $href;
@@ -458,6 +460,9 @@ sub _parse_end_table {
     my($fields) = $self->{$_PACKAGE};
     $fields->{table_depth}--;
     if ($fields->{table_depth} == 0) {
+	if ($fields->{currenttable}->{link_count} == 0) {
+	    pop (@{$fields->{tables}});
+	}
 	delete $fields->{currenttable};
     }
     return;
@@ -639,6 +644,7 @@ sub _parse_start_img {
     my($fields) = $self->{$_PACKAGE};
     $fields->{image_name} = $attr->{src};
 
+return;
     $fields->{images} = [] unless defined ($fields->{images});
     push (@{$fields->{images}}, $attr);
     
@@ -736,6 +742,7 @@ sub _parse_start_table {
     if ($fields->{table_depth} == 0) {
 	push (@{$fields->{tables}}, ($fields->{currenttable} = {}));
 	$fields->{currenttable}->{line_no} = $fields->{line_no};
+	$fields->{currenttable}->{link_count} = 0;
 
 	# cache attributes, if any
 	if (defined ($attr)) {
