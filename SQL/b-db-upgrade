@@ -249,101 +249,27 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_celeb();
+    _upgrade_ec();
     _upgrade_perms();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_celeb()
+# _upgrade_ec()
 #
-# Add take stock and club cafe.
+# status
 #
-sub _upgrade_celeb {
-    print("upgrading club_cafe, take_stock, and ask_candis\n");
-    use Bivio::Agent::HTTP::Location;
-    my($root) = Bivio::Agent::HTTP::Location->get_document_root;
-    use Bivio::Biz::Util::File;
-    my($file) = Bivio::Biz::Util::File->new(['-r', 'take_stock',
-	    '-i', $root.'i/ellis_traub.jpg']);
-    my($req) = $file->get_request;
-    my($fm) = Bivio::Biz::Model::File->new($req);
-    my($fv) = Bivio::Type::FileVolume::FILE();
-    $fm->delete if $fm->unsafe_load({
-	directory_id => $fv->get_root_directory_id($req->get('auth_id')),
-	volume => $fv,
-	name => 'ellis_traub.jpg',
-    });
-    $file->create('ellis_traub.jpg', '', 'public');
-    my($decor) = Bivio::Biz::Model->new($req, 'RealmDecor');
-    $decor->delete if $decor->unsafe_load;
-    $decor->create({
-	realm_id => $req->get('auth_id'),
-	show_all_columns => 0,
-	show_disclaimer => 1,
-	show_profile => 1,
-	disclaimer => _disclaimer('Ellis Traub'),
-	portrait_filename => 'ellis_traub.jpg',
-	profile_title => 'Ellis Traub',
-	profile_bio => <<'EOF',
-Ellis Traub has a mission to help you discover how easy it is to produce
-as good a portfolio as your professional friends - or better.
-<p>
-Father of Technamental Analysis, author of the book "Take Stock" and
-chairman of <a href="/goto?x=http://www.investware.com">InvestWare</a>,
-Ellis Traub is also well known as the creator of NAIC's official
-software, the Investor's Toolkit.  He believes that the things you
-have to know about companies are few and easy to understand.  In
-his words, "my qualifications are simply that I've been there and done that."
-<p>
-Ellis' columns:
-<p>
-<a href="/hm/take-stock.html">Worthy Mission and Some Staunch Allies</a>
-<p>
-<a href="/hm/take-stock-010331.html">There's No Time Like the Present.
-Let the Good Times Roll!</a>
-EOF
-    });
-
-    $file = Bivio::Biz::Util::File->new(['-r', 'club_cafe',
-	    '-i', $root.'i/club_cafe.jpg']);
-    $req = $file->get_request;
-    $fm = Bivio::Biz::Model::File->new($req);
-    $fm->delete if $fm->unsafe_load({
-	directory_id => $fv->get_root_directory_id($req->get('auth_id')),
-	volume => $fv,
-	name => 'club_cafe.jpg',
-    });
-    $file->create('club_cafe.jpg', '', 'public');
-    $decor = Bivio::Biz::Model->new($req, 'RealmDecor');
-    $decor->delete if $decor->unsafe_load;
-    $decor->create({
-	realm_id => $req->get('auth_id'),
-	show_all_columns => 0,
-	show_disclaimer => 1,
-	show_profile => 1,
-	disclaimer => _disclaimer('bivio users or representatives'),
-	portrait_filename => 'club_cafe.jpg',
-	profile_title => 'Club Cafe',
-	profile_bio => <<'EOF',
-Relax, sit down, and have a cappuccino.
-<p>
-Use this discussion board to chat with members of the bivio club
-community.  You'll find quite a few bivions listening - old-timers and
-novices alike.
-<p>
-Have a specific question, or looking for something?  Use the search box
-at the top to find previous posts.  You can also contact bivio customer
-support at <a href="/pub/mail-support">support@bivio.com</a>.
-EOF
-    });
-    $req->set_club_pref('MAIL_ALLOW_ATTACHMENTS', 0);
-    $req->set_club_pref('MAIL_POST_PUBLIC', 1);
-
-    $req->set_realm('ask_candis');
-    $decor->update({disclaimer => _disclaimer('Candis King')})
-	    if $decor->unsafe_load;
-
+sub _upgrade_ec {
+    print("Upgrading constraints on ec_payment_t\n");
+    _drop_constraints('ec_payment_t', 'status');
+    _do_sql('
+ALTER TABLE ec_payment_t modify status not null
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t8
+  check (status between 0 and 9)
+/
+');
     return;
 }
 
@@ -356,280 +282,44 @@ sub _upgrade_perms {
     my($rru) = Bivio::Biz::Util::RealmRole->new();
     my($req) = $rru->get_request;
 
-    print("Upgrading permissions\n");
-    # For non-public clubs, turn off mail_forward
-    my($rr) = Bivio::Biz::Model::RealmRole->new($req);
-    my($it) = $rr->unauth_iterate_start('realm_id, role');
-    while ($rr->iterate_next_and_load($it)) {
-	# Skip general, user, club
-	next if $rr->get('realm_id') <= 3;
-	my($role) = $rr->get('role');
-	my($s) = $rr->get('permission_set');
-	my($read) = Bivio::Auth::PermissionSet
-		->is_set(\$s, Bivio::Auth::Permission::MAIL_READ());
-	my($got_one) = 0;
-	if (Bivio::Auth::PermissionSet
-		->is_set(\$s, Bivio::Auth::Permission::NOT_IN_USE_1())) {
-	    Bivio::Auth::PermissionSet
-			->clear(\$s, Bivio::Auth::Permission::NOT_IN_USE_1());
-	    $got_one++;
-	}
-	if (!$read || $role == Bivio::Auth::Role::ANONYMOUS()) {
-	    # Clear forward if read isn't set.  Never allow forwarding
-	    # for anonymous users
-	    Bivio::Auth::PermissionSet
-			->clear(\$s, Bivio::Auth::Permission::MAIL_FORWARD());
-	    $got_one++;
-	}
-	if (!$read) {
-	    Bivio::Auth::PermissionSet
-			->clear(\$s, Bivio::Auth::Permission::MAIL_POST());
-	    $got_one++;
-	}
-	next unless $got_one;
-	$rr->update({permission_set => $s});
-# There are 1708 entries, this is going to be a long list.
-#	print('Fixed: ', $rr->get('realm_id'), "\n");
-    }
-    $rr->iterate_end($it);
-
-    $req->set_realm('general');
-    _init_realm_role($rru, <<'EOF');
-b-realm-role -r GENERAL edit ANONYMOUS - \
-    +DOCUMENT_READ \
-    +LOGIN \
-    +MAIL_WRITE
-b-realm-role -r GENERAL edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r GENERAL edit WITHDRAWN - \
-    +USER
-b-realm-role -r GENERAL edit GUEST - \
-    +WITHDRAWN \
-    +ANY_REALM_USER
-b-realm-role -r GENERAL edit MEMBER - \
-    +GUEST
-b-realm-role -r GENERAL edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r GENERAL edit ADMINISTRATOR - \
-    +ACCOUNTANT \
-    +ACCOUNTING_READ \
-    +ACCOUNTING_WRITE \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +DOCUMENT_WRITE \
-    +FILE_ADMIN \
-    +INVESTMENT_READ \
-    +MAIL_ADMIN \
-    +MAIL_FORWARD \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MAIL_RECEIVE \
-    +MEMBER_READ \
-    +MEMBER_WRITE \
-    +MOTION_READ \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-EOF
-
-    $req->set_realm('user');
-    _init_realm_role($rru, <<'EOF');
-b-realm-role -r user edit ANONYMOUS - \
-    +LOGIN \
-    +MAIL_WRITE
-b-realm-role -r user edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r user edit WITHDRAWN - \
-    +USER
-b-realm-role -r user edit GUEST - \
-    +WITHDRAWN \
-    +ANY_REALM_USER \
-    +DOCUMENT_READ
-b-realm-role -r user edit MEMBER - \
-    +GUEST
-b-realm-role -r user edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r user edit ADMINISTRATOR - \
-    +ACCOUNTANT \
-    +ACCOUNTING_READ \
-    +ACCOUNTING_WRITE \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +DOCUMENT_WRITE \
-    +FILE_ADMIN \
-    +INVESTMENT_READ \
-    +MAIL_ADMIN \
-    +MAIL_FORWARD \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MAIL_RECEIVE \
-    +MEMBER_READ \
-    +MEMBER_WRITE \
-    +MOTION_READ \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-EOF
-
-    # CLUB
-    $req->set_realm('club');
-    _init_realm_role($rru, <<'EOF');
-b-realm-role -r club edit ANONYMOUS - \
-    +LOGIN \
-    +MAIL_WRITE
-b-realm-role -r club edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r club edit WITHDRAWN - \
-    +USER
-b-realm-role -r club edit GUEST - \
-    +WITHDRAWN \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ANY_REALM_USER \
-    +DOCUMENT_READ \
-    +INVESTMENT_READ \
-    +MAIL_FORWARD \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MEMBER_READ \
-    +MOTION_READ
-b-realm-role -r club edit MEMBER - \
-    +GUEST \
-    +DOCUMENT_WRITE \
-    +MAIL_RECEIVE
-b-realm-role -r club edit ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_WRITE \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +FILE_ADMIN \
-    +MAIL_ADMIN \
-    +MEMBER_WRITE \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-b-realm-role -r club edit ADMINISTRATOR - \
-    +ACCOUNTANT
-EOF
-
-    $req->set_realm('demo_club');
-    _init_realm_role($rru, <<'EOF');
-b-realm-role -r demo_club edit ANONYMOUS - \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ANY_REALM_USER \
-    +ANY_USER \
-    +DOCUMENT_READ \
-    +INVESTMENT_READ \
-    +LOGIN \
-    +MAIL_READ \
-    +MEMBER_READ \
-    +MOTION_READ
-b-realm-role -r demo_club edit USER - \
-    +ANONYMOUS
-b-realm-role -r demo_club edit WITHDRAWN - \
-    +USER \
-b-realm-role -r demo_club edit GUEST - \
-    +WITHDRAWN
-b-realm-role -r demo_club edit MEMBER - \
-    +GUEST
-b-realm-role -r demo_club edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r demo_club edit ADMINISTRATOR - \
-    +ACCOUNTANT
-EOF
-
-    $req->set_realm('club_index');
-    _init_realm_role($rru, <<'EOF');
-b-realm-role -r club_index edit ANONYMOUS - \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +INVESTMENT_READ \
-    +LOGIN
-b-realm-role -r club_index edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r club_index edit WITHDRAWN - \
-    +USER \
-b-realm-role -r club_index edit GUEST - \
-    +WITHDRAWN \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ANY_REALM_USER \
-    +DOCUMENT_READ \
-    +INVESTMENT_READ \
-    +MAIL_FORWARD \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MAIL_WRITE \
-    +MEMBER_READ \
-    +MOTION_READ
-b-realm-role -r club_index edit MEMBER - \
-    +GUEST \
-    +DOCUMENT_WRITE \
-    +MAIL_RECEIVE
-b-realm-role -r club_index edit ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_WRITE \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +MAIL_ADMIN \
-    +MEMBER_WRITE \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-b-realm-role -r club_index edit ADMINISTRATOR - \
-    +ACCOUNTANT
-EOF
-
+    print("Upgrading permissions for club_cafe\n");
     $req->set_realm('club_cafe');
     _init_realm_role($rru, <<'EOF');
-b-realm-role -r club edit ANONYMOUS - \
+b-realm-role -r club_cafe edit ANONYMOUS - \
     +DOCUMENT_READ \
     +LOGIN \
     +MAIL_READ
-b-realm-role -r club edit USER - \
+b-realm-role -r club_cafe edit USER - \
     +ANONYMOUS \
     +ANY_USER \
     +MAIL_POST
-b-realm-role -r club edit WITHDRAWN - \
+b-realm-role -r club_cafe edit WITHDRAWN - \
     +USER
-b-realm-role -r club edit GUEST - \
+b-realm-role -r club_cafe edit GUEST - \
     +WITHDRAWN \
+    +ANY_REALM_USER \
+    +MAIL_FORWARD
+b-realm-role -r club_cafe edit MEMBER - \
+    +GUEST \
+    +MAIL_RECEIVE
+b-realm-role -r club_cafe edit ACCOUNTANT - \
+    +MEMBER \
     +ACCOUNTING_READ \
+    +ACCOUNTING_WRITE \
     +ACCOUNT_READ \
     +ADMIN_READ \
-    +ANY_REALM_USER \
-    +INVESTMENT_READ \
-    +MAIL_FORWARD \
-    +MEMBER_READ \
-    +MOTION_READ
-b-realm-role -r club edit MEMBER - \
-    +GUEST \
-    +DOCUMENT_WRITE \
-    +MAIL_RECEIVE
-b-realm-role -r club edit ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_WRITE \
     +ADMIN_WRITE \
     +DEBUG_ACTION \
+    +DOCUMENT_WRITE \
     +FILE_ADMIN \
+    +INVESTMENT_READ \
     +MAIL_ADMIN \
+    +MEMBER_READ \
     +MEMBER_WRITE \
+    +MOTION_READ \
     +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-b-realm-role -r club edit ADMINISTRATOR - \
+    +REALM_PUBLICIZE
+b-realm-role -r club_cafe edit ADMINISTRATOR - \
     +ACCOUNTANT
 EOF
     return;
