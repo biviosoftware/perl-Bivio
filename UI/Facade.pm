@@ -140,8 +140,9 @@ used.
 
 #=IMPORTS
 use Bivio::Die;
-use Bivio::IO::ClassLoader;
+use Bivio::Biz::Model::Preferences;
 use Bivio::HTML;
+use Bivio::IO::ClassLoader;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::UI::FacadeChildType;
@@ -458,7 +459,8 @@ sub prepare_to_render {
     }
 
     # If there is no child of this type, default case
-    $type ||= $req->get_user_pref('facade_child_type');
+    $type ||= Bivio::Biz::Model::Preferences->get_user_pref($req,
+	    'facade_child_type');
     unless ($children->{$type}) {
 	_trace($self, ': ', $type, ': no such child') if $_TRACE;
 	return;
