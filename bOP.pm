@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,34 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    THREE_MONTHS. Added SIX_MONTHS.
+  * Added DateTimeMode FULL_MONTH
+  * LinuxConfig allow any program
+
+  Revision 1.80  2003/09/25 15:29:24  nagler
+  * Bivio::Biz::ListModel->load_page returns self
+  * Bivio::Biz::Model::UserCreateForm->parse_display_names splits a
+    display_name into first, middle, and last
+  * Bivio::Delegate::SimpleAuthSupport and Bivio::Delegate::SimplePermission
+    modified to support SUPER_USER_TRANSIENT permission
+  * Bivio::IO::Alert->format_args was not handling object as_string
+    correctly. Empty strings resulted in returning $object as a string.
+  * Bivio::PetShop added support for tests of SUPER_USER_TRANSIENT
+  * Bivio::Test::HTMLParser::Tables creates Bivio::Test::HTMLParser::Tables::Cell
+    instances for each cell, and it parses Links for each cell making it
+    easier to click on a table cell's value.  This change will result in
+    exceptions in tests, and you need to use $cell->get('text') to get
+    the data.  String conversion was overloaded to ease the upgrade
+    process.
+  * Bivio::Test::HTMLParser::Tables->do_rows adds a _row_index value to
+    each row.  find_rows returns a row with the found index.
+  * Bivio::Test::Language:HTTP->follow_link_in_table allows you to
+    call a link in a table by value.
+  * Bivio::Test::Request->initialize_fully calls setup_all_facades, not
+    setup_facade
+  * Bivio::UI::Facade->get_all_classes returns an array_ref of all
+    simple package names for the facades.
+  * Bivio::UI::Facade->setup_request($req) is new signature that allows
     you to setup a facade instance directly.
   * Bivio::UI::Facade->get_instance() returns the default facade
     (making get_default redundant).
