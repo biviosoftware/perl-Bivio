@@ -256,7 +256,7 @@ sub _upgrade {
     _upgrade_create_bivio_buck($req);
     my($subscribers) = _upgrade_credit_current_subscribers($req);
     _upgrade_subscribe_free_trial($req, $subscribers);
-    _upgrade_inifinite_clubs($req);
+    _upgrade_infinite_clubs($req);
     print("\n*** done ***\n");
     return;
 }
@@ -405,10 +405,60 @@ sub _upgrade_infinite_clubs {
 
     my($ec_util) = Bivio::Biz::Util::EC->new;
     $ec_util->put(req => $req);
+    my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
 
-    foreach my $name (Bivio::Type::RealmName->CELEBRITY_CLUBS,
-	'ask_candis', 'trez_talk') {
+    foreach my $name (Bivio::Type::RealmName->CELEBRITY_CLUBS, qw(
+	a_finance
+	account_sync_log
+	administrare
+	adventor
+	advoco
+	affiliates
+	agora
+	amicus
+	artisans
+	ask_candis
+	ask_candis_inbox
+	barbarus
+	billing
+	bivio_site_search
+	bop
+	buyandhold
+	celebritas
+	club_cafe
+	club_index
+	computare
+	contentcube
+	cosmic
+	data
+	documentum
+	endo
+	filtrum
+	fiscus
+	flatironssolutions
+	freeware
+	internus
+	investware_ssg_files
+	jobs
+	julie_stav
+	juliestav
+	lex
+	media
+	nagler_family
+	onlineads
+	oreilly_tools
+	peteweb
+	societas
+	take_stock
+	trez_talk
+	trez_talk_inbox
+	troppus
+	xmlproject
+	xpip
+    )) {
+	next unless $ro->unauth_load({name => $name});
 	$req->set_realm($name);
+	print("\t", $name, "\n");
 	$ec_util->infinite_subscription('FREE_TRIAL');
     }
     return;
