@@ -569,6 +569,8 @@ _compile(\%_MAP, [
         => 'Public',
     MAIL_IS_PUBLIC_ALT => 'Message is publicly viewable',
     MAIL_THREAD => 'Thread',
+    MAIL_STARTED_BY => 'Started By',
+    MAIL_THREAD_ROOT_ID => 'Subject',
 
     # FILES
     FILE_NAME => 'Name',
