@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::HTMLParser::Tables, Bivio::Test::Language::HTTP
+    improved error messages
+  * Bivio::TypeValue added equals( and as_string()
+
+  Revision 2.44  2004/11/10 17:24:32  nagler
+  * Bivio::Delegate::SimpleWidgetFactory supports DollarCell widget
   * Bivio::UI::HTML::Widget::DollarCell added
   * Bivio::UI::HTML::Format::Dollar added
   * Bivio::UI::HTML::Widget::Page.want_page_print pops up print dialogue if set
