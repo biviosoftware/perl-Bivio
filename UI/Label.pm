@@ -255,6 +255,9 @@ _compile(
     REALMOWNER_NAME_HEADING => ['Name'],
     MEMBERENTRY_VALUATION_DATE_HEADING => ['Val. Date'],
     MEMBERENTRY_UNITS_HEADING => ['Units'],
+    PAID_YTD_HEADING => ["Paid YTD"],
+    UNITS_YTD_HEADING => ["Units YTD"],
+    TAX_BASIS_HEADING => ["Tax Basis"],
 
     # HTML Tax attachment label headings
     TAX_DESCRIPTION_OF_PROPERTY_1_HEADING => ['1 (a) Description of property'],
