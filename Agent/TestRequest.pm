@@ -54,7 +54,7 @@ Creates a test request with the specified attributes
 sub new {
     my($proto, $attributes) = @_;
     $attributes->{start_time} = Bivio::Util::gettimeofday();
-    my($self) = &Bivio::Agent::Request::new($proto, $attributes);
+    my($self) = &Bivio::Agent::Request::internal_new($proto, $attributes);
 
     # also handles its own replies
     $self->put('reply', $self);
