@@ -35,6 +35,7 @@ opening balance.
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model::Instrument;
 use Bivio::Biz::Model::InstrumentLookupForm;
+use Bivio::Biz::Model::InstrumentLookupList;
 use Bivio::Biz::Model::RealmInstrument;
 use Bivio::Biz::Model::RealmInstrumentEntry;
 use Bivio::Biz::Model::RealmTransaction;
@@ -52,6 +53,21 @@ my($_PACKAGE) = __PACKAGE__;
 =head1 METHODS
 
 =cut
+
+=for html <a name="execute_empty"></a>
+
+=head2 execute_empty()
+
+Initializes the empty form.
+
+=cut
+
+sub execute_empty {
+    my($self) = @_;
+    $self->internal_get->{
+	Bivio::Biz::Model::InstrumentLookupList::SHOW_LOCAL()} = 1;
+    return;
+}
 
 =for html <a name="execute_input"></a>
 
@@ -154,6 +170,13 @@ sub internal_initialize {
 	primary_key => [
 	    ['RealmTransaction.realm_transaction_id',
 		     'Entry.realm_transaction_id']
+	],
+	hidden => [
+	    {
+		name => Bivio::Biz::Model::InstrumentLookupList::SHOW_LOCAL(),
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
 	],
     };
 }
