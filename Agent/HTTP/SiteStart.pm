@@ -84,7 +84,7 @@ sub init {
     my($setup_pres) = Bivio::UI::HTML::Presentation->new(
 	    [$setup_intro, $admin_setup, $club_setup, $setup_finish]);
     my($setup_page) = Bivio::UI::HTML::Page->new([$setup_pres],
-	    Bivio::UI::Menu->new(1, ['club', 'Club Setup']));
+	    Bivio::UI::Menu->new(1, ['setup', 'Club Setup']));
 
     my($user_list) = Bivio::UI::Admin::UserListView->new();
     my($add_user) = Bivio::UI::Admin::UserView->new();
@@ -107,7 +107,7 @@ sub init {
     my($club_setup_controller) = Bivio::Agent::HTTP::ClubSetupController->new(
 	    [$setup_intro, $admin_setup, $club_setup, $setup_finish],
 	    $setup_intro);
-    Bivio::Agent::Dispatcher::register_controller('club',
+    Bivio::Agent::Dispatcher::register_controller('setup',
 	    $club_setup_controller);
 
     my($admin_controller) = Bivio::Agent::HTTP::AdminController->new(

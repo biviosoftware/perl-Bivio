@@ -79,7 +79,7 @@ sub handle_request {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    if ($req->get_target_name() ne 'setup') {
+    if ($req->get_target_name() ne 'club') {
 	return;
     }
 
@@ -96,8 +96,7 @@ sub handle_request {
 	    $model->find($req->get_model_args());
 	}
 	if ($req->get_action_name()) {
-	    $model->get_action($req->get_action_name())->execute(
-		    $model, $req);
+	    $model->get_action($req->get_action_name())->execute($model, $req);
 	    if ($model->get_status()->is_OK()
 		    && $req->get_action_name() eq 'add'
 		    && $req->get_view_name() eq 'admin') {
