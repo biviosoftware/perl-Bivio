@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::ShellUtil->lock_action supports locking closures with
+    checking for process aliveness.  Old usage (locking by subprocess)
+    is deprecated.
+
+  Revision 1.46  2003/03/21 13:39:54  nagler
   * Bivio::SQL::ListSupport allows internal_pre_load to return a where
     clause which includes the FROM.  Allows for complex Postgres LEFT JOIN
     statements.
