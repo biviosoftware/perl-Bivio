@@ -9,7 +9,7 @@ use Bivio::SQL::Connection;
 map({
     my($n) = $_;
     Bivio::Die->eval(sub {
-        Bivio::SQL::Connection->execute("drop table t_leftjoin_t$n");
+	Bivio::SQL::Connection->execute("drop table t_leftjoin_t$n");
 	Bivio::SQL::Connection->commit;
     });
     Bivio::Die->eval(sub {Bivio::SQL::Connection->rollback;});
@@ -57,6 +57,15 @@ Bivio::Test->unit([
 	    # Two left with two different sets of tables
 	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+)' => [[9]],
 	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+) order by t_leftjoin_t1.f1' => [[9]],
-	],
+	    'select count(*), (select sum(f1) from t_leftjoin_t4
+			       where t_leftjoin_t4.f2 > 1) as f3
+	     from t_leftjoin_t1, t_leftjoin_t2
+	     where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[3,5]],
+	     'select count(*),
+		   (select sum(t_leftjoin_t3.f2) from t_leftjoin_t3
+		    where t_leftjoin_t3.f1=t_leftjoin_t1.f1) as f3
+	      from t_leftjoin_t1, t_leftjoin_t2
+	      where t_leftjoin_t1.f1=t_leftjoin_t2.f1(+)' => [[3,3]],
+       ],
     ],
 ]);
