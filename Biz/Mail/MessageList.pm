@@ -104,8 +104,19 @@ sub find {
 
 	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
 		'where club=?', $fp->get('club'));
+
+	# default order date descending unless specified
+	my($order_by) = $self->get_order_by($fp);
+	if (! $order_by) {
+	    $order_by = ' order by dttm desc';
+	}
+	elsif ($order_by =~ /dttm/) {
+	}
+	else {
+	    $order_by .= ', dttm desc';
+	}
 	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
-		$fields->{index}, 15, 'where club=?'.$self->get_order_by($fp),
+		$fields->{index}, 15, 'where club=?'.$order_by,
 		$fp->get('club'));
     }
 
