@@ -706,10 +706,11 @@ sub _eval_result {
 	    return undef if
 		Bivio::IO::Ref->nested_equals($case->get('expect'), $res);
 	}
-	elsif ($res) {
-	    return undef;
+	elsif (defined($res)) {
+	    return "custom $custom must be 0 or 1 if a scalar"
+		unless $res =~ /^[01]$/;
+	    return undef if $res;
         }
-	# else false return from custom
     }
     return 'expected ' . Bivio::IO::Ref->to_short_string($case->get('expect'))
 	.' but got ' . Bivio::IO::Ref->to_short_string($actual);
