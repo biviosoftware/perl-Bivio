@@ -89,7 +89,7 @@ sub t {
 }
 my($m);
 my($req) = Bivio::Collection::Attributes->new;
-my($now) = 315532800;
+my($now) = Bivio::Type::DateTime->from_literal('2001/12/31 17:00:00');
 foreach $m ('TListT1', 'TListT2') {
     my($pkg) = "Bivio::Biz::PropertyModel::$m";
     my($table) = $pkg->get_instance->get_info('table_name');
@@ -115,13 +115,14 @@ EOF
 	foreach $name ('name00'..'name09') {
 	    foreach $gender ('FEMALE', 'MALE') {
 		$model->create({
-		    date_time => $date_time++,
+		    date_time => $date_time,
 		    toggle => ($toggle = !$toggle),
 		    auth_id => $auth_id,
 		    name => $name,
 		    value => undef,
 		    gender => $gender,
 		});
+		$date_time = Bivio::Type::DateTime->add_seconds($date_time, 1);
 	    }
 	}
     }
@@ -235,14 +236,15 @@ $query = Bivio::SQL::ListQuery->new({
 }, $support);
 $rows = $support->load($query);
 # Should begin after first the first name.
-t($rows->[0]->{'TListT1.date_time'}, $now + 1);
+t($rows->[0]->{'TListT1.date_time'},
+    Bivio::Type::DateTime->add_seconds($now,  1));
 # DEBUG: map {print STDERR join(' ', %$_), "\n"} @$rows;
 
 # Check missed just prior
 $query = Bivio::SQL::ListQuery->new({
     auth_id => 1,
     count => 100,
-    j => ($now+100000)."\177".0,
+    j => (Bivio::Type::DateTime->add_seconds($now, 100000))."\177".0,
     b0 => 'name00',
 }, $support);
 $rows = $support->load($query);
@@ -270,7 +272,7 @@ t($rows->[0]->{'TListT1.toggle'}, 0);
 $query = Bivio::SQL::ListQuery->new({
     auth_id => 1,
     count => 1,
-    t => ($now + 10000)."\177".0,
+    t => Bivio::Type::DateTime->add_seconds($now, 10000)."\177".0,
 }, $support);
 $rows = $support->load($query);
 t(int(@$rows), 0);
