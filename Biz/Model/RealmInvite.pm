@@ -121,7 +121,7 @@ sub check_accept_after_login {
 
 	# New User registering via an invite URL
 	if ($req->get('Bivio::Biz::Model::CreateUserForm')) {
-	    RealmInviteAcceptForm->execute($req, {});
+	    Bivio::Biz::Model::RealmInviteAcceptForm->execute($req, {});
 	    $req->client_redirect(Bivio::Agent::TaskId::CLUB_USER_NEW());
 	    # DOES NOT RETURN
 	}
@@ -171,7 +171,7 @@ sub check_accept_after_login {
 
     # Have an invite figure out what type of invite it is
     my($realm_user_id) = $invite->get('realm_user_id');
-    if ($realm_user_id eq $auth_user_id) {
+    if (defined($realm_user_id) && ($realm_user_id eq $auth_user_id)) {
 	# Guest 2 Member (needs a realm)
 	$req->client_redirect(
 		Bivio::Agent::TaskId::CLUB_GUEST_2_MEMBER_ACCEPT(),
