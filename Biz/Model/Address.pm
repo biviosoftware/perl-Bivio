@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::Address::VERSION;
 
 Bivio::Biz::Model::Address - interface to address_t SQL table
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::Address;
