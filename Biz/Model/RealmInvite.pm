@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::RealmInvite;
 use strict;
 $Bivio::Biz::Model::RealmInvite::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::RealmInvite::VERSION;
 
 =head1 NAME
 
@@ -100,7 +101,7 @@ my($_SEPARATOR) = '!';
 =head2 static check_accept(Bivio::Agent::Request req)
 
 If there is a pending accept, load and set the I<realm_invite_state>
-I<realm_invite_shadow_user> (if set)
+I<realm_invite_offline_user> (if set)
 on I<req>.  These values will be undef, if not loaded.
 Cookie is unmodified.
 
@@ -276,7 +277,7 @@ invite and load it.
 
 Sets the realm to that of the realm_id of the invite.  Determines
 the L<Bivio::Type::RealmInviteState|Bivio::Type::RealmInviteState>
-and puts I<realm_invite_shadow_user> and I<realm_invite_state> on request.
+and puts I<realm_invite_offline_user> and I<realm_invite_state> on request.
 
 =cut
 
@@ -404,10 +405,10 @@ sub internal_initialize {
 	table_name => 'realm_invite_t',
 	columns => {
             realm_invite_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
-            user_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+            user_id => ['RealmUser.user_id', 'NOT_NULL'],
 	    # Will be null if just a "guest"
-	    realm_user_id => ['PrimaryId', 'NONE'],
+	    realm_user_id => ['RealmUser.user_id', 'NONE'],
             email => ['Email', 'NOT_NULL'],
             role => ['Bivio::Auth::Role', 'NOT_ZERO_ENUM'],
 	    honorific => ['Honorific', 'NOT_ZERO_ENUM'],
@@ -515,16 +516,16 @@ sub _set_state {
 			    : $req->get('user_state')
 				    == Bivio::Type::UserState::LOGGED_OUT()
 				    ? 'IS_USER' : 'NO_USER';
-    my($shadow);
+    my($offline);
     if ($self->get('realm_user_id')) {
-	$shadow = Bivio::Biz::Model::RealmOwner->new($req);
-	$shadow->unauth_load_or_die(realm_id => $self->get('realm_user_id'),
+	$offline = Bivio::Biz::Model::RealmOwner->new($req);
+	$offline->unauth_load_or_die(realm_id => $self->get('realm_user_id'),
 		realm_type => Bivio::Auth::RealmType::USER());
     }
 
     $req->put(
 	    realm_invite_state => Bivio::Type::RealmInviteState->$state(),
-	    realm_invite_shadow_user => $shadow,
+	    realm_invite_offline_user => $offline,
 	   );
     _trace($self->get('realm_invite_id'), ': state=', $state) if $_TRACE;
     return Bivio::Type::RealmInviteState->$state();
