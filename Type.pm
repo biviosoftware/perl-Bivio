@@ -65,7 +65,8 @@ sub get_instance {
     $type = Bivio::IO::ClassLoader->map_require('Type', $type)
 	    unless ref($type);
     Bivio::IO::Alert->bootstrap_die($type, ': not a Bivio::Type')
-		unless UNIVERSAL::isa($type, 'Bivio::Type');
+		unless UNIVERSAL::isa($type, 'Bivio::Type')
+			|| UNIVERSAL::isa($type, 'Bivio::Delegator');
     return $type;
 }
 
