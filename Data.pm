@@ -162,7 +162,7 @@ sub _update ($) {
 # &_write $absfile $value
 #   Writes $value to $absfile carefully.  Old values are copied to the file
 #   name appended with the time.
-#   
+#
 sub _write ($$$) {
     my($absfile, $value, $br) = @_;
     my($dd) = Data::Dumper->new([$value]);
@@ -177,10 +177,38 @@ sub _write ($$$) {
     (print $fh $s) || $br->server_error("print $new: $!");
     close($fh) || $br->server_error("close $new: $!");
     unlink($old);				# just in case, shouldn't exist
-    ! -e $absfile || &File::Copy::copy($absfile, $old)
-	|| $br->server_error("copy $absfile $old: $!");
+    ! -e $absfile || &_copy($absfile, $old, $br);
     rename($new, $absfile) || $br->server_error("rename $new $absfile: $!");
 }
+
+# File::Copy is broken, because it creates a glob of a code reference
+# (*syscopy) and when File::Copy is loaded by PerlModule (httpd) and forked
+# (just a guess), the test at line 63 (\&syscopy != \&copy) is invalid, i.e.
+# the values are not equal, but they are the same and it gets into an
+# infinite recursion.
+sub _copy ($$$) {
+    my($from, $to, $br) = @_;
+    open(COPY_TO, ">$to") || goto _copy_error;
+    open(COPY_FROM, "<$from") || goto _copy_error;
+    for (;;) {
+	my($r, $w, $t, $buf);
+	defined($r = sysread(COPY_FROM, $buf, 8192)) || goto _copy_error;
+	$r || last;
+	for ($w = 0; $w < $r; $w += $t) {
+	    ($t = syswrite(COPY_TO, $buf, $r - $w, $w)) || goto _copy_error;
+	}
+    }
+    close(COPY_TO) || goto _copy_error;
+    close(COPY_FROM) || goto _copy_error;
+    return 1;
+
+ _copy_error:
+    my($error) = "$!";
+    close(COPY_TO);
+    close(COPY_FROM);
+    $br->server_error("copy($from, $to): $!");
+}
+
 
 sub _home ($) {
     $_Home || ($_Home = shift->r->document_root . &_REL_HOME);

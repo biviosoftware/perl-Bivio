@@ -95,7 +95,16 @@ sub href ($;$) {
     my($href, $label) = @_;
     defined($href) || return defined($label) ? &escape_html($label) : undef;
     defined($label) || ($label = $href);
-    return '<a href="' . $href . '">' . &escape_html($label) . '</a>';
+    return &href_with_html_label($href, &escape_html($label));
+}
+
+# href_with_html_label $link $label
+#   If link is undef, then returns label.  The label is in html and doesn't
+#   need to be escaped.
+sub href_with_html_label ($$) {
+    my($href, $label) = @_;
+    defined($href) || return defined($label) ? $label : undef;
+    return '<a href="' . $href . '">' . $label . '</a>';
 }
 
 # mailto $email ; $label $subject

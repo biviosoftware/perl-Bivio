@@ -7,6 +7,7 @@ package Bivio::Club;
 use strict;
 use Bivio::Request;
 use Bivio::Data;
+use Bivio::Util;
 use Bivio::User;
 use Bivio::Club::Page;
 use Bivio::Club::Page::Agreement;
@@ -21,7 +22,7 @@ $Bivio::Club::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 BEGIN {
     use Bivio::Util;
     &Bivio::Util::compile_attribute_accessors(
-	[qw(title full_name watchlist name members guests data_dir main_pages)],
+	[qw(title full_name watchlist name members guests data_dir)],
 	'no_set');
 }
 
@@ -39,7 +40,11 @@ my(@_PAGES) = (
     Bivio::Club::Page::Watchlist->new(),
 );
 
+my($_PAGE_MENU) = Bivio::Club::Menu->new(\@_PAGES);
+
 sub message_page { $_MESSAGE_PAGE }
+
+sub page_menu { $_PAGE_MENU }
 
 my(%_URI_TO_PAGE_MAP) = map {($_->URI, $_)} @_PAGES;
 
@@ -50,7 +55,6 @@ sub handler ($) {
 sub init ($$) {
     my($proto, $self, $br) = @_;
     bless($self, ref($proto) || $proto);
-    $self->{main_pages} = \@_PAGES;
     return $self;
 }
 
@@ -111,6 +115,17 @@ sub lookup_data ($$$$) {
 sub begin_txn ($$$$) {
     my($self, $file, $proto_or_sub, $br) = @_;
     &Bivio::Data::begin_txn($self->data_dir . $file, $proto_or_sub, $br);
+}
+
+# abs_uri $page $rel_uri -> $uri
+#   Returns the absolute URI for a uri relative to this club
+sub abs_uri ($$) {
+    my($self, $rel_uri) = @_;
+    return $self->uri . (defined($rel_uri) ? ('/' . $rel_uri) : '');
+}
+
+sub uri ($) {
+    return '/' . shift->name;
 }
 
 1;

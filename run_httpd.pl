@@ -86,9 +86,10 @@ KeepAlive off
 #
 PerlWarn on
 # Can't be on and use PERLLIB.
-#PerlTaintCheck on
+#PerlTaintCaheck on
 PerlFreshRestart on
 PerlSetEnv BIVIO_REQUEST_DEBUG 1
+PerlModule Bivio::Club
 
 #
 # Files
@@ -120,7 +121,7 @@ Allow from all
 </Directory>
 
 <LocationMatch "^/\w{4,}($|/)">
-AuthName xbivio
+AuthName xbivio-PORT
 AuthType Basic
 SetHandler perl-script
 PerlHandler Bivio::Club
