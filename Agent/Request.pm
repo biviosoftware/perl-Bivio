@@ -1028,7 +1028,7 @@ sub internal_server_redirect {
 	    query => $new_query,
 	    form => $new_form,
 	    form_model => undef,
-	    new_path_info => $new_path_info,
+	    path_info => $new_path_info,
 	    form_context => $fc);
     return;
 }
