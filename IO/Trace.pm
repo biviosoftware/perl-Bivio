@@ -13,7 +13,7 @@ Bivio::IO::Trace - statement level trace management
     use Bivio::IO::Trace;
     Bivio::IO::Trace->register;
     &_trace("this is my message");
-    $_TRACE && &_trace("This is ", &a_complex, " list of arguments");
+    &_trace("This is ", &a_complex, " list of arguments") if $_TRACE;
     Bivio::IO::Trace->set_filters('/my message/');
 
 =cut
@@ -190,8 +190,7 @@ programmatically.
 Use C<&_trace> for defining trace_points.  To avoid argument computation, use
 the form:
 
-    &_trace(bla, bla, bla, bla)
-            if $_TRACE;
+    &_trace(bla, bla, bla, bla) if $_TRACE;
 
 You will need to experiment with which trace points are expensive and require
 this more elaborate form.  In general, a simple string argument

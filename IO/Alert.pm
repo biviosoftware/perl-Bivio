@@ -37,13 +37,18 @@ redefinitions here.
 use Bivio::IO::Config;
 
 #=VARIABLES
+# What perl outputs on "die" or "warn" without a newline
+my($_PERL_MSG_AT_LINE) = ' at (\S+|\(eval \d+\)) line \d+\.$';
 my($_PACKAGE) = __PACKAGE__;
-
 my($_LOGGER) = \&_log_stderr;
 my($_DEFAULT_MAX_ARG_LENGTH) = 128;
 my($_MAX_ARG_LENGTH) = $_DEFAULT_MAX_ARG_LENGTH;
 my($_WANT_PID) = 0;
 
+#=INITIALIZATION
+# Normalize error messages
+$SIG{__DIE__} = \&_initial_die_handler;
+$SIG{__WARN__} = \&_warn_handler;
 Bivio::IO::Config->register();
 
 =head1 METHODS
@@ -61,7 +66,7 @@ Bivio::IO::Config->register();
 If true, installs a C<$SIG{__DIE__}> handler which writes alerts on all
 calls to die.
 
-=item intercept_warn : boolean [false]
+=item intercept_warn : boolean [true]
 
 If true, installs a C<$SIG{__WARN__}> handler which writes alerts on all
 warnings.
@@ -120,7 +125,7 @@ sub configure {
     else {
 	$_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
     }
-    if ($cfg->{intercept_warn}) {
+    if ($cfg->{intercept_warn} || !exists($cfg->{intercept_warn})) {
 	$SIG{__WARN__} = \&_warn_handler;
     }
     else {
@@ -245,14 +250,19 @@ Note: If the message consists of a single newline, nothing is output.
 sub warn {
     shift(@_);
     int(@_) == 1 && $_[0] eq "\n" && return;
-    my($i) = 2;
-    $i++ while caller($i) eq __PACKAGE__;
-    &$_LOGGER('err', &_format(undef,
-	    ((caller($i))[0,1,2], (caller($i+1))[$[+3] || undef),
-	    \@_));
+    &$_LOGGER('err', &_call_format(\@_));
 }
 
 #=PRIVATE METHODS
+
+sub _call_format {
+    my($msg) = @_;
+    my($i) = 1;
+    $i++ while caller($i) eq __PACKAGE__;
+    return &_format(undef,
+	    ((caller($i))[0,1,2], (caller($i+1))[$[+3] || undef),
+	    $msg);
+}
 
 sub _die_handler {
     &_warn_handler(@_);
@@ -285,6 +295,18 @@ sub _format {
     return $text;
 }
 
+sub _initial_die_handler {
+    my($msg) = @_;
+    $msg =~ s/$_PERL_MSG_AT_LINE//o;
+    CORE::die(&_call_format([$msg]));
+}
+
+sub _initial_warn_handler {
+    my($msg) = @_;
+    $msg =~ s/$_PERL_MSG_AT_LINE//o;
+    print STDERR &_call_format([$msg]);
+}
+
 sub _log_apache {
     my($severity, $msg) =@_;
 #RJN: How to log a "notice" from mod_perl?
@@ -304,7 +326,7 @@ sub _log_stderr {
 sub _warn_handler {
     my($msg) = @_;
     # Trim perl's message format (not enough info)
-    $msg =~ s/at (\S+|\(eval \d+\)) line \d+\.$//;
+    $msg =~ s/$_PERL_MSG_AT_LINE//o;
     Bivio::IO::Alert->warn($msg);
 }
 
