@@ -349,7 +349,13 @@ sub render {
 	while ($source->next_row()) {
 	    $$buffer .= $fields->{$row++ % 2 ? 'odd_row' : 'even_row'};
 	    foreach my $c (@{$fields->{cells}}) {
-		ref($c) ? $c->render($source, $buffer) : ($$buffer .= $c);
+		$$buffer .= $c, next unless ref($c);
+
+		# Insert a "&nbsp;" if the widget doesn't render.  This
+		# makes the table look nicer on certain browsers.
+		my($start) = length($$buffer);
+		$c->render($source, $buffer);
+		$$buffer .= '&nbsp;' if length($$buffer) == $start;
 	    }
 	}
 	$want_sep = 1, $close_row++ if $row > 0;
