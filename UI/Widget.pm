@@ -34,16 +34,8 @@ placed on what a widget can render.  There are three main methods:
 
 =item new
 
-creates a new instance and binds the initial attributes.
-Instantation is passive as far as the widgets are concerned, i.e.
-attribute binding is the only action that occurs.
-
 =item initialize
 
-parses the attributes into an internal format which may result in the
-creation of new widgets.  Attributes should not be modified by the
-caller after initialization unless they are explicitly labeled
-I<dynamic>.
 
 =item render
 
@@ -74,7 +66,7 @@ L<Bivio::Collection::Attributes::ancestral_get|Bivio::Collection::Attributes/"an
 will search the I<parent> attribute recursively until if finds
 a value.
 
-=item defaulted
+=item default
 
 need not be supplied.  If not supplied, the default value will
 be used.  Defaulted attributes are indicated with square brackets []
@@ -94,7 +86,7 @@ An attribute is declared in the I<ATTRIBUTES> section of the Widget.
 The items define the name, the type, default value, and the kind
 it is (required, inherited, etc.).
 
-=head2 Values
+=head2 Widget Values
 
 Most widgets have an attribute called C<value>.  Some widgets have
 several values.  A widget value may be static, but it typically
@@ -103,7 +95,6 @@ as an array_ref.  Here are some of attributes which are expecting
 widget values:
 
     value => ['mailhost'],
-    src => ['Bivio::UI::Icon', 'next'],
     cells => [
 	['RealmOwner.name'],
 	['RealmUser.role', '->get_short_desc'],
@@ -112,114 +103,19 @@ widget values:
     alt => ['auth_user', 'name', 'Bivio::UI::HTML::Format::Printf',
     		'The auth_user is %s'],
 
-Let's go through each of these one by one:
+When a Widget's render method is called, it executes the following call:
 
-=over 4
+    $source->get_widget_value(@{$self->get('value')});
 
-=item value
+The contents of the I<value> attribute in this case is known to
+be a widget value.  Let's say I<value> contains the array_ref:
 
-is an attribute of
-L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>.
-The array_ref contains a single element, C<'mailhost'>.  When
-String's render is called, it executes the following call:
+    ['mailhost'],
 
-    $source->get_widget_value(@{$fields->{value}})
-
-The contents of the I<value> attribute have been squirreled away to an
-internal field for efficiency.  The call dereferences the array_ref,
-which causes C<'mailhost'> to be passed to C<get_widget_value> of
+The string C<'mailhost'> is be passed to C<get_widget_value> of
 C<$source>.  Typically, C<$source> is a
-L<Bivio::Agent::Request|Bivio::Agent::Request> which always
-has an C<mailhost> attribute.  C<get_widget_value> sees that
-the attribute exists and returns the value to String, which
-in turn renders it with the appropriate font decoration as described
-by the other String attributes.
-
-=item src
-
-is an attribute of
-L<Bivio::UI::HTML::Widget::Image|Bivio::UI::HTML::Widget::Image>.
-This one is slightly more complex.  L<Bivio::UI::Icon|Bivio::UI::Icon>
-is a class.  It is not an attribute name of the request.
-During rendering, Image calls C<$source-E<gt>get_widget_value> which
-determines that C<'Bivio::UI::Icon'> is not an attribute, but is a
-class which I<can> C<get_widget_value>.  It shifts off the
-C<'Bivio::UI::Icon'> and uses it as the object and makes the
-following call:
-
-    return Bivio::UI::Icon->get_widget_value('next');
-
-Icon's C<get_widget_value> returns the information for the
-C<'next'> icon, whatever that is.
-
-=item source
-
-is an attribute of
-L<Bivio::UI::HTML::Widget::HTML::Table|Bivio::UI::HTML::Widget::Table>.
-This widget value looks like a class, but there is a trick.  All
-models, which load themselves successfully, are put as attributes
-on the request by their class name.  So although
-C<Bivio::Biz::Model::ClubUserList> I<can> C<get_widget_value>,
-it won't.  Instead, the value of the
-C<'Bivio::Biz::Model::ClubUserList'> instance which was loaded
-successfully is retrieved.
-
-=item cells
-
-is an attribute of
-L<Bivio::UI::HTML::Widget::HTML::Table|Bivio::UI::HTML::Widget::Table>.
-This is a different type of value attribute.  It is an array_ref of
-value attributes.  Table renders a series of cells.  For convenience
-of the configurer, it allows you to specify the widget values sans
-widgets!  It then wraps a String instance around each value.  This
-avoids a lot of boilerplate.
-
-Table is unique in that it changes the C<$source> dynamically by
-asking it's C<$source> for a widget value.  This is the use
-of the I<source> attribute discussed just above.  The ListModel
-becomes the source for the headings and cells of the Table.
-
-The two widget values (cells) are rendered by two independent String
-widgets whose parent is the Table.   The first value
-retrieves the attribute C<'RealmOwner.name'> from the C<$source>,
-which is the ListModel.  The second cell's value  retrieves
-C<'RealmUser.role'> from the ListModel.
-However, I<RealmUser.role> is an Enum.  What should be displayed?
-The second argument begins with C<-E<gt>>
-which tells C<get_widget_value> to call the result of the first
-argument with the second.  The result is calling the Enum's
-C<get_short_desc> method to retrieve the short description for
-the RealmUser's role.
-
-=item alt
-
-is an attribute of
-L<Bivio::UI::HTML::Widget::Image|Bivio::UI::HTML::Widget::Image>.
-This demonstrates "extreme" cascading of C<get_widget_value> arguments.
-The first argument causes the C<auth_user> attribute from the
-Request to be retrieved, which is a
-L<Bivio::Biz::Model::RealmOwner|Bivio::Biz::Model::RealmOwner>
-object.  The RealmOwner has a property C<name>, which is retrieved
-from this particular instance.
-
-There are more arguments and first argument is a class which
-I<can> C<get_widget_value>, so the following call is executed:
-
-    return Bivio::UI::HTML::Format::Printf->get_widget_value(
-        $name, 'The auth_user is %s');
-
-This particular class is known as a I<formatter>, used for
-the purpose of controlling rendering via the configuration
-of a widget.
-
-=back
-
-The C<get_widget_value> interface will be evolve as needs
-progress.  With perl's powerful introspection mechanisms, we
-have lots of "hooks" to grow.  For example, we might have
-a widget value argument which is a CODE ref which would allow
-the configurer to specify an arbitrary perl subroutine to
-retrieve the widget value.
+L<Bivio::Agent::Request|Bivio::Agent::Request> which must have
+a C<mailhost> attribute or the I<get_widget_value> will fail.
 
 Several routines support implicit C<get_widget_value> calls.
 For example,
@@ -261,37 +157,6 @@ I<auth_user>.
 In general, widgets get all their values via
 C<get_widget_value>.
 
-=head2 Optimizations
-
-Rendering is expensive.  During initialization, the widgets
-render as much as they can and store this "pre-rendered" values
-in their private fields.
-
-In some cases, a widget is rendering
-a completely static value, e.g. a label.  In this case, the
-widget can indicate to its parent that it C<is_constant>.
-The parent widget can avoid the call to the widget's
-C<render> method.  The widget itself is obligated to
-return the constant string as efficiently as possible as well.
-
-For convenience, C<is_constant> is only valid after the first
-call to render.  This is because the widget can't render until
-it has a C<$source>, which it only sees during rendering.
-Some sources are always constant, e.g. Icons.
-
-Only a few widgets keep track of their children's C<is_constant>
-value.  One of these is
-L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>,
-which simply joins together all its values, serially.  If all
-its values are constant, the Join's C<is_constant> will also
-be true.
-
-=head2 Conclusion
-
-Widgets have complex implementations, because they are providing
-multiple options to their configurers.  The configuration, in turn,
-should be simple and as syntax free as possible.
-
 =head1 ATTRIBUTES
 
 =over 4
@@ -309,6 +174,9 @@ L<Bivio::Collection::Attributes::ancestral_get|Bivio::Collection::Attributes/"an
 
 
 #=IMPORTS
+use Bivio::Die;
+use Bivio::IO::Alert;
+use Bivio::IO::ClassLoader;
 
 #=VARIABLES
 
@@ -319,6 +187,10 @@ L<Bivio::Collection::Attributes::ancestral_get|Bivio::Collection::Attributes/"an
 =for html <a name="new"></a>
 
 =head2 static new(hash_ref attrs) : Bivio::UI::Widget
+
+creates a new instance and binds the initial attributes.  Instantation is
+passive as far as the widgets are concerned, i.e.  attribute binding is the
+only action that occurs.
 
 =cut
 
@@ -344,47 +216,122 @@ sub accepts_attribute {
     return 0;
 }
 
-=for html <a name="get_content_type"></a>
+=for html <a name="die"></a>
 
-=head2 abstract get_content_type(any source) : string
+=head2 die(string attr_name, any source, string msg, ...)
 
-Returns the content type of this widget.  Only top level widgets
-need to return the content type.  The content type is defined
-by the application protocol.  For HTTP, the content type is the
-MIME type.
+Dies with I<msg> and context including I<attr_name> and I<source>
+which both may be C<undef>.
 
 =cut
 
-$_ = <<'}'; # emacs
-sub get_content_type {
+sub die {
+    my($self, $attr_name, $source, @msg) = @_;
+    Bivio::Die->throw('DIE', {
+	message => Bivio::IO::Alert->format_args(@msg),
+	entity => $attr_name,
+	widget => $self,
+	view => Bivio::IO::ClassLoader->is_loaded('Bivio::View')
+		&& Bivio::View->unsafe_get_current,
+	source => $source,
+	program_error => 1,
+    });
+    # DOES NOT RETURN
+}
+
+=for html <a name="get_content_type"></a>
+
+=head2 abstract execute(Bivio::Agent::Request req)
+
+Renders the widget and puts the result on I<req>'s reply.  Only "top level"
+widgets are executable,
+e.g. L<Bivio::UI::HTML::Widget::Page|Bivio::UI::HTML::Widget::Page>.
+
+Typically, an executable widget will call
+L<execute_with_content_type|"execute_with_content_type">.
+
+=cut
+
+$_ = <<'}'; # for emacs
+sub execute {
+}
+
+=for html <a name="execute_with_content_type"></a>
+
+=head2 execute_with_content_type(Bivio::Agent::Request req, string content_type)
+
+Executable widgets will call this method, which calls L<render|"render">
+and sets the reply's output_type to I<content_type>.
+
+=cut
+
+sub execute_with_content_type {
+    my($self, $req, $content_type) = @_;
+    my($buffer) = '';
+    my($reply) = $req->get('reply');
+    $self->render($req, \$buffer);
+    $reply->set_output_type($content_type);
+    $reply->set_output(\$buffer);
+    return;
 }
 
 =for html <a name="initialize"></a>
 
-=head2 abstract initialize()
+=head2 initialize()
 
 Initializes the widgets internal structures.  Widgets should cache static
-attributes.  Widgets initialize should be callable more than once.
+attributes.  A Widget's initialize should be callable more than once.
+
+Parses the attributes into an internal format which may result in the
+creation of new widgets.  Attributes should not be modified by the
+caller after initialization unless they are explicitly labeled
+I<dynamic>.
+
+By default, does nothing.
 
 =cut
 
 sub initialize {
-    die('abstract method');
+    return;
 }
 
-=for html <a name="is_constant"></a>
+=for html <a name="initialize_attr"></a>
 
-=head2 is_constant : boolean
+=head2 initialize_attr(string attr_name) : any
 
-Will this widget always render exactly the same way?
-May only be called after the first render call.
+Calls L<unsafe_initialize_attr|"unsafe_initialize_attr">.
+Dies if I<attr_name> doesn't exist or is C<undef>.
 
-Returns false by default.
+Returns attribute value.
 
 =cut
 
-sub is_constant {
-    return 0;
+sub initialize_attr {
+    my($self, $attr_name) = @_;
+    my($res) = $self->unsafe_initialize_attr($attr_name);
+    $self->die($attr_name, undef, 'attribute must be defined')
+	    unless defined($res);
+    return $res;
+}
+
+=for html <a name="initialize_value"></a>
+
+=head2 initialize_value(string attr_name, any value) : any
+
+Initializes an attribute I<value>.  If I<value> is a widget, will
+put I<parent> on I<value> to be I<self>.
+
+I<attr_name> is used only for debugging.
+
+Returns value.
+
+=cut
+
+sub initialize_value {
+    my($self, $attr_name, $value) = @_;
+    return $value unless defined($value);
+    return $value unless UNIVERSAL::isa($value, __PACKAGE__);
+    return $value->put_and_initialize(parent => $self);
 }
 
 =for html <a name="put_and_initialize"></a>
@@ -393,7 +340,7 @@ sub is_constant {
 
 Puts the attributes and initializes.  Typically used in the form:
 
-    $fields->{my_child} = $self->some_widget(...)->put_and_initialize(
+    $fields->{my_child} = $self->get('some_widget')->put_and_initialize(
            parent => $self,
     );
 
@@ -410,14 +357,140 @@ sub put_and_initialize {
 
 =for html <a name="render"></a>
 
-=head2 render(any source, string_ref buffer)
+=head2 abstract render(any source, string_ref buffer)
 
-Appends the value of the widget to I<buffer>.
+Appends the value of the widget to I<buffer>.  I<source> is used
+to retrieve widget values, if any.  Widgets should not depend that
+I<source> is a Request.  Always call:
+
+      my($req) = $source->get_request;
+
+to get the request object.
 
 =cut
 
+$_ = <<'}'; # for emacs
 sub render {
-    die('abstract method');
+}
+
+=for html <a name="render_attr"></a>
+
+=head2 render_attr(string attr_name, any source) : string_ref
+
+=head2 render_attr(string attr_name, any source, string_ref buffer) : string_ref
+
+Calls L<unsafe_render_attr|"unsafe_render_attr">.
+
+Dies if there was no attribute or is C<undef>.
+
+Returns I<buffer>.  If I<buffer> is I<undef>, will create one.
+
+=cut
+
+sub render_attr {
+    my($self, $attr_name, $source, $buffer) = @_;
+    my($b) = '';
+    $buffer = \$b unless $buffer;
+    $self->die($attr_name, $source, 'attribute renders as undef')
+	    unless $self->unsafe_render_attr($attr_name, $source, $buffer);
+    return $buffer;
+}
+
+=for html <a name="render_value"></a>
+
+=head2 render_value(string attr_name, any value, any source, string_ref buffer) : string_ref
+
+Calls L<unsafe_render_value|"unsafe_render_value">.
+
+Dies if I<value> renders to C<undef>.
+
+Returns I<buffer>.  If I<buffer> is I<undef>, will create one.
+
+=cut
+
+sub render_value {
+    my($self, $attr_name, $value, $source, $buffer) = @_;
+    my($b) = '';
+    $buffer = \$b unless $buffer;
+    $self->die($attr_name, $source, 'value renders as undef')
+	    unless $self->unsafe_render_value(
+		    $attr_name, $value, $source, $buffer);
+    return $buffer;
+}
+
+=for html <a name="unsafe_initialize_attr"></a>
+
+=head2 unsafe_initialize_attr(string attr_name) : any
+
+Calls L<initialize_value|"initialize_value"> on I<attr_name>'s value.
+Calls I<unsafe_get> to initialize the attribute.
+
+Returns value which may be C<undef>.
+
+=cut
+
+sub unsafe_initialize_attr {
+    my($self, $attr_name) = @_;
+    return $self->initialize_value($attr_name, $self->unsafe_get($attr_name));
+}
+
+=for html <a name="unsafe_render_attr"></a>
+
+=head2 unsafe_render_attr(string attr_name, any source, string_ref buffer) : boolean
+
+Retrieves I<attr_name> from I<self> and calls
+L<unsafe_render_value|"unsafe_render_value"> on the result.
+
+=cut
+
+sub unsafe_render_attr {
+    my($self, $attr_name, $source, $buffer) = @_;
+    return $self->unsafe_render_value(
+	    $attr_name, $self->unsafe_get($attr_name), $source, $buffer);
+}
+
+=for html <a name="unsafe_render_value"></a>
+
+=head2 unsafe_render_value(string attr_name, any value, any source, string_ref buffer) : boolean
+
+Evaluates I<value>.  If is a constant, simply appends to I<buffer>.  If it
+is a widget value (array_ref), calls I<source>C<-E<gt>get_widget_value>, to get
+the value.  If the resultant value or original value is a
+L<Bivio::UI::Widget|Bivio::UI::Widget>, calls render on the widget.
+
+The result is appended to I<buffer>.  If the value or widget value is C<undef>,
+returns false and I<buffer> is unmodified.  I<buffer> should be a reference
+to a defined value, so that widgets can call C<length> and other functions
+with it.
+
+I<attr_name> is used for debugging only.
+
+Dies if value is or widget value results in a reference which is not a
+Widget.
+
+=cut
+
+sub unsafe_render_value {
+    my($self, $attr_name, $value, $source, $buffer) = @_;
+    return 0 unless defined($value);
+    my($i) = 5;
+    while (ref($value) eq 'ARRAY') {
+	$value = $source->get_widget_value(@$value);
+	return 0 unless defined($value);
+	$self->die($attr_name, $source, 'infinite loop trying to ',
+		' unwind widget value: ', $value)
+		if --$i < 0;
+    }
+    if (ref($value)) {
+	$self->die($attr_name, $source,
+		'value is unknown type: ', $value)
+		unless UNIVERSAL::isa($value, __PACKAGE__);
+	$value->render($source, $buffer);
+    }
+    else {
+	$$buffer .= $value;
+    }
+    return 1;
 }
 
 #=PRIVATE METHODS
