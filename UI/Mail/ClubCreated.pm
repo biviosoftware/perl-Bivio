@@ -53,7 +53,7 @@ sub execute {
     my($recipient) = $club->format_email();
     my($http) = $req->format_http_prefix;
     my($subscribe) = $http
-	    .$_VS->vs_format_uri_static_site($req, 'need-link-to-form'');
+	    .$_VS->vs_format_uri_static_site($req, 'need-link-to-form');
     my($as) = $http
 	    .$_VS->vs_format_uri_static_site($req, 'hm/account-sync.html');
     my($ak) = $http
