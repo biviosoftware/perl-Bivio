@@ -214,7 +214,6 @@ Returns information about the commands executed.
 sub build {
     my($self, @packages) = @_;
     $self->usage_error("Missing spec file\n") unless @packages;
-    $self->usage_error("Must be run as root\n") unless $> == 0;
     my($rpm_stage) = $self->get('build_stage');
     $self->usage_error("Invalid build_stage ", $rpm_stage, "\n")
 	    unless $rpm_stage =~ /^[pcib]$/;
@@ -428,7 +427,7 @@ sub _create_rpm_spec {
 %define _srcrpmdir .
 %define _rpmdir $_TMP_DIR
 %define _builddir .
-%define cvs cvs checkout -f -r $version
+%define cvs cvs -Q checkout -f -r $version
 Release: $release
 EOF
     print(SPECOUT "Version: $version\n")
@@ -551,13 +550,12 @@ sub _search {
 #
 sub _system {
     my($command, $output) = @_;
-    $$output .= "** $command\n";
-    $$output .= join('', `$command 2>&1`);
+    $$output .= "** $command\n" . `$command 2>&1`;
 
     if ($?) {
 	# print out current output and die with the status code
-	print($$output);
-	Bivio::Die->die("$command failed, exit status ",$?);
+	Bivio::IO::Alert->print_literally($$output);
+	Bivio::Die->die("$command failed, exit status: ",$?);
     }
     return;
 }
