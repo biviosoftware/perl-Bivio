@@ -47,8 +47,6 @@ It is currently a placeholder.
 
 Returns the string comparison (cmp) of I<left> to I<right>.
 
-=back
-
 =cut
 
 sub compare {
