@@ -279,6 +279,7 @@ sub VISITOR_FIELD {
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::MIME::Base64;
 use Bivio::Type::LoginCookie;
 use Bivio::Type::UserAgent;
 use Bivio::Util;
@@ -550,7 +551,7 @@ sub _encrypt {
     # remove trailing $_SEP
     chop($res);
 
-    $res = $_CIPHER->encrypt_hex($res);
+    $res = Bivio::MIME::Base64->http_encode($_CIPHER->encrypt($res));
     _trace($is_persistent ? 'persistent-length=' : 'volatile-length=',
 	    length($res)) if $_TRACE;
 
@@ -565,6 +566,10 @@ sub _encrypt {
 sub _parse {
     my($cookie) = @_;
     my($fields) = {};
+
+    # Set to true if either of the time fields are invalid
+    my($bad) = 0;
+
     # Our cookies don't have ';' in them.  If someone sends a cookie
     # back with ';' in it, well, it won't initialize correctly
     # New cookies have ',' to separate them.  The attributes of a cookie
@@ -597,7 +602,19 @@ sub _parse {
 	    next;
 	}
 
-	my($s) = $_CIPHER->decrypt_hex($v);
+	my($s);
+#TODO: REMOVE ON 8/1/2000.  It assumes that we have at least one
+#      non-hex in the new form (http-base64), which is probably safe.
+	if ($v =~ /^[0-9a-z]+$/) {
+	    $s = $_CIPHER->decrypt_hex($v);
+	    # Force a rewrite to change encoding
+	    $fields->{MODIFIED_FIELD()} = 1;
+	    _trace('received hex format, rewriting') if $_TRACE;
+	}
+	else {
+#TODO: Keep this
+	    $s = $_CIPHER->decrypt(Bivio::MIME::Base64->http_decode($v));
+	}
 	my(@v) = split(/$_SEP/o, $s);
 	_trace('data=', \@v) if $_TRACE;
 	# Make sure we have an even number of elements and then convert to hash
@@ -610,15 +627,11 @@ sub _parse {
 	unless ($v{$_TIME_FIELD} && $v{$_TIME_FIELD} <= time
 	       && $v{$_TIME_FIELD} > EPOCH()) {
 	    # Bad cookie
-	    _trace('unable to decrypt cookie') if $_TRACE;
+	    _trace('unable to decrypt cookie: key=', $k, ', value=', $v)
+		    if $_TRACE;
 
-#TODO: This may be a noisy error message, but makes sense to try it.
-	    Bivio::IO::Alert->warn('invalid cookie, time field = ',
-		    $v{$_TIME_FIELD}) if $v{$_TIME_FIELD};
-
-	    # force a new cookie to be written
-	    $fields->{MODIFIED_FIELD()} = 1;
-	    next;
+	    $bad = 1;
+	    # fall through, so we can see the fields in the warning below
 	}
 
 	# Copy over all the field values; they will be parsed by the handlers
@@ -627,10 +640,20 @@ sub _parse {
 	}
     }
 
-    # If we didn't get both cookies, always send them back.
-    $fields->{MODIFIED_FIELD()} = 1 unless
-	    $fields->{received_persistent} && $fields->{received_volatile};
+    if ($bad) {
+	# This will help us track users who hack cookies.
+	Bivio::IO::Alert->warn('invalid cookie: ', $fields);
 
+	# We know nothing about the validity of the cookie, so must destroy
+	# both volatile and persistent.
+	$fields = {MODIFIED_FIELD() => 1};
+
+    }
+    else {
+	# If we didn't get both cookies, always send them back.
+	$fields->{MODIFIED_FIELD()} = 1 unless
+		$fields->{received_persistent} && $fields->{received_volatile};
+    }
     return $fields;
 }
 
