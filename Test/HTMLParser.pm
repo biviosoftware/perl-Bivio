@@ -144,6 +144,20 @@ sub get_fields {
     return($fields);
 }
 
+=for html <a name="get_title"></a>
+
+=head2 get_title(Bivio::Test::HTMLParser self) : string
+
+Access routine that returns the title of the HTML page.
+
+=cut
+
+sub get_title {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return ($fields->{title});
+}
+
 =for html <a name="start"></a>
 
 =head2 start(string text, hash_ref attr, arrayref attrseq, string origtext)

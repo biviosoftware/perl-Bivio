@@ -64,6 +64,7 @@ sub new {
 
     my($p) = Bivio::Test::HTMLParser->new($content)->get_fields();
 
+#   $fields->{title} = $p->get_title();
     $fields->{title} = $p->{title};
 
     # save parser's output, for reference when debugging.
