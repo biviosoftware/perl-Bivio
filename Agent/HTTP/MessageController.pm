@@ -101,7 +101,7 @@ sub handle_request {
 	my($model) = $view->get_default_model();
 	my($fp) = $req->get_model_args();
 	$fp->put('club', $club->get('id'));
-	$model->find($fp); # error handling done by view
+	$model->load($fp); # error handling done by view
 	$view->activate()->render($model, $req);
 
 	my($reply) = $req->get_reply();

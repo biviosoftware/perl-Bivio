@@ -88,7 +88,7 @@ sub handle_request {
 	$fp->put('club', $club->get('id'));
 
 	if ($view->get_name eq 'users') {
-	    $model->find($fp);
+	    $model->load($fp);
 	}
 
 	if ($req->get_action_name()) {
@@ -103,7 +103,7 @@ sub handle_request {
 		$req->set_view_name('users');
 		$view = $self->get_view('users');
 		$model = $view->get_default_model();
-		$model->find(Bivio::Biz::FindParams->new(
+		$model->load(Bivio::Biz::FindParams->new(
 			{'club' => $club->get('id')}));
 	    }
 	}

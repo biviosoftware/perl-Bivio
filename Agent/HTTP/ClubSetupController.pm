@@ -80,7 +80,7 @@ sub handle_request {
 
 	my($model) = $view->get_default_model();
 	if (! $req->get_model_args()->is_empty()) {
-	    $model->find($req->get_model_args());
+	    $model->load($req->get_model_args());
 	}
 	if ($req->get_action_name()) {
 	    $model->get_action($req->get_action_name())->execute($model, $req);
