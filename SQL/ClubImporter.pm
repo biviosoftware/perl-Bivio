@@ -989,22 +989,35 @@ sub _create_stock_transfer_entry {
 sub _is_group_deposit {
     my($trans, $easyware_trans) = @_;
 
+    my($is_group) = 0;
     my($type) = $trans->{transaction_type};
-    if ($type == 10 || $type == 11 || $type == 12) {
 
-	# see if there is an cash entry with id == 0 on same date
+    return unless ($type == 10 || $type == 11 || $type == 12);
 
-	for (my($i) = 0; $i < int(@$easyware_trans); $i++) {
-	    my($t) = $easyware_trans->[$i];
-	    next unless $t;
-	    if ($t->{date_time} eq $trans->{date_time}
-		    && $t->{class} == Bivio::Type::EntryClass->CASH()
-		    && $t->{id} == 0) {
-		return 1;
+    # is this the cash account entry?
+    if ($trans->{id} == 0
+	    && $trans->{class} == Bivio::Type::EntryClass::CASH()) {
+	return 1;
+    }
+    # see if there is an cash entry with id == 0 on same date
+
+    for (my($i) = 0; $i < int(@$easyware_trans); $i++) {
+	my($t) = $easyware_trans->[$i];
+	next unless $t;
+	if ($t->{date_time} eq $trans->{date_time}
+		&& $t->{class} == Bivio::Type::EntryClass->CASH()) {
+
+	    if ($t->{id} == $trans->{id}) {
+		# single deposit
+		return 0;
+	    }
+	    elsif ($t->{id} == 0) {
+		# might be a group if it isn't a single deposit
+		$is_group = 1;
 	    }
 	}
     }
-    return 0;
+    return $is_group;
 }
 
 # _is_earnings_distribution(int type) : boolean
