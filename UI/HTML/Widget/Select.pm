@@ -72,10 +72,13 @@ TODO: this attribute shouldn't exist - it should use the primary key
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Util;
 use Bivio::Type::Enum;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -122,7 +125,7 @@ sub initialize {
 	_load_items_from_enum($self, $choices);
     }
     elsif (!ref($choices)) {
-	Carp::croak($choices, ': unknown choices type');
+	Carp::croak($choices, ': unknown choices type (not a ref)');
     }
     elsif (ref($choices) eq 'ARRAY') {
 	# load it dynamically during render
@@ -133,7 +136,7 @@ sub initialize {
 	_load_items_from_enum_set($self, $choices);
     }
     else {
-	Carp::croak(ref($choices), ': unknown choices type');
+	Carp::croak(ref($choices), ': unknown choices type (not a set)');
     }
     return;
 }
