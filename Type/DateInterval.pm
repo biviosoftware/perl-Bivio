@@ -49,19 +49,11 @@ A month relative to current date/time.  Time component unmodified.
 
 A year relative to current date/time.  Time component unmodified.
 
-=item BEGINNING_OF_YEAR
+=item FISCAL_YEAR
 
-The beginning of next year if L<inc|"inc">.
-The beginning of this year if L<dec|"dec">.
-Time component unmodified.
+=item SIX_MONTHS
 
-=item END_OF_IRS_TAX_SEASON
-
-4/15.
-
-=item THREE_MONTHS
-
-Three months.  (not a quarter).
+Six months.
 
 =back
 
@@ -82,25 +74,17 @@ __PACKAGE__->compile([
     WEEK => [
 	7,
     ],
-#TODO: This should go away.  It's not an interval.
-    # negative values are interpreted, not actual
-    BEGINNING_OF_YEAR => [
+    MONTH => [
 	-1,
     ],
-    MONTH => [
+    YEAR => [
 	-2,
     ],
-    YEAR => [
+    FISCAL_YEAR => [
 	-3,
     ],
-    FISCAL_YEAR => [
+    SIX_MONTHS => [
 	-4,
-    ],
-    IRS_TAX_SEASON => [
-	-5,
-    ],
-    THREE_MONTHS => [
-	-6,
     ],
 ]);
 
@@ -150,8 +134,6 @@ except for FISCAL_YEAR, e.g. MONTH-E<gt>inc_to_end('12/22/2001') is
 
 FISCAL_YEAR increments to 12/31.
 
-BEGINNING_OF_YEAR is not allowed.
-
 =cut
 
 sub inc_to_end {
@@ -175,16 +157,6 @@ sub is_continuous {
 
 #=PRIVATE METHODS
 
-# _dec_beginning_of_year(string date_time) : string
-#
-# Goes to beginning of this year.
-#
-sub _dec_beginning_of_year {
-    my($date_time) = @_;
-    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
-    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
-}
-
 # _dec_fiscal_year(string date_time) : string
 #
 # On 1/1, goes to prior year.  Else, goes to beginning of this year.
@@ -194,18 +166,6 @@ sub _dec_fiscal_year {
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
     $year-- if $mday == 1 && $mon == 1;
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
-}
-
-# _dec_irs_tax_season(string date_time) : string
-#
-#TODO: Not sure what this should do...
-#
-sub _dec_irs_tax_season {
-    my($date_time) = @_;
-    die('not implemented');
-#    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
-#    $year-- if $mon < 4 || $mon == 4 && $mday <= 15;
-#    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
 }
 
 # _dec_month(string date_time) : string
@@ -222,13 +182,13 @@ sub _dec_month {
 	$mday, $mon, $year);
 }
 
-# _dec_three_months(string date_time) : string
+# _dec_six_months(string date_time) : string
 #
-# Decrement three months.
+# Decrement six months.
 #
-sub _dec_three_months {
+sub _dec_six_months {
     my($date_time) = @_;
-    return $_DT->add_months($date_time, -3);
+    return $_DT->add_months($date_time, -6);
 }
 
 # _dec_year(string date_time) : string
@@ -256,34 +216,15 @@ sub _from_parts_with_mday_correction {
 	    $mday > $last ? $last : $mday, $mon, $year);
 }
 
-# _inc_beginning_of_year(string date_time) : string
+# _inc_fiscal_year(string date_time) : string
 #
 # Goes to beginning of next year.
 #
-sub _inc_beginning_of_year {
+sub _inc_fiscal_year {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
 	= $_DT->to_parts($date_time);
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, 1 + $year);
-}
-
-# _inc_fiscal_year(string date_time) : string
-#
-# Same as calling _inc_beginning_of_year, but has fiscal year name.
-#
-sub _inc_fiscal_year {
-    my($date_time) = @_;
-    return _inc_beginning_of_year($date_time);
-}
-
-# _inc_irs_tax_season(string date_time) : string
-#
-# Goes to start of next tax season.  Always adds a year.
-#
-sub _inc_irs_tax_season {
-    my($date_time) = @_;
-    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
-    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year + 1);
 }
 
 # _inc_month(string date_time) : string
@@ -300,22 +241,13 @@ sub _inc_month {
 	$mday, $mon, $year);
 }
 
-# _inc_three_months(string date_time) : string
+# _inc_six_months(string date_time) : string
 #
-# Increments by three months.
+# Increments by six months.
 #
-sub _inc_three_months {
+sub _inc_six_months {
     my($date_time) = @_;
-    return $_DT->add_months($date_time, 3);
-}
-
-# _inc_to_end_beginning_of_year(self, string start_date) : string
-#
-# Not supported.
-#
-sub _inc_to_end_beginning_of_year {
-    die('operation not implemented on BEGINNING_OF_YEAR');
-    # DOES NOT RETURN
+    return $_DT->add_months($date_time, 6);
 }
 
 # _inc_to_end_day(self, string start_date) : string
@@ -325,19 +257,6 @@ sub _inc_to_end_beginning_of_year {
 sub _inc_to_end_day {
     shift;
     return shift;
-}
-
-# _inc_to_end_irs_tax_season(self, string start_date) : string
-#
-# End of IRS tax season goes to 4/15.  This is like
-# _inc_year(_dec_irs_tax_season($start_date)) and setting 4/15.
-# Does nothing if already 4/15.
-#
-sub _inc_to_end_irs_tax_season {
-    my($self, $start_date) = @_;
-    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($start_date);
-    $year++ unless $mon < 4 || $mon == 4 && $mday <= 15;
-    return $_DT->from_parts_or_die($sec, $min, $hour, 15, 4, $year);
 }
 
 # _inc_to_end_none(self, string start_date) : string
