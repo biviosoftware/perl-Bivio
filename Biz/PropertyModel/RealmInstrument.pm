@@ -33,6 +33,7 @@ and delete interface to the C<realm_instrument_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Boolean;
 use Bivio::Type::Line;
@@ -45,6 +46,115 @@ use Bivio::Type::Text;
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_cost_per_share"></a>
+
+=head2 static get_cost_per_share(string realm_instrument_id, Bivio::Type::DateTime date) : string
+
+Returns the average cost per share for the specified instrument up to
+the specified date.
+
+=cut
+
+sub get_cost_per_share {
+    my(undef, $realm_instrument_id, $date) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute(
+	    'select entry_t.amount, realm_instrument_entry_t.count from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= TO_DATE(?,\'J SSSSS\')',
+	   [$realm_instrument_id, $date]);
+
+    my($total_cost) = 0.0;
+    my($total_count) = 0;
+    my($row);
+    while ($row = $sth->fetchrow_arrayref()) {
+	$total_cost += $row->[0];
+	$total_count += $row->[1];
+    }
+    return $total_count > 0 ? ($total_cost / $total_count) : 0;
+}
+
+=for html <a name="get_first_buy_date"></a>
+
+=head2 static get_first_buy_date(string realm_instrument_id) : string
+
+Returns the date of the first buy or valuation of the specified
+instrument.
+
+=cut
+
+sub get_first_buy_date {
+    my(undef, $realm_instrument_id) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute(
+	    'select TO_CHAR(min(realm_transaction_t.dttm), \'J SSSSS\') from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.entry_type = 200 and realm_instrument_entry_t.realm_instrument_id=?',
+	    [$realm_instrument_id]);
+
+    my($date);
+    my($row);
+    if ($row = $sth->fetchrow_arrayref()) {
+	$date = Bivio::Type::DateTime->from_sql_column($row->[0]);
+    }
+
+    $sth = Bivio::SQL::Connection->execute(
+	    'select TO_CHAR(min(realm_instrument_valuation_t.dttm), \'J SSSSS\') from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=?',
+	   [$realm_instrument_id]);
+
+    if ($row = $sth->fetchrow_arrayref()) {
+	my($date2) = Bivio::Type::DateTime->from_sql_column($row->[0]);
+
+	if (!defined($date) || $date > $date2) {
+	    $date = $date2;
+	}
+    }
+#    my($d, $m, $y) = (gmtime($date))[3,4,5];
+#    return sprintf('%02d/%02d/%02d', ++$m, $d, $y);
+    return $date;
+}
+
+=for html <a name="get_number_of_shares"></a>
+
+=head2 static get_number_of_shares(string realm_instrument_id, Bivio::Type::DateTime date) : int
+
+Returns the number of shares of the specified realm instrument that are
+owned by on the specified date.
+
+=cut
+
+sub get_number_of_shares {
+    my(undef, $realm_instrument_id, $date) = @_;
+
+    # note: doesn't include fractional shares paid in cash (not tax basis)
+
+    my($sth) = Bivio::SQL::Connection->execute(
+	    'select sum(realm_instrument_entry_t.count) from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= TO_DATE(?, \'J SSSSS\')',
+	   [$realm_instrument_id, $date]);
+    return $sth->fetchrow_arrayref()->[0] || '0';
+}
+
+=for html <a name="get_share_price"></a>
+
+=head2 static get_share_price(string realm_instrument_id, Bivio::Type::DateTime date) : string
+
+Returns the value of one share of the specified instrument on the specified
+date.
+
+=cut
+
+sub get_share_price {
+    my(undef, $realm_instrument_id, $date) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute(
+	    'select realm_instrument_valuation_t.price_per_share from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=? and realm_instrument_valuation_t.dttm <= TO_DATE(?, \'J SSSSS\') order by realm_instrument_valuation_t.dttm desc',
+	   [$realm_instrument_id, $date]);
+
+    my($row);
+    if ($row = $sth->fetchrow_arrayref()) {
+	my ($value) = $row->[0];
+	$sth->finish();
+	return $value;
+    }
+    return 0.0;
+}
 
 =for html <a name="internal_initialize"></a>
 
