@@ -2200,21 +2200,21 @@ my(@_CFG) = (
         Bivio::Biz::Action::CelebrityRedirect
         next=CLUB_COMMUNICATIONS_MAIL_DETAIL
     )],
-#    [qw(
-#        CLUB_COMMUNICATIONS_FILE_UNZIP
-#        225
-#        CLUB
-#        DOCUMENT_WRITE
-#        ?/file-unzip/*
-#        Bivio::Biz::Action::PublicRealm
-#        Bivio::Type::FileVolume->execute_file
-#        Bivio::Biz::Model::FilePathList
-#        Bivio::Biz::Model::FileDirectoryList->execute_load_all
-#        Bivio::Biz::Model::FileUnzipForm
-#        Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
-#        Bivio::UI::HTML::Club::FileUnzip
-#        next=CLUB_COMMUNICATIONS_FILE_READ
-#    )],
+    [qw(
+        CLUB_COMMUNICATIONS_FILE_UNZIP
+        225
+        CLUB
+        DOCUMENT_WRITE
+        ?/file-unzip/*
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::FileDirectoryList->execute_load_all
+        Bivio::Biz::Model::FileUnzipForm
+        Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
+        Bivio::UI::HTML::Club::FileUnzip
+        next=CLUB_COMMUNICATIONS_FILE_READ
+    )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_MERGER
         226
