@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::RealmAccount;
 use strict;
 $Bivio::Biz::Model::RealmAccount::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::RealmAccount::VERSION;
 
 =head1 NAME
 
@@ -88,12 +89,7 @@ sub SUSPENSE {
 
 #=IMPORTS
 use Bivio::SQL::Connection;
-use Bivio::SQL::Constraint;
-use Bivio::Type::Boolean;
 use Bivio::Type::DateTime;
-use Bivio::Type::Line;
-use Bivio::Type::Name;
-use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 
@@ -157,49 +153,40 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_account_t',
 	columns => {
-            realm_account_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            name => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            tax_free => ['Bivio::Type::Boolean',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            in_valuation => ['Bivio::Type::Boolean',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            institution_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NONE()],
-            account_number => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-            external_password => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
+            realm_account_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'NOT_NULL'],
+            name => ['Line', 'NOT_NULL'],
+            tax_free => ['Boolean', 'NOT_NULL'],
+            in_valuation => ['Boolean', 'NOT_NULL'],
+            institution_id => ['PrimaryId', 'NONE'],
+            account_number => ['Name', 'NONE'],
+            external_password => ['Name', 'NONE'],
         },
 	auth_id => 'realm_id',
-#	other => [
-#	    [qw(realm_id RealmOwner.realm_id)],
-#	],
     };
 }
 
 =for html <a name="create_initial"></a>
 
-=head2 create_initial(Bivio::Biz::Model::RealmOwner realm)
+=head2 create_initial()
+
+=head2 create_initial(string realm_id)
 
 Create the initial accounts (BANK, BROKER, SUSPENSE, and PETTY_CASH)
-for a realm.
+for the current request's realm.
 
 =cut
 
 sub create_initial {
-    my($self, $realm) = @_;
-    my($realm_id) = $realm->get('realm_id');
+    my($self, $realm_id) = @_;
+    $realm_id ||= $self->get_request->get('auth_id');
 
-    foreach my $n (BANK(), BROKER(), SUSPENSE(), PETTY_CASH()) {
+    foreach my $name (BANK(), BROKER(), SUSPENSE(), PETTY_CASH()) {
 	$self->create({
 	    realm_id => $realm_id,
-	    name => $n,
+	    name => $name,
 	    tax_free => 0,
-	    in_valuation => $n ne PETTY_CASH() ? 1 : 0,
+	    in_valuation => $name eq PETTY_CASH() ? 0 : 1,
 	});
     }
     return;
