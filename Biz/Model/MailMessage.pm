@@ -91,8 +91,8 @@ Creates a mail message model from an L<Bivio::Mail::Incoming>.
 sub create {
     my($self, $msg, $realm_owner, $club) = @_;
     # Archive mail message first
-    # $dttm is always valid
-    my($dttm) = $msg->get_dttm() || time;
+    # $date_time is always valid
+    my($date_time) = $msg->get_date_time() || time;
     my($club_id, $club_name) = $realm_owner->get('realm_id', 'name');
     my($from_email, $from_name) = $msg->get_from;
     defined($from_name) || ($from_name = $from_email);
@@ -105,7 +105,7 @@ sub create {
     my($values) = {
 	club_id => $club_id,
 	rfc822_id => $msg->get_message_id,
-	dttm => Bivio::Type::DateTime->from_unix($dttm),
+	date_time => Bivio::Type::DateTime->from_unix($date_time),
 	from_name => $from_name,
 	from_email => $from_email,
 	reply_to_email => $reply_to_email,
@@ -287,7 +287,7 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NONE()],
             rfc822_id => ['Bivio::Type::Line',
     		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
-            dttm => ['Bivio::Type::DateTime',
+            date_time => ['Bivio::Type::DateTime',
     		Bivio::SQL::Constraint::NOT_NULL()],
             from_name => ['Bivio::Type::Line',
     		Bivio::SQL::Constraint::NOT_NULL()],
@@ -465,7 +465,7 @@ sub _extract_mime_header {
 #
 sub _get_date {
     my($line) = @_;
-#TODO: Use Mail::Incoming::get_dttm
+#TODO: Use Mail::Incoming::get_date_time
     if ($$line =~ s/^Date:\s*//i) {
 	my(@date) = split(/\s+/, $$line);
 	return _to_date(\@date);
@@ -511,7 +511,7 @@ sub _parse_keywords {
     while (!$file->eof) {
 	my($line) = $file->getline;
 	if ($line =~ /^Date:/i) {
-#TODO: use Mail::Incoming->get_dttm
+#TODO: use Mail::Incoming->get_date_time
 	    my($fdate) = _get_date(\$line);
 	}
 	elsif ($line =~ s/^(?:From|To|Subject):\s*//i) {
@@ -616,7 +616,7 @@ sub _to_date {
 #TODO: This actually is incorrect, because day of week is optional
 #      so may have N or N+1 parts depending on sender
 
-#probably don't need this method, anyway, as I can use get_dttm on
+#probably don't need this method, anyway, as I can use get_date_time on
 #mail incoming.
 
     my($d) = $date->[2].' ';
