@@ -109,6 +109,14 @@ Too many records were returned.
 
 Insufficient resources to satisfy your request.
 
+=item IO_ERROR: entity, message
+
+file system error
+
+=item CLIENT_ERROR: request
+
+error reading or writing to the client.
+
 =back
 
 =cut
@@ -196,8 +204,18 @@ __PACKAGE__->compile(
     ],
     NO_RESOURCES => [
 	15,
-	'no resources',
+	undef,
 	'insufficient resources to satisfy the request',
+    ],
+    IO_ERROR => [
+	16,
+	undef,
+	'file system error',
+    ],
+    CLIENT_ERROR => [
+	17,
+	undef,
+	'error reading or writing to the client',
     ],
 );
 
