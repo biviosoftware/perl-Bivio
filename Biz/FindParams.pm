@@ -113,8 +113,9 @@ sub clear {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    #pjm: how to remove all elements without creating a new one?
+#TODO: how to remove all elements without creating a new one?
     $fields->{map} = {};
+    return;
 }
 
 =for html <a name="clone"></a>
@@ -194,6 +195,7 @@ sub put {
     my($self, $key, $value) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{map}->{$key} = $value;
+    return;
 }
 
 =for html <a name="remove"></a>
@@ -208,6 +210,7 @@ sub remove {
     my($self, $key) = @_;
     my($fields) = $self->{$_PACKAGE};
     delete($fields->{map}->{$key});
+    return;
 }
 
 =for html <a name="to_string"></a>
