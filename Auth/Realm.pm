@@ -132,7 +132,8 @@ sub new {
 	# If there is no owner, then permissions already retrieved from
 	# database.  Set "id" to realm_type.
 	$self->{$_PACKAGE} = $_DEFAULT_PERMISSION_SET{$class};
-	$self->put(id => $self->get_type->as_int);
+	$self->put(id => $self->get_type->as_int,
+	       type => $_CLASS_TO_TYPE{ref($self)});
 	return $self;
     }
     $self->{$_PACKAGE} = {
