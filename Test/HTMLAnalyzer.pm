@@ -42,6 +42,8 @@ use Bivio::Test::HTMLParser;
 use Data::Dumper;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 
@@ -103,6 +105,14 @@ sub new {
 	}
     }
  
+    if ($_TRACE) {
+	my($dd) = Data::Dumper->new([$self]);
+	$dd->Indent(1);
+	$dd->Terse(1);
+	$dd->Deepcopy(1);
+	print STDERR $dd->Dumpxs();
+    }
+
     return $self;
 }
 

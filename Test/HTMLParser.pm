@@ -177,9 +177,10 @@ sub start {
     # return if we don't care about this tag
     return unless $tag =~ /^(?:$_INTERESTING_TAGS)$/io;
   
-    unless (defined($fields->{currenttext})) {
-	_trace("no text associated with $origtext") if $_TRACE;
-    }
+#    commented out momentarily - sometimes an error, most often not.
+#    unless (defined($fields->{currenttext})) {
+#	_trace("no text associated with $origtext") if $_TRACE;
+#    }
   
     # dispatch the appropriate start tag action.
     my($method) = '_parse_start_'.$tag;
