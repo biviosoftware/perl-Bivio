@@ -155,11 +155,10 @@ __PACKAGE__->compile(
 	undef,
 	'can not be negative',
     ],
-    # not really an error, just an indicator to put the form on the next page
-    NEXT_PAGE => [
+    TOO_LONG => [
 	24,
 	undef,
-	'next form page',
+	'field is too long; there may be a problem with your browser',
     ],
     YEAR_DIGITS => [
 	25,
@@ -195,6 +194,21 @@ __PACKAGE__->compile(
 	31,
 	undef,
 	'invalid ratio',
+    ],
+    EMAIL => [
+	32,
+	undef,
+	'invalid email address',
+    ],
+    EMAIL_DOMAIN_LITERAL => [
+	33,
+	undef,
+	'email addresses with domain literals [w.x.y.z] are not acceptable',
+    ],
+    EMAIL_UNQUALIFIED => [
+	34,
+	undef,
+	'email does not contain a @domain.com',
     ],
 );
 
