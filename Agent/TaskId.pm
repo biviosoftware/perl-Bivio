@@ -1037,6 +1037,38 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberWithdrawal
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
     )],
+    [qw(
+        CLUB_ADMIN_NAME_EDIT
+        102
+        CLUB
+        ADMIN_WRITE
+        _/admin/edit/name
+        Bivio::Biz::Model::ClubNameForm
+        Bivio::UI::HTML::Club::EditName
+        next=CLUB_ADMIN_USER_LIST
+        FORBIDDEN=CLUB_ADMIN_DEMO_RENAME
+    )],
+    [qw(
+        CLUB_ADMIN_DEMO_RENAME
+        103
+        CLUB
+        ADMIN_WRITE
+        !
+        Bivio::UI::HTML::Club::DemoRename
+    )],
+#TODO: Shadow realms have no data protection.  We may need to
+#      have a second security check in LoadShadowRealm or something.
+#      For now, the list is small so easy to manage.
+#    [qw(
+#        ASK_CANDIS
+#        102
+#        GENERAL
+#        LOGIN
+#        pub/ask_candis
+#        Bivio::Biz::Action::SetShadowRealm
+#        Bivio::Biz::Model::MessageList
+#        Bivio::UI::HTML::Club::MessageList
+#    )],
 );
 
 __PACKAGE__->compile(
