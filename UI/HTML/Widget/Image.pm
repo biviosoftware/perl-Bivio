@@ -119,11 +119,14 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
+=head2 static new(any icon, any alt_text) : Bivio::UI::HTML::Widget::Image
+
+Passes I<icon> and I<alt_text> (or I<icon> as I<alt_text> if I<alt_text> is
+undef) as attributes.
+
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Image
 
-Creates a new Image widget.  Typically an image widget is a constant.
-You should use a L<Bivio::UI::HTML::Director|Bivio::UI::HTML::Director>
-widget to select between different Image widgets.
+Creates a new Image widget using I<attributes>.
 
 =cut
 
@@ -264,7 +267,7 @@ sub _new_args {
     return ($proto, $icon) if ref($icon) eq 'HASH' || int(@_) == 1;
     return ($proto, {
 	src => $icon,
-	alt_text => $text,
+	alt_text => defined($text) ? $text : $icon,
     }) if defined($icon);
     $proto->die(undef, undef, 'invalid arguments to new');
     # DOES NOT RETURN
