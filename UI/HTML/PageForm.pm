@@ -135,13 +135,13 @@ If <desc> exists, it will be added in a column to the right of the field.
 sub add_field {
     my($self, $field, $label, $size_or_widget, $desc) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $self->map_field($field, $label);
     unless (ref($size_or_widget)) {
 	$size_or_widget = Bivio::UI::HTML::Widget::Text->new({
 	    field => $field,
 	    size => $size_or_widget,
 	});
     }
-    push(@{$fields->{fields}}, [$field, $label]);
     return (Bivio::UI::HTML::Widget::FormFieldLabel->new({
 	label => $label,
 	field => $field,
@@ -205,6 +205,21 @@ Returns the array_ref containing the fields.  It is passed by reference.
 
 sub get_fields {
     return shift->{$_PACKAGE}->{fields};
+}
+
+=for html <a name="map_field"></a>
+
+=head2 map_field(string field, string label)
+
+Maps a field to a label for error messages.  Insert in order.
+
+=cut
+
+sub map_field {
+    my($self, $field, $label) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    push(@{$fields->{fields}}, [$field, $label]);
+    return;
 }
 
 #=PRIVATE METHODS
