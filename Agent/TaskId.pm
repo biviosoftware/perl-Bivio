@@ -110,7 +110,7 @@ my(@_CFG) = (
         hm/tour.html
         Bivio::Biz::Action::HTTPDocument
     )],
-    #7
+#7
     [qw(
 	LOGOUT
 	8
@@ -632,7 +632,7 @@ my(@_CFG) = (
         62
         GENERAL
         DOCUMENT_READ
-        pub/user_agreement
+        !
         Bivio::Biz::Model::UserAgreementForm
         Bivio::UI::HTML::General::UserAgreement
         next=USER_CREATE
@@ -971,6 +971,46 @@ my(@_CFG) = (
         _/new
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::UI::HTML::Club::New
+    )],
+    [qw(
+        CONNECT_USER_CREATE
+        96
+        GENERAL
+        LOGIN
+        pub/connect
+        Bivio::Biz::Model::CreateUserForm
+        Bivio::UI::HTML::General::CreateUser
+        next=CONNECT_USER_CREATED
+        cancel=HTTP_DOCUMENT
+    )],
+    [qw(
+        CONNECT_USER_CREATED
+        97
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::Mail::UserCreated
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=CONNECT_USER_NEW
+    )],
+#TODO: Put user_new state into cookie
+    [qw(
+        CONNECT_USER_NEW
+        98
+        USER
+        DOCUMENT_READ
+        _/new_connect
+        Bivio::UI::HTML::User::New
+    )],
+    [qw(
+        USER_ADMIN_PROFILE_EDIT
+        99
+        USER
+        ADMIN_WRITE
+        _/admin/edit/profile
+        Bivio::Biz::Model::ConnectSurveyForm
+        Bivio::UI::HTML::User::EditProfile
+        next=USER_ADMIN_INFO
     )],
 );
 
