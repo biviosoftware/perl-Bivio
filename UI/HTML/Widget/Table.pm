@@ -182,11 +182,12 @@ sub initialize {
     # Doesn't end in </tr>
 
     # Stripe: finishes off previous row (which may be header)
-    $fields->{odd_row} = "</tr><tr>\n";
-    $fields->{even_row} = '</tr><tr';
+    # First row is even (row = 0)
+    $fields->{even_row} = "</tr><tr>\n";
+    $fields->{odd_row} = '</tr><tr';
     $bgcolor = $self->get_or_default('stripe_bgcolor', 'table_stripe_bg');
-    $fields->{even_row} .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
-    $fields->{even_row} .= ">\n";
+    $fields->{odd_row} .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
+    $fields->{odd_row} .= ">\n";
 
     # Cells
     my($cell_attrs) = $self->get_or_default('cell_attrs',
