@@ -237,6 +237,12 @@ use strict;
     'Bivio::Biz::PropertyModel::MailMessage' => {
 	file_server => 'file',
     },
+    'Bivio::Biz::Mime::MimeParse' => {
+	file_server => 'file',
+    },
+    'Bivio::Mail::Store::MIMEDecode' => {
+	file_server => 'file',
+    },
     'Bivio::Die' => {
 	stack_trace => 1,
     },
