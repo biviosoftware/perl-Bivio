@@ -61,6 +61,12 @@ The From: address in the header.
 Any additional headers.  Returns a string in RFC 822 header format.  Each
 header appears on its own line.
 
+=item log_file : any []
+
+Where to log the message, if defined.  Calls
+L<Bivio::IO::Log::write|Bivio::IO::Log/"write"> with the formatted
+message.
+
 =item recipients : any (required)
 
 The recipients is a string of addresses separated by a comma.
@@ -88,28 +94,13 @@ munge body by wrapping urls and email addresses in HTMl.
 use Bivio::Die;
 use Bivio::Mail::Address;
 use Bivio::Mail::Outgoing;
+use Bivio::IO::Log;
 
 #=VARIABLES
-my($_IDI) = __PACKAGE__->instance_data_index;
-
 
 =head1 FACTORIES
 
 =cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::Mail::Widget::Message
-
-Creates a Message.  There is no positional notation for this widget.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
 
 =head1 METHODS
 
@@ -125,23 +116,20 @@ Creates and sends a mail message.
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->[$_IDI];
-
-    # Headers
     my($msg) = Bivio::Mail::Outgoing->new();
-    my($recipients) = $self->render_value('recipients',
-	    $fields->{recipients}, $req);
+    my($recipients) = $self->render_attr('recipients', $req);
     $msg->set_recipients($$recipients);
-    my($from) = $self->render_value('from', $fields->{from}, $req);
+    my($from) = $self->render_attr('from', $req);
     $msg->set_header('From', $$from);
     my($email) = Bivio::Mail::Address->parse($$from);
-    $self->die('from', $req, 'no email in From: ', $$from) unless $email;
+    $self->die('from', $req, 'no email in From: ', $$from)
+	unless $email;
     $msg->set_envelope_from($email);
 
     foreach my $f (qw(to cc subject)) {
 	my($b) = '';
 	$msg->set_header(ucfirst($f), $b)
-		if $self->unsafe_render_value($f, $fields->{$f}, $req, \$b);
+		if $self->unsafe_render_attr($f, $req, \$b);
     }
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
 	    if $req->has_keys('client_addr');
@@ -157,6 +145,9 @@ sub execute {
     }
     $msg->set_body($$body);
     $msg->enqueue_send;
+    my($lf);
+    Bivio::IO::Log->write($lf, $msg->as_string)
+        if $self->unsafe_render_attr('log_file', $req, \$lf) && $lf;
     return;
 }
 
@@ -170,11 +161,10 @@ Initializes child widgets.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{recipients} = $self->initialize_attr('recipients');
-    $fields->{from} = $self->initialize_attr('from');
-    foreach my $f (qw(body cc to subject headers)) {
-	$fields->{$f} = $self->unsafe_initialize_attr($f);
+    $self->initialize_attr('recipients');
+    $self->initialize_attr('from');
+    foreach my $f (qw(body cc to subject headers log_file)) {
+	$self->unsafe_initialize_attr($f);
     }
     return;
 }
@@ -194,18 +184,15 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _headers(self, hash_ref fields, Bivio::Mail::Outgoing msg, Bivio::Agent::Request req)
+# _headers(self, Bivio::Mail::Outgoing msg, Bivio::Agent::Request req)
 #
 # Sets headers if any
 #
 sub _headers {
     my($self, $msg, $req) = @_;
-    my($fields) = $self->[$_IDI];
     my($b) = '';
     return
-	unless $self->unsafe_render_value(
-	    'headers', $fields->{headers}, $req, \$b)
-	    && $b;
+	unless $self->unsafe_render_attr('headers', $req, \$b) && $b;
     foreach my $h (split(/\n(?=\S)/, $b)) {
 	chomp($h);
 	next unless $h;
