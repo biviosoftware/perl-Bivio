@@ -306,6 +306,22 @@ sub execute {
     # DOES NOT RETURN
 }
 
+=for html <a name="execute_one_row"></a>
+
+=head2 execute_one_row(string sql, array_ref params, ref die, boolean has_blob) : array_ref
+
+Calls L<execute|"execute"> and returns the first row as an array_ref.
+If there is no row, returns C<undef>.
+
+=cut
+
+sub execute_one_row {
+    my($sth) = shift->execute(@_);
+    my($row) = $sth->fetchrow_arrayref;
+    $sth->finish;
+    return $row;
+}
+
 =for html <a name="get_db_time"></a>
 
 =head2 static get_db_time() : int
