@@ -194,17 +194,31 @@ sub render {
 
     $fields->{body}->render($source, $buffer);
 
-    if ($_SHOW_TIME || $_TRACE) {
-        # Output timing info
-        my($times) = sprintf('total=%.3fs; db=%.3fs',
-                $req->get_current->elapsed_time,
-                Bivio::SQL::Connection->get_db_time);
-        $$buffer .= "\n<!-- " . $times . " -->\n" if $_SHOW_TIME;
-        _trace($times) if $_TRACE;
-    }
+    my($t) = $self->show_time_as_html($req);
+    $$buffer .= "\n".$t."\n";
 
     $$buffer .= "</body></html>\n";
     return;
+}
+
+=for html <a name="show_time_as_html"></a>
+
+=head2 static show_time_as_html(Bivio::Agent::Request req) : string
+
+Returns page times as an html comment, no spaces or newlines.
+Resets counters.  Returns empty string if I<show_time> not configured.
+
+=cut
+
+sub show_time_as_html {
+    my($proto, $req) = @_;
+    return '' unless $_SHOW_TIME || $_TRACE;
+    # Output timing info
+    my($times) = sprintf('total=%.3fs; db=%.3fs',
+	    $req->get_current->elapsed_time,
+	    Bivio::SQL::Connection->get_db_time);
+    _trace($times) if $_TRACE;
+    return $_SHOW_TIME ? "<!-- " . $times . " -->" : '';
 }
 
 #=PRIVATE METHODS
