@@ -85,7 +85,7 @@ Initializes String attributes.
 =cut
 
 sub initialize {
-    my($self) = @_;
+    my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{initialized};
     my($field) = $self->get('field');
@@ -95,12 +95,13 @@ sub initialize {
 	    value => [$field, 'Bivio::UI::HTML::Format::Amount', $d, 1,
 		   $zero_as_blank],
 	    column_align => 'E',
-	    string_font => 'number_cell',
 	    pad_left => 1,
 	    column_nowrap => 1,
 	   );
+    $self->put(string_font => 'number_cell')
+	    unless defined($self->unsafe_get('string_font'));
     $fields->{initialized} = 1;
-    $self->SUPER::initialize;
+    return $self->SUPER::initialize(@_);
 }
 
 #=PRIVATE METHODS

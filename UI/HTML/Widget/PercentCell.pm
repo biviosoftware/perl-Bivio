@@ -82,7 +82,7 @@ Initializes String attributes.
 =cut
 
 sub initialize {
-    my($self) = @_;
+    my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{initialized};
     my($field) = $self->get('field');
@@ -92,11 +92,12 @@ sub initialize {
 		'%.'.$d.'f%%'],
 	    column_align => 'E',
 	    pad_left => 1,
-	    string_font => 'number_cell',
 	    column_nowrap => 1,
 	   );
+    $self->put(string_font => 'number_cell')
+	    unless defined($self->unsafe_get('string_font'));
     $fields->{initialized} = 1;
-    $self->SUPER::initialize;
+    return $self->SUPER::initialize(@_);
 }
 
 #=PRIVATE METHODS
