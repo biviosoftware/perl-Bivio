@@ -62,7 +62,7 @@ sub new {
     $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
 	    Bivio::UI::HTML::Widget::Table2->new({
-		list_class => 'MiscIncomeList',
+		list_class => 'PortfolioIncomeList',
 		end_tag => 0,
 		columns => [
 		    # showing date_time as date
@@ -89,7 +89,7 @@ sub new {
 	    }),
 	    "\n<tr><td><br></td></tr>",
 	    Bivio::UI::HTML::Widget::Table2->new({
-		list_class => 'MiscExpenseList',
+		list_class => 'PortfolioDeductionList',
 		start_tag => 0,
 		columns => [
 		    # showing date_time as date
@@ -131,7 +131,7 @@ sub new {
 
 =head2 execute(Bivio::Agent::Request req)
 
-Draws the MiscIncomeList and MiscExpenseList.
+Draws the PortfolioIncomeList and PortfolioDeductionList.
 
 =cut
 
