@@ -54,6 +54,7 @@ use Bivio::Type::MIMEType;
 use Carp ();
 use IO::Scalar;
 use MIME::Parser;
+use Bivio::Mail::Store::MailFormatter;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -173,13 +174,13 @@ sub _extract_mime {
 #   $fields->{keywords}, $fields->{num_parts}, and $fields->{kbytes}
     _trace('file_name: ', $file_name) if $_TRACE;
     _trace('head: ', $entity->head()) if $_TRACE;
-    _parse_mime($fields, $entity,
-	    Bivio::Type::MIMEType->from_content_type(
-		    $entity->head->get('content-type')));
+    my($type) =   Bivio::Type::MIMEType->from_content_type(
+		    $entity->head->get('content-type'));
+    _parse_mime($fields, $entity, $type);
 
 #TODO parse for keyword storage if MIME part content type is HTML
 #right now, we're only parsing for keywords MIME type "plain-text".
-    _write_entity_to_file($fields, $entity, $file_name);
+    _write_entity_to_file($fields, $entity, $file_name, $type);
 
     my(@parts) = $entity->parts();
     _trace('number of parts for this MIME part is ', int(@parts)) if $_TRACE;
@@ -256,6 +257,21 @@ sub _extract_mime_header {
     _trace('done writing mime_header');
     $file->close();
     return $s;
+}
+
+# _format_body(scalar_ref body) : scalar_ref
+#
+# formats the email and returns a scalar reference to the
+# result. Uses MailFormatter.
+
+sub _format_body {
+    my($body) = @_;
+    if(!$body){ #not necessarily an error condition
+	return undef;
+    }
+    my($formatter) = Bivio::Mail::Store::MailFormatter->new($body);
+    my($formatted_mail) = $formatter->format_mail();
+    return $formatted_mail;
 }
 
 # _parse_keywords(string_ref str, hash_ref keywords)
@@ -362,7 +378,7 @@ sub _strip_html_tags {
 # file_name : the name of the file (fully qualified path)
 # fields : member variables from this object (_PACKAGE_)
 sub _write_entity_to_file {
-    my($fields, $entity, $file_name) = @_;
+    my($fields, $entity, $file_name, $content_type) = @_;
     #extract the header and body, and shove them into a string.
     #probably I should re-use a scalar ref or an IO handle for both of these.
     my($msg_hdr) = _extract_mime_header($fields, $entity);
@@ -370,9 +386,19 @@ sub _write_entity_to_file {
     my($msg_body) = _extract_mime_body_decoded($fields, $entity);
     _trace('no body in this MIME Entity')
 	    if $_TRACE && !(defined($$msg_body) && length($$msg_body));
-    $msg_hdr .= $$msg_body if defined($$msg_body);
+    if($content_type == Bivio::Type::MIMEType::TEXT_PLAIN){
+	_trace('message is text/plain so formatting it...') if $_TRACE;
+	my($formatted_mail) = _format_body($msg_body);
+	_trace('formatted mail: ', $$formatted_mail);
+	$msg_hdr .= $$formatted_mail if defined($$formatted_mail);
+    }
+    else{
+	$msg_hdr .= $$msg_body;
+    }
     $fields->{kbytes} += length($msg_hdr)/1024;
     _trace('kbytes: ', $fields->{kbytes}) if $_TRACE;
+    _trace('writing: ', $msg_hdr) if $_TRACE;
+    _trace('file: ', $file_name) if $_TRACE;
     $fields->{file_client}->create($file_name, \$msg_hdr)
 	    || die("write failed: $msg_hdr");
     $fields->{num_parts}++;
