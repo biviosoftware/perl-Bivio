@@ -147,6 +147,19 @@ sub get_html_parser {
     return _assert_html($self);
 }
 
+=for html <a name="get_uri"></a>
+
+=head2 get_uri() : string
+
+Returns the uri for the current page.  Blows up if no current uri.
+
+=cut
+
+sub get_uri {
+    return shift->[$_IDI]->{uri}
+	|| Bivio::Die->die('no current uri');
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -169,26 +182,35 @@ sub handle_config {
 
 =for html <a name="home_page"></a>
 
-=head2 home_page()
+=head2 home_page(string facade_uri)
 
-Requests the the home page.
+Requests the the home page.  See L<home_page_uri|"home_page_uri"> for
+arguments.
 
 =cut
 
 sub home_page {
-    return shift->visit_uri($_CFG->{home_page_uri});
+    my($self) = shift;
+    return $self->visit_uri($self->home_page_uri(@_));
 }
 
 =for html <a name="home_page_uri"></a>
 
-=head2 home_page_uri() : string
+=head2 home_page_uri(string facade_uri) : string
 
-Returns configured home page uri.  Used by other tests.
+Returns configured home page uri.  Used by other tests.  If I<facade_uri> is
+supplied, will modify configured URI to download from facade.  Doesn't validate
+I<facade_uri> is a valid facade.
 
 =cut
 
 sub home_page_uri {
-    return $_CFG->{home_page_uri};
+    my(undef, $facade_uri) = @_;
+    my($res) = $_CFG->{home_page_uri};
+    $res =~ s{(?<=://)}{$facade_uri.}
+	|| Bivio::Die->die($res, ': unable to create facade URI')
+	if $facade_uri;
+    return $res;
 }
 
 =for html <a name="submit_form"></a>
