@@ -45,6 +45,10 @@ insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
+=item background : array_ref
+
+Widget which returns image to render for background.
+
 =item bgcolor : string [] (dynamic)
 
 =item bgcolor : array_ref [] (dynamic)
@@ -90,6 +94,10 @@ used in most cases.
 =item width : array_ref []
 
 Dynamic width.
+
+=item height : array_ref []
+
+Dynamic height (only IE and Netscape support this attribute).
 
 =back
 
@@ -420,9 +428,16 @@ sub render {
 
     if ($self->get_or_default('start_tag', 1)) {
 	$$buffer .= $fields->{prefix};
-	my($bg);
-	$$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req)
-	    if $self->unsafe_render_attr('bgcolor', $source, \$bg) && $bg;
+	my($v);
+	$$buffer .= Bivio::UI::Color->format_html($v, 'bgcolor', $req)
+	    if $self->unsafe_render_attr('bgcolor', $source, \$v) && $v;
+	$v = '';
+	$$buffer .= Bivio::UI::Icon->format_html_attribute(
+	    $v, 'background', $req)
+	    if $self->unsafe_render_attr('background', $source, \$v) && $v;
+	$v = '';
+	$$buffer .= qq{ height="$v"}
+	    if $self->unsafe_render_attr('height', $source, \$v) && $v;
 	$$buffer .= ' width="'
 	    .$source->get_widget_value(@{$fields->{width}}).'"'
 		if $fields->{width};
