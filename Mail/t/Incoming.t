@@ -5,7 +5,7 @@
 #TODO: WAY more tests...  Especially tests which test addresses
 use strict;
 
-BEGIN { $| = 1; print "1..8\n"; }
+BEGIN { $| = 1; print "1..9\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Mail::Incoming;
@@ -248,6 +248,39 @@ EOF
     'reply_to_email' => undef,
     'subject' => 'What resources are available to new investors?',
     'date_time' => 945382838,
+},
+<<'EOF'
+Return-Path: <charles.reamer2@gte.net>
+Received: from smtppop2.gte.net (smtppop2.gte.net [207.115.153.21])
+	by bivio.com (8.9.3/8.9.3) with ESMTP id JAA23467
+	for <jespi@bivio.com>; Thu, 10 Feb 2000 09:36:26 -0700
+Received: from gte.net (1Cust94.tnt26.sfo3.da.uu.net [63.28.72.94])
+	by smtppop2.gte.net  with SMTP
+	for jespi@bivio.com; id KAA27342125
+	Thu, 10 Feb 2000 10:36:16 -0600 (CST)
+Date: Thu, 10 Feb 100 08:17:07 Pacific Daylight Time
+From: CHARLES "CHUCK" REAMER <charles.reamer2@gte.net>
+To: jespi <jespi@bivio.com>
+Subject: RE: cleanlivin Investment Club Invitation
+Message-ID: <0210100081707.5@oemcomputer>
+MIME-Version: 1.0
+X-Mail-Agent: An Internet Client 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+
+
+      Thanks, Jim. I accept the invitaion. Let me know when and where
+      the 200 dollars can be handled. Thanks!
+EOF
+=>
+{
+    'content_type' => 'text/plain',
+    'from_name' => 'CHARLES "CHUCK" REAMER',
+    'from_email' => 'charles.reamer2@gte.net',
+    'reply_to_email' => undef,
+    'subject' => 'RE: cleanlivin Investment Club Invitation',
+    'date_time' => 950170627,
 },
 );
 
