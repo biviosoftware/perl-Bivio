@@ -127,7 +127,7 @@ can not be negative
 
 =item TOO_LONG
 
-field is too long; there may be a problem with your browser
+field is too long
 
 =item YEAR_DIGITS
 
@@ -360,7 +360,7 @@ sub get_delegate_info {
     TOO_LONG => [
 	21,
 	undef,
-	'field is too long; there may be a problem with your browser',
+	'field is too long',
     ],
     YEAR_DIGITS => [
 	22,
