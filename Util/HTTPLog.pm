@@ -261,6 +261,15 @@ sub _initialize {
 	'::warn:\d+ blocking mail with executable content',
 	'::HomePage::execute:.*Both <FRAMESET> and <BODY> tags found',
 	'::HomePage::execute:.*Neither <FRAMESET> or <BODY> tags found',
+        # AccountSync errors and warnings
+        '::AccountScraper::unhandled_rows',
+        '::InstrumentLookup::find',
+        '::get_balance.* balance not available',
+        '::Schwab::pre_parse_html',
+        'E*TRADE temporarily unavailable',
+        '::SimpleBase::bad_field_in_raw_row',
+        '::Data::AccountScraper.* Bivio::DieCode::CLIENT_ERROR',
+        '_process_sell: no lots owned',
     );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
