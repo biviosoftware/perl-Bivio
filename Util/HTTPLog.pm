@@ -262,6 +262,10 @@ sub _initialize {
 	'::warn:\d+ blocking mail with executable content',
 	'::HomePage::execute:.*Both <FRAMESET> and <BODY> tags found',
 	'::HomePage::execute:.*Neither <FRAMESET> or <BODY> tags found',
+        '::Message::_parse_date:727 timezone.* unknown',
+        'confirm delete with not txns, aborting',
+        'unsupported encoding \'iso-8859-1\': using \'binary\'',
+        '::VERSION_MISMATCH: actual=..undef.',
         # AccountSync errors and warnings
         '::AccountScraper::unhandled_row',
         '::InstrumentLookup::find',
