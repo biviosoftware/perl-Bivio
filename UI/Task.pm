@@ -158,6 +158,7 @@ use Bivio::DieCode;
 use Bivio::HTML;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::Type::RealmName;
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -545,7 +546,8 @@ sub parse_uri {
     }
 
     # If first uri doesn't match a RealmName, can't be one.
-    if ($uri[0] !~ /^\w{3,}$/) {
+    my($name) = Bivio::Type::RealmName->from_literal($uri[0]);
+    unless (defined($name)) {
 	# Not a realm, so try SITE_ROOT
 	_trace($orig_uri, ' => site_root') if $_TRACE;
 	return ($_SITE_ROOT, $_GENERAL, '/'.$uri, $orig_uri);
@@ -566,8 +568,6 @@ sub parse_uri {
     # Up to which component is checked for path_info URI
     my($path_info_index) = undef;
 
-    # Be friendly, by downcasing
-    my($name) = lc($uri[0]);
     $uri[0] = $_REALM_PLACEHOLDER;
 
     # Is this a valid, authorized realm with a task for this uri?
