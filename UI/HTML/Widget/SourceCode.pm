@@ -89,20 +89,6 @@ sub new {
 
 =cut
 
-=for html <a name="execute"></a>
-
-=head2 execute(Bivio::Agent::Request req)
-
-Calls L<Bivio::UI::Widget::execute_with_content_type|Bivio::UI::Widget/"execute_with_content_type">
-as text/html.
-
-=cut
-
-sub execute {
-    my($self, $req) = @_;
-    return $self->execute_with_content_type($req, 'text/html');
-}
-
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -181,7 +167,7 @@ sub render {
     Bivio::Die->throw(Bivio::DieCode::NOT_FOUND())
 		unless -e $file;
 
-    my($lines) = [`cat $file | /usr/local/bin/perl2html -c -t $package`];
+    my($lines) = [`cat $file | /usr/local/bin/perl2html -c -s`];
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package);
 
