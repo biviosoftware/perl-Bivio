@@ -175,6 +175,15 @@ sub _dec_year {
 	    $mday, $mon, $year - 1);
 }
 
+# _dec_fiscal_year(string date_time) : string
+#
+# Same as calling _dec_beginning_of_year, but has fiscal year name.
+#
+sub _dec_fiscal_year {
+    my($date_time) = @_;
+    return _dec_beginning_of_year($date_time);
+}
+
 # _from_parts_with_mday_correction(int sec, int min, int hour, int mday, int mon, int year) : string
 #
 # Returns DateTime->from_parts correcting mday to be at month's end
@@ -196,7 +205,7 @@ sub _inc_beginning_of_year {
     my($sec, $min, $hour, $mday, $mon, $year)
 	    = Bivio::Type::DateTime->to_parts($date_time);
     return Bivio::Type::DateTime->from_parts_or_die($sec, $min, $hour,
-	    $mday, $mon, 1 + $year);
+	    1, 1, 1 + $year);
 }
 
 # _inc_fiscal_year(string date_time) : string
