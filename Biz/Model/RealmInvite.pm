@@ -248,7 +248,7 @@ sub internal_initialize {
 	    realm_user_id => ['PrimaryId', 'NONE'],
             email => ['Email', 'NOT_NULL'],
             role => ['Bivio::Auth::Role', 'NOT_ZERO_ENUM'],
-	    title => ['Name', 'NOT_ZERO_ENUM'],
+	    honorific => ['Honorific', 'NOT_ZERO_ENUM'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
             message => ['Text', 'NONE'],
 	    # unique(realm_id, email)
