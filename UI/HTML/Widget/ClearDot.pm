@@ -35,6 +35,13 @@ i.e. zero means "doesn't exist".
 
 =over 4
 
+=item align : string []
+
+How to align the image.  The allowed (case
+insensitive) values are defined in
+L<Bivio::UI::Align|Bivio::UI::Align>.
+The value affects the C<ALIGN> and C<VALIGN> attributes of the C<IMG> tag.
+
 =item height : int [1]
 
 =item height : array_ref []
@@ -122,7 +129,9 @@ sub initialize {
     return if exists($fields->{value});
     $fields->{value} = '<img src="'
 	    .Bivio::UI::Icon->get_clear_dot->{uri}
-            .'" border=0';
+            .'" border=0'
+	    .Bivio::UI::Align->as_html($self->unsafe_get('align'));
+
     $fields->{is_constant} = 1;
     foreach my $f (qw(width height)) {
 	my($fv) = $self->get_or_default($f, 1);
