@@ -73,8 +73,8 @@ sub vs_address_fields {
 
     return (
 	[$proto->vs_form_field($address.'.addr1')],
-	[$proto->vs_blank_cell, Bivio::UI::HTML::Widget::FormField->new(
-	    $address.'.addr2')],
+	[$proto->vs_blank_cell,
+	    $proto->vs_new('FormField', $address.'.addr2')],
 	[$proto->vs_form_field($address.'.city')],
 	$state_zip,
 	[$proto->vs_form_field($address.'.country')],
