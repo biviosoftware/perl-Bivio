@@ -36,7 +36,7 @@ You can extend this delegate with:
 	];
     }
 
-Start your permissions at 20.  Don't worry about dups, because
+Start your permissions at 21.  Don't worry about dups, because
 L<Bivio::Type::Enum|Bivio::Type::Enum> will die if you overlap.
 
 =cut
