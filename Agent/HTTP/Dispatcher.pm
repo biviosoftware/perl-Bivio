@@ -119,11 +119,9 @@ Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
 
 sub handler {
     my($r) = @_;
-    my($die);
-    $die = $_SELF->process_request($r)
-	    unless $die;
+    my($die) = $_SELF->process_request($r);
     $r->log_reason($die->as_string) if defined($die);
-    return Bivio::Agent::HTTP::Reply->die_to_http_code($die);
+    return Bivio::Agent::HTTP::Reply->die_to_http_code($die, $r);
 }
 
 =for html <a name="initialize"></a>

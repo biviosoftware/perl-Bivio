@@ -188,7 +188,7 @@ sub format_uri {
     $query = $self->get('query_string') unless int(@_) >= 3;
     return $uri unless defined($query);
     $query = Bivio::Agent::HTTP::Query->format($query) if ref($query);
-    return $uri.'?'.$query unless ref($query);
+    return $uri.'?'.$query;
 }
 
 =for html <a name="server_redirect"></a>
