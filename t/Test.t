@@ -178,7 +178,32 @@ t(
     2,
     [],
 );
-
+t(
+    {
+	class_name => 'Bivio::t::Test::Testee',
+    }, [
+	66 => [
+	    ok => 66,
+	],
+	sub {
+	    return Bivio::t::Test::Testee->new(77);
+        } => [
+	    ok => 77,
+	],
+	{
+	    compute_object => sub {
+		my($case, $params) = @_;
+		die($params, ': expected 99 as object')
+		    unless $params->[0] == 99;
+		return Bivio::t::Test::Testee->new(88);
+	    },
+	    object => 99,
+	} => [
+	    ok => 88,
+	],
+    ],
+    3,
+);
 
 # t(hash_ref options, array_ref tests, int num_tests, array_ref not_ok)
 #

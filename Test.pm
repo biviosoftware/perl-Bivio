@@ -113,10 +113,12 @@ Sometimes it is difficult to specify a return result.  For example, in
 L<Bivio::SQL::Connection|Bivio::SQL::Connection>, the result is often a
 C<DBI::st>.  The result can't be compared structurally.
 
-You can specify a I<success_ok> option to L<new|"new"> or at the
-object or method level.  Here's an example at instantiation:
+You can specify a I<check_return> option to L<new|"new"> or at the
+object or method level.  You can also specify a I<class_name> to test
+as long as it implements C<new>.  Here's an example at instantiation:
 
     Bivio::Test->new->({
+        class_name => 'Bivio::Math::EMA',
 	check_return => sub {
 	    my($case, $return, $expect) = @_;
             # Round to 6 decimal places
@@ -125,11 +127,11 @@ object or method level.  Here's an example at instantiation:
             return $expect;
 	},
     })->unit([
-	Bivio::Math::EMA->new(30) => [
+	30 => [
 	    compute => [
-	        [1] => [1],
-	        [2] => [1.666666],
-	        [2] => [1.888888],
+	        1 => 1,
+	        2 => 1.666666,
+	        2 => 1.888888,
 	    ],
         ],
     ]);
@@ -139,7 +141,8 @@ as in:
 
     Bivio::Test->unit([
         {
-	    object => Bivio::Math::EMA->new(30),
+            class_name => 'Bivio::Math::EMA',
+	    object => 30,
             check_return => sub {
                 my($case, $return, $expect) = @_;
                 $case->actual_return(
@@ -155,9 +158,8 @@ as in:
         ],
     ]);
 
-Note the introduction of a hash_ref in place of the object
-C<Bivio::Math::EMA-E<gt>new(30)> and the introduction of the
-named attributes: C<object> and C<check_return>.
+Note the introduction of a hash_ref in place of the object C<30> and the
+introduction of the named attributes: C<object> and C<check_return>.
 
 The object level overrides the value supplied to L<new|"new">.
 The method level overrides the object level.
@@ -173,6 +175,14 @@ See L<check_die_code|"check_die_code">.
 =item check_return : code_ref
 
 See L<check_return|"check_return">.
+
+=item class_name : string
+
+Name of class to test.  Will be loaded dynamically with
+L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader>.
+L<compute_object|"compute_object"> will be set to
+L<default_compute_object|"default_compute_object">
+unless already set.
 
 =item compute_object : code_ref
 
@@ -222,7 +232,8 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my(@_CALLBACKS) = qw(check_return check_die_code compute_params compute_object);
-my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', 'method_is_autoloaded');
+my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name);
+my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', @_PLAIN_OPTIONS);
 my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
 
 =head1 FACTORIES
@@ -337,6 +348,20 @@ $_ = <<'}'; # emacs
 sub compute_params {
 }
 
+=for html <a name="default_compute_object"></a>
+
+=head2 subroutine default_compute_object(Bivio::Test::Case case, array_ref params) : any
+
+Implements L<compute_object|"compute_object"> interface.  Calls
+L<new|"new"> on I<class_name> attribute.
+
+=cut
+
+sub default_compute_object {
+    my($case, $params) = @_;
+    return $case->get('class_name')->new(@$params);
+}
+
 =for html <a name="format_results"></a>
 
 =head2 static format_results(int num_ok, int max) : string
@@ -421,7 +446,8 @@ sub _assert_options {
     foreach my $c (@_ALL_OPTIONS) {
 	next unless exists($o->{$c});
 	die($c, ': option not a subroutine (code_ref)')
-	    unless ref($o->{$c}) eq 'CODE' || $c eq 'method_is_autoloaded';
+	    unless ref($o->{$c}) eq 'CODE'
+		|| grep($c eq $_, @_PLAIN_OPTIONS);
 	delete($o->{$c});
     }
     _die('unknown option(s) passed to new: ', join(' ', sort(keys(%$o))))
@@ -542,6 +568,10 @@ sub _compile_method {
 sub _compile_object {
     my($self, $state, $tests, $object, $methods) = @_;
     $state = _compile_options($state, 'object', $object);
+    if ($state->{class_name}) {
+	$state->{compute_object} = \&default_compute_object
+	    unless $state->{compute_object};
+    }
     if ($state->{compute_object} || ref($state->{object}) eq 'CODE') {
 	my($fields) = $self->[$_IDI];
 	$state->{_eval_object} = @{$fields->{_eval_object} ||= []};
@@ -594,7 +624,9 @@ sub _compile_options {
 	my($h) = {%$entity_or_hash};
 	_compile_die($state, '"', $which, '" must be specified in HASH')
 	    unless $h->{$which};
-	_add_option($state, $h, 'method_is_autoloaded');
+	foreach my $o (@_PLAIN_OPTIONS) {
+	    _add_option($state, $h, $o);
+	}
 	foreach my $c (@_CALLBACKS, $which) {
 	    next unless _add_option($state, $h, $c);
 	    next if $c eq $which;
@@ -731,6 +763,9 @@ sub _eval_object {
     }
     if (ref($object) eq 'ARRAY') {
 	my($code, $param) = @$object;
+#TODO: Wrap in exception?
+	Bivio::IO::ClassLoader->simple_require($case->get('class_name'))
+	    if $case->unsafe_get('class_name');
 	$case->put(compute_object => $code);
 	$fields->{_eval_object}->[$e] = $object
 	    = _eval_custom($case, 'compute_object', [$param], $err);
