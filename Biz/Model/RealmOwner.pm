@@ -51,6 +51,18 @@ sub DEFAULT_UNIT_VALUE {
     return '10.0';
 }
 
+=for html <a name="SHADOW_PREFIX"></a>
+
+=head2 SHADOW_PREFIX : string
+
+Returns prefix character for shadow users
+
+=cut
+
+sub SHADOW_PREFIX {
+    return '=';
+}
+
 #=IMPORTS
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::Email;
@@ -80,6 +92,7 @@ my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 my($_DEMO_SUFFIX) = Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 my($_DEMO_THRESHOLD) = Bivio::Type::RealmName->get_width
 	- length($_DEMO_SUFFIX);
+my($_SHADOW_PREFIX) = SHADOW_PREFIX();
 
 =head1 FACTORIES
 
@@ -776,6 +789,26 @@ sub is_name_eq_email {
 #TODO: ANY OTHER mail_host aliases?
     return $email eq $name.'@'.$mail_host
 	    || $email eq $name.'@www.'.$mail_host;
+}
+
+=for html <a name="is_shadow_user"></a>
+
+=head2 is_shadow_user() : boolean
+
+=head2 static is_shadow_user(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Returns true if is a shadow realm.
+
+See L<format_name|"format_name"> for params.
+
+=cut
+
+sub is_shadow_user {
+    my($self, $list_model, $model_prefix) = @_;
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
+    my($name) = $m->get($p.'name');
+    return $name =~ /^$_SHADOW_PREFIX/o ? 1 : 0;
 }
 
 =for html <a name="unauth_load_by_email"></a>
