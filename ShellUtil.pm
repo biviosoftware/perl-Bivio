@@ -668,7 +668,7 @@ DEPRECATED: See L<Bivio::IO::File::write|Bivio::IO::File/"write">
 sub write_file {
     my(undef, $file_name, $contents) = @_;
     Bivio::IO::Alert->warn_deprecated('use Bivio::IO::File->write');
-    return Bivio::IO::File->read($file_name, $contents);
+    return Bivio::IO::File->write($file_name, $contents);
 }
 
 #=PRIVATE METHODS
