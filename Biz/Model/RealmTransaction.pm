@@ -40,7 +40,6 @@ use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
 use Bivio::Type::Honorific;
 use Bivio::Type::Integer;
-#use Bivio::Biz::Model::EntryList;
 use Bivio::Biz::Model::MemberEntry;
 use Bivio::Biz::Model::RealmUser;
 
@@ -336,31 +335,28 @@ sub _pre_delete {
     my($self) = @_;
     my($req) = $self->get_request;
 
-#TODO: this isn't modular, need a better approach for this
+#TODO: this isn't modular, need a better approach for post delete processing
 
-    my($entry_list) = Bivio::Biz::Model::EntryList->new($req);
-    $entry_list->load({
-	p => $self->get('realm_transaction_id'),
-	count => Bivio::Type::Integer->get_max,
-    });
+    # if this is a full withdrawal, then reset the member's status to member
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT entry_id
+            FROM entry_t
+            WHERE realm_transaction_id=?
+            AND class=?
+            AND entry_type in (?,?)',
+	    [$self->get('realm_transaction_id'),
+		    Bivio::Type::EntryClass::MEMBER->as_sql_param,
+		    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_CASH
+		    ->as_sql_param,
+		    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_STOCK
+		    ->as_sql_param]);
 
-    while ($entry_list->next_row) {
-	my($type) = $entry_list->get('Entry.entry_type');
-
-	# look for full withdrawals, reset the member role if necessary
-	next unless $type
-		== Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_CASH()
-	        || $type
-		== Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_STOCK();
-
-	next unless $entry_list->get('Entry.class')
-		== Bivio::Type::EntryClass::MEMBER();
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($entry_id) = $row->[0];
 
 	# set the target status to MEMBER if it is WITHDRAWN
-
 	my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req);
-	$member_entry->load(entry_id => $entry_list->get(
-		'Entry.entry_id'));
+	$member_entry->load(entry_id => $entry_id);
 	my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
 	$realm_user->load(user_id => $member_entry->get('user_id'));
 
