@@ -117,6 +117,10 @@ file system error
 
 error reading or writing to the client.
 
+=item UPDATE_COLLISION: entity, class
+
+two or more people are trying to update your records simultaneously
+
 =back
 
 =cut
@@ -216,6 +220,11 @@ __PACKAGE__->compile(
 	17,
 	undef,
 	'error reading or writing to the client',
+    ],
+    UPDATE_COLLISION => [
+	18,
+	undef,
+	'two or more people are trying to update your records simultaneously',
     ],
 );
 
