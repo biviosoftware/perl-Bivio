@@ -396,8 +396,8 @@ sub unauth_load_by_email {
     return $self->unauth_load(@query, realm_id => $em->get('realm_id'))
 	    if $em->unauth_load(email => $email);
 
-    # not continuing if job request, to avoid a missing facade with ShellUtil
-    return 0 if $req->isa('Bivio::Agent::Job::Request');
+    return unless Bivio::IO::ClassLoader->simple_require(
+        'Bivio::UI::Facade')->is_fully_initialized;
 
     # Strip off @mail_host and validate resulting name
     my($mail_host) = '@'.Bivio::UI::Text->get_value('mail_host', $req);
