@@ -411,7 +411,7 @@ _compile(\%_MAP, [
     REALM_CHOOSER => 'Select Site',
 
     # Tasks (sorted alphabetically)
-    ADM_ACCOUNT_SYNC => 'Synchronize Accounts',
+    CLUB_ADM_ACCOUNT_SYNC => 'Synchronize Accounts',
     ADM_FIND_REALM_OWNER_LIST => 'Adm Lookup',
     ADM_REALM_NOTICE_LIST => 'Notices',
     ADM_MERGER_SPINOFF_CREATE => 'Create New Merger/Spin-off Information',
@@ -465,7 +465,6 @@ _compile(\%_MAP, [
     CLUB_ACCOUNTING_TAXES_F1065_OPTIONS => 'IRS 1065 Tax Fields',
     CLUB_ACCOUNTING_TAXES_K1_OPTIONS => 'IRS K-1 Tax Fields',
     CLUB_ACCOUNTING_TAXES_MISSING_FIELDS => 'Missing Required Fields',
-    CLUB_ADMIN_CLUB_DELETE => 'Delete Club',
     CLUB_ADMIN_EC_PAYMENT_CANCELLED => 'Payment Cancelled',
     CLUB_ADMIN_EC_SUBSCRIPTIONS => 'Premium Subscriptions',
     CLUB_ADMIN_EC_SUBSCRIBE_DONE => 'Thank You!',
@@ -498,6 +497,8 @@ _compile(\%_MAP, [
 	help_topic => 'Public Access',
     ],
     CLUB_ADMIN_PRIVATE => 'Close Public Access',
+
+    CLUB_ADM_DELETE => 'Delete Club',
 
     CLUB_COMMUNICATIONS_FILE_READ => 'Files',
     CLUB_COMMUNICATIONS_FILE_RENAME => 'Rename File',
@@ -546,7 +547,7 @@ _compile(\%_MAP, [
     PASSWORD_FORGOTTEN => 'Forgot Your Password?',
     PASSWORD_FORGOTTEN_CONFIRMATION => 'Password Assistance',
     USER_AGREEMENT_TEXT => 'Terms of Service',
-    USER_ADMIN_USER_DELETE => 'Delete User',
+    USER_ADM_DELETE => 'Delete User',
     ['USER_HOME', 'MY_SITE']
         => 'My Site',
 

@@ -3043,11 +3043,11 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::MemberOfflineConfirmation
     )],
     [qw(
-        CLUB_ADMIN_CLUB_DELETE
+        CLUB_ADM_DELETE
         266
         CLUB
         ADMIN_WRITE&SUPER_USER_TRANSIENT
-        ?/adm/delete-club
+        ?/adm/delete
         Bivio::Biz::Model::ClubDeleteForm
         Bivio::UI::HTML::Club::Delete
         next=USER_HOME
@@ -3100,11 +3100,11 @@ my(@_CFG) = (
     )],
     # Would redirect to bivio home page but want imagemenu bar?
     [qw(
-        USER_ADMIN_USER_DELETE
+        USER_ADM_DELETE
         271
         USER
         ADMIN_WRITE&SUPER_USER_TRANSIENT
-        ?/adm/delete-user
+        ?/adm/delete
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::UserDeleteForm
         Bivio::UI::HTML::User::Delete
@@ -3142,11 +3142,11 @@ my(@_CFG) = (
         require_secure=1
     )],
     [qw(
-        ADM_ACCOUNT_SYNC
+        CLUB_ADM_ACCOUNT_SYNC_ALL
         275
         CLUB
-        ADMIN_WRITE&SUPER_USER_TRANSIENT
-        ?/adm/account-sync
+        ACCOUNTING_WRITE&SUPER_USER_TRANSIENT
+        ?/adm/account-sync-all
         Bivio::Biz::Action::AdmAccountSync
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
