@@ -190,7 +190,7 @@ sub _task {
     $t->group(MY_SITE => 'my-site/*');
     $t->group(HELP => 'hp/*');
     $t->group(PRODUCTS => 'pub/products');
-    $t->group(PRODUCT_SEARCH => 'pub/search');
+    $t->group(ITEM_SEARCH => 'pub/search');
     $t->group(ITEMS => 'items');
     $t->group(ITEM_DETAIL => 'pub/item-detail');
     $t->group(CART => 'my/cart');
