@@ -73,6 +73,7 @@ __PACKAGE__->compile(
 	'action_bar_border',
 	'detail_chooser',
 	'page_heading',
+	'form_field_in_text',
     ],
     ICON_TEXT_IA => [
 	0xEEEEEE,
