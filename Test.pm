@@ -880,11 +880,13 @@ sub _eval_result {
 	    if $ok;
     }
     elsif (ref($case->get('expect')) eq ref($result)) {
-	return undef if
-	    Bivio::IO::Ref->nested_equals($case->get('expect'), $result);
+	my($res) = Bivio::IO::Ref->nested_differences(
+	    $case->get('expect'), $result);
+	return $res ? "expected != actual:\n$$res" : undef;
     }
-    return 'expected ' . Bivio::IO::Ref->to_short_string($case->get('expect'))
-	.' but got '
+    return "expected != actual:\n"
+	. Bivio::IO::Ref->to_short_string($case->get('expect'))
+	.' != '
 	. ($show ? $$show : Bivio::IO::Ref->to_short_string($case->get($which)));
 }
 
