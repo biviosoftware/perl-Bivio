@@ -215,7 +215,7 @@ sub pwd {
 
 =head2 static read(string file_name) : string_ref
 
-=head2 static read(string file_name, glob_ref file) : string_ref
+=head2 static read(glob_ref file) : string_ref
 
 Returns the contents of the file.  If the file name is '-',
 input is read from STDIN (new handle)
@@ -227,10 +227,13 @@ file_name must be supplied.
 
 sub read {
     my(undef, $file_name, $file) = @_;
-    unless ($file) {
-	$file = IO::File->new($file_name eq '-' ? '-' : '< '.$file_name)
-	    or _err('open', $file, $file_name);
+    if ($file) {
+	Bivio::IO::Alert->warn_deprecated('pass glob_ref as first param');
+	$file_name = $file;
     }
+    $file = ref($file_name) ? $file_name
+	: IO::File->new($file_name eq '-' ? '-' : '< '.$file_name)
+		|| _err('open', $file, $file_name);
     my($offset, $read, $buf) = (0, 0, '');
     $offset += $read
 	while $read = CORE::read($file, $buf, 0x1000, $offset);
