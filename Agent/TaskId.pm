@@ -414,7 +414,7 @@ my(@_CFG) = (
         %/accounting/member/detail
         Bivio::Biz::Model::MemberTransactionList
         Bivio::Biz::Model::RealmUser
-        Bivio::Biz::Model::RealmUserList->execute_load_all
+        Bivio::Biz::Model::RealmMemberList->execute_load_all
         Bivio::UI::HTML::Club::MemberDetail
     )],
     [qw(
@@ -1047,7 +1047,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         %/accounting/member/withdrawal
-        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::MemberWithdrawalForm
         Bivio::UI::HTML::Club::MemberWithdrawal
@@ -1197,7 +1197,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/openbal
-        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::MemberOpeningBalanceForm
         Bivio::UI::HTML::Club::MemberOpeningBalance
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
