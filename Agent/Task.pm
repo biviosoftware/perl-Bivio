@@ -280,20 +280,14 @@ sub execute {
 	if $self->get('require_secure')
 	    && $req->can('client_redirect_if_not_secure');
     my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
-#TODO: Handle multiple realms and roles.  Switching between should be possible.
     unless ($auth_realm->can_user_execute_task($self, $req)) {
-	my($auth_user, $agent) = $req->get(
-	    'auth_user', 'Bivio::Type::UserAgent');
 	# Redirect to FORBIDDEN if not browser or not auth_user
 	Bivio::Die->throw('FORBIDDEN', {
-	    auth_user => $auth_user,
+	    auth_user => $req->get('auth_user'),
 	    entity => $auth_realm,
 	    auth_role => $auth_role,
 	    operation => $self->get('id'),
-	}) if $auth_user || !$agent->is_browser;
-#TODO: Throw FORBIDDEN and have DEFAULT_FORBIDDEN check if logged in.
-	$req->server_redirect(Bivio::Agent::TaskId->LOGIN);
-	# DOES NOT RETURN
+	});
     }
     _invoke_pre_execute_handlers($req);
     my($i);
@@ -301,7 +295,7 @@ sub execute {
 	my($instance, $method, $args) = @$i;
 	# Don't continue if returns true.
 	my($res) = defined($instance)
-		? $instance->$method(@$args, $req) : &$method(@$args, $req);
+	    ? $instance->$method(@$args, $req) : $method->(@$args, $req);
 	next unless $res;
 	my($next) = $res;
 	unless (ref($res)) {
@@ -397,21 +391,28 @@ sub handle_die {
     unless (defined($new_task_id)) {
 	# Default mapped?
 	$new_task_id = Bivio::Agent::TaskId->unsafe_from_any(
-		'DEFAULT_ERROR_REDIRECT_'.$die_code->get_name);
+	    'DEFAULT_ERROR_REDIRECT_' . $die_code->get_name);
 	unless (defined($new_task_id)) {
 	    _trace('not a mapped task: ', $die_code) if $_TRACE;
 	    return;
 	}
-	unless (Bivio::UI::Task->is_defined_for_facade($new_task_id, $req)) {
-	    _trace('error redirect not defined in facade: ', $new_task_id)
-		    if $_TRACE;
-	    return;
-	}
+    }
+    # Allowed?
+    unless (Bivio::UI::Task->is_defined_for_facade($new_task_id, $req)) {
+	_trace('error redirect not defined in facade: ', $new_task_id)
+	    if $_TRACE;
+	return;
     }
 
-    # Redirect to error redirect
-    $die->set_code(Bivio::DieCode::SERVER_REDIRECT_TASK(),
-	    task_id => $new_task_id);
+    # Redirect
+    $die->set_code(
+	Bivio::DieCode->SERVER_REDIRECT_TASK,
+	task_id => $new_task_id,
+    );
+    # Save state of current task executing
+    $req->put_durable(
+	form_context => Bivio::Biz::FormModel->get_context_from_request($req),
+    );
     return;
 }
 
@@ -528,12 +529,11 @@ sub _init_executables {
 	my($class, $method) = split(/->/, $i, 2);
 	my($c) = Bivio::Collection::SingletonMap->get($class);
 	$method ||= 'execute';
-	Bivio::Die->die($i,
-		": can't be executed (missing $method method)")
-		    unless $c->can($method);
+	Bivio::Die->die($i, ": can't be executed (missing $method method)")
+	    unless $c->can($method);
 	if ($c->isa('Bivio::Biz::FormModel')) {
 	    Bivio::Die->die($attrs->{id}, ': too many form models')
-			if $attrs->{form_model};
+	        if $attrs->{form_model};
 	    $attrs->{form_model} = ref($c) || $c;
 	}
 	push(@new_items, [$c, $method, []]);
@@ -553,16 +553,18 @@ sub _init_form_attrs {
     }
 
     Bivio::Die->die($attrs->{id}, ": FormModels require \"next=\" item")
-		unless $attrs->{next};
+	unless $attrs->{next};
     # default cancel to next unless present
     $attrs->{cancel} = $attrs->{next} unless $attrs->{cancel};
 
     my($form_require) = $attrs->{form_model}->get_instance
-	    ->get_info('require_context');
+	->get_info('require_context');
     if (defined($attrs->{require_context})) {
-	Bivio::Die->die($attrs->{id}, ": can't require_context, because",
-		" FormModel doesn't require it")
-		    if !$form_require && $attrs->{require_context};
+	Bivio::Die->die(
+	    $attrs->{id},
+	    ": can't require_context, because",
+	    " FormModel doesn't require it",
+	) if !$form_require && $attrs->{require_context};
     }
     else {
 	$attrs->{require_context} = $form_require;
