@@ -370,13 +370,13 @@ sub set_printer {
 	$_LOGGER = \&_log_stderr if $logger eq 'STDERR';
     }
     elsif ($logger eq 'FILE') {
-	Bivio::Die->die('Must specify log file with FILE as printer')
+	$proto->die('Must specify log file with FILE as printer')
 		    unless defined($log_file);
 	$_LOG_FILE = $log_file;
 	$_LOGGER = \&_log_file;
     }
     else {
-	Bivio::Die->die('Unknown logger type ', $logger);
+	$proto->die('Unknown logger type ', $logger);
     }
     return;
 }
