@@ -74,6 +74,7 @@ my($_DEFAULT_CONFIG) = {
 	database => 'none',
 	user => 'none',
 	password => 'none',
+	connection => 'Bivio::SQL::Connection::Oracle',
     },
     'Bivio::IO::Alert' => {
 	intercept_warn => 1,
