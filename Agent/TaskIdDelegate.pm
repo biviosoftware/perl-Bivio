@@ -55,6 +55,14 @@ sub get_delegate_info {
         Bivio::Biz::Action::HTTPDocument
     )],
 #    [qw(
+#        VIEW_TEST_TASK
+#        2
+#        GENERAL
+#        DOCUMENT_READ
+#        pub/test ),
+#        'View#hello',
+#    ],
+#    [qw(
 #        TEST_JOB
 #        2
 #        CLUB
