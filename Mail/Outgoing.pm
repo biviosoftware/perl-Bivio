@@ -163,7 +163,8 @@ sub send {
     my($self, $email_errors) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($msg) = $self->as_string;
-    Bivio::Mail::Common->send($fields->{recipients}, \$msg);
+    Bivio::Mail::Common->send($fields->{recipients}, \$msg, 0, 
+                              $fields->{sender});
 }
 
 =for html <a name="set_body"></a>

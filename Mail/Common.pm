@@ -136,19 +136,26 @@ sub handle_config {
 
 =head2 send(array_ref recipients, string_ref msg, int offset)
 
+=head2 send(string recipients, string_ref msg, int offset, string $from)
+
+=head2 send(array_ref recipients, string_ref msg, int offset, string $from)
+
 Sends a message via configured C<sendmail> program.  Errors are
 mailed back to configured C<errors_to>--except if no I<recipients>
 iwc an exception is raised or no I<msg>.
 
+Bounces are sent back to $from. $from is the envelope FROM, ie.
+the -f argument given to sendmail.
+
 =cut
 
 sub send {
-#TODO: Test where errors are sent when there is a bad user
-    my(undef, $recipients, $msg, $offset) = @_;
+    my(undef, $recipients, $msg, $offset, $from) = @_;
     $offset ||= 0;
     $offset < 0 && die("negative offset \"$offset\"\n");
     defined($recipients) || die("no recipients\n");
     defined($msg) || die("no message\n");
+    defined($from) && ($from = '-f' . $from);
     ref($recipients) && ($recipients = join(',', @$recipients));
     $recipients =~ s/(['\\])/\\$1/g;
     my($msg_ref) = ref($msg) ? $msg : \$msg;
@@ -159,7 +166,7 @@ sub send {
 #TODO: recipients may be very long(?).  If so either throw an error
 #      or need to generate multiple sends.
     &_trace('sending to ', $recipients) if $_TRACE;
-    unless (open($fh, "| $_SENDMAIL '$recipients'")) {
+    unless (open($fh, "| $_SENDMAIL '$from' '$recipients'")) {
 	$err = "open failed: $!";
 	goto error;
     }

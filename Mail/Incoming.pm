@@ -523,7 +523,7 @@ sub send {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     Bivio::Mail::Common->send($fields->{recipients}, $fields->{rfc822},
-	    $fields->{header_offset});
+	    $fields->{header_offset}, $fields->{sender});
 }
 
 =for html <a name="set_recipients"></a>
