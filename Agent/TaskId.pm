@@ -248,6 +248,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailListForm->execute_if_allowed
         Bivio::UI::HTML::Club::MailList
         next=CLUB_COMMUNICATIONS_MAIL_LIST
+        help=mail
     )],
     [qw(
         CLUB_COMMUNICATIONS_MAIL_DETAIL
@@ -259,6 +260,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::UI::HTML::Club::MailDetail
+        help=mail
     )],
     # The string msg-part/*?t=NNN is encoded in the MAIL_CACHE generation
     # code. Path info (/*) is ignored by MailPartDownload, because it isn't
@@ -285,6 +287,7 @@ my(@_CFG) = (
 	Bivio::Biz::Model::MailPartSaveForm
 	Bivio::UI::HTML::Club::MailPartSave
         next=CLUB_COMMUNICATIONS_MAIL_DETAIL
+        help=mail
     )],
     [qw(
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
@@ -809,6 +812,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::FileHomePageList->execute_load_all
         Bivio::Biz::Action::HomePageRedirect
         Bivio::UI::HTML::Club::Home
+        help=club-home
     )],
     [qw(
         USER_ADMIN_PASSWORD_EDIT
@@ -1252,6 +1256,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::FileDeleteForm
         Bivio::UI::HTML::Club::FileDelete
 	next=CLUB_COMMUNICATIONS_FILE_READ
+        help=files
     )],
     [qw(
         CLUB_COMMUNICATIONS_FILE_UPLOAD
@@ -1267,6 +1272,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Widget::FilePageHeading
         Bivio::UI::HTML::Club::FileUpload
 	next=CLUB_COMMUNICATIONS_FILE_READ
+        help=files
     )],
     [qw(
         CLUB_COMMUNICATIONS_FILE_REPLACE
@@ -1282,6 +1288,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
         Bivio::UI::HTML::Club::FileReplace
 	next=CLUB_COMMUNICATIONS_FILE_READ
+        help=files
     )],
     [qw(
         CLUB_COMMUNICATIONS_FILE_CREATE_DIRECTORY
@@ -2196,6 +2203,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Action::ClubMailDelete
         next=CLUB_COMMUNICATIONS_MAIL_LIST
+        help=mail
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
@@ -2307,6 +2315,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailToList->execute_load_all
         Bivio::UI::HTML::Club::MailPost
         next=CLUB_COMMUNICATIONS_MAIL_LIST
+        help=mail
     )],
     [qw(
         CLUB_MAIL_REPLY
@@ -2321,6 +2330,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailToList->execute_load_all
         Bivio::UI::HTML::Club::MailReply
         next=CLUB_COMMUNICATIONS_MAIL_LIST
+        help=mail
     )],
     [qw(
         CLUB_MAIL_FORWARD
@@ -2333,6 +2343,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailForwardForm
         Bivio::UI::HTML::Club::MailForward
         next=CLUB_COMMUNICATIONS_MAIL_LIST
+        help=mail
     )],
     [qw(
         GENERAL_SEARCH
@@ -2562,6 +2573,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
         Bivio::UI::HTML::Club::FileRename
         next=CLUB_COMMUNICATIONS_FILE_READ
+        help=files
     )],
     #220
     [qw(
@@ -2615,6 +2627,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
         Bivio::UI::HTML::Club::FileUnzip
         next=CLUB_COMMUNICATIONS_FILE_READ
+        help=files
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_MERGER
