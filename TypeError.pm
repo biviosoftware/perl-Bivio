@@ -854,11 +854,6 @@ __PACKAGE__->compile(
 	undef,
 	'foreign taxes may only be associated with dividend distributions',
     ],
-    NUMBER_OUT_OF_RANGE => [
-	115,
-	undef,
-	'the number is out of range',
-    ],
 );
 
 #=PRIVATE METHODS
