@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Auth::PermissionSet added includes() for permission testing
+  * Bivio::Mail::Common added config reroute_address to route all mail
+    to one address for testing, refactored methods
+
+  Revision 2.24  2004/06/17 21:10:48  david
+  * Bivio::UI::ViewLanguage
+    Bivio::UI::ViewShortcutsBase
+      Allows functions defined in ViewShortcuts files to call other vs_
+      functions and Widget() constructors without $proto-> or Package->,
       just like in bview files.
   * Bivio::Util::SQL added upgrade_db function.  Subclasses should
     override internal_upgrade_db to implement upgrade functionality.
