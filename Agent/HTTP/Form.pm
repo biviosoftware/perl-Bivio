@@ -358,12 +358,13 @@ sub _parse_header_line {
 
 # _read(Apache r, string_ref buf, int_ref len, int read_max, Bivio::Agent::Request req)
 #
-# Reads or dies
+# Reads or dies.  Appends to $$buf.
 #
 sub _read {
     my($r, $buf, $len, $read_max, $req) = @_;
     my($read_bytes) = $$len < $read_max ? $$len : $read_max;
-    $r->read($$buf, $read_bytes)
+    # Newer mod_perl requires offset param.  Older mod_perl ignores.
+    $r->read($$buf, $read_bytes, length($$buf))
             || $req->throw_die('CLIENT_ERROR', 'read error');
     $req->throw_die('CLIENT_ERROR', 'buffer undefined after read')
 	    unless defined($$buf);
