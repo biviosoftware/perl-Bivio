@@ -980,6 +980,11 @@ fiscal year',
 	undef,
 	'Brokerage must be specified if you have a login or password',
     ],
+    NOT_FISCAL_START_DATE => [
+	141,
+	undef,
+	'Start date for AccountKeeper must be 1/1/YYYY',
+    ],
 ]);
 
 #=PRIVATE METHODS
