@@ -266,7 +266,7 @@ sub internal_initialize {
 
 =for html <a name="setup_club"></a>
 
-=head2 setup_club(Bivio::Biz::Model::Club club)
+=head2 setup_club(Bivio::Biz::Model::RealmOwner club)
 
 Creates the club message storage area.
 
