@@ -34,7 +34,7 @@ which registered for that request.
 =cut
 
 sub _DEFAULT_HTTP_CONTROLLER_NAME {
-    return 'human';
+    return 'admin';
 }
 
 #=VARIABLES
@@ -150,8 +150,12 @@ $Id$
 
 
 # for testing
-use Bivio::Agent::HTTP::TestController();
+#use Bivio::Agent::HTTP::TestController();
+#Bivio::Agent::HTTP::TestController->create_test_site();
 
-Bivio::Agent::HTTP::TestController->create_test_site();
+# site initialization - should be from config file
+
+use Bivio::Agent::HTTP::SiteStart;
+Bivio::Agent::HTTP::SiteStart->init();
 
 1;
