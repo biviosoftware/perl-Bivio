@@ -34,9 +34,13 @@ C<Bivio::UI::HTML::Widget::ClearDot> displays the clear dot
 
 =item height : int []
 
+=item height : array_ref []
+
 The (constant) height of the dot.
 
 =item width : int []
+
+=item width : array_ref []
 
 The (constant) width of the dot.
 
@@ -109,15 +113,21 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{value});
-    my($width) = $self->get_or_default('width', 0);
-    my($height) = $self->get_or_default('height', 0);
     $fields->{value} = '<img src="'
 	    .Bivio::Util::escape_html(Bivio::UI::Icon->get_clear_dot->{uri})
             .'" border=0';
-    $fields->{value} .= " width=$width" if $width;
-    $fields->{value} .= " height=$height" if $height;
-    $fields->{value} .= '>';
-    $fields->{is_initialized} = 1;
+    $fields->{is_constant} = 1;
+    foreach my $f (qw(width height)) {
+	my($fv) = $self->get_or_default($f, 0);
+	if (ref($fv)) {
+	    $fields->{is_constant} = 0;
+	    $fields->{$f} = $fv;
+	}
+	elsif ($fv) {
+	    $fields->{value} .= ' '.$f.'='.$fv;
+	}
+    }
+    $fields->{value} .= '>' if $fields->{is_constant};
     return;
 }
 
@@ -125,12 +135,13 @@ sub initialize {
 
 =head2 is_constant : boolean
 
-Returns 1.
+Returns true if is a constant.
 
 =cut
 
 sub is_constant {
-    return 1;
+    my($fields) = shift->{$_PACKAGE};
+    return $fields->{is_constant};
 }
 
 =for html <a name="render"></a>
@@ -145,6 +156,13 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     $$buffer .= $fields->{value};
+    return if $fields->{is_constant};
+
+    foreach my $f (qw(width height)) {
+	next unless ref($fields->{$f});
+	$$buffer .= ' '.$f.'='.$source->get_widget_value(@{$fields->{$f}});
+    }
+    $$buffer .= '>';
     return;
 }
 
