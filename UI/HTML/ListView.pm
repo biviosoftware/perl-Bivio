@@ -183,8 +183,10 @@ Draws the table body - all the rows.
 sub render_body {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($max_row) = $model->get_row_count();
+    my($max_col) = $model->get_column_count();
 
-    for (my($row) = 0; $row < $model->get_row_count(); $row++ ) {
+    for (my($row) = 0; $row < $max_row; $row++ ) {
 	if ($row & 0x01) {
 	    $req->print('<tr bgcolor="#EEEEEE">');
 	}
@@ -192,7 +194,7 @@ sub render_body {
 	    $req->print('<tr>');
         }
 
-	for (my($col) = 0; $col < $model->get_column_count(); $col++ ) {
+	for (my($col) = 0; $col < $max_col; $col++ ) {
 
 	    #TODO: need a way to render td per type
 

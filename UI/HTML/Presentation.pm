@@ -2,8 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Presentation;
 use strict;
-use Bivio::UI::HTML::Link();
-use Bivio::UI::HTML::MenuRenderer();
 $Bivio::UI::HTML::Presentation::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -23,6 +21,7 @@ L<Bivio::UI::MultiView>
 
 =cut
 
+use Bivio::UI::MultiView;
 @Bivio::UI::HTML::Presentation::ISA = qw(Bivio::UI::MultiView);
 
 =head1 DESCRIPTION
@@ -93,6 +92,10 @@ sub NAV_UP {
     return 'up';
 }
 
+#=IMPORTS
+use Bivio::UI::HTML::Link;
+use Bivio::UI::HTML::MenuRenderer;
+
 #=VARIABLES
 
 my($_EMPTY_LINK) = Bivio::UI::HTML::Link->new('empty',
@@ -108,7 +111,7 @@ my($_EMPTY_LINK) = Bivio::UI::HTML::Link->new('empty',
 
 Creates a view presentation with the specified subviews and menu.
 
-=head2 static new(array views, Menu menu) : Bivio::UI::HTML::Presentation
+=head2 static new(array views) : Bivio::UI::HTML::Presentation
 
 Creates a view presentation with the specified subviews.
 
