@@ -46,7 +46,8 @@ For example, don't assume $self is a reference and instead load things
 on the request.   As an example, in Bivio::Biz::Util::File, the volume
 is loaded on the request once it is parsed from $self if it is available.
 
-ShellUtils can't be subclassed.  See _method_ok() below.
+ShellUtils can't be subclassed and commands may not begin with "handle_".
+See _method_ok() below.
 
 =head1 ATTRIBUTES
 
@@ -686,6 +687,7 @@ sub _compile_options {
 sub _method_ok {
     my($self, $method) = @_;
     return 0 unless $method =~ /^([a-z]\w*)$/i;
+    return 0 if $method =~ /^handle_/;
     my($can) = $self->can($method);
     return 1 if $can eq \&{ref($self).'::'.$method};
     return 0 if ref($self) eq __PACKAGE__;
