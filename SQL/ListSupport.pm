@@ -512,7 +512,6 @@ sub _load_list {
 		my($fob) = $fob_type->from_sql_column($row->[$fob_index]);
 		_trace('fob_start compare to ', $fob) if $_TRACE;
 		next ROW if defined($fob) && $fob_start eq $fob;
-		_trace('passed fob_start') if $_TRACE;
 #TODO: May want to "go back to" the beginning and process all rows.
 #      If we miss the just_prior, do we want an error message?
 
@@ -524,6 +523,8 @@ sub _load_list {
 	    continue {
 		$j++;
 	    }
+	    _trace($started ? 'passed fob_start' : 'found just_prior',
+		   ' at row #', $statement->rows) if $_TRACE;
 	    # Start with this row if $fob is different, else just_prior
 	    # primary key found so start with next.
 	    next ROW unless $started++;
