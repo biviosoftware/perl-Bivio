@@ -48,16 +48,16 @@ Bivio::IO::Trace->register;
 
 =cut
 
-=for html <a name="create"></a>
+=for html <a name="execute_input"></a>
 
-=head2 create()
+=head2 execute_input()
 
 Processes the form's values and creates models.
 Any errors are "put" on the form and the operation is aborted.
 
 =cut
 
-sub create {
+sub execute_input {
     my($self) = @_;
     my($properties) = $self->internal_get;
     my($realm_owner) = $self->get_model_properties('RealmOwner');

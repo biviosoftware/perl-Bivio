@@ -31,10 +31,13 @@ C<Bivio::Biz::Model::InstrumentSellForm>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::TypeError;
 use Bivio::UI::HTML::Format::Date;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 
@@ -68,19 +71,16 @@ sub new {
 
 =cut
 
-=for html <a name="create"></a>
+=for html <a name="execute_input"></a>
 
-=head2 create()
+=head2 execute_input()
 
 
 =cut
 
-sub create {
+sub execute_input {
     my($self) = @_;
-
-    use Data::Dumper;
-    print(STDERR Dumper($self->internal_get));
-
+    _trace($self->internal_get) if $_TRACE;
     return;
 }
 

@@ -65,14 +65,14 @@ sub new {
 
 =cut
 
-=for html <a name="create"></a>
+=for html <a name="execute_input"></a>
 
-=head2 create()
+=head2 execute_input()
 
 
 =cut
 
-sub create {
+sub execute_input {
     my($self) = @_;
 
     my($req) = $self->get_request();
@@ -126,7 +126,7 @@ sub internal_initialize {
 
 =for html <a name="validate"></a>
 
-=head2 validate(boolean is_create)
+=head2 validate()
 
 Checks the form property values.  Puts errors on the fields
 if there are any.

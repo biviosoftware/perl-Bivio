@@ -49,16 +49,16 @@ Bivio::IO::Trace->register;
 
 =cut
 
-=for html <a name="create"></a>
+=for html <a name="execute_input"></a>
 
-=head2 create()
+=head2 execute_input()
 
 Processes the form's values and creates models.
 Any errors are "put" on the form and the operation is aborted.
 
 =cut
 
-sub create {
+sub execute_input {
     my($self) = @_;
     my($properties) = $self->internal_get;
 
@@ -96,24 +96,9 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="update"></a>
-
-=head2 update()
-
-Processes the form's values and updates models.
-Any errors are "put" on the form and the operation is aborted.
-
-
-=cut
-
-sub update {
-    my($self) = @_;
-    die('not implemented properly');
-}
-
 =for html <a name="validate"></a>
 
-=head2 validate(boolean is_create)
+=head2 validate()
 
 Checks the form property values.  Puts errors on the fields
 if there are any.
