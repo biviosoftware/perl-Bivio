@@ -85,14 +85,10 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'mgfs_download_t',
 	columns => {
-	    file_name => ['Bivio::Type::Name',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    file_date => ['Bivio::Type::Date',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    file_size => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    download_date => ['Bivio::Type::Date',
-		    Bivio::SQL::Constraint::NOT_NULL()],
+	    file_name => ['Name', 'PRIMARY_KEY'],
+	    file_date => ['Date', 'PRIMARY_KEY'],
+	    file_size => ['Amount', 'PRIMARY_KEY'],
+	    download_date => ['Date', 'NOT_NULL'],
         },
     };
 }
