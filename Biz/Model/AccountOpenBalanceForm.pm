@@ -182,6 +182,8 @@ sub execute_input {
 
     # need to update units after this date
     $realm->audit_units($properties->{'RealmTransaction.date_time'});
+
+    $req->server_redirect($req->get('task')->get('next'));
     return;
 }
 
@@ -196,6 +198,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
+	require_context => 1,
 	visible => [
 	    {
 		name => 'RealmTransaction.date_time',
