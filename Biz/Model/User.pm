@@ -62,6 +62,9 @@ Deletes this user and all its related realm information. This will not
 delete club RealmUser data, and if it exists then this method will die
 with a database constraint violation.
 
+(RealmUser is not deleted because the auth_id on that model is realm_id,
+which is not the same as the User's auth_id.)
+
 =cut
 
 sub cascade_delete {
