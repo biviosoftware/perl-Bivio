@@ -43,8 +43,7 @@ my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_SELF) = __PACKAGE__->new({
     clone => undef,
     is_production => 0,
-    uri => 'petshop.bivio.net',
-    local_file_prefix => 'petshop',
+    uri => 'petshop',
     Color => {
 	initialize => sub {
 	    my($fc) = @_;
@@ -129,6 +128,7 @@ my($_SELF) = __PACKAGE__->new({
                     search_field
                     mailto
                     link
+		    form_submit
             )],
 		   []);
 
