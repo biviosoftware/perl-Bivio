@@ -123,7 +123,6 @@ sub internal_pre_load {
     my($self) = @_;
     my($req) = $self->get_request;
     my($date) = $req->get('report_date');
-    $date = Bivio::Type::Date->to_local_date($date);
 
     # get tax year start
     my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
