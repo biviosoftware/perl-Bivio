@@ -252,7 +252,7 @@ sub _create_user {
     });
 
     # log the user in
-    Bivio::Biz::Model->get_instance('LoginForm')->execute($req, {
+    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
 	realm_owner => $realm,
     });
 

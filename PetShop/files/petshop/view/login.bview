@@ -10,7 +10,7 @@ view_put(
 	String('Please sign into the bOP Pet Shop Demo', 'page_heading'),
 	'<br><br><br><br>',
 
-	Form('LoginForm', Grid([
+	Form('UserLoginForm', Grid([
 	    [
 		vs_form_field('LoginForm.RealmOwner.name'),
 	    ], [

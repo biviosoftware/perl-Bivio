@@ -48,7 +48,7 @@ Returns the form error definitions.
 sub get_delegate_info {
     my($proto) = @_;
     my($info) = <<'EOF'.${$proto->SUPER::get_delegate_info};
-LoginForm
+UserLoginForm
 RealmOwner.password
 PASSWORD_MISMATCH
 The password you entered does not match the value stored

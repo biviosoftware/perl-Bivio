@@ -161,7 +161,7 @@ sub get_delegate_info {
 	    511
 	    GENERAL
 	    ANYBODY
-	    Action.Logout
+	    Action.UserLogout
 	    Model.UserAccountForm
 	    View.account
 	    next=USER_ACCOUNT_CREATED
@@ -212,8 +212,8 @@ sub get_delegate_info {
 	    517
 	    GENERAL
 	    ANYBODY
-	    Action.Logout
-	    Model.LoginForm
+	    Action.UserLogout
+	    Model.UserLoginForm
 	    View.login
 	    next=CART
 	    MISSING_COOKIES=MISSING_COOKIES
@@ -223,7 +223,7 @@ sub get_delegate_info {
 	    518
 	    GENERAL
 	    ANYBODY
-	    Action.Logout->execute_clear_cart_and_logout
+	    Action.UserLogout->execute_clear_cart_and_logout
 	    Action.ClientRedirect->execute_next
 	    next=MAIN
 	)],
