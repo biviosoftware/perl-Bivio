@@ -232,17 +232,19 @@ sub _interpret_constraint_violation {
 	# Try to find the constraint columns
 	my($statement) = $self->internal_get_dbi_connection()
 		->prepare(<<"EOF");
-	    SELECT user_cons_columns.table_name,
-		    user_cons_columns.column_name
-	    FROM user_cons_columns
-	    WHERE user_cons_columns.constraint_name = ?
+	    SELECT all_cons_columns.table_name,
+		    all_cons_columns.column_name
+	    FROM all_cons_columns
+	    WHERE all_cons_columns.owner = ?
+            AND all_cons_columns.constraint_name = ?
             UNION
-	    SELECT user_ind_columns.table_name,
-		    user_ind_columns.column_name
-	    FROM user_ind_columns
-	    WHERE user_ind_columns.index_name = ?
+	    SELECT all_ind_columns.table_name,
+		    all_ind_columns.column_name
+	    FROM all_ind_columns
+	    WHERE all_ind_columns.index_owner = ?
+            AND all_ind_columns.index_name = ?
 EOF
-	$statement->execute($constraint, $constraint);
+	$statement->execute($owner, $constraint, $owner, $constraint);
 
 	my($cols) = [];
 	my($table);
