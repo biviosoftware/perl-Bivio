@@ -1,0 +1,14 @@
+
+test_setup('PetShop');
+
+home_page();
+click_on('Dogs');
+click_on('Corgi');
+click_on('Male Adult Corgi');
+add_to_cart();
+click_on('Reptiles');
+click_on('Rattlesnake');
+click_on('Venomless Rattlesnake');
+add_to_cart();
+verify_cart('Male Adult Corgi');
+verify_cart('Venomless Rattlesnake');
