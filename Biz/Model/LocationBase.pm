@@ -52,7 +52,7 @@ Sets I<location> if not set, then calls SUPER.
 
 sub create {
     my($self, $values) = @_;
-    $values->{location} = Bivio::Type::Location::HOME()
+    $values->{location} = Bivio::Type::Location->HOME()
 	    unless $values->{location};
     return $self->SUPER::create($values);
 }
@@ -70,7 +70,7 @@ Sets I<location> if not set, then calls SUPER.
 sub unauth_load {
     my($self) = shift;
     my($query) = int(@_) == 1 ? @_ : {@_};
-    $query->{location} = Bivio::Type::Location::HOME()
+    $query->{location} = Bivio::Type::Location->HOME()
 	    unless $query->{location};
     return $self->SUPER::unauth_load($query);
 }

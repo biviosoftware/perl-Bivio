@@ -191,7 +191,7 @@ sub get_outgoing_emails {
     my($self, $which) = @_;
 
     # Load Email
-    $which ||= Bivio::Type::Location::HOME();
+    $which ||= Bivio::Type::Location->HOME();
     my($email) = Bivio::Biz::Model->new($self->get_request, 'Email');
     return undef unless $email->unauth_load(
 	    location => $which, realm_id => $self->get('user_id'));

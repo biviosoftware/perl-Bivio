@@ -180,6 +180,7 @@ sub _base {
 		'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
 		'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
+		'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
 		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
 		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
 		'Bivio::UI::FacadeChildType' => 'Bivio::Delegate::SimpleFacadeChildType',

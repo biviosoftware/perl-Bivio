@@ -21,7 +21,7 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::Type::Enum>
+L<Bivio::Type::Enum>;
 
 =cut
 
@@ -31,31 +31,17 @@ use Bivio::Type::Enum;
 =head1 DESCRIPTION
 
 C<Bivio::Type::Location> describes the physical location where an
-address, phone, or email resides.  The current choices are:
+address, phone, or email resides.
 
-=over 4
-
-=item HOME
-
-=item WORK
-
-=back
+It can be assumed C<HOME> is defined.
 
 =cut
 
 #=IMPORTS
 
 #=VARIABLES
-
-__PACKAGE__->compile([
-    HOME => [
-	1,
-    ],
-    WORK => [
-	2,
-    ],
-]);
-
+__PACKAGE__->compile(
+    Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__));
 
 #=PRIVATE METHODS
 
