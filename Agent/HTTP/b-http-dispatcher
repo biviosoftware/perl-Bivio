@@ -106,11 +106,11 @@ EOF
     close(OUT) || die("close $conf: $!");
     close(DATA);
     if ($execute) {
-	exec("$_APACHE_HOME/bin/httpd", '-X', '-f', "$pwd/$conf");
+	exec("$_APACHE_HOME/bin/httpd", '-X', '-d', $pwd, '-f', "$pwd/$conf");
 	die("$_APACHE_HOME/bin/httpd: $!");
     }
     else {
-	print "Starting: $_APACHE_HOME/bin/httpd -X -f $pwd/$conf\n";
+	print "Starting: $_APACHE_HOME/bin/httpd -X -d $pwd -f $pwd/$conf\n";
     }
 }
 
@@ -197,33 +197,10 @@ ResourceConfig /dev/null
 AccessConfig /dev/null
 
 #
-# Configure modules minimally
-#
-LoadModule access_module      libexec/mod_access.so
-LoadModule config_log_module  libexec/mod_log_config.so
-LoadModule agent_log_module   libexec/mod_log_agent.so
-LoadModule referer_log_module libexec/mod_log_referer.so
-LoadModule mime_module        libexec/mod_mime.so
-LoadModule dir_module         libexec/mod_dir.so
-LoadModule setenvif_module    libexec/mod_setenvif.so
-
-ClearModuleList
-AddModule mod_access.c
-AddModule mod_log_config.c
-AddModule mod_log_agent.c
-AddModule mod_log_referer.c
-AddModule mod_mime.c
-AddModule mod_dir.c
-AddModule mod_so.c
-AddModule mod_setenvif.c
-AddModule mod_perl.c
-
-#
 # Server
 #
 ServerName <$host>
-ServerType standalone
-Port <$port>
+Listen <$port>
 User <$user>
 Group <$group>
 ServerAdmin <$user>
@@ -257,29 +234,20 @@ DefaultType text/html
 LockFile httpd.lock
 
 <Directory />
-Order deny,allow
-Deny from all
-</Directory>
-
-<Directory <$pwd>/html>
 AllowOverride None
-# Always FollowSymLinks for performance
 Options FollowSymLinks
-Allow from all
 </Directory>
 
-<LocationMatch "^/\w{3,}($|/)">
+<LocationMatch "^/[a-z][a-z][a-z][a-z]+($|/)">
 AuthName bivio:<$port>
 AuthType Basic
 SetHandler perl-script
 PerlHandler <$handler>
 </LocationMatch>
 
-<Location /i>
-AllowOverride None
-# Always FollowSymLinks for performance
-Options FollowSymLinks
-Allow from all
+<Location /modperl-status>
+SetHandler perl-script
+PerlHandler Apache::Status
 </Location>
 
 #
