@@ -34,8 +34,9 @@ and delete interface to the C<realm_account_entry_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::PrimaryId;
+use Bivio::Biz::Model::Entry;
+use Bivio::Type::EntryClass;
+use Bivio::Type::TaxCategory;
 
 #=VARIABLES
 
@@ -89,12 +90,9 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_account_entry_t',
 	columns => {
-            entry_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            realm_account_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+            entry_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_account_id => ['PrimaryId', 'NOT_NULL'],
         },
 	other => [
 	    [qw(realm_account_id RealmAccount.realm_account_id)],
