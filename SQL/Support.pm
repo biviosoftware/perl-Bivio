@@ -314,9 +314,10 @@ sub update {
     my($columns) = $fields->{columns};
     my($set);
     my(@params);
-    foreach (@{$fields->{column_names}}) {
-	next if ! exists($new_values->{$_});
-	my($column) = $columns->{$_};
+    my($n);
+    foreach $n (@{$fields->{column_names}}) {
+	next if ! exists($new_values->{$n});
+	my($column) = $columns->{$n};
 	if ($column->{is_primary_key}) {
 	    # Ensure primary keys aren't different, because PropertyModel
 	    # always copies new_values to old_values on success
