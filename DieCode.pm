@@ -288,7 +288,7 @@ __PACKAGE__->compile([
 	# entity, class
 	22,
 	undef,
-	'missing or bad configuration',
+	'missing or incorrect configuration.  Please check your bconf file.',
     ],
 ]);
 
