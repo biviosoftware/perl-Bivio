@@ -198,14 +198,11 @@ sub update {
 #
 # Abbreviates the instrument name if present.
 #
-# Corporation --> Corp.
-# Incorporated --> Inc.
-#
 sub _abbreviate_name {
     my($values) = @_;
     return unless exists($values->{name});
-    $values->{name} =~ s/Corporation/Corp./;
-    $values->{name} =~ s/Incorporated/Inc./;
+    $values->{name} = Bivio::Biz::Model::Instrument->abbreviate_name(
+	    $values->{name});
     return;
 }
 
