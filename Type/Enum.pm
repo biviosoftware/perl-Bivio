@@ -25,7 +25,9 @@ Bivio::Type::Enum - base class for enumerated types
     __PACKAGE__->NAME->get_short_desc;
     __PACKAGE__->NAME->get_long_desc;
     __PACKAGE__->from_int(0);
-    __PACKAGE__->from_string('NAME');
+    __PACKAGE__->from_any('NAME');
+    __PACKAGE__->from_any(0);
+    __PACKAGE__->from_any(__PACKAGE__->from_int(0));
 
 =cut
 
@@ -57,6 +59,18 @@ my(%_MAP);
 
 =cut
 
+=for html <a name="from_any"></a>
+
+=head2 static from_any(any thing) : Bivio::Type::Enum
+
+Returns enum value for specified string, enum, or integer.
+
+=cut
+
+sub from_any {
+    return &_get_info(shift(@_), shift(@_))->[4];
+}
+
 =for html <a name="from_int"></a>
 
 =head2 static from_int(int num) : Bivio::Type::Enum
@@ -67,18 +81,6 @@ Returns enum value for specified integer.
 
 sub from_int {
     return &_get_info(shift(@_), shift(@_) + 0)->[4];
-}
-
-=for html <a name="from_string"></a>
-
-=head2 static from_string(string name) : Bivio::Type::Enum
-
-Returns enum value for specified string
-
-=cut
-
-sub from_string {
-    return &_get_info(shift(@_), shift(@_))->[4];
 }
 
 =for html <a name="get_list"></a>
@@ -114,12 +116,13 @@ sub as_int {
 
 =head2 as_string() : string
 
-Returns string representation of enum value
+Returns fully-qualified string representation of enum value.
 
 =cut
 
 sub as_string {
-    return &_get_info(shift(@_), undef)->[3];
+    my($self) = shift;
+    return ref($self) . '::' . &_get_info($self, undef)->[3];
 }
 
 =for html <a name="compile"></a>
@@ -207,6 +210,18 @@ Returns the long description for the enum value.
 
 sub get_long_desc {
     return &_get_info(shift(@_), undef)->[2];
+}
+
+=for html <a name="get_name"></a>
+
+=head2 get_name() : string
+
+Returns the string name of the enumerated value.
+
+=cut
+
+sub get_name {
+    return &_get_info(shift(@_), undef)->[3];
 }
 
 =for html <a name="get_short_desc"></a>
