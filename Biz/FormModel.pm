@@ -337,7 +337,7 @@ sub _execute_input {
     return if $fields->{errors};
     # Success, redirect to the next task.
     my($req) = $self->get_request;
-    $req->redirect($req->get('task')->get('next'));
+    $req->client_redirect($req->get('task')->get('next'));
     # DOES NOT RETURN
 }
 
@@ -453,6 +453,10 @@ sub _parse_submit {
 	# Does not return
     }
     return if $value eq SUBMIT_OK() || $value eq SUBMIT_NEXT();
+
+#TODO: need a general fix for this
+    # lynx trims submit padding!
+    return if SUBMIT_OK =~ /$value/x;
 
     $self->die(Bivio::DieCode::CORRUPT_FORM(),
 	    {field => SUBMIT(),
