@@ -424,10 +424,7 @@ _compile(
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    ANNOUNCE_EDITING =>['Edit Transactions'],
-    ANNOUNCE_FRACTIONAL => ['Cash in Lieu'],
-    ANNOUNCE_SAVE_ATTACH => ['Save Attachments to Files'],
-    ANNOUNCE_UNZIP => ['Multiple File Upload'],
+    ANNOUNCE_SORTING => ['Sorting'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
