@@ -422,8 +422,6 @@ sub get_local_file_name {
 
 Return an attribute of the current facade.
 
-=back
-
 =cut
 
 sub get_value {
