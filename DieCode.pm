@@ -69,10 +69,6 @@ internal error: CORE::die was caught by Bivio::Die->catch
 die within handle_die: CORE::die was called while handling an existing die
 I<proto> is either the instance or class passed to C<handle_die>.
 
-=item AUTH_REQUIRED: operation, entity
-
-authentication required: user must authenticate first before proceeding
-
 =item VERSION_MISMATCH: entity, class
 
 version mismatch: user request using invalid or old form, query, or uri.
@@ -129,6 +125,10 @@ avoid a mail loop by not forwarding a message a second time
 
 unexpected error while communicating with database
 
+=item MISSING_COOKIES: client_addr
+
+unexpected error while communicating with database
+
 =back
 
 =cut
@@ -179,10 +179,10 @@ __PACKAGE__->compile(
 	'die within handle_die',
 	'CORE::die was called while handling an existing die',
     ],
-    AUTH_REQUIRED => [
-    	8,
-	'authentication required',
-	'user must authenticate first before proceeding',
+    MISSING_COOKIES => [
+	8,
+	undef,
+	'browser did not return all necessary cookies',
     ],
     VERSION_MISMATCH => [
     	9,

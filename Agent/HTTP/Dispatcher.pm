@@ -92,25 +92,6 @@ sub create_request {
     return Bivio::Agent::HTTP::Request->new($r);
 }
 
-=for html <a name="handle_die"></a>
-
-=head2 static handle_die(Bivio::Die die)
-
-We handle certain die codes, e.g. AUTH_REQUIRED here.
-
-=cut
-
-sub handle_die {
-    my($self, $die) = @_;
-    my($code) = $die->get('code');
-    if ($code == Bivio::DieCode::AUTH_REQUIRED()) {
-	# Change this to a redirect depending on the cookie state
-	Bivio::Agent::Request->get_current->server_redirect_in_handle_die(
-		$die, Bivio::Agent::TaskId::LOGIN());
-    }
-    return;
-}
-
 =for html <a name="handler"></a>
 
 =head2 static handler(Apache::Request r) : int
