@@ -61,6 +61,20 @@ sub from_literal {
     return $value;
 }
 
+=for html <a name="get_tail"></a>
+
+=head2 get_tail(string value ) : string
+
+Returns the basename, stripping directories and drive names.
+
+=cut
+
+sub get_tail {
+    my(undef, $value) = @_;
+    $value =~ s!.*[:\/\\]!!;
+    return $value;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
