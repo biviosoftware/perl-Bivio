@@ -443,7 +443,6 @@ If the host is missing, adds I<Text.mail_host>.
 sub format_email {
     my($self, $email) = @_;
 #TODO: Properly quote the email name???
-    $email = _deprecate_wv($self, $email, 'email') if ref($email);
     # Will bomb if no auth_realm.
     return $self->get('auth_realm')->format_email unless defined($email);
     $email .= '@' . Bivio::UI::Facade->get_value('mail_host', $self)
@@ -465,8 +464,6 @@ a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 
 sub format_help_uri {
     my($self, $task_id) = @_;
-    $task_id = _deprecate_wv($self, $task_id, 'task_id')
-	    if ref($task_id) eq 'ARRAY';
     $task_id = $task_id ? ref($task_id) ? $task_id
 	    : Bivio::Agent::TaskId->from_any($task_id)
 		    : $self->get('task_id');
@@ -543,8 +540,6 @@ sub format_mailto {
     my($self, $email, $subject) = @_;
     my($res) = 'mailto:'
 	    . Bivio::HTML->escape_uri($self->format_email($email));
-    $subject = _deprecate_wv($self, $subject, 'subject')
-	    if ref($subject);
     if (defined($subject)) {
 	# This is a bug.  Currently Outlook doesn't understand
 	# escaped URIs in mailtos.  We should be escap_uri'ing the subject.
@@ -596,13 +591,6 @@ I<no_context> allows the caller to not allow FormContext.
 
 sub format_uri {
     my($self, $task_id, $query, $auth_realm, $path_info, $no_context) = @_;
-    $task_id = _deprecate_wv($self, $task_id, 'task_id')
-	    if ref($task_id) eq 'ARRAY';
-    $query = _deprecate_wv($self, $query, 'query') if ref($query) eq 'ARRAY';
-    $auth_realm = _deprecate_wv($self, $auth_realm, 'auth_realm')
-	    if ref($auth_realm) eq 'ARRAY';
-    $path_info = _deprecate_wv($self, $path_info, 'path_info')
-	    if ref($path_info) eq 'ARRAY';
     if ($task_id) {
 	$task_id = Bivio::Agent::TaskId->from_name($task_id)
 		unless ref($task_id) eq 'Bivio::Agent::TaskId';
