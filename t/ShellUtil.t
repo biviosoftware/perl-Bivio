@@ -5,7 +5,7 @@ use Bivio::Test;
 use Bivio::ShellUtil;
 use Bivio::t::ShellUtil::T1;
 # Needed for the usage_error (DIE below).  Take out for debugging
-Bivio::IO::Alert->set_printer(sub {});
+#Bivio::IO::Alert->set_printer(sub {});
 Bivio::Test->unit([
     'Bivio::ShellUtil' => [
 	group_args => [
@@ -50,6 +50,8 @@ Bivio::Test->unit([
     'Bivio::t::ShellUtil::T1' => [
 	main => [
 	    t1 => [],
+	    rd1 => [],
 	],
+	read_log => qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s,
     ],
 ]);

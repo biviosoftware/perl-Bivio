@@ -54,12 +54,84 @@ Some usage string
 }
 
 #=IMPORTS
+use Bivio::IO::Log;
+use Bivio::IO::File;
 
 #=VARIABLES
+my($_LOG) = 'ShellUtil/mylog.log';
+use Bivio::IO::Config;
+Bivio::IO::Config->introduce_values({
+    'Bivio::IO::Log' => {
+	directory => Bivio::IO::File->pwd,
+    },
+    'Bivio::ShellUtil' => {
+	rd1 => {
+#TODO: due to a bug in introduce_values, all config must be set here
+	    daemon_log_file => $_LOG,
+	    daemon_max_children => 2,
+	    daemon_sleep_after_start => 1,
+	    daemon_child_priority => 5,
+	},
+    },
+});
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="rd1"></a>
+
+=head2 rd1(string arg)
+
+Writes a message to a log file.
+
+=cut
+
+sub rd1 {
+    my($self, $arg) = @_;
+    my($count) = 0;
+    unlink(Bivio::IO::Log->file_name($_LOG));
+    $self->run_daemon(
+	sub {
+	    return
+		if $count > 4;
+	    return [
+		[__PACKAGE__, 'rd1a', $count],
+		[__PACKAGE__, 'rd1a', $count],
+	    ]->[$count++ % 2];
+	},
+	'rd1',
+    );
+    return;
+}
+
+=for html <a name="rd1a"></a>
+
+=head2 rd1a(int arg)
+
+Write a message to the log and sleep.
+
+=cut
+
+sub rd1a {
+    my($self, $arg) = @_;
+    Bivio::IO::Alert->warn('myarg=', $arg);
+    sleep(1);
+    return;
+}
+
+=for html <a name="read_log"></a>
+
+=head2 read_log() : string
+
+Returns the log
+
+=cut
+
+sub read_log {
+    my($self) = @_;
+    return ${Bivio::IO::Log->read($_LOG)};
+}
 
 =for html <a name="t1"></a>
 

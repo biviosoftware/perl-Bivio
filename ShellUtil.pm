@@ -237,6 +237,7 @@ sub USAGE {
 }
 
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::Die;
 use Bivio::IO::File;
 use Bivio::IO::Ref;
@@ -244,6 +245,7 @@ use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::Type::DateTime;
 use Bivio::TypeError;
+use File::Spec ();
 use POSIX ();
 
 #=VARIABLES
@@ -252,7 +254,15 @@ Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Map of class to Attributes which contains result of _parse_options()
 my(%_DEFAULT_OPTIONS);
-
+Bivio::IO::Config->register(my $_CFG = {
+    lock_directory => '/tmp',
+    Bivio::IO::Config->NAMED => {
+	daemon_max_children => 1,
+	daemon_sleep_after_start => 60,
+	daemon_log_file => Bivio::IO::Config->REQUIRED,
+	daemon_child_priority => 5,
+    },
+});
 
 =head1 FACTORIES
 
@@ -513,6 +523,52 @@ sub group_args {
     push(@$res, [splice(@$args, 0, $group_size)])
 	while @$args;
     return $res;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item daemon_log_file : string (named, required)
+
+Name of the log file for the daemon process.  Will be passed to
+L<Bivio::IO::Log::file_name|Bivio::IO::Log/"file_name">, so may be relative.
+The log file is openned at each write to avoid collisions and to make log
+rotation easier.
+
+=item daemon_max_children : int [1] (named)
+
+Number of children for the worker.  This creates a single queue.
+
+=item daemon_sleep_after_start : int [60] (named)
+
+Sleep after starts and before retries.
+
+=item daemon_child_priority : int [5] (named)
+
+Run priority of children.
+
+=item lock_directory : string [/tmp]
+
+Where L<lock_action|"lock_action"> directories are created.  Must be absolute,
+writable directory.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    Bivio::Die->die($cfg->{lock_directory}, ': not a writable directory')
+	unless length($cfg->{lock_directory})
+	    && -w $cfg->{lock_directory} && -d _;
+    Bivio::Die->die($cfg->{lock_directory}, ': not absolute')
+	unless File::Spec->file_name_is_absolute($cfg->{lock_directory});
+    _check_cfg($cfg);
+    $_CFG = $cfg;
+    return;
 }
 
 =for html <a name="initialize_ui"></a>
@@ -914,6 +970,61 @@ sub result {
     return;
 }
 
+=for html <a name="run_daemon"></a>
+
+=head2 run_daemon(code_ref next_command, string cfg_name)
+
+Starts a collection of processes using config defined by
+I<cfg_name> (see L<handle_config|"handle_config">.
+
+=cut
+
+sub run_daemon {
+    my($self, $next_command, $cfg_name) = @_;
+    $self->get_request;
+    Bivio::IO::ClassLoader->simple_require('Bivio::IO::Log');
+    my($cfg) = Bivio::IO::Config->get($cfg_name);
+    Bivio::IO::ClassLoader->simple_require('BSD::Resource');
+#TODO: Fork/setsid is another program.  Need to set pid of process
+#TODO: Returned by parent on stdout
+#    POSIX::setsid();
+#For now I think is good enough
+    setpgrp();
+    _check_cfg($cfg, $cfg_name);
+    my($children) = {};
+    my($i) = 3;
+    while (1) {
+	my($max_duplicates) = $cfg->{daemon_max_children};
+	while (keys(%$children) < $cfg->{daemon_max_children}) {
+	    my($args) = $next_command->();
+	    last unless $args;
+	    if (grep(
+		Bivio::IO::Ref->nested_equals($args, $_),
+		values(%$children),
+	    )) {
+		_trace('already running: ', $args) if $_TRACE;
+		# protects against infinite loop when daemon_max_children
+		# is greater than the number of jobs.
+		last if --$max_duplicates <= 0;
+	    }
+	    else {
+		$children->{_start_daemon_child($args, $cfg)} = $args;
+		sleep($cfg->{daemon_sleep_after_start});
+	    }
+	}
+	return unless %$children;
+	my($stopped) = wait;
+	while ($stopped > 0) {
+	    _trace('stopped: ', $stopped, ' ', $children->{$stopped})
+		if $_TRACE;
+	    Bivio::IO::Alert->warn($stopped, ': unknown pid')
+	        unless delete($children->{$stopped});
+	    $stopped = waitpid(-1, POSIX::WNOHANG());
+	}
+    }
+    return;
+}
+
 =for html <a name="set_realm_and_user"></a>
 
 =head2 static set_realm_and_user(any realm, any user) : self
@@ -1048,6 +1159,23 @@ sub write_file {
 
 #=PRIVATE METHODS
 
+# _check_cfg(hash_ref cfg, string cfg_name)
+#
+# Asserts config is valid
+#
+sub _check_cfg {
+    my($cfg, $cfg_name) = @_;
+    while (my($k, $v) = each(%$cfg)) {
+	next unless $k =~ /_(?:sleep|max|child)_/;
+	next if $v =~ /^\d+$/ && $v >= 0;
+	Bivio::IO::Alert->warn($v, ': bad value for ',
+	    ($cfg_name ? "$cfg_name." : ''), $k,
+	    '; using ', $_CFG->{$k});
+	$cfg->{$k} = $_CFG->{$k};
+    }
+    return;
+}
+
 # _compile_options(Bivio::ShellUtil self) : array
 #
 # Compiles the options string.  Returns a map of options to declarations
@@ -1093,7 +1221,7 @@ sub _compile_options {
 #
 sub _deprecated_lock_action {
     my($action) = @_;
-    my($dir) = "/tmp/$action.lockdir";
+    my($dir) = _lock_files($action);
     return _lock_warning($dir)
 	unless mkdir($dir, 0700);
     my($pid) = fork;
@@ -1134,8 +1262,8 @@ sub _initialize {
 sub _lock_files {
     my($name) = @_;
     $name =~ s/::/./g;
-    my($d) = '/tmp/' . $name . '.lockdir';
-    return ($d, "$d/pid");
+    my($d) = File::Spec->catdir($_CFG->{lock_directory}, "$name.lockdir");
+    return ($d, File::Spec->catfile($d, 'pid'));
 }
 
 # _lock_warning(string lock_dir) : int
@@ -1341,6 +1469,43 @@ sub _setup_for_main {
     $self->set_realm_and_user(_parse_realm_id($self, 'realm'),
 	_parse_realm_id($self, 'user'));
     return;
+}
+
+# _start_daemon_child(array_ref args, hash_ref cfg) : int
+#
+# Starts child process, appending to log.  Returns pid.
+#
+sub _start_daemon_child {
+    my($args, $cfg) = @_;
+    Bivio::IO::Alert->reset_warn_counter;
+ RETRY: {
+	my($child) = fork;
+	unless (defined($child)) {
+	    Bivio::IO::Alert->warn($args,
+		" fork: $!; sleeping before retry");
+	    sleep($cfg->{daemon_sleep_after_start});
+	    redo RETRY;
+	}
+	if ($child) {
+	    _trace('started: ', $child, ' ', $args) if $_TRACE;
+	    return $child;
+	}
+	setpriority(BSD::Resource::PRIO_PROCESS(), 0,
+	    $cfg->{daemon_child_priority});
+	# Makes log rotating simple: All processes share a log
+	Bivio::IO::Alert->set_printer(
+	    'FILE',
+	    Bivio::IO::Log->file_name($cfg->{daemon_log_file}),
+	) if $cfg->{daemon_log_file};
+	# Force a reconnect
+	Bivio::SQL::Connection->get_instance;
+	Bivio::Agent::Request->clear_current;
+	$0 = join(' ', @$args);
+	Bivio::IO::Alert->info('Starting: pid=', $$, ' args=',
+	    join(' ', @$args[2 .. $#$args]));
+        $args->[0]->main(@$args[1 .. $#$args]);
+	CORE::exit(0);
+    }
 }
 
 =head1 COPYRIGHT
