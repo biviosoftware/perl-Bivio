@@ -87,10 +87,10 @@ sub execute {
     });
 
     my($id_map) = {$source_id => $new_realm->get('realm_id')};
-
+#TODO: hacked mail rfc822 for copy to avoid UNIQUE constraint
     # mail messages
     _copy($id_map, 'mail_message', {club_id => $source_id},
-	    Bivio::Biz::Model::MailMessage->new($req));
+	    Bivio::Biz::Model::MailMessage->new($req), 'HACK!');
     Bivio::Biz::Model::MailMessage->copy_club($source, $new_realm);
 
     # transactions and base entries
@@ -179,10 +179,16 @@ sub _copy {
 	}
 	# also change extra field if present
 	if (defined($extra_field)) {
-	    $properties->{$extra_field} =
-		    $id_map->{$properties->{$extra_field}};
-	    # skip if not present (not part of realm)
-	    next unless defined($properties->{$extra_field});
+	    if ($extra_field eq 'HACK!') {
+#TODO: remove mail message hack
+		$properties->{rfc822_id} = rand(99999999999999999999);
+	    }
+	    else {
+		$properties->{$extra_field} =
+			$id_map->{$properties->{$extra_field}};
+		# skip if not present (not part of realm)
+		next unless defined($properties->{$extra_field});
+	    }
 	}
 	$model->create($properties);
 
