@@ -138,6 +138,25 @@ sub WIDTH {
 
 =cut
 
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : any
+
+Validates and converts the value from a literal to an internal form.
+The literal is usually a compact representation of the value, e.g.
+for Enums it is the integer form.
+
+If the value is invalid, C<undef> is return.
+
+See L<to_literal|"to_literal">.
+
+=cut
+
+sub from_literal {
+    shift;
+    return shift;
+}
+
 =for html <a name="from_sql_column"></a>
 
 =head2 from_sql_column(string result) : string
@@ -169,6 +188,21 @@ See L<from_sql_column|"from_sql_column">.
 =cut
 
 sub from_sql_value {
+    shift;
+    return shift;
+}
+
+=for html <a name="to_literal"></a>
+
+=head2 abstract to_literal(any value) : string
+
+Converts from internal form to a literal string value.
+
+See L<from_literal|"from_literal">.
+
+=cut
+
+sub to_literal {
     shift;
     return shift;
 }
