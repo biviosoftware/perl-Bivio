@@ -246,64 +246,24 @@ EOF
 
 sub _upgrade {
     my($req) = @_;
-    _upgrade_add_ec_indices($req);
+    _upgrade_missing_file_constraint($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_add_ec_indices(Bivio::Agent::Request req)
+# _upgrade_missing_file_constraint(Bivio::Agent::Request req)
 #
-# Adds missing foreign key indices.
+# Adds a missing file_t.user_id not null constraint.
 #
-sub _upgrade_add_ec_indices {
+sub _upgrade_missing_file_constraint {
     my($req) = @_;
-    print("adding missing ec indices\n");
     _do_sql('
-CREATE INDEX ec_check_payment_t4 on ec_check_payment_t (
-  realm_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-/
-CREATE INDEX ec_credit_card_payment_t4 on ec_credit_card_payment_t (
-  realm_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-/
-CREATE INDEX ec_payment_t10 on ec_payment_t (
-  realm_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-/
-CREATE INDEX ec_payment_t11 on ec_payment_t (
-  user_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-/
-CREATE INDEX ec_payment_t12 on ec_payment_t (
-  salesperson_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-/
-CREATE INDEX ec_subscription_t5 on ec_subscription_t (
-  realm_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-/
-CREATE INDEX expense_info_t7 on expense_info_t (
-  expense_category_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
+ALTER TABLE file_t modify user_id not null
 /
 ');
     return;
 }
+
 
 # _usage(array message)
 #
