@@ -61,6 +61,7 @@ __PACKAGE__->compile(
     ANY_USER => [17],
     MAIL_ADMIN => [18],
     MAIL_FORWARD => [19],
+    ANY_REALM_USER => [20],
 );
 
 =head1 METHODS
