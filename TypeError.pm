@@ -959,6 +959,12 @@ __PACKAGE__->compile([
 	undef,
 	'no lot adjustment was entered',
     ],
+    ACCEPT_AGREEMENT => [
+	136,
+	undef,
+	'You must check this box to indicate you have read and accept '
+	.' the agreement(s).',
+    ],
 
 ]);
 
