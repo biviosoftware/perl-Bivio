@@ -146,6 +146,10 @@ missing or bad configuration
 
 unexpected database constraint violation
 
+=item MODEL_NOT_FOUND : entity, class
+
+model not found
+
 =back
 
 =cut
@@ -299,6 +303,12 @@ __PACKAGE__->compile([
 	23,
 	undef,
 	'unexpected database constraint violation',
+    ],
+    MODEL_NOT_FOUND => [
+	# entity, class
+    	24,
+	undef,
+	'model was not found',
     ],
 ]);
 
