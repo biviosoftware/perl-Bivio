@@ -1220,6 +1220,14 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::AccountTransfer
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
     )],
+    [qw(
+        DEFAULT_ERROR_REDIRECT_NO_RESOURCES
+        119
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::General::NoResources
+    )],
 );
 
 __PACKAGE__->compile(
