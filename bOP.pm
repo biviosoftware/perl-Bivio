@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.17  2002/06/22 22:32:54  nagler
+  * PetShop facade not "is_production"
+
+  Revision 1.16  2002/06/14 23:53:15  nagler
+  * Bivio::Test::HTMLParser::Forms->get_by_field_name added.
+  * Bivio::Test::HTTP::Page supports redirects correctly
+  * Bivio::Test::Util (b-test) works around bug in File::Find
+  * Bivio::UI::HTML::Widget::Grid bgcolor and cell_bgcolor can be widget
     values.
   * Bivio::UI::Icon supports PNG.
   * Bivio::Ext::LWPUserAgent added (missing in last release)
