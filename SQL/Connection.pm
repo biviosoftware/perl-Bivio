@@ -364,6 +364,19 @@ sub internal_clear_ping {
     return;
 }
 
+=for html <a name="internal_dbi_connect"></a>
+
+=head2 static internal_dbi_connect(string dbi_name) : Bivio::Ext::DBI
+
+Connects to the database.  Returns the database handle.
+
+=cut
+
+sub internal_dbi_connect {
+    my(undef, $dbi_name) = @_;
+    return Bivio::Ext::DBI->connect($dbi_name);
+}
+
 =for html <a name="internal_fixup_sql"></a>
 
 =head2 internal_fixup_sql(string sql) : string
@@ -422,7 +435,7 @@ sub internal_get_retry_sleep {
 
 =for html <a name="internal_execute_blob"></a>
 
-=head2 internal_prepare_blob(boolean is_select, array_ref params, scalar_ref statement) : array_ref
+=head2 abstract internal_prepare_blob(boolean is_select, array_ref params, scalar_ref statement) : array_ref
 
 Prepares the statement which store a blob. By default this method is not
 implemented.
@@ -430,8 +443,8 @@ Returns the altered statement params.
 
 =cut
 
+$_ = <<'}'; # emacs
 sub internal_prepare_blob {
-    Bivio::Die->die("not implemented");
 }
 
 =for html <a name="is_read_only"></a>
@@ -465,6 +478,7 @@ sub next_primary_id {
     return _get_instance($self)->next_primary_id($table_name, $die)
 	    unless ref($self);
     Bivio::Die->die('abstract method');
+    # DOES NOT RETURN
 }
 
 =for html <a name="rollback"></a>
@@ -574,7 +588,7 @@ sub _get_connection {
 	    $fields->{connection} = undef;
 	}
 	_trace("creating connection: pid=$$") if $_TRACE;
-	$fields->{connection} = Bivio::Ext::DBI->connect($fields->{dbi_name});
+	$fields->{connection} = $self->internal_dbi_connect;
 	$fields->{db_is_read_only} = Bivio::Ext::DBI->get_config(
 		$fields->{dbi_name})->{is_read_only};
 	# Got a connection which will be reused on next call.  We don't

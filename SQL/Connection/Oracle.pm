@@ -134,6 +134,23 @@ sub get_dbi_prefix {
     return 'dbi:Oracle:';
 }
 
+=for html <a name="internal_dbi_connect"></a>
+
+=head2 static internal_dbi_connect(string dbi_name) : Bivio::Ext::DBI
+
+Adds Oracle parameters to dbh.
+
+=cut
+
+sub internal_dbi_connect {
+    my($dbh) = shift->SUPER::internal_dbi_connect(@_);
+    # In later DBD::Oracle versions, this parameter is set here, not on
+    # the $statement
+    $dbh->{LongReadLen} = $_MAX_BLOB;
+    $dbh->{LongTruncOk} = 0;
+    return $dbh;
+}
+
 =for html <a name="internal_get_error_code"></a>
 
 =head2 internal_get_error_code(string die_attrs) : Bivio::Type::Enum
@@ -202,7 +219,9 @@ sub internal_prepare_blob {
     my($self, $is_select, $params, $statement) = @_;
 
     if ($is_select) {
-	# Returns a value
+	# Returns a value.  For older DBD::Oracle implementations, we
+	# need to set the value on every $statement.  Newer imps,
+	# set it once per connection.
 	$$statement->{LongReadLen} = $_MAX_BLOB;
 	$$statement->{LongTruncOk} = 0;
 	return $params;
