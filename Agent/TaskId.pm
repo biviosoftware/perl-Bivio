@@ -824,7 +824,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmInstrumentLotList
         Bivio::Biz::Model::InstrumentSellForm2
         Bivio::UI::HTML::Club::InstrumentSell2
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_TRANSACTION_DELETE
