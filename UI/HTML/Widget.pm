@@ -938,6 +938,21 @@ sub mailto {
     return $x;
 }
 
+=for html <a name="page_text"></a>
+
+=head2 static page_text(any value) : Bivio::UI::HTML::Widget::String
+
+Returns a String widget with I<string_font> C<page_text> and
+the html is NOT escaped.  Used for long strings which contain
+html.
+
+=cut
+
+sub page_text {
+    my($proto, $value) = @_;
+    return $proto->string($value, 'page_text')->put(escape_html => 0);
+}
+
 =for html <a name="realm_name"></a>
 
 =head2 static realm_name() : array
