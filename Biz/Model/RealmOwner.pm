@@ -65,7 +65,7 @@ use Bivio::Type::Amount;
 use Bivio::Type::Date;
 use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
-use Bivio::Type::FedTaxId;
+#use Bivio::Type::FedTaxId;
 use Bivio::Type::Integer;
 use Bivio::Type::Name;
 use Bivio::Type::Number;
