@@ -58,6 +58,7 @@ use Bivio::Die;
 my($_URI_PREFIX) = '/'.FIRST_URI_COMPONENT().'/';
 my(%_CFG) = (
     ask_candis => 'ask_candis_publish',
+    trez_talk => 'trez_talk_publish',
 );
 my($_MAP);
 
