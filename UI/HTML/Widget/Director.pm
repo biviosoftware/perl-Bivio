@@ -44,15 +44,17 @@ is not defined, is an error.
 
 The value selection of values.  The keys must match the type
 of I<control>.  The values are widgets.
+If a value is zero (0), renders nothing.
 
 =item default_value : widget []
 
 The widget to use when the I<control> does not match any of
-the keys in I<values>.
+the keys in I<values>.  If zero (0), renders nothing.
 
 =item undef_value : widget []
 
 The widget to use when the I<control> is undefined.
+If zero (0), renders nothing.
 
 =back
 
@@ -105,7 +107,7 @@ sub initialize {
     my($child);
     foreach $child (values(%{$fields->{values}}), $fields->{default_value},
 	    $fields->{undef_value}) {
-	next unless defined($child);
+	next unless $child;
 	$child->put(parent => $self);
 	$child->initialize;
     }
@@ -128,13 +130,19 @@ sub render {
     my($ctl) = $source->get_widget_value(@{$fields->{control}});
     if (defined($ctl)) {
 	my($values) = $fields->{values};
-	$values->{$ctl}->render($source, $buffer), return
-		if $values->{$ctl};
-	$fields->{default_value}->render($source, $buffer), return
-		if $fields->{default_value};
+	if (defined($values->{$ctl})) {
+	    $values->{$ctl}->render($source, $buffer) if $values->{$ctl};
+	    return;
+	}
+	if (defined($fields->{default_value})) {
+	    $fields->{default_value}->render($source, $buffer)
+		    if $fields->{default_value};
+	    return;
+	}
     }
     elsif (defined($fields->{undef_value})) {
-	$fields->{undef_value}->render($source, $buffer);
+	$fields->{undef_value}->render($source, $buffer)
+		if $fields->{undef_value};
 	return;
     }
     Bivio::IO::Alert->die($fields->{control},
