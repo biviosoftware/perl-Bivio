@@ -326,8 +326,9 @@ returned: task, user, referer, uri, query, and form.
 sub as_string {
     my($self) = @_;
     my($r) = $self->unsafe_get('r');
+    my($t) = $self->unsafe_get('task_id');
     return 'Request['.Bivio::IO::Alert->format_args(
-	    'task=', $self->get('task_id')->get_name,
+	    'task=', $t ? $t->get_name : undef,
 	    ' user=', $r ? $r->connection->user : undef,
 	    ' referer=', $r ? $r->header_in('Referer') : undef,
 	    ' uri=', $self->unsafe_get('uri'),
@@ -408,7 +409,6 @@ sub throw_die {
     ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
 
     # Give some context to the error message
-    $attrs->{request} = $self;
     my($realm, $task, $user) = $self->unsafe_get(
 	    qw(auth_realm task_id auth_user));
     # Be a little more "safe" than usual, because we are in an
