@@ -30,7 +30,6 @@ which modifies the database.>
 
 =cut
 
-
 =head1 CONSTANTS
 
 =cut
@@ -41,6 +40,8 @@ which modifies the database.>
 
 Maximum length of a blob.  You cannot retrieve blobs larger than this.
 You can only have one blob per record.
+
+Returns 0x400_000
 
 =cut
 
@@ -54,6 +55,8 @@ sub MAX_BLOB {
 
 Maximum number of '?' parameters on a single statement.
 
+Returns 100.
+
 =cut
 
 sub MAX_PARAMETERS {
@@ -63,10 +66,25 @@ sub MAX_PARAMETERS {
     return 100;
 }
 
+=for html <a name="MAX_RETRIES"></a>
+
+=head2 MAX_RETRIES : int
+
+Number of times we retry a single statement.
+
+Returns 3.
+
+=cut
+
+sub MAX_RETRIES {
+    return 3;
+}
+
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Ext::DBI;
+use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::Util;
 use Bivio::TypeError;
@@ -86,6 +104,8 @@ my($_CONNECTION_PID) = 0;
 my($_NEED_PING) = 0;
 my($_NEED_COMMIT) = 0;
 my($_DB_TIME) = 0;
+# Allow for a bit larger space than maximum blob
+my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
 my(%_ERR_TO_DIE_CODE) = (
 # Why bother?
 #	1400 => Bivio::DieCode::ALREADY_EXISTS,
@@ -94,9 +114,39 @@ my(%_ERR_TO_DIE_CODE) = (
         # ORA-00060: deadlock detected
 	60 => Bivio::DieCode::UPDATE_COLLISION(),
 );
-# Allow for a bit larger space than maximum blob
-my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
 
+#
+# We need to retry connections in the event of certain failures.  These
+# are outlined in:
+# http://www.oracle.com/nt/clusters/failsafe/html/fs_30_cawp.html
+#
+# We have seen ORA-03113 as the result of a oracle slave crash.
+# See:
+# http://www.oracle.com/support/bulletins/net/net2/html/1523.html
+#
+# Key=ora-#, value=sleep_seconds
+my(%_ERR_RETRY_SLEEP) = (
+    # ORA-01012: not logged on to Oracle
+    1012 => 0,
+    # ORA-01033: Oracle initialization or shutdown in progress
+    1033 => 5,
+    # ORA-01034: ORACLE not available
+    1034 => 5,
+    # ORA-01089: immediate shutdown in progress - no operations are permitted
+    1089 => 5,
+    # ORA-03113: end-of-file on communication channel
+    3113 => 0,
+    # ORA-03114: not connected to ORACLE
+    3114 => 0,
+    # ORA-12203: TNS: unable to connect to destination
+    12203 => 5,
+    # ORA-12500: TNS: listener failed to start a dedicated server process
+    12500 => 5,
+    # ORA-12537: TNS connection closed
+    12537 => 5,
+    # ORA-12571: TNS: packet writer failure
+    12571 => 1,
+);
 
 =head1 METHODS
 
@@ -140,53 +190,64 @@ If found, the positional parameter is bound properly.  If no scalar_ref
 is found, then the BLOB is assumed to be an output parameter and
 I<LongReadLen> and I<LongTruncOk> are set accordingly.
 
+We retry on certain errors (see $_ERR_RETRY_SLEEP in this model).
+
 =cut
 
 sub execute {
     my($self, $sql, $params, $die, $has_blob) = @_;
 
-    my($statement);
-    Bivio::Die->eval(sub {
-	_trace_sql($sql, $params) if $_TRACE;
+    my($err, $errstr, $statement);
+    my($retries) = 0;
+ TRY: {
+	# Execute the statement
 	my($start_time) = Bivio::Util::gettimeofday();
-#TODO: Need to investigate problems and performance of cached statements
-#TODO: If do cache, then make sure not "active" when making call.
-	$statement = _get_connection()->prepare($sql);
-	# Only need a commit if there has been data modification language
-	# Tightly coupled with PropertySupport
-	my($is_select) = $sql =~ /^\s*select/i
-		&& $sql !~ /for\s+update\s*$/i;
-	$_NEED_COMMIT = 1 unless $is_select;
-	if ($has_blob) {
-	    if ($is_select) {
-		# Returns a value
-		$statement->{LongReadLen} = $_MAX_BLOB;
-		$statement->{LongTruncOk} = 0;
-	    }
-	    else {
-		# Passing a value, possibly
-		my($i) = 1;
-		foreach my $p (@$params) {
-		    $statement->bind_param($i++, $p), next unless ref($p);
-		    # I wonder if it stores a reference or a copy?
-		    $statement->bind_param($i++,  $$p, {ora_type => ORA_BLOB});
-		}
-		# Parameters are bound, so don't pass below
-		$params = undef;
-	    }
-	}
-	ref($params) ? $statement->execute(@$params)
-		: $statement->execute();
-#TODO: need to inc when a failure
+	my($ok) = Bivio::Die->eval(sub {
+        	_execute_helper($self, $sql, $params, $has_blob, \$statement);
+		return 1;
+	    });
 	$self->increment_db_time($start_time);
-    });
-    return $statement unless $@;
+	return $statement if $ok;
 
-    # If we get an error, it may be a timed-out connection.  We'll
-    # check the connection the next time through.
-    $_NEED_PING = 1;
-    my($err) = $statement && $statement->err ? $statement->err + 0 : 0;
-    my($errstr) = $statement && $statement->errstr ? $statement->errstr : '';
+	# Extract the errors
+	$err = $statement && $statement->err ? $statement->err + 0 : 0;
+	$errstr = $statement && $statement->errstr ? $statement->errstr : '';
+
+	# If we get an error, it may be a timed-out connection.  We'll
+	# check the connection the next time through.
+	$_NEED_PING = 1;
+
+	# Can we retry?
+	last TRY unless (exists($_ERR_RETRY_SLEEP{$err}));
+
+	# Don't retry if connection has executed DML already
+	if ($_NEED_COMMIT) {
+	    Bivio::IO::Alert->warn($errstr,
+		    '; not retrying, partial transaction');
+	    last TRY;
+	}
+
+	# Maxed out?
+	if (++$retries > MAX_RETRIES()) {
+	    Bivio::IO::Alert->warn($errstr, '; max retries hit');
+	    last TRY;
+	}
+
+	# Don't do anything with statement, it will be garbage collected.
+	# Shouldn't really get here, so put in the logs.
+	Bivio::IO::Alert->warn('retrying:  ',
+		$errstr, '; die=', $die, '; sql=', $sql,
+		'; params=', @{_prep_params_for_io($params)},
+		'; retries=', $retries) if $retries == 1;
+
+	_trace('retry after sleep=', $_ERR_RETRY_SLEEP{$err}) if $_TRACE;
+
+	# Don't call "empty" sleeps
+	sleep($_ERR_RETRY_SLEEP{$err}) if $_ERR_RETRY_SLEEP{$err} > 0;
+	redo TRY;
+    }
+
+    # Unrecoverable error
     my($attrs) = {
 	message => $@,
 	dbi_err => $err,
@@ -195,27 +256,34 @@ sub execute {
 	sql_params => $params,
     };
     my($die_code);
+
+    # Constraint violation?
     if ($errstr =~ /constraint \((\w+)\.(\w+)\) violated/i) {
 	$die_code = _interpret_constraint_violation($attrs, uc($1), uc($2));
     }
+
+    # Clean up just in case statement is cached
     Bivio::Die->eval(sub {
-	# Clean up just in case statement is cached
 	$statement->finish if $statement;
     });
-#TODO: add more application error processing here
-#TODO: Add reply processingn
+
+    # If we don't have a die_code, map it simply
     unless ($die_code) {
 	if (defined($err) && defined($_ERR_TO_DIE_CODE{$err})) {
+	    # These are program manageable errors, hence program_error=0
 	    $die_code = $_ERR_TO_DIE_CODE{$err};
 	}
 	else {
 	    $attrs->{program_error} = 1;
 	    # Unexpected oracle error is treated as an assertion fault
-	    $die_code = Bivio::DieCode::DIE();
+	    $die_code = Bivio::DieCode::DB_ERROR();
 	}
     }
+
+    # Throw exception
     $die ||= 'Bivio::Die';
     $die->die($die_code, $attrs, caller);
+    # DOES NOT RETURN
 }
 
 =for html <a name="get_db_time"></a>
@@ -266,6 +334,50 @@ sub rollback {
 }
 
 #=PRIVATE METHODS
+
+# _execute_helper(string sql, array_ref params, boolean has_blob, scalar_ref statement)
+#
+# Executes sql.  Exception must be caught by caller. Sets statement (even on
+# error).
+#
+sub _execute_helper {
+    my($self, $sql, $params, $has_blob, $statement) = @_;
+
+    _trace_sql($sql, $params) if $_TRACE;
+#TODO: Need to investigate problems and performance of cached statements
+#TODO: If do cache, then make sure not "active" when making call.
+    $$statement = _get_connection()->prepare($sql);
+
+    # Only need a commit if there has been data modification language
+    # Tightly coupled with PropertySupport
+    my($is_select) = $sql =~ /^\s*select/i
+	    && $sql !~ /for\s+update\s*$/i;
+    if ($has_blob) {
+	if ($is_select) {
+	    # Returns a value
+	    $$statement->{LongReadLen} = $_MAX_BLOB;
+	    $$statement->{LongTruncOk} = 0;
+	}
+	else {
+	    # Passing a value, possibly
+	    my($i) = 1;
+	    foreach my $p (@$params) {
+		$$statement->bind_param($i++, $p), next unless ref($p);
+		# I wonder if it stores a reference or a copy?
+		$$statement->bind_param($i++,  $$p, {ora_type => ORA_BLOB});
+	    }
+	    # Parameters are bound, so don't pass below
+	    $params = undef;
+	}
+    }
+    ref($params) ? $$statement->execute(@$params)
+	    : $$statement->execute();
+
+    # Only need a commit after successful DML operation
+    $_NEED_COMMIT = 1 unless $is_select;
+
+    return;
+}
 
 # _interpret_constraint_violation(hash_ref attrs, string owner, string constraint) : Bivio::Type::Enum
 #
@@ -359,7 +471,7 @@ sub _get_connection {
 	    # Make sure we don't enter this code again.
 	    $_CONNECTION = undef;
 	}
-	&_trace("creating connection: pid=$$") if $_TRACE;
+	_trace("creating connection: pid=$$") if $_TRACE;
 	$_CONNECTION = Bivio::Ext::DBI->connect();
 	# Got a connection which will be reused on next call.  We don't
 	# need to ping it (just in case parent process had an error on
@@ -382,12 +494,12 @@ sub _get_connection {
     return $_CONNECTION;
 }
 
-# _trace_sql(string sql, array_ref params)
+# _prep_params_for_io(array_ref params) : array_ref
 #
-# Traces the specified sql statement with parameters.
+# Returns an array which can be passed to Bivio::IO.
 #
-sub _trace_sql {
-    my($sql, $params) = @_;
+sub _prep_params_for_io {
+    my($params) = @_;
     my(@args);
     my($sep) = ' [';
     my($p);
@@ -397,7 +509,17 @@ sub _trace_sql {
     }
     @args && push(@args, ']');
     # Let trace deal with string truncation and undef
-    &_trace($sql, @args);
+    return \@args;
+}
+
+# _trace_sql(string sql, array_ref params)
+#
+# Traces the specified sql statement with parameters.
+#
+sub _trace_sql {
+    my($sql, $params) = @_;
+    # Let trace deal with string truncation and undef
+    _trace($sql, '; params=', @{_prep_params_for_io($params)});
     return;
 }
 
