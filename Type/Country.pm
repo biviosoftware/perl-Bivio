@@ -57,7 +57,7 @@ sub from_literal {
     # Leave middle spaces in case a "display" name.
     $value =~ s/^\s+|\s+$//g;
     return undef unless length($value);
-    return (undef, Bivio::TypeError::DATE_TIME())
+    return (undef, Bivio::TypeError::COUNTRY())
 	    unless $value =~ /^[a-z]{2}$/i;
     return uc($value);
 }
@@ -66,7 +66,7 @@ sub from_literal {
 
 =head2 static get_width : int
 
-Returns 30.
+Returns 2.
 
 =cut
 
