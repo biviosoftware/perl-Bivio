@@ -67,12 +67,15 @@ separated.
 sub new {
     my($proto, $r) = @_;
     my($start_time) = Bivio::Util::gettimeofday();
+    # Set remote IP address if passed through Via: header
+    my($via) = $r->header_in('via');
+    $r->connection->remote_ip($via) if defined($via);
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
     my($self) = Bivio::Agent::Request::new($proto, {
 	start_time => $start_time,
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
-	client_addr => $r->header_in('via') || $r->connection->remote_ip,
+	client_addr => $r->connection->remote_ip,
 	is_secure => $ENV{HTTPS} || _is_hack_https_port($r)
 	? 1 : 0,
     });
