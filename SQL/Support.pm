@@ -246,11 +246,8 @@ sub init_column {
 	unless ($model = $attrs->{models}->{$qual_model}) {
 	    my($package) = $qual_model;
 	    $package =~ s!((?:_\d+)?)$!!;
-	    $package = Bivio::IO::ClassLoader->map_require('Model#'.$package);
 	    my($qual_index) = $1;
-	    # Make sure package is loaded
-	    Bivio::IO::ClassLoader->simple_require($package);
-	    my($instance) = $package->get_instance;
+	    my($instance) = Bivio::Biz::Model->get_instance($package);
 	    $model = $attrs->{models}->{$qual_model} = {
 		name => $qual_model,
 		instance => $instance,

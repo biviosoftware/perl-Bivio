@@ -66,12 +66,9 @@ May not be called on anonymous Models without I<class> argument.
 sub get_instance {
     my($proto, $class) = @_;
     if (defined($class)) {
+	$class = Bivio::IO::ClassLoader->map_require('Model', $class)
+		unless ref($class);
 	$class = ref($class) if ref($class);
-	$class = Bivio::IO::ClassLoader->map_require('Model#'.$class)
-		unless $class =~ /::/;
-
-	# First time, make sure the class is loaded.
-	Bivio::IO::ClassLoader->simple_require($class) unless $_CLASS_INFO{$class};
     }
     else {
 	$class = ref($proto) || $proto;
