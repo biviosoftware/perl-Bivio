@@ -411,8 +411,6 @@ sub initialize {
 
 =for html <a name="rollback"></a>
 
-=head2 DEPRECATED rollback()
-
 =head2 rollback(Bivio::Agent::Request req)
 
 Rollback the current transaction.  Call C<handle_rollback> with
@@ -424,10 +422,8 @@ Called from L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
 
 sub rollback {
     my(undef, $req) = @_;
-    Bivio::IO::Alert->warn_deprecated('missing request');
     # NOTE: Bivio::Biz::Model::Lock::release behaves a particular way
     # and this code must stay in synch with it.
-    $req ||= Bivio::Agent::Request->get_current;
     _call_txn_resources($req, 'handle_rollback');
     Bivio::SQL::Connection->rollback;
     Bivio::Mail::Common->discard_queued_messages;
