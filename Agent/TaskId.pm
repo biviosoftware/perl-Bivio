@@ -1513,6 +1513,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         ?/accounting/reports/allocations
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
@@ -1556,6 +1557,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/tax99/f1065k1.pdf
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberTaxList->execute_load_all
@@ -1673,6 +1675,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/tax99/allocations
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::UI::HTML::Club::MemberAllocationReport
@@ -1915,6 +1918,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/member-status:?/accounting/reports/member_status
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberStatusList->execute_load_all
@@ -2071,8 +2075,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         ?/accounting/reports/investment-performance-detail
-        Bivio::Biz::Model::RealmInstrumentList->execute_load_all
         Bivio::Biz::Model::InstrumentDateSpanForm
+        Bivio::Biz::Model::RealmInstrumentList->execute_load_all
         Bivio::Biz::Model::InstrumentPerformanceDetailList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
