@@ -112,7 +112,7 @@ sub execute {
     my($self, $req) = @_;
     my($w) = _select($self, $req);
     Bivio::Die->die('Director did not select a widget; no content type')
-	    unless defined($w);
+        unless defined($w);
     return $w->execute($req);
 }
 
@@ -127,12 +127,11 @@ Copies the attributes to local fields.
 sub initialize {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    return if exists($fields->{control});
-    ($fields->{control}, $fields->{values})
-	    = $self->get('control', 'values');
-    $fields->{default_value} = $self->unsafe_initialize_attr('default_value');
-    $fields->{undef_value} = $self->unsafe_initialize_attr('undef_value');
-    while (my($k, $v) = each(%{$fields->{values}})) {
+    return if $fields->{initialized}++;
+    $self->initialize_attr('control');
+    $self->unsafe_initialize_attr('default_value');
+    $self->unsafe_initialize_attr('undef_value');
+    while (my($k, $v) = each(%{$self->get('values')})) {
 	$self->initialize_value($k, $v);
     }
     return;
@@ -194,22 +193,23 @@ sub render {
 
 # _select(self, any source) : Bivio::UI::Widget
 #
-# Returns the widget to render or dies.
+# Returns the widget to render, undef, or dies.
 #
 sub _select {
     my($self, $source) = @_;
-    my($fields) = $self->[$_IDI];
-    my($ctl) = $source->get_widget_value(@{$fields->{control}});
-    if (defined($ctl)) {
-	my($values) = $fields->{values};
-	return $values->{$ctl} || undef if defined($values->{$ctl});
-	return $fields->{default_value} || undef
-		if defined($fields->{default_value});
+    my($ctl, $v) = '';
+    if ($self->unsafe_render_attr('control', $source, \$ctl)) {
+	my($values) = $self->get('values');
+	return $values->{$ctl} || undef
+	    if defined($values->{$ctl});
+	$v = $self->unsafe_get('default_value');
     }
-    elsif (defined($fields->{undef_value})) {
-	return $fields->{undef_value} || undef;
+    else {
+	$v = $self->unsafe_get('undef_value');
     }
-    Bivio::Die->die($fields->{control}, ': invalid control value: ', $ctl);
+    return $v || undef
+	if defined($v);
+    Bivio::Die->die($self->get('control'), ': invalid control value: ', $ctl);
     # DOES NOT RETURN
 }
 
