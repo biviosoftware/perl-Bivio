@@ -18,13 +18,13 @@ Bivio::Test->unit([
 	],
 	unit => [
 	    ['should-pass.t'] => [],
-	    ['should-fail.t'] => Bivio::DieCode->DIE,
-	    ['.'] => Bivio::DieCode->DIE,
+	    ['should-fail.t-data'] => Bivio::DieCode->DIE,
+	    ['.'] => [],
 	],
 	acceptance => [
 	    ['should-pass.btest'] => [],
-	    ['should-fail.btest'] => Bivio::DieCode->DIE,
-	    ['.'] => Bivio::DieCode->DIE,
+	    ['should-fail.btest-data'] => Bivio::DieCode->DIE,
+	    ['.'] => [],
 	],
      ],
 ]);

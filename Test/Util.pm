@@ -258,18 +258,22 @@ sub _find_files {
     $self->usage_error('must supply test files or directories') unless @$args;
     my($tests) = {};
     my($pwd) = Bivio::IO::File->pwd;
-    File::Find::find({
-	no_chdir => 1,
-	wanted => sub {
-	    return
-		unless $File::Find::name =~ /\.$pattern$/
-		    && -r $File::Find::name;
-	    my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
-	    $d = File::Spec->rel2abs($d, $pwd);
-	    push(@{$tests->{$d} ||= []}, $f);
-	    return;
-	}},
-	@$args);
+    foreach my $arg (@$args) {
+	my($is_file) = -f $arg;
+	File::Find::find({
+	    no_chdir => 1,
+	    wanted => sub {
+		return
+		    unless $is_file
+			|| $File::Find::name =~ /\.$pattern$/
+			&& -r $File::Find::name;
+		my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
+		$d = File::Spec->rel2abs($d, $pwd);
+		push(@{$tests->{$d} ||= []}, $f);
+		return;
+	    }},
+	    $arg);
+    }
     return ($self, $tests);
 }
 
@@ -297,6 +301,7 @@ sub _make_nightly_dir {
 sub _run {
     my($self, $tests, $action) = @_;
     my($ok, $max) = (0, 0);
+    my($failed) = [];
     my($one_dir) = keys(%$tests) == 1;
     foreach my $t (values(%$tests)) {
 	$max += @$t;
@@ -309,9 +314,12 @@ sub _run {
 	    $self->print(sprintf('%20s: ', $t));
 	    my($res) = 'FAILED';
 	    my($out);
-	    if (&$action($self, $t, \$out)) {
+	    if ($action->($self, $t, \$out)) {
 		$res = 'PASSED';
 		$ok++;
+	    }
+	    else {
+		push(@$failed, File::Spec->catfile($d, $t));
 	    }
 	    $self->print($res, "\n");
 	    $out ||= '';
@@ -322,7 +330,10 @@ sub _run {
         }
 	$self->print("*** Leaving: $d\n\n") unless $one_dir;
     }
-    $self->print(Bivio::Test->format_results($ok, $max));
+    $self->print(
+	(@$failed ? join("\n    ", 'Failed tests: ', @$failed) . "\n"
+	    : ''),
+	Bivio::Test->format_results($ok, $max));
     Bivio::Die->throw_quietly('DIE')
 	unless $max == $ok;
     return;
