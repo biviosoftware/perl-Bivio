@@ -70,17 +70,44 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program({
     },
     blockquote => ['blockquote'],
     'chapter/title' => ['h1'],
-    chapter => ['html', 'body'],
+    chapter => sub {
+	my($html, $state) = @_;
+	$$html .= "<p><h2>Footnotes</h2></p><ol>\n$state->{footnotes}</ol>\n"
+	    if $state->{footnote_idx};
+	return "<html><body>$$html</body></html>";
+    },
+    citetitle => ['i'],
+    classname => ['tt'],
     command => ['tt'],
     emphasis => ['b'],
     epigraph => [],
+    filename => ['tt'],
+    footnote => sub {
+	my($html, $state) = @_;
+	$state->{footnote_idx}++;
+	$state->{footnotes}
+	    .= qq(<li><a name="$state->{footnote_idx}"></a>$$html</li>\n);
+	return qq(<a href="#$state->{footnote_idx}">[$state->{footnote_idx}]</a>);
+    },
     function => ['tt'],
+    itemizedlist => ['ul'],
+    listitem => ['li'],
     literal => ['tt'],
     para => ['p'],
     programlisting => ['blockquote', 'pre'],
+    property => ['tt'],
+    quote => {
+	prefix => '"',
+	suffix => '"',
+    },
     sect1 => [],
     'sect1/title' => ['h2'],
     simplesect => [],
+    systemitem => sub {
+	my($html) = @_;
+	return qq(<a href="$$html">$$html</a>);
+    },
+    varname => ['tt'],
 });
 
 =head1 METHODS
@@ -98,7 +125,9 @@ Converts I<xml_file> from XML to HTML.
 sub to_html {
     my($self, $xml_file) = @_;
     return _to_html(
-	'', XML::Parser->new(Style => 'Tree')->parsefile($xml_file));
+	'',
+	XML::Parser->new(Style => 'Tree')->parsefile($xml_file),
+        {});
 }
 
 #=PRIVATE METHODS
@@ -130,27 +159,29 @@ sub _compile_tags_to_html {
     return join('', map {"<$prefix$_>"} @$names);
 }
 
-# _eval_child(string tag, array_ref children, string parent_tag) : string
+# _eval_child(string tag, array_ref children, string parent_tag, hash_ref state) : string
 #
 # Lookup $tag in context of $parent_tag to find operator, evaluate $children,
 # and then evaluate the found operator.  Returns the result of _eval_op.
 #
 sub _eval_child {
-    my($tag, $children, $parent_tag) = @_;
+    my($tag, $children, $parent_tag, $state) = @_;
     return HTML::Entities::encode($children) unless $tag;
     # We ignore the attributes for now.
     shift(@$children);
     return _eval_op(
 	_lookup_op($tag, $parent_tag),
-	_to_html($tag, $children));
+	_to_html($tag, $children, $state),
+	$state);
 }
 
-# _eval_op(hash_ref op, string_ref html) : string
+# _eval_op(hash_ref op, string_ref html, hash_ref state) : string
 #
 # Surround $html with prefix and suffix from $op.  Return concatenation.
 #
 sub _eval_op {
-    my($op, $html) = @_;
+    my($op, $html, $state) = @_;
+    return &$op($html, $state) if ref($op) eq 'CODE';
     return $op->{prefix} . $$html . $op->{suffix};
 }
 
@@ -166,14 +197,15 @@ sub _lookup_op {
 	|| die("$parent_tag/$tag: unhandled tag");
 }
 
-# _to_html(string tag, array_ref children) : string_ref
+# _to_html(string tag, array_ref children, hash_ref state) : string_ref
 #
 # Concatenate evaluation of $children and return the resultant HTML.
 #
 sub _to_html {
-    my($tag, $children) = @_;
+    my($tag, $children, $state) = @_;
     my($res) = '';
-    $res .= _eval_child(splice(@$children, 0, 2), $tag) while @$children;
+    $res .= _eval_child(splice(@$children, 0, 2), $tag, $state)
+	while @$children;
     return \$res;
 }
 

@@ -1,0 +1,38 @@
+<chapter>
+<title>Chapter with Footnotes</title>
+<simplesect>
+
+<para>
+Needs further clarification.
+<footnote><para>
+Should appear at the end of the chapter.
+</para></footnote>
+</para>
+
+<itemizedlist>
+<listitem><para>
+First item
+</para></listitem>
+<listitem><para>
+Second item
+</para></listitem>
+</itemizedlist>
+
+<para>
+Something about XML.
+<footnote><para>
+Click here <systemitem role="url">http://www.w3c.org/XML/</systemitem>
+</para></footnote>
+</para>
+
+<para>
+<classname>SomeClass</classname>
+<varname>$some_var</varname>
+<property>a_property</property>
+<filename>my/file/name.PL</filename>
+<citetitle>War &amp; Peace</citetitle>
+<quote>I do declare!</quote>
+</para>
+
+</simplesect>
+</chapter>
