@@ -84,6 +84,28 @@ sub create_entry {
     return $self;
 }
 
+=for html <a name="has_transactions"></a>
+
+=head2 static has_transactions(Bivio::Biz::Model::RealmUser model) : boolean
+
+=head2 static has_transactions(Bivio::Biz::Model model, string model_prefix) : boolean
+
+Returns 1 if the user has accounting transactions within the realm.
+
+=cut
+
+sub has_transactions {
+    my($proto, $model, $model_prefix) = @_;
+    $model_prefix ||= '';
+    return Bivio::SQL::Connection->execute_one_row('
+            SELECT COUNT(*)
+            FROM member_entry_t
+            WHERE realm_id=?
+            AND user_id=?',
+	    [$model->get_request->get('auth_id'),
+		$model->get($model_prefix.'user_id')])->[0] ? 1 : 0;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
