@@ -233,7 +233,7 @@ PerlPassEnv DBI_USER
 PerlPassEnv DBI_PASS
 PerlPassEnv ORACLE_SID
 
-Timeout 60
+Timeout 10
 HostnameLookups off
 KeepAlive off
 MinSpareServers 1
