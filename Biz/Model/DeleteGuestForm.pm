@@ -55,7 +55,7 @@ sub execute_input {
     my($list) = $req->get('Bivio::Biz::Model::ClubUserList');
     $list->set_cursor(0);
     my($realm_user) = $list->get_model('RealmUser');
-    $realm_user->delete();
+    $realm_user->cascade_delete();
 
     return;
 }
