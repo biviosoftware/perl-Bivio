@@ -318,6 +318,11 @@ Returns a value to the widget.  The return value is determined as follows:
 
 =over 4
 
+=item 1.0.
+
+If <param1> is "!" (not), shifts arguments and calls recursively,
+inverting the result (returning a valid Type::Boolean).
+
 =item 1.1.
 
 Attribute is not a reference or there are no more parameters.
@@ -376,6 +381,8 @@ sub get_widget_value {
     Bivio::IO::Alert->die('too few arguments passed to ', $self) unless @_;
     my($param1) = shift;
     my($value);
+
+    return $self->get_widget_value(@_) ? 0 : 1 if $param1 eq '!';
 
     # What value does $param1 identify?
     if (exists($fields->{$param1})) {
