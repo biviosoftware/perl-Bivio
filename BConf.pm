@@ -246,6 +246,7 @@ sub merge_http_log {
 		    'mod_ssl: SSL handshake timed out',
 		    'mod_ssl: SSL handshake failed: HTTP spoken on HTTPS port',
 		    'mod_ssl: SSL handshake interrupted by system',
+		    'Invalid method in request',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
