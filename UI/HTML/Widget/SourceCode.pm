@@ -46,12 +46,16 @@ The uri to use when rendering related package links.
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::DieCode;
 use Bivio::IO::Config;
+use Bivio::UI::Facade;
+use Bivio::UI::LocalFileType;
 use File::Find ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 
+my($_FILES) = {};
 my($_SOURCE_DIR);
 Bivio::IO::Config->register({
     source_dir => Bivio::IO::Config->REQUIRED,
@@ -110,6 +114,7 @@ The directory to search for source code.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_SOURCE_DIR = $cfg->{source_dir};
+    _find_files();
     return;
 }
 
@@ -126,6 +131,19 @@ sub initialize {
     return;
 }
 
+=for html <a name="is_source_module"></a>
+
+=head2 static is_source_module(string name) : boolean
+
+Returns true if the name identifies a browsable source module.
+
+=cut
+
+sub is_source_module {
+    my($proto, $name) = @_;
+    return $_FILES->{$name} ? 1 : 0;
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, string_ref buffer)
@@ -136,30 +154,58 @@ Render the source code using perl2html, then adding links.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($package) = $source->get_request->get('query')->{'s'};
-    return unless $package;
+    my($req) = $source->get_request;
+    Bivio::Die->throw(Bivio::DieCode::NOT_FOUND())
+		unless $req->get('query') && $req->get('query')->{'s'};
+    my($package) = $req->get('query')->{'s'};
 
     my($file) = $package;
-    $file =~ s,::,/,g;
-    $file = $_SOURCE_DIR.'/'.$file.'.pm';
-    Bivio::Die->die($file, ' not found') unless -e $file;
+    if ($file =~ /^View\./) {
+	$file =~ s/^View\.//;
+	$file .= '.bview';
+#TODO: probably don't want the views directly browsable
+	$file = Bivio::UI::Facade->get_local_file_name(
+		Bivio::UI::LocalFileType->VIEW, $file, $req);
+    }
+    else {
+	$file =~ s,::,/,g;
+	$file = $_SOURCE_DIR.'/'.$file.'.pm';
+    }
+
+    Bivio::Die->throw(Bivio::DieCode::NOT_FOUND())
+		unless -e $file;
 
     my($lines) = [`cat $file | perl2html -c`];
 #TODO: reformat POD
-    _add_links($self, $lines, _find_files($self, $package));
+    _add_links($self, $lines, $package);
 
     $$buffer .= join('', @$lines);
     return;
 }
 
+=for html <a name="render_source_link"></a>
+
+=head2 static render_source_link(Bivio::Agent::Request req, string source, string name, string_ref buffer)
+
+Draws the source link onto the buffer.
+
+=cut
+
+sub render_source_link {
+    my($proto, $req, $source, $name, $buffer) = @_;
+#TODO: use $req to determine the URI?
+    $$buffer .= '<a href="/src?s='.$source.'">'.$name.'</a>';
+    return;
+}
+
 #=PRIVATE METHODS
 
-# _add_links(self, array_ref lines, hash_ref files)
+# _add_links(self, array_ref lines, string ignore_package)
 #
 # Adds href links to related package files.
 #
 sub _add_links {
-    my($self, $lines, $files) = @_;
+    my($self, $lines, $ignore_package) = @_;
     my($uri) = $self->get('uri');
 
     foreach my $line (@$lines) {
@@ -170,12 +216,12 @@ sub _add_links {
 	    my($package) = $1;
 
 	    # try removing a constant reference
-	    unless ($files->{$package}) {
+	    unless ($_FILES->{$package}) {
 		$package =~ s/::[A-Z_]+$//;
 	    }
 
 	    push(@$matches, $package)
-		    if $files->{$package};
+		    if $_FILES->{$package} && $package ne $ignore_package;
 	}
 
 	# iterate the matches, substituting in hrefs into the line
@@ -187,14 +233,12 @@ sub _add_links {
     return;
 }
 
-# _find_files(self, string ignore_package) : hash_ref
+# _find_files() : hash_ref
 #
-# Returns a map of source file names, searching the specified directory.
+# Loads a map of browsable source file names.
 #
 sub _find_files {
-    my($self, $ignore_package) = @_;
 
-    my($files) = {};
     File::Find::find(
 	    sub {
 		my($name) = $File::Find::name;
@@ -204,11 +248,10 @@ sub _find_files {
 		$name =~ s,^$_SOURCE_DIR/(.*)\.pm$,$1,;
 		$name =~ s,/,::,g;
 
-		$files->{$name} = 1
-			unless $name eq $ignore_package;
+		$_FILES->{$name} = 1;
 	    },
 	    $_SOURCE_DIR);
-    return $files;
+    return;
 }
 
 =head1 COPYRIGHT
