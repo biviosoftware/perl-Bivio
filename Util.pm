@@ -230,26 +230,28 @@ sub bsearch_numeric {
     return (0, $middle);
 }
 
-# shell(string command) : string
-# shell(string command, string input) : string
+# shell(string command) : string_ref
+# shell(string command, string input) : string_ref
+# shell(string command, string_ref input) : string_ref
 #
 # Runs the command on the local host and returns the result.
 # input may be undef.
 sub shell {
     my($command, $input) = @_;
-    $input ||= '';
+    my($in) = ref($input) ? $input : defined($input) ? \$input
+	    : (\$input, $input = '');
     my($pid) = open(IN, "-|");
     defined($pid) || die("fork: $!");
     unless ($pid) {
 	open(OUT, "| $command 2>&1") || die("open $command: $!");
-	print OUT $input;
+	print OUT $$in;
 	close(OUT) || die("write to $command failed: $!");
 	exit(0);
     }
     local($/) = undef;
     my($res) = <IN>;
     close(IN) || die("$res\n$command failed: $!");
-    return $res;
+    return \$res;
 }
 
 1;
