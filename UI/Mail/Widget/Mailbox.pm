@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Mail::Widget::Mailbox::VERSION;
 
 Bivio::UI::Mail::Widget::Mailbox - single mail address formatted for a header
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Mail::Widget::Mailbox;

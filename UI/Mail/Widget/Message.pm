@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Mail::Widget::Message::VERSION;
 
 Bivio::UI::Mail::Widget::Message - creates and enqueues a mail message
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Mail::Widget::Message;
