@@ -378,13 +378,14 @@ sub verify_text {
 
 =head2 verify_uri(string uri)
 
-Verifies that the current uri is the provided uri.
+Verifies that the current uri (not including http://.../) is the provided uri.
 
 =cut
 
 sub verify_uri {
     my($self, $uri) = @_;
     my($current_uri) = $self->[$_IDI]->{uri};
+    $current_uri =~ s/http.*\/\/[^\/]*\///;
     Bivio::Die->die('Current uri is ', $current_uri, ', not ', $uri)
 	unless $current_uri eq $uri;
     return;
