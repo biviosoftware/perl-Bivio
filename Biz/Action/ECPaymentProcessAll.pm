@@ -81,7 +81,7 @@ sub _process_all {
 
     my($task) = Bivio::Agent::Task->get_by_id(
             Bivio::Agent::TaskId::CLUB_ADMIN_EC_PROCESS_PAYMENT());
-    my($payment_list) = Bivio::Biz::Model->new($req, 'ECAdmPaymentList');
+    my($payment_list) = Bivio::Biz::Model->new($req, 'AdmECPaymentList');
 #TODO: How to pass a WHERE clause?? Only want certain records from the list.
     $payment_list->load_all;
     while ($payment_list->next_row) {
