@@ -81,12 +81,15 @@ sub bsearch_numeric {
 
 =head2 static from_literal(string value)
 
-B<NOT SUPPORTED.>
+Splits on commas surround by any amount of whitespace.
 
 =cut
 
 sub from_literal {
-    Bivio::Die->die('not supported');
+    my($proto, $value) = @_;
+    return $value
+	? [split(/\s*,\s*/, $value)]
+	: [];
 }
 
 =for html <a name="from_sql_column"></a>
