@@ -216,6 +216,41 @@ sub accepts_attribute {
     return 0;
 }
 
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Renders a terse description of the widget.
+
+=cut
+
+sub as_string {
+    my($self) = @_;
+    return $self->simple_package_name unless ref($self);
+
+    # Don't recurse more than two levels in calls to this sub.  We
+    # look back an arbitrary number of levels (10), because there's
+    # nesting inside Alert->format_args.
+    my($this_sub) = (caller(0))[3];
+    my($recursion) = 0;
+    for (my($i) = 1; $i < 20; $i++) {
+	my($sub) = (caller($i))[3];
+	last unless $sub;
+	# Stop at two levels
+	return $self->simple_package_name
+		if $this_sub eq $sub && ++$recursion >= 1;
+    }
+
+    # Can't use join, because it formats the strings incorrectly.
+    my(@cfg) = map {($_, ',')} $self->internal_as_string;
+    pop(@cfg);
+
+    my($res) = Bivio::IO::Alert->format_args(
+	    $self->simple_package_name, @cfg ? ('[', @cfg, ']') : ());
+    chomp($res);
+    return $res;
+}
+
 =for html <a name="die"></a>
 
 =head2 die(string attr_name, any source, string msg, ...)
@@ -272,6 +307,20 @@ sub execute_with_content_type {
     $self->render($req, \$buffer);
     $reply->set_output_type($content_type);
     $reply->set_output(\$buffer);
+    return;
+}
+
+=for html <a name="handle_die"></a>
+
+=head2 static handle_die(Bivio::Die die)
+
+Add self to widget_stack.
+
+=cut
+
+sub handle_die {
+    my($proto, $die) = @_;
+    push(@{$die->get('attrs')->{widget_stack} ||= []}, $proto);
     return;
 }
 
@@ -332,6 +381,27 @@ sub initialize_value {
     return $value unless defined($value);
     return $value unless UNIVERSAL::isa($value, __PACKAGE__);
     return $value->put_and_initialize(parent => $self);
+}
+
+=for html <a name="internal_as_string"></a>
+
+=head2 internal_as_string() : array
+
+Returns a list of values to be joined which describe this widgets
+configuration.  You should limit the configuration list to one or
+at most two items.
+
+Looks for I<field> or I<value> attributes.
+
+=cut
+
+sub internal_as_string {
+    my($self) = @_;
+    foreach my $a (qw(field value)) {
+	my($v) = $self->unsafe_get($a);
+	return ($v) if defined($v);
+    }
+    return ();
 }
 
 =for html <a name="put_and_initialize"></a>
@@ -473,7 +543,7 @@ Widget.
 sub unsafe_render_value {
     my($self, $attr_name, $value, $source, $buffer) = @_;
     return 0 unless defined($value);
-    my($i) = 5;
+    my($i) = 10;
     while (ref($value) eq 'ARRAY') {
 	$value = $source->get_widget_value(@$value);
 	return 0 unless defined($value);

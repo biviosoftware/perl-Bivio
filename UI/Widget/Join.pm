@@ -94,6 +94,25 @@ sub initialize {
     return;
 }
 
+=for html <a name="internal_as_string"></a>
+
+=head2 internal_as_string() : array
+
+Returns the first two values in the join
+
+See L<Bivio::UI::Widget::as_string|Bivio::UI::Widget/"as_string">.
+
+=cut
+
+sub internal_as_string {
+    my($self) = @_;
+    my($values) = $self->unsafe_get('values');
+    # A little bit of safety.  Don't want to crash in "as_string".
+    return ($values) unless ref($values) eq 'ARRAY';
+    my(@res) = @$values;
+    return int(@res) > 2 ? (splice(@res, 0, 2), '...') : @res;
+}
+
 =for html <a name="render"></a>
 
 =head2 render(string_ref buffer)

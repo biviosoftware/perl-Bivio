@@ -35,7 +35,6 @@ use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -58,7 +57,7 @@ sub new {
     my($fields) = $self->{$_PACKAGE} = {};
 
     $fields->{page_heading} = $_VS->vs_heading(
-	    Bivio::UI::Label->get_simple('EC_SUBSCRIPTION_PAGE_HEADING'))
+	    $_VS->vs_text('EC_SUBSCRIPTION_PAGE_HEADING'))
 	    ->put_and_initialize(parent => $self);
     $fields->{action_bar} = $_VS->vs_action_bar('club_post_message');
     $fields->{action_bar}->initialize;
@@ -211,7 +210,7 @@ sub execute {
     my($list) = $req->get('Bivio::Biz::Model::ECSubscriptionList');
     $req->put(
 	    page_subtopic =>
-                Bivio::UI::Label->get_simple('EC_SUBSCRIPTION_PAGE_HEADING'),
+                Bivio::UI::Text->get_value('EC_SUBSCRIPTION_PAGE_HEADING', $req),
 	    page_title_value => $fields->{page_heading},
 	    page_content => $fields->{content},
 #	    page_action_bar => $fields->{action_bar},

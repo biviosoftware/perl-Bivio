@@ -89,7 +89,6 @@ use Bivio::UI::HTML::Widget::Select;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::Text;
 use Bivio::UI::HTML::Widget::TextArea;
-use Bivio::UI::Label;
 use Bivio::TypeValue;
 use Bivio::Type::Name;
 use Bivio::Type::TextArea;
@@ -437,7 +436,7 @@ sub _create_edit {
 	$attrs->{label_on_field} = 0;
 	return Bivio::UI::HTML::Widget::FormButton->new({
 	    field => $field,
-	    label => Bivio::UI::Label->get_simple($field),
+	    label => $_VS->vs_text($field),
 	    %$attrs,
 	});
     }

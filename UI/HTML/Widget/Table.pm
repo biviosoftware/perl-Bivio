@@ -84,7 +84,7 @@ Spacing around each cell in pixels.
 =item columns : array_ref (required)
 
 The column names to display, in order. Column headings will be assigned
-by looking up (name, 'table_heading), then name.'_HEADING' in Bivio::UI::Label.
+by looking up ('table_column_heading', field).
 
 Each column element is specified in one of the following forms:
 
@@ -316,7 +316,6 @@ use Bivio::UI::HTML::Widget::FormFieldError;
 use Bivio::UI::HTML::Widget::LineCell;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::WidgetFactory;
-use Bivio::UI::Label;
 use Bivio::UI::Widget::Join;
 
 #=VARIABLES
@@ -682,37 +681,10 @@ sub _get_heading {
     my($heading) = $cell->get_or_default('column_heading', $col);
 
     unless (UNIVERSAL::isa($heading, 'Bivio::UI::Widget')) {
-	# Try to get the heading label first
-	if ($heading) {
-	    my($hl) = Bivio::UI::Label->unsafe_get_exactly(
-		    $heading, 'table_heading');
-	    unless ($hl) {
-		# Deprecated form: we do lots of substitutions to get value
-		$hl = $heading;
-		$hl =~ s/\s/_/g;
-		$hl =~ s/\./_/;
-		$hl = Bivio::UI::Label->unsafe_get_simple($hl.'_HEADING');
-	    }
-
-	    if (defined($hl)) {
-		$heading = $hl;
-	    }
-	    else {
-		# try the simple version
-		my($l) = $heading;
-		$l =~ s/\s/_/g;
-		$heading = Bivio::UI::Label->unsafe_get_simple($l);
-
-		# then without periods
-		$l =~ s/\./_/;
-		$heading = Bivio::UI::Label->get_simple($l)
-			unless defined($heading);
-	    }
-	}
-
 	# wrap it in a string widget
 	$heading = Bivio::UI::HTML::Widget::String->new({
-	    value => $heading,
+	    value => length($heading)
+	    ? $_VS->vs_text('table_column_heading', $heading) : $heading,
 	    string_font => $self->get_or_default(
 		    'heading_font', 'table_heading'),
 	});
@@ -725,14 +697,14 @@ sub _get_heading {
                 return \$sort_col eq '$sort_fields->[0]' ? 1 : 0;
             }")], {
                 0 => $_VS->vs_link($heading,
-                        ['->format_uri_for_sort', $sort_fields]),
+                        ['->format_uri_for_sort', undef, $sort_fields]),
                 1 => $_VS->vs_director([
                     sub {
                         return shift->get_query->get('order_by')->[1];
                     }], {
                         0 => $_VS->vs_join([
                             $_VS->vs_link($heading, ['->format_uri_for_sort',
-                                $sort_fields, 1]),
+				undef, $sort_fields, 1]),
                             ' ',
                             $_VS->vs_image('sort_up',
                                     'This column sorted in descending order')
@@ -740,7 +712,7 @@ sub _get_heading {
                             ]),
                         1 => $_VS->vs_join([
                             $_VS->vs_link($heading, ['->format_uri_for_sort',
-                                $sort_fields, 0]),
+				undef, $sort_fields, 0]),
                             ' ',
                             $_VS->vs_image('sort_down',
                                     'This column sorted in ascending order')

@@ -79,6 +79,7 @@ the angle brackets, e.g.
 
     This is my escaped opening program bracket <<>{
     and my escaped closing bracket }<>>.
+    You can also escape a closing()<;>
 
 Note that any E<lt>E<lt>E<gt> and E<lt>E<gt><gt> sequences in the
 text will be unescaped when processing.
@@ -101,6 +102,7 @@ on I<self> as I<values> for the Join widget (superclass).
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::UI::Widget;
+use Bivio::UI::ViewLanguage;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -181,8 +183,8 @@ sub _parse_text {
     while (length($text)) {
 	unless ($text =~ /^\w+\(/) {
 	    ($bit, $text) = split(/(?=\b\w+\()/, $text, 2);
-	    # Unescape parens followed by words
-	    $bit =~ s/\<([\<\>\(])\>/$1/g if $bit;
+	    # Unescape any specials in <>.
+	    $bit =~ s/\<([\<\>\(;])\>/$1/g if $bit;
 	    push(@res, $bit);
 	    last unless defined($text) && length($text);
 	}

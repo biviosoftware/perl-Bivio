@@ -41,16 +41,22 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<IMG> tag.
 
 =item alt : array_ref (required)
 
-Dereferenced and passed to C<$source-E<gt>get_widget_value>
-to get string to use (see below).
-
 =item alt : string (required)
 
-Literal text to use for C<ALT> attribute of C<IMG> tag.
-Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
-before rendering.
+B<DEPRECATED>
 
-May be C<undef>.
+=item alt_text : string (required)
+
+=item alt_text : array_ref (required)
+
+Text tag to use for C<ALT> attribute of C<IMG> tag.  Tag will be prefixed with
+C<Image_alt> qualifier.  Resultant text will be passed to
+L<Bivio::HTML->escape|Bivio::Util/"escape_html">.
+
+=item alt_text : Bivio::UI::Widget (required)
+
+Widget to render string to be used in C<ALT> attribute.
+Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">.
 
 =item attributes : string []
 
@@ -122,7 +128,7 @@ widget to select between different Image widgets.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(_new_args(@_));
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -146,7 +152,12 @@ sub initialize {
     return if exists($fields->{prefix});
 
     # Both must be defined
-    my($src, $alt) = $self->get(qw(src alt));
+    my($src) = $self->get('src');
+#TODO: Need to ensure we set alt_text.  Maybe want to warn_deprecated?
+    $fields->{alt} = $self->unsafe_initialize_attr('alt');
+    $fields->{alt_text} = $self->initialize_attr('alt_text')
+	    unless defined($fields->{alt});
+
     my($width, $height, $border) = $self->unsafe_get(
 	    qw(width height border));
     $border = 0 unless defined($border);
@@ -168,11 +179,9 @@ sub initialize {
     $p .= Bivio::UI::Align->as_html($v) if $v;
 
     # Assume false until after first render.
-    if (ref($alt)) {
-	$fields->{alt} = $alt;
-    }
-    elsif (defined($alt)) {
-	$p .= ' alt="'.Bivio::HTML->escape($alt).'"';
+    if (!ref($fields->{alt}) && defined($fields->{alt})) {
+	$p .= ' alt="'.Bivio::HTML->escape($fields->{alt}).'"';
+	delete($fields->{alt});
     }
     # If width defined, then height defined.
     if (defined($width)) {
@@ -187,6 +196,21 @@ sub initialize {
     return;
 }
 
+=for html <a name="internal_as_string"></a>
+
+=head2 internal_as_string() : string
+
+Returns I<src>.
+
+See L<Bivio::UI::Widget::as_string|Bivio::UI::Widget/"as_string">.
+
+=cut
+
+sub internal_as_string {
+    my($self) = @_;
+    return ($self->unsafe_get('src'));
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, string_ref buffer)
@@ -197,12 +221,12 @@ Render the image.
 
 sub render {
     my($self, $source, $buffer) = @_;
+    my($req) = $source->get_request;
     my($fields) = $self->{$_PACKAGE};
 
     $$buffer .= $fields->{prefix};
     $$buffer .= ' alt="'.Bivio::HTML->escape(
-	    $source->get_widget_value(@{$fields->{alt}})).'"'
-		    if $fields->{alt};
+	    _render_alt($self, $fields, $source, $req)).'"';
 
     # May be a widget value
     my($src) = $fields->{src};
@@ -214,13 +238,12 @@ sub render {
 
     unless ($fields->{have_size}) {
 	# Normal case: icon is dynamic and size comes from Icon
-	$$buffer .= Bivio::UI::Icon->format_html(
-		$src, $source->get_request).'>';
+	$$buffer .= Bivio::UI::Icon->format_html($src, $req).'>';
 	return;
     }
 
     # Have a size, so must format explicitly.
-    $src = Bivio::UI::Icon->get_value($src, $source->get_request);
+    $src = Bivio::UI::Icon->get_value($src, $req);
 
     $$buffer .= ' src="'.Bivio::HTML->escape($src->{uri}).'"';
     $$buffer .= " width=$src->{width} height=$src->{height}"
@@ -230,6 +253,36 @@ sub render {
 }
 
 #=PRIVATE METHODS
+
+# _new_args(proto, any arg, ...) : array
+#
+# Returns arguments to be passed to Attributes::new.
+#
+sub _new_args {
+    my($proto, $icon, $text) = @_;
+    return ($proto, $icon) if ref($icon) eq 'HASH' || int(@_) == 1;
+    return ($proto, {
+	src => $icon,
+	alt_text => $text,
+    }) if defined($icon);
+    $proto->die(undef, undef, 'invalid arguments to new');
+    # DOES NOT RETURN
+}
+
+# _render_alt(self, hash_ref fields, any source, Bivio::Agent::Request req) : string
+#
+# Renders the alt_text or alt.
+#
+sub _render_alt {
+    my($self, $fields, $source, $req) = @_;
+#TODO: Deprecated
+    return $source->get_widget_value(@{$fields->{alt}}) if $fields->{alt};
+    return '' unless $fields->{alt_text};
+
+    my($b) = $self->render_value('alt_text', $fields->{alt_text}, $source);
+    return $$b if UNIVERSAL::isa($fields->{alt_text}, 'Bivio::UI::Widget');
+    return Bivio::UI::Text->get_value('Image_alt', $$b, $req);
+}
 
 =head1 COPYRIGHT
 

@@ -110,13 +110,11 @@ sub initialize {
 	    Bivio::UI::HTML::Widget::String->new({
 		value => $label,
 		string_font => 'form_field_error_label',
-		parent => $self,
 	    }),
 	]),
 	undef_value =>  Bivio::UI::HTML::Widget::String->new({
 	    value => $label,
 	    string_font => 'form_field_label',
-	    parent => $self,
 	}),
     );
     $self->SUPER::initialize;

@@ -48,12 +48,13 @@ Class name of form are we dealing with.
 
 Which form are we dealing with.
 
-=item label : string [get_form_field()]
+=item label : any [see description]
 
-String label to use.
+String, widget value, widget, etc. to be rendered as label.  Font
+should be I<checkbox> if you are creating your own widget.
 
-If I<label> is C<undef>, will look up using I<field> with
-L<Bivio::UI::Label::get_form_field|Bivio::UI::Label/"get_form_field">.
+If I<label> is C<undef>, will look up in Bivio::UI::Text using I<field>
+and I<form_class>.
 
 =item value : string [1]
 
@@ -64,12 +65,10 @@ The checkbox's submit value.
 =cut
 
 #=IMPORTS
-use Bivio::UI::Label;
 use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -111,11 +110,15 @@ sub initialize {
     $fields->{value} = $self->get_or_default('value', 1);
     $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
     my($l) = $self->unsafe_get('label');
-    $l = Bivio::UI::Label->get_form_field(
-	    $self->ancestral_get('form_class'), $fields->{field})
-		unless defined($l);
-    $fields->{label} = $_VS->vs_template_as_string(' '.$l, 'checkbox')
-	    ->put_and_initialize(parent => $self);
+    $fields->{label} = $self->unsafe_initialize_attr('label');
+    $fields->{label} = $_VS->vs_text(
+	    $self->ancestral_get('form_class')->simple_package_name,
+	    $fields->{field})
+	    unless defined($fields->{label});
+    $fields->{label} = $_VS->vs_string($fields->{label}, 'checkbox')
+	    ->put_and_initialize(parent => $self)
+		    unless UNIVERSAL::isa($fields->{label},
+			    'Bivio::UI::Widget');
     return;
 }
 

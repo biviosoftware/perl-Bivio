@@ -223,7 +223,7 @@ sub initialization_complete {
     my($self) = @_;
 
     # Initialize default first
-    my($default) = $self->internal_unsafe_get_value('default');
+    my($default) = $self->internal_get_value('default');
     $self->bad_value({names => ['default']}, ': default font not defined')
 	    unless $default;
     _initialize($self, $default, $default);

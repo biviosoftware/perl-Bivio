@@ -12,7 +12,6 @@ Bivio::UI::HTML::FormErrors - maps form, field, and TypeError to strings
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::FormErrors;
-    Bivio::UI::HTML::FormErrors->to_html($source, $form, $field, $label, $type_error);
 
 =cut
 
@@ -161,7 +160,8 @@ sub _escape {
 sub _link {
     my($source, $task, $text) = @_;
     $task = Bivio::Agent::TaskId->$task();
-    $text = Bivio::UI::Label->get_simple($task->get_name) unless $text;
+    $text = Bivio::UI::Text->get_value($task->get_name, $source->get_request)
+	    unless $text;
     return '<a href="'
 	    .Bivio::HTML->escape($source->format_stateless_uri($task))
 	    .'">'.Bivio::HTML->escape($text).'</a>';

@@ -69,7 +69,7 @@ sub create_content {
 	    }],
 	    {
 		field => 'remark',
-		column_heading => 'CATEGORY_HEADING',
+		column_heading => 'CATEGORY',
 	    },
 	    'Entry.amount',
 	],

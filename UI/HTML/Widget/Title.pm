@@ -36,9 +36,10 @@ is rendered dynamically by accessing this widget's attributes dynamically.
 
 =item values : array_ref (required)
 
-Each element can be an array_ref or a string to be rendered.
-If the element is an array_ref, will be dereferenced and passed
-to C<$source-E<gt>get_widget_value>. If result is C<undef>, no value
+Each element will be rendered with
+L<Bivio::UI::Widget::unsafe_render_value|Bivio::UI::Widget/"unsafe_render_value">
+
+If result is C<undef> or zerol length, no value
 is rendered.  In all cases, the strings are passed to escaped.
 
 =item title_separator : string [' - '] (inherited)
@@ -93,8 +94,10 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{values};
+
+    my($i) = 0;
     $fields->{values} = [map {
-	ref($_) ? $_ : Bivio::HTML->escape($_);
+	$self->initialize_value($i++, $_);
     } @{$self->get('values')}];
     $fields->{separator} = $self->ancestral_get('title_separator',
 	    $_DEFAULT_SEPARATOR);
@@ -114,11 +117,14 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     my(@v, @t) = ();
+    my($i) = 0;
     foreach my $v (@{$fields->{values}}) {
 	my($x) = $v;
 	if (ref($x)) {
-	    $x = $source->get_widget_value(@$x);
-	    next unless defined($x) && length($x);
+	    my($b) = '';
+	    $self->unsafe_render_value($i++, $x, $source, \$b);
+	    next unless length($b);
+	    $x = $b;
 	}
 	push(@v, Bivio::HTML->escape($x));
 	push(@t, $x);

@@ -266,7 +266,7 @@ Registers with Facade.
 
 sub handle_register {
     my($proto) = @_;
-    Bivio::UI::Facade->register($proto);
+    Bivio::UI::Facade->register($proto, ['Text']);
     return;
 }
 
@@ -297,7 +297,7 @@ sub initialization_complete {
 	foreach my $file (grep(/[^\.].*\.\w+$/, readdir(IN))) {
 	    my($name) = $file;
 	    $name =~ s/\.\w+$//;
-	    $map{$name} = $prefix.$file;
+	    $map{lc($name)} = $prefix.$file;
 	}
     }
     close(IN);
@@ -306,7 +306,7 @@ sub initialization_complete {
     # warning.  Only reinitialize those images with different config,
     # i.e. different file names.
     while (my($name, $file) = each(%map)) {
-	my($v) = $self->internal_unsafe_get_value($name);
+	my($v) = $self->internal_unsafe_lc_get_value($name);
 	unless (defined($v)) {
 	    $self->group($name, $file);
 	}

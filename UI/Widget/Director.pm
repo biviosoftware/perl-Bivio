@@ -131,6 +131,21 @@ sub initialize {
     return;
 }
 
+=for html <a name="internal_as_string"></a>
+
+=head2 internal_as_string() : array
+
+Returns I<control>.
+
+See L<Bivio::UI::Widget::as_string|Bivio::UI::Widget/"as_string">.
+
+=cut
+
+sub internal_as_string {
+    my($self) = @_;
+    return $self->unsafe_get('control');
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, string_ref buffer)

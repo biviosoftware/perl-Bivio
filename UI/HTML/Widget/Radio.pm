@@ -50,6 +50,8 @@ Which form are we dealing with.
 
 =item label : string (required)
 
+=item label : array_ref (required)
+
 String label to use.
 
 =item value : Bivio::Type::Enum (required)
@@ -121,13 +123,15 @@ sub control_on_render {
 
     my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
 
+    my($label) = $self->get('label');
+    $label = $source->get_widget_value(@$label) if ref($label);
     $$buffer .= $fields->{prefix}
 	    .$form->get_field_name_for_html($field)
 #TODO: is_equal?
 	    .(defined($form->get($field))
 		    && $value eq $form->get($field) ? ' checked' : '')
 	    .$fields->{suffix}
-	    .$p.Bivio::HTML->escape($self->get('label')).$s;
+ 	    .$p.Bivio::HTML->escape($label).$s;
     return;
 }
 

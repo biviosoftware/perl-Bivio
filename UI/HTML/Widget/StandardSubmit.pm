@@ -114,8 +114,7 @@ sub initialize {
 		    'Bivio::Type::CancelButton')
 	            ? 'onclick="reset()"'
 	            : '',
-	    label => Bivio::UI::Label->get_simple(
-		    $labels->{$button} || $button),
+	    label => $_VS->vs_text($labels->{$button} || $button),
 	}));
 	unshift(@$values,
 		Bivio::UI::HTML::Widget::ClearDot->as_html($_SEPARATION))

@@ -36,9 +36,12 @@ The string is html-escaped and newlines are converted to C<E<lt>br E<gt>>.
 
 =over 4
 
-=item escape_html : boolean [true]
+=item escape_html : boolean [see description]
 
-Should we escape the value?  Only applies if the value is not a widget.
+Should we escape HTML specials within the value?
+
+True by default for non-widgets.  False by default if the value or the widget
+value is a widget.
 
 =item format : Bivio::UI::HTML::Format []
 
@@ -98,11 +101,8 @@ use Bivio::Die;
 use Bivio::HTML;
 use Bivio::UI::Font;
 use Bivio::UI::HTML::Format;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -111,14 +111,19 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
+=head2 static new(any value, string font) : Bivio::UI::HTML::Widget::String
+
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::String
 
-Creates a new String widget.
+Create a C<String> widget with I<value> and I<font> (if supplied and defined).
+Pass C<0> (zero) as I<font> to set "no font".  Will not set font, if C<undef>.
+
+If I<attributes> supplied, creates with attribute (name, value) pairs.
 
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(_new_args(@_));
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -131,7 +136,7 @@ sub new {
 
 =head2 initialize()
 
-Initializes static information.
+Initializes static information and child widgets.
 
 =cut
 
@@ -140,7 +145,11 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{value});
     $fields->{font} = $self->ancestral_get('string_font', undef);
-    $fields->{escape} = $self->get_or_default('escape_html', 1);
+
+    # -1 is default true which is handled differently in widget and
+    # html cases.
+    $fields->{escape} = $self->get_or_default('escape_html', -1);
+
     $fields->{hard_newlines} = $self->get_or_default('hard_newlines',
 	    $fields->{escape});
     my($pad_left) = $self->get_or_default('pad_left', 0);
@@ -161,8 +170,7 @@ sub initialize {
 	$fields->{value} = _format($fields, $fields->{value});
     }
     elsif ($fields->{is_widget} = ref($fields->{value}) ne 'ARRAY') {
-	$fields->{value}->put(parent => $self);
-	$fields->{value}->initialize;
+	$fields->{value}->put_and_initialize(parent => $self);
     }
     return;
 }
@@ -187,6 +195,8 @@ sub render {
     }
     elsif ($fields->{is_widget}) {
 	$fields->{value}->render($source, \$b);
+	# Note the special treatment of non-default true.
+	$b = _escape($fields, $b) if $fields->{escape} == 1;
     }
     else {
 	my($value) = $source->get_widget_value(@{$fields->{value}});
@@ -197,6 +207,8 @@ sub render {
 	# Result may be a widget!
 	if (ref($value) && UNIVERSAL::isa($value, 'Bivio::UI::Widget')) {
 	    $value->render($source, \$b);
+	    # Note the special treatment of non-default true.
+	    $b = _escape($fields, $b) if $fields->{escape} == 1;
 	}
 	else {
 	    $b .= _format($fields, $value);
@@ -215,6 +227,18 @@ sub render {
 
 #=PRIVATE METHODS
 
+# _escape(hash_ref fields, string value) : string
+#
+# Escapes the value.
+#
+sub _escape {
+    my($fields, $value) = @_;
+    $value = Bivio::HTML->escape($value);
+    $value =~ s/\n/<br>/mg if $fields->{hard_newlines};
+    $value =~ s/^\s+$/&nbsp;/s;
+    return $value;
+}
+
 # _format(hash_ref fields, string value) : string
 #
 # Formats and escapes the string and replaces newlines with <br>.
@@ -228,12 +252,23 @@ sub _format {
     }
     Bivio::Die->die('got ref where scalar expected: ', $value)
 		if ref($value);
-    return $value unless $fields->{escape};
+    # Note the treatment of escape when -1 or +1.
+    return $fields->{escape} ? _escape($fields, $value) : $value;
+}
 
-    $value = Bivio::HTML->escape($value);
-    $value =~ s/\n/<br>/mg if $fields->{hard_newlines};
-    $value =~ s/^\s+$/&nbsp;/s;
-    return $value;
+# _new_args(proto, any value) : array
+#
+# Returns arguments to be passed to Attributes::new.
+#
+sub _new_args {
+    my($proto, $value, $font) = @_;
+    return ($proto, $value) if ref($value) eq 'HASH' || int(@_) == 1;
+    return ($proto, {
+	value => $value,
+	defined($font) ? (string_font => $font) : (),
+    }) if defined($value);
+    Bivio::Die->die('invalid arguments to new');
+    # DOES NOT RETURN
 }
 
 =head1 COPYRIGHT

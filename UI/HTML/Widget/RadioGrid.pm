@@ -56,9 +56,6 @@ on the radio button, e.g. I<control> and I<value>.
 The I<control> will be set to the choice, if the choice type is
 a TaskId.  See ControlBase.
 
-B<If a L<Bivio::UI::Label|Bivio::UI::Label> exists for the
-enum name, it will be used in place of the description.>
-
 =item field : string (required)
 
 Name of the form field.
@@ -75,6 +72,11 @@ If defined, forces the number of columns to a fixed width.
 
 Should the UNKNOWN type be displayed?
 
+=item want_text : boolean [0]
+
+Lookup the names of the grid values using L<Bivio::UI::Text|Bivio::UI::Text>.
+Will prefix with RadioGrid.  Only works if I<column_count> is defined.
+
 =back
 
 =cut
@@ -83,9 +85,8 @@ Should the UNKNOWN type be displayed?
 use Bivio::Die;
 use Bivio::HTML;
 use Bivio::Type::Enum;
-use Bivio::UI::HTML::Widget::Radio;
-use Bivio::UI::Label;
 use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::UI::HTML::Widget::Radio;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
@@ -122,19 +123,21 @@ sub new {
 	Bivio::Die->die($choices, ': unsupported choices type');
     }
 
+    my($cc) = $self->unsafe_get('column_count');
+    my($wtl) = $self->get_or_default('want_text', 0);
     # Convert to Radio
     my(@items) = map {
 	Bivio::UI::HTML::Widget::Radio->new({
 	    field => $field,
 	    value => $_->[0],
-	    label => $_->[1],
+	    label => $wtl ? $_VS->vs_text('radiogrid', $_->[0]->get_name)
+	    : $_->[1],
 	    auto_submit => $self->get_or_default('auto_submit', 0),
 	    %{$_->[2]},
 	});
     } @$items;
 
     # Layout the buttons
-    my($cc) = $self->unsafe_get('column_count');
     if ($cc) {
 	$self->layout_buttons_row_major(\@items, $cc);
     }
@@ -206,10 +209,7 @@ sub _load_items_from_enum_array {
 	    delete($attrs->{value});
 	    [
 		$e,
-		Bivio::HTML->escape(
-		    # Use the label if available
-		    Bivio::UI::Label->unsafe_get_simple($e->get_name)
-		    || $e->get_long_desc),
+		Bivio::HTML->escape($e->get_long_desc),
 		$attrs,
 	    ];
 	} @$value

@@ -370,7 +370,7 @@ sub _die {
 #
 sub _eval_code {
     my($code) = @_;
-    _assert_in_eval('eval');
+#    _assert_in_eval('eval');
     _trace($code) if $_TRACE;
     return Bivio::Die->eval_or_die($code);
 }

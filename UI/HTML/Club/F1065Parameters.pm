@@ -107,21 +107,21 @@ EOF
 	['Address.city'],
 	['Address.state', undef, undef, 'NY, CA, CO', {size => 2}],
 	['Address.zip', undef, undef, '12345, 12345-6789'],
-	['Tax1065.irs_center', 'IRS Center', <<'EOF'],
+	['Tax1065.irs_center', undef, <<'EOF'],
 Select the IRS Center where the partnership files its return
 EOF
-	['Tax1065.partnership_type', 'Partnership Type',
+	['Tax1065.partnership_type', undef,
 	    <<'EOF',
 Schedule B 1. Most investment clubs are formed as general partnerships. Members in a general partnership do not have liability protection.
 EOF
 	    undef, {show_unknown => 0}],
-	['Tax1065.partner_is_partnership', 'Member is Partnership', <<'EOF'],
+	['Tax1065.partner_is_partnership', undef, <<'EOF'],
 Schedule B 2.
 EOF
-	['Tax1065.partnership_is_partner', 'Club is Partner', <<'EOF'],
+	['Tax1065.partnership_is_partner', undef, <<'EOF'],
 Schedule B 3.
 EOF
-	['Tax1065.consolidated_audit', 'Consolidated Audit', <<'EOF'],
+	['Tax1065.consolidated_audit', undef, <<'EOF'],
 Schedule B 4. We recommend that you choose Consolidated Audit, so that the tax treatment of partnership items is determined at the partnership level, rather than in a separate proceeding.
 EOF
     ],

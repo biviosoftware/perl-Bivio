@@ -109,7 +109,8 @@ sub render {
 		    : '')
 	    .'">'.$fs
             .$bp.'<input type=submit value="'
-	    .Bivio::UI::Label->get_simple('search_button')
+	    .Bivio::HTML->escape_attr_value(
+		    Bivio::UI::Text->get_value('search_button', $req))
             .'">'.$bs
 	    .($self->get_or_default('cell_end_form', 0) ? '' : '</form>');
 

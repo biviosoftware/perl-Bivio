@@ -100,6 +100,22 @@ $_ = <<'}'; # emacs
 sub escape {
 }
 
+=for html <a name="escape_attr_value"></a>
+
+=head2 escape_attr_value(string text) : string
+
+Escapes an attribute.  Escaping quotes.
+
+B<Netscape and IE seems to require that we escape the html inside the quotes
+even though this isn't the standard.>
+
+=cut
+
+sub escape_attr_value {
+    my($proto, $text) = @_;
+    return $proto->escape($text);
+}
+
 =for html <a name="escape_query"></a>
 
 =head2 static escape_query(string text) : string
