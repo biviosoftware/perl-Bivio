@@ -37,7 +37,6 @@ use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Auth::RealmType;
-use Bivio::Biz::Model::LoginForm;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Die;
 use Bivio::DieCode;
@@ -361,8 +360,9 @@ sub _get_auth_user {
 	$self->warn($auth_user_id, ': user_id not found, logging out');
     }
 
-    # Unknown or invalid user, so force logout (which clears cookie)
-    Bivio::Biz::Model::LoginForm->invalidate_user($self);
+    # Unknown or invalid user, clear cookie
+    $self->get('cookie')->invalidate_user;
+
     return undef;
 }
 
