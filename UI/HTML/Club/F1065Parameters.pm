@@ -67,7 +67,7 @@ EOF
 	    ['Address.state', undef, undef, 'NY, CA, CO', {size => 2}],
 	    ['Address.zip', undef, undef, '12345, 12345-6789'],
 	    ['Tax1065.irs_center', 'IRS Center', <<'EOF'],
-Select the state where the partnership files its return
+Select the IRS Center where the partnership files its return
 EOF
 	    ['Tax1065.partnership_type', 'Partnership Type',
 		    <<'EOF',
