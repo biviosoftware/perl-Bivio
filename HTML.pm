@@ -64,12 +64,21 @@ BEGIN {
     else {
         eval '
 	    use URI::Escape ();
-	    sub escape { shift; return HTML::Entities::encode(shift) }
-	    sub escape_uri {
-		shift;
-		return _extra_escape_uri(URI::Escape::uri_escape(shift));
+	    sub escape {
+		my(undef, $value) = @_;
+		$value = HTML::Entities::encode($value);
+		return $value;
 	    }
-	    sub unescape_uri { shift; return URI::Escape::uri_unescape(shift) }
+	    sub escape_uri {
+		my(undef, $value) = @_;
+		$value = _extra_escape_uri(URI::Escape::uri_escape($value));
+		return $value;
+	    }
+	    sub unescape_uri {
+		my(undef, $value) = @_;
+		$value = URI::Escape::uri_unescape($value);
+		return $value;
+	    }
 	    1;
 	' || die($@);
     }
