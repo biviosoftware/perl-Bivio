@@ -27,8 +27,6 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
-use Bivio::IO::Config;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::Club;
 use Bivio::Auth::Realm::General;
@@ -37,6 +35,8 @@ use Bivio::Auth::Realm;
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::DieCode;
+use Bivio::IO::Config;
+use Bivio::IO::Trace;
 use Carp ();
 
 #=VARIABLES
@@ -134,12 +134,14 @@ sub initialize {
     map {
 	my($task_id_name, $realm_type_name, $uri_list) = @{$_}[0,2,4];
 	my($task_id) = Bivio::Agent::TaskId->$task_id_name();
+#TODO: Shouldn't know that GENERAL is a special realm(?)
 	# Test for all the realms we understand, explicitly.
 	my($is_general) = $realm_type_name eq 'GENERAL';
 	my($realm);
 	if ($is_general) {
 	    $realm = $_GENERAL;
 	}
+#TODO: Shouldn't have to do this mapping here.  Should be in RealmType.
 	elsif ($realm_type_name =~ /^(CLUB|USER)$/) {
 	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($realm_type_name));
 	}
