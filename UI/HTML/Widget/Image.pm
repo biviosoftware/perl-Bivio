@@ -234,8 +234,6 @@ sub internal_new_args {
 	alt_text => defined($text) ? $text : $icon,
 	($attributes ? %$attributes : ()),
     };
-    # DOES NOT RETURN
-    return;
 }
 
 =for html <a name="render"></a>
