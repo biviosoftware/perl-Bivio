@@ -1191,16 +1191,17 @@ sub parse_query {
     # May be called without args
     $query = {} unless defined($query);
 
-    my($auth_id) = $self->get_request->get('auth_id');
+    my($sql_support) = $self->internal_get_sql_support;
+    my($auth_id) = $sql_support->get('auth_id')
+	? $self->get_request->get('auth_id') : undef;
     if (ref($query) eq 'HASH') {
-	my($sql_support) = $self->internal_get_sql_support;
 	$query->{auth_id} = $auth_id;
 	# Let user override page count
 	return Bivio::SQL::ListQuery->new($query, $sql_support, $self);
     }
 
     # Already a list query, put auth_id on query
-    $query->put('auth_id' => $auth_id);
+    $query->put(auth_id => $auth_id);
     return $query;
 }
 
@@ -1349,6 +1350,7 @@ Returns I<self>.
 
 sub unauth_load_all {
     my($self, $query) = @_;
+    $query ||= {};
     if (ref($query) eq 'HASH') {
 	$query->{count} = $self->LOAD_ALL_SIZE;
     }
