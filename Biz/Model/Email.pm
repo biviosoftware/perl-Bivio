@@ -17,12 +17,12 @@ Bivio::Biz::Model::Email - interface to email_t SQL table
 
 =head1 EXTENDS
 
-L<Bivio::Biz::Model::AbstractLocation>
+L<Bivio::Biz::Model::LocationBase>
 
 =cut
 
-use Bivio::Biz::Model::AbstractLocation;
-@Bivio::Biz::Model::Email::ISA = qw(Bivio::Biz::Model::AbstractLocation);
+use Bivio::Biz::Model::LocationBase;
+@Bivio::Biz::Model::Email::ISA = qw(Bivio::Biz::Model::LocationBase);
 
 =head1 DESCRIPTION
 

@@ -1,17 +1,17 @@
 # Copyright (c) 2001 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::Biz::Model::AbstractLocation;
+package Bivio::Biz::Model::LocationBase;
 use strict;
-$Bivio::Biz::Model::AbstractLocation::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::AbstractLocation::VERSION;
+$Bivio::Biz::Model::LocationBase::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::LocationBase::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Model::AbstractLocation - base class for Address, Email, etc.
+Bivio::Biz::Model::LocationBase - base class for Address, Email, etc.
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::Model::AbstractLocation;
+    use Bivio::Biz::Model::LocationBase;
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::PropertyModel>
 =cut
 
 use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::AbstractLocation::ISA = ('Bivio::Biz::PropertyModel');
+@Bivio::Biz::Model::LocationBase::ISA = ('Bivio::Biz::PropertyModel');
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::AbstractLocation> base class for Address, Email, etc.
+C<Bivio::Biz::Model::LocationBase> base class for Address, Email, etc.
 
 =cut
 
