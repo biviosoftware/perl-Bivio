@@ -237,6 +237,7 @@ of args.
 sub die {
     my($self, @args) = @_;
     $self->throw_die('DIE', {
+#TODO: format, not die
 	message => Bivio::Die->die(@args),
 	program_error => 1,
     },
@@ -539,25 +540,36 @@ sub iterate_next {
 
 =for html <a name="merge_initialize_info"></a>
 
-=head2 static merge_initialize_info(hash_ref info, hash_ref info2) : hash_ref
+=head2 static merge_initialize_info(hash_ref parent, hash_ref child) : hash_ref
 
-Merges two model field definitions into a new hash.
+Merges two model field definitions (I<child> into I<parent>) into a new
+hash_ref.
 
 =cut
 
 sub merge_initialize_info {
-    my(undef, $info, $info2) = @_;
+    my($proto, $parent, $child) = @_;
 
     my($res) = {};
-    foreach my $inf ($info, $info2) {
-	foreach my $key (keys(%$inf)) {
-	    if (exists($res->{$key})) {
-		my($value) = $res->{$key};
-		CORE::die("duplicate info key '$key'") unless ref($value);
-		push(@$value, @{$inf->{$key}});
+    foreach my $info ($parent, $child) {
+	foreach my $key (keys(%$info)) {
+	    unless (exists($res->{$key})) {
+		$res->{$key} = $info->{$key};
 		next;
 	    }
-	    $res->{$key} = $inf->{$key};
+	    my($value) = $res->{$key};
+	    $proto->die('unexpected key value: ', $key, ' => ', $value)
+		unless ref($value) eq ref($info->{$key});
+	    if (ref($value) eq 'ARRAY') {
+		push(@$value, @{$info->{$key}});
+		next;
+	    }
+	    # PropertyModel columns is a hash
+	    foreach my $subkey (keys(%{$info->{$key}})) {
+		$proto->die("duplicate $key key: ", $subkey)
+		    if exists($value->{$subkey});
+		$value->{$subkey} = $info->{$key}->{$subkey};
+	    }
 	}
     }
     return $res;
