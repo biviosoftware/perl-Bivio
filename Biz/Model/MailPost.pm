@@ -103,7 +103,7 @@ sub execute_input {
 
     # Create a mail header and message body from the form input
     if (defined($user)) {
-        $msg->set_from($user->format_email);#, $user->get('display_name'));
+        $msg->set_from($user->format_email, $user->get('display_name'));
     }
     else {
         $msg->set_from($self->get('from'));
