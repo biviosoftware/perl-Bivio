@@ -89,6 +89,7 @@ _compile(
     PRICE_PER_SHARE => ['Price/Share', undef,
 	   'RealmInstrumentValuation.price_per_share'],
     NAME_TICKER => ['Name'],
+    VALUATION_SEARCH_DATE => ['Date'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
