@@ -32,9 +32,12 @@ C<password_request_t> table.  Can also format queries.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Biz::Model::RealmOwner;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_QUERY_FIELD) = 'x';
 
@@ -46,57 +49,57 @@ my($_QUERY_FIELD) = 'x';
 
 =head2 create(hashref values)
 
-Sets I<realm_id>, I<authorization_code>, and I<creation_date_time>.
+Sets I<authorization_code> and I<creation_date_time>.
 
 =cut
 
 sub create {
     my($self, $values) = @_;
-    my($req) = $self->get_request();
-
-    # return if entry exists for realm_id
-    return $self if $self->unsafe_load(realm_id => $values->{realm_id});
     $values->{creation_date_time} = Bivio::Type::DateTime->now()
 	    unless defined($values->{creation_date_time});
-    $values->{authorization_code} = Bivio::Type::AuthorizationCode->
-	    random_value() unless defined($values->{authorization_code});
-    $values->{realm_id} =  $values->{realm_id};
+    $values->{authorization_code} =
+	    Bivio::Type::AuthorizationCode->random_value()
+			unless defined($values->{authorization_code});
     return $self->SUPER::create($values);
 }
 
 =for html <a name="execute_load_from_query"></a>
 
-=head2 execute_load_from_query(Bivio::Agent::Request req)
+=head2 execute_load_from_query(Bivio::Agent::Request req) : boolean
 
-Loads model based on realm_id and authorization_code in the uri.
+Loads model based on realm_id and authorization_code in the query.
 
 =cut
 
 sub execute_load_from_query {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
+    my($q) = $req->unsafe_get('query');
+    $self->throw_die('NOT_FOUND', {message => 'no query'}) unless $q;
 
-    # get the query string...should die if not found
-    my($query) = $req->get('query');
-    my($auth_code) = $query->{$_QUERY_FIELD};
+    # Parse query
+    my($lq) = Bivio::SQL::ListQuery->unauth_new({%$q},
+	    $self, $self->internal_get_sql_support);
+    my($id, $actual) = $lq->unsafe_get('this', $_QUERY_FIELD);
 
-    # load realm, set target realm owner
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
-#TODO Where does 't' come from...would like not to hard code it here
-    $realm->unauth_load_or_die(realm_id => $query->{t});
+    # User hacked the query?
+    $self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
+	    'missing or incorrect this') unless $id && $id->[0];
+    my($realm_id) = $id->[0];
+    $self->unauth_load_or_die(realm_id => $realm_id);
+    _trace('actual=', $actual,
+	    '; expected=', $self->get('authorization_code')) if $_TRACE;
+    # Show not found; eliminates info that might allow "fishing"
+    $self->throw_die(Bivio::DieCode::NOT_FOUND(),
+	    {actual => $actual, expected => $self->get('authorization_code'),
+		message => 'auth_code field mismatch'})
+	    unless $actual eq $self->get('authorization_code');
+
+    # Now load realm, because we know $self is valid
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req)
+	    ->unauth_load_or_die(realm_id => $id->[0]);
     $req->put(target_realm_owner => $realm);
-
-    # load password request, give error if auth_code is bad
-    $self->throw_die(Bivio::DieCode::NOT_FOUND(),
-	    'password request for query realm_id not found in db')
-	    unless ($self->unauth_load(realm_id => $query->{t}));
-    # Give error page if auth code doesn't match query...could make diff page
-    $self->throw_die(Bivio::DieCode::NOT_FOUND(),
-	    'authorization code in query does not match db')
-	    unless ($self->get('authorization_code')
-		    == $query->{$_QUERY_FIELD});
-
-    return;
+    return 0;
 }
 
 =for html <a name="format_query_with_auth_code"></a>
@@ -127,12 +130,26 @@ sub internal_initialize {
 	table_name => 'password_request_t',
 	columns => {
 	    realm_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    authorization_code => ['Bivio::Type::AuthorizationCode',
-		'NOT_NULL'],
-	    creation_date_time => ['Bivio::Type::DateTime', 'NOT_NULL'],
+	    authorization_code => ['AuthorizationCode', 'NOT_NULL'],
+	    creation_date_time => ['DateTime', 'NOT_NULL'],
 	},
 	auth_id => 'realm_id',
     };
+}
+
+=for html <a name="update"></a>
+
+=head2 update(hash_ref values) : self
+
+Sets I<creation_date_time> if not set, then calls super.
+
+=cut
+
+sub update {
+    my($self, $values) = @_;
+    $values->{creation_date_time} = Bivio::Type::DateTime->now()
+	    unless defined($values->{creation_date_time});
+    return $self->SUPER::update($values);
 }
 
 #=PRIVATE METHODS
