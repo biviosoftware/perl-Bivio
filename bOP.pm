@@ -27,7 +27,7 @@ use Bivio::UNIVERSAL;
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application.
+cohesive infrastructure for any Perl application. 
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info. 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    Undefined values now compare as equal.
+  * Bivio::Type::DateTime->delta_days
+    Returns the floating point difference between two DateTimes
+
+  Revision 2.2  2004/01/17 13:00:00  nagler
+  * Bivio::Test::Language->test_setup prints die msgs correctly
   * Bivio::Test::Util->nightly sets PERLLIB correctly
   * Bivio::UI::HTML::Widget::Page->render uses unsafe_render_attr on
     body's html_tag_attrs
