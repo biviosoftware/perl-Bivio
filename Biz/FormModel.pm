@@ -458,6 +458,28 @@ sub get_field_as_html {
     return Bivio::Util::escape_html($fields->{literals}->{$fn});
 }
 
+=for html <a name="get_field_as_literal"></a>
+
+=head2 get_field_as_literal(string name) : string
+
+Returns the field value.  If the field is in error and there
+is no value, returns the literal value that was entered by
+the user.
+
+Always returns a valid string, but may be the empty string.
+
+=cut
+
+sub get_field_as_literal {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($value) = $self->unsafe_get($name);
+    return $self->get_field_type($name)->to_literal($value) if defined($value);
+    my($fn) = $self->get_field_info($name, 'form_name');
+    return '' unless defined($fields->{literals}->{$fn});
+    return $fields->{literals}->{$fn};
+}
+
 =for html <a name="get_field_error"></a>
 
 =head2 get_field_error(string name) : Bivio::TypeError

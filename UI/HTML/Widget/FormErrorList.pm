@@ -50,6 +50,7 @@ time.
 
 #=IMPORTS
 use Bivio::IO::Trace;
+use Bivio::UI::HTML::FormErrors;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -120,14 +121,10 @@ sub render {
     # iterate errors, so general errors don't have to be bound to a field
     foreach my $name (keys(%$errors)) {
 	my($caption) = _get_caption($self, $name);
-	if ($caption) {
-	    $e .= "\n<li>".Bivio::Util::escape_html(
-		    $caption.': '.$errors->{$name}->get_long_desc);
-	}
-	else {
-	    $e .= "\n<li>".Bivio::Util::escape_html(
-		    $errors->{$name}->get_long_desc);
-	}
+	$e .= "\n<li>";
+	$e .= Bivio::Util::escape_html($caption.': ') if $caption;
+	$e .= Bivio::UI::HTML::FormErrors->to_html(
+		$source, $model, $name, $caption || '', $errors->{$name});
     }
 
     $$buffer .= $e.$fields->{suffix};
