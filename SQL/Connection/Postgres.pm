@@ -265,10 +265,9 @@ sub _fixup_outer_join {
 	    next if $joins->{$source_table}
 		=~ s/(?<=LEFT JOIN $target_table ON \()/$left = $right AND /is;
 	}
-	$joins->{$source_table}
-	    .= " LEFT JOIN $target_table ON ($left = $right)";
-	$from_where =~ s/(\sFROMPOSTGRES-FIXME\s.*?)\b$target_table\b(,)?/$1/s
+	$from_where =~ s/(\sFROMPOSTGRES-FIXME\s.*?)\b((?:\w+\s+)?$target_table)\b,?/$1/s
 	    || Bivio::Die->die('failed to remove ', $target_table, ': ', $from_where);
+	$joins->{$source_table} .= " LEFT JOIN $2 ON ($left = $right)";
     }
     foreach my $source_table (sort(keys(%$joins))) {
 	$from_where =~ s/(?=FROMPOSTGRES-FIXME)(.*?\b$source_table\b)/$1$joins->{$source_table}/is
