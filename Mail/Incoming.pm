@@ -39,6 +39,7 @@ message.
 
 #=IMPORTS
 use Bivio::IO::Config;
+use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::Mail::Common;
 use Time::Local ();
@@ -205,7 +206,7 @@ sub get_date_time {
 #TODO: If no Date: or bad Date: search Received: for valid dates
 #hello
     unless (defined($date)) {
-	warn("no Date");
+	Bivio::IO::Alert->warn("no Date");
 	&_trace('no Date') if $_TRACE;
 	return $fields->{date_time} = undef;
     }
@@ -227,13 +228,17 @@ Return <I>From:</I> email address and name or just email if not array context.
 sub get_from {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    exists($fields->{from_email}) && return $fields->{from_email};
+    if (exists($fields->{from_email})) {
+	return wantarray ? ($fields->{from_email}, $fields->{from_name})
+	    : $fields->{from_email};
+    }
+
     # 822: The  "Sender"  field  mailbox  should  NEVER  be  used
     #      automatically, in a recipient's reply message.
     my($from) = &_get_field($fields, 'from:')
 	    || &_get_field($fields, 'apparently-from:');
     unless (defined($from)) {
-	warn("no From");
+	Bivio::IO::Alert->warn("no From");
 	&_trace('no From') if $_TRACE;
 	$fields->{from_email} = undef;
 	$fields->{from_name} = undef;
@@ -272,7 +277,8 @@ sub get_headers {
     my($f);
     foreach $f (split(/^(?=$_822_FIELD_NAME)/om, $fields->{header})) {
 	my($n) = $f =~ /^($_822_FIELD_NAME)/;
-	warn("invalid 822 field: $f"), next unless defined($n);
+	Bivio::IO::Alert->warn("invalid 822 field: $f"), next
+		    unless defined($n);
 	chop($n);
 	$headers->{lc($n)} .= $f;
     }
@@ -293,7 +299,7 @@ sub get_message_id {
     exists($fields->{message_id}) && return $fields->{message_id};
     my($id) = &_get_field($fields, 'message-id:');
     unless (defined($id)) {
-	warn("no message-id");
+	Bivio::IO::Alert->warn("no message-id");
 	&_trace('no Message-Id') if $_TRACE;
 	return $fields->{message_id} = undef;
     }
@@ -339,7 +345,11 @@ if not array context.
 sub get_reply_to {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    exists($fields->{reply_to}) && return $fields->{reply_to};
+    if (exists($fields->{reply_to})) {
+	return wantarray
+		? ($fields->{reply_to_email}, $fields->{reply_to_name})
+		: $fields->{reply_to_email};
+    }
     my($reply_to) = &_get_field($fields, 'reply-to:');
     unless (defined($reply_to)) {
 	&_trace('no Reply-To') if $_TRACE;
@@ -662,7 +672,7 @@ sub _parse_date {
 	$mon = $_822_MONTHS{$mon};
     }
     else {
-	warn("month \"$mon\" unknown in date \"$_\"");
+	Bivio::IO::Alert->warn("month \"$mon\" unknown in date \"$_\"");
 	$mon = 0;
     }
     $tz = uc($tz);
@@ -673,7 +683,7 @@ sub _parse_date {
     if ($tz =~ /^(-|\+?)(\d\d?)(\d\d)/s) {
 	$date_time -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
     } else {
-	warn("timezone \"$tz\" unknown in date \"$_\"");
+	Bivio::IO::Alert->warn("timezone \"$tz\" unknown in date \"$_\"");
     }
     return $date_time;
 }
