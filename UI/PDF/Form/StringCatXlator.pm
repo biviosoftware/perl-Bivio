@@ -6,7 +6,8 @@ $Bivio::UI::PDF::Form::StringCatXlator::VERSION = sprintf('%d.%02d', q$Revision$
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::StringCatXlator - 
+Bivio::UI::PDF::Form::StringCatXlator - an Xlator that concatonates several
+strings.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Header::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Header - 
+Bivio::UI::PDF::Header - encapsulates a PDF header section.
 
 =head1 SYNOPSIS
 

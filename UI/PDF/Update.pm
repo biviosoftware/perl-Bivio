@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Update::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Update - 
+Bivio::UI::PDF::Update - encapsulate a PDF "update".
 
 =head1 SYNOPSIS
 
@@ -20,7 +20,10 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::PDF::Update>
+C<Bivio::UI::PDF::Update> encapsulates a PDF "update", a term coined by the
+author that describes the text added to a PDF file to change or update it.
+In PDF land, one changes a PDF file not by changing the original contents, but
+by adding more text that describe the changes to the original.
 
 =cut
 

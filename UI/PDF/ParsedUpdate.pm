@@ -6,7 +6,8 @@ $Bivio::UI::PDF::ParsedUpdate::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/
 
 =head1 NAME
 
-Bivio::UI::PDF::ParsedUpdate - 
+Bivio::UI::PDF::ParsedUpdate - a PDF update whose data comes from parsing some
+PDF text.
 
 =head1 SYNOPSIS
 

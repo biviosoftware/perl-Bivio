@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Form::FloatXlator::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::FloatXlator - 
+Bivio::UI::PDF::Form::FloatXlator - translates a floating point number.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Array::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Array - 
+Bivio::UI::PDF::Array - encapsulates a PDF array direct object.
 
 =head1 SYNOPSIS
 

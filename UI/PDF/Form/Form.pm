@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Form::Form::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g)
 
 =head1 NAME
 
-Bivio::UI::PDF::Form - 
+Bivio::UI::PDF::Form - a base class for PDF form objects.
 
 =head1 SYNOPSIS
 

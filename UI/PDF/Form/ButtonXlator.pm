@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Form::ButtonXlator::VERSION = sprintf('%d.%02d', q$Revision$ =~
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::ButtonXlator - 
+Bivio::UI::PDF::Form::ButtonXlator - translates a PDF button.
 
 =head1 SYNOPSIS
 

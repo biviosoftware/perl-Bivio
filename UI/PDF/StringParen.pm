@@ -6,7 +6,8 @@ $Bivio::UI::PDF::StringParen::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 =head1 NAME
 
-Bivio::UI::PDF::StringParen - 
+Bivio::UI::PDF::StringParen - encapsulates a PDF direct string object whose
+contents are enclosed in parentheses.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Form::TaxId2Xlator::VERSION = sprintf('%d.%02d', q$Revision$ =~
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::TaxId2Xlator - 
+Bivio::UI::PDF::Form::TaxId2Xlator - an Xlator for the second part of a tax id.
 
 =head1 SYNOPSIS
 

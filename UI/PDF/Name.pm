@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Name::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Name - 
+Bivio::UI::PDF::Name - encapsulates a PDF name direct object.
 
 =head1 SYNOPSIS
 

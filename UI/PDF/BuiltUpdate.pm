@@ -6,7 +6,8 @@ $Bivio::UI::PDF::BuiltUpdate::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 =head1 NAME
 
-Bivio::UI::PDF::BuiltUpdate - 
+Bivio::UI::PDF::BuiltUpdate - encapsulates a PDF object that is built by the
+PDF code.
 
 =head1 SYNOPSIS
 

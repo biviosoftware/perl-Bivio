@@ -6,7 +6,8 @@ $Bivio::UI::PDF::Emit::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Emit - 
+Bivio::UI::PDF::Emit - keeps the text of a PDF file as it is being emitted
+from a hierarchy of PDF objects that contain the data of a PDF file.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Form::Xlator::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::Xlator - 
+Bivio::UI::PDF::Form::Xlator - a base class for the various Xlator objects.
 
 =head1 SYNOPSIS
 

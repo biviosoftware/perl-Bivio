@@ -7,7 +7,8 @@ $Bivio::UI::PDF::Form::F1065::Y1999::XlatorSet::VERSION = sprintf('%d.%02d', q$R
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::F1065::Y1999::XlatorSet - 
+Bivio::UI::PDF::Form::F1065::Y1999::XlatorSet - the XlatorSet for
+F1065::Y1999.
 
 =head1 SYNOPSIS
 

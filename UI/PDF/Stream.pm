@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Stream::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Stream - 
+Bivio::UI::PDF::Stream - encapsulates a PDF direct stream object.
 
 =head1 SYNOPSIS
 

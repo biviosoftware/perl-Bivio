@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Section::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Section - 
+Bivio::UI::PDF::Section - base class for PDF section objects.
 
 =head1 SYNOPSIS
 
@@ -20,7 +20,9 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::PDF::Section>
+C<Bivio::UI::PDF::Section> is a base class for PDF section objects, which are
+Bivio::UI::PDF::Body, Bivio::UI::PDF::Header, Bivio::UI::PDF::Trailer,
+and Bivio::UI::PDF::Xref.
 
 =cut
 

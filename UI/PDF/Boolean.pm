@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Boolean::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Boolean - 
+Bivio::UI::PDF::Boolean - encapsulates a PDF boolean direct object.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,8 @@ $Bivio::UI::PDF::StringAngle::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 =head1 NAME
 
-Bivio::UI::PDF::StringAngle - 
+Bivio::UI::PDF::StringAngle - encapsulates a PDF direct string object whose
+data is enclosed in angle brackets.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Body::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Body - 
+Bivio::UI::PDF::Body - encapsulates a PDF bocy section.
 
 =head1 SYNOPSIS
 

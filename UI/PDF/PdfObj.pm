@@ -6,7 +6,8 @@ $Bivio::UI::PDF::PdfObj::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::PdfObj - 
+Bivio::UI::PDF::PdfObj - a base class for PDF objects that are part of a PDF
+body.
 
 =head1 SYNOPSIS
 
@@ -20,7 +21,9 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::PDF::PdfObj>
+C<Bivio::UI::PDF::PdfObj> is a base class for PDF objects that are part of a
+PDF body.  These are Bivio::UI::PDF::Comment, Bivio::UI::PDF::DirectObj, and
+Bivio::UI::PDF::IndirectObj.
 
 =cut
 

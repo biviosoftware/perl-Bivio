@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Trailer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Trailer - 
+Bivio::UI::PDF::Trailer - encapsulates a trailer in a PDF file.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Form::DateXlator::VERSION = sprintf('%d.%02d', q$Revision$ =~ /
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::DateXlator - 
+Bivio::UI::PDF::Form::DateXlator - translates a date.
 
 =head1 SYNOPSIS
 

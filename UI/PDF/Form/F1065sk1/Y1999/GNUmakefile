@@ -45,7 +45,6 @@ modules=  \
 	IntXlator.pm \
 	MoneyXlator.pm \
 	RadioBtnXlator.pm \
-	Request.pm \
 	StringCatXlator.pm \
 	StringXlator.pm \
 	TaxId1Xlator.pm \

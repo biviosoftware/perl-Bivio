@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Strings::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Strings - 
+Bivio::UI::PDF::Strings - contains various string used by the PDF code.
 
 =head1 SYNOPSIS
 

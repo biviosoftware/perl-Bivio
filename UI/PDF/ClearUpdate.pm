@@ -6,7 +6,8 @@ $Bivio::UI::PDF::ClearUpdate::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 =head1 NAME
 
-Bivio::UI::PDF::ClearUpdate - 
+Bivio::UI::PDF::ClearUpdate - a base class for PDF updates that are created
+by the PDF code or parsed by it.
 
 =head1 SYNOPSIS
 

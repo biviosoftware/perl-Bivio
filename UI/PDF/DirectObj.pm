@@ -6,7 +6,7 @@ $Bivio::UI::PDF::DirectObj::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::DirectObj - 
+Bivio::UI::PDF::DirectObj - a base class for all PDF direct objects.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,8 @@ $Bivio::UI::PDF::Form::RadioBtnXlator::VERSION = sprintf('%d.%02d', q$Revision$ 
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::RadioBtnXlator - 
+Bivio::UI::PDF::Form::RadioBtnXlator - makes a group of PDF buttons act
+like a radio button.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Xref::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Xref - 
+Bivio::UI::PDF::Xref - encapsulates the cross reference section of a PDF file.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,8 @@ $Bivio::UI::PDF::OpaqueUpdate::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/
 
 =head1 NAME
 
-Bivio::UI::PDF::OpaqueUpdate - 
+Bivio::UI::PDF::OpaqueUpdate - a PDF update whose contents have not been
+examined by the PDF code.
 
 =head1 SYNOPSIS
 

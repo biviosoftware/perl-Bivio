@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Dictionary::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g)
 
 =head1 NAME
 
-Bivio::UI::PDF::Dictionary - 
+Bivio::UI::PDF::Dictionary - encapsulates a PDF dictionary direct object.
 
 =head1 SYNOPSIS
 

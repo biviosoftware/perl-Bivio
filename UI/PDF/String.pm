@@ -6,7 +6,8 @@ $Bivio::UI::PDF::String::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::String - 
+Bivio::UI::PDF::String - base class for the two kinds of direct string object:
+string and angle.
 
 =head1 SYNOPSIS
 

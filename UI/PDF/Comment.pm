@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Comment::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Comment - 
+Bivio::UI::PDF::Comment - encapsulates a PDF comment object.
 
 =head1 SYNOPSIS
 

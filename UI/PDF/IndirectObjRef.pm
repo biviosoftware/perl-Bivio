@@ -6,7 +6,8 @@ $Bivio::UI::PDF::IndirectObjRef::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d
 
 =head1 NAME
 
-Bivio::UI::PDF::IndirectObjRef - 
+Bivio::UI::PDF::IndirectObjRef - encapsulates a PDF indirect object reference
+direct object.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,8 @@ $Bivio::UI::PDF::Regex::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Regex - 
+Bivio::UI::PDF::Regex - contains various regular expressions used by the
+PDF code.
 
 =head1 SYNOPSIS
 

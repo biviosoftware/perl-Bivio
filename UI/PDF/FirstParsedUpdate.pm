@@ -6,7 +6,8 @@ $Bivio::UI::PDF::FirstParsedUpdate::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 =head1 NAME
 
-Bivio::UI::PDF::FirstParsedUpdate - 
+Bivio::UI::PDF::FirstParsedUpdate - encapsulates a PDF parsed update that is
+the first one in a PDF file.
 
 =head1 SYNOPSIS
 

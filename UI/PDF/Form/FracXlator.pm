@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Form::FracXlator::VERSION = sprintf('%d.%02d', q$Revision$ =~ /
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::FracXlator - 
+Bivio::UI::PDF::Form::FracXlator - translates thefractional part of a number.
 
 =head1 SYNOPSIS
 

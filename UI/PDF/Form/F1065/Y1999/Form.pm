@@ -6,7 +6,8 @@ $Bivio::UI::PDF::Form::F1065::Y1999::Form::VERSION = sprintf('%d.%02d', q$Revisi
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::F1065::Y1999::Form - 
+Bivio::UI::PDF::Form::F1065::Y1999::Form - the Form object referenced by the
+task block for form 1065, 1999.
 
 =head1 SYNOPSIS
 

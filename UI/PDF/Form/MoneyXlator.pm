@@ -6,7 +6,8 @@ $Bivio::UI::PDF::Form::MoneyXlator::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::MoneyXlator - 
+Bivio::UI::PDF::Form::MoneyXlator - translates an arbitrary number to one with
+two decimal places.
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::PDF::ArrayIterator::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+
 
 =head1 NAME
 
-Bivio::UI::PDF::ArrayIterator - 
+Bivio::UI::PDF::ArrayIterator - iterates over a perl array.
 
 =head1 SYNOPSIS
 

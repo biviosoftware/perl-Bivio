@@ -6,7 +6,7 @@ $Bivio::UI::PDF::Form::IntXlator::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::IntXlator - 
+Bivio::UI::PDF::Form::IntXlator - translates the integer part of a number.
 
 =head1 SYNOPSIS
 
