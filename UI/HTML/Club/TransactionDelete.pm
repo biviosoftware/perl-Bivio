@@ -17,30 +17,24 @@ Bivio::UI::HTML::Club::TransactionDelete - transaction delete form UI
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::PageForm>
+L<Bivio::UI::HTML::DescriptivePage>
 
 =cut
 
-use Bivio::UI::HTML::PageForm;
-@Bivio::UI::HTML::Club::TransactionDelete::ISA = ('Bivio::UI::HTML::PageForm');
+use Bivio::UI::HTML::DescriptivePage;
+@Bivio::UI::HTML::Club::TransactionDelete::ISA = ('Bivio::UI::HTML::DescriptivePage');
 
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Club::TransactionDelete> transaction delete form UI.
-Shows a table of all transaction entries and OK and Cancel to really do it.
+Shows a table of all transaction entries.
 
 =cut
 
 #=IMPORTS
 use Bivio::Biz::Model::EntryList;
 use Bivio::Biz::Model::RealmTransaction;
-use Bivio::Type::Integer;
-use Bivio::Type::TaxCategory;
-use Bivio::UI::HTML::Club::Page;
-use Bivio::UI::HTML::Widget::AmountCell;
 use Bivio::UI::HTML::Widget::ClearDot;
-use Bivio::UI::HTML::Widget::Director;
-use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::DateTime;
 
@@ -51,15 +45,15 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="create_fields"></a>
+=for html <a name="create_content"></a>
 
-=head2 create_fields() : array_ref
+=head2 create_content() : Bivio::UI::HTML::Widget
 
-Create Grid I<values> for this form.
+Create widgets.
 
 =cut
 
-sub create_fields {
+sub create_content {
     my($self) = @_;
 
     # list of entries
@@ -80,20 +74,11 @@ sub create_fields {
 
     # super table with transaction info
     # followed by the entry table for that transaction
-    return [
+    return Bivio::UI::HTML::Widget::Grid->new({pad => 5, values => [
 	[
-	    Bivio::UI::HTML::Widget::String->new({
-		value => 'Date',
-		string_font => 'table_heading',
-	    }),
-	    Bivio::UI::HTML::Widget::String->new({
-		value => 'Created By',
-		string_font => 'table_heading',
-	    }),
-	    Bivio::UI::HTML::Widget::String->new({
-		value => 'Remark',
-		string_font => 'table_heading',
-	    }),
+	    $self->string('Date', 'table_heading'),
+	    $self->string('Created By', 'table_heading'),
+	    $self->string('Remark', 'table_heading'),
 	],
 	[
 	    Bivio::UI::HTML::Widget::LineCell->new({
@@ -104,14 +89,12 @@ sub create_fields {
 	[
 	    Bivio::UI::HTML::Widget::DateTime->new({
 		mode => 'DATE',
-		value => ['RealmTransaction.date_time'],
+		value => ['Bivio::Biz::Model::RealmTransaction', 'date_time'],
+		string_font => 'table_cell',
 	    }),
-	    Bivio::UI::HTML::Widget::String->new({
-		value => ['RealmTransaction.user_name',],
-	    }),
-	    Bivio::UI::HTML::Widget::String->new({
-		value => ['RealmTransaction.remark'],
-	    }),
+	    $self->string(['RealmTransaction.user_name'], 'table_cell'),
+	    $self->string(['Bivio::Biz::Model::RealmTransaction', 'remark'],
+		   'table_cell'),
 	],
 	[
 	    Bivio::UI::HTML::Widget::Grid->new({
@@ -127,17 +110,19 @@ sub create_fields {
 	    }),
 	],
 	[
-	    Bivio::UI::HTML::Widget::Join->new({
-		values => ['&nbsp;']
-	    }),
+	    $self->join('&nbsp;'),
 	],
 	[
 	    Bivio::UI::HTML::Widget::String->new({
 		cell_colspan => 3,
 		value => 'Delete this transaction?',
+		string_font => 'table_cell',
 	    }),
 	],
-    ];
+	[
+	    $self->form('Bivio::Biz::Model::TransactionDeleteForm', []),
+	],
+    ]});
 }
 
 =for html <a name="execute"></a>
@@ -156,34 +141,16 @@ sub execute {
 	p => $entry->get('realm_transaction_id'),
     });
 
-    my($tran) = Bivio::Biz::Model::RealmTransaction->new($req);
-    $tran->load(realm_transaction_id => $entry->get('realm_transaction_id'));
-    my($tran_user_realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($txn) = Bivio::Biz::Model::RealmTransaction->new($req);
+    $txn->load(realm_transaction_id => $entry->get('realm_transaction_id'));
+    my($txn_user_realm) = Bivio::Biz::Model::RealmOwner->new($req);
     # need to unauth_load so the current club realm isn't used instead
-    $tran_user_realm->unauth_load(realm_id =>
-	    $tran->get_model('User')->get('user_id'));
-    $req->put('RealmTransaction.date_time' => $tran->get('date_time'),
-	    'RealmTransaction.user_name' =>
-	    $tran_user_realm->get('display_name'),
-	    'RealmTransaction.remark' => $tran->get('remark'));
+    $txn_user_realm->unauth_load(realm_id =>
+	    $txn->get_model('User')->get('user_id'));
+    $req->put('RealmTransaction.user_name' =>
+	    $txn_user_realm->get('display_name'));
 
-    $req->put(page_content => $self);
-    Bivio::UI::HTML::Club::Page->execute($req);
-    return;
-}
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Sets attributes on self used by SUPER.
-
-=cut
-
-sub initialize {
-    my($self) = @_;
-    $self->put(form_model => ['Bivio::Biz::Model::TransactionDeleteForm']);
-    $self->SUPER::initialize;
+    $self->SUPER::execute($req);
     return;
 }
 
