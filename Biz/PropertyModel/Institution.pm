@@ -58,8 +58,6 @@ sub internal_initialize {
     my($property_info) = {
 	'institution_id' => ['Internal ID',
 		Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-	'club_id' => ['Internal Club ID',
-		Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
 	'name' => ['Name',
 		Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
     };
