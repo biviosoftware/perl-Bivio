@@ -127,7 +127,7 @@ sub execute_process {
     my($proto, $req) = @_;
 
     my($payment) = $req->unsafe_get('Bivio::Biz::Model::ECPayment');
-    $payment = Bivio::Biz::Model::ECPayment->new($req)->load_from_request
+    $payment = Bivio::Biz::Model::ECPayment->new($req)->load_this_from_request
             unless defined($payment);
     $payment->process_payment($req);
 #TODO: This is kinda neat, but maybe too much of a hack?
