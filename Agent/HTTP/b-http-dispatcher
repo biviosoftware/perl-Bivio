@@ -275,7 +275,7 @@ SetHandler perl-script
 PerlHandler Apache::Status
 </Location>
 
-<LocationMatch "^/">
+<LocationMatch "^/[a-zA-Z0-9_]{3,}($|/)">
 AuthName bivio:<$port>
 AuthType Basic
 SetHandler perl-script
