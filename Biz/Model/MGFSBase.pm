@@ -225,7 +225,7 @@ sub post_import {
 
     my($date) = _get_oldest_quote_date($req);
     _resolve_symbol_clashes($req);
-    _audit_last_import_date($req, $date);
+#    _audit_last_import_date($req, $date);
     _align_nasdaq_quotes($req, $date);
 
     Bivio::SQL::Connection->commit;
