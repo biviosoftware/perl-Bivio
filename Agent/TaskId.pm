@@ -698,7 +698,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         pub/join
         Bivio::Biz::Model::RealmInvite->execute_accept
-        Bivio::Biz::Model::Lock->execute_accounting_import
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmInviteAcceptForm
         Bivio::UI::HTML::General::InviteAccept
         cancel=HTTP_DOCUMENT
@@ -1280,7 +1280,7 @@ my(@_CFG) = (
 #        CLUB
 #        ACCOUNTING_WRITE&MEMBER_WRITE
 #        ?/test_job
-#        Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
+#        Bivio::Biz::Model::Lock
 #        Bivio::Biz::Action::TestJob
 #        next=CLUB_HOME
 #    )],
@@ -1292,7 +1292,7 @@ my(@_CFG) = (
         ?/accounting/import
         Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::Club->execute_load
-        Bivio::Biz::Model::Lock->execute_accounting_import
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::LegacyClubUploadForm
         Bivio::UI::HTML::Club::LegacyClubUpload
         next=CLUB_LEGACY_SECURITY_RECONCILIATION
@@ -1330,7 +1330,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         ?/accounting/clear
         Bivio::Biz::Action::NotDemoClub
-        Bivio::Biz::Model::Lock->execute_accounting_import
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::Club->execute_load
         Bivio::Biz::Model::ClearAccountingForm
         Bivio::UI::HTML::Club::ClearAccounting
@@ -1352,7 +1352,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         !
-        Bivio::Biz::Model::Lock->execute_accounting_import
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::AccountingImport
     )],
     [qw(

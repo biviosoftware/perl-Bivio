@@ -214,23 +214,19 @@ ALTER TABLE $table MODIFY $column $type
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-
-    use Bivio::Agent::Request;
-    use Bivio::Biz::Model::RealmOwner;
-    use Bivio::Data::EW::ClubImporter;
-
-    # changes MTCG entries to LTCG where appropriate for a select
-    # group of clubs identified as having invalid data
-
-    my($realm) = Bivio::Biz::Model::RealmOwner->new(
-	    Bivio::Agent::Request->get_current_or_new);
-    foreach my $name (qw(aic beachtraders doctors top2)) {
-	unless ($realm->unauth_load(name => $name)) {
-	    print(STDERR "skipping $name\n");
-	    next;
-	}
-	Bivio::Data::EW::ClubImporter->fix_incorrect_gain_types($realm);
-    }
+    _do_sql('
+DROP TABLE lock_t
+/
+CREATE TABLE lock_t (
+  realm_id NUMBER(18) primary key
+)
+  organization INDEX pctfree 95 initrans 255 storage (
+  initial 1m next 1m minextents 1 maxextents 500 freelists 32
+  pctincrease 0)
+  tablespace realm_data
+  nologging
+/
+');
     return;
 }
 
