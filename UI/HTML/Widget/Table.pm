@@ -143,9 +143,18 @@ on Bivio::UI::HTML.page_left_margin.
 
 Widgets which will be rendered as the last row in the table.
 
+=item heading_align : string [S]
+
+How to align the heading.
+The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TH> tag.
+
+May be specified on the table or overriden by the cell.
+
 =item heading_font : font [table_heading]
 
 Font to use for table headings.
+
+May be specified on the table or overriden by the cell.
 
 =item heading_separator : boolean [show_headings]
 
@@ -296,11 +305,6 @@ numeric columns. By default, numeric columns always summarize.
 
 The widget which will be used to render the column. By default the column
 widget is based on the column's field type.
-
-=item heading_align : string [S]
-
-How to align the heading.
-The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TH> tag.
 
 =back
 
@@ -685,8 +689,9 @@ sub _get_heading {
 	$heading = Bivio::UI::HTML::Widget::String->new({
 	    value => length($heading)
 	    ? $_VS->vs_text($list->simple_package_name, $heading) : $heading,
-	    string_font => $self->get_or_default(
-		    'heading_font', 'table_heading'),
+	    string_font => $cell->get_or_default(
+		    'heading_font',
+		    $self->get_or_default('heading_font', 'table_heading')),
 	});
     }
 
@@ -723,7 +728,8 @@ sub _get_heading {
     }
     $heading->put(
             column_nowrap => 1,
-            column_align => $cell->get_or_default('heading_align', 'S'),
+            column_align => $cell->get_or_default('heading_align',
+		    $self->get_or_default('heading_align', 'S')),
             column_span => $cell->get_or_default('column_span', 1),
             heading_expand => $cell->unsafe_get('column_expand'),
            );
