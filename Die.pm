@@ -254,6 +254,23 @@ sub die {
     CORE::die($_IN_CATCH ? "$self\n" : $self->as_string);
 }
 
+=for html <a name="eval"></a>
+
+=head2 eval(code sub) : any
+
+Calls eval on I<sub>, but turns off any handle_die processing.  This should be
+used everyhwere in place of a normal eval.  Returns the result of I<sub>.
+
+=cut
+
+sub eval {
+    my($self, $sub) = @_;
+    local($SIG{__DIE__});
+    return eval {
+	&$sub();
+    };
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(string class, hash cfg)
