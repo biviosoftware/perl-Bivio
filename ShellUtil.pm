@@ -534,21 +534,6 @@ sub main {
     return;
 }
 
-=for html <a name="parse_date"></a>
-
-=head2 static parse_date(string date) : string
-
-Returns the internal form of a date, from a literal. Dies on error.
-
-=cut
-
-sub parse_date {
-    my($proto, $date) = @_;
-    my($d, $err) = Bivio::Type::Date->from_literal($date);
-    die($err) if ($err);
-    return $d;
-}
-
 =for html <a name="piped_exec"></a>
 
 =head2 static piped_exec(string command) : string_ref
