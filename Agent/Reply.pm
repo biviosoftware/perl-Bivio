@@ -16,6 +16,7 @@ Bivio::Agent::Reply - a user agent reply
     $reply->set_output_type('image/gif');  # default is 'text/plain'
     $reply->print($image);
     $reply->set_state($reply->OK);
+    $reply->flush();
 
 =cut
 
@@ -25,7 +26,7 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::Agent::Reply> is the complement to
-L<Bivio::Agent::Request|"Bivio::Agent::Request">, it is the output channel
+L<Bivio::Agent::Request>, it is the output channel
 for responses. Initially, a reply is in the NOT_HANDLED state indicating
 that no action has been taken for the corresponding Request.
 
@@ -127,6 +128,18 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="flush"></a>
+
+=head2 abstract flush()
+
+Sends the buffered reply data.
+
+=cut
+
+sub flush {
+    die('abstract method');
+}
 
 =for html <a name="get_output_type"></a>
 
