@@ -35,10 +35,12 @@ and delete interface to the C<club_t> table.
 
 #=IMPORTS
 use Bivio::Biz::ListModel;
+use Bivio::Biz::Model::ClubUserList;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
+use Bivio::Biz::Model::User;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Email;
@@ -81,7 +83,8 @@ my($_EMAIL_LIST) = Bivio::Biz::ListModel->new_anonymous({
 =head2 cascade_delete()
 
 Deletes the club, and all of its related transactions, membership records,
-files, and file server messages.
+files, and file server messages. Also deletes any shadow members which
+are a member of the club.
 
 =cut
 
@@ -152,14 +155,19 @@ sub check_kbytes {
 =head2 delete_instruments_and_transactions()
 
 Deletes all realm instruments and accounting transaction for the club.
+Remove any shadow users which are currently club members.
 This "cleans the slate" for the club books.
 
 =cut
 
 sub delete_instruments_and_transactions {
     my($self) = @_;
-
     my($id) = $self->get('club_id');
+
+    my($req) = $self->get_request;
+    die("can't delete outside of auth_realm")
+	    unless $id == $req->get('auth_id');
+
     foreach my $table (qw(
             realm_instrument_valuation_t
             member_entry_t
@@ -174,6 +182,21 @@ sub delete_instruments_and_transactions {
                 WHERE realm_id=?',
 		[$id]);
     }
+
+    # delete realm's existing shadow members
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+    my($user) = Bivio::Biz::Model::User->new($req);
+    my($list) = Bivio::Biz::Model::ClubUserList->new($req);
+    $list->load_all;
+    while ($list->next_row) {
+	next unless $list->get('RealmOwner.name') =~ /^=/;
+
+	$realm_user->load(user_id => $list->get('RealmUser.user_id'));
+	$realm_user->delete;
+	$user->unauth_load(user_id => $list->get('RealmUser.user_id'));
+	$user->cascade_delete;
+    }
+
     return;
 }
 
