@@ -152,39 +152,54 @@ sub create {
 
 Creates the quota and initial file volumes.
 
-Handles demo club differently.
+Demo club gets smaller default quota. 
 
 =cut
 
 sub create_initial {
     my($proto, $realm, $user_id) = @_;
     my($req) = $realm->get_request;
-    my($fq) = Bivio::Biz::Model::FileQuota->new($req);
     my($realm_id) = $realm->get('realm_id');
 
+    # CReate the quota
+    my($fq) = Bivio::Biz::Model::FileQuota->new($req);
     $fq->create({
 	realm_id => $realm_id,
 	max_kbytes => $realm->is_demo_club()
 	? $fq->DEFAULT_MAX_KBYTES_FOR_DEMO_CLUB() : $fq->DEFAULT_MAX_KBYTES(),
     });
 
+    # Create the volumes
     my($self) = $proto->new($req);
-    my($now) = Bivio::Type::DateTime->now;
     foreach my $v (Bivio::Type::FileVolume->get_list()) {
-	$self->create({
-	    file_id => $v->get_root_directory_id($realm_id),
-	    realm_id => $realm_id,
-	    volume => $v,
-	    directory_id => undef,
-	    name => $v->get_name.$realm_id,
-	    user_id => $user_id,
-	    modified_date_time => $now,
-	    bytes => 0,
-	    is_directory => 1,
-	    aux_info => undef,
-	    content => undef,
-	});
+	$self->create_volume($realm_id, $user_id, $v);
     }
+    return;
+}
+
+=for html <a name="create_volume"></a>
+
+=head2 create_volume(string realm_id, string user_id, Bivio::Type::FileVolume volume)
+
+Creates a volume for this instance.  Should only be used for upgrades.  Use
+L<create_initial|"create_initial"> to create all the volumes for a realm.
+
+=cut
+
+sub create_volume {
+    my($self, $realm_id, $user_id, $volume) = @_;
+    $self->create({
+	file_id => $volume->get_root_directory_id($realm_id),
+	realm_id => $realm_id,
+	volume => $volume,
+	directory_id => undef,
+	name => $volume->get_name.$realm_id,
+	user_id => $user_id,
+	bytes => 0,
+	is_directory => 1,
+	aux_info => undef,
+	content => undef,
+    });
     return;
 }
 
