@@ -33,9 +33,22 @@ use Bivio::Type::Enum;
 C<Bivio::Agent::TaskId> defines all possible "tasks" within bOP site.  A
 structure of a task is defined in L<Bivio::Agent::TaskBivio::Agent::Task>.
 
-The syntax of the configuration table is defined as follows.
+The syntax of the configuration table is defined as follows:
 
-#TODO: Need to describe format.
+    NAME_OF_TASK
+    <unique number for enumerated type>
+    <Bivio::Auth::RealmType>
+    <Bivio::Auth::PermissionSet>
+    <executable object1>
+    <executable object2>
+    ...
+    attribute1=value1
+    attribute2=value2
+    ...
+
+The first two entries are what defines the TaskId enumerated type.
+The subsequent entries are configuration for the Task instance itself.
+See L<Bivio::Agent::Task|Bivio::Agent::Task> for a description.
 
 =cut
 

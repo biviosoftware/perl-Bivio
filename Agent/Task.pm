@@ -39,13 +39,22 @@ The following fields are returned by L<get|"get">:
 
 =item cancel : Bivio::Agent::TaskId [next]
 
-The task_id to go to in other cases.
+The task_id to go to in other cases.  In the case forms, is the "Cancel" task
+of a form.
 
-=item die_actions : hash_ref
+=item die_actions : hash_ref (see below for configuration)
 
 The map of die codes (any enums, actually) to tasks executed when
 the die code is encountered for this task.  I<Only maps if the
 request is from HTTP.>
+Specified in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>
+and passed to L<new|"new"> as:
+
+    DIE_CODE=TASK_ID
+
+The name of a L<Bivio::DieCode|Bivio::DieCode> or a fully
+specified enum, e.g. C<Bivio::TypeError::EXISTS>.  The action
+will be executed if this enum is thrown.
 
 =item form_model : Bivio::Biz::FormModel (computed)
 
@@ -71,10 +80,27 @@ there is a FormModel in I<items>.
 =item permission_set : Bivio::Auth::Permission (required)
 
 L<Bivio::Auth::Permission|Bivio::Auth::PermissionSet> for this task.
+Specified in TaskId and passed to L<new|"new"> as:
+
+    PERMISSION_1&PERMISSION_2
+
+where PERMISSION_n are names of
+L<Bivio::Auth::Permission|Bivio::Auth::Permission>.  All permissions
+must be set for the task to be executable by the current
+L<Bivio::Auth::Role|Bivio::Auth::Role>.
 
 =item realm_type : Bivio::Auth::RealmType (required)
 
 L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
+Specified in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>
+and passed to L<new|"new"> as:
+
+     REALM_TYPE
+
+where REALM_TYPE is one of the names of
+L<Bivio::Auth::RealmType|Bivio::Auth::RealmType>.  This defines
+the security realm, and the names space to find the
+L<Bivio::Biz::Model::RealmOwner|Bivio::Biz::Model::RealmOwner>.
 
 =item require_context : boolean [form_model's require_context]
 
@@ -145,31 +171,19 @@ bound to the I<id>.   The rest of the arguments are
 items to be executed (in order) or mapped.  An executable item must be a
 class with an C<execute> method, of the form C<class-E<gt>method>,
 or a C<CODE> reference, i.e. a C<sub> which takes a C<$req> as
-a parameter.
+a parameter.  Here are some examples:
+
+    Model.UserLoginForm
+    View.user-login
+
+See L<Bivio::Delegate::SimpleTaskId|Bivio::Delegate::SimpleTaskId>
+and L<Bivio::PetShop::Agent::TaskId|Bivio::PetShop::Agent::TaskId>
+for complete examples.
 
 There may only be one FormModel in the items of a task.
 
 A mapping item is of the form I<name>=I<action>, where I<name>
-and I<action> are mapped as follows:
-
-=over 4
-
-=item cancel : Bivio::Agent::TaskId
-
-The "Cancel" task of a form.  If not specified, defaults to
-the I<next> task.
-
-=item next
-
-identifies "OK" task of a form.  All tasks which have an
-L<Bivio::Biz::FormModel|Bivio::Biz::FormModel> as an executable
-item, must have a I<next>.
-
-=item I<DIE_CODE>
-
-The name of a L<Bivio::DieCode|Bivio::DieCode> or a fully
-specified enum, e.g. C<Bivio::TypeError::EXISTS>.  The action
-will be executed if this enum is thrown.
+and I<action> are attributes as defined above.
 
 =back
 
