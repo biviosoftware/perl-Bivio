@@ -69,13 +69,38 @@ Bivio::IO::Trace->register;
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
-    $fields ->{content} = Bivio::UI::HTML::Widget::Indirect->new({
- 	      value => 0,
-	      cell_rowspan => 1,
-	      cell_compact => 1,
-	      cell_align => 'N',
- 	    });
+    $fields->{attachment} = Bivio::UI::HTML::Widget::Indirect->new({
+	value => 0,
+	cell_rowspan => 1,
+	cell_compact => 1,
+	cell_align => 'NW',
+    });
+    $fields ->{content} = Bivio::UI::HTML::Widget::Join->new({
+	values => [
+	    '<center>by ',
+	    Bivio::UI::HTML::Widget::Link->new({
+		href => ['->format_mailto',
+		    ['Bivio::Biz::Model::MailMessage', 'from_email'],
+		    ['reply_subject'],
+		],
+		value => Bivio::UI::HTML::Widget::String->new({
+		    value => ['Bivio::Biz::Model::MailMessage', 'from_name'],
+		}),
+	    }),
+	    ' on ',
+	    ['Bivio::Biz::Model::MailMessage', 'date_time',
+		'Bivio::UI::HTML::Format::DateTime'],
+	    ' GMT</center><p><div align=left>',
+	    $fields->{attachment},
+	    '</div>',
+	]
+    });
     $fields->{content}->initialize;
+    $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
+	values => Bivio::UI::HTML::ActionButtons->get_list(
+	    'club_compose_message', 'club_reply_message'),
+    });
+    $fields->{action_bar}->initialize;
     return $self;
 }
 
@@ -101,60 +126,79 @@ sub execute {
     my($s) = '';
     my($esc) = 1;
     my($str) = '';
-    if (defined($req->get('query')) && defined($req->get('query')->{att})) {
-	my($club_name) = $req->get('auth_realm')->get('owner_name');
+    $req->die(Bivio::DieCode::CORRUPT_QUERY()) unless
+	    defined($req->get('query')) && defined($req->get('query')->{att});
+    my($club_name) = $req->get('auth_realm')->get('owner_name');
 	my($attachment_id) = $req->get('query')->{att};
-	$filename = '/'.$club_name.'/messages/html/'.$attachment_id;
-	die("couldn't get mime  body for $attachment_id. Error: $body")
+    my($msg_id, $header_id) = $attachment_id =~ /^(\d+)_(\w+)/;
+    $header_id =~ s/_/./g;
+    my($msg) = Bivio::Biz::Model::MailMessage->new($req);
+    $msg->load(mail_message_id => $msg_id);
+    $filename = '/'.$club_name.'/messages/html/'.$attachment_id;
+    $msg->die(Bivio::DieCode::NOT_FOUND())
 	    unless $_FILE_CLIENT->get($filename, \$body);
-	my($numparts) = _numparts(\$body);
-	if($numparts eq(0)){
-	    _trace('there are zero numparts for this MIME part') if $_TRACE;
-	    my $ctypestr = _content_type(\$body);
-	    if($ctypestr =~ 'text/plain'){$esc = 1;}
-	    #everything we get from the file server should be text/html
-	    if($ctypestr =~ 'text/html'){$esc = 0;}
-	    if($ctypestr =~ "image/"){
-		$esc = 0;
-		$html = "\n<IMG SRC=".$req->format_uri(
+    my($numparts) = _numparts(\$body);
+    if ($numparts eq(0)) {
+	_trace('there are zero numparts for this MIME part') if $_TRACE;
+	my $ctypestr = _content_type(\$body);
+	if ($ctypestr =~ 'text/plain') {
+	    $esc = 1;
+	}
+	#everything we get from the file server should be text/html
+	if ($ctypestr =~ 'text/html') {
+	    $esc = 0;
+	}
+	if ($ctypestr =~ "image/") {
+	    $esc = 0;
+	    $html = "\n<IMG SRC=".$req->format_uri(
 		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
 		    "img=".$attachment_id).">";
-	    }
-	    else {
-		$body =~ /(?:X-BivioNumParts: \d*)\n(.*)/m;
-		$html = $esc ? Bivio::Util::escape_html($1) : $1;
-	    }
-	    $str = Bivio::UI::HTML::Widget::Join->new({
-		values => [$html],
-	    });
-	    $str->initialize();
-	    $fields->{content}->put(value => $str);
 	}
-	else{
-	    my(@urls);
-	    for(my $i = 0; $i < $numparts; $i++){
-		my($attachment) = $filename."_$i";
-		push(@urls,
-			Bivio::UI::HTML::Widget::Link->new({
-			    href  => $req->format_uri(
-				    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT(),
-				    "att=".$attachment),
-			    value => Bivio::UI::HTML::Widget::String->new({
-				value => 'Attachment '.$i}),
-			    }));
-		push(@urls, "<BR>");
-	    }
-	    my($mime_urls) = Bivio::UI::HTML::Widget::Join->new({
-		values => \@urls});
-	    $mime_urls->initialize;
-	    $fields->{content}->put(value => $mime_urls);
+	else {
+#TODO: This is totally wrong, I suspect.  If no index found, then a total
+#      hack.
+#TODO: More hackery to fix text/plain being incorrect here.  It is already
+#      been converted to html, but the header still has text/plain...
+	    my($s) = substr($body, index($body, "\n\n") + 1);
+	    $html = $s =~ /^\s*\<!DOC/i ? $s
+		    : $esc ? Bivio::Util::escape_html($s) : $s;
 	}
+	$str = Bivio::UI::HTML::Widget::Join->new({
+	    values => [$html],
+	});
+	$str->initialize();
+	$fields->{attachment}->put(value => $str);
     }
+    else {
+	my(@urls);
+	for (my $i = 0; $i < $numparts; $i++) {
+	    my($attachment) = $attachment_id."_$i";
+	    push(@urls,
+		    Bivio::UI::HTML::Widget::Link->new({
+			href  => $req->format_uri(
+				Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT(),
+				"att=".$attachment),
+			value => Bivio::UI::HTML::Widget::String->new({
+			    value => 'Attachment '.$i}),
+		    }));
+	    push(@urls, "<BR>");
+	}
+	my($mime_urls) = Bivio::UI::HTML::Widget::Join->new({
+	    values => \@urls});
+	$mime_urls->initialize;
+	$fields->{attachment}->put(value => $mime_urls);
+    }
+    my($subject) = $msg->get('subject');
+    my($reply_subject) =
+	    Bivio::UI::HTML::Format::ReplySubject->get_widget_value($subject);
     $req->put(
-	    page_subtopic => "", 
-	    page_heading => "", 
+	    page_subtopic => "Attachment $header_id",
+	    page_heading => "Attachment $header_id: $subject",
 	    page_content => $fields->{content},
-	    page_action_bar => 0,
+	    page_action_bar => $fields->{action_bar},
+#TODO: Should really be detail with a list generate of attachments...
+	    page_type => Bivio::UI::PageType::NONE(),
+	    reply_subject => $reply_subject,
 	    );
 #	    body => $s,
     Bivio::UI::HTML::Club::Page->execute($req);
@@ -189,11 +233,8 @@ sub handle_config {
 #
 sub _content_type {
     my($body) = @_;
-    my $i = index($$body, 'Content-Type: ');
-    my($ctypestr) = substr($$body, $i);
-    $i = index($ctypestr, "\n");
-    $ctypestr = substr($ctypestr, 0, $i);
-    return $ctypestr;
+    return $$body =~ /^(Content-Type:\s*\S+)/
+	    ? $1 : 'Content-Type: text/plain';
 }
 
 # _numparts(scalar_ref) : int
