@@ -640,6 +640,7 @@ b-realm-role -r club_index edit ADMINISTRATOR - \
 #   * No MAIL_WRITE
 #   * MAIL_POST only for user+
 #   * No MAIL_FORWARD (only for guest+)
+#   * Members and guests have very limited privs
 #
 b-realm-role -r club_cafe edit ANONYMOUS - \
     +DOCUMENT_READ \
@@ -653,28 +654,27 @@ b-realm-role -r club_cafe edit WITHDRAWN - \
     +USER
 b-realm-role -r club_cafe edit GUEST - \
     +WITHDRAWN \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
     +ANY_REALM_USER \
-    +INVESTMENT_READ \
-    +MAIL_FORWARD \
-    +MEMBER_READ \
-    +MOTION_READ
+    +MAIL_FORWARD
 b-realm-role -r club_cafe edit MEMBER - \
     +GUEST \
-    +DOCUMENT_WRITE \
     +MAIL_RECEIVE
 b-realm-role -r club_cafe edit ACCOUNTANT - \
     +MEMBER \
+    +ACCOUNTING_READ \
     +ACCOUNTING_WRITE \
+    +ACCOUNT_READ \
+    +ADMIN_READ \
     +ADMIN_WRITE \
     +DEBUG_ACTION \
+    +DOCUMENT_WRITE \
     +FILE_ADMIN \
+    +INVESTMENT_READ \
     +MAIL_ADMIN \
+    +MEMBER_READ \
     +MEMBER_WRITE \
+    +MOTION_READ \
     +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
+    +REALM_PUBLICIZE
 b-realm-role -r club_cafe edit ADMINISTRATOR - \
     +ACCOUNTANT
