@@ -65,6 +65,7 @@ use Bivio::Mail::RFC822;
 
 #=VARIABLES
 my($_IGNORE) = IGNORE_PREFIX();
+my($_INVALID) = INVALID_PREFIX();
 my($_ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
 
 =head1 METHODS
@@ -111,6 +112,20 @@ sub from_literal {
 #	    unless /\@/;
     # Some other error
     return (undef, Bivio::TypeError::EMAIL());
+}
+
+=for html <a name="invalidate"></a>
+
+=head2 invalidate(string_ref email)
+
+Invalidate email address and truncate if necessary
+
+=cut
+
+sub invalidate {
+    my($proto, $email) = @_;
+    $$email = substr($_INVALID . $$email, 0, $proto->get_width);
+    return;
 }
 
 =for html <a name="is_ignore"></a>
