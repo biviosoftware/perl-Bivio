@@ -60,12 +60,7 @@ sub new {
     $fields->{action_bar} = $self->action_bar('club_post_message');
     $fields->{action_bar}->initialize;
 
-#TODO: Just a temporary message!
-    my($empty_message) = $self->join(<<'EOF');
-No running subscriptions.
-Subscribe to <A HREF="subscription/account-sync">AccountSync</A>
-or <A HREF="subscription/account-keeper">AccountKeeper</A>!
-EOF
+    my($empty_message) = $self->join('No running subscriptions.');
     my($table) = Bivio::UI::HTML::Widget::Table->new({
         list_class => 'ECSubscriptionList',
 	expand => 1,
