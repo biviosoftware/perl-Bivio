@@ -46,7 +46,9 @@ Which form are we dealing with.
 
 =item label: string
 
-The label used for the error.
+=item label: array_ref
+
+The label string or widget value used in the error message.
 
 =back
 
@@ -127,7 +129,7 @@ sub render {
 			    $source, $model, $fields->{field},
 			    ref($fields->{label}) eq 'ARRAY'
 			    ? $source->get_widget_value(
-				    @{$fields->{label}}) : '',
+				    @{$fields->{label}}) : $fields->{label},
 			    $error)
 		    .$s."<br>\n";
 	}
