@@ -91,7 +91,6 @@ sub get_delegate_info {
 	    Model.ItemListForm
 	    View.items
 	    next=CART
-	    MISSING_COOKIES=MISSING_COOKIES
 	)],
 	[qw(
 	    ITEM_DETAIL
@@ -103,7 +102,6 @@ sub get_delegate_info {
 	    Model.ItemForm
 	    View.item
 	    next=CART
-	    MISSING_COOKIES=MISSING_COOKIES
 	)],
 	[qw(
 	    CART
@@ -115,7 +113,6 @@ sub get_delegate_info {
 	    View.cart
 	    next=CART
 	    want_query=0
-	    MISSING_COOKIES=MISSING_COOKIES
 	)],
 	[qw(
 	    CHECKOUT
@@ -124,7 +121,6 @@ sub get_delegate_info {
 	    ANYBODY
 	    Model.CartItemList->execute_load_all
 	    View.checkout
-	    MISSING_COOKIES=MISSING_COOKIES
 	)],
 	[qw(
 	    PLACE_ORDER
@@ -134,7 +130,6 @@ sub get_delegate_info {
 	    Model.OrderForm
 	    View.place-order
 	    next=ORDER_COMMIT
-	    MISSING_COOKIES=MISSING_COOKIES
 	)],
 	[qw(
 	    SHIPPING_ADDRESS
@@ -177,7 +172,6 @@ sub get_delegate_info {
 	    Model.UserAccountForm
 	    View.account
 	    next=USER_ACCOUNT_CREATED
-	    MISSING_COOKIES=MISSING_COOKIES
 	)],
 	[qw(
 	    USER_ACCOUNT_EDIT
@@ -211,10 +205,9 @@ sub get_delegate_info {
 	    Model.OrderStatus->execute_load_parent
 	    Model.CartItemList->execute_load_for_order
 	    View.order-commit
-	    MISSING_COOKIES=MISSING_COOKIES
 	)],
 	[qw(
-	    MISSING_COOKIES
+            DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
 	    516
 	    GENERAL
 	    ANYBODY
@@ -229,7 +222,6 @@ sub get_delegate_info {
 	    Model.UserLoginForm
 	    View.login
 	    next=CART
-	    MISSING_COOKIES=MISSING_COOKIES
 	)],
 	[qw(
 	    LOGOUT
