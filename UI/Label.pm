@@ -673,6 +673,10 @@ Value',
     HELP_OFF_ALT => 'Get help using bivio',
     REGISTER_R_OFF_ALT => 'Become a bivio user',
     BIVIO_POWER_ALT => 'Powered by bivio',
+    services => [
+	['', 'image_alt'] => 'Club Accounting - Premium Support - AccountSync'
+	             .' - AccountKeeper - Professional Funds',
+    ],
 
     # Search
     ['SEARCH_STRING', 'SEARCH_BUTTON']
@@ -791,7 +795,6 @@ sub _map {
 		    unless ref($value) eq 'ARRAY';
 	# Explode the map
 	$value = _compile({}, $value);
-	Bivio::Die->
 	Bivio::Die->die($name, '=>', $value, ': missing default')
 		    unless defined($value->{''});
     }
