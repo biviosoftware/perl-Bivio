@@ -61,9 +61,11 @@ my($_SELF) = __PACKAGE__->new({
 	    $ra->{support_email} = 'network@networkinvestments.com';
 	    $ra->{support_phone} = '+1 (858) 638-7245';
 
-	    $fc->value(want_secure => 1);
-	    $fc->value(want_help => 0);
+	    $fc->value(want_ads => 0);
 	    $fc->value(want_bulletin => 0);
+	    $fc->value(want_help => 0);
+	    $fc->value(want_public_search => 0);
+	    $fc->value(want_secure => 1);
 	    $fc->value(want_tos => 0);
 	    $fc->value(club_or_fund => 'fund');
 
@@ -76,7 +78,7 @@ my($_SELF) = __PACKAGE__->new({
 
 	    # Home page is special
 	    $fc->value(home_page => Bivio::Biz::Action::ClientRedirect->new(
-		    '/networkinvestments/files/index.htm'));
+		    '/network_lp/files/index.htm'));
 
 	    # These are required names, which are checked by page.
 	    _footer($fc);

@@ -483,7 +483,8 @@ sub initialization_complete {
     	    header_height logo_icon site_name home_alt_text
             want_secure page_left_margin table_default_align
             home_page descriptive_page_width scene_show_profile
-            request_attrs want_bulletin want_help)) {
+            request_attrs want_bulletin want_help want_public_search
+            want_ads)) {
 	push(@bad, $n) unless defined($self->get_value($n));
     }
     Bivio::Die->die($self, ': missing names: ', \@bad)
@@ -503,8 +504,16 @@ Initializes Page groups for standard widgets.
 sub initialize_standard_support {
     my($self) = @_;
 
-    # Home page isn't special
+    # Fund attributes
+    $self->group(club_or_fund => 'club');
+    $self->group(want_ads => 1);
+    $self->group(want_bulletin => 1);
+    $self->group(want_help => 1);
+    $self->group(want_public_search => 1);
     $self->group(want_secure => 0);
+    $self->group(want_tos => 1);
+
+    # Home page isn't special
     $self->group(home_page => '');
     $self->group(descriptive_page_width => 600);
 
@@ -540,10 +549,6 @@ sub initialize_standard_support {
     }));
     $self->group(image_menu_separator_width => 1);
     $self->group(text_menu_left_cell => undef);
-    $self->group(want_help => 1);
-    $self->group(want_bulletin => 1);
-    $self->group(want_tos => 1);
-    $self->group(club_or_fund => 'club');
 
     # Used by standard header
     $self->group(logo_icon_width_as_html =>
