@@ -165,10 +165,12 @@ sub _auth_user {
 	    {request => $self, entity => $name, message => 'user not found'})
 	    unless $user->unauth_load(name => $name)
 		    && defined($user->get('password'));
+#TODO: set cookie for number of login attempts
     Bivio::Die->die(Bivio::DieCode::AUTH_REQUIRED(),
 	    {request => $self, message => 'password mismatch',
 		entity => $name, auth_user => $user})
-    	    unless $user->get('password') eq $password;
+    	    unless Bivio::Type::Password->is_equal($user->get('password'),
+		    $password);
     return $user;
 }
 
