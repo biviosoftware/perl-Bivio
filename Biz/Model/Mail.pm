@@ -33,6 +33,24 @@ which is stored in mail_t and file_t, volume MAIL & MAIL_CACHE
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="_MAIL_PART_URL"></a>
+
+=head2 _MAIL_PART_URL : string
+
+The URL that's used in HTML message parts to replace "cid:<content-id>"
+links. The actual content-id as appended to this constant string.
+
+=cut
+
+sub MAIL_PART_URL {
+    return '../../mail-part?t=';
+}
+
 #=IMPORTS
 use MIME::Parser;
 use Bivio::IO::Trace;
@@ -120,6 +138,7 @@ sub create {
     $self->SUPER::create($values);
     $mail_id = $self->get('mail_id');
 
+# TODO: Remove this procedure after the migration is completed
     $self->setup_club($realm_owner);
 
     my($volume) = Bivio::Type::FileVolume::MAIL;
@@ -148,9 +167,9 @@ sub create {
             $user_id, $mail_id);
 
     $self->update({
-        rfc822_id => $rfc822_id,
+        rfc822_file_id => $rfc822_id,
         bytes => $bytes,
-        cache_id => $cache_id
+        cache_file_id => $cache_id
     });
     return;
 }
@@ -213,21 +232,19 @@ sub delete {
         }
     }
     my($file) = Bivio::Biz::Model::File->new($req);
-    if( defined($properties->{rfc822_id}) ) {
-        _trace('Deleting file, id=', $properties->{rfc822_id}) if $_TRACE;
-        $file->load(
-                file_id => $properties->{rfc822_id},
+    if( defined($properties->{rfc822_file_id}) ) {
+        _trace('Deleting file, id=', $properties->{rfc822_file_id}) if $_TRACE;
+        $file->delete(
+                file_id => $properties->{rfc822_file_id},
                 volume => Bivio::Type::FileVolume::MAIL,
                );
-        $file->delete;
     }
-    if( defined($properties->{cache_id}) ) {
-        _trace('Deleting file, id=', $properties->{cache_id}) if $_TRACE;
-        $file->load(
-                file_id => $properties->{cache_id},
+    if( defined($properties->{cache_file_id}) ) {
+        _trace('Deleting file, id=', $properties->{cache_file_id}) if $_TRACE;
+        $file->delete(
+                file_id => $properties->{cache_file_id},
                 volume => Bivio::Type::FileVolume::MAIL_CACHE,
                );
-        $file->delete;
     }
     return $self->SUPER::delete(@_);
 }
@@ -236,7 +253,9 @@ sub delete {
 
 =head2 setup_club(Bivio::Biz::Model::RealmOwner club) :
 
-Setup necessary volumes
+Setup necessary volumes. Only needed during the transition phase.
+Can be removed afterwards because newly created clubs will have
+all current volumes initialized.
 
 =cut
 
@@ -245,7 +264,7 @@ sub setup_club {
     my($req) = $self->unsafe_get_request;
 
     my($club_id) = $realm_owner->get('realm_id');
-    
+
     # Get club admin (pick first in list)
     my($admins) = Bivio::Biz::Model::RealmAdminList->new($req);
     $admins->unauth_load_all({auth_id => $club_id});
@@ -298,41 +317,41 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'mail_t',
 	columns => {
-            mail_id => ['Bivio::Type::PrimaryId',
+            mail_id => ['PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
+            realm_id => ['PrimaryId',
     		Bivio::SQL::Constraint::NONE()],
-            message_id => ['Bivio::Type::Line',
+            message_id => ['Line',
     		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
-            date_time => ['Bivio::Type::DateTime',
+            date_time => ['DateTime',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            from_name => ['Bivio::Type::Line',
+            from_name => ['Line',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            from_name_sort => ['Bivio::Type::Line',
+            from_name_sort => ['Line',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            from_email => ['Bivio::Type::Line',
+            from_email => ['Email',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            reply_to_email => ['Bivio::Type::Line',
+            reply_to_email => ['Email',
     		Bivio::SQL::Constraint::NONE()],
-            subject => ['Bivio::Type::Line',
+            subject => ['Line',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            subject_sort => ['Bivio::Type::Line',
+            subject_sort => ['Line',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            is_public => ['Bivio::Type::Boolean',
+            is_public => ['Boolean',
     		Bivio::SQL::Constraint::NONE()],
-            is_inline_only => ['Bivio::Type::Boolean',
+            is_inline_only => ['Boolean',
     		Bivio::SQL::Constraint::NONE()],
-            is_thread_root => ['Bivio::Type::Boolean',
+            is_thread_root => ['Boolean',
     		Bivio::SQL::Constraint::NONE()],
-            thread_root_id => ['Bivio::Type::PrimaryId',
+            thread_root_id => ['PrimaryId',
     		Bivio::SQL::Constraint::NONE()],
-            thread_parent_id => ['Bivio::Type::PrimaryId',
+            thread_parent_id => ['PrimaryId',
     		Bivio::SQL::Constraint::NONE()],
-            rfc822_id => ['Bivio::Type::PrimaryId',
+            rfc822_file_id => ['PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            cache_id => ['Bivio::Type::PrimaryId',
+            cache_file_id => ['PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            bytes => ['Bivio::Type::Integer',
+            bytes => ['Integer',
     		Bivio::SQL::Constraint::NONE()],
         },
 	auth_id => 'realm_id',
@@ -351,11 +370,12 @@ sub internal_initialize {
 #  - create a file for each actual part
 # Store the MIME header in file_t.aux_info field
 # Returns file_id in case of a single part message, directory_id otherwise
-
+# TODO: This needs clearer structure
 sub _walk_attachment_tree {
     my($self, $entity, $dir_id, $user_id, $mail_id, $index) = @_;
     my($req) = $self->unsafe_get_request;
     my($file) = Bivio::Biz::Model::File->new($req);
+    my($ct) = $entity->mime_type;
     my(@parts) = $entity->parts;
     if (@parts) {
         # Has sub-parts, so create directory and descend
@@ -364,36 +384,52 @@ sub _walk_attachment_tree {
             is_directory => 1,
             name => $mail_id,
             user_id => $user_id,
-            aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $entity->mime_type,
+            aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $ct,
             directory_id => $dir_id,
             volume => Bivio::Type::FileVolume::MAIL_CACHE,
         });
         $dir_id = $file->get('directory_id');
         my($i);
         for $i (0..$#parts) {
-            # Pass $mail_id and $i separately, so subparts can refer to parent
+            if( $ct eq 'multipart/alternative' && $parts[$i]->mime_type =~ m|^text/| ) {
+                # Only keep the HTML version
+                next unless $parts[$i]->mime_type eq 'text/html';
+            }
+            # Pass $mail_id and $i separately, so a subpart can refer to its parent
             _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
                     $mail_id, sprintf('%02X', $i));
         }
     } else {
-        my($mime_type) = $entity->mime_type;
-        if ($mime_type =~ m!^text/!) {
+        if( $ct =~ m!^text/! ) {
             my($tohtml) = Bivio::MIME::TextToHTML->new;
-            $tohtml->convert($entity, 'att?t=' . $mail_id);
-        }
-        # Append the given index or its content-id to the name of the file
-        if(my($cid) = $entity->head->get('Content-ID')) {
-            $mail_id .= '_' . $cid;
-        } elsif ($index) {
-            $mail_id .= '_' . $index;
+            $tohtml->convert($entity, $self->MAIL_PART_URL);
         }
         my($content) = $entity->bodyhandle->as_string;
+# TODO: This wouldn't work for more than one forwarded message. Need to
+#       handle message/rfc822 as if it would have subparts (in another else clause)
+        if( $ct eq 'message/rfc822' ) {
+            # Recursively unpack this message
+            my($msg) = Bivio::Mail::Message->new(\$content);
+            _walk_attachment_tree($self, $msg->get_entity, $dir_id, $user_id,
+                    $mail_id, sprintf('%02X', $index+1));
+            # Store the header as its own part
+            $content = $entity->header_as_string;
+            $mail_id .= '_' . $index;
+            $index = undef;
+        } else {
+            # Append the given index or its content-id to the filename
+            if(my($cid) = $entity->head->get('Content-ID')) {
+                $mail_id .= '_' . $cid;
+            } elsif ($index) {
+                $mail_id .= '_' . $index;
+            }
+        }
         $file->create({
             is_directory => 0,
             name => $mail_id,
             user_id => $user_id,
-            # Store the full header information only for sub-parts, not for single-part messages
-            aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $entity->mime_type,
+            # Store complete header only for sub-parts, not for single-part messages
+            aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $ct,
             content => \$content,
             directory_id => $dir_id,
             volume => Bivio::Type::FileVolume::MAIL_CACHE,
@@ -407,6 +443,7 @@ sub _walk_attachment_tree {
 # Find an existing thread for I<msg>, using the message-ids first
 # and if that fails using the subject to match up with other messages.
 #
+# TODO: Test to see if this works properly
 sub _attach_to_thread {
     my($msg, $values) = @_;
     # Shortcutting the procedure... only use newest message-id
@@ -434,7 +471,7 @@ sub _attach_to_thread {
         # Attach to youngest message
         my($row) = $sth->fetchrow_arrayref;
         if( defined($row) ) {
-            _trace('Found parent via subject') if $_TRACE;
+            _trace('Found parent via Subject') if $_TRACE;
            _attach_to_parent($row, $values);
         }
     }
@@ -469,13 +506,16 @@ sub _attach_to_parent {
 # _sortable_subject(string subject) : string
 #
 # Returns a stripped, lowercase version of the subject line for
-# storing in the "subject_sort" field.
+# storing in the "subject_sort" field which is used by the database
+# to sort subjects. Must ensure to not return an empty string.
 #
 sub _sortable_subject {
     my($subject) = @_;
     $subject = lc($subject);
     $subject =~ s/^\s*re:\s*//;
     $subject =~ s/\s+//g;
+    # Handle case of empty subject
+    $subject = '.' unless length($subject);
     return $subject;
 }
 
