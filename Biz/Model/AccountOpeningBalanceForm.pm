@@ -85,7 +85,8 @@ sub execute_input {
     my($account) = Bivio::Biz::Model::RealmAccount->new($req);
     my($account_entry) = Bivio::Biz::Model::RealmAccountEntry->new($req);
     foreach my $field ('bank', 'broker', 'petty_cash', 'suspense') {
-	my($balance) = Bivio::Type::Amount->round($properties->{$field}, 2);
+	my($balance) = Bivio::Type::Amount->round(
+		$properties->{$field} || 0, 2);
 	next if $balance == 0;
 
 	$account->load(name => $_ACCOUNT_MAP->{$field});
