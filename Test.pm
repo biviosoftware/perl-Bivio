@@ -272,7 +272,7 @@ level, e.g.,
 You may also specify an I<imperative_case> as the I<method> option of a
 method group.  This allows you to specify the return value.
 
-=back
+=cut
 
 =head2 SHORTCUTS
 
