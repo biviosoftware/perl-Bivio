@@ -78,7 +78,7 @@ sub VALID_CLUB_ROLES {
 
 =head2 create(hash_ref new_values)
 
-Sets I<creation_date_time> and I<title> if not set, then calls SUPER.
+Sets I<creation_date_time> if not set, then calls SUPER.
 
 =cut
 
@@ -86,12 +86,6 @@ sub create {
     my($self, $values) = @_;
     $values->{creation_date_time} = Bivio::Type::DateTime->now()
 	    unless $values->{creation_date_time};
-    unless (defined($values->{title})) {
-	# Set the title to Self if the realm and user are the same,
-	# else set to the description of the role
-	$values->{title} = $values->{realm_id} eq $values->{user_id}
-		? 'Self' : $values->{role}->get_short_desc;
-    }
     return $self->SUPER::create($values);
 }
 

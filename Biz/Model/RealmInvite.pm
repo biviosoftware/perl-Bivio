@@ -75,7 +75,7 @@ sub check_accept {
 
 =head2 create(hash_ref new_values)
 
-Sets I<creation_date_time> and I<title> if not set, then calls SUPER.
+Sets I<creation_date_time> if not set, then calls SUPER.
 
 =cut
 
@@ -83,11 +83,6 @@ sub create {
     my($self, $values) = @_;
     $values->{creation_date_time} = Bivio::Type::DateTime->now()
 	    unless $values->{creation_date_time};
-    # Set the title to Self if the realm and user are the same,
-    # else set to the description of the role
-    $values->{title} = $values->{realm_id} eq $values->{user_id}
-	    ? 'Self' : $values->{role}->get_short_desc
-		    unless defined($values->{title});
 
     # Save the use who initiated the invite
     $values->{user_id}
@@ -275,7 +270,8 @@ sub _set_state {
 	    unless $invited_user->unauth_load_by_email($self->get('email'));
     my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
     my($state) = $user
-	    ? ($realm_user->unsafe_load(user_id => $user->get('realm_id'))
+	    ? ($realm_user->unauth_load(user_id => $user->get('realm_id'),
+		    realm_id => $self->get('realm_id'))
 		    ? 'AUTH_USER_IS_REALM_USER'
 			    : $invited_user && $invited_user->get('realm_id')
 				    eq $user->get('realm_id')

@@ -28,6 +28,8 @@ use Bivio::Type::Enum;
 C<Bivio::Type::ClubUserTitle> defines a list of club user titles.
 These titles are not stored as an enum in the database.
 
+Titles always map to a role.  See L<get_role|"get_role">.
+
 =over 4
 
 =item UNKNOWN
@@ -41,6 +43,8 @@ These titles are not stored as an enum in the database.
 =cut
 
 #=IMPORTS
+use Bivio::Auth::Role;
+use Bivio::IO::Alert;
 
 #=VARIABLES
 __PACKAGE__->compile(
@@ -73,6 +77,40 @@ __PACKAGE__->compile(
 	8,
     ],
 );
+my(%_ROLE_MAP) = (
+    PARTNER => 'MEMBER',
+    TREASURER => 'ACCOUNTANT',
+    PRESIDENT => 'ADMINISTRATOR',
+    VICE_PRESIDENT => 'ADMINISTRATOR',
+    SECRETARY => 'MEMBER',
+    ADMINISTRATOR => 'ADMINISTRATOR',
+    MEMBER => 'MEMBER',
+    GUEST => 'GUEST',
+);
+
+# Fixup so real names
+%_ROLE_MAP = map {
+    (__PACKAGE__->$_(), Bivio::Auth::Role->from_name($_ROLE_MAP{$_}));
+    } keys(%_ROLE_MAP);
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="get_role"></a>
+
+=head2 get_role() : Bivio::Auth::Role
+
+Returns the role for this title.
+
+=cut
+
+sub get_role {
+    my($self) = @_;
+    Bivio::IO::Alert->die($self, ': not a ClubUserTitle')
+		unless $_ROLE_MAP{$self};
+    return $_ROLE_MAP{$self};
+}
 
 #=PRIVATE METHODS
 

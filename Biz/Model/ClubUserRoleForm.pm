@@ -94,6 +94,7 @@ sub execute_input {
     # Make sure we don't let admin clear last admin.
     my($a) = Bivio::Auth::Role::ADMINISTRATOR();
     my($properties) = $self->internal_get;
+    $properties->{'RealmUser.role'} = $properties->{title}->get_role();
     if ($list->get('RealmUser.role') == $a
 	    && $properties->{'RealmUser.role'} != $a) {
 	my($realm_id) = $list->get('RealmUser.realm_id');
@@ -104,7 +105,7 @@ sub execute_input {
 	    where role = $ai and realm_id = $realm_id
 EOF
 	if ($statement->fetchrow_arrayref->[0] <= 1) {
-	    $self->internal_put_error('RealmUser.role',
+	    $self->internal_put_error('title',
 		    Bivio::TypeError::LAST_CLUB_ADMIN());
 	    return;
 	}
@@ -137,35 +138,17 @@ sub internal_initialize {
 		type => 'Bivio::Type::ClubUserTitle',
 		constraint => Bivio::SQL::Constraint::NOT_ZERO_ENUM(),
 	    },
-	    'RealmUser.role',
 	],
 	auth_id => [
 	    'RealmUser.realm_id',
+	],
+	other => [
+	    'RealmUser.role',
 	],
 	primary_key => [
 	    ['RealmUser.user_id', 'RealmOwner.realm_id'],
 	],
     };
-}
-
-=for html <a name="validate"></a>
-
-=head2 validate()
-
-Makes sure I<role> is valid for club user.
-
-=cut
-
-sub validate {
-    my($self) = @_;
-    my($properties) = $self->internal_get;
-    unless (Bivio::Auth::RoleSet->is_set(\$_CLUB_ROLES,
-	    $properties->{'RealmUser.role'})) {
-	$self->internal_put_error('RealmUser.role',
-		Bivio::TypeError::CLUB_USER_ROLE());
-	return;
-    }
-    return;
 }
 
 #=PRIVATE METHODS

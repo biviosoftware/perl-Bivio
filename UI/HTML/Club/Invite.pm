@@ -31,7 +31,6 @@ C<Bivio::UI::HTML::Club::Invite> invite a new user to a club.
 =cut
 
 #=IMPORTS
-use Bivio::Auth::RoleSet;
 use Bivio::Biz::Model::ClubInviteForm;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Type::ClubUserTitle;
@@ -57,23 +56,12 @@ Create Grid I<values> for this form.
 
 sub create_fields {
     my($self) = @_;
-    my($roles) = Bivio::Biz::Model::RealmUser->VALID_CLUB_ROLES;
-    # Add in UNKNOWN so comes up on blank form and forces use to
-    # make a select (not just default).
-    Bivio::Auth::RoleSet->set(\$roles,
-	    Bivio::Auth::Role::UNKNOWN());
     return [
 	[$self->add_field('RealmInvite.email', 'email', 30)],
-	[$self->add_field('title', 'Function',
+	[$self->add_field('title', 'Privileges',
 		Bivio::UI::HTML::Widget::Select->new({
 		    field => 'title',
 		    choices => 'Bivio::Type::ClubUserTitle',
-		}))],
-	[$self->add_field('RealmInvite.role', 'Privileges',
-		Bivio::UI::HTML::Widget::Select->new({
-		    field => 'RealmInvite.role',
-		    choices => Bivio::TypeValue->new(
-			    'Bivio::Auth::RoleSet', \$roles)
 		}))],
     ];
 }

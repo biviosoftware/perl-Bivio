@@ -31,7 +31,6 @@ C<Bivio::UI::HTML::Club::EditUserRole> edits a club user's title/role.
 =cut
 
 #=IMPORTS
-use Bivio::Auth::RoleSet;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Type::ClubUserTitle;
 use Bivio::TypeValue;
@@ -56,22 +55,13 @@ Create Grid I<values> for this form.
 
 sub create_fields {
     my($self) = @_;
-    my($roles) = Bivio::Biz::Model::RealmUser->VALID_CLUB_ROLES;
     # Add in UNKNOWN so comes up on blank form and forces use to
     # make a select (not just default).
-    Bivio::Auth::RoleSet->set(\$roles,
-	    Bivio::Auth::Role::UNKNOWN());
     return [
-	[$self->add_field('title', 'Function',
+	[$self->add_field('title', 'Privileges',
 		Bivio::UI::HTML::Widget::Select->new({
 		    field => 'title',
 		    choices => 'Bivio::Type::ClubUserTitle',
-		}))],
-	[$self->add_field('RealmUser.role', 'Privileges',
-		Bivio::UI::HTML::Widget::Select->new({
-		    field => 'RealmUser.role',
-		    choices => Bivio::TypeValue->new(
-			    'Bivio::Auth::RoleSet', \$roles)
 		}))],
     ];
 }
@@ -94,9 +84,9 @@ sub execute {
     my($list) = $req->get('Bivio::Biz::Model::ClubUserList');
     $self->die(Bivio::DieCode::NOT_FOUND())
 	    unless $list->set_cursor(0);
-    $req->put(page_heading => 'Change Function and Privileges for'
+    $req->put(page_heading => 'Change Privileges for '
 	    .$list->get('RealmOwner.display_name'),
-	    page_subtopic => 'Change Function and Privileges',
+	    page_subtopic => 'Change Privileges',
 	    page_content => $self);
     Bivio::UI::HTML::Club::Page->execute($req);
     return;

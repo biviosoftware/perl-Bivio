@@ -31,15 +31,12 @@ C<Bivio::Biz::Model::ClubInviteForm> invite a new realm member.
 =cut
 
 #=IMPORTS
-use Bivio::Auth::Role;
-use Bivio::Auth::RoleSet;
 use Bivio::SQL::Constraint;
 use Bivio::Type::ClubUserTitle;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::UI::Mail::ClubInvite;
 
 #=VARIABLES
-my($_CLUB_ROLES) = Bivio::Biz::Model::RealmUser::VALID_CLUB_ROLES();
 
 =head1 METHODS
 
@@ -57,7 +54,6 @@ sub execute_empty {
     my($self) = @_;
     my($properties) = $self->internal_get;
     $properties->{title} = Bivio::Type::ClubUserTitle::UNKNOWN();
-    $properties->{'RealmInvite.role'} = Bivio::Auth::Role::UNKNOWN();
     return;
 }
 
@@ -93,6 +89,7 @@ sub execute_input {
     # This transfer is necessary, because the types don't agree.
     # We are using a string in the DB, but a enum (for convenience) in UI
     $values->{title} = $properties->{title}->get_short_desc;
+    $values->{role} = $properties->{title}->get_role;
     my($model) = $self->get_model('RealmInvite');
     $model->create($values);
 
@@ -114,7 +111,6 @@ sub internal_initialize {
 	version => 1,
 	visible => [
 	    'RealmInvite.email',
-            'RealmInvite.role',
 	    {
 		name => 'title',
 		type => 'Bivio::Type::ClubUserTitle',
@@ -129,26 +125,6 @@ sub internal_initialize {
 	    'RealmInvite.email',
 	],
     };
-}
-
-=for html <a name="validate"></a>
-
-=head2 validate()
-
-Makes sure I<role> is valid for club user.
-
-=cut
-
-sub validate {
-    my($self) = @_;
-    my($properties) = $self->internal_get;
-    unless (Bivio::Auth::RoleSet->is_set(\$_CLUB_ROLES,
-	    $properties->{'RealmInvite.role'})) {
-	$self->internal_put_error('RealmInvite.role',
-		Bivio::TypeError::CLUB_USER_ROLE());
-	return;
-    }
-    return;
 }
 
 #=PRIVATE METHODS
