@@ -41,6 +41,13 @@ C<Bivio::UI::HTML::Widget::Checkbox> is a form checkbox
 
 Should a click submit the form?
 
+=item event_handler : Bivio::UI::Widget []
+
+If set, this widget will be initialized as a child and must
+support a method C<get_html_field_attributes> which returns a
+string to be inserted in this fields declaration.
+I<event_handler> will be rendered before this field.
+
 =item field : string (required)
 
 Name of the form field.
@@ -128,6 +135,12 @@ sub initialize {
 	    && length($fields->{label});
     $fields->{label}->put_and_initialize(parent => $self)
 	if $fields->{label};
+    # Initialize handler, if any
+    $fields->{handler} = $self->unsafe_get('event_handler');
+    if ($fields->{handler}) {
+	$fields->{handler}->put(parent => $self);
+	$fields->{handler}->initialize;
+    }
     return;
 }
 
@@ -155,11 +168,16 @@ sub render {
     }
     $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
     $$buffer .= ' checked' if $form->get($field);
+    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
+	$field, $source) if $fields->{handler};
     $$buffer .= $fields->{suffix};
     if ($fields->{label}) {
 	$$buffer .= "\n";
 	$fields->{label}->render($source, $buffer);
     }
+    # Handler is rendered after, because it probably needs to reference the
+    # field.
+    $fields->{handler}->render($source, $buffer) if $fields->{handler};
     return;
 }
 
