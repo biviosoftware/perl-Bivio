@@ -540,7 +540,7 @@ sub _load {
 #
 sub _setup_request {
     my($self, $req) = @_;
-    $req->put($_PACKAGE => $self);
+    $req->put_durable($_PACKAGE => $self);
     _trace($self) if $_TRACE;
     return $self;
 }
