@@ -42,6 +42,24 @@ L<Bivio::UI::ViewLanguage::view_shortcuts|Bivio::UI::ViewLanguage/"view_shortcut
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new()
+
+Dies.  You can't instantiate a ViewShortcut.
+
+=cut
+
+sub new {
+    die("you can't instantiate a ViewShortcut; perhaps you meant vs_new()?");
+    # DOES NOT RETURN
+}
+
 =head1 METHODS
 
 =cut
