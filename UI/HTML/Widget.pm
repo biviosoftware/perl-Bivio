@@ -939,6 +939,21 @@ sub list_actions {
     };
 }
 
+=for html <a name="load_and_new"></a>
+
+=head2 static load_and_new(string class, hash_ref attrs) : Bivio::UI::HTML::Widget
+
+Returns an instance of I<class> created with I<attrs>.  Loads I<class>, if not
+already loaded.
+
+=cut
+
+sub load_and_new {
+    my(undef, $class, $attrs) = @_;
+    my($c) = _use($class);
+    return $c->new($attrs);
+}
+
 =for html <a name="load_class"></a>
 
 =head2 load_class(string widget, ...)
@@ -1142,11 +1157,11 @@ EOF
 
 #=PRIVATE METHODS
 
-# _use(string class, ....)
+# _use(string class, ....) : array
 #
 # Executes Bivio::IO::ClassLoader->simple_require on its args.  Inserts
 # Bivio::UI::HTML::Widget:: prefix, if class does not contain
-# colons.
+# colons.  Returns the named classes.
 #
 sub _use {
     my(@class) = @_;
@@ -1154,7 +1169,7 @@ sub _use {
 	$c =~ s/^([^:]+)$/Bivio::UI::HTML::Widget::$1/;
     }
     Bivio::IO::ClassLoader->simple_require(@class);
-    return;
+    return @class;
 }
 
 =head1 COPYRIGHT
