@@ -381,7 +381,6 @@ sub _upgrade_reinvested_commissions {
 # Creates the visitor table.
 #
 sub _upgrade_visitor {
-    my() = @_;
     _do_sql('
 CREATE TABLE visitor_t (
   visitor_id NUMBER(18),
