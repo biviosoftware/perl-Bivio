@@ -250,51 +250,30 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_add_charitable_expense($req);
+    _upgrade_add_ellis_bio_link($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_add_charitable_expense(Bivio::Agent::Request req)
+# _upgrade_add_ellis_bio_link(Bivio::Agent::Request req)
 #
-# Adds a "Charitable Contributions" to the deductible expense
-# categories for all clubs.
+# Adds a link to a new article in Ellis' bio.
 #
-sub _upgrade_add_charitable_expense {
+sub _upgrade_add_ellis_bio_link {
     my($req) = @_;
-    print("\nadding charitable expenses to existing clubs\n");
+    $req->set_realm('take_stock');
 
-    my($category) = Bivio::Biz::Model->new($req, 'ExpenseCategory');
+    my($article_link) = qq|<a href="/hm/take-stock-011008.html">Earnings are Down. Should I Sell?</a>
+<br>&nbsp;<br>
+|;
 
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_id, name
-            FROM realm_owner_t, club_t
-            WHERE realm_owner_t.realm_id=club_t.club_id
-            ORDER by realm_owner_t.name',
-	    []);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($realm_id, $name) = @$row;
+    my($decor) = Bivio::Biz::Model->new($req, 'RealmDecor');
+    $decor->load;
+    my($bio) = $decor->get('profile_bio');
+    $bio =~ s/(Father of Technamental)/$article_link$1/
+	|| die("couldn't find text in bio");
+    $decor->update(profile_bio => $bio);
 
-	my($parent_id) = (Bivio::SQL::Connection->execute_one_row('
-                SELECT expense_category_id
-                FROM expense_category_t
-                WHERE parent_category_id IS NULL
-                AND deductible=1
-                AND realm_id=?',
-		[$realm_id]) || [])->[0];
-
-	unless ($parent_id) {
-	    print("\t", $name, " - skipping, no parent expense category\n");
-	    next;
-	}
-
-	$category->create({
-	    realm_id => $realm_id,
-	    name => 'Charitable Contributions',
-	    deductible => 1,
-	    parent_category_id => $parent_id,
-	});
-    }
     return;
 }
 
