@@ -79,10 +79,7 @@ sub execute {
     $old_club->unauth_load(club_id => $source_id)
 	    || die("can't load source club $source_id");
     my($new_club) = Bivio::Biz::Model::Club->new($req);
-    $new_club->create({
-	kbytes_in_use => $old_club->get('kbytes_in_use'),
-	max_storage_kbytes => $old_club->get('max_storage_kbytes')
-    });
+    $new_club->create({});
     my($realm_id) = $new_club->get('club_id');
 
     my($new_realm) = Bivio::Biz::Model::RealmOwner->new($req);
