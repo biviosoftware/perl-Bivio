@@ -121,6 +121,7 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Type::FileName;
 use Bivio::UI::FacadeChildType;
+use Bivio::UI::LocalFileType;
 
 #=VARIABLES
 use vars ('$_TRACE');
