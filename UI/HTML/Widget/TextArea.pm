@@ -117,15 +117,16 @@ sub render {
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 #TODO: need get_width or is it something else?
-	$fields->{prefix} = '<textarea name='
-		.$form->get_field_name_for_html($field)
+	$fields->{prefix} = '<textarea'
 		.' rows='.$fields->{rows}
 		.' cols='.$fields->{cols}
-		.'>';
+		.' name=';
 	$fields->{initialized} = 1;
     }
-    $$buffer .= $fields->{prefix};
-    $$buffer .= $form->get_field_as_html($field).'</textarea>';
+    $$buffer .= $fields->{prefix}
+	    .$form->get_field_name_for_html($field)
+	    .'>'.
+	    $form->get_field_as_html($field).'</textarea>';
     return;
 }
 
