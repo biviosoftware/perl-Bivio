@@ -39,6 +39,7 @@ message.
 #=IMPORTS
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::Mail::Common;
 use Time::Local ();
 
 #=VARIABLES
@@ -75,6 +76,7 @@ my($_822_ROUTE_ADDR) = "<(?:$_822_ROUTE)?$_822_ADDR_SPEC>";
 my($_822_MAILBOX) = "(?:$_822_ADDR_SPEC|$_822_PHRASE\s+$_822_ROUTE_ADDR)";
 my($_822_GROUP) = "$_822_PHRASE:(?:$_822_MAILBOX(?:,$_822_MAILBOX)*;";
 my($_822_ADDRESS) = "(?:$_822_MAILBOX|$_822_GROUP)";
+my($_822_FIELD_NAME) = '[\\041-\\071\\073-\\176]+:';
 my($_822_DAY) = "[a-zA-Z]{3}";
 my($_822_DATE) = '(\\d\\d?)\\s*([a-zA-Z]{3})\\s*(\\d{2,4})';
 # Be flexible with times, as I have seen 17:9:12
@@ -196,6 +198,8 @@ sub get_dttm {
     my($fields) = $self->{$_PACKAGE};
     exists($fields->{dttm}) && return $fields->{dttm};
     my($date) = &_get_field($fields, 'date:');
+#TODO: If no Date: or bad Date: search Received: for valid dates
+#hello
     unless (defined($date)) {
 	warn("no Date");
 	&_trace('no Date') if $_TRACE;
@@ -236,6 +240,38 @@ sub get_from {
 	   $fields->{from_name}, ')') if $_TRACE;
     return wantarray ? ($fields->{from_email}, $fields->{from_name})
 	    : $fields->{from_email};
+}
+
+=for html <a name="get_headers"></a>
+
+=head2 get_headers() : hash
+
+=head2 get_headers(hash headers) : hash
+
+Returns a hash of headers.  The key is a the field name in lower case sans the
+colon.  The value is the field name in original case followed by the field
+value, i.e. the original text.  If a header appears multiple times, its
+value will be a scalar contain all instances of the field.
+
+Note: the field values include the terminating newline.
+
+If I<headers> is undefined, a new hash will be created.  If I<headers> is
+defined, fills in and returns I<headers>.
+
+=cut
+
+sub get_headers {
+    my($self, $headers) = @_;
+    $headers ||= {};
+    my($fields) = $self->{$_PACKAGE};
+    # Important to include the newline
+    my($f);
+    foreach $f (split(/^(?=$_822_FIELD_NAME)/om, $fields->{header})) {
+	my($n) = $f =~ /^($_822_FIELD_NAME)/;
+	chop($n);
+	$headers->{lc($n)} .= $f;
+    }
+    return $headers;
 }
 
 =for html <a name="get_message_id"></a>
@@ -319,20 +355,6 @@ sub get_subject {
     return $subject;
 }
 
-=for html <a name="uninitialize"></a>
-
-=head2 uninitialize()
-
-Clear any state associated with this object.
-
-=cut
-
-sub uninitialize {
-    my($self) = @_;
-    delete($self->{$_PACKAGE});
-    return;
-}
-
 =for html <a name="initialize"></a>
 
 =head2 initialize(string_ref $rfc822)
@@ -357,14 +379,16 @@ sub initialize {
     my($h);
     if ($i >= 0) {
 	$i -= $offset;
-	$h = substr($$rfc822, $offset, $i);
+	$h = substr($$rfc822, $offset, $i + 1);
 	# Account for \n\n
 	$i += 2 + $offset;
     }
     else {
 	$i = length($$rfc822) - $offset;
-	$h = substr($$rfc822, $offset, $i);
+	$h = substr($$rfc822, $offset, $i + 1);
     }
+#TODO: Don't unfold headers in advance.  Unfold headers as they
+#      are parsed.  This makes resent mail messages cleaner.
     # unfold all headers in advance.  Makes other code simpler.
     #
     # [rfc882] Unfolding is accomplished by regarding CRLF immediately
@@ -376,11 +400,44 @@ sub initialize {
     $h =~ s/\r?\n[ \t]/ /gs;
     $self->{$_PACKAGE} = {
 	'rfc822' => $rfc822,
+	'header' => $h,
+	'header_offset' => $offset,
 	# If there is no body, get_body will return empty string.
 	'body_offset' => $i,
-	# Must include the \n\n
-	'header' => $h,
     };
+    return;
+}
+
+=for html <a name="resend"></a>
+
+=head2 resend(string recipients)
+
+=head2 resend(array_ref recipients)
+
+Resend the mail message to the specified recipients.  The headers
+and body remain unchanged, even C<Sender:>.   This should be used
+for "alias-like" forwarding only.
+
+=cut
+
+sub resend {
+    my($self, $recipients) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Bivio::Mail::Common->send($recipients, $fields->{rfc822},
+	    $fields->{header_offset});
+}
+
+=for html <a name="uninitialize"></a>
+
+=head2 uninitialize()
+
+Clear any state associated with this object.
+
+=cut
+
+sub uninitialize {
+    my($self) = @_;
+    delete($self->{$_PACKAGE});
     return;
 }
 

@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..4\n"; }
+BEGIN { $| = 1; print "1..5\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Mail::Incoming;
@@ -12,6 +12,8 @@ $loaded = 1;
 print "ok 1\n";
 
 ######################### End of black magic.
+
+use User::pwent ();
 
 Bivio::IO::Config->initialize(\@ARGV);
 my(%_MSGS) = (
@@ -138,16 +140,16 @@ EOF
 my($test) = 2;
 my($msg, $fields, $id);
 while (($msg, $fields) = each(%_MSGS)) {
-    my($bim) = Bivio::Mail::Incoming->new(\$msg);
-    $id = $bim->get_message_id;
-    my($e, $n) = $bim->get_from;
+    my($bmi) = Bivio::Mail::Incoming->new(\$msg);
+    $id = $bmi->get_message_id;
+    my($e, $n) = $bmi->get_from;
     &assert_eq('from_email',  $e) || next;
     &assert_eq('from_name',  $n) || next;
-    &assert_eq('reply_to_email', $bim->get_reply_to) || next;
-    &assert_eq('subject', $bim->get_subject) || next;
-    &assert_eq('dttm', $bim->get_dttm) || next;
+    &assert_eq('reply_to_email', $bmi->get_reply_to) || next;
+    &assert_eq('subject', $bmi->get_subject) || next;
+    &assert_eq('dttm', $bmi->get_dttm) || next;
     (undef, $fields->{body}) = split(/\n\n/, $msg, 2);
-    &assert_eq('body', $bim->get_body) || next;
+    &assert_eq('body', $bmi->get_body) || next;
     print "ok $test\n";
 }
 continue {
@@ -168,3 +170,16 @@ not ok $test
 EOF
     return 0;
 }
+
+$msg = <<"EOF";
+From: Joe Blow <joe_blow>
+To: Joe Farmer <joe_farmer>
+Subject: My message (pid = $$)
+Message-Id: <1234567890\@blow.com>
+
+This is the body.
+EOF
+my($bmi) = Bivio::Mail::Incoming->new(\$msg);
+$bmi->resend(User::pwent::getpwuid($>)->name);
+print "ok $test\n";
+$test++;
