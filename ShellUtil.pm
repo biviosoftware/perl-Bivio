@@ -370,6 +370,26 @@ sub email_file {
     return;
 }
 
+=for html <a name="email_message"></a>
+
+=head2 email_message(string email, string subject, string_ref message)
+
+Sends I<message> to I<email> with I<subject>.  Sends as simple body.
+
+=cut
+
+sub email_message {
+    my($self, $email, $subject, $message) = @_;
+    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing',
+	   'Bivio::MIME::Type');
+    my($msg) = Bivio::Mail::Outgoing->new();
+    $msg->set_recipients($email);
+    $msg->set_header('Subject', $subject);
+    $msg->set_body($message);
+    $msg->send();
+    return;
+}
+
 =for html <a name="finish"></a>
 
 =head2 finish(boolean abort)
