@@ -1581,6 +1581,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/tax99/f1065.pdf
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberTaxList->execute_load_all
         Bivio::Biz::Accounting::Tax->check_required_fields
@@ -2090,6 +2091,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/withdrawal
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::Entry
         Bivio::Biz::Model::MemberEntry
         Bivio::Biz::Model::MemberWithdrawalInfo->execute_load_all
@@ -2179,6 +2181,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         ?/accounting/reports/member-performance
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::DateSpanForm
         Bivio::Biz::Model::MemberPerformanceList->execute_load_all
         Bivio::UI::HTML::Club::MemberPerformanceReport
