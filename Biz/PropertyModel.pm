@@ -104,7 +104,6 @@ sub internal_initialize_sql_support {
 	eval "
 	    package $pkg;
             sub unsafe_load {
-		Carp::croak('no query arguments') unless int(\@_) > 1;
 		return shift->unauth_load(\@_);
 	    }
 	    1;
@@ -177,8 +176,6 @@ L<internal_initialize_sql_support|"internal_initialize_sql_support">.
 
 sub unsafe_load {
     my($self) = shift;
-    Carp::croak('no query arguments') unless @_;
-
     # Ensure we are only getting data from the realm we are authorized
     # to operate in.
     my($sql_support) = $self->internal_get_sql_support;
