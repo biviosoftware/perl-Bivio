@@ -291,7 +291,7 @@ sub suggest_encoding {
         defined($$content) || return '7bit';
         my($unclean);
         # Scan message for 7bit-cleanliness:
-        $unclean = $content =~  /[\200-\377]/;
+        $unclean = $$content =~ /[\200-\377]/;
         # Return '7bit' if clean; try and encode if not...
         # Note that encodings are not permitted for messages!
         return $unclean ? ($major eq 'message') ? 'binary' : 'quoted-printable'
