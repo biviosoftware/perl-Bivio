@@ -55,9 +55,10 @@ EOF
 }
 
 #=IMPORTS
-use Bivio::IO::Trace;
-use Bivio::IO::Config;
 use Bivio::Ext::LWPUserAgent;
+use Bivio::IO::Config;
+use Bivio::IO::Trace;
+use HTTP::Headers ();
 use HTTP::Request ();
 
 #=VARIABLES
@@ -65,10 +66,14 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_CFG) = {
-    page => ['http://127.0.0.1/'],
-    email => 'lichtin@mail.bivio.com',
+    page => ['http://127.0.0.1'],
+    email => 'root',
 };
 Bivio::IO::Config->register($_CFG);
+my(%_HOST_MAP) = (
+    'www1.bivio.com', 'www.bivio.com',
+    'www2.bivio.com', 'www.bivio.com',
+);
 
 =head1 METHODS
 
@@ -113,7 +118,11 @@ sub page {
     my($user_agent) = Bivio::Ext::LWPUserAgent->new;
     my($status) = '';
     foreach my $page (@pages) {
-        my($reply) = $user_agent->request(HTTP::Request->new('GET', $page));
+        my($host) = $page =~ m!^\w+://([^:/]+)!;
+        $host = $_HOST_MAP{$host} if exists($_HOST_MAP{$host});
+        my($header) = HTTP::Headers->new(Host => $host);
+        my($request) = HTTP::Request->new('GET', $page, $header);
+        my($reply) = $user_agent->request($request);
         next if $reply->is_success;
         $status .= 'PAGE: '.$page."\n".$reply->status_line."\n".
                 substr($reply->as_string, 0, 512)."\n---\n";
