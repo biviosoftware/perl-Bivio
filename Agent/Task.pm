@@ -384,9 +384,10 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 sub initialize {
     my($proto) = @_;
     return if $_INITIALIZED;
-    my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
-    map {
-	my($id_name, undef, $realm_type, $perm_spec, @items) = @$_;
+    $_INITIALIZED = 1;
+
+    foreach my $cfg (@{Bivio::Agent::TaskId->get_cfg_list}) {
+	my($id_name, undef, $realm_type, $perm_spec, @items) = @$cfg;
 	my($perm_set) = Bivio::Auth::PermissionSet->get_min;
 	foreach my $p (split(/\&/, $perm_spec)) {
 	    Bivio::Auth::PermissionSet->set(\$perm_set,
@@ -395,8 +396,7 @@ sub initialize {
 	$proto->new(Bivio::Agent::TaskId->$id_name(),
 		Bivio::Auth::RealmType->$realm_type(),
 		$perm_set, @items);
-    } @$cfg;
-    $_INITIALIZED = 1;
+    };
     return;
 }
 
