@@ -61,11 +61,6 @@ Sets realm, user, and server_redirects to task.
 User is set from Reply-To:, From:, Apparently-From:, in that order.
 You can forge any address, but we respect the Reply-To: override.
 
-Two addresses are parsed:
-
-   op.realm
-   realm-op
-
 op then maps to a URI:
 
    Bivio::UI::Text->get_value('MailReceiveDispatchForm.uri_prefix') . $op
@@ -83,11 +78,7 @@ sub execute_ok {
 	client_addr => $self->get('client_addr'),
 	'Model.' . $self->simple_package_name => $self,
     );
-    my($to) = lc($self->get('recipient'));
-    my($name, $op) = $to =~ /^(\w+)(?:-(.+))?$/;
-    ($op, $name) = $to =~/^(?:(.+)\.)(\w+)$/
-	unless $name;
-    _trace('name: ', $name, ' op: ', $op) if $_TRACE;
+    my($name, $op) = $self->parse_recipient;
     _set_realm($self, $name);
     my($copy) = ${$self->get('message')->{content}};
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
@@ -96,8 +87,9 @@ sub execute_ok {
 	$parser->head->get('reply-to')
 	|| $parser->head->get('from')
         || $parser->head->get('apparently-from'));
-    $req->server_redirect(_uri($self, $op));
-    # DOES NOT RETURN
+    # Should not return, but always put in a return just in case
+    $req->server_redirect(_task($self, $op));
+    return;
 }
 
 =for html <a name="internal_initialize"></a>
@@ -123,6 +115,29 @@ sub internal_initialize {
 	    },
 	],
     });
+}
+
+=for html <a name="parse_recipient"></a>
+
+=head2 parse_recipient() : array
+
+Returns (realm, op) from recipient.  I<op> may be undef.
+
+Two addresses are parsed:
+
+   op.realm
+   realm-op
+
+=cut
+
+sub parse_recipient {
+    my($self) = @_;
+    my($to) = lc($self->get('recipient'));
+    my($name, $op) = $to =~ /^(\w+)(?:-(.+))?$/;
+    ($op, $name) = $to =~/^(?:(.+)\.)(\w+)$/
+	unless $name;
+    _trace('name: ', $name, ' op: ', $op) if $_TRACE;
+    return ($name, $op);
 }
 
 #=PRIVATE SUBROUTINES
@@ -169,11 +184,11 @@ sub _set_realm {
     return;
 }
 
-# _uri(self, string op) : Bivio::Agent::TaskId
+# _task(self, string op) : Bivio::Agent::TaskId
 #
 # Returns the task for the op.
 #
-sub _uri {
+sub _task {
     my($self, $op) = @_;
     my($req) = $self->get_request;
     $op ||= '';
