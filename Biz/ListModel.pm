@@ -196,6 +196,21 @@ sub append_empty_rows {
     return;
 }
 
+=for html <a name="can_iterate"></a>
+
+=head2 can_iterate() : boolean
+
+Returns true if L<iterate_start|"iterate_start"> can be called.
+Most ListModels are not set up for iterations.
+
+Default is false.
+
+=cut
+
+sub can_iterate {
+    return 0;
+}
+
 =for html <a name="can_next_row"></a>
 
 =head2 can_next_row() : boolean
@@ -596,6 +611,9 @@ B<FOR INTERNAL USE ONLY.>
 
 Loads the ListModel with I<rows>.
 
+Calls L<internal_post_load_row|"internal_post_load_row"> after
+all the rows are loaded if I<self> implements this method.
+
 =cut
 
 sub internal_load {
@@ -613,8 +631,24 @@ sub internal_load {
     $self->die('NOT_FOUND') if $self->NOT_FOUND_IF_EMPTY && !@$rows;
     my($req) = $self->unsafe_get_request;
     $req->put(ref($self) => $self, list_model => $self) if $req;
+
+    # Fixup if need be
+    if ($self->can('internal_post_load_row')) {
+	foreach my $r (@$rows) {
+	    $self->internal_post_load_row($r);
+	}
+    }
     return;
 }
+
+=for html <a name="internal_post_load_row"></a>
+
+=head2 abstract internal_post_load_row(hash_ref row)
+
+Used to fix up a row after loading.  No state should be assumed except
+the row itself.
+
+=cut
 
 =for html <a name="internal_pre_load"></a>
 
@@ -660,6 +694,71 @@ sub internal_set_cursor {
 	$self->set_cursor($cursor);
     }
     return;
+}
+
+=for html <a name="iterate_next"></a>
+
+=head2 iterate_next(ref iterator, hash_ref row) : boolean
+
+=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
+
+I<iterator> was returned by L<iterate_start|"iterate_start">.
+I<row> is the resultant values by field name.
+I<converter> is optional and is the name of a
+L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
+
+Returns false if there is no next.
+
+Subclasses: Calls L<internal_post_load_row|"internal_post_load_row"> after
+the row is loaded if I<self> implements this method.  Care must
+be taken when using the values returned, because converter is
+already applied.
+
+=cut
+
+sub iterate_next {
+    my($self, $iterator, $row) = (shift, shift, shift);
+    return 0 unless $self->internal_get_sql_support->iterate_next(
+	    $iterator, $row, @_);
+
+    # Fixup the row if loaded.
+    $self->internal_post_load_row($row)
+	    if $self->can('internal_post_load_row');
+    return 1;
+}
+
+=head2 iterate_start(hash_ref query) : ref
+
+=head2 iterate_start(Bivio::SQL::ListQuery query) : ref
+
+Returns a handle which can be used to iterate this list for this
+realm with L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+should be called, too.
+
+Use this method when you need to make one pass over the data (efficiently).
+
+NOTE: Most ListModels cannot be iterated.  If L<can_iterate|"can_iterate">
+returns false, this routine will die.
+
+Calls L<internal_pre_load|"internal_pre_load">, but does not call
+L<internal_load|"internal_load">.  See L<iterate_next|"iterate_next">
+for semantics of row fixups.
+
+=cut
+
+sub iterate_start {
+    my($self, $query) = @_;
+    $self->die('DIE', 'iteration not supported') unless $self->can_iterate;
+
+    $query = $self->parse_query($query);
+    my($sql_support) = $self->internal_get_sql_support;
+
+    # Let the subclass add specializations to the query.
+    my($params) = [];
+    my($where) = $self->internal_pre_load($query, $sql_support, $params);
+    $where = ' and '.$where if $where;
+
+    return $sql_support->iterate_start($query, $where, $params, $self);
 }
 
 =for html <a name="load"></a>
