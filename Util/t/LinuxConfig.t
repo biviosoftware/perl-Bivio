@@ -50,6 +50,14 @@ Bivio::Test->unit([
 		['etc/grub.conf', 'md2 console=ttyS0,38400'],
 	    ],
 	], [
+	    'serial_console', [9600] => [
+		['etc/securetty', '(?<!/dev/)ttyS0'],
+		['etc/inittab', 'getty\s+ttyS0'],
+		['etc/grub.conf', '#splash'],
+		['etc/grub.conf', 'serial\s+--unit=0'],
+		['etc/grub.conf', 'md2 console=ttyS0,9600'],
+	    ],
+	], [
             'disable_iptables_counters', [] => [
 		['etc/rc.d/init.d/iptables', 'iptables-restore \&\&'],
 	    ],
