@@ -271,6 +271,7 @@ sub execute {
 	# We don't want it to appear in any more URIs now that we can
 	# store it in a form.
 	delete($query->{fc});
+	$req->put(query => undef) unless int(keys(%$query));
 	_trace('context: ', $c) if $_TRACE;
     }
 
@@ -412,6 +413,8 @@ formats as a query string value.
 
 sub format_context_as_query {
     my($self, $req) = @_;
+#TODO: Tightly coupled with Widget::Form which knows this is fc=
+#      Need to understand better how to stop the context propagation
     return 'fc='.Bivio::Type::SecretAny->to_literal(
 	    $self->get_context_from_request($req));
 }

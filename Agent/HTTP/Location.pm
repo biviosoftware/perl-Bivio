@@ -74,7 +74,7 @@ sub format {
     my($uri) = $_FROM_TASK_ID{$task_id}->[1];
     Bivio::IO::Alert->die($task_id, ': task has no uri')
 	    unless defined($uri);
-# Add in the form context with \& at the end which turns into nothing
+#TODO: Add in the form context with \& at the end which turns into nothing
 # if no context added.
     # URI contains a lone
     if ($uri =~ /%/) {
@@ -85,6 +85,7 @@ sub format {
     }
     $uri = '/'.$uri unless $uri =~ /^\//;
 
+#TODO: Tightly coupled with UI::HTML::Widget::Form.
     my($rc) = Bivio::Agent::Task->get_by_id($task_id)->get('require_context');
     $uri .= '?'.Bivio::Biz::FormModel->format_context_as_query($req) if $rc;
     return $uri;

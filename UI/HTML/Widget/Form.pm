@@ -160,6 +160,10 @@ sub render {
 	$action = ref($action)
 		? $source->get_widget_value(@$action)
 			: Bivio::Agent::Request->get_current->format_uri();
+#TODO: Tightly Coupled with FormModel & Location.  Do not propagate form
+#      context when you have a form to store the context in fields.
+#      Context management is hard....
+	$action =~ s/[&?]fc=\w+//;
 	$$buffer .= $action . "\">\n"
     }
     # Timezone is computed on every form
