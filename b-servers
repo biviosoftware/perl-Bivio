@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# $Id$
+#
+# Manage servers for the Sociatas Application
+#
+
+case "$1" in
+  start)
+	/etc/rc.d/init.d/b-file-server start
+	/etc/rc.d/init.d/b-mail-dispatcher start
+	/etc/rc.d/init.d/httpd start
+	;;
+  stop)
+	/etc/rc.d/init.d/b-file-server stop
+	/etc/rc.d/init.d/b-mail-dispatcher stop
+	/etc/rc.d/init.d/httpd stop
+	;;
+  status)
+	/etc/rc.d/init.d/b-file-server status
+	/etc/rc.d/init.d/b-mail-dispatcher status
+	/etc/rc.d/init.d/httpd status
+	;;
+  restart)
+	/etc/rc.d/init.d/b-file-server restart
+	/etc/rc.d/init.d/b-mail-dispatcher restart
+	/etc/rc.d/init.d/httpd restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|reload|status}"
+	exit 1
+esac
+exit 0
