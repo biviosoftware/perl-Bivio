@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Util::Release->install_tar chdirs out of the tmp dir before
+    deleting it
+  * Bivio::SQL::Connection::Postgres handles yet another left join case
+
+  Revision 2.15  2004/03/12 21:48:49  nagler
+  * Bivio::Delegate::PersistentCookie upcases tag after reading it from config
+  * Bivio::SQL::Connection::Postgres converts left join with table aliases
+  * Bivio::ShellUtil->lock_action adds host to pid file so works on network
+    file systems.  Also catches $SIG{TERM} and deletes lock before rethrowing
+    so it works nicely with run_daemon.
+  * Bivio::Type->compare/is_equal/compare_defined is self-consistent.
+    Subclasses implement compare_defined, and all undef values handled
+    by Bivio::Type::compare.  is_equal calls compare.
+    Bivio::Type->compare_defined uses cmp for comparisons so now compare
+    is defined for all types.
   * Bivio::Type::Password->is_equal/compare defines undef values as
     always not equal for security reasons.  A successful encryption is
     the only way to compare equal.
