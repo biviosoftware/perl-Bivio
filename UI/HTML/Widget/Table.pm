@@ -788,7 +788,8 @@ sub render_row {
 	$$buffer .= '&nbsp;'
 	    if length($$buffer) == $start
 		&& $class == Bivio::UI::TableRowClass->DATA;
-	$$buffer .= '</td>';
+	$$buffer .= $class == Bivio::UI::TableRowClass->HEADING
+	    ? '<th>' : '<td>';
     }
     $$buffer .= "\n</tr>";
     return;
