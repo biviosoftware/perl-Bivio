@@ -32,9 +32,9 @@ All shell utilities take a I<command> as their first argument
 followed by zero or more arguments.  I<command> must map to a
 method in the subclass.  The arguments are parsed by the method.
 
-Before L<main|"main"> calls the I<command> method, it calls
-L<setup|"setup"> which creates a request from the standard
-options (I<user>, I<db>, and I<realm>).
+L<setup|"setup"> creates a request from the standard
+options (I<user>, I<db>, and I<realm>).  It is called
+implicitly by L<get_request|"get_request">
 
 Options precede the command.  See L<OPTIONS|"OPTIONS">.
 
@@ -231,6 +231,32 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new() : Bivio::ShellUtil
+
+=head2 static new(array_ref argv) : Bivio::ShellUtil
+
+Initializes a new instance with these command line arguments.
+
+=cut
+
+sub new {
+    my($proto, $argv) = @_;
+    my($self) = Bivio::Collection::Attributes::new($proto);
+    $argv ||= [];
+    my($orig_argv) = [@$argv];
+    $self->{$_PACKAGE} = {};
+    $self->internal_put(_parse_options($self, $argv));
+    $self->put(argv => $orig_argv);
+    return $self;
+}
+
 =head1 METHODS
 
 =cut
@@ -357,12 +383,8 @@ Global options precede the command and are set on the instance.
 
 sub main {
     my($proto, @argv) = @_;
-    my(@orig_argv) = @argv;
-
     local($|) = 1;
-    my($self) = $proto->new(_parse_options($proto, \@argv));
-    $self->put(argv => \@orig_argv);
-    $self->{$_PACKAGE} = {};
+    my($self) = $proto->new(\@argv);
 
     if ($self->unsafe_get('db')) {
         # Setup DBI connection to access a probably non-default database
@@ -668,15 +690,15 @@ sub write_file {
 
 #=PRIVATE METHODS
 
-# _compile_options(string proto) : array
+# _compile_options(Bivio::ShellUtil self) : array
 #
 # Compiles the options string.  Returns a map of options to declarations
 # as a hash_ref and an array_ref of the declarations.  A declaration
 # is an array_ref (name, type, default).
 #
 sub _compile_options {
-    my($proto) = @_;
-    my($options) = $proto->OPTIONS;
+    my($self) = @_;
+    my($options) = $self->OPTIONS;
     return ({}, []) unless $options && keys(%$options);
 
     my($map) = {};
@@ -723,14 +745,17 @@ sub _method_ok {
     return 0;
 }
 
-# _parse_options(string proto, array_ref argv) : hash_ref
+# _parse_options(Bivio::ShellUtil self, array_ref argv) : hash_ref
 #
 # Returns the options that were set.
 #
 sub _parse_options {
-    my($proto, $argv) = @_;
+    my($self, $argv) = @_;
+    my($fields) = $self->{$_PACKAGE};
     my($res) = {};
-    my($map, $opts) = _compile_options($proto);
+    my($map, $opts) = _compile_options($self);
+    $fields->{compiled_options} = $opts;
+    $fields->{compiled_map} = $map;
     return unless %$map;
 
     # Parse the options
@@ -738,15 +763,15 @@ sub _parse_options {
 	my($k) = shift(@$argv);
 	$k =~ s/^-//;
 	my($opt) = $map->{$k};
-	$proto->usage("-$k: unknown option") unless $opt;
+	$self->usage("-$k: unknown option") unless $opt;
 	if ($opt->[1] eq 'Bivio::Type::Boolean') {
 	    $res->{$opt->[0]} = 1;
 	    next;
 	}
-	$proto->usage("-$k: missing an argument") unless @$argv;
+	$self->usage("-$k: missing an argument") unless @$argv;
 	my($v, $e) = shift(@$argv);
 	($v, $e) = $opt->[1]->from_literal($v);
-	$proto->usage("-$k: ", $e->get_long_desc) if $e;
+	$self->usage("-$k: ", $e->get_long_desc) if $e;
 	$res->{$opt->[0]} = $v;
     }
 
