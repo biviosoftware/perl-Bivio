@@ -341,8 +341,6 @@ ALTER TABLE ec_payment_t
   foreign key (ec_subscription_id)
   references ec_subscription_t(ec_subscription_id)
 /
-ALTER TABLE ec_payment_t modify ec_subscription_period not null
-/
 ALTER TABLE ec_payment_t
   add constraint ec_payment_t7
   check (ec_subscription_period = 0 or ec_subscription_period = 30
