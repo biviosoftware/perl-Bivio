@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::HTMLParser::Forms handles textarea and checkboxes in
+    tables without column headers correctly
+  * Bivio::Test::Language::HTTP fills in defaults for checkboxes correctly
+
+  Revision 1.81  2003/10/01 18:04:49  moeller
+  * AdmMailBulletin now has TEST_MODE which only send the bulletin to support
+  * AdmMailBulletin allows subclasses to change the message per email
+  * removed DateInterval BEGINNING_OF_YEAR, END_OF_IRS_TAX_SEASON, and
     THREE_MONTHS. Added SIX_MONTHS.
   * Added DateTimeMode FULL_MONTH
   * LinuxConfig allow any program
