@@ -40,6 +40,9 @@ a call to
 L<Bivio::Biz::ListModel::format_uri|Bivio::Biz::ListModel/"format_uri">
 with I<wf_list_link> as the query type.
 
+=item wf_want_select : boolean []
+
+If true, will force a widget to a be a select, if it can.
 
 =back
 
@@ -244,13 +247,9 @@ sub _create_edit {
 			%$attrs,
 		    }),
 		    ' ',
-		    Bivio::UI::HTML::Widget::Join->new({
-			values => [
-				'<input type=submit name="submit" value="'.
-				Bivio::Biz::Model::LocalPricesForm::REFRESH()
-				.'">',
-		        ],
-		    }),
+		    $proto->submit('REFRESH')->put(
+			    form_class => 'Bivio::Biz::Model::LocalPricesForm'
+			   ),
 	    ],
 	});
     }
@@ -277,14 +276,22 @@ sub _create_edit {
 		      );
     }
 
+    if (UNIVERSAL::isa($type, 'Bivio::UI::FacadeChildType')) {
+	return Bivio::UI::HTML::Widget::Select->new({
+	    field => $field,
+	    choices => $type,
+	    enum_sort => 'as_int',
+	    %$attrs,
+	});
+    }
+
     if (UNIVERSAL::isa($type, 'Bivio::Type::Enum')) {
 	# Don't have larger than a 2x3 Grid
 	return Bivio::UI::HTML::Widget::Select->new({
 	    field => $field,
 	    choices => $type,
 	    %$attrs,
-#TODO: hacked in want_select, don't want radios for list forms
-	}) if $type->get_count() > 6 || $attrs->{want_select};
+	}) if $type->get_count() > 6 || $attrs->{wf_want_select};
 
 	# Having label on field with radio grid is sloppy.
 	$attrs->{label_on_field} = 0;
@@ -394,6 +401,29 @@ sub _create_edit {
     }
 
     if (UNIVERSAL::isa($type, 'Bivio::Type::Year')) {
+	return Bivio::UI::HTML::Widget::Text->new({
+	    field => $field,
+	    size => $type->get_width,
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::PageSize')) {
+	# We limit PageSize to a specific set of values,
+	# because it is used in the EditPreferencesForm which
+	# ignores all errors.  We try to make preferences be
+	# always 'correct'.
+	Bivio::IO::Alert->die($type, ': range changed')
+		if $type->get_min != 5 || $type->get_max != 500;
+	return Bivio::UI::HTML::Widget::Select->new({
+	    field => $field,
+	    choices => Bivio::TypeValue->new($type,
+		    [qw(5 10 15 20 30 40 50 75 100 200 300 400 500)]),
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Integer')) {
 	return Bivio::UI::HTML::Widget::Text->new({
 	    field => $field,
 	    size => $type->get_width,

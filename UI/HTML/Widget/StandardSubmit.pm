@@ -82,7 +82,7 @@ sub new {
 
 =head2 initialize()
 
-Doesn't initialize Grid until first render.
+Initialize grid.
 
 =cut
 
@@ -90,44 +90,8 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{initialized};
-    # Initialization of grid handled in first render, because
-    # we don't have "form_model" until then.
-    $fields->{is_first_render} = 1;
     $fields->{initialized} = 1;
-    return;
-}
 
-=for html <a name="is_constant"></a>
-
-=head2 is_constant : boolean
-
-Always constant (after first render).
-
-=cut
-
-sub is_constant {
-    my($fields) = shift->{$_PACKAGE};
-    Carp::croak('can only be called after first render')
-		if $fields->{is_first_render};
-    return 1;
-}
-
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-Render the object.
-
-=cut
-
-sub render {
-    my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $$buffer .= $fields->{value}, return unless $fields->{is_first_render};
-
-    my($form) = $source->get_request->get_widget_value(
-	    @{$self->ancestral_get('form_model')});
-    my($separation) = $self->ancestral_get('standard_submit_separation', 10);
     my($row) = [
 	Bivio::UI::HTML::Widget::Submit->new({
 	    value => 'SUBMIT_OK',
@@ -135,7 +99,10 @@ sub render {
     ];
 
     # Only include cancel and spacer if there is a cancel
-    if ($form->SUBMIT_CANCEL) {
+    my($fc) = $self->ancestral_get('form_class');
+    if ($fc->SUBMIT_CANCEL) {
+	my($separation) = $self->ancestral_get(
+		'standard_submit_separation', 10);
 	push(@$row,
 	    Bivio::UI::HTML::Widget::ClearDot->as_html($separation),
 	    Bivio::UI::HTML::Widget::Submit->new({
@@ -145,15 +112,9 @@ sub render {
 	);
     }
 
-    # Initialize the grid, render, and store result for next time
+    # Initialize the grid
     $self->put(values => [$row]);
     $self->SUPER::initialize;
-
-    my($start) = length($$buffer);
-    $self->SUPER::render($source, $buffer);
-    $fields->{value} = substr($$buffer, $start);
-
-    $fields->{is_first_render} = 0;
     return;
 }
 

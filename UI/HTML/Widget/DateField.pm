@@ -144,7 +144,8 @@ Draws the date field on the specified buffer.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
 #TODO: Merge with Text.  Too much duplicated code.
@@ -162,7 +163,8 @@ sub render {
     }
 
     # If field in error, just return the value user entered
-    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field)
+    my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
+    $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field)
 	    .' value="';
  SWITCH:
     {
@@ -185,7 +187,7 @@ sub render {
 	# is when we render the default.  Otherwise, values are
 	# coming from the db which means they are GMT anyway and
 	# have a fixed time component.
-	$$buffer .= Bivio::Type::Date->to_literal($value).$fields->{suffix};
+	$$buffer .= Bivio::Type::Date->to_literal($value).$fields->{suffix}.$s;
     }
 
     # Handler is rendered after, because it probably needs to reference the

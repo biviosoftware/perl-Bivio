@@ -120,7 +120,8 @@ Render the input field.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
     # need first time initialization to get field name from form model
@@ -135,10 +136,11 @@ sub render {
 	$fields->{prefix} .= ' name=';
 	$fields->{initialized} = 1;
     }
-    $$buffer .= $fields->{prefix}
+    my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
+    $$buffer .= $p.$fields->{prefix}
 	    .$form->get_field_name_for_html($field)
 	    .'>'.
-	    $form->get_field_as_html($field).'</textarea>';
+	    $form->get_field_as_html($field).'</textarea>'.$s;
     return;
 }
 

@@ -60,16 +60,28 @@ Returns I<which> preference for I<realm>.
 I<attr> identifies the attribute on the request which holds the current
 prefs for I<realm>, if loaded.
 
+If the type of the preference exports I<get_default>, this well be
+used if the user preference is not set.
+
+If I<realm> is C<undef>, returns default value or undef.
+
 =cut
 
 sub get_value {
     my(undef, $req, $attr, $realm, $which) = @_;
+    my($type) = $which->get_type();
 
+    # If no realm, return default.
+    return $type->can('get_default') ? $type->get_default : undef
+	    unless $realm;
+
+    # Have a realm
     my($self) = _get_instance($req, $attr, $realm);
     my($fields) = $self->{$_PACKAGE};
     # Loaded:  Get fields and return value (after type conversion)
-    my($value) = $which->get_type()->from_sql_column(
-	    $fields->{values}->[$which->as_int]);
+    my($value) = $type->from_sql_column($fields->{values}->[$which->as_int]);
+    $value = $type->get_default
+	    if !defined($value) && $type->can('get_default');
     _trace_self($fields, $which->get_name, '=',
 	    $fields->{values}->[$which->as_int]) if $_TRACE;
     return $value;

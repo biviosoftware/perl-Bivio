@@ -39,13 +39,13 @@ Font is always C<FORM_SUBMIT>.
 Attributes to be applied to the button.  C<StandardSubmit>
 uses this to set "onclick=reset()".
 
-=item form_model : array_ref (required, inherited, get_request)
+=item form_class : array_ref (required, inherited)
 
 Which form are we dealing with.
 
 =item value : string (required)
 
-The method on I<form_model> which returns the submit button value,
+The method on I<form_class> which returns the submit button value,
 e.g. C<SUBMIT_OK> or C<SUBMIT_CANCEL>.
 
 =item value : array_ref (required)
@@ -96,7 +96,7 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{model};
-    $fields->{model} = $self->ancestral_get('form_model');
+    $fields->{class} = $self->ancestral_get('form_class');
     $fields->{value} = $self->get('value');
     $fields->{attributes} = $self->get_or_default('attributes', undef);
     return;
@@ -115,14 +115,13 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
 
     my($value) = $fields->{value};
-
     my($req) = $source->get_request;
     my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
-    my($model) = $req->get_widget_value(@{$fields->{model}});
-    $$buffer .= $p.'<input type=submit name="'.$model->SUBMIT().'" value="'
+    $$buffer .= $p.'<input type=submit name="'
+	    .$fields->{class}->SUBMIT().'" value="'
 	    .Bivio::Util::escape_html(
 		    ref($value) ? $source->get_widget_value(@$value)
-		    : $model->$value())
+		    : $fields->{class}->$value())
 	    .($fields->{attributes}
 		    ? '" '.$fields->{attributes}.'>' : '">').$s;
     return;

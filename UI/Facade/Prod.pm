@@ -32,7 +32,7 @@ C<Bivio::UI::Facade::Prod> is the main production and default Facade.
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->new({
+my($_SELF) = __PACKAGE__->new({
     clone => undef,
     is_production => 1,
     'Bivio::UI::Color' => {
@@ -122,7 +122,7 @@ __PACKAGE__->new({
 	    my($fc) = @_;
 	    $fc->group(default => [
 		'family=arial,sans-serif',
-		'size=x-small',
+		'size=small',
 	    ]);
 	    $fc->group(profile_box_title => ['bold']);
 	    $fc->group(celebrity_disclaimer => ['smaller']);
@@ -198,6 +198,7 @@ __PACKAGE__->new({
                     page_legend
                     checkbox
                     page_text
+                    input_field
             )],
 		   []);
 	    return;
@@ -237,6 +238,29 @@ __PACKAGE__->new({
 	},
     },
 });
+
+# Only initialize children if parent was created.  Won't be
+# created on production if not is_production.
+if ($_SELF) {
+    foreach my $cfg (
+	    ['small', 'x-small'],
+	    ['large', 'medium'],
+	    ['extra_large', 'large']) {
+	$_SELF->new_child({
+	    child_type => $cfg->[0],
+	    'Bivio::UI::Font' => {
+		initialize => sub {
+		    my($fc) = @_;
+		    $fc->value(default => [
+			'family=arial,sans-serif',
+			'size='.$cfg->[1],
+		    ]);
+		    return;
+		},
+	    },
+	});
+    }
+}
 
 =head1 METHODS
 

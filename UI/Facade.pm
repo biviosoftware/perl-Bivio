@@ -49,6 +49,20 @@ The default I<clone> is on the Facade and must always be specified
 (even if C<undef>).  The I<clone> may be overriden in a particular
 component's configuration.
 
+=item children : hash_ref (facade)
+
+The children of this Facade.  The keys are
+L<Bivio::UI::FacadeChildType|Bivio::UI::FacadeChildType>
+and values are facades.  A child may be undef or
+there may be no children at all.
+
+Children do not have children, i.e. the tree is only two levels deep.
+
+=item child_type : Bivio::UI::FacadeChildType (children)
+
+The type of this child.  Must be unique to all children of
+this Facade.
+
 =item initialize : sub (component)
 
 The initialization attribute is a C<sub> to initialize a Component.
@@ -65,6 +79,10 @@ Returns true if this is the default facade.
 If set to true, the Facade will be found in a production environment.
 Otherwise, won't be initialized if not running in the
 production environment.
+
+=item parent : Bivio::UI::Facade (children)
+
+Parent facade.
 
 =item uri : string (facade)
 
@@ -87,11 +105,11 @@ used.
 
 =over 4
 
-=item x1 : Cool
+=item ic : BUYandHOLD (production)
 
 =item aristau : WFN
 
-=item muri : BUYandHOLD
+=item muri :
 
 =item cimo : eklubs
 
@@ -116,8 +134,9 @@ used.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
+use Bivio::UI::FacadeChildType;
 use Bivio::Util;
 
 #=VARIABLES
@@ -218,45 +237,79 @@ sub new {
 	uri => $uri,
 	is_production => $config->{is_production} ? 1 : 0,
 	is_default => $_DEFAULT eq $class ? 1 : 0,
+	children => {},
     });
     delete($config->{is_production});
 
     # Load all relevant components first.  This modifies @_COMPONENTS.
     Bivio::Util::my_require(keys(%$config));
 
-    # Initialize all components
-    foreach my $c (@_COMPONENTS) {
-	# Get the config for this component (or force to exist)
-	my($cfg) = $config->{$c} || {};
+    _initialize($self, $config, $clone);
 
-	# Get the clone, if any
-	my($cc) = $cfg && exists($cfg->{clone})
-		? $cfg->{clone} ? _load($cfg->{clone}) : undef : $clone;
-	$cc = $cc->get($c) if $cc;
-
-	# Must have a clone or initialize (all components MUST be exist)
-	Bivio::IO::Alert->die($class, ': ', $c,
-		': missing component clone or initialize attributes')
-		    unless $cc || $cfg->{initialize};
-
-	# Create the instance, initialize, seal, and store.
-	$self->put($c => $c->new($self, $cc, $cfg->{initialize}));
-	delete($config->{$c});
-    }
-
-    # Make sure everything in $config is valid.
-    Bivio::IO::Alert->die(ref($self), ': unknown config (modules not ',
-	    ' FacadeComponents(?): ', $config) if %$config;
-
-    # Finish initialization
+    # Store globally
     $_CLASS_MAP{$class} = $_URI_MAP{$uri} = $self;
-    $self->set_read_only();
+    return $self;
+}
+
+=for html <a name="new_child"></a>
+
+=head2 new_child(hash_ref config) : Bivio::UI::Facade
+
+Creates a child of I<self> (parent).  The I<child_type> attribute
+must be set, but no other attributes except components should
+be set.  The clone is always the parent.
+
+=cut
+
+sub new_child {
+    my($parent, $config) = @_;
+
+    # Will blow up if not a parent (main facade).
+    my($children) = $parent->get('children');
+
+    my($self) = Bivio::Collection::Attributes::new($parent);
+
+    # Initialize this instance's attributes
+    my($type) = Bivio::UI::FacadeChildType->from_any($config->{child_type});
+    delete($config->{child_type});
+    $self->internal_put({
+	uri => $parent->get('uri'),
+	is_production => $parent->get('is_production'),
+	is_default => 0,
+	child_type => $type,
+	parent => $parent,
+    });
+
+    Bivio::IO::Alert->die($self, ': duplicate child type initialization')
+		if $children->{$type};
+
+    # This is actually very inefficient, because we copy the entire
+    # parent facade to the child.  Most of it can probably be shared.
+    _initialize($self, $config, $parent);
+
+    # This is allowed even though the parent is already read-only
+    $children->{$type} = $self;
     return $self;
 }
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Returns string representation of the Facade.
+
+=cut
+
+sub as_string {
+    my($self) = @_;
+    my($type) = $self->unsafe_get('type')
+	    || Bivio::UI::FacadeChildType->DEFAULT;
+    return $self->simple_package_name.'.'.lc($type->get_name);
+}
 
 =for html <a name="get_default"></a>
 
@@ -371,6 +424,33 @@ sub initialize {
     return;
 }
 
+=for html <a name="prepare_to_render"></a>
+
+=head2 static prepare_to_render(Bivio::Agent::Request req)
+
+Called before rendering to lookup the user preference
+I<facade_child_type> and set on the request.
+
+=cut
+
+sub prepare_to_render {
+    my(undef, $req) = @_;
+    my($self) = $req->get('facade');
+    my($children) = $self->unsafe_get('children');
+
+    # No children?  If already a child, then got an error during
+    # rendering or server_redirect(?) and we should just stay in the
+    # same facade.
+    return unless $children && %$children;
+
+    # No child of this type (could be default case)?
+    my($type) = $req->get_user_pref('facade_child_type');
+    return unless $children->{$type};
+
+    _setup_request($children->{$type}, $req);
+    return;
+}
+
 =for html <a name="register"></a>
 
 =head2 static register(array_ref required_components)
@@ -424,18 +504,12 @@ sub setup_request {
 	    # Avoid repeated errors
 	    $self = $_URI_MAP{$uri} = $_CLASS_MAP{$_DEFAULT};
 	}
-	elsif ($_TRACE) {
-	    _trace($uri);
-	}
     }
     else {
-	_trace('using default') if $_TRACE;
 	$self = $_CLASS_MAP{$_DEFAULT};
     }
 
-    # Put facade and component map on request
-    my($attrs) = $self->internal_get;
-    $req->put(facade => $self, map {($_, $attrs->{$_})} @_COMPONENTS);
+    _setup_request($self, $req);
     return;
 }
 
@@ -457,6 +531,41 @@ sub _get_class_pattern {
     return $pat;
 }
 
+# _initialize(Bivio::UI::Facade self, hash_ref config, Bivio::UI::Facade clone)
+#
+# Initializes the facade from config and clone.
+#
+sub _initialize {
+    my($self, $config, $clone) = @_;
+    # Initialize all components
+    foreach my $c (@_COMPONENTS) {
+	# Get the config for this component (or force to exist)
+	my($cfg) = $config->{$c} || {};
+
+	# Get the clone, if any
+	my($cc) = $cfg && exists($cfg->{clone})
+		? $cfg->{clone} ? _load($cfg->{clone}) : undef : $clone;
+	$cc = $cc->get($c) if $cc;
+
+	# Must have a clone or initialize (all components MUST be exist)
+	Bivio::IO::Alert->die($self, ': ', $c,
+		': missing component clone or initialize attributes')
+		    unless $cc || $cfg->{initialize};
+
+	# Create the instance, initialize, seal, and store.
+	$self->put($c => $c->new($self, $cc, $cfg->{initialize}));
+	delete($config->{$c});
+    }
+
+    # Make sure everything in $config is valid.
+    Bivio::IO::Alert->die($self, ': unknown config (modules not ',
+	    ' FacadeComponents(?): ', $config) if %$config;
+
+    # No more modifications allowed
+    $self->set_read_only();
+    return;
+}
+
 # _load(string class) : Bivio::UI::Facade
 #
 # Loads a facade if not already loaded.
@@ -470,6 +579,19 @@ sub _load {
     Bivio::IO::Alert->die($clone, ": did not call this module's new "
 	    ." (non-production Facade?") unless ref($_CLASS_MAP{$clone});
     return $_CLASS_MAP{$clone};
+}
+
+# _setup_request(Bivio::UI::Facade self, Bivio::Agent::Request req)
+#
+# Sets facade and components on request.
+#
+sub _setup_request {
+    my($self, $req) = @_;
+    # Put facade and component map on request
+    my($attrs) = $self->internal_get;
+    $req->put(facade => $self, map {($_, $attrs->{$_})} @_COMPONENTS);
+    _trace($self) if $_TRACE;
+    return;
 }
 
 =head1 COPYRIGHT

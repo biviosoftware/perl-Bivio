@@ -160,7 +160,7 @@ my(%_QUERY_TO_FIELDS) = (
     's' => 'search',
     't' => 'this',
 );
-my(@_QUERY) = sort(values(%_QUERY_TO_FIELDS));
+my(@_QUERY_FIELDS) = sort(values(%_QUERY_TO_FIELDS));
 my(%_ATTR_TO_CHAR) = map {
     ($_QUERY_TO_FIELDS{$_}, $_);
 } keys(%_QUERY_TO_FIELDS);
@@ -188,7 +188,7 @@ sub new {
     die('missing auth_id') if $support->get('auth_id') && !$attrs->{auth_id};
 #TODO: There may be junk in the query.  Probably should "clean" it?
 #      Doesn't really matter as ALL the attributes are set explicitly.
-    foreach my $k (@_QUERY) {
+    foreach my $k (@_QUERY_FIELDS) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $die);
     }
     return _new($proto, $attrs);
@@ -208,7 +208,7 @@ B<I<attrs> will be subsumed by this module.  Do not use it again.>
 sub unauth_new {
     my($proto, $attrs, $model, $support) = @_;
     # Always set these
-    foreach my $k (@_QUERY) {
+    foreach my $k (@_QUERY_FIELDS) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $model)
 		unless exists($attrs->{$k});
     }
@@ -218,6 +218,24 @@ sub unauth_new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="clean_raw"></a>
+
+=head2 clean_raw(hash_ref query)
+
+Removes any raw query keys that aren't part of the "valid" set.
+Used by
+L<Bivio::Biz::ListModel::parse_query_from_request|Bivio::Biz::ListModel/"parse_query_from_request">.
+
+=cut
+
+sub clean_raw {
+    my(undef, $query) = @_;
+    foreach my $k (keys(%$query)) {
+	delete($query->{$k}) unless $_QUERY_TO_FIELDS{$k};
+    }
+    return;
+}
 
 =for html <a name="format_uri_for_any_list"></a>
 

@@ -618,12 +618,12 @@ not set iwc the default should be used.
 sub get_club_pref {
     my($self, $pref) = @_;
     my($auth_realm) = $self->get('auth_realm');
-    return undef unless $auth_realm && $auth_realm->get('type')
-	    == Bivio::Auth::RealmType::CLUB();
     return Bivio::Biz::Model::Preferences->get_value(
 	    $self,
 	    'club_prefs',
-	    $auth_realm->get('owner'),
+	    $auth_realm && $auth_realm->get('type')
+		    == Bivio::Auth::RealmType::CLUB()
+	    ? $auth_realm->get('owner') : undef,
 	    Bivio::Type::ClubPreference->from_any($pref));
 }
 
@@ -774,12 +774,10 @@ not set iwc the default should be used.
 
 sub get_user_pref {
     my($self, $pref) = @_;
-    my($auth_user) = $self->get('auth_user');
-    return undef unless $auth_user;
     return Bivio::Biz::Model::Preferences->get_value(
 	    $self,
 	    'user_prefs',
-	    $auth_user,
+	    $self->get('auth_user'),
 	    Bivio::Type::UserPreference->from_any($pref));
 }
 

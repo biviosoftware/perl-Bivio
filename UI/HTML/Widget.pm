@@ -980,6 +980,22 @@ sub string {
     });
 }
 
+=for html <a name="submit"></a>
+
+=head2 static submit(any value) : Bivio::UI::HTML::Widget::Submit
+
+Returns a submit button with I<value>.
+
+=cut
+
+sub submit {
+    my(undef, $value) = @_;
+    _use('Submit');
+    return Bivio::UI::HTML::Widget::Submit->new({
+	value => $value,
+    });
+}
+
 =for html <a name="table"></a>
 
 =head2 static table(string list_class, array_ref columns, hash_ref attrs) : Bivio::UI::HTML::Widget::Table

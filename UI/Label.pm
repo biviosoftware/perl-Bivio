@@ -443,6 +443,10 @@ _compile(
     HELP_TAX_ALLOCATION_METHODS => ['Tax Allocation Methods'],
     HELP_EXPENSES => ['Expenses'],
     HELP_FEES => ['Fees'],
+
+    # Preferences
+    PAGE_SIZE => ['List Size'],
+    FACADE_CHILD_TYPE => ['Style'],
 );
 
 =head1 METHODS

@@ -2347,6 +2347,16 @@ my(@_CFG) = (
         Bivio::UI::HTML::Adm::FindRealmOwner
         next=HTTP_DOCUMENT
     )],
+    [qw(
+        USER_ADMIN_PREFERENCES_EDIT
+        236
+        USER
+        ADMIN_WRITE
+        ?/admin/edit/preferences
+        Bivio::Biz::Model::EditPreferencesForm
+        Bivio::UI::HTML::User::EditPreferences
+        next=USER_ADMIN_PREFERENCES_EDIT
+    )],
 );
 
 __PACKAGE__->compile(

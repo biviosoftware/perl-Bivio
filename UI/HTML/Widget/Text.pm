@@ -164,7 +164,8 @@ to extract the field's type and can only do that when we have a form.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
     unless ($fields->{initialized}) {
@@ -179,7 +180,8 @@ sub render {
     }
 
     # Name
-    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
+    my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
+    $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
 
     # Format if provided
     my($v);
@@ -196,7 +198,7 @@ sub render {
     $v = $form->get_field_as_html($field) unless defined($v);
 
     # Value
-    $$buffer .= ' value="'.$v.'">';
+    $$buffer .= ' value="'.$v.'">'.$s;
 
     # Handler is rendered after, because it probably needs to reference the
     # field.

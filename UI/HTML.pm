@@ -187,7 +187,7 @@ sub get_standard_footer {
 	   ));
 
     # Create grid
-    Bivio::UI::HTML::Widget->load_class('Grid');
+    Bivio::UI::HTML::Widget->load_class('Grid', 'EditPreferences');
     return Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
@@ -199,6 +199,24 @@ sub get_standard_footer {
 			cell_expand => 1,
 			cell_bgcolor => 'footer_line',
 		       ),
+	    ],
+	    [
+		Bivio::UI::HTML::Widget::EditPreferences->new->put(
+			cell_expand => 1,
+		),
+	    ],
+	    [
+		# Only render second line if the the EditPreferences
+		# widget actually rendered something.
+		Bivio::UI::HTML::Widget->director(
+			['edit_preferences_rendered'],
+			{
+			    0 => 0,
+			    1 => Bivio::UI::HTML::Widget->clear_dot(undef, 1),
+			})->put(
+				cell_expand => 1,
+				cell_bgcolor => 'footer_line',
+			       ),
 	    ],
 	    [
 		Bivio::UI::HTML::Widget->toggle_secure(),

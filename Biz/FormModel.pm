@@ -301,7 +301,22 @@ sub execute {
 	# should blow up.
 	return 1 if $self->execute_input();
 	return 0 unless $fields->{errors};
-	Carp::croak($self->as_string, ": called with invalid values");
+	Bivio::IO::Alert->die($self->as_string,
+		": called with invalid values");
+	# DOES NOT RETURN
+    }
+
+    # Is this an auxiliary form on the request?
+    my($primary_class) = $req->get('task')->get('form_model');
+    unless (defined($primary_class) && $primary_class eq ref($self)) {
+	# Auxiliary forms are not the "main" form models on the page
+	# and therefore, do not have any input.  They always return
+	# back to this page, if they require_context.
+	_trace(ref($self), ': auxiliary form') if $_TRACE;
+	$fields->{literals} = {};
+	$fields->{context} = $self->get_context_from_request($req)
+		if $self->get_info('require_context');
+	return $self->execute_empty;
     }
 
     # Only save "generically" if not executed explicitly.
@@ -314,7 +329,8 @@ sub execute {
     my($query) = $req->unsafe_get('query');
     if ($query && $query->{fc}) {
 	# If there is an incoming context, must be syntactically valid.
-	my($c) = Bivio::Biz::FormContext->from_literal($self, $query->{fc});
+	my($c) = Bivio::Biz::FormContext->from_literal(
+		$self, $query->{fc});
 	$fields->{context} = $c;
 	# We don't want it to appear in any more URIs now that we can
 	# store it in a form.

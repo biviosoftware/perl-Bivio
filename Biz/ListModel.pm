@@ -89,7 +89,7 @@ May be overridden.
 =cut
 
 sub LOAD_ALL_SIZE {
-    return 500;
+    return Bivio::Type::PageSize->get_max;
 }
 
 =for html <a name="NOT_FOUND_IF_EMPTY"></a>
@@ -105,21 +105,6 @@ sub NOT_FOUND_IF_EMPTY {
     return 0;
 }
 
-=for html <a name="PAGE_SIZE"></a>
-
-=head2 PAGE_SIZE : int
-
-Default page size for display.
-
-May be overridden, but probably want L<load_all|"load_all">.
-
-=cut
-
-sub PAGE_SIZE {
-#TODO: Move this into a preference
-    return 15;
-}
-
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::Biz::Model::SummaryList;
@@ -127,6 +112,7 @@ use Bivio::Biz::QueryType;
 use Bivio::SQL::ListSupport;
 use Bivio::SQL::ListQuery;
 use Bivio::Util;
+use Bivio::Type::PageSize;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -1057,8 +1043,13 @@ Parses the query from the request.  If not set, uses default query.
 sub parse_query_from_request {
     my($self) = @_;
     my($query) = $self->get_request->unsafe_get('query');
-    # Pass a copy of the query, because it is trashed by ListQuery.
-    return $self->parse_query($query ? {%$query} : {});
+
+    # Make a copy of the query, because we modify the value.
+    $query = $query ? {%$query} : {};
+
+    # Clean up the query and then parse.
+    Bivio::SQL::ListQuery->clean_raw($query);
+    return $self->parse_query($query);
 }
 
 =for html <a name="prev_row"></a>
@@ -1230,8 +1221,8 @@ sub _new {
 # while I<query> is L<Bivio::SQL::ListQuery::new|Bivio::SQL::ListQuery/"new">.
 # B<Use the full names of ListQuery attributes.>
 #
-# I<count> will be set to L<PAGE_SIZE|"PAGE_SIZE"> if not already
-# set.
+# I<count> will be set to L<PAGE_SIZE|"PAGE_SIZE"> if defined,
+# or the user preference for page_size.
 #
 # Returns count of rows loaded.
 #
@@ -1244,7 +1235,9 @@ sub _unauth_load {
 	    if ref($query) eq 'HASH';
 
     # Add in count if not there
-    $query->put(count => $self->PAGE_SIZE()) unless $query->has_keys('count');
+    $query->put(count => $self->can('PAGE_SIZE') ? $self->PAGE_SIZE()
+	    : $self->get_request->get_user_pref('PAGE_SIZE'))
+	    unless $query->has_keys('count');
 
     # Add specializations to the where and params.
     my($params) = [];

@@ -28,6 +28,8 @@ use Bivio::UI::HTML::Widget;
 
 C<Bivio::UI::HTML::Widget::FormButton> a form specific submit button.
 
+Font is always C<FORM_SUBMIT>.
+
 =head1 ATTRIBUTES
 
 =over 4
@@ -111,9 +113,11 @@ sub render {
     my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
-    my($value) = $fields->{prefix}
+    my($req) = $source->get_request;
+    my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
+    my($value) = $p.$fields->{prefix}
 	    .$form->get_field_name_for_html($field)
-		    .' value ="'.$fields->{text}.'">';
+		    .' value ="'.$fields->{text}.'">'.$s;
 
     $$buffer .= $value;
     return;

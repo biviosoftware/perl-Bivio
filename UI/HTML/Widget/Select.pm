@@ -49,7 +49,10 @@ List of choices will be constructed from the Enum's values.
 
 List of choices will be constructed from a
 L<Bivio::TypeValue|Bivio::TypeValue> whose type is a
-L<Bivio::Type::EnumSet|Bivio::Type::EnumSet>.
+L<Bivio::Type::EnumSet|Bivio::Type::EnumSet> and value
+is a string (set)
+or type is L<Bivio::Type::EnumSet|Bivio::Type::Integer> and value
+is an array_ref.
 
 =item choices : array_ref (required, get_request)
 
@@ -139,7 +142,7 @@ sub initialize {
     my($choices) = $self->get('choices');
     $fields->{list_source} = undef;
     if (UNIVERSAL::isa($choices, 'Bivio::Type::Enum')) {
-	_load_items_from_enum($self, $choices);
+	$fields->{items} = _load_items_from_enum($self, $choices);
     }
     elsif (!ref($choices)) {
 	Carp::croak($choices, ': unknown choices type (not a ref)');
@@ -150,7 +153,12 @@ sub initialize {
     }
     elsif ($choices->isa('Bivio::TypeValue')
 	   && $choices->get('type')->isa('Bivio::Type::EnumSet')) {
-	_load_items_from_enum_set($self, $choices);
+	$fields->{items} = _load_items_from_enum_set($self, $choices);
+    }
+    elsif ($choices->isa('Bivio::TypeValue')
+	   && $choices->get('type')->isa('Bivio::Type::Integer')
+	   && ref($choices->get('value')) eq 'ARRAY') {
+	$fields->{items} = _load_items_from_integer_array($self, $choices);
     }
     else {
 	Carp::croak(ref($choices), ': unknown choices type (not a set)');
@@ -178,7 +186,8 @@ sub render {
 	$fields->{prefix} = '<select name=';
 	$fields->{initialized} = 1;
     }
-    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
+    my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
+    $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
     $$buffer .= ' size='.$self->get_or_default('size', 1);
     $$buffer .= ' disabled' if $self->get_or_default('disabled', 0);
     $$buffer .= ">\n";
@@ -199,7 +208,7 @@ sub render {
 	$$buffer .= '>'.$items->[$i+1]."\n";
     }
     # No newline, don't know what follows.
-    $$buffer .= '</select>';
+    $$buffer .= '</select>'.$s;
     return;
 }
 
@@ -231,7 +240,9 @@ sub _load_items_from_enum_list {
 	# Always put "0" (unknown) first.
 	return -1 if $a->as_int == 0;
 	return 1 if $b->as_int == 0;
-	$a->$sort_method() cmp $b->$sort_method()
+	return $sort_method eq 'as_int'
+		? $a->$sort_method() <=> $b->$sort_method()
+		: $a->$sort_method() cmp $b->$sort_method();
     } @$list;
 
     shift(@values) unless $self->get_or_default('show_unknown', 1);
@@ -244,8 +255,7 @@ sub _load_items_from_enum_list {
     }
 
     # Result
-    $fields->{items} = \@items;
-    return;
+    return \@items;
 }
 
 # _load_items_from_enum_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
@@ -260,6 +270,16 @@ sub _load_items_from_enum_set {
 	$type->is_set($value, $_) ? ($_) : ();
     } $type->get_enum_type->get_list;
     return _load_items_from_enum_list($self, \@choices);
+}
+
+# _load_items_from_enum_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
+#
+# Loads the items from an integer array_ref.
+#
+sub _load_items_from_integer_array {
+    my($self, $choices) = @_;
+    my($value) = $choices->get('value');
+    return [map {($_, $_)} @$value];
 }
 
 # _load_items_from_list(Bivio::UI::HTML::Widget::Select self, Bivio::Biz::Listmodel list) : array_ref
