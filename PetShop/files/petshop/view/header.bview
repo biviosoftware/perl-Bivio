@@ -4,10 +4,16 @@
 #
 # Parameters:
 view_declare('header_content');
+#use Bivio::PetShop::Type::Category;
 view_put(
     header_title => 'bOP Pet Shop Demo',
     # Used a few places, so centralize here
-    header_categories => [qw(FISH DOGS REPTILES CATS BIRDS)],
+    header_categories => [
+	grep(
+	    $_ ne 'UNKNOWN',
+	    sort(map($_->get_name, Bivio::PetShop::Type::Category->get_list)),
+	),
+    ],
 );
 
 view_class_map('HTMLWidget');
