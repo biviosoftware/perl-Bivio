@@ -97,7 +97,19 @@ The widget and shortcut methods are dynamically loaded.
 =cut
 
 sub AUTOLOAD {
-    my($proto, @args) = _args(@_);
+    return __PACKAGE__->call_method($AUTOLOAD, _args(@_));
+}
+
+=for html <a name="call_method"></a>
+
+=head2 call_method() : 
+
+
+
+=cut
+
+sub call_method {
+    my($package, $AUTOLOAD, $proto, @args) = @_;
     my($view) = _assert_in_eval($AUTOLOAD);
     my($method) = $AUTOLOAD;
     $method =~ s/.*:://;

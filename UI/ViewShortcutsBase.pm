@@ -41,7 +41,6 @@ L<Bivio::UI::ViewLanguage::view_shortcuts|Bivio::UI::ViewLanguage/"view_shortcut
 
 #=VARIABLES
 
-
 =head1 FACTORIES
 
 =cut
@@ -62,6 +61,30 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="fixup_args"></a>
+
+=head2 fixup_args(any proto, ...) : list
+
+Prepend the package name if the arg list doesn't already have an object or
+package name as the first element.
+
+This method can't be called as a function.
+
+=cut
+
+sub fixup_args {
+    my($package, $caller_proto) = (shift, @_);
+
+    return @_
+	if ref($caller_proto)
+	    && UNIVERSAL::isa($caller_proto, $package);
+    return @_
+	if defined($caller_proto)
+	    && !ref($caller_proto)
+	    && $package eq $caller_proto;
+    return ($package, @_);
+}
 
 #=PRIVATE METHODS
 
