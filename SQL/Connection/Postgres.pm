@@ -211,15 +211,51 @@ sub _fixup_outer_join {
     # select * from ec_payment_t LEFT JOIN ec_subscription_t ON
     # ec_payment_t.ec_payment_id=ec_subscription_t.ec_payment_id, realm_owner_t
     # where ec_payment_id.realm_id=realm_owner_t.realm_id
+    #
+    # Another case is:
+    #     SELECT (SELECT
+    #         SUM(policy_t.state_tax)
+    #             FROM policy_t, filing_event_t
+    #             WHERE policy_t.broker_user_id=broker_t.user_id
+    #         ) AS state_tax_due
+    #     FROM tax_deposit_t,broker_t,user_t,broker_tax_payment_t
+    #     WHERE broker_t.user_id=broker_tax_payment_t.broker_user_id(+)
+    # becomes:
+    #     SELECT (SELECT
+    #         SUM(policy_t.state_tax)
+    #             FROM policy_t, filing_event_t
+    #             WHERE policy_t.broker_user_id=broker_t.user_id
+    #         ) AS state_tax_due
+    #     FROM tax_deposit_t,broker_t
+    #         LEFT JOIN broker_tax_payment_t
+    #	      ON (broker_t.user_id = broker_tax_payment_t.broker_user_id),
+    #          user_t
+    #     WHERE broker_t.user_id=broker_tax_payment_t.broker_user_id
+    #
     my($relations) = [];
-    while ($sql =~ /\(\+\)/) {
-	$sql =~ s/\b(FROM)(?:POSTGRES-FIXME)?\b(.+?)([\w\.]+)\s?\=\s?([\w\.]+)\(\+\)(?:\s+AND\b)?/FROMPOSTGRES-FIXME$2/is
-	    || Bivio::Die->die('failed to find outer join: ', $sql);
+    my($prefix, $from_where)
+	# This only handles two levels of parens in SELECTs with AS clauses
+	= $sql =~ /^(
+           (?:
+              [^()]+
+              | \([^()]+\)+
+              | \((?:
+                  [^()]+
+                  |\([^()]+\)
+                )+\)
+           )+
+        )(\sFROM\s.*)/six;
+    Bivio::Die->die('could not find FROM in: ', $sql)
+	unless $from_where;
+    _trace('prefix=', $prefix, '; from_where=', $from_where) if $_TRACE;
+    while ($from_where =~ /\(\+\)/) {
+	$from_where =~ s/\b(FROM)(?:POSTGRES-FIXME)?\b(.+?)([\w\.]+)\s*\=\s*([\w\.]+)\(\+\)(?:\s+AND\b)?/FROMPOSTGRES-FIXME$2/is
+	    || Bivio::Die->die('failed to find outer join: ', $from_where);
 	push(@$relations, [$3, $4]);
     }
     return unless @$relations;
-    Bivio::Die->die('too weird outer join: ', $sql)
-	if $sql =~ /POSTGRES-FIXME.*POSTGRES-FIXME/s;
+    Bivio::Die->die('too weird outer join: ', $from_where)
+	if $from_where =~ /POSTGRES-FIXME.*POSTGRES-FIXME/s;
     my($joins) = {};
     foreach my $r (@$relations) {
 	my($left, $right) = @$r;
@@ -231,20 +267,20 @@ sub _fixup_outer_join {
 	}
 	$joins->{$source_table}
 	    .= " LEFT JOIN $target_table ON ($left = $right)";
-	$sql =~ s/(\sFROMPOSTGRES-FIXME\s.*?)\b$target_table\b(,)?/$1/s
-	    || Bivio::Die->die('failed to remove ', $target_table, ': ', $sql);
+	$from_where =~ s/(\sFROMPOSTGRES-FIXME\s.*?)\b$target_table\b(,)?/$1/s
+	    || Bivio::Die->die('failed to remove ', $target_table, ': ', $from_where);
     }
     foreach my $source_table (sort(keys(%$joins))) {
-	$sql =~ s/(?=FROMPOSTGRES-FIXME)(.*?\b$source_table\b)/$1$joins->{$source_table}/is
+	$from_where =~ s/(?=FROMPOSTGRES-FIXME)(.*?\b$source_table\b)/$1$joins->{$source_table}/is
 	    || Bivio::Die->die('failed to insert outer join "',
-		$joins->{$source_table}, '" into ', $sql);
+		$joins->{$source_table}, '" into ', $from_where);
     }
     # remove extra commas, trailing where
-    $sql =~ s/\bFROMPOSTGRES-FIXME\b/FROM/sg;
-    $sql =~ s/,\s*(?=\sWHERE\s)//is;
+    $from_where =~ s/\bFROMPOSTGRES-FIXME\b/FROM/sg;
+    $from_where =~ s/,\s*(?=\sWHERE\s)//is;
     # Really should have an SQL lexicon...
-    $sql =~ s/\s(?:WHERE|AND)(?=\s*$|\s*\)|\s*(?:HAVING|GROUP|ORDER|UNION|INTERSECT)\b)//is;
-    return $sql;
+    $from_where =~ s/\s(?:WHERE|AND)(?=\s*$|\s*\)|\s*(?:HAVING|GROUP|ORDER|UNION|INTERSECT)\b)//is;
+    return $prefix . $from_where;
 }
 
 # _interpret_constraint_violation(self, hash_ref attrs, string constraint) : Bivio::Type::Enum
