@@ -48,6 +48,10 @@ plain html.  No translation is performed.
 
 L<Bivio::UI::View|Bivio::UI::View> loads views from this tree.
 
+=item CACHE
+
+Denormalized files which can be rebuilt.
+
 =back
 
 =cut
@@ -63,6 +67,10 @@ __PACKAGE__->compile([
     'VIEW' => [
 	2,
 	'view/',
+    ],
+    'CACHE' => [
+        3,
+        'cache/',
     ],
 ]);
 
