@@ -1036,7 +1036,7 @@ my(@_CFG) = (
         110
         CLUB
         DOCUMENT_WRITE
-        ?/file_delete/*
+        ?/file-delete/*:?/file_delete/*
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
@@ -1050,7 +1050,7 @@ my(@_CFG) = (
         111
         CLUB
         DOCUMENT_WRITE
-        ?/file_upload/*
+        ?/file-upload/*:?/file_upload/*
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
@@ -1064,7 +1064,7 @@ my(@_CFG) = (
         112
         CLUB
         DOCUMENT_WRITE
-        ?/file_replace/*
+        ?/file-replace/*:?/file_replace/*
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
@@ -2242,7 +2242,7 @@ my(@_CFG) = (
         219
         CLUB
         DOCUMENT_WRITE
-        ?/file_rename/*
+        ?/file-rename/*
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
