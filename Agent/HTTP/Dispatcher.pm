@@ -144,7 +144,6 @@ sub initialize {
     my($proto) = @_;
     $_INITIALIZED && return;
     $_INITIALIZED = 1;
-    Bivio::IO::Config->initialize;
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize();
     # Avoids import problems

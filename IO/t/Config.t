@@ -14,6 +14,8 @@ print "ok 1\n";
 
 ######################### End of black magic.
 
+die("NEED TO REWRITE TO USE fork() etc.");
+
 my($T) = 1;
 sub dev_init {
     ++$T;

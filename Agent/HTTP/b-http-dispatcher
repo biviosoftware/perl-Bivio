@@ -66,7 +66,6 @@ Bivio::IO::Config->register({
 
 sub main {
     my(@argv) = @_;
-    Bivio::IO::Config->initialize(\@argv);
     my($execute) = 1;
     my($background) = 0;
     my($server_name) = undef;

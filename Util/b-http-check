@@ -57,7 +57,6 @@ my($_NOW) = time;
 
 sub main {
     my(@argv) = @_;
-    Bivio::IO::Config->initialize(\@argv);
     my($interval) = $_DEFAULT_INTERVAL;
     my($error_log) = $_DEFAULT_ERROR_LOG;
     my($mail_to) = $_DEFAULT_MAIL_TO;

@@ -88,12 +88,12 @@ use Bivio::Ext::DBI;
 use Bivio::IO::Trace;
 use Bivio::TypeError;
 use DBD::Oracle qw(:ora_types);
-use Carp ();
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_DBI_NAME) = undef;
 my($_CONNECTION);
 # Set to the pid that creates the connection.  Ensures all children
 # use a different connection.
@@ -132,7 +132,7 @@ my(%_ERR_RETRY_SLEEP) = (
     # ORA-01012: not logged on to Oracle
     1012 => 2,
     # ORA-01033: Oracle initialization or shutdown in progress
-    1033 => 5,
+    1033 => 15,
     # ORA-01034: ORACLE not available
     1034 => 5,
     # ORA-01089: immediate shutdown in progress - no operations are permitted
@@ -315,7 +315,7 @@ returns its new value.
 
 sub increment_db_time {
     my(undef, $start_time) = @_;
-    Carp::croak('invalid start_time') unless $start_time;
+    die('invalid start_time') unless $start_time;
     $_DB_TIME += Bivio::Type::DateTime->gettimeofday_diff_seconds($start_time);
     return $_DB_TIME;
 }
@@ -336,7 +336,35 @@ sub rollback {
     return;
 }
 
+=for html <a name="set_dbi_name"></a>
+
+=head2 static set_dbi_name(string name) : string
+
+Sets the name of the L<Bivio::Ext::DBI|Bivio::Ext::DBI> configuration
+to use.  The default is C<undef>.  Returns the previous name.
+
+Doesn't do anything if I<name> is not different from the current name.
+
+B<To be used by utilities only.>
+
+=cut
+
+sub set_dbi_name {
+    my(undef, $name) = @_;
+
+    # Don't do anything if the names are equal
+    return $name if defined($name) == defined($_DBI_NAME)
+	    && (!defined($name) || $name eq $_DBI_NAME);
+
+    my($old) = $_DBI_NAME;
+    # This will force the connection to be re-opened after the next use
+    $_CONNECTION_PID = 0;
+    $_DBI_NAME = $name;
+    return $old;
+}
+
 #=PRIVATE METHODS
+
 
 # _execute_helper(string sql, array_ref params, boolean has_blob, scalar_ref statement)
 #
@@ -478,7 +506,7 @@ sub _get_connection {
 	    $_CONNECTION = undef;
 	}
 	_trace("creating connection: pid=$$") if $_TRACE;
-	$_CONNECTION = Bivio::Ext::DBI->connect();
+	$_CONNECTION = Bivio::Ext::DBI->connect($_DBI_NAME);
 	# Got a connection which will be reused on next call.  We don't
 	# need to ping it (just in case parent process had an error on
 	# the connection).

@@ -18,7 +18,6 @@ use User::pwent ();
 
 my($_USER) = $ENV{LOGNAME} || $ENV{USER} || User::pwent::getpwuid($>)->name;
 
-Bivio::IO::Config->initialize(\@ARGV);
 
 my($_IN) = <<'EOF';
 Received: (from majordomo@localhost)

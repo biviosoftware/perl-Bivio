@@ -59,7 +59,6 @@ use Cwd ();
 sub main {
     my(@argv) = @_;
     $> == 0 && die('this program cannot be run as root');
-    Bivio::IO::Config->initialize(\@argv);
     my($cmd_fmt) = '"$prog_file $arg"';
     my($tmp);
     my($execute) = 1;

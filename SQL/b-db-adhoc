@@ -32,7 +32,6 @@ main(@ARGV);
 
 sub main {
     my(@argv) = @_;
-    Bivio::IO::Config->initialize(\@argv);
     my($arg, @q);
     while ($arg = shift(@argv)) {
         if ($arg eq '-report') {

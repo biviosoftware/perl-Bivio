@@ -14,7 +14,6 @@ print "ok 1\n";
 ######################### End of black magic.
 
 use Bivio::IO::Config;
-Bivio::IO::Config->initialize(\@ARGV);
 
 package Bivio::Die::T1;
 

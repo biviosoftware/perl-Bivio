@@ -46,7 +46,6 @@ sub main {
     }
     _usage("$_DIR: not a directory") unless -d $_DIR;
     my($buffer) = "\"".join('","', @_FIELDS)."\"\n";
-    Bivio::IO::Config->initialize(\@argv);
     local($_);
     foreach my $f (<$_DIR/*>) {
 	open(IN, $f) || die("$f: $!");

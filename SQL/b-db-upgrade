@@ -44,7 +44,6 @@ $| = 1;
 
 sub main {
     my(@argv) = @_;
-    Bivio::IO::Config->initialize(\@argv);
 
     # want to avoid accidentally running this script
     my($method) = @argv;

@@ -256,7 +256,6 @@ Calls L<Bivio::SQL::Connection::commit|Bivio::SQL::Connection/"commit">.
 
 sub main {
     my($proto, @argv) = @_;
-    Bivio::IO::Config->initialize(\@argv);
     Bivio::Agent::Request->get_current_or_new;
 
     # Parse -n flag

@@ -18,7 +18,6 @@ use Bivio::DieCode;
 use Bivio::TypeError;
 use Bivio::IO::Config;
 
-Bivio::IO::Config->initialize(\@ARGV);
 
 my($_TABLE) = 't_connection_t';
 Bivio::Die->eval(sub {

@@ -26,7 +26,6 @@ use Bivio::Type::PrimaryId;
 use Bivio::Type::Text;
 use Bivio::Type::Time;
 
-Bivio::IO::Config->initialize(\@ARGV);
 
 my($T) = 2;
 sub t {

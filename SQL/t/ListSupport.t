@@ -30,7 +30,6 @@ use Bivio::Biz::PropertyModel;
 use Bivio::SQL::ListQuery;
 use Bivio::SQL::Support;
 
-Bivio::IO::Config->initialize(\@ARGV);
 
 package Bivio::Biz::PropertyModel::TListT1;
 

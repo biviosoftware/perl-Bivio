@@ -26,147 +26,9 @@ configuration name/value tuples.
 Modules are dynamically configured in the order they are initialized.
 Each module defines a C<handle_config> method and
 calls L<register|"register"> during initialization.
-When L<initialize|"initialize"> is called, the registrants are
-upcalled with their configuration.
 
-Programs may pass I<@ARGV> to L<initialize|"initialize"> to allow
-individual configuration parameters to be set from command line arguments.
-See L<initialize|"initialize"> for syntax.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="NAMED"></a>
-
-=head2 NAMED : string
-
-Identifies the named configuration specification, see L<register|"register">.
-
-=cut
-
-sub NAMED {
-    return \&NAMED;
-}
-
-=for html <a name="REQUIRED"></a>
-
-=head2 REQUIRED : string
-
-Returns a unique value which passed in spec (see L<get|"get">)
-will indicate the configuration parameter is required.
-
-=cut
-
-sub REQUIRED {
-    return \&REQUIRED;
-}
-
-#=VARIABLES
-my($_PACKAGE, $_ACTUAL, $_INITIALIZED, @_REGISTERED, %_SPEC, %_CONFIGURED);
-# Make sure we are initialized
-BEGIN {
-    $_PACKAGE = __PACKAGE__;
-    # The configuration read off disk or passed in
-    $_ACTUAL = {};
-    # Was "initialized" called once?
-    $_INITIALIZED = 0;
-    # List of packages registered
-    @_REGISTERED = ();
-    # Configuration specifications for registered packages
-    %_SPEC = ();
-    # Has a package been configured?
-    %_CONFIGURED = ();
-}
-
-#=IMPORTS
-# Do not use explicitly, to ensure this module initialized first
-# use Bivio::IO::Alert;
-# use Bivio::IO::Trace;
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get"></a>
-
-=head2 static get(string name) : hash
-
-Looks up configuration for the caller's package.  If name is provided, returns
-the configuration hash bound to I<name> within the package's configuration
-space, e.g. given the config:
-
-    'Bivio::IPC::Server' => {
-        'listen' => 35,
-        'my_server' => {
-            'port' => 1234,
-            'timeout' => 60_000,
-        },
-        'my_other_server' => {
-            'port' => 9999,
-        },
-    }
-
-C<get('my_server')> will return the following hash:
-
-    {
-        'listen' => 35,
-        'port' => 1234,
-        'timeout' => 60_000,
-    }
-
-Required configuration is checked during this call.
-
-If I<name> is passed but is undefined, then only the named configuration
-parameters will be returned.
-
-If I<name> is not passed, then the entire configuration will be returned,
-including specific named sections.
-
-NOTE: Should not be called from a package body, because
-L<initialize|"initialize"> should be called by main.
-
-=cut
-
-sub get {
-    my($proto, $name) = @_;
-    my($pkg);
-    my($i) = 0;
-    0 while ($pkg = caller($i++)) eq __PACKAGE__;
-    my($pkg_cfg) = &_get_pkg($pkg);
-    int(@_) < 2 && return $pkg_cfg;
-    my($spec) = $_SPEC{$pkg};
-    defined($spec) && defined($spec->{&NAMED})
-	    || die("$pkg: NAMED config not specified");
-    if (defined($name)) {
-	defined($pkg_cfg->{$name})
-		|| die("$pkg.$name: named config not found");
-	return $pkg_cfg->{$name};
-    }
-    # Retrieve the "undef" config, see _get_pkg
-    my($cfg) = $pkg_cfg->{&NAMED};
-    my(@bad) = grep(defined($cfg->{$_}) && $cfg->{$_} eq &REQUIRED,
-	    keys(%$cfg));
-    @bad || return $cfg;
-    @bad = sort @bad;
-    die("$pkg.(@bad): named config required");
-}
-
-=for html <a name="initialize"></a>
-
-=head2 initialize(string file)
-=head2 initialize(string file, array argv)
-
-=head2 initialize(hash config, array argv)
-
-=head2 initialize(array argv)
-
-=head2 initialize()
-
-Initializes the configuration from I<config> hash or I<file> which contains
-a hash.
+This module parses I<@ARGV> at initialization time.  It removes any
+arguments which are destined for this module.  See the syntax
 
 Without an argument or with just I<argv>, looks for the name of a configuration
 file as follows:
@@ -216,9 +78,8 @@ value to undef, use the word C<undef>.
 
 Module defaults to C<main> if not supplied on the command line.
 
-B<initialize> also observes the lone B<--> convention, i.e.
-B<initialize> stops parsing command line arguments if a B<--> is
-encountered.
+This modules observes the lone B<--> convention, i.e.
+parsing stops if a B<--> is encountered in the command line arguments.
 
 HACK: Since it is fairly common, the option I<--TRACE> is translated
 to I<--Bivio::IO::Trace.package_filter> for brevity.
@@ -229,51 +90,171 @@ for C<::> and C<.> separators) for this syntax to work.
 If a valid configuration is found, calls packages which have
 called L<register|"register">.
 
+=head1 ENVIRONMENT
+
+=over 4
+
+=item $BIVIO_CONF
+
+Name of configuration file if not running setuid, setgid, or as root.
+
+=back
+
+=head1 FILES
+
+=over 4
+
+=item bivio.conf
+
+Default value for environment variable I<$BIVIO_CONF>.
+
+=item /etc/bivio.conf
+
+Name of configuration used if the programming is running setuid, setgid, or as
+root, or the file identified by C<$BIVIO_CONF> (or its default) is not found.
+
+=back
+
+=cut
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="NAMED"></a>
+
+=head2 NAMED : string
+
+Identifies the named configuration specification, see L<register|"register">.
+
+=cut
+
+sub NAMED {
+    return \&NAMED;
+}
+
+=for html <a name="REQUIRED"></a>
+
+=head2 REQUIRED : string
+
+Returns a unique value which passed in spec (see L<get|"get">)
+will indicate the configuration parameter is required.
+
+=cut
+
+sub REQUIRED {
+    return \&REQUIRED;
+}
+
+#=IMPORTS
+# This is the first module to initialize.  Don't import anything that
+# might import other bivio modules.
+# This is here to avoid a bunch of error messages when societas
+# is started in stack_trace_warn.
+use MIME::Parser ();
+
+#=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
+# The configuration read off disk or passed in
+my($_ACTUAL) = {};
+# List of packages registered
+my(@_REGISTERED) = ();
+# Configuration specifications for registered packages
+my(%_SPEC) = ();
+# Has a package been configured?
+my(%_CONFIGURED) = ();
+_initialize(defined(@main::ARGV) ? \@main::ARGV : []);
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="get"></a>
+
+=head2 static get(string name) : hash
+
+Looks up configuration for the caller's package.  If name is provided, returns
+the configuration hash bound to I<name> within the package's configuration
+space, e.g. given the config:
+
+    'Bivio::IPC::Server' => {
+        'listen' => 35,
+        'my_server' => {
+            'port' => 1234,
+            'timeout' => 60_000,
+        },
+        'my_other_server' => {
+            'port' => 9999,
+        },
+    }
+
+C<get('my_server')> will return the following hash:
+
+    {
+        'listen' => 35,
+        'port' => 1234,
+        'timeout' => 60_000,
+    }
+
+Required configuration is checked during this call.
+
+If I<name> is passed but is undefined, then only the named configuration
+parameters will be returned.
+
+If I<name> is not passed, then the entire configuration will be returned,
+including specific named sections.
+
+=cut
+
+sub get {
+    my($proto, $name) = @_;
+    my($pkg);
+    my($i) = 0;
+    0 while ($pkg = caller($i++)) eq __PACKAGE__;
+    my($pkg_cfg) = &_get_pkg($pkg);
+    int(@_) < 2 && return $pkg_cfg;
+    my($spec) = $_SPEC{$pkg};
+    defined($spec) && defined($spec->{&NAMED})
+	    || die("$pkg: NAMED config not specified");
+    if (defined($name)) {
+	defined($pkg_cfg->{$name})
+		|| die("$pkg.$name: named config not found");
+	return $pkg_cfg->{$name};
+    }
+    # Retrieve the "undef" config, see _get_pkg
+    my($cfg) = $pkg_cfg->{&NAMED};
+    my(@bad) = grep(defined($cfg->{$_}) && $cfg->{$_} eq &REQUIRED,
+	    keys(%$cfg));
+    @bad || return $cfg;
+    @bad = sort @bad;
+    die("$pkg.(@bad): named config required");
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 abstract static handle_config(hash cfg)
+
+This method is upcalled during the call to L<register|"register">.
+It will be passed I<cfg> for the registrant.  The values parallel
+the registered configuration.
+
+=cut
+
+$_ = <<'}'; # for emacs
+sub handle_config {
+}
+
+=for html <a name="initialize"></a>
+
+=head2 initialize()
+
+DEPRECATED.
+
 =cut
 
 sub initialize {
-    my(undef, $arg) = @_;
-    my($argv) = $_[$#_];
-    $_INITIALIZED = 1;
-    %_CONFIGURED = ();
-    # On failure, we have no configuration.
-    $_ACTUAL = {};
-    my($file);
-    my($not_setuid) = $< == $> && $( == $);
-    # If $arg is an ARRAY, then it is $argv
-    if (defined($arg) && ref($arg) ne 'ARRAY') {
-	if (ref($arg) eq 'HASH') {
-	    $_ACTUAL = $arg;
-	}
-	else {
-	    $file = $arg;
-	}
-    }
-    else {
-	# If we are setuid or setgid or as root, then don't initialize from
-	# environment variables or files in the current directory.
-	# /etc/bivio.conf is last resort if the file doesn't exist.
-	$file = $ENV{'BIVIO_CONF'} || 'bivio.conf';
-	unless (-f $file && -r $file && $> != 0 && $not_setuid) {
-	    $file = '/etc/bivio.conf';
-	}
-    }
-    if (defined($file)) {
-	my($actual) = do $file;
-	unless (ref($actual) eq 'HASH') {
-	    -e $file && die("$file: config parse failed: ",
-		$@ ? $@ : "empty or not a hash_ref");
-	    $actual = {};
-	}
-	$_ACTUAL = $actual;
-    }
-    $not_setuid && ref($argv) eq 'ARRAY' && &_process_argv($_ACTUAL, $argv);
-    # Call registrants in FIFO
-    my($pkg);
-    foreach $pkg (@_REGISTERED) {
-	&{\&{$pkg . '::handle_config'}}($pkg, &_get_pkg($pkg));
-    }
-#TODO: Why doesn't return an error when @argv = () and no default config?
+    warn('DEPRECATED Bivio::IO::Config->initialize call at '
+	    .join(' ', caller)."\n");
     return;
 }
 
@@ -282,14 +263,14 @@ sub initialize {
 =head2 register(hash spec)
 
 Calling package will be put in the list of packages to be configured.  A
-callback may happen immediately, if L<initialize|"initialize"> was called
-already.
+callback to L<handle_config|"handle_config"> will happen
+during the call to this method.
 
-The calling package must define a C<handle_config> method which takes two
-arguments, the class and the configuration as a hash.
+The calling package must define a L<handle_config|"handle_config"> method which
+takes two arguments, the class and the configuration as a hash.
 
-If I<spec> is supplied, the values will be filled in when
-L<get|"get"> is called or the values are upcalled to I<handle_config>.
+If I<spec> is supplied, the values will be filled in when L<get|"get"> is
+called or the values are upcalled to L<handle_config|"handle_config">.
 
 A configuration I<spec> looks like:
 
@@ -334,7 +315,9 @@ sub register {
 	    "&$pkg\::handle_config not defined");
     push(@_REGISTERED, $pkg);
     $_SPEC{$pkg} = $spec;
-    $_INITIALIZED && &{\&{$pkg . '::handle_config'}}($pkg, &_get_pkg($pkg));
+
+    # Call handle_config
+    &{\&{$pkg . '::handle_config'}}($pkg, &_get_pkg($pkg));
     return;
 }
 
@@ -411,6 +394,42 @@ sub _get_pkg {
     return $_ACTUAL->{$pkg} = $actual;
 }
 
+# _initialize(array_ref argv)
+#
+# Initializes the configuration from I<config> hash.
+#
+sub _initialize {
+    my($argv) = @_;
+    %_CONFIGURED = ();
+    # On failure, we have no configuration.
+    $_ACTUAL = {};
+    my($not_setuid) = $< == $> && $( == $);
+    # If we are setuid or setgid or as root, then don't _initialize from
+    # environment variables or files in the current directory.
+    # /etc/bivio.conf is last resort if the file doesn't exist.
+    my($file) = $ENV{'BIVIO_CONF'} || 'bivio.conf';
+    unless (-f $file && -r $file && $> != 0 && $not_setuid) {
+	$file = '/etc/bivio.conf';
+    }
+    if (defined($file)) {
+	my($actual) = do($file);
+	unless (ref($actual) eq 'HASH') {
+	    -e $file && die("$file: config parse failed: ",
+		$@ ? $@ : "empty or not a hash_ref");
+	    $actual = {};
+	}
+	$_ACTUAL = $actual;
+    }
+
+    # Only process arguments in not_setuid case
+    _process_argv($_ACTUAL, $argv) if $not_setuid;
+    return;
+}
+
+# _process_argv(hash_ref actual, array_ref argv)
+#
+# Inserts applicable command line arguments in $argv to $actual.
+#
 sub _process_argv {
     my($actual, $argv) = @_;
     for (my($i) = 0; $i < int(@$argv); $i++) {
@@ -445,33 +464,6 @@ sub _process_argv {
 	splice(@$argv, $i--, 1);
     }
 }
-
-=head1 ENVIRONMENT
-
-=over 4
-
-=item $BIVIO_CONF
-
-Name of configuration file if L<initialize|"initialize"> is not passed
-arguments and the program is not running setuid, setgid, or as root.
-
-=back
-
-=head1 FILES
-
-=over 4
-
-=item bivio.conf
-
-Default value for environment variable I<$BIVIO_CONF>.
-
-=item /etc/bivio.conf
-
-Name of configuration used if L<initialize|"initialize"> is not passed
-arguments and the programming is running setuid, setgid, or as root, or the
-file identified by C<$BIVIO_CONF> (or its default) is not found.
-
-=back
 
 =head1 COPYRIGHT
 
