@@ -236,7 +236,7 @@ sub get_delegate_info {
 	    518
 	    GENERAL
 	    ANYBODY
-	    Action.UserLogout->execute_clear_cart_and_logout
+	    Action.UserLogout->execute
 	    Action.ClientRedirect->execute_next
 	    next=MAIN
 	)],
