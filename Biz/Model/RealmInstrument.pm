@@ -37,10 +37,12 @@ use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Boolean;
 use Bivio::Type::DateTime;
+use Bivio::Type::EntryType;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
 use Bivio::Type::Text;
+use Bivio::Type::TaxCategory;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -62,8 +64,12 @@ sub get_cost_per_share {
 #TODO: input array of instruments and use group by
     my(undef, $realm_instrument_id, $date) = @_;
 
+#TODO: THIS SHOULD ALL BE DONE IN SQL!
+#      very clumsy with cost basis of fractional shares
+#      need to separate shares returned (ignored)
+#      from the value of the returned shares (affects total_cost)
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select entry_t.amount, realm_instrument_entry_t.count from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= '
+	    'select entry_t.amount, realm_instrument_entry_t.count, entry_t.entry_type, entry_t.tax_basis, entry_t.tax_category from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= '
 	    .Bivio::Type::Date->to_sql_value('?'),
 	   [$realm_instrument_id,
 		   Bivio::Type::Date->to_sql_param($date)]);
@@ -72,8 +78,25 @@ sub get_cost_per_share {
     my($total_count) = 0;
     my($row);
     while ($row = $sth->fetchrow_arrayref()) {
-	$total_cost += $row->[0];
-	$total_count += $row->[1];
+	my($cost, $count, $type, $basis, $tax) = @$row;
+
+	if ($basis) {
+	    $total_cost += $cost;
+	}
+	elsif ($tax == Bivio::Type::TaxCategory->NOT_TAXABLE->as_int()
+#TODO: ugh - consider consolidating SHARES_AS_CASH types
+		&& ($type == Bivio::Type::EntryType
+			->INSTRUMENT_SPLIT_SHARES_AS_CASH->as_int()
+		    || $type == Bivio::Type::EntryType
+			->INSTRUMENT_SPINOFF_SHARES_AS_CASH->as_int()
+		    || $type == Bivio::Type::EntryType
+			->INSTRUMENT_MERGER_SHARES_AS_CASH->as_int())) {
+	    print(STDERR "\n\ncost = $cost\n\n");
+	    $total_cost += $cost;
+	}
+	if ($basis) {
+	    $total_count += $count;
+	}
     }
     return $total_count == 0 ? 0
 	    : $total_cost / $total_count;
