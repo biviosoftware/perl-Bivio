@@ -65,6 +65,9 @@ verify_mail(\$e1, 'this should not match');
 test_conformance();
 \$m->(\$e2);
 verify_mail(\$e2, 'You have mail');
+test_deviance(qr/No mail for /);
+verify_mail(\$e2, 'You have mail');
+test_conformance();
 verify_mail(\$e1, 'You have mail');
 EOF
 	    [<<'EOF'] => [undef],
