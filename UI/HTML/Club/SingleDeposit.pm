@@ -32,6 +32,8 @@ C<Bivio::UI::HTML::Club::SingleDeposit>
 
 #=IMPORTS
 use Bivio::Biz::Model::RealmUser;
+use Bivio::Biz::Model::RealmAccountList;
+use Bivio::Biz::Model::RealmValuationAccountList;
 use Bivio::Type::DepositType;
 use Bivio::UI::Font;
 use Bivio::UI::HTML::Club::Page;
@@ -156,61 +158,64 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    # make sure the member key is in the query
-    if (defined($req->get('query')) && defined($req->get('query')->{pk})) {
-	my($user_id) = $req->get('query')->{pk};
-
-	my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
-	$realm_user->load(user_id => $user_id);
+    # get the selected user and load them
+    my($list) = $req->get('Bivio::Biz::Model::MemberSummaryList');
+    $req->die(Bivio::DieCode::NOT_FOUND) if $list->get_result_set_size() < 1;
+#TODO: won't work if someone already advanced it!
+    $list->next_row;
+    my($user_id) = $list->get('RealmUser.user_id');
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+    $realm_user->load(user_id => $user_id);
 #TODO: why User_2?
-	my($user) = $realm_user->get_model('User_2');
+    my($user) = $realm_user->get_model('User_2');
 
-	my($task_id) = $req->get('task_id');
-	my($heading);
-	if ($task_id
-		== Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_PAYMENT()) {
-	    $heading = 'Payment: ';
-	    $req->put(account_list => $req->get_widget_value(
-		    'Bivio::Biz::Model::RealmAccountList'));
-	}
-	elsif ($task_id
-		== Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_FEE()) {
-	    $heading = 'Fee: ';
-	    $req->put(account_list => $req->get_widget_value(
-		    'Bivio::Biz::Model::RealmValuationAccountList'));
-	}
-	else {
-	    die("unhandled task_id $task_id");
-	}
-
-	$req->put(page_heading => $heading.$user->get('display_name'),
-		page_subtopic => undef,
-		page_content => $fields->{form});
-	my($form) = $req->get('form_model');
-
-	if ($form->in_error) {
-	    my($errors) = $form->get_errors;
-
-	    my(@errors);
-	    foreach my $f (@$_FIELDS) {
-		my($n) = $f->[0];
-		next unless defined($errors->{$n});
-		push(@errors, Bivio::Util::escape_html(
-			$f->[1].': '.$errors->{$n}->get_long_desc));
-	    }
-
-	    my($p, $s) = Bivio::UI::Font->as_html('error');
-	    $req->put(page_error =>
-		    "<table border=0 cellpadding=5 cellspacing=0>\n<tr><td>"
-		    .join("</td></tr>\n<tr><td><li>",
-			    "${p}Please correct the following errors:$s",
-			    @errors)
-		    ."</td></tr></table>\n<hr>");
-	}
-	Bivio::UI::HTML::Club::Page->execute($req);
-	return;
+    my($task_id) = $req->get('task_id');
+    my($heading, $account_list);
+    if ($task_id
+	    == Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_PAYMENT()) {
+	$heading = 'Payment: ';
+	$account_list = Bivio::Biz::Model::RealmAccountList->new($req);
     }
-    $req->die(Bivio::DieCode::NOT_FOUND);
+    elsif ($task_id
+	    == Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_FEE()) {
+	$heading = 'Fee: ';
+	$account_list = Bivio::Biz::Model::RealmValuationAccountList
+		->new($req);
+    }
+    else {
+	die("unhandled task_id $task_id");
+    }
+    $account_list->load();
+
+    $req->put(page_heading => $heading.$user->get('display_name'),
+	    page_subtopic => undef,
+	    page_content => $fields->{form},
+	    account_list => $account_list,
+	   );
+    my($form) = $req->get('form_model');
+
+    # error rendering
+    if ($form->in_error) {
+	my($errors) = $form->get_errors;
+
+	my(@errors);
+	foreach my $f (@$_FIELDS) {
+	    my($n) = $f->[0];
+	    next unless defined($errors->{$n});
+	    push(@errors, Bivio::Util::escape_html(
+		    $f->[1].': '.$errors->{$n}->get_long_desc));
+	}
+
+	my($p, $s) = Bivio::UI::Font->as_html('error');
+	$req->put(page_error =>
+		"<table border=0 cellpadding=5 cellspacing=0>\n<tr><td>"
+		.join("</td></tr>\n<tr><td><li>",
+			"${p}Please correct the following errors:$s",
+			@errors)
+		."</td></tr></table>\n<hr>");
+    }
+    Bivio::UI::HTML::Club::Page->execute($req);
+    return;
 }
 
 #=PRIVATE METHODS
