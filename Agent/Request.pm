@@ -265,7 +265,17 @@ sub die {
     $line ||= (caller)[2];
     $attrs ||= {};
     ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
+
+    # Give some context to the error message
     $attrs->{request} = $self;
+    my($realm, $task, $user) = $self->unsafe_get(
+	    qw(auth_realm task_id auth_user));
+    # Be a little more "safe" than usual, because we are in an
+    # error situation.
+    $attrs->{realm} = ref($realm) ? $realm->as_string : undef;
+    $attrs->{task} = ref($task) ? $task->get_name : undef;
+    $attrs->{user} = ref($user) ? $user->as_string : undef;
+
     Bivio::Die->die($code, $attrs, $package, $file, $line);
 }
 
@@ -352,6 +362,19 @@ sub format_mailto {
 	$res .= '?subject=' . $subject;
     }
     return $res;
+}
+
+=for html <a name="format_stateless_uri"></a>
+
+=head2 format_stateless_uri(Bivio::Agent::TaskId task_id) : string
+
+Creates a URI relative to this host/port/realm without a query string.
+
+=cut
+
+sub format_stateless_uri {
+    my($self, $task_id) = @_;
+    return $self->format_uri($task_id, undef);
 }
 
 =for html <a name="format_uri"></a>
@@ -496,6 +519,24 @@ DEPRECATED
 
 sub get_reply {
     return shift->get('reply');
+}
+
+=for html <a name="get_request"></a>
+
+=head2 static get_request() : Bivio::Agent::Request
+
+Returns I<self> if not called statically, else returns
+I<get_current_or_new>.
+
+Called I<get_request> so callers don't have to worry about getting
+request from non-Biz::Model sources.  Calling I<get_request> always
+works on I<$source>.
+
+=cut
+
+sub get_request {
+    my($proto) = @_;
+    return ref($proto) ? $proto : $proto->get_current_or_new;
 }
 
 =for html <a name="handle_config"></a>
