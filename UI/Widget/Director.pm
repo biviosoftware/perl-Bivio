@@ -185,7 +185,7 @@ sub _select {
 		if defined($fields->{default_value});
     }
     elsif (defined($fields->{undef_value})) {
-	return $fields->{undef_value} || undef if $fields->{undef_value};
+	return $fields->{undef_value} || undef;
     }
     Bivio::Die->die($fields->{control}, ': invalid control value: ', $ctl);
     # DOES NOT RETURN
