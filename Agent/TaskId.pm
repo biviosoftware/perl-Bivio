@@ -1067,38 +1067,6 @@ my(@_CFG) = (
 	next=CLUB_COMMUNICATIONS_FILE_READ
     )],
     [qw(
-        CLUB_ACCOUNTING_MEMBER_OPENING_BALANCE
-        115
-        CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
-        ?/accounting/member/openbal
-        Bivio::Biz::Model::RealmUserList
-        Bivio::Biz::Action::TargetRealm->execute_this_member
-        Bivio::Biz::Model::MemberOpeningBalanceForm
-        Bivio::UI::HTML::Club::MemberOpeningBalance
-        next=CLUB_ACCOUNTING_MEMBER_DETAIL
-    )],
-    [qw(
-        CLUB_ACCOUNTING_INVESTMENT_OPENING_BALANCE
-        116
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/investment/openbal
-        Bivio::Biz::Model::InstrumentOpeningBalanceForm
-        Bivio::UI::HTML::Club::InstrumentOpeningBalance
-        next=CLUB_ACCOUNTING_INVESTMENT_LIST
-    )],
-    [qw(
-        CLUB_ACCOUNTING_ACCOUNT_OPENING_BALANCE
-        117
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/account/openbal
-        Bivio::Biz::Model::AccountOpeningBalanceForm
-        Bivio::UI::HTML::Club::AccountOpeningBalance
-        next=CLUB_ACCOUNTING_ACCOUNT_LIST
-    )],
-    [qw(
         CLUB_ACCOUNTING_ACCOUNT_TRANSFER
         118
         CLUB
@@ -1343,7 +1311,7 @@ my(@_CFG) = (
         ?/accounting/unlisted/new
         Bivio::Biz::Model::LocalInstrumentForm
         Bivio::UI::HTML::Club::LocalInstrument
-        next=CLUB_ACCOUNTING_INVESTMENT_BUY
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
     [qw(
         CLUB_ACCOUNTING_LOCAL_VALUATION_DATES
@@ -1840,6 +1808,39 @@ my(@_CFG) = (
         DOCUMENT_READ
         !
         Bivio::UI::HTML::ErrorPages->execute_mail_receive_not_found
+    )],
+    [qw(
+        CLUB_MEMBER_OPEN_BALANCE
+        186
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
+        ?/accounting/members/openbal
+        Bivio::Biz::Model::MemberOpenBalanceList
+        Bivio::Biz::Model::MemberOpenBalanceListForm
+        Bivio::UI::HTML::Club::MemberOpenBalanceList
+        next=CLUB_LEGACY_INVITE
+    )],
+    [qw(
+        CLUB_INVESTMENT_OPEN_BALANCE
+        187
+        CLUB
+        ACCOUNTING_WRITE&ADMIN_WRITE
+        ?/accounting/investments/openbal
+        Bivio::Biz::Model::InstrumentOpenBalanceList
+        Bivio::Biz::Model::InstrumentOpenBalanceListForm
+        Bivio::UI::HTML::Club::InstrumentOpenBalanceList
+        next=CLUB_MEMBER_OPEN_BALANCE
+    )],
+    [qw(
+        CLUB_OPEN_BALANCE
+        188
+        CLUB
+        ACCOUNTING_WRITE&ADMIN_WRITE
+        ?/accounting/opening_balance
+        Bivio::Biz::Model::AccountOpenBalanceForm
+        Bivio::UI::HTML::Club::AccountOpenBalance
+        next=CLUB_INVESTMENT_OPEN_BALANCE
+        cancel=CLUB_ADMIN_TOOLS
     )],
 );
 
