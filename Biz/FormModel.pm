@@ -441,6 +441,33 @@ sub internal_put_error {
     return;
 }
 
+=for html <a name="is_submit_ok"></a>
+
+=head2 is_submit_ok(string button_value, hash_ref form) : boolean
+
+Returns true if the button value is "SUBMIT_OK".  Subclasses can override this,
+but probably don't need to.
+
+=cut
+
+sub is_submit_ok {
+    my($self, $value, $form) = @_;
+    # Default is cancel
+
+    # default to OK, submit isn't passed when user presses 'enter'
+    return 1 unless defined($value) && length($value);
+
+    # We assume it is a cancel if we don't get a match to ok
+    # It is better than returning corrupt form for now.
+    my($submit_ok) = $self->SUBMIT_OK;
+    return 1 if $value eq $submit_ok;
+
+    # If has same letters in same order, then is ok.
+    $submit_ok =~ s/\s+//g;
+    $value =~ s/\s+//g;
+    return lc($value) eq lc($submit_ok) ? 1 : 0;
+}
+
 =for html <a name="load_from_model_properties"></a>
 
 =head2 load_from_model_properties(string model)
@@ -544,7 +571,7 @@ sub _parse {
     my($sql_support) = $self->internal_get_sql_support;
     _trace("form = ", $form) if $_TRACE;
     _parse_version($self, $form->{version}, $sql_support);
-    _parse_submit($self, $form->{$self->SUBMIT});
+    _parse_submit($self, $form->{$self->SUBMIT}, $form);
     _parse_timezone($self, $form->{TIMEZONE_FIELD()});
     my($values) = {};
     _parse_cols($self, $form, $sql_support, $values, 1);
@@ -591,34 +618,22 @@ sub _parse_cols {
     return;
 }
 
-# _parse_submit(Bivio::Biz::FormModel self, string value)
+# _parse_submit(Bivio::Biz::FormModel self, string value, hash_ref form)
 #
 # Parses the submit button.  If there is an error, throws CORRUPT_FORM.
 # If the button is Cancel, will redirect immediately.  If the button
 # is "OK", just returns.
 #
 sub _parse_submit {
-    my($self, $value) = @_;
+    my($self, $value, $form) = @_;
 
-    # Default is cancel
+    return if $self->is_submit_ok($value, $form);
 
-    # default to OK, submit isn't passed when user presses 'enter'
-    return unless defined($value) && length($value);
-
-    # We assume it is a cancel if we don't get a match to ok
-    # It is better than returning corrupt form for now.
-    my($submit_ok) = $self->SUBMIT_OK;
-    return if $value eq $submit_ok;
-
-    # If has same letters in same order, then is ok.
-    $submit_ok =~ s/\s+//g;
-    my($v) = $value;
-    $v =~ s/\s+//g;
-    return if lc($v) eq lc($submit_ok);
+    _trace('cancel or other button: ', $value) if $_TRACE;
 
     # Cancel or another button
     my($req) = $self->get_request;
-    $self->execute_other($v);
+    $self->execute_other($value);
     # client redirect on cancel
     $req->client_redirect($req->get('task')->get('cancel'));
     # DOES NOT RETURN
