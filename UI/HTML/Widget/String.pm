@@ -174,7 +174,8 @@ Render the object.  Outputs nothing if result is empty.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    die("String not initialized") unless exists($fields->{value});
+    die("String not initialized: ".$self->get('value'))
+	    unless exists($fields->{value});
 
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
     my($b) = '';
