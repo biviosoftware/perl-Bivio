@@ -341,9 +341,15 @@ sub get_model {
     foreach my $pk (keys(%$map)) {
 	my($v);
 	unless (defined($v = $properties->{$map->{$pk}->{name}})) {
-	    _trace($self, ': loading ', $m->{instance}, ' missing key ',
-		    $map->{$pk}->{name}) if $_TRACE;
-	    return $mi;
+	    # If there is an auth_id, use it if this is the missing
+	    # primary key.
+	    my($auth_id) = $mi->get_info('auth_id');
+	    unless ($auth_id && $pk eq $auth_id->{name}) {
+		_trace($self, ': loading ', $m->{instance}, ' missing key ',
+			$map->{$pk}->{name}) if $_TRACE;
+		return $mi;
+	    }
+	    $v = $req->get('auth_id');
 	}
 	push(@query, $pk, $v);
     }
