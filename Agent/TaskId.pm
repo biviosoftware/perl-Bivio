@@ -2733,17 +2733,7 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::ErrorPages->execute_club_accounting_instrument_delete_failure
     )],
-    [qw(
-        ADM_FIND_REALM_OWNER
-        235
-        GENERAL
-        ADMIN_WRITE
-        adm/lookup
-        Bivio::Biz::Model::AdmFindRealmOwnerForm
-        Bivio::UI::HTML::Adm::FindRealmOwner
-        next=HTTP_DOCUMENT
-        require_secure=1
-    )],
+# 235
     [qw(
         USER_ADMIN_PREFERENCES_EDIT
         236
@@ -3138,7 +3128,7 @@ my(@_CFG) = (
         274
         GENERAL
         ADMIN_WRITE
-        adm/lookup-new
+        adm/lookup
         Bivio::Biz::Model::AdmLookupForm
         Bivio::Biz::Model::AdmRealmOwnerList->execute_load_page
         Bivio::UI::HTML::Adm::LookupList
