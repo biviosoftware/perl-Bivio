@@ -137,6 +137,10 @@ sub _check_error_log {
                 || /read request (line|headers) timed out for/
                 || /(read|send) timed out for (.+)/
                ) && next;
+        # Skip SSL stuffy
+        (/mod_ssl: SSL handshake interrupted/
+               || /System: Connection reset by peer/
+               ) && next;
         # Skip regular Bivio messages
         (/Bivio::Agent::Job::Dispatcher:.*JOB_(START|END)/
                 || /Bivio::SQL::Connection::_get_connection.*reconnecting/
