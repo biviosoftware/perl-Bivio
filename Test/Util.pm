@@ -101,17 +101,18 @@ sub acceptance {
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
 	my($ok) = 0;
-	foreach my $line (split(/\n/,
-	    $$out = ${$self->piped_exec("$^X -w - 2>&1", <<"EOF", 1)})) {
+	_piped_exec($self, '-', <<"EOF", $out,
 use strict;
 use Bivio::Test::Language;
 print "1..1\n";
 my(\$die) = Bivio::Test::Language->test_run(qw{$test});
 print(\$die ? "1 not ok: " . \$die->as_string . "\n" : "1 ok\n");
 EOF
-            chomp($line);
-            $ok++ if $line eq "1 ok";
-	}
+	    sub {
+		my($line) = @_;
+		$ok++ if $line eq "1 ok";
+	    },
+	);
 	return $ok;
     });
 }
@@ -215,16 +216,15 @@ sub unit {
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
 	my($max, $ok) = (-1, 0);
-	foreach my $line (split(/\n/,
-	    $$out = ${$self->piped_exec("$^X -w $test 2>&1", undef, 1)})) {
-	    chomp($line);
+	_piped_exec($self, $test, undef, $out, sub {
+	    my($line) = @_;
 	    if ($max >= 0) {
 		$ok++ if $line =~ /^ok\s*(\d+)/;
 	    }
 	    elsif ($line =~ /^1\.\.(\d+)/) {
 		$max = $1;
 	    }
-	}
+	});
 	return $ok == $max;
     });
 }
@@ -292,6 +292,33 @@ sub _make_nightly_dir {
     Bivio::IO::File->chdir($dir);
     $self->print("Created $dir\n");
     return $dir;
+}
+
+# _piped_exec(string command, string input, string_ref out, code_ref do)
+#
+# Call $do for each line.
+#
+sub _piped_exec {
+    my($self, $command, $input, $out, $do) = @_;
+    foreach my $line (split(/\n/,
+	$$out = ${$self->piped_exec(
+	    join(' ',
+		$^X,
+		'-w',
+		$command,
+		map({
+		    # this regex is hairy to accommodate shell string escaping rules
+		    s/'/'\\''/g;
+		    "'$_'";
+		} @{Bivio::IO::Config->command_line_args}),
+		'2>&1',
+	    ),
+	    $input, 1)})
+    ) {
+	chomp($line);
+	$do->($line);
+    }
+    return;
 }
 
 # _run(self, hash_ref tests, code_ref action)

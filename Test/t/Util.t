@@ -3,6 +3,9 @@
 #
 # Only works in PetShop config.
 #
+BEGIN {
+    push(@ARGV, "--Bivio::Test::t::Language::T1.t1='foo'");
+}
 use Bivio::Test;
 use Bivio::Test::Util;
 use File::Spec ();

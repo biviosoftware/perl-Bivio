@@ -175,6 +175,7 @@ my($_PKG) = __PACKAGE__;
 my($_BCONF) = undef;
 # The configuration read off disk or passed in
 my($_ACTUAL) = {};
+my($_COMMAND_LINE_ARGS) = [];
 # List of packages registered
 my(@_REGISTERED) = ();
 # Configuration specifications for registered packages
@@ -217,6 +218,18 @@ It is available during initialization, i.e., in the I<bconf_file> itself.
 
 sub bconf_file {
     return $_BCONF;
+}
+
+=for html <a name="command_line_args"></a>
+
+=head2 static command_line_args() : array_ref
+
+Returns command line arguments, which were stripped from @ARGV
+
+=cut
+
+sub command_line_args {
+    return [@$_COMMAND_LINE_ARGS];
 }
 
 =for html <a name="get"></a>
@@ -703,7 +716,7 @@ sub _process_argv {
 	}
 	$ref->{$car} = $v;
 	# Get rid of processed parameter
-	splice(@$argv, $i--, 1);
+	push(@$_COMMAND_LINE_ARGS, splice(@$argv, $i--, 1));
     }
 }
 

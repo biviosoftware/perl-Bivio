@@ -1,3 +1,4 @@
 # $Id$
 test_setup('T1', 'x1');
+assert_config("'foo'");
 

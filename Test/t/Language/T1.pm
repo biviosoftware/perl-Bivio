@@ -35,10 +35,14 @@ C<Bivio::Test::t::Language::T1>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SENTINEL_PREFIX) = __PACKAGE__ . '.tmp.';
+Bivio::IO::Config->register(my $_CFG = {
+    t1 => 'not foo',
+});
 
 =head1 FACTORIES
 
@@ -62,6 +66,21 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="assert_config"></a>
+
+=head2 assert_config(string t1)
+
+Asserts configuration is t1.
+
+=cut
+
+sub assert_config {
+    my(undef, $t1) = @_;
+    Bivio::Die->die($t1, ': not same as config value t1: ', $_CFG->{t1})
+        unless $t1 eq $_CFG->{t1};
+    return;
+}
 
 =for html <a name="die_now"></a>
 
@@ -101,6 +120,26 @@ sub handle_cleanup {
     my($proto) = @_;
     unlink(<$_SENTINEL_PREFIX*>);
     $proto->SUPER::handle_cleanup;
+    return;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item t1 : int [1]
+
+For testing passing command line args.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
     return;
 }
 
