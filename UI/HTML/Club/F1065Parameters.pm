@@ -125,10 +125,11 @@ EOF
 	    $show_countries ? (
     [
 	'RealmInstrument.name',
-	['country_code', undef, <<'EOF',],
+	['country_code', undef, <<'EOF',
 
 Select the country for any investment which received foreing taxes.
 EOF
+	    undef, {enum_sort => 'get_short_desc'}],
     ],
 		   ) : (),
     {
