@@ -574,6 +574,7 @@ sub _print_stack {
     my($self) = @_;
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
     return if $sp || $tq;
+    Bivio::IO::Alert->warn($self->as_string);
     Bivio::IO::Alert->print_literally($self->get('stack'));
     $self->put(stack_printed => 1);
     return;
