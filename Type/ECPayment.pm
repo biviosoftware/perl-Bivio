@@ -45,7 +45,6 @@ for a subscription-based service. The current choices are:
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-
 __PACKAGE__->compile([
     SUBSCRIPTION => [
 	1,
