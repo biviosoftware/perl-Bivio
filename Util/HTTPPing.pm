@@ -40,9 +40,10 @@ C<Bivio::Util::HTTPPing> pings a HTTP is running.
 
 Returns:
 
-    usage: b-http-ping [options] command [args...]
-    commands:
-	page url ... -- request url(s) and email problems
+  usage: b-http-ping [options] command [args...]
+  commands:
+    page url ... -- request url(s)
+    process_status -- check load avg and process status
 
 =cut
 
@@ -50,13 +51,15 @@ sub USAGE {
     return <<'EOF';
 usage: b-http-ping [options] command [args...]
 commands:
-	page url ... -- request url(s) and email problems
+    page url ... -- request url(s)
+    process_status -- check load avg and process status
 EOF
 }
 
 #=IMPORTS
-use Bivio::Ext::LWPUserAgent;
 use Bivio::IO::Config;
+use Bivio::Ext::LWPUserAgent;
+use Bivio::IO::File;
 use Bivio::IO::Trace;
 use HTTP::Headers ();
 use HTTP::Request ();
@@ -64,15 +67,13 @@ use HTTP::Request ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_CFG) = {
-    page => ['http://127.0.0.1'],
-    email => 'root',
-};
-Bivio::IO::Config->register($_CFG);
 my(%_HOST_MAP) = (
     'www1.bivio.com', 'www.bivio.com',
     'www2.bivio.com', 'www.bivio.com',
 );
+Bivio::IO::Config->register(my $_CFG = {
+    status_file => '/var/tmp/httpd.status',
+});
 
 =head1 METHODS
 
@@ -84,14 +85,10 @@ my(%_HOST_MAP) = (
 
 =over 4
 
-=item email : string [root]
+=item status_file : string [/var/tmp/httpd.status]
 
-Where to send mail to.  ShellUtil -email flag overrides this value
-if it is defined.
-
-=item page: array []
-
-Pages to be pinged.
+Location of file which is "diffed" with previous run of
+L<process_status|"process_status">.
 
 =back
 
@@ -126,10 +123,25 @@ sub page {
         $status .= 'PAGE: '.$page."\n".$reply->status_line."\n".
                 substr($reply->as_string, 0, 512)."\n---\n";
     }
-    return unless length($status);
-    return \$status unless $_CFG->{email};
-    $self->email_message($_CFG->{email}, 'http ping errors', $status);
-    return;
+    return $status;
+}
+
+=for html <a name="process_status"></a>
+
+=head2 process_status() : string
+
+Returns load average and httpd process_status changes.
+
+=cut
+
+sub process_status {
+    my($self) = @_;
+    ${Bivio::IO::File->read('/proc/loadavg')} =~ /^\S+\s+\S+\s+(\S+)/;
+    my($new) = "System load above @{[int($1)]}\n"
+	. ${$self->piped_exec('/etc/rc.d/init.d/httpd status', undef, 1)};
+    my($res) = $self->piped_exec("diff '$_CFG->{status_file}' -", $new,	1);
+    Bivio::IO::File->write($_CFG->{status_file}, $new);
+    return $$res;
 }
 
 #=PRIVATE METHODS
