@@ -540,8 +540,7 @@ sub get_share_price_and_date {
     #   if realm_instrument_valuation_t exists for the date, use it
     #   if not in MGFS use local (realm_instrument_valuation_t).
     #   otherwise get most recent value from realm_instrument_valuation_t
-
-    my($id, $value, $val_date);
+    #    or mgfs_daily_quote_t
 
     # look on exactly that date, allows a local override
     my($sth) = Bivio::SQL::Connection->execute("
@@ -551,7 +550,7 @@ sub get_share_price_and_date {
             AND date_time=$_SQL_DATE_VALUE",
 	    [$self->get('realm_id'), $date]);
     while (my $row = $sth->fetchrow_arrayref) {
-	($id, $value) = @$row;
+	my($id, $value) = @$row;
 	$result->{$id} = [$value, $date, 1];
     }
 
@@ -573,7 +572,7 @@ sub get_share_price_and_date {
 
 	my($found_quote) = 0;
 	while (my $row = $sth->fetchrow_arrayref) {
-	    ($id, $value) = @$row;
+	    my($id, $value) = @$row;
 
 	    unless (exists($result->{$id})) {
 		$result->{$id} = [$value, $search_date, 0];
@@ -584,38 +583,62 @@ sub get_share_price_and_date {
     }
 
     # make sure that valuations exists for every realm instrument
-    # if not, then go to the realm_instrument_valuation_t which
-    # is guarenteed to have at least buy/sell valuations
+    # if not, then get the latest value from the local or global
+    # quote tables, depending on whether the instrument is local
 
     $sth = Bivio::SQL::Connection->execute('
-            SELECT realm_instrument_t.realm_instrument_id
-            FROM realm_instrument_t
-            WHERE realm_instrument_t.realm_id=?',
+            SELECT realm_instrument_t.realm_instrument_id,
+                mgfs_instrument_t.mg_id
+            FROM realm_instrument_t, mgfs_instrument_t
+            WHERE realm_instrument_t.instrument_id
+                =mgfs_instrument_t.instrument_id (+)
+            AND realm_instrument_t.realm_id=?',
 	    [$self->get('realm_id')]);
 
     while (my $row = $sth->fetchrow_arrayref) {
-	($id) = @$row;
+	my($id, $mg_id) = @$row;
 
 	next if exists($result->{$id});
 
-	my($d) = Bivio::Type::DateTime->from_sql_value(
-		'realm_instrument_valuation_t.date_time');
-	my($sth2) = Bivio::SQL::Connection->execute("
-	        SELECT realm_instrument_valuation_t.price_per_share,
-	        $d
-	        FROM realm_instrument_valuation_t
-	        WHERE realm_instrument_valuation_t.realm_instrument_id=?
-                AND realm_instrument_valuation_t.date_time <= $_SQL_DATE_VALUE
-                AND realm_instrument_valuation_t.realm_id=?
-	        ORDER BY realm_instrument_valuation_t.date_time DESC",
-		[$id, Bivio::Type::DateTime->to_sql_param($date),
-		       $self->get('realm_id')]);
-
-	my($row2);
-	if ($row2 = $sth2->fetchrow_arrayref()) {
-	    ($value, $val_date) = @$row2;
-	    $val_date = Bivio::Type::DateTime->from_sql_column($val_date);
-	    $result->{$id} = [$value, $val_date, 1];
+	if (defined($mg_id)) {
+	    # find the max global date
+	    my($d) = Bivio::Type::DateTime->from_sql_value(
+		    'mgfs_daily_quote_t.date_time');
+	    my($sth2) = Bivio::SQL::Connection->execute("
+                    SELECT mgfs_daily_quote_t.close,
+                    $d
+                    FROM mgfs_daily_quote_t
+                    WHERE mg_id=?
+                    AND mgfs_daily_quote_t.date_time=(
+                        SELECT MAX(mgfs_daily_quote_t.date_time)
+                        FROM mgfs_daily_quote_t
+                        WHERE mg_id=?)",
+		    [$mg_id, $mg_id]);
+	    my($row2);
+	    while (my $row2 = $sth2->fetchrow_arrayref) {
+		my($value, $val_date) = @$row2;
+		$result->{$id} = [$value, $val_date, 0];
+	    }
+	}
+	else {
+	    # find the max local date
+	    my($d) = Bivio::Type::DateTime->from_sql_value(
+		    'realm_instrument_valuation_t.date_time');
+	    my($sth2) = Bivio::SQL::Connection->execute("
+                    SELECT realm_instrument_valuation_t.price_per_share,
+                    $d
+                    FROM realm_instrument_valuation_t
+                    WHERE realm_instrument_id=?
+                    AND realm_instrument_valuation_t.date_time=(
+                        SELECT MAX(realm_instrument_valuation_t.date_time)
+                        FROM realm_instrument_valuation_t
+                        WHERE realm_instrument_id=?)",
+		    [$id, $id]);
+	    my($row2);
+	    while (my $row2 = $sth2->fetchrow_arrayref) {
+		my($value, $val_date) = @$row2;
+		$result->{$id} = [$value, $val_date, 1];
+	    }
 	}
     }
 
