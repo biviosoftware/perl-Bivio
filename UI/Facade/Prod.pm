@@ -143,7 +143,6 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(checked_icon => ['smaller']);
 	    $fc->group(page_heading => ['bold']);
 	    $fc->group(realm_name => ['bold']);
-	    $fc->group(realm_name => ['bold']);
 	    $fc->group(tax_disclaimer => ['italic']);
 	    $fc->group(['prev_next_bar_link', 'text_menu_selected'] =>
 		    ['color=text_menu_font', 'bold']);
