@@ -47,7 +47,8 @@ entry.
 #=VARIABLES
 my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER, $_LOG_FILE,
 	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
-        $_STACK_TRACE_WARN, $_MAX_WARNINGS, $_WARN_COUNTER);
+        $_STACK_TRACE_WARN, $_STACK_TRACE_WARN_DEPRECATED,
+	$_MAX_WARNINGS, $_WARN_COUNTER);
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line (\d+)\.' . "\n\$";
@@ -58,6 +59,7 @@ BEGIN {
     $_WANT_PID = 0;
     $_WANT_TIME = 0;
     $_STACK_TRACE_WARN = 0;
+    $_STACK_TRACE_WARN_DEPRECATED = 0;
     $_MAX_WARNINGS = 1000;
     $_WARN_COUNTER = $_MAX_WARNINGS;
 }
@@ -81,6 +83,7 @@ my($_LAST_WARNING);
 Bivio::IO::Config->register({
     intercept_warn => 1,
     stack_trace_warn => 0,
+    stack_trace_warn_deprecated => 0,
     log_facility => 'daemon',
     log_name => $0,
     max_arg_length => $_DEFAULT_MAX_ARG_LENGTH,
@@ -212,10 +215,14 @@ Maximum number of warnings between L<reset_warn_counter|"reset_warn_counter">
 calls.  By default, L<reset_warn_counter|"reset_warn_counter"> is not
 called, so this is the maximum per program invocation.
 
+=item stack_trace_warn_deprecated : boolean [false]
+
+Print a stack trace when L<warn_deprecated|"warn_deprecated"> is called.
+
 =item stack_trace_warn : boolean [false]
 
-If true, implies B<intercept_warn> is true and will print a stack trace
-on L<warn|"warn">.
+If true, implies B<intercept_warn> is true and will print a stack trace on
+C<CORE::warn>.  Only works on perl's warn, not on calls to L<warn|"warn">.
 
 =item want_stderr : boolean [false]
 
@@ -264,6 +271,7 @@ sub handle_config {
     $_WARN_COUNTER = $_MAX_WARNINGS = $cfg->{max_warnings};
 
     $_STACK_TRACE_WARN = $cfg->{stack_trace_warn};
+    $_STACK_TRACE_WARN_DEPRECATED = $cfg->{stack_trace_warn_deprecated};
 
     $SIG{__WARN__} = \&_warn_handler
 	    if $cfg->{intercept_warn} || $cfg->{stack_trace_warn};
@@ -394,6 +402,7 @@ sub warn_deprecated {
     $i++ while caller($i) eq $pkg;
     $proto->warn('DEPRECATED: ', (caller($i-1))[3], ': ', $message,
 	    ' called from ', (caller($i))[0], ':', (caller($i))[2]);
+    _trace_stack() if $_STACK_TRACE_WARN;
     return;
 }
 
@@ -553,6 +562,7 @@ sub _log_apache {
 	# will recurse if someone is intercepting __DIE__).
 	_log_stderr(@_);
     }
+    return;
 }
 
 sub _log_file {
@@ -560,16 +570,19 @@ sub _log_file {
     open(FILE, ">>$_LOG_FILE");
     print FILE $msg;
     close FILE;
+    return;
 }
 
 sub _log_syslog {
     my($severity, $msg) = @_;
     Sys::Syslog::syslog($severity, $msg);
+    return;
 }
 
 sub _log_stderr {
     my($severity, $msg) = @_;
     print STDERR $msg;
+    return;
 }
 
 sub _timestamp {
@@ -584,6 +597,7 @@ sub _trace_stack {
     # Doesn't trim stack trace, so may be really long.  Have an
     # absolute limit?
     &$_LOGGER('err', Carp::longmess(''));
+    return;
 }
 
 sub _warn_handler {
@@ -592,6 +606,7 @@ sub _warn_handler {
     $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
     Bivio::IO::Alert->warn($msg);
     _trace_stack() if $_STACK_TRACE_WARN;
+    return;
 }
 
 =head1 COPYRIGHT
