@@ -36,7 +36,7 @@ redefinitions here.
 
 #=VARIABLES
 my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER,
-	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID,
+	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
        $_STACK_TRACE_DIE, $_STACK_TRACE_WARN);
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
@@ -59,16 +59,17 @@ use Carp ();
 # $SIG{__DIE__} = \&_initial_die_handler;
 # $SIG{__WARN__} = \&_warn_handler;
 Bivio::IO::Config->register({
-    'intercept_die' => 0,
-    'stack_trace_die' => 0,
-    'intercept_warn' => 1,
-    'stack_trace_warn' => 0,
-    'log_facility' => 'daemon',
-    'log_name' => $0,
-    'max_arg_length' => $_DEFAULT_MAX_ARG_LENGTH,
-    'want_stderr' => 0,
-    'syslog_socket' => 'unix',
-    'want_pid' => 0,
+    intercept_die => 0,
+    stack_trace_die => 0,
+    intercept_warn => 1,
+    stack_trace_warn => 0,
+    log_facility => 'daemon',
+    log_name => $0,
+    max_arg_length => $_DEFAULT_MAX_ARG_LENGTH,
+    want_stderr => 0,
+    syslog_socket => 'unix',
+    want_pid => 0,
+    want_time => 0,
 });
 
 =head1 METHODS
@@ -210,6 +211,10 @@ If writing to C<Sys::Syslog>, the type of socket to open.
 
 If not writing to C<Sys::Syslog>, include the pid in the log messages.
 
+=item want_time : boolean [false]
+
+If not writing to C<Sys::Syslog>, include the time in the log messages.
+
 =back
 
 =cut
@@ -240,6 +245,7 @@ sub handle_config {
 	$_LOGGER = \&_log_syslog;
     }
     $_WANT_PID = $cfg->{want_pid};
+    $_WANT_TIME = $cfg->{want_time};
     return;
 }
 
@@ -294,6 +300,7 @@ sub _format {
     my(undef, $pkg, $file, $line, $sub, $msg) = @_;
     # depends heavily on perl's "die" syntax
     my($text) = $_WANT_PID ? "[$$]" : '';
+    $text .= $_WANT_TIME ? _timestamp() : '';
     my($is_eval) = $file && $file =~ s/^\(eval (\d+)\)$/eval$1/s;
     if (defined($pkg) && $pkg eq 'main') {
 	# main doesn't give us much info, so use the file instead
@@ -401,6 +408,15 @@ sub _log_syslog {
 sub _log_stderr {
     my($severity, $msg) = @_;
     print STDERR $msg;
+}
+
+# _timestamp() 
+#
+#
+#
+sub _timestamp {
+    my($sec, $min, $hour) = gmtime(time);
+    return sprintf('%02d:%02d:%02d ', $hour, $min, $sec);
 }
 
 sub _trace_stack {
