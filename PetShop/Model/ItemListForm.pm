@@ -70,7 +70,7 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	list_class => 'ItemList',
 	visible => [
@@ -81,9 +81,7 @@ sub internal_initialize {
 		in_list => 1,
 	    },
 	],
-    };
-    return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+    });
 }
 
 #=PRIVATE METHODS
