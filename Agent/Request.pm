@@ -133,6 +133,10 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 Identifier used to find I<task>.
 
+=item this_host : string
+
+This host (hostname).
+
 =item timezone : string
 
 The user's timezone (if available).
@@ -177,6 +181,9 @@ my($_PACKAGE) = __PACKAGE__;
 my($_HTTP_HOST) = sprintf('%d.%d.%d.%d',
 	unpack('C4', (gethostbyname(substr(`hostname`, 0, -1)))[4]));
 my($_MAIL_HOST) = "[$_HTTP_HOST]";
+my($_THIS_HOST) = `hostname`;
+chop($_THIS_HOST);
+die('unable to get hostname') unless $_THIS_HOST;
 my($_SUPPORT_PHONE);
 my($_SUPPORT_EMAIL);
 my($_SUPPORT_EMAIL_AS_HTML);
@@ -208,6 +215,7 @@ sub new {
     $self->put(request => $self,
 	    http_host => $_HTTP_HOST,
 	    mail_host => $_MAIL_HOST,
+	    this_host => $_THIS_HOST,
 	    support_phone => $_SUPPORT_PHONE,
 	    support_email => $_SUPPORT_EMAIL,
 	    support_email_as_html => $_SUPPORT_EMAIL_AS_HTML,
