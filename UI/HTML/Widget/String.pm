@@ -127,8 +127,10 @@ sub initialize {
     else {
 	$fields->{prefix} = $p;
 	$fields->{suffix} = $s;
-	$fields->{value}->initialize
-		if $fields->{is_widget} = ref($fields->{value}) ne 'ARRAY';
+	if ($fields->{is_widget} = ref($fields->{value}) ne 'ARRAY') {
+	    $fields->{value}->put(parent => $self);
+	    $fields->{value}->initialize;
+	}
     }
     return;
 }
@@ -149,7 +151,7 @@ sub is_constant {
 
 =head2 render(any source, string_ref buffer)
 
-Render the object.
+Render the object.  Outputs nothing if result is empty.
 
 =cut
 
@@ -159,9 +161,9 @@ sub render {
     die("String not initialized") unless exists($fields->{value});
 
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
-    $$buffer .= $fields->{prefix};
+    my($b) = '';
     if ($fields->{is_widget}) {
-	$fields->{value}->render($source, $buffer);
+	$fields->{value}->render($source, \$b);
     }
     else {
 	my($value) = $source->get_widget_value(@{$fields->{value}});
@@ -171,13 +173,14 @@ sub render {
 				unless defined($value);
 	# Result may be a widget!
 	if (ref($value)) {
-	    $value->render($source, $buffer);
+	    $value->render($source, \$b);
 	}
 	else {
-	    $$buffer .= _escape($value);
+	    $b .= _escape($value);
 	}
     }
-    $$buffer .= $fields->{suffix};
+    # Don't output anything if nothing passed
+    $$buffer .= $fields->{prefix}.$b.$fields->{suffix} if length($b);
     return;
 }
 
@@ -185,13 +188,13 @@ sub render {
 
 # _escape(string value) : string
 #
-# Escapes the string and replaces newlines with <br>.  A single space
-# equates to a &nbsp;
+# Escapes the string and replaces newlines with <br>.  An all space
+# string equates to a &nbsp;
 #
 sub _escape {
     my($value) = @_;
     $value = Bivio::Util::escape_html($value);
-    $value =~ s/\n/<br>/mg || $value eq ' ' && ($value = '&nbsp;');
+    $value =~ s/\n/<br>/mg || $value =~ s/^\s+$/&nbsp;/s;
     return $value;
 }
 
