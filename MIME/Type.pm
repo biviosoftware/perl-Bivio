@@ -263,6 +263,43 @@ sub from_extension {
 	    ? $_EXT_TO_TYPE{$ext} : 'application/octet-stream';
 }
 
+=for html <a name="suggest_encoding"></a>
+
+=head2 suggest_encoding(string content_type, string_ref content) : string
+
+Return a good suggested encoding of content.
+
+    Major type:       7bit ok?    Suggested encoding:
+    ------------------------------------------------------------
+    text              yes         7bit
+    text              no          quoted-printable
+    message           yes         7bit
+    message           no          binary
+    multipart         *           binary (in case some parts are not ok)
+    image, etc...     *           base64
+
+Code taken partly from MIME::Entity.pm
+
+=cut
+
+sub suggest_encoding {
+    my(undef, $content_type, $content) = @_;
+
+    my($major) = split('/', $content_type);
+    if (($major eq 'text') || ($major eq 'message')) {
+        # scan message body
+        defined($$content) || return '7bit';
+        my($unclean);
+        # Scan message for 7bit-cleanliness:
+        $unclean = $content =~  /[\200-\377]/;
+        # Return '7bit' if clean; try and encode if not...
+        # Note that encodings are not permitted for messages!
+        return $unclean ? ($major eq 'message') ? 'binary' : 'quoted-printable'
+                    : '7bit';
+    }
+    return ($major eq 'multipart') ? 'binary' : 'base64';
+}
+
 =for html <a name="to_extension"></a>
 
 =head2 to_extension(string content-type) : string
