@@ -54,6 +54,10 @@ used as the C<ACTION> attribute of the C<FORM> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
+=item end_tag : boolean [1]
+
+Renders the C<FORM> end tag if true.
+
 =item form_class : Bivio::Biz::FormModel [*computed*] (inherited)
 
 This value is computed from I<form_model> if it can be.  It

@@ -34,7 +34,7 @@ a message list.
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::UI::HTML::ActionButtons;
-use Bivio::UI::HTML::Widget::ToolBar;
+use Bivio::UI::HTML::Widget::ActionBar;
 use Bivio::Biz::Model::MailList;
 use Bivio::UI::HTML::Celebrity::Page;
 use Bivio::UI::HTML::Widget::Join;
@@ -85,11 +85,11 @@ sub new {
 	],
     });
     $fields->{content}->initialize;
-    $fields->{tool_bar} = Bivio::UI::HTML::Widget::ToolBar->new({
+    $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
 	values => Bivio::UI::HTML::ActionButtons->get_list(
 		'celebrity_post_message'),
     });
-    $fields->{tool_bar}->initialize;
+    $fields->{action_bar}->initialize;
 
     $fields->{heading} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
@@ -138,7 +138,7 @@ sub execute {
 	    page_subtopic => undef,
 	    page_heading => $heading,
 	    page_content => $fields->{content},
-	    page_tool_bar => $fields->{tool_bar},
+	    page_action_bar => $fields->{action_bar},
 	    page_type => Bivio::UI::PageType::LIST(),
 #	    want_page_search => 1,
 	    list_model => $req->get('Bivio::Biz::Model::MailList'),

@@ -95,7 +95,7 @@ If not set, displays an empty table (with headers).
 
 =item expand : boolean [false]
 
-If true, the table will C<WIDTH> will be C<100%>.
+If true, the table will C<WIDTH> will be C<95%>.
 
 =item heading_attrs: hash_ref [{string_font => 'table_heading', column_align => 'S'}]
 
@@ -227,7 +227,7 @@ sub initialize {
 	$p .= $self->get_or_default('pad', 5);
 	$p .= Bivio::UI::Align->as_html(
 		$self->get_or_default('align', 'center'));
-	$p .= ' width="100%"' if $self->get_or_default('expand', 0);
+	$p .= ' width="95%"' if $self->get_or_default('expand', 0);
 	my($bgcolor) = $self->get_or_default('bgcolor', 0);
 	$p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
 	$p .= '>';

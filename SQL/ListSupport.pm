@@ -264,13 +264,7 @@ Arguments are the same as L<load|"load">.
 =cut
 
 sub iterate_start {
-    my($self, $query, $where, $params, $die) = @_;
-
-    my($select) = $self->unsafe_get('select');
-    $die->die('DIE', 'must support select') unless $select;
-    $select .= $where;
-
-    return _execute_select($self, $query, \$select, $params, $die);
+    return _execute_select(@_);
 }
 
 =for html <a name="load"></a>
@@ -287,52 +281,33 @@ I<where> is added to the internally generated select with I<params>.
 
 sub load {
     my($self, $query, $where, $params, $die) = @_;
-    my($select) = $self->unsafe_get('select');
+
     # If no select such just return an empty list.  Only local fields.
-    return [] unless $select;
-    $select .= $where;
-    my($statement) = _execute_select($self, $query, \$select, $params, $die);
+    return [] unless $self->unsafe_get('select');
+
+    # Detail or list?
     return $query->get('this')
-	    ? _load_this($self, $query, $statement, $die)
-		    : _load_list($self, $query, $statement, $select, $params);
+	    ? _load_this($self, $query, _execute_select(@_), $die)
+	    : _load_list(@_);
 }
 
 #=PRIVATE METHODS
 
-# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref select, array_ref params) : DBI::Statement
+# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string where, array_ref params, any die) : DBI::Statement
 #
-# Create and execute the select statement based on query, auth_id, and
-# parent_id.  Assumes select takes an "auth_id" as the first element and
-# "parent_id" as second element (if defined), so unshifts onto "params" instead
-# of pushing.
+# Prepare and execute the select statement.
 #
 sub _execute_select {
-    my($self, $query, $select, $params, $die) = @_;
+    my($self, $query, $where, $params, $die) = @_;
     my($attrs) = $self->internal_get;
 
-    # Insert parent_id and auth_id
-    my($parent_id, $qob) =  $query->get('parent_id', 'order_by');
-    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($parent_id))
-	    if $attrs->{parent_id};
-    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param(
-	    $query->get('auth_id')))
-	    if $attrs->{auth_id};
+    my($select) = $self->unsafe_get('select');
+    $die->die('DIE', 'must support select') unless $select;
 
-    # Formats order_by clause if there are order_by columns
-    if (@{$attrs->{order_by}}) {
-	my($columns) = $attrs->{columns};
-	$$select .= ' order by';
-	for (my($i) = 0; $i < int(@$qob); $i += 2) {
-	    # Append to order_by (name, order)
-	    $$select .= ' '.$columns->{$qob->[$i]}->{sql_name}
-		    .($qob->[$i+1] ? ',' : ' desc,');
-	}
-	# Remove trailing comma
-	chop($$select);
-    }
+    _prepare_where($self, $query, \$where, $params);
 
     # Execute the query
-    return Bivio::SQL::Connection->execute($$select, $params);
+    return Bivio::SQL::Connection->execute($select.$where, $params);
 }
 
 # _init_column_classes(hash_ref attrs, hash_ref decl) : string
@@ -451,8 +426,7 @@ sub _init_column_lists {
     # parent_id constraints (if defined) in where.
     $where = ' and '.$attrs->{parent_id}->{sql_name}.'='.$_PRIMARY_ID_SQL_VALUE
 	    .$where if $attrs->{parent_id};
-    $attrs->{select} = 'select '.join(',', @select_sql_names)
-	    .' from '.join(',',
+    my($from) = ' from '.join(',',
 		    map {
 			my($tn) = $_->{instance}->get_info('table_name');
 			$tn eq $_->{sql_name}
@@ -460,14 +434,16 @@ sub _init_column_lists {
 		    } sort(values(%{$attrs->{models}})));
     if ($attrs->{auth_id}) {
 	$where =~ s/^ where / and /;
-	$attrs->{select} .= ' where '
+	$from .= ' where '
 		.$attrs->{auth_id}->{sql_name}.'='.$_PRIMARY_ID_SQL_VALUE
 			.$where;
     }
     else {
 	$where =~ s/^ and / where /;
-	$attrs->{select} .= $where;
+	$from .= $where;
     }
+    $attrs->{select} = 'select '.join(',', @select_sql_names).$from;
+    $attrs->{select_count} = 'select count(*)'.$from;
     return;
 }
 
@@ -539,26 +515,44 @@ sub _load_this {
     $statement->finish;
 
     # Which page are we on?
-    $query->put(page_number => int(--$row_count / $count));
+    $query->put(page_number => _page_number($query, $row_count));
     return $rows;
 }
 
-# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, string select, array_ref params) : array_ref
+# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, string where, array_ref params, any die) : array_ref
 #
 # Search the list until we find our page_number and then return count rows.
 # If the page_number exceeds the number of rows, read the last page.
 #
 sub _load_list {
-    my($self, $query, $statement, $select, $params) = @_;
+    my($self, $query, $where, $params, $die) = @_;
     my($attrs) = $self->internal_get;
     my($count, $page_number, $parent_id)
 	    = $query->get(qw(count page_number parent_id));
     my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
 
+    _prepare_where($self, $query, \$where, $params);
+
+    # Count the pages if requested
+    if ($query->unsafe_get('want_page_count')) {
+	my($statement) = Bivio::SQL::Connection->execute(
+		$attrs->{select_count}.$where, $params);
+	my($page_count) = _page_number($query, $statement->fetchrow_array);
+	_trace('page_count=', $page_count) if $_TRACE;
+	if ($page_number > $page_count) {
+	    _trace('page_number (',  $page_number, ') > count') if $_TRACE;
+	    $query->put(page_number => $page_number = $page_count);
+	}
+	$query->put(page_count => $page_count);
+    }
+
+    my($select) = $attrs->{select}.$where;
+    my($statement) = Bivio::SQL::Connection->execute($select, $params);
+
     my($row);
  FIND_START: {
 	# Set prev first, because there is a return in the for loop
-	if ($page_number > 0) {
+	if ($page_number > $query->FIRST_PAGE()) {
 	    $query->put(has_prev => 1, prev_page => $page_number - 1);
 	}
 	else {
@@ -566,7 +560,7 @@ sub _load_list {
 	}
 
 	# Find the page.  We load the first row of the page here.
-	my($start) = $page_number * $count;
+	my($start) = ($page_number - $query->FIRST_PAGE()) * $count;
 	for (my($i) = 0; $i <= $start; $i++) {
 	    next if $row = $statement->fetchrow_arrayref;
 
@@ -580,7 +574,8 @@ sub _load_list {
 	    }
 
 	    # Go back to last page.  Have to restart the select.
-	    $query->put(page_number => $page_number = int(--$i/$count));
+	    $query->put(page_number =>
+		    $page_number = _page_number($query, $i));
 	    _trace('last page=', $page_number, ', retrying') if $_TRACE;
 	    $statement = Bivio::SQL::Connection->execute($select, $params);
 	    redo FIND_START;
@@ -629,6 +624,49 @@ sub _load_list {
 
     # Return the page
     return \@rows;
+}
+
+# _page_number(Bivio::SQL::ListQuery query, int row_number) : int
+#
+# Returns the page number that $row_number is on.
+#
+sub _page_number {
+    my($query, $row_number) = @_;
+    return int(--$row_number/$query->get('count')) + $query->FIRST_PAGE();
+}
+
+# _prepare_where(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
+#
+# Prepare select statement based on query, auth_id, and parent_id.  Assumes
+# where takes an "auth_id" as the first element and "parent_id" as second
+# element (if defined), so unshifts onto "params" instead of pushing.
+#
+sub _prepare_where {
+    my($self, $query, $where, $params) = @_;
+    my($attrs) = $self->internal_get;
+
+    # Insert parent_id and auth_id
+    my($parent_id, $qob) =  $query->get('parent_id', 'order_by');
+    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($parent_id))
+	    if $attrs->{parent_id};
+    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param(
+	    $query->get('auth_id')))
+	    if $attrs->{auth_id};
+
+    # Formats order_by clause if there are order_by columns
+    if (@{$attrs->{order_by}}) {
+	my($columns) = $attrs->{columns};
+	$$where .= ' order by';
+	for (my($i) = 0; $i < int(@$qob); $i += 2) {
+	    # Append to order_by (name, order)
+	    $$where .= ' '.$columns->{$qob->[$i]}->{sql_name}
+		    .($qob->[$i+1] ? ',' : ' desc,');
+	}
+	# Remove trailing comma
+	chop($$where);
+    }
+
+    return;
 }
 
 =head1 COPYRIGHT

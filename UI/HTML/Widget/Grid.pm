@@ -102,6 +102,11 @@ If true, the cell will be C<WIDTH=1%>.
 
 If false, will not put cell end tag C<E<lt>/TD E<gt>>
 
+=item cell_end_form : boolean [false]
+
+End the form after the cell is closed.  This is a netscape/IE hack
+which generates invalid html.
+
 =item cell_expand : boolean [false]
 
 If true, the cell will consume any excess columns in its row.
@@ -194,6 +199,7 @@ sub initialize {
 	foreach $c (@cols) {
 	    my($p) = '<td';
 	    my($end) = 1;
+	    my($form_end) = 0;
 	    if (ref($c) eq 'ARRAY') {
 		# Widget value, nothing to prepare.
 	    }
@@ -225,6 +231,7 @@ sub initialize {
 		$p .= qq! width="$width"! if $width;
 		$p .= qq! height="$height"! if $height;
 		$end = $c->get_or_default('cell_end', 1);
+		$form_end = $c->get_or_default('cell_end_form', 0);
 	    }
 	    elsif (!defined($c)) {
 		# Replace undef cells with something real. 
@@ -235,7 +242,8 @@ sub initialize {
 		$c =~ s/\s/&nbsp;/g;
 	    }
 	    # Render scalars literally.
-	    push(@$r, $p .'>', $c, $end ? "</td>\n" : '');
+	    push(@$r, $p .'>', $c, $end ? "</td>\n" : '',
+		   $form_end ? '</form>' : '');
 	}
     }
     $fields->{rows} = $rows;

@@ -79,11 +79,17 @@ from model's order_by names.  Even indexed elements are the name
 and odd elements are true if ascending and false if descending.
 It is an array_ref to preserve the order specified by the user.
 
+=item page_count : int
+
+Number of pages in the list.  Only set if I<want_page_count> is
+true.
+
 =item page_number : int
 
 Page number on which I<this> is on or the page we are viewing.
 Incoming is ignored if I<this>, because is set by
 L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
+Page numbers are one-based.
 
 =item parent_id : string
 
@@ -108,11 +114,33 @@ is to trim blanks and set to undef if zero length.
 The primary key values for this item.  The query should be to
 find this primary key.  There should only be one row returned.
 
+=item want_page_count : boolean
+
+Set this to true if you want to count the number of pages.
+
 =back
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="FIRST_PAGE"></a>
+
+=head2 FIRST_PAGE : int
+
+Returns 1.
+
+=cut
+
+sub FIRST_PAGE {
+    return 1;
+}
+
 #=IMPORTS
+use Bivio::Agent::HTTP::Query;
 use Bivio::IO::Trace;
 use Bivio::Die;
 use Bivio::DieCode;
@@ -133,6 +161,9 @@ my(%_QUERY_TO_FIELDS) = (
     't' => 'this',
 );
 my(@_QUERY) = sort(values(%_QUERY_TO_FIELDS));
+my(%_ATTR_TO_CHAR) = map {
+    ($_QUERY_TO_FIELDS{$_}, $_);
+} keys(%_QUERY_TO_FIELDS);
 # Separates elements in a multivalued primary key.
 # Tightly coupled with $Bivio::Biz::FormContext::_HASH_CHAR
 my($_SEPARATOR) = "\177";
@@ -187,6 +218,22 @@ sub unauth_new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="format_uri_for_any_list"></a>
+
+=head2 format_uri_for_any_list(Bivio::SQL::Support support) : hash_ref
+
+Returns the query without a this or page_number.
+
+=cut
+
+sub format_uri_for_any_list {
+    my($self, $support) = @_;
+    my(%attrs) = %{$self->internal_get()};
+    $attrs{this} = undef;
+    $attrs{page_number} = undef;
+    return _format_uri(\%attrs, $support);
+}
 
 =for html <a name="format_uri_for_next"></a>
 
@@ -459,6 +506,22 @@ sub set_request_this {
     return;
 }
 
+=for html <a name="to_char"></a>
+
+=head2 static to_char(string attr_name) : string
+
+Returns the character for the specified field.  This value is a
+constant.
+
+=cut
+
+sub to_char {
+    my(undef, $attr_name) = @_;
+    die($attr_name, ': unknown query attribute')
+	    unless defined($_ATTR_TO_CHAR{$attr_name});
+    return $_ATTR_TO_CHAR{$attr_name};
+}
+
 #=PRIVATE METHODS
 
 # _die(Bivio::Type::Enum code, string message, string value)
@@ -593,10 +656,10 @@ sub _parse_page_number {
     # Returns undef if no page number
     $attrs->{page_number} = Bivio::Type::Integer->from_literal($attrs->{'n'});
 
-    # Set page_number to 0 by default
-    $attrs->{page_number} = 0
+    # Set page_number to 1 by default (if invalid)
+    $attrs->{page_number} = FIRST_PAGE()
 	    unless defined($attrs->{page_number})
-		    && $attrs->{page_number} >= 0;
+		    && $attrs->{page_number} >= FIRST_PAGE();
     return;
 }
 

@@ -33,7 +33,7 @@ L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 
 =over 4
 
-=item align : string []
+=item align : string [center]
 
 How to align the table.  The allowed (case
 insensitive) values are defined in
@@ -99,7 +99,7 @@ If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
 
 =item expand : boolean [false]
 
-If true, the table C<WIDTH> will be C<100%>.
+If true, the table C<WIDTH> will be C<95%>.
 
 =item list_class : string (required)
 
@@ -324,9 +324,9 @@ sub initialize {
     my($prefix) = "\n<table border=0 cellspacing=";
     $prefix .= $self->get_or_default('cellspacing', 0);
     $prefix .= ' cellpadding=' . $self->get_or_default('cellpadding', 5);
-    $prefix .= Bivio::UI::Align->as_html($self->get('align'))
-	    if $self->has_keys('align');
-    $prefix .= ' width="100%"' if $self->unsafe_get('expand');
+    $prefix .= Bivio::UI::Align->as_html(
+	    $self->get_or_default('align', 'center'));
+    $prefix .= ' width="95%"' if $self->unsafe_get('expand');
     $fields->{table_prefix} = $prefix.'>';
     return;
 }

@@ -128,9 +128,11 @@ sub initialize {
     }
 
     # Make the value into a widget
+    my($string_font) = $self->unsafe_get('string_font');
     $fields->{value_widget} = Bivio::UI::HTML::Widget::String->new({
 	value => $fields->{value},
 	parent => $self,
+	string_font => $string_font,
     });
     $fields->{value_widget}->initialize;
 
@@ -138,6 +140,7 @@ sub initialize {
 	$fields->{value_invalid} = Bivio::UI::HTML::Widget::String->new({
 	    value => $fields->{value_invalid},
 	    parent => $self,
+	    string_font => $string_font,
 	});
 	$fields->{value_invalid}->initialize;
     }

@@ -179,6 +179,9 @@ _compile(
     # Accounting Reports (Tasks)
     CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => ['Valuation Report'],
     CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL => ['Member Withdrawal Report'],
+    # Not really a report, but on the report page
+    CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL_LIST => [
+	'Member Withdrawal Summary'],
     CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION => [
 	'Member Tax Allocation Report'],
     CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status Report'],
@@ -187,6 +190,8 @@ _compile(
     CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY => ['Investment Report'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE => [
 	'Investment Performance Report'],
+    CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL => [
+	'Investment Performance Detail Report'],
     CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
 	'Income and Expense Report'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => ['Capital Gains and Losses Report'],
@@ -374,11 +379,23 @@ _compile(
     COMPUFEST_2000 => ['CompuFest 2000'],
     ABOUT_COM_GUIDE => ['About.com Guide Wanted'],
 
+    # PrevNextBar
+    PREV_NEXT_BAR_PREV_LIST => ['prev'],
+    PREV_NEXT_BAR_NEXT_LIST => ['next'],
+    PREV_NEXT_BAR_PREV_DETAIL => ['prev'],
+    PREV_NEXT_BAR_NEXT_DETAIL => ['next'],
+    PREV_NEXT_BAR_THIS_LIST => ['back to list'],
+    PREV_NEXT_BAR_ONLY_ONE_PAGE => ['page 1 of 1'],
+    PREV_NEXT_BAR_GO_TO_PAGE => ['page'],
+    PREV_NEXT_BAR_OF_PAGE => ['of %d'],
+    PREV_NEXT_BAR_SPACER => [' | '],
+
     # Help topics
     HELP_ENABLING_COOKIES => ['Enabling Cookies in your Browser'],
     HELP_COOKIES => ['Cookies'],
     HELP_VALUATION_DATE => ['Valuation Date'],
     HELP_UNIT_VALUE => ['Unit Value'],
+    HELP_ACCOUNT_TRANSACTIONS => ['Account Transactions'],
 );
 
 =head1 METHODS

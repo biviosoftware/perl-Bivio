@@ -2070,6 +2070,7 @@ my(@_CFG) = (
         ?/accounting/reports/withdrawals
         Bivio::Biz::Model::MemberWithdrawalList->execute_load_all
         Bivio::UI::HTML::Club::MemberWithdrawalReportList
+        help=member-withdrawal-summary
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL
@@ -2110,6 +2111,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentPerformanceList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentPerformanceReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE
+        help=investment-performance-report
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
@@ -2122,6 +2124,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentPerformanceDetailList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
+        help=investment-performance-detail-report
     )],
     [qw(
         CLUB_ADMIN_PUBLIC

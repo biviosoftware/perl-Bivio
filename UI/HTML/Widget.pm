@@ -29,6 +29,8 @@ use Bivio::UI::Widget;
 C<Bivio::UI::HTML::Widget> is the superclass of all HTML
 widgets.
 
+Provides many utility routines to help build widgets.
+
 =cut
 
 #=IMPORTS

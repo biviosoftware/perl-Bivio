@@ -51,7 +51,6 @@ sub REALM_TYPE {
 }
 
 #=IMPORTS
-use Bivio::UI::HTML::Widget::ToolBar;
 use Bivio::UI::HTML::Widget::Director;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::String;
@@ -117,10 +116,13 @@ sub new {
 			}),
 		    ],
 		    [
-			['page_tool_bar'],
+			['celeb_page_action_bar'],
 		    ],
 		    [
 			['page_content'],
+		    ],
+		    [
+			['celeb_page_action_bar'],
 		    ],
 		    [
 			' ',
@@ -207,9 +209,12 @@ sub execute {
     my($page_type) = $req->unsafe_get('page_type')
 	    || Bivio::UI::PageType::NONE();
     my($page_heading) = $req->unsafe_get('page_heading');
+    my($action_bar) = $req->unsafe_get('page_action_bar');
     $req->put(
 	    celebrity_page_heading => $page_heading,
 	    page_heading => '',
+	    page_action_bar => undef,
+	    celeb_page_action_bar => $action_bar,
 	    page_type => $page_type,
 	    tool_bar_nav => $_NAV_BAR_MAP->{$page_type});
     return $_MAP->{$owner_name}->SUPER::execute($req);

@@ -75,6 +75,11 @@ I<path_info> attribute.
 The list must have a I<path_info> attribute, but doesn't include
 the query string.
 
+=item ANY_LIST
+
+The list must be loaded.  The page_number and this will be cleared,
+only the order_by and parent will be used.
+
 =back
 
 =cut
@@ -96,6 +101,7 @@ __PACKAGE__->compile(
     THIS_PATH_NO_QUERY => [10, '', 'detail_uri'],
     NO_QUERY => [11, '', 'list_uri'],
     THIS_DETAIL_WITH_PATH => [12, 'format_uri_for_this', 'detail_uri'],
+    ANY_LIST => [13, 'format_uri_for_any_list', 'list_uri'],
 );
 
 =head1 METHODS

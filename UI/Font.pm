@@ -32,35 +32,7 @@ The current font names are:
 
 =over 4
 
-=item PAGE_HEADING
-
-=item TABLE_HEADING
-
-=item TABLE_CELL
-
-=item ICON_TEXT_IA
-
-=item ERROR
-
-=item LIST_ERROR
-
-=item ITALIC
-
-=item TIME
-
-=item NUMBER_CELL
-
-=item TABLE_ROW_TITLE
-
-=item FORM_FIELD_LABEL
-
-=item FORM_FIELD_ERROR_LABEL
-
-=item REALM_NAME
-
-=item FORM_SUBMIT
-
-=item SUBSTITUTE_USER
+TODO: fill these in...
 
 =back
 
@@ -104,7 +76,7 @@ _compile([
     ACTION_BAR_STRING => [undef, undef, 'strong'],
     ACTION_BUTTON => [undef, undef],
     REPORT_PAGE_HEADING => [$_SANS_SERIF, 'page_heading', 'big', 'strong'],
-    TEXT_MENU_NORMAL => [$_SANS_SERIF, 'text_menu_font',],
+    TEXT_MENU_NORMAL => [$_SANS_SERIF, 'text_menu_font'],
     TEXT_MENU_SELECTED => [$_SANS_SERIF, 'text_menu_font', 'strong'],
     DETAIL_CHOOSER => [$_SANS_SERIF, 'detail_chooser', 'strong'],
     MESSAGE_SUBJECT => [$_SANS_SERIF, undef],
@@ -118,6 +90,8 @@ _compile([
     CHECKED_ICON => [$_SANS_SERIF, 'page_heading', 'small'],
     ERROR_ICON => [$_SANS_SERIF, 'error', 'big', 'strong'],
     REPORT_FOOTER => [$_SANS_SERIF, undef, 'small'],
+    PREV_NEXT_BAR_LINK => [$_SANS_SERIF, 'text_menu_font', 'strong'],
+    PREV_NEXT_BAR_TEXT => [$_SANS_SERIF, undef],
 ]);
 
 =head1 METHODS

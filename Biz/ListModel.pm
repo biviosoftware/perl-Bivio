@@ -243,12 +243,16 @@ sub execute_load_all {
 
 Loads current page from I<req> query.
 
+Requests a I<page_count> by setting I<want_page_count> on the
+queury.
+
 =cut
 
 sub execute_load_page {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
     my($query) = $self->parse_query_from_request();
+    $query->put(want_page_count => 1);
     $self->die('CORRUPT_QUERY', {message => 'unexpected this',
 	query => $req->unsafe_get('query')})
 	    if $query->unsafe_get('this');
@@ -513,6 +517,28 @@ associated with this list model.
 
 sub get_query {
     return shift->{$_PACKAGE}->{query};
+}
+
+=for html <a name="get_query_as_hash"></a>
+
+=head2 get_query_as_hash(Bivio::Biz::QueryType type) : hash_ref
+
+=head2 get_query_as_hash(string type) : hash_ref
+
+Same as L<format_query|"format_query"> except that it returns as an
+(unescaped) hash, not a string.
+
+Returns C<undef> if the query is empty.
+
+=cut
+
+sub get_query_as_hash {
+    my($self) = shift;
+    # Easier to do this way that to try to modularize the code for
+    # this one case.  Typical case is that the string is empty.
+    # If there is one element, it's easy, too.
+    my($s) = $self->format_query(@_);
+    return length($s) ? Bivio::Agent::HTTP::Query->parse($s) : undef;
 }
 
 =for html <a name="get_result_set_size"></a>
