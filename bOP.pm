@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Type::ECService subclasses (above) EnumDelegator
+  * Bivio::Type::Number->max/min supported
+  * Bivio::UI::HTML::Widget::Select refactored
+
+  Revision 2.38  2004/10/14 17:48:12  moeller
   * Bivio::UI::HTML::Widget::Select fixed doc
   * Bivio::Biz::ListModel fixed previous check-in, _format_uri_args()
     only dies if uri is ref and not a Bivio::Agent::TaskId
