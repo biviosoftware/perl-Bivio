@@ -963,6 +963,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         _/new_user
         Bivio::Biz::Model::RealmUser->execute_auth_user
+        Bivio::Biz::Model::Email->execute_auth_user
         Bivio::UI::HTML::Club::UserNew
     )],
     [qw(
