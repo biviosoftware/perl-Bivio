@@ -220,6 +220,7 @@ sub _upgrade {
     my($req) = @_;
 
     _upgrade_create_spinoff_table();
+    _upgrade_permission_table();
     print("\n*** done ***\n");
     return;
 }
@@ -274,6 +275,16 @@ ALTER TABLE instrument_merger_spinoff_t modify remaining_basis not null
 ALTER TABLE instrument_merger_spinoff_t modify new_shares_ratio not null
 /
 ');
+    return;
+}
+
+# _upgrade_permission_table()
+#
+# New permission MAIL_POST
+#
+sub _upgrade_permission_table {
+    use Bivio::Biz::Util::RealmRole;
+    Bivio::Biz::Util::RealmRole->main('set_same', 'MAIL_WRITE', 'MAIL_POST');
     return;
 }
 
