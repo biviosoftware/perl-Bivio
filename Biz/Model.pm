@@ -496,6 +496,8 @@ sub internal_initialize {
 
 =head2 static internal_initialize_local_fields(array_ref decls, any default_type, any default_constraint) : array_ref
 
+=head2 static internal_initialize_local_fields(string class, array_ref decls, string class2, array_ref decls2, ..., any default_type, any default_constraint) : array_ref
+
 Provides positional shortcut for generating field declarations to pass return
 from L<internal_initialize|"internal_initialize">.  I<decls> is a array of
 arrays.  Each element is a field declaration that is a tuple of (name, type,
@@ -504,7 +506,11 @@ values.  If both type or constraint is missing, element may be a string.
 I<default_type> and <default_constraint> must be defined if I<decls>
 requires default values.
 
-Example:
+In the second form, you may specify the class as an argument.  This also allows
+you to declare multiple (class, decl) tuples which can be convenient for
+forms with all local fields.
+
+Examples:
 
     $self->internal_initialize_local_fields([
         'first_name',
@@ -517,21 +523,49 @@ Example:
         ['count', 'Integer', 'NOT_NULL'],
     ]);
 
+    $self->internal_initialize_local_fields(
+        visible => [
+	    'first_name',
+	    'middle_name',
+	    'last_name',
+	    [qw(gender Gender)],
+	],
+        hidden => [
+            ['count', 'Integer', 'NOT_NULL'],
+        ],
+        'Line', 'NOT_NULL');
+
 =cut
 
 sub internal_initialize_local_fields {
     my($proto, $decls, $default_type, $default_constraint) = @_;
-    return [map({
-	$_ = [$_]
+    return [
+	map({
+	    $_ = [$_]
 	    unless ref($_);
-	{
-	    name => $_->[0],
-	    type => $_->[1] || $default_type
-		|| $proto->die('default_type must be defined'),
-	    constraint => $_->[2] || $default_constraint
-		|| $proto->die('default_constraint must be defined'),
-	};
-    } @$decls)];
+	    {
+		name => $_->[0],
+		type => $_->[1] || $default_type
+		    || $proto->die('default_type must be defined'),
+		constraint => $_->[2] || $default_constraint
+		    || $proto->die('default_constraint must be defined'),
+	    };
+	} @$decls)
+    ] if ref($decls) eq 'ARRAY';
+    my($aux) = [];
+    unshift(@$aux, pop(@_))
+	while !ref($_[$#_]);
+    Bivio::Die->die('expecting class and declarations')
+	unless @_ > 1;
+    shift(@_);
+    Bivio::Die->die('uneven (class, declarations) tuples')
+        if @_ % 2;
+    return [
+	map({
+	    (shift(@_) => $proto->internal_initialize_local_fields(
+		shift(@_), @$aux));
+	} 1 .. @_ / 2),
+    ];
 }
 
 =for html <a name="internal_iterate_next"></a>

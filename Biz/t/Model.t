@@ -36,6 +36,30 @@ Bivio::Test->new('Bivio::Biz::Model')->unit([
 	    ]],
 	    [['a']] => Bivio::DieCode->DIE,
 	    [['a'], 'String'] => Bivio::DieCode->DIE,
+	    [c1 => ['d1'], c2 => ['d2'], 'String', 'NOT_NULL'] => [
+		[map({
+		    ("c$_" => [
+			{
+			    name => "d$_",
+			    type => 'String',
+			    constraint => 'NOT_NULL',
+			},
+		    ]);
+		} 1 ..2)],
+            ],
+	    [c1 => [[qw(d1 Line NONE)]], c2 => [[qw(d2 String NOT_NULL)]]]
+		=> [[
+		    c1 => [{
+			name => 'd1',
+			type => 'Line',
+			constraint => 'NONE',
+		    }],
+		    c2 => [{
+			name => 'd2',
+			type => 'String',
+			constraint => 'NOT_NULL',
+		    }],
+		]],
 	],
 	new => [
 	    ['RealmOwner'] => qr/RealmOwner/,
