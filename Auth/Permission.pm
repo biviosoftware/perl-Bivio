@@ -72,6 +72,7 @@ __PACKAGE__->compile([
     PRO_FUND_INVESTOR => [25],
     PRO_FUND_MANAGER => [26],
     SUPER_USER_TRANSIENT => [27],
+    MAIL_POST => [28],
 ]);
 
 =head1 METHODS
