@@ -244,7 +244,268 @@ sub _upgrade {
     my($req) = @_;
 
     _upgrade_instrument_type();
+    _upgrade_csi_tables();
     print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_csi_tables() : 
+#
+# Create CSI tables
+#
+sub _upgrade_csi_tables {
+    print("Creating CSI tables\n");
+    _do_sql(<<'EOF');
+CREATE TABLE instrument_valuation_t (
+  instrument_id NUMBER(18),
+  closing_date DATE,
+  closing_price NUMBER(23,6),
+  constraint instrument_valuation_t1 primary key(instrument_id, closing_date)
+)
+  organization INDEX COMPRESS 1 tablespace index_64m
+  pctfree 10 initrans 2 storage (freelists 1)
+/
+ALTER TABLE instrument_valuation_t modify instrument_id not null
+/
+ALTER TABLE instrument_valuation_t modify closing_date not null
+/
+ALTER TABLE instrument_valuation_t modify closing_price not null
+/
+CREATE TABLE csi_distribution_t (
+  csi_id NUMBER(9),
+  distribution_date DATE,
+  distribution_type CHAR(2),
+  amount NUMBER(23,6)
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
+/
+
+CREATE TABLE csi_fact_sheet_t (
+  csi_id NUMBER(9),
+  fact_date DATE,
+  fact_op CHAR(2),
+  ticker_symbol VARCHAR2(30),
+  name VARCHAR2(100),
+  conversion_factor NUMBER(20,3),
+  exchange_name VARCHAR2(30)
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
+/
+
+CREATE TABLE csi_import_t (
+  file_name VARCHAR2(30),
+  import_date DATE
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
+/
+
+CREATE TABLE csi_instrument_t (
+  csi_id NUMBER(9),
+  instrument_id NUMBER(18),
+  instrument_type NUMBER(2)
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
+/
+
+CREATE TABLE csi_mutual_fund_t (
+  csi_id NUMBER(9),
+  price_date DATE,
+  net_asset_value NUMBER(23,6),
+  ask_price NUMBER(23,6)
+)
+  tablespace data_64m
+  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
+/
+
+CREATE TABLE csi_split_t (
+  csi_id NUMBER(9),
+  split_date DATE,
+  new_shares NUMBER(9),
+  old_shares NUMBER(9)
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
+/
+
+CREATE TABLE csi_stock_price_t (
+  csi_id NUMBER(9),
+  price_date DATE,
+  open NUMBER(23,6),
+  high NUMBER(23,6),
+  low NUMBER(23,6),
+  close NUMBER(23,6),
+  volume NUMBER(20,3)
+)
+  tablespace data_64m
+  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
+/
+ALTER TABLE csi_distribution_t
+  add constraint csi_distribution_t1
+  primary key(csi_id, distribution_date, distribution_type)
+  using index tablespace index_1m pctfree 10 initrans 2 storage (freelists 1)
+/
+ALTER TABLE csi_fact_sheet_t
+  add constraint csi_fact_sheet_t1
+  primary key(csi_id, fact_date)
+  using index tablespace index_1m pctfree 10 initrans 2 storage (freelists 1)
+/
+ALTER TABLE csi_import_t
+  add constraint csi_import_t1
+  primary key (file_name)
+  using index tablespace index_1m pctfree 10 initrans 2 storage (freelists 1)
+/
+ALTER TABLE csi_instrument_t
+  add constraint csi_instrument_t1
+  primary key (csi_id)
+  using index tablespace index_1m pctfree 10 initrans 2 storage (freelists 1)
+/
+ALTER TABLE csi_mutual_fund_t
+  add constraint csi_mutual_fund_t1
+  primary key (csi_id, price_date)
+  using index tablespace index_64m pctfree 10 initrans 2 storage (freelists 1)
+/
+ALTER TABLE csi_split_t
+  add constraint csi_split_t1
+  primary key(csi_id, split_date)
+  using index tablespace index_1m pctfree 10 initrans 2 storage (freelists 1)
+/
+ALTER TABLE csi_stock_price_t
+  add constraint csi_stock_price_t1
+  primary key(csi_id, price_date)
+  using index tablespace index_64m pctfree 10 initrans 2 storage (freelists 1)
+/
+
+----------------------------------------------------------------
+-- Non-Primary Key Constraints
+----------------------------------------------------------------
+--
+-- csi_distribution_t
+--
+ALTER TABLE csi_distribution_t modify csi_id not null
+/
+ALTER TABLE csi_distribution_t
+  add constraint csi_distribution_t2
+  foreign key (csi_id)
+  references csi_instrument_t
+/
+ALTER TABLE csi_distribution_t modify distribution_date not null
+/
+ALTER TABLE csi_distribution_t
+  add constraint csi_distribution_t3
+  check (distribution_type between 1 and 2)
+/
+ALTER TABLE csi_distribution_t modify amount not null
+/
+
+--
+-- csi_fact_sheet_t
+--
+ALTER TABLE csi_fact_sheet_t modify csi_id not null
+/
+ALTER TABLE csi_fact_sheet_t
+  add constraint csi_fact_sheet_t2
+  foreign key (csi_id)
+  references csi_instrument_t
+/
+ALTER TABLE csi_fact_sheet_t modify fact_date not null
+/
+ALTER TABLE csi_fact_sheet_t
+  add constraint csi_fact_sheet_t3
+  check (fact_op between 1 and 3)
+/
+ALTER TABLE csi_fact_sheet_t modify ticker_symbol not null
+/
+ALTER TABLE csi_fact_sheet_t modify name not null
+/
+ALTER TABLE csi_fact_sheet_t modify conversion_factor not null
+/
+ALTER TABLE csi_fact_sheet_t modify exchange_name not null
+/
+
+--
+-- csi_import_t
+--
+ALTER TABLE csi_import_t modify file_name not null
+/
+ALTER TABLE csi_import_t modify import_date not null
+/
+
+--
+-- csi_instrument_t
+--
+ALTER TABLE csi_instrument_t modify csi_id not null
+/
+ALTER TABLE csi_instrument_t
+  add constraint csi_instrument_t2
+  foreign key (instrument_id)
+  references instrument_t
+/
+ALTER TABLE csi_instrument_t
+  add constraint csi_instrument_t3
+  check (instrument_type between 1 and 4)
+/
+
+--
+-- csi_mutual_fund_t
+--
+ALTER TABLE csi_mutual_fund_t modify csi_id not null
+/
+ALTER TABLE csi_mutual_fund_t
+  add constraint csi_mutual_fund_t2
+  foreign key (csi_id)
+  references csi_instrument_t
+/
+ALTER TABLE csi_mutual_fund_t modify price_date not null
+/
+ALTER TABLE csi_mutual_fund_t modify net_asset_value not null
+/
+ALTER TABLE csi_mutual_fund_t modify ask_price not null
+/
+
+--
+-- csi_split_t
+--
+ALTER TABLE csi_split_t modify csi_id not null
+/
+ALTER TABLE csi_split_t
+  add constraint csi_split_t2
+  foreign key (csi_id)
+  references csi_instrument_t(csi_id)
+/
+ALTER TABLE csi_split_t modify split_date not null
+/
+ALTER TABLE csi_split_t modify new_shares not null
+/
+ALTER TABLE csi_split_t modify old_shares not null
+/
+
+--
+-- csi_stock_price_t
+--
+ALTER TABLE csi_stock_price_t modify csi_id not null
+/
+ALTER TABLE csi_stock_price_t
+  add constraint csi_stock_price_t2
+  foreign key (csi_id)
+  references csi_instrument_t(csi_id)
+/
+ALTER TABLE csi_stock_price_t modify price_date not null
+/
+ALTER TABLE csi_stock_price_t modify open not null
+/
+ALTER TABLE csi_stock_price_t modify high not null
+/
+ALTER TABLE csi_stock_price_t modify low not null
+/
+ALTER TABLE csi_stock_price_t modify close not null
+/
+ALTER TABLE csi_stock_price_t modify volume not null
+/
+EOF
     return;
 }
 
