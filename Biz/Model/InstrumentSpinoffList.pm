@@ -36,34 +36,10 @@ use Bivio::Biz::Model::InstrumentSpinoff;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_SEPARATOR) = Bivio::Biz::Model::InstrumentSpinoff::QUERY_SEPARATOR;
 
 =head1 METHODS
 
 =cut
-
-=for html <a name="format_query"></a>
-
-=head2 format_query(Bivio::Type::QueryType type) : string
-
-Returns the multiple key string for the current row.
-
-=cut
-
-sub format_query {
-    my($self, $type, @args) = @_;
-
-    $type = $type->get_name if ref($type);
-    return $self->SUPER::format_query($type, @args)
-	    unless $type eq 'THIS_DETAIL';
-
-    return "t=".Bivio::Type::Date->to_query($self->get(
-	    'InstrumentSpinoff.spinoff_date'))
-	    .$_SEPARATOR
-	    .$self->get('InstrumentSpinoff.source_instrument_id')
-	    .$_SEPARATOR
-	    .$self->get('InstrumentSpinoff.new_instrument_id');
-}
 
 =for html <a name="internal_initialize"></a>
 

@@ -34,23 +34,10 @@ C<Bivio::Biz::Model::InstrumentSpinoff> spin-off info
 
 =cut
 
-=for html <a name="QUERY_SEPARATOR"></a>
-
-=head2 QUERY_SEPARATOR : string
-
-Returns the separator used between the multiple key query.
-
-=cut
-
-sub QUERY_SEPARATOR {
-    return '-';
-}
-
 #=IMPORTS
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_SEP) = QUERY_SEPARATOR();
 
 =head1 METHODS
 
@@ -76,32 +63,6 @@ sub internal_initialize {
 	    new_shares_ratio => ['Amount', 'NOT_NULL'],
         },
     };
-}
-
-=for html <a name="load_this_from_request"></a>
-
-=head2 load_this_from_request() : self
-
-Overridden to handle the multiple keys.
-
-=cut
-
-sub load_this_from_request {
-    my($self) = @_;
-    my($date, $source, $new);
-
-    my($this) = $self->get_request->get('query')->{t};
-    if ($this) {
-	($date, $source, $new) = $this =~ /^(.*)$_SEP(\d+)$_SEP(\d+)$/;
-    }
-    $self->throw_die(Bivio::DieCode::CORRUPT_QUERY())
-	    unless $date;
-
-    return $self->load({
-	spinoff_date => Bivio::Type::Date->from_literal($date),
-	source_instrument_id => $source,
-	new_instrument_id => $new,
-    });
 }
 
 #=PRIVATE METHODS
