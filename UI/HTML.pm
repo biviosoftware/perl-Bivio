@@ -530,6 +530,14 @@ sub initialize_standard_support {
     $self->group(home_login_image => $_W->load_and_new('HomeLoginImage'));
     $self->group(home_date_clubs => $_W->load_and_new('HomeDateClubs'));
     $self->group(toggle_secure_widget => $_W->toggle_secure);
+    $self->group(register_button_widget => $_W->director(
+	    [sub {shift->get_request->get('user_state')
+			  == Bivio::Type::UserState::JUST_VISITOR() ? 1 : 0}],
+	    {
+		0 => '',
+		1 => $_W->link($_W->image('register', 'Sign up!'),
+		       'USER_CREATE'),
+	    }));
     return;
 }
 
