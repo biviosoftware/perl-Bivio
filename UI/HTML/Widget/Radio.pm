@@ -61,13 +61,9 @@ Which form are we dealing with.
 
 String label to use.
 
-=item value : Bivio::Type::Enum (required)
+=item value : any (required)
 
-Value of button.
-
-=item value : int (required)
-
-Value of button.
+Scalar value of button or Bivio::Type::Enum.
 
 =back
 
@@ -87,14 +83,22 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::UI::HTML::Widget::Radio
+=head2 static new(string field, any value, any label, hash_ref attrs) : Bivio::UI::HTML::Widget::Radio
+
+I<value> may be a scalar, L<Bivio::Type::Enum|Bivio::Type::Enum>, or
+array_ref which returns one of these.
+
+I<label> may be a scalar, L<Bivio::UI::Widget|Bivio::UI::Widget>,
+or array_ref which returns a scalar.
+
+=head2 static new(hash_ref attrs) : Bivio::UI::HTML::Widget::Radio
 
 Creates a Radio widget.
 
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::ControlBase::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }
@@ -116,27 +120,19 @@ sub control_on_render {
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
-    my($field) = $fields->{field};
-    my($value) = $fields->{value};
-
-    # first render initialization
-    unless ($fields->{initialized}) {
-	$fields->{initialized} = 1;
-	$fields->{prefix} = '<input name=';
-	$fields->{suffix} = ' type=radio value="'
-		.(ref($value) ? $value->to_html($value) : $value)
-		."\""
-		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
-		.">&nbsp;";
-    }
-
-
-    $$buffer .= $fields->{prefix}
-	    .$form->get_field_name_for_html($field)
+    my($field) = $self->get('field');
+    my($value) = ${$self->render_attr('value', $source)};
+    $$buffer .= '<input name='
+	    . $form->get_field_name_for_html($field)
 #TODO: is_equal?
-	    .(defined($form->get($field))
+	    . (defined($form->get($field))
 		    && $value eq $form->get($field) ? ' checked' : '')
-	    .$fields->{suffix};
+	    . ' type=radio value="'
+	    . (ref($value) ? $value->to_html($value) :
+		Bivio::HTML->escape($value))
+	    . "\""
+	    . ($fields->{auto_submit} ? ' onclick="submit()"' : '')
+	    . ">&nbsp;";
 
     my($label) = $self->get('label');
     if (UNIVERSAL::isa($label, 'Bivio::UI::Widget')) {
@@ -146,7 +142,7 @@ sub control_on_render {
 	my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
 	$label = $source->get_widget_value(@$label)
 	    if ref($label);
-	$$buffer .= $p.Bivio::HTML->escape($label).$s;
+	$$buffer .= $p . Bivio::HTML->escape($label) . $s;
     }
     return;
 }
@@ -163,13 +159,41 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return if $fields->{model};
+#TODO: Cache these?
     $fields->{model} = $self->ancestral_get('form_model');
-    $fields->{field} = $self->get('field');
-    $fields->{value} = $self->get('value');
     $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
-    $self->get('label')->initialize
+#TODO: Probably should just wrap in a String widget.
+    $self->get('label')->put_and_initialize(parent => $self)
 	if UNIVERSAL::isa($self->get('label'), 'Bivio::UI::Widget');
-    return $self->SUPER::initialize();
+    return $self->SUPER::initialize;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $field, $value, $label, $attributes) = @_;
+    return '"field" must be a defined scalar'
+	unless defined($field) && !ref($field);
+    return '"value" must be a scalar, array_ref, or Bivio::Type::Enum'
+	unless defined($value)
+	    && (!ref($value) || ref($value) eq 'ARRAY'
+		|| UNIVERSAL::isa($value, 'Bivio::Type::Enum'));
+    return '"value" must be a scalar, array_ref, or Bivio::UI::Widget'
+	unless defined($value)
+	    && (!ref($value) || ref($value) eq 'ARRAY'
+		|| UNIVERSAL::isa($value, 'Bivio::UI::Widget'));
+    return {
+	field => $field,
+	value => $value,
+	label => $label,
+	($attributes ? %$attributes : ()),
+    };
 }
 
 #=PRIVATE METHODS
