@@ -905,6 +905,11 @@ __PACKAGE__->compile([
 	undef,
 	"card number does not match card type",
     ],
+    SELECT_VALID_CREDIT_TYPE => [
+	125,
+	undef,
+	'identify the income received',
+    ],
 ]);
 
 #=PRIVATE METHODS
