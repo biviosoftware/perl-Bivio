@@ -276,8 +276,9 @@ the fact that L<handle_die|"handle_die"> is called to execute rollback.
 
 sub execute {
     my($self, $req) = @_;
-    $req->client_redirect_if_not_secure() if $self->get('require_secure') &&
-	$self->can('client_redirect_if_not_secure');
+    $req->client_redirect_if_not_secure()
+	if $self->get('require_secure')
+	    && $req->can('client_redirect_if_not_secure');
     my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
 #TODO: Handle multiple realms and roles.  Switching between should be possible.
     unless ($auth_realm->can_user_execute_task($self, $req)) {
