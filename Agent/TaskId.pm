@@ -548,7 +548,15 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MessageAttachment
 
     )],
-	
+    [qw(
+	DEMO_REDIRECT
+	59
+        GENERAL
+        DOCUMENT_READ
+        demo
+	Bivio::Biz::Action::DemoClubRedirect
+        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+    )],
 );
 
 __PACKAGE__->compile(
@@ -556,6 +564,7 @@ __PACKAGE__->compile(
 );
 
 =head1 METHODS
+
 
 =cut
 
