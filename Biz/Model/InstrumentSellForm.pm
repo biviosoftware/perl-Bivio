@@ -40,36 +40,34 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::InstrumentBuyForm
-
-Creates an instrument buy form.
+=head1 METHODS
 
 =cut
 
-sub new {
-    my($self) = &Bivio::Biz::FormModel::new(@_);
-    $self->{$_PACKAGE} = {};
+=for html <a name="execute_empty"></a>
 
-#TODO: rework when defaults available
+=head2 execute_empty()
+
+Processes an empty form.
+
+=cut
+
+sub execute_empty {
+    my($self) = @_;
+
     my($properties) = $self->internal_get;
     # default date_time to now
     $properties->{'RealmTransaction.date_time'} =
 	    Bivio::UI::HTML::Format::Date->get_widget_value(
 		    Bivio::Type::Date->now());
 
-    return $self;
+    # default account to Broker
+    $properties->{'RealmAccountEntry.realm_account_id'} =
+	    $self->get_request->get(
+		    'Bivio::Biz::Model::RealmValuationAccountList')
+		    ->get_default_broker_account();
+    return;
 }
-
-=head1 METHODS
-
-=cut
 
 =for html <a name="execute_input"></a>
 
@@ -80,7 +78,16 @@ sub new {
 
 sub execute_input {
     my($self) = @_;
-    _trace($self->internal_get) if $_TRACE;
+
+    # need to convert date to display value, or next form will barf
+    my($properties) = $self->internal_get;
+    $self->get_request->get('form')->{'RealmTransaction.date_time'}
+	    = Bivio::UI::HTML::Format::Date->get_widget_value(
+		    $properties->{'RealmTransaction.date_time'});
+
+    # hacked redirect to page two
+    $self->internal_put_error(redirect => Bivio::TypeError::UNKNOWN);
+
     return;
 }
 
@@ -103,14 +110,9 @@ sub internal_initialize {
 	    },
 	    'RealmAccountEntry.realm_account_id',
 	    'RealmInstrumentEntry.count',
-	    'Entry.amount',
+	    'RealmInstrumentValuation.price_per_share',
 	    {
 		name => 'commission',
-		type => 'Bivio::Type::Amount',
-		constraint => Bivio::SQL::Constraint::NONE(),
-	    },
-	    {
-		name => 'admin_fee',
 		type => 'Bivio::Type::Amount',
 		constraint => Bivio::SQL::Constraint::NONE(),
 	    },
@@ -136,12 +138,17 @@ if there are any.
 sub validate {
     my($self) = @_;
 
-    my($amount) = $self->get_model_properties('Entry')->{amount};
+    my($properties) = $self->internal_get;
 
-    # make sure the payment amount is > 0
-    $self->internal_put_error('Entry.amount',
+    # make sure the price/share amount is > 0
+    $self->internal_put_error('RealmInstrumentValuation.price_per_share',
 	    Bivio::TypeError::GREATER_THAN_ZERO())
-	    unless $amount > 0;
+	  unless $properties->{'RealmInstrumentValuation.price_per_share'} > 0;
+
+    # make sure the count is > 0
+    $self->internal_put_error('RealmInstrumentEntry.count',
+	    Bivio::TypeError::GREATER_THAN_ZERO())
+	    unless $properties->{'RealmInstrumentEntry.count'} > 0;
 
     return;
 }
