@@ -26,18 +26,26 @@ BNF syntax in RFC 822.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Alert;
 use Bivio::Mail::RFC822;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+# Copy constant strings into locals, can't use subroutine calls in regexps
+my($ATOM_ONLY_PHRASE) = Bivio::Mail::RFC822->ATOM_ONLY_PHRASE;
+my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
+my($QUOTED_STRING) = Bivio::Mail::RFC822->QUOTED_STRING;
+my($NOT_NESTED_COMMENT) = Bivio::Mail::RFC822->NOT_NESTED_COMMENT;
+my($MAILBOX) = Bivio::Mail::RFC822->MAILBOX;
+my($ADDR_SPEC) = Bivio::Mail::RFC822->ADDR_SPEC;
+my($ROUTE_ADDR) = Bivio::Mail::RFC822->ROUTE_ADDR;
+my($PHRASE) = Bivio::Mail::RFC822->PHRASE;
 
 =head1 METHODS
 
 =cut
 
 =for html <a name="parse"></a>
-
-=head2 parse(string addr) : string
 
 =head2 parse(string addr) : array
 
@@ -82,20 +90,14 @@ is not an 822 thing.
 Parses the first address in the field. If there are multiple
 addresses, only grabs the first one.
 
+Returns an array (address, name) or (undef, undef) if the input
+could not be parse successfully.
+
 =cut
 
 sub parse {
     local($_) = @_;
     s/^\s+//s;
-    # Copy constant strings into local strings, can't use subroutine calls in regexps
-    my($ATOM_ONLY_PHRASE) = Bivio::Mail::RFC822->ATOM_ONLY_PHRASE;
-    my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
-    my($QUOTED_STRING) = Bivio::Mail::RFC822->QUOTED_STRING;
-    my($NOT_NESTED_COMMENT) = Bivio::Mail::RFC822->NOT_NESTED_COMMENT;
-    my($MAILBOX) = Bivio::Mail::RFC822->MAILBOX;
-    my($ADDR_SPEC) = Bivio::Mail::RFC822->ADDR_SPEC;
-    my($ROUTE_ADDR) = Bivio::Mail::RFC822->ROUTE_ADDR;
-    my($PHRASE) = Bivio::Mail::RFC822->PHRASE;
     my($n, $a);
     # Cases are optimized by their statistical counts.
     # Joe Bob <joe@bob.com>
@@ -131,9 +133,10 @@ sub parse {
 	    return (&_clean_route_addr($a), $n);
 	}
 #TODO: error or assert_fail
-	die("822 regular expressions incorrect");
+	Bivio::IO::Alert->die('regexps incorrect, cannot parse: ', $_);
     }
-    die("unable to parse address: $_");
+    Bivio::IO::Alert->warn('Unable to parse address: ', $_);
+    return (undef, undef);
 }
 
 #=PRIVATE METHODS
