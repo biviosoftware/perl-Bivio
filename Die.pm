@@ -388,8 +388,9 @@ sub throw_quietly {
 sub _as_string_args {
     my($code, $attrs) = @_;
     return [$code, ': ', $attrs->{message}]
-	    if UNIVERSAL::isa($code, 'Bivio::DieCode')
-		    && int(keys(%$attrs)) <= 2 && $attrs->{message};
+	    if $attrs->{message}
+		    && int(keys(%$attrs))
+			    <= 1 + ($attrs->{program_error} ? 1 : 0);
     my($msg) = [$code];
     if (%$attrs) {
 	# Don't just "join", because we want Alert to call
@@ -574,7 +575,7 @@ sub _print_stack {
     my($self) = @_;
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
     return if $sp || $tq;
-    Bivio::IO::Alert->print_literally($self->as_string);
+    Bivio::IO::Alert->print_literally($self->as_string."\n");
     Bivio::IO::Alert->print_literally($self->get('stack'));
     $self->put(stack_printed => 1);
     return;
