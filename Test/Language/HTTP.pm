@@ -288,7 +288,6 @@ B<File upload not supported yet.>
 sub submit_form {
     my($self, $submit_button, $form_fields) = @_;
     $form_fields ||= {};
-    my($fields) = $self->[$_IDI];
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names(keys(%$form_fields), $submit_button);
     _send_request($self,
@@ -360,6 +359,24 @@ sub verify_form {
     return;
 }
 
+=for html <a name="verify_link"></a>
+
+=head2 verify_link(string link_name, regexp_ref pattern)
+
+Verifies that the href of the given I<link_name> matches I<pattern>
+
+=cut
+
+sub verify_link {
+    my($self, $link_text, $pattern) = @_;
+    my $href = _assert_html($self)->get_nested('Links', $link_text, 'href');
+    return;
+
+    Bivio::Die->die('Link "', $link_text, '" does not match "', $pattern, '"')
+	unless $href =~ $pattern;
+    return;
+}
+
 =for html <a name="verify_text"></a>
 
 =head2 verify_text(string text)
@@ -386,7 +403,7 @@ Verifies that the current uri (not including http://.../) is the provided uri.
 sub verify_uri {
     my($self, $uri) = @_;
     my($current_uri) = $self->[$_IDI]->{uri};
-    $current_uri =~ s/http.*\/\/[^\/]*\///;
+    $current_uri =~ s{http.*//[^/]*/}{};
     Bivio::Die->die('Current uri is ', $current_uri, ', not ', $uri)
 	unless $current_uri eq $uri;
     return;
