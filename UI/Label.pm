@@ -108,6 +108,7 @@ _compile(\%_MAP, [
     CALCULATE_BUTTON => 'Calculate',
     CANCEL_BUTTON => 'Cancel',
     CHANGE_PREFERENCES_BUTTON => 'Refresh',
+    CONTINUE_BUTTON => 'Continue',
     CREATE_BUTTON => 'Create',
     I_ACCEPT_BUTTON => ' I Accept ',
     I_DECLINE_BUTTON => ' I Decline ',
@@ -505,6 +506,8 @@ _compile(\%_MAP, [
     MY_CLUB_SITE => 'My Club Site',
     ['USER_ADMIN_PREFERENCES_EDIT', 'USER_ADMIN_PREFERENCES_EDIT_WITH_CONTEXT']
         => 'Change User Preferences',
+    PASSWORD_FORGOTTEN => 'Forgot Your Password?',
+    PASSWORD_FORGOTTEN_CONFIRMATION => 'Password Assistance',
     USER_AGREEMENT_TEXT => 'Terms of Service',
     ['USER_HOME', 'MY_SITE']
         => 'My Site',
