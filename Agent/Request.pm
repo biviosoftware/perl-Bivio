@@ -1036,28 +1036,30 @@ sub set_current {
 
 =for html <a name="set_realm"></a>
 
-=head2 set_realm(Bivio::Auth::Realm new_realm)
+=head2 set_realm(Bivio::Auth::Realm new_realm) : Bivio::Auth::Realm
 
-=head2 set_realm(Bivio::Biz::Model::RealmOwner new_realm)
+=head2 set_realm(Bivio::Biz::Model::RealmOwner new_realm) : Bivio::Auth::Realm
 
-=head2 set_realm(string realm_id_or_name)
+=head2 set_realm(string realm_id_or_name) : Bivio::Auth::Realm
 
 Changes attributes to be authorized for I<new_realm>.  Also
-sets C<auth_role>.
+sets C<auth_role>.  Returns the realm.
 
 =cut
 
 sub set_realm {
     my($self, $new_realm) = @_;
     $new_realm = Bivio::Auth::Realm->new($new_realm, $self)
-	    unless UNIVERSAL::isa($new_realm, 'Bivio::Auth::Realm');
+	unless UNIVERSAL::isa($new_realm, 'Bivio::Auth::Realm');
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
-    $self->put_durable(auth_realm => $new_realm,
-	    auth_id => $realm_id,
-	    auth_role => $new_role);
+    $self->put_durable(
+	auth_realm => $new_realm,
+	auth_id => $realm_id,
+	auth_role => $new_role,
+    );
     _trace($new_realm, '; ', $new_role) if $_TRACE;
-    return;
+    return $new_realm;
 }
 
 =for html <a name="set_user"></a>
@@ -1086,7 +1088,7 @@ the cached I<user_realms> list.
 sub set_user {
     # dont_set_role is used internally, don't pass if outside this module.
     my($self, $user, $dont_set_role) = @_;
-    $user = Bivio::Biz::Model::RealmOwner->new($self)
+    $user = Bivio::Biz::Model->new($self, 'RealmOwner')
 	    ->unauth_load_by_id_or_name_or_die($user, 'USER')
 		    unless ref($user) || !defined($user);
     # DON'T CHECK CURRENT USER.  Always reread DB.
