@@ -78,7 +78,7 @@ List of I<buttons> can be supplied with options I<attributes>.
 
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::StandardSubmit
 
-Creates a new StandardSubmit widget from I<attributes.
+Creates a new StandardSubmit widget from I<attributes>.
 
 =cut
 
