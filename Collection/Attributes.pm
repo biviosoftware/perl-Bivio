@@ -101,6 +101,7 @@ sub ancestral_get {
     }
     return $default if int(@_) > 2;
     Bivio::IO::Alert->die($name, ': ancestral attribute not found');
+    # DOES NOT RETURN
 }
 
 =for html <a name="clone"></a>
@@ -560,6 +561,18 @@ Returns whether any attributes in the map.
 
 sub is_empty {
     return !%{shift->{$_PACKAGE}};
+}
+
+=for html <a name="is_read_only"></a>
+
+=head2 is_read_only() : boolean
+
+Returns true if the view is READ_ONLY.
+
+=cut
+
+sub is_read_only {
+    return shift->{$_PACKAGE}->{$_READ_ONLY_ATTR} ? 1 : 0;
 }
 
 =for html <a name="put"></a>
