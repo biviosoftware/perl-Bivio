@@ -249,6 +249,7 @@ sub _load_items_from_list {
 
     # id, display pairs
     my(@items);
+    $list->reset_cursor;
     while($list->next_row) {
 	push(@items, $list->get($id_name), $list->get($display_name));
     }
