@@ -55,7 +55,7 @@ use Bivio::IO::Config;
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Cwd ();
-use Sys::Hostname;
+use Sys::Hostname ();
 
 #=VARIABLES
 my($_APACHE_HOME) = '/usr/local/apache';
@@ -88,7 +88,8 @@ sub main {
     }
     if ($execute) {
         -f 'httpd.pid' && (kill('TERM', `cat httpd.pid`), sleep(5));
-	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
+	CORE::system(
+	    'rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
 	&symlink('.', 'logs');
     }
     else {
@@ -103,7 +104,7 @@ EOF
     my($user) = getpwuid($>) || $>;
     my($group) = getgrgid($)) || $);
     my($pwd) = &Cwd::cwd();
-    my($hostname) = hostname;
+    my($hostname) = Sys::Hostname::hostname();
     my($handler) = $cfg->{handler};
     my($perl_module) = $handler =~ /^\+/ ? "" : "PerlModule $cfg->{handler}";
     my(@start_mode) = $background ? () : ('-X');
