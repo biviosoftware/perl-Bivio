@@ -470,11 +470,15 @@ sub send_queued_messages {
 
 =for html <a name="send"></a>
 
+=head2 send()
+
 =head2 send(Bivio::Agent::Request req)
 
 Sends a message via configured C<sendmail> program.  Errors are
 mailed back to configured C<errors_to>--except if no I<recipients>
 iwc an exception is raised or no I<msg>.
+
+If I<req> is provided, a X-Bivio-Client-IP header field will be added.
 
 =cut
 
@@ -486,7 +490,8 @@ sub send {
     # Always have header to do loop counting
     my($num_loops) = $self->get_head->get('X-Bivio-Forwarded') || 0;
     $self->get_head->replace('X-Bivio-Forwarded', $num_loops+1);
-    $self->get_head->replace('X-Bivio-Client-IP', $req->get('client_addr'));
+    $self->get_head->replace('X-Bivio-Client-IP', $req->get('client_addr'))
+            if defined($req);
 
     _trace('To ', join(',',@{$fields->{recipients}})) if $_TRACE;
 
