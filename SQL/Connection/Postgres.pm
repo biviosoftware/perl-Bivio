@@ -73,14 +73,14 @@ sub internal_fixup_sql {
     my($self, $sql) = @_;
 
     # Julian date format is 'J SSSS'
-    $sql =~ s/(J SSSS)S/$1/ig;
+    $sql =~ s/('J SSSS)S'/$1'/igs;
 
     # Timestamp instead of date
-    $sql =~ s/(\W)DATE(\W)/$1TIMESTAMP$2/ig;
-    $sql =~ s/TO_DATE\(/TO_TIMESTAMP\(/ig;
+    $sql =~ s/\bDATE\b/TIMESTAMP/igs;
+    $sql =~ s/\bTO_DATE\(/TO_TIMESTAMP\(/igs;
 
     # No 'by' on sequence increments
-    $sql =~ s/( INCREMENT )BY /$1/ig;
+    $sql =~ s/(\sINCREMENT\s+)BY\b/$1/igs;
 
     $sql = _fixup_outer_join($sql)
 	if $sql =~ /\(\+\)/;
@@ -197,7 +197,7 @@ sub _fixup_outer_join {
 #
 sub _fixup_select_count {
     my($sql) = @_;
-    $sql =~ s/\border\s+by\s.*$//;
+    $sql =~ s/\border\s+by\s.*$//is;
     return $sql;
 }
 
