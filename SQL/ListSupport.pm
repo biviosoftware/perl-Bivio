@@ -297,23 +297,15 @@ sub _init_column_classes {
 	    }
 	}
     }
+    # Unwind one level--wrapped in array by _init_column_classes
+    foreach my $c ('auth_id', 'parent_id') {
+	$attrs->{$c} = $attrs->{$c}->[0];
+    }
     return undef unless %{$attrs->{models}};
 
-    # auth_id must be exactly one column.  Turn into that column.
-    Carp::croak('no auth_id or too many auth_id fields')
-		unless int(@{$attrs->{auth_id}}) == 1;
-    $attrs->{auth_id} = $attrs->{auth_id}->[0];
-
-    # parent_id at most one column.  Turn into that column.
-    if (int(@{$attrs->{parent_id}}) >= 1) {
-	Carp::croak('too many parent_id fields')
-		    if int(@{$attrs->{parent_id}}) > 1;
-	$attrs->{parent_id} = $attrs->{parent_id}->[0];
-    }
-    else {
-	# Allow caller to call 'get'
-	$attrs->{parent_id} = undef;
-    }
+    # auth_id must exist
+    Carp::croak("no auth_id or too many auth_id fields")
+		unless $attrs->{auth_id};
 
     # primary_key must be at least one column if there are models.
     Carp::croak('no primary_key fields')
