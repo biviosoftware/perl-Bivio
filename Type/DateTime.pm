@@ -330,6 +330,21 @@ sub diff_seconds {
     return ($lj - $rj) * SECONDS_IN_DAY() + $ls - $rs;
 }
 
+=for html <a name="english_month3"></a>
+
+=head2 english_month3(int month) : string
+
+Returns I<month> as a three character string with first letter caps.
+
+=cut
+
+sub english_month3 {
+    my(undef, $month) = @_;
+    Bivio::Die->die('month out of range: ', $month)
+		unless 1 <= $month && $month <= 12;
+    return $_MONTH[$month - 1];
+}
+
 =for html <a name="from_parts"></a>
 
 =head2 static from_parts(int sec, int min, int hour, int mday, int mon, int year) : array
