@@ -140,16 +140,20 @@ __PACKAGE__->compile(
 
 =for html <a name="as_html_hex"></a>
 
-=head2 as_html() : string
-
 =head2 as_html(any thing) : string
 
 Returns the alignment in html as C<VALIGN> and C<ALIGN> attributes
 of C<TD> tag.  Prefixed with leading space.
 
+If I<thing> returns false (zero or C<undef>), returns two empty
+strings.
+
 =cut
 
 sub as_html {
+    my($proto, $thing) = @_;
+    return '' unless $thing;
+
     return Bivio::Type::Enum::from_any(@_)->get_long_desc;
 }
 
