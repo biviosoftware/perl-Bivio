@@ -87,6 +87,7 @@ use Bivio::IO::Config;
 use Bivio::IO::File;
 use HTTP::Request ();
 use LWP::UserAgent ();
+use Config ();
 
 #=VARIABLES
 my($_CVS_RPM_SPEC_DIR);
@@ -421,7 +422,7 @@ sub _create_rpm_spec {
     my($specout) = "$specin-build";
     open(SPECOUT, ">$specout") || Bivio::Die->die("$specout: $!");
 
-    print(SPECOUT <<"EOF");
+    print(SPECOUT <<"EOF"._perl_make());
 %define _sourcedir .
 %define _topdir .
 %define _srcrpmdir .
@@ -503,6 +504,22 @@ sub _link_rpm_base {
     $$output .= "LINKING AS $base_file\n";
     _system("ln -s $rpm_file $base_file", $output);
     return;
+}
+
+# _perl_make() : string
+#
+# %define perl_make_install ....
+#
+sub _perl_make {
+    return '%define perl_make umask 022; perl Makefile.PL;'
+	. " make POD2MAN=true\n"
+	. '%define perl_make_install umask 022; make ' . join(' ', map {
+	    my($n) = "install$_";
+	    uc($n) . '=$RPM_BUILD_ROOT' . $Config::Config{$n};
+	} qw(archlib bin man1dir man3dir privlib script sitebin sitelib))
+	.  ' POD2MAN=true pure_install && '
+        . ' find $RPM_BUILD_ROOT%{_libdir}/perl? -name "*.bs" '
+	. " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
 }
 
 # _read_all(string file) : array_ref
