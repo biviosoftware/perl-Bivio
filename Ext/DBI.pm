@@ -85,7 +85,7 @@ sub connect {
 #TODO: Is this really true
     # Mod_perl wipes out %ENV on each request, it seems...
     $ENV{ORACLE_HOME} ||= $_ORACLE_HOME;
-    _trace('dbi:Oracle:', $cfg->{database}, ':',
+    _trace($cfg->{database}, ':',
 	    $cfg->{user}, '/', $cfg->{password},
 	    ':', $_DEFAULT_OPTIONS) if $_TRACE;
     Bivio::IO::Alert->warn('DATABASE IS READ ONLY') if $cfg->{is_read_only};
