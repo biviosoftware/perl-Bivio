@@ -1785,6 +1785,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Model::Tax1065->execute_load_for_report_date
         Bivio::Biz::Action::ReportDateToday
         Bivio::UI::HTML::Club::MemberAllocationReport
         Bivio::UI::HTML::Club::ReportPage
@@ -1807,15 +1808,159 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
         help=misc-income-and-deductions-report
     )],
-    # All tax views are ACCOUNTING_WRITE so only the accountant can access
     [qw(
-        CLUB_ACCOUNTING_TAX99_F1065
+        CLUB_ACCOUNTING_TAXES
         162
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/tax99/f1065.pdf
+        ?/accounting/taxes
+        Bivio::Biz::Model::TaxYearForm
+        Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::UI::HTML::Club::Taxes
+        next=CLUB_ACCOUNTING_TAXES
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_F1065_OPTIONS
+        163
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/taxes/f1065-options
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Model::F1065ParametersForm
+        Bivio::UI::HTML::Club::F1065Parameters
+        next=CLUB_ACCOUNTING_TAXES
+        require_secure=1
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_K1_OPTIONS
+        164
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        ?/accounting/taxes/k1-options
+        Bivio::Biz::Model::F1065K1ParametersForm
+        Bivio::UI::HTML::Club::F1065K1Parameters
+        next=CLUB_ACCOUNTING_TAXES
+        require_secure=1
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_CHECKLIST
+        165
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        ?/accounting/taxes/checklist
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::Biz::Model::TaxId->execute_load
+        Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_invalid_members
+        Bivio::UI::HTML::Tax::Checklist
+        next=CLUB_ACCOUNTING_TAXES_CHECKLIST
+        require_secure=1
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_SCHEDULE_D
+        166
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/taxes/schedule-d
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Type::ScheduleDParams->execute_hide_distributions
+        Bivio::Biz::Model::InstrumentSaleList->execute_load_all
+        Bivio::Biz::Model::ScheduleDList->execute_load_all
+        Bivio::UI::HTML::Tax::ScheduleD
+        next=CLUB_ACCOUNTING_TAXES_SCHEDULE_D
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_INCOME
+        167
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/taxes/income
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::PortfolioIncomeList->execute_load_all
+        Bivio::UI::HTML::Tax::PortfolioIncome
+        next=CLUB_ACCOUNTING_TAXES_INCOME
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_DEDUCTIONS
+        168
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/taxes/deductions
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::PortfolioDeductionList->execute_load_all
+        Bivio::UI::HTML::Tax::PortfolioDeductions
+        next=CLUB_ACCOUNTING_TAXES_DEDUCTIONS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_DISTRIBUTIONS
+        169
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/taxes/distributions
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::CashWithdrawalList->execute_load_all
+        Bivio::Biz::Model::InstrumentWithdrawalList->execute_load_all
+        Bivio::UI::HTML::Tax::MemberDistributions
+        next=CLUB_ACCOUNTING_TAXES_DISTRIBUTIONS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_ALLOCATION_METHOD
+        170
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/taxes/allocation-method
+        Bivio::Biz::Model::AllocationMethodForm
+        Bivio::UI::HTML::Club::AllocationMethod
+        next=CLUB_ADMIN_TOOLS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_ALLOCATIONS
+        171
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        ?/accounting/taxes/allocations
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Model::Tax1065->execute_load_for_report_date
+        Bivio::UI::HTML::Club::MemberAllocationReport
+        Bivio::UI::HTML::Tax::AttachmentPage
+        next=CLUB_ACCOUNTING_TAXES_ALLOCATIONS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_MISSING_FIELDS
+        172
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        ?/accounting/taxes/missing-fields
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::Biz::Model::TaxId->execute_load
+        Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_invalid_members
+        Bivio::UI::HTML::Tax::Checklist
+        next=CLUB_ACCOUNTING_TAXES_CHECKLIST
+        require_secure=1
+    )],
+    # All tax views are ACCOUNTING_WRITE so only the accountant can access
+    [qw(
+        CLUB_ACCOUNTING_TAXES_F1065
+        173
+        CLUB
+        ACCOUNTING_WRITE
+        ?/taxes-1065/*
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::Biz::Accounting::Tax->check_required_fields
         Bivio::Type::ScheduleDParams->execute_hide_distributions
@@ -1823,118 +1968,38 @@ my(@_CFG) = (
         Bivio::Biz::Model::ScheduleDList->execute_load_all
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065Form->execute_load_all
-	Bivio::UI::PDF::Form::F1065::Y1999::Form
-        next=CLUB_ACCOUNTING_TAX99_F1065
+	Bivio::UI::PDF::Form::F1065::YearSelector
+        next=CLUB_ACCOUNTING_TAXES_F1065
         require_secure=1
     )],
     [qw(
-        CLUB_ACCOUNTING_TAX99_F1065K1
-        163
+        CLUB_ACCOUNTING_TAXES_F1065K1
+        174
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
-        ?/accounting/tax99/f1065k1.pdf
+        ?/taxes-k1/*
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmUser
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
+        Bivio::Biz::Model::TaxYearSubForm
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065K1Form->execute_load_all
-	Bivio::UI::PDF::Form::F1065sk1::Y1999::Form
-        next=CLUB_ACCOUNTING_TAX99_F1065
+	Bivio::UI::PDF::Form::F1065sk1::YearSelector
+        next=CLUB_ACCOUNTING_TAXES_F1065
         require_secure=1
     )],
     [qw(
-        CLUB_ACCOUNTING_TAX99
-        164
+        CLUB_ACCOUNTING_TAX99_REDIRECT
+        175
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/tax99
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::AllocationMethodForm
-        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
-        Bivio::UI::HTML::Club::Tax99
-        next=CLUB_ACCOUNTING_TAX99
-    )],
-    [qw(
-        CLUB_ACCOUNTING_TAX99_F1065_PARAMETERS
-        166
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/tax99/f1065/options
-        Bivio::Biz::Model::F1065ParametersForm
-        Bivio::UI::HTML::Club::F1065Parameters
-        next=CLUB_ACCOUNTING_TAX99
-        require_secure=1
-    )],
-    [qw(
-        CLUB_ACCOUNTING_TAX99_F1065K1_PARAMETERS
-        167
-        CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
-        ?/accounting/tax99/k1/options
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
-        Bivio::Biz::Model::F1065K1ParametersForm
-        Bivio::UI::HTML::Club::F1065K1Parameters
-        next=CLUB_ACCOUNTING_TAX99
-        require_secure=1
-    )],
-    [qw(
-        CLUB_ACCOUNTING_TAX99_SCHEDULE_D
-        168
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/tax99/schedule-d:?/accounting/tax99/schedule_d
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Type::ScheduleDParams->execute_hide_distributions
-        Bivio::Biz::Model::InstrumentSaleList->execute_load_all
-        Bivio::Biz::Model::ScheduleDList->execute_load_all
-        Bivio::UI::HTML::Tax::ScheduleD
-        next=CLUB_ACCOUNTING_TAX99_SCHEDULE_D
-    )],
-    [qw(
-        CLUB_ACCOUNTING_TAX99_INCOME
-        169
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/tax99/income
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::PortfolioIncomeList->execute_load_all
-        Bivio::UI::HTML::Tax::PortfolioIncome
-        next=CLUB_ACCOUNTING_TAX99_INCOME
-    )],
-    [qw(
-        CLUB_ACCOUNTING_TAX99_DISTRIBUTIONS
-        170
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/tax99/distributions
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Action::LocalDateHack
-        Bivio::Biz::Model::CashWithdrawalList->execute_load_all
-        Bivio::Biz::Model::InstrumentWithdrawalList->execute_load_all
-        Bivio::UI::HTML::Tax::MemberDistributions
-    )],
-#171
-    [qw(
-        CLUB_ACCOUNTING_TAX99_DEDUCTIONS
-        172
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/tax99/deductions
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::PortfolioDeductionList->execute_load_all
-        Bivio::UI::HTML::Tax::PortfolioDeductions
-        next=CLUB_ACCOUNTING_TAX99_DEDUCTIONS
+        Bivio::Biz::Action::TaxesRedirect
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_CHARGES_PAID
-        173
+        176
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/investment/charges-paid:?/accounting/investment/charges_paid
@@ -1943,51 +2008,6 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentCharges
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
-    )],
-    [qw(
-        CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
-        174
-        CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
-        ?/accounting/tax99/allocations
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::MemberAllocationList->execute_load_all
-        Bivio::UI::HTML::Club::MemberAllocationReport
-        Bivio::UI::HTML::Tax::AttachmentPage
-        next=CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
-    )],
-    [qw(
-        CLUB_ACCOUNTING_TAX99_CHECKLIST
-        175
-        CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
-        ?/accounting/tax99/checklist
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
-        Bivio::Biz::Model::TaxId->execute_load
-        Bivio::Type::MemberTaxListParams->execute_hide_valid_members
-        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
-        Bivio::UI::HTML::Tax::Checklist
-        next=CLUB_ACCOUNTING_TAX99_CHECKLIST
-        require_secure=1
-    )],
-    [qw(
-        CLUB_ACCOUNTING_TAX99_MISSING_FIELDS
-        176
-        CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
-        ?/accounting/tax99/missing-fields:?/accounting/tax99/missing_fields
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
-        Bivio::Biz::Model::TaxId->execute_load
-        Bivio::Type::MemberTaxListParams->execute_hide_valid_members
-        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
-        Bivio::UI::HTML::Tax::Checklist
-        next=CLUB_ACCOUNTING_TAX99_CHECKLIST
-        require_secure=1
     )],
     [qw(
         MAIL_RECEIVE
@@ -2751,6 +2771,31 @@ my(@_CFG) = (
         want_query=0
         help=creating-accounts
      )],
+#TODO: to be added soon...
+#    [qw(
+#        CLUB_ACCOUNTING_IMPORT_REVIEW
+#        245
+#        CLUB
+#        ACCOUNTING_WRITE
+#        ?/accounting/import/review
+#        Bivio::Biz::Model::ImportedTransactionList->execute_load_all
+#        Bivio::Biz::Model::ImportedTransactionTypeForm
+#        Bivio::UI::HTML::Club::AccountingImportReview
+#        next=CLUB_ACCOUNTING_IMPORT_REVIEW
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_IMPORT_REVIEW2
+#        246
+#        CLUB
+#        ACCOUNTING_WRITE
+#        ?/accounting/import/review2
+#        Bivio::Biz::Model::ImportedTransactionList->execute_load_all
+#        Bivio::Biz::Model::RealmUserList->execute_load_all_active
+#        Bivio::Biz::Model::RealmAccountList->execute_load_all_active
+#        Bivio::Biz::Model::ImportedTransactionForm
+#        Bivio::UI::HTML::Club::AccountingImportReview
+#        next=CLUB_ACCOUNTING_IMPORT_REVIEW
+#    )],
 );
 
 __PACKAGE__->compile([
