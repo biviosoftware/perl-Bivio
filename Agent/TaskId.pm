@@ -1878,11 +1878,14 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::DeleteMember
         next=CLUB_ADMIN_USER_LIST
     )],
+#TODO: These permissions are "wrong" in that you need, not write, but
+#      everybody has read and this means people could read the ssns
+#      of people such as guests.  Don't want this.
     [qw(
         CLUB_ADMIN_EXPORT
         193
         CLUB
-	ACCOUNTING_READ&ADMIN_READ&MEMBER_READ
+	ACCOUNTING_WRITE&ADMIN_WRITE&MEMBER_WRITE
         ?/admin/export
 	Bivio::UI::HTML::Club::Export
     )],
@@ -1890,7 +1893,7 @@ my(@_CFG) = (
         CLUB_ADMIN_EXPORT_COMPRESSED
         194
         CLUB
-	ACCOUNTING_READ&ADMIN_READ&MEMBER_READ
+	ACCOUNTING_WRITE&ADMIN_WRITE&MEMBER_WRITE
         ?/admin/clubexp.xml.gz
         Bivio::Biz::Model::Lock
         Bivio::UI::XML::ClubExport->execute_compressed
@@ -1899,7 +1902,7 @@ my(@_CFG) = (
         CLUB_ADMIN_EXPORT_PLAIN
         195
         CLUB
-        ACCOUNTING_READ&ADMIN_READ&MEMBER_READ
+        ACCOUNTING_WRITE&ADMIN_WRITE&MEMBER_WRITE
         ?/admin/clubexp.xml
         Bivio::Biz::Model::Lock
         Bivio::UI::XML::ClubExport->execute_plain
