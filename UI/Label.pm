@@ -77,6 +77,7 @@ _compile(
     USER_FIRST_NAME => ['First Name', undef, 'User.first_name'],
     USER_MIDDLE_NAME => ['Middle Name', undef, 'User.middle_name'],
     USER_LAST_NAME => ['Last Name', undef, 'User.last_name'],
+    USER_LAST_NAME_SORT => ['Last Name', undef, 'User.last_name_sort'],
 
     # Accounting labels
     TRANSACTION_DATE => ['Transaction Date', undef,
@@ -294,9 +295,11 @@ _compile(
     # MAIL
     MAIL_FROM => ['From'],
     MAIL_FROM_NAME => ['From'],
+    MAIL_FROM_NAME_SORT => ['From'],
     MAIL_TO => ['To'],
     MAIL_CC => ['Cc'],
     MAIL_SUBJECT => ['Subject'],
+    MAIL_SUBJECT_SORT => ['Subject'],
     MAIL_DATE => ['Date'],
     MAIL_DATE_TIME => ['Date'],
     MAIL_TEXT => ['Text'],
@@ -309,12 +312,15 @@ _compile(
 
     # FILES
     FILE_NAME => ['Name'],
+    FILE_NAME_SORT => ['Name'],
     FILE_OWNER => ['Owner'],
     FILE_LAST_MODIFIED => ['Last Modified'],
+    FILE_MODIFIED_DATE_TIME => ['Last Modified'],
     FILE_ACTION => ['Action'],
     FILE_IS_PUBLIC => ['Public', undef, 'File.is_public'],
     FILE_IS_PUBLIC_ALT => ['File is publicly viewable'],
     FILE_SIZE => ['Size'],
+    FILE_BYTES => ['Size'],
     FILE_LOCATION => ['Folder'],
     MAKE_PUBLIC => ['Publish Contents'],
 
