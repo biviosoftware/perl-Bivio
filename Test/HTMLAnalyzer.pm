@@ -150,7 +150,8 @@ sub find_row_by_content {
 =head2 gen_form_data(Bivio::Test::HTMLAnalyzer self, string name, hash_ref p) : hash_ref
 
 Return a hash_ref that contains all information necessary to submit the
-form to the HTTP object.
+form to the HTTP object.  The hash_ref passed in should be a modified
+version of the public fields returned by list_public_fields.
 
 =cut
 
@@ -286,6 +287,57 @@ sub get_title {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return ($fields->{title});
+}
+
+=for html <a name="list_form_fields"></a>
+
+=head2 list_all_public_fields(Bivio::Test::HTMLAnalyzer self, string name) : hash_ref
+
+Return a hash_ref containing all public fields in all forms.
+
+
+=cut
+
+sub list_all_public_fields {
+    my($self,$name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($results) = {};
+    my($form);
+
+    foreach $form (@{$fields->{form_list}}) {
+	my($f) = $self->list_public_fields($form);
+	@{$results->{$form}} = keys(%{$f});
+    }
+
+    return $results;
+}
+
+=for html <a name="list_forms_by_field"></a>
+
+=head2 list_forms_by_field(HTMLAnalyzer self) : hash_ref 
+
+Return a hash_ref mapping public fields to the forms that contain them.
+The results are undefined if the same label appears in multiple forms.
+
+=cut
+
+sub list_forms_by_field {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($results) = {};
+    my($form);
+
+    foreach $form (@{$fields->{form_list}}) {
+	my($f) = $self->list_public_fields($form);
+	if (int($f) > 0) {
+	    my($g);
+	    foreach $g (keys(%{$f})) {
+		$results->{$g} = $form;
+	    }
+	}
+    }
+
+    return $results;
 }
 
 =for html <a name="list_private_fields"></a>
