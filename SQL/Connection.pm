@@ -400,13 +400,15 @@ sub _interpret_constraint_violation {
 	my($statement) = _get_connection()->prepare(<<"EOF");
 	    SELECT user_cons_columns.table_name,
 		    user_cons_columns.column_name
-	    FROM user_cons_columns, user_constraints
-	    WHERE user_constraints.constraint_name = ?
-	    AND user_constraints.owner = ?
-	    AND user_constraints.constraint_name
-	    = user_cons_columns.constraint_name
+	    FROM user_cons_columns
+	    WHERE user_cons_columns.constraint_name = ?
+            UNION
+	    SELECT user_ind_columns.table_name,
+		    user_ind_columns.column_name
+	    FROM user_ind_columns
+	    WHERE user_ind_columns.index_name = ?
 EOF
-	$statement->execute($constraint, $owner);
+	$statement->execute($constraint, $constraint);
 	my($row);
 	my($cols) = [];
 	my($table);
