@@ -36,6 +36,10 @@ C<Bivio::UI::HTML::Widget::Submit> draws a submit button.
 
 Which form are we dealing with.
 
+=item has_next : boolean [false]
+
+If true, then a Next button will appear instead of the OK button.
+
 =back
 
 =cut
@@ -114,7 +118,8 @@ sub render {
     my($form) = $source->get_widget_value(@{$fields->{model}});
     my($name) = $form->SUBMIT();
     $fields->{value} = '<input type=submit name='.$name.' value="'
-	    .$form->SUBMIT_OK()
+	    .($self->unsafe_get('has_next') ? $form->SUBMIT_NEXT()
+		    : $form->SUBMIT_OK())
 	    .'">&nbsp;<input type=submit name='.$name.' value="'
 	    .$form->SUBMIT_CANCEL().'">';
     $$buffer .= $fields->{value};
