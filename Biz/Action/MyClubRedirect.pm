@@ -52,6 +52,7 @@ sub execute {
     my(undef, $req) = @_;
     # Change to this user's realm, so we can look at UserClubList
     $req->set_realm(Bivio::Auth::Realm::User->new($req->get('auth_user')));
+#TODO: Optimize to user request's user_realms
     my($clubs) = Bivio::Biz::Model::UserClubList->new($req);
     $clubs->load;
     my($num_clubs) = $clubs->get_result_set_size;
