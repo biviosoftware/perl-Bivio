@@ -65,7 +65,7 @@ sub format_name {
 
 sub format_uri_hack {
     my($self) = @_;
-    return $req->format_uri(
+    return $self->get_request->format_uri(
 	    Bivio::Agent::TaskId::ADM_EC_SUBSCRIPTION_EDIT(), {
 		p => $self->get('ec_payment_id'),
 		realm => $self->get('RealmOwner.name'),
