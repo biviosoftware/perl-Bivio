@@ -132,17 +132,142 @@ EOF
     return;
 }
 
+# _update_spinoff_merger(Bivio::Biz::Model::RealmOwner realm)
+#
+# Determines the acquisition dates for spinoffs and mergers by referring
+# to the original import files.
+#
+sub _update_spinoff_merger {
+    my($realm) = @_;
+    my($req) = $realm->get_request;
+
+    my($date_param) = Bivio::Type::DateTime->from_sql_value(
+	    'realm_transaction_t.date_time');
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT $date_param,
+                entry_t.entry_id,
+                entry_t.amount,
+                realm_instrument_entry_t.count,
+                realm_instrument_entry_t.external_identifier
+            FROM realm_transaction_t, entry_t, realm_instrument_entry_t
+            WHERE realm_transaction_t.realm_transaction_id
+                = entry_t.realm_transaction_id
+            AND entry_t.entry_id=realm_instrument_entry_t.entry_id
+            AND entry_t.entry_type in (?, ?)
+            AND realm_instrument_entry_t.count > 0
+            AND realm_instrument_entry_t.external_identifier != 0
+            AND realm_instrument_entry_t.acquisition_date IS NULL
+            AND realm_transaction_t.realm_id=?",
+	    [Bivio::Type::EntryType->INSTRUMENT_SPINOFF->as_int,
+		    Bivio::Type::EntryType->INSTRUMENT_MERGER->as_int,
+		    $realm->get('realm_id')]);
+    my($ew_txns);
+    my($inst_entry);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($date, $entry_id, $amount, $count, $block) = @$row;
+
+	# only load these once per realm
+	unless (defined($ew_txns)) {
+	    $ew_txns = [];
+	    $inst_entry = Bivio::Biz::Model::RealmInstrumentEntry->new($req);
+	    my($file) = Bivio::Biz::Model::File->new($req);
+	    $file->unauth_load(
+		    name => 'ncadata.dat',
+		    volume => Bivio::Type::FileVolume::EW_IMPORT(),
+		    realm_id => $realm->get('realm_id'),
+		   ) || die("couldn't find ncadata.dat for "
+			   .$realm->get('name'));
+
+	    my($parser) = Bivio::Data::EW::ExportParser->new(
+		    $file->get('content'));
+	    my($records) = $parser->parse(
+		    Bivio::Data::EW::Parser::INSTRUMENT_TRANSACTION());
+	    foreach my $rec (@$records) {
+		if ($rec->{transaction_type} == 67
+			|| $rec->{transaction_type} == 72) {
+		    push(@$ew_txns, $rec);
+		}
+	    }
+	}
+
+	my($success) = 0;
+
+	print(STDERR "\t\tlooking for $date $amount $count $block\n");
+
+	# search for the matching entry, then create the date from the remark
+	foreach my $txn (@$ew_txns) {
+	    next unless defined($txn);
+
+	    #use Data::Dumper;
+	    #print(Dumper($txn));
+	    if ($txn->{date_time} eq $date
+		    && $txn->{amount} == $amount
+		    && $txn->{count} == $count
+		    && $txn->{external_identifier} == $block) {
+
+		$inst_entry->unauth_load(
+			entry_id => $entry_id,
+			realm_id => $realm->get('realm_id'))
+			or die("couldn't find inst entry $entry_id");
+		my($acq_date) = Bivio::Data::EW::DateCalculator
+			->get_date_from_remark($txn->{remark});
+		$acq_date or die("couldn't get acq date from remark "
+			.$txn->{remark});
+		$inst_entry->update({acquisition_date => $acq_date});
+		$txn = undef;
+		$success = 1;
+		last;
+	    }
+	}
+	$success or print(STDERR "\t\t\tcouldn't find acquisition date\n");
+    }
+    return;
+}
+
 # _upgrade()
 #
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
+
+    use Bivio::Agent::Request;
+    use Bivio::Biz::Model::File;
+    use Bivio::Biz::Model::RealmOwner;
+    use Bivio::Biz::Model::RealmInstrumentEntry;
+    use Bivio::Data::EW::DateCalculator;
+    use Bivio::Data::EW::ExportParser;
+    use Bivio::Data::EW::Parser;
+    use Bivio::Type::DateTime;
+    use Bivio::Type::EntryType;
+    use Bivio::Type::FileVolume;
+
+    # add the acquisition date field
     _do('
-ALTER TABLE realm_invite_t
-  add foreign key (user_id)
-    references user_t(user_id)
+ALTER TABLE realm_instrument_entry_t
+   ADD acquisition_date DATE
 /
-        ');
+');
+
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT club_id
+            FROM club_t',[]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+	$realm->unauth_load(realm_id => $row->[0])
+		|| die("couldn't load realm ".$row->[0]);
+	$req->put(auth_id => $realm->get('realm_id'));
+
+	print(STDERR $realm->get('name')."\n");
+
+	# update acquisition dates for spinoffs and mergers
+	print(STDERR "\tcomputing merger/spinoff dates\n");
+	_update_spinoff_merger($realm);
+
+	# compute instrument acquisition dates
+	print(STDERR "\tcomputing acquisition dates\n");
+	Bivio::Data::EW::DateCalculator->generate_acquisition_dates($realm);
+    }
     return;
 }
 
