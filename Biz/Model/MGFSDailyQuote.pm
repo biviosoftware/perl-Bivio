@@ -262,6 +262,22 @@ sub new {
 
 =cut
 
+=for html <a name="align_price"></a>
+
+=head2 static align_price(string value) : string
+
+Aligns I<value> along the L<FRACTIONAL_ALIGNMENT|"FRACTIONAL_ALIGNMENT">
+boundary.
+
+=cut
+
+sub align_price {
+    my($proto, $value) = @_;
+    my($whole) = int($value);
+    my($div) = int(($value - $whole) / $proto->FRACTIONAL_ALIGNMENT() + 0.5);
+    return $whole + $div * $proto->FRACTIONAL_ALIGNMENT();
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
@@ -277,7 +293,7 @@ sub create {
 	    && $new_values->{low} == 0
 		    && $new_values->{high} == 0
 			    && $new_values->{volume} == 0;
-    $self->SUPER::create(_unsplit($new_values));
+    $self->SUPER::create(_unsplit($self, $new_values));
     return;
 }
 
@@ -428,7 +444,7 @@ Updates an MGFS Daily Quote. Does price unsplitting.
 
 sub update {
     my($self, $new_values) = @_;
-    $self->SUPER::update(_unsplit($new_values));
+    $self->SUPER::update(_unsplit($self, $new_values));
     return;
 }
 
@@ -458,17 +474,6 @@ sub _add_decimal {
     foreach my $value (@$values) {
 	$value =~ s/^(.*)(..)$/$1\.$2/;
     }
-}
-
-# _align(string value) : string
-#
-# Aligns the value along the FRACTIONAL_ALIGNMENT boundary.
-#
-sub _align {
-    my($value) = @_;
-    my($whole) = int($value);
-    my($div) = int(($value - $whole) / FRACTIONAL_ALIGNMENT() + 0.5);
-    return $whole + $div * FRACTIONAL_ALIGNMENT();
 }
 
 # _get_splits(string mg_id) : array_ref
@@ -503,13 +508,13 @@ EOF
     return $result;
 }
 
-# _unsplit(hash_ref values) : hash_ref
+# _unsplit(self, hash_ref values) : hash_ref
 #
 # Unsplits 'high', 'low', and 'close' by the split factors up to that 'date'.
 # Returns the same hash_ref.
 #
 sub _unsplit {
-    my($values) = @_;
+    my($self, $values) = @_;
     my($mg_id) = $values->{mg_id};
     my($date) = $values->{date_time};
     # only interested in first part
@@ -526,9 +531,9 @@ sub _unsplit {
 	    $values->{low} /= $factor;
 
 	    # align along fractional boundary
-	    $values->{close} = _align($values->{close});
-	    $values->{high} = _align($values->{high});
-	    $values->{low} = _align($values->{low});
+	    $values->{close} = $self->align_price($values->{close});
+	    $values->{high} = $self->align_price($values->{high});
+	    $values->{low} = $self->align_price($values->{low});
 	    $aligned = 1;
 	}
 	else {
@@ -541,9 +546,9 @@ sub _unsplit {
     }
     else {
 	# align along fractional boundary
-	$values->{close} = _align($values->{close});
-	$values->{high} = _align($values->{high});
-	$values->{low} = _align($values->{low});
+	$values->{close} = $self->align_price($values->{close});
+	$values->{high} = $self->align_price($values->{high});
+	$values->{low} = $self->align_price($values->{low});
     }
 
     return $values;
