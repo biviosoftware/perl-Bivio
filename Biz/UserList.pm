@@ -44,13 +44,12 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_COLUMN_INFO) = [
-    ['Internal ID', Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
     ['Login Name', Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
-    ['Password', Bivio::Biz::FieldDescriptor->lookup('PASSWORD', 32)]
+    ['Full Name', Bivio::Biz::FieldDescriptor->lookup('USER_FULL_NAME', 3)]
     ];
 
 my($_SQL_SUPPORT) = Bivio::Biz::SqlListSupport->new('user_, club_user',
-	['user_.id', 'user_.name', 'user_.password']);
+	['user_.name', 'user_.first_name,user_.middle_name,user_.last_name']);
 
 =head1 FACTORIES
 
@@ -96,7 +95,8 @@ sub find {
     if ($fp->{'club'}) {
 	# club users
 	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100,
-		'where club_user.club=? and club_user.user_=user_.id',
+		'where club_user.club=? and club_user.user_=user_.id'
+		.' order by user_.name',
 		$fp->{'club'});
     }
     else {
