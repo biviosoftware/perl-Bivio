@@ -550,11 +550,12 @@ sub parse_uri {
 
     # If the Facade doesn't have a USER_HOME, there are no realms so
     # don't hit the database.
-    $req->throw_die(Bivio::DieCode::NOT_FOUND,
-            {entity => $orig_uri,
-		uri => $uri,
-                message => 'site_root files should be in subdir'})
-	    unless $self->has_uri(Bivio::Agent::TaskId->USER_HOME);
+#TODO: This check is insufficient.  We should check if there is a database.
+    $req->throw_die(Bivio::DieCode::NOT_FOUND, {
+	entity => $orig_uri,
+	uri => $uri,
+	message => 'site_root files should be in subdir OR you need to configure USER_HOME uri',
+    }) unless $self->has_uri(Bivio::Agent::TaskId->USER_HOME);
 
     # Try to find the uri with the realm replaced by placeholder
     # Replace realm with underscore.  This is ugly, but good enough for now.
