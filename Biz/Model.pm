@@ -444,6 +444,7 @@ sub internal_initialize_sql_support {
 =head2 iterate_end(ref iterator)
 
 Terminates the iterator.  See L<iterate_start|"iterate_start">.
+Does not modify model state, i.e. if loaded, stays loaded.
 
 =cut
 
