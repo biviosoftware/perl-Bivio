@@ -243,6 +243,7 @@ my(%_PART_NAMES) = (
 );
 my($_REGEX_CTIME) = REGEX_CTIME();
 my($_REGEX_ALERT) = REGEX_ALERT();
+my($_LOCAL_TIMEZONE);
 _initialize();
 
 =head1 METHODS
@@ -506,16 +507,7 @@ for the shift in daylight savings time.
 =cut
 
 sub get_local_timezone {
-    my($proto) = @_;
-    my($now) = time();
-    my($local, $err) = $proto->from_parts(_localtime($now));
-    Bivio::Die->die('DIE', {
-	message => 'unable to convert localtime',
-	type_error => $err,
-	entity => $now,
-    }) unless $local;
-    return int($proto->diff_seconds($proto->from_unix($now), $local)
-	    / 60 + 0.5);
+    return $_LOCAL_TIMEZONE;
 }
 
 =for html <a name="get_part"></a>
@@ -1091,6 +1083,24 @@ sub _adjust_to_local {
     return $tz ? __PACKAGE__->add_seconds($value, -$tz * 60) : $value;
 }
 
+# _compute_local_timezone()
+#
+# Computes the local timezone by using _localtime().
+#
+sub _compute_local_timezone {
+    my($now) = time();
+    my($local, $err) = __PACKAGE__->from_parts(_localtime($now));
+    Bivio::Die->die('DIE', {
+	message => 'unable to convert localtime',
+	type_error => $err,
+	entity => $now,
+    }) unless $local;
+    $_LOCAL_TIMEZONE =
+	    int(__PACKAGE__->diff_seconds(__PACKAGE__->from_unix($now), $local)
+		    / 60 + 0.5);
+    return;
+}
+
 # _from_alert(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
 #
 # Returns true if it matches the pattern.  Parses alert format.
@@ -1177,6 +1187,7 @@ sub _initialize {
     }
     my($i) = 1;
     %_MONTH = map {(uc($_), $i++)} @_MONTH;
+    _compute_local_timezone();
     return;
 }
 
@@ -1197,10 +1208,11 @@ sub _localtime {
 # Returns the timezone from the current request or returns undef.
 #
 sub _timezone {
-    return undef
+    return $_LOCAL_TIMEZONE
 	    unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
+    # We can't return something other than undef.
     my($req) = Bivio::Agent::Request->get_current;
-    return $req ? $req->unsafe_get('timezone') : undef;
+    return $req ? $req->unsafe_get('timezone') : $_LOCAL_TIMEZONE;
 }
 
 # _to_string(proto, string value, string timezone) : string
