@@ -108,6 +108,7 @@ sub internal_initialize {
 	    valuation_date => ['Bivio::Type::Date',
 		Bivio::SQL::Constraint::NONE()],
         },
+	auth_id => 'realm_id',
 #TODO: SECURITY: Not authenticated, but ok to load other models?
 	other => [
 	    [qw(entry_id Entry.entry_id)],

@@ -1888,6 +1888,42 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::DeleteMember
         next=CLUB_ADMIN_USER_LIST
     )],
+    [qw(
+        CLUB_ACCOUNTING_EXPORT_CLUB_DATA
+        193
+        CLUB
+	ACCOUNTING_READ
+        ?/accounting/export_club_data
+	Bivio::UI::HTML::Club::ExportClubData
+        next=CLUB_ADMIN_TOOLS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_EXPORT_CLUB_DATA_ZIP
+        194
+        CLUB
+        ACCOUNTING_READ
+        ?/bivio-acct.zip/*
+        Bivio::UI::XML::ClubData->zip
+        next=CLUB_ADMIN_TOOLS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_EXPORT_CLUB_DATA_UNCOMPRESSED
+        195
+        CLUB
+        ACCOUNTING_READ
+        ?/bivio-acct.xml/*
+        Bivio::UI::XML::ClubData->uncompressed
+        next=CLUB_ADMIN_TOOLS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_EXPORT_CLUB_DATA_GZ
+        196
+        CLUB
+        ACCOUNTING_READ
+        ?/bivio-acct.xml.gz/*
+        Bivio::UI::XML::ClubData->gz
+        next=CLUB_ADMIN_TOOLS
+    )],
 );
 
 __PACKAGE__->compile(

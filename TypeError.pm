@@ -260,6 +260,10 @@ last name is too long
 email address loops back to itself.  Must not be the same as your
 login name.
 
+=item INVALID_EXPORT_FILE_FORMAT
+
+invalid file format for export file chosen
+
 =back
 
 =cut
@@ -724,6 +728,11 @@ __PACKAGE__->compile(
 	89,
 	undef,
 	"Use the Accounting Import function to import.",
+    ],
+    INVALID_EXPORT_FILE_FORMAT => [
+	90,
+	undef,
+	"invalid export file format selected",
     ],
 );
 

@@ -59,6 +59,7 @@ sub internal_initialize {
 	    partner_type => ['F1065Partner', 'NOT_NULL'],
 	    foreign_partner => ['Boolean', 'NOT_NULL'],
         },
+	auth_id => 'realm_id',
     };
 }
 

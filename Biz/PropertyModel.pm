@@ -267,6 +267,21 @@ sub iterate_start {
 	    $self, $auth_id, @_);
 }
 
+=for html <a name="iterate_start_with_id"></a>
+
+=head2 iterate_start_with_id(string id, string order_by) : ref
+
+Same as iterate_start, but takes a value for auth_id to use in the request
+instead of using the one on the request.
+
+=cut
+
+sub iterate_start_with_id {
+    my($self) = @_;
+    my($id) = shift;
+    return $self->internal_get_sql_support->iterate_start($self, $id, @_);
+}
+
 =for html <a name="load"></a>
 
 =head2 load(hash query)
