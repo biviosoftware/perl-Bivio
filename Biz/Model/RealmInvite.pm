@@ -64,6 +64,10 @@ sub create {
 	$values->{title} = $values->{realm_id} eq $values->{user_id}
 		? 'Self' : $values->{role}->get_short_desc;
     }
+    # Save the use who initiated the invite
+    $values->{user_id}
+	    = $self->get_request->get('auth_user')->get('realm_id')
+		    unless defined($values->{user_id});
     return $self->SUPER::create($values);
 }
 
@@ -83,6 +87,8 @@ sub internal_initialize {
             realm_invite_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
             realm_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            user_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
             email => ['Bivio::Type::Email',
     		Bivio::SQL::Constraint::NOT_NULL()],
