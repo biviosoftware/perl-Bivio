@@ -55,9 +55,10 @@ sub from_literal {
     $value =~ s/^\s+|\s+$//g;
     return undef unless length($value);
 
-    # This is the same as the Win32 set, so we are pretty safe
+    # This is the same as the Win32 set, so we are pretty safe.
+    # Don't allow '.' or '..'.
     return (undef, Bivio::TypeError::FILE_NAME())
-	    if $value =~ m![\\/:*?"<>|]!;
+	    if $value =~ m!^\.\.?$|[\\/:*?"<>|]!;
     return $value;
 }
 
