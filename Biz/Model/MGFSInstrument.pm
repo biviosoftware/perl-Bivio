@@ -81,8 +81,7 @@ sub create {
     return if $new_values->{name} eq '';
 
     $new_values = _synchronize_instrument($self, $new_values, 0);
-    $self->SUPER::create($new_values);
-    return;
+    return $self->SUPER::create($new_values);
 }
 
 =for html <a name="from_mgfs"></a>

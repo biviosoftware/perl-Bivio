@@ -309,8 +309,7 @@ sub create {
 	    && $new_values->{low} == 0
 		    && $new_values->{high} == 0
 			    && $new_values->{volume} == 0;
-    $self->SUPER::create(_unsplit($self, $new_values));
-    return;
+    return $self->SUPER::create(_unsplit($self, $new_values));
 }
 
 =for html <a name="from_mgfs"></a>
