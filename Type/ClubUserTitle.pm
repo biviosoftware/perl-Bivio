@@ -101,6 +101,18 @@ my(%_ROLE_MAP) = (
 
 =cut
 
+=for html <a name="as_sql_param"></a>
+
+=head2 as_sql_param() : string
+
+Overrides superclass.  Returns string
+
+=cut
+
+sub as_sql_param {
+    return shift->get_short_desc;
+}
+
 =for html <a name="get_role"></a>
 
 =head2 get_role() : Bivio::Auth::Role
@@ -114,6 +126,20 @@ sub get_role {
     Bivio::IO::Alert->die($self, ': not a ClubUserTitle')
 		unless $_ROLE_MAP{$self};
     return $_ROLE_MAP{$self};
+}
+
+=for html <a name="to_sql_param"></a>
+
+=head2 static to_sql_param(Bivio::Type::Enum value) : string
+
+Overrides superclass.  Returns string
+
+=cut
+
+sub to_sql_param {
+    my($proto, $value) = @_;
+    return undef unless defined($value);
+    return $proto->from_any($value)->get_short_desc;
 }
 
 #=PRIVATE METHODS
