@@ -64,7 +64,7 @@ sub new {
     $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
 	    Bivio::UI::HTML::Widget::MailPartList->new({
-		download_task => 'CLUB_COMMUNICATIONS_MESSAGE_PART',
+		download_task => 'CELEBRITY_MESSAGE_PART',
 	    }),
         ],
     });
