@@ -104,8 +104,8 @@ sub internal_initialize {
             realm_account_id => ['PrimaryId', 'NOT_NULL'],
         },
 	other => [
+	    [qw(entry_id Entry.entry_id)],
 	    [qw(realm_account_id RealmAccount.realm_account_id)],
-	    [qw(entry_id RealmInstrumentEntry.entry_id)],
 	],
 	auth_id => 'realm_id',
     };
