@@ -34,6 +34,7 @@ the one without a specific owner.
 #=IMPORTS
 
 #=VARIABLES
+my($_SELF);
 
 =head1 FACTORIES
 
@@ -47,7 +48,25 @@ the one without a specific owner.
 
 sub new {
     my($proto) = @_;
-    return &Bivio::Auth::Realm::new($proto);
+    return Bivio::Auth::Realm::new($proto);
+}
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance() : Bivio::Auth::Realm::General
+
+Returns the singleton instance of the general realm.
+
+=cut
+
+sub get_instance {
+    my($proto) = @_;
+    $_SELF = $proto->new unless $_SELF;
+    return $_SELF;
 }
 
 #=PRIVATE METHODS
