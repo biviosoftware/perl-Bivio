@@ -83,17 +83,15 @@ sub main {
 	-x $httpd && ($_HTTPD = $httpd);
     }
     if ($execute) {
-	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf');
+	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
 	system('cvs checkout html; cd html/societas; make INSTALLDIR=../')
 		unless -f 'html/index.html';
-	&symlink("$_APACHE_HOME/libexec", 'libexec');
 	&symlink('.', 'logs');
     }
     else {
 	print <<"EOF";
-rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf
+rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem
 cvs checkout html/i
-ln -s $_APACHE_HOME/libexec libexec
 ln -s . logs
 EOF
     }
@@ -187,10 +185,6 @@ is removed and rewritten with new pid
 =item httpd[0-9]*.conf
 
 is removed and rewritten with new pid
-
-=item libexec
-
-is linked to F</usr/local/apache/libexec> if it already doesn't exist.
 
 =item $PERLLIB/../external/apache/src/httpd
 
