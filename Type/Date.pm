@@ -127,7 +127,8 @@ sub to_sql_param {
     my(undef, $param_value) = @_;
     return undef unless defined($param_value);
     Carp::croak("$param_value: invalid date (clock component)")
-		if $param_value % Bivio::Type::DateTime::SECONDS_IN_DAY();
+		if $param_value % Bivio::Type::DateTime::SECONDS_IN_DAY()
+			!= Bivio::Type::DateTime::DEFAULT_TIME();
     return Bivio::Type::DateTime->to_sql_param($param_value);
 }
 
