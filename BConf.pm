@@ -237,14 +237,14 @@ sub merge_http_log {
 	    $overrides || {}, {
 		ignore_list => [
 		    # Standard apache notices and info
-		    '\] \[(?:info|notice)\] ',
-		    'Dispatcher::execute_queue:\d+ \d+ JOB_(?:START|END):',
+		    '\] \[(?:info|notice|debug)\] ',
+		    'Dispatcher::execute_queue:.*JOB_(?:START|END):',
 		    # Virii and such
 		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida|/sumthin|/scripts|/cgi|root.exe|/instmsg|/favicon2)',
 		    'DieCode::MISSING_COOKIES',
 		    'client sent HTTP/1.1 request without hostname',
 		    'mod_ssl: SSL handshake timed out',
-		    'Invalid method in request ',
+		    'Invalid method in request',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
@@ -256,6 +256,21 @@ sub merge_http_log {
 		],
 		critical_list => [
 		    'Bivio::DieCode::DB_ERROR',
+		],
+		# These errors are not a problem unless they occur "too often"
+		# See ignore_unless_count_list
+		ignore_unless_count_list => [
+		    'Bivio::DieCode::CLIENT_ERROR',
+		    'Bivio::DieCode::FORBIDDEN',
+		    'Bivio::DieCode::NOT_FOUND',
+		    'Bivio::DieCode::FORBIDDEN',
+		    'Bivio::DieCode::CORRUPT_QUERY',
+		    'Bivio::DieCode::UPDATE_COLLISION',
+		    'form_errors=\{',
+		    'Bivio::Biz::FormContext::_parse_error',
+		    'HTTP::Query::_correct.*correcting query',
+		    'request aborted, rolling back',
+		    'Unable to parse address',
 		],
 	    },
 	    1,
@@ -326,9 +341,12 @@ sub _base {
 	    mail_host => 'localhost',
 	},
 	$proto->merge_http_log({
+	    # These are defaults, which may be overriden for testing,
+	    # which is why they are here
 	    email => 'root',
 	    pager_email => 'root',
-	    error_count_for_page => 5,
+	    error_count_for_page => 3,
+	    ignore_unless_count => 3,
 	}),
 	main => {
 	    http => {
