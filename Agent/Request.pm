@@ -74,6 +74,10 @@ use C<exists> or C<defined>.
 
 This value is initialized by FormModel, not by Request.
 
+=item is_production : boolean
+
+Are we running in production mode?
+
 =item is_secure : boolean
 
 Are we running in secure mode (SSL)?
@@ -180,6 +184,7 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_HTTP_HOST) = sprintf('%d.%d.%d.%d',
 	unpack('C4', (gethostbyname(substr(`hostname`, 0, -1)))[4]));
+my($_IS_PRODUCTION) = 0;
 my($_MAIL_HOST) = "[$_HTTP_HOST]";
 my($_THIS_HOST) = `hostname`;
 chop($_THIS_HOST);
@@ -190,6 +195,7 @@ my($_SUPPORT_EMAIL_AS_HTML);
 Bivio::IO::Config->register({
     mail_host =>  $_MAIL_HOST,
     http_host =>  $_HTTP_HOST,
+    is_production => $_IS_PRODUCTION,
     support_phone => Bivio::IO::Config->REQUIRED,
     support_email => Bivio::IO::Config->REQUIRED,
 });
@@ -214,6 +220,7 @@ sub new {
     my($self) = &Bivio::Collection::Attributes::new($proto, $hash);
     $self->put(request => $self,
 	    http_host => $_HTTP_HOST,
+	    is_production => $_IS_PRODUCTION,
 	    mail_host => $_MAIL_HOST,
 	    this_host => $_THIS_HOST,
 	    support_phone => $_SUPPORT_PHONE,
@@ -580,6 +587,10 @@ Host to create absolute URIs.  May contain a port number.
 
 Host used to create mail_to URIs.
 
+=item is_production : boolean [false]
+
+Are we running in production mode?
+
 =item support_phone : string (required)
 
 Phone number to be displayed to get support.
@@ -594,6 +605,7 @@ email to be displayed to get support
 
 sub handle_config {
     my(undef, $cfg) = @_;
+    $_IS_PRODUCTION = $cfg->{is_production};
     $_HTTP_HOST = $cfg->{http_host};
     $_MAIL_HOST = $cfg->{mail_host};
     $_SUPPORT_PHONE = $cfg->{support_phone};
@@ -731,6 +743,19 @@ sub internal_server_redirect {
 	    form_model => undef,
 	    form_context => $fc);
     return;
+}
+
+=for html <a name="is_production"></a>
+
+=head2 static is_production() : boolean
+
+Returns I<is_production> from the configuration.
+
+=cut
+
+sub is_production {
+    my($proto) = @_;
+    return $_IS_PRODUCTION;
 }
 
 =for html <a name="server_redirect"></a>
