@@ -48,6 +48,11 @@ my(@_CFG) = (
     # URLs can be aliases, separated by a colon. However, the first
     # on is returned on get from task id.  See HTTP::Location code.
     #
+    # LOGIN privileges mean something special.  It means the task
+    # must be executed from an encrypted context.  Only tasks which
+    # require the user to enter sensitive information, e.g. passwords,
+    # credit cards, should have LOGIN set.
+    #
     # ACHTUNG: Any static top level URI names, must be in
     #          Bivio::Type::RealmName::_RESERVED list
     [qw(
@@ -55,7 +60,7 @@ my(@_CFG) = (
 	1
         CLUB
         MAIL_WRITE
-        :
+        !
 	Bivio::Biz::Action::ForwardClubMail
     )],
     [qw(
@@ -63,9 +68,10 @@ my(@_CFG) = (
 	2
         USER
         MAIL_WRITE
-        :
+        !
 	Bivio::Biz::Action::ForwardUserMail
     )],
+    # This is the home page task.
     [qw(
 	HTTP_DOCUMENT
 	3
@@ -74,6 +80,8 @@ my(@_CFG) = (
         /
 	Bivio::Biz::Action::HTTPDocument
     )],
+#TODO: MY_CLUB_REDIRECT isn't right if user not part of club.
+#      Need a redirect to club or to user's home.
     [qw(
 	MY_CLUB_REDIRECT
 	4
@@ -83,8 +91,6 @@ my(@_CFG) = (
 	Bivio::Biz::Action::MyClubRedirect
         next=CLUB_HOME
     )],
-#TODO: MY_CLUB_REDIRECT isn't right if user not part of club.
-#      Need a redirect to club or to user's home.
     [qw(
 	LOGIN
 	5
@@ -95,16 +101,16 @@ my(@_CFG) = (
 	Bivio::UI::HTML::General::Login
         next=MY_CLUB_REDIRECT
     )],
-#missing: 6
-#TODO: Make searching for public docs general
+    # Must match the start of the tour
     [qw(
-	SLOGAN_GIF
-	7
+        TOUR
+        6
         GENERAL
-        LOGIN
-        i/slogan.gif
+        DOCUMENT_READ
+        hm/tour.html
         Bivio::Biz::Action::HTTPDocument
     )],
+    #7
     [qw(
 	LOGOUT
 	8
@@ -112,7 +118,8 @@ my(@_CFG) = (
         ANY_USER
         pub/logout
 	Bivio::Biz::Action::Logout
-        next=LOGIN
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=HTTP_DOCUMENT
         cancel=USER_HOME
     )],
     [qw(
@@ -383,7 +390,7 @@ my(@_CFG) = (
         39
         CLUB
         MAIL_WRITE
-        :
+        !
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_DETAIL
@@ -523,7 +530,7 @@ my(@_CFG) = (
         JAPAN_SURVEY
         52
         GENERAL
-        LOGIN
+        DOCUMENT_READ
         pub/japan_survey
         Bivio::Biz::Model::JapanSurveyForm
         next=JAPAN_SURVEY_THANKS
@@ -533,7 +540,7 @@ my(@_CFG) = (
         JAPAN_SURVEY_THANKS
         53
         GENERAL
-        LOGIN
+        DOCUMENT_READ
         hm/thanks_japan.html
 	Bivio::Biz::Action::HTTPDocument
     )],
@@ -624,7 +631,7 @@ my(@_CFG) = (
         USER_AGREEMENT
         62
         GENERAL
-        LOGIN
+        DOCUMENT_READ
         pub/user_agreement
         Bivio::Biz::Model::UserAgreementForm
         Bivio::UI::HTML::General::UserAgreement
@@ -636,7 +643,7 @@ my(@_CFG) = (
         USER_AGREEMENT_TEXT
         63
         GENERAL
-        LOGIN
+        DOCUMENT_READ
         hm/user.html
         Bivio::Biz::Action::HTTPDocument
     )],
@@ -646,9 +653,10 @@ my(@_CFG) = (
         GENERAL
         LOGIN
         pub/create_user
+        Bivio::Biz::Model::RealmInvite->check_accept
         Bivio::Biz::Model::CreateUserForm
         Bivio::UI::HTML::General::CreateUser
-        next=USER_HOME
+        next=USER_CREATED
         cancel=HTTP_DOCUMENT
     )],
     # Default page for users, see MY_BIVIO_REDIRECT
@@ -745,7 +753,7 @@ my(@_CFG) = (
 	74
         GENERAL
         MAIL_WRITE
-        :
+        !
 	Bivio::Biz::Action::HandleUnknownMail
     )],
     [qw(
@@ -767,18 +775,22 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmInviteList
         Bivio::UI::HTML::Club::InviteList
     )],
+    # This technically doesn't have to be in your domain
     [qw(
-        CLUB_ADMIN_INVITE_ACCEPT
+        REALM_INVITE_ACCEPT
         77
-        CLUB
-        LOGIN
-        _/admin/join
-        Bivio::Biz::Model::RealmInvite
-        Bivio::Biz::Model::ClubInviteAcceptForm
-        Bivio::UI::HTML::Club::InviteAccept
+        GENERAL
+        DOCUMENT_READ
+        pub/join
+        Bivio::Biz::Model::RealmInvite->execute_accept
+        Bivio::Biz::Model::RealmInviteAcceptForm
+        Bivio::UI::HTML::General::InviteAccept
         cancel=HTTP_DOCUMENT
         next=CLUB_HOME
+        NOT_FOUND=REALM_INVITE_NOT_FOUND
     )],
+# Another task here which handles does the invite accept part.
+# May need multiple tasks, because the cancels will be different
     [qw(
         CLUB_ADMIN_USER_DETAIL
         78
@@ -914,7 +926,27 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentSplit
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
-       );
+    [qw(
+        REALM_INVITE_NOT_FOUND
+        91
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::General::InviteNotFound
+    )],
+    # Sets the realm to this user
+    [qw(
+        USER_CREATED
+        92
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::Biz::Model::RealmInviteAcceptForm->execute_if_found
+        Bivio::UI::Mail::UserCreated
+        Bivio::UI::HTML::General::UserCreated
+        next=USER_HOME
+    )],
+);
 
 __PACKAGE__->compile(
     map {($_->[0], [$_->[1]])} @_CFG
