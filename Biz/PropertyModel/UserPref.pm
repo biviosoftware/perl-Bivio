@@ -64,8 +64,8 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NONE()],
             avatar_file => ['Bivio::Type::Text',
     		Bivio::SQL::Constraint::NONE()],
-    
         },
+	auth_id => 'user_id',
     };
 }
 

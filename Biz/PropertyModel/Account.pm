@@ -76,6 +76,7 @@ sub internal_initialize {
             external_password => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::NONE()],
         },
+	auth_id => 'club_id',
     };
 }
 

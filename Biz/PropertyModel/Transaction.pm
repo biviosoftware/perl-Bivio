@@ -75,6 +75,7 @@ sub internal_initialize {
             broker_code => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::NONE()],
         },
+	auth_id => club_id,
     };
 }
 

@@ -87,10 +87,28 @@ Returns the L<Bivio::SQL::PropertySupport|Bivio::SQL::PropertySupport>
 for this class.  Calls L<internal_initialize|"internal_initialize">
 to get the hash_ref to initialize the sql support instance.
 
+Dynamically overrides L<unsafe_load|"unsafe_load"> for models which don't have
+an C<auth_id>.  This makes the code in unsafe_load simpler which means there
+are fewer errors and security holes.
+
 =cut
 
 sub internal_initialize_sql_support {
-    return Bivio::SQL::PropertySupport->new(shift->internal_initialize);
+    my($proto) = @_;
+    my($sql_support) =  Bivio::SQL::PropertySupport->new(
+	    $proto->internal_initialize);
+    unless ($sql_support->unsafe_get('auth_id')) {
+	my($pkg) = ref($proto) || $proto;
+	eval "
+	    package $pkg;
+            sub unsafe_load {
+		Carp::croak('no query arguments') unless int(\@_) > 1;
+		return shift->unauth_load(\@_);
+	    }
+	    1;
+	" || die("$@");
+    }
+    return $sql_support;
 }
 
 =for html <a name="load"></a>
@@ -148,6 +166,9 @@ Returns false if not found.  Dies on all other errors.
 
 Subclasses shouldn't override this method.
 
+B<This method will be dynamically overridden.  See
+L<internal_initialize_sql_support|"internal_initialize_sql_support">.
+
 =cut
 
 sub unsafe_load {
@@ -156,9 +177,11 @@ sub unsafe_load {
 
     # Ensure we are only getting data from the realm we are authorized
     # to operate in.
-    my($k, $v) = $self->get_request->unsafe_get('auth_id_field', 'auth_id');
+    my($sql_support) = $self->internal_get_sql_support;
+    my($k) = $sql_support->get('auth_id')->{name};
+    my($v) = $self->get_request->get('auth_id');
     # Will override existing value for auth_id if any
-    return $self->unauth_load(@_, $k ? ($k, $v) : ());
+    return $self->unauth_load(@_, $k => $v);
 }
 
 =for html <a name="update"></a>

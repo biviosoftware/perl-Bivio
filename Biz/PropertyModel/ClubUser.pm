@@ -64,6 +64,7 @@ sub internal_initialize {
             mail_mode => ['Bivio::Type::MailMode',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
+	auth_id => 'club_id',
     };
 }
 

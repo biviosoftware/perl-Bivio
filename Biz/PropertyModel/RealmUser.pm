@@ -63,6 +63,7 @@ sub internal_initialize {
             role => ['Bivio::Auth::Role',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
+	auth_id => 'realm_id',
     };
 }
 

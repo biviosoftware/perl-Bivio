@@ -74,6 +74,7 @@ sub internal_initialize {
             remark => ['Bivio::Type::Text',
     		Bivio::SQL::Constraint::NONE()],
         },
+	auth_id => 'club_id',
     };
 }
 

@@ -97,8 +97,8 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
             age => ['Bivio::Type::Integer',
     		Bivio::SQL::Constraint::NONE()],
-    
         },
+	auth_id => 'user_id',
     };
 }
 

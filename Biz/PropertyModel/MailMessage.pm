@@ -242,6 +242,7 @@ sub internal_initialize {
             parts => ['Bivio::Type::Integer',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
+	auth_id => 'club_id',
     };
 }
 

@@ -74,8 +74,7 @@ This module takes ownership of I<decl>.
 
 sub new {
     my($proto, $attrs) = @_;
-    Carp::croak("invalid or no version")
-		unless $attrs->{version} && $attrs->{version} =~ /^\d+$/;
+    $proto->init_version($attrs, $attrs);
     my($table_name) = $attrs->{table_name};
     Carp::croak("$table_name: invalid table name, must end in _t")
 		unless $table_name =~ m!^\w{1,28}_t$!;
@@ -85,11 +84,12 @@ sub new {
     # Oracle caching of prepared statements.
     my($column_names) = $attrs->{column_names} = [sort(keys(%$column_cfg))];
     my($primary_key_names) = $attrs->{primary_key_names} = [];
+    $attrs->{column_aliases} = {};
     # Go through columns and
     my($n);
     foreach $n (@$column_names) {
 	my($cfg) = $column_cfg->{$n};
-	$columns->{$n} = {
+	$attrs->{column_aliases}->{$n} = $columns->{$n} = {
 	    # Bivio::SQL::Support attributes
 	    name => $n,
 	    type => $cfg->[0],
@@ -104,6 +104,14 @@ sub new {
     }
     Carp::croak("$table_name: no primary keys")
 		unless int(@$primary_key_names);
+
+    # Convert auth_id to a column if it exists
+    if ($attrs->{auth_id}) {
+	Carp::croak($attrs->{auth_id}, ': auth_id not set')
+		    unless $columns->{$attrs->{auth_id}};
+	$attrs->{auth_id} = $columns->{$attrs->{auth_id}};
+    }
+
     # Cache as much of the statements as possible
     $attrs->{select} = 'select '.join (',', map {
 	$columns->{$_}->{type}->from_sql_value($_)

@@ -50,9 +50,6 @@ Forwards the email to the owner of the auth_realm.
 sub execute {
     my(undef, $req) = @_;
     my($user_id) = $req->get('auth_id');
-#TODO: This probably should be RealmType
-    die('auth_realm not a user')
-	    unless $req->get('auth_id_field') eq 'user_id';
     my($user) = Bivio::Biz::PropertyModel::User->new($req);
     $user->load(user_id => $user_id);
     my($msg) = $req->get('message');

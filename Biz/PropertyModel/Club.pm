@@ -131,6 +131,7 @@ sub internal_initialize {
             max_storage_kbytes => ['Bivio::Type::Integer',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
+	auth_id => 'club_id',
     };
 }
 

@@ -67,6 +67,7 @@ sub internal_initialize {
             realm_type => ['Bivio::Auth::RealmType',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
+	auth_id => 'realm_id',
     };
 }
 

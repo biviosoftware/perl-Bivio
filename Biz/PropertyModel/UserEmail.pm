@@ -61,8 +61,8 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
             user_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
-    
         },
+	auth_id => 'user_id',
     };
 }
 
