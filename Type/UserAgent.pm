@@ -99,7 +99,7 @@ sub put_on_request {
     my($proto, $ua, $req) = @_;
     # MSIE is the only modern browser.  Will test with Netscape 6,
     # once they get out of beta.
-    $req->put((ref($proto) || $proto) =>
+    $req->put_durable((ref($proto) || $proto) =>
 	    $ua =~ /MSIE [5678]/io ? $proto->BROWSER
 	    : $ua =~ /b-sendmail/i ? $proto->MAIL : $proto->BROWSER_HTML3);
     return;
