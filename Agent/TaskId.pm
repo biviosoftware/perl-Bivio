@@ -122,9 +122,7 @@ my(@_CFG) = (
         hm/tour_new/index.html
         Bivio::Biz::Action::HTTPDocument
     )],
-#TODO: This is only temporary (ha!).  It names the demo_club
-#      as an HTTP_DOCUMENT.  It shouldn't never be executed.
-    #
+#7
     [qw(
 	LOGOUT
 	8
@@ -2242,6 +2240,42 @@ my(@_CFG) = (
         Bivio::Biz::Model::ComparisonPerformanceList->execute_load_all
         Bivio::UI::HTML::Club::ComparisonPerformanceReport
         next=CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE
+    )],
+    [qw(
+        ASK_CANDIS_MESSAGE_LIST_REDIRECT
+        221
+        GENERAL
+        DOCUMENT_READ
+        pub/ask_candis
+        Bivio::Biz::Action::CelebrityRedirect
+        next=CLUB_HOME
+    )],
+    [qw(
+        ASK_CANDIS_MESSAGE_DETAIL_REDIRECT
+        222
+        GENERAL
+        DOCUMENT_READ
+        pub/ask_candis/msg
+        Bivio::Biz::Action::CelebrityRedirect
+        next=CLUB_COMMUNICATIONS_MAIL_DETAIL
+    )],
+    [qw(
+        TREZ_TALK_MESSAGE_LIST_REDIRECT
+        223
+        GENERAL
+        DOCUMENT_READ
+        pub/trez_talk
+        Bivio::Biz::Action::CelebrityRedirect
+        next=CLUB_HOME
+    )],
+    [qw(
+        TREZ_TALK_MESSAGE_DETAIL_REDIRECT
+        224
+        GENERAL
+        DOCUMENT_READ
+        pub/trez_talk/msg
+        Bivio::Biz::Action::CelebrityRedirect
+        next=CLUB_COMMUNICATIONS_MAIL_DETAIL
     )],
 );
 
