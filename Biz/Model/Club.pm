@@ -60,7 +60,6 @@ my($_COUNT_ALL_WHERE_CLAUSE) =
 my($_MEMBER_ROLES) = Bivio::Biz::Model::RealmUser::MEMBER_ROLES();
 $_MEMBER_ROLES = Bivio::Auth::RoleSet->to_sql_list(\$_MEMBER_ROLES);
 my($_COUNT_ALL_MEMBERS_RATIO);
-_compute_count_all_members_ratio();
 
 =head1 METHODS
 
@@ -115,6 +114,8 @@ Returns the total number of members of L<count_all|"count_all"> clubs.
 
 sub count_all_members {
     my($proto, $req) = @_;
+    _compute_count_all_members_ratio()
+	    unless defined($_COUNT_ALL_MEMBERS_RATIO);
     return Bivio::Type::Amount->round(
 	    $_COUNT_ALL_MEMBERS_RATIO->multiply(
 		    Bivio::SQL::Connection->execute_one_row(
