@@ -48,29 +48,31 @@ Returns the form.
 =cut
 
 sub create_content {
-    my($form) = Bivio::UI::HTML::DescriptivePageForm->new({
-	form_class => 'Bivio::Biz::Model::InstrumentOpeningBalanceForm',
+    my($self) = @_;
+    return $self->form('Bivio::Biz::Model::InstrumentOpeningBalanceForm', [
+	    ['RealmTransaction.date_time', 'Purchase Date', <<'EOF'],
+The date the block of shares was purchased.
+EOF
+	    ['Instrument.ticker_symbol', 'Ticker', $self->join(<<'EOF',
+The ticker symbol of the investment.  If the investment you purchased
+is not available in our database, you may add a
+EOF
+		    $self->link('CLUB_ACCOUNTING_LOCAL_INSTRUMENT'),
+		    ".\n",
+		   )],
+	    ['paid', 'Total Paid', <<'EOF'],
+The cost basis of the block of shares.
+EOF
+	    ['RealmInstrumentEntry.count', 'Shares', <<'EOF'],
+The number of shares in the block.
+EOF
+    ],
+    {
 	header => $_PACKAGE->join(<<'EOF')
 Use this form to record the number of shares and the associated cost for
 a block of shares owned prior to using bivio club accounting.
 EOF
     });
-    $form->put(value => $form->create_fields([
-	['RealmTransaction.date_time', 'Purchase Date', <<'EOF'],
-The date the block of shares was purchased.
-EOF
-	['Instrument.ticker_symbol', 'Ticker Symbol', <<'EOF', 'CSCO, WFMI'],
-The ticker symbol of the investment. Use the "Symbol Lookup" button to
-search for a ticker using part of a company name.
-EOF
-	['paid', 'Total Paid', <<'EOF'],
-The cost basis of the block of shares.
-EOF
-	['RealmInstrumentEntry.count', 'Shares', <<'EOF'],
-The number of shares in the block.
-EOF
-    ]));
-    return $form;
 }
 
 #=PRIVATE METHODS
