@@ -361,6 +361,7 @@ sub handle_die {
 
     my($req) = Bivio::Agent::Request->get_current;
     $proto->rollback($req);
+    $req->warn('task_error=', $die) if $req;
 
     # Is this an HTTP request? (We don't redirect on non-http requests)
     unless (UNIVERSAL::isa($req, 'Bivio::Agent::HTTP::Request')) {
@@ -371,7 +372,6 @@ sub handle_die {
     # Some type of unhandled error.  Rollback and check die_actions
     unless (ref($proto)) {
 	_trace('called statically (probably should not happen)') if $_TRACE;
-	$req->warn('task_error=', $die);
 	return;
     }
 
@@ -382,14 +382,12 @@ sub handle_die {
 	$new_task_id = Bivio::Agent::TaskId->unsafe_from_any(
 		'DEFAULT_ERROR_REDIRECT_'.$die_code->get_name);
 	unless (defined($new_task_id)) {
-	    $req->warn('task_error=', $die);
 	    _trace('not a mapped task: ', $die_code) if $_TRACE;
 	    return;
 	}
     }
 
     # Redirect to error redirect
-    $req->warn('task_error=', $die, ' new_task=', $new_task_id->get_name);
     $die->set_code(Bivio::DieCode::SERVER_REDIRECT_TASK(),
 	    task_id => $new_task_id);
     return;
