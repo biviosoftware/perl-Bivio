@@ -460,6 +460,21 @@ sub header_out {
     return 1;
 }
 
+=for html <a name="invalidate_user"></a>
+
+=head2 invalidate_user()
+
+Do the absolute mininum to clear the user from the cookie.
+This only happens if a user is logged in, but doesn't exist.
+
+=cut
+
+sub invalidate_user {
+    my($self) = @_;
+    $self->delete(LOGIN_FIELD(), USER_FIELD(), SU_FIELD());
+    return;
+}
+
 =for html <a name="put"></a>
 
 =head2 put(string key, string value, ...)
