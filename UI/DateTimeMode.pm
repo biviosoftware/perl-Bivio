@@ -58,6 +58,10 @@ displays a long month name and day number, e.g. October 31
 
 displays month/day.
 
+=item FULL_MONTH_DAY_AND_YEAR_UC
+
+displays MONTH day, year
+
 =back
 
 =cut
@@ -73,6 +77,7 @@ __PACKAGE__->compile([
     DATE_TIME => [3],
     MONTH_NAME_AND_DAY_NUMBER => [4],
     MONTH_AND_DAY => [5],
+    FULL_MONTH_DAY_AND_YEAR_UC => [6],
 ]);
 
 #=PRIVATE METHODS

@@ -129,15 +129,17 @@ function dt(m,j,t,gmt){
 
     // ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2, DATE_TIME=3
     //          and MONTH_NAME_AND_DAY_NUMBER=4, DAY_AND_NUMBER=5
+    //          FULL_MONTH_DAY_AND_YEAR_UC=6
     // This renders more compact javascript and is possibly slower on client.
     document.write(
         m<=3?
-            ((m&1)?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())+'/'+dt_n(dt_y(d))
+            ((m&1)?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())+'/'+dt_y(d)
                   :'')
             +(m==3?' ':'')
             +((m&2)?dt_n(d.getHours())+':'+dt_n(d.getMinutes()):'')
         :m==4?dt_mn(d)+' '+d.getDate()
         :m==5?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())
+        :m==6?dt_mn(d).toUpperCase()+' '+dt_n(d.getDate())+', '+dt_y(d)
         :'');
 }
 
