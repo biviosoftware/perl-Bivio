@@ -99,11 +99,7 @@ sub new {
 #TODO: Change this so everyone knows realm_id?
     my($owner_id) = $owner->get('realm_id');
     $owner_id || Carp::croak('owner must have valid id (must be loaded)');
-#TODO: Fix this hack
-    my($owner_id_field) = $class;
-    $owner_id_field =~ s/.*::(\w+)/\L$1_id/;
     $self->put(owner => $owner, owner_id => $owner_id,
-	    owner_id_field => $owner_id_field,
 	    owner_name => $owner->get('name'));
     return $self;
 }

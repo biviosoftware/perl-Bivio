@@ -78,12 +78,20 @@ sub new {
 	    ? _auth_user($self, $r->connection->user, $password) : undef;
     my($auth_realm, $task_id)
 	    = Bivio::Agent::HTTP::Location->parse($self, $r->uri);
+#TODO: Make secure.  Need to watch for large queries and forms here.
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
-    my($query) = (defined $r->args) ? +{$r->args} : undef;
-    # Form may be undef
+    my($query) = (defined $r->args) ? {$r->args} : undef;
     my($form) = $r->method_number() eq Apache::Constants::M_POST()
 	    ? {$r->content()} : undef;
+
+    # AUTH: Make sure the auth_id is NEVER set by the user.
+    #       We are making a presumption about how the models work.
+    #       However, it is reasonable to assume that there should never
+    #       be a query or form field called "auth_id".
+    delete($query->{auth_id}) if $query;
+    delete($form->{auth_id}) if $form;
+
     $self->put(
 	    # FindParams are always unique.
 	    auth_realm => $auth_realm,
