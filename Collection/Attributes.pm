@@ -60,7 +60,8 @@ the map, so don't modify the hash after invoking this.
 sub new {
     my($proto, $map) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
-    $self->{$_PACKAGE} = $map || {};
+    $map = {} unless ref($map);
+    $self->{$_PACKAGE} = $map;
     return $self;
 }
 
@@ -215,23 +216,30 @@ will be passed to C<get_widget_value> of the reference.
 =item 1.3.
 
 Attribute is hash or array reference, the second parameter will be used as a
-key into the reference.  If there are more parameters, the third parameter must
+key into the reference.  If the second parameter is an array_ref,
+its value will be interpreted by C<get_widget_value>.
+If there are more parameters, the third parameter must
 be a blessed reference which supports C<get_widget_value>.  The first argument
 will be the value from the hash, array, or indexed value
 and the rest of the arguments will be passed.
 
 =back
 
-=item 2.1
+=item 2.1.
 
 If I<param1> begins with C<-E<gt>>, C<$self-E<gt>$param1(@_)> will be called.
 
 =item 2.2.
 
+If I<param1> begins with C<++> and once deleted I<param1> is an attribute,
+the attribute will be (pre-)incremented, stored (put), and returned.
+
+=item 2.3.
+
 If I<param1> I<can> C<get_widget_value>,
 C<$param-E<gt>get_widget_value(@_)> will be called.
 
-=item 2.3.
+=item 2.4.
 
 If I<param1> is an array reference, then
 C<$self-E<gt>get_widget_value(@$param1)> will be called.
@@ -254,9 +262,16 @@ sub get_widget_value {
 	return $self->$param1(@_) if $param1 =~ s/^\-\>//;
 	return $param1->get_widget_value(@_)
 		if UNIVERSAL::can($param1, 'get_widget_value');
-	Carp::croak("$param1: not found and can't get_widget_value")
-		    unless ref($param1) eq 'ARRAY';
-	$value = $self->get_widget_value(@$param1);
+	if ($param1 =~ s/^\+\+//) {
+	    Carp::croak("++${param1}: not found")
+			unless exists($fields->{$param1});
+	    $value = ++$fields->{$param1};
+	}
+	else {
+	    Carp::croak("$param1: not found and can't get_widget_value")
+			unless ref($param1) eq 'ARRAY';
+	    $value = $self->get_widget_value(@$param1);
+	}
     }
     else {
 	# scalar or undef attribute
@@ -277,6 +292,7 @@ sub get_widget_value {
 	my($param2) = shift;
 	Carp::croak("$param1: is a ref, but not passed second param")
 		    unless defined($param2);
+	$param2 = $self->get_widget_value(@$param2) if ref($param2) eq 'ARRAY';
 	if (ref($value) eq 'HASH') {
 	    # key must exist
 	    Carp::croak("$param1\->{$param2}: does not exist")
