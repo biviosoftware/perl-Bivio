@@ -209,12 +209,16 @@ _compile(
     SOURCE_ACCOUNT_ID => ['Source Account'],
     TARGET_ACCOUNT_ID => ['Target Account'],
     EASY_ACTIONS => ['Shortcuts'],
+    INVESTMENT => ['Investment'],
+    MEMBER => ['Member'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
     CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE => [
 	    'Performance Comparison Report'],
+    CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL => [
+	    'Journal Report'],
     CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
 	'Income and Expense Report'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE => [
@@ -430,6 +434,15 @@ _compile(
     PRIVILEGES_AND_USER_ID => ["Privileges\nUser ID"],
     USER_CLUB_PRIVILEGES => ['Your Privileges'],
     USER_CLUB_HEADING => ['Club'],
+    INVESTMENT_INCOME_HEADING => ["Investment\nIncome"],
+    INVESTMENT_SALE_GAIN_HEADING => ["Investment\nSale Gain"],
+    CASH_DR_HEADING => ["Cash\nDebit"],
+    INSTRUMENT_DR_HEADING => ["Investment\nDebit"],
+    MEMBER_CR_HEADING => ['Member'],
+    DIVIDEND_INTEREST_CR_HEADING => ["Dividend\nand Interest"],
+    MISC_INCOME_CR_HEADING => ["Misc.\nIncome"],
+    SALE_GAIN_CR_HEADING => ["Investment\nSale Gain"],
+    UNREALIZED_GAIN_CR_HEADING => ["Unrealized\nGain"],
 
     # Invite List
     REALMINVITE_EMAIL_HEADING => ['Email'],
@@ -489,6 +502,20 @@ _compile(
     # Preferences
     PAGE_SIZE => ['List Size'],
     FACADE_CHILD_TYPE => ['Style'],
+
+    # page subtopics
+    OVERVIEW => ['Overview'],
+    INVESTMENTS => ['Investments'],
+    ACCOUNTS => ['Accounts'],
+    MEMBERS => ['Members'],
+    REPORTS => ['Reports'],
+    TAXES => ['Taxes'],
+    INFORMATION => ['Information'],
+    INVITES => ['Invites'],
+    ROSTER => ['Roster'],
+    MAIL => ['Mail'],
+    PROFILE => ['Profile'],
+    PREFERENCES => ['Preferences'],
 );
 
 =head1 METHODS
