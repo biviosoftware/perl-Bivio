@@ -45,9 +45,9 @@ use Bivio::Type::EntryClass;
 
 =for html <a name="create_entry"></a>
 
-=head2 static create_entry(Bivio::Biz::Model::RealmTransactions txn, hash_ref properties)
+=head2 static create_entry(Bivio::Biz::Model::RealmTransactions txn, hash_ref properties) : Bivio::Biz::Model::RealmInstrumentEntry
 
-=head2 create_entry(Bivio::Biz::Model::RealmTransactions txn, hash_ref properties)
+=head2 create_entry(Bivio::Biz::Model::RealmTransactions txn, hash_ref properties) : Bivio::Biz::Model::RealmInstrumentEntry
 
 Creates the instrument entry, and transaction entry for the specified
 transaction, using the values from the specified properties hash. Dies
@@ -76,7 +76,7 @@ sub create_entry {
 
     $properties->{entry_id} = $entry->get('entry_id');
     $self->create($properties);
-    return;
+    return $self;
 }
 
 =for html <a name="internal_initialize"></a>
