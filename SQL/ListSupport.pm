@@ -173,6 +173,12 @@ The version of this particular combination of fields.  It will be
 set in all query strings.  It should be changed whenever the
 declaration changes.  It is used to reject an out-dated query.
 
+=item where : array_ref
+
+A list of fields which will be ANDed to rest of the where clause.
+If an element matches a column_name or alias, then the appropriate
+sql_name for the column_name or alias will be substituted.
+
 =back
 
 =cut
@@ -292,6 +298,18 @@ sub _init_column_classes {
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
 	    [qw(auth_id primary_key order_by other)]);
 
+    if ($decl->{where}) {
+	$where .= ' and';
+	foreach my $e (@{$decl->{where}}) {
+	    if (defined($attrs->{column_aliases}->{$e})) {
+		my($col) = $attrs->{column_aliases}->{$e};
+		$where .= ' ' . $col->{sql_name};
+	    }
+	    else {
+		$where .= ' ' . $e;
+	    }
+	}
+    }
     return undef unless %{$attrs->{models}};
 
     # auth_id must be exactly one column.  Turn into that column.
