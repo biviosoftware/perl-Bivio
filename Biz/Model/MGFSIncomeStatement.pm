@@ -17,12 +17,12 @@ Bivio::Biz::Model::MGFSIncomeStatement -
 
 =head1 EXTENDS
 
-L<Bivio::Biz::PropertyModel>
+L<Bivio::Biz::Model::MGFSBase>
 
 =cut
 
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::MGFSIncomeStatement::ISA = ('Bivio::Biz::PropertyModel');
+use Bivio::Biz::Model::MGFSBase;
+@Bivio::Biz::Model::MGFSIncomeStatement::ISA = ('Bivio::Biz::Model::MGFSBase');
 
 =head1 DESCRIPTION
 
@@ -31,11 +31,11 @@ C<Bivio::Biz::Model::MGFSIncomeStatement>
 =cut
 
 #=IMPORTS
+use Bivio::Data::MGFS::Amount;
+use Bivio::Data::MGFS::AnnualCode;
 use Bivio::Data::MGFS::Id;
 use Bivio::Data::MGFS::MonthDate;
 use Bivio::Data::MGFS::Quarter;
-use Bivio::Type::Amount;
-use Bivio::Type::Integer;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -43,6 +43,89 @@ my($_PACKAGE) = __PACKAGE__;
 =head1 METHODS
 
 =cut
+
+=for html <a name="internal_get_mgfs_import_format"></a>
+
+=head2 internal_get_mgfs_import_format() : hash_ref
+
+Returns the defintion of the models MGFS import format.
+
+=cut
+
+sub internal_get_mgfs_import_format {
+    return {
+	file => {
+	    indb03 => [0, 0],
+	    indb04 => [0, 0],
+	    chgdb03 => [0, 1],
+	    chgdb04 => [0, 1],
+	},
+	format => [
+	    {
+		# skips sign from id, always +
+		mg_id => ['ID', 44, 8],
+		dttm => ['CHAR', 66, 7],
+		annual => ['CHAR', 0, 2],
+		quarter => ['CHAR', 86, 1],
+		using_basic_eps => ['CHAR', 87, 1],
+		op_revenue => ['MILLIONS', 89, 10],
+		cost_sales => ['MILLIONS', 99, 10],
+		gross_op_profit => ['MILLIONS', 109, 10],
+		general_expense => ['MILLIONS', 119, 10],
+		other_taxes => ['MILLIONS', 129, 10],
+		op_profit_pre_dep => ['MILLIONS', 139, 10],
+		dep => ['MILLIONS', 149, 10],
+		op_profit_post_dep => ['MILLIONS', 159, 10],
+		inc_other => ['MILLIONS', 169, 10],
+		inc_for_int => ['MILLIONS', 179, 10],
+		int_expense => ['MILLIONS', 189, 10],
+		int_minority => ['MILLIONS', 199, 10],
+		inc_pre_tax => ['MILLIONS', 209, 10],
+		inc_taxes => ['MILLIONS', 219, 10],
+		inc_cont_op => ['MILLIONS', 229, 10],
+		inc_discont_op => ['MILLIONS', 239, 10],
+		inc_op => ['MILLIONS', 249, 10],
+		inc_special => ['MILLIONS', 259, 10],
+		inc_normalized => ['MILLIONS', 269, 10],
+		inc_extra => ['MILLIONS', 279, 10],
+		inc_accounting_change => ['MILLIONS', 289, 10],
+		inc_tax_carry => ['MILLIONS', 299, 10],
+		other_gains => ['MILLIONS', 309, 10],
+		inc => ['MILLIONS', 319, 10],
+		div_preferred => ['MILLIONS', 329, 10],
+		inc_available_common => ['MILLIONS', 339, 10],
+
+		eps_cont_op => ['DOLLARS', 349, 6],
+		eps_discont_op => ['DOLLARS', 355, 6],
+		eps_op => ['DOLLARS', 361, 6],
+		eps_extra => ['DOLLARS', 367, 6],
+		eps_accounting_change => ['DOLLARS', 373, 6],
+		eps_tax_carry => ['DOLLARS', 379, 6],
+		eps_other_gains => ['DOLLARS', 385, 6],
+		eps => ['DOLLARS', 391, 6],
+		eps_normalized => ['DOLLARS', 397, 6],
+
+		deps_cont_op => ['DOLLARS', 403, 6],
+		deps_dicont_op => ['DOLLARS', 409, 6],
+		deps_op => ['DOLLARS', 415, 6],
+		deps_extra => ['DOLLARS', 421, 6],
+		deps_accounting_change => ['DOLLARS', 427, 6],
+		deps_tax_carry => ['DOLLARS', 433, 6],
+		deps_other_gains => ['DOLLARS', 439, 6],
+		deps => ['DOLLARS', 445, 6],
+		deps_normalized => ['DOLLARS', 451, 6],
+
+		div_per_share => ['DOLLARS', 457, 6],
+
+		# Year-to-Date
+		revenue_ytd => ['MILLIONS', 463, 10],
+		inc_ytd => ['MILLIONS', 473, 10],
+		eps_ytd => ['DOLLARS', 483, 6],
+		div_ytd => ['DOLLARS', 489, 6],
+	    },
+	],
+    };
+}
 
 =for html <a name="internal_initialize"></a>
 
@@ -63,112 +146,112 @@ sub internal_initialize {
 		    Bivio::SQL::Constraint::PRIMARY_KEY()],
 	    quarter => ['Bivio::Data::MGFS::Quarter',
 		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    annual => ['Bivio::Type::Boolean',
+	    annual => ['Bivio::Data::MGFS::AnnualCode',
 		    Bivio::SQL::Constraint::PRIMARY_KEY()],
 	    using_basic_eps => ['Bivio::Data::MGFS::Boolean',
 		    Bivio::SQL::Constraint::NOT_NULL()],
-	    op_revenue => ['Bivio::Type::Amount',
+	    op_revenue => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    cost_sales => ['Bivio::Type::Amount',
+	    cost_sales => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    gross_op_profit => ['Bivio::Type::Amount',
+	    gross_op_profit => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    general_expense => ['Bivio::Type::Amount',
+	    general_expense => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    other_taxes => ['Bivio::Type::Amount',
+	    other_taxes => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    op_profit_pre_dep => ['Bivio::Type::Amount',
+	    op_profit_pre_dep => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    dep => ['Bivio::Type::Amount',
+	    dep => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    op_profit_post_dep => ['Bivio::Type::Amount',
+	    op_profit_post_dep => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_other => ['Bivio::Type::Amount',
+	    inc_other => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_for_int => ['Bivio::Type::Amount',
+	    inc_for_int => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    int_expense => ['Bivio::Type::Amount',
+	    int_expense => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    int_minority => ['Bivio::Type::Amount',
+	    int_minority => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_pre_tax => ['Bivio::Type::Amount',
+	    inc_pre_tax => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_taxes => ['Bivio::Type::Amount',
+	    inc_taxes => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_cont_op => ['Bivio::Type::Amount',
+	    inc_cont_op => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_discont_op => ['Bivio::Type::Amount',
+	    inc_discont_op => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_op => ['Bivio::Type::Amount',
+	    inc_op => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_special => ['Bivio::Type::Amount',
+	    inc_special => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_normalized => ['Bivio::Type::Amount',
+	    inc_normalized => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_extra => ['Bivio::Type::Amount',
+	    inc_extra => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_accounting_change => ['Bivio::Type::Amount',
+	    inc_accounting_change => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_tax_carry => ['Bivio::Type::Amount',
+	    inc_tax_carry => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    other_gains => ['Bivio::Type::Amount',
+	    other_gains => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc => ['Bivio::Type::Amount',
+	    inc => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    div_preferred => ['Bivio::Type::Amount',
+	    div_preferred => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_available_common => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-
-	    eps_cont_op => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    eps_discont_op => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    eps_op => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    eps_extra => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    eps_accounting_change => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    eps_tax_carry => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    eps_other_gains => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    eps => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    eps_normalized => ['Bivio::Type::Amount',
+	    inc_available_common => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
 
-	    deps_cont_op => ['Bivio::Type::Amount',
+	    eps_cont_op => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    deps_dicont_op => ['Bivio::Type::Amount',
+	    eps_discont_op => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    deps_op => ['Bivio::Type::Amount',
+	    eps_op => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    deps_extra => ['Bivio::Type::Amount',
+	    eps_extra => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    deps_accounting_change => ['Bivio::Type::Amount',
+	    eps_accounting_change => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    deps_tax_carry => ['Bivio::Type::Amount',
+	    eps_tax_carry => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    deps_other_gains => ['Bivio::Type::Amount',
+	    eps_other_gains => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    deps => ['Bivio::Type::Amount',
+	    eps => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    deps_normalized => ['Bivio::Type::Amount',
+	    eps_normalized => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
 
-	    div_per_share => ['Bivio::Type::Amount',
+	    deps_cont_op => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    deps_dicont_op => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    deps_op => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    deps_extra => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    deps_accounting_change => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    deps_tax_carry => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    deps_other_gains => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    deps => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    deps_normalized => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+
+	    div_per_share => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
 
 	    # Year-to-Date
-	    revenue_ytd => ['Bivio::Type::Amount',
+	    revenue_ytd => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    inc_ytd => ['Bivio::Type::Amount',
+	    inc_ytd => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    eps_ytd => ['Bivio::Type::Amount',
+	    eps_ytd => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
-	    div_ytd => ['Bivio::Type::Amount',
+	    div_ytd => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
         },
     };

@@ -17,12 +17,12 @@ Bivio::Biz::Model::MGFSCompany -
 
 =head1 EXTENDS
 
-L<Bivio::Biz::PropertyModel>
+L<Bivio::Biz::Model::MGFSBase>
 
 =cut
 
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::MGFSCompany::ISA = ('Bivio::Biz::PropertyModel');
+use Bivio::Biz::Model::MGFSBase;
+@Bivio::Biz::Model::MGFSCompany::ISA = ('Bivio::Biz::Model::MGFSBase');
 
 =head1 DESCRIPTION
 
@@ -38,7 +38,7 @@ use Bivio::Data::MGFS::Domicile;
 use Bivio::Data::MGFS::DowJonesMember;
 use Bivio::Data::MGFS::Fortune500Industrial;
 use Bivio::Data::MGFS::Id;
-use Bivio::Data::MGFS::Industry;
+use Bivio::Data::MGFS::IndustryId;
 use Bivio::Data::MGFS::Market;
 use Bivio::Data::MGFS::SICCode;
 use Bivio::Data::MGFS::SPIndustry;
@@ -47,7 +47,6 @@ use Bivio::Type::Amount;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
-use Bivio::Type::PrimaryId;
 use Bivio::Type::State;
 use Bivio::Data::MGFS::Ratio;
 use Bivio::Data::MGFS::RussellMember;
@@ -61,6 +60,81 @@ my($_PACKAGE) = __PACKAGE__;
 =head1 METHODS
 
 =cut
+
+=for html <a name="from_mgfs"></a>
+
+=head2 from_mgfs(string record, string file)
+
+Creates/updates an MGFS model from the MGFS record format.
+Skips non stock files.
+
+=cut
+
+sub from_mgfs {
+    my($self, $record, $file) = @_;
+
+    # only record types of D
+    # skips industry/index/composite records
+    if (substr($record, 4, 1) eq 'D') {
+	$self->SUPER::from_mgfs($record, $file);
+    }
+
+#TODO: create split records
+
+    return;
+}
+
+=for html <a name="internal_get_mgfs_import_format"></a>
+
+=head2 internal_get_mgfs_import_format() : hash_ref
+
+Returns the defintion of the models MGFS import format.
+
+=cut
+
+sub internal_get_mgfs_import_format {
+    return {
+	file => {
+	    indb01 => [0, 0],
+	    chgdb01 => [0, 1],
+	},
+	format => [
+	    {
+		# skips sign from id, always +
+		mg_id => ['ID', 44, 8],
+		cusip => ['CHAR', 54, 9],
+		market => ['CHAR', 52, 2],
+		industry => ['CHAR', 63, 3],
+		primary_sic => ['CHAR', 66, 5],
+		dow_jones_member => ['CHAR', 121, 2],
+		sp_member => ['CHAR', 123, 2],
+		sp_industry => ['CHAR', 125, 4],
+		street1 => ['CHAR', 159, 27],
+		street2 => ['CHAR', 187, 27],
+		city => ['CHAR', 215, 20],
+		state => ['CHAR', 235, 2],
+		zip => ['CHAR', 237, 10],
+		phone => ['CHAR', 247, 14],
+		fax => ['CHAR', 261, 14],
+		ceo => ['CHAR', 275, 50],
+		description => ['CHAR', 325, 50],
+		sp_midcap => ['CHAR', 375, 2],
+		stock_options => ['CHAR', 377, 2],
+		russell_member => ['CHAR', 381, 2],
+		bankruptcy => ['CHAR', 395, 1],
+		drp => ['CHAR', 396, 1],
+		domicile => ['CHAR', 397, 2],
+		adr_ratio => ['CHAR', 399, 8],
+		forbes500_member => ['CHAR', 407, 1],
+		fortune500_industrial => ['CHAR', 408, 1],
+		fortune500_services => ['CHAR', 409, 2],
+		auditor_name => ['CHAR', 1043, 50],
+		auditor_last_report => ['CHAR', 1093, 2],
+		business_description => ['CHAR', 1095, 256],
+	    },
+	],
+    };
+}
 
 =for html <a name="internal_initialize"></a>
 
@@ -77,15 +151,11 @@ sub internal_initialize {
 	columns => {
 	    mg_id => ['Bivio::Data::MGFS::Id',
 		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    instrument_id => ['Bivio::Type::PrimaryId',
-		    Bivio::SQL::Constraint::NONE()],
-	    ticker_symbol => ['Bivio::Type::Name',
-		    Bivio::SQL::Constraint::NOT_NULL()],
 	    cusip => ['Bivio::Type::String',
 		    Bivio::SQL::Constraint::NOT_NULL()],
 	    market => ['Bivio::Data::MGFS::Market',
 		    Bivio::SQL::Constraint::NOT_NULL()],
-	    industry => ['Bivio::Data::MGFS::Id',
+	    industry => ['Bivio::Data::MGFS::IndustryId',
 		    Bivio::SQL::Constraint::NOT_NULL()],
 	    primary_sic => ['Bivio::Data::MGFS::SICCode',
 		    Bivio::SQL::Constraint::NOT_NULL()],

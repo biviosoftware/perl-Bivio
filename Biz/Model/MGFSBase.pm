@@ -65,22 +65,32 @@ sub new {
 
 =cut
 
+=for html <a name="can_import_from"></a>
+
+=head2 can_import_from(string file) : boolean
+
+Returns true if this model can import itself from the specified MGFS data
+file.
+
+=cut
+
+sub can_import_from {
+    my($self, $file) = @_;
+    my($format) = $self->internal_get_mgfs_import_format();
+    return exists($format->{file}->{$file});
+}
+
 =for html <a name="from_mgfs"></a>
 
-=head2 from_mgfs(string record, hash_ref values, boolean update)
+=head2 from_mgfs(string record, string file)
 
-Creates/updates an MGFS model from the MGFS record format. If the update
-parameter is true, then an attempt will be made to update an existing model
-with the same mg_id. On failure to find the specified existing model, a new one
-will be created.
-If the update parameter is false, then a full import on an empty database
-is assumed, and no existance check will be made before the create.
+Creates/updates an MGFS model from the MGFS record format.
 Bad records are written to <model>_reject and ignored.
 
 =cut
 
 sub from_mgfs {
-    my($self, $record, $values, $update) = @_;
+    my($self, $record, $file) = @_;
 
     # lazy instantiation, kept in static map
     my($importer) = $_IMPORTER_MAP->{ref($self)};
@@ -90,18 +100,43 @@ sub from_mgfs {
 		$self->internal_get_mgfs_import_format);
 	$_IMPORTER_MAP->{ref($self)} = $importer;
     }
-
-    # copy the imported values into the values hash
-    my($parsed_values) = $importer->parse($record);
-    foreach my $field (keys(%$parsed_values)) {
-	$values->{$field} = $parsed_values->{$field};
-    }
-
-    my($die) = $self->try_to_update_or_create($values, $update);
+    my($values);
+    my($die) = Bivio::Die->catch(
+	    sub {
+		$values = $importer->parse($record, $file);
+	    });
+    $die ||= $self->try_to_update_or_create($values,
+	    $importer->is_update($file));
     if ($die) {
 	$self->write_reject_record($die, $record);
     }
     return;
+}
+
+=for html <a name="internal_get_mgfs_import_format"></a>
+
+=head2 abstract internal_get_mgfs_import_format() : hash_ref
+
+Returns the defintion of the models MGFS import format.
+The import format should be:
+   {
+       file => {
+           <file name> => [<format index>, <update>],
+           ...
+       },
+       format => [
+           {
+               <field> => [<type>, <offset>, <size>],
+               ...
+           },
+           ...
+       ],
+   }
+
+=cut
+
+sub internal_get_mgfs_import_format {
+    die("abstract method");
 }
 
 =for html <a name="try_to_update_or_create"></a>

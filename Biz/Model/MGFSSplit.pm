@@ -17,12 +17,12 @@ Bivio::Biz::Model::MGFSSplit -
 
 =head1 EXTENDS
 
-L<Bivio::Biz::PropertyModel>
+L<Bivio::Biz::Model::MGFSBase>
 
 =cut
 
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::MGFSSplit::ISA = ('Bivio::Biz::PropertyModel');
+use Bivio::Biz::Model::MGFSBase;
+@Bivio::Biz::Model::MGFSSplit::ISA = ('Bivio::Biz::Model::MGFSBase');
 
 =head1 DESCRIPTION
 
@@ -31,16 +31,88 @@ C<Bivio::Biz::Model::MGFSSplit>
 =cut
 
 #=IMPORTS
+use Bivio::Data::MGFS::Amount;
 use Bivio::Data::MGFS::Date;
 use Bivio::Data::MGFS::Id;
-use Bivio::Type::Amount;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_DATES) = 'a9' x 10;
+my($_FACTORS) = 'a7' x 10;
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="from_mgfs"></a>
+
+=head2 from_mgfs(string record, string file)
+
+Overrides MGFSBase.from_mgfs to deal with the one-to-many format for
+MGFS splits.
+
+=cut
+
+sub from_mgfs {
+    my($self, $record, $file) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    my($id) = substr($record, 44, 8);
+    my(@dates) = unpack($_DATES, substr($record, 420, 90));
+    my(@factors) = unpack($_FACTORS, substr($record, 510, 70));
+
+    foreach my $date (@dates) {
+	if ($date eq '+00000000' || $date eq '         ') {
+	    $date = undef;
+	}
+	else {
+	    $date = Bivio::Data::MGFS::Date->from_mgfs($date);
+	    # not interested in anything before 1989
+	    my(@parts) = Bivio::Data::MGFS::Date->to_parts($date);
+	    if ($parts[5] < 1989) {
+		$date = undef;
+	    }
+	}
+    }
+    _add_decimal(\@factors);
+
+    my($values) = {mg_id => $id};
+    for (my($i) = 0; $i < 10; $i++) {
+	last unless defined($dates[$i]);
+	$values->{dttm} = $dates[$i];
+	$values->{factor} = $factors[$i];
+
+	my($die) = $self->try_to_update_or_create($values,
+		$file eq 'chgdb01x');
+	if ($die) {
+	    $self->write_reject_record($die, $record);
+	    last;
+	}
+    }
+    return;
+}
+
+=for html <a name="internal_get_mgfs_import_format"></a>
+
+=head2 internal_get_mgfs_import_format() : hash_ref
+
+Returns the defintion of the models MGFS import format.
+
+=cut
+
+sub internal_get_mgfs_import_format {
+    return {
+	file => {
+	    indb01 => [0, 0],
+	    chgdb01 => [0, 1],
+	},
+	format => [
+	    {
+		# handled internally by this class
+	    },
+	],
+    };
+}
 
 =for html <a name="internal_initialize"></a>
 
@@ -59,13 +131,24 @@ sub internal_initialize {
 		    Bivio::SQL::Constraint::PRIMARY_KEY()],
 	    date_time => ['Bivio::Data::MGFS::Date',
 		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    factor => ['Bivio::Type::Amount',
+	    factor => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NOT_NULL()],
 	},
     };
 }
 
 #=PRIVATE METHODS
+
+# _add_decimal(array_ref values)
+#
+# Iterates each value and inserts a '.' before the third-to-last digit.
+#
+sub _add_decimal {
+    my($values) = @_;
+    foreach my $value (@$values) {
+	$value =~ s/^(.*)(...)$/$1\.$2/;
+    }
+}
 
 =head1 COPYRIGHT
 

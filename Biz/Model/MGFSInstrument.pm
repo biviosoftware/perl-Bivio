@@ -73,15 +73,31 @@ sub create {
 =head2 internal_get_mgfs_import_format() : hash_ref
 
 Returns the defintion of the models MGFS import format.
-EXPECTED FORMAT: QSPVDyy or QCPVSDyy
 
 =cut
 
 sub internal_get_mgfs_import_format {
     return {
-	mg_id => ['ID', 4, 8],
-	name => ['CHAR', 12, 80],
-	symbol => ['CHAR', 92, 5],
+	file => {
+	    qspvsd => [0, 0],
+	    qcpvsd => [0, 1],
+	    indb01 => [1, 1],
+	    chgdb01 => [1, 1],
+	    changes => [2, 1],
+	},
+	format => [
+	    {
+		mg_id => ['ID', 4, 8],
+		name => ['CHAR', 12, 80],
+		symbol => ['CHAR', 92, 5],
+	    },
+	    {
+		# skip sign on ID, always '+'
+		mg_id => ['ID', 44, 8],
+		name => ['CHAR', 129, 30],
+		symbol => ['CHAR', 35, 8],
+	    },
+	],
     };
 }
 

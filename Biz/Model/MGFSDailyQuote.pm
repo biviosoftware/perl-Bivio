@@ -34,7 +34,6 @@ C<Bivio::Biz::Model::MGFSDailyQuote>
 use Bivio::Data::MGFS::Amount;
 use Bivio::Data::MGFS::Date;
 use Bivio::Data::MGFS::Id;
-use Bivio::Type::Date;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -67,7 +66,7 @@ sub new {
 
 =for html <a name="from_mgfs"></a>
 
-=head2 from_mgfs(string record, hash_ref values, boolean update)
+=head2 from_mgfs(string record, string file)
 
 Overrides MGFSBase.from_mgfs to deal with the one-to-many format for
 MGFS quotes.
@@ -75,8 +74,14 @@ MGFS quotes.
 =cut
 
 sub from_mgfs {
-    my($self, $record, $values, $update) = @_;
+    my($self, $record, $file) = @_;
     my($fields) = $self->{$_PACKAGE};
+
+    # process the indb02 and chgdb02 files normally
+    if ($file eq 'indb02' || $file eq 'chgdb02') {
+	$self->SUPER::from_mgfs($record, $file);
+	return;
+    }
 
     # date records store the array in a local var
     my($record_id) = substr($record, 4, 8);
@@ -114,7 +119,7 @@ sub from_mgfs {
 	my($id) = $fields->{mg_id};
 
 	my($values) = {mg_id => $id};
-	for (my($i) = 0; $i <= 265; $i++) {
+	for (my($i) = 0; $i < 265; $i++) {
 	    last unless defined($dates->[$i]);
 	    $values->{dttm} = $dates->[$i];
 	    $values->{high} = $highs[$i];
@@ -122,7 +127,8 @@ sub from_mgfs {
 	    $values->{close} = $closes[$i];
 	    $values->{volume} = $volumes[$i];
 
-	    my($die) = $self->try_to_update_or_create($values, $update);
+	    my($die) = $self->try_to_update_or_create($values,
+		   $file eq 'qcpvsd');
 	    if ($die) {
 		$self->write_reject_record($die, $record);
 		last;
@@ -130,6 +136,39 @@ sub from_mgfs {
 	}
     }
     return;
+}
+
+=for html <a name="internal_get_mgfs_import_format"></a>
+
+=head2 internal_get_mgfs_import_format() : hash_ref
+
+Returns the defintion of the models MGFS import format.
+
+=cut
+
+sub internal_get_mgfs_import_format {
+    return {
+	file => {
+	    qspvsd => [0, 0],
+	    qcpvsd => [0, 1],
+	    indb02 => [1, 0],
+	    chgdb02 => [1, 1],
+	},
+	format => [
+	    {
+		# handled internally by this class
+	    },
+	    {
+		# skips sign from id, always +
+		mg_id => ['ID', 44, 8],
+		dttm => ['CHAR', 82, 9],
+		close => ['DOLLARS', 91, 8],
+		high => ['DOLLARS', 99, 8],
+		low => ['DOLLARS', 107, 8],
+		volume => ['HUNDREDS', 1287, 10],
+	    }
+	],
+    };
 }
 
 =for html <a name="internal_initialize"></a>
@@ -147,7 +186,7 @@ sub internal_initialize {
 	columns => {
 	    mg_id => ['Bivio::Data::MGFS::Id',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            dttm => ['Bivio::Type::Date',
+            dttm => ['Bivio::Data::MGFS::Date',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
 	    high => ['Bivio::Data::MGFS::Amount',
     		Bivio::SQL::Constraint::NOT_NULL()],
