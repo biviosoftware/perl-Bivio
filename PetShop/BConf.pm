@@ -80,10 +80,8 @@ sub dev {
     chomp($pwd);
     # Make sure petshop symlink exists (local_file_prefix is petshop)
     symlink('.', 'files/petshop') unless -l 'files/petshop';
-
     my($host) = `hostname`;
     chomp($host);
-
     return Bivio::IO::Config->merge($overrides || {},
 	    $proto->merge({
 		'Bivio::Agent::Request' => {
