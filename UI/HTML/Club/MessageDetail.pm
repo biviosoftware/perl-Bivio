@@ -123,12 +123,10 @@ sub execute {
     my($mail_message) = $list->get_model('MailMessage');
     my($subject) = $mail_message->get('subject');
     my @mimen = $mail_message->get_num_mime_parts();
-    print(STDERR "\nNUMPARTS in this message: " . int(@mimen));
     if( int(@mimen) != 0){
 	my @urls;
 	my $i = 1;
 	foreach my $ext (@mimen){
-	    print(STDERR "\npushing $ext");
 	    push(@urls,
 		    Bivio::UI::HTML::Widget::Link->new({
 			href  => $req->format_uri(
@@ -139,11 +137,9 @@ sub execute {
 			}));
 	    push(@urls, "<BR>");
 	}
-	print(STDERR "\ncreating join");
 	my($mime_urls) = Bivio::UI::HTML::Widget::Join->new({
 	values => \@urls});
 	$mime_urls->initialize;
-	print(STDERR "\nsetting mime_uri array.\n");
 	$fields->{mime_uri}->put(value => $mime_urls);
     }
 
