@@ -38,10 +38,10 @@ the body of which is stored in the file server.
 #=IMPORTS
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
-use Bivio::Biz::SqlSupport;
 use Bivio::File::Client;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::SQL::Support;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -70,7 +70,7 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 10)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('email_message',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('email_message',
 	keys(%$_PROPERTY_INFO));
 
 Bivio::IO::Config->register({
@@ -407,6 +407,6 @@ print($mail->get_body());
 #$Data::Dumper::Indent = 1;
 #print(Dumper($mail));
 
-Bivio::Biz::SqlConnection->get_connection()->commit();
+Bivio::SQL::Connection->get_connection()->commit();
 
 =cut

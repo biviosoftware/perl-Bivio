@@ -35,9 +35,9 @@ use Bivio::Biz::CreateClubAction;
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::FindParams;
-use Bivio::Biz::SqlSupport;
 use Bivio::Biz::User;
 use Bivio::IO::Trace;
+use Bivio::SQL::Support;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -56,7 +56,7 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 9)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('club',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('club',
 	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
@@ -212,7 +212,7 @@ If an error occurs during processing, then undef is returned.
 sub get_outgoing_emails {
     my($self) = @_;
 
-    my($conn) = Bivio::Biz::SqlConnection->get_connection();
+    my($conn) = Bivio::SQL::Connection->get_connection();
 
     # a 4 table join
     my($statement) = $conn->prepare_cached(
@@ -223,7 +223,7 @@ sub get_outgoing_emails {
 	    .'and club_user.user_=user_.id '
 	    .'and user_.id=user_email.user_');
 
-    Bivio::Biz::SqlConnection->execute($statement, $self, $self->get('id'));
+    Bivio::SQL::Connection->execute($statement, $self, $self->get('id'));
 
     my($result);
 

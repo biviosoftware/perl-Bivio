@@ -46,9 +46,9 @@ use Bivio::Biz::CreateUserAction;
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::FindParams;
-use Bivio::Biz::SqlSupport;
 use Bivio::Biz::UserDemographics;
 use Bivio::IO::Trace;
+use Bivio::SQL::Support;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -64,7 +64,7 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('PASSWORD', 32)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('user_',
 	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
@@ -223,7 +223,7 @@ Returns an array of email addresses for this user.
 
 sub get_email_addresses {
     my($self) = @_;
-    my($conn) = Bivio::Biz::SqlConnection->get_connection();
+    my($conn) = Bivio::SQL::Connection->get_connection();
 
     # a 4 table join
     my($statement) = $conn->prepare_cached(
@@ -232,7 +232,7 @@ sub get_email_addresses {
 	    .'where user_.id=? '
 	    .'and user_.id=user_email.user_');
 
-    Bivio::Biz::SqlConnection->execute($statement, $self, $self->get('id'));
+    Bivio::SQL::Connection->execute($statement, $self, $self->get('id'));
 
     my($result);
 

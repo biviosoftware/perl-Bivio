@@ -37,8 +37,8 @@ C<Bivio::Biz::ClubUser>
 #=IMPORTS
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
-use Bivio::Biz::SqlSupport;
 use Bivio::IO::Trace;
+use Bivio::SQL::Support;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -55,7 +55,7 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('BOOLEAN', 1)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('club_user',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('club_user',
 	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES

@@ -29,9 +29,8 @@ use Bivio::Biz::ClubUser;
 use Bivio::Biz::FindParams;
 use Bivio::Biz::UserDemographics;
 use Bivio::Biz::UserEmail;
-use Bivio::Biz::SqlConnection;
 use Bivio::IO::Trace;
-use Data::Dumper;
+use Bivio::SQL::Connection;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -143,16 +142,16 @@ sub execute {
 
     # check for exceptions
     if ($@) {
-	Bivio::Biz::SqlConnection->rollback();
+	Bivio::SQL::Connection->rollback();
 	die($@);
     }
 
     if ($user->get_status()->is_ok()) {
-	Bivio::Biz::SqlConnection->commit();
+	Bivio::SQL::Connection->commit();
 	return 1;
     }
 
-    Bivio::Biz::SqlConnection->rollback();
+    Bivio::SQL::Connection->rollback();
     return 0;
 }
 

@@ -36,8 +36,8 @@ C<Bivio::Biz::UserList>
 
 #=IMPORTS
 use Bivio::Biz::FieldDescriptor;
-use Bivio::Biz::SqlListSupport;
 use Bivio::IO::Trace;
+use Bivio::SQL::ListSupport;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -48,7 +48,7 @@ my($_COLUMN_INFO) = [
     ['Full Name', Bivio::Biz::FieldDescriptor->lookup('USER_FULL_NAME', 3)]
     ];
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlListSupport->new('user_, club_user',
+my($_SQL_SUPPORT) = Bivio::SQL::ListSupport->new('user_, club_user',
 	['user_.name', 'user_.first_name,user_.middle_name,user_.last_name']);
 
 =head1 FACTORIES

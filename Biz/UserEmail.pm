@@ -38,9 +38,9 @@ C<Bivio::Biz::UserEmail>
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::FindParams;
-use Bivio::Biz::SqlSupport;
 use Bivio::Biz::User;
 use Bivio::IO::Trace;
+use Bivio::SQL::Support;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -54,7 +54,7 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('EMAIL', 255)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_email',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('user_email',
 	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES

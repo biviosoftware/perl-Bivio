@@ -27,6 +27,7 @@ C<Bivio::Biz::CreateClubAction> creates a club and its administrator.
 use Bivio::Biz::ClubUser;
 use Bivio::Biz::Mail::Message;
 use Bivio::IO::Trace;
+use Bivio::SQL::Connection;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -102,16 +103,16 @@ sub execute {
 
     # check for exceptions
     if ($@) {
-	Bivio::Biz::SqlConnection->rollback();
+	Bivio::SQL::Connection->rollback();
 	die($@);
     }
 
     if ($club->get_status()->is_ok()) {
-	Bivio::Biz::SqlConnection->commit();
+	Bivio::SQL::Connection->commit();
 	return 1;
     }
 
-    Bivio::Biz::SqlConnection->rollback();
+    Bivio::SQL::Connection->rollback();
     die(join("\n", map {$_->get_message} @{$club->get_status->get_errors}));
 }
 

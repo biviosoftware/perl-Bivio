@@ -35,8 +35,8 @@ C<Bivio::Biz::Mail::MessageList>
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::FindParams;
 use Bivio::Biz::Mail::Message;
-use Bivio::Biz::SqlListSupport;
 use Bivio::IO::Trace;
+use Bivio::SQL::ListSupport;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -46,7 +46,7 @@ my($_COLUMN_INFO) = [
 	['Date', Bivio::Biz::FieldDescriptor->lookup('DATE')]
        ];
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlListSupport->new('email_message',
+my($_SQL_SUPPORT) = Bivio::SQL::ListSupport->new('email_message',
 	['id,subject', 'from_name,from_email,subject', 'dttm']);
 
 =head1 FACTORIES
