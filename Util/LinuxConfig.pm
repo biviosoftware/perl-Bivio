@@ -389,7 +389,7 @@ sub sshd_param {
     my($self, @args) = @_;
     return _insert_text($self, '/etc/ssh/sshd_config', map {
 	my($param, $value) = @$_;
-	["(?<=\n)\\s*#?\\s*$param\[^\n+]", "$param $value"],
+	["(?<=\n)\\s*#?\\s*$param\[^\n]+", "$param $value"],
     } @{$self->group_args(2, \@args)});
 }
 
