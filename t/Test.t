@@ -8,7 +8,7 @@ BEGIN { $| = 1; print "1..2\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Test;
-use Bivio::t::Testee;
+use Bivio::t::Test::Testee;
 $loaded = 1;
 print "ok 1\n";
 
@@ -16,10 +16,10 @@ my($_T) = 2;
 t(
     {
     }, [
-	'Bivio::t::Testee' => [
+	'Bivio::t::Test::Testee' => [
 	    ok => undef,
 	],
-	Bivio::t::Testee->new('1') => [
+	Bivio::t::Test::Testee->new('1') => [
 	    ok => 1,
 	    # Deviance; 3
 	    ok => 2,
@@ -35,13 +35,14 @@ t(
 		[3] => [2],
 		[2] => [2],
 		[1, 2, 3] => undef,
+		# Deviance: 12
 		[1, 2, 3] => [1],
 	    ],
 	],
-	'Bivio::t::Testee' => [
+	'Bivio::t::Test::Testee' => [
 	    die => [
 		[] => Bivio::DieCode->DIE,
-		# Deviance: 12
+		# Deviance: 14
 		[] => [],
 	    ],
 	    die => [
@@ -49,24 +50,40 @@ t(
 		    => Bivio::DieCode->DB_CONSTRAINT,
 	    ],
 	],
-	Bivio::t::Testee->new('1') => [
+	Bivio::t::Test::Testee->new('1') => [
 	    ok => [
+		# Deviance: 16
 		[1] => Bivio::DieCode->DIE,
 	    ],
 	],
-	# 17
-	Bivio::t::Testee->new('3') => [
+	Bivio::t::Test::Testee->new('3') => [
 	    ok => [
+		# Conformance: 17
 		[3] => sub {
-		    my($o, $m, $p, $e, $a) = @_;
-		    return $a->[0] == 3;
+		    my($case, $return) = @_;
+		    return $return->[0] == 3;
 		},
-		sub {[3, 4, 5]} => [3, 4, 5],
+		sub {[3, 4, 5]} => sub {[3, 4, 5]},
+		# Deviance: 19
+		[1] => sub {Bivio::DieCode->DIE},
+		sub {
+		    my($case) = @_;
+		    $case->put(expect => [999, 999]);
+		    return [@{$case->get('expect')}];
+		} => Bivio::DieCode->DIE,
+	    ],
+	    die => [
+		# Conformance: 21
+		sub {
+		    my($case) = @_;
+		    $case->put(expect => Bivio::DieCode->DIE);
+		    return [];
+		} => [],
 	    ],
 	],
     ],
-    18,
-    [3, 5, 8, 9, 12, 14, 16],
+    21,
+    [3, 5, 8, 9, 12, 14, 16, 19],
 );
 
 
