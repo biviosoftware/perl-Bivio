@@ -34,7 +34,6 @@ C<Bivio::Biz::Model::TransactionDeleteForm> deletes a transaction and entries
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_ENTRY_KEY) = 'ek';
 
 =head1 METHODS
 
