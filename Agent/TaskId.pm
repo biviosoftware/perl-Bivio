@@ -2845,31 +2845,8 @@ my(@_CFG) = (
         want_query=0
         help=creating-accounts
      )],
-    [qw(
-        CLUB_ACCOUNTING_SYNC_IDENTIFY
-        245
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/sync/identify
-        Bivio::Biz::Model::ImportedTransactionList->execute_load_all_unassigned
-        Bivio::Biz::Model::ImportedTransactionTypeForm
-        Bivio::UI::HTML::Club::AccountingImportIdentify
-        next=CLUB_ACCOUNTING_SYNC_IDENTIFY
-    )],
-    [qw(
-        CLUB_ACCOUNTING_SYNC_IDENTIFY_DETAIL
-        246
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/sync/identify-detail
-        Bivio::Biz::Model::ImportedTransactionList->execute_load_all_unassigned
-        Bivio::Biz::Model::AllMemberList->execute_load_all_active
-        Bivio::Biz::Model::RealmAccountList->execute_load_all_active
-        Bivio::Biz::Model::ExpenseCategoryList->execute_load_all
-        Bivio::Biz::Model::ImportedTransactionForm
-        Bivio::UI::HTML::Club::AccountingImportIdentify
-        next=CLUB_ACCOUNTING_SYNC_IDENTIFY
-    )],
+    #245
+    #246
     [qw(
         CLUB_ACCOUNTING_TAXES_FOREIGN_INCOME
         247
@@ -2916,15 +2893,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::UI::HTML::Club::New
     )],
-    [qw(
-        CLUB_ACCOUNTING_SYNC_REVIEW
-        251
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/sync/review
-        Bivio::Biz::Model::ImportedTransactionList->execute_load_review_page
-        Bivio::UI::HTML::Club::AccountingImportReview
-    )],
+    #251
     [qw(
         PASSWORD_FORGOTTEN
         252
