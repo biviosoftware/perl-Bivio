@@ -59,6 +59,7 @@ usage: b-test [options] command [args...]
 commands:
     acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
     unit tests/dirs... -- runs the tests (*.t) and print cummulative results
+    task name query path_info -- executes task in context supplied returns output
 EOF
 }
 
@@ -107,6 +108,30 @@ EOF
             $ok++ if $line eq "1 ok";
 	}
 	return $ok;
+    });
+}
+
+=for html <a name="task"></a>
+
+=head2 task(any task, any query, any path_info) : string_ref
+
+Executes the task, and returns the result.
+
+=cut
+
+sub task {
+    my($self, $task, $query, $path_info) = @_;
+    Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
+	->get_instance;
+    # Forces type check, and probably good thing anyway.
+    $query = ref($query) ? {%$query}
+	: $query ? Bivio::IO::ClassLoader->simple_require(
+	    'Bivio::Agent::HTTP::Query')->parse($query)
+	: undef;
+    # Finishes realm, user, db init, and then executes task
+    return $self->get_request->execute_task($task, {
+	query => $query,
+	path_info => $path_info,
     });
 }
 
