@@ -26,7 +26,7 @@ output type will be 'text/html'.
 =cut
 
 #=IMPORTS
-use Apache::Constants ();
+use Apache::Constants;
 use Bivio::Die;
 use Bivio::IO::Alert;
 use Bivio::DieCode;
