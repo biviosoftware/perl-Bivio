@@ -59,37 +59,33 @@ my(%_ID_TO_TASK) = ();
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Agent::TaskId id, string action_class, string view) : Bivio::Agent::Task
+=head2 static new(Bivio::Agent::TaskId id, any item1, ...) : Bivio::Agent::Task
 
 Creates a new task for I<id>.  A task must not already be
 bound to the I<id>.   The rest of the arguments are
-objects.
+items to be executed (in order).
 
 =cut
 
 sub new {
-    my($proto, $id, $action_class, $view) = @_;
+    my($proto, $id, @items) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
 #MODIFIES_SQL
 #MODIFIES_FILES
 #MODIFIES_MAIL_QUEUE
     die("id invalid")
 	    unless $id->isa('Bivio::Agent::TaskId');
-    $action_class || ref($view)
-	    || die($id->as_string, ': neither action or view is defined');
-    die($id->as_string, ': action is not a Bivio::Biz::Action')
-	    unless !defined($action_class)
-		    || $action_class->isa('Bivio::Biz::Action');
-    die($id->as_string, ': view is not a Bivio::UI::View')
-	    unless !defined($view) || $view->isa('Bivio::UI::View');
+    my($i);
+    foreach $i (@items) {
+	Carp::croak($i, ": can't be executed") unless $i->can('execute');
+    }
     $_ID_TO_TASK{$id} && die($id->as_string, ': id already defined');
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
     # the error anyway...
     $self->{$_PACKAGE} = {
 	'id' => $id,
-	'action_class' => $action_class,
-	'view' => $view,
+	'items' => \@items,
     };
     return $_ID_TO_TASK{$id} = $self;
 }
@@ -121,18 +117,21 @@ sub execute {
 		{auth_user => $auth_user, entity => $auth_realm,
 		    auth_role => $auth_role, operation => $fields->{id}});
     }
-    $fields->{action_class} && $fields->{action_class}->execute($req);
-    $fields->{view} && $fields->{view}->execute($req);
-    if ($fields->{action_class}) {
-	# Always commit before sending queued messages.  The database
-	# is more important than email.  If we get an error
-	# while rendering view, don't commit since the only side effect
-	# is that there might be some external state outside of SQL DB
-	# which needs to be garbage-collected.
-	Bivio::SQL::Connection->commit();
-	Bivio::Mail::Common->send_queued_messages;
-#TODO: Garbage collect state that doesn't agree with SQL DB
+    my($i);
+    foreach $i (@{$fields->{items}}) {
+	$i->execute($req);
     }
+    # Always commit before sending queued messages.  The database
+    # is more important than email.  If we get an error
+    # while rendering view, don't commit since the only side effect
+    # is that there might be some external state outside of SQL DB
+    # which needs to be garbage-collected.
+    #
+    # These modules are intelligent and won't do anything if there
+    # were no modifications.
+    Bivio::SQL::Connection->commit;
+    Bivio::Mail::Common->send_queued_messages;
+#TODO: Garbage collect state that doesn't agree with SQL DB
     # Note: rollback is in handle_die
     $req->get('reply')->flush;
     return;
@@ -180,13 +179,10 @@ and discard the mail queue.
 
 sub handle_die {
     my($proto, $die_msg) = @_;
-#TODO: Need to undo mkdir in MailMessag.  Probably push on stack of
-#      commit handlers...
-    # Only rollback if there was an action
-    if (ref($proto) eq __PACKAGE__ && $proto->{$_PACKAGE}->{action_class}) {
-	Bivio::SQL::Connection->rollback;
-	Bivio::Mail::Common->discard_queued_messages;
-    }
+#TODO: Need to undo mkdir or writes in MailMessage.  Probably push on stack of
+#      commit handlers...??
+    Bivio::SQL::Connection->rollback;
+    Bivio::Mail::Common->discard_queued_messages;
     return;
 }
 

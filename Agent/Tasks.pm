@@ -31,8 +31,7 @@ enumeration.  Configuration resides in TaskId to avoid duplication.
 #=IMPORTS
 use Bivio::Agent::Task;
 use Bivio::Agent::TaskId;
-use Bivio::Agent::Views;
-use Bivio::Util;
+use Bivio::Collection::SingletonMap;
 
 #=VARIABLES
 
@@ -52,16 +51,13 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 sub initialize {
     my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
     map {
-	my($id_name, $action_class, $view_class) = @{$_}[0,5,6];
-	if ($action_class) {
-	    $action_class = 'Bivio::Biz::Action::' . $action_class;
-	    Bivio::Util::my_require($action_class);
-	}
+	my(@items) = @$_;
+	my($id_name) = shift(@items);
+	splice(@items, 0, 4);
 	Bivio::Agent::Task->new(
 		Bivio::Agent::TaskId->$id_name(),
-		$action_class,
-		$view_class
-		   && Bivio::Agent::Views->get('Bivio::UI::' . $view_class));
+		map {Bivio::Collection::SingletonMap->get($_)} @items,
+	       );
     } @$cfg;
     return;
 }

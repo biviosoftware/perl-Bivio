@@ -66,15 +66,13 @@ my(@_CFG) = (
     # Always start enums at 1, so 0 can be reserved for UNKNOWN.
     # DO NOT CHANGE the order of this list, the values may be
     # stored in the database.
-    # undefs are fixed up with magic map below.
     [qw(
         CLUB_MESSAGE_DETAIL
         1
         CLUB
         MEMBER
         _/messages/detail
-	undef
-	MessageBoard::DetailView
+	Bivio::UI::MessageBoard::DetailView
     )],
     [qw(
         CLUB_MESSAGE_LIST
@@ -82,8 +80,7 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _:_/messages
-	undef
-	MessageBoard::ListView
+	Bivio::UI::MessageBoard::ListView
     )],
     [qw(
 	CLUB_MEMBER_ADD
@@ -91,8 +88,8 @@ my(@_CFG) = (
         CLUB
         ADMINISTRATOR
         _/members/added
-	AddClubUser
-	Admin::UserListView
+	Bivio::Biz::Action::AddClubUser
+	Bivio::UI::Admin::UserListView
     )],
     [qw(
 	CLUB_MEMBER_ADD_EDIT
@@ -100,8 +97,7 @@ my(@_CFG) = (
         CLUB
         ADMINISTRATOR
         _/members/new
-	undef
-	Admin::UserView
+	Bivio::UI::Admin::UserView
     )],
     [qw(
 	CLUB_MEMBER_LIST
@@ -109,8 +105,7 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/members
-	undef
-	Admin::UserListView
+	Bivio::UI::Admin::UserListView
     )],
     [qw(
 	SETUP_USER_CREATE
@@ -118,8 +113,8 @@ my(@_CFG) = (
 	PUBLIC
 	ANONYMOUS
 	user/created
-	CreateUser
-	Setup::Login
+	Bivio::Biz::Action::CreateUser
+	Bivio::UI::Setup::Login
     )],
     [qw(
 	SETUP_USER_EDIT
@@ -127,8 +122,7 @@ my(@_CFG) = (
 	PUBLIC
 	ANONYMOUS
 	user/new
-	undef
-	Setup::Admin
+	Bivio::UI::Setup::Admin
     )],
     [qw(
 	SETUP_CLUB_CREATE
@@ -136,8 +130,8 @@ my(@_CFG) = (
         ANY_USER
         USER
         club/created
-	CreateClub
-	Setup::Finish
+	Bivio::Biz::Action::CreateClub
+	Bivio::UI::Setup::Finish
     )],
     [qw(
 	SETUP_INTRO
@@ -145,8 +139,7 @@ my(@_CFG) = (
 	PUBLIC
 	ANONYMOUS
 	club/setup
-	undef
-	Setup::Intro
+	Bivio::UI::Setup::Intro
     )],
     [qw(
 	CLUB_MAIL_FORWARD
@@ -154,8 +147,7 @@ my(@_CFG) = (
         CLUB
         ANONYMOUS
         :
-	ForwardClubMail
-	undef
+	Bivio::Biz::Action::ForwardClubMail
     )],
     [qw(
 	USER_MAIL_FORWARD
@@ -163,8 +155,7 @@ my(@_CFG) = (
         USER
         ANONYMOUS
         :
-	ForwardUserMail
-	undef
+	Bivio::Biz::Action::ForwardUserMail
     )],
     [qw(
 	SETUP_CLUB_EDIT
@@ -172,8 +163,7 @@ my(@_CFG) = (
         ANY_USER
         USER
         club/new
-	undef
-	Setup::Club
+	Bivio::UI::Setup::Club
     )],
     [qw(
 	TEST_VIEW
@@ -181,8 +171,7 @@ my(@_CFG) = (
         PUBLIC
         ANONYMOUS
         test
-	undef
-	HTML::View::Test
+	Bivio::UI::HTML::View::Test
     )],
     [qw(
 	TEST_FORM
@@ -190,8 +179,7 @@ my(@_CFG) = (
         PUBLIC
         ANONYMOUS
         test/form
-	undef
-	HTML::View::TestForm
+	Bivio::UI::HTML::View::TestForm
     )],
     [qw(
 	CLUB_TEST_VIEW
@@ -199,12 +187,9 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/test
-	undef
-	HTML::View::ClubTest
+	Bivio::UI::HTML::View::ClubTest
     )],
 );
-# Fix up undefs to be real undefs
-map {map {$_ eq 'undef' && ($_ = undef)} @$_} @_CFG;
 
 __PACKAGE__->compile(
     map {($_->[0], [$_->[1]])} @_CFG
