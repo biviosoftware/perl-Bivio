@@ -1422,9 +1422,19 @@ sub _unauth_load {
 	    if ref($query) eq 'HASH';
 
     # Add in count if not there
-    $query->put(count => $self->can('PAGE_SIZE') ? $self->PAGE_SIZE()
-	    : $self->get_request->get_user_pref('PAGE_SIZE'))
-	    unless $query->has_keys('count');
+    unless ($query->has_keys('count')) {
+	my($count);
+	if ($self->can('PAGE_SIZE')) {
+	    $count = $self->PAGE_SIZE();
+	}
+	# only check preferences if that model is present
+	elsif (Bivio::IO::ClassLoader->is_class_loaded(
+		'Bivio::Biz::Model::Preferences')) {
+	    $count = Bivio::Biz::Model::Preferences->get_user_pref(
+		    $self->get_request, 'PAGE_SIZE');
+	}
+	$query->put(count => $count);
+    }
 
     # Add specializations to the where and params.
     my($params) = [];
