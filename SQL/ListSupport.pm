@@ -290,8 +290,12 @@ sub _init_column_classes {
 	$where .= length($where) ? ' and ' : ' where ';
 	foreach my $e (@{$decl->{where}}) {
 	    if (defined($attrs->{column_aliases}->{$e})) {
-		my($col) = $attrs->{column_aliases}->{$e};
-		$where .= ' ' . $col->{sql_name};
+		$where .= ' ' . $attrs->{column_aliases}->{$e}->{sql_name};
+	    }
+	    elsif (defined($attrs->{models}->{$e})) {
+#TODO: This doesn't work for qualified columns, but it works for
+#      what I need right now.
+		$where .= ' ' . $attrs->{models}->{$e}->{sql_name};
 	    }
 	    else {
 		$where .= ' ' . $e;
@@ -362,17 +366,18 @@ sub _init_column_lists {
     return unless defined($where);
 
     # Order select columns alphabetically, ignoring primary_key, primary_id
-    # and auth_id
-    my(%ignore) = map {
-	($_->{name}, 1),
-    } (@{$attrs->{primary_key}},
+    # and auth_id and any other columns with in_select turned off.
+    foreach my $col (@{$attrs->{primary_key}},
 	    $attrs->{auth_id} ? ($attrs->{auth_id}) : (),
 	    $attrs->{parent_id} ? ($attrs->{parent_id}) : (),
-	    @{$attrs->{local_columns}});
+	    @{$attrs->{local_columns}}) {
+	$col->{in_select} = 0;
+    }
+
     $attrs->{select_columns} = [
 	# Everything but primary_keys, parent_id, auth_id are in column_names
-	sort {$a->{name} cmp $b->{name}} (grep(!defined($ignore{$_->{name}}),
-		values(%{$attrs->{columns}}))),
+	sort {$a->{name} cmp $b->{name}}
+	(grep($_->{in_select}, values(%{$attrs->{columns}})))
     ];
     # Put primary key at front
     unshift(@{$attrs->{select_columns}}, @{$attrs->{primary_key}});

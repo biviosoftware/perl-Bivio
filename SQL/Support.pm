@@ -78,6 +78,10 @@ These attributes apply to fields (INCOMPLETE!)
 
 Used by ListFormModel to indicate a column is in the list.
 
+=item in_select : boolean
+
+Used by ListModel to indicate a column is in the select.
+
 =item sort_order : boolean
 
 Default order by option.
@@ -254,6 +258,7 @@ sub init_column {
 	    model => $model,
 	    sql_name => $model->{sql_name}.'.'.$column,
 	    in_list => 0,
+	    in_select => 1,
 	};
 	$columns->{$qual_col} = $col unless $is_alias;
     }
@@ -420,6 +425,7 @@ sub _init_column_from_hash {
     $col->{constraint} = Bivio::SQL::Constraint->from_any(
 	    $decl->{constraint}) if $decl->{constraint};
     $col->{in_list} = $decl->{in_list} ? 1 : 0;
+    $col->{in_select} = $decl->{in_select} ? 1 : 0;
     push(@{$attrs->{$class}}, $col);
     return $col;
 }
