@@ -166,8 +166,10 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         %/accounting/members
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Model::InactiveForm
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberList
+        next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
     # NOTE: This must not be CLUB_ACCOUNTING_REPORT_*, because
     # AccountingReportForm knows the list of accounting reports.
