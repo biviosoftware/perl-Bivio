@@ -268,7 +268,40 @@ ALTER TABLE realm_instrument_entry_t
 	print(STDERR "\tcomputing acquisition dates\n");
 	Bivio::Data::EW::DateCalculator->generate_acquisition_dates($realm);
     }
+    _upgrade_prefs();
     return;
+}
+
+# _upgrade_prefs()
+#
+# Create preferences
+#
+sub _upgrade_prefs {
+    # Fix up missing constraints
+    do('
+CREATE TABLE preferences_t (
+  realm_id NUMBER(18),
+  perl BLOB
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_data
+  lob (perl) store as
+  (tablespace realm_lob storage
+  (initial 10m next 10m pctincrease 0)
+  chunk 1k pctversion 10 cache logging)
+/
+ALTER TABLE preferences_t add primary key(realm_id)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE preferences_t
+  add foreign key (realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE preferences_t modify perl not null
+/
+');
+     return;
 }
 
 # _usage(array message)
