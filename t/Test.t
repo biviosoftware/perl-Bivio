@@ -49,9 +49,14 @@ t(
 		    => Bivio::DieCode->DB_CONSTRAINT,
 	    ],
 	],
+	Bivio::t::Testee->new('1') => [
+	    ok => [
+		[1] => Bivio::DieCode->DIE,
+	    ],
+	],
     ],
-    15,
-    [3, 5, 8, 9, 12, 14],
+    16,
+    [3, 5, 8, 9, 12, 14, 16],
 );
 
 

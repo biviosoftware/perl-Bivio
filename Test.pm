@@ -555,7 +555,7 @@ sub _eval {
 	if ($die) {
 	    $err = _eval_result($test, $die->get('code'));
 	}
-	elsif (ref($test->{expect}) eq 'ARRAY') {
+	elsif (defined($test->{expect})) {
 	    $err = _eval_result($test, $actual);
 	}
 	# else ignore result
@@ -669,38 +669,9 @@ sub _eval_result {
 #
 sub _summarize {
     my($value) = @_;
-    return $value->as_string if UNIVERSAL::isa($value, 'Bivio::DieCode');
-    return _summarize_scalar($value) unless ref($value);
-    return ref($value) unless ref($value) eq 'ARRAY';
-    return '[]' unless @$value;
-    my($res) = '[';
-    my($i) = 0;
-    foreach my $v (@$value) {
-	if (++$i > 3) {
-	    # Extra dot gets chopped below
-	    $res .= '....';
-	    last;
-	}
-	$res .= ref($v)
-	    ? UNIVERSAL::can($v, 'as_string')
-	        ? _summarize_scalar($v->as_string)
-	        : ref($v) eq 'SCALAR'
-		    ? '\\{'._summarize_scalar($$v).'}' : ref($v)
-	    : _summarize_scalar($v);
-	$res .= ',';
-    }
-    chop($res);
-    return $res.']';
-}
-
-# _summarize_scalar(string v) : string
-#
-# Trims the scalar if too long.  Outputs undef, if undefined.
-#
-sub _summarize_scalar {
-    my($v) = @_;
-    return 'undef' unless defined($v);
-    return length($v) > 30 ? substr($v, 0, 30).'...' : $v;
+    my($res) = Bivio::IO::Alert->format_args($value);
+    chomp($res);
+    return $res;
 }
 
 # _test_sig(hash_ref test) : string
