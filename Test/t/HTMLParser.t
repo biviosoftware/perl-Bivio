@@ -20,6 +20,10 @@ Bivio::Test->unit([
 		'Save Password', 'type'] => ['checkbox'],
 	],
     ], [
+	'petshop-account-created' => [
+	    ['Links', 'MyAccount', 'href'] => ['/test_http_28027/account'],
+	],
+    ], [
 	petshop => [
 	    ['Forms', 'search', 'submit', 'search', 'type'] => ['submit'],
 	    ['Forms', 'search', 'visible', '_anon', 'type'] => ['text'],
