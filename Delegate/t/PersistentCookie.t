@@ -9,7 +9,7 @@ Bivio::IO::Config->introduce_values({
 	# Can't test with a domain (FakeRequest is too simple),
 	# but not a big problem.
 	domain => undef,
-	tag => 'TT',
+	tag => 'Tt',
     },
 });
 my($_req) = Bivio::Test::Request->get_instance->setup_http(

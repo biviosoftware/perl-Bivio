@@ -164,7 +164,7 @@ cookies are not returned with a domain (normal for testing).
 
 =item tag : string [A]
 
-Name of the tag.
+Name of the tag.  Will be upcased.
 
 =back
 
@@ -174,7 +174,7 @@ sub handle_config {
     my(undef, $cfg) = @_;
     Bivio::Die->die($cfg->{domain}, ': domain must begin with dot (.)')
         if defined($cfg->{domain}) && $cfg->{domain} !~ /^\./;
-    $_CFG = $cfg;
+    $_CFG = {%{$cfg}, tag => uc($cfg->{tag})};
     return;
 }
 
