@@ -34,25 +34,6 @@ C<Bivio::SQL::Connection::Oracle>
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="MAX_BLOB"></a>
-
-=head2 MAX_BLOB : int
-
-Maximum length of a blob.  You cannot retrieve blobs larger than this.
-You can only have one blob per record.
-
-Returns 0x400_000
-
-=cut
-
-sub MAX_BLOB {
-    return 0x400_000;
-}
-
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
@@ -115,7 +96,7 @@ my($_ERR_RETRY_SLEEP) = {
 };
 
 # Allow for a bit larger space than maximum blob
-my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
+my($_MAX_BLOB) = int(__PACKAGE__->MAX_BLOB() * 1.1);
 
 =head1 METHODS
 
@@ -148,6 +129,19 @@ sub internal_dbi_connect {
     $dbh->{LongReadLen} = $_MAX_BLOB;
     $dbh->{LongTruncOk} = 0;
     return $dbh;
+}
+
+=for html <a name="internal_get_blob_type"></a>
+
+=head2 internal_get_blob_type() : hash_ref
+
+Returns the bind_param() value for a BLOB.
+
+=cut
+
+sub internal_get_blob_type {
+    # DBD::Oracle::ORA_BLOB is 113.  Saves importing DBD::Oracle explicitly.
+    return {ora_type => 113};
 }
 
 =for html <a name="internal_get_error_code"></a>
@@ -203,40 +197,6 @@ retury.
 sub internal_get_retry_sleep {
     my($self, $error, $message) = @_;
     return $_ERR_RETRY_SLEEP->{$error};
-}
-
-=for html <a name="internal_execute_blob"></a>
-
-=head2 internal_prepare_blob(boolean is_select, array_ref params, scalar_ref statement) : array_ref
-
-Prepares a query or update of a blob field..
-Returns the altered statement params.
-
-=cut
-
-sub internal_prepare_blob {
-    my($self, $is_select, $params, $statement) = @_;
-
-    if ($is_select) {
-	# Returns a value.  For older DBD::Oracle implementations, we
-	# need to set the value on every $statement.  Newer imps,
-	# set it once per connection.
-	$$statement->{LongReadLen} = $_MAX_BLOB;
-	$$statement->{LongTruncOk} = 0;
-	return $params;
-    }
-
-    # Passing a value, possibly
-    my($i) = 1;
-    foreach my $p (@$params) {
-	$$statement->bind_param($i++, $p), next unless ref($p);
-	# I wonder if it stores a reference or a copy?
-	# DBD::Oracle::ORA_BLOB is 113.  Saves importing DBD::Oracle
-	# explicitly.
-	$$statement->bind_param($i++,  $$p, {ora_type => 113});
-    }
-    # Parameters are bound, so don't pass them on
-    return undef;
 }
 
 =for html <a name="next_primary_id"></a>
