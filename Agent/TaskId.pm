@@ -105,6 +105,7 @@ my(@_CFG) = (
         GENERAL
         LOGIN
         pub/login
+	Bivio::Biz::Action::Logout
 	Bivio::Biz::Model::LoginForm
 	Bivio::UI::HTML::General::Login
         next=MY_CLUB_REDIRECT
