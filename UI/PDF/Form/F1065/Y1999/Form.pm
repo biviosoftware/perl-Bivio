@@ -34,7 +34,6 @@ C<Bivio::UI::PDF::Form::F1065::Y1999::Form>
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::UI::PDF::Form::F1065::Y1999::Formf1065;
-use Bivio::UI::PDF::Form::F1065::Y1999::Formf1065Draft;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -76,16 +75,7 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
     $req->get('Bivio::Biz::Model::F1065Form')->set_cursor_or_die(0);
-    my($draft) = $req->get_widget_value('Bivio::Biz::Model::F1065Form',
-	    'draft');
-    my($real_form);
-    if ($draft) {
-	$real_form = Bivio::UI::PDF::Form::F1065::Y1999::Formf1065Draft->new();
-    }
-    else {
-	$real_form = Bivio::UI::PDF::Form::F1065::Y1999::Formf1065->new();
-    }
-    return $real_form->execute($req);
+    return Bivio::UI::PDF::Form::F1065::Y1999::Formf1065->new()->execute($req);
 }
 
 #=PRIVATE METHODS
