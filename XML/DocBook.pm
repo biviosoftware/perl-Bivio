@@ -137,6 +137,7 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
     programlisting => ['blockquote', 'pre'],
     'qandaset/para' => ['p', 'i'],
     quote => '"${_}"',
+    'quote/quote' => q{'${_}'},
     'sect1/title' => ['h2'],
     'sect2/title' => ['h3'],
     sidebar => '<table width="95%" border=0 cellpadding=5 bgcolor="#CCCCCC">'
