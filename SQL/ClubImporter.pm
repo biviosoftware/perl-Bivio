@@ -753,7 +753,7 @@ sub _create_transaction {
 
     $transaction->create({
 	realm_id => $club_id,
-	source_class => $class->as_int(),
+	source_class => $class,
 	date_time => $date_time,
 	user_id => $user_id
     });
@@ -920,6 +920,12 @@ sub _is_related_spinoff {
 sub _create_entry {
     my($transaction, $trans, $attributes) = @_;
 
+    # update the transaction remark if the entry is from the source class
+    if (($transaction->get('source_class') eq $trans->{class})
+	    && $trans->{remark} ne '') {
+	$transaction->update({remark => $trans->{remark}});
+    }
+
     # adjust the sign of the entry if needed
     my($sign) = $_TYPE_MAP->{$trans->{transaction_type}}->[4];
     if (defined($sign) && $sign eq '-') {
@@ -952,14 +958,13 @@ sub _create_entry {
     $entry->create({
 	realm_id => $attributes->{club_id},
 	realm_transaction_id => $transaction->get('realm_transaction_id'),
-	class => $trans->{class}->as_int(),
-	entry_type => $_TYPE_MAP->{
-	    $trans->{transaction_type}}->[0]->as_int(),
-	tax_category => $_TYPE_MAP->{
-	    $trans->{transaction_type}}->[1]->as_int(),
+	class => $trans->{class},
+	entry_type => $_TYPE_MAP->{$trans->{transaction_type}}->[0],
+	tax_category => $_TYPE_MAP->{$trans->{transaction_type}}->[1],
 	tax_basis => $tax_basis,
 	amount => $trans->{amount},
-	remark => $trans->{remark},
+	# no longer used, only kept on transaction
+	# remark => $trans->{remark},
     });
 
     if ($trans->{class} == Bivio::Type::EntryClass->MEMBER) {
@@ -1031,7 +1036,6 @@ sub parse_file {
 
     $_END_OF_INPUT = 0;
     my($file_name) = $self->{$_PACKAGE}->{directory}.'/'.$format->{file_name};
-    print(STDERR "\n\n$file_name\n\n");
     open(IN, '< '.$file_name) or die("can't open file $file_name");
     binmode(IN); # for win32
 
