@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::DateTime;
 use strict;
 $Bivio::Type::DateTime::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::DateTime::VERSION;
 
 =head1 NAME
 
@@ -46,14 +47,14 @@ A C<DateTime> is not a L<Bivio::Type::Number|Bivio::Type::Number>.
 
 =head2 DEFAULT_DATE : string
 
-Returns L<FIRST_YEAR_IN_JULIAN_DAYS|"FIRST_YEAR_IN_JULIAN_DAYS">.
+Returns L<FIRST_DATE_IN_JULIAN_DAYS|"FIRST_DATE_IN_JULIAN_DAYS">.
 Used when there is only a time value.  See
 L<Bivio::Type::Time|Bivio::Type::Time>.
 
 =cut
 
 sub DEFAULT_DATE {
-    return FIRST_YEAR_IN_JULIAN_DAYS();
+    return FIRST_DATE_IN_JULIAN_DAYS();
 }
 
 =for html <a name="DEFAULT_TIME"></a>
@@ -81,6 +82,18 @@ sub DEFAULT_TIME {
     return 79199;
 }
 
+=for html <a name="FIRST_DATE_IN_JULIAN_DAYS"></a>
+
+=head2 FIRST_DATE_IN_JULIAN_DAYS : int
+
+Returns 2378497.
+
+=cut
+
+sub FIRST_DATE_IN_JULIAN_DAYS {
+    return 2378497;
+}
+
 =for html <a name="FIRST_YEAR"></a>
 
 =head2 FIRST_YEAR : int
@@ -91,18 +104,6 @@ Returns 1800.
 
 sub FIRST_YEAR {
     return 1800;
-}
-
-=for html <a name="FIRST_YEAR_IN_JULIAN_DAYS"></a>
-
-=head2 FIRST_YEAR_IN_JULIAN_DAYS : int
-
-Returns 2378497.
-
-=cut
-
-sub FIRST_YEAR_IN_JULIAN_DAYS {
-    return 2378497;
 }
 
 =for html <a name="LAST_YEAR"></a>
@@ -127,6 +128,22 @@ Returns 1/1/2199 in julian.
 
 sub LAST_DATE_IN_JULIAN_DAYS {
     return 2524593;
+}
+
+=for html <a name="RANGE_IN_DAYS"></a>
+
+=head2 RANGE_IN_DAYS : int
+
+Number of days between
+L<FIRST_DATE_IN_JULIAN_DAYS|"FIRST_DATE_IN_JULIAN_DAYS">
+and
+L<LAST_DATE_IN_JULIAN_DAYS|"LAST_DATE_IN_JULIAN_DAYS">
+
+
+=cut
+
+sub RANGE_IN_DAYS {
+    return LAST_DATE_IN_JULIAN_DAYS() - FIRST_DATE_IN_JULIAN_DAYS();
 }
 
 =for html <a name="SECONDS_IN_DAY"></a>
@@ -171,7 +188,7 @@ use Bivio::TypeError;
 $^O !~ /win32/i && CORE::require 'syscall.ph';
 
 #=VARIABLES
-my($_MIN) = FIRST_YEAR_IN_JULIAN_DAYS().' 0';
+my($_MIN) = FIRST_DATE_IN_JULIAN_DAYS().' 0';
 my($_MAX) = LAST_DATE_IN_JULIAN_DAYS().' '.(SECONDS_IN_DAY() - 1);
 # Is this year (- FIRST_YEAR) a leap year?  Returns 0 or 1.
 my(@_IS_LEAP_YEAR);
@@ -181,7 +198,7 @@ my(@_MONTH_DAYS, @_MONTH_BASE);
 # Index is year - FIRST_YEAR.  Returns number of days up to this year.
 my(@_YEAR_BASE);
 my($_TIME_SUFFIX) = ' '.DEFAULT_TIME();
-my($_DATE_PREFIX) = FIRST_YEAR_IN_JULIAN_DAYS().' ';
+my($_DATE_PREFIX) = FIRST_DATE_IN_JULIAN_DAYS().' ';
 my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
 my(@_MONTH) = ('Jan','Feb','Mar','Apr','May','Jun',
@@ -191,6 +208,29 @@ _initialize();
 =head1 METHODS
 
 =cut
+
+=for html <a name="add_days"></a>
+
+=head2 static add_days(string date_time, int days) : string
+
+Returns I<date_time> adjusted by I<days> (may be negative).
+
+Aborts on range error.
+
+=cut
+
+sub add_days {
+    my($proto, $date_time, $days) = @_;
+    my($j, $s) = split(' ', $date_time);
+    if (abs($days) < RANGE_IN_DAYS()) {
+	$j += $days;
+	return $j.' '.$s
+		if FIRST_DATE_IN_JULIAN_DAYS() <= $j
+			&& $j < LAST_DATE_IN_JULIAN_DAYS();
+    }
+    Bivio::IO::Alert->die('add_days range_error: ', $date_time, ' + ', $days);
+    # DOES NOT RETURN
+}
 
 =for html <a name="can_be_negative"></a>
 
@@ -643,7 +683,7 @@ sub to_parts {
     # Make sure within range
     if ($i == 0) {
 	Carp::croak("$value: time less than first year")
-		    if FIRST_YEAR_IN_JULIAN_DAYS > $date;
+		    if FIRST_DATE_IN_JULIAN_DAYS > $date;
     }
     elsif ($i >= $#_YEAR_BASE) {
 	Carp::croak("$value: time greater than last year")
@@ -751,7 +791,7 @@ sub _initialize {
     }
     # 1800 is a leap year and is julian 2378497
     $_IS_LEAP_YEAR[0] = 0;
-    $_YEAR_BASE[0] = Bivio::Type::DateTime::FIRST_YEAR_IN_JULIAN_DAYS();
+    $_YEAR_BASE[0] = Bivio::Type::DateTime::FIRST_DATE_IN_JULIAN_DAYS();
     foreach my $y (Bivio::Type::DateTime::FIRST_YEAR()+1
 	    ..Bivio::Type::DateTime::LAST_YEAR()) {
 	my($yy) = $y - Bivio::Type::DateTime::FIRST_YEAR();
@@ -764,7 +804,7 @@ sub _initialize {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
