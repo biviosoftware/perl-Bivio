@@ -35,11 +35,7 @@ and delete interface to the C<member_entry_t> table.
 
 #=IMPORTS
 use Bivio::Biz::Model::Entry;
-use Bivio::SQL::Constraint;
-use Bivio::Type::Amount;
-use Bivio::Type::Date;
 use Bivio::Type::EntryClass;
-use Bivio::Type::PrimaryId;
 use Bivio::Type::TaxCategory;
 
 #=VARIABLES
@@ -97,16 +93,11 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'member_entry_t',
 	columns => {
-            entry_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            user_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            units => ['Bivio::Type::Amount',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-	    valuation_date => ['Bivio::Type::Date',
-		Bivio::SQL::Constraint::NONE()],
+            entry_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'NOT_NULL'],
+            user_id => ['PrimaryId', 'NOT_NULL'],
+            units => ['Amount', 'NOT_NULL'],
+	    valuation_date => ['Date', 'NONE'],
         },
 	auth_id => 'realm_id',
 #TODO: SECURITY: Not authenticated, but ok to load other models?
