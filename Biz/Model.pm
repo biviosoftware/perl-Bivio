@@ -3,6 +3,7 @@
 package Bivio::Biz::Model;
 use strict;
 $Bivio::Biz::Model::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::VERSION;
 
 =head1 NAME
 
@@ -66,7 +67,9 @@ sub get_instance {
     my($proto, $class) = @_;
     if (defined($class)) {
 	$class = ref($class) if ref($class);
-	$class = 'Bivio::Biz::Model::'.$class unless $class =~ /::/;
+	$class = Bivio::IO::ClassLoader->map_require('Model#'.$class)
+		unless $class =~ /::/;
+
 	# First time, make sure the class is loaded.
 	Bivio::IO::ClassLoader->simple_require($class) unless $_CLASS_INFO{$class};
     }
