@@ -230,7 +230,7 @@ sub _create_payment_widget {
 	    [
 		$self->string("Member: "),
 		$wf->create(
-			'ImportedTransactionForm.MemberEntry.user_id', {
+			'ImportedTransactionForm.RealmUser.user_id', {
 			    choices => ['Bivio::Biz::Model::AllMemberList'],
 			    list_display_field => 'last_first_middle',
 			    list_id_field => 'RealmUser.user_id',
