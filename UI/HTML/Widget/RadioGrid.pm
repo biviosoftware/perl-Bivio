@@ -46,6 +46,10 @@ Which form are we dealing with.
 
 List of choices will be constructed from the Enum's values.
 
+=item show_unknown : boolean [1]
+
+Should the UNKNOWN type be displayed?
+
 =back
 
 =cut
@@ -86,7 +90,7 @@ sub new {
 	    value => $_->[0],
 	    label => $_->[1],
 	}),
-    } @{_load_items_from_enum($choices)};
+    } @{_load_items_from_enum($self, $choices)};
 
     #
     my($width) = $choices->get_width_long_desc;
@@ -135,8 +139,8 @@ sub new {
 #
 #TODO: MERGE WITH Select
 sub _load_items_from_enum {
-    my($enum) = @_;
-    return _load_items_from_enum_list([$enum->get_list]);
+    my($self, $enum) = @_;
+    return _load_items_from_enum_list($self, [$enum->get_list]);
 }
 
 # _load_items_from_enum_list(array_ref list) : array_ref
@@ -145,12 +149,14 @@ sub _load_items_from_enum {
 # and _load_items_from_enum_set.
 #
 sub _load_items_from_enum_list {
-    my($list) = @_;
+    my($self, $list) = @_;
     # Sort
     my(@values) = sort {
 	# Always put "0" (unknown) first.
 	$a->as_int <=> $b->as_int;
     } @$list;
+
+    shift(@values) unless $self->get_or_default('show_unknown', 1);
 
     # id, display pairs
     my(@items);
