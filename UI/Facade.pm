@@ -218,7 +218,11 @@ sub new {
     my($wlfc) = $config->{want_local_file_cache};
     $wlfc = $_WANT_LOCAL_FILE_CACHE unless defined($wlfc);
 
+    # Not in use
     delete($config->{uri});
+    delete($config->{local_file_prefix});
+    delete($config->{want_local_file_cache});
+
     Bivio::Die->die($uri, ': duplicate uri for ', $class, ' and ',
 	    ref($_URI_MAP{$uri}))
 		if $_URI_MAP{$uri};
