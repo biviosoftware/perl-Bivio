@@ -435,6 +435,7 @@ sub _create_rpm_spec {
     my($self, $specin, $output) = @_;
     my($version) = $self->get('version');
 
+    my($cvs) = 0;
     if ($specin =~ /\.spec$/) {
 	$specin = $_START_DIR.'/'.$specin unless $specin =~ m!^/!;
     }
@@ -442,6 +443,7 @@ sub _create_rpm_spec {
         $specin = "$_CVS_RPM_SPEC_DIR/$specin.spec";
         _system("cvs checkout -f -r $version $specin", $output);
 	$specin = Bivio::IO::File->pwd.'/'.$specin unless $specin =~ m!^/!;
+	$cvs = 1;
     }
     my($spec_dir) = $specin;
     $spec_dir =~ s#[^/]+$##;
@@ -466,7 +468,7 @@ EOF
     $buf .= _build_root(_search('buildroot', $base_spec));
     for my $line (@$base_spec) {
         $line =~ s{^\s*_b_release_include\(\s*'(\S+)'\s*\);}
-	    {${Bivio::IO::File->read("$spec_dir$1")}}xe;
+	    {_include($1, $spec_dir, $cvs ? $version : 0, $output)}xe;
 	$buf .= $line unless $line =~ /^(buildroot|release|name): /i;
     }
 
@@ -507,6 +509,18 @@ sub _get_rpm_arch {
     my($rc) = _read_all("rpm --showrc|");
     grep(/^\-\d+: _arch\s+(\S+)/ && (return $1), @$rc);
     return 'i386';
+}
+
+# _include(string to_include, string spec_dir, string version, string_ref output) : string
+#
+# Returns contents of to_include.
+#
+sub _include {
+    my($to_include, $spec_dir, $version, $output) = @_;
+    _system("cd $_TMP_DIR && cvs checkout -f -r $version"
+	. " $_CVS_RPM_SPEC_DIR/$to_include", $output)
+	if $version;
+    return ${Bivio::IO::File->read("$spec_dir$to_include")};
 }
 
 # _link_rpm_base(string rpm_file, string_ref output)
