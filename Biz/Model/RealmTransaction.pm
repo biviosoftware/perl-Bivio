@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::RealmTransaction;
 use strict;
 $Bivio::Biz::Model::RealmTransaction::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::RealmTransaction::VERSION;
 
 =head1 NAME
 
@@ -68,14 +69,15 @@ sub cascade_delete {
     _pre_delete($self);
 
     # delete member, instrument, and account entries
-    foreach my $table ('member_entry_t', 'realm_instrument_entry_t',
-	    'realm_account_entry_t') {
+    # and cash expenses
+    foreach my $table (qw(member_entry_t realm_instrument_entry_t
+	    realm_account_entry_t expense_info_t)) {
 	Bivio::SQL::Connection->execute('
                 DELETE FROM '.$table.'
                 WHERE entry_id IN (
                 SELECT entry_id FROM entry_t
                 WHERE realm_transaction_id=?)',
-	    [$id]);
+		[$id]);
     }
 
     # delete entries
