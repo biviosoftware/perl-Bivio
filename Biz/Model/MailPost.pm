@@ -131,26 +131,31 @@ sub execute_input {
 
     # Dispatch to proper action(s) based on the To: selection
     my($to) = $self->get('to');
-    if (defined($to)) {
-        if ( $to == Bivio::Type::MailTo::USER()) {
-            # Send to author of the original message
-            my($list) = $req->get('Bivio::Biz::Model::MailList');
-            $list->set_cursor_or_not_found(0);
-            my($mail) = $list->get_model('Mail');
-            my($author) = $mail->get('from_email');
-            $header->add('To', $author);
-            $msg->add_recipients($author);
-            $msg->enqueue_send;
-       }
-        else {
-            my($name) = $req->get('auth_realm')->get('owner_name');
-            my($suffix) =  $to->get_long_desc;
-            $name .= '-' . $suffix
-                    if defined($suffix) && length($suffix);
-            $header->add('To', $name);
-            Bivio::Biz::Model::MailReceiveForm->dispatch($req, $to);
-        }
+    return 0 unless defined($to);
+
+    if ($to == Bivio::Type::MailTo::USER()) {
+	# Send to author of the original message
+	my($list) = $req->get('Bivio::Biz::Model::MailList');
+	$list->set_cursor_or_not_found(0);
+	my($mail) = $list->get_model('Mail');
+	my($author) = $mail->get('from_email');
+	$header->add('To', $author);
+	$msg->add_recipients($author);
+	$msg->enqueue_send;
+	return 0;
     }
+
+    # Posting via a selection
+    my($realm) = $req->get('auth_realm');
+    my($name) = $realm->get('owner_name');
+    my($suffix) =  $to->get_long_desc;
+    $name .= '-' . $suffix if $suffix;
+    $header->add('To', $name);
+    if ($realm->get('type') == Bivio::Auth::RealmType::PROXY()) {
+	_dispatch_proxy($req, $to);
+	return 0;
+    }
+    Bivio::Biz::Model::MailReceiveForm->dispatch($req, $to);
     return 0;
 }
 
@@ -286,6 +291,27 @@ sub validate {
 }
 
 #=PRIVATE METHODS
+
+# _dispatch_proxy(Bivio::Agent::Request req, Bivio::Type::MailTo to)
+#
+# Proxies are broken.  We must change the realm, so it gets dispatched to
+# the "fake" realm (ask_candis).  Right now we are operating in the
+# proxy realm (really, ask_candis_publish).
+#
+sub _dispatch_proxy {
+    my($req, $to) = @_;
+
+    my($real_realm) = $req->get('auth_realm');
+    my($fake_realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    # This returns the fake realm owner name (ask_candis) from the
+    # proxy realm (ask_candis_publish) which causes a *real* realm
+    # (ask_candis, aka Ask Candis Inbox) to be loaded.
+    $fake_realm->unauth_load_or_die(name => $real_realm->get('owner_name'));
+    $req->set_realm(Bivio::Auth::Realm->new($fake_realm));
+            Bivio::Biz::Model::MailReceiveForm->dispatch($req, $to);
+    $req->set_realm($real_realm);
+    return;
+}
 
 =head1 COPYRIGHT
 
