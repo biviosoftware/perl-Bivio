@@ -116,6 +116,10 @@ The list of fields and field that uniquely identifies a row.
 
 List of primary key types in the order of I<primary_key_names>.
 
+=item select_value : string
+
+The raw SQL to be substituted into the SQL query for the column.
+
 =item version : int
 
 The version of this particular combination of fields.  It will be
@@ -459,7 +463,7 @@ sub _init_column_lists {
     my($i) = 0;
     my(@select_sql_names) = map {
 	$_->{select_index} = $i++;
-	$_->{type}->from_sql_value($_->{sql_name});
+        $_->{select_value} || $_->{type}->from_sql_value($_->{sql_name});
     } @{$attrs->{select_columns}};
 
     # Create select from all columns and include auth_id and
