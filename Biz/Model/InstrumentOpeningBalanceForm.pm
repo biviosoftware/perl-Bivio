@@ -87,9 +87,17 @@ sub execute_input {
     # load the realm instrument associated with the ticker
     my($ticker) = $properties->{'Instrument.ticker_symbol'};
     my($realm_inst) = Bivio::Biz::Model::RealmInstrument->new($req);
-    unless ($realm_inst->unsafe_find_or_create($ticker)) {
+
+    my($res) = $realm_inst->unsafe_find_or_create($ticker);
+    if ($res == 0) {
 	$self->internal_put_error('Instrument.ticker_symbol',
 		Bivio::TypeError::NOT_FOUND());
+	return;
+    }
+    # duplicate tickers or instrument ids
+    elsif ($res == -1) {
+	$self->internal_put_error('Instrument.ticker_symbol',
+		Bivio::TypeError::TOO_MANY_INSTRUMENTS_OPEN_BALANCE());
 	return;
     }
 
