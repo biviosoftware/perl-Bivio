@@ -677,6 +677,21 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="is_default"></a>
+
+=head2 is_default() : boolean
+
+Returns true if the realm is one of the default realms (general,
+user, club).
+
+=cut
+
+sub is_default {
+    my($self) = @_;
+    # Default realms have ids same as their types as_int.
+    return $self->get('realm_type')->as_int eq $self->get('realm_id') ? 1 : 0;
+}
+
 =for html <a name="is_demo_club"></a>
 
 =head2 is_demo_club() : boolean
