@@ -64,8 +64,8 @@ use Bivio::SQL::ListQuery;
 use Bivio::Type::Amount;
 use Bivio::Type::Date;
 use Bivio::Type::DateTime;
-use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
+use Bivio::Type::FedTaxId;
 use Bivio::Type::Integer;
 use Bivio::Type::Name;
 use Bivio::Type::Number;
@@ -215,61 +215,84 @@ sub create {
 
 =head2 format_email() : string
 
+=head2 static format_email(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
 Returns fully-qualified email address for this realm or '' if the
 realm is an accounting shadow user.
+
+See L<format_name|"format_name"> for params.
 
 =cut
 
 sub format_email {
-    my($self) = @_;
+    my($proto) = shift;
 #TODO: Need to modify Request to handle this case.
-    my($name) = $self->format_name;
-    return $name ? $name.'@'.$self->get_request->get('mail_host')
-	    : '';
+    my($name) = $proto->format_name(@_);
+    return $name ? $name.'@'.$proto->get_request->get('mail_host') : '';
 }
 
 =for html <a name="format_http"></a>
 
 =head2 format_http() : string
 
+=head2 static format_http(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
 Returns the absolute URL (with http) to access (the root of) this realm.
 
 HACK!
 
+See L<format_name|"format_name"> for params.
+
 =cut
 
 sub format_http {
-    my($self) = @_;
+    my($proto) = shift;
 #TODO: This is a total hack.   Need to know the "root" task
-    return 'https://'.$self->get_request->get('http_host')
-	    .'/'.$self->get('name');
+    return 'https://'.$proto->get_request->get('http_host')
+	    .'/'.$proto->format_name(@_);
 }
 
 =for html <a name="format_mailto"></a>
 
 =head2 format_mailto() : string
 
+=head2 static format_mailto(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
 Returns email address with C<mailto:> prefix.
+
+See L<format_name|"format_name"> for params.
 
 =cut
 
 sub format_mailto {
-    my($self) = @_;
-    return 'mailto:'.$self->format_email();
+    my($proto) = shift;
+    return 'mailto:'.$proto->format_email(@_);
 }
 
 =for html <a name="format_name"></a>
 
 =head2 format_name() : string
 
+=head2 static format_name(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
 Returns the name formatted for display. Accounting shadow users
 return ''.
+
+In the second form, I<list_model> is used to get the values, not I<self>.
+List Models can declare a method of the form:
+
+    sub format_name {
+	my($self) = @_;
+	Bivio::Biz::Model::Address->format($self, 'RealmOwner.');
+    }
 
 =cut
 
 sub format_name {
-    my($self) = @_;
-    my($name) = $self->get('name');
+    my($self, $list_model, $model_prefix) = @_;
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
+    my($name) = $m->get($p.'name');
     return ($name =~ /^=/) ? '' : $name;
 }
 
@@ -277,16 +300,20 @@ sub format_name {
 
 =head2 format_uri() : string
 
+=head2 static format_uri(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
 Returns the URI to access (the root of) this realm.
 
 HACK!
 
+See L<format_name|"format_name"> for params.
+
 =cut
 
 sub format_uri {
-    my($self) = @_;
+    my($proto) = shift;
 #TODO: This is a total hack.   Need to know the "root" task
-    return '/'.$self->get('name');
+    return '/'.$proto->format_name(@_);
 }
 
 =for html <a name="get_instruments_info"></a>
@@ -683,18 +710,13 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_owner_t',
 	columns => {
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            name => ['Bivio::Type::RealmName',
-    		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
-            password => ['Bivio::Type::Password',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            realm_type => ['Bivio::Auth::RealmType',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-	    display_name => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-	    creation_date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::NOT_NULL()],
+            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            name => ['RealmName', 'NOT_NULL_UNIQUE'],
+            password => ['Password', 'NOT_NULL'],
+            realm_type => ['Bivio::Auth::RealmType', 'NOT_NULL'],
+	    display_name => ['Line', 'NOT_NULL'],
+	    creation_date_time => ['DateTime', 'NOT_NULL'],
+#	    fed_tax_id => ['FedTaxId', 'NONE'],
         },
 	auth_id => 'realm_id',
 	other => [
