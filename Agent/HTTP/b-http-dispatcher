@@ -212,19 +212,12 @@ __DATA__
 ResourceConfig /dev/null
 AccessConfig /dev/null
 
-#
-# Server
-#
 ServerName <$host>
 Listen <$port>
 User <$user>
 Group <$group>
 ServerAdmin <$user>
-UseCanonicalName on
 
-#
-# Perl
-#
 PerlWarn on
 # Can't be on and use PERLLIB.
 PerlFreshRestart off
@@ -240,9 +233,6 @@ PerlPassEnv DBI_USER
 PerlPassEnv DBI_PASS
 PerlPassEnv ORACLE_SID
 
-#
-# Connections
-#
 Timeout 60
 HostnameLookups off
 KeepAlive off
@@ -250,12 +240,9 @@ MinSpareServers 1
 MaxSpareServers 1
 StartServers 1
 MaxClients 2
-# Bump this number for performance
 MaxRequestsPerChild 1000
+LimitRequestBody 4194304
 
-#
-# Files
-#
 ServerRoot <$pwd>
 DocumentRoot <$pwd>/html
 PidFile httpd.pid
@@ -270,25 +257,22 @@ DefaultType text/html
 LockFile httpd.lock
 
 <Directory />
-AllowOverride None
-Options FollowSymLinks
+    AllowOverride None
+    Options FollowSymLinks
 </Directory>
 
 <Location /modperl-status>
-SetHandler perl-script
-PerlHandler Apache::Status
+    SetHandler perl-script
+    PerlHandler Apache::Status
 </Location>
 
 <LocationMatch "^/[a-zA-Z0-9_]{3,}($|/)">
-AuthName bivio:<$port>
-AuthType Basic
-SetHandler perl-script
-PerlHandler <$handler>
+    AuthName bivio:<$port>
+    AuthType Basic
+    SetHandler perl-script
+    PerlHandler <$handler>
 </LocationMatch>
 
-#
-# Browsers
-#
 BrowserMatch "Mozilla/2" nokeepalive
 BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
 BrowserMatch "RealPlayer 4\.0" force-response-1.0
