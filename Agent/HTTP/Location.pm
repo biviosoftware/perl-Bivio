@@ -74,7 +74,7 @@ my($_DOCUMENT_TASK);
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
 my($_GENERAL);
 my($_DOCUMENT_ROOT) = undef;
-my($_HELP_ROOT) = undef;
+my($_HELP_REL_ROOT) = undef;
 Bivio::IO::Config->register({
     document_root => Bivio::IO::Config->REQUIRED,
 });
@@ -208,6 +208,28 @@ sub format_realmless {
 	    undef);
 }
 
+=for html <a name="get_document_path_info"></a>
+
+=head2 static get_document_path_info(string path) : string
+
+Returns the path_info to be passed to DOCUMENT task for I<path>
+(doesn't need .html).
+
+=cut
+
+sub get_document_path_info {
+    my(undef, $path) = @_;
+    $path =~ s,^(?!/),/,;
+    if (-d $_DOCUMENT_ROOT.$path) {
+	$path =~ s,(?<!/)$/,/,;
+	$path .= 'index.html';
+    }
+    $path .= '.html' unless $path =~ /\.\w+$/;
+    Bivio::Die->die($path, ': document file not found')
+		unless -r $_DOCUMENT_ROOT.$path;
+    return $path;
+}
+
 =for html <a name="get_document_root"></a>
 
 =head2 get_document_root() : string
@@ -230,27 +252,13 @@ Returns the path_info to be passed to HELP task for this topic.
 =cut
 
 sub get_help_path_info {
-    my(undef, $topic) = @_;
+    my($proto, $topic) = @_;
     Bivio::Die->die($topic, ': invalid help topic')
 		unless $topic =~ /^[\w-]+$/;
-#TODO: This presumes a lot.  Too much?
     $topic = '/'.$topic.'.html';
-    Bivio::Die->die($topic, ': help file not found')
-		unless $_HELP_ROOT.$topic;
+    # Assert file exists
+    $proto->get_document_path_info($_HELP_REL_ROOT.'/'.$topic);
     return $topic;
-}
-
-=for html <a name="get_help_root"></a>
-
-=head2 get_help_root() : string
-
-Returns the help system root.
-
-=cut
-
-sub get_help_root {
-    die(__PACKAGE__, 'not initialized') unless $_HELP_ROOT;
-    return $_HELP_ROOT;
 }
 
 =for html <a name="handle_config"></a>
@@ -312,8 +320,9 @@ sub initialize {
     # Configure HELP_ROOT
     my($help) = $_FROM_TASK_ID{Bivio::Agent::TaskId::HELP()};
     die('HELP: task not configured') unless $help;
-    $_HELP_ROOT = $_DOCUMENT_ROOT.$help->{uri};
-    die("HELP_ROOT: $_HELP_ROOT: not a directory") unless -d $_HELP_ROOT;
+    $_HELP_REL_ROOT = '/'.$help->{uri};
+    die("HELP_REL_ROOT: $_HELP_REL_ROOT: not a directory")
+	    unless -d $_DOCUMENT_ROOT.$_HELP_REL_ROOT;
 
     return;
 }
