@@ -63,7 +63,7 @@ sub from_literal {
 
 =for html <a name="get_tail"></a>
 
-=head2 get_tail(string value ) : string
+=head2 static get_tail(string value) : string
 
 Returns the basename, stripping directories and drive names.
 
