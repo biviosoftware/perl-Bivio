@@ -1189,7 +1189,8 @@ sub _form_for_warning {
     my($form) = $self->unsafe_get('form');
     return undef unless $form;
     my($form_model) = $self->unsafe_get('form_model');
-    return '<secure data>' if $form_model->get_info('has_secure_data');
+    return '<secure data>' if $form_model
+	    && $form_model->get_info('has_secure_data');
     return $form;
 }
 
