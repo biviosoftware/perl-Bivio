@@ -58,7 +58,7 @@ A nested widget value is used here to be sure we are retrieving the
 I<auth_user> attribute from the Request and not some other WidgetValueSource.
 WidgetValueSources implement L<get_request|"get_request"> in various
 ways.  You should probably use this second form, because the simple
-case (previous example) may net be evaluated in the right context.
+case (previous example) may not be evaluated in the right context.
 
     ['RealmOwner.name']
 
