@@ -62,6 +62,7 @@ EOF
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::IO::Config;
 use Bivio::IO::File;
 use Bivio::IO::Trace;
 use Bivio::Test::Language;
@@ -69,7 +70,6 @@ use Bivio::Test;
 use Bivio::Type::DateTime;
 use File::Find ();
 use File::Spec ();
-use Bivio::IO::Config;
 
 #=VARIABLES
 use vars ('$_TRACE');
