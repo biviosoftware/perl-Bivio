@@ -71,6 +71,11 @@ The Subject: address in the header.
 The To: address(es) in the header.  See I<recipients> for
 the actual send-to addresses.
 
+=item headers : any []
+
+Any additional headers.  Returns a collection of lines which are
+headers.
+
 =back
 
 =cut
@@ -136,6 +141,7 @@ sub execute {
     }
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
 	    if $req->has_keys('client_addr');
+    _headers($self, $msg, $req);
 
     my($body) = '';
     $self->unsafe_render_value('body', $fields->{body}, $req, \$body);
@@ -164,7 +170,7 @@ sub initialize {
     my($fields) = $self->[$_IDI];
     $fields->{recipients} = $self->initialize_attr('recipients');
     $fields->{from} = $self->initialize_attr('from');
-    foreach my $f (qw(body cc to subject)) {
+    foreach my $f (qw(body cc to subject headers)) {
 	$fields->{$f} = $self->unsafe_initialize_attr($f);
     }
     return;
@@ -184,6 +190,27 @@ sub render {
 }
 
 #=PRIVATE METHODS
+
+# _headers(self, hash_ref fields, Bivio::Mail::Outgoing msg, Bivio::Agent::Request req)
+#
+# Sets headers if any
+#
+sub _headers {
+    my($self, $msg, $req) = @_;
+    my($fields) = $self->[$_IDI];
+    my($b) = '';
+    return
+	unless $self->unsafe_render_value(
+	    'headers', $fields->{headers}, $req, \$b)
+	    && $b;
+    foreach my $h (split(/\n(?=\S)/, $b)) {
+	chomp($h);
+	Bivio::Die->die($h, ': invalid header')
+	    unless $h =~ /^(\S+):\s*(.+)/s;
+        $msg->set_header($1, $2);
+    }
+    return;
+}
 
 # _text_to_aol(string text) : string
 #
