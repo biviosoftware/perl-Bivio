@@ -210,10 +210,10 @@ sub compile {
 	elsif (int(@$d) != 3) {
 	    Carp::croak("$name: incorrect array length (should be 1 to 3)");
 	}
-	defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/
-		|| Carp::croak("$name: invalid number \"$d->[0]\"");
-        $name =~ /^[A-Z][A-Z0-9_]*$/
-		|| Carp::croak("$name: invalid enum name");
+	Carp::croak("$name: invalid number \"$d->[0]\"")
+		    unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
+	Carp::croak("$name: invalid enum name")
+		    unless $name =~ /^[A-Z][A-Z0-9_]*$/;
 	# Fill out declaration to reverse map number to name (index 3)
 	push(@$d, $name);
 	$width = length($name) if length($name) > $width;
@@ -230,6 +230,9 @@ sub compile {
 	    $min = $max = $d;
 	}
 	$can_be_zero = 1 if $d->[0] == 0;
+	Carp::croak($d->[0], ': duplicate int value (',
+		$d->[3], ' and ', $info{$d->[0]}->[3], ')')
+		    if defined($info{$d->[0]});
 	$info{$d->[0]} = $d;
 	# Index 5: enum instance
 	$eval .= <<"EOF";
@@ -309,6 +312,18 @@ sub get_name {
     return &_get_info(shift(@_), undef)->[3];
 }
 
+=for html <a name="get_self"></a>
+
+=head2 get_self() : Bivio::Type::Enum
+
+Returns C<$self>.  Convenience routine.
+
+=cut
+
+sub get_self {
+    return shift;
+}
+
 =for html <a name="get_short_desc"></a>
 
 =head2 get_short_desc() : string
@@ -323,19 +338,21 @@ sub get_short_desc {
 
 =for html <a name="get_widget_value"></a>
 
-=head2 get_widget_value() : string
+=head2 get_widget_value(string method) : any
 
-=head2 get_widget_value(string method) : string
+=head2 get_widget_value(string method, string formatter, ...) : any
 
-Returns the short description if no I<method>.  Else calls
-I<method> on I<self>.
+Calls I<method> on I<self>.
+
+If a formatter is specified, the formatter will be called with the value
+and the rest of the arguments.
 
 =cut
 
 sub get_widget_value {
-    my($self, $method) = @_;
-    $method ||= 'get_short_desc';
-    return $self->$method();
+    my($self, $method) = (shift, shift);
+    my($value) = $self->$method();
+    return @_ ? shift(@_)->get_widget_value($value, @_) : $value;
 }
 
 =for html <a name="to_sql_param"></a>

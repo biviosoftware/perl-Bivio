@@ -58,8 +58,8 @@ may not be null and must be unique
 __PACKAGE__->compile(
     NONE => [0],
     PRIMARY_KEY => [1],
-    NOT_NULL => [1],
-    NOT_NULL_UNIQUE => [1],
+    NOT_NULL => [2],
+    NOT_NULL_UNIQUE => [3],
 );
 
 #=PRIVATE METHODS
