@@ -9,7 +9,7 @@ b-societas-start - start all the servers for Societas
 
 =head1 SYNOPSIS
 
-b-societas-start [-xterm] [-tmp] [-n] file-root
+b-societas-start [-xterm] [-tmp] [-n] [-port http] file-root
 
 =head1 DESCRIPTION
 
@@ -38,6 +38,10 @@ Creates a temporary directory F</tmp/societas$$> from which
 the programs will be run.  After the execution, the entire
 directory will be cleaned up.
 
+=item B<-port> I<number>
+
+Port for http server.
+
 =item B<-xterm>
 
 Start the programs in separate xterms.  The xterm "names" will
@@ -64,11 +68,13 @@ sub main {
     my($file_root);
     my($execute) = 1;
     local($_);
+    my($http_port) = 10000 + $> * 10;
     while (@argv) {
 	$_ = shift(@argv);
 	/^-x(term)?$/
 		&& ($cmd_fmt = qq("xterm -name \$prog -e $cmd_fmt"), next);
 	/^-t(mp)?$/ && ($tmp = "/tmp/societas$$", next);
+	/^-p(ort)?$/ && ($http_port = shift(@argv), next);
 	/^-n/ && ($execute = 0, next);
 	/^-/ && &_usage("unknown option \"$_\"");
 	defined($file_root) && &_usage('too many arguments');
@@ -98,7 +104,6 @@ sub main {
     $tmp || system('rm -f bivio[0-9]*.conf bmd[0-9]*');
     my($conf) = $tmp ? "$tmp/bivio.conf" : "$pwd/bivio$$.conf";
     $ENV{'BIVIO_CONF'} = $conf;
-    my($http_port) = 10000 + $> * 10;
     my($file_port) = ($tmp || $pwd) . "/bfs";
     my($mail_port) = ($tmp || $pwd) . "/bmd";
     my($host) = `hostname`;
@@ -159,7 +164,7 @@ sub _usage {
     my($msg) = join('', @_);
     print STDERR <<"EOF";
 $0: $msg
-usage: $0 [-tmp] [-xterm] [-n] file-root
+usage: $0 [-tmp] [-xterm] [-n] [-port http] file-root
 EOF
     exit(1);
 }
