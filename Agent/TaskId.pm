@@ -1552,6 +1552,27 @@ my(@_CFG) = (
         next=CLUB_ADMIN_INVITE_LIST
         cancel=CLUB_ADMIN_USER_LIST
     )],
+    [qw(
+        CLUB_ADMIN_INVITE_DELETE
+        149
+        CLUB
+        ADMIN_WRITE
+        %/admin/invite/delete
+        Bivio::Biz::Model::RealmInvite
+        Bivio::Biz::Model::DeleteInviteForm
+        next=CLUB_ADMIN_INVITE_LIST
+    )],
+    [qw(
+        CLUB_ADMIN_INVITE_RESEND
+        150
+        CLUB
+        ADMIN_WRITE
+        %/admin/invite/resend
+        Bivio::Biz::Model::RealmInvite
+        Bivio::Biz::Model::ResendInviteForm
+        Bivio::UI::HTML::Club::ResendInvite
+        next=CLUB_ADMIN_INVITE_LIST
+    )],
 );
 
 __PACKAGE__->compile(
