@@ -19,6 +19,10 @@ Bivio::Mail::Outgoing - send mail directly or via a queue
     $bmo->set_body('what a body');
     $bmo->remove_headers('Subject', 'x-mailer');
 
+    $bmo->set_content_type('multipart/mixed');
+    $bmo->attach( \$buffer1, 'image/jpg', 'my.jpg');
+    $bmo->attach( \$buffer2, 'application/pdf', 'my.pdf');
+
 =cut
 
 use Bivio::Mail::Common;
@@ -33,6 +37,10 @@ scratch.
 =cut
 
 #=IMPORTS
+use Carp;
+use MIME::Base64;
+use Bivio::Util;
+use Bivio::MIME::Type;
 use Bivio::IO::Trace;
 use Bivio::Mail::Incoming;
 
@@ -132,6 +140,36 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="attach"></a>
+
+=head2 attach(string_ref content, string content-type, string name, int binary) : 
+
+Add an attachment part to the mail message.
+Arguments 'content' and 'content-type' are mandatory.
+'name' is the file name that should be used to store it.
+'binary' can be set to true to base64-encode the contents.
+Anything which is not if type text/* is encoded automatically.
+
+=cut
+
+sub attach {
+    my($self, $content, $type, $name, $binary) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    Bivio::MIME::Type->get_type_info($type)
+            || Carp::croak("$type: not a valid type");
+    defined($binary) || ($binary = 0);
+    my($part) = { content => $content, type => $type, binary => $binary };
+    if (defined($name)) {
+        my($from_suffix) = Bivio::MIME::Type->from_extension($name);
+        $from_suffix eq $type
+            || Carp::croak("$name: suffix does not match type");
+        $part->{name} = $name;
+    }
+    push(@{$fields->{parts}}, $part);
+    return;
+}
 
 =for html <a name="remove_headers"></a>
 
@@ -235,6 +273,21 @@ sub set_headers_for_list_send {
     return;
 }
 
+=for html <a name="set_content_type"></a>
+
+=head2 set_content_type(string name, string value)
+
+Sets the Content-Type header field. Any previous setting is overridden.
+
+=cut
+
+sub set_content_type {
+    my($self, $value) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{content_type} = $value;
+    return;
+}
+
 =for html <a name="set_header"></a>
 
 =head2 set_header(string name, string value)
@@ -276,9 +329,7 @@ sub set_recipients {
 
 =for html <a name="set_envelope_from"></a>
 
-=head2 set_envelope_from(string email_list)
-
-=head2 set_envelope_from(array email_list)
+=head2 set_envelope_from(string email)
 
 Sets the envelope FROM of this mail message.  It's the address
 which appears as Return-Path: in the outgoing message header and
@@ -315,12 +366,53 @@ sub as_string {
     foreach $name (sort keys %headers) {
 	$res .= $headers{$name};
     }
-    defined($fields->{body}) && ($res .= "\n"
-	    . (ref($fields->{body}) ? ${$fields->{body}} : $fields->{body}));
+
+    if (defined($fields->{parts})) {
+        defined($fields->{content_type})
+                || Carp::croak("'content_type' must be set for attachments");
+        defined($fields->{body}) &&
+                Bivio::IO::Alert->warn("ignoring body, have attachments");
+        _encapsulate_parts(\$res, $fields->{content_type}, $fields->{parts});
+    } else {
+        defined($fields->{body}) && ($res .= "\n"
+                . (ref($fields->{body}) ? ${$fields->{body}} : $fields->{body}));
+    }
     return $res;
 }
 
 #=PRIVATE METHODS
+
+# _encapsulate_parts(string_ref buf, string type, array parts) : 
+#
+# Encapsulate all attachments according to type.
+#
+sub _encapsulate_parts {
+    my($buf, $type, $parts) = @_;
+# TODO: Randomize boundary    
+    my($boundary) = '------------8169AB88A610572B963B8638';
+    $$buf .= <<"EOF";
+MIME-Version: 1.0
+Content-Type: $type;
+ boundary="$boundary"
+
+This is a multi-part message in MIME format.
+EOF
+    $$buf .= "--$boundary";
+    my($p);
+    foreach $p (@$parts) {
+        $$buf .= "\nContent-Type: $p->{type}";
+        defined($p->{name}) && ($$buf .= ";\n name=\"$p->{name}\"");
+        if ($p->{type} =~ m!^text/! && !$p->{binary}) {
+            $$buf .= "\n\n" . ${$p->{content}} . "\n\n";
+        } else {
+            $$buf .= "\nContent-Transfer-Encoding: base64\n\n";
+            $$buf .= MIME::Base64::encode(${$p->{content}});
+        }
+        $$buf .= "--$boundary";
+    }
+    $$buf .= "--\n";
+    return;
+}
 
 =head1 COPYRIGHT
 

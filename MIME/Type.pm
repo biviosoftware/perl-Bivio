@@ -263,6 +263,20 @@ sub from_extension {
 	    ? $_EXT_TO_TYPE{$ext} : 'application/octet-stream';
 }
 
+=for html <a name="get_type_info"></a>
+
+=head2 get_type_info(string type) : string
+
+Looks up type in _TYPE_TO_EXT table and returns
+undef if not found or the info string (suffix[,suffix]:description) otherwise.
+
+=cut
+
+sub get_type_info {
+    my(undef, $type) = @_;
+    return exists($_TYPE_TO_EXT{$type}) ? $_TYPE_TO_EXT{$type} : undef;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
