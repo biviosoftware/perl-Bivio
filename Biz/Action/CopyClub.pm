@@ -35,6 +35,7 @@ demo clubs.
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::Club;
 use Bivio::Biz::Model::Entry;
+use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::MemberEntry;
 use Bivio::Biz::Model::RealmAccount;
 use Bivio::Biz::Model::RealmAccountEntry;
@@ -87,7 +88,8 @@ sub execute {
 
     my($id_map) = {$source_id => $new_realm->get('realm_id')};
 
-    # NOTE: doesn't copy mail messages
+    # NOTE: doesn't copy mail messages, but creates directories
+    Bivio::Biz::Model::MailMessage->setup_club($new_realm);
 
     # transactions and base entries
     my($ids) = _copy($id_map, 'realm_transaction', {realm_id => $source_id},
