@@ -140,8 +140,21 @@ sub extract {
 	} else {
 	    die(__FILE__,", ", __LINE__, ": no matched text returned\n");
 	}
-    }else {
-	die(__FILE__,", ", __LINE__, ": No match\n");
+    }
+    elsif ($self->_get_closing_char()
+	    eq substr(${$line_iter_ref->current_ref()}, 0, 1)) {
+	# The regular expression didn't match because the next character is
+	# just the string closing character, which it doesn't match.
+	$fields->{'text'} = '';
+	$line_iter_ref->replace_first(
+		substr(${$line_iter_ref->current_ref()}, 1));
+
+	_trace("Extracting ", $self->_get_string_type(),
+		" string\n\t\"", $text, "\"") if $_TRACE;
+    }
+    else {
+	die(__FILE__,", ", __LINE__, ": No match for \"",
+		${$line_iter_ref->current_ref()}, "\"\n");
     }
 
     return;
