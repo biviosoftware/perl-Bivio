@@ -250,76 +250,50 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_sync_keys($req);
+    _upgrade_add_charitable_expense($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_sync_keys(Bivio::Agent::Request req)
+# _upgrade_add_charitable_expense(Bivio::Agent::Request req)
 #
-# Updates the account_sync_t.sync_key field to a normalized amount.
+# Adds a "Charitable Contributions" to the deductible expense
+# categories for all clubs.
 #
-sub _upgrade_sync_keys {
+sub _upgrade_add_charitable_expense {
     my($req) = @_;
+    print("\nadding charitable expenses to existing clubs\n");
 
-use Bivio::Type::Amount;
+    my($category) = Bivio::Biz::Model->new($req, 'ExpenseCategory');
+
     my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_id, sync_key
-            FROM account_sync_t
-            ORDER BY realm_id, sync_key',
+            SELECT realm_id, name
+            FROM realm_owner_t, club_t
+            WHERE realm_owner_t.realm_id=club_t.club_id
+            ORDER by realm_owner_t.name',
 	    []);
     while (my $row = $sth->fetchrow_arrayref) {
-	my($realm_id, $sync_key) = @$row;
+	my($realm_id, $name) = @$row;
 
-	# parse out the values, skip invalid keys
-	my(@values) = split(/\*/, $sync_key);
-	unless (int(@values) == 4 || int(@values) == 5) {
-	    print("skipping $sync_key\n");
+	my($parent_id) = (Bivio::SQL::Connection->execute_one_row('
+                SELECT expense_category_id
+                FROM expense_category_t
+                WHERE parent_category_id IS NULL
+                AND deductible=1
+                AND realm_id=?',
+		[$realm_id]) || [])->[0];
+
+	unless ($parent_id) {
+	    print("\t", $name, " - skipping, no parent expense category\n");
 	    next;
 	}
 
-	my($account_id, $date, $type, $amount, $ticker) = @values;
-
-	unless (Bivio::Type::Date->from_literal($date)) {
-	    print("skipping $sync_key\n");
-	    next;
-	}
-
-	my($number) = $ticker ? $ticker : $amount;
-	unless ($number =~ /\-(\d+)$/) {
-	    print("skipping: $sync_key\n");
-	    next;
-	}
-	$number = $1;
-
-	# remove the number from the ticker or amount
-	if ($ticker) {
-	    $ticker =~ s/-\d+$//;
-	}
-	else {
-	    $amount =~ s/-\d+$//;
-	}
-
-	# normalize the amount and reconstruct the key
-	$amount = Bivio::Type::Amount->to_literal($amount);
-
-	my($id) = join('*', ($account_id, $date, $type, $amount));
-	$id .= '*'.$ticker if defined($ticker);
-	$id .= '-'.$number;
-
-	if ($id eq $sync_key) {
-	    print("no change $sync_key\n");
-	    next;
-	}
-
-	print("    $sync_key\n--> $id (");
-	my($sth2) = Bivio::SQL::Connection->execute('
-                UPDATE account_sync_t
-                SET sync_key=?
-                WHERE realm_id=?
-                AND sync_key=?',
-		[$id, $realm_id, $sync_key]);
-	print($sth2->rows.")\n");
+	$category->create({
+	    realm_id => $realm_id,
+	    name => 'Charitable Contributions',
+	    deductible => 1,
+	    parent_category_id => $parent_id,
+	});
     }
     return;
 }
