@@ -146,7 +146,7 @@ sub create {
 	    unless $values->{volume};
 
     # Check quota first and ensures directory_id is really a directory
-    _update_directory($self, $values, $values->{bytes});
+    _update_directory($self, $values, _kbytes($values->{bytes}));
 
     $self->SUPER::create($values);
     return;
