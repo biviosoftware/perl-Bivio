@@ -191,7 +191,6 @@ sub get_user_role {
     return $realm_user->get('role');
 }
 
-
 #=PRIVATE METHODS
 
 sub _initialize {
