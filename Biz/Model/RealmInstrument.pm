@@ -163,6 +163,19 @@ sub has_transactions {
     return $found_transactions > 0;
 }
 
+=for html <a name="is_local"></a>
+
+=head2 is_local() : boolean
+
+Returns true if the instrument is club-local, false otherwise.
+
+=cut
+
+sub is_local {
+    my($self) = @_;
+    return defined($self->get('instrument_id')) ? 0 : 1;
+}
+
 =for html <a name="set_instrument_id"></a>
 
 =head2 set_instrument_id(string instrument_id)
