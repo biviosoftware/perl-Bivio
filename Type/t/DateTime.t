@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..61\n"; }
+BEGIN { $| = 1; print "1..65\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Type::DateTime;
@@ -23,6 +23,9 @@ sub make_date {
 sub make_time {
     return Bivio::Type::DateTime::DEFAULT_DATE().' '.shift(@_);
 }
+use Bivio::Agent::Request;
+Bivio::Agent::Request->get_current_or_new->put(
+	timezone => 120);
 my(@tests) = (
     'Bivio::Type::DateTime', {
     	get_min => '2378497 0',
@@ -37,6 +40,29 @@ my(@tests) = (
 	    undef, undef,
 	    '2378497 9' => '2378497 9',
 	    '-9' => undef,
+	    'Feb 29 0:0:0 MST 1972' => '2441377 0',
+	    'Feb 29 13:13:13 XXX 2000' => '2451604 47593',
+	    '2/29/1972 0:0:0' => '2441377 0',
+	    '2/29/2000 13:13:13' => '2451604 47593',
+	],
+	from_local_literal => [
+	    undef, undef,
+	    '2378497 9' => '2378497 7209',
+	    '-9' => undef,
+	    'Feb 29 0:0:0 MST 1972' => '2441377 7200',
+	    'Feb 29 13:13:13 XXX 2000' => '2451604 54793',
+	    '2/29/1972 0:0:0' => '2441377 7200',
+	    '2/29/2000 13:13:13' => '2451604 54793',
+	],
+	to_string => [
+	    '2378497 9' => '01/01/1800 00:00:09 GMT',
+	    '2441377 0' => '02/29/1972 00:00:00 GMT',
+	    '2451604 47593' => '02/29/2000 13:13:13 GMT',
+	],
+	to_local_string => [
+	    '2378497 7209' => '01/01/1800 00:00:09',
+	    '2441377 7200' => '02/29/1972 00:00:00',
+	    '2451604 54793' => '02/29/2000 13:13:13',
 	],
 	to_parts => [
 	    Bivio::Type::DateTime->get_min => '0 0 0 1 1 1800',

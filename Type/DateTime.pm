@@ -146,6 +146,33 @@ sub RANGE_IN_DAYS {
     return LAST_DATE_IN_JULIAN_DAYS() - FIRST_DATE_IN_JULIAN_DAYS();
 }
 
+=for html <a name="REGEX_ALERT"></a>
+
+=head2 REGEX_ALERT : string
+
+Returns a regex which matches L<Bivio::IO::Alert|Bivio::IO::Alert>'s
+time format (mon/day/year hour:min:sec).
+Doesn't include begin and trailing anchors.
+
+=cut
+
+sub REGEX_ALERT {
+    return '(\d+)/(\d+)/(\d+) (\d+):(\d+):(\d+)';
+}
+
+=for html <a name="REGEX_CTIME"></a>
+
+=head2 REGEX_CTIME : string
+
+Returns the "ctime" regex.  Ignores the time zone and day of week.
+Doesn't include begin and trailing anchors.
+
+=cut
+
+sub REGEX_CTIME {
+    return '(?:\w+ )?(\w+)\s+(\d+) (\d+):(\d+):(\d+)(?: \w+)? (\d+)';
+}
+
 =for html <a name="SECONDS_IN_DAY"></a>
 
 =head2 SECONDS_IN_DAY : int
@@ -204,6 +231,8 @@ my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
 my(@_MONTH) = ('Jan','Feb','Mar','Apr','May','Jun',
 	'Jul','Aug','Sep','Oct','Nov','Dec');
+# Maps uc(months) to numbers (see _initialize() and _from_ctime())
+my(%_MONTH);
 my(%_PART_NAMES) = (
     second => 0,
     minute => 1,
@@ -212,6 +241,8 @@ my(%_PART_NAMES) = (
     month => 4,
     year => 5,
 );
+my($_REGEX_CTIME) = REGEX_CTIME();
+my($_REGEX_ALERT) = REGEX_ALERT();
 _initialize();
 
 =head1 METHODS
@@ -389,6 +420,22 @@ sub english_month3 {
     Bivio::Die->die('month out of range: ', $month)
 		unless 1 <= $month && $month <= 12;
     return $_MONTH[$month - 1];
+}
+
+=for html <a name="from_local_literal"></a>
+
+=head2 static from_local_literal(string value) : array
+
+Calls L<from_literal|"from_literal"> and adds in the timezone.
+I<value> should be in local time.
+
+=cut
+
+sub from_local_literal {
+    my($proto, $value) = @_;
+    my($res, $err) = $proto->from_literal($value);
+    return ($res, $err) unless $res;
+    return (_adjust_from_local($res), undef);
 }
 
 =for html <a name="from_parts"></a>
@@ -640,10 +687,7 @@ See also L<now_as_filename|"now_as_filename">.
 sub local_now_as_file_name {
     my($proto) = @_;
     # We call DateTime now, because we have to adjust for timezone.
-    my($now) = __PACKAGE__->now();
-    my($tz) = _timezone();
-    $now = $proto->add_seconds($now, -$tz * 60) if $tz;
-    return $proto->to_file_name($now);
+    return $proto->to_file_name(_adjust_to_local(__PACKAGE__->now()));
 }
 
 =for html <a name="max"></a>
@@ -787,25 +831,22 @@ sub set_local_end_of_day {
 
 =head2 static from_literal(string value) : array
 
-Makes sure is a unsigned number.
+Converts literal (J SSSSS), ctime, and alert formats.
 
 =cut
 
 sub from_literal {
     my($proto, $value) = @_;
     return undef unless defined($value) && $value =~ /\S/;
-    # Get rid of all blanks to be nice to user
-    return (undef, Bivio::TypeError::DATE_TIME())
-	    unless $value =~ /^\s*(\d+)\s+(\d+)\s*$/;
-    my($date, $time) = ($1, $2);
-    return (undef, Bivio::TypeError::DATE_RANGE())
-	    unless length($date) <= length($proto->LAST_DATE_IN_JULIAN_DAYS())
-		    && $date >= $proto->FIRST_DATE_IN_JULIAN_DAYS()
-		    && $date <= $proto->LAST_DATE_IN_JULIAN_DAYS();
-    return (undef, Bivio::TypeError::TIME_RANGE())
-	    unless length($time) <= length($proto->SECONDS_IN_DAY())
-		    && $time < $proto->SECONDS_IN_DAY();
-    return $date.' '.$time;
+    # Fix up blanks (multiples, leading, trailing)
+    $value =~ s/^\s+|\s+$//;
+    $value =~ s/\s+/ /g;
+    my($res, $err);
+    foreach my $method (\&_from_literal, \&_from_alert, \&_from_ctime) {
+	return ($res, $err) if &$method($proto, $value, \$res, \$err);
+    }
+    # unknown format
+    return (undef, Bivio::TypeError::DATE_TIME());
 }
 
 =for html <a name="from_sql_value"></a>
@@ -901,6 +942,19 @@ sub time_from_parts {
     return $_DATE_PREFIX.(($hour * 60 + $min) * 60 + $sec);
 }
 
+=for html <a name="to_local_string"></a>
+
+=head2 static to_local_string(string value) : string
+
+Converts to a human readable string in the local timezone.
+
+=cut
+
+sub to_local_string {
+    my($proto, $date_time) = @_;
+    return _to_string($proto, _adjust_to_local($date_time));
+}
+
 =for html <a name="to_parts"></a>
 
 =head2 to_parts(string value) : array
@@ -978,11 +1032,7 @@ Converts to a human readable string
 
 sub to_string {
     my($proto, $date_time) = @_;
-    return '' unless defined($date_time);
-    my($sec, $min, $hour, $mday, $mon, $year)
-	    = $proto->to_parts($date_time);
-    return sprintf('%02d/%02d/%04d %02d:%02d:%02d GMT', $mon, $mday, $year,
-	    $hour, $min, $sec);
+    return _to_string($proto, $date_time, 'GMT');
 }
 
 =for html <a name="to_unix"></a>
@@ -1021,6 +1071,80 @@ sub to_xml {
 
 #=PRIVATE METHODS
 
+# _adjust_from_local(string value) : value
+#
+# Converts from local to GMT.
+#
+sub _adjust_from_local {
+    my($value) = @_;
+    my($tz) = _timezone();
+    return $tz ? __PACKAGE__->add_seconds($value, $tz * 60) : $value;
+}
+
+# _adjust_to_local(string value) : value
+#
+# Subtracts timezone to get to local time.
+#
+sub _adjust_to_local {
+    my($value) = @_;
+    my($tz) = _timezone();
+    return $tz ? __PACKAGE__->add_seconds($value, -$tz * 60) : $value;
+}
+
+# _from_alert(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
+#
+# Returns true if it matches the pattern.  Parses alert format.
+#
+sub _from_alert {
+    my($proto, $value, $res, $err) = @_;
+    my($mon, $d, $y, $h, $m, $s) = $value =~ /^$_REGEX_ALERT$/o;
+    return 0 unless defined($s);
+    ($$res, $$err) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
+    return 1;
+}
+
+
+# _from_ctime(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
+#
+# Returns true if it matches the pattern.  Parses ctime format.
+#
+sub _from_ctime {
+    my($proto, $value, $res, $err) = @_;
+    my($mon, $d, $h, $m, $s, $y) = $value =~ /^$_REGEX_CTIME$/o;
+    return 0 unless defined($y);
+    $mon = $_MONTH{uc($mon)};
+    if (defined($mon)) {
+	($$res, $$err) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
+    }
+    else {
+	$$err = Bivio::TypeError::MONTH();
+    }
+    return 1;
+}
+
+# _from_literal(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
+#
+# Returns true if it matches the pattern.  Parses literal format.
+#
+sub _from_literal {
+    my($proto, $value, $res, $err) = @_;
+    my($date, $time) = $value =~ /^(\d+) (\d+)$/;
+    return 0 unless defined($time);
+    if (length($date) > length(LAST_DATE_IN_JULIAN_DAYS())
+	    || $date < FIRST_DATE_IN_JULIAN_DAYS()
+	    || $date > LAST_DATE_IN_JULIAN_DAYS()) {
+	$$err = Bivio::TypeError::DATE_RANGE();
+    }
+    elsif (length($time) > length(SECONDS_IN_DAY())
+	    || $time >= SECONDS_IN_DAY()) {
+	$$err = Bivio::TypeError::TIME_RANGE();
+    }
+    else {
+	$$res = $date.' '.$time;
+    }
+    return 1;
+}
+
 # _initialize()
 #
 # Initializes year and month tables.
@@ -1051,6 +1175,9 @@ sub _initialize {
 	$_YEAR_BASE[$yy] = $_YEAR_BASE[$yy-1]
 		+ ($_IS_LEAP_YEAR[$yy-1] ? 366 : 365);
     }
+    my($i) = 1;
+    %_MONTH = map {(uc($_), $i++)} @_MONTH;
+    return;
 }
 
 # _localtime(string unix_time) : array
@@ -1071,7 +1198,20 @@ sub _localtime {
 #
 sub _timezone {
     my($req) = Bivio::Agent::Request->get_current;
-    return $req->unsafe_get('timezone');
+    return $req ? $req->unsafe_get('timezone') : undef;
+}
+
+# _to_string(proto, string value, string timezone) : string
+#
+# Does the work of to_string and to_local_string.
+#
+sub _to_string {
+    my($proto, $date_time, $timezone) = @_;
+    return '' unless defined($date_time);
+    my($sec, $min, $hour, $mday, $mon, $year)
+	    = $proto->to_parts($date_time);
+    return sprintf('%02d/%02d/%04d %02d:%02d:%02d', $mon, $mday, $year,
+	    $hour, $min, $sec).($timezone ? ' '.$timezone : '');
 }
 
 =head1 COPYRIGHT
