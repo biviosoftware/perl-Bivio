@@ -684,7 +684,8 @@ sub _summarize {
 	$res .= ref($v)
 	    ? UNIVERSAL::can($v, 'as_string')
 	        ? _summarize_scalar($v->as_string)
-	        : ref($v)
+	        : ref($v) eq 'SCALAR'
+		    ? '\\{'._summarize_scalar($$v).'}' : ref($v)
 	    : _summarize_scalar($v);
 	$res .= ',';
     }
