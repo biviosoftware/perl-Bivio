@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Util::Release defaults more config params, and Bivio::BConf
+    configures the rest to reasonable defaults.  This allows easier
+    testing.
+
+  Revision 2.8  2004/02/22 07:01:09  david
+  Bivio::SQL::ListSupport - Can generate the GROUP BY clause in SQL
   based on the metadata in ListModel.
   Bivio::Type::Array->from_literal returns undef if the value passed in
   is not defined.
