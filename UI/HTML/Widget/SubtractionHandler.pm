@@ -79,13 +79,14 @@ sub render {
     my($prefix) = "document.$form_name.";
     my($total) = $prefix . $model->get_field_name_for_html($self->get('sum_field'));
     my($sub_fields) = $self->get('sub_fields');
+    my($adder) = $prefix . $model->get_field_name_for_html($self->get('adder'));
     my($initial_value) = $prefix . $model->get_field_name_for_html($self->get('initial_value'));
     Bivio::UI::HTML::Widget::JavaScript->render(
 	$source, $buffer, _function_name($self, $model), <<"EOF"
 
 function @{[_function_name($self, $model)]}(field)
 {
-    $total.value = $initial_value.value -
+    tmp = $initial_value.value -
 EOF
         # uses a double negative for addition to avoid string concatenation
 	. join("\n- ",
@@ -94,6 +95,7 @@ EOF
 	    } @$sub_fields)
 	) . ";" . <<"EOF"
 
+    $total.value = (tmp - -$adder.value);
     @{[$self->MATH_ROUND]}($total);
 }
 EOF
