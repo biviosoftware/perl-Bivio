@@ -18,10 +18,10 @@ print "ok 1\n";
 my($T) = 2;
 
 sub make_date {
-    return shift(@_).' '.Bivio::Type::DateTime::DEFAULT_TIME();
+    return shift(@_).' '.Bivio::Type::DateTime->DEFAULT_TIME;
 }
 sub make_time {
-    return Bivio::Type::DateTime::DEFAULT_DATE().' '.shift(@_);
+    return Bivio::Type::DateTime->DEFAULT_DATE.' '.shift(@_);
 }
 use Bivio::Agent::Request;
 Bivio::Agent::Request->get_current_or_new->put(
@@ -83,8 +83,8 @@ my(@tests) = (
 	],
     },
     'Bivio::Type::Date', {
-    	get_min => '2378497 '.Bivio::Type::DateTime::DEFAULT_TIME(),
-	get_max => (2524594 - 1).' '.Bivio::Type::DateTime::DEFAULT_TIME(),
+    	get_min => '2378497 '.Bivio::Type::DateTime->DEFAULT_TIME,
+	get_max => (2524594 - 1).' '.Bivio::Type::DateTime->DEFAULT_TIME,
 	get_precision => undef,
 	get_width => 10,
 	get_decimals => 0,
