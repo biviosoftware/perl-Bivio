@@ -270,10 +270,12 @@ LockFile httpd.lock
     PerlHandler Apache::Status
 </Location>
 
-<LocationMatch "^/(index.html|[a-zA-Z0-9_]{2,}($|/))">
-    SetHandler perl-script
-    PerlHandler <$handler>
-</LocationMatch>
+<VirtualHost _default_:<$port>>
+    <LocationMatch "^/(index.html|[a-zA-Z0-9_\-]{2,}($|/))">
+        SetHandler perl-script
+        PerlHandler <$handler>
+    </LocationMatch>
+</VirtualHost>
 
 BrowserMatch "Mozilla/2" nokeepalive
 BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
