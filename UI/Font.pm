@@ -42,8 +42,6 @@ may either be a numeric size, e.g. +1, -3, 2, or
 one of the various HTML font modifiers, e.g. C<strong>,
 C<tt>, and C<small>.
 
-=back
-
 =cut
 
 
