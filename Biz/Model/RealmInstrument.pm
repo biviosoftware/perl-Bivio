@@ -76,6 +76,23 @@ sub create {
     return $self->SUPER::create($values);
 }
 
+=for html <a name="get_name"></a>
+
+=head2 get_name() : string
+
+Returns the local name, or the instrument name depending on whether this
+is a realm-local instrument.
+
+=cut
+
+sub get_name {
+    my($self) = @_;
+
+    return defined($self->get('instrument_id'))
+	    ? $self->get_model('Instrument')->get('name')
+	    : $self->get('name');
+}
+
 =for html <a name="unsafe_find_or_create"></a>
 
 =head2 unsafe_find_or_create(string ticker) : boolean
