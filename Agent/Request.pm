@@ -177,6 +177,7 @@ my($_HTTP_HOST) = sprintf('%d.%d.%d.%d',
 my($_MAIL_HOST) = "[$_HTTP_HOST]";
 my($_SUPPORT_PHONE);
 my($_SUPPORT_EMAIL);
+my($_SUPPORT_EMAIL_AS_HTML);
 Bivio::IO::Config->register({
     mail_host =>  $_MAIL_HOST,
     http_host =>  $_HTTP_HOST,
@@ -207,6 +208,7 @@ sub new {
 	    mail_host => $_MAIL_HOST,
 	    support_phone => $_SUPPORT_PHONE,
 	    support_email => $_SUPPORT_EMAIL,
+	    support_email_as_html => $_SUPPORT_EMAIL_AS_HTML,
 	   );
     return $_CURRENT = $self;
 }
@@ -519,6 +521,8 @@ sub handle_config {
     $_MAIL_HOST = $cfg->{mail_host};
     $_SUPPORT_PHONE = $cfg->{support_phone};
     $_SUPPORT_EMAIL = $cfg->{support_email};
+    $_SUPPORT_EMAIL_AS_HTML = '<a href="mailto:'.$_SUPPORT_EMAIL
+	    .'">'.$_SUPPORT_EMAIL.'</a>';
     return;
 }
 
