@@ -250,56 +250,48 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_club_cafe();
+    _upgrade_withdrawn_names();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_club_cafe()
+# _upgrade_withdrawn_names()
 #
-# Make permissions looser.
+# Updates mangled withdrawn names to a correct offline withdrawn name.
 #
-sub _upgrade_club_cafe {
-    print("Upgrading club cafe permissions\n");
-    use Bivio::Biz::Util::RealmRole;
-    my($rr) = Bivio::Biz::Util::RealmRole->new(['-r', 'club_cafe']);
-    $rr->edit(qw(ANONYMOUS -
-    +DOCUMENT_READ
-    +LOGIN
-    +MAIL_READ));
-    $rr->edit(qw(USER -
-    +ANONYMOUS
-    +ANY_USER
-    +MAIL_FORWARD
-    +MAIL_POST));
-    $rr->edit(qw(WITHDRAWN -
-    +USER));
-    $rr->edit(qw(GUEST -
-    +WITHDRAWN
-    +ANY_REALM_USER
-    +MAIL_WRITE));
-    $rr->edit(qw(MEMBER -
-    +GUEST
-    +MAIL_RECEIVE));
-    $rr->edit(qw(ACCOUNTANT -
-    +MEMBER
-    +ACCOUNTING_READ
-    +ACCOUNTING_WRITE
-    +ACCOUNT_READ
-    +ADMIN_READ
-    +ADMIN_WRITE
-    +DEBUG_ACTION
-    +DOCUMENT_WRITE
-    +FILE_ADMIN
-    +INVESTMENT_READ
-    +MAIL_ADMIN
-    +MEMBER_READ
-    +MEMBER_WRITE
-    +MOTION_READ
-    +MOTION_WRITE
-    +REALM_PUBLICIZE));
-    $rr->edit(qw(ADMINISTRATOR -
-    +ACCOUNTANT));
+sub _upgrade_withdrawn_names {
+
+    use Bivio::Data::EW::ClubImporter;
+    use Bivio::Type::RealmName;
+
+    print("updating withdrawn member names\n");
+
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT name
+            FROM realm_owner_t
+            WHERE name like '(%'
+            ORDER BY name",
+	    []);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($name) = $row->[0];
+	my($new_name) = $name;
+
+	# example old names:
+	#  (tjameson)0
+	#  ((cue1981)0)0
+
+	# strip leading (, and trailing )0...
+	$new_name =~ s/^\(+(\w+)\).*$/$1/;
+	$new_name = Bivio::Data::EW::ClubImporter::_make_unique_name(
+		Bivio::Type::RealmName->OFFLINE_PREFIX.$new_name);
+
+	print("\t".$name.' --> '.$new_name."\n");
+	Bivio::SQL::Connection->execute("
+                UPDATE realm_owner_t
+                SET name=?
+                WHERE name=?",
+		[$new_name, $name]);
+    }
     return;
 }
 
