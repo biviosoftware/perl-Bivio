@@ -49,7 +49,6 @@ Returns:
  usage: b-test [options] command [args...]
  commands:
     accept tests... - runs the tests (.btest) under Bivio::Test::Language
-    cleanup tests... - runs the cleanup function of tests (.btest) 
     unit tests/dirs... -- runs the tests (*.t) under Test::Harness
 
 =cut
@@ -59,12 +58,12 @@ sub USAGE {
 usage: b-test [options] command [args...]
 commands:
     accept tests... - runs the tests (.btest) under Bivio::Test::Language
-    cleanup tests... - runs the cleanup function of tests (.btest) 
     unit tests/dirs... -- runs the tests (*.t) under Test::Harness
 EOF
 }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Test::Harness ();
 use Bivio::Test::Language;
 use File::Find ();
@@ -72,33 +71,22 @@ use File::Spec ();
 use Bivio::IO::File;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="accept"></a>
+=for html <a name="acceptance"></a>
 
-=head2 accept(string tests, ...)
+=head2 acceptance(string tests, ...)
 
 Run acceptance tests.
 
 =cut
 
-sub accept {
-    my($self) = @_;
-    return;
-}
-
-=for html <a name="cleanup"></a>
-
-=head2 cleanup(string btest)
-
-Run cleanup method on btest file after setup.
-
-=cut
-
-sub cleanup {
+sub acceptance {
     my($self) = @_;
     return;
 }
@@ -114,29 +102,81 @@ will be executed.  All tests must end in C<*.t>.
 =cut
 
 sub unit {
-    my($self, @test) = @_;
-    $self->usage_error('must supply test files or directories') unless @test;
-    my($tests) = {};
-    File::Find::find({
-	no_chdir => 1,
-	wanted => sub {
-	    return unless $_ =~ /\.t$/ && -r $_;
-	    my(undef, $d, $f) = File::Spec->splitpath($_);
-	    push(@{$tests->{$d} ||= []}, $f);
-	    return;
-	}},
-	@test);
-    foreach my $d (sort(keys(%$tests))) {
-	$self->print("*** Entering: $d\n");
-	# Test::Harness is not re-entrant
-	system("cd '$d' && perl -e 'use Test::Harness; runtests(qw{"
-	    . join(' ', sort(@{$tests->{$d}})) . "})'");
-	$self->print("*** Leaving: $d\n\n");
+    my($self, $tests) = _find_files(\@_, 't');
+    my($total_ok, $total_max) = (0, 0);
+    _run($self, $tests, sub {
+	my($self, $tests) = @_;
+	foreach my $t (@$tests) {
+	    my($max, $ok, $not_ok) = (0, 0, 0, 0);
+	    $self->print(sprintf('%20s: ', $t));
+	    _trace('running: ', $t) if $_TRACE;
+	    foreach my $line (split(/\n/, ${$self->piped_exec("$^X -w $t 2>&1")})) {
+		_trace($line) if $_TRACE;
+		if ($max) {
+		    $ok++ if $line =~ /^ok\s*(\d+)/;
+		}
+		elsif ($line =~ /^1\.\.(\d+)/) {
+		    $max = $1;
+		}
+	    }
+	    $self->print($ok == $max ? 'ok' : 'NOT OK', "\n");
+	    $total_ok++ if $ok == $max;
+	    $total_max++;
+        }
+    });
+    unless ($total_max == $total_ok) {
+	$self->print(
+	    sprintf('FAILED %d (%.1f%%) and passed %d (%.1f%%)' . "\n",
+		map {
+		    ($_, 100 * $_ / $total_max);
+		} ($total_max - $total_ok), $total_ok
+	));
+	Bivio::Die->throw_quietly('DIE');
+        # DOES NOT RETURN
     }
+    $self->print("All ($total_max) tests passed\n");
     return;
 }
 
 #=PRIVATE METHODS
+
+# _find_files(array_ref args, string pattern) : array
+#
+# Returns self, and hash of tests to run (dir, tests).
+#
+sub _find_files {
+    my($args, $pattern) = @_;
+    my($self) = shift(@$args);
+    $self->usage_error('must supply test files or directories') unless @$args;
+    my($tests) = {};
+    my($pwd) = Bivio::IO::File->pwd;
+    File::Find::find({
+	no_chdir => 1,
+	wanted => sub {
+	    return unless $_ =~ /\.$pattern$/ && -r $_;
+	    my(undef, $d, $f) = File::Spec->splitpath($_);
+	    $d = File::Spec->rel2abs($d, $pwd);
+	    push(@{$tests->{$d} ||= []}, $f);
+	    return;
+	}},
+	@$args);
+    return ($self, $tests);
+}
+
+# _run(self, hash_ref tests, code_ref action)
+#
+# Runs the tests with action.
+#
+sub _run {
+    my($self, $tests, $action) = @_;
+    foreach my $d (sort(keys(%$tests))) {
+	$self->print("*** Entering: $d\n");
+	Bivio::IO::File->chdir($d);
+	&$action($self, $tests->{$d});
+	$self->print("*** Leaving: $d\n\n");
+    }
+    return;
+}
 
 =head1 COPYRIGHT
 
