@@ -478,6 +478,32 @@ sub iterate_next {
     return $self->internal_get_sql_support->iterate_next(@_);
 }
 
+=for html <a name="merge_initialize_info"></a>
+
+=head2 static merge_initialize_info(hash_ref info, hash_ref info2) : hash_ref
+
+Merges two model field definitions into a new hash.
+
+=cut
+
+sub merge_initialize_info {
+    my(undef, $info, $info2) = @_;
+
+    my($res) = {};
+    foreach my $inf ($info, $info2) {
+	foreach my $key (keys(%$inf)) {
+	    if (exists($res->{$key})) {
+		my($value) = $res->{$key};
+		CORE::die("duplicate info key '$key'") unless ref($value);
+		push(@$value, @{$inf->{$key}});
+		next;
+	    }
+	    $res->{$key} = $inf->{$key};
+	}
+    }
+    return $res;
+}
+
 =for html <a name="put"></a>
 
 =head2 put()
