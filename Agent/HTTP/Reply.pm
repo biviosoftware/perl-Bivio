@@ -84,15 +84,15 @@ sub client_redirect {
     my($self, $req, $uri) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    my($r) = $fields->{r};
+
     # don't let any more data be sent
-    $fields->{output} = '';
-    $fields->{header_sent} = 1;
+    $self->{$_PACKAGE} = undef;
 
     # have to do it the long way, there is a bug in using the REDIRECT
     # return value when handling a form
-    my($r) = $fields->{r};
     $r->header_out(Location => $uri);
-    Bivio::Agent::HTTP::Cookie->set($req, $fields->{r});
+    Bivio::Agent::HTTP::Cookie->set($req, $r);
     $r->status(302);
     $r->send_http_header;
     # make it look like apache's redirect
@@ -119,28 +119,30 @@ Sends the buffered reply data.
 sub send {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($r) = $fields->{r};
+    my($o) = $fields->{output};
 
-    my($size);
-    if ($fields->{header_sent} == 0) {
-	# only do this the first time
-	$fields->{header_sent} = 1;
-	$fields->{r}->header_out('Content-Length',
-		$size = $fields->{file_handle} ? -s $fields->{file_handle}
-		: length($fields->{output}));
-	# We always set a cookie
-	Bivio::Agent::HTTP::Cookie->set($req, $fields->{r});
-	$fields->{r}->content_type($self->get_output_type());
-	$fields->{r}->send_http_header;
-    }
-    if ($fields->{file_handle}) {
-	$fields->{r}->send_fd($fields->{file_handle}, $size);
-	close($fields->{file_handle});
-	delete($fields->{file_handle});
+    my($is_scalar) = ref($o) eq 'SCALAR';
+    my($size) = $is_scalar ? length($$o) : -s $o;
+
+    # only do this the first time
+    $r->header_out('Content-Length', $size);
+    # We always set a cookie
+    Bivio::Agent::HTTP::Cookie->set($req, $r);
+    $r->content_type($self->get_output_type());
+    $r->send_http_header;
+    if ($is_scalar) {
+	$r->print($$o);
     }
     else {
-	$fields->{r}->print($fields->{output});
-	$fields->{output} = '';
+	$r->send_fd($o, $size);
+	close($o);
     }
+
+    # don't let any more data be sent.  Don't clear early in case
+    # there is an error and we get called back in die_to_http_code
+    # (then _error()).
+    $self->{$_PACKAGE} = undef
 }
 
 =for html <a name="die_to_http_code"></a>
@@ -180,39 +182,24 @@ sub die_to_http_code {
     return _error(Apache::Constants::SERVER_ERROR(), $r);
 }
 
-=for html <a name="print"></a>
+=for html <a name="set_output"></a>
 
-=head2 print(string str, ...)
+=head2 set_output(scalar_ref value)
 
-Writes the specified string to the request's output stream.
-
-=cut
-
-sub print {
-    my($self) = shift;
-    my($fields) = $self->{$_PACKAGE};
-    die('set_output_from_file and print cannot both be called')
-	    if $fields->{file_handle};
-    $fields->{output} .= join('', @_);
-    return;
-}
-
-=for html <a name="set_output_from_file"></a>
-
-=head2 set_output_from_file(file handle)
+=head2 set_output(io_handle file)
 
 Sets the output to the file.  Output type must be set.
-The handle will be owned by this method.
+I<file> or I<value> will be owned by this method.
 
 =cut
 
-sub set_output_from_file {
-    my($self, $handle) = @_;
+sub set_output {
+    my($self, $value) = @_;
     my($fields) = $self->{$_PACKAGE};
-    die('set_output_from_file and print cannot both be called')
-	    if length($fields->{output});
-    die('too many calls to set_output_from_file') if $fields->{file_handle};
-    $fields->{file_handle} = $handle;
+    die('too many calls to set_output') if $fields->{output};
+    die('not a GLOB or SCALAR reference')
+	    unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB';
+    $fields->{output} = $value;
     return;
 }
 

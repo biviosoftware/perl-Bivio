@@ -14,9 +14,7 @@ Bivio::Agent::Reply - a user agent reply
     my($reply) = $req->get_reply();
 
     $reply->set_output_type('image/gif');  # default is 'text/plain'
-    $reply->print($image);
-    $reply->set_die_code($die->get('code'));
-    $reply->set_die_code(undef);
+    $reply->set_output(\$image);
     $reply->send($req);
 
 =cut
@@ -27,9 +25,7 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::Agent::Reply> is the complement to
-L<Bivio::Agent::Request>, it is the output channel
-for responses. Initially, a reply is in the NOT_HANDLED state indicating
-that no action has been taken for the corresponding Request.
+L<Bivio::Agent::Request>, it is the output channel.
 
 =cut
 
@@ -68,17 +64,6 @@ sub new {
 
 =cut
 
-=for html <a name="send"></a>
-
-=head2 send(Bivio::Agent::Request req)
-
-Sends the buffered reply data.
-
-=cut
-
-sub send {
-}
-
 =for html <a name="get_output_type"></a>
 
 =head2 get_ouput_type() : string
@@ -93,32 +78,15 @@ sub get_output_type {
     return $fields->{output_type};
 }
 
-#TODO: Don't think we need this
-#=for html <a name="get_die_code"></a>
-#
-#=head2 get_die_code() : Bivio::DieCode or undef
-#
-#Returns the die code associated with the reply. 
-#
-#=cut
-#
-#sub get_die_code {
-#    my($self) = @_;
-#    my($fields) = $self->{$_PACKAGE};
-#    return $fields->{die_code};
-#}
+=for html <a name="send"></a>
 
-=for html <a name="print"></a>
+=head2 send(Bivio::Agent::Request req)
 
-=head2 abstract print(string str)
-
-Writes the specified string to the request's output stream. Binary output
-types can pass binary data to this method as well.
+Sends the buffered reply data.
 
 =cut
 
-sub print {
-    die("abstract method");
+sub send {
 }
 
 =for html <a name="set_output_type"></a>
@@ -135,28 +103,6 @@ sub set_output_type {
     $fields->{output_type} = $type;
     return;
 }
-
-#TODO: Don't think we need this
-#=for html <a name="set_die_code"></a>
-#
-#=head2 set_die_code(Bivio::DieCode die_code)
-#
-#Sets I<die_code> to the appropriate state.
-#
-#=cut
-#
-#sub set_die_code {
-#    my($self, $die_code) = @_;
-#    my($fields) = $self->{$_PACKAGE};
-#    if (defined($die_code) && !UNIVERSAL::isa($die_code, 'Bivio::DieCode')) {
-#	my($dc) = Bivio::DieCode->from_any($die_code);
-#	# By calling die here, Bivio::Die takes over error handlingo
-#	Bivio::Die->die($die_code, {reply => $self}, caller) unless $dc;
-#	$die_code = $dc;
-#    }
-#    $fields->{die_code} = $die_code;
-#    return;
-#}
 
 #=PRIVATE METHODS
 
