@@ -133,7 +133,7 @@ sub initialize {
 		    . " width=1 border=0></td>"
 			    if $fields->{tab_height} = $th;
     $fields->{highlight_prefix}
-	    = "<td$tc><table border=0 cellspacing=0 cellpadding=2>"
+	    = "<td$tc><table border=0 cellspacing=0 cellpadding=2><tr>"
 		    ."<td$pc><strong>";
     $fields->{highlight_suffix} = "</strong></td></tr></table></td>";
     my($tf) = $self->ancestral_get('text_tab_font', undef);
