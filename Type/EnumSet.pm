@@ -241,7 +241,9 @@ sub to_sql_list {
 
 =head2 static to_sql_param(Bivio::Type::Enum value) : int
 
-Returns the database representation (hex string) of the bit vector.
+Returns the database representation (lower nybble first, hex string)
+of the bit vector.
+Note: Two characters are required _per_ byte.
 
 =cut
 
@@ -249,7 +251,7 @@ sub to_sql_param {
     my($proto, $value) = @_;
     return undef unless defined($value) && length($value);
     my($res) = unpack('h*', $value);
-    my($width) = $proto->get_width;
+    my($width) = 2 * $proto->get_width;
     # Exact match means field is correct.
     return $res if length($res) == $width;
     Carp::croak('field too long') if length($res) > $width;
