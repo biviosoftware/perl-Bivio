@@ -42,6 +42,8 @@ The current font names are:
 
 =item ERROR
 
+=item LIST_ERROR
+
 =item ITALIC
 
 =item TIME
@@ -78,6 +80,7 @@ _compile([
     TABLE_CELL => [undef, undef],
     ICON_TEXT_IA => [undef, 'icon_text_ia'],
     ERROR => [undef, 'error', 'b'],
+    LIST_ERROR => [undef, 'error', 'small'],
     ITALIC => [undef, undef, 'i'],
     TIME => [$_SANS_SERIF, undef, 'small'],
     NUMBER_CELL => [undef, undef],
