@@ -36,7 +36,6 @@ use Bivio::Agent::Request;
 use Bivio::Auth::Realm;
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::DbUpgrade;
-use Bivio::Biz::Model::MGFSInstrument;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::IO::Config;
 use Bivio::SQL::Connection;
