@@ -364,6 +364,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         _/accounting/member/detail
+        Bivio::Biz::Model::MemberSummaryList
         Bivio::UI::HTML::Club::MemberDetail
     )],
     [qw(
@@ -372,6 +373,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/investment/detail
+        Bivio::Biz::Model::InstrumentSummaryList
         Bivio::UI::HTML::Club::InstrumentDetail
     )],
     [qw(
