@@ -40,8 +40,6 @@ sub CHAR {
     return '[\\0-\\177]';
 }
 
-=cut
-
 =for html <a name="ALPHA"></a>
 
 =head2 ALPHA : string
@@ -53,8 +51,6 @@ any ASCII alphabetic character
 sub ALPHA {
     return '[\\101-\\132\\141-\\172]';
 }
-
-=cut
 
 =for html <a name="DIGIT"></a>
 
@@ -68,8 +64,6 @@ sub DIGIT {
     return '[\\060-\\071]';
 }
 
-=cut
-
 =for html <a name="CTL"></a>
 
 =head2 CTL : string
@@ -82,8 +76,6 @@ sub CTL {
     return '[\\0-\\037\\177-\\377]';
 }
 
-=cut
-
 =for html <a name="LWSP"></a>
 
 =head2 LWSP : string
@@ -95,8 +87,6 @@ Linear white-space
 sub LWSP {
     return '[ \\t]';
 }
-
-=cut
 
 =for html <a name="SPECIALS"></a>
 
@@ -122,8 +112,6 @@ sub TSPECIALS {
     return '[][()<>@,;:\\\\/".]';
 }
 
-=cut
-
 =for html <a name="ATOM"></a>
 
 =head2 ATOM : string
@@ -136,8 +124,6 @@ sub ATOM {
     return '[^][()<>@,;:\\\\". \\000-\\040\\177-\\377]+';
 }
 
-=cut
-
 =for html <a name="QUOTED_STRING"></a>
 
 =head2 QUOTED_STRING : string
@@ -149,8 +135,6 @@ Regular qouted text or quoted chars
 sub QUOTED_STRING {
     return '"(?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^\\\\"])*)"';
 }
-
-=cut
 
 =for html <a name="DOMAIN_LITERAL"></a>
 
@@ -165,8 +149,6 @@ domain-literal = "[" *(dtext / quoted-pair) "]"
 sub DOMAIN_LITERAL {
     return '\\[(?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^][\\\\])*)\\]';
 }
-
-=cut
 
 =for html <a name="NOT_NESTED_COMMENT"></a>
 
@@ -184,8 +166,6 @@ sub NOT_NESTED_COMMENT {
     return '\\((?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^()\\\\])*)\\)';
 }
 
-=cut
-
 =for html <a name="WORD"></a>
 
 =head2 WORD : string
@@ -197,8 +177,6 @@ word = atom / quoted-string
 sub WORD {
     return "(?:". ATOM() . "|" . QUOTED_STRING() .")";
 }
-
-=cut
 
 =for html <a name="PHRASE"></a>
 
@@ -212,8 +190,6 @@ sub PHRASE {
     return WORD() . "(?:\\s+" . WORD() .")*";
 }
 
-=cut
-
 =for html <a name="ATOM_ONLY_PHRASE"></a>
 
 =head2 ATOM_ONLY_PHRASE : string
@@ -225,8 +201,6 @@ sequence of atoms
 sub ATOM_ONLY_PHRASE {
     return ATOM() . "(?:\\s+" . ATOM() . ")*";
 }
-
-=cut
 
 =for html <a name="LOCAL_PART"></a>
 
@@ -240,8 +214,6 @@ sub LOCAL_PART {
     return WORD() . "(?:\\." . WORD() .")*";
 }
 
-=cut
-
 =for html <a name="DOTTED_ATOMS"></a>
 
 =head2 DOTTED_ATOMS : string
@@ -253,8 +225,6 @@ sequence of dotted atoms
 sub DOTTED_ATOMS {
     return ATOM() . "(?:\\." . ATOM() . ")*";
 }
-
-=cut
 
 =for html <a name="SUB_DOMAIN"></a>
 
@@ -269,8 +239,6 @@ sub SUB_DOMAIN {
     return "(?:" . ATOM() . "|" . DOMAIN_LITERAL() . ")";
 }
 
-=cut
-
 =for html <a name="DOMAIN"></a>
 
 =head2 DOMAIN : string
@@ -282,8 +250,6 @@ sequence of sub-domains
 sub DOMAIN {
     return SUB_DOMAIN() . "(?:\\." . SUB_DOMAIN() . ")*";
 }
-
-=cut
 
 =for html <a name="ADDR_SPEC"></a>
 
@@ -297,8 +263,6 @@ sub ADDR_SPEC {
     return LOCAL_PART() . "\@" . DOMAIN() . "";
 }
 
-=cut
-
 =for html <a name="ATOM_ONLY_ADDR"></a>
 
 =head2 ATOM_ONLY_ADDR : string
@@ -310,8 +274,6 @@ sub ADDR_SPEC {
 sub ATOM_ONLY_ADDR {
     return DOTTED_ATOMS() . "\@" . DOTTED_ATOMS();
 }
-
-=cut
 
 =for html <a name="ROUTE"></a>
 
@@ -325,8 +287,6 @@ sub ROUTE {
     return "\@" . &DOMAIN . "(?:,\@" . &DOMAIN .")*:";
 }
 
-=cut
-
 =for html <a name="ROUTE_ADDR"></a>
 
 =head2 ROUTE_ADDR : string
@@ -338,8 +298,6 @@ route-addr = "<" [route] addr-spec ">"
 sub ROUTE_ADDR {
     return "<(?:" . ROUTE() . ")?" . ADDR_SPEC() .">";
 }
-
-=cut
 
 =for html <a name="MAILBOX"></a>
 
@@ -353,8 +311,6 @@ sub MAILBOX {
     return "(?:" . ADDR_SPEC() . "|(?:" . PHRASE() . "\\s+)*" . ROUTE_ADDR() . ")";
 }
 
-=cut
-
 =for html <a name="GROUP"></a>
 
 =head2 GROUP : string
@@ -366,8 +322,6 @@ group = phrase ":" [#mailbox] ";"
 sub GROUP {
     return PHRASE() . ":(?:" . MAILBOX() . "(?:," . MAILBOX() . ")*;";
 }
-
-=cut
 
 =for html <a name="ADDRESS"></a>
 
@@ -381,8 +335,6 @@ sub ADDRESS {
     return "(?:" . MAILBOX() . "|" . GROUP() .")";
 }
 
-=cut
-
 =for html <a name="FIELD_NAME"></a>
 
 =head2 FIELD_NAME : string
@@ -394,8 +346,6 @@ Header field name, any CHAR, excluding CTLs, SPACE, and ":"
 sub FIELD_NAME {
     return '[\\041-\\071\\073-\\176]+:';
 }
-
-=cut
 
 =for html <a name="DAY"></a>
 
@@ -409,8 +359,6 @@ sub DAY {
     return "[a-zA-Z]{3}";
 }
 
-=cut
-
 =for html <a name="DATE"></a>
 
 =head2 DATE : string
@@ -422,8 +370,6 @@ day month year
 sub DATE {
     return '(\\d\\d?)\\s*([a-zA-Z]{3})\\s*(\\d{2,4})';
 }
-
-=cut
 
 =for html <a name="TIME"></a>
 
@@ -437,7 +383,6 @@ Modifications to original spec:
 TODO: Parse the following variations:
 
 Thu Sep 21 16:15:07 2000
-Sat, 23 Sep 2000 17:27:48
 
 =cut
 
@@ -445,7 +390,19 @@ sub TIME {
     return '(\\d\\d?):(\\d\\d?)(?:|:(\\d\\d?))\\s+([\\(\\)\\-+"\\w]{1,5})';
 }
 
+=for html <a name="TIME2"></a>
+
+=head2 TIME2 : string
+
+hour (allow missing timezone field, return 0 instead)
+
+Sat, 23 Sep 2000 17:27:48
+
 =cut
+
+sub TIME2 {
+    return '(\\d\\d?):(\\d\\d?)(\\d\\d?)()';
+}
 
 =for html <a name="DATE_TIME"></a>
 
@@ -459,7 +416,19 @@ sub DATE_TIME {
     return "(?:" . DAY() . "\\s*,)?\\s*" . DATE() . "\\s*" . TIME();
 }
 
+=for html <a name="DATE_TIME2"></a>
+
+=head2 DATE_TIME2 : string
+
+date-time2  = [ day "," ] date time2
+
+Handle more variations with a separate TIME2 regexp
+
 =cut
+
+sub DATE_TIME2 {
+    return "(?:" . DAY() . "\\s*,)?\\s*" . DATE() . "\\s*" . TIME2();
+}
 
 =for html <a name="MONTHS"></a>
 
@@ -485,8 +454,6 @@ sub MONTHS {
             'DEC' => 11,
            };
 }
-
-=cut
 
 =for html <a name="TIME_ZONES"></a>
 
