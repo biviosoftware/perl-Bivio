@@ -139,8 +139,15 @@ sub _create_display {
 
     if ($field =~ /is_public$/) {
 	return $proto->checkmark($field)->put(
-	    column_align => 'center',
-	);
+		column_align => 'center',
+		column_control => [
+		    sub { my($req) = shift->get_request;
+			  return $req->get(
+				  'realm_decor_show_all_columns')
+				  && $req->get('realm_is_public');
+		      }],
+		%$attrs,
+	       );
     }
 
     if (UNIVERSAL::isa($type, 'Bivio::Type::IRR')) {
