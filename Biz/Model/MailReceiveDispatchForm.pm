@@ -58,8 +58,7 @@ Requires form fields: client_addr, recipient, message.
 
 Sets realm, user, and server_redirects to task.
 
-User is set from Reply-To:, From:, Apparently-From:, in that order.
-You can forge any address, but we respect the Reply-To: override.
+User is set from From: or Apparently-From:, in that order.
 
 op then maps to a URI:
 
@@ -84,8 +83,7 @@ sub execute_ok {
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
     $self->internal_put_field(mime_parser => $parser);
     _login($self,
-	$parser->head->get('reply-to')
-	|| $parser->head->get('from')
+	$parser->head->get('from')
         || $parser->head->get('apparently-from'));
     # Should not return, but always put in a return just in case
     $req->server_redirect(_task($self, $op));

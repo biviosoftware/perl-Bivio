@@ -9,7 +9,7 @@ use Bivio::Test::Request;
 my($_req) = Bivio::Test::Request->get_instance->setup_facade;
 my($_compute_params) = sub {
     my($case, $params) = @_;
-    my($from, $recipient, $reply_to) = @$params;
+    my($from, $recipient) = @$params;
     return [$_req,  {
 	recipient => $recipient,
 	client_addr => '1.2.3.4',
@@ -17,7 +17,6 @@ my($_compute_params) = sub {
 	    name => '',
 	    content => Bivio::IO::Ref->to_scalar_ref(<<"EOF"),
 From: @{[$from =~ /\@/ ? $from : "$from\@bivio.biz"]}
-@{[$reply_to ? "Reply-To: $reply_to\@bivio.biz" : '']}
 
 EOF
 	},
