@@ -163,7 +163,7 @@ sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{rows});
-    my($p) = '<table border ='.$self->get_or_default('border', 0);
+    my($p) = '<table border='.$self->get_or_default('border', 0);
     # We don't want to check parents
     my($expand, $bg, $align) = $self->unsafe_get(qw(expand bgcolor align));
     $p .= ' cellpadding='.$self->get_or_default('pad', 0);
