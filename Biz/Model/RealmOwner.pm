@@ -701,7 +701,8 @@ Invalidates I<self>'s password. Deletes any outstanding password requests.
 sub invalidate_password {
     my($self) = @_;
     $self->update({password => Bivio::Type::Password->INVALID});
-    Bivio::Biz::Model->get_instance('PasswordRequest')->delete({});
+    Bivio::Biz::Model->get_instance('PasswordRequest')
+                ->new()->delete({});
     return;
 }
 
