@@ -246,10 +246,10 @@ HostnameLookups off
 KeepAlive On
 MaxKeepAliveRequests 5
 KeepAliveTimeout 10
-MinSpareServers 0
-MaxSpareServers 0
+MinSpareServers 1
+MaxSpareServers 1
 StartServers 1
-MaxClients 1
+MaxClients 2
 # Bump this number for performance
 MaxRequestsPerChild 1000
 
