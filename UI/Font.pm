@@ -48,6 +48,16 @@ The current font names are:
 
 =item NUMBER_CELL
 
+=item TABLE_ROW_TITLE
+
+=item FORM_FIELD_LABEL
+
+=item FORM_FIELD_ERROR_LABEL
+
+=item REALM_NAME
+
+=item FORM_SUBMIT
+
 =back
 
 =cut
@@ -72,6 +82,7 @@ _compile([
     FORM_FIELD_LABEL => [undef, undef, 'small'],
     FORM_FIELD_ERROR_LABEL => [undef, 'error', 'i', 'small'],
     REALM_NAME => [$_SANS_SERIF, 'realm_name', 'big'],
+    FORM_SUBMIT => [$_SANS_SERIF, undef],
 ]);
 
 =head1 METHODS
