@@ -52,6 +52,7 @@ use Bivio::Mail::RFC822;
 
 #=VARIABLES
 my($_IGNORE) = IGNORE_PREFIX();
+my($_ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
 
 =head1 METHODS
 
@@ -78,14 +79,6 @@ sub from_literal {
     # database that can be searchable.
     $value = lc($value);
 
-    # Domain must NOT match our local mail or server domain
-    my($req) = Bivio::Agent::Request->get_current;
-    my($domain);
-    foreach $domain ($req->get('http_host'), $req->get('mail_host')) {
-        $domain =~ s/(\W)/\\$1/g;
-        $value =~ /\@$domain$/i && return (undef, Bivio::TypeError::EMAIL());
-    }
-    
     # Must match a simple dotted atom address and must contain at least one dot
 #TODO: parse out address and try to do a DNS resolution?
 #      I checked out Net::DNS, but it doesn't seem like it can
@@ -93,8 +86,8 @@ sub from_literal {
 #      started(?)).  Anyway, we need a way to avoid entering bogus
 #      addresses.  The best way would be to mail the user the password.
 #      I don't know if we could sustain this in the beginning.
-    my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
-    return $value if $value =~ /^$ATOM_ONLY_ADDR$/os && $value =~ /.+\..*/;
+    return $value if $value =~ /^$_ATOM_ONLY_ADDR$/os && $value =~ /.+\..*/;
+
 #TODO: This is weak.  Either make good, or just use general message
 #    # Give a reasonable error message
 #    # We don't accept domain literal addresses?
