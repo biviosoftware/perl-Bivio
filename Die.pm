@@ -174,7 +174,8 @@ sub as_string {
 Destroys self and removes from the current chain.  The initial error is not
 actually destroyed, but is set in L<is_destroyed|"is_destroyed"> state.  This
 allows L<catch|"catch"> to know there is an error while also knowing all errors
-were handled.
+were handled.  I<code> is set to C<undef> which is the flag that this
+instance was destroyed.
 
 If self is not part of the current catch, then it is simply set to destroyed
 and its next link is left untouched.
@@ -183,7 +184,7 @@ and its next link is left untouched.
 
 sub destroy {
     my($self) = @_;
-    $self->put('destroyed' => 1);
+    $self->put('code' => undef);
 
     # No current chain
     return unless $_CURRENT_SELF;
@@ -295,7 +296,7 @@ Returns true if the instance was destroyed.
 =cut
 
 sub is_destroyed {
-    return shift->get('destroyed');
+    return !shift->get('code');
 }
 
 #=PRIVATE METHODS
@@ -352,7 +353,6 @@ sub _new {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
     my($self) = Bivio::Type::Attributes::new($proto, {
 	next => undef,
-	destroyed => 0,
 	code => $code,
 	attrs => $attrs,
 	package => $package,
