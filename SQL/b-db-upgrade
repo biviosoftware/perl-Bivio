@@ -250,47 +250,76 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_withdrawn_names();
+    _upgrade_sync_keys($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_withdrawn_names()
+# _upgrade_sync_keys(Bivio::Agent::Request req)
 #
-# Updates mangled withdrawn names to a correct offline withdrawn name.
+# Updates the account_sync_t.sync_key field to a normalized amount.
 #
-sub _upgrade_withdrawn_names {
+sub _upgrade_sync_keys {
+    my($req) = @_;
 
-    use Bivio::Data::EW::ClubImporter;
-    use Bivio::Type::RealmName;
-
-    print("updating withdrawn member names\n");
-
-    my($sth) = Bivio::SQL::Connection->execute("
-            SELECT name
-            FROM realm_owner_t
-            WHERE name like '(%'
-            ORDER BY name",
+use Bivio::Type::Amount;
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_id, sync_key
+            FROM account_sync_t
+            ORDER BY realm_id, sync_key',
 	    []);
     while (my $row = $sth->fetchrow_arrayref) {
-	my($name) = $row->[0];
-	my($new_name) = $name;
+	my($realm_id, $sync_key) = @$row;
 
-	# example old names:
-	#  (tjameson)0
-	#  ((cue1981)0)0
+	# parse out the values, skip invalid keys
+	my(@values) = split(/\*/, $sync_key);
+	unless (int(@values) == 4 || int(@values) == 5) {
+	    print("skipping $sync_key\n");
+	    next;
+	}
 
-	# strip leading (, and trailing )0...
-	$new_name =~ s/^\(+(\w+)\).*$/$1/;
-	$new_name = Bivio::Data::EW::ClubImporter::_make_unique_name(
-		Bivio::Type::RealmName->OFFLINE_PREFIX.$new_name);
+	my($account_id, $date, $type, $amount, $ticker) = @values;
 
-	print("\t".$name.' --> '.$new_name."\n");
-	Bivio::SQL::Connection->execute("
-                UPDATE realm_owner_t
-                SET name=?
-                WHERE name=?",
-		[$new_name, $name]);
+	unless (Bivio::Type::Date->from_literal($date)) {
+	    print("skipping $sync_key\n");
+	    next;
+	}
+
+	my($number) = $ticker ? $ticker : $amount;
+	unless ($number =~ /\-(\d+)$/) {
+	    print("skipping: $sync_key\n");
+	    next;
+	}
+	$number = $1;
+
+	# remove the number from the ticker or amount
+	if ($ticker) {
+	    $ticker =~ s/-\d+$//;
+	}
+	else {
+	    $amount =~ s/-\d+$//;
+	}
+
+	# normalize the amount and reconstruct the key
+	$amount = Bivio::Type::Amount->to_literal($amount);
+
+	my($id) = join('*', ($account_id, $date, $type, $amount));
+	$id .= '*'.$ticker if defined($ticker);
+	$id .= '-'.$number;
+
+	if ($id eq $sync_key) {
+	    print("no change $sync_key\n");
+	    next;
+	}
+
+	print("    $sync_key\n--> $id (");
+	my($sth2) = Bivio::SQL::Connection->execute('
+                UPDATE account_sync_t
+                SET sync_key=?
+                WHERE realm_id=?
+                AND sync_key=?',
+		[$id, $realm_id, $sync_key]);
+	print($sth2->rows.")\n");
     }
     return;
 }
