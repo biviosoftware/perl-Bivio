@@ -1240,16 +1240,13 @@ sub _setup_for_main {
     my($fields) = $self->[$_IDI];
     my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
     Bivio::IO::ClassLoader->simple_require(qw{
-        Bivio::Agent::Job::Request
-        Bivio::Agent::TaskId
+        Bivio::Test::Request
         Bivio::SQL::Connection
     });
     my($p) = Bivio::SQL::Connection->set_dbi_name($db);
     $fields->{prior_db} = $p unless $fields->{prior_db};
-    $self->put_request(Bivio::Agent::Job::Request->new({
-	task_id => Bivio::Agent::TaskId->SHELL_UTIL,
-	timezone => Bivio::Type::DateTime->timezone,
-    })) unless $self->unsafe_get('req');
+    $self->put_request(Bivio::Test::Request->get_instance)
+        unless $self->unsafe_get('req');
     $self->set_realm_and_user(_parse_realm_id($self, 'realm'),
 	_parse_realm_id($self, 'user'));
     return;
