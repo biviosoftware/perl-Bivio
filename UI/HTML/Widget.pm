@@ -672,7 +672,7 @@ sub highlight {
 =head2 href_goto(any uri) : array_ref
 
 Widget value to create a goto link href for "offsite" links.
-I<uri> may be a string or an array_ref (widget value).
+I<uri> may be a string, task, or an array_ref (widget value).
 
 =cut
 
@@ -912,10 +912,14 @@ sub link_ask_candis {
 
 =for html <a name="link_goto"></a>
 
-=head2 link_goto(string label, string uri) : Bivio::UI::HTML::Widget::Link
+=head2 link_goto(any label, any uri) : Bivio::UI::HTML::Widget::Link
 
 Create a "goto" link, which allows us to track references to other
 sites.
+
+See L<link|"link"> for a description of I<label>.
+
+See L<href_goto|"href_goto"> for description of I<uri>.
 
 =cut
 
