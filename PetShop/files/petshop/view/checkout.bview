@@ -37,13 +37,14 @@ view_put(menu_content => Grid([
     ],
     [vs_blank_cell()],
     [
-	Link({
-#TODO: need a general way to link to this
-	    href => '/my-site/place-order',
-	    value => Image({
-		src => 'continue',
-		alt => 'Continue',
-	    }),
-	}),
+	Link(
+	    Image('continue'),
+	    [sub {
+		 my(undef, $v) = @_;
+		 return Bivio::Agent::TaskId->from_name($v
+		     ? 'USER_ACCOUNT_CREATE_AND_PLACE_ORDER'
+		     : 'PLACE_ORDER');
+	    }, ['user_state', '->equals_by_name', 'JUST_VISITOR']],
+	),
     ],
 ]));
