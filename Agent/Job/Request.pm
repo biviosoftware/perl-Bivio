@@ -130,20 +130,20 @@ sub client_redirect {
 
 =for html <a name="ignore_redirects"></a>
 
-=head2 ignore_redirects()
+=head2 ignore_redirects(boolean state)
 
-Sets internal state to ignore redirects.  This can be dangerous.
+Sets internal state to ignore redirects if I<state> is true.
+This can be dangerous.
 
 Will set the new state, but not throw the exception.
 
 B<EXPERIMENTAL>
 
-
 =cut
 
 sub ignore_redirects {
-    my($self) = @_;
-    $self->put_durable($_IGNORE_REDIRECTS => 1);
+    my($self, $state) = @_;
+    $self->put_durable($_IGNORE_REDIRECTS => $state);
     return;
 }
 

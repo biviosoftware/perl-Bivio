@@ -134,7 +134,7 @@ Redirects are ignored.
 sub setup_http {
     my($self, $cookie_class) = @_;
     $self = $self->get_instance unless ref($self);
-    $self->ignore_redirects;
+    $self->ignore_redirects(1);
     # What's required by bOP infrastructure.
     Bivio::Type::UserAgent->BROWSER->execute($self, 1);
     my($r) = Bivio::Test::Bean->new;
@@ -156,7 +156,12 @@ sub setup_http {
 	    },
 	},
     });
-    $self->put_durable(cookie => Bivio::Agent::HTTP::Cookie->new($self, $r));
+    $self->put_durable(
+	uri => '/',
+	path_info => undef,
+	query => undef,
+	cookie => Bivio::Agent::HTTP::Cookie->new($self, $r),
+    );
     return $self;
 }
 
