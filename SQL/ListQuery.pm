@@ -690,6 +690,12 @@ sub _format_uri {
     $res .= 'i='.Bivio::Type::DateInterval->to_query($attrs->{interval}).'&'
 	    if defined($attrs->{interval});
 
+    # other query keys
+    foreach (@{$support->unsafe_get('other_query_keys')||[]}) {
+	$res .= $_."=".$attrs->{$_}.'&'
+	    if defined($attrs->{$_});
+    }
+
     # Delete trailing '&'
     chop($res);
     return $res;
