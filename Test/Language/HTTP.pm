@@ -456,25 +456,25 @@ verified.
 sub verify_form {
     my($self, $form_fields) = @_;
     my($fields) = $self->[$_IDI];
-    my($visibles) = _assert_html($self)->get('Forms')
-	->get_by_field_names(keys(%$form_fields))->{visible};
-    _trace($visibles) if $_TRACE;
-
+    my($form) = _assert_html($self)->get('Forms')
+	->get_by_field_names(keys(%$form_fields));
+    _trace($form->{visible}) if $_TRACE;
     foreach my $field (keys(%$form_fields)) {
-	my($control) = $visibles->{$field};
+	my($control) = _assert_form_field($form, $field);
 	Bivio::Die->die($control->{type}, ' ', $field,
 	    ' expected != actual: "', $form_fields->{$field},
 	    '" != "', $control->{value}, '"',
         ) unless
 	    $control->{type} eq 'checkbox'
-		? ($control->{checked}
-		    ? defined($control->{value})
-		    ? $control->{value} : 1 : 0)
-		    == (defined($form_fields->{$field})
-			? $form_fields->{$field} : 0)
-			: $form_fields->{$field} eq $control->{value};
+		? ($control->{checked} ? defined($control->{value})
+		   ? $control->{value} : 1 : 0)
+		  == (defined($form_fields->{$field})
+		      ? $form_fields->{$field} : 0)
+		: $control->{options}
+		?  _verify_form_option(
+		    $control, $field, $form_fields->{$field})
+		: $form_fields->{$field} eq $control->{value};
     }
-
     return;
 }
 
@@ -572,13 +572,15 @@ sub verify_options {
     my($fields) = $self->[$_IDI];
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names($select_field);
-    my($f) = _assert_form_field($form, 'visible', $select_field);
-    Bivio::Die->die('Select field "', $select_field, '" does not contain any options.')
-	    unless $f->{options};
+    my($f) = _assert_form_field($form, $select_field);
+    Bivio::Die->die(
+	'Select field "', $select_field, '" does not contain any options.',
+    ) unless $f->{options};
     foreach my $option (@$options) {
-	    Bivio::Die->die('Select field "', $select_field,
-		'" does not contain option "', $option, '".')
-		    unless $f->{options}->{$option};
+	Bivio::Die->die(
+	    'Select field "', $select_field, '" does not contain option "',
+	    $option, '".',
+	) unless $f->{options}->{$option};
     }
     return;
 }
@@ -682,15 +684,12 @@ sub visit_uri {
 
 #=PRIVATE SUBROUTINES
 
-# _assert_form_field(hash_ref form, string class, string name) : string
+# _assert_form_field(hash_ref form, any name) : hash_ref
 #
 # Returns the named field from form->class or dies.
 #
 sub _assert_form_field {
-    my($form, $class, $name) = @_;
-    return $form->{$class}->{$name}
-	|| Bivio::Die->die($name, ': field not found in ', $class, ' of form ',
-	    $form->{label});
+    return Bivio::Test::HTMLParser::Forms->get_field(@_);
 }
 
 # _assert_form_response(self)
@@ -790,7 +789,7 @@ sub _format_form {
     my($match) = {};
 #TODO: Add hidden form field testing
     while (my($k, $v) = each(%$form_fields)) {
-	my($f) = _assert_form_field($form, 'visible', $k);
+	my($f) = _assert_form_field($form, $k);
 	$match->{$f}++;
 	my($value) = $v;
 	if ($f->{options}) {
@@ -819,7 +818,7 @@ sub _format_form {
 	}
     }
     # Needs to be some "true" value for our forms
-    my($button) = _assert_form_field($form, 'submit', $submit);
+    my($button) = _assert_form_field($form, $submit);
     push(@$result, $button->{name}, $button->{value} || '1');
     return $result;
 }
@@ -903,6 +902,19 @@ sub _send_request {
 	Bivio::Test::HTMLParser->new($fields->{response}->content_ref)
         if $fields->{response}->content_type eq 'text/html';
     return;
+}
+
+# _verify_form_option(hash_ref control, string field, string value) : boolean
+#
+# Returns matching state of option.
+#
+sub _verify_form_option {
+    my($control, $field, $value) = @_;
+    foreach my $o (keys(%{$control->{options}})) {
+	return 1
+	    if $value eq $o || $value eq $control->{options}->{$o}->{value};
+    }
+    return 0;
 }
 
 =head1 COPYRIGHT

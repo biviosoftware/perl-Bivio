@@ -105,8 +105,12 @@ home_page();
 follow_link('MyAccount');
 submit_form(search => {
 });
-submit_form(search => {
+submit_form(qr/\bsearch\b/ => {
     _anon => 'dogs',
+});
+verify_text('Adult Female German Shepherd');
+submit_form(search => {
+    qr/_ano/ => 'dogs',
 });
 verify_text('Adult Female German Shepherd');
 follow_link_in_table('Item ID', 'Item Name', 'Male Adult Corgi');
