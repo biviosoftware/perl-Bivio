@@ -95,19 +95,20 @@ sub _footer {
 	    'Email Us:mailto:info@allwomeninvest.com',
 	   ) {
 	my($label, $task) = split(/:/, $t, 2);
-	push(@$links, Bivio::UI::HTML::Widget->link(
-		$label, $task, 'footer_menu'),
+	push(@$links, $_W->link($label, $task, 'footer_menu'),
 		'&nbsp;|&nbsp;');
     }
+    # Delete last separator
+    pop(@$links);
 
     # Create grid
-    Bivio::UI::HTML::Widget->load_class('Grid', 'EditPreferences');
+    $_W->load_class('Grid', 'EditPreferences');
     $html->group(footer_widget => Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
 	    [
 		Bivio::UI::HTML::Widget->clear_dot(1, 10),
-	    ],
+		],
 	    [
 		Bivio::UI::HTML::Widget->clear_dot(undef, 1)->put(
 			cell_expand => 1,
@@ -115,7 +116,8 @@ sub _footer {
 		       ),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->toggle_secure(),
+		# Match the top
+		'&nbsp;&nbsp;&nbsp;',
 		Bivio::UI::HTML::Widget::Grid->new({
 		    cell_align => 'center',
 		    cell_expand => 1,
@@ -123,19 +125,27 @@ sub _footer {
 			$links,
 		    ],
 		}),
-		Bivio::UI::HTML::Widget->link('top', '#top', 'footer_menu'),
+		$_W->link('top', '#top', 'footer_menu'),
 	    ],
 	    [
 		' ',
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->link(
-			Bivio::UI::HTML::Widget->image('bivio_power'),
-			'http://www.bivio.com')->put(cell_align => 'sw'),
-		$html->get_standard_copyright->put(
-		    cell_align => 'right',
+		Bivio::UI::HTML::Widget::Grid->new({
+		    expand => 1,
 		    cell_expand => 1,
-		),
+		    values => [
+			[
+			    $_W->link($_W->image('bivio_power'),
+				    'http://www.bivio.com')
+				    ->put(cell_align => 'sw'),
+			    $html->get_standard_copyright->put(
+				    cell_align => 'right',
+				    cell_expand => 1,
+				   ),
+			],
+		    ],
+		}),
 	    ],
 	],
     }));
@@ -149,11 +159,13 @@ sub _footer {
 sub _header {
     my($html) = @_;
     my($hdr) = $html->get_standard_header();
-    unshift(@{$hdr->get('values')}, _logo($html));
+    # Insert before <a name=top>...
+    splice(@{$hdr->get('values')}, 1, 0, _logo($html));
     $html->group(header_widget => $hdr);
     $html->group(header_height =>
 	    $html->get_standard_header_height
-	    + $html->get_facade->get('Bivio::UI::Icon')->get_height('header_010'));
+	    + $html->get_facade->get('Bivio::UI::Icon')
+	    ->get_height('header_010'));
     return;
 }
 
