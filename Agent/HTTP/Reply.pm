@@ -123,7 +123,10 @@ sub send {
     my($o) = $fields->{output};
 
     my($is_scalar) = ref($o) eq 'SCALAR';
+    die('no reply generated, missing UI item on Task')
+	    unless $is_scalar || ref($o) eq 'GLOB';
     my($size) = $is_scalar ? length($$o) : -s $o;
+
 
     # only do this the first time
     $r->header_out('Content-Length', $size);
