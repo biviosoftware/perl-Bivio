@@ -39,6 +39,7 @@ use Bivio::Biz::Model::RealmAccountEntry;
 use Bivio::Biz::Model::RealmTransaction;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
+use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
 use Bivio::Type::TaxCategory;
@@ -766,7 +767,7 @@ sub _create_entries {
 
 	my($type) = $trans->{transaction_type};
 
-	if ($trans->{dttm} == $dttm && ($type == $transaction_type
+	if ($trans->{dttm} eq $dttm && ($type == $transaction_type
 		|| _contains($set, $type))) {
 
 	    # group deposit and earning distributions
@@ -808,7 +809,7 @@ sub _create_stock_transfer_entry {
     foreach $trans (@$easyware_trans) {
 	next if (! defined($trans));
 
-	if ($trans->{dttm} == $dttm && $trans->{transaction_type} == 44) {
+	if ($trans->{dttm} eq $dttm && $trans->{transaction_type} == 44) {
 
 	    _create_entry($transaction, $trans, $attributes);
 	    $trans = undef;
@@ -1145,7 +1146,8 @@ sub _read_date {
     if ($year > 2043) {
 	$year -= 100;
     }
-    my($value) = Time::Local::timegm(0, 0, 12, $day, $month - 1, $year);
+    my($value) = Bivio::Type::DateTime->date_from_parts(
+	    $day, $month, $year);
 
 #    _trace("date $value") if $_TRACE;
     return $value;
