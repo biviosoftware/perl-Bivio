@@ -842,7 +842,8 @@ sub _has_foreign_partners {
 sub _has_transfer_of_interest {
     my($self, $date) = @_;
 
-    if (_get_stock_withdraw_amount($self, $date)) {
+    if (_get_stock_withdraw_amount($self, $date)
+	   || _get_cash_withdrawal_amount($self, $date)) {
 	return 1;
     }
     return 0;
