@@ -155,7 +155,8 @@ sub handle_config {
     $_CFG = $cfg;
     $_REGEXP = {};
     foreach my $r (qw(ignore critical error ignore_unless_count)) {
-	$_REGEXP->{$r} = qr/(@{[join('|', @{$cfg->{"${r}_list"}})]})/;
+	my($x) = $cfg->{"${r}_list"};
+	$_REGEXP->{$r} = @$x ? qr/(@{[join('|', @$x)]})/ : undef;
     }
     return;
 }
@@ -192,22 +193,23 @@ sub parse_errors {
 	    $in_interval = 1;
 	}
 	_trace('record: ', $record) if $_TRACE;
-	if ($record =~ $_REGEXP->{ignore}) {
+	if ($_REGEXP->{ignore} && $record =~ $_REGEXP->{ignore}) {
 	    _trace('ignoring: ', $1) if $_TRACE;
 	    next RECORD;
 	}
-	if ($record =~ $_REGEXP->{ignore_unless_count}) {
+	if ($_REGEXP->{ignore_unless_count}
+	    && $record =~ $_REGEXP->{ignore_unless_count}) {
 	    $ignored->{$1}++;
 	    _trace('ignore_unless_count: ', $1) if $_TRACE;
 	    next RECORD;
 	}
 	# Critical already avoids dups, so put before time check after.
-	if ($record =~ $_REGEXP->{critical}) {
+	if ($_REGEXP->{critical} && $record =~ $_REGEXP->{critical}) {
 	    _trace('critical: ', $1) if $_TRACE;
 	    _pager_report($self, $1);
 	    $record =~ s/^/***CRITICAL*** /;
 	}
-	if ($record =~ $_REGEXP->{error}) {
+	if ($_REGEXP->{error} && $record =~ $_REGEXP->{error}) {
 	    _trace('error: ', $1) if $_TRACE;
 	    # Certain error messages don't pass the $_REGEXP->{error} on the
 	    # first output.  die message comes out first and it's what we want
