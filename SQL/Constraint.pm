@@ -48,6 +48,10 @@ may not be null
 
 may not be null and must be unique
 
+=item NOT_ZERO_ENUM
+
+may not be null and must be non-zero enumerated type value
+
 =back
 
 =cut
@@ -60,6 +64,7 @@ __PACKAGE__->compile(
     PRIMARY_KEY => [1],
     NOT_NULL => [2],
     NOT_NULL_UNIQUE => [3],
+    NOT_ZERO_ENUM => [4],
 );
 
 #=PRIVATE METHODS
