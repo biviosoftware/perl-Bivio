@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    you to setup a facade instance directly.
+  * Bivio::UI::Facade->get_instance() returns the default facade
+    (making get_default redundant).
+
+  Revision 1.79  2003/09/23 20:31:01  nagler
+  * Bivio::Biz::ListModel->map_rows is similar to map_iterate, but
+    operates on a loaded ListModel.
+  * Bivio::Biz::Model->iterate_map has been renamed to map_iterate
+  * Bivio::UI::HTML::Widget::ListActions was not inserting a comma
+    between list items.
   * b-realm-admin invalidate_password (Bivio::Util::RealAdmin) invalidates the
     auth_user's password.
   * Removed assertion in b-realm-admin reset_password for realm
