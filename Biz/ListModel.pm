@@ -656,6 +656,20 @@ sub get_summary {
     return Bivio::Biz::Model::SummaryList->new([$self]);
 }
 
+=for html <a name="has_cursor"></a>
+
+=head2 has_cursor() : boolean
+
+Returns true if there is a row loaded, i.e. cursor is non-negative
+and defined.
+
+=cut
+
+sub has_cursor {
+    my($cursor) = shift->{$_PACKAGE}->{cursor};
+    return defined($cursor) && $cursor >= 0 ? 1 : 0;
+}
+
 =for html <a name="has_next"></a>
 
 =head2 has_next() : boolean
