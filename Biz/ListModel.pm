@@ -601,7 +601,7 @@ sub get_hidden_field_values {
 
 =for html <a name="get_list_model"></a>
 
-=head2 get_list_model() : 
+=head2 get_list_model() : Bivio::Biz::ListModel
 
 Returns itself, the list model.
 
@@ -1225,7 +1225,7 @@ sub parse_query_from_request {
     $query = $query ? {%$query} : {};
 
     # Clean up the query and then parse.
-    Bivio::SQL::ListQuery->clean_raw($query);
+    Bivio::SQL::ListQuery->clean_raw($query, $self->internal_get_sql_support);
     return $self->parse_query($query);
 }
 

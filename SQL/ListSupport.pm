@@ -78,6 +78,10 @@ Optionally override the FROM clause.  Use this feature with caution.
 
 A list of fields and field identities that have no ordering.
 
+=item other_query_keys : array_ref
+
+Extra keys expected on the query.  Used by L<clean_raw|"clean_raw">.
+
 =item order_by : array_ref
 
 A list of fields and field identities that can be used to sort
@@ -268,6 +272,12 @@ sub new {
 	# Default is true
 	want_select => !defined($decl->{want_select}) || $decl->{want_select}
 	         ? 1 : 0,
+	other_query_keys => !defined($decl->{other_query_keys})
+	    || ref($decl->{other_query_keys}) eq 'ARRAY'
+	    ? $decl->{other_query_keys}
+	    : Bivio::Die->die(
+		$decl->{other_query_keys}, ': invalid other_query_keys'),
+
     };
     $proto->init_common_attrs($attrs, $decl);
 

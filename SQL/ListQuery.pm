@@ -301,18 +301,23 @@ sub unauth_new {
 
 =for html <a name="clean_raw"></a>
 
-=head2 clean_raw(hash_ref query)
+=head2 clean_raw(hash_ref query, Bivio::SQL::ListSupport support)
 
-Removes any raw query keys that aren't part of the "valid" set.
+Removes any raw query keys that aren't part of the "valid" set.  If
+the model has I<other_query_keys>, these will not be removed.
 Used by
 L<Bivio::Biz::ListModel::parse_query_from_request|Bivio::Biz::ListModel/"parse_query_from_request">.
 
 =cut
 
 sub clean_raw {
-    my(undef, $query) = @_;
+    my(undef, $query, $support) = @_;
+    Bivio::IO::Alert->warn_deprecated('must pass ListSupport')
+	unless $support;
+    my($oqk) = $support && $support->unsafe_get('other_query_keys');
     foreach my $k (keys(%$query)) {
-	delete($query->{$k}) unless $_QUERY_TO_FIELDS{$k};
+	delete($query->{$k})
+	    unless $_QUERY_TO_FIELDS{$k} || $oqk && grep($k eq $_, @$oqk);
     }
     return;
 }
