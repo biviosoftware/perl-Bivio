@@ -256,23 +256,6 @@ sub build {
     return $output;
 }
 
-=for html <a name="find_files"></a>
-
-=head2 find_files(string root_dir, string exclude_list, string spec_prefix) : string
-
-Finds files in I<root_dir> not already in I<exclude_list>.  Prints result
-with I<spec_prefix> in front (be sure to include spaces), e.g.
-
-    find_files($RPM_BUILD_ROOT, $RPM_BUILD_ROOT/../files,
-
-=cut
-
-sub find_files {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return;
-}
-
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
