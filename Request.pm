@@ -66,7 +66,7 @@ EOF
 #   aborted.  Queued messages are sent only on success.
 sub _process ($$$) {
     my($proto, $self, $code) = @_;
-    bless($self, ref($proto) || $proto);
+    defined($proto) && bless($self, ref($proto) || $proto);
     my($ok) = eval { &$code($self); 1;};
     unless ($ok) {
 	chop($@);
