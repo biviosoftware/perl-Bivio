@@ -3053,36 +3053,36 @@ my(@_CFG) = (
         next=USER_HOME
     )],
     [qw(
-        ADM_SPINOFFS
+        ADM_MERGER_SPINOFF_LIST
         267
         GENERAL
         ADMIN_WRITE
-        adm/spin-offs
-        Bivio::Biz::Model::AdmInstrumentSpinoffList->execute_load_page
-        Bivio::UI::HTML::Adm::InstrumentSpinoffList
+        adm/merger-spinoff
+        Bivio::Biz::Model::AdmInstrumentMergerSpinoffList->execute_load_page
+        Bivio::UI::HTML::Adm::InstrumentMergerSpinoffList
         require_secure=1
     )],
     [qw(
-        ADM_SPINOFF_DELETE
+        ADM_MERGER_SPINOFF_DELETE
         268
         GENERAL
         ADMIN_WRITE
-        adm/spin-off/delete
-        Bivio::Biz::Model::AdmInstrumentSpinoffList->execute_load_this
-        Bivio::Biz::Action::InstrumentSpinoffDelete
+        adm/merger-spinoff/delete
+        Bivio::Biz::Model::AdmInstrumentMergerSpinoffList->execute_load_this
+        Bivio::Biz::Action::InstrumentMergerSpinoffDelete
         Bivio::Biz::Action::ClientRedirect->execute_next_stateless
-        next=ADM_SPINOFFS
+        next=ADM_MERGER_SPINOFF_LIST
         require_secure=1
     )],
     [qw(
-        ADM_SPINOFF_CREATE
+        ADM_MERGER_SPINOFF_CREATE
         269
         GENERAL
         ADMIN_WRITE
-        adm/spin-off/create
-        Bivio::Biz::Model::AdmInstrumentSpinoffForm
-        Bivio::UI::HTML::Adm::CreateInstrumentSpinoff
-        next=ADM_SPINOFFS
+        adm/merger-spinoff/create
+        Bivio::Biz::Model::AdmInstrumentMergerSpinoffForm
+        Bivio::UI::HTML::Adm::CreateInstrumentMergerSpinoff
+        next=ADM_MERGER_SPINOFF_LIST
         require_secure=1
     )],
     [qw(
