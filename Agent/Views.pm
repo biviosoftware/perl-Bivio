@@ -6,24 +6,17 @@ $Bivio::Agent::Views::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Agent::Views - initializes and maps all views
+Bivio::Agent::Views - initializes all views (deprecated)
 
 =head1 SYNOPSIS
 
     use Bivio::Agent::Views;
-    Bivio::Agent::Views->initialize();
-    Bivio::Agent::Views->get($class, ...);
+    Bivio::Agent::Views->initialize;
 
 =cut
 
-=head1 EXTENDS
-
-L<Bivio::Collection::SingletonMap>
-
-=cut
-
-use Bivio::Collection::SingletonMap;
-@Bivio::Agent::Views::ISA = qw(Bivio::Collection::SingletonMap);
+use Bivio::UNIVERSAL;
+@Bivio::Agent::Views::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
@@ -40,9 +33,11 @@ use Bivio::Agent::TaskId;
 use Bivio::UI::HTML::Page;
 use Bivio::UI::HTML::Presentation;
 use Bivio::UI::Menu;
+use Bivio::Collection::SingletonMap;
 use Carp ();
 
 #=VARIABLES
+my($_INITIALIZED) = 0;
 my(@_PERSISTENT);
 
 =head1 METHODS
@@ -51,33 +46,20 @@ my(@_PERSISTENT);
 
 =for html <a name="initialize"></a>
 
-=head2 static initialize() : boolean
+=head2 static initialize()
 
 Initialize all views, presentations, and pages.
 
 =cut
 
 sub initialize {
-    # Super-class calls "require" for each of these classes.
-    __PACKAGE__->SUPER::initialize([qw(
-	Bivio::UI::MessageBoard::DetailView
-	Bivio::UI::MessageBoard::ListView
-	Bivio::UI::Admin::UserListView
-	Bivio::UI::Admin::UserView
-	Bivio::UI::Setup::Club
-	Bivio::UI::Setup::Admin
-	Bivio::UI::Setup::Login
-	Bivio::UI::Setup::Finish
-	Bivio::UI::Setup::Intro
-	Bivio::UI::HTML::View::Test
-	Bivio::UI::HTML::View::TestForm
-	Bivio::UI::HTML::View::ClubTest
-    )]) || return 0;
-
+    return if $_INITIALIZED;
+    $_INITIALIZED = 1;
     # Assemble pages and presentations from views.  Note that
     # the Views have backlinks to their parents, so they can never
     # be garbage collected--which is what we want.n
-    my($setup) = Bivio::UI::HTML::Presentation->new([__PACKAGE__->get(qw(
+    my($setup) = Bivio::UI::HTML::Presentation->new([
+	Bivio::Collection::SingletonMap->get(qw(
 	    Bivio::UI::Setup::Intro
 	    Bivio::UI::Setup::Admin
 	    Bivio::UI::Setup::Login
@@ -88,12 +70,14 @@ sub initialize {
     push(@_PERSISTENT, Bivio::UI::HTML::Page->new([$setup],
  	    Bivio::UI::Menu->new(1,
 		    [Bivio::Agent::TaskId::SETUP_INTRO, 'Club Setup'])));
-    my($admin) = Bivio::UI::HTML::Presentation->new([__PACKAGE__->get(qw(
+    my($admin) = Bivio::UI::HTML::Presentation->new([
+	Bivio::Collection::SingletonMap->get(qw(
 	    Bivio::UI::Admin::UserListView
 	    Bivio::UI::Admin::UserView
     ))]);
     push(@_PERSISTENT, $admin);
-    my($messages) = Bivio::UI::HTML::Presentation->new([__PACKAGE__->get(qw(
+    my($messages) = Bivio::UI::HTML::Presentation->new([
+	Bivio::Collection::SingletonMap->get(qw(
 	    Bivio::UI::MessageBoard::ListView
 	    Bivio::UI::MessageBoard::DetailView
     ))]);
@@ -105,7 +89,7 @@ sub initialize {
     push(@_PERSISTENT, $main_menu);
     push(@_PERSISTENT, Bivio::UI::HTML::Page->new(
  	    [$admin, $messages], $main_menu));
-    return 1;
+    return;
 }
 
 #=PRIVATE METHODS
