@@ -67,7 +67,6 @@ my($_XML_TO_HTML_PROGRAM) = {
     # Many-to-one mappings
     map({$_ => []} qw(
         answer/para
-	epigraph
 	figure
 	qandaentry
 	qandaset
@@ -112,11 +111,19 @@ my($_XML_TO_HTML_PROGRAM) = {
         chapter
         preface
     )),
+    'figure/title' => [],
 
     # One-to-one mappings
     abstract => '<p><table width="70%" align="center" border="0"><tr>'
         . '<td align="center">${_}</td></tr></table></p>',
-    attribution => '<div align="right">-- ${_}</div>',
+    attribution => sub {
+	my($attr, $html, $clipboard) = @_;
+	# epigraph requires attribution be first in O'Reilly's dblite
+	# DTD.  This means we have to store it in the clipboard and
+	# retrieve it in epigraph.  Element order shouldn't matter...
+	$clipboard->{attribution} = '<div align="right">-- ${_}</div>';
+	return '';
+    },
     blockquote => ['blockquote'],
     comment => '<i>[COMMENT: ${_}]</i>',
     emphasis => sub {
@@ -125,6 +132,10 @@ my($_XML_TO_HTML_PROGRAM) = {
 	    : $attr->{role} eq 'bold' ? 'b'
 	    : die($attr->{role}, ': bad role on emphasis');
 	return "<$r>$$html</$r>";
+    },
+    epigraph => sub {
+	my($attr, $html, $clipboard) = @_;
+	return "<blockquote>$$html$clipboard->{attribution}</blockquote>";
     },
     'figure/title' => ['center', 'b'],
     footnote => sub {
