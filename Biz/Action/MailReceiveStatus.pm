@@ -55,7 +55,7 @@ Sets status of the request and sets reply to empty.
 sub execute {
     my($proto, $req, $status) = @_;
     my($reply) = $req->get('reply');
-    $reply->set_http_status($status || Bivio::Ext::ApacheConstants->OK);
+    $reply->set_http_status($status || Bivio::Ext::ApacheConstants->HTTP_OK);
     my($buffer) = '';
     $reply->set_output(\$buffer);
     return 0;
