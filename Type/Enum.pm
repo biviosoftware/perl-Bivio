@@ -95,6 +95,24 @@ sub from_int {
     return _get_info(shift(@_), shift(@_) + 0)->[5];
 }
 
+=for html <a name="from_name"></a>
+
+=head2 static from_name(string name) : Bivio::Type::Enum
+
+Returns enum value for specified name in a case-insensitive manner.
+
+=cut
+
+sub from_name {
+    my($proto, $name) = @_;
+    Carp::croak("$name: is not a string") if ref($name);
+    $name = uc($name);
+    my($info) = _get_info($proto, $name);
+    Carp::croak("$name: is not the name of an ", ref($proto) || $proto)
+		unless $name eq $info->[3];
+    return $info->[5];
+}
+
 =for html <a name="unsafe_from_any"></a>
 
 =head2 static unsafe_from_any(any thing) : Bivio::Type::Enum
