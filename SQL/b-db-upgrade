@@ -194,7 +194,6 @@ CREATE TABLE connect_survey_t (
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
   tablespace realm_data
 /
-EOF
 
 --
 -- connect_survey_t
