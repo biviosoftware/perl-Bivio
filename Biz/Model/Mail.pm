@@ -7,7 +7,7 @@ $Bivio::Biz::Model::Mail::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::Model::Mail - where email messages enter the system
+Bivio::Biz::Model::Mail - where email messages are managed
 
 =head1 SYNOPSIS
 
@@ -28,13 +28,15 @@ use Bivio::Biz::PropertyModel;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Model::Mail> holds information about an email message
-which is stored in mail_t and file_t, volume MAIL_MESSAGE&MAIL_MESSAGE_CACHE
+which is stored in mail_t and file_t, volume MAIL & MAIL_CACHE
 
 
 =cut
 
 #=IMPORTS
+use MIME::Parser;
 use Bivio::IO::Trace;
+use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
@@ -42,13 +44,13 @@ use Bivio::Type::Line;
 use Bivio::Type::Email;
 use Bivio::Type::PrimaryId;
 use Bivio::Type::FileVolume;
-use MIME::Parser;
+use Bivio::MIME::TextToHTML;
 
 #=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_MAX_SUBJECT) = Bivio::Type::Line->get_width;
-my($_FILE_CLIENT);
 my($_UNKNOWN_ADDRESS);
 
 =head1 METHODS
@@ -57,44 +59,48 @@ my($_UNKNOWN_ADDRESS);
 
 =for html <a name="create"></a>
 
-=head2 create(Bivio::Mail::Message msg, Bivio::Biz::Model::RealmOwner realm_owner)
+=head2 create(Bivio::Mail::Message msg, int mail_id, int date)
 
 Creates a mail message model from a L<Bivio::Mail::Message>.
  - Validates message fields
- - Stores raw message in MAIL_MESSAGE file volume (implicit quota check)
-   by fyguring out its place in a possible discussion thread
+ - Stores raw message in MAIL file volume (implicit quota check)
+   by figuring out its place in a possible discussion thread
  - Decodes all MIME attachments, converts text/* parts and stores
-   all of them in volume MAIL_MESSAGE_CACHE
+   them in volume MAIL_CACHE
 
 =cut
 
 sub create {
-    my($self, $msg, $realm_owner) = @_;
+    my($self, $msg, $mail_id, $date) = @_;
     my($req) = $self->unsafe_get_request;
+    my($realm_owner) = $req->get('auth_realm')->get('owner');
 
-    # $date_time is always valid
-    my($date_time) = $msg->get_date_time() || time;
+    # Use $date if Date: field can't be parsed (now as last resort)
+    my($date_time) = $msg->get_date_time() || $date || time;
     my($from_email, $from_name) = $msg->get_from;
     unless (defined($from_email)) {
 	$_UNKNOWN_ADDRESS = $req->format_email(
 		Bivio::Type::Email->IGNORE_PREFIX.'unknown')
 		unless $_UNKNOWN_ADDRESS;
 	$from_email = $_UNKNOWN_ADDRESS;
+        Bivio::IO::Alert->warn("Assigning 'unknown' from_email");
     }
 
     defined($from_name) || ($from_name = $from_email);
     my($reply_to_email) = $msg->get_reply_to;
-    my($subject) = $msg->get_subject;
 
-    my($club_id, $club_name) = $realm_owner->get('realm_id', 'name');
-    # Strip the club name prefix out of the message, but leave the "Re:"
-    $subject =~ s/^\s*((?:re:)?\s*)$club_name:\s*/$1/i;
+    my($subject) = $msg->get_head->get('subject');
+    chomp($subject);
+    my($realm_id, $realm_name) = $realm_owner->get('realm_id', 'name');
+    # Strip the name prefix out of the message, but leave the "Re:"
+    $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
     $subject = defined($subject) && $subject !~ /^\s*$/s
 	    ? substr($subject, 0, $_MAX_SUBJECT) : '(no subject)';
-    my($sortable_subject) = _sortable_subject($subject, $club_name);
+    my($sortable_subject) = _sortable_subject($subject, $realm_name);
+
     my($values) = {
-	club_id => $club_id,
-	msg_id => $msg->get_message_id,
+	realm_id => $realm_id,
+	message_id => $msg->get_message_id,
 	date_time => Bivio::Type::DateTime->from_unix($date_time),
 	from_name => $from_name,
 	from_name_sort => lc($from_name),
@@ -103,40 +109,47 @@ sub create {
 	subject => $subject,
 	subject_sort => $sortable_subject,
         is_public => 0,
+        is_thread_root => 0,
     };
-    _trace('msg from '.$from_name.' club_id '.$club_id) if $_TRACE;
-    
-    # Find discussion thread and link to it
-    if (@refs = $msg->get_references) {
-        # SQL query...
-        $values->{thread_head} = ;
-        $values->{thread_parent} = ;
-    }
-    unless (@refs) {
-        # match subject string if no success with message ids
-        # SQL query...
-        $values->{thread_head} = ;
-        $values->{thread_parent} = ;
-    }
-    $self->SUPER::create($values);
-    my($mail_id) = $self->get('mail_id');
+    # Provide mail_id if it was passed on
+    $values->{mail_id} = $mail_id if defined($mail_id);
 
+    _attach_to_thread($msg, $values);
+
+    # Insert into mail_t and retrieve the new mail_id sequence number
+    $self->SUPER::create($values);
+    $mail_id = $self->get('mail_id');
+
+    my($volume) = Bivio::Type::FileVolume::MAIL;
+    my($user_id) = $req->unsafe_get('auth_user');
+    # Get user of root directory if we don't have an auth_user
+    unless( $user_id ) {
+        my($root_dir_id) = $volume->get_root_directory_id($req->get('auth_id'));
+        my($root_dir) = Bivio::Biz::Model::File->new($req);
+        $root_dir->load(file_id => $root_dir_id);
+        $user_id = $root_dir->get('user_id');
+    }
     # Store raw message in file_t
-    my($volume) = Bivio::Type::FileVolume::MAIL_MESSAGE;
     my($file) = Bivio::Biz::Model::File->new($req);
     $file->create({
         is_directory => 0,
+        user_id => $user_id,
         name => $mail_id,
-        content => $msg->get_entity->as_string,
+        content => $msg->get_rfc822,
         directory_id => $volume->get_root_directory_id($req->get('auth_id')),
         volume => $volume,
     });
-    $rfc822_id = $req->get('Bivio::Biz::Model::File.file_id');
-    $self->update({ rfc822_id => $rfc822_id });
+    my($rfc822_id, $bytes ) = $file->get('file_id', 'bytes');
 
-    # Preprocess text and store in cache
-    $self->process_cache($mail_id, $msg->get_entity);
-    
+    # Convert text parts to HTML and store all parts in cache
+    my($cache_id) = $self->unpack_and_cache($req, $msg->get_entity,
+            $user_id, $mail_id);
+
+    $self->update({
+        rfc822_id => $rfc822_id,
+        bytes => $bytes,
+        cache_id => $cache_id
+    });
     return;
 }
 
@@ -144,32 +157,97 @@ sub create {
 
 =head2 delete() : boolean
 
-Deletes the current model from the database. Returns 1 if successful,
-0 otherwise.
+Delete this mail and the corresponding file_t entries.
+Attach replies to the parent of this message, or, if this
+mail has been a thread root, make the replies thread roots.
+Returns 1 if successful, 0 otherwise.
 
 =cut
 
 sub delete {
-    my($self) = @_;
-    die("not supported");
+    my($self) = shift;
+    my($req) = $self->unsafe_get_request;
+    my($properties) = $self->internal_get;
+
+    # Is message part of a thread, but not the thread root?
+    if ($properties->{thread_parent_id}) {
+        # Adjust all replies to now point to our parent
+        _trace('Adjusting replies to point to new parent') if $_TRACE;
+        my($sth) = Bivio::SQL::Connection->execute('
+                UPDATE mail_t
+                SET thread_parent_id = ?
+                WHERE thread_parent_id = ?',
+                [$properties->{thread_parent_id}, $properties->{mail_id}]);
+    } elsif ($properties->{is_thread_root}) {
+        # Deleting the root of a thread!
+        # Get the first reply and make it the new thread root
+        my($sth) = Bivio::SQL::Connection->execute('
+                    SELECT mail_id
+                    FROM mail_t
+                    WHERE thread_parent_id = ?
+                    ORDER BY date_time',
+                [$properties->{mail_id}]);
+        my $row = $sth->fetchrow_arrayref;
+        my($new_root) = $row->[0];
+        if( defined($new_root) ) {
+            _trace('Making ', $new_root, ' the new thread root') if $_TRACE;
+            # Let all other thread members point to the new root message
+            my($sth) = Bivio::SQL::Connection->execute('
+                    UPDATE mail_t
+                    SET thread_root_id = ?
+                    WHERE thread_root_id = ?',
+                    [$new_root, $properties->{mail_id}]);
+            my($num_replies) = $sth->rows;
+            # Make it top of the thread
+            $sth = Bivio::SQL::Connection->execute('
+                    UPDATE mail_t
+                    SET thread_parent_id = NULL, thread_root_id = NULL,
+                        is_thread_root = ?
+                    WHERE mail_id = ?',
+                    [$num_replies > 0, $new_root]);
+        } else {
+            Bivio::IO::Alert->warn('mail_id=', $properties->{mail_id},
+                    ': is_thread_root was true, but had no replies!');
+        }
+    }
+    my($file) = Bivio::Biz::Model::File->new($req);
+    if( defined($properties->{rfc822_id}) ) {
+        _trace('Deleting file, id=', $properties->{rfc822_id}) if $_TRACE;
+        $file->load(
+                file_id => $properties->{rfc822_id},
+                volume => Bivio::Type::FileVolume::MAIL,
+               );
+        $file->delete;
+    }
+    if( defined($properties->{cache_id}) ) {
+        _trace('Deleting file, id=', $properties->{cache_id}) if $_TRACE;
+        $file->load(
+                file_id => $properties->{cache_id},
+                volume => Bivio::Type::FileVolume::MAIL_CACHE,
+               );
+        $file->delete;
+    }
+    return $self->SUPER::delete(@_);
 }
 
-=for html <a name="handle_config"></a>
+=for html <a name="unpack_and_cache"></a>
 
-=head2 static handle_config(hash cfg)
+=head2 unpack_and_cache(Request req, MIME::Entity e, user_id, mail_id) : int
 
-=over 4
-
-=item file_server : string (required)
-
-=back
+Unpack all parts recursively, convert simple text into HTML and store all
+parts in cache. Returns the top-level directory id.
 
 =cut
 
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_FILE_CLIENT = Bivio::File::Client->new($cfg->{file_server});
-    return;
+sub unpack_and_cache {
+    my($self, $req, $entity, $user_id, $mail_id) = @_;
+
+    # Convert and store attachments
+    my($volume) = Bivio::Type::FileVolume::MAIL_CACHE;
+    my($cache_id) = _walk_attachment_tree($self, $entity,
+            $volume->get_root_directory_id($req->get('auth_id')),
+            $user_id, $mail_id, undef);
+    return $cache_id;
 }
 
 =for html <a name="internal_initialize"></a>
@@ -187,9 +265,9 @@ sub internal_initialize {
 	columns => {
             mail_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            club_id => ['Bivio::Type::PrimaryId',
+            realm_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NONE()],
-            msg_id => ['Bivio::Type::Line',
+            message_id => ['Bivio::Type::Line',
     		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
             date_time => ['Bivio::Type::DateTime',
     		Bivio::SQL::Constraint::NOT_NULL()],
@@ -205,52 +283,28 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
             subject_sort => ['Bivio::Type::Line',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            is_public => ['Bivio::Type::Integer',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            is_thread => ['Bivio::Type::Integer',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            thread_root => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            thread_parent => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+            is_public => ['Bivio::Type::Boolean',
+    		Bivio::SQL::Constraint::NONE()],
+            is_inline_only => ['Bivio::Type::Boolean',
+    		Bivio::SQL::Constraint::NONE()],
+            is_thread_root => ['Bivio::Type::Boolean',
+    		Bivio::SQL::Constraint::NONE()],
+            thread_root_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NONE()],
+            thread_parent_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NONE()],
             rfc822_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
             cache_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
+            bytes => ['Bivio::Type::Integer',
+    		Bivio::SQL::Constraint::NONE()],
         },
-	auth_id => 'club_id',
+	auth_id => 'realm_id',
 	other => [
-	    [qw(club_id Club.club_id)],
+	    [qw(realm_id Club.club_id)],
 	],
     };
-}
-
-=for html <a name="process_cache"></a>
-
-=head2 process_cache(int mail_id, MIME::Entity) : int
-
-Process MIME parts, convert text into HTML and store in cache.
-Return TRUE if all parts are either text, image or message parts.
-
-=cut
-
-sub process_cache {
-    my($self, $mail_id, $entity) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    # Convert and store attachments
-    my($volume) = Bivio::Type::FileVolume::MAIL_MESSAGE_CACHE;
-    my($cache_id) = _walk_attachment_tree($self, $entity, $mail_id,
-            $volume->get_root_directory_id($req->get('auth_id')));
-    $self->update({ cache_id => $cache_id });
-
-    return;
-}
-
-sub setup_club {
-    my(undef, $club) = @_;
-# TODO: Anything necessary?
-    return;
 }
 
 #=PRIVATE METHODS
@@ -258,14 +312,13 @@ sub setup_club {
 # _walk_attachment_tree(MIME::Entity entity, int dir_id, string mail_id, int index) : int
 #
 # Descend into the message parts:
-# - create a directory for multipart attachments
-# - create a file for each actual part
+#  - create a directory for multipart attachments
+#  - create a file for each actual part
 # Store the MIME header in file_t.aux_info field
 # Returns file_id in case of a single part message, directory_id otherwise
 
 sub _walk_attachment_tree {
-    my($self, $entity, $dir_id, $mail_id, $index) = @_;
-    my($file_id);
+    my($self, $entity, $dir_id, $user_id, $mail_id, $index) = @_;
     my($req) = $self->unsafe_get_request;
     my($file) = Bivio::Biz::Model::File->new($req);
     my(@parts) = $entity->parts;
@@ -275,69 +328,114 @@ sub _walk_attachment_tree {
         $file->create({
             is_directory => 1,
             name => $mail_id,
-            aux_info => $entity->head,
+            user_id => $user_id,
+            aux_info => $entity->header_as_string,
             directory_id => $dir_id,
-            volume => Bivio::Type::FileVolume::MAIL_MESSAGE_CACHE,
+            volume => Bivio::Type::FileVolume::MAIL_CACHE,
         });
-        $file_id = $req->get('Bivio::Biz::Model::File.file_id');
-        $dir_id = $req->get('Bivio::Biz::Model::File.directory_id');
+        $dir_id = $file->get('directory_id');
         my($i);
         for $i (0..$#parts) {
             # Pass $mail_id and $i separately, so subparts can refer to parent
-            _walk_attachment_tree($self, $parts[$i], $dir_id, $mail_id, $i);
+            _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
+                    $mail_id, $i);
         }
     } else {
         my($mime_type) = $entity->mime_type;
         if ($mime_type =~ m!^text/!) {
-            my($tohtml) = Bivio::MIME::AnyText2Html->new;
+            my($tohtml) = Bivio::MIME::TextToHTML->new;
             $tohtml->convert($entity, 'att?t=' . $mail_id);
         }
-        $mail_id .= '.' . $index if $index;
+        # Append the given index or its content-id to the name of the directory
+        if(my($cid) = $entity->head->get('Content-ID')) {
+            $mail_id .= '.' . $cid;
+        } elsif ($index) {
+            $mail_id .= '.' . $index;
+        }
         $file->create({
             is_directory => 0,
             name => $mail_id,
-            aux_info => $entity->header_as_string,
+            user_id => $user_id,
+            aux_info => $entity->mime_type,
             content => $entity->bodyhandle->as_string,
             directory_id => $dir_id,
-            volume => Bivio::Type::FileVolume::MAIL_MESSAGE_CACHE,
+            volume => Bivio::Type::FileVolume::MAIL_CACHE,
         });
-        $file_id = $req->get('Bivio::Biz::Model::File.file_id');
     }
-    return $file_id;
+    return $file->get('file_id');
 }
 
-# _fileserver2db(Bivio::Biz::Model::Mail, Bivio::Agent::Request req, int mail_id) :
+# _attach_to_thread(Bivio::Mail::Message msg, hash_ref values) : 
 #
-# Read a mail message from the file server and load it into
-# the new mail_t/file_t system.
+# Find an existing thread for I<msg>, using the message-ids first
+# and if that fails using the subject to match up with other messages.
 #
-sub _fileserver2db {
-    my($self, $req, $mail_id) = @_;
-    my($club_name) = $req->get('auth_realm')->format_file;
-    my($filename) = '/'.$club_name.'/messages/rfc822/'.$mail_id;
-    my($fs_msg);
-    die("couldn't get mail message: $fs_msg")
-	    unless $_FILE_CLIENT->get($filename, \$fs_msg);
-    my($msg) = Bivio::Mail::Message->new($fs_msg);
-    my($email, $name) = $msg->get_from;
-    $self->die(Bivio::DieCode::CLIENT_ERROR) unless defined($email);
-
-    my($realm_owner) = $req->get('auth_realm')->get('owner');
-    my($club) = Bivio::Biz::Model::Club->new($req);
-    $club->load(club_id => $realm_owner->get('realm_id'));
-
-    my($mail) = Bivio::Biz::Model::Mail->new($req);
-    $mail->create($msg, $realm_owner, $club);
+sub _attach_to_thread {
+    my($msg, $values) = @_;
+    # Shortcutting the procedure... only use newest message-id
+# TODO: Search for all message ids
+    my($in_reply_to) = $msg->get_references;
+    if ($in_reply_to) {
+        # Have existing message with message_id = $in_reply_to?
+        my($sth) = Bivio::SQL::Connection->execute('
+                SELECT mail_id,is_thread_root,thread_root_id FROM mail_t
+                WHERE message_id=?',
+                [$in_reply_to]);
+        my($row) = $sth->fetchrow_arrayref;
+        if( defined($row) ) {
+            _trace('Found parent via Message-Id') if $_TRACE;
+            _attach_to_parent($row, $values);
+        }
+    }
+    unless (exists($values->{thread_parent_id})) {
+        # Have message(s) with the same subject? Attach to root message
+        my($sth) = Bivio::SQL::Connection->execute('
+                SELECT mail_id,is_thread_root,thread_root_id FROM mail_t
+                WHERE subject_sort = ? AND thread_root_id = NULL
+                ORDER BY date_time DESC',
+                [$values->{subject_sort}]);
+        # Attach to youngest message
+        my($row) = $sth->fetchrow_arrayref;
+        if( defined($row) ) {
+            _trace('Found parent via subject') if $_TRACE;
+           _attach_to_parent($row, $values);
+        }
+    }
     return;
 }
 
-# _sortable_subject(string subject, string clubname) : string
+# _attach_to_parent(Bivio::SQL::Connection sth, hash_ref values) : 
+#
+# Use first row returned by I<sth> as the parent message and
+# update I<values> to link to it. Also mark the parent as a "thread root"
+# in case it does neither have a thread_root_id nor a thread_parent_id.
+#
+sub _attach_to_parent {
+    my($row, $values) = @_;
+    _trace('Attaching to parent msg, id=', $row->[0]) if $_TRACE;
+    # Inherit the thread_root_id from the parent
+    $values->{thread_root_id} = $row->[2] || $row->[0];
+    # Also link directly to the parent
+    $values->{thread_parent_id} = $row->[0];
+    # If the parent message does not have a thread_root_id
+    # make it the root of this new thread
+    unless ($row->[2]) {
+        Bivio::SQL::Connection->execute('
+                        UPDATE mail_t
+                        SET is_thread_root = 1
+                        WHERE message_id=?',
+                [$row->[0]]);
+    }
+    return;
+}
+
+# _sortable_subject(string subject) : string
 #
 # Returns a stripped, lowercase version of the subject line for
 # storing in the "subject_sort" field.
 #
 sub _sortable_subject {
-    my($subject, $clubname) = @_;
+    my($subject) = @_;
     $subject = lc($subject);
     $subject =~ s/^\s*re:\s*//;
     $subject =~ s/\s+//g;
