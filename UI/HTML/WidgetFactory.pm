@@ -332,16 +332,16 @@ sub _create_edit {
 	return Bivio::UI::HTML::Widget::TextArea->new({
 	    field => $field,
 	    rows => 5,
-	    cols => 45,
+	    cols => Bivio::Type::TextArea->LINE_WIDTH,
 	    %$attrs,
 	});
     }
 
-    if (UNIVERSAL::isa($type, 'Bivio::Type::BLOB')) {
+    if (UNIVERSAL::isa($type, 'Bivio::Type::TextArea')) {
 	return Bivio::UI::HTML::Widget::TextArea->new({
 	    field => $field,
 	    rows => 15,
-	    cols => 60,
+	    cols => Bivio::Type::TextArea->LINE_WIDTH,
 	    %$attrs,
 	});
     }
