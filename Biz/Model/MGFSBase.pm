@@ -87,10 +87,12 @@ sub can_import_from {
 
 =for html <a name="from_mgfs"></a>
 
-=head2 from_mgfs(string record, string file)
+=head2 from_mgfs(string record, string file) : boolean
 
 Creates/updates an MGFS model from the MGFS record format.
 Bad records are written to <model>_reject and ignored.
+Returns 1 on success, 0 on failure.
+Failures should be rolled back.
 
 =cut
 
@@ -114,8 +116,9 @@ sub from_mgfs {
 	    $importer->is_update($file));
     if ($die) {
 	$self->write_reject_record($die, $record);
+	return 0;
     }
-    return;
+    return 1;
 }
 
 =for html <a name="internal_get_mgfs_import_format"></a>

@@ -62,7 +62,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="from_mgfs"></a>
 
-=head2 from_mgfs(string record, string file)
+=head2 from_mgfs(string record, string file) : boolean
 
 Creates/updates an MGFS model from the MGFS record format.
 Skips non stock files.
@@ -75,9 +75,9 @@ sub from_mgfs {
     # only record types of D
     # skips industry/index/composite records
     if (substr($record, 4, 1) eq 'D') {
-	$self->SUPER::from_mgfs($record, $file);
+	return $self->SUPER::from_mgfs($record, $file);
     }
-    return;
+    return 1;
 }
 
 =for html <a name="internal_get_mgfs_import_format"></a>

@@ -171,7 +171,7 @@ sub create {
 
 =for html <a name="from_mgfs"></a>
 
-=head2 from_mgfs(string record, string file)
+=head2 from_mgfs(string record, string file) : boolean
 
 Overrides MGFSBase.from_mgfs to deal with the one-to-many format for
 MGFS quotes.
@@ -184,15 +184,14 @@ sub from_mgfs {
 
     # process the indb02 and chgdb02 files normally
     if ($file eq 'indb02' || $file eq 'chgdb02') {
-	$self->SUPER::from_mgfs($record, $file);
-	return;
+	return $self->SUPER::from_mgfs($record, $file);
     }
 
     # workaround for unnamed MGFS data, ignore quotes for unnamed instruments
     my($name) = substr($record, 12, 80);
     # trim spaces
     $name =~ s/\s+$//;
-    return if $name eq '';
+    return 1 if $name eq '';
 
     # date records store the array in a local var
     my($record_id) = substr($record, 4, 8);
@@ -242,11 +241,11 @@ sub from_mgfs {
 	    my($die) = $self->try_to_update_or_create($values, 2);
 	    if ($die) {
 		$self->write_reject_record($die, $record);
-		last;
+		return 0;
 	    }
 	}
     }
-    return;
+    return 1;
 }
 
 =for html <a name="internal_get_mgfs_import_format"></a>

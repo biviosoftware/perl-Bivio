@@ -87,7 +87,7 @@ sub create {
 
 =for html <a name="from_mgfs"></a>
 
-=head2 from_mgfs(string record, string file)
+=head2 from_mgfs(string record, string file) : boolean
 
 Overrides from_mgfs to determine if it is a stock record.
 
@@ -108,7 +108,7 @@ sub from_mgfs {
 	    # skip companies, the names are shorter than the q files
 	    # but still need to process industries and composites,
 	    # they don't exists in q files
-	    return;
+	    return 1;
 	}
 	$fields->{is_stock} = 0;
     }

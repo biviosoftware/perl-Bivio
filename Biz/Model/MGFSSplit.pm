@@ -46,7 +46,7 @@ my($_FACTORS) = 'a7' x 10;
 
 =for html <a name="from_mgfs"></a>
 
-=head2 from_mgfs(string record, string file)
+=head2 from_mgfs(string record, string file) : boolean
 
 Overrides MGFSBase.from_mgfs to deal with the one-to-many format for
 MGFS splits.
@@ -86,10 +86,10 @@ sub from_mgfs {
 		$file eq 'chgdb01');
 	if ($die) {
 	    $self->write_reject_record($die, $record);
-	    last;
+	    return 0;
 	}
     }
-    return;
+    return 1;
 }
 
 =for html <a name="internal_get_mgfs_import_format"></a>
