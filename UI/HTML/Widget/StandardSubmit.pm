@@ -26,23 +26,27 @@ use Bivio::UI::HTML::Widget::Grid;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Widget::StandardSubmit> draws a submit button.  The
-font is always I<FORM_SUBMIT>.
-
-If the form's L<SUBMIT_CANCEL|"SUBMIT_CANCEL"> returns an empty
-string, the button won't be rendered.
+C<Bivio::UI::HTML::Widget::StandardSubmit> Draws buttons associated with
+the form. By default, the ok_button and cancel_button are rendered. Use
+the buttons attribute to display an alternative.
 
 =head1 ATTRIBUTES
 
 =over 4
 
+=item buttons : array_ref []
+
+The buttons to render. If not specified, then ok_button and cancel_button
+are rendered.
+
 =item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
-=item standard_submit_separation : int [10] (inherited);
+=item labels : hash_ref []
 
-How far apart should the buttons be.
+Mapping of button field names to labels. A button label defaults to its
+field name.
 
 =back
 
@@ -50,10 +54,10 @@ How far apart should the buttons be.
 
 #=IMPORTS
 use Bivio::UI::HTML::Widget::ClearDot;
-use Bivio::UI::HTML::Widget::Submit;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_SEPARATION) = 10;
 
 =head1 FACTORIES
 
@@ -91,28 +95,31 @@ sub initialize {
     return if $fields->{initialized};
     $fields->{initialized} = 1;
 
-    my($row) = [
-	Bivio::UI::HTML::Widget::Submit->new({
-	    value => 'SUBMIT_OK',
-	}),
-    ];
+    # load the grid with buttons
+    my($values) = [];
+    my($buttons) = $self->unsafe_get('buttons')
+	    || ['ok_button', 'cancel_button'];
 
-    # Only include cancel and spacer if there is a cancel
-    my($fc) = $self->ancestral_get('form_class');
-    if ($fc->SUBMIT_CANCEL) {
-	my($separation) = $self->ancestral_get(
-		'standard_submit_separation', 10);
-	push(@$row,
-	    Bivio::UI::HTML::Widget::ClearDot->as_html($separation),
-	    Bivio::UI::HTML::Widget::Submit->new({
-		value => 'SUBMIT_CANCEL',
-		attributes => 'onclick="reset()"',
-	    }),
-	);
+    my($factory) = 'Bivio::UI::HTML::WidgetFactory';
+    my($form) = Bivio::Biz::Model->get_instance(
+	    $self->ancestral_get('form_class'));
+    my($labels) = $self->unsafe_get('labels') || {};
+
+    foreach my $button (reverse(@$buttons)) {
+	unshift(@$values, $factory->create(ref($form).".$button", {
+	    attributes => $form->get_field_type($button)->isa(
+		    'Bivio::Type::CancelButton')
+	            ? 'onclick="reset()"'
+	            : '',
+	    label => Bivio::UI::Label->get_simple(
+		    $labels->{$button} || $button),
+	}));
+	unshift(@$values,
+		Bivio::UI::HTML::Widget::ClearDot->as_html($_SEPARATION))
+		unless $button eq $buttons->[0];
     }
 
-    # Initialize the grid
-    $self->put(values => [$row]);
+    $self->put(values => [$values]);
     $self->SUPER::initialize;
     return;
 }
