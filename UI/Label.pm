@@ -82,6 +82,9 @@ _compile(
     REMARK => ['Remark', undef, 'RealmTransaction.remark'],
     DEFAULT_REMARK => ['Default Remark'],
     MEMBER_SPECIFIC_REMARK => ['Member Specific Remark'],
+    REALM_INSTRUMENT_NAME => ['Name', undef, 'RealmInstrument.name'],
+    TICKER => ['Ticker', undef, 'Instrument.ticker_symbol'],
+    NONE => [' '],
 );
 
 =head1 METHODS
