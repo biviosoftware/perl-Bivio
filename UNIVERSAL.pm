@@ -95,6 +95,22 @@ sub package_name {
     return ref($proto) || $proto;
 }
 
+=for html <a name="simple_package_name"></a>
+
+=head2 static simple_package_name() : string
+
+Returns the package name sans directory prefixes, i.e. the simple package
+name of this class is C<UNIVERSAL>.
+
+=cut
+
+sub simple_package_name {
+    my($proto) = @_;
+    $proto = ref($proto) || $proto;
+    $proto =~ s/.*:://;
+    return $proto;
+}
+
 #=PRIVATE METHODS
 
 =head1 SEE ALSO
