@@ -68,7 +68,6 @@ use Carp ();
 
 #=VARIABLES
 
-
 =head1 FACTORIES
 
 =cut
@@ -191,8 +190,10 @@ sub init_column {
 		name => $qual_model,
 		instance => $instance,
 		sql_name => $instance->get_info('table_name') . $qual_index,
+		column_names_referenced => [],
 	    };
 	}
+	push(@{$model->{column_names_referenced}}, $column);
 	my($type) = $model->{instance}->get_field_type($column);
 	$col = {
 	    # Bivio::SQL::Support attributes
@@ -341,6 +342,7 @@ sub _init_column_from_hash {
 		    unless $decl->{type} && $decl->{name};
 	$col = {name => $first};
 	push(@{$attrs->{local_columns}}, $col);
+	$attrs->{columns}->{$first} = $col;
     }
     # Override or define new, but only set if set
     if ($decl->{type}) {
@@ -354,6 +356,7 @@ sub _init_column_from_hash {
 			    'Bivio::SQL::Constraint');
 	$col->{constraint} = $decl->{constraint};
     }
+    push(@{$attrs->{$class}}, $col);
     return $col;
 }
 
