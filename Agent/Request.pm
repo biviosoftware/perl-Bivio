@@ -552,8 +552,10 @@ sub format_uri {
     $path_info = $self->unsafe_get('path_info') unless int(@_) >= 5;
 
     my($uri) = Bivio::Agent::HTTP::Location->format(
-	    $task_id, defined($auth_realm) ? $auth_realm :
-	    $self->get_realm_for_task($task_id), $self, 0,
+	    $task_id,
+	    defined($auth_realm) ? $auth_realm
+	    : $self->get_realm_for_task($task_id),
+	    $self, 0,
 	    $path_info);
 
     # Yes, we don't want $query unless it is passed.
@@ -828,7 +830,7 @@ sub internal_redirect_realm {
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
 		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
-#TODO: MOVE THIS INTO MyClubRedirect or some other business logic.
+#TODO: MOVE this out of here
 #      Eventually need specific list.
 		    # Club not found.  Try to redirect to DEMO_REDIRECT
 		    # which must be in GENERAL domain
