@@ -92,13 +92,14 @@ sub create {
     my($from_email, $from_name) = $msg->get_from;
     $self->die('DIE', {message => 'missing or bad From: address'})
                 unless defined($from_email);
-    $self->die('DIE', {message => 'From: mail address too long'})
+    Bivio::Type::Email->invalidate(\$from_email)
                 if length($from_email) > $_MAX_WIDTH;
 
     defined($from_name) || ($from_name = $from_email);
     $from_name = substr($from_name, 0, $_MAX_WIDTH);
+
     my($reply_to_email) = $msg->get_reply_to || $from_email;
-    $self->die('DIE', {message => 'Reply-To: mail address too long'})
+    Bivio::Type::Email->invalidate(\$reply_to_email)
                 if length($reply_to_email) > $_MAX_WIDTH;
 
     my($subject) = $msg->get_field('subject');
