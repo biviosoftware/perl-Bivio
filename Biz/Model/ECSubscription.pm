@@ -69,14 +69,14 @@ sub internal_initialize {
 
 =head2 is_running() : boolean
 
-Returns TRUE if this subscription is running, ie. not expired.
+Returns TRUE if this subscription is currently running, ie. not expired.
 
 =cut
 
 sub is_running {
     my($self) = @_;
     return Bivio::Type::Date->compare(Bivio::Type::Date->now,
-            $self->get('end_date')) == 1 ? 1 : 0;
+            $self->get('end_date')) == 1 ? 0 : 1;
 }
 
 #=PRIVATE METHODS
