@@ -6,7 +6,7 @@ $Bivio::Auth::Realm::Club::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Auth::Realm::Club - defines the realm owned by a particular user
+Bivio::Auth::Realm::Club - defines the realm owned by a particular club
 
 =head1 SYNOPSIS
 
@@ -32,9 +32,6 @@ L<Bivio::Biz::Model::Club|Bivio::Biz::Model::Club>.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Model::Club;
-use Bivio::Agent::TaskId;
-use Bivio::Auth::Role;
 
 #=VARIABLES
 
@@ -46,7 +43,7 @@ use Bivio::Auth::Role;
 
 =head2 static new(Bivio::Biz::Model::RealmOwner owner) : Bivio::Auth::Realm::Club
 
-Define the realm owned by this particular user.
+Define the realm owned by this particular club.
 
 =cut
 

@@ -81,9 +81,12 @@ sub execute {
     my($query) = $req->unsafe_get('query');
     if ($query && defined($query->{QUERY_TAG()})) {
 #TODO: Assumes realm is always first name...
-	$req->client_redirect('/'.Bivio::Util::escape_uri(
-		lc($query->{QUERY_TAG()})));
+	my($uri) = Bivio::Util::escape_uri(lc($query->{QUERY_TAG()}));
+	$uri =~ s!^([^/])!/$1!;
+	$req->client_redirect($uri);
+	# DOES NOT RETURN
     }
+
     # Just redirect to the configured default
     $req->client_redirect($req->get('task')->get('next'));
     # DOES NOT RETURN

@@ -31,10 +31,6 @@ the one without a specific owner.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
 #=IMPORTS
 
 #=VARIABLES

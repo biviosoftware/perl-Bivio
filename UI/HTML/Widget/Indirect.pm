@@ -38,6 +38,11 @@ is rendered dynamically by accessing this widget's attributes dynamically.
 
 Accessed dynamically.  If the dynamic value is false, nothing is rendered.
 
+=item value : array_ref (required,dynamic)
+
+Accessed dynamically.  Widget value must be a widget or
+false.
+
 =back
 
 =cut
@@ -67,14 +72,17 @@ sub initialize {
 =head2 render(any source, string_ref buffer)
 
 Render the indirect.  If there the widget value is false, then
-nothing is rendered.
+nothing is rendered.  If the widget value is an array_ref,
+it first calls get_widget_value to get the actual value.
 
 =cut
 
 sub render {
     my($self, $source, $buffer) = @_;
     my($v) = $self->get('value');
-    $v->render($source, $buffer) if $v;
+    return unless ref($v);
+    $v = $source->get_widget_value($v) if ref($v) eq 'ARRAY';
+    $v->render($source, $buffer) if ref($v);
     return;
 }
 

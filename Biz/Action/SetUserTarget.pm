@@ -29,8 +29,6 @@ Sets C<user_target> in the request which is used by forms.
 =cut
 
 #=IMPORTS
-use Bivio::Auth::Realm::Club;
-use Bivio::Auth::Realm::User;
 
 #=VARIABLES
 
@@ -49,7 +47,7 @@ Set C<user_target> to either C<auth_realm> or C<auth_user>.
 sub execute {
     my(undef, $req) = @_;
     my($auth_realm, $target) = $req->get('auth_realm', 'auth_user');
-    if ($auth_realm->get_type() eq Bivio::Auth::RealmType::USER()) {
+    if ($auth_realm->get('type') == Bivio::Auth::RealmType::USER()) {
 	$target = $auth_realm->get('owner');
     }
     elsif (!defined($target)) {

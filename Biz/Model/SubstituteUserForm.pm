@@ -63,7 +63,6 @@ sub SUBMIT_CANCEL {
 
 #=IMPORTS
 use Bivio::Agent::HTTP::Cookie;
-use Bivio::Auth::RealmType;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Hash;
 use Bivio::Type::Text;

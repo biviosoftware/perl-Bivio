@@ -100,6 +100,8 @@ _compile([
     LIST_ACTION => [undef, undef, 'small'],
     STRONG => [undef, undef, 'strong'],
     RADIO => [undef, undef],
+    CELEBRITY_BOX_TITLE => [$_SANS_SERIF, 'celebrity_box_title'],
+    CELEBRITY_BOX_TEXT => [$_SANS_SERIF, undef, 'small'],
 ]);
 
 =head1 METHODS

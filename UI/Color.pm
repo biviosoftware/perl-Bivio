@@ -53,6 +53,8 @@ __PACKAGE__->compile(
 	0xFFFFFF,
 	'image_menu_separator',
 	'report_page_heading_bg',
+        'celebrity_box_title',
+        'celebrity_box_text_bg',
     ],
     ERROR => [
 	0x990000,
@@ -76,6 +78,7 @@ __PACKAGE__->compile(
 	'page_heading',
 	'form_field_in_text',
 	'text_menu_font',
+        'celebrity_box',
     ],
     ICON_TEXT_IA => [
 	0xEEEEEE,
