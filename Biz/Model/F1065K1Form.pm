@@ -317,27 +317,6 @@ sub internal_initialize {
 
 #=PRIVATE METHODS
 
-# _add_row(hash_ref row, Bivio::Biz::ListModel list)
-#
-# Adds the contents of the current list row to the specified row.
-#
-sub _add_row {
-    my($row, $list) = @_;
-    foreach my $field (@{$list->get_keys}) {
-	if (exists($row->{$field})) {
-	    my($type) = $list->get_field_type($field);
-	    if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
-		$row->{$field} = Bivio::Type::Amount->add(
-			$row->{$field}, $list->get($field));
-	    }
-	}
-	else {
-	    $row->{$field} = $list->get($field);
-	}
-    }
-    return;
-}
-
 # _get_cash_withdrawal_amount(Bivio::Biz::Model::RealmOwner user, string date) : string
 #
 # Returns the total cash amount withdrawn by the specified user.
@@ -532,26 +511,15 @@ sub _get_user_allocations {
     my($self, $user, $date) = @_;
     my($req) = $self->get_request;
 
-    # get tax year start
-    my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
-	    $date);
-
-    # add withdrawal and current allocations for the tax year
-    my($result) = {};
-
-    foreach my $list_name (qw(
-            Bivio::Biz::Model::WithdrawnAllocationList
-            Bivio::Biz::Model::MemberAllocationList)) {
-
-	my($list) = $req->get($list_name);
-	$list->reset_cursor;
-	while ($list->next_row) {
-	    if ($list->get('user_id') eq $user->get('realm_id')) {
-		_add_row($result, $list);
-	    }
+    my($allocations) = $req->get('Bivio::Biz::Model::MemberAllocationList');
+    $allocations->reset_cursor;
+    while ($allocations->next_row) {
+	if ($allocations->get('user_id') eq $user->get('realm_id')) {
+	    return $allocations;
 	}
     }
-    return Bivio::Collection::Attributes->new($result);
+    # return an empty set on failure
+    return Bivio::Collection::Attributes->new({});
 }
 
 # _negative(string amount) : string
