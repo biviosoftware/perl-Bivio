@@ -56,7 +56,6 @@ sub internal_initialize {
 	table_name => 'user_account_t',
 	columns => {
             user_id => ['User.user_id', 'PRIMARY_KEY'],
-            entity_id => ['Entity.entity_id', 'NOT_NULL'],
 	    status => ['UserStatus', 'NOT_NULL'],
 	    user_type => ['UserType', 'NOT_NULL'],
 	    last_cart_id => ['Cart.cart_id', 'NONE'],
