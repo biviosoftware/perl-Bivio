@@ -252,6 +252,7 @@ sub merge_http_log {
 		    'mod_ssl: SSL handshake timed out',
 		    'mod_ssl: SSL handshake failed: HTTP spoken on HTTPS port',
 		    'mod_ssl: SSL handshake interrupted by system',
+		    'request failed: URI too long',
 		    'Invalid method in request',
 		    'Facade::setup_request:.*: unknown facade uri',
                     'access to /favicon.ico failed',
