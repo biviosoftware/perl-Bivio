@@ -115,6 +115,9 @@ from model's order_by names.  Even indexed elements are the name
 and odd elements are true if ascending and false if descending.
 It is an array_ref to preserve the order specified by the user.
 
+You can pass C<order_by> in the query string and it will be parsed, if
+C<o> is not set.
+
 =item page_count : int
 
 Total number of pages that can be returned by this the query.  Only set if
@@ -127,10 +130,16 @@ Incoming is ignored if I<this>, because is set by
 L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
 Page numbers are one-based.
 
+You can pass C<page_number> in the query string and it will be parsed, if
+C<n> is not set.
+
 =item parent_id : string
 
 Primary id of parent list.  It is used to further qualify a
 list of lists.
+
+You can pass C<parent_id> in the query string and it will be parsed, if
+C<p> is not set.
 
 =item prev : array_ref
 
@@ -157,6 +166,9 @@ if the single character attribute doesn't exist.
 
 The primary key values for this item.  The query should be to
 find this primary key.  There should only be one row returned.
+
+You can pass C<this> in the query string and it will be parsed, if
+C<t> is not set.
 
 =item want_first_only : boolean (optional)
 
@@ -803,7 +815,7 @@ sub _parse_interval {
 #
 sub _parse_order_by {
     my($attrs, $support, $die) = @_;
-    my($value) = $attrs->{o} || '';
+    my($value) = $attrs->{o} || $attrs->{order_by} || '';
     my($res) = $attrs->{order_by} = [];
     my($order_by, $columns) = $support->unsafe_get(
 	    'order_by_names', 'columns');
@@ -832,8 +844,9 @@ sub _parse_order_by {
 sub _parse_page_number {
     my($attrs, $support, $die) = @_;
 
-    # Returns undef if no page number
-    $attrs->{page_number} = Bivio::Type::Integer->from_literal($attrs->{'n'});
+    # Returns undef if no page number.
+    $attrs->{page_number} = Bivio::Type::Integer->from_literal(
+	    $attrs->{'n'} || $attrs->{page_number});
 
     # Set page_number to 1 by default (if invalid)
     $attrs->{page_number} = FIRST_PAGE()
@@ -871,9 +884,11 @@ sub _parse_parent_id {
 # Parse the primary key.  The $_SEPARATOR is a special character
 # that is unlikely to appear in primary keys.
 #
+# Allows $tag or $name in the query.
+#
 sub _parse_pk {
     my($attrs, $support, $die, $tag, $name) = @_;
-    my($value) = $attrs->{$tag};
+    my($value) = $attrs->{$tag} || $attrs->{$name};
     $attrs->{$name} = undef, return unless defined($value);
     my($res) = $attrs->{$name} = [];
     my(@pk) = split(/$_SEPARATOR/o, $value);
