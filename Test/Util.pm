@@ -63,7 +63,6 @@ EOF
 #=IMPORTS
 use Bivio::Die;
 use Bivio::IO::File;
-use Bivio::IO::File;
 use Bivio::IO::Trace;
 use Bivio::Test::Language;
 use Bivio::Test;
