@@ -108,6 +108,7 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
@@ -119,6 +120,8 @@ use Bivio::Util;
 use Carp ();
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_HTTP_HOST) = sprintf('%d.%d.%d.%d',
 	unpack('C4', (gethostbyname(substr(`hostname`, 0, -1)))[4]));
@@ -455,6 +458,8 @@ sub internal_initialize {
 
 =head2 redirect(Bivio::Agent::TaskId new)
 
+=head2 redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm)
+
 Redirect the current task to the new task.
 
 B<DOES NOT RETURN.>
@@ -462,13 +467,48 @@ B<DOES NOT RETURN.>
 =cut
 
 sub redirect {
-    my($self, $new) = @_;
-    # Encapsulates the redirect.  Actually has nothing to do with
-    # request, but $req is central mechanism for such things.
-    Carp::croak($new, ': not a task id')
-		unless UNIVERSAL::isa($new, 'Bivio::Agent::TaskId');
-    Bivio::Die->die(Bivio::DieCode::REDIRECT_TASK(),
-	    {task_id => $new});
+    my($self, $new_task, $new_realm) = @_;
+    my($task) = Bivio::Agent::Task->get_by_id($new_task);
+    my($trt) = $task->get('realm_type');
+    if ($new_realm) {
+	# Assert param
+	my($nrt) = $new_realm->get_type;
+	Carp::croak($new_task->as_string, 'realm_type mismatch (',
+		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
+    }
+    else {
+	# Only set realm if type is different
+	my($ar) = $self->get('auth_realm');
+	unless ($ar->get_type eq $trt) {
+	    $new_realm = _get_realm($self, $trt, $new_task);
+	    # No new realm, do something reasonable
+	    unless (defined($new_realm)) {
+		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
+		    # Club not found.  Try to redirect to MY_CLUB_NOT_FOUND
+		    # which must be in GENERAL domain
+		    my($auth_user) = $self->unsafe_get('auth_user');
+		    if (defined($auth_user)) {
+			CORE::die('misconfiguration of MY_CLUB_NOT_FOUND task')
+				if Bivio::Agent::TaskId::MY_CLUB_NOT_FOUND()
+					eq $new_task;
+			$self->redirect(
+				Bivio::Agent::TaskId::MY_CLUB_NOT_FOUND());
+		    }
+		}
+		Bivio::Die->die('AUTH_REQUIRED', {
+		    auth_user => undef,
+		    entity => Bivio::Auth::RealmType::USER(),
+		    auth_role => undef,
+		    operation => $new_task});
+	    }
+	}
+    }
+    # Change realms before formatting uri
+    $self->set_realm($new_realm) if $new_realm;
+#TODO: should we be clearing the query?
+    # Need to set the uri, but the query is cleared
+    $self->put(uri => $self->format_uri($new_task, undef));
+    Bivio::Die->die(Bivio::DieCode::REDIRECT_TASK(), {task_id => $new_task});
     return;
 }
 
@@ -508,41 +548,65 @@ sub task_ok {
 	CORE::die("not yet implemented");
     }
     unless ($trt eq $art) {
-	# Find the appropriate realm
-	if ($trt eq Bivio::Auth::RealmType::GENERAL()) {
-	    $_GENERAL = Bivio::Auth::Realm::General->new unless $_GENERAL;
-	    $realm = $_GENERAL;
-	}
-	elsif ($trt eq Bivio::Auth::RealmType::CLUB()) {
-#TODO: This is wrong; need to allow user to go to club, from user realm
-	    &_trace($task_id, ': for club realm, but no club specified');
-	    return 0;
-	}
-	elsif ($trt eq Bivio::Auth::RealmType::USER()) {
-#TODO: Should this look in the user realm list?  This might point
-#      to an arbitrary user?
-	    my($auth_user) = $self->get('auth_user');
-	    if ($auth_user) {
-		$realm = $self->unsafe_get('auth_user_realm');
-		unless ($realm) {
-		    $realm = Bivio::Auth::Realm::User->new($auth_user);
-		    $self->put(auth_user_realm => $realm);
-		}
-	    }
-	    else {
-		&_trace($task_id, ': for user realm, but no auth_user');
-		return 0;
-	    }
-	}
-	else {
-	    CORE::die($trt->as_string, ': unknown realm type for ',
-		    $task_id->as_string);
-	}
+	$realm = _get_realm($self, $trt, $task_id);
+	return 0 unless $realm;
     }
     return $realm->can_user_execute_task($task, $self);
 }
 
 #=PRIVATE METHODS
+
+# _get_realm(Bivio::Agent::Request self, Bivio::Auth::RealmType realm_type, Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm
+#
+# Returns the realm for the specified type.  task_id is passed for
+# debugging purposes.
+#
+sub _get_realm {
+    my($self, $realm_type, $task_id) = @_;
+    # Find the appropriate realm
+    if ($realm_type eq Bivio::Auth::RealmType::GENERAL()) {
+	$_GENERAL = Bivio::Auth::Realm::General->new unless $_GENERAL;
+	return $_GENERAL;
+    }
+    if ($realm_type eq Bivio::Auth::RealmType::CLUB()) {
+#TODO: This is wrong; need to allow user to go to club, from user realm
+	&_trace($task_id, ': for club realm, but no club specified');
+	my($user_realms) = $self->get('user_realms');
+	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
+	foreach my $r (values(%$user_realms)) {
+	    next unless $r->{'RealmOwner.realm_type'}
+		    eq Bivio::Auth::RealmType::CLUB();
+	    my($rr) = $r->{'RealmUser.role'}->as_int;
+	    next unless  $rr > $role;
+	    $realm_id = $r->{'RealmUser.realm_id'};
+	    $role = $rr;
+	}
+	return undef unless $realm_id;
+	my($club) = Bivio::Biz::Model::RealmOwner->new($self);
+#TODO: This will bomb if the realm disappeared since (cached) user_realms
+#      was accessed.
+	$club->unauth_load(realm_id => $realm_id);
+	return Bivio::Auth::Realm::Club->new($club);
+    }
+    if ($realm_type eq Bivio::Auth::RealmType::USER()) {
+#TODO: Should this look in the user realm list?  This might point
+#      to an arbitrary user?
+	my($auth_user) = $self->get('auth_user');
+	if ($auth_user) {
+	    my($realm) = $self->unsafe_get('auth_user_realm');
+	    unless ($realm) {
+		$realm = Bivio::Auth::Realm::User->new($auth_user);
+		$self->put(auth_user_realm => $realm);
+	    }
+	    return $realm;
+	}
+	&_trace($task_id, ': for user realm, but no auth_user');
+#TODO: Distinguish between auth_user case and other cases
+	return undef;
+    }
+    CORE::die($realm_type->as_string, ': unknown realm type for ',
+	    $task_id->as_string);
+}
 
 =head1 COPYRIGHT
 

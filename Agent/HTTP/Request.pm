@@ -81,8 +81,9 @@ sub new {
     my($ret, $password) = $r->get_basic_auth_pw();
     my($auth_user) = ($ret == Apache::Constants::OK())
 	    ? _auth_user($self, $r->connection->user, $password) : undef;
+    my($uri) = $r->uri;
     my($auth_realm, $task_id)
-	    = Bivio::Agent::HTTP::Location->parse($self, $r->uri);
+	    = Bivio::Agent::HTTP::Location->parse($self, $uri);
 #TODO: Make secure.  Need to watch for large queries and forms here.
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
@@ -100,6 +101,7 @@ sub new {
     delete($form->{auth_id}) if $form;
 
     $self->put(
+	    uri => $uri,
 	    form => $form,
 	    query => $query,
 	    query_string => $query_string,

@@ -26,10 +26,11 @@ to which clubs she belongs.  Redirects request
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::Club;
 use Bivio::Auth::Realm::User;
 use Bivio::Biz::Model::UserClubList;
+use Bivio::IO::Trace;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -50,22 +51,9 @@ Redirects user to club start page if user is a member of a club.
 
 sub execute {
     my(undef, $req) = @_;
-    # Change to this user's realm, so we can look at UserClubList
-    $req->set_realm(Bivio::Auth::Realm::User->new($req->get('auth_user')));
-#TODO: Optimize to user request's user_realms
-    my($clubs) = Bivio::Biz::Model::UserClubList->new($req);
-    $clubs->load;
-    my($num_clubs) = $clubs->get_result_set_size;
-#TODO: Probably want to redirect to "create club"
-    $req->die(Bivio::DieCode::NOT_FOUND, {entity => 'UserClubList'})
-	    unless $num_clubs;
-    $clubs->next_row;
-    _trace($clubs->get_model('RealmOwner'), ', ',
-	    $clubs->get('RealmUser.role')) if $_TRACE;
 #TODO: If more than one club, then provide list or lookup default?
 #TODO: Look for club where user is not a guest.
-    $req->set_realm(Bivio::Auth::Realm::Club->new(
-	    $clubs->get_model('RealmOwner')));
+    # All the work is in redirect which switches realms for us
     # Go to the task for my_club
     $req->redirect($req->get('task')->get('next'));
     # DOES NOT RETURN

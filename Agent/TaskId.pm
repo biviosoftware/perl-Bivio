@@ -89,6 +89,14 @@ my(@_CFG) = (
 	Bivio::Biz::Action::Login
     )],
     [qw(
+        MY_CLUB_NOT_FOUND
+        6
+        GENERAL
+        DOCUMENT_READ
+        hm/start.html
+        Bivio::Biz::Action::HTTPDocument
+    )],
+    [qw(
         CLUB_ACCOUNTING_ACCOUNT_LIST
         9
         CLUB

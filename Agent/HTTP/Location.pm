@@ -78,6 +78,18 @@ sub format {
     return '/' . $uri;
 }
 
+=for html <a name="get_document_root"></a>
+
+=head2 get_document_root() : string
+
+Returns the document root.
+
+=cut
+
+sub get_document_root {
+    return $_DOCUMENT_ROOT;
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -182,10 +194,8 @@ sub parse {
 
     # If document_root is set, look for the file directly.  If found,
     # go to HTTP_DOCUMENT task.
-    if (defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri)) {
-	$req->put(http_document => $_DOCUMENT_ROOT . $uri);
-	return ($_GENERAL, $_DOCUMENT_TASK->[0]);
-    }
+    return ($_GENERAL, $_DOCUMENT_TASK->[0])
+	    if defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri);
 
     # If '/', then always not found
     $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri})
