@@ -138,8 +138,56 @@ sub find_row_by_content {
 	    }
 	}
     }
-  
+
     return undef;
+}
+
+=for html <a name="gen_form_data"></a>
+
+=head2 gen_form_data(Bivio::Test::HTMLAnalyzer self, string name, hash_ref p) : hash_ref
+
+Return a hash_ref that contains all information necessary to submit the
+form to the HTTP object.
+
+=cut
+
+sub gen_form_data {
+    my($self, $name, $p) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($data) = [];
+    my($key);
+
+    Bivio::Die->die ("specified form does not exist: $name!")
+		unless defined($fields->{$name});
+
+    my($form_name) = $fields->{$name}->{form_name};
+    my($form) = $fields->{$name}->{forms}->{$form_name};
+    my($method) = $form->{method};
+    $method = 'post' if ($method =~ /^post$/io);
+    $method = 'get' if ($method =~ /^get$/io);
+
+    if (defined($p)) {
+	foreach $key (keys(%{$p})) {
+	    my($line) = $p->{$key}->{name};
+	    $line .= '='.$p->{$key}->{value}
+		    if (defined($p->{$key}->{value}));
+	    push(@{$data}, $line);
+	}
+    }
+
+    if (defined($form->{hidden_fields})) {
+	foreach $key (keys(%{$form->{hidden_fields}})) {
+	    my($line) = $form->{hidden_fields}->{$key}->{name};
+	    $line .= '='.$form->{hidden_fields}->{$key}->{value}
+		    if (defined($form->{hidden_fields}->{$key}->{value}));
+	    push(@{$data}, $line);
+	}
+    }
+
+    return {
+	action => $form->{action},
+        method => $method,
+        data => $data };
 }
 
 =for html <a name="gen_form_uri"></a>
@@ -188,7 +236,7 @@ sub get_form_action {
 
     my($form_name) = $fields->{$name}->{form_name};
     return ($fields->{$name}->{forms}->{$form_name}->{action});
-    
+
     return;
 }
 
