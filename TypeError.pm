@@ -819,6 +819,11 @@ __PACKAGE__->compile(
 	undef,
 	'the zip archive contains invalid data and cannot be read',
     ],
+    NOT_ZERO => [
+	108,
+	undef,
+	'may be not be zero',
+    ],
 );
 
 #=PRIVATE METHODS
