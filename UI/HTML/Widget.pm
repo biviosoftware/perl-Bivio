@@ -510,6 +510,23 @@ sub form_button {
     return shift->simple_form_field(@_);
 }
 
+=for html <a name="format_uri_static_site"></a>
+
+=head2 static format_uri_static_site(Bivio::Agent::Request req, string page) : string
+
+Returns a uri formatted for the static site.
+
+=cut
+
+sub format_uri_static_site {
+    my(undef, $req, $page) = @_;
+    return $req->format_uri(Bivio::Agent::TaskId::HTTP_DOCUMENT(),
+	    undef,
+	    '',
+	    Bivio::Agent::HTTP::Location->get_document_path_info($page),
+	    1),
+}
+
 =for html <a name="get_label"></a>
 
 =head2 static get_label(string name, ....) : string
@@ -925,13 +942,8 @@ with a '/', but must include directory, e.g. "hm/services.html".
 
 sub link_static_site {
     my($proto, $label, $page, $font) = @_;
-    return $proto->link($label,
-	    Bivio::Agent::Request->get_current->format_uri(
-		    Bivio::Agent::TaskId::HTTP_DOCUMENT(),
-		    undef,
-		    '',
-		    Bivio::Agent::HTTP::Location->get_document_path_info(
-			    $page)),
+    return $proto->link($label, $proto->format_uri_static_site(
+	    Bivio::Agent::Request->get_current, $page),
 	    $font);
 }
 
