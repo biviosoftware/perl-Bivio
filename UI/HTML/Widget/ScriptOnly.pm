@@ -109,6 +109,8 @@ EOF
     $self->get('widget')->render($source, \$str);
     # escape any single quotes
     $str =~ s|'|\\'|g;
+    # ensure it is one line
+    $str =~ s|\n| |g;
     $$buffer .= "document.write('".$str."');
 // -->
 </script>";
