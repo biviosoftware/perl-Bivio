@@ -67,19 +67,12 @@ sub create_content {
 	    ],
 	    [
 		Bivio::UI::HTML::Widget::String->new({
-		    value => <<'EOF',
-Investment clubs are required to file one copy of Form 1065, and one copy of Schedule K-1 for each member. Each member should also receive a copy of the Schedule K-1 for their records. Form 1065 is only an informational return, used to report gains and losses for the partnership. Taxable items are allocated proportionally among members, who then claim their portion of the club's tax burden on their individual tax returns.
-EOF
+		    value => 'Tax Options',
+		    string_font => 'page_heading',
 		}),
 	    ],
 	    [
 		$self->join('&nbsp;'),
-	    ],
-	    [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Tax Options',
-		    string_font => 'table_heading',
-		}),
 	    ],
 	    [
 		Bivio::UI::HTML::Widget::String->new({
@@ -107,7 +100,7 @@ EOF
 		$self->join(
 		    $self->string('Allocation Method.', 'description_label'),
 		    $self->string(<<'EOF')),
- Determines the manner in which taxable entries are allocated to each member. The time based method allocates each taxable entry according to each member's ownership in the club at the time of the entry. The snapshot method allocates taxable entries according to the member ownership at the time of withdrawal, and at the end of the year.
+ Determines the manner in which taxable entries are allocated to each member. The time based method allocates each taxable entry according to each member's ownership in the club at the time of the entry. The snapshot method allocates taxable entries according to the member ownership at the time of withdrawal, and at the end of the year. Most clubs use the "Time Based" method.
 EOF
 	    ],
 	    [
@@ -167,14 +160,27 @@ EOF
 		$self->join('&nbsp;'),
 	    ],
 	    [
-		$self->link('IRS 1065 Form', 'CLUB_ACCOUNTING_TAX99_F1065'),
+		Bivio::UI::HTML::Widget::String->new({
+		    value => <<'EOF',
+Investment clubs are required to file one copy of Form 1065, one copy of Schedule K-1 for each member, and the Schedule D and supplementary schedules below. Each member should also receive a copy of the Schedule K-1 for their records.
+
+Form 1065 is only an informational return, used to report gains and losses for the partnership. Taxable items are allocated proportionally among members, who then claim their portion of the club's tax burden on their individual tax returns.
+EOF
+		}),
+	    ],
+	    [
+		$self->join('&nbsp;'),
+	    ],
+	    [
+		$self->link('IRS 1065 Form (pdf)',
+			'CLUB_ACCOUNTING_TAX99_F1065'),
 	    ],
 	    [
 		$self->join('&nbsp;'),
 	    ],
 	    [
 		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Member K-1',
+		    value => 'Member K-1 (pdf)',
 		    string_font => 'table_heading',
 		}),
 	    ],
@@ -203,6 +209,12 @@ EOF
 		    value => 'Required Schedules and Itemizations',
 		    string_font => 'page_heading',
 		}),
+	    ],
+	    [
+		$self->string(<<'EOF'),
+
+The following documents should be submitted with the partnership return.
+EOF
 	    ],
 	    [
 		$self->join('&nbsp;'),

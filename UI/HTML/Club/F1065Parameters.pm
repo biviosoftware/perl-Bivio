@@ -56,9 +56,10 @@ EOF
 	    ['Club.start_date', undef, <<'EOF', undef, {allow_undef => 1}],
 The date the club began as a partnership
 EOF
-	    ['Address.street1', undef, <<'EOF'],
+	    ['Address.street1', undef, <<'EOF', undef,
 Partnership's address and ZIP code
 EOF
+		    {label_in_text => 'Address'}],
 	    ['Address.street2'],
 	    ['Address.city'],
 	    ['Address.state', undef, undef, 'NY, CA, CO', {size => 2}],
@@ -68,13 +69,7 @@ Select the state where the partnership files its return
 EOF
 	    ['Tax1065.partnership_type', 'Partnership Type',
 		    <<'EOF',
-Schedule B 1. The partner type determines the member's liability in the
-club. Most investment clubs are general partnerships, which can be made up
-of only general partners.  A general partner is personally liable for
-partnership debts. A limited partner is personally liable for partnership
-debts limited to the amount of money that partner contributed. There must
-be at least one general partner in a limited partnership. In a limited
-liability company, no partner is personally liable for its debts.
+Schedule B 1. Most investment clubs are formed as general partnerships. Members in a general partnership do not have liability protection.
 EOF
 		    undef, {show_unknown => 0}],
 	    ['Tax1065.partner_is_partnership', 'Member is Partnership',
@@ -86,9 +81,7 @@ EOF
 Schedule B 3.
 EOF
 	    ['Tax1065.consolidated_audit', 'Consolidated Audit', <<'EOF'],
-Schedule B 4. Generally, the tax treatment of partnership items is determined
-at the partnership level in a consolidated audit proceeding, rather than in
-separate proceedings with individual partners.
+Schedule B 4. We recommend that you choose Consolidated Audit, so that the tax treatment of partnership items is determined at the partnership level, rather than in a separate proceeding.
 EOF
     ],
     {
