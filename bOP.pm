@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.59  2003/04/15 23:20:39  moeller
+  readonly text fields are 'disabled' again
+
+  Revision 1.58  2003/04/14 11:32:58  nagler
   * Bivio::Util::LinuxConfig->ifcfg_static fixed /etc/hosts creation
   * Bivio::ShellUtil->lock_action fixed deprecated lock (wasn't passing
     lock name).
