@@ -47,7 +47,7 @@ Predefined bank account name.
 =cut
 
 sub BANK {
-    return 'BANK';
+    return 'Bank';
 }
 
 =for html <a name="BROKER"></a>
