@@ -471,10 +471,8 @@ sub submit_from_table {
 
 =head2 text_exists(any pattern) : boolean
 
-If I<pattern> exists in response (must be text/html), then return true,
+Returns true if I<pattern> exists in response (must be text/html),
 else false.
-
-Only works on HTML pages.
 
 =cut
 
@@ -611,6 +609,21 @@ sub verify_local_mail {
     # DOES NOT RETURN
 }
 
+=for html <a name="verify_no_text"></a>
+
+=head2 verify_no_text(any text)
+
+Verifies that I<text> DOES NOT appear on the page.
+
+=cut
+
+sub verify_no_text {
+    my($self, $text) = @_;
+    Bivio::Die->die($text, ': text found in response')
+	if $self->text_exists($text);
+    return;
+}
+
 =for html <a name="verify_options"></a>
 
 =head2 verify_options(string select_field, array_ref options)
@@ -700,14 +713,14 @@ sub verify_table {
 
 =head2 verify_text(string text)
 
-Verifies that the specified text appears on the page.
+Verifies I<text> appears on the page.
 
 =cut
 
 sub verify_text {
     my($self, $text) = @_;
     Bivio::Die->die($text, ': text not found in response')
-	unless $self->get_content =~ /$text/s;
+	unless $self->text_exists($text);
     return;
 }
 
