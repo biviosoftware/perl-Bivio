@@ -159,7 +159,7 @@ _compile(
     INSTRUMENT_FMV => ["Investments' FMV"],
     WITHDRAWAL_ADJUSTMENT => ['Post-Withdrawal Adjustment'],
     MEMBER_TAX_BASIS => ["Member's Tax Basis"],
-    WITHDRAWAL_ALLOCATIONS => ["Current Income Allocations"],
+    WITHDRAWAL_ALLOCATIONS => ["Current Income Allocation"],
     MEMBER_INSTRUMENT_COST_BASIS => ["Stock"],
     UNIT_VALUE => ['Unit Value'],
     UNITS_WITHDRAWN => ['Units Withdrawn'],
