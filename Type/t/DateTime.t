@@ -82,5 +82,7 @@ Bivio::Test->unit([
 	    ['29', '2', '2000'] => ['2451604 79199'],
 	    ['32', '2', '2000'] => Bivio::DieCode->DIE,
 	],
+	# Just make sure it doesn't blow
+	gettimeofday => undef,
     ],
 ]);
