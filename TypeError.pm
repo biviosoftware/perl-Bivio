@@ -690,6 +690,16 @@ __PACKAGE__->compile(
 	undef,
 	'The club is currently a general partnership, members may only be a general partner',
     ],
+    INVALID_INSTRUMENT_OPENING_BALANCE_DATE => [
+	83,
+	undef,
+	'The acquisition date may not be greater than the accounting switch-over date',
+    ],
+    UNEXPECTED_FLOPPY_EXPORT_EOF => [
+	84,
+	undef,
+	'Import unsuccessful, the data file was truncated. Perhaps the A: drive ran out of space when exporting?',
+    ],
 );
 
 #=PRIVATE METHODS
