@@ -46,6 +46,7 @@ use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Email;
+use Bivio::Type::Honorific;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
 use Bivio::Type::Location;
@@ -152,6 +153,23 @@ sub delete_instruments_and_transactions {
 		[$id]);
     }
 
+    # need to reset any withdrawn members to member
+    # otherwise they can't be deleted using the UI
+    my($list) = Bivio::Biz::Model::RealmUserList->new($req);
+    my($it) = $list->iterate_start({});
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+    my($member) = Bivio::Type::Honorific::MEMBER();
+    while ($list->iterate_next_and_load($it)) {
+	next unless $list->get('RealmUser.role')
+		== Bivio::Auth::Role::WITHDRAWN();
+	$realm_user->load(user_id => $list->get('RealmUser.user_id'));
+	$realm_user->update({
+	    honorific=> $member,
+	    role => $member->get_role,
+	});
+    }
+    $list->iterate_end($it);
+
     return;
 }
 
@@ -219,7 +237,6 @@ sub delete_shadow_users {
     my($user) = Bivio::Biz::Model::User->new($req);
     my($list) = Bivio::Biz::Model::RealmUserList->new($req);
     my($it) = $list->iterate_start({});
-    my(%row);
     while ($list->iterate_next_and_load($it)) {
 	next unless $list->is_shadow_user;
 
