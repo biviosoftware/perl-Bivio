@@ -61,7 +61,9 @@ Bivio::IO::Config->register({
     maps => {
 	AccountScraper => ['Bivio::Data::AccountScraper'],
     },
+    model_classpath => ['Bivio::Biz::Model'],
 });
+my($_MODELS);
 
 =head1 METHODS
 
@@ -84,7 +86,7 @@ A map is a named path, e.g.
 =cut
 
 sub handle_config {
-    my(undef, $cfg) = @_;
+    my($proto, $cfg) = @_;
     Bivio::IO::Alert->die('maps must be a hash_ref')
 		unless ref($cfg->{maps}) eq 'HASH';
 
@@ -111,6 +113,7 @@ sub handle_config {
 	    $x;
 	} @$v];
     }
+    _find_property_models($cfg->{model_classpath});
     return;
 }
 
@@ -131,7 +134,7 @@ Throws an exception if the class can't be found or doesn't load.
 =cut
 
 sub map_require {
-    my(undef, $map, $simple_package_name, $map_class) = _map_args(@_);
+    my($proto, $map, $simple_package_name, $map_class) = _map_args(@_);
     return $_MAP_CLASS{$map_class} if $_MAP_CLASS{$map_class};
 
     Bivio::IO::Alert->die($map, ': no such map') unless $_MAPS->{$map};
@@ -143,7 +146,8 @@ sub map_require {
 	$last_real_error = $@
 		unless defined($last_real_error) && $@ =~ /^Can't locate/i;
     }
-    Bivio::IO::Alert->die($map_class, ': ', defined($last_real_error) ? $last_real_error
+    Bivio::IO::Alert->die($map_class, ': ', defined($last_real_error)
+	    ? $last_real_error
 	    : 'no paths in map');
     # DOES NOT RETURN
 }
@@ -158,16 +162,72 @@ I<package> must be a fully-qualified perl package name.
 =cut
 
 sub simple_require {
-    my(undef, @pkg) = @_;
-    my($pkg);
+    my($proto, @pkg) = @_;
 
-    foreach $pkg (@pkg) {
+#TODO: totally hacked in, need a good way to know when to load models
+    _load_property_models($proto)
+	    if $_MODELS && $pkg[0] =~ /Bivio::Biz::Model/;
+
+    foreach my $pkg (@pkg) {
 	die('undefined package') unless $pkg;
 	_require($pkg) || die($@);
     }
 }
 
 #=PRIVATE METHODS
+
+# _find_property_models(string classpath)
+#
+# Finds the full name of the property models. Used later by
+# _load_property_models().
+#
+sub _find_property_models {
+    my($classpath) = @_;
+    $_MODELS = [];
+
+    # first get the base path, using UNIVERSAL
+    my($universal) = 'Bivio/UNIVERSAL.pm';
+    my($base) = $INC{$universal};
+    $base =~ s/$universal//;
+
+    foreach my $package (@$classpath) {
+	my($pat) = $package;
+	$pat =~ s,::,/,g;
+	$pat = $base.$pat.'/*.pm';
+
+	# Find all Models
+	foreach my $class (glob($pat)) {
+	    $class =~ s,.*/,,;
+	    $class =~ s/\.pm//;
+
+	    # only interested in property models, ignore common file names
+	    next if $class =~ /Form$/;
+	    next if $class =~ /List$/;
+	    next if $class =~ /Base$/;
+
+	    push(@$_MODELS, $package.'::'.$class);
+	}
+    }
+    return;
+}
+
+# _load_property_models(array_ref classpath)
+#
+# Loads the property models from the specified path.
+#
+sub _load_property_models {
+    my($proto) = @_;
+
+    # make a copy and delete original to prevent reentrant calls
+    my(@models) = (@$_MODELS);
+    $_MODELS = undef;
+
+    $proto->simple_require('Bivio::Biz::Model');
+    foreach my $class (@models) {
+	Bivio::Biz::Model->get_instance($class);
+    }
+    return;
+}
 
 # _map_args(any proto, string map, string simple_package_name) : array
 # _map_args(any proto, string map_class) : array
