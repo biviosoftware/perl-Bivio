@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Type::Number to_literal() no longer formats trailing .0*
+  * Bivio::UI::Widget::MIMEEntity allows attaching files
+    using the FileAttachment widget
+
+  Revision 2.25  2004/07/04 14:10:51  moeller
   * Bivio::Auth::PermissionSet added includes() for permission testing
   * Bivio::Mail::Common added config reroute_address to route all mail
     to one address for testing, refactored methods
