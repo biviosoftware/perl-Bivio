@@ -1,0 +1,58 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-content-filter - Oracle helper tool to convert documents to HTML
+
+=head1 SYNOPSIS
+
+b-content-filter
+
+=head1 DESCRIPTION
+
+B<b-content-filter> converts various document formats to HTML.  This is a
+USER_FILTER for the Oracle interMedia package.  Oracle "extproc" invokes this
+script and provides two arguments, the first is the name of the input file to
+be read, and the second is the name of the output file to be written to.
+The script must be installed in $ORACLE_HOME/ctx/bin
+
+The filter is configured as a preference in the ctx_ddl context.
+For example:
+
+    exec ctx_ddl.create_preference('im_filter', 'USER_FILTER');
+    exec ctx_ddl.set_attribute('im_filter', 'COMMAND', 'b-content-filter');
+
+This preference can be used when creating the index, eg:
+
+    create index file_t15 on file_t(content) indextype is ctxsys.context
+        parameters ('filter im_filter');
+
+=cut
+
+#=IMPORTS
+use Bivio::SQL::Util::ContentFilter;
+
+#=VARIABLES
+
+Bivio::SQL::Util::ContentFilter->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
