@@ -99,6 +99,9 @@ foreach $i (0..2) {
     $t1->$e()->get_long_desc eq "e $i" || last;
     $not_done--;
 }
+t($t1->E0->equals_by_name('E0') == 1);
+t($t1->E1->equals_by_name('E0') == 0);
+t($t1->E1->equals_by_name('E2', 'E1') == 1);
 t(!$not_done);
 t(int(@{[$t1->get_list]}) == 3);
 

@@ -406,15 +406,19 @@ sub compile_with_numbers {
 
 =for html <a name="equals_by_name"></a>
 
-=head2 equals_by_name(string name) : boolean
+=head2 equals_by_name(string name, ... ) : boolean
 
-Returns true if I<name> is self's name.  Blows up if I<name> is invalid.
+Returns true if any I<name> is self's name.  Blows up if I<name> is invalid.
 
 =cut
 
 sub equals_by_name {
-    my($self, $name) = @_;
-    return $self == $self->from_name($name);
+    my($self) = shift;
+    foreach my $name (@_) {
+	return 1
+	    if $self == $self->from_name($name);
+    }
+    return 0;
 }
 
 =for html <a name="execute"></a>
