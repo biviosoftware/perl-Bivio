@@ -38,6 +38,27 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 
 =over 4
 
+
+The categories:
+
+=over 4
+
+=item auth_id : array_ref (required)
+
+=item auth_id : string (required)
+
+A field or field identity which must be equal to
+request's I<auth_id> attribute.
+
+=item other : array_ref
+
+A list of fields and field identities that have no ordering.
+
+=item order_by : array_ref
+
+A list of fields and field identities that can be used to sort
+the result.
+
 =item order_by_names : array_ref
 
 List of columns order_by columns (in order).
@@ -55,9 +76,38 @@ of the list model, e.g.
     # operation fails.  See ListSupport for more details.
     orabug_fetch_all_select => 1,
 
+=item parent_id : array_ref
+
+=item parent_id : string
+
+A field or field identity which further qualifies a query.
+Used when a list "this" points to another list, e.g.
+InstrumentSummaryList leads the user to InstrumentTransactionList.
+
+=item primary_key : array_ref (required)
+
+The list of fields and field that uniquely identifies a row.
+
 =item primary_key_types : array_ref
 
 List of primary key types in the order of I<primary_key_names>.
+
+=item version : int
+
+The version of this particular combination of fields.  It will be
+set in all query strings.  It should be changed whenever the
+declaration changes.  It is used to reject an out-dated query.
+
+=item want_level_in_select : boolean
+
+Add C<LEVEL> to the select.  This is an Oracle specific field.
+It is used with C<CONNECT BY>.
+
+=item where : array_ref
+
+A list of fields which will be ANDed to rest of the where clause.
+If an element matches a column_name or alias, then the appropriate
+sql_name for the column_name or alias will be substituted.
 
 =back
 
@@ -149,52 +199,6 @@ a digit.  The digits start at I<1>.
 The types of the columns will be extracted from the property
 models corresponding to the table names.
 
-The categories:
-
-=over 4
-
-=item auth_id : array_ref (required)
-
-=item auth_id : string (required)
-
-A field or field identity which must be equal to
-request's I<auth_id> attribute.
-
-=item other : array_ref
-
-A list of fields and field identities that have no ordering.
-
-=item order_by : array_ref
-
-A list of fields and field identities that can be used to sort
-the result.
-
-=item parent_id : array_ref
-
-=item parent_id : string
-
-A field or field identity which further qualifies a query.
-Used when a list "this" points to another list, e.g.
-InstrumentSummaryList leads the user to InstrumentTransactionList.
-
-=item primary_key : array_ref (required)
-
-The list of fields and field that uniquely identifies a row.
-
-=item version : int
-
-The version of this particular combination of fields.  It will be
-set in all query strings.  It should be changed whenever the
-declaration changes.  It is used to reject an out-dated query.
-
-=item where : array_ref
-
-A list of fields which will be ANDed to rest of the where clause.
-If an element matches a column_name or alias, then the appropriate
-sql_name for the column_name or alias will be substituted.
-
-=back
-
 =cut
 
 sub new {
@@ -214,6 +218,20 @@ sub new {
 	orabug_fetch_all_select => $decl->{orabug_fetch_all_select},
     };
     $proto->init_version($attrs, $decl);
+
+    # We add this to the declaration in the case that 
+    if ($decl->{want_level_in_select}) {
+	$decl->{other} = [] unless ref($decl->{other});
+	push(@{$decl->{other}},
+	    {
+		name => 'level',
+		type => 'Integer',
+		constraint => 'NOT_NULL',
+		in_select => 1,
+	    },
+	);
+    }
+
     _init_column_lists($attrs, _init_column_classes($attrs, $decl));
     my($self) = Bivio::SQL::Support::new($proto, $attrs);
     Bivio::SQL::ListQuery->initialize_support($self);
@@ -372,20 +390,24 @@ sub _init_column_lists {
 
     # Order select columns alphabetically, ignoring primary_key, primary_id
     # and auth_id and any other columns with in_select turned off.
-    foreach my $col (@{$attrs->{primary_key}},
-	    $attrs->{auth_id} ? ($attrs->{auth_id}) : (),
-	    $attrs->{parent_id} ? ($attrs->{parent_id}) : (),
-	    @{$attrs->{local_columns}}) {
-	$col->{in_select} = 0;
-    }
-
-    $attrs->{select_columns} = [
+    my(@sel_cols) =
 	# Everything but primary_keys, parent_id, auth_id are in column_names
 	sort {$a->{name} cmp $b->{name}}
-	(grep($_->{in_select}, values(%{$attrs->{columns}})))
-    ];
-    # Put primary key at front
-    unshift(@{$attrs->{select_columns}}, @{$attrs->{primary_key}});
+	(grep($_->{in_select}, values(%{$attrs->{columns}})));
+
+    # Go through the list and delete cols we don't return or in the
+    # case of the primary key, what we return first.  Yes, this probably
+    # could be done in one giant grep, but better to get right than
+    # tricky. <g>
+    foreach my $col (@{$attrs->{primary_key}},
+	    $attrs->{auth_id} ? ($attrs->{auth_id}) : (),
+	    $attrs->{parent_id} ? ($attrs->{parent_id}) : ()) {
+	@sel_cols = grep($_ ne $col, @sel_cols);
+    }
+
+    # Put primary key back on front
+    unshift(@sel_cols, @{$attrs->{primary_key}});
+    $attrs->{select_columns} = \@sel_cols;
 
     # Get names and set select_index
     my($i) = 0;
