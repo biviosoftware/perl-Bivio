@@ -74,6 +74,21 @@ sub from_literal {
     return Bivio::Type::DateTime->date_from_parts($2, $1, $3);
 }
 
+=for html <a name="get_days_between"></a>
+
+=head2 get_days_between(string date, string date2) : int
+
+Returns the number of days between two dates.
+
+=cut
+
+sub get_days_between {
+    my(undef, $date, $date2) = @_;
+    my($days, undef) = split(/\s+/, $date);
+    my($days2, undef) = split(/\s+/, $date2);
+    return $days2 - $days;
+}
+
 =for html <a name="get_max"></a>
 
 =head2 get_max() : string
