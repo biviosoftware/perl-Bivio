@@ -339,15 +339,14 @@ Initializes the cookie object from the request.  Does not put anything
 on the request, but upcalls the cookie handlers.
 
 Initializes an empty cookie unless
-L<Bivio::Type::UserAgent|Bivio::Type::UserAgent> is a C<BROWSER>.
+L<Bivio::Type::UserAgent|Bivio::Type::UserAgent> is a browser.
 
 =cut
 
 sub new {
     my($proto, $req, $r) = @_;
     return Bivio::Collection::Attributes::new($proto, {})
-	    unless $req->get('Bivio::Type::UserAgent')
-		    == Bivio::Type::UserAgent::BROWSER();
+	    unless $req->get('Bivio::Type::UserAgent')->is_browser();
     my($cookie) = $r->header_in('Cookie');
     _trace($cookie) if $_TRACE;
 
@@ -453,7 +452,7 @@ sub handle_cookie_in {
 
 Sets the cookie in the header if the
 L<Bivio::Type::UserAgent|Bivio::Type::UserAgent>
-is C<BROWSER>. Returns true if the cookie was modified
+is a browser. Returns true if the cookie was modified
 and set thusly.
 
 =cut
@@ -464,8 +463,7 @@ sub header_out {
 
     # Only set if a modified and a browser.
     return 0 unless $fields->{MODIFIED_FIELD()}
-	    && $req->get('Bivio::Type::UserAgent')
-		    == Bivio::Type::UserAgent::BROWSER();
+	    && $req->get('Bivio::Type::UserAgent')->is_browser;
 
     # Since our fields are encrypted, we don't need to return a "secure"
     # cookie.  Allows us to track users better (on non-secure portions of the
@@ -636,9 +634,9 @@ sub _parse {
 	    _trace('unable to decrypt cookie: key=', $k, ', value=', $v)
 		    if $_TRACE;
 	    # This will help us track users who hack cookies.
-	    Bivio::IO::Alert->warn('invalid ',
-		    $k eq $_VOLATILE_TAG ? 'volatile' : 'persistent',
-		    ' cookie: ', \@v);
+#	    Bivio::IO::Alert->warn('invalid ',
+#		    $k eq $_VOLATILE_TAG ? 'volatile' : 'persistent',
+#		    ' cookie: ', \@v);
 
 	    $bad = 1;
 	    # fall through, so we can see the fields in the warning below
