@@ -353,7 +353,7 @@ sub _initialize {
 sub _load_default_permissions {
     my($rti, $req) = @_;
     # Copy the default (if loaded) and return
-    my($rr) = Bivio::Biz::Model::RealmRole->new($req);
+    my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
     # Load and save the defaults
     my($dp) = $_DEFAULT_PERMISSIONS{$rti} = {};
     my($it) = $rr->unauth_iterate_start('role', {realm_id => $rti});
@@ -376,7 +376,7 @@ sub _load_permissions {
     my($fields) = $self->{$_PACKAGE};
     my($owner) = $self->unsafe_get('owner');
     if ($owner) {
-	my($rr) = Bivio::Biz::Model::RealmRole->new($req);
+	my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
 	# Try to load for just this role explicitly and cache.
 	return $fields->{$role} = $rr->get('permission_set')
 		if $rr->unauth_load(
