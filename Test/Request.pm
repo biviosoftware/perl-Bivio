@@ -137,6 +137,18 @@ sub execute_task {
     return [$o ? $$o : undef, @{$self->unsafe_get_captured_mail || []}];
 }
 
+=for html <a name="get_form"></a>
+
+=head2 get_form() : hash_ref
+
+Returns value of I<form> key.
+
+=cut
+
+sub get_form {
+    return shift->unsafe_get('form');
+}
+
 =for html <a name="initialize_fully"></a>
 
 =head2 initialize_fully(string task_id, hash_ref req_attrs) : self
@@ -158,6 +170,27 @@ sub initialize_fully {
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
     ) unless Bivio::UI::Facade->is_fully_initialized;
     return $self;
+}
+
+=for html <a name="put_form"></a>
+
+=head2 put_form(Bivio::Biz::FormModel form, hash_ref fields) : self
+
+Converts I<fields> to names in I<form>.  Then puts hash_ref of new fields on
+result.  Converts to literal any values, which will need to be parsed.
+
+=cut
+
+sub put_form {
+    my($self, $form, $fields) = @_;
+    return $self->put(form => {
+	$form->VERSION_FIELD => $form->get_info('version'),
+	map({
+	    my($f) = $_;
+	    ($form->get_field_name_for_html($f) =>
+		$form->get_field_type($f)->to_literal($fields->{$f}));
+	} keys(%$fields)),
+    });
 }
 
 =for html <a name="set_realm_and_user"></a>
