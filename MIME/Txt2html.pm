@@ -60,23 +60,23 @@ my($_PACKAGE) = __PACKAGE__;
 # These are just constants I use for making bit vectors to keep track
 # of what modes I'm in and what actions I've taken on the current and
 # previous lines.
-*NONE       =   \0;
-*LIST       =   \1;
-*HRULE      =   \2;
-*PAR        =   \4;
-*PRE        =   \8;
-*END        =  \16;
-*BREAK      =  \32;
-*HEADER     =  \64;
-*MAILHEADER = \128;
-*MAILQUOTE  = \256;
-*CAPS       = \512;
-*LINK       =\1024;
+my($NONE)       =   0;
+my($LIST)       =   1;
+my($HRULE)      =   2;
+my($PAR)        =   4;
+my($PRE)        =   8;
+my($END)        =  16;
+my($BREAK)      =  32;
+my($HEADER)     =  64;
+my($MAILHEADER) = 128;
+my($MAILQUOTE)  = 256;
+my($CAPS)       = 512;
+my($LINK)       =1024;
 
 # Constants for Ordered Lists and Unordered Lists.
 # I use this in the list stack to keep track of what's what.
-*OL = \1;
-*UL = \2;
+my($OL) = 1;
+my($UL) = 2;
 
 # XXX is there a better way to make a constant hash?
 # Character entity names
@@ -292,13 +292,13 @@ sub new {
             source_aref => [split(/^/, $$source_ref)],
             result => "",
             line => "",
-            line_action => $Txt2html::NONE,
+            line_action => $NONE,
             non_header_anchor => 0,
             mode => 0,
             listnum => 0,
             list_indent => "",
-            line_action => $Txt2html::NONE,
-            prev_action => $Txt2html::NONE,
+            line_action => $NONE,
+            prev_action => $NONE,
             prev_line_length => 0,
             prev_indent => 0,
             prev => "",
@@ -326,7 +326,7 @@ sub new {
             underline_offset_tolerance => 1,
             tab_width => 8,
             indent_width => 2,
-            extract => 0,
+            extract => 1,
             make_links => 1,
             escape_HTML_chars => 1,
             link_only => 0,
@@ -402,7 +402,7 @@ sub add_custom_heading_regexp {
 sub convert {
     my($self) = shift;
 
-    $* = 1;			# Turn on multiline searches
+    local($*) = 1;			# Turn on multiline searches
 
     # Re-initialize variables that need it for each conversion.
     $self->initialize();
@@ -483,35 +483,35 @@ sub convert {
 			$self->escape() if $self->{escape_HTML_chars};
 
             $self->endpreformat()
-                    if (($self->{mode} & $Txt2html::PRE) &&
+                    if (($self->{mode} & $PRE) &&
                             ($self->{preformat_trigger_lines} != 0));
 
-            $self->hrule() if !($self->{mode} & $Txt2html::PRE);
+            $self->hrule() if !($self->{mode} & $PRE);
 
             $self->custom_heading()
                     if (($#{$self->{custom_heading_regexp_aref}} > -1)
-                            && !($self->{mode} & $Txt2html::PRE));
+                            && !($self->{mode} & $PRE));
 
-            $self->liststuff() if (!($self->{mode} & $Txt2html::PRE) &&
+            $self->liststuff() if (!($self->{mode} & $PRE) &&
                     !$self->is_blank($self->{line}));
 
             $self->heading()   if (!$self->{explicit_headings} &&
-                    !($self->{mode} & ($Txt2html::PRE | $Txt2html::HEADER)) &&
+                    !($self->{mode} & ($PRE | $HEADER)) &&
                     $self->{nextline} =~ /^\s*[=\-\*\.~\+]+\s*$/);
 
 #	        &custom_tag if (($#{$self->{custom_tags_aref}} > -1)
-#                        && !($self->{mode} & $Txt2html::PRE)
-#                        && !($self->{line_action} & $Txt2html::HEADER));
+#                        && !($self->{mode} & $PRE)
+#                        && !($self->{line_action} & $HEADER));
 
             $self->mailstuff() if ($self->{mailmode} &&
-                    !($self->{mode} & $Txt2html::PRE) &&
-                    !($self->{line_action} & $Txt2html::HEADER));
+                    !($self->{mode} & $PRE) &&
+                    !($self->{line_action} & $HEADER));
 
             $self->preformat() if (!($self->{line_action} &
-                    ($Txt2html::HEADER |
-                            $Txt2html::LIST |
-                            $Txt2html::MAILHEADER)) &&
-                    !($self->{mode} & ($Txt2html::LIST | $Txt2html::PRE)) &&
+                    ($HEADER |
+                            $LIST |
+                            $MAILHEADER)) &&
+                    !($self->{mode} & ($LIST | $PRE)) &&
                     ($self->{endpreformat_trigger_lines} != 0));
 
             $self->paragraph();
@@ -521,12 +521,12 @@ sub convert {
                     ($self->{line} =~ /[^\W\d_]\-$/) && # ends in hyphen
                     # next line starts w/letters
                     ($self->{nextline} =~ /^\s*[^\W\d_]/) && 
-                    !($self->{mode} & ($Txt2html::PRE |
-                            $Txt2html::HEADER |
-                            $Txt2html::MAILHEADER |
-                            $Txt2html::BREAK)));
+                    !($self->{mode} & ($PRE |
+                            $HEADER |
+                            $MAILHEADER |
+                            $BREAK)));
 
-            $self->caps() if  !($self->{mode} & $Txt2html::PRE);
+            $self->caps() if  !($self->{mode} & $PRE);
 
         }
 
@@ -548,7 +548,7 @@ sub convert {
 
         if (!$self->is_blank($self->{nextline})) {
             $self->{prev_action} = $self->{line_action};
-            $self->{line_action} = $Txt2html::NONE;
+            $self->{line_action} = $NONE;
             $self->{prev_line_length} = $self->{line_length};
             $self->{prev_indent} = $self->{line_indent};
         }
@@ -560,12 +560,12 @@ sub convert {
 
     $self->{prev} = "";
     &endlist($self->{listnum})
-            if ($self->{mode} & $Txt2html::LIST); # End all lists
+            if ($self->{mode} & $LIST); # End all lists
     $self->emit($self->{prev});
 
     $self->emit("\n");
 
-    $self->emit("</PRE>\n") if ($self->{mode} & $Txt2html::PRE);
+    $self->emit("</PRE>\n") if ($self->{mode} & $PRE);
 
     if ($self->{append_file}) {
         if (-r $self->{append_file}) {
@@ -674,9 +674,9 @@ sub hrule {
     if ($self->{line} =~ /^\s*([-_~=\*]\s*){$self->{hrule_min},}$/) {
         $self->{line} = "<HR>\n";
         $self->{prev} =~ s/<P>//;
-        $self->{line_action} |= $Txt2html::HRULE;
+        $self->{line_action} |= $HRULE;
     } elsif ($self->{line} =~ /\014/) {
-        $self->{line_action} |= $Txt2html::HRULE;
+        $self->{line_action} |= $HRULE;
         $self->{line} =~ s/\014/\n<HR>\n/g; # Linefeeds become horizontal rules
     }
 }
@@ -688,20 +688,20 @@ sub shortline {
     # (sorry)
     my($self) = shift;
 
-    if (!($self->{mode} & ($Txt2html::PRE | $Txt2html::LIST))
+    if (!($self->{mode} & ($PRE | $LIST))
             && !$self->is_blank($self->{line})
             && !$self->is_blank($self->{prev})
             && ($self->{prev_line_length} < $self->{short_line_length})
-            && !($self->{line_action} & ($Txt2html::END
-                    | $Txt2html::HEADER
-                    | $Txt2html::HRULE
-                    | $Txt2html::LIST
-                    | $Txt2html::PAR))
-            && !($self->{prev_action} & ($Txt2html::HEADER
-                    | $Txt2html::HRULE
-                    | $Txt2html::BREAK))) {
+            && !($self->{line_action} & ($END
+                    | $HEADER
+                    | $HRULE
+                    | $LIST
+                    | $PAR))
+            && !($self->{prev_action} & ($HEADER
+                    | $HRULE
+                    | $BREAK))) {
         $self->{prev} .= "<BR>" . chop($self->{prev});
-        $self->{prev_action} |= $Txt2html::BREAK;
+        $self->{prev_action} |= $BREAK;
     }
 }
 
@@ -711,29 +711,29 @@ sub mailstuff {
             || ($self->{line} =~ /^\w*\|/)) # Handle "Igor| There wolves."
             && !$self->is_blank($self->{nextline})) {
 	$self->{line} =~ s/$/<BR>/;
-	$self->{line_action} |= ($Txt2html::BREAK | $Txt2html::MAILQUOTE);
-        if(!($self->{prev_action} & ($Txt2html::BREAK | $Txt2html::PAR))) {
+	$self->{line_action} |= ($BREAK | $MAILQUOTE);
+        if(!($self->{prev_action} & ($BREAK | $PAR))) {
             $self->{prev} .= "<P>\n";
-            $self->{line_action} |= $Txt2html::PAR;
+            $self->{line_action} |= $PAR;
         }
     } elsif (($self->{line} =~ /^(From:?)|(Newsgroups:) /)
              && $self->is_blank($self->{prev})) {
-	$self->anchor_mail if !($self->{prev_action} & $Txt2html::MAILHEADER);
+	$self->anchor_mail if !($self->{prev_action} & $MAILHEADER);
         chop $self->{line};
 	$self->{line} = "<!-- New Message -->\n<p>\n" . $self->{line} . "<BR>\n";
-	$self->{line_action} |= ($Txt2html::BREAK
-                | $Txt2html::MAILHEADER
-                | $Txt2html::PAR);
+	$self->{line_action} |= ($BREAK
+                | $MAILHEADER
+                | $PAR);
     } elsif (($self->{line} =~ /^[\w\-]*:/)  # Handle "Some-Header: blah"
-            && ($self->{prev_action} & $Txt2html::MAILHEADER)
+            && ($self->{prev_action} & $MAILHEADER)
             && !$self->is_blank($self->{nextline})) {
 	$self->{line} =~ s/$/<BR>/;
-	$self->{line_action} |= ($Txt2html::BREAK | $Txt2html::MAILHEADER);
+	$self->{line_action} |= ($BREAK | $MAILHEADER);
     } elsif (($self->{line} =~ /^\s+\S/) &&   # Handle multi-line mail headers
-            ($self->{prev_action} & $Txt2html::MAILHEADER) &&
+            ($self->{prev_action} & $MAILHEADER) &&
             !$self->is_blank($self->{nextline})) {
 	$self->{line} =~ s/$/<BR>/;
-	$self->{line_action} |= ($Txt2html::BREAK | $Txt2html::MAILHEADER);
+	$self->{line_action} |= ($BREAK | $MAILHEADER);
     }
 }
 
@@ -748,18 +748,18 @@ sub paragraph
 {
     my($self) = shift;
     if (!$self->is_blank($self->{line})
-            && !($self->{mode} & $Txt2html::PRE)
+            && !($self->{mode} & $PRE)
             && !$self->subtract_modes($self->{line_action},
-                    $Txt2html::END
-                    | $Txt2html::MAILQUOTE
-                    | $Txt2html::CAPS
-                    | $Txt2html::BREAK)
+                    $END
+                    | $MAILQUOTE
+                    | $CAPS
+                    | $BREAK)
             && ($self->is_blank($self->{prev})
-                    || ($self->{line_action} & $Txt2html::END)
+                    || ($self->{line_action} & $END)
                     || ($self->{line_indent}
                             > $self->{prev_indent} + $self->{par_indent}))) {
         $self->{prev} .= "<P>\n";
-        $self->{line_action} |= $Txt2html::PAR;
+        $self->{line_action} |= $PAR;
     }
 }
 
@@ -816,16 +816,16 @@ sub startlist {
             return 0;
         }
         $self->{prev} .= "$self->{list_indent}<OL>\n";
-        ${$self->{list_aref}}[$self->{listnum}] = $Txt2html::OL;
+        ${$self->{list_aref}}[$self->{listnum}] = $OL;
     } else {
         $self->{prev} .= "$self->{list_indent}<UL>\n";
-        ${$self->{list_aref}}[$self->{listnum}] = $Txt2html::UL;
+        ${$self->{list_aref}}[$self->{listnum}] = $UL;
     }
 
     $self->{listnum}++;
     $self->{list_indent} = " " x $self->{listnum} x $self->{indent_width};
-    $self->{line_action} |= $Txt2html::LIST;
-    $self->{mode} |= $Txt2html::LIST;
+    $self->{line_action} |= $LIST;
+    $self->{mode} |= $LIST;
     return 1;
 }
 
@@ -835,26 +835,26 @@ sub endlist	{		# End N lists
     for (; $n > 0; $n--, $self->{listnum}--) {
         $self->{list_indent} =
                 " " x ($self->{listnum}-1) x $self->{indent_width};
-        if (${$self->{list_aref}}[$self->{listnum}-1] == $Txt2html::UL) {
+        if (${$self->{list_aref}}[$self->{listnum}-1] == $UL) {
             $self->{prev} .= "$self->{list_indent}</UL>\n";
         } elsif (${$self->{list_aref}}[$self->{listnum}-1] ==
-                $Txt2html::OL) {
+                $OL) {
             $self->{prev} .= "$self->{list_indent}</OL>\n";
         } else {
             print STDERR "Encountered list of unknown type\n";
         }
     }
-    $self->{line_action} |= $Txt2html::END;
-    $self->{mode} ^= $Txt2html::LIST if (!$self->{listnum});
+    $self->{line_action} |= $END;
+    $self->{mode} ^= $LIST if (!$self->{listnum});
 }
 
 sub continuelist {
     my($self) = shift;
     $self->{line} =~ s/^\s*[-=o\*]+\s*/$self->{list_indent}<LI> /
-            if ${$self->{list_aref}}[$self->{listnum}-1] == $Txt2html::UL;
+            if ${$self->{list_aref}}[$self->{listnum}-1] == $UL;
     $self->{line} =~ s/^\s*(\d+|[^\W\d_]).\s*/$self->{list_indent}<LI> /
-            if ${$self->{list_aref}}[$self->{listnum}-1] == $Txt2html::OL;
-    $self->{line_action} |= $Txt2html::LIST;
+            if ${$self->{list_aref}}[$self->{listnum}-1] == $OL;
+    $self->{line_action} |= $LIST;
 }
 
 sub liststuff {
@@ -902,8 +902,8 @@ sub liststuff {
     } elsif (!$self->{listnum} || ($i != $self->{listnum})) {
         if (($self->{line_indent} > 0)
                 || $self->is_blank($self->{prev}) 
-                || ($self->{prev_action} & ($Txt2html::BREAK
-                        | $Txt2html::HEADER))) {
+                || ($self->{prev_action} & ($BREAK
+                        | $HEADER))) {
             $islist = $self->startlist($prefix, $number, $rawprefix);
         } else {
             # We have something like this: "- foo" which usually
@@ -913,7 +913,7 @@ sub liststuff {
     }
 
     $self->continuelist($prefix, $number, $rawprefix)
-            if ($self->{mode} & $Txt2html::LIST);
+            if ($self->{mode} & $LIST);
     $self->{line_indent} = length($total_prefix) if $islist;
 }
 
@@ -931,8 +931,8 @@ sub endpreformat {
                     || !$self->is_preformatted($self->{nextline})))
     {
 	$self->{prev} .= "</PRE>\n";
-	$self->{mode} ^= ($Txt2html::PRE & $self->{mode});
-	$self->{line_action} |= $Txt2html::END;
+	$self->{mode} ^= ($PRE & $self->{mode});
+	$self->{line_action} |= $END;
     }
 }
 
@@ -944,8 +944,8 @@ sub preformat {
                             $self->is_preformatted($self->{nextline})))) {
         $self->{line} =~ s/^/<PRE>\n/;
         $self->{prev} =~ s/<P>//;
-        $self->{mode} |= $Txt2html::PRE;
-        $self->{line_action} |= $Txt2html::PRE;
+        $self->{mode} |= $PRE;
+        $self->{line_action} |= $PRE;
     }
 }
 
@@ -1026,7 +1026,7 @@ sub heading
     my($heading_level) = $self->heading_level($underline);
     $self->tagline("H" . $heading_level);
     $self->anchor_heading($heading_level);
-    $self->{line_action} |= $Txt2html::HEADER;
+    $self->{line_action} |= $HEADER;
 }
 
 sub custom_heading {
@@ -1041,7 +1041,7 @@ sub custom_heading {
             }
             $self->tagline("H" . $level);
             $self->anchor_heading($level);
-            $self->{line_action} |= $Txt2html::HEADER;
+            $self->{line_action} |= $HEADER;
             last;
         }
     }
@@ -1095,7 +1095,7 @@ sub caps {
     my($self) = shift;
     if ($self->iscaps($self->{line})) {
         $self->tagline($self->{caps_tag});
-        $self->{line_action} |= $Txt2html::CAPS;
+        $self->{line_action} |= $CAPS;
     }
 }
 
@@ -1269,7 +1269,7 @@ sub make_dictionary_links_code {
     $code = <<EOCode;
 sub dynamic_make_dictionary_links {
 	my(\$self) = shift;
-    my(\$line_link) = (\$self->{line_action} | \$Txt2html::LINK);
+    my(\$line_link) = (\$self->{line_action} | \$LINK);
     my(\$before, \$linkme, \$line_with_links, \$link_line, \@done_with_link);
 
 EOCode
@@ -1303,7 +1303,7 @@ EOCode
 					$code .= "\n\twhile(\$self->{line} =~ /$pattern/$s_sw) {\n";
 				}
 		$code .= <<EOCode;
-		\$link_line = \$Txt2html::LINK if(!\$link_line);
+		\$link_line = \$LINK if(!\$link_line);
 		\$before = \$\`;
 		\$linkme = \$&;
 
