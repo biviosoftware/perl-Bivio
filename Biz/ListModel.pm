@@ -81,7 +81,7 @@ sub new {
 
 =for html <a name="execute"></a>
 
-=head2 static execute(Bivio::Agent::Request)
+=head2 static execute(Bivio::Agent::Request req)
 
 Loads a new instance of this model using the request.
 
@@ -446,6 +446,35 @@ sub reset_cursor {
     my($fields) = $self->{$_PACKAGE};
     $fields->{cursor} = -1;
     return;
+}
+
+=for html <a name="set_cursor"></a>
+
+=head2 set_cursor(int index) : boolean
+
+Sets the row to I<index> (starts at 0).  Returns false if
+just after last row.  Other indices cause termination.
+
+Particularly useful for "this" queries.  Can check if
+"this" loaded by calling C<set_cursor(0)>.
+
+=cut
+
+sub set_cursor {
+    my($self, $index) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Carp::croak('not loaded') unless $fields->{rows};
+    $self->internal_clear_model_cache;
+    my($n) = int(@{$fields->{rows}});
+    if ($index >= $n) {
+	Carp::croak("$index: invalid index") if $index > $n;
+	$fields->{cursor} = undef;
+	$self->internal_put($fields->{empty_properties});
+	return 0;
+    }
+    Carp::croak("$index: invalid index") if $index < 0;
+    $self->internal_put($fields->{rows}->[$fields->{cursor} = $index]);
+    return 1;
 }
 
 #=PRIVATE METHODS
