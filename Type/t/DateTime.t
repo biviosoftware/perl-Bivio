@@ -3,18 +3,12 @@ use Bivio::Test;
 use Bivio::Type::DateTime;
 use Bivio::Type::Date;
 use Bivio::Type::Time;
-my($unit_dt) = 'Bivio::Type::DateTime';
-my($unit_d) = 'Bivio::Type::Date';
-my($unit_t) = 'Bivio::Type::Time';
+sub make_time {
+    return Bivio::Type::DateTime->DEFAULT_DATE.' '.shift(@_);
+}
 Bivio::Test->new({
-#    make_date => sub {
-#	return shift(@_).' '.$unit_dt->DEFAULT_TIME;
-#    },
-#    make_time => sub {
-#	return $unit_dt->DEFAULT_DATE.' '.shift(@_);
-#    },
 })->unit([
-    $unit_dt => [
+    'Bivio::Type::DateTime' => [
 	from_literal => [
 	    [undef] => [undef],
 	    ['2378497 9'] => ['2378497 9', undef],
@@ -44,8 +38,10 @@ Bivio::Test->new({
 #	    ['2451604 54793'] => ['02/29/2000 13:13:13'],
 #	],
 	to_parts => [
-	    [$unit_dt->get_min] => ['0', '0', '0', '1', '1', '1800'],
-	    [$unit_dt->get_max] => ['59', '59', '23', '31', '12', '2199'],
+	    [Bivio::Type::DateTime->get_min]
+	    	=> ['0', '0', '0', '1', '1', '1800'],
+	    [Bivio::Type::DateTime->get_max]
+	    	=> ['59', '59', '23', '31', '12', '2199'],
 	    ['2440588 0'] => ['0', '0', '0', '1', '1', '1970'],
 	    ['2441377 0'] => ['0', '0', '0', '29', '2', '1972'],
 	    ['2451604 47593'] => ['13', '13', '13', '29', '2', '2000'],
@@ -61,12 +57,17 @@ Bivio::Test->new({
 	    ['2440588 0', -1] => ['2440587 86399'],
 	],
     ],
-    $unit_d => [
-	from_literal => [
-	    [undef] => [undef],
-	    ['1/1/1800'] => ['2378497 79199'],
+    'Bivio::Type::Date' => [
+	{
+	    method => 'from_literal',
+	    result_ok => sub {
+		my($proto, $method, $params, $expect, $actual) = @_;
+		return $actual
+		    eq $expect.' '.Bivio::Type::DateTime->DEFAULT_TIME;
+	    },
+	} => [
+	    ['1/1/1800'] => [2378497],
 #	    ['1/1/1800'] => [make_date(2378497)],
-	    ['1/1/1970 x'] => [undef, Bivio::TypeError::DATE_TIME()],
 	    ['1/1/1850'] => ['2396759 79199'],
 #	    ['1/1/1850'] => [make_date(2396759)],
 	    ['1/2/1800'] => ['2378498 79199'],
@@ -84,16 +85,24 @@ Bivio::Test->new({
 	],
 	from_literal => [
 	    [undef] => [undef],
+	    ['1/1/1970 x'] => [undef, Bivio::TypeError::DATE_TIME()],
+	],
+    ],
+    'Bivio::Type::Time' => [
+	from_literal => [
 #	    ['1:1:1'] => [make_time((1 * 60 + 1) * 60 + 1)],
 #	    ['24:0:0'] => [make_time(0)],
-	    ['24:0:0 x'] => [undef, Bivio::TypeError::DATE_TIME()],
-	    ['24:0:0 ax'] => [undef, Bivio::TypeError::DATE_TIME()],
-	    ['24:0:1'] => [undef, Bivio::TypeError::DATE_TIME()],
-	    ['24:1:0'] => [undef, Bivio::TypeError::DATE_TIME()],
 #	    ['12:59:0 p.m.'] => [make_time((12 * 60 + 59) * 60 + 0)],
 #	    ['12:59:0  a'] => [make_time((0 * 60 + 59) * 60 + 0)],
 #	    ['1:0:0  a'] => [make_time((1 * 60 + 0) * 60 + 0)],
 #	    ['1:0:1  p'] => [make_time((13 * 60 + 0) * 60 + 1)],
+	],
+	from_literal => [
+	    [undef] => [undef],
+	    ['24:0:0 x'] => [undef, Bivio::TypeError::DATE_TIME()],
+	    ['24:0:0 ax'] => [undef, Bivio::TypeError::DATE_TIME()],
+	    ['24:0:1'] => [undef, Bivio::TypeError::DATE_TIME()],
+	    ['24:1:0'] => [undef, Bivio::TypeError::DATE_TIME()],
 	],
     ],
 ]);
