@@ -10,10 +10,12 @@ b-db-util - standard queries and dba operations
 =head1 SYNOPSIS
 
   b-db-util count_rows
+  b-db-util sql2csv file.sql [database [email]]
   b-db-util remote_sqlplus host db_login actions
+
   b-db-util copy_logs_to_standby
   b-db-util recover_standby
-  b-db-util sql2csv file.sql [database [email]]
+  b-db-util switch_logs_and_count_rows
 
 =head1 DESCRIPTION
 
