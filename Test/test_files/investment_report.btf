@@ -1,4 +1,0 @@
-Login->execute();
-Browser->go_uri('/my-club-site/accounting/reports');
-
-Browser->submit({'radio_0'=>'Investment Report'}, 'Generate_0');
