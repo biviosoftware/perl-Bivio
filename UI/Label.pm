@@ -216,6 +216,7 @@ _compile(
     REALMTRANSACTION_REMARK_HEADING => ['Description'],
     ENTRY_AMOUNT_HEADING => ['Amount'],
     REALMINSTRUMENTENTRY_COUNT_HEADING => ['Shares'],
+    RECIPIENT_HEADING => ['Recipient'],
 
     # HTML Tax attachment label headings
     TAX_DESCRIPTION_OF_PROPERTY_1_HEADING => ['1 (a) Description of property'],
