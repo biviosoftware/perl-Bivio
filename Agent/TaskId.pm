@@ -2979,7 +2979,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_MEMBER_ADJUSTMENT
         260
         CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE&SUPER_USER_TRANSIENT
         ?/accounting/member/adjustment
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmUserList->execute_load_this
@@ -2992,7 +2992,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_ACCOUNT_ADJUSTMENT
         261
         CLUB
-        ACCOUNTING_WRITE
+        ACCOUNTING_WRITE&SUPER_USER_TRANSIENT
         ?/accounting/account/adjustment
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmAccount->execute_load_parent
@@ -3004,7 +3004,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_INVESTMENT_ADJUSTMENT
         262
         CLUB
-        ACCOUNTING_WRITE
+        ACCOUNTING_WRITE&SUPER_USER_TRANSIENT
         ?/accounting/investment/adjustment
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmInstrument->execute_load_parent
@@ -3048,8 +3048,8 @@ my(@_CFG) = (
         CLUB_ADMIN_CLUB_DELETE
         266
         CLUB
-        ADMIN_WRITE
-        ?/admin/info/delete-club
+        ADMIN_WRITE&SUPER_USER_TRANSIENT
+        ?/adm/delete-club
         Bivio::Biz::Model::ClubDeleteForm
         Bivio::UI::HTML::Club::Delete
         next=USER_HOME
@@ -3091,8 +3091,8 @@ my(@_CFG) = (
         CLUB_ADMIN_MEMBER_MERGE
         270
         CLUB
-        ADMIN_WRITE
-        ?/adm/merge-members
+        ADMIN_WRITE&SUPER_USER_TRANSIENT
+        ?/adm/merge-member
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
         Bivio::Biz::Model::MemberList->execute_load_all
