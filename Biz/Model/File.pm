@@ -501,7 +501,7 @@ sub _get_mime_filename {
     return undef
 	    unless defined($aux_info) && $aux_info =~ /(file|)name="([^"]+)"/;
     my($name) = $2;
-    $name =~ s|.*[\\/]||;
+    $name = Bivio::Type::FileName->get_tail($name);
     return $name;
 }
 
