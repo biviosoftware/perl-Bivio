@@ -469,11 +469,11 @@ sub _format_uri {
 	    if $attrs->{this};
 
     # parent_id?
-    $res .= 'p='.Bivio::Type::PrimaryId->to_uri($attrs->{parent_id}).'&'
+    $res .= 'p='.Bivio::Type::PrimaryId->to_query($attrs->{parent_id}).'&'
 	    if $attrs->{parent_id};
 
     # page_number?
-    $res .= 'n='.Bivio::Type::Integer->to_uri($attrs->{page_number}).'&'
+    $res .= 'n='.Bivio::Type::Integer->to_query($attrs->{page_number}).'&'
 	    if defined($attrs->{page_number});
 
     # order_by
@@ -508,8 +508,9 @@ sub _format_uri_primary_key {
     my($is_array) = ref($pk) eq 'ARRAY';
     # NOTE: Nice to agree with PropertyModel::format_query
     for (my($i) = 0; $i < int(@$pk_cols); $i++) {
-	$res .= $pk_cols->[$i]->{type}->to_uri(
-		$is_array ? $pk->[$i] : $pk->{$pk_cols->[$i]->{name}})."\177";
+	$res .= $pk_cols->[$i]->{type}->to_query(
+		$is_array ? $pk->[$i] : $pk->{$pk_cols->[$i]->{name}})
+		."\177";
     }
     chop($res);
     return $res;
