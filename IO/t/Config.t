@@ -79,3 +79,11 @@ Bivio::IO::Config->register({
     }
 });
 &main::conf_get(undef);
+my($c) = Bivio::IO::Config->get(undef);
+my($k);
+foreach $k (qw(p3 p4 p5)) {
+    exists($c->{$k}) || die("missing $k");
+}
+foreach $k (qw(p1 p2)) {
+    exists($c->{$k}) && die("shouldn't be set $k");
+}
