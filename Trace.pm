@@ -38,7 +38,12 @@ L<filter|"filter">  will be treated as always true.
 
 =cut
 
+use Carp ();
+
 #=VARIABLES
+
+# Maximum length of a string in $msg
+my($_MAX_STRING) = 256;
 
 # Packages which are registered
 my(@_REGISTERED) = ();
@@ -127,10 +132,10 @@ sub print {
     my($o);
     foreach $o (@$msg) {
 	# Don't let to_string calls crash;
-	$text .= defined($o) ?
+	$text .= substr(defined($o) ?
 		&UNIVERSAL::can($o, 'to_string') ?
-			(eval {$o->to_string} || $o) : $o
-				: 'undef';
+		(eval {$o->to_string} || $o) : $o
+		: 'undef', 0, $_MAX_STRING);
     }
     return &$_PRINTER($text . "\n");
 }
