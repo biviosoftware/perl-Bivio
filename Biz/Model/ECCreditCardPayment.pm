@@ -83,7 +83,6 @@ sub internal_initialize {
             card_expiration_date => ['Date', 'NONE'],
             card_name => ['Line', 'NONE'],
             card_zip => ['Name', 'NONE'],
-	    point_of_sale => ['ECPointOfSale', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
 	other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
