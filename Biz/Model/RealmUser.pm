@@ -113,13 +113,15 @@ sub MEMBER_ROLES {
 
 =head2 create(hash_ref new_values)
 
-Sets I<creation_date_time> if not set, then calls SUPER.
+Sets I<creation_date_time> if not set. Defaults the role to the honorific's
+role if not set.
 
 =cut
 
 sub create {
     my($self, $values) = @_;
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
+    $values->{role} ||= $values->{honorific}->get_role;
     return $self->SUPER::create($values);
 }
 
