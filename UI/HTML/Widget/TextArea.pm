@@ -53,7 +53,7 @@ The number of character columns to show.
 
 Don't allow text-editing
 
-=item wrap : string (optional) [OFF]
+=item wrap : string (optional) [VIRTUAL]
 
 The text wrapping mode.
 
@@ -104,7 +104,7 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
 	    'field', 'rows', 'cols');
-    $fields->{wrap} = $self->get_or_default('wrap', 'off');
+    $fields->{wrap} = $self->get_or_default('wrap', 'virtual');
     $fields->{readonly} = $self->get_or_default('readonly', 0);
     return;
 }
