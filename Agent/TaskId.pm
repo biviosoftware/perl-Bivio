@@ -76,22 +76,8 @@ tasks defined in this module is:
 
 #=VARIABLES
 my(@_CFG) = (
-    [qw(
-	CLUB_MAIL_FORWARD
-	1
-        CLUB
-        MAIL_WRITE
-        !
-	Bivio::Biz::Action::ForwardClubMail
-    )],
-    [qw(
-	USER_MAIL_FORWARD
-	2
-        USER
-        MAIL_WRITE
-        !
-	Bivio::Biz::Action::ForwardUserMail
-    )],
+#1
+#2
     # This is the home page task.
     [qw(
 	HTTP_DOCUMENT
