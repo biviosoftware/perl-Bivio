@@ -41,7 +41,7 @@ state about the test, e.g. cookies and connections to servers.
 
 =over 4
 
-=item script : string
+=item test_script : string
 
 file name of the script
 
