@@ -339,22 +339,11 @@ Reference an Enum value with:
 
     __PACKAGE__->NAME1;
 
-B<DEPRECATED FORM: accepts an array, not a array_ref.>
-
 =cut
 
 sub compile {
-    my($pkg) = shift;
+    my($pkg, $args) = @_;
     defined($_MAP{$pkg}) && Bivio::IO::Alert->die($pkg, ': already compiled');
-
-    my($args) = @_;
-#TODO: Remove once no more deprecated warnings.
-    if (int(@_) > 1) {
-	# DEPRECATED FORM
-	$args = [@_];
-	Bivio::IO::Alert->warn_deprecated('pass an array_ref');
-    }
-
     Bivio::IO::Alert->die($pkg, ': first argument must be an array_ref')
 		if ref($args) ne 'ARRAY';
     # Will warn if odd number of elements
