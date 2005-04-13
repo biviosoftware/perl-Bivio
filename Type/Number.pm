@@ -411,7 +411,8 @@ sub _mpf {
     my($value) = @_;
 
     unless (defined($value)) {
-        Bivio::IO::Alert->info('numeric amount not defined, defaulting to 0');
+        Bivio::IO::Alert->warn_deprecated(
+            'numeric amount not defined, defaulting to 0');
         $value = 0;
     }
     # leading + and commas not accepted by GMP
