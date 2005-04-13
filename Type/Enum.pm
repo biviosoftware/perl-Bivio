@@ -155,24 +155,26 @@ sub unsafe_from_name {
 
 =head2 as_int() : int
 
-Returns integer value for enum value
+Returns integer value for enum value.
 
 =cut
 
 sub as_int {
-    return _get_info(shift(@_), undef)->[0];
+    my($self) = @_;
+    return $self->to_sql_param($self);
 }
 
 =for html <a name="as_sql_param"></a>
 
 =head2 as_sql_param() : int
 
-Returns integer representation of this value.
+Returns integer value for enum value.
 
 =cut
 
 sub as_sql_param {
-    return _get_info(shift(@_), undef)->[0];
+    my($self) = @_;
+    return $self->to_sql_param($self);
 }
 
 =for html <a name="as_string"></a>
@@ -652,20 +654,22 @@ sub to_literal {
     my($proto, $value) = @_;
     return shift->SUPER::to_literal(@_)
 	unless defined($value);
-    return _get_info($proto, $value)->[0];
+    return $proto->to_sql_param($value);
 }
 
 =for html <a name="to_sql_param"></a>
 
 =head2 static to_sql_param(Bivio::Type::Enum value) : int
 
-Returns L<as_string|"as_string"> for I<value> or the empty string.
+Return the integer representation of I<value>
 
 =cut
 
 sub to_sql_param {
     my($proto, $value) = @_;
     return undef unless defined($value);
+    Bivio::IO::Alert->warn_deprecated('enum ref required')
+        unless ref($value);
     return _get_info($proto, $value)->[0];
 }
 
