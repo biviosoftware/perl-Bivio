@@ -84,6 +84,10 @@ The special field C<_row_index> is set to the value of the index of that row.
 sub do_rows {
     my($self, $table_name, $do_rows_callback) = @_;
     my($index) = -1;
+
+    Bivio::Die->die('table name: "', $table_name,
+        '" not found in ', $self->get_keys)
+        unless $self->unsafe_get($table_name);
     my($t) = $self->get($table_name);
     foreach my $row (@{$t->{rows}}) {
 	my($i) = -1;
