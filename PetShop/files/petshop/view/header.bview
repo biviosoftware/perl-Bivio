@@ -24,6 +24,7 @@ view_main(Page({
         FirstFocus(),
     ]),
     string_font => 'page_text',
+    style => Style(),
     body => Join([
 	Grid([
 	    [
