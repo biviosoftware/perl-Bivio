@@ -56,16 +56,7 @@ Always calls L<initialize_permissions|"initialize_permissions"> first.
 =cut
 
 sub add_permissions {
-    my($self, $realm, $roles, $permissions) = @_;
-    $self->initialize_permissions($realm);
-
-    my($realm_id) = $realm->get('realm_id');
-    foreach my $role (@$roles) {
-	$self->unauth_load_or_die(realm_id => $realm_id, role => $role);
-        $self->update({
-	    permission_set => $self->get('permission_set') | $permissions});
-    }
-    return;
+    return _do('add', @_);
 }
 
 =for html <a name="get_roles_for_permission"></a>
@@ -129,16 +120,7 @@ Always calls L<initialize_permissions|"initialize_permissions"> first.
 =cut
 
 sub remove_permissions {
-    my($self, $realm, $roles, $permissions) = @_;
-    $self->initialize_permissions($realm);
-
-    my($realm_id) = $realm->get('realm_id');
-    foreach my $role (@$roles) {
-	$self->unauth_load_or_die(realm_id => $realm_id, role => $role);
-        $self->update({permission_set =>
-	    $self->get('permission_set') & ~$permissions});
-    }
-    return;
+    return _do('remove', @_);
 }
 
 =for html <a name="internal_initialize"></a>
@@ -163,6 +145,25 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
+
+# _do(string which, <see add_permissions>)
+#
+# Do operation.
+#
+sub _do {
+    my($which, $self, $realm, $roles, $permissions) = @_;
+    $self->initialize_permissions($realm);
+    my($realm_id) = $realm->get('realm_id');
+    foreach my $role (@$roles) {
+	$self->unauth_load_or_die(realm_id => $realm_id, role => $role);
+	$self->update({
+	    permission_set => $which eq 'add'
+	            ? ($self->get('permission_set') | $permissions)
+	            : ($self->get('permission_set') & ~$permissions),
+	});
+    }
+    return;
+}
 
 =head1 COPYRIGHT
 
