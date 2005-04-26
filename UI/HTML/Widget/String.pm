@@ -123,6 +123,8 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head2 static new(any value, string font, hash_ref attributes) : Bivio::UI::HTML::Widget::String
 
+=head2 static new(any value, hash_ref attributes) : Bivio::UI::HTML::Widget::String
+
 Create a C<String> widget with I<value> and I<font> (if supplied and defined).
 Pass C<0> (zero) as I<font> to set "no font".  Will not set font, if C<undef>.
 Optionally, pass other I<attributes>.
@@ -199,6 +201,10 @@ Implements positional argument parsing for L<new|"new">.
 sub internal_new_args {
     my(undef, $value, $font, $attributes) = @_;
     return '"value" attribute must be defined' unless defined($value);
+    if (ref($font) eq 'HASH' && !defined($attributes)) {
+	$attributes = $font;
+	$font = undef;
+    }
     return {
 	value => $value,
 	(defined($font) ? (string_font => $font) : ()),
