@@ -153,6 +153,10 @@ Bivio::Test->new({
 	    ['Tables', 'First Seen', 'rows', 0, 1, 'text'] => 'REMINDER: Boulder Software Club - First Annual Business Builders Series',
 	    ['Tables', 'First Seen', 'rows', 1, 1, 'text'] => 'campaign.btest at 06/16/2003 17:21:39',
 	],
+    ], [
+        'societas-valuation' => [
+            ['Tables', 'Shares Held', 'rows', 2, 1, 'text'] => ['(600.0000)'],
+        ],
     ]),
     ['login', 'Forms'] => [
 	get_by_field_names => [
@@ -164,6 +168,25 @@ Bivio::Test->new({
 	    [qr/User ID/ . ''] => undef,
 	    [qr/Not fo/] => Bivio::DieCode->DIE,
 	],
+    ],
+    ['societas-valuation', 'Tables'] => [
+        find_row => [
+            ['Shares Held', '', 'Hartford Financial Services Group Inc (HIG)']
+	        => qr{1,368.00}m,
+        ],
+        do_rows => [
+            ['Shares Held', sub {
+                 my($row, $index) = @_;
+                 $_TMP = 0;
+                 return 1 unless exists($row->{'Price per Share'});
+                 return 1 unless $row->{'Price per Share'}->get('text')
+                     eq '72.2800';
+                 $_TMP = $index;
+                 return 0;
+             }] => sub {
+                 return $_TMP == 2 ? 1 : 0;
+             },
+        ],
     ],
     ['petshop-cart', 'Tables'] => [
 	get_by_headings => [
