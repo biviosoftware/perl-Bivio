@@ -1509,10 +1509,12 @@ sub _result_output {
 #
 sub _result_ref {
     my($self, $res) = @_;
-    return undef unless defined($res);
+    return undef
+	unless defined($res);
     my($ref) = \$res;
     if (ref($res)) {
-	return $self->ref_to_string($res) unless ref($res) eq 'SCALAR';
+	return $self->ref_to_string($res)
+	    unless ref($res) eq 'SCALAR';
 	$ref = $res;
     }
     return defined($$ref) && length($$ref) ? $ref : undef;
