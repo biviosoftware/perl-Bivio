@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::Widget::Simple takes a "value" attribute and renders it
+  * Bivio::UI::HTML::Widget::SimplePage is an executable Simple widget
+    that sets the content type to text/html
+
+  Revision 2.62  2005/04/15 19:23:58  moeller
+  * Bivio::Agent::Request deprecated task_ok(),
+    use can_user_execute_task() instead
+  * Bivio::Biz::Model::ForbiddenForm now uses $req->can_user_execute_task()
+  * Bivio::Test::HTMLParser::Tables improved error message when table
+    not found by name
+  * Bivio::Type::Enum deprecated calls to to_sql_param() with a scalar value
   * Bivio::Type::Number deprecated math calls with undef arguments
   * Bivio::UI::HTML::Widget::ListActions now uses $req->can_user_execute_task()
   * Date.t added more from_literal() and to_xml() test cases
