@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::HTMLParser::Tables doesn't map undef columns in
+    do_rows()
+  * Bivio::UI::HTML::Widget::AmountCell added internal_new_args()
+
+  Revision 2.63  2005/04/26 22:29:55  nagler
+  * Bivio::MIME::Type supports xml, xhtml, and css
+  * Bivio::Biz::Model::RealmRole refactored to share code between add/remove
+  * Widget String('some text', {attr => 'a'}) supported
   * Bivio::UI::Widget::Simple takes a "value" attribute and renders it
   * Bivio::UI::HTML::Widget::SimplePage is an executable Simple widget
     that sets the content type to text/html
