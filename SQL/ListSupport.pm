@@ -629,10 +629,12 @@ sub _init_column_lists {
 	$from .= $where;
     }
     $attrs->{from_where} = $from;
-    my($select) = $decl->{want_select_distinct}
-	? 'SELECT DISTINCT ' : 'SELECT ';
-    $attrs->{select} =  $select . join(',', @select_sql_names);
-    $attrs->{select_count} = $select . 'COUNT(*)';
+    my($select) = ($decl->{want_select_distinct} ? 'DISTINCT ' : '')
+        . join(',', @select_sql_names);
+    $attrs->{select_count} = 'SELECT COUNT('
+        . ($decl->{want_select_distinct} ? $select : '*')
+        . ')';
+    $attrs->{select} = 'SELECT ' . $select;
     if ($attrs->{date}) {
 	$attrs->{where_begin_date} = ' AND '
 		.$attrs->{date}->{sql_name}.' >= '.$_DATE_SQL_VALUE;
