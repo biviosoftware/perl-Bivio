@@ -135,3 +135,46 @@ $Id$
 =cut
 
 1;
+
+__END__
+
+sub render {
+    my($self, $source, $buffer) = @_;
+    my($name) = 0;
+    my($entity) = MIME::Entity->new;
+    foreach my $v (@{$self->get('values')}) {
+        next if $v->can('want_render') && !$v->want_render($source);
+	my($data) = '';
+	$v->render($source, \$data);
+        $self->die($v, ': empty mime part')
+	    unless length($data);
+	$entity->attach({
+	        Data => $data,
+	        map({
+		     my($x) = '';
+		     ($_ => $v->unsafe_render_attr('mime_' . lc($_), $source, \$x) => $x : $_DEFAULT->{$_});
+	        } qw(Type Encoding)),
+        });
+    );
+    if ($self->has_keys('mime_type')) {
+	map({
+	    ($_ => ${$self->render_attr('mime_' . lc($_), $source)});
+	} qw(Type Encoding));
+    }
+    else {
+        if (scalar($entity->parts) == 1) {
+            $entity->make_singlepart;
+        else {
+             $entity->make_multipart;
+        }
+    }
+    $$buffer .= $entity->body_as_string;
+    $source->get_request->put(
+	"$self.headers" => join('',
+	    map({
+		$_ . ': ', $entity->head->get(lc($_));
+	    } 'MIME-Version', 'Content-Type', 'Content-Transfer-Encoding'),
+	),
+    );
+    return;
+}
