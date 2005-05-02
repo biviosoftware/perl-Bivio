@@ -590,14 +590,8 @@ Widget.
 sub unsafe_render_value {
     my($self, $attr_name, $value, $source, $buffer) = @_;
     return 0 unless defined($value);
-    my($i) = 10;
-    while (ref($value) eq 'ARRAY') {
-	$value = $source->get_widget_value(@$value);
-	return 0 unless defined($value);
-	$self->die($attr_name, $source, 'infinite loop trying to ',
-		' unwind widget value: ', $value)
-		if --$i < 0;
-    }
+    $value = $self->unsafe_resolve_widget_value($value, $source);
+    return 0 unless defined($value);
     if (ref($value) && UNIVERSAL::isa($value, __PACKAGE__)) {
 	$value->put_and_initialize(parent => undef)
 	    unless $value->has_keys('parent');
@@ -613,6 +607,27 @@ sub unsafe_render_value {
 	$$buffer .= $value;
     }
     return 1;
+}
+
+=for html <a name="unsafe_resolve_widget_value"></a>
+
+=head2 unsafe_resolve_widget_value(array_ref value, any source) : any
+
+Recursively eliminate array_ref widget values.
+
+=cut
+
+sub unsafe_resolve_widget_value {
+    my($self, $value, $source) = @_;
+    my($i) = 10;
+    while (ref($value) eq 'ARRAY') {
+	$value = $source->get_widget_value(@$value);
+	return undef unless defined($value);
+	$self->die($source, 'infinite loop trying to ',
+		' unwind widget value: ', $value)
+		if --$i < 0;
+    }
+    return $value;
 }
 
 #=PRIVATE METHODS

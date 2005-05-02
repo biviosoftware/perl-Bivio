@@ -58,6 +58,7 @@ The From: address in the header.
 
 =item headers : any []
 
+I<Deprecated>
 Any additional headers.  Returns a string in RFC 822 header format.  Each
 header appears on its own line.
 
@@ -155,17 +156,30 @@ sub execute {
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
 	    if $req->has_keys('client_addr');
 
+    #Body must be rendered first in case the widget has mail headers.
     my($body) = $self->render_attr('body', $req);
-#TODO: Headers must be rendered after body, b/c Widget::MIMEEntity
-#      depends on this.
-    _headers($self, $msg, $req);
+
+    #Deprecated attribute
+    my($b) = '';
+    $self->die($self, ': headers attribute is deprecated')
+	if $self->unsafe_render_attr('headers', $req, \$b) && $b;
+
+    my($body_widget) = $self->unsafe_resolve_widget_value(
+        $self->get('body'), $req);
+    if (UNIVERSAL::can($body_widget, 'mail_headers')) {
+	_add_mail_headers($self, $msg, $body_widget->mail_headers($req));
+    }
+
+    #TODO: Eliminate
     if ($self->get_or_default('want_aol_munge', 1)
 	&&  $recipients =~ /\@(?:aol|compuserve|cs).com$/i) {
 	# AOL and compuserv are totally brain dead.
 	$body = _text_to_aol($body);
     }
+
     $msg->set_body($$body);
     $msg->enqueue_send;
+
     my($lf);
     Bivio::IO::Log->write($lf, $msg->as_string)
         if $self->unsafe_render_attr('log_file', $req, \$lf) && $lf;
@@ -204,21 +218,14 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _headers(self, Bivio::Mail::Outgoing msg, Bivio::Agent::Request req)
+# _add_mail_headers(self, Bivio::Mail::Outgoing msg, arrayref headers) : 
 #
-# Sets headers if any
+# Sets headers
 #
-sub _headers {
-    my($self, $msg, $req) = @_;
-    my($b) = '';
-    return
-	unless $self->unsafe_render_attr('headers', $req, \$b) && $b;
-    foreach my $h (split(/\n(?=\S)/, $b)) {
-	chomp($h);
-	next unless $h;
-	Bivio::Die->die($h, ': invalid header')
-	    unless $h =~ /^(\S+):\s*(.+)/s;
-        $msg->set_header($1, $2);
+sub _add_mail_headers {
+    my($self, $msg, $headers) = @_;
+    foreach my $header (@$headers) {
+	$msg->set_header(@$header);
     }
     return;
 }
