@@ -105,6 +105,8 @@ test_conformance();
 home_page();
 follow_link('Sign-in');
 follow_link('New User');
+go_back();
+follow_link(qr/New Use/);
 my($id) = "test_http_$$";
 submit_form(submit => {
     'Password:' => 'password',
