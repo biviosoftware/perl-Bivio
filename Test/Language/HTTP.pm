@@ -167,17 +167,21 @@ sub find_table_row {
 
 =for html <a name="follow_link"></a>
 
-=head2 follow_link(string link_name)
+=head2 follow_link(any link_name)
 
-Loads the page for the L<link_name|"link_name">
+Loads the page for the L<link_name|"link_name">, which may be a regular
+expression.
 
 =cut
 
 sub follow_link {
     my($self, $link_text) = @_;
-    $self->visit_uri(
-	_assert_html($self)->get_nested('Links', $link_text, 'href'));
-    return;
+    my($m) = ref($link_text) ? 'get_by_regexp' : 'get';
+    return $self->visit_uri(
+	_assert_html($self)->get('Links')
+	->$m($link_text)
+	->{href},
+    );
 }
 
 =for html <a name="follow_link_in_table"></a>
