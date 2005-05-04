@@ -26,6 +26,11 @@ Bivio::Test->new({
 	    get_nested => $_->[1],
         ];
     } [
+	'already-registered' => [
+	    ['Forms', 'Your Full Name:', 'visible',
+		 'Your Full Name:', 'error'] => 'You are already registered.Please click here if you would like to recover your password.',
+	],
+    ], [
 	'missing-href' => [
 	    ['Links', 'missing'] => Bivio::DieCode->DIE,
 	],
