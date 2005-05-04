@@ -45,6 +45,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
 Bivio::IO::Config->register(my $_CFG = {
     error_color => '#990000',
+    error_class => 'form_field_error',
 });
 
 =head1 FACTORIES
@@ -123,6 +124,10 @@ sub get_field {
 
 =over 4
 
+=item error_class : string [form_field_error]
+
+unique class for error text on page. If found, assumes form failed.
+
 =item error_color : string [#990000]
 
 unique color for error text on page. If found, assumes form failed.
@@ -148,12 +153,18 @@ Dispatch to the _end_XXX routines.
 sub html_parser_end {
     my($self, $tag) = @_;
     my($fields) = $self->[$_IDI];
-    return _end_th($fields) if $tag eq 'th';
-    return _end_table($fields) if $tag eq 'table';
-    return _end_form($self) if $tag eq 'form';
-    return _end_textarea($fields) if $tag eq 'textarea';
-    return _end_select($fields) if $tag eq 'select';
-    return _end_font($fields) if $tag eq 'font';
+    return _end_th($fields)
+	if $tag eq 'th';
+    return _end_table($fields)
+	if $tag eq 'table';
+    return _end_form($self)
+	if $tag eq 'form';
+    return _end_textarea($fields)
+	if $tag eq 'textarea';
+    return _end_select($fields)
+	if $tag eq 'select';
+    return _end_font($fields)
+	if $tag eq 'font';
     return;
 }
 
@@ -169,11 +180,16 @@ sub html_parser_start {
     my($self, $tag, $attr) = @_;
     my($fields) = $self->[$_IDI];
     _fixup_attr($tag, $attr);
-    return _start_tx($fields, $attr, $tag) if $tag =~ /^t(?:d|r|h|able)$/;
-    return _start_form($fields, $attr) if $tag eq 'form';
-    return _start_option($fields, $attr) if $tag eq 'option';
-    return _start_input($self, $attr) if $attr->{type};
-    return _start_font($fields, $attr) if $tag eq 'font';
+    return _start_tx($fields, $attr, $tag)
+	if $tag =~ /^t(?:d|r|h|able)$/;
+    return _start_form($fields, $attr)
+	if $tag eq 'form';
+    return _start_option($fields, $attr)
+	if $tag eq 'option';
+    return _start_input($self, $attr)
+	if $attr->{type} && $tag !~ /^(?:link|style)/;
+    return _start_font($fields, $attr)
+	if $tag eq 'font';
     return;
 }
 
@@ -251,9 +267,12 @@ sub _empty {
 sub _end_font {
     my($fields) = @_;
     my($f) = pop(@{$fields->{font}});
-    return unless defined($f->{color})
-	&& $f->{color} eq $_CFG->{error_color}
-	&& !_empty($fields->{text})
+    return
+	unless (
+	    $f->{color} ? $f->{color} eq $_CFG->{error_color}
+	    : $f->{class} ? $f->{class} eq $_CFG->{error_class}
+	    : 0
+	) && !_empty($fields->{text})
 	&& !_have_prefix_label($fields);
     $fields->{input_error} = $fields->{text};
     $fields->{text} = undef;
