@@ -11,7 +11,7 @@ Bivio::UI::Widget::MIMEBodyWithAttachment -
 
 =head1 RELEASE SCOPE
 
-Bivio
+bOP
 
 =head1 SYNOPSIS
 
