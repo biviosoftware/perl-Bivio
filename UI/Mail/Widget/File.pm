@@ -11,7 +11,7 @@ Bivio::UI::Mail::Widget::File -
 
 =head1 RELEASE SCOPE
 
-Bivio
+bOP
 
 =head1 SYNOPSIS
 
