@@ -203,6 +203,19 @@ sub initialize_fully {
     return $self;
 }
 
+=for html <a name="is_test"></a>
+
+=head2 is_test() : boolean
+
+Return value of is_test attribute or SUPER::is_test if not defined.
+
+=cut
+
+sub is_test {
+    my($self) = @_;
+    return $self->get_or_default('is_test', shift->SUPER::is_test(@_));
+}
+
 =for html <a name="put_form"></a>
 
 =head2 put_form(Bivio::Biz::FormModel form, hash_ref fields) : self
