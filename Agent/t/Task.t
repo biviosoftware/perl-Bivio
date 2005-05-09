@@ -19,9 +19,9 @@ BEGIN {
 use Bivio::Test;
 use Bivio::Test::Request;
 use Bivio::Agent::Task;
-my($_req) = Bivio::Test::Request->get_instance;
+my($req) = Bivio::Test::Request->get_instance;
 Bivio::Agent::Task->initialize;
-$_req->setup_facade->ignore_redirects(0);
+$req->setup_facade->ignore_redirects(0);
 Bivio::Test->new({
     create_object => sub {
 	my($case, $object) = @_;
@@ -30,7 +30,7 @@ Bivio::Test->new({
     compute_params => sub {
 	my($case, $params) = @_;
 	$case->put(expected_task => $params->[0]);
-	return [$_req];
+	return [$req];
     },
     check_die_code => sub {
 	my($case, $die, $expect) = @_;
@@ -46,16 +46,27 @@ Bivio::Test->new({
 	my($this, $next) = @$_;
 	$this => [
 	    execute => [
-		$next => Bivio::DieCode->SERVER_REDIRECT_TASK,
+		$next => $next eq 'FORBIDDEN' ? Bivio::DieCode->FORBIDDEN
+		    : Bivio::DieCode->SERVER_REDIRECT_TASK,
 	    ],
 	];
     }
-    [qw(SHELL_UTIL SITE_ROOT)],
-    [qw(REDIRECT_TEST_1 REDIRECT_TEST_2)],
+	[qw(SHELL_UTIL SITE_ROOT)],
+	[qw(REDIRECT_TEST_1 REDIRECT_TEST_2)],
 #TODO: this no longer works - it returns a FORBIDDEN diecode
-#    [qw(REDIRECT_TEST_2 LOGIN)],
-    [qw(REDIRECT_TEST_3 REDIRECT_TEST_1)],
-    [qw(REDIRECT_TEST_3 REDIRECT_TEST_2)]),
+	[qw(REDIRECT_TEST_3 REDIRECT_TEST_1)],
+	[qw(REDIRECT_TEST_3 REDIRECT_TEST_2)],
+	[qw(REDIRECT_TEST_2 FORBIDDEN)],
+	[qw(TEST_TRANSIENT SITE_ROOT)],
+    ),
+    TEST_TRANSIENT => [
+	execute => [
+	    sub {
+		$req->put(is_test => 0);
+		return [$req];
+	    } => Bivio::DieCode->FORBIDDEN,
+	],
+    ],
     DEVIANCE_1 => [
 	execute => [
 #TODO: Undeprecate!

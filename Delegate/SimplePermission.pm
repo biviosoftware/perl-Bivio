@@ -95,6 +95,11 @@ substituted as another user.
 
 Set when the user executing the request is a super_user.
 
+=item TEST_TRANSIENT
+
+Is the system running in test mode? (not
+L<Bivio::Agent::Request::is_production|Bivio::Agent::Request/"is_production">).
+
 =back
 
 =cut
@@ -109,6 +114,7 @@ sub get_delegate_info {
 	ADMIN_WRITE => [6],
 	SUBSTITUTE_USER_TRANSIENT => [7],
 	SUPER_USER_TRANSIENT => [8],
+	TEST_TRANSIENT => [9],
     ];
 }
 

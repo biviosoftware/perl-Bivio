@@ -124,12 +124,13 @@ SUPER_USER_TRANSIENT and SUBSTITUTE_USER_TRANSIENT.
 
 sub task_permission_ok {
     my($proto, $user, $task, $req) = @_;
-    foreach my $op ('', qw(super substitute)) {
+    foreach my $op ('', qw(super_user substitute_user test)) {
 	if ($op) {
-	    my($method) = 'is_' . $op . '_user';
+	    my($method) = 'is_' . $op;
 	    next unless $req->$method();
-	    Bivio::Auth::PermissionSet->set(\$user,
-		Bivio::Auth::Permission->from_name($op . '_user_transient'));
+	    Bivio::Auth::PermissionSet->set(
+		\$user,
+		Bivio::Auth::Permission->from_name($op . '_transient'));
 	    _trace($op, ' user: ', $user) if $_TRACE;
 	}
 	# Does this role have all the required permission?

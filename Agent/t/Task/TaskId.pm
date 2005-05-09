@@ -95,6 +95,14 @@ sub get_delegate_info {
 		return "no_such_task";
 	    },
 	],
+	[qw(
+	    TEST_TRANSIENT
+	    505
+	    GENERAL
+	    TEST_TRANSIENT
+            Action.ClientRedirect->execute_next
+            next=SITE_ROOT
+	)],
     ]);
 }
 
