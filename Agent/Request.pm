@@ -991,6 +991,18 @@ sub is_super_user {
 	});
 }
 
+=for html <a name="is_test"></a>
+
+=head2 is_test() : boolean
+
+Opposite of L<is_production|"is_production">.
+
+=cut
+
+sub is_test {
+    return shift->is_production(@_) ? 0 : 1;
+}
+
 =for html <a name="push_txn_resource"></a>
 
 =head2 push_txn_resource(any resource)
