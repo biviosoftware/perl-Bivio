@@ -151,9 +151,16 @@ sub find_row {
             return 1 unless exists($row->{$column_name});
             $found_column = 1;
 	    my($t) = $row->{$column_name}->get('text');
+	    if (ref($column_value) && ref($column_value) eq 'Regexp') {
+		$found_row = $row
+		    if $t =~ $column_value;
+	    }
+	    else {
+		$found_row = $row
+		    if $t eq $column_value;
+            }
 	    return 1
-		unless $t eq $column_value || $t =~ $column_value;
-	    $found_row = $row;
+		unless $found_row;
 	    return 0;
 	});
     Bivio::Die->die('column name not found: ', $column_name)
