@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    else calls SUPER::is_test
+  * Bivio::Test::HTMLParser::Tables->find_row only uses value as regex
+    if value is a Regexp ref
+
+  Revision 2.65  2005/05/05 23:01:57  moeller
+  * Bivio::ShellUtil->new_other() explicitly dies if the class is not
+    found
+  * Bivio::Test::HTMLParser::Forms added error_class
+  * Bivio::Test::Language::HTTP allow regexp as arg to follow_link
   * Bivio::UI::Mail::Widget::Message +26 -19 lines
   * Bivio::UI::Widget::MIMEEntity incomplete refactoring -- harmless
   * Bivio::UI::Widget added unsafe_resolve_widget_value()
