@@ -482,7 +482,10 @@ else false.
 
 sub text_exists {
     my($self, $pattern) = @_;
-    return $self->get_content =~ /$pattern/s ? 1 : 0;
+    unless (ref($pattern) && ref($pattern) eq 'Regexp') {
+	$pattern = qr/\Q$pattern/;
+    }
+    return $self->get_content =~ $pattern ? 1 : 0;
 }
 
 =for html <a name="unsafe_get_uri"></a>
