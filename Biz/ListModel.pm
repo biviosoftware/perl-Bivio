@@ -334,12 +334,7 @@ queury.
 sub execute_load_page {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
-    my($query) = $self->parse_query_from_request();
-    $query->put(want_page_count => 1);
-    $self->throw_die('CORRUPT_QUERY', {message => 'unexpected this',
-	query => $req->unsafe_get('query')})
-	    if $query->unsafe_get('this');
-    $self->load_page($query);
+    $self->load_page($self->parse_query_from_request());
     return 0;
 }
 
@@ -1080,10 +1075,11 @@ Saves the model in the request.
 
 sub load_page {
     my($self, $query) = @_;
-    $query = $self->parse_query($query);
+    $query = $self
+	->parse_query($query)
+        ->put(want_page_count => 1);
 
-    # Must NOT specify a "this" else programming error.
-    $self->throw_die('DIE', {message => 'unexpected this',
+    $self->throw_die('CORRUPT_QUERY', {message => 'unexpected this',
 	query => $query}) if $query->unsafe_get('this');
 
     _unauth_load($self, $query);
