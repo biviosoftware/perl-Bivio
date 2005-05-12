@@ -467,7 +467,7 @@ sub upgrade_db {
     $self->are_you_sure('Upgrade the database?');
 
     # Must be first, because pg_dump closes all db connections.
-    AssuranceSys::Util::SQL->main('export_db')
+    $self->main('export_db')
 	if $_CFG->{export_db_on_upgrade};
 
     my($upgrade) = Bivio::Biz::Model::DbUpgrade->new($req);
