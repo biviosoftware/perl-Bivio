@@ -470,7 +470,7 @@ sub upgrade_db {
     $self->main('export_db')
 	if $_CFG->{export_db_on_upgrade};
 
-    my($upgrade) = Bivio::Biz::Model::DbUpgrade->new($req);
+    my($upgrade) = Bivio::Biz::Model->new($req, 'DbUpgrade');
     $self->usage_error($self->package_version(), ': already ran.')
 	if $upgrade->unauth_load({version => $self->package_version});
 
