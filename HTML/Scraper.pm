@@ -344,8 +344,7 @@ sub parse_html {
 
 =head2 read_file(string file_name) : string_ref
 
-Returns the contents of I<file_name> from the current directory. Prepends
-the name of the institution to the file name.
+Returns the contents of I<file_name> from the current directory.
 
 =cut
 
@@ -398,8 +397,7 @@ sub unescape_html {
 
 =head2 write_file(string file_name, string_ref contents)
 
-Writes I<contents> to I<file_name> in the current directory. Prepends
-the name of the institution to the file name.
+Writes I<contents> to I<file_name> in the current directory.
 
 =cut
 
