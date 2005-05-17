@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::HTMLParser tables with the same name use the name,
+    name#1, name#2 sequence
+  * Bivio::Test::Language::HTTP text_exists() now calls \Q on string arg
+
+  Revision 2.66  2005/05/10 18:28:51  nagler
+  * Bivio::Agent::Request->is_test returns ! is_production()
+  * Bivio::Delegate::SimplePermission->TEST_TRANSIENT added
+  * Bivio::Delegate::SimpleAuthSupport->task_permission_ok supports
+    TEST_TRANSIENT, a permission that is set when $res->is_test() is true
+  * Bivio::Biz::ListModel->execute_load_page shares code with execute_load_all
+  * Bivio::ShellUtil->new_other dies explicitly if class not found (was
+    relying on Bivio::IO::ClassLoader before, which calls throw_quietly)
+  * Bivio::Test::Request->is_test returns is_test attribute if exists
     else calls SUPER::is_test
   * Bivio::Test::HTMLParser::Tables->find_row only uses value as regex
     if value is a Regexp ref
