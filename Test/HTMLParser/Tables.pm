@@ -281,10 +281,20 @@ sub _end_table {
     return unless $fields->{in_data_table} && !--$fields->{in_data_table};
     # Delete totally empty rows (probably separators)
     _delete_empty_rows($fields->{table}->{rows});
-    $self->get('elements')->{
-	$fields->{table}->{label} ||= '_anon#'
-	    . keys(%{$self->get('elements')})
-    } = $fields->{table};
+
+    my($elements) = $self->get('elements');
+    my($name) = $fields->{table}->{label} ||= '_anon#'
+        . keys(%{$self->get('elements')});
+
+    if ($elements->{$name}) {
+        my($count) = 1;
+
+        while ($elements->{$name . '#' . $count}) {
+            $count++;
+        }
+        $name .= '#' . $count;
+    }
+    $elements->{$name} = $fields->{table};
     _trace($fields->{table}) if $_TRACE;
     delete($fields->{table});
     return;
