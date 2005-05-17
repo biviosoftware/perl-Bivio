@@ -60,7 +60,7 @@ by the path_info within user area.  If no path_info, redirects to "next".
 sub execute {
     my(undef, $req) = @_;
     _redirect($req, $req->get('auth_user')->get('name'),
-	    Bivio::Auth::RealmType::USER());
+	    Bivio::Auth::RealmType->USER());
     # DOES NOT RETURN
 }
 

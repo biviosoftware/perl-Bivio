@@ -11,7 +11,7 @@ Bivio::Test->new('Bivio::Auth::Realm')->unit([
 	    $case->actual_return([
 		$o->get('type')->get_name,
 		$o->is_default,
-		Bivio::Die->eval(sub {$o->format_file}),
+#		Bivio::Die->eval(sub {$o->format_file}),
 	    ]);
 	    return $expect;
 	},
@@ -19,7 +19,8 @@ Bivio::Test->new('Bivio::Auth::Realm')->unit([
     } => [
 	new => [
 	    [] => Bivio::DieCode->DIE,
-	    ['demo', $req] => ['USER', 0, 'demo'],
+#	    ['demo', $req] => ['USER', 0, 'demo'],
+	    ['demo', $req] => ['USER', 0],
 	    ['user', $req] => ['USER', 1],
 	    ['club', $req] => ['CLUB', 1],
 	    ['general', $req] => ['GENERAL', 1],

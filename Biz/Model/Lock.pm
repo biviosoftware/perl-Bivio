@@ -119,7 +119,7 @@ database so use sparingly.
 sub execute_general {
     my($proto, $req) = @_;
     my($old_realm) = $req->get('auth_realm');
-    $req->set_realm(Bivio::Auth::Realm::General->get_instance);
+    $req->set_realm(Bivio::Auth::Realm->get_general);
     $proto->new($req)->acquire;
     $req->set_realm($old_realm);
     return;

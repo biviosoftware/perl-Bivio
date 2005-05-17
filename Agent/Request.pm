@@ -212,7 +212,7 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::Task;
 use Bivio::Agent::TaskId;
-use Bivio::Auth::Realm::General;
+use Bivio::Auth::Realm;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Biz::FormModel;
@@ -237,7 +237,7 @@ Bivio::IO::Config->register({
     can_secure => 1,
 });
 my($_CURRENT);
-my($_GENERAL) = Bivio::Auth::Realm::General->get_instance;
+my($_GENERAL) = Bivio::Auth::Realm->get_general();
 my($_URI_ARG_LIST) = [qw(task_id query realm path_info no_context anchor)];
 my($_URI_ARG_MAP) = {map(($_ => 1), @$_URI_ARG_LIST)};
 
@@ -839,7 +839,7 @@ sub internal_redirect_realm {
 	    $new_realm = _get_realm($self, $trt, $new_task);
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
-		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
+		if ($trt eq Bivio::Auth::RealmType->CLUB()) {
 		    # GO TO HOME instead of a club.  He can choose
 		    # realm chooser
 		    $self->client_redirect(Bivio::Agent::TaskId::USER_HOME())
@@ -982,10 +982,10 @@ sub is_super_user {
     return !$user_id
 	|| defined($user_id) eq defined($self->get('auth_user_id'))
 	    && $user_id eq $self->get('auth_user_id')
-	? _get_role($self, Bivio::Auth::RealmType::GENERAL->as_int)
+	? _get_role($self, Bivio::Auth::RealmType->GENERAL->as_int)
 	    ->equals_by_name('ADMINISTRATOR')
 	: Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
-	    realm_id => Bivio::Auth::RealmType::GENERAL->as_int,
+	    realm_id => Bivio::Auth::RealmType->GENERAL->as_int,
 	    user_id => $user_id,
 	    role => Bivio::Auth::Role->ADMINISTRATOR,
 	});
@@ -1275,7 +1275,7 @@ sub _get_realm {
 	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
 	foreach my $r (values(%$user_realms)) {
 	    next unless $r->{'RealmOwner.realm_type'}
-		    eq Bivio::Auth::RealmType::CLUB();
+		    eq Bivio::Auth::RealmType->CLUB();
 	    my($rr) = $r->{'RealmUser.role'}->as_int;
 #TODO: Roles aren't necessarily ordered
 	    next unless  $rr > $role;
@@ -1289,7 +1289,7 @@ sub _get_realm {
 	$club->unauth_load(realm_id => $realm_id);
 	return Bivio::Auth::Realm->new($club);
     }
-    if ($realm_type eq Bivio::Auth::RealmType::USER()) {
+    if ($realm_type eq Bivio::Auth::RealmType->USER()) {
 #TODO: Should this look in the user realm list?  This might point
 #      to an arbitrary user?
 	my($auth_user) = $self->get('auth_user');

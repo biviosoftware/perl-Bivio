@@ -88,11 +88,11 @@ sub new {
     # Realm
     my($realm);
     if ($params->{auth_id} && $params->{auth_id}
-            != Bivio::Auth::RealmType::GENERAL()->as_int) {
+            != Bivio::Auth::RealmType->GENERAL()->as_int) {
 	$realm = Bivio::Auth::Realm->new($params->{auth_id}, $self);
     }
     else {
-	$_GENERAL = Bivio::Auth::Realm::General->new unless $_GENERAL;
+	$_GENERAL = Bivio::Auth::Realm->get_general() unless $_GENERAL;
 	$realm = $_GENERAL;
     }
     $self->internal_set_current();

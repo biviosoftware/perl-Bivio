@@ -360,7 +360,7 @@ sub is_offline_user {
 =head2 unauth_load_by_email(string email, hash query) : boolean
 
 Tries to load this realm using I<email> and any other I<query> parameters,
-e.g. (realm_type, Bivio::Auth::RealmType::USER()).
+e.g. (realm_type, Bivio::Auth::RealmType->USER()).
 
 I<email> is interpreted as follows:
 

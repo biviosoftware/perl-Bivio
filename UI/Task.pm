@@ -151,7 +151,6 @@ sub UNDEF_URI {
 #=IMPORTS
 use Bivio::Agent::Request;
 use Bivio::Agent::TaskId;
-use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Die;
 use Bivio::DieCode;
@@ -164,7 +163,7 @@ use Bivio::Type::RealmName;
 my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_GENERAL) = Bivio::Auth::Realm::General->new;
+my($_GENERAL) = Bivio::Auth::Realm->get_general();
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
 my($_SITE_ROOT) = Bivio::Agent::TaskId->SITE_ROOT;
 my($_REALM_PLACEHOLDER) = '?';
@@ -827,7 +826,7 @@ sub _init_uri {
 
 	# Is the URI valid?
 	my($path_info_count) = undef;
-	if ($value->{realm_type} == Bivio::Auth::RealmType::GENERAL()) {
+	if ($value->{realm_type} == Bivio::Auth::RealmType->GENERAL()) {
 	    $path_info_count = $alias eq '/' ? 0 : 1;
 	}
 	else {

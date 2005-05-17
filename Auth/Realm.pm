@@ -72,6 +72,7 @@ use Bivio::HTML;
 #Avoid circular import: See code in _initialize
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
+use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Auth::Support;
@@ -129,11 +130,11 @@ sub new {
 	}
 	my($realm_type) = $owner->get('realm_type');
 	return Bivio::Auth::Realm::Club->new($owner)
-		if $realm_type == Bivio::Auth::RealmType::CLUB();
+		if $realm_type == Bivio::Auth::RealmType->CLUB();
 	return Bivio::Auth::Realm::User->new($owner)
-		if $realm_type == Bivio::Auth::RealmType::USER();
+		if $realm_type == Bivio::Auth::RealmType->USER();
 	return Bivio::Auth::Realm::General->get_instance
-		if $realm_type == Bivio::Auth::RealmType::GENERAL();
+		if $realm_type == Bivio::Auth::RealmType->GENERAL();
 	Bivio::Die->die($realm_type, ": unknown realm type");
     }
 
@@ -284,6 +285,18 @@ Returns the owner name used for the three default realms (general, club, user).
 sub get_default_name {
     my($self) = @_;
     return lc($self->get('type')->get_name);
+}
+
+=for html <a name="get_general"></a>
+
+=head2 get_general() : Bivio::Auth::Realm
+
+Returns the singleton instance of the GENERAL realm.
+
+=cut
+
+sub get_general {
+    return Bivio::Auth::Realm::General->get_instance();
 }
 
 =for html <a name="get_type"></a>

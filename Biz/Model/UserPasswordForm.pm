@@ -35,7 +35,6 @@ C<Bivio::Biz::Model::UserPasswordForm>
 =cut
 
 #=IMPORTS
-use Bivio::Auth::Realm::General;
 use Bivio::Biz::Model::UserLoginForm;
 use Bivio::Biz::Model::UserLostPasswordForm;
 use Bivio::Type::Password;

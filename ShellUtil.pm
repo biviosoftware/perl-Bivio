@@ -732,7 +732,7 @@ sub lock_realm {
     my($req) = $self->get_request;
     Bivio::Die->die("can't lock general realm")
 	    if $req->get('auth_realm')->get('type')
-		    == Bivio::Auth::RealmType::GENERAL();
+		    == Bivio::Auth::RealmType->GENERAL();
     Bivio::Biz::Model->get_instance('Lock')->execute_if_not_acquired($req);
     return;
 }
@@ -1079,7 +1079,7 @@ L<set_user_to_any_online_admin|"set_user_to_any_online_admin">.
 
 sub set_realm_and_user {
     my($self, $realm, $user) = @_;
-    $realm = Bivio::Auth::Realm::General->get_instance()
+    $realm = Bivio::Auth::Realm->get_general()
 	unless defined($realm);
     my($req) = $self->get_request;
     $req->set_realm($realm);
@@ -1092,7 +1092,7 @@ sub set_realm_and_user {
     # $realm may be a string (name or id), so must get to check type
     $self->set_user_to_any_online_admin
 	    unless $req->get('auth_realm')->get_type
-		    == Bivio::Auth::RealmType::GENERAL();
+		    == Bivio::Auth::RealmType->GENERAL();
     return $self;
 }
 

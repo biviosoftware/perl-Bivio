@@ -318,6 +318,7 @@ sub _base {
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
 		'Bivio::Agent::TaskId' => 'Bivio::Delegate::SimpleTaskId',
 		'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
+		'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
 		'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
 		'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
@@ -325,7 +326,7 @@ sub _base {
 		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
 		'Bivio::UI::FacadeChildType' => 'Bivio::Delegate::SimpleFacadeChildType',
 		'Bivio::UI::HTML::FormErrors' => 'Bivio::Delegate::SimpleFormErrors',
-		'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidgetFactory',
+		'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidFgetFactory',
 	    },
 	}),
 	'Bivio::Die' => {

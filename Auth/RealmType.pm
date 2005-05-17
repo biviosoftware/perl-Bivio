@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::RealmType;
 use strict;
@@ -19,41 +19,20 @@ bOP
 
 =cut
 
+
 =head1 EXTENDS
 
-L<Bivio::Type::Enum>
+L<Bivio::Type::EnumDelegator>
 
 =cut
 
-use Bivio::Type::Enum;
-@Bivio::Auth::RealmType::ISA = qw(Bivio::Type::Enum);
+use Bivio::Type::EnumDelegator;
+@Bivio::Auth::RealmType::ISA = ('Bivio::Type::EnumDelegator');
 
 =head1 DESCRIPTION
 
 C<Bivio::Auth::RealmType> defines the kinds of realms in which
 requests are authenticated.
-
-The following realm types are defined:
-
-=over 4
-
-=item UNKNOWN
-
-realm has not been determined
-
-=item GENERAL
-
-access to general areas (not club or user specific)
-
-=item USER
-
-access to a particular user
-
-=item CLUB
-
-access to a particular club
-
-=back
 
 =cut
 
@@ -62,33 +41,11 @@ access to a particular club
 #=VARIABLES
 
 #=PRIVATE METHODS
-
-__PACKAGE__->compile([
-    'UNKNOWN' => [
-    	0,
-	undef,
-	'realm has yet to be established',
-    ],
-    'GENERAL' => [
-	1,
-	undef,
-	'access to general areas (not club or user specific)',
-    ],
-    'USER' => [
-	2,
-	undef,
-	'access to a particular user',
-    ],
-    'CLUB' => [
-	3,
-	undef,
-	'access to a particular club',
-    ],
-]);
+__PACKAGE__->compile;
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
