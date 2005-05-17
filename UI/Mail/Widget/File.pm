@@ -7,7 +7,7 @@ $_ = $Bivio::UI::Mail::Widget::File::VERSION;
 
 =head1 NAME
 
-Bivio::UI::Mail::Widget::File - 
+Bivio::UI::Mail::Widget::File - mail content from a file
 
 =head1 RELEASE SCOPE
 

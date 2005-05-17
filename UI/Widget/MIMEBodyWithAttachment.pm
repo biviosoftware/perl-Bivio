@@ -7,7 +7,7 @@ $_ = $Bivio::UI::Widget::MIMEBodyWithAttachment::VERSION;
 
 =head1 NAME
 
-Bivio::UI::Widget::MIMEBodyWithAttachment - 
+Bivio::UI::Widget::MIMEBodyWithAttachment - mime body with attachment
 
 =head1 RELEASE SCOPE
 
