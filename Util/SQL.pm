@@ -171,6 +171,7 @@ I<input> which must be of the form:
    ALTER TABLE realm_role_t
       ADD CONSTRAINT realm_role_t1
       PRIMARY KEY(realm_id, role)
+   create function ...
 
 and so on.
 
@@ -182,7 +183,8 @@ sub drop {
     my($self) = @_;
     foreach my $s (_parse($self)) {
 	next unless $s =~ /^(\s*)create(?:\s+unique)?\s+(\w+\s+\w+)\s+/is
-		|| $s =~ /^\s*(alter\s+table\s*\w+\s*)add\s+(constraint\s+\w+)\s+/is;
+            || $s =~ /^\s*(alter\s+table\s*\w+\s*)add\s+(constraint\s+\w+)\s+/is
+            || $s =~ /^(\s*)create(\s+function\s[\S]+)/is;
 	Bivio::Die->eval(sub {
 #TODO: don't want to ignore all errors - ex. db doesn't exist
 	    Bivio::SQL::Connection->execute($1.'drop '.$2);
