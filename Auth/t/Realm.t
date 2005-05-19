@@ -11,7 +11,7 @@ Bivio::Test->new('Bivio::Auth::Realm')->unit([
 	    $case->actual_return([
 		$o->get('type')->get_name,
 		$o->is_default,
-#		Bivio::Die->eval(sub {$o->format_file}),
+		Bivio::Die->eval(sub {$o->format_file}),
 	    ]);
 	    return $expect;
 	},
@@ -19,11 +19,10 @@ Bivio::Test->new('Bivio::Auth::Realm')->unit([
     } => [
 	new => [
 	    [] => Bivio::DieCode->DIE,
-#	    ['demo', $req] => ['USER', 0, 'demo'],
-	    ['demo', $req] => ['USER', 0],
-	    ['user', $req] => ['USER', 1],
-	    ['club', $req] => ['CLUB', 1],
-	    ['general', $req] => ['GENERAL', 1],
+	    ['demo', $req] => ['USER', 0, 'demo'],
+	    ['user', $req] => ['USER', 1, 'user'],
+	    ['club', $req] => ['CLUB', 1, 'club'],
+	    ['general', $req] => ['GENERAL', 1, 'general'],
 	],
 	get_general => [
 	    [] => ['GENERAL', 1],
@@ -33,7 +32,7 @@ Bivio::Test->new('Bivio::Auth::Realm')->unit([
 	format_email => qr/\bdemo@/,
 	format_file => 'demo',
 	format_uri => '/demo',
-	as_string => qr/\bBivio::Auth::Realm\(USER,demo,\d+\)\b/,
+	as_string => qr/Bivio::Auth::Realm\(USER,demo,\d+\)/,
 	get_default_name => 'user',
 	get_type => [
 	    [] => [Bivio::Auth::RealmType->USER],
@@ -46,7 +45,7 @@ Bivio::Test->new('Bivio::Auth::Realm')->unit([
 	],
     ],
     sub {
-	return Bivio::Auth::Realm::General->get_general;
+	return Bivio::Auth::Realm->get_general;
     } => [
 	format_email => Bivio::DieCode->DIE,
     ],

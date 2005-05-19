@@ -69,30 +69,18 @@ Type of this realm.
 use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
-#Avoid circular import: See code in _initialize
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
-use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Auth::Support;
 use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars qw($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_INITIALIZED) = 0;
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
-# Create class names from REALM_TYPE names.
-my($_CLASS_TO_TYPE) = {map {
-    my($class) = lc($_->get_name);
-    $class =~ s/(^|_)(\w)/\u$2/g;
-    # Don't need to "use" these modules, because don't actually
-    # reference the class--just a name here.
-    ("Bivio::Auth::Realm::$class", $_);
-} Bivio::Auth::RealmType->get_list};
-my($_TYPE_TO_CLASS) = {reverse(%$_CLASS_TO_TYPE)};
-# Maps realm types to permission sets
+my($_GENERAL);
 my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
 	    Bivio::Auth::Role->get_list);
 
@@ -118,49 +106,17 @@ The owner must exist.
 
 sub new {
     my($proto, $owner, $req) = @_;
-    $_INITIALIZED || _initialize();
-    if ($proto eq __PACKAGE__) {
-	Bivio::Die->die("must have owner or call type explicitly")
-		    unless $owner;
-	unless (ref($owner)) {
-	    Bivio::Die->die('cannot create model without request')
-			unless ref($req);
-	    $owner = Bivio::Biz::Model->new($req, 'RealmOwner')
-		    ->unauth_load_by_id_or_name_or_die($owner);
-	}
-	my($realm_type) = $owner->get('realm_type');
-	return Bivio::Auth::Realm::Club->new($owner)
-		if $realm_type == Bivio::Auth::RealmType->CLUB();
-	return Bivio::Auth::Realm::User->new($owner)
-		if $realm_type == Bivio::Auth::RealmType->USER();
-	return Bivio::Auth::Realm::General->get_instance
-		if $realm_type == Bivio::Auth::RealmType->GENERAL();
-	Bivio::Die->die($realm_type, ": unknown realm type");
+
+    Bivio::Die->die("must have owner or call type explicitly")
+        unless $owner;
+    unless (ref($owner)) {
+        Bivio::Die->die('cannot create model without request')
+	    unless ref($req);
+	$owner = Bivio::Biz::Model->new($req, 'RealmOwner')
+	     ->unauth_load_by_id_or_name_or_die($owner);
     }
 
-    # Instantiate and initialize with/out owner
-    my($self) = &Bivio::Collection::Attributes::new($proto);
-    $self->[$_IDI] = {};
-    unless ($owner) {
-	# If there is no owner, then permissions already retrieved from
-	# database.  Set "id" to realm_type.
-	my($type) = $_CLASS_TO_TYPE->{ref($self)};
-	$self->put(id => $type->as_int, type => $type);
-	return $self;
-    }
-
-    my($type) = $owner->get('realm_type');
-    Bivio::Die->die($owner, ': owner not a Model::RealmOwner')
-	    unless UNIVERSAL::isa($owner, 'Bivio::Biz::Model::RealmOwner');
-
-#TODO: Change this so everyone knows realm_id?
-    my($id) = $owner->get('realm_id');
-    Bivio::Die->die($id, ': owner must have valid id (must be loaded)')
-		unless $id;
-    $self->put(owner => $owner, id => $id,
-	    owner_name => $owner->get('name'),
-	    type => $type);
-    return $self;
+    return _new($proto, $owner, $req);
 }
 
 =head1 METHODS
@@ -177,9 +133,17 @@ Pretty prints the realm.
 
 sub as_string {
     my($self) = @_;
-    my($owner_name, $id) = $self->unsafe_get('owner_name', 'id');
-    return ref($self) . (defined($owner_name)
-	    ? ('('.$owner_name.','.$id.')'): '');
+    my($desc) = '';
+    my($owner) = $self->unsafe_get('owner');
+    if ($owner) {
+        my($realm_type) = $owner->get('realm_type');
+        my($owner_name, $id) = $self->unsafe_get('owner_name', 'id');
+	$desc =
+	    '('
+	    . join(',', $realm_type->get_name(), $owner_name, $id)
+	    . ')';
+    }
+    return ref($self) . $desc;
 }
 
 =for html <a name="can_user_execute_task"></a>
@@ -296,7 +260,9 @@ Returns the singleton instance of the GENERAL realm.
 =cut
 
 sub get_general {
-    return Bivio::Auth::Realm::General->get_instance();
+    my($proto) = @_;
+    $_GENERAL = _new($proto) unless $_GENERAL;
+    return $_GENERAL;
 }
 
 =for html <a name="get_type"></a>
@@ -314,9 +280,7 @@ sub get_type {
     # Get the type from the instance itself otherwise
     # just from class.
     return $proto->get('type') if ref($proto);
-    Bivio::Die->die($proto, ': unknown realm class')
-	    unless exists($_CLASS_TO_TYPE->{$proto});
-    return $_CLASS_TO_TYPE->{$proto};
+    Bivio::Die->die($proto, ': unknown realm class');
 }
 
 =for html <a name="is_default"></a>
@@ -349,19 +313,37 @@ sub is_default_id {
 
 #=PRIVATE METHODS
 
-# _initialize()
+# _new($proto, $owner, $req) : Bivio::Auth::Realm
 #
-# Loads the RealmType classes.
+# Create a new instance.  If I<owner> is undef, a GENERAL realm
+# is created.
 #
-sub _initialize {
-    return if $_INITIALIZED;
-    $_INITIALIZED = 1;
-    foreach my $t ('GENERAL', 'USER', 'CLUB') {
-	my($rt) = Bivio::Auth::RealmType->$t();
-	my($rc) = $_TYPE_TO_CLASS->{$rt};
-	Bivio::IO::ClassLoader->simple_require($rc);
+sub _new {
+    my($proto, $owner, $req) = @_;
+
+    # Instantiate and initialize with/out owner
+    my($self) = &Bivio::Collection::Attributes::new($proto);
+    $self->[$_IDI] = {};
+    unless ($owner) {
+	# If there is no owner, then permissions already retrieved from
+	# database.  Set "id" to realm_type.
+	my($type) = Bivio::Auth::RealmType->GENERAL();
+	$self->put(id => $type->as_int, type => $type);
+	return $self;
     }
-    return;
+
+    my($type) = $owner->get('realm_type');
+    Bivio::Die->die($owner, ': owner not a Model::RealmOwner')
+	    unless UNIVERSAL::isa($owner, 'Bivio::Biz::Model::RealmOwner');
+
+#TODO: Change this so everyone knows realm_id?
+    my($id) = $owner->get('realm_id');
+    Bivio::Die->die($id, ': owner must have valid id (must be loaded)')
+		unless $id;
+    $self->put(owner => $owner, id => $id,
+	    owner_name => $owner->get('name'),
+	    type => $type);
+    return $self;
 }
 
 =head1 COPYRIGHT
