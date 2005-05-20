@@ -102,16 +102,22 @@ sub AUTOLOAD {
 
 =for html <a name="call_method"></a>
 
-=head2 call_method() : 
+=head2 static call_method(string autoload, any proto, any args, ...) : any
 
+Calls method or class contained in I<autoload>.  Using I<proto> and passing
+I<args> as appropriate.
 
+If I<autoload> begins with a capital letter, it is assumed to be a class which
+needs to be loaded via view_class_map.  If I<autoload> begins with C<vs_> it is
+found in the view_shortcuts map.  Otherwise, I<autoload> must begin with
+C<view_>, and is called in this module.
 
 =cut
 
 sub call_method {
-    my($package, $AUTOLOAD, $proto, @args) = @_;
-    my($view) = _assert_in_eval($AUTOLOAD);
-    my($method) = $AUTOLOAD;
+    my(undef, $autoload, $proto, @args) = @_;
+    my($view) = _assert_in_eval($autoload);
+    my($method) = $autoload;
     $method =~ s/.*:://;
     if ($method =~ /^[A-Z]/) {
 	my($map) = $view->ancestral_get('view_class_map', undef);
