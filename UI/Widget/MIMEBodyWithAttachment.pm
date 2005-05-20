@@ -78,7 +78,7 @@ sub mail_headers {
     return [
 	map({
 	    my($value) = $fields->{entity}->head()->get(lc($_));
-            chomp ($value);
+            chomp ($value) if $value;
             [$_, $value];
         } 'MIME-Version', 'Content-Type', 'Content-Transfer-Encoding'),
     ];
