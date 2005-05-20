@@ -106,6 +106,7 @@ The directory to search for source code.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_SOURCE_DIR = $cfg->{source_dir};
+    $_SOURCE_DIR =~ s,/+$,,;
     _find_files();
     return;
 }
@@ -255,19 +256,21 @@ sub _contains {
 # Loads a map of browsable source file names.
 #
 sub _find_files {
-
-    File::Find::find(sub {
+    $_FILES = {};
+    File::Find::find({
+	wanted => sub {
 	    my($name) = $File::Find::name;
-	    return unless $name =~ /\.pm$/;
-
-	    # turn the file name into a package name
-	    $name =~ s,^$_SOURCE_DIR/(.*)\.pm$,$1,;
+	    return
+		unless $name =~ /\.pm$/;
+	    $name =~ s,^\Q$_SOURCE_DIR\E/(.*)\.pm$,$1,;
 	    $name =~ s,/,::,g;
-
 	    $_FILES->{$name} = 1;
+	    return;
 	},
-	$_SOURCE_DIR);
-    return $_FILES;
+    },
+	$_SOURCE_DIR,
+    );
+    return;
 }
 
 # _reformat_pod(self, array_ref lines)
