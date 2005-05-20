@@ -326,7 +326,7 @@ sub _base {
 		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
 		'Bivio::UI::FacadeChildType' => 'Bivio::Delegate::SimpleFacadeChildType',
 		'Bivio::UI::HTML::FormErrors' => 'Bivio::Delegate::SimpleFormErrors',
-		'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidFgetFactory',
+		'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidgetFactory',
 	    },
 	}),
 	'Bivio::Die' => {
