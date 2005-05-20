@@ -125,6 +125,18 @@ sub vs_director {
     return $proto->vs_new('Director', @_);
 }
 
+=for html <a name="vs_fe"></a>
+
+=head2 static vs_fe(string item) : string
+
+Calls SUPER and escapes.
+
+=cut
+
+sub vs_fe {
+    return Bivio::HTML->escape(shift->SUPER::vs_fe(@_));
+}
+
 #TODO: Why doesn't this work right?
 #=for html <a name="vs_display"></a>
 #
