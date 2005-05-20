@@ -317,16 +317,21 @@ sub _base {
 	    delegates => {
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
 		'Bivio::Agent::TaskId' => 'Bivio::Delegate::SimpleTaskId',
-		'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
+		'Bivio::Auth::Permission' =>
+		    'Bivio::Delegate::SimplePermission',
 		'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
+		'Bivio::Auth::Role' => 'Bivio::Delegate::Role',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
 		'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
 		'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
 		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
 		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
-		'Bivio::UI::FacadeChildType' => 'Bivio::Delegate::SimpleFacadeChildType',
-		'Bivio::UI::HTML::FormErrors' => 'Bivio::Delegate::SimpleFormErrors',
-		'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidgetFactory',
+		'Bivio::UI::FacadeChildType' =>
+		    'Bivio::Delegate::SimpleFacadeChildType',
+		'Bivio::UI::HTML::FormErrors' =>
+		    'Bivio::Delegate::SimpleFormErrors',
+		'Bivio::UI::HTML::WidgetFactory' =>
+		    'Bivio::Delegate::SimpleWidgetFactory',
 	    },
 	}),
 	'Bivio::Die' => {
