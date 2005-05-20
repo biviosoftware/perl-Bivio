@@ -160,9 +160,6 @@ use Bivio::IO::Config;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_SEP) = SEPARATOR();
-my($_SEP_PAT) = SEPARATOR();
-$_SEP_PAT =~ s/(\W)/\\$1/g;
 
 =head1 METHODS
 
@@ -179,7 +176,7 @@ We allow 'x.y' names.
 sub assert_name {
     my($self, $name) = @_;
     $self->die($name, 'invalid name syntax')
-	    unless $name =~ /^\w+($_SEP_PAT\w+)*$/;
+	unless $name =~ /^\w+(\Q@{[$self->SEPARATOR]}\E\w+)*$/;
     return;
 }
 
@@ -229,20 +226,10 @@ L<UNDEF_CONFIG|"UNDEF_CONFIG">
 
 sub get_value {
     my($proto, @tag_part) = @_;
-    my($req_or_facade) = ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef;
-    my($self) = $proto->internal_get_self($req_or_facade);
-    my($tag) = _join_tag(\@tag_part);
-    # We search a diagonal matrix.  We iterate over the $tag until we
-    # find a match.  Chops off front component each time, if not found.
-    my($v);
-    while ($tag) {
-	$v = $self->internal_unsafe_lc_get_value($tag);
-	return $v->{value} if $v;
-	# Chop off top level.  If unable to do replacement, the tag
-	# is bad so can't be found.
-	last unless $tag =~ s/^\w+($_SEP_PAT)?//g;
-    }
-    return $self->get_error(\@tag_part)->{value};
+    my($self) = $proto->internal_get_self(
+	ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef);
+    my($v) = $self->unsafe_get_value(@tag_part);
+    return defined($v) ? $v : $self->get_error(\@tag_part)->{value};
 }
 
 =for html <a name="get_widget_value"></a>
@@ -260,10 +247,9 @@ will call the method appropriately.
 
 sub get_widget_value {
     my($self, @tag) = @_;
-    # SUPER has code to handle this
-    return $self->SUPER::get_widget_value(@tag) if $tag[0] =~ /^->/;
-    # defaults to get_value
-    return $self->get_value(@tag);
+    # SUPER has code to handle ->, which we don't allow in names
+    return $tag[0] =~ /^->/ ? $self->SUPER::get_widget_value(@tag)
+	: $self->get_value(@tag);
 }
 
 =for html <a name="group"></a>
@@ -318,11 +304,11 @@ sub internal_initialize_value {
     if (ref($v)) {
 	# This shouldn't happen, but good to check
 	$self->initialization_error(
-		$value, 'expecting a string, not a reference');
+	    $value, 'expecting a string, not a reference');
 	$v = undef;
     }
     # Undefined is error
-    $value->{value} = defined($v) ? $v : UNDEF_VALUE();
+    $value->{value} = defined($v) ? $v : $self->UNDEF_VALUE();
     return;
 }
 
@@ -336,7 +322,8 @@ Returns I<tag_part>s combined as a whole.
 
 sub join_tag {
     my($proto, @tag) = @_;
-    return _join_tag(\@tag);
+    return int(@tag) == 1 && $tag[0] =~ /^[a-z0-9_.]+$/ ? $tag[0]
+	: join($proto->SEPARATOR, map((length($_) ? lc($_) : ()), @tag));
 }
 
 =for html <a name="regroup"></a>
@@ -356,6 +343,34 @@ sub regroup {
 	$self->SUPER::regroup(@$group);
     }
     return;
+}
+
+=for html <a name="unsafe_get_value"></a>
+
+=head2 unsafe_get_value(string tag_part, ...) : string
+
+You probably want to call L<get_value|"get_value">.
+
+Returns C<undef> if it cannot get the value, and doesn't output an error.
+
+=cut
+
+sub unsafe_get_value {
+    my($self) = shift;
+    my($tag) = $self->join_tag(@_);
+    # We search a diagonal matrix.  We iterate over the $tag until we
+    # find a match.  Chops off front component each time, if not found.
+    my($v);
+    my($sep) = $self->SEPARATOR;
+    while ($tag) {
+	$v = $self->internal_unsafe_lc_get_value($tag);
+	return $v->{value}
+	    if $v;
+	# Chop off top level.  If unable to do replacement, the tag
+	# is bad so can't be found.
+	last unless $tag =~ s/^\w+(\Q$sep\E)?//g;
+    }
+    return undef;
 }
 
 =for html <a name="unsafe_get_widget_value_by_name"></a>
@@ -397,26 +412,6 @@ sub _assert_group_arg {
     return;
 }
 
-# _init_value(self, hash_ref decl, any values) : hash_ref
-#
-# Returns $values a values value.
-#
-sub _check_value {
-    my($self, $decl, $values) = @_;
-    unless (ref($values)) {
-	$self->die($decl, 'undefined value') unless defined($values);
-	return $values;
-    }
-    if (ref($values) eq 'ARRAY') {
-	$self->($decl, 'odd number of elements in value: ', $values)
-		if int(@$values) % 2 == 0;
-	return $values;
-    }
-    return [%$values] if ref($values) eq 'HASH';
-    $self->die($values, 'invalid value: ', $values);
-    # DOES NOT RETURN
-}
-
 # _group(self, any name, any value, array_ref parent_names) : array_ref
 #
 # Returns the permutations found in name and value.  $parent_names is
@@ -435,7 +430,7 @@ sub _group {
 	my($p) = $_;
 	map {
 	    # We don't append our name if it is "blank"
-	    length($_) ? $p.$_SEP.$_ : $p;
+	    length($_) ? $p . $self->SEPARATOR . $_ : $p;
 	} @$name;
     } @$parent_names]
 	    if $parent_names;
@@ -454,48 +449,6 @@ sub _group {
 	push(@$groups, [$name, $value]);
     }
     return $groups;
-}
-
-# _init_value(self, hash_ref decl, array_ref values) : hash_ref
-#
-# $values is a complex value.  Turn into a hash_ref.  $decl is value
-# passed into internal_initialize_value.
-#
-# Unrolls the declaration.
-#
-sub _init_value {
-    my($self, $decl, $values) = @_;
-    $values = _check_value($self, $decl, $values);
-    return $values unless ref($values);
-
-    my(%res);
-    while (@$values) {
-	my($name, $value) = splice(@$values, 0, 2);
-	my($v) = _init_value($self, $decl, $value);
-	foreach my $n (ref($name) ? @$name : $name) {
-	    $self->die($value, 'duplicate tag: ', $n) if $res{$n};
-	    if (length($n)) {
-		$self->assert_name($n);
-	    }
-	    elsif (ref($v)) {
-		$self->die($value, 'empty tag must point to string, not ref');
-	    }
-	    $res{$n} = $v;
-	}
-    }
-    return \%res;
-}
-
-# _join_tag(array_ref tag) : arrary
-#
-# Implements join_tag without assertions.  Empty elements are tossed.
-#
-sub _join_tag {
-    my($tag) = @_;
-    # Optimization
-    return $tag->[0] if int(@$tag) == 1 && $tag->[0] =~ /^[a-z0-9_.]+$/;
-
-    return join($_SEP, map {length($_) ? lc($_) : ()} @$tag);
 }
 
 =head1 COPYRIGHT
