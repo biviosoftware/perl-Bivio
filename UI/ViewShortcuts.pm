@@ -62,6 +62,19 @@ sub vs_call {
     return Bivio::UI::ViewLanguage->AUTOLOAD(@args);
 }
 
+=for html <a name="vs_fe"></a>
+
+=head2 vs_fe(string item) : string
+
+Calls L<Bivio::UI::FormError::field_value|Bivio::UI::FormError/"field_value">.
+
+=cut
+
+sub vs_fe {
+    shift;
+    return Bivio::UI::FormError->field_value(@_);
+}
+
 =for html <a name="vs_html"></a>
 
 =head2 static vs_html(string attr) : array_ref
