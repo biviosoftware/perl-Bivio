@@ -625,7 +625,7 @@ sub list_projects_el {
 	. join("\n       ",
 	    map(sprintf('("%s" "%s" "%s")', @$_),
 		@{$_CFG->{projects}}))
-	. ")\n";
+	. "))\n";
 }
 
 =for html <a name="list_updates"></a>
