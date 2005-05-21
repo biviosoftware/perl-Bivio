@@ -57,6 +57,7 @@ The label string or widget value used in the error message.
 #=IMPORTS
 use Bivio::UI::Font;
 use Bivio::UI::HTML::FormErrors;
+use Bivio::UI::FormError;
 
 #=VARIABLES
 
@@ -125,13 +126,20 @@ sub render {
 	    my($p, $s) = Bivio::UI::Font->format_html('form_field_error',
 		    $req);
 	    $$buffer .= $p
-		    .Bivio::UI::HTML::FormErrors->to_html(
-			    $source, $model, $fields->{field},
-			    ref($fields->{label}) eq 'ARRAY'
-			    ? $source->get_widget_value(
-				    @{$fields->{label}}) : $fields->{label},
-			    $error)
-		    .$s."<br>\n";
+		. Bivio::UI::Facade->get_from_request_or_self($req)
+		    ->get_or_default(
+			'FormError', 'Bivio::UI::HTML::FormErrors')
+		    ->to_html(
+			$source,
+			$model,
+			$fields->{field},
+			ref($fields->{label}) eq 'ARRAY'
+			    ? $source->get_widget_value(@{$fields->{label}})
+			    : $fields->{label},
+			$error,
+		    )
+		. $s
+		. "<br>\n";
 	}
     }
     return;
