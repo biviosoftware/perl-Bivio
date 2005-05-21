@@ -153,6 +153,21 @@ my($_SELF) = __PACKAGE__->new({
 	    return;
 	},
     },
+    FormError => {
+	initialize => sub {
+	    my($fc) = @_;
+	    $fc->group('UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH'
+		=> <<'EOF',
+The password you entered does not match the value stored
+in our database.
+Please remember that passwords are case-sensitive, i.e.
+"HELLO" is not the same as "hello".
+EOF
+	    );
+	    $fc->group(NULL => 'You must supply a value for vs_fe("label");.'),
+	    $fc->group('UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)'),
+	},
+    },
 });
 
 =head1 METHODS
@@ -259,8 +274,7 @@ sub _text {
         list_price => 'Item Price',
     ]);
     $t->group(Order => [
-        bill_to_name => 'Name',
-        ship_to_name => 'Name',
+        [qw(bill_to_name ship_to_name)] => 'Name',
     ]);
     $t->group('Phone.phone' => 'Telephone Number');
     $t->group(Product => [
@@ -299,6 +313,13 @@ sub _text {
 
     # Misc Model support
     $t->group('MailReceiveDispatchForm.uri_prefix' => 'mail-handler-');
+
+
+    $t->group(test_text => 'Global');
+    $t->group(Test_Text_Parent => [
+	test_text => 'Child',
+	test_text_only_child => 'Only Child',
+    ]);
     return;
 }
 
