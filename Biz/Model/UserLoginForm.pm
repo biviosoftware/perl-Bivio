@@ -174,7 +174,7 @@ sub internal_initialize {
             'RealmOwner.password',
 	],
 
-	# Fields used internally which are dynamically computed dynamically.
+	# Fields used internally which are computed dynamically.
 	# They are not sent to or returned from the user.
 	other => [
 	    # The following fields are computed by validate
