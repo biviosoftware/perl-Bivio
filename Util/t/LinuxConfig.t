@@ -12,7 +12,7 @@ Bivio::IO::Config->introduce_values({
 CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -a LinuxConfig/* $_tmp; find $_tmp -name CVS -exec rm -rf {} \\; -prune");
 
 Bivio::Test->unit([
-    Bivio::Util::LinuxConfig => [
+    'Bivio::Util::LinuxConfig' => [
 	(map {
 	    my($method, $args, $tests) = @$_;
 	    ({

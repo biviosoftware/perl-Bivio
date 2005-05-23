@@ -4,7 +4,7 @@ use strict;
 use Bivio::Util::HTTPPing;
 use Bivio::Test;
 Bivio::Test->unit([
-    Bivio::Util::HTTPPing => [
+    'Bivio::Util::HTTPPing' => [
 	page => [
 	    ['http://www.bivio.biz/hm/contact'] => [''],
 	    ['http://www.bivio.biz'] => [''],
