@@ -3,7 +3,7 @@
 use strict;
 use Bivio::Test;
 Bivio::Test->new('Bivio::Type::String')->unit([
-    Bivio::Type::String => [
+    'Bivio::Type::String' => [
 	compare => [
 	    [undef, undef] => 0,
 	    [undef, ''] => 0,

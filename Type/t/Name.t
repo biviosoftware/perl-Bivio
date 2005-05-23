@@ -5,7 +5,7 @@ use Bivio::Test;
 use Bivio::Type::Name;
 use Bivio::TypeError;
 Bivio::Test->unit([
-    Bivio::Type::Name => [
+    'Bivio::Type::Name' => [
 	{
 	    method => 'from_literal',
 	    check_return => sub {

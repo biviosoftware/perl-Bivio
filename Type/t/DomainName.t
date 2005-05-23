@@ -5,7 +5,7 @@ use Bivio::Test;
 use Bivio::Type::DomainName;
 use Bivio::TypeError;
 Bivio::Test->unit([
-    Bivio::Type::DomainName => [
+    'Bivio::Type::DomainName' => [
 	{
 	    method => 'from_literal',
 	    check_return => sub {

@@ -12,7 +12,7 @@ Bivio::Test->new({
 	return $expect;
     },
 })->unit([
-    Bivio::Type::Secret => [
+    'Bivio::Type::Secret' => [
 	map {(
 	    "encrypt_$_" => [
 		map {([$_] => [$_])}
