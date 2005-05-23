@@ -1,13 +1,13 @@
 # Copyright (c) 2002 bivio Software Artisans, Inc.  All rights reserved.
 # $Id$
-package Bivio::Agent::t::Task::TaskId;
+package Bivio::Agent::t::Mock::TaskId;
 use strict;
-$Bivio::Agent::t::Task::TaskId::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::t::Task::TaskId::VERSION;
+$Bivio::Agent::t::Mock::TaskId::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::t::Mock::TaskId::VERSION;
 
 =head1 NAME
 
-Bivio::Agent::t::Task::TaskId - test tasks
+Bivio::Agent::t::Mock::TaskId - unit test tasks
 
 =head1 RELEASE SCOPE
 
@@ -15,16 +15,16 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::Agent::t::Task::TaskId;
+    use Bivio::Agent::t::Mock::TaskId;
 
 =cut
 
 use Bivio::Delegate::SimpleTaskId;
-@Bivio::Agent::t::Task::TaskId::ISA = ('Bivio::Delegate::SimpleTaskId');
+@Bivio::Agent::t::Mock::TaskId::ISA = ('Bivio::Delegate::SimpleTaskId');
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::t::Task::TaskId> test tasks
+C<Bivio::Agent::t::Mock::TaskId> unit test tasks
 
 =cut
 
@@ -100,6 +100,14 @@ sub get_delegate_info {
 	    505
 	    GENERAL
 	    TEST_TRANSIENT
+            Action.ClientRedirect->execute_next
+            next=SITE_ROOT
+	)],
+	[qw(
+	    TEST_ROLE1
+	    506
+	    CLUB
+	    TEST_ROLE1
             Action.ClientRedirect->execute_next
             next=SITE_ROOT
 	)],

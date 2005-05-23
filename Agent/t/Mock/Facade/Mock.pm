@@ -1,13 +1,13 @@
 # Copyright (c) 2000 bivio Software Artisans, Inc.  All rights reserved.
 # $Id$
-package Bivio::Agent::t::Task::Facade::Task;
+package Bivio::Agent::t::Mock::Facade::Mock;
 use strict;
-$Bivio::Agent::t::Task::Facade::Task::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::t::Task::Facade::Task::VERSION;
+$Bivio::Agent::t::Mock::Facade::Mock::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::t::Mock::Facade::Mock::VERSION;
 
 =head1 NAME
 
-Bivio::Agent::t::Task::Facade::Task - facade for Task.t
+Bivio::Agent::t::Mock::Facade::Mock - facade for Agent unit tests
 
 =head1 RELEASE SCOPE
 
@@ -15,7 +15,7 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::Agent::t::Task::Facade::Task;
+    use Bivio::Agent::t::Mock::Facade::Mock;
 
 =cut
 
@@ -26,11 +26,11 @@ L<Bivio::UI::Facade>
 =cut
 
 use Bivio::UI::Facade;
-@Bivio::Agent::t::Task::Facade::Task::ISA = ('Bivio::UI::Facade');
+@Bivio::Agent::t::Mock::Facade::Mock::ISA = ('Bivio::UI::Facade');
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::t::Task::Facade::Task> is a facade for Task.t
+C<Bivio::Agent::t::Mock::Facade::Mock> is a facade for Agent unit tests
 
 =cut
 

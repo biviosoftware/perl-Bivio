@@ -5,14 +5,16 @@ BEGIN {
     Bivio::IO::Config->introduce_values({
 	'Bivio::IO::ClassLoader' => {
 	    delegates => {
-		'Bivio::Agent::TaskId' => 'Bivio::Agent::t::Task::TaskId',
+		'Bivio::Agent::TaskId' => 'Bivio::Agent::t::Mock::TaskId',
+		'Bivio::Auth::Permission'
+		    => 'Bivio::Agent::t::Mock::Permission',
 	    },
 	    maps => {
-		Facade => ['Bivio::Agent::t::Task::Facade'],
+		Facade => ['Bivio::Agent::t::Mock::Facade'],
 	    },
 	},
 	'Bivio::UI::Facade' => {
-	    default => 'Task',
+	    default => 'Mock',
 	},
     });
 }
