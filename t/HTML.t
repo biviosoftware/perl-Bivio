@@ -11,5 +11,12 @@ Bivio::Test->new('Bivio::HTML')->unit([
 	    'hello&bye' => 'hello%26bye',
 	    'hello?bye' => 'hello%3Fbye',
         ],
+	unescape_query => [
+	    hello => 'hello',
+	    'hello%2Bbye' => 'hello+bye',
+	    'hello%20bye' => 'hello bye',
+	    'hello%26bye' => 'hello&bye',
+	    'hello%3Fbye' => 'hello?bye',
+        ],
     ],
 ]);
