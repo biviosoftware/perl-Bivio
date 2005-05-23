@@ -9,8 +9,7 @@ Bivio::Test->new('Bivio::HTML')->unit([
 	    'hello+bye' => 'hello%2Bbye',
 	    'hello bye' => 'hello%20bye',
 	    'hello&bye' => 'hello%26bye',
-#TODO: Is this a bug?
-	    'hello?bye' => 'hello?bye',
+	    'hello?bye' => 'hello%3Fbye',
         ],
     ],
 ]);

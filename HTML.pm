@@ -124,7 +124,7 @@ sub escape_attr_value {
 
 =head2 static escape_query(string text) : string
 
-Same as escape_uri except escapes '+' as well.
+Same as escape_uri except escapes '+' and '?' as well.
 
 =cut
 
@@ -132,6 +132,7 @@ sub escape_query {
     my($proto, $text) = @_;
     $text = $proto->escape_uri($text);
     $text =~ s/\+/\%2B/g;
+    $text =~ s/\?/\%3F/g;  #don't let this fall through the cracks
     return $text;
 }
 
