@@ -203,9 +203,7 @@ sub to_string {
     $dd->Deepcopy(1);
     $dd->Indent(defined($indent) ? $indent : 1);
     $dd->Maxdepth($max_depth || 0);
-    #Perl 5.6 Data::Dumper doesn't have or need Sortkeys. Perl 5.8 does.
-    $dd->Sortkeys(1)
-	if UNIVERSAL::can($dd, 'Sortkeys');
+    $dd->Sortkeys(1);
     $dd->Terse(1);
     my($res) = $dd->Dumpxs();
     return \$res;
