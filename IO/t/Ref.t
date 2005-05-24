@@ -13,11 +13,11 @@ EOF
 	    # Assumes the Data::Dumper algorithm
 	    [{a0 => '0', b => ['b', 'c']}] => [\<<'EOF'],
 {
+  'a0' => '0',
   'b' => [
     'b',
     'c'
-  ],
-  'a0' => '0'
+  ]
 }
 EOF
 	],
