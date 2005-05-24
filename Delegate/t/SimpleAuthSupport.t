@@ -4,17 +4,6 @@
 # Must be executed in the petshop facade.
 #
 use strict;
-BEGIN {
-    use Bivio::IO::Config;
-    Bivio::IO::Config->introduce_values({
-	'Bivio::IO::ClassLoader' => {
-	    delegates => {
-		'Bivio::Auth::Permission'
-		    => 'Bivio::Delegate::t::Mock::Permission',
-	    },
-        },
-    });
-}
 use Bivio::PetShop::Test::Request;
 my($req) = Bivio::PetShop::Test::Request->initialize_fully;
 Bivio::Test->unit([

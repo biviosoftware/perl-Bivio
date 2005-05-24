@@ -48,8 +48,7 @@ sub get_delegate_info {
     my($proto) = @_;
     return [
 	@{$proto->SUPER::get_delegate_info},
-	TEST_TRANSIENT => [9],
-	TEST_ROLE1 => [10],
+	TEST_ROLE1 => [21],
     ];
 }
 
