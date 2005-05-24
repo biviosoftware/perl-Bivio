@@ -114,7 +114,6 @@ sub get_delegate_info {
 	ADMIN_WRITE => [6],
 	SUBSTITUTE_USER_TRANSIENT => [7],
 	SUPER_USER_TRANSIENT => [8],
-	TEST_TRANSIENT => [9],
     ];
 }
 
