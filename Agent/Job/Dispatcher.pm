@@ -127,8 +127,6 @@ sub enqueue {
 Processes the queue.  Called from Mail or HTTP dispatcher after
 request completes.
 
-This is an L<Bivio::IPC::Server|Bivio::IPC::Server> upcall.
-
 =cut
 
 sub execute_queue {
