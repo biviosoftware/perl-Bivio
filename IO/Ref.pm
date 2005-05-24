@@ -200,11 +200,11 @@ I<indent> is passed to Data::Dumper::Indent (defaults 1);
 sub to_string {
     my(undef, $ref, $max_depth, $indent) = @_;
     my($dd) = Data::Dumper->new([$ref]);
-    $dd->Indent(defined($indent) ? $indent : 1);
-    $dd->Terse(1);
     $dd->Deepcopy(1);
-    $dd->Maxdepth($max_depth)
-	if defined $max_depth;
+    $dd->Indent(defined($indent) ? $indent : 1);
+    $dd->Maxdepth($max_depth || 0);
+    $dd->Sortkeys(1);
+    $dd->Terse(1);
     my($res) = $dd->Dumpxs();
     return \$res;
 }
