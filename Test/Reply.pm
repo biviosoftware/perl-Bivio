@@ -104,7 +104,7 @@ sub set_output {
     my($fields) = $self->[$_IDI];
     # Ignore duplicate calls, that's not what were testing
     $fields->{output} = ref($value) eq 'GLOB'
-        ? Bivio::IO::File->read('output', $value)
+        ? Bivio::IO::File->read($value)
 	: ref($value) eq 'SCALAR' ? $value
 	: Bivio::Die->die('not a GLOB or SCALAR reference');
     return;
