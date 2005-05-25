@@ -342,7 +342,7 @@ Maximum number of attempts to get mail.  Each try is about 1 second.
 sub handle_config {
     my(undef, $cfg) = @_;
     Bivio::Die->die($cfg->{email_user}, ': email_user must be an alphanum')
-        if $cfg->{email_user} =~ /\W/;
+        if ($cfg->{email_user} || '') =~ /\W/;
     Bivio::Die->die($cfg->{mail_tries},
 	': mail_tries must be a postive integer')
         if $cfg->{mail_tries} =~ /\D/ || $cfg->{mail_tries} <= 0;
