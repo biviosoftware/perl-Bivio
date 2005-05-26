@@ -615,8 +615,8 @@ sub rename_rpmnew {
 	unless ($self->unsafe_get('noexecute')) {
 	    my($s) = "$f.rpmsave";
 	    unlink($s);
-	    $self->piped_exec("cp -af $f $s");
-	    $self->piped_exec("cp -af $n $f");
+	    $self->piped_exec("cp -pRf $f $s");
+	    $self->piped_exec("cp -pRf $n $f");
 	    unlink($n);
 	}
 	else {
@@ -776,7 +776,7 @@ sub _edit {
     # which needs to modify /var/spool/cron for cron to "wakeup" and reread
     # all crontabs.  $file.bak may be read-only
     unlink("$file.bak");
-    system("cp -a $file $file.bak");
+    system("cp -pR $file $file.bak");
     Bivio::IO::File->write($file, $data);
     return "Updated: $file\n";
 }
