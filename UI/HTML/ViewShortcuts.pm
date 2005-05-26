@@ -283,19 +283,28 @@ sub vs_link {
 
 =for html <a name="vs_link_target_as_html"></a>
 
-=head2 static vs_link_target_as_html(Bivio::UI::Widget widget) : string
+=head2 static vs_link_target_as_html(Bivio::UI::Widget widget, any source) : string
 
 Looks up the attribute I<link_target> ancestrally and renders
 it as ' target="XXX"' (with leading space) whatever its value is.
 
 Default is '_top', because we don't use frames.
 
+If I<source> is supplied, renders dynamically.  Otherwise, renders
+a static string only.
+
 =cut
 
 sub vs_link_target_as_html {
-    my($proto, $widget) = @_;
+    my($proto, $widget, $source) = @_;
     my($t) = $widget->ancestral_get('link_target', '_top');
-    return defined($t) ? (' target="'.Bivio::HTML->escape($t).'"') : '';
+    if ($source) {
+	my($b);
+	$widget->unsafe_render_value('link_target', $t, $source, \$b);
+	$t = $b;
+    }
+    return defined($t) && length($t)
+	? ' target="' . Bivio::HTML->escape($t) . '"' : '';
 }
 
 =for html <a name="vs_new"></a>
