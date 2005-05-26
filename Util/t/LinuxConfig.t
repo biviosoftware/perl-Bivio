@@ -9,8 +9,11 @@ Bivio::IO::Config->introduce_values({
 	root_prefix => $_tmp,
     },
 });
-CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -a LinuxConfig/* $_tmp; find $_tmp -name CVS -exec rm -rf {} \\; -prune");
+CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -pR LinuxConfig/* $_tmp; find $_tmp -name CVS -exec rm -rf {} \\; -prune");
 
+my($_true) = grep(-x $_, qw(/bin/true /usr/bin/true));
+die('could not find "true"')
+    unless $_true;
 Bivio::Test->unit([
     'Bivio::Util::LinuxConfig' => [
 	(map {
@@ -129,21 +132,23 @@ other.host
 		['etc/sendmail.cf', "\nO MaxMessageSize=99999\n"],
 		['etc/sendmail.cf', "O DaemonPortOptions=Port=smtp, Name=MTA"],
 	    ],
-	], [
-	    'add_sendmail_http_agent', ['localhost:80/my_uri'] => [
+	],
+	[
+	    'add_sendmail_http_agent', ['localhost:80/my_uri', $_true] => [
 		['etc/sendmail.cf', 'localhost:80/my_uri'],
  		['etc/sendmail.cf', '\$#bsendmailhttp.*\$#bsendmailhttp'],
  		['etc/sendmail.cf', 'Mbsendmailhttp'],
  		['etc/sendmail.cf', sub {${shift(@_)} =~ m{R=EnvToL}}],
- 		['etc/sendmail.cf', 'A=b-sendmail-http'],
+ 		['etc/sendmail.cf', 'A=true'],
  		['etc/sendmail.cf', "names\nFP/etc/mail"],
  		['etc/sendmail.cf', '\$=w.*bsendmailhttp \$@ \$2 \$: \$1'],
 	    ],
-	    'add_sendmail_http_agent', ['localhost:8000/my_uri', '/bin/true'] => [
+	    'add_sendmail_http_agent', ['localhost:8000/my_uri', $_true] => [
 		['etc/sendmail.cf', 'localhost:8000/my_uri'],
  		['etc/sendmail.cf', 'A=true'],
 	    ],
-	], [
+	],
+	[
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [
 		['etc/ssh/sshd_config', "\nPermitRootLogin no(?!yes)"],
 		['etc/ssh/sshd_config', "\nVerifyReverseMapping yes(?!no)"],
