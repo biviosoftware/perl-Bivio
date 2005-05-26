@@ -380,7 +380,7 @@ sub initialize_attr {
     my($self, $attr_name) = @_;
     my($res) = $self->unsafe_initialize_attr($attr_name);
     $self->die($attr_name, undef, 'attribute must be defined')
-	    unless defined($res);
+	unless defined($res);
     return $res;
 }
 
@@ -508,7 +508,7 @@ sub render_attr {
     my($b) = '';
     $buffer = \$b unless $buffer;
     $self->die($attr_name, $source, 'attribute renders as undef')
-	    unless $self->unsafe_render_attr($attr_name, $source, $buffer);
+	unless $self->unsafe_render_attr($attr_name, $source, $buffer);
     return $buffer;
 }
 
@@ -529,8 +529,8 @@ sub render_value {
     my($b) = '';
     $buffer = \$b unless $buffer;
     $self->die($attr_name, $source, 'value renders as undef')
-	    unless $self->unsafe_render_value(
-		    $attr_name, $value, $source, $buffer);
+	unless $self->unsafe_render_value(
+	    $attr_name, $value, $source, $buffer);
     return $buffer;
 }
 
@@ -562,7 +562,7 @@ L<unsafe_render_value|"unsafe_render_value"> on the result.
 sub unsafe_render_attr {
     my($self, $attr_name, $source, $buffer) = @_;
     return $self->unsafe_render_value(
-	    $attr_name, $self->unsafe_get($attr_name), $source, $buffer);
+	$attr_name, $self->unsafe_get($attr_name), $source, $buffer);
 }
 
 =for html <a name="unsafe_render_value"></a>
@@ -623,9 +623,10 @@ sub unsafe_resolve_widget_value {
     while (ref($value) eq 'ARRAY') {
 	$value = $source->get_widget_value(@$value);
 	return undef unless defined($value);
-	$self->die($source, 'infinite loop trying to ',
-		' unwind widget value: ', $value)
-		if --$i < 0;
+	$self->die(
+	    $source, 'infinite loop trying to ',
+	    ' unwind widget value: ', $value,
+	) if --$i < 0;
     }
     return $value;
 }
