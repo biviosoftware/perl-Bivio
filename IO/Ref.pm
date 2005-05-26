@@ -203,7 +203,8 @@ sub to_string {
     $dd->Deepcopy(1);
     $dd->Indent(defined($indent) ? $indent : 1);
     $dd->Maxdepth($max_depth || 0);
-    $dd->Sortkeys(1);
+    $dd->Sortkeys(1)
+	if $dd->can('Sortkeys');
     $dd->Terse(1);
     my($res) = $dd->Dumpxs();
     return \$res;
