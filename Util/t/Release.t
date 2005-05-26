@@ -1,13 +1,17 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 BEGIN {
     use Cwd ();
     $ENV{BCONF} = Cwd::getcwd() . '/Release/t.bconf';
 }
+unless (-x '/bin/rpm') {
+    Bivio::IO::Alert->warn("skipping: /bin/rpm not found\n");
+    print("1..1\nok 1\n");
+    exit(0);
+}
 use Bivio::IO::File;
 use Bivio::Test;
-#TODO: Shared with Release.t
 my($base) = Bivio::IO::File->rm_rf(Bivio::IO::File->pwd . '/Release/tmp');
 my($home) = Bivio::IO::File->mkdir_p("$base/h");
 Bivio::IO::File->mkdir_p(my $facades_dir = "$base/f");
