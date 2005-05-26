@@ -84,7 +84,7 @@ Returns true if I<self> is identical I<that>.
 
 sub equals {
     my($self, $that) = @_;
-    return $self == $that;
+    return $self eq $that ? 1 : 0;
 }
 
 =for html <a name="as_string"></a>
@@ -96,9 +96,7 @@ Returns the string form of I<self>.  By default, this is just I<self>.
 =cut
 
 sub as_string {
-    my($self) = @_;
-#TODO: Ensure it is a string?
-    return $self;
+    return shift(@_) . '';
 }
 
 =for html <a name="inheritance_ancestor_list"></a>
@@ -153,6 +151,46 @@ sub instance_data_index {
 	unless $pkg eq (caller)[0];
     # This class doesn't have any instance data.
     return @{$pkg->inheritance_ancestor_list} - 1;
+}
+
+=for html <a name="mapcar"></a>
+
+=head2 static mapcar(string method, array_ref args) : array_ref
+
+Calls I<method> on I<self> with each element of I<args>.  If the element
+of I<args> is an array, it will be unrolled as its arguments.  Otherwise,
+the individual argument is called.  For example,
+
+    $math->mapcar('add', [[1, 2], [3, 4]])
+
+returns
+
+    [3, 7]
+
+while
+
+    $math->mapcar('sqrt', [4, 9])
+
+returns
+
+    [2, 3]
+
+If I<method> takes a single array_ref as an argument, you need to wrap it
+twice, e.g.
+
+    $string->mapcar('concat', [[['a', 'b'], ['c', 'd']]])
+
+returns
+
+    ['ab', 'cd']
+
+Result is always called in a scalar context.
+
+=cut
+
+sub mapcar {
+    my($proto, $method, $args) = @_;
+    return [map($proto->$method(ref($_) eq 'ARRAY' ? @$_ : $_), @$args)];
 }
 
 =for html <a name="package_name"></a>
