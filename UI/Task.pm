@@ -226,17 +226,16 @@ sub format_help_uri {
     my($proto, $task, $req) = @_;
     my($self) = $proto->internal_get_self($req);
     my($info) = $task
-	    ? $self->internal_get_value(ref($task) ? $task->get_name  : $task)
-	    : undef;
+	? $self->internal_get_value(ref($task) ? $task->get_name  : $task)
+	: undef;
     return $self->format_uri(
-#TODO: Allow HELP per realm_type
-	    Bivio::Agent::TaskId->HELP,
-	    undef,
-	    $info && $info->{help} ? $info->{help}
+	Bivio::Agent::TaskId->HELP,
+	undef,
+	$info && $info->{help} ? $info->{help}
 	    : Bivio::UI::Text->get_value('help_index_path_info'),
-	    0,
-	    $req,
-	   );
+	0,
+	$req,
+    );
 }
 
 =for html <a name="format_realmless_uri"></a>
@@ -255,13 +254,14 @@ sub format_realmless_uri {
     my($self) = $proto->internal_get_self($req);
     my($fields) = $self->[$_IDI];
     return $proto->format_uri(
-	    $task_id,
-	    $fields->{realmless_uri}->{
-		Bivio::Agent::Task->get_by_id($task_id)->get('realm_type')
-	    },
-	    $path_info,
-	    1,
-	    $req);
+	$task_id,
+	$fields->{realmless_uri}->{
+	    Bivio::Agent::Task->get_by_id($task_id)->get('realm_type')
+	},
+	$path_info,
+	1,
+	$req,
+    );
 }
 
 =for html <a name="format_uri"></a>
@@ -341,9 +341,8 @@ sub format_uri {
     return $uri if $no_context;
 
     # Tightly coupled with UI::HTML::Widget::Form.
-    my($rc) = Bivio::Agent::Task->get_by_id($task_id)->get('require_context');
     $uri .= Bivio::Biz::FormModel->format_context_as_query($req, $task_id)
-	    if $rc;
+	    if Bivio::Agent::Task->get_by_id($task_id)->get('require_context');
     return $uri;
 }
 
@@ -372,11 +371,7 @@ Does the task have a help topic?
 =cut
 
 sub has_help {
-    my($proto, $task_id, $req_or_facade) = @_;
-    return defined($proto->internal_get_value(
-	    ref($task_id) ? $task_id->get_name : $task_id, $req_or_facade)
-	    ->{help}
-	   ) ? 1 : 0;
+    return _has('help', @_);
 }
 
 =for html <a name="has_uri"></a>
@@ -390,11 +385,7 @@ Does the task have a uri?
 =cut
 
 sub has_uri {
-    my($proto, $task_id, $req_or_facade) = @_;
-    return defined($proto->internal_get_value(
-	    ref($task_id) ? $task_id->get_name : $task_id, $req_or_facade)
-	    ->{uri}
-	   ) ? 1 : 0;
+    return _has('uri', @_);
 }
 
 =for html <a name="initialization_complete"></a>
@@ -409,10 +400,8 @@ sub initialization_complete {
     my($self) = @_;
     my($fields) = _initialize_fields($self);
     delete($fields->{to_realm_type});
-
     _init_basic($self);
     _init_from_uri($self, $self->internal_get_all_groups);
-
     # Map default placeholders for these realms.  See format_realmless_uri().
     $fields->{realmless_uri} = {
 	# You can't format realmless unless these tasks exist.
@@ -422,7 +411,6 @@ sub initialization_complete {
 	    => $self->internal_get_value('my_site')->{uri},
 	Bivio::Auth::RealmType->GENERAL => undef,
     };
-
     $self->SUPER::initialization_complete();
     return;
 }
@@ -441,15 +429,13 @@ and I<placeholder> here.
 sub internal_initialize_value {
     my($self, $value) = @_;
     my($fields) = _initialize_fields($self);
-
     # Special case undefined value
     return _init_err($self, $value)
-	    if ref($value->{config}) eq 'HASH'
-		    && $value->{config}->{undef_config};
-
+	if ref($value->{config}) eq 'HASH' && $value->{config}->{undef_config};
     foreach my $s (\&_init_config, \&_init_name, \&_init_uri) {
-	my($err) = &$s($fields, $value);
-	return _init_err($self, $value, $err) if $err;
+	my($err) = $s->($fields, $value);
+	return _init_err($self, $value, $err)
+	    if $err;
     }
     $value->{is_valid} = 1;
     return;
@@ -457,16 +443,14 @@ sub internal_initialize_value {
 
 =for html <a name="is_defined_for_facade"></a>
 
-=head2 is_defined_for_facade(Bivio::Agent::TaskId task, Bivio::Collection::Attributes req_or_facade) : boolean
+=head2 is_defined_for_facade(any task, Bivio::Collection::Attributes req_or_facade) : boolean
 
-Returns true if I<task> is defined in this facade.
+Returns true if I<task> is defined in this facade and I<is_valid>.
 
 =cut
 
 sub is_defined_for_facade {
-    my($proto, $task, $req_or_facade) = @_;
-    return $proto->internal_get_value(lc($task->get_name), $req_or_facade)
-	    ? 1 : 0;
+    return _has('is_valid', @_);
 }
 
 =for html <a name="parse_uri"></a>
@@ -663,6 +647,19 @@ sub _clean_uri {
 #
 sub _get_error {
     return shift->get_error(@_)->{uri};
+}
+
+# _has(string which, proto, any task_id, any req_or_facade) : boolean
+#
+# Tests whether $which exists for $task_id
+#
+sub _has {
+    my($which, $proto, $task_id, $req_or_facade) = @_;
+    return defined(
+	$proto->internal_get_value(
+	    ref($task_id) ? $task_id->get_name : $task_id, $req_or_facade
+	)->{$which}
+    ) ? 1 : 0;
 }
 
 # _init_basic(self)
