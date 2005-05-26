@@ -43,15 +43,15 @@ sub internal_initialize {
 	table_name => 't_list1_t',
 	columns => {
 	    date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
+		Bivio::SQL::Constraint->PRIMARY_KEY],
 	    toggle => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
+		Bivio::SQL::Constraint->PRIMARY_KEY],
 	    auth_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NOT_NULL()],
+		Bivio::SQL::Constraint->NOT_NULL],
 	    name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NOT_NULL()],
+		Bivio::SQL::Constraint->NOT_NULL],
 	    gender => ['Bivio::Type::Gender',
-		Bivio::SQL::Constraint::NOT_NULL()],
+		Bivio::SQL::Constraint->NOT_NULL],
 	},
     };
 }
@@ -66,15 +66,15 @@ sub internal_initialize {
 	table_name => 't_list2_t',
 	columns => {
 	    date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
+		Bivio::SQL::Constraint->PRIMARY_KEY],
 	    toggle => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
+		Bivio::SQL::Constraint->PRIMARY_KEY],
 	    auth_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NOT_NULL()],
+		Bivio::SQL::Constraint->NOT_NULL],
 	    name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NOT_NULL()],
+		Bivio::SQL::Constraint->NOT_NULL],
 	    gender => ['Bivio::Type::Gender',
-		Bivio::SQL::Constraint::NOT_NULL()],
+		Bivio::SQL::Constraint->NOT_NULL],
 	},
     };
 }
@@ -130,7 +130,7 @@ EOF
 		    auth_id => $auth_id,
 		    name => $name,
 		    value => undef,
-		    gender => $gender,
+		    gender => Bivio::Type::Gender->$gender(),
 		});
 		$date_time = Bivio::Type::DateTime->add_seconds($date_time, 1);
 	    }
