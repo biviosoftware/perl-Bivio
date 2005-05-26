@@ -84,10 +84,7 @@ Returns true if this permission set includes perm_name.
 
 sub includes {
     my($proto, $perm_set, $perm_name) = @_;
-    my($p) = Bivio::Auth::Permission->unsafe_from_any($perm_name);
-    return 0
-	unless $p && $p->get_name eq $perm_name;
-    return vec($perm_set, $p->as_int, 1);
+    return $proto->is_set($perm_set, Bivio::Auth::Permission->$perm_name());
 }
 
 #=PRIVATE METHODS
