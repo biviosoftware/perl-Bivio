@@ -58,31 +58,52 @@ Calls L<Bivio::Test::new|Bivio::Test/"new"> and
 L<Bivio::Test::unit|Bivio::Test/"unit"> with I<cases>.  Calls
 L<setup_render|"setup_render"> with Bivio::Test::Request instance for call to
 render.  Adds an explicit check_return for render which returns the rendered
-buffer.
+buffer.  create_object calls C<new> and then puts parent and initializes.
+
+If the case is of the form:
+
+    ['new args', ...] => 'string',
+
+It will be transformed to:
+
+    ['new args', ...] => [
+        render => [
+            [] => 'string',
+        ],
+    ],
 
 =cut
 
 sub unit {
     my($proto, $class_name, $setup_render, $cases) = @_;
+    Bivio::Agent::Task->initialize;
+    my($req) = Bivio::Test::Request->setup_facade;
+    my($i) = 0;
     Bivio::Test->new({
+	create_object => sub {
+	    my($case, $params) = @_;
+	    return $case->get('class_name')->new(@$params)
+		->put_and_initialize(parent => undef);
+	},
 	class_name => $class_name,
 	compute_params => sub {
 	    my($case, $params, $method) = @_;
 	    return $params
 		unless $method eq 'render';
-	    my($req) = Bivio::Test::Request->get_instance;
 	    $setup_render->($req, @_);
 	    my($x) = '';
 	    return $method eq 'render' ? [$req, \$x] : $params;
 	},
 	check_return => sub {
 	    my($case, $actual, $expected) = @_;
-	    return $expected
-		unless $case->get('method') eq 'render';
-	    $case->actual_return([${$case->get('params')->[1]}]);
+	    $case->actual_return([${$case->get('params')->[1]}])
+		if $case->get('method') eq 'render';
 	    return $expected;
-	}
-    })->unit($cases);
+	},
+    })->unit([map(
+	$i++ % 2 && ref($_) ne 'ARRAY'
+	    ? [render => [[] => $_]] : $_,
+	@$cases)]);
 }
 
 #=PRIVATE SUBROUTINES
