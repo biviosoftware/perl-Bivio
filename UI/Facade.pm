@@ -175,30 +175,33 @@ with one value, e.g.:
 
     __PACKAGE__->new({
         clone => 'Prod',
-        'Bivio::UI::Color' => {
+        'Color' => {
             clone => 'AlternateProdLook',
             initialize => sub {
-                my($comp) = @_;
-                $comp->create_group(
-                    0x006666,
-                    qw(
-			page_vlink
-			page_alink
-			page_link
-			form_field_label_in_text
-			task_list_heading
-			task_list_label
-			footer_menu
-                    ),
-                );
-                $comp->create_group(
-	             0x66CC66,
-                     'summary_line'
-                );
+                my($fc) = @_;
+                $fc->group(page_link => 0x330099),
+	        $fc->group(['page_vlink', 'page_alink'] => 0x330099),
                 return;
             }
         },
     });
+
+There are some shortcuts, e.g.
+
+    'Color' => sub {
+	 shift->mapcar(group => [
+	    [page_link => 0x330099],
+	    [['page_vlink', 'page_alink'] => 0x330099],
+	 ]);
+	 return;
+     },
+
+Or even shorter:
+
+    'Color' => [
+	 [page_link => 0x330099],
+	 [['page_vlink', 'page_alink'] => 0x330099],
+     ],
 
 =cut
 
@@ -740,16 +743,27 @@ sub _initialize {
     foreach my $c (@_COMPONENTS) {
 	# Get the config for this component (or force to exist)
 	my($cfg) = $config->{$c} || {};
+	if (ref($cfg) eq 'ARRAY') {
+	    # closure must be bound to new a variable
+	    my($groups) = $cfg;
+	    $cfg = sub {
+		shift->mapcar(group => $groups);
+		return;
+	    };
+	}
+	$cfg = {initialize => $cfg}
+	    if ref($cfg) eq 'CODE';
 
 	# Get the clone, if any
 	my($cc) = $cfg && exists($cfg->{clone})
-		? $cfg->{clone} ? _load($cfg->{clone}) : undef : $clone;
+	    ? $cfg->{clone} ? _load($cfg->{clone}) : undef : $clone;
 	$cc = $cc->get($c) if $cc;
 
 	# Must have a clone or initialize (all components MUST be exist)
-	Bivio::Die->die($self, ': ', $c,
-		': missing component clone or initialize attributes')
-		    unless $cc || $cfg->{initialize};
+	Bivio::Die->die(
+	    $self, ': ', $c,
+	    ': missing component clone or initialize attributes',
+	) unless $cc || $cfg->{initialize};
 
 	# Create the instance, initialize, seal, and store.
 	$self->put($c => $_COMPONENTS{$c}->new(

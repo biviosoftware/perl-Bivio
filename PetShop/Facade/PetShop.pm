@@ -46,128 +46,215 @@ my($_SELF) = __PACKAGE__->new({
     uri => 'petshop',
     http_host => 'petshop.bivio.biz',
     mail_host => 'bivio.biz',
-    Color => {
-	initialize => sub {
-	    my($fc) = @_;
-
-	    #
-	    # Links
-	    #
-	    $fc->group(page_link => 0x330099);
-	    $fc->group(['page_vlink', 'page_alink'] => 0x330099);
-            $fc->group(page_link_hover => 0xCC9900);
-
-	    #
-	    # Text
-	    #
-	    $fc->group(page_text => 0x000000);
-	    $fc->group(page_bg => 0xFFFFFF);
-
-	    # Basic emphasized text
-	    $fc->group(page_heading => 0x111199);
-
-	    $fc->group(error => 0x990000);
-            # not quite error color so acceptance tests don't die
-            $fc->group(warning => 0x990001);
-
-	    #
-	    # Table
-	    #
-	    $fc->group(table_heading => -1);
-
-            $fc->group(table_even_row_bg => 0xF0F9FF);
-	    $fc->group(table_odd_row_bg => 0xD5EEFF);
-	    $fc->group(table_separator => 0x000000);
-            $fc->group(summary_line => 0x66CC66);
-
-	    # PetShop colors
-	    $fc->group(header_background => 0xEDE4B5);
-	    $fc->group(category_background => 0xD5EEFF);
-
-	    return;
-	},
-    },
-    Font => {
-	initialize => sub {
-	    my($fc) = @_;
-	    $fc->group(default => [
-		'family=arial,sans-serif',
-#		'size=x-small',
-	    ]);
-	    $fc->group(error_icon => ['color=error', 'larger', 'bold']);
-	    $fc->group(page_heading => ['bold']);
-	    $fc->group([qw(
-                    table_heading
-		    normal_table_heading
-            )],
-		    ['color=table_heading', 'bold'],
-		   );
-	    $fc->group(form_field_error => ['color=error', 'smaller', 'bold']);
-	    $fc->group(error => ['color=error', 'bold']);
-	    $fc->group(warning => ['color=warning', 'bold']);
-	    $fc->group(form_field_error_label => ['color=error', 'italic']);
-	    $fc->group(['list_error', 'checkbox_error'] =>
-		   ['color=error', 'smaller']);
-	    $fc->group(italic => ['italic']);
-	    $fc->group([qw(
-                    strong
-                    table_row_title
-            )],
-		   ['bold']);
-	    $fc->group([qw(
-		    form_field_description
-		    form_field_label
-		    table_cell
-		    number_cell
-                    action_button
-	            radio
-                    descriptive_page
-                    page_legend
-                    checkbox
-                    page_text
-                    input_field
-                    search_field
-                    mailto
-                    link
-		    form_submit
-            )],
-		   []);
-
-	    $fc->group(menu_link => ['smaller']);
-	    $fc->group(heading_link => ['larger', 'bold']);
-	    $fc->group(main_description_text => ['smaller']);
-	    return;
-	}
-    },
-    Text => {
-	initialize => \&_text,
-    },
-    Task => {
-	initialize => \&_task,
-    },
-    HTML => {
-	initialize => sub {
-	    my($fc) = @_;
-	    $fc->group(want_secure => 0);
-	    $fc->group(table_default_align => 'left');
-	    return;
-	},
-    },
-    FormError => {
-	initialize => sub {
-	    my($fc) = @_;
-	    $fc->group('UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH'
-		=> <<'EOF',
+    Color => [
+	[page_link => 0x330099],
+	[['page_vlink', 'page_alink'] => 0x330099],
+	[page_link_hover => 0xCC9900],
+	[page_text => 0x000000],
+	[page_bg => 0xFFFFFF],
+	[page_heading => 0x111199],
+	[error => 0x990000],
+	[warning => 0x990001],
+	[table_heading => -1],
+	[table_even_row_bg => 0xF0F9FF],
+	[table_odd_row_bg => 0xD5EEFF],
+	[table_separator => 0x000000],
+	[summary_line => 0x66CC66],
+	[header_background => 0xEDE4B5],
+	[category_background => 0xD5EEFF],
+    ],
+    Font => [
+	[default => ['family=arial,sans-serif']],
+	[error_icon => ['color=error', 'larger', 'bold']],
+	[page_heading => ['bold']],
+	[[qw(
+		table_heading
+		normal_table_heading
+	)],
+		['color=table_heading', 'bold'],
+	       ],
+	[form_field_error => ['color=error', 'smaller', 'bold']],
+	[error => ['color=error', 'bold']],
+	[warning => ['color=warning', 'bold']],
+	[form_field_error_label => ['color=error', 'italic']],
+	[['list_error', 'checkbox_error'] =>
+	       ['color=error', 'smaller']],
+	[italic => ['italic']],
+	[[qw(
+		strong
+		table_row_title
+	)],
+	       ['bold']],
+	[[qw(
+		form_field_description
+		form_field_label
+		table_cell
+		number_cell
+		action_button
+		radio
+		descriptive_page
+		page_legend
+		checkbox
+		page_text
+		input_field
+		search_field
+		mailto
+		link
+		form_submit
+	)],
+	       []],
+	[menu_link => ['smaller']],
+	[heading_link => ['larger', 'bold']],
+	[main_description_text => ['smaller']],
+    ],
+    FormError => [
+	['UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH'
+	    => <<'EOF',
 The password you entered does not match the value stored
 in our database.
 Please remember that passwords are case-sensitive, i.e.
 "HELLO" is not the same as "hello".
 EOF
-	    );
-	    $fc->group(NULL => 'You must supply a value for vs_fe("label");.'),
-	    $fc->group('UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)'),
-	},
+	],
+	[NULL => 'You must supply a value for vs_fe("label");.'],
+	['UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)'],
+    ],
+    HTML => [
+	[want_secure => 0],
+	[table_default_align => 'left'],
+    ],
+    Task => sub {
+	my($fc) = @_;
+	$fc->mapcar(group => [
+	    # The task which utilities run as.
+	    [SHELL_UTIL => undef],
+
+	    # The task is called to execute views by name.  Bivio::UI::View
+	    # prefixes any uri with Text.view_uri_prefix, which should be the
+	    # root of the tree of all directly executed views.  These are views
+	    # which aren't associated with an explicitly Task.
+	    [SITE_ROOT => '/*'],
+
+	    # Only icons are plain files.  We use /i as the URI, because it is
+	    # short and we it makes named-based routing easy for multi-tiered
+	    # systems.  /i must agree with the configured values of Bivio::UI::Icon.
+	    [LOCAL_FILE_PLAIN => ['/i/*']],
+
+	    [MY_CLUB_SITE => 'my-club-site/*'],
+	    [LOGIN => 'pub/login'],
+	    [LOGOUT => 'pub/logout'],
+	    [USER_HOME => '?'],
+	    [CLUB_HOME => '?'],
+	    [CLIENT_REDIRECT => 'goto/*'],
+	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
+	    [FORBIDDEN => undef],
+	    [MY_SITE => 'my-site/*'],
+	    [HELP => 'hp/*'],
+	    [FAVICON_ICO => '/favicon.ico'],
+	    [PRODUCTS => 'pub/products'],
+	    [ITEM_SEARCH => 'pub/search'],
+	    [ITEMS => 'items'],
+	    [ITEM_DETAIL => 'pub/item-detail'],
+	    [CART => 'my/cart'],
+	    [CHECKOUT => 'my/checkout'],
+	    [PLACE_ORDER => '?/place-order'],
+	    [SHIPPING_ADDRESS => '?/shipping-address'],
+	    [ORDER_CONFIRMATION => '?/confirm-order'],
+	    [ORDER_DETAILS => '?/order-details'],
+	    [MAIN => $fc->get_facade->get('Text')->get_value('home_page_uri')],
+	    [USER_ACCOUNT_CREATE => 'my/create-account'],
+	    [USER_ACCOUNT_EDIT => '?/account'],
+	    [USER_ACCOUNT_EDIT_BY_SUPER_USER => '?/edit-account'],
+	    [USER_ACCOUNT_DELETE => '?/delete-account'],
+	    [USER_ACCOUNT_CREATED => '?/account-created'],
+	    [USER_ACCOUNT_UPDATED => '?/account-updated'],
+	    [ORDER_COMMIT => '?/commit-order'],
+	    [DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
+	    [SOURCE => 'src'],
+	    [ADM_SUBSTITUTE_USER => 'su'],
+	    [MAIL_RECEIVE_DISPATCH => 'mail-handler'],
+	    [MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore'],
+	    [USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
+		'my/create-account-and-order'],
+	]);
+	return;
     },
+    Text => [
+	# Where to redirect to when coming in via /,
+	# i.e. http://petshop.bivio.biz
+	[home_page_uri => '/pub'],
+
+	# SITE_ROOT task calls View->execute_uri and we look for pages in
+	# the "site_root" directory.
+	[view_execute_uri_prefix => 'site_root/'],
+	[favicon_uri => '/i/favicon.ico'],
+
+	# No label is convenient to have
+	[none => ''],
+
+	[Address => [
+	    street1 => 'Street Address',
+	    city => 'City',
+	    state => 'State/Province',
+	    country => 'Country',
+	    zip => 'Postal Code',
+	]],
+	[CartItem => [
+	    quantity => 'Quantity',
+	    unit_price => 'Unit Price',
+	]],
+	[ECCreditCardPayment => [
+	    card_number => 'Card Number',
+	]],
+	['Email.email' => 'E-Mail Address'],
+	[Item => [
+	    item_id => 'Item ID',
+	    list_price => 'Item Price',
+	]],
+	[Order => [
+	    [qw(bill_to_name ship_to_name)] => 'Name',
+	]],
+	['Phone.phone' => 'Telephone Number'],
+	[Product => [
+	    description => 'Description',
+	    name => 'Product Name',
+	    product_id => 'Product ID',
+	]],
+	['login' => 'Email'],
+	[RealmOwner => [
+	    name => 'User ID',
+	    password => 'Password',
+	]],
+	[['User.first_name', 'Order.bill_to_first_name',
+	    'Order.ship_to_first_name'] => 'First Name'],
+	[['User.last_name', 'Order.bill_to_last_name',
+	    'Order.ship_to_last_name'] => 'Last Name'],
+	[add_to_cart => 'Add to Cart'],
+	[card_expire_year => 'Expiration Date'],
+	[continue => 'Continue'],
+	[in_stock => 'In Stock'],
+	[item_name => 'Item Name'],
+	[proceed_to_checkout => 'Proceed to Checkout'],
+	[remove => 'Remove'],
+	[ship_to_billing_address => 'Ship to Billing Address'],
+	[total_cost => 'Total Cost'],
+	[update_cart => 'Update Cart'],
+
+	# Table headings
+	['ItemListForm.add_to_cart' => ' '],
+	['CartItemListForm.remove' => ' '],
+	[Image_alt => [
+	    bivio_power => 'Powered by bivio Inc.',
+	]],
+
+	# Misc Model support
+	['MailReceiveDispatchForm.uri_prefix' => 'mail-handler-'],
+	[test_text => 'Global'],
+	[Test_Text_Parent => [
+	    test_text => 'Child',
+	    test_text_only_child => 'Only Child',
+	]],
+    ],
 });
 
 =head1 METHODS
@@ -175,153 +262,6 @@ EOF
 =cut
 
 #=PRIVATE METHODS
-
-# _task(Bivio::UI::Text t)
-#
-# Decls here just to be cleaner.
-#
-sub _task {
-    my($t) = @_;
-
-    # The task which utilities run as.
-    $t->group(SHELL_UTIL => undef);
-
-    # The task is called to execute views by name.  Bivio::UI::View prefixes
-    # any uri with Text.view_uri_prefix, which should be the root of the tree
-    # of all directly executed views.  These are views which aren't associated
-    # with an explicitly Task.
-    $t->group(SITE_ROOT => '/*');
-
-    # Only icons are plain files.  We use /i as the URI, because it is
-    # short and we it makes named-based routing easy for multi-tiered
-    # systems.  /i must agree with the configured values of Bivio::UI::Icon.
-    $t->group(LOCAL_FILE_PLAIN => ['/i/*']);
-
-    $t->group(MY_CLUB_SITE => 'my-club-site/*');
-    $t->group(LOGIN => 'pub/login');
-    $t->group(LOGOUT => 'pub/logout');
-    $t->group(USER_HOME => '?');
-    $t->group(CLUB_HOME => '?');
-    $t->group(CLIENT_REDIRECT => 'goto/*');
-    $t->group(DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef);
-    $t->group(FORBIDDEN => undef);
-    $t->group(MY_SITE => 'my-site/*');
-    $t->group(HELP => 'hp/*');
-    $t->group(FAVICON_ICO => '/favicon.ico');
-    $t->group(PRODUCTS => 'pub/products');
-    $t->group(ITEM_SEARCH => 'pub/search');
-    $t->group(ITEMS => 'items');
-    $t->group(ITEM_DETAIL => 'pub/item-detail');
-    $t->group(CART => 'my/cart');
-    $t->group(CHECKOUT => 'my/checkout');
-    $t->group(PLACE_ORDER => '?/place-order');
-    $t->group(SHIPPING_ADDRESS => '?/shipping-address');
-    $t->group(ORDER_CONFIRMATION => '?/confirm-order');
-    $t->group(ORDER_DETAILS => '?/order-details');
-    $t->group(MAIN => $t->get_facade->get('Text')->get_value('home_page_uri'));
-    $t->group(USER_ACCOUNT_CREATE => 'my/create-account');
-    $t->group(USER_ACCOUNT_EDIT => '?/account');
-    $t->group(USER_ACCOUNT_EDIT_BY_SUPER_USER => '?/edit-account');
-    $t->group(USER_ACCOUNT_DELETE => '?/delete-account');
-    $t->group(USER_ACCOUNT_CREATED => '?/account-created');
-    $t->group(USER_ACCOUNT_UPDATED => '?/account-updated');
-    $t->group(ORDER_COMMIT => '?/commit-order');
-    $t->group(DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies');
-    $t->group(SOURCE => 'src');
-    $t->group(ADM_SUBSTITUTE_USER => 'su');
-    $t->group(MAIL_RECEIVE_DISPATCH => 'mail-handler');
-    $t->group(MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore');
-    $t->group(USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
-	'my/create-account-and-order');
-    return;
-}
-
-# _text(Bivio::UI::Text t)
-#
-# Decls here just to be cleaner
-#
-sub _text {
-    my($t) = @_;
-
-    # Where to redirect to when coming in via /, i.e. http://petshop.bivio.biz
-    $t->group(home_page_uri => '/pub');
-
-    # SITE_ROOT task calls View->execute_uri and we look for pages in
-    # the "site_root" directory.
-    $t->group(view_execute_uri_prefix => 'site_root/');
-    $t->group(favicon_uri => '/i/favicon.ico');
-
-    # No label is convenient to have
-    $t->group(none => '');
-
-    $t->group(Address => [
-        street1 => 'Street Address',
-        city => 'City',
-        state => 'State/Province',
-        country => 'Country',
-        zip => 'Postal Code',
-    ]);
-    $t->group(CartItem => [
-        quantity => 'Quantity',
-        unit_price => 'Unit Price',
-    ]);
-    $t->group(ECCreditCardPayment => [
-        card_number => 'Card Number',
-    ]);
-    $t->group('Email.email' => 'E-Mail Address');
-    $t->group(Item => [
-        item_id => 'Item ID',
-        list_price => 'Item Price',
-    ]);
-    $t->group(Order => [
-        [qw(bill_to_name ship_to_name)] => 'Name',
-    ]);
-    $t->group('Phone.phone' => 'Telephone Number');
-    $t->group(Product => [
-        description => 'Description',
-        name => 'Product Name',
-        product_id => 'Product ID',
-    ]);
-    $t->group('login' => 'Email');
-    $t->group(RealmOwner => [
-        name => 'User ID',
-        password => 'Password',
-    ]);
-    $t->group(['User.first_name', 'Order.bill_to_first_name',
-	'Order.ship_to_first_name'] => 'First Name');
-    $t->group(['User.last_name', 'Order.bill_to_last_name',
-	'Order.ship_to_last_name'] => 'Last Name');
-
-    $t->group(add_to_cart => 'Add to Cart');
-    $t->group(card_expire_year => 'Expiration Date');
-    $t->group(continue => 'Continue');
-    $t->group(in_stock => 'In Stock');
-    $t->group(item_name => 'Item Name');
-    $t->group(proceed_to_checkout => 'Proceed to Checkout');
-    $t->group(remove => 'Remove');
-    $t->group(ship_to_billing_address => 'Ship to Billing Address');
-    $t->group(total_cost => 'Total Cost');
-    $t->group(update_cart => 'Update Cart');
-
-    # Table headings
-    $t->group('ItemListForm.add_to_cart' => ' ');
-    $t->group('CartItemListForm.remove' => ' ');
-
-    $t->group(Image_alt => [
-	bivio_power => 'Powered by bivio Inc.',
-    ]);
-
-    # Misc Model support
-    $t->group('MailReceiveDispatchForm.uri_prefix' => 'mail-handler-');
-
-
-    $t->group(test_text => 'Global');
-    $t->group(Test_Text_Parent => [
-	test_text => 'Child',
-	test_text_only_child => 'Only Child',
-    ]);
-    return;
-}
 
 =head1 COPYRIGHT
 
