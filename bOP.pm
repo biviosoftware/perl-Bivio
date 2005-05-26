@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,36 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::Widget::MIMEBodyWithAttachment won't include headers if empty
+  * All tests run on Mac OS 10.4 (Tiger) and Perl 5.8.6 (Release.t skips
+    all tests if no /bin/rpm).
+
+  Revision 2.68  2005/05/24 16:12:07  moeller
+  * RealmType delegation affected the following modules
+    Bivio::Agent::Job::Request
+    Bivio::Agent::Request
+    Bivio::Auth::Realm
+    Bivio::Auth::RealmType
+    Bivio::BConf
+    Bivio::Biz::Action::PublicRealm
+    Bivio::Biz::Model::Lock
+    Bivio::Biz::Model::RealmOwner
+    Bivio::Biz::Model::UserPasswordForm
+    Bivio::PetShop::Action::UserRedirect
+    Bivio::ShellUtil
+    Bivio::UI::Task
+  * Bivio::Auth::Role configurable roles
+  * Bivio::HTML fix escaping of ? in query
+  * Bivio::PetShop::Facade::PetShop use FormError FacadeComponent
+  * Bivio::Test::Reply fixed deprecated call to Bivio::IO::File->read()
+  * Bivio::UI::HTML::ViewShortcuts added vs_fe to wrap super's vs_fe
+  * Bivio::UI::HTML::Widget::FormFieldError Call FormError facade
+    component if it exists else FormErrors
+  * Bivio::UI::HTML::Widget::SourceCode strip trailing slash from
+    $_SOURCE_DIR config. Escape in pattern match
+  * Bivio::UI::Text refactored and added unsafe_get_value
+  * Bivio::UI::ViewShortcuts added vs_fe (calls Bivio:UI::FormError)
+  * Bivio::UI::Widget::MIMEBodyWIthAttachment fixed uninitialized value
     warning
   * Bivio::Util::Release Need extra ) on list_projects_el
   * Bivio::Util::SQL drop() now drops functions
