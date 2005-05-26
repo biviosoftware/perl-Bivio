@@ -563,7 +563,7 @@ sub format_stateless_uri {
 
 =for html <a name="format_uri"></a>
 
-=head2 format_uri(any task_id, any query, any realm, string_path_info, boolean no_context, string anchor) : string
+=head2 format_uri(any task_id, any query, any realm, string path_info, boolean no_context, string anchor) : string
 
 =head2 format_uri(hash_ref named) : string
 
