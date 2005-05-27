@@ -54,7 +54,7 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
-    email_user => $ENV{LOGNAME},
+    email_user => $ENV{LOGNAME} || $ENV{USER},
     home_page_uri => Bivio::IO::Config->REQUIRED,
     mail_dir => "$ENV{HOME}/btest-mail/",
     mail_tries => 60,
