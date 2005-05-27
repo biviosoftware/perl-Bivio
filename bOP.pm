@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    Color => [[blue => 0xff], [red => 0xff0000]],
+    or Color => sub {shift->group(blue => 0xff)}
+  * Bivio::PetShop::Facade::PetShop refactored to simplified Facade config
+
+  Revision 2.69  2005/05/26 19:27:11  nagler
+  * Bivio::Auth::PermissionSet->includes simplified
+  * Bivio::IO::Ref->to_string calls Sortkeys if Data::Dumper supports it
+  * Bivio::Test::Language::HTTP handles case where email_user is not set
+  * Bivio::UNIVERSAL->mapcar calls a method on $self repeatedly
+  * Bivio::UNIVERSAL->is_equal uses 'eq'
+  * Bivio::UNIVERSAL->as_string concats result with '' to force string
+  * Bivio::UI::HTML::ViewShortcuts->vs_link_target_as_html can be called
+    from render() with $source
+  * Bivio::UI::HTML::Widget::Link is fully dynamic, and also allows
+    resolved href to be a hash_ref, which results in a call to $req->format_uri
   * Bivio::UI::Widget::MIMEBodyWithAttachment won't include headers if empty
   * All tests run on Mac OS 10.4 (Tiger) and Perl 5.8.6 (Release.t skips
     all tests if no /bin/rpm).
