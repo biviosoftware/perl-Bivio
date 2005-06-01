@@ -46,215 +46,205 @@ my($_SELF) = __PACKAGE__->new({
     uri => 'petshop',
     http_host => 'petshop.bivio.biz',
     mail_host => 'bivio.biz',
-    Color => [
-	[page_link => 0x330099],
-	[['page_vlink', 'page_alink'] => 0x330099],
-	[page_link_hover => 0xCC9900],
-	[page_text => 0x000000],
-	[page_bg => 0xFFFFFF],
-	[page_heading => 0x111199],
-	[error => 0x990000],
-	[warning => 0x990001],
-	[table_heading => -1],
-	[table_even_row_bg => 0xF0F9FF],
-	[table_odd_row_bg => 0xD5EEFF],
-	[table_separator => 0x000000],
-	[summary_line => 0x66CC66],
-	[header_background => 0xEDE4B5],
-	[category_background => 0xD5EEFF],
-    ],
-    Font => [
-	[default => ['family=arial,sans-serif']],
-	[error_icon => ['color=error', 'larger', 'bold']],
-	[page_heading => ['bold']],
-	[[qw(
-		table_heading
-		normal_table_heading
-	)],
-		['color=table_heading', 'bold'],
-	       ],
-	[form_field_error => ['color=error', 'smaller', 'bold']],
-	[error => ['color=error', 'bold']],
-	[warning => ['color=warning', 'bold']],
-	[form_field_error_label => ['color=error', 'italic']],
-	[['list_error', 'checkbox_error'] =>
-	       ['color=error', 'smaller']],
-	[italic => ['italic']],
-	[[qw(
-		strong
-		table_row_title
-	)],
-	       ['bold']],
-	[[qw(
-		form_field_description
-		form_field_label
-		table_cell
-		number_cell
-		action_button
-		radio
-		descriptive_page
-		page_legend
-		checkbox
-		page_text
-		input_field
-		search_field
-		mailto
-		link
-		form_submit
-	)],
-	       []],
-	[menu_link => ['smaller']],
-	[heading_link => ['larger', 'bold']],
-	[main_description_text => ['smaller']],
-    ],
-    FormError => [
-	['UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH'
-	    => <<'EOF',
+    Color => __PACKAGE__->arrays([
+	page_link => 0x330099,
+	['page_vlink', 'page_alink'] => 0x330099,
+	page_link_hover => 0xCC9900,
+	page_text => 0x000000,
+	page_bg => 0xFFFFFF,
+	page_heading => 0x111199,
+	error => 0x990000,
+	warning => 0x990001,
+	table_heading => -1,
+	table_even_row_bg => 0xF0F9FF,
+	table_odd_row_bg => 0xD5EEFF,
+	table_separator => 0x000000,
+	summary_line => 0x66CC66,
+	header_background => 0xEDE4B5,
+	category_background => 0xD5EEFF,
+    ]),
+    Font => __PACKAGE__->arrays([
+	default => ['family=arial,sans-serif'],
+	error_icon => ['color=error', 'larger', 'bold'],
+	page_heading => ['bold'],
+	[qw(table_heading normal_table_heading)] =>
+            ['color=table_heading', 'bold'],
+	form_field_error => ['color=error', 'smaller', 'bold'],
+	error => ['color=error', 'bold'],
+	warning => ['color=warning', 'bold'],
+	form_field_error_label => ['color=error', 'italic'],
+	['list_error', 'checkbox_error'] =>
+	       ['color=error', 'smaller'],
+	italic => ['italic'],
+	[qw(strong table_row_title)] => ['bold'],
+	[qw(
+	    form_field_description
+	    form_field_label
+	    table_cell
+	    number_cell
+	    action_button
+	    radio
+	    descriptive_page
+	    page_legend
+	    checkbox
+	    page_text
+	    input_field
+	    search_field
+	    mailto
+	    link
+	    form_submit
+	)] => [],
+	menu_link => ['smaller'],
+	heading_link => ['larger', 'bold'],
+	main_description_text => ['smaller'],
+    ]),
+    FormError => __PACKAGE__->arrays([
+	'UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH' => <<'EOF',
 The password you entered does not match the value stored
 in our database.
 Please remember that passwords are case-sensitive, i.e.
 "HELLO" is not the same as "hello".
 EOF
-	],
-	[NULL => 'You must supply a value for vs_fe("label");.'],
-	['UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)'],
-    ],
-    HTML => [
-	[want_secure => 0],
-	[table_default_align => 'left'],
-    ],
+	NULL => 'You must supply a value for vs_fe("label");.',
+	'UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)',
+    ]),
+    HTML => __PACKAGE__->arrays([
+	want_secure => 0,
+	table_default_align => 'left',
+    ]),
     Task => sub {
 	my($fc) = @_;
-	$fc->mapcar(group => [
+	$fc->mapcar(group => __PACKAGE__->arrays([
 	    # The task which utilities run as.
-	    [SHELL_UTIL => undef],
+	    SHELL_UTIL => undef,
 
 	    # The task is called to execute views by name.  Bivio::UI::View
 	    # prefixes any uri with Text.view_uri_prefix, which should be the
 	    # root of the tree of all directly executed views.  These are views
 	    # which aren't associated with an explicitly Task.
-	    [SITE_ROOT => '/*'],
+	    SITE_ROOT => '/*',
 
 	    # Only icons are plain files.  We use /i as the URI, because it is
 	    # short and we it makes named-based routing easy for multi-tiered
-	    # systems.  /i must agree with the configured values of Bivio::UI::Icon.
-	    [LOCAL_FILE_PLAIN => ['/i/*']],
+	    # systems.  /i must agree with the configured values
+            # of Bivio::UI::Icon.
+	    LOCAL_FILE_PLAIN => '/i/*',
 
-	    [MY_CLUB_SITE => 'my-club-site/*'],
-	    [LOGIN => 'pub/login'],
-	    [LOGOUT => 'pub/logout'],
-	    [USER_HOME => '?'],
-	    [CLUB_HOME => '?'],
-	    [CLIENT_REDIRECT => 'goto/*'],
-	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
-	    [FORBIDDEN => undef],
-	    [MY_SITE => 'my-site/*'],
-	    [HELP => 'hp/*'],
-	    [FAVICON_ICO => '/favicon.ico'],
-	    [PRODUCTS => 'pub/products'],
-	    [ITEM_SEARCH => 'pub/search'],
-	    [ITEMS => 'items'],
-	    [ITEM_DETAIL => 'pub/item-detail'],
-	    [CART => 'my/cart'],
-	    [CHECKOUT => 'my/checkout'],
-	    [PLACE_ORDER => '?/place-order'],
-	    [SHIPPING_ADDRESS => '?/shipping-address'],
-	    [ORDER_CONFIRMATION => '?/confirm-order'],
-	    [ORDER_DETAILS => '?/order-details'],
-	    [MAIN => $fc->get_facade->get('Text')->get_value('home_page_uri')],
-	    [USER_ACCOUNT_CREATE => 'my/create-account'],
-	    [USER_ACCOUNT_EDIT => '?/account'],
-	    [USER_ACCOUNT_EDIT_BY_SUPER_USER => '?/edit-account'],
-	    [USER_ACCOUNT_DELETE => '?/delete-account'],
-	    [USER_ACCOUNT_CREATED => '?/account-created'],
-	    [USER_ACCOUNT_UPDATED => '?/account-updated'],
-	    [ORDER_COMMIT => '?/commit-order'],
-	    [DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
-	    [SOURCE => 'src'],
-	    [ADM_SUBSTITUTE_USER => 'su'],
-	    [MAIL_RECEIVE_DISPATCH => 'mail-handler'],
-	    [MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore'],
-	    [USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
-		'my/create-account-and-order'],
-	]);
+	    MY_CLUB_SITE => 'my-club-site/*',
+	    LOGIN => 'pub/login',
+	    LOGOUT => 'pub/logout',
+	    USER_HOME => '?',
+	    CLUB_HOME => '?',
+	    CLIENT_REDIRECT => 'goto/*',
+	    DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef,
+	    FORBIDDEN => undef,
+	    MY_SITE => 'my-site/*',
+	    HELP => 'hp/*',
+	    FAVICON_ICO => '/favicon.ico',
+	    PRODUCTS => 'pub/products',
+	    ITEM_SEARCH => 'pub/search',
+	    ITEMS => 'items',
+	    ITEM_DETAIL => 'pub/item-detail',
+	    CART => 'my/cart',
+	    CHECKOUT => 'my/checkout',
+	    PLACE_ORDER => '?/place-order',
+	    SHIPPING_ADDRESS => '?/shipping-address',
+	    ORDER_CONFIRMATION => '?/confirm-order',
+	    ORDER_DETAILS => '?/order-details',
+	    MAIN => $fc->get_facade->get('Text')->get_value('home_page_uri'),
+	    USER_ACCOUNT_CREATE => 'my/create-account',
+	    USER_ACCOUNT_EDIT => '?/account',
+	    USER_ACCOUNT_EDIT_BY_SUPER_USER => '?/edit-account',
+	    USER_ACCOUNT_DELETE => '?/delete-account',
+	    USER_ACCOUNT_CREATED => '?/account-created',
+	    USER_ACCOUNT_UPDATED => '?/account-updated',
+	    ORDER_COMMIT => '?/commit-order',
+	    DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies',
+	    SOURCE => 'src',
+	    ADM_SUBSTITUTE_USER => 'su',
+	    MAIL_RECEIVE_DISPATCH => 'mail-handler',
+	    MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore',
+	    USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
+		'my/create-account-and-order',
+        ]));
 	return;
     },
-    Text => [
+    Text => __PACKAGE__->arrays([
 	# Where to redirect to when coming in via /,
 	# i.e. http://petshop.bivio.biz
-	[home_page_uri => '/pub'],
+	home_page_uri => '/pub',
 
 	# SITE_ROOT task calls View->execute_uri and we look for pages in
 	# the "site_root" directory.
-	[view_execute_uri_prefix => 'site_root/'],
-	[favicon_uri => '/i/favicon.ico'],
+	view_execute_uri_prefix => 'site_root/',
+	favicon_uri => '/i/favicon.ico',
 
 	# No label is convenient to have
-	[none => ''],
+	none => '',
 
-	[Address => [
+	Address => [
 	    street1 => 'Street Address',
 	    city => 'City',
 	    state => 'State/Province',
 	    country => 'Country',
 	    zip => 'Postal Code',
-	]],
-	[CartItem => [
+	],
+	CartItem => [
 	    quantity => 'Quantity',
 	    unit_price => 'Unit Price',
-	]],
-	[ECCreditCardPayment => [
+	],
+	ECCreditCardPayment => [
 	    card_number => 'Card Number',
-	]],
-	['Email.email' => 'E-Mail Address'],
-	[Item => [
+	],
+	'Email.email' => 'E-Mail Address',
+	Item => [
 	    item_id => 'Item ID',
 	    list_price => 'Item Price',
-	]],
-	[Order => [
+	],
+	Order => [
 	    [qw(bill_to_name ship_to_name)] => 'Name',
-	]],
-	['Phone.phone' => 'Telephone Number'],
-	[Product => [
+	],
+	'Phone.phone' => 'Telephone Number',
+	Product => [
 	    description => 'Description',
 	    name => 'Product Name',
 	    product_id => 'Product ID',
-	]],
-	['login' => 'Email'],
-	[RealmOwner => [
+	],
+	'login' => 'Email',
+	RealmOwner => [
 	    name => 'User ID',
 	    password => 'Password',
-	]],
-	[['User.first_name', 'Order.bill_to_first_name',
-	    'Order.ship_to_first_name'] => 'First Name'],
-	[['User.last_name', 'Order.bill_to_last_name',
-	    'Order.ship_to_last_name'] => 'Last Name'],
-	[add_to_cart => 'Add to Cart'],
-	[card_expire_year => 'Expiration Date'],
-	[continue => 'Continue'],
-	[in_stock => 'In Stock'],
-	[item_name => 'Item Name'],
-	[proceed_to_checkout => 'Proceed to Checkout'],
-	[remove => 'Remove'],
-	[ship_to_billing_address => 'Ship to Billing Address'],
-	[total_cost => 'Total Cost'],
-	[update_cart => 'Update Cart'],
+	],
+	['User.first_name', 'Order.bill_to_first_name',
+	    'Order.ship_to_first_name'] => 'First Name',
+	['User.last_name', 'Order.bill_to_last_name',
+	    'Order.ship_to_last_name'] => 'Last Name',
+	add_to_cart => 'Add to Cart',
+	card_expire_year => 'Expiration Date',
+	continue => 'Continue',
+	in_stock => 'In Stock',
+	item_name => 'Item Name',
+	proceed_to_checkout => 'Proceed to Checkout',
+	remove => 'Remove',
+	ship_to_billing_address => 'Ship to Billing Address',
+	total_cost => 'Total Cost',
+	update_cart => 'Update Cart',
 
 	# Table headings
-	['ItemListForm.add_to_cart' => ' '],
-	['CartItemListForm.remove' => ' '],
-	[Image_alt => [
+	'ItemListForm.add_to_cart' => ' ',
+	'CartItemListForm.remove' => ' ',
+	Image_alt => [
 	    bivio_power => 'Powered by bivio Inc.',
-	]],
+	],
 
 	# Misc Model support
-	['MailReceiveDispatchForm.uri_prefix' => 'mail-handler-'],
-	[test_text => 'Global'],
-	[Test_Text_Parent => [
+	'MailReceiveDispatchForm.uri_prefix' => 'mail-handler-',
+	test_text => 'Global',
+	Test_Text_Parent => [
 	    test_text => 'Child',
 	    test_text_only_child => 'Only Child',
-	]],
-    ],
+	],
+    ]),
 });
 
 =head1 METHODS
