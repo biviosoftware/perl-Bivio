@@ -320,6 +320,27 @@ sub new_child {
 
 =cut
 
+=for html <a name="arrays"></a>
+
+=head2 static arrays(array_ref) : array_ref
+
+Converts a series of [(key, value), ...] pairs into [[key, value], ...].
+
+=cut
+
+sub arrays {
+    my($proto, $items) = @_;
+    Bivio::Die->die('uneven number of items in array: ', $items)
+        unless @$items % 2 == 0;
+    my($result) = [];
+
+    while (my($key, $value) = @$items) {
+        push(@$result, [$key, $value]);
+        splice(@$items, 0, 2);
+    }
+    return $result
+}
+
 =for html <a name="as_string"></a>
 
 =head2 as_string() : string
