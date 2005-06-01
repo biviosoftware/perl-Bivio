@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 2.71  2005/06/01 21:25:48  moeller
+  * Bivio::UI::Facade added arrays() for cleaner config formatting
+  * Bivio::PetShop::Facade::PetShop uses new format
+
+  Revision 2.70  2005/05/27 18:55:35  nagler
+  * Bivio::UI::Facade allows flexible configuration:
     Color => [[blue => 0xff], [red => 0xff0000]],
     or Color => sub {shift->group(blue => 0xff)}
   * Bivio::PetShop::Facade::PetShop refactored to simplified Facade config
