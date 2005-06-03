@@ -631,18 +631,21 @@ sub format_uri {
 	if $task->get('require_secure') && !$self->unsafe_get('is_secure')
 	    && $self->get('can_secure');
 
-    $uri =~ s/\?/\#$named->{anchor}?/ || ($uri .= '#'.$named->{anchor})
-	if defined($named->{anchor}) && length($named->{anchor});
+    if (defined($named->{query}) && $task->get('want_query')) {
+        $named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
+            if ref($named->{query});
 
-    return $uri
-	unless defined($named->{query}) && $task->get('want_query');
-    $named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
-	if ref($named->{query});
-
-    # The uri may have a query string already, if the form requires context.
-    # Put the $query first, since the context is long and ugly
-    $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
+        # The uri may have a query string already, if the form requires
+        # context.
+        # Put the $query first, since the context is long and ugly
+        $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
 	    if length($named->{query});
+    }
+
+    # anchor goes last
+    $uri .= '#' . Bivio::HTML->escape_query($named->{anchor})
+        if defined($named->{anchor}) && length($named->{anchor});
+
     return $uri;
 }
 
