@@ -61,14 +61,12 @@ sub execute_empty {
     my($self) = @_;
     return unless _is_editing($self);
     $self->load_from_model_properties($self->get_request->get('auth_user'));
-
     foreach my $model (qw(Address Email Phone)) {
 	$self->load_from_model_properties(
             $self->new_other($model)->load({
                 location => Bivio::Type::Location->PRIMARY,
             }));
     }
-    $self->load_from_model_properties($self->new_other('User')->load);
     return;
 }
 
