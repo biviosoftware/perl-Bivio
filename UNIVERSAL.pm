@@ -153,15 +153,15 @@ sub instance_data_index {
     return @{$pkg->inheritance_ancestor_list} - 1;
 }
 
-=for html <a name="mapcar"></a>
+=for html <a name="map_invoke"></a>
 
-=head2 static mapcar(string method, array_ref args) : array_ref
+=head2 static map_invoke(string method, array_ref args) : array_ref
 
 Calls I<method> on I<self> with each element of I<args>.  If the element
 of I<args> is an array, it will be unrolled as its arguments.  Otherwise,
 the individual argument is called.  For example,
 
-    $math->mapcar('add', [[1, 2], [3, 4]])
+    $math->map_invoke('add', [[1, 2], [3, 4]])
 
 returns
 
@@ -169,7 +169,7 @@ returns
 
 while
 
-    $math->mapcar('sqrt', [4, 9])
+    $math->map_invoke('sqrt', [4, 9])
 
 returns
 
@@ -178,7 +178,7 @@ returns
 If I<method> takes a single array_ref as an argument, you need to wrap it
 twice, e.g.
 
-    $string->mapcar('concat', [[['a', 'b'], ['c', 'd']]])
+    $string->map_invoke('concat', [[['a', 'b'], ['c', 'd']]])
 
 returns
 
@@ -188,7 +188,7 @@ Result is always called in a scalar context.
 
 =cut
 
-sub mapcar {
+sub map_invoke {
     my($proto, $method, $args) = @_;
     return [map($proto->$method(ref($_) eq 'ARRAY' ? @$_ : $_), @$args)];
 }

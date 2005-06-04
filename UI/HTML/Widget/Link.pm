@@ -154,14 +154,14 @@ It is fully initialized after first render.
 
 sub initialize {
     my($self) = @_;
-    $self->mapcar(
+    $self->map_invoke(
 	'unsafe_initialize_attr',
 	[qw(attributes event_handler name link_target)],
     );
     my($v) = $self->get('value');
     $self->put(value => $_VS->vs_new('String', $v))
 	unless UNIVERSAL::isa($v, 'Bivio::UI::Widget');
-    $self->mapcar('initialize_attr', [qw(value href)]);
+    $self->map_invoke('initialize_attr', [qw(value href)]);
     return shift->SUPER::initialize(@_);
 }
 

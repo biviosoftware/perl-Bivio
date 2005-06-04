@@ -41,7 +41,7 @@ Bivio::Test->unit([
 	    'Bivio::t::UNIVERSAL::t1' => 1,
 	    'Bivio::t::UNIVERSAL::t2' => 0,
 	],
-	mapcar => [
+	map_invoke => [
 	    ['concat', ['a']] => [['a']],
 	    ['concat', [qw(a b)]] => [[qw(a b)]],
 	    ['concat', [[qw(a b)], [qw(c d)]]] => [['a-b', 'c-d']],
