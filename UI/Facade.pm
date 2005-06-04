@@ -189,7 +189,7 @@ with one value, e.g.:
 There are some shortcuts, e.g.
 
     'Color' => sub {
-	 shift->mapcar(group => [
+	 shift->map_invoke(group => [
 	    [page_link => 0x330099],
 	    [['page_vlink', 'page_alink'] => 0x330099],
 	 ]);
@@ -319,27 +319,6 @@ sub new_child {
 =head1 METHODS
 
 =cut
-
-=for html <a name="arrays"></a>
-
-=head2 static arrays(array_ref) : array_ref
-
-Converts a series of [(key, value), ...] pairs into [[key, value], ...].
-
-=cut
-
-sub arrays {
-    my($proto, $items) = @_;
-    Bivio::Die->die('uneven number of items in array: ', $items)
-        unless @$items % 2 == 0;
-    my($result) = [];
-
-    while (my($key, $value) = @$items) {
-        push(@$result, [$key, $value]);
-        splice(@$items, 0, 2);
-    }
-    return $result
-}
 
 =for html <a name="as_string"></a>
 
@@ -596,6 +575,25 @@ sub is_fully_initialized {
     return $_IS_FULLY_INITIALIZED;
 }
 
+=for html <a name="make_groups"></a>
+
+=head2 static make_groups(array_ref) : array_ref
+
+Converts a series of [(key, value), ...] pairs into [[key, value], ...].
+
+=cut
+
+sub make_groups {
+    my($proto, $items) = @_;
+    Bivio::Die->die('uneven number of items in array: ', $items)
+        unless @$items % 2 == 0;
+    my($result) = [];
+    while (@$items) {
+        push(@$result, [splice(@$items, 0, 2)]);
+    }
+    return $result
+}
+
 =for html <a name="prepare_to_render"></a>
 
 =head2 static prepare_to_render(Bivio::Agent::Request req) : self
@@ -768,7 +766,7 @@ sub _initialize {
 	    # closure must be bound to new a variable
 	    my($groups) = $cfg;
 	    $cfg = sub {
-		shift->mapcar(group => $groups);
+		shift->map_invoke(group => $groups);
 		return;
 	    };
 	}

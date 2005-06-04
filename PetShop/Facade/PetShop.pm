@@ -46,7 +46,7 @@ my($_SELF) = __PACKAGE__->new({
     uri => 'petshop',
     http_host => 'petshop.bivio.biz',
     mail_host => 'bivio.biz',
-    Color => __PACKAGE__->arrays([
+    Color => __PACKAGE__->make_groups([
 	page_link => 0x330099,
 	['page_vlink', 'page_alink'] => 0x330099,
 	page_link_hover => 0xCC9900,
@@ -63,7 +63,7 @@ my($_SELF) = __PACKAGE__->new({
 	header_background => 0xEDE4B5,
 	category_background => 0xD5EEFF,
     ]),
-    Font => __PACKAGE__->arrays([
+    Font => __PACKAGE__->make_groups([
 	default => ['family=arial,sans-serif'],
 	error_icon => ['color=error', 'larger', 'bold'],
 	page_heading => ['bold'],
@@ -98,7 +98,7 @@ my($_SELF) = __PACKAGE__->new({
 	heading_link => ['larger', 'bold'],
 	main_description_text => ['smaller'],
     ]),
-    FormError => __PACKAGE__->arrays([
+    FormError => __PACKAGE__->make_groups([
 	'UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH' => <<'EOF',
 The password you entered does not match the value stored
 in our database.
@@ -108,13 +108,13 @@ EOF
 	NULL => 'You must supply a value for vs_fe("label");.',
 	'UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)',
     ]),
-    HTML => __PACKAGE__->arrays([
+    HTML => __PACKAGE__->make_groups([
 	want_secure => 0,
 	table_default_align => 'left',
     ]),
     Task => sub {
 	my($fc) = @_;
-	$fc->mapcar(group => __PACKAGE__->arrays([
+	$fc->map_invoke(group => __PACKAGE__->make_groups([
 	    # The task which utilities run as.
 	    SHELL_UTIL => undef,
 
@@ -169,7 +169,7 @@ EOF
         ]));
 	return;
     },
-    Text => __PACKAGE__->arrays([
+    Text => __PACKAGE__->make_groups([
 	# Where to redirect to when coming in via /,
 	# i.e. http://petshop.bivio.biz
 	home_page_uri => '/pub',
