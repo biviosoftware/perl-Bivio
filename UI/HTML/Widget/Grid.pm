@@ -131,6 +131,10 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 The value to be passed to the C<BGCOLOR> attribute of the C<TD> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
+=item cell_class : string []
+
+Class attribute of the cell.
+
 =item cell_colspan : int [1]
 
 The value passed to C<COLSPAN> attribute of the C<TD> tag.
@@ -280,11 +284,11 @@ sub initialize {
 		# May set attributes on itself
 		$c->put_and_initialize(parent => $self);
 		my($expand2, $align, $colspan, $rowspan, $width, $height,
-		       $width_as_html, $height_as_html)
+		       $width_as_html, $height_as_html, $class)
 			= $c->unsafe_get(qw(cell_expand
 				cell_align cell_colspan cell_rowspan cell_width
 				cell_height cell_width_as_html
-                                cell_height_as_html));
+                                cell_height_as_html cell_class));
 		if ($expand2) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
@@ -304,6 +308,7 @@ sub initialize {
 #TODO: Should be a number or percent?
 		_append(\@p, qq! width="$width"!) if $width;
 		_append(\@p, qq! height="$height"!) if $height;
+		_append(\@p, qq! class="$class"!) if $class;
 		_append(\@p, $width_as_html) if $width_as_html;
 		_append(\@p, $height_as_html) if $height_as_html;
 
