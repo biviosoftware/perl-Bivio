@@ -36,10 +36,10 @@ C<Bivio::PetShop::Model::UserAccountForm> creates a new user account.
 
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::Auth::Role;
 use Bivio::Die;
 use Bivio::PetShop::Type::UserStatus;
 use Bivio::PetShop::Type::UserType;
-use Bivio::Type::Honorific;
 use Bivio::Type::Location;
 use Bivio::Type::Password;
 
@@ -181,7 +181,7 @@ sub _create_user {
     $self->new_other('RealmUser')->create({
 	realm_id => $user->get('user_id'),
 	user_id => $user->get('user_id'),
-	honorific => Bivio::Type::Honorific->SELF,
+	role => Bivio::Auth::Role->ADMINISTRATOR,
     });
 
     foreach my $model (qw(Address Email Phone)) {

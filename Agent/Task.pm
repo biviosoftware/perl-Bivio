@@ -279,13 +279,15 @@ sub execute {
     $req->client_redirect_if_not_secure()
 	if $self->get('require_secure')
 	    && $req->can('client_redirect_if_not_secure');
-    my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
+    my($auth_realm, $auth_role, $auth_roles) =
+	$req->get('auth_realm', 'auth_role', 'auth_roles');
     unless ($auth_realm->can_user_execute_task($self, $req)) {
 	# Redirect to FORBIDDEN if not browser or not auth_user
 	Bivio::Die->throw('FORBIDDEN', {
 	    auth_user => $req->get('auth_user'),
 	    entity => $auth_realm,
 	    auth_role => $auth_role,
+	    auth_roles => $auth_roles,
 	    operation => $self->get('id'),
 	});
     }

@@ -660,13 +660,27 @@ Returns auth role for I<realm>.
 =cut
 
 sub get_auth_role {
+    return shift->get_auth_roles(@_)->[0];
+}
+
+=for html <a name="get_auth_roles"></a>
+
+=head2 get_auth_roles(string realm_id) : [Bivio::Auth::Role, ...]
+
+=head2 get_auth_roles(Bivio::Auth::Realm realm) : [Bivio::Auth::Role, ...]
+
+Returns auth roles for I<realm>.
+
+=cut
+
+sub get_auth_roles {
     my($self, $realm) = @_;
     my($realm_id) = ref($realm) ? $realm->get('id') : $realm;
-    my($auth_id, $auth_role) = $self->unsafe_get(qw(auth_id auth_role));
+    my($auth_id, $auth_roles) = $self->unsafe_get(qw(auth_id auth_roles));
 
     # Use (cached) value in $self if realm_id is the same.  Otherwise,
     # go through entire lookup process.
-    return $auth_id eq $realm_id ? $auth_role : _get_role($self, $realm_id);
+    return $auth_id eq $realm_id ? $auth_roles : _get_roles($self, $realm_id);
 }
 
 =for html <a name="get_current"></a>
@@ -1114,12 +1128,14 @@ sub set_realm {
 	unless $new_realm && UNIVERSAL::isa($new_realm, 'Bivio::Auth::Realm');
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
+    my($new_roles) = _get_roles($self, $realm_id);
     $self->put_durable(
 	auth_realm => $new_realm,
 	auth_id => $realm_id,
 	auth_role => $new_role,
+	auth_roles => $new_roles,
     );
-    _trace($new_realm, '; ', $new_role) if $_TRACE;
+    _trace($new_realm, '; ', $new_roles) if $_TRACE;
     return $new_realm;
 }
 
@@ -1175,7 +1191,10 @@ sub set_user {
 	user_realms => $user_realms,
     );
     # Set the (cached) auth_role if requested (by default).
-    $self->put_durable(auth_role => _get_role($self, $self->get('auth_id')))
+    $self->put_durable(
+        auth_role => _get_role($self, $self->get('auth_id')),
+        auth_roles => _get_roles($self, $self->get('auth_id')),
+    )
 	unless $dont_set_role;
     return $user;
 }
@@ -1275,7 +1294,7 @@ sub _get_realm {
     return $_GENERAL if $realm_type eq Bivio::Auth::RealmType->GENERAL;
     if ($realm_type eq Bivio::Auth::RealmType->CLUB) {
 	my($user_realms) = $self->get('user_realms');
-	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
+	my($role, $realm_id) = Bivio::Auth::Role->UNKNOWN->as_int;
 	foreach my $r (values(%$user_realms)) {
 	    next unless $r->{'RealmOwner.realm_type'}
 		    eq Bivio::Auth::RealmType->CLUB();
@@ -1317,19 +1336,27 @@ sub _get_realm {
 # Does the work for get_auth_role().
 #
 sub _get_role {
+    return _get_roles(@_)->[0];
+}
+
+# _get_roles(Bivio::Agent::Request self, string realm_id) : array_ref
+#
+# Does the work for get_auth_roles().
+#
+sub _get_roles {
     my($self, $realm_id) = @_;
     my($auth_user, $user_realms) = $self->unsafe_get(
-	    qw(auth_user user_realms));
+        qw(auth_user user_realms));
 
     # If no user, then is always anonymous
-    return Bivio::Auth::Role->ANONYMOUS unless $auth_user;
+    return [Bivio::Auth::Role->ANONYMOUS] unless $auth_user;
 
     # Not the current realm, but an authenticated realm
-    return $user_realms->{$realm_id}->{'RealmUser.role'}
-	    if ref($user_realms->{$realm_id});
+    return $user_realms->{$realm_id}->{roles}
+        if ref($user_realms->{$realm_id});
 
     # User has no special privileges in realm
-    return Bivio::Auth::Role->USER;
+    return [Bivio::Auth::Role->USER];
 }
 
 =head1 SEE ALSO

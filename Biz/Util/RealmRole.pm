@@ -233,7 +233,7 @@ sub make_super_user {
     Bivio::Biz::Model->new($req, 'RealmUser')->create({
 	realm_id => Bivio::Auth::RealmType->GENERAL->as_int,
 	user_id => $req->get('auth_user_id'),
-	honorific => Bivio::Type::Honorific->ADMINISTRATOR,
+	role => Bivio::Auth::Role->ADMINISTRATOR,
     });
     return;
 }
@@ -282,7 +282,7 @@ sub unmake_super_user {
 	realm_id => Bivio::Auth::RealmType->GENERAL->as_int,
 	user_id => $req->get('auth_user_id')
 	    || $self->usage_error('user not set'),
-	honorific => Bivio::Type::Honorific->ADMINISTRATOR,
+	role => Bivio::Auth::Role->ADMINISTRATOR,
     });
     return;
 }

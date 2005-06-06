@@ -37,8 +37,8 @@ to override this form.
 
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::Auth::Role;
 use Bivio::IO::Trace;
-use Bivio::Type::Honorific;
 use Bivio::Type::Location;
 use Bivio::Type::Name;
 use Bivio::Type::Password;
@@ -115,7 +115,7 @@ sub internal_create_models {
     $self->new_other('RealmUser')->create({
 	realm_id => $user->get('user_id'),
 	user_id => $user->get('user_id'),
-	honorific => Bivio::Type::Honorific->SELF,
+        role => Bivio::Auth::Role->ADMINISTRATOR,
     });
     return ($realm, $user);
 }

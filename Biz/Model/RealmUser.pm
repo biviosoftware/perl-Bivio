@@ -77,7 +77,7 @@ my($_IS_SOLE_ADMIN_QUERY) = "SELECT count(*)
     WHERE realm_user_t.realm_id = ?
     AND user_id != ?
     AND role = "
-    .Bivio::Auth::Role::ADMINISTRATOR->as_sql_param."
+    .Bivio::Auth::Role->ADMINISTRATOR->as_sql_param."
     AND realm_user_t.user_id = realm_owner_t.realm_id
     AND realm_owner_t.name NOT LIKE '"
     .Bivio::Type::RealmName->OFFLINE_PREFIX."\%'";
@@ -131,15 +131,13 @@ sub MEMBER_ROLES {
 
 =head2 create(hash_ref new_values)
 
-Sets I<creation_date_time> if not set. Defaults the role to the honorific's
-role if not set.
+Sets I<creation_date_time> if not set.
 
 =cut
 
 sub create {
     my($self, $values) = @_;
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
-    $values->{role} ||= $values->{honorific}->get_role;
     return $self->SUPER::create($values);
 }
 
@@ -202,8 +200,7 @@ sub internal_initialize {
 	columns => {
             realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             user_id => ['User.user_id', 'PRIMARY_KEY'],
-            role => ['RealmRole.role', 'NOT_NULL'],
-	    honorific => ['Honorific', 'NOT_ZERO_ENUM'],
+            role => ['RealmRole.role', 'PRIMARY_KEY'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
@@ -256,7 +253,7 @@ List Models can declare a method of the form:
 sub is_guest {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return $model->get($model_prefix.'role') ==
-	    Bivio::Auth::Role::GUEST() ? 1 : 0;
+	    Bivio::Auth::Role->GUEST() ? 1 : 0;
 }
 
 =for html <a name="is_member"></a>
@@ -332,7 +329,7 @@ sub is_sole_admin {
     # Check to see if an admin at all.  This avoids a db query for most
     # realm users.
     return 0 unless $model->get($model_prefix.'role')
-	    == Bivio::Auth::Role::ADMINISTRATOR();
+	    == Bivio::Auth::Role->ADMINISTRATOR();
     return _cache_in_request($proto, $model, $model_prefix,
 	    $_IS_SOLE_ADMIN_QUERY) ? 0 : 1;
 }

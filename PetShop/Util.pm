@@ -45,6 +45,7 @@ As you:
 =cut
 
 #=IMPORTS
+use Bivio::Auth::Role;
 use Bivio::Biz::Util::RealmRole;
 
 #=VARIABLES
@@ -86,6 +87,23 @@ sub ddl_files {
 	    $base.'-'.$_.'.sql';
 	} qw(tables constraints sequences);
     } qw(bOP petshop)];
+}
+
+=for html <a name="realm_role_config"></a>
+
+=head2 realm_role_config() : array_ref
+
+Add test realm roles
+
+=cut
+
+sub realm_role_config {
+    my($self) = @_;
+    return [
+        @{$self->SUPER::realm_role_config()},
+        'b-realm-role -r GENERAL edit TEST_ROLE1 - +TEST_PERMISSION1',
+        'b-realm-role -r GENERAL edit TEST_ROLE2 - +TEST_PERMISSION2',
+    ];
 }
 
 #=PRIVATE METHODS
@@ -220,7 +238,9 @@ sub _init_demo_products {
 sub _init_demo_users {
     my($self) = @_;
     my($req) = $self->get_request;
-    foreach my $u ('demo', 'guest', ($req->is_production ? () : ('root'))) {
+    foreach my $u ('demo', 'guest', 'multi_role_user',
+        ($req->is_production ? () : ('root')),
+    ) {
 	$self->print("Created user $u\@bivio.biz\n");
 	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
 	    'User.first_name' => 'Demo',
@@ -240,9 +260,22 @@ sub _init_demo_users {
 	$req->get('auth_user')->update({
 	    name => $u,
 	});
+	if ($u eq 'multi_role_user') {
+            Bivio::Biz::Model->new($req, 'RealmUser')->create({
+                realm_id => Bivio::Auth::Realm->get_general->get('id'),
+                user_id => $req->get('auth_user_id'),
+                role => Bivio::Auth::Role->TEST_ROLE1,
+            });
+            Bivio::Biz::Model->new($req, 'RealmUser')->create({
+                realm_id => Bivio::Auth::Realm->get_general->get('id'),
+                user_id => $req->get('auth_user_id'),
+                role => Bivio::Auth::Role->TEST_ROLE2,
+            });
+	}
 	Bivio::Biz::Util::RealmRole->make_super_user
 	    if $u eq 'root';
     }
+    
     return;
 }
 

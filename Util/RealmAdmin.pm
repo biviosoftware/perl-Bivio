@@ -62,8 +62,8 @@ EOF
 }
 
 #=IMPORTS
+use Bivio::Auth::Role;
 use Bivio::Biz::Model;
-use Bivio::Type::Honorific;
 use Bivio::Type::Password;
 
 #=VARIABLES
@@ -152,19 +152,19 @@ sub invalidate_password {
 
 =for html <a name="join_user"></a>
 
-=head2 join_user(string honorific)
+=head2 join_user(string role)
 
-Adds user to realm with I<honorific>.
+Adds user to realm with I<role>.
 
 =cut
 
 sub join_user {
-    my($self, $honorific) = @_;
+    my($self, $role) = @_;
     my($req) = $self->get_request;
     Bivio::Biz::Model->new($req, 'RealmUser')->create({
 	realm_id => $req->get('auth_id'),
 	user_id => $req->get('auth_user_id'),
-	honorific => $self->convert_literal('Honorific', $honorific),
+	role => Bivio::Auth::Role->$role,
     });
     return;
 }

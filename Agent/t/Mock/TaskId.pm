@@ -104,10 +104,18 @@ sub get_delegate_info {
             next=SITE_ROOT
 	)],
 	[qw(
-	    TEST_ROLE1
+	    TEST_MULTI_ROLES1
 	    506
-	    CLUB
-	    TEST_ROLE1
+	    GENERAL
+	    TEST_PERMISSION1
+            Action.ClientRedirect->execute_next
+            next=SITE_ROOT
+	)],
+	[qw(
+	    TEST_MULTI_ROLES2
+	    507
+	    GENERAL
+	    TEST_PERMISSION2
             Action.ClientRedirect->execute_next
             next=SITE_ROOT
 	)],

@@ -80,14 +80,17 @@ sub merge_overrides {
 	    delegates => {
 		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Delegate::TaskId',
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
-		'Bivio::UI::HTML::FormErrors' =>
-	    	    'Bivio::PetShop::Delegate::FormErrors',
-		'Bivio::TypeError' => 'Bivio::PetShop::Delegate::TypeError',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
-                'Bivio::Type::Location' =>
-                    'Bivio::PetShop::Delegate::Location',
-                'Bivio::Type::ECService' =>
-                    'Bivio::PetShop::Delegate::ECService',
+		'Bivio::Auth::Permission'
+		    => 'Bivio::PetShop::Delegate::Permission',
+		'Bivio::Auth::Role' => 'Bivio::PetShop::Delegate::Role',
+                'Bivio::Type::ECService'
+                    => 'Bivio::PetShop::Delegate::ECService',
+                'Bivio::Type::Location'
+                    => 'Bivio::PetShop::Delegate::Location',
+		'Bivio::TypeError' => 'Bivio::PetShop::Delegate::TypeError',
+		'Bivio::UI::HTML::FormErrors'
+	    	    => 'Bivio::PetShop::Delegate::FormErrors',
 	    },
 	    maps => {
 		Model => ['Bivio::PetShop::Model'],

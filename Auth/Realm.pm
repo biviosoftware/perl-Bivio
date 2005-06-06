@@ -81,7 +81,7 @@ use vars qw($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_INITIALIZED) = 0;
 my($_GENERAL);
-my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
+my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role->UNKNOWN(),
 	    Bivio::Auth::Role->get_list);
 
 =head1 FACTORIES
@@ -156,24 +156,30 @@ Returns true if I<auth_user> of I<req> can execute I<task>.
 
 sub can_user_execute_task {
     my($self, $task, $req) = @_;
-    my($auth_role) = $req->get_auth_role($self);
-    my($realm_type, $required) = $task->get('realm_type', 'permission_set');
 
     # Is the task defined in the right realm?
-    unless ($self->get('type') eq $realm_type) {
+    unless ($self->get('type') eq $task->get('realm_type')) {
 	_trace($task->get('id'), ': no such task in ', $self->get('type'))
-		if $_TRACE;
+	    if $_TRACE;
 	return 0;
     }
 
     # Load the permissions and cache
+    my($auth_roles) = $req->get_auth_roles($self);
     my($fields) = $self->[$_IDI];
-    $fields->{$auth_role} = Bivio::Auth::Support->load_permissions(
-	    $self, $auth_role, $req)
-	    unless defined($fields->{$auth_role});
+    my($permissions) = [map({
+	my($auth_role) = $_;
+        unless (defined($fields->{$auth_role})) {
+	    $fields->{$auth_role} = Bivio::Auth::Support->load_permissions(
+	        $self, $auth_role, $req);
+	}
+	$fields->{$auth_role};
+    } @$auth_roles)];
 
+    # Does this role have all the required permission?
+    my($perm_set) = _perm_set_from_all($permissions);
     return Bivio::Auth::Support->task_permission_ok(
-	    $fields->{$auth_role}, $required, $req);
+        $perm_set, $task->get('permission_set'), $req);
 }
 
 =for html <a name="format_email"></a>
@@ -344,6 +350,19 @@ sub _new {
 	    owner_name => $owner->get('name'),
 	    type => $type);
     return $self;
+}
+
+# _perm_set_from_all(arrayref permissions) : Bivio::Auth::PermissionSet
+#
+# Calculate the sum of all given permissions.
+#
+sub _perm_set_from_all {
+    my($permissions) = @_;
+    my($perm_set) = Bivio::Type::EnumSet->get_min();
+    foreach my $perms (@$permissions) {
+	$perm_set |= $perms;
+    }
+    return $perm_set;
 }
 
 =head1 COPYRIGHT

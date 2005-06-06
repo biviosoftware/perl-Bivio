@@ -37,6 +37,7 @@ C<Bivio::PetShop::Model::OrderForm>
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
+use Bivio::Auth::Role;
 use Bivio::Die;
 use Bivio::IO::Trace;
 use Bivio::SQL::ListQuery;
@@ -44,7 +45,6 @@ use Bivio::Type::Date;
 use Bivio::Type::ECPaymentMethod;
 use Bivio::Type::ECPaymentStatus;
 use Bivio::Type::ECService;
-use Bivio::Type::Honorific;
 use Bivio::Type::Location;
 
 #=VARIABLES
@@ -307,7 +307,7 @@ sub _save_order {
     $self->new_other('RealmUser')->create({
         realm_id => $order->get('realm_id'),
         user_id => $self->get_request->get('auth_user_id'),
-        honorific => Bivio::Type::Honorific->MEMBER,
+        role => Bivio::Auth::Role->MEMBER,
     });
     _decrease_inventory($self);
     return $order->get('realm_id');

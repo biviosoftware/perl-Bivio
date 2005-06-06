@@ -48,6 +48,18 @@ in the L<Bivio::Auth::Realm::CLUB|Bivio::Auth::Realm/"CLUB">.
 
 __PACKAGE__->compile();
 
+=for html <a name="is_continuous"></a>
+
+=head2 static is_continuous() : false
+
+Roles are not continuous.
+
+=cut
+
+sub is_continuous {
+    return 0;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT

@@ -220,10 +220,6 @@ CREATE INDEX realm_role_t3 ON realm_role_t (
   realm_id
 )
 /
-ALTER TABLE realm_role_t
-  ADD CONSTRAINT realm_role_t4
-  CHECK (role BETWEEN 1 AND 7)
-/
 
 --
 -- realm_user_t
@@ -245,14 +241,6 @@ ALTER TABLE realm_user_t
 CREATE INDEX realm_user_t5 ON realm_user_t (
   user_id
 )
-/
-ALTER TABLE realm_user_t
-  ADD CONSTRAINT realm_user_t6
- CHECK (role BETWEEN 1 AND 7)
-/
-ALTER TABLE realm_user_t
-  ADD CONSTRAINT realm_user_t7
-  CHECK (honorific BETWEEN 1 AND 9)
 /
 CREATE INDEX realm_user_t8 ON realm_user_t (
   creation_date_time

@@ -63,10 +63,13 @@ sub internal_initialize {
 	other => [qw(
             RealmOwner.name
 	    RealmUser.role
-	    RealmUser.honorific
 	    RealmOwner.realm_type
             RealmOwner.display_name
-	)],
+	), {
+	    name => 'roles',
+	    type => 'String',     #Not really, is arrayref
+	    constraint => 'NONE',
+	}],
 	primary_key => [
 	    [qw(RealmUser.realm_id RealmOwner.realm_id)],
 	],
@@ -74,7 +77,45 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="internal_load_rows"></a>
+
+=head2 internal_load_rows(Bivio::SQL::ListQuery query, string where, array_ref params, Bivio::SQL::ListSupport sql_support) : array_ref
+
+Return only one row per user/realm.  Collect roles into seperate attribute.
+
+=cut
+
+sub internal_load_rows {
+    my($self) = @_;
+    my($rows) = shift->SUPER::internal_load_rows(@_);
+    my($roles) = {};
+    return [
+	grep({_internal_post_load_row($_, $roles)}
+	    @$rows),
+    ];
+}
+
 #=PRIVATE METHODS
+
+# _internal_post_load_row() : 
+#
+# Gather multiple realm roles into a single row record.
+#
+sub _internal_post_load_row {
+    my($row, $roles) = @_;
+
+    if (exists($roles->{$row->{'RealmUser.realm_id'}})) {
+	push(@{$roles->{$row->{'RealmUser.realm_id'}}},
+	    $row->{'RealmUser.role'});
+	return 0;
+    }
+    else {
+	$row->{roles} =
+	    $roles->{$row->{'RealmUser.realm_id'}} =
+		[$row->{'RealmUser.role'}];
+	return 1;
+    }
+}
 
 =head1 COPYRIGHT
 

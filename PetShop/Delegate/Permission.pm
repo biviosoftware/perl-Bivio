@@ -1,13 +1,13 @@
 # Copyright (c) 2004 IEEE SA, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Agent::t::Mock::Permission;
+package Bivio::PetShop::Delegate::Permission;
 use strict;
-$Bivio::Agent::t::Mock::Permission::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::t::Mock::Permission::VERSION;
+$Bivio::PetShop::Delegate::Permission::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::PetShop::Delegate::Permission::VERSION;
 
 =head1 NAME
 
-Bivio::Agent::t::Mock::Permission - unit test permissions
+Bivio::PetShop::Delegate::Permission - unit test permissions
 
 =head1 RELEASE SCOPE
 
@@ -15,16 +15,16 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::Agent::t::Mock::Permission;
+    use Bivio::PetShop::Delegate::Permission;
 
 =cut
 
 use Bivio::Delegate::SimplePermission;
-@Bivio::Agent::t::Mock::Permission::ISA = ('Bivio::Delegate::SimplePermission');
+@Bivio::PetShop::Delegate::Permission::ISA = ('Bivio::Delegate::SimplePermission');
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::t::Mock::Permission>
+C<Bivio::PetShop::Delegate::Permission>
 
 =cut
 

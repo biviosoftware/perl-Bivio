@@ -143,9 +143,8 @@ CREATE TABLE realm_user_t (
   realm_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
   role NUMERIC(2) NOT NULL,
-  honorific NUMERIC(2) NOT NULL,
   creation_date_time DATE NOT NULL,
-  CONSTRAINT realm_user_t1 PRIMARY KEY(realm_id, user_id)
+  CONSTRAINT realm_user_t1 PRIMARY KEY(realm_id, user_id, role)
 )
 /
 
