@@ -1,5 +1,5 @@
 #!perl -w
-# Copyright (c) 2003 IEEE SA, Inc.  All Rights Reserved.
+# Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 my($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -47,7 +47,6 @@ use Bivio::Type::Date;
 use Bivio::Type::DateInterval;
 use Bivio::Type::DateTime;
 use Bivio::Type::Honorific;
-#use IEEESA::Util::SQL;
 
 #=VARIABLES
 $| = 1;
@@ -64,7 +63,7 @@ sub main {
     _usage("missing or bad method")
 	    unless $method && $method  =~ /^_upgrade/;
     # Must be first, because pg_dump closes all db connections.
-#    IEEESA::Util::SQL->main('export_db');
+#    Bivio::Util::SQL->main('export_db');
 
     my($req) = Bivio::Agent::Request->get_current_or_new();
     my($upgrade) = Bivio::Biz::Model::DbUpgrade->new($req);
@@ -91,7 +90,7 @@ sub main {
 
 # _add_realm_roles(hashref role_map)
 #
-#
+# Add new roles to realm_role_t to replace honorifics
 #
 sub _add_realm_roles {
     my($role_map) = @_;
@@ -170,7 +169,7 @@ sub _is_special {
 
 # _map_honorifics(arrayref roles)
 #
-#
+# Update roles to reflect old honorific
 #
 sub _map_honorifics {
     my($roles) = @_;
@@ -196,59 +195,30 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_drop_honorific_petshop
-    _upgrade_multiple_realm_roles
+    _upgrade_drop_honorific($req);
+    _upgrade_multiple_realm_roles($req);
     print("** DONE ***\n");
     return;
 }
 
-# _upgrade_add_lookaside_table(Bivio::Agent::Request req)
+# _upgrade_drop_honorific(Bivio::Agent::Request req)
 #
-# Adds sa_member_lookaside_t.
+# Drop honorific column from realm_user_t
 #
-sub _upgrade_add_lookaside_table {
+sub _upgrade_drop_honorific {
     my($req) = @_;
-    print("adding sa_member_lookaside_t\n");
-    _do_sql(<<'EOF');
-CREATE TABLE sa_member_lookaside_t (
-  sa_member_lookaside_id NUMERIC(18) NOT NULL,
-  ldap_cid VARCHAR(100),
-  email VARCHAR(100),
-  constraint sa_member_lookaside_t1 primary key (sa_member_lookaside_id)
-)
-/
-CREATE sequence sa_member_lookaside_s
-  MINVALUE 100029
-  CACHE 1 INCREMENT BY 100000
-/
-CREATE INDEX sa_member_lookaside_t2 ON sa_member_lookaside_t (
-  ldap_cid
-)
-/
-CREATE INDEX sa_member_lookaside_t3 ON sa_member_lookaside_t (
-  email
-)
-/
-EOF
-    return;
-}
-
-# _upgrade_drop_honorific_petshop(Bivio::Agent::Request req)
-#
-#
-#
-sub _upgrade_drop_honorific_petshop {
-    my($req) = @_;
+    print("dropping honorific\n");
     _drop_honorific();
     return;
 }
 
-# _upgrade_drop_honorific_societas()
+# _upgrade_drop_honorific_societas(Bivio::Agent::Request req)
 #
-#
+# Map honorifics to new role and drop honorific column from realm_user_t
 #
 sub _upgrade_drop_honorific_societas {
     my($req) = @_;
+    print("dropping honorific\n");
     my($role_map) = {
 	SECRETARY => 'MEMBER',
 	TREASURER => 'ACCOUNTANT',
@@ -268,11 +238,11 @@ EOF
 
 # _upgrade_multiple_realm_roles(Bivio::Agent::Request req)
 #
-#
+# Drop single role per realm contraint
 #
 sub _upgrade_multiple_realm_roles {
     my($req) = @_;
-    print("adding dropping realm-role constraint\n");
+    print("dropping realm-role constraint\n");
     _do_sql(<<'EOF');
 ALTER TABLE realm_role_t
   DROP CONSTRAINT realm_role_t4
@@ -306,7 +276,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 IEEE SA, Inc.  All Rights Reserved.
+Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
