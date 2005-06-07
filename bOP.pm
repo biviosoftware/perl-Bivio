@@ -9,7 +9,7 @@ $_ = $Bivio::bOP::VERSION;
 
 Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
-=head1 RELEASE SCOPE
+=head1 RELEASE SCOPE 
 
 bOP
 
@@ -41,6 +41,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 2.73  2005/06/07 19:17:56  david
+  * clean up Util/b-db-upgrade
+
+  Revision 2.72  2005/06/07 03:53:02  moeller
+  * Bivio::Biz::Model::RealmUser removed honorific property
+  * Allow multiple RealmUser roles for one realm, modules changed:
+    Bivio::Agent::Request
+    Bivio::Agent::Task
+    Bivio::Auth::Realm
+    Bivio::Auth::Role
+    Bivio::Biz::Model::RealmRole
+    Bivio::Biz::Model::UserCreateForm
+    Bivio::Biz::Model::UserRealmList
+    Bivio::Biz::Util::RealmAdmin
+    Bivio::Biz::Util::RealmRole
   * Bivio::UI::Facade renamed arrays() to make_groups()
   * Bivio::UI::HTML::Widget::Grid added cell_class
   * Bivio::UNIVERSAL renamed mapcar() to map_invoke()
