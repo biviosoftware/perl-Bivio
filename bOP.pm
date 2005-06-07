@@ -9,7 +9,7 @@ $_ = $Bivio::bOP::VERSION;
 
 Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
-=head1 RELEASE SCOPE 
+=head1 RELEASE SCOPE
 
 bOP
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 2.74  2005/06/07 19:29:51  david
+  * fix bad release scope on Util/b-db-upgrade
 
   Revision 2.73  2005/06/07 19:17:56  david
   * clean up Util/b-db-upgrade
