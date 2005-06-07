@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::Facade renamed arrays() to make_groups()
+  * Bivio::UI::HTML::Widget::Grid added cell_class
+  * Bivio::UNIVERSAL renamed mapcar() to map_invoke()
+
   Revision 2.71  2005/06/01 21:25:48  moeller
   * Bivio::UI::Facade added arrays() for cleaner config formatting
   * Bivio::PetShop::Facade::PetShop uses new format
