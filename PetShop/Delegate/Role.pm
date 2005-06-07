@@ -7,7 +7,7 @@ $_ = $Bivio::PetShop::Delegate::Role::VERSION;
 
 =head1 NAME
 
-Bivio::PetShop::Delegate::Role - 
+Bivio::PetShop::Delegate::Role - roles for the PetShop application
 
 =head1 RELEASE SCOPE
 
