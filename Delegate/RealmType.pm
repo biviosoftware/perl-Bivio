@@ -59,14 +59,15 @@ look like:
 
     sub get_delegate_info {
 	my($proto) = @_;
-	return $proto->merge_task_info($proto->SUPER::get_delegate_info, [
+	return [
+            @{$proto->SUPER::get_delegate_info},
 	    MY_NEW_TYPE => [
 	        20,
 		undef,
 		'access to some new type of realm',
 	    ],
-        ]);
-    }									  
+        ];
+    }
 
 =cut
 
