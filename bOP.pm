@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 2.75  2005/06/08 14:33:19  nagler
+  * Bivio::Type::Year->from_literal calculates date window (+20 years)
+    for two digit dates.  get_min() returns 100
 
   Revision 2.74  2005/06/07 19:29:51  david
   * fix bad release scope on Util/b-db-upgrade
