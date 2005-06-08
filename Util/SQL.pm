@@ -323,7 +323,7 @@ sub init_realm_role {
 
 =for html <a name="internal_upgrade_db"></a>
 
-=head2 abstract internal_upgrade_db() 
+=head2 abstract internal_upgrade_db()
 
 Subclass should implement.
 
