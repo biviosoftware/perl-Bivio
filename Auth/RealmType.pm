@@ -43,6 +43,18 @@ requests are authenticated.
 #=PRIVATE METHODS
 __PACKAGE__->compile;
 
+=for html <a name="is_continuous"></a>
+
+=head2 static is_continuous() : boolean
+
+Overrides should start at number 20.
+
+=cut
+
+sub is_continuous {
+    return 0;
+}
+
 =head1 COPYRIGHT
 
 Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
