@@ -197,6 +197,7 @@ sub _upgrade {
     my($req) = @_;
     _upgrade_drop_honorific($req);
     _upgrade_multiple_realm_roles($req);
+#    _upgrade_drop_honorific_societas($req);
     print("** DONE ***\n");
     return;
 }
@@ -221,7 +222,6 @@ sub _upgrade_drop_honorific_societas {
     print("dropping honorific\n");
     my($role_map) = {
 	SECRETARY => 'MEMBER',
-	TREASURER => 'ACCOUNTANT',
 	VICE_PRESIDENT => 'ADMINISTRATOR',
 	PRESIDENT => 'ADMINISTRATOR',
     };
