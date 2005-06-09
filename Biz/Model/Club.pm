@@ -44,30 +44,6 @@ and delete interface to the C<club_t> table.
 
 =cut
 
-=for html <a name="cascade_delete"></a>
-
-=head2 cascade_delete()
-
-Deletes this club and all its related realm information. Also deletes
-any offline members which are a member of the club.
-
-=cut
-
-sub cascade_delete {
-    my($self) = @_;
-#TODO: This needs to be moved out to simplify for the "normal" case
-    my($realm) = Bivio::Biz::Model->new($self->get_request, 'RealmOwner')
-	    ->unauth_load_or_die(realm_id => $self->get('club_id'));
-
-    # need to load the user list first, delete offline members last
-    my($user_list) = Bivio::Biz::Model->new($self->get_request,
-	    'RealmUserList')->load_all_with_inactive;
-    $self->SUPER::cascade_delete;
-    $realm->cascade_delete;
-    $user_list->delete_offline_users;
-    return;
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
