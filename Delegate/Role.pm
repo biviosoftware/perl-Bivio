@@ -163,20 +163,6 @@ sub is_admin {
     return $self->equals_by_name('ADMINISTRATOR');
 }
 
-=for html <a name="is_member"></a>
-
-=head2 is_member() : boolean
-
-Returns true if the role is a member.
-
-=cut
-
-sub is_member {
-    my($self) = @_;
-    return $self->is_admin
-        || $self->equals_by_name(qw(MEMBER ACCOUNTANT)) ? 1 : 0;
-}
-
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
