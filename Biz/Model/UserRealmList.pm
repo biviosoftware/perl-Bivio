@@ -67,7 +67,7 @@ sub internal_initialize {
             RealmOwner.display_name
 	), {
 	    name => 'roles',
-	    type => 'String',     #Not really, is arrayref
+	    type => 'Array',
 	    constraint => 'NONE',
 	}],
 	primary_key => [
