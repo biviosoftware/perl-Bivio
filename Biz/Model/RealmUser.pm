@@ -36,92 +36,13 @@ and delete interface to the C<realm_user_t> table.
 =cut
 
 #=IMPORTS
-# also uses User model
-use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
-use Bivio::Auth::RoleSet;
 use Bivio::Die;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::RealmName;
 
 #=VARIABLES
-my($_ACTIVE_ROLES) = '';
-Bivio::Auth::RoleSet->set(\$_ACTIVE_ROLES,
-    Bivio::Auth::Role->GUEST,
-    Bivio::Auth::Role->MEMBER,
-    Bivio::Auth::Role->ACCOUNTANT,
-    Bivio::Auth::Role->ADMINISTRATOR,
-   );
-my($_MEMBER_ROLES) = '';
-Bivio::Auth::RoleSet->set(\$_MEMBER_ROLES,
-    Bivio::Auth::Role->MEMBER,
-    Bivio::Auth::Role->ACCOUNTANT,
-    Bivio::Auth::Role->ADMINISTRATOR,
-   );
-my($_OFFICER_ROLES) = '';
-Bivio::Auth::RoleSet->set(\$_OFFICER_ROLES,
-    Bivio::Auth::Role->ACCOUNTANT,
-    Bivio::Auth::Role->ADMINISTRATOR,
-   );
-
-my($_MEMBER_OR_WITHDRAWN_ROLES) = '';
-Bivio::Auth::RoleSet->set(\$_MEMBER_OR_WITHDRAWN_ROLES,
-    Bivio::Auth::Role->WITHDRAWN,
-    Bivio::Auth::Role->MEMBER,
-    Bivio::Auth::Role->ACCOUNTANT,
-    Bivio::Auth::Role->ADMINISTRATOR,
-   );
-my($_IS_SOLE_ADMIN_QUERY) = "SELECT count(*)
-    FROM realm_owner_t, realm_user_t
-    WHERE realm_user_t.realm_id = ?
-    AND user_id != ?
-    AND role = "
-    .Bivio::Auth::Role->ADMINISTRATOR->as_sql_param."
-    AND realm_user_t.user_id = realm_owner_t.realm_id
-    AND realm_owner_t.name NOT LIKE '"
-    .Bivio::Type::RealmName->OFFLINE_PREFIX."\%'";
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="OFFICER_ROLES"></a>
-
-=head2 OFFICER_ROLES : string
-
-Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>.
-
-=cut
-
-sub OFFICER_ROLES {
-    return $_OFFICER_ROLES;
-}
-
-=for html <a name="VALID_ACTIVE_ROLES"></a>
-
-=head2 VALID_ACTIVE_ROLES : string
-
-Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>
-includes Guest, Member, Accountant, and Administrator.
-
-=cut
-
-sub VALID_ACTIVE_ROLES {
-    return $_ACTIVE_ROLES;
-}
-
-=for html <a name="MEMBER_ROLES"></a>
-
-=head2 MEMBER_ROLES : string
-
-Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>.
-
-=cut
-
-sub MEMBER_ROLES {
-    return $_MEMBER_ROLES;
-}
 
 =head1 METHODS
 
@@ -151,9 +72,10 @@ Loads this realm for this auth user.
 
 sub execute_auth_user {
     my($proto, $req) = @_;
-    my($user) = $req->get('auth_user');
-    Bivio::Die->die('no auth_user') unless $user;
-    $proto->new($req)->load(user_id => $user->get('realm_id'));
+    my($user) = $req->get('auth_user') || Bivio::Die->die('no auth_user');
+    $proto->new($req)->load({
+        user_id => $user->get('realm_id'),
+    });
     return;
 }
 
@@ -168,19 +90,20 @@ I<Request.auth_realm>.  Dies if none (shouldn't be the case).
 
 sub get_any_online_admin {
     my($self) = @_;
-    my($req) = $self->get_request;
-    my($it) = $self->iterate_start(
-	    'user_id', {role => Bivio::Auth::Role->ADMINISTRATOR});
-    my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
-    while ($self->iterate_next_and_load($it)) {
-	my($admin) = $self->get('user_id');
-	return $ro
-	    unless $ro->unauth_load_or_die({realm_id => $admin})
-		    ->is_offline_user;
+    $self->iterate_start('user_id', {});
+    my($owner) = $self->new_other('RealmOwner');
+
+    while ($self->iterate_next_and_load) {
+        next unless $self->get('role')->is_admin;
+        next if $owner->unauth_load_or_die({
+            realm_id => $self->get('user_id'),
+        })->is_offline_user;
+        $self->iterate_end;
+	return $owner;
     }
     $self->throw_die('DIE', {
 	message => 'no admins found',
-	entity => $req->unsafe_get('auth_realm'),
+	entity => $self->get_request->unsafe_get('auth_realm'),
     });
     # DOES NOT RETURN
 }
@@ -228,90 +151,8 @@ sub is_auth_user {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($auth_user) = $model->get_request->get('auth_user');
     return 0 unless $auth_user;
-    return $model->get($model_prefix.'user_id')
-	    eq $auth_user->get('realm_id') ? 1 : 0;
-}
-
-=for html <a name="is_guest"></a>
-
-=head2 is_guest() : boolean
-
-=head2 static is_guest(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Returns true if the user is a GUEST.
-
-In the second form, I<model> is used to get the values, not I<self>.
-List Models can declare a method of the form:
-
-    sub is_guest {
-	my($self) = shift;
-	Bivio::Biz::Model::RealmUser->format($self, 'RealmUser.');
-    }
-
-=cut
-
-sub is_guest {
-    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return $model->get($model_prefix.'role') ==
-	    Bivio::Auth::Role->GUEST() ? 1 : 0;
-}
-
-=for html <a name="is_member"></a>
-
-=head2 is_member() : boolean
-
-=head2 static is_member(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Returns true if the user is a member or above, i.e. I<role> must
-be MEMBER, ACCOUNT, or ADMINISTRATOR.
-
-In the second form, I<model> is used to get the values, not I<self>.
-List Models can declare a method of the form:
-
-    sub is_member {
-	my($self) = shift;
-	Bivio::Biz::Model::RealmUser->format($self, 'RealmUser.');
-    }
-
-=cut
-
-sub is_member {
-    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return Bivio::Auth::RoleSet->is_set(\$_MEMBER_ROLES,
-	    $model->get($model_prefix.'role'));
-}
-
-=for html <a name="is_member_or_guest"></a>
-
-=head2 is_member_or_guest() : boolean
-
-=head2 static is_member_or_guest(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Is this a member, accountant, admin, or a guest?
-
-=cut
-
-sub is_member_or_guest {
-    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return unless Bivio::Auth::RoleSet->is_set(\$_ACTIVE_ROLES,
-	    $model->get($model_prefix.'role'));
-}
-
-=for html <a name="is_member_or_withdrawn"></a>
-
-=head2 is_member_or_withdrawn() : boolean
-
-=head2 static is_member_or_withdrawn(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Returns true if the user is a member or above, i.e. I<role> must
-be WITHDRAWN, MEMBER, ACCOUNT, or ADMINISTRATOR.
-
-=cut
-
-sub is_member_or_withdrawn {
-    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return Bivio::Auth::RoleSet->is_set(\$_MEMBER_OR_WITHDRAWN_ROLES,
-	    $model->get($model_prefix.'role'));
+    return $model->get($model_prefix . 'user_id')
+        eq $auth_user->get('realm_id') ? 1 : 0;
 }
 
 =for html <a name="is_sole_admin"></a>
@@ -328,45 +169,23 @@ sub is_sole_admin {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     # Check to see if an admin at all.  This avoids a db query for most
     # realm users.
-    return 0 unless $model->get($model_prefix.'role')
-	    == Bivio::Auth::Role->ADMINISTRATOR();
-    return _cache_in_request($proto, $model, $model_prefix,
-	    $_IS_SOLE_ADMIN_QUERY) ? 0 : 1;
-}
-
-=for html <a name="unauth_load_user_or_die"></a>
-
-=head2 unauth_load_user_or_die() : Bivio::Biz::Model::User
-
-Loads the user for this RealmUser.
-
-=cut
-
-sub unauth_load_user_or_die {
-    my($self) = @_;
-    return Bivio::Biz::Model->new($self->get_request, 'User')
-	    ->unauth_load_or_die(user_id => $self->get('user_id'));
+    return 0 unless $model->get($model_prefix . 'role')->is_admin;
+    return Bivio::SQL::Connection->execute_one_row('
+        SELECT count(*)
+        FROM realm_owner_t, realm_user_t
+        WHERE realm_user_t.realm_id = ?
+        AND user_id != ?
+        AND role IN ('
+            . join(',', map($_->is_admin ? $_->as_sql_param : (),
+                Bivio::Auth::Role->get_list)) . ")
+        AND realm_user_t.user_id = realm_owner_t.realm_id
+        AND realm_owner_t.name NOT LIKE '"
+            . Bivio::Type::RealmName->OFFLINE_PREFIX . "\%'",
+        [$model->get($model_prefix . 'realm_id',
+            $model_prefix . 'user_id')])->[0] ? 0 : 1;
 }
 
 #=PRIVATE METHODS
-
-# _cache_in_request(proto, Bivio::Biz::Model model, string model_prefix, string query) : boolean
-#
-# Computes the boolean $query, unless it already is on the request.
-# Must accept a [realm, user] as params.
-#
-sub _cache_in_request {
-    my($proto, $model, $model_prefix, $query) = @_;
-    my($req) = $model->get_request;
-    my($realm, $user) = $model->get(
-	    $model_prefix.'realm_id', $model_prefix.'user_id');
-    return $req->get_if_exists_else_put(
-	    (caller(1))[3].$realm.'-'.$user =>
-	    sub {
-		return Bivio::SQL::Connection->execute_one_row(
-			$query, [$realm, $user])->[0] ? 1 : 0;
-	    });
-}
 
 =head1 COPYRIGHT
 
