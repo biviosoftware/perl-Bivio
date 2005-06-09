@@ -201,7 +201,7 @@ sub get_delegate_info {
 	[qw(
 	    ORDER_COMMIT
 	    515
-	    CLUB
+	    ORDER
 	    DATA_READ
 	    Model.Order->execute_load
 	    Model.CartItemList->execute_load_for_order
