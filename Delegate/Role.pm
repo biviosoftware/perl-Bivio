@@ -150,19 +150,6 @@ sub get_delegate_info {
     ];
 }
 
-=for html <a name="is_active"></a>
-
-=head2 is_active() : boolean
-
-Returns true if the role is active.
-
-=cut
-
-sub is_active {
-    my($self) = @_;
-    return $self->is_member || $self->equals_by_name('GUEST');
-}
-
 =for html <a name="is_admin"></a>
 
 =head2 is_admin() : boolean
