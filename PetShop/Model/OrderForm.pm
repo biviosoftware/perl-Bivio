@@ -270,7 +270,7 @@ sub _save_order {
             display_name => 'Order ' . $club->get('club_id'),
             name => 'o' . $club->get('club_id'),
             realm_id => $club->get('club_id'),
-            realm_type => Bivio::Auth::RealmType->CLUB,
+            realm_type => Bivio::Auth::RealmType->ORDER,
         })->get('realm_id'),
 	cart_id => $cart->get('cart_id'),
         ec_payment_id => $self->new_other('ECCreditCardPayment')->create({
