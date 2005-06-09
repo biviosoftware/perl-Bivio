@@ -76,15 +76,20 @@ sub get_width {
 
 =for html <a name="includes"></a>
 
-=head2 includes(Bivio::Auth::Permission perm_name) : boolean
+=head2 includes(string perm_name, ...) : boolean
 
 Returns true if this permission set includes perm_name.
 
 =cut
 
 sub includes {
-    my($proto, $perm_set, $perm_name) = @_;
-    return $proto->is_set($perm_set, Bivio::Auth::Permission->$perm_name());
+    my($proto, $perm_set, @perm_name) = @_;
+
+    foreach my $name (@perm_name) {
+        return 1
+            if $proto->is_set($perm_set, Bivio::Auth::Permission->$name());
+    }
+    return 0;
 }
 
 #=PRIVATE METHODS
