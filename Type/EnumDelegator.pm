@@ -64,7 +64,10 @@ sub AUTOLOAD {
     # can() returns a reference to the method to invoke
     # use this so delegates can be subclassed
     $_MAP->{$c} ||= Bivio::IO::ClassLoader->delegate_require($c);
-    return &{$_MAP->{$c}->can($method)}(@_);
+    my($dispatch) = $_MAP->{$c}->can($method);
+    Bivio::Die->die('method not found: ', $c, '->', $method)
+        unless $dispatch;
+    return &$dispatch(@_);
 }
 
 =for html <a name="compile"></a>
