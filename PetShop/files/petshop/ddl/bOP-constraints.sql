@@ -199,10 +199,6 @@ CREATE UNIQUE INDEX realm_owner_t3 ON realm_owner_t (
   name
 )
 /
-ALTER TABLE realm_owner_t
-  ADD CONSTRAINT realm_owner_t4
-  CHECK (realm_type BETWEEN 1 AND 3)
-/
 CREATE INDEX realm_owner_t5 ON realm_owner_t (
   creation_date_time
 )
