@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Delegate::Role added is_admin()
+  * Bivio::Type::EnumDelegator now uses UNIVERSAL->can() to lookup
+    dispatch method which allows delegates to be subclassed
+
   Revision 2.75  2005/06/08 14:33:19  nagler
   * Bivio::Type::Year->from_literal calculates date window (+20 years)
     for two digit dates.  get_min() returns 100
