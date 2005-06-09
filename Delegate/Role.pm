@@ -77,14 +77,15 @@ look like:
 
     sub get_delegate_info {
 	my($proto) = @_;
-	return $proto->merge_task_info($proto->SUPER::get_delegate_info, [
+	return [
+            @{$proto->SUPER::get_delegate_info},
 	    MY_NEW_ROLE => [
 	        20,
 		undef,
 		'some new role',
 	    ],
-        ]);
-    }									  
+        ];
+    }
 
 =cut
 
@@ -147,6 +148,46 @@ sub get_delegate_info {
             'all privileges',
         ],
     ];
+}
+
+=for html <a name="is_active"></a>
+
+=head2 is_active() : boolean
+
+Returns true if the role is active.
+
+=cut
+
+sub is_active {
+    my($self) = @_;
+    return $self->is_member || $self->equals_by_name('GUEST');
+}
+
+=for html <a name="is_admin"></a>
+
+=head2 is_admin() : boolean
+
+Returns true if the role is an administrator.
+
+=cut
+
+sub is_admin {
+    my($self) = @_;
+    return $self->equals_by_name('ADMINISTRATOR');
+}
+
+=for html <a name="is_member"></a>
+
+=head2 is_member() : boolean
+
+Returns true if the role is a member.
+
+=cut
+
+sub is_member {
+    my($self) = @_;
+    return $self->is_admin
+        || $self->equals_by_name(qw(MEMBER ACCOUNTANT)) ? 1 : 0;
 }
 
 #=PRIVATE METHODS
