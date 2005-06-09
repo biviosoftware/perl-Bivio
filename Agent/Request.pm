@@ -332,16 +332,18 @@ and current I<auth_user>.
 =cut
 
 sub can_user_execute_task {
-    my($self, $task) = @_;
-    $task = Bivio::Agent::TaskId->from_name($task) unless ref($task);
+    my($self, $task_name) = @_;
+    my($task) = Bivio::Agent::Task->get_by_id(
+        Bivio::Agent::TaskId->from_any($task_name));
+    return 1 if Bivio::Auth::PermissionSet->includes(
+        $task->get('permission_set'), qw(ANYBODY ANY_USER));
 
-    # If we can't get a realm, than can execute task
-    my($realm) = $self->get_realm_for_task($task);
+    # If we can't get a realm, then can't execute task
+    my($realm) = $self->get_realm_for_task($task->get('id'));
     return 0 unless $realm;
 
     # Execute in this realm?
-    return $realm->can_user_execute_task(
-	    Bivio::Agent::Task->get_by_id($task), $self);
+    return $realm->can_user_execute_task($task, $self);
 }
 
 =for html <a name="clear_current"></a>
@@ -780,7 +782,7 @@ sub get_realm_for_task {
     my($trt) = $task->get('realm_type');
     return $realm if $trt == $realm->get('type');
     # Else, different realm type, look up
-    return _get_realm($self, $trt, $task_id);
+    return _get_realm($self, $trt);
 }
 
 =for html <a name="get_request"></a>
@@ -853,10 +855,10 @@ sub internal_redirect_realm {
 	# Only set realm if type is different
 	my($ar) = $self->get('auth_realm');
 	unless ($ar->get('type') eq $trt) {
-	    $new_realm = _get_realm($self, $trt, $new_task);
+	    $new_realm = _get_realm($self, $trt);
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
-		if ($trt eq Bivio::Auth::RealmType->CLUB()) {
+		unless ($trt eq Bivio::Auth::RealmType->USER) {
 		    # GO TO HOME instead of a club.  He can choose
 		    # realm chooser
 		    $self->client_redirect(Bivio::Agent::TaskId::USER_HOME())
@@ -1280,41 +1282,19 @@ sub _form_for_warning {
     return $result;
 }
 
-# _get_realm(Bivio::Agent::Request self, Bivio::Auth::RealmType realm_type, Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm
+# _get_realm(Bivio::Agent::Request self, Bivio::Auth::RealmType realm_type) : Bivio::Auth::Realm
 #
 # Returns the realm for the specified type.  task_id is passed for
 # debugging purposes.
 #
 sub _get_realm {
-#TODO: This method should be in application code.  Probably should have
-#      hook for managing realms.  This is the only mention of clubs in
-#      all of this code.
-    my($self, $realm_type, $task_id) = @_;
+    my($self, $realm_type) = @_;
     # Find the appropriate realm
-    return $_GENERAL if $realm_type eq Bivio::Auth::RealmType->GENERAL;
-    if ($realm_type eq Bivio::Auth::RealmType->CLUB) {
-	my($user_realms) = $self->get('user_realms');
-	my($role, $realm_id) = Bivio::Auth::Role->UNKNOWN->as_int;
-	foreach my $r (values(%$user_realms)) {
-	    next unless $r->{'RealmOwner.realm_type'}
-		    eq Bivio::Auth::RealmType->CLUB();
-	    my($rr) = $r->{'RealmUser.role'}->as_int;
-#TODO: Roles aren't necessarily ordered
-	    next unless  $rr > $role;
-	    $realm_id = $r->{'RealmUser.realm_id'};
-	    $role = $rr;
-	}
-	return undef unless $realm_id;
-	my($club) = Bivio::Biz::Model->new($self, 'RealmOwner');
-#TODO: This will bomb if the realm disappeared since (cached) user_realms
-#      was accessed.
-	$club->unauth_load(realm_id => $realm_id);
-	return Bivio::Auth::Realm->new($club);
-    }
-    if ($realm_type eq Bivio::Auth::RealmType->USER()) {
-#TODO: Should this look in the user realm list?  This might point
-#      to an arbitrary user?
+    return $_GENERAL if $realm_type->equals_by_name('GENERAL');
+
+    if ($realm_type->equals_by_name('USER')) {
 	my($auth_user) = $self->get('auth_user');
+
 	if ($auth_user) {
 	    my($realm) = $self->unsafe_get('auth_user_realm');
 	    unless ($realm) {
@@ -1323,12 +1303,26 @@ sub _get_realm {
 	    }
 	    return $realm;
 	}
-	&_trace($task_id, ': for user realm, but no auth_user');
 #TODO: Distinguish between auth_user case and other cases
 	return undef;
     }
-    CORE::die($realm_type->as_string, ': unknown realm type for ',
-	    $task_id->as_string);
+    my($role) = Bivio::Auth::Role->UNKNOWN->as_int;
+    my($realm_id);
+
+    foreach my $realm (values(%{$self->get('user_realms')})) {
+        next unless $realm->{'RealmOwner.realm_type'} eq $realm_type;
+        my($rr) = $realm->{'RealmUser.role'}->as_int;
+#TODO: Roles aren't necessarily ordered
+        next unless  $rr > $role;
+        $realm_id = $realm->{'RealmUser.realm_id'};
+        $role = $rr;
+    }
+    return undef unless $realm_id;
+
+    return Bivio::Auth::Realm->new(
+        Bivio::Biz::Model->new($self, 'RealmOwner')->unauth_load_or_die({
+            realm_id => $realm_id,
+        }));
 }
 
 # _get_role(Bivio::Agent::Request self, string realm_id) : Bivio::Auth::Role
