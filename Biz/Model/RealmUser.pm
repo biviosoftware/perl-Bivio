@@ -185,6 +185,27 @@ sub is_sole_admin {
             $model_prefix . 'user_id')])->[0] ? 0 : 1;
 }
 
+=for html <a name="update_role"></a>
+
+=head2 update_role(self, Bivio::Auth::Role role) : self
+
+Changes the role by deleting and recreating the RealmUser record.
+Primary keys can't be update in bOP.
+
+=cut
+
+sub update_role {
+    my($self, $role) = @_;
+    return $self
+        if $self->get('role') == $role;
+    my($values) = $self->get_shallow_copy;
+    $self->delete;
+    return $self->create({
+        %$values,
+        role => $role,
+    });
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
