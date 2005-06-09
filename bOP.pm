@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::Model::RealmUser added update_role()
+      to delete/recreate RealmUser with a new role
+  * PetShop application uses a custom realm type ORDER
+
+  Revision 2.76  2005/06/09 17:50:26  moeller
+  * Bivio::Biz::Model::Club removed override for cascade_delete()
+  * Bivio::Biz::Model::RealmUser removed role sets and many is_xxx()
+    methods which were either deleted or moved to the Role delegate.
   * Bivio::Delegate::Role added is_admin()
   * Bivio::Type::EnumDelegator now uses UNIVERSAL->can() to lookup
     dispatch method which allows delegates to be subclassed
