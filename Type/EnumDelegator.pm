@@ -60,11 +60,11 @@ sub AUTOLOAD {
     my($method) = $AUTOLOAD =~ /([^:]+)$/;
     return if $method eq 'DESTROY';
     my($c) = ref($proto) || $proto;
-    return &{\&{
-	($_MAP->{$c} ||= Bivio::IO::ClassLoader->delegate_require($c))
-	. '::'
-	. $method
-    }}(@_);
+
+    # can() returns a reference to the method to invoke
+    # use this so delegates can be subclassed
+    $_MAP->{$c} ||= Bivio::IO::ClassLoader->delegate_require($c);
+    return &{$_MAP->{$c}->can($method)}(@_);
 }
 
 =for html <a name="compile"></a>
