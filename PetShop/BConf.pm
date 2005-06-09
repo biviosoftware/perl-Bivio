@@ -80,6 +80,8 @@ sub merge_overrides {
 	    delegates => {
 		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Delegate::TaskId',
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
+		'Bivio::Auth::RealmType'
+                    => 'Bivio::PetShop::Delegate::RealmType',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
 		'Bivio::Auth::Permission'
 		    => 'Bivio::PetShop::Delegate::Permission',
