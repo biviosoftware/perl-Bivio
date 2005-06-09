@@ -101,8 +101,7 @@ sub realm_role_config {
     my($self) = @_;
     return [
         @{$self->SUPER::realm_role_config()},
-        'b-realm-role -r GENERAL edit TEST_ROLE1 - +TEST_PERMISSION1',
-        'b-realm-role -r GENERAL edit TEST_ROLE2 - +TEST_PERMISSION2',
+        <DATA>,
     ];
 }
 
@@ -290,3 +289,28 @@ $Id$
 =cut
 
 1;
+__DATA__
+# The following is returned by realm_role_config().
+b-realm-role -r GENERAL edit TEST_ROLE1 - \
+    +TEST_PERMISSION1
+b-realm-role -r GENERAL edit TEST_ROLE2 - \
+    +TEST_PERMISSION2
+b-realm-role -r ORDER -u user edit ANONYMOUS - \
+    +ANYBODY
+b-realm-role -r ORDER -u user edit USER - \
+    +ANONYMOUS \
+    +ANY_USER
+b-realm-role -r ORDER -u user edit WITHDRAWN - \
+    +USER
+b-realm-role -r ORDER -u user edit GUEST - \
+    +WITHDRAWN
+b-realm-role -r ORDER -u user edit MEMBER - \
+    +GUEST \
+    +ADMIN_READ \
+    +DATA_READ \
+    +DATA_WRITE
+b-realm-role -r ORDER -u user edit ACCOUNTANT - \
+    +MEMBER \
+    +ADMIN_WRITE
+b-realm-role -r ORDER -u user edit ADMINISTRATOR - \
+    +ACCOUNTANT
