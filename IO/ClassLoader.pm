@@ -144,8 +144,8 @@ A map of class names to delegate class names.
 
 sub handle_config {
     my($proto, $cfg) = @_;
-    Bivio::IO::Alert->bootstrap_die('maps must be a hash_ref')
-		unless ref($cfg->{maps}) eq 'HASH';
+    Bivio::IO::Alert->bootstrap_die($cfg->{maps}, ': maps must be a hash_ref')
+        unless ref($cfg->{maps}) eq 'HASH';
 
     # Normalize and validate the map paths
     $_MAPS = {};
