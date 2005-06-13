@@ -205,6 +205,8 @@ sub get_delegate_info {
 	    DATA_READ
 	    Model.Order->execute_load
 	    Model.CartItemList->execute_load_for_order
+            Model.ECPayment->execute_load
+            Model.ECCreditCardPayment->execute_load
 	    View.order-commit
 	)],
 	[qw(
@@ -296,6 +298,15 @@ sub get_delegate_info {
 	    USER
 	    DATA_READ&DATA_WRITE&SUBSTITUTE_USER_TRANSIENT
 	    View.account
+	    next=SITE_ROOT
+	)],
+	# used by Model.RealmOwner
+	[qw(
+	    ORDER_HOME
+	    527
+	    ORDER
+	    DATA_READ
+	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
     ]);
