@@ -166,6 +166,7 @@ EOF
 	    MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore',
 	    USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
 		'my/create-account-and-order',
+	    ORDER_HOME => '?',
         ]));
 	return;
     },
