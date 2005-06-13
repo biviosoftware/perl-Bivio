@@ -257,6 +257,9 @@ ALTER TABLE realm_user_t
   ADD CONSTRAINT realm_user_t1
   PRIMARY KEY(realm_id, user_id, role)
 /
+ALTER TABLE realm_owner_t
+  DROP CONSTRAINT realm_owner_t4
+/
 EOF
     return;
 }
