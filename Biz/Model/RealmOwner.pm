@@ -48,12 +48,11 @@ use Bivio::Type::RealmName;
 
 #=VARIABLES
 
-#TODO: this needs to be configurable, maybe a method on RealmType?
 my($_HOME_TASK_MAP) = {
     map({
-        Bivio::Auth::RealmType->from_name($_) =>
-            Bivio::Agent::TaskId->from_name($_ . '_HOME'),
-    } (qw(CLUB USER))),
+        $_ => Bivio::Agent::TaskId->from_name($_->get_name . '_HOME'),
+    } (grep($_->equals_by_name(qw(UNKNOWN GENERAL)) ? 0 : 1,
+        Bivio::Auth::RealmType->get_list))),
 };
 
 =head1 METHODS
