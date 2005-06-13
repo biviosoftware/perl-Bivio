@@ -53,8 +53,8 @@ Returns PRIMARY, BILL_TO and SHIP_TO.
 sub get_delegate_info {
     return [
 	PRIMARY => [1],
-        BILL_TO => [2],
-        SHIP_TO => [3],
+        BILL_TO => [2, 'Bill To Address'],
+        SHIP_TO => [3, 'Shipping Address'],
     ];
 }
 
