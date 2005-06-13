@@ -58,12 +58,11 @@ CREATE TABLE item_t (
 /
 
 CREATE TABLE order_t (
-  realm_id NUMERIC(18),
+  order_id NUMERIC(18),
   cart_id NUMERIC(18) NOT NULL,
-  ec_payment_id NUMERIC(18) NOT NULL,
   bill_to_name VARCHAR(100) NOT NULL,
   ship_to_name VARCHAR(100) NOT NULL,
-  CONSTRAINT order_t1 PRIMARY KEY(realm_id)
+  CONSTRAINT order_t1 PRIMARY KEY(order_id)
 )
 /
 
