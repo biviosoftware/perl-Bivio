@@ -83,26 +83,12 @@ ALTER TABLE item_t
 -- order_t
 --
 ALTER TABLE order_t
-  add constraint order_t2
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
-/
-ALTER TABLE order_t
   ADD CONSTRAINT order_t3
   FOREIGN KEY (cart_id)
   REFERENCES cart_t(cart_id)
 /
 CREATE INDEX order_t4 on order_t (
   cart_id
-)
-/
-ALTER TABLE order_t
-  add constraint order_t5
-  foreign key (ec_payment_id)
-  references ec_payment_t(ec_payment_id)
-/
-CREATE INDEX order_t6 on order_t (
-  ec_payment_id
 )
 /
 
