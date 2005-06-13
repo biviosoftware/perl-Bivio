@@ -40,10 +40,10 @@ use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Die;
 use Bivio::IO::Trace;
-use Bivio::SQL::ListQuery;
 use Bivio::Type::Date;
 use Bivio::Type::ECPaymentMethod;
 use Bivio::Type::ECPaymentStatus;
+use Bivio::Type::ECPointOfSale;
 use Bivio::Type::ECService;
 use Bivio::Type::Location;
 
@@ -263,32 +263,30 @@ sub _get_expiration_date {
 sub _save_order {
     my($self) = @_;
     my($cart) = $self->new_other('Cart')->load_from_cookie;
-    # create the order (in the club realm)
-    my($club) = $self->new_other('Club')->create({});
     my($order) = $self->new_other('Order')->create({
-        realm_id => $self->new_other('RealmOwner')->create({
-            display_name => 'Order ' . $club->get('club_id'),
-            name => 'o' . $club->get('club_id'),
-            realm_id => $club->get('club_id'),
-            realm_type => Bivio::Auth::RealmType->ORDER,
-        })->get('realm_id'),
-	cart_id => $cart->get('cart_id'),
-        ec_payment_id => $self->new_other('ECCreditCardPayment')->create({
-            realm_id => $club->get('club_id'),
-            ec_payment_id => $self->new_other('ECPayment')->create({
-                realm_id => $club->get('club_id'),
-                amount => $cart->get_total,
-                method => Bivio::Type::ECPaymentMethod->CREDIT_CARD,
-                status => Bivio::Type::ECPaymentStatus->TRY_CAPTURE,
-                service => Bivio::Type::ECService->ANIMAL,
-                point_of_sale => Bivio::Type::ECPointOfSale->INTERNET,
-            })->get('ec_payment_id'),
-            card_name => $self->get('Order.bill_to_name'),
-            card_expiration_date => _get_expiration_date($self),
-            card_zip => $self->get('Address.zip'),
-            %{$self->get_model_properties('ECCreditCardPayment')},
+        cart_id => $cart->get('cart_id'),
+        %{$self->get_model_properties('Order')},
+    });
+    $self->new_other('RealmOwner')->create({
+        display_name => 'Order ' . $order->get('order_id'),
+        name => 'o' . $order->get('order_id'),
+        realm_type => Bivio::Auth::RealmType->ORDER,
+        realm_id => $order->get('order_id'),
+    });
+    $self->new_other('ECCreditCardPayment')->create({
+        realm_id => $order->get('order_id'),
+        ec_payment_id => $self->new_other('ECPayment')->create({
+            realm_id => $order->get('order_id'),
+            amount => $cart->get_total,
+            method => Bivio::Type::ECPaymentMethod->CREDIT_CARD,
+            status => Bivio::Type::ECPaymentStatus->TRY_CAPTURE,
+            service => Bivio::Type::ECService->ANIMAL,
+            point_of_sale => Bivio::Type::ECPointOfSale->INTERNET,
         })->get('ec_payment_id'),
-	%{$self->get_model_properties('Order')},
+        card_name => $self->get('Order.bill_to_name'),
+        card_expiration_date => _get_expiration_date($self),
+        card_zip => $self->get('Address.zip'),
+        %{$self->get_model_properties('ECCreditCardPayment')},
     });
 
     # create the entity address/phone for billing/shipping
@@ -296,7 +294,7 @@ sub _save_order {
 
         foreach my $model (qw(Address Phone)) {
             $self->new_other($model)->create({
-                realm_id => $order->get('realm_id'),
+                realm_id => $order->get('order_id'),
                 location => Bivio::Type::Location->from_name($location),
                 %{$self->get_model_properties($model
                     . ($location eq 'BILL_TO' ? '' : '_2'))},
@@ -305,12 +303,12 @@ sub _save_order {
     }
     # grant the user access to view the order
     $self->new_other('RealmUser')->create({
-        realm_id => $order->get('realm_id'),
+        realm_id => $order->get('order_id'),
         user_id => $self->get_request->get('auth_user_id'),
         role => Bivio::Auth::Role->MEMBER,
     });
     _decrease_inventory($self);
-    return $order->get('realm_id');
+    return $order->get('order_id');
 }
 
 =head1 COPYRIGHT
