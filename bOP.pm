@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    GENERAL
+  * Bivio::IO::ClassLoader dump value of "maps" config in handle_config
+    die
+
+  Revision 2.77  2005/06/09 23:27:33  moeller
+  * Bivio::Agent::Request
+    can_user_execute_task() returns true if the task permissions
+      include ANYBODY or ANY_USER
+    removed references to CLUB realm type
+    _get_realm() now allows any realm type
+  * Bivio::Auth::PermissionSet includes() now accepts one or more
+      permission names
   * Bivio::Biz::Model::RealmUser added update_role()
       to delete/recreate RealmUser with a new role
   * PetShop application uses a custom realm type ORDER
