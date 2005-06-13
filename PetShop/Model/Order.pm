@@ -55,16 +55,12 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'order_t',
 	columns => {
-            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+            order_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    cart_id => ['Cart.cart_id', 'NOT_NULL'],
-            ec_payment_id => ['ECPayment.ec_payment_id', 'NOT_NULL'],
             bill_to_name => ['Line', 'NOT_NULL'],
 	    ship_to_name => ['Line', 'NOT_NULL'],
 	},
-	auth_id => 'realm_id',
-        other => [
-            [qw(ec_payment_id ECPayment.ec_payment_id)],
-        ],
+	auth_id => 'order_id',
     };
 }
 
