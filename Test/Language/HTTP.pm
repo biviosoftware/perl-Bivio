@@ -701,9 +701,10 @@ sub verify_table {
     my($columns) = shift(@$expect);
     Bivio::Die->die('missing rows values') unless int(@$expect);
 
+    my($header_col) = shift(@$columns);
     foreach my $expect_row (@$expect) {
-	my($row) = _find_row($self, $table_name, $columns->[0],
-            $expect_row->[0]);
+	my($row) = _find_row($self, $table_name, $header_col,
+            shift(@$expect_row));
 	my($diff) = Bivio::IO::Ref->nested_differences(
 	    $expect_row,
 	    [map({
