@@ -11,6 +11,9 @@ Bivio::Test::Widget->unit(
     },
     [
 	['txt', '#anchor'] => '<a target="_top" href="#anchor">txt</a>',
+	['txt', '#', 'foo'] => '<a target="_top" class="foo" href="#">txt</a>',
+	['txt', '#', {id => 'id6'}]
+	    => '<a target="_top" id="id6" href="#">txt</a>',
 	['txt', '#', {link_target => [sub {''}]}] => '<a href="#">txt</a>',
 	['txt', [sub {'/url'}]]
 	    => '<a target="_top" href="/url">txt</a>',

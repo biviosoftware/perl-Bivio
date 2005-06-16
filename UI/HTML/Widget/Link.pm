@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Link;
 use strict;
@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget::ControlBase>
+L<Bivio::UI::HTML::Widget::ControlBase>
 
 =cut
 
-use Bivio::UI::Widget::ControlBase;
-@Bivio::UI::HTML::Widget::Link::ISA = ('Bivio::UI::Widget::ControlBase');
+use Bivio::UI::HTML::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::Link::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -41,6 +41,10 @@ an C<HREF> attribute.
 
 Arbitrary HTML attributes to be applied to the begin tag.  Must begin
 with leading space.
+
+=item class : string []
+
+Class attribute.
 
 =item control : any
 
@@ -98,10 +102,13 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
+=head2 static new(any value, any href, any class, hash_ref attributes) : Bivio::UI::HTML::Widget::Link
+
 =head2 static new(any value, any href, hash_ref attributes) : Bivio::UI::HTML::Widget::Link
 
-Creates a C<Link> widget with attributes I<value> and I<href>.
-And optionally, set extra I<attributes>.
+Creates a C<Link> widget with attributes I<value> and I<href>.  I<class> is
+optionally a widget value, constant, or widget.  And optionally, set extra
+I<attributes>.
 
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Link
 
@@ -124,6 +131,7 @@ Render the link.
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     $$buffer .= '<a' . $_VS->vs_link_target_as_html($self, $source);
+    $self->SUPER::control_on_render($source, $buffer);
     $self->unsafe_render_attr('attributes', $source, $buffer);
     my($n) = '';
     $$buffer .= ' name="' . Bivio::HTML->escape($n) . '"'
@@ -188,17 +196,16 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    my(undef, $value, $href, $attributes) = @_;
+    my($proto, $value, $href) = splice(@_, 0, 3);
 #TODO: generalize, and possibly couple with as_string
     return '"value" must be defined'
 	unless defined($value);
     return '"href" must be defined'
 	unless defined($href);
-    return {
+    return $proto->SUPER::internal_new_args({
 	value => $value,
 	href => $href,
-	($attributes ? %$attributes : ()),
-    };
+    }, @_);
 }
 
 #=PRIVATE METHODS
@@ -233,7 +240,7 @@ sub _render_href {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
