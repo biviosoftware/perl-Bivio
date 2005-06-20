@@ -401,8 +401,8 @@ the model could not be loaded.
 =cut
 
 sub get_model {
-    my($self) = shift;
-    my($model) = $self->unsafe_get_model(@_);
+    my($self) = @_;
+    my($model) = shift->unsafe_get_model(@_);
     $self->throw_die('MODEL_NOT_FOUND', {
 	message => 'unable to load model', entity => $model})
 	    unless $model->is_loaded;

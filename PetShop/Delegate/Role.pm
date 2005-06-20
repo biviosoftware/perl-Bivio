@@ -51,9 +51,8 @@ Return test roles.
 =cut
 
 sub get_delegate_info {
-    my($proto) = @_;
     return [
-	@{$proto->SUPER::get_delegate_info},
+	@{shift->SUPER::get_delegate_info(@_)},
 	TEST_ROLE1 => [21],
 	TEST_ROLE2 => [22],
     ];
