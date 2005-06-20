@@ -333,17 +333,28 @@ and current I<auth_user>.
 
 sub can_user_execute_task {
     my($self, $task_name) = @_;
+
     my($task) = Bivio::Agent::Task->get_by_id(
         Bivio::Agent::TaskId->from_any($task_name));
     return 1 if Bivio::Auth::PermissionSet->includes(
         $task->get('permission_set'), qw(ANYBODY ANY_USER));
 
-    # If we can't get a realm, then can't execute task
+    # try an obvious realm
     my($realm) = $self->get_realm_for_task($task->get('id'));
-    return 0 unless $realm;
+    return $realm->can_user_execute_task($task, $self)
+	if $realm;
 
-    # Execute in this realm?
-    return $realm->can_user_execute_task($task, $self);
+    foreach my $user_realm (values(%{$self->get('user_realms')})) {
+        next unless $user_realm->{'RealmOwner.realm_type'}
+	    eq $task->get('realm_type');
+	my($realm) = Bivio::Auth::Realm->new(
+        Bivio::Biz::Model->new($self, 'RealmOwner')->unauth_load_or_die({
+            realm_id => $user_realm->{'RealmUser.realm_id'},
+        }));
+	return 1 if $realm->can_user_execute_task($task, $self);
+    }
+
+    return 0;
 }
 
 =for html <a name="clear_current"></a>
@@ -777,11 +788,13 @@ sub get_realm_for_task {
     my($self, $task_id) = @_;
     # If is current task, just return current realm.
     my($realm) = $self->get('auth_realm');
+    _trace('current auth_realm is: ', $realm->get('id'))
+	if $_TRACE;
     return $realm if $task_id == $self->get('task_id');
     my($task) = Bivio::Agent::Task->get_by_id($task_id);
     my($trt) = $task->get('realm_type');
     return $realm if $trt == $realm->get('type');
-    # Else, different realm type, look up
+
     return _get_realm($self, $trt);
 }
 
@@ -1306,23 +1319,6 @@ sub _get_realm {
 #TODO: Distinguish between auth_user case and other cases
 	return undef;
     }
-    my($role) = Bivio::Auth::Role->UNKNOWN->as_int;
-    my($realm_id);
-
-    foreach my $realm (values(%{$self->get('user_realms')})) {
-        next unless $realm->{'RealmOwner.realm_type'} eq $realm_type;
-        my($rr) = $realm->{'RealmUser.role'}->as_int;
-#TODO: Roles aren't necessarily ordered
-        next unless  $rr > $role;
-        $realm_id = $realm->{'RealmUser.realm_id'};
-        $role = $rr;
-    }
-    return undef unless $realm_id;
-
-    return Bivio::Auth::Realm->new(
-        Bivio::Biz::Model->new($self, 'RealmOwner')->unauth_load_or_die({
-            realm_id => $realm_id,
-        }));
 }
 
 # _get_role(Bivio::Agent::Request self, string realm_id) : Bivio::Auth::Role
