@@ -11,7 +11,7 @@ Bivio::UI::HTML::Widget::ControlBase - adds a class and id attributes
 
 =head1 RELEASE SCOPE
 
-Bivio
+bOP
 
 =head1 SYNOPSIS
 
