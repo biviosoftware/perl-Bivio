@@ -101,10 +101,11 @@ sub initialize_permissions {
         # Skip role if already cloned
         next if $self->unauth_load(realm_id => $realm_id, role => $role);
 
+	$self->unauth_load(realm_id => $type_id, role => $role);
+	next if !$self->is_loaded();
+
         $self->create({realm_id => $realm_id, role => $role,
-            permission_set => $self->unauth_load_or_die(
-		    realm_id => $type_id, role => $role)
-	            ->get('permission_set')});
+            permission_set => $self->get('permission_set')});
     }
     return;
 }
