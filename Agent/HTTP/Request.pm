@@ -174,10 +174,12 @@ sub client_redirect {
 		$new_path_info)
 		if $new_task eq $self->get('task_id')
 		    || !Bivio::UI::Task->has_uri($new_task, $self);
-
+        _trace('current task: ', $self->get('task_id')->get_name,
+            ', new task: ', $new_task->get_name)
+            if $_TRACE && ! $new_realm;
 	$uri = $self->format_uri($new_task, $new_query,
 		defined($new_realm) ? $new_realm
-		: $self->get_realm_for_task($new_task),
+		: $self->internal_get_realm_for_task($new_task),
 		$new_path_info, $no_context);
     }
     else {
