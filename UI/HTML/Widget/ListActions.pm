@@ -64,6 +64,9 @@ or a widget value which produces a URI.
 The fourth optional element is a control.  If the control returns
 true, the action is rendered.
 
+The fifth optional element is a widget value which returns the realm
+for the task.
+
 =back
 
 =cut
@@ -118,6 +121,7 @@ sub initialize {
     $fields->{values} = [];
     my($target) = $_VS->vs_link_target_as_html($self);
     my($font) = $self->get_or_default('link_font', 'list_action');
+
     foreach my $v (@{$self->get('values')}) {
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
@@ -127,6 +131,7 @@ sub initialize {
 	    : (method => Bivio::Biz::QueryType->from_any(
 		    $v->[2] || 'THIS_DETAIL')),
 	    control => $v->[3],
+            realm => $v->[4],
 	});
     }
     return;
@@ -167,17 +172,15 @@ sub render {
     my($info) = $req->unsafe_get($self);
     unless ($info) {
 	$info = [];
-	# Check each of the actions for execute privs and if so push on $info
+
 	foreach my $v (@$values) {
-	    next unless $req->can_user_execute_task($v->{task_id});
 	    push (@$info, {
 		value => $v,
 		$v->{method}
-		? (uri => $req->format_stateless_uri($v->{task_id}))
-		: (),
+		    ? (uri => $req->format_stateless_uri($v->{task_id}))
+		    : (),
 	    });
 	}
-
 	# Only compute once
 	$req->put($self => $info);
     }
@@ -187,7 +190,13 @@ sub render {
     foreach my $v (@$info) {
 	my($v2) = $v->{value};
 	next if $v2->{control}
-		&& !$source->get_widget_value(@{$v2->{control}});
+            && !$source->get_widget_value(@{$v2->{control}});
+        next unless $req->can_user_execute_task($v2->{task_id},
+            $v2->{realm}
+                ? (ref($v2->{realm})
+                    ? $source->get_widget_value($v2->{realm})
+                    : $v2->{realm})
+                : ());
 	$$buffer .= $sep
 	    . $v2->{prefix}
 	    . ($v2->{format_uri}
