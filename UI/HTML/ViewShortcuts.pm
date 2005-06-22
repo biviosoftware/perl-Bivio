@@ -44,11 +44,45 @@ Some of these routines are deprecated.
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::IO::ClassLoader;
+use Bivio::UI::HTML;
 #NOTE: Do not import any widgets here, use _use().
 
 #=VARIABLES
 
 =head1 METHODS
+
+=for html <a name="vs_acknowledgement"></a>
+
+=head2 static vs_acknowledgement() : Bivio::UI::Widget
+
+=head2 static vs_acknowledgement(boolean die_if_not_found) : Bivio::UI::Widget
+
+Display acknowledgement, if it exists.  Sets row_control on the widget.
+Dies if die_if_not_found is specified and the acknowledgement is missing.
+
+=cut
+
+sub vs_acknowledgement {
+    my($proto, $die_if_not_found) = @_;
+    return $proto->vs_call('Join', [
+        '<p class="acknowledgement">',
+        [sub {
+             my($req) = shift->get_request;
+             return __PACKAGE__->vs_call('String',
+                 __PACKAGE__->vs_call('Prose',
+                     Bivio::UI::Text->get_value('acknowledgement',
+                         $req->get_nested('Action.Acknowledgement', 'label'),
+                         $req)),
+             );
+         }],
+        '</p>',
+    ], $die_if_not_found
+        ? ()
+        : {
+            row_control =>
+                [['->get_request'], '->unsafe_get', 'Action.Acknowledgement'],
+        });
+}
 
 =for html <a name="vs_blank_cell"></a>
 
