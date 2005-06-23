@@ -897,25 +897,24 @@ sub internal_redirect_realm {
 		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
     }
     else {
-	# Only set realm if type is different
-	my($ar) = $self->get('auth_realm');
-	unless ($ar->get('type') eq $trt) {
-	    $new_realm = $self->internal_get_realm_for_task($new_task);
-	    # No new realm, do something reasonable
-	    unless (defined($new_realm)) {
-		unless ($trt eq Bivio::Auth::RealmType->USER) {
-		    # GO TO HOME instead of a club.  He can choose
-		    # realm chooser
-		    $self->client_redirect(Bivio::Agent::TaskId::USER_HOME())
-		}
+        $new_realm = $self->internal_get_realm_for_task($new_task);
 
-		# Need to login as a user.
-		$self->server_redirect(Bivio::Agent::TaskId::LOGIN());
-	    }
+        # No new realm, do something reasonable
+        unless (defined($new_realm)) {
+            # Need to login as a user.
+            $self->server_redirect(Bivio::Agent::TaskId->LOGIN)
+                if $trt eq Bivio::Auth::RealmType->USER;
+
+            # GO TO HOME instead of a club.  He can choose realm chooser
+            $self->client_redirect(Bivio::Agent::TaskId->USER_HOME)
 	}
     }
     # Change realms before formatting uri
     $self->set_realm($new_realm) if $new_realm;
+    $self->put(
+        task_id => $new_task,
+        task => Bivio::Agent::Task->get_by_id($new_task),
+    );
     return;
 }
 
@@ -960,10 +959,7 @@ sub internal_server_redirect {
 
     # Set the realm AND task, because they MUST match.
     # This matches what the Dispatcher will do.
-    #NOTE: Coupling with Dispatcher::process_request.
     $self->internal_redirect_realm($new_task, $new_realm);
-    $self->put(task_id => $new_task,
-	    task => Bivio::Agent::Task->get_by_id($new_task));
 
     if (defined($new_form) && !ref($new_form)) {
 	# Handle overload for client_redirect
