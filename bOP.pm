@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::ListActions
+    added forth argument for the realm for the task,
+    avoid deprecated warning when linking to a different realm
+
+  Revision 2.79  2005/06/20 17:56:38  moeller
   * Bivio::Test::Language added test_script()
   * Bivio::UI::HTML::Widget::Link subclassed to use new ControlBase which
     will add in class, id
