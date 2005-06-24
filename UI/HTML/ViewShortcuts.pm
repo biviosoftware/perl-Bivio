@@ -171,6 +171,22 @@ sub vs_fe {
     return Bivio::HTML->escape(shift->SUPER::vs_fe(@_));
 }
 
+=for html <a name="vs_task_link"></a>
+
+=head2 vs_task_link(string text, string task) : Bivio::UI::HTML::Widget::Link
+
+Returns a link widget for the specified task. Only renders if the current
+user can execute the task.
+
+=cut
+
+sub vs_task_link {
+    my($proto, $text, $task) = @_;
+    return $proto->vs_call('Link', $text, $task, {
+        control => $task,
+    });
+}
+
 #TODO: Why doesn't this work right?
 #=for html <a name="vs_display"></a>
 #
