@@ -519,7 +519,14 @@ sub _init_column_classes {
     foreach my $c ('auth_id', 'parent_id', 'date') {
 	$attrs->{$c} = $attrs->{$c}->[0];
     }
-    return undef unless %{$attrs->{models}} && $attrs->{want_select};
+
+    # order_by may be empty and stays in specified order.
+    my($i) = 0;
+    foreach my $c (@{$attrs->{order_by}}) {
+	$c->{order_by_index} = $i++;
+    }
+    return undef
+	unless %{$attrs->{models}} && $attrs->{want_select};
 
     # primary_key must be at least one column if there are models.
     Bivio::Die->die('no primary_key fields')
@@ -533,12 +540,6 @@ sub _init_column_classes {
     # Ensure that (qual) columns defined for all (qual) models and their
     # primary keys and initialize primary_key_map.
     __PACKAGE__->init_model_primary_key_maps($attrs);
-
-    # order_by may be empty and stays in specified order.
-    my($i) = 0;
-    foreach my $c (@{$attrs->{order_by}}) {
-	$c->{order_by_index} = $i++;
-    }
 
     return $where;
 }

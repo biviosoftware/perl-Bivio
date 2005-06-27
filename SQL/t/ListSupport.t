@@ -345,3 +345,17 @@ t(Bivio::IO::Ref->nested_equals($rows, [
 	'TListT1.gender' => Bivio::Type::Gender->from_int($_)
     }, 1, 2),
 ]), 1);
+Bivio::SQL::ListSupport->new({
+    version => 1,
+    date => 'TListT1.date_time',
+    want_select => 0,
+    order_by => [
+	{
+	    name => 'TListT1.date_time',
+	    sort_order => 1,
+	},
+    ],
+    primary_key => [
+	'TListT1.date_time',
+    ],
+});
