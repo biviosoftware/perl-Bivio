@@ -90,6 +90,25 @@ sub get_dbi_prefix {
     return 'dbi:Pg:dbname=';
 }
 
+=for html <a name="internal_execute"></a>
+
+=head2 internal_execute()
+
+Ignores annoying warnings.
+
+=cut
+
+sub internal_execute {
+    my($prev) = $SIG{__WARN__};
+    local($SIG{__WARN__}) = sub {
+	my($msg) = @_;
+	return
+	    if $msg =~ /NOTICE:\s+CREATE TABLE . PRIMARY KEY will create implicit index/;
+	return $prev->(@_);
+    };
+    return shift->SUPER::internal_execute(@_);
+}
+
 =for html <a name="internal_fixup_sql"></a>
 
 =head2 internal_fixup_sql(string sql) : string
@@ -144,8 +163,6 @@ undef if the message is not translatable.
 
 sub internal_get_error_code {
     my($self, $die_attrs) = @_;
-
-    # Constraint violation?
     if ($die_attrs->{dbi_errstr} =~
 	    /Cannot insert a duplicate key into unique index (\w+)/i
         # Postgres 7.4.1
@@ -155,7 +172,7 @@ sub internal_get_error_code {
     }
     $die_attrs->{dbi_errstr} =~
 	s/(Unterminated quoted string)/$1; There is a null character in one of the parameters/;
-    return $self->SUPER::internal_get_error_code($die_attrs);
+    return shift->SUPER::internal_get_error_code(@_);
 }
 
 =for html <a name="internal_get_retry_sleep"></a>
@@ -297,17 +314,14 @@ sub _fixup_outer_join {
 sub _interpret_constraint_violation {
     my($self, $attrs, $constraint) = @_;
     my($die_code);
-
     # Ignore errors, die_code will be undef in this case and result in a
     # server error
     Bivio::Die->eval(sub {
-
-	# rollback because Postgres won't let other queries on this txn
+        # rollback because Postgres won't let other queries on this txn
 	$self->rollback;
 
 	# Try to find the constraint columns (assumes it is an index)
-	my($statement) = $self->internal_get_dbi_connection()
-		->prepare(<<"EOF");
+	my($statement) = $self->internal_get_dbi_connection()->prepare(<<"EOF");
             SELECT class2.relname, attname
             FROM pg_class class1, pg_class class2, pg_index, pg_attribute
             WHERE class1.relfilenode=pg_attribute.attrelid
