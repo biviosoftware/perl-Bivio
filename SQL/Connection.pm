@@ -29,7 +29,7 @@ of this module maintains one connection to the database at all times.  They
 will reset the connection if the database the connection is lost.
 
 B<Bivio::Agent::Task> depends on the fact that this is the only module
-which modifies the database.
+which modifies the database. 
 
 =cut
 
