@@ -155,13 +155,10 @@ undef if the message is not translatable.
 
 sub internal_get_error_code {
     my($self, $die_attrs) = @_;
-
-    # Constraint violation?
     if ($die_attrs->{dbi_errstr} =~ /constraint \((\w+)\.(\w+)\) violated/i) {
 	return _interpret_constraint_violation($self,
 		$die_attrs, uc($1), uc($2));
     }
-
     my($err) = $die_attrs->{dbi_err};
     # If we don't have a die_code, map it simply
     unless ($err) {
@@ -181,7 +178,7 @@ sub internal_get_error_code {
 	delete($die_attrs->{code});
 	return $result;
     }
-    return $self->SUPER::internal_get_error_code($die_attrs);
+    return shift->SUPER::internal_get_error_code(@_);
 }
 
 =for html <a name="internal_get_retry_sleep"></a>
@@ -209,7 +206,6 @@ Returns the next primary id sequence number for the specified table.
 
 sub next_primary_id {
     my($self, $table_name, $die) = @_;
-
     my($sql) = 'select '.substr($table_name, 0, -2).'_s.nextval from dual';
     return $self->execute($sql, [], $die)->fetchrow_array;
 }
@@ -228,10 +224,7 @@ sub _interpret_constraint_violation {
     # Ignore errors, die_code will be undef in this case and result in a
     # server error
     Bivio::Die->eval(sub {
-
-	# Try to find the constraint columns
-	my($statement) = $self->internal_get_dbi_connection()
-		->prepare(<<"EOF");
+	my($statement) = $self->internal_get_dbi_connection()->prepare(<<"EOF");
 	    SELECT all_cons_columns.table_name,
 		    all_cons_columns.column_name
 	    FROM all_cons_columns
