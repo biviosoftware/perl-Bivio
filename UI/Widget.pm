@@ -43,11 +43,10 @@ placed on what a widget can render.  There are three main methods:
 
 =item render
 
-converts attributes and values into the target format.  Currently,
-this is html, but could easily be gif, pdf, or javascript.  Widget
-values are retrieved from a I<source> via the call
-I<get_widget_value>.   This is the only method that a I<source> needs
-to provide to the widget.  The interface is defined in
+converts attributes and values into the target format.  Currently, this can be
+html, gif, pdf, or javascript.  Widget values are retrieved from a I<source>
+via the call I<get_widget_value>.  This is the only method that a I<source>
+needs to provide to the widget.  The interface is defined in
 L<Bivio::UI::WidgetValueSource|Bivio::UI::WidgetValueSource>.
 
 =back
