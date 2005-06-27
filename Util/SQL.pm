@@ -70,6 +70,8 @@ EOF
 
 #=IMPORTS
 use Bivio::IO::Config;
+use Bivio::IO::File;
+use Bivio::IO::Ref;
 use Bivio::SQL::Connection;
 use Bivio::Type::PrimaryId;
 
@@ -82,6 +84,30 @@ Bivio::IO::Config->register(my $_CFG = {
 =head1 METHODS
 
 =cut
+
+=for html <a name="backup_model"></a>
+
+=head2 backup_model(string model, string order_by)
+
+Backs up the model, and prints a message stating where it was backed up to.
+
+=cut
+
+sub backup_model {
+    my($self, $model, $order_by) = @_;
+    $self->print(
+	"$model written to ",
+	Bivio::IO::File->write(
+	    "$model-" . Bivio::Type::DateTime->local_now_as_file_name . '.pl',
+	    Bivio::IO::Ref->to_string(
+		Bivio::Biz::Model->new($self->get_request, $model)
+		    ->map_iterate(undef, 'unauth_iterate_start', $order_by),
+	    ),
+	),
+	"\n",
+    );
+    return;
+}
 
 =for html <a name="create_db"></a>
 
@@ -159,10 +185,10 @@ sub destroy_db {
 
 =for html <a name="drop"></a>
 
-=head2 drop()
+=head2 drop(string sql)
 
-Reads I<input> and executes "drop I<object>" where I<object> may
-be a table, index, sequence, etc.  The values are parsed from
+Parses I<sql> (default: reads I<input>) and executes "drop I<object>" where
+I<object> may be a table, index, sequence, etc.  The values are parsed from
 I<input> which must be of the form:
 
    create table ....
@@ -180,8 +206,8 @@ Ignores "does not exist" errors.
 =cut
 
 sub drop {
-    my($self) = @_;
-    foreach my $s (_parse($self)) {
+    my($self, $sql) = @_;
+    foreach my $s (_parse($self, $sql)) {
 	next unless $s =~ /^(\s*)create(?:\s+unique)?\s+(\w+\s+\w+)\s+/is
             || $s =~ /^\s*(alter\s+table\s*\w+\s*)add\s+(constraint\s+\w+)\s+/is
             || $s =~ /^(\s*)create(\s+function\s[\S]+)/is;
@@ -197,16 +223,16 @@ sub drop {
 
 =for html <a name="drop_and_run"></a>
 
-=head2 drop_and_run()
+=head2 drop_and_run(string sql)
 
 Executes L<drop|"drop"> and then L<run|"run"> with same input.
 
 =cut
 
 sub drop_and_run {
-    my($self) = @_;
-    $self->drop;
-    return $self->run;
+    my($self, $sql) = @_;
+    $self->drop($sql);
+    return $self->run($sql);
 }
 
 =for html <a name="export_db"></a>
@@ -333,6 +359,43 @@ $_ = <<'}'; # emacs
 sub internal_upgrade_db {
 }
 
+=for html <a name="internal_upgrade_db_multiple_realm_roles"></a>
+
+=head2 internal_upgrade_db_multiple_realm_roles()
+
+Changes schema to upgrade multiple realm roles and drops honorifics.
+
+=cut
+
+sub internal_upgrade_db_multiple_realm_roles {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE realm_role_t
+  DROP CONSTRAINT realm_role_t4
+;
+ALTER TABLE realm_user_t
+  DROP CONSTRAINT realm_user_t6
+;
+ALTER TABLE realm_user_t
+  DROP CONSTRAINT realm_user_t1
+;
+ALTER TABLE realm_user_t
+  ADD CONSTRAINT realm_user_t1
+  PRIMARY KEY(realm_id, user_id, role)
+;
+ALTER TABLE realm_owner_t
+  DROP CONSTRAINT realm_owner_t4
+;
+ALTER TABLE realm_user_t
+  DROP CONSTRAINT realm_user_t7
+;
+ALTER TABLE realm_user_t
+  DROP COLUMN honorific
+;
+EOF
+    return;
+}
+
 =for html <a name="realm_role_config"></a>
 
 =head2 realm_role_config() : array_ref
@@ -414,18 +477,36 @@ sub reinitialize_sequences {
     return $res;
 }
 
+=for html <a name="restore_model"></a>
+
+=head2 restore_model(string model, string filename)
+
+Restores I<model> table with I<filename>.  Rows are not deleted first.
+
+=cut
+
+sub restore_model {
+    my($self, $model, $filename) = @_;
+    my($m) = Bivio::Biz::Model->new($self->get_request, $model);
+    foreach my $r (@{do($filename)}) {
+	$m->create($r);
+    }
+    $self->print("Restored $model\n");
+    return;
+}
+
 =for html <a name="run"></a>
 
-=head2 run()
+=head2 run(string sql)
 
-Runs SQL read from I<input>, terminating on errors.  Any query results are
-thrown away.
+Parses I<sql> (default: reads I<input>), terminating on errors.  Any query
+results are thrown away.
 
 =cut
 
 sub run {
-    my($self) = @_;
-    foreach my $s (_parse($self)) {
+    my($self, $sql) = @_;
+    foreach my $s (_parse($self, $sql)) {
 	Bivio::SQL::Connection->execute($s);
     }
     return;
@@ -457,12 +538,13 @@ sub run_command {
 
 =head2 upgrade_db()
 
-Handles common setup for database upgrades.  Calls internal_upgrade_db.
+Handles common setup for database upgrades.  Calls
+L<internal_upgrade_db|"internal_upgrade_db">.
 
 =cut
 
 sub upgrade_db {
-    my($self) = @_;
+    my($self, $method) = @_;
     my($req) = $self->get_request();
 
     # want to avoid accidentally running this script
@@ -541,7 +623,7 @@ sub vacuum_db_continuously {
     return;
 }
 
-#=PRIVATE METHODS
+#=PRIVATE SUBROUTINES
 
 # _assert_postgres(self) : hash_ref
 #
@@ -569,21 +651,22 @@ sub _ddl_files {
     return $f;
 }
 
-# _parse(self) : array
+# _parse(self, string sql) : array
 #
 # Parses input into SQL statements.  Dies if there as an extra statement.
+# If $sql not supplied, calls I<read_input>
 #
 sub _parse {
-    my($self) = @_;
+    my($self, $sql) = @_;
     $self->setup;
     my(@res);
     my($s) = '';
-    foreach my $line (split(/\n/, ${$self->read_input})) {
+    foreach my $line (split(/\n/, $sql || ${$self->read_input})) {
 	# Skip comments and blank lines
 	next if $line =~ /^\s*--|^\s*$/s;
 
-	# Execute statement if '/' found
-	if ($line =~ /^\s*\/\s*$/s) {
+	# Execute statement if '/' or ';' found
+	if ($line =~ /^\s*[\/;]\s*$/s) {
 	    push(@res, $s);
 	    $s = '';
 	    next;
