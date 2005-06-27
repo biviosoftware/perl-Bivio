@@ -106,10 +106,11 @@ Sometimes it is difficult to specify a return result.  For example, in
 L<Bivio::SQL::Connection|Bivio::SQL::Connection>, the result is often a
 C<DBI::st>.  The result can't be compared structurally.
 
-You can specify a I<check_return> option to L<new|"new"> or at the object or
-method level.  You can also specify a I<class_name> to require.  When
-I<class_name> implements C<new>, it will be called with the I<object> params.
-Here's an example with global I<check_return> and the implicit call to I<new>:
+You can specify a I<check_return> or I<compute_return> option to L<new|"new">
+or at the object or method level.  You can also specify a I<class_name> to
+require.  When I<class_name> implements C<new>, it will be called with the
+I<object> params.  Here's an example with global I<check_return> and the
+implicit call to I<new>:
 
     Bivio::Test->new->({
         class_name => 'Bivio::Math::EMA',
@@ -181,6 +182,10 @@ unless already set.
 =item compute_params : code_ref
 
 See L<compute_params|"compute_params">
+
+=item compute_return : code_ref
+
+See L<compute_return|"compute_return">.
 
 =item create_object : code_ref
 
@@ -299,7 +304,7 @@ use Bivio::Test::Case;
 my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my(@_CALLBACKS) = qw(check_return check_die_code compute_params create_object);
+my(@_CALLBACKS) = qw(check_return check_die_code compute_params compute_return create_object);
 my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name want_scalar);
 my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', @_PLAIN_OPTIONS);
 my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
@@ -417,6 +422,22 @@ B<Called as a I<sub>, not a method>.
 
 $_ = <<'}'; # emacs
 sub compute_params {
+}
+
+=for html <a name="compute_return"></a>
+
+=head2 callback compute_return(Bivio::Test::Case case, array_ref actual_return, array_ref expect) : array_ref
+
+Returns a replacement for I<actual_return> to be passed to I<check_return>.
+
+The sub always returns a valid array_ref.
+
+B<Called as a I<sub>, not a method>.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub compute_return {
 }
 
 =for html <a name="default_create_object"></a>
@@ -702,7 +723,7 @@ sub _compile_object {
     return;
 }
 
-# _compile_options(hash_ref state, string which, any entity_or_hash) : 
+# _compile_options(hash_ref state, string which, any entity_or_hash) : hash_ref
 #
 # which is object, method, or case.  If entity_or_hash is a hash, the hash
 # is parsed for which and the attributes are copied.  Any extra attributes
@@ -817,6 +838,29 @@ sub _eval {
     return;
 }
 
+# _eval_compute_return(Bivio::Test::Case case, any_ref return) : string
+#
+# Calls compute_return if there is a compute_return on the case, and
+# $return is an array_ref.
+#
+sub _eval_compute_return {
+    my($case, $return) = @_;
+    return undef
+	unless ref($$return) eq 'ARRAY' && $case->unsafe_get('compute_return');
+    my($err);
+    my($new_return) = _eval_custom(
+	$case,
+	'compute_return',
+	[$$return, $case->get('expect')],
+	\$err,
+    );
+    _trace($err || $new_return) if $_TRACE;
+    return $err
+	unless $new_return;
+    $$return = $new_return;
+    return undef;
+}
+
 # _eval_custom(Bivio::Test::Case case, string which, array_ref params, string_ref err) : any
 #
 # Returns result of custom call $which (check_return or compute_params).
@@ -830,7 +874,7 @@ sub _eval_custom {
     my($res);
     my($die) = Bivio::Die->catch(sub {
 	$res = $case->get($which)->($case, @$params);
-	return;
+	return undef;
     });
     if ($die) {
 	$$err = "Error in custom $which: " . $die->as_string;
@@ -842,7 +886,10 @@ sub _eval_custom {
     elsif ($which =~ /object/ && !UNIVERSAL::isa($res, 'UNIVERSAL')) {
 	$$err = 'a subclass of UNIVERSAL (forgot to "use"?)';
     }
-    elsif ($which =~ /expect|return/
+    elsif ($which eq 'compute_return' && ref($res) ne 'ARRAY') {
+	$$err = 'an array_ref';
+    }
+    elsif ($which =~ /expect|check_return/
 	&& (ref($res) ? ref($res) !~ /^(?:ARRAY|Regexp)$/
 	    : defined($res) ? $res !~ /^[01]$/ : 1)) {
 	$$err = 'an array_ref, Regexp, or boolean (0 or 1)';
@@ -923,6 +970,11 @@ sub _eval_result {
 	? ($actual->get('code'), 'die_code') : ($actual, 'return');
     my($expect_which) = UNIVERSAL::isa($case->get('expect'), 'Bivio::DieCode')
 	? 'die_code' : 'return';
+    my($err);
+    $err = _eval_compute_return($case, \$result)
+	if $expect_which eq 'return';
+    return $err
+	if $err;
     if (ref($case->get('expect')) eq 'CODE') {
 	# Only on success do we eval a case-specific check_return
 	$custom = 'expect'
@@ -935,9 +987,12 @@ sub _eval_result {
     }
     if ($custom) {
 #TODO: Move off to separate method
-	my($err);
+	$err = undef;
 	my($res) = _eval_custom(
-	    $case, $custom, [$actual, $case->get('expect')], \$err);
+	    $case,
+	    $custom, [$actual, $case->get('expect')],
+	    \$err,
+	);
 	_trace($case, ' ', $custom, ' returned: ', $res) if $_TRACE;
 	return $err
 	    if $err;

@@ -290,14 +290,17 @@ t(
     {
 	class_name => 'Bivio::t::Test::Testee',
     }, [
+	# 1
 	66 => [
 	    ok => 66,
 	],
+	# 2
 	sub {
 	    return Bivio::t::Test::Testee->new(77);
         } => [
 	    ok => 77,
 	],
+	# 3
 	{
 	    create_object => sub {
 		my($case, $params) = @_;
@@ -309,22 +312,27 @@ t(
 	} => [
 	    ok => 88,
 	],
+	# Deviance 4
 	{
 	    class_name => 'No::Such::ClassName',
 	    object => 99,
 	} => [
 	    ok => 88,
         ],
+	# 5
 	'Bivio::t::Test::Testee' => sub {
 	    my($case, $object) = @_;
 	    return $object eq 'Bivio::t::Test::Testee' ? 1: 0;
 	},
+	# Deviance 6
 	'Bivio::t::Test::Testee' => sub {
 	    return 0;
 	},
+	# Deviance 7
 	'Bivio::t::Test::Testee' => sub {
 	    Bivio::Die->throw_quietly('expect fail');
 	},
+	# 8
 	'Bivio::t::Test::Testee' => [
 	    {
 		method => sub {
@@ -333,9 +341,36 @@ t(
 		want_scalar => 1,
 	    } => 1,
 	],
+	{
+	    object => [2001],
+	    compute_return => sub {
+		my($case, $actual, $expect) = @_;
+		return $expect->[0] == 2001 ? $actual
+		    : $expect->[0] == -1 ? die('expect die')
+		    : $expect->[0] == 2525 ? [@$expect]
+		    : die('should not happen');
+	    },
+	    check_return => sub {
+		my($case, $actual, $expect) = @_;
+		return $actual->[0] =~ /2001|2525/ ? 1 : 0;
+	    },
+	} => [
+	    ok => [
+		# 9
+		[] => 2001,
+		# 10
+		[] => 2525,
+		# Deviance 11
+		[] => -1,
+	    ],
+	    die => [
+		# 12
+		[] => Bivio::DieCode->DIE,
+	    ],
+	],
     ],
-    8,
-    [4, 6, 7],
+    12,
+    [4, 6, 7, 11],
 );
 
 # t(hash_ref options, array_ref tests, int num_tests, array_ref not_ok)
