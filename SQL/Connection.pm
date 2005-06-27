@@ -196,18 +196,7 @@ Commits all open transactions.
 =cut
 
 sub commit {
-    my($self) = @_;
-    return _get_instance($self)->commit
-	    unless ref($self);
-    my($fields) = $self->[$_IDI];
-
-    unless ($self->REQUIRE_COMMIT_OR_ROLLBACK) {
-        return unless $fields->{need_commit};
-    }
-    _trace('commit') if $_TRACE;
-    _get_connection($self)->commit() unless $fields->{db_is_read_only};
-    $fields->{need_commit} = 0;
-    return;
+    return _commit_or_rollback('commit', @_);
 }
 
 =for html <a name="disconnect"></a>
@@ -219,9 +208,9 @@ Disconnects from database.
 =cut
 
 sub disconnect {
-    my($self) = @_;
-    return _get_instance($self)->disconnect
-	    unless ref($self);
+    my($self) = shift;
+    return _get_instance($self)->disconnect(@_)
+	unless ref($self);
     my($fields) = $self->[$_IDI];
     _get_connection($self)->disconnect();
     $fields->{connection_pid} = 0;
@@ -229,9 +218,32 @@ sub disconnect {
     return;
 }
 
+=for html <a name="do_execute"></a>
+
+=head2 do_execute(code_ref do_execute_callback, string sql, array_ref params, ref die, boolean has_blob)
+
+Calls op with fetched row.
+
+=cut
+
+sub do_execute {
+    my($self) = shift;
+    return _get_instance($self)->do_execute(@_)
+	unless ref($self);
+    my($op) = shift;
+    my($st) = $self->execute(@_);
+    while (my $row = $st->fetchrow_arrayref) {
+	last unless $op->($row);
+    }
+    $st->finish;
+#TODO: Clears cached handle
+#    $self->finish_statement($st);
+    return;
+}
+
 =for html <a name="execute"></a>
 
-=head2 execute(string sql)
+=head2 execute(string sql) : DBI::st
 
 =head2 execute(string sql, array_ref params)
 
@@ -257,9 +269,10 @@ L<internal_get_retry_sleep|"internal_get_retry_sleep">).
 =cut
 
 sub execute {
-    my($self, $sql, $params, $die, $has_blob) = @_;
-    return _get_instance($self)->execute($sql, $params, $die, $has_blob)
-	    unless ref($self);
+    my($self) = shift;
+    return _get_instance($self)->execute(@_)
+	unless ref($self);
+    my($sql, $params, $die, $has_blob) = @_;
     my($fields) = $self->[$_IDI];
 
     $sql = $self->internal_fixup_sql($sql);
@@ -271,7 +284,7 @@ sub execute {
 #TODO: should be a Die->catch() but this prints a stack trace, and
 #      causes the request to lose attributes?
         my($ok) = Bivio::Die->eval(sub {
-        	_execute_helper($self, $sql, $params, $has_blob, \$statement);
+		$self->internal_execute($sql, $params, $has_blob, \$statement);
                 return 1;
             });
         my($die_error) = $@;
@@ -328,13 +341,9 @@ sub execute {
 	sql_params => $params,
     };
     my($die_code) = $self->internal_get_error_code($attrs);
-
-    # Clean up just in case statement is cached
     Bivio::Die->eval(sub {
 	$statement->finish if $statement;
     });
-
-    # Throw exception
     $die ||= 'Bivio::Die';
     $die->throw_die($die_code, $attrs, caller);
     # DOES NOT RETURN
@@ -352,7 +361,7 @@ If there is no row, returns C<undef>.
 sub execute_one_row {
     my($self) = shift;
     return _get_instance($self)->execute_one_row(@_)
-	    unless ref($self);
+	unless ref($self);
     my($sth) = $self->execute(@_);
     my($row) = $sth->fetchrow_arrayref;
     $sth->finish;
@@ -369,9 +378,9 @@ database requests. Invoking this method clears the counter.
 =cut
 
 sub get_db_time {
-    my($self) = @_;
-    return _get_instance($self)->get_db_time
-	    unless ref($self);
+    my($self) = shift;
+    return _get_instance($self)->get_db_time(@_)
+	unless ref($self);
     my($fields) = $self->[$_IDI];
     my($result) = $fields->{db_time};
     $fields->{db_time} = 0;
@@ -388,8 +397,8 @@ L<Bivio::Ext::DBI::get_config|Bivio::Ext::DBI/"get_config">.
 =cut
 
 sub get_dbi_config {
-    my($self) = @_;
-    return _get_instance($self)->get_dbi_config
+    my($self) = shift;
+    return _get_instance($self)->get_dbi_config(@_)
 	unless ref($self);
     my($fields) = $self->[$_IDI];
     return Bivio::Ext::DBI->get_config($fields->{dbi_name});
@@ -417,9 +426,10 @@ returns its new value.
 =cut
 
 sub increment_db_time {
-    my($self, $start_time) = @_;
-    return _get_instance($self)->increment_db_time($start_time)
-	    unless ref($self);
+    my($self) = shift;
+    return _get_instance($self)->increment_db_time(@_)
+	unless ref($self);
+    my($start_time) = @_;
     my($fields) = $self->[$_IDI];
     die('invalid start_time') unless $start_time;
     $fields->{db_time} += Bivio::Type::DateTime->gettimeofday_diff_seconds(
@@ -453,6 +463,39 @@ Connects to the database.  Returns the database handle.
 sub internal_dbi_connect {
     my(undef, $dbi_name) = @_;
     return Bivio::Ext::DBI->connect($dbi_name);
+}
+
+=for html <a name="internal_execute"></a>
+
+=head2 internal_execute(string sql, array_ref params, boolean has_blob, scalar_ref statement)
+
+Executes sql.  Exception must be caught by caller. Sets statement (even on
+error).
+
+=cut
+
+sub internal_execute {
+    my($self, $sql, $params, $has_blob, $statement) = @_;
+    my($fields) = $self->[$_IDI];
+
+    _trace_sql($sql, $params) if $_TRACE;
+#TODO: Need to investigate problems and performance of cached statements
+#TODO: If do cache, then make sure not "active" when making call.
+    $$statement = _get_connection($self)->prepare($sql);
+
+    # Only need a commit if there has been data modification language
+    # Tightly coupled with PropertySupport
+    my($is_select) = $sql =~ /^\s*select/i
+	    && $sql !~ /\bfor\s+update\b/i;
+    return if !$is_select && $fields->{db_is_read_only};
+    if ($has_blob) {
+	$params = $self->internal_prepare_blob($is_select, $params,
+		$statement);
+    }
+    $fields->{need_commit} = 1 unless $is_select;
+    ref($params) ? $$statement->execute(@$params)
+	    : $$statement->execute();
+    return;
 }
 
 =for html <a name="internal_fixup_sql"></a>
@@ -499,7 +542,7 @@ sub internal_get_error_code {
     my($self, $die_attrs) = @_;
     $die_attrs->{program_error} = 1;
     # Unexpected error is treated as an assertion fault
-    return Bivio::DieCode::DB_ERROR();
+    return Bivio::DieCode->DB_ERROR;
 }
 
 =for html <a name="internal_execute_blob"></a>
@@ -572,9 +615,9 @@ database.
 =cut
 
 sub is_read_only {
-    my($self) = @_;
-    return _get_instance($self)->is_read_only
-	    unless ref($self);
+    my($self) = shift;
+    return _get_instance($self)->is_read_only(@_)
+	unless ref($self);
     my($fields) = $self->[$_IDI];
     return $fields->{db_is_read_only};
 }
@@ -589,9 +632,9 @@ table.
 =cut
 
 sub next_primary_id {
-    my($self, $table_name, $die) = @_;
-    return _get_instance($self)->next_primary_id($table_name, $die)
-	    unless ref($self);
+    my($self) = shift;
+    return _get_instance($self)->next_primary_id(@_)
+	unless ref($self);
     Bivio::Die->die('abstract method');
     # DOES NOT RETURN
 }
@@ -605,8 +648,8 @@ Ensures the connection is valid.
 =cut
 
 sub ping_connection {
-    my($self) = @_;
-    return _get_instance($self)->ping_connection
+    my($self) = shift;
+    return _get_instance($self)->ping_connection(@_)
         unless ref($self);
     my($fields) = $self->[$_IDI];
     $fields->{need_ping} = 1;
@@ -622,18 +665,7 @@ Rolls back all open transactions.
 =cut
 
 sub rollback {
-    my($self) = @_;
-    return _get_instance($self)->rollback
-	    unless ref($self);
-    my($fields) = $self->[$_IDI];
-
-    unless ($self->REQUIRE_COMMIT_OR_ROLLBACK) {
-        return unless $fields->{need_commit};
-    }
-    _trace('rollback') if $_TRACE;
-    _get_connection($self)->rollback() unless $fields->{db_is_read_only};
-    $fields->{need_commit} = 0;
-    return;
+    return _commit_or_rollback('rollback', @_);
 }
 
 =for html <a name="set_dbi_name"></a>
@@ -651,11 +683,9 @@ The name selected will become the default database for all static calls.
 
 sub set_dbi_name {
     my(undef, $name) = @_;
-
     # Don't do anything if the names are equal
     return $name if defined($name) == defined($_DEFAULT_DBI_NAME)
-	    && (!defined($name) || $name eq $_DEFAULT_DBI_NAME);
-
+	&& (!defined($name) || $name eq $_DEFAULT_DBI_NAME);
     my($old) = $_DEFAULT_DBI_NAME;
     $_DEFAULT_DBI_NAME = $name;
     _trace('default db set to ', $name) if $_TRACE;
@@ -664,42 +694,21 @@ sub set_dbi_name {
 
 #=PRIVATE METHODS
 
-# _execute_helper(string sql, array_ref params, boolean has_blob, scalar_ref statement)
+# _commit_or_rollback(string method, self)
 #
-# Executes sql.  Exception must be caught by caller. Sets statement (even on
-# error).
+# Wrapper for commit() and rollback()
 #
-sub _execute_helper {
-    my($self, $sql, $params, $has_blob, $statement) = @_;
+sub _commit_or_rollback {
+    my($method, $self) = splice(@_, 0, 2);
+    return _get_instance($self)->$method(@_)
+	unless ref($self);
     my($fields) = $self->[$_IDI];
-
-    _trace_sql($sql, $params) if $_TRACE;
-#TODO: Need to investigate problems and performance of cached statements
-#TODO: If do cache, then make sure not "active" when making call.
-    $$statement = _get_connection($self)->prepare($sql);
-
-    # Only need a commit if there has been data modification language
-    # Tightly coupled with PropertySupport
-    my($is_select) = $sql =~ /^\s*select/i
-	    && $sql !~ /\bfor\s+update\b/i;
-    return if !$is_select && $fields->{db_is_read_only};
-    if ($has_blob) {
-	$params = $self->internal_prepare_blob($is_select, $params,
-		$statement);
-    }
-    $fields->{need_commit} = 1 unless $is_select;
-    ref($params) ? $$statement->execute(@$params)
-	    : $$statement->execute();
+    return unless $self->REQUIRE_COMMIT_OR_ROLLBACK || $fields->{need_commit};
+    _trace($method) if $_TRACE;
+    _get_connection($self)->$method()
+	unless $fields->{db_is_read_only};
+    $fields->{need_commit} = 0;
     return;
-}
-
-# _get_instance(proto) : Bivio::SQL::Connection
-#
-# Returns the default instance.
-#
-sub _get_instance {
-    my($proto) = @_;
-    return $proto->get_instance($_DEFAULT_DBI_NAME);
 }
 
 # static _get_connection(self) : connection
@@ -747,6 +756,15 @@ sub _get_connection {
 	# Current connection is valid
     }
     return $fields->{connection};
+}
+
+# _get_instance(proto) : Bivio::SQL::Connection
+#
+# Returns the default instance.
+#
+sub _get_instance {
+    my($proto) = @_;
+    return $proto->get_instance($_DEFAULT_DBI_NAME);
 }
 
 # _prep_params_for_io(array_ref params) : array_ref
