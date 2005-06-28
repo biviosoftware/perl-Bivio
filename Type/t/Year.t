@@ -10,13 +10,7 @@ my($now) = Bivio::Type::DateTime->now_as_year;
 my($now2) = $now % 100;
 Bivio::Test->unit([
     'Bivio::Type::Year' => [
-	{
-	    method => 'from_literal',
-	    check_return => sub {
-		my(undef, undef, $expect) = @_;
-		return @$expect == 2 ? $expect : [@$expect, undef];
-	    },
-	} => [
+	from_literal => [
 	    -1 => [undef, Bivio::TypeError->NUMBER_RANGE],
 	    0 => Bivio::Type::DateTime->now_as_year
 		- Bivio::Type::DateTime->now_as_year % 100,

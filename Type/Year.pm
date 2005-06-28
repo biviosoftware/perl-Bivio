@@ -72,7 +72,7 @@ Converts value.  Handles date windowing (+20 years).
 sub from_literal {
     my($proto) = shift;
     my($res, $err) = $proto->SUPER::from_literal(@_);
-    return ($res, $err)
+    return $err ? ($res, $err) : $res
         unless $err && $err == Bivio::TypeError->NUMBER_RANGE;
     ($res, $err) = Bivio::Type::Integer->from_literal(@_);
     return ($res, $err)
@@ -80,11 +80,11 @@ sub from_literal {
     return (undef, Bivio::TypeError->NUMBER_RANGE)
 	unless $res >= 0 && $res < 100;
     my($century) = int(Bivio::Type::DateTime->now_as_year / 100) * 100;
-    return ($res + $century -
-		($res <= Bivio::Type::DateTime->now_as_year % 100
-		     + $proto->WINDOW_SIZE
-		? 0 : 100),
-	    undef);
+    return $proto->SUPER::from_literal(
+	$res + $century
+	    - ($res <= Bivio::Type::DateTime->now_as_year % 100
+		   + $proto->WINDOW_SIZE
+		? 0 : 100));
 }
 
 =for html <a name="get_max"></a>
