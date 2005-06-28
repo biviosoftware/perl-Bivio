@@ -38,9 +38,28 @@ so we know the we are operating in super-user mode.
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="SUPER_USER_FIELD"></a>
+
+=head2 SUPER_USER_FIELD : string
+
+Returns the cookie key for the super user value.
+
+=cut
+
+sub SUPER_USER_FIELD {
+    return 's';
+}
+
 #=IMPORTS
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
@@ -76,11 +95,8 @@ Logs in the I<realm_owner> and updates the cookie.
 
 sub execute_ok {
     my($self) = @_;
-    unless ($self->unsafe_get('validate_called')) {
-	$self->validate;
-	return if $self->in_error;
-	# Note that "realm_owner" may be undef
-    }
+    # user is validated in internal_pre_execute
+    return if $self->in_error;
 
     return $self->get_instance('UserLoginForm')->substitute_user(
 	$self->get('realm_owner'),
@@ -114,31 +130,52 @@ sub internal_initialize {
 		    type => 'Bivio::Biz::Model::RealmOwner',
 		    constraint => 'NONE',
 		},
-		{
-		    # Do not set this if validate was not called
-		    name => 'validate_called',
-		    type => 'Boolean',
-		    constraint => 'NONE',
-		},
 	    ],
 	},
     );
 }
 
-=for html <a name="validate"></a>
+=for html <a name="internal_pre_execute"></a>
 
-=head2 validate()
+=head2 internal_pre_execute()
 
 Look up the user by email, user_id, or name.
 
 =cut
 
-sub validate {
-    my($self) = @_;
+sub internal_pre_execute {
+    my($self, $method) = @_;
     $self->internal_put_field(realm_owner =>
 	Bivio::Biz::Model->get_instance('UserLoginForm')
-	->validate_login($self));
+	->validate_login($self)
+    ) if $method eq 'execute_ok';
     return;
+}
+
+=for html <a name="su_logout"></a>
+
+=head2 su_logout(Bivio::Agent::Request req) : Bivio::Agent::TaskId
+
+Logout as substitute user, return to super user.
+Return next task (if any).
+
+=cut
+
+sub su_logout {
+    my($proto, $req) = @_;
+    my($su) = $req->get('super_user_id');
+    $req->delete('super_user_id');
+    $req->get('cookie')->delete($proto->SUPER_USER_FIELD)
+	if $req->unsafe_get('cookie');
+    my($realm) = Bivio::Biz::Model->new($req, 'RealmOwner');
+    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
+	realm_owner => $realm->unauth_load({realm_id => $su})
+	    ? $realm : undef,
+    });
+    _trace($realm) if $_TRACE;
+    return $realm->is_loaded
+	? $req->get('task')->unsafe_get('su_task')
+	    || Bivio::Agent::TaskId->ADM_SUBSTITUTE_USER : 0;
 }
 
 #=PRIVATE METHODS

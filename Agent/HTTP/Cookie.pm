@@ -63,9 +63,7 @@ for instance notification.
 sub new {
     my($proto, $req, $r) = @_;
     my($self) = Bivio::Delegator::new($proto, $req, $r);
-    foreach my $h (@_HANDLERS) {
-	$h->handle_cookie_in($self, $req);
-    }
+    $self->internal_notify_handlers($req);
     return $self;
 }
 
@@ -90,6 +88,22 @@ There may be a I<handle_cookie_out> someday, hence the name of this routine.
 
 $_ = <<'}'; #emacs
 sub handle_cookie_in {
+}
+
+=for html <a name="internal_notify_handlers"></a>
+
+=head2 internal_notify_handlers(Bivio::Agent::Request req)
+
+Notify all registered handlers.
+
+=cut
+
+sub internal_notify_handlers {
+    my($self, $req) = @_;
+    foreach my $h (@_HANDLERS) {
+	$h->handle_cookie_in($self, $req);
+    }
+    return;
 }
 
 =for html <a name="register"></a>

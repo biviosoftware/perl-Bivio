@@ -439,21 +439,8 @@ sub _set_user {
 # Logout as substitute user, return to super user.
 #
 sub _su_logout {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($su) = $req->get('super_user_id');
-    $req->delete('super_user_id');
-    $req->get('cookie')->delete($self->SUPER_USER_FIELD)
-	if $req->unsafe_get('cookie');
-    my($realm) = $self->new_other('RealmOwner');
-    $self->execute($req, {
-	realm_owner => $realm->unauth_load({realm_id => $su})
-	    ? $realm : undef,
-    });
-    _trace($realm) if $_TRACE;
-    return $realm->is_loaded
-	? $req->get('task')->unsafe_get('su_task')
-	    || Bivio::Agent::TaskId->ADM_SUBSTITUTE_USER : 0;
+    return Bivio::Biz::Model->get_instance('AdmSubstituteUserForm')
+        ->su_logout(shift->get_request());
 }
 
 =head1 COPYRIGHT
