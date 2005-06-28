@@ -1,0 +1,3 @@
+httpd.pid
+httpd*.conf
+rewrite.log
