@@ -6,14 +6,27 @@ Bivio::Test->unit([
     Bivio::Collection::Attributes->new({
 	a => '3',
 	b => ['A', 'B'],
-	c => {A => 1, B => 2},
+	c => {A => 1, B => 2, C => undef},
 	d => Bivio::Collection::Attributes->new({a => 99}),
     }) => [
 	get_nested => [
 	    a => 3,
+	    ['a', 'a'] => Bivio::DieCode->DIE,
 	    ['b', 1] => ['B'],
 	    ['c', 'B'] => 2,
 	    ['d', 'a'] => 99,
+	    ['d', 'a', 'a'] => Bivio::DieCode->DIE,
+	],
+	unsafe_get_nested => [
+	    a => 3,
+	    ['a', 'a'] => Bivio::DieCode->DIE,
+	    ['b', 1] => ['B'],
+	    ['b', ''] => Bivio::DieCode->DIE,
+	    ['b', 1, 1] => Bivio::DieCode->DIE,
+	    ['b', 2] => [undef],
+	    ['c', 'Q'] => [undef],
+	    ['c', 'C', 'x'] => [undef],
+	    ['c', 'C', 'x', 'z'] => [undef],
 	],
 	{
 	    method => 'get',

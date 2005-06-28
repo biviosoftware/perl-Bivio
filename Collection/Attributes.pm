@@ -329,34 +329,7 @@ exists, but is C<undef>.
 =cut
 
 sub get_nested {
-    my($self, @names) = @_;
-    my($v) = $self->[$_IDI];
-    while (@names) {
-	my($name) = shift(@names);
-	if (ref($v) eq 'HASH') {
-	    if (exists($v->{$name})) {
-		$v = $v->{$name};
-		next;
-	    }
-	}
-	elsif (ref($v) eq 'ARRAY') {
-	    _die($self, $name, ": not an array index ", \@names)
-			unless $name =~ /^\d+$/;
-	    if ($name <= $#$v) {
-		$v = $v->[$name];
-		next;
-	    }
-	}
-	elsif (ref($v) && UNIVERSAL::isa($v, __PACKAGE__)) {
-	    return $v->get_nested($name, @names);
-	}
-	else {
-	    _die($self, "can't index \"", $v, '" at name"',
-		    $name, '" ', \@names);
-	}
-	_die($self, $name, ": attribute doesn't exist ", \@names);
-    }
-    return $v;
+    return _get_nested(@_);
 }
 
 =for html <a name="get_or_default"></a>
@@ -576,6 +549,25 @@ sub unsafe_get_by_regexp {
     return defined($match) ? $self->[$_IDI]->{$match} : undef;
 }
 
+=for html <a name="unsafe_get_nested"></a>
+
+=head2 unsafe_get_nested(string name, string subname, ...) : any
+
+Looks up I<name> and indexes with I<subname>, if supplied.  Continues with
+subnames.  Works with objects of this class, hash_refs and, array_refs.  There
+are type assertions on I<subname> if the value is an array_ref, or that the
+thing being indexed is indexable.
+
+Similar to L<get_widget_value|"get_widget_value">, but not as complex.
+
+Will return C<undef> if the value doesn't exist at any level.
+
+=cut
+
+sub unsafe_get_nested {
+    return _get_nested(@_);
+}
+
 =for html <a name="unsafe_get_widget_value_by_name"></a>
 
 =head2 unsafe_get_widget_value_by_name(string name) : array
@@ -604,6 +596,46 @@ sub _die {
     $sub =~ s/.*://;
     Bivio::IO::Alert->bootstrap_die($self, '->', $sub, ': ', @msg);
     # DOES NOT RETURN
+}
+
+# _get_nested(self, string names, ...) : any
+#
+# Does work of get_nested and unsafe_get_nested
+#
+sub _get_nested {
+    my($self, @names) = @_;
+    my($method) = (caller(1))[3] =~ /(\w+)$/;
+    my($v) = $self->[$_IDI];
+    while (@names) {
+	my($name) = shift(@names);
+	if (ref($v) eq 'HASH') {
+	    if (exists($v->{$name})) {
+		$v = $v->{$name};
+		next;
+	    }
+	}
+	elsif (ref($v) eq 'ARRAY') {
+	    _die($self, $name, ": not an array index ", \@names)
+		unless $name =~ /^\d+$/;
+	    if ($name <= $#$v) {
+		$v = $v->[$name];
+		next;
+	    }
+	}
+	elsif (ref($v) && UNIVERSAL::isa($v, __PACKAGE__)) {
+	    return $v->$method($name, @names);
+	}
+	else {
+	    return undef
+		if  $method =~ /unsafe/ && !defined($v);
+	    _die($self, "can't index \"", $v, '" at name"',
+		    $name, '" ', \@names);
+	}
+	return $method =~ /unsafe/
+	    ? undef
+	    : _die($self, $name, ": attribute doesn't exist ", \@names);
+    }
+    return $v;
 }
 
 # _unsafe_get_by_regexp(Bivio::Collection::Attributes self, string pattern) : string
