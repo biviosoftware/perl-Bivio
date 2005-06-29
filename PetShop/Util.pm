@@ -44,6 +44,34 @@ As you:
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="DEMO_USER_LAST_NAME"></a>
+
+=head2 DEMO_USER_LAST_NAME : string
+
+Returns last name of DEMO_USER
+
+=cut
+
+sub DEMO_USER_LAST_NAME {
+    return 'User';
+}
+
+=for html <a name="USAGE"></a>
+
+=head2 USAGE : string
+
+=cut
+
+sub USAGE {
+    return shift->SUPER::USAGE . <<'EOF';
+    demo_users -- lists demo user names
+EOF
+}
+
 #=IMPORTS
 use Bivio::Auth::Role;
 use Bivio::Biz::Util::RealmRole;
@@ -87,6 +115,22 @@ sub ddl_files {
 	    $base.'-'.$_.'.sql';
 	} qw(tables constraints sequences);
     } qw(bOP petshop)];
+}
+
+=for html <a name="demo_users"></a>
+
+=head2 demo_users() : array_ref
+
+Returns list of demo users.
+
+=cut
+
+sub demo_users {
+    my($self) = @_;
+    return [
+	qw(demo guest multi_role_user),
+	$self->get_request->is_production ? () : ('root'),
+    ];
 }
 
 =for html <a name="realm_role_config"></a>
@@ -237,13 +281,11 @@ sub _init_demo_products {
 sub _init_demo_users {
     my($self) = @_;
     my($req) = $self->get_request;
-    foreach my $u ('demo', 'guest', 'multi_role_user',
-        ($req->is_production ? () : ('root')),
-    ) {
+    foreach my $u (@{$self->demo_users()}) {
 	$self->print("Created user $u\@bivio.biz\n");
 	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
-	    'User.first_name' => 'Demo',
-	    'User.last_name' => 'User',
+	    'User.first_name' => ucfirst($u),
+	    'User.last_name' => $self->DEMO_USER_LAST_NAME,
 	    'Email.email' => "$u\@bivio.biz",
 	    'Address.street1' => '1313 Mockingbird Lane',
 	    'Address.street2' => undef,
@@ -274,7 +316,6 @@ sub _init_demo_users {
 	Bivio::Biz::Util::RealmRole->make_super_user
 	    if $u eq 'root';
     }
-    
     return;
 }
 
