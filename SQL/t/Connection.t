@@ -6,13 +6,14 @@ use Bivio::Test;
 use Bivio::SQL::Connection;
 
 my($_TABLE) = 't_connection_t';
+Bivio::Die->eval(
+    sub {
+	Bivio::SQL::Connection->execute("drop table $_TABLE");
+	Bivio::SQL::Connection->commit;
+    },
+);
 Bivio::Test->unit([
     Bivio::SQL::Connection->get_instance => [
-	execute => [
-	    # Drop the table first, we don't care about the result
-	    ["drop table $_TABLE"] => undef,
-	],
-	commit => undef,
 	execute => [
 	    # We expect to get a statement back.
 	    [<<"EOF"] => \&_expect_statement,
