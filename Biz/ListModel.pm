@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListModel;
 use strict;
@@ -111,12 +111,13 @@ sub NOT_FOUND_IF_EMPTY {
 }
 
 #=IMPORTS
-use Bivio::Die;
-use Bivio::IO::Trace;
 use Bivio::Biz::Model::SummaryList;
 use Bivio::Biz::QueryType;
-use Bivio::SQL::ListSupport;
+use Bivio::Die;
+use Bivio::IO::Trace;
 use Bivio::SQL::ListQuery;
+use Bivio::SQL::ListSupport;
+use Bivio::SQL::Statement;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -765,9 +766,8 @@ hasn't been loaded, blows up.
 =cut
 
 sub internal_get_rows {
-    my($rows) = shift->[$_IDI]->{rows};
-    Carp::croak('not loaded') unless $rows;
-    return $rows;
+    my($self) = @_;
+    return $self->[$_IDI]->{rows} || $self->die('not loaded');
 }
 
 =for html <a name="internal_initialize_sql_support"></a>
@@ -868,8 +868,7 @@ sub internal_post_load_row {
 
 =head2 internal_pre_load(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
 
-Returns the where clause and params associated as the result of a
-"search" or other "pre_load".
+B<DEPRECATED>, use L<internal_prepare_statement|"internal_prepare_statement">.
 
 =cut
 
@@ -888,6 +887,33 @@ May be overriden.  Must return the rows loaded.
 sub internal_load_rows {
     my($self, $query, $where, $params, $sql_support) = @_;
     return $sql_support->load($query, $where, $params, $self);
+}
+
+=for html <a name="internal_prepare_statement"></a>
+
+=head2 internal_prepare_statement(Bivio::SQL::Statement stmt) : Bivio::SQL::Statement
+
+Prepares the where clause of the statement by calling
+L<internal_pre_load|"internal_pre_load"> for backwards-compatibility.
+Subclasses should override this method.
+
+Returns the stmt to use.
+
+=cut
+
+sub internal_prepare_statement {
+    my($self, $stmt) = @_;
+    my($params) = [];
+    my($where) = $self->internal_pre_load(
+	$self->get_query,
+	$self->internal_get_sql_support,
+	$params,
+    );
+    $self->die($params, ': unexpected params (missing where')
+	if @$params && !$where;
+    $stmt->append_where_and($where, $params)
+	if $where;
+    return $stmt;
 }
 
 =for html <a name="internal_set_cursor"></a>
@@ -1000,7 +1026,8 @@ Use this method when you need to make one pass over the data (efficiently).
 NOTE: Most ListModels cannot be iterated.  If L<can_iterate|"can_iterate">
 returns false, this routine will die.
 
-Calls L<internal_pre_load|"internal_pre_load">, but does not call
+Calls L<internal_prepare_statement|"internal_prepare_statement">, but
+does not call
 L<internal_load|"internal_load">.  See L<iterate_next|"iterate_next">
 for semantics of row fixups.
 
@@ -1012,18 +1039,16 @@ sub iterate_start {
     my($self, $query) = @_;
     $self->throw_die('DIE', 'iteration not supported')
 	unless $self->can_iterate;
-
     my($fields) = $self->[$_IDI];
-    $fields->{query} = $query = $self->parse_query($query);
-    my($sql_support) = $self->internal_get_sql_support;
-
-    # Let the subclass add specializations to the query.
-    my($params) = [];
-    my($where) = $self->internal_pre_load($query, $sql_support, $params);
-    $where = ' and '.$where if $where;
-
+    $fields->{query} = $self->parse_query($query);
     return $self->internal_put_iterator(
-	$sql_support->iterate_start($query, $where, $params, $self));
+	$self->internal_get_sql_support->iterate_start(
+	    $fields->{query},
+	    $self->internal_prepare_statement(Bivio::SQL::Statement->new)
+		->get(qw(where params)),
+	    $self,
+        ),
+    );
 }
 
 =for html <a name="load_all"></a>
@@ -1532,7 +1557,7 @@ sub _unauth_load {
 
     # Convert to listQuery
     $query = Bivio::SQL::ListQuery->unauth_new($query, $self, $sql_support)
-	    if ref($query) eq 'HASH';
+	if ref($query) eq 'HASH';
 
     # Add in count if not there
     unless ($query->has_keys('count')) {
@@ -1547,22 +1572,23 @@ sub _unauth_load {
 	}
 	$query->put(count => $count);
     }
-
-    # Add specializations to the where and params.
-    my($params) = [];
-    my($where) = $self->internal_pre_load($query, $sql_support, $params);
-    $where = ' and '.$where if $where;
-
-    # Execute the load and fixups
-    my($rows) = $self->internal_load_rows($query, $where, $params,
-	    $sql_support);
-    $self->internal_load($rows, $query);
-    return int(@$rows);
+    $fields->{query} = $query;
+    $self->internal_load(
+	$self->internal_load_rows(
+	    $query,
+	    $self->internal_prepare_statement(Bivio::SQL::Statement->new)
+		->get(qw(where params)),
+	    $sql_support,
+	),
+	$query,
+    );
+    # fields is invalid at this point
+    return scalar(@{$self->[$_IDI]->{rows}});
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
