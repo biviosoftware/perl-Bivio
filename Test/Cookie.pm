@@ -7,7 +7,7 @@ $_ = $Bivio::Test::Cookie::VERSION;
 
 =head1 NAME
 
-Bivio::Test::Cookie - 
+Bivio::Test::Cookie - mock cookie object
 
 =head1 RELEASE SCOPE
 
