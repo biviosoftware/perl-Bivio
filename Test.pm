@@ -277,8 +277,6 @@ level, e.g.,
 You may also specify an I<imperative_case> as the I<method> option of a
 method group.  This allows you to specify the return value.
 
-=cut
-
 =head2 SHORTCUTS
 
 If a method takes no parameters and returns a simple scalar
@@ -290,6 +288,22 @@ result, the case case be written, e.g.:
 	    get_max => 999999999,
         ],
     ]);
+
+=head2 RESULTS
+
+After L<unit|"unit"> completes, the following attributes are set:
+
+=over 4
+
+=item failed : array_ref
+
+Numbers for the cases which I<failed>.  Case numbers start at 1.
+
+=item passed : array_ref
+
+Numbers for the cases which I<passed>.  Case numbers start at 1.
+
+=back
 
 =cut
 
@@ -791,7 +805,10 @@ sub _eval {
     my($print) = $self->get_or_default('print', \&_default_print);
     $print->('1..' . int(@$tests) . "\n");
     my($err);
-    my($ok) = 0;
+    my($results) = {
+	failed => [],
+	passed => [],
+    };
     foreach my $case (@$tests) {
 	$c++;
 	my($result);
@@ -829,12 +846,16 @@ sub _eval {
 	}
     }
     continue {
-	$ok++ unless $err;
-	$print->(!$err
-	    ? "ok $c\n" : ("not ok $c " . $case->as_string . ": $err\n"));
+	push(@{$results->{$err ? 'failed' : 'passed'}}, $c);
+	$print->($err
+	    ? "not ok $c " . $case->as_string . ": $err\n"
+	    : "ok $c\n");
 	$err = undef;
     }
-    $print->($self->format_results($ok, int(@$tests)));
+    $self->put(%$results);
+    $print->(
+	$self->format_results(scalar(@{$results->{passed}}), int(@$tests)),
+    );
     return;
 }
 
