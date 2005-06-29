@@ -104,7 +104,7 @@ sub internal_execute {
 	my($msg) = @_;
 	return
 	    if $msg =~ /NOTICE:\s+CREATE TABLE . PRIMARY KEY will create implicit index/;
-	return $prev->(@_);
+	return $prev && $prev->(@_);
     };
     return shift->SUPER::internal_execute(@_);
 }
