@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    argument or reads input (backwards compatible).
+  * Bivio::Util::SQL->run allows ';' for separating statements
+  * Bivio::SQL::t::Connection.t runs on freshly loaded database.
+
+  Revision 2.80  2005/06/24 23:14:45  moeller
+  * Bivio::Agent::Dispatcher does not set request task_id,
+    lets internal_redirect_realm() handle it
+  * Bivio::Agent::Request
+    puts the task on the request at the end of internal_redirect_realm(),
+    can_user_execute_task() now takes an optional realm_id argument,
+    renamed get_realm_for_task() to internal_get_realm_for_task(),
+    it is now deprecated to get a realm for a task other than
+     the current realm, GENERAL or USER
+  * Bivio::Biz::Model::RealmRole
+    fixed bug: not all roles have defined permissions for all realms
+  * Bivio::UI::HTML::ViewShortcuts
+    added vs_task_link() and vs_acknowledgement()
   * Bivio::UI::HTML::Widget::ListActions
     added forth argument for the realm for the task,
     avoid deprecated warning when linking to a different realm
