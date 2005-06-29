@@ -47,12 +47,15 @@ user_id in the cookie so we can track logged out users.
 
 =head2 SUPER_USER_FIELD : string
 
-Returns the cookie key for the super user value.
+B<DEPRECATED>:
+L<Bivio::Biz::Model::AdmSubstituteUserForm::SUPER_USER_FIELD|Bivio::Biz::Model::AdmSubstituteUserForm/SUPER_USER_FIELD>
 
 =cut
 
 sub SUPER_USER_FIELD {
-    return 's';
+    Bivio::IO::Alert->warn_deprecated(
+	'use Bivio::Biz::Model::AdmSubstituteUserForm->SUPER_USER_FIELD');
+    return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
 }
 
 =for html <a name="PASSWORD_FIELD"></a>
@@ -216,7 +219,7 @@ sub substitute_user {
 	# then su as that admin.
 	my($super_user_id) = $req->get('auth_user')->get('realm_id');
 	my($cookie) = $req->unsafe_get('cookie');
-	$cookie->put($proto->SUPER_USER_FIELD => $super_user_id)
+	$cookie->put(_super_user_field($proto) => $super_user_id)
 	    if $cookie;
 	$req->put_durable(super_user_id => $super_user_id);
     }
@@ -405,7 +408,10 @@ sub _set_log_user {
     my($proto, $cookie, $req) = @_;
     my($r) = $req->unsafe_get('r');
     return unless $r && _get($cookie, $proto->USER_FIELD);
-    my($super_user_id) = _get($cookie, $proto->SUPER_USER_FIELD);
+    my($super_user_id) = _get(
+	$cookie,
+	_super_user_field($proto),
+    );
     $r->connection->user(
 	($super_user_id ? 'su-' . $super_user_id . '-' : '')
 	. ($req->get('user_state') == Bivio::Type::UserState->LOGGED_IN
@@ -423,7 +429,7 @@ sub _set_user {
     $req->set_user($user);
     $req->put_durable(
 	# Cookie overrides but may not have a cookie so super_user_id
-	super_user_id => _get($cookie, $proto->SUPER_USER_FIELD)
+	super_user_id => _get($cookie, _super_user_field($proto))
 	    || $req->unsafe_get('super_user_id'),
 	user_state => $user ? Bivio::Type::UserState->LOGGED_IN
 	    : _get($cookie, $proto->USER_FIELD)
@@ -441,6 +447,14 @@ sub _set_user {
 sub _su_logout {
     return Bivio::Biz::Model->get_instance('AdmSubstituteUserForm')
         ->su_logout(shift->get_request());
+}
+
+# _super_user_field(proto) : string
+#
+# Returns SUPER_USER_FIELD
+#
+sub _super_user_field {
+    return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
 }
 
 =head1 COPYRIGHT
