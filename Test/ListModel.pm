@@ -102,7 +102,7 @@ sub new {
 
 =head2 unit(array_ref method_groups)
 
-Wraps I<method_groups in an object group, with a call to the list model's,
+Wraps I<method_groups> in an object group, with a call to the list model's,
 new.  See L<Bivio::Test::unit|Bivio::Test/"unit"> for details.
 
 I<method_groups> are just like normal method groups with the exception that if
