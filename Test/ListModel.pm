@@ -100,7 +100,14 @@ sub new {
 
 =for html <a name="unit"></a>
 
+=head2 static unit(string model, array_ref method_groups)
+
+=head2 static unit(hash_ref new_attrs, array_ref method_groups)
+
 =head2 unit(array_ref method_groups)
+
+Instantiates this class with I<model> or I<new_attrs> (which must include
+I<model>), and calls the instance method form with I<method_groups>.
 
 Wraps I<method_groups> in an object group, with a call to the list model's,
 new.  See L<Bivio::Test::unit|Bivio::Test/"unit"> for details.
@@ -115,6 +122,8 @@ return.
 =cut
 
 sub unit {
+    return shift->new(shift)->unit(shift)
+	if @_ == 3;
     my($self, $method_groups) = @_;
     return $self->SUPER::unit([
 	$self->get('class_name') => $method_groups,

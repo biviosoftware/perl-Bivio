@@ -5,16 +5,17 @@ use Bivio::Test;
 Bivio::Test->new({
     class_name => 'Bivio::Test::ListModel',
     compute_return => sub {
-	return shift->get('object')->get('passed');
+	my(undef, $actual) = @_;
+	return $actual->[0]->get('passed');
     },
 })->unit([
-    [{
-	model => 'Bivio::Test::t::ListModel::T1List',
-	# Comment out to debug
-	print => sub {},
-    }] => [
+    'Bivio::Test::ListModel' => [
 	unit => [
-	    [[
+	    [{
+		model => 'Bivio::Test::t::ListModel::T1List',
+		# Comment out to debug
+		print => sub {},
+	    }, [
 		load_page => [
 		    [{count => 0}] => [],
 		    [{count => 1}] => [
@@ -40,5 +41,5 @@ Bivio::Test->new({
 		load_all => undef,
 	    ]] => [1..6],
 	],
-     ],
+    ],
 ]);
