@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,59 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::FormModel->OK_BUTTON_NAME is exported
+  * Bivio::Biz::Model::AdmSubstituteUserForm accepts query string again
+    (broken in 2.81)
+
+  Revision 2.81  2005/06/29 22:13:06  nagler
+  * Bivio::Biz::Model::AdmUserList provides list of all users with
+    last name search capability
+  * Bivio::Test::ListModel simplifies ListModel testing.  See unit test
+    and AdmUserList.t
+  * Bivio::Agent::HTTP::Cooke->internal_notify_handlers exported to
+    allow for easier testing
+  * Bivio::Test::Cookie is a mock object for testing delegates
+  * Bivio::SQL::Statement encapsulates params and where clause of SQL
+  * Bivio::Biz::ListModel->internal_prepare_statement deprecates
+    internal_pre_load.  internal_prepare_statement uses a
+    Bivio::SQL::Statement object to encapsulate where/params manipulation.
+    internal_pre_load is called by ListModel's implementation of
+    internal_prepare_statement.  Subclasses wishing to use
+    internal_prepare_statement should NOT call
+    SUPER::internal_prepare_statement if ListModel is direct super class.
+  * Bivio::Biz::Model::AdmSubstituteUserForm exports and mostly
+    handles SUPER_USER_FIELD.
+    Bivio::Biz::Model::UserLoginForm->SUPER_USER_FIELD is deprecated.
+  * Bivio::Collection::Attributes->unsafe_get_nested returns undef if
+    one of the keys is not found.
+  * Bivio::PetShop::Util->DEMO_USER_LAST_NAME returns constant last name
+    of demo users
+  * Bivio::PetShop::Util->demo_users returns array_ref of demo user
+    names
+  * Bivio::SQL::Connection::Oracle->internal_get_error_code works correctly.
+  * Bivio::SQL::Connection->internal_execute allows subclasses to wrap
+    call to DBI execute.
+  * Bivio::SQL::Connection::Postgres->internal_execute ignores
+    "PRIMARY KEY will create implicit index" msg.
+  * Bivio::SQL::Connection->commit/rollback shares code
+  * Bivio::SQL::Connection->do_execute wraps execute, fetchrow_arrayref,
+    and finish_statement loop
+  * Bivio::SQL::ListSupport.order_by is initialized when want_select
+    is false.
+  * Bivio::Test.compute_return is called before check_return to modify
+    the actual return.  Will probably eliminate many calls to
+    check_return in favor of simpler code.
+  * Bivio::test.failed and passed are attributes set after unit() returns.
+    Makes it easier to test specializations.
+  * Bivio::Type::Year->from_literal checks range after windowing
+    happens.
+  * Bivio::Util::SQL->backup_model and restore_model allow backup and
+    restore of model to/from files.
+  * Bivio::Util::SQL->backup_model->internal_upgrade_db_multiple_realm_roles
+    implements the upgrade for the multiple realm role fix.
+    b-db-upgrade is gone.  Instead, call internal_upgrade_db_multiple_realm_roles
+    from internal_upgrade_db in your ::Util::SQL.
+  * Bivio::Util::SQL->run/drop/drop_and_run can take $sql as an
     argument or reads input (backwards compatible).
   * Bivio::Util::SQL->run allows ';' for separating statements
   * Bivio::SQL::t::Connection.t runs on freshly loaded database.
