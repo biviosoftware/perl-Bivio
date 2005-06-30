@@ -125,6 +125,18 @@ sub NEXT_FIELD {
     return '.next';
 }
 
+=for html <a name="OK_BUTTON_NAME"></a>
+
+=head2 OK_BUTTON_NAME : string
+
+Default name of the ok_button.
+
+=cut
+
+sub OK_BUTTON_NAME {
+    return 'ok_button';
+}
+
 =for html <a name="TIMEZONE_FIELD"></a>
 
 =head2 TIMEZONE_FIELD : string
@@ -775,11 +787,10 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-
     return {
 	visible => [
 	    {
-		name => 'ok_button',
+		name => shift->OK_BUTTON_NAME,
 		type => 'OKButton',
 		constraint => 'NONE',
 	    },
@@ -1014,7 +1025,7 @@ sub process {
 	# should blow up.
 
 	$self->internal_pre_execute('execute_ok');
-	my($res) = _call_execute_ok($self, 'ok_button');
+	my($res) = _call_execute_ok($self, $self->OK_BUTTON_NAME);
 	$self->internal_post_execute('execute_ok');
 	return $res if $res;
 	return 0 unless $fields->{errors};
@@ -1096,7 +1107,8 @@ sub process {
     }
 
     # determine the selected button, default is ok
-    my($button, $button_type) = ('ok_button', 'Bivio::Type::OKButton');
+    my($button, $button_type) = ($self->OK_BUTTON_NAME,
+				 'Bivio::Type::OKButton');
     foreach my $field (@{$self->get_keys}) {
 	if (defined($self->get($field))) {
 	    my($type) = $self->get_field_type($field);
