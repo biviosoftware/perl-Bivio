@@ -81,8 +81,7 @@ sub execute_empty {
     return unless $this;
     $self->internal_put_field(login => $this);
     $req->put(query => {});
-    $self->validate_and_execute_ok;
-    return;
+    return $self->validate_and_execute_ok($self->OK_BUTTON_NAME);
 }
 
 =for html <a name="execute_ok"></a>
@@ -96,8 +95,6 @@ Logs in the I<realm_owner> and updates the cookie.
 sub execute_ok {
     my($self) = @_;
     # user is validated in internal_pre_execute
-    return if $self->in_error;
-
     return $self->get_instance('UserLoginForm')->substitute_user(
 	$self->get('realm_owner'),
 	$self->get_request,
@@ -137,7 +134,7 @@ sub internal_initialize {
 
 =for html <a name="internal_pre_execute"></a>
 
-=head2 internal_pre_execute()
+=head2 internal_pre_execute(string method)
 
 Look up the user by email, user_id, or name.
 
@@ -148,7 +145,7 @@ sub internal_pre_execute {
     $self->internal_put_field(realm_owner =>
 	Bivio::Biz::Model->get_instance('UserLoginForm')
 	->validate_login($self)
-    ) if $method eq 'execute_ok';
+    ) if $method =~ /execute_ok/;
     return;
 }
 
