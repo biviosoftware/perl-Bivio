@@ -4,7 +4,7 @@ use strict;
 use Bivio::PetShop::Util;
 use Bivio::Test::ListModel;
 Bivio::Test::Request->get_instance;
-Bivio::Test::ListModel->new('AdmUserList')->unit([
+Bivio::Test::ListModel->unit('AdmUserList', [
     load_all => [
 	[{search => Bivio::PetShop::Util->DEMO_USER_LAST_NAME}] => [
 	    map(({
