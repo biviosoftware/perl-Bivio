@@ -230,6 +230,9 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
+    my($body) = '';
+    $fields->{body}->render($source, \$body);
+
     $$buffer .=
 	    '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
 	    ."\n<html><head>\n";
@@ -258,14 +261,9 @@ sub render {
     $$buffer .= ' onLoad="window.print()"'
 	if $self->unsafe_render_attr('want_page_print', $source, \$a) && $a;
     $fields->{body}->unsafe_render_attr('html_tag_attrs', $source, $buffer);
-    $$buffer .= ">\n";
-
-    $fields->{body}->render($source, $buffer);
-
-    my($t) = $self->show_time_as_html($req);
-    $$buffer .= "\n".$t."\n";
-
-    $$buffer .= "</body></html>\n";
+    $$buffer .= ">\n$body\n"
+	. $self->show_time_as_html($req)
+	. "</body></html>\n";
     return;
 }
 
@@ -286,7 +284,7 @@ sub show_time_as_html {
 	    $req->get_current->elapsed_time,
 	    Bivio::SQL::Connection->get_db_time);
     _trace($times) if $_TRACE;
-    return $_SHOW_TIME ? "<!-- " . $times . " -->" : '';
+    return $_SHOW_TIME ? "<!-- " . $times . " -->\n" : '';
 }
 
 #=PRIVATE METHODS
