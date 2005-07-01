@@ -878,7 +878,7 @@ sub _eval_compute_return {
     _trace($err || $new_return) if $_TRACE;
     return $err
 	unless $new_return;
-    $$return = $new_return;
+    $case->put(return => $$return = $new_return);
     return undef;
 }
 
@@ -991,15 +991,16 @@ sub _eval_result {
 	? ($actual->get('code'), 'die_code') : ($actual, 'return');
     my($expect_which) = UNIVERSAL::isa($case->get('expect'), 'Bivio::DieCode')
 	? 'die_code' : 'return';
-    my($err);
-    $err = _eval_compute_return($case, \$result)
-	if $expect_which eq 'return';
-    return $err
-	if $err;
+    if ($expect_which eq 'return') {
+	my($err) = _eval_compute_return($case, \$actual);
+	return $err
+	    if $err;
+	$result = $actual;
+    }
     if (ref($case->get('expect')) eq 'CODE') {
 	# Only on success do we eval a case-specific check_return
 	$custom = 'expect'
-	    if ref($result) eq 'ARRAY';
+	    if ref($actual) eq 'ARRAY';
     }
     elsif ($actual_which eq $expect_which) {
 	$custom = "check_$expect_which";
@@ -1008,7 +1009,7 @@ sub _eval_result {
     }
     if ($custom) {
 #TODO: Move off to separate method
-	$err = undef;
+	my($err) = undef;
 	my($res) = _eval_custom(
 	    $case,
 	    $custom, [$actual, $case->get('expect')],

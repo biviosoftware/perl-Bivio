@@ -345,7 +345,8 @@ t(
 	    object => [2001],
 	    compute_return => sub {
 		my($case, $actual, $expect) = @_;
-		return $expect->[0] == 2001 ? $actual
+		return ref($expect) eq 'CODE' ? [1313]
+		    : $expect->[0] == 2001 ? $actual
 		    : $expect->[0] == -1 ? die('expect die')
 		    : $expect->[0] == 2525 ? [@$expect]
 		    : die('should not happen');
@@ -362,14 +363,18 @@ t(
 		[] => 2525,
 		# Deviance 11
 		[] => -1,
+		[] => sub {
+		    my(undef, $actual) = @_;
+		    return $actual->[0] == 1313 ? 1 : 0;
+		},
 	    ],
 	    die => [
-		# 12
+		# 13
 		[] => Bivio::DieCode->DIE,
 	    ],
 	],
     ],
-    12,
+    13,
     [4, 6, 7, 11],
 );
 
