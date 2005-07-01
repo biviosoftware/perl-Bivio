@@ -94,7 +94,7 @@ C<undef> or an array of parameters to pass.
 sub append_where_and {
     my($self, $where, $params) = @_;
     my($w) = $self->get('where');
-    $self->put(where => "$w AND ($where)");
+    $self->put(where => "$w AND $where");
     push(@{$self->get('params')}, @$params)
 	if $params;
     return $self;
