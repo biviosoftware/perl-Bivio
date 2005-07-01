@@ -198,7 +198,8 @@ sub initialize {
     $self->unsafe_initialize_attr('style');
     $self->unsafe_initialize_attr('background');
     foreach my $x (qw(style script)) {
-	$self->get_if_exists_else_put($x, $_VS->vs_call(ucfirst($x)));
+	$self->get_if_exists_else_put($x,
+	    sub {$_VS->vs_call(ucfirst($x))});
 	$self->unsafe_initialize_attr($x);
     }
     if ($self->unsafe_initialize_attr('want_page_print')) {
