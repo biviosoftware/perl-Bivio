@@ -171,6 +171,21 @@ sub vs_fe {
     return Bivio::HTML->escape(shift->SUPER::vs_fe(@_));
 }
 
+=for html <a name="vs_first_focus"></a>
+
+=head2 static vs_first_focus(any control) : Bivio::UI::Widget
+
+Returns script widget that focuses on the first field on the page.
+I<control> is optional.
+
+=cut
+
+sub vs_first_focus {
+    my($proto, $control) = @_;
+    my($w) = $proto->vs_call('Script', 'first_focus');
+    return defined($control) ? $proto->vs_call('If', $control, $w) : $w;
+}
+
 =for html <a name="vs_task_link"></a>
 
 =head2 vs_task_link(string text, string task) : Bivio::UI::HTML::Widget::Link
