@@ -3,7 +3,10 @@
 # Order detail
 #
 view_parent('menu');
-view_put(header_title => 'Order Shipped');
+view_put(
+    header_title => 'Order Shipped',
+    header_page_print => 1,
+);
 
 # Returns a address widget which renders the specified Address.
 my($address_widget) = sub {
