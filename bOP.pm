@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 2.84  2005/07/01 20:15:25  nagler
+  * Bivio::UI::Widget::HTML::Page->initialize avoids vs_call unless
+    script/style need to be put on Page
+
+  Revision 2.83  2005/07/01 04:55:18  nagler
+  * Bivio::UI::HTML::Widget::Page.style defaults to Style() widget, if not
+    set explicitly to undef or another value.
+  * Bivio::UI::HTML::Widget::Page.script defaults to Script() widget, if not
+    set explicitly to undef or another value.
+  * As a part of this change, body is rendered before style or script.
+    This should have no effect, but some apps may depend on evaluation
+    orders.  You should avoid like the plague.
+  * Script('name') enables views to include JavaScript in the <head>
+    tag.  The currently implementation is designed for limited
+    JavaScript, but the interface hides much, and will allow for
+    a new implementation as needs grow.
+  * Bivio::UI::HTML::Widget::FirstFocus has been replaced by
+    vs_first_focus(), which accepts a control, and uses new Script()
+    interface.
+  * Bivio::UI::HTML::Widget::Page implements positional args (head,
+    body, attrs)
+  * Bivio::Test::Widget->unit wraps Bivio::Test->unit call in a view to
+    enable use of vs_call, among other view APIs.
+  * Bivio::Test->compute_return handles regular expressions correctly
   * Bivio::Test::ListModel implemented to match Bivio::Test::Widget
   * Bivio::PetShop/files/view/header & order-commit.bviews use
     vs_first_focus and want_page_print
