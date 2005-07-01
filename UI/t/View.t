@@ -11,7 +11,7 @@ CORE::system("ln -s . src") unless -e 'src';
 Bivio::Test->unit([
     'Bivio::UI::View' => [
 	execute => [
-	    [Bivio::IO::Ref->to_scalar_ref(<<'EOF'), $_req]
+	    [\(<<'EOF'), $_req]
 view_class_map('HTMLWidget');
 view_main(Page({
     head => Join(['hello']),
