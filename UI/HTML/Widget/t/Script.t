@@ -31,5 +31,12 @@ EOF
 	page_print => '',
 	first_focus => '',
 	[] => qr/\npage_print_onload\(\);\nfirst_focus_onload\(\);/,
+	page_print => '',
+	page_print => '',
+	[] => sub {
+	    my(undef, $actual) = @_;
+	    return $actual->[0] =~ /window.onload.*page_print.*page_print/is
+		? 0 : 1;
+	},
     ],
 );

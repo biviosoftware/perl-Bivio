@@ -145,7 +145,9 @@ sub render {
 	    $x = 'JAVASCRIPT_' . uc($x);
 	    $self->die('value', $source, $x, ': no such script')
 		unless $self->can($x);
-	    push(@{$req->get_if_exists_else_put(__PACKAGE__, [])}, $x);
+	    my($names) = $req->get_if_exists_else_put(__PACKAGE__, []);
+	    push(@$names, $x)
+		unless grep($x eq $_, @$names);
 	}
 	return;
     }
