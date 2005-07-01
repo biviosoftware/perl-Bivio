@@ -1,4 +1,4 @@
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2003-2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Widget;
 use strict;
@@ -54,11 +54,14 @@ sub setup_render {
 
 =head2 static unit(string class_name, code_ref setup_render, array_ref cases)
 
+=head2 static unit(string class_name, code_ref setup_render, code_ref compute_return, array_ref cases)
+
 Calls L<Bivio::Test::new|Bivio::Test/"new"> and
 L<Bivio::Test::unit|Bivio::Test/"unit"> with I<cases>.  Calls
-L<setup_render|"setup_render"> with Bivio::Test::Request instance for call to
-render.  Adds an explicit check_return for render which returns the rendered
-buffer.  create_object calls C<new> and then puts parent and initializes.
+L<setup_render|"setup_render"> (if defined) with Bivio::Test::Request instance
+for call to render.  Adds an explicit C<compute_return> for render which
+returns the rendered buffer.  After fixup I<compute_return> is called,
+if defined.  create_object calls C<new> and then puts parent and initializes.
 
 If the case is of the form:
 
@@ -75,42 +78,71 @@ It will be transformed to:
 =cut
 
 sub unit {
-    my($proto, $class_name, $setup_render, $cases) = @_;
+    my($proto, $class_name, $setup_render, $compute_return, $cases) = @_;
     Bivio::Agent::Task->initialize;
     my($req) = Bivio::Test::Request->setup_facade;
     my($i) = 0;
-    Bivio::Test->new({
-	create_object => sub {
-	    my($case, $params) = @_;
-	    return $case->get('class_name')->new(@$params)
-		->put_and_initialize(parent => undef);
-	},
-	class_name => $class_name,
-	compute_params => sub {
-	    my($case, $params, $method) = @_;
-	    return $params
-		unless $method eq 'render';
-	    $setup_render->($req, @_);
-	    my($x) = '';
-	    return $method eq 'render' ? [$req, \$x] : $params;
-	},
-	check_return => sub {
-	    my($case, $actual, $expected) = @_;
-	    $case->actual_return([${$case->get('params')->[1]}])
-		if $case->get('method') eq 'render';
-	    return $expected;
-	},
-    })->unit([map(
-	$i++ % 2 && ref($_) ne 'ARRAY'
-	    ? [render => [[] => $_]] : $_,
-	@$cases)]);
+    if (ref($compute_return) eq 'ARRAY') {
+	$cases = $compute_return;
+	$compute_return = undef;
+    }
+    my($res);
+    $req->put('Bivio::Test::Widget' => sub {
+	$res = Bivio::Test->new({
+	    create_object => sub {
+		my($case, $params) = @_;
+		return $case->get('class_name')->new(@$params)
+		    ->put_and_initialize(parent => undef);
+	    },
+	    class_name => $class_name,
+	    compute_params => sub {
+		my($case, $params) = @_;
+		return $params
+		    unless _is_render($case);
+		$setup_render->($req, @_)
+		    if $setup_render;
+		my($x) = '';
+		return [$req, \$x];
+	    },
+	    compute_return => sub {
+		my($case, $actual) = splice(@_, 0, 2);
+		return $actual
+		    unless _is_render($case);
+		$actual = [${$case->get('params')->[1]}];
+		return $compute_return ? $compute_return->($case, $actual, @_)
+		    : $actual;
+	    },
+	})->unit([map(
+	    $i++ % 2 && ref($_) ne 'ARRAY' ? [render => [[] => $_]] : $_,
+	    @$cases,
+	)]);
+    });
+    Bivio::UI::View->execute(\(<<'EOF'), $req);
+view_class_map('HTMLWidget');
+view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
+view_main(SimplePage([
+    sub {
+	shift->get_request->get('Bivio::Test::Widget')->();
+	return '';
+    },
+]));
+EOF
+    return $res;
 }
 
 #=PRIVATE SUBROUTINES
 
+# _is_render(Bivio::Test::Case case) : boolean
+#
+# Returns true if render.
+#
+sub _is_render {
+    return shift->get('method') eq 'render' ? 1 : 0;
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2003-2005 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
