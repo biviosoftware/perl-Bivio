@@ -14,18 +14,14 @@ view_put(
 		Bivio::Type->get_instance('Category')->get_list)),
 	),
     ],
+    header_page_print => 0,
 );
 
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::PetShop::ViewShortcuts');
-view_main(Page({
-    head => Join([
-        Title({values => ['bOP PetShop', view_widget_value('header_title')]}),
-        FirstFocus(),
-    ]),
-    string_font => 'page_text',
-    style => Style(),
-    body => Join([
+view_main(Page(
+    Title(['bOP PetShop', view_widget_value('header_title')]),
+    Join([
 	Grid([
 	    [
 		Link(Image('banner2', 'none'), 'MAIN'),
@@ -67,5 +63,10 @@ view_main(Page({
 	}),
 	'<p><hr>',
 	TaskInfo({}),
+	vs_first_focus(),
     ]),
-}));
+    {
+	string_font => 'page_text',
+	want_page_print => view_widget_value('header_page_print'),
+    },
+));
