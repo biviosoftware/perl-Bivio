@@ -86,12 +86,15 @@ Facade color for text.
 
 Facade color for visited links.
 
-=item style : Bivio::UI::Widget
+=item script : any [Script()]
 
-Renders an inline style in the header.  The widget
-must render the C<STYLE> or C<META> tags as appropriate.
+Renders script code in the header.
 
-=item want_page_print : any
+=item style : any [Style()]
+
+Renders an inline style in the header.
+
+=item want_page_print : any [0]
 
 If true, adds onLoad=window.print() to the body tag.
 
@@ -132,8 +135,8 @@ use Bivio::IO::Config;
 
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SHOW_TIME) = 0;
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 Bivio::IO::Config->register({
     'show_time' => $_SHOW_TIME,
 });
@@ -141,20 +144,6 @@ Bivio::IO::Config->register({
 =head1 FACTORIES
 
 =cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Page
-
-Creates a new Page widget.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
 
 =head1 METHODS
 
@@ -204,20 +193,42 @@ Initializes child widgets.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{head};
-
-    my($v);
-    foreach $v (($fields->{head}, $fields->{body})
-	    = $self->get('head', 'body')) {
-	$v->put(parent => $self);
-	$v->initialize;
+    $self->initialize_attr('head');
+    $self->initialize_attr('body');
+    $self->unsafe_initialize_attr('style');
+    $self->unsafe_initialize_attr('background');
+    foreach my $x (qw(style script)) {
+	$self->get_if_exists_else_put($x, $_VS->vs_call(ucfirst($x)));
+	$self->unsafe_initialize_attr($x);
     }
-    $self->unsafe_initialize_attr('want_page_print');
-    $fields->{style}->put_and_initialize(parent => $self)
-	if $fields->{style} = $self->unsafe_get('style');
-    $fields->{background} = $self->get_or_default('background');
+    if ($self->unsafe_initialize_attr('want_page_print')) {
+	$self->put(
+	    _page_print_script => $self->get('script')->new('page_print'),
+	);
+	$self->initialize_attr('_page_print_script');
+    }
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args() :  hash_ref
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my($proto, $head, $body, $attrs) = @_;
+    return '"head" must be defined'
+	unless defined($head);
+    return '"body" must be defined'
+	unless defined($body);
+    return {
+	head => $head,
+	body => $body,
+	($attrs ? %$attrs : ()),
+    };
 }
 
 =for html <a name="render"></a>
@@ -228,20 +239,27 @@ sub initialize {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
-    my($body) = '';
-    $fields->{body}->render($source, \$body);
-
-    $$buffer .=
-	    '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
-	    ."\n<html><head>\n";
-    $fields->{head}->render($source, $buffer);
-    $fields->{style}->render($source, $buffer) if $fields->{style};
+    my($body) = $self->render_attr('body', $source);
+    $$buffer .= '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
+	."\n<html><head>\n";
+    my($x) = '';
+    $self->map_invoke(
+	unsafe_render_attr => [
+	    map(
+		[$_, $source, $buffer],
+		'head',
+		'style',
+		$self->unsafe_render_attr('want_page_print', $source, \$x)
+		    && $x ? '_page_print_script' : (),
+		'script',
+	    ),
+	],
+    );
     # This is a check for Internet Explorer.  Netscape is BROWSER_HTML4.
     # IE caches too much.
-    $$buffer .= "<meta name=MSSmartTagsPreventParsing content=TRUE>\n"
-	.'<meta http-equiv=pragma content="no-cache">'."\n"
+    $$buffer .= qq{<meta name="MSSmartTagsPreventParsing" content="TRUE">\n}
+	.qq{<meta http-equiv="pragma" content="no-cache">\n}
 	if $req->get('Type.UserAgent')->equals_by_name('BROWSER');
     $$buffer .= '</head><body';
     # Always have a background color
@@ -252,16 +270,13 @@ sub render {
 	$$buffer .= Bivio::UI::Color->format_html(
 	    $self->get_or_default($n.'_color', $n), $c, $req);
     }
-
-    # background image
-    my($a) = '';
+    $x = '';
     $$buffer .= Bivio::UI::Icon->format_html_attribute(
-	$a, 'background', $req)
-	if $self->unsafe_render_attr('background', $source, \$a) && $a;
-    $$buffer .= ' onLoad="window.print()"'
-	if $self->unsafe_render_attr('want_page_print', $source, \$a) && $a;
-    $fields->{body}->unsafe_render_attr('html_tag_attrs', $source, $buffer);
-    $$buffer .= ">\n$body\n"
+	$x, 'background', $req
+    ) if $self->unsafe_render_attr('background', $source, \$x) && $x;
+    $self->get('body')->unsafe_render_attr('html_tag_attrs', $source, $buffer)
+	if UNIVERSAL::can($self->get('body'), 'unsafe_render_attr');
+    $$buffer .= ">\n$$body\n"
 	. $self->show_time_as_html($req)
 	. "</body></html>\n";
     return;
