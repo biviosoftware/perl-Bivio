@@ -45,7 +45,7 @@ use Bivio::IO::Trace;
 use User::pwent ();
 
 #=VARIABLES
-use vars qw($_TRACE);
+use vars qw($_TRACE $OUT);
 Bivio::IO::Trace->register;
 Bivio::IO::Config->register({
     errors_to => 'postmaster',
@@ -53,6 +53,7 @@ Bivio::IO::Config->register({
     sendmail => '/usr/lib/sendmail -U -oem -odb -i',
     reroute_address => undef,
 });
+#TODO: get rid of global state - put it on the request instead
 my($_QUEUE) = [];
 my($_CFG);
 
@@ -100,8 +101,15 @@ L<send_queued_messages|"send_queued_messages">.
 
 sub enqueue_send {
     my($self) = @_;
-    Bivio::Agent::Request->get_current_or_new->push_txn_resource(ref($self))
-	unless int(@$_QUEUE);
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+
+    if (int(@$_QUEUE)) {
+        $req->push_txn_resource(ref($self))
+            if _txn_resources_corrupted($self, $req);
+    }
+    else {
+        $req->push_txn_resource(ref($self));
+    }
     push(@$_QUEUE, $self);
     return;
 }
@@ -293,6 +301,21 @@ sub _send {
     close($fh);
     # check the process return code
     return $? == 0 ? '' : "exit status non-zero ($?)";
+}
+
+# _txn_resources_corrupted() : boolean
+#
+# Returns true if the request's transaction resources do not include
+# self.
+#
+sub _txn_resources_corrupted {
+    my($self, $req) = @_;
+
+    foreach my $resource (@{$req->get('txn_resources')}) {
+        return 0 if $resource eq ref($self);
+    }
+    $req->warn('Mail queue has items, but is not a txn resource: ', $self);
+    return 1;
 }
 
 =head1 COPYRIGHT
