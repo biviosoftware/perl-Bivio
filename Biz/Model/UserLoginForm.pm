@@ -368,7 +368,7 @@ sub _load_cookie_user {
 	    ': user_id not found, logging out');
     }
     $cookie->delete($proto->USER_FIELD, $proto->PASSWORD_FIELD);
-    # If user is invalid, login as super user
+    # If user is invalid, logout as super user
     _su_logout($proto->new($req))
 	if $req->is_substitute_user;
     return undef;

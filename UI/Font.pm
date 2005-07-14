@@ -69,7 +69,8 @@ a group and there is a color by that name.
 
 Fonts behave differently depending on if the
 L<Bivio::Type::UserAgent|Bivio::Type::UserAgent> is a
-C<BROWSER> or C<BROWSER_HTML3>.
+C<BROWSER_HTML3> or other BROWSER type, see
+L<Bivio::UI::HTML::Widget::Style|Bivio::UI::HTML::Widget::Style>.
 
 =head1 IMPLEMENTATION NOTES
 
