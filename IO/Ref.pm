@@ -54,6 +54,13 @@ sub nested_differences {
         unless defined($left) eq defined($right);
     return undef
 	unless defined($left);
+
+    # Regexp: match if right is not a reference
+    return $right =~ $left
+        ? undef
+        : _diff_res($proto, $left, $right, $name)
+            if (ref($left) eq 'Regexp' && !ref($right));
+
     return _diff_res($proto, $left, $right, $name)
         unless ref($left) eq ref($right);
 
@@ -99,7 +106,7 @@ sub nested_differences {
 	? undef : _diff_res($proto, $left, $right, $name)
 	if UNIVERSAL::can($left, 'equals');
 
-    # CODE, GLOB, Regex, and blessed references should always be equal exactly
+    # CODE, GLOB, Regexp, and blessed references should always be equal exactly
     return $left eq $right ? undef : _diff_res($proto, $left, $right, $name);
 }
 

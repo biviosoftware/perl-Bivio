@@ -39,6 +39,7 @@ EOF
             [{'a' => 1, 'b' => 2}, {'a' => 2, 'b' => 3}] => [\(
 		"1 != 2 at ->{'a'}\n2 != 3 at ->{'b'}"
 	    )],
+	    [qr/\d/, 1] => [undef],
 	    [qr/abc/, qr/abc/] => [undef],
 	    [qr/abc/, qr/abd/] => [\('(?-xism:abc) != (?-xism:abd)')],
 	],
