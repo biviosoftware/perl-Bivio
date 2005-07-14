@@ -49,10 +49,26 @@ Renders the name of the script to render.
 
 =cut
 
-
 =head1 CONSTANTS
 
 =cut
+
+=for html <a name="JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG"></a>
+
+=head2 JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG() : string
+
+Adds newline to html body to cause the browser to layout the table
+again. Works around mozilla/firefox layout bug.
+
+=cut
+
+sub JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG {
+    return <<'EOF';
+function correct_table_layout_bug_onload() {
+    document.body.innerHTML += "\n";
+}
+EOF
+}
 
 =for html <a name="JAVASCRIPT_FIRST_FOCUS"></a>
 
@@ -63,7 +79,7 @@ Forces focus to first text input field, if there is one.
 =cut
 
 sub JAVASCRIPT_FIRST_FOCUS {
-    return <<'EOF'
+    return <<'EOF';
 function first_focus_onload() {
     if (document.forms.length == 0)
         return;
