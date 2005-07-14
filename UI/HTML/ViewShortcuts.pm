@@ -146,6 +146,22 @@ sub vs_clear_dot_as_html {
     return $c->as_html(@_);
 }
 
+=for html <a name="vs_correct_table_layout_bug"></a>
+
+=head2 vs_correct_table_layout_bug() : Bivio::UI::Widget
+
+Returns a widget which renders a table layout correction javascript if
+necessary.
+
+=cut
+
+sub vs_correct_table_layout_bug {
+    my($proto) = @_;
+    return $proto->vs_call('If',
+        [['->get_request'], 'Type.UserAgent', '->has_table_layout_bug'],
+        $proto->vs_call('Script', 'correct_table_layout_bug'));
+}
+
 =for html <a name="vs_director"></a>
 
 =head2 static vs_director(any control, hash_ref values, Bivio::UI::Widget default_value, Bivio::UI::Widget undef_value) : Bivio::UI::Widget
