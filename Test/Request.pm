@@ -308,7 +308,7 @@ sub setup_http {
     return $self if $self->unsafe_get('r');
     $self->ignore_redirects(1);
     # What's required by bOP infrastructure.
-    Bivio::Type::UserAgent->BROWSER->execute($self, 1);
+    Bivio::Type::UserAgent->BROWSER_HTML4->execute($self, 1);
     my($r) = Bivio::Test::Bean->new;
     $self->put_durable(r => $r);
     my($c) = Bivio::Test::Bean->new;
