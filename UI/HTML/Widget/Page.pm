@@ -257,11 +257,10 @@ sub render {
 	    ),
 	],
     );
-    # This is a check for Internet Explorer.  Netscape is BROWSER_HTML4.
     # IE caches too much.
     $$buffer .= qq{<meta name="MSSmartTagsPreventParsing" content="TRUE">\n}
 	.qq{<meta http-equiv="pragma" content="no-cache">\n}
-	if $req->get('Type.UserAgent')->equals_by_name('BROWSER');
+	if $req->get('Type.UserAgent')->has_over_caching_bug;
     $$buffer .= '</head><body';
     # Always have a background color
     $$buffer .= Bivio::UI::Color->format_html(
