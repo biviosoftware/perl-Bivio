@@ -69,8 +69,8 @@ on the request.
 
 =item Bivio::Type::UserAgent : Bivio::Type::UserAgent (required)
 
-If the type is C<BROWSER> (read MSIE), will render a full style sheet.
-If C<BROWSER_HTML3> (read Netscape), will render a partial style sheet.
+If the agent supports css, will render a full style sheet.
+Otherwise will render a partial style sheet.
 
 =back
 
@@ -154,8 +154,7 @@ sub render {
     my($req) = $source->get_request;
 
     # Only real browsers get style sheets, sorry.
-    return unless $req->get('Bivio::Type::UserAgent')
-	    == Bivio::Type::UserAgent::BROWSER();
+    return unless $req->get('Bivio::Type::UserAgent')->is_css_compatible;
 
     $req->put(font_with_style => 1);
 
