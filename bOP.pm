@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * PetShop application now uses the correct_table_layout_bug script.
+  * Bivio::IO::Ref nested_differences now handles Regexp matches
+  * Bivio::Test::Request now defaults the user agent to BROWSER_HTML4
+
   Revision 2.86  2005/07/07 16:45:50  moeller
   * Bivio::Mail::Common added sanity check - warn if mail queue has items,
     but self is not a transaction resource on the request
