@@ -2,7 +2,9 @@
 # $Id$
 use strict;
 use Bivio::Test::Widget;
+use Bivio::Type::UserAgent;
 use Bivio::UI::HTML::Widget::Script;
+
 Bivio::Test::Widget->unit(
     'Bivio::UI::HTML::Widget::Page',
     undef,
@@ -10,12 +12,11 @@ Bivio::Test::Widget->unit(
 	my($case, $actual, $expect) = @_;
 	my($r) = $actual->[0];
 	$r =~ s{.*?<html><head>\n}{}s || die;
-	$r =~ s{<meta name="MSSmartTagsPreventParsing".*?</head>}{}s || die;
 	$r =~ s{\n</body></html>\n}{}s || die;
 	return [$r];
     },
     [
-	['head', 'hello', {style => undef}] => qr{head<body bgcolor="#FFFFFF" text="#000000" link="#330099" alink="#330099" vlink="#330099">\nhello}is,
+	['head', 'hello', {style => undef}] => qr{head</head><body bgcolor="#FFFFFF" text="#000000" link="#330099" alink="#330099" vlink="#330099">\nhello}is,
 	['', '', {
 	    style => undef,
 	    want_page_print => [sub {0}],
