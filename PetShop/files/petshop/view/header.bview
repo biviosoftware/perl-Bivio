@@ -64,6 +64,7 @@ view_main(Page(
 	'<p><hr>',
 	TaskInfo({}),
 	vs_first_focus(),
+        vs_correct_table_layout_bug(),
     ]),
     {
 	string_font => 'page_text',
