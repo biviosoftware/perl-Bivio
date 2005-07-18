@@ -163,13 +163,13 @@ sub initialize {
     return if $fields->{prefix};
 
     # Compute form_class from form_model or vice-versa
-    my($class) = $self->ancestral_get('form_class', undef);
+    my($class) = $self->unsafe_get('form_class');
     if ($class && $class !~ /:/) {
 	# lookup the full class name
 	$class = ref(Bivio::Biz::Model->get_instance($class));
 	$self->put(form_class => $class);
     }
-    my($model) = $self->ancestral_get('form_model', undef);
+    my($model) = $self->unsafe_get('form_model');
     if ($class && $model) {
 	# fall through
     }
