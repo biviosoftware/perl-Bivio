@@ -85,9 +85,8 @@ field automatically.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::Join::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
-
     # adds the error widget and the edit widget
     $self->put(values => [
 	$_VS->vs_new('FormFieldError', {
@@ -114,7 +113,6 @@ Creates a label for the field, and returns the (label, field) pair.
 
 sub get_label_and_field {
     my($self) = @_;
-
     return ($_VS->vs_new('FormFieldLabel', {
 	field => _get_field_name($self),
 	label => $_VS->vs_join(
@@ -139,7 +137,6 @@ Implements positional argument parsing for L<new|"new">.
 
 sub internal_new_args {
     my($proto, $field, $edit_attributes, $row_control) = @_;
-
     return {
 	field => $field,
 	($edit_attributes ? (edit_attributes => $edit_attributes) : ()),

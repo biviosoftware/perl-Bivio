@@ -129,7 +129,7 @@ Creates widget.  I<value> must be set at instantiation.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::Join::new(@_);
+    my($self) = shift->SUPER::new(@_);
     return $self->put(values => _parse($self->get('value')));
 }
 
