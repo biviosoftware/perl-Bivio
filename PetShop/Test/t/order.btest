@@ -29,3 +29,4 @@ submit_form(continue => {
 });
 submit_form('continue');
 verify_text('Order Information:');
+verify_text('page_print_onload');
