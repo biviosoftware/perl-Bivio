@@ -52,6 +52,8 @@ sub setup_render {
 
 =for html <a name="unit"></a>
 
+=head2 static unit(string class_name, array_ref cases)
+
 =head2 static unit(string class_name, code_ref setup_render, array_ref cases)
 
 =head2 static unit(string class_name, code_ref setup_render, code_ref compute_return, array_ref cases)
@@ -78,14 +80,13 @@ It will be transformed to:
 =cut
 
 sub unit {
-    my($proto, $class_name, $setup_render, $compute_return, $cases) = @_;
+    my($proto) = shift;
     Bivio::Agent::Task->initialize;
     my($req) = Bivio::Test::Request->setup_facade;
     my($i) = 0;
-    if (ref($compute_return) eq 'ARRAY') {
-	$cases = $compute_return;
-	$compute_return = undef;
-    }
+    my($class_name) = shift;
+    my($cases) = pop;
+    my($setup_render, $compute_return) = @_;
     my($res);
     $req->put('Bivio::Test::Widget' => sub {
 	$res = Bivio::Test->new({
