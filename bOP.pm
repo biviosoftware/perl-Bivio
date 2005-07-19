@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    ancestral_get for form_class and form_model.  This was a defect.
+  * Bivio::Test::Widget->unit no longer requires setup_render to be
+    passed.
+
+  Revision 2.87  2005/07/14 22:14:56  moeller
+  * Bivio::Type::UserAgent now detects many common browser types,
+    MSIE_5, MSIE_6, FIREFOX and MOZILLA.
+    Added methods has_over_caching_bug(), has_table_layout_bug() and
+    is_css_compatible() methods for determining browser features.
+    Removed BROWSER item.
+  * Bivio::UI::HTML::ViewShortcuts added vs_correct_table_layout_bug()
+    which adds javascript to fix layout problems in Mozilla and Firefox
+  * Bivio::UI::HTML::Widget::Page asks UserAgent if there are caching
+    bugs
+  * Bivio::UI::HTML::Widget::Style asks UserAgent if css is supported
   * PetShop application now uses the correct_table_layout_bug script.
   * Bivio::IO::Ref nested_differences now handles Regexp matches
   * Bivio::Test::Request now defaults the user agent to BROWSER_HTML4
