@@ -196,6 +196,16 @@ sub internal_create_display {
 	}),
     }
 
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Year')) {
+	return $_VS->vs_new('String', {
+	    field => $field,
+	    value => [$field],
+	    string_font => 'table_cell',
+	    column_align => 'right',
+	    %$attrs,
+	}),
+    }
+
     # Default number formatting
     if (UNIVERSAL::isa($type, 'Bivio::Type::Number')) {
 	return $_VS->vs_new('AmountCell', {
