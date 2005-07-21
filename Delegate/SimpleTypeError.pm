@@ -39,199 +39,6 @@ You can extend this delegate with:
 Start your TypeErrors at 501.  Don't worry about dups, because
 L<Bivio::Type::Enum|Bivio::Type::Enum> will die if you overlap.
 
-=over 4
-
-=item UNKNOWN
-
-=item INTEGER
-
-expecting a number without a decimal point
-
-=item NUMBER_RANGE
-
-number outside of expected range
-
-=item DATE_TIME
-
-date time must be number of seconds since Jan 1, 1970
-
-=item DATE
-
-invalid date format, must be mm/dd/yyyy
-
-=item TIME
-
-invalid time format, must be hh:mm, hh:mm a, hh:mm:ss p
-
-=item NUMBER
-
-expecting a number
-
-=item YEAR_RANGE
-
-year outside of valid range (1800 to 2199)
-
-=item EXISTS
-
-already exists
-
-=item MONTH
-
-invalid month
-
-=item DAY_OF_MONTH
-
-invalid day for this month
-
-=item HOUR
-
-invalid hour
-
-=item MINUTE
-
-invalid minute
-
-=item SECOND
-
-invalid second
-
-=item NULL
-
-field may not be empty
-
-=item COUNTRY
-
-country must be exactly two letters
-
-=item PASSWORD
-
-invalid password; must be at least SIX characters
-
-=item REALM_NAME
-
-The name you create must begin with a letter and only contain
-letters, numbers, and underscores, and be at least
-three characters long.
-
-=item GREATER_THAN_ZERO
-
-must be greater than zero
-
-=item NOT_FOUND
-
-not found
-
-=item NOT_NEGATIVE
-
-can not be negative
-
-=item TOO_LONG
-
-field is too long
-
-=item YEAR_DIGITS
-
-four digit year required (mm/dd/yyyy)
-
-=item EMAIL
-
-invalid email address; should be of the form mary@aol.com
-
-=item EMAIL_DOMAIN_LITERAL
-
-email addresses with domain literals [w.x.y.z] are not acceptable
-
-=item EMAIL_UNQUALIFIED
-
-email does not contain a @domain.com
-
-=item UNSPECIFIED
-
-field may not be unspecified
-
-=item TEXT_TOO_LONG
-
-input is too long.  Maximum size is 500 characters
-
-=item FORM_DATA_MULTIPART_MIXED
-
-only one file may be uploaded at a time
-
-=item PRIMARY_ID
-
-invalid URL, query string is invalid
-
-=item FILE_FIELD_RESET_FOR_SECURITY
-
-your browser reset this field for security reasons
-
-=item FILE_NAME
-
-File names may not contain \\, /, :, *, ?, ", <, >, or |.  They may not
-be equal to "." or "..". or contain control characters or tabs.
-
-=item NOT_ZERO
-
-may be not be zero
-
-=item TIME_COMPONENT_OF_DATE
-
-time component not valid for date value
-
-=item TIME_RANGE
-
-seconds outside of the maximum for a time
-
-=item DATE_RANGE
-
-days outside of the maximum for a date
-
-=item PASSWORD_MISMATCH
-
-invalid password
-
-=item US_ZIP_CODE
-
-invalid US Zip; must be 5 or 9 digits.
-
-=item CREDITCARD_INVALID_NUMBER
-
-not a valid credit card number
-
-=item CREDITCARD_EXPIRED
-
-expiration date is in the past
-
-=item CREDITCARD_UNSUPPORTED_TYPE
-
-credit card type not supported; Amex, Visa and MasterCard only
-
-=item CREDITCARD_WRONG_TYPE
-
-card number does not match card type
-
-=item FILE_FIELD
-
-your browser has not submitted the file correctly; please try again
-
-=item EMPTY
-
-file cannot be empty
-
-=item OFFLINE_USER
-
-operation not allowed for offline user
-
-=item CONFIRM_PASSWORD
-
-password and confirm password fields do not match
-
-=item DOMAIN_NAME
-
-invalid internet domain name
-
-=back
-
 =cut
 
 #=IMPORTS
@@ -492,6 +299,21 @@ sub get_delegate_info {
         47,
         undef,
         'message body must be plain text or HTML',
+    ],
+    FIRST_NAME_LENGTH => [
+	48,
+	undef,
+	'first name is too long',
+    ],
+    MIDDLE_NAME_LENGTH => [
+	49,
+	undef,
+	'middle name is too long',
+    ],
+    LAST_NAME_LENGTH => [
+	50,
+	undef,
+	'last name is too long',
     ],
 ];
 }
