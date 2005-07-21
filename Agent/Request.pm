@@ -893,7 +893,7 @@ sub internal_redirect_realm {
     if ($new_realm) {
 	# Assert param
 	my($nrt) = $new_realm->get('type');
-	Bivio::Die->die($new_task->as_string, 'realm_type mismatch (',
+	Bivio::Die->die($new_task->as_string, ' realm_type mismatch (',
 		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
     }
     else {
