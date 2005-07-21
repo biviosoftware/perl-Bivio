@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    the case.
+  * Bivio::Delegate::SimpleWidgetFactory treats Bivio::Type::Year as a
+    right justified string, instead of an AmountCell.
+
+  Revision 2.88  2005/07/19 20:59:13  nagler
+  * Bivio::UI::Widget::Join.join_separator is rendered between elements
+    that are non-zero length
+  * Bivio::UI::HTML::Widget::Form->initialize no longer calls
     ancestral_get for form_class and form_model.  This was a defect.
   * Bivio::Test::Widget->unit no longer requires setup_render to be
     passed.
