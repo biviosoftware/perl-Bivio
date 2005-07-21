@@ -84,13 +84,19 @@ the user is logged in at that point.
 Will not create email if value is
 L<Bivio::Type::Email::IGNORE_PREFIX|Bivio::Type::Email::IGNORE_PREFIX>.
 
+Returns () if there is an error.
+
 =cut
 
 sub internal_create_models {
     my($self) = @_;
     my($req) = $self->get_request;
-    my($user) = $self->new_other('User')->create(
-        $self->parse_display_name($self->get('RealmOwner.display_name')));
+    my($x) = $self->parse_display_name($self->get('RealmOwner.display_name'));
+    unless (ref($x) eq 'HASH') {
+	$self->internal_put_error('RealmOwner.display_name' => $x);
+	return;
+    }
+    my($user) = $self->new_other('User')->create($x);
     my($realm) = $self->new_other('RealmOwner')->create({
 	realm_id => $user->get('user_id'),
 	name =>	 $self->unsafe_get('RealmOwner.name')
@@ -144,7 +150,6 @@ sub internal_initialize {
 	],
 	other => [
 	    {
-		# Optionally, set user name explicitly
 		name => 'RealmOwner.name',
 		constraint => 'NONE',
 	    },
