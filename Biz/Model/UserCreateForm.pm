@@ -156,34 +156,48 @@ sub internal_initialize {
 
 =for html <a name="parse_display_name"></a>
 
-=head2 parse_display_name(string display_name) : hash_ref
+=head2 parse_display_name(string display_name) : any
 
 Returns a hash_ref of first_name, middle_name, last_name parsed from the
-display_name.  Suitable for L<Bivio::Biz::Model::User|Bivio::Biz::Model::User>
-updates.
+display_name.  Returns L<Bivio::TypeError|Bivio::TypeError> if there
+was a syntax error while parsing.
 
 =cut
 
 sub parse_display_name {
     my($self, $display_name) = @_;
-    my($first, $middle, @last) = split(' ', $display_name);
+    # Clean up display_name (add spaces after commas, non-suffix periods,
+    # remove extra spaces).
+    my($dn) = $display_name;
+    $dn =~ s/,(\S)/, $1/g;
+    $dn =~ s/\.(.*\s)/. $1/g;
 
-    # split on spaces, last name gets all the extra words
-    my($last);
-    if (int(@last)) {
-        $last = join(' ', @last);
+    # Split on spaces; reorder and remove comma if entered backwards
+    # Only works if comma after first word (eg: 'la salle, jane' fails)
+    my(@parts) = split(' ', $dn);
+    if($parts[0] =~ /,$/) {
+	$parts[0] =~ s/,//;
+	push(@parts, shift(@parts));
     }
-    else {
-        $last = $middle;
-        $middle = undef;
+
+    # Parse by priority.  There is always a last name (unless format is a & b)
+    my($name) = {};
+    _parse_last($name, \@parts);
+    _parse_first($name, \@parts);
+    _parse_middle($name, \@parts);
+
+    my($total) = 0;
+    foreach my $part (keys(%$name)) {
+	return Bivio::TypeError->from_name(uc($part).'_LENGTH')
+	    if defined($name->{$part})
+		&& length($name->{$part}) > Bivio::Type::Name->get_width;
+	$total += length($name->{$part});
     }
-    my($result) = {
-        first_name => _trim($first),
-        middle_name => _trim($middle),
-        last_name => _trim($last),
-    };
-    _trace($result) if $_TRACE;
-    return $result;
+
+    return Bivio::TypeError->NULL
+	unless $total;
+    _trace($name) if $_TRACE;
+    return $name;
 }
 
 =for html <a name="validate"></a>
@@ -205,6 +219,89 @@ sub validate {
 }
 
 #=PRIVATE SUBROUTINES
+
+# _is_conjunction(string str) : boolean
+#
+# Returns 1 if $str matches a conjunction
+#
+sub _is_conjunction {
+    my($str) = @_;
+    return 1 if ($str =~ /^and$|^&$/i);
+    return 0;
+}
+
+# _parse_first(hashref name, arrayref parts)
+#
+# Sets the prefix (if applicable) and the firstname.
+# Catches (with or without periods):
+#   Mr, Mrs, Sir, Dr, Miss, Rev, Ms, etc.
+# Names joined by 'and' or '&' are considered both firstnames components,
+# unless there is no last name given.
+sub _parse_first {
+    my($name, $parts) = @_;
+    return unless int (@$parts)>0;
+    my($first) = shift(@$parts);
+    if ($first =~ /^(mr\.?|mrs\.?|sir|dr\.?|miss|rev\.?|ms\.?)$/i
+	    && @$parts) {
+	$name->{first_name} = $first.' '.shift(@$parts);
+    }
+    else {
+	$name->{first_name} = $first;
+    }
+    return unless @$parts;
+    if(_is_conjunction($parts->[0])) {
+	$name->{first_name} .= ' '.shift(@$parts).' ';
+	$name->{first_name} .= shift(@$parts) if @$parts;
+    }
+    # Remove trailing space if exists
+    $name->{first_name} =~ s/\s$//;
+    return;
+}
+
+# _parse_last(hashref name, arrayref parts)
+#
+# Sets the suffix (if applicable) and the surname (including patronymic).
+# Catches anything with a period in the last place as a suffix.  Also detects
+# certain common suffixes without periods, ie:
+#     Sr, Jr, PhD, JD, MD, I, II, III, IV, etc.
+# Removes commas if present before adding them.
+# Returns if second to last word is a form of '&' (both stored as first name)
+sub _parse_last {
+    my($name, $parts) = @_;
+    return if _is_conjunction($parts->[$#$parts - 1]);
+    my($last) = pop(@$parts);
+    if ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|I|IV|V)$|\.|^I{2,}/i
+	    && defined($parts->[0])) {
+	my($penult) = pop(@$parts);
+	$penult =~ s/,//;
+	$name->{last_name} = $penult.', ';
+    }
+    $name->{last_name} .= $last;
+
+    return unless defined($parts->[0]);
+    # Check for patronymics in last place: van, von, de la
+    if ($parts->[$#$parts] =~ /^(van|von|la|de|du)$/i) {
+	my($patr) = pop(@$parts);
+	$name->{last_name} = $patr.' '.$name->{last_name};
+	return unless defined($parts->[0]);
+	if ($parts->[$#$parts] =~ /^de$/i) {
+	    my($de) = pop(@$parts);
+	    $name->{last_name} = $de.' '.$name->{last_name};
+	}
+    }
+    return;
+}
+
+# _parse_middle(hashref name, arrayref parts)
+#
+# Checks for leftover parts and stores them as the middle name.
+#
+sub _parse_middle {
+    my($name, $parts) = @_;
+    return unless @$parts;
+    $name->{middle_name} = join(' ', @$parts);
+    return;
+}
 
 # _trim(string value) : string
 #
