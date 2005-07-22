@@ -60,13 +60,10 @@ Loads values for the current user, if present.
 sub execute_empty {
     my($self) = @_;
     return unless _is_editing($self);
-    $self->load_from_model_properties($self->get_request->get('auth_user'));
-    foreach my $model (qw(Address Email Phone)) {
-	$self->load_from_model_properties(
-            $self->new_other($model)->load({
-                location => Bivio::Type::Location->PRIMARY,
-            }));
-    }
+    _do_models(
+	$self,
+	sub {$self->load_from_model_properties(shift)},
+    );
     return;
 }
 
@@ -83,17 +80,10 @@ sub execute_ok {
     _create_user($self)
 	unless _is_editing($self);
     my($account) = $self->new_other('UserAccount')->load;
-
-    foreach my $model (qw(User)) {
-	$self->new_other($model)->load->update(
-	    $self->get_model_properties($model));
-    }
-
-    foreach my $model (qw(Address Email Phone)) {
-	$self->new_other($model)->load({
-	    location => Bivio::Type::Location->PRIMARY,
-	})->update($self->get_model_properties($model));
-    }
+    _do_models(
+	$self,
+	sub {shift->update($self->get_model_properties(shift))},
+    );
     Bivio::Die->die("invalid password")
 	unless $self->get_request->get('auth_user')->has_valid_password;
     return;
@@ -202,6 +192,24 @@ sub _create_user {
 	realm_owner => $realm,
     });
     $req->set_realm($realm);
+    return;
+}
+
+# _do_models(self, code_ref op)
+#
+# Operate on User, Address, Email, Phone
+#
+sub _do_models {
+    my($self, $op) = @_;
+    foreach my $model (qw(User Address Email Phone)) {
+	$op->(
+	    $self->new_other($model)->load({
+		$model eq 'User' ? ()
+		    : (location => Bivio::Type::Location->PRIMARY),
+	    }),
+	    $model,
+	);
+    }
     return;
 }
 
