@@ -107,7 +107,7 @@ sub merge_overrides {
 	    home_page_uri => 'http://petshop.bivio.biz',
 	},
 	'Bivio::Test::Util' => {
-	    nightly_output_dir => '/home/petshop-testsuite',
+	    nightly_output_dir => '/home/btest/petshop',
 	    nightly_cvs_dir => 'perl/Bivio/PetShop',
 	},
 	'Bivio::UI::Facade' => {
