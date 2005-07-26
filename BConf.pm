@@ -47,6 +47,49 @@ use Sys::Hostname ();
 
 =cut
 
+=for html <a name="default_merge_overrides"></a>
+
+=head2 static default_merge_overrides(string root_name) : hash_ref
+
+Configure L<Bivio::Test::Util|Bivio::Test::Util>.
+
+=cut
+
+sub default_merge_overrides {
+    my($proto, $root, $prefix, $owner) = @_;
+    # Grab last part: Only needed by PetShop
+    my($root_lc) = lc(($root =~ /(\w+)$/)[0]);
+    return (
+	'Bivio::Ext::DBI' => {
+	    database => $prefix,
+	    user => "${prefix}user",
+	    password => '${prefix}pass',
+	    connection => 'Bivio::SQL::Connection::Postgres',
+	},
+	'Bivio::Test::HTMLParser::Forms' => {
+	    error_color => '#993300',
+	},
+	'Bivio::Test::Language::HTTP' => {
+	    home_page_uri => "http://$root_lc.bivio.biz",
+	},
+	'Bivio::Test::Util' => {
+	    nightly_output_dir => "/home/btest/$root_lc",
+	    nightly_cvs_dir => "perl/$root",
+	},
+	'Bivio::UI::Facade' => {
+	    default => $root,
+	},
+	'Bivio::Util::Release' => {
+	    projects => [
+		[$root, $prefix, $owner],
+	    ],
+	},
+        'Bivio::Delegate::Cookie' => {
+            tag => uc($prefix),
+	},
+    );
+}
+
 =for html <a name="dev"></a>
 
 =head2 dev(int http_port, hash_ref overrides) : hash_ref
@@ -293,7 +336,7 @@ sub merge_http_log {
 
 =for html <a name="merge_overrides"></a>
 
-=head2 abstract static merge_overrides(string host) : hash_ref
+=head2 static static merge_overrides(string host) : hash_ref
 
 Returns any overrides to the base configuration, called by
 L<merge|"merge">.  Returns an empty hash by default.

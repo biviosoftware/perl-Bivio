@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::BConf;
 use strict;
@@ -70,6 +70,7 @@ Base configuration.
 sub merge_overrides {
     my($proto) = @_;
     return {
+	$proto->default_merge_overrides('Bivio/Petshop' => 'pet' => 'bivio Software, Inc.'),
 	'Bivio::Ext::DBI' => {
 	    database => 'petdb',
 	    user => 'petuser',
@@ -103,13 +104,6 @@ sub merge_overrides {
 		TestLanguage => ['Bivio::PetShop::Test'],
 	    },
 	}),
-	'Bivio::Test::Language::HTTP' => {
-	    home_page_uri => 'http://petshop.bivio.biz',
-	},
-	'Bivio::Test::Util' => {
-	    nightly_output_dir => '/home/btest/petshop',
-	    nightly_cvs_dir => 'perl/Bivio/PetShop',
-	},
 	'Bivio::UI::Facade' => {
 	    default => 'PetShop',
 	    http_suffix => 'bivio.biz',
@@ -122,7 +116,7 @@ sub merge_overrides {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
