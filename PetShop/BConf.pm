@@ -70,7 +70,7 @@ Base configuration.
 sub merge_overrides {
     my($proto) = @_;
     return {
-	$proto->default_merge_overrides('Bivio/Petshop' => 'pet' => 'bivio Software, Inc.'),
+	$proto->default_merge_overrides('Bivio/PetShop' => 'pet' => 'bivio Software, Inc.'),
 	'Bivio::Ext::DBI' => {
 	    database => 'petdb',
 	    user => 'petuser',
