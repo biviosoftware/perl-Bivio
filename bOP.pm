@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    for many common values
+  * Bivio::PetShop::BConf uses default_merge_overrides
+  * Bivio::PetShop::Model::UserAccountForm refactored to share more code
+
+  Revision 2.89  2005/07/21 23:43:28  nagler
+  * Bivio::Biz::Model::UserCreateForm->parse_display_name understands
+    prefixes (Dr., Mr., etc.) and suffixes (Jr, III, etc.).  Length
+    errors on User.*_name's are checked, and parse_display_name returns
+    false after putting an error on RealmOwner.display_name if that is
     the case.
   * Bivio::Delegate::SimpleWidgetFactory treats Bivio::Type::Year as a
     right justified string, instead of an AmountCell.
