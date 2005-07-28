@@ -312,7 +312,7 @@ sub new_other {
         unless Bivio::IO::ClassLoader->unsafe_simple_require($class);
     my($options) = [];
     if (ref($self)) {
-	my($standard) = OPTIONS();
+	my($standard) = __PACKAGE__->OPTIONS();
 	while (my($k, $v) = each(%$standard)) {
 	    if ($v->[0] eq 'Boolean') {
 		push(@$options, '-'.$k) if $self->unsafe_get($k);
