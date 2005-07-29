@@ -421,7 +421,8 @@ sub reload_page {
 
 =for html <a name="submit_form"></a>
 
-=head2 submit_form(string submit_button, hash_ref form_fields)
+=head2 submit_form(string submit_button, hash_ref form_fields,
+string expected_content_type)
 
 Submits I<form_fields> using I<submit_button>. Only fields specified will be
 sent.
@@ -431,7 +432,7 @@ B<File upload not supported yet.>
 =cut
 
 sub submit_form {
-    my($self, $submit_button, $form_fields) = @_;
+    my($self, $submit_button, $form_fields, $expected_content_type) = @_;
     $form_fields ||= {};
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names(keys(%$form_fields), $submit_button);
@@ -440,7 +441,7 @@ sub submit_form {
 	    $self, uc($form->{method}),
 	    _fixup_uri($self, $form->{action}),
             _format_form($form, $submit_button, $form_fields)));
-    _assert_form_response($self);
+    _assert_form_response($self, $expected_content_type);
     return;
 }
 
@@ -788,16 +789,27 @@ sub _assert_form_field {
     return Bivio::Test::HTMLParser::Forms->get_field(@_);
 }
 
-# _assert_form_response(self)
+# _assert_form_response(self, string expected_content_type)
 #
 # Asserts result of form is valid.
 #
 sub _assert_form_response {
-    my($self) = @_;
-    my($forms) = _assert_html($self)->get('Forms')->get_shallow_copy;
-    while (my($k, $v) = each(%$forms)) {
-	Bivio::Die->die('form submission errors: ', $v->{errors})
-            if $v->{errors};
+    my($self, $expected_content_type) = @_;
+    $expected_content_type ||= 'text/html';
+    my($fields) = $self->[$_IDI];
+
+    if ($expected_content_type eq 'text/html') {
+	my($forms) = _assert_html($self)->get('Forms')->get_shallow_copy;
+	while (my($k, $v) = each(%$forms)) {
+	    Bivio::Die->die('form submission errors: ', $v->{errors})
+	        if $v->{errors};
+	}
+    }
+    else {
+	my($content_type) = _assert_response($self)->content_type;
+	Bivio::Die->die($content_type, ': response not ',
+	    $expected_content_type)
+		if $content_type ne $expected_content_type;
     }
     return;
 }
