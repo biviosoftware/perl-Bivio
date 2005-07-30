@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::ShellUtil->new_other calls __PACKAGE__->OPTIONS, not OPTIONS()
+  * Bivio::Test::Language::HTTP->submit_form accepts expected_content_type
+    to allow other types of form responses than text/html.
+
+  Revision 2.90  2005/07/27 17:09:46  nagler
+  * Bivio::BConf->default_merge_overrides specifies reasonable defaults
     for many common values
   * Bivio::PetShop::BConf uses default_merge_overrides
   * Bivio::PetShop::Model::UserAccountForm refactored to share more code
