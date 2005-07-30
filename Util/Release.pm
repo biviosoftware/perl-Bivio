@@ -710,7 +710,13 @@ EOF
 	    }
 	}
 	elsif ($line =~ m#^/#) {
-	    $res .= "echo '$prefix$line'";
+	    if ($line =~ /[\?\*\[\]]/) {
+		$line =~ s{^/}{};
+		$res .= "foreach file in $line; do echo '$prefix' /$file; done";
+	    }
+	    else {
+		$res .= "echo '$prefix$line'";
+	    }
 	}
 	else {
 	    die($line, ": unknown _b_release_files instruction");
