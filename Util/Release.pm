@@ -92,6 +92,7 @@ use Bivio::Ext::LWPUserAgent;
 use Bivio::Type::FileName;
 use Config ();
 use File::Find ();
+use Sys::Hostname ();
 use URI::Heuristic ();
 
 #=VARIABLES
@@ -204,6 +205,7 @@ commands:
     install package ... -- install rpms from network repository
     install_facades facades_dir -- install facade files into local_file_root
     install_stream stream_name -- installs all rpms in a stream
+    install_host_stream -- installs all rpms for a $(hostname) stream (with -force)
     install_tar project ... -- install perl tars from network repository
     list [uri] -- displays packages in network repository
     list_installed match -- lists packages which match pattern
@@ -452,8 +454,10 @@ sub install {
     push(@$command, '--force') if $self->unsafe_get('force');
     push(@$command, '--nodeps') if $self->unsafe_get('nodeps');
     push(@$command, '--test') if $self->unsafe_get('noexecute');
-    push(@$command, _get_proxy($self))
-	unless $_CFG->{http_realm};
+#BUG: rpm 4.0.4 has a bug with proxy: after downloading correctly, it
+#     installs the first package N times.  NOTE: check below $ENV{http_proxy}.
+#    push(@$command, _get_proxy($self))
+#	unless $_CFG->{http_realm};
 
     # install all the packages
     for my $package (@packages) {
@@ -483,7 +487,7 @@ sub install {
 	system(@$command) == 0
 	    || Bivio::Die->die('ERROR exit status: ', $?);
 	return;
-    }) if $_CFG->{http_realm};
+    }) if $_CFG->{http_realm} || $ENV{http_proxy};
 
     $self->print(join(' ', @$command, "\n"));
 
@@ -517,6 +521,18 @@ sub install_facades {
 	_system("chgrp -h -R '$_CFG->{facades_group}' .", $output);
 	return;
     });
+}
+
+=for html <a name="install_host_stream"></a>
+
+=head2 install_host_stream()
+
+Forces install of all host packages in stream.
+
+=cut
+
+sub install_host_stream {
+    return shift->put(force => 1)->install_stream(Sys::Hostname::hostname());
 }
 
 =for html <a name="install_stream"></a>
