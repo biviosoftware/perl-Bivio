@@ -205,7 +205,7 @@ commands:
     install package ... -- install rpms from network repository
     install_facades facades_dir -- install facade files into local_file_root
     install_stream stream_name -- installs all rpms in a stream
-    install_host_stream -- installs all rpms for a $(hostname) stream (with -force)
+    install_host_stream -- executes "-force install_stream $(hostname)"
     install_tar project ... -- install perl tars from network repository
     list [uri] -- displays packages in network repository
     list_installed match -- lists packages which match pattern
