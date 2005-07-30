@@ -664,7 +664,7 @@ sub update {
 sub _b_release_files {
     my($instructions) = @_;
     my($prefix) = '';
-    my($res) = '';
+    my($res) = "cd \$RPM_BUILD_ROOT\n";
     foreach my $line (split(/\n/, $instructions)) {
 	$line =~ s/^\s+|\s+$//g;
 	next unless length($line);
