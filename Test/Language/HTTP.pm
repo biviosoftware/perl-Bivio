@@ -421,13 +421,13 @@ sub reload_page {
 
 =for html <a name="submit_form"></a>
 
-=head2 submit_form(string submit_button, hash_ref form_fields,
-string expected_content_type)
+=head2 submit_form(string submit_button, hash_ref form_fields, string expected_content_type)
 
 Submits I<form_fields> using I<submit_button>. Only fields specified will be
-sent.
-
-B<File upload not supported yet.>
+sent.  Asserts I<expected_content_type> is expected_content_type (default:
+text/html).  If I<expected_content_type> is text/html, form is checked for
+submission errors.  If I<expected_content_type> is not text/html, won't check
+for submission errors.
 
 =cut
 
