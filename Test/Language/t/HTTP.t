@@ -134,6 +134,13 @@ submit_form(search => {
 verify_text('Adult Female German Shepherd');
 follow_link_in_table('Item ID', 'Item Name', 'Male Adult Corgi');
 verify_text('Friendly dog from Wales');
+follow_link('Sign-out');
+follow_link('Sign-in');
+submit_form({
+    'Email:' => 'demo',
+    'Password:' => 'password',
+});
+follow_link('MyAccount');
 debug_print('Forms');
 EOF
 	],

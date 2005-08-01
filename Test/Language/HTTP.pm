@@ -423,19 +423,32 @@ sub reload_page {
 
 =head2 submit_form(string submit_button, hash_ref form_fields, string expected_content_type)
 
-Submits I<form_fields> using I<submit_button>. Only fields specified will be
-sent.  Asserts I<expected_content_type> is expected_content_type (default:
-text/html).  If I<expected_content_type> is text/html, form is checked for
-submission errors.  If I<expected_content_type> is not text/html, won't check
-for submission errors.
+=head2 submit_form(hash_ref form_fields, string expected_content_type)
+
+Submits I<form_fields> using I<submit_button> (or none, if no submit
+button). Only fields specified will be sent.  Asserts I<expected_content_type>
+is expected_content_type (default: text/html).  If I<expected_content_type> is
+text/html, form is checked for submission errors.  If I<expected_content_type>
+is not text/html, won't check for submission errors.
 
 =cut
 
 sub submit_form {
     my($self, $submit_button, $form_fields, $expected_content_type) = @_;
-    $form_fields ||= {};
-    my($form) = _assert_html($self)->get('Forms')
-	->get_by_field_names(keys(%$form_fields), $submit_button);
+    if (ref($submit_button) eq 'HASH') {
+	$form_fields = $submit_button;
+	$submit_button = undef;
+    }
+    elsif (!defined($submit_button)) {
+	Bivio::Die->die('submit button not defined');
+    }
+    else {
+	$form_fields ||= {};
+    }
+    my($form) = _assert_html($self)->get('Forms') ->get_by_field_names(
+	keys(%$form_fields),
+	defined($submit_button) ? $submit_button : (),
+    );
     _send_request($self,
 	_create_form_request(
 	    $self, uc($form->{method}),
@@ -922,6 +935,8 @@ sub _format_form {
 	}
     }
     # Needs to be some "true" value for our forms
+    return $result
+	unless defined($submit);
     my($button) = _assert_form_field($form, $submit);
     push(@$result, $button->{name}, $button->{value} || '1');
     return $result;
