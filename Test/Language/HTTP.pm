@@ -531,15 +531,13 @@ sub verify_form {
     _trace($form->{visible}) if $_TRACE;
     foreach my $field (keys(%$form_fields)) {
 	my($control) = _assert_form_field($form, $field);
-	Bivio::Die->die($control->{type}, ' ', $field,
-	    ' expected != actual: "', $form_fields->{$field},
-	    '" != "', $control->{value}, '"',
-        ) unless
-	    $control->{type} eq 'checkbox'
-		? ($control->{checked} ? defined($control->{value})
-		   ? $control->{value} : 1 : 0)
+	Bivio::Die->die($control->{type}, ' ', $field, ': does not match')
+	    unless $control->{type} eq 'checkbox'
+		? ($control->{checked}
+		       ? defined($control->{value}) ? $control->{value} : 1
+		       : 0)
 		  == (defined($form_fields->{$field})
-		      ? $form_fields->{$field} : 0)
+		       ? $form_fields->{$field} : 0)
 		: $control->{options}
 		?  _verify_form_option(
 		    $control, $field, $form_fields->{$field})
