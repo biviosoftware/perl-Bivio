@@ -52,6 +52,7 @@ sub USAGE {
 usage: b-sql [options] command [args...]
 commands:
     create_db -- initializes database (must be run from ddl directory)
+    create_test_db -- destroys, creates, and initializes test database
     destroy_db -- drops all the tables, indexes, and sequences created
     drop -- drops objects which would be created by running input
     drop_and_run -- calls drop then run
@@ -113,7 +114,7 @@ sub backup_model {
 
 =head2 create_db()
 
-Initializes petshop database.  Must be un from from C<files/ddl> directory,
+Initializes database.  Must be un from from C<files/ddl> directory,
 which contains C<*-tables.sql>, C<*-constraints.sql>, etc.
 
 See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
@@ -133,6 +134,27 @@ sub create_db {
     Bivio::Biz::Model->new($self->get_request, 'RealmOwner')->init_db;
     $self->init_realm_role;
     return;
+}
+
+=for html <a name="create_test_db"></a>
+
+=head2 create_test_db()
+
+Destroys old database, creates new database, populates with test data.
+Subclasses should override L<initialize_test_data|"initialize_test_data"> to
+create the test data.
+
+=cut
+
+sub create_test_db {
+    my($self) = @_;
+    $self->initialize_ui;
+    my($req) = $self->get_request;
+    die('cannot be run on production system')
+	if $req->is_production;
+    $self->destroy_db;
+    $self->create_db;
+    return $self->initialize_test_data;
 }
 
 =for html <a name="ddl_files"></a>
@@ -344,6 +366,18 @@ sub init_realm_role {
 	$rr->main(@args);
         $cmd = '';
     }
+    return;
+}
+
+=for html <a name="initialize_test_data"></a>
+
+=head2 initialize_test_data()
+
+Initializes test data.  A hook for the subclasses.
+
+=cut
+
+sub initialize_test_data {
     return;
 }
 
