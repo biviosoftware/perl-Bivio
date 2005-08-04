@@ -378,6 +378,7 @@ Initializes test data.  A hook for the subclasses.
 =cut
 
 sub initialize_test_data {
+    my($self) = @_;
     return;
 }
 
