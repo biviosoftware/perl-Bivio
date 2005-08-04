@@ -280,6 +280,9 @@ sub _send {
 #      or need to generate multiple sends.
     _trace('sending to ', $recipients) if $_TRACE;
 
+    $$msg = 'X-Bivio-Reroute-Address: '.$_CFG->{reroute_address}."\n".$$msg
+	if $_CFG->{reroute_address};
+
     my($command) = '| ' . $_CFG->{sendmail} . " $from '"
 	. ($_CFG->{reroute_address} || $recipients)
 	. "'";
