@@ -20,7 +20,7 @@ bOP
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::bOP::ISA = ('Bivio::UNIVERSAL');
+@Bivio::bOP::ISA = ('Bivio::UNIVERSAL'); 
 
 =head1 DESCRIPTION
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    reroute_address is specified in bconf.
+  * Bivio::Test::Language::HTTP->submit_form can now submit forms
+    without reference to a button (mimicking Javascript autosubmit).
+
+  Revision 2.91  2005/07/30 15:50:19  nagler
+  * Bivio::Util::Release->build primitive _b_release_files accepts
+    shell-meta-chars, which will complete *, ?, and [].
+  * Bivio::Util::Release->install_host_stream calls install_stream
+    with $(hostname) and -force
+  * Bivio::Util::Release->install with $ENV{http_proxy} downloads the
+    packages first before installing.  This works around an rpm 4.0.4
+    bug.
   * Bivio::ShellUtil->new_other calls __PACKAGE__->OPTIONS, not OPTIONS()
   * Bivio::Test::Language::HTTP->submit_form accepts expected_content_type
     to allow other types of form responses than text/html.
