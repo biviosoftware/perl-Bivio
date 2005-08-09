@@ -36,6 +36,9 @@ Bivio::Test->unit([
                 => [Bivio::Type::UserAgent->BROWSER_HTML3],
             [''] => [Bivio::Type::UserAgent->BROWSER_HTML3],
             [undef] => [Bivio::Type::UserAgent->BROWSER_HTML3],
+            ['Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0; .NET CLR 2.0.50215; SL Commerce Client v1.0; Tablet PC 2.0; Media Center PC 3.1; Media Center PC $(runtime.Emerald_version))'] => [Bivio::Type::UserAgent->BROWSER_MSIE_7],
+            ['Mozilla/4.0 (compatible; MSIE 25.0; Windows 2098)']
+                => [Bivio::Type::UserAgent->BROWSER_HTML3],
         ],
     ],
     Bivio::Type::UserAgent->MAIL => [
@@ -63,6 +66,12 @@ Bivio::Test->unit([
         is_css_compatible => 1,
     ],
     Bivio::Type::UserAgent->BROWSER_MSIE_6 => [
+        has_over_caching_bug => 1,
+        has_table_layout_bug => 0,
+        is_browser => 1,
+        is_css_compatible => 1,
+    ],
+    Bivio::Type::UserAgent->BROWSER_MSIE_7 => [
         has_over_caching_bug => 1,
         has_table_layout_bug => 0,
         is_browser => 1,
