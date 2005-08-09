@@ -50,6 +50,7 @@ __PACKAGE__->compile([
     BROWSER_MSIE_6 => [7],
     BROWSER_FIREFOX_1 => [8],
     BROWSER_MOZILLA_1 => [9],
+    BROWSER_MSIE_7 => [10],
 ]);
 
 =head1 METHODS
@@ -84,12 +85,8 @@ sub from_header {
     # Internet Explorer
     if ($ua =~ /\bMSIE (\d+)/) {
         return $proto->BROWSER_HTML3
-            if $1 < 5;
-        return $1 == 5
-            ? $proto->BROWSER_MSIE_5
-            : $1 == 6
-                ? $proto->BROWSER_MSIE_6
-                : $proto->BROWSER;
+            if $1 < 5 || $1 > 7;
+        return $proto->from_name('BROWSER_MSIE_' . $1);
     }
 
     # Mozilla or Firefox, or other Mozilla/x compatible browsers
@@ -102,9 +99,11 @@ sub from_header {
             if $ua =~ /\brv:1\./;
         return $proto->BROWSER_HTML4;
     }
-    return $ua =~ /b-sendmail/i
-        ? $proto->MAIL
-        : $proto->BROWSER_HTML3;
+
+    if ($ua =~ /b-sendmail/i) {
+        return $proto->MAIL;
+    }
+    return $proto->BROWSER_HTML3;
 }
 
 =for html <a name="has_over_caching_bug"></a>
@@ -172,7 +171,7 @@ Returns true if the browser can handle css.
 sub is_css_compatible {
     my($self) = @_;
     return $self->equals_by_name(qw(BROWSER_HTML4 BROWSER_MSIE_5
-        BROWSER_MSIE_6 BROWSER_FIREFOX_1 BROWSER_MOZILLA_1));
+        BROWSER_MSIE_6 BROWSER_MSIE_7 BROWSER_FIREFOX_1 BROWSER_MOZILLA_1));
 }
 
 #=PRIVATE METHODS
