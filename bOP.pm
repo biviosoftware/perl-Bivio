@@ -20,7 +20,7 @@ bOP
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::bOP::ISA = ('Bivio::UNIVERSAL'); 
+@Bivio::bOP::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    fixed bug where unknown type BROWSER was referenced
+  * Bivio::Util::SQL push up the create_test_db and
+    initialize_test_data methods
+
+  Revision 2.92  2005/08/04 19:36:47  david
+  * Bivio::Mail::Common adds X-Bivio-Reroute-Address header if
     reroute_address is specified in bconf.
   * Bivio::Test::Language::HTTP->submit_form can now submit forms
     without reference to a button (mimicking Javascript autosubmit).
