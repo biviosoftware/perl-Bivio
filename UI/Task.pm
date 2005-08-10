@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Task;
 use strict;
@@ -229,11 +229,13 @@ sub format_help_uri {
 	? $self->internal_get_value(ref($task) ? $task->get_name  : $task)
 	: undef;
     return $self->format_uri(
-	Bivio::Agent::TaskId->HELP,
-	undef,
-	$info && $info->{help} ? $info->{help}
-	    : Bivio::UI::Text->get_value('help_index_path_info'),
-	0,
+	{
+	    task_id => Bivio::Agent::TaskId->HELP,
+	    realm => undef,
+	    path_info => $info && $info->{help} ? $info->{help}
+		: Bivio::UI::Text->get_value('help_index_path_info'),
+	    no_context => 0,
+	},
 	$req,
     );
 }
@@ -254,96 +256,113 @@ sub format_realmless_uri {
     my($self) = $proto->internal_get_self($req);
     my($fields) = $self->[$_IDI];
     return $proto->format_uri(
-	$task_id,
-	$fields->{realmless_uri}->{
-	    Bivio::Agent::Task->get_by_id($task_id)->get('realm_type')
+	{
+	    task_id => $task_id,
+	    realm => $fields->{realmless_uri}->{
+		Bivio::Agent::Task->get_by_id($task_id)->get('realm_type')
+	    },
+	    path_info => $path_info,
+	    no_context => 1,
 	},
-	$path_info,
-	1,
 	$req,
     );
 }
 
 =for html <a name="format_uri"></a>
 
-=head2 static format_uri(Bivio::Agent::TaskId task_id, Bivio::Auth::Realm realm, string path_info, boolean no_context, Bivio::Agent::Request req) : string
-
-=head2 static format_uri(Bivio::Agent::TaskId task_id, string realm_name, string path_info, boolean no_context, Bivio::Agent::Request req) : string
+=head2 static format_uri(hash_ref named, Bivio::Agent::Request req) : string
 
 Transforms I<task_id> and I<realm> (if needed) into a URI.
-I<realm_name> must be a legitimate realm name.
+I<realm> must be a legitimate realm name.
+
+I<named> is not modified.
+
+Accepts the following I<named> keys:
+
+=over 4
+
+=item task_id : Bivio::Agent::TaskId (required)
+
+=item realm :  any []
+
+May be a Bivio::Biz::Model or a string.
+
+=item path_info : string []
+
+=item no_context : boolean [0]
+
+Don't append context, even if I<task_id> requires it.
+
+=item require_context : boolean [0]
+
+Always append contxt, even if I<task_id> does not require it and/or
+I<no_context> is true.
+
+=back
 
 B<path_info is not escaped.>
 
 =cut
 
 sub format_uri {
-    my($proto, $task_id, $realm, $path_info, $no_context, $req) = @_;
+    my($proto, $named, $req) = @_;
+    my($args);
+    if (ref($named) eq 'HASH') {
+	$args = {%$named};
+    }
+    else {
+	Bivio::IO::Alert->warn_deprecated('named parameters only');
+	shift;
+	$args = {
+	    task_id => shift,
+	    realm => shift,
+	    path_info => shift,
+	    no_context => shift,
+	};
+	$req = shift;
+    }
     my($self) = $proto->internal_get_self($req);
-    my($task_name) = $task_id->get_name;
+    my($task_name) = $args->{task_id}->get_name;
     my($info) = $self->internal_get_value($task_name);
-    return _get_error($self, $task_name) unless defined($info->{uri});
+    return _get_error($self, $task_name)
+	unless defined($info->{uri});
     my($uri) = $info->{uri};
-
-#TODO: Add in the form context with \& at the end which turns into nothing
-# if no context added.
-    # URI contains a question mark
     if ($uri =~ /$_REALM_PLACEHOLDER_PAT/o) {
-	$realm = $self->[$_IDI]->{realmless_uri}->{$info->{realm_type}}
+	$args->{realm} = $self->[$_IDI]->{realmless_uri}->{$info->{realm_type}}
 	    || return _get_error($self, $task_name,
 		'uri requires a realm but not defined nor is there a'
 		. ' realmless_uri configured for ', $info->{realm_type})
-	    unless defined($realm);
+	    unless defined($args->{realm});
 	my($ro);
-	if (ref($realm)) {
+	if (ref($args->{realm})) {
 	    # If the realm doesn't have an owner, there's a bug somewhere
-	    $ro = $realm->get('owner_name');
+	    $ro = $args->{realm}->get('owner_name');
 	}
 	else {
-	    # We're a little strict here, since we added this overload later
-	    return _get_error($self, $task_name, $realm,
-		    'not a simple realm name or placeholder')
-		    # The '-' is for my-club-site, not for realm names
-		    unless $realm =~ /^[-\w]+$/;
-	    $ro = $realm;
+	    return _get_error(
+		$self, $task_name, $args->{realm},
+		'not a simple realm name or placeholder'
+#TODO: Use RealmName
+	    # The '-' is for my-club-site, not for realm names
+	    ) unless $args->{realm} =~ /^[-\w]+$/;
+	    $ro = $args->{realm};
 	}
-	# Replace everything leading up to placeholder with the uri prefix
 	$uri =~ s/.*$_REALM_PLACEHOLDER_PAT/\/$ro/og;
     }
-    $uri = '/'.$uri unless $uri =~ /^\//;
-
-    # Append path_info, if necessary.  Note that we don't check for
-    # "defined", because path_info is returned as '' from "parse".
-    # We do this so we can handle safely in various bits of code.
-    # path_info must begin with a '/' if it is set.
+    $uri = '/' . $uri
+	unless $uri =~ /^\//;
     if ($info->{has_path_info}) {
-	if ($path_info) {
-	    return _get_error($self, $task_name, 'uri requires path_info')
-			    unless $path_info;
-	    # Be a little flexible on formatting.  path_info almost
-	    # always begins with a '/'.
-	    $path_info = '/'.$path_info
-			unless $path_info =~ /^\//;
-	    # Deletes trailing '/' on URI (only happens in case of DOC ROOT)
+	if ($args->{path_info}) {
 	    $uri =~ s/\/$//;
-	    $uri .= Bivio::HTML->escape_uri($path_info);
+	    $uri .= Bivio::HTML->escape_uri(
+		($args->{path_info} =~ /^\// ? '' : '/') . $args->{path_info},
+	    );
 	}
     }
-    else {
-#TODO: This assertion check doesn't work
-#	Bivio::Die->die($task_id, '(', $uri,
-#		'): does not require path_info (', $path_info, ')')
-#		    if $path_info;
-    }
-
-    # This prevents recursion with FormModel callbacks.  Also used
-    # in where context is counter-productive.
-    return $uri if $no_context;
-
-    # Tightly coupled with UI::HTML::Widget::Form.
-    $uri .= Bivio::Biz::FormModel->format_context_as_query($req, $task_id)
-	    if Bivio::Agent::Task->get_by_id($task_id)->get('require_context');
-    return $uri;
+    $args->{no_form} = 1;
+    return $uri
+	. Bivio::Biz::FormModel->format_context_as_query(
+	    $req->get_form_context_from_named($args), $req);
 }
 
 =for html <a name="handle_register"></a>
@@ -649,7 +668,7 @@ sub _get_error {
     return shift->get_error(@_)->{uri};
 }
 
-# _has(string which, proto, any task_id, any req_or_facade) : boolean
+# _has(string which, proto, any value, any req_or_facade) : boolean
 #
 # Tests whether $which exists for $task_id
 #
@@ -875,7 +894,7 @@ sub _initialize_fields {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
