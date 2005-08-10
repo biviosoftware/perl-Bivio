@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
@@ -113,6 +113,15 @@ if the I<form_model> doesn't require it already.
 L<Bivio::Agent::Request|Bivio::Agent::Request> will not add the query
 (even if supplied) if this is false.
 
+=item want_workflow : boolean [0]
+
+If true, the current task is part of a multi-task workflow.  Go to the next
+task on L<Bivio::Biz::FormModel|Bivio::Biz::FormModel> execute_ok, even if
+there is L<Bivio::Biz::FormContext|Bivio::Biz::FormContext>.  The FormContext
+is copied to the new task verbatim.  It's like a "goto" the next task (think:
+tail recursion) and only return when you are at the end of the workflow
+(want_workflow is false on that task).
+
 =item want_[a-z0-9_]+ : boolean []
 
 Custom boolean attribute.
@@ -151,8 +160,8 @@ Bivio::IO::Trace->register;
 my(%_ID_TO_TASK) = ();
 my($_INITIALIZED);
 my(%_REDIRECT_DIE_CODES) = (
-    Bivio::DieCode::CLIENT_REDIRECT_TASK() => 1,
-    Bivio::DieCode::SERVER_REDIRECT_TASK() => 1,
+    Bivio::DieCode->CLIENT_REDIRECT_TASK => 1,
+    Bivio::DieCode->SERVER_REDIRECT_TASK => 1,
 );
 my($_REQUEST_LOADED);
 my(@_HANDLERS);
@@ -220,13 +229,14 @@ sub new {
     # Set form
     _init_form_attrs($attrs);
 
-    # Defaults
-    $attrs->{want_query} = 1 unless defined($attrs->{want_query});
-    $attrs->{require_secure} = 0 unless defined($attrs->{require_secure});
-
-    # If there is an error, we'll be caching instances in one of the
-    # hashes which may never be used.  Unlikely we'll be continuing after
-    # the error anyway...
+    foreach my $x (
+	[want_query => 1],
+	[require_secure => 0],
+	[want_workflow => 0],
+    ) {
+	$attrs->{$x->[0]} = $x->[1]
+	    unless defined($attrs->{$x->[0]});
+    }
     $attrs->{items} = $new_items;
     $self->set_read_only;
     return $self;
@@ -282,8 +292,7 @@ sub execute {
     my($auth_realm, $auth_role, $auth_roles) =
 	$req->get('auth_realm', 'auth_role', 'auth_roles');
     unless ($auth_realm->can_user_execute_task($self, $req)) {
-	# Redirect to FORBIDDEN if not browser or not auth_user
-	Bivio::Die->throw('FORBIDDEN', {
+	Bivio::Die->throw_quietly('FORBIDDEN', {
 	    auth_user => $req->get('auth_user'),
 	    entity => $auth_realm,
 	    auth_role => $auth_role,
@@ -375,13 +384,12 @@ sub handle_die {
     my($req) = Bivio::Agent::Request->get_current;
     $proto->rollback($req);
 
-    if ($req) {
-        # don't log forbidden when no user, it will automatically goto login
-        unless ($die->get('code')->equals_by_name('FORBIDDEN')
-            && ! $req->get('auth_user')) {
-            $req->warn('task_error=', $die);
-        }
-    }
+    # Don't clutter logs with forbidden -> login redirects
+    $req->warn('task_error=', $die)
+	if $req
+	&& (!$die->get('code')->equals_by_name('FORBIDDEN')
+		|| $req->get('auth_user'));
+
     # Is this an HTTP request? (We don't redirect on non-http requests)
     unless (UNIVERSAL::isa($req, 'Bivio::Agent::HTTP::Request')) {
 	_trace('not an http request: ', $req) if $_TRACE;
@@ -412,7 +420,7 @@ sub handle_die {
 	return;
     }
 
-    # Redirect
+    # error_redirect listed on a task
     $die->set_code(
 	Bivio::DieCode->SERVER_REDIRECT_TASK,
 	task_id => $new_task_id,
@@ -420,14 +428,14 @@ sub handle_die {
 #TODO: Figure out how to save the current form in context if there is one.
 #      Cannot simply call $req->get_form here, because it has to be
 #      parsed into internal_values by FormModel.
-    # Save state of current task executing; emulates server_redirect
-    $req->put_durable(
+    # Leave uri untouched.
+    $req->put_durable_server_redirect_state({
+	task_id => $new_task_id,
 	query => undef,
 	form => undef,
 	form_model => undef,
 	path_info => undef,
-	form_context => Bivio::Biz::FormModel->get_context_from_request($req),
-    );
+    });
     return;
 }
 
@@ -657,7 +665,7 @@ sub _put_attr {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
