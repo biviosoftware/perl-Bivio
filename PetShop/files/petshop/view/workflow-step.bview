@@ -1,0 +1,7 @@
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# $Id$
+view_parent('workflow');
+view_put(menu_content => Form(
+    'WorkflowStepForm',
+     StandardSubmit(),
+));

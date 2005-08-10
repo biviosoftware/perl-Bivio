@@ -1,0 +1,10 @@
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# $Id$
+view_parent('workflow');
+view_put(menu_content => Form(
+    'WorkflowCallerForm',
+    Grid([
+	[vs_form_field('WorkflowCallerForm.prev_task')],
+	[StandardSubmit({cell_colspan => 2})],
+    ]),
+));
