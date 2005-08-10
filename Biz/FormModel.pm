@@ -42,12 +42,14 @@ L<internal_put_error|"internal_put_error">, then
 L<execute_ok|"execute_ok"> is called.
 
 A form may have a context.  This is specified by the C<require_context> in
-L<internal_initialize_sql_support|"internal_initialize_sql_support">.  The
+L<internal_initialize_sql_support|"internal_initialize_sql_support">, or on
+the task as I<require_context> or I<want_workflow>.  The
 context is how we got to this form, e.g. from another form and the contents of
 that form.  Forms with context return to the uri specified in the context on
 "ok" completion.  If the request has FormModel.require_context set to false,
 no context will be required.  If the task has require_context set to false
 and this is the primary form (Task.form_model), no context will be required.
+If the context exists and is I<want_workflow>, we'll accept the context.
 
 A query may have a context as well.  The form's context overrides
 the query's context.  The query's context is usually only valid
@@ -337,49 +339,34 @@ sub execute_unwind {
 
 =for html <a name="format_context_as_query"></a>
 
-=head2 static format_context_as_query(Bivio::Agent::Request req, Bivio::Agent::TaskId uri_task) : string
+=head2 static format_context_as_query(Bivio::Biz::FormContext context, Bivio::Agent::Request req) : string
 
 B<Only to be called by Bivio::UI::Task.>
 
-Calls L<get_context_from_request|"get_context_from_request"> and
-formats as a query string value with a '?' prefix.
+Takes context (which may be null), and formats as query string.
 
 =cut
 
 sub format_context_as_query {
-    my($self, $req, $uri_task) = @_;
-    my($c) = $self->get_context_from_request($req, 1);
-
-    # If the task we are going to is the same as the unwind task,
-    # don't render the context.  Prevents infinite recursion.
-    # If we don't have an unwind task, we don't return a context
-    return ''
-	if !$c || !$c->unsafe_get('unwind_task')
-	    || $c->get('unwind_task') == $uri_task;
-#TODO: Tightly coupled with Widget::Form which knows this is fc=
-#      Need to understand better how to stop the context propagation
-    return '?fc='
-	. Bivio::HTML->escape_query($c->as_literal($req));
+    my(undef, $fc, $req) = @_;
+    return $fc ? '?fc=' . Bivio::HTML->escape_query($fc->as_literal($req)) : '';
 }
 
 =for html <a name="get_context_from_request"></a>
 
-=head2 static get_context_from_request(Bivio::Agent::Request hash_ref, boolean no_form) : hash_ref
+=head2 static get_context_from_request(hash_ref named, Bivio::Agent::Request req) : Bivio::Biz::FormContext
 
-Returns the context elements extracted from the request as hash_ref.
-If the form is I<redirecting> already, then the nested context
-is returned.
+Extract the context from C<req.form_model> depending on various state params.
+If I<named.no_form> is true, we don't add in the form to the context.  This is
+used by L<format_context_as_query|"format_context_as_query"> to limit the size.
 
-If I<no_form> is true, we don't add in the form to the context.  This is used
-by L<format_context_as_query|"format_context_as_query"> to limit
-the size.
+Does not modify I<named>.
 
 =cut
 
 sub get_context_from_request {
-    my(undef, $req, $no_form) = @_;
+    my(undef, $named, $req) = @_;
     my($self) = $req->unsafe_get('form_model');
-
     # If there is a model, make sure not redirecting
     my($form, $context);
     if ($self) {
@@ -387,26 +374,29 @@ sub get_context_from_request {
 	if ($fields->{redirecting}) {
 	    # Just in case, clear the sentinel
 	    $fields->{redirecting} = 0;
-
+	    if ($req->unsafe_get_nested(qw(task want_workflow))) {
+		_trace('kept context for workflow: ', $fields->{context})
+		    if $_TRACE;
+		return $fields->{context};
+	    }
 	    # If redirecting, return the stacked context if there is one
 	    my($c) = $fields->{context};
-	    $c = $c->get('form_context')
-		if $c;
+	    $c &&= $c->get('form_context');
 	    _trace('unwound context: ', $c) if $_TRACE;
 	    return $c;
 	}
 	$form = $self->internal_get_field_values;
 	$context = $self->[$_IDI]->{context};
-	_trace('from model: ', $form) if $_TRACE;
+	_trace('model from request: ', $form) if $_TRACE;
     }
     elsif ($self = $req->get('task')->get('form_model')) {
 	$self = $self->get_instance;
 	$form = $req->unsafe_get('form');
-	_trace('from request: ', $form) if $_TRACE;
+	_trace('model from task: ', $form) if $_TRACE;
     }
 
     $context = $form = undef
-	if $no_form;
+	if $named->{no_form};
 
     # Fix up file fields if any
     my($ff);
@@ -424,8 +414,7 @@ sub get_context_from_request {
 	}
 	$form = $f;
     }
-    return Bivio::Biz::FormContext->new_from_form(
-	$self, $form, $context, $req);
+    return Bivio::Biz::FormContext->new_from_form($self, $form, $context, $req);
 }
 
 =for html <a name="get_errors"></a>
@@ -1044,24 +1033,23 @@ sub process {
     # Is this a primary or auxiliary form on the request?
     my($task) = $req->get('task');
     my($primary_class) = $task->get('form_model');
-    $fields->{require_context} = $self->get_info('require_context')
-	&& $req->get_or_default(ref($self). '.' . 'require_context', 1);
     if (defined($primary_class) && $primary_class eq ref($self)) {
-	# Primary forms don't require context if task doesn't require
-	# context.
-	$fields->{require_context} = 0
-	    unless $task->get('require_context');
-	_trace(ref($self), ': primary form') if $_TRACE;
+	$fields->{want_context} = $self->get_info('require_context')
+	    && $task->get('require_context');
+	_trace(
+	    ref($self), ': primary form, want_context=', $fields->{want_context}
+	) if $_TRACE;
     }
     else {
+	$fields->{want_context} = $self->get_info('require_context');
 	# Auxiliary forms are not the "main" form models on the page
 	# and therefore, do not have any input.  They always return
 	# back to this page, if they require_context.
 	_trace(ref($self), ': auxiliary form; primary_class=', $primary_class)
-		if $_TRACE;
+	    if $_TRACE;
 	$fields->{literals} = {};
-	$fields->{context} = $self->get_context_from_request($req)
-	    if $fields->{require_context};
+	$fields->{context} = $self->get_context_from_request({}, $req)
+	    if $fields->{want_context};
 	return _call_execute($self, 'execute_empty');
     }
 
@@ -1072,7 +1060,6 @@ sub process {
     $req->put(form_model => $self);
 
     my($input) = $req->get_form();
-
     # Parse context from the query string, if any
     my($query) = $req->unsafe_get('query');
     if ($query && $query->{fc}) {
@@ -1143,7 +1130,7 @@ sub put_context_fields {
     $self->die('must be an even number of parameters')
 	unless @_ % 2 == 0;
     my($fields) = $self->[$_IDI];
-    $self->die('form does not require_context')
+    $self->die('form does not have context')
 	unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->get('form_model');
@@ -1192,7 +1179,7 @@ each time.
 sub unsafe_get_context_field {
     my($self, $name) = @_;
     my($fields) = $self->[$_IDI];
-    die('form does not require_context')
+    die('form does not have context')
 	unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->get('form_model');
@@ -1441,16 +1428,17 @@ sub _get_literal {
 
 # _initial_context(Bivio::Biz::FormModel self) : hash_ref
 #
-# If "self" does not have context, does nothing (context is undef).
-# Else, initialize the context to the "next" task unless the context
-# is passed in from the req.
+# Return a context if available from the request.  If there is not context,
+# creates one if the form or task wants it.
 #
 sub _initial_context {
-    my($self, $req) = @_;
+    my($self) = @_;
     my($fields) = $self->[$_IDI];
-    return unless $fields->{require_context};
-    return $self->get_request->unsafe_get('form_context')
-	|| Bivio::Biz::FormContext->new_empty($self);
+    my($req) = $self->get_request;
+    return $req->unsafe_get('form_context')
+	|| ($fields->{want_context}
+	   || $req->unsafe_get_nested(qw(task want_workflow))
+	       ? Bivio::Biz::FormContext->new_empty($self) : undef);
 }
 
 # _parse(Bivio::Biz::FormModel self, hash_ref form) : boolean
@@ -1471,8 +1459,7 @@ sub _parse {
 	    $form->{$self->VERSION_FIELD},
 	    $sql_support);
     # Parse context first
-    _parse_context($self, $form)
-	if $fields->{require_context};
+    _parse_context($self, $form);
     # Ditto for timezone
     _parse_timezone($self, $form->{$self->TIMEZONE_FIELD});
 
@@ -1581,8 +1568,8 @@ sub _parse_cols {
 
 # _parse_context(Bivio::Biz::FormModel self, string value, hash_ref form, Bivio::SQL::FormSupport sql_support)
 #
-# Parses the form's context.  If there is no context, creates it.
-# ONLY CALL IF require_context
+# Parses the form's context.  If there is no context, creates it only
+# if !want_workflow.
 #
 sub _parse_context {
     my($self, $form) = @_;
@@ -1696,18 +1683,19 @@ sub _redirect {
     my($self, $which) = @_;
     my($fields) = $self->[$_IDI];
     my($req) = $self->get_request;
-
-    # Ensure this form_model is seen as the redirect model
-    # by get_context_from_request and set a flag so it
-    # knows to pop context instead of pushing.
     $req->put(form_model => $self);
     $fields->{redirecting} = 1;
-
-    # Success, redirect to the next task or to the task in
-    # the context.
-    $req->client_redirect($req->get('task')->get($which))
-	unless $fields->{context};
-    $fields->{context}->return_redirect($self, $which);
+    if ($fields->{context}) {
+	if ($req->unsafe_get_nested(qw(task want_workflow))) {
+	    _trace('continue workflow') if $_TRACE;
+	    $req->server_redirect({
+		task_id => $req->get('task')->get($which),
+		require_context => 1,
+	    });
+	}
+	$fields->{context}->return_redirect($self, $which);
+    }
+    $req->client_redirect($req->get('task')->get($which));
     # DOES NOT RETURN
 }
 
