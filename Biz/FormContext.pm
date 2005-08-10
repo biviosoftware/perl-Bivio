@@ -263,7 +263,6 @@ sub new_from_literal {
     # $err is boolean_ref used during recursion, hence it isn't in the
     # documentation.
     my($proto, $model, $value, $err) = @_;
-
     _trace(ref($model), ' incoming: ', $value) if $_TRACE;
     # First iterate over the fields and decode the base64.
     my($c) = {};
@@ -361,9 +360,14 @@ sub return_redirect {
 
     # Redirect calls model back in get_context_from_request
     _trace('have form, server_redirect: ', $c->{unwind_task},
-	'?', $c->{query}) if $_TRACE;
-    $req->server_redirect(
-	$c->{unwind_task}, $c->{realm}, $c->{query}, $f, $c->{path_info});
+	'?', $c->{query}, ' form=', $f) if $_TRACE;
+    $req->server_redirect({
+	task_id => $c->{unwind_task},
+	realm => $c->{realm},
+	query => $c->{query},
+	form => $f,
+	path_info => $c->{path_info},
+    });
     # DOES NOT RETURN
 }
 
