@@ -48,7 +48,9 @@ test_setup('HTTP');
 use Bivio::IO::File;
 Bivio::Die->die(q{$mail_file: should not exist})
     if -e q{$mail_file};
-my(\$e1) = generate_local_email();
+# Deprecated usage:
+generate_local_email() =~ /@/;
+my(\$e1, \$n1) = generate_local_email();
 test_deviance(qr/No mail for /);
 verify_local_mail(\$e1, '');
 test_conformance();

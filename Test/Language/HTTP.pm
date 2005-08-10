@@ -224,20 +224,24 @@ sub follow_link_in_table {
 
 =for html <a name="generate_local_email"></a>
 
-=head2 generate_local_email(string suffix) : string
+=head2 generate_local_email(string suffix) : array
 
 Returns an email address based on I<email_user> and I<suffix> (a random number
-by default).
+by default) and a name based on I<suffix>.
 
 =cut
 
 sub generate_local_email {
     my(undef, $suffix) = @_;
-    return $_CFG->{email_user}
+    Bivio::IO::Alert->warn_deprecated('should be called from an array context')
+	unless wantarray;
+    $suffix ||= int(rand(2_000_000_000)) + 1;
+    my($email) = $_CFG->{email_user}
 	. $_CFG->{email_tag}
-	. ($suffix || int(rand(2_000_000_000)) + 1)
+	. $suffix
 	. '@'
 	. Sys::Hostname::hostname();
+    return wantarray ? ($email, "btest_$suffix") : $email;
 }
 
 =for html <a name="get_content"></a>
