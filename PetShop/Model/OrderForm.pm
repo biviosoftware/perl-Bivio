@@ -104,13 +104,13 @@ sub execute_ok {
         if $self->get('ship_to_billing_address');
 
     unless (defined($self->get('Order.ship_to_name'))) {
-	_trace("redirecting to shipping address page") if $_TRACE;
+	_trace('redirecting to shipping address page') if $_TRACE;
 	$self->get_request->server_redirect(
             Bivio::Agent::TaskId->SHIPPING_ADDRESS);
 	# DOES NOT RETURN
     }
 #TODO: try returning task id
-    _trace("redirecting to order confirmation page") if $_TRACE;
+    _trace('redirecting to order confirmation page') if $_TRACE;
     $self->get_request->server_redirect(
         Bivio::Agent::TaskId->ORDER_CONFIRMATION);
     # DOES NOT RETURN
@@ -129,11 +129,12 @@ sub execute_unwind {
     my($self) = @_;
 
     if ($self->get('confirmed_order')) {
+	_trace('order confirmed, redirecting to next') if $_TRACE;
 	$self->execute_ok;
 	$self->internal_redirect_next;
 	# DOES NOT RETURN
     }
-    _trace("redirecting to order confirmation page") if $_TRACE;
+    _trace('redirecting to order confirmation page') if $_TRACE;
     $self->get_request->server_redirect(
         Bivio::Agent::TaskId->ORDER_CONFIRMATION);
     # DOES NOT RETURN
