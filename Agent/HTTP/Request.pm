@@ -137,13 +137,13 @@ sub new {
 
 =for html <a name="client_redirect"></a>
 
-=head2 client_redirect(string new_uri, hash_ref new_query)
+=head2 client_redirect(hash_ref named)
 
-=head2 client_redirect(string new_uri, string new_query)
+See L<Bivio::Agent::Request::format_uri|Bivio::Agent::Request/"format_uri">
 
-=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info, boolean no_context)
+=head2 client_redirect(any uri, any query)
 
-=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, string new_path_info, boolean no_context)
+=head2 client_redirect(any task_id, any realm, any query, string path_info, boolean no_context)
 
 Client side redirect to the new task within the new realm.  If I<new_task>
 is the same as the current task, does an server_redirect.  Otherwise,
@@ -154,46 +154,34 @@ B<DOES NOT RETURN.>
 =cut
 
 sub client_redirect {
-    my($self) = shift;
-    # do internal redirect if task is the same, avoids bad browser behavior
-    # when redirecting to same uri.
-    my($uri);
-    if (ref($_[0])) {
-	my($new_task, $new_realm, $new_query, $new_path_info, $no_context)
-		= @_;
-
-	# use previous query if not specified, maintains state across pages
-	if (int(@_) <= 2) {
-	    $new_query = $self->get('query');
-	    $new_path_info = $self->unsafe_get('path_info')
-		    if int(@_) <= 3;
-	}
-
-	# server_redirect if same task or if task doesn't have a uri
-	$self->SUPER::server_redirect($new_task, $new_realm, $new_query,
-		$new_path_info)
-		if $new_task eq $self->get('task_id')
-		    || !Bivio::UI::Task->has_uri($new_task, $self);
-        _trace('current task: ', $self->get('task_id')->get_name,
-            ', new task: ', $new_task->get_name)
-            if $_TRACE && ! $new_realm;
-	$uri = $self->format_uri($new_task, $new_query,
-		defined($new_realm) ? $new_realm
-		: $self->internal_get_realm_for_task($new_task),
-		$new_path_info, $no_context);
+    my($self, $named) =  shift->internal_get_named_args(
+	ref($_[0]) && (ref($_[0]) ne 'HASH' || $_[0]->{task_id})
+	    ? [qw(task_id realm query path_info no_context require_context)]
+	    : [qw(uri query no_context)],
+	\@_,
+    );
+    if (exists($named->{uri})) {
+	# Can't check want_query here, because literal URI
+	$named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
+	    if ref($named->{query});
+	$named->{uri} =~ s/\?/\?$named->{query}&/
+	    || ($named->{uri} .= '?'.$named->{query})
+	    if defined($named->{query}) && length($named->{query});
     }
     else {
-	my($new_uri, $new_query) = @_;
-	$self->SUPER::server_redirect($self->get('task_id'), undef, $new_query)
-		if $new_uri eq $self->get('uri');
-	$uri = $new_uri;
-	# Can't check want_query here, because literal URI
-	$new_query = Bivio::Agent::HTTP::Query->format($new_query)
-		if ref($new_query);
-	$uri =~ s/\?/\?$new_query&/ || ($uri .= '?'.$new_query)
-		if defined($new_query) && length($new_query);
+	# use previous query if not specified, maintains state across pages
+	$named->{query} = $self->get('query')
+	    unless exists($named->{query});
+	$named->{path_info} = $self->unsafe_get('path_info')
+	    unless exists($named->{path_info});
+	$self->SUPER::server_redirect($named)
+	    unless Bivio::UI::Task->has_uri($named->{task_id}, $self);
+        _trace(
+	    'current: ', $self->get('task_id'), ', new: ', $named->{task_id}
+	 ) if $_TRACE && !$named->{realm};
+	$named->{uri} = $self->format_uri($named);
     }
-    $self->get('reply')->client_redirect($self, $uri);
+    $self->get('reply')->client_redirect($self, $named->{uri});
     Bivio::Die->throw_quietly(Bivio::DieCode->CLIENT_REDIRECT_TASK);
     # DOES NOT RETURN
 }
@@ -211,7 +199,9 @@ returns (does nothing).
 sub client_redirect_if_not_secure {
     my($self) = @_;
     return if $self->get('is_secure') || !$self->get('can_secure');
-    $self->client_redirect($self->format_http_toggling_secure);
+    $self->client_redirect({
+	uri => $self->format_http_toggling_secure,
+    });
     # DOES NOT RETURN
 }
 
@@ -258,29 +248,22 @@ I<form_model> must be set.
 
 sub get_form {
     my($self) = @_;
-
-    # Parsed already or perhaps set via context
-    return $self->get('form') if $self->has_keys('form');
-
-    my($form) = Bivio::Agent::HTTP::Form->parse($self);
-    $self->put(form => $form);
-    return $form;
+    return $self->get_if_exists_else_put(
+	form => sub {Bivio::Agent::HTTP::Form->parse($self)},
+    );
 }
 
 =for html <a name="server_redirect"></a>
 
-=head2 server_redirect(string new_uri, hash_ref new_query, hash_ref new_form, string new_path_info)
+=head2 server_redirect(string uri, any query, hash_ref form, string path_info)
 
-=head2 server_redirect(string new_uri, string new_query, hash_ref new_form, string new_path_info)
-
-=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
-
-=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info)
+=head2 server_redirect(...)
 
 Server-side (aka internal) redirect to the new task within the new realm.
 
-If I<new_uri> supplied, parses out the task, realm, and new_path_info
-from the uri and then calls C<SUPER::redirect>.
+If I<uri> supplied, parses out the task_id, realm, and path_info
+from the uri and then calls
+L<Bivio::Agent::Request::server_redirect|Bivio::Agent::Request/"server_redirect">
 
 B<DOES NOT RETURN.>
 
@@ -288,59 +271,20 @@ B<DOES NOT RETURN.>
 
 sub server_redirect {
     my($self) = shift;
-    # If the task is specified already, let super handle it.
-    $self->SUPER::server_redirect(@_) if ref($_[0]);
-
-    # Need to parse out task and realm from uri
-    die('too many args') if int(@_) > 4;
-    my($new_uri, $new_query, $new_form, $new_path_info) = @_;
-    my($new_task, $new_realm, $path_info_from_uri)
-	    = Bivio::UI::Task->parse_uri($new_uri, $self);
-    # Replace path_info (if not set)
-    $new_path_info ||= $path_info_from_uri if int(@_) <= 3;
-    $self->SUPER::server_redirect($new_task, $new_realm, $new_query,
-	    $new_form, $new_path_info);
+    $self->SUPER::server_redirect(@_)
+	if ref($_[0]);
+    my(undef, $named) = $self->internal_get_named_args(
+	[qw(uri query form path_info)],
+	\@_,
+    );
+    @$named{qw(task_id realm path_info_from_uri)}
+        = Bivio::UI::Task->parse_uri($named->{uri}, $self);
+    $named->{path_info} = $named->{path_info_from_uri}
+	unless exists($named->{path_info});
+    grep(delete($named->{$_}), path_info_from_uri uri);
+    $self->SUPER::server_redirect($named);
+    # DOES NOT RETURN
 }
-
-=for html <a name="server_redirect_in_handle_die"></a>
-
-=head2 server_redirect_in_handle_die(string new_uri, hash_ref new_query, hash_ref new_form, string new_path_info)
-
-=head2 server_redirect_in_handle_die(string new_uri, string new_query, hash_ref new_form, string new_path_info)
-
-=head2 server_redirect_in_handle_die(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
-
-=head2 server_redirect_in_handle_die(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info)
-
-Server-side (aka internal) redirect to the new task within the new realm.
-
-If I<new_uri> supplied, parses out the task and realm from the uri
-and then calls C<SUPER::redirect>.
-
-B<DOES NOT RETURN.>
-
-=cut
-
-sub server_redirect_in_handle_die {
-    my($self, $die) = (shift, shift);
-    # If the task is specified already, let super handle it.
-    if (ref($_[0])) {
-	$self->SUPER::server_redirect_in_handle_die($die, @_);
-	return;
-    }
-
-    # Need to parse out task and realm from uri
-    die('too many args') if int(@_) > 4;
-    my($new_uri, $new_query, $new_form, $new_path_info) = @_;
-    my($new_task, $new_realm, $path_info_from_uri)
-	    = Bivio::UI::Task->parse_uri($new_uri, $self);
-    # Replace path_info (if not set)
-    $new_path_info ||= $path_info_from_uri if int(@_) <= 3;
-    $self->SUPER::server_redirect_in_handle_die($new_task, $new_realm,
-	    $new_query, $new_form, $new_path_info);
-    return;
-}
-
 
 #=PRIVATE METHODS
 
