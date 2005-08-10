@@ -126,13 +126,14 @@ sub process_request {
 	    && $redirect_count <= $self->MAX_SERVER_REDIRECTS
 	) {
 	    #NOTE: Coupling with Request::internal_server_redirect.
-	    #      It already has set task and task_id
+	    #      It already has set all the state
 	    my($attrs) = $die->get('attrs');
 	    _trace('redirect from ', $task_id, ' to ', $attrs->{task_id})
 		if $_TRACE;
 #TODO: add this when thoroughly debugged
 #	    $req->clear_nondurable_state;
             $task_id = $attrs->{task_id};
+#TODO: Can we remove the line below?
 	    $req->internal_redirect_realm($task_id);
 	    redo TRY;
 	}
