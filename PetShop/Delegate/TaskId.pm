@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Delegate::TaskId;
 use strict;
@@ -309,6 +309,37 @@ sub get_delegate_info {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
+	[qw(
+	    WORKFLOW_CALLER
+	    528
+	    GENERAL
+	    ANYBODY
+	    Model.WorkflowCallerForm
+	    View.workflow-caller
+	    next=CART
+	    cancel=SITE_ROOT
+	)],
+	[qw(
+	    WORKFLOW_STEP_1
+	    529
+	    GENERAL
+	    ANYBODY
+	    Model.WorkflowStepForm
+	    View.workflow-step
+	    next=WORKFLOW_STEP_2
+	    cancel=USER_ACCOUNT_CREATE
+	    want_workflow=1
+	)],
+	[qw(
+	    WORKFLOW_STEP_2
+	    530
+	    GENERAL
+	    ANYBODY
+	    Model.WorkflowStepForm
+	    View.workflow-step
+	    next=LOGIN
+	    cancel=USER_ACCOUNT_CREATE
+	)],
     ]);
 }
 
@@ -316,7 +347,7 @@ sub get_delegate_info {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
