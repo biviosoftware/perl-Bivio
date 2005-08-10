@@ -9,12 +9,27 @@ submit_form('OK');
 verify_text('Workflow Step 2');
 submit_form('OK');
 verify_form({'Previous Task:' => 'Workflow Step 2'});
+submit_form('Cancel');
+verify_text(qr{Name:\s+MAIN});
+go_back();
 submit_form('OK');
-verify_text('Your shopping cart is empty');
+verify_text(qr{Name:\s+CART});
 
 visit_uri('/pub/workflow-step-1');
 verify_text('Workflow Step 1');
 submit_form('OK');
 verify_text('Workflow Step 2');
 submit_form('OK');
-verify_text('Please sign into');
+verify_text(qr{Name:\s+LOGIN});
+
+visit_uri('/pub/workflow-caller');
+submit_form('Cancel');
+verify_text(qr{Name:\s+USER_ACCOUNT_CREATE});
+
+visit_uri('/pub/workflow-step-1');
+submit_form('Cancel');
+verify_text(qr{Name:\s+USER_ACCOUNT_CREATE});
+
+visit_uri('/pub/workflow-step-2');
+submit_form('Cancel');
+verify_text(qr{Name:\s+USER_ACCOUNT_CREATE});
