@@ -5,7 +5,7 @@ home_page();
 follow_link('Sign-in');
 follow_link('New User');
 submit_form(submit => {
-    'E-Mail Address:' => generate_local_email(),
+    'E-Mail Address:' => (generate_local_email())[0],
     'Password:' => 'password',
     'First Name:' => 'test-first',
     'Last Name:' => 'test-last',
