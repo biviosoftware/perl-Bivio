@@ -71,7 +71,7 @@ sub internal_initialize {
 	visible => [
 	    {
 		name => 'prev_task',
-		type => 'String',
+		type => 'Line',
 		constraint => 'NOT_NULL',
 	    },
 	],
