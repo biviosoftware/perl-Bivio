@@ -167,6 +167,9 @@ EOF
 	    USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
 		'my/create-account-and-order',
 	    ORDER_HOME => '?',
+	    WORKFLOW_CALLER => 'pub/workflow-caller',
+	    WORKFLOW_STEP_1 => 'pub/workflow-step-1',
+	    WORKFLOW_STEP_2 => 'pub/workflow-step-2',
         ]));
 	return;
     },
@@ -240,11 +243,14 @@ EOF
 
 	# Misc Model support
 	'MailReceiveDispatchForm.uri_prefix' => 'mail-handler-',
+	'WorkflowCallerForm.prev_task' => 'Previous Task',
 	test_text => 'Global',
 	Test_Text_Parent => [
 	    test_text => 'Child',
 	    test_text_only_child => 'Only Child',
 	],
+	ok_button => ' OK ',
+	cancel_button => 'Cancel',
     ]),
 });
 
