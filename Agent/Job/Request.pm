@@ -113,7 +113,7 @@ sub new {
 
 =for html <a name="client_redirect"></a>
 
-=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info, boolean no_context)
+=head2 client_redirect(...)
 
 Will set redirect values but not throw the exception if
 L<ignore_redirects|"ignore_redirects"> was called.
@@ -149,9 +149,7 @@ sub ignore_redirects {
 
 =for html <a name="server_redirect"></a>
 
-=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info, boolean no_context)
-
-=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info, boolean no_context)
+=head2 server_redirect(...)
 
 Will set redirect values but not throw the exception if
 L<ignore_redirects|"ignore_redirects"> was called.
