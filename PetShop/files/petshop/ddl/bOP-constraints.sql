@@ -50,10 +50,6 @@ CREATE INDEX ec_check_payment_t4 ON ec_check_payment_t (
   realm_id
 )
 /
-CREATE INDEX ec_check_payment_t5 ON ec_check_payment_t (
-  ec_payment_id
-)
-/
 
 --
 -- ec_credit_card_payment_t
@@ -71,10 +67,6 @@ ALTER TABLE ec_credit_card_payment_t
 /
 CREATE INDEX ec_credit_card_payment_t4 ON ec_credit_card_payment_t (
   realm_id
-)
-/
-CREATE INDEX ec_credit_card_payment_t5 ON ec_credit_card_payment_t (
-  ec_payment_id
 )
 /
 
@@ -142,10 +134,6 @@ ALTER TABLE ec_subscription_t
 /
 CREATE INDEX ec_subscription_t5 ON ec_subscription_t (
   realm_id
-)
-/
-CREATE INDEX ec_subscription_t6 ON ec_subscription_t (
-  ec_payment_id
 )
 /
 
