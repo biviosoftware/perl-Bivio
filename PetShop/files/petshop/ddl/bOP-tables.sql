@@ -28,7 +28,7 @@ CREATE TABLE bulletin_t (
   bulletin_id NUMERIC(18) NOT NULL,
   date_time DATE NOT NULL,
   subject VARCHAR(100) NOT NULL,
-  body VARCHAR(100000) NOT NULL,
+  body TEXT64K NOT NULL,
   body_content_type VARCHAR(100) NOT NULL,
   CONSTRAINT bulletin_t1 PRIMARY KEY(bulletin_id)
 )
