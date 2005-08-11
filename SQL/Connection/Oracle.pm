@@ -131,6 +131,23 @@ sub internal_dbi_connect {
     return $dbh;
 }
 
+=for html <a name="internal_fixup_sql"></a>
+
+=head2 internal_fixup_sql(string sql) : string
+
+Fixes up definition to match Oracle ddl.
+
+=cut
+
+sub internal_fixup_sql {
+    my($self, $sql) = @_;
+    $sql = $self->SUPER::internal_fixup_sql($sql);
+    $sql =~ s/\bTEXT64K\b/CLOB/igs;
+    # remove work-around for Postgres bug, Oracle doesn't allow CACHE of 1
+    $sql =~ s/\bCACHE 1 (INCREMENT BY)\b/$1/igs;
+    return $sql;
+}
+
 =for html <a name="internal_get_blob_type"></a>
 
 =head2 internal_get_blob_type() : hash_ref
@@ -253,7 +270,8 @@ EOF
 	# Found the constraint?
 	if ($table) {
 	    # Save the state for the die message
-	    $attrs->{columns} = $cols, $attrs->{table} = $table;
+	    $attrs->{columns} = $cols;
+            $attrs->{table} = $table;
 	    _trace($owner, '.', $constraint, ': found ', $table, '.', $cols)
 		    if $_TRACE;
 	    if (1 == $attrs->{dbi_err}) {
