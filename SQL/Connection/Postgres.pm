@@ -134,6 +134,8 @@ sub internal_fixup_sql {
     # blobs
     $sql =~ s/\bBLOB\b/BYTEA/igs;
 
+    $sql =~ s/\bTEXT64K\b/TEXT/igs;
+
     $sql = _fixup_outer_join($sql)
 	if $sql =~ /\(\+\)/;
     _trace($sql) if $_TRACE;
