@@ -5,6 +5,11 @@ use Bivio::Test;
 
 use Bivio::SQL::Connection;
 
+sub _is_postgres {
+    return Bivio::SQL::Connection->get_instance->isa(
+        'Bivio::SQL::Connection::Postgres') ? 1 : 0;
+};
+
 foreach my $table (qw(2 1)) {
     Bivio::Die->catch(sub {
         Bivio::SQL::Connection->execute("drop table t_$table");
@@ -27,12 +32,14 @@ Bivio::Test->new('Bivio::SQL::Connection')->unit([
             'alter table t_2 add constraint t_2_3 check (f1 > 0)',
         )],
         commit => undef,
-        execute_one_row => [
-            'select tgconstrname from pg_trigger'
-            . " where tgconstrname='t_2_2'" => [['t_2_2']],
-            'select conname from pg_constraint'
-            . " where conname='t_2_3'" => [['t_2_3']],
-        ],
+        (_is_postgres()
+            ? (execute_one_row => [
+                'select tgconstrname from pg_trigger'
+                . " where tgconstrname='t_2_2'" => [['t_2_2']],
+                'select conname from pg_constraint'
+                . " where conname='t_2_3'" => [['t_2_3']],
+            ])
+            : ()),
         execute => [map({
             $_ => undef;
         }
