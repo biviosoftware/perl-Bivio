@@ -128,7 +128,7 @@ sub internal_initialize {
             bulletin_id => ['PrimaryId', 'PRIMARY_KEY'],
             date_time => ['DateTime', 'NOT_NULL'],
             subject => ['Line', 'NOT_NULL'],
-            body => ['ReallyLongText', 'NOT_NULL'],
+            body => ['Text64K', 'NOT_NULL'],
             body_content_type => ['Line', 'NOT_NULL'],
 	},
     };
