@@ -192,7 +192,7 @@ sub mkdir_parent_only {
     Bivio::Die->die('no path supplied')
 	    unless defined($child) && length($child);
     my($parent) = File::Basename::dirname($child);
-    Bivio::IO::File->mkdir_p($parent);
+    Bivio::IO::File->mkdir_p($parent, $permissions);
     return $parent;
 }
 
