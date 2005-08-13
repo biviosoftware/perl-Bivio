@@ -191,9 +191,8 @@ sub mkdir_parent_only {
     my($proto, $child, $permissions) = @_;
     Bivio::Die->die('no path supplied')
 	    unless defined($child) && length($child);
-    my($parent) = File::Basename::dirname($child);
-    Bivio::IO::File->mkdir_p($parent, $permissions);
-    return $parent;
+    return Bivio::IO::File->mkdir_p(
+	File::Basename::dirname($child), $permissions);
 }
 
 =for html <a name="pwd"></a>
