@@ -133,12 +133,6 @@ sub dev {
 		http_suffix => "$host:$http_port",
 		mail_host => $host,
 	    },
-	    'Bivio::Util::HTTPConf' => {
-		ports => {
-		    petshop => 8080,
-		},
-		webmaster_email => "$user\@$host",
-	    },
 	    'Bivio::Util::HTTPLog' => {
 		email => '',
 		error_file => 'stderr.log',
