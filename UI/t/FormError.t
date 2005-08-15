@@ -37,8 +37,8 @@ Bivio::Test->new('Bivio::UI::FormError')->unit([
 		),
 		'RealmOwner.password',
 		'Password',
-		Bivio::TypeError->PASSWORD_MISMATCH,
-	    ] => qr/The password you entered does not match the value stored/,
+		Bivio::TypeError->NULL,
+	    ] => qr/Please enter a password/,
 	    [
 		$req,
 		'Bivio::Biz::Model::UserLoginForm',
