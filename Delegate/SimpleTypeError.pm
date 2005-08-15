@@ -192,7 +192,7 @@ sub get_delegate_info {
     PASSWORD_MISMATCH => [
 	26,
 	undef,
-	'invalid password',
+	'The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".',
     ],
     UNSPECIFIED => [
 	27,
