@@ -10,8 +10,10 @@ login_as('Demo@Bivio.Biz', 'password');
 test_deviance('does not match');
 login_as('demo', 'PASSWORD');
 
-test_deviance('must supply a value');
+test_deviance('Please enter a password');
 login_as('demo', '');
+
+test_deviance('You must supply a value for Email');
 login_as('', 'password');
 
 test_deviance('not found');

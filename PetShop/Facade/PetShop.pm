@@ -99,13 +99,8 @@ my($_SELF) = __PACKAGE__->new({
 	main_description_text => ['smaller'],
     ]),
     FormError => __PACKAGE__->make_groups([
-	'UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH' => <<'EOF',
-The password you entered does not match the value stored
-in our database.
-Please remember that passwords are case-sensitive, i.e.
-"HELLO" is not the same as "hello".
-EOF
 	NULL => 'You must supply a value for vs_fe("label");.',
+	'UserLoginForm.RealmOwner.password.NULL' => 'Please enter a password.',
 	'UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)',
     ]),
     HTML => __PACKAGE__->make_groups([
