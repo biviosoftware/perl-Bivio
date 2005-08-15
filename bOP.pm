@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::IO::File simplified mkdir_parent_only
+  * SQL unit tests no longer execute Postgres specific test when running
+    against an Oracle database.
+
+  Revision 2.94  2005/08/10 22:35:20  nagler
+  * Major refactoring of Bivio::Agent::Request to support named args
+    (hash_ref) for most APIs that generate URIs or do redirects.
+    task_id may now be "any", and will default to current task if
+    not supplied for all routines.
+  * Bivio::Agent::Request->server_redirect/client_redirect/format_uri
+    accept require_context, which allows a task to force a redirect
+    back to itself on successful completion of the form.
+  * Bivio::Agent::Task.want_workflow allows tasks to "chain" context,
+    instead of stacking.  See Bivio/PetShop/Test/t/workflow.btest for
+    an example workflow.
+  * Bivio::Agent::Request->client_redirect_contextless was removed.
+    Use $req->client_redirect({task_id => 'bla', no_context => 1})
+    with considerations whether you should add path_info => undef or
+    query => undef.
+  * Bivio::Biz::FormModel->format_context_as_query and
+    get_context_from_request interface changed;  These routines
+    are not used by applications.
+  * FORBIDDEN exceptions without an auth_user (i.e. to force login)
+    are invoked with throw_quietly to avoid messages and stack traces.
   * Bivio::Test::Language::HTTP->generate_local_email returns a name
     as well as an email.  Use (generate_local_email())[0] in a scalar
     context, a form which is now deprectated.
