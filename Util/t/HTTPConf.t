@@ -2,6 +2,10 @@
 # $Id$
 use strict;
 use Bivio::Test;
+use Bivio::IO::File;
+my($tmp) = "$ENV{PWD}/HTTPConf.tmp/";
+CORE::system("rm -rf $tmp; mkdir $tmp");
+Bivio::IO::File->chdir($tmp);
 Bivio::Test->new('Bivio::Util::HTTPConf')->unit([
     'Bivio::Util::HTTPConf' => [
 	generate => [
@@ -34,17 +38,25 @@ Bivio::Test->new('Bivio::Util::HTTPConf')->unit([
 EOF
             sub {
 		my($vars) = Bivio::Die->eval_or_die(shift->get('params')->[0]);
-		foreach my $app (grep(/^a\d+$/, sort(keys(%$vars)))) {
+		my($h) = $vars->{httpd};
+		$h->{listen} = 80;
+		# Doubles on the last round so matches 2 * sum(servers)
+		$h->{servers} = 0;
+		foreach my $app (grep(/^a\d+$/, sort(keys(%$vars))), 'httpd') {
+		    $h->{servers} += ($vars->{$app}->{servers} ||= 4);
 		    foreach my $x (
 			["etc/httpd/conf/$app.conf", qw(listen server_admin servers)],
 			["etc/$app.bconf", qw(cookie_tag http_suffix mail_host)],
+			["etc/rc.d/init.d/$app"],
+			["etc/logrotate.d/$app"],
 		    ) {
 			my($file) = shift(@$x);
+			next if $file eq 'etc/httpd.bconf';
 			my($c) = Bivio::IO::File->read($file);
 			foreach my $k (@$x) {
 			    my($n) = ($k =~ /([a-z]+)$/)[0];
 			    # 4 is default servers, only default being tested
-			    my($v) = $vars->{$app}->{$k} || $vars->{$k} || 4;
+			    my($v) = $vars->{$app}->{$k} || $vars->{$k};
 			    die("$n $v: not found in $file")
 				unless $$c =~ /${n}[^\n]+$v/is;
 			}

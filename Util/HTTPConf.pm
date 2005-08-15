@@ -100,13 +100,15 @@ sub generate {
     umask(027);
     foreach my $v (map(_app_vars($vars->{$_}), @{$vars->{apps}})) {
 	_write(_httpd_conf($v));
-	_mkdir($v->{log_directory});
 	_write(_app_bconf($v));
 	_write(_app_init_rc($v));
+	_mkdir($v->{log_directory});
+	_write(_logrotate($v));
     }
     _httpd_vars($vars);
     _write($vars->{httpd_init_rc}, _httpd_init_rc());
     _write(_httpd_conf($vars->{httpd}));
+    _write(_logrotate($vars->{httpd}));
     return;
 }
 
@@ -174,7 +176,7 @@ sub validate_vars {
 	%{Bivio::Die->eval_or_die($vars)},
     };
     foreach my $app (
-	@{$vars->{apps} = [grep(!exists($_VARS->{$_}), sort(keys(%$vars)))]},
+	@{$vars->{apps} = [sort(grep(!exists($_VARS->{$_}), sort(keys(%$vars))))]},
     ) {
 	foreach my $k (keys(%$_VARS)) {
 	    my($v) = $vars->{$app};
@@ -233,6 +235,7 @@ sub _app_vars {
 	init_rc => "/etc/rc.d/init.d/$app",
 	lock_file => "/var/lock/subsys/$app",
 	log_directory => "/var/log/$app",
+	logrotate => "/etc/logrotate.d/$app",
 	pid_file => "/var/run/$app.pid",
 	permanent_redirects => ($vars->{http_suffix} || '') =~ /^www\.(.*)$/
 	    ? <<"EOF" : '',
@@ -346,6 +349,24 @@ BrowserMatch "JDK/1\.0" force-response-1.0
 EOF
 }
 
+# _logrotate(hash_ref vars) : array
+#
+# Copies template for vars.
+#
+sub _logrotate
+    {
+    my($vars) = @_;
+    return _replace_vars($vars, logrotate => <<'EOF');
+$log_directory/access_log $log_directory/agent_log $log_directory/error_log $log_directory/referer_log {
+    missingok
+    sharedscripts
+    postrotate
+        /bin/kill -HUP `cat $pid_file 2>/dev/null` 2> /dev/null || true
+    endscript
+}
+EOF
+}
+
 # _mkdir(string name) : string
 #
 # Makes directory
@@ -354,14 +375,6 @@ sub _mkdir {
     my($name) = @_;
     $name =~ s,^/,,;
     return Bivio::IO::File->mkdir_p($name);
-}
-
-# _httpd_httpd_conf(hash_ref vars) : array
-#
-# Replace vars
-#
-sub _httpd_httpd_conf {
-    return;
 }
 
 # _httpd_init_rc() : string
@@ -422,7 +435,8 @@ EOF
     foreach my $i (map($vars->{$_}->{servers}, @{$vars->{apps}})) {
 	$n += $i;
     }
-    $v->{server_admin} ||= 'webmaster@' . $v->{host_name};
+    $v->{server_admin} ||= $vars->{server_admin}
+	|| 'webmaster@' . $v->{host_name};
     $v->{servers} = $n * 2;
     return;
 }
