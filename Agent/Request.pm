@@ -1012,6 +1012,8 @@ sub internal_set_current {
     my($self) = @_;
     Bivio::Die->die($self, ': must be reference')
 	unless ref($self);
+    Bivio::IO::Alert->warn('replacing request:', $self->get_current)
+        if $self->get_current;
     return $_CURRENT = $self;
 }
 
