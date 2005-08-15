@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    changed to be more suitable.  If you have (deviance) acceptance
+    tests that rely on the old value (invalid password), they will
+    fail.
+
+  Revision 2.95  2005/08/15 16:10:24  moeller
+  * Added new type Bivio::Type::Text64K which replaces
+    Bivio::Type::ReallyLongText.
+  * Bivio::Biz::Model::Bulletin now uses Text64K type.
+  * Bivio::SQL::Connection::Oracle treats Text64K type as CLOB,
+    Bivio::SQL::Connection::Postgres treats Text64K as TEXT.
   * Bivio::IO::File simplified mkdir_parent_only
   * SQL unit tests no longer execute Postgres specific test when running
     against an Oracle database.
