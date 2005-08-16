@@ -425,7 +425,7 @@ EOF
     $legacy_rewrite_rules
     RewriteRule ^/./ - [L]
     RewriteRule .*favicon.ico$$ /i/favicon.ico [L]
-    RewriteRule ^(.*) http://%{HTTP_HOST}:$listen$$1 [proxy]
+    RewriteRule ^(.*) http://$http_suffix:$listen$$1 [proxy]
 </VirtualHost>
 $permanent_redirects
 EOF
