@@ -255,8 +255,8 @@ sub _pager_report {
     my($self, @args) = @_;
     my($fields) = $self->[$_IDI];
     my($msg) = Bivio::IO::Alert->format_args(@args);
-    $fields->{res} = "CRITICAL ERRORS\n".$fields->{res}
-	    unless $fields->{res} =~ /^CRITICAL ERRORS/;
+    $fields->{res} = "CRITICAL ERRORS\n$fields->{res}"
+	unless $fields->{res} =~ /^CRITICAL ERRORS/;
     my($last) = $fields->{pager_res}->[$#{$fields->{pager_res}}];
     push(@{$fields->{pager_res}}, $msg) if !$last || $last ne $msg;
     return;
@@ -273,7 +273,7 @@ sub _parse_errors_complete {
     $fields->{fh}->close;
     my($pr) = join('', @{$fields->{pager_res}});
     $self->email_message($_CFG->{pager_email}, 'critical http errors', \$pr)
-	    if $pr && $_CFG->{pager_email};
+	if $pr && $_CFG->{pager_email};
     return \$fields->{res};
 }
 
@@ -286,13 +286,10 @@ sub _parse_errors_init {
     my($self, $interval_minutes) = @_;
     # Initializes the request (timezone)
     $self->usage('interval_minutes must be supplied')
-	    if $interval_minutes <= 0;
+	if $interval_minutes <= 0;
     $self->put(email => $_CFG->{email})
-	    unless defined($self->unsafe_get('email'));
-    $self->put(result_subject =>
-	    'Errors on '.Sys::Hostname::hostname().' at '
-	    .Bivio::Type::DateTime->to_local_string(
-		    Bivio::Type::DateTime->now));
+	unless defined($self->unsafe_get('email'));
+    $self->put(result_subject => $_CFG->{error_file});
     my($fields) = $self->[$_IDI] = {
 	res => '',
 	pager_res => [],
