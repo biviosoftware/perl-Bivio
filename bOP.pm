@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 2.97  2005/08/16 23:33:12  nagler
+  * Bivio::Util::HTTPLog Subject: is the log name without date or host,
+    because they are elsewhere
+
+  Revision 2.96  2005/08/15 23:21:45  nagler
+  * Bivio::Agent::Request->internal_set_current warns if a request is
+    already current.  There may be a defect with Apache not calling
+    the clean up handlers if a request aborts.
+  * Bivio::Util::HTTPConf (b-http-conf) generates configuration for a
+    bOP application server allowing you to run multiple bOP applications
+    on the same machine.  The front-end is an Apache proxy server that
+    also servers static files (RewriteRule ^/./ - [L]).  HTTPConf.t
+    is a good place to start to try to understand what this command does.
+  * Bivio::Delegate::SimpleTypeError->PASSWORD_MISMATCH description
     changed to be more suitable.  If you have (deviance) acceptance
     tests that rely on the old value (invalid password), they will
     fail.
