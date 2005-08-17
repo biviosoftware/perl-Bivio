@@ -919,7 +919,6 @@ Sets the current request to I<req>.
 
 sub put_request {
     my($self, $req) = @_;
-    $req->set_current;
     return $self->put(req => $req);
 }
 
