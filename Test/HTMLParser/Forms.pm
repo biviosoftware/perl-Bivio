@@ -46,6 +46,10 @@ __PACKAGE__->register(['Cleaner']);
 Bivio::IO::Config->register(my $_CFG = {
     error_color => '#990000',
     error_class => 'form_field_error',
+    # this controls whether a checkbox in a table uses the
+    # table heading as a label, or if the label is parsed from nearby text.
+    # the key is the name of the table heading
+    disable_checkbox_heading => {},
 });
 
 =head1 FACTORIES
@@ -578,6 +582,10 @@ sub _start_input {
 #TODO: Deal with the case when no header and not a checkbox
     if (defined($attr->{index}) && $fields->{headers}
 	&& defined($fields->{headers}->[$fields->{cell_num}])) {
+
+        return if $attr->{type} =~ /checkbox/
+            && $_CFG->{disable_checkbox_heading}->{
+                $fields->{headers}->[$fields->{cell_num}]};
 	$fields->{text} = $fields->{headers}->[$fields->{cell_num}]
 		. '_' . $attr->{index};
 	return _label_visible($fields);
@@ -588,7 +596,8 @@ sub _start_input {
 
     # A field has a label if the word preceding it begins with a ':'
     return _label_visible($fields)
-        if ($fields->{text} || $fields->{prev_cell_text}) =~ /\:\s*$/;
+        if ($fields->{text} || $fields->{prev_cell_text}) =~ /\:\s*$/
+            && $attr->{type} !~ /checkbox/;
 
     # Unlabeled field.  Will be dealt with on closing tag or next text
     return;
