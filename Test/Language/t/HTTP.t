@@ -37,7 +37,7 @@ Bivio::Test->unit([
 test_setup('HTTP');
 home_page();
 follow_link('Sign-in');
-test_deviance('You must supply a value');
+test_deviance('Please enter a password.');
 submit_form('submit');
 submit_form('submit' => {
     'Email:' => 'foobar',
