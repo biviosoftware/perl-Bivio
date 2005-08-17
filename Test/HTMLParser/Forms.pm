@@ -46,9 +46,6 @@ __PACKAGE__->register(['Cleaner']);
 Bivio::IO::Config->register(my $_CFG = {
     error_color => '#990000',
     error_class => 'form_field_error',
-    # this controls whether a checkbox in a table uses the
-    # table heading as a label, or if the label is parsed from nearby text.
-    # the key is the name of the table heading
     disable_checkbox_heading => {},
 });
 
@@ -135,6 +132,12 @@ unique class for error text on page. If found, assumes form failed.
 =item error_color : string [#990000]
 
 unique color for error text on page. If found, assumes form failed.
+
+=item disable_checkbox_heading : hash_ref {}
+
+Controls whether a checkbox in a table uses the table heading as a
+label, or if the label is parsed from nearby text.
+The key is the name of the table heading.
 
 =back
 
