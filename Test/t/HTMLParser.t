@@ -59,6 +59,15 @@ Bivio::Test->new({
 		 'AES/GA', 'type'] => [ 'checkbox' ],
 	],
     ], [
+        'ioe-overview' => [
+            ['Forms', '<prev', 'visible', 'PK', 'type'] => ['checkbox'],
+            ['Forms', '<prev', 'visible', 'PK', 'checked'] => ['1'],
+            ['Forms', '<prev', 'visible', '1983-1984', 'checked'] => ['1'],
+            ['Forms', '<prev', 'visible', '2004-2005', 'checked'] => ['1'],
+            ['Forms', '<prev', 'visible', '1984-1985', 'checked'] =>
+                Bivio::DieCode::DIE,
+        ],
+    ], [
 	'ieeesa-open-ballot-invitations' => [
 	    ['Forms', 'Join Ballot Group_0', 'visible',
 		 'Classification_0', 'options', '', 'value'] => [ '1' ],
