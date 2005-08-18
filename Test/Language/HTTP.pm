@@ -920,14 +920,16 @@ sub _format_form {
 		last;
 	    }
   	}
+        _validate_text_field($f, $v)
+            if $f->{type} eq 'text';
         push(@$result, $f->{name}, $value);
     }
     # Fill in hidden and defaults
     foreach my $class (qw(hidden visible)) {
 	foreach my $v (values(%{$form->{$class}})) {
 	    next if $match->{$v};
-            Bivio::Die->die('text input must be a single line: ', $v->{label})
-                if $v->{type} eq 'text' && ($v->{value} || '') =~ /\n/;
+            _validate_text_field($v, $v->{value})
+                if $v->{type} eq 'text';
             push(@$result, $v->{name},
 		$v->{type} eq 'checkbox'
 		    ? $v->{checked}
@@ -1031,6 +1033,17 @@ sub _send_request {
     $fields->{html_parser} =
 	Bivio::Test::HTMLParser->new($fields->{response}->content_ref)
         if $fields->{response}->content_type eq 'text/html';
+    return;
+}
+
+# _validate_text_field(hash_ref field, string value)
+#
+# Dies if the text field has multipel lines.
+#
+sub _validate_text_field {
+    my($field, $value) = @_;
+    Bivio::Die->die('text input must be a single line: ', $field->{label})
+        if $field->{type} eq 'text' && ($value || '') =~ /\n/;
     return;
 }
 
