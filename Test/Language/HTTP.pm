@@ -926,6 +926,8 @@ sub _format_form {
     foreach my $class (qw(hidden visible)) {
 	foreach my $v (values(%{$form->{$class}})) {
 	    next if $match->{$v};
+            Bivio::Die->die('text input must be a single line: ', $v->{label})
+                if $v->{type} eq 'text' && ($v->{value} || '') =~ /\n/;
             push(@$result, $v->{name},
 		$v->{type} eq 'checkbox'
 		    ? $v->{checked}
