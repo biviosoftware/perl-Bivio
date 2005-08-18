@@ -18,3 +18,12 @@ submit_form(submit => {
 });
 follow_link('MyAccount');
 verify_text(qr/First Name:.*test-start.*Last Name:.*test-end/s);
+
+test_deviance('text input must be a single line');
+submit_form(submit => {
+    'City:' => <<'EOF',
+Multiple
+Lines
+of Text
+EOF
+});
