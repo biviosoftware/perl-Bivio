@@ -181,13 +181,15 @@ sub render {
     my($email) = ref($fields->{email})
 	    ? $source->get_widget_value(@{$fields->{email}})
 	    : $req->format_email($fields->{email});
+    $email ||= '';
 
     # Don't render anything which is ignored.
     if (Bivio::Type::Email->is_ignore($email)) {
 	# Don't make visible ignored addresses
 	if ($fields->{email} eq $fields->{value}
 	    || ref($fields->{value}) eq 'ARRAY'
-	    && $email eq $source->get_widget_value(@{$fields->{value}})) {
+	    && $email eq $source->get_widget_value(@{$fields->{value}}))
+	{
 	    $fields->{value_invalid}->render($source, $buffer)
 		    if $fields->{value_invalid};
 	} else {
