@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegate::SimpleTypeError;
 use strict;
@@ -315,6 +315,11 @@ sub get_delegate_info {
 	undef,
 	'last name is too long',
     ],
+    HTTPURI => [
+	51,
+	undef,
+	'invalid HTTP URL (web location)',
+    ],
 ];
 }
 
@@ -322,7 +327,7 @@ sub get_delegate_info {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
