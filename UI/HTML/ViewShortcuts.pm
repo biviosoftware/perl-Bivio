@@ -162,6 +162,41 @@ sub vs_correct_table_layout_bug {
         $proto->vs_call('Script', 'correct_table_layout_bug'));
 }
 
+=for html <a name="vs_descriptive_field"></a>
+
+=head2 static vs_descriptive_field(string field, any description) : array_ref
+
+Calls vs_form_field and adds I<description> to the result.  I<description>
+is an optional string, widget value, or widget.  It is always wrapped
+in a String with font form_field_description.
+
+=cut
+
+sub vs_descriptive_field {
+    my($proto, $field, $description) = @_;
+    my($label, $input) = $proto->vs_form_field($field);
+    return [
+	$label,
+	$proto->vs_call('Join', [
+	    $input,
+	    [sub {
+		 my($req) = shift->get_request;
+		 my($proto, $field) = @_;
+#TODO: Need to create a separate space for field_descriptions so we don't
+#      default to something that we don't expect.
+		 my($v) = $req->get_nested('Bivio::UI::Facade', 'Text')
+		     ->unsafe_get_value($field, 'field_description');
+		 return $v ?
+		     $proto->vs_call(
+			 'String',
+			 $proto->vs_call('Prose', '<br><p class="form_field_description">' . $v . '</p>'),
+			 'form_field_description',
+		     ) :  '';
+	    }, $proto, $field],
+	]),
+    ];
+}
+
 =for html <a name="vs_director"></a>
 
 =head2 static vs_director(any control, hash_ref values, Bivio::UI::Widget default_value, Bivio::UI::Widget undef_value) : Bivio::UI::Widget
@@ -401,6 +436,65 @@ sub vs_new {
     my(undef, $class) = (shift, shift);
     my($c) = _use($class);
     return $c->new(@_);
+}
+
+=for html <a name="vs_simple_form"></a>
+
+=head2 static vs_simple_form(string form_name, array_ref fields, Bivio::UI::Widget preamble, Bivio::UI::Widget epilogue) : Bivio::UI::Widget
+
+Creates a Form in a Grid.  Preamble text.
+
+=cut
+
+sub vs_simple_form {
+    my($proto, $form, $fields, $preamble, $epilogue) = @_;
+    return $proto->vs_call('Form', $form,
+	$proto->vs_call('Grid', [
+	    $preamble ? (
+		[$preamble->put(
+		    cell_colspan => 2,
+		    cell_align => 'left',
+	        )],
+		[$proto->vs_blank_cell()],
+	    ) : (),
+	    map({
+		my($x);
+		if (ref($_)) {
+		    $x = [$_->put(cell_colspan => 2)];
+		}
+		elsif ($_ =~ s/^-//) {
+		    $x = [$proto->vs_call(
+			'String',
+			$proto->vs_text('separator', $_),
+			0,
+			{
+			    cell_colspan => 2,
+			    cell_class => 'separator',
+			},
+		    )];
+		}
+		else {
+		    $x = $proto->vs_descriptive_field($_);
+		    $x->[0]->put(cell_class => 'form_field_label');
+		    $x->[1]->put(cell_class => 'form_field_input');
+		}
+		$x;
+	    } @$fields),
+	    [$proto->vs_blank_cell()],
+	    [$proto->vs_call('StandardSubmit', {
+		cell_colspan => 2,
+		cell_align => 'center',
+	    })],
+	    $epilogue ? (
+		[$proto->vs_blank_cell()],
+		[$epilogue->put(
+		    cell_colspan => 2,
+		    cell_align => 'left',
+	        )],
+	    ) : (),
+	], {
+	    pad => 2,
+	}));
 }
 
 =for html <a name="vs_string"></a>
