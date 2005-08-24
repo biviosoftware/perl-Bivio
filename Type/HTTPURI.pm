@@ -62,7 +62,7 @@ sub from_literal {
 	unless defined($v);
     my($u) = Bivio::Die->eval(sub {URI->new($v)});
     return $u && ($u->scheme || '') =~ /^https?$/i && $u->host ? $v
-	: (undef, Bivio::TypeError->HTTPURI);
+	: (undef, Bivio::TypeError->HTTP_URI);
 }
 
 =for html <a name="get_width"></a>

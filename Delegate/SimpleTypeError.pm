@@ -315,10 +315,15 @@ sub get_delegate_info {
 	undef,
 	'last name is too long',
     ],
-    HTTPURI => [
+    HTTP_URI => [
 	51,
 	undef,
 	'invalid HTTP URL (web location)',
+    ],
+    US_ZIP_CODE_9 => [
+	52,
+	undef,
+	'Nine (9) digit US Zip code required',
     ],
 ];
 }
