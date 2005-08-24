@@ -99,13 +99,12 @@ sub internal_create_models {
     my($user) = $self->new_other('User')->create($x);
     my($realm) = $self->new_other('RealmOwner')->create({
 	realm_id => $user->get('user_id'),
-	name =>	 $self->unsafe_get('RealmOwner.name')
-	    || 'u' . $user->get('user_id'),
+	name =>	 $self->unsafe_get('RealmOwner.name'),
 	realm_type => Bivio::Auth::RealmType->USER,
-	password => $self->has_keys('RealmOwner.password')
-	    ? Bivio::Type::Password->encrypt(
-	        $self->get('RealmOwner.password'))
-	    : Bivio::Type::Password->INVALID,
+	$self->has_keys('RealmOwner.password')
+	    ? (password => Bivio::Type::Password->encrypt(
+		$self->get('RealmOwner.password')))
+	    : (),
 	display_name => $self->get('RealmOwner.display_name'),
     });
     $self->new_other('Email')->create({
