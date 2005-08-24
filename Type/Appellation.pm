@@ -1,21 +1,21 @@
 # Copyright (c) 2005 bivio Software, Inc..  All Rights Reserved.
 # $Id$
-package OxAlumNY::Type::Appellation;
+package Bivio::Type::Appellation;
 use strict;
-$OxAlumNY::Type::Appellation::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $OxAlumNY::Type::Appellation::VERSION;
+$Bivio::Type::Appellation::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::Appellation::VERSION;
 
 =head1 NAME
 
-OxAlumNY::Type::Appellation - titles
+Bivio::Type::Appellation - titles
 
 =head1 RELEASE SCOPE
 
-OxAlumNY
+Bivio
 
 =head1 SYNOPSIS
 
-    use OxAlumNY::Type::Appellation;
+    use Bivio::Type::Appellation;
 
 =cut
 
@@ -26,11 +26,11 @@ L<Bivio::Type::Enum>
 =cut
 
 use Bivio::Type::Enum;
-@OxAlumNY::Type::Appellation::ISA = ('Bivio::Type::Enum');
+@Bivio::Type::Appellation::ISA = ('Bivio::Type::Enum');
 
 =head1 DESCRIPTION
 
-C<OxAlumNY::Type::Appellation>
+C<Bivio::Type::Appellation>
 
 =cut
 
