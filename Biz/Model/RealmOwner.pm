@@ -70,8 +70,11 @@ and I<display_name> if not set, then calls SUPER.
 
 sub create {
     my($self, $values) = @_;
+    $values->{name} =
+	lc(substr($values->{realm_type}->get_name, 0, 1)) . $values->{realm_id}
+	unless defined($values->{name});
     $values->{display_name} = $values->{name}
-	    unless defined($values->{display_name});
+	unless defined($values->{display_name});
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
     $values->{password} = Bivio::Type::Password->INVALID
 	    unless defined($values->{password});
