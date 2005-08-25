@@ -78,15 +78,7 @@ sub execute_ok {
     $self->get_request->server_redirect(
         Bivio::Agent::TaskId->ADM_CREATE_BULLETIN_CONFIRM)
         unless $self->get('confirmed_bulletin') || $self->get('test_mode');
-
-    my($bulletin) = $self->new($self->get_request, 'Bulletin')->create({
-        body => ${$self->read_body},
-        body_content_type => $self->get('body_content_type'),
-        %{$self->get_model_properties('Bulletin')},
-    });
-    _copy_attachments($self, $bulletin->get('bulletin_id'))
-        if $self->get('attachment_files');
-
+    my($bulletin) = $self->internal_create_bulletin;
     # send the email in a background task
     Bivio::IO::ClassLoader->simple_require(
         'Bivio::Agent::Job::Dispatcher');
@@ -139,6 +131,26 @@ sub execute_unwind {
 	# DOES NOT RETURN
     }
     return;
+}
+
+=for html <a name="internal_create_bulletin"></a>
+
+=head2 internal_create_bulletin() : Bivio::Biz::Model::Bulletin
+
+Creates the Bulletin model and copies the attachments.
+
+=cut
+
+sub internal_create_bulletin {
+    my($self) = @_;
+    my($bulletin) = $self->new($self->get_request, 'Bulletin')->create({
+        body => ${$self->read_body},
+        body_content_type => $self->get('body_content_type'),
+        %{$self->get_model_properties('Bulletin')},
+    });
+    _copy_attachments($self, $bulletin->get('bulletin_id'))
+        if $self->get('attachment_files');
+    return $bulletin;
 }
 
 =for html <a name="internal_initialize"></a>
