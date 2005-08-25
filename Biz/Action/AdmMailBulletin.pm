@@ -70,6 +70,7 @@ use Bivio::MIME::Type;
 use Bivio::Mail::Outgoing;
 use Bivio::Type::Email;
 use Bivio::UI::Text;
+use Sys::Hostname ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -100,13 +101,16 @@ sub execute {
         $bulletin->cascade_delete;
         return;
     }
+    my($host) = Sys::Hostname::hostname();
 
     foreach my $email (@{$proto->internal_get_recipients($req)}) {
         next unless Bivio::Type::Email->is_valid($email)
             && ! Bivio::Type::Email->is_ignore($email);
 
         # avoid accidentally sending to real email address in dev mode
-        next unless $req->get('is_production') || $email =~ /\@localhost/;
+        next unless $req->get('is_production')
+            || $email =~ /\@localhost/
+            || $email =~ /\@\Q$host/;
 
         _send_bulletin($proto, $bulletin, $email);
     }
