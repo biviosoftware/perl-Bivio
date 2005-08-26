@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 3.3  2005/08/26 21:36:47  moeller
+  * added Bivio::Type::CountryCode enum
+
+  Revision 3.2  2005/08/26 05:26:13  moeller
+  * Bivio::Biz::Action::AdmMailBulletin allow sending bulletin on
+    non-production servers if the email matches localhost or the current
+    hostname
+  * Bivio::Biz::Model::AdmBulletinForm added internal_create_bulletin()
+    which allow subclasses to perform additional work when the bulletin
+    is created
+  * Bivio::Biz::Model::RealmOwner default name in create
+  * Bivio::Biz::Model::UserCreateForm RealmOwner.name is now defaulted
     by RealmOwner->create
   * Bivio::UI::HTML::ViewShortcuts added vs_simple_form and
     vs_descriptive_field
