@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    by RealmOwner->create
+  * Bivio::UI::HTML::ViewShortcuts added vs_simple_form and
+    vs_descriptive_field
+
+  Revision 3.1  2005/08/18 19:34:24  moeller
+  * Bivio::ShellUtil removed set_current() call in put_request()
+    Job::Request->new is already doing this
+  * Bivio::Test::HTMLParser::Forms added config value
+    'disable_checkbox_heading' which disables the default table checkbox
     labeling for a named table heading
   * Bivio::Test::Language::HTTP ensures that input submitted to a text
     control is not multi-line
