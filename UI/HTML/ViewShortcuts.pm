@@ -237,6 +237,52 @@ sub vs_first_focus {
     return defined($control) ? $proto->vs_call('If', $control, $w) : $w;
 }
 
+=for html <a name="vs_html_attrs_initialize"></a>
+
+=head2 static vs_html_attrs_initialize(Bivio::UI::Widget widget, array_ref attrs)
+
+Initializes I<attrs> (default: [class, id]) using unsafe_initialize_attr.
+
+=cut
+
+sub vs_html_attrs_initialize {
+    my(undef, $widget, $attrs) = @_;
+    $widget->map_invoke(
+	'unsafe_initialize_attr',
+	$attrs || [qw(class id)],
+    );
+    return;
+}
+
+=for html <a name="vs_html_attrs_render"></a>
+
+=head2 static vs_html_attrs_render(Bivio::UI::Widget widget, any source, array_ref attrs) : string
+
+Renders I<attrs> (default: [class, id]) in the form of html attributes:
+
+    k1="v1" k2="v2"
+
+Always returns a string.   If I<attrs> contains a key with underscores, e.g.
+k1_class, then the full name will be rendered, but the string will be:
+
+    class="v1"
+
+=cut
+
+sub vs_html_attrs_render {
+    my(undef, $widget, $source, $attrs) = @_;
+    return join(
+	'',
+	map({
+	    my($h) = ($_ =~ /([^_]+)$/);
+	    my($b) = undef;
+	    $widget->unsafe_render_attr($_, $source, \$b) && length($b)
+		? qq{ $h="@{[Bivio::HTML->escape($b)]}"} : '';
+	} $attrs ? @$attrs : qw(class id)),
+    );
+    return;
+}
+
 =for html <a name="vs_task_link"></a>
 
 =head2 vs_task_link(string text, string task) : Bivio::UI::HTML::Widget::Link
