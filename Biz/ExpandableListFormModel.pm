@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2004 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ExpandableListFormModel;
 use strict;
@@ -38,6 +38,25 @@ C<Bivio::Biz::ExpandableListFormModel> list form which can have extra rows
 =head1 CONSTANTS
 
 =cut
+
+=for html <a name="MUST_BE_SPECIFIED_FIELDS"></a>
+
+=head2 MUST_BE_SPECIFIED_FIELDS : array_ref
+
+The list of fields that are expected to have NULL or UNSPECIFIED
+L<Bivio::TypeError|Bivio::TypeError> on them if the row is to be considered ok
+to be empty.  By default, this returns undef, in which case, this class
+does nothing in L<validate_row|"validate_row">.
+
+When you supply an array_ref, this code will go through those fields.  If they
+are I<all> NULL or UNSPECIFIED, then all those errors will be cleared.  You can
+then check on of the 
+
+=cut
+
+sub MUST_BE_SPECIFIED_FIELDS {
+    return;
+}
 
 =for html <a name="ROW_INCREMENT"></a>
 
@@ -96,6 +115,23 @@ sub execute_empty {
     $self->internal_put({%{$prev_self->internal_get}})
 	if $prev_self;
     return shift->SUPER::execute_empty(@_);
+}
+
+=for html <a name="execute_empty_row"></a>
+
+=head2 execute_empty_row()
+
+Loads visible list fields.
+
+=cut
+
+sub execute_empty_row {
+    my($self) = @_;
+    foreach my $f (@{$self->get_info('visible_field_names')}) {
+	$self->internal_load_field($f)
+	    if $self->get_list_model->has_keys($f);
+    }
+    return;
 }
 
 =for html <a name="internal_load_field"></a>
@@ -174,6 +210,25 @@ sub internal_initialize_list {
     return $list;
 }
 
+=for html <a name="is_empty_row"></a>
+
+=head2 is_empty_row() : boolean
+
+Returns true if the L<MUST_BE_SPECIFIED_FIELDS|"MUST_BE_SPECIFIED_FIELDS"> are
+L<Bivio::Type::is_specified|Bivio::Type/"is_specified">.  Also returns undef if
+L<MUST_BE_SPECIFIED_FIELDS|"MUST_BE_SPECIFIED_FIELDS"> returns C<undef>.
+
+=cut
+
+sub is_empty_row {
+    my($self) = @_;
+    foreach my $f (@{$self->MUST_BE_SPECIFIED_FIELDS || return 0}) {
+	return 0
+	    if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
+    }
+    return 1;
+}
+
 =for html <a name="validate"></a>
 
 =head2 validate(string form_button)
@@ -197,6 +252,24 @@ sub validate {
     # DOES NOT RETURN
 }
 
+=for html <a name="validate_row"></a>
+
+=head2 validate_row()
+
+Clears errors on L<MUST_BE_SPECIFIED_FIELDS|"MUST_BE_SPECIFIED_FIELDS">
+if L<is_empty_row|"is_empty_row">.
+
+=cut
+
+sub validate_row {
+    my($self) = @_;
+    return unless $self->is_empty_row;
+    foreach my $f (@{$self->MUST_BE_SPECIFIED_FIELDS}) {
+	$self->internal_clear_error($f);
+    }
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _key(self) : string
@@ -210,7 +283,7 @@ sub _key {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2004 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2004 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
