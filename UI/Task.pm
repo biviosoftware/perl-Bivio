@@ -580,8 +580,6 @@ sub parse_uri {
                 message => 'no such realm'})
             unless $o->unauth_load(name => $name);
     $realm = Bivio::Auth::Realm->new($o);
-    # Component after realm name must identify path_info URI
-    $path_info_index = 1;
 
     # Found the realm, now try to find the URI (without checking path_info)
     $uri = join('/', @uri);
@@ -597,8 +595,10 @@ sub parse_uri {
 
     # Is this a path_info URI?  Note this may seem a bit "slow", but it
     # is a rare case and NOT_FOUND processing is much faster than normal
-    # requests anyway.
-    $uri = join('/', @uri[0..$path_info_index]);
+    # requests anyway.  Component after realm name must identify path_info URI
+    $path_info_index = 1;
+    $uri = join('/', @uri[0..$path_info_index])
+	if @uri > $path_info_index;
     if (defined($fields->{from_uri}->{$uri})
 	    && defined($info = $fields->{from_uri}->{$uri}->[$rti])
 	    && $info->{has_path_info}) {
