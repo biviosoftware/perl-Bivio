@@ -40,9 +40,6 @@ and delete interface to the C<user_t> table.
 
 #=IMPORTS
 use Bivio::Die;
-use Bivio::Type::Email;
-use Bivio::Type::Gender;
-use Bivio::Type::Location;
 
 #=VARIABLES
 
@@ -119,11 +116,46 @@ calls SUPER.
 
 sub create {
     my($self, $values) = @_;
-    $values->{gender} ||= Bivio::Type::Gender->UNKNOWN;
+    $values->{gender} ||= $self->get_field_type('gender')->UNKNOWN;
     _compute_sorting_names($values);
     my($res) = $self->SUPER::create($values);
     _validate_names($self);
     return $res;
+}
+
+=for html <a name="create_realm"></a>
+
+=head2 create_realm(hash_ref user, hash_ref realm_owner) : array
+
+Creates the User, RealmOwner, and RealmUser models.  I<realm_owner> may be an
+empty hash_ref.  I<realm_owner>.password will be encrypted.
+
+B<Does not set the realm to the new user.>
+
+Returns (user, realm_owner) models.
+
+=cut
+
+sub create_realm {
+    my($self, $user, $realm_owner) = @_;
+    $self->create($user);
+    $realm_owner ||= {};
+    $realm_owner->{password} = Bivio::Type::Password->encrypt(
+	$realm_owner->{password}
+    ) if defined($realm_owner->{password});
+    $realm_owner->{display_name} = $self->format_full_name
+	unless defined($realm_owner->{display_name});
+    my($ro) = $self->new_other('RealmOwner')->create({
+	%$realm_owner,
+	realm_type => Bivio::Auth::RealmType->USER,
+	realm_id => $self->get('user_id'),
+    });
+    $self->new_other('RealmUser')->create({
+	realm_id => $self->get('user_id'),
+	user_id => $self->get('user_id'),
+        role => Bivio::Auth::Role->ADMINISTRATOR,
+    });
+    return ($self, $ro);
 }
 
 =for html <a name="format_full_name"></a>
@@ -189,11 +221,12 @@ sub get_outgoing_emails {
     my($self, $which) = @_;
     my($email) = $self->new_other('Email');
     return undef unless $email->unauth_load({
-        location => $which || Bivio::Type::Location->HOME,
+        location => $which || $email->get_field_type('location')->HOME,
         realm_id => $self->get('user_id'),
     });
     # Validate address
-    return undef unless Bivio::Type::Email->is_valid($email->get('email'));
+    return undef
+	unless $email->get_field_type('email')->is_valid($email->get('email'));
     return [$email->get('email')];
 }
 
@@ -242,7 +275,7 @@ sub invalidate_email {
         realm_id => $self->get('user_id'),
     });
     my($address) = $email->get('email');
-    my($prefix) = Bivio::Type::Email->INVALID_PREFIX;
+    my($prefix) = $email->get_field_type('email')->INVALID_PREFIX;
     # Already invalidated?
     return if $address =~ /^\Q$prefix/o;
 
