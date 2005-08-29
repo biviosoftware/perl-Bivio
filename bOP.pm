@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2004 bivio Software Artisans, Inc.  All Rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Util::RealmAdmin->delete_with_users deletes current realm and
+    all its users.  Userful for testing.
+  * Bivio::Type::USZipCode9 enforces 9 digit zip codes
 
   Revision 3.3  2005/08/26 21:36:47  moeller
   * added Bivio::Type::CountryCode enum
@@ -1843,7 +1846,7 @@ http://www.bivio.biz for more info.
 
 =cut
 
-Copyright (c) 2001-2004 bivio Software Artisans, Inc.  All Rights reserved.
+#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
