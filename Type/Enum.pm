@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Enum;
 use strict;
@@ -629,6 +629,22 @@ sub is_continuous {
     return 1;
 }
 
+=for html <a name="is_specified"></a>
+
+=head2 is_specified() : boolean
+
+=head2 static is_specified(Bivio::Type::Enum value) : boolean
+
+Returns true if I<self> or I<value> is not null and as_int returns something
+other than 0.
+
+=cut
+
+sub is_specified {
+    my($self) = @_ > 1 ? $_[1] : $_[0];
+    return defined($self) && $self->as_int != 0;
+}
+
 =for html <a name="is_valid_name"></a>
 
 =head2 static is_valid_name(string name) : boolean
@@ -722,7 +738,7 @@ sub _get_info {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
