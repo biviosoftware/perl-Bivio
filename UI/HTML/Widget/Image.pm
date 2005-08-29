@@ -69,6 +69,11 @@ L<Bivio::HTML::escape_attr_value|Bivio::HTML/"escape_attr_value">.
 Arbitrary HTML attributes to be applied to the begin tag.  Must begin
 with leading space.
 
+=item class : any []
+
+The html CLASS for the table.  If exists, then border is not
+defaulted.
+
 =item hspace : int [0]
 
 HSPACE attribute value.
@@ -84,6 +89,10 @@ clear gif for forcing dimensions of an area.  Both B<height> and
 B<width> must be set.
 
 For "real" gifs, the dimensions are extracted from the file.
+
+=item id : any []
+
+The html ID attribute.
 
 =item src : array_ref (required)
 
@@ -116,6 +125,7 @@ use Carp ();
 #=VARIABLES
 
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 =head1 FACTORIES
 
@@ -165,23 +175,18 @@ sub initialize {
     $fields->{alt_text} = $self->initialize_attr('alt_text')
 	    unless defined($fields->{alt});
 
-    my($width, $height, $border) = $self->unsafe_get(
-	    qw(width height border));
-    $border = 0 unless defined($border);
+    my($width, $height, $border) = $self->unsafe_get(qw(width height border));
     die('width and height must both be defined')
-	    unless defined($width) == defined($height);
+	unless defined($width) == defined($height);
     my($p) = '<img';
     my($a) = $self->unsafe_get('attributes');
     $p .= $a if $a;
-
-    # hspace and vspace
     foreach my $f (qw(hspace vspace)) {
 	my($v) = $self->unsafe_get($f);
 	next unless $v;
 	$p .= ' '.$f.'='.$v;
     }
 
-    # align
     my($v) = $self->unsafe_get('align');
     $p .= Bivio::UI::Align->as_html($v) if $v;
 
@@ -196,7 +201,11 @@ sub initialize {
 	$p .= " width=$width" if $width;
 	$p .= " height=$height" if $height;
     }
-    $p .= " border=$border";
+    $border ||= 0
+	unless $self->has_keys('class');
+    $p .= " border=$border"
+	if defined($border);
+    $_VS->vs_html_attrs_initialize($self);
     $fields->{prefix} = $p;
     $fields->{have_size} = defined($width);
     $fields->{src} = $src;
@@ -250,6 +259,7 @@ sub render {
     my($fields) = $self->[$_IDI];
 
     $$buffer .= $fields->{prefix};
+    $$buffer .= $_VS->vs_html_attrs_render($self, $source);
     $$buffer .= ' alt="'.Bivio::HTML->escape_attr_value(
 	    _render_alt($self, $fields, $source, $req)).'"'
 		    unless $fields->{prefix} =~ / alt=/;
