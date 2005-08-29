@@ -106,6 +106,7 @@ my($_SELF) = __PACKAGE__->new({
     HTML => __PACKAGE__->make_groups([
 	want_secure => 0,
 	table_default_align => 'left',
+	page_left_margin => 20,
     ]),
     Task => sub {
 	my($fc) = @_;
