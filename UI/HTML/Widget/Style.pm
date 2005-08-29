@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Style;
 use strict;
@@ -80,65 +80,9 @@ Otherwise will render a partial style sheet.
 
 #=VARIABLES
 
-my($_IDI) = __PACKAGE__->instance_data_index;
-my($_TAGS) = join(',', qw(
-    address
-    blockquote
-    body
-    button
-    center
-    div
-    dl
-    input
-    ins
-    kbd
-    label
-    legend
-    menu
-    multicol
-    ol
-    p
-    pre
-    select
-    th
-    td
-    textarea
-    ul
-));
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::Widget::Style
-
-Returns a new instance.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
 =head1 METHODS
 
 =cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Does nothing.
-
-=cut
-
-sub initialize {
-    return;
-}
 
 =for html <a name="render"></a>
 
@@ -150,13 +94,10 @@ Renders the appropriate style sheet.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
 
     # Only real browsers get style sheets, sorry.
-    return unless $req->get('Bivio::Type::UserAgent')->is_css_compatible;
-
-    $req->put(font_with_style => 1);
+    return unless $req->unsafe_get('font_with_style');
 
     # Begin
     $$buffer .= "<style>\n<!--\n";
@@ -164,7 +105,7 @@ sub render {
     # Font
     my($font) = Bivio::UI::Font->get_attrs('default', $req);
     if ($font) {
-	$$buffer .= $_TAGS." {\n";
+	$$buffer .= "body {\n";
 	# If the value isn't set or is zero, then don't render.
 	$$buffer .= ' font-family : '.$font->{family}.';' if $font->{family};
 	$$buffer .= ' font-size : '.$font->{size}.';'
@@ -187,7 +128,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
