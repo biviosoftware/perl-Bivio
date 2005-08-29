@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Grid;
 use strict;
@@ -22,12 +22,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget>
+L<Bivio::UI::HTML::Widget::TableBase>
 
 =cut
 
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::Grid::ISA = qw(Bivio::UI::Widget);
+use Bivio::UI::HTML::Widget::TableBase;
+@Bivio::UI::HTML::Widget::Grid::ISA = ('Bivio::UI::HTML::Widget::TableBase');
 
 =head1 DESCRIPTION
 
@@ -38,78 +38,15 @@ There are two types of attributes: table and cell.
 
 =over 4
 
-=item align : string []
-
-How to align the table.  The allowed (case
-insensitive) values are defined in
-L<Bivio::UI::Align|Bivio::UI::Align>.
-The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
-
-=item background : array_ref
-
-Widget which returns image to render for background.
-
-=item bgcolor : string [] (dynamic)
-
-=item bgcolor : array_ref [] (dynamic)
-
-The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
-See L<Bivio::UI::Color|Bivio::UI::Color>.
-
-=item border : number [0]
-
-The value to be passed to the C<BORDER> attributes of the C<TABLE> tag.
-
-=item end_tag : boolean [true]
-
-If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
-
-=item expand : boolean [false]
-
-If true, the table will C<WIDTH> will be C<100%>.
-
 =item hide_empty_cells : boolean [false]
 
 If true, empty cells will not be rendered.
-
-=item id : string
-
-The html ID for the table.
-
-=item pad : number [0]
-
-The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
-
-=item space : number [0]
-
-The value to be passed to the C<CELLSPACING> attribute of the C<TABLE> tag.
-
-=item start_tag : boolean [true]
-
-If false, this widget won't render the C<&gt;TABLE&lt;>tag.
-
-=item style : string
-
-Style attribute for the table.  No elements of the string are interpolated.
 
 =item values : array_ref (required)
 
 An array_ref of rows of array_ref of columns (cells).  A cell may
 be C<undef>.  A cell may be a widget_value which returns a widget
 or a string or it may be a widget or a string.
-
-=item width : string []
-
-Set the width of the table explicitly.  I<expand> should be
-used in most cases.
-
-=item width : array_ref []
-
-Dynamic width.
-
-=item height : array_ref []
-
-Dynamic height (only IE and Netscape support this attribute).
 
 =back
 
@@ -191,6 +128,11 @@ L<Bivio::UI::Icon::get_width_as_html|Bivio::UI::Icon/"get_width_as_html">.
 If set, controls the rendering of an entire row.  Can be set
 on any cell in the row.
 
+=item row_class : any []
+
+If set, controls the class of the entire row.  Can be set
+on any cell in the row.
+
 =back
 
 =cut
@@ -201,7 +143,6 @@ use Bivio::UI::Align;
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SPACER) = '&nbsp;' x 3;
-
 
 =head1 FACTORIES
 
@@ -241,26 +182,7 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return if exists($fields->{rows});
-    my($p) = '<table border='.$self->get_or_default('border', 0);
-    # We don't want to check parents
-    my($expand, $align, $width)
-	    = $self->unsafe_get(qw(expand align width));
-    $p .= ' cellpadding='.$self->get_or_default('pad', 0);
-    $p .= ' cellspacing='.$self->get_or_default('space', 0);
-    $p .= ' id="' . Bivio::HTML->escape_attr_value($self->get('id')) . '"'
-	if $self->unsafe_get('id');
-    $p .= ' width="100%"' if $expand;
-    if (ref($width)) {
-	$fields->{width} = $width;
-    }
-    elsif ($width) {
-	$p .= " width=\"$width\"";
-    }
-    $p .= ' style="' . Bivio::HTML->escape_attr_value($self->get('style')).'"'
-	if $self->unsafe_get('style');
-    $p .= Bivio::UI::Align->as_html($align) if $align;
-    $fields->{prefix} = $p;
-    $fields->{suffix} = '</table>';
+    $self->initialize_html_attrs;
     my($num_cols) = 0;
     my($rows, $r) = $self->get('values');
     foreach $r (@$rows) {
@@ -289,6 +211,7 @@ sub initialize {
 				cell_align cell_colspan cell_rowspan cell_width
 				cell_height cell_width_as_html
                                 cell_height_as_html cell_class));
+		$c->unsafe_initialize_attr('row_class');
 		if ($expand2) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
@@ -446,25 +369,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
-
-    if ($self->get_or_default('start_tag', 1)) {
-	$$buffer .= $fields->{prefix};
-	my($v);
-	$$buffer .= Bivio::UI::Color->format_html($v, 'bgcolor', $req)
-	    if $self->unsafe_render_attr('bgcolor', $source, \$v) && $v;
-	$v = '';
-	$$buffer .= Bivio::UI::Icon->format_html_attribute(
-	    $v, 'background', $req)
-	    if $self->unsafe_render_attr('background', $source, \$v) && $v;
-	$v = '';
-	$$buffer .= qq{ height="$v"}
-	    if $self->unsafe_render_attr('height', $source, \$v) && $v;
-	$$buffer .= ' width="'
-	    .$source->get_widget_value(@{$fields->{width}}).'"'
-		if $fields->{width};
-	$$buffer .= '>';
-    }
-
+    $$buffer .= $self->render_start_tag($source, '');
     my($r, $c);
  ROW: foreach $r (@{$fields->{rows}}) {
 	my($row) = "<tr>\n";
@@ -477,10 +382,15 @@ sub render {
 		my($rc) = $w->unsafe_get('row_control');
 		next ROW if $rc && !$source->get_widget_value(@$rc);
 		unless ($is_widget_value) {
-		    my($bg);
-		    $row .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req)
+		    my($b);
+		    $row .= Bivio::UI::Color->format_html($b, 'bgcolor', $req)
 			if $c->unsafe_render_attr(
-			    'cell_bgcolor', $source, \$bg) && $bg;
+			    'cell_bgcolor', $source, \$b) && $b;
+		    $b = undef;
+		    # Only first row_class counts
+		    $row =~ s/^<tr>/<tr class="$b">/
+			if $c->unsafe_render_attr(
+			    'row_class', $source, \$b) && $b;
 		    # Close cell start always.  See initialization.
 		    $row .= '>';
 		}
@@ -500,8 +410,7 @@ sub render {
 	# If row is completely empty, don't render it.
 	$$buffer .= $row unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
     }
-    $$buffer .= $fields->{suffix}
-	if $self->get_or_default('end_tag', 1);
+    $$buffer .= $self->render_end_tag($source, '');
     return;
 }
 
@@ -528,7 +437,7 @@ sub _append {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

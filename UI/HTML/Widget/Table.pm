@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Table;
 use strict;
@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget>
+L<Bivio::UI::HTML::Widget::TableBase>
 
 =cut
 
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::Table::ISA = ('Bivio::UI::Widget');
+use Bivio::UI::HTML::Widget::TableBase;
+@Bivio::UI::HTML::Widget::Table::ISA = ('Bivio::UI::HTML::Widget::TableBase');
 
 =head1 DESCRIPTION
 
@@ -72,18 +72,6 @@ insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> attributes of the C<TABLE> tag.
 
-=item border : int [0]
-
-Width of border surrounding the table and its cells.
-
-=item cellpadding : int [5]
-
-Padding inside each cell in pixels.
-
-=item cellspacing : int [0]
-
-Spacing around each cell in pixels.
-
 =item columns : array_ref (required)
 
 The column names to display, in order. Column headings will be assigned
@@ -127,20 +115,15 @@ The I<source> will be the original source, not the list_model.
 
 If not set, displays an empty table (with headers).
 
-=item end_tag : boolean [true]
-
-If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
-
 =item even_row_bgcolor : string [table_even_row_bg]
 
 The stripe color to use for even rows as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
 undefined, no striping will occur.
 
-=item expand : boolean [false]
+=item even_row_class : any []
 
-If true, the table C<WIDTH> will be C<95%> or C<100%> depending
-on Bivio::UI::HTML.page_left_margin.
+Class applied applied to even rows.
 
 =item footer_row_widgets : array_ref []
 
@@ -164,9 +147,9 @@ May be specified on the table or overriden by the cell.
 A separator will separate the headings from the cells.  The color will be
 C<table_separator>.
 
-=item id : string
+=item heading_separator_class : any []
 
-The html ID for the table.
+HTML class for heading_separator.
 
 =item list_class : string (required)
 
@@ -179,6 +162,10 @@ C<Bivio::Biz::Model::> prefix will be inserted if need be.
 The stripe color to use for odd rows as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
 undefined, no striping will occur.
+
+=item odd_row_class : any []
+
+Class applied applied to odd rows.
 
 =item repeat_headings : boolean [false]
 
@@ -211,10 +198,6 @@ I<table_max_rows> feature uses the ref($list) for list_name (see below).
 
 Using this attribute allows lists of lists.
 
-=item start_tag : boolean [true]
-
-If false, this widget won't render the C<&gt;TABLE&lt;>tag.
-
 =item string_font : string [table_cell]
 
 Font to use for rendering cells.
@@ -223,6 +206,11 @@ Font to use for rendering cells.
 
 If true, the list's summary model will be rendered.  Will be true
 implicitly, if I<summary_line_type> is set.
+
+=item summary_line_class : string
+
+Class for summary lines.  Must be a string or undef, and if set,
+must not have I<summary_line_type>.
 
 =item summary_line_type : string
 
@@ -238,6 +226,10 @@ The name of the table.
 
 A separator will separate the cells from the summary.  The color will be
 C<table_separator>.
+
+=item trailing_separator_class : any []
+
+HTML class for trailing_separator.
 
 =item want_sorting : boolean [1]
 
@@ -266,6 +258,10 @@ See also I<heading_align>.
 
 Sets the cell background color.
 
+=item column_data_class : any []
+
+HTML class for column data cells.
+
 =item column_control : value
 
 A widget value which, if set, must be a true value to render the column.
@@ -284,6 +280,10 @@ columns to display.
 
 If true, the column will be C<width="100%">.
 
+=item column_footer_class : any []
+
+HTML class for column footer.
+
 =item column_heading : string
 
 =item column_heading : Bivio::UI::Widget
@@ -301,6 +301,10 @@ B<DEPRECATED>.
 The literal text of the label.  The indirected value will be
 looked up once and used.  This avoids a second lookup.  Only
 used by DescriptivePageForm.
+
+=item column_heading_class : any []
+
+HTML class for column heading.
 
 =item column_width : string
 
@@ -483,8 +487,8 @@ sub get_render_state {
     $list_name = ref($list_name) ? ref($list) : $list_name;
 
     # check for an empty list
-    if ($fields->{empty_list_widget} && $list->get_result_set_size == 0) {
-	$fields->{empty_list_widget}->render($source, $buffer);
+    if ($list->get_result_set_size == 0) {
+	$self->unsafe_render_attr('empty_list_widget', $source, $buffer);
 	return undef;
     }
 
@@ -609,35 +613,33 @@ sub initialize {
 	$fields->{title} = $_VS->vs_new('String', {
             value => "\n$title\n",
             string_font => 'table_heading',
-        });
-	$fields->{title}->initialize;
+        })->put_and_initialize(parent => $self);
     }
 
     # heading separator and summary
-    $fields->{separator} = $_VS->vs_new('LineCell', {
-	height => 1,
-	color => 'table_separator',
-    });
-    $fields->{separator}->initialize;
-
-    $fields->{empty_list_widget} = $self->unsafe_get('empty_list_widget');
-    if ($fields->{empty_list_widget}) {
-	$fields->{empty_list_widget}->put(parent => $self);
-	$fields->{empty_list_widget}->initialize;
+    foreach my $w (qw(heading trailing)) {
+	$fields->{$w . '_separator'} = $_VS->vs_new('LineCell', {
+	    height => 1,
+	    color => 'table_separator',
+	})->put_and_initialize(parent => $self);
     }
-
-    my($prefix) = "\n<table border=";
-    $prefix .= $self->get_or_default('border', 0);
-    $prefix .= ' cellspacing=' . $self->get_or_default('cellspacing', 0);
-    $prefix .= ' cellpadding=' . $self->get_or_default('cellpadding', 5);
-    $prefix .= ' id="' . Bivio::HTML->escape_attr_value($self->get('id')) . '"'
-	if $self->unsafe_get('id');
-    $fields->{table_prefix} = $prefix;
-
-    if ($self->unsafe_get('footer_row_widgets')) {
-	foreach my $widget (@{$self->get('footer_row_widgets')}) {
-	    $self->initialize_child_widget($widget);
-	}
+    $self->unsafe_initialize_attr('empty_list_widget');
+    $_VS->vs_html_attrs_initialize(
+	$self,
+	[qw(
+	    data_row_class
+	    even_row_class
+	    footer_row_class
+	    heading_row_class
+	    heading_separator_row_class
+	    odd_row_class
+	    title_row_class
+	    trailing_separator_row_class
+        )],
+    );
+    $self->initialize_html_attrs(5);
+    foreach my $widget (@{$self->unsafe_get('footer_row_widgets') || []}) {
+	$self->initialize_child_widget($widget);
     }
     return;
 }
@@ -661,6 +663,9 @@ sub initialize_child_widget {
     my($span) = $widget->get_or_default('column_span', 1);
     $column_prefix .= " colspan=$span" if $span != 1;
     $widget->put(column_prefix => $column_prefix);
+    $_VS->vs_html_attrs_initialize(
+	$widget,
+	[qw(column_data_class column_footer_class column_heading_class)]);
     return;
 }
 
@@ -716,11 +721,12 @@ sub render {
     return unless $state;
     my($list) = $state->{list};
 
-    _render_start($state) if $self->get_or_default('start_tag', 1);
+    ${$state->{buffer}} .= $self->render_start_tag($source);
 
 #TODO: optimize, for static tables just compute this once in initialize
     _initialize_colspan($state);
-    _render_row_with_colspan($state, 'title') if $fields->{title};
+    _render_row_with_colspan($state, 'title')
+	if $fields->{title};
     _render_headings($state);
 
     # alternating row colors
@@ -785,8 +791,6 @@ sub render_cell {
 
 =for html <a name="render_row"></a>
 
-=head2 render_row(array_ref cells, any source, string_ref buffer)
-
 =head2 render_row(array_ref cells, any source, string_ref buffer, string row_prefix, Bivio::UI::TableRowClass class)
 
 Renders the specified set of widgets onto the output buffer.
@@ -797,12 +801,18 @@ If in_list is true, then empty strings will be rendered as '&nbsp;'.
 sub render_row {
     my($self, $cells, $source, $buffer, $row_prefix, $class) = @_;
     my($req) = $self->get_request;
-    $row_prefix ||= "\n<tr>";
-    $$buffer .= $row_prefix;
+    $$buffer .= $row_prefix
+	|| "\n<tr"
+	. $_VS->vs_html_attrs_render(
+	    $self, $source, [lc($class->get_name) . '_row_class'])
+	. '>';
     foreach my $cell (@$cells) {
 	$$buffer .= ($class == Bivio::UI::TableRowClass->HEADING
-	    ? "\n<th" : "\n<td") . $cell->get_or_default('column_prefix', '');
-
+	    ? "\n<th" : "\n<td")
+	    . $cell->get_or_default('column_prefix', '')
+	    . $_VS->vs_html_attrs_render(
+		$self, $source,
+		['column_' . $class->get_name . '_class']);
 	if ($cell->get_or_default('heading_expand', 0)) {
 	    $$buffer .= ' width="100%"'
 	}
@@ -924,28 +934,21 @@ sub _get_summary_line {
     my($self, $cell) = @_;
 
     my($widget);
-    if ($cell->get_or_default('column_summarize', 0)
-	    && $self->unsafe_get('summary_line_type')) {
-
-	my($line_type) = $self->unsafe_get('summary_line_type');
-	if ($line_type eq '-') {
-#TODO: optimize, could share instances with common span
-	    $widget =  $_VS->vs_new('LineCell', {
-		color => 'summary_line',
-		column_align => 'N'
-	    });
-	}
-	elsif ($line_type eq '=') {
-#TODO: optimize, could share instances with common span
-	    $widget = $_VS->vs_new('LineCell', {
+    my($type) = $self->unsafe_get('summary_line_type');
+    my($class) = $self->unsafe_get('summary_line_class');
+    if ($cell->get_or_default('column_summarize', 0) && ($type || $class)) {
+	Bivio::Die->die(
+	    $type, ' & ', $class,
+	    ': may not have both summary_line_type and summary_line_class'
+	) if $type && $class;
+	$widget = $type
+	    ? $_VS->vs_new('LineCell', {
 		color => 'summary_line',
 		column_align => 'N',
-		count => 2
-	    });
-	}
-	else {
-	    die("invalid summary_line_type $line_type");
-	}
+		count => $type eq '=' ? 2
+		    : $type eq '-' ? 1
+		    : Bivio::Die->die($type, 'invalid summary_line_type')})
+	    : $_VS->vs_new('Join', [qq{td class="$class"></td>}]);
     }
     else {
 #TODO: optimize, could share instances with common span
@@ -979,16 +982,16 @@ sub _initialize_colspan {
 #
 sub _initialize_row_prefixes {
     my($state) = @_;
-    $state->{odd_row} = "\n<tr"
-	    .Bivio::UI::Color->format_html(
-		    $state->{self}->get_or_default('odd_row_bgcolor',
-			    'table_odd_row_bg'),
-		    'bgcolor', $state->{req}).'>';
-    $state->{even_row} = "\n<tr"
-	    .Bivio::UI::Color->format_html(
-		    $state->{self}->get_or_default('even_row_bgcolor',
-			    'table_even_row_bg'),
-		    'bgcolor', $state->{req}).'>';
+    foreach my $w (qw(odd even)) {
+	$state->{$w . '_row'} = "\n<tr"
+	    . Bivio::UI::Color->format_html(
+		$state->{self}->get_or_default(
+		    $w . '_row_bgcolor', "table_${w}_row_bg"),
+		'bgcolor', $state->{req})
+	    . $_VS->vs_html_attrs_render(
+		@$state{qw(self source)}, [$w . '_row_class'])
+	    .'>';
+    }
     return;
 }
 
@@ -1002,7 +1005,7 @@ sub _render_headings {
 	$state->{list}, $state->{buffer}, undef,
 	Bivio::UI::TableRowClass->HEADING)
 	if $state->{show_headings};
-    _render_row_with_colspan($state, 'separator')
+    _render_row_with_colspan($state, 'heading_separator')
 	if $state->{heading_separator};
     return;
 }
@@ -1015,34 +1018,13 @@ sub _render_headings {
 sub _render_row_with_colspan {
     my($state, $widget_name) = @_;
     my($buffer) = $state->{buffer};
-    $$buffer .= "\n<tr><td colspan=".$state->{colspan}.'>';
+    $$buffer .= "\n<tr"
+	. $_VS->vs_html_attrs_render(
+	    @$state{qw(self source)}, [$widget_name . '_row_class'])
+	. '><td colspan=' . $state->{colspan}
+	.'>';
     $state->{fields}->{$widget_name}->render($state->{list}, $buffer);
-    $$buffer .= "</td>\n</tr>",
-    return;
-}
-
-# _render_start(hash_ref state)
-#
-# Renders start tag of table.
-#
-sub _render_start {
-    my($state) = @_;
-    my($buffer) = $state->{buffer};
-    $$buffer .= $state->{fields}->{table_prefix};
-    $$buffer .= Bivio::UI::Align->as_html(
-	    $state->{self}->get_or_default('align',
-		    Bivio::UI::HTML->get_value('table_default_align',
-			    $state->{req})));
-
-    if ($state->{self}->unsafe_get('expand')) {
-	$$buffer .= Bivio::UI::HTML->get_value('page_left_margin',
-		$state->{req})
-		? ' width="95%"' : ' width="100%"';
-    }
-    elsif (my $width = $state->{self}->unsafe_get('width')) {
-	$$buffer .= ' width="'.$width.'"';
-    }
-    $$buffer .= '>';
+    $$buffer .= "</td>\n</tr>";
     return;
 }
 
@@ -1058,7 +1040,7 @@ sub _render_trailer {
 	Bivio::UI::TableRowClass->FOOTER)
 	if $self->unsafe_get('footer_row_widgets');
 
-    _render_row_with_colspan($state, 'separator')
+    _render_row_with_colspan($state, 'trailing_separator')
 	if $self->unsafe_get('trailing_separator');
 
     $self->render_row($state->{summary_cells},
@@ -1071,7 +1053,7 @@ sub _render_trailer {
 	Bivio::UI::TableRowClass->FOOTER)
 	if $self->unsafe_get('summary_line_type');
 
-    ${$state->{buffer}} .= "\n</table>" if $self->get_or_default('end_tag', 1);
+    ${$state->{buffer}} .= $state->{self}->render_end_tag($state->{source});
     return;
 }
 
@@ -1094,7 +1076,7 @@ sub _row_prefix {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
