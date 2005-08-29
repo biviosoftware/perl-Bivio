@@ -53,6 +53,7 @@ usage: b-realm-admin [options] command [args...]
 commands:
     create_user email display_name password [user_name] -- creates a new user
     delete_user -- deletes the user
+    delete_with_users -- deletes realm and all of its users
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
     join_user honorific -- adds user to realm
@@ -116,6 +117,37 @@ sub delete_user {
     $self->are_you_sure("delete user " . $email->get('email'));
     $req->set_realm($req->get('auth_user'));
     $req->get('auth_user')->cascade_delete;
+    $req->set_user(undef);
+    $req->set_realm(undef);
+    return;
+}
+
+=for html <a name="delete_with_users"></a>
+
+=head2 delete_with_users()
+
+Deletes current realm and its users and sets realm to general,
+and user to nobody afterwards.
+
+=cut
+
+sub delete_with_users {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $self->usage_error(
+	$req->get_nested('auth_realm'),
+	': cannot delete a default realm',
+    ) if $req->get('auth_realm')->is_default;
+    $self->are_you_sure(
+	'delete realm ' . $req->get_nested(qw(auth_realm owner_name)));
+    foreach my $r (
+	$req->get('auth_id'),
+	@{Bivio::Biz::Model->new($req, 'RealmUser')->map_iterate(
+	    sub {shift->get('user_id')}, 'user_id',
+	)},
+    ) {
+	$req->set_realm($r)->get('owner')->cascade_delete;
+    }
     $req->set_user(undef);
     $req->set_realm(undef);
     return;
