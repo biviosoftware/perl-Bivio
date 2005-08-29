@@ -527,7 +527,9 @@ or L<Bivio::SQL::ListSupport::new|Bivio::SQL::ListSupport/"new">.
 =cut
 
 sub internal_initialize {
-    Bivio::Die->die(shift, ': abstract method');
+    return (caller(1))[3] =~ /::internal_initialize$/ ? {}
+	: Bivio::Die->die(
+	    shift, ': abstract method; internal_initialize must be defined');
 }
 
 =for html <a name="internal_initialize_local_fields"></a>
