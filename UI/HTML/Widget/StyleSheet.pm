@@ -21,7 +21,7 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget::ControlBase;
+L<Bivio::UI::Widget::ControlBase>
 
 =cut
 
