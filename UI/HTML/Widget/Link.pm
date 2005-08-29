@@ -144,7 +144,7 @@ sub control_on_render {
     $$buffer .= $handler->get_html_field_attributes(undef, $source)
 	if $handler;
     $$buffer .= '>';
-    $self->render_attr('value', $source, $buffer);
+    $self->render_attr('value', $source, $buffer); 
     $$buffer .= '</a>';
     $handler->render($source, $buffer)
 	if $handler;
@@ -196,16 +196,7 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    my($proto, $value, $href) = splice(@_, 0, 3);
-#TODO: generalize, and possibly couple with as_string
-    return '"value" must be defined'
-	unless defined($value);
-    return '"href" must be defined'
-	unless defined($href);
-    return $proto->SUPER::internal_new_args({
-	value => $value,
-	href => $href,
-    }, @_);
+    return shift->SUPER::internal_new_args([qw(value href)], \@_);
 }
 
 #=PRIVATE METHODS
