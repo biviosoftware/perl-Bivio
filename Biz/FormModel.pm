@@ -99,6 +99,18 @@ sub CONTEXT_FIELD {
     return 'c';
 }
 
+=for html <a name="GLOBAL_ERROR_FIELD"></a>
+
+=head2 GLOBAL_ERROR_FIELD : string
+
+Returns field name for errors not applied to a specific field.
+
+=cut
+
+sub GLOBAL_ERROR_FIELD {
+    return '_';
+}
+
 =for html <a name="MAX_FIELD_SIZE"></a>
 
 =head2 MAX_FIELD_SIZE : int
@@ -213,9 +225,7 @@ Remove any errors on fields on the form.
 =cut
 
 sub clear_errors {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{errors} = undef;
+    delete(shift->[$_IDI]->{errors});
     return;
 }
 
@@ -267,6 +277,7 @@ sub execute_cancel {
     my($self, $button_field) = @_;
     # client redirect on cancel, no state is saved
     _redirect($self, 'cancel');
+    # DOES NOT RETURN
 }
 
 
@@ -485,9 +496,8 @@ Returns undef if field has no error associated with it.
 
 sub get_field_error {
     my($self, $name) = @_;
-    my($fields) = $self->[$_IDI];
-    return undef unless $fields->{errors};
-    return $fields->{errors}->{$name};
+    my($e) = $self->get_errors;
+    return $e ? $e->{$name} : undef;
 }
 
 =for html <a name="get_hidden_field_values"></a>
@@ -609,7 +619,7 @@ Returns true if any of the form fields are in error.
 =cut
 
 sub in_error {
-    return shift->[$_IDI]->{errors} ? 1 : 0;
+    return shift->get_errors ? 1 : 0;
 }
 
 =for html <a name="internal_catch_field_constraint_error"></a>
@@ -648,11 +658,12 @@ If I<property> is null, clears the "form" error.
 
 sub internal_clear_error {
     my($self, $property) = @_;
-    my($fields) = $self->[$_IDI];
-    return unless $fields->{errors};
-    $property = '_' unless $property;
-    delete($fields->{errors}->{$property});
-    delete($fields->{errors}) unless %{$fields->{errors}};
+    return unless $self->in_error;
+    $property ||= $self->GLOBAL_ERROR_FIELD;
+    my($e) = $self->get_errors;
+    delete($e->{$property});
+    $self->clear_errors
+	unless %$e;
     return;
 }
 
@@ -883,13 +894,11 @@ a name thereof.
 
 sub internal_put_error {
     my($self, $property, $error) = @_;
-    Carp::croak('too many args, literal deprecated') if int(@_) > 3;
     my($fields) = $self->[$_IDI];
     $error = Bivio::TypeError->from_any($error);
-    $property = '_' unless $property;
-    _trace($property, ': ', $error->as_string) if $_TRACE;
-    $fields->{errors} = {} unless $fields->{errors};
-    $fields->{errors}->{$property} = $error;
+    $property ||= $self->GLOBAL_ERROR_FIELD;
+    _trace($property, ': ', $error) if $_TRACE;
+    ($fields->{errors} ||= {})->{$property} = $error;
     return;
 }
 
@@ -1017,11 +1026,12 @@ sub process {
 	my($res) = _call_execute_ok($self, $self->OK_BUTTON_NAME);
 	$self->internal_post_execute('execute_ok');
 	return $res if $res;
-	return 0 unless $fields->{errors};
+	return 0 unless $self->in_error;
 	if ($_TRACE) {
 	    my($msg) = '';
-	    foreach my $field (keys(%{$fields->{errors}})) {
-		$msg .= $field.' '.$fields->{errors}->{$field}->get_name."\n";
+	    my($e) = $self->get_errors;
+	    foreach my $field (keys(%$e)) {
+		$msg .= $field.' '.$e->{$field}->get_name."\n";
 	    }
 	    _trace($msg);
 	}
@@ -1235,7 +1245,7 @@ sub validate_and_execute_ok {
     # to the user as possible.
     $self->internal_pre_execute('validate_and_execute_ok');
     $self->validate($form_button);
-    if ($fields->{errors}) {
+    if ($self->in_error) {
 	_put_file_field_reset_errors($self);
     }
     else {
@@ -1245,7 +1255,7 @@ sub validate_and_execute_ok {
 	# stop executing so no need to test errors.
 	return $res if $res;
 
-	if ($fields->{errors}) {
+	if ($self->in_error) {
 	    _put_file_field_reset_errors($self);
 	}
 	elsif ( ! $fields->{stay_on_page}) {
@@ -1258,7 +1268,8 @@ sub validate_and_execute_ok {
     # Some type of error, rollback and fall through to the next
     # task items.
     my($req) = $self->get_request;
-    $req->warn('form_errors=', $fields->{errors}) if $fields->{errors};
+    $req->warn('form_errors=', $self->get_errors)
+	if $self->in_error;
     Bivio::Agent::Task->rollback($req) unless $fields->{stay_on_page};
     return 0;
 }
@@ -1452,7 +1463,7 @@ sub _parse {
     my($self, $form) = @_;
     my($fields) = $self->[$_IDI];
     # Clear any incoming errors
-    delete($fields->{errors});
+    $self->clear_errors;
     my($sql_support) = $self->internal_get_sql_support;
     _trace("form = ", $form) if $_TRACE;
     _parse_version($self,
@@ -1525,14 +1536,13 @@ sub _parse_cols {
 	}
 
 	# Finally, parse the value
-	my($v, $err) = $self->get_field_info($n, 'type')
-		->from_literal($form->{$fn});
+	my($type) = $self->get_field_info($n, 'type');
+	my($v, $err) = $type->from_literal($form->{$fn});
 	$values->{$n} = $v;
 
 	# try one more time in case of image buttons, append '.x' to name
 	unless (defined($v) || defined($err)) {
-	    ($v, $err) = $self->get_field_info($n, 'type')
-		    ->from_literal($form->{$fn.'.x'});
+	    ($v, $err) = $type->from_literal($form->{$fn.'.x'});
 	    $values->{$n} = $v;
 	}
 
@@ -1540,22 +1550,24 @@ sub _parse_cols {
 	if (defined($v)) {
 	    # Zero field ok?
 	    next unless $self->get_field_info($n, 'constraint')
-		    == Bivio::SQL::Constraint::NOT_ZERO_ENUM();
-	    next if $v->as_int != 0;
-	    $err = Bivio::TypeError::UNSPECIFIED();
+		== Bivio::SQL::Constraint->NOT_ZERO_ENUM;
+	    next if $type->is_specified($v);
+	    $err = Bivio::TypeError->UNSPECIFIED;
 	}
 
 	# Null field ok?
 	unless ($err) {
 	    next if $self->get_field_info($n, 'constraint')
-		    == Bivio::SQL::Constraint::NONE();
-	    $err = Bivio::TypeError::NULL();
+		    == Bivio::SQL::Constraint->NONE;
+	    $err = Bivio::TypeError->NULL;
 	}
 
 	# Error in field.  Save the original value.
 	if ($is_hidden) {
-	    Bivio::IO::Alert->warn('Error in hidden value(s), refreshing: ',
-		    {field => $n, actual => $form->{$fn}, error => $err});
+	    Bivio::IO::Alert->warn(
+		'Error in hidden value(s), refreshing: ',
+		{field => $n, actual => $form->{$fn}, error => $err},
+	    );
 	    _redirect_same($self);
 	    # DOES NOT RETURN
 	}
@@ -1650,11 +1662,11 @@ sub _put_file_field_reset_errors {
     my($properties) = $self->internal_get;
     foreach my $n (@$file_fields) {
 	# Don't replace an existing error
-	next unless defined($properties->{$n}) && !$fields->{errors}->{$n};
+	next unless defined($properties->{$n}) && !$self->get_field_error($n);
 
 	# Tells user that we didn't clear the field, the browser did.
 	$self->internal_put_error($n,
-		Bivio::TypeError::FILE_FIELD_RESET_FOR_SECURITY())
+		Bivio::TypeError->FILE_FIELD_RESET_FOR_SECURITY)
     }
     return;
 }
