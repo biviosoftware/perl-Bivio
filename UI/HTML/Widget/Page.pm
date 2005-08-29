@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Page;
 use strict;
@@ -241,6 +241,11 @@ sub internal_new_args {
 sub render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
+    $req->put(font_with_style =>
+        $req->get('Type.UserAgent')->is_css_compatible
+	    && $self->unsafe_get('style')
+	    ? 1 : 0,
+    );
     my($body) = $self->render_attr('body', $source);
     $$buffer .= '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
 	."\n<html><head>\n";
@@ -306,7 +311,7 @@ sub show_time_as_html {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
