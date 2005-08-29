@@ -51,6 +51,7 @@ HTML id attribute.
 #=IMPORTS
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 =head1 METHODS
 
@@ -66,11 +67,7 @@ Render class and id.
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    for my $a (qw(class id)) {
-	my($b) = undef;
-	$$buffer .= qq{ $a="$b"}
-	    if $self->unsafe_render_attr($a, $source, \$b) && length($b);
-    }
+    $$buffer .= $_VS->vs_html_attrs_render($self, $source);
     return;
 }
 
@@ -84,36 +81,31 @@ Initializes class attribute.
 
 sub initialize {
     my($self) = @_;
-    $self->map_invoke(
-	'unsafe_initialize_attr',
-	[qw(class id)],
-    );
+    $_VS->vs_html_attrs_initialize($self);
     return shift->SUPER::initialize(@_);
 }
 
 =for html <a name="internal_new_args"></a>
 
-=head2 static internal_new_args(hash_ref child, any class, hash_ref attributes) : hash_ref
-
-=head2 static internal_new_args(hash_ref child, hash_ref attributes) : hash_ref
-
-Pulls C<class> and C<attributes> off.   I<child> is passed in by
-subclass.
+=head2 static internal_new_args(array_ref required, array_ref args) : hash_ref
 
 =cut
 
 sub internal_new_args {
-    my($proto, $child, $class, $attributes) = @_;
-    if (ref($class) eq 'HASH') {
-	return 'too many parameters; "attributes" must be last'
-	    if defined($attributes);
-	$attributes = $class;
-	$class = undef;
-    }
+    my($proto, $required, $args) = @_;
     return {
-	%$child,
-	(defined($class) ? (class => $class) : ()),
-	($attributes ? %$attributes : ()),
+	map({
+	    my($a) = shift(@$args);
+	    return qq{"$_" must be defined}
+		unless defined($a);
+	    ($_ => $a);
+	} @$required),
+	!@$args ? ()
+	    : @$args > 2 ? return "too many parameters"
+	    : (ref($args->[0]) ne 'HASH'
+		   ? (class => shift(@$args))
+		   : @$args == 2 ? return qq{"attributes" must be last} : (),
+	       %{shift(@$args) || {}}),
     };
 }
 
