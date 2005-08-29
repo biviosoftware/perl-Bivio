@@ -48,6 +48,20 @@ belongs.
 
 =cut
 
+=for html <a name="find_row_by_type"></a>
+
+=head2 find_row_by_type(Bivio::Auth::RealmType type) : boolean
+
+Sets the cursor by I<type> or returns false.
+
+=cut
+
+sub find_row_by_type {
+    my($self, $type) = @_;
+    return $self->do_rows(sub {$self->get('RealmOwner.realm_type') != $type})
+	->has_cursor;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref;
