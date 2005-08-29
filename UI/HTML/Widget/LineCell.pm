@@ -48,7 +48,7 @@ Color of the line(s).
 
 Number of lines.
 
-=item height :  [1] 
+=item height : int [1]
 
 The height of a single line of the two lines and the space in between
 in pixels.
@@ -104,8 +104,8 @@ sub initialize {
     my($line) = "<td>".$_VS->vs_clear_dot_as_html(1, $h)."</td>";
     $fields->{value} = "<table width=\"100%\" cellspacing=0"
 	    . " cellpadding=0 border=0>\n"
-	    . (("<tr!COLOR!>$line</tr>\n<tr!PAGE_BG!>$line</tr>\n") x --$count)
-	    . "<tr!COLOR!>$line</tr></table>";
+	    . ((qq{<tr!COLOR!>$line</tr>\n<tr!PAGE_BG!>$line</tr>\n}) x --$count)
+	    . qq{<tr!COLOR!>$line</tr></table>};
 }
 
 =for html <a name="render"></a>
