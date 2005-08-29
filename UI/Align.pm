@@ -157,9 +157,7 @@ strings.
 
 sub as_html {
     my($proto, $thing) = @_;
-    return '' unless $thing;
-
-    return Bivio::Type::Enum::from_any(@_)->get_long_desc;
+    return $thing ? $proto->from_any($thing)->get_long_desc : '';
 }
 
 #=PRIVATE METHODS
