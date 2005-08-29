@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::LocationBase;
 use strict;
@@ -52,8 +52,7 @@ Sets I<location> if not set, then calls SUPER.
 
 sub create {
     my($self, $values) = @_;
-    $values->{location} = Bivio::Type::Location->HOME()
-	    unless $values->{location};
+    $values->{location} ||= Bivio::Type::Location->HOME;
     return $self->SUPER::create($values);
 }
 
@@ -80,7 +79,7 @@ sub unauth_load {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
