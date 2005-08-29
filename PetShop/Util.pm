@@ -48,6 +48,18 @@ As you:
 
 =cut
 
+=for html <a name="DEMO_USER"></a>
+
+=head2 DEMO_USER : string
+
+Returns 'demo'.
+
+=cut
+
+sub DEMO_USER {
+    return 'demo';
+}
+
 =for html <a name="DEMO_USER_LAST_NAME"></a>
 
 =head2 DEMO_USER_LAST_NAME : string
@@ -128,7 +140,7 @@ Returns list of demo users.
 sub demo_users {
     my($self) = @_;
     return [
-	qw(demo guest multi_role_user),
+	$self->DEMO_USER, qw(guest multi_role_user),
 	$self->get_request->is_production ? () : ('root'),
     ];
 }
