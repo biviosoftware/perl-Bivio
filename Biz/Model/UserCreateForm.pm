@@ -96,17 +96,10 @@ sub internal_create_models {
 	$self->internal_put_error('RealmOwner.display_name' => $x);
 	return;
     }
-    my($user) = $self->new_other('User')->create($x);
-    my($realm) = $self->new_other('RealmOwner')->create({
-	realm_id => $user->get('user_id'),
-	name =>	 $self->unsafe_get('RealmOwner.name'),
-	realm_type => Bivio::Auth::RealmType->USER,
-	$self->has_keys('RealmOwner.password')
-	    ? (password => Bivio::Type::Password->encrypt(
-		$self->get('RealmOwner.password')))
-	    : (),
-	display_name => $self->get('RealmOwner.display_name'),
-    });
+    my($user, $realm) = $self->new_other('User')->create_realm(
+	$x,
+	$self->get_model_properties('RealmOwner'),
+    );
     $self->new_other('Email')->create({
 	realm_id => $user->get('user_id'),
 	email => $self->unsafe_get('Email.email')
@@ -117,11 +110,6 @@ sub internal_create_models {
 	want_bulletin => 0,
     }) unless ($self->unsafe_get('Email.email') || '')
 	eq Bivio::Type::Email->IGNORE_PREFIX;
-    $self->new_other('RealmUser')->create({
-	realm_id => $user->get('user_id'),
-	user_id => $user->get('user_id'),
-        role => Bivio::Auth::Role->ADMINISTRATOR,
-    });
     return ($realm, $user);
 }
 
