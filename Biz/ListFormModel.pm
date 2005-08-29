@@ -298,7 +298,7 @@ sub get_field_name_for_html {
     # Get the column info and return if not in_list
     my($col) = $self->get_field_info($name);
     unless ($col->{in_list}) {
-	Carp::croak($name, ': not in_list and row specified')
+	die($name, ': not in_list and row specified')
 		if defined($row);
 	return $col->{form_name};
     }
@@ -306,7 +306,7 @@ sub get_field_name_for_html {
     # Row specified?
     unless (defined($row)) {
 	my($fields) = $self->[$_IDI];
-	Carp::croak('no cursor') unless defined($fields->{cursor})
+	die('no cursor') unless defined($fields->{cursor})
 		&& $fields->{cursor} >= 0;
 	$row = $fields->{cursor};
     }
@@ -395,11 +395,11 @@ Clears the error on I<property> if any.
 =cut
 
 sub internal_clear_error {
-    my($self, $property, $error, $literal) = @_;
-
-    my($n, $nr) = _names($self, $property);
-    $self->SUPER::internal_clear_error($n) if $n;
-    $self->SUPER::internal_clear_error($nr) if $nr;
+    my($self, $property) = @_;
+    foreach my $n (_names($self, $property)) {
+	$self->SUPER::internal_clear_error($n)
+	    if $n;
+    }
     return;
 }
 
@@ -529,12 +529,12 @@ sub next_row {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
 
-    Carp::croak('no cursor') unless defined($fields->{cursor});
+    die('no cursor')
+	unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     my($lm) = $fields->{list_model};
     # Advance only if list_model can advance
     unless ($lm->next_row) {
-	# No place to advance to
 	$fields->{cursor} = undef;
 	_clear_row($self);
 	return 0;
@@ -550,8 +550,10 @@ sub next_row {
 	my($nr) = $n.$_SEP.$row;
 	$values->{$n} = $values->{$nr};
 	# No literals for "other" entries
-	$literals->{$fn} = $literals->{$fn.$_SEP.$row} if defined($fn);
-	$errors->{$n} = $errors->{$nr} if $errors;
+	$literals->{$fn} = $literals->{"$fn$_SEP$row"}
+	    if defined($fn);
+	$errors->{$n} = $errors->{$nr}
+	    if $errors;
     }
     return 1;
 }
@@ -677,13 +679,12 @@ sub _clear_row {
     my($self) = @_;
     my($literals) = $self->internal_get_literals;
     my($values) = $self->internal_get;
-    my($errors) = $self->get_errors;
     foreach my $f (@{$self->get_info('in_list')}) {
 	my($n, $fn) = @{$f}{'name', 'form_name'};
 	delete($values->{$n});
-	# Other fields don't have form names
-	delete($literals->{$fn}) if defined($fn);
-	delete($errors->{$n}) if $errors;
+	delete($literals->{$fn})
+	    if defined($fn);
+	$self->SUPER::internal_clear_error($n);
     }
     return;
 }
@@ -768,7 +769,8 @@ sub _names {
     my($self, $name) = @_;
 
     # If there is no property name, global error
-    return ($_SEP, undef) unless $name;
+    return ($self->GLOBAL_ERROR_FIELD, undef)
+	unless $name;
 
     my($sql_support) = $self->internal_get_sql_support;
 
@@ -779,8 +781,8 @@ sub _names {
     # Get the column info and return if not in_list
     my($col) = $sql_support->get_column_info($name);
     unless ($col->{in_list}) {
-	Carp::croak($name, ': not in_list and row specified')
-		if defined($row);
+	die($name, ': not in_list and row specified')
+	    if defined($row);
 	# No qualified name
 	return ($name, undef);
     }
@@ -791,16 +793,16 @@ sub _names {
 	if (defined($fields->{cursor}) && $fields->{cursor} >= 0) {
 	    # If there is a cursor and it matches the row, then
 	    # return unqualified and qualified names.
-	    return ($name, $name.$_SEP.$row) if $fields->{cursor} == $row;
+	    return ($name, $name.$_SEP.$row)
+		if $fields->{cursor} == $row;
 	}
-
 	# No unqualified name
 	return (undef, $name.$_SEP.$row);
     }
 
     # No row specified, must be a cursor and must return both forms
-    Carp::croak('no cursor') unless defined($fields->{cursor})
-	    && $fields->{cursor} >= 0;
+    die('no cursor') unless defined($fields->{cursor})
+	&& $fields->{cursor} >= 0;
     return ($name, $name.$_SEP.$fields->{cursor});
 }
 
