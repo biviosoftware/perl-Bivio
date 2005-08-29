@@ -389,6 +389,18 @@ sub is_secure_data {
     return 0;
 }
 
+=for html <a name="is_specified"></a>
+
+=head2 is_specified(any value) : boolean
+
+Returns true if value is not C<undef>.
+
+=cut
+
+sub is_specified {
+    return defined($_[1]) ? 1 : 0;
+}
+
 =for html <a name="put_on_request"></a>
 
 =head2 put_on_request(Bivio::Agent::Request req, boolean put_durable) : self
