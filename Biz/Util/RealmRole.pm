@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Util::RealmRole;
 use strict;
@@ -50,6 +50,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-role [options] command [args...]
 commands:
+    copy_all src dst -- copies all records from src to dst realm
     edit role operation ... -- changes the permissions for realm/role
     list [role] -- lists permissions for this realm and role or all
     list_all [realm_type] -- lists permissions for all realms of realm_type
@@ -96,6 +97,36 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="copy_all"></a>
+
+=head2 copy_all(any src, any dst)
+
+Copies all role, permission tuples from I<src> to I<dst> realm.
+
+=cut
+
+sub copy_all {
+    my($self, $src, $dst) = @_;
+    my($req) = $self->get_request;
+    ($src, $dst) = map(
+	Bivio::Biz::Model->new($req, 'RealmOwner')
+	    ->unauth_load_by_id_or_name_or_die($_)->get('realm_id'),
+	$src, $dst,
+    );
+    Bivio::Biz::Model->new($self->get_request, 'RealmRole')->do_iterate(
+	sub {
+	    my($m) = @_;
+	    $m->new_other('RealmRole')->create_or_unauth_update({
+		%{$m->get_shallow_copy},
+		realm_id => $dst,
+	    });
+	    return 1;
+	},
+        unauth_iterate_start => ('realm_id', {realm_id => $src}),
+    );
+    return;
+}
 
 =for html <a name="edit"></a>
 
@@ -367,7 +398,7 @@ sub _roles {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
