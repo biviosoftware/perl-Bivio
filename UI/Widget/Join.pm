@@ -68,7 +68,7 @@ Initializes widget state and children.
 =cut
 
 sub initialize {
-    my($self, $source) = @_;
+    my($self) = @_;
     my($name) = 0;
     foreach my $v (@{$self->get('values')}) {
 	$self->initialize_value($name++, $v);
