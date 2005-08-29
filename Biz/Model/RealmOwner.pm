@@ -64,20 +64,21 @@ my($_HOME_TASK_MAP) = {
 =head2 create(hash_ref new_values)
 
 Sets I<creation_date_time>, I<password> (to invalid),
-and I<display_name> if not set, then calls SUPER.
+I<display_name>, I<name> if not set, downcases I<name>, then calls SUPER.
 
 =cut
 
 sub create {
     my($self, $values) = @_;
     $values->{name} =
-	lc(substr($values->{realm_type}->get_name, 0, 1)) . $values->{realm_id}
+	substr($values->{realm_type}->get_name, 0, 1) . $values->{realm_id}
 	unless defined($values->{name});
+    $values->{name} = lc($values->{name});
     $values->{display_name} = $values->{name}
 	unless defined($values->{display_name});
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
     $values->{password} = Bivio::Type::Password->INVALID
-	    unless defined($values->{password});
+	unless defined($values->{password});
     return $self->SUPER::create($values);
 }
 
