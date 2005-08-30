@@ -10,7 +10,7 @@ Bivio::Test::ListModel->unit('UserRealmList', [
 	[] => undef,
     ],
     find_row_by_type => [
-	[Bivio::Auth::RealmType->USER] => 1,
-	[Bivio::Auth::RealmType->CLUB] => 0,
+	[Bivio::Auth::RealmType->USER] => sub {[shift->get('object')]},
+	[Bivio::Auth::RealmType->CLUB] => [undef],
     ],
 ]);

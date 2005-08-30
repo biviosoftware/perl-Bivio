@@ -50,16 +50,16 @@ belongs.
 
 =for html <a name="find_row_by_type"></a>
 
-=head2 find_row_by_type(Bivio::Auth::RealmType type) : boolean
+=head2 find_row_by_type(Bivio::Auth::RealmType type) : Bivio::Biz::Model::UserRealmList
 
-Sets the cursor by I<type> or returns false.
+Sets the cursor by I<type> and returns self or returns undef.
 
 =cut
 
 sub find_row_by_type {
     my($self, $type) = @_;
     return $self->do_rows(sub {$self->get('RealmOwner.realm_type') != $type})
-	->has_cursor;
+	->has_cursor ? $self : undef;
 }
 
 =for html <a name="internal_initialize"></a>
