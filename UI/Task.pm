@@ -423,6 +423,10 @@ sub initialization_complete {
     _init_from_uri($self, $self->internal_get_all_groups);
     # Map default placeholders for these realms.  See format_realmless_uri().
     $fields->{realmless_uri} = {
+	map(($_ => ($self->internal_unsafe_lc_get_value(
+	    $_->get_name . '_REALMLESS_REDIRECT') || {})->{uri}),
+	    Bivio::Auth::RealmType->get_list),
+#TODO: Remove my_club_site and my_site requirements
 	# You can't format realmless unless these tasks exist.
 	Bivio::Auth::RealmType->CLUB
 	    => $self->internal_get_value('my_club_site')->{uri},
