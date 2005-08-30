@@ -97,6 +97,7 @@ my($_SELF) = __PACKAGE__->new({
 	menu_link => ['smaller'],
 	heading_link => ['larger', 'bold'],
 	main_description_text => ['smaller'],
+	string_test1 => ['family=', 'class=string_test1'],
     ]),
     FormError => __PACKAGE__->make_groups([
 	NULL => 'You must supply a value for vs_fe("label");.',
