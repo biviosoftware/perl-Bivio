@@ -6,7 +6,7 @@ use Bivio::Test::ListModel;
 Bivio::Test::Request->get_instance;
 Bivio::Test::ListModel->unit('AdmUserList', [
     load_all => [
-	[{search => Bivio::PetShop::Util->DEMO_USER_LAST_NAME}] => [
+	[{search => Bivio::PetShop::Util->DEMO_LAST_NAME}] => [
 	    map(({
 		'User.first_name' => ucfirst($_),
 		'User.middle_name' => undef,
