@@ -48,28 +48,40 @@ As you:
 
 =cut
 
-=for html <a name="DEMO_USER"></a>
+=for html <a name="DEMO"></a>
 
-=head2 DEMO_USER : string
+=head2 DEMO : string
 
 Returns 'demo'.
 
 =cut
 
-sub DEMO_USER {
+sub DEMO {
     return 'demo';
 }
 
-=for html <a name="DEMO_USER_LAST_NAME"></a>
+=for html <a name="DEMO_LAST_NAME"></a>
 
-=head2 DEMO_USER_LAST_NAME : string
+=head2 DEMO_LAST_NAME : string
 
-Returns last name of DEMO_USER
+Returns last name of DEMO
 
 =cut
 
-sub DEMO_USER_LAST_NAME {
+sub DEMO_LAST_NAME {
     return 'User';
+}
+
+=for html <a name="GUEST"></a>
+
+=head2 GUEST : string
+
+Guest user's name.
+
+=cut
+
+sub GUEST {
+    return 'guest';
 }
 
 =for html <a name="USAGE"></a>
@@ -140,7 +152,7 @@ Returns list of demo users.
 sub demo_users {
     my($self) = @_;
     return [
-	$self->DEMO_USER, qw(guest multi_role_user),
+	$self->DEMO, $self->GUEST, qw(multi_role_user),
 	$self->get_request->is_production ? () : ('root'),
     ];
 }
@@ -297,7 +309,7 @@ sub _init_demo_users {
 	$self->print("Created user $u\@bivio.biz\n");
 	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
 	    'User.first_name' => ucfirst($u),
-	    'User.last_name' => $self->DEMO_USER_LAST_NAME,
+	    'User.last_name' => $self->DEMO_LAST_NAME,
 	    'Email.email' => "$u\@bivio.biz",
 	    'Address.street1' => '1313 Mockingbird Lane',
 	    'Address.street2' => undef,
