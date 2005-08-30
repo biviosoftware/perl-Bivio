@@ -8,7 +8,8 @@ Bivio::Test::Widget->unit(
     [
 	['s'] => 's',
 	['s', 'page_text'] => '<font face="arial,sans-serif">s</font>',
-	['s', 'string_test1'] => '<font class="string_test1">s</font>',
+	[_t('p', 's')] => '<p>s</p>',
+	[_t('p', 's'), 'string_test1'] => '<font class="string_test1"><p>s</p></font>',
     ],
 );
 sub _t {
