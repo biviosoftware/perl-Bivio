@@ -104,6 +104,7 @@ sub execute_ok {
         if $self->get('ship_to_billing_address');
 
     unless (defined($self->get('Order.ship_to_name'))) {
+#TODO: try returning task id
 	_trace('redirecting to shipping address page') if $_TRACE;
 	$self->get_request->server_redirect(
             Bivio::Agent::TaskId->SHIPPING_ADDRESS);
