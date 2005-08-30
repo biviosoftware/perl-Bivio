@@ -3,7 +3,7 @@
 use strict;
 use Bivio::PetShop::Util;
 use Bivio::Test::ListModel;
-Bivio::Test::Request->get_instance->set_realm(Bivio::PetShop::Util->DEMO_USER);
+Bivio::Test::Request->get_instance->set_realm(Bivio::PetShop::Util->DEMO);
 Bivio::Test::ListModel->unit('UserRealmList', [
     load_all => [
 	# There may be orders;  We testing find_row_by_type, not load_all.
