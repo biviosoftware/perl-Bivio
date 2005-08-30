@@ -340,6 +340,26 @@ sub get_delegate_info {
 	    next=LOGIN
 	    cancel=USER_ACCOUNT_CREATE
 	)],
+	[qw(
+	    USER_REALMLESS_REDIRECT
+	    531
+	    GENERAL
+	    ANYBODY
+	    Action.RealmlessRedirect
+	    visitor_task=USER_ACCOUNT_CREATE
+	    home_task=USER_ACCOUNT_EDIT
+	    unauth_task=SITE_ROOT
+	)],
+	[qw(
+	    ORDER_REALMLESS_REDIRECT
+	    532
+	    GENERAL
+	    ANYBODY
+	    Action.RealmlessRedirect
+	    visitor_task=ORDER_COMMIT
+	    home_task=ORDER_COMMIT
+	    unauth_task=SITE_ROOT
+	)],
     ]);
 }
 

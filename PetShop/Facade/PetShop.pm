@@ -166,6 +166,8 @@ my($_SELF) = __PACKAGE__->new({
 	    WORKFLOW_CALLER => 'pub/workflow-caller',
 	    WORKFLOW_STEP_1 => 'pub/workflow-step-1',
 	    WORKFLOW_STEP_2 => 'pub/workflow-step-2',
+	    USER_REALMLESS_REDIRECT => 'ru/*',
+	    ORDER_REALMLESS_REDIRECT => 'ro/*',
         ]));
 	return;
     },
