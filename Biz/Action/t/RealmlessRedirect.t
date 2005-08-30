@@ -4,7 +4,7 @@ use strict;
 use Bivio::Test::Request;
 use Bivio::PetShop::Util;
 my($req) = Bivio::Test::Request->initialize_fully();
-my($demo, $guest) = map(Bivio::PetShop::Util->$_(), qw(DEMO_USER GUEST_USER));
+my($demo, $guest) = map(Bivio::PetShop::Util->$_(), qw(DEMO GUEST));
 Bivio::Test->new('Bivio::Biz::Action::RealmlessRedirect')->unit([
     [] =>[
 	{
