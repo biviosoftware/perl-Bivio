@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,92 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::Action::RealmlessRedirect allows you to redirect a
+    realmless redirect to one with a realm depending on your login
+    state.
+
+  Revision 3.4  2005/08/29 19:17:41  nagler
+  NOTE: Major refactoring of Table and Grid widgets in this release
+
+  * Bivio::UI::HTML::Widget::TableBase is the common base class for Grid
+    and Table widgets.  cellpadding, cellspacing, bgcolor, background,
+    etc. have been moved to TableBase.  These attributes are rendered
+    dynamically (except "expand"), and are common to both Grid and
+    Table.
+  * Bivio::UI::HTML::Grid/Table.class allows you to turn off defaulting
+    of parameters, e.g. Grid([['x']], {class => 'y'}) yields
+  	<table class="y"><tr>
+  	<td>x</td>
+  	</tr></table>
+    whereas Grid([['x]]) yields:
+  	<table border="0" cellpadding="0" cellspacing="0"><tr>
+  	<td>x</td>
+  	</tr></table>
+    Thusly, Table and Grid are fully CSS compatible.
+  * Bivio::UI::HTML::Grid/Table.*_class, e.g. odd_row_class, row_class,
+    summary_line_class, allow full class tagging at row and cell levels
+    for data, heading, and footer cells.  See the code and tests for details.
+  * Bivio::Biz::ExpandableListFormModel->validate_row uses
+    MUST_BE_SPECIFIED_FIELDS() to figure out if a row is empty iwc all
+    errors on MUST_BE_SPECIFIED_FIELDS() are cleared.  If
+    MUST_BE_SPECIFIED_FIELDS() is undef, validate_row does nothing.
+  * Bivio::Biz::ExpandableListFormModel->is_empty_row uses
+    MUST_BE_SPECIFIED_FIELDS() to determine if the row is empty.
+  * Bivio::Biz::ExpandableListFormModel->execute_empty_row calls
+    internal_load_field on all visible fields that also exist in
+    in list_model.
+  * Bivio::Biz::FormModel-GLOBAL_ERROR_FIELD formally couples the
+    implicit coupling of '_' meaning a general form error.
+  * Bivio::Biz::List/FormModel->get_errors/internal_clear_error/etc. reuse
+    get_errors as much as possible to increase explicit coupling.
+    Fixed defect in internal_clear_error for ListForms where get_errors
+    would return an empty hash (not allowed).
+  * Bivio::Type->is_specified returns false if value is undef.
+  * Bivio::Type::Enum->is_specified returns false if value is undef
+    or as_int is 0.  Creates overridable explicit coupling.
+  * Bivio::Biz::FormModel::_parse_cols() uses Bivio::Type->is_specified
+    to validate NOT_ZERO_ENUM constraint.
+  * Bivio::Biz::Model::RealmOwner->create sets $name to first letter of
+    realm_type + realm_id and always downcases $name.
+  * Bivio::Biz::Model::User->create_realm encapsulates the work of
+    creating a User realm.
+  * Bivio::Biz::Model::UserCreateForm->internal_create_models refactored
+    to use User->create_realm.
+  * Bivio::Biz::Model::UserRealmList->find_row_by_type sets the cursor
+    to the first row with specified RealmType.
+  * Bivio::Biz::Model->internal_initialize no longer dies when called
+    from a subclasses internal_initialize.
+  * Bivio::Biz::Util::RealmRole->copy_all copies permissions from
+    one realm to another.  Useful for initializing new realm types.
+  * Bivio::PetShop::Util->DEMO_USER defines the demo user name for
+    PetShop.
+  * Bivio::UI::HTML::ViewShortcuts->vs_html_attrs_initialize defaults
+    to unsafe_initializing class and id for widgets.  Can also pass in
+    a list.  See Tag, Link, and TableBase.
+  * Bivio::UI::HTML::ViewShortcuts->vs_html_attrs_render renders class
+    and id by default, but can also unsafe_render other html attrs.
+  * Bivio::UI::HTML::Widget::ControlBase uses vs_html_attrs_initialize
+    and vs_html_attrs_render.
+  * Bivio::UI::HTML::Widget::ControlBase->internal_new_args ifc
+    simplified for subclasses.  See Tag and Link.
+  * Bivio::UI::HTML::Widget::Tag renders arbitrary html tags with class
+    and id attribles.
+  * Bivio::UI::HTML::Widget::StyleSheet renders style sheet file as a
+    link if want_local_file_cache is true.  Otherwise, typically for
+    development, renders css inline.  Enables rapid CSS edit-debug
+    loops.
+  * Bivio::UI::HTML::Widget::Image.class defined and will not render
+    border=0 if set.
+  * Bivio::UI::HTML::Widget::Page->render sets font_with_style on
+    request.  Style data was being duplicated unnecessarily when Style()
+    widget was in use after Script() was added in release 2.83.  Not
+    functional problem, but possible performance problem.
+  * Bivio::UI::HTML::Widget::Style->render uses "body" instead of
+    explicit lists of tags to set default font.  Observes
+    font_with_style as passed in by Page.
+  * Bivio::UI::Task->parse_uri was not handling path_info empty case
+    properly for realm case.  Was producing an uninitialized variable
+    error.
   * Bivio::Util::RealmAdmin->delete_with_users deletes current realm and
     all its users.  Userful for testing.
   * Bivio::Type::USZipCode9 enforces 9 digit zip codes
