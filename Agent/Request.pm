@@ -308,8 +308,9 @@ sub as_string {
     my($t) = $self->unsafe_get('task_id');
     return 'Request['.Bivio::IO::Alert->format_args(
 	    'task=', $t ? $t->get_name : undef,
-	    ' user=', $r ? $r->connection->user : undef,
-	    ' realm=', $self->unsafe_get('auth_realm'),
+	    ' user=', $self->unsafe_get_nested(qw(auth_user name))
+		|| $r && $r->connection->user,
+	    ' realm=', $self->unsafe_get_nested(qw(auth_realm owner_name)),
 	    ' referer=', $r ? $r->header_in('Referer') : undef,
 	    ' uri=', $self->unsafe_get('uri'),
 	    ' query=', $self->unsafe_get('query'),
