@@ -79,6 +79,30 @@ Otherwise will render a partial style sheet.
 #=IMPORTS
 
 #=VARIABLES
+my($_TAGS) = join(',', qw(
+    address
+    blockquote
+    body
+    button
+    center
+    div
+    dl
+    input
+    ins
+    kbd
+    label
+    legend
+    menu
+    multicol
+    ol
+    p
+    pre
+    select
+    th
+    td
+    textarea
+    ul
+));
 
 =head1 METHODS
 
@@ -105,7 +129,7 @@ sub render {
     # Font
     my($font) = Bivio::UI::Font->get_attrs('default', $req);
     if ($font) {
-	$$buffer .= "body {\n";
+	$$buffer .= $_TAGS . " {\n";
 	# If the value isn't set or is zero, then don't render.
 	$$buffer .= ' font-family : '.$font->{family}.';' if $font->{family};
 	$$buffer .= ' font-size : '.$font->{size}.';'
