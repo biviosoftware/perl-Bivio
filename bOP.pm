@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 3.6  2005/08/31 21:36:53  moeller
+  * Bivio::UI::HTML::Widget::Style put explicit tags back for the default font
+
+  Revision 3.5  2005/08/30 22:53:20  nagler
   * Bivio::Biz::Action::RealmlessRedirect allows you to redirect a
     realmless redirect to one with a realm depending on your login
     state.
