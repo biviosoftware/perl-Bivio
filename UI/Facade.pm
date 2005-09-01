@@ -216,6 +216,7 @@ sub new {
     # event of self-referential configuration.
     $_CLASS_MAP{$simple_class} = 1;
 
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
     # Only load production configuration.
     if (Bivio::Agent::Request->is_production && !$config->{is_production}) {
 	# Anybody referencing this facade will get an error; see _load().
