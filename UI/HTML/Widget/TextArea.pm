@@ -38,10 +38,6 @@ attribute C<TYPE=TEXTAREA>.
 
 =over 4
 
-=item class : any []
-
-The html CLASS for the textarea.
-
 =item field : string (required)
 
 Name of the form field.
@@ -49,10 +45,6 @@ Name of the form field.
 =item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
-
-=item id : any []
-
-The html ID attribute.
 
 =item rows : int (required)
 
@@ -79,7 +71,6 @@ The text wrapping mode.
 #=VARIABLES
 
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 
 =head1 FACTORIES
@@ -144,7 +135,6 @@ sub render {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 #TODO: need get_width or is it something else?
 	$fields->{prefix} = '<textarea'
-	        . ($_VS->vs_html_attrs_render($self, $source) || '')
 		.' rows='.$fields->{rows}
 		.' cols='.$fields->{cols}
 		.' wrap='.$fields->{wrap};
