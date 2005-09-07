@@ -359,7 +359,7 @@ sub _get_realm {
 #
 sub _validate_names {
     my($self) = @_;
-    $self->throw_die('must have at least one of first, last, and middle names')
+    $self->die('must have at least one of first, last, and middle names')
         unless defined($self->get('first_name'))
             || defined($self->get('middle_name'))
             || defined($self->get('last_name'));
