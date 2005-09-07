@@ -71,6 +71,7 @@ The text wrapping mode.
 #=VARIABLES
 
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 
 =head1 FACTORIES
@@ -135,6 +136,7 @@ sub render {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 #TODO: need get_width or is it something else?
 	$fields->{prefix} = '<textarea'
+	        . ($_VS->vs_html_attrs_render($self, $source) || '')
 		.' rows='.$fields->{rows}
 		.' cols='.$fields->{cols}
 		.' wrap='.$fields->{wrap};
