@@ -76,9 +76,8 @@ The numbers 0-19 are reserved by this module so your first Role would
 look like:
 
     sub get_delegate_info {
-	my($proto) = @_;
 	return [
-            @{$proto->SUPER::get_delegate_info},
+            @{shift->SUPER::get_delegate_info(@_)},
 	    MY_NEW_ROLE => [
 	        20,
 		undef,
