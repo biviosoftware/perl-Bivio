@@ -226,7 +226,7 @@ Returns true if subclass is table.
 =cut
 
 sub subclass_is_table {
-    return ref(shift) =~ /::Table$/ ? 1 : 0;
+    return ref(shift) =~ /Table$/ ? 1 : 0;
 }
 
 #=PRIVATE SUBROUTINES
