@@ -307,6 +307,30 @@ Numbers for the cases which I<passed>.  Case numbers start at 1.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="CLASS"></a>
+
+=head2 CLASS : code_ref
+
+Identifies the class under test, e.g.
+
+    Bivio::Test->unit([
+        Bivio::Test->CLASS() => [
+            static_method_1 => [
+            ],
+        ],
+    ];
+
+=cut
+
+sub CLASS {
+    return \&CLASS;
+}
+
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::IO::Ref;
@@ -525,7 +549,9 @@ sub print {
 
 =for html <a name="unit"></a>
 
-=head2 static unit(array_ref tests) : self
+=head2 unit(array_ref tests) : self
+
+=head2 static unit(string class_name, array_ref tests) : self
 
 Evaluates I<tests> which are defined as tuples of tuples of tuples.
 see L<DESCRIPTION|"DESCRIPTION"> for the syntax.
@@ -534,14 +560,18 @@ The tests are suitable for processing by
 L<Bivio::Util::Test::unit|Bivio::Util::Test/"unit">
 (command C<b-test unit>) or C<Test::Harness> (a standard CPAN module).
 
+If I<class_name> is supplied, will pass to L<new|"new"> or simply "put" on
+self.
+
 =cut
 
 sub unit {
-    my($self, $tests) = @_;
-    # Instantiate first, if called statically.
-    return $self->new->unit($tests) unless ref($self);
-    _eval($self, _compile($self, $tests));
-    return $self;
+    my($self, $tests) = splice(@_, 0, 2);
+    return ref($tests)
+	? ref($self) ? _eval($self, _compile($self, $tests))
+	: $self->new->unit($tests)
+	: (ref($self) ? $self->put(class_name => $tests) : $self->new($tests))
+	    ->unit(shift);
 }
 
 #=PRIVATE METHODS
@@ -702,6 +732,8 @@ sub _compile_object {
     if ($state->{class_name}) {
 	$state->{create_object} = \&default_create_object
 	    unless $state->{create_object};
+	$state->{object} = $state->{class_name}
+	    if $state->{object} eq __PACKAGE__->CLASS;
     }
     if ($state->{create_object} || ref($state->{object}) eq 'CODE') {
 	my($fields) = $self->[$_IDI];
@@ -795,7 +827,7 @@ sub _die {
     # DOES NOT RETURN
 }
 
-# _eval(self, array_ref tests)
+# _eval(self, array_ref tests) : self
 #
 # Runs the tests as returned from _compile().
 #
@@ -856,7 +888,7 @@ sub _eval {
     $print->(
 	$self->format_results(scalar(@{$results->{passed}}), int(@$tests)),
     );
-    return;
+    return $self;
 }
 
 # _eval_compute_return(Bivio::Test::Case case, any_ref return) : string

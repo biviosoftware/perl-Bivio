@@ -5,7 +5,9 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..4\n"; }
+BEGIN {
+    $| = 1; print "1..4\n";
+}
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Test;
@@ -373,8 +375,11 @@ t(
 		[] => Bivio::DieCode->DIE,
 	    ],
 	],
+	Bivio::Test->CLASS => [
+	    ok => undef,
+	],
     ],
-    13,
+    14,
     [4, 6, 7, 11],
 );
 
