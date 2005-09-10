@@ -212,11 +212,11 @@ When only one test is run, shows the output of the test.
 =cut
 
 sub unit {
-    my($self, $tests) = _find_files(\@_, 't');
+    my($self, $tests) = _find_files(\@_, '(?:t|bunit)');
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
 	my($max, $ok) = (-1, 0);
-	_piped_exec($self, $test, undef, $out, sub {
+	_piped_exec($self, _unit($test), $out, sub {
 	    my($line) = @_;
 	    if ($max >= 0) {
 		$ok++ if $line =~ /^ok\s*(\d+)/;
@@ -364,6 +364,19 @@ sub _run {
     Bivio::Die->throw_quietly('DIE')
 	unless $max == $ok;
     return;
+}
+
+# _unit(string test) : array
+#
+# If test ends in bunit, need to construct '.t'
+#
+sub _unit {
+    my($test) = @_;
+    return $test =~ /bunit$/ ? ('-', <<"EOF") : ($test, undef);
+use strict;
+use Bivio::Test::Unit;
+Bivio::Test::Unit->run(q{$test});
+EOF
 }
 
 =head1 COPYRIGHT
