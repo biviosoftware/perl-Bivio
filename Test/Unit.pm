@@ -34,6 +34,48 @@ C<Bivio::Test::Unit> is a simple wrapper for
 L<Bivio::Test::unit|Bivio::Test/"unit"> that allows you to declare different
 test types.  You create a ".bunit" file which looks like:
 
+    [
+	4 => [
+	    compute => [
+		5 => 5,
+		5 => 5,
+		10 => 7,
+	    ],
+	    value => 7,
+	],
+	CLASS() => [
+	    new => [
+		-2 => DIE(),
+		0 => DIE(),
+		1 => undef,
+		2.5 => DIE(),
+	    ],
+	],
+	50 => [
+	    value => DIE(),
+	],
+    ];
+
+Or for widgets:
+
+    [
+	Widget => [
+	    [['']] => '',
+	    [['a', 'b']] => 'ab',
+	    [['a', 'b'], '-'] => 'a-b',
+	    [['a'], '-'] => 'a',
+	    [['a', 'b'], [sub {return undef}]] => 'ab',
+	    [['a', 'b'], [sub {Bivio::UI::Widget::Join->new(['x'])}]] => 'axb',
+	    [['a', 'b'], [sub {Bivio::UI::Widget::Join->new([''])}]] => 'ab',
+	    [[
+	       [sub {Bivio::UI::Widget::Join->new([''])}],
+		'a',
+	       'b',
+	       '',
+	    ], '-'] => 'a-b',
+	],
+    ];
+
 =cut
 
 #=IMPORTS
