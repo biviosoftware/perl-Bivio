@@ -449,7 +449,7 @@ sub submit_form {
     else {
 	$form_fields ||= {};
     }
-    my($form) = _assert_html($self)->get('Forms') ->get_by_field_names(
+    my($form) = _assert_html($self)->get('Forms')->get_by_field_names(
 	keys(%$form_fields),
 	defined($submit_button) ? $submit_button : (),
     );
