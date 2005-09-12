@@ -487,7 +487,8 @@ sub get_render_state {
     $list_name = ref($list_name) ? ref($list) : $list_name;
 
     # check for an empty list
-    if ($list->get_result_set_size == 0) {
+    if ($list->get_result_set_size == 0
+        && $self->unsafe_get('empty_list_widget')) {
 	$self->unsafe_render_attr('empty_list_widget', $source, $buffer);
 	return undef;
     }
