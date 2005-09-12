@@ -486,7 +486,13 @@ sub _label_submit {
 	$attr->{src} ? _submit_label_clean($attr->{src})
 	: $attr->{value});
     $attr->{label} .= '_'.$attr->{index} if defined($attr->{index});
-    return _label_field($fields, 'submit', $attr);
+    _label_field($fields, 'submit', $attr);
+    if ($fields->{input_error}) {
+	$attr->{error} = $fields->{input_error};
+	push(@{$fields->{current}->{errors} ||= []}, $attr);
+	$fields->{input_error} = undef;
+    }
+    return;
 }
 
 # _label_visible(hash_ref fields)

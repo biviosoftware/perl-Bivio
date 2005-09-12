@@ -171,6 +171,11 @@ Bivio::Test->new({
         'societas-valuation' => [
             ['Tables', 'Shares Held', 'rows', 2, 1, 'text'] => ['(600.0000)'],
         ],
+    ], [
+        'button-error' => [
+            ['Forms', 'Copyright Release_1', 'submit', 'Copyright Release_1', 'error']
+	        => ['To join the ballot, you must sign the Copyright Release'],
+        ],
     ]),
     ['login', 'Forms'] => [
 	get_by_field_names => [
