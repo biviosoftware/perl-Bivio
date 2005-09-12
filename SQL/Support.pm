@@ -161,9 +161,8 @@ Returns I<attr> for I<column> or all attrs if attr not defined.
 =cut
 
 sub get_column_info {
-    my($columns) = shift->get('columns');
-    my($name, $attr) = @_;
-    my($col) = $columns->{$name};
+    my($self, $name, $attr) = @_;
+    my($col) = $self->get('columns')->{$name};
 
     Bivio::Die->die($name, ': no such column') unless $col;
     return $col unless defined($attr);
@@ -183,9 +182,8 @@ main column names) to the original column name.
 =cut
 
 sub get_column_name {
-    my($column_aliases) = shift->get('columns_aliases');
-    my($name) = shift;
-    my($col) = $column_aliases->{$name};
+    my($self, $name) = @_;
+    my($col) = $self->get('column_aliases')->{$name};
     Bivio::Die->die($name, ': no such column alias')
         unless $col;
     return $col->{name};
