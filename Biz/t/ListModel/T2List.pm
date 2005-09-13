@@ -69,7 +69,7 @@ sub internal_initialize {
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    return $stmt->append_where_and('realm_id = ?', [3]);
+    $stmt->where(['RealmOwner.realm_id', [3]]);
 }
 
 #=PRIVATE SUBROUTINES

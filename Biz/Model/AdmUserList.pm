@@ -98,6 +98,10 @@ sub internal_initialize {
 		type => 'Line',
 		constraint => 'NOT_NULL',
 	    },
+	    {
+	        name => 'User.last_name_sort',
+	        in_select => '0',
+	    },
 	],
     };
 }
@@ -113,19 +117,21 @@ Narrow the search of users by last name.
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     my($query) = $self->get_query;
-    if (my $search = $query->get('search')) {
-	if ($search eq $self->LOAD_ALL_SEARCH_STRING) {
-	    $query->put(count => $self->LOAD_ALL_SIZE);
-	}
-	elsif ($search =~ /^\d+$/) {
-	    $stmt->append_where_and('user_t.user_id = ?', [$search]);
-	}
-	else {
-	    $stmt->append_where_and(
-		'user_t.last_name_sort LIKE ?', [lc($search) . '%']);
-	}
+    my($search) = $query->get('search');
+
+    return unless $search;
+
+    if ($search eq $self->LOAD_ALL_SEARCH_STRING) {
+	$query->put(count => $self->LOAD_ALL_SIZE);
     }
-    return $stmt
+    elsif ($search =~ /^\d+$/) {
+	$stmt->where(['User.user_id', [$search]]);
+    }
+    else {
+	$stmt->where($stmt->LIKE('User.last_name_sort', lc($search) . '%'));
+    }
+
+    return;
 }
 
 #=PRIVATE SUBROUTINES

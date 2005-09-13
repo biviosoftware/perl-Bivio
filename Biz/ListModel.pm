@@ -891,29 +891,15 @@ sub internal_load_rows {
 
 =for html <a name="internal_prepare_statement"></a>
 
-=head2 internal_prepare_statement(Bivio::SQL::Statement stmt) : Bivio::SQL::Statement
+=head2 internal_prepare_statement(Bivio::SQL::Statement stmt)
 
-Prepares the where clause of the statement by calling
-L<internal_pre_load|"internal_pre_load"> for backwards-compatibility.
-Subclasses should override this method.
-
-Returns the stmt to use.
+Passes I<stmt> so model can modify the SQL query to be generated.
 
 =cut
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    my($params) = [];
-    my($where) = $self->internal_pre_load(
-	$self->get_query,
-	$self->internal_get_sql_support,
-	$params,
-    );
-    $self->die($params, ': unexpected params (missing where')
-	if @$params && !$where;
-    $stmt->append_where_and($where, $params)
-	if $where;
-    return $stmt;
+    return;
 }
 
 =for html <a name="internal_set_cursor"></a>
@@ -1041,11 +1027,11 @@ sub iterate_start {
 	unless $self->can_iterate;
     my($fields) = $self->[$_IDI];
     $fields->{query} = $self->parse_query($query);
+    my($stmt) = Bivio::SQL::Statement->new($self->internal_get_sql_support());
     return $self->internal_put_iterator(
 	$self->internal_get_sql_support->iterate_start(
 	    $fields->{query},
-	    $self->internal_prepare_statement(Bivio::SQL::Statement->new)
-		->get(qw(where params)),
+	    _where_and_params($self, $stmt),
 	    $self,
         ),
     );
@@ -1573,17 +1559,33 @@ sub _unauth_load {
 	$query->put(count => $count);
     }
     $fields->{query} = $query;
+    my($stmt) = Bivio::SQL::Statement->new($sql_support);
     $self->internal_load(
 	$self->internal_load_rows(
 	    $query,
-	    $self->internal_prepare_statement(Bivio::SQL::Statement->new)
-		->get(qw(where params)),
+	    _where_and_params($self, $stmt),
 	    $sql_support,
 	),
 	$query,
     );
     # fields is invalid at this point
     return scalar(@{$self->[$_IDI]->{rows}});
+}
+
+# _where_and_params(self, Bivio::SQL::Statement stmt) : (string, array_ref)
+#
+# Gather changes from internal_prepare_statment and internal_pre_load
+#
+sub _where_and_params {
+    my($self, $stmt) = @_;
+    $self->internal_prepare_statement($stmt);
+    my($where, $params) = $stmt->build_for_internal_load_rows();
+    $where = join(' AND ', grep({$_} $where, $self->internal_pre_load(
+	$self->get_query(),
+	$self->internal_get_sql_support(),
+	$params,
+    )));
+    return (($where ? " AND $where" : ''), $params);
 }
 
 =head1 COPYRIGHT
