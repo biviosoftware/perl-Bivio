@@ -533,7 +533,7 @@ sub verify_form {
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names(keys(%$form_fields));
     _trace($form->{visible}) if $_TRACE;
-    foreach my $field (keys(%$form_fields)) {
+    foreach my $field (sort(keys(%$form_fields))) {
 	my($control) = _assert_form_field($form, $field);
 	Bivio::Die->die($control->{type}, ' ', $field, ': does not match')
 	    unless $control->{type} eq 'checkbox'
@@ -1055,7 +1055,7 @@ sub _verify_form_option {
     my($control, $field, $value) = @_;
     foreach my $o (keys(%{$control->{options}})) {
 	return 1
-	    if $value eq $o || $value eq $control->{options}->{$o}->{value};
+	    if $value eq $o && $control->{options}->{$o}->{selected};
     }
     return 0;
 }
