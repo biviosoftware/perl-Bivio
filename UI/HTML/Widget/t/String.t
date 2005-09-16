@@ -10,6 +10,10 @@ Bivio::Test::Widget->unit(
 	['s', 'page_text'] => '<font face="arial,sans-serif">s</font>',
 	[_t('p', 's')] => '<p>s</p>',
 	[_t('p', 's'), 'string_test1'] => '<font class="string_test1"><p>s</p></font>',
+	[[sub {[sub {'s'}]}]] => 's',
+	[[sub {'0'}], undef, {format => 'Amount'}] => '0.00',
+	[[sub {['is_secure']}], undef, {format => 'Amount'}] => '0.00',
+	[[sub {undef}], undef, {undef_value => 'x'}] => 'x',
     ],
 );
 sub _t {

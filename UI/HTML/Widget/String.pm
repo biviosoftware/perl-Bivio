@@ -236,19 +236,18 @@ sub render {
 	$b = _escape($fields, $b) if $fields->{escape} == 1;
     }
     else {
-	my($value) = $source->get_widget_value(@{$fields->{value}});
-	$value = ref($fields->{undef_value})
-		? $source->get_widget_value(@{$fields->{undef_value}})
-			: $fields->{undef_value}
-				unless defined($value);
+	my($v) = $self->unsafe_resolve_widget_value($fields->{value}, $source);
+	$v = $self->unsafe_resolve_widget_value(
+	    $fields->{undef_value}, $source,
+	) unless defined($v);
 	# Result may be a widget!
-	if (ref($value) && UNIVERSAL::isa($value, 'Bivio::UI::Widget')) {
-	    $value->render($source, \$b);
+	if (ref($v) && UNIVERSAL::isa($v, 'Bivio::UI::Widget')) {
+	    $v->render($source, \$b);
 	    # Note the special treatment of non-default true.
 	    $b = _escape($fields, $b) if $fields->{escape} == 1;
 	}
 	else {
-	    $b .= _format($fields, $value);
+	    $b .= _format($fields, $v);
 	}
     }
     # Don't output anything if string is empty
@@ -295,7 +294,7 @@ sub _format {
 	return $value if $fields->{format}->result_is_html;
     }
     Bivio::Die->die('got ref where scalar expected: ', $value)
-		if ref($value);
+	if ref($value);
     # Note the treatment of escape when -1 or +1.
     return $fields->{escape} ? _escape($fields, $value) : $value;
 }
