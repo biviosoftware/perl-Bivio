@@ -57,15 +57,15 @@ use Bivio::UI::HTML;
 
 =head2 static vs_acknowledgement(boolean die_if_not_found) : Bivio::UI::Widget
 
-Display acknowledgement, if it exists.  Sets row_control on the widget.
-Dies if die_if_not_found is specified and the acknowledgement is missing.
+Display acknowledgement, if it exists or can be extracted.  Sets row_control on
+the widget.  Dies if die_if_not_found is specified and the acknowledgement is
+missing (does not extract_label in this case).
 
 =cut
 
 sub vs_acknowledgement {
     my($proto, $die_if_not_found) = @_;
-    return $proto->vs_call('Join', [
-        '<p class="acknowledgement">',
+    return $proto->vs_call('Tag', 'p',
         [sub {
              my($req) = shift->get_request;
              return __PACKAGE__->vs_call('String',
@@ -75,12 +75,17 @@ sub vs_acknowledgement {
                          $req)),
              );
          }],
-        '</p>',
-    ], $die_if_not_found
-        ? ()
+	'acknowledgement',
+        $die_if_not_found ? ()
         : {
-            row_control =>
-                [['->get_request'], '->unsafe_get', 'Action.Acknowledgement'],
+            row_control => [
+                sub {
+		    my($req) = shift->get_request;
+		    return $req->unsafe_get('Action.Acknowledgement')
+			|| Bivio::Biz::Action->get_instance('Acknowledgement')
+			    ->extract_label($req);
+		},
+	    ],
         });
 }
 
