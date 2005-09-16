@@ -82,6 +82,23 @@ sub get_instance {
 
 =cut
 
+=for html <a name="delete_from_request"></a>
+
+=head2 static delete_from_request(Bivio::Agent::Request req)
+
+Deletes self from request
+
+=cut
+
+sub delete_from_request {
+    my($proto, $req) = @_;
+    $req->delete(
+	'Action.' . $proto->simple_package_name,
+	ref($proto) || $proto,
+    );
+    return;
+}
+
 =for html <a name="execute"></a>
 
 =head2 abstract execute(Bivio::Agent::Request req) : any
