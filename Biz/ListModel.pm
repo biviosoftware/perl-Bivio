@@ -891,14 +891,14 @@ sub internal_load_rows {
 
 =for html <a name="internal_prepare_statement"></a>
 
-=head2 internal_prepare_statement(Bivio::SQL::Statement stmt)
+=head2 internal_prepare_statement(Bivio::SQL::Statement stmt, Bivio::SQL::ListQuery query)
 
 Passes I<stmt> so model can modify the SQL query to be generated.
 
 =cut
 
 sub internal_prepare_statement {
-    my($self, $stmt) = @_;
+    my($self, $stmt, $query) = @_;
     return;
 }
 
@@ -1578,7 +1578,7 @@ sub _unauth_load {
 #
 sub _where_and_params {
     my($self, $stmt) = @_;
-    $self->internal_prepare_statement($stmt);
+    $self->internal_prepare_statement($stmt, $self->get_query());
     my($where, $params) = $stmt->build_for_internal_load_rows();
     $where = join(' AND ', grep({$_} $where, $self->internal_pre_load(
 	$self->get_query(),
