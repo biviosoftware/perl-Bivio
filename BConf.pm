@@ -227,6 +227,7 @@ sub merge_class_loader {
 		    TextWidget =>
 		        ['Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
 		    TestLanguage => ['Bivio::Test::Language'],
+		    TestUnit => ['Bivio::Test'],
 		    Model => ['Bivio::Biz::Model'],
 		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
 		    Type => ['Bivio::Type'],
