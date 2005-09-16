@@ -375,11 +375,8 @@ t(
 		[] => Bivio::DieCode->DIE,
 	    ],
 	],
-	Bivio::Test->CLASS => [
-	    ok => undef,
-	],
     ],
-    14,
+    13,
     [4, 6, 7, 11],
 );
 
