@@ -134,7 +134,7 @@ sub new_unit {
 
 =head2 run_unit(string class_name, array_ref cases)
 
-Calls L<unit>
+Calls L<unit|"unit">.
 
 =cut
 
