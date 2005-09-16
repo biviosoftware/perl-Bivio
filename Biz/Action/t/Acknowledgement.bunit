@@ -1,0 +1,15 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+use Bivio::Test::Request;
+my($req) = Bivio::Test::Request->get_instance;
+[
+    CLASS() => [
+        save_label => [
+	    ['abc', $req] => [],
+	],
+	extract_label => [
+	    [$req] => ['abc'],
+	    [$req] => [undef],
+	],
+    ],
+]
