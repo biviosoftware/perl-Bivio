@@ -47,17 +47,30 @@ my($_QUERY) = 'ack';
 
 =head2 static execute(Bivio::Agent::Request req) : boolean
 
+L<extract_label|"extract_label">
+
+=cut
+
+sub execute {
+    shift->extract_label(@_);
+    return 0;
+}
+
+=for html <a name="extract_label"></a>
+
+=head2 static extract_label(Bivio::Agent::Request req) : string
+
 Pulls label off query if it exists.  If length is non-zero, puts
 I<label> attribute on self.
 
 =cut
 
-sub execute {
+sub extract_label {
     my($proto, $req) = @_;
-    my($l) = delete(($req->unsafe_get('query') || {})->{$_QUERY});
+    return my($l) = delete(($req->unsafe_get('query') || {})->{$_QUERY});
     $proto->new($req)->put_on_request($req)->put(label => $l)
 	if $l;
-    return 0;
+    return $l;
 }
 
 =for html <a name="save_label"></a>
