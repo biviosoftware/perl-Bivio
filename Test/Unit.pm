@@ -43,7 +43,7 @@ test types.  You create a ".bunit" file which looks like:
 	    ],
 	    value => 7,
 	],
-	CLASS() => [
+	class() => [
 	    new => [
 		-2 => DIE(),
 		0 => DIE(),
@@ -77,30 +77,14 @@ Or for widgets:
 
 =cut
 
-#=VARIABLES
-use vars (qw($AUTOLOAD $_TYPE $_CLASS));
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="CLASS"></a>
-
-=head2 CLASS : string
-
-Returns class under test.
-
-=cut
-
-sub CLASS {
-    return $_CLASS;
-}
-
 #=IMPORTS
 use Bivio::IO::File;
 use Bivio::DieCode;
 use File::Spec ();
 use File::Basename ();
+
+#=VARIABLES
+use vars (qw($AUTOLOAD $_TYPE $_CLASS));
 
 =head1 METHODS
 
@@ -110,8 +94,7 @@ use File::Basename ();
 
 =head2 AUTOLOAD(...) : any
 
-Returns L<Bivio::Test::CLASS|Bivio::Test/"CLASS"> or
-a L<Bivio::DieCode|Bivio::DieCode> , else dies.
+Tries to find Bivio::DieCode or class or type or type function.
 
 =cut
 
@@ -119,20 +102,28 @@ sub AUTOLOAD {
     my($func) = $AUTOLOAD;
     $func =~ s/.*:://;
     return if $func eq 'DESTROY';
-    return $_TYPE && $func =~ /^[A-Z][A-Z0-9_]*$/ && $_TYPE->can($func)
-	? $_TYPE->$func()
-	: $func eq 'CLASS'
-	? __PACKAGE__->CLASS()
-	: $func =~ /^[A-Z][A-Z0-9_]*$/ && Bivio::DieCode->can($func)
+    return $func eq 'class'
+	? __PACKAGE__->class()
+	: Bivio::DieCode->is_valid_name($func) && Bivio::DieCode->can($func)
 	? Bivio::DieCode->$func()
-	: !$_TYPE && $func =~ /^\w+$/
-        ? ($_TYPE = Bivio::IO::ClassLoader->map_require('TestUnit', $func)
-	   and $_TYPE->can('new_unit')
-	       ? ($_TYPE = $_TYPE->new_unit($_CLASS, @_))
-	       : $_TYPE)
 	: $_TYPE
 	? $_TYPE->$func(@_)
-	: Bivio::Die->die($func, ': method not found');
+	: ($_TYPE = Bivio::IO::ClassLoader->map_require('TestUnit', $func)
+	   and $_TYPE->can('new_unit')
+	       ? ($_TYPE = $_TYPE->new_unit($_CLASS, @_))
+	       : $_TYPE);
+}
+
+=for html <a name="class"></a>
+
+=head2 static class() : string
+
+Returns class under test.
+
+=cut
+
+sub class {
+    return $_CLASS;
 }
 
 =for html <a name="run"></a>
@@ -174,7 +165,7 @@ Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
 
 sub run_unit {
     my($self) = shift;
-    return $self->new($self->CLASS)->unit(@_);
+    return $self->new($self->class)->unit(@_);
 }
 
 #=PRIVATE SUBROUTINES

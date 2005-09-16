@@ -2,7 +2,7 @@
 # $Id$
 ListModel();
 use Bivio::PetShop::Util;
-REQ()->set_realm(Bivio::PetShop::Util->DEMO);
+req()->set_realm(Bivio::PetShop::Util->DEMO);
 [
     load_all => [
 	# There may be orders;  We testing find_row_by_type, not load_all.

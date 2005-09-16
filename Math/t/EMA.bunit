@@ -9,7 +9,7 @@
 	],
 	value => 7,
     ],
-    CLASS() => [
+    class() => [
 	new => [
 	    -2 => DIE(),
 	    0 => DIE(),

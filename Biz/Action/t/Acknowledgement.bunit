@@ -2,25 +2,25 @@
 # $Id$
 Request();
 [
-    CLASS() => [
+    class() => [
         save_label => [
-	    ['abc', REQ()] => [],
+	    ['abc', req()] => [],
 	],
 	extract_label => [
-	    [REQ()] => ['abc'],
+	    [req()] => ['abc'],
         ],
     ],
-    sub {REQ()} => [
+    sub {req()} => [
 	unsafe_get_nested => [
 	    ['Action.Acknowledgement', 'label'] => ['abc'],
 	],
     ],
-    CLASS() => [
+    class() => [
 	extract_label => [
-	    [REQ()] => [undef],
+	    [req()] => [undef],
 	],
     ],
-    sub {REQ()} => [
+    sub {req()} => [
 	unsafe_get => [
 	    ['Action.Acknowledgement'] => [undef],
 	],

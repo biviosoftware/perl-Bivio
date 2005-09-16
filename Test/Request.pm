@@ -35,23 +35,6 @@ new request running in general realm.
 
 =cut
 
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="REQ"></a>
-
-=head2 REQ : self
-
-Returns instance of self.
-
-=cut
-
-sub REQ {
-    return shift->get_instance;
-}
-
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Type::DateTime;
@@ -272,6 +255,18 @@ sub put_form {
 	        : ();
 	} keys(%$fields)),
     });
+}
+
+=for html <a name="req"></a>
+
+=head2 req() : Bivio::Test::Request
+
+Calls L<get_instance|"get_instance">.
+
+=cut
+
+sub req {
+    return shift->get_instance;
 }
 
 =for html <a name="run_unit"></a>

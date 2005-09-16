@@ -35,22 +35,6 @@ C<Bivio::Test::ListModel>
 =cut
 
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="REQ"></a>
-
-=head2 REQ : Bivio::Test::Request
-
-Calls L<Bivio::Test::Request::REQ|Bivio::Test::Request/"REQ">
-
-=cut
-
-sub REQ {
-    return Bivio::Test::Request->REQ;
-}
-
 #=IMPORTS
 use Bivio::Biz::Model;
 use Bivio::Test::Request;
@@ -129,6 +113,18 @@ sub new_unit {
 =head1 METHODS
 
 =cut
+
+=for html <a name="req"></a>
+
+=head2 req() : Bivio::Test::Request.
+
+Calls L<Bivio::Test::Request::req|Bivio::Test::Request/"req">
+
+=cut
+
+sub req {
+    return Bivio::Test::Request->req;
+}
 
 =for html <a name="run_unit"></a>
 

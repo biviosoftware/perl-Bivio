@@ -2,7 +2,13 @@
 # $Id$
 Unit();
 [
+    class() => [
+	simple_package_name => 'Unit',
+    ],
     sub {'Bivio::UNIVERSAL'} => [
 	simple_package_name => 'UNIVERSAL',
+    ],
+    sub {'Bivio::Die'} => [
+	die => DIE(),
     ],
 ];
