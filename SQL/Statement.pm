@@ -114,6 +114,21 @@ sub GT {
     return _static_compare('>', $left, $right);
 }
 
+=for html <a name="GTE"></a>
+
+=head2 static GTE(string left, string right) : hash_ref
+
+=head2 static GTE(string left, array_ref right) : hash_ref
+
+Return a Greater Than or Equal predicate.
+
+=cut
+
+sub GTE {
+    my($proto, $left, $right) = @_;
+    return _static_compare('>=', $left, $right);
+}
+
 =for html <a name="IN"></a>
 
 =head2 static IN(string column, array_ref list) : hash_ref
@@ -129,7 +144,43 @@ sub IN {
         values => $values,
         build => sub {
             return _build_column($column, @_) . ' IN (' .
-                join(',', @$values) . ')';
+                join(',', map({_build_value($column, $_, @_)} @$values)) . ')';
+        },
+    };
+}
+
+=for html <a name="IS_NOT_NULL"></a>
+
+=head2 static IS_NOT_NULL(string column) : hash_ref
+
+Return an IS NOT NULL predicate
+
+=cut
+
+sub IS_NOT_NULL {
+    my($proto, $column) = @_;
+    return {
+        column => $column,
+        build => sub {
+            return _build_column($column, @_) . ' IS NOT NULL';
+        },
+    };
+}
+
+=for html <a name="IS_NULL"></a>
+
+=head2 static IS_NULL(string column) : hash_ref
+
+Return an IS NULL predicate
+
+=cut
+
+sub IS_NULL {
+    my($proto, $column) = @_;
+    return {
+        column => $column,
+        build => sub {
+            return _build_column($column, @_) . ' IS NULL';
         },
     };
 }
@@ -176,13 +227,28 @@ sub LIKE {
     };
 }
 
+=for html <a name="LT"></a>
+
+=head2 static LT(string left, string right) : hash_ref
+
+=head2 static LT(string left, array_ref right) : hash_ref
+
+Return a Less Than predicate.
+
+=cut
+
+sub LT {
+    my($self, $left, $right) = @_;
+    return _static_compare('<=', $left, $right);
+}
+
 =for html <a name="LTE"></a>
 
 =head2 static LTE(string left, string right) : hash_ref
 
 =head2 static LTE(string left, array_ref right) : hash_ref
 
-Return a less than or equal to predicate.
+Return a Less Than or Equal predicate.
 
 =cut
 
@@ -293,7 +359,8 @@ with any other existing conditions.
 sub where {
     my($self, $predicate) = @_;
     push(@{$self->[$_IDI]->{where}->{predicates}},
-        _parse_predicate($self, $predicate));
+        _parse_predicate($self, $predicate))
+	if $predicate;
     return;
 }
 
@@ -346,8 +413,9 @@ sub _build_model {
 #
 sub _build_value {
     my($column, $value, $support, $params) = @_;
-    push(@$params, $value);
-    return $support->get_column_info($column)->{type}->to_sql_value('?');
+    my($col_type) = $support->get_column_info($column)->{type};
+    push(@$params, $col_type->to_sql_param($value));
+    return $col_type->to_sql_value('?');
 }
 
 # _parse_predicate(proto, any predicate) : 
