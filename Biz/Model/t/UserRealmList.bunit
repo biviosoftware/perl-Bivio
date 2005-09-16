@@ -1,0 +1,15 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+use Bivio::PetShop::Util;
+REQ()->set_realm(Bivio::PetShop::Util->DEMO);
+[
+    load_all => [
+	# There may be orders;  We testing find_row_by_type, not load_all.
+	[] => undef,
+    ],
+    find_row_by_type => [
+	[Bivio::Auth::RealmType->USER] => sub {[shift->get('object')]},
+	[Bivio::Auth::RealmType->CLUB] => [undef],
+    ],
+];
