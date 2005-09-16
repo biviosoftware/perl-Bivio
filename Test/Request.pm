@@ -35,6 +35,23 @@ new request running in general realm.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="REQ"></a>
+
+=head2 REQ : self
+
+Returns instance of self.
+
+=cut
+
+sub REQ {
+    return shift->get_instance;
+}
+
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Type::DateTime;
@@ -65,6 +82,22 @@ TODO: Probably should be deprecated.
 
 sub get_instance {
     return shift->get_current_or_new(@_);
+}
+
+=for html <a name="new_unit"></a>
+
+=head2 static new_unit(string class_name, string method, string args) : self
+
+Creates new instance of self, unless one already exists iwc dies.
+
+=cut
+
+sub new_unit {
+    my($proto, $class_name, $method, @args) = @_;
+    Bivio::Die->die('request already exists: ', $proto->get_current)
+        if $proto->get_current;
+    $method ||= 'get_instance';
+    return $proto->$method(@args)->put(class_name => $class_name);
 }
 
 =head1 METHODS
@@ -239,6 +272,20 @@ sub put_form {
 	        : ();
 	} keys(%$fields)),
     });
+}
+
+=for html <a name="run_unit"></a>
+
+=head2 static run_unit(array_ref cases)
+
+Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
+
+=cut
+
+sub run_unit {
+    return Bivio::IO::ClassLoader->simple_require('Bivio::Test')
+	->new(shift->get('class_name'))
+	->unit(shift);
 }
 
 =for html <a name="set_realm_and_user"></a>

@@ -34,6 +34,23 @@ C<Bivio::Test::ListModel>
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="REQ"></a>
+
+=head2 REQ : Bivio::Test::Request
+
+Calls L<Bivio::Test::Request::REQ|Bivio::Test::Request/"REQ">
+
+=cut
+
+sub REQ {
+    return Bivio::Test::Request->REQ;
+}
+
 #=IMPORTS
 use Bivio::Biz::Model;
 use Bivio::Test::Request;
@@ -61,6 +78,7 @@ sub new {
     my($model) = ref($attrs) ? delete($attrs->{model}) : $attrs;
     $attrs = {}
 	unless ref($attrs);
+    Bivio::Test::Request->get_instance();
     return $proto->SUPER::new({
 	class_name => Bivio::Biz::Model->get_instance($model)->package_name,
 	create_object => sub {
@@ -94,9 +112,35 @@ sub new {
     });
 }
 
+=for html <a name="new_unit"></a>
+
+=head2 new_unit(string class_name, hash_ref attrs) : self
+
+Calls L<new|"new">.
+
+=cut
+
+sub new_unit {
+    my($self, $class_name, $attrs) = @_;
+    ($attrs ||= {})->{model} = $class_name;
+    return $self->new($attrs);
+}
+
 =head1 METHODS
 
 =cut
+
+=for html <a name="run_unit"></a>
+
+=head2 run_unit(string class_name, array_ref cases)
+
+Calls L<unit>
+
+=cut
+
+sub run_unit {
+    return shift->unit(@_);
+}
 
 =for html <a name="unit"></a>
 

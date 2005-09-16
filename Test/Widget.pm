@@ -19,8 +19,14 @@ bOP
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Test::Widget::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::Collection::Attributes>
+
+=cut
+
+use Bivio::Collection::Attributes;
+@Bivio::Test::Widget::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
@@ -34,9 +40,44 @@ use Bivio::Test::Request;
 
 #=VARIABLES
 
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new_unit"></a>
+
+=head2 new_unit(string class_name, hash_ref attrs) : self
+
+Accepts I<setup_render> and I<compute_return> attributes.
+
+=cut
+
+sub new_unit {
+    my($proto, $class_name, $attrs) = @_;
+    ($attrs ||= {})->{class_name} = $class_name;
+    return $proto->new($attrs);
+}
+
 =head1 METHODS
 
 =cut
+
+=for html <a name="run_unit"></a>
+
+=head2 run_unit(array_ref cases)
+
+Calls L<unit|"unit"> with appropriate args.
+
+=cut
+
+sub run_unit {
+    my($self, $cases) = @_;
+    return $self->unit(
+	$self->unsafe_get(qw(class_name setup_render compute_return)),
+	$cases,
+    );
+}
 
 =for html <a name="setup_render"></a>
 
@@ -80,7 +121,7 @@ It will be transformed to:
 =cut
 
 sub unit {
-    my($proto) = shift;
+    my($self) = shift;
     Bivio::Agent::Task->initialize;
     my($req) = Bivio::Test::Request->setup_facade;
     my($i) = 0;
@@ -118,7 +159,7 @@ sub unit {
 	    @$cases,
 	)]);
     });
-#TODO: Shouldn't be hardwired
+#TODO: Shouldn't be hardwired, can setup above.
     Bivio::UI::View->execute(\(<<'EOF'), $req);
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
