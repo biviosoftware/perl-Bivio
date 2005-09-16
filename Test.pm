@@ -307,30 +307,6 @@ Numbers for the cases which I<passed>.  Case numbers start at 1.
 
 =cut
 
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="CLASS"></a>
-
-=head2 CLASS : code_ref
-
-Identifies the class under test, e.g.
-
-    Bivio::Test->unit([
-        Bivio::Test->CLASS() => [
-            static_method_1 => [
-            ],
-        ],
-    ];
-
-=cut
-
-sub CLASS {
-    return \&CLASS;
-}
-
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::IO::Ref;
@@ -566,12 +542,9 @@ self.
 =cut
 
 sub unit {
-    my($self, $tests) = splice(@_, 0, 2);
-    return ref($tests)
-	? ref($self) ? _eval($self, _compile($self, $tests))
-	: $self->new->unit($tests)
-	: (ref($self) ? $self->put(class_name => $tests) : $self->new($tests))
-	    ->unit(shift);
+    my($self, $tests) = @_;
+    return ref($self) ? _eval($self, _compile($self, $tests))
+	: $self->new->unit($tests);
 }
 
 #=PRIVATE METHODS
@@ -732,8 +705,6 @@ sub _compile_object {
     if ($state->{class_name}) {
 	$state->{create_object} = \&default_create_object
 	    unless $state->{create_object};
-	$state->{object} = $state->{class_name}
-	    if $state->{object} eq __PACKAGE__->CLASS;
     }
     if ($state->{create_object} || ref($state->{object}) eq 'CODE') {
 	my($fields) = $self->[$_IDI];
