@@ -242,6 +242,8 @@ sub render {
 	) unless defined($v);
 	# Result may be a widget!
 	if (ref($v) && UNIVERSAL::isa($v, 'Bivio::UI::Widget')) {
+	    $self->initialize_value($v);
+	    $v->put_and_initialize(parent => $self);
 	    $v->render($source, \$b);
 	    # Note the special treatment of non-default true.
 	    $b = _escape($fields, $b) if $fields->{escape} == 1;
