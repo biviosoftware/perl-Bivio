@@ -58,22 +58,21 @@ test types.  You create a ".bunit" file which looks like:
 
 Or for widgets:
 
+    Widget();
     [
-	Widget => [
-	    [['']] => '',
-	    [['a', 'b']] => 'ab',
-	    [['a', 'b'], '-'] => 'a-b',
-	    [['a'], '-'] => 'a',
-	    [['a', 'b'], [sub {return undef}]] => 'ab',
-	    [['a', 'b'], [sub {Bivio::UI::Widget::Join->new(['x'])}]] => 'axb',
-	    [['a', 'b'], [sub {Bivio::UI::Widget::Join->new([''])}]] => 'ab',
-	    [[
-	       [sub {Bivio::UI::Widget::Join->new([''])}],
-		'a',
-	       'b',
-	       '',
-	    ], '-'] => 'a-b',
-	],
+	[['']] => '',
+	[['a', 'b']] => 'ab',
+	[['a', 'b'], '-'] => 'a-b',
+	[['a'], '-'] => 'a',
+	[['a', 'b'], [sub {return undef}]] => 'ab',
+	[['a', 'b'], [sub {Bivio::UI::Widget::Join->new(['x'])}]] => 'axb',
+	[['a', 'b'], [sub {Bivio::UI::Widget::Join->new([''])}]] => 'ab',
+	[[
+	   [sub {Bivio::UI::Widget::Join->new([''])}],
+	    'a',
+	   'b',
+	   '',
+	], '-'] => 'a-b',
     ];
 
 =cut
@@ -131,6 +130,8 @@ sub AUTOLOAD {
 	   and $_TYPE->can('new_unit')
 	       ? ($_TYPE = $_TYPE->new_unit($_CLASS, @_))
 	       : $_TYPE)
+	: $_TYPE
+	? $_TYPE->$func(@_)
 	: Bivio::Die->die($func, ': method not found');
 }
 
