@@ -8,7 +8,21 @@ Request();
 	],
 	extract_label => [
 	    [REQ()] => ['abc'],
+        ],
+    ],
+    sub {REQ()} => [
+	unsafe_get_nested => [
+	    ['Action.Acknowledgement', 'label'] => ['abc'],
+	],
+    ],
+    CLASS() => [
+	extract_label => [
 	    [REQ()] => [undef],
+	],
+    ],
+    sub {REQ()} => [
+	unsafe_get => [
+	    ['Action.Acknowledgement'] => [undef],
 	],
     ],
 ]

@@ -67,10 +67,12 @@ I<label> attribute on self.
 
 sub extract_label {
     my($proto, $req) = @_;
-    return my($l) = delete(($req->unsafe_get('query') || {})->{$_QUERY});
-    $proto->new($req)->put_on_request($req)->put(label => $l)
-	if $l;
-    return $l;
+    if (my $l = delete(($req->unsafe_get('query') || {})->{$_QUERY})) {
+	$proto->new($req)->put_on_request($req)->put(label => $l);
+	return $l;
+    }
+    $proto->delete_from_request($req);
+    return undef;
 }
 
 =for html <a name="save_label"></a>
