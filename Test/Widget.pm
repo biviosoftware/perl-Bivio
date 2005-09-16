@@ -118,6 +118,7 @@ sub unit {
 	    @$cases,
 	)]);
     });
+#TODO: Shouldn't be hardwired
     Bivio::UI::View->execute(\(<<'EOF'), $req);
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
