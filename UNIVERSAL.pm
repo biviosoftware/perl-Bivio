@@ -233,9 +233,7 @@ name for this class is C<UNIVERSAL>.
 
 sub simple_package_name {
     my($proto) = @_;
-    $proto = ref($proto) || $proto;
-    $proto =~ s/.*:://;
-    return $proto;
+    return ((ref($proto) || $proto) =~ /([^:]+$)/)[0];
 }
 
 #=PRIVATE METHODS
