@@ -366,35 +366,30 @@ sub set_printer {
 
 sub _define_pkg_symbols {
     my($pkg, $call_sub, $pkg_sub) = @_;
-    my($trace, $sub) = '1';
+    my($trace, $sub);
     unless ($pkg_sub->($pkg)) {
 	# Tracing is off
-	$trace = 'undef';
-	$sub = 'return 0';
+	$trace = undef;
+	$sub = sub {return};
     }
     else {
 	# Tracing is on
-	$sub = 'return '
+	$trace = 1;
+	$sub = eval 'sub {return '
 		. (defined($call_sub)
 			? '$Bivio::IO::Trace::_CALL_SUB->'
 			: 'Bivio::IO::Trace->print')
 	        # caller(1) can return an empty array, hence '|| undef'
-		. '((caller), (caller(1))[$[+3] || undef, \@_)';
+		. '((caller), (caller(1))[$[+3] || undef, \@_)}';
     }
-    Bivio::IO::Alert->bootstrap_die("internal inconsistency: $@")
-	unless eval <<"EOF";
-        package $pkg;
-        use Bivio::IO::Trace;
-        use strict;
-        \$${pkg}::_TRACE = $trace;
-        BEGIN {
-            undef(&_trace);
-        }
-	sub _trace {
-            $sub;
-	}
-	1;
-EOF
+    {
+	# Look Ma! No evals!!
+	no strict;
+	*{$pkg.'::_TRACE'} = \$trace;
+        # Suppress 'Subroutine %s redefined' warning
+	local $^W = 0;
+	*{$pkg.'::_trace'} = $sub;
+    }
 }
 
 
