@@ -89,6 +89,43 @@ sub vs_acknowledgement {
         });
 }
 
+=for html <a name="vs_alphabetical_chooser"></a>
+
+=head2 static vs_alphabetical_chooser(string list_model) : Bivio::UI::Widget
+
+Generates a list of links which are alphabetically ordered and pass their
+"letter" on to the ListQuery.search.
+
+=cut
+
+sub vs_alphabetical_chooser {
+    my($proto, $list_model) = @_;
+    my($all) = Bivio::Biz::Model->get_instance($list_model)
+	->LOAD_ALL_SEARCH_STRING;
+    return $proto->vs_call('String',
+	$proto->vs_call('Join', [
+	    map({(
+		$_ =~ /^A/ ? $_ eq $all ? ' | ' : '' : ' ',
+		$proto->vs_call('Link',
+		    $proto->vs_call('Join', [$_]),
+		    ['->format_uri', undef,
+			[sub {
+			     return {
+				 'ListQuery.search' => $_[1],
+				 'ListQuery.date' => $_[0]->get($_[2])
+				     ->get_query->get('date'),
+			     };
+			 },
+			 $_,
+			 "Model.$list_model",
+			],
+		    ],
+		),
+	    )} 'A'..'Z', $all),
+	]),
+    );
+}
+
 =for html <a name="vs_blank_cell"></a>
 
 =head2 static vs_blank_cell() : Bivio::UI::Widget
@@ -169,7 +206,7 @@ sub vs_correct_table_layout_bug {
 
 =for html <a name="vs_descriptive_field"></a>
 
-=head2 static vs_descriptive_field(string field, any description) : array_ref
+=head2 static vs_descriptive_field(string field) : array_ref
 
 Calls vs_form_field and adds I<description> to the result.  I<description>
 is an optional string, widget value, or widget.  It is always wrapped
@@ -178,7 +215,7 @@ in a String with font form_field_description.
 =cut
 
 sub vs_descriptive_field {
-    my($proto, $field, $description) = @_;
+    my($proto, $field) = @_;
     my($label, $input) = $proto->vs_form_field($field);
     return [
 	$label,
@@ -491,26 +528,24 @@ sub vs_new {
 
 =for html <a name="vs_simple_form"></a>
 
-=head2 static vs_simple_form(string form_name, array_ref fields, Bivio::UI::Widget preamble, Bivio::UI::Widget epilogue) : Bivio::UI::Widget
+=head2 static vs_simple_form(string form_name, array_ref rows) : Bivio::UI::Widget
 
-Creates a Form in a Grid.  Preamble text.
+Creates a Form in a Grid.  I<rows> may be a field name, a separator name
+(preceded by a dash), a widget (iwc colspan will be set to 2), or a list of
+button names separated by spaces (preceded by a '*').  If there is no '*'
+list, then StandardSubmit will be appended to the list of fields.
 
 =cut
 
 sub vs_simple_form {
-    my($proto, $form, $fields, $preamble, $epilogue) = @_;
+    my($proto, $form, $rows) = @_;
+    my($have_submit) = 0;
     return $proto->vs_call('Form', $form,
 	$proto->vs_call('Grid', [
-	    $preamble ? (
-		[$preamble->put(
-		    cell_colspan => 2,
-		    cell_align => 'left',
-	        )],
-		[$proto->vs_blank_cell()],
-	    ) : (),
 	    map({
 		my($x);
-		if (ref($_)) {
+		if (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
+		    $_->get_if_exists_else_put(cell_align => 'left'),
 		    $x = [$_->put(cell_colspan => 2)];
 		}
 		elsif ($_ =~ s/^-//) {
@@ -524,28 +559,45 @@ sub vs_simple_form {
 			},
 		    )];
 		}
+		elsif ($_ =~ s/^\*//) {
+		    $have_submit = 1;
+		    $x = [$proto->vs_call(
+			'StandardSubmit',
+			{
+			    cell_colspan => 2,
+			    cell_align => 'center',
+			    cell_class => 'form_submit',
+			    $_ ? (buttons => [split(/\s+/, $_)]) : (),
+			},
+		    )];
+		}
 		else {
 		    $x = $proto->vs_descriptive_field($_);
 		    $x->[0]->put(cell_class => 'form_field_label');
 		    $x->[1]->put(cell_class => 'form_field_input');
 		}
 		$x;
-	    } @$fields),
-	    [$proto->vs_blank_cell()],
-	    [$proto->vs_call('StandardSubmit', {
+	    } @$rows),
+	    $have_submit ? () : [$proto->vs_call('StandardSubmit', {
 		cell_colspan => 2,
 		cell_align => 'center',
+		cell_class => 'form_submit',
 	    })],
-	    $epilogue ? (
-		[$proto->vs_blank_cell()],
-		[$epilogue->put(
-		    cell_colspan => 2,
-		    cell_align => 'left',
-	        )],
-	    ) : (),
 	], {
 	    pad => 2,
 	}));
+}
+
+=for html <a name="vs_site_name"></a>
+
+=head2 vs_site_name() : array_ref
+
+Returns a widget value that 
+
+=cut
+
+sub vs_site_name {
+    return shift->vs_text('site_name');
 }
 
 =for html <a name="vs_string"></a>
