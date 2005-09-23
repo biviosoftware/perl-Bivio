@@ -72,7 +72,7 @@ sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
     # All this state must be durable
-    Bivio::Type::UserAgent->MAIL->execute($req);
+    Bivio::Type::UserAgent->MAIL->execute($req, 1);
     $req->put_durable(
 	client_addr => $self->get('client_addr'),
 	'Model.' . $self->simple_package_name => $self,
