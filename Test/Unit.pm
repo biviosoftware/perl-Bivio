@@ -102,8 +102,9 @@ sub AUTOLOAD {
     my($func) = $AUTOLOAD;
     $func =~ s/.*:://;
     return if $func eq 'DESTROY';
-    return $func eq 'class'
-	? __PACKAGE__->class()
+    my($b) = "builtin_$func";
+    return __PACKAGE__->can($b)
+	? __PACKAGE__->$b(@_)
 	: Bivio::DieCode->is_valid_name($func) && Bivio::DieCode->can($func)
 	? Bivio::DieCode->$func()
 	: $_TYPE
@@ -114,16 +115,29 @@ sub AUTOLOAD {
 	       : $_TYPE);
 }
 
-=for html <a name="class"></a>
+=for html <a name="builtin_class"></a>
 
-=head2 static class() : string
+=head2 static builtin_class() : string
 
-Returns class under test.
+Returns builtin_class under test.
 
 =cut
 
-sub class {
+sub builtin_class {
     return $_CLASS;
+}
+
+=for html <a name="builtin_simple_require"></a>
+
+=head2 static builtin_simple_require(string class) : Bivio::UNIVERSAL
+
+Returns class which was loaded.
+
+=cut
+
+sub builtin_simple_require {
+    my(undef, $class) = @_;
+    return Bivio::IO::ClassLoader->simple_require($class);
 }
 
 =for html <a name="run"></a>
@@ -165,7 +179,7 @@ Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
 
 sub run_unit {
     my($self) = shift;
-    return $self->new($self->class)->unit(@_);
+    return $self->new($_CLASS)->unit(@_);
 }
 
 #=PRIVATE SUBROUTINES
