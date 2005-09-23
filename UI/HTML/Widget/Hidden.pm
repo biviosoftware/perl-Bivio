@@ -92,7 +92,7 @@ sub initialize {
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
-    $fields->{prefix} = '<input type=hidden name=';
+    $fields->{prefix} = '<input type="hidden" name="';
     return;
 }
 
@@ -127,9 +127,11 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
-    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html(
-	$fields->{field});
-    $$buffer .= ' value="'.$form->get_field_as_html($fields->{field}).'">';
+    $$buffer .= $fields->{prefix}
+	. $form->get_field_name_for_html($fields->{field})
+	. '" value="'
+	. $form->get_field_as_html($fields->{field})
+	. '" />';
     return;
 }
 

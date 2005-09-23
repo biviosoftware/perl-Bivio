@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Select;
 use strict;
@@ -252,18 +252,17 @@ sub render {
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
-    unless ($fields->{initialized}) {
-	my($type) = $fields->{type} = $form->get_field_type($field);
-	$fields->{prefix} = '<select name=';
-	$fields->{initialized} = 1;
-    }
-
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
-    $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
-    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
-	$field, $source) if $fields->{handler};
-    $$buffer .= ' size='.$self->get_or_default('size', 1);
-    $$buffer .= ' disabled' if $self->get_or_default('disabled', 0);
+    $$buffer .= $p
+	. '<select name="'
+	. $form->get_field_name_for_html($field)
+	. '"';
+    $$buffer .= ' '
+	. $fields->{handler}->get_html_field_attributes($field, $source)
+	if $fields->{handler};
+    $$buffer .= ' size="' .$self->get_or_default('size', 1) . '"';
+    $$buffer .= ' disabled'
+	if $self->get_or_default('disabled', 0);
     $$buffer .= ' onchange="submit()"' if $fields->{auto_submit};
     $$buffer .= ">\n";
 
@@ -281,8 +280,9 @@ sub render {
 	my($v) = $items->[$i];
 	if ($editable || $field_value eq $v) {
 	    $$buffer .= '<option value="' . $v . '"';
-	    $$buffer .= ' selected' if $field_value eq $v;
-	    $$buffer .= '>'.$items->[$i+1]."\n";
+	    $$buffer .= ' selected="1"'
+		if $field_value eq $v;
+	    $$buffer .= ' />' . $items->[$i+1] . "\n";
 	}
     }
     # No newline, don't know what follows.
@@ -475,7 +475,7 @@ sub _load_items_from_string_array {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

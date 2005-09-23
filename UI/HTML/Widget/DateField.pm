@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::DateField;
 use strict;
@@ -22,12 +22,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget>
+L<Bivio::UI::HTML::Widget::ControlBase>
 
 =cut
 
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::DateField::ISA = ('Bivio::UI::Widget');
+use Bivio::UI::HTML::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::DateField::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -63,15 +63,11 @@ Which form are we dealing with.
 =cut
 
 #=IMPORTS
-use Bivio::Type::DateTime;
-use Bivio::Type::Date;
 use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::Format::DateTime;
 
 #=VARIABLES
-
-my($_IDI) = __PACKAGE__->instance_data_index;
-my($_MODE_INT) = Bivio::UI::DateTimeMode->DATE->as_int;
+my($_D) = Bivio::Type->get_instance('Date');
 my(@_ATTRS) = qw(
     allow_undef
     event_handler
@@ -82,20 +78,6 @@ my(@_ATTRS) = qw(
 =head1 FACTORIES
 
 =cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::Widget::DateField
-
-Creates a Date widget.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
 
 =head1 METHODS
 
@@ -111,7 +93,56 @@ Does the widget accept this attribute?
 
 sub accepts_attribute {
     my(undef, $attr) = @_;
-    return grep($_ eq $attr, @_ATTRS);
+    return grep($_ eq $attr, @_ATTRS) ? 1 : 0;
+}
+
+=for html <a name="control_on_render"></a>
+
+=head2 control_on_render(any source, string_ref buffer)
+
+Draws the date field on the specified buffer.
+
+=cut
+
+sub control_on_render {
+    my($self, $source, $buffer) = @_;
+    my($req) = $source->get_request;
+    my($form) = $self->unsafe_resolve_widget_value(
+	$self->ancestral_get('form_model'),
+	$source,
+    );
+    my($field) = ${$self->render_attr('field', $source)};
+
+#TODO: Merge with Text.  Too much duplicated code.
+    my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
+    my($width) = $form->get_field_type($field)->get_width();
+    $$buffer .= $p
+	. '<input name="'
+	. $form->get_field_name_for_html($field)
+	. '" type="text" size="'
+	. ($width  + 2)
+	. q{" maxlength="$width"};
+    my($h) = $self->unsafe_get('event_handler');
+    $h = $self->unsafe_resolve_widget_value($h, $source)
+	if $h;
+    $$buffer .= ' ' . $h->get_html_field_attributes($field, $source)
+	if $h;
+    $$buffer .= ' disabled="1"'
+	unless $form->is_field_editable($field);
+    my($b) = '';
+    $$buffer .= ' value="'
+	. ($form->get_field_error($field) ? $form->get_field_as_html($field)
+	    : $_D->to_literal(
+		$form->get($field)
+		    or $self->unsafe_render_attr('allow_undef', $source, \$b)
+			&& $b ? undef
+		    : $_D->local_today
+	)) . qq{" />$s};
+    # Handler is rendered after, because it probably needs to reference the
+    # field.
+    $h->render($source, $buffer)
+	if $h;
+    return;
 }
 
 =for html <a name="initialize"></a>
@@ -124,92 +155,44 @@ Initializes from configuration attributes.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{model};
-    $fields->{model} = $self->ancestral_get('form_model');
-    $fields->{field} = $self->get('field');
-    $fields->{allow_undef} = $self->get_or_default('allow_undef', 0);
-
-    # Initialize handler, if any
-    $fields->{handler} = $self->unsafe_get('event_handler');
-    if ($fields->{handler}) {
-	$fields->{handler}->put(parent => $self);
-	$fields->{handler}->initialize;
-    }
+    $self->initialize_attr('field');
+    $self->map_invoke(
+	'unsafe_initialize_attr',
+	[@_ATTRS],
+    );
     return;
 }
 
-=for html <a name="render"></a>
+=for html <a name="internal_as_string"></a>
 
-=head2 render(any source, string_ref buffer)
+=head2 internal_as_string() : array
 
-Draws the date field on the specified buffer.
+Returns this widget's config for
+L<Bivio::UI::Widget::as_string|Bivio::UI::Widget/"as_string">.
 
 =cut
 
-sub render {
-    my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
-    my($req) = $source->get_request;
-    my($form) = $req->get_widget_value(@{$fields->{model}});
-    my($field) = $fields->{field};
+sub internal_as_string {
+    return shift->unsafe_get('field');
+}
 
-#TODO: Merge with Text.  Too much duplicated code.
-    # first render initialization
-    unless ($fields->{initialized}) {
-	my($type) = $form->get_field_type($field);
-	# Might be a subclass of Bivio::Type::Date
-	my($width) = $type->get_width();
-	# allow extra size padding for IE 5.5 with small style
-	$fields->{prefix} = "<input type=text size="
-		.($width  + 2)." maxlength=$width";
-	$fields->{prefix} .= ' name=';
-	$fields->{suffix} = '">';
-	$fields->{initialized} = 1;
-    }
+=for html <a name="internal_new_args"></a>
 
-    # If field in error, just return the value user entered
-    my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
-    $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
-    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
-	$field, $source) if $fields->{handler};
-    $$buffer .= ' readonly' unless $form->is_field_editable($field);
-    $$buffer .= ' value="';
- SWITCH:
-    {
-	if ($form->get_field_error($field)) {
-	    $$buffer .= $form->get_field_as_html($field).$fields->{suffix};
-	    last SWITCH;
-	}
+=head2 static internal_new_args() :  hash_ref
 
-	# Default is local_today unless allow_undef set
-	my($value) = $form->get($field);
-	unless (defined($value)) {
-	    if ($fields->{allow_undef}) {
-		$$buffer .= $fields->{suffix};
-		last SWITCH;
-	    }
-	    $value = Bivio::Type::Date->local_today;
-	}
+Implements positional argument parsing for L<new|"new">.
 
-	# We render the date in GMT always.  The only strange case
-	# is when we render the default.  Otherwise, values are
-	# coming from the db which means they are GMT anyway and
-	# have a fixed time component.
-	$$buffer .= Bivio::Type::Date->to_literal($value).$fields->{suffix}.$s;
-    }
+=cut
 
-    # Handler is rendered after, because it probably needs to reference the
-    # field.
-    $fields->{handler}->render($source, $buffer) if $fields->{handler};
-    return;
+sub internal_new_args {
+    return shift->SUPER::internal_new_args(['field'], \@_);
 }
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

@@ -139,7 +139,7 @@ sub initialize {
     return if exists($fields->{value});
     $fields->{value} = '<img src="'
 	    .Bivio::UI::Icon->get_clear_dot->{uri}
-            .'" border=0'
+            .'" border="0"'
 	    .Bivio::UI::Align->as_html($self->unsafe_get('align'));
 
     $fields->{is_constant} = 1;
@@ -150,10 +150,10 @@ sub initialize {
 	    $fields->{$f} = $fv;
 	}
 	elsif ($fv) {
-	    $fields->{value} .= ' '.$f.'='.$fv;
+	    $fields->{value} .= qq{ $f="$fv"};
 	}
     }
-    $fields->{value} .= '>' if $fields->{is_constant};
+    $fields->{value} .= ' />' if $fields->{is_constant};
     return;
 }
 
@@ -180,9 +180,9 @@ sub render {
 	    substr($$buffer, $start) = '';
 	    return;
 	}
-	$$buffer .= ' '.$f.'='.$v;
+	$$buffer .= qq{ $f="$v"};
     }
-    $$buffer .= '>';
+    $$buffer .= ' />';
     return;
 }
 

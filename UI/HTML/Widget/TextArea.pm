@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::TextArea;
 use strict;
@@ -136,19 +136,20 @@ sub render {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 #TODO: need get_width or is it something else?
 	$fields->{prefix} = '<textarea'
-	        . ($_VS->vs_html_attrs_render($self, $source) || '')
-		.' rows='.$fields->{rows}
-		.' cols='.$fields->{cols}
-		.' wrap='.$fields->{wrap};
-        $fields->{prefix} .= ' readonly' if $fields->{readonly};
-	$fields->{prefix} .= ' name=';
+	    . ($_VS->vs_html_attrs_render($self, $source) || '')
+	    . join('', map(qq{ $_="$fields->{$_}"}, qw(rows cols wrap)));
+        $fields->{prefix} .= ' readonly="1"'
+	    if $fields->{readonly};
 	$fields->{initialized} = 1;
     }
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}
-	    .$form->get_field_name_for_html($field)
-	    .'>'.
-	    $form->get_field_as_html($field).'</textarea>'.$s;
+	    . ' name="'
+	    . $form->get_field_name_for_html($field)
+	    . '">'
+	    . $form->get_field_as_html($field)
+	    . '</textarea>'
+	    . $s;
     return;
 }
 
@@ -156,7 +157,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

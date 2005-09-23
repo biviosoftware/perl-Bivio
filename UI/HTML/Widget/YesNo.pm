@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All Rights reserved.
+# Copyright (c) 2001-2005 bivio Inc.  All Rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::YesNo;
 use strict;
@@ -89,11 +89,10 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return if $fields->{yes_widget};
-
     foreach my $name (qw(yes no)) {
 	$fields->{$name.'_widget'} = Bivio::UI::HTML::Widget::String->new(
-	    ucfirst($name), 'radio')->put(parent => $self)
-		->put_and_initialize(parent => $self);
+	    ucfirst($name), 'radio'
+	)->put_and_initialize(parent => $self);
     }
     return;
 }
@@ -109,20 +108,18 @@ sub render {
     my($fields) = $self->[$_IDI];
     my($form) = $source->get_request->get_widget_value(
 	$self->ancestral_get('form_model'));
-
     foreach my $name (qw(yes no)) {
 	my($value) = $name eq 'yes' ? 1 : 0;
-
-	$$buffer .= '<input name='
-	    .$form->get_field_name_for_html($self->get('field'));
-	$$buffer .= ' type=radio value="'.$value.'"';
+	$$buffer .= '<input name="'
+	    . $form->get_field_name_for_html($self->get('field'))
+	    . qq{" type=radio value="$value"};
 
 	if (($form->get($self->get('field')) || 0) eq $value) {
 	    $$buffer .= ' checked';
 	}
 
-	$$buffer .= '>&nbsp;';
-	$fields->{$name.'_widget'}->render($source, $buffer);
+	$$buffer .= ' />&nbsp;';
+	$fields->{$name . '_widget'}->render($source, $buffer);
     }
     return;
 }
@@ -131,7 +128,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All Rights reserved.
+Copyright (c) 2001-2005 bivio Inc.  All Rights reserved.
 
 =head1 VERSION
 

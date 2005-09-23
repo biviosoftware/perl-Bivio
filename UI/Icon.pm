@@ -95,7 +95,7 @@ my(%_CACHE);
 
 Returns the image formated for an an C<IMG> tag, e.g.
 
-     src="uri" width=W height=H
+     src="uri" width="W" height="H"
 
 Value contains a I<leading space>.
 
@@ -157,7 +157,7 @@ to an HTML tag.
 =cut
 
 sub get_height_as_html {
-    return ' height='._find(@_)->{value}->{height};
+    return ' height="' . _find(@_)->{value}->{height} . '"';
 }
 
 =for html <a name="get_value"></a>
@@ -210,7 +210,7 @@ to an HTML tag.
 =cut
 
 sub get_width_as_html {
-    return ' width='._find(@_)->{value}->{width};
+    return ' width="' . _find(@_)->{value}->{width} . '"';
 }
 
 =for html <a name="handle_config"></a>
@@ -316,7 +316,7 @@ sub _find {
 		width => $w,
 		height => $h,
 	    },
-	    html => qq! src="$u" width=$w height=$h!,
+	    html => qq! src="$u" width="$w" height="$h"!,
 	};
 	$_CACHE{$file_name} = $value if $cache;
 	return $value;
@@ -333,7 +333,7 @@ sub _find {
 	    width => 1,
 	    height => 1,
 	},
-	html => qq! src="$_MISSING" width=1 height=1!,
+	html => qq! src="$_MISSING" width="1" height="1"!,
     };
 
     # We cache misses to avoid lots of noise

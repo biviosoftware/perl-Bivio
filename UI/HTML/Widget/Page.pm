@@ -98,6 +98,13 @@ Renders an inline style in the header.
 
 If true, adds onLoad=window.print() to the body tag.
 
+=item xhtml : boolean [0]
+
+If set, the page will be generated with the following XHTML doctype
+
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
 =back
 
 =head1 COMPONENT ATTRIBUTES
@@ -247,7 +254,9 @@ sub render {
 	    ? 1 : 0,
     );
     my($body) = $self->render_attr('body', $source);
-    $$buffer .= '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
+    $$buffer .= ($self->get_or_default('xhtml', 0)
+	? '<!doctype html public "-//w3c//dtd xhtml 1.0 transitional//en" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transititional.dtd">'
+        : '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">')
 	."\n<html><head>\n";
     my($x) = '';
     $self->map_invoke(

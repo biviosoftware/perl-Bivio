@@ -94,8 +94,7 @@ L<Bivio::UI::Widget::as_string|Bivio::UI::Widget/"as_string">.
 =cut
 
 sub internal_as_string {
-    my($self) = @_;
-    return $self->unsafe_get('tag', 'value');
+    return shift->unsafe_get('tag', 'value');
 }
 
 =for html <a name="internal_new_args"></a>

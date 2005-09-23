@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Image;
 use strict;
@@ -198,12 +198,12 @@ sub initialize {
     # If width defined, then height defined.
     if (defined($width)) {
 	# Allow for 0 in either dimension
-	$p .= " width=$width" if $width;
-	$p .= " height=$height" if $height;
+	$p .= qq{ width="$width"} if $width;
+	$p .= qq{ height="$height"} if $height;
     }
     $border ||= 0
 	unless $self->has_keys('class');
-    $p .= " border=$border"
+    $p .= qq{ border="$border"}
 	if defined($border);
     $_VS->vs_html_attrs_initialize($self);
     $fields->{prefix} = $p;
@@ -261,12 +261,13 @@ sub render {
     $$buffer .= $fields->{prefix};
     $$buffer .= $_VS->vs_html_attrs_render($self, $source);
     $$buffer .= ' alt="'.Bivio::HTML->escape_attr_value(
-	    _render_alt($self, $fields, $source, $req)).'"'
-		    unless $fields->{prefix} =~ / alt=/;
+	_render_alt($self, $fields, $source, $req)).'"'
+	unless $fields->{prefix} =~ / alt=/;
 
     # May be a widget value
     my($src) = $fields->{src};
-    $src = $source->get_widget_value(@$src) if ref($src) eq 'ARRAY';
+    $src = $source->get_widget_value(@$src)
+	if ref($src) eq 'ARRAY';
 
     # Must return a string (used to return a hash)
     Bivio::Die->die($fields->{src}, ' return a ref: ', $src)
@@ -274,7 +275,7 @@ sub render {
 
     unless ($fields->{have_size}) {
 	# Normal case: icon is dynamic and size comes from Icon
-	$$buffer .= Bivio::UI::Icon->format_html($src, $req).'>';
+	$$buffer .= Bivio::UI::Icon->format_html($src, $req).' />';
 	return;
     }
 
@@ -282,9 +283,9 @@ sub render {
     $src = Bivio::UI::Icon->get_value($src, $req);
 
     $$buffer .= ' src="'.Bivio::HTML->escape($src->{uri}).'"';
-    $$buffer .= " width=$src->{width} height=$src->{height}"
-	    if !$fields->{have_size} && defined($src->{width});
-    $$buffer .= '>';
+    $$buffer .= qq{ width="$src->{width}" height="$src->{height}"}
+	if !$fields->{have_size} && defined($src->{width});
+    $$buffer .= ' />';
     return;
 }
 
@@ -307,7 +308,7 @@ sub _render_alt {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

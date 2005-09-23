@@ -75,67 +75,67 @@ __PACKAGE__->compile([
     'N' => [
 	1,
 	'north',
-	' valign=top align=center',
+	' valign="top" align="center"',
     ],
     'NE' => [
 	2,
 	'northeast',
-	' valign=top align=right',
+	' valign="top" align="right"',
     ],
     'E' => [
 	3,
 	'east',
-	' align=right',
+	' align="right"',
     ],
     'SE' => [
 	4,
 	'southeast',
-	' valign=bottom align=right',
+	' valign="bottom" align="right"',
     ],
     'S' => [
 	5,
 	'south',
-	' valign=bottom align=center',
+	' valign="bottom" align="center"',
     ],
     'SW' => [
 	6,
 	'southwest',
-	' valign=bottom align=left',
+	' valign="bottom" align="left"',
     ],
     'W' => [
 	7,
 	'west',
-	' align=left',
+	' align="left"',
     ],
     'NW' => [
 	8,
 	'northwest',
-	' valign=top align=left',
+	' valign="top" align="left"',
     ],
     CENTER => [
 	9,
 	undef,
-	' align=center',
+	' align="center"',
     ],
     LEFT => [
 	10,
 	undef,
-	' align=left',
+	' align="left"',
     ],
     RIGHT => [
 	11,
 	undef,
-	' align=right',
+	' align="right"',
     ],
     TOP => [
 	12,
 	undef,
-	' valign=top',
+	' valign="top"',
     ],
     BOTTOM => [
 	13,
 	undef,
-	' valign=bottom',
+	' valign="bottom"',
     ],
 ]);
 

@@ -56,7 +56,7 @@ function tzf(){
         return;
     var d=new Date();
     var o=d.getTimezoneOffset();
-    document.write('<input name=$_FIELD type=hidden value="'+o+'">');
+    document.write('<input name="$_FIELD" type="hidden" value="' + o + '" />');
 }
 EOF
 

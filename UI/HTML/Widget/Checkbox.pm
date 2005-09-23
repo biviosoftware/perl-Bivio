@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Checkbox;
 use strict;
@@ -158,26 +158,26 @@ sub render {
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
-
-    unless ($fields->{initialized}) {
-	$fields->{prefix} = '<input name=';
-	$fields->{suffix} = ' type=checkbox value="'.$fields->{value}.'"';
-	$fields->{suffix} .= ' onclick="submit()"' if $fields->{auto_submit};
-	$fields->{suffix} .= ">";
-	$fields->{initialized} = 1;
-    }
-    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
-    $$buffer .= ' checked' if $form->get($field);
-    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
-	$field, $source) if $fields->{handler};
-    $$buffer .= $fields->{suffix};
+    $$buffer .= '<input name="'
+	. $form->get_field_name_for_html($field)
+	. '"';
+    $$buffer .= ' checked="1"'
+	if $form->get($field);
+    $$buffer .= ' '
+	. $fields->{handler}->get_html_field_attributes($field, $source)
+	if $fields->{handler};
+    $$buffer .= ' type="checkbox" value="' .$fields->{value} . '"';
+    $$buffer .= ' onclick="submit()"'
+	if $fields->{auto_submit};
+    $$buffer .= " />";
     if ($fields->{label}) {
 	$$buffer .= "\n";
 	$fields->{label}->render($source, $buffer);
     }
     # Handler is rendered after, because it probably needs to reference the
     # field.
-    $fields->{handler}->render($source, $buffer) if $fields->{handler};
+    $fields->{handler}->render($source, $buffer)
+	if $fields->{handler};
     return;
 }
 
@@ -185,7 +185,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

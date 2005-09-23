@@ -216,7 +216,8 @@ sub initialize {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
 		    # width to 100%.
-		    _append(\@p, " colspan=$expand_cols") if $expand_cols > 1;
+		    _append(\@p, q{ colspan="$expand_cols"})
+			if $expand_cols > 1;
 		    _append(\@p, ' width="100%"') if $expand2 && !$width;
 		    $expand_cols = 1;
 		}
@@ -224,10 +225,10 @@ sub initialize {
 		_append(\@p, ' width="1%"')
 			if $c->get_or_default('cell_compact', 0);
 		_append(\@p, Bivio::UI::Align->as_html($align)) if $align;
-		_append(\@p, " rowspan=$rowspan") if $rowspan;
-		_append(\@p, " colspan=$colspan") if $colspan;
-		_append(\@p, ' nowrap')
-			if $c->get_or_default('cell_nowrap', 0);
+		_append(\@p, qq{ rowspan="$rowspan"}) if $rowspan;
+		_append(\@p, qq{ colspan="$colspan"}) if $colspan;
+		_append(\@p, ' nowrap="1"')
+		    if $c->get_or_default('cell_nowrap', 0);
 #TODO: Should be a number or percent?
 		_append(\@p, qq! width="$width"!) if $width;
 		_append(\@p, qq! height="$height"!) if $height;

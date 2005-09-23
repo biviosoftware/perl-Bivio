@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Radio;
 use strict;
@@ -124,12 +124,13 @@ sub control_on_render {
     my($value) = UNIVERSAL::isa($self->get('value'), 'Bivio::Type::Enum')
         ? $self->get('value')
         : ${$self->render_attr('value', $source)};
-    $$buffer .= '<input name='
+    $$buffer .= '<input name="'
 	    . $form->get_field_name_for_html($field)
+	    . '"'
 #TODO: is_equal?
 	    . (defined($form->get($field))
-		    && $value eq $form->get($field) ? ' checked' : '')
-	    . ' type=radio value="'
+		    && $value eq $form->get($field) ? ' checked="1"' : '')
+	    . ' type="radio" value="'
 	    . (ref($value) ? $value->to_html($value) :
 		Bivio::HTML->escape($value))
 	    . "\""
@@ -202,7 +203,7 @@ sub internal_new_args {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

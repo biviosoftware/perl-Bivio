@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000-2005 bivio, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::ImageFormButton;
 use strict;
@@ -118,7 +118,6 @@ sub initialize {
     elsif (defined($alt)) {
 	$fields->{prefix} .= ' alt="'.Bivio::HTML->escape_attr_value($alt).'"';
     }
-    $fields->{prefix} .= ' name="';
     return;
 }
 
@@ -136,17 +135,17 @@ sub render {
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field}
-	    ? $form->get_field_name_for_html($fields->{field})
-		    : 'submit';
-
-    $$buffer .= $fields->{prefix}.$field.'"';
+	? $form->get_field_name_for_html($fields->{field})
+	: 'submit';
+    $$buffer .= qq{$fields->{prefix} name="$field"};
     $$buffer .= ' alt="'
-	    .Bivio::HTML->escape_attr_value(
-		    $self->render_value('alt', $fields->{alt}, $source))
-	    .'"'
-		    if $fields->{alt};
+	. Bivio::HTML->escape_attr_value(
+	    $self->render_value('alt', $fields->{alt}, $source))
+	. '"'
+	if $fields->{alt};
     $$buffer .= ' src="'
-	    .Bivio::UI::Icon->get_value($fields->{image}, $req)->{uri}.'">';
+	. Bivio::UI::Icon->get_value($fields->{image}, $req)->{uri}
+	. '" />';
     return;
 }
 
@@ -154,7 +153,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000-2005 bivio, Inc.  All rights reserved.
 
 =head1 VERSION
 

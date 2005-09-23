@@ -659,10 +659,12 @@ sub initialize_child_widget {
     $widget->put(parent => $self);
     $widget->initialize;
     my($column_prefix) = Bivio::UI::Align->as_html(
-	    $widget->get_or_default('column_align', 'LEFT'));
-    $column_prefix .= ' nowrap' if $widget->unsafe_get('column_nowrap');
+	$widget->get_or_default('column_align', 'LEFT'));
+    $column_prefix .= ' nowrap="1"'
+	if $widget->unsafe_get('column_nowrap');
     my($span) = $widget->get_or_default('column_span', 1);
-    $column_prefix .= " colspan=$span" if $span != 1;
+    $column_prefix .= qq{ colspan="$span"}
+	if $span != 1;
     $widget->put(column_prefix => $column_prefix);
     $_VS->vs_html_attrs_initialize(
 	$widget,
@@ -1022,8 +1024,8 @@ sub _render_row_with_colspan {
     $$buffer .= "\n<tr"
 	. $_VS->vs_html_attrs_render(
 	    @$state{qw(self source)}, [$widget_name . '_row_class'])
-	. '><td colspan=' . $state->{colspan}
-	.'>';
+	. '><td colspan="' . $state->{colspan}
+	.'">';
     $state->{fields}->{$widget_name}->render($state->{list}, $buffer);
     $$buffer .= "</td>\n</tr>";
     return;

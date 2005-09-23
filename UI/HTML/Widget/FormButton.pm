@@ -159,7 +159,7 @@ sub render {
 			    $source->get_widget_value(@{$fields->{label}}))
 		    : $fields->{label})
 	    .'" '.$self->get_or_default('attributes', '')
-	    .'>'.$s;
+	    .' />'.$s;
     return;
 }
 

@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Text;
 use strict;
@@ -175,7 +175,6 @@ sub render {
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
-
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 
@@ -184,23 +183,22 @@ sub render {
 	my($w) = $type->get_width();
 	$s++ if $s == $w;
 
-	$fields->{prefix} = '<input type='
-		.($type->is_password ? 'password' : 'text')
-		.' size='.$s.' maxlength='.$w;
-	$fields->{prefix} .= ' name=';
+	$fields->{prefix} = '<input type="'
+		. ($type->is_password ? 'password' : 'text')
+		. qq{" size="$s" maxlength="$w"};
 	$fields->{initialized} = 1;
     }
-
-    # Name
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
-    $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
+    $$buffer .= $p
+        . $fields->{prefix}
+	. ' name="'
+	. $form->get_field_name_for_html($field)
+	. '"';
     $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
 	$field, $source) if $fields->{handler};
-    $$buffer .= ' disabled'
+    $$buffer .= ' disabled="1"'
 	if $self->get_or_default('is_read_only',
             ! $form->is_field_editable($field));
-
-    # Format if provided
     my($v);
     if ($fields->{format} && !$form->get_field_error($field)) {
 	my($f) = ref($fields->{format}) eq 'ARRAY'
@@ -209,14 +207,13 @@ sub render {
 	if ($f) {
 	    $v = $f->get_widget_value($form->get($field));
 	    # Formatter must always return a defined value
-	    $v = Bivio::HTML->escape($v) unless $f->result_is_html;
+	    $v = Bivio::HTML->escape($v)
+		unless $f->result_is_html;
 	}
     }
-    $v = $form->get_field_as_html($field) unless defined($v);
-
-    # Value
-    $$buffer .= ' value="'.$v.'">'.$s;
-
+    $v = $form->get_field_as_html($field)
+	unless defined($v);
+    $$buffer .= qq{ value="$v" />$s};
     # Handler is rendered after, because it probably needs to reference the
     # field.
     $fields->{handler}->render($source, $buffer) if $fields->{handler};
@@ -227,7 +224,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
