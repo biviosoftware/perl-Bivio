@@ -60,6 +60,19 @@ sub DEMO {
     return 'demo';
 }
 
+=for html <a name="DEMO_EMAIL"></a>
+
+=head2 DEMO_EMAIL : string
+
+Returns email for DEMO.
+
+=cut
+
+sub DEMO_EMAIL {
+    my($proto) = @_;
+    return $proto->format_email($proto->DEMO);
+}
+
 =for html <a name="DEMO_LAST_NAME"></a>
 
 =head2 DEMO_LAST_NAME : string
@@ -155,6 +168,19 @@ sub demo_users {
 	$self->DEMO, $self->GUEST, qw(multi_role_user),
 	$self->get_request->is_production ? () : ('root'),
     ];
+}
+
+=for html <a name="format_email"></a>
+
+=head2 static format_email(string user) : string
+
+Formats email.
+
+=cut
+
+sub format_email {
+    my(undef, $user) = @_;
+    return "$user\@bivio.biz";
 }
 
 =for html <a name="realm_role_config"></a>
@@ -310,7 +336,7 @@ sub _init_demo_users {
 	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
 	    'User.first_name' => ucfirst($u),
 	    'User.last_name' => $self->DEMO_LAST_NAME,
-	    'Email.email' => "$u\@bivio.biz",
+	    'Email.email' => format_email($u),
 	    'Address.street1' => '1313 Mockingbird Lane',
 	    'Address.street2' => undef,
 	    'Address.city' => 'Boulder',
