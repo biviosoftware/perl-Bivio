@@ -244,6 +244,19 @@ sub generate_local_email {
     return wantarray ? ($email, "btest_$suffix") : $email;
 }
 
+=for html <a name="generate_remote_email"></a>
+
+=head2 generate_remote_email(string base) : string
+
+Generates an email for the remote server.
+
+=cut
+
+sub generate_remote_email {
+    my($self, $base) = @_;
+    return $base . '@' . URI->new($self->home_page_uri())->host;
+}
+
 =for html <a name="get_content"></a>
 
 =head2 get_content() : string
