@@ -360,7 +360,7 @@ sub is_offline_user {
 
 =head2 unauth_load_by_email(string email) : boolean
 
-=head2 unauth_load_by_email(string email, hash query) : boolean
+=head2 unauth_load_by_email(string email, hash_ref query) : boolean
 
 Tries to load this realm using I<email> and any other I<query> parameters,
 e.g. (realm_type, Bivio::Auth::RealmType->USER()).
@@ -390,11 +390,16 @@ Returns false.
 
 sub unauth_load_by_email {
     my($self, $email, @query) = @_;
+    my($query) = @query == 1
+	? ref($query[0]) eq 'HASH'
+	? $query[0]
+	: Bivio::Die->die(@query, ': query not a hash')
+	: {@query};
     # Emails are always lower case
     $email = lc($email);
     # Load the email.  Return the result of the next unauth_load, just in case
     my($em) = $self->new_other('Email');
-    return $self->unauth_load({@query, realm_id => $em->get('realm_id')})
+    return $self->unauth_load({%$query, realm_id => $em->get('realm_id')})
         if $em->unauth_load({email => $email});
     return unless Bivio::IO::ClassLoader->simple_require(
         'Bivio::UI::Facade')->is_fully_initialized;
