@@ -74,6 +74,7 @@ sub execute_ok {
     # All this state must be durable
     Bivio::Type::UserAgent->MAIL->execute($req, 1);
     $req->put_durable(
+	# Overwrite the request's client_addr, which our sendmail host's addr
 	client_addr => $self->get('client_addr'),
 	'Model.' . $self->simple_package_name => $self,
     );
