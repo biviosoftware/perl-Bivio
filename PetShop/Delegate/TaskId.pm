@@ -360,6 +360,13 @@ sub get_delegate_info {
 	    home_task=ORDER_COMMIT
 	    unauth_task=SITE_ROOT
 	)],
+	[qw(
+            MAIL_RECEIVE
+            533
+            USER
+            ANYBODY
+            Action.MailReceiveStatus->execute
+        )],
     ]);
 }
 

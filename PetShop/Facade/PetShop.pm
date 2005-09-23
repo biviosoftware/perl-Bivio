@@ -161,6 +161,7 @@ my($_SELF) = __PACKAGE__->new({
 	    ADM_SUBSTITUTE_USER => 'su',
 	    MAIL_RECEIVE_DISPATCH => 'mail-handler',
 	    MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore',
+	    MAIL_RECEIVE => '?/mail-handler-',
 	    USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
 		'my/create-account-and-order',
 	    ORDER_HOME => '?',
