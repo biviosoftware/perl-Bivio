@@ -178,7 +178,7 @@ sub execute {
     }
 
     $msg->set_body($$body);
-    $msg->enqueue_send;
+    $msg->enqueue_send($req);
 
     my($lf);
     Bivio::IO::Log->write($lf, $msg->as_string)

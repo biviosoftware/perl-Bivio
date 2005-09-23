@@ -314,7 +314,7 @@ sub set_header {
 
 =for html <a name="set_headers_for_list_send"></a>
 
-=head2 set_headers_for_list_send(string list_name, string list_title, boolean reply_to_list, boolean list_in_subject, Bivio::Agent::Request req)
+=head2 set_headers_for_list_send(string list_name, string list_title, boolean reply_to_list, string subject_prefix, Bivio::Agent::Request req) : self
 
 Removes the headers that are either to be replaced or are uninteresting on a
 resend.  This is used for mailing list resends, not simple alias forwarding.
@@ -324,23 +324,24 @@ Sets the I<list_name> in the C<To>. Sets From to owner-I<list_name> if C<From:>
 not already set.  Inserts the I<list_name> in the C<Subject:> if
 I<list_in_subject>.  Sets I<Reply-To:> to I<list_name> if I<reply_to_list>.
 
-ASSUMES: Header addresses are rewritten with appropriate domain name
-by MTA (sendmail).
-
 =cut
 
 sub set_headers_for_list_send {
-    my($self, $list_name, $list_title, $reply_to_list, $list_in_subject, $req) = @_;
+    my($self, $list_name, $list_title, $reply_to_list, $subject_prefix, $req) = @_;
+    
+    if (($subject_prefix || '') eq 1) {
+	Bivio::IO::Alert->warn_deprecated(
+	    'list_in_subject is now subject_prefix');
+	$subject_prefix = "$list_name:";
+    }
     my($fields) = $self->[$_IDI];
     my($headers) = $fields->{headers};
-#TODO: Being too restrictive on list_name syntax?
-    $list_name =~ /^[-\w]+$/s || die("$list_name: invalid list name");
-    $list_title =~ /^[^\n]+$/s || die("$list_title: invalid list title");
+    Bivio::Die->die($list_name, ': invalid list name')
+       unless $list_name =~ /^[-\.\w]+$/s;
+    Bivio::Die->die($list_title, ': invalid list title')
+        unless $list_title =~ /^[^\n]+$/s;
     $list_title =~ s/(["\\])/\\$1/g;
-    my($name);
-    foreach $name (@_REMOVE_FOR_LIST_RESEND) {
-	delete $headers->{$name};
-    }
+    delete(@$headers{@_REMOVE_FOR_LIST_RESEND});
     my($sender) = $req->format_email("$list_name-owner");
     $headers->{sender} = "Sender: $sender\n";
     $self->set_envelope_from($sender);
@@ -348,26 +349,24 @@ sub set_headers_for_list_send {
 	. $req->format_email($list_name)
 	. ">\n"
 	if $reply_to_list;
-    # If there is no From:, add it now.
     $headers->{from} ||= "From: $sender\n";
-    # Insert the list in the subject, if not already there
-    if ($list_in_subject) {
-	if (defined($headers->{subject})) {
-	    $headers->{subject}
-	    =~ s/^subject:(?!(\s*Re:\s*)*$list_name:)/Subject: $list_name:/is;
-	}
-	else {
-	    $headers->{subject} = "Subject: $list_name:\n";
-	}
+    return $self
+	unless $subject_prefix;
+    if (defined($headers->{subject})) {
+	$headers->{subject}
+	    =~ s/^subject:(?!(\s*Re:\s*)*\Q$subject_prefix\E:)/Subject: $subject_prefix/is;
     }
-    return;
+    else {
+	$headers->{subject} = "Subject: $subject_prefix\n";
+    }
+    return $self;
 }
 
 =for html <a name="set_recipients"></a>
 
-=head2 set_recipients(string email_list)
+=head2 set_recipients(string email_list) : self
 
-=head2 set_recipients(array email_list)
+=head2 set_recipients(array email_list) : self
 
 Sets the recipient of this mail message.  It does not modify the
 headers, i.e. To:, etc.  I<email_list> may be a single scalar
@@ -380,7 +379,7 @@ sub set_recipients {
     my($self, $email_list) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{recipients} = $email_list;
-    return;
+    return $self;
 }
 
 =for html <a name="set_envelope_from"></a>

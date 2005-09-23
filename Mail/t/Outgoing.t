@@ -45,7 +45,7 @@ my($host) = Sys::Hostname::hostname();
 my($_OUT) = <<"EOF";
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 From: "Fan Tango" <foo_bar\@example.net>
-Subject: some-list: This is my subject
+Subject: [abc] This is my subject
 Sender: some-list-owner\@$host
 To: "Some-List" <some-list\@example.com>
 Reply-To: "My Fancy List" <some-list\@$host>
@@ -66,7 +66,7 @@ my($_BODY) = 'what a body';
 Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
     [Bivio::Mail::Incoming->new(\$_IN)] => [
 	set_headers_for_list_send => [
-	    ['some-list', 'My Fancy List', 1, 1, $req] => undef,
+	    ['some-list', 'My Fancy List', 1, '[abc]', $req] => undef,
 	],
 	set_recipients => [
 	    [$_USER] => undef,

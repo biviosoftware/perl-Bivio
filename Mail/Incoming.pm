@@ -77,10 +77,7 @@ destroyed.
 =cut
 
 sub new {
-    my($proto, $rfc822, $offset) = @_;
-    my($self) = &Bivio::Mail::Common::new($proto);
-    $self->initialize($rfc822, $offset);
-    return $self;
+    return shift->SUPER::new->initialize(@_);
 }
 
 =head1 METHODS
@@ -423,7 +420,7 @@ sub initialize {
 	'body_offset' => $i,
 	'time' => time,
     };
-    return;
+    return $self;
 }
 
 =for html <a name="send"></a>

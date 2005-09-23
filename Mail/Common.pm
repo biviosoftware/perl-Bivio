@@ -92,7 +92,7 @@ sub discard_queued_messages () {
 
 =for html <a name="enqueue_send"></a>
 
-=head2 enqueue_send()
+=head2 enqueue_send(Bivio::Agent::Request req)
 
 Queues this message for sending with
 L<send_queued_messages|"send_queued_messages">.
@@ -100,9 +100,11 @@ L<send_queued_messages|"send_queued_messages">.
 =cut
 
 sub enqueue_send {
-    my($self) = @_;
-    my($req) = Bivio::Agent::Request->get_current_or_new;
-
+    my($self, $req) = @_;
+    unless ($req) {
+	Bivio::IO::Alert->warn_deprecated('request is a required parameter');
+	$req = Bivio::Agent::Request->get_current_or_new;
+    }
     if (int(@$_QUEUE)) {
         $req->push_txn_resource(ref($self))
             if _txn_resources_corrupted($self, $req);
