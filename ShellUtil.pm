@@ -592,7 +592,7 @@ sub handle_config {
 
 =for html <a name="initialize_ui"></a>
 
-=head2 initialize_ui()
+=head2 initialize_ui() : Bivio::Agent::Request
 
 Initializes the UI and sets up the default facade.  This takes some time,
 so classes should use this sparingly.
@@ -611,7 +611,7 @@ sub initialize_ui {
     $req->put_durable(
 	task => Bivio::Agent::Task->get_by_id($req->get('task_id')))
 	if $req->unsafe_get('task_id');
-    return;
+    return $req;
 }
 
 =for html <a name="is_loadavg_ok"></a>
