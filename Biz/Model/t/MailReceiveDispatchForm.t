@@ -29,7 +29,7 @@ my($_check_return) = sub {
 	$_req->get('auth_realm')->unsafe_get('owner_name'),
 	$_req->get('task_id'),
     ]);
-    return [@$expect, Bivio::Agent::TaskId->MAIL_RECEIVE_IGNORE];
+    return [@$expect[0..1], $expect->[2] || Bivio::Agent::TaskId->MAIL_RECEIVE_IGNORE];
 };
 Bivio::Test->new({
     check_return => $_check_return,
@@ -43,7 +43,7 @@ Bivio::Test->new({
 	    ['Bob <demo@bivio.biz>', 'ignore.demo'] => ['demo', 'demo'],
 	    ['not_a_user', 'demo-ignore'] => [undef, 'demo'],
 	    ['demo', 'not_a_user-ignore'] => Bivio::DieCode->MODEL_NOT_FOUND,
-	    ['demo', 'demo'] => Bivio::DieCode->NOT_FOUND,
+	    ['demo', 'demo'] => [demo => demo => Bivio::Agent::TaskId->MAIL_RECEIVE],
 	    ['demo', 'demo-ignore+antything'] => ['demo', 'demo'],
 	    # Should not see "unknown facade uri"
 	    ['demo', 'demo-ignore+antything@petshop.bivio.biz'] => ['demo', 'demo'],

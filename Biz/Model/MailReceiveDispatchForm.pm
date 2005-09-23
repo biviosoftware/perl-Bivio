@@ -77,9 +77,9 @@ sub execute_ok {
 	client_addr => $self->get('client_addr'),
 	'Model.' . $self->simple_package_name => $self,
     );
-    my($name, $op, $plus_tag, $domain) = $self->parse_recipient;
+    my($realm, $op, $plus_tag, $domain) = $self->parse_recipient;
     Bivio::UI::Facade->setup_request($domain, $req);
-    _set_realm($self, $name);
+    _set_realm($self, $realm);
     my($copy) = ${$self->get('message')->{content}};
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
     $self->internal_put_field(mime_parser => $parser);
@@ -152,6 +152,7 @@ sub internal_initialize {
 =head2 parse_recipient() : array
 
 Returns (realm, op, plus_tag, domain) from recipient.  I<op> may be undef.
+I<realm> may be a Model.RealmOwner, name, or realm_id.
 
 Two addresses are parsed:
 
@@ -191,17 +192,16 @@ sub _from_email {
     return $from && lc($from);
 }
 
-# _set_realm(self, string name)
+# _set_realm(self, any realm)
 #
 # Validates incoming realm is correct.
 #
 sub _set_realm {
-    my($self, $name) = @_;
+    my($self, $realm) = @_;
     my($req) = $self->get_request;
-    my($realm) = Bivio::Biz::Model->new($req, 'RealmOwner')
-	->unauth_load_or_die({
-	    name => $name,
-	});
+    $realm = ref($realm) ? $realm
+	: $self->new_other('RealmOwner')
+	->unauth_load_by_id_or_name_or_die($realm);
     $self->throw_die('NOT_FOUND', {
 	entity => $realm,
         message => 'cannot mail to a default realm or offline user',
@@ -221,16 +221,16 @@ sub _task {
     $self->throw_die('NOT_FOUND', {
 	entity => $op,
         message => 'operation is invalid',
-    }) unless $op =~ /^[-\w]+$/;
+    }) unless $op =~ /^[-\w]*$/;
     return Bivio::UI::Task->unsafe_get_from_uri(
 	Bivio::UI::Text->get_value('MailReceiveDispatchForm.uri_prefix', $req)
 	. $op,
 	$req->get('auth_realm')->get('type'),
-	$req)
-	|| $self->throw_die('NOT_FOUND', {
-	    entity => $op,
-	    message => 'task not found',
-	});
+	$req
+    ) || $self->throw_die('NOT_FOUND', {
+	entity => $op,
+	message => 'task not found',
+    });
 }
 
 =head1 COPYRIGHT
