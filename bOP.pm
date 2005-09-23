@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Unit->builtin_simple_require (maps to simple_require()
+    in bunit tests) added.  Ex. RealmOwner.bunit
+  * Bivio::Type::Date->from_literal accepts YYYY-MM-DD and YYYY-MM-DD.
+
+  Revision 3.10  2005/09/16 20:54:01  nagler
+  * Bivio::Biz::ListModel->internal_prepare_statement and
+    Bivio::SQL::Statement changed to support more powerful API for creating
+    statements on the fly with automatic type conversions.
+  * emacs/b-perl.el and b-site-start.el added to bOP
+  * Bivio::Test::Unit (bunit tests) restructured to support dynamic
+    calls from *.bunit file via AUTOLOAD.
+  * Various bunit tests created.  *.t versions still available to ensure
+    backwards compatibility and for comparison purposes
+  * Bivio::Biz::Action::Acknowledgement->extract_label factored out of
+    execute()
+  * Bivio::UI::HTML::ViewShortcuts->vs_acknowledgement calls
+    Bivio::Biz::Action::Acknowledgement->extract_label if there isn't
+    already a Action.Acknowledgement on the request.
+  * Bivio::Biz::Action::Acknowledgement->execute deletes Action.Acknowledgement
+    from request if there's no label.
+  * Bivio::Biz::Action->delete_from_request removes the action from the
+    request.
+  * Bivio::Test->CLASS deleted; Bivio::Test::Unit->class implements
+    better
   * Bivio::UI::HTML::Widget::String->render initializes widget if
     returned by widget value.  Also uses unsafe_resolve_widget_value so
     can unwrap several levels of indirections.
