@@ -73,3 +73,12 @@ use strict;
 this routine should not be found;
 ');
 print $die && $die->get('code')->equals_by_name('DIE') ? "ok 4\n" : "not ok 4\n";
+
+use HTML::Parser;
+$die = Bivio::Die->catch(<<'EOF');
+HTML::Parser->new(
+    api_version => 3,
+    text_h => [sub {die('dead')}]
+)->parse('<html>x</html>');
+EOF
+print $die && $die->get('code')->equals_by_name('DIE') ? "ok 5\n" : "not ok 5\n";

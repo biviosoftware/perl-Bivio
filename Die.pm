@@ -481,9 +481,8 @@ sub _as_string_args {
 #
 sub _catch_done {
     my($proto) = @_;
-    my($self) =  $@ ? $_CURRENT_SELF ? $_CURRENT_SELF
-	    : _new_from_eval_syntax_error($proto)
-	    : undef;
+    my($self) =  $_CURRENT_SELF
+	|| ($@ ? _new_from_eval_syntax_error($proto) : undef);
     $_CURRENT_SELF = undef;
     $_IN_CATCH--;
     return $self;
