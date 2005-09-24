@@ -4,6 +4,7 @@ Unit();
 [
     class() => [
 	simple_package_name => 'Unit',
+	simple_package_name => not_die(),
     ],
     sub {'Bivio::UNIVERSAL'} => [
 	simple_package_name => 'UNIVERSAL',
