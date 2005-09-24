@@ -15,7 +15,7 @@ Bivio::Test::Widget->unit(
 	[[['x']], {height => 33}] => qq{<table border="0" cellpadding="0" cellspacing="0" height="33"><tr>\n<td>x</td>\n</tr></table>},
 	[[['x']], {style => 'fancy&'}] => qq{<table border="0" cellpadding="0" cellspacing="0" style="fancy&amp;"><tr>\n<td>x</td>\n</tr></table>},
 	[[['x']], {id => 'ego'}] => qq{<table border="0" cellpadding="0" cellspacing="0" id="ego"><tr>\n<td>x</td>\n</tr></table>},
-	[[['x']], {align => 'N'}] => qq{<table border="0" cellpadding="0" cellspacing="0" valign=top align=center><tr>\n<td>x</td>\n</tr></table>},
+	[[['x']], {align => 'N'}] => qq{<table border="0" cellpadding="0" cellspacing="0" valign="top" align="center"><tr>\n<td>x</td>\n</tr></table>},
 	[[['x']], {bgcolor => 'error'}] => qq{<table border="0" cellpadding="0" cellspacing="0" bgcolor="#993300"><tr>\n<td>x</td>\n</tr></table>},
 	[[['x']], {background => 'iguana'}] => qq{<table border="0" cellpadding="0" cellspacing="0" background="/i/iguana.gif"><tr>\n<td>x</td>\n</tr></table>},
 	[[['x']], {start_tag => 1}] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},
