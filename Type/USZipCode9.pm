@@ -59,6 +59,20 @@ sub from_literal {
     return $v;
 }
 
+=for html <a name="to_html"></a>
+
+=head2 static to_html(string value) : string
+
+Insert the '-'.
+
+=cut
+
+sub to_html {
+    my(undef, $value) = @_;
+    substr($value, 5, 0) = '-';
+    return $value;
+}
+
 #=PRIVATE SUBROUTINES
 
 =head1 COPYRIGHT
