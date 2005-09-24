@@ -336,7 +336,7 @@ sub _init_demo_users {
 	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
 	    'User.first_name' => ucfirst($u),
 	    'User.last_name' => $self->DEMO_LAST_NAME,
-	    'Email.email' => format_email($u),
+	    'Email.email' => $self->format_email($u),
 	    'Address.street1' => '1313 Mockingbird Lane',
 	    'Address.street2' => undef,
 	    'Address.city' => 'Boulder',
