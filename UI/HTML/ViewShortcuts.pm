@@ -206,7 +206,7 @@ sub vs_correct_table_layout_bug {
 
 =for html <a name="vs_descriptive_field"></a>
 
-=head2 static vs_descriptive_field(string field) : array_ref
+=head2 static vs_descriptive_field(any field) : array_ref
 
 Calls vs_form_field and adds I<description> to the result.  I<description>
 is an optional string, widget value, or widget.  It is always wrapped
@@ -216,25 +216,26 @@ in a String with font form_field_description.
 
 sub vs_descriptive_field {
     my($proto, $field) = @_;
-    my($label, $input) = $proto->vs_form_field($field);
+    my($name, $attrs) = ref($field) ? @$field : $field;
+    my($label, $input) = $proto->vs_form_field($name, $attrs);
     return [
 	$label,
 	$proto->vs_call('Join', [
 	    $input,
 	    [sub {
 		 my($req) = shift->get_request;
-		 my($proto, $field) = @_;
+		 my($proto, $name) = @_;
 #TODO: Need to create a separate space for field_descriptions so we don't
 #      default to something that we don't expect.
 		 my($v) = $req->get_nested('Bivio::UI::Facade', 'Text')
-		     ->unsafe_get_value($field, 'field_description');
+		     ->unsafe_get_value($name, 'field_description');
 		 return $v ?
 		     $proto->vs_call(
 			 'String',
 			 $proto->vs_call('Prose', '<br><p class="form_field_description">' . $v . '</p>'),
 			 'form_field_description',
 		     ) :  '';
-	    }, $proto, $field],
+	    }, $proto, $name],
 	]),
     ];
 }
