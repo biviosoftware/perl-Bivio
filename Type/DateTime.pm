@@ -270,6 +270,8 @@ my($_TIME_SUFFIX) = ' '.DEFAULT_TIME();
 my($_DATE_PREFIX) = FIRST_DATE_IN_JULIAN_DAYS().' ';
 my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
+my($_DAY_OF_WEEK)
+    = [qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)];
 my($_NUM_TO_MONTH) = [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)];
 my($_MONTH_TO_NUM) = {map {
     (uc($_NUM_TO_MONTH->[$_]), $_ + 1);
@@ -524,6 +526,19 @@ sub diff_seconds {
     my($lj, $ls) = split(' ', $left);
     my($rj, $rs) = split(' ', $right);
     return ($lj - $rj) * SECONDS_IN_DAY() + $ls - $rs;
+}
+
+=for html <a name="english_day_of_week"></a>
+
+=head2 static english_day_of_week(string date_time) : string
+
+Returns day of week for date.
+
+=cut
+
+sub english_day_of_week {
+    my($proto, $date) = @_;
+    return $_DAY_OF_WEEK->[(gmtime($proto->to_unix($date)))[6]];
 }
 
 =for html <a name="english_month3"></a>
