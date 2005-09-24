@@ -26,7 +26,7 @@ Bivio::Test::Widget->unit(
 	    [{expand => 1}, {width => '95%'}],
 	    {width => '100%'},
 	    {border => 1},
-	    [{title => 'Reptiles'}, {title => qq{\n<tr><td colspan=2><font face="arial,sans-serif"><b><br>Reptiles<br></b></font></td>\n</tr>}}],
+	    [{title => 'Reptiles'}, {title => qq{\n<tr><td colspan="2"><font face="arial,sans-serif"><b><br>Reptiles<br></b></font></td>\n</tr>}}],
 	    [{
 		class => 'reptiles',
 	    }, {
@@ -40,21 +40,21 @@ sub _t {
     my($exp) = @_;
     chomp(my $x = <<'EOF');
 
-<table border="0" cellpadding="5" cellspacing="0" valign=NOP width="NOP" align=left class="NOP"> title=NOP
+<table border="0" cellpadding="5" cellspacing="0" valign="NOP" width="NOP" align="left" class="NOP"> title=NOP
 <tr>
-<th valign=bottom align=center nowrap><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th valign=bottom align=center nowrap><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font></a> <img valign=bottom alt="This column sorted in ascending order" border=0 src="/i/sort_down.gif" width=10 height=8></th>
+<th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
+<th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font></a> <img valign="bottom" alt="This column sorted in ascending order" border="0" src="/i/sort_down.gif" width="10" height="8" /></th>
 </tr>
-<tr><td colspan=2><table width="100%" cellspacing=0 cellpadding=0 border=0>
-<tr bgcolor="#000000"><td><img src="/i/dot.gif" border=0 width=1 height=1></td></tr></table></td>
+<tr><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr bgcolor="#000000"><td><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr></table></td>
 </tr>
 <tr bgcolor="#D5EEFF">
-<td align=left><font face="arial,sans-serif">RP-LI-02</font></td>
-<td align=left><font face="arial,sans-serif">Iguana</font></td>
+<td align="left"><font face="arial,sans-serif">RP-LI-02</font></td>
+<td align="left"><font face="arial,sans-serif">Iguana</font></td>
 </tr>
 <tr bgcolor="#F0F9FF">
-<td align=left><font face="arial,sans-serif">RP-SN-01</font></td>
-<td align=left><font face="arial,sans-serif">Rattlesnake</font></td>
+<td align="left"><font face="arial,sans-serif">RP-SN-01</font></td>
+<td align="left"><font face="arial,sans-serif">Rattlesnake</font></td>
 </tr>
 </table>
 EOF
