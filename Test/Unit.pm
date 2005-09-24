@@ -127,6 +127,19 @@ sub builtin_class {
     return $_CLASS;
 }
 
+=for html <a name="builtin_not_die"></a>
+
+=head2 static builtin_not_die() : undef
+
+Returns C<undef> which is the value L<Bivio::Test::unit|Bivio::Test/"unit">
+uses for ignoring result, but not allowing a die.
+
+=cut
+
+sub builtin_not_die {
+    return undef;
+}
+
 =for html <a name="builtin_simple_require"></a>
 
 =head2 static builtin_simple_require(string class) : Bivio::UNIVERSAL
@@ -150,17 +163,19 @@ Runs I<file> in bunit environment.
 
 sub run {
     my($proto, $bunit) = @_;
-    local($_CLASS) = (${Bivio::IO::File->read(
-	File::Spec->catfile(
-	    File::Basename::dirname(
-		File::Basename::dirname(File::Spec->rel2abs($bunit))),
-	    File::Basename::basename($bunit, '.bunit'). '.pm',
-	),
-    )} =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
-	|| Bivio::Die->die(
-	    $bunit, ': unable to extract class to test; must',
-	    ' have "package <class::name>;" statement in class under test',
-	);
+    local($_CLASS) = Bivio::IO::ClassLoader->simple_require(
+	(${Bivio::IO::File->read(
+	    File::Spec->catfile(
+		File::Basename::dirname(
+		    File::Basename::dirname(File::Spec->rel2abs($bunit))),
+		File::Basename::basename($bunit, '.bunit'). '.pm',
+	    ),
+	)} =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
+	    || Bivio::Die->die(
+		$bunit, ': unable to extract class to test; must',
+		' have "package <class::name>;" statement in class under test',
+	    ),
+    );
     local($_TYPE);
     my($t) = Bivio::Die->eval_or_die(
 	'package ' . __PACKAGE__ . ';use strict;'
