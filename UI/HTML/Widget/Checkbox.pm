@@ -166,6 +166,9 @@ sub render {
     $$buffer .= ' '
 	. $fields->{handler}->get_html_field_attributes($field, $source)
 	if $fields->{handler};
+    $$buffer .= ' disabled="1"'
+	if $self->get_or_default('is_read_only',
+            ! $form->is_field_editable($field));
     $$buffer .= ' type="checkbox" value="' .$fields->{value} . '"';
     $$buffer .= ' onclick="submit()"'
 	if $fields->{auto_submit};
