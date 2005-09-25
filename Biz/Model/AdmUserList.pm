@@ -108,15 +108,14 @@ sub internal_initialize {
 
 =for html <a name="internal_prepare_statement"></a>
 
-=head2 internal_prepare_statement(Bivio::SQL::Statement stmt) : Bivio::SQL::Statement
+=head2 internal_prepare_statement(Bivio::SQL::Statement stmt, Bivio::SQL::ListQuery query)
 
 Narrow the search of users by last name.
 
 =cut
 
 sub internal_prepare_statement {
-    my($self, $stmt) = @_;
-    my($query) = $self->get_query;
+    my($self, $stmt, $query) = @_;
     my($search) = $query->get('search');
 
     return unless $search;
