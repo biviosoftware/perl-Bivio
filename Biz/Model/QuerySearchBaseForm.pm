@@ -92,9 +92,10 @@ sub execute_ok {
             my($v) = $self->unsafe_get($_);
             my($t) = $self->get_field_info($_, 'type');
             my($dv) = $self->get_field_info($_, 'default_value');
+	    my($name) = $self->get_field_info($_, 'form_name');
             $self->OMIT_DEFAULT_VALUES_FROM_QUERY
-                ? ($t->is_equal($dv, $v) ? () : ($_ => $t->to_literal($v)))
-                : ($_ => $t->to_literal($v));
+                ? ($t->is_equal($dv, $v) ? () : ($name => $t->to_literal($v)))
+                : ($name => $t->to_literal($v));
         } @{_get_visible_fields($self)}),
     });
     return;
@@ -183,9 +184,9 @@ sub _load_query_value {
     my($query) = $self->get_request->get('query');
     my($v, $e);
 
-    if (exists($query->{$field})) {
-	($v, $e) = $self->get_field_type($field)
-	    ->from_literal($query->{$field});
+    my($value) = $query->{$self->get_field_info($field, 'form_name')};
+    if ($value) {
+	($v, $e) = $self->get_field_type($field)->from_literal($value);
 	if ($e) {
 	    $self->internal_put_error($field => $e);
 	    return;
