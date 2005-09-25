@@ -870,6 +870,7 @@ sub _prepare_where {
     else {
 	unshift(@$params, @$qualifiers);
     }
+    $$where =~ s/\s+AND\s*$//;
     _prepare_where_date($self, $query, $where, $params)
 	if $attrs->{date};
     _prepare_group_by($self, $where)
