@@ -95,7 +95,8 @@ sub load_permissions {
 
     my($rti) = $realm->get('type')->as_int;
     _load_default_permissions($rti, $req)
-	unless $_DEFAULT_PERMISSIONS{$rti};
+	unless $_DEFAULT_PERMISSIONS{$rti}
+	    && $_DEFAULT_PERMISSIONS{$rti}->{$role};
 
     # Copy just this role's permission if there is an owner
     my($res) = $_DEFAULT_PERMISSIONS{$rti}->{$role};
