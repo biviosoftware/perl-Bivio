@@ -129,6 +129,25 @@ sub GTE {
     return _static_compare('>=', $left, $right);
 }
 
+=for html <a name="ILIKE"></a>
+
+=head2 static ILIKE(string column, string match) : hash_ref
+
+Return a ILIKE predicate.
+
+=cut
+
+sub ILIKE {
+    my($proto, $column, $match) = @_;
+    return {
+        column => $column,
+        match => $match,
+        build => sub {
+            return _build_column($column, @_) . ' ILIKE ' . "'$match'";
+        },
+    };
+}
+
 =for html <a name="IN"></a>
 
 =head2 static IN(string column, array_ref list) : hash_ref
@@ -143,6 +162,8 @@ sub IN {
         column => $column,
         values => $values,
         build => sub {
+	    return 'FALSE'
+		unless scalar(@$values);
             return _build_column($column, @_) . ' IN (' .
                 join(',', map({_build_value($column, $_, @_)} @$values)) . ')';
         },
@@ -319,31 +340,34 @@ sub build_for_internal_load_rows {
 
 =for html <a name="from"></a>
 
-=head2 from(any join)
+=head2 from(any join, ...)
 
-Add the join to the FROM clause.
+Add the join(s) to the FROM clause.
+BAD: Assumes LEFT JOIN
 
 =cut
 
 sub from {
-    my($self, $join) = @_;
+    my($self, @joins) = @_;
     my($models) = $self->[$_IDI]->{_models};
-    my($left_table) = $join->{left_table};
-    my($right_table) = $join->{right_table};
+    foreach my $join (@joins) {
+	my($left_table) = $join->{left_table};
+	my($right_table) = $join->{right_table};
 
-    Bivio::Die->die($right_table, ': is already left joined with ',
-        $models->{$right_table}->{_joined_from},
-    )
-        if exists $models->{$right_table}
-            && exists $models->{$right_table}->{_joined_from};
+	Bivio::Die->die($right_table, ': is already left joined with ',
+            $models->{$right_table}->{_joined_from},
+        )
+            if exists $models->{$right_table}
+                && exists $models->{$right_table}->{_joined_from};
 
-    my($left) = _add_model($self, $left_table);
-    $left->{joins}->{$right_table} = $join;
+	my($left) = _add_model($self, $left_table);
+	my($right) = _add_model($self, $right_table, $join);
 
-    my($right) = _add_model($self, $right_table);
-    $right->{_joined_from} = $left_table;
+	$left->{joins}->{$right_table} = $right;
+	$right->{_joined_from} = $left_table;
 
-    delete $self->[$_IDI]->{from}->{$right_table};
+	delete $self->[$_IDI]->{from}->{$right_table};
+    }
     return;
 }
 
@@ -366,23 +390,27 @@ sub where {
 
 #=PRIVATE SUBROUTINES
 
-# _add_model(self, string model) : hash_ref
+# _add_model(self, string model, hash_ref join) : hash_ref
 #
 # Add model to _models and from (if new).
 # Return the hash_ref representation.
 #
 sub _add_model {
-    my($self, $model) = @_;
+    my($self, $model, $join) = @_;
     my($models) = $self->[$_IDI]->{_models};
     my($joins) = {};
+    my($build_model) = $join
+	? $join
+	: {build => sub {_build_model($model, @_)}};
     $self->[$_IDI]->{from}->{$model} = $models->{$model} = {
+        joins => $joins,
+	build_model => $build_model,
         build => sub {
             return
-                join(' ', _build_model($model, @_),
+                join(' ', $build_model->{build}->(@_),
                     map({$_->{build}->(@_)}
                         map({$joins->{$_}} sort keys %$joins)));
         },
-        joins => $joins,
     }
         unless exists $models->{$model};
 
@@ -395,7 +423,10 @@ sub _add_model {
 #
 sub _build_column {
     my($column, $support) = @_;
-    return $support->get_column_info($column)->{sql_name};
+    my($model, $index, $field) = $column =~ /^(\w+?)(_\d+)?\.(\w+)$/;
+    $index ||= '';
+    return Bivio::Biz::Model->get_instance($model)->get_info('table_name')
+	. "$index.$field";
 }
 
 # _build_model(string model, Bivio::SQL::Support support) : string
@@ -403,8 +434,13 @@ sub _build_column {
 # Return the sql table name for the model
 #
 sub _build_model {
-    my($model, $support) = @_;
-    return $support->get('models')->{$model}->{sql_name};
+    my($model_name, $support) = @_;
+    my($model, $index) = $model_name =~ /^(\w+?)(_\d+)?$/;
+    my($table) = Bivio::Biz::Model->get_instance($model)
+	->get_info('table_name');
+    return $table
+	. ($index ? " $table$index" : '');
+#    return $support->get('models')->{$model}->{sql_name};
 }
 
 # _build_value(string column, string value, Bivio::SQL::Support support) : string
@@ -413,7 +449,10 @@ sub _build_model {
 #
 sub _build_value {
     my($column, $value, $support, $params) = @_;
-    my($col_type) = $support->get_column_info($column)->{type};
+#    my($col_type) = $support->get_column_info($column)->{type};
+    my($model, $index, $field) = $column =~ /^(\w+?)(_\d+)?\.(\w+)$/;
+    my($instance) = Bivio::Biz::Model->get_instance($model);
+    my($col_type) = $instance->get_field_type($field);
     push(@$params, $col_type->to_sql_param($value));
     return $col_type->to_sql_value('?');
 }
