@@ -927,7 +927,7 @@ sub _format_form {
 	if ($f->{options}) {
 	    # Radio or Select: Allow the use of the option label instead of value
 	    foreach my $o (keys(%{$f->{options}})) {
-		next unless $o eq $value;
+		next unless ref($value) ? $o =~ $value : $o eq $value;
 		$value = $f->{options}->{$o}->{value};
 		_trace($o, ': mapped to ', $value) if $_TRACE;
 		last;
@@ -1068,7 +1068,8 @@ sub _verify_form_option {
     my($control, $field, $value) = @_;
     foreach my $o (keys(%{$control->{options}})) {
 	return 1
-	    if $value eq $o && $control->{options}->{$o}->{selected};
+	    if (ref($value) ? $o =~ $value : $value eq $o)
+	    && $control->{options}->{$o}->{selected};
     }
     return 0;
 }
