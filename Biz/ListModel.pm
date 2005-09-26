@@ -374,6 +374,21 @@ sub execute_load_this_or_first {
     return 0;
 }
 
+=for html <a name="find_row_by"></a>
+
+=head2 find_row_by(string field, string value) : self
+
+Sets the cursor by I<field> and returns self or returns undef.
+
+=cut
+
+sub find_row_by {
+    my($self, $field, $value) = @_;
+    my($t) = $self->get_field_type($field);
+    return $self->do_rows(sub {!$t->is_equal($self->get($field), $value)})
+	->has_cursor ? $self : undef;
+}
+
 =for html <a name="format_query"></a>
 
 =head2 format_query(Bivio::Biz::QueryType type) : string
