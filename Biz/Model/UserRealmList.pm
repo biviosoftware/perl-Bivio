@@ -57,9 +57,7 @@ Sets the cursor by I<type> and returns self or returns undef.
 =cut
 
 sub find_row_by_type {
-    my($self, $type) = @_;
-    return $self->do_rows(sub {$self->get('RealmOwner.realm_type') != $type})
-	->has_cursor ? $self : undef;
+    return shift->find_row_by('RealmOwner.realm_type', shift);
 }
 
 =for html <a name="internal_initialize"></a>
