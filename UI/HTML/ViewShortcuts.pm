@@ -219,7 +219,7 @@ sub vs_descriptive_field {
     my($name, $attrs) = ref($field) ? @$field : $field;
     my($label, $input) = $proto->vs_form_field($name, $attrs);
     return [
-	$label,
+	$label->put(cell_class => 'form_field_label'),
 	$proto->vs_call('Join', [
 	    $input,
 	    [sub {
@@ -236,7 +236,9 @@ sub vs_descriptive_field {
 			 'form_field_description',
 		     ) :  '';
 	    }, $proto, $name],
-	]),
+	], {
+	    cell_class => 'form_field_input',
+        }),
     ];
 }
 
@@ -572,10 +574,11 @@ sub vs_simple_form {
 			},
 		    )];
 		}
+		elsif (ref($_) eq 'ARRAY' && ref($_->[0])) {
+		    $x = $_;
+		}
 		else {
 		    $x = $proto->vs_descriptive_field($_);
-		    $x->[0]->put(cell_class => 'form_field_label');
-		    $x->[1]->put(cell_class => 'form_field_input');
 		}
 		$x;
 	    } @$rows),
