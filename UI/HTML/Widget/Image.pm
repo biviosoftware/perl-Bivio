@@ -173,7 +173,7 @@ sub initialize {
 #TODO: Need to ensure we set alt_text.  Maybe want to warn_deprecated?
     $fields->{alt} = $self->unsafe_initialize_attr('alt');
     $fields->{alt_text} = $self->initialize_attr('alt_text')
-	    unless defined($fields->{alt});
+	unless defined($fields->{alt});
 
     my($width, $height, $border) = $self->unsafe_get(qw(width height border));
     die('width and height must both be defined')
@@ -303,7 +303,9 @@ sub _render_alt {
 
     my($b) = $self->render_value('alt_text', $fields->{alt_text}, $source);
     return $$b if ref($fields->{alt_text});
-    return Bivio::UI::Text->get_value('Image_alt', $$b, $req);
+    return $req->get_nested('Bivio::UI::Facade', 'Text')
+	->unsafe_get_value('Image_alt', $$b)
+	|| $fields->{alt_text};
 }
 
 =head1 COPYRIGHT
