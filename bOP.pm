@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,43 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Checkbox.is_read_only added
+  * Bivio::UI::HTML::Widget::Image.alt_text can resolve to nothing
+  * Various small bug fixes in XHTML changes
+
+  Revision 3.11  2005/09/23 16:22:11  nagler
+  * Bivio:UI::HTML::Widget:Page.xhtml allows you to create XHTML pages:
+    <!doctype html public "-//w3c//dtd xhtml 1.0 transitional//en"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transititional.dtd">
+  * Bivio::UI::HTML::Widget::* and Bivio::UI:* have been upgraded to
+    be XHTML compliant.   A variety of bugs were fixed and code
+    refactored along with these changes.
+  * Bivio::UI::HTML::ViewShortcuts->vs_alphabetic_chooser has been added
+  * Bivio::UI::HTML::ViewShortcuts->vs_simple_form $epilogue and
+    $prologue have been removed -- just put the widgets in the list.
+    Buttons may be specified with leading '*', like separators.
+    Otherwise, StandardSubmit is appended to the form.
+  * Bivio::UI::HTML::ViewShortcuts->vs_site_name has been updated to
+    include
+  * Bivio::Biz::Model::MailReceiveDispatchForm->parse_recipient can
+    return model, name, or realm_id for realm
+  * Bivio::Biz::Model::MailReceiveDispatchForm->execute_ok handles empty
+    $op correctly.
+  * Bivio::Biz::Model::RealmOwner->unauth_load_by_email accepts hash_ref
+    for $query.  hash (%query) is deprecated.
+  * Bivio::Die works better with HTML::Parser now.  HTML::Parser seems
+    to reset $@.  This fix may cause unexpected failures due to implicit
+    couplings, but we haven't seen this in our testing.
+  * Bivio::Mail::Outgoing returns $self for more methods
+  * Bivio::Mail::Common->enqueue_send requires $req.  Implicit $req
+    is deprecated.
+  * Bivio::Mail::Outgoing->set_headers_for_list_send accepts
+    subject_prefix (list_in_subject form is deprecated).  $list_name is
+    relaxed to include period ('.').
+  * Bivio::PetShop expanded MAIL_RECEIVE interface for testing/examples
+  * Bivio::PetShop::Util->DEMO_EMAIL/format_email added
+  * Bivio::ShellUtil->initialize_ui returns $req
+  * Bivio::Test::Language::HTTP->generate_remote_email added
   * Bivio::Test::Unit->builtin_simple_require (maps to simple_require()
     in bunit tests) added.  Ex. RealmOwner.bunit
   * Bivio::Type::Date->from_literal accepts YYYY-MM-DD and YYYY-MM-DD.
