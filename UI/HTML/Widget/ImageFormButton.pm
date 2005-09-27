@@ -137,7 +137,7 @@ sub render {
     my($field) = $fields->{field}
 	? $form->get_field_name_for_html($fields->{field})
 	: 'submit';
-    $$buffer .= qq{$fields->{prefix} name="$field"};
+    $$buffer .= qq{$fields->{prefix} name="$field" id="$field"};
     $$buffer .= ' alt="'
 	. Bivio::HTML->escape_attr_value(
 	    $self->render_value('alt', $fields->{alt}, $source))
