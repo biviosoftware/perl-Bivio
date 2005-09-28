@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::ImageFormButton sets "name" and "id" attributes
+    to allow access from javascript. <input type=image ...> items do not
+    exist in javascript form.elements
+
+  Revision 3.12  2005/09/27 16:34:47  nagler
+  * freiker.org is using XHTML syntax.  Source will be available at some
+    point.
+  * Bivio::Biz::ListModel->find_row_by allows you to find a row by a
+    particular field value
+  * Bivio::Biz::Model::QuerySearchBaseForm uses form_name of fields,
+    in case it has been set explicitly
+  * Bivio::Biz::Model::UserRealmList->find_row_by_type uses find_row_by
+  * Bivio::SQL::Statement->ILIKE added
+  * Bivio::SQL::Statement does nested left joins properly and columns no
+    longer have to be mentioned in internal_initialize to be mentioned
+    from or where.
+  * Bivio::Test::Language::HTTP->submit/verify_form allows regexp for
+    select options
+  * Bivio::Test::Unit->builtin_not_die (not_die()) is a synonym for "undef"
+  * Bivio::Type::DateTime->english_day_of_week added
+  * Bivio::Type::USZipCode9->to_html formats with '-'
+  * Bivio::UI::HTML::ViewShortcuts->vs_simple_form and vs_descriptive_field
+    better organized and allows fields of the form [name, {attrs}]
   * Bivio::UI::HTML::Widget::Checkbox.is_read_only added
   * Bivio::UI::HTML::Widget::Image.alt_text can resolve to nothing
   * Various small bug fixes in XHTML changes
