@@ -216,7 +216,7 @@ sub initialize {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
 		    # width to 100%.
-		    _append(\@p, q{ colspan="$expand_cols"})
+		    _append(\@p, qq{ colspan="$expand_cols"})
 			if $expand_cols > 1;
 		    _append(\@p, ' width="100%"') if $expand2 && !$width;
 		    $expand_cols = 1;
