@@ -524,8 +524,6 @@ sub register {
 	    "&$pkg\::handle_config not defined");
     push(@_REGISTERED, $pkg);
     $_SPEC{$pkg} = $spec;
-
-    # Call handle_config
     &{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
     return;
 }
