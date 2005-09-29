@@ -152,6 +152,18 @@ sub handle_config {
 
 =head2 mock_sendmail(string from, string recipients)
 
+You need to create the directory:
+
+    ~/btest-mail
+
+(default for Bivio::Test::Language::HTTP.mail_dir) and
+have a ~/.procmailrc:
+
+    EXTENSION="$1"
+    :0
+    * EXTENSION ?? btest
+    btest-mail/.
+
 =cut
 
 sub mock_sendmail {
