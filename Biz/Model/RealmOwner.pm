@@ -410,7 +410,7 @@ sub unauth_load_by_email {
     my($name) = Bivio::Type::RealmName->from_literal($email);
     return 0 unless defined($name);
     # Is it a valid user/club?
-    return $self->unauth_load({@query, name => $name});
+    return $self->unauth_load({%$query, name => $name});
 }
 
 =for html <a name="unauth_load_by_email_id_or_name"></a>
