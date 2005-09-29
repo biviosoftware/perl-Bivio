@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    of recipients. (set_recipients now joins recipients instead of
+    deferring to Common.)
+  * Various minor bugs fixes (e.g. Grid colspan was bad)
 
   Revision 3.14  2005/09/29 03:35:05  moeller
   * Bivio::UI::HTML::Widget::Grid fix bug in colspan
