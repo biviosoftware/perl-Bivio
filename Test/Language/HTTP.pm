@@ -56,6 +56,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
     email_user => $ENV{LOGNAME} || $ENV{USER},
     home_page_uri => Bivio::IO::Config->REQUIRED,
+    remote_mail_host => undef,
     mail_dir => "$ENV{HOME}/btest-mail/",
     mail_tries => 60,
     email_tag => '+btest_',
@@ -246,15 +247,19 @@ sub generate_local_email {
 
 =for html <a name="generate_remote_email"></a>
 
-=head2 generate_remote_email(string base) : string
+=head2 generate_remote_email(string base, string facade_uri) : string
 
-Generates an email for the remote server.
+Generates an email for the remote server.  Appends  @I<remote_mail_host> with
+I<facade_uri>. prefix if it is supplied.
 
 =cut
 
 sub generate_remote_email {
-    my($self, $base) = @_;
-    return $base . '@' . URI->new($self->home_page_uri())->host;
+    my($self, $base, $facade_uri) = @_;
+    return $base
+	. '@'
+	. ($facade_uri ? "$facade_uri." : '')
+	. $_CFG->{remote_mail_host};
 }
 
 =for html <a name="get_content"></a>
@@ -352,6 +357,10 @@ Make sure the permissions are 0600 on your .procmailrc.
 
 Maximum number of attempts to get mail.  Each try is about 1 second.
 
+=item remote_mail_host : string [host of home_page_uri]
+
+You can set the uri of the remote host.
+
 =back
 
 =cut
@@ -363,6 +372,7 @@ sub handle_config {
     Bivio::Die->die($cfg->{mail_tries},
 	': mail_tries must be a postive integer')
         if $cfg->{mail_tries} =~ /\D/ || $cfg->{mail_tries} <= 0;
+    $cfg->{remote_mail_host} ||= URI->new($cfg->{home_page_uri})->host;
     $_CFG = $cfg;
     return;
 }
@@ -630,7 +640,8 @@ sub verify_local_mail {
 	        if @found != $count;
 	    foreach (@found) {
 		unlink($_->[0]);
-		_log($self, 'msg', $_->[1]);
+		_log($self, 'msg', $_->[1])
+		    if ref($self);
 	    }
 	    return wantarray
 		? map(${$_->[1]}, @found)
