@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Common;
 use strict;
@@ -42,36 +42,20 @@ use Bivio::Agent::Request;
 use Bivio::Die;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use IO::File ();
 use User::pwent ();
 
 #=VARIABLES
-use vars qw($_TRACE $OUT);
+use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-Bivio::IO::Config->register({
+Bivio::IO::Config->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
-    sendmail => '/usr/lib/sendmail -U -oem -odb -i',
+    sendmail => '/usr/lib/sendmailxs -U -oem -odb -i',
     reroute_address => undef,
 });
 #TODO: get rid of global state - put it on the request instead
 my($_QUEUE) = [];
-my($_CFG);
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UNIVERSAL
-
-Pass through
-
-=cut
-
-sub new {
-    return &Bivio::UNIVERSAL::new(@_);
-}
 
 =head1 METHODS
 
@@ -100,11 +84,7 @@ L<send_queued_messages|"send_queued_messages">.
 =cut
 
 sub enqueue_send {
-    my($self, $req) = @_;
-    unless ($req) {
-	Bivio::IO::Alert->warn_deprecated('request is a required parameter');
-	$req = Bivio::Agent::Request->get_current_or_new;
-    }
+    my($self, $req) = shift->internal_req(@_);
     if (int(@$_QUEUE)) {
         $req->push_txn_resource(ref($self))
             if _txn_resources_corrupted($self, $req);
@@ -115,6 +95,37 @@ sub enqueue_send {
     push(@$_QUEUE, $self);
     return;
 }
+
+=for html <a name="format_as_bounce"></a>
+
+=head2 static format_as_bounce(string err, string recipients, string_ref msg, string errors_to) : string_ref
+
+Creates an error message to be sent to 'errors_to'.  I<recipients> will
+be retrieved with I<unsafe_get_recipients> if not supplied.
+I<msg> will be retrieved with I<as_string> if not supplied.
+I<errors_to> will be retrieved from I<errors_to> config if not supplied.
+
+=cut
+
+sub format_as_bounce {
+    my($proto, $err, $recipients, $msg, $errors_to) = @_;
+    $msg ||= \($proto->as_string);
+    $recipients ||= $proto->unsafe_get_recipients || '<>';
+    my($u) = User::pwent::getpwuid($>);
+    $u = defined($u) ? $u->name : 'uid' . $>;
+    $errors_to ||= $_CFG->{errors_to};
+    return \(<<"EOF");
+To: $errors_to
+Subject: ERROR: unable to send mail
+Sender: "$0" <$u>
+
+Error while trying to message to $recipients:
+    $err
+-------------------- Original Message Follows ----------------
+$$msg
+EOF
+}
+
 
 =for html <a name="get_last_queued_message"></a>
 
@@ -187,6 +198,24 @@ sub handle_rollback {
     return;
 }
 
+=for html <a name="internal_req"></a>
+
+=head2 internal_req(Bivio::Agent::Request req) : Bivio::Agent::Request
+
+Returns request.  Warns deprecated if I<req> not supplied
+
+=cut
+
+sub internal_req {
+    my($self, $req) = @_;
+    return (
+	$self,
+	$req ? $req : (
+	    Bivio::Agent::Request->get_current_or_new,
+	    Bivio::IO::Alert->warn_deprecated('request is a required parameter')
+    ));
+}
+
 =for html <a name="send"></a>
 
 =head2 static send(string or array_ref recipients, string msg)
@@ -221,8 +250,13 @@ sub send {
     $from =~ s/'/'\\''/g;
     my($err) = _send($proto, $recipients, $msg_ref, $offset, $from);
     if ($err) {
-        $err = _send($proto, $_CFG->{errors_to},
-            _compose_error_message($proto, $err, $recipients, $msg_ref), 0, '');
+        $err = _send(
+	    $proto,
+	    $_CFG->{errors_to},
+            $proto->format_as_bounce($err, $recipients, $msg_ref),
+	    0,
+	    '',
+	);
         Bivio::Die->die('errors_to mail failed: ', $err, "\n", $msg_ref)
             if $err;
     }
@@ -248,63 +282,33 @@ sub send_queued_messages {
 
 #=PRIVATE METHODS
 
-# _compose_error_message(proto, string err, string recipients, string_ref msg) : string_ref
-#
-# Creates an error message to be sent to 'errors_to'.
-#
-sub _compose_error_message {
-    my($proto, $err, $recipients, $msg) = @_;
-    my($u) = User::pwent::getpwuid($>);
-    $u = defined($u) ? $u->name : 'uid' . $>;
-    my($errors_to) = $_CFG->{errors_to};
-    return \(<<"EOF");
-To: $errors_to
-Subject: ERROR: unable to send mail
-Sender: "$0" <$u>
-
-Error while trying to message to $recipients:
-    $err
--------------------- Original Message Follows ----------------
-${$msg}
-EOF
-}
-
 # _send(proto, string recipients, string_ref msg, int offset, string from) : string
 #
 # Attempts to send the message. Returns an error string on failure.
 #
 sub _send {
     my($proto, $recipients, $msg, $offset, $from) = @_;
-    # Use only one handle to avoid leaks
-    my($fh) = \*Bivio::Mail::Common::OUT;
-#TODO: fork and exec, so can pass argument lists
-#TODO: recipients may be very long(?).  If so either throw an error
-#      or need to generate multiple sends.
     _trace('sending to ', $recipients) if $_TRACE;
-
     $$msg = 'X-Bivio-Reroute-Address: '.$_CFG->{reroute_address}."\n".$$msg
 	if $_CFG->{reroute_address};
-
-    my($command) = '| ' . $_CFG->{sendmail} . " $from '"
+    my($command) = '| ' . $_CFG->{sendmail}
+	. ($from ? " '$from'" : '')
+	. " '"
 	. ($_CFG->{reroute_address} || $recipients)
 	. "'";
     _trace($command) if $_TRACE;
-
-    unless (open($fh, $command)) {
-        return "open failed: $!";
-    }
-
+    my($fh) = IO::File->new($command);
+    return "$command failed: $!"
+	unless $fh;
     while (length($$msg) > $offset) {
-	my($res) = syswrite($fh, $$msg, length($$msg) - $offset, $offset);
-
+	my($res) = $fh->syswrite($$msg, length($$msg) - $offset, $offset);
 	unless (defined($res)) {
-	    close($fh);
+	    $fh->close;
 	    return "write failed: $!";
 	}
 	$offset += $res;
     }
-    close($fh);
-    # check the process return code
+    $fh->close;
     return $? == 0 ? '' : "exit status non-zero ($?)";
 }
 
@@ -325,7 +329,7 @@ sub _txn_resources_corrupted {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
