@@ -38,6 +38,18 @@ C<Bivio::Biz::Util::RealmRole> manages the RealmRole table.
 
 =cut
 
+=for html <a name="CATEGORIES"></a>
+
+=head2 CATEGORIES : array_ref
+
+Returns categories in L<CATEGORY_MAP|"CATEGORY_MAP">
+
+=cut
+
+sub CATEGORIES {
+    return [keys(%{_category_map(shift)})];
+}
+
 =for html <a name="USAGE"></a>
 
 =head2 USAGE : string
@@ -52,6 +64,7 @@ usage: b-realm-role [options] command [args...]
 commands:
     copy_all src dst -- copies all records from src to dst realm
     edit role operation ... -- changes the permissions for realm/role
+    edit_categories [category_op ...] -- disable or enable classes of permissions
     list [role] -- lists permissions for this realm and role or all
     list_all [realm_type] -- lists permissions for all realms of realm_type
     make_super_user -- gives current user super_user privileges
@@ -61,6 +74,7 @@ EOF
 }
 
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
 use Bivio::Auth::RealmType;
@@ -74,7 +88,10 @@ my(@_DATA);
 my($_IDI) = __PACKAGE__->instance_data_index;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-
+my($_CATEGORY_MAP);
+Bivio::IO::Config->register(my $_CFG = {
+    category_map => sub {[]},
+});
 
 =head1 FACTORIES
 
@@ -201,6 +218,68 @@ sub edit {
     return;
 }
 
+=for html <a name="edit_categories"></a>
+
+=head2 edit_categories(string category_ops, ...) : string
+
+=head2 edit_categories(array_ref category_ops, ...) : string
+
+Edits permissions for entire auth realm.  I<category_ops> looks like
+normal
+L<Bivio::Biz::Util::RealmRole::edit|Bivio::Biz::Util::RealmRole/"edit">.
+operations (+foo, -foo), but they are defined for a particular class
+of L<CATEGORIES|"CATEGORIES">.
+
+If I<category_ops> is an array_ref, it's not an error for it to be empty.
+
+Returns string of what operations were performed, including current realm.
+
+=cut
+
+sub edit_categories {
+    my($self) = shift;
+    $self->usage('missing category_ops')
+	unless @_;
+    my($category_ops) = [map((ref($_) ? @$_ : $_), @_)];
+    return
+	unless @$category_ops;
+    my($req) = $self->get_request;
+    my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
+    my($o) = $req->get('auth_realm')->get('owner');
+    $self->lock_realm;
+    foreach my $category_op (@$category_ops) {
+	my($op, $cat) = $category_op =~ /^(-|\+)(\w+)$/;
+	$self->usage_error($_, ': unknown category operation')
+	    unless $op;
+	foreach my $x (@{
+	    _category_map($self)->{$cat}->{$op}
+		|| $self->usage_error(
+		    $cat, ': unknown category (case-sensitive)')
+	}) {
+	    my($method, $roles, $permissions) = @$x;
+	    $rr->$method($o, $roles, $permissions);
+	}
+    }
+    return join(' ', $o->get('name') . ':', @$category_ops) . "\n";
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CATEGORY_MAP = undef;
+    $_CFG = $cfg;
+    return;
+}
+
 =for html <a name="list"></a>
 
 =head2 list(string role_name)
@@ -319,6 +398,37 @@ sub unmake_super_user {
 }
 
 #=PRIVATE METHODS
+
+# _category_map() : hash_ref
+#
+# Returns initialized $_CATEGORY_MAP.
+#
+sub _category_map {
+    my($proto) = @_;
+    return $_CATEGORY_MAP ||= {map({
+	my($cat, @ops) = @$_;
+	($cat => {
+	    map({
+		my($op) = $_;
+		($op => [
+		    map({
+			my($roles, $perms) = map(ref($_) ? $_ : [$_], @$_);
+			$roles = [map(Bivio::Auth::Role->$_(), @$roles)];
+			map({[
+			    ($_ =~ s/^-// xor $op eq '-')
+			        ? 'remove_permissions' : 'add_permissions',
+			    $roles,
+			    ${Bivio::Auth::PermissionSet->set(
+				Bivio::Auth::PermissionSet->get_min,
+				Bivio::Auth::Permission->$_(),
+			    )},
+			]} @{[@$perms]});
+		    } @ops),
+		]);
+	    } qw(+ -)),
+	});
+    } @{$_CFG->{category_map}->()})};
+}
 
 # _get_permission_set(self, string realm_id, Bivio::Auth::Role role, boolean dont_die) : string
 #
