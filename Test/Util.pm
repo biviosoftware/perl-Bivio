@@ -54,6 +54,7 @@ sub USAGE {
 usage: b-test [options] command [args...]
 commands:
     acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
+    mock_sendmail -ffrom@email.com recipient1,recipient2,... -- bypasses MTA for acceptance tests
     nightly -- runs all acceptance tests with current tests from CVS
     task name query path_info -- executes task in context supplied returns output
     unit tests/dirs... -- runs the tests (*.t) and print cummulative results
@@ -61,6 +62,7 @@ EOF
 }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Die;
 use Bivio::IO::Config;
 use Bivio::IO::File;
@@ -74,11 +76,14 @@ use File::Spec ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 Bivio::IO::Config->register({
     nightly_output_dir => '/tmp/test-run',
     nightly_cvs_dir => 'perl/Bivio',
 });
 my($_CFG);
+my($_DT) = Bivio::Type->get_instance('DateTime');
 
 =head1 METHODS
 
@@ -140,6 +145,71 @@ The directory to checkout of cvs, which contains the source and the code.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
+    return;
+}
+
+=for html <a name="mock_sendmail"></a>
+
+=head2 mock_sendmail(string from, string recipients)
+
+=cut
+
+sub mock_sendmail {
+    my($self, $from, $recipients, $recursing) = @_;
+    my($in) = $self->read_input;
+    unless ($recursing) {
+	my($pid) = fork;
+	die("fork: $!")
+	    unless defined($pid);
+	return if $pid;
+    }
+    my($req) = $self->initialize_ui(1);
+    unless ($from =~ s/^-f//) {
+	$recipients = $from;
+	$from = undef;
+    }
+    _trace($in) if $_TRACE;
+    my($msg) = Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing')
+        ->new(
+	    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Incoming')
+	        ->new($in))
+	->add_missing_headers($from, $req);
+    foreach my $r (split(/,/, $recipients)) {
+	(my $email = $r) =~ s/\+([^\@]+)//;
+	my($extension) = $1 || '';
+	$msg->set_recipients($r);
+	my($res) = $self->piped_exec(
+	    "b-sendmail-http 127.0.0.1 '$r' '"
+	    . (Bivio::IO::ClassLoader
+	        ->simple_require('Bivio::Test::Language::HTTP')
+		->home_page_uri =~ m{http://([^/]+)})[0]
+	    . $req->format_uri({
+		task_id => 'MAIL_RECEIVE_DISPATCH',
+		path_info => undef,
+	    }) . "' /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
+	    $msg->as_string,
+	    1,
+	);
+	chomp($$res);
+	_trace($r, ' => ', $res) if $_TRACE;
+	next unless $$res;
+	Bivio::IO::Alert->warn(
+	    $r, ': failed with ', $$res, "\n", $msg->as_string);
+	next if $recursing;
+	$r = (Bivio::Mail::Address->parse(
+	    $msg->unsafe_get_header('errors-to')
+	    || $msg->unsafe_get_header('return-path')
+	    || $from
+	    || $self->unsafe_get('From')
+	    ||next
+	))[0];
+	$self->put(
+	    input => $msg->format_as_bounce($$res, undef, undef, $r),
+	);
+	$self->mock_sendmail('-f' . $req->format_email('mailer-daemon'), $r, 1);
+    }
+    CORE::exit(0)
+	unless $recursing;
     return;
 }
 
