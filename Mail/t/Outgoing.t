@@ -68,8 +68,23 @@ Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
 	set_headers_for_list_send => [
 	    ['some-list', 'My Fancy List', 1, '[abc]', $req] => undef,
 	],
+	unsafe_get_recipients => [
+	    [] => [undef],
+	],
+	set_recipients => [
+	    [[$_USER, 'joe@example.com']] => undef,
+	],
+	unsafe_get_recipients => $_USER . ',joe@example.com',
 	set_recipients => [
 	    [$_USER] => undef,
+	],
+	unsafe_get_recipients => $_USER,
+	unsafe_get_header => [
+	    'Date' => "Thu, 1 Jul 1999 09:33:35 -0400",
+	    'Not_Found' => [undef],
+	],
+	format_as_bounce => [
+	    ['bad, bad, bad'] => qr{ERROR.*$_USER.*bad, bad, bad.*Original}s,
 	],
 	send => undef,
 	enqueue_send => undef,
@@ -83,5 +98,9 @@ Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
 	    $_OUT =~ /(^.*?\n\n)/s;
 	    return [$1 . $_BODY];
 	},
+	add_missing_headers => [
+	    [undef, $req] => undef,
+	],
+	as_string => qr{Return-Path: <foo_bar\@example.net>\nMessage-ID}is,
     ],
 ]);
