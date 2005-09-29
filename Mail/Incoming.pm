@@ -1,4 +1,4 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Incoming;
 use strict;
@@ -121,11 +121,11 @@ sub get_date_time {
 #hello
     unless (defined($date)) {
 	Bivio::IO::Alert->warn("no Date");
-	&_trace('no Date') if $_TRACE;
+	_trace('no Date') if $_TRACE;
 	return $fields->{date_time} = undef;
     }
     $fields->{date_time} = &_parse_date($date);
-    &_trace($date, ' -> ', $fields->{date_time}) if $_TRACE;
+    _trace($date, ' -> ', $fields->{date_time}) if $_TRACE;
     return $fields->{date_time};
 }
 
@@ -149,17 +149,17 @@ sub get_from {
 
     # 822: The  "Sender"  field  mailbox  should  NEVER  be  used
     #      automatically, in a recipient's reply message.
-    my($from) = &_get_field($fields, 'from:')
-	    || &_get_field($fields, 'apparently-from:');
+    my($from) = _get_field($fields, 'from:')
+	    || _get_field($fields, 'apparently-from:');
     unless (defined($from)) {
 	Bivio::IO::Alert->warn("no From");
-	&_trace('no From') if $_TRACE;
+	_trace('no From') if $_TRACE;
 	$fields->{from_email} = undef;
 	$fields->{from_name} = undef;
 	return wantarray ? (undef, undef) : undef;
     }
     ($fields->{from_email}, $fields->{from_name}) = Bivio::Mail::Address->parse($from);
-    &_trace($from, ' -> (', $fields->{from_email}, ',',
+    _trace($from, ' -> (', $fields->{from_email}, ',',
 	   $fields->{from_name}, ')') if $_TRACE;
     return wantarray ? ($fields->{from_email}, $fields->{from_name})
 	    : $fields->{from_email};
@@ -189,11 +189,11 @@ sub get_headers {
     my($fields) = $self->[$_IDI];
     # Important to include the newline
     my($f);
-    my($FIELD_NAME) = Bivio::Mail::RFC822->FIELD_NAME;
-    foreach $f (split(/^(?=$FIELD_NAME)/om, $fields->{header})) {
-	my($n) = $f =~ /^($FIELD_NAME)/o;
+    my($fn) = Bivio::Mail::RFC822->FIELD_NAME;
+    foreach $f (split(/^(?=$fn)/om, $fields->{header})) {
+	my($n) = $f =~ /^($fn)/o;
 	Bivio::IO::Alert->warn("invalid 822 field: $f"), next
-		    unless defined($n);
+	    unless defined($n);
 	chop($n);
 	$headers->{lc($n)} .= $f;
     }
@@ -215,14 +215,14 @@ sub get_message_id {
     my($id) = &_get_field($fields, 'message-id:');
     unless (defined($id)) {
 	Bivio::IO::Alert->warn("no message-id");
-	&_trace('no Message-Id') if $_TRACE;
+	_trace('no Message-Id') if $_TRACE;
 	return $fields->{message_id} = undef;
     }
 #TODO: Should really parse this, but I mean RIIILLY....
     $id =~ s!^\s+!!s;
     $id =~ s!\s+$!!s;
     $fields->{message_id} = $id;
-    &_trace($fields->{message_id}) if $_TRACE;
+    _trace($fields->{message_id}) if $_TRACE;
     return $id;
 }
 
@@ -267,14 +267,14 @@ sub get_reply_to {
     }
     my($reply_to) = &_get_field($fields, 'reply-to:');
     unless (defined($reply_to)) {
-	&_trace('no Reply-To') if $_TRACE;
+	_trace('no Reply-To') if $_TRACE;
 	$fields->{reply_to_email} = undef;
 	$fields->{reply_to_name} = undef;
 	return wantarray ? (undef, undef) : undef;
     }
     ($fields->{reply_to_email}, $fields->{reply_to_name})
 	    = Bivio::Mail::Address->parse($reply_to);
-    &_trace($reply_to, ' -> (', $fields->{reply_to_email}, ',',
+    _trace($reply_to, ' -> (', $fields->{reply_to_email}, ',',
 	   $fields->{reply_to_name}, ')') if $_TRACE;
     return wantarray ? ($fields->{reply_to_email}, $fields->{reply_to_name})
 	    : $fields->{reply_to_email};
@@ -340,13 +340,13 @@ sub get_subject {
     exists($fields->{subject}) && return $fields->{subject};
     my($subject) = &_get_field($fields, 'subject:');
     unless (defined($subject)) {
-	&_trace('no Subject') if $_TRACE;
+	_trace('no Subject') if $_TRACE;
 	return $fields->{subject} = undef;
     }
     $subject =~ s/^\s+//s;
     $subject =~ s/\s+$//s;
     $fields->{subject} = $subject;
-    &_trace($fields->{subject}) if $_TRACE;
+    _trace($fields->{subject}) if $_TRACE;
     return $subject;
 }
 
@@ -524,7 +524,7 @@ sub _parse_complex_date {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
