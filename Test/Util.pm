@@ -195,10 +195,13 @@ sub mock_sendmail {
 	    . (Bivio::IO::ClassLoader
 	        ->simple_require('Bivio::Test::Language::HTTP')
 		->home_page_uri =~ m{http://([^/]+)})[0]
-	    . $req->format_uri({
-		task_id => 'MAIL_RECEIVE_DISPATCH',
-		path_info => undef,
-	    }) . "' /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
+	    . (Bivio::Agent::TaskId->unsafe_from_name('MAIL_RECEIVE_DISPATCH')
+		? $req->format_uri({
+		    task_id => 'MAIL_RECEIVE_DISPATCH',
+		    path_info => undef,
+		})
+		: '/no-mail-receive-dispatch')
+	    . "' /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
 	    $msg->as_string,
 	    1,
 	);
