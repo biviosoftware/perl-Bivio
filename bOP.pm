@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 3.14  2005/09/29 03:35:05  moeller
+  * Bivio::UI::HTML::Widget::Grid fix bug in colspan
+
+  Revision 3.13  2005/09/28 03:27:30  moeller
   * Bivio::UI::HTML::Widget::ImageFormButton sets "name" and "id" attributes
     to allow access from javascript. <input type=image ...> items do not
     exist in javascript form.elements
