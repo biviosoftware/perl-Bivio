@@ -42,16 +42,13 @@ scratch.
 =cut
 
 #=IMPORTS
-use Carp;
-use MIME::Base64;
 use Bivio::MIME::Type;
-use Bivio::IO::Trace;
+use Bivio::Mail::Address;
 use Bivio::Mail::Incoming;
-use Sys::Hostname ();
+use MIME::Base64;
 
 #=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
+my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Some of these were taken from majordomo's resend.  Others, just make
 # sense.  Check set_headers_for_list_send for headers which set but
@@ -123,11 +120,10 @@ uses as the basis for the message.
 =cut
 
 sub new {
-    my($self) = &Bivio::UNIVERSAL::new(@_);
-    my(undef, $incoming) = @_;
-    my($fields) = {};
-    if (defined($incoming)
-	    && UNIVERSAL::isa($incoming, 'Bivio::Mail::Incoming')) {
+    my($self) = shift->SUPER::new;
+    my($incoming) = @_;
+    my($fields) = $self->[$_IDI] = {};
+    if (UNIVERSAL::isa($incoming, 'Bivio::Mail::Incoming')) {
 	my($body);
 	$incoming->get_body(\$body);
 	$fields->{body} = $body;
@@ -137,13 +133,43 @@ sub new {
     else {
 	$fields->{headers} = {};
     }
-    $self->[$_IDI] = $fields;
     return $self;
 }
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="add_missing_headers"></a>
+
+=head2 add_missing_headers(string from_email, Bivio::Agent::Request req) : self
+
+Sets Date, Message-ID, From, and Return-Path if not set.
+
+=cut
+
+sub add_missing_headers {
+    my($self, $from_email, $req) = @_;
+    $from_email ||= (Bivio::Mail::Address->parse(
+	$self->unsafe_get_header('From')
+	|| $self->unsafe_get_header('Apparently-From')
+	|| (_user_email($req))[0],
+    ))[0];
+    my($now) = $_DT->now;
+    foreach my $x (
+	[Date => $_DT->rfc822($now)],
+	['Message-ID' => '<' .
+	     $req->format_email(
+		 $_DT->to_file_name($now) . "." . int(rand(1_000_000_000)))
+	     . '>'],
+	[From => "<$from_email>"],
+	['Return-Path' => "<$from_email>"],
+    ) {
+	$self->set_header(@$x)
+	    unless $self->unsafe_get_header($x->[0]);
+    }
+    return $self;
+}
 
 =for html <a name="attach"></a>
 
@@ -161,16 +187,9 @@ sub attach {
     my($self, $content, $type, $name, $binary) = @_;
     my($fields) = $self->[$_IDI];
 
-#TODO: We can't keep this list perfectly up to date.
-#    Bivio::MIME::Type->to_extension($type)
-#            || Carp::croak("$type: not a valid type");
     defined($binary) || ($binary = 0);
     my($part) = { content => $content, type => $type, binary => $binary };
     if (defined($name)) {
-#TODO: We can't keep this list perfectly up to date.
-#        my($from_suffix) = Bivio::MIME::Type->from_extension($name);
-#        $from_suffix eq $type
-#            || Carp::croak("$name: suffix does not match type");
         $part->{name} = $name;
     }
     push(@{$fields->{parts}}, $part);
@@ -186,8 +205,7 @@ Returns the receiver's body.
 =cut
 
 sub get_body {
-    my($self) = @_;
-    my($body) = $self->[$_IDI]->{body};
+    my($body) = shift->[$_IDI]->{body};
     return (ref($body) eq 'SCALAR')
         ? $body
         : \$body
@@ -266,7 +284,7 @@ sub set_content_type {
 
 =for html <a name="set_from_with_user"></a>
 
-=head2 set_from_with_user() : string
+=head2 set_from_with_user(Bivio::Agent::Request req) : string
 
 Sets the from with the current user and host name.  It uses the email
 address not the comment entry (/etc/passwd) for the name.  If it can't get
@@ -277,20 +295,11 @@ Returns the from email address or C<undef> if it couldn't set anything.
 =cut
 
 sub set_from_with_user {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    my($name) = getpwuid($>);
-    # We don't know the name, just let the MTA handle it.
-    return unless defined($name);
-    my($host) = Sys::Hostname::hostname();
-    # We don't know the host, defer to MTA.
-    return unless defined($host);
-    my($from_email) = $name.'@'.$host;
-    my($from_name) = $from_email;
-    $from_name =~ s/(["\\])/\\$1/g;
-    $self->set_envelope_from($from_email);
-    $self->set_header('From', qq!"$from_name" <$from_email>!);
-    return $from_email;
+    my($self, $req) = shift->internal_req(@_);
+    my($email, $name) = _user_email($req);
+    $self->set_envelope_from($email);
+    $self->set_header('From', qq{"$name" <$email>});
+    return $email
 }
 
 =for html <a name="set_header"></a>
@@ -366,7 +375,7 @@ sub set_headers_for_list_send {
 
 =head2 set_recipients(string email_list) : self
 
-=head2 set_recipients(array email_list) : self
+=head2 set_recipients(array_ref email_list) : self
 
 Sets the recipient of this mail message.  It does not modify the
 headers, i.e. To:, etc.  I<email_list> may be a single scalar
@@ -377,8 +386,8 @@ or an array whose elements may contain scalar lists.
 
 sub set_recipients {
     my($self, $email_list) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{recipients} = $email_list;
+    $self->[$_IDI]->{recipients}
+	= ref($email_list) ? join(',', @$email_list) : $email_list;
     return $self;
 }
 
@@ -424,7 +433,7 @@ sub as_string {
 
     if (defined($fields->{parts})) {
         defined($fields->{content_type})
-                || Carp::croak("'content_type' must be set for attachments");
+                || die("'content_type' must be set for attachments");
         defined($fields->{body}) &&
                 Bivio::IO::Alert->warn("ignoring body, have attachments");
         _encapsulate_parts(\$res, $fields->{content_type}, $fields->{parts});
@@ -436,6 +445,33 @@ sub as_string {
 		${$fields->{body}} : $fields->{body});
     }
     return $res;
+}
+
+=for html <a name="unsafe_get_header"></a>
+
+=head2 unsafe_get_header(string name) : string
+
+Returns header value or undef.
+
+=cut
+
+sub unsafe_get_header {
+    return [
+	((shift->[$_IDI]->{headers}->{lc(shift)})[0] || '')
+        =~ /^(?:.*?):\s+(.*)\n$/s
+    ]->[0];
+}
+
+=for html <a name="unsafe_get_recipients"></a>
+
+=head2 unsafe_get_recipients() : string
+
+Returns recipients.
+
+=cut
+
+sub unsafe_get_recipients {
+    return shift->[$_IDI]->{recipients};
 }
 
 #=PRIVATE METHODS
@@ -474,9 +510,19 @@ EOF
     return;
 }
 
+# _user_email(Bivio::Agent::Request req) : array
+#
+# Returns ($email, $name)
+#
+sub _user_email {
+    my($req) = @_;
+    my($name) = getpwuid($>) || 'intruder';
+    return ($req->format_email($name), $name);
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
