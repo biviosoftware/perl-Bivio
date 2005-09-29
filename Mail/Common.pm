@@ -51,7 +51,7 @@ Bivio::IO::Trace->register;
 Bivio::IO::Config->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
-    sendmail => '/usr/lib/sendmailxs -U -oem -odb -i',
+    sendmail => '/usr/lib/sendmail -U -oem -odb -i',
     reroute_address => undef,
 });
 #TODO: get rid of global state - put it on the request instead
