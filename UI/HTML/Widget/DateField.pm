@@ -107,10 +107,7 @@ Draws the date field on the specified buffer.
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
-    my($form) = $self->unsafe_resolve_widget_value(
-	$self->ancestral_get('form_model'),
-	$source,
-    );
+    my($form) = $req->get_widget_value(@{$self->ancestral_get('form_model')});
     my($field) = ${$self->render_attr('field', $source)};
 
 #TODO: Merge with Text.  Too much duplicated code.
