@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,48 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    which will fail
+  * Bivio::ShellUtil, Bivio::Biz::Action::AdmMailBulletin fix deprecated
+    Mail calls
+
+  Revision 3.15  2005/09/29 04:42:18  nagler
+  * b-test/Bivio::Test::Util->mock_sendmail bypasses sendmail so
+    acceptance tests run without a local MTA.  This is the default
+    sendmail in the "dev" environment for Bivio::Mail::Common as
+    set in Bivio::BConf->dev.   Most of the bivions are using
+    Mac OS X for development, and now we can test apps which use
+    MailReceiveDispatchForm locally.
+  * b-realm-role/Bivio::Biz::Util::RealmRole->edit_categories enables
+    named complex realm/role grant/revoke operations.  Configuration
+    resides in BConf as a lambda/code_ref, e.g.
+          'Bivio::Biz::Util::RealmRole' => {
+              category_map => sub {
+  		return [[
+  		    public_forum => [
+  			[qw(ANONYMOUS USER WITHDRAWN)] => 'DATA_WRITE',
+  		    ],
+  		], [
+  		    semi_public_forum => [
+  			USER => 'DATA_WRITE',
+  		    ],
+  		]];
+  	    },
+          },
+    Calling b-realm-role edit_categories +public_forum turns on
+    DATA_WRITE for ANONYMOUS, USER and WITHDRAWN.
+    b-realm-role edit_categories -public_forum clears DATA_WRITE
+    for all three roles.
+  * Bivio::Test::Language::HTTP.remote_mail_host added.
+  * Bivio::Mail::Common->format_as_bounce exposes bounce generation
+    for mock_sendmail.
+  * Bivio::Mail::Common/Outgoing/Incoming refactored to more modern
+    style.  A few more tests added.
+  * Bivio::Mail::Outgoing->set_from_with_user requires $req; old
+    form deprecated.
+  * Bivio::Mail::Outgoing->add_missing_headers inserts Date, Message-ID,
+    From, and Return-Path, just like an MTA, for mock_sendmail.
+  * Bivio::Mail::Outgoing->unsafe_get_header returns header values
+  * Bivio::Mail::Outgoing->unsafe_get_recipients returns the string
     of recipients. (set_recipients now joins recipients instead of
     deferring to Common.)
   * Various minor bugs fixes (e.g. Grid colspan was bad)
