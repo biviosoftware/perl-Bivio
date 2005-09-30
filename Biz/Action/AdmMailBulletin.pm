@@ -191,7 +191,7 @@ sub _send_bulletin {
         $msg->set_content_type($bulletin->get('body_content_type'));
         $msg->set_body($body);
     }
-    $msg->enqueue_send;
+    $msg->enqueue_send($req);
     return;
 }
 
