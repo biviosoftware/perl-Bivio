@@ -200,24 +200,6 @@ sub update_role {
         if $self->get('role') == $role;
     my($values) = $self->get_shallow_copy;
     $self->delete;
-
-    # copy RealmRole if necessary
-    $self->new_other('RealmRole')->create({
-        realm_id => $self->get('realm_id'),
-	role => $role,
-	permission_set => $self->new_other('RealmRole')->unauth_load_or_die({
-            realm_id => $self->get('realm_id'),
-	    role => $self->get('role'),
-        })->get('permission_set'),
-    })
-	if $self->new_other('RealmRole')->unauth_load({
-            realm_id => $self->get('realm_id'),
-	    role => $self->get('role'),
-        }) && !$self->new_other('RealmRole')->unauth_load_or_die({
-            realm_id => $self->get('realm_id'),
-	    role => $role,
-	});
-
     return $self->create({
         %$values,
         role => $role,
