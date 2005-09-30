@@ -443,7 +443,7 @@ sub email_file {
     $msg->set_recipients($email);
     $msg->set_header('Subject', $subject);
     $msg->set_header('To', $email);
-    $msg->set_from_with_user;
+    $msg->set_from_with_user($self->get_request);
     my($type) = Bivio::MIME::Type->from_extension($file_name);
     $msg->set_content_type('multipart/mixed');
     $msg->attach($content, $type, $file_name, -T $file_name ? 0 : 1);
@@ -1475,7 +1475,7 @@ sub _result_email {
     $msg->set_recipients($email);
     $msg->set_header('Subject',
 	    $subject || $name || 'Output from: '.$self->command_line());
-    $msg->set_from_with_user;
+    $msg->set_from_with_user($self->get_request);
     $name ||= $cmd;
     $msg->set_header('To', $email);
     if ($type) {
