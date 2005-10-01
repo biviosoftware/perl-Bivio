@@ -131,6 +131,24 @@ sub do_table_rows {
     return shift->get_html_parser()->get('Tables')->do_rows(@_);
 }
 
+=for html <a name="do_xxx"></a>
+
+=head2 do_test_backdoor(string form_model, string fields)
+
+Executes _do_test_backdoor.
+
+=cut
+
+sub do_test_backdoor {
+    my($self, $form_model, $form_fields) = @_;
+    $self->visit_uri(
+	'/_test_backdoor?'
+	. Bivio::IO::ClassLoader->simple_require('Bivio::Agent::HTTP::Query')
+	    ->format({%$form_fields, form_model => $form_model}),
+    );
+    return;
+}
+
 =for html <a name="file_field"></a>
 
 =head2 file_field(string name, string content) : array_ref
