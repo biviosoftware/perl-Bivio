@@ -97,6 +97,18 @@ sub GUEST {
     return 'guest';
 }
 
+=for html <a name="PASSWORD"></a>
+
+=head2 PASSWORD : string
+
+Password user's name.
+
+=cut
+
+sub PASSWORD {
+    return 'password';
+}
+
 =for html <a name="USAGE"></a>
 
 =head2 USAGE : string
@@ -344,7 +356,7 @@ sub _init_demo_users {
 	    'Address.zip' => '80304',
 	    'Address.country' => 'US',
 	    'Phone.phone' => '555-1212',
-	    'RealmOwner.password' => 'password',
+	    'RealmOwner.password' => $self->PASSWORD,
 	    force_create => 1,
 	});
 	# test accounts have real names, for ease of logging in
