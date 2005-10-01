@@ -37,6 +37,7 @@ field.  L<verify_cart|"verify_cart"> uses this to test the results.
 
 #=IMPORTS
 use Bivio::Type::Amount;
+use Bivio::PetShop::Util;
 
 #=VARIABLES
 my($_A) = 'Bivio::Type::Amount';
@@ -134,7 +135,8 @@ sub login_as {
     $self->follow_link('Sign-in');
     $self->submit_form(submit => {
         'Email:' => $user,
-	'Password:' => $password,
+	'Password:' => defined($password) ? $password
+	    : Bivio::PetShop::Util->PASSWORD,
     });
     $self->verify_text('Sign-out');
     return;
@@ -149,9 +151,7 @@ Logs in as demo user.  Returns to the current page.
 =cut
 
 sub login_as_demo {
-    my($self) = @_;
-    $self->login_as('demo', 'password');
-    return;
+    return shift->login_as(Bivio::PetShop::Util->DEMO);
 }
 
 =for html <a name="remove_from_cart"></a>
