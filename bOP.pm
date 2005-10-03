@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Language::HTTP->do_test_backdoor is API for TEST_BACKDOOR
+  * Bivio::Delegate::SimplePermission.MAIL_READ/WRITE/SEND/POST added
+  * Bivio::Util::SQL sets MAIL_* on standard realms
+
+  Revision 3.16  2005/09/30 16:58:02  moeller
+  * Bivio::UI::HTML::Widget::DateField fpc - now works in list forms
+    again
+  * Bivio::Test::Util if no MAIL_RECEIVE_DISPATCH, build bogus URL,
     which will fail
   * Bivio::ShellUtil, Bivio::Biz::Action::AdmMailBulletin fix deprecated
     Mail calls
