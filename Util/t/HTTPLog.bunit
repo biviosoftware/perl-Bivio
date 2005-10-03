@@ -1,8 +1,8 @@
 # Copyright (c) 2005 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
-use strict;
+use Bivio::Type::DateTime;
 my($_LOG) = 'HTTPLog.tmp';
-use Bivio::IO::Config;
+our($_PREFIX) = '2003/03/22 06:2';
 Bivio::IO::Config->introduce_values({
     'Bivio::Util::HTTPLog' => {
 	email => '',
@@ -23,27 +23,27 @@ Bivio::IO::Config->introduce_values({
 	],
 	ignore_unless_count => 3,
 	error_file => $_LOG,
+	test_now => Bivio::Type::DateTime->from_literal("${_PREFIX}9:00"),
     },
     'Bivio::IO::Alert' => {
 	want_time => 1,
     },
 });
 
-our($_PREFIX) = '2003/03/22 06:2';
-use Bivio::Type::DateTime;
-package Bivio::Type::DateTime;
-undef(&now);
-*now = sub {
-    return Bivio::Type::DateTime->from_literal("${main::_PREFIX}9:00");
-};
-undef(&from_local_literal);
-*from_local_literal = sub {
-    return shift->from_literal(@_);
-};
-package main;
-use Bivio::Test::Request;
-Bivio::Test::Request->get_instance;
-Bivio::Test->new('Bivio::Util::HTTPLog')->unit([
+#use Test::MockObject;
+
+# Test::MockObject->fake_module(
+#     'Bivio::Type::DateTime',
+#     now => sub {
+# 	return Bivio::Type::DateTime->from_literal("${_PREFIX}9:00");
+#     },
+#     from_local_literal => sub {
+# 	return Bivio::Type::DateTime->from_literal(@_);
+#     },
+# );
+
+Request();
+[
     [] => [
 	{
 	    compute_params => sub {
@@ -77,4 +77,10 @@ Bivio::Test->new('Bivio::Util::HTTPLog')->unit([
 	    '1:22 this is an error' => [],
 	],
     ],
-]);
+    'Bivio::Util::HTTPLog' => [
+	main => [
+	    [-email => email(), parse_errors => 5] => undef,
+	],
+    ],
+];
+
