@@ -41,7 +41,8 @@ undef(&from_local_literal);
     return shift->from_literal(@_);
 };
 package main;
-use Bivio::Test;
+use Bivio::Test::Request;
+Bivio::Test::Request->get_instance;
 Bivio::Test->new('Bivio::Util::HTTPLog')->unit([
     [] => [
 	{
