@@ -1,19 +1,17 @@
 # Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
-use strict;
 use Bivio::t::ShellUtil::T1;
-use Bivio::Test::Request;
-Bivio::Test::Request->get_instance;
+Request();
 # Needed for the usage_error (DIE below).  Take out for debugging
 Bivio::IO::Alert->set_printer(sub {});
 my($myarg_re) = qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s;
-Bivio::Test->unit([
+[
     'Bivio::ShellUtil' => [
 	email_file => [
-	    [$ENV{USER} => 'any subject' => '/dev/null'] => undef,
+	    [email() => 'any subject' => $INC{'Bivio/Test.pm'}] => undef,
 	],
 	email_message => [
-	    [$ENV{USER} => 'any subject' => \('hello')] => undef,
+	    [email() => 'any subject' => \('hello')] => undef,
 	],
 	group_args => [
 	    [2, ['a', 'b', 'c', 'd']] => [[['a', 'b'], ['c', 'd']]],
@@ -75,11 +73,11 @@ Bivio::Test->unit([
 	    },
 	],
     ],
-    'Bivio::t::ShellUtil::T1' => [
+    sub {'Bivio::t::ShellUtil::T1'} => [
 	main => [
 	    t1 => [],
 	    # If these tests are failing, check ShellUtil/mylog.log
-	    [-email => $ENV{USER}, 'rd1'] => $myarg_re,
+	    [-email => email(), 'rd1'] => $myarg_re,
 	    ['rd1', 'rd2'] => $myarg_re,
 	    ['rd1', 'rd3'] => sub {
 		my($case, $actual) = @_;
@@ -90,4 +88,5 @@ Bivio::Test->unit([
 	    },
 	],
     ],
-]);
+];
+
