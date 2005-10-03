@@ -100,6 +100,22 @@ Set when the user executing the request is a super_user.
 Is the system running in test mode? (not
 L<Bivio::Agent::Request::is_production|Bivio::Agent::Request/"is_production">).
 
+=item MAIL_READ
+
+Read mails sent to the realm.
+
+=item MAIL_WRITE
+
+Write and delete mails (in the application) to the realm
+
+=item MAIL_SEND
+
+Send mails to the realm via an MTA.
+
+=item MAIL_POST
+
+Send mails to the realm via authenticated web interface.
+
 =back
 
 =cut
@@ -115,6 +131,10 @@ sub get_delegate_info {
 	SUBSTITUTE_USER_TRANSIENT => [7],
 	SUPER_USER_TRANSIENT => [8],
 	TEST_TRANSIENT => [9],
+	MAIL_READ => [10],
+	MAIL_WRITE => [11],
+	MAIL_SEND => [12],
+	MAIL_POST => [13],
     ];
 }
 
