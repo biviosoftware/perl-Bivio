@@ -81,6 +81,7 @@ my($_CFG) = {
     critical_list => Bivio::IO::Config->REQUIRED,
     ignore_unless_count => Bivio::Type::Integer->get_max,
     ignore_unless_count_list => [],
+    test_now => undef,
 };
 Bivio::IO::Config->register($_CFG);
 my($_RECORD_PREFIX) = '^(?:\[('
@@ -180,7 +181,9 @@ sub parse_errors {
 	unless $interval_minutes;
     my($fields) = $self->[$_IDI];
     my($start) = Bivio::Type::DateTime->add_seconds(
-	    Bivio::Type::DateTime->now, -$interval_minutes * 60);
+	$_CFG->{test_now} || Bivio::Type::DateTime->now,
+	-$interval_minutes * 60,
+    );
     my($error_countdown) = $_CFG->{error_count_for_page};
     my($date, $record, $in_interval);
     my($last_error) = Bivio::Type::DateTime->get_min;
@@ -332,7 +335,8 @@ sub _parse_record {
     return 0 unless defined($$record);
     my($err);
     my($d1, $d2) = $$record =~ /$_RECORD_PREFIX/o;
-    ($$date, $err) = Bivio::Type::DateTime->from_local_literal($d1 || $d2);
+    my($m) = $_CFG->{test_now} ? 'from_literal' : 'from_local_literal';
+    ($$date, $err) = Bivio::Type::DateTime->$m($d1 || $d2);
     unless ($$date) {
 	_report($self, "can't parse date: ", $err, ": ", $$record);
 	$$record = '';
