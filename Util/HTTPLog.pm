@@ -176,7 +176,6 @@ I<interval_minutes> must match the execute time in cron.
 
 sub parse_errors {
     my($self, $interval_minutes) = _parse_errors_init(@_);
-    $self->initialize_ui;
     return _parse_errors_complete($self)
 	unless $interval_minutes;
     my($fields) = $self->[$_IDI];
