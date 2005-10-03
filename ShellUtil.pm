@@ -436,18 +436,18 @@ from suffix of I<file_name>.  File is always an attachment.
 
 sub email_file {
     my($self, $email, $subject, $file_name) = @_;
-    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing',
-	   'Bivio::MIME::Type');
-    my($msg) = Bivio::Mail::Outgoing->new();
-    my($content) = Bivio::IO::File->read($file_name);
-    $msg->set_recipients($email);
-    $msg->set_header('Subject', $subject);
-    $msg->set_header('To', $email);
-    $msg->set_from_with_user($self->get_request);
-    my($type) = Bivio::MIME::Type->from_extension($file_name);
-    $msg->set_content_type('multipart/mixed');
-    $msg->attach($content, $type, $file_name, -T $file_name ? 0 : 1);
-    $msg->send();
+    _email(
+	$self, $email, $subject,
+	sub {
+	    my($msg) = @_;
+	    $msg->set_content_type('multipart/mixed');
+	    return $msg->attach(
+		Bivio::IO::File->read($file_name),
+		Bivio::MIME::Type->from_extension($file_name),
+		$file_name, -T $file_name ? 0 : 1,
+	    );
+	},
+    );
     return;
 }
 
@@ -461,14 +461,12 @@ Sends I<message> to I<email> with I<subject>.  Sends as simple body.
 
 sub email_message {
     my($self, $email, $subject, $message) = @_;
-    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing',
-	   'Bivio::MIME::Type');
-    my($msg) = Bivio::Mail::Outgoing->new();
-    $msg->set_recipients($email);
-    $msg->set_header('Subject', $subject);
-    $msg->set_header('To', $email);
-    $msg->set_body($message);
-    $msg->send();
+    _email(
+	$self, $email, $subject,
+	sub {
+	    return shift->set_body($message);
+	},
+    );
     return;
 }
 
@@ -1286,6 +1284,23 @@ sub _deprecated_lock_action {
     return 0;
 }
 
+sub _email {
+    my($self, $to_email, $subject, $body) = @_;
+    $self->initialize_ui;
+    Bivio::IO::ClassLoader->simple_require(
+	'Bivio::Mail::Outgoing',
+	'Bivio::MIME::Type',
+    );
+    my($msg) = Bivio::Mail::Outgoing->new();
+    $msg->set_recipients($to_email);
+    $msg->set_header('Subject', $subject);
+    $msg->set_header('To', $to_email);
+    $msg->set_from_with_user($self->get_request);
+    $body->($msg);
+    $msg->send();
+    return;
+}
+
 # _initialize(self, array_ref argv) : self
 #
 # Initializes the instance with the appropriate params.
@@ -1468,26 +1483,26 @@ sub _result_email {
     my($email) = $self->unsafe_get('email');
     return 0 unless $email;
 
-    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing');
-    my($msg) = Bivio::Mail::Outgoing->new();
     my($name, $type, $subject) = $self->unsafe_get(
 	    qw(result_name result_type result_subject));
-    $msg->set_recipients($email);
-    $msg->set_header('Subject',
-	    $subject || $name || 'Output from: '.$self->command_line());
-    $msg->set_from_with_user($self->get_request);
-    $name ||= $cmd;
-    $msg->set_header('To', $email);
-    if ($type) {
-	$msg->set_content_type('multipart/mixed');
-	# Can't use -B and couldn't get IO::Scalar to work.
-	# Just assume is binary
-	$msg->attach($res, $type, $name, 1);
-    }
-    else {
-	$msg->set_body($res);
-    }
-    $msg->send();
+    _email(
+	$self,
+	$email,
+	$subject || $name || 'Output from: '.$self->command_line(),
+	sub {
+	    my($msg) = @_;
+	    if ($type) {
+		$msg->set_content_type('multipart/mixed');
+		# Can't use -B and couldn't get IO::Scalar to work.
+		# Just assume is binary
+		$msg->attach($res, $type, $name || $cmd, 1);
+	    }
+	    else {
+		$msg->set_body($res);
+	    }
+	    return;
+	}
+    );
     return 1;
 }
 
