@@ -95,9 +95,11 @@ sub get_by_field_names {
 	$found = $values;
     }
     return $found if $found;
+    my(@fields) = map({[sort(keys(%{$_->{visible}}), keys(%{$_->{submit}}))]}
+            values(%$forms));
+    _trace(join("\n", map({@$_} @fields)));
     Bivio::Die->die(\@name, ': no form matches named fields, visible fields: ',
-        map({[sort(keys(%{$_->{visible}}), keys(%{$_->{submit}}))]}
-            values(%$forms)));
+        @fields);
 }
 
 =for html <a name="get_field"></a>
