@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::SQL;
 use strict;
@@ -716,7 +716,7 @@ sub _parse {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
@@ -732,7 +732,9 @@ __DATA__
 #
 b-realm-role -r GENERAL -u user edit ANONYMOUS - \
     +ANYBODY \
-    +DATA_READ
+    +DATA_READ \
+    +MAIL_POST \
+    +MAIL_SEND
 b-realm-role -r GENERAL -u user edit USER - \
     +ANONYMOUS \
     +ANY_USER
@@ -749,7 +751,9 @@ b-realm-role -r GENERAL -u user edit ADMINISTRATOR - \
     +ACCOUNTANT \
     +ADMIN_READ \
     +ADMIN_WRITE \
-    +DATA_WRITE
+    +DATA_WRITE \
+    +MAIL_READ \
+    +MAIL_WRITE
 
 #
 # USER Permissions
@@ -767,7 +771,11 @@ b-realm-role -r USER -u user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
     +DATA_READ \
-    +DATA_WRITE
+    +DATA_WRITE \
+    +MAIL_POST \
+    +MAIL_READ \
+    +MAIL_SEND \
+    +MAIL_WRITE
 b-realm-role -r USER -u user edit ACCOUNTANT - \
     +MEMBER \
     +ADMIN_WRITE
@@ -790,7 +798,11 @@ b-realm-role -r CLUB -u user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
     +DATA_READ \
-    +DATA_WRITE
+    +DATA_WRITE \
+    +MAIL_POST \
+    +MAIL_READ \
+    +MAIL_SEND \
+    +MAIL_WRITE
 b-realm-role -r CLUB -u user edit ACCOUNTANT - \
     +MEMBER \
     +ADMIN_WRITE
