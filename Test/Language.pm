@@ -66,7 +66,7 @@ my($_SELF_IN_EVAL);
 Bivio::IO::Config->register(my $_CFG = {
     log_dir => 'log',
 });
-my($_INLINE_LOG_PREFIX) = 'inline00000';
+my($_INLINE) = 'inline00000';
 
 =head1 FACTORIES
 
@@ -283,6 +283,18 @@ sub test_log_output {
     );
 }
 
+=for html <a name="test_name"></a>
+
+=head2 test_name() : string
+
+Returns the basename of the test_script.
+
+=cut
+
+sub test_name {
+    return File::Basename::basename(shift->get('test_script'));
+}
+
 =for html <a name="test_run"></a>
 
 =head2 static test_run(string script_name) : Bivio::Die
@@ -296,13 +308,14 @@ everything goes ok.  Otherwise, returns the die instance created by the script.
 
 sub test_run {
     my($proto, $script) = @_;
-    my($script_name) = ref($script) ? '<inline>' : $script;
+    my($script_name) = ref($script) ? $_INLINE++ : $script;
     my($die) = Bivio::Die->catch(sub {
 	_die($_SELF_IN_EVAL, 'called ', $script_name,
 	    ' from within test script')
 	    if $_SELF_IN_EVAL;
 	$_SELF_IN_EVAL = $proto->new({test_script => $script_name});
-        $script = Bivio::IO::File->read($script_name) unless ref($script);
+        $script = Bivio::IO::File->read($script_name)
+	    unless ref($script);
 	substr($$script, 0, 0) = 'use strict;';
 	my($die) = Bivio::Die->catch($script);
 	_trace($die) if $_TRACE;
@@ -437,10 +450,7 @@ sub _find_line_number {
 #
 sub _log_prefix {
     my($script_name) = @_;
-    my($v, $d, $f) = File::Spec->splitpath(
-	    File::Spec->rel2abs(
-		$script_name eq '<inline>' ? $_INLINE_LOG_PREFIX++
-		: $script_name));
+    my($v, $d, $f) = File::Spec->splitpath(File::Spec->rel2abs($script_name));
     $f =~ s/(?<=.)\.[^\.]+$//g;
     return Bivio::IO::File->mkdir_p(
 	Bivio::IO::File->rm_rf(
