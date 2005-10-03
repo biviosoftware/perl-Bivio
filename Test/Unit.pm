@@ -127,6 +127,23 @@ sub builtin_class {
     return $_CLASS;
 }
 
+=for html <a name="builtin_email"></a>
+
+=head2 builtin_email(string suffix) : array
+
+Generate a btest email.
+See Bivio::Test::Language::HTTP::generate_local_email.
+
+=cut
+
+sub builtin_email {
+    shift;
+    return [
+	Bivio::IO::ClassLoader->simple_require('Bivio::Test::Language::HTTP')
+            ->generate_local_email(@_),
+    ]->[0];
+}
+
 =for html <a name="builtin_not_die"></a>
 
 =head2 static builtin_not_die() : undef
