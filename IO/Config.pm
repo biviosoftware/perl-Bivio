@@ -169,6 +169,10 @@ sub REQUIRED {
 # use Bivio::BConf;
 use File::Basename ();
 use File::Spec ();
+eval(q{
+    use Image::Size ();
+    use HTML::Parser ();
+}) if $] > 5.008;
 
 #=VARIABLES
 my($_PKG) = __PACKAGE__;
