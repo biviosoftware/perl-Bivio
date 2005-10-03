@@ -179,7 +179,7 @@ sub get_delegate_info {
             Action.Forbidden
         )],
         # Add this to the Task section of your facade:
-        #   $t->group(ROBOTS_TXT => '/robots.txt');
+        #   $t->group(ROBOTS_TXT => 'robots.txt');
 	[qw(
             ROBOTS_TXT
             15
@@ -187,6 +187,14 @@ sub get_delegate_info {
             ANYBODY
             Action.LocalFilePlain->execute_robots_txt
         )],
+	[qw(
+	    TEST_BACKDOOR
+	    16
+	    GENERAL
+	    TEST_TRANSIENT
+	    Action.TestBackdoor
+	    Action.MailReceiveStatus
+	)],
     ];
 }
 
