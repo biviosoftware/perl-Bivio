@@ -268,6 +268,7 @@ my(@_MONTH_DAYS, @_MONTH_BASE);
 my(@_YEAR_BASE);
 my($_TIME_SUFFIX) = ' '.DEFAULT_TIME();
 my($_DATE_PREFIX) = FIRST_DATE_IN_JULIAN_DAYS().' ';
+my($_BEGINNING_OF_DAY) = 0;
 my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
 my($_DAY_OF_WEEK)
@@ -454,7 +455,7 @@ error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
 sub date_from_parts {
     my(undef, $mday, $mon, $year) = @_;
     return (undef, Bivio::TypeError::YEAR_DIGITS())
-	if $year < 100;
+	unless($year) && $year > 99;
     return (undef, Bivio::TypeError::YEAR_RANGE())
 	unless FIRST_YEAR() <= $year && $year <= LAST_YEAR();
     return (undef, Bivio::TypeError::MONTH()) unless 1 <= $mon && $mon <= 12;
@@ -966,6 +967,32 @@ sub set_end_of_month {
     return $self->from_parts_or_die($sec, $min, $hour,
 	$self->get_last_day_in_month($mon, $year),
 	$mon, $year);
+}
+
+=for html <a name="set_local_beginning_of_day"></a>
+
+=head2 set_local_beginning_of_day(string date_time) : string
+
+Sets the time component of the date/time to 00:00:00 in the user's
+time zone.
+
+=cut
+
+sub set_local_beginning_of_day {
+    my($proto, $date_time) = @_;
+    my($date, $time) = split(' ', $date_time);
+    my($tz) = $proto->timezone;
+
+    return $date.' '.$_BEGINNING_OF_DAY unless $tz;
+
+    # The timezone is really a timezone offset for now.  This will
+    # have to be fixed someday, but not right now.
+    $tz *= 60;
+
+    $date--
+	if $time < $tz;
+
+    return $date.' '.$tz;
 }
 
 =for html <a name="set_local_end_of_day"></a>

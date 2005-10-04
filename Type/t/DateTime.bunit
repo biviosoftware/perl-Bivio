@@ -4,6 +4,14 @@ Type();
 simple_require('Bivio::Test::Request')->get_instance->put(timezone => 120);
 [
     class() => [
+	set_local_end_of_day => [
+	    ['2453647 64200'] => ['2453648 7199'],
+	    ['2453648 00000'] => ['2453648 7199'],
+	],
+	set_local_beginning_of_day => [
+	    ['2453647 64200'] => ['2453647 7200'],
+	    ['2453648 00000'] => ['2453647 7200'],
+	],
 	from_literal => [
 	    [undef] => [undef],
 	    '2378497 9' => '2378497 9',
