@@ -33,7 +33,7 @@ use Bivio::Biz::Model;
 C<Bivio::Biz::ListModel> is used to describe queries which return multiple
 rows.  This class is typically subclassed.  However, you can create
 anonymous ListModels by calling
-L<new_anonymous|Bivio::Biz::PropertyModel/"new_anonymous">.
+L<new_anonymous|Bivio::Biz::ListModel/"new_anonymous">.
 
 Here is a an example iteration:
 
