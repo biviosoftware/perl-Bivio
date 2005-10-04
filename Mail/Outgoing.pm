@@ -153,7 +153,7 @@ sub add_missing_headers {
     $from_email ||= (Bivio::Mail::Address->parse(
 	$self->unsafe_get_header('From')
 	|| $self->unsafe_get_header('Apparently-From')
-	|| (_user_email($req))[0],
+	|| ($self->user_email($req))[0],
     ))[0];
     my($now) = $_DT->now;
     foreach my $x (
@@ -296,7 +296,7 @@ Returns the from email address or C<undef> if it couldn't set anything.
 
 sub set_from_with_user {
     my($self, $req) = shift->internal_req(@_);
-    my($email, $name) = _user_email($req);
+    my($email, $name) = $self->user_email($req);
     $self->set_envelope_from($email);
     $self->set_header('From', qq{"$name" <$email>});
     return $email
@@ -337,7 +337,6 @@ I<list_in_subject>.  Sets I<Reply-To:> to I<list_name> if I<reply_to_list>.
 
 sub set_headers_for_list_send {
     my($self, $list_name, $list_title, $reply_to_list, $subject_prefix, $req) = @_;
-    
     if (($subject_prefix || '') eq 1) {
 	Bivio::IO::Alert->warn_deprecated(
 	    'list_in_subject is now subject_prefix');
@@ -508,16 +507,6 @@ EOF
     }
     $$buf .= "--\n";
     return;
-}
-
-# _user_email(Bivio::Agent::Request req) : array
-#
-# Returns ($email, $name)
-#
-sub _user_email {
-    my($req) = @_;
-    my($name) = getpwuid($>) || 'intruder';
-    return ($req->format_email($name), $name);
 }
 
 =head1 COPYRIGHT
