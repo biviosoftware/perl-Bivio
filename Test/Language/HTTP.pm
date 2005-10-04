@@ -631,7 +631,6 @@ messages found.
 
 sub verify_local_mail {
     my($self, $email, $body_regex, $count) = @_;
-    sleep(2);  # intentionally loose the race with sendmail ;-)
     $count ||= 1;
     my($seen) = {};
     Bivio::Die->die($_CFG->{mail_dir},
@@ -640,7 +639,10 @@ sub verify_local_mail {
     my($email_match);
     $email = qr{\Q$email}i
 	unless ref($email);
-    for (my $i = $_CFG->{mail_tries}; $i-- > 0; sleep(1)) {
+    for (my $i = $_CFG->{mail_tries}; $i-- > 0;) {
+	# It takes a certain amount of time to hit, and on the same machine
+	# we're going to be competing for the CPU so let b-sendmail-http win
+	sleep(1);
 	if (my(@found) = map({
 	    my($msg) = Bivio::IO::File->read($_);
 	    ($email_match = $$msg =~ /^(?:to|cc):.*\b$email/mi)
@@ -653,6 +655,7 @@ sub verify_local_mail {
 		}
 	    ))
 	) {
+	    next if @found < $count;
 	    Bivio::Die->die('wrong number of messages matched.  expected != actual: ',
 		$count, ' != ', int(@found), "\n", \@found)
 	        if @found != $count;
