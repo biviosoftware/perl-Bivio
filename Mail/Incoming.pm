@@ -152,13 +152,13 @@ sub get_from {
     my($from) = _get_field($fields, 'from:')
 	    || _get_field($fields, 'apparently-from:');
     unless (defined($from)) {
-	Bivio::IO::Alert->warn("no From");
-	_trace('no From') if $_TRACE;
+	Bivio::IO::Alert->warn('no From: ', $fields);
 	$fields->{from_email} = undef;
 	$fields->{from_name} = undef;
 	return wantarray ? (undef, undef) : undef;
     }
-    ($fields->{from_email}, $fields->{from_name}) = Bivio::Mail::Address->parse($from);
+    ($fields->{from_email}, $fields->{from_name})
+	= Bivio::Mail::Address->parse($from);
     _trace($from, ' -> (', $fields->{from_email}, ',',
 	   $fields->{from_name}, ')') if $_TRACE;
     return wantarray ? ($fields->{from_email}, $fields->{from_name})
