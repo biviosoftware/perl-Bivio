@@ -208,18 +208,17 @@ sub mock_sendmail {
 	chomp($$res);
 	_trace($r, ' => ', $res) if $_TRACE;
 	next unless $$res;
-	Bivio::IO::Alert->warn(
-	    $r, ': failed with ', $$res, "\n", $msg->as_string);
+	_trace('delivery failed: ', $msg) if $_TRACE;
 	next if $recursing;
 	$r = (Bivio::Mail::Address->parse(
 	    $msg->unsafe_get_header('errors-to')
 	    || $msg->unsafe_get_header('return-path')
 	    || $from
-	    || $self->unsafe_get('From')
-	    ||next
+	    || $msg->unsafe_get('From')
+	    || next
 	))[0];
 	$self->put(
-	    input => $msg->format_as_bounce($$res, undef, undef, $r),
+	    input => $msg->format_as_bounce($$res, undef, undef, $r, $req),
 	);
 	$self->mock_sendmail('-f' . $req->format_email('mailer-daemon'), $r, 1);
     }
