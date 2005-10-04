@@ -98,7 +98,7 @@ sub enqueue_send {
 
 =for html <a name="format_as_bounce"></a>
 
-=head2 static format_as_bounce(string err, string recipients, string_ref msg, string errors_to) : string_ref
+=head2 static format_as_bounce(string err, string recipients, string_ref msg, string errors_to, Bivio::Agent::Request req) : string_ref
 
 Creates an error message to be sent to 'errors_to'.  I<recipients> will
 be retrieved with I<unsafe_get_recipients> if not supplied.
@@ -108,13 +108,15 @@ I<errors_to> will be retrieved from I<errors_to> config if not supplied.
 =cut
 
 sub format_as_bounce {
-    my($proto, $err, $recipients, $msg, $errors_to) = @_;
+    my($proto, $err, $recipients, $msg, $errors_to, $req) = @_;
     $msg ||= \($proto->as_string);
     $recipients ||= $proto->unsafe_get_recipients || '<>';
     my($u) = User::pwent::getpwuid($>);
     $u = defined($u) ? $u->name : 'uid' . $>;
     $errors_to ||= $_CFG->{errors_to};
+    my($email, $name) = $proto->user_email($req);
     return \(<<"EOF");
+From: "$name" <$email>
 To: $errors_to
 Subject: ERROR: unable to send mail
 Sender: "$0" <$u>
@@ -253,7 +255,10 @@ sub send {
         $err = _send(
 	    $proto,
 	    $_CFG->{errors_to},
-            $proto->format_as_bounce($err, $recipients, $msg_ref),
+            $proto->format_as_bounce(
+		$err, $recipients, $msg_ref, undef,
+		Bivio::Agent::Request->get_current_or_new,
+	    ),
 	    0,
 	    '',
 	);
@@ -278,6 +283,20 @@ sub send_queued_messages {
 	shift(@$_QUEUE)->send;
     }
     return;
+}
+
+=for html <a name="user_email"></a>
+
+=head2 user_email(Bivio::Agent::Request req) : array
+
+Returns ($email, $name)
+
+=cut
+
+sub user_email {
+    my(undef, $req) = @_;
+    my($name) = getpwuid($>) || 'intruder';
+    return ($req->format_email($name), $name);
 }
 
 #=PRIVATE METHODS
