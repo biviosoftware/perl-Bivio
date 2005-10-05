@@ -16,11 +16,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::Mail::Common;
-    Bivio::Mail::Common->send($recipients, $msg);
-    $self->send();
-    $self->enqueue_send();
-    Bivio::Mail::Common->send_queued_messages();
-    Bivio::Mail::Common->discard_queued_messages();
 
 =cut
 
@@ -36,6 +31,19 @@ C<Bivio::Mail::Common>
 =head1 CONSTANTS
 
 =cut
+
+=for html <a name="RECIPIENTS_HDR"></a>
+
+=head2 static RECIPIENTS_HDR()
+
+Returns header where recipients are inserted into msg.  Only if
+$req.is_test.
+
+=cut
+
+sub RECIPIENTS_HDR {
+    return 'X-Bivio-Recipients';
+}
 
 #=IMPORTS
 use Bivio::Agent::Request;
@@ -143,15 +151,15 @@ sub get_last_queued_message {
 
 =for html <a name="handle_commit"></a>
 
-=head2 handle_commit()
+=head2 handle_commit(Bivio::Agent::Request req)
 
 Commit called, delete lock from request before DB commit
 
 =cut
 
 sub handle_commit {
-    my($proto) = @_;
-    $proto->send_queued_messages;
+    my($proto, $req) = @_;
+    $proto->send_queued_messages($req);
     return;
 }
 
@@ -236,7 +244,7 @@ the -f argument given to sendmail.
 =cut
 
 sub send {
-    my($proto, $recipients, $msg, $offset, $from) = @_;
+    my($proto, $recipients, $msg, $offset, $from, $req) = @_;
     Bivio::Die->die('no recipients')
         unless defined($recipients);
     Bivio::Die->die('no message')
@@ -250,17 +258,19 @@ sub send {
         if $offset < 0;
     $from = defined($from) ? '-f' . $from : '';
     $from =~ s/'/'\\''/g;
-    my($err) = _send($proto, $recipients, $msg_ref, $offset, $from);
+    $req ||= Bivio::Agent::Request->get_current_or_new;
+    my($err) = _send($proto, $recipients, $msg_ref, $offset, $from, $req);
     if ($err) {
         $err = _send(
 	    $proto,
 	    $_CFG->{errors_to},
             $proto->format_as_bounce(
 		$err, $recipients, $msg_ref, undef,
-		Bivio::Agent::Request->get_current_or_new,
+		$req,
 	    ),
 	    0,
 	    '',
+	    $req,
 	);
         Bivio::Die->die('errors_to mail failed: ', $err, "\n", $msg_ref)
             if $err;
@@ -279,8 +289,9 @@ postmaster.
 =cut
 
 sub send_queued_messages {
+    my(undef, $req) = shift->internal_req(@_);
     while (@$_QUEUE) {
-	shift(@$_QUEUE)->send;
+	shift(@$_QUEUE)->send($req);
     }
     return;
 }
@@ -306,15 +317,16 @@ sub user_email {
 # Attempts to send the message. Returns an error string on failure.
 #
 sub _send {
-    my($proto, $recipients, $msg, $offset, $from) = @_;
+    my($proto, $recipients, $msg, $offset, $from, $req) = @_;
     _trace('sending to ', $recipients) if $_TRACE;
-    $$msg = 'X-Bivio-Reroute-Address: '.$_CFG->{reroute_address}."\n".$$msg
-	if $_CFG->{reroute_address};
+    if ($req->is_test) {
+	$recipients = $_CFG->{reroute_address}
+	    if $_CFG->{reroute_address};
+	substr($$msg, $offset, 0) = $proto->RECIPIENTS_HDR . ": $recipients\n";
+    }
     my($command) = '| ' . $_CFG->{sendmail}
 	. ($from ? " '$from'" : '')
-	. " '"
-	. ($_CFG->{reroute_address} || $recipients)
-	. "'";
+	. " '$recipients'";
     _trace($command) if $_TRACE;
     my($fh) = IO::File->new($command);
     return "$command failed: $!"
