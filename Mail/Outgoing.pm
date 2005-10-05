@@ -55,7 +55,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 # not in this list.
 #
 # NOTE: This list is sorted for maintenance convenience.
-my(@_REMOVE_FOR_LIST_RESEND) = qw(
+my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
     approved
     cc
     encoding
@@ -71,7 +71,10 @@ my(@_REMOVE_FOR_LIST_RESEND) = qw(
     x-mozilla-status
     x-mozilla-status2
     x-pmrqc
-);
+),
+    Bivio::Mail::Common->RECIPIENTS_HDR,
+)];
+
 # 822:
 # Due to an artifact of the notational conventions, the syn-
 # tax  indicates that, when present, some fields, must be in
@@ -231,7 +234,7 @@ sub remove_headers {
 
 =for html <a name="send"></a>
 
-=head2 send()
+=head2 send(Bivio::Agent::Request req)
 
 Sends the message.  Recipients must be set.  Errors are
 e-mailed except if recipients are not set.
@@ -239,11 +242,11 @@ e-mailed except if recipients are not set.
 =cut
 
 sub send {
-    my($self) = @_;
+    my($self, $req) = shift->internal_req(@_);
     my($fields) = $self->[$_IDI];
     my($msg) = $self->as_string;
-    Bivio::Mail::Common->send($fields->{recipients}, \$msg, 0, 
-                              $fields->{env_from});
+    Bivio::Mail::Common->send($fields->{recipients}, \$msg, 0,
+                              $fields->{env_from}, $req);
 }
 
 =for html <a name="set_body"></a>
@@ -349,7 +352,7 @@ sub set_headers_for_list_send {
     Bivio::Die->die($list_title, ': invalid list title')
         unless $list_title =~ /^[^\n]+$/s;
     $list_title =~ s/(["\\])/\\$1/g;
-    delete(@$headers{@_REMOVE_FOR_LIST_RESEND});
+    delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
     my($sender) = $req->format_email("$list_name-owner");
     $headers->{sender} = "Sender: $sender\n";
     $self->set_envelope_from($sender);
