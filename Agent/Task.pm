@@ -520,7 +520,7 @@ sub _call_txn_resources {
     if (ref($resources) eq 'ARRAY') {
 	foreach my $r (@$resources) {
 	    _trace($r, '->', $method) if $_TRACE;
-	    $r->$method();
+	    $r->$method($req);
 	}
     }
 
