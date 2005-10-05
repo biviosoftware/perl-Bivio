@@ -127,6 +127,20 @@ sub builtin_class {
     return $_CLASS;
 }
 
+=for html <a name="builtin_config"></a>
+
+=head2 builtin_config(hash_ref config)
+
+Calls Bivio::IO::Config::introduce_values.
+
+=cut
+
+sub builtin_config {
+    my(undef, $config) = @_;
+    Bivio::IO::Config->introduce_values($config);
+    return;
+}
+
 =for html <a name="builtin_email"></a>
 
 =head2 builtin_email(string suffix) : array
