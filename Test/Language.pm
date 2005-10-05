@@ -292,7 +292,7 @@ Returns the basename of the test_script.
 =cut
 
 sub test_name {
-    return File::Basename::basename(shift->get('test_script'));
+    return File::Basename::basename(shift->get('test_script'), '.btest');
 }
 
 =for html <a name="test_run"></a>
