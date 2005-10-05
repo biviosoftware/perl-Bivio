@@ -40,6 +40,7 @@ use Bivio::Ext::LWPUserAgent;
 use Bivio::IO::Config;
 use Bivio::IO::Ref;
 use Bivio::IO::Trace;
+use Bivio::Mail::Common;
 use Bivio::Type::FileName;
 use Bivio::Test::HTMLParser;
 use File::Temp ();
@@ -246,14 +247,13 @@ sub follow_link_in_table {
 =head2 generate_local_email(string suffix) : array
 
 Returns an email address based on I<email_user> and I<suffix> (a random number
-by default) and a name based on I<suffix>.
+by default) and a name based on I<suffix>.  Used in scalar context, just returns
+the email.
 
 =cut
 
 sub generate_local_email {
     my(undef, $suffix) = @_;
-    Bivio::IO::Alert->warn_deprecated('should be called from an array context')
-	unless wantarray;
     $suffix ||= int(rand(2_000_000_000)) + 1;
     my($email) = $_CFG->{email_user}
 	. $_CFG->{email_tag}
@@ -632,33 +632,29 @@ messages found.
 sub verify_local_mail {
     my($self, $email, $body_regex, $count) = @_;
     $count ||= 1;
-    my($seen) = {};
     Bivio::Die->die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
     my($email_match);
     $email = qr{\Q$email}i
 	unless ref($email);
+    my(@found);
     for (my $i = $_CFG->{mail_tries}; $i-- > 0;) {
 	# It takes a certain amount of time to hit, and on the same machine
 	# we're going to be competing for the CPU so let b-sendmail-http win
 	sleep(1);
-	if (my(@found) = map({
+	$email_match = 0;
+	if (@found = map({
 	    my($msg) = Bivio::IO::File->read($_);
 	    ($email_match = $$msg =~ /^(?:to|cc):.*\b$email/mi)
 	        && $$msg =~ /$body_regex/
 	        ? [$_, $msg] : ();
-	    } _grep_mail_dir(
-		sub {
-		    my($file) = @_;
-		    return !$seen->{$file}++ && -M $file <= 0;
-		}
-	    ))
+	    } _grep_mail_dir(sub {-M shift(@_) <= 0}))
 	) {
 	    next if @found < $count;
-	    Bivio::Die->die('wrong number of messages matched.  expected != actual: ',
+	    Bivio::Die->die('too many messages found.  expected != actual: ',
 		$count, ' != ', int(@found), "\n", \@found)
-	        if @found != $count;
+	        if @found > $count;
 	    foreach (@found) {
 		unlink($_->[0]);
 		_log($self, 'msg', $_->[1])
@@ -669,6 +665,10 @@ sub verify_local_mail {
 		: ${$found[0]->[1]};
 	}
     }
+    Bivio::Die->die(
+	'too few messages found.  expected != actual: ',
+	$count, ' != ', int(@found), "\n", \@found,
+    ) if @found && @found < $count;
     Bivio::Die->die(
 	$email_match ? ('Found mail for "', $email,
 	    '", but does not match ', qr/$body_regex/)
