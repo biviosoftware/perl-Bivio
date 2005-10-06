@@ -257,18 +257,6 @@ sub put_form {
     });
 }
 
-=for html <a name="req"></a>
-
-=head2 req() : Bivio::Test::Request
-
-Calls L<get_instance|"get_instance">.
-
-=cut
-
-sub req {
-    return shift->get_instance;
-}
-
 =for html <a name="run_unit"></a>
 
 =head2 static run_unit(array_ref cases)

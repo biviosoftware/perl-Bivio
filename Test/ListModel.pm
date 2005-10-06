@@ -114,18 +114,6 @@ sub new_unit {
 
 =cut
 
-=for html <a name="req"></a>
-
-=head2 req() : Bivio::Test::Request.
-
-Calls L<Bivio::Test::Request::req|Bivio::Test::Request/"req">
-
-=cut
-
-sub req {
-    return Bivio::Test::Request->req;
-}
-
 =for html <a name="run_unit"></a>
 
 =head2 run_unit(string class_name, array_ref cases)
