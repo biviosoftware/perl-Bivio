@@ -215,14 +215,17 @@ sub internal_initialize_list {
 =head2 is_empty_row() : boolean
 
 Returns true if the L<MUST_BE_SPECIFIED_FIELDS|"MUST_BE_SPECIFIED_FIELDS"> are
-L<Bivio::Type::is_specified|Bivio::Type/"is_specified">.  Also returns undef if
-L<MUST_BE_SPECIFIED_FIELDS|"MUST_BE_SPECIFIED_FIELDS"> returns C<undef>.
+L<Bivio::Type::is_specified|Bivio::Type/"is_specified">.
+Calls SUPER::is_empty_row if MUST_BE_SPECIFIED_FIELDS is false.
 
 =cut
 
 sub is_empty_row {
     my($self) = @_;
-    foreach my $f (@{$self->MUST_BE_SPECIFIED_FIELDS || return 0}) {
+    foreach my $f (@{
+	$self->MUST_BE_SPECIFIED_FIELDS
+	    || return shift->SUPER::is_empty_row(@_),
+    }) {
 	return 0
 	    if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
     }
@@ -263,8 +266,9 @@ if L<is_empty_row|"is_empty_row">.
 
 sub validate_row {
     my($self) = @_;
+    return unless my $cols = $self->MUST_BE_SPECIFIED_FIELDS;
     return unless $self->is_empty_row;
-    foreach my $f (@{$self->MUST_BE_SPECIFIED_FIELDS}) {
+    foreach my $f (@$cols) {
 	$self->internal_clear_error($f);
     }
     return;

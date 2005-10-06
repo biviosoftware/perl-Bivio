@@ -512,6 +512,18 @@ sub internal_put_field {
     return;
 }
 
+=for html <a name="is_empty_row"></a>
+
+=head2 is_empty_row : boolean
+
+Calls get_list_model.is_empty_row.
+
+=cut
+
+sub is_empty_row {
+    return shift->get_list_model->is_empty_row;
+}
+
 =for html <a name="next_row"></a>
 
 =head2 next_row() : boolean
