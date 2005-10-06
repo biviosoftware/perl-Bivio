@@ -42,6 +42,32 @@ EOF
 	    [qr/\d/, 1] => [undef],
 	    [qr/abc/, qr/abc/] => [undef],
 	    [qr/abc/, qr/abd/] => [\('(?-xism:abc) != (?-xism:abd)')],
-	],
+	    Bivio::IO::ClassLoader->unsafe_simple_require('Algorithm::Diff')
+	        ? ([<<'LEFT', <<'RIGHT'] => [\<<'EOF']) : (),
+Line 1 agrees
+Second Line is off
+Line 3 same
+3a is missing
+Line 4 same
+Line 5 is diff
+LEFT
+Line 1 agrees
+Second Line is on
+Line 3 same
+Line 4 same
+Line 5 is diffX
+RIGHT
+*** EXPECTED
+--- ACTUAL
+*** 2,2d2 ***
+- Second Line is off
++ Second Line is on
+*** 4,4c4,3 ***
+- 3a is missing
+*** 6,6d5 ***
+- Line 5 is diff
++ Line 5 is diffX
+EOF
+        ],
     ],
 ]);

@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software Artisans, Inc.  All Rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::IO::Ref;
 use strict;
@@ -225,19 +225,51 @@ sub to_string {
 #
 sub _diff_res {
     my($proto, $left, $right, $name) = @_;
-    my($res) = join(' != ', map({
-	my($v) = $proto->to_short_string($_);
-	chomp($v);
-	$v;
-    } $left, $right));
-    $res .= " at $name"
-	if $name;
+    my($res) = $name && $name =~ /\S/ ? " at $name" : '';
+    if ($left && $right && !ref($left) && !ref($right)
+	&& $left =~ /\n/ && $right =~ /\n/
+	&& Bivio::IO::ClassLoader->unsafe_simple_require('Algorithm::Diff'),
+    ) {
+	my($diff) = Algorithm::Diff->new(
+	    map([split(/(?<=\n)/, $_)], $left , $right),
+	);
+	$res = "*** EXPECTED$res\n--- ACTUAL\n";
+	$diff->Base(1);
+	while ($diff->Next) {
+	    next if $diff->Same;
+	    my($sep) = '';
+	    $res .= sprintf(
+		"*** %s ***\n",
+		$diff->Items(2)
+		? sprintf('%d,%dd%d', $diff->Get(qw(Min1 Max1 Max2)))
+	        : $diff->Items(1) ? (
+		    sprintf('%d,%dc%d,%d', $diff->Get(qw(Min1 Max1 Min2 Max2))),
+		    $sep = "--\n",
+		)[0] : sprintf('%da%d,%d', $diff->Get(qw(Max1 Min2 Max2))),
+	    );
+	    my($top, $bot) = map({
+		my($s) = $_ ? '+' : '-';
+		join('', map("$s $_", $diff->Items($_ + 1)));
+	    } 0, 1);
+	    $res .= $top . ($top && $bot ? $sep : '') . $bot;
+	}
+    }
+    else {
+        substr($res, 0, 0) = join(
+	    ' != ',
+	    map({
+		my($v) = $proto->to_short_string($_);
+		chomp($v);
+		$v;
+	    } $left, $right),
+	);
+    }
     return \$res;
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Software Artisans, Inc.  All Rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 
