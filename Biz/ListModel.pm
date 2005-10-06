@@ -937,6 +937,24 @@ sub internal_set_cursor {
     return;
 }
 
+=for html <a name="is_empty_row"></a>
+
+=head2 is_empty_row : boolean
+
+If all primary key(s) equal EMPTY_KEY_VALUE.
+
+=cut
+
+sub is_empty_row {
+    my($self) = @_;
+    foreach my $k (@{$self->get_info('primary_key_names')}) {
+	return 0 unless $self->get_field_type($k)->is_equal(
+	    $self->get($k), $self->EMPTY_KEY_VALUE,
+	);
+    }
+    return 1;
+}
+
 =for html <a name="iterate_next"></a>
 
 =head2 iterate_next(hash_ref row) : boolean
