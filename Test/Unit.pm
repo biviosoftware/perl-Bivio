@@ -171,6 +171,19 @@ sub builtin_not_die {
     return undef;
 }
 
+=for html <a name="builtin_req"></a>
+
+=head2 static builtin_req() : Bivio::Agent::Request
+
+Calls Bivio::Test::Request::get_instance;
+
+=cut
+
+sub builtin_req {
+    return Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
+	->get_instance;
+}
+
 =for html <a name="builtin_simple_require"></a>
 
 =head2 static builtin_simple_require(string class) : Bivio::UNIVERSAL
