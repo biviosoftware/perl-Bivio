@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Inc.  All rights reserved.
+# Copyright (c) 2000-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Facade::PetShop;
 use strict;
@@ -240,7 +240,10 @@ my($_SELF) = __PACKAGE__->new({
 	'ItemListForm.add_to_cart' => ' ',
 	'CartItemListForm.remove' => ' ',
 	Image_alt => [
-	    bivio_power => 'Powered by bivio Inc.',
+	    bivio_power => 'Powered by bivio Software, Inc.',
+	    image_bunit => 'Image.bunit',
+	    sort_up => 'This column sorted in descending order',
+	    sort_down => 'This column sorted in ascending order',
 	],
 
 	# Misc Model support
@@ -253,6 +256,9 @@ my($_SELF) = __PACKAGE__->new({
 	],
 	ok_button => ' OK ',
 	cancel_button => 'Cancel',
+	acknowledgement => [
+	    SHELL_UTIL => 'shell util ack',
+	],
     ]),
 });
 
@@ -264,7 +270,7 @@ my($_SELF) = __PACKAGE__->new({
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Inc.  All rights reserved.
+Copyright (c) 2000-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
