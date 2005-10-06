@@ -377,7 +377,7 @@ sub unsafe_get_value {
 
 =head2 unsafe_get_widget_value_by_name(string tag) : array
 
-Returns the text value identified by I<tag> if defined.
+Returns the text value identified by the fully-qualified I<tag> if defined.
 
 =cut
 
