@@ -365,7 +365,7 @@ sub get_default {
 
 =for html <a name="get_from_request_or_self"></a>
 
-=head2 static get_from_request_or_self(Bivio::Collection::Attributes req_or_facade) : self
+=head2 static get_from_request_or_self(any source_or_facade) : self
 
 Returns facade from the I<req_or_facade> or just I<req_or_facade> if
 it isa Facade.
@@ -378,13 +378,13 @@ L<Bivio::Agent::Request::get_current|Bivio::Agent::Request/"get_current">.
 sub get_from_request_or_self {
     my($proto, $req_or_facade) = @_;
     if (ref($req_or_facade)) {
-	return $req_or_facade if UNIVERSAL::isa($req_or_facade, __PACKAGE__);
+	return $req_or_facade
+	    if UNIVERSAL::isa($req_or_facade, __PACKAGE__);
     }
     else {
-	# Not defined, just get current
 	$req_or_facade = Bivio::Agent::Request->get_current;
     }
-    return $req_or_facade->get(__PACKAGE__);
+    return $req_or_facade->get_request->get(__PACKAGE__);
 }
 
 =for html <a name="get_instance"></a>
