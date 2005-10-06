@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * When Bivio::Biz::FormModel->validate_and_execute_ok is called,
+    Action.Acknowledgement->save_label will be called.
+  * Bivio::Mail::Common/Outgoing->*send* require $req (deprecated)
+
   Revision 3.18  2005/10/06 18:18:06  nagler
   * Bivio::IO::Ref uses Algorithm::Diff::diff if available to print
     differences on multi-line strings
