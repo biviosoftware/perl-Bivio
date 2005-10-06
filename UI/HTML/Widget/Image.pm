@@ -16,18 +16,17 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Image;
-    Bivio::UI::HTML::Widget::Image->new($attrs);
 
 =cut
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget>
+L<Bivio::UI::HTML::Widget::ControlBase>
 
 =cut
 
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::Image::ISA = qw(Bivio::UI::Widget);
+use Bivio::UI::HTML::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::Image::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -57,12 +56,6 @@ C<Image_alt> qualifier.  Resultant text will be passed to
 L<Bivio::HTML->escape|Bivio::Util/"escape_html">.
 
 =item alt_text : array_ref (required)
-
-=item alt_text : Bivio::UI::Widget (required)
-
-Widget to render string to be used in C<ALT> attribute.
-Will be passed to
-L<Bivio::HTML::escape_attr_value|Bivio::HTML/"escape_attr_value">.
 
 =item attributes : string []
 
@@ -117,38 +110,12 @@ VSPACE attribute value.
 =cut
 
 #=IMPORTS
-use Bivio::Die;
-use Bivio::HTML;
-use Bivio::UI::Icon;
-use Carp ();
+use Bivio::UI::Align;
 
 #=VARIABLES
-
-my($_IDI) = __PACKAGE__->instance_data_index;
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(any icon, any alt_text, hash_ref attributes) : Bivio::UI::HTML::Widget::Image
-
-Passes I<icon> and I<alt_text> (or I<icon> as I<alt_text> if I<alt_text> is
-undef) as attributes.  And optionally, set extra I<attributes>.
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Image
-
-Creates a new Image widget using I<attributes>.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
+my($_OLD_HTML) =
+    [qw(hspace vspace width height border align attributes alt)];
 
 =head1 METHODS
 
@@ -165,51 +132,14 @@ src, and have_size.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if exists($fields->{prefix});
-
-    # Both must be defined
-    my($src) = $self->get('src');
-#TODO: Need to ensure we set alt_text.  Maybe want to warn_deprecated?
-    $fields->{alt} = $self->unsafe_initialize_attr('alt');
-    $fields->{alt_text} = $self->initialize_attr('alt_text')
-	unless defined($fields->{alt});
-
-    my($width, $height, $border) = $self->unsafe_get(qw(width height border));
-    die('width and height must both be defined')
-	unless defined($width) == defined($height);
-    my($p) = '<img';
-    my($a) = $self->unsafe_get('attributes');
-    $p .= $a if $a;
-    foreach my $f (qw(hspace vspace)) {
-	my($v) = $self->unsafe_get($f);
-	next unless $v;
-	$p .= ' '.$f.'='.$v;
-    }
-
-    my($v) = $self->unsafe_get('align');
-    $p .= Bivio::UI::Align->as_html($v) if $v;
-
-    # Assume false until after first render.
-    if (!ref($fields->{alt}) && defined($fields->{alt})) {
-	$p .= ' alt="'.Bivio::HTML->escape($fields->{alt}).'"';
-	delete($fields->{alt});
-    }
-    # If width defined, then height defined.
-    if (defined($width)) {
-	# Allow for 0 in either dimension
-	$p .= qq{ width="$width"} if $width;
-	$p .= qq{ height="$height"} if $height;
-    }
-    $border ||= 0
-	unless $self->has_keys('class');
-    $p .= qq{ border="$border"}
-	if defined($border);
-    $_VS->vs_html_attrs_initialize($self);
-    $fields->{prefix} = $p;
-    $fields->{have_size} = defined($width);
-    $fields->{src} = $src;
-    return;
+    $self->initialize_attr('src');
+    $self->map_invoke(
+	unsafe_initialize_attr => [
+	    @$_OLD_HTML,
+	    'alt_text',
+	]
+    );
+    return shift->SUPER::initialize(@_);
 }
 
 =for html <a name="internal_as_string"></a>
@@ -236,77 +166,66 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    my(undef, $icon, $text, $attributes) = @_;
-    return '"icon" attribute must be defined' unless defined($icon);
     return {
-	src => $icon,
-	alt_text => defined($text) ? $text : $icon,
-	($attributes ? %$attributes : ()),
+	alt_text => ref($_[2]) eq 'HASH' ? undef : [splice(@_, 2, 1)]->[0],
+	%{shift->SUPER::internal_new_args([qw(src)], \@_)},
     };
 }
 
-=for html <a name="render"></a>
+=for html <a name="control_on_render"></a>
 
-=head2 render(any source, string_ref buffer)
+=head2 control_on_render(any source, string_ref buffer)
 
 Render the image.
 
 =cut
 
-sub render {
+sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($req) = $source->get_request;
-    my($fields) = $self->[$_IDI];
-
-    $$buffer .= $fields->{prefix};
-    $$buffer .= $_VS->vs_html_attrs_render($self, $source);
-    $$buffer .= ' alt="'.Bivio::HTML->escape_attr_value(
-	_render_alt($self, $fields, $source, $req)).'"'
-	unless $fields->{prefix} =~ / alt=/;
-
-    # May be a widget value
-    my($src) = $fields->{src};
-    $src = $source->get_widget_value(@$src)
-	if ref($src) eq 'ARRAY';
-
-    # Must return a string (used to return a hash)
-    Bivio::Die->die($fields->{src}, ' return a ref: ', $src)
-		if ref($src);
-
-    unless ($fields->{have_size}) {
-	# Normal case: icon is dynamic and size comes from Icon
-	$$buffer .= Bivio::UI::Icon->format_html($src, $req).' />';
-	return;
+    my($src) = ${$self->render_attr('src', $source)};
+    my($b) = '<img';
+    $self->SUPER::control_on_render($source, \$b);
+    $b .= qq{ class="$src"}
+	if $b !~ /class=|id=/ && $_VS->vs_xhtml($source);
+    $$buffer .= $b;
+    my($alt) = $self->has_keys('alt') ? $self->render_simple_attr('alt')
+	: Bivio::UI::Text->get_from_source($source)
+	->unsafe_get_widget_value_by_name(
+	    'Image_alt.'
+	    . (defined($self->unsafe_get('alt_text'))
+	        ? $self->render_simple_attr('alt_text', $source)
+		: $src,
+	    ),
+	);
+    $$buffer .= ' alt="' . Bivio::HTML->escape_attr_value($alt) . '"'
+	if $alt;
+    my($a) = {map(($_ => $self->render_simple_attr($_)), @$_OLD_HTML)};
+    $a->{border} ||= '0'
+	unless  $b =~ /class=|id=/;
+    foreach my $k (qw(width height)) {
+	$a->{$k} ||= '';
     }
-
-    # Have a size, so must format explicitly.
-    $src = Bivio::UI::Icon->get_value($src, $req);
-
-    $$buffer .= ' src="'.Bivio::HTML->escape($src->{uri}).'"';
-    $$buffer .= qq{ width="$src->{width}" height="$src->{height}"}
-	if !$fields->{have_size} && defined($src->{width});
+    $$buffer .= join(
+	'',
+	Bivio::UI::Align->as_html(delete($a->{align})),
+	delete($a->{attributes}),
+	map((length($a->{$_}) ? qq{ $_="$a->{$_}"} : ()), sort(keys(%$a))),
+    );
+    if (defined($self->unsafe_get('width'))) {
+	$$buffer .= ' src="'
+	    . Bivio::HTML->escape(Bivio::UI::Icon->get_value($src, $source))
+		->{uri}
+	    . '"';
+	$src = undef;
+    }
+    else {
+	$$buffer .= Bivio::UI::Icon->format_html($src, $source);
+    }
     $$buffer .= ' />';
     return;
 }
 
 #=PRIVATE METHODS
-
-# _render_alt(self, hash_ref fields, any source, Bivio::Agent::Request req) : string
-#
-# Renders the alt_text or alt.
-#
-sub _render_alt {
-    my($self, $fields, $source, $req) = @_;
-#TODO: Deprecated
-    return $source->get_widget_value(@{$fields->{alt}}) if $fields->{alt};
-    return '' unless $fields->{alt_text};
-
-    my($b) = $self->render_value('alt_text', $fields->{alt_text}, $source);
-    return $$b if ref($fields->{alt_text});
-    return $req->get_nested('Bivio::UI::Facade', 'Text')
-	->unsafe_get_value('Image_alt', $$b)
-	|| $fields->{alt_text};
-}
 
 =head1 COPYRIGHT
 

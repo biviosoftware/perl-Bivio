@@ -22,12 +22,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget>
+L<Bivio::UI::HTML::Widget::ControlBase>
 
 =cut
 
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::FormButton::ISA = ('Bivio::UI::Widget');
+use Bivio::UI::HTML::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::FormButton::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -72,24 +72,6 @@ L<get_widget_value|"get_widget_value"> on the rendering source.
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::FormButton
-
-Creates a new Form Button widget.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
 =head1 METHODS
 
 =cut
@@ -104,17 +86,18 @@ Initializes from configuration attributes.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{model};
-    $fields->{model} = $self->ancestral_get('form_model');
-    $fields->{field} = $self->get('field');
-
-    my($label) = $self->has_keys('label') ? $self->get('label')
-	: $_VS->vs_text(
-	    $self->ancestral_get('form_class')->simple_package_name,
-	    $fields->{field});
-    $fields->{label} = ref($label) ? $label : Bivio::HTML->escape($label);
-    return;
+    $self->get_if_exists_else_put(
+	'label',
+	sub {
+	    $_VS->vs_text(
+		$self->ancestral_get('form_class')->simple_package_name,
+		$self->get('field'),
+	    );
+	},
+    );
+    $self->initialize_attr('label');
+    $self->unsafe_initialize_attr('attributes');
+    return shift->SUPER::initialize(@_);
 }
 
 =for html <a name="internal_new_args"></a>
@@ -128,38 +111,30 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    my($proto, $field, $attributes) = @_;
-    return {
-	field => $field,
-	($attributes ? %$attributes : ()),
-    };
+    return shift->SUPER::internal_new_args([qw(field)], \@_);
 }
 
-=for html <a name="render"></a>
+=for html <a name="control_on_render"></a>
 
-=head2 render(any source, Text_ref buffer)
+=head2 control_on_render(any source, Text_ref buffer)
 
 Render the input field.
 
 =cut
 
-sub render {
+sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
-    my($req) = $source->get_request;
-    my($form) = $req->get_widget_value(@{$fields->{model}});
-    my($field) = $fields->{field};
-
-    # first render initialization
-    my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
-    $$buffer .= $p.'<input type=submit name='
-	    .$form->get_field_name_for_html($field).' value="'
-	    .(ref($fields->{label})
-		    ? Bivio::HTML->escape(
-			    $source->get_widget_value(@{$fields->{label}}))
-		    : $fields->{label})
-	    .'" '.$self->get_or_default('attributes', '')
-	    .' />'.$s;
+    my($p, $s) = Bivio::UI::Font->format_html('form_submit', $source);
+    $$buffer .= $p
+	. '<input type=submit name='
+	. $self->resolve_ancestral_attr('form_model', $source)
+	    ->get_field_name_for_html($self->get('field'))
+	. ' value="'
+	. Bivio::HTML->escape($self->render_simple_attr('label', $source))
+	. '" '
+	. $self->render_simple_attr('attributes', $source)
+	. ' />'
+	. $s;
     return;
 }
 
