@@ -172,6 +172,7 @@ use File::Spec ();
 eval(q{
     use Image::Size ();
     use HTML::Parser ();
+    use MIME::Entity ();
 }) if $] > 5.008;
 
 #=VARIABLES
