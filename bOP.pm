@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.18  2005/10/06 18:18:06  nagler
+  * Bivio::IO::Ref uses Algorithm::Diff::diff if available to print
+    differences on multi-line strings
+
+  Revision 3.17  2005/10/03 20:52:58  nagler
+  * Perl 5.8.6 (on darwin at least) seems to have a defect loading dynamic
+    libraries inside multiple evals.  Added use of Image::Size and
+    HTML::Parser in Bivio::IO::Config to avoid problems.
+  * Bivio::ShellUtil::*email* routines refactored to share code
+  * Bivio::Test::Unit->email returns email address for testing
+  * Bivio::Test::Language->test_name returns the script base name
+  * Bivio::Delegate::SimpleTaskId.TEST_BACKDOOR allows you to call any
+    FormModel with arguments if TEST_TRANSIENT is true.  See
+    test-backdoor.btest in PetShop.
   * Bivio::Test::Language::HTTP->do_test_backdoor is API for TEST_BACKDOOR
   * Bivio::Delegate::SimplePermission.MAIL_READ/WRITE/SEND/POST added
   * Bivio::Util::SQL sets MAIL_* on standard realms
