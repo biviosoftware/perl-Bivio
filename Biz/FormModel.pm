@@ -1238,6 +1238,7 @@ changes on errors.
 
 sub validate_and_execute_ok {
     my($self, $form_button) = @_;
+    my($req) = $self->get_request;
     my($fields) = $self->[$_IDI];
 
     # If the form has errors, the transaction will be rolled back.
@@ -1251,6 +1252,9 @@ sub validate_and_execute_ok {
     else {
 	# Catch errors and rethrow unless we can process
 	my($res) = _call_execute_ok($self, $form_button);
+	Bivio::Biz::Action->get_instance('Acknowledgement')->save_label($req)
+	     unless $self->in_error || $fields->{stay_on_page};
+
 	# If execute_ok returns true, just get out.  The task will
 	# stop executing so no need to test errors.
 	return $res if $res;
@@ -1267,7 +1271,6 @@ sub validate_and_execute_ok {
 
     # Some type of error, rollback and fall through to the next
     # task items.
-    my($req) = $self->get_request;
     $req->warn('form_errors=', $self->get_errors)
 	if $self->in_error;
     Bivio::Agent::Task->rollback($req) unless $fields->{stay_on_page};
