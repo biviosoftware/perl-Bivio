@@ -245,6 +245,21 @@ sub get_facade {
     return shift->[$_IDI]->{facade};
 }
 
+=for html <a name="get_from_source"></a>
+
+=head2 static get_from_source(any source) : self
+
+Returns this instance off of the facade on source.
+
+=cut
+
+sub get_from_source {
+    my($proto, $source) = @_;
+    return Bivio::UI::Facade->get_from_request_or_self($source->get_request)
+	    ->get($proto->simple_package_name);
+}
+
+
 =for html <a name="group"></a>
 
 =head2 group(string name, any value)
