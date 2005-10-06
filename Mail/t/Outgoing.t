@@ -84,16 +84,25 @@ Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
 	    'Not_Found' => [undef],
 	],
 	format_as_bounce => [
-	    ['bad, bad, bad'] => qr{ERROR.*$_USER.*bad, bad, bad.*Original}s,
+	    ['bad, bad, bad', undef, undef, undef, $req]
+		=> qr{ERROR.*$_USER.*bad, bad, bad.*Original}s,
 	],
-	send => undef,
-	enqueue_send => undef,
-	send_queued_messages => undef,
+	send => [
+	    [$req] => undef,
+	],
+	enqueue_send => [
+	    [$req] => undef,
+	],
+	send_queued_messages => [
+	    [$req] => undef,
+	],
 	as_string => $_OUT,
 	set_body => [
 	    [\$_BODY] => undef,
 	],
-	send => undef,
+	send => [
+	    [$req] => undef,
+	],
 	as_string => sub {
 	    $_OUT =~ /(^.*?\n\n)/s;
 	    return [$1 . $_BODY];
