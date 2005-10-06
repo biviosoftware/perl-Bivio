@@ -1,0 +1,42 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    setup_render => sub {
+	shift->put(xhtml => shift->get('object')->unsafe_get('xhtml'));
+	return;
+    },
+    compute_return => sub {
+	my($case, $actual, $expect) = @_;
+	$expect->[0] .= qq{ src="/i/dot.gif" width="1" height="1" />}
+	    unless $expect->[0] =~ />/;
+	return $actual;
+    },
+});
+[
+    dot => '<img border="0"',
+    ['dot', 'not found'] => '<img border="0"',
+    [bivio_power => {class => 'bp'}] =>
+	'<img class="bp" alt="Powered by bivio Software, Inc." src="/i/bivio_power.gif" width="118" height="22" />',
+    ['dot', ''] => '<img border="0"',
+    ['dot', {
+	align => 'n',
+	alt_text => vs_new('Join', ['image_bunit']),
+	attributes => ' x=y',
+    }] => '<img alt="Image.bunit" valign="top" align="center" x=y border="0"',
+    ['dot', {
+	xhtml => 1,
+    }] => '<img class="dot"',
+    ['dot', {
+	width => 0,
+	height => 1,
+    }] => '<img border="0" height="1" src="/i/dot.gif" />',
+    ['dot', {
+	width => 1,
+	height => 0,
+    }] => '<img border="0" width="1" src="/i/dot.gif" />',
+    ['dot', {
+	width => 2,
+	height => 3,
+    }] => '<img border="0" height="3" width="2" src="/i/dot.gif" />',
+];
+
