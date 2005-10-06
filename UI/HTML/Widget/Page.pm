@@ -203,6 +203,7 @@ sub initialize {
     $self->initialize_attr('head');
     $self->initialize_attr('body');
     $self->unsafe_initialize_attr('style');
+    $self->unsafe_initialize_attr('xhtml');
     $self->unsafe_initialize_attr('background');
     foreach my $x (qw(style script)) {
 	$self->get_if_exists_else_put($x,
@@ -254,7 +255,8 @@ sub render {
 	    ? 1 : 0,
     );
     my($body) = $self->render_attr('body', $source);
-    $$buffer .= ($self->get_or_default('xhtml', 0)
+    $req->put(xhtml => my $xhtml = $self->render_simple_attr('xhtml', 0));
+    $$buffer .= ($xhtml
 	? '<!doctype html public "-//w3c//dtd xhtml 1.0 transitional//en" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transititional.dtd">'
         : '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">')
 	."\n<html><head>\n";
