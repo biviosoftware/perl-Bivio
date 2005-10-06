@@ -68,6 +68,8 @@ I<label> attribute on self.
 sub extract_label {
     my($proto, $req) = @_;
     if (my $l = delete(($req->unsafe_get('query') || {})->{$_QUERY})) {
+	$l = Bivio::Agent::TaskId->from_int($l)->get_name
+	    if $l && $l =~ /^\d+$/;
 	$proto->new($req)->put_on_request($req)->put(label => $l);
 	return $l;
     }
@@ -79,12 +81,23 @@ sub extract_label {
 
 =head2 static save_label(string label, Bivio::Agent::Request req)
 
-Saves I<label> in query.
+=head2 static save_label(Bivio::Agent::Request req)
+
+Saves I<label> in query.  If I<label> is false, will set the
+$req.task_id.as_int to the query if acknowledgement.task_id is a
+Bivio::UI::Text is a label.
 
 =cut
 
 sub save_label {
-    my(undef, $label, $req) = @_;
+    my(undef, $label, $req) = @_ >= 3 ? @_ : (undef, undef, pop(@_));
+    unless ($label) {
+	return unless Bivio::UI::Text->get_from_source($req)
+	    ->unsafe_get_widget_value_by_name(
+		"acknowledgement." . $req->get('task_id')->get_name,
+	    );
+	$label = $req->get('task_id')->as_int;
+    }
     my($q) = $req->unsafe_get('query');
     $req->put(query => $q = {})
 	unless $q;
