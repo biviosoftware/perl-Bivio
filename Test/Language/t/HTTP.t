@@ -86,7 +86,7 @@ test_conformance();
 verify_local_mail(\$e1, 'You have mail');
 \$m->();
 \$m->();
-test_deviance(qr/wrong number of messages matched/);
+test_deviance(qr/too many messages found/);
 verify_local_mail(\$e1, 'You have mail');
 test_conformance();
 foreach my \$m (verify_local_mail(\$e1, 'You have mail', 2)) {
