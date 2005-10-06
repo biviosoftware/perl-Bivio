@@ -619,6 +619,19 @@ sub vs_string {
     return $proto->vs_new('String', $value, $font, $attrs);
 }
 
+=for html <a name="vs_xhtml"></a>
+
+=head2 static vs_xhtml(any source) : boolean
+
+Returns true if rendering in xhtml.
+
+=cut
+
+sub vs_xhtml {
+    my(undef, $source) = @_;
+    return $source->get_request->get_or_default('xhtml', 0);
+}
+
 #=PRIVATE METHODS
 
 # _escape(any source, string value) : string
