@@ -17,7 +17,7 @@ Bivio::Test::Widget->unit(
 	    my($left, $right) = ref($_) eq 'ARRAY' ? @$_ : $_;
 	    $right ||= {%$left};
 	    ([ProductList => ['Product.product_id', 'Product.name'], $left]
-		 => _t($right));
+		 => ref($right) ? _t($right) : $right);
 	}
 	    {},
 	    {cellpadding => 2},
@@ -27,23 +27,44 @@ Bivio::Test::Widget->unit(
 	    {width => '100%'},
 	    {border => 1},
 	    [{title => 'Reptiles'}, {title => qq{\n<tr><td colspan="2"><font face="arial,sans-serif"><b><br>Reptiles<br></b></font></td>\n</tr>}}],
-	    [{
-		class => 'reptiles',
-	    }, {
-		class => 'reptiles',
-		map(($_ => 'NOP'), qw(border cellspacing cellpadding align)),
-	    }],
+	    [{class => 'reptiles'}, _chomp(<<'EOF')],
+
+<table class="reptiles">
+<tr>
+<th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
+<th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
+</tr>
+<tr><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr bgcolor="#000000"><td><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr></table></td>
+</tr>
+<tr bgcolor="#D5EEFF">
+<td><font face="arial,sans-serif">RP-LI-02</font></td>
+<td><font face="arial,sans-serif">Iguana</font></td>
+</tr>
+<tr bgcolor="#F0F9FF">
+<td><font face="arial,sans-serif">RP-SN-01</font></td>
+<td><font face="arial,sans-serif">Rattlesnake</font></td>
+</tr>
+</table>
+EOF
 	),
     ],
 );
+
+sub _chomp {
+    my($x) = @_;
+    chomp($x);
+    return $x;
+}
+
 sub _t {
     my($exp) = @_;
-    chomp(my $x = <<'EOF');
+    my($x) = _chomp(<<'EOF');
 
 <table border="0" cellpadding="5" cellspacing="0" valign="NOP" width="NOP" align="left" class="NOP"> title=NOP
 <tr>
 <th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font></a> <img valign="bottom" alt="This column sorted in ascending order" border="0" src="/i/sort_down.gif" width="10" height="8" /></th>
+<th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" valign="bottom" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
 </tr>
 <tr><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr bgcolor="#000000"><td><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr></table></td>

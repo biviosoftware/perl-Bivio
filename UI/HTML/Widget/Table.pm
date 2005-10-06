@@ -409,9 +409,11 @@ sub create_cell {
 	$cell->put(%$attrs);
     }
     elsif ($col eq '') {
-#TODO: optimize, could share instances with common span
 	$cell =  $_VS->vs_new('Join', {
-	    values => ['&nbsp;'],
+	    %{_xhtml(
+		$self,
+		sub {{values => ['&nbsp;']}}
+	    )},
 	    column_span => $attrs->{column_span} || 1,
 	});
     }
@@ -537,8 +539,10 @@ sub get_render_state {
 	summary_lines => $summary_lines,
 	show_headings => $self->get_or_default('show_headings', 1),
     };
-    $state->{heading_separator}
-	= $self->get_or_default('heading_separator', $state->{show_headings});
+    $state->{heading_separator} = $self->get_or_default(
+	'heading_separator',
+	$state->{show_headings},
+    );
     return $state;
 }
 
@@ -658,10 +662,17 @@ sub initialize_child_widget {
 
     $widget->put(parent => $self);
     $widget->initialize;
-    my($column_prefix) = Bivio::UI::Align->as_html(
-	$widget->get_or_default('column_align', 'LEFT'));
-    $column_prefix .= ' nowrap="1"'
-	if $widget->unsafe_get('column_nowrap');
+    my($column_prefix) = '';
+    _xhtml(
+	$self,
+	sub {
+	    $column_prefix .= Bivio::UI::Align->as_html(
+		$widget->get_or_default('column_align', 'LEFT'));
+	    $column_prefix .= ' nowrap="1"'
+		if $widget->unsafe_get('column_nowrap');
+	    return;
+        },
+    );
     my($span) = $widget->get_or_default('column_span', 1);
     $column_prefix .= qq{ colspan="$span"}
 	if $span != 1;
@@ -787,7 +798,7 @@ Draws the specified cell onto the output buffer.
 sub render_cell {
     my($self, $cell, $source, $buffer) = @_;
     $source = $source->get_list_model
-	    if $cell->unsafe_get('column_use_list');
+	if $cell->unsafe_get('column_use_list');
     $cell->render($source, $buffer);
     return;
 }
@@ -827,16 +838,20 @@ sub render_row {
 	    if $class == Bivio::UI::TableRowClass->DATA
 		&& $cell->unsafe_render_attr(
 		    'column_bgcolor', $source, \$bg) && $bg;
-
         $$buffer .= '>';
 
 	# Insert a "&nbsp;" if the widget doesn't render.  This
 	# makes the table look nicer on certain browsers.
 	my($start) = length($$buffer);
 	$self->render_cell($cell, $source, $buffer);
-	$$buffer .= '&nbsp;'
-	    if length($$buffer) == $start
-		&& $class == Bivio::UI::TableRowClass->DATA;
+	_xhtml(
+	    $self,
+	    sub {
+		$$buffer .= '&nbsp;'
+		    if length($$buffer) == $start
+		    && $class == Bivio::UI::TableRowClass->DATA;
+	    },
+	);
 	$$buffer .= $class == Bivio::UI::TableRowClass->HEADING
 	    ? '</th>' : '</td>';
     }
@@ -852,60 +867,65 @@ sub render_row {
 #
 sub _get_heading {
     my($self, $list, $col, $cell, $sort_fields) = @_;
-
     my($heading) = $cell->get_or_default('column_heading', $col);
-
-    unless (UNIVERSAL::isa($heading, 'Bivio::UI::Widget')) {
-	# wrap it in a string widget
-	$heading = $_VS->vs_new('String', {
-	    value => length($heading)
-	    ? $_VS->vs_text($list->simple_package_name, $heading) : $heading,
-	    string_font => $cell->get_or_default(
-		    'heading_font',
-		    $self->get_or_default('heading_font', 'table_heading')),
-	});
-    }
-
-    if (defined($sort_fields) && @$sort_fields) {
-        $heading = $_VS->vs_director([
-            Bivio::Die->eval_or_die("sub {
-                my(\$sort_col) = shift->get_query->get('order_by')->[0];
-                return \$sort_col eq '$sort_fields->[0]' ? 1 : 0;
-            }")], {
-                0 => $_VS->vs_link($heading,
-                        ['->format_uri_for_sort', undef, undef,
-			    @$sort_fields]),
-                1 => $_VS->vs_director([
-                    sub {
-                        return shift->get_query->get('order_by')->[1];
-                    }], {
-                        0 => $_VS->vs_join([
-                            $_VS->vs_link($heading, ['->format_uri_for_sort',
-				undef, 1, @$sort_fields]),
-                            ' ',
-                            $_VS->vs_image('sort_up',
-                                    'This column sorted in descending order')
-                            ->put(align => 'BOTTOM'),
-                            ]),
-                        1 => $_VS->vs_join([
-                            $_VS->vs_link($heading, ['->format_uri_for_sort',
-				undef, 0, @$sort_fields]),
-                            ' ',
-                            $_VS->vs_image('sort_down',
-                                    'This column sorted in ascending order')
-                            ->put(align => 'BOTTOM'),
-                        ]),
-                    }),
-            });
-    }
+    $heading = $_VS->vs_new(
+	'String',
+	length($heading) ? $_VS->vs_text($list->simple_package_name, $heading)
+	    : $heading,
+	$cell->get_or_default(
+	    'heading_font',
+	    $self->get_or_default('heading_font', 'table_heading'),
+	),
+    ) unless UNIVERSAL::isa($heading, 'Bivio::UI::Widget');
+    $heading = $_VS->vs_new(
+	'Link',
+	$_VS->vs_new(
+	    'Join', [
+		$heading,
+		$_VS->vs_new(
+		    'If',
+		    [sub {
+			 shift->get_query->get('order_by')->[0] eq shift(@_);
+		     }, $sort_fields->[0]],
+		    $_VS->vs_new(
+			'Join', [
+			    ' ',
+			    $_VS->vs_new(
+				'Image',
+				[sub {
+				     shift->get_query->get('order_by')->[1]
+					 ? 'sort_down' : 'sort_up',
+				}],
+				undef,
+				_xhtml(
+				    $self,
+				    sub {{align => 'bottom'}},
+				),
+			    ),
+			],
+		    ),
+		),
+	    ],
+	), [
+	    '->format_uri_for_sort',
+	    undef,
+	    [sub {
+		  my($o) = shift->get_query->get('order_by');
+		  return $o->[0] eq shift(@_) ? $o->[1] ? 0 : 1 : undef;
+	    }, $sort_fields->[0]],
+	    @$sort_fields,
+	],
+    ) if $sort_fields && @$sort_fields;
     $heading->put(
-            column_nowrap => 1,
-            column_align => $cell->get_or_default('heading_align',
-		    $self->get_or_default('heading_align', 'S')),
-            column_span => $cell->get_or_default('column_span', 1),
-            heading_expand => $cell->unsafe_get('column_expand'),
-	    heading_width => $cell->unsafe_get('column_width'),
-           );
+	column_nowrap => 1,
+	column_align => $cell->get_or_default(
+	    'heading_align',
+	    $self->get_or_default('heading_align', 'S'),
+	),
+	column_span => $cell->get_or_default('column_span', 1),
+	heading_expand => $cell->unsafe_get('column_expand'),
+	heading_width => $cell->unsafe_get('column_width'),
+    );
     $self->initialize_child_widget($heading);
     return $heading;
 }
@@ -998,6 +1018,11 @@ sub _initialize_row_prefixes {
     return;
 }
 
+sub _xhtml {
+    my($self, $op) = @_;
+    return $self->unsafe_get('class') ? () : $op->();
+}
+
 # _render_headings(hash_ref state)
 #
 # Renders the headings.  Checks show_headings and heading_separator.
@@ -1071,7 +1096,7 @@ sub _row_prefix {
 	unless $state->{self}->unsafe_render_attr(
 	    'row_bgcolor', $state->{list}, \$b)
 	    && length($b);
-    $row_prefix =~ s/ bgcolor[^> ]+//;
+    $row_prefix =~ s/ bgcolor[^>\s]+//;
     $row_prefix =~ s{(?<=\<tr)}{
          Bivio::UI::Color->format_html($b, 'bgcolor', $state->{req})}xe;
     return $row_prefix;
