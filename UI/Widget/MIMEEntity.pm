@@ -35,7 +35,7 @@ C<Bivio::UI::Widget::MIMEEntity>
 =cut
 
 #=IMPORTS
-use MIME::Entity;
+use MIME::Entity ();
 
 #=VARIABLES
 
