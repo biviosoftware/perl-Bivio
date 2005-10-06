@@ -39,7 +39,7 @@ use Bivio::UI::Widget::Join;
 use Bivio::Test::Request;
 
 #=VARIABLES
-
+our($AUTOLOAD);
 
 =head1 FACTORIES
 
@@ -62,6 +62,23 @@ sub new_unit {
 =head1 METHODS
 
 =cut
+
+# =for html <a name="AUTOLOAD"></a>
+
+# =head2 AUTOLOAD(...) : any
+
+# The widget and shortcut methods are dynamically loaded.
+
+# =cut
+
+# sub AUTOLOAD {
+# #TODO: This doesn't work
+#     return Bivio::IO::ClassLoader->simple_require(
+# 	'Bivio::UI::ViewLanguage',
+#     )->call_method(
+# 	$AUTOLOAD, 'Bivio::UI::ViewLanguage', @_,
+#     );
+# }
 
 =for html <a name="run_unit"></a>
 
@@ -171,6 +188,22 @@ view_main(SimplePage([
 ]));
 EOF
     return $res;
+}
+
+=for html <a name="vs_new"></a>
+
+=head2 vs_new(....)
+
+#TODO: Remove this after AUTOLOAD works
+Calls Bivio::UI::ViewShortcuts::vs_call.
+
+=cut
+
+sub vs_new {
+    shift;
+    return Bivio::IO::ClassLoader->simple_require(
+	'Bivio::UI::HTML::ViewShortcuts',
+    )->vs_new(@_);
 }
 
 #=PRIVATE SUBROUTINES
