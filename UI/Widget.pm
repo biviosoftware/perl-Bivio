@@ -511,6 +511,22 @@ sub render_attr {
     return $buffer;
 }
 
+=for html <a name="render_simple_attr"></a>
+
+=head2 render_simple_attr(string attr_name, any source) : string
+
+Calls L<unsafe_render_value|"unsafe_render_value">, and returns a
+zero length string, never C<undef>, even $attr_name doesn't exist.
+
+=cut
+
+sub render_simple_attr {
+    my($self, $attr_name, $source) = @_;
+    my($b) = '';
+    $self->unsafe_render_attr($attr_name, $source, \$b);
+    return $b;
+}
+
 =for html <a name="render_value"></a>
 
 =head2 render_value(string attr_name, any value, any source, string_ref buffer) : string_ref
@@ -606,6 +622,28 @@ sub unsafe_render_value {
 	$$buffer .= $value;
     }
     return 1;
+}
+
+=for html <a name="resolve_ancestral_attr"></a>
+
+=head2 resolve_ancestral_attr(string attr_name, any source) : string
+
+Calls unsafe_resolve_widget_value.
+
+Dies if there was no attribute or is C<undef>.
+
+Returns I<buffer>.  If I<buffer> is I<undef>, will create one.
+
+=cut
+
+sub resolve_ancestral_attr {
+    my($self, $attr_name, $source) = @_;
+    my($res) = $self->unsafe_resolve_widget_value(
+	$self->ancestral_get($attr_name), $source,
+    );
+    $self->die($attr_name, $source, 'attribute resolves as undef')
+	unless defined($res);
+    return $res;
 }
 
 =for html <a name="unsafe_resolve_widget_value"></a>
