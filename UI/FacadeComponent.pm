@@ -426,10 +426,11 @@ sub internal_get_self {
     # If a reference, then dynamic.  Just get from instance.
     # Otherwise, $req and $facade behave similarly; they are both
     # Collection::Attributes with the class as the attribute name.
-    return ($req_or_facade->isa('Bivio::UI::Facade')
+    return (
+	$req_or_facade->isa('Bivio::UI::Facade')
 	    ? $req_or_facade
-	    : $req_or_facade->get('Bivio::UI::Facade'))
-	    	    ->get($proto->simple_package_name);
+	    : $req_or_facade->get_request->get('Bivio::UI::Facade')
+	)->get($proto->simple_package_name);
 }
 
 =for html <a name="internal_get_value"></a>
