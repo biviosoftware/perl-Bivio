@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,42 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 3.20  2005/10/07 20:09:17  nagler
+  * Bivio::UI::HTML::Widget::FormButton is fixed.
+
+  Revision 3.19  2005/10/06 18:39:43  nagler
+  * Bivio::UI::HTML::Widget::Page puts xhtml on request if it has xhtml
+    as an attribute
+  * Bivio::UI::HTML::ViewShortcuts->vs_xhtml checks html on request
+  * Bivio::UI::HTML::Widget::Table will not set alignments or add
+    extra padding if xhtml
+  * Bivio::UI::HTML::Widget::Table includes image in link for sorting
+  * Bivio::UI::HTML::Widget::Image/FormButton refactored to be fully
+    dynamic and support xhtml.  If vs_xhtml Image will use src as
+    class if not already has class.
+  * Bivio::IO::Ref uses Algorithm::Diff::diff if available to print
+    differences on multi-line strings
+  * Bivio::UI::Widget->resolve_ancestral_attr is useful for getting
+    form_model
+  * Bivio::UI::Widget->render_simple_attr converts attribute to defined
+    (but possibly empty) string always
+  * Bivio::UI::Facade->get_from_request_or_self accepts anything that
+    can get_request
+  * Bivio::Type::DateTime->set_local_beginning_of_day added
+  * Bivio::Test::Unit->builtin_req added.  req() now works for all
+    bunit tests.
+  * Bivio::Test::Unit->builtin_config calls Bivio::IO::Config->introduce_values
+  * Bivio::Test::Language::HTTP->verify_local_mail wasn't waiting for
+    all msgs to come in before failing
+  * Bivio::Mail::Common->RECIPIENTS_HDR added, and it is added to all
+    outgoing message if $req->is_test
+  * Bivio::Agent::TaskId->handle_commit/rollback get $req
+  * Bivio::Biz::List(Form)Model->is_empty_row tests primary keys equal to
+    EMPTY_KEY_VALUE. Bivio::Biz::ExpandableListFormModel->is_empty_row
+    adjusted to take into that account.
+  * Bivio::Biz::Action::Acknowledgement->save/extract_label will default
+    the label to the TaskId->as_int if label is undef.
   * When Bivio::Biz::FormModel->validate_and_execute_ok is called,
     Action.Acknowledgement->save_label will be called.
   * Bivio::Mail::Common/Outgoing->*send* require $req (deprecated)
