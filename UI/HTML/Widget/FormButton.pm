@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::FormButton;
 use strict;
@@ -127,7 +127,7 @@ sub control_on_render {
     my($p, $s) = Bivio::UI::Font->format_html('form_submit', $source);
     $$buffer .= $p
 	. '<input type=submit name='
-	. $self->resolve_ancestral_attr('form_model', $source)
+	. $self->resolve_ancestral_attr('form_model', $source->get_request)
 	    ->get_field_name_for_html($self->get('field'))
 	. ' value="'
 	. Bivio::HTML->escape($self->render_simple_attr('label', $source))
@@ -142,7 +142,7 @@ sub control_on_render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
