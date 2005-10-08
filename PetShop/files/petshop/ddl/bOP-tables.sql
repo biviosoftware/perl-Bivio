@@ -107,6 +107,16 @@ CREATE TABLE email_t (
 )
 /
 
+CREATE TABLE forum_t (
+  forum_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18),
+  parent_forum_id NUMERIC(18),
+  name VARCHAR(30) NOT NULL,
+  name_lc VARCHAR(30) NOT NULL,
+  CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
+)
+/
+
 CREATE TABLE lock_t (
   realm_id NUMERIC(18) primary key
 )
@@ -117,6 +127,17 @@ CREATE TABLE phone_t (
   location NUMERIC(2) NOT NULL,
   phone VARCHAR(30),
   CONSTRAINT phone_t1 primary key(realm_id, location)
+)
+/
+
+CREATE TABLE realm_file_t (
+  realm_file_id NUMERIC(18),
+  realm_id NUMERIC(18) NOT NULL,
+  volume NUMERIC(1) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  path VARCHAR(200) NOT NULL,
+  is_folder NUMERIC(1) NOT NULL,
+  CONSTRAINT realm_file_t1 PRIMARY KEY(realm_file_id)
 )
 /
 

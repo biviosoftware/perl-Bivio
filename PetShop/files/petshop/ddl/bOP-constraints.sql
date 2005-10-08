@@ -159,6 +159,36 @@ ALTER TABLE email_t
 /
 
 --
+-- forum_t
+--
+ALTER TABLE forum_t
+  add constraint forum_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX forum_t3 on forum_t (
+  realm_id
+)
+/
+CREATE INDEX forum_t4 on forum_t (
+  parent_forum_id
+)
+/
+CREATE UNIQUE INDEX forum_t5 on forum_t (
+  realm_id,
+  name_lc
+)
+/
+CREATE INDEX forum_t6 on forum_t (
+  name
+)
+/
+CREATE INDEX forum_t7 on forum_t (
+  name_lc
+)
+/
+
+--
 -- lock_t
 --
 -- These constraints intentionally left blank.
@@ -174,6 +204,37 @@ ALTER TABLE phone_t
 CREATE INDEX phone_t3 on phone_t (
   realm_id
 )
+/
+
+--
+-- realm_file_t
+--
+ALTER TABLE realm_file_t
+  ADD CONSTRAINT realm_file_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX realm_file_t3 ON realm_file_t (
+  realm_id
+)
+/
+CREATE INDEX realm_file_t4 ON realm_file_t (
+  creation_date_time
+)
+/
+CREATE INDEX realm_file_t5 ON realm_file_t (
+  path
+)
+/
+CREATE UNIQUE INDEX realm_file_t6 ON realm_file_t (
+  realm_id,
+  volume,
+  path
+)
+/
+ALTER TABLE realm_file_t
+  ADD CONSTRAINT realm_file_t7
+  CHECK (is_folder BETWEEN 0 AND 1)
 /
 
 --
