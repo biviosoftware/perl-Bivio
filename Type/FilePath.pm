@@ -10,12 +10,14 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = shift->SUPER::from_literal(@_);
     return ($v, $e)
-	unless defined($v) && $v =~ m{[^\s/]};
+	unless defined($v);
+    return (undef, undef)
+	unless $v =~ m{[^\s/]};
     $v =~ s{/^\s+|\s+$|^/+|/+$}{}g;
     $v =~ s{/+}{/}g;
     # No leading dots or specials except forward '/' and not '%' (see to_os)
-    return $v =~ m{(?:^|/)\.|\.$|[\\%:*?"<>\|\0-\037\177]}
-	? (undef, Bivio::TypeError->FILE_NAME) : $v;
+    return $v =~ m{(?:^|/)\.|\.$|[\\\%:*?"<>\|\0-\037\177]}
+	? (undef, Bivio::TypeError->FILE_PATH) : $v;
 }
 
 sub get_width {
