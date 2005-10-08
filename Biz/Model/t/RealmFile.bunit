@@ -1,13 +1,6 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-config({
-    'Bivio::UI::Facade' => {
-	local_file_root => my $tmp = Bivio::IO::File->mkdir_p(
-	    Bivio::IO::File->rm_rf(
-		File::Spec->rel2abs('tmp'))),
-    },
-});
 req()->set_realm_and_user('demo', 'demo');
 [
     {
