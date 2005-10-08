@@ -1297,7 +1297,7 @@ sub _email {
     $msg->set_header('To', $to_email);
     $msg->set_from_with_user($self->get_request);
     $body->($msg);
-    $msg->send();
+    $msg->send($self->get_request);
     return;
 }
 
