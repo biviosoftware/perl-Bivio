@@ -325,6 +325,11 @@ sub get_delegate_info {
 	undef,
 	'Nine (9) digit US Zip code required',
     ],
+    FILE_PATH => [
+	53,
+	undef,
+	'File paths may not contain \\, :, *, ?, ", <, >, |, tabs, control characters, leading or trailing dots.',
+    ],
 ];
 }
 
