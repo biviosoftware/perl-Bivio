@@ -59,6 +59,18 @@ sub AUTOLOAD {
     return [undef, Bivio::TypeError->$func(@_)];
 }
 
+=for html <a name="UNDEF"></a>
+
+=head2 UNDEF()
+
+For not defined case.
+
+=cut
+
+sub UNDEF {
+    return [undef, undef];
+}
+
 #=PRIVATE SUBROUTINES
 
 =head1 COPYRIGHT
