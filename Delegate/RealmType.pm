@@ -109,6 +109,7 @@ sub get_delegate_info {
 	    undef,
 	    'access to a particular club',
 	],
+	'FORUM' => [4],
     ];
 }
 
