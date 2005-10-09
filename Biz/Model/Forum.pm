@@ -22,7 +22,7 @@ sub create_realm {
 	    %$forum,
 	    realm_id => $req->get('auth_id'),
 	})->get('forum_id'),
-    })->get('realm_id');
+    });
     $self->new_other('RealmUser')->create({
 	realm_id => $self->get('forum_id'),
 	user_id => $admin_id,
