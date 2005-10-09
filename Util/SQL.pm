@@ -366,6 +366,8 @@ sub init_realm_role {
 	$rr->main(@args);
         $cmd = '';
     }
+    $rr->copy_all(club => 'forum')
+	if Bivio::Auth::RealmType->unsafe_from_name('FORUM');
     return;
 }
 
@@ -378,7 +380,6 @@ Initializes test data.  A hook for the subclasses.
 =cut
 
 sub initialize_test_data {
-    my($self) = @_;
     return;
 }
 
