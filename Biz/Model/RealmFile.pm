@@ -36,13 +36,23 @@ sub delete {
 
 sub delete_all {
     my($self, $query) = @_;
-    $self->die('unsupported with a query')
+    my($req) = $self->get_request;
+    my($realm);
+    if ($query && $query->{realm_id}) {
+ 	$realm = $req->get('auth_realm');
+ 	$req->set_realm($query->{realm_id});
+ 	delete($query->{realm_id});
+    }
+    $self->die('unsupported with a query: ', $query)
 	if $query && %$query;
     my($d) = _realm_dir($self);
     _txn($self, sub {
         Bivio::IO::File->rm_rf($d);
     });
-    return $self->SUPER::delete_all;
+    my(@res) = $self->SUPER::delete_all;
+    $req->set_realm($realm)
+	if $realm;
+    return @res;
 }
 
 sub get_content {

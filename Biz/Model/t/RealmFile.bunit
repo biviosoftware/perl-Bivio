@@ -45,5 +45,13 @@ my($h2) = {path => 'h2', volume => $vt};
 	    [] => 0,
 	    [$h2] => 0,
 	],
+        create_with_content => [
+	    [\('hello')] => not_die(),
+	],
+	handle_commit => not_die(),
+	delete_all => [
+	    [{volume => $vt}] => DIE(),
+	    [{realm_id => req()->get('auth_id')}] => 1,
+	],
     ],
 ];
