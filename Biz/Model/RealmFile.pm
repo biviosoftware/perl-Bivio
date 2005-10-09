@@ -27,33 +27,33 @@ sub delete {
     $self->load(@_)
 	unless $self->is_loaded;
     $self->internal_clear_model_cache;
-    $self->get_request->push_txn_resource($self);
+    _txn($self, sub {
+	# Don't check for errors, may not exist
+	unlink(shift(@_));
+    });
     return $self->SUPER::delete;
 }
 
 sub delete_all {
-    die('unsupported');
+    my($self, $query) = @_;
+    $self->die('unsupported with a query')
+	if $query && %$query;
+    my($d) = _realm_dir($self);
+    _txn($self, sub {
+        Bivio::IO::File->rm_rf($d);
+    });
+    return $self->SUPER::delete_all;
 }
 
 sub get_content {
     my($self) = @_;
-    return ($self->[$_IDI] ||= {})->{content}
-	||= Bivio::IO::File->read(_path($self))
+    return _f($self)->{content} ||= Bivio::IO::File->read(_path($self));
 }
 
 sub handle_commit {
     my($self) = @_;
-    my($p) = _path($self);
-    if (my $fields = $self->[$_IDI]) {
-	my($c) = $self->get_content;
-	$self->internal_clear_model_cache;
-	Bivio::IO::File->mkdir_parent_only($p);
-	Bivio::IO::File->write($p, $c);
-    }
-    else {
-	# May not be there, so don't check result
-	unlink($p);
-    }
+    (_f($self)->{handle_commit} || sub {})->();
+    $self->internal_clear_model_cache;
     return;
 }
 
@@ -87,13 +87,17 @@ sub internal_initialize {
 
 sub put_content {
     my($self, $content) = @_;
-    ($self->[$_IDI] ||= {})->{content}
-	= ref($content) ? $content : \$content;
+    _f($self)->{content} = ref($content) ? $content : \$content;
     $$content = ''
 	unless defined($$content);
     $self->die('folder with content')
 	if $self->get('is_folder') && length($$content);
-    $self->get_request->push_txn_resource($self);
+    my($c) = $self->get_content;
+    _txn($self, sub {
+	my($p) = @_;
+	Bivio::IO::File->mkdir_parent_only($p);
+	Bivio::IO::File->write($p, $c);
+    });
     return $self;
 }
 
@@ -105,18 +109,37 @@ sub update {
     die('unsupported');
 }
 
+sub _f {
+    return (shift->[$_IDI] ||= {});
+}
+
 sub _path {
     my($self) = @_;
-    return $self->[$_IDI]->{path} ||= Bivio::UI::Facade->get_local_file_name(
-	Bivio::UI::LocalFileType->REALM_DATA,
-	$self->get('realm_id')
+    return _f($self)->{path} ||= _realm_dir($self)
 	. '/'
 	. lc($self->get('volume')->get_name)
 	. '/'
 	.  $self->get('realm_file_id')
 	. '-'
-	. $_P->to_os($self->get('path')),
+	. $_P->to_os($self->get('path'));
+}
+
+sub _realm_dir {
+    my($self) = @_;
+    return Bivio::UI::Facade->get_local_file_name(
+	Bivio::UI::LocalFileType->REALM_DATA,
+	$self->get('realm_id')
     );
+}
+
+sub _txn {
+    my($self, $op) = @_;
+    my($p) = _path($self);
+    _f($self)->{handle_commit} = sub {
+	$op->($p);
+    };
+    $self->get_request->push_txn_resource($self);
+    return;
 }
 
 1;
