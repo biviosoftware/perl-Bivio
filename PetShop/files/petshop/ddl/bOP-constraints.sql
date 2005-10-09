@@ -170,20 +170,16 @@ CREATE INDEX forum_t3 on forum_t (
   realm_id
 )
 /
-CREATE INDEX forum_t4 on forum_t (
-  parent_forum_id
-)
-/
-CREATE UNIQUE INDEX forum_t5 on forum_t (
+CREATE UNIQUE INDEX forum_t4 on forum_t (
   realm_id,
   name_lc
 )
 /
-CREATE INDEX forum_t6 on forum_t (
+CREATE INDEX forum_t5 on forum_t (
   name
 )
 /
-CREATE INDEX forum_t7 on forum_t (
+CREATE INDEX forum_t6 on forum_t (
   name_lc
 )
 /

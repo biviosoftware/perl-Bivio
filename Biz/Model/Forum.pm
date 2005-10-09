@@ -19,8 +19,8 @@ sub create_realm {
 	display_name => $display_name,
 	realm_type => Bivio::Auth::RealmType->FORUM,
 	realm_id => $self->create({
-	    realm_id => $req->get('auth_id'),
 	    %$forum,
+	    realm_id => $req->get('auth_id'),
 	})->get('forum_id'),
     })->get('realm_id');
     $self->new_other('RealmUser')->create({
@@ -39,7 +39,6 @@ sub internal_initialize {
 	columns => {
             forum_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    realm_id => ['RealmOwner.realm_id', 'NONE'],
-            parent_forum_id => ['RealmOwner.realm_id', 'NONE'],
 	    name => ['Name', 'NOT_NULL'],
 	    name_lc => ['Name', 'NOT_NULL'],
         },
