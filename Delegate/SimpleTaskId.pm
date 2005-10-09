@@ -195,6 +195,15 @@ sub get_delegate_info {
 	    Action.TestBackdoor
 	    Action.MailReceiveStatus
 	)],
+	# used by Model.RealmOwner
+	[qw(
+	    FORUM_HOME
+	    17
+	    FORUM
+	    DATA_READ
+	    Action.ClientRedirect->execute_next
+	    next=SITE_ROOT
+	)],
     ];
 }
 
