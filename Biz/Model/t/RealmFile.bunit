@@ -1,15 +1,17 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-req()->set_realm_and_user('demo', 'demo');
+set_realm_and_user('demo', 'demo');
+my($vt) = class()->get_instance->get_field_type('volume')->from_int(1);
+my($h2) = {path => 'h2', volume => $vt};
 [
     {
 	object => [req()],
 	compute_params => sub {
-	    my(undef, $params, $method, $object) = @_;
+	    my(undef, $params) = @_;
 	    return [
 		ref($params->[0]) eq 'HASH' ? () : {
-		    volume => $object->get_field_type('volume')->from_int(1),
+		    volume => $vt,
 		    path => 'h',
 		},
 		@$params,
@@ -17,14 +19,31 @@ req()->set_realm_and_user('demo', 'demo');
 	},
     } => [
         create_with_content => [
-	    [\('hello')] => undef,
+	    [\('hello')] => not_die(),
 	],
-	handle_commit => undef,
+	handle_commit => not_die(),
 	unsafe_load => 1,
 	get_content => [
 	    [] => [\('hello')],
 	],
-	delete => undef,
+	delete => not_die(),
 	unsafe_load => 0,
+        create_with_content => [
+	    [\('hello')] => not_die(),
+	    [$h2, \('hello2')] => not_die(),
+	],
+	handle_commit => not_die(),
+	unsafe_load => [
+	    [] => 1,
+	    [$h2] => 1,
+	],
+	delete_all => [
+	    [{}] => 2,
+	],
+	handle_commit => not_die(),
+	unsafe_load => [
+	    [] => 0,
+	    [$h2] => 0,
+	],
     ],
 ];
