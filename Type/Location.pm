@@ -43,6 +43,10 @@ It can be assumed C<HOME> is defined.
 __PACKAGE__->compile(
     Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__));
 
+sub get_default {
+    return shift->from_int(1);
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
