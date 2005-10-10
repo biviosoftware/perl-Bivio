@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 3.23  2005/10/10 22:21:14  moeller
+  * Bivio::UI::HTML::Widget::Image fixed escape of icon uri
+
+  Revision 3.22  2005/10/10 05:01:08  nagler
+  * Bivio::UI::Task->parse_uri/format_uri use Type.Realm->unsafe_from_uri
+    which allows '-' as a valid uri RealmName.  This change is backwards
+    compatible, because would otherwise have gotten NOT_FOUND exception.
+    Cleaned up some of the indentation, too.
+  * Bivio::Delegate::SimpleRealmName->unsafe_from_uri added
+  * Bivio::Biz::Model->is_instance added
+  * Bivio::Biz::Model::RealmFile->delete_all allows realm_id in query
+  * Bivio::Util::SQL->init_realm_role will copy permissions of CLUB to
+    FORUM if Bivio::Auth::RealmType->FORUM exists
+  * Bivio::Delegate::RealmType->FORUM added
   * Bivio::Delegate::SimpleTaskId->FORUM_HOME added
   * Bivio::Delegate::SimpleTypeError->FILE_PATH added
   * Bivio::Test::Type->UNDEF added
