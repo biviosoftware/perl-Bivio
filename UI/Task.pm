@@ -157,12 +157,11 @@ use Bivio::DieCode;
 use Bivio::HTML;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
-use Bivio::Type::RealmName;
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+my($_RN) = Bivio::Type->get_instance('RealmName');
 my($_GENERAL) = Bivio::Auth::Realm->get_general();
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
 my($_SITE_ROOT) = Bivio::Agent::TaskId->SITE_ROOT;
@@ -340,14 +339,13 @@ sub format_uri {
 	}
 	else {
 	    return _get_error(
-		$self, $task_name, $args->{realm},
+		$self,
+		$task_name,
+		$args->{realm},
 		'not a simple realm name or placeholder'
-#TODO: Use RealmName
-	    # The '-' is for my-club-site, not for realm names
-	    ) unless $args->{realm} =~ /^[-\w]+$/;
-	    $ro = $args->{realm};
+	    ) unless $ro = $_RN->unsafe_from_uri($args->{realm});
 	}
-	$uri =~ s/.*$_REALM_PLACEHOLDER_PAT/\/$ro/og;
+	$uri =~ s/.*?$_REALM_PLACEHOLDER_PAT/\/$ro/og;
     }
     $uri = '/' . $uri
 	unless $uri =~ /^\//;
@@ -534,7 +532,7 @@ sub parse_uri {
     if (defined($info = $fields->{from_uri}->{$uri[0]}->[$_GENERAL_INT])) {
 	# At this stage, we have to map to a general realm, because
 	# all first components of the general realm are not valid
-	# Bivio::Type::RealmName values.  Therefore, we fail with
+	# RealmName values.  Therefore, we fail with
 	# not found if it matches the first component, but the task
 	# doesn't have path_info.
 	if ($info->{has_path_info}) {
@@ -552,7 +550,7 @@ sub parse_uri {
     }
 
     # If first uri doesn't match a RealmName, can't be one.
-    my($name) = Bivio::Type::RealmName->from_literal($uri[0]);
+    my($name) = $_RN->unsafe_from_uri($uri[0]);
     unless (defined($name)) {
 	# Not a realm, so try SITE_ROOT
 	_trace($orig_uri, ' => site_root') if $_TRACE;
@@ -578,11 +576,11 @@ sub parse_uri {
 
     # Is this a valid, authorized realm with a task for this uri?
     my($o) = Bivio::Biz::Model::RealmOwner->new($req);
-    $req->throw_die(Bivio::DieCode::NOT_FOUND,
-            {entity => $name, uri => $orig_uri,
-                class => 'Bivio::Auth::Realm',
-                message => 'no such realm'})
-            unless $o->unauth_load(name => $name);
+    $req->throw_die(Bivio::DieCode->NOT_FOUND, {
+	entity => $name, uri => $orig_uri,
+	class => 'Bivio::Auth::Realm',
+	message => 'no such realm',
+     }) unless $o->unauth_load(name => $name);
     $realm = Bivio::Auth::Realm->new($o);
 
     # Found the realm, now try to find the URI (without checking path_info)
@@ -590,11 +588,16 @@ sub parse_uri {
     my($rti) = $realm->get('type')->as_int;
     # No path info?
     if (defined($fields->{from_uri}->{$uri})
-	    && defined($fields->{from_uri}->{$uri}->[$rti])) {
+        && defined($fields->{from_uri}->{$uri}->[$rti]),
+    ) {
 	_trace($orig_uri, ' => ', $fields->{from_uri}->{$uri}->[$rti]->{task})
 		if $_TRACE;
-	return ($fields->{from_uri}->{$uri}->[$rti]->{task}, $realm, '',
-		$orig_uri);
+	return (
+	    $fields->{from_uri}->{$uri}->[$rti]->{task},
+	    $realm,
+	    '',
+	    $orig_uri,
+	);
     }
 
     # Is this a path_info URI?  Note this may seem a bit "slow", but it
@@ -604,19 +607,26 @@ sub parse_uri {
     $uri = join('/', @uri[0..$path_info_index])
 	if @uri > $path_info_index;
     if (defined($fields->{from_uri}->{$uri})
-	    && defined($info = $fields->{from_uri}->{$uri}->[$rti])
-	    && $info->{has_path_info}) {
+	&& defined($info = $fields->{from_uri}->{$uri}->[$rti])
+	&& $info->{has_path_info},
+    ) {
 	_trace($orig_uri, ' => ', $info->{task}) if $_TRACE;
-	return ($info->{task}, $realm,
-		'/'.join('/', @uri[$path_info_index+1..$#uri]), $orig_uri);
+	return (
+	    $info->{task},
+	    $realm,
+	    join('/', '', @uri[$path_info_index+1..$#uri]),
+	    $orig_uri,
+	);
     }
 
     # Well, really not found
-    $req->throw_die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
+    $req->throw_die(Bivio::DieCode->NOT_FOUND, {
+	entity => $orig_uri,
 	realm_type => $realm->get('type')->get_name,
 	orig_uri => $orig_uri,
 	uri => $uri,
-	message => 'no such URI for this realm'});
+	message => 'no such URI for this realm',
+    });
     # DOES NOT RETURN
 }
 
