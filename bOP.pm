@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    Bivio::Biz::Model::LocationBase uses it instead of hardwired HOME.
+    Remove other references to get_default/HOME in Action.ECSecureSourceProcessor,
+    Model.Email, and Model.UserCreateForm.
 
   Revision 3.23  2005/10/10 22:21:14  moeller
   * Bivio::UI::HTML::Widget::Image fixed escape of icon uri
