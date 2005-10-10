@@ -395,6 +395,103 @@ $_ = <<'}'; # emacs
 sub internal_upgrade_db {
 }
 
+=for html <a name="internal_upgrade_db_forum"></a>
+
+=head2 internal_upgrade_db_forum()
+
+Adds Forum and RealmFile tables.  Don't forget to add the following
+to your BConf.pm after running this.
+
+   'Bivio::SQL::PropertySupport' => {
+        unused_classes => [],
+   },
+
+=cut
+
+sub internal_upgrade_db_forum {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE forum_t (
+  forum_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18),
+  name VARCHAR(30) NOT NULL,
+  name_lc VARCHAR(30) NOT NULL,
+  CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
+)
+/
+CREATE TABLE realm_file_t (
+  realm_file_id NUMERIC(18),
+  realm_id NUMERIC(18) NOT NULL,
+  volume NUMERIC(1) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  path VARCHAR(200) NOT NULL,
+  is_folder NUMERIC(1) NOT NULL,
+  CONSTRAINT realm_file_t1 PRIMARY KEY(realm_file_id)
+)
+/
+CREATE SEQUENCE realm_file_s
+  MINVALUE 100003
+  CACHE 1 INCREMENT BY 100000
+/
+
+CREATE SEQUENCE forum_s
+  MINVALUE 100004
+  CACHE 1 INCREMENT BY 100000
+/
+
+ALTER TABLE realm_file_t
+  ADD CONSTRAINT realm_file_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX realm_file_t3 ON realm_file_t (
+  realm_id
+)
+/
+CREATE INDEX realm_file_t4 ON realm_file_t (
+  creation_date_time
+)
+/
+CREATE INDEX realm_file_t5 ON realm_file_t (
+  path
+)
+/
+CREATE UNIQUE INDEX realm_file_t6 ON realm_file_t (
+  realm_id,
+  volume,
+  path
+)
+/
+ALTER TABLE realm_file_t
+  ADD CONSTRAINT realm_file_t7
+  CHECK (is_folder BETWEEN 0 AND 1)
+/
+ALTER TABLE forum_t
+  add constraint forum_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX forum_t3 on forum_t (
+  realm_id
+)
+/
+CREATE UNIQUE INDEX forum_t4 on forum_t (
+  realm_id,
+  name_lc
+)
+/
+CREATE INDEX forum_t5 on forum_t (
+  name
+)
+/
+CREATE INDEX forum_t6 on forum_t (
+  name_lc
+)
+/
+EOF
+    return;
+}
+
 =for html <a name="internal_upgrade_db_multiple_realm_roles"></a>
 
 =head2 internal_upgrade_db_multiple_realm_roles()
