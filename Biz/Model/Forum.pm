@@ -13,10 +13,10 @@ sub create {
 }
 
 sub create_realm {
-    my($self, $forum, $display_name, $admin_id) = @_;
+    my($self, $forum, $realm_owner, $admin_id) = @_;
     my($req) = $self->get_request;
     $self->new_other('RealmOwner')->create({
-	display_name => $display_name,
+	%$realm_owner,
 	realm_type => Bivio::Auth::RealmType->FORUM,
 	realm_id => $self->create({
 	    %$forum,
