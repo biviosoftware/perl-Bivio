@@ -49,6 +49,8 @@ my($h2) = {path => 'h2', volume => $vt};
 	    [\('hello')] => not_die(),
 	],
 	handle_commit => not_die(),
+    ],
+    class() => [
 	delete_all => [
 	    [{volume => $vt}] => DIE(),
 	    [{realm_id => req()->get('auth_id')}] => 1,
