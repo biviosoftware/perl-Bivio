@@ -104,6 +104,9 @@ sub merge_overrides {
 		TestLanguage => ['Bivio::PetShop::Test'],
 	    },
 	}),
+	'Bivio::SQL::PropertySupport' => {
+	    unused_classes => [],
+	},
 	'Bivio::UI::Facade' => {
 	    default => 'PetShop',
 	    http_suffix => 'bivio.biz',
