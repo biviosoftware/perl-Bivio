@@ -84,6 +84,9 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_EMPTY_ARRAY) = [];
 my($_MIN_PRIMARY_ID) = Bivio::Type::PrimaryId->get_min;
+Bivio::IO::Config->register(my $_CFG = {
+    unused_classes => [qw(RealmFile Forum)],
+});
 
 =head1 FACTORIES
 
@@ -274,6 +277,26 @@ Returns an array of (model class, key map) pairs.
 sub get_children {
     my($self) = @_;
     return $self->get('children');
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item unused_classes : array_ref (required)
+
+May be empty.  List of PropertyModel classes not in use in this application.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 =for html <a name="iterate_start></a>
@@ -613,6 +636,10 @@ sub _prepare_select_param {
 #
 sub _register_with_parents {
     my($attrs) = @_;
+    return if grep(
+	!$attrs->{class} || $_ eq $attrs->{class}->simple_package_name,
+	@{$_CFG->{unused_classes}},
+    );
     my($parents) = $attrs->{parents};
     foreach my $parent (keys(%$parents)) {
 	my($parent_class) = $parent;
