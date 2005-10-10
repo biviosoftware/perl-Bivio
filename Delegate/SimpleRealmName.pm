@@ -75,14 +75,15 @@ if the syntax check fails.
 
 sub from_literal {
     my($proto, $value) = @_;
-    return undef unless defined($value);
-    # Leave middle spaces, because user can't have them
-    $value =~ s/^\s+|\s+$//g;
-    return undef unless length($value);
-    $value = lc($value);
+    $value =~ s/^\s+|\s+$//g
+	if defined($value);
+    my($v, $e) = $proto->SUPER::from_literal($value);
+    return ($v, $e)
+	unless $v;
+    $v = lc($v);
     return (undef, Bivio::TypeError->REALM_NAME)
-        unless $proto->internal_is_realm_name($value);
-    return $value;
+        unless $proto->internal_is_realm_name($v);
+    return $v;
 }
 
 =for html <a name="internal_is_realm_name"></a>
@@ -96,7 +97,7 @@ Must begin with a letter and be at least three chars
 
 sub internal_is_realm_name {
     my($proto, $value) = @_;
-    return $value =~ /^[a-z][a-z0-9_]{2,}$/ ? 1 : 0;
+    return $value =~ /^[a-z][a-z0-9_]{2,}$/i ? 1 : 0;
 }
 
 =for html <a name="is_offline"></a>
@@ -110,6 +111,24 @@ Returns true if the RealmName is a offline name.
 sub is_offline {
     my(undef, $value) = @_;
     return defined($value) && $value =~ /^$_OFFLINE_PREFIX/o ? 1 : 0;
+}
+
+=for html <a name="unsafe_from_uri"></a>
+
+=head2 static unsafe_from_uri(string name) : string
+
+Returns the name (possibly cleaned up) or undef, if not valid.
+
+=cut
+
+sub unsafe_from_uri {
+    my($proto, $value) = @_;
+    return undef
+	unless ($proto->SUPER::from_literal($value))[0];
+    # We allow dashes in URI names (my-site and other constructed names)
+    (my $v = $value) =~ s/-//g;
+    return $proto->internal_is_realm_name($v) && $value !~ /^-/
+	? $value : undef;
 }
 
 #=PRIVATE METHODS
