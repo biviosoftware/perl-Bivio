@@ -212,10 +212,8 @@ sub control_on_render {
 	map((length($a->{$_}) ? qq{ $_="$a->{$_}"} : ()), sort(keys(%$a))),
     );
     if (defined($self->unsafe_get('width'))) {
-	$$buffer .= ' src="'
-	    . Bivio::HTML->escape(Bivio::UI::Icon->get_value($src, $source))
-		->{uri}
-	    . '"';
+	$$buffer .= ' src="' . Bivio::HTML->escape(
+            Bivio::UI::Icon->get_value($src, $source)->{uri}) . '"';
 	$src = undef;
     }
     else {
