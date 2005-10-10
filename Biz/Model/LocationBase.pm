@@ -37,6 +37,7 @@ C<Bivio::Biz::Model::LocationBase> base class for Address, Email, etc.
 #=IMPORTS
 
 #=VARIABLES
+my($_DEFAULT_LOCATION) = Bivio::Type->get_instance('Location')->get_default;
 
 =head1 METHODS
 
@@ -52,7 +53,7 @@ Sets I<location> if not set, then calls SUPER.
 
 sub create {
     my($self, $values) = @_;
-    $values->{location} ||= Bivio::Type::Location->HOME;
+    $values->{location} ||= $_DEFAULT_LOCATION;
     return $self->SUPER::create($values);
 }
 
@@ -70,7 +71,7 @@ and calls SUPER.
 sub unauth_load {
     my($self) = shift;
     my($query) = int(@_) == 1 ? @_ : {@_};
-    $query->{location} = Bivio::Type::Location->HOME
+    $query->{location} = $_DEFAULT_LOCATION
 	if !$query->{location} && $query->{realm_id};
     return $self->SUPER::unauth_load($query);
 }
