@@ -27,15 +27,18 @@ sub delete {
     $self->load(@_)
 	unless $self->is_loaded;
     $self->internal_clear_model_cache;
+    my($p) = _path($self);
     _txn($self, sub {
 	# Don't check for errors, may not exist
-	unlink(shift(@_));
+	unlink($p);
     });
     return $self->SUPER::delete;
 }
 
 sub delete_all {
     my($self, $query) = @_;
+    $self = $self->new
+	unless $self->is_instance;
     my($req) = $self->get_request;
     my($realm);
     if ($query && $query->{realm_id}) {
@@ -45,7 +48,7 @@ sub delete_all {
     }
     $self->die('unsupported with a query: ', $query)
 	if $query && %$query;
-    my($d) = _realm_dir($self);
+    my($d) = _realm_dir($req->get('auth_id'));
     _txn($self, sub {
         Bivio::IO::File->rm_rf($d);
     });
@@ -103,8 +106,8 @@ sub put_content {
     $self->die('folder with content')
 	if $self->get('is_folder') && length($$content);
     my($c) = $self->get_content;
+    my($p) = _path($self);
     _txn($self, sub {
-	my($p) = @_;
 	Bivio::IO::File->mkdir_parent_only($p);
 	Bivio::IO::File->write($p, $c);
     });
@@ -125,7 +128,7 @@ sub _f {
 
 sub _path {
     my($self) = @_;
-    return _f($self)->{path} ||= _realm_dir($self)
+    return _f($self)->{path} ||= _realm_dir($self->get('realm_id'))
 	. '/'
 	. lc($self->get('volume')->get_name)
 	. '/'
@@ -135,19 +138,16 @@ sub _path {
 }
 
 sub _realm_dir {
-    my($self) = @_;
+    my($realm_id) = @_;
     return Bivio::UI::Facade->get_local_file_name(
 	Bivio::UI::LocalFileType->REALM_DATA,
-	$self->get('realm_id')
+	$realm_id,
     );
 }
 
 sub _txn {
     my($self, $op) = @_;
-    my($p) = _path($self);
-    _f($self)->{handle_commit} = sub {
-	$op->($p);
-    };
+    _f($self)->{handle_commit} = $op;
     $self->get_request->push_txn_resource($self);
     return;
 }
