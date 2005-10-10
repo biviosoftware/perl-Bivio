@@ -1,0 +1,21 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    class() => [
+	from_literal => [
+	    abc => 'abc',
+	    ab => REALM_NAME(),
+	    ' abc ' => 'abc',
+	    [undef] => UNDEF(),
+	    [' '] => UNDEF(),
+	],
+        unsafe_from_uri => [
+	    ab => [undef],
+	    abc => 'abc',
+	    'abc-' => 'abc-',
+	    'ab-' => [undef],
+	    '-abc' => [undef],
+	],
+    ],
+]
