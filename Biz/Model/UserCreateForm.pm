@@ -106,7 +106,6 @@ sub internal_create_models {
 	    || $req->format_email(Bivio::Type::Email->IGNORE_PREFIX
 	    . $realm->get('name')
 	    . '-' . time),
-	location => Bivio::Type::Location->HOME,
 	want_bulletin => 0,
     }) unless ($self->unsafe_get('Email.email') || '')
 	eq Bivio::Type::Email->IGNORE_PREFIX;
