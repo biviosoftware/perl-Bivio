@@ -660,6 +660,19 @@ sub internal_initialize_sql_support {
     Bivio::Die->die(shift, ': abstract method');
 }
 
+=for html <a name="is_instance"></a>
+
+=head2 static is_instance()
+
+Returns true if is a normal instance and not singleton or class.
+
+=cut
+
+sub is_instance {
+    my($self) = @_;
+    return !ref($self) || $self->[$_IDI]->{is_singleton} ? 0 : 1;
+}
+
 =for html <a name="iterate_end"></a>
 
 =head2 iterate_end()
