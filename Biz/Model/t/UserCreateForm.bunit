@@ -1,17 +1,16 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-use strict;
-use Bivio::Test;
-Bivio::Test->new('Bivio::Biz::Model::UserCreateForm')->unit([
-    'Bivio::Biz::Model::UserCreateForm' => [
+Request('initialize_fully');
+[
+    class() => [
 	{
 	    method => 'parse_display_name',
 	    compute_return => sub {
 		my($case, $actual) = @_;
 		my($a) = $actual->[0];
-		return ref($actual->[0]) eq 'HASH'
+		return ref($a) eq 'HASH'
 		    ? [@$a{qw(first_name middle_name last_name)}]
-		    : [$actual->[0]->get_name];
+		    : [$a->get_name];
 	    },
 	} => [
 	    'Dr. John' => ['Dr.', undef, 'John'],
@@ -43,5 +42,20 @@ Bivio::Test->new('Bivio::Biz::Model::UserCreateForm')->unit([
 	    'a b MyVeryLongNameShouldBlowTheLengthLimit'
 		=> 'LAST_NAME_LENGTH',
 	],
+	execute => [
+	    [req(), {
+		'RealmOwner.display_name' => 'Fred',
+		'RealmOwner.password' => 'password',
+	     }] => sub {Bivio::IO::Alert->info(req()->get('auth_user_id')); return 1;}
+	],
     ],
-]);
+    sub {Bivio::Biz::Model->new(req(), 'User')} => [
+	unauth_load => [
+	    sub {[{user_id => req()->get('auth_user_id')}]} => 1,
+	],
+	cascade_delete => undef,
+	unauth_load => [
+	    sub {[{user_id => req()->get('auth_user_id')}]} => 0,
+	],
+    ],
+];
