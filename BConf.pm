@@ -223,12 +223,13 @@ sub merge_class_loader {
 		    Action => ['Bivio::Biz::Action'],
 		    FacadeComponent => ['Bivio::UI'],
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
-		    HTMLWidget =>
-		        ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
-		    MailWidget =>
-		        ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
-		    TextWidget =>
-		        ['Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
+		    map(
+			("${_}Widget" => [
+			    "Bivio::UI::${_}::Widget",
+			    $_ eq 'XHTML' ? 'Bivio::UI::HTML::Widget' : (),
+			    'Bivio::UI::Widget',
+			]),
+			qw(HTML XHTML Mail Text)),
 		    TestLanguage => ['Bivio::Test::Language'],
 		    TestUnit => ['Bivio::Test'],
 		    Model => ['Bivio::Biz::Model'],
