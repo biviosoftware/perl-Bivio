@@ -525,7 +525,8 @@ not already loaded.
 
 sub vs_new {
     my($proto, $class) = (shift, shift);
-    return Bivio::UI::ViewLanguage->view_ok
+    return UNIVERSAL::can('Bivio::UI::ViewLanguage', 'view_ok')
+	&& Bivio::UI::ViewLanguage->view_ok
 	? $proto->vs_call($class, @_) : (_use($class))[0]->new(@_);
 }
 
