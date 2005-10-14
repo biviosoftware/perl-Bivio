@@ -68,9 +68,7 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 The value to be passed to the C<BGCOLOR> attribute of the C<TD> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
-=item cell_class : string []
-
-Class attribute of the cell.
+=item cell_class : any [] (dynamic)
 
 =item cell_colspan : int [1]
 
@@ -128,7 +126,7 @@ L<Bivio::UI::Icon::get_width_as_html|Bivio::UI::Icon/"get_width_as_html">.
 If set, controls the rendering of an entire row.  Can be set
 on any cell in the row.
 
-=item row_class : any []
+=item row_class : any [] (dynamic)
 
 If set, controls the class of the entire row.  Can be set
 on any cell in the row.
@@ -206,12 +204,14 @@ sub initialize {
 		# May set attributes on itself
 		$c->put_and_initialize(parent => $self);
 		my($expand2, $align, $colspan, $rowspan, $width, $height,
-		       $width_as_html, $height_as_html, $class)
+		       $width_as_html, $height_as_html)
 			= $c->unsafe_get(qw(cell_expand
 				cell_align cell_colspan cell_rowspan cell_width
 				cell_height cell_width_as_html
-                                cell_height_as_html cell_class));
-		$c->unsafe_initialize_attr('row_class');
+                                cell_height_as_html));
+		$c->map_invoke(
+		    unsafe_initialize_attr =>
+			[qw(row_class cell_class cell_bgcolor)]);
 		if ($expand2) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
@@ -232,17 +232,13 @@ sub initialize {
 #TODO: Should be a number or percent?
 		_append(\@p, qq! width="$width"!) if $width;
 		_append(\@p, qq! height="$height"!) if $height;
-		_append(\@p, qq! class="$class"!) if $class;
 		_append(\@p, $width_as_html) if $width_as_html;
 		_append(\@p, $height_as_html) if $height_as_html;
-
-		# NOTE: Start tag will be closed by render in case there
-		# is a cell_bgcolor.
 		$end = $c->get_or_default('cell_end', 1);
 		$form_end = $c->get_or_default('cell_end_form', 0);
 	    }
 	    elsif (!defined($c)) {
-		# Replace undef cells with something real. 
+		# Replace undef cells with something real.
 		_append(\@p, '>');
 		$c = '';
 	    }
@@ -384,14 +380,14 @@ sub render {
 		next ROW if $rc && !$source->get_widget_value(@$rc);
 		unless ($is_widget_value) {
 		    my($b);
-		    $row .= Bivio::UI::Color->format_html($b, 'bgcolor', $req)
-			if $c->unsafe_render_attr(
-			    'cell_bgcolor', $source, \$b) && $b;
-		    $b = undef;
 		    # Only first row_class counts
 		    $row =~ s/^<tr>/<tr class="$b">/
 			if $c->unsafe_render_attr(
 			    'row_class', $source, \$b) && $b;
+		    $row .= Bivio::UI::Color->format_html($b, 'bgcolor', $req)
+			if $b = $c->render_simple_attr('cell_bgcolor', $source);
+		    $row .= qq{ class="$b"}
+			if $b = $c->render_simple_attr('cell_class', $source);
 		    # Close cell start always.  See initialization.
 		    $row .= '>';
 		}
