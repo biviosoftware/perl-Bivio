@@ -83,8 +83,8 @@ sub extract_label {
 
 =head2 static save_label(Bivio::Agent::Request req)
 
-Saves I<label> in query.  If I<label> is false, will set the
-$req.task_id.as_int to the query if acknowledgement.task_id is a
+Saves I<label> in query (FormContext and req).  If I<label> is false, will set
+the $req.task_id.as_int to the query if acknowledgement.task_id is a
 Bivio::UI::Text is a label.
 
 =cut
@@ -98,10 +98,13 @@ sub save_label {
 	    );
 	$label = $req->get('task_id')->as_int;
     }
-    my($q) = $req->unsafe_get('query');
-    $req->put(query => $q = {})
-	unless $q;
-    $q->{$_QUERY} = $label;
+    # Add to FormContext (if exists) and request
+    my($x) = $req->unsafe_get('form_model');
+    $x &&= $x->unsafe_get_context;
+    foreach my $y ($x, $req) {
+	($y->unsafe_get('query') || $y->put(query => {})->get('query'))
+	    ->{$_QUERY} = $label;
+    }
     return;
 }
 
