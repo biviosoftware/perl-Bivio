@@ -306,12 +306,16 @@ sub view_put {
     while (@args) {
 	my($n, $v) = (shift(@args), shift(@args));
 	# The syntax is very rigid to allow for expansion
-	_die($n.': attr_name is not a perl identifier') if $n =~ /\W/;
-	_die($n.': attr_name does not begin with a letter')
-		unless $n =~ /^[a-z]/;
-	_die($n.': attr_name is not all lower case') if $n =~ /[A-Z]/;
-	_die($n.': attr_name may not begin with view_') if $n =~ /^view_/;
-	_die($n.': is a reserved attribute name') if $n eq 'parent';
+	_die($n, ': attr_name is not a perl identifier')
+	    if $n =~ /\W/;
+	_die($n, ': attr_name does not begin with a letter')
+	    unless $n =~ /^[a-z]/;
+	_die($n, ': attr_name is not all lower case')
+	    if $n =~ /[A-Z]/;
+	_die($n, ': attr_name may not begin with view_')
+	    if $n =~ /^view_/;
+	_die($n, ': is a reserved attribute name')
+	    if $n eq 'parent';
 	_put($n, $v);
     }
     return;
@@ -379,9 +383,9 @@ sub _args {
 #
 sub _assert_in_eval {
     my($op) = @_;
-    return $_VIEW_IN_EVAL if $_VIEW_IN_EVAL;
-    return Bivio::UI::View->unsafe_get_current
-	if Bivio::UI::View->unsafe_get_current;
+    my($res) = _in_eval();
+    return $res
+	if $res;
     $op ||= 'eval';
     $op =~ s/.*:://;
     Bivio::Die->die($op, ': operation only allowed in views');
@@ -406,7 +410,8 @@ sub _assert_value {
 	    unless UNIVERSAL::isa($value, $class);
 
     foreach my $m (@methods) {
-	_die("$name()'s value does not implement '$m'") unless $value->can($m);
+	_die($value, qq{: $name() does not implement $m})
+	    unless $value->can($m);
     }
     return;
 }
@@ -453,6 +458,12 @@ sub _eval_view {
     return $die;
 }
 
+sub _in_eval {
+    return $_VIEW_IN_EVAL if $_VIEW_IN_EVAL;
+    return Bivio::UI::View->unsafe_get_current
+	if Bivio::UI::View->unsafe_get_current;
+}
+
 # _initialize($view)
 #
 # Ensures the attributes are properly defined.  Specifies refs
@@ -486,9 +497,9 @@ sub _put {
     my($view) = _assert_in_eval();
     # We allow an attribute to be view_declared (undef) and then
     # assigned later in the view.
-    _die($name, ': view attribute already defined',
-	    ' (no overrides within view)')
-	    if defined($view->unsafe_get($name));
+    _die($name, ': view attribute already defined in this view',
+	 ' (no overrides within view)')
+	if defined($view->unsafe_get($name));
     $view->put($name => $value);
     return;
 }
