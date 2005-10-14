@@ -47,6 +47,33 @@ my($_PASSWORD_KEY) = 'x';
 
 =cut
 
+=for html <a name="execute_empty"></a>
+
+=head2 execute_empty()
+
+Default the email address to the user in the cookie if present.
+
+=cut
+
+sub execute_empty {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $self->SUPER::execute_empty;
+    my($cookie) = $req->unsafe_get('cookie');
+    return unless $cookie;
+    my($user_id) = $cookie->unsafe_get(
+        $self->get_instance('UserLoginForm')->USER_FIELD);
+    return unless $user_id;
+    my($email) = $self->new($req, 'Email');
+    return unless $email->unauth_load({
+        realm_id => $user_id,
+    });
+    $email = $email->unsafe_get('email');
+    return unless Bivio::Type->get_instance('Email')->is_valid($email);
+    $self->internal_put_field('Email.email' => $email);
+    return;
+}
+
 =for html <a name="execute_ok"></a>
 
 =head2 execute_ok() : string
@@ -86,19 +113,19 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	visible => [
 	    'Email.email',
 	],
-        other => [{
-            name => 'uri',
-            type => 'String',
-            constraint => 'NONE',
-        }],
-    };
-    return $self->merge_initialize_info(
-        $self->SUPER::internal_initialize, $info);
+        other => [
+	    {
+		name => 'uri',
+		type => 'String',
+		constraint => 'NONE',
+	    },
+	],
+    });
 }
 
 =for html <a name="unsafe_get_realm_from_query"></a>
