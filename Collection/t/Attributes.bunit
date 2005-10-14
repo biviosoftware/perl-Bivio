@@ -1,0 +1,88 @@
+# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
+# $Id$
+[
+    [{
+	a => '3',
+	b => ['A', 'B'],
+	c => {A => 1, B => 2, C => undef},
+	d => class()->new({a => 99}),
+	e => 'e',
+	parent => class()->new({pa => 13}),
+    }] => [
+	put => [
+	    [e => 5, f => 6] => not_die(),
+	],
+	get => [
+	    [] => [],
+	    a => 3,
+	    [qw(a e)] => [qw(3 5)],
+	],
+	delete => [
+	    f => not_die(),
+	],
+	get => [
+	    f => DIE(),
+	],
+	ancestral_get => [
+	    pa => 13,
+	    x => DIE(),
+	    [x => 15] => 15,
+	],
+	get_nested => [
+	    a => 3,
+	    ['a', 'a'] => DIE(),
+	    ['b', 1] => ['B'],
+	    ['c', 'B'] => 2,
+	    ['d', 'a'] => 99,
+	    ['d', 'a', 'a'] => DIE(),
+	],
+	unsafe_get_nested => [
+	    a => 3,
+	    ['a', 'a'] => DIE(),
+	    ['b', 1] => ['B'],
+	    ['b', ''] => DIE(),
+	    ['b', 1, 1] => DIE(),
+	    ['b', 2] => [undef],
+	    ['c', 'Q'] => [undef],
+	    ['c', 'C', 'x'] => [undef],
+	    ['c', 'C', 'x', 'z'] => [undef],
+	],
+	{
+	    method => 'get',
+	    want_scalar => 1,
+	} => [
+	    ['a', 'b'] => DIE(),
+	    a => 3,
+	],
+	get_if_exists_else_put => [
+	    [aa => 33] => 33,
+	    [aa => 99] => 33,
+	    [bb => sub {22}] => 22,
+	    [bb => sub {44}] => 22,
+	    [cc => 'c', dd => 'd'] => [qw(c d)],
+	    [cc => 'c', 'odd'] => DIE(),
+	],
+	map_each => [
+	    [sub {
+		 shift;
+		 return (shift(@_) => 1);
+	    }] => sub {
+		my($case, $actual) = @_;
+		$case->actual_return([{@{$actual->[0]}}]);
+		return [{map(($_ => 1),
+		    sort(@{$case->get('object')->get_keys}))}];
+	    },
+	],
+	get_by_regexp => [
+	    [qr/a/] => DIE(),
+	    [qr/aa/] => 33,
+	],
+	delete_all => not_die(),
+	unsafe_get_by_regexp => [
+	    [qr/./] => undef,
+	],
+	get_by_regexp => [
+	    [qr/./] => DIE(),
+	],
+    ],
+];
