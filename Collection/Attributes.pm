@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Collection::Attributes;
 use strict;
@@ -102,14 +102,14 @@ I<default> not supplied or returns default.
 
 sub ancestral_get {
     my($self, $name, $default) = @_;
-    my($fields) = $self->[$_IDI];
-    while (1) {
-	return $fields->{$name}
-	    if exists($fields->{$name});
-	last unless defined($fields->{parent});
-	$fields = $fields->{parent}->[$_IDI];
+    my($s) = $self;
+    while ($s) {
+	return $s->get($name)
+	    if $s->has_keys($name);
+	$s = $s->unsafe_get('parent');
     }
-    return $default if int(@_) > 2;
+    return $default
+	if int(@_) > 2;
     _die($self, $name, ': ancestral attribute not found');
     # DOES NOT RETURN
 }
@@ -124,16 +124,32 @@ instance or its ancestors.
 =cut
 
 sub ancestral_has_keys {
+     my($self, @names) = @_;
+     _die($self, 'missing arguments') unless @names;
+     my($fields) = $self->[$_IDI];
+     while (@names) {
+ 	# Top of array checked first, since we're splicing as we go
+ 	for (my($i) = $#names; $i >= 0; $i--) {
+ 	    splice(@names, $i, 1) if exists($fields->{$names[$i]});
+  	}
+  	return @names ? 0 : 1 unless defined($fields->{parent});
+  	$fields = $fields->{parent}->[$_IDI];
+      }
+      return 1;
+}
+
+sub xancestral_has_keys {
     my($self, @names) = @_;
-    _die($self, 'missing arguments') unless @names;
-    my($fields) = $self->[$_IDI];
-    while (@names) {
-	# Top of array checked first, since we're splicing as we go
-	for (my($i) = $#names; $i >= 0; $i--) {
-	    splice(@names, $i, 1) if exists($fields->{$names[$i]});
+    _die($self, 'missing arguments')
+	unless @names;
+    foreach my $name (@names) {
+	my($s) = $self;
+	while ($s) {
+	    last if $s->has_keys($name);
+	    $s = $s->unsafe_get('parent');
 	}
-	return @names ? 0 : 1 unless defined($fields->{parent});
-	$fields = $fields->{parent}->[$_IDI];
+	return 0
+	    unless $s;
     }
     return 1;
 }
@@ -151,12 +167,12 @@ from this class' C<new>.>
 
 sub clone {
     my($self) = @_;
-    return $self->new({%{$self->[$_IDI]}});
+    return $self->new($self->get_shallow_copy);
 }
 
 =for html <a name="delete"></a>
 
-=head2 delete(string key, ...)
+=head2 delete(string key, ...) : self
 
 Removes the named attribute(s) from the map.  They needn't exist.
 
@@ -164,32 +180,29 @@ Removes the named attribute(s) from the map.  They needn't exist.
 
 sub delete {
     my($self) = shift;
-    my($fields) = $self->[$_IDI];
-    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
-    map {delete($fields->{$_})} @_;
-    return;
+    my($fields) = _writable($self);
+    map(delete($fields->{$_}), @_);
+    return $self;
 }
 
 =for html <a name="delete_all"></a>
 
-=head2 delete_all()
+=head2 delete_all() : self
 
 Removes all the parameters.
 
 =cut
 
 sub delete_all {
-    my($self) = shift;
-    my($fields) = $self->[$_IDI];
-    # This is probably the fastest way to remove all elements
-    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
+    my($self) = @_;
+    _writable($self);
     $self->[$_IDI] = {};
-    return;
+    return $self;
 }
 
 =for html <a name="delete_all_by_regexp"></a>
 
-=head2 delete_all_by_regexp(string pattern)
+=head2 delete_all_by_regexp(any pattern) : self
 
 Deletes all keys matching I<pattern>.
 
@@ -197,12 +210,15 @@ Deletes all keys matching I<pattern>.
 
 sub delete_all_by_regexp {
     my($self, $pattern) = @_;
-    my($fields) = $self->[$_IDI];
-    foreach my $k (keys(%$fields)) {
-	next unless $k =~ /$pattern/;
-	delete($fields->{$k});
-    }
-    return;
+    _writable($self);
+    return $self->delete(
+	@{$self->map_each(
+	    sub {
+		my(undef, $k) = @_;
+		return $k =~ /$pattern/ ? $k : ();
+	    }
+	)},
+    );
 }
 
 =for html <a name="dump"></a>
@@ -215,14 +231,13 @@ For debugging, dumps the current state to trace output. One level only.
 
 sub dump {
     my($self) = @_;
-
     if ($_TRACE) {
 	my($dump) = "\n";
 	foreach my $k (sort(@{$self->get_keys})) {
 	    my($value) = $self->get($k);
 	    $dump .= "\t$k => ".(defined($value) ? $value : 'undef')."\n";
 	}
-	&_trace($dump);
+	_trace($dump);
     }
     return;
 }
@@ -256,14 +271,10 @@ L<has_keys|"has_keys"> to test for existence.
 sub get {
     my($self) = shift;
     my($fields) = $self->[$_IDI];
-    my(@res) = map {
-	_die($self, $_, ": attribute doesn't exist")
-		unless exists($fields->{$_});
-	$fields->{$_};
-    } @_;
-    return @res if wantarray;
-    _die($self, 'get not called in array context') unless int(@res) == 1;
-    return $res[0];
+    return _array($self, map(
+	exists($fields->{$_}) ? $fields->{$_}
+	    : _die($self, $_, ": attribute doesn't exist"),
+	@_));
 }
 
 =for html <a name="get_by_regexp"></a>
@@ -276,29 +287,27 @@ Returns a single value by regular expression.  If not found, throws die.
 
 sub get_by_regexp {
     my($self, $pattern) = @_;
-    my($match) = _unsafe_get_by_regexp(@_);
-    _die($self, $pattern, ': pattern not found') unless defined($match);
-    return $self->[$_IDI]->{$match};
+    my($match) = _unsafe_get_by_regexp($self, $pattern);
+    return defined($match) ? $self->get($match)
+	: _die($self, $pattern, ': pattern not found');
 }
 
 =for html <a name="get_if_exists_else_put"></a>
 
-=head2 get_if_exists_else_put(string key, any value) : any
+=head2 get_if_exists_else_put(string key, any value, ...) : any
 
 Returns value of I<key> if it exists.  Otherwise, calls I<value> if it
 is a code_ref or just puts I<value>.
+
+See also put_unless_exists.
 
 Returns the gotten or computed value.
 
 =cut
 
 sub get_if_exists_else_put {
-    my($self, $key, $value) = @_;
-    return $self->get($key)
-	if $self->has_keys($key);
-    my($res) = ref($value) eq 'CODE' ? $value->() : $value;
-    $self->put($key => $res);
-    return $res;
+    return shift->put_unless_exists(@_)
+	->get(map($_[2 * $_], 0 .. (@_/2 - 1)));
 }
 
 =for html <a name="get_keys"></a>
@@ -355,9 +364,9 @@ Return a shallow copy of the attributes.
 =cut
 
 sub get_shallow_copy {
-    my($res) = {%{shift->[$_IDI]}};
-    delete($res->{$_READ_ONLY_ATTR});
-    return $res;
+    my($self) = @_;
+    my($k) = $self->get_keys;
+    return {map((shift(@$k) => $_), $self->get(@$k))};
 }
 
 =for html <a name="has_keys"></a>
@@ -389,12 +398,9 @@ Not allowed if read-only.
 
 sub internal_get {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-#    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
-    Bivio::IO::Alert->warn_deprecated('internal_get on read-only instance')
-	if $fields->{$_READ_ONLY_ATTR};
-    _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
-    return $fields;
+    _die($self, "protected method")
+	unless caller(0)->isa(__PACKAGE__);
+    return _writable($self);
 }
 
 
@@ -412,7 +418,7 @@ Modifying the hash will modify the attributes.
 sub internal_put {
     my($self, $fields) = @_;
     _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
-    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
+    _writable($self);
     $self->[$_IDI] = $fields;
     return $self;
 }
@@ -426,7 +432,7 @@ Returns whether any attributes in the map.
 =cut
 
 sub is_empty {
-    return !%{shift->[$_IDI]};
+    return @{shift->get_keys} ? 1 : 0;
 }
 
 =for html <a name="is_read_only"></a>
@@ -487,14 +493,31 @@ Returns I<self>.
 =cut
 
 sub put {
-    my($self) = shift;
-    my($fields) = $self->[$_IDI];
-    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
-    _die($self, "must be an even number of parameters")
-	    unless int(@_) % 2 == 0;
-    while (@_) {
-	my($k, $v) = (shift(@_), shift(@_));
+    my($self, $args) = _even(\@_);
+    my($fields) = _writable($self);
+    while (@$args) {
+	my($k, $v) = (shift(@$args), shift(@$args));
 	$fields->{$k} = $v;
+    }
+    return $self;
+}
+
+=for html <a name="put_unless_exists"></a>
+
+=head2 put_unless_exists(string key, any value, ....) : self
+
+If I<key> exists, does nothing.  Otherwise, puts the result of a call to
+I<value> if it is a code_ref and or just puts I<value> if it isn't a code_ref.
+
+=cut
+
+sub put_unless_exists {
+    my($self, $args) = _even(\@_);
+    _writable($self);
+    while (@$args) {
+	my($k, $v) = (splice(@$args, 0, 2));
+	$self->put($k => ref($v) eq 'CODE' ? $v->() : $v)
+	    unless $self->has_keys($k);
     }
     return $self;
 }
@@ -525,11 +548,7 @@ in its place.
 sub unsafe_get {
     my($self) = shift(@_);
     my($fields) = $self->[$_IDI];
-    my(@res) = map {$fields->{$_}} @_;
-    return @res if wantarray;
-    _die($self, 'unsafe_get not called in array context')
-	    unless int(@res) == 1;
-    return $res[0];
+    return _array($self, map($fields->{$_}, @_))
 }
 
 =for html <a name="unsafe_get_by_regexp"></a>
@@ -546,7 +565,7 @@ If multiple found, throws exception.
 sub unsafe_get_by_regexp {
     my($self, $pattern) = @_;
     my($match) = _unsafe_get_by_regexp(@_);
-    return defined($match) ? $self->[$_IDI]->{$match} : undef;
+    return defined($match) ? $self->get($match) : undef;
 }
 
 =for html <a name="unsafe_get_nested"></a>
@@ -580,11 +599,17 @@ Returns:
 
 sub unsafe_get_widget_value_by_name {
     my($self, $name) = @_;
-    my($fields) = $self->[$_IDI];
-    return ($fields->{$name}, exists($fields->{$name}) ? 1 : 0);
+    return ($self->unsafe_get($name), $self->has_keys($name));
 }
 
 #=PRIVATE METHODS
+
+# _array result
+sub _array {
+    my($self) = shift;
+    return wantarray ? @_ : @_ == 1 ? $_[0]
+	: _die($self, 'method must be called called in array context');
+}
 
 # _die(self, any msg, ...)
 #
@@ -596,6 +621,15 @@ sub _die {
     $sub =~ s/.*://;
     Bivio::IO::Alert->bootstrap_die($self, '->', $sub, ': ', @msg);
     # DOES NOT RETURN
+}
+
+# _even($args) : ($self, $args)
+sub _even {
+    my($args) = @_;
+    my($self) = shift(@$args);
+    _die($self, "must be an even number of parameters")
+	unless @$args % 2 == 0;
+    return ($self, $args);
 }
 
 # _get_nested(self, string names, ...) : any
@@ -644,23 +678,31 @@ sub _get_nested {
 #
 sub _unsafe_get_by_regexp {
     my($self, $pattern) = @_;
-    my($fields) = $self->[$_IDI];
     my($match);
-    foreach my $k (keys(%$fields)) {
+    foreach my $k (@{$self->get_keys}) {
 	next unless $k =~ /$pattern/;
 	_die($self, $pattern, ': pattern matches more than one key',
-		' (', $k, ' and ', $match, ')')
-		    if defined($match)
+	     ' (', $k, ' and ', $match, ')')
+	    if defined($match)
 #TODO: temporary to prevent problems with Model aliases on request
-			    && $self->get($match) ne $self->get($k);
+		&& $self->get($match) ne $self->get($k);
 	$match = $k;
     }
     return $match;
+  }
+
+# _writable($self) : $fields
+sub _writable {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    _die($self, $_READ_ONLY_ERROR)
+	if $fields->{$_READ_ONLY_ATTR};
+    return $fields;
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
