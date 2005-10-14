@@ -74,9 +74,6 @@ Initialize children.  Wraps value in String widget if not already a widget.
 
 sub initialize {
     my($self) = @_;
-    my($v) = $self->get('value');
-    $self->put(value => $_VS->vs_new('String', $v, 0))
-	unless UNIVERSAL::isa($v, 'Bivio::UI::Widget');
     $self->map_invoke(
 	'unsafe_initialize_attr',
 	[qw(tag value)],
