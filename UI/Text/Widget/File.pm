@@ -1,13 +1,13 @@
 # Copyright (c) 2005 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::Mail::Widget::File;
+package Bivio::UI::Text::Widget::File;
 use strict;
-$Bivio::UI::Mail::Widget::File::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Mail::Widget::File::VERSION;
+$Bivio::UI::Text::Widget::File::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Text::Widget::File::VERSION;
 
 =head1 NAME
 
-Bivio::UI::Mail::Widget::File - mail content from a file
+Bivio::UI::Text::Widget::File - text content from a file
 
 =head1 RELEASE SCOPE
 
@@ -15,7 +15,7 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::Mail::Widget::File;
+    use Bivio::UI::Text::Widget::File;
 
 =cut
 
@@ -26,11 +26,11 @@ L<Bivio::UI::Widget>
 =cut
 
 use Bivio::UI::Widget;
-@Bivio::UI::Mail::Widget::File::ISA = ('Bivio::UI::Widget');
+@Bivio::UI::Text::Widget::File::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Mail::Widget::File> is a UI adapter for getting mail content
+C<Bivio::UI::Text::Widget::File> is a UI adapter for getting text content
 from a file.
 
 =head1 ATTRIBUTES
@@ -59,7 +59,7 @@ C<$source-E<gt>get_widget_value> to get the uri to use.
 
 =for html <a name="new"></a>
 
-=head2 static new(any file, hash_ref attributes) : Bivio::UI::Mail::Widget::File
+=head2 static new(any file, hash_ref attributes) : Bivio::UI::Text::Widget::File
 
 Creates a C<File> widget with attributes I<file>.
 And optionally, set extra I<attributes>.

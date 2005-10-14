@@ -208,6 +208,7 @@ sub initialize {
 =head2 render(any source, string_ref buffer)
 
 This widget is not renderable.
+This method must be here to satisfy ->can('render').
 
 =cut
 

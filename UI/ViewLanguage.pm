@@ -240,6 +240,18 @@ sub view_main {
     return;
 }
 
+=for html <a name="view_ok"></a>
+
+=head2 static view_ok() : boolean
+
+Returns true if in eval.
+
+=cut
+
+sub view_ok {
+    return $_VIEW_IN_EVAL || Bivio::UI::View->unsafe_get_current ? 1 : 0;
+}
+
 =for html <a name="view_parent"></a>
 
 =head2 static view_parent(string view_name)

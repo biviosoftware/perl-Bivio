@@ -1,13 +1,13 @@
-# Copyright (c) 2001 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2005 bivio Software Artisans, Inc.  All rights reserved.
 # $Id$
-package Bivio::UI::Mail::Widget::Link;
+package Bivio::UI::Text::Widget::Link;
 use strict;
-$Bivio::UI::Mail::Widget::Link::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Mail::Widget::Link::VERSION;
+$Bivio::UI::Text::Widget::Link::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Text::Widget::Link::VERSION;
 
 =head1 NAME
 
-Bivio::UI::HTML::Widget::Link - renders an absolute URI link
+Bivio::UI::Text::Widget::Link - renders an absolute URI link
 
 =head1 RELEASE SCOPE
 
@@ -15,7 +15,7 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::Mail::Widget::Link;
+    use Bivio::UI::Text::Widget::Link;
 
 =cut
 
@@ -26,12 +26,11 @@ L<Bivio::UI::Widget>
 =cut
 
 use Bivio::UI::Widget;
-@Bivio::UI::Mail::Widget::Link::ISA = ('Bivio::UI::Widget');
+@Bivio::UI::Text::Widget::Link::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Mail::Widget::Link> implements an http: link for a
-mail message.
+C<Bivio::UI::Text::Widget::Link> implements a text http: link.
 
 =head1 ATTRIBUTES
 
@@ -64,12 +63,12 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
-=head2 static new(any value, hash_ref attributes) : Bivio::UI::Mail::Widget::Link
+=head2 static new(any value, hash_ref attributes) : Bivio::UI::Text::Widget::Link
 
 Creates a C<Link> widget with attributes I<value>.
 And optionally, set extra I<attributes>.
 
-=head2 static new(hash_ref attributes) : Bivio::UI::Mail::Widget::Link
+=head2 static new(hash_ref attributes) : Bivio::UI::Text::Widget::Link
 
 If I<attributes> supplied, creates with attribute (name, value) pairs.
 
@@ -165,7 +164,7 @@ sub _initialize_value {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Software Artisans, Inc.  All rights reserved.
+Copyright (c) 2005 bivio Software Artisans, Inc.  All rights reserved.
 
 =head1 VERSION
 

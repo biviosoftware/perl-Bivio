@@ -281,6 +281,48 @@ sub as_string {
     return 'View['.$self->get('view_name').']';
 }
 
+=for html <a name="call_main"></a>
+
+=head2 call_main(any view_name, Bivio::Agent::Request req) : any
+
+Return the result of calling execute on the widget rendered by view_main
+
+=cut
+
+sub call_main {
+    my($proto, $view_name, $req) = @_;
+    my($result);
+    my($self) = _get_instance($proto, $view_name, $req);
+    Bivio::Die->die($self, ': view is not terminal, contains undef values')
+		unless $self->get('view_is_executable');
+    _trace($self) if $_TRACE;
+    # Used by the view values
+    my($prev_current) = $_CURRENT;
+    $_CURRENT = $self;
+    $req->put(__PACKAGE__, $self);
+
+    # Execute user defined code
+    my($die) = Bivio::Die->catch(sub {
+	_pre_execute($self, $req);
+	$result = $self->ancestral_get('view_main')->execute($req);
+	return;
+    });
+
+    if ($prev_current) {
+	$req->put(__PACKAGE__, $prev_current);
+    }
+    else {
+	$req->delete(__PACKAGE__);
+    }
+    $_CURRENT = $prev_current;
+    if ($die) {
+	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
+	$die->throw;
+	# DOES NOT RETURN
+    }
+    return $result;
+}
+
 =for html <a name="compile_die"></a>
 
 =head2 compile_die(string msg, ...) : string
@@ -312,35 +354,7 @@ Always returns false.
 =cut
 
 sub execute {
-    my($proto, $view_name, $req) = @_;
-    my($self) = _get_instance($proto, $view_name, $req);
-    Bivio::Die->die($self, ': view is not terminal, contains undef values')
-		unless $self->get('view_is_executable');
-    _trace($self) if $_TRACE;
-    # Used by the view values
-    my($prev_current) = $_CURRENT;
-    $_CURRENT = $self;
-    $req->put(__PACKAGE__, $self);
-
-    # Execute user defined code
-    my($die) = Bivio::Die->catch(sub {
-	_pre_execute($self, $req);
-	$self->ancestral_get('view_main')->execute($req);
-	return;
-    });
-
-    if ($prev_current) {
-	$req->put(__PACKAGE__, $prev_current);
-    }
-    else {
-	$req->delete(__PACKAGE__);
-    }
-    $_CURRENT = $prev_current;
-    if ($die) {
-	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
-	$die->throw;
-	# DOES NOT RETURN
-    }
+    shift->call_main(@_);
     return 0;
 }
 

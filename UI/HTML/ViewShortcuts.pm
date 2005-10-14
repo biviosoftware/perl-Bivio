@@ -524,9 +524,9 @@ not already loaded.
 =cut
 
 sub vs_new {
-    my(undef, $class) = (shift, shift);
-    my($c) = _use($class);
-    return $c->new(@_);
+    my($proto, $class) = (shift, shift);
+    return Bivio::UI::ViewLanguage->view_ok
+	? $proto->vs_call($class, @_) : (_use($class))[0]->new(@_);
 }
 
 =for html <a name="vs_simple_form"></a>
