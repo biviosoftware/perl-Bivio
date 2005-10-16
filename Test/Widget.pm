@@ -49,13 +49,14 @@ our($AUTOLOAD);
 
 =head2 new_unit(string class_name, hash_ref attrs) : self
 
-Accepts I<setup_render> and I<compute_return> attributes.
+Accepts I<setup_render> and I<compute_return> attributes.  Also allows
+override of I<class_name> via I<attrs>.
 
 =cut
 
 sub new_unit {
     my($proto, $class_name, $attrs) = @_;
-    ($attrs ||= {})->{class_name} = $class_name;
+    ($attrs ||= {})->{class_name} ||= $class_name;
     return $proto->new($attrs);
 }
 
