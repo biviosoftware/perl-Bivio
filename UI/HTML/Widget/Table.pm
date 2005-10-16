@@ -540,8 +540,7 @@ sub get_render_state {
 	show_headings => $self->get_or_default('show_headings', 1),
     };
     $state->{heading_separator} = $self->get_or_default(
-	'heading_separator',
-	$state->{show_headings},
+	heading_separator => _xhtml($self, sub {$state->{show_headings}}, 0),
     );
     return $state;
 }
@@ -1019,8 +1018,8 @@ sub _initialize_row_prefixes {
 }
 
 sub _xhtml {
-    my($self, $op) = @_;
-    return $self->unsafe_get('class') ? () : $op->();
+    my($self, $html, $xhtml) = @_;
+    return $self->unsafe_get('class') ? ($xhtml || sub {})->() : $html->();
 }
 
 # _render_headings(hash_ref state)
