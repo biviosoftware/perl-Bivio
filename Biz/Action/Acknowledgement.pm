@@ -103,7 +103,8 @@ sub save_label {
     $x &&= $x->unsafe_get_context;
     foreach my $y ($x, $req) {
 	($y->unsafe_get('query') || $y->put(query => {})->get('query'))
-	    ->{$_QUERY} = $label;
+	    ->{$_QUERY} = $label
+	    if $y;
     }
     return;
 }
