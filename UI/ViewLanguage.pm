@@ -116,9 +116,10 @@ C<view_>, and is called in this module.
 
 sub call_method {
     my(undef, $autoload, $proto, @args) = @_;
-    my($view) = _assert_in_eval($autoload);
     my($method) = $autoload;
     $method =~ s/.*:://;
+    return if $method eq 'DESTROY';
+    my($view) = _assert_in_eval($autoload);
     if ($method =~ /^[A-Z]/) {
 	my($map) = $view->ancestral_get('view_class_map', undef);
 	_die("view_class_map() or view_parent() must be called before $method")
