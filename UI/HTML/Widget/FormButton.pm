@@ -85,19 +85,17 @@ Initializes from configuration attributes.
 =cut
 
 sub initialize {
-    my($self) = @_;
-    $self->get_if_exists_else_put(
-	'label',
-	sub {
+    my($self) = shift;
+    return $self->put_unless_exists(label => sub {
 	    $_VS->vs_text(
 		$self->ancestral_get('form_class')->simple_package_name,
 		$self->get('field'),
 	    );
 	},
+    )->map_invoke(
+	initialize_attr => [qw(label attributes)],
     );
-    $self->initialize_attr('label');
-    $self->unsafe_initialize_attr('attributes');
-    return shift->SUPER::initialize(@_);
+    return $self->SUPER::initialize(@_);
 }
 
 =for html <a name="internal_new_args"></a>
@@ -126,15 +124,15 @@ sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($p, $s) = Bivio::UI::Font->format_html('form_submit', $source);
     $$buffer .= $p
-	. '<input type=submit name='
+	. '<input type="submit" name="'
 	. $self->resolve_ancestral_attr('form_model', $source->get_request)
 	    ->get_field_name_for_html($self->get('field'))
-	. ' value="'
+	. '" value="'
 	. Bivio::HTML->escape($self->render_simple_attr('label', $source))
 	. '" '
-	. $self->render_simple_attr('attributes', $source)
-	. ' />'
-	. $s;
+	. $self->render_simple_attr('attributes', $source);
+    $self->SUPER::control_on_render($source, $buffer);
+    $buffer .= " />$s";
     return;
 }
 
