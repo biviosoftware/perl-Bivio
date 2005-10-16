@@ -5,6 +5,13 @@ use strict;
 use base 'Bivio::UI::HTML::ViewShortcuts';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($AUTOLOAD);
+
+sub AUTOLOAD {
+    return Bivio::UI::ViewLanguage->call_method(
+	$AUTOLOAD, 'Bivio::UI::ViewLanguage', @_,
+    );
+}
 
 sub vs_phone {
     my($proto) = @_;
@@ -40,81 +47,6 @@ sub vs_acknowledgement {
 	    'ack',
 	),
     );
-}
-
-=for html <a name="vs_simple_form"></a>
-
-=head2 static vs_simple_form(string form_name, array_ref rows) : Bivio::UI::Widget
-
-Creates a Form in a Grid.  I<rows> may be a field name, a separator name
-(preceded by a dash), a widget (iwc colspan will be set to 2), or a list of
-button names separated by spaces (preceded by a '*').  If there is no '*'
-list, then StandardSubmit will be appended to the list of fields.
-
-=cut
-
-sub vs_simple_form {
-    my($proto, $form, $rows) = @_;
-    my($have_submit) = 0;
-    my($m) = Bivio::Biz::Model->get_instance($form);
-    return $proto->vs_call(
-	    'Form', $form,
-	    $proto->vs_call(Join => [
-		$proto->vs_form_error_title($form),
-		$proto->vs_call('Grid', [
-		map({
-		    my($x);
-		    if (UNIVERSAL::isa($_, 'Bivio::UI::HTML::Widget::FormField')) {
-			$_->get_if_exists_else_put(cell_class => 'field'),
-			$x = [
-			    $proto->vs_call('Join', [''], {cell_class => 'label'}),
-			    $_,
-			];
-		    }
-		    elsif (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
-			$x = [$_->put(cell_colspan => 2)];
-		    }
-		    elsif ($_ =~ s/^-//) {
-			$x = [$proto->vs_call(
-			    'String',
-			    $proto->vs_text($form, 'separator', $_),
-			    0,
-			    {
-				cell_colspan => 2,
-				cell_class => 'sep',
-			    },
-			)];
-		    }
-		    elsif ($_ =~ s/^\*//) {
-			$have_submit = 1;
-			$x = [$proto->vs_call(
-			    'StandardSubmit',
-			    {
-				cell_colspan => 2,
-				cell_class => 'submit',
-				$_ ? (buttons => [split(/\s+/, $_)]) : (),
-			    },
-			)];
-		    }
-		    elsif (ref($_) eq 'ARRAY' && ref($_->[0])) {
-			$x = $_;
-		    }
-		    else {
-			$x = $proto->vs_descriptive_field($_);
-		    }
-		    $x;
-		} @$rows),
-		$have_submit ? () : [
-		    $proto->vs_call(StandardSubmit => {
-			cell_colspan => 2,
-			cell_class => 'submit',
-		    }),
-		],
-	    ], {
-		class => 'simple',
-	    }),
-	    ]),
-	);
 }
 
 sub vs_descriptive_field {
@@ -162,11 +94,114 @@ sub vs_descriptive_field {
 sub vs_form_error_title {
     my($proto, $form) = @_;
     return $proto->vs_call(
-	If => ["Model.$form", '->in_error'],
+	If => [['->get_request'], "Model.$form", '->in_error'],
 	$proto->vs_call(Tag => div =>
 	    $proto->vs_call(
 		String => $proto->vs_text('form_error_title'), 0),
 	    'err_title'));
+}
+
+sub vs_list_form {
+    my($proto, $form, $columns, $empty_list) = @_;
+    return $proto->vs_call(
+	If => [
+	    'Model.'
+	    . Bivio::Biz::Model->get_instance(
+		Bivio::Biz::Model->get_instance($form)->get_list_class
+	    )->simple_package_name,
+	    '->get_result_set_size',
+	],
+	$proto->vs_call(
+	    Form => $form,
+	    $proto->vs_call('Join', [
+		$proto->vs_form_error_title($form),
+		$proto->vs_call(Table => $form => [
+		    map({
+			$_ = ref($_) eq 'ARRAY' ? {
+			    field => $_->[0],
+			    $_->[1] ? %{$->[1]} : (),
+			} : {field => $_}
+			    unless ref($_) eq 'HASH';
+			$_->{column_class} ||= 'field';
+			$_;
+		    } @$columns),
+		], {
+		    class => 'list',
+		}),
+		$proto->vs_call(
+		    Tag => div => $proto->vs_call(
+			# cell_class tells StandardSubmit to produce XHTML
+			StandardSubmit => {cell_class => 'button'},
+		    ),
+		    'submit',
+		),
+	    ]),
+	),
+	$proto->vs_call('Tag', div => $empty_list, 'empty_list'),
+    );
+}
+
+sub vs_simple_form {
+    my($proto, $form, $rows) = @_;
+    my($have_submit) = 0;
+    my($m) = Bivio::Biz::Model->get_instance($form);
+    return Form($form,
+	Join([
+	    $proto->vs_form_error_title($form),
+	    Grid([
+	    map({
+		my($x);
+		if (UNIVERSAL::isa($_, 'Bivio::UI::Widget') &&
+			$_->simple_package_name eq 'FormField'
+		) {
+		    $_->get_if_exists_else_put(cell_class => 'field'),
+		    $x = [
+			$proto->vs_call('Join', [''], {cell_class => 'label'}),
+			$_,
+		    ];
+		}
+		elsif (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
+		    $x = [$_->put(cell_colspan => 2)];
+		}
+		elsif ($_ =~ s/^-//) {
+		    $x = [String(
+			vs_text($form, 'separator', $_),
+			0,
+			{
+			    cell_colspan => 2,
+			    cell_class => 'sep',
+			},
+		    )];
+		}
+		elsif ($_ =~ s/^\*//) {
+		    $have_submit = 1;
+		    $x = [StandardSubmit(
+			{
+			    cell_colspan => 2,
+			    cell_class => 'submit',
+			    $_ ? (buttons => [split(/\s+/, $_)]) : (),
+			},
+		    )];
+		}
+		elsif (ref($_) eq 'ARRAY' && ref($_->[0])) {
+		    $x = $_;
+		}
+		else {
+		    $x = $proto->vs_descriptive_field($_);
+		}
+		$x;
+	    } @$rows),
+	    $have_submit ? () : [
+		StandardSubmit({
+		    cell_colspan => 2,
+		    cell_class => 'submit',
+		}),
+	    ],
+	], {
+	    class => 'simple',
+	}),
+	]),
+    );
 }
 
 1;
