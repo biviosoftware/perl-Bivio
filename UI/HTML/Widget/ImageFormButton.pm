@@ -106,11 +106,10 @@ field values.
 sub initialize {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->unsafe_get('field');
     $fields->{image} = $self->get('image');
-    $fields->{prefix} = '<input type=image border=0';
+    $fields->{prefix} = '<input type="image"';
     my($alt) = $self->get('alt');
     if (ref($alt)) {
 	$fields->{alt} = $alt;
@@ -138,6 +137,8 @@ sub render {
 	? $form->get_field_name_for_html($fields->{field})
 	: 'submit';
     $$buffer .= qq{$fields->{prefix} name="$field" id="$field"};
+    my($c) = $self->render_simple_attr('class', $source);
+    $$buffer .= $c ? qq{ class="$c"} : ' border="0"';
     $$buffer .= ' alt="'
 	. Bivio::HTML->escape_attr_value(
 	    $self->render_value('alt', $fields->{alt}, $source))
