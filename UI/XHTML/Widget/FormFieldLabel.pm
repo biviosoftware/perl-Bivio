@@ -29,7 +29,12 @@ sub initialize {
 	cell_class => [sub {
 	    my($source, $err) = @_;
 	    return $err ? 'label_err' : 'label_ok';
-	}, [$self->ancestral_get('form_model'), '->get_field_error', $self->get('field')]],
+	}, [
+	    ['->get_request'],
+	    $self->ancestral_get('form_class'),
+	    '->get_field_error',
+	    $self->get('field'),
+	]],
     );
     return shift->SUPER::initialize(@_);
 }

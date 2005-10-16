@@ -26,8 +26,10 @@ sub initialize {
     $self->put(
         tag => 'div',
 	class => 'field_err',
-	control => [['->get_request'], $self->ancestral_get('form_model'),
-		    '->get_field_error', $self->get('field')],
+	control => [
+	    ['->get_request'], $self->ancestral_get('form_class'),
+	    '->get_field_error', $self->get('field'),
+	],
 	value => [sub {
 	    my($source, $model, $field, $label) = @_;
 	    return Bivio::UI::Facade->get_from_request_or_self(
@@ -41,7 +43,7 @@ sub initialize {
 		$label,
 		$model->get_field_error($field),
 	    );
-	}, $self->ancestral_get('form_model'),
+	}, [['->get_request'], $self->ancestral_get('form_class')],
 	   $self->get('field'),
 	   $self->get_or_default('label', ''),
 	],
