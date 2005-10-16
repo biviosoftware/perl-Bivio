@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget::If;
 use strict;
@@ -62,31 +62,6 @@ etc.
 #=IMPORTS
 
 #=VARIABLES
-my($_IDI) = __PACKAGE__->instance_data_index;
-
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(array_ref control, any control_on_value, any control_off_value, hash_ref attributes) : Bivio::UI::Widget::If
-
-Creates with attributes I<control>, I<control_on_value>, and
-I<control_off_value>.  Optionally, I<attributes> are applied.
-
-=head2 static new(hash_ref attributes) : Bivio::UI::Widget::If
-
-Creates with named attributes.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::ControlBase::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
 
 =head1 METHODS
 
@@ -102,8 +77,7 @@ Render I<control_on_value>.
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
-    $self->render_value('control_on_render', $fields->{on}, $source, $buffer);
+    $self->render_attr('control_on_value', $source, $buffer);
     return;
 }
 
@@ -116,14 +90,9 @@ Initializes children.
 =cut
 
 sub initialize {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if exists($fields->{on});
-    $fields->{on} = $self->initialize_attr('control_on_value');
-    # ControlBase doesn't require control, but we do.  Result is stored
-    # in ControlBase.
-    $self->initialize_attr('control');
-    return $self->SUPER::initialize();
+    my($self) = shift;
+    $self->initialize_attr('control_on_value');
+    return $self->SUPER::initialize(@_);
 }
 
 =for html <a name="internal_new_args"></a>
@@ -151,7 +120,7 @@ sub internal_new_args {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
