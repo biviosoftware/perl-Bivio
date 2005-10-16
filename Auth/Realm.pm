@@ -289,6 +289,18 @@ sub get_type {
     Bivio::Die->die($proto, ': unknown realm class');
 }
 
+=for html <a name="has_owner"></a>
+
+=head2 has_owner() : boolean
+
+Returns true if has I<owner> (same as not is_default).
+
+=cut
+
+sub has_owner {
+    return shift->is_default ? 0 : 1;
+}
+
 =for html <a name="is_default"></a>
 
 =head2 is_default() : boolean
