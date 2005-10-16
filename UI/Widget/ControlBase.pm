@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget::ControlBase;
 use strict;
@@ -60,25 +60,6 @@ renders nothing.  May be a widget value, widget, etc.
 #=IMPORTS
 
 #=VARIABLES
-my($_IDI) = __PACKAGE__->instance_data_index;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::Widget::ControlBase
-
-Initializes fields.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
 
 =head1 METHODS
 
@@ -94,9 +75,7 @@ Renders the I<control_off_value>.  May be overridden.
 
 sub control_off_render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
-    $self->unsafe_render_value('control_off_value',
-	    $fields->{off_value}, $source, $buffer);
+    $self->unsafe_render_attr(control_off_value => $source, $buffer);
     return;
 }
 
@@ -122,14 +101,16 @@ Initializes the control field
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{control};
-
-    $fields->{control} = $self->unsafe_get('control');
-    $fields->{control} = [['->get_request'], '->can_user_execute_task',
-	Bivio::Agent::TaskId->from_any($fields->{control})]
-	    if $fields->{control} && ref($fields->{control}) ne 'ARRAY';
-    $fields->{off_value} = $self->unsafe_initialize_attr('control_off_value');
+    if (my $c = $self->unsafe_get('control')) {
+	$self->put(control => [
+	    ['->get_request'],
+	    '->can_user_execute_task',
+	    Bivio::Agent::TaskId->from_any($c)
+	]) unless ref($c) eq 'ARRAY';
+    }
+    $self->map_invoke(
+	unsafe_initialize_attr => [qw(control control_on_render)],
+    );
     return;
 }
 
@@ -147,18 +128,17 @@ default renders nothing.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
-    return !$fields->{control}
-	    || $source->get_widget_value(@{$fields->{control}})
-		    ? $self->control_on_render($source, $buffer)
-		    : $self->control_off_render($source, $buffer);
+    my($c) = $self->unsafe_get('control');
+    return !defined($c) || $self->unsafe_resolve_widget_value($c, $source)
+	? $self->control_on_render($source, $buffer)
+	: $self->control_off_render($source, $buffer);
 }
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
