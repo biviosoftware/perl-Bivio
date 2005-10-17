@@ -197,7 +197,7 @@ sub get_delegate_info {
     UNSPECIFIED => [
 	27,
 	undef,
-	'field may not be unspecified',
+	'field must be specified',
     ],
     TEXT_TOO_LONG => [
 	28,
