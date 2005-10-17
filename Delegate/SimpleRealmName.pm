@@ -124,7 +124,7 @@ Returns the name (possibly cleaned up) or undef, if not valid.
 sub unsafe_from_uri {
     my($proto, $value) = @_;
     return undef
-	unless ($proto->SUPER::from_literal($value))[0];
+	unless $value = ($proto->SUPER::from_literal($value))[0];
     # We allow dashes in URI names (my-site and other constructed names)
     (my $v = $value) =~ s/-//g;
     return $proto->internal_is_realm_name($v) && $value !~ /^-/
