@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::Model::LocationBase uses get_default instead of HOME
+  * Bivio::Biz::Action::ECSecureSourceProcessor and
+    Bivio::Biz::Model::UserCreateForm no longer refer to location explicitly
+
+  Revision 3.24  2005/10/10 23:08:00  nagler
+  * Bivio::SQL::PropertySupport.unused_classes allows you to avoid db
+    upgrades when new tables are added to bOP.  cascade_delete fails,
+    otherwise.  The default unused_classes is [qw(RealmFile Forum)].
+    See Bivio::PetShop::BConf for how to override.
+  * Bivio::Type::Location->get_default added, and
     Bivio::Biz::Model::LocationBase uses it instead of hardwired HOME.
     Remove other references to get_default/HOME in Action.ECSecureSourceProcessor,
     Model.Email, and Model.UserCreateForm.
