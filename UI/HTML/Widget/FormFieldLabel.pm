@@ -69,24 +69,6 @@ my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::Widget::FormFieldLabel
-
-Nothing here.
-
-=cut
-
-sub new {
-    my($self) = &Bivio::UI::Widget::If::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
 =head1 METHODS
 
 =cut
@@ -101,7 +83,7 @@ Builds up the attributes for SUPER (If).
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
+    my($fields) = $self->[$_IDI] ||= {};
     return if $fields->{initialized};
     my($label, $field) = $self->get('label', 'field');
     my($model) = $self->ancestral_get('form_model');
