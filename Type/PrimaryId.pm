@@ -192,6 +192,22 @@ sub get_width {
     return 18;
 }
 
+=for html <a name="is_specified"></a>
+
+=head2 static is_specified(any value) : boolean
+
+Returns true if value is specified, that is, something that is likely
+to be a primary key.
+
+=cut
+
+sub is_specified {
+    my($proto, $value) = @_;
+    return defined($value) && $value =~ /\d/
+	&& $value ne Bivio::Biz::ListModel->EMPTY_KEY_VALUE
+	? 1 : 0;
+}
+
 =for html <a name="to_html"></a>
 
 =head2 to_html(any value) : string

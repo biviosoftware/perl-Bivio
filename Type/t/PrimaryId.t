@@ -3,6 +3,7 @@
 # $Id$
 use strict;
 use Bivio::Test;
+use Bivio::Biz::ListModel;
 Bivio::Test->new('Bivio::Type::PrimaryId')->unit([
     'Bivio::Type::PrimaryId' => [
 	to_parts => [
@@ -33,6 +34,12 @@ Bivio::Test->new('Bivio::Type::PrimaryId')->unit([
 		site => 1,
 		number => '1111111111111',
 	    }] => '111111111111100101',
+	],
+	is_specified => [
+	    [undef] => 0,
+	    '' => 0,
+	    1 => 0,
+	    2 => 1,
 	],
     ],
 ]);
