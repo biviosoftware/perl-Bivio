@@ -16,6 +16,7 @@ Type();
 	    'abc-' => 'abc-',
 	    'ab-' => [undef],
 	    '-abc' => [undef],
+	    'Abc' => 'abc',
 	],
     ],
 ]
