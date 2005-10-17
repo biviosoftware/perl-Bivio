@@ -135,10 +135,11 @@ sub render {
 	    my($next_sep)
 		= $self->unsafe_render_value($name++, $v, $source, \$b)
 		&& length($b);
-	    $self->unsafe_render_attr('join_separator', $source, $buffer)
-		if $need_sep && $next_sep;
+	    if ($need_sep && $next_sep) {
+		$self->unsafe_render_attr('join_separator', $source, $buffer);
+	    }
+	    $need_sep ||= $next_sep;
 	    $$buffer .= $b;
-	    $need_sep = $next_sep;
 	}
     }
     else {
