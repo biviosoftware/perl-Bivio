@@ -250,7 +250,9 @@ Returns true if in eval.
 =cut
 
 sub view_ok {
-    return $_VIEW_IN_EVAL || Bivio::UI::View->unsafe_get_current ? 1 : 0;
+    return $_VIEW_IN_EVAL
+	|| UNIVERSAL::isa('Bivio::UI::View', 'Bivio::UNIVERSAL')
+	&& Bivio::UI::View->unsafe_get_current ? 1 : 0;
 }
 
 =for html <a name="view_parent"></a>
