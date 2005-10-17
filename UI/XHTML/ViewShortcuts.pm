@@ -103,103 +103,99 @@ sub vs_form_error_title {
 
 sub vs_list_form {
     my($proto, $form, $columns, $empty_list) = @_;
-    return $proto->vs_call(
-	If => [
-	    'Model.'
-	    . Bivio::Biz::Model->get_instance(
-		Bivio::Biz::Model->get_instance($form)->get_list_class
-	    )->simple_package_name,
-	    '->get_result_set_size',
-	],
-	$proto->vs_call(
-	    Form => $form,
-	    $proto->vs_call('Join', [
-		$proto->vs_form_error_title($form),
-		$proto->vs_call(Table => $form => [
-		    map({
-			$_ = ref($_) eq 'ARRAY' ? {
-			    field => $_->[0],
-			    $_->[1] ? %{$->[1]} : (),
-			} : {field => $_}
-			    unless ref($_) eq 'HASH';
-			$_->{column_class} ||= 'field';
-			$_;
-		    } @$columns),
-		], {
-		    class => 'list',
-		}),
-		$proto->vs_call(
-		    Tag => div => $proto->vs_call(
-			# cell_class tells StandardSubmit to produce XHTML
-			StandardSubmit => {cell_class => 'button'},
-		    ),
-		    'submit',
-		),
-	    ]),
-	),
-	$proto->vs_call('Tag', div => $empty_list, 'empty_list'),
+    my($f) = Bivio::Biz::Model->get_instance($form);
+    my($res) = Form(
+	$form,
+	Join([
+	    $proto->vs_form_error_title($form),
+	    Table($form => [
+		map({
+		    $_ = ref($_) eq 'ARRAY' ? {
+			field => $_->[0],
+			$_->[1] ? %{$_->[1]} : (),
+		    } : {field => $_}
+			unless ref($_) eq 'HASH';
+		    $_->{column_class} ||= 'field';
+		    $_;
+		} @$columns),
+	    ], {
+		class => 'list',
+	    }),
+	    Tag(
+		'div',
+		# cell_class tells StandardSubmit to produce XHTML
+		StandardSubmit({cell_class => 'button'}),
+		'submit',
+	    )
+	])
     );
+    return $empty_list ? If(
+	[$f->get_list_class, '->get_result_set_size'],
+	$res,
+	Tag(div => $empty_list, 'empty_list'),
+    ) : $res;
 }
 
 sub vs_simple_form {
     my($proto, $form, $rows) = @_;
     my($have_submit) = 0;
     my($m) = Bivio::Biz::Model->get_instance($form);
-    return Form($form,
+    return Form(
+	$form,
 	Join([
 	    $proto->vs_form_error_title($form),
 	    Grid([
-	    map({
-		my($x);
-		if (UNIVERSAL::isa($_, 'Bivio::UI::Widget') &&
-			$_->simple_package_name eq 'FormField'
-		) {
-		    $_->get_if_exists_else_put(cell_class => 'field'),
-		    $x = [
-			$proto->vs_call('Join', [''], {cell_class => 'label'}),
-			$_,
-		    ];
-		}
-		elsif (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
-		    $x = [$_->put(cell_colspan => 2)];
-		}
-		elsif ($_ =~ s/^-//) {
-		    $x = [String(
-			vs_text($form, 'separator', $_),
-			0,
-			{
-			    cell_colspan => 2,
-			    cell_class => 'sep',
-			},
-		    )];
-		}
-		elsif ($_ =~ s/^\*//) {
-		    $have_submit = 1;
-		    $x = [StandardSubmit(
-			{
-			    cell_colspan => 2,
-			    cell_class => 'submit',
-			    $_ ? (buttons => [split(/\s+/, $_)]) : (),
-			},
-		    )];
-		}
-		elsif (ref($_) eq 'ARRAY' && ref($_->[0])) {
-		    $x = $_;
-		}
-		else {
-		    $x = $proto->vs_descriptive_field($_);
-		}
-		$x;
-	    } @$rows),
-	    $have_submit ? () : [
-		StandardSubmit({
-		    cell_colspan => 2,
-		    cell_class => 'submit',
-		}),
-	    ],
-	], {
-	    class => 'simple',
-	}),
+		map({
+		    my($x);
+		    if (UNIVERSAL::isa($_, 'Bivio::UI::Widget') &&
+			    $_->simple_package_name eq 'FormField'
+		    ) {
+			$_->get_if_exists_else_put(cell_class => 'field'),
+			$x = [
+			    $proto->vs_call('Join', [''], {cell_class => 'label'}),
+			    $_,
+			];
+		    }
+		    elsif (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
+			$x = [$_->put(cell_colspan => 2)];
+		    }
+		    elsif ($_ =~ s/^-//) {
+			$x = [String(
+			    vs_text($form, 'separator', $_),
+			    0,
+			    {
+				cell_colspan => 2,
+				cell_class => 'sep',
+			    },
+			)];
+		    }
+		    elsif ($_ =~ s/^\*//) {
+			$have_submit = 1;
+			$x = [StandardSubmit(
+			    {
+				cell_colspan => 2,
+				cell_class => 'submit',
+				$_ ? (buttons => [split(/\s+/, $_)]) : (),
+			    },
+			)];
+		    }
+		    elsif (ref($_) eq 'ARRAY' && ref($_->[0])) {
+			$x = $_;
+		    }
+		    else {
+			$x = $proto->vs_descriptive_field($_);
+		    }
+		    $x;
+		} @$rows),
+		$have_submit ? () : [
+		    StandardSubmit({
+			cell_colspan => 2,
+			cell_class => 'submit',
+		    }),
+		],
+	    ], {
+		class => 'simple',
+	    }),
 	]),
     );
 }
