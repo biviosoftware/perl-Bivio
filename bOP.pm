@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,46 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::Widget::Join->render inserts separator correctly with null elements
+  * Bivio::Type::PrimaryId->is_specified returns false if is
+    Bivio::Biz::ListModel->EMPTY_KEY_VALUE
+
+  Revision 3.25  2005/10/17 21:20:33  nagler
+  * b-perl.el and b-perl-agile.el bind C-c ; as comment-or-uncomment-region.
+    A few other fixes to new style.
+  * realm_user_t6 (ddl/bOP-constraints.sql) checks role > 0.
+  * Bivio::Auth::Realm->has_owner added -- same as ! is_default, but clearer
+  * Bivio::Auth::RoleSet calls initialize so works now
+  * Bivio::BConf includes XHTMLWidget map
+  * Bivio::Biz::Action::Acknowledgement->save_label stores value in
+    req.form_model's context if defined.
+  * Bivio::Biz::Model::UserLostPasswordForm->execute_empty added
+    (logs in via creds in query)
+  * Bivio::Collection::Attributes refactored to reuse put/get/delete/delete_all
+    instead of inlining all manips.  Allows more overrides.
+  * Bivio::Collection::Attributes->put_unless_exists added
+  * Bivio::Delegate::SimpleRealmName->unsafe_from_uri downcases uri
+  * Bivio::SQL::PropertySupport.unused_classes is config that allows you
+    to avoid adding new property models (which are autoloaded) when they
+    are added to bOP.
+  * Bivio::SQL::Statement->NE added.
+  * Bivio::Test::Widget->new_unit allows class_name override.
+  * Bivio::UI::HTML::ViewShortcuts->view_ok works when Bivio::UI::View
+    isn't loaded.
+  * Bivio::UI::HTML::Widget::FormButton fixed to be XHTML compatible and dynamic
+  * Bivio::UI::HTML::Widget::FormFieldLabel is dynamic
+  * Bivio::UI::HTML::Widget::Grid.cell_class and row_class are dynamic
+  * Bivio::UI::HTML::Widget::ImageFormButton is XHTML compatible
+  * Bivio::UI::HTML::Widget::Table.heading_separator not rendered by
+    default if XHTML
+  * Bivio::UI::HTML::Widget::Tag->initialize no longer wraps value as String
+  * Bivio::UI::View->call_main added
+  * Bivio::UI::Widget::ControlBase->render resolves control recursively
+    and no longer considers a constant control of "0" or "" to be true.
+    Refactored to evaluate dynamically.
+  * Bivio::UI::Widget::If refactored to be dynamic
+  * Bivio::Util::SQL->internal_upgrade_db_forum added
+  * Bivio::Type::Location->get_default calls from_int(1)
   * Bivio::Biz::Model::LocationBase uses get_default instead of HOME
   * Bivio::Biz::Action::ECSecureSourceProcessor and
     Bivio::Biz::Model::UserCreateForm no longer refer to location explicitly
