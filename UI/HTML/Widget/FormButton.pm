@@ -93,7 +93,7 @@ sub initialize {
 	    );
 	},
     )->map_invoke(
-	initialize_attr => [qw(label attributes)],
+	unsafe_initialize_attr => [qw(label attributes)],
     );
     return $self->SUPER::initialize(@_);
 }
