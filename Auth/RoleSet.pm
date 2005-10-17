@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::RoleSet;
 use strict;
@@ -38,6 +38,7 @@ L<Bivio::Biz::Model::RealmUser|Bivio::Biz::Model::RealmUser>.
 #=IMPORTS
 
 #=VARIABLES
+__PACKAGE__->initialize;
 
 =head1 METHODS
 
@@ -71,7 +72,7 @@ sub get_width {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
