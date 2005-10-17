@@ -109,7 +109,7 @@ sub initialize {
 	]) unless ref($c) eq 'ARRAY';
     }
     $self->map_invoke(
-	unsafe_initialize_attr => [qw(control control_on_render)],
+	unsafe_initialize_attr => [qw(control control_off_value)],
     );
     return;
 }
