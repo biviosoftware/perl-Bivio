@@ -80,10 +80,9 @@ sub from_literal {
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
 	unless $v;
-    $v = lc($v);
     return (undef, Bivio::TypeError->REALM_NAME)
         unless $proto->internal_is_realm_name($v);
-    return $v;
+    return lc($v);
 }
 
 =for html <a name="internal_is_realm_name"></a>
@@ -128,7 +127,7 @@ sub unsafe_from_uri {
     # We allow dashes in URI names (my-site and other constructed names)
     (my $v = $value) =~ s/-//g;
     return $proto->internal_is_realm_name($v) && $value !~ /^-/
-	? $value : undef;
+	? lc($value) : undef;
 }
 
 #=PRIVATE METHODS
