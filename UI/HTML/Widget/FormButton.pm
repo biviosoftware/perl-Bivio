@@ -132,7 +132,7 @@ sub control_on_render {
 	. '" '
 	. $self->render_simple_attr('attributes', $source);
     $self->SUPER::control_on_render($source, $buffer);
-    $buffer .= " />$s";
+    $$buffer .= " />$s";
     return;
 }
 
