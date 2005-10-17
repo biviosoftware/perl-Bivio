@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::HTMLParser::Forms;
 use strict;
@@ -95,10 +95,11 @@ sub get_by_field_names {
 	$found = $values;
     }
     return $found if $found;
+    Bivio::IO::Alert->info($forms);
     my(@fields) = map({[sort(keys(%{$_->{visible}}), keys(%{$_->{submit}}))]}
             values(%$forms));
     _trace(join("\n", map({@$_} @fields)));
-    Bivio::Die->die(\@name, ': no form matches named fields, visible fields: ',
+    Bivio::Die->die(\@name, ': no form matches named fields; all visible form fields: ',
         @fields);
 }
 
@@ -743,7 +744,7 @@ sub _unwind_duplicates {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
