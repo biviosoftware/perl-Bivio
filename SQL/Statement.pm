@@ -278,6 +278,22 @@ sub LTE {
     return _static_compare('<=', $left, $right);
 }
 
+=for html <a name="NE"></a>
+
+=head2 static NE(string left, string right) : hash_ref
+
+=head2 static NE(string left, array_ref right) : hash_ref
+
+Return an != predicate.
+If I<right> is an array_ref, treat right as a value, not a column.
+
+=cut
+
+sub NE {
+    my($proto, $left, $right) = @_;
+    return _static_compare('!=', $left, $right);
+}
+
 =for html <a name="new"></a>
 
 =head2 static new(Bivio::SQL::Support support) : Bivio::SQL::Statement
@@ -385,7 +401,7 @@ sub where {
     push(@{$self->[$_IDI]->{where}->{predicates}},
         _parse_predicate($self, $predicate))
 	if $predicate;
-    return;
+    return $self;
 }
 
 #=PRIVATE SUBROUTINES
