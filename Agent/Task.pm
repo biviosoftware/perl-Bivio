@@ -204,7 +204,6 @@ sub new {
     die("realm_type invalid")
 	    unless $realm_type->isa('Bivio::Auth::RealmType');
     die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
-    my($i, $next, @new_items);
 
     my($self) = Bivio::Collection::Attributes::new($proto, {
 	id => $id,
@@ -217,7 +216,7 @@ sub new {
     # Make the task visible to the items being initialized
     $_ID_TO_TASK{$id} = $self;
     my(@executables);
-    foreach $i (@items) {
+    foreach my $i (@items) {
 	if ($i =~ /=/) {
 	    # Map item
 	    _parse_map_item($attrs, split(/=/, $i, 2));
