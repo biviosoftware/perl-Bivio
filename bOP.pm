@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::BConf update to include Bivio::UI::Text::Widget in MailWidget
+    map, because Bivio::UI::Mail::Link moved to Bivio::UI::Text::Link in the last
+    release.
+
+  Revision 3.26  2005/10/17 23:48:37  nagler
   * Bivio::UI::Widget::Join->render inserts separator correctly with null elements
   * Bivio::Type::PrimaryId->is_specified returns false if is
     Bivio::Biz::ListModel->EMPTY_KEY_VALUE
