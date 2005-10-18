@@ -227,6 +227,7 @@ sub merge_class_loader {
 			("${_}Widget" => [
 			    "Bivio::UI::${_}::Widget",
 			    $_ eq 'XHTML' ? 'Bivio::UI::HTML::Widget' : (),
+			    $_ eq 'Mail' ? 'Bivio::UI::Text::Widget' : (),
 			    'Bivio::UI::Widget',
 			]),
 			qw(HTML XHTML Mail Text)),
