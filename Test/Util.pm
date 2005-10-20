@@ -175,7 +175,7 @@ sub mock_sendmail {
 	    unless defined($pid);
 	return if $pid;
     }
-    my($req) = $self->initialize_ui(1);
+    my($req) = $self->get_request;
     unless ($from =~ s/^-f//) {
 	$recipients = $from;
 	$from = undef;
