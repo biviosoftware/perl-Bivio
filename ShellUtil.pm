@@ -425,6 +425,32 @@ sub convert_literal {
     return Bivio::Type->get_instance($type)->from_literal_or_die(@_);
 }
 
+=for html <a name="detach_process"></a>
+
+=head2 detach_process()
+
+Forks, closes tty, stdin, out, etc.
+
+=cut
+
+sub detach_process {
+    my($pid) = fork;
+    die("fork: $!")
+	unless defined($pid);
+    CORE::exit(0)
+	if $pid;
+    # Child
+    open(STDIN, '< /dev/null');
+    open(STDOUT, '< /dev/null');
+    open(STDERR, '>&STDOUT');
+    chdir('/');
+    eval {
+	require POSIX;
+	POSIX::setsid();
+    };
+    return;
+}
+
 =for html <a name="email_file"></a>
 
 =head2 email_file(string email, string subject, string file_name)
