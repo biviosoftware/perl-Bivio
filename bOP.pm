@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 3.29  2005/10/20 21:03:54  moeller
+  * Bivio::Biz::Util::ListModel->csv() fixed multi-line column output
+
+  Revision 3.28  2005/10/20 04:11:59  nagler
+  * Bivio::ShellUtil->detach_process makes an effort at detaching the
+    process from the controlling terminal.  It forks, parent exits, and
+    child closes STD* and calls POSIX::setsid.  This will detach on most
+    modern Unixen including MacOS.
+  * Bivio::ShellUtil -email doesn't cause initialize_ui.
+  * Bivio::Agent::Request->format_email checks for existence of a
+    facade to get the mailhost.  If not available, uses hostname.  This
     allows command line utilities to work without a UI, and for
     web-based emails to be formatted properly in multi-hosted/facade
     environments.
