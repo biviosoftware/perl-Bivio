@@ -1286,7 +1286,6 @@ sub _deprecated_lock_action {
 
 sub _email {
     my($self, $to_email, $subject, $body) = @_;
-    $self->initialize_ui;
     Bivio::IO::ClassLoader->simple_require(
 	'Bivio::Mail::Outgoing',
 	'Bivio::MIME::Type',

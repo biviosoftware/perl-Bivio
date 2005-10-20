@@ -442,7 +442,10 @@ sub format_email {
     # Will bomb if no auth_realm.
     return $self->get('auth_realm')->format_email
 	unless defined($email);
-    $email .= '@' . Bivio::UI::Facade->get_value('mail_host', $self)
+    $email .= '@'
+	. ($self->unsafe_get('Bivio::UI::Facade')
+	    ? Bivio::UI::Facade->get_value('mail_host', $self)
+	    : Sys::Hostname::hostname())
 	unless $email =~ /\@/;
     return $email;
 }
