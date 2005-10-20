@@ -128,9 +128,8 @@ sub csv {
 	if $method eq 'next_row';
     while ($model->$method()) {
 	foreach my $c (@$cols) {
-	    my($cell) = $c->{type}->to_string($model->get($c->{name}));
-	    _quote_cell(\$cell);
-	    $res .= $cell.',';
+            $res .= _quote_cell($c->{type}->to_string(
+                $model->get($c->{name}))) . ',';
 	}
 	chop($res);
 	$res .= "\n";
@@ -155,16 +154,15 @@ EOF
 
 #=PRIVATE METHODS
 
-# _quote_cell(string_ref cell)
+# _quote_cell(string cell) : string
 #
 # Quotes the cell, if need be.
 #
 sub _quote_cell {
     my($cell) = @_;
-    return unless $$cell =~ /,/s;
-    $$cell =~ s/"/""/sg;
-    $$cell =~ s/^|$/"/sg;
-    return;
+    return $cell unless $cell;
+    $cell =~ s/"/""/sg;
+    return '"' . $cell . '"';
 }
 
 =head1 COPYRIGHT
