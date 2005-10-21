@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [0],
     MAIL => [1],
+    PLAIN => [2],
 ]);
 
 1;
