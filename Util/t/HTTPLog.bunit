@@ -79,7 +79,7 @@ Request();
     ],
     'Bivio::Util::HTTPLog' => [
 	main => [
-	    [-email => email(), parse_errors => 5] => undef,
+	    [-email => email('httplog'), parse_errors => 5] => undef,
 	],
     ],
 ];

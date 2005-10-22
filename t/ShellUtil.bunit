@@ -5,13 +5,14 @@ Request();
 # Needed for the usage_error (DIE below).  Take out for debugging
 Bivio::IO::Alert->set_printer(sub {});
 my($myarg_re) = qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s;
+my($email) = email('shellutil');
 [
     'Bivio::ShellUtil' => [
 	email_file => [
-	    [email() => 'any subject' => $INC{'Bivio/Test.pm'}] => undef,
+	    [$email => 'any subject' => $INC{'Bivio/Test.pm'}] => undef,
 	],
 	email_message => [
-	    [email() => 'any subject' => \('hello')] => undef,
+	    [$email => 'any subject' => \('hello')] => undef,
 	],
 	group_args => [
 	    [2, ['a', 'b', 'c', 'd']] => [[['a', 'b'], ['c', 'd']]],
@@ -77,7 +78,7 @@ my($myarg_re) = qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s;
 	main => [
 	    t1 => [],
 	    # If these tests are failing, check ShellUtil/mylog.log
-	    [-email => email(), 'rd1'] => $myarg_re,
+	    [-email => $email, 'rd1'] => $myarg_re,
 	    ['rd1', 'rd2'] => $myarg_re,
 	    ['rd1', 'rd3'] => sub {
 		my($case, $actual) = @_;
