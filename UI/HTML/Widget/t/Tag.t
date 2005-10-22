@@ -6,7 +6,7 @@ use Bivio::UI::Widget::Join;
 Bivio::Test::Widget->unit(
     'Bivio::UI::HTML::Widget::Tag',
     [
-	['p', '&'] => '<p>&amp;</p>',
+	['p', '&'] => '<p>&</p>',
 	['p', _j('&amp;')] => '<p>&amp;</p>',
 	['p', 'x', 'foo'] => '<p class="foo">x</p>',
     ],
