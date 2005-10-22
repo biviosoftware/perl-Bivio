@@ -34,9 +34,6 @@ Bivio::Test::Widget->unit(
 <th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
 <th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
 </tr>
-<tr><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
-<tr bgcolor="#000000"><td><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr></table></td>
-</tr>
 <tr bgcolor="#D5EEFF">
 <td><font face="arial,sans-serif">RP-LI-02</font></td>
 <td><font face="arial,sans-serif">Iguana</font></td>
