@@ -297,7 +297,7 @@ sub render {
     my($hidden) = $model->get_hidden_field_values();
     while (@$hidden) {
 	# hidden fields have been converted to literal, but not  escaped.
-	$$buffer .= '<input type=hidden name='.shift(@$hidden).' value="'
+	$$buffer .= '<input type="hidden" name="'.shift(@$hidden).'" value="'
 		.Bivio::HTML->escape(shift(@$hidden))."\">\n";
     }
 
