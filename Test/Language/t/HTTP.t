@@ -112,7 +112,7 @@ follow_link(qr/New Use/);
 my($id) = "test_http_$$";
 submit_form(submit => {
     'Password:' => 'password',
-    'E-Mail Address:' => "ignore-$id\@bivio.biz",
+    'Email:' => "ignore-$id\@bivio.biz",
     'First Name:' => 'HTTP',
     'Last Name:' => 'UnitTest',
     'Street Address:' => '1313 Mockingbird Lane',
