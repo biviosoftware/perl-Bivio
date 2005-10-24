@@ -39,8 +39,7 @@ my(@image_map) = map {
 );
 
 # The header_content is defined in header.bview of which this view is a child.
-view_put(header_content => Grid([
-    [
+view_put(header_content => Grid([[
 	Grid([
 	    @left_menu_cells,
 	], {

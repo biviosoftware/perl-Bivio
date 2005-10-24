@@ -22,10 +22,15 @@ DO NOT ENTER REAL DATA.
 
 EOF
 	], [
-	    String('Account Information:', 'page_heading',
-		{cell_colspan => 2}),
+	    String('Account Information:', 'page_heading', {
+		cell_colspan => 2,
+	    }),
 	], [
 	    vs_form_field('UserAccountForm.Email.email'),
+	], [
+	    Link('Click here to change your password', 'USER_PASSWORD', {
+		cell_colspan => 2,
+	    }),
 	], [
 	    vs_form_field('UserAccountForm.RealmOwner.password', {},
 		['!', $edit_mode_condition]),

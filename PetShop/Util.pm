@@ -101,12 +101,37 @@ sub GUEST {
 
 =head2 PASSWORD : string
 
-Password user's name.
+Default password.
 
 =cut
 
 sub PASSWORD {
     return 'password';
+}
+
+=for html <a name="ROOT"></a>
+
+=head2 ROOT : string
+
+Test super user
+
+=cut
+
+sub ROOT {
+    return 'root';
+}
+
+=for html <a name="ROOT_EMAIL"></a>
+
+=head2 ROOT_EMAIL : string
+
+Test super user's email
+
+=cut
+
+sub ROOT_EMAIL {
+    my($proto) = @_;
+    return $proto->format_email($proto->ROOT);
 }
 
 =for html <a name="USAGE"></a>
@@ -178,7 +203,7 @@ sub demo_users {
     my($self) = @_;
     return [
 	$self->DEMO, $self->GUEST, qw(multi_role_user),
-	$self->get_request->is_production ? () : ('root'),
+	$self->get_request->is_production ? () : ($self->ROOT),
     ];
 }
 
@@ -376,7 +401,7 @@ sub _init_demo_users {
             });
 	}
 	Bivio::Biz::Util::RealmRole->make_super_user
-	    if $u eq 'root';
+	    if $u eq $self->ROOT;
     }
     return;
 }

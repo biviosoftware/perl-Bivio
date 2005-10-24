@@ -29,6 +29,9 @@ view_put(
 	    ], [
 		vs_blank_cell(),
 		Link('New User', 'USER_ACCOUNT_CREATE'),
+	    ], [
+		vs_blank_cell(),
+		Link('Forgot Password?', 'GENERAL_USER_PASSWORD_QUERY'),
 	    ],
 	], {
 	    align => 'left',

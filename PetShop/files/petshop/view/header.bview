@@ -54,12 +54,12 @@ view_main(Page(
 	    bgcolor => 'header_background',
 	    expand => 1,
 	}),
-	Grid([
-	    [
-		# The child's content
-		view_widget_value('header_content'),
-	    ],
-	], {
+	Grid([[
+	    vs_acknowledgement()->put(string_font => 'acknowledgement'),
+	], [
+	    # The child's content
+	    view_widget_value('header_content'),
+        ]], {
 	    expand => 1,
 	}),
 	'<p><hr>',

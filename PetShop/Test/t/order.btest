@@ -7,9 +7,10 @@ follow_link('Finch');
 submit_form('add_to_cart_0');
 submit_form('checkout');
 follow_link('continue');
+#TODO: do_register, re-use name
 submit_form(submit => {
-    'E-Mail Address:' => 'test_' . rand() . '@' . rand() . '.bivio.biz',
-    'Password:' => 'x' x 6,
+    'Email:' => (generate_local_email(random_string()))[0],
+    'Password:' => random_string(),
     'First Name:' => 'First',
     'Last Name:' => 'Last',
 });

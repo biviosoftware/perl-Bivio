@@ -62,6 +62,7 @@ my($_SELF) = __PACKAGE__->new({
 	summary_line => 0x66CC66,
 	header_background => 0xEDE4B5,
 	category_background => 0xD5EEFF,
+	acknowledgement => 0x009900,
     ]),
     Font => __PACKAGE__->make_groups([
 	default => ['family=arial,sans-serif'],
@@ -73,6 +74,7 @@ my($_SELF) = __PACKAGE__->new({
 	error => ['color=error', 'bold'],
 	warning => ['color=warning', 'bold'],
 	form_field_error_label => ['color=error', 'italic'],
+	acknowledgement => ['italic'],
 	['list_error', 'checkbox_error'] =>
 	       ['color=error', 'smaller'],
 	italic => ['italic'],
@@ -140,6 +142,11 @@ my($_SELF) = __PACKAGE__->new({
 	    FAVICON_ICO => 'favicon.ico',
 	    ROBOTS_TXT => 'robots.txt',
 	    TEST_BACKDOOR => '_test_backdoor',
+	    GENERAL_USER_PASSWORD_QUERY => '/pub/forgot-password',
+	    GENERAL_USER_PASSWORD_QUERY_MAIL => undef,
+	    GENERAL_USER_PASSWORD_QUERY_ACK => '/pub/forgot-password-ack',
+	    USER_PASSWORD_RESET => '?/new-password',
+	    USER_PASSWORD => '?/change-password',
 	    PRODUCTS => 'pub/products',
 	    ITEM_SEARCH => 'pub/search',
 	    ITEMS => 'items',
@@ -180,6 +187,9 @@ my($_SELF) = __PACKAGE__->new({
 	# i.e. http://petshop.bivio.biz
 	home_page_uri => '/pub',
 
+	support_email => 'webmaster@localhost.localdomain',
+	site_name => 'PetShop',
+
 	# SITE_ROOT task calls View->execute_uri and we look for pages in
 	# the "site_root" directory.
 	view_execute_uri_prefix => 'site_root/',
@@ -202,7 +212,6 @@ my($_SELF) = __PACKAGE__->new({
 	ECCreditCardPayment => [
 	    card_number => 'Card Number',
 	],
-	'Email.email' => 'E-Mail Address',
 	Item => [
 	    item_id => 'Item ID',
 	    list_price => 'Item Price',
@@ -216,7 +225,7 @@ my($_SELF) = __PACKAGE__->new({
 	    name => 'Product Name',
 	    product_id => 'Product ID',
 	],
-	'login' => 'Email',
+	[qw(login email)] => 'Email',
 	RealmOwner => [
 	    name => 'User ID',
 	    password => 'Password',
@@ -235,6 +244,15 @@ my($_SELF) = __PACKAGE__->new({
 	ship_to_billing_address => 'Ship to Billing Address',
 	total_cost => 'Total Cost',
 	update_cart => 'Update Cart',
+	UserPasswordQueryForm => [
+	    ok_button => 'Reset Password',
+	],
+	UserPasswordForm => [
+	    old_password => 'Current Password',
+	    new_password => 'New Password',
+	    confirm_new_password => 'Re-enter New Password',
+	    ok_button => 'Change',
+	],
 
 	# Table headings
 	'ItemListForm.add_to_cart' => ' ',
@@ -258,6 +276,9 @@ my($_SELF) = __PACKAGE__->new({
 	cancel_button => 'Cancel',
 	acknowledgement => [
 	    SHELL_UTIL => 'shell util ack',
+	    GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)], 'strong'); with a link to reset your password.},
+	    USER_PASSWORD => q{Your password has been changed.},
+	    password_nak => q{We're sorry, but the link you clicked on is no longer valid.  Please enter your email address and send again.},
 	],
     ]),
 });

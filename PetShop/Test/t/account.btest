@@ -4,8 +4,9 @@ test_setup('PetShop');
 home_page();
 follow_link('Sign-in');
 follow_link('New User');
+#TODO: do_register, re-use name
 submit_form(submit => {
-    'E-Mail Address:' => (generate_local_email())[0],
+    'Email:' => (generate_local_email(random_string()))[0],
     'Password:' => 'password',
     'First Name:' => 'test-first',
     'Last Name:' => 'test-last',

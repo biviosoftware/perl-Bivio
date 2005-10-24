@@ -120,6 +120,20 @@ sub checkout_as_demo {
     return;
 }
 
+=for html <a name="do_logout"></a>
+
+=head2 do_logout()
+
+Logs out if logged in.
+
+=cut
+
+sub do_logout {
+    my($self) = @_;
+    $self->follow_link('Sign-out')
+	if $self->text_exists('Sign-out');
+}
+
 =for html <a name="login_as"></a>
 
 =head2 login_as(string user, string password)
@@ -130,8 +144,7 @@ Logs in as I<user> and I<password>.
 
 sub login_as {
     my($self, $user, $password) = @_;
-    $self->follow_link('Sign-out')
-	if $self->get_html_parser->get('Links')->unsafe_get('Sign-out');
+    $self->do_logout();
     $self->follow_link('Sign-in');
     $self->submit_form(submit => {
         'Email:' => $user,
