@@ -69,7 +69,11 @@ sub get_content {
 
 sub get_handle {
     my($self) = @_;
-    return IO::File->new(_path($self), 'r');
+    return IO::File->new(_path($self), 'r')
+	|| $self->throw_die('IO_ERROR', {
+	    entity => _path($self),
+	    message => "$!",
+	});
 }
 
 sub handle_commit {
