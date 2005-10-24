@@ -51,9 +51,7 @@ Server redirect to I<next> task.
 =cut
 
 sub execute_next {
-    my($proto, $req) = @_;
-    $req->server_redirect($req->get('task')->get('next'));
-    # DOES NOT RETURN
+    return 'server_redirect.next';
 }
 
 #=PRIVATE SUBROUTINES
