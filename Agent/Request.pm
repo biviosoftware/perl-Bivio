@@ -986,6 +986,9 @@ sub internal_server_redirect {
     Bivio::UI::Task->assert_defined_for_facade($named->{task_id}, $self);
     my($fc) = Bivio::Biz::FormModel->get_context_from_request($named, $self);
     $self->internal_redirect_realm($named->{task_id}, $named->{realm});
+    $named->{query} = $self->get('query')
+	if !exists($named->{query})
+	&& Bivio::Agent::Task->get_by_id($named->{task_id})->get('want_query');
     $named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
 	if ref($named->{query});
     $named->{query} = defined($named->{query})
@@ -1154,7 +1157,7 @@ sub server_redirect {
 	Bivio::DieCode->SERVER_REDIRECT_TASK,
 	{task_id => $task},
     );
-    return;
+    # DOES NOT RETURN
 }
 
 =for html <a name="set_current"></a>
