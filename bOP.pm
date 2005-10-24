@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,45 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::Model::RealmFile->create downcases path_lc
+  * Bivio::Util::RealmFile->import_tree works
+  * Various tests have been fixed
+
+  Revision 3.30  2005/10/24 20:54:13  nagler
+  * Bivio::Biz::FormModel->validate_greater/* return false if validation fails
+  * Bivio::Test::Language::HTTP->generate_local_email deprecates the no params
+    call.  Use generate_local_email(random_string()) if you really want a random
+    email address.  Better to write a test like PetShop/Test/t/password.btest
+    which reuses the user for every test.
+  * Bivio::Test::Language::HTTP->unsafe_op wraps Die->catch
+  * Bivio::Test::Language::HTTP->default_password returns standard test password
+  * Bivio::Test::Language::HTTP->random_string returns a random 8 char string
+  * Bivio::Test::Language::HTTP->verify_content_type asserts mime type
+  * Bivio::UI::XHTML::Widget::Page3->new adds a "top" anchor
+  * Bivio::Agent::Request->server_redirect adds $req->query if not already set
+  * Bivio::Agent::Task->execute supports task item return values of the
+    form: "server_redirect.<task>" where <task> is a task attribute or task name.
+  * Bivio::Agent::Task->execute no longer supports arbitrary true return
+    values.  Must be 1 or task/attribute.  This behavior was deprecated fro
+    some time.
+  * Bivio::Biz::Action->put_on_request accepts a $durable param.
+  * Bivio::Biz::Action::UserPasswordQuery and Model.UserPasswordQueryForm replace
+    UserLostPasswordForm, and integrates with Model.UserPassword.
+  * Bivio::Biz::Model::RealmOwner->update_password added
+  * Bivio::Delegate::SimpleTaskId added PASSWORD support tasks.  The view names
+    are recommended, but not required.  For best results, use the names specified
+    in the tasks to avoid denormalizing tasks in app TaskId files.
+  * Bivio::Delegate::SimpleTypeError->PASSWORD_QUERY_SUPER_USER added.  Super
+    users can't request password resets
+  * Bivio::Test::Util->mock_sendmail no longer requires Facade
+  * Bivio::UI::ViewShortcuts->vs_site_name added from HTML::ViewShortcuts
+  * Bivio::PetShop::* supports password reset
+  * Bivio::ShellUtil allows literals for option defaults
+  * Bivio::Agent::Reply->set_output allows IO::File
+  * Bivio::Biz::Model::RealmFile supports longer file names (500), is_public,
+    and user_id
+  * Bivio::Biz::Action::RealmFile returns files like LocalFilePlain
+  * Bivio::Util::RealmFile (b-realm-file) allows you to import a file tree
   * Bivio::PetShop::Util (b-petshop) integrates with create_test_db
   * Bivio::PetShop supports realm files and reset password
   * Bivio::Util::HTTPConf (b-http-conf) supports facade_redirects
