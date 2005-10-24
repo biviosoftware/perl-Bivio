@@ -156,24 +156,6 @@ use Bivio::Biz::Util::RealmRole;
 
 =cut
 
-=for html <a name="create_db"></a>
-
-=head2 create_db()
-
-Initializes petshop database.  Must be un from from C<files/ddl> directory,
-which contains C<bOP-tables.sql>, C<petshop-tables.sql>, etc.
-
-See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
-
-=cut
-
-sub create_db {
-    my($self) = shift;
-    $self->SUPER::create_db(@_);
-    _init_demo($self);
-    return;
-}
-
 =for html <a name="ddl_files"></a>
 
 =head2 ddl_files() : array_ref
@@ -220,6 +202,22 @@ sub format_email {
     return "$user\@bivio.biz";
 }
 
+=for html <a name="initialize_test_data"></a>
+
+=head2 initialize_test_data()
+
+=cut
+
+sub initialize_test_data {
+    my($self) = @_;
+    _init_demo_categories($self);
+    _init_demo_products($self);
+    _init_demo_items($self);
+    _init_demo_users($self);
+    _init_demo_files($self);
+    return;
+}
+
 =for html <a name="realm_role_config"></a>
 
 =head2 realm_role_config() : array_ref
@@ -233,23 +231,10 @@ sub realm_role_config {
     return [
         @{$self->SUPER::realm_role_config()},
         <DATA>,
-    ];
-}
+    ];}
+
 
 #=PRIVATE METHODS
-
-# _init_demo(self)
-#
-# Initializes demo data.
-#
-sub _init_demo {
-    my($self) = @_;
-    _init_demo_categories($self);
-    _init_demo_products($self);
-    _init_demo_items($self);
-    _init_demo_users($self);
-    return;
-}
 
 # _init_demo_categories(self)
 #
@@ -357,6 +342,35 @@ sub _init_demo_products {
 	    description => $col[4],
 	});
     }
+    return;
+}
+
+# _init_demo_files(self)
+#
+sub _init_demo_files {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $self->set_realm_and_user($self->DEMO, $self->DEMO);
+    Bivio::IO::File->chdir(
+	Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf(
+	    File::Spec->rel2abs('demo_files'))));
+    foreach my $x (
+	['pub/file.txt' => 'text/plain'],
+	['pub/image.gif' => 'image/gif'],
+	['private/file.html' => '<html><body>text/html</body></html>'],
+    ) {
+	my($f, $c) = @$x;
+	Bivio::IO::File->mkdir_parent_only($f);
+	Bivio::IO::File->write($f, $c);
+    }
+    foreach my $x (qw(pub private)) {
+	Bivio::IO::File->chdir($x);
+	$self->new_other('Bivio::Util::RealmFile')->put(
+	    is_public => $x eq 'pub' ? 1 : 0,
+	)->import_tree($x);
+	Bivio::IO::File->chdir('..');
+    }
+    Bivio::IO::File->chdir('..');
     return;
 }
 
