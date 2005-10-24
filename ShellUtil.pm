@@ -308,7 +308,7 @@ sub new_other {
     my($self, $class) = @_;
     # explicit die if not found
     # ClassLoader calls throw_quietly() which has no output
-    Bivio::Die->die('other ShellUtil not found: ', $class)
+    Bivio::Die->die('other ShellUtil not found or syntax error: ', $class)
         unless Bivio::IO::ClassLoader->unsafe_simple_require($class);
     my($options) = [];
     if (ref($self)) {
