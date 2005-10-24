@@ -134,7 +134,7 @@ sub send {
 
     my($is_scalar) = ref($o) eq 'SCALAR';
     die('no reply generated, missing UI item on Task')
-	    unless $is_scalar || ref($o) eq 'GLOB';
+	unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::File');
     my($size) = $is_scalar ? length($$o) : -s $o;
     # NOTE: The -s $o and the "stat(_)" below must be near each other
     if ($is_scalar) {
@@ -299,7 +299,7 @@ sub set_last_modified {
 
 =head2 set_output(scalar_ref value)
 
-=head2 set_output(io_handle file)
+=head2 set_output(IO::File file)
 
 Sets the output to the file.  Output type must be set.
 I<file> or I<value> will be owned by this method.
@@ -310,8 +310,9 @@ sub set_output {
     my($self, $value) = @_;
     my($fields) = $self->[$_IDI];
     die('too many calls to set_output') if $fields->{output};
-    die('not a GLOB or SCALAR reference')
-	    unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB';
+    die('not an IO::File, GLOB, or SCALAR reference')
+	unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
+	    || UNIVERSAL::isa($value, 'IO::Handle');
     $fields->{output} = $value;
     return;
 }
