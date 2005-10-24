@@ -21,7 +21,7 @@ sub create_with_content {
     $values->{user_id} ||= $req->get('auth_user_id');
     $values->{is_folder} ||= 0;
     $values->{is_public} ||= 0;
-    $values->{path_lc} = $values->{path};
+    $values->{path_lc} = lc($values->{path});
     return $self->SUPER::create($values)->put_content($content);
 }
 
