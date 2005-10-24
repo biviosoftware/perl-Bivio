@@ -353,7 +353,7 @@ sub _init_demo_files {
     $self->set_realm_and_user($self->DEMO, $self->DEMO);
     Bivio::IO::File->chdir(
 	Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf(
-	    File::Spec->rel2abs('demo_files'))));
+	    my $d = File::Spec->rel2abs('demo_files.tmp'))));
     foreach my $x (
 	['pub/file.txt' => 'text/plain'],
 	['pub/image.gif' => 'image/gif'],
