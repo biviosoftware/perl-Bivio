@@ -21,7 +21,7 @@ sub from_literal {
 }
 
 sub get_width {
-    return 200;
+    return 500;
 }
 
 sub to_os {
