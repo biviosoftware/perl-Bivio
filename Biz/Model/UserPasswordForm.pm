@@ -1,4 +1,4 @@
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2003-2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserPasswordForm;
 use strict;
@@ -35,9 +35,6 @@ C<Bivio::Biz::Model::UserPasswordForm>
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Model::UserLoginForm;
-use Bivio::Biz::Model::UserLostPasswordForm;
-use Bivio::Type::Password;
 
 #=VARIABLES
 
@@ -55,21 +52,11 @@ Updates the password in the database and the cookie.
 
 sub execute_ok {
     my($self) = @_;
-    my($encrypted) = Bivio::Type::Password->encrypt(
-        $self->get('new_password'));
-    my($lost_password_realm) = _get_lost_password_realm($self);
-    ($lost_password_realm || _get_owner($self))->update({
-        password => $encrypted});
-
-    if ($lost_password_realm) {
-        $self->get_instance('UserLoginForm')->execute($self->get_request, {
-            realm_owner => $lost_password_realm,
-        });
-    }
-    else {
-        $self->get_request->get('cookie')->put(
-            Bivio::Biz::Model::UserLoginForm->PASSWORD_FIELD => $encrypted);
-    }
+    my($req) = $self->get_request;
+    $self->get_instance('UserLoginForm')->execute($req, {
+	realm_owner => $req->get_nested(qw(auth_realm owner))
+	    ->update_password($self->get('new_password')),
+    });
     return;
 }
 
@@ -77,47 +64,27 @@ sub execute_ok {
 
 =head2 internal_initialize() : hash_ref
 
-B<FOR INTERNAL USE ONLY>
+Return config.
 
 =cut
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
-	version => 1,
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
 	require_context => 1,
-	visible => [
-	    {
-		name => 'old_password',
-		type => 'Password',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'new_password',
-		type => 'Password',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'confirm_new_password',
-		type => 'Password',
-		constraint => 'NOT_NULL',
-	    },
-	],
-	other => [
-	    {
-		name => 'display_old_password',
-		type => 'Boolean',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'user_display_name',
-		type => 'String',
-		constraint => 'NOT_NULL',
-	    },
-	],
-    };
-    return $self->merge_initialize_info(
-        $self->SUPER::internal_initialize, $info);
+	@{$self->internal_initialize_local_fields(
+	    visible => [
+		[old_password => undef, 'NONE'],
+		qw(new_password confirm_new_password),
+	    ],
+	    hidden => [
+		[qw(display_old_password  Boolean)],
+		[query_password => undef, 'NONE'],
+	    ],
+	    'Password', 'NOT_NULL',
+	)},
+    });
 }
 
 =for html <a name="internal_pre_execute"></a>
@@ -132,12 +99,13 @@ super user.
 sub internal_pre_execute {
     my($self, $method) = @_;
     my($req) = $self->get_request;
-    my($lost_password_realm) = _get_lost_password_realm($self);
-    $self->internal_put_field(display_old_password =>
-        ($lost_password_realm || $req->is_substitute_user)
-        ? 0 : 1);
-    $self->internal_put_field(user_display_name =>
-        ($lost_password_realm || _get_owner($self))->get('display_name'));
+    my($qp) = $req->unsafe_get_nested(qw(Action.UserPasswordQuery password));
+    $self->internal_put_field(query_password => $qp)
+	if $qp;
+    $self->internal_put_field(old_password => $qp)
+	if $qp ||= $self->unsafe_get('query_password');
+    $self->internal_put_field(
+	display_old_password => $qp || $req->is_substitute_user ? 0 : 1);
     return;
 }
 
@@ -152,60 +120,34 @@ Ensures the new password and confirm password matches.
 
 sub validate {
     my($self) = @_;
-    _validate_old_password($self)
-        if $self->get('display_old_password');
-    return if $self->in_error;
-    $self->internal_put_error('confirm_new_password', 'CONFIRM_PASSWORD')
-        unless $self->get('new_password')
-            eq $self->get('confirm_new_password');
+    my($req) = $self->get_request;
+    unless ($req->is_substitute_user) {
+	return unless $self->validate_not_null('old_password');
+	Bivio::IO::Alert->info(
+	    $req->get_nested(qw(auth_realm owner password)),
+	    ' ', 
+	    $self->get('old_password'),
+	);
+
+	unless (Bivio::Type::Password->is_equal(
+	    $req->get_nested(qw(auth_realm owner password)),
+	    $self->get('old_password'),
+        )) {
+	    $self->internal_put_error(qw(old_password PASSWORD_MISMATCH));
+	    return;
+	}
+    }
+    $self->internal_put_error(qw(confirm_new_password CONFIRM_PASSWORD))
+        unless $self->in_error
+        || $self->get('new_password') eq $self->get('confirm_new_password');
      return;
 }
 
 #=PRIVATE SUBROUTINES
 
-# _get_lost_password_realm(self) : Bivio::Biz::Model
-#
-# Returns the realm of the lost password user. Returns undef if the
-# user is not present in the query.
-#
-sub _get_lost_password_realm {
-    my($self) = @_;
-    my($lost_password_realm) = Bivio::Biz::Model::UserLostPasswordForm
-        ->unsafe_get_realm_from_query($self->get_request);
-
-    unless ($lost_password_realm) {
-        Bivio::DieCode->NOT_FOUND->throw_die
-            if $self->get_request->get('auth_realm')->get('type')
-                ->equals_by_name('GENERAL');
-    }
-    return $lost_password_realm;
-}
-
-# _get_owner(self) : Bivio::Biz::Model::RealmOwner
-#
-# Returns the RealmOwner for the current realm.
-#
-sub _get_owner {
-    my($self) = @_;
-    return $self->new_other('RealmOwner')->load;
-}
-
-# _validate_old_password(self)
-#
-# Validate the old password.
-#
-sub _validate_old_password {
-    my($self) = @_;
-    $self->validate_not_null('old_password');
-    return if $self->in_error;
-    $self->internal_put_error('old_password', 'PASSWORD_MISMATCH')
-        unless Bivio::Type::Password->is_equal(
-            _get_owner($self)->get('password'), $self->get('old_password'));
-}
-
 =head1 COPYRIGHT
 
-Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2003-2005 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
