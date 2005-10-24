@@ -38,6 +38,7 @@ sub new {
     return $proto->SUPER::new($attrs)->put_unless_exists(
 	head => Title([vs_site_name(), view_widget_value('page3_title')]),
 	body => Join([
+	    '<a name="top"></a>',
 	    Tag('div',
 		Join([
 		    map(
