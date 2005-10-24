@@ -85,6 +85,7 @@ sub execute_ok {
 	uri => Bivio::Biz::Action->get_instance('UserPasswordQuery')
 	    ->format_uri($req),
     );
+    $self->put_on_request(1);
     return 'server_redirect.next';
 }
 
