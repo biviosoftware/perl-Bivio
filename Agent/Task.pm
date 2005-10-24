@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
@@ -308,22 +308,26 @@ sub execute {
 	    ? $instance->$method(@$args, $req) : $method->(@$args, $req);
 	next unless $res;
 	my($next) = $res;
+	my($redirect) = 'client_redirect';
 	unless (ref($res)) {
 	    # Boolean true means "I'm done"
 	    last if $res eq '1';
-	    $next = $self->unsafe_get($res);
+	    $redirect = 'server_redirect'
+		if $res =~ s/^(server_redirect)\.//;
+ 	    $next = $self->get($res);
 	}
-	_trace('redirecting to: ', $next) if $_TRACE;
-	$req->client_redirect($next)
+	_trace($redirect, '.', $next, ' ', $req->unsafe_get('query'))
+	    if $_TRACE;
+	$req->$redirect($next)
 	    if ref($next) && UNIVERSAL::isa($next, 'Bivio::Agent::TaskId');
-	Bivio::IO::Alert->warn_deprecated(
+	Bivio::Die->die(
 	    $self->get('id'), ' item ',
 	    defined($instance)
 	    ? (ref($instance) || $instance) . '->' . $method
 	    : 'code',
 	    ': must return boolean, Bivio::Agent::TaskId, or attribute',
-	    ', not ', $res);
-	last;
+	    ', not ', $res,
+	);
     }
     $self->commit($req);
     $req->get('reply')->send($req);
@@ -430,10 +434,8 @@ sub handle_die {
     # Leave uri untouched.
     $req->put_durable_server_redirect_state({
 	task_id => $new_task_id,
-	query => undef,
 	form => undef,
 	form_model => undef,
-	path_info => undef,
     });
     return;
 }
@@ -613,35 +615,29 @@ sub _invoke_pre_execute_handlers {
 #
 sub _parse_map_item {
     my($attrs, $cause, $action) = @_;
-
-    return _put_attr($attrs, $cause,
-	    Bivio::Type::Boolean->from_literal_or_die($action))
-	    if $cause =~ /^(?:require_|want_)[a-z0-9_]+$/;
-
-    # These items all have tasks as actions
+    return _put_attr(
+	$attrs, $cause,
+	Bivio::Type::Boolean->from_literal_or_die($action),
+    ) if $cause =~ /^(?:require_|want_)[a-z0-9_]+$/;
     $action = Bivio::Agent::TaskId->from_any($action);
-
-    # Special cases (non-enums)
     return _put_attr($attrs, $cause, $action)
-	    if $cause =~ /^(?:next|cancel|login|[a-z0-9_]+_task)$/;
-
-    # Map die action
+	if $cause =~ /^(?:next|cancel|login|[a-z0-9_]+_task)$/;
     if ($cause =~ /(.+)::(.+)/) {
-	# Fully specified enum
 	my($class, $method) = ($1, $2);
-	Bivio::Die->die($cause, ': not an enum (', $attrs->{id}, ')')
-		    unless UNIVERSAL::isa($class, 'Bivio::Type::Enum');
+	Bivio::Die->die(
+	    $cause, ': not an enum (', $attrs->{id}, ')',
+	) unless UNIVERSAL::isa($class, 'Bivio::Type::Enum');
 	$cause = $class->from_name($method);
     }
     else {
-	# Must be a DieCode
 	Bivio::Die->die($cause, ': not a valid attribute name')
 	    unless Bivio::DieCode->is_valid_name($cause);
 	$cause = Bivio::DieCode->from_name($cause);
     }
-    Bivio::Die->die($cause->get_name, ': cannot be a mapped item (',
-	    $attrs->{id}, ')')
-		if $_REDIRECT_DIE_CODES{$cause};
+    Bivio::Die->die(
+	$cause->get_name, ': cannot be a mapped item (',
+	$attrs->{id}, ')',
+    ) if $_REDIRECT_DIE_CODES{$cause};
     return _put_attr($attrs, 'die_actions', $cause, $action);
 }
 
@@ -656,15 +652,17 @@ sub _put_attr {
     foreach my $k (@keys) {
 	$a = $a->{$k};
     }
-    Bivio::Die->die([@keys, $final], ': attribute already exists for ',
-	    $attrs->{id}) if defined($a->{$final});
+    Bivio::Die->die(
+	[@keys, $final], ': attribute already exists for ',
+	$attrs->{id},
+    ) if defined($a->{$final});
     $a->{$final} = $value;
     return;
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
