@@ -102,6 +102,18 @@ sub vs_mail_host {
     return [['->get_request'], 'Bivio::UI::Facade', 'mail_host'];
 }
 
+=for html <a name="vs_site_name"></a>
+
+=head2 vs_site_name() : array_ref
+
+Returns a widget value that 
+
+=cut
+
+sub vs_site_name {
+    return shift->vs_text('site_name');
+}
+
 =for html <a name="vs_text"></a>
 
 =head2 vs_text(string tag_part, ...) : array_ref
