@@ -39,7 +39,6 @@ my($h2) = {path => 'h2', volume => $vt};
 	],
 	delete_all => [
 	    [{}] => 2,
-#	    [{}] => 5,
 	],
 	handle_commit => not_die(),
 	unsafe_load => [
