@@ -4,6 +4,7 @@ package Bivio::Biz::Action::Acknowledgement;
 use strict;
 $Bivio::Biz::Action::Acknowledgement::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 $_ = $Bivio::Biz::Action::Acknowledgement::VERSION;
+use Bivio::IO::Trace;
 
 =head1 NAME
 
@@ -35,9 +36,11 @@ C<Bivio::Biz::Action::Acknowledgement>
 =cut
 
 #=IMPORTS
-my($_QUERY) = 'ack';
+use Bivio::IO::Trace;
 
 #=VARIABLES
+my($_QUERY) = 'ack';
+our($_TRACE);
 
 =head1 METHODS
 
@@ -71,6 +74,7 @@ sub extract_label {
 	$l = Bivio::Agent::TaskId->from_int($l)->get_name
 	    if $l && $l =~ /^\d+$/;
 	$proto->new($req)->put_on_request($req)->put(label => $l);
+	_trace($_QUERY, '=', $l) if $_TRACE;
 	return $l;
     }
     $proto->delete_from_request($req);
@@ -98,6 +102,7 @@ sub save_label {
 	    );
 	$label = $req->get('task_id')->as_int;
     }
+    _trace($_QUERY, '=', $label) if $_TRACE;
     # Add to FormContext (if exists) and request
     my($x) = $req->unsafe_get('form_model');
     $x &&= $x->unsafe_get_context;
