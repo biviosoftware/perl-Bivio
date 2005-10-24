@@ -1265,7 +1265,8 @@ sub _compile_options {
 		unless $k =~ /^[a-z]\w+$/i;
 	my($first) = $k =~ /^(.)/;
 	my($type, $default) = @{$options->{$k}};
-	my($opt) = [$k, Bivio::Type->get_instance($type), $default];
+	my($opt) = [$k, Bivio::Type->get_instance($type)];
+	$opt->[2] = _parse_option_value($self, $opt, $default);
 	if (exists($map->{$first})) {
 	    # Single char collision, mark for deletion below
 	    die("option conflict '$first' and '$k'")
@@ -1424,17 +1425,9 @@ sub _parse_options {
 	    $res->{$opt->[0]} = 1;
 	    next;
 	}
-	$self->usage("-$k: missing an argument") unless @$argv;
-	my($v, $e);
-	$v = shift(@$argv);
-
-	# We allow the caller to pass in "undef" or a "ref" for the value
-	# of an option, i.e. it doesn't need to be parsed.
-	unless (ref($v) || !defined($v)) {
-	    ($v, $e) = $opt->[1]->from_literal($v);
-	    $self->usage("-$k: ", $e->get_long_desc) if $e;
-	}
-	$res->{$opt->[0]} = $v;
+	$self->usage("-$k: missing an argument")
+	    unless @$argv;
+	$res->{$opt->[0]} = _parse_option_value($self, $opt, shift(@$argv));
     }
 
     # Set the (defined) defaults
@@ -1446,6 +1439,20 @@ sub _parse_options {
 
     _trace($res) if $_TRACE;
     return $res;
+}
+
+# _parse_option_value(Bivio::ShellUtil self, array_ref opt, string ) : hash_ref
+#
+# Returns the options that were set.
+#
+sub _parse_option_value {
+    my($self, $opt, $value) = @_;
+    return $value
+	if ref($value) || !defined($value);
+    my($v, $e) = $opt->[1]->from_literal($value);
+    $self->usage("-$opt->[0] '$value': ", $e->get_long_desc)
+	if $e;
+    return $v;
 }
 
 # _parse_realm_id(Bivio::ShellUtil self, string attr) : string
