@@ -79,6 +79,7 @@ my($_VARS) = {
 	app => 'httpd',
 	listen => '80',
     },
+    facade_redirects => '',
     # Trick to help _replace_vars
     '$' => '$',
 };
@@ -428,6 +429,7 @@ EOF
     RewriteRule ^(.*) http://$http_suffix:$listen$$1 [proxy]
 </VirtualHost>
 $permanent_redirects
+$facade_redirects
 EOF
 	),
     );
