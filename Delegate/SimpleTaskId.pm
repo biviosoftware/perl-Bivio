@@ -204,6 +204,50 @@ sub get_delegate_info {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
+	[qw(
+	    GENERAL_USER_PASSWORD_QUERY
+	    18
+	    GENERAL
+	    ANYBODY
+	    Model.UserPasswordQueryForm
+	    View.user-password-query
+	    reset_task=USER_PASSWORD_RESET
+	    next=GENERAL_USER_PASSWORD_QUERY_MAIL
+	)],
+	[qw(
+	    GENERAL_USER_PASSWORD_QUERY_MAIL
+	    19
+	    GENERAL
+	    ANYBODY
+	    View.user-password-query-mail
+	    Action.ServerRedirect->execute_next
+	    next=GENERAL_USER_PASSWORD_QUERY_ACK
+	)],
+	[qw(
+	    USER_PASSWORD_RESET
+	    20
+	    USER
+	    ANYBODY
+	    Action.UserPasswordQuery
+	    password_task=USER_PASSWORD
+	    NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
+	)],
+	[qw(
+	    USER_PASSWORD
+	    21
+	    USER
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.UserPasswordForm
+	    View.user-password
+	    next=SITE_ROOT
+	)],
+	[qw(
+	    GENERAL_USER_PASSWORD_QUERY_ACK
+	    22
+	    GENERAL
+	    ANYBODY
+	    View.user-password-query-ack
+	)],
     ];
 }
 
