@@ -192,8 +192,8 @@ sub _parse_text {
     my($text) = @_;
     my(@res, $bit);
     while (length($text)) {
-	unless ($text =~ /^\w+\(/) {
-	    ($bit, $text) = split(/(?=\b\w+\()/, $text, 2);
+	unless ($text =~ /^[a-z]\w+\(/i) {
+	    ($bit, $text) = split(/(?=\b[a-z]\w+\()/i, $text, 2);
 	    # Unescape any specials in <>.
 	    $bit =~ s/\<([\<\>\{\}\(\);])\>/$1/g if $bit;
 	    push(@res, $bit);
