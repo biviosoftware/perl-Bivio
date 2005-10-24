@@ -112,26 +112,23 @@ sub handler {
     Apache->push_handlers('PerlCleanupHandler', sub {
 	my($req) = Bivio::Agent::Request->get_current;
 	if ($req) {
-	    Bivio::IO::Alert->warn('[', $req->unsafe_get('client_addr'),
-		    '] request aborted, rolling back ',
-		    $req->unsafe_get('task_id'));
+	    Bivio::IO::Alert->warn(
+		'[', $req->unsafe_get('client_addr'),
+		'] request aborted, rolling back ',
+		$req->unsafe_get('task_id'),
+	    );
 	    Bivio::Agent::Task->rollback($req);
 	    Bivio::Agent::Request->clear_current;
 	}
 	return Bivio::Ext::ApacheConstants::OK();
     });
     my($die) = $_SELF->process_request($r);
-
-    # Log the error
-    if (defined($die) && $die->get('code')
-	    # Keep in synch with Reply::die_to_http_code
-	    ne Bivio::DieCode::CLIENT_REDIRECT_TASK()) {
+    if ($die && !$die->get('code')->equals_by_name('CLIENT_REDIRECT_TASK')) {
 	my($c) = $r->connection();
 	my($u) = $c && $c->user() || 'ANONYMOUS';
 	my($ip) = $c && $c->remote_ip || '0.0.0.0';
 	$r->log_reason($ip.' '.$u.' '.$die->as_string)
     }
-
     Apache->push_handlers('PerlCleanupHandler', sub {
 	Bivio::Agent::Job::Dispatcher->execute_queue();
 	return Bivio::Ext::ApacheConstants::OK();
