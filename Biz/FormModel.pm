@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::FormModel;
 use strict;
@@ -1279,21 +1279,16 @@ sub validate_and_execute_ok {
 
 =for html <a name="validate_greater_than_zero"></a>
 
-=head2 validate_greater_than_zero(string field)
+=head2 validate_greater_than_zero(string field) : boolean
 
 Ensures the specified field is greater than 0. Puts an error on the form
-if it fails.
+if it fails.  Returns false if the field is in error or if an error is
+put on the field.
 
 =cut
 
 sub validate_greater_than_zero {
-    my($self, $field) = @_;
-    my($value) = $self->get($field);
-    return unless defined($value);
-
-    $self->internal_put_error($field, Bivio::TypeError::GREATER_THAN_ZERO())
-	    unless $value > 0;
-    return;
+    return _validate(sub {shift(@_) <= 0 && 'GREATER_THAN_ZERO'}, @_);
 }
 
 =for html <a name="validate_not_negative"></a>
@@ -1301,18 +1296,13 @@ sub validate_greater_than_zero {
 =head2 validate_not_negative(string field) : boolean
 
 Ensures the specified field isn't negative. Puts an error on the form
-if it fails.
+if it fails. Returns false if the field is in error or if an error is
+put on the field.
 
 =cut
 
 sub validate_not_negative {
-    my($self, $field) = @_;
-    my($value) = $self->get($field);
-    return unless defined($value);
-
-    $self->internal_put_error($field, Bivio::TypeError::NOT_NEGATIVE())
-	    unless $value >= 0;
-    return;
+    return _validate(sub {shift(@_) < 0 && 'NOT_NEGATIVE'}, @_);
 }
 
 =for html <a name="validate_not_null"></a>
@@ -1320,36 +1310,27 @@ sub validate_not_negative {
 =head2 validate_not_null(string field)
 
 Ensures the specified field isn't undef and isn't in error. Puts an error on
-the form if it fails.
+the form if it fails.  Returns false if the field is in error or if an error is
+put on the field.
 
 =cut
 
 sub validate_not_null {
-    my($self, $field) = @_;
-    my($value) = $self->get($field);
-
-    # Only put the error if not already in error
-    $self->internal_put_error($field, Bivio::TypeError::NULL())
-	    unless defined($value) || $self->get_field_error($field);
-    return;
+    return _validate(sub {!defined(shift(@_)) && 'NULL'}, @_);
 }
 
 =for html <a name="validate_not_zero"></a>
 
-=head2 validate_not_zero(string field)
+=head2 validate_not_zero(string field) : boolean
 
 Ensures the specified field isn't 0. Puts an error on the form if it fails.
+Returns false if the field is in error or if an error is
+put on the field.
 
 =cut
 
 sub validate_not_zero {
-    my($self, $field) = @_;
-    my($value) = $self->get($field);
-    return unless defined($value);
-
-    $self->internal_put_error($field, Bivio::TypeError::NOT_ZERO())
-	    if $value == 0;
-    return;
+    return _validate(sub {shift(@_) == 0 && 'NOT_ZERO'}, @_);
 }
 
 #=PRIVATE METHODS
@@ -1729,9 +1710,19 @@ sub _redirect_same {
     # DOES NOT RETURN
 }
 
+sub _validate {
+    my($op, $self, $field) = @_;
+    return 0
+	if $self->get_field_error($field);
+    return 1
+	unless my $e = $op->($self->unsafe_get($field));
+    $self->internal_put_error($field, $e);
+    return 0;
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
