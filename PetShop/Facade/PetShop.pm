@@ -179,6 +179,8 @@ my($_SELF) = __PACKAGE__->new({
 	    WORKFLOW_STEP_2 => 'pub/workflow-step-2',
 	    USER_REALMLESS_REDIRECT => 'ru/*',
 	    ORDER_REALMLESS_REDIRECT => 'ro/*',
+	    PUBLIC_USER_FILE_READ => '?/public/*',
+	    USER_FILE_READ => '?/file/*',
         ]));
 	return;
     },

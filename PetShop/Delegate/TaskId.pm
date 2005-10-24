@@ -367,6 +367,22 @@ sub get_delegate_info {
             ANYBODY
             Action.MailReceiveStatus->execute
         )],
+	[qw(
+            PUBLIC_USER_FILE_READ
+            534
+            USER
+            ANYBODY
+	    Type.FileVolume->execute_plain
+	    Action.RealmFile->execute_public
+        )],
+	[qw(
+            USER_FILE_READ
+            535
+            USER
+            DATA_READ
+	    Type.FileVolume->execute_plain
+	    Action.RealmFile
+        )],
     ]);
 }
 
