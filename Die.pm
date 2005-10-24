@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000,2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Die;
 use strict;
@@ -707,7 +707,7 @@ sub _print_stack {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000,2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
