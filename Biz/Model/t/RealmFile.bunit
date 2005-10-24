@@ -49,6 +49,10 @@ my($h2) = {path => 'h2', volume => $vt};
 	    [\('hello')] => not_die(),
 	],
 	handle_commit => not_die(),
+	get_handle => sub {
+	    my($case, $actual) = @_;
+	    return $actual->[0]->getline eq 'hello' ? 1 : 0;
+	},
     ],
     class() => [
 	delete_all => [
