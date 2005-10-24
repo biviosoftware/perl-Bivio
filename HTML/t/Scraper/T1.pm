@@ -75,7 +75,7 @@ sub attempt_login {
     my($uri) = Bivio::Test::Language::HTTP->home_page_uri . '/pub/login';
     my($rs) = $self->http_get($uri, 'login.html');
     $self->client_error("couldn't find fields on login page")
-	unless $$rs =~ /name=v.*value="?1"?/mig;
+	unless $$rs =~ /name="v.*value="?1"?/mig;
     $rs = $self->http_post(
 	Bivio::Test::Language::HTTP->home_page_uri . '/pub/login', [
 	v => 1,
