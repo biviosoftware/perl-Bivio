@@ -44,11 +44,11 @@ sub import_tree {
 		{
 		    path => $self->convert_literal('FilePath', "$root/$f"),
 		    creation_date_time => Bivio::Type::DateTime->from_unix(
-			(stat($f))[9],
+			(stat($_))[9],
 		    ),
 		    map(($_ => $self->get($_)), qw(volume is_public)),
 		},
-		Bivio::IO::File->read($f),
+		Bivio::IO::File->read($_),
 	    );
 	}, '.',
     );
