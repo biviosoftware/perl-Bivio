@@ -330,6 +330,11 @@ sub get_delegate_info {
 	undef,
 	'File paths may not contain \\, :, *, ?, ", <, >, |, tabs, control characters, leading or trailing dots.',
     ],
+    PASSWORD_QUERY_SUPER_USER => [
+	54,
+	undef,
+	'You are not allowed to reset your password.  Please contact your system administrator for password assistance.',
+    ],
 ];
 }
 
