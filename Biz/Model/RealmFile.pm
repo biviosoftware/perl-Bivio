@@ -14,10 +14,14 @@ sub create {
 
 sub create_with_content {
     my($self, $values, $content) = @_;
+    my($req) = $self->get_request;
     # You must not reuse $self after this call
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
-    $values->{realm_id} ||= $self->get_request->get('auth_id');
+    $values->{realm_id} ||= $req->get('auth_id');
+    $values->{user_id} ||= $req->get('auth_user_id');
     $values->{is_folder} ||= 0;
+    $values->{is_public} ||= 0;
+    $values->{path_lc} = $values->{path};
     return $self->SUPER::create($values)->put_content($content);
 }
 
@@ -63,6 +67,11 @@ sub get_content {
     return _f($self)->{content} ||= Bivio::IO::File->read(_path($self));
 }
 
+sub get_handle {
+    my($self) = @_;
+    return IO::File->new(_path($self), 'r');
+}
+
 sub handle_commit {
     my($self) = @_;
     (_f($self)->{handle_commit} || sub {})->();
@@ -89,10 +98,14 @@ sub internal_initialize {
         columns => {
             realm_file_id => ['PrimaryId', 'PRIMARY_KEY'],
             realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+	    # Don't cascade when User.user_id is deleted
+	    user_id =>  ['PrimaryId', 'NOT_NULL'],
 	    volume => ['FileVolume', 'NOT_ZERO_ENUM'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
 	    is_folder => ['Boolean', 'NOT_NULL'],
+	    is_public => ['Boolean', 'NOT_NULL'],
             path => ['FilePath', 'NOT_NULL'],
+            path_lc => ['FilePath', 'NOT_NULL'],
         },
         auth_id => 'realm_id',
     });
@@ -128,13 +141,13 @@ sub _f {
 
 sub _path {
     my($self) = @_;
-    return _f($self)->{path} ||= _realm_dir($self->get('realm_id'))
+    return _f($self)->{path_lc} ||= _realm_dir($self->get('realm_id'))
 	. '/'
 	. lc($self->get('volume')->get_name)
 	. '/'
 	.  $self->get('realm_file_id')
 	. '-'
-	. $_P->to_os($self->get('path'));
+	. $_P->to_os($self->get('path_lc'));
 }
 
 sub _realm_dir {
