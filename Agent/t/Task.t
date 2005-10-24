@@ -71,10 +71,6 @@ Bivio::Test->new({
 	],
     ],
     DEVIANCE_1 => [
-	execute => [
-#TODO: Undeprecate!
-#	    [] => Bivio::DieCode->DIE,
-	    [] => [],
-	],
+	execute => => Bivio::DieCode->DIE,
     ],
 ]);
