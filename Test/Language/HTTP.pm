@@ -119,6 +119,18 @@ sub debug_print {
     return;
 }
 
+=for html <a name="default_password"></a>
+
+=head2 default_password() : string
+
+Returns the default password.
+
+=cut
+
+sub default_password {
+    return 'password';
+}
+
 =for html <a name="do_table_rows"></a>
 
 =head2 do_table_rows(string table_name, code_ref do_rows_callback)
@@ -246,15 +258,17 @@ sub follow_link_in_table {
 
 =head2 generate_local_email(string suffix) : array
 
-Returns an email address based on I<email_user> and I<suffix> (a random number
+Returns an email address based on I<email_user> and I<suffix> (test_name()
 by default) and a name based on I<suffix>.  Used in scalar context, just returns
 the email.
 
 =cut
 
 sub generate_local_email {
-    my(undef, $suffix) = @_;
-    $suffix ||= int(rand(2_000_000_000)) + 1;
+    my($self, $suffix) = @_;
+    Bivio::IO::Alert->warn_deprecated('you need to pass random_string(); random_string will not be supported in future')
+        unless $suffix;
+    $suffix ||= $self->random_string;
     my($email) = $_CFG->{email_user}
 	. $_CFG->{email_tag}
 	. $suffix
@@ -445,6 +459,18 @@ sub home_page_uri {
     return $res;
 }
 
+=for html <a name="random_string"></a>
+
+=head2 random_string() : string
+
+Returns a positive 8 digit random number that is always 8 digits.
+
+=cut
+
+sub random_string {
+    return sprintf('%08d', int(rand(99_999_999)) + 1);
+}
+
 =for html <a name="reload_page"></a>
 
 =head2 reload_page()
@@ -557,6 +583,17 @@ Gets current uri or returns undef.
 
 sub unsafe_get_uri {
     return shift->[$_IDI]->{uri};
+}
+
+=head2 unsafe_op(string method, any args...) : boolean
+
+Calls method, and if it dies, returns false.  Otherwise, true.
+
+=cut
+
+sub unsafe_op {
+    my($self, $method, @args) = @_;
+    return Bivio::Die->catch(sub {$self->$method(@args)}) ? 0 : 1;
 }
 
 =for html <a name="verify_form"></a>
