@@ -1,7 +1,7 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-set_realm_and_user('demo', 'demo');
+set_realm_and_user('root', 'root');
 my($vt) = class()->get_instance->get_field_type('volume')->from_int(1);
 my($h2) = {path => 'h2', volume => $vt};
 [
@@ -39,6 +39,7 @@ my($h2) = {path => 'h2', volume => $vt};
 	],
 	delete_all => [
 	    [{}] => 2,
+#	    [{}] => 5,
 	],
 	handle_commit => not_die(),
 	unsafe_load => [
