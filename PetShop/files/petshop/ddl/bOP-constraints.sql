@@ -219,18 +219,35 @@ CREATE INDEX realm_file_t4 ON realm_file_t (
 )
 /
 CREATE INDEX realm_file_t5 ON realm_file_t (
-  path
+  path_lc
 )
 /
 CREATE UNIQUE INDEX realm_file_t6 ON realm_file_t (
   realm_id,
   volume,
-  path
+  path_lc
 )
 /
 ALTER TABLE realm_file_t
   ADD CONSTRAINT realm_file_t7
   CHECK (is_folder BETWEEN 0 AND 1)
+/
+ALTER TABLE realm_file_t
+  ADD CONSTRAINT realm_file_t8
+  CHECK (is_public BETWEEN 0 AND 1)
+/
+ALTER TABLE realm_file_t
+  ADD CONSTRAINT realm_file_t9
+  CHECK (volume > 0)
+/
+ALTER TABLE realm_file_t
+  ADD CONSTRAINT realm_file_t10
+  foreign key (user_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX realm_file_t11 ON realm_file_t (
+  user_id
+)
 /
 
 --

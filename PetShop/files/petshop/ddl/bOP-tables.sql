@@ -132,10 +132,13 @@ CREATE TABLE phone_t (
 CREATE TABLE realm_file_t (
   realm_file_id NUMERIC(18),
   realm_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18) NOT NULL,
   volume NUMERIC(1) NOT NULL,
   creation_date_time DATE NOT NULL,
-  path VARCHAR(200) NOT NULL,
+  path VARCHAR(500) NOT NULL,
+  path_lc VARCHAR(500) NOT NULL,
   is_folder NUMERIC(1) NOT NULL,
+  is_public NUMERIC(1) NOT NULL,
   CONSTRAINT realm_file_t1 PRIMARY KEY(realm_file_id)
 )
 /
