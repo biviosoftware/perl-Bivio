@@ -596,6 +596,22 @@ sub unsafe_op {
     return Bivio::Die->catch(sub {$self->$method(@args)}) ? 0 : 1;
 }
 
+=for html <a name="verify_content_type"></a>
+
+=head2 verify_content_type(string mime_type)
+
+Verifies the Content-Type of the reply.
+
+=cut
+
+sub verify_content_type {
+    my($self, $mime_type) = @_;
+    my($ct) = _assert_response($self)->content_type;
+    Bivio::Die->die($ct, ': response not ', $mime_type)
+	unless $ct eq $mime_type;
+    return;
+}
+
 =for html <a name="verify_form"></a>
 
 =head2 verify_form(hash_ref form_fields)
@@ -767,9 +783,7 @@ in the regular expression.
 
 sub verify_pdf {
     my($self, $text) = @_;
-    my($ct) = _assert_response($self)->content_type;
-    Bivio::Die->die($ct, ': response not application/pdf')
-	unless $ct eq 'application/pdf';
+    $self->verify_content_type('application/pdf');
     my($f) = _log($self, 'pdf', $self->get_content);
     system("pdftotext '$f'") == 0
 	or Bivio::Die->die($f, ': unable to convert pdf to text');
