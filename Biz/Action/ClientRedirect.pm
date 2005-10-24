@@ -130,18 +130,18 @@ sub execute_cancel {
 
 =for html <a name="execute_home_page_if_site_root"></a>
 
-=head2 execute_home_page_if_site_root(Bivio::Agent::Request req) : boolean
+=head2 static execute_home_page_if_site_root(Bivio::Agent::Request req) : boolean
 
 Redirects to I<Text.home_page_uri> if the I<$req.uri> is '/' or the empty
-string.  Otherwise,
+string.  Otherwise, does nothing.
 
 =cut
 
 sub execute_home_page_if_site_root {
-    my(undef, $req) = @_;
+    my($proto, $req) = @_;
     $req->client_redirect(Bivio::UI::Text->get_value('home_page_uri', $req))
 	if $req->get('uri') =~ m!^/?$!;
-    return 0;
+    return;
 }
 
 =for html <a name="execute_next"></a>
@@ -153,7 +153,6 @@ Redirect to I<next> task.
 =cut
 
 sub execute_next {
-    my(undef, $req) = @_;
     return 'next';
 }
 
