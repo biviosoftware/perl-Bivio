@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Action;
 use strict;
@@ -127,7 +127,7 @@ sub execute {
 
 =for html <a name="put_on_request"></a>
 
-=head2 put_on_request(Bivio::Agent::Request req) : self
+=head2 put_on_request(Bivio::Agent::Request req, boolean durable) : self
 
 Puts self on request.  May not be called with
 L<get_instance|"get_instance">.
@@ -135,13 +135,14 @@ L<get_instance|"get_instance">.
 =cut
 
 sub put_on_request {
-    my($self, $req) = @_;
+    my($self, $req, $durable) = @_;
     Bivio::Die->die($self, ': must be instance')
 	unless ref($self);
     Bivio::Die->die($self, ': may not put singleton on request')
 	if $self->get_instance == $self;
+    my($method) = $durable ? 'put_durable' : 'put';
     foreach my $key ('Action.' . $self->simple_package_name, ref($self)) {
-	$req->put($key => $self);
+	$req->$method($key => $self);
     }
     return $self;
 }
@@ -150,7 +151,7 @@ sub put_on_request {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
