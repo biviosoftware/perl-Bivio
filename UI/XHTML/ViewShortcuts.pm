@@ -52,6 +52,7 @@ sub vs_acknowledgement {
 sub vs_descriptive_field {
     my($proto, $field) = @_;
     my($name, $attrs) = ref($field) ? @$field : $field;
+    $attrs ||= {};
     $name =~ /^(\w+)\.(.+)/;
     my($label, $input)
 	= UNIVERSAL::isa(
@@ -86,6 +87,8 @@ sub vs_descriptive_field {
 		 }, $proto, $name],
 	    ], {
 		cell_class => 'field',
+		$attrs->{row_control} ? (row_control => $attrs->{row_control})
+		    : (),
 	    },
 	),
     ];
@@ -147,8 +150,8 @@ sub vs_simple_form {
 	    Grid([
 		map({
 		    my($x);
-		    if (UNIVERSAL::isa($_, 'Bivio::UI::Widget') &&
-			    $_->simple_package_name eq 'FormField'
+		    if (UNIVERSAL::isa($_, 'Bivio::UI::Widget')
+			&& $_->simple_package_name eq 'FormField'
 		    ) {
 			$_->get_if_exists_else_put(cell_class => 'field'),
 			$x = [
