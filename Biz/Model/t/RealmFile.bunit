@@ -12,7 +12,7 @@ my($h2) = {path => 'h2', volume => $vt};
 	    return [
 		ref($params->[0]) eq 'HASH' ? () : {
 		    volume => $vt,
-		    path => 'h',
+		    path => 'h.unknown-suffix',
 		},
 		@$params,
 	    ];
@@ -49,15 +49,38 @@ my($h2) = {path => 'h2', volume => $vt};
 	    [\('hello')] => not_die(),
 	],
 	handle_commit => not_die(),
+#broken until I figure out how to get -T working with IO::File
+#	get_content_type => 'text/plain',
 	get_handle => sub {
 	    my($case, $actual) = @_;
 	    return $actual->[0]->getline eq 'hello' ? 1 : 0;
 	},
+	create_folder => [
+	    [{
+		path => 'subdir',
+		volume => $vt,
+	    }] => not_die(),
+	],
+	load => [
+	    [] => not_die(),
+	],
+	update => [
+	    [{
+		path => 'subdir/Foo',
+	    }] => not_die(),
+	],
+	handle_commit => not_die(),
+	load => [
+	    [{path_lc => 'subdir/foo'}] => not_die(),
+	],
+	get_content => [
+	    [] => [\('hello')],
+	],
     ],
     class() => [
 	delete_all => [
 	    [{volume => $vt}] => DIE(),
-	    [{realm_id => req()->get('auth_id')}] => 1,
+	    [{realm_id => req()->get('auth_id')}] => 2,
 	],
     ],
 ];

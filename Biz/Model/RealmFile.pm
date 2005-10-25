@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::RealmFile;
 use strict;
 use base ('Bivio::Biz::PropertyModel');
+use Bivio::MIME::Type;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -14,15 +15,12 @@ sub create {
 
 sub create_with_content {
     my($self, $values, $content) = @_;
-    my($req) = $self->get_request;
-    # You must not reuse $self after this call
-    $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
-    $values->{realm_id} ||= $req->get('auth_id');
-    $values->{user_id} ||= $req->get('auth_user_id');
-    $values->{is_folder} ||= 0;
-    $values->{is_public} ||= 0;
-    $values->{path_lc} = lc($values->{path});
-    return $self->SUPER::create($values)->put_content($content);
+    return _create($self, $values, 0)->put_content($content);
+}
+
+sub create_folder {
+    my($self, $values) = @_;
+    return _create($self, $values, 1);
 }
 
 sub delete {
@@ -67,6 +65,15 @@ sub get_content {
     return _f($self)->{content} ||= Bivio::IO::File->read(_path($self));
 }
 
+sub get_content_type {
+    my($self) = @_;
+    return Bivio::MIME::Type->from_extension($self->get('path'));
+#    my($t) = Bivio::MIME::Type->from_extension($self->get('path'));
+#    Bivio::IO::Alert->info(-T $self->get_handle);
+#    return $t eq 'application/octet-stream' && -T $self->get_handle
+#	? 'text/plain' : $t,
+}
+
 sub get_handle {
     my($self) = @_;
     return IO::File->new(_path($self), 'r')
@@ -105,7 +112,7 @@ sub internal_initialize {
 	    # Don't cascade when User.user_id is deleted
 	    user_id =>  ['PrimaryId', 'NOT_NULL'],
 	    volume => ['FileVolume', 'NOT_ZERO_ENUM'],
-            creation_date_time => ['DateTime', 'NOT_NULL'],
+            modified_date_time => ['DateTime', 'NOT_NULL'],
 	    is_folder => ['Boolean', 'NOT_NULL'],
 	    is_public => ['Boolean', 'NOT_NULL'],
             path => ['FilePath', 'NOT_NULL'],
@@ -136,7 +143,32 @@ sub unauth_delete {
 }
 
 sub update {
-    die('unsupported');
+    my($self, $values) = @_;
+    my($o) = _path($self);
+    $self->internal_clear_model_cache;
+    $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
+    delete($values->{path_lc});
+    $values->{path_lc} = lc($values->{path})
+	if exists($values->{path});
+    my(@res) = shift->SUPER::update(@_);
+    my($n) = _path($self);
+    _txn($self, sub {
+        Bivio::IO::File->rename($o, $n);
+    }) unless $n eq $o;
+    return @res;
+}
+
+sub _create {
+    my($self, $values, $is_folder) = @_;
+    my($req) = $self->get_request;
+    # You must not reuse $self after this call
+    $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
+    $values->{realm_id} ||= $req->get('auth_id');
+    $values->{user_id} ||= $req->get('auth_user_id');
+    $values->{is_public} ||= 0;
+    $values->{is_folder} = $is_folder;
+    $values->{path_lc} = lc($values->{path});
+    return $self->SUPER::create($values);
 }
 
 sub _f {
