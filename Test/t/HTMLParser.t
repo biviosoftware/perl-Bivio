@@ -26,6 +26,11 @@ Bivio::Test->new({
 	    get_nested => $_->[1],
         ];
     } [
+        'div-err' => [
+            ['Forms', 'Email Address:', 'visible', 'Email Address:', 'error']
+	        => ['You must supply a value for Email Address.'],
+        ],
+    ], [
 	'already-registered' => [
 	    ['Forms', 'Your Full Name:', 'visible',
 		 'Your Full Name:', 'error'] => 'You are already registered.Please click here if you would like to recover your password.',
