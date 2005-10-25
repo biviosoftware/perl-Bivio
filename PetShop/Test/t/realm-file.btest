@@ -5,8 +5,6 @@ home_page();
 visit_uri('/demo/public/pub/file.txt');
 verify_content_type('text/plain');
 verify_text('text/plain');
-visit_uri('/demo/public/pub/image.gif');
-verify_content_type('image/gif');
 test_deviance();
 visit_uri('/demo/public/private/file.html');
 test_conformance();
@@ -15,3 +13,6 @@ login_as('demo');
 visit_uri('/demo/file/private/file.html');
 verify_content_type('text/html');
 verify_text('text/html');
+visit_uri('/demo/file/private/image.gif');
+verify_content_type('image/gif');
+
