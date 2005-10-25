@@ -206,6 +206,12 @@ sub die_to_http_code {
 	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
 	Bivio::DieCode->CLIENT_REDIRECT_TASK
 	    => Bivio::Ext::ApacheConstants->OK,
+	Bivio::DieCode->CORRUPT_QUERY
+	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
+	Bivio::DieCode->CORRUPT_FORM
+	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
+	Bivio::DieCode->INVALID_OP
+	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
     ) unless %_DIE_TO_HTTP_CODE;
     return _error($_DIE_TO_HTTP_CODE{$die}, $r)
 	if defined($_DIE_TO_HTTP_CODE{$die});
@@ -245,7 +251,7 @@ sub set_expire_immediately {
 
 =for html <a name="set_header"></a>
 
-=head2 set_header(string name, string value)
+=head2 set_header(string name, string value) : self
 
 Sets an arbitrary header value.
 
@@ -255,12 +261,12 @@ sub set_header {
     my($self, $name, $value) = @_;
     my($fields) = $self->[$_IDI];
     ($fields->{headers} ||= {})->{$name} = $value;
-    return;
+    return $self;
 }
 
 =for html <a name="set_http_status"></a>
 
-=head2 set_http_status(int status)
+=head2 set_http_status(int status) : self
 
 Sets the HTTP return code.  Use C<Bivio::Ext::ApacheConstants> values, e.g.
 C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
@@ -273,10 +279,10 @@ sub set_http_status {
     # It is error prone keeping a list up to date, so we just check
     # a reasonable range.
     Bivio::Die->die($status, ': unknown HTTP status')
-	    unless defined($status) && $status =~ /^\d+$/
-		&& 100 <= $status && $status < 600;
+        unless defined($status) && $status =~ /^\d+$/
+	&& 100 <= $status && $status < 600;
     $fields->{status} = $status;
-    return;
+    return $self;
 }
 
 =for html <a name="set_last_modified"></a>
