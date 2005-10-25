@@ -807,10 +807,11 @@ Returns I<self>.
 
 sub update {
     my($self, $new_values) = @_;
-    Bivio::Die->die('model is not loaded') unless $self->is_loaded;
+    Bivio::Die->die('model is not loaded')
+	unless $self->is_loaded;
+    $self->internal_clear_model_cache;
     my($properties) = $self->internal_get;
     $self->internal_get_sql_support->update($properties, $new_values, $self);
-
     foreach my $n (keys(%$new_values)) {
 	$properties->{$n} =  $new_values->{$n};
     }
