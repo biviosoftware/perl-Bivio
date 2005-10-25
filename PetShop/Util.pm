@@ -356,20 +356,23 @@ sub _init_demo_files {
 	    my $d = File::Spec->rel2abs('demo_files.tmp'))));
     foreach my $x (
 	['pub/file.txt' => 'text/plain'],
-	['pub/image.gif' => 'image/gif'],
+	['private/image.gif' => 'image/gif'],
 	['private/file.html' => '<html><body>text/html</body></html>'],
     ) {
 	my($f, $c) = @$x;
 	Bivio::IO::File->mkdir_parent_only($f);
 	Bivio::IO::File->write($f, $c);
     }
-    foreach my $x (qw(pub private)) {
-	Bivio::IO::File->chdir($x);
-	$self->new_other('Bivio::Util::RealmFile')->put(
-	    is_public => $x eq 'pub' ? 1 : 0,
-	)->import_tree($x);
-	Bivio::IO::File->chdir('..');
-    }
+    $self->new_other('Bivio::Util::RealmFile')->import_tree('');
+    Bivio::Biz::Model->new('RealmFile')->do_iterate(
+	sub {
+	    my($f) = @_;
+	    $f->update({is_public => 1})
+		if $f->get('path') =~ /pub/;
+	    return 1;
+	},
+	'path',
+    );
     Bivio::IO::File->chdir('..');
     return;
 }
