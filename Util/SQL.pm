@@ -154,6 +154,9 @@ sub create_test_db {
 	if $req->is_production;
     $self->destroy_db;
     $self->create_db;
+    Bivio::IO::File->rm_rf(
+	Bivio::UI::Facade->get_local_file_name(
+	    Bivio::UI::LocalFileType->REALM_DATA, ''));
     return $self->initialize_test_data;
 }
 
@@ -424,7 +427,7 @@ CREATE TABLE realm_file_t (
   realm_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
   volume NUMERIC(1) NOT NULL,
-  creation_date_time DATE NOT NULL,
+  modified_date_time DATE NOT NULL,
   path VARCHAR(500) NOT NULL,
   path_lc VARCHAR(500) NOT NULL,
   is_folder NUMERIC(1) NOT NULL,
@@ -452,7 +455,7 @@ CREATE INDEX realm_file_t3 ON realm_file_t (
 )
 /
 CREATE INDEX realm_file_t4 ON realm_file_t (
-  creation_date_time
+  modified_date_time
 )
 /
 CREATE INDEX realm_file_t5 ON realm_file_t (

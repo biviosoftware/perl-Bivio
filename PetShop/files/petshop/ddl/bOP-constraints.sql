@@ -215,7 +215,7 @@ CREATE INDEX realm_file_t3 ON realm_file_t (
 )
 /
 CREATE INDEX realm_file_t4 ON realm_file_t (
-  creation_date_time
+  modified_date_time
 )
 /
 CREATE INDEX realm_file_t5 ON realm_file_t (
