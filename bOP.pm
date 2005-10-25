@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::HTMLParser::Forms set default error_class to match
+    XHTMLWidget.FormFieldError _start/end_font -> _start/end_maybe_err which
+    also checks spans and divs
+
+  Revision 3.31  2005/10/24 22:02:36  nagler
   * Bivio::Biz::Model::RealmFile->create downcases path_lc
   * Bivio::Util::RealmFile->import_tree works
   * Various tests have been fixed
