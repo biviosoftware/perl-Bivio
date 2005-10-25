@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::DieCode;
 use strict;
@@ -310,6 +310,12 @@ __PACKAGE__->compile([
 	undef,
 	'model was not found',
     ],
+    INVALID_OP => [
+	# entity, class, message
+    	25,
+	undef,
+	'invalid operation',
+    ],
 ]);
 
 =head1 METHODS
@@ -336,7 +342,7 @@ sub throw_die {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
