@@ -113,7 +113,7 @@ sub new {
         Bivio::Die->die('cannot create model without request')
 	    unless ref($req);
 	$owner = Bivio::Biz::Model->new($req, 'RealmOwner')
-	     ->unauth_load_by_id_or_name_or_die($owner);
+	     ->unauth_load_by_id_or_name_or_die(lc($owner));
     }
 
     return _new($proto, $owner, $req);
