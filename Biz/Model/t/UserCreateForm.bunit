@@ -41,6 +41,12 @@ Request('initialize_fully');
 		=> 'MIDDLE_NAME_LENGTH',
 	    'a b MyVeryLongNameShouldBlowTheLengthLimit'
 		=> 'LAST_NAME_LENGTH',
+            'Dr. ANGELICA M DE ANTONIO PHD' =>
+                ['Dr. ANGELICA', 'M', 'DE ANTONIO, PHD'],
+            'B JOSEPH GRONER, III' =>
+                ['B', 'JOSEPH', 'GRONER, III'],
+            'H R STEWART JR' =>
+                ['H', 'R', 'STEWART, JR'],
 	],
 	execute => [
 	    [req(), {
