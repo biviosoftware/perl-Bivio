@@ -34,24 +34,25 @@ use File::Find ();
 
 sub import_tree {
     my($self, $root) = @_;
-    $root = $self->convert_literal('FilePath', $root || '');
+    $root = $root ? $self->convert_literal('FilePath', $root) : '';
     my($req) = $self->initialize_ui;
-    File::Find::find(
-	sub{
-	    return if -d $_;
+    File::Find::find({
+	wanted => sub {
+	    return if $_ =~ /^\.\.?$/;
 	    my($f) = $File::Find::name =~ m{^\./(.+)};
-	    Bivio::Biz::Model->new($req, 'RealmFile')->create_with_content(
+	    my($method) = -d $_ ? 'create_folder' : 'create_with_content';
+	    Bivio::Biz::Model->new($req, 'RealmFile')->$method(
 		{
 		    path => $self->convert_literal('FilePath', "$root/$f"),
-		    creation_date_time => Bivio::Type::DateTime->from_unix(
+		    modified_date_time => Bivio::Type::DateTime->from_unix(
 			(stat($_))[9],
 		    ),
 		    map(($_ => $self->get($_)), qw(volume is_public)),
 		},
-		Bivio::IO::File->read($_),
+		$method =~ /content/ ? Bivio::IO::File->read($_) : (),
 	    );
-	}, '.',
-    );
+	},
+    }, '.');
     return;
 }
 
