@@ -45,7 +45,8 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
 Bivio::IO::Config->register(my $_CFG = {
     error_color => '#990000',
-    error_class => 'form_field_error',
+    # Set by XHTMLWidget.FormFieldError
+    error_class => 'field_err',
     disable_checkbox_heading => {},
 });
 
@@ -173,8 +174,8 @@ sub html_parser_end {
 	if $tag eq 'textarea';
     return _end_select($fields)
 	if $tag eq 'select';
-    return _end_font($fields)
-	if $tag eq 'font';
+    return _end_maybe_err($fields)
+	if $tag =~ /^(font|span|div)$/;
     return;
 }
 
@@ -198,8 +199,8 @@ sub html_parser_start {
 	if $tag eq 'option';
     return _start_input($self, $attr)
 	if $attr->{type} && $tag !~ /^(?:link|style)/;
-    return _start_font($fields, $attr)
-	if $tag eq 'font';
+    return _start_maybe_err($fields, $attr)
+	if $tag =~ /^(font|span|div)$/;
     return;
 }
 
@@ -270,25 +271,6 @@ sub _empty {
     return !grep(defined($_) && length($_), @_);
 }
 
-# _end_font(hash_ref fields)
-#
-# Ends the current font.  Possibly saving last error.
-#
-sub _end_font {
-    my($fields) = @_;
-    my($f) = pop(@{$fields->{font}});
-    return
-	unless (
-	    $f->{color} ? $f->{color} eq $_CFG->{error_color}
-	    : $f->{class} ? $f->{class} eq $_CFG->{error_class}
-	    : 0
-	) && !_empty($fields->{text})
-	&& !_have_prefix_label($fields);
-    $fields->{input_error} = $fields->{text};
-    $fields->{text} = undef;
-    return;
-}
-
 # _end_form(self)
 #
 # Ends the form and puts in $fields->{current}.
@@ -323,6 +305,25 @@ sub _end_form {
         $self->get('elements')->{$curr->{label}} = $curr;
     }
     _trace($curr) if $_TRACE;
+    return;
+}
+
+# _end_maybe_err(hash_ref fields)
+#
+# Ends the current tag which may contain err.
+#
+sub _end_maybe_err {
+    my($fields) = @_;
+    my($f) = pop(@{$fields->{maybe_err}});
+    return
+	unless (
+	    $f->{color} ? $f->{color} eq $_CFG->{error_color}
+	    : $f->{class} ? $f->{class} eq $_CFG->{error_class}
+	    : 0
+	) && !_empty($fields->{text})
+	&& !_have_prefix_label($fields);
+    $fields->{input_error} = $fields->{text};
+    $fields->{text} = undef;
     return;
 }
 
@@ -534,16 +535,6 @@ sub _leftover_input {
     return;
 }
 
-# _start_font(hash_ref fields, hash_ref attr)
-#
-# Saves current font info.
-#
-sub _start_font {
-    my($fields, $attr) = @_;
-    push(@{$fields->{font}}, $attr);
-    return;
-}
-
 # _start_form(hash_ref fields, hash_ref attr)
 #
 # Starts a form.
@@ -612,6 +603,16 @@ sub _start_input {
             && $attr->{type} !~ /checkbox/;
 
     # Unlabeled field.  Will be dealt with on closing tag or next text
+    return;
+}
+
+# _start_maybe_err(hash_ref fields, hash_ref attr)
+#
+# Saves current tag info.
+#
+sub _start_maybe_err {
+    my($fields, $attr) = @_;
+    push(@{$fields->{maybe_err}}, $attr);
     return;
 }
 
