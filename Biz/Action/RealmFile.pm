@@ -24,8 +24,7 @@ sub execute {
     })->get_handle;
     my($reply) = $req->get('reply');
     my($t) = Bivio::MIME::Type->from_extension($p);
-    $reply->set_output_type(
-	$t eq 'application/octet-stream' && -T $h ? 'text/plain' : $t);
+    $reply->set_output_type($f->get_content_type);
     $reply->set_output($h);
     return;
 }
