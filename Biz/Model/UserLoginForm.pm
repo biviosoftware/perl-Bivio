@@ -273,19 +273,13 @@ sub validate_login {
     my($login) = $model->get('login');
     return undef
 	unless defined($login);
-
-    # Emulate what happens in Type::RealmName
-    $login =~ s/\s+//g;
-    $login = lc($login);
-    $model->internal_put_field(login => $login);
-
     my($owner) = $model->new_other('RealmOwner');
     return $owner
 	if $owner->unauth_load_by_email_id_or_name($model->get('login'))
 	    && !$owner->is_offline_user
 	    && !$owner->is_default
 	    && $owner->get('realm_type') == Bivio::Auth::RealmType->USER;
-    $model->internal_put_error('login', 'NOT_FOUND');
+    $model->internal_put_error(login => 'NOT_FOUND');
     return undef;
 }
 
