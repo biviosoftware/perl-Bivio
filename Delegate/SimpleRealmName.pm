@@ -82,7 +82,7 @@ sub from_literal {
 	unless $v;
     return (undef, Bivio::TypeError->REALM_NAME)
         unless $proto->internal_is_realm_name($v);
-    return lc($v);
+    return $proto->internal_lc($v);
 }
 
 =for html <a name="internal_is_realm_name"></a>
@@ -97,6 +97,19 @@ Must begin with a letter and be at least three chars
 sub internal_is_realm_name {
     my($proto, $value) = @_;
     return $value =~ /^[a-z][a-z0-9_]{2,}$/i ? 1 : 0;
+}
+
+=for html <a name="internal_lc"></a>
+
+=head2 static internal_lc(string value) : string
+
+Returns the value, converted to lowercase. May be overridden by subclasses.
+
+=cut
+
+sub internal_lc {
+    my($proto, $value) = @_;
+    return lc($value);
 }
 
 =for html <a name="is_offline"></a>
@@ -127,7 +140,7 @@ sub unsafe_from_uri {
     # We allow dashes in URI names (my-site and other constructed names)
     (my $v = $value) =~ s/-//g;
     return $proto->internal_is_realm_name($v) && $value !~ /^-/
-	? lc($value) : undef;
+	? $proto->internal_lc($value) : undef;
 }
 
 #=PRIVATE METHODS
