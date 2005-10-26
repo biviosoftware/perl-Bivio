@@ -215,7 +215,7 @@ sub delete {
     ($self, $query) = _load_args(@_);
     $self = $self->new() unless ref($self);
     return $self->internal_get_sql_support->delete(
-	    _add_auth_id($self, $query), $self);
+	    $self->internal_prepare_query(_add_auth_id($self, $query)), $self);
 #TODO: Need to test this thoroughly
 #    _unload($self, 1);
 #    return $res;
@@ -234,7 +234,8 @@ sub delete_all {
     my($self, $query) = @_;
     $self = $self->new() unless ref($self);
     my($rows) =  $self->internal_get_sql_support->delete_all(
-	    _add_auth_id($self, $query), $self);
+	$self->internal_prepare_query(_add_auth_id($self, $query)),
+	$self);
     _trace($rows, ' ', ref($self)) if $_TRACE;
     return $rows;
 }
@@ -426,6 +427,19 @@ sub internal_initialize_sql_support {
     return  Bivio::SQL::PropertySupport->new($config);
 }
 
+=for html <a name="internal_prepare_query"></a>
+
+=head2 internal_prepare_query(hash_ref query) : hash_ref
+
+Returns I<query> after fixing it up.
+
+=cut
+
+sub internal_prepare_query {
+    shift;
+    return shift;
+}
+
 =for html <a name="is_loaded"></a>
 
 =head2 is_loaded() : boolean
@@ -503,10 +517,9 @@ B<Deprecated form returns the iterator.>
 sub iterate_start {
     my($self, $order_by, $query) = @_;
     $self->throw_die('DIE', 'no auth_id')
-	    unless $self->get_request->get('auth_id');
-    return $self->internal_put_iterator(
-	$self->internal_get_sql_support->iterate_start($self, $order_by,
-	    _add_auth_id($self, $query || {})));
+	unless $self->get_request->get('auth_id');
+    return $self->unauth_iterate_start(
+	$order_by, _add_auth_id($self, $query || {}));
 }
 
 =for html <a name="load"></a>
@@ -610,8 +623,9 @@ sub unauth_delete {
     $load_args = $self->internal_get unless $load_args;
     $self = $self->new() unless ref($self);
     $self->die('load_args or model must not be empty')
-	    unless %$load_args;
-    return $self->internal_get_sql_support->delete($load_args, $self);
+	unless %$load_args;
+    return $self->internal_get_sql_support->delete(
+	$self->internal_prepare_query($load_args), $self);
 }
 
 =for html <a name="unauth_iterate_start"></a>
@@ -640,9 +654,14 @@ B<Deprecated form returns the iterator.>
 =cut
 
 sub unauth_iterate_start {
-    my($self) = shift;
+    my($self, $order_by, $query) = @_;
     return $self->internal_put_iterator(
-	$self->internal_get_sql_support->iterate_start($self, @_));
+	$self->internal_get_sql_support->iterate_start(
+	    $self,
+	    $order_by,
+	    $self->internal_prepare_query($query),
+	),
+    );
 }
 
 =for html <a name="unauth_load"></a>
@@ -673,7 +692,8 @@ B<DEPRECATED>
 sub unauth_load {
     my($self, $query) = _load_args(@_);
     # Don't bother checking query.  Will kick back if empty.
-    my($values) = $self->internal_get_sql_support->unsafe_load($query, $self);
+    my($values) = $self->internal_get_sql_support->unsafe_load(
+	$self->internal_prepare_query($query), $self);
     return _unload($self, 1) unless $values;
     return _load($self, $values);
 }
