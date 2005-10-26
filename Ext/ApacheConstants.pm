@@ -701,6 +701,18 @@ sub MOVED {
     return 301;
 }
 
+=for html <a name="MULTI_STATUS"></a>
+
+=head2 MULTI_STATUS : int
+
+Returns 207
+
+=cut
+
+sub MULTI_STATUS {
+    return 207;
+}
+
 =for html <a name="M_CONNECT"></a>
 
 =head2 M_CONNECT : int
