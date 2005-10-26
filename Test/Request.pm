@@ -118,6 +118,16 @@ sub capture_mail {
     return $self;
 }
 
+=for html <a name="commit"></a>
+
+=head2 commit()
+
+=cut
+
+sub commit {
+    return Bivio::Agent::Task->commit(shift(@_));
+}
+
 =for html <a name="execute_task"></a>
 
 =head2 static execute_task(any task_id, hash_ref req_attrs) : array_ref
