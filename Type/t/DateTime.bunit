@@ -22,6 +22,7 @@ simple_require('Bivio::Test::Request')->get_instance->put(timezone => 120);
 	    '2000/2/29 13:13:13' => '2451604 47593',
 	    'Sun Dec 16 13:47:35 GMT 2001' => '2452260 49655',
 	    '20000229131313' => '2451604 47593',
+	    'Wed, 26 Oct 2005 04:19:47 GMT' => '2453670 15587',
 	],
 	from_local_literal => [
 	    [undef] => [undef, undef],
