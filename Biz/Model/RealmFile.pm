@@ -4,10 +4,12 @@ package Bivio::Biz::Model::RealmFile;
 use strict;
 use base ('Bivio::Biz::PropertyModel');
 use Bivio::MIME::Type;
+use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_P) = Bivio::Type->get_instance('FilePath');
+our($_TRACE);
 
 sub create {
     die('unsupported; call create_with_content');
@@ -25,7 +27,6 @@ sub create_folder {
 
 sub delete {
     my($self) = shift;
-    # You must not reuse $self after this call
     $self->load(@_)
 	unless $self->is_loaded;
     $self->internal_clear_model_cache;
@@ -33,7 +34,7 @@ sub delete {
     _txn($self, sub {
 	# Don't check for errors, may not exist
 	unlink($p);
-    });
+    }) unless $self->get('is_folder');
     return $self->SUPER::delete;
 }
 
@@ -122,6 +123,45 @@ sub internal_initialize {
     });
 }
 
+sub internal_prepare_query {
+    my($self, $query) = @_;
+    # Only load by path_lc, and convert from_literal (which is idempotent)
+    if (exists($query->{path})) {
+	my($p) = delete($query->{path});
+	$query->{path_lc} = $p
+	    unless exists($query->{path_lc});
+    }
+    if (exists($query->{path_lc})) {
+	my($p, $e) = $_P->from_literal($query->{path_lc});
+	# The value won't be found if it is illegal
+	_trace($query, ': path error ', $e)
+	    if $e && $_TRACE;
+	$query->{path_lc} = lc($p)
+	    if $p;
+    }
+    return shift->SUPER::internal_prepare_query(@_);
+}
+
+sub map_folder {
+    my($self, $op) = @_;
+    $self->die('not a folder')
+	unless $self->get('is_folder');
+    my($p) = $self->get('path_lc');
+    $p .= '/'
+	if $p ne '/';
+    my($re) = qr{^\Q$p\E[^/]+$};
+    $self->new->map_iterate(sub {
+       my($it) = @_;
+       return $it->get('path') =~ $re ? $op->($it) : ();
+    }, 'path_lc', {
+	map(($_ => $self->get($_)),
+	    $self->get('is_public') ? 'is_public' : (),
+	    'volume',
+	    'realm_id',
+	),
+    });
+}
+
 sub put_content {
     my($self, $content) = @_;
     _f($self)->{content} = ref($content) ? $content : \$content;
@@ -144,13 +184,14 @@ sub unauth_delete {
 
 sub update {
     my($self, $values) = @_;
+    my($req) = $self->get_request;
+    $self->die('may not change is_folder value')
+	if exists($values->{is_folder})
+	&& $self->get('is_folder') ne $values->{is_folder};
+    $values->{is_folder} = $self->get('is_folder');
+    $values->{path} ||= $self->get('path');
     my($o) = _path($self);
-    $self->internal_clear_model_cache;
-    $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
-    delete($values->{path_lc});
-    $values->{path_lc} = lc($values->{path})
-	if exists($values->{path});
-    my(@res) = shift->SUPER::update(@_);
+    my(@res) = $self->SUPER::update(_fix_values($self, $values));
     my($n) = _path($self);
     _txn($self, sub {
         Bivio::IO::File->rename($o, $n);
@@ -162,17 +203,24 @@ sub _create {
     my($self, $values, $is_folder) = @_;
     my($req) = $self->get_request;
     # You must not reuse $self after this call
-    $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
-    $values->{realm_id} ||= $req->get('auth_id');
-    $values->{user_id} ||= $req->get('auth_user_id');
-    $values->{is_public} ||= 0;
     $values->{is_folder} = $is_folder;
-    $values->{path_lc} = lc($values->{path});
-    return $self->SUPER::create($values);
+    $values->{is_public} ||= 0;
+    return $self->SUPER::create(_fix_values($self, $values));
 }
 
 sub _f {
     return (shift->[$_IDI] ||= {});
+}
+
+sub _fix_values {
+    my($self, $values) = @_;
+    my($req) = $self->get_request;
+    $values->{realm_id} ||= $req->get('auth_id');
+    $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
+    $values->{user_id} ||= $req->get('auth_user_id');
+    $values->{path_lc} = lc(
+	$values->{path} = $_P->from_literal_or_die($values->{path}));
+    return $values;
 }
 
 sub _path {
