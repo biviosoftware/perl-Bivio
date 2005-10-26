@@ -3,16 +3,16 @@
 Request('initialize_fully');
 set_realm_and_user('root', 'root');
 my($vt) = class()->get_instance->get_field_type('volume')->from_int(1);
-my($h2) = {path => 'h2', volume => $vt};
+my($h2) = {path => 'hello2', volume => $vt};
 [
     {
 	object => [req()],
 	compute_params => sub {
 	    my(undef, $params) = @_;
 	    return [
-		ref($params->[0]) eq 'HASH' ? () : {
+		ref($params->[0]) =~ /^(HASH|CODE)$/ ? () : {
 		    volume => $vt,
-		    path => 'h.unknown-suffix',
+		    path => 'hello',
 		},
 		@$params,
 	    ];
@@ -76,11 +76,34 @@ my($h2) = {path => 'h2', volume => $vt};
 	get_content => [
 	    [] => [\('hello')],
 	],
+	create_folder => [
+	    [{
+		path => 'subdir/subSubdir',
+		volume => $vt,
+	    }] => not_die(),
+	],
+        create_with_content => [
+	    [{
+		path => '/subdir/subsubdir/Hello',
+		volume => $vt,
+	    }, \('subsubhello')] => not_die(),
+	],
+	load => [
+	    [{path => 'subdir'}] => not_die(),
+	],
+	map_folder => [
+	    [sub {
+		 return shift->get('path');
+	    }] => [[
+		'/subdir/Foo',
+		'/subdir/subSubdir',
+	    ]],
+	],
     ],
     class() => [
 	delete_all => [
 	    [{volume => $vt}] => DIE(),
-	    [{realm_id => req()->get('auth_id')}] => 2,
+	    [{realm_id => req()->get('auth_id')}] => 4,
 	],
     ],
 ];
