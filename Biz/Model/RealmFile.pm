@@ -17,6 +17,10 @@ sub create {
 
 sub create_with_content {
     my($self, $values, $content) = @_;
+    $self->throw_die(DIE => {
+	entity => $content,
+	message => 'content must be a scalar or scalar_ref',
+    }) unless ref($content) eq 'SCALAR' || !ref($content) && defined($content);
     return _create($self, $values, 0)->put_content($content);
 }
 
@@ -221,21 +225,20 @@ sub _fix_values {
     unless ($p eq '/') {
 	$p =~ s{[^/]+$}{} || $self->die('logic error');
 	my($new) = $self->new;
-	if ($new->unauth_load({
+	unless ($new->unauth_load({
 	    realm_id => $values->{realm_id},
 	    volume => $values->{volume},
 	    path_lc => lc($p),
 	})) {
-	    $new->throw_die(IO_ERROR => {
-		entity => $values->{path},
-		message => 'parent is file, not folder',
-	    }) unless $new->get('is_folder');
-	}
-	else {
 	    $new->create_folder({
 		%$values,
-		is_folder => 1,
 		path => $p,
+	    });
+	}
+	elsif (!$new->get('is_folder')) {
+	    $new->throw_die(IO_ERROR => {
+		entity => $values->{path},
+		message => 'parent exists as a file, but must be a folder',
 	    });
 	}
     }
