@@ -16,7 +16,7 @@ sub from_literal {
     $v =~ s{/^\s+|\s+$|^/+|/+$}{}g;
     $v =~ s{/+}{/}g;
     # No leading dots or specials except forward '/' and not '%' (see to_os)
-    return $v =~ m{(?:^|/)\.|\.$|[\\\%:*?"<>\|\0-\037\177]}
+    return $v =~ m{(?:^|/)\.|\.$|[\\\:*?"<>\|\0-\037\177]}
 	? (undef, Bivio::TypeError->FILE_PATH) : "/$v";
 }
 
@@ -26,7 +26,7 @@ sub get_width {
 
 sub to_os {
     my($proto, $path) = @_;
-    $path =~ s{/}{\%}g;
+    $path =~ s{/}{:}g;
     return $path;
 }
 

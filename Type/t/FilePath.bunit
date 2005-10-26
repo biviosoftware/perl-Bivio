@@ -4,8 +4,8 @@ Type();
 [
     class() => [
         to_os => [
-	    '/' => '%',
-	    '/a/b' => '%a%b',
+	    '/' => ':',
+	    '/a/b' => ':a:b',
 	],
 	from_literal => [
 	    '/////////' => '/',
@@ -14,7 +14,7 @@ Type();
 	    '/a/b' => '/a/b',
 	    '/a////b' => '/a/b',
 	    '/a////b////' => '/a/b',
-	    'a%b' => FILE_PATH(),
+	    'a:b' => FILE_PATH(),
 	    '/.' => FILE_PATH(),
 	    '.' => FILE_PATH(),
 	    '.a' => FILE_PATH(),
