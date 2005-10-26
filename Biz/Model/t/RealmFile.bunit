@@ -4,6 +4,7 @@ Request('initialize_fully');
 set_realm_and_user('root', 'root');
 my($vt) = class()->get_instance->get_field_type('volume')->from_int(1);
 my($h2) = {path => 'hello2', volume => $vt};
+my($commit) = sub {commit(); return 1};
 [
     {
 	object => [req()],
@@ -18,37 +19,37 @@ my($h2) = {path => 'hello2', volume => $vt};
 	    ];
 	},
     } => [
-        create_with_content => [
-	    [\('hello')] => not_die(),
+	delete_all => [
+	    [{}] => $commit,
 	],
-	handle_commit => not_die(),
+        create_with_content => [
+	    [\('hello')] => $commit,
+	],
 	unsafe_load => 1,
 	get_content => [
 	    [] => [\('hello')],
 	],
-	delete => not_die(),
+	delete => $commit,
 	unsafe_load => 0,
         create_with_content => [
 	    [\('hello')] => not_die(),
-	    [$h2, \('hello2')] => not_die(),
+	    [$h2, \('hello2')] => $commit,
+	    [$h2, \('hello2')] => DB_CONSTRAINT(),
 	],
-	handle_commit => not_die(),
 	unsafe_load => [
 	    [] => 1,
 	    [$h2] => 1,
 	],
 	delete_all => [
-	    [{}] => 2,
+	    [{}] => sub {commit(); return [2]}
 	],
-	handle_commit => not_die(),
 	unsafe_load => [
 	    [] => 0,
 	    [$h2] => 0,
 	],
         create_with_content => [
-	    [\('hello')] => not_die(),
+	    [\('hello')] => $commit,
 	],
-	handle_commit => not_die(),
 #broken until I figure out how to get -T working with IO::File
 #	get_content_type => 'text/plain',
 	get_handle => sub {
@@ -59,7 +60,7 @@ my($h2) = {path => 'hello2', volume => $vt};
 	    [{
 		path => 'subdir',
 		volume => $vt,
-	    }] => not_die(),
+	    }] => $commit,
 	],
 	load => [
 	    [] => not_die(),
@@ -67,9 +68,8 @@ my($h2) = {path => 'hello2', volume => $vt};
 	update => [
 	    [{
 		path => 'subdir/Foo',
-	    }] => not_die(),
+	    }] => $commit,
 	],
-	handle_commit => not_die(),
 	load => [
 	    [{path_lc => 'subdir/foo'}] => not_die(),
 	],
@@ -86,7 +86,7 @@ my($h2) = {path => 'hello2', volume => $vt};
 	    [{
 		path => '/subdir/subsubdir/Hello',
 		volume => $vt,
-	    }, \('subsubhello')] => not_die(),
+	    }, \('subsubhello')] => $commit,
 	],
 	load => [
 	    [{path => 'subdir'}] => not_die(),
