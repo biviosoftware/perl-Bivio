@@ -383,6 +383,14 @@ sub get_delegate_info {
 	    Type.FileVolume->execute_plain
 	    Action.RealmFile
         )],
+	[qw(
+	    PUBLIC_USER_DAV
+	    536
+	    USER
+	    ANYBODY
+	    Type.FileVolume->execute_plain
+	    Action.DAV
+	)],
     ]);
 }
 

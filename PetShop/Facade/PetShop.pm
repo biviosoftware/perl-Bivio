@@ -181,6 +181,7 @@ my($_SELF) = __PACKAGE__->new({
 	    ORDER_REALMLESS_REDIRECT => 'ro/*',
 	    PUBLIC_USER_FILE_READ => '?/public/*',
 	    USER_FILE_READ => '?/file/*',
+	    PUBLIC_USER_DAV => '?/dav/*',
         ]));
 	return;
     },
