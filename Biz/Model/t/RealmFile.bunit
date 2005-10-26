@@ -26,6 +26,7 @@ my($commit) = sub {commit(); return 1};
 	    [\('hello')] => $commit,
 	],
 	unsafe_load => 1,
+	get_content_length => 5,
 	get_content => [
 	    [] => [\('hello')],
 	],

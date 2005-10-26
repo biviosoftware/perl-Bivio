@@ -69,6 +69,11 @@ sub get_content {
     return _f($self)->{content} ||= Bivio::IO::File->read(_path($self));
 }
 
+sub get_content_length {
+    my($self) = @_;
+    return _f($self)->{content_length} ||= -s $self->get_handle;
+}
+
 sub get_content_type {
     my($self) = @_;
     return Bivio::MIME::Type->from_extension($self->get('path'));
