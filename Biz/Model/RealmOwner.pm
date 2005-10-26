@@ -71,8 +71,7 @@ sub create {
     $values->{name} =
 	substr($values->{realm_type}->get_name, 0, 1) . $values->{realm_id}
 	unless defined($values->{name});
-    $values->{name} = Bivio::Type::RealmName->from_literal_or_die(
-        $values->{name});
+    $values->{name} = Bivio::Type::RealmName->process_name($values->{name});
     $values->{display_name} = $values->{name}
 	unless defined($values->{display_name});
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
@@ -406,10 +405,11 @@ sub unauth_load_by_email {
     my($mail_host) = '@' . Bivio::UI::Facade->get_value('mail_host',
         $self->get_request);
     return 0 unless $email =~ s/\Q$mail_host\E$//i;
-    my($name) = Bivio::Type::RealmName->from_literal($email);
-    return 0 unless defined($name);
     # Is it a valid user/club?
-    return $self->unauth_load({%$query, name => $name});
+    return $self->unauth_load({
+        %$query,
+        name => Bivio::Type::RealmName->process_name($email),
+    });
 }
 
 =for html <a name="unauth_load_by_email_id_or_name"></a>
@@ -427,12 +427,9 @@ sub unauth_load_by_email_id_or_name {
         if $email_id_or_name =~ /@/;
     return $self->unauth_load({realm_id => $email_id_or_name})
         if $email_id_or_name =~ /^\d+$/;
-    my($name) = Bivio::Type::RealmName->from_literal($email_id_or_name);
-    return $name
-        ? $self->unauth_load({
-            name => $name,
-        })
-        : 0;
+    return $self->unauth_load({
+        name => Bivio::Type::RealmName->process_name($name),
+    });
 }
 
 =for html <a name="unauth_load_by_id_or_name_or_die"></a>
@@ -450,8 +447,7 @@ sub unauth_load_by_id_or_name_or_die {
     return $self->unauth_load_or_die({
         ($id_or_name =~ /^\d+$/
             ? (realm_id => $id_or_name)
-            : (name =>
-                Bivio::Type::RealmName->from_literal_or_die($id_or_name))),
+            : (name => Bivio::Type::RealmName->process_name($id_or_name))),
         $realm_type
 	    ? (realm_type => Bivio::Auth::RealmType->from_any($realm_type))
 	    : (),
