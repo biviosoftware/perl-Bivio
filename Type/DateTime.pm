@@ -204,6 +204,19 @@ sub REGEX_LITERAL {
 
 =for html <a name="REGEX_STRING"></a>
 
+=head2 REGEX_RFC822 : regexp
+
+Internet time.
+
+=cut
+
+sub REGEX_RFC822 {
+    return qr{[a-z]{3},\s+(\d+)\s+([a-z]+)\s+(\d+)\s+(\d+):(\d+):(\d+)\s+GMT}i;
+}
+
+
+=for html <a name="REGEX_STRING"></a>
+
 =head2 REGEX_STRING : string
 
 Output format for L<to_string|"to_string">.  Allows optional timezone.
@@ -1062,6 +1075,7 @@ sub from_literal {
 	\&_from_ctime,
 	\&_from_string,
 	\&_from_file_name,
+	\&_from_rfc822,
     ) {
 	return @res
 	    if @res = $method->($proto, $value);
@@ -1435,6 +1449,14 @@ sub _from_or_die {
 	class => (ref($proto) || $proto),
     });
     # DOES NOT RETURN
+}
+
+# _from_rfc822(proto, string value) : string
+sub _from_rfc822 {
+    my($proto, $value) = @_;
+    my($d, $m3, $y, $h, $m, $s) = $value =~ /^@{[REGEX_RFC822()]}$/o;
+    return defined($s) ? $proto->from_parts(
+	$s, $m, $h, $d, $proto->english_month3_to_int($m3), $y) : ();
 }
 
 # _from_string(proto, string value) : array
