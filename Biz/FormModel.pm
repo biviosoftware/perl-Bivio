@@ -805,9 +805,9 @@ sub internal_initialize {
 
 =for html <a name="internal_initialize_sql_support"></a>
 
-=head2 static internal_initialize_sql_support() : Bivio::SQL::Support
+=head2 static internal_initialize_sql_support(Bivio::SQL::Statement stmt) : Bivio::SQL::Support
 
-=head2 static internal_initialize_sql_support(hash_ref config) : Bivio::SQL::Support
+=head2 static internal_initialize_sql_support(Bivio::SQL::Statement stmt, hash_ref config) : Bivio::SQL::Support
 
 Returns the L<Bivio::SQL::FormSupport|Bivio::SQL::FormSupport>
 for this class.  Calls L<internal_initialize|"internal_initialize">
@@ -816,7 +816,7 @@ to get the hash_ref to initialize the sql support instance.
 =cut
 
 sub internal_initialize_sql_support {
-    my($proto, $config) = @_;
+    my($proto, $stmt, $config) = @_;
     die('cannot create anonymous PropertyModels') if $config;
     $config = $proto->internal_initialize;
     $config->{class} = ref($proto) || $proto;

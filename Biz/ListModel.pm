@@ -117,7 +117,6 @@ use Bivio::Die;
 use Bivio::IO::Trace;
 use Bivio::SQL::ListQuery;
 use Bivio::SQL::ListSupport;
-use Bivio::SQL::Statement;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -787,9 +786,11 @@ sub internal_get_rows {
 
 =for html <a name="internal_initialize_sql_support"></a>
 
-=head2 static internal_initialize_sql_support() : Bivio::SQL::Support
+=head2 static internal_initialize_sql_support(Bivio::SQL::Statement stmt) : Bivio::SQL::Support
 
-=head2 static internal_initialize_sql_support(hash_ref config) : Bivio::SQL::Support
+=head2 static internal_initialize_sql_support(Bivio::SQL::Statement stmt, hash_ref config) : Bivio::SQL::Support
+
+=head2 static internal_initialize_sql_support(Bivio::SQL::Statement stmt, code_ref config) : Bivio::SQL::Support
 
 Returns the L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>
 for this class.  Calls L<internal_initialize|"internal_initialize">
@@ -798,13 +799,32 @@ to get the hash_ref to initialize the sql support instance.
 You can create anonymous list model.  Simply supply the configuration
 that is returned by C<internal_initialize> to new_anonymous.
 
+This method is complicated by the use of Bivio::SQL::Statement to build
+the model declaration.  We call build_decl_for_sql_support to ask the
+statement what columns are on this model.
+
 =cut
 
 sub internal_initialize_sql_support {
-    my($proto, $config) = @_;
-    $config ||= $proto->internal_initialize;
-    $config->{class} = ref($proto) || $proto;
-    return Bivio::SQL::ListSupport->new($config);
+    my($proto, $stmt, $config) = @_;
+
+    my($decl);
+    if (ref($config) eq 'CODE') {
+	$stmt->config($config->($proto, $stmt));
+        $decl = {
+            version => 1,
+            can_iterate => 1,
+	};
+    }
+    else {
+        $decl = $config || $proto->internal_initialize($stmt);
+    }
+    $decl->{class} = ref($proto) || $proto;
+
+    return Bivio::SQL::ListSupport->new(
+        $proto->merge_initialize_info($decl,
+	    $stmt->build_decl_for_sql_support()),
+	$stmt);
 }
 
 =for html <a name="internal_is_loaded"></a>
@@ -1060,11 +1080,10 @@ sub iterate_start {
 	unless $self->can_iterate;
     my($fields) = $self->[$_IDI];
     $fields->{query} = $self->parse_query($query);
-    my($stmt) = Bivio::SQL::Statement->new($self->internal_get_sql_support());
     return $self->internal_put_iterator(
 	$self->internal_get_sql_support->iterate_start(
 	    $fields->{query},
-	    _where_and_params($self, $stmt),
+	    _where_and_params($self),
 	    $self,
         ),
     );
@@ -1441,9 +1460,9 @@ sub set_cursor_or_not_found {
 
 =for html <a name="unauth_load_all"></a>
 
-=head2 unauth_load_all(hash_ref attrs)
+=head2 unauth_load_all(hash_ref attrs) : Bivio::Biz::Model::ListModel
 
-=head2 unauth_load_all(Bivio::SQL::ListQuery query)
+=head2 unauth_load_all(Bivio::SQL::ListQuery query) : Bivio::Biz::Model::ListModel
 
 Adds in I<count> equal to L<LOAD_ALL_SIZE|"LOAD_ALL_SIZE">.
 
@@ -1592,11 +1611,10 @@ sub _unauth_load {
 	$query->put(count => $count);
     }
     $fields->{query} = $query;
-    my($stmt) = Bivio::SQL::Statement->new($sql_support);
     $self->internal_load(
 	$self->internal_load_rows(
 	    $query,
-	    _where_and_params($self, $stmt),
+	    _where_and_params($self),
 	    $sql_support,
 	),
 	$query,
@@ -1610,12 +1628,14 @@ sub _unauth_load {
 # Gather changes from internal_prepare_statment and internal_pre_load
 #
 sub _where_and_params {
-    my($self, $stmt) = @_;
+    my($self) = @_;
+    my($stmt) = Bivio::SQL::Statement->new();
+    my($support) = $self->internal_get_sql_support();
     $self->internal_prepare_statement($stmt, $self->get_query());
-    my($where, $params) = $stmt->build_for_internal_load_rows();
+    my($where, $params) = $stmt->build_for_internal_load_rows($support);
     $where = join(' AND ', grep({$_} $where, $self->internal_pre_load(
 	$self->get_query(),
-	$self->internal_get_sql_support(),
+	$support,
 	$params,
     )));
     return (($where ? " AND $where" : ''), $params);

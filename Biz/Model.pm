@@ -39,6 +39,7 @@ use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
 use Bivio::IO::Trace;
+use Bivio::SQL::Statement;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -514,6 +515,22 @@ sub internal_get_sql_support {
     return $fields->{class_info}->{sql_support};
 }
 
+=for html <a name="internal_get_statement"></a>
+
+=head2 internal_get_statement() : Bivio::SQL::Statement
+
+Returns L<Bivio::SQL::Statement|Bivio::SQL::Statement> for this instance.
+
+
+=cut
+
+sub internal_get_statement {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    $self->assert_not_singleton if $fields->{is_singleton};
+    return $fields->{class_info}->{statement};
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 static abstract internal_initialize() : hash_ref
@@ -645,9 +662,9 @@ sub internal_put_iterator {
 
 =for html <a name="internal_initialize_sql_support"></a>
 
-=head2 static abstract internal_initialize_sql_support() : Bivio::SQL::Support
+=head2 static abstract internal_initialize_sql_support(Bivio::SQL::Statement stmt) : Bivio::SQL::Support
 
-=head2 static abstract internal_initialize_sql_support(hash_ref config) : Bivio::SQL::Support
+=head2 static abstract internal_initialize_sql_support(Bivio::SQL::Statement stmt, hash_ref config) : Bivio::SQL::Support
 
 B<FOR INTERNAL USE ONLY>.
 
@@ -1024,9 +1041,11 @@ sub _initialize_class_info {
 
     _assert_class_name($class) unless $config;
 
-    my($sql_support) = $class->internal_initialize_sql_support($config);
+    my($stmt) = Bivio::SQL::Statement->new();
+    my($sql_support) = $class->internal_initialize_sql_support($stmt, $config);
     my($ci) = {
 	sql_support => $sql_support,
+        statement => $stmt,
 	as_string_fields => _as_string_fields($sql_support),
 	# Is an array, because faster than a hash_ref for our purposes
 	properties => [map {
