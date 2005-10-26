@@ -4,6 +4,7 @@ package Bivio::Agent::HTTP::Reply;
 use strict;
 $Bivio::Agent::HTTP::Reply::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 $_ = $Bivio::Agent::HTTP::Reply::VERSION;
+use Bivio::IO::Trace;
 
 =head1 NAME
 
@@ -40,14 +41,12 @@ use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
-use Carp ();
 use UNIVERSAL;
 # Avoid import
 # use Bivio::Agent::Job::Dispatcher
 
 #=VARIABLES
 use vars qw($_TRACE);
-Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Can't initialize here, because get "deep recursion".  Don't ask me
 # why...
@@ -163,6 +162,7 @@ sub send {
     }
     elsif ($is_scalar) {
 	$r->print($$o);
+	_trace($o) if $_TRACE;
     }
     else {
 	$r->send_fd($o, $size);
@@ -415,6 +415,7 @@ sub _send_http_header {
 		$r->header_out($k, $fields->{headers}->{$k});
 	    }
 	}
+	_trace($fields->{status}, ' ', $fields->{headers}) if $_TRACE;
     }
 
     # Turn off KeepAlive if there are jobs.  This is because IE doesn't
