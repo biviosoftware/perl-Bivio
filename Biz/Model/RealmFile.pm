@@ -29,7 +29,6 @@ sub delete {
     my($self) = shift;
     $self->load(@_)
 	unless $self->is_loaded;
-    $self->internal_clear_model_cache;
     my($p) = _path($self);
     _txn($self, sub {
 	# Don't check for errors, may not exist
@@ -87,12 +86,10 @@ sub get_handle {
 sub handle_commit {
     my($self) = @_;
     (_f($self)->{handle_commit} || sub {})->();
-    $self->internal_clear_model_cache;
     return;
 }
 
 sub handle_rollback {
-    shift->internal_clear_model_cache;
     return;
 }
 
@@ -243,8 +240,10 @@ sub _realm_dir {
 
 sub _txn {
     my($self, $op) = @_;
-    _f($self)->{handle_commit} = $op;
-    $self->get_request->push_txn_resource($self);
+    # Need to create $new, because callers may modify or re-use $self after call
+    my($new) = $self->new;
+    _f($new)->{handle_commit} = $op;
+    $new->get_request->push_txn_resource($new);
     return;
 }
 
