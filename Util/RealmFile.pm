@@ -25,35 +25,52 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-file [options] command [args...]
 commands:
-    import_tree root -- imports files in current directory into root of current realm
+    create_folder folder -- creates folder and parents
+    import_tree [folder] -- imports files in current directory into folder [/]
 EOF
 }
 
 use Bivio::Biz::Model::RealmFile;
 use File::Find ();
 
+sub create_folder {
+    my($self, $folder) = @_;
+    return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFile')
+	->create_folder(
+	    _fix_values($self, {
+		path => $self->convert_literal('FilePath', $folder),
+	    }),
+	)->get('path');
+}
+
 sub import_tree {
-    my($self, $root) = @_;
-    $root = $root ? $self->convert_literal('FilePath', $root) : '';
-    my($req) = $self->initialize_ui;
+    my($self, $folder) = @_;
+    $folder = $self->create_folder($folder || '/');
     File::Find::find({
 	wanted => sub {
 	    return if $_ =~ /^\.\.?$/;
 	    my($f) = $File::Find::name =~ m{^\./(.+)};
 	    my($method) = -d $_ ? 'create_folder' : 'create_with_content';
-	    Bivio::Biz::Model->new($req, 'RealmFile')->$method(
-		{
-		    path => $self->convert_literal('FilePath', "$root/$f"),
+	    Bivio::Biz::Model->new($self->get_request, 'RealmFile')->$method(
+		_fix_values($self, {
+		    path => $self->convert_literal('FilePath', "$folder/$f"),
 		    modified_date_time => Bivio::Type::DateTime->from_unix(
 			(stat($_))[9],
 		    ),
-		    map(($_ => $self->get($_)), qw(volume is_public)),
-		},
+		}),
 		$method =~ /content/ ? Bivio::IO::File->read($_) : (),
 	    );
 	},
     }, '.');
     return;
+}
+
+sub _fix_values {
+    my($self, $values) = @_;
+    return {
+	%$values,
+	map(($_ => $self->get($_)), qw(volume is_public)),
+    };
 }
 
 1;
