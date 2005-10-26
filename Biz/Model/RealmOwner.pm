@@ -428,7 +428,7 @@ sub unauth_load_by_email_id_or_name {
     return $self->unauth_load({realm_id => $email_id_or_name})
         if $email_id_or_name =~ /^\d+$/;
     return $self->unauth_load({
-        name => Bivio::Type::RealmName->process_name($name),
+        name => Bivio::Type::RealmName->process_name($email_id_or_name),
     });
 }
 
