@@ -16,16 +16,15 @@ sub execute {
 	message => 'bad RealmFile.path',
 	type_error => $e,
     }) if $e;
-    my($h) = $f->load({
-	is_folder => 0,
-	volume => $req->get('Type.FileVolume'),
-	path_lc => lc($p),
-	defined($is_public) ? (is_public => $is_public) : (),
-    })->get_handle;
     my($reply) = $req->get('reply');
-    my($t) = Bivio::MIME::Type->from_extension($p);
-    $reply->set_output_type($f->get_content_type);
-    $reply->set_output($h);
+    $reply->set_output(
+	$f->load({
+	    is_folder => 0,
+	    volume => $req->get('Type.FileVolume'),
+	    path_lc => lc($p),
+	    defined($is_public) ? (is_public => $is_public) : (),
+	})->get_handle
+    )->set_output_type($f->get_content_type);
     return;
 }
 
