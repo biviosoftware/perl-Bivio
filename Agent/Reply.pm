@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Reply;
 use strict;
@@ -15,12 +15,7 @@ bOP
 
 =head1 SYNOPSIS
 
-    my($req) = ...;
-    my($reply) = $req->get('reply');
-
-    $reply->set_output_type('image/gif');  # default is 'text/plain'
-    $reply->set_output(\$image);
-    $reply->send($req);
+   use Bivio::Agent::Reply;
 
 =cut
 
@@ -95,9 +90,9 @@ sub send {
 
 =for html <a name="set_output"></a>
 
-=head2 set_output(scalar_ref value)
+=head2 set_output(scalar_ref value) : self
 
-=head2 set_output(io_handle file)
+=head2 set_output(io_handle file) : self
 
 Sets the output to the file.  Output type must be set.
 I<file> or I<value> will be owned by this method.
@@ -105,11 +100,12 @@ I<file> or I<value> will be owned by this method.
 =cut
 
 sub set_output {
+    return shift;
 }
 
 =for html <a name="set_output_type"></a>
 
-=head2 set_output_type(string type)
+=head2 set_output_type(string type) : self
 
 Sets the reply format type. For example this could be 'text/html'.
 
@@ -119,14 +115,14 @@ sub set_output_type {
     my($self, $type) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{output_type} = $type;
-    return;
+    return $self;
 }
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

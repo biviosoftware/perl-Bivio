@@ -303,9 +303,9 @@ sub set_last_modified {
 
 =for html <a name="set_output"></a>
 
-=head2 set_output(scalar_ref value)
+=head2 set_output(scalar_ref value) : self
 
-=head2 set_output(IO::File file)
+=head2 set_output(IO::File file) : slef
 
 Sets the output to the file.  Output type must be set.
 I<file> or I<value> will be owned by this method.
@@ -320,7 +320,7 @@ sub set_output {
 	unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
 	    || UNIVERSAL::isa($value, 'IO::Handle');
     $fields->{output} = $value;
-    return;
+    return $self;
 }
 
 #=PRIVATE METHODS
