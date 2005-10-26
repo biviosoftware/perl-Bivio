@@ -207,7 +207,8 @@ sub internal_new_args {
 #
 sub _render_href {
     my($self, $source) = @_;
-    my($href) = $self->unsafe_resolve_widget_value($self->get('href'), $source);
+    my($href) = $self->unsafe_resolve_widget_value(
+        $self->get('href'), $source);
     if (UNIVERSAL::isa($href, 'Bivio::UI::Widget')) {
 	my($v) = $href;
 	$href = undef;
