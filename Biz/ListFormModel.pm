@@ -156,9 +156,13 @@ Subclasses should override if they need to perform an
 operation during L<execute_empty|"execute_empty">
 B<for each row>.
 
+By default, loads field data from model.
+
 =cut
 
 sub execute_empty_row {
+    my($self) = @_;
+    $self->load_from_model_properties();
     return;
 }
 
@@ -522,6 +526,24 @@ Calls get_list_model.is_empty_row.
 
 sub is_empty_row {
     return shift->get_list_model->is_empty_row;
+}
+
+=for html <a name="load_from_model_properties"></a>
+
+=head2 load_from_model_properties(Bivio::Biz::Model model)
+
+Load form values from model.
+
+=cut
+
+sub load_from_model_properties {
+    my($self, $model) = @_;
+    $model ||= $self->get_list_model();
+    foreach my $field (@{$self->get_info('visible_field_names')}) {
+	$self->internal_put_field($field, $model->get($field))
+	    if $model->has_keys($field);
+    }
+    return;
 }
 
 =for html <a name="next_row"></a>
