@@ -279,6 +279,7 @@ sub _fixup_outer_join {
     return unless @$relations;
     Bivio::Die->die('too weird outer join: ', $from_where)
 	if $from_where =~ /POSTGRES-FIXME.*POSTGRES-FIXME/s;
+    _trace('from_where=', $from_where, '; relations=', $relations) if $_TRACE;
     my($joins) = {};
     foreach my $r (@$relations) {
 	my($left, $right) = @$r;
