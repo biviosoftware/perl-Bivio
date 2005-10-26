@@ -230,7 +230,6 @@ sub _path {
 	. lc($self->get('volume')->get_name)
 	. '/'
 	.  $self->get('realm_file_id')
-	. '-'
 	. $_P->to_os($self->get('path_lc'));
 }
 
