@@ -33,12 +33,7 @@ sub delete {
     my($self) = shift;
     $self->load(@_)
 	unless $self->is_loaded;
-    my($p) = _path($self);
-    _txn($self, sub {
-	# Don't check for errors, may not exist
-	unlink($p);
-    }) unless $self->get('is_folder');
-    return $self->SUPER::delete;
+    return _unlink($self)->SUPER::delete;
 }
 
 sub delete_all {
@@ -70,8 +65,7 @@ sub get_content {
 }
 
 sub get_content_length {
-    my($self) = @_;
-    return _f($self)->{content_length} ||= -s $self->get_handle;
+    return -s _path(shift);
 }
 
 sub get_content_type {
@@ -206,6 +200,11 @@ sub update {
     return @res;
 }
 
+sub update_with_content {
+    my($self, $values, $content) = @_;
+    return _unlink($self)->put_content($content)->update($values || {});
+}
+
 sub _create {
     my($self, $values, $is_folder) = @_;
     my($req) = $self->get_request;
@@ -275,6 +274,16 @@ sub _txn {
     _f($new)->{handle_commit} = $op;
     $new->get_request->push_txn_resource($new);
     return;
+}
+
+sub _unlink {
+    my($self) = @_;
+    my($p) = _path($self);
+    _txn($self, sub {
+	# Don't check for errors, may not exist
+	unlink($p);
+    }) unless $self->get('is_folder');
+    return $self;
 }
 
 1;

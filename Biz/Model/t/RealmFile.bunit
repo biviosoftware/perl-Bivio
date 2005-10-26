@@ -9,7 +9,7 @@ my($commit) = sub {commit(); return 1};
     {
 	object => [req()],
 	compute_params => sub {
-	    my(undef, $params) = @_;
+	    my(undef, $params, $method) = @_;
 	    return [
 		ref($params->[0]) =~ /^(HASH|CODE)$/ ? () : {
 		    volume => $vt,
@@ -29,6 +29,12 @@ my($commit) = sub {commit(); return 1};
 	get_content_length => 5,
 	get_content => [
 	    [] => [\('hello')],
+	],
+	update_with_content => [
+	    [\('goodbye')] => $commit,
+	],
+	get_content => [
+	    [] => [\('goodbye')],
 	],
 	delete => $commit,
 	unsafe_load => 0,
