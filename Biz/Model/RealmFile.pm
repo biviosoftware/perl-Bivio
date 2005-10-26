@@ -187,6 +187,7 @@ sub update {
 	&& $self->get('is_folder') ne $values->{is_folder};
     $values->{is_folder} = $self->get('is_folder');
     $values->{path} ||= $self->get('path');
+    $values->{volume} ||= $self->get('volume');
     my($o) = _path($self);
     my(@res) = $self->SUPER::update(_fix_values($self, $values));
     my($n) = _path($self);
@@ -216,7 +217,28 @@ sub _fix_values {
     $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
     $values->{user_id} ||= $req->get('auth_user_id');
     $values->{path_lc} = lc(
-	$values->{path} = $_P->from_literal_or_die($values->{path}));
+	$values->{path} = my $p = $_P->from_literal_or_die($values->{path}));
+    unless ($p eq '/') {
+	$p =~ s{[^/]+$}{} || $self->die('logic error');
+	my($new) = $self->new;
+	if ($new->unauth_load({
+	    realm_id => $values->{realm_id},
+	    volume => $values->{volume},
+	    path_lc => lc($p),
+	})) {
+	    $new->throw_die(IO_ERROR => {
+		entity => $values->{path},
+		message => 'parent is file, not folder',
+	    }) unless $new->get('is_folder');
+	}
+	else {
+	    $new->create_folder({
+		%$values,
+		is_folder => 1,
+		path => $p,
+	    });
+	}
+    }
     return $values;
 }
 

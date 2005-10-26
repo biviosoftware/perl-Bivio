@@ -41,7 +41,7 @@ my($commit) = sub {commit(); return 1};
 	    [$h2] => 1,
 	],
 	delete_all => [
-	    [{}] => sub {commit(); return [2]}
+	    [{}] => sub {commit(); return [3]}
 	],
 	unsafe_load => [
 	    [] => 0,
@@ -76,34 +76,27 @@ my($commit) = sub {commit(); return 1};
 	get_content => [
 	    [] => [\('hello')],
 	],
-	create_folder => [
-	    [{
-		path => 'subdir/subSubdir',
-		volume => $vt,
-	    }] => not_die(),
-	],
         create_with_content => [
 	    [{
-		path => '/subdir/subsubdir/Hello',
+		path => '/newdir/subSubdir/Hello',
 		volume => $vt,
 	    }, \('subsubhello')] => $commit,
 	],
 	load => [
-	    [{path => 'subdir'}] => not_die(),
+	    [{path => 'newdir'}] => not_die(),
 	],
 	map_folder => [
 	    [sub {
 		 return shift->get('path');
 	    }] => [[
-		'/subdir/Foo',
-		'/subdir/subSubdir',
+		'/newdir/subSubdir',
 	    ]],
 	],
     ],
     class() => [
 	delete_all => [
 	    [{volume => $vt}] => DIE(),
-	    [{realm_id => req()->get('auth_id')}] => 4,
+	    [{realm_id => req()->get('auth_id')}] => 6,
 	],
     ],
 ];
