@@ -82,7 +82,7 @@ sub from_literal {
 	unless $v;
     return (undef, Bivio::TypeError->REALM_NAME)
         unless $proto->internal_is_realm_name($v);
-    return $proto->internal_lc($v);
+    return $proto->process_name($v);
 }
 
 =for html <a name="internal_is_realm_name"></a>
@@ -99,19 +99,6 @@ sub internal_is_realm_name {
     return $value =~ /^[a-z][a-z0-9_]{2,}$/i ? 1 : 0;
 }
 
-=for html <a name="internal_lc"></a>
-
-=head2 static internal_lc(string value) : string
-
-Returns the value, converted to lowercase. May be overridden by subclasses.
-
-=cut
-
-sub internal_lc {
-    my($proto, $value) = @_;
-    return lc($value);
-}
-
 =for html <a name="is_offline"></a>
 
 =head2 is_offline(string value) : boolean
@@ -123,6 +110,19 @@ Returns true if the RealmName is a offline name.
 sub is_offline {
     my(undef, $value) = @_;
     return defined($value) && $value =~ /^$_OFFLINE_PREFIX/o ? 1 : 0;
+}
+
+=for html <a name="process_name"></a>
+
+=head2 static process_name(string value) : string
+
+Returns the value, converted to lowercase. May be overridden by subclasses.
+
+=cut
+
+sub process_name {
+    my($proto, $value) = @_;
+    return lc($value);
 }
 
 =for html <a name="unsafe_from_uri"></a>
@@ -140,7 +140,7 @@ sub unsafe_from_uri {
     # We allow dashes in URI names (my-site and other constructed names)
     (my $v = $value) =~ s/-//g;
     return $proto->internal_is_realm_name($v) && $value !~ /^-/
-	? $proto->internal_lc($value) : undef;
+	? $proto->process_name($value) : undef;
 }
 
 #=PRIVATE METHODS
