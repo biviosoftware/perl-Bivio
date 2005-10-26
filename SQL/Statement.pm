@@ -57,7 +57,8 @@ sub AND {
     return {
         predicates => $predicates,
         build => sub {
-            return join(' AND ', map({$_->{build}->(@_)} @$predicates));
+            return join(' AND ', grep({$_}
+	        map({$_->{build}->(@_)} @$predicates)));
         },
     }
 }
@@ -79,8 +80,25 @@ sub CROSS_JOIN {
             return join(',', map({$_->{build}->(@_)} @$joins));
         },
     };
+}
 
-    return;
+=for html <a name="DISTINCT"></a>
+
+=head2 static DISTINCT(string column) : hash_ref
+
+
+
+=cut
+
+sub DISTINCT {
+    my($self, $column) = @_;
+    return {
+        distinct => $column,
+	columns => [$column],
+        build => sub {
+            return join(' ', 'DISTINCT', _build_column($column, @_));
+        },
+    };
 }
 
 =for html <a name="EQ"></a>
@@ -296,21 +314,20 @@ sub NE {
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::SQL::Support support) : Bivio::SQL::Statement
+=head2 static new() : Bivio::SQL::Statement
 
 Return a new instance.
 
 =cut
 
 sub new {
-    my($proto, $support) = @_;
+    my($proto) = @_;
     my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {
         from => {},
+        select => undef,
         where => $self->AND(),
         _models => {},
-	_sql_support => $support,
-	_params => [],
     };
     return $self;
 }
@@ -319,25 +336,44 @@ sub new {
 
 =cut
 
+=for html <a name="build_decl_for_sql_support"></a>
+
+=head2 build_decl_for_sql_support() : hash_ref
+
+Return columns for ListModel
+
+=cut
+
+sub build_decl_for_sql_support {
+    my($self) = @_;
+    return {
+        other => $self->[$_IDI]->{select}->{columns},
+	# HACK: but I don't know what to do about it yet
+	primary_key => $self->[$_IDI]->{select}->{columns},
+    }
+	if $self->[$_IDI]->{select};
+    return {};
+}
+
 =for html <a name="build_for_internal_load_rows"></a>
 
-=head2 build_for_internal_load_rows() : (string, array_ref)
+=head2 build_for_internal_load_rows(Bivio::SQL::Support support) : (string, array_ref)
 
 Return FROM and WHERE clauses for internal_load_rows
 
 =cut
 
 sub build_for_internal_load_rows {
-    my($self) = @_;
+    my($self, $support) = @_;
+    _merge_statements($self, $support->get_statement());
     my($fields) = $self->[$_IDI];
-    my($support) = $fields->{_sql_support};
-    my($params) = $fields->{_params};
+    my($params) = [];
 
     my($where) = $fields->{where};
-    return ($where->{build}->($support, $params), $fields->{_params})
+    return ($where->{build}->($support, $params), $params)
         unless scalar(keys %{$fields->{from}});
 
-    foreach my $model (keys %{$fields->{_sql_support}->get('models')}) {
+    foreach my $model (keys %{$support->get('models')}) {
         _add_model($self, $model);
     }
 
@@ -345,13 +381,43 @@ sub build_for_internal_load_rows {
         map({$fields->{from}->{$_}}
             sort keys %{$fields->{from}}));
 
-    #TODO: The trailing AND avoids a bug in ListSupport (or somewhere).
-    # Should be removed once ListSupport (and kin) have been gutted of
-    # their vile string manipulations.
     return (
         join(' ', 'FROM', $join->{build}->($support, $params),
-            'WHERE', $where->{build}->($support, $params), 'AND '),
-	$fields->{_params});
+            'WHERE', $where->{build}->($support, $params)),
+	$params);
+}
+
+=for html <a name="build_select_for_sql_support"></a>
+
+=head2 build_select_for_sql_support(Bivio::SQL::ListSupport support) : string
+
+Build SELECT clause.
+
+=cut
+
+sub build_select_for_sql_support {
+    my($self, $support) = @_;
+    my($fields) = $self->[$_IDI];
+    return join(' ',
+        'SELECT', $fields->{select}->{build}->($support, []))
+	if $fields->{select};
+    return $support->unsafe_get('select');
+}
+
+=for html <a name="config"></a>
+
+=head2 config(hash_ref config)
+
+Parse and apply config data
+
+=cut
+
+sub config {
+    my($self, $config) = @_;
+    foreach my $method (keys %$config) {
+	$self->$method(@{$config->{$method}});
+    }
+    return;
 }
 
 =for html <a name="from"></a>
@@ -387,21 +453,36 @@ sub from {
     return;
 }
 
+=for html <a name="select"></a>
+
+=head2 select(any select_item)
+
+Add item to SELECT clause.
+
+=cut
+
+sub select {
+    my($self, $select_item) = @_;
+    $self->[$_IDI]->{select} = $select_item;
+    return;
+}
+
 =for html <a name="where"></a>
 
-=head2 where(any predicate)
+=head2 where(any predicate, ...)
 
-Add I<predicate> to WHERE clause.  This condition will be ANDed
+Add I<predicate>s to WHERE clause.  This condition will be ANDed
 with any other existing conditions.
 
 =cut
 
 sub where {
-    my($self, $predicate) = @_;
-    push(@{$self->[$_IDI]->{where}->{predicates}},
-        _parse_predicate($self, $predicate))
-	if $predicate;
-    return $self;
+    my($self, @predicates) = @_;
+    foreach my $predicate (grep({$_} @predicates)) {
+        push(@{$self->[$_IDI]->{where}->{predicates}},
+            _parse_predicate($self, $predicate));
+    }
+    return;
 }
 
 #=PRIVATE SUBROUTINES
@@ -471,6 +552,19 @@ sub _build_value {
     my($col_type) = $instance->get_field_type($field);
     push(@$params, $col_type->to_sql_param($value));
     return $col_type->to_sql_value('?');
+}
+
+# _merge_statements(self, Bivio::SQL::Statement)
+#
+# Merge statement data
+#
+sub _merge_statements {
+    my($self, $other) = @_;
+    return unless $other;
+
+    # TODO: more needs to be done here.
+    $self->where($other->[$_IDI]->{where});
+    return;
 }
 
 # _parse_predicate(proto, any predicate) : 

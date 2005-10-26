@@ -238,7 +238,7 @@ my($_DATE_SQL_VALUE) = Bivio::Type::Date->to_sql_value('?');
 
 =for html <a name="new"></a>
 
-=head2 static new(hash_ref decl) : Bivio::SQL::ListSupport
+=head2 static new(hash_ref config, Bivio::SQL::Statement stmt) : Bivio::SQL::ListSupport
 
 Creates a SQL list support instance from a declaration.  A I<decl> is a list of
 keyed categories.  The keys are described below.  The values are either an
@@ -256,8 +256,9 @@ models corresponding to the table names.
 =cut
 
 sub new {
-    my($proto, $decl) = @_;
+    my($proto, $decl, $stmt) = @_;
     my($attrs) = {
+	statement => $stmt,
 	# All columns by qualified name
 	columns => {},
 	# All models by qualified name
@@ -309,6 +310,19 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_statement"></a>
+
+=head2 get_statement() : Bivio::SQL::Statement
+
+Return the statement for this instance.
+
+=cut
+
+sub get_statement {
+    my($self) = @_;
+    return $self->internal_get()->{statement};
+}
 
 =for html <a name="iterate_next"></a>
 
@@ -371,7 +385,7 @@ sub load {
     my($self, $query, $where, $params, $die) = @_;
 
     # If no select such just return an empty list.  Only local fields.
-    return [] unless $self->unsafe_get('select');
+    return [] unless _select($self);
 
     # Detail or list?
     return $query->get('this') || $query->unsafe_get('want_first_only')
@@ -408,7 +422,8 @@ sub _count_pages {
 sub _execute_select {
     my($self, $query, $where, $params, $die) = @_;
     my($attrs) = $self->internal_get;
-    my($select, $from_where) = $self->unsafe_get('select', 'from_where');
+    my($select) = _select($self);
+    my($from_where) = $self->unsafe_get('from_where');
     ($die || 'Bivio::Die')
 	->throw_die('DIE', 'must support select') unless $select;
     _prepare_where($self, $query, \$from_where, \$where, $params);
@@ -422,8 +437,9 @@ sub _execute_select {
 #
 sub _find_list_start {
     my($self, $query, $where, $params, $die) = @_;
+
     my($db) = Bivio::SQL::Connection->get_instance;
-    my($select) = $self->get('select') . $where;
+    my($select) = _select($self) . $where;
     my($statement, $row);
     my($page_number, $count) = $query->get(qw(page_number count));
     foreach my $is_second_try (0 .. 1) {
@@ -861,16 +877,18 @@ sub _prepare_where {
 	$$from_where =~ s/^\s*\bFROM\s+.*?(?:(?=\bWHERE\b)|$)//is
 	    || die($$from_where, ': bad where configuration');
 	push(@$params, @$qualifiers);
+#	$$from_where =~ s/^\s*WHERE\b/ AND/;
 	$$where .= $$from_where;
 	$$where =~ s/\bWHERE\s+AND\b/AND/gis;
 	$$where =~ s/\bAND\s+WHERE\b/AND/gis;
 	$$where =~ s/\bWHERE\s+WHERE\b/WHERE/gis;
+	$$where =~ s/\bAND\s+AND\b/AND/gis;
 	$$from_where = '';
     }
     else {
 	unshift(@$params, @$qualifiers);
     }
-    $$where =~ s/\s+AND\s*$//;
+    $$where =~ s/\s*\bAND\s*$//;
     _prepare_where_date($self, $query, $where, $params)
 	if $attrs->{date};
     _prepare_group_by($self, $where)
@@ -915,6 +933,16 @@ sub _prepare_where_date {
 	push(@$params, $date);
     }
     return;
+}
+
+# _select(self) : string
+#
+# Ask statement to build select string. 
+#
+sub _select {
+    my($self) = @_;
+    return $self->get_statement()
+	->build_select_for_sql_support($self);
 }
 
 =head1 COPYRIGHT
