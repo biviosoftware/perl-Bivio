@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Agent::Reply/HTTP::Reply return $self on more methods.
+  * Bivio::Agent::Reply maps CORRUPT_QUERY, CORRUPT_FORM, and INVALID_OP
+    to BAD_REQUEST.
+
+  Revision 3.32  2005/10/25 17:50:07  moeller
+  * Bivio::Auth::Realm calls lc() on owner_name in new()
+  * Bivio::Biz::Model::RealmOwner no longer calls lc() on name,
+    uses Bivio::Type::RealmName->from_literal() to do this
+  * Bivio::Biz::Model::UserLoginForm->validate_login no longer emulates
+    Type::RealmName by stripping spaces and calling lc()
+  * Bivio::Delegate::SimpleRealmName now calls internal_lc() to covert
+    name to lowercase. Allows overrides by subclasses.
   * Bivio::Test::HTMLParser::Forms set default error_class to match
     XHTMLWidget.FormFieldError _start/end_font -> _start/end_maybe_err which
     also checks spans and divs
