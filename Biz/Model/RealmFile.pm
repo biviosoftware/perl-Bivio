@@ -31,8 +31,8 @@ sub create_folder {
 
 sub delete {
     my($self) = shift;
-    $self->load(@_)
-	unless $self->is_loaded;
+    $self->is_loaded ? _fix_values($self, $self->get_shallow_copy)
+	: $self->load(@_);
     $self->throw_die(DIE => {
 	entity => $self->get('path'),
 	message => 'folder is not empty',
@@ -188,6 +188,8 @@ sub update {
     $values->{is_folder} = $self->get('is_folder');
     $values->{path} ||= $self->get('path');
     $values->{volume} ||= $self->get('volume');
+    $values->{realm_id} ||= $self->get('realm_id');
+    $values->{user_id} ||= $self->get('user_id');
     my($children) = $self->get('is_folder')
 	&& grep(
 	    $values->{$_} && $values->{$_} ne $self->get($_),
@@ -225,6 +227,8 @@ sub _create {
     # You must not reuse $self after this call
     $values->{is_folder} = $is_folder;
     $values->{is_public} ||= 0;
+    $values->{realm_id} ||= $req->get('auth_id');
+    $values->{user_id} ||= $req->get('auth_user_id');
     return $self->SUPER::create(_fix_values($self, $values));
 }
 
@@ -235,9 +239,7 @@ sub _f {
 sub _fix_values {
     my($self, $values) = @_;
     my($req) = $self->get_request;
-    $values->{realm_id} ||= $req->get('auth_id');
     $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
-    $values->{user_id} ||= $req->get('auth_user_id');
     $values->{path_lc} = lc(
 	$values->{path} = my $p = $_P->from_literal_or_die($values->{path}));
     unless ($p eq '/' || delete($values->{_parent_folder_exists})) {
@@ -257,6 +259,8 @@ sub _fix_values {
 	    # match case of folder that exists
  	    substr($values->{path}, 0, length($new->get('path')))
 		= $new->get('path');
+	    # touch directory
+	    $new->update({});
 	}
 	else {
 	    $new->throw_die(IO_ERROR => {
