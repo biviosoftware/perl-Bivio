@@ -189,8 +189,10 @@ sub update {
     $values->{path} ||= $self->get('path');
     $values->{volume} ||= $self->get('volume');
     my($children) = $self->get('is_folder')
-	&& grep($values->{$_} ne $self->get($_), qw(realm_id volume path))
-	? $self->map_folder_deep(sub {shift->get('realm_file_id')})
+	&& grep(
+	    $values->{$_} && $values->{$_} ne $self->get($_),
+	    qw(realm_id volume path),
+	) ? $self->map_folder_deep(sub {shift->get('realm_file_id')})
 	: [];
     my(@res) = $self->SUPER::update(_fix_values($self, $values));
     foreach my $cid (@$children) {
@@ -201,6 +203,7 @@ sub update {
 	$child->$method({
 	    # Communicate with _fix_values
 	    $method eq 'update' ? (_parent_folder_exists => 1) : (),
+	    map(($_ => $child->get($_)), qw(modified_date_time)),
 	    map(($_ => $self->get($_)), qw(realm_id volume)),
 	    map(($_ => $self->get($_)
 	        . substr($child->get($_), length($self->get($_)) - 1)),
