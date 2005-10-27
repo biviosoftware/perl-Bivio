@@ -27,7 +27,8 @@ my($_FP) = Bivio::Biz::Model->get_instance('RealmFile')->get_field_type('path');
 
 sub execute {
     my($proto, $req) = @_;
-    $req->set_user('demo');
+    $req->set_user(
+	Bivio::Biz::Model->new($req, 'RealmUser')->get_any_online_admin);
     my($s) = {
 	proto => $proto,
 	file => Bivio::Biz::Model->new($req, 'RealmFile'),
@@ -259,7 +260,7 @@ sub _format_http {
 sub _is_not_empty {
     my($s) = @_;
     return _output($s, FORBIDDEN => "Folder is not empty: $s->{path}")
-	if $s->{file}->get('is_folder') && @{$s->{file}->map_folder(sub {1})};
+	unless $s->{file}->is_empty;
     return;
 }
 
