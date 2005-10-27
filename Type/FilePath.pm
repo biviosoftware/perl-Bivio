@@ -24,10 +24,4 @@ sub get_width {
     return 500;
 }
 
-sub to_os {
-    my($proto, $path) = @_;
-    $path =~ s{/}{:}g;
-    return $path;
-}
-
 1;
