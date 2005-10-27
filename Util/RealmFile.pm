@@ -45,21 +45,30 @@ sub create_folder {
 
 sub import_tree {
     my($self, $folder) = @_;
-    $folder = $self->create_folder($folder || '/');
+    my($req) = $self->initialize_ui;
+    $folder = $folder ? $self->convert_literal(FilePath => $folder) : '/';
     File::Find::find({
 	wanted => sub {
 	    return if $_ =~ /^\.\.?$/;
 	    my($f) = $File::Find::name =~ m{^\./(.+)};
+	    my($path) = $self->convert_literal('FilePath', "$folder/$f");
 	    my($method) = -d $_ ? 'create_folder' : 'create_with_content';
-	    Bivio::Biz::Model->new($self->get_request, 'RealmFile')->$method(
+	    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
+	    $method = 'update'
+		if $rf->unsafe_load({
+		    volume => $self->get('volume'),
+		    path => $path,
+		}) && !($method =~ s/create_with/update_with/);
+	    $rf->$method(
 		_fix_values($self, {
-		    path => $self->convert_literal('FilePath', "$folder/$f"),
+		    path => $path,
 		    modified_date_time => Bivio::Type::DateTime->from_unix(
 			(stat($_))[9],
 		    ),
 		}),
 		$method =~ /content/ ? Bivio::IO::File->read($_) : (),
 	    );
+	    return;
 	},
     }, '.');
     return;
