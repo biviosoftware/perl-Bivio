@@ -193,10 +193,9 @@ sub update {
     $values->{volume} ||= $self->get('volume');
     my($o) = _path($self);
     my(@res) = $self->SUPER::update(_fix_values($self, $values));
-    my($n) = _path($self);
-    _txn($self, sub {
-        Bivio::IO::File->rename($o, $n);
-    }) unless $n eq $o;
+    if ($self->get('is_folder')) {
+	die('need to make this work');
+    }
     return @res;
 }
 
@@ -255,8 +254,7 @@ sub _path {
 	. '/'
 	. lc($self->get('volume')->get_name)
 	. '/'
-	.  $self->get('realm_file_id')
-	. $_P->to_os($self->get('path_lc'));
+	.  $self->get('realm_file_id');
 }
 
 sub _realm_dir {
