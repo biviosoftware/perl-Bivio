@@ -135,7 +135,6 @@ sub _dav_move {
     my($s) = @_;
     return 1
 	if _copy_move($s);
-    return if _is_not_empty($s);
     $s->{dest_file}->delete
 	if my $exists = $s->{dest_file}->is_loaded;
     $s->{file}->update({
