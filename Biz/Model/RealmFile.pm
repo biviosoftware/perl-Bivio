@@ -33,6 +33,10 @@ sub delete {
     my($self) = shift;
     $self->load(@_)
 	unless $self->is_loaded;
+    $self->throw_die(DIE => {
+	entity => $self->get('path'),
+	message => 'folder is not empty',
+    }) unless $self->is_empty;
     return _unlink($self)->SUPER::delete;
 }
 
@@ -142,24 +146,17 @@ sub internal_prepare_query {
     return shift->SUPER::internal_prepare_query(@_);
 }
 
+sub is_empty {
+    my($self) = @_;
+    return $self->get('is_folder') && @{$self->map_folder(sub {1})} ? 0 : 1;
+}
+
 sub map_folder {
-    my($self, $op) = @_;
-    $self->die('not a folder')
-	unless $self->get('is_folder');
-    my($p) = $self->get('path_lc');
-    $p .= '/'
-	if $p ne '/';
-    my($re) = qr{^\Q$p\E[^/]+$};
-    $self->new->map_iterate(sub {
-       my($it) = @_;
-       return $it->get('path') =~ $re ? $op->($it) : ();
-    }, 'path_lc', {
-	map(($_ => $self->get($_)),
-	    $self->get('is_public') ? 'is_public' : (),
-	    'volume',
-	    'realm_id',
-	),
-    });
+    return _map_folder(0, @_);
+}
+
+sub map_folder_deep {
+    return _map_folder(1, @_);
 }
 
 sub put_content {
@@ -191,10 +188,25 @@ sub update {
     $values->{is_folder} = $self->get('is_folder');
     $values->{path} ||= $self->get('path');
     $values->{volume} ||= $self->get('volume');
-    my($o) = _path($self);
+    my($children) = $self->get('is_folder')
+	&& grep($values->{$_} ne $self->get($_), qw(realm_id volume path))
+	? $self->map_folder_deep(sub {shift->get('realm_file_id')})
+	: [];
     my(@res) = $self->SUPER::update(_fix_values($self, $values));
-    if ($self->get('is_folder')) {
-	die('need to make this work');
+    foreach my $cid (@$children) {
+	my($child) = $self->new;
+	next unless $child->unauth_load({realm_file_id => $cid});
+	# Don't want recursion, because we are doing deep.
+	my($method) = ($child->get('is_folder') ? 'SUPER::' : '') . 'update';
+	$child->$method({
+	    # Communicate with _fix_values
+	    $method eq 'update' ? (_parent_folder_exists => 1) : (),
+	    map(($_ => $self->get($_)), qw(realm_id volume)),
+	    map(($_ => $self->get($_)
+	        . substr($child->get($_), length($self->get($_)) - 1)),
+		qw(path path_lc),
+	    ),
+	});
     }
     return @res;
 }
@@ -225,7 +237,7 @@ sub _fix_values {
     $values->{user_id} ||= $req->get('auth_user_id');
     $values->{path_lc} = lc(
 	$values->{path} = my $p = $_P->from_literal_or_die($values->{path}));
-    unless ($p eq '/') {
+    unless ($p eq '/' || delete($values->{_parent_folder_exists})) {
 	$p =~ s{[^/]+$}{} || $self->die('logic error');
 	my($new) = $self->new;
 	unless ($new->unauth_load({
@@ -238,7 +250,12 @@ sub _fix_values {
 		path => $p,
 	    });
 	}
-	elsif (!$new->get('is_folder')) {
+	elsif ($new->get('is_folder')) {
+	    # match case of folder that exists
+ 	    substr($values->{path}, 0, length($new->get('path')))
+		= $new->get('path');
+	}
+	else {
 	    $new->throw_die(IO_ERROR => {
 		entity => $values->{path},
 		message => 'parent exists as a file, but must be a folder',
@@ -246,6 +263,26 @@ sub _fix_values {
 	}
     }
     return $values;
+}
+
+sub _map_folder {
+    my($deep, $self, $op) = @_;
+    $self->die('not a folder')
+	unless $self->get('is_folder');
+    my($p) = $self->get('path_lc');
+    $p .= '/'
+	if $p ne '/';
+    my($re) = $deep ? qr{^\Q$p} : qr{^\Q$p\E[^/]+$};
+    return $self->new->map_iterate(sub {
+       my($it) = @_;
+       return $it->get('path_lc') =~ $re ? $op->($it) : ();
+    }, unauth_iterate_start => path_lc => {
+	map(($_ => $self->get($_)),
+	    $self->get('is_public') ? 'is_public' : (),
+	    'volume',
+	    'realm_id',
+	),
+    });
 }
 
 sub _path {
