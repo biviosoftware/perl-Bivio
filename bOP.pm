@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    changed.
+  * Bivio::Util::RealmAdmin join_user calls from_name instead of direct
+    call
+
   Revision 3.35  2005/10/27 06:56:17  nagler
   * Bivio::Biz::Action::DAV escapes displayname
   * Bivio::Util::RealmFile->import_tree does create or update
