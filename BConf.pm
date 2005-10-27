@@ -70,7 +70,7 @@ sub default_merge_overrides {
 	    error_color => '#993300',
 	},
 	'Bivio::Test::Language::HTTP' => {
-	    home_page_uri => "http://$root_lc.bivio.biz",
+	    home_page_uri => "http://test.$root_lc.bivio.biz",
 	},
 	'Bivio::Test::Util' => {
 	    nightly_output_dir => "/home/btest/$root_lc",
