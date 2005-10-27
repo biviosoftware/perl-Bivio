@@ -1285,12 +1285,12 @@ sub validate_and_execute_ok {
 
 Ensures the specified field is greater than 0. Puts an error on the form
 if it fails.  Returns false if the field is in error or if an error is
-put on the field.
+put on the field. An undef value is valid.
 
 =cut
 
 sub validate_greater_than_zero {
-    return _validate(sub {shift(@_) <= 0 && 'GREATER_THAN_ZERO'}, @_);
+    return _validate(1, sub {shift(@_) <= 0 && 'GREATER_THAN_ZERO'}, @_);
 }
 
 =for html <a name="validate_not_negative"></a>
@@ -1299,12 +1299,12 @@ sub validate_greater_than_zero {
 
 Ensures the specified field isn't negative. Puts an error on the form
 if it fails. Returns false if the field is in error or if an error is
-put on the field.
+put on the field. An undef value is valid.
 
 =cut
 
 sub validate_not_negative {
-    return _validate(sub {shift(@_) < 0 && 'NOT_NEGATIVE'}, @_);
+    return _validate(1, sub {shift(@_) < 0 && 'NOT_NEGATIVE'}, @_);
 }
 
 =for html <a name="validate_not_null"></a>
@@ -1318,7 +1318,7 @@ put on the field.
 =cut
 
 sub validate_not_null {
-    return _validate(sub {!defined(shift(@_)) && 'NULL'}, @_);
+    return _validate(0, sub {!defined(shift(@_)) && 'NULL'}, @_);
 }
 
 =for html <a name="validate_not_zero"></a>
@@ -1327,12 +1327,12 @@ sub validate_not_null {
 
 Ensures the specified field isn't 0. Puts an error on the form if it fails.
 Returns false if the field is in error or if an error is
-put on the field.
+put on the field. An undef value is valid.
 
 =cut
 
 sub validate_not_zero {
-    return _validate(sub {shift(@_) == 0 && 'NOT_ZERO'}, @_);
+    return _validate(1, sub {shift(@_) == 0 && 'NOT_ZERO'}, @_);
 }
 
 #=PRIVATE METHODS
@@ -1713,9 +1713,11 @@ sub _redirect_same {
 }
 
 sub _validate {
-    my($op, $self, $field) = @_;
+    my($undef_ok, $op, $self, $field) = @_;
     return 0
 	if $self->get_field_error($field);
+    return 1
+        if $undef_ok && ! defined($self->unsafe_get($field));
     return 1
 	unless my $e = $op->($self->unsafe_get($field));
     $self->internal_put_error($field, $e);
