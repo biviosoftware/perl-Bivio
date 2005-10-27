@@ -29,7 +29,11 @@ sub execute {
     }
     $proto->new({password => $pw})->put_on_request($req, 1);
     $proto->get_instance('Acknowledgement')->save_label($req);
-    return 'server_redirect.password_task';
+    $req->server_redirect({
+        task_id => $req->get('task')->get('password_task'),
+        no_context => 1,
+    });
+    # DOES NOT RETURN
 }
 
 sub format_uri {
