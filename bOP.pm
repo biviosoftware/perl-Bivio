@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::Action::DAV->execute sets any online admin for realm
+    (Don't use this on production just yet, because there's no security.)
+  * Bivio::Biz::Model::Forum->create_realm creates root folder
+
+  Revision 3.33  2005/10/27 03:33:32  nagler
+  * Bivio::Biz::Action::DAV is a class 2 web dav server that's mostly
+    working.  We'll be updating it over the time.
+  * Bivio::Biz::Model::RealmFile has been fleshed out.  Supports
+    everything except folder moves/deletes correctly.
+    creation_date_time is now modified_date_time.
+  * Bivio::Type::FilePath->to_os is gone.   RealmFiles are stored
+    without path.  Makes easier for renames.
+  * Bivio::Type::DateTime->from_literal supports rfc822 format.
+  * Bivio::UI::Text::Widget::String can render scalar_refs.
+  * Bivio::Agent::Test::Request->commit added.
+  * Bivio::SQL::Statement/ListSupport expanded to allow DISTINCT and
+    nested left joins.
+  * Bivio::PetShop has a DAV task that doesn't authenticate right now.
+  * Bivio::Ext::ApacheConstants->MULTI_STATUS added
+  * Bivio::DieCode->INVALID_OP added
+  * Bivio::Biz::PropertyModel->internal_prepare_query added.  Allows you
+    to twiddle the query before it its PropertySupport.
+  * Bivio::Delegate::SimpleRealmName/RealmOwner
+  * Bivio::Biz::ListFormModel->load_from_model_properties added.
+  * Bivio::Biz::Action::UserPasswordQuery->execute fixed to not redirect
+    with context.
   * Bivio::Agent::Reply/HTTP::Reply return $self on more methods.
   * Bivio::Agent::Reply maps CORRUPT_QUERY, CORRUPT_FORM, and INVALID_OP
     to BAD_REQUEST.
