@@ -28,6 +28,15 @@ sub create_realm {
 	user_id => $admin_id,
 	role => Bivio::Auth::Role->ADMINISTRATOR,
     });
+    my($f) = $self->new_other('RealmFile');
+    foreach my $v ($f->get_field_type('volume')->get_list) {
+	$f->create_folder({
+	    path => '/',
+	    user_id => $admin_id,
+	    realm_id => $self->get('forum_id'),
+	    volume => $v,
+	}) unless $v->equals_by_name('UNKNOWN');
+    }
     return $self;
 }
 
