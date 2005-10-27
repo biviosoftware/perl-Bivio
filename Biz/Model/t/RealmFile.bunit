@@ -89,8 +89,14 @@ my($commit) = sub {commit(); return 1};
 		volume => $vt,
 	    }, \('subsubhello')] => $commit,
 	],
+	create_folder => [
+	    [{
+		path => '/newdir/subsubdir/subsubsubdir',
+		volume => $vt,
+	    }] => $commit,
+	],
 	load => [
-	    [{path => 'newdir'}] => not_die(),
+	    [{path => 'NewDir'}] => not_die(),
 	],
 	map_folder => [
 	    [sub {
@@ -99,11 +105,24 @@ my($commit) = sub {commit(); return 1};
 		'/newdir/subSubdir',
 	    ]],
 	],
+	update => [
+	    [{path => '/Newdir2'}] => $commit,
+
+	],
+	map_folder_deep => [
+	    [sub {
+		 return shift->get('path');
+	    }] => [[qw(
+                /Newdir2/subSubdir
+                /Newdir2/subSubdir/Hello
+                /Newdir2/subSubdir/subsubsubdir
+	    )]],
+	],
     ],
     class() => [
 	delete_all => [
 	    [{volume => $vt}] => DIE(),
-	    [{realm_id => req()->get('auth_id')}] => 6,
+	    [{realm_id => req()->get('auth_id')}] => 7,
 	],
     ],
 ];
