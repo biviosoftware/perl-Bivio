@@ -258,7 +258,7 @@ models corresponding to the table names.
 sub new {
     my($proto, $decl, $stmt) = @_;
     my($attrs) = {
-	statement => $stmt,
+	statement => $stmt || Bivio::SQL::Statement->new(),
 	# All columns by qualified name
 	columns => {},
 	# All models by qualified name
