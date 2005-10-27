@@ -408,6 +408,8 @@ sub get_context_from_request {
 
     $context = $form = undef
 	if $named->{no_form};
+    $context = undef
+        if $named->{no_context};
 
     # Fix up file fields if any
     my($ff);
