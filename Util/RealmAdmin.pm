@@ -196,7 +196,7 @@ sub join_user {
     Bivio::Biz::Model->new($req, 'RealmUser')->create({
 	realm_id => $req->get('auth_id'),
 	user_id => $req->get('auth_user_id'),
-	role => Bivio::Auth::Role->$role,
+	role => Bivio::Auth::Role->from_name($role),
     });
     return;
 }
