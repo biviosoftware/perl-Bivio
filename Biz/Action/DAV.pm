@@ -179,8 +179,8 @@ sub _dav_propfind {
 			 [href => _format_http($s, $x)],
 			 [propstat => [
 			     [prop => [
-				 [displayname =>
-				      ($x->{path} =~ m{([^/]+)$})[0]],
+				 [displayname => Bivio::HTML->escape(
+				     $x->{path} =~ m{([^/]+)$})],
 				 # MS
 				 [isroot => $x->{isroot} || '0'],
 				 [getlastmodified => $_DT->rfc822(
