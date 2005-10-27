@@ -580,7 +580,7 @@ sub parse_uri {
 	entity => $name, uri => $orig_uri,
 	class => 'Bivio::Auth::Realm',
 	message => 'no such realm',
-     }) unless $o->unauth_load(name => $name);
+     }) unless $o->unauth_load({name => $name});
     $realm = Bivio::Auth::Realm->new($o);
 
     # Found the realm, now try to find the URI (without checking path_info)
