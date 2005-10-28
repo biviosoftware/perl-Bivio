@@ -195,7 +195,7 @@ sub mock_sendmail {
 	    . (Bivio::IO::ClassLoader
 	        ->simple_require('Bivio::Test::Language::HTTP')
 		->home_page_uri =~ m{http://([^/]+)})[0]
-	    . ($req->unsafe_get('Bivio::UI::Facade')
+	    . ($req->unsafe_get('facade')
 	       && Bivio::Agent::TaskId->unsafe_from_name('MAIL_RECEIVE_DISPATCH')
 	       && Bivio::UI::Text->has_uri('MAIL_RECEIVE_DISPATCH')
 	       ? $req->format_uri({
