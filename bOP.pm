@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Delegate::SimpleTaskId->ADM_SUBSTITUTE_USER includes a
+    view (adm-substitute-user.bview).
+  * Bivio::Biz::ListModel->is_loaded is added.
+
+  Revision 3.36  2005/10/27 20:14:44  moeller
+  * Bivio::Biz::FormModel restored validate_greater_than_zero(),
+    validate_not_negative() and validate_not_zero () behavior to accept
+    undef values
+  * Bivio::Biz::ListFormModel renamed load_from_model_properties() to
+    load_from_list_model_properties(), so superclass behavior is not
     changed.
   * Bivio::Util::RealmAdmin join_user calls from_name instead of direct
     call
