@@ -52,6 +52,8 @@ Default the email address to the user in the cookie if present.
 
 sub execute_empty {
     my($self) = @_;
+    # don't overwrite if already set by subclass
+    return if $self->unsafe_get('Email.email');
     my($req) = $self->get_request;
     $self->SUPER::execute_empty;
     my($cookie) = $req->unsafe_get('cookie');
