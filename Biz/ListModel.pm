@@ -836,7 +836,7 @@ Returns true if is loaded.
 =cut
 
 sub internal_is_loaded {
-    return shift->[$_IDI]->{rows} ? 1 : 0;
+    return shift->is_loaded();
 }
 
 =for html <a name="internal_load"></a>
@@ -955,6 +955,18 @@ sub internal_set_cursor {
 	$self->set_cursor($cursor);
     }
     return;
+}
+
+=for html <a name="is_loaded"></a>
+
+=head2 is_loaded : boolean
+
+Has load been called?
+
+=cut
+
+sub is_loaded {
+    return shift->[$_IDI]->{rows} ? 1 : 0;
 }
 
 =for html <a name="is_empty_row"></a>
