@@ -21,7 +21,7 @@ sub AUTOLOAD {
     return if $func eq 'DESTROY';
     if ($func =~ /^[A-Z]/) {
 	$_UTIL = Bivio::IO::ClassLoader->map_require('ShellUtil', $func);
-	return @_ ? $_UTIL->main(@_) : ();
+	return @_ ? $_UTIL->main(@_) : $_UTIL;
     }
     die('you need to call a ShellUtil class first, e.g. RealmAdmin();')
 	unless $_UTIL;
