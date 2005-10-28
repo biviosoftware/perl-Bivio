@@ -56,16 +56,6 @@ sub get_delegate_info {
 	    Action.UserRedirect
 	    next=USER_ACCOUNT_EDIT
 	)],
-	# Overwrite default ADM_SUBSTITUTE_USER
-	[qw(
-	    ADM_SUBSTITUTE_USER
-	    11
-	    GENERAL
-	    ADMIN_READ&ADMIN_WRITE
-	    Model.AdmSubstituteUserForm
-            View.adm-substitute-user
-	    next=USER_ACCOUNT_EDIT
-	)],
 	[qw(
 	    PRODUCTS
 	    500
