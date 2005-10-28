@@ -142,14 +142,14 @@ sub get_delegate_info {
 	    ANYBODY
 	    Action.ViewAsPlainText
 	)],
-	# If this is used, you need to overwrite it.
 	[qw(
 	    ADM_SUBSTITUTE_USER
 	    11
 	    GENERAL
 	    ADMIN_READ&ADMIN_WRITE
-            Action.ClientRedirect->execute_next
-            next=SITE_ROOT
+	    Model.AdmSubstituteUserForm
+            View.adm-substitute-user
+	    next=MY_SITE
 	)],
 	# To make this visible, add this to Task section of your facade:
 	#   $t->group(FAVICON_ICO => '/favicon.ico');
