@@ -23,11 +23,13 @@ sub create_realm {
 	    realm_id => $req->get('auth_id'),
 	})->get('forum_id'),
     });
-    $self->new_other('RealmUser')->create({
-	realm_id => $self->get('forum_id'),
-	user_id => $admin_id,
-	role => Bivio::Auth::Role->ADMINISTRATOR,
-    });
+    foreach my $r (qw(ADMINISTRATOR MEMBER MAIL_RECIPIENT)) {
+	$self->new_other('RealmUser')->create({
+	    realm_id => $self->get('forum_id'),
+	    user_id => $admin_id,
+	    role => Bivio::Auth::Role->$r(),
+	});
+    }
     my($f) = $self->new_other('RealmFile');
     foreach my $v ($f->get_field_type('volume')->get_list) {
 	$f->create_folder({
