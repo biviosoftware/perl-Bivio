@@ -875,6 +875,7 @@ b-realm-role -r GENERAL -u user edit ADMINISTRATOR - \
     +DATA_WRITE \
     +MAIL_READ \
     +MAIL_WRITE
+b-realm-role -r GENERAL -u user edit MAIL_RECIPIENT -
 
 #
 # USER Permissions
@@ -902,6 +903,7 @@ b-realm-role -r USER -u user edit ACCOUNTANT - \
     +ADMIN_WRITE
 b-realm-role -r USER -u user edit ADMINISTRATOR - \
     +ACCOUNTANT
+b-realm-role -r USER -u user edit MAIL_RECIPIENT -
 
 #
 # CLUB Permissions
@@ -929,3 +931,4 @@ b-realm-role -r CLUB -u user edit ACCOUNTANT - \
     +ADMIN_WRITE
 b-realm-role -r CLUB -u user edit ADMINISTRATOR - \
     +ACCOUNTANT
+b-realm-role -r CLUB -u user edit MAIL_RECIPIENT -
