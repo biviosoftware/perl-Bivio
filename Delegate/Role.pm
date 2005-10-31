@@ -69,6 +69,10 @@ accountant: normal and financial transaction privileges
 
 administrator: all privileges
 
+=item MAIL_RECIPIENT
+
+wants to receive mail from forums
+
 =back
 
 You should extend this class if you have new Roles in your application.
@@ -106,46 +110,49 @@ Returns standard realm types.
 
 sub get_delegate_info {
     return [
-        'UNKNOWN' => [
+        UNKNOWN => [
             0,
             'Unknown',
             'user has yet to be authenticated',
         ],
-        'ANONYMOUS' => [
+        ANONYMOUS => [
             1,
             'Anonymous',
             'user not supplied with request or unable to authenticate',
         ],
-        'USER' => [
+        USER => [
             2,
             'Any User',
             'privileges of any authenticated user, not particular to realm',
         ],
-        'WITHDRAWN' => [
+        WITHDRAWN => [
             3,
             'Withdrawn Member',
             'very limited access to this realm',
         ],
-        'GUEST' => [
+        GUEST => [
             4,
             'Guest',
             'limited access to realm',
         ],
-        'MEMBER' => [
+        MEMBER => [
             5,
             'Member',
             'normal participant in realm',
         ],
-        'ACCOUNTANT' => [
+        ACCOUNTANT => [
             6,
             'Accountant',
             'normal and financial transaction privileges',
         ],
-        'ADMINISTRATOR' => [
+        ADMINISTRATOR => [
             7,
             'Administrator',
             'all privileges',
         ],
+	MAIL_RECIPIENT => [
+	    8,
+	],
     ];
 }
 
