@@ -175,7 +175,7 @@ sub mock_sendmail {
 	    unless defined($pid);
 	return if $pid;
     }
-    my($req) = $self->get_request;
+    my($req) = $self->initialize_ui;
     unless ($from =~ s/^-f//) {
 	$recipients = $from;
 	$from = undef;
@@ -195,9 +195,9 @@ sub mock_sendmail {
 	    . (Bivio::IO::ClassLoader
 	        ->simple_require('Bivio::Test::Language::HTTP')
 		->home_page_uri =~ m{http://([^/]+)})[0]
-	    . ($req->unsafe_get('facade')
+	    . ($req->unsafe_get('Bivio::UI::Facade')
 	       && Bivio::Agent::TaskId->unsafe_from_name('MAIL_RECEIVE_DISPATCH')
-	       && Bivio::UI::Text->has_uri('MAIL_RECEIVE_DISPATCH')
+	       && Bivio::UI::Task->has_uri('MAIL_RECEIVE_DISPATCH')
 	       ? $req->format_uri({
 		    task_id => 'MAIL_RECEIVE_DISPATCH',
 		    path_info => undef,
