@@ -862,6 +862,7 @@ sub _prepare_order_by {
 #
 sub _prepare_where {
     my($self, $query, $from_where, $where, $params) = @_;
+    _trace('from_where: ', $$from_where, "\n", 'where: ', $$where, "\n");
     my($attrs) = $self->internal_get;
 
     # Insert parent_id and auth_id
@@ -877,8 +878,10 @@ sub _prepare_where {
 	$$from_where =~ s/^\s*\bFROM\s+.*?(?:(?=\bWHERE\b)|$)//is
 	    || die($$from_where, ': bad where configuration');
 	push(@$params, @$qualifiers);
-#	$$from_where =~ s/^\s*WHERE\b/ AND/;
-	$$where .= $$from_where;
+	$$from_where =~ s/^\s*WHERE\b/ AND/
+	    if $$where =~ /WHERE\s*\w+/;
+	$$where .= ' ' . $$from_where;
+        _trace('new where: ', $$where, "\n");
 	$$where =~ s/\bWHERE\s+AND\b/AND/gis;
 	$$where =~ s/\bAND\s+WHERE\b/AND/gis;
 	$$where =~ s/\bWHERE\s+WHERE\b/WHERE/gis;
