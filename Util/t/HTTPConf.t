@@ -32,8 +32,10 @@ Bivio::Test->new('Bivio::Util::HTTPConf')->unit([
         mail_host => 'a2.com',
         http_suffix => 'a2.com',
         servers => 333,
+        limit_request_body => 1_000_000_000,
     },
     server_admin => 'default@default.com',
+    limit_request_body => 9999,
 };
 EOF
             sub {
@@ -42,10 +44,13 @@ EOF
 		$h->{listen} = 80;
 		# Doubles on the last round so matches 2 * sum(servers)
 		$h->{servers} = 0;
+		$h->{limit_request_body} = 0;
 		foreach my $app (grep(/^a\d+$/, sort(keys(%$vars))), 'httpd') {
 		    $h->{servers} += ($vars->{$app}->{servers} ||= 4);
+		    $h->{limit_request_body} = $vars->{$app}->{limit_request_body}
+			if $h->{limit_request_body} < ($vars->{$app}->{limit_request_body} || 0);
 		    foreach my $x (
-			["etc/httpd/conf/$app.conf", qw(listen server_admin servers)],
+			["etc/httpd/conf/$app.conf", qw(listen server_admin servers limit_request_body)],
 			["etc/$app.bconf", qw(cookie_tag http_suffix mail_host)],
 			["etc/rc.d/init.d/$app"],
 			["etc/logrotate.d/$app"],
