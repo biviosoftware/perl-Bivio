@@ -1,0 +1,68 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+my($root) = '/demo/dav';
+my($a) = {d1 => "$root/dav-btest"};
+$a->{d2} = "$a->{d1}.new";
+$a->{f1} = "$a->{d1}/a.txt";
+$a->{f2} = "$a->{d2}/a.txt";
+foreach my $x (reverse(sort(values(%$a)))) {
+    unsafe_op(sub {send_request(DELETE => $x)});
+}
+test_deviance(qr{not.found}i);
+foreach my $x (sort(values(%$a))) {
+    send_request(PROPFIND => $x);
+}
+send_request(DELETE => $a->{d1});
+test_conformance();
+send_request(MKCOL => $a->{d1});
+test_deviance('conflict');
+send_request(MKCOL => $a->{d1});
+test_deviance('forbidden');
+visit_uri($a->{d1});
+test_conformance();
+send_request(PUT => $a->{f1}, undef, my $content = "$$");
+visit_uri($a->{f1});
+verify_content_type('text/plain');
+die unless get_content() eq $content;
+send_request(PROPFIND => $root);
+die unless get_content() =~ m{$a->{d1}/<};
+send_request(PROPFIND => $a->{d1});
+die unless get_content() =~ m{\Q$a->{f1}<};
+send_request(MOVE => $a->{d1} => {
+    Destination => absolute_uri($a->{d2}),
+});
+send_request(PROPFIND => $root);
+die unless get_content() =~ m{\Q$a->{d2}/<};
+send_request(PROPFIND => $a->{d2});
+die unless get_content() =~ m{\Q$a->{f2}<};
+visit_uri($a->{f2});
+die unless get_content() eq $content;
+test_deviance(qr{not.found}i);
+visit_uri($a->{d1});
+visit_uri($a->{f1});
+test_conformance();
+send_request(MKCOL => $a->{d1});
+my($x) = absolute_uri($a->{d1});
+test_deviance(qr{precondition}i);
+send_request(MOVE => $a->{d2} => {
+    Overwrite => 'F',
+    Destination => $x,
+});
+test_conformance();
+send_request(PUT => $a->{f1}, undef, "$$.2");
+send_request(MOVE => $a->{d2} => {
+    Destination => absolute_uri($a->{d1}),
+});
+visit_uri($a->{f1});
+die unless get_content() eq $content;
+test_deviance(qr{not.found}i);
+visit_uri($a->{d2});
+visit_uri($a->{f2});
+test_conformance();
+send_request(COPY => $a->{d1} => {
+    Destination => absolute_uri($a->{d2}),
+});
+visit_uri($a->{f2});
+die unless get_content() eq $content;
