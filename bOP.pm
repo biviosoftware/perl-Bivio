@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Language::HTTP->send_request and absolute_uri added so you can
+    make arbitrary web requests (see dav.btest)
+  * Bivio::Agent::HTTP::Reply only calls set_last_modified if Last-Modified not set
+
+  Revision 3.37  2005/10/28 20:48:02  nagler
+  * Bivio::Util::Shell/b-shell enables batch execution of shell
+    utilities.  Here's an example:
+      b-shell batch <<'EOF'
+      HTTPPing(page => 'http://www.bivio.biz');
+      page('http://www.bivio.com');
+      EOF
+    The first use of a ShellUtil (map_required) imports it and changes
+    the "name space" to that method.  You can switch back and forth
+    between various utilities easily, and you save load time.  Another
+    use is for rpm spec files:
+
+      %pre -p b-shell batch
+      LinuxConfig();
+      add_user('joe:29');
+      add_user('mary:30');
   * Bivio::Delegate::SimpleTaskId->ADM_SUBSTITUTE_USER includes a
     view (adm-substitute-user.bview).
   * Bivio::Biz::ListModel->is_loaded is added.
