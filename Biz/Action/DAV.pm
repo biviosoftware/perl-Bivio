@@ -27,8 +27,6 @@ my($_FP) = Bivio::Biz::Model->get_instance('RealmFile')->get_field_type('path');
 
 sub execute {
     my($proto, $req) = @_;
-    $req->set_user(
-	Bivio::Biz::Model->new($req, 'RealmUser')->get_any_online_admin);
     my($s) = {
 	proto => $proto,
 	file => Bivio::Biz::Model->new($req, 'RealmFile'),
@@ -36,6 +34,7 @@ sub execute {
 	reply => $req->get('reply'),
 	r => $req->get('r'),
 	method => $req->get('r')->method,
+	role => _role($req),
     };
     my($p, $e) = $_FP->from_literal($req->get('path_info') || '/');
     return _output($s, BAD_REQUEST => 'Invalid resource name: ' . $req->get('path_info'))
@@ -131,6 +130,10 @@ sub _dav_get {
 
 sub _dav_head {
     return _dav_get(@_);
+}
+
+sub _dav_lock {
+    return _output(shift(@_), HTTP_OK => 'Locked');
 }
 
 sub _dav_mkcol {
@@ -243,6 +246,10 @@ sub _dav_put {
     return _output($s, HTTP_OK => "$op $s->{path}");
 }
 
+sub _dav_unlock {
+    return _output(shift(@_), HTTP_OK => 'Unlocked');
+}
+
 sub _depth {
     my($s) = @_;
     my($x) = $s->{r}->header_in('depth');
@@ -254,6 +261,7 @@ sub _file_args {
     return {
 	volume => $s->{req}->get('Type.FileVolume'),
 	path => $s->{path},
+	_public_only($s) ? (is_public => 1) : (),
     };
 }
 
@@ -276,10 +284,7 @@ sub _format_http {
 sub _other_op {
     my($s) = @_;
     return _output(
-	$s,
-	$s->{method} =~ /^(LOCK|UNLOCK)$/
-	    ? (HTTP_OK => '')
-	    : (HTTP_NOT_IMPLEMENTED => 'does not support: ' . $s->{method}));
+	$s, (HTTP_NOT_IMPLEMENTED => 'does not support: ' . $s->{method}));
 }
 
 sub _output {
@@ -301,6 +306,8 @@ sub _output {
 
 sub _precondition {
     my($s) = @_;
+    return _output($s, FORBIDDEN => 'Write operations not permitted')
+	if _read_only($s) && $s->{method} =~ /^(COPY|DELETE|EDIT|LOCK|MKCOL|PROPPATCH|PUT|UNLOCK)$/i;
     my($exists) = $s->{file}->is_loaded;
     foreach my $x (
 	['if-non-match' => sub {
@@ -357,6 +364,23 @@ sub _propfind_render {
 	       "</D:$t>\n"
 	   ) : "<D:$t/>\n";
     } @_);
+}
+
+sub _public_only {
+    return shift->{role} eq 'ANONYMOUS';
+}
+
+sub _read_only {
+    return shift->{role} ne 'ADMINISTRATOR';
+}
+
+sub _role {
+    my($req) = @_;
+    foreach my $r (qw(ADMINISTRATOR MEMBER)) {
+	return $r
+	    if grep($_->equals_by_name($r), @{$req->get('auth_roles')});
+    }
+    return 'ANONYMOUS';
 }
 
 1;
