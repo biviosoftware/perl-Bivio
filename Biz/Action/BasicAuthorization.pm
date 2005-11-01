@@ -1,6 +1,6 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Biz::Action::BasicAuth;
+package Bivio::Biz::Action::BasicAuthorization;
 use strict;
 use base 'Bivio::Biz::Action';
 use Bivio::Ext::ApacheConstants;
