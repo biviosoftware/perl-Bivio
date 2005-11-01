@@ -91,6 +91,23 @@ sub new {
 
 =cut
 
+=for html <a name="absolute_uri"></a>
+
+=head2 absolute_uri(string uri)
+
+Clear the cookies
+
+=cut
+
+sub absolute_uri {
+    my($self, $uri) = @_;
+    my($u) = URI->new($uri);
+    return defined($u->scheme) ? $uri : $u->abs(
+	$self->[$_IDI]->{uri}
+	|| Bivio::Die->die($uri, ': unable to make absolute; no prior URI')
+    )->as_string;
+}
+
 =for html <a name="clear_cookies"></a>
 
 =head2 clear_cookies()
@@ -490,6 +507,26 @@ sub reload_page {
     return;
 }
 
+=for html <a name="send_request"></a>
+
+=head2 send_request(string method, string uri, array_ref header, $content)
+
+Wraps HTTP::Request
+
+=cut
+
+sub send_request {
+    my($self, $method, $uri, $header, $content) = @_;
+    _send_request(
+	$self, HTTP::Request->new(
+	    $method => $self->absolute_uri($uri),
+	    $header ? ref($header) eq 'ARRAY' ? $header : [%$header] : undef,
+	    $content,
+	),
+    );
+    return;
+}
+
 =for html <a name="submit_form"></a>
 
 =head2 submit_form(string submit_button, hash_ref form_fields, string expected_content_type)
@@ -523,7 +560,7 @@ sub submit_form {
     _send_request($self,
 	_create_form_request(
 	    $self, uc($form->{method}),
-	    _fixup_uri($self, $form->{action}),
+	    $self->absolute_uri($form->{action}),
             _format_form($form, $submit_button, $form_fields)));
     _assert_form_response($self, $expected_content_type);
     return;
@@ -886,7 +923,7 @@ Loads the page using the specified URI.
 sub visit_uri {
     my($self, $uri) = @_;
     _trace($uri) if $_TRACE;
-    _send_request($self, HTTP::Request->new(GET => _fixup_uri($self, $uri)));
+    _send_request($self, HTTP::Request->new(GET => $self->absolute_uri($uri)));
     return;
 }
 
@@ -977,19 +1014,6 @@ sub _find_row {
     my($self, $table_name, $find_heading, $find_value) = @_;
     return _assert_html($self)->get('Tables')->find_row(
 	$table_name, $find_heading, $find_value);
-}
-
-# _fixup_uri(self, string uri) : string
-#
-# Add in the current URI prefix if not present.
-#
-sub _fixup_uri {
-    my($self, $uri) = @_;
-    my($u) = URI->new($uri);
-    return defined($u->scheme) ? $uri : $u->abs(
-	$self->[$_IDI]->{uri}
-	|| Bivio::Die->die($uri, ': unable to make absolute; no prior URI')
-    )->as_string;
 }
 
 # _format_form(hash_ref form, string submit,  hash_ref form_fields) : array_ref
@@ -1120,10 +1144,15 @@ sub _send_request {
 	$fields->{cookies}->extract_cookies($fields->{response});
 	my($uri) = $fields->{response}->as_string
 	    =~ /(?:^|\n)Location: (\S*)/si;
-	$request = HTTP::Request->new(GET => _fixup_uri($self, $uri));
+	$request = HTTP::Request->new(GET => $self->absolute_uri($uri));
     }
-    Bivio::Die->die("uri request failed: ", $request->uri)
-	unless $fields->{response}->is_success;
+    Bivio::Die->die(
+	$request->uri,
+	': uri request failed: ',
+	$fields->{response}->code,
+	' ',
+	$fields->{response}->message,
+    ) unless $fields->{response}->is_success;
 
     $fields->{cookies}->extract_cookies($fields->{response});
     $fields->{html_parser} =
