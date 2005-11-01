@@ -435,9 +435,13 @@ EOF
 	),
     );
     my($n) = 0;
-    foreach my $i (map($vars->{$_}->{servers}, @{$vars->{apps}})) {
-	$n += $i;
+    my($max) = 0;
+    foreach my $s (@{$vars->{apps}}) {
+	$n += $vars->{$s}->{servers};
+	$max = $vars->{$s}->{limit_request_body}
+	    if $vars->{$s}->{limit_request_body} > $max;
     }
+    $v->{limit_request_body} = $max;
     $v->{server_admin} ||= $vars->{server_admin}
 	|| 'webmaster@' . $v->{host_name};
     $v->{servers} = $n * 2;
