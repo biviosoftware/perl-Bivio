@@ -307,7 +307,7 @@ sub _output {
 sub _precondition {
     my($s) = @_;
     return _output($s, FORBIDDEN => 'Write operations not permitted')
-	if _read_only($s) && $s->{method} =~ /^(COPY|DELETE|EDIT|LOCK|MKCOL|PROPPATCH|PUT|UNLOCK)$/i;
+	if _read_only($s) && $s->{method} =~ /^(COPY|DELETE|EDIT|LOCK|MKCOL|MOVE|PROPPATCH|PUT|UNLOCK)$/i;
     my($exists) = $s->{file}->is_loaded;
     foreach my $x (
 	['if-non-match' => sub {

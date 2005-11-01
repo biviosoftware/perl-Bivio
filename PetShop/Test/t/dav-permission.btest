@@ -5,12 +5,16 @@ home_page();
 visit_uri('/demo/public-dav/pub/file.txt');
 send_request(PROPFIND => '/demo/public-dav/pub');
 get_content() =~ />file.txt</ || die;
+my($x) = absolute_uri('/demo/public-dav/pub2');
 my($forbidden) = sub {
     test_deviance(qr{forbidden}i);
     send_request(MKCOL => "/demo/public-dav/pub/dav-permission.$$");
     send_request(PUT => "/demo/public-dav/pub/dav-permission.$$", undef, '');
     send_request(DELETE => '/demo/public-dav/pub/file.txt');
     send_request(LOCK => '/demo/public-dav/pub');
+    send_request(MOVE => '/demo/public-dav/pub', {
+	Destination => $x,
+    });
     test_deviance(qr{not.found}i);
     send_request(OPTIONS => '/demo/public-dav/private');
     visit_uri('/demo/public-dav/private/file.html');
