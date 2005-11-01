@@ -377,7 +377,7 @@ sub get_delegate_info {
 	    PUBLIC_USER_DAV
 	    536
 	    USER
-	    ANYBODY
+	    TEST_TRANSIENT
 	    Type.FileVolume->execute_plain
 	    Action.DAV
 	)],
