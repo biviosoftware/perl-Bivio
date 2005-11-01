@@ -1,5 +1,5 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# $Id$p
 package Bivio::Biz::Action::DAV;
 use strict;
 use base 'Bivio::Biz::Action::RealmFile';
@@ -82,7 +82,7 @@ sub _content {
 
 sub _copy_move {
     my($s) = @_;
-    my($d) = $s->{r}->header_in('destination');
+    my($d) = Bivio::HTML->unescape_uri($s->{r}->header_in('destination') || '');
     return _output($s, BAD_REQUEST => "cannot move across servers: $d")
 	unless $d =~ s/^\Q@{[_format_http($s)]}//;
     $s->{dest} = ($_FP->from_literal($d))[0];
@@ -94,36 +94,48 @@ sub _copy_move {
 	    path => $s->{dest},
 	});
     return _output($s, HTTP_PRECONDITION_FAILED => 'Destination exists')
-	unless $s->{r}->header_in('overwrite');
-    return _output($s, FORBIDDEN => 'Destination cannot be a directory')
-	if $s->{dest_file}->get('is_folder');
+	if ($s->{r}->header_in('overwrite') || 'T') =~ /f/i;
+    $s->{dest_file}->delete_deep;
+    $s->{dest_existed} = 1;
     return;
+}
+
+sub _dav_copy {
+    my($s) = @_;
+    return 1
+	if _copy_move($s);
+    return _output($s, HTTP_NOT_IMPLEMENTED => 'Depth 0 unsupported for COPY')
+	unless _depth($s);
+    $s->{file}->copy_deep($s->{dest});
+    return _output($s, $s->{dest_existed} ? 'HTTP_NO_CONTENT' : 'HTTP_CREATED');
 }
 
 sub _dav_delete {
     my($s) = @_;
-    return if _is_not_empty($s);
-    $s->{file}->delete;
+    $s->{file}->delete_deep;
     return _output($s, 'HTTP_OK');
 }
 
 sub _dav_edit {
     my($s) = @_;
-    return _output($s, FORBIDDEN => 'is a directory')
-	if $s->{file}->get('is_folder');
     return _output(
 	$s, HTTP_OK => $s->{file}->get_content_type, $s->{file}->get_handle);
 }
 
 sub _dav_get {
     my($s) = @_;
+    $s->{reply}->set_last_modified($s->{file}->get('modified_date_time'));
     return _output(
 	$s, HTTP_OK => $s->{file}->get_content_type, $s->{file}->get_handle);
 }
 
+sub _dav_head {
+    return _dav_get(@_);
+}
+
 sub _dav_mkcol {
     my($s) = @_;
-    return _output($s, FORBIDDEN => 'already exists')
+    return _output($s, HTTP_CONFLICT => 'already exists')
 	if $s->{file}->is_loaded;
     return _output($s, 'HTTP_UNSUPPORTED_MEDIA_TYPE')
 	if length($s->{content});
@@ -135,13 +147,11 @@ sub _dav_move {
     my($s) = @_;
     return 1
 	if _copy_move($s);
-    $s->{dest_file}->delete
-	if my $exists = $s->{dest_file}->is_loaded;
     $s->{file}->update({
 	%{_file_args($s)},
 	path => $s->{dest},
     });
-    return _output($s, $exists ? 'HTTP_NO_CONTENT' : 'HTTP_CREATED');
+    return _output($s, $s->{dest_existed} ? 'HTTP_NO_CONTENT' : 'HTTP_CREATED');
 }
 
 sub _dav_options {
@@ -160,7 +170,7 @@ sub _dav_options {
 
 sub _dav_propfind {
     my($s) = @_;
-    my($depth) = $s->{r}->header_in('depth') || 'infinity';
+    my($depth) = _depth($s);
     my($noroot) = $depth =~ s/\s*,\s*noroot//
 	|| $s->{content} =~ /schemas-microsoft/;
     # We don't recurse
@@ -178,8 +188,9 @@ sub _dav_propfind {
 			 [href => _format_http($s, $x)],
 			 [propstat => [
 			     [prop => [
-				 [displayname => Bivio::HTML->escape(
-				     $x->{path} =~ m{([^/]+)$})],
+				 [displayname => Bivio::Type::String->to_xml(
+				     $x->{path} =~ m{([^/]+)$},
+				 )],
 				 # MS
 				 [isroot => $x->{isroot} || '0'],
 				 [getlastmodified => $_DT->rfc822(
@@ -232,6 +243,12 @@ sub _dav_put {
     return _output($s, HTTP_OK => "$op $s->{path}");
 }
 
+sub _depth {
+    my($s) = @_;
+    my($x) = $s->{r}->header_in('depth');
+    return defined($x) && length($x) ? $x : 'infinity';
+}
+
 sub _file_args {
     my($s) = @_;
     return {
@@ -244,7 +261,7 @@ sub _format_http {
     my($s, $x) = @_;
     $x = {
 	path => '/',
-	is_foler => 0,
+	is_folder => 0,
     } unless $x;
     my($res) = $s->{req}->format_http({
 	task_id => $s->{req}->get('task_id'),
@@ -254,13 +271,6 @@ sub _format_http {
     # Must match what the user asked for exactly
     $res =~ s{^(https?://)[^/:]+}{$1@{[$s->{r}->hostname]}} || die;
     return $res;
-}
-
-sub _is_not_empty {
-    my($s) = @_;
-    return _output($s, FORBIDDEN => "Folder is not empty: $s->{path}")
-	unless $s->{file}->is_empty;
-    return;
 }
 
 sub _other_op {
@@ -275,6 +285,8 @@ sub _other_op {
 sub _output {
     my($s, $status, $msg_or_type, $buf) = @_;
     my($n) = Bivio::Ext::ApacheConstants->$status();
+    Bivio::IO::Alert->warn($status, ' ', $msg_or_type)
+        if $status =~ /HTTP_PRECONDITION_FAILED|BAD_REQUEST|HTTP_NOT_IMPLEMENTED|HTTP_NOT_MODIFIED|HTTP_REQUEST_ENTITY_TOO_LARGE|FORBIDDEN|HTTP_CONFLICT/;
     $status =~ s/_/-/g;
     $s->{reply}->set_http_status($n)
 	->set_output_type(
@@ -328,8 +340,10 @@ sub _precondition {
     }
     return _output($s, NOT_FOUND => "Resource does not exist: $s->{path}")
 	unless $exists || $s->{method} !~ /^(BROWSE|COPY|DELETE|EDIT|GET|HEAD|LOCK|MOVE|OPTIONS|PROPFIND|PROPPATCH|UNLOCK)$/i;
-    return _output($s, FORBIDDEN => 'Cannot operate on rooot')
+    return _output($s, FORBIDDEN => 'Cannot operate on root directory')
 	if $s->{path} eq '/' && $s->{method} =~ /^(COPY|DELETE|EDIT|MOVE|PUT|SAVE)$/;
+    return _output($s, FORBIDDEN => "Resource is a directory: $s->{path}")
+	if $exists && $s->{file}->get('is_folder') && $s->{method} =~ /^(EDIT|SAVE|GET|HEAD|PUT)$/;
     return;
 }
 
