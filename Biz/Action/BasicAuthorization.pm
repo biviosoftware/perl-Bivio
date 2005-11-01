@@ -20,6 +20,8 @@ sub execute {
 	    $f->validate($u, $p);
 	    unless ($f->in_error) {
 		$req->set_user($f->get('realm_owner'));
+		$req->get('r')->connection->user(
+		    'ba-' . $req->get('auth_user_id'));
 		return 0;
 	    }
 	    else {
