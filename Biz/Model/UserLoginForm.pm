@@ -232,13 +232,19 @@ sub substitute_user {
 
 =head2 validate()
 
+=head2 validate(string login, string password)
+
 Checks the form property values.  Puts errors on the fields
 if there are any.
 
 =cut
 
 sub validate {
-    my($self) = @_;
+    my($self, $login, $password) = @_;
+    if (@_ == 3) {
+	$self->internal_put_field(login => $login);
+	$self->internal_put_field('RealmOwner.password' => $password);
+    }
     return if $self->in_error;
 
     my($owner) = $self->validate_login;
@@ -258,6 +264,8 @@ sub validate {
 
 =for html <a name="validate_login"></a>
 
+=head2 validate_login() : Bivio::Biz::Model
+
 =head2 static validate_login(Bivio::Biz::FormModel model) : Bivio::Biz::Model
 
 Looks at I<login> field of I<model> and loads.
@@ -268,18 +276,18 @@ I<self>.
 
 sub validate_login {
     my($proto, $model) = @_;
-    $model ||= $proto;
-    $model->internal_put_field(validate_called => 1);
-    my($login) = $model->get('login');
+    my($self) = $model || $proto;
+    $self->internal_put_field(validate_called => 1);
+    my($login) = $self->get('login');
     return undef
 	unless defined($login);
-    my($owner) = $model->new_other('RealmOwner');
+    my($owner) = $self->new_other('RealmOwner');
     return $owner
-	if $owner->unauth_load_by_email_id_or_name($model->get('login'))
+	if $owner->unauth_load_by_email_id_or_name($self->get('login'))
 	    && !$owner->is_offline_user
 	    && !$owner->is_default
 	    && $owner->get('realm_type') == Bivio::Auth::RealmType->USER;
-    $model->internal_put_error(login => 'NOT_FOUND');
+    $self->internal_put_error(login => 'NOT_FOUND');
     return undef;
 }
 
