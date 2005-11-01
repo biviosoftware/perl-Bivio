@@ -1,0 +1,25 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+visit_uri('/demo/public-dav/pub/file.txt');
+send_request(PROPFIND => '/demo/public-dav/pub');
+get_content() =~ />file.txt</ || die;
+my($forbidden) = sub {
+    test_deviance(qr{forbidden}i);
+    send_request(MKCOL => "/demo/public-dav/pub/dav-permission.$$");
+    send_request(PUT => "/demo/public-dav/pub/dav-permission.$$", undef, '');
+    send_request(DELETE => '/demo/public-dav/pub/file.txt');
+    send_request(LOCK => '/demo/public-dav/pub');
+    test_deviance(qr{not.found}i);
+    send_request(OPTIONS => '/demo/public-dav/private');
+    visit_uri('/demo/public-dav/private/file.html');
+    test_conformance();
+};
+test_deviance(qr{authorization}i);
+send_request(OPTIONS => '/demo/dav');
+$forbidden->();
+basic_authorization('guest');
+visit_uri('/demo/dav/private/file.html');
+send_request(PROPFIND => '/demo/dav/private');
+$forbidden->();
