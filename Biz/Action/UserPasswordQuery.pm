@@ -9,7 +9,7 @@ my($_KEY) = 'x';
 
 sub execute {
     my($proto, $req) = @_;
-    my($pw) = delete($req->get('query')->{$_KEY});
+    my($pw) = delete(($req->get('query') || {})->{$_KEY});
     my($u) = $req->get_nested(qw(auth_realm owner));
     if (Bivio::Die->catch(sub {
 	Bivio::Die->throw_quietly('invalid password in query')
