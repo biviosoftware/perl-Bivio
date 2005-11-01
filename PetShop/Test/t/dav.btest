@@ -2,6 +2,7 @@
 # $Id$
 test_setup('PetShop');
 home_page();
+basic_authorization('demo');
 my($root) = '/demo/dav';
 my($a) = {d1 => "$root/dav-btest"};
 $a->{d2} = "$a->{d1}.new";
