@@ -145,7 +145,8 @@ sub send {
     }
     else {
 	# Files read from disk are never private
-	$self->set_last_modified((stat(_))[9]);
+	$self->set_last_modified((stat(_))[9])
+	    unless $fields->{headers} && $fields->{headers}->{'Last-Modified'};
     }
 
     # Don't keep the connection open on normal replies
