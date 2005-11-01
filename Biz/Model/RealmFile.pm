@@ -11,6 +11,44 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_P) = Bivio::Type->get_instance('FilePath');
 our($_TRACE);
 
+sub copy_deep {
+    my($self, $dest) = @_;
+    $dest = $_P->from_literal_or_die($dest);
+    my($v) = $self->get_shallow_copy;
+    $v->{path} = $dest;
+    delete($v->{realm_file_id});
+    my($new) = $self->new;
+    $new->SUPER::create(_fix_values($new, $v));
+    if ($self->is_empty) {
+	$new->put_content($self->get_content)
+	    unless $self->get('is_folder');
+	return;
+    }
+    my($old_length) = length($self->get('path'));
+    my($size) = 0;
+    foreach my $x (@{$self->map_folder_deep(
+	sub {
+	    my($it) = @_;
+	    my($res) = $it->get_shallow_copy;
+	    unless ($res->{is_folder}) {
+		$res->{content} = $it->get_content;
+		$it->throw_die(NO_RESOURCES => {message => 'copy too large'})
+		    if ($size += length(${$res->{content}})) > 30_000_000;
+	    }
+	    return $res;
+	},
+    )}) {
+	delete($x->{realm_file_id});
+	my($c) = delete($x->{content});
+	$x->{path} = $dest . substr($x->{path}, $old_length);
+	$x->{_parent_folder_exists} = 1;
+	$new->SUPER::create(_fix_values($new, $x));
+	$new->put_content($c)
+	    if $c;
+    }
+    return;
+}
+
 sub create {
     die('unsupported; call create_with_content');
 }
@@ -61,6 +99,24 @@ sub delete_all {
     $req->set_realm($realm)
 	if $realm;
     return @res;
+}
+
+sub delete_deep {
+    my($self) = @_;
+    _assert_not_root($self);
+    return $self->delete
+	if $self->is_empty;
+    foreach my $x (reverse(@{$self->map_folder_deep(
+	sub {
+	    my($it) = shift;
+	    return $it->new->unauth_load_or_die({
+		realm_file_id => $it->get('realm_file_id'),
+	    });
+	},
+    )})) {
+	$x->delete;
+    }
+    return $self->delete;
 }
 
 sub get_content {
@@ -196,6 +252,7 @@ sub update {
 	    qw(realm_id volume path),
 	) ? $self->map_folder_deep(sub {shift->get('realm_file_id')})
 	: [];
+    my($old_length) = length($self->get('path_lc'));
     my(@res) = $self->SUPER::update(_fix_values($self, $values));
     foreach my $cid (@$children) {
 	my($child) = $self->new;
@@ -207,8 +264,7 @@ sub update {
 	    $method eq 'update' ? (_parent_folder_exists => 1) : (),
 	    map(($_ => $child->get($_)), qw(modified_date_time)),
 	    map(($_ => $self->get($_)), qw(realm_id volume)),
-	    map(($_ => $self->get($_)
-	        . substr($child->get($_), length($self->get($_)) - 1)),
+	    map(($_ => $self->get($_) . substr($child->get($_), $old_length)),
 		qw(path path_lc),
 	    ),
 	});
@@ -219,6 +275,13 @@ sub update {
 sub update_with_content {
     my($self, $values, $content) = @_;
     return _unlink($self)->put_content($content)->update($values || {});
+}
+
+sub _assert_not_root {
+    my($self) = @_;
+    $self->die('cannot perform operation on root')
+	if $self->get('path') eq '/';
+    return;
 }
 
 sub _create {

@@ -11,7 +11,8 @@ my($commit) = sub {commit(); return 1};
 	compute_params => sub {
 	    my(undef, $params, $method) = @_;
 	    return [
-		ref($params->[0]) =~ /^(HASH|CODE)$/ ? () : {
+		defined($params->[0]) && ref($params->[0]) =~ /^(HASH|CODE|)$/
+		? () : {
 		    volume => $vt,
 		    path => 'hello',
 		},
@@ -89,6 +90,15 @@ my($commit) = sub {commit(); return 1};
 		volume => $vt,
 	    }, \('subsubhello')] => $commit,
 	],
+	load => [
+	    [{
+		path => '/newdir/subSubdir/Hello',
+		volume => $vt,
+	    }] => not_die(),
+	],
+	get_content => [
+	   [] => [\('subsubhello')],
+	],
 	create_folder => [
 	    [{
 		path => '/newdir/subsubdir/subsubsubdir',
@@ -106,18 +116,62 @@ my($commit) = sub {commit(); return 1};
 	    ]],
 	],
 	update => [
-	    [{path => '/Newdir2'}] => $commit,
+	    [{path => '/RealmFile.bunit'}] => $commit,
 
 	],
 	map_folder_deep => [
 	    [sub {
 		 return shift->get('path');
 	    }] => [[qw(
-                /Newdir2/subSubdir
-                /Newdir2/subSubdir/Hello
-                /Newdir2/subSubdir/subsubsubdir
+                /RealmFile.bunit/subSubdir
+                /RealmFile.bunit/subSubdir/Hello
+                /RealmFile.bunit/subSubdir/subsubsubdir
 	    )]],
 	],
+	copy_deep => [
+	    '/newdir-copy' => $commit,
+	],
+	load => [
+	    [{path => '/newdir-copy'}] => not_die(),
+	],
+	map_folder_deep => [
+	    [sub {
+		 return shift->get('path');
+	    }] => [[qw(
+                /newdir-copy/subSubdir
+                /newdir-copy/subSubdir/Hello
+                /newdir-copy/subSubdir/subsubsubdir
+	    )]],
+	],
+	load => [
+	    [{
+		path => '/realmfile.bunit/subsubdir/hello',
+		volume => $vt,
+	    }] => not_die(),
+	],
+	get_content => [
+	    [] => [\('subsubhello')],
+	],
+	copy_deep => [
+	    ['/subsubhello-copy'] => $commit,
+	],
+	load => [
+	    [{path => '/subsubhello-copy'}] => not_die(),
+	],
+	get_content => [
+	    [] => [\('subsubhello')],
+	],
+	copy_deep => [
+	    ['/subsubhello-copy'] => DB_CONSTRAINT(),
+	],
+	delete_deep => $commit,
+	load => [
+	    [{path => '/subsubhello-copy'}] => MODEL_NOT_FOUND(),
+	],
+	load => [
+	    [{path => '/newdir-copy'}] => not_die(),
+	],
+	delete_deep => $commit,
     ],
     class() => [
 	delete_all => [
