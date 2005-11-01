@@ -97,6 +97,18 @@ sub GUEST {
     return 'guest';
 }
 
+=for html <a name="MULTI_ROLE_USER"></a>
+
+=head2 MULTI_ROLE_USER : string
+
+Test super user
+
+=cut
+
+sub MULTI_ROLE_USER {
+    return 'multi_role_user';
+}
+
 =for html <a name="PASSWORD"></a>
 
 =head2 PASSWORD : string
@@ -184,7 +196,7 @@ Returns list of demo users.
 sub demo_users {
     my($self) = @_;
     return [
-	$self->DEMO, $self->GUEST, qw(multi_role_user),
+	$self->DEMO, $self->GUEST, $self->MULTI_ROLE_USER,
 	$self->get_request->is_production ? () : ($self->ROOT),
     ];
 }
@@ -385,6 +397,7 @@ sub _init_demo_files {
 sub _init_demo_users {
     my($self) = @_;
     my($req) = $self->get_request;
+    my($demo_id);
     foreach my $u (@{$self->demo_users()}) {
 	$self->print("Created user $u\@bivio.biz\n");
 	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
@@ -405,20 +418,32 @@ sub _init_demo_users {
 	$req->get('auth_user')->update({
 	    name => $u,
 	});
-	if ($u eq 'multi_role_user') {
+	my($uid) = $req->get('auth_user_id');
+	if ($u eq $self->DEMO) {
+	    $demo_id = $uid;
+	}
+	elsif ($u eq $self->ROOT) {
+	    Bivio::Biz::Util::RealmRole->make_super_user;
+	}
+	elsif ($u eq $self->GUEST) {
+            Bivio::Biz::Model->new($req, 'RealmUser')->create({
+                realm_id => $demo_id || die('DEMO must come before GUEST'),
+                user_id => $uid,
+                role => Bivio::Auth::Role->MEMBER,
+            });
+	}
+	elsif ($u eq $self->MULTI_ROLE_USER) {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
                 realm_id => Bivio::Auth::Realm->get_general->get('id'),
-                user_id => $req->get('auth_user_id'),
+                user_id => $uid,
                 role => Bivio::Auth::Role->TEST_ROLE1,
             });
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
                 realm_id => Bivio::Auth::Realm->get_general->get('id'),
-                user_id => $req->get('auth_user_id'),
+                user_id => $uid,
                 role => Bivio::Auth::Role->TEST_ROLE2,
             });
 	}
-	Bivio::Biz::Util::RealmRole->make_super_user
-	    if $u eq $self->ROOT;
     }
     return;
 }
