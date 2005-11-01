@@ -74,6 +74,7 @@ my($_VARS) = {
     servers => 4,
     httpd_init_rc => '/etc/rc.d/init.d/httpd',
     httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
+    limit_request_body => 4194304,
     # Users can supply certain params here
     httpd => my $_HTTPD_VARS = {
 	app => 'httpd',
@@ -313,7 +314,7 @@ MaxSpareServers $servers
 StartServers $servers
 MaxClients $servers
 MaxRequestsPerChild 100000
-LimitRequestBody 4194304
+LimitRequestBody $limit_request_body
 
 ServerRoot /etc/httpd
 PidFile $pid_file
