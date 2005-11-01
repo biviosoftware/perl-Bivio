@@ -386,7 +386,7 @@ sub get_delegate_info {
 	    537
 	    USER
 	    TEST_TRANSIENT
-	    Action.BasicAuth
+	    Action.BasicAuthorization
 	    Type.FileVolume->execute_plain
 	    Action.DAV
 	)],
