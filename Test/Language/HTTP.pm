@@ -108,6 +108,20 @@ sub absolute_uri {
     )->as_string;
 }
 
+=for html <a name="basic_authorization"></a>
+
+=head2 basic_authorization(string user, string password)
+
+=cut
+
+sub basic_authorization {
+    my($self, $user, $password) = @_;
+    $self->put(Authorization =>
+        'Basic ' . MIME::Base64::encode(
+	    $user . ':' . ($password || $self->default_password)));
+    return;
+}
+
 =for html <a name="clear_cookies"></a>
 
 =head2 clear_cookies()
@@ -1133,6 +1147,8 @@ sub _send_request {
     shift(@{$fields->{history}})
 	while @{$fields->{history}} > $fields->{history_length};
     while () {
+	$request->header(Authorization => $self->get('Authorization'))
+	    if $self->has_keys('Authorization');
 	$fields->{uri} = $request->uri->as_string;
 	$fields->{cookies}->add_cookie_header($request);
 	_log($self, 'req', $request);
