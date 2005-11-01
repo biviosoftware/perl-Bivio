@@ -15,8 +15,8 @@ sub from_literal {
 	unless $v =~ m{\S};
     $v =~ s{/^\s+|\s+$|^/+|/+$}{}g;
     $v =~ s{/+}{/}g;
-    # No leading dots or specials except forward '/' and not '%' (see to_os)
-    return $v =~ m{(?:^|/)\.|\.$|[\\\:*?"<>\|\0-\037\177]}
+    # No specials except forward '/'
+    return $v =~ m{(?:^|/)\.\.?$|[\\\:*?"<>\|\0-\037\177]}
 	? (undef, Bivio::TypeError->FILE_PATH) : "/$v";
 }
 
