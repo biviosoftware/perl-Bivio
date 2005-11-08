@@ -246,7 +246,6 @@ sub edit_categories {
     my($req) = $self->get_request;
     my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
     my($o) = $req->get('auth_realm')->get('owner');
-    $self->lock_realm;
     foreach my $category_op (@$category_ops) {
 	my($op, $cat) = $category_op =~ /^(-|\+)(\w+)$/;
 	$self->usage_error($_, ': unknown category operation')
