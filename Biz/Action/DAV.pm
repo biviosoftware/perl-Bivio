@@ -2,7 +2,7 @@
 # $Id$p
 package Bivio::Biz::Action::DAV;
 use strict;
-use base 'Bivio::Biz::Action::RealmFile';
+use base 'Bivio::Biz::Action';
 use Bivio::Type::FileName;
 use Bivio::IO::Trace;
 use Bivio::Biz::Model;
@@ -37,8 +37,9 @@ sub execute {
 	role => _role($req),
     };
     my($p, $e) = $_FP->from_literal($req->get('path_info') || '/');
-    return _output($s, BAD_REQUEST => 'Invalid resource name: ' . $req->get('path_info'))
-	if $e;
+    return _output(
+	$s, BAD_REQUEST => 'Invalid resource name: ' . $req->get('path_info'),
+    ) if $e;
     $s->{path} = $p;
     $s->{file}->unsafe_load(_file_args($s));
     my($op) = \&{'_dav_' . lc($s->{method})};
