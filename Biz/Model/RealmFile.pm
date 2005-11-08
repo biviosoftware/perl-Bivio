@@ -350,8 +350,8 @@ sub _map_folder {
 	map(($_ => $self->get($_)),
 	    'volume',
 	    'realm_id',
-	    %{$query || {}},
 	),
+	%{$query || {}},
     });
 }
 
