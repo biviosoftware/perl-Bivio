@@ -261,7 +261,7 @@ sub render {
 	. $fields->{handler}->get_html_field_attributes($field, $source)
 	if $fields->{handler};
     $$buffer .= ' size="' .$self->get_or_default('size', 1) . '"';
-    $$buffer .= ' disabled'
+    $$buffer .= ' disabled="1"'
 	if $self->get_or_default('disabled', 0);
     $$buffer .= ' onchange="submit()"' if $fields->{auto_submit};
     $$buffer .= ">\n";
@@ -269,13 +269,11 @@ sub render {
     my($items) = $fields->{choices}
 	    ? _load_items($self, $req->get_widget_value(@{$fields->{choices}}))
 	    : $fields->{items};
-    my($field_value) = $form->get($field);
-
-    $field_value = '' unless defined($field_value);
-    $field_value = $field_value->as_int if ref($field_value);
+    my($field_value) = $form->get_field_type($field)->to_html(
+	$form->get($field));
     my($editable) = $form->is_field_editable($field)
-	    || $field_value eq '';
-
+#TODO: Why this?
+	|| $field_value eq '';
     for (my($i) = 0; $i < int(@$items); $i += 2) {
 	my($v) = $items->[$i];
 	if ($editable || $field_value eq $v) {
