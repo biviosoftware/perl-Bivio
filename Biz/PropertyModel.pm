@@ -586,6 +586,27 @@ sub load_this_from_request {
     return $self->load($q);
 }
 
+=for html <a name="merge_initialize_info"></a>
+
+=head2 static merge_initialize_info(hash_ref parent, hash_ref child) : hash_ref
+
+Merges two model field definitions (I<child> into I<parent>) into a new
+hash_ref.
+
+=cut
+
+sub merge_initialize_info {
+    my($proto, $parent, $child) = @_;
+    return {
+	%$parent,
+        %$child,
+	columns => {
+	    %{$parent->{columns} || {}},
+	    %{$child->{columns} || {}},
+	},
+    };
+}
+
 =for html <a name="register_child_model"></a>
 
 =head2 register_child_model(string child, hash_ref key_map)
