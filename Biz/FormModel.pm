@@ -999,6 +999,50 @@ sub load_from_model_properties {
     return;
 }
 
+=for html <a name="merge_initialize_info"></a>
+
+=head2 static merge_initialize_info(hash_ref parent, hash_ref child) : hash_ref
+
+Merges two model field definitions (I<child> into I<parent>) into a new
+hash_ref.
+
+=cut
+
+sub merge_initialize_info {
+    my($proto, $parent, $child) = @_;
+    my($names) = {};
+    foreach my $i ($child, $parent) {
+	foreach my $class (qw(visible other hidden)) {
+	    foreach my $name (@{$i->{$class} || []}) {
+		my($v) = ref($name) eq 'HASH' ? $name
+		    : ref($name) eq 'ARRAY' ? {
+			name => $name->[0],
+			_aliases => [@$name[1,$#$name]],
+		    } : {name => $name};
+		$v->{_class} = $class;
+		foreach my $attr (keys(%$v)) {
+		    my($x) = ($names->{$v->{name}} ||= {});
+		    $x->{$attr} = $v->{$attr}
+			unless exists($x->{$attr});
+		}
+	    }
+	    delete($i->{$class});
+	}
+    }
+    # Sort so works with testing
+    foreach my $v (sort {$a->{name} cmp $b->{name}} values(%$names)) {
+	push(
+	    @{$child->{delete($v->{_class})} ||= []},
+	    $v->{_aliases} ? [
+		delete($v->{name}),
+		@{delete($v->{_aliases})},
+		%$v ? Bivio::Die->die('cannot equivalence a hash') : (),
+	    ] : keys(%$v) == 1 ? $v->{name} : $v,
+	);
+    }
+    return $proto->SUPER::merge_initialize_info($parent, $child);
+}
+
 =for html <a name="process"></a>
 
 =head2 process(Bivio::Agent::Request req) : boolean
