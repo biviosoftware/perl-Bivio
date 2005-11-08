@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    field value so comparison works for any type
+  * Bivio::UI::XHMTL::ViewShortcuts->vs_list_form clears label attribute
+    if field does not have one -- avoids labelling checkboxes in a column
+
+  Revision 3.38  2005/11/01 08:49:44  nagler
+  * Bivio::Biz::Action::BasicAuthorization supports WWW-Authenticate/Authorization
+  * Bivio::Biz::Action::DAV tests authorization (hardwired to ADMINISTRATOR
+    and MEMBER for now)
+  * Bivio::Biz::Model::UserLoginForm->validate accepts user/password as args
+  * Bivio::Biz::Util::HTTPConf.limit_request_body added
+  * Bivio::Type::FilePath (RealmFile)
+  * Bivio::Biz::Model::UserRealmList cannot iterate (can_iterate was incorrect)
+  * Bivio::Biz::Model::RealmFile->delete/copy_deep
+  * Bivio::Test::Util->mock_sendmail looks up MAIL_RECEIVE_DISPATCH uri correctly
+  * Bivio::Delegate::Role->MAIL_RECIPIENT added
+  * Bivio::Test::Language::HTTP->basic_authorization added
   * Bivio::Test::Language::HTTP->send_request and absolute_uri added so you can
     make arbitrary web requests (see dav.btest)
   * Bivio::Agent::HTTP::Reply only calls set_last_modified if Last-Modified not set
