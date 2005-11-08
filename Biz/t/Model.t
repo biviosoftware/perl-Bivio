@@ -69,6 +69,25 @@ Bivio::Test->new('Bivio::Biz::Model')->unit([
 	    [] => Bivio::DieCode->DIE,
 	],
     ],
+    'Bivio::Biz::Model::UserLoginForm' => [
+	merge_initialize_info => [
+	    [{
+		auth_id => ['p'],
+		order_by => ['p1'],
+		visible => ['p1', {name => 'p2', in_list => 1}],
+	    }, {
+		auth_id => ['c'],
+		order_by => ['c1'],
+		visible => ['c2'],
+		hidden => ['p2'],
+	    }] => [{
+		auth_id => ['c'],
+		order_by => ['p1', 'c1'],
+		visible => ['c2', 'p1'],
+		hidden => [{name => 'p2', in_list => 1}],
+	    }],
+	],
+    ],
     'Bivio::Biz::Model::RealmOwner' => [
 	new => [
 	    [] => qr/Bivio::Biz::Model::RealmOwner/,
