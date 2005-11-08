@@ -50,6 +50,18 @@ sub OFFLINE_PREFIX {
     return '=';
 }
 
+=for html <a name="REGEXP"></a>
+
+=head2 REGEXP : regexp_ref
+
+Returns regular expression used by from_literal.
+
+=cut
+
+sub REGEXP {
+    return qr/^[a-z][a-z0-9_]{2,}$/i;
+}
+
 #=IMPORTS
 use Bivio::TypeError;
 
@@ -96,7 +108,7 @@ Must begin with a letter and be at least three chars
 
 sub internal_is_realm_name {
     my($proto, $value) = @_;
-    return $value =~ /^[a-z][a-z0-9_]{2,}$/i ? 1 : 0;
+    return $value =~ $proto->REGEXP ? 1 : 0;
 }
 
 =for html <a name="is_offline"></a>
