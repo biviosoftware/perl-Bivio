@@ -229,6 +229,8 @@ sub _dav_propfind {
 				 $res->{type} = $f->get_content_type;
 			     }
 			     return $res;
+			  }, {
+			      _public_only($s) ? (is_public => 1) : (),
 			  },
 		     )}
 		     : (),
