@@ -13,7 +13,9 @@ sub create {
 }
 
 sub create_realm {
-    my($self, $forum, $realm_owner, $admin_id) = @_;
+    my($self, $forum, $realm_owner, $admin_ids) = @_;
+    $admin_ids = [$admin_ids]
+	unless ref($admin_ids) eq 'ARRAY';
     my($req) = $self->get_request;
     $self->new_other('RealmOwner')->create({
 	%$realm_owner,
@@ -23,18 +25,20 @@ sub create_realm {
 	    realm_id => $req->get('auth_id'),
 	})->get('forum_id'),
     });
-    foreach my $r (qw(ADMINISTRATOR MEMBER MAIL_RECIPIENT)) {
-	$self->new_other('RealmUser')->create({
-	    realm_id => $self->get('forum_id'),
-	    user_id => $admin_id,
-	    role => Bivio::Auth::Role->$r(),
-	});
+    foreach my $admin_id (@$admin_ids) {
+	foreach my $r (qw(ADMINISTRATOR MEMBER MAIL_RECIPIENT)) {
+	    $self->new_other('RealmUser')->create({
+		realm_id => $self->get('forum_id'),
+		user_id => $admin_id,
+		role => Bivio::Auth::Role->$r(),
+	    });
+	}
     }
     my($f) = $self->new_other('RealmFile');
     foreach my $v ($f->get_field_type('volume')->get_list) {
 	$f->create_folder({
 	    path => '/',
-	    user_id => $admin_id,
+	    user_id => $admin_ids->[0],
 	    realm_id => $self->get('forum_id'),
 	    volume => $v,
 	}) unless $v->equals_by_name('UNKNOWN');
