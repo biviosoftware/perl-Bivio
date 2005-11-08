@@ -336,7 +336,7 @@ sub _fix_values {
 }
 
 sub _map_folder {
-    my($deep, $self, $op) = @_;
+    my($deep, $self, $op, $query) = @_;
     $self->die('not a folder')
 	unless $self->get('is_folder');
     my($p) = $self->get('path_lc');
@@ -348,9 +348,9 @@ sub _map_folder {
        return $it->get('path_lc') =~ $re ? $op->($it) : ();
     }, unauth_iterate_start => path_lc => {
 	map(($_ => $self->get($_)),
-	    $self->get('is_public') ? 'is_public' : (),
 	    'volume',
 	    'realm_id',
+	    %{$query || {}},
 	),
     });
 }
