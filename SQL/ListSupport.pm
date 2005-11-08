@@ -523,19 +523,11 @@ sub _init_column_classes {
 	    }
 	}
     }
-    # auth_id must be at most one column.  Turn into that column or undef.
-    Bivio::Die->die('too many auth_id fields')
-	if int(@{$attrs->{auth_id}}) > 1;
-
-    # date must be at most one column.  Turn into that column or undef.
-    Bivio::Die->die('too many date fields')
-	if int(@{$attrs->{date}}) > 1;
-
-    # Unwind one level--wrapped in array by _init_column_classes
     foreach my $c ('auth_id', 'parent_id', 'date') {
+	Bivio::Die->die("too many $c fields")
+	    if @{$attrs->{$c}} > 1;
 	$attrs->{$c} = $attrs->{$c}->[0];
     }
-
     # order_by may be empty and stays in specified order.
     my($i) = 0;
     foreach my $c (@{$attrs->{order_by}}) {
