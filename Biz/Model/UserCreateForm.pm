@@ -100,6 +100,7 @@ sub internal_create_models {
 	$x,
 	$self->get_model_properties('RealmOwner'),
     );
+    $self->internal_put_field('User.user_id' => $user->get('user_id'));
     $self->new_other('Email')->create({
 	realm_id => $user->get('user_id'),
 	email => $self->unsafe_get('Email.email')
@@ -122,7 +123,7 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	visible => [
 	    'RealmOwner.display_name',
@@ -139,10 +140,12 @@ sub internal_initialize {
 		name => 'RealmOwner.name',
 		constraint => 'NONE',
 	    },
+	    {
+		name => 'User.user_id',
+		constraint => 'NONE',
+	    },
 	],
-    };
-    return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+    });
 }
 
 =for html <a name="parse_display_name"></a>
