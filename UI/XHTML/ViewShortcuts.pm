@@ -107,6 +107,7 @@ sub vs_form_error_title {
 sub vs_list_form {
     my($proto, $form, $columns, $empty_list) = @_;
     my($f) = Bivio::Biz::Model->get_instance($form);
+    my($l) = Bivio::Biz::Model->get_instance($f->get_list_class);
     my($res) = Form(
 	$form,
 	Join([
@@ -119,6 +120,9 @@ sub vs_list_form {
 		    } : {field => $_}
 			unless ref($_) eq 'HASH';
 		    $_->{column_class} ||= 'field';
+		    # So checkboxes don't have labels in the fields, just hdr
+		    $_->{label} = ''
+			unless exists($_->{label});
 		    $_;
 		} @$columns),
 	    ], {
