@@ -893,7 +893,8 @@ sub internal_get_realm_for_task {
 
 #TODO: remove this section and die at some point
 #      it makes incorrect assumptions about role order
-    Bivio::IO::Alert->warn_deprecated('use explicit realm');
+    Bivio::IO::Alert->warn_deprecated(
+	$task_id, ': use explicit realm');
 
     my($role) = Bivio::Auth::Role->UNKNOWN->as_int;
     my($realm_id);
