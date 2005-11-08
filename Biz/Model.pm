@@ -809,34 +809,29 @@ hash_ref.
 
 =cut
 
+=for html <a name="merge_initialize_info"></a>
+
+=head2 static merge_initialize_info(hash_ref parent, hash_ref child) : hash_ref
+
+Merges two model field definitions (I<child> into I<parent>) into a new
+hash_ref.
+
+=cut
+
 sub merge_initialize_info {
     my($proto, $parent, $child) = @_;
-
-    my($res) = {};
-    foreach my $info ($parent, $child) {
-	foreach my $key (keys(%$info)) {
-	    unless (exists($res->{$key})) {
-		$res->{$key} = $info->{$key};
-		next;
-	    }
-	    my($value) = $res->{$key};
-	    $proto->die('unexpected key value: ', $key, ' => ', $value)
-		unless ref($value) eq ref($info->{$key});
-	    unless (ref($value)) {
-		# Scalar (version)
-		$res->{$key} = $info->{$key};
-		next;
-	    }
-	    if (ref($value) eq 'ARRAY') {
-		push(@$value, @{$info->{$key}});
-		next;
-	    }
-	    # PropertyModel columns is a hash
-	    foreach my $subkey (keys(%{$info->{$key}})) {
-		$proto->die("duplicate $key key: ", $subkey)
-		    if exists($value->{$subkey});
-		$value->{$subkey} = $info->{$key}->{$subkey};
-	    }
+    my($res) = {%$child};
+    foreach my $k (keys(%$parent)) {
+	if (
+	    ref($parent->{$k}) ne 'ARRAY'
+	    || $k =~ /^(auth_id|date|primary_id|primary_key)$/,
+        ) {
+	    $res->{$k} = $parent->{$k}
+		unless exists($res->{$k});
+	}
+	else {
+	    # Parent takes precedence on arrays
+	    unshift(@{$res->{$k} ||= []}, @{$parent->{$k}});
 	}
     }
     return $res;
