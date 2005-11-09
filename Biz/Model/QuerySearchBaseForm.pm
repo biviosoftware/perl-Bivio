@@ -185,7 +185,7 @@ sub _load_query_value {
     my($v, $e);
 
     my($value) = $query->{$self->get_field_info($field, 'form_name')};
-    if ($value) {
+    if (defined($value)) {
 	($v, $e) = $self->get_field_type($field)->from_literal($value);
 	if ($e) {
 	    $self->internal_put_error($field => $e);
