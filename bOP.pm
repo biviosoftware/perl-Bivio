@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    value is present, allows boolean query arguments
+  * Bivio::Biz::Model::RealmFile map_folder was broken
+  * Bivio::Biz::Util::RealmRole can't lock the realm
+
+  Revision 3.39  2005/11/08 02:49:00  nagler
+  * Bivio::Biz::Action::DAV PROPFIND only returns public files is is_public
+  * Bivio::Biz::*Model->merge_initialize refactored to remove complexity
+    and to allow visible/hidden/other to be managed properly between
+    parent and child.
+  * Bivio::Biz::Model::RealmFile->map_folder* supports $query instead of
+    just is_public
+  * Bivio::Delegate::SimpleRealmName->REGEXP defined to allow overrides of
+    the pattern used for RealmNames
+  * Bivio::UI::HTML::Widget::Select->render calls get_field_type on
     field value so comparison works for any type
   * Bivio::UI::XHMTL::ViewShortcuts->vs_list_form clears label attribute
     if field does not have one -- avoids labelling checkboxes in a column
