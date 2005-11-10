@@ -110,7 +110,7 @@ Returns I<self>.
 
 sub create {
     my($self, $new_values) = @_;
-    $new_values = {%$new_values};
+    $new_values = _dup($new_values);
     my($sql_support) = $self->internal_get_sql_support;
     # Make sure all columns are defined
     my($n);
@@ -141,7 +141,7 @@ are defaulted by L<create|"create"> are not validated.
 
 sub create_from_literals {
     my($self, $values) = @_;
-    $values = {%$values};
+    $values = _dup($values);
     while (my($k, $v) = each(%$values)) {
 	$values->{$k} = $self->get_field_type($k)->from_literal_or_die($v);
     }
@@ -683,7 +683,7 @@ sub unauth_iterate_start {
 	$self->internal_get_sql_support->iterate_start(
 	    $self,
 	    $order_by,
-	    $self->internal_prepare_query($query ? {%$query} : {}),
+	    $self->internal_prepare_query(_dup($query)),
 	),
     );
 }
@@ -717,7 +717,7 @@ sub unauth_load {
     my($self, $query) = _load_args(@_);
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $self->internal_get_sql_support->unsafe_load(
-	$self->internal_prepare_query($query ? {%$query} : {}), $self);
+	$self->internal_prepare_query(_dup($query)), $self);
     return _unload($self, 1) unless $values;
     return _load($self, $values);
 }
@@ -851,7 +851,7 @@ Returns I<self>.
 
 sub update {
     my($self, $new_values) = @_;
-    $new_values = {%$new_values};
+    $new_values = _dup($new_values);
     Bivio::Die->die('model is not loaded')
 	unless $self->is_loaded;
     $self->internal_clear_model_cache;
@@ -875,7 +875,7 @@ sub update {
 #
 sub _add_auth_id {
     my($self, $query) = @_;
-    $query = $query ? {%$query} : {};
+    $query = _dup($query);
     my($sql_support) = $self->internal_get_sql_support;
     my($auth_field) = $sql_support->get('auth_id');
     # Will override existing value for auth_id if model has an auth_id
@@ -894,6 +894,12 @@ sub _die_not_found {
     $self->throw_die(Bivio::DieCode->MODEL_NOT_FOUND, $args, $pkg,
         $file, $line);
     # DOES NOT RETURN
+}
+
+# _dup(hash_ref v) : hash_ref
+sub _dup {
+    my($v) = @_;
+    return $v ? {%$v} : {};
 }
 
 # _get_primary_keys(self, hash_ref new_values) : hash_ref
