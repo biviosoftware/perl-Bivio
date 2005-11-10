@@ -86,7 +86,7 @@ sub dav_propfind_children {
     my($self) = @_;
     $self->set_cursor_or_die(0);
     return $self->new->map_iterate(
-	sub {shift->dav_propfind},
+	\&dav_propfind,
 	{
 	    realm_id => $self->get('RealmFile.realm_id'),
 	    path => lc($self->get('RealmFile.path')),
