@@ -1,0 +1,57 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully->set_realm_and_user('demo', 'demo');
+my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/pub'});
+[
+    {
+	method => 'dav_load',
+	compute_return => sub {
+	    return [shift->get('object')->get_result_set_size];
+	},
+    } => [
+	[{
+	    realm => req()->get('auth_realm'),
+	    path => '/not-found',
+	}] => 0,
+	[{
+	    realm => req()->get('auth_realm'),
+	    path => '/*',
+	}] => CORRUPT_QUERY(),
+	[{
+	    realm => req()->get('auth_realm'),
+	    path => '/',
+	}] => 1,
+	[{
+	    realm => req()->get('auth_realm'),
+	    path => '',
+	}] => 1,
+	[{
+	    realm => req()->get('auth_realm'),
+	    path => '/pub',
+	}] => 1,
+    ],
+    dav_propfind => [
+	[] => [{
+	    displayname => 'pub',
+	    uri => '',
+	    getlastmodified => $pub->get('modified_date_time'),
+	}],
+    ],
+    dav_propfind_children => [
+	[] => [
+	    $pub->map_folder(sub {
+		my($m) = @_;
+	        my($n) = Bivio::Type::FileName->get_tail($m->get('path'));
+	        return {
+		    uri => $n,
+		    displayname => $n,
+		    $m->get('is_folder') ? ()
+			: (getcontenttype => $m->get_content_type,
+			   getcontentlength => $m->get_content_length),
+		    getlastmodified => $m->get('modified_date_time'),
+		};
+	    }),
+	],
+    ],
+];
