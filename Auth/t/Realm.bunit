@@ -1,0 +1,90 @@
+# Copyright (c) 2005 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+[
+    {
+	check_return => sub {
+	    my($case, $actual, $expect) = @_;
+	    my($o) = $actual->[0];
+	    $case->actual_return([
+		$o->get('type')->get_name,
+		$o->is_default,
+		Bivio::Die->eval(sub {$o->format_file}),
+	    ]);
+	    return $expect;
+	},
+        object => 'Bivio::Auth::Realm',
+    } => [
+	new => [
+	    [] => Bivio::DieCode->DIE,
+	    ['demo', req()] => ['USER', 0, 'demo'],
+	    ['user', req()] => ['USER', 1, 'user'],
+	    ['club', req()] => ['CLUB', 1, 'club'],
+	    ['general', req()] => ['GENERAL', 1, 'general'],
+	],
+	get_general => [
+	    [] => ['GENERAL', 1],
+	],
+    ],
+    ['demo', req()] => [
+	format_email => qr/\bdemo@/,
+	format_file => 'demo',
+	format_uri => '/demo',
+	as_string => qr/Bivio::Auth::Realm\(USER,demo,\d+\)/,
+	get_default_name => 'user',
+	get_type => [
+	    [] => [Bivio::Auth::RealmType->USER],
+	],
+	is_default => 0,
+	is_default_id => [
+	    sub {
+		return [shift->get_nested(qw(object id))];
+	    } => 0,
+	],
+    ],
+    sub {
+	return Bivio::Auth::Realm->get_general;
+    } => [
+	format_email => Bivio::DieCode->DIE,
+    ],
+    'Bivio::Auth::Realm' => [
+	is_default_id => [
+	    1 => 1,
+	    2 => 1,
+	],
+    ],
+    {
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    req()->set_user($params->[0]);
+	    return [Bivio::Agent::Task->get_by_id($params->[1]), req()];
+	},
+	object => ['demo', req()],
+    } => [
+	can_user_execute_task => [
+	    [undef, 'LOGIN'] => 0,
+	    [undef, 'PUBLIC_USER_FILE_READ'] => 1,
+	    [undef, 'USER_ACCOUNT_EDIT'] => 0,
+	    [undef, 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 0,
+	    ['demo', 'LOGIN'] => 0,
+	    ['demo', 'PUBLIC_USER_FILE_READ'] => 1,
+	    ['demo', 'USER_ACCOUNT_EDIT'] => 1,
+	    ['demo', 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 0,
+	    ['root', 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 1,
+	],
+    ],
+    {
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    req()->set_user($params->[0]);
+	    return [${Bivio::Auth::PermissionSet->from_array([$params->[1]])}, req()];
+	},
+	object => ['demo', req()],
+    } => [
+	does_user_have_permissions => [
+	    [undef, 'ANYBODY'] => 1,
+	    [undef, 'DATA_READ'] => 0,
+	    ['demo', 'DATA_READ'] => 1,
+	],
+    ],
+];
