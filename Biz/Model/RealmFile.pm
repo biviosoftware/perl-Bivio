@@ -12,10 +12,12 @@ my($_P) = Bivio::Type->get_instance('FilePath');
 our($_TRACE);
 
 sub copy_deep {
-    my($self, $dest) = @_;
-    $dest = $_P->from_literal_or_die($dest);
-    my($v) = $self->get_shallow_copy;
-    $v->{path} = $dest;
+    my($self, $query) = @_;
+    my($v) = {
+	%{$self->internal_get},
+	map(exists($query->{$_}) ? ($_ => $query->{$_}) : (),
+	    qw(path realm_id)),
+    };
     delete($v->{realm_file_id});
     my($new) = $self->new;
     $new->SUPER::create(_fix_values($new, $v));
@@ -40,7 +42,8 @@ sub copy_deep {
     )}) {
 	delete($x->{realm_file_id});
 	my($c) = delete($x->{content});
-	$x->{path} = $dest . substr($x->{path}, $old_length);
+	$x->{path} = $v->{path} . substr($x->{path}, $old_length);
+	$x->{realm_id} = $v->{realm_id};
 	$x->{_parent_folder_exists} = 1;
 	$new->SUPER::create(_fix_values($new, $x));
 	$new->put_content($c)
@@ -120,17 +123,16 @@ sub delete_deep {
 }
 
 sub get_content {
-    my($self) = @_;
-    return _f($self)->{content} ||= Bivio::IO::File->read(_path($self));
+    return _f(@_)->{content} ||= Bivio::IO::File->read(_path(@_));
 }
 
 sub get_content_length {
-    return -s _path(shift);
+    return -s _path(@_);
 }
 
 sub get_content_type {
-    my($self) = @_;
-    return Bivio::MIME::Type->from_extension($self->get('path'));
+    my($self, $model, $prefix) = shift->internal_get_target(@_);
+    return Bivio::MIME::Type->from_extension($model->get($prefix . 'path'));
 #    my($t) = Bivio::MIME::Type->from_extension($self->get('path'));
 #    Bivio::IO::Alert->info(-T $self->get_handle);
 #    return $t eq 'application/octet-stream' && -T $self->get_handle
@@ -279,7 +281,7 @@ sub update_with_content {
 
 sub _assert_not_root {
     my($self) = @_;
-    $self->die('cannot perform operation on root')
+    $self->throw_die(FORBIDDEN => 'cannot perform operation on root')
 	if $self->get('path') eq '/';
     return;
 }
@@ -296,7 +298,8 @@ sub _create {
 }
 
 sub _f {
-    return (shift->[$_IDI] ||= {});
+    my(undef, $model) = shift->internal_get_target(@_);
+    return $model->isa(__PACKAGE__) ? ($model->[$_IDI] ||= {}) : {};
 }
 
 sub _fix_values {
@@ -356,12 +359,14 @@ sub _map_folder {
 }
 
 sub _path {
-    my($self) = @_;
-    return _f($self)->{path_lc} ||= _realm_dir($self->get('realm_id'))
+    my(undef, $model, $prefix) = shift->internal_get_target(@_);
+    my($res) = _realm_dir($model->get($prefix . 'realm_id'))
 	. '/'
-	. lc($self->get('volume')->get_name)
+	. lc($model->get($prefix . 'volume')->get_name)
 	. '/'
-	.  $self->get('realm_file_id');
+	.  $model->get($prefix . 'realm_file_id');
+    _trace($res) if $_TRACE;
+    return $res;
 }
 
 sub _realm_dir {
