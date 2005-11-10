@@ -97,13 +97,6 @@ The task which L<format_help_uri|"format_help_uri"> uses to format uris.
 This task must have a I<help> attribute which is where help is routed
 to.
 
-=item SITE_ROOT
-
-The I<uri> of this task must be C</*>, i.e. the root of all URIs.
-This task will be executed.
-
-=back
-
 =cut
 
 =head1 CONSTANTS
@@ -164,7 +157,6 @@ use vars ('$_TRACE');
 my($_RN) = Bivio::Type->get_instance('RealmName');
 my($_GENERAL) = Bivio::Auth::Realm->get_general();
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
-my($_SITE_ROOT) = Bivio::Agent::TaskId->SITE_ROOT;
 my($_REALM_PLACEHOLDER) = '?';
 my($_REALM_PLACEHOLDER_PAT) = $_REALM_PLACEHOLDER;
 $_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
@@ -183,7 +175,7 @@ Returns a new Task instance.
 =cut
 
 sub new {
-    return Bivio::UI::FacadeComponent::new(@_);
+    return shift->SUPER::new(@_);
 }
 
 =head1 METHODS
@@ -418,7 +410,6 @@ sub initialization_complete {
     my($self) = @_;
     my($fields) = _initialize_fields($self);
     delete($fields->{to_realm_type});
-    _init_basic($self);
     _init_from_uri($self, $self->internal_get_all_groups);
     # Map default placeholders for these realms.  See format_realmless_uri().
     $fields->{realmless_uri} = {
@@ -433,8 +424,7 @@ sub initialization_complete {
 	    => $self->internal_get_value('my_site')->{uri},
 	Bivio::Auth::RealmType->GENERAL => undef,
     };
-    $self->SUPER::initialization_complete();
-    return;
+    return shift->SUPER::initialization_complete(@_);
 }
 
 =for html <a name="internal_initialize_value"></a>
@@ -506,7 +496,7 @@ sub parse_uri {
     unless (length($uri)) {
 	_trace($orig_uri,  '=> special case root') if $_TRACE;
 	$req->put_durable(initial_uri => '/');
-	return ($_SITE_ROOT, $_GENERAL, '', '/');
+	return ($fields->{site_root}, $_GENERAL, '', '/');
     }
 
     # Question mark is a special character
@@ -524,8 +514,7 @@ sub parse_uri {
 
     # General realm simple map; no placeholders or path_info.
     if (defined($info = $fields->{from_uri}->{$uri}->[$_GENERAL_INT])) {
-	_trace($orig_uri, ' => ', $info->{task}) if $_TRACE;
-	return ($info->{task}, $_GENERAL, '', $orig_uri);
+	return (_task($self, $info, $orig_uri), $_GENERAL, '', $orig_uri);
     }
 
     # Is this a general realm with path_info?  URI has at least
@@ -537,9 +526,12 @@ sub parse_uri {
 	# not found if it matches the first component, but the task
 	# doesn't have path_info.
 	if ($info->{has_path_info}) {
-	    _trace($orig_uri, ' => ', $info->{task}) if $_TRACE;
-	    return ($info->{task}, $_GENERAL, '/'.join('/', @uri[1..$#uri]),
-		    $orig_uri);
+	    return (
+		_task($self, $info, $orig_uri),
+		$_GENERAL,
+		'/'.join('/', @uri[1..$#uri]),
+		$orig_uri,
+	    );
 	}
 
 	# The URI doesn't accept path_info, so not found.
@@ -553,9 +545,9 @@ sub parse_uri {
     # If first uri doesn't match a RealmName, can't be one.
     my($name) = $_RN->unsafe_from_uri($uri[0]);
     unless (defined($name) && $self->has_uri(Bivio::Agent::TaskId->USER_HOME)) {
-	# Not a realm, so try SITE_ROOT
+	# Not a realm, so try site_root
 	_trace($orig_uri, ' => site_root') if $_TRACE;
-	return ($_SITE_ROOT, $_GENERAL, '/'.$uri, $orig_uri);
+	return ($fields->{site_root}, $_GENERAL, '/'.$uri, $orig_uri);
     }
 
     # Try to find the uri with the realm replaced by placeholder
@@ -582,10 +574,8 @@ sub parse_uri {
     if (defined($fields->{from_uri}->{$uri})
         && defined($fields->{from_uri}->{$uri}->[$rti]),
     ) {
-	_trace($orig_uri, ' => ', $fields->{from_uri}->{$uri}->[$rti]->{task})
-		if $_TRACE;
 	return (
-	    $fields->{from_uri}->{$uri}->[$rti]->{task},
+	    _task($self, $fields->{from_uri}->{$uri}->[$rti], $orig_uri),
 	    $realm,
 	    '',
 	    $orig_uri,
@@ -602,9 +592,8 @@ sub parse_uri {
 	&& defined($info = $fields->{from_uri}->{$uri}->[$rti])
 	&& $info->{has_path_info},
     ) {
-	_trace($orig_uri, ' => ', $info->{task}) if $_TRACE;
 	return (
-	    $info->{task},
+	    _task($self, $info, $orig_uri),
 	    $realm,
 	    join('/', '', @uri[$path_info_index+1..$#uri]),
 	    $orig_uri,
@@ -648,7 +637,7 @@ sub unsafe_get_from_uri {
     $info = $info->[$realm_type->as_int];
 
 #TODO: Is this really the same as what parse_uri() does?
-    return $info ? $info->{task} : undef;
+    return $info ? _task($self, $info) : undef;
 }
 
 #=PRIVATE METHODS
@@ -685,16 +674,6 @@ sub _has {
 	    ref($task_id) ? $task_id->get_name : $task_id, $req_or_facade
 	)->{$which}
     ) ? 1 : 0;
-}
-
-# _init_basic(self)
-#
-# Ensures SITE_ROOT defined.
-#
-sub _init_basic {
-    my($self) = @_;
-    $self->internal_get_value('SITE_ROOT');
-    return;
 }
 
 # _init_config(hash_ref fields, hash_ref value) : string
@@ -737,6 +716,7 @@ sub _init_config {
 #
 sub _init_err {
     my($self, $value, @msg) = @_;
+    my($fields) = $self->[$_IDI];
     # Print message before changing $value
     $self->initialization_error($value, @msg) if @msg;
 
@@ -745,7 +725,7 @@ sub _init_err {
     $value->{has_path_info} = 0;
     $value->{realm_type} = $_GENERAL;
     # This task must always be defined.
-    $value->{task} = Bivio::Agent::TaskId->SITE_ROOT;
+    $value->{task} = undef;
     return;
 }
 
@@ -766,13 +746,22 @@ sub _init_from_uri {
 	    # Save the URI in the map
 	    if ($from_uri{$uri}) {
 		if ($from_uri{$uri}->[$rti]) {
-		    _init_err($self, $group,
-			    "$uri $group->{realm_type}: uri already mapped to ",
-			    $from_uri{$uri}->[$rti]->{task}->get_name);
+		    _init_err(
+			$self, $group,
+			"$uri $group->{realm_type}: uri already mapped to ",
+			$from_uri{$uri}->[$rti]->{task}->get_name,
+		    );
 		    next;
 		}
 	    }
 	    else {
+		if ($uri eq '/'
+		    && $group->{realm_type}->equals_by_name('GENERAL'),
+		) {
+		    die('site_root must have path_info')
+			unless $group->{has_path_info};
+		    $fields->{site_root} = $group->{task};
+		}
 		$from_uri{$uri} = [];
 	    }
 	    $from_uri{$uri}->[$rti] = $group;
@@ -780,6 +769,8 @@ sub _init_from_uri {
 #	    $path_info_uri{$uri}++ if $group->{has_path_info};
 	}
     }
+    die('must define a uri as /*')
+	unless $fields->{site_root};
 
 #TODO: This test isn't really useful.  You may want a general foo/* URI
 #      and a specific "foo/bar" URI (task).  parse_uri will always route
@@ -812,11 +803,11 @@ sub _init_name {
 
     my($task_id_name) = uc($value->{names}->[0]);
     return 'name not a task_id'
-	    unless $value->{task} = Bivio::Agent::TaskId->$task_id_name();
+	unless $value->{task} = Bivio::Agent::TaskId->$task_id_name();
 
     my($realm_type_name) = $fields->{to_realm_type}->{$task_id_name};
     return 'no realm_type for task'
-	    unless $realm_type_name;
+	unless $realm_type_name;
     $value->{realm_type} = Bivio::Auth::RealmType->$realm_type_name();
     return;
 }
@@ -896,6 +887,18 @@ sub _initialize_fields {
 	    (uc($_->[0]) => uc($_->[2]));
 	} @{Bivio::Agent::TaskId->get_cfg_list}},
     };
+}
+
+
+# _task(self, hash_ref info) : Bivio::Agent::TaskId
+#
+# Returns task or site_root
+#
+sub _task {
+    my($self, $info, $orig_uri) = @_;
+    _trace($orig_uri, ' => ', $info->{task})
+	if $orig_uri && $_TRACE;
+    return $info->{task} || $self->[$_IDI]->{site_root};
 }
 
 =head1 COPYRIGHT
