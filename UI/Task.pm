@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Task;
 use strict;
@@ -358,6 +358,7 @@ sub format_uri {
 	}
     }
     $args->{no_form} = 1;
+    $uri =~ s{//+}{/}g;
     return $uri
 	. Bivio::Biz::FormModel->format_context_as_query(
 	    $req->get_form_context_from_named($args), $req);
@@ -551,20 +552,11 @@ sub parse_uri {
 
     # If first uri doesn't match a RealmName, can't be one.
     my($name) = $_RN->unsafe_from_uri($uri[0]);
-    unless (defined($name)) {
+    unless (defined($name) && $self->has_uri(Bivio::Agent::TaskId->USER_HOME)) {
 	# Not a realm, so try SITE_ROOT
 	_trace($orig_uri, ' => site_root') if $_TRACE;
 	return ($_SITE_ROOT, $_GENERAL, '/'.$uri, $orig_uri);
     }
-
-    # If the Facade doesn't have a USER_HOME, there are no realms so
-    # don't hit the database.
-#TODO: This check is insufficient.  We should check if there is a database.
-    $req->throw_die(Bivio::DieCode::NOT_FOUND, {
-	entity => $orig_uri,
-	uri => $uri,
-	message => 'site_root files should be in subdir OR you need to configure USER_HOME uri',
-    }) unless $self->has_uri(Bivio::Agent::TaskId->USER_HOME);
 
     # Try to find the uri with the realm replaced by placeholder
     # Replace realm with underscore.  This is ugly, but good enough for now.
@@ -908,7 +900,7 @@ sub _initialize_fields {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
