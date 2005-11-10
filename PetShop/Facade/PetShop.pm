@@ -182,7 +182,6 @@ my($_SELF) = __PACKAGE__->new({
 	    PUBLIC_USER_FILE_READ => '?/public/*',
 	    USER_FILE_READ => '?/file/*',
 	    USER_DAV => '?/dav/*',
-	    PUBLIC_USER_DAV => '?/public-dav/*',
         ]));
 	return;
     },
