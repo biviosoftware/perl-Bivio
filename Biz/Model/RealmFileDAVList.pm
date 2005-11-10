@@ -20,19 +20,19 @@ sub as_string {
 
 sub dav_copy {
     my($self, $dest) = @_;
-    _do($self, copy_deep => _load_args($dest));
+    _instance($self, copy_deep => _load_args($dest));
     return;
 }
 
 sub dav_delete {
     my($self) = @_;
-    _do($self, 'delete_deep');
+    _instance($self, 'delete_deep');
     return;
 }
 
 sub dav_get {
     my($self) = @_;
-    return _do($self, 'get_handle');
+    return _static($self, 'get_handle');
 }
 
 sub dav_is_read_only {
@@ -60,13 +60,13 @@ sub dav_load {
 
 sub dav_mkcol {
     my($self) = @_;
-    _do($self, create_folder => _load_args($self));
+    _instance($self, create_folder => _load_args($self));
     return;
 }
 
 sub dav_move {
     my($self, $dest) = @_;
-    _do($self, update => _load_args($dest));
+    _instance($self, update => _load_args($dest));
     return;
 }
 
@@ -75,8 +75,8 @@ sub dav_propfind {
     return {
 	map(($_ => $self->get($_)), qw(displayname uri)),
 	$self->get('RealmFile.is_folder') ? ()
-	   : (getcontenttype => $_RF->get_content_type($self, 'RealmFile.'),
-	       getcontentlength => $_RF->get_content_length($self, 'RealmFile.')
+	   : (getcontenttype => _static($self, 'get_content_type'),
+	       getcontentlength => _static($self, 'get_content_length'),
 	   ),
 	getlastmodified => $self->get('RealmFile.modified_date_time'),
     };
@@ -96,7 +96,7 @@ sub dav_propfind_children {
 
 sub dav_put {
     my($self, $content) = @_;
-    return _do(
+    return _instance(
 	$self,
 	($self->get_result_set_size > 0 ? 'update' : 'create') . '_with_content',
 	_load_args($self),
@@ -167,7 +167,7 @@ sub internal_prepare_statement {
     return;
 }
 
-sub _do {
+sub _instance {
     my($self, $method) = splice(@_, 0, 2);
     my($m) = $self->get_result_set_size > 0 ? 'get_model' : 'new_other';
     return $self->$m('RealmFile')->$method(@_);
@@ -180,6 +180,11 @@ sub _load_args {
 	volume => Bivio::Type::FileVolume->PLAIN,
 	map(($_ => $q->get($_)), qw(path realm_id)),
     };
+}
+
+sub _static {
+    my($self, $method) = splice(@_, 0, 2);
+    return $_RF->$method($self, 'RealmFile.', @_);
 }
 
 1;

@@ -140,10 +140,10 @@ sub get_content_type {
 }
 
 sub get_handle {
-    my($self) = @_;
-    return IO::File->new(_path($self), 'r')
-	|| $self->throw_die('IO_ERROR', {
-	    entity => _path($self),
+    my($p) = _path(@_);
+    return IO::File->new($p, 'r')
+	|| (shift->internal_get_target(@_))[1]->throw_die(IO_ERROR => {
+	    entity => $p,
 	    message => "$!",
 	});
 }
