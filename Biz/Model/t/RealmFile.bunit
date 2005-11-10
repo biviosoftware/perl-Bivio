@@ -3,60 +3,48 @@
 Request('initialize_fully');
 set_realm_and_user('root', 'root');
 my($vt) = class()->get_instance->get_field_type('volume')->from_int(1);
+my($h) = {volume => $vt, path => 'hello'};
 my($h2) = {path => 'hello2', volume => $vt};
 my($commit) = sub {commit(); return 1};
 [
-    {
-	object => [req()],
-	compute_params => sub {
-	    my(undef, $params, $method) = @_;
-	    return [
-		defined($params->[0]) && ref($params->[0]) =~ /^(HASH|CODE|)$/
-		? () : {
-		    volume => $vt,
-		    path => 'hello',
-		},
-		@$params,
-	    ];
-	},
-    } => [
-	delete_all => [
-	    [{}] => $commit,
-	],
+    [req()] => [
+	delete_all => $commit,
         create_with_content => [
-	    [\('hello')] => $commit,
+	    [$h, \('hello')] => $commit,
 	],
-	unsafe_load => 1,
+	unsafe_load => [
+	    [$h] => 1,
+	],
 	get_content_length => 5,
 	get_content => [
 	    [] => [\('hello')],
 	],
 	update_with_content => [
-	    [\('goodbye')] => $commit,
+	    [$h, \('goodbye')] => $commit,
 	],
 	get_content => [
 	    [] => [\('goodbye')],
 	],
 	delete => $commit,
-	unsafe_load => 0,
+	unsafe_load => [
+	    [$h] => 0,
+	],
         create_with_content => [
-	    [\('hello')] => not_die(),
+	    [$h, \('hello')] => $commit,
 	    [$h2, \('hello2')] => $commit,
 	    [$h2, \('hello2')] => DB_CONSTRAINT(),
 	],
 	unsafe_load => [
-	    [] => 1,
+	    [$h] => 1,
 	    [$h2] => 1,
 	],
-	delete_all => [
-	    [{}] => sub {commit(); return [3]}
-	],
+	delete_all => sub {commit(); return [3]},
 	unsafe_load => [
-	    [] => 0,
+	    [$h] => 0,
 	    [$h2] => 0,
 	],
         create_with_content => [
-	    [\('hello')] => $commit,
+	    [$h, \('hello')] => $commit,
 	],
 #broken until I figure out how to get -T working with IO::File
 #	get_content_type => 'text/plain',
@@ -71,7 +59,7 @@ my($commit) = sub {commit(); return 1};
 	    }] => $commit,
 	],
 	load => [
-	    [] => not_die(),
+	    [$h] => not_die(),
 	],
 	update => [
 	    [{
@@ -129,7 +117,7 @@ my($commit) = sub {commit(); return 1};
 	    )]],
 	],
 	copy_deep => [
-	    '/newdir-copy' => $commit,
+	    [{path => '/newdir-copy'}] => $commit,
 	],
 	load => [
 	    [{path => '/newdir-copy'}] => not_die(),
@@ -153,7 +141,7 @@ my($commit) = sub {commit(); return 1};
 	    [] => [\('subsubhello')],
 	],
 	copy_deep => [
-	    ['/subsubhello-copy'] => $commit,
+	    [{path => '/subsubhello-copy'}] => $commit,
 	],
 	load => [
 	    [{path => '/subsubhello-copy'}] => not_die(),
@@ -162,7 +150,7 @@ my($commit) = sub {commit(); return 1};
 	    [] => [\('subsubhello')],
 	],
 	copy_deep => [
-	    ['/subsubhello-copy'] => DB_CONSTRAINT(),
+	    [{path => '/subsubhello-copy'}] => DB_CONSTRAINT(),
 	],
 	delete_deep => $commit,
 	load => [
