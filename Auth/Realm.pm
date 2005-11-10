@@ -163,23 +163,32 @@ sub can_user_execute_task {
 	    if $_TRACE;
 	return 0;
     }
+    return $self->does_user_have_permissions($task->get('permission_set'), $req);
+}
 
-    # Load the permissions and cache
-    my($auth_roles) = $req->get_auth_roles($self);
+=for html <a name="does_user_have_permissions"></a>
+
+=head2 does_user_have_permissions(Bivio::Auth::PermissionSet perms, Bivio::Agent::Request req) : boolean
+
+Does req.auth_user have I<perms> in this realm.
+
+=cut
+
+sub does_user_have_permissions {
+    my($self, $perms, $req) =  @_;
     my($fields) = $self->[$_IDI];
-    my($permissions) = [map({
-	my($auth_role) = $_;
-        unless (defined($fields->{$auth_role})) {
-	    $fields->{$auth_role} = Bivio::Auth::Support->load_permissions(
-	        $self, $auth_role, $req);
-	}
-	$fields->{$auth_role};
-    } @$auth_roles)];
-
-    # Does this role have all the required permission?
-    my($perm_set) = _perm_set_from_all($permissions);
     return Bivio::Auth::Support->task_permission_ok(
-        $perm_set, $task->get('permission_set'), $req);
+	_perm_set_from_all([map({
+	    my($auth_role) = $_;
+	    unless (defined($fields->{$auth_role})) {
+		$fields->{$auth_role} = Bivio::Auth::Support->load_permissions(
+		    $self, $auth_role, $req);
+	    }
+	    $fields->{$auth_role};
+	} @{$req->get_auth_roles($self)})]),
+	$perms,
+	$req,
+    );
 }
 
 =for html <a name="format_email"></a>
@@ -372,7 +381,7 @@ sub _perm_set_from_all {
     my($permissions) = @_;
     my($perm_set) = Bivio::Type::EnumSet->get_min();
     foreach my $perms (@$permissions) {
-	$perm_set |= $perms;
+ 	$perm_set |= $perms;
     }
     return $perm_set;
 }
