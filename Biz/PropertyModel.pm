@@ -110,6 +110,7 @@ Returns I<self>.
 
 sub create {
     my($self, $new_values) = @_;
+    $new_values = {%$new_values};
     my($sql_support) = $self->internal_get_sql_support;
     # Make sure all columns are defined
     my($n);
@@ -140,6 +141,7 @@ are defaulted by L<create|"create"> are not validated.
 
 sub create_from_literals {
     my($self, $values) = @_;
+    $values = {%$values};
     while (my($k, $v) = each(%$values)) {
 	$values->{$k} = $self->get_field_type($k)->from_literal_or_die($v);
     }
@@ -208,17 +210,15 @@ B<DEPRECATED>
 sub delete {
     my($self) = @_;
     return $self->internal_get_sql_support->delete($self->internal_get, $self)
-	    if int(@_) <= 1;
-
-    # With args
+	if int(@_) <= 1;
     my($query);
     ($self, $query) = _load_args(@_);
-    $self = $self->new() unless ref($self);
+    $self = $self->new()
+	unless ref($self);
     return $self->internal_get_sql_support->delete(
-	    $self->internal_prepare_query(_add_auth_id($self, $query)), $self);
-#TODO: Need to test this thoroughly
-#    _unload($self, 1);
-#    return $res;
+	$self->internal_prepare_query(_add_auth_id($self, $query)),
+	$self,
+    );
 }
 
 =for html <a name="delete_all"></a>
@@ -232,10 +232,12 @@ partial key) query. Returns the number of models deleted.
 
 sub delete_all {
     my($self, $query) = @_;
-    $self = $self->new() unless ref($self);
+    $self = $self->new
+	unless ref($self);
     my($rows) =  $self->internal_get_sql_support->delete_all(
 	$self->internal_prepare_query(_add_auth_id($self, $query)),
-	$self);
+	$self,
+    );
     _trace($rows, ' ', ref($self)) if $_TRACE;
     return $rows;
 }
@@ -641,12 +643,13 @@ Note: I<query> may be modified by this method.
 
 sub unauth_delete {
     my($self, $load_args) = @_;
-    $load_args = $self->internal_get unless $load_args;
-    $self = $self->new() unless ref($self);
+    $load_args ||= $self->internal_get;
+    $self = $self->new()
+	unless ref($self);
     $self->die('load_args or model must not be empty')
 	unless %$load_args;
     return $self->internal_get_sql_support->delete(
-	$self->internal_prepare_query($load_args), $self);
+	$self->internal_prepare_query({%$load_args}), $self);
 }
 
 =for html <a name="unauth_iterate_start"></a>
@@ -680,7 +683,7 @@ sub unauth_iterate_start {
 	$self->internal_get_sql_support->iterate_start(
 	    $self,
 	    $order_by,
-	    $self->internal_prepare_query($query),
+	    $self->internal_prepare_query($query ? {%$query} : {}),
 	),
     );
 }
@@ -714,7 +717,7 @@ sub unauth_load {
     my($self, $query) = _load_args(@_);
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $self->internal_get_sql_support->unsafe_load(
-	$self->internal_prepare_query($query), $self);
+	$self->internal_prepare_query($query ? {%$query} : {}), $self);
     return _unload($self, 1) unless $values;
     return _load($self, $values);
 }
@@ -848,6 +851,7 @@ Returns I<self>.
 
 sub update {
     my($self, $new_values) = @_;
+    $new_values = {%$new_values};
     Bivio::Die->die('model is not loaded')
 	unless $self->is_loaded;
     $self->internal_clear_model_cache;
@@ -871,11 +875,12 @@ sub update {
 #
 sub _add_auth_id {
     my($self, $query) = @_;
+    $query = $query ? {%$query} : {};
     my($sql_support) = $self->internal_get_sql_support;
     my($auth_field) = $sql_support->get('auth_id');
     # Will override existing value for auth_id if model has an auth_id
     $query->{$auth_field->{name}} = $self->get_request->get('auth_id')
-	    if $auth_field;
+	if $auth_field;
     return $query;
 }
 
