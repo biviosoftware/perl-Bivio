@@ -127,11 +127,10 @@ sub _dav_edit {
 
 sub _dav_get {
     my($s) = @_;
-    my($p) = _call($s, 'propfind');
-    $s->{reply}->set_last_modified($p->{getlastmodified})
-	if $p->{getlastmodified};
+    $s->{reply}->set_last_modified($s->{propfind}->{getlastmodified})
+	if $s->{propfind}->{getlastmodified};
     return _output(
-	$s, HTTP_OK => $p->{getcontenttype}, _call($s, 'get'));
+	$s, HTTP_OK => $s->{propfind}->{getcontenttype}, _call($s, 'get'));
 }
 
 sub _dav_head {
@@ -145,7 +144,7 @@ sub _dav_lock {
 sub _dav_mkcol {
     my($s) = @_;
     return _output($s, HTTP_CONFLICT => 'already exists')
-	if _exists($s->{list});
+	if $s->{exists};
     return _output($s, 'HTTP_UNSUPPORTED_MEDIA_TYPE')
 	if length($s->{content});
     _call($s, 'mkcol');
@@ -169,7 +168,7 @@ sub _dav_options {
 		grep(
 		    !$s->{is_read_only} || $_ !~ $_WRITABLE,
 		    qw(copy delete get head lock move options propfind unlock),
-		    _call($s, 'propfind')->{getcontenttype}
+		    $s->{propfind}->{getcontenttype}
 			? qw(edit put) : qw(mkcol),
 		),
 	    ),
@@ -220,7 +219,7 @@ sub _dav_propfind {
 		     ]],
 		 );
 	     }
-	         ($noroot ? () : _call($s, 'propfind')),
+	         ($noroot ? () : $s->{propfind}),
 		 @{_call($s, 'propfind_children')},
 	     ),
 	     "</D:multistatus>\n",
@@ -271,7 +270,7 @@ sub _format_http {
 sub _load {
     my($s, $realm, $path, $is_dest) = @_;
     my($q) = {
-	path => $path,
+	path => defined($path) ? $path : '',
 	realm => $realm,
 	model => $s->{root_model}->new,
     };
@@ -292,6 +291,10 @@ sub _load {
 	$m = $q->{model}->dav_load($q);
 	last unless ref($m) eq 'HASH';
 	$q = $m;
+    }
+    unless ($m) {
+	_output($s, NOT_FOUND => 'No such resource: ', $path);
+	return;
     }
     if ($q->{is_read_only} && $is_dest) {
 	_output($s, FORBIDDEN => 'Destination is read-only');
@@ -369,10 +372,15 @@ sub _precondition {
 			$s->{list}->get_by_regexp('modified_date_time'), $t));
 	}
     }
-    return _output($s, NOT_FOUND => "Resource does not exist: $s->{uri}")
-	unless $s->{exists} || $s->{method} !~ /^(copy|delete|edit|get|head|lock|move|options|propfind|unlock)$/;
-    return _output($s, FORBIDDEN => "Resource is a directory: $s->{uri}")
-	if $s->{exists} && $s->{list}->get_by_regexp('is_folder') && $s->{method} =~ /^(edit|get|head|put)$/;
+    if ($s->{exists}) {
+	$s->{propfind} = _call($s, 'propfind');
+	return _output($s, FORBIDDEN => "Resource is a directory: $s->{uri}")
+	    if !$s->{propfind}->{getcontenttype}
+		&& $s->{method} =~ /^(edit|get|head|put)$/;
+    }
+    elsif ($s->{method} =~ /^(copy|delete|edit|get|head|lock|move|options|propfind|unlock)$/) {
+	return _output($s, NOT_FOUND => "Resource does not exist: $s->{uri}");
+    }
     return;
 }
 
