@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListModel;
 use strict;
@@ -1680,7 +1680,7 @@ sub _where_and_params {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
