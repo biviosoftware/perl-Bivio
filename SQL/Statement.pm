@@ -52,13 +52,15 @@ Return a list of predicates joined by AND.
 =cut
 
 sub AND {
-    my($proto, @predicates) = @_;
-    my($predicates) = [map({_parse_predicate($proto, $_)} @predicates)];
+    my($proto) = shift;
+    my($predicates) = [map(_parse_predicate($proto, $_), @_)];
     return {
         predicates => $predicates,
         build => sub {
-            return join(' AND ', grep({$_}
-	        map({$_->{build}->(@_)} @$predicates)));
+            return join(
+		' AND ',
+		grep($_, map($_->{build}->(@_), @$predicates)),
+	    );
         },
     }
 }
@@ -520,10 +522,14 @@ sub _add_model {
 #
 sub _build_column {
     my($column, $support) = @_;
-    my($model, $index, $field) = $column =~ /^(\w+?)(_\d+)?\.(\w+)$/;
+    my($func, $model, $index, $field, $paren)
+	= $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)(\)?)$/;
+    $func ||= '';
     $index ||= '';
-    return Bivio::Biz::Model->get_instance($model)->get_info('table_name')
-	. "$index.$field";
+    $paren ||= '';
+    return $func
+        . Bivio::Biz::Model->get_instance($model)->get_info('table_name')
+	. "$index.$field$paren";
 }
 
 # _build_model(string model, Bivio::SQL::Support support) : string
@@ -547,11 +553,11 @@ sub _build_model {
 sub _build_value {
     my($column, $value, $support, $params) = @_;
 #    my($col_type) = $support->get_column_info($column)->{type};
-    my($model, $index, $field) = $column =~ /^(\w+?)(_\d+)?\.(\w+)$/;
-    my($instance) = Bivio::Biz::Model->get_instance($model);
-    my($col_type) = $instance->get_field_type($field);
-    push(@$params, $col_type->to_sql_param($value));
-    return $col_type->to_sql_value('?');
+    my($func, $model, $index, $field) = $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)\)?$/;
+    my($t) = ($func || '') =~ /^(length|count)\(/i ? 'Bivio::Type::Number'
+	: Bivio::Biz::Model->get_instance($model)->get_field_type($field);
+    push(@$params, $t->to_sql_param($value));
+    return $t->to_sql_value('?');
 }
 
 # _merge_statements(self, Bivio::SQL::Statement)
@@ -596,7 +602,7 @@ sub _static_compare {
         build => sub {
             my($_left) = _build_column($left, @_);
             my($_right) = ref($right) eq 'ARRAY'
-                ? _build_value($left, shift @$right, @_)
+                ? _build_value($left, shift(@$right), @_)
                 : _build_column($right, @_);
             return "$_left$comp$_right";
         },
