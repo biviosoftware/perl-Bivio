@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::Task->parse_uri no longer throws NOT_FOUND if USER_HOME is
+    not found.  Rather returns SITE_ROOT.
+  * Bivio::SQL::Statement allows FUNCTION(Model.column) format for colums
+
+  Revision 3.40  2005/11/09 21:04:14  moeller
+  * Bivio::Biz::Action::DAV no longer descendent of Action.RealmFile
+  * Bivio::Biz::Model::Forum allow multiple admin_ids
+  * Bivio::Biz::QuerySearchBaseForm checks defined($value) to see if
     value is present, allows boolean query arguments
   * Bivio::Biz::Model::RealmFile map_folder was broken
   * Bivio::Biz::Util::RealmRole can't lock the realm
