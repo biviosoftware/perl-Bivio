@@ -365,7 +365,7 @@ sub set_headers_for_list_send {
 	unless $subject_prefix;
     if (defined($headers->{subject})) {
 	$headers->{subject}
-	    =~ s/^subject:(?!(\s*Re:\s*)*\Q$subject_prefix\E:)/Subject: $subject_prefix/is;
+	    =~ s/^subject:(?!(\s*Re:\s*)*\Q$subject_prefix\E)/Subject: $subject_prefix/is;
     }
     else {
 	$headers->{subject} = "Subject: $subject_prefix\n";
