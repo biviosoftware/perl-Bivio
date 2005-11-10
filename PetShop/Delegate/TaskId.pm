@@ -374,20 +374,12 @@ sub get_delegate_info {
 	    Action.RealmFile
         )],
 	[qw(
-	    PUBLIC_USER_DAV
+	    USER_DAV
 	    536
 	    USER
 	    ANYBODY
-	    Type.FileVolume->execute_plain
-	    Action.DAV
-	)],
-	[qw(
-	    USER_DAV
-	    537
-	    USER
-	    TEST_TRANSIENT
 	    Action.BasicAuthorization
-	    Type.FileVolume->execute_plain
+	    Model.RealmFileDAVList
 	    Action.DAV
 	)],
     ]);

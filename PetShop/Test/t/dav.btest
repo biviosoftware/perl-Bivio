@@ -28,7 +28,7 @@ visit_uri($a->{f1});
 verify_content_type('text/plain');
 die unless get_content() eq $content;
 send_request(PROPFIND => $root);
-die unless get_content() =~ m{$a->{d1}/<};
+die unless get_content() =~ m{\Q$a->{d1}/<};
 send_request(PROPFIND => $a->{d1});
 die unless get_content() =~ m{\Q$a->{f1}<};
 send_request(MOVE => $a->{d1} => {
