@@ -62,11 +62,25 @@ sub clear {
     return $vector;
 }
 
+=for html <a name="from_array"></a>
+
+=head2 static from_literal(array_ref enums) : string_ref
+
+Returns set from an array of enum values (numbers, names, or enums).
+
+=cut
+
+sub from_array {
+    my($proto, $enums) = @_;
+    my($t) = $proto->get_enum_type;
+    return $proto->set($proto->get_min, map($t->from_any($_), @$enums));
+}
+
 =for html <a name="from_literal"></a>
 
-=head2 from_literal(string value) : string
+=head2 static from_literal(string value) : string_ref
 
-Same as L<from_sql_column|"from_sql_column">.
+Returns set from a string.
 
 =cut
 
