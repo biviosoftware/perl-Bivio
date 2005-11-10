@@ -1187,12 +1187,6 @@ Returns I<self> after setting cursor to the first row (0).
 
 sub load_this {
     my($self, $query) = @_;
-    $query = $self->parse_query($query);
-    $self->throw_die('DIE', {
-	message => 'missing this',
-	query => $query,
-	program_error => 1,
-    }) unless $query->unsafe_get('this');
     return _load_this($self, $query);
 }
 
@@ -1212,9 +1206,7 @@ Returns I<self> after setting cursor to the first row (0).
 
 sub load_this_or_first {
     my($self, $query) = @_;
-    $query = $self->parse_query($query);
-    $query->put(want_first_only => 1) unless $query->unsafe_get('this');
-    return _load_this($self, $query);
+    return _load_this($self, $query, 1);
 }
 
 =for html <a name="map_primary_key_to_rows"></a>
@@ -1498,6 +1490,25 @@ sub unauth_load_all {
     return $self;
 }
 
+=for html <a name="unsafe_load_this"></a>
+
+=head2 unsafe_load_this(any query) : boolean
+
+Loads the specified I<this> in I<query> which must be a form
+acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+unless I<query> is already a ListQuery.
+
+I<this> must be specified.
+
+Does not die if this is not found.  (Does die if this is too_many.)
+
+=cut
+
+sub unsafe_load_this {
+    my($self, $query) = @_;
+    return _load_this($self, $query, 0, 1) ? 1 : 0;
+}
+
 #=PRIVATE METHODS
 
 # _assert_all(Bivio::Biz::ListModel self)
@@ -1557,16 +1568,30 @@ sub _format_uri_args {
 # Loads this or first.  Sets cursor to 0.
 #
 sub _load_this {
-    my($self, $query) = @_;
+    my($self, $query, $first_only, $not_found_ok) = @_;
+    $query = $self->parse_query($query);
+    unless ($query->unsafe_get('this')) {
+	$self->throw_die('DIE', {
+	    message => 'missing this',
+	    query => $query,
+	    program_error => 1,
+	}) unless $first_only;
+	$query->put(want_first_only => 1);
+    }
     my($count) = _unauth_load($self, $query);
-    return $self->set_cursor_or_die(0) if $count == 1;
-
-    $self->throw_die('MODEL_NOT_FOUND', {message => 'this not found',
-	query => $query}) unless $count;
-
-    $self->throw_die('TOO_MANY', {message => 'expecting just one this',
-	query => $query});
-    # DOES NOT RETURN
+    return $self->set_cursor_or_die(0)
+	if $count == 1;
+    $self->throw_die(TOO_MANY => {
+	message => 'expecting just one this',
+	query => $query,
+    }) if $count;
+    $self->throw_die(
+	MODEL_NOT_FOUND => {
+	    message => 'this not found',
+	    query => $query,
+	},
+    ) unless $not_found_ok;
+    return;
 }
 
 # _new(Bivio::Biz::ListModel self) : Bivio::Biz::ListModel
