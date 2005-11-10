@@ -351,6 +351,35 @@ sub get_html_parser {
     return _assert_html($self);
 }
 
+=for html <a name="get_table_row"></a>
+
+=head2 get_table_row(string table_name) : hash_ref
+
+=head2 get_table_row(string table_name, string row_index) : hash_ref
+
+Return table row specified by column_index.
+
+=cut
+
+sub get_table_row {
+    my($self, $table_name, $row_index) = @_;
+    $row_index ||= 0;
+    my($found_row);
+    $self->get_html_parser()->get('Tables')->do_rows($table_name, sub {
+        my($row, $index) = @_;
+	if ($index == $row_index) {
+	    $found_row = $row;
+	    return 0;
+	}
+	else {
+	    return 1;
+	}
+    });
+    Bivio::Die->($row_index, ': no such row number')
+        unless $found_row;
+    return $found_row;
+}
+
 =for html <a name="get_uri"></a>
 
 =head2 get_uri() : string
