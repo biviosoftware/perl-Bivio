@@ -206,13 +206,13 @@ sub _dav_propfind {
 					 $x->{getlastmodified})]
 				     : (),
 				 $x->{getcontenttype} ? (
-				     [resourcetype => [
-					 [collection => ''],
-				     ]],
-				 ) : (
 				     [getcontenttype => $x->{getcontenttype}],
 				     [getcontentlength => $x->{getcontentlength}],
 				     [resourcetype => ''],
+				 ) : (
+				     [resourcetype => [
+					 [collection => ''],
+				     ]],
 				 ),
 			     ]],
 			     [status => 'HTTP/1.1 200 OK'],

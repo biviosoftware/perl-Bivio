@@ -29,6 +29,15 @@ verify_content_type('text/plain');
 die unless get_content() eq $content;
 send_request(PROPFIND => $root);
 die unless get_content() =~ m{\Q$a->{d1}/<};
+send_request(PROPFIND => $root, {
+    Depth => 0,
+});
+die unless get_content() =~ m{<D:displayname>/</D:displayname>\n
+<D:getlastmodified>.*?</D:getlastmodified>\n
+<D:resourcetype>\n
+<D:collection/>\n
+</D:resourcetype>\n
+</D:prop>}xs;
 send_request(PROPFIND => $a->{d1});
 die unless get_content() =~ m{\Q$a->{f1}<};
 send_request(MOVE => $a->{d1} => {
