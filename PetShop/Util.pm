@@ -429,7 +429,7 @@ sub _init_demo_users {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
                 realm_id => $demo_id || die('DEMO must come before GUEST'),
                 user_id => $uid,
-                role => Bivio::Auth::Role->MEMBER,
+                role => Bivio::Auth::Role->GUEST,
             });
 	}
 	elsif ($u eq $self->MULTI_ROLE_USER) {
@@ -484,3 +484,6 @@ b-realm-role -r ORDER -u user edit ACCOUNTANT - \
     +ADMIN_WRITE
 b-realm-role -r ORDER -u user edit ADMINISTRATOR - \
     +ACCOUNTANT
+b-realm-role -r USER -u user edit GUEST - \
+    +WITHDRAWN \
+    +DATA_READ
