@@ -313,8 +313,9 @@ sub _other_op {
 sub _output {
     my($s, $status, $msg_or_type, $buf) = @_;
     my($n) = Bivio::Ext::ApacheConstants->$status();
-    Bivio::IO::Alert->warn($status, ' ', $msg_or_type)
-        if $status =~ /HTTP_PRECONDITION_FAILED|BAD_REQUEST|HTTP_NOT_IMPLEMENTED|HTTP_NOT_MODIFIED|HTTP_REQUEST_ENTITY_TOO_LARGE|FORBIDDEN|HTTP_CONFLICT/;
+    Bivio::IO::Alert->warn(
+	$status, ' ', $s->{method}, ' ', $s->{uri}, ' ', $msg_or_type,
+    ) if $status =~ /HTTP_PRECONDITION_FAILED|BAD_REQUEST|HTTP_NOT_IMPLEMENTED|HTTP_NOT_MODIFIED|HTTP_REQUEST_ENTITY_TOO_LARGE|FORBIDDEN|HTTP_CONFLICT/;
     $status =~ s/_/-/g;
     $s->{reply}->set_http_status($n)
 	->set_output_type(
@@ -376,7 +377,7 @@ sub _precondition {
 	$s->{propfind} = _call($s, 'propfind');
 	return _output($s, FORBIDDEN => "Resource is a directory: $s->{uri}")
 	    if !$s->{propfind}->{getcontenttype}
-		&& $s->{method} =~ /^(edit|get|head|put)$/;
+		&& $s->{method} =~ /^(edit|get|head|put|save)$/;
     }
     elsif ($s->{method} =~ /^(copy|delete|edit|get|head|lock|move|options|propfind|unlock)$/) {
 	return _output($s, NOT_FOUND => "Resource does not exist: $s->{uri}");
