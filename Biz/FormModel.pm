@@ -544,12 +544,16 @@ sub get_field_name_for_html {
 
 =head2 get_model_properties(string model) : hash_ref
 
+=head2 get_model_properties(Bivio::Biz::Model model) : hash_ref
+
 Returns the properties for this model that were passed in with the form.
 
 =cut
 
 sub get_model_properties {
     my($self, $model) = @_;
+    $model = $model->simple_package_name()
+	if ref($model);
     my($sql_support) = $self->internal_get_sql_support();
     my($properties) = $self->internal_get();
     my($models) = $sql_support->get('models');
@@ -1249,6 +1253,20 @@ sub unsafe_get_context_field {
     my($type) = $mi->get_field_info($name, 'type');
     my($fn) = $mi->get_field_name_for_html($name);
     return $type->from_literal($c->get('form')->{$fn});
+}
+
+=for html <a name="update_model_properties"></a>
+
+=head2 update_model_properties(Bivio::Biz::Model model)
+
+Update model from values on self.
+
+=cut
+
+sub update_model_properties {
+    my($self, $model) = @_;
+    $model->update($self->get_model_properties($model));
+    return;
 }
 
 =for html <a name="validate"></a>
