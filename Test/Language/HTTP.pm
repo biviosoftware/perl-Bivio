@@ -709,7 +709,9 @@ sub verify_form {
     _trace($form->{visible}) if $_TRACE;
     foreach my $field (sort(keys(%$form_fields))) {
 	my($control) = _assert_form_field($form, $field);
-	Bivio::Die->die($control->{type}, ' ', $field, ': does not match')
+	Bivio::Die->die($control->{type}, ' ', $field, ' expected: ',
+	    $form_fields->{$field}, ' but got: ', $control->{value},
+	)
 	    unless $control->{type} eq 'checkbox'
 		? ($control->{checked}
 		       ? defined($control->{value}) ? $control->{value} : 1
