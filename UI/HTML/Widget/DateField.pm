@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::DateField;
 use strict;
@@ -118,7 +118,7 @@ sub control_on_render {
 	. $form->get_field_name_for_html($field)
 	. '" type="text" size="'
 	. ($width  + 2)
-	. q{" maxlength="$width"};
+	. qq{" maxlength="$width"};
     my($h) = $self->unsafe_get('event_handler');
     $h = $self->unsafe_resolve_widget_value($h, $source)
 	if $h;
@@ -189,7 +189,7 @@ sub internal_new_args {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
