@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::LinuxConfig;
 use strict;
@@ -100,9 +100,7 @@ Adds aliases: 'foo: bar'.  Ensures a \t is between : and destination.
 =cut
 
 sub add_aliases {
-    return shift->append_lines(
-	qw(/etc/aliases root root 0640),
-	map(join(":\t", split(/\s*:\s*/, $_, 2)), @_));
+    return _add_aliases('/etc/aliases', ':', @_);
 }
 
 =for html <a name="add_bashrc_d"></a>
@@ -293,9 +291,7 @@ Adds virtusers: 'foo bar'.  Ensures a \t is between target and destination
 =cut
 
 sub add_virtusers {
-    return shift->append_lines(
-	qw(/etc/mail/virtusertable root root 0640),
-	map(join("\t", split(/:?\s+/, $_)), @_));
+    return _add_aliases('/etc/mail/virtusertable', '', @_);
 }
 
 =for html <a name="allow_any_sendmail_smtp"></a>
@@ -730,6 +726,13 @@ sub sshd_param {
 
 #=PRIVATE METHODS
 
+sub _add_aliases {
+    my($file, $sep, $self) = splice(@_, 0, 3);
+    return $self->append_lines(
+	$file,  qw(root root 0640),
+	map(join("$sep\t", split(/[:\s]+/, $_, 2)), @_));
+}
+
 # _add_file(self, string file, string owner, string group, int perms)
 #
 # Creates the file if it doesn't exist.
@@ -845,7 +848,7 @@ sub _prefix_file {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
