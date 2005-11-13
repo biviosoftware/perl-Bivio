@@ -110,9 +110,10 @@ other.host
 		['etc/aliases', "d:\te\n"],
 	    ],
 	], [
-	    'add_virtusers', ['a: b', 'c d'] => [
+	    'add_virtusers', ['a: b', 'c d', 'e:f'] => [
 		['etc/mail/virtusertable', "a\tb\n"],
 		['etc/mail/virtusertable', "c\td\n"],
+		['etc/mail/virtusertable', "e\tf\n"],
 	    ],
 	], [
 	    'add_sendmail_class_line', ['relay-domains', '10.1.1.1'] => [
