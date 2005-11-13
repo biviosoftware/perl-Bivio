@@ -105,6 +105,16 @@ other.host
 		['etc/bashrc', '/etc/bashrc.d/'],
 	    ],
 	], [
+	    'add_aliases', ['a: b:c', 'd:e'] => [
+		['etc/aliases', "a:\tb:c\n"],
+		['etc/aliases', "d:\te\n"],
+	    ],
+	], [
+	    'add_virtusers', ['a: b', 'c d'] => [
+		['etc/mail/virtusertable', "a\tb\n"],
+		['etc/mail/virtusertable', "c\td\n"],
+	    ],
+	], [
 	    'add_sendmail_class_line', ['relay-domains', '10.1.1.1'] => [
 		['etc/mail/relay-domains', '10.1.1.1'],
 	    ],

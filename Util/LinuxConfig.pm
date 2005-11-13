@@ -91,6 +91,20 @@ Bivio::IO::Config->register(my $_CFG = {
 
 =cut
 
+=for html <a name="add_aliases"></a>
+
+=head2 add_aliases(string alias, ....) : string
+
+Adds aliases: 'foo: bar'.  Ensures a \t is between : and destination.
+
+=cut
+
+sub add_aliases {
+    return shift->append_lines(
+	qw(/etc/aliases root root 0640),
+	map(join(":\t", split(/\s*:\s*/, $_, 2)), @_));
+}
+
 =for html <a name="add_bashrc_d"></a>
 
 =head2 add_bashrc_d() : string
@@ -268,6 +282,20 @@ sub add_users_to_group {
     } @user);
     $res .= _exec($self, 'grpconv') if $res && $> == 0;
     return $res;
+}
+
+=for html <a name="add_virtusers"></a>
+
+=head2 add_virtusers(string virtuser, ...) : string
+
+Adds virtusers: 'foo bar'.  Ensures a \t is between target and destination
+
+=cut
+
+sub add_virtusers {
+    return shift->append_lines(
+	qw(/etc/mail/virtusertable root root 0640),
+	map(join("\t", split(/:?\s+/, $_)), @_));
 }
 
 =for html <a name="allow_any_sendmail_smtp"></a>
