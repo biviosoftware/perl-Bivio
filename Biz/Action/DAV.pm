@@ -23,7 +23,8 @@ my($_DIE) = {
     UPDATE_COLLISION => 'HTTP_CONFLICT',
 };
 # This list should be complete, even though we don't implement them all
-my($_WRITABLE) = qr/^(copy|delete|edit|lock|mkcol|move|put|proppatch|save|unlock)$/;
+# NOTE: copy is not a write operation.  It's write on Destination, not source
+my($_WRITABLE) = qr/^(delete|edit|lock|mkcol|move|put|proppatch|save|unlock)$/;
 sub execute {
     my(undef, $req) = @_;
     my($s) = {
@@ -33,7 +34,6 @@ sub execute {
 	method => lc($req->get('r')->method),
 	uri => $req->get('uri'),
 	path_info => $req->get('path_info'),
-	root_model => $req->get_by_regexp(qr{Model\.\w+DAVList}),
     };
     my($die) = Bivio::Die->catch(sub {
         return unless $s->{list} = _load(
@@ -94,9 +94,12 @@ sub _copy_move {
     return _output(
 	$s, FORBIDDEN => "cannot $s->{method} across file system tasks"
     ) unless $t == $s->{req}->get('task_id');
-    return unless $s->{dest_list} = _load($s, $r, $path_info, 1);
+    return 1
+	unless $s->{dest_list} = _load($s, $r, $path_info, 1);
+    return _output($s, FORBIDDEN => 'Destination is read-only: ', $path_info)
+	if _call($s, $s->{dest_list}, 'is_read_only');
     return _output(
-	$s, FORBIDDEN => "cannot $s->{method} across file system classes"
+	$s, FORBIDDEN => "cannot $s->{method} across resource classes"
     ) unless $s->{dest_list}->isa(ref($s->{list}));
     return _output($s, HTTP_PRECONDITION_FAILED => 'Destination exists')
 	if ($s->{dest_existed} = _exists($s->{dest_list}))
@@ -269,38 +272,30 @@ sub _format_http {
 
 sub _load {
     my($s, $realm, $path, $is_dest) = @_;
-    my($q) = {
-	path => defined($path) ? $path : '',
-	realm => $realm,
-	model => $s->{root_model}->new,
-    };
-    my($m);
-    while (1) {
-	_trace($q) if $_TRACE;
-	unless ($q->{realm}->does_user_have_permissions(
-	    ${Bivio::Auth::PermissionSet->from_array(['DATA_READ'])},
-	    $s->{req},
-	)) {
-	    _output($s, FORBIDDEN => 'User does not have access');
-	    return;
-	}
-	$q->{is_read_only} = $q->{realm}->does_user_have_permissions(
-	    ${Bivio::Auth::PermissionSet->from_array(['DATA_WRITE'])},
-	    $s->{req},
-	) ? 0 : 1;
-	$m = $q->{model}->dav_load($q);
-	last unless ref($m) eq 'HASH';
-	$q = $m;
+    my($req) = $s->{req};
+    my($prev) = {map(($_ => $req->get($_)), qw(auth_realm task_id task))};
+    $req->set_realm($realm);
+    my($tid) = $req->get('task')->get(
+	$is_dest || $s->{method} =~ $_WRITABLE ? 'write_task' : 'read_task');
+    $req->put(path_info => defined($path) ? $path : '');
+    while ($tid) {
+	_trace($tid, ' ', $req) if $_TRACE;
+	my($t) = Bivio::Agent::Task->get_by_id($tid);
+	last unless $req->get('auth_realm')->can_user_execute_task($t, $req);
+	$req->put(task_id => $tid, task => $t);
+	$tid = $req->get('task')->execute_items($req);
     }
+    $req->set_realm($prev->{auth_realm});
+    $req->put(map(($_ => $prev->{$_}), qw(task_id task)));
+    if ($tid) {
+	_output($s, FORBIDDEN => 'No access to task');
+	return;
+    }
+    my($m) = $req->unsafe_get('dav_model');
     unless ($m) {
 	_output($s, NOT_FOUND => 'No such resource: ', $path);
 	return;
     }
-    if ($q->{is_read_only} && $is_dest) {
-	_output($s, FORBIDDEN => 'Destination is read-only');
-	return;
-    }
-    $s->{is_read_only} = $q->{is_read_only};
     return $m;
 }
 
@@ -370,7 +365,7 @@ sub _precondition {
 	    return 1
 		if $s->{exists} && $op->(
 		    $_DT->compare(
-			$s->{list}->get_by_regexp('modified_date_time'), $t));
+			$s->{list}->get('getlastmodified'), $t));
 	}
     }
     if ($s->{exists}) {
