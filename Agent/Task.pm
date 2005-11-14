@@ -285,23 +285,37 @@ the fact that L<handle_die|"handle_die"> is called to execute rollback.
 
 sub execute {
     my($self, $req) = @_;
-    $req->client_redirect_if_not_secure()
+    $req->client_redirect_if_not_secure
 	if $self->get('require_secure')
-	    && $req->can('client_redirect_if_not_secure');
-    my($auth_realm, $auth_role, $auth_roles) =
-	$req->get('auth_realm', 'auth_role', 'auth_roles');
-    unless ($auth_realm->can_user_execute_task($self, $req)) {
+	&& $req->can('client_redirect_if_not_secure');
+    unless ($req->get('auth_realm')->can_user_execute_task($self, $req)) {
 	Bivio::Die->throw_quietly('FORBIDDEN', {
-	    auth_user => $req->get('auth_user'),
-	    entity => $auth_realm,
-	    auth_role => $auth_role,
-	    auth_roles => $auth_roles,
+	    map(($_ => $req->get($_)),
+		qw(auth_realm auth_user auth_roles auth_role)),
 	    operation => $self->get('id'),
 	});
     }
     _invoke_pre_execute_handlers($req);
-    my($i);
-    foreach $i (@{$self->get('items')}) {
+    my($next, $method) = $self->execute_items($req);
+    $req->$method($next)
+	if $next;
+    $self->commit($req);
+    $req->get('reply')->send($req);
+    return;
+}
+
+=for html <a name="execute_items"></a>
+
+=head2 execute_items(Bivio::Agent::request req) : array
+
+Executes the items on the task.  Does not call the preexecute handler and
+does not authorize (does not call can_user_execute_task).
+
+=cut
+
+sub execute_items {
+    my($self, $req) = @_;
+    foreach my $i (@{$self->get('items')}) {
 	my($instance, $method, $args) = @$i;
 	# Don't continue if returns true.
 	my($res) = defined($instance)
@@ -318,21 +332,19 @@ sub execute {
 	}
 	_trace($redirect, '.', $next, ' ', $req->unsafe_get('query'))
 	    if $_TRACE;
-	$req->$redirect($next)
-	    if ref($next) && UNIVERSAL::isa($next, 'Bivio::Agent::TaskId');
 	Bivio::Die->die(
 	    $self->get('id'), ' item ',
-	    defined($instance)
-	    ? (ref($instance) || $instance) . '->' . $method
-	    : 'code',
+	    defined($instance) ? (ref($instance) || $instance) . '->' . $method
+		: 'code',
 	    ': must return boolean, Bivio::Agent::TaskId, or attribute',
-	    ', not ', $res,
-	);
+	    ', not ',
+	    $res,
+	) unless ref($next) && UNIVERSAL::isa($next, 'Bivio::Agent::TaskId');
+	return ($next, $redirect);
     }
-    $self->commit($req);
-    $req->get('reply')->send($req);
     return;
 }
+
 
 =for html <a name="get_by_id"></a>
 
