@@ -1087,18 +1087,7 @@ B<Deprecated form returns the iterator.>
 =cut
 
 sub iterate_start {
-    my($self, $query) = @_;
-    $self->throw_die('DIE', 'iteration not supported')
-	unless $self->can_iterate;
-    my($fields) = $self->[$_IDI];
-    $fields->{query} = $self->parse_query($query);
-    return $self->internal_put_iterator(
-	$self->internal_get_sql_support->iterate_start(
-	    $fields->{query},
-	    _where_and_params($self),
-	    $self,
-        ),
-    );
+    return _iterate_start('parse_query', @_);
 }
 
 =for html <a name="load_all"></a>
@@ -1462,6 +1451,24 @@ sub set_cursor_or_not_found {
 	entity => $_[0]});
 }
 
+=head2 unauth_iterate_start(hash_ref query) : ref
+
+=head2 unauth_iterate_start(Bivio::SQL::ListQuery query) : ref
+
+Begins an iteration which can be used to iterate the rows for this
+realm with L<iterate_next|"iterate_next"> or
+L<iterate_next_and_load|"iterate_next_and_load">.
+L<iterate_end|"iterate_end"> should be called when you are through
+with the iteration.
+
+B<Deprecated form returns the iterator.>
+
+=cut
+
+sub unauth_iterate_start {
+    return _iterate_start(unauth_parse_query => @_);
+}
+
 =for html <a name="unauth_load_all"></a>
 
 =head2 unauth_load_all(hash_ref attrs) : Bivio::Biz::Model::ListModel
@@ -1488,6 +1495,25 @@ sub unauth_load_all {
     _unauth_load($self, $query);
     _assert_all($self);
     return $self;
+}
+
+=for html <a name="unauth_parse_query"></a>
+
+=head2 unauth_parse_query(hash_ref query) : Bivio::SQL::ListQuery
+
+=head2 unauth_parse_query(Bivio::SQL::ListQuery query) : Bivio::SQL::ListQuery
+
+Does the processing of I<query>.  Converts to
+L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery> which
+may modify I<query> if it isn't already a ListQuery.
+
+=cut
+
+sub unauth_parse_query {
+    my($self, $query) = @_;
+    return UNIVERSAL::isa($query, 'Bivio::SQL::ListQuery') ? $query
+	: Bivio::SQL::ListQuery->unauth_new(
+	    $query || {}, $self->internal_get_sql_support, $self);
 }
 
 =for html <a name="unsafe_load_this"></a>
@@ -1606,6 +1632,22 @@ sub _new {
 	load_notes => '',
     };
     return $self;
+}
+
+# _iterate_start(string parse_query, self, any query) : ref
+sub _iterate_start {
+    my($parse_query, $self, $query) = @_;
+    $self->throw_die('DIE', 'iteration not supported')
+	unless $self->can_iterate;
+    my($fields) = $self->[$_IDI];
+    $fields->{query} = $self->$parse_query($query);
+    return $self->internal_put_iterator(
+	$self->internal_get_sql_support->iterate_start(
+	    $fields->{query},
+	    _where_and_params($self),
+	    $self,
+        ),
+    );
 }
 
 # _unauth_load(Bivio::Biz::ListModel self, hash_ref attrs) : int
