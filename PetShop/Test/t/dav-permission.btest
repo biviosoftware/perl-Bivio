@@ -3,8 +3,6 @@
 test_setup('PetShop');
 home_page();
 my($x) = absolute_uri('/demo/dav/pub2');
-my($forbidden) = sub {
-};
 test_deviance(qr{authorization}i);
 send_request(OPTIONS => '/demo/dav');
 test_conformance();
@@ -23,3 +21,11 @@ send_request(MOVE => '/demo/dav/pub', {
 test_conformance();
 send_request(OPTIONS => '/demo/dav/private');
 visit_uri('/demo/dav/private/file.html');
+send_request(COPY => '/demo/dav/private/file.html', {
+    Destination => absolute_uri('/guest/dav/dav-permission'),
+});
+$x = absolute_uri('/demo/dav/dav-permission');
+test_deviance('forbidden');
+send_request(COPY => '/guest/dav/private/file.html', {
+    Destination => $x,
+});
