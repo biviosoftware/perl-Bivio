@@ -177,17 +177,7 @@ Return an IN predicate.
 =cut
 
 sub IN {
-    my($proto, $column, $values) = @_;
-    return {
-        column => $column,
-        values => $values,
-        build => sub {
-	    return 'FALSE'
-		unless scalar(@$values);
-            return _build_column($column, @_) . ' IN (' .
-                join(',', map({_build_value($column, $_, @_)} @$values)) . ')';
-        },
-    };
+    return _in('', @_);
 }
 
 =for html <a name="IS_NOT_NULL"></a>
@@ -312,6 +302,18 @@ If I<right> is an array_ref, treat right as a value, not a column.
 sub NE {
     my($proto, $left, $right) = @_;
     return _static_compare('!=', $left, $right);
+}
+
+=for html <a name="NOT_IN"></a>
+
+=head2 static NOT_IN(string column, array_ref list) : hash_ref
+
+Return an NOT_IN predicate.
+
+=cut
+
+sub NOT_IN {
+    return _in(' NOT', @_);
 }
 
 =for html <a name="new"></a>
@@ -558,6 +560,26 @@ sub _build_value {
 	: Bivio::Biz::Model->get_instance($model)->get_field_type($field);
     push(@$params, $t->to_sql_param($value));
     return $t->to_sql_value('?');
+}
+
+# _in(string modifier, proto, string column, any values) : hash_ref
+#
+# Create "IN" or "NOT IN" clause
+#
+sub _in {
+    my($modifier, undef, $column, $values) = @_;
+    return {
+        column => $column,
+        values => $values,
+        build => sub {
+            return @$values
+		? _build_column($column, @_)
+		. "$modifier IN ("
+		. join(',', map(_build_value($column, $_, @_), @$values))
+		. ')'
+		: $modifier ? 'TRUE' : 'FALSE';
+        },
+    };
 }
 
 # _merge_statements(self, Bivio::SQL::Statement)
