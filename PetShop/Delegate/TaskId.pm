@@ -379,8 +379,23 @@ sub get_delegate_info {
 	    USER
 	    ANYBODY
 	    Action.BasicAuthorization
-	    Model.RealmFileDAVList
 	    Action.DAV
+	    write_task=USER_DAV_WRITE
+	    read_task=USER_DAV_READ
+	)],
+	[qw(
+	    USER_DAV_WRITE
+	    537
+	    USER
+	    DATA_READ&DATA_WRITE
+	    Model.RealmFileDAVList
+	)],
+	[qw(
+	    USER_DAV_READ
+	    538
+	    USER
+	    DATA_READ
+	    Model.RealmFileDAVList
 	)],
     ]);
 }

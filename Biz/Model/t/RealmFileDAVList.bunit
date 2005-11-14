@@ -5,31 +5,21 @@ req()->initialize_fully->set_realm_and_user('demo', 'demo');
 my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/pub'});
 [
     {
-	method => 'dav_load',
+	method => 'load_dav',
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    req()->put(path_info => $params->[0]);
+	    return [];
+	},
 	compute_return => sub {
 	    return [shift->get('object')->get_result_set_size];
 	},
     } => [
-	[{
-	    realm => req()->get('auth_realm'),
-	    path => '/not-found',
-	}] => 0,
-	[{
-	    realm => req()->get('auth_realm'),
-	    path => '/*',
-	}] => CORRUPT_QUERY(),
-	[{
-	    realm => req()->get('auth_realm'),
-	    path => '/',
-	}] => 1,
-	[{
-	    realm => req()->get('auth_realm'),
-	    path => '',
-	}] => 1,
-	[{
-	    realm => req()->get('auth_realm'),
-	    path => '/pub',
-	}] => 1,
+	['/not-found'] => 0,
+	['/*'] => CORRUPT_QUERY(),
+	['/'] => 1,
+	[''] => 1,
+	['/pub'] => 1,
     ],
     dav_propfind => [
 	[] => [{
