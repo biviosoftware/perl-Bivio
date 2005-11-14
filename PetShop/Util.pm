@@ -362,7 +362,6 @@ sub _init_demo_products {
 sub _init_demo_files {
     my($self) = @_;
     my($req) = $self->get_request;
-    $self->set_realm_and_user($self->DEMO, $self->DEMO);
     Bivio::IO::File->chdir(
 	Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf(
 	    my $d = File::Spec->rel2abs('demo_files.tmp'))));
@@ -375,16 +374,19 @@ sub _init_demo_files {
 	Bivio::IO::File->mkdir_parent_only($f);
 	Bivio::IO::File->write($f, $c);
     }
-    $self->new_other('Bivio::Util::RealmFile')->import_tree('');
-    Bivio::Biz::Model->new('RealmFile')->do_iterate(
-	sub {
-	    my($f) = @_;
-	    $f->update({is_public => 1})
-		if $f->get('path') =~ /pub/;
-	    return 1;
-	},
-	'path',
-    );
+    foreach my $u (qw(DEMO GUEST)) {
+	$self->set_realm_and_user($self->$u(), $self->$u());
+	$self->new_other('Bivio::Util::RealmFile')->import_tree('');
+	Bivio::Biz::Model->new('RealmFile')->do_iterate(
+	    sub {
+		my($f) = @_;
+		$f->update({is_public => 1})
+		    if $f->get('path') =~ /pub/;
+		return 1;
+	    },
+	    'path',
+	);
+    }
     Bivio::IO::File->chdir('..');
     return;
 }
