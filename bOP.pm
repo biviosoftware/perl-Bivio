@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Util::LinuxConfig->add_aliases/virtusers added
+  * Bivio::Type::EnumSet->to_array added
+  * Bivio::Biz::Model::DAVList added
+
+  Revision 3.41  2005/11/10 23:16:34  nagler
+  * Bivio::UI:Task dynamically computes site_root by finding GENERAL
+    task with /* as URI.
+  * Bivio::Biz::Model::RealmFile->copy_deep accepts a query
+  * Bivio::Biz::Model::RealmFile->get_* accepts (model, prefix) args so
+    other lists can use (RealmFileDAVList)
+  * Bivio::Biz::ListModel->unsafe_load_this added
+  * Bivio::Biz::Action::DAV redesigned to interface with lists that support
+    dav_* interface (RealmFileDAVList)
+  * Bivio::Biz::Model::RealmFileDAVList added
+  * Bivio::Biz::PropertyModel query/values arguments are copied
+  * Bivio::Auth::Realm->does_user_have_permissions added
+  * Bivio::Type::EnumSet->from_array added
   * Bivio::UI::Task->parse_uri no longer throws NOT_FOUND if USER_HOME is
     not found.  Rather returns SITE_ROOT.
   * Bivio::SQL::Statement allows FUNCTION(Model.column) format for colums
