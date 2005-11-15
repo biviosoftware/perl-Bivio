@@ -237,9 +237,26 @@ sub set {
     return $vector;
 }
 
+=for html <a name="to_array"></a>
+
+=head2 static to_array(string value) : array_ref
+
+Converts to an array of enums.
+
+=cut
+
+sub to_array {
+    my($proto) = @_;
+    my($v) = _parse_args(\@_);
+    return [map(
+	$proto->is_set($v, $_) ? $_ : (),
+	$proto->get_enum_type->get_list,
+    )];
+}
+
 =for html <a name="to_literal"></a>
 
-=head2 to_literal(string value) : string
+=head2 static to_literal(string value) : string
 
 Same as L<to_sql_param|"to_sql_param">.
 
