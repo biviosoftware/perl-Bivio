@@ -22,12 +22,11 @@ sub as_string {
 
 sub dav_propfind_children {
     my($self) = @_;
-    $self->set_cursor_or_die(0);
+    my($q) = $self->get_query;
     return $self->new->map_iterate(
 	sub {shift->dav_propfind},
 	unauth_iterate_start => {
-	    auth_id => $self->get('RealmFile.realm_id'),
-	    path_info => lc($self->get('RealmFile.path')),
+	    map(($_ => $q->get($_)), qw(auth_id path_info)),
 	},
     );
 }
