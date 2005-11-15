@@ -1021,7 +1021,7 @@ sub merge_initialize_info {
 		my($v) = ref($name) eq 'HASH' ? $name
 		    : ref($name) eq 'ARRAY' ? {
 			name => $name->[0],
-			_aliases => [@$name[1,$#$name]],
+			_aliases => [@$name[1..$#$name]],
 		    } : {name => $name};
 		$v->{_class} = $class;
 		foreach my $attr (keys(%$v)) {
