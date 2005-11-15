@@ -11,6 +11,7 @@ my($_DT) = Bivio::Type->get_instance('DateTime');
 our($_TRACE);
 my($_DIE) = {
     ALREADY_EXISTS => 'HTTP_PRECONDITION_FAILED',
+#
     DIE => 'FORBIDDEN',
     IO_ERROR => 'FORBIDDEN',
     FORBIDDEN => 'FORBIDDEN',
@@ -24,7 +25,7 @@ my($_DIE) = {
 };
 # This list should be complete, even though we don't implement them all
 # NOTE: copy is not a write operation.  It's write on Destination, not source
-my($_WRITABLE) = qr/^(delete|edit|lock|mkcol|move|put|proppatch|save|unlock)$/;
+my($_WRITABLE) = qr/^(delete|edit|lock|mkcol|move|put|proppatch|save|unlock)$/i;
 sub execute {
     my(undef, $req) = @_;
     my($s) = {
@@ -270,13 +271,25 @@ sub _format_http {
     return _fix_http($s, $res);
 }
 
+sub _has_write_permission {
+    my($realm, $task, $req) = @_;
+    return $realm->does_user_have_permissions(
+	${Bivio::Auth::PermissionSet->from_array(
+	    [map(Bivio::Auth::Permission->$_(),
+		 grep(s/_READ$/_WRITE/,
+		      map($_->get_name,
+			  @{Bivio::Auth::PermissionSet->to_array(
+			      $task->get('permission_set'))})))])},
+	$req,
+    );
+}
+
 sub _load {
     my($s, $realm, $path, $is_dest) = @_;
     my($req) = $s->{req};
     my($prev) = {map(($_ => $req->get($_)), qw(auth_realm task_id task))};
     $req->set_realm($realm);
-    my($tid) = $req->get('task')->get(
-	$is_dest || $s->{method} =~ $_WRITABLE ? 'write_task' : 'read_task');
+    my($tid) = $req->get('task')->get('next');
     $req->put(path_info => defined($path) ? $path : '');
     while ($tid) {
 	_trace($tid, ' ', $req) if $_TRACE;
@@ -285,6 +298,8 @@ sub _load {
 	$req->put(task_id => $tid, task => $t);
 	$tid = $req->get('task')->execute_items($req);
     }
+    my($task) = $req->get('task');
+    $realm = $req->get('auth_realm');
     $req->set_realm($prev->{auth_realm});
     $req->put(map(($_ => $prev->{$_}), qw(task_id task)));
     if ($tid) {
@@ -294,6 +309,12 @@ sub _load {
     my($m) = $req->unsafe_get('dav_model');
     unless ($m) {
 	_output($s, NOT_FOUND => 'No such resource: ', $path);
+	return;
+    }
+    if (($is_dest || $s->{method} =~ $_WRITABLE)
+	&& !_has_write_permission($realm, $task, $req)
+    ) {
+	_output($s, FORBIDDEN => 'No write access');
 	return;
     }
     return $m;
