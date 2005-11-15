@@ -86,6 +86,34 @@ Bivio::Test->new('Bivio::Biz::Model')->unit([
 		visible => ['c2', 'p1'],
 		hidden => [{name => 'p2', in_list => 1}],
 	    }],
+	    [{
+		other => [
+		    {
+			name => 'RealmOwner.name',
+			constraint => 'NONE',
+		    },
+		    {
+			name => 'User.user_id',
+			constraint => 'NONE',
+		    },
+		],
+	    }, {
+		other => [
+		    [qw(RealmOwner.realm_id Foo.realm_id Address.realm_id Phone.realm_id)],
+		],
+	    }] => [{
+		other => [
+		    {
+			name => 'RealmOwner.name',
+			constraint => 'NONE',
+		    },
+		    [qw(RealmOwner.realm_id Foo.realm_id Address.realm_id Phone.realm_id)],
+		    {
+			name => 'User.user_id',
+			constraint => 'NONE',
+		    },
+		],
+	    }],
 	],
     ],
     'Bivio::Biz::Model::RealmOwner' => [
