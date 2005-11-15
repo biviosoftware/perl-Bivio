@@ -2,21 +2,10 @@
 # $Id$
 package Bivio::Biz::Model::RealmFileDAVList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use base 'Bivio::Biz::Model::DAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
-my($_FP) = $_RF->get_field_type('path');
-
-sub as_string {
-    my($self) = @_;
-    if (my $q = $self->get_query) {
-	my($r, $p) = $q->unsafe_get(qw(auth_id path_info));
-	return ref($self) . "[$r,$p]"
-	    if $r && $p;
-    }
-    return $self->SUPER::as_string;
-}
 
 sub dav_copy {
     my($self, $dest) = @_;
@@ -63,18 +52,6 @@ sub dav_propfind {
     };
 }
 
-sub dav_propfind_children {
-    my($self) = @_;
-    $self->set_cursor_or_die(0);
-    return $self->new->map_iterate(
-	\&dav_propfind,
-	unauth_iterate_start => {
-	    auth_id => $self->get('RealmFile.realm_id'),
-	    path_info => lc($self->get('RealmFile.path')),
-	},
-    );
-}
-
 sub dav_put {
     my($self, $content) = @_;
     return _instance(
@@ -84,14 +61,6 @@ sub dav_put {
 	$content,
     );
     return;
-}
-
-sub execute {
-    my($proto, $req) = @_;
-    my($self) = $proto->new($req);
-    $self->load_dav;
-    $req->put(dav_model => $self);
-    return 0;
 }
 
 sub internal_initialize {
@@ -153,7 +122,7 @@ sub load_dav {
     my($self) = @_;
     my($req) = $self->get_request;
     my($path) = $req->get('path_info');
-    my($p, $e) = $_FP->from_literal($path);
+    my($p, $e) = Bivio::Type::FilePath->from_literal($path);
     Bivio::Die->throw_die(
 	CORRUPT_QUERY => {
 	    message => 'invalid path',
