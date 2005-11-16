@@ -1265,20 +1265,6 @@ sub set_user {
     return $user;
 }
 
-=for html <a name="task_ok"></a>
-
-=head2 task_ok(Bivio::Agent::TaskId task_id) : boolean
-
-B<Deprecated>
-
-=cut
-
-sub task_ok {
-    my($self, $task_id) = @_;
-    Bivio::IO::Alert->warn_deprecated('call can_user_execute_task() instead');
-    return $self->can_user_execute_task($task_id);
-}
-
 =for html <a name="throw_die"></a>
 
 =head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
