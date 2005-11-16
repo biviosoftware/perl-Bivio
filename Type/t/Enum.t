@@ -4,7 +4,7 @@
 # $Id$
 #
 use strict;
-BEGIN { $| = 1; print "1..36\n"; }
+BEGIN { $| = 1; print "1..37\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Type::Enum;
@@ -50,6 +50,9 @@ __PACKAGE__->compile([
     'E_2' => [
     	2,
 	'e two',
+    ],
+    'SOME_ENUM' => [
+    	3,
     ],
 ]);
 
@@ -112,9 +115,9 @@ t(!eval {$t1->from_name(0)});
 t(!eval {$t1->from_name('e 0')});
 
 my($t2) = Bivio::Type::Enum::T2->E_0;
-t($t2->get_min eq $t2->E_0 && $t2->get_max eq $t2->E_2);
+t($t2->get_min eq $t2->E_0 && $t2->get_max eq $t2->SOME_ENUM);
 t($t2->can_be_zero && $t2->can_be_positive && !$t2->can_be_negative);
-t($t2->get_width == 3);
+t($t2->get_width == 9);
 t($t2->get_precision == 1);
 
 $not_done = 2;
@@ -130,6 +133,7 @@ t(!$not_done);
 t($t2->E_0->get_short_desc eq 'E 0');
 t($t2->E_0->get_long_desc eq 'E 0');
 t($t2->E_2->get_short_desc eq 'e two');
+t($t2->SOME_ENUM->get_short_desc eq 'Some Enum');
 t($t2->E_2->get_long_desc eq 'e two');
 t(int(@{[$t1->get_list]}) == 3);
 

@@ -286,12 +286,8 @@ sub compile {
 	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name,
 		': does not point to an array')
 		    unless ref($d) eq 'ARRAY';
-	unless (defined($d->[1])) {
-	    # Turn TEST_VIEW into Test View.
-	    my($n) = ucfirst(lc($name));
-	    $n =~ s/_(\w?)/ \u$1/g;
-	    $d->[1] = $n;
-	}
+	$d->[1] = $pkg->format_short_desc($name)
+	    unless defined($d->[1]);
 	$short_width = length($d->[1]) if length($d->[1]) > $short_width;
 	$d->[2] = $d->[1] unless defined($d->[2]);
 	$long_width = length($d->[2]) if length($d->[2]) > $long_width;
@@ -434,6 +430,23 @@ Calls I<put_on_request>.  Always returns false.
 sub execute {
     shift->put_on_request(@_);
     return 0;
+}
+
+=for html <a name="format_short_desc"></a>
+
+=head2 static format_short_desc(any name) : string
+
+Converts an enum name (may be string or enum) to a mixed case string,
+e.g.  turns TEST_VIEW into Test View.  If no arg, uses self.
+
+=cut
+
+sub format_short_desc {
+    my($proto) = shift;
+    my($name) = @_ ? shift(@_) : $proto;
+    $name = ucfirst(lc(ref($name) ? $name->get_name : $name));
+    $name =~ s/_(\w?)/ \u$1/g;
+    return $name;
 }
 
 =for html <a name="from_literal"></a>
