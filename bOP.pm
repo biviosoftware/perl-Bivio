@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::Model::RealmFileDAVList preserves case properly
+  * Bivio::Biz::Action::DAV supports any task execution via AnyTaskDAVList
+  * Bivio::PetShop allows you to brows orders via DAV.
+
+  Revision 3.42  2005/11/15 20:48:20  nagler
+  NOTE: Model.t is failing, but will be fixed shortly
+  * Bivio::Biz::ListModel->unauth_parse_query/unauth_iterate_start added
+  * Bivio::Agent::Task->execute_items calls items on a task, and returns
+    redirect.
+  * Bivio::Biz::Action::DAV redesigned to interface via Tasks.  Effectively,
+    Action.DAV->execute is a dispatcher loop.
+  * Bivio::SQL::Statement->NOT_IN added
   * Bivio::Util::LinuxConfig->add_aliases/virtusers added
   * Bivio::Type::EnumSet->to_array added
   * Bivio::Biz::Model::DAVList added
