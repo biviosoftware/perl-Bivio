@@ -2,10 +2,33 @@
 # $Id$
 test_setup('PetShop');
 home_page();
+follow_link('Dogs');
+follow_link('Corgi');
+follow_link('Female Puppy Corgi');
+add_to_cart();
+checkout_as_demo();
+my($order_content) = get_content() =~ m{^.+?\n\n(.+)}s;
+my($order_realm) = get_uri() =~ m{/(o\d+)/};
+die unless $order_realm;
 basic_authorization('demo');
-my($root) = '/demo/dav';
+my($root) = '/demo/dav/orders';
+send_request(PROPFIND => $root);
+my($order_href) = get_content() =~ m{<D:href>(.+?/$order_realm/)</D:href>};
+die(get_content()) unless $order_href;
+test_deviance(qr{not.found}i);
+send_request(PROPFIND => "$root/not-to-be-found");
+send_request(PROPFIND => "/demo/dav/not-to-be-found");
+test_conformance();
+send_request(PROPFIND => $order_href);
+$order_href = (get_content() =~ m{<D:href>(.+?/$order_realm/detail.html)</D:href>})[0];
+die(get_content()) unless $order_href;
+send_request(GET => $order_href);
+verify_content_type('text/html');
+my($new) = get_content() =~ m{^.+?\n\n(.+)}s;
+die unless $new eq $order_content;
+$root = '/demo/dav/files';
 my($a) = {d1 => "$root/dav-btest"};
-$a->{d2} = "$a->{d1}.new";
+$a->{d2} = "$a->{d1}.New";
 $a->{f1} = "$a->{d1}/a.txt";
 $a->{f2} = "$a->{d2}/a.txt";
 foreach my $x (reverse(sort(values(%$a)))) {

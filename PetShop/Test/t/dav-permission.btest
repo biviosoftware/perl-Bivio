@@ -2,30 +2,40 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-my($x) = absolute_uri('/demo/dav/pub2');
+my($root) = '/demo/dav/files';
+my($x) = absolute_uri("$root/pub2");
 test_deviance(qr{authorization}i);
-send_request(OPTIONS => '/demo/dav');
+send_request(OPTIONS => "$root");
 test_conformance();
 basic_authorization('guest');
-visit_uri('/demo/dav/private/file.html');
-send_request(PROPFIND => '/demo/dav/private');
-my($rand) = random_string();
+$root =~ s{/files}{};
+send_request(PROPFIND => $root);
+verify_no_text('orders');
 test_deviance(qr{forbidden}i);
-send_request(MKCOL => "/demo/dav/pub/dav-permission.$rand");
-send_request(PUT => "/demo/dav/pub/dav-permission.$rand", undef, '');
-send_request(DELETE => '/demo/dav/pub/file.txt');
-send_request(LOCK => '/demo/dav/pub');
-send_request(MOVE => '/demo/dav/pub', {
+send_request(PROPFIND => "$root/orders");
+test_conformance();
+$root .= '/files';
+visit_uri("$root/private/file.html");
+send_request(PROPFIND => "$root/private");
+my($rand) = random_string();
+test_deviance(qr{not.found}i);
+send_request(PROPFIND => "$root/pub/dav-permission.$rand");
+test_deviance(qr{forbidden}i);
+send_request(MKCOL => "$root/pub/dav-permission.$rand");
+send_request(PUT => "$root/pub/dav-permission.$rand", undef, '');
+send_request(DELETE => "$root/pub/file.txt");
+send_request(LOCK => "$root/pub");
+send_request(MOVE => "$root/pub", {
     Destination => $x,
 });
 test_conformance();
-send_request(OPTIONS => '/demo/dav/private');
-visit_uri('/demo/dav/private/file.html');
-send_request(COPY => '/demo/dav/private/file.html', {
-    Destination => absolute_uri('/guest/dav/dav-permission'),
+send_request(OPTIONS => "$root/private");
+visit_uri("$root/private/file.html");
+send_request(COPY => "$root/private/file.html", {
+    Destination => absolute_uri('/guest/dav/files/dav-permission'),
 });
-$x = absolute_uri('/demo/dav/dav-permission');
+$x = absolute_uri("$root/dav-permission");
 test_deviance('forbidden');
-send_request(COPY => '/guest/dav/private/file.html', {
+send_request(COPY => '/guest/dav/files/private/file.html', {
     Destination => $x,
 });
