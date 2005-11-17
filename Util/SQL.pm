@@ -281,9 +281,9 @@ sub export_db {
     return "Exported $db->{database} to $f\n";
 }
 
-=for html <a name="format_email"></a>
+=for html <a name="format_test_email"></a>
 
-=head2 static format_email(string base) : string
+=head2 static format_test_email(string base) : string
 
 Returns 
 
@@ -291,7 +291,7 @@ Returns
 
 =cut
 
-sub format_email {
+sub format_test_email {
     my(undef, $base) = @_;
     return (Bivio::IO::ClassLoader->simple_require(
 	'Bivio::Test::Language::HTTP')->generate_local_email($base))[0],
