@@ -20,15 +20,35 @@ sub as_string {
     return $self->SUPER::as_string;
 }
 
+sub dav_propfind {
+    my($self) = @_;
+    return {
+	getlastmodified => $self->unsafe_get('getlastmodified')
+	    || Bivio::Type::DateTime->now,
+	map(($_ => $self->unsafe_get($_)), qw(uri displayname)),
+    };
+}
+
 sub dav_propfind_children {
     my($self) = @_;
     my($q) = $self->get_query;
     return $self->new->map_iterate(
 	sub {shift->dav_propfind},
 	unauth_iterate_start => {
-	    map(($_ => $q->get($_)), qw(auth_id path_info)),
+	    map(($_ => $q->get($_)),
+		'auth_id',
+		@{$self->internal_get_sql_support->get('other_query_keys')},
+	    ),
 	},
     );
+}
+
+sub execute {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    my($res) = $self->load_dav;
+    $req->put(dav_model => $self);
+    return $res;
 }
 
 sub internal_initialize {
@@ -36,17 +56,36 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	can_iterate => 1,
+	other => [
+	    {
+		name => 'displayname',
+		type => 'Line',
+		constraint => 'NOT_NULL',
+		in_list => 1,
+	    },
+	    {
+		name => 'getlastmodified',
+		type => 'DateTime',
+		constraint => 'NONE',
+		in_list => 1,
+	    },
+	    {
+		name => 'uri',
+		type => 'FilePath',
+		constraint => 'NOT_NULL',
+		in_list => 1,
+	    },
+	],
 	other_query_keys => ['path_info'],
     });
 }
 
-sub execute {
-    my($proto, $req) = @_;
-    my($self) = $proto->new($req);
-    return 'next'
-	unless $self->load_dav;
-    $req->put(dav_model => $self);
-    return 0;
+sub root_dav_row {
+    my($self) = @_;
+    return [{
+	displayname => '/',
+	uri => '',
+    }];
 }
 
 1;
