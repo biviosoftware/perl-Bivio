@@ -8,7 +8,7 @@ $_ = $Bivio::UI::Task::VERSION;
 =head1 NAME
 
 Bivio::UI::Task - provides URIs for tasks
-n
+
 =head1 RELEASE SCOPE
 
 bOP
