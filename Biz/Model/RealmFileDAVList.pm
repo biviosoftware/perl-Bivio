@@ -76,15 +76,7 @@ sub internal_initialize {
 	    RealmFile.modified_date_time
 	    RealmFile.is_folder
 	    RealmFile.volume
-        ),
-	    map(
-		+{
-		    name => $_,
-		    constraint => 'NONE',
-		    type => 'FilePath',
-		}, qw(displayname uri),
-	    ),
-	],
+        )],
 	other_query_keys => ['path_info'],
     });
 }
@@ -92,15 +84,15 @@ sub internal_initialize {
 sub internal_post_load_row {
     my($self, $row) = @_;
     my($q) = $self->get_query;
-    my($p) = $q->get('path_info');
+    my($p) = lc($q->get('path_info'));
     return 0
 	unless $row->{'RealmFile.path_lc'} =~ /^\Q$p/;
     if ($p eq $row->{'RealmFile.path_lc'}) {
 	return 0
 	    unless $q->get('this');
 	$row->{uri} = '';
-	$row->{displayname}
-	    = ($row->{'RealmFile.path'} =~ m{([^/]+$)})[0] || $p;
+	$row->{displayname} = ($row->{'RealmFile.path'} =~ m{([^/]+$)})[0]
+	    || $q->get('path_info');
 	return 1;
     }
     $row->{uri} = $row->{displayname}
@@ -130,12 +122,13 @@ sub load_dav {
 	    entity => $path,
         },
     ) if $e;
-    $p = $p ? lc($p) : '/';
+    $p = '/'
+	unless $p;
     $self->unsafe_load_this({
 	path_info => $p,
-	this => $p,
+	this => lc($p),
     });
-    return $self;
+    return 1;
 }
 
 sub _instance {
