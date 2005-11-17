@@ -380,14 +380,40 @@ sub get_delegate_info {
 	    ANYBODY
 	    Action.BasicAuthorization
 	    Action.DAV
-	    next=USER_DAV_FILE
+	    next=USER_DAV_TASKS
 	)],
 	[qw(
-	    USER_DAV_FILE
+	    USER_DAV_TASKS
 	    537
 	    USER
 	    DATA_READ
+	    Model.UserTaskDAVList
+	    files_task=USER_DAV_FILE
+	    orders_task=USER_DAV_ORDER_LIST
+	)],
+	[qw(
+	    USER_DAV_FILE
+	    538
+	    USER
+	    DATA_READ
 	    Model.RealmFileDAVList
+	    require_dav=1
+	)],
+	[qw(
+	    USER_DAV_ORDER_LIST
+	    539
+	    USER
+	    ADMIN_READ
+	    Model.UserRealmDAVList
+	    realm_task=USER_DAV_ORDER
+	)],
+	[qw(
+	    USER_DAV_ORDER
+	    540
+	    ORDER
+	    DATA_READ
+	    Model.UserTaskDAVList
+	    detail_html_task=ORDER_COMMIT
 	)],
     ]);
 }
