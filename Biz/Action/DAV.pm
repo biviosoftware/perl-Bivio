@@ -131,6 +131,8 @@ sub _dav_edit {
 
 sub _dav_get {
     my($s) = @_;
+    return _call($s, 'reply_get')
+	if $s->{list}->can('dav_reply_get');
     $s->{reply}->set_last_modified($s->{propfind}->{getlastmodified})
 	if $s->{propfind}->{getlastmodified};
     return _output(
@@ -210,8 +212,11 @@ sub _dav_propfind {
 				     : (),
 				 $x->{getcontenttype} ? (
 				     [getcontenttype => $x->{getcontenttype}],
-				     [getcontentlength => $x->{getcontentlength}],
 				     [resourcetype => ''],
+				     defined($x->{getcontentlength})
+					 ? [getcontentlength =>
+						$x->{getcontentlength}]
+				         : (),
 				 ) : (
 				     [resourcetype => [
 					 [collection => ''],
@@ -296,7 +301,14 @@ sub _load {
 	my($t) = Bivio::Agent::Task->get_by_id($tid);
 	last unless $req->get('auth_realm')->can_user_execute_task($t, $req);
 	$req->put(task_id => $tid, task => $t);
-	$tid = $req->get('task')->execute_items($req);
+	if ($t->unsafe_get('require_dav')
+	    || grep(($_->[0] || '') =~ /DAV/, @{$t->get('items')})) {
+	    $tid = ($req->get('task')->execute_items($req))[0];
+	    next;
+	}
+	Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
+	$tid = undef;
+	last;
     }
     my($task) = $req->get('task');
     $realm = $req->get('auth_realm');
