@@ -1,9 +1,5 @@
-
 # $Id$
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All rights reserved.
-#
-# Only works with PetShop configuration
-#
+# Copyright (c) 2003-2005 bivio Software, Inc.  All rights reserved.
 use strict;
 use Bivio::Test;
 use Bivio::Test::Request;
