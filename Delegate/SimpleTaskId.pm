@@ -213,6 +213,7 @@ sub get_delegate_info {
 	    View.user-password-query
 	    reset_task=USER_PASSWORD_RESET
 	    next=GENERAL_USER_PASSWORD_QUERY_MAIL
+	    cancel=SITE_ROOT
 	)],
 	[qw(
 	    GENERAL_USER_PASSWORD_QUERY_MAIL
@@ -239,7 +240,7 @@ sub get_delegate_info {
 	    ADMIN_READ&ADMIN_WRITE
 	    Model.UserPasswordForm
 	    View.user-password
-	    next=SITE_ROOT
+	    next=MY_SITE
 	)],
 	[qw(
 	    GENERAL_USER_PASSWORD_QUERY_ACK
