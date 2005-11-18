@@ -157,14 +157,14 @@ sub vs_simple_form {
 		    if (UNIVERSAL::isa($_, 'Bivio::UI::Widget')
 			&& $_->simple_package_name eq 'FormField'
 		    ) {
-			$_->get_if_exists_else_put(cell_class => 'field'),
+			$_->put_unless_exists(cell_class => 'field'),
 			$x = [
 			    $proto->vs_call('Join', [''], {cell_class => 'label'}),
 			    $_,
 			];
 		    }
 		    elsif (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
-			$x = [$_->put(cell_colspan => 2)];
+			$x = [$_->put_unless_exists(cell_colspan => 2)];
 		    }
 		    elsif ($_ =~ s/^-//) {
 			$x = [String(
