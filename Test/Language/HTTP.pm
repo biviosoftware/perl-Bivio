@@ -709,19 +709,14 @@ sub verify_form {
     _trace($form->{visible}) if $_TRACE;
     foreach my $field (sort(keys(%$form_fields))) {
 	my($control) = _assert_form_field($form, $field);
+	my($case) = {
+	    expected => $form_fields->{$field},
+	    result => '',
+	};
+	_verify_form_field($self, $control, $case);
 	Bivio::Die->die($control->{type}, ' ', $field, ' expected: ',
-	    $form_fields->{$field}, ' but got: ', $control->{value},
-	)
-	    unless $control->{type} eq 'checkbox'
-		? ($control->{checked}
-		       ? defined($control->{value}) ? $control->{value} : 1
-		       : 0)
-		  == (defined($form_fields->{$field})
-		       ? $form_fields->{$field} : 0)
-		: $control->{options}
-		?  _verify_form_option(
-		    $control, $field, $form_fields->{$field})
-		: $form_fields->{$field} eq $control->{value};
+	    $case->{expected}, ' but got: ', $case->{result})
+		unless $case->{expected} eq $case->{result};
     }
     return;
 }
@@ -1219,18 +1214,40 @@ sub _validate_text_field {
     return;
 }
 
-# _verify_form_option(hash_ref control, string field, string value) : boolean
+# _verify_form_field(self, hash_ref control, hash_ref case)
 #
-# Returns matching state of option.
+# Find value of the form field.
+#
+sub _verify_form_field {
+    my($self, $control, $case) = @_;
+	
+    if ($control->{type} eq 'checkbox') {
+	$case->{expected} = 0
+	    unless defined($case->{expected});
+	$case->{result} = $control->{checked}
+	    ? defined($control->{value}) ? $control->{value} : 1
+	    : 0;
+    }
+    elsif ($control->{options}) {
+	$case->{result} = _verify_form_option($control);
+    }
+    else {
+	$case->{result} = $control->{value};
+    }
+    return;
+}
+
+# _verify_form_option(hash_ref control, string value) : string
+#
+# Return the state of option.
 #
 sub _verify_form_option {
-    my($control, $field, $value) = @_;
+    my($control, $value) = @_;
     foreach my $o (keys(%{$control->{options}})) {
-	return 1
-	    if (ref($value) ? $o =~ $value : $value eq $o)
-	    && $control->{options}->{$o}->{selected};
+	return $o
+	    if $control->{options}->{$o}->{selected};
     }
-    return 0;
+    return undef;
 }
 
 =head1 COPYRIGHT
