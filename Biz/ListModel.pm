@@ -122,6 +122,7 @@ use Bivio::SQL::ListSupport;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_LOAD_ALL_DIE_FACTOR) = 2;
 
 =head1 FACTORIES
 
@@ -1111,7 +1112,7 @@ Returns I<self>.
 sub load_all {
     my($self, $query) = @_;
     $query = $self->parse_query($query);
-    $query->put(count => $self->LOAD_ALL_SIZE);
+    $query->put(count => _load_all_die_count($self));
     _unauth_load($self, $query);
     _assert_all($self);
     return $self;
@@ -1487,10 +1488,10 @@ sub unauth_load_all {
     my($self, $query) = @_;
     $query ||= {};
     if (ref($query) eq 'HASH') {
-	$query->{count} = $self->LOAD_ALL_SIZE;
+	$query->{count} = _load_all_die_count($self);
     }
     else {
-	$query->put(count => $self->LOAD_ALL_SIZE);
+	$query->put(count => _load_all_die_count($self));
     }
     _unauth_load($self, $query);
     _assert_all($self);
@@ -1544,9 +1545,12 @@ sub unsafe_load_this {
 sub _assert_all {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    $self->throw_die(Bivio::DieCode::TOO_MANY(), 'more than '
-	    .$self->LOAD_ALL_SIZE.' records')
-	    if $fields->{query}->get('has_next');
+    $self->throw_die(Bivio::DieCode->TOO_MANY, 'more than '
+        . _load_all_die_count($self) . ' records')
+        if $fields->{query}->get('has_next');
+    Bivio::IO::Alert->warn('more than ', $self->LOAD_ALL_SIZE,
+        ' records returned: ', $self)
+        if $self->get_result_set_size > $self->LOAD_ALL_SIZE;
     return;
 }
 
@@ -1587,6 +1591,16 @@ sub _format_uri_args {
 		$req->format_stateless_uri($req->get('task_id'));
     }
     return ($self, $type, $uri, $query_args, $req);
+}
+
+# _load_all_die_count(self) : int
+#
+# Returns the number of rows for LOAD_ALL where load_all() will die()
+# rather than warn().
+#
+sub _load_all_die_count {
+    my($self) = @_;
+    return $self->LOAD_ALL_SIZE * $_LOAD_ALL_DIE_FACTOR;
 }
 
 # _load_this(self, Bivio::SQL::ListQuery query)
