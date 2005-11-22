@@ -84,5 +84,13 @@
 	get_by_regexp => [
 	    [qr/./] => DIE(),
 	],
+	put => [
+	    [u1 => undef, d1 => 1, d2 => 1] => not_die(),
+	],
+	are_defined => [
+	    [] => 1,
+	    [qw(d1 d2)] => 1,
+	    [qw(d1 d2 u1)] => 0,
+	],
     ],
 ];

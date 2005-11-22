@@ -138,18 +138,18 @@ sub ancestral_has_keys {
       return 1;
 }
 
-sub xancestral_has_keys {
-    my($self, @names) = @_;
-    _die($self, 'missing arguments')
-	unless @names;
-    foreach my $name (@names) {
-	my($s) = $self;
-	while ($s) {
-	    last if $s->has_keys($name);
-	    $s = $s->unsafe_get('parent');
-	}
+=for html <a name="are_defined"></a>
+
+=head2 are_defined(string key, ...) : boolean
+
+Returns true if all attributes are defined.
+
+=cut
+
+sub are_defined {
+    foreach my $v (shift->unsafe_get(@_)) {
 	return 0
-	    unless $s;
+	    unless defined($v);
     }
     return 1;
 }
