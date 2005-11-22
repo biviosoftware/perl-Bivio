@@ -394,8 +394,6 @@ sub clear_nondurable_state {
 
 Pass in parameters I<named> below.
 
-I<named> is modified.
-
 =head2 client_redirect(any task_id, any realm, hash_ref query, string path_info, boolean no_context)
 
 Redirects the client to the location of the specified new_task. By default,
@@ -592,8 +590,6 @@ I<anchor> will be appended last.
 
 I<no_context> and I<require_context> as described by
 L<Bivio::UI::Task::format_uri|Bivio::UI::Task/"format_uri">.
-
-I<named> is modified.
 
 =cut
 
@@ -836,6 +832,8 @@ sub internal_get_named_args {
 	    $named, ': unknown params passed to ',
 	    (caller(1))[3], ', which only accepts ', $names,
 	) if grep(!$map->{$_}, keys(%$named));
+        # make a copy to avoid changing the caller's value
+        $named = {%$named};
     }
     else {
 	Bivio::Die->die($argv, ': too many params passed to ', (caller(1))[3])
@@ -975,8 +973,6 @@ sub internal_initialize {
 
 Sets all values and saves form context.  See L<format_uri|"format_uri"> for the
 arguments.
-
-I<named> is modified.
 
 =cut
 
