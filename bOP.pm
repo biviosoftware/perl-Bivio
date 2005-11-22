@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.46  2005/11/22 02:04:09  nagler
+  * Bivio::Collection::Attributes->are_defined added
+  * Bivio::Type::Text64K isa Bivio::Type::Text
+
   Revision 3.45  2005/11/21 18:09:49  nagler
   * Bivio::Biz::Action::DAV was removing folder if overwrite was set
     on copy and move
