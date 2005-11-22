@@ -221,7 +221,8 @@ sub _render_href {
     my($req) = $source->get_request;
     return $req->format_stateless_uri($href)
 	if !ref($href) || UNIVERSAL::isa($href, 'Bivio::Agent::TaskId');
-    return $req->format_uri($href)
+    # use a copy of the hash because format_uri() munges it
+    return $req->format_uri({%$href})
 	if ref($href) eq 'HASH';
     $self->die(
 	'href', $source,
