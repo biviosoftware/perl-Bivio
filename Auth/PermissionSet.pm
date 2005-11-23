@@ -50,6 +50,23 @@ __PACKAGE__->initialize();
 
 =cut
 
+=for html <a name="clear"></a>
+
+=head2 clear(string permission_set, string bit ...) : string
+
+=head2 clear(string permission_set, Bivio::Auth::Permission bit ...) : string
+
+Return a permission set with the specified bits cleared
+
+=cut
+
+sub clear {
+    my($proto, $perm_set, @arg_bits) = @_;
+    my(@bits) = map({ref($_)
+        ? $_ : Bivio::Auth::Permission->from_literal($_)} @arg_bits);
+    return ${Bivio::Type::EnumSet->clear(\$perm_set, @bits)};
+}
+
 =for html <a name="get_enum_type"></a>
 
 =head2 get_enum_type() : Bivio::Type::Enum
