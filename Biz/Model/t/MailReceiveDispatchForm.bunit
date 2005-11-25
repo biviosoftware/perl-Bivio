@@ -31,7 +31,7 @@ Request('setup_facade');
 	['demo', 'ignore.demo'] => ['demo', 'demo'],
 	['Bob <demo@bivio.biz>', 'ignore.demo'] => ['demo', 'demo'],
 	['not_a_user', 'demo-ignore'] => [undef, 'demo'],
-	['demo', 'not_a_user-ignore'] => Bivio::DieCode->MODEL_NOT_FOUND,
+	['demo', 'not_a_user-ignore'] => MODEL_NOT_FOUND(),
 	['demo', 'demo'] => [demo => demo => Bivio::Agent::TaskId->MAIL_RECEIVE],
 	['demo', 'demo-ignore+antything'] => ['demo', 'demo'],
 	# Should not see "unknown facade uri"
