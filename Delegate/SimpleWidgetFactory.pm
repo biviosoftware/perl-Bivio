@@ -249,7 +249,8 @@ sub internal_create_edit {
 	    field => $field,
 	    choices => $type,
 	    %$attrs,
-	}) if $type->get_count() > 6 || $attrs->{wf_want_select};
+	}) if $attrs->{wf_want_select}
+	    || !defined($attrs->{wf_want_select}) && $type->get_count() > 6;
 
 	# Having label on field with radio grid is sloppy.
 	$attrs->{label_on_field} = 0;
