@@ -76,12 +76,18 @@ Returns the signature of the test.
 
 sub as_string {
     my($self) = @_;
-    return $self->SUPER::as_string unless ref($self);
+    return $self->SUPER::as_string
+	unless ref($self);
     my($attr) = $self->internal_get;
     my($sig) = '';
-    $sig .= (ref($attr->{object}) || $attr->{object} || '<Object>')
-	.'#'.$attr->{object_num}
-	if $attr->{object};
+    if ($attr->{object}) {
+	my($s) = UNIVERSAL::can($attr->{object}, 'as_string')
+	    && Bivio::Die->eval(sub {$attr->{object}->as_string})
+	    || ref($attr->{object})
+	    || $attr->{object} || '<Object>';
+	$s =~ s/=\w+\(0x[a-z0-9]\)$//;
+	$sig .= substr($s, 0, 100) . '#' . $attr->{object_num};
+    }
     $sig .= '->'.($attr->{method} || '<method>').'#'.$attr->{method_num}
 	if $attr->{method_num};
     $sig .= '(case#'.$attr->{case_num}
