@@ -31,6 +31,7 @@ send_request(MOVE => "$root/pub", {
 test_conformance();
 send_request(OPTIONS => "$root/private");
 visit_uri("$root/private/file.html");
+# Don't write to '/' or '/pub', other tests depend
 send_request(COPY => "$root/private/file.html", {
     Destination => absolute_uri('/guest/dav/files/dav-permission'),
 });
