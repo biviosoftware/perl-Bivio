@@ -112,7 +112,7 @@ sub from_literal {
     $value =~ s/\s+//g;
     $value =~ s/^0+//g;
     # Make sure is a digit.  Can't do more, because we allow
-    # "special" primary ids (see Type::FileVolume).
+    # "special" primary ids
     return $value if $value =~ /^\d+$/;
     return (undef, Bivio::TypeError::PRIMARY_ID());
 }
