@@ -1,0 +1,25 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully->set_realm_and_user('guest', 'guest');
+my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/pub'});
+[
+    {
+	method => 'load_all',
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    return [{path_info => $params->[0]}];
+	},
+    } => [
+	'/not-found' => [],
+	'/' => not_die(),
+	'/private' => [map(+{'RealmFile.path' => "/private/$_"}, qw(file.html image.gif))],
+    ],
+    map((
+	set_cursor_or_not_found => [
+	    $_ => not_die(),
+	],
+	get_content_type => $_ ? 'image/gif' : 'text/html'),
+	0, 1,
+    ),
+];
