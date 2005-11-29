@@ -362,7 +362,6 @@ sub get_delegate_info {
             534
             USER
             ANYBODY
-	    Type.FileVolume->execute_plain
 	    Action.RealmFile->execute_public
         )],
 	[qw(
@@ -370,7 +369,6 @@ sub get_delegate_info {
             535
             USER
             DATA_READ
-	    Type.FileVolume->execute_plain
 	    Action.RealmFile
         )],
 	[qw(
