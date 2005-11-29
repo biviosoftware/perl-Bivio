@@ -917,19 +917,8 @@ L<Bivio::Biz::PropertyModel::is_loaded|Bivio::Biz::PropertyModel/"is_loaded">.
 sub unsafe_get_model {
     my($self, $name) = @_;
     my($fields) = $self->[$_IDI];
-    if (defined($fields->{models})) {
-	return $fields->{models}->{$name} if $fields->{models}->{$name};
-    }
-    else {
-	$fields->{models} = {};
-    }
-    my($query, $mi) = _get_model_query($self, $name);
-    $fields->{models}->{$name} = $mi;
-
-#TODO: SECURITY: Is this valid?
-    # Can be "unauth_load", because the primary load was authenticated
-    $mi->unauth_load($query) if $query;
-    return $mi;
+    return ($fields->{models} ||= {})->{$name}
+	||= _load_other_model($self, $name);
 }
 
 =for html <a name="unsafe_get_request"></a>
@@ -993,7 +982,8 @@ sub _get_model_query {
     # Asserts operation is valid
     my($sql_support) = $self->internal_get_sql_support;
     my($models) = $sql_support->get('models');
-    $self->die("$name: no such model") unless defined($models->{$name});
+    $self->die("$name: no such model")
+	unless defined($models->{$name});
     my($m) = $models->{$name};
     my($properties) = $self->internal_get;
     my($req) = $self->unsafe_get_request;
@@ -1076,6 +1066,27 @@ sub _load_all_property_models {
 	$class->get_instance;
     }
     return;
+}
+
+# _load_other_model(self, string name) : Bivio:Biz::PropertyModel
+sub _load_other_model {
+    my($self, $name) = @_;
+    # Does a bunch of asssertion checking
+    my($query, $mi) = _get_model_query($self, $name);
+    return $mi
+	unless $query;
+    my($aliases) = $self->get_info('column_aliases');
+    my($values) = $self->internal_get;
+    return $mi->internal_load_properties({
+	map({
+	    my($k) = $aliases->{"$name.$_"};
+	    unless ($k && exists($values->{$k})) {
+		$mi->unauth_load($query);
+		return $mi;
+	    }
+	    ($k => $values->{$k});
+	 } @{$mi->get_info('column_names')}),
+    });
 }
 
 # _new_args(proto, Bivio::Agent::Request req, any class) : array
