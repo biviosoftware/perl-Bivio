@@ -9,7 +9,10 @@ my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
 
 sub dav_copy {
     my($self, $dest) = @_;
-    _instance($self, copy_deep => _load_args($dest));
+    _instance($self, copy_deep => {
+	%{_load_args($dest)},
+	user_id => $self->get_request->get('auth_user_id'),
+    });
     return;
 }
 
@@ -75,7 +78,7 @@ sub internal_initialize {
 	    RealmFile.realm_file_id
 	    RealmFile.modified_date_time
 	    RealmFile.is_folder
-	    RealmFile.volume
+	    RealmFile.is_read_only
         )],
 	other_query_keys => ['path_info'],
     });
@@ -83,50 +86,32 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    my($q) = $self->get_query;
-    my($p) = lc($q->get('path_info'));
-    return 0
-	unless $row->{'RealmFile.path_lc'} =~ /^\Q$p/;
-    if ($p eq $row->{'RealmFile.path_lc'}) {
-	return 0
-	    unless $q->get('this');
+    my($pi) = $self->get_query->get('path_info');
+    if ($row->{'RealmFile.path_lc'} eq lc($pi)) {
 	$row->{uri} = '';
-	$row->{displayname} = ($row->{'RealmFile.path'} =~ m{([^/]+$)})[0]
-	    || $q->get('path_info');
-	return 1;
+	$row->{displayname} = $pi eq '/' ? '/'
+	    : ($row->{'RealmFile.path'} =~ m{([^/]+)$})[0];
     }
-    $row->{uri} = $row->{displayname}
-	= substr($row->{'RealmFile.path'}, $p eq '/' ? 1 : length($p) + 1);
-    return $row->{displayname} =~ m{/} ? 0 : 1;
+    else {
+	$row->{uri} = $row->{displayname}
+	    = substr(
+		$row->{'RealmFile.path'}, length($pi) + ($pi eq '/' ? 0 : 1));
+    }
+    return 1;
 }
 
-sub internal_prepare_statement {
-    my($self, $stmt, $query) = @_;
-    $stmt->where(
-	$stmt->GTE(
-	    'LENGTH(RealmFile.path_lc)', [length($query->get('path_info'))]),
-	$stmt->EQ('RealmFile.volume', [Bivio::Type::FileVolume->PLAIN]),
-    );
-    return;
+sub internal_pre_load {
+    my($self, $query) = @_;
+    return $query->get('this') ? ''
+	: shift->get_instance('RealmFileList')->internal_pre_load(@_);
 }
 
 sub load_dav {
     my($self) = @_;
-    my($req) = $self->get_request;
-    my($path) = $req->get('path_info');
-    my($p, $e) = Bivio::Type::FilePath->from_literal($path);
-    Bivio::Die->throw_die(
-	CORRUPT_QUERY => {
-	    message => 'invalid path',
-	    type_error => $e,
-	    entity => $path,
-        },
-    ) if $e;
-    $p = '/'
-	unless $p;
+    my($p) = $_RF->parse_path($self->get_request->get('path_info'), $self);
     $self->unsafe_load_this({
-	path_info => $p,
 	this => lc($p),
+	path_info => $p,
     });
     return 1;
 }
@@ -141,15 +126,14 @@ sub _load_args {
     my($self) = @_;
     my($q) = $self->get_query;
     return {
-	volume => Bivio::Type::FileVolume->PLAIN,
 	path => $q->get('path_info'),
 	realm_id => $q->get('auth_id'),
     };
 }
 
 sub _static {
-    my($self, $method) = splice(@_, 0, 2);
-    return $_RF->$method($self, 'RealmFile.', @_);
+    my($self, $method) = @_;
+    return $_RF->$method($self, 'RealmFile.');
 }
 
 1;
