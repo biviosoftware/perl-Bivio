@@ -3,21 +3,23 @@
 package Bivio::Util::RealmFile;
 use strict;
 use base 'Bivio::ShellUtil';
+use Bivio::Biz::Model::RealmFile;
+use File::Find ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub OPTIONS {
     return {
 	 %{shift->SUPER::OPTIONS(@_)},
-	 volume => [FileVolume => 'PLAIN'],
 	 is_public => [Boolean => 0],
+	 is_read_only => [Boolean => 0],
     };
 }
 
 sub OPTIONS_USAGE {
     return shift->SUPER::OPTIONS_USAGE(@_) . <<'EOF'
-    -volume [FileVolume] - file volume to operate on (default: PLAIN)
     -is_public - operate on public files (default: 0)
+    -is_read_only - operate on read only files (default: 0)
 EOF
 }
 
@@ -29,9 +31,6 @@ commands:
     import_tree [folder] -- imports files in current directory into folder [/]
 EOF
 }
-
-use Bivio::Biz::Model::RealmFile;
-use File::Find ();
 
 sub create_folder {
     my($self, $folder) = @_;
@@ -56,7 +55,6 @@ sub import_tree {
 	    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
 	    $method = 'update'
 		if $rf->unsafe_load({
-		    volume => $self->get('volume'),
 		    path => $path,
 		}) && !($method =~ s/create_with/update_with/);
 	    $rf->$method(
@@ -78,7 +76,7 @@ sub _fix_values {
     my($self, $values) = @_;
     return {
 	%$values,
-	map(($_ => $self->get($_)), qw(volume is_public)),
+	map(($_ => $self->get($_)), qw(is_public is_read_only)),
     };
 }
 
