@@ -2,169 +2,320 @@
 # $Id$
 Request('initialize_fully');
 set_realm_and_user('root', 'root');
-my($vt) = class()->get_instance->get_field_type('volume')->from_int(1);
-my($h) = {volume => $vt, path => 'hello'};
-my($h2) = {path => 'hello2', volume => $vt};
+my($a) = sub {
+    my($p, $ro, $oro) = @_;
+    return {
+	defined($p) ? (path => '/RealmFile/' . $p) : (),
+	defined($ro) ? (is_read_only => $ro) : (),
+	defined($oro) ? (override_is_read_only => $oro) : (),
+    };
+};
+my($dt) = 'Bivio::Type::DateTime';
 my($commit) = sub {commit(); return 1};
+my($old_mtime) = {modified_date_time => $dt->add_days($dt->now, -1)};
+my($new_mtime) = sub {
+    my(undef, $actual) = @_;
+    die($actual->[0], ': modified_date_time is wrong')
+	if $dt->diff_seconds($dt->now, $actual->[0]) > 5;
+    return 1;
+};
 [
+#Tests: delete: existing, not existing, not existing and not existing parent (doesn't create parent, delete loaded, delete with args, delete loaded with args, delete read only, public, read only with override, delete with auth_id and without auth_id, not empty folder, empty folder
+#Tests: copy from one realm to another, simple file, to dest without parent, to dest with parent, to is_public parent, to is_read_only parent w/o override, with override,  to parent writable but child not writable, w/override
+#Tests: update read only w/o override, w/override
     [req()] => [
-	delete_all => $commit,
-        create_with_content => [
-	    [$h, \('hello')] => $commit,
+	parse_path => [
+	    '' => '/',
+	    '0' => '/0',
+	    '?' => CORRUPT_QUERY(),
+	],
+	# basic CRUD tests; First clean up from possibly bad test run
+	delete_deep => [
+	    [$a->('/', undef, 1)] => $commit,
 	],
 	unsafe_load => [
-	    [$h] => 1,
+	    [$a->('/')] => 0,
 	],
-	get_content_length => 5,
+        create_with_content => [
+	    [$a->('f1'), \('f1')] => $commit,
+	],
+	is_empty => 1,
+	unsafe_load => [
+	    [$a->('f1')] => 1,
+	],
+	get_content_length => 2,
 	get_content => [
-	    [] => [\('hello')],
+	    [] => [\('f1')],
 	],
 	update_with_content => [
-	    [$h, \('goodbye')] => $commit,
+	    [{}, \('f1-update')] => $commit,
 	],
 	get_content => [
-	    [] => [\('goodbye')],
+	    [] => [\('f1-update')],
+	],
+	load => [
+	    [$a->('f1')] => not_die(),
+	],
+	get_content => [
+	    [] => [\('f1-update')],
 	],
 	delete => $commit,
 	unsafe_load => [
-	    [$h] => 0,
+	    [$a->('f1')] => 0,
 	],
         create_with_content => [
-	    [$h, \('hello')] => $commit,
-	    [$h2, \('hello2')] => $commit,
-	    [$h2, \('hello2')] => DB_CONSTRAINT(),
+	    [$a->('f1'), \('f1')] => $commit,
+	    [$a->('f2'), \('f2')] => $commit,
+	    [$a->('f2'), \('f2')] => DB_CONSTRAINT(),
 	],
 	unsafe_load => [
-	    [$h] => 1,
-	    [$h2] => 1,
+	    [$a->('f1')] => 1,
+	    [$a->('f2')] => 1,
+	    [{path => '/'}] => 1,
 	],
-	delete_all => sub {commit(); return [3]},
+	create_folder => [
+	    [$a->('d2/d3')] => not_die(),
+	],
+	load => [
+	    [{path => '/'}] => not_die(),
+	],
+	update => [
+	    [$old_mtime] => $commit,
+	],
+	delete_deep => [
+	    [$a->('/')] => sub {commit(); return [5]},
+	],
+	load => [
+	    [{path => '/'}] => not_die(),
+	],
+	get => [
+	    modified_date_time => $new_mtime,
+	],
 	unsafe_load => [
-	    [$h] => 0,
-	    [$h2] => 0,
+	    [$a->('f1')] => 0,
+	    [$a->('f2')] => 0,
 	],
         create_with_content => [
-	    [$h, \('hello')] => $commit,
+	    [$a->('f1'), \('f1')] => $commit,
 	],
-#broken until I figure out how to get -T working with IO::File
-#	get_content_type => 'text/plain',
+	get_content_type => 'application/octet-stream',
 	get_handle => sub {
 	    my($case, $actual) = @_;
-	    return $actual->[0]->getline eq 'hello' ? 1 : 0;
+	    return $actual->[0]->getline eq 'f1' ? 1 : 0;
 	},
 	create_folder => [
-	    [{
-		path => 'subdir',
-		volume => $vt,
-	    }] => $commit,
-	],
-	load => [
-	    [$h] => not_die(),
+	    [$a->('d1')] => $commit,
 	],
 	update => [
-	    [{
-		path => 'subdir/Foo',
-	    }] => $commit,
+	    [$old_mtime] => $commit,
 	],
 	load => [
-	    [{path_lc => 'subdir/foo'}] => not_die(),
+	    [$a->('f1')] => not_die(),
+	],
+	update => [
+	    [$a->('new1/f1')] => $commit,
+	],
+	map((
+	    load => [
+		[$a->($_)] => not_die(),
+	    ],
+	    update => [
+		[$old_mtime] => $commit,
+	    ]),
+	    qw(new1 d1),
+	),
+	load => [
+	    [$a->('new1/F1')] => not_die(),
+	],
+	update => [
+	    [{is_public => 1}] => not_die(),
+	],
+	map((
+	    load => [
+		[$a->($_)] => not_die(),
+	    ],
+	    get => [
+		modified_date_time => $old_mtime->{modified_date_time},
+	    ]),
+	    qw(new1 d1),
+	),
+	load => [
+	    [$a->('new1/F1')] => not_die(),
+	],
+	update => [
+	    [$a->('d1/F1')] => $commit,
+	],
+	map((
+	    load => [
+		[$a->($_)] => not_die(),
+	    ],
+	    get => [
+		modified_date_time => $new_mtime,
+	    ]),
+	    qw(new1 d1),
+	),
+	load => [
+	    [$a->('d1/f1')] => not_die(),
+	],
+	get => [
+	    path => $a->('d1/F1')->{path},
 	],
 	get_content => [
-	    [] => [\('hello')],
+	    [] => [\('f1')],
 	],
         create_with_content => [
-	    [{
-		path => '/newdir/subSubdir/Hello',
-		volume => $vt,
-	    }, \('subsubhello')] => $commit,
+	    [$a->('d1/d2/f3'), \('f3')] => $commit,
 	],
 	load => [
-	    [{
-		path => '/newdir/subSubdir/Hello',
-		volume => $vt,
-	    }] => not_die(),
+	    [$a->('d1/d2/f3')] => not_die(),
 	],
 	get_content => [
-	   [] => [\('subsubhello')],
+	   [] => [\('f3')],
 	],
 	create_folder => [
-	    [{
-		path => '/newdir/subsubdir/subsubsubdir',
-		volume => $vt,
-	    }] => $commit,
+	    [$a->('d1/d2/d3')] => $commit,
+	],
+	is_empty => 1,
+	load => [
+	    [$a->('D1')] => not_die(),
+	],
+	is_empty => 0,
+	update => [
+	    [$a->('/d1-update')] => $commit,
 	],
 	load => [
-	    [{path => 'NewDir'}] => not_die(),
+	    map(([$a->("/d1-update/$_")] => not_die()), qw(f1 d2 d2/d3 d2/f3), ''),
 	],
-	map_folder => [
-	    [sub {
-		 return shift->get('path');
-	    }] => [[
-		'/newdir/subSubdir',
-	    ]],
+	copy_deep => [
+	    [$a->('/d1-copy')] => $commit,
+	],
+	load => [
+	    [$a->('/d1-copy')] => not_die(),
+	],
+	load => [
+	    map(([$a->("/d1-copy/$_")] => not_die()), '', qw(f1 d2 d2/d3 d2/f3)),
+	],
+	get_content => [
+	    [] => [\('f3')],
+	],
+	copy_deep => [
+	    [$a->('f3-copy')] => $commit,
+	],
+	load => [
+	    [$a->('f3-copy')] => not_die(),
+	],
+	get_content => [
+	    [] => [\('f3')],
+	],
+	copy_deep => [
+	    [$a->('f3-copy')] => not_die(),
+	],
+	delete_deep => $commit,
+	load => [
+	    [$a->('f3-copy')] => MODEL_NOT_FOUND(),
+	],
+	load => [
+	    [$a->('d1-copy')] => not_die(),
+	],
+	delete_deep => $commit,
+	load => [
+	    map(([$a->("/d1-copy/$_")] => MODEL_NOT_FOUND()),
+		'', qw(d2 d2/f3 d2/d3)),
+	],
+	# Read-only tests
+	load => [
+	    [{path => '/'}] => not_die(),
 	],
 	update => [
-	    [{path => '/RealmFile.bunit'}] => $commit,
-
+	    [$old_mtime] => $commit,
 	],
-	map_folder_deep => [
-	    [sub {
-		 return shift->get('path');
-	    }] => [[qw(
-                /RealmFile.bunit/subSubdir
-                /RealmFile.bunit/subSubdir/Hello
-                /RealmFile.bunit/subSubdir/subsubsubdir
-	    )]],
+	create_folder => [
+	    [$a->('ro1', 1)] => $commit,
+	],
+	get => [
+	    is_public => 0,
+	    is_read_only => 1,
+	],
+	load => [
+	    [{path => '/'}] => not_die(),
+	],
+	get => [
+	    modified_date_time => $old_mtime->{modified_date_time},
+	],
+	create_with_content => [
+	    [$a->('ro1/f1', undef, 1), \('ro1/f1')] => $commit,
+	    [$a->('ro1/f2', undef, 1), \('ro1/f2')] => $commit,
+	],
+	get => [
+	    is_public => 0,
+	    is_read_only => 1,
+	],
+	delete => [
+	    [] => FORBIDDEN(),
+	    [$a->('ro1/f2', undef, 1)] => $commit,
+	],
+	load => [
+	    [$a->('ro1/f2')] => MODEL_NOT_FOUND(),
+	    [$a->('ro1')] => not_die(),
 	],
 	copy_deep => [
-	    [{path => '/newdir-copy'}] => $commit,
+	    [$a->('d1')] => $commit,
+	    [$a->('ro2', 1)] => $commit,
+	],
+	map((
+	    load => [
+		[$a->($_)] => not_die(),
+	    ],
+	    get => [
+		is_read_only => $_ =~ /ro2/ ? 1 : 0,
+		is_public => 0,
+	    ],
+	    $_ =~ /f1/ ? (
+		get_content => [
+		    [] => [\('ro1/f1')],
+		]
+	    ) : ()),
+	    qw(d1 d1/f1 ro2 ro2/f1),
+	),
+	delete_deep => [
+	    [$a->('d1')] => $commit,
+	    [$a->('ro2/f1')] => FORBIDDEN(),
+	    [$a->('ro2', undef, 1)] => $commit,
 	],
 	load => [
-	    [{path => '/newdir-copy'}] => not_die(),
+	    [$a->('ro1')] => not_die(),
 	],
-	map_folder_deep => [
-	    [sub {
-		 return shift->get('path');
-	    }] => [[qw(
-                /newdir-copy/subSubdir
-                /newdir-copy/subSubdir/Hello
-                /newdir-copy/subSubdir/subsubsubdir
-	    )]],
+	update => [
+	    [$a->('ro1-update')] => FORBIDDEN(),
+# Recursive update of is_read_only and is_public?
+	    [$a->('ro1-update', 0, 1)] => not_die(),
+	],
+ 	load => [
+ 	    [$a->('ro1-update/f1')] => not_die(),
+ 	],
+# This tests non-recursive update of is_read_only
+	delete => FORBIDDEN(),
+	load => [
+	    [$a->('ro1-update')] => not_die(),
+	],
+	delete_deep => FORBIDDEN(),
+	load => [
+	    [$a->('ro1-update/f1')] => not_die(),
+	],
+	update => [
+	    [$a->(undef, 0, 1)] => not_die(),
 	],
 	load => [
-	    [{
-		path => '/realmfile.bunit/subsubdir/hello',
-		volume => $vt,
-	    }] => not_die(),
+	    [$a->('ro1-update')] => not_die(),
 	],
-	get_content => [
-	    [] => [\('subsubhello')],
-	],
-	copy_deep => [
-	    [{path => '/subsubhello-copy'}] => $commit,
-	],
-	load => [
-	    [{path => '/subsubhello-copy'}] => not_die(),
-	],
-	get_content => [
-	    [] => [\('subsubhello')],
-	],
-	copy_deep => [
-	    [{path => '/subsubhello-copy'}] => DB_CONSTRAINT(),
-	],
-	delete_deep => $commit,
-	load => [
-	    [{path => '/subsubhello-copy'}] => MODEL_NOT_FOUND(),
-	],
-	load => [
-	    [{path => '/newdir-copy'}] => not_die(),
-	],
-	delete_deep => $commit,
+	delete_deep => not_die(),
     ],
     class() => [
 	delete_all => [
-	    [{volume => $vt}] => DIE(),
-	    [{realm_id => req()->get('auth_id')}] => 7,
+	    [{path => '/'}] => DIE(),
+	    # Don't commit, since we don't know what other files need to
+	    # be there.
+	    [{realm_id => req()->get('auth_id')}] => not_die(),
 	],
     ],
 ];
