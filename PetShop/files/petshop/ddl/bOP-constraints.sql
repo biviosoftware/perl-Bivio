@@ -224,7 +224,6 @@ CREATE INDEX realm_file_t5 ON realm_file_t (
 /
 CREATE UNIQUE INDEX realm_file_t6 ON realm_file_t (
   realm_id,
-  volume,
   path_lc
 )
 /
@@ -238,7 +237,7 @@ ALTER TABLE realm_file_t
 /
 ALTER TABLE realm_file_t
   ADD CONSTRAINT realm_file_t9
-  CHECK (volume > 0)
+  CHECK (is_read_only BETWEEN 0 AND 1)
 /
 ALTER TABLE realm_file_t
   ADD CONSTRAINT realm_file_t10
