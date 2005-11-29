@@ -105,12 +105,6 @@ sub _copy_move {
     return _output($s, HTTP_PRECONDITION_FAILED => 'Destination exists')
 	if ($s->{dest_existed} = _exists($s->{dest_list}))
 	&& ($s->{r}->header_in('overwrite') || 'T') =~ /f/i;
-    if ($s->{dest_existed}) {
-	return _output($s, HTTP_PRECONDITION_FAILED
-			   => 'Cannot overwrite collections')
-	    unless $s->{propfind}->{getcontenttype};
-	_call($s, $s->{dest_list}, 'delete');
-    }
     return;
 }
 
@@ -165,6 +159,8 @@ sub _dav_move {
     my($s) = @_;
     return 1
 	if _copy_move($s);
+    _call($s, $s->{dest_list}, 'delete')
+	if $s->{dest_existed};
     _call($s, move => $s->{dest_list});
     return _output($s, $s->{dest_existed} ? 'HTTP_NO_CONTENT' : 'HTTP_CREATED');
 }
