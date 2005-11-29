@@ -9,21 +9,12 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub execute {
     my($self, $req, $is_public) = @_;
     my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
-    my($p, $e) = $f->get_field_type('path')
-	->from_literal($req->get('path_info'));
-    Bivio::Die->throw(NOT_FOUND => {
-	entity => $req->get('path_info'),
-	message => 'bad RealmFile.path',
-	type_error => $e,
-    }) if $e;
-    my($reply) = $req->get('reply');
-    $reply->set_output(
+    $req->get('reply')->set_output(
 	$f->load({
 	    is_folder => 0,
-	    volume => $req->get('Type.FileVolume'),
-	    path_lc => lc($p),
+	    path_lc => lc($f->parse_path($req->get('path_info'))),
 	    defined($is_public) ? (is_public => $is_public) : (),
-	})->get_handle
+	})->get_handle,
     )->set_output_type($f->get_content_type);
     return;
 }
