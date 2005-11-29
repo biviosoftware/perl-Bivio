@@ -118,10 +118,7 @@ sub create {
 	$new_values->{$n} = undef unless exists($new_values->{$n});
     }
     $sql_support->create($new_values, $self);
-    $self->internal_clear_model_cache;
-    $self->internal_put($new_values);
-    $self->put_on_request;
-    return $self;
+    return $self->internal_load_properties($new_values);
 }
 
 =for html <a name="create_from_literals"></a>
@@ -210,7 +207,7 @@ B<DEPRECATED>
 sub delete {
     my($self) = @_;
     return $self->internal_get_sql_support->delete($self->internal_get, $self)
-	if int(@_) <= 1;
+	if @_ <= 1;
     my($query);
     ($self, $query) = _load_args(@_);
     $self = $self->new()
@@ -429,6 +426,28 @@ sub internal_initialize_sql_support {
     return  Bivio::SQL::PropertySupport->new($config);
 }
 
+=for html <a name="internal_load_properties"></a>
+
+=head2 internal_load_properties(hash_ref values) : self
+
+Loads model with values as properties.  DOES NOT MAKE A COPY of values.
+
+=cut
+
+sub internal_load_properties {
+    my($self, $values) = @_;
+    $self->internal_clear_model_cache;
+    unless (__PACKAGE__ eq (caller)[0]) {
+	foreach my $k (@{$self->get_info('column_names')}) {
+	    $self->die($_, ': missing column')
+		unless exists($values->{$_});
+	}
+    }
+    $self->internal_put($values);
+    $self->put_on_request;
+    return $self;
+}
+
 =for html <a name="internal_prepare_query"></a>
 
 =head2 internal_prepare_query(hash_ref query) : hash_ref
@@ -440,6 +459,22 @@ Returns I<query> after fixing it up.
 sub internal_prepare_query {
     shift;
     return shift;
+}
+
+=for html <a name="internal_unload"></a>
+
+=head2 internal_unload() : self
+
+Clears the model state, if loaded.  Deletes from request.
+
+=cut
+
+sub internal_unload {
+    my($self) = @_;
+    return $self
+	unless $self->is_loaded;
+    _unload($self, 1);
+    return $self;
 }
 
 =for html <a name="is_loaded"></a>
@@ -489,10 +524,7 @@ B<Deprecated form accepts an iterator as the first argument.>
 
 sub iterate_next_and_load_new {
     my($self, $row) = shift->internal_iterate_next(@_, {});
-    return undef unless $row;
-    my($new) = $self->new();
-    _load($new, $row);
-    return $new;
+    return $row ? $self->new->internal_load_properties($row) : undef;
 }
 
 =for html <a name="iterate_start></a>
@@ -718,8 +750,7 @@ sub unauth_load {
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $self->internal_get_sql_support->unsafe_load(
 	$self->internal_prepare_query(_dup($query)), $self);
-    return _unload($self, 1) unless $values;
-    return _load($self, $values);
+    return $values ? _load($self, $values) : _unload($self, 1);
 }
 
 =for html <a name="unauth_load_or_die"></a>
@@ -922,16 +953,12 @@ sub _get_primary_keys {
     return $have_keys ? \%pk_values : undef;
 }
 
-# _load(Bivio::Biz::PropertyModel self, hash_ref values) : boolean
+# _load_pro(Bivio::Biz::PropertyModel self, hash_ref values) : boolean
 #
 # Initializes the self with values and returns 1.
 #
 sub _load {
-    my($self, $values) = @_;
-    $self->internal_clear_model_cache;
-    $self->internal_put($values);
-    # If found, put a reference to this model in request
-    $self->put_on_request;
+    shift->internal_load_properties(@_);
     return 1;
 }
 
