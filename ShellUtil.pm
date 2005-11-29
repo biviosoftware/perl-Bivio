@@ -858,10 +858,21 @@ sub piped_exec {
 	# If there is a signal, return 99.  Otherwise, return exit code.
 	CORE::exit($? ? ($? >> 8) ? ($? >> 8) : 99 :  0);
     }
-    local($/) = undef;
-    my($res) = <IN>;
+    my($res);
+    if ($_TRACE) {
+	_trace('START: ', $command);
+	while (defined(my $line = <IN>)) {
+	    $res .= $line;
+	    _trace($line);
+	}
+	_trace('END: ', $command);
+    }
+    else {
+	local($/) = undef;
+	$res = <IN>;
+    }
+    # May be undef
     $res .= '';
-    _trace($command, " -> ", $res) if $_TRACE;
     unless (close(IN)) {
 	Bivio::Die->throw_die('DIE', {
 	    message => 'command died with non-zero status',
@@ -1261,28 +1272,19 @@ sub _compile_options {
     my($map) = {};
     my($opts) = [];
     foreach my $k (keys(%$options)) {
-	die("$k: options must be valid perl idents")
-		unless $k =~ /^[a-z]\w+$/i;
-	my($first) = $k =~ /^(.)/;
+	die("$k: options must be valid perl idents with at least on character")
+	    unless $k =~ /^[a-z]\w+$/i;
+	my($first) = substr($k, 0, 1);
 	my($type, $default) = @{$options->{$k}};
 	my($opt) = [$k, Bivio::Type->get_instance($type)];
 	$opt->[2] = _parse_option_value($self, $opt, $default);
-	if (exists($map->{$first})) {
-	    # Single char collision, mark for deletion below
-	    die("option conflict '$first' and '$k'")
-		    if $map->{$first}->[0] eq $first;
-	    $map->{$first} = undef;
-	}
-	else {
-	    $map->{$first} = $opt;
-	}
+	$map->{$first} = exists($map->{$first}) ? 0 : $opt;
 	$map->{$k} = $opt;
 	push(@$opts, $opt);
     }
-
-    # Delete single chars which collided
     while (my($k, $v) = each(%$map)) {
-	delete($map->{$k}) unless $v;
+	delete($map->{$k})
+	    unless $v;
     }
     return ($map, $opts);
 }
