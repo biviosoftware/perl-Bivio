@@ -40,6 +40,7 @@ Set your $BCONF variable to point to this file, e.g. for bash:
 use Bivio::IO::Config;
 use Cwd ();
 use Sys::Hostname ();
+use File::Basename ();
 
 #=VARIABLES
 
@@ -59,7 +60,11 @@ sub default_merge_overrides {
     my($proto, $root, $prefix, $owner) = @_;
     # Grab last part: Only needed by PetShop
     my($root_lc) = lc(($root =~ /(\w+)$/)[0]);
+    (my $file_root = "/var/db/$root_lc") =~ s/_/-/g;
     return (
+	'Bivio::Biz::File' => {
+	    root => $file_root,
+	},
 	'Bivio::Ext::DBI' => {
 	    database => $prefix,
 	    user => "${prefix}user",
@@ -107,6 +112,10 @@ sub dev {
     my($host) = Sys::Hostname::hostname();
     my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
     my($home) = $ENV{HOME} || $pwd;
+    (my $root = ref($proto) || $proto) =~ s,::,/,g;
+    $root = ($INC{"$root.pm"} =~ m{(.+)/.+?.pm})[0];
+    my($file_root) = "$root/files/db";
+    mkdir($file_root);
     return _validate_config(Bivio::IO::Config->merge_list(
 	$overrides || {},
 	Bivio::IO::Config->bconf_dir_hashes,
@@ -115,11 +124,14 @@ sub dev {
 	    'Bivio::Agent::Request' => {
 		can_secure => 0,
 	    },
+	    'Bivio::Biz::File' => {
+		root => $file_root,
+	    },
 	    'Bivio::IO::Alert' => {
 		want_time => 0,
 	    },
 	    'Bivio::IO::Log' => {
-		directory => $pwd,
+		directory => $root,
 	    },
 	    'Bivio::Mail::Common' => {
 		sendmail => 'b-test -input - mock_sendmail',
@@ -131,7 +143,7 @@ sub dev {
 		die_on_error => 1,
 	    },
 	    'Bivio::UI::Facade' => {
-		local_file_root => "$pwd/files",
+		local_file_root => "$root/files",
 		want_local_file_cache => 0,
 		http_suffix => "$host:$http_port",
 		mail_host => $host,
