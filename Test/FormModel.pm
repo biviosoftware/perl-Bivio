@@ -93,23 +93,16 @@ sub new {
 		unless ref($e) eq 'HASH' && @$expect == 1;
 	    my($o) = $case->get('object');
 	    $e = _walk_tree_expect($case, $e);
-	    if ($case->unsafe_get('execute_empty')) {
-		$case->actual_return([
-		    {map(($_ => $o->unsafe_get($_)), keys(%$e))}
-		]);
-	    }
-	    elsif ($o->in_error) {
-		$case->actual_return([
-		    {map(($_ => $o->get_field_error($_) ?
-			      $o->get_field_error($_)->get_name : undef),
-			 keys(%$e))}
-		]);
-	    }
-	    else {
-		#confirm expected models are on request
-		_walk_tree_actual($case, $e, []);
-	    }
-	    return $expect;
+	    $case->actual_return([
+		$case->unsafe_get('execute_empty')
+		    ? {map(($_ => $o->unsafe_get($_)), keys(%$e))}
+		    : $o->in_error
+			? {map(($_ => $o->get_field_error($_) ?
+				    $o->get_field_error($_)->get_name : undef),
+			       keys(%$e))}
+			: _walk_tree_actual($case, $e, [])
+	    ]);
+	    return [$e];
 	},
 	#TODO compute_return
 	%$attrs,
