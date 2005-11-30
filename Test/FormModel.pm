@@ -91,7 +91,7 @@ sub new {
 	    my($e) = $expect->[0];
 	    return $expect
 		unless ref($e) eq 'HASH' && @$expect == 1;
-	    my($o) = $req->get($case->get('object')->package_name);
+	    my($o) = $case->get('object');
 	    $e = _walk_tree_expect($case, $e);
 	    if ($case->unsafe_get('execute_empty')) {
 		$case->actual_return([
@@ -134,9 +134,8 @@ sub unit {
     my($self, $case_group) = @_;
     my($req) = Bivio::Test::Request->initialize_fully;
     return $self->SUPER::unit([
-	[$req] => [
-	    process => $case_group,
-	],
+	map(([$req] => [process => [splice(@$case_group, 0, 2)]]),
+	    1 .. @$case_group/2),
     ]);
 }
 
