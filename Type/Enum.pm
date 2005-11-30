@@ -308,7 +308,7 @@ sub compile {
 	my($as_string) = $pkg.'::'.$name;
 	# Index 4: as_string
 	push(@$d, $as_string);
-	push(@list, $as_string.'()');
+	push(@list, $as_string);
 	# ALSO Ensures we convert $d->[0] into an integer!
 	if (defined($min)) {
 	    $d->[0] < $min->[0] && ($min = $d);
@@ -337,7 +337,6 @@ sub compile {
 	my($ln) = lc($name);
 	$eval .= <<"EOF";
 	    sub $name {return \\&$name;}
-            sub execute_$ln {shift; return ${pkg}::${name}()->execute(\@_)};
 	    push(\@{\$_INFO->{'$name'}}, bless(&$name));
 	    \$_INFO->{&$name} = \$_INFO->{'$name'};
 EOF
@@ -351,8 +350,8 @@ EOF
 	        unless defined($info->{$n});
 	}
     }
-    eval($eval . '; 1')
-	    || Carp::croak("compilation failed: $@");
+    die("$pkg: compilation failed: $@")
+	unless eval($eval . '; 1');
     $_MAP{$pkg} = $info;
     # Must happen last after enum references are defined.
     my($can_be_negative) = $min->[0] < 0;
@@ -363,9 +362,14 @@ EOF
     $precision = length($precision);
     $min = $min->[3];
     $max = $max->[3];
-    my($list) = join(',', @list);
-    my($count) = int(@list);
-    eval <<"EOF" || Carp::Croak("compilation failed: $@");
+    my($list) = join(
+	',',
+	map($_->get_name . '()',
+	    sort {$a->as_int <=> $b->as_int} map($pkg->$_(), @list)),
+    );
+    my($count) = scalar(@list);
+    die("$pkg: compilation failed: $@")
+	unless eval(<<"EOF1" . <<'EOF2');
         package $pkg;
         sub can_be_negative {return $can_be_negative;}
         sub can_be_positive {return $can_be_positive;}
@@ -378,8 +382,21 @@ EOF
         sub get_width_long_desc {return $long_width;}
         sub get_width_short_desc {return $short_width;}
         sub get_count {return $count;}
+EOF1
+        use vars ('$AUTOLOAD');
+        sub AUTOLOAD {
+            my($func) = $AUTOLOAD;
+            $func =~ s/.*:://;
+            return if $func eq 'DESTROY';
+	    my($self);
+	    return __PACKAGE__->from_name($1)->execute(@_[1..$#_])
+		if $func =~ /^execute_(\w+)$/;
+	    return __PACKAGE__->from_name($1) == $_[0] ? 1 : 0
+		if $func =~ /^eq_(\w+)$/;
+	    die($AUTOLOAD, ': not found');
+	}
         1;
-EOF
+EOF2
     return;
 }
 
@@ -401,6 +418,21 @@ sub compile_with_numbers {
 	($_, [$i++]);
     } @$names]);
 }
+
+=for html <a name="eq_identifier"></a>
+
+=head2 abstract eq_identifier() : boolean
+
+Returns true if I<identifier> part of method matches I<self>.  Equivalent to:
+
+    $self->equals_by_name('identifier');
+
+Ex:
+
+    Bivio::DieCode->MALE->eq_male() => true
+    Bivio::DieCode->MALE->eq_female() => false
+
+=cut
 
 =for html <a name="equals_by_name"></a>
 
@@ -431,6 +463,20 @@ sub execute {
     shift->put_on_request(@_);
     return 0;
 }
+
+=for html <a name="execute_identifier"></a>
+
+=head2 abstract execute_identifier() : false
+
+Calls C<execute> with I<identifer> part of name.  Equivalent to:
+
+    $self->IDENTIFIER->execute($req);
+
+Ex:
+
+    Bivio::Type::Gender->FEMALE->execute($req);
+
+=cut
 
 =for html <a name="format_short_desc"></a>
 
@@ -697,7 +743,7 @@ Return the integer representation of I<value>
 sub to_sql_param {
     my($proto, $value) = @_;
     return undef unless defined($value);
-    Bivio::IO::Alert->warn_deprecated('enum ref required')
+    Bivio::IO::Alert->warn_deprecated($value, ': enum ref required')
         unless ref($value);
     return _get_info($proto, $value)->[0];
 }
@@ -741,7 +787,7 @@ sub to_xml {
 sub _get_info {
     my($self, $ident, $dont_die) = @_;
     my($info) = $_MAP{ref($self) || $self};
-    Carp::croak($self, ': not an enumerated type') unless defined($info);
+    die($self, ': not an enumerated type') unless defined($info);
     defined($ident) || ($ident = $self);
     return $info->{$ident} if defined($info->{$ident});
     Bivio::IO::Alert->bootstrap_die($ident, ': no such ', ref($self) || $self)
