@@ -25,8 +25,8 @@ L<Bivio::Test>
 
 =cut
 
-use Bivio::Test;
-@Bivio::Test::ListModel::ISA = ('Bivio::Test');
+use Bivio::Test::ModelBase;
+@Bivio::Test::ListModel::ISA = ('Bivio::Test::ModelBase');
 
 =head1 DESCRIPTION
 
@@ -114,49 +114,6 @@ sub new_unit {
 
 =cut
 
-=for html <a name="run_unit"></a>
-
-=head2 run_unit(string class_name, array_ref cases)
-
-Calls L<unit|"unit">.
-
-=cut
-
-sub run_unit {
-    return shift->unit(@_);
-}
-
-=for html <a name="unit"></a>
-
-=head2 static unit(string model, array_ref method_groups)
-
-=head2 static unit(hash_ref new_attrs, array_ref method_groups)
-
-=head2 unit(array_ref method_groups)
-
-Instantiates this class with I<model> or I<new_attrs> (which must include
-I<model>), and calls the instance method form with I<method_groups>.
-
-Wraps I<method_groups> in an object group, with a call to the list model's,
-new.  See L<Bivio::Test::unit|Bivio::Test/"unit"> for details.
-
-I<method_groups> are just like normal method groups with the exception that if
-the expect is an array of hashes and the method begins with C<load>
-or C<unauth_load)>, the actual return is the result of
-L<Bivio::Biz::ListModel::map_rows|Bivio::Biz::ListModel/"map_rows">
-filtered to only include the keys contained the first row of the expected
-return.
-
-=cut
-
-sub unit {
-    return shift->new(shift)->unit(shift)
-	if @_ == 3;
-    my($self, $method_groups) = @_;
-    return $self->SUPER::unit([
-	$self->get('class_name') => $method_groups,
-    ]);
-}
 
 #=PRIVATE SUBROUTINES
 
