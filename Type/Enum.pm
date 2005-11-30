@@ -364,7 +364,7 @@ EOF
     $max = $max->[3];
     my($list) = join(
 	',',
-	map($_->get_name . '()',
+	map($pkg . '::' . $_->get_name . '()',
 	    sort {$a->as_int <=> $b->as_int} map($pkg->$_(), @list)),
     );
     my($count) = scalar(@list);
