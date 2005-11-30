@@ -59,14 +59,10 @@ sub new {
     my($m) = Bivio::Biz::Model->get_instance($model);
     return $proto->SUPER::new({
 	class_name => $m->package_name,
-	create_object => sub {
-	    my(undef, $object) = @_;
-	    return $object->[0]->get_instance;
-	},
 	compute_params => sub {
 	    my($case, $params, $method, $object) = @_;
 	    return $params
-		unless $method eq 'execute';
+		unless $method eq 'process';
 	    $req->put(task => Bivio::Collection::Attributes->new({
 		form_model => ref($m),
 		next => 'MY_SITE',
@@ -91,7 +87,7 @@ sub new {
 	check_return => sub {
 	    my($case, $actual, $expect) = @_;
 	    return $expect
-		unless $case->get('method') eq 'execute';
+		unless $case->get('method') eq 'process';
 	    my($e) = $expect->[0];
 	    return $expect
 		unless ref($e) eq 'HASH' && @$expect == 1;
@@ -124,15 +120,24 @@ sub new {
 
 =cut
 
-=for html <a name="new_unit"></a>
+=for html <a name="unit"></a>
 
-=head2 new_unit(string class_name) : self
+=head2 unit(array_ref case_group)
+
+Example ForumCreateForm.bunit.
 
 =cut
 
-sub new_unit {
-    Bivio::Test::Request->initialize_fully;
-    return shift->SUPER::new_unit(@_);
+sub unit {
+    return shift->new(shift)->unit(shift)
+	if @_ == 3;
+    my($self, $case_group) = @_;
+    my($req) = Bivio::Test::Request->initialize_fully;
+    return $self->SUPER::unit([
+	[$req] => [
+	    process => $case_group,
+	],
+    ]);
 }
 
 #=PRIVATE SUBROUTINES
@@ -142,7 +147,7 @@ sub _walk_tree_actual {
     return ref($e) eq 'HASH'
 	? {map(($_ => _walk_tree_actual($case, $e->{$_}, [@$names, $_])),
 	       keys(%$e))}
-	: Bivio::Test::Request->get_instance->get_nested(@$names);
+	: Bivio::Test::Request->get_instance->unsafe_get_nested(@$names);
 }
 
 sub _walk_tree_expect {
