@@ -78,8 +78,8 @@ sub new {
 		form => {
 		    $m->VERSION_FIELD => $m->get_info('version'),
 		    map(
-			($m->get_field_name_for_html($_) => $m->get_field_type($_)
-			     ->to_literal($hash->{$_})),
+			($m->get_field_name_for_html($_) =>
+			     $m->get_field_type($_)->to_literal($hash->{$_})),
 			keys(%$hash),
 		    )},
 	    )];
