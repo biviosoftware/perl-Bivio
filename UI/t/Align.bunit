@@ -4,7 +4,7 @@ Type();
 [
     class() => [
         from_name => [
-	    NE => [class()->NE],
+	    'NE' => [class()->NE()],
 	],
     ],
 ];
