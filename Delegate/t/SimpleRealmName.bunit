@@ -9,6 +9,7 @@ Type();
 	    ' abc ' => 'abc',
 	    [undef] => UNDEF(),
 	    [' '] => UNDEF(),
+	    0 => REALM_NAME(),
 	],
         unsafe_from_uri => [
 	    ab => [undef],

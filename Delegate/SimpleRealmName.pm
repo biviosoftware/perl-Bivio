@@ -91,7 +91,7 @@ sub from_literal {
 	if defined($value);
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless $v;
+	unless defined($v);
     return (undef, Bivio::TypeError->REALM_NAME)
         unless $proto->internal_is_realm_name($v);
     return $proto->process_name($v);
