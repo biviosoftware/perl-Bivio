@@ -339,6 +339,8 @@ sub compile {
 	    sub $name {return \\&$name;}
 	    push(\@{\$_INFO->{'$name'}}, bless(&$name));
 	    \$_INFO->{&$name} = \$_INFO->{'$name'};
+            sub execute_$ln {shift; return ${pkg}::${name}()->execute(\@_)}
+	    sub eq_$ln {return ${pkg}::${name}() == shift(\@_) ? 1 : 0}
 EOF
     }
     defined($min) || Bivio::IO::Alert->bootstrap_die($pkg, ': no values');
@@ -369,7 +371,7 @@ EOF
     );
     my($count) = scalar(@list);
     die("$pkg: compilation failed: $@")
-	unless eval(<<"EOF1" . <<'EOF2');
+	unless eval(<<"EOF");
         package $pkg;
         sub can_be_negative {return $can_be_negative;}
         sub can_be_positive {return $can_be_positive;}
@@ -382,21 +384,8 @@ EOF
         sub get_width_long_desc {return $long_width;}
         sub get_width_short_desc {return $short_width;}
         sub get_count {return $count;}
-EOF1
-        use vars ('$AUTOLOAD');
-        sub AUTOLOAD {
-            my($func) = $AUTOLOAD;
-            $func =~ s/.*:://;
-            return if $func eq 'DESTROY';
-	    my($self);
-	    return __PACKAGE__->from_name($1)->execute(@_[1..$#_])
-		if $func =~ /^execute_(\w+)$/;
-	    return __PACKAGE__->from_name($1) == $_[0] ? 1 : 0
-		if $func =~ /^eq_(\w+)$/;
-	    die($AUTOLOAD, ': not found');
-	}
         1;
-EOF2
+EOF
     return;
 }
 
