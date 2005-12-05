@@ -292,6 +292,7 @@ sub _update_status {
         $status = $error_code =~ /^([5-9]|1[079]|2[01235678]|3[5])$/
 	    ? Bivio::Type::ECPaymentStatus->FAILED
 	    : $payment->get('status');
+	Bivio::IO::Alert->warn($details, ': failed request: ', $payment);
     }
     else {
         Bivio::Die->throw_die('DIE', {
@@ -309,7 +310,8 @@ sub _update_status {
 	processor_response => $msg,
 	processor_transaction_number => $processor_transaction_number,
     });
-    _warn_declined($proto, $payment) if $status->is_bad;
+    _warn_declined($proto, $payment)
+	if $status->is_bad;
     return;
 }
 
