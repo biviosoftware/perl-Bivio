@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::FormModel allows end-to-end testing of FormModels.  See
+    ForumForum.bunit as example (may not be in this release, but will be
+    soon!)
+
   Revision 3.46  2005/11/22 02:04:09  nagler
   * Bivio::Collection::Attributes->are_defined added
   * Bivio::Type::Text64K isa Bivio::Type::Text
