@@ -133,17 +133,14 @@ Pretty prints the realm.
 
 sub as_string {
     my($self) = @_;
-    my($desc) = '';
     my($owner) = $self->unsafe_get('owner');
-    if ($owner) {
-        my($realm_type) = $owner->get('realm_type');
-        my($owner_name, $id) = $self->unsafe_get('owner_name', 'id');
-	$desc =
-	    '('
-	    . join(',', $realm_type->get_name(), $owner_name, $id)
-	    . ')';
-    }
-    return ref($self) . $desc;
+    return ref($self)
+	. '['
+        . join(
+	    ',',
+	    $self->get('type')->get_name,
+	    $owner ? $self->unsafe_get('owner_name', 'id') : (),
+        ) . ']';
 }
 
 =for html <a name="can_user_execute_task"></a>
