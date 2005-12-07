@@ -45,7 +45,6 @@ use Bivio::Type::DateTime;
 use Bivio::Type::UserAgent;
 
 #=VARIABLES
-my($_GENERAL);
 my($_IGNORE_REDIRECTS) = __PACKAGE__.'.ignore_redirects';
 
 =head1 FACTORIES
@@ -74,30 +73,19 @@ sub new {
 	reply => Bivio::Agent::Reply->new(),
     });
     Bivio::Type::UserAgent->execute_job($self);
-
-    # all attributes need to be durable
     $self->put_durable(
-	    %$params,
-	    start_time => $self->get('start_time'),
-	    form => $self->get('form'),
-	    query => $self->get('query'),
-	    reply => $self->get('reply'),
-	    'Bivio::Type::UserAgent' => $self->get('Bivio::Type::UserAgent'),
-	   );
-
-    # Realm
-    my($realm);
-    if ($params->{auth_id} && $params->{auth_id}
-            != Bivio::Auth::RealmType->GENERAL()->as_int) {
-	$realm = Bivio::Auth::Realm->new($params->{auth_id}, $self);
-    }
-    else {
-	$_GENERAL = Bivio::Auth::Realm->get_general() unless $_GENERAL;
-	$realm = $_GENERAL;
-    }
+	%$params,
+	start_time => $self->get('start_time'),
+	form => $self->get('form'),
+	query => $self->get('query'),
+	reply => $self->get('reply'),
+	'Bivio::Type::UserAgent' => $self->get('Bivio::Type::UserAgent'),
+    );
+    my($realm) = $params->{auth_id}
+	&& $params->{auth_id} != Bivio::Auth::RealmType->GENERAL()->as_int
+	? Bivio::Auth::Realm->new($params->{auth_id}, $self)
+	: Bivio::Auth::Realm->get_general();
     $self->internal_set_current();
-
-    # User
     my($auth_user);
     if ($params->{auth_user_id}) {
 	$auth_user = Bivio::Biz::Model->new($self, 'RealmOwner')
