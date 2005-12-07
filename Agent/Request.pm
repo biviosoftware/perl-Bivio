@@ -310,7 +310,9 @@ sub as_string {
 	    'task=', $t ? $t->get_name : undef,
 	    ' user=', $self->unsafe_get_nested(qw(auth_user name))
 		|| $r && $r->connection->user,
-	    ' realm=', $self->unsafe_get_nested(qw(auth_realm owner_name)),
+	    ' realm=',
+	        ($self->unsafe_get_nested(qw(auth_realm owner_name))
+		|| $self->get_nested(qw(auth_realm type))->get_name),
 	    ' referer=', $r ? $r->header_in('Referer') : undef,
 	    ' uri=', $self->unsafe_get('uri'),
 	    ' query=', $self->unsafe_get('query'),
