@@ -176,6 +176,8 @@ Does req.auth_user have I<perms> in this realm.
 
 sub does_user_have_permissions {
     my($self, $perms, $req) =  @_;
+    $perms = ${Bivio::Auth::PermissionSet->from_array($perms)}
+	if ref($perms) eq 'ARRAY';
     my($fields) = $self->[$_IDI];
     return Bivio::Auth::Support->task_permission_ok(
 	_perm_set_from_all([map({

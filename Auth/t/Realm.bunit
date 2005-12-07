@@ -77,7 +77,7 @@ Request('initialize_fully');
 	compute_params => sub {
 	    my(undef, $params) = @_;
 	    req()->set_user($params->[0]);
-	    return [${Bivio::Auth::PermissionSet->from_array([$params->[1]])}, req()];
+	    return [[$params->[1]], req()];
 	},
 	object => ['demo', req()],
     } => [
