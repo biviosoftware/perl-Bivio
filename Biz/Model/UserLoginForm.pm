@@ -193,6 +193,12 @@ sub internal_initialize {
 		type => 'Boolean',
 		constraint => 'NONE',
 	    },
+            {
+                # Don't assert the cookie is valid
+                name => 'disable_assert_cookie',
+		type => 'Boolean',
+		constraint => 'NONE',
+            },
 	],
     };
     return $self->merge_initialize_info(
@@ -389,7 +395,7 @@ sub _set_cookie_user {
 
     # If logging in, need to have a cookie.
     Bivio::Agent::HTTP::Cookie->assert_is_ok($req)
-	if $realm;
+	if $realm && ! $self->unsafe_get('disable_assert_cookie');
     if ($realm) {
 	$cookie->put(
 	    $self->USER_FIELD => $realm->get('realm_id'),
