@@ -30,7 +30,7 @@ Request('initialize_fully');
 	format_email => qr/\bdemo@/,
 	format_file => 'demo',
 	format_uri => '/demo',
-	as_string => qr/Bivio::Auth::Realm\(USER,demo,\d+\)/,
+	as_string => qr/Bivio::Auth::Realm\[USER,demo,\d+\]/,
 	get_default_name => 'user',
 	get_type => [
 	    [] => [Bivio::Auth::RealmType->USER],
