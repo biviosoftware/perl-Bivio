@@ -5,6 +5,9 @@ BEGIN {
     use Cwd ();
     $ENV{BCONF} = Cwd::getcwd() . '/Release/t.bconf';
 }
+
+die("this test fails on Redhat 7.2\n");
+
 unless (-x '/bin/rpm') {
     Bivio::IO::Alert->warn("skipping: /bin/rpm not found\n");
     print("1..1\nok 1\n");
