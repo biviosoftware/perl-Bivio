@@ -233,6 +233,9 @@ sub get_delegate_info {
 	    password_task=USER_PASSWORD
 	    NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
 	)],
+        # forbidden errors are probably due to missing cookies.
+        # for example, if user is resetting password from email link
+        #   with cookies disabled
 	[qw(
 	    USER_PASSWORD
 	    21
@@ -241,6 +244,7 @@ sub get_delegate_info {
 	    Model.UserPasswordForm
 	    View.user-password
 	    next=MY_SITE
+            FORBIDDEN=DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
 	)],
 	[qw(
 	    GENERAL_USER_PASSWORD_QUERY_ACK
@@ -248,6 +252,13 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	    View.user-password-query-ack
+	)],
+	[qw(
+            DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
+	    23
+	    GENERAL
+	    ANYBODY
+	    View.missing-cookies
 	)],
     ];
 }
