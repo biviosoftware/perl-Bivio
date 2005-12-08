@@ -200,13 +200,6 @@ sub get_delegate_info {
 	    View.order-commit
 	)],
 	[qw(
-            DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
-	    516
-	    GENERAL
-	    ANYBODY
-	    View.missing-cookies
-	)],
-	[qw(
 	    LOGIN
 	    517
 	    GENERAL
