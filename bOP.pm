@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,38 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Delegate::SimpleTaskId added
+    DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
+    USER_PASSWORD redirects FORBIDDEN errors to the missing cookies task
+
+  Revision 3.47  2005/12/06 20:03:01  moeller
+  * Bivio::Agent::Request named args are no longer directly modified in
+    calls to redirect() and format_uri() methods
+  * Bivio::Auth::PermanentSet added clear() method
+  * Bivio::Biz::Action::ECCreditCardProcessor warn when result_code 3
+  * Bivio::Biz::Model::RealmFile supports is_read_only and is_public (correctly)
+    and no longer supports volumes, instead files are stored in known directories
+    (Public, Mail, etc.).
+  * Bivio::Biz::File stores site wide files (outside the concept of a
+    facade's local files).  The default location is /var/db/<prefix>.
+  * Bivio::Biz::Model::RealmFile stores its files using Bivio::Biz::File
+  * Bivio::Biz::Model::RealmFileList replaces RealmFile->map_folder
+  * Bivio::Biz::ShellUtil->piped_exec traces output a line at a time when
+    $_TRACE is true.
+  * Bivio::Biz::Model->unsafe_get_model avoids loading from the database
+    when all the fields of  PropertyModel are available from the parent
+    model.
+  * Bivio::Biz::Model->internal_load_properties loads a model from a hash_ref
+  * Bivio::Biz::Model->internal_unload unloads a model
+  * Bivio::Biz::Action no longer deletes object before copy, and only
+    deletes on move if exists
+  * Bivio::Biz::Action::RealmFile uses new Model.RealmFile interface.
+  * Bivio::Biz::Model::RealmFileDAVList uses new RealmFile
+  * Bivio::Test::Case->as_string calls as_string on the object if it can to
+    help identify tests better
+  * Bivio::Type::Enum->get_list is sorted by as_int
+  * Bivio::Type::Enum->eq_<identifier> is equivalent to
+    equals_by_name('<identifier>').
   * Bivio::Test::FormModel allows end-to-end testing of FormModels.  See
     ForumForum.bunit as example (may not be in this release, but will be
     soon!)
