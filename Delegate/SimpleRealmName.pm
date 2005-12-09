@@ -62,6 +62,19 @@ sub REGEXP {
     return qr/^[a-z][a-z0-9_]{2,}$/i;
 }
 
+=for html <a name="SPECIAL_SEPARATOR"></a>
+
+=head2 SPECIAL_SEPARATOR : string
+
+The special separator is used in URIs and to group realm names (see ForumName).
+Don't assume '-'.  Rather explicitly couple with this call.
+
+=cut
+
+sub SPECIAL_SEPARATOR {
+    return '-';
+}
+
 #=IMPORTS
 use Bivio::TypeError;
 
@@ -150,8 +163,9 @@ sub unsafe_from_uri {
     return undef
 	unless $value = ($proto->SUPER::from_literal($value))[0];
     # We allow dashes in URI names (my-site and other constructed names)
-    (my $v = $value) =~ s/-//g;
-    return $proto->internal_is_realm_name($v) && $value !~ /^-/
+    my($s) = $proto->SPECIAL_SEPARATOR;
+    (my $v = $value) =~ s/$s//og;
+    return $proto->internal_is_realm_name($v) && $value !~ /^$s/o
 	? $proto->process_name($value) : undef;
 }
 
