@@ -47,7 +47,6 @@ sub execute {
 	return _other_op($s)
 	    unless defined(&$op);
         return if _precondition($s);
-	$op = \&{'_dav_' . $s->{method}};
 	return $op->($s);
     });
     _output($s, ($_DIE->{$die->get('code')->get_name} || 'SERVER_ERROR'))
@@ -144,7 +143,9 @@ sub _dav_head {
 
 sub _dav_lock {
     my($s) = @_;
-    my($owner) = $s->{content} =~ /href>\s*([^<]+)\s*</s;
+    my($owner) = grep($_,
+	$s->{content} =~ /<owner>\s*([^<]+)\s*<|href>\s*([^<]+)\s*</s);
+    my($want_href) = $s->{content} =~ /href/;
     return _output(
 	$s, HTTP_OK => qq{text/xml; charset="utf-8"}, \(
 	join('',
@@ -159,9 +160,8 @@ sub _dav_lock {
 			     ['exclusive' => ''],
 			 ]],
 			 [depth => 'Infinity'],
-			 $owner ? [owner => [
-			     [href => $owner],
-			 ]] : (),
+			 $owner ? [owner => $want_href ? [[href => $owner]] : $owner]
+			      : (),
 			 [timeout => 'Second-1000000'],
 			 [locktocken => [
 			     [href => 'opaquelocktoken:' .
@@ -217,12 +217,11 @@ sub _dav_options {
 
 sub _dav_propfind {
     my($s) = @_;
-    my($noroot) = _depth($s) =~ /noroot/
-	|| $s->{content} =~ /schemas-microsoft/;
+    my($noroot) = _depth($s) =~ /noroot/ || _is_microsoft($s);
     return _output(
 	$s, MULTI_STATUS => qq{text/xml; charset="utf-8"}, \(
 	join('',
-	     qq{<?xml version="1.0"? encoding="utf-8" ?>\n<D:multistatus xmlns:D="DAV:">\n},
+	     qq{<?xml version="1.0" encoding="utf-8" ?>\n<D:multistatus xmlns:D="DAV:">\n},
 	     map({
 		 my($x) = $_;
 		 _xml_render(
@@ -314,6 +313,11 @@ sub _has_write_permission {
     );
 }
 
+sub _is_microsoft {
+    my($s) = @_;
+    return ($s->{r}->header_in('User-Agent') || '') =~ /microsoft/i;
+}
+
 sub _load {
     my($s, $realm, $path, $is_dest) = @_;
     my($req) = $s->{req};
@@ -374,10 +378,11 @@ sub _output {
 	->set_output_type(
 	    ref($buf) && $msg_or_type ? $msg_or_type : 'text/plain'
 	)->set_header(DAV => 2)
-	->set_header('MS-Author-Via' => 'DAV')
         ->set_output(
 	    ref($buf) ? $buf
 		: \("$n $status" . ($msg_or_type ? " $msg_or_type\n" : "\n")));
+    $s->{reply}->set_header('MS-Author-Via' => 'DAV')
+	if _is_microsoft($s);
     return 1;
 }
 
