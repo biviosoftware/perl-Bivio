@@ -144,6 +144,7 @@ sub _dav_head {
 
 sub _dav_lock {
     my($s) = @_;
+    my($owner) = $s->{content} =~ /href>\s*([^<]+)\s*</s;
     return _output(
 	$s, HTTP_OK => qq{text/xml; charset="utf-8"}, \(
 	join('',
@@ -158,12 +159,15 @@ sub _dav_lock {
 			     ['exclusive' => ''],
 			 ]],
 			 [depth => 'Infinity'],
+			 $owner ? [owner => [
+			     [href => $owner],
+			 ]] : (),
 			 [timeout => 'Second-1000000'],
 			 [locktocken => [
 			     [href => 'opaquelocktoken:' .
 				 Bivio::Type::DateTime->now_as_file_name
 				 . '-'
-				 . rand(1_000_000_000)],
+				 . int(rand(1_000_000_000))],
 			 ]],
 		     ]],
 		 ]],
