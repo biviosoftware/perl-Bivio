@@ -12,33 +12,9 @@ sub dav_propfind {
     my($self) = @_;
     return {
 	%{shift->SUPER::dav_propfind(@_)},
-	displayname => $self->get('RealmOwner.display_name'),
+	displayname => $self->get('RealmOwner.name'),
 	uri => $self->get('RealmOwner.name'),
     };
-}
-
-sub load_dav {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($this, $next) = $req->get('path_info') =~ m{^/([^/]+)(.*)};
-    my($rt) = Bivio::Agent::Task->get_by_id($req->get_nested(qw(task realm_task)))
-	->get('realm_type');
-    unless ($this) {
-	$self->load_all({path_info => '', realm_type => $rt});
-	return 1;
-    }
-    Bivio::Die->throw_quietly(MODEL_NOT_FOUND => {
-	class => ref($self),
-	entity => $this,
-    }) unless $this = ($_RN->from_literal($this))[0]
-	    and $self->unsafe_load_this({
-		this => $this,
-		realm_type => $rt,
-		path_info => $this,
-	    });
-    $req->set_realm($self->set_cursor_or_die(0)->get('RealmOwner.name'));
-    $req->put(path_info => $next);
-    return 'realm_task';
 }
 
 sub internal_initialize {
@@ -75,6 +51,30 @@ sub internal_prepare_statement {
 	$stmt->EQ('RealmUser.user_id', [$req->get('auth_user_id')]),
     );
     return shift->SUPER::internal_prepare_statement(@_);
+}
+
+sub load_dav {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($this, $next) = $req->get('path_info') =~ m{^/([^/]+)(.*)};
+    my($rt) = Bivio::Agent::Task->get_by_id(
+	$req->get_nested(qw(task next)))->get('realm_type');
+    unless ($this) {
+	$self->load_all({path_info => '', realm_type => $rt});
+	return 1;
+    }
+    Bivio::Die->throw_quietly(MODEL_NOT_FOUND => {
+	class => ref($self),
+	entity => $this,
+    }) unless $this = ($_RN->from_literal($this))[0]
+	    and $self->unsafe_load_this({
+		this => $this,
+		realm_type => $rt,
+		path_info => $this,
+	    });
+    $req->set_realm($self->set_cursor_or_die(0)->get('RealmOwner.name'));
+    $req->put(path_info => $next);
+    return 'next';
 }
 
 1;
