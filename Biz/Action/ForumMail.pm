@@ -17,15 +17,18 @@ sub execute {
     $s =~ s/\s+/ /;
     $s =~ s/\s$//;
     $s ||= '(No Subject)';
+    my($now) = Bivio::Type::DateTime->to_file_name($now);
     $mr->new_other('RealmFile')->create_with_content(
 	{
 	    override_is_read_only => 1,
 	    path =>
 		$mr->get_instance('Forum')->MAIL_FOLDER
 		. '/'
+		. join('-', $now =~ /^(\d{4})(\d{2})/)
+		. '/'
 		. lc($s)
 		. ' '
-		. Bivio::Type::DateTime->now_as_file_name
+		. $now
 		. sprintf('%03d', int(rand(1_000)))
 		. '.eml',
 	    user_id => $req->get('auth_user_id')
