@@ -163,24 +163,11 @@ ALTER TABLE email_t
 --
 ALTER TABLE forum_t
   add constraint forum_t2
-  foreign key (realm_id)
+  foreign key (parent_realm_id)
   references realm_owner_t(realm_id)
 /
 CREATE INDEX forum_t3 on forum_t (
-  realm_id
-)
-/
-CREATE UNIQUE INDEX forum_t4 on forum_t (
-  realm_id,
-  name_lc
-)
-/
-CREATE INDEX forum_t5 on forum_t (
-  name
-)
-/
-CREATE INDEX forum_t6 on forum_t (
-  name_lc
+  parent_realm_id
 )
 /
 
