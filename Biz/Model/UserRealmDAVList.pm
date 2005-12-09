@@ -39,7 +39,7 @@ sub internal_load_rows {
     return $query->unsafe_get('this') ?  shift->SUPER::internal_load_rows(@_)
 	: [{
 	    'RealmOwner.display_name' => '/',
-	    'RealmOwner.name' => '',
+	    'RealmOwner.name' => '/',
 	}];
 }
 
