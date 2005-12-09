@@ -223,6 +223,7 @@ my(%_TYPE_TO_EXT) = (
     'model/mesh',			'mesh:Mesh model',
 
     'text/css',		                'css:cascading style sheet',
+    'text/csv',		                'csv:comma-separated values',
     'text/enriched',			'rtx:Text-enriched document',
     'text/html',			'htm,html:HTML document',
     'text/plain',			'txt:Text document',
@@ -263,10 +264,7 @@ C<application/octet-stream>, if extension is unknown or not defined.
 =cut
 
 sub from_extension {
-    my(undef, $file_name) = @_;
-    my($ext) = $file_name =~ /([^\.]+)$/;
-    return defined($ext) && defined($_EXT_TO_TYPE{$ext})
-	    ? $_EXT_TO_TYPE{$ext} : 'application/octet-stream';
+    return shift->unsafe_from_extension(@_) || 'application/octet-stream';
 }
 
 =for html <a name="suggest_encoding"></a>
@@ -340,6 +338,20 @@ sub to_header {
     return 'Content-Type: '.$type."\n";
 }
 
+=for html <a name="unsafe_from_extension"></a>
+
+=head2 unsafe_from_extension(string file_name) : string
+
+Returns the mime type for the given extension or undef.
+
+=cut
+
+sub unsafe_from_extension {
+    my(undef, $file_name) = @_;
+    my($ext) = $file_name =~ /([^\.]+)$/;
+    return defined($ext) && $_EXT_TO_TYPE{$ext};
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
@@ -351,5 +363,6 @@ Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 $Id$
 
 =cut
+
 
 1;
