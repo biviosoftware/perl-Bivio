@@ -1,0 +1,19 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Resreved.
+# $Id$
+ForumUserUnit();
+[
+    [req()] => [
+	process => [
+	    'fuaf1-sub1-sub1' => [qw(fuaf1 fuaf1-sub1 fuaf1-sub1-sub1)],
+	    'fuaf1-sub1' => [qw(fuaf1 fuaf1-sub1)],
+	    'fuaf1' => [qw(fuaf1)],
+	    [qw(fuaf1-sub1-sub1 1)] => [qw(fuaf1-sub1-sub1)],
+	    [qw(fuaf1-sub1 1)] => [qw(fuaf1-sub1 fuaf1-sub1-sub1)],
+	    [qw(fuaf1 1)] => [qw(
+		fuaf1 fuaf1-sub1 fuaf1-sub1-sub1
+		fuaf1-sub2 fuaf1-sub2-sub1
+		fuaf1-sub3)],
+	],
+    ],
+];
+
