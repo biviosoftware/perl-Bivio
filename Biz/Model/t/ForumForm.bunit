@@ -2,7 +2,7 @@
 # $Id$
 FormModel();
 my($parent);
-req()->set_realm_and_user(undef, 'demo');
+req()->set_realm_and_user(undef, 'root');
 my($mode) = sub {
     my($m) = @_;
     return (
@@ -69,6 +69,13 @@ my($check_perms) = sub {
 		return $parent = req()->get_nested('Model.Forum', 'forum_id');
 	    },
 	},
+        'Model.RealmUser' => {
+            user_id => req()->get('auth_user_id'),
+            role => Bivio::Auth::Role->ADMINISTRATOR,
+            realm_id => sub {
+                return req()->get_nested('Model.Forum', 'forum_id');
+            },
+        },
     }],
     $realm->('ff1'),
     $mode->('EDIT'),
