@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegate::SimpleTypeError;
 use strict;
@@ -335,6 +335,21 @@ sub get_delegate_info {
 	undef,
 	'You are not allowed to reset your password.  Please contact your system administrator for password assistance.',
     ],
+    FORUM_NAME => [
+	55,
+	undef,
+	'The first part of a forum name must be three or more characters and consist of alphanumeric characters followed by any number of hyphens and alpha numeric characters.',
+    ],
+    TOP_FORUM_NAME => [
+	56,
+	undef,
+	'Top forum name not formed incorrectly.  Must not contain hyphens (-).',
+    ],
+    TOP_FORUM_NAME_CHANGE => [
+	57,
+	undef,
+	'Top forum name may not be changed',
+    ],
 ];
 }
 
@@ -342,7 +357,7 @@ sub get_delegate_info {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2005 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
