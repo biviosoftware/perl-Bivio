@@ -8,6 +8,10 @@ use Text::CSV ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub LOAD_ALL_SIZE {
+    return 5000;
+}
+
 sub dav_reply_get {
     my($self) = @_;
     Bivio::UI::View->execute(\(<<"EOF"), shift->get_request);
@@ -43,6 +47,7 @@ sub dav_put {
     $self->die('primary key must be last column: ', $cols)
 	unless $cols->[$#$cols] eq $pk;
     my($num) = 1;
+    my($rows) = {create_row => [], update_row => []};
     foreach my $new (map({
 	$num++;
 	$self->throw_die(CORRUPT_FORM => "line, $num: unable to parse: ", $_)
@@ -53,9 +58,28 @@ sub dav_put {
 	my($row) = {map(($cols->[$_] => $l->[$_]), 0 .. $#$l)};
 	$row;
     } split(/^/m, $$content))) {
-	$self->add_row($new)
-	    unless $new->{$pk};
+	my($o) = delete($old->{$new->{$pk} || ''});
+	next if $o && Bivio::IO::Ref->nested_equals($o, $new);
+	push(@{$rows->{$new->{$pk} ? 'row_update' : 'row_create'}}, $new);
     }
+    $rows->{row_delete} = [values(%$old)];
+    foreach my $op (qw(row_delete row_update row_create)) {
+	foreach my $row (@{$rows->{$op}}) {
+	    $self->$op($row);
+	}
+    }
+    return;
+}
+
+sub row_create {
+    return;
+}
+
+sub row_delete {
+    return;
+}
+
+sub row_update {
     return;
 }
 
