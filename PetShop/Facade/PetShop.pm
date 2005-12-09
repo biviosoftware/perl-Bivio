@@ -182,6 +182,7 @@ my($_SELF) = __PACKAGE__->new({
 	    PUBLIC_USER_FILE_READ => '?/public/*',
 	    USER_FILE_READ => '?/file/*',
 	    USER_DAV => '?/dav/*',
+	    DAV => 'dav/*',
         ]));
 	return;
     },
@@ -255,6 +256,11 @@ my($_SELF) = __PACKAGE__->new({
 	    new_password => 'New Password',
 	    confirm_new_password => 'Re-enter New Password',
 	    ok_button => 'Change',
+	],
+	ForumList => [
+	    'RealmOwner.name' => 'Forum',
+	    'RealmOwner.display_name' => 'Title',
+	    'RealmOwner.realm_id' => 'Database Key',
 	],
 
 	# Table headings

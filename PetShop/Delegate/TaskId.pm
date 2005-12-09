@@ -396,7 +396,7 @@ sub get_delegate_info {
 	    USER
 	    ADMIN_READ
 	    Model.UserRealmDAVList
-	    realm_task=USER_DAV_ORDER
+	    next=USER_DAV_ORDER
 	)],
 	[qw(
 	    USER_DAV_ORDER
@@ -405,6 +405,49 @@ sub get_delegate_info {
 	    DATA_READ
 	    Model.UserTaskDAVList
 	    detail_html_task=ORDER_COMMIT
+	)],
+	[qw(
+	    DAV
+	    541
+	    GENERAL
+	    ANYBODY
+	    Action.BasicAuthorization
+	    Action.DAV
+	    next=DAV_ROOT_FORUM_LIST
+	)],
+	[qw(
+	    DAV_ROOT_FORUM_LIST
+	    542
+	    GENERAL
+	    DATA_READ
+	    Model.UserForumDAVList
+	    next=DAV_FORUM_LIST
+	    forums_csv_task=ROOT_FORUM_LIST
+	)],
+	[qw(
+	    DAV_FORUM_LIST
+	    543
+	    FORUM
+	    DATA_READ
+	    Model.UserForumDAVList
+	    next=DAV_FORUM_LIST
+	    files_task=DAV_FORUM_FILE
+	)],
+	[qw(
+	    DAV_FORUM_FILE
+	    544
+	    FORUM
+	    DATA_READ
+	    Model.RealmFileDAVList
+	    require_dav=1
+	)],
+	[qw(
+	    ROOT_FORUM_LIST
+	    545
+	    GENERAL
+	    ADMIN_READ
+	    Model.ForumList->execute_load_all
+	    Model.ForumEditDAVList
 	)],
     ]);
 }
