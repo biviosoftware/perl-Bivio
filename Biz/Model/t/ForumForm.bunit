@@ -1,0 +1,127 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Resreved.
+# $Id$
+FormModel();
+my($parent);
+req()->set_realm_and_user(undef, 'demo');
+my($mode) = sub {
+    my($m) = @_;
+    return (
+	sub {
+	    Bivio::Type->get_instance('FormMode')->$m()->execute(req(), 1);
+	    return 1;
+	 } => 1,
+    );
+};
+my($realm) = sub {
+    my($r) = @_;
+    return (
+	sub {
+	    req()->set_realm($r);
+	    return 1;
+	 } => 1,
+    );
+};
+my($check_perms) = sub {
+    my($id) = req()->get_nested(qw(auth_realm id));
+    req()->set_realm(undef);
+    req()->set_user(undef);
+    # Clear cache
+    req()->set_realm($id);
+    shift->actual_return([
+	req()->get('auth_realm')->does_user_have_permissions(
+	    ['MAIL_SEND'], req())]);
+    req()->set_user('demo');
+    return [shift];
+};
+[
+    # Starting deviance tests
+    $mode->('CREATE'),
+    [{
+	'RealmOwner.display_name' => 'Deviance',
+	'RealmOwner.name' => 't1',
+	is_public => 0,
+    }] => [{
+	'RealmOwner.name' => 'FORUM_NAME',
+    }],
+    [{
+	'RealmOwner.display_name' => 'Deviance',
+	'RealmOwner.name' => 'nosuchtop-subforum',
+	is_public => 0,
+    }] => [{
+	'RealmOwner.name' => 'TOP_FORUM_NAME',
+    }],
+    # Conformance must be in one "non-rolled back" section
+    [{
+	'RealmOwner.display_name' => 'Top One',
+	'RealmOwner.name' => 'ff1',
+	is_public => 0,
+    }] => [{
+	'Model.RealmOwner' => {
+	    name => 'ff1',
+	},
+	'Model.Forum' => {
+	    parent_realm_id => Bivio::Auth::Realm->get_general->get('id'),
+	},
+	'Model.RealmFile' => {
+#There are several RealmFiles created here so I can only test this easily
+#Would be nice to know that I can find, say, 'Public' or 'Mail.
+	    realm_id => sub {
+		return $parent = req()->get_nested('Model.Forum', 'forum_id');
+	    },
+	},
+    }],
+    $realm->('ff1'),
+    $mode->('EDIT'),
+    [] => [{
+	'RealmOwner.display_name' => 'Top One',
+	'RealmOwner.name' => 'ff1',
+	is_public => 0,
+    }],
+    [{
+	'RealmOwner.display_name' => 'Top One',
+	'RealmOwner.name' => 'ff1',
+	is_public => 1,
+    }] => sub {
+	return $check_perms->(shift(@_), 1);
+    },
+    [{
+	'RealmOwner.display_name' => 'Top One',
+	'RealmOwner.name' => 'ff1',
+	is_public => 0,
+    }] => sub {
+	return $check_perms->(shift(@_), 0);
+    },
+    $mode->('CREATE'),
+    [] => [{
+	'RealmOwner.display_name' => 'Top One ',
+	'RealmOwner.name' => 'ff1-',
+	is_public => 0,
+    }],
+    $realm->('ff1'),
+    [{
+	'RealmOwner.display_name' => 'Sub One',
+	'RealmOwner.name' => 'ff1-s1',
+	is_public => 0,
+    }] => [{
+	'Model.Forum' => {
+	    parent_realm_id => sub {$parent},
+	},
+	'Model.RealmOwner' => {
+	    name => 'ff1-s1',
+	},
+	'Model.RealmFile' => {
+	    realm_id => sub {req()->get_nested(qw(Model.Forum forum_id))},
+	},
+    }],
+    $realm->('ff1'),
+    $mode->('CREATE'),
+    # Trailing deviance tests
+    [{
+	'RealmOwner.display_name' => 'Deviance',
+	'RealmOwner.name' => 'ff1_s1',
+	is_public => 0,
+    }] => [{
+	'RealmOwner.name' => 'TOP_FORUM_NAME',
+    }],
+
+];
