@@ -7,6 +7,27 @@ use Bivio::MIME::Type;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub REGEXP {
+    return qr/^[A-Z][\w\s\.]+$/;
+}
+
+sub dav_propfind_children {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($q) = $self->get_query;
+    my($prev) = $req->get('auth_realm');
+    $req->set_realm($q->get('auth_id'));
+    my($t) = Bivio::Agent::Task->get_by_id($q->get('task_id'));
+    my($res) = $t->map_each(
+	sub {
+	    my(undef, $k, $tid) = @_;
+	    return $k =~ /^(\w+)_task$/ ? _fmt($self, lc($1), $tid) : ();
+	},
+    );
+    $req->set_realm($prev);
+    return $res;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -41,34 +62,20 @@ sub load_dav {
     return $t;
 }
 
-sub dav_propfind_children {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($q) = $self->get_query;
-    my($prev) = $req->get('auth_realm');
-    $req->set_realm($q->get('auth_id'));
-    my($t) = Bivio::Agent::Task->get_by_id($q->get('task_id'));
-    my($res) = $t->map_each(
-	sub {
-	    my(undef, $k, $tid) = @_;
-	    return $k =~ /^(\w+)_task$/ ? _fmt($self, $1, $tid) : ();
-	},
-    );
-    $req->set_realm($prev);
-    return $res;
-}
-
 sub _fmt {
     my($self, $name, $task_id) = @_;
     my($req) = $self->get_request;
     my($t) = Bivio::Agent::Task->get_by_id($task_id);
     return unless $req->can_user_execute_task($task_id);
     my($ct) = $t->unsafe_get('require_dav') || grep(/_task$/, $t->get_keys) ? ()
-      : ($name =~ s/_([a-z]+)$/.$1/i && Bivio::MIME::Type->from_extension($name));
+      : ($name =~ s/_([a-z]{3})$/.$1/
+	 && Bivio::MIME::Type->unsafe_from_extension($name));
+    $name = ucfirst($name);
+    $name =~ s/_(\w?)/ \u$1/g;
     return {
 	getlastmodified => Bivio::Type::DateTime->now,
 	uri => $name,
-	displayname => Bivio::Type::Enum->format_short_desc($name),
+	displayname => $name,
 	$ct ? (getcontenttype => $ct) : (),
     }
 }
