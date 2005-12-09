@@ -207,9 +207,10 @@ Runs I<file> in bunit environment.
 
 sub run {
     my($proto, $bunit) = @_;
-    local($_CLASS) = Bivio::IO::ClassLoader->simple_require(
+    my($pm);
+    local($_CLASS) = Bivio::IO::ClassLoader->unsafe_simple_require(
 	(${Bivio::IO::File->read(
-	    File::Spec->catfile(
+	    $pm = File::Spec->catfile(
 		File::Basename::dirname(
 		    File::Basename::dirname(File::Spec->rel2abs($bunit))),
 		File::Basename::basename($bunit, '.bunit'). '.pm',
@@ -220,6 +221,8 @@ sub run {
 		' have "package <class::name>;" statement in class under test',
 	    ),
     );
+    Bivio::Die->die($pm, ': unable to load the pm')
+        unless $_CLASS;
     local($_TYPE);
     my($t) = Bivio::Die->eval_or_die(
 	'package ' . __PACKAGE__ . ';use strict;'
