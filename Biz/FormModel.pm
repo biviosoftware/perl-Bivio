@@ -262,7 +262,7 @@ knows I<values> is valid.   L<validate|"validate"> is not called.
 
 sub execute {
     my($proto, $req, $values) = @_;
-    return $proto->new($req)->process($req, $values);
+    return $proto->new($req)->process($values);
 }
 
 =for html <a name="execute_cancel"></a>
@@ -1053,12 +1053,19 @@ sub merge_initialize_info {
 
 =head2 process(Bivio::Agent::Request req, hash_ref values) : boolean
 
+=head2 process(hash_ref values) : boolean
+
 Does the work for L<execute|"execute"> after execute creates a I<self>.
 
 =cut
 
 sub process {
     my($self, $req, $values) = @_;
+    if (ref($req) eq 'HASH') {
+	$values = $req;
+	$req = undef;
+    }
+    $req ||= $self->get_request;
     my($fields) = $self->[$_IDI];
 
     # Save in request
