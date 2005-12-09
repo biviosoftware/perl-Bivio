@@ -28,7 +28,9 @@ sub dav_get {
 }
 
 sub dav_is_read_only {
-    return 0;
+    my($self) = @_;
+    return $self->get_result_set_size > 0 ? $self->set_cursor_or_die(0)
+	->get('RealmFile.is_read_only') : 0;
 }
 
 sub dav_mkcol {
@@ -46,12 +48,11 @@ sub dav_move {
 sub dav_propfind {
     my($self) = @_;
     return {
-	map(($_ => $self->get($_)), qw(displayname uri)),
+	map(($_ => $self->get($_)), qw(getlastmodified displayname uri)),
 	$self->get('RealmFile.is_folder') ? ()
 	   : (getcontenttype => _static($self, 'get_content_type'),
 	       getcontentlength => _static($self, 'get_content_length'),
 	   ),
-	getlastmodified => $self->get('RealmFile.modified_date_time'),
     };
 }
 
@@ -97,6 +98,7 @@ sub internal_post_load_row {
 	    = substr(
 		$row->{'RealmFile.path'}, length($pi) + ($pi eq '/' ? 0 : 1));
     }
+    $row->{getlastmodified} = $self->get('RealmFile.modified_date_time');
     return 1;
 }
 
