@@ -63,6 +63,7 @@ sub new {
 	    my($case, $params, $method, $object) = @_;
 	    return $params
 		unless $method eq 'process';
+	    $req->clear_nondurable_state;
 	    $req->put(task => Bivio::Collection::Attributes->new({
 		form_model => ref($m),
 		next => 'MY_SITE',
@@ -127,8 +128,10 @@ sub unit {
     my($self, $case_group) = @_;
     my($req) = Bivio::Test::Request->initialize_fully;
     return $self->SUPER::unit([
-	map(([$req] => [process => [splice(@$case_group, 0, 2)]]),
-	    1 .. @$case_group/2),
+	map(([$req] => [
+	    ref($case_group->[0]) eq 'CODE' ? splice(@$case_group, 0, 2)
+		: (process => [splice(@$case_group, 0, 2)]),
+	    ]), 1 .. @$case_group/2),
     ]);
 }
 
