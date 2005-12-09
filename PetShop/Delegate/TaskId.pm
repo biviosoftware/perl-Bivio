@@ -432,6 +432,7 @@ sub get_delegate_info {
 	    Model.UserForumDAVList
 	    next=DAV_FORUM_LIST
 	    files_task=DAV_FORUM_FILE
+	    forums_csv_task=FORUM_LIST
 	)],
 	[qw(
 	    DAV_FORUM_FILE
@@ -445,6 +446,14 @@ sub get_delegate_info {
 	    ROOT_FORUM_LIST
 	    545
 	    GENERAL
+	    ADMIN_READ
+	    Model.ForumList->execute_load_all
+	    Model.ForumEditDAVList
+	)],
+	[qw(
+	    FORUM_LIST
+	    546
+	    FORUM
 	    ADMIN_READ
 	    Model.ForumList->execute_load_all
 	    Model.ForumEditDAVList
