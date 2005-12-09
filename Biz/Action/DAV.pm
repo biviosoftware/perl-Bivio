@@ -39,14 +39,15 @@ sub execute {
     my($die) = Bivio::Die->catch(sub {
         return unless $s->{list} = _load(
 	    $s, $req->get('auth_realm'), $req->get('path_info'));
-	my($op) = \&{'_dav_' . $s->{method}};
 	return if _content($s);
 	_trace($s->{method}, ' ', $s->{uri}, ' ',
 	       {$s->{r}->headers_in}, "\n", \($s->{content})
 	) if $_TRACE;
+	my($op) = \&{'_dav_' . $s->{method}};
 	return _other_op($s)
 	    unless defined(&$op);
         return if _precondition($s);
+	$op = \&{'_dav_' . $s->{method}};
 	return $op->($s);
     });
     _output($s, ($_DIE->{$die->get('code')->get_name} || 'SERVER_ERROR'))
@@ -142,7 +143,34 @@ sub _dav_head {
 }
 
 sub _dav_lock {
-    return _output(shift(@_), HTTP_OK => 'Locked');
+    my($s) = @_;
+    return _output(
+	$s, HTTP_OK => qq{text/xml; charset="utf-8"}, \(
+	join('',
+	     qq{<?xml version="1.0" encoding="utf-8" ?>\n<D:prop xmlns:D="DAV:">\n},
+	     _xml_render(
+		 [lockdiscovery => [
+		     [activelock => [
+			 [locktype => [
+			     ['write' => ''],
+			 ]],
+			 [lockscope => [
+			     ['exclusive' => ''],
+			 ]],
+			 [depth => 'Infinity'],
+			 [timeout => 'Second-1000000'],
+			 [locktocken => [
+			     [href => 'opaquelocktoken:' .
+				 Bivio::Type::DateTime->now_as_file_name
+				 . '-'
+				 . rand(1_000_000_000)],
+			 ]],
+		     ]],
+		 ]],
+	     ),
+	     "</D:prop>\n",
+	 ),
+    ));
 }
 
 sub _dav_mkcol {
@@ -185,27 +213,20 @@ sub _dav_options {
 
 sub _dav_propfind {
     my($s) = @_;
-    my($depth) = _depth($s);
-    my($noroot) = $depth =~ s/\s*,\s*noroot//
+    my($noroot) = _depth($s) =~ /noroot/
 	|| $s->{content} =~ /schemas-microsoft/;
-    # We don't recurse
-    $depth =~ s/infinity/1/;
-    # Ignore stuff we don't understand
-    $depth =~ s/\D//g;
     return _output(
 	$s, MULTI_STATUS => qq{text/xml; charset="utf-8"}, \(
 	join('',
-	     qq{<?xml version="1.0"?>\n<D:multistatus xmlns:D="DAV:">\n},
+	     qq{<?xml version="1.0"? encoding="utf-8" ?>\n<D:multistatus xmlns:D="DAV:">\n},
 	     map({
 		 my($x) = $_;
-		 _propfind_render(
+		 _xml_render(
 		     [response => [
 			 [href => _format_http($s, $x)],
 			 [propstat => [
 			     [prop => [
-				 [displayname => Bivio::Type::String->to_xml(
-				     $x->{displayname},
-				 )],
+				 [displayname => $x->{displayname}],
 				 $x->{getlastmodified}
 				     ? [getlastmodified => $_DT->rfc822(
 					 $x->{getlastmodified})]
@@ -358,7 +379,7 @@ sub _output {
 
 sub _precondition {
     my($s) = @_;
-    $s->{is_read_only} ||= _call($s, 'is_read_only');
+    $s->{is_read_only} = _call($s, 'is_read_only');
     return _output($s, FORBIDDEN => 'Write operations not permitted')
 	if $s->{is_read_only} && $s->{method} =~ $_WRITABLE;
     $s->{exists} = _exists($s->{list});
@@ -403,9 +424,13 @@ sub _precondition {
     }
     if ($s->{exists}) {
 	$s->{propfind} = _call($s, 'propfind');
-	return _output($s, FORBIDDEN => "Resource is a directory: $s->{uri}")
-	    if !$s->{propfind}->{getcontenttype}
-		&& $s->{method} =~ /^(edit|get|head|put|save)$/;
+	if (!$s->{propfind}->{getcontenttype}
+		&& $s->{method} =~ /^(edit|get|head|put|save)$/) {
+	    return _output($s, FORBIDDEN => "Resource is a directory: $s->{uri}");
+#TODO: Something needed here for EditDAVList
+#		unless $s->{method} eq 'head';
+#	    $s->{method} = 'propfind';
+	}
     }
     elsif ($s->{method} =~ /^(copy|delete|edit|get|head|lock|move|options|propfind|unlock)$/) {
 	return _output($s, NOT_FOUND => "Resource does not exist: $s->{uri}");
@@ -413,13 +438,13 @@ sub _precondition {
     return;
 }
 
-sub _propfind_render {
+sub _xml_render {
     map({
 	my($t, $v) = @$_;
 	defined($v) && length($v)
 	   ? (
 	       "<D:$t>",
-	       ref($v) ? ("\n", _propfind_render(@$v)) : $v,
+	       ref($v) ? ("\n", _xml_render(@$v)) : Bivio::HTML->escape($v),
 	       "</D:$t>\n"
 	   ) : "<D:$t/>\n";
     } @_);
