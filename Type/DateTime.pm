@@ -844,7 +844,7 @@ See also L<now_as_file_name|"now_as_file_name">.
 sub local_now_as_file_name {
     my($proto) = @_;
     # We call DateTime now, because we have to adjust for timezone.
-    return $proto->to_file_name(_adjust_to_local(__PACKAGE__->now()));
+    return $proto->to_local_file_name(__PACKAGE__->now());
 }
 
 =for html <a name="local_to_parts"></a>
@@ -1212,6 +1212,20 @@ sub to_four_digit_year {
 	    : $year + ($year > $_WINDOW_YEAR ? 1900 : 2000);
 }
 
+=for html <a name="to_local_file_name"></a>
+
+=head2 static to_local_file_name(string value) : string
+
+Converts to a local time file name.
+
+=cut
+
+sub to_local_file_name {
+    my($proto, $date_time) = @_;
+    return $proto->to_file_name(_adjust_to_local($date_time));
+}
+
+=for html <a name="to_parts"></a>
 =for html <a name="to_local_string"></a>
 
 =head2 static to_local_string(string value) : string
