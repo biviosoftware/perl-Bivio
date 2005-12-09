@@ -6,44 +6,47 @@ use base ('Bivio::Biz::PropertyModel');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub create {
-    my($self, $values) = @_;
-    $values->{name_lc} = lc($values->{name});
-    return shift->SUPER::create(@_);
+sub MAIL_FOLDER {
+    return '/Mail';
+}
+
+sub PUBLIC_FOLDER {
+    return '/Public';
 }
 
 sub create_realm {
-    my($self, $forum, $realm_owner, $admin_ids) = @_;
-    $admin_ids = [$admin_ids]
-	unless ref($admin_ids) eq 'ARRAY';
+    my($self, $realm_owner) = @_;
     my($req) = $self->get_request;
-    $self->new_other('RealmOwner')->create({
+    my($ro) = $self->new_other('RealmOwner')->create({
 	%$realm_owner,
 	realm_type => Bivio::Auth::RealmType->FORUM,
 	realm_id => $self->create({
-	    %$forum,
-	    realm_id => $req->get('auth_id'),
+	    parent_realm_id => $req->get('auth_id'),
 	})->get('forum_id'),
     });
-    foreach my $admin_id (@$admin_ids) {
-	foreach my $r (qw(ADMINISTRATOR MEMBER MAIL_RECIPIENT)) {
-	    $self->new_other('RealmUser')->create({
-		realm_id => $self->get('forum_id'),
-		user_id => $admin_id,
-		role => Bivio::Auth::Role->$r(),
-	    });
-	}
-    }
     my($f) = $self->new_other('RealmFile');
-    foreach my $v ($f->get_field_type('volume')->get_list) {
+    foreach my $folder (qw(MAIL_FOLDER PUBLIC_FOLDER)) {
 	$f->create_folder({
-	    path => '/',
-	    user_id => $admin_ids->[0],
+	    path => $self->$folder(),
 	    realm_id => $self->get('forum_id'),
-	    volume => $v,
-	}) unless $v->equals_by_name('UNKNOWN');
+	    ($folder eq 'MAIL_FOLDER' ? 'is_read_only' : 'is_public') => 1,
+	});
     }
-    return $self;
+    foreach my $admin_id (
+	@{$self->new_other('RealmAdminList')->map_iterate(
+	    sub {shift->get('RealmUser.user_id')},
+	)},
+    ) {
+	$self->new_other('ForumUserAddForm')->execute($req, {
+	    'RealmUser.realm_id' => $self->get('forum_id'),
+	    'User.user_id' => $admin_id,
+	    role => Bivio::Auth::Role->ADMINISTRATOR,
+	});
+    }
+    # Reset state after ForumUserAddForm messed it up
+    $self->put_on_request;
+    $ro->put_on_request;
+    return ($self, $ro);
 }
 
 sub internal_initialize {
@@ -53,9 +56,7 @@ sub internal_initialize {
 	table_name => 'forum_t',
 	columns => {
             forum_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
-	    realm_id => ['RealmOwner.realm_id', 'NONE'],
-	    name => ['Name', 'NOT_NULL'],
-	    name_lc => ['Name', 'NOT_NULL'],
+	    parent_realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
         },
 	auth_id => 'forum_id',
     });
