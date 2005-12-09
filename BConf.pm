@@ -200,6 +200,28 @@ sub merge {
     );
 }
 
+=for html <a name="merge_realm_role_category_map"></a>
+
+=head2 static merge_realm_role_category_map(code_ref new) : array
+
+Calls $new and basic category map.
+
+=cut
+
+sub merge_realm_role_category_map {
+    my($proto, $new) = @_;
+    return 'Bivio::Biz::Util::RealmRole' => {
+	category_map => sub {
+	    return [
+	    $new ? @{$new->()} : (),
+	    [
+		public_forum =>
+		    [[qw(ANONYMOUS USER)] => 'MAIL_SEND'],
+	    ],
+        ];
+    }};
+}
+
 =for html <a name="merge_class_loader"></a>
 
 =head2 static merge_class_loader(hash_ref overrides) : array
@@ -396,6 +418,7 @@ sub _base {
 		    'Bivio::Delegate::SimpleWidgetFactory',
 	    },
 	}),
+	$proto->merge_realm_role_category_map(),
 	'Bivio::Die' => {
 	    stack_trace_error => 1,
 	},
