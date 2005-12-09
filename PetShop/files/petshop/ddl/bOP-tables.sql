@@ -109,9 +109,7 @@ CREATE TABLE email_t (
 
 CREATE TABLE forum_t (
   forum_id NUMERIC(18) NOT NULL,
-  realm_id NUMERIC(18),
-  name VARCHAR(30) NOT NULL,
-  name_lc VARCHAR(30) NOT NULL,
+  parent_realm_id NUMERIC(18) NOT NULL,
   CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
 )
 /
