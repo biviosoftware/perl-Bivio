@@ -1257,7 +1257,9 @@ sub unsafe_get_context_field {
 
 =for html <a name="update_model_properties"></a>
 
-=head2 update_model_properties(Bivio::Biz::Model model)
+=head2 update_model_properties(Bivio::Biz::Model model) : Bivio::Biz::Model
+
+=head2 update_model_properties(string model) : Bivio::Biz::Model
 
 Update model from values on self.
 
@@ -1265,8 +1267,9 @@ Update model from values on self.
 
 sub update_model_properties {
     my($self, $model) = @_;
-    $model->update($self->get_model_properties($model));
-    return;
+    $model = $self->get_model($model)
+	unless ref($model);
+    return $model->update($self->get_model_properties($model));
 }
 
 =for html <a name="validate"></a>
@@ -1328,16 +1331,15 @@ sub validate_and_execute_ok {
 	}
 	elsif ( ! $fields->{stay_on_page}) {
 	    _redirect($self, 'next');
-	    # DOES NOT RETURN
+	    # During unit tests, will fall through
+	    return 0;
 	}
     }
     $self->internal_post_execute('validate_and_execute_ok');
-
-    # Some type of error, rollback and fall through to the next
-    # task items.
     $req->warn('form_errors=', $self->get_errors)
 	if $self->in_error;
-    Bivio::Agent::Task->rollback($req) unless $fields->{stay_on_page};
+    Bivio::Agent::Task->rollback($req)
+	unless $fields->{stay_on_page};
     return 0;
 }
 
