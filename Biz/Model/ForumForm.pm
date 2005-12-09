@@ -29,6 +29,10 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
+    unless ($self->unsafe_get('validate_called')) {
+	$self->validate;
+	return if $self->in_error;
+    }
     my($req) = $self->get_request;
     if (_is_create($req)) {
 	my($f, $ro) = $self->new_other('Forum')->create_realm(
@@ -63,11 +67,19 @@ sub internal_initialize {
 	    },
 	],
 	auth_id => ['RealmOwner.realm_id', 'Forum.forum_id'],
+	other => [
+	    {
+		name => 'validate_called',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+	],
     });
 }
 
 sub validate {
     my($self) = @_;
+    $self->internal_put_field(validate_called => 1);
     return if $self->get_field_error('RealmOwner.name');
     my($req) = $self->get_request;
     my($n) = $self->get('RealmOwner.name');
