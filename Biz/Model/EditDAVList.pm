@@ -4,9 +4,11 @@ package Bivio::Biz::Model::EditDAVList;
 use strict;
 use base 'Bivio::Biz::Model::AnyTaskDAVList';
 use Bivio::IO::Ref;
+use Bivio::IO::Trace;
 use Text::CSV ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
 sub LOAD_ALL_SIZE {
     return 5000;
@@ -31,8 +33,12 @@ sub dav_is_read_only {
 sub dav_put {
     my($self, $content) = @_;
     my($req) = $self->get_request;
+#TODO: Is this lock too broad?   With Forums, you may be updating all the
+#      way to the top.
+    $self->get_instance('Lock')->execute_general($req);
     my($csv) = Text::CSV->new;
-    $self->throw_die(CORRUPT_FORM => 'no header line')
+    my($num) = 1;
+    _e($self, $num, $content, 'no header line')
 	unless $$content =~ s/^.*?\r?\n//;
     my($l) = $req->get('Model.' . $self->LIST_CLASS);
     my($pk, $other_pk) = @{$l->get_info('primary_key_names')};
@@ -46,26 +52,42 @@ sub dav_put {
     my($cols) = $self->CSV_COLUMNS;
     $self->die('primary key must be last column: ', $cols)
 	unless $cols->[$#$cols] eq $pk;
-    my($num) = 1;
-    my($rows) = {create_row => [], update_row => []};
-    foreach my $new (map({
-	$num++;
-	$self->throw_die(CORRUPT_FORM => "line, $num: unable to parse: ", $_)
-	    unless $csv->parse($_);
-	my($l) = [$csv->fields];
-	$self->throw_die(CORRUPT_FORM => "line, $num: invalid columns: ", $l)
-	    if @$l > @$cols;
-	my($row) = {map(($cols->[$_] => $l->[$_]), 0 .. $#$l)};
-	$row;
-    } split(/^/m, $$content))) {
-	my($o) = delete($old->{$new->{$pk} || ''});
-	next if $o && Bivio::IO::Ref->nested_equals($o, $new);
-	push(@{$rows->{$new->{$pk} ? 'row_update' : 'row_create'}}, $new);
+    my($ops) = {create_row => [], update_row => []};
+    my($types) = [map($l->get_field_type($_), @$cols)];
+    foreach my $new (
+	map({
+	    $num++;
+	    _e($self, $num, $_, 'parse failure')
+		unless $csv->parse($_);
+	    my($l) = [$csv->fields];
+	    _e($self, $num, $l, 'too many columns')
+		if @$l > @$cols;
+	    +{
+		line_num => $num,
+		map({
+		    my($v, $e) = $types->[$_]->from_literal($l->[$_]);
+		    _e($self, $num, $l, "$cols->[$_] invalid: " . $e->get_name)
+			if $e;
+		    ($cols->[$_] => $v);
+		} 0 .. $#$cols),
+	    };
+	} split(/^/m, $$content))
+    ) {
+	my($o) = defined($new->{$pk}) ? delete($old->{$new->{$pk}}) : undef;
+	push(@{$ops->{$o ? 'row_update' : 'row_create'}}, [$new, $o])
+	    unless $o && Bivio::IO::Ref->nested_equals($o, $new);
     }
-    $rows->{row_delete} = [values(%$old)];
+    $ops->{row_delete} = [map([$_], values(%$old))];
+    my($realm) = $self->new_other('RealmOwner')->unauth_load_or_die({
+	realm_id => $self->get_query->get('auth_id'),
+    });
     foreach my $op (qw(row_delete row_update row_create)) {
-	foreach my $row (@{$rows->{$op}}) {
-	    $self->$op($row);
+	foreach my $args (@{$ops->{$op}}) {
+	    $req->set_realm($realm);
+	    _trace($op, $args) if $_TRACE;
+	    my($e) = $self->$op(@$args);
+	    _e($self, $args->[0]->{line_num}, $args, "$op failed: $e")
+		if $e;
 	}
     }
     return;
@@ -81,6 +103,16 @@ sub row_delete {
 
 sub row_update {
     return;
+}
+
+sub _e {
+    my($self, $num, $line, $msg) = @_;
+    $self->throw_die(CORRUPT_FORM => {
+	row_num => $num,
+	row => $line,
+	message => $msg,
+    });
+    # DOES NOT RETURN
 }
 
 1;
