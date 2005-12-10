@@ -68,7 +68,7 @@ sub _fmt {
     my($t) = Bivio::Agent::Task->get_by_id($task_id);
     return unless $req->can_user_execute_task($task_id);
     my($ct) = $t->unsafe_get('require_dav') || grep(/_task$/, $t->get_keys) ? ()
-      : ($name =~ s/_([a-z]{3})$/.$1/
+      : ($name =~ s/_([a-z]{3,4})$/.$1/
 	 && Bivio::MIME::Type->unsafe_from_extension($name));
     $name = ucfirst($name);
     $name =~ s/_(\w?)/ \u$1/g;
