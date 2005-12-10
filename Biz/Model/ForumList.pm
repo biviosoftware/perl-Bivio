@@ -12,7 +12,10 @@ sub internal_initialize {
         version => 1,
 	primary_key => [['RealmOwner.realm_id', 'Forum.forum_id']],
 	order_by => [
-	    'RealmOwner.name',
+	    {
+		name => 'RealmOwner.name',
+		type => 'ForumName',
+	    },
 	    'RealmOwner.display_name',
 	],
 	auth_id => ['Forum.parent_realm_id'],
