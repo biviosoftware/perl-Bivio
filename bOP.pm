@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Util::DAV/b-dav added
+  * Bivio::Util::RealmAdmin->leave_user delete all roles
+  * PetShop has forums available via DAV
+
+  Revision 3.48  2005/12/08 19:07:58  moeller
+  * Bivio::Agent::Job::Request refactored
+  * Bivio::Agent::Request show GENERAL in as_string
+  * Bivio::Auth::Realm as_string shows entery realm
+  * Bivio::Biz::Action::UserPasswordQuery fix bug when reseting password
+    without a site cookie, no longer validates cookie in UserLoginForm
+  * Bivio::Biz::Model::UserLoginForm added disable_assert_cookie field
+    so cookie is not validated in some cases
   * Bivio::Delegate::SimpleTaskId added
     DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
     USER_PASSWORD redirects FORBIDDEN errors to the missing cookies task
