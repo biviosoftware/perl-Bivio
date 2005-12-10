@@ -11,10 +11,8 @@ sub dav_propfind_children {
     my($self) = @_;
     my($q) = $self->get_query;
     return [
-	# Microsoft requires list to be sorted
-	sort {lc($a->{displayname}) cmp lc($b->{displayname})}
-	    @{shift->SUPER::dav_propfind_children(@_)},
-	    $q->unsafe_get('this') ? ()
+	@{shift->SUPER::dav_propfind_children(@_)},
+	$q->unsafe_get('this') ? ()
 	    : @{$self->new_other('UserTaskDAVList')
 	       ->unauth_load_all({
 		   map(($_ => $q->get($_)), qw(task_id path_info auth_id)),
