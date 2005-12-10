@@ -410,7 +410,7 @@ sub _touch_parent {
     my($parent) = $self->new_other;
     my($parent_path) = ($values->{path} =~ m{(^/.+)/})[0] || '/';
     return $parent->create_folder({
-	map(($_ => $values->{$_}), qw(user_id realm_id)),
+	map(($_ => $values->{$_}), qw(user_id realm_id override_is_read_only)),
 	path => $parent_path,
     }) unless $parent->unauth_load({
 	realm_id => $values->{realm_id},
