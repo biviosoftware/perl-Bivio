@@ -20,6 +20,10 @@ sub as_string {
     return $self->SUPER::as_string;
 }
 
+sub dav_exists {
+    return shift->get_result_set_size > 0 ? 1 : 0;
+}
+
 sub dav_propfind {
     my($self) = @_;
     return {
