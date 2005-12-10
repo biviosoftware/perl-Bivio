@@ -57,7 +57,7 @@ commands:
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
     join_user honorific -- adds user to realm
-    leave_user -- adds user to realm
+    leave_user -- removes user from realm
     reset_password password -- reset a user's password
 EOF
 }
@@ -212,12 +212,17 @@ Drops I<user> from I<realm>.
 sub leave_user {
     my($self) = @_;
     my($req) = $self->get_request;
-    Bivio::Biz::Model->new($req, 'RealmUser')->unauth_delete({
+    my($realm_user) = Bivio::Biz::Model->new($req, 'RealmUser');
+    $realm_user->unauth_iterate_start('realm_id', {
 	realm_id => $req->get('auth_id')
 	   || $self->usage_error('realm not set'),
 	user_id => $req->get('auth_user_id')
 	   || $self->usage_error('user not set'),
-    });
+	});
+    while ($realm_user->iterate_next_and_load) {
+	$realm_user->delete;
+    }
+    $realm_user->iterate_end;
     return;
 }
 
