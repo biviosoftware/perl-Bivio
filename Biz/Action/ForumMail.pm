@@ -8,10 +8,10 @@ use Bivio::Mail::Outgoing;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
-    my($self, $req) = @_;
+    my(undef, $req) = @_;
     my($mr) = $req->get('Model.MailReceiveDispatchForm');
     my($in) = Bivio::Mail::Incoming->new($mr->get('message')->{content});
-    my($s) = $self->get_subject || '';
+    my($s) = $in->get_subject || '';
     my($n) = $req->get_nested(qw(auth_realm owner name));
     0 while $s =~ s/^(\s+|\[\S*\]|[a-z]{1,3}(:|\[\d+\]))//i;
     $s =~ s/\s+/ /;
