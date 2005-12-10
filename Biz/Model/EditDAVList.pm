@@ -33,9 +33,6 @@ sub dav_is_read_only {
 sub dav_put {
     my($self, $content) = @_;
     my($req) = $self->get_request;
-#TODO: Is this lock too broad?   With Forums, you may be updating all the
-#      way to the top.
-    $self->get_instance('Lock')->execute_general($req);
     my($csv) = Text::CSV->new;
     my($num) = 1;
     _e($self, $num, $content, 'no header line')
@@ -79,7 +76,7 @@ sub dav_put {
     }
     $ops->{row_delete} = [map([$_], values(%$old))];
     my($realm) = $self->new_other('RealmOwner')->unauth_load_or_die({
-	realm_id => $self->get_query->get('auth_id'),
+	realm_id => ($self->get_query || $req)->get('auth_id'),
     });
     foreach my $op (qw(row_delete row_update row_create)) {
 	foreach my $args (@{$ops->{$op}}) {
