@@ -32,6 +32,10 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	primary_key => [{
+	    name => 'RealmOwner.name',
+	    type => 'ForumName',
+	}],
         auth_id => ['Forum.parent_realm_id'],
         other => [
 	    [qw(RealmOwner.realm_id Forum.forum_id)],
