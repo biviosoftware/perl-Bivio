@@ -7,7 +7,7 @@ $_ = $Bivio::Test::FormModel::VERSION;
 
 =head1 NAME
 
-Bivio::Test::FormModel - 
+Bivio::Test::FormModel - x
 
 =head1 RELEASE SCOPE
 
