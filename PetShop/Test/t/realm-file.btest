@@ -2,7 +2,7 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-visit_uri('/demo/public/pub/file.txt');
+visit_uri('/demo/public/file.txt');
 verify_content_type('text/plain');
 verify_text('text/plain');
 test_deviance();
