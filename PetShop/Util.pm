@@ -366,7 +366,7 @@ sub _init_demo_files {
 	Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf(
 	    my $d = File::Spec->rel2abs('demo_files.tmp'))));
     foreach my $x (
-	['pub/file.txt' => 'text/plain'],
+	['Public/file.txt' => 'text/plain'],
 	['private/image.gif' => 'image/gif'],
 	['private/file.html' => '<html><body>text/html</body></html>'],
     ) {
@@ -381,7 +381,7 @@ sub _init_demo_files {
 	    sub {
 		my($f) = @_;
 		$f->update({is_public => 1})
-		    if $f->get('path') =~ /pub/;
+		    if $f->get('path') =~ /public/i;
 		return 1;
 	    },
 	    'path',
