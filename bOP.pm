@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::Action::ForumMail was broken
+  * Fixed some POD errors
+  * PetShop tests updated and UserTaskDAVList allows 3 & 4 char file suffixes
+
+  Revision 3.50  2005/12/10 07:15:11  nagler
+  * Bivio::Biz::Model::RealmFile correctly passes override_is_read_only
     to created parent folders
   * Bivio::Biz::Model::UserRealmDAVList and UserForumDAVList communicate
     about RealmOwner.name which has to be a ForumName
