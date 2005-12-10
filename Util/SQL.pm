@@ -385,8 +385,10 @@ sub init_realm_role {
 	$rr->main(@args);
         $cmd = '';
     }
-    $rr->copy_all(club => 'forum')
-	if Bivio::Auth::RealmType->unsafe_from_name('FORUM');
+    if (Bivio::Auth::RealmType->unsafe_from_name('FORUM')) {
+	$rr->copy_all(club => 'forum');
+	$rr->main(qw(-r FORUM -u user edit MEMBER -ADMIN_READ));
+    }
     return;
 }
 
