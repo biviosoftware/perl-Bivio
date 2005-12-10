@@ -244,7 +244,7 @@ my($new_mtime) = sub {
 	],
 	create_with_content => [
 	    [$a->('ro1/f1', undef, 1), \('ro1/f1')] => $commit,
-	    [$a->('ro1/f2', undef, 1), \('ro1/f2')] => $commit,
+	    [$a->('ro1/d2/f3', undef, 1), \('ro1/d2/f3')] => $commit,
 	],
 	get => [
 	    is_public => 0,
@@ -252,10 +252,12 @@ my($new_mtime) = sub {
 	],
 	delete => [
 	    [] => FORBIDDEN(),
-	    [$a->('ro1/f2', undef, 1)] => $commit,
+	],
+	delete_deep => [
+	    [$a->('ro1/d2', undef, 1)] => $commit,
 	],
 	load => [
-	    [$a->('ro1/f2')] => MODEL_NOT_FOUND(),
+	    [$a->('ro1/d2/f3')] => MODEL_NOT_FOUND(),
 	    [$a->('ro1')] => not_die(),
 	],
 	copy_deep => [
