@@ -97,6 +97,8 @@ The task which L<format_help_uri|"format_help_uri"> uses to format uris.
 This task must have a I<help> attribute which is where help is routed
 to.
 
+=back
+
 =cut
 
 =head1 CONSTANTS
