@@ -26,16 +26,14 @@ sub row_create {
 }
 
 sub row_update {
-    my($self, $values) = @_;
+    my($self, $new) = @_;
     my($req) = $self->get_request;
-    my($old_realm) = $req->get('auth_realm');
-    $_FM->execute_edit($self->get_request);
-    $req->set_realm($values->{'RealmOwner.realm_id'});
+    $_FM->execute_edit($req);
+    $req->set_realm($new->{'RealmOwner.realm_id'});
     $self->new_other('ForumForm')->process({
 	is_public => 0,
-	%$values,
+	%$new,
     });
-    $req->set_realm($old_realm);
     return;
 }
 
