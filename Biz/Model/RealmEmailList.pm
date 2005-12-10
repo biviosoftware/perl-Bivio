@@ -1,6 +1,6 @@
 # Copyright (c) 2005 bivio Software.  All Rights Reserved.
 # $Id$
-package Bivio::Model::RealmEmailList;
+package Bivio::Biz::Model::RealmEmailList;
 use strict;
 use base 'Bivio::Biz::Model::RealmUserList';
 
