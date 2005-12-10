@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,31 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    to created parent folders
+  * Bivio::Biz::Model::UserRealmDAVList and UserForumDAVList communicate
+    about RealmOwner.name which has to be a ForumName
+
+  Revision 3.49  2005/12/10 05:47:31  nagler
+  * Bivio::BConf->merge_realm_role_category_map added
+  * Added following models ForumForum, RealmUserList,
+    RealmUserAddForum, RealmUserDeleteForum, ForumUserAddForum,
+    ForumUserDeleteForum, and RealmEmailList, RealmAdminList, ForumUserEditDAVList
+    EditDAVList, ForumEditDAVList
+  * Bivio::Test::ForumUserUnit added
+  * Bivio::Biz::Model::UserForumDAVList allows tasks to be included
+  * Bivio::Biz::Model::UserRealmDAVList uri and displayname are same
+  * Bivio::Biz::FormModel->update_model_properties accepts simple pkg name
+  * Bivio::Biz::Action::ForumMail added
+  * Bivio::MIME::Type->unsafe_from_extension and text/csv added
+  * Forums can now have children
+  * RealmFile supports is_read_only and is_public (correctly)
+  * Bivio::Type::ForumName added
+  * Bivio::Type::FormMode added (used by ForumForm)
+  * Bivio::Biz::Action::DAV returns complete lock response;
+  * Bivio::Type::DateTime->to_local_file_name added
+  * Bivio::Test::FormModel allows imperative cases also calls
+    clear_nondurable_state in compute_params
+  * Bivio::Biz::FormModel->process doesn't require $req
   * Bivio::Util::DAV/b-dav added
   * Bivio::Util::RealmAdmin->leave_user delete all roles
   * PetShop has forums available via DAV
