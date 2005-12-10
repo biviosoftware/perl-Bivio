@@ -262,6 +262,12 @@ my($_SELF) = __PACKAGE__->new({
 	    'RealmOwner.display_name' => 'Title',
 	    'RealmOwner.realm_id' => 'Database Key',
 	],
+	ForumUserList => [
+	    'Email.email' => 'Email',
+	    'mail_recipient' => 'Subscribed?',
+	    'administrator' => 'Administrator?',
+	    'RealmUser.user_id' => 'Database Key',
+	],
 
 	# Table headings
 	'ItemListForm.add_to_cart' => ' ',
