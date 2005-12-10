@@ -422,7 +422,7 @@ sub get_delegate_info {
 	    DATA_READ
 	    Model.UserForumDAVList
 	    next=DAV_FORUM_LIST
-	    forums_csv_task=ROOT_FORUM_LIST
+	    forums_csv_task=DAV_ROOT_FORUM_LIST_EDIT
 	)],
 	[qw(
 	    DAV_FORUM_LIST
@@ -432,7 +432,8 @@ sub get_delegate_info {
 	    Model.UserForumDAVList
 	    next=DAV_FORUM_LIST
 	    files_task=DAV_FORUM_FILE
-	    forums_csv_task=FORUM_LIST
+	    forums_csv_task=DAV_FORUM_LIST_EDIT
+	    members_csv_task=DAV_FORUM_USER_LIST_EDIT
 	)],
 	[qw(
 	    DAV_FORUM_FILE
@@ -443,20 +444,31 @@ sub get_delegate_info {
 	    require_dav=1
 	)],
 	[qw(
-	    ROOT_FORUM_LIST
+	    DAV_ROOT_FORUM_LIST_EDIT
 	    545
 	    GENERAL
 	    ADMIN_READ
+	    Model.Lock->execute_general
 	    Model.ForumList->execute_load_all
 	    Model.ForumEditDAVList
 	)],
 	[qw(
-	    FORUM_LIST
+	    DAV_FORUM_LIST_EDIT
 	    546
 	    FORUM
 	    ADMIN_READ
+	    Model.Lock->execute_general
 	    Model.ForumList->execute_load_all
 	    Model.ForumEditDAVList
+	)],
+	[qw(
+	    DAV_FORUM_USER_LIST_EDIT
+	    547
+	    FORUM
+	    ADMIN_READ
+	    Model.Lock->execute_general
+	    Model.ForumUserList->execute_load_all
+	    Model.ForumUserEditDAVList
 	)],
     ]);
 }
