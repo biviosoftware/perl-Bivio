@@ -6,10 +6,6 @@ use base 'Bivio::Biz::Model::RealmUserAddForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub BASE_ROLES {
-    return [@{shift->SUPER::BASE_ROLES(@_)}, Bivio::Auth::Role->MAIL_RECIPIENT];
-}
-
 sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
@@ -22,6 +18,14 @@ sub execute_ok {
 	if $self->unsafe_get('RealmUser.role');
     _up($self);
     return @res;
+}
+
+sub internal_get_roles {
+    my($self) = @_;
+    return [
+	@{$self->SUPER::internal_get_roles(@_)},
+	Bivio::Auth::Role->MAIL_RECIPIENT,
+    ];
 }
 
 sub _down {
@@ -60,7 +64,7 @@ sub _up {
 	&& !$self->new_other('RealmUser')->unauth_load({
 	    realm_id => $f->get('forum_id'),
 	    user_id => $self->get('User.user_id'),
-	    role => $self->BASE_ROLES->[0],
+	    role => $self->internal_get_roles->[0],
         });
     return;
 }

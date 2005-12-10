@@ -6,10 +6,6 @@ use base 'Bivio::Biz::Model::UserRegisterForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub BASE_ROLES {
-    return [Bivio::Auth::Role->MEMBER],
-}
-
 sub execute_ok {
     my($self) = @_;
     my($e) = $self->new_other('Email');
@@ -28,6 +24,10 @@ sub execute_ok {
 	    || $self->get_request->get('auth_id'),
     );
     return;
+}
+
+sub internal_get_roles {
+    return [Bivio::Auth::Role->MEMBER];
 }
 
 sub internal_initialize {
@@ -51,7 +51,7 @@ sub _join_user {
     $self->internal_put_field('RealmUser.realm_id' => $realm_id);
     $self->internal_put_field('User.user_id' => $user_id);
     foreach my $r (
-	grep($_, @{$self->BASE_ROLES}, $self->unsafe_get('RealmUser.role')),
+	grep($_, @{$self->internal_get_roles}, $self->unsafe_get('RealmUser.role')),
     ) {
 	$self->new_other('RealmUser')->create_or_unauth_update({
 	    realm_id => $realm_id,
