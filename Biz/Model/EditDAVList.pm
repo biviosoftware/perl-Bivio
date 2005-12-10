@@ -108,6 +108,7 @@ sub _e {
 	row_num => $num,
 	row => $line,
 	message => $msg,
+	program_error => 1,
     });
     # DOES NOT RETURN
 }
