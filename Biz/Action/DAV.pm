@@ -103,7 +103,7 @@ sub _copy_move {
 	$s, FORBIDDEN => "cannot $s->{method} across resource classes"
     ) unless $s->{dest_list}->isa(ref($s->{list}));
     return _output($s, HTTP_PRECONDITION_FAILED => 'Destination exists')
-	if ($s->{dest_existed} = _exists($s->{dest_list}))
+	if ($s->{dest_existed} = $s->{dest_list}->dav_exists)
 	&& ($s->{r}->header_in('overwrite') || 'T') =~ /f/i;
     return;
 }
@@ -217,7 +217,7 @@ sub _dav_options {
 
 sub _dav_propfind {
     my($s) = @_;
-    my($noroot) = _depth($s) =~ /noroot/ || _is_microsoft($s);
+    my($noroot) = _depth($s) =~ /noroot/;
     return _output(
 	$s, MULTI_STATUS => qq{text/xml; charset="utf-8"}, \(
 	join('',
@@ -252,8 +252,11 @@ sub _dav_propfind {
 		     ]],
 		 );
 	     }
-	         ($noroot ? () : $s->{propfind}),
-		 @{_call($s, 'propfind_children')},
+		 # Microsoft requires list to be sorted; RFC2518 doesn't
+		 (sort {lc($a->{displayname}) cmp lc($b->{displayname})}
+		     @{_call($s, 'propfind_children')}),
+		 # Microsoft seems to require this to be last
+		 ($noroot ? () : $s->{propfind}),
 	     ),
 	     "</D:multistatus>\n",
 	 ),
@@ -274,10 +277,6 @@ sub _depth {
     my($s) = @_;
     my($x) = $s->{r}->header_in('depth');
     return defined($x) && length($x) ? $x : 'infinity';
-}
-
-sub _exists {
-    return shift->get_result_set_size > 0 ? 1 : 0;
 }
 
 sub _fix_http {
@@ -378,11 +377,10 @@ sub _output {
 	->set_output_type(
 	    ref($buf) && $msg_or_type ? $msg_or_type : 'text/plain'
 	)->set_header(DAV => 2)
+	->set_header('MS-Author-Via' => 'DAV')
         ->set_output(
 	    ref($buf) ? $buf
 		: \("$n $status" . ($msg_or_type ? " $msg_or_type\n" : "\n")));
-    $s->{reply}->set_header('MS-Author-Via' => 'DAV')
-	if _is_microsoft($s);
     return 1;
 }
 
@@ -391,7 +389,7 @@ sub _precondition {
     $s->{is_read_only} = _call($s, 'is_read_only');
     return _output($s, FORBIDDEN => 'Write operations not permitted')
 	if $s->{is_read_only} && $s->{method} =~ $_WRITABLE;
-    $s->{exists} = _exists($s->{list});
+    $s->{exists} = $s->{list}->dav_exists;
     $s->{list}->set_cursor(0)
 	if $s->{exists};
     foreach my $x (
