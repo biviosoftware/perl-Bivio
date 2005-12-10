@@ -15,6 +15,20 @@ sub execute_ok {
     return @res;
 }
 
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+        other => [
+	    {
+		name => 'realm',
+		type => 'ForumName',
+		constraint => 'NONE',
+	    },
+	],
+    });
+}
+
 sub _down {
     my($self) = @_;
     foreach my $cid (@{$self->new_other('Forum')->map_iterate(
