@@ -5,8 +5,6 @@ use strict;
 use base 'Bivio::Biz::Model::DAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RN) = Bivio::Biz::Model->get_instance('RealmOwner')
-    ->get_field_type('name');
 
 sub dav_propfind {
     my($self) = @_;
@@ -66,12 +64,13 @@ sub load_dav {
     Bivio::Die->throw_quietly(MODEL_NOT_FOUND => {
 	class => ref($self),
 	entity => $this,
-    }) unless $this = ($_RN->from_literal($this))[0]
-	    and $self->unsafe_load_this({
-		this => $this,
-		realm_type => $rt,
-		path_info => $this,
-	    });
+    }) unless $this
+	= ($self->get_field_type('RealmOwner.name')->from_literal($this))[0]
+	and $self->unsafe_load_this({
+	    this => $this,
+	    realm_type => $rt,
+	    path_info => $this,
+	});
     $req->set_realm($self->set_cursor_or_die(0)->get('RealmOwner.name'));
     $req->put(path_info => $next);
     return 'next';
