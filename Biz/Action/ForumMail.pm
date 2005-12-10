@@ -8,7 +8,7 @@ use Bivio::Mail::Outgoing;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
-    my($proto, $req) = @_;
+    my($self, $req) = @_;
     my($mr) = $req->get('Model.MailReceiveDispatchForm');
     my($in) = Bivio::Mail::Incoming->new($mr->get('message')->{content});
     my($s) = $self->get_subject || '';
@@ -17,7 +17,7 @@ sub execute {
     $s =~ s/\s+/ /;
     $s =~ s/\s$//;
     $s ||= '(No Subject)';
-    my($now) = Bivio::Type::DateTime->to_file_name($now);
+    my($now) = Bivio::Type::DateTime->now_as_file_name;
     $mr->new_other('RealmFile')->create_with_content(
 	{
 	    override_is_read_only => 1,
