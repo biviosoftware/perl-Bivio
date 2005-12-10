@@ -20,7 +20,7 @@ send_request(PROPFIND => "$root/not-to-be-found");
 send_request(PROPFIND => "/demo/dav/not-to-be-found");
 test_conformance();
 send_request(PROPFIND => $order_href);
-$order_href = (get_content() =~ m{<D:href>(.+?/$order_realm/detail.html)</D:href>})[0];
+$order_href = (get_content() =~ m{<D:href>(.+?/$order_realm/Detail.html)</D:href>})[0];
 die(get_content()) unless $order_href;
 send_request(GET => $order_href);
 verify_content_type('text/html');
@@ -56,7 +56,6 @@ send_request(PROPFIND => $root, {
     Depth => 0,
 });
 die unless get_content() =~ m{<D:displayname>/</D:displayname>\n
-<D:getlastmodified>.*?</D:getlastmodified>\n
 <D:resourcetype>\n
 <D:collection/>\n
 </D:resourcetype>\n
