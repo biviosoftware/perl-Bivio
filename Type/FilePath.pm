@@ -6,6 +6,10 @@ use base ('Bivio::Type::String');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub ILLEGAL_CHAR_REGEXP {
+    return qr{(?:^|/)\.\.?$|[\\\:*?"<>\|\0-\037\177]};
+}
+
 sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = shift->SUPER::from_literal(@_);
@@ -16,7 +20,7 @@ sub from_literal {
     $v =~ s{/^\s+|\s+$|^/+|/+$}{}g;
     $v =~ s{/+}{/}g;
     # No specials except forward '/'
-    return $v =~ m{(?:^|/)\.\.?$|[\\\:*?"<>\|\0-\037\177]}
+    return $v =~ $proto->ILLEGAL_CHAR_REGEXP
 	? (undef, Bivio::TypeError->FILE_PATH) : "/$v";
 }
 

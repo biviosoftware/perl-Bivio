@@ -91,8 +91,8 @@ sub from_literal {
 
     # This is the same as the Win32 set, so we are pretty safe.
     # Don't allow '.' or '..'.
-    return (undef, Bivio::TypeError::FILE_NAME())
-	    if $value =~ $proto->ILLEGAL_CHAR_REGEXP;
+    return (undef, Bivio::TypeError->FILE_NAME)
+	if $value =~ $proto->ILLEGAL_CHAR_REGEXP;
     return $proto->SUPER::from_literal($value);
 }
 
