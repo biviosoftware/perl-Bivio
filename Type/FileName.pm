@@ -34,6 +34,22 @@ C<Bivio::Type::FileName>
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="ILLEGAL_CHAR_REGEXP"></a>
+
+=head2 ILLEGAL_CHAR_REGEXP : regexp
+
+Characters not allowed in file names
+
+=cut
+
+sub ILLEGAL_CHAR_REGEXP {
+    return qr{^\.\.?$|[\\/:*?"<>|\0-\037\177]};
+}
+
 #=IMPORTS
 
 #=VARIABLES
@@ -76,7 +92,7 @@ sub from_literal {
     # This is the same as the Win32 set, so we are pretty safe.
     # Don't allow '.' or '..'.
     return (undef, Bivio::TypeError::FILE_NAME())
-	    if $value =~ m!^\.\.?$|[\\/:*?"<>|\0-\037\177]!;
+	    if $value =~ $proto->ILLEGAL_CHAR_REGEXP;
     return $proto->SUPER::from_literal($value);
 }
 
