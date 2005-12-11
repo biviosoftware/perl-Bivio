@@ -15,10 +15,12 @@ sub execute {
     my($n) = $req->get_nested(qw(auth_realm owner name));
     0 while $s =~ s/^(\s+|\[\S*\]|[a-z]{1,3}(:|\[\d+\]))//i;
     $s =~ s/\s+/ /;
-    $s =~ s/\s$//;
-    $s ||= '(No Subject)';
+    my($rf) = $mr->new_other('RealmFile');
+    $s =~ s{\s$|/|@{[$rf->get_field_type('path')->ILLEGAL_CHAR_REGEXP]}}{}og;
+    $s = length($s) ? substr($s, 0, Bivio::Type::Line->get_width)
+	: '(No Subject)';
     my($now) = Bivio::Type::DateTime->now_as_file_name;
-    $mr->new_other('RealmFile')->create_with_content(
+    $rf->create_with_content(
 	{
 	    override_is_read_only => 1,
 	    path =>
