@@ -13,7 +13,7 @@ sub execute {
     my($in) = Bivio::Mail::Incoming->new($mr->get('message')->{content});
     my($s) = $in->get_subject || '';
     my($n) = $req->get_nested(qw(auth_realm owner name));
-    0 while $s =~ s/^(\s+|\[\S*\]|[a-z]{1,3}(:|\[\d+\]))//i;
+    0 while $s =~ s/^(\s+|\[\S*\]|[a-z]{1,3}(:|\[\d+\])|\.)//i;
     $s =~ s/\s+/ /;
     my($rf) = $mr->new_other('RealmFile');
     $s =~ s{\s$|/|@{[$rf->get_field_type('path')->ILLEGAL_CHAR_REGEXP]}}{}og;
