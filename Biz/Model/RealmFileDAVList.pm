@@ -98,7 +98,7 @@ sub internal_post_load_row {
 	    = substr(
 		$row->{'RealmFile.path'}, length($pi) + ($pi eq '/' ? 0 : 1));
     }
-    $row->{getlastmodified} = $self->get('RealmFile.modified_date_time');
+    $row->{getlastmodified} = $row->{'RealmFile.modified_date_time'};
     return 1;
 }
 
