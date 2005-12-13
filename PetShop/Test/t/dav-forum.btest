@@ -15,13 +15,13 @@ send_request(PROPFIND => $root);
 verify_text($root_forums);
 send_request(GET => $root_forums);
 #TODO: NEED TO DELETE THE FORUM so we don't get a proliferation
-my($n) = "btest_" . random_string();
-my($dn) = "DAV $n BTEST";
+my($top) = "btest_" . random_string();
+my($dn) = "DAV $top BTEST";
 send_request(PUT => $root_forums, undef, get_content() . <<"EOF");
-$n,$dn
+$top,$dn
 EOF
-my($forum) = "$root/$n";
-send_request(PROPFIND => "$forum/Files");
+my($top_uri) = "$root/$top";
+send_request(PROPFIND => "$top_uri/Files");
 send_request(GET => $root_forums);
 my($csv) = get_content();
 my($tag) = random_string();
@@ -29,14 +29,15 @@ $csv =~ s/$dn/$dn $tag/ || die;
 send_request(PUT => $root_forums, undef, $csv);
 send_request(GET => $root_forums);
 verify_text($tag);
-my($users) = [map((generate_local_email(random_string()))[0], 0 .. 2)];
-send_request(GET => "$forum/Members.csv");
-send_request(PUT => "$forum/Members.csv", undef, get_content() . <<"EOF");
+my($users) = [map((generate_local_email("$_-" . random_string()))[0], 0 .. 4)];
+my($top_members) = "$top_uri/Members.csv";
+send_request(GET => $top_members);
+send_request(PUT => $top_members, undef, get_content() . <<"EOF");
 $users->[0],0,0
 $users->[1],1,1
 $users->[2],1,0
 EOF
-send_request(GET => "$forum/Members.csv");
+send_request(GET => $top_members);
 my($found) = 0;
 foreach my $line (split(/\n/, get_content())) {
     my($u, $s, $a) = split(/,/, $line);
@@ -49,3 +50,23 @@ foreach my $line (split(/\n/, get_content())) {
 }
 die("only found: $found: $csv")
     unless $found == 3;
+my($uri) = "$top_uri/Forums.csv";
+send_request(GET => $uri);
+send_request(PUT => $uri, undef, get_content() . <<"EOF");
+$top-s1,s1
+EOF
+send_request(GET => $uri);
+($csv = get_content()) =~ s/^\Q$top-s1,s1,/$top-sub1,sub forum 1,/m || die;
+send_request(PUT => $uri, undef, $csv);
+$uri = "$top_uri/$top-sub1/Members.csv";
+send_request(GET => $uri);
+send_request(PUT => $uri, undef, get_content() . <<"EOF");
+$users->[3],1,1
+EOF
+send_request(GET => $top_members);
+get_content() =~ /\Q$users->[3],1,0,/ || die;
+send_request(PUT => $top_members, undef, get_content() . <<"EOF");
+$users->[4],0,1
+EOF
+send_request(GET => $uri);
+get_content() =~ /\Q$users->[4],0,1,/ || die;
