@@ -2,7 +2,7 @@
 # $Id$
 ListModel();
 req()->initialize_fully->set_realm_and_user('demo', 'demo');
-my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/pub'});
+my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/public'});
 [
     {
 	method => 'load_dav',
@@ -19,11 +19,11 @@ my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/pub'});
 	'/*' => CORRUPT_QUERY(),
 	'/' => 1,
 	'' => 1,
-	'/pub' => 1,
+	'/public' => 1,
     ],
     dav_propfind => [
 	[] => [{
-	    displayname => 'pub',
+	    displayname => 'Public',
 	    uri => '',
 	    getlastmodified => $pub->get('modified_date_time'),
 	}],
@@ -43,7 +43,7 @@ my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/pub'});
 		    getlastmodified => $m->get('RealmFile.modified_date_time'),
 		};
 	    }, {
-		path_info => '/pub',
+		path_info => '/public',
 	    }),
 	],
     ],
