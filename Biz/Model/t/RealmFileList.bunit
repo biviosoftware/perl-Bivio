@@ -2,7 +2,7 @@
 # $Id$
 ListModel();
 req()->initialize_fully->set_realm_and_user('guest', 'guest');
-my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/pub'});
+my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/public'});
 [
     {
 	method => 'load_all',
