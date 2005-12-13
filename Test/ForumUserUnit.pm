@@ -32,13 +32,11 @@ sub run_unit {
 	    class_name => shift->get('class_name'),
 	    compute_params => sub {
 		my(undef, $params) = @_;
-		my($r) = $params->[1] ? Bivio::Auth::Role->ADMINISTRATOR
-		    : undef;
 		return [$self, {
 		    'Email.email' => $params->[2] || $params->[0]
-			. '@a.a' . ($r ? $r->get_name : ''),
+			. '@a.a' . ($params->[1] ? 'admin' : ''),
 		    realm => $params->[0],
-		    'RealmUser.role' => $r,
+		    administrator => $params->[1],
 		}];
 	    },
 	    compute_return => sub {
@@ -55,8 +53,9 @@ sub run_unit {
 			'realm_id',
 			{
 			    user_id => $f->unsafe_get('User.user_id'),
-			    role => $f->unsafe_get('RealmUser.role')
-				|| Bivio::Auth::Role->MEMBER,
+			    role => $f->unsafe_get('administrator') ?
+				Bivio::Auth::Role->ADMINISTRATOR
+				: Bivio::Auth::Role->MEMBER,
 			},
 		 )})];
 	    },

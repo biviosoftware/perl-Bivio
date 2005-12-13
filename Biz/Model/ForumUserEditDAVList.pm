@@ -21,13 +21,9 @@ sub row_create {
     $f->process({
 	'Email.email' => $new->{'Email.email'},
 	'RealmUser.realm_id' => $req->get('auth_id'),
-	'RealmUser.role' => $new->{administrator} ? Bivio::Auth::Role->ADMINISTRATOR : undef,
+	administrator => $new->{administrator},
+	not_mail_recipient => !$new->{mail_recipient},
     });
-    $self->new_other('RealmUser')->unauth_delete({
-	realm_id => $f->get('RealmUser.realm_id'),
-	user_id => $f->get('User.user_id'),
-	role => Bivio::Auth::Role->MAIL_RECIPIENT,
-    }) unless $new->{mail_recipient};
     return;
 }
 

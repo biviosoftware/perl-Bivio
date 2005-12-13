@@ -40,7 +40,7 @@ sub create_realm {
 	$self->new_other('ForumUserAddForm')->execute($req, {
 	    'RealmUser.realm_id' => $self->get('forum_id'),
 	    'User.user_id' => $admin_id,
-	    'RealmUser.role' => Bivio::Auth::Role->ADMINISTRATOR,
+	    administrator => 1,
 	});
     }
     # Reset state after ForumUserAddForm messed it up
