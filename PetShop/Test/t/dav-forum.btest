@@ -50,23 +50,36 @@ foreach my $line (split(/\n/, get_content())) {
 }
 die("only found: $found: $csv")
     unless $found == 3;
-my($uri) = "$top_uri/Forums.csv";
-send_request(GET => $uri);
-send_request(PUT => $uri, undef, get_content() . <<"EOF");
+# Add a child forum
+my($top_forums) = "$top_uri/Forums.csv";
+send_request(GET => $top_forums);
+send_request(PUT => $top_forums, undef, get_content() . <<"EOF");
 $top-s1,s1
 EOF
-send_request(GET => $uri);
+# Rename child forum
+send_request(GET => $top_forums);
 ($csv = get_content()) =~ s/^\Q$top-s1,s1,/$top-sub1,sub forum 1,/m || die;
-send_request(PUT => $uri, undef, $csv);
-$uri = "$top_uri/$top-sub1/Members.csv";
-send_request(GET => $uri);
-send_request(PUT => $uri, undef, get_content() . <<"EOF");
+send_request(PUT => $top_forums, undef, $csv);
+# Verify existing admin shows up in child forum
+my($sub1_members) = "$top_uri/$top-sub1/Members.csv";
+send_request(GET => $sub1_members);
+get_content() =~ /\Q$users->[1],1,1,/ || die;
+# Add an admin at the child forum level
+send_request(GET => $sub1_members);
+send_request(PUT => $sub1_members, undef, get_content() . <<"EOF");
 $users->[3],1,1
 EOF
+# Verify that new admin appears in top forum
 send_request(GET => $top_members);
 get_content() =~ /\Q$users->[3],1,0,/ || die;
+# Add a member at top forum level
 send_request(PUT => $top_members, undef, get_content() . <<"EOF");
 $users->[4],0,1
 EOF
-send_request(GET => $uri);
+send_request(GET => $sub1_members);
 get_content() =~ /\Q$users->[4],0,1,/ || die;
+# Remove a member at child forum level
+($csv = get_content()) =~ s/^\Q$users->[4]\E,.+\n//m || die;
+send_request(PUT => $sub1_members, undef, $csv);
+send_request(GET => $sub1_members);
+get_content() !~ /\Q$users->[4],0,1,/ || die;
