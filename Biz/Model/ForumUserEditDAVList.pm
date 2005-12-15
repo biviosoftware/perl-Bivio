@@ -30,7 +30,7 @@ sub row_create {
 sub row_delete {
     my($self, $old) = @_;
     my($req) = $self->get_request;
-    $self->new_other('ForumUserDeleteForum')->process({
+    $self->new_other('ForumUserDeleteForm')->process({
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $old->{'RealmUser.user_id'},
     });
