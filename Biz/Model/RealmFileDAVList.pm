@@ -41,7 +41,10 @@ sub dav_mkcol {
 
 sub dav_move {
     my($self, $dest) = @_;
-    _instance($self, update => _load_args($dest));
+    my($a) = _load_args($dest);
+    $dest->dav_delete
+	if $dest->dav_exists;
+    _instance($self, update => $a);
     return;
 }
 
