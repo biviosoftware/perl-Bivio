@@ -56,6 +56,7 @@ send_request(PROPFIND => $root, {
     Depth => 0,
 });
 die unless get_content() =~ m{<D:displayname>/</D:displayname>\n
+<D:getlastmodified>.*</D:getlastmodified>\n
 <D:resourcetype>\n
 <D:collection/>\n
 </D:resourcetype>\n
