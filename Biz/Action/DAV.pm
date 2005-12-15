@@ -37,6 +37,9 @@ sub execute {
 	path_info => $req->get('path_info'),
     };
     my($die) = Bivio::Die->catch(sub {
+	if ($req->get('path_info') =~ m{/\.}) {
+	    return _output($s, 'HTTP_OK');
+        }
         return unless $s->{list} = _load(
 	    $s, $req->get('auth_realm'), $req->get('path_info'));
 	return if _content($s);
@@ -191,8 +194,6 @@ sub _dav_move {
     my($s) = @_;
     return 1
 	if _copy_move($s);
-    _call($s, $s->{dest_list}, 'delete')
-	if $s->{dest_existed};
     _call($s, move => $s->{dest_list});
     return _output($s, $s->{dest_existed} ? 'HTTP_NO_CONTENT' : 'HTTP_CREATED');
 }
@@ -204,7 +205,10 @@ sub _dav_options {
 	    ', ',
 	    map(uc($_),
 		grep(
-		    !$s->{is_read_only} || $_ !~ $_WRITABLE,
+		    $_ ||
+#TODO: always pretend everything works?
+
+			!$s->{is_read_only} || $_ !~ $_WRITABLE,
 		    qw(copy delete get head lock move options propfind unlock),
 		    $s->{propfind}->{getcontenttype}
 			? qw(edit put) : qw(mkcol),
