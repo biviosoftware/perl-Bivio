@@ -26,14 +26,15 @@ sub new {
 	['content'],
 	[foot1 => Link(String('back to top'), '#top')],
 	['foot2'],
-	[foot3 => Join([
+	[foot3 => Tag(p => Join([
 	    'Copyright &copy; ',
 	    Bivio::Type::DateTime->now_as_year,
 	    ' ',
 	    vs_text('site_copyright'),
 	    '<br />All rights reserved.<br />',
 	    Link('Developed by bivio', 'http://www.bivio.biz'),
-	])],
+	]))
+     ],
     ));
     return $proto->SUPER::new($attrs)->put_unless_exists(
 	head => Title([vs_site_name(), view_widget_value('page3_title')]),
