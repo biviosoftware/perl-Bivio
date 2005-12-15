@@ -59,7 +59,7 @@ sub dav_put {
 	    my($l) = [$csv->fields];
 	    _e($self, $num, $l, 'too many columns')
 		if @$l > @$cols;
-	    +{
+	    @$l ? +{
 		line_num => $num,
 		map({
 		    my($v, $e) = $types->[$_]->from_literal($l->[$_]);
@@ -67,7 +67,7 @@ sub dav_put {
 			if $e;
 		    ($cols->[$_] => $v);
 		} 0 .. $#$cols),
-	    };
+	    } : ();
 	} split(/^/m, $$content))
     ) {
 	my($o) = defined($new->{$pk}) ? delete($old->{$new->{$pk}}) : undef;
