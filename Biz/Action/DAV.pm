@@ -37,9 +37,6 @@ sub execute {
 	path_info => $req->get('path_info'),
     };
     my($die) = Bivio::Die->catch(sub {
-	if ($req->get('path_info') =~ m{/\.}) {
-	    return _output($s, 'HTTP_OK');
-        }
         return unless $s->{list} = _load(
 	    $s, $req->get('auth_realm'), $req->get('path_info'));
 	return if _content($s);
@@ -256,9 +253,12 @@ sub _dav_propfind {
 		     ]],
 		 );
 	     }
-		 # Microsoft requires list to be sorted; RFC2518 doesn't
-		 (sort {lc($a->{displayname}) cmp lc($b->{displayname})}
-		     @{_call($s, 'propfind_children')}),
+		 # Don't return dot files, e.g. '.DS_Store'
+		 grep($_->{displayname} !~ m{^\.},
+		      # Microsoft requires list to be sorted; RFC2518 doesn't
+		      sort {lc($a->{displayname}) cmp lc($b->{displayname})}
+		      @{_call($s, 'propfind_children')}
+		 ),
 		 # Microsoft seems to require this to be last
 		 ($noroot ? () : $s->{propfind}),
 	     ),
