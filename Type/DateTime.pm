@@ -675,6 +675,32 @@ sub get_local_timezone {
     return $_LOCAL_TIMEZONE;
 }
 
+=for html <a name="get_next_year"></a>
+
+=head2 get_next_year(string date) : string
+
+Returns the date value for this date next year.
+
+=cut
+
+sub get_next_year {
+    my($proto, $date) = @_;
+
+    my($day, $month, $year) = ($proto->to_parts($date))[3..5];
+    $year++;
+
+    my($next_date, $err);
+    # find the closest day of that month
+    for my $i (0 .. 1) {
+	($next_date, $err) = $proto->date_from_parts($day, $month, $year);
+	last unless $err;
+	$day--;
+    }
+
+    # may drop off the end if original date near min
+    return $next_date || $proto->get_max;
+}
+
 =for html <a name="get_part"></a>
 
 =head2 get_part(string date, string part_name) : string
