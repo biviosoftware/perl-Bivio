@@ -83,3 +83,25 @@ get_content() =~ /\Q$users->[4],0,1,/ || die;
 send_request(PUT => $sub1_members, undef, $csv);
 send_request(GET => $sub1_members);
 get_content() !~ /\Q$users->[4],0,1,/ || die;
+# Test ignore of empty line in CSV
+($csv = get_content()) =~ s/^(\Q$users->[3]\E)/\n$1/m || die;
+send_request(PUT => $sub1_members, undef, $csv);
+send_request(GET => $sub1_members);
+my($lc) = (get_content() =~ tr/\n//);
+die unless $lc == 4;  #3 members + header line
+# Test ignore of line with spaces in CSV
+($csv = get_content()) =~ s/^(\Q$users->[3]\E)/   \n$1/m || die;
+Bivio::IO::Alert->info($csv);
+send_request(PUT => $sub1_members, undef, $csv);
+send_request(GET => $sub1_members);
+$lc = (get_content() =~ tr/\n//);
+die unless $lc == 4;
+# Test ignore of line with commas in CSV
+($csv = get_content()) =~ s/^(\Q$users->[3]\E)/,,,\n$1/m || die;
+Bivio::IO::Alert->info($csv);
+send_request(PUT => $sub1_members, undef, $csv);
+send_request(GET => $sub1_members);
+$lc = (get_content() =~ tr/\n//);
+die unless $lc == 4;
+# TODO: Test writing .DS_Store and retrieval(?)
+# TODO: Test editing admin or mail recipient property for member
