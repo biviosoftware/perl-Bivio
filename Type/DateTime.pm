@@ -1164,6 +1164,21 @@ sub timezone {
     return defined($tz) ? $tz : $_LOCAL_TIMEZONE;
 }
 
+=for html <a name="to_dd_mmm_yyyy"></a>
+
+=head2 to_dd_mmm_yyyy(any value) : string
+
+Returns date in DD MMM YYYY format
+
+=cut
+
+sub to_dd_mmm_yyyy {
+    my($proto, $value) = @_;
+    my($mday, $mon, $year) = ($proto->to_parts($value))[3..5];
+    return sprintf('%2d %s %04d',
+	    $mday, $_NUM_TO_MONTH->[$mon-1], $year);
+}
+
 =for html <a name="to_file_name"></a>
 
 =head2 static to_file_name(string value) : string
