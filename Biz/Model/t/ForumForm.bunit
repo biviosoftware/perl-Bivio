@@ -71,7 +71,8 @@ my($check_perms) = sub {
 	},
         'Model.RealmUser' => {
             user_id => req()->get('auth_user_id'),
-            role => Bivio::Auth::Role->ADMINISTRATOR,
+	    # Last role found for forum admin user
+            role => Bivio::Auth::Role->FILE_WRITER,
             realm_id => sub {
                 return req()->get_nested('Model.Forum', 'forum_id');
             },
