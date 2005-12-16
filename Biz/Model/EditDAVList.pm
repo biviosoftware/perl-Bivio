@@ -37,11 +37,11 @@ sub dav_put {
     my($num) = 1;
     _e($self, $num, $content, 'no header line')
 	unless $$content =~ s/^.*?\r?\n//;
-    my($l) = $req->get('Model.' . $self->LIST_CLASS);
-    my($pk, $other_pk) = @{$l->get_info('primary_key_names')};
-    $l->die('primary_key must be exactly one column')
+    my($lm) = $req->get('Model.' . $self->LIST_CLASS);
+    my($pk, $other_pk) = @{$lm->get_info('primary_key_names')};
+    $lm->die('primary_key must be exactly one column')
 	if $other_pk;
-    my($old) = {@{$l->map_rows(
+    my($old) = {@{$lm->map_rows(
 	sub {
 	    my($row) = shift->get_shallow_copy;
 	    return ($row->{$pk} => $row);
@@ -50,7 +50,7 @@ sub dav_put {
     $self->die('primary key must be last column: ', $cols)
 	unless $cols->[$#$cols] eq $pk;
     my($ops) = {create_row => [], update_row => []};
-    my($types) = [map($l->get_field_type($_), @$cols)];
+    my($types) = [map($lm->get_field_type($_), @$cols)];
     foreach my $new (
 	map({
 	    $num++;
@@ -59,7 +59,7 @@ sub dav_put {
 	    my($l) = [$csv->fields];
 	    _e($self, $num, $l, 'too many columns')
 		if @$l > @$cols;
-	    @$l ? +{
+	    grep($_ =~ /\S/, @$l) ? +{
 		line_num => $num,
 		map({
 		    my($v, $e) = $types->[$_]->from_literal($l->[$_]);
@@ -68,7 +68,7 @@ sub dav_put {
 		    ($cols->[$_] => $v);
 		} 0 .. $#$cols),
 	    } : ();
-	} split(/^/m, $$content))
+	} split(/[\r\n]+/m, $$content))
     ) {
 	my($o) = defined($new->{$pk}) ? delete($old->{$new->{$pk}}) : undef;
 	push(@{$ops->{$o ? 'row_update' : 'row_create'}}, [$new, $o])
