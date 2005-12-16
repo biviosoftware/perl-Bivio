@@ -33,19 +33,19 @@ my($users) = [map((generate_local_email("$_-" . random_string()))[0], 0 .. 4)];
 my($top_members) = "$top_uri/Members.csv";
 send_request(GET => $top_members);
 send_request(PUT => $top_members, undef, get_content() . <<"EOF");
-$users->[0],0,0
-$users->[1],1,1
-$users->[2],1,0
+$users->[0],0,0,0
+$users->[1],1,1,1
+$users->[2],1,1,0
 EOF
 send_request(GET => $top_members);
 my($found) = 0;
 foreach my $line (split(/\n/, get_content())) {
-    my($u, $s, $a) = split(/,/, $line);
+    my($u, $s, $wf, $a) = split(/,/, $line);
     foreach my $i (0..2) {
 	next unless $users->[$i] eq $u;
 	$found++;
 	die($line)
-	    unless "$s,$a" eq ($i < 2 ? "$i,$i" : '1,0');
+	    unless "$s,$wf,$a" eq ($i < 2 ? "$i,$i,$i" : '1,1,0');
     }
 }
 die("only found: $found: $csv")
@@ -67,22 +67,22 @@ get_content() =~ /\Q$users->[1],1,1,/ || die;
 # Add an admin at the child forum level
 send_request(GET => $sub1_members);
 send_request(PUT => $sub1_members, undef, get_content() . <<"EOF");
-$users->[3],1,1
+$users->[3],1,0,1
 EOF
 # Verify that new admin appears in top forum
 send_request(GET => $top_members);
-get_content() =~ /\Q$users->[3],1,0,/ || die;
+get_content() =~ /\Q$users->[3],1,0,0,/ || die;
 # Add a member at top forum level
 send_request(PUT => $top_members, undef, get_content() . <<"EOF");
-$users->[4],0,1
+$users->[4],0,0,1
 EOF
 send_request(GET => $sub1_members);
-get_content() =~ /\Q$users->[4],0,1,/ || die;
+get_content() =~ /\Q$users->[4],0,1,1,/ || die;
 # Remove a member at child forum level
 ($csv = get_content()) =~ s/^\Q$users->[4]\E,.+\n//m || die;
 send_request(PUT => $sub1_members, undef, $csv);
 send_request(GET => $sub1_members);
-get_content() !~ /\Q$users->[4],0,1,/ || die;
+get_content() !~ /\Q$users->[4],0,1,1,/ || die;
 # Test ignore of empty line in CSV
 ($csv = get_content()) =~ s/^(\Q$users->[3]\E)/\n$1/m || die;
 send_request(PUT => $sub1_members, undef, $csv);

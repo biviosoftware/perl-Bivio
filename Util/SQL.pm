@@ -387,7 +387,7 @@ sub init_realm_role {
     }
     if (Bivio::Auth::RealmType->unsafe_from_name('FORUM')) {
 	$rr->copy_all(club => 'forum');
-	$rr->main(qw(-r FORUM -u user edit MEMBER -ADMIN_READ));
+	$rr->main(qw(-r FORUM -u user edit MEMBER -ADMIN_READ -DATA_WRITE));
     }
     return;
 }
@@ -877,6 +877,8 @@ b-realm-role -r GENERAL -u user edit ADMINISTRATOR - \
     +MAIL_READ \
     +MAIL_WRITE
 b-realm-role -r GENERAL -u user edit MAIL_RECIPIENT -
+b-realm-role -r GENERAL -u user edit FILE_WRITER - \
+    +DATA_WRITE
 
 #
 # USER Permissions
@@ -905,6 +907,8 @@ b-realm-role -r USER -u user edit ACCOUNTANT - \
 b-realm-role -r USER -u user edit ADMINISTRATOR - \
     +ACCOUNTANT
 b-realm-role -r USER -u user edit MAIL_RECIPIENT -
+b-realm-role -r USER -u user edit FILE_WRITER - \
+    +DATA_WRITE
 
 #
 # CLUB Permissions
@@ -933,3 +937,5 @@ b-realm-role -r CLUB -u user edit ACCOUNTANT - \
 b-realm-role -r CLUB -u user edit ADMINISTRATOR - \
     +ACCOUNTANT
 b-realm-role -r CLUB -u user edit MAIL_RECIPIENT -
+b-realm-role -r CLUB -u user edit FILE_WRITER - \
+    +DATA_WRITE
