@@ -260,6 +260,71 @@ sub get_delegate_info {
 	    ANYBODY
 	    View.missing-cookies
 	)],
+#24
+	[qw(
+	    DAV
+	    25
+	    GENERAL
+	    ANYBODY
+	    Action.BasicAuthorization
+	    Action.DAV
+	    next=DAV_ROOT_FORUM_LIST
+	)],
+	[qw(
+	    DAV_ROOT_FORUM_LIST
+	    26
+	    GENERAL
+	    DATA_READ
+	    Model.UserForumDAVList
+	    next=DAV_FORUM_LIST
+	    forums_csv_task=DAV_ROOT_FORUM_LIST_EDIT
+	)],
+	[qw(
+	    DAV_FORUM_LIST
+	    27
+	    FORUM
+	    DATA_READ
+	    Model.UserForumDAVList
+	    next=DAV_FORUM_LIST
+	    files_task=DAV_FORUM_FILE
+	    forums_csv_task=DAV_FORUM_LIST_EDIT
+	    members_csv_task=DAV_FORUM_USER_LIST_EDIT
+	)],
+	[qw(
+	    DAV_FORUM_FILE
+	    28
+	    FORUM
+	    DATA_READ
+	    Model.RealmFileDAVList
+	    require_dav=1
+	)],
+	[qw(
+	    DAV_ROOT_FORUM_LIST_EDIT
+	    29
+	    GENERAL
+	    ADMIN_READ
+	    Model.Lock->execute_general
+	    Model.ForumList->execute_load_all
+	    Model.ForumEditDAVList
+	)],
+	[qw(
+	    DAV_FORUM_LIST_EDIT
+	    30
+	    FORUM
+	    ADMIN_READ
+	    Model.Lock->execute_general
+	    Model.ForumList->execute_load_all
+	    Model.ForumEditDAVList
+	)],
+	[qw(
+	    DAV_FORUM_USER_LIST_EDIT
+	    31
+	    FORUM
+	    ADMIN_READ
+	    Model.Lock->execute_general
+	    Model.ForumUserList->execute_load_all
+	    Model.ForumUserEditDAVList
+	)],
     ];
 }
 
