@@ -22,7 +22,9 @@ sub internal_initialize {
 	    'RealmUser.role',
 	],
 	other => $self->internal_initialize_local_fields(
-	    [qw(administrator mail_recipient)], Boolean => 'NOT_NULL'),
+	    [qw(administrator mail_recipient file_writer)],
+	    Boolean => 'NOT_NULL',
+	),
 	auth_id => ['RealmUser.realm_id'],
     });
 }
@@ -35,7 +37,7 @@ sub internal_post_load_row {
     $r->{$role} = 1;
     return 0
 	if $r ne $row;
-    foreach my $x (qw(administrator mail_recipient)) {
+    foreach my $x (qw(administrator mail_recipient file_writer)) {
 	$r->{$x} ||= 0;
     }
     return 1;

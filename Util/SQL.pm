@@ -516,6 +516,44 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_file_writer {
+    my($self) = @_;
+    my($req) = $self->initialize_ui;
+    Bivio::Biz::Model->new($req, 'RealmUser')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    $it->new->create({
+		%{$it->get_shallow_copy},
+		role => Bivio::Auth::Role->FILE_WRITER,
+	    });
+	    return 1;
+	},
+	unauth_iterate_start => 'user_id',
+	{role => Bivio::Auth::Role->ADMINISTRATOR},
+    );
+    my($p) = ${Bivio::Auth::PermissionSet->from_array(['DATA_WRITE'])};
+    Bivio::Biz::Model->new($req, 'RealmRole')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    my($rid) = $it->get('realm_id');
+	    $it->update({
+		permission_set => ($it->get('permission_set') & ~$p),
+	    }) if $it->new_other('RealmOwner')
+		->unauth_load_or_die({realm_id => $rid})
+		->get('realm_type')->eq_forum;
+	    $it->new->create({
+		realm_id => $rid,
+		role => Bivio::Auth::Role->FILE_WRITER,
+		permission_set => $p,
+	    });
+	    return 1;
+	},
+	unauth_iterate_start => 'realm_id',
+	{role => Bivio::Auth::Role->MEMBER},
+    );
+    return;
+}
+
 =for html <a name="internal_upgrade_db_multiple_realm_roles"></a>
 
 =head2 internal_upgrade_db_multiple_realm_roles()

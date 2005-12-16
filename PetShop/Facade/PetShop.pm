@@ -264,8 +264,9 @@ my($_SELF) = __PACKAGE__->new({
 	],
 	ForumUserList => [
 	    'Email.email' => 'Email',
-	    'mail_recipient' => 'Subscribed?',
-	    'administrator' => 'Administrator?',
+	    mail_recipient => 'Subscribed?',
+	    file_writer => 'Write Files?',
+	    administrator => 'Administrator?',
 	    'RealmUser.user_id' => 'Database Key',
 	],
 

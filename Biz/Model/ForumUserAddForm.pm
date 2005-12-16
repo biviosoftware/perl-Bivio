@@ -22,10 +22,11 @@ sub internal_get_roles {
     my($self) = @_;
     return [
 	@{$self->SUPER::internal_get_roles(@_)},
-	$self->unsafe_get('not_mail_recipient') ?
-	    () : Bivio::Auth::Role->MAIL_RECIPIENT,
-	$self->unsafe_get('administrator') ?
-	    Bivio::Auth::Role->ADMINISTRATOR : (),
+	map(Bivio::Auth::Role->$_(),
+	    $self->unsafe_get('not_mail_recipient') ? () : 'MAIL_RECIPIENT',
+	    $self->unsafe_get('administrator') ? qw(ADMINISTRATOR FILE_WRITER)
+		: $self->unsafe_get('file_writer') ? 'FILE_WRITER' : (),
+	),
     ];
 }
 
@@ -34,7 +35,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	@{$self->internal_initialize_local_fields(
-	    visible => [qw(not_mail_recipient administrator)],
+	    visible => [qw(not_mail_recipient administrator file_writer)],
 	    qw(Boolean NONE))},
         other => [
 	    {
@@ -76,7 +77,8 @@ sub _up {
     $self->execute($self->get_request, {
 	'User.user_id' => $self->get('User.user_id'),
 	# Exclude ADMINISTRATOR (see above)
-	'administrator' => 0,
+	administrator => 0,
+	file_writer => 0,
 	'RealmUser.realm_id' => $f->get('forum_id'),
     }) if $f->unauth_load({forum_id => $f->get('parent_realm_id')})
 	&& !$self->new_other('RealmUser')->unauth_load({

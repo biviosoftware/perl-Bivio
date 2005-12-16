@@ -30,50 +30,7 @@ use Bivio::Delegate;
 
 =head1 DESCRIPTION
 
-C<Bivio::Delegate::Role> implements the common Roles in bOP,
-defined as follows:
-
-The following roles are defined:
-
-=over 4
-
-=item UNKNOWN
-
-unknown: user has yet to be authenticated
-
-=item ANONYMOUS
-
-not a user: user not supplied with request or unable to authenticate
-
-=item USER
-
-any user: privileges of any authenticated user, not particular to realm
-
-=item WITHDRAWN
-
-withdrawn member: very limited access to this realm
-
-=item GUEST
-
-non-member: limited privileges
-
-=item MEMBER
-
-member: normal privileges
-
-=item ACCOUNTANT
-
-accountant: normal and financial transaction privileges
-
-=item ADMINISTRATOR
-
-administrator: all privileges
-
-=item MAIL_RECIPIENT
-
-wants to receive mail from forums
-
-=back
+C<Bivio::Delegate::Role> implements the common Roles in bOP.
 
 You should extend this class if you have new Roles in your application.
 The numbers 0-19 are reserved by this module so your first Role would
@@ -152,6 +109,9 @@ sub get_delegate_info {
         ],
 	MAIL_RECIPIENT => [
 	    8,
+	],
+	FILE_WRITER => [
+	    9,
 	],
     ];
 }
