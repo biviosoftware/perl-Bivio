@@ -325,7 +325,7 @@ sub _expunge {
     # this automatically loops through files in ascending order of timestamp
     # only works for this millenium
     my(@dirs) = glob("$_CFG->{nightly_output_dir}/2?????????????");
-    while (@dirs > 14) {
+    while (@dirs > 7) {
 	my($dir) = shift(@dirs);
         $self->print("Deleting old test directory: $dir\n");
 	Bivio::IO::File->rm_rf($dir);
