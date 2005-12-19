@@ -522,6 +522,8 @@ sub internal_upgrade_db_file_writer {
     Bivio::Biz::Model->new($req, 'RealmUser')->do_iterate(
 	sub {
 	    my($it) = @_;
+            return 1 if $it->get('realm_id')
+                eq Bivio::Auth::RealmType->GENERAL->as_int;
 	    $it->new->create({
 		%{$it->get_shallow_copy},
 		role => Bivio::Auth::Role->FILE_WRITER,
