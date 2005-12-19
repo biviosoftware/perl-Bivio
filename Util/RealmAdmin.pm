@@ -56,8 +56,8 @@ commands:
     delete_with_users -- deletes realm and all of its users
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
-    join_user honorific -- adds user to realm
-    leave_user -- removes user from realm
+    join_user role -- adds specified user role to realm
+    leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
 EOF
 }
