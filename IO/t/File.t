@@ -64,5 +64,16 @@ Bivio::Test->new('Bivio::IO::File')->unit([
 		return ['-'];
 	    } => [\('stdout')],
 	],
+	{
+	    method => 'foreach_line',
+	    compute_params => sub {
+		my($acc) = '';
+		shift->put(acc => \$acc);
+		return ['File/1.txt', sub{$acc .= '--' . shift;}];
+	    },
+	    compute_return => sub {[shift->get('acc')];},
+	} => [
+	    [] => [\("--hello\n--goodbye")],
+	],
     ],
 ]);

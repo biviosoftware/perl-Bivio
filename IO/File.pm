@@ -128,6 +128,29 @@ sub chown_by_name {
     return;
 }
 
+=for html <a name="foreach_line"></a>
+
+=head2 foreach_line(string file_name, code_ref fn)
+
+Call I<fn> on each line in I<file_name> like so:
+
+$fn->($line);
+
+Ensures that file_name is closed but does no other error handling.
+
+=cut
+
+sub foreach_line {
+    my($self, $file_name, $fn) = @_;
+    my($fh) = IO::File->new('<'.$file_name)
+	or _err('open', undef, $file_name);
+    my($die) = Bivio::Die->catch(sub {while (<$fh>) {$fn->($_);}});
+    close($fh);
+    $die->throw
+	if $die;
+    return;
+}
+
 =for html <a name="ls"></a>
 
 =head2 static ls(string directory) : array_ref
