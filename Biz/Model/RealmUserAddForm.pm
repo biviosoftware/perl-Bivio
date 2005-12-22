@@ -6,6 +6,23 @@ use base 'Bivio::Biz::Model::UserRegisterForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub copy_admins {
+    my($self, $realm_id) = @_;
+    my($req) = $self->get_request;
+    foreach my $admin_id (
+	@{$self->new_other('RealmAdminList')->map_iterate(
+	    sub {shift->get('RealmUser.user_id')},
+	)},
+    ) {
+	$self->new->process({
+	    'RealmUser.realm_id' => $realm_id,
+	    'User.user_id' => $admin_id,
+	    administrator => 1,
+	});
+    }
+    return;
+}
+
 sub execute_ok {
     my($self) = @_;
     my($e) = $self->new_other('Email');
@@ -27,13 +44,25 @@ sub execute_ok {
 }
 
 sub internal_get_roles {
-    return [Bivio::Auth::Role->MEMBER];
+    my($self) = @_;
+    return [
+	Bivio::Auth::Role->MEMBER,
+	map(Bivio::Auth::Role->$_(),
+	    $self->unsafe_get('not_mail_recipient') ? () : 'MAIL_RECIPIENT',
+	    $self->unsafe_get('administrator') ? qw(ADMINISTRATOR FILE_WRITER)
+		: $self->unsafe_get('file_writer') ? 'FILE_WRITER' : (),
+	),
+    ];
 }
 
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	visble => $self->internal_initialize_local_fields(
+	    [qw(not_mail_recipient administrator file_writer)],
+	    qw(Boolean NONE),
+	),
 	other => [
 	    {
 		# Match RealmUserDeleteForm
