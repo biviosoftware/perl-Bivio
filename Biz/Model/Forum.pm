@@ -32,17 +32,7 @@ sub create_realm {
 	    ($folder eq 'MAIL_FOLDER' ? 'is_read_only' : 'is_public') => 1,
 	});
     }
-    foreach my $admin_id (
-	@{$self->new_other('RealmAdminList')->map_iterate(
-	    sub {shift->get('RealmUser.user_id')},
-	)},
-    ) {
-	$self->new_other('ForumUserAddForm')->execute($req, {
-	    'RealmUser.realm_id' => $self->get('forum_id'),
-	    'User.user_id' => $admin_id,
-	    administrator => 1,
-	});
-    }
+    $self->new_other('ForumUserAddForm')->copy_admins($ro->get('realm_id'));
     # Reset state after ForumUserAddForm messed it up
     $self->put_on_request;
     $ro->put_on_request;
