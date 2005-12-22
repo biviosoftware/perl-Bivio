@@ -227,6 +227,18 @@ sub REGEX_STRING {
     return '(\d+)/(\d+)/(\d{4}) (\d+):(\d+):(\d+)(?: \w+)?';
 }
 
+=for html <a name="REGEX_XML"></a>
+
+=head2 REGEX_XML : string
+
+Output format for L<to_xml|"to_xml">.  Only accepts zulu.
+
+=cut
+
+sub REGEX_XML {
+    return '(\d{4})-?(\d\d)-?(\d\d)T(\d\d):?(\d\d):?(\d\d)(Z?)';
+}
+
 =for html <a name="SECONDS_IN_DAY"></a>
 
 =head2 SECONDS_IN_DAY : int
@@ -1102,6 +1114,7 @@ sub from_literal {
 	\&_from_string,
 	\&_from_file_name,
 	\&_from_rfc822,
+	\&_from_xml,
     ) {
 	return @res
 	    if @res = $method->($proto, $value);
@@ -1183,7 +1196,7 @@ set.
 
 sub timezone {
     return $_LOCAL_TIMEZONE
-	    unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
+	unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
     # We can't return something other than undef.
     my($req) = Bivio::Agent::Request->get_current;
     my($tz) = $req && $req->unsafe_get('timezone');
@@ -1522,6 +1535,19 @@ sub _from_string {
     my($proto, $value) = @_;
     my($mon, $d, $y, $h, $m, $s) = $value =~ /^@{[REGEX_STRING()]}$/o;
     return defined($s) ? $proto->from_parts($s, $m, $h, $d, $mon, $y) : ();
+}
+
+# _from_xml(proto, string value) : array
+#
+# Parses to_xml format
+#
+sub _from_xml {
+    my($proto, $value) = @_;
+    my($y, $mon, $d, $h, $m, $s, $z) = $value =~ /^@{[REGEX_XML()]}$/o;
+    return ()
+	unless defined($s);
+    my($res) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
+    return $z ? $res : _adjust_from_local($res);
 }
 
 # _initialize()
