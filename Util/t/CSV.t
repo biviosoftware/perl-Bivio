@@ -50,6 +50,13 @@ Bivio::Test->unit([
                     [''],
                     ['the,end'],
                 ]],
+            [\(qq{1,,2\n,,"\r\n\n\r",3,4\n\n"the,end"\n}), 1]
+                => [[
+                    [1, 1, '', 2],
+                    [2, '', '', "\n\n\n",3,4],
+                    [6, ''],
+                    [7, 'the,end'],
+                ]],
             [\(qq{1""2,3\n})] => Bivio::DieCode->DIE,
             [\(qq{"abc"2,3\n})] => Bivio::DieCode->DIE,
             [\(qq{"abc2,3\n})] => Bivio::DieCode->DIE,
