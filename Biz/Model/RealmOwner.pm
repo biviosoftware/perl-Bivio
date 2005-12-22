@@ -212,14 +212,27 @@ sub init_db {
     my($self) = @_;
 
     foreach my $rt (Bivio::Auth::RealmType->get_list) {
-	next if $rt->equals_by_name('UNKNOWN');
-	$self->create({
-	    name => lc($rt->get_name),
-	    realm_id => $rt->as_int,
-	    realm_type => $rt,
-	});
+	$self->init_realm_type($rt)
+	    unless $rt->equals_by_name('UNKNOWN');
     }
     return;
+}
+
+=for html <a name="init_realm_type"></a>
+
+=head2 init_realm_type(Bivio::Auth::RealmType rt) : self
+
+Adds I<rt> to the database.
+
+=cut
+
+sub init_realm_type {
+    my($self, $rt) = @_;
+    return $self->create({
+	name => lc($rt->get_name),
+	realm_id => $rt->as_int,
+	realm_type => $rt,
+    });
 }
 
 =for html <a name="internal_initialize"></a>
