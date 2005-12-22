@@ -54,6 +54,7 @@ will use the iterator to render the rows.
 =cut
 
 #=IMPORTS
+use Bivio::Util::CSV;
 
 #=VARIABLES
 
@@ -156,35 +157,18 @@ sub render {
 	ref(Bivio::Biz::Model->get_instance($self->get('list_class'))));
     my($method) = $list->has_iterator
 	? 'iterate_next_and_load' : ('next_row', $list->reset_cursor);
-    $$buffer .= _join([map({
+    $$buffer .= ${Bivio::Util::CSV->to_csv_text([map({
 	Bivio::UI::Text->get_value($list->simple_package_name, $_, $req);
-    } @{$self->get('columns')})]);
+    } @{$self->get('columns')})])};
     while ($list->$method()) {
-	$$buffer .= _join([map({
+	$$buffer .= ${Bivio::Util::CSV->to_csv_text([map({
 	    $list->get_field_type($_)->to_string($list->get($_));
-	} @{$self->get('columns')})]);
+	} @{$self->get('columns')})])};
     }
     return;
 }
 
 #=PRIVATE METHODS
-
-# _join(array_ref values) : string
-#
-# Joins $values in a CSV row
-#
-sub _join {
-    my($values) = @_;
-    return join(',',
-	(map {
-	    if ($_ =~ /[",\n\r]/) {
-		$_ =~ s/"/""/g;
-		$_ = qq{"$_"};
-	    }
-	    $_;
-	} @$values),
-    ) . "\n";
-}
 
 =head1 COPYRIGHT
 
