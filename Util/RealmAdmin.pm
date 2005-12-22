@@ -59,15 +59,18 @@ commands:
     join_user role -- adds specified user role to realm
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
+    info -- dump info on a realm
 EOF
 }
 
 #=IMPORTS
 use Bivio::Auth::Role;
 use Bivio::Biz::Model;
+use Bivio::Type::DateTime;
 use Bivio::Type::Password;
 
 #=VARIABLES
+my($_DT) = 'Bivio::Type::DateTime';
 
 =head1 METHODS
 
@@ -151,6 +154,19 @@ sub delete_with_users {
     $req->set_user(undef);
     $req->set_realm(undef);
     return;
+}
+
+=for html <a name="info"></a>
+
+=head2 info()
+
+info on realm.
+
+=cut
+
+sub info {
+    my($self) = @_;
+    return _info($self->get_request->get_nested(qw(auth_realm owner))) . "\n";
 }
 
 =for html <a name="invalidate_email"></a>
@@ -244,7 +260,62 @@ sub reset_password {
     return;
 }
 
+=for html <a name="users"></a>
+
+=head2 users()
+
+users for realm.
+
+=cut
+
+sub users {
+    my($self) = @_;
+    my($users) = {};
+    my($ru) = Bivio::Biz::Model->new($self->get_request, 'RealmUser');
+    $ru->do_iterate(
+	sub {
+	    my($it) = @_;
+	    push(@{$users->{$it->get('user_id')} ||= []},
+		 $it->get('role')->get_name
+		 . ' '
+		 . $_DT->to_xml($it->get('creation_date_time'))
+	    );
+	    return 1;
+	},
+	'role asc',
+    );
+    my($ro) = $ru->new_other('RealmOwner');
+    return join('',
+        map(join("\n  ",
+		 _info($ro->unauth_load_or_die({realm_id => $_})),
+		 sort(@{$users->{$_}}),
+	    ) . "\n",
+	    sort(keys(%$users)),
+	),
+    );
+}
+
 #=PRIVATE SUBROUTINES
+
+sub _info {
+    my($user) = @_;
+    return join("\n  ",
+	join(' ',
+	    $user->get(qw(name realm_id password)),
+	    $_DT->to_xml($user->get('creation_date_time')),
+	    $user->get('display_name'),
+	),
+	@{$user->new_other('Email')->map_iterate(
+	    sub {
+		my($l, $e) = shift->get(qw(location email));
+		return $l->get_name . ' ' . $e;
+	    },
+	    'unauth_iterate_start',
+	    'location',
+	    {realm_id => $user->get('realm_id')},
+	)},
+    );
+}
 
 # _validate_user(self, string message) : Bivio::Biz::Model::RealmOwner
 #
