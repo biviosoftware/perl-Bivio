@@ -18,25 +18,10 @@ sub execute_ok {
     return @res;
 }
 
-sub internal_get_roles {
-    my($self) = @_;
-    return [
-	@{$self->SUPER::internal_get_roles(@_)},
-	map(Bivio::Auth::Role->$_(),
-	    $self->unsafe_get('not_mail_recipient') ? () : 'MAIL_RECIPIENT',
-	    $self->unsafe_get('administrator') ? qw(ADMINISTRATOR FILE_WRITER)
-		: $self->unsafe_get('file_writer') ? 'FILE_WRITER' : (),
-	),
-    ];
-}
-
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	@{$self->internal_initialize_local_fields(
-	    visible => [qw(not_mail_recipient administrator file_writer)],
-	    qw(Boolean NONE))},
         other => [
 	    {
 		name => 'realm',
