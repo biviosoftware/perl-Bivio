@@ -59,8 +59,8 @@ EOF
 
 #=VARIABLES
 my($_QUOTE) = '"';
-my($_END_OF_VALUE) = qr/,|\r|\n/o;
-my($_END_OF_LINE) = qr/\r|\n/o;
+my($_END_OF_VALUE) = qr/[\,\r\n]/o;
+my($_END_OF_LINE) = qr/[\r\n]/o;
 
 =head1 METHODS
 
@@ -95,23 +95,29 @@ sub colrm {
 
 =head2 static parse(string_ref csv_text) : array_ref
 
+=head2 static parse(string_ref csv_text, boolean want_line_numbers) : array_ref
+
 Parses the CSV text file into an array of array rows.
 Embedded CR LF or CR values are converted to LF ("\n").
 Dies on failure with an appropriate message.
 
+If want_line_numbers is specified, then the first item of each row
+will contain the line number from the input text.
+
 =cut
 
 sub parse {
-    my($proto, $csv_text) = @_;
+    my($proto, $csv_text, $want_line_numbers) = @_;
     $$csv_text .= "\n"
         unless $$csv_text =~ /(\r|\n)$/;
     my($state) = {
         buffer => $csv_text,
+        want_line_numbers => $want_line_numbers,
         char_count => 0,
-        line_number => 0,
+        line_number => 1,
         current_value => '',
         rows => [],
-        current_row => [],
+        current_row => [$want_line_numbers ? 1 : ()],
     };
 
     while (defined(my $char = _next_char($state))) {
@@ -202,7 +208,7 @@ sub _append_char {
 #
 sub _die {
     my($state, @mesesage) = @_;
-    Bivio::Die->die('line: ', $state->{line_number} + 1, ' ', @mesesage);
+    Bivio::Die->die('line: ', $state->{line_number}, ' ', @mesesage);
 }
 
 # _end_value(hash_ref state)
@@ -223,7 +229,8 @@ sub _end_value {
 sub _end_row {
     my($state) = @_;
     push(@{$state->{rows}}, $state->{current_row});
-    $state->{current_row} = [];
+    $state->{current_row} = [
+        $state->{want_line_numbers} ? $state->{line_number} : ()];
     return;
 }
 
