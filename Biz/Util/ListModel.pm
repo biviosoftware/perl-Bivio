@@ -62,6 +62,7 @@ EOF
 #=IMPORTS
 use Bivio::Biz::Action;
 use Bivio::IO::Trace;
+use Bivio::Util::CSV;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -127,12 +128,9 @@ sub csv {
     $model->reset_cursor
 	if $method eq 'next_row';
     while ($model->$method()) {
-	foreach my $c (@$cols) {
-            $res .= _quote_cell($c->{type}->to_string(
-                $model->get($c->{name}))) . ',';
-	}
-	chop($res);
-	$res .= "\n";
+        $res .= ${Bivio::Util::CSV->to_csv_text([
+            map($_->{type}->to_string($model->get($_->{name})), @$cols),
+        ])};
     }
     $model->iterate_end
 	if $method eq 'iterate_next_and_load';
@@ -153,17 +151,6 @@ EOF
 }
 
 #=PRIVATE METHODS
-
-# _quote_cell(string cell) : string
-#
-# Quotes the cell, if need be.
-#
-sub _quote_cell {
-    my($cell) = @_;
-    return $cell unless $cell;
-    $cell =~ s/"/""/sg;
-    return '"' . $cell . '"';
-}
 
 =head1 COPYRIGHT
 
