@@ -33,9 +33,33 @@ CREATE INDEX address_t3 on address_t (
 /
 
 --
+-- calendar_event_t
+--
+ALTER TABLE calendar_event_t
+  ADD CONSTRAINT calendar_event_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX calendar_event_t3 ON calendar_event_t (
+  realm_id
+)
+/
+CREATE INDEX calendar_event_t4 ON calendar_event_t (
+  modified_date_time
+)
+/
+CREATE INDEX calendar_event_t5 ON calendar_event_t (
+  start_date_time
+)
+/
+CREATE INDEX calendar_event_t6 ON calendar_event_t (
+  end_date_time
+)
+/
+
+--
 -- ec_check_payment_t
 --
-
 ALTER TABLE ec_check_payment_t
   ADD CONSTRAINT ec_check_payment_t2
   FOREIGN KEY (realm_id)
@@ -54,7 +78,6 @@ CREATE INDEX ec_check_payment_t4 ON ec_check_payment_t (
 --
 -- ec_credit_card_payment_t
 --
-
 ALTER TABLE ec_credit_card_payment_t
   ADD CONSTRAINT ec_credit_card_payment_t2
   FOREIGN KEY (realm_id)
@@ -73,7 +96,6 @@ CREATE INDEX ec_credit_card_payment_t4 ON ec_credit_card_payment_t (
 --
 -- ec_payment_t
 --
-
 ALTER TABLE ec_payment_t
   ADD CONSTRAINT ec_payment_t2
   FOREIGN KEY (realm_id)
@@ -117,7 +139,6 @@ CREATE INDEX ec_payment_t12 ON ec_payment_t (
 --
 -- ec_subscription_t
 --
-
 ALTER TABLE ec_subscription_t
   ADD CONSTRAINT ec_subscription_t2
   FOREIGN KEY (realm_id)

@@ -389,6 +389,8 @@ sub init_realm_role {
 	$rr->copy_all(club => 'forum');
 	$rr->main(qw(-r FORUM -u user edit MEMBER -ADMIN_READ -DATA_WRITE));
     }
+    $rr->copy_all(forum => 'calendar_event')
+	if Bivio::Auth::RealmType->unsafe_from_name('CALENDAR_EVENT');
     return;
 }
 
@@ -414,6 +416,62 @@ Subclass should implement.
 
 $_ = <<'}'; # emacs
 sub internal_upgrade_db {
+}
+
+=for html <a name="internal_upgrade_db_calendar_event"></a>
+
+=head2 internal_upgrade_db_calendar_event()
+
+Adds CalendarEvent table.
+
+=cut
+
+sub internal_upgrade_db_calendar_event {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE calendar_event_t (
+  calendar_event_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  start_date_time DATE NOT NULL,
+  end_date_time DATE NOT NULL,
+  location VARCHAR(500),
+  description VARCHAR(500),
+  url VARCHAR(255),
+  CONSTRAINT calendar_event_t1 PRIMARY KEY(calendar_event_id)
+)
+/
+ALTER TABLE calendar_event_t
+  ADD CONSTRAINT calendar_event_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX calendar_event_t3 ON calendar_event_t (
+  realm_id
+)
+/
+CREATE INDEX calendar_event_t4 ON calendar_event_t (
+  modified_date_time
+)
+/
+CREATE INDEX calendar_event_t5 ON calendar_event_t (
+  start_date_time
+)
+/
+CREATE INDEX calendar_event_t6 ON calendar_event_t (
+  end_date_time
+)
+/
+CREATE SEQUENCE calendar_event_s
+  MINVALUE 100005
+  CACHE 1 INCREMENT BY 100000
+/
+EOF
+    Bivio::Biz::Model->new($self->get_request, 'RealmOwner')
+        ->init_realm_type(Bivio::Auth::RealmType->CALENDAR_EVENT);
+    $self->new_other('Bivio::Biz::Util::RealmRole')
+	->copy_all(forum => 'calendar_event');
+    return;
 }
 
 =for html <a name="internal_upgrade_db_forum"></a>
@@ -513,6 +571,9 @@ CREATE INDEX forum_t3 on forum_t (
 )
 /
 EOF
+    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
+    $rr->copy_all(club => 'forum');
+    $rr->main(qw(-r FORUM -u user edit MEMBER -ADMIN_READ -DATA_WRITE));
     return;
 }
 

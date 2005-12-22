@@ -30,28 +30,7 @@ use Bivio::Delegate;
 
 =head1 DESCRIPTION
 
-C<Bivio::Delegate::RealmType> implements the common RealmTypes in bOP,
-defined as follows:
-
-=over 4
-
-=item UNKNOWN
-
-realm has not been determined
-
-=item GENERAL
-
-access to general areas (not club or user specific)
-
-=item USER
-
-access to a particular user
-
-=item CLUB
-
-access to a particular club
-
-=back
+C<Bivio::Delegate::RealmType> implements the common RealmTypes in bOP.
 
 You should extend this class if you have new RealmTypes in your application.
 The numbers 0-19 are reserved by this module so your first RealmType would
@@ -89,27 +68,28 @@ Returns standard realm types.
 
 sub get_delegate_info {
     return [
-	'UNKNOWN' => [
+	UNKNOWN => [
 	    0,
 	    undef,
 	    'realm has yet to be established',
 	],
-	'GENERAL' => [
+	GENERAL => [
 	    1,
 	    undef,
 	    'access to general areas (not club or user specific)',
 	],
-	'USER' => [
+	USER => [
 	    2,
 	    undef,
 	    'access to a particular user',
 	],
-	'CLUB' => [
+	CLUB => [
 	    3,
 	    undef,
 	    'access to a particular club',
 	],
-	'FORUM' => [4],
+	FORUM => [4],
+	CALENDAR_EVENT=> [5],
     ];
 }
 

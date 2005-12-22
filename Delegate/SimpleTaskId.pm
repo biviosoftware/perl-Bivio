@@ -260,7 +260,15 @@ sub get_delegate_info {
 	    ANYBODY
 	    View.missing-cookies
 	)],
-#24
+	# used by Model.RealmOwner
+	[qw(
+	    CALENDAR_EVENT_HOME
+	    24
+	    CALENDAR_EVENT
+	    DATA_READ
+	    Action.ClientRedirect->execute_next
+	    next=SITE_ROOT
+	)],
 	[qw(
 	    DAV
 	    25

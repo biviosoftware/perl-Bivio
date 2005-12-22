@@ -34,6 +34,19 @@ CREATE TABLE bulletin_t (
 )
 /
 
+CREATE TABLE calendar_event_t (
+  calendar_event_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  start_date_time DATE NOT NULL,
+  end_date_time DATE NOT NULL,
+  location VARCHAR(500),
+  description VARCHAR(500),
+  url VARCHAR(255),
+  CONSTRAINT calendar_event_t1 PRIMARY KEY(calendar_event_id)
+)
+/
+
 CREATE TABLE club_t (
   club_id NUMERIC(18),
   start_date DATE,

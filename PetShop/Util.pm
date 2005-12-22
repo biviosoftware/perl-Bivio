@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Util;
 use strict;
@@ -161,8 +161,10 @@ EOF
 #=IMPORTS
 use Bivio::Auth::Role;
 use Bivio::Biz::Util::RealmRole;
+use Bivio::Type::DateTime;
 
 #=VARIABLES
+my($_DT) = 'Bivio::Type::DateTime';
 
 =head1 METHODS
 
@@ -227,6 +229,22 @@ sub initialize_test_data {
     _init_demo_items($self);
     _init_demo_users($self);
     _init_demo_files($self);
+    _init_demo_calendar($self);
+    return;
+}
+
+=for html <a name="internal_upgrade_db"></a>
+
+=head2 internal_upgrade_db()
+
+Add CalendarEvent table
+
+=cut
+
+sub internal_upgrade_db {
+    my($self) = @_;
+    $self->internal_upgrade_db_calendar_event;
+    _init_demo_calendar($self);
     return;
 }
 
@@ -247,6 +265,32 @@ sub realm_role_config {
 
 
 #=PRIVATE METHODS
+
+# _init_demo_calendar(self)
+#
+sub _init_demo_calendar {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $self->set_realm_and_user($self->DEMO, $self->DEMO);
+    my($ce) = Bivio::Biz::Model->new($req, 'CalendarEvent');
+    my($now) = $_DT->now;
+    $ce->create_realm({
+	start_date_time => $now,
+	end_date_time => $_DT->add_seconds($now, 3600),
+	location => 'US-80304-2435',
+    }, {
+	display_name => 'One Hour Event',
+    });
+    $self->set_realm_and_user($self->DEMO, $self->DEMO);
+    $ce->create_realm({
+	start_date_time => $now,
+	end_date_time => $_DT->add_seconds($now, 2 * 3600),
+	location => 'US-08854',
+    }, {
+	display_name => 'Two Hour Meeting',
+    });
+    return;
+}
 
 # _init_demo_categories(self)
 #
@@ -452,7 +496,7 @@ sub _init_demo_users {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
