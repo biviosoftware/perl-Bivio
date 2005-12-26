@@ -1,0 +1,69 @@
+[
+  {
+    'class' => 'PUBLIC',
+    'description' => 'A terrific opportunity to discuss last week\'s TPS reports',
+    'dtend' => '2453724 61200',
+    'dtstart' => '2453724 57600',
+    'location' => 'bivio Software Meeting Room',
+    'summary' => 'Monday status meeting',
+    'uid' => 'uuid:1135117484828'
+  },
+  {
+    'class' => 'PUBLIC',
+    'description' => 'Discuss status of Libery RFP',
+    'dtend' => '2453726 70200',
+    'dtstart' => '2453726 64800',
+    'location' => 'teleconference',
+    'summary' => 'Liberty Call NOW',
+    'uid' => 'uuid:1135117573515'
+  },
+  {
+    'class' => 'PUBLIC',
+    'dtend' => '2453737 79199',
+    'dtstart' => '2453736 79199',
+    'summary' => 'New Years Eve',
+    'uid' => 'uuid:1135117609417'
+  },
+  {
+    'class' => 'PUBLIC',
+    'dtend' => '2453731 79199',
+    'dtstart' => '2453730 79199',
+    'summary' => 'Christmas',
+    'uid' => 'uuid:1135117592332'
+  },
+  {
+    'class' => 'PUBLIC',
+    'description' => 'Drink all of the rummy egg nog that you can handle!',
+    'dtend' => '2453730 18000',
+    'dtstart' => '2453730 3600',
+    'location' => 'PR Ski Refuge',
+    'summary' => 'Christmas Eve Party',
+    'uid' => 'uuid1135118086629'
+  },
+  {
+    'class' => 'PUBLIC',
+    'description' => 'Greg will be flying in to visit',
+    'dtend' => '2453741 63000',
+    'dtstart' => '2453740 75600',
+    'location' => 'bivio Software HQ',
+    'summary' => 'Greg\'s Visit',
+    'uid' => 'uuid1135118466990'
+  },
+  {
+    'class' => 'PRIVATE',
+    'dtend' => '2453733 79199',
+    'dtstart' => '2453732 79199',
+    'summary' => 'Kwanzaa begins!',
+    'uid' => 'a7514d3f-722e-11da-94d5-8d6b5f6091c9'
+  },
+  {
+    'class' => 'PRIVATE',
+    'description' => 'some\\nmultiline\\ndesci',
+    'dtend' => '2453720 79199',
+    'dtstart' => '2453718 79199',
+    'location' => 'This is a long location field',
+    'summary' => 'hello',
+    'uid' => 'uuid1135277417056jfjf',
+    'url' => 'hello'
+  }
+];
