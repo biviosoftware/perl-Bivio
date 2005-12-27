@@ -1048,19 +1048,21 @@ sub set_local_beginning_of_day {
 
 =for html <a name="set_local_end_of_day"></a>
 
-=head2 set_local_end_of_day(string date_time) : string
+=head2 set_local_end_of_day(string date_time, int timezone) : string
 
 Sets the time component of the date/time to 23:59:59 in the user's
-time zone.
+time zone.  I<timezone> may be undef iwc it defaults to I<timezone>.
 
 =cut
 
 sub set_local_end_of_day {
-    my($proto, $date_time) = @_;
+    my($proto, $date_time, $tz) = @_;
     my($date, $time) = split(' ', $date_time);
-    my($tz) = $proto->timezone;
+    $tz = $proto->timezone
+	unless defined($tz);
 
-    return $date.' '.$_END_OF_DAY unless defined($tz);
+    return "$date $_END_OF_DAY"
+	unless defined($tz) && $tz;
     # The timezone is really a timezone offset for now.  This will
     # have to be fixed someday, but not right now.
     $tz *= 60;
