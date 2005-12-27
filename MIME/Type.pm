@@ -236,6 +236,7 @@ my(%_TYPE_TO_EXT) = (
     'text/x-speech',			'talk:Speech document',
     'text/xml',		                'xml,xsl,dtd:XML document',
     'application/xhtml+xml',		'xhtml,xht:XHTML document',
+    'application/xml',			'rss:Really Simple Syndication',
 
     'video/isivideo',			'fvi:isi video',
     'video/mpeg',			'mpg,mpeg,mpe:MPEG movie',
