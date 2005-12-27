@@ -1,0 +1,21 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+use Bivio::PetShop::Util;
+my($_DT) = 'Bivio::Type::DateTime';
+req()->set_realm(Bivio::PetShop::Util->DEMO);
+my($now) = $_DT->from_literal('1/1/2006 16:0:0');
+[
+    load_all => [
+	[] => [
+	    map(
+		+{
+		    'RealmOwner.display_name' => 'Summary' . $_,
+		    'CalendarEvent.location' => 'Location' . $_,
+		    'CalendarEvent.dtstart' => $_DT->add_seconds($now, $_ * 3600),
+		},
+		qw{2 1}
+	    ),
+	],
+    ],
+];
