@@ -11,6 +11,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	auth_id => 'CalendarEvent.realm_id',
+	can_iterate => 1,
         primary_key => [
 	    [qw{CalendarEvent.calendar_event_id RealmOwner.realm_id}],
 	 ],
