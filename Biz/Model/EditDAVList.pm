@@ -14,18 +14,6 @@ sub LOAD_ALL_SIZE {
     return 5000;
 }
 
-sub dav_reply_get {
-    my($self) = @_;
-    Bivio::UI::View->execute(\(<<"EOF"), shift->get_request);
-view_class_map('TextWidget');
-view_main(CSV(
-    '@{[$self->LIST_CLASS]}',
-    ${Bivio::IO::Ref->to_string($self->CSV_COLUMNS)}
-));
-EOF
-    return 1;
-}
-
 sub dav_is_read_only {
     return 0;
 }
@@ -88,6 +76,19 @@ sub dav_put {
 	}
     }
     return;
+}
+
+
+sub dav_reply_get {
+    my($self) = @_;
+    Bivio::UI::View->execute(\(<<"EOF"), shift->get_request);
+view_class_map('TextWidget');
+view_main(CSV(
+    '@{[$self->LIST_CLASS]}',
+    ${Bivio::IO::Ref->to_string($self->CSV_COLUMNS)}
+));
+EOF
+    return 1;
 }
 
 sub row_create {
