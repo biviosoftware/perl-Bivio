@@ -271,22 +271,22 @@ sub realm_role_config {
 sub _init_demo_calendar {
     my($self) = @_;
     my($req) = $self->get_request;
-    $self->set_realm_and_user($self->DEMO, $self->DEMO);
+    my($now) = $_DT->from_literal('1/1/2006 16:0:0');
     my($ce) = Bivio::Biz::Model->new($req, 'CalendarEvent');
-    my($now) = $_DT->now;
-    $ce->create_from_vevent({
-	dtstart => $now,
-	dtend => $_DT->add_seconds($now, 3600),
-	location => 'US-80304-2435',
-	summary => 'One Hour Event',
-    });
-    $self->set_realm_and_user($self->DEMO, $self->DEMO);
-    $ce->create_from_vevent({
-	dtstart => $now,
-	dtend => $_DT->add_seconds($now, 2 * 3600),
-	location => 'US-08854',
-	summary => 'Two Hour Meeting',
-    });
+    map(
+	{
+	    $self->set_realm_and_user($self->DEMO, $self->DEMO);
+	    $ce->create_from_vevent(
+		{
+		    dtstart => $_DT->add_seconds($now, $_ * 3600),
+		    dtend => $_DT->add_seconds($now, ($_ + 1) * 3600),
+		    location => 'Location' . $_,
+		    summary => 'Summary' . $_,
+		}
+	    );
+	}
+	qw{1 2}
+    );
     return;
 }
 
