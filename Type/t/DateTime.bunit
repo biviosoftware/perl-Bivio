@@ -1,7 +1,7 @@
 # Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 Type();
-simple_require('Bivio::Test::Request')->get_instance->put(timezone => 120);
+req()->put(timezone => 120);
 [
     class() => [
 	is_date => [
@@ -17,6 +17,8 @@ simple_require('Bivio::Test::Request')->get_instance->put(timezone => 120);
 	set_local_beginning_of_day => [
 	    ['2453647 64200'] => ['2453647 7200'],
 	    ['2453648 00000'] => ['2453647 7200'],
+	    ['2453648 00000', 0] => ['2453648 0'],
+	    ['2453648 00000', -60] => ['2453647 3600'],
 	],
 	from_literal => [
 	    [undef] => [undef],
