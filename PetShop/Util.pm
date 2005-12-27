@@ -274,20 +274,18 @@ sub _init_demo_calendar {
     $self->set_realm_and_user($self->DEMO, $self->DEMO);
     my($ce) = Bivio::Biz::Model->new($req, 'CalendarEvent');
     my($now) = $_DT->now;
-    $ce->create_realm({
-	start_date_time => $now,
-	end_date_time => $_DT->add_seconds($now, 3600),
+    $ce->create_from_vevent({
+	dtstart => $now,
+	dtend => $_DT->add_seconds($now, 3600),
 	location => 'US-80304-2435',
-    }, {
-	display_name => 'One Hour Event',
+	summary => 'One Hour Event',
     });
     $self->set_realm_and_user($self->DEMO, $self->DEMO);
-    $ce->create_realm({
-	start_date_time => $now,
-	end_date_time => $_DT->add_seconds($now, 2 * 3600),
+    $ce->create_from_vevent({
+	dtstart => $now,
+	dtend => $_DT->add_seconds($now, 2 * 3600),
 	location => 'US-08854',
-    }, {
-	display_name => 'Two Hour Meeting',
+	summary => 'Two Hour Meeting',
     });
     return;
 }
