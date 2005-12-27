@@ -1184,6 +1184,19 @@ sub get_width {
     return 13;
 }
 
+=for html <a name="is_date"></a>
+
+=head2 static is_date(string value) : boolean
+
+Is this a date (with DEFAULT_TIME)?
+
+=cut
+
+sub is_date {
+    my(undef, $value) = @_;
+    return defined($value) && $value =~ /$_TIME_SUFFIX$/o ? 1 : 0;
+}
+
 =for html <a name="timezone"></a>
 
 =head2 static timezone() : int
