@@ -433,8 +433,8 @@ CREATE TABLE calendar_event_t (
   calendar_event_id NUMERIC(18) NOT NULL,
   realm_id NUMERIC(18) NOT NULL,
   modified_date_time DATE NOT NULL,
-  start_date_time DATE NOT NULL,
-  end_date_time DATE NOT NULL,
+  dtstart DATE NOT NULL,
+  dtend DATE NOT NULL,
   location VARCHAR(500),
   description VARCHAR(500),
   url VARCHAR(255),
@@ -455,11 +455,11 @@ CREATE INDEX calendar_event_t4 ON calendar_event_t (
 )
 /
 CREATE INDEX calendar_event_t5 ON calendar_event_t (
-  start_date_time
+  dtstart
 )
 /
 CREATE INDEX calendar_event_t6 ON calendar_event_t (
-  end_date_time
+  dtend
 )
 /
 CREATE SEQUENCE calendar_event_s
