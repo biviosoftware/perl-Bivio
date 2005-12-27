@@ -49,11 +49,11 @@ CREATE INDEX calendar_event_t4 ON calendar_event_t (
 )
 /
 CREATE INDEX calendar_event_t5 ON calendar_event_t (
-  start_date_time
+  dtstart
 )
 /
 CREATE INDEX calendar_event_t6 ON calendar_event_t (
-  end_date_time
+  dtend
 )
 /
 
