@@ -297,6 +297,8 @@ sub get_delegate_info {
 	    files_task=DAV_FORUM_FILE
 	    forums_csv_task=DAV_FORUM_LIST_EDIT
 	    members_csv_task=DAV_FORUM_USER_LIST_EDIT
+	    events_ics_task=DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
+	    events_rss_task=FORUM_CALENDAR_EVENT_LIST_RSS
 	)],
 	[qw(
 	    DAV_FORUM_FILE
@@ -324,7 +326,7 @@ sub get_delegate_info {
 	    Model.ForumList->execute_load_all
 	    Model.ForumEditDAVList
 	)],
-	[qw(
+ 	[qw(
 	    DAV_FORUM_USER_LIST_EDIT
 	    31
 	    FORUM
@@ -332,6 +334,21 @@ sub get_delegate_info {
 	    Model.Lock->execute_general
 	    Model.ForumUserList->execute_load_all
 	    Model.ForumUserEditDAVList
+	)],
+ 	[qw(
+	    FORUM_CALENDAR_EVENT_LIST_RSS
+	    32
+	    FORUM
+	    DATA_READ
+	    Action.CalendarEventListRSS
+	)],
+	[qw(
+	    DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
+	    33
+	    FORUM
+	    ADMIN_READ
+	    Model.Lock
+	    Model.CalendarEventDAVList
 	)],
     ];
 }
