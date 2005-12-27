@@ -608,8 +608,7 @@ I<value> should be in local time.
 sub from_local_literal {
     my($proto, $value) = @_;
     my($res, $err) = $proto->from_literal($value);
-    return ($res, $err) unless $res;
-    return (_adjust_from_local($res));
+    return $res ? _adjust_from_local($proto, $res) : ($res, $err);
 }
 
 =for html <a name="from_parts"></a>
@@ -887,20 +886,20 @@ sub local_now_as_file_name {
 
 =for html <a name="local_to_parts"></a>
 
-=head2 local_to_parts(string date_time) : array
+=head2 static local_to_parts(string date_time) : array
 
 Adjusts for local time and calls L<to_parts|"to_parts">.
 
 =cut
 
 sub local_to_parts {
-    my($self, $date_time) = @_;
-    return $self->to_parts(_adjust_to_local($date_time));
+    my($proto, $date_time) = @_;
+    return $proto->to_parts(_adjust_to_local($proto, $date_time));
 }
 
 =for html <a name="max"></a>
 
-=head2 max(string left, string right) : string
+=head2 static max(string left, string right) : string
 
 Returns the greater of the two dates.
 
@@ -908,8 +907,7 @@ Returns the greater of the two dates.
 
 sub max {
     my($proto, $left, $right) = @_;
-    return $left if $proto->compare($left, $right) > 0;
-    return $right;
+    return $proto->compare($left, $right) > 0 ? $left : $right;
 }
 
 =for html <a name="min"></a>
@@ -1022,28 +1020,16 @@ sub set_end_of_month {
 
 =for html <a name="set_local_beginning_of_day"></a>
 
-=head2 set_local_beginning_of_day(string date_time) : string
+=head2 set_local_beginning_of_day(string date_time, int tz) : string
 
 Sets the time component of the date/time to 00:00:00 in the user's
-time zone.
+time zone.   I<timezone> may be undef iwc it defaults to I<timezone>.
 
 =cut
 
 sub set_local_beginning_of_day {
-    my($proto, $date_time) = @_;
-    my($date, $time) = split(' ', $date_time);
-    my($tz) = $proto->timezone;
-
-    return $date.' '.$_BEGINNING_OF_DAY unless $tz;
-
-    # The timezone is really a timezone offset for now.  This will
-    # have to be fixed someday, but not right now.
-    $tz *= 60;
-
-    $date--
-	if $time < $tz;
-
-    return $date.' '.$tz;
+    my($proto, $date_time, $tz) = @_;
+    return $proto->set_local_time_part($date_time, $_BEGINNING_OF_DAY, $tz);
 }
 
 =for html <a name="set_local_end_of_day"></a>
@@ -1057,39 +1043,22 @@ time zone.  I<timezone> may be undef iwc it defaults to I<timezone>.
 
 sub set_local_end_of_day {
     my($proto, $date_time, $tz) = @_;
-    my($date, $time) = split(' ', $date_time);
-    $tz = $proto->timezone
-	unless defined($tz);
+    return $proto->set_local_time_part($date_time, $_END_OF_DAY, $tz);
+}
 
-    return "$date $_END_OF_DAY"
-	unless defined($tz) && $tz;
-    # The timezone is really a timezone offset for now.  This will
-    # have to be fixed someday, but not right now.
-    $tz *= 60;
+=for html <a name="set_local_time_part"></a>
 
-    # This algorithm is "dumb and stupid", because I'm trying to get it
-    # right.  Probably smarter ways...
+=head2 set_local_time_part(string date_time, int seconds, int timezone) : string
 
-    # First figure out what the day is
-    $time -= $tz;
-    if ($time < 0) {
-	$date--;
-    }
-    elsif ($time >= SECONDS_IN_DAY()) {
-	$date++;
-    }
+Sets the time component of the date/time to I<seconds> in the user's
+time zone.  I<timezone> may be undef iwc it defaults to I<timezone>.
 
-    # Next figure out what day GMT is in when today is at end of day
-    $time = ($_END_OF_DAY + $tz) % SECONDS_IN_DAY();
-    if ($tz > 0) {
-	$date++;
-    }
-    elsif ($tz < 0) {
-	$date--;
-    }
+=cut
 
-    # Return the adjusted date and time
-    return $date.' '.$time;
+sub set_local_time_part {
+    my($proto, $date_time, $seconds, $tz) = @_;
+    my($date, $time) = split(' ', _adjust_to_local($proto, $date_time, $tz));
+    return _adjust_from_local($proto, "$date $seconds", $tz);
 }
 
 =for html <a name="from_literal"></a>
@@ -1199,6 +1168,23 @@ sub is_date {
     return defined($value) && $value =~ /$_TIME_SUFFIX$/o ? 1 : 0;
 }
 
+=for html <a name="time_from_parts"></a>
+
+=head2 time_from_parts(int sec, int min, int hour) : array
+
+Returns the date/time value comprising the parts.  If there is an
+error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
+
+=cut
+
+sub time_from_parts {
+    my(undef, $sec, $min, $hour) = @_;
+    return (undef, Bivio::TypeError::HOUR) if $hour > 23 || $hour < 0;
+    return (undef, Bivio::TypeError::MINUTE) if $min > 59 || $min < 0;
+    return (undef, Bivio::TypeError::SECOND) if $sec > 59 || $sec < 0;
+    return $_DATE_PREFIX.(($hour * 60 + $min) * 60 + $sec);
+}
+
 =for html <a name="timezone"></a>
 
 =head2 static timezone() : int
@@ -1248,23 +1234,6 @@ sub to_file_name {
 	    $hour, $min, $sec);
 }
 
-=for html <a name="time_from_parts"></a>
-
-=head2 time_from_parts(int sec, int min, int hour) : array
-
-Returns the date/time value comprising the parts.  If there is an
-error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
-
-=cut
-
-sub time_from_parts {
-    my(undef, $sec, $min, $hour) = @_;
-    return (undef, Bivio::TypeError::HOUR) if $hour > 23 || $hour < 0;
-    return (undef, Bivio::TypeError::MINUTE) if $min > 59 || $min < 0;
-    return (undef, Bivio::TypeError::SECOND) if $sec > 59 || $sec < 0;
-    return $_DATE_PREFIX.(($hour * 60 + $min) * 60 + $sec);
-}
-
 =for html <a name="to_four_digit_year"></a>
 
 =head2 to_four_digit_year(int year) : int
@@ -1291,7 +1260,7 @@ Converts to a local time file name.
 
 sub to_local_file_name {
     my($proto, $date_time) = @_;
-    return $proto->to_file_name(_adjust_to_local($date_time));
+    return $proto->to_file_name(_adjust_to_local($proto, $date_time));
 }
 
 =for html <a name="to_parts"></a>
@@ -1305,7 +1274,7 @@ Converts to a human readable string in the local timezone.
 
 sub to_local_string {
     my($proto, $date_time) = @_;
-    return _to_string($proto, _adjust_to_local($date_time));
+    return _to_string($proto, _adjust_to_local($proto, $date_time));
 }
 
 =for html <a name="to_parts"></a>
@@ -1418,30 +1387,24 @@ sub to_xml {
     my($proto, $value) = @_;
     return '' unless defined($value);
     my($sec, $min, $hour, $mday, $mon, $year) = $proto->to_parts($value);
-    return sprintf('%04d-%02d-%02dT%02d:%02d:%02dZ', $year, $mon, $mday,
-	    $hour, $min, $sec);
+    return sprintf('%04d-%02d-%02dT%02d:%02d:%02dZ',
+        $year, $mon, $mday, $hour, $min, $sec);
 }
 
 #=PRIVATE METHODS
 
-# _adjust_from_local(string value) : value
-#
-# Converts from local to GMT.
-#
 sub _adjust_from_local {
-    my($value) = @_;
-    my($tz) = __PACKAGE__->timezone;
-    return $tz ? __PACKAGE__->add_seconds($value, $tz * 60) : $value;
+    return _adjust_local(+1, @_);
 }
 
-# _adjust_to_local(string value) : value
-#
-# Subtracts timezone to get to local time.
-#
+sub _adjust_local {
+    my($sign, $proto, $value, $tz) = @_;
+    return $proto->add_seconds(
+	$value, $sign * 60 * (defined($tz) ? $tz : $proto->timezone));
+}
+
 sub _adjust_to_local {
-    my($value) = @_;
-    my($tz) = __PACKAGE__->timezone;
-    return $tz ? __PACKAGE__->add_seconds($value, -$tz * 60) : $value;
+    return _adjust_local(-1, @_);
 }
 
 # _compute_local_timezone()
@@ -1562,7 +1525,7 @@ sub _from_xml {
     return ()
 	unless defined($s);
     my($res) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
-    return $z ? $res : _adjust_from_local($res);
+    return $z ? $res : _adjust_from_local($proto, $res);
 }
 
 # _initialize()
