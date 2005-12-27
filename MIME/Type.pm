@@ -222,6 +222,7 @@ my(%_TYPE_TO_EXT) = (
     'model/vrml',			'wrl:VRML model',
     'model/mesh',			'mesh:Mesh model',
 
+    'text/calendar',		        'ics:calendar rfc2445',
     'text/css',		                'css:cascading style sheet',
     'text/csv',		                'csv:comma-separated values',
     'text/enriched',			'rtx:Text-enriched document',
