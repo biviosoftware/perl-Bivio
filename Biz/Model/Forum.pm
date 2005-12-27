@@ -46,7 +46,8 @@ sub internal_initialize {
 	table_name => 'forum_t',
 	columns => {
             forum_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
-	    parent_realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+	    # Don't link
+	    parent_realm_id => ['PrimaryId', 'NOT_NULL'],
         },
 	auth_id => 'forum_id',
     });
