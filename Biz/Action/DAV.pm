@@ -450,7 +450,7 @@ sub _precondition {
 }
 
 sub _xml_render {
-    map({
+    return map({
 	my($t, $v) = @$_;
 	defined($v) && length($v)
 	   ? (
