@@ -2,8 +2,8 @@
   {
     'class' => 'PUBLIC',
     'description' => 'A terrific opportunity to discuss last week\'s TPS reports',
-    'dtend' => '2453724 61200',
-    'dtstart' => '2453724 57600',
+    'dtend' => '2453724 36000',
+    'dtstart' => '2453724 32400',
     'location' => 'bivio Software Meeting Room',
     'summary' => 'Monday status meeting',
     'uid' => 'uuid:1135117484828'
@@ -11,8 +11,8 @@
   {
     'class' => 'PUBLIC',
     'description' => 'Discuss status of Libery RFP',
-    'dtend' => '2453726 70200',
-    'dtstart' => '2453726 64800',
+    'dtend' => '2453726 45000',
+    'dtstart' => '2453726 39600',
     'location' => 'teleconference',
     'summary' => 'Liberty Call NOW',
     'uid' => 'uuid:1135117573515'
@@ -34,8 +34,8 @@
   {
     'class' => 'PUBLIC',
     'description' => 'Drink all of the rummy egg nog that you can handle!',
-    'dtend' => '2453730 18000',
-    'dtstart' => '2453730 3600',
+    'dtend' => '2453729 79200',
+    'dtstart' => '2453729 64800',
     'location' => 'PR Ski Refuge',
     'summary' => 'Christmas Eve Party',
     'uid' => 'uuid1135118086629'
@@ -43,8 +43,8 @@
   {
     'class' => 'PUBLIC',
     'description' => 'Greg will be flying in to visit',
-    'dtend' => '2453741 63000',
-    'dtstart' => '2453740 75600',
+    'dtend' => '2453741 37800',
+    'dtstart' => '2453740 50400',
     'location' => 'bivio Software HQ',
     'summary' => 'Greg\'s Visit',
     'uid' => 'uuid1135118466990'

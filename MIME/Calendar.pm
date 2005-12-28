@@ -51,6 +51,10 @@ sub _event {
 	    |dtstamp|priority)$}x;
 	if ($k =~ /^(dtstart|dtend)(;value=date)?$/) {
 	    my($w) = $1;
+	    my($is_date) = $2;
+#TODO: Timezone
+	    $v .= 'Z'
+		unless $is_date || $v =~ /Z$/;
 	    my($t, $e) = ($2 ? $_D : $_DT)->from_literal($v);
 	    _e($v, ": failed to parse $k: ", $e)
 		unless $t;
