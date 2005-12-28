@@ -64,7 +64,7 @@ sub dav_put {
     }
     $ops->{row_delete} = [map([$_], values(%$old))];
     my($realm) = $self->new_other('RealmOwner')->unauth_load_or_die({
-	realm_id => ($self->get_query || $req)->get('auth_id'),
+	realm_id => $self->get_auth_id,
     });
     foreach my $op (qw(row_delete row_update row_create)) {
 	foreach my $args (@{$ops->{$op}}) {

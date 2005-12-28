@@ -55,6 +55,14 @@ sub execute {
     return $res;
 }
 
+sub get_auth_id {
+    my($self) = @_;
+    return (
+	$self->get_query
+        || $self->get_request->is_test && $self->get_request
+    )->get('auth_id');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
