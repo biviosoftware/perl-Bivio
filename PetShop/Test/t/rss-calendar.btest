@@ -14,21 +14,15 @@ send_request(PUT => $root_forums, undef, get_content() . <<"EOF");
 $top,$dn
 EOF
 my($forum_uri) = "$root/$top";
-# Verify that non-admin can view and get calendar (.ics)
-#basic_authorization('demo');
-#send_request(PROPFIND => $forum_uri);
 my($events_ics) = "$forum_uri/Events.ics";
 my($events_rss) = "$forum_uri/Events.rss";
-#verify_text($events_ics);
-##test_deviance(qr{forbidden}i);
-#send_request(GET => $events_ics);
-# TODO: should this be an empty generated .ics (i.e. no VEVENTS)?
-##test_conformance();
-# Verify that admin can view and get .ics
+# Verify that admin can view and get .ics with no events
 basic_authorization('root');
 send_request(PROPFIND => $forum_uri);
 verify_text($events_ics);
 send_request(GET => $events_ics);
+get_content() =~ /BEGIN:VCALENDAR.*END:VCALENDAR/s || die;
+get_content() !~ /BEGIN:VEVENT/s || die;
 # Verify that admin can put a 2-event .ics, simulating Sunbird output
 send_request(PUT => $events_ics, undef, <<"EOF");
 BEGIN:VCALENDAR
@@ -67,15 +61,12 @@ END:VCALENDAR
 EOF
 # Verify that admin can read validated .ics
 send_request(GET => $events_ics);
-#Bivio::IO::Alert->info(get_content());
 get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
-# Verify that admin can read generated .rss
-send_request(GET => $events_rss);
-get_content() =~ /title.*Event2.*title.*Event1/s || die;
-# Verify that non-admin can read validated .ics
-basic_authorization('demo');
+# Verify putting unmodified .ics
+my($ics) = get_content();
+send_request(PUT => $events_ics, undef, $ics);
 send_request(GET => $events_ics);
-get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
-# Verify that non-admin can read generated .rss
+get_content() eq $ics || die;
+# Verify that admin can read generated .rss
 send_request(GET => $events_rss);
 get_content() =~ /title.*Event2.*title.*Event1/s || die;
