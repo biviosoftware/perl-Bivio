@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.55  2005/12/17 07:14:17  nagler
+  * Bivio::Type::DateTime->get_next_year added
+  * Bivio::Type::DateTime->to_dd_mmm_yyyy added
+  * Bivio::Delegate::SimpleTaskId added DAV tasks
+  * Bivio::Delegate::Role->FILE_WRITER added
+  * Bivio::Biz::Model::RealmFileDAVList ignores dot files
+
   Revision 3.54  2005/12/13 23:33:45  aviggio
   * b-perl-agile.el updates to b-perl-project-prefix and
     b-perl-insert-method-usage Emacs functions
