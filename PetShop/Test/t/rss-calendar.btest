@@ -24,7 +24,7 @@ send_request(GET => $events_ics);
 get_content() =~ /BEGIN:VCALENDAR.*END:VCALENDAR/s || die;
 get_content() !~ /BEGIN:VEVENT/s || die;
 # Verify that admin can put a 2-event .ics, simulating Sunbird output
-send_request(PUT => $events_ics, undef, <<"EOF");
+send_request(PUT => $events_ics, undef, <<'EOF');
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN
@@ -38,7 +38,7 @@ CLASS:PUBLIC
 DTSTART:20051221T110000
 DTEND:20051221T123000
 LOCATION:Location1
-DESCRIPTION:Discuss status of Libery RFP
+DESCRIPTION:Discuss status of Liberty RFP
 CATEGORIES:Customer
 X-LIC-ERROR:No value for STATUS property. Removing entire property:
 END:VEVENT
@@ -67,6 +67,31 @@ my($ics) = get_content();
 send_request(PUT => $events_ics, undef, $ics);
 send_request(GET => $events_ics);
 get_content() eq $ics || die;
+# Verify adding events
+(my $new_ics = $ics) =~ s/END:VCALENDAR\r\n//m;
+Bivio::IO::Alert->info($new_ics);
+send_request(PUT => $events_ics, undef, $new_ics . <<'EOF');
+BEGIN:VEVENT
+CREATED:20051225T223923Z
+LAST-MODIFIED:20051225T224201Z
+DTSTAMP:20051220T223923Z
+UID:uuid1135118466991
+SUMMARY:Event3
+PRIORITY:0
+CLASS:PUBLIC
+DTSTART:20060102T140000
+DTEND:20060103T103000
+X-LIC-ERROR:No value for STATUS property. Removing entire property:
+LOCATION:Location2
+CATEGORIES:Business
+DESCRIPTION:Prepare for Greg's trip
+END:VEVENT
+END:VCALENDAR
+EOF
+# Verify that admin can read modified .ics
+send_request(GET => $events_ics);
+# TODO: Test correct event order
+get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event3.*BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
 # Verify that admin can read generated .rss
 send_request(GET => $events_rss);
-get_content() =~ /title.*Event2.*title.*Event1/s || die;
+get_content() =~ /title.*Event2.*title.*Event3.*title.*Event1/s || die;
