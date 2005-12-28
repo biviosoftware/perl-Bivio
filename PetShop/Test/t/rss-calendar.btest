@@ -67,14 +67,15 @@ END:VCALENDAR
 EOF
 # Verify that admin can read validated .ics
 send_request(GET => $events_ics);
-get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event1.*BEGIN:VEVENT.*SUMMARY:Event2/s || die;
+#Bivio::IO::Alert->info(get_content());
+get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
 # Verify that admin can read generated .rss
 send_request(GET => $events_rss);
 get_content() =~ /title.*Event2.*title.*Event1/s || die;
 # Verify that non-admin can read validated .ics
 basic_authorization('demo');
 send_request(GET => $events_ics);
-get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event1.*BEGIN:VEVENT.*SUMMARY:Event2/s || die;
+get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
 # Verify that non-admin can read generated .rss
 send_request(GET => $events_rss);
 get_content() =~ /title.*Event2.*title.*Event1/s || die;
