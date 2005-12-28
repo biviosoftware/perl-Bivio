@@ -36,6 +36,7 @@ sub render {
 }
 
 sub _dt {
+    # TODO: Evaluate with user time zone?
     my($dt, $method) = @_;
     $method ||= 'rfc822';
     return $_DT->$method($_DT->is_date($dt) ?
