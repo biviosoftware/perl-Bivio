@@ -3,7 +3,7 @@
 ListModel();
 use Bivio::PetShop::Util;
 my($_DT) = 'Bivio::Type::DateTime';
-req()->set_realm(Bivio::PetShop::Util->DEMO);
+req()->set_realm_and_user(Bivio::PetShop::Util->DEMO);
 my($now) = $_DT->from_literal('1/1/2006 16:0:0');
 [
     load_all => [
@@ -17,5 +17,22 @@ my($now) = $_DT->from_literal('1/1/2006 16:0:0');
 		qw{2 1}
 	    ),
 	],
+    ],
+    sub {
+	Bivio::Biz::Model->new(req(), 'CalendarEvent')->delete_all;
+	return 1;
+    } => 1,
+    {
+	compute_return => sub {
+	    return [shift->get('object')->map_iterate(
+		sub {
+		    return [shift->get(
+			qw(RealmOwner.display_name CalendarEvent.location))];
+		})];
+	    },
+	method => 'update_from_ics',
+    } => [
+	[Bivio::IO::File->read('CalendarEventList/1.in')] =>
+	    [do('CalendarEventList/1.out')],
     ],
 ];
