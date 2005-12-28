@@ -21,7 +21,7 @@ sub render {
     return \(join(
 	'',
 	qq{<?xml version="1.0"?>\n},
-	qq{#<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://my.netscape.com/publish/formats/rss-0.91.dtd">\n},
+	qq{<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://my.netscape.com/publish/formats/rss-0.91.dtd">\n},
 	qq{<rss version="0.91">\n},
 	_xml_render(
 	    [channel => [
