@@ -436,7 +436,7 @@ CREATE TABLE calendar_event_t (
   dtstart DATE NOT NULL,
   dtend DATE NOT NULL,
   location VARCHAR(500),
-  description VARCHAR(500),
+  description VARCHAR(4000),
   url VARCHAR(255),
   CONSTRAINT calendar_event_t1 PRIMARY KEY(calendar_event_id)
 )
