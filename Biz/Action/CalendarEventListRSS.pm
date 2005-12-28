@@ -35,6 +35,12 @@ sub render {
     ));
 }
 
+sub _br {
+    my($s) = @_;
+    $s =~ s{\\n}{<br />}g;
+    return $s;
+}
+
 sub _dt {
     # TODO: Evaluate with user time zone?
     my($dt, $method) = @_;
@@ -76,7 +82,7 @@ sub _xml_render {
 	defined($v) && length($v)
 	   ? (
 	       $t && "<$t>",
-	       ref($v) ? ("\n", _xml_render(@$v)) : Bivio::HTML->escape($v),
+	       ref($v) ? ("\n", _xml_render(@$v)) : _br(Bivio::HTML->escape($v)),
 	       $t && "</$t>\n"
 	   ) : '';
     } @_);
