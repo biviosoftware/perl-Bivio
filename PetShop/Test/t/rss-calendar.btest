@@ -1,0 +1,80 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+# Create forum for test purposes
+my($root) = '/dav';
+my($root_forums) = "$root/Forums.csv";
+basic_authorization('root');
+send_request(GET => $root_forums);
+#TODO: NEED TO DELETE THE FORUM so we don't get a proliferation
+my($top) = "btest_" . random_string();
+my($dn) = "DAV $top BTEST";
+send_request(PUT => $root_forums, undef, get_content() . <<"EOF");
+$top,$dn
+EOF
+my($forum_uri) = "$root/$top";
+# Verify that non-admin can view and get calendar (.ics)
+#basic_authorization('demo');
+#send_request(PROPFIND => $forum_uri);
+my($events_ics) = "$forum_uri/Events.ics";
+my($events_rss) = "$forum_uri/Events.rss";
+#verify_text($events_ics);
+##test_deviance(qr{forbidden}i);
+#send_request(GET => $events_ics);
+# TODO: should this be an empty generated .ics (i.e. no VEVENTS)?
+##test_conformance();
+# Verify that admin can view and get .ics
+basic_authorization('root');
+send_request(PROPFIND => $forum_uri);
+verify_text($events_ics);
+send_request(GET => $events_ics);
+# Verify that admin can put a 2-event .ics, simulating Sunbird output
+send_request(PUT => $events_ics, undef, <<"EOF");
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN
+BEGIN:VEVENT
+CREATED:20051220T222822Z
+LAST-MODIFIED:20051220T222822Z
+DTSTAMP:20051220T222822Z
+UID:uuid:1135117573515
+SUMMARY:Event1
+CLASS:PUBLIC
+DTSTART:20051221T110000
+DTEND:20051221T123000
+LOCATION:Location1
+DESCRIPTION:Discuss status of Libery RFP
+CATEGORIES:Customer
+X-LIC-ERROR:No value for STATUS property. Removing entire property:
+END:VEVENT
+BEGIN:VEVENT
+CREATED:20051220T223923Z
+LAST-MODIFIED:20051220T224201Z
+DTSTAMP:20051220T223923Z
+UID:uuid1135118466990
+SUMMARY:Event2
+PRIORITY:0
+CLASS:PUBLIC
+DTSTART:20060104T140000
+DTEND:20060105T103000
+X-LIC-ERROR:No value for STATUS property. Removing entire property:
+LOCATION:Location2
+CATEGORIES:Business
+DESCRIPTION:Greg will be flying in to visit
+END:VEVENT
+END:VCALENDAR
+EOF
+# Verify that admin can read validated .ics
+send_request(GET => $events_ics);
+get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event1.*BEGIN:VEVENT.*SUMMARY:Event2/s || die;
+# Verify that admin can read generated .rss
+send_request(GET => $events_rss);
+get_content() =~ /title.*Event2.*title.*Event1/s || die;
+# Verify that non-admin can read validated .ics
+basic_authorization('demo');
+send_request(GET => $events_ics);
+get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event1.*BEGIN:VEVENT.*SUMMARY:Event2/s || die;
+# Verify that non-admin can read generated .rss
+send_request(GET => $events_rss);
+get_content() =~ /title.*Event2.*title.*Event1/s || die;
