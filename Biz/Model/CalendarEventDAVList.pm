@@ -14,6 +14,7 @@ sub dav_is_read_only {
 
 sub dav_put {
     my($self, $content) = @_;
+    $self->get_request->set_realm($self->get_auth_id);
     $self->new_other('CalendarEventList')->update_from_ics($content);
     return;
 }
@@ -50,7 +51,10 @@ sub dav_reply_get {
 	        'X-LIC-ERROR:No value for STATUS property. Removing entire property:',
 		'END:VEVENT',
 	    );
-	})},
+	},
+	    'unauth_iterate_start',
+	     {auth_id => $self->get_auth_id},
+        )},
 	'END:VCALENDAR',
 	'',
     )));
