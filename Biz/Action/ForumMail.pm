@@ -46,7 +46,7 @@ sub execute {
 	->set_headers_for_list_send(
 	    $n,
 	    $req->get_nested(qw(auth_realm owner display_name)),
-	    1,
+	    0,
 	    "[$n]",
 	    $req,
         )->enqueue_send($req);
