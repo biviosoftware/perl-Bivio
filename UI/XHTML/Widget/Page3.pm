@@ -20,6 +20,7 @@ sub new {
 	("page3_$_->[0]" => delete($attrs->{$_->[0]}) || $_->[1] || Join([''])),
 	[title => vs_text(
 	    [sub {"title.$_[1]"}, ['task_id', '->get_name']])],
+	['meta_info'],
 	[head1 => Link(Tag(span => ''), 'SITE_ROOT')],
 	[head2 => Tag(div => view_widget_value('page3_title'), 'title')],
 	['head3'],
@@ -37,7 +38,10 @@ sub new {
      ],
     ));
     return $proto->SUPER::new($attrs)->put_unless_exists(
-	head => Title([vs_site_name(), view_widget_value('page3_title')]),
+	head => Join([
+	    Title([vs_site_name(), view_widget_value('page3_title')]),
+	    view_widget_value('page3_meta_info'),
+	]),
 	body => Join([
 	    '<a name="top"></a>',
 	    Tag('div',
