@@ -1252,15 +1252,16 @@ sub to_four_digit_year {
 
 =for html <a name="to_local_file_name"></a>
 
-=head2 static to_local_file_name(string value) : string
+=head2 static to_local_file_name(string value, int tz) : string
 
-Converts to a local time file name.
+Converts to a local time file name. I<tz> is optional timezone.  Defaults to
+I<timezone>.
 
 =cut
 
 sub to_local_file_name {
-    my($proto, $date_time) = @_;
-    return $proto->to_file_name(_adjust_to_local($proto, $date_time));
+    my($proto, $date_time, $tz) = @_;
+    return $proto->to_file_name(_adjust_to_local($proto, $date_time, $tz));
 }
 
 =for html <a name="to_parts"></a>
