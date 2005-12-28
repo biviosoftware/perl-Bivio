@@ -14,7 +14,7 @@ my($now) = $_DT->from_literal('1/1/2006 16:0:0');
 		    'CalendarEvent.location' => 'Location' . $_,
 		    'CalendarEvent.dtstart' => $_DT->add_seconds($now, $_ * 3600),
 		},
-		qw{2 1}
+		2, 1,
 	    ),
 	],
     ],
