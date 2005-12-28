@@ -47,7 +47,7 @@ sub update_from_ics {
     my($ce) = $self->new_other('CalendarEvent');
     foreach my $v (@{Bivio::MIME::Calendar->from_ics($ics)}) {
         if (my $x = delete($old->{$v->{uid}})) {
-	    $ce->load({calendar_event_id => $x->{calendar_event_id}})
+	    $ce->load({calendar_event_id => $x->{'CalendarEvent.calendar_event_id'}})
 		->update_from_vevent($v);
 	}
 	else {
@@ -55,7 +55,7 @@ sub update_from_ics {
 	}
     }
     foreach my $x (values(%$old)) {
-	$ce->load({calendar_event_id => $x->{calendar_event_id}})
+	$ce->load({calendar_event_id => $x->{'CalendarEvent.calendar_event_id'}})
 	    ->cascade_delete;
     }
     return;
