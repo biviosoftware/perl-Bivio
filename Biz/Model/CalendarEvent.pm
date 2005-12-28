@@ -22,7 +22,7 @@ sub create_from_vevent {
 	    realm_id => $req->get('auth_id'),
 	})->get('calendar_event_id'),
 	%$rv,
-	name => $_UID . $self->get('calendar_event_id'),
+	name => $self->id_to_uid,
     });
     $self->new_other('RealmUserAddForm')
 	->copy_admins($self->get('calendar_event_id'));
@@ -46,6 +46,11 @@ sub delete_all {
     return $i;
 }
 
+sub id_to_uid {
+    my($self, $id) = @_;
+    return $_UID . ($id || $self->get('calendar_event_id'));
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -59,7 +64,7 @@ sub internal_initialize {
 	    dtstart => ['DateTime', 'NOT_NULL'],
 	    dtend => ['DateTime', 'NOT_NULL'],
 	    location => ['Text', 'NONE'],
-	    description => ['Text', 'NONE'],
+	    description => ['LongText', 'NONE'],
 	    url => ['HTTPURI', 'NONE'],
 # 	    rrule_freq
 # 		rrule_until
@@ -73,29 +78,6 @@ sub internal_initialize {
 	    [qw(calendar_event_id RealmOwner.realm_id)],
 	],
     });
-}
-
-sub update_from_ics {
-    my($self, $ics) = @_;
-    my($cel) = {map(
-	($_->{calendar_event_id} => $_),
-	@{$self->new_other('CalendarEventList')->map_iterate(
-	    sub {shift->get_shallow_copy},
-	)},
-    )};
-    foreach my $v (@{Bivio::MIME::Calendar->from_ics($ics)}) {
-	my($id) = ($v->{uid} =~ /^$_UID(\d+)$/o)[0] || 0;
-        if (delete($cel->{$id})) {
-	    $self->load->update_from_vevent($v);
-	}
-	else {
-	    $self->create_from_vevent($v);
-	}
-    }
-    foreach my $id (keys(%$cel)) {
-	$self->load({calendar_event_id => $id})->cascade_delete;
-    }
-    return;
 }
 
 sub update_from_vevent {
