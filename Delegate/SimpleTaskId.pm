@@ -297,8 +297,8 @@ sub get_delegate_info {
 	    files_task=DAV_FORUM_FILE
 	    forums_csv_task=DAV_FORUM_LIST_EDIT
 	    members_csv_task=DAV_FORUM_USER_LIST_EDIT
-	    events_ics_task=DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
-	    events_rss_task=FORUM_CALENDAR_EVENT_LIST_RSS
+	    calendar_ics_task=DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
+	    calendar_rss_task=FORUM_CALENDAR_EVENT_LIST_RSS
 	)],
 	[qw(
 	    DAV_FORUM_FILE
@@ -346,7 +346,7 @@ sub get_delegate_info {
 	    DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
 	    33
 	    FORUM
-	    ADMIN_READ
+	    DATA_READ
 	    Model.Lock
 	    Model.CalendarEventDAVList
 	)],
