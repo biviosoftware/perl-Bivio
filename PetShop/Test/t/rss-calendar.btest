@@ -14,17 +14,16 @@ send_request(PUT => $root_forums, undef, get_content() . <<"EOF");
 $top,$dn
 EOF
 my($forum_uri) = "$root/$top";
-my($events_ics) = "$forum_uri/Events.ics";
-my($events_rss) = "$forum_uri/Events.rss";
-# Verify that admin can view and get .ics with no events
-basic_authorization('root');
+my($calendar_ics) = "$forum_uri/Calendar.ics";
+my($calendar_rss) = "$forum_uri/Calendar.rss";
+# Verify that admin can view and get .ics with no calendar
 send_request(PROPFIND => $forum_uri);
-verify_text($events_ics);
-send_request(GET => $events_ics);
+verify_text($calendar_ics);
+send_request(GET => $calendar_ics);
 get_content() =~ /BEGIN:VCALENDAR.*END:VCALENDAR/s || die;
 get_content() !~ /BEGIN:VEVENT/s || die;
 # Verify that admin can put a 2-event .ics, simulating Sunbird output
-send_request(PUT => $events_ics, undef, <<'EOF');
+send_request(PUT => $calendar_ics, undef, <<'EOF');
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN
@@ -60,17 +59,17 @@ END:VEVENT
 END:VCALENDAR
 EOF
 # Verify that admin can read validated .ics
-send_request(GET => $events_ics);
+send_request(GET => $calendar_ics);
 get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
 # Verify putting unmodified .ics
 my($ics) = get_content();
-send_request(PUT => $events_ics, undef, $ics);
-send_request(GET => $events_ics);
+send_request(PUT => $calendar_ics, undef, $ics);
+send_request(GET => $calendar_ics);
 get_content() eq $ics || die;
-# Verify adding events
+# Verify adding calendar
 (my $new_ics = $ics) =~ s/END:VCALENDAR\r\n//m;
 Bivio::IO::Alert->info($new_ics);
-send_request(PUT => $events_ics, undef, $new_ics . <<'EOF');
+send_request(PUT => $calendar_ics, undef, $new_ics . <<'EOF');
 BEGIN:VEVENT
 CREATED:20051225T223923Z
 LAST-MODIFIED:20051225T224201Z
@@ -89,9 +88,33 @@ END:VEVENT
 END:VCALENDAR
 EOF
 # Verify that admin can read modified .ics
-send_request(GET => $events_ics);
+send_request(GET => $calendar_ics);
 # TODO: Test correct event order
 get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event3.*BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
 # Verify that admin can read generated .rss
-send_request(GET => $events_rss);
+send_request(GET => $calendar_rss);
 get_content() =~ /title.*Event2.*title.*Event3.*title.*Event1/s || die;
+# Verify that non-admin, non-member can't access .ics or .rss
+basic_authorization('demo');
+test_deviance(qr{not found}i);
+send_request(PROPFIND => $forum_uri);
+send_request(GET => $calendar_ics);
+send_request(GET => $calendar_rss);
+test_conformance();
+# Add non-admin member and verify read-only access of .ics and .rss
+basic_authorization('root');
+my($forum_members) = "$forum_uri/Members.csv";
+send_request(GET => $forum_members);
+send_request(PUT => $forum_members, undef, get_content() . <<'EOF');
+demo@bivio.biz,1,0,0
+EOF
+basic_authorization('demo');
+send_request(PROPFIND => $forum_uri);
+verify_text($calendar_ics);
+verify_text($calendar_rss);
+send_request(GET => $calendar_ics);
+$ics = get_content();
+test_deviance(qr{forbidden}i);
+send_request(PUT => $calendar_ics, undef, $ics);
+test_conformance();
+send_request(GET => $calendar_rss);
