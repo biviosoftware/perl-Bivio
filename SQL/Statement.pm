@@ -53,16 +53,7 @@ Return a list of predicates joined by AND.
 
 sub AND {
     my($proto) = shift;
-    my($predicates) = [map(_parse_predicate($proto, $_), @_)];
-    return {
-        predicates => $predicates,
-        build => sub {
-            return join(
-		' AND ',
-		grep($_, map($_->{build}->(@_), @$predicates)),
-	    );
-        },
-    }
+    return _combine_predicates($proto, 'AND', @_);
 }
 
 =for html <a name="CROSS_JOIN"></a>
@@ -316,6 +307,19 @@ sub NOT_IN {
     return _in(' NOT', @_);
 }
 
+=for html <a name="OR"></a>
+
+=head2 OR(any predicate, ... ) : hash_ref
+
+Return a list of predicates joined by OR.
+
+=cut
+
+sub OR {
+    my($proto) = shift;
+    return _combine_predicates($proto, 'OR', @_);
+}
+
 =for html <a name="new"></a>
 
 =head2 static new() : Bivio::SQL::Statement
@@ -560,6 +564,24 @@ sub _build_value {
 	: Bivio::Biz::Model->get_instance($model)->get_field_type($field);
     push(@$params, $t->to_sql_param($value));
     return $t->to_sql_value('?');
+}
+
+# _combine_predicates(proto, string conjunctive, any predicate, ...) : hash_ref
+#
+# Combines the predicates with the conjunctive (AND or OR).
+# OR values are wappred in parenthesis.
+#
+sub _combine_predicates {
+      my($proto, $conjunctive) = (shift, shift);
+      my($p) = [map(_parse_predicate($proto, $_), @_)];
+      return {
+          predicates => $p,
+          build => sub {
+              my($str) = join(" $conjunctive ",
+  		grep($_, map($_->{build}->(@_), @$p)));
+              return $conjunctive eq 'OR' ? "($str)" : $str;
+          },
+      };
 }
 
 # _in(string modifier, proto, string column, any values) : hash_ref
