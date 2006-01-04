@@ -18,7 +18,8 @@ my($v) = {
 [
     [req()] => [
 	create_from_vevent => [
-	    [{}] => DB_ERROR(),
+#TODO: removed this - it causes everything to fail on Redhat 7.2
+#	    [{}] => DB_ERROR(),
 	    [{
 		%$v,
 		url => 'bad url',
