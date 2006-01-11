@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.57  2006/01/04 23:53:11  moeller
+  * Bivio::Delegate::SimpleTaskId WebDAV calendar task is now accessible
+    by normal members
+  * Bivio::SQL::Statement add OR() method
+
   Revision 3.56  2005/12/28 07:13:19  nagler
   * Bivio::Biz::Action::ForumMail defaults reply-to to false
   * Bivio::Type::DateTime->is_date & set_local_time_part added
