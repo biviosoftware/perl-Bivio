@@ -30,7 +30,6 @@ sub execute {
     my(undef, $req) = @_;
     my($s) = {
 	req => $req,
-	reply => $req->get('reply'),
 	r => $req->get('r'),
 	method => lc($req->get('r')->method),
 	uri => $req->get('uri'),
@@ -131,8 +130,9 @@ sub _dav_get {
     my($s) = @_;
     return _call($s, 'reply_get')
 	if $s->{list}->can('dav_reply_get');
-    $s->{reply}->set_last_modified($s->{propfind}->{getlastmodified})
-	if $s->{propfind}->{getlastmodified};
+    $s->{req}->get('reply')->set_last_modified(
+	$s->{propfind}->{getlastmodified}
+    ) if $s->{propfind}->{getlastmodified};
     return _output(
 	$s, HTTP_OK => $s->{propfind}->{getcontenttype}, _call($s, 'get'));
 }
@@ -197,7 +197,7 @@ sub _dav_move {
 
 sub _dav_options {
     my($s) = @_;
-    $s->{reply}->set_header(
+    $s->{req}->get('reply')->set_header(
 	Allow => join(
 	    ', ',
 	    map(uc($_),
@@ -316,11 +316,6 @@ sub _has_write_permission {
     );
 }
 
-sub _is_microsoft {
-    my($s) = @_;
-    return ($s->{r}->header_in('User-Agent') || '') =~ /microsoft/i;
-}
-
 sub _load {
     my($s, $realm, $path, $is_dest) = @_;
     my($req) = $s->{req};
@@ -328,18 +323,23 @@ sub _load {
     $req->set_realm($realm);
     my($tid) = $req->get('task')->get('next');
     $req->put(path_info => defined($path) ? $path : '');
-    while ($tid) {
+    while (1) {
 	_trace($tid, ' ', $req) if $_TRACE;
 	my($t) = Bivio::Agent::Task->get_by_id($tid);
-	last unless $req->get('auth_realm')->can_user_execute_task($t, $req);
+	$realm = $req->get('auth_realm');
+	last if !$realm->can_user_execute_task($t, $req)
+	    || ($is_dest || $s->{method} =~ $_WRITABLE)
+	    && !_has_write_permission($realm, $t, $req);
 	$req->put(task_id => $tid, task => $t);
 	if ($t->unsafe_get('require_dav')
 	    || grep(($_->[0] || '') =~ /DAV/, @{$t->get('items')})) {
 	    $tid = ($req->get('task')->execute_items($req))[0];
-	    next;
+	    next if $tid;
 	}
-	Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
-	$tid = undef;
+	else {
+	    Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
+	    $tid = undef;
+	}
 	last;
     }
     my($task) = $req->get('task');
@@ -347,18 +347,12 @@ sub _load {
     $req->set_realm($prev->{auth_realm});
     $req->put(map(($_ => $prev->{$_}), qw(task_id task)));
     if ($tid) {
-	_output($s, FORBIDDEN => 'No access to task');
+	_output($s, FORBIDDEN => 'No write access');
 	return;
     }
     my($m) = $req->unsafe_get('dav_model');
     unless ($m) {
 	_output($s, NOT_FOUND => 'No such resource: ', $path);
-	return;
-    }
-    if (($is_dest || $s->{method} =~ $_WRITABLE)
-	&& !_has_write_permission($realm, $task, $req)
-    ) {
-	_output($s, FORBIDDEN => 'No write access');
 	return;
     }
     return $m;
@@ -377,7 +371,7 @@ sub _output {
 	$status, ' ', $s->{method}, ' ', $s->{uri}, ' ', $msg_or_type,
     ) if $status =~ /HTTP_PRECONDITION_FAILED|BAD_REQUEST|HTTP_NOT_IMPLEMENTED|HTTP_NOT_MODIFIED|HTTP_REQUEST_ENTITY_TOO_LARGE|FORBIDDEN|HTTP_CONFLICT/;
     $status =~ s/_/-/g;
-    $s->{reply}->set_http_status($n)
+    $s->{req}->get('reply')->set_http_status($n)
 	->set_output_type(
 	    ref($buf) && $msg_or_type ? $msg_or_type : 'text/plain'
 	)->set_header(DAV => 2)
