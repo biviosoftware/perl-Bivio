@@ -320,6 +320,24 @@ sub OR {
     return _combine_predicates($proto, 'OR', @_);
 }
 
+=for html <a name="PARENS"></a>
+
+=head2 static PARENS(any predicate, ... ) : hash_ref
+
+Return a single predicate grouped inside parentheses.
+
+=cut
+
+sub PARENS {
+    my($proto, $predicate) = @_;
+    return {
+        predicate => $predicate,
+        build => sub {
+            return '(' . $predicate->{build}->(@_) . ')';
+        },
+    }
+}
+
 =for html <a name="new"></a>
 
 =head2 static new() : Bivio::SQL::Statement
