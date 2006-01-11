@@ -253,6 +253,20 @@ sub get_form {
     );
 }
 
+=for html <a name="reset_reply"></a>
+
+=head2 reset_reply()
+
+Clears the current reply and sets a new one on this request.
+
+=cut
+
+sub reset_reply {
+    my($self) = @_;
+    $self->put(reply => Bivio::Agent::HTTP::Reply->new($self->get('r')));
+    return;
+}
+
 =for html <a name="server_redirect"></a>
 
 =head2 server_redirect(string uri, any query, hash_ref form, string path_info)
