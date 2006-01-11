@@ -306,7 +306,7 @@ sub set_last_modified {
 
 =head2 set_output(scalar_ref value) : self
 
-=head2 set_output(IO::File file) : slef
+=head2 set_output(IO::File file) : self
 
 Sets the output to the file.  Output type must be set.
 I<file> or I<value> will be owned by this method.
@@ -316,12 +316,25 @@ I<file> or I<value> will be owned by this method.
 sub set_output {
     my($self, $value) = @_;
     my($fields) = $self->[$_IDI];
-    die('too many calls to set_output') if $fields->{output};
+    die('too many calls to set_output')
+	if $fields->{output};
     die('not an IO::File, GLOB, or SCALAR reference')
 	unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
 	    || UNIVERSAL::isa($value, 'IO::Handle');
     $fields->{output} = $value;
     return $self;
+}
+
+=for html <a name="unsafe_get_output"></a>
+
+=head2 unsafe_get_output() : ref
+
+Returns the current output value.
+
+=cut
+
+sub unsafe_get_output {
+    return shift->[$_IDI]->{output};
 }
 
 #=PRIVATE METHODS
