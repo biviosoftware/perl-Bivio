@@ -190,6 +190,20 @@ sub does_user_have_permissions {
     );
 }
 
+=for html <a name="equals"></a>
+
+=head2 equals(UNIVERSAL that) : boolean
+
+Returns true if I<self> is identical I<that>.
+
+=cut
+
+sub equals {
+    my($self, $that) = @_;
+    return ref($self) eq ref($that) && $self->get('id') eq $that->get('id')
+	? 1 : 0;
+}
+
 =for html <a name="format_email"></a>
 
 =head2 format_email() : string
