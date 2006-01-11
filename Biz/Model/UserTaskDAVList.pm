@@ -66,6 +66,7 @@ sub _fmt {
     my($self, $name, $task_id) = @_;
     my($req) = $self->get_request;
     my($t) = Bivio::Agent::Task->get_by_id($task_id);
+    # Not writable, just readable
     return unless $req->can_user_execute_task($task_id);
     my($ct) = $t->unsafe_get('require_dav') || grep(/_task$/, $t->get_keys) ? ()
       : ($name =~ s/_([a-z]{3,4})$/.$1/
@@ -76,8 +77,36 @@ sub _fmt {
 	getlastmodified => Bivio::Type::DateTime->now,
 	uri => $name,
 	displayname => $name,
-	$ct ? (getcontenttype => $ct) : (),
+	$ct ? (getcontenttype => $ct, getcontentlength => _size($t, $req)) : (),
     }
+}
+
+sub _size {
+    my($t, $req) = @_;
+    my($prev_id, $prev_task, $prev_realm)
+	= $req->get(qw(task_id task auth_realm));
+    $req->put(task_id => $t->get('id'), task => $t);
+    if ($t->unsafe_get('require_dav')
+        || grep(($_->[0] || '') =~ /DAV/, @{$t->get('items')})) {
+	$req->get('task')->execute_items($req);
+    }
+    else {
+	Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
+    }
+    my($m) = $req->get('dav_model');
+    my($o) = $m->can('dav_reply_get')
+	? ($m->dav_reply_get, $req->get('reply')->unsafe_get_output)[1]
+	: $m->dav_get;
+    # Need to rollback, because may be a lock.  UserTaskDAVList doesn't hold
+    # locks, because essentially a directory
+    $t->rollback($req);
+    $req->put(task_id => $prev_id, task => $prev_task);
+    # OPTIMIZATION: avoid database problem
+    $req->set_realm($prev_realm)
+	unless $prev_realm->equals($req->get('auth_realm'));
+    $req->reset_reply;
+    return ref($o) eq 'SCALAR' ? length($$o)
+	: Bivio::Die->die($t->get('id'), ': failed to return scalar: ', $o);
 }
 
 1;
