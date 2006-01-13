@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.58  2006/01/11 07:28:42  nagler
+  * Bivio::Auth::Realm->equals added
+  * Bivio::Agent::HTTP::Reply->unsafe_get_output added
+  * Bivio::Agent::HTTP::Request->reset_reply added
+  * Bivio::Biz::Model::UserTaskDAVList sets size on propfind so broken DAV client
+    implementations (Novell and Apple) which cache getcontentlength from the
+    directory list work with any task.
+  * Bivio::Biz::Action::DAV loading was testing write permissions after executing
+    the task.  While this wasn't a security hole (due to rollback on forbidden),
+    it was doing work when it didn't need to.
+  * Bivio::SQL::Statement->PARENS added
+
   Revision 3.57  2006/01/04 23:53:11  moeller
   * Bivio::Delegate::SimpleTaskId WebDAV calendar task is now accessible
     by normal members
