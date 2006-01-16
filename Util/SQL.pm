@@ -617,6 +617,93 @@ sub internal_upgrade_db_file_writer {
     return;
 }
 
+sub internal_upgrade_db_mail {
+    my($self) = @_;
+    my($req) = $self->initialize_ui;
+    $self->run(<<'EOF');
+CREATE TABLE realm_mail_t (
+  realm_file_id NUMERIC(18),
+  realm_id NUMERIC(18) NOT NULL,
+  message_id VARCHAR(100) NOT NULL,
+  thread_root_id NUMERIC(18) NOT NULL,
+  thread_parent_id NUMERIC(18),
+  from_email VARCHAR(100) NOT NULL,
+  subject VARCHAR(100) NOT NULL,
+  subject_lc VARCHAR(100) NOT NULL,
+  CONSTRAINT realm_mail_t1 PRIMARY KEY(realm_file_id)
+)
+/
+--
+-- realm_mail_t
+--
+ALTER TABLE realm_mail_t
+  ADD CONSTRAINT realm_mail_t2
+  foreign key (realm_file_id)
+  references realm_file_t(realm_file_id)
+/
+ALTER TABLE realm_mail_t
+  ADD CONSTRAINT realm_mail_t3
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX realm_mail_t4 ON realm_mail_t (
+  realm_id
+)
+/
+CREATE INDEX realm_mail_t5 ON realm_mail_t (
+  message_id
+)
+/
+ALTER TABLE realm_mail_t
+  ADD CONSTRAINT realm_mail_t6
+  foreign key (thread_root_id)
+  references realm_file_t(realm_file_id)
+/
+CREATE INDEX realm_mail_t7 ON realm_mail_t (
+  thread_root_id
+)
+/
+ALTER TABLE realm_mail_t
+  ADD CONSTRAINT realm_mail_t8
+  foreign key (thread_parent_id)
+  references realm_file_t(realm_file_id)
+/
+CREATE INDEX realm_mail_t9 ON realm_mail_t (
+  thread_parent_id
+)
+/
+CREATE INDEX realm_mail_t10 ON realm_mail_t (
+  from_email
+)
+/
+CREATE INDEX realm_mail_t11 ON realm_mail_t (
+  subject_lc
+)
+/
+EOF
+    my($mf) = Bivio::Biz::Model->get_instance('Forum')->MAIL_FOLDER;
+    Bivio::Biz::Model->new($req, 'RealmFile')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    $req->set_realm($it->get('realm_id'));
+	    $it->new_other('RealmFile')->do_iterate(
+		sub {
+		    my($it) = @_;
+		    $it->new_other('RealmMail')->create_from_file($it)
+			if !$it->get('is_folder')
+			&& $it->get('path') =~ m{^\Q$mf/}o;
+		    return 1;
+		},
+		'realm_file_id asc',
+	    );
+	    return 1;
+	},
+	unauth_iterate_start => 'realm_id',
+	{path => $mf},
+    );
+    return;
+}
+
 =for html <a name="internal_upgrade_db_multiple_realm_roles"></a>
 
 =head2 internal_upgrade_db_multiple_realm_roles()
