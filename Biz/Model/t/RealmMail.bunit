@@ -1,0 +1,26 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+PropertyModel();
+[
+    create_from_rfc822 => [
+	[\(<<'EOF')]
+From: a@a.a
+Message-ID: <a@a.a1>
+Date: Sun, 1 May 2005 10:11:41 -0600
+Subject: /S1
+
+Body
+EOF
+	=> [{
+	    message_id => 'a@a.a1',
+	    'Model.RealmFile' => {
+		modified_date_time => '2453492 58301',
+	    },
+	    thread_root_id => sub {shift->get('object')->get('realm_file_id')},
+	    thread_parent_id => undef,
+	    from_email => 'a@a.a',
+	    subject => '/S1',
+	    subject_lc => 's1',
+	}],
+    ],
+];
