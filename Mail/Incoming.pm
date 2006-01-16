@@ -116,10 +116,10 @@ sub get_date_time {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     exists($fields->{date_time}) && return $fields->{date_time};
-    my($date) = &_get_field($fields, 'date:');
+    my($date) = _get_field($fields, 'date:');
 #TODO: If no Date: or bad Date: search Received: for valid dates
 #hello
-    unless (defined($date)) {
+    unless ($date) {
 	Bivio::IO::Alert->warn("no Date");
 	_trace('no Date') if $_TRACE;
 	return $fields->{date_time} = undef;
@@ -212,8 +212,8 @@ sub get_message_id {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     exists($fields->{message_id}) && return $fields->{message_id};
-    my($id) = &_get_field($fields, 'message-id:');
-    unless (defined($id)) {
+    my($id) = _get_field($fields, 'message-id:');
+    unless ($id) {
 	Bivio::IO::Alert->warn("no message-id");
 	_trace('no Message-Id') if $_TRACE;
 	return $fields->{message_id} = undef;
@@ -246,6 +246,29 @@ sub get_recipients {
     return $r;
 }
 
+=for html <a name="get_references"></a>
+
+=head2 get_references() : array
+
+Return sorted array of message ids this message refers to.
+
+The first id in the array returned is either the "In-Reply-To" value
+or (if In-Reply-To does not exist) the last (most recent) id in the
+"References" list.
+
+=cut
+
+sub get_references {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    my($seen) = {};
+    return map(
+	$seen->{$_}++ ? () : $_,
+	_get_field($fields, 'in-reply-to:') =~ /.*<([^<>]+)>/,
+	reverse(_get_field($fields, 'references:') =~ /<([^<>]+)>/g),
+    );
+}
+
 =for html <a name="get_reply_to"></a>
 
 =head2 get_reply_to() : (string addr, string name)
@@ -265,8 +288,8 @@ sub get_reply_to {
 		? ($fields->{reply_to_email}, $fields->{reply_to_name})
 		: $fields->{reply_to_email};
     }
-    my($reply_to) = &_get_field($fields, 'reply-to:');
-    unless (defined($reply_to)) {
+    my($reply_to) = _get_field($fields, 'reply-to:');
+    unless ($reply_to) {
 	_trace('no Reply-To') if $_TRACE;
 	$fields->{reply_to_email} = undef;
 	$fields->{reply_to_name} = undef;
@@ -338,8 +361,8 @@ sub get_subject {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     exists($fields->{subject}) && return $fields->{subject};
-    my($subject) = &_get_field($fields, 'subject:');
-    unless (defined($subject)) {
+    my($subject) = _get_field($fields, 'subject:');
+    unless (length($subject)) {
 	_trace('no Subject') if $_TRACE;
 	return $fields->{subject} = undef;
     }
@@ -485,7 +508,7 @@ sub _get_field {
         # CPERL-BUG: (?: |\t) is necessary because $name[ \t] would be bad
         ($fields->{$name}) = $fields->{header} =~ /^$name(?: |\t)*(.*)/im;
     }
-    return $fields->{$name};
+    return defined($fields->{$name}) ? $fields->{$name} : '';
 }
 
 sub _parse_date {

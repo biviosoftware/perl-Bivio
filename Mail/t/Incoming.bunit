@@ -6,11 +6,16 @@ Request('initialize_fully');
 From: john+btest_forum-admin@localhost.localdomain
 To: private_forum@localhost.localdomain
 Subject: should bounce
+References: <a@a> <b@b>
+In-Reply-To: <c@c> <d@d>
 
 any body
 EOF
         get_from => [
 	    [] => ['john+btest_forum-admin@localhost.localdomain', undef],
+	],
+	get_references => [
+	    [] => [qw(d@d b@b a@a)],
 	],
     ],
 ]
