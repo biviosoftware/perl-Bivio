@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::PropertyModel;
 use strict;
@@ -70,7 +70,6 @@ sub new {
 	    $case->actual_return([_walk_tree_actual($case, $e, [])]);
 	    return [$e];
 	},
-	#TODO compute_return
 	%$attrs,
     });
 }
@@ -120,7 +119,7 @@ sub _walk_tree_expect {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
