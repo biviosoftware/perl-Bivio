@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
 [
@@ -8,6 +8,7 @@ To: private_forum@localhost.localdomain
 Subject: should bounce
 References: <a@a> <b@b>
 In-Reply-To: <c@c> <d@d>
+Message-ID: <m@m>
 
 any body
 EOF
@@ -17,6 +18,6 @@ EOF
 	get_references => [
 	    [] => [qw(d@d b@b a@a)],
 	],
+	get_message_id => 'm@m',
     ],
-]
-
+];

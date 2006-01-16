@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Incoming;
 use strict;
@@ -15,14 +15,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::Mail::Incoming;
-    my($bim) = Bivio::Mail::Incoming->new($rfc822_ref);
-    Bivio::Mail::Incoming->uninitialize();
-    Bivio::Mail::Incoming->initialize($rfc822_ref);
-    $bim->get_from();
-    $bim->get_reply_to();
-    $bim->get_subject();
-    $bim->get_message_id();
-    $bim->get_date_time();
 
 =cut
 
@@ -211,19 +203,16 @@ Returns the Message-Id for this message.
 sub get_message_id {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    exists($fields->{message_id}) && return $fields->{message_id};
+    return $fields->{message_id}
+	if exists($fields->{message_id});
     my($id) = _get_field($fields, 'message-id:');
-    unless ($id) {
-	Bivio::IO::Alert->warn("no message-id");
-	_trace('no Message-Id') if $_TRACE;
+    unless ($id =~ /<([^<>]+)>/) {
+	Bivio::IO::Alert->warn($id, ': bad or missing Message-Id');
 	return $fields->{message_id} = undef;
     }
-#TODO: Should really parse this, but I mean RIIILLY....
-    $id =~ s!^\s+!!s;
-    $id =~ s!\s+$!!s;
-    $fields->{message_id} = $id;
+    $fields->{message_id} = $1;
     _trace($fields->{message_id}) if $_TRACE;
-    return $id;
+    return $fields->{message_id};
 }
 
 =for html <a name="get_recipients"></a>
@@ -547,7 +536,7 @@ sub _parse_complex_date {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
