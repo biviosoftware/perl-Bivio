@@ -1,26 +1,65 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 PropertyModel();
+my($root, $parent);
 [
     create_from_rfc822 => [
 	[\(<<'EOF')]
 From: a@a.a
-Message-ID: <a@a.a1>
+Message-ID: <a@RealmMail.bunit>
 Date: Sun, 1 May 2005 10:11:41 -0600
-Subject: /S1
+Subject: /Sa
 
 Body
 EOF
 	=> [{
-	    message_id => 'a@a.a1',
+	    message_id => 'a@RealmMail.bunit',
 	    'Model.RealmFile' => {
 		modified_date_time => '2453492 58301',
 	    },
 	    thread_root_id => sub {shift->get('object')->get('realm_file_id')},
 	    thread_parent_id => undef,
 	    from_email => 'a@a.a',
-	    subject => '/S1',
-	    subject_lc => 's1',
+	    subject => '/Sa',
+	    subject_lc => 'sa',
+	}],
+	sub {$root = shift->get('object')->get('realm_file_id'); [\(<<'EOF')]}
+From: b@b.b
+Message-ID: <b@RealmMail.bunit>
+In-Reply-To: <a@RealmMail.bunit>
+Date: Sun, 1 May 2005 10:11:42 -0600
+Subject: Re: /Sa
+
+Body
+EOF
+	=> [{
+	    message_id => 'b@RealmMail.bunit',
+	    'Model.RealmFile' => {
+		modified_date_time => '2453492 58302',
+	    },
+	    thread_root_id => sub {$root},
+	    thread_parent_id => sub {$root},
+	    from_email => 'b@b.b',
+	    subject => '/Sa',
+	}],
+	sub {$parent = shift->get('object')->get('realm_file_id'); [\(<<'EOF')]}
+From: c@c.c
+Message-ID: <c@RealmMail.bunit>
+References: <a@RealmMail.bunit> <b@RealmMail.bunit>
+Date: Sun, 1 May 2005 10:11:43 -0600
+Subject: [joe] Re: /Sa
+
+Body
+EOF
+	=> [{
+	    message_id => 'c@RealmMail.bunit',
+	    'Model.RealmFile' => {
+		modified_date_time => '2453492 58303',
+	    },
+	    thread_root_id => sub {$root},
+	    thread_parent_id => sub {$parent},
+	    from_email => 'c@c.c',
+	    subject => '/Sa',
 	}],
     ],
 ];
