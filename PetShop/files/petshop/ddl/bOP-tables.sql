@@ -154,6 +154,19 @@ CREATE TABLE realm_file_t (
 )
 /
 
+CREATE TABLE realm_mail_t (
+  realm_file_id NUMERIC(18),
+  realm_id NUMERIC(18) NOT NULL,
+  message_id VARCHAR(100) NOT NULL,
+  thread_root_id NUMERIC(18) NOT NULL,
+  thread_parent_id NUMERIC(18),
+  from_email VARCHAR(100) NOT NULL,
+  subject VARCHAR(100) NOT NULL,
+  subject_lc VARCHAR(100) NOT NULL,
+  CONSTRAINT realm_mail_t1 PRIMARY KEY(realm_file_id)
+)
+/
+
 CREATE TABLE realm_owner_t (
   realm_id NUMERIC(18),
   name VARCHAR(30) NOT NULL,

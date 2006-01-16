@@ -258,6 +258,54 @@ CREATE INDEX realm_file_t11 ON realm_file_t (
 /
 
 --
+-- realm_mail_t
+--
+ALTER TABLE realm_mail_t
+  ADD CONSTRAINT realm_mail_t2
+  foreign key (realm_file_id)
+  references realm_file_t(realm_file_id)
+/
+ALTER TABLE realm_mail_t
+  ADD CONSTRAINT realm_mail_t3
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX realm_mail_t4 ON realm_mail_t (
+  realm_id
+)
+/
+CREATE INDEX realm_mail_t5 ON realm_mail_t (
+  message_id
+)
+/
+ALTER TABLE realm_mail_t
+  ADD CONSTRAINT realm_mail_t6
+  foreign key (thread_root_id)
+  references realm_file_t(realm_file_id)
+/
+CREATE INDEX realm_mail_t7 ON realm_mail_t (
+  thread_root_id
+)
+/
+ALTER TABLE realm_mail_t
+  ADD CONSTRAINT realm_mail_t8
+  foreign key (thread_parent_id)
+  references realm_file_t(realm_file_id)
+/
+CREATE INDEX realm_mail_t9 ON realm_mail_t (
+  thread_parent_id
+)
+/
+CREATE INDEX realm_mail_t10 ON realm_mail_t (
+  from_email
+)
+/
+CREATE INDEX realm_mail_t11 ON realm_mail_t (
+  subject_lc
+)
+/
+
+--
 -- realm_owner_t
 --
 ALTER TABLE realm_owner_t
