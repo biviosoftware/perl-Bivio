@@ -36,6 +36,7 @@ sub _down {
     my($self) = @_;
     foreach my $cid (@{$self->new_other('Forum')->map_iterate(
 	sub {
+#TODO: Need to look at other children such as CalendarEvent
 	    my($child) = @_;
 	    return $self->new_other('RealmUser')->unauth_load({
 		realm_id => $child->get('forum_id'),

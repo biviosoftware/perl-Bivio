@@ -10,6 +10,7 @@ sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
     my(@res) = shift->SUPER::execute_ok(@_);
+#TODO: Need to look at other children such as CalendarEvent
     _down($self)
 	unless $self->in_error || !$self->unsafe_get('User.user_id');
     return @res;
