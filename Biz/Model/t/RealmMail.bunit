@@ -61,5 +61,42 @@ EOF
 	    from_email => 'c@c.c',
 	    subject => '/Sa',
 	}],
+	[\(<<'EOF')]
+From: d@d.d
+Message-ID: <d@RealmMail.bunit>
+References: <a@RealmMail.bunit> <b@RealmMail.bunit>
+Date: Sun, 1 May 2005 10:11:43 -0600
+Subject: [joe] Re: /Sa
+
+Body
+EOF
+	=> [{
+	    message_id => 'd@RealmMail.bunit',
+	    'Model.RealmFile' => {
+		modified_date_time => '2453492 58303',
+	    },
+	    thread_root_id => sub {$root},
+	    thread_parent_id => sub {$parent},
+	    from_email => 'd@d.d',
+	    subject => '/Sa',
+	}],
+	sub {$parent = shift->get('object')->get('realm_file_id'); [\(<<'EOF')]}
+From: e@e.e
+Date: Sun, 1 May 2005 10:11:43 -0600
+Message-ID: <e@RealmMail.bunit>
+Subject: [joe] Re: /Sa
+
+Body
+EOF
+	=> [{
+	    message_id => 'e@RealmMail.bunit',
+	    'Model.RealmFile' => {
+		modified_date_time => '2453492 58303',
+	    },
+	    thread_root_id => sub {$root},
+	    thread_parent_id => sub {$parent},
+	    from_email => 'e@e.e',
+	    subject => '/Sa',
+	}],
     ],
 ];
