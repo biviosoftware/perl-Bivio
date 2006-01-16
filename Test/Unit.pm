@@ -84,7 +84,7 @@ use File::Spec ();
 use File::Basename ();
 
 #=VARIABLES
-use vars (qw($AUTOLOAD $_TYPE $_CLASS));
+use vars (qw($AUTOLOAD $_TYPE $_CLASS $_PM));
 
 =head1 METHODS
 
@@ -111,7 +111,7 @@ sub AUTOLOAD {
 	? $_TYPE->$func(@_)
 	: ($_TYPE = Bivio::IO::ClassLoader->map_require('TestUnit', $func)
 	   and $_TYPE->can('new_unit')
-	       ? ($_TYPE = $_TYPE->new_unit($_CLASS, @_))
+	       ? ($_TYPE = $_TYPE->new_unit(__PACKAGE__->builtin_class(), @_))
 	       : $_TYPE);
 }
 
@@ -124,6 +124,18 @@ Returns builtin_class under test.
 =cut
 
 sub builtin_class {
+    return $_CLASS
+	if $_CLASS;
+    $_CLASS = Bivio::IO::ClassLoader->unsafe_simple_require(
+	(${Bivio::IO::File->read($_PM)}
+	     =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
+	    || Bivio::Die->die(
+		$_PM, ': unable to extract class to test; must',
+		' have "package <class::name>;" statement in class under test',
+	    ),
+    );
+    Bivio::Die->die($_PM, ': unable to load the pm')
+        unless $_CLASS;
     return $_CLASS;
 }
 
@@ -207,23 +219,11 @@ Runs I<file> in bunit environment.
 
 sub run {
     my($proto, $bunit) = @_;
-    my($pm);
-    local($_CLASS) = Bivio::IO::ClassLoader->unsafe_simple_require(
-	(${Bivio::IO::File->read(
-	    $pm = File::Spec->catfile(
-		File::Basename::dirname(
-		    File::Basename::dirname(File::Spec->rel2abs($bunit))),
-		File::Basename::basename($bunit, '.bunit'). '.pm',
-	    ),
-	)} =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
-	    || Bivio::Die->die(
-		$bunit, ': unable to extract class to test; must',
-		' have "package <class::name>;" statement in class under test',
-	    ),
-    );
-    Bivio::Die->die($pm, ': unable to load the pm')
-        unless $_CLASS;
-    local($_TYPE);
+    local($_PM) = File::Spec->catfile(
+	File::Basename::dirname(
+	    File::Basename::dirname(File::Spec->rel2abs($bunit))),
+	File::Basename::basename($bunit, '.bunit'). '.pm');
+    local($_TYPE, $_CLASS);
     my($t) = Bivio::Die->eval_or_die(
 	'package ' . __PACKAGE__ . ';use strict;'
 	. ${Bivio::IO::File->read($bunit)});
@@ -241,7 +241,7 @@ Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
 
 sub run_unit {
     my($self) = shift;
-    return $self->new($_CLASS)->unit(@_);
+    return $self->new($self->builtin_class)->unit(@_);
 }
 
 #=PRIVATE SUBROUTINES
