@@ -714,7 +714,19 @@ sub get_next_year {
 
 =for html <a name="get_part"></a>
 
-=head2 get_part(string date, string part_name) : string
+=head2 static get_part(string date, string part_name) : string
+
+DEPRECATED: use get_parts.
+
+=cut
+
+sub get_part {
+    return shift->get_parts(@_);
+}
+
+=for html <a name="get_parts"></a>
+
+=head2 static get_parts(string date, string part_name, ...) : array
 
 Returns the specific part of the date. Valid parts are:
    second
@@ -724,16 +736,23 @@ Returns the specific part of the date. Valid parts are:
    month
    year
 
+If called in a scalar context, must be returning a single part_name.
+
 =cut
 
-sub get_part {
-    my($proto, $date, $part_name) = @_;
+sub get_parts {
+    my($proto, $date, @parts) = @_;
+    Bivio::Die->die(\@parts, ': only one part when called in scalar context')
+        unless wantarray || @parts == 1;
     return ($proto->to_parts($date))[
-	(
-	    $_PART_NUMBER->{$part_name}
-	    || $_PART_NUMBER->{lc($part_name)}
-	    || Bivio::Die->die($part_name, ': invalid part name'),
-	) - 1,
+	map(
+	    (
+		$_PART_NUMBER->{$_}
+	        || $_PART_NUMBER->{lc($_)}
+		|| Bivio::Die->die($$_, ': invalid part name'),
+	    ) - 1,
+	    @parts,
+	),
     ];
 }
 
