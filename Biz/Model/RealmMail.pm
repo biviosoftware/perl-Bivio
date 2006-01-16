@@ -113,10 +113,9 @@ sub _thread_values {
 	'SELECT realm_file_id, thread_root_id, subject_lc
         FROM realm_mail_t
         WHERE realm_id = ?
-	AND thread_parent_id IS NULL
 	AND realm_file_id < ?
         AND subject_lc = ?
-	ORDER BY realm_file_id ASC',
+	ORDER BY realm_file_id DESC',
 	[@{$values}{qw(realm_id realm_file_id subject_lc)}],
     ) unless $row;
     $row ||= [];
