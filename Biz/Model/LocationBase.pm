@@ -34,10 +34,27 @@ C<Bivio::Biz::Model::LocationBase> base class for Address, Email, etc.
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="DEFAULT_LOCATION"></a>
+
+=head2 DEFAULT_LOCATION : Type.Location
+
+The default location value
+
+=cut
+
+my($_DEFAULT_LOCATION) = Bivio::Type->get_instance('Location')->get_default;
+
+sub DEFAULT_LOCATION {
+    return $_DEFAULT_LOCATION;
+}
+
 #=IMPORTS
 
 #=VARIABLES
-my($_DEFAULT_LOCATION) = Bivio::Type->get_instance('Location')->get_default;
 
 =head1 METHODS
 
