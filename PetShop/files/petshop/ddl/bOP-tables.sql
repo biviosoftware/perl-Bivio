@@ -195,3 +195,11 @@ CREATE TABLE user_t (
   CONSTRAINT user_t1 PRIMARY KEY(user_id)
 )
 /
+
+CREATE TABLE website_t (
+  realm_id NUMERIC(18) NOT NULL,
+  location NUMERIC(2) NOT NULL,
+  url VARCHAR(255),
+  CONSTRAINT website_t1 primary key(realm_id, location)
+)
+/
