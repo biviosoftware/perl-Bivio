@@ -323,3 +323,16 @@ ALTER TABLE user_t
   ADD CONSTRAINT user_t2
   CHECK (gender BETWEEN 0 AND 2)
 /
+
+--
+-- website_t
+--
+ALTER TABLE website_t
+  add constraint website_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX website_t3 on website_t (
+  realm_id
+)
+/
