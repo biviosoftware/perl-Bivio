@@ -9,9 +9,6 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MAX_LINE) = Bivio::Type->get_instance('Line')->get_width;
 my($_MAX_EMAIL) = Bivio::Type->get_instance('Email')->get_width;
-my($_FOLDER) = __PACKAGE__->get_instance('Forum')->MAIL_FOLDER;
-my($_ILLEGAL_CHAR_REGEXP) = __PACKAGE__->get_instance('RealmFile')
-    ->get_field_type('path')->ILLEGAL_CHAR_REGEXP;
 our($_TRACE);
 my($_DT) = Bivio::Type->get_instance('DateTime');
 
@@ -86,8 +83,11 @@ sub _chomp_subject {
 	unless defined($s);
     $s =~ s/\s+/ /;
     0 while $s =~ s/^(\s+|\[\S*\]|[a-z]{1,3}(:|\[\d+\])|\.)//i;
-    $s =~ s{\s$|/|$_ILLEGAL_CHAR_REGEXP}{}og
-	if $sortable;
+    $s =~ s{
+        \s$
+        |/
+        |@{[__PACKAGE__->get_instance('RealmFile')->get_field_type('path')->ILLEGAL_CHAR_REGEXP]}
+    }{}xog if $sortable;
     return length($s) ? substr($s, 0, $_MAX_LINE) : '(No Subject)';
 }
 
@@ -113,7 +113,7 @@ sub _create_file {
 	$in,
 	$self->new_other('RealmFile')->create_with_content({
 	    override_is_read_only => 1,
-	    path => $_FOLDER
+	    path => $self->get_instance('Forum')->MAIL_FOLDER
 		. '/'
 		. join('-', $_DT->get_parts($date, qw(year month)))
 		. '/'
