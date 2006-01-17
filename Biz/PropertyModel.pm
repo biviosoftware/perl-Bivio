@@ -439,8 +439,8 @@ sub internal_load_properties {
     $self->internal_clear_model_cache;
     unless (__PACKAGE__ eq (caller)[0]) {
 	foreach my $k (@{$self->get_info('column_names')}) {
-	    $self->die($_, ': missing column')
-		unless exists($values->{$_});
+	    $self->die($k, ': missing column')
+		unless exists($values->{$k});
 	}
     }
     $self->internal_put($values);
