@@ -47,6 +47,8 @@ Request('initialize_fully');
                 ['B', 'JOSEPH', 'GRONER, III'],
             'H R STEWART JR' =>
                 ['H', 'R', 'STEWART, JR'],
+            'DONALD E EASTLAKE 3RD' =>
+                ['DONALD', 'E', 'EASTLAKE, 3RD'],
 	],
 	execute => [
 	    [req(), {
