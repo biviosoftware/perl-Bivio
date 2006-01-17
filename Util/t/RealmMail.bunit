@@ -2,6 +2,7 @@
 # $Id$
 Request();
 set_realm('fourem');
+my($domain) = 'Util.RealmMail.bunit';
 [
     {
 	object => class(),
@@ -9,7 +10,7 @@ set_realm('fourem');
 	    return [scalar(@{
 		Bivio::Biz::Model->new(req(), 'RealmMail')->map_iterate(
 		    sub {
-			shift->get('message_id') =~ /RealmMail.bunit/ ? 1 : ();
+			shift->get('message_id') =~ /$domain/ ? 1 : ();
 		    },
 		    'message_id',
 		),
@@ -17,7 +18,7 @@ set_realm('fourem');
 	},
     } => [
 	delete_message_id => [
-	    [map($_ . '@RealmMail.bunit', 'a' .. 'g')] => 0,
+	    [map($_ . '@' . $domain, 'a' .. 'g')] => 0,
 	],
 	import_rfc822  => [
 	    RealmMail => 7,
