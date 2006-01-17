@@ -261,7 +261,7 @@ Return a Less Than predicate.
 
 sub LT {
     my($self, $left, $right) = @_;
-    return _static_compare('<=', $left, $right);
+    return _static_compare('<', $left, $right);
 }
 
 =for html <a name="LTE"></a>
