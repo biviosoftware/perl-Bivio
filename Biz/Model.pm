@@ -111,7 +111,7 @@ sub new {
 	    {@{$ci->{properties}}});
     $self->[$_IDI] = {
 	class_info => $ci,
-        request => $req || (ref($proto) ? $proto->get_request : undef),
+        request => $req || (ref($proto) ? $proto->unsafe_get_request : undef),
     };
     return $self;
 }
