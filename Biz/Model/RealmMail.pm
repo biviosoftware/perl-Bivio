@@ -15,6 +15,36 @@ my($_ILLEGAL_CHAR_REGEXP) = __PACKAGE__->get_instance('RealmFile')
 our($_TRACE);
 my($_DT) = Bivio::Type->get_instance('DateTime');
 
+sub cascade_delete {
+    my($self, $query) = @_;
+    if ($query) {
+	$self->cascade_delete
+	    if $self->unsafe_load($query);
+	return;
+    }
+    $self->die('model must be loaded or query must be supplied')
+	unless $self->is_loaded;
+    foreach my $m (@{
+	$self->new->map_iterate(
+	    sub {
+		my($it) = @_;
+		return $it->new->internal_load_properties(
+		    $it->get_shallow_copy);
+	    },
+	    'realm_file_id',
+	    {thread_parent_id => $self->get('realm_file_id')},
+	)
+    }) {
+	$m->cascade_delete;
+    }
+    $self->delete;
+    $self->new_other('RealmFile')->delete({
+	realm_file_id => $self->get('realm_file_id'),
+	override_is_read_only => 1,
+    });
+    return;
+}
+
 sub create_from_file {
     my($self, $file) = @_;
     return _create($self, Bivio::Mail::Incoming->new($file->get_content), $file);
@@ -42,6 +72,10 @@ sub internal_initialize {
             subject => ['Line', 'NOT_NULL'],
             subject_lc => ['Line', 'NOT_NULL'],
         },
+	other => [
+	    [qw(realm_file_id RealmFile.realm_file_id)],
+	    [qw(realm_id RealmOwner.realm_id)],
+	],
         auth_id => 'realm_id',
     });
 }
