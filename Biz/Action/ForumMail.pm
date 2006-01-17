@@ -10,37 +10,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub execute {
     my(undef, $req) = @_;
     my($mr) = $req->get('Model.MailReceiveDispatchForm');
-    my($in) = Bivio::Mail::Incoming->new($mr->get('message')->{content});
-    my($s) = $in->get_subject || '';
-    my($n) = $req->get_nested(qw(auth_realm owner name));
-    0 while $s =~ s/^(\s+|\[\S*\]|[a-z]{1,3}(:|\[\d+\])|\.)//i;
-    $s =~ s/\s+/ /;
-    my($rf) = $mr->new_other('RealmFile');
-    $s =~ s{\s$|/|@{[$rf->get_field_type('path')->ILLEGAL_CHAR_REGEXP]}}{}og;
-    $s = length($s) ? substr($s, 0, Bivio::Type::Line->get_width)
-	: '(No Subject)';
-    my($now) = Bivio::Type::DateTime->now_as_file_name;
-    $rf->create_with_content(
-	{
-	    override_is_read_only => 1,
-	    path =>
-		$mr->get_instance('Forum')->MAIL_FOLDER
-		. '/'
-		. join('-', $now =~ /^(\d{4})(\d{2})/)
-		. '/'
-		. lc($s)
-		. ' '
-		. $now
-		. sprintf('%03d', int(rand(1_000)))
-		. '.eml',
-	    user_id => $req->get('auth_user_id')
-		|| $mr->new_other('RealmUser')
-		    ->get_any_online_admin->get('realm_id'),
-	},
-	$mr->get('message')->{content},
-    );
+    my($in) = Bivio::Biz::Model->new($req, 'RealmMail')->create_from_rfc822(
+	$mr->get('message')->{content});
     my($to) = $mr->new_other('RealmEmailList')->get_recipients;
     return unless @$to;
+    my($n) = $req->get_nested(qw(auth_realm owner name));
     Bivio::Mail::Outgoing->new($in)
 	->set_recipients($to)
 	->set_headers_for_list_send(
