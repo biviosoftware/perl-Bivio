@@ -272,6 +272,8 @@ sub validate {
 
 =head2 validate_login() : Bivio::Biz::Model
 
+=head2 validate_login(string login) : Bivio::Biz::Model
+
 =head2 static validate_login(Bivio::Biz::FormModel model) : Bivio::Biz::Model
 
 Looks at I<login> field of I<model> and loads.
@@ -281,8 +283,15 @@ I<self>.
 =cut
 
 sub validate_login {
-    my($proto, $model) = @_;
-    my($self) = $model || $proto;
+    my($self, $model_or_login) = @_;
+    if (@_ >= 2) {
+	if (ref($model_or_login)) {
+	    $self = $model_or_login;
+	}
+	else {
+	    $self->internal_put_field(login => $model_or_login);
+	}
+    }
     $self->internal_put_field(validate_called => 1);
     my($login) = $self->get('login');
     return undef
