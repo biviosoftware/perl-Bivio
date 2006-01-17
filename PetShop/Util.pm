@@ -85,6 +85,18 @@ sub DEMO_LAST_NAME {
     return 'User';
 }
 
+=for html <a name="FOUREM"></a>
+
+=head2 FOUREM : string
+
+Fourem RealmOwner.name.
+
+=cut
+
+sub FOUREM {
+    return 'fourem';
+}
+
 =for html <a name="GUEST"></a>
 
 =head2 GUEST : string
@@ -230,6 +242,7 @@ sub initialize_test_data {
     _init_demo_users($self);
     _init_demo_files($self);
     _init_demo_calendar($self);
+    _init_forum($self);
     return;
 }
 
@@ -489,6 +502,17 @@ sub _init_demo_users {
             });
 	}
     }
+    return;
+}
+
+sub _init_forum {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $req->set_realm(undef);
+    Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
+        'RealmOwner.display_name' => 'Unit Test Forum',
+	'RealmOwner.name' => $self->FOUREM,
+    });
     return;
 }
 
