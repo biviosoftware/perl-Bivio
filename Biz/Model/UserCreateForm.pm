@@ -257,14 +257,14 @@ sub _parse_first {
 # Sets the suffix (if applicable) and the surname (including patronymic).
 # Catches anything with a period in the last place as a suffix.  Also detects
 # certain common suffixes without periods, ie:
-#     Sr, Jr, PhD, JD, MD, I, II, III, IV, etc.
+#     Sr, Jr, PhD, JD, MD, I, II, III, IV, 1st, 2nd, 3rd, etc.
 # Removes commas if present before adding them.
 # Returns if second to last word is a form of '&' (both stored as first name)
 sub _parse_last {
     my($name, $parts) = @_;
     return if _is_conjunction($parts->[$#$parts - 1]);
     my($last) = pop(@$parts);
-    if ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|I|IV|V)$|\.|^I{2,}/i
+    if ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|I|IV|V|\d..)$|\.|^I{2,}/i
 	    && defined($parts->[0])) {
 	my($penult) = pop(@$parts);
 	$penult =~ s/,//;
