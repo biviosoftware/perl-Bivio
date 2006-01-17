@@ -17,11 +17,25 @@ sub execute {
 		=~ /^([^:]+):(.*)$/;
 	if ($u) {
 	    my($f) = Bivio::Biz::Model->new($req, 'UserLoginForm');
-	    $f->validate($u, $p);
-	    unless ($f->in_error) {
-		$req->set_user($f->get('realm_owner'));
+	    my($su);
+	    my($ro);
+	    if ($u =~ s/^(.*)\>//) {
+		$f->validate($1, $p);
+		unless ($f->in_error) {
+		    $req->put(super_user_id =>
+		        $su = $f->get_nested(qw(realm_owner realm_id)));
+		    $ro = $f->validate_login($u);
+		}
+	    }
+	    else {
+		$f->validate($u, $p);
+		$ro = $f->unsafe_get('realm_owner');
+	    }
+	    if ($ro && !$f->in_error) {
+		$req->set_user($ro);
 		$req->get('r')->connection->user(
-		    'ba-' . $req->get('auth_user_id'));
+		    ($su ? "sb-$su-" : '')
+		    . 'ba-' . $req->get('auth_user_id'));
 		return 0;
 	    }
 	    else {
