@@ -2,101 +2,116 @@
 # $Id$
 PropertyModel();
 my($root, $parent);
+my($domain) = '@model.realmmail.bunit';
+my($subject) = 'Model.RealmMail.bunit subject:';
+my($subject_lc) = lc($subject);
+$subject_lc =~ s/://;
 [
     create_from_rfc822 => [
-	[\(<<'EOF')]
-From: a@a.a
-Message-ID: <a@RealmMail.bunit>
+	[\(<<"EOF")]
+From: a$domain
+Message-ID: <a$domain>
 Date: Sun, 1 May 2005 10:11:41 -0600
-Subject: /Sa
+Subject: $subject
 
 Body
 EOF
 	=> [{
-	    message_id => 'a@RealmMail.bunit',
+	    message_id => "a$domain",
 	    'Model.RealmFile' => {
 		modified_date_time => '2453492 58301',
 	    },
 	    thread_root_id => sub {shift->get('object')->get('realm_file_id')},
 	    thread_parent_id => undef,
-	    from_email => 'a@a.a',
-	    subject => '/Sa',
-	    subject_lc => 'sa',
+	    from_email => "a$domain",
+	    subject => $subject,
+	    subject_lc => $subject_lc,
 	}],
-	sub {$root = shift->get('object')->get('realm_file_id'); [\(<<'EOF')]}
-From: b@b.b
-Message-ID: <b@RealmMail.bunit>
-In-Reply-To: <a@RealmMail.bunit>
+	sub {$root = shift->get('object')->get('realm_file_id'); [\(<<"EOF")]}
+From: b$domain
+Message-ID: <b$domain>
+In-Reply-To: <a$domain>
 Date: Sun, 1 May 2005 10:11:42 -0600
-Subject: Re: /Sa
+Subject: Re: $subject
 
 Body
 EOF
 	=> [{
-	    message_id => 'b@RealmMail.bunit',
+	    message_id => "b$domain",
 	    'Model.RealmFile' => {
 		modified_date_time => '2453492 58302',
 	    },
 	    thread_root_id => sub {$root},
 	    thread_parent_id => sub {$root},
-	    from_email => 'b@b.b',
-	    subject => '/Sa',
+	    from_email => "b$domain",
+	    subject => $subject,
 	}],
-	sub {$parent = shift->get('object')->get('realm_file_id'); [\(<<'EOF')]}
-From: c@c.c
-Message-ID: <c@RealmMail.bunit>
-References: <a@RealmMail.bunit> <b@RealmMail.bunit>
+	sub {$parent = shift->get('object')->get('realm_file_id'); [\(<<"EOF")]}
+From: c$domain
+Message-ID: <c$domain>
+References: <a$domain> <b$domain>
 Date: Sun, 1 May 2005 10:11:43 -0600
-Subject: [joe] Re: /Sa
+Subject: [joe] Re: $subject
 
 Body
 EOF
 	=> [{
-	    message_id => 'c@RealmMail.bunit',
+	    message_id => "c$domain",
 	    'Model.RealmFile' => {
 		modified_date_time => '2453492 58303',
 	    },
 	    thread_root_id => sub {$root},
 	    thread_parent_id => sub {$parent},
-	    from_email => 'c@c.c',
-	    subject => '/Sa',
+	    from_email => "c$domain",
+	    subject => $subject,
 	}],
-	[\(<<'EOF')]
-From: d@d.d
-Message-ID: <d@RealmMail.bunit>
-References: <a@RealmMail.bunit> <b@RealmMail.bunit>
+	[\(<<"EOF")]
+From: d$domain
+Message-ID: <d$domain>
+References: <a$domain> <b$domain>
 Date: Sun, 1 May 2005 10:11:43 -0600
-Subject: [joe] Re: /Sa
+Subject: [joe] Re: $subject
 
 Body
 EOF
 	=> [{
-	    message_id => 'd@RealmMail.bunit',
+	    message_id => "d$domain",
 	    'Model.RealmFile' => {
 		modified_date_time => '2453492 58303',
 	    },
 	    thread_root_id => sub {$root},
 	    thread_parent_id => sub {$parent},
-	    from_email => 'd@d.d',
-	    subject => '/Sa',
+	    from_email => "d$domain",
+	    subject => $subject,
 	}],
-	sub {$parent = shift->get('object')->get('realm_file_id'); [\(<<'EOF')]}
-From: e@e.e
+	sub {$parent = shift->get('object')->get('realm_file_id'); [\(<<"EOF")]}
+From: e$domain
 Date: Sun, 1 May 2005 10:11:43 -0600
-Message-ID: <e@RealmMail.bunit>
-Subject: [joe] Re: /Sa
+Message-ID: <e$domain>
+Subject: [joe] Re: $subject
 
 Body
 EOF
 	=> [{
-	    message_id => 'e@RealmMail.bunit',
+	    message_id => "e$domain",
 	    'Model.RealmFile' => {
 		modified_date_time => '2453492 58303',
 	    },
 	    thread_root_id => sub {$root},
 	    thread_parent_id => sub {$parent},
-	    from_email => 'e@e.e',
-	    subject => '/Sa',
+	    from_email => "e$domain",
+	    subject => $subject,
 	}],
+    ],
+    load => [
+	[{message_id => "b$domain"}] => not_die(),
+    ],
+    cascade_delete => not_die(),
+    map_iterate => [
+	[
+	    sub {shift->get('message_id')},
+	    'message_id ASC',
+	    {subject_lc => $subject_lc},
+	] => [["a$domain"]],
     ],
 ];
