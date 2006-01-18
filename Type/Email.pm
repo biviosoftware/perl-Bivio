@@ -95,8 +95,8 @@ sub from_literal {
     # Leave middle spaces, because user can't have them
     $value =~ s/^\s+|\s+$//g;
     return undef unless length($value);
-    return (undef, Bivio::TypeError::TOO_LONG())
-	    if length($value) > $proto->get_width;
+    return (undef, Bivio::TypeError->TOO_LONG)
+	if length($value) > $proto->get_width;
     # We always force to lower case to ensure values get into the
     # database that can be searchable.
     $value = lc($value);
@@ -119,7 +119,7 @@ sub from_literal {
 #    return (undef, Bivio::TypeError::EMAIL_UNQUALIFIED())
 #	    unless /\@/;
     # Some other error
-    return (undef, Bivio::TypeError::EMAIL());
+    return (undef, Bivio::TypeError->EMAIL);
 }
 
 =for html <a name="invalidate"></a>
