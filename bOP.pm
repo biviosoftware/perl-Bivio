@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.60  2006/01/17 06:05:20  nagler
+  * Bivio::Type::DateTime->get_parts replaces get_part (deprecated)
+  * Bivio::Biz::{Model,Util}::RealmMail supports threaded mail archives
+  * Bivio::Biz::Model::Website supports Type.Location-based URLs for realms
+  * Bivio::Biz::Action::ForumMail updated to use Model.RealmMail
+  * Bivio::Util::SQL->internal_db_upgrade_mail added to upgrade
+    RealmFiles of forums to RealmMail
+  * Bivio::Mail::Incoming->get_references added
+  * Bivio::Test::PropertyModel simplifies testing of PropertyModels
+    (see RealmMail.bunit)
+  * Bivio::Biz::Model::UserLoginForm->validate_login accepts (and sets field to)
+    login argument
+  * Bivio::Biz::Model->new gets request off of $self if available and not
+    supplied.
+  * Bivio::Biz::Model::LocationBase->DEFAULT_LOCATION added
+  * Bivio::Biz::Action::BasicAuthorization supports substitute user
+  * Bivio::Test::Unit defers loading of class until requested by *.bunit
+
   Revision 3.59  2006/01/13 08:26:45  nagler
   * Bivio::Biz::Action::TouchCookie added
 
