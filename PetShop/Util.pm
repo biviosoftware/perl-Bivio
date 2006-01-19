@@ -243,6 +243,7 @@ sub initialize_test_data {
     _init_demo_files($self);
     _init_demo_calendar($self);
     _init_forum($self);
+    _init_email_alias($self);
     return;
 }
 
@@ -501,6 +502,22 @@ sub _init_demo_users {
                 role => Bivio::Auth::Role->TEST_ROLE2,
             });
 	}
+    }
+    return;
+}
+
+sub _init_email_alias {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    foreach my $x (
+	[qw(demo-alias@bivio.biz demo)],
+	[qw(fourem-alias@bivio.biz fourem)],
+	[qw(random-alias@bivio.biz random@example.com)],
+    ) {
+	Bivio::Biz::Model->new($req, 'EmailAlias')->create({
+	    incoming => $x->[0],
+	    outgoing => $x->[1],
+	});
     }
     return;
 }
