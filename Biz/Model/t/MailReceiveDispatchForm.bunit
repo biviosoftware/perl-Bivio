@@ -1,10 +1,14 @@
 # $Id$
 # Copyright (c) 2002-2005 bivio Software, Inc.  All rights reserved.
-Request('setup_facade');
+Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 [{
     compute_params => => sub {
 	my($case, $params) = @_;
+	req()->set_realm(undef);
+	req()->set_user(undef);
 	my($from, $recipient) = @$params;
+	$recipient .= '@bivio.biz'
+	    unless $recipient =~ /\@/;
 	return [req(),  {
 	    recipient => $recipient,
 	    client_addr => '1.2.3.4',
@@ -15,26 +19,42 @@ Request('setup_facade');
 	}];
     },
     check_return => sub {
-	my($case, undef, $expect) = @_;
+	my($case, $actual, $expect) = @_;
 	$case->actual_return([
 	    req()->get('auth_user') && req()->get('auth_user')->get('name'),
 	    req()->get('auth_realm')->unsafe_get('owner_name'),
-	    req()->get('task_id'),
+	    ($actual->[0] =~ /^server_redirect\.(.*)/)[0],
+	    $case->get('object')->get('recipient'),
 	]);
-	return [@$expect[0..1], $expect->[2] || Bivio::Agent::TaskId->MAIL_RECEIVE_IGNORE];
+	return [
+	    @$expect[0,1],
+	    $expect->[2] || 'MAIL_RECEIVE_IGNORE',
+	    $expect->[3] || $case->get('object')->get('recipient'),
+
+	];
     },
-    object => class(),
+    object => sub {
+	class()->new(req());
+    },
 } => [
-    execute => [
+    process => [
 	    # [From:, To:] => [auth_user, auth_realm]
-	['demo', 'demo-ignore'] => ['demo', 'demo'],
-	['demo', 'ignore.demo'] => ['demo', 'demo'],
-	['Bob <demo@bivio.biz>', 'ignore.demo'] => ['demo', 'demo'],
-	['not_a_user', 'demo-ignore'] => [undef, 'demo'],
-	['demo', 'not_a_user-ignore'] => MODEL_NOT_FOUND(),
-	['demo', 'demo'] => [demo => demo => Bivio::Agent::TaskId->MAIL_RECEIVE],
-	['demo', 'demo-ignore+antything'] => ['demo', 'demo'],
+	[qw(demo demo-ignore)] => [qw(demo demo)],
+	[qw(demo ignore.demo)] => [qw(demo demo)],
+	['Bob <demo@bivio.biz>', 'ignore.demo'] => [qw(demo demo)],
+	[qw(not_a_user demo-ignore)] => [undef, 'demo'],
+	[qw(demo not_a_user-ignore)] => MODEL_NOT_FOUND(),
+	[qw(demo demo)] => [qw(demo demo USER_MAIL_RECEIVE)],
+	[qw(demo demo-ignore+antything)] => [qw(demo demo)],
 	# Should not see "unknown facade uri"
-	['demo', 'demo-ignore+antything@petshop.bivio.biz'] => ['demo', 'demo'],
+	[qw(demo demo-ignore+antything@petshop.bivio.biz)]
+	    => [qw(demo demo)],
+	[qw(demo fourem)] => [qw(demo fourem FORUM_MAIL_RECEIVE)],
+	[qw(demo ignore-fourem)] => [undef, undef, 'ignore_task'],
+	[qw(demo demo-alias@bivio.biz)] => [qw(demo demo USER_MAIL_RECEIVE)],
+	[qw(demo fourem-alias@bivio.biz)]
+	    => [qw(demo fourem FORUM_MAIL_RECEIVE)],
+	[qw(demo random-alias@bivio.biz)]
+	    => [undef, undef, qw(email_alias_task random@example.com)],
     ],
 ]];
