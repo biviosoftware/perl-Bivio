@@ -157,6 +157,7 @@ use Bivio::Type::Boolean;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+my($_T) = 'Bivio::Agent::TaskId';
 my(%_ID_TO_TASK) = ();
 my($_INITIALIZED);
 my(%_REDIRECT_DIE_CODES) = (
@@ -200,7 +201,7 @@ sub new {
     my($proto, $id, $realm_type, $perm, @items) = @_;
 
     # Validate $id
-    die("id invalid") unless $id->isa('Bivio::Agent::TaskId');
+    die("id invalid") unless $id->isa($_T);
     die("realm_type invalid")
 	    unless $realm_type->isa('Bivio::Auth::RealmType');
     die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
@@ -328,7 +329,9 @@ sub execute_items {
 	    last if $res eq '1';
 	    $redirect = 'server_redirect'
 		if $res =~ s/^(server_redirect)\.//;
- 	    $next = $self->get($res);
+ 	    $next = $self->unsafe_get($res)
+		|| $_T->is_valid_name($res) && $_T->from_name($res)
+		|| $res;
 	}
 	_trace($redirect, '.', $next, ' ', $req->unsafe_get('query'))
 	    if $_TRACE;
@@ -339,7 +342,7 @@ sub execute_items {
 	    ': must return boolean, Bivio::Agent::TaskId, or attribute',
 	    ', not ',
 	    $res,
-	) unless ref($next) && UNIVERSAL::isa($next, 'Bivio::Agent::TaskId');
+	) unless ref($next) && UNIVERSAL::isa($next, $_T);
 	return ($next, $redirect);
     }
     return;
@@ -356,7 +359,7 @@ Returns the task associated with the id.
 
 sub get_by_id {
     my(undef, $id) = @_;
-    $id = Bivio::Agent::TaskId->from_name($id)
+    $id = $_T->from_name($id)
         unless ref($id);
     Bivio::Die->die($id, ": no task associated with id")
 	unless $_ID_TO_TASK{$id};
@@ -421,7 +424,7 @@ sub handle_die {
     my($new_task_id) = $proto->get('die_actions')->{$die_code};
     unless (defined($new_task_id)) {
 	# Default mapped?
-	$new_task_id = Bivio::Agent::TaskId->unsafe_from_any(
+	$new_task_id = $_T->unsafe_from_any(
 	    'DEFAULT_ERROR_REDIRECT_' . $die_code->get_name);
 	unless (defined($new_task_id)) {
 	    _trace('not a mapped task: ', $die_code) if $_TRACE;
@@ -470,14 +473,14 @@ sub initialize {
     return if $_INITIALIZED;
     $_INITIALIZED = 1;
 
-    foreach my $cfg (@{Bivio::Agent::TaskId->get_cfg_list}) {
+    foreach my $cfg (@{$_T->get_cfg_list}) {
 	my($id_name, undef, $realm_type, $perm_spec, @items) = @$cfg;
 	my($perm_set) = Bivio::Auth::PermissionSet->get_min;
 	foreach my $p (split(/\&/, $perm_spec)) {
 	    Bivio::Auth::PermissionSet->set(\$perm_set,
 		    Bivio::Auth::Permission->$p());
 	}
-	$proto->new(Bivio::Agent::TaskId->$id_name(),
+	$proto->new($_T->$id_name(),
 		Bivio::Auth::RealmType->$realm_type(),
 		$perm_set, $partially ? () : @items);
     };
@@ -518,6 +521,22 @@ sub rollback {
     _call_txn_resources($req, 'handle_rollback');
     Bivio::SQL::Connection->rollback;
     return;
+}
+
+=for html <a name="unsafe_get_redirect"></a>
+
+=head2 unsafe_get_redirect(string attr, Bivio::Agent::Request req) : Bivio::Agent::TaskId
+
+Returns the task associated with I<attr> on I<self>, if it exists and is
+defined in the facade.
+
+=cut
+
+sub unsafe_get_redirect {
+    my($self, $attr, $req) = @_;
+    return undef
+	unless my $v = $self->unsafe_get($attr);
+     return Bivio::UI::Task->is_defined_for_facade($v, $req) ? $v : undef;
 }
 
 #=PRIVATE METHODS
@@ -631,7 +650,7 @@ sub _parse_map_item {
 	$attrs, $cause,
 	Bivio::Type::Boolean->from_literal_or_die($action),
     ) if $cause =~ /^(?:require_|want_)[a-z0-9_]+$/;
-    $action = Bivio::Agent::TaskId->from_any($action);
+    $action = $_T->from_any($action);
     return _put_attr($attrs, $cause, $action)
 	if $cause =~ /^(?:next|cancel|login|[a-z0-9_]+_task)$/;
     if ($cause =~ /(.+)::(.+)/) {
