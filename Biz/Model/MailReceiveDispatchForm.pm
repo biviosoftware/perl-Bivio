@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailReceiveDispatchForm;
 use strict;
@@ -44,6 +44,7 @@ use Bivio::UI::Task;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+my($_E) = Bivio::Type->get_instance('Email');
 
 =head1 METHODS
 
@@ -71,30 +72,29 @@ I<op> must contain only \w and dashes (-).
 sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
-    # All this state must be durable
     Bivio::Type::UserAgent->MAIL->execute($req, 1);
-    $req->put_durable(
-	# Overwrite the request's client_addr, which our sendmail host's addr
-	client_addr => $self->get('client_addr'),
-	'Model.' . $self->simple_package_name => $self,
-    );
-    my($realm, $op, $plus_tag, $domain) = $self->parse_recipient;
-    Bivio::UI::Facade->setup_request($domain, $req);
+    $req->put_durable(client_addr => $self->get('client_addr'));
+    $self->put_on_request(1);
+    my($redirect, $realm, $op) = _email_alias($self);
+    $redirect = _ignore_email($self)
+	unless $redirect;
+    _trace($redirect) if $_TRACE;
+    return "server_redirect.$redirect"
+	if $redirect;
     _set_realm($self, $realm);
     my($copy) = ${$self->get('message')->{content}};
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
     $self->internal_put_field(mime_parser => $parser);
     $self->internal_put_field(task_id => _task($self, $op));
     $self->internal_put_field(from_email =>
-	_from_email($parser->head->get('from')
+	_from_email(
+	    $parser->head->get('from')
 	    || $parser->head->get('apparently-from')));
     _trace($self->get('from_email'), ' ', $self->get('task_id')) if $_TRACE;
     Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
 	login => $self->internal_get_login,
     });
-    # Should not return, but always put in a return just in case
-    $req->server_redirect($self->get('task_id'));
-    return;
+    return 'server_redirect.' . $self->get('task_id')->get_name;
 }
 
 =for html <a name="internal_get_login"></a>
@@ -115,7 +115,7 @@ sub internal_get_login {
     # the user doesn't exist.
     my($email) = Bivio::Biz::Model->new($self->get_request, 'Email');
     return $email->unauth_load({email => $self->get('from_email')})
-	    ? $email->get('realm_id') : undef;
+	? $email->get('realm_id') : undef;
 }
 
 =for html <a name="internal_initialize"></a>
@@ -167,7 +167,7 @@ need +plus_tag.
 
 sub parse_recipient {
     my($self) = @_;
-    my($to) = lc($self->get('recipient'));
+    my($to) = $self->get('recipient');
     $to =~ s/@(.*)$//;
     my($domain) = $1;
     $to =~ s/\+(.*)$//g;
@@ -182,6 +182,34 @@ sub parse_recipient {
 }
 
 #=PRIVATE SUBROUTINES
+
+# _email_alias()
+sub _email_alias {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($realm, $op, $plus_tag, $domain) = $self->parse_recipient;
+    Bivio::UI::Facade->setup_request($domain, $req);
+    my($ea) = $self->new_other('EmailAlias');
+    return (undef, $realm, $op)
+	unless $req->get('task')->unsafe_get_redirect('email_alias_task', $req)
+	&& $ea->unsafe_load({incoming => $self->get('recipient')});
+    my($n) = $ea->get('outgoing');
+    if ($n =~ /\@/) {
+	_trace($self->get('recipient'), ' => ', $n) if $_TRACE;
+	$self->internal_put_field(recipient => $n);
+	return 'email_alias_task';
+    }
+    $self->internal_put_field(recipient => "$n\@$domain");
+    return (undef, $self->parse_recipient);
+}
+
+# _ignore_email()
+sub _ignore_email {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    return $req->get('task')->unsafe_get_redirect('ignore_task', $req)
+	&& $_E->is_ignore($self->get('recipient')) ? 'ignore_task' : undef;
+}
 
 # _from_email(string from)
 #
@@ -236,7 +264,7 @@ sub _task {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
