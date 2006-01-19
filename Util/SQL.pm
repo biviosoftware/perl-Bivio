@@ -474,6 +474,31 @@ EOF
     return;
 }
 
+=for html <a name="internal_upgrade_db_email_alias"></a>
+
+=head2 internal_upgrade_db_email_alias()
+
+Adds EmailAlias table.
+
+=cut
+
+sub internal_upgrade_db_email_alias {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE email_alias_t (
+  incoming VARCHAR(100) NOT NULL,
+  outgoing VARCHAR(100) NOT NULL,
+  CONSTRAINT email_alias_t1 PRIMARY KEY(incoming)
+)
+/
+CREATE INDEX email_alias_t2 ON email_alias_t (
+  outgoing
+)
+/
+EOF
+    return;
+}
+
 =for html <a name="internal_upgrade_db_forum"></a>
 
 =head2 internal_upgrade_db_forum()
