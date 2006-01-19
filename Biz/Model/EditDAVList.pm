@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::EditDAVList;
 use strict;
@@ -38,18 +38,14 @@ sub dav_put {
 	unless $cols->[$#$cols] eq $pk;
     my($ops) = {create_row => [], update_row => []};
     my($types) = [map($lm->get_field_type($_), @$cols)];
-#TODO: Catch die cases
-    my($rows) = Bivio::Util::CSV->parse($content);
     foreach my $new (
 	map({
 	    $num++;
-#	    _e($self, $num, $_, 'parse failure')
-#		unless $csv->parse($_);
 	    my($l) = $_;
 	    _e($self, $num, $l, 'too many columns')
 		if @$l > @$cols;
 	    grep($_ =~ /\S/, @$l) ? +{
-		line_num => $num,
+		_line_num => $num,
 		map({
 		    my($v, $e) = $types->[$_]->from_literal($l->[$_]);
 		    _e($self, $num, $l, "$cols->[$_] invalid: " . $e->get_name)
@@ -57,11 +53,12 @@ sub dav_put {
 		    ($cols->[$_] => $v);
 		} 0 .. $#$cols),
 	    } : ();
-	} @$rows)
+	} @{Bivio::Util::CSV->parse($content)})
     ) {
-	my($o) = defined($new->{$pk}) ? delete($old->{$new->{$pk}}) : undef;
+	next unless my $o = defined($new->{$pk}) && delete($old->{$new->{$pk}});
+	$o->{_line_num} = $new->{_line_num};
 	push(@{$ops->{$o ? 'row_update' : 'row_create'}}, [$new, $o])
-	    unless $o && Bivio::IO::Ref->nested_equals($o, $new);
+	    unless Bivio::IO::Ref->nested_equals($o, $new);
     }
     $ops->{row_delete} = [map([$_], values(%$old))];
     my($realm) = $self->new_other('RealmOwner')->unauth_load_or_die({
@@ -72,7 +69,7 @@ sub dav_put {
 	    $req->set_realm($realm);
 	    _trace($op, $args) if $_TRACE;
 	    my($e) = $self->$op(@$args);
-	    _e($self, $args->[0]->{line_num}, $args, "$op failed: $e")
+	    _e($self, $args->[0]->{_line_num}, $args, "$op failed: $e")
 		if $e;
 	}
     }
