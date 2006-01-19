@@ -55,10 +55,11 @@ sub dav_put {
 	    } : ();
 	} @{Bivio::Util::CSV->parse($content)})
     ) {
-	next unless my $o = defined($new->{$pk}) && delete($old->{$new->{$pk}});
-	$o->{_line_num} = $new->{_line_num};
+	my($o) = defined($new->{$pk}) && delete($old->{$new->{$pk}});
+	$o->{_line_num} = $new->{_line_num}
+	    if $o;
 	push(@{$ops->{$o ? 'row_update' : 'row_create'}}, [$new, $o])
-	    unless Bivio::IO::Ref->nested_equals($o, $new);
+	    unless $o && Bivio::IO::Ref->nested_equals($o, $new);
     }
     $ops->{row_delete} = [map([$_], values(%$old))];
     my($realm) = $self->new_other('RealmOwner')->unauth_load_or_die({
