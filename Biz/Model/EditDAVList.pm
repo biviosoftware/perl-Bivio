@@ -5,7 +5,7 @@ use strict;
 use base 'Bivio::Biz::Model::AnyTaskDAVList';
 use Bivio::IO::Ref;
 use Bivio::IO::Trace;
-use Text::CSV ();
+use Bivio::Util::CSV;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -21,7 +21,6 @@ sub dav_is_read_only {
 sub dav_put {
     my($self, $content) = @_;
     my($req) = $self->get_request;
-    my($csv) = Text::CSV->new;
     my($num) = 1;
     _e($self, $num, $content, 'no header line')
 	unless $$content =~ s/^.*?\r?\n//;
@@ -39,12 +38,14 @@ sub dav_put {
 	unless $cols->[$#$cols] eq $pk;
     my($ops) = {create_row => [], update_row => []};
     my($types) = [map($lm->get_field_type($_), @$cols)];
+#TODO: Catch die cases
+    my($rows) = Bivio::Util::CSV->parse($content);
     foreach my $new (
 	map({
 	    $num++;
-	    _e($self, $num, $_, 'parse failure')
-		unless $csv->parse($_);
-	    my($l) = [$csv->fields];
+#	    _e($self, $num, $_, 'parse failure')
+#		unless $csv->parse($_);
+	    my($l) = $_;
 	    _e($self, $num, $l, 'too many columns')
 		if @$l > @$cols;
 	    grep($_ =~ /\S/, @$l) ? +{
@@ -56,7 +57,7 @@ sub dav_put {
 		    ($cols->[$_] => $v);
 		} 0 .. $#$cols),
 	    } : ();
-	} split(/[\r\n]+/m, $$content))
+	} @$rows)
     ) {
 	my($o) = defined($new->{$pk}) ? delete($old->{$new->{$pk}}) : undef;
 	push(@{$ops->{$o ? 'row_update' : 'row_create'}}, [$new, $o])
@@ -77,7 +78,6 @@ sub dav_put {
     }
     return;
 }
-
 
 sub dav_reply_get {
     my($self) = @_;
