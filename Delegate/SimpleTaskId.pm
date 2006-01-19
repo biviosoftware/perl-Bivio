@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegate::SimpleTaskId;
 use strict;
@@ -286,6 +286,8 @@ sub get_delegate_info {
 	    Model.UserForumDAVList
 	    next=DAV_FORUM_LIST
 	    forums_csv_task=DAV_ROOT_FORUM_LIST_EDIT
+	    email_aliases_csv_task=DAV_EMAIL_ALIAS_LIST_EDIT
+	    mail_task=DAV_MAIL_FOLDER_LIST
 	)],
 	[qw(
 	    DAV_FORUM_LIST
@@ -350,6 +352,77 @@ sub get_delegate_info {
 	    Model.Lock
 	    Model.CalendarEventDAVList
 	)],
+	[qw(
+	    DAV_MAIL_FOLDER_LIST
+	    34
+	    GENERAL
+	    DATA_READ
+	    Model.UserForumDAVList
+	    next=DAV_MAIL_MESSAGE_LIST
+	)],
+	[qw(
+	    DAV_MAIL_MESSAGE_LIST
+	    35
+	    FORUM
+	    DATA_READ
+	    Model.UserMailDAVList
+	)],
+ 	[qw(
+	    DAV_EMAIL_ALIAS_LIST_EDIT
+	    36
+	    GENERAL
+	    ADMIN_READ
+	    Model.EmailAliasList->execute_load_all
+	    Model.EmailAliasEditDAVList
+	)],
+	[qw(
+            MAIL_RECEIVE_DISPATCH
+            37
+	    GENERAL
+	    ANYBODY
+	    Model.MailReceiveDispatchForm
+            next=MAIL_RECEIVE_NOT_FOUND
+            NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+            NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
+	    email_alias_task=MAIL_RECEIVE_FORWARD
+	    ignore_task=MAIL_RECEIVE_IGNORE
+	)],
+	[qw(
+            MAIL_RECEIVE_NO_RESOURCES
+            38
+            GENERAL
+            ANYBODY
+            Action.MailReceiveStatus->execute_no_resources
+        )],
+	[qw(
+            MAIL_RECEIVE_NOT_FOUND
+            39
+            GENERAL
+            ANYBODY
+            Action.MailReceiveStatus->execute_not_found
+        )],
+	[qw(
+            MAIL_RECEIVE_IGNORE
+            40
+            USER
+            ANYBODY
+            Action.MailReceiveStatus->execute
+        )],
+	[qw(
+            MAIL_RECEIVE_FORWARD
+            41
+	    GENERAL
+	    ANYBODY
+	    Action.MailForward
+	)],
+	[qw(
+            FORUM_MAIL_RECEIVE
+            42
+            FORUM
+            MAIL_SEND
+            Action.ForumMail
+            Action.MailReceiveStatus->execute
+        )],
     ];
 }
 
@@ -380,7 +453,7 @@ sub merge_task_info {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
