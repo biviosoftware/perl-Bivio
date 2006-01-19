@@ -287,8 +287,8 @@ sub get_delegate_info {
 	    next=DAV_FORUM_LIST
 	    forums_csv_task=DAV_ROOT_FORUM_LIST_EDIT
 	    email_aliases_csv_task=DAV_EMAIL_ALIAS_LIST_EDIT
-	    mail_task=DAV_MAIL_FOLDER_LIST
 	)],
+#	    mail_task=DAV_MAIL_FOLDER_LIST
 	[qw(
 	    DAV_FORUM_LIST
 	    27
@@ -352,21 +352,21 @@ sub get_delegate_info {
 	    Model.Lock
 	    Model.CalendarEventDAVList
 	)],
-	[qw(
-	    DAV_MAIL_FOLDER_LIST
-	    34
-	    GENERAL
-	    DATA_READ
-	    Model.UserForumDAVList
-	    next=DAV_MAIL_MESSAGE_LIST
-	)],
-	[qw(
-	    DAV_MAIL_MESSAGE_LIST
-	    35
-	    FORUM
-	    DATA_READ
-	    Model.UserMailDAVList
-	)],
+# 	[qw(
+# 	    DAV_MAIL_FOLDER_LIST
+# 	    34
+# 	    GENERAL
+# 	    DATA_READ
+# 	    Model.UserForumDAVList
+# 	    next=DAV_MAIL_MESSAGE_LIST
+# 	)],
+# 	[qw(
+# 	    DAV_MAIL_MESSAGE_LIST
+# 	    35
+# 	    FORUM
+# 	    DATA_READ
+# 	    Model.UserMailDAVList
+# 	)],
  	[qw(
 	    DAV_EMAIL_ALIAS_LIST_EDIT
 	    36
