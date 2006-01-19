@@ -350,6 +350,11 @@ sub get_delegate_info {
 	undef,
 	'Top forum name may not be changed',
     ],
+    EMAIL_ALIAS_OUTGOING => [
+	58,
+	undef,
+	'Outgoing email alias values must be an email address or simple name',
+    ],
 ];
 }
 
