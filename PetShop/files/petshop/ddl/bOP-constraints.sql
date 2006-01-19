@@ -159,6 +159,15 @@ CREATE INDEX ec_subscription_t5 ON ec_subscription_t (
 /
 
 --
+-- email_alias_t
+--
+CREATE INDEX email_alias_t2 ON email_alias_t (
+  outgoing
+)
+/
+
+--
+--
 -- email_t
 --
 ALTER TABLE email_t
