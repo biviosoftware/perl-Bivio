@@ -111,6 +111,13 @@ CREATE TABLE ec_subscription_t (
 )
 /
 
+CREATE TABLE email_alias_t (
+  incoming VARCHAR(100) NOT NULL,
+  outgoing VARCHAR(100) NOT NULL,
+  CONSTRAINT email_alias_t1 PRIMARY KEY(incoming)
+)
+/
+
 CREATE TABLE email_t (
   realm_id NUMERIC(18) NOT NULL,
   location NUMERIC(2) NOT NULL,
