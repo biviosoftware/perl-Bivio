@@ -437,7 +437,7 @@ sub initialize {
 
 =for html <a name="send"></a>
 
-=head2 send()
+=head2 send() : self
 
 Send the mail message to the specified recipients (see
 L<set_recipients|"set_recipients">).  The headers
@@ -449,15 +449,18 @@ for "alias-like" forwarding only.
 sub send {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    Bivio::Mail::Common->send($fields->{recipients}, $fields->{rfc822},
-	    $fields->{header_offset}, $self->get_from());
+    Bivio::Mail::Common->send(
+	@{$fields}{qw(recipients rfc822 header_offset)},
+	($self->get_from)[0],
+    );
+    return $self;
 }
 
 =for html <a name="set_recipients"></a>
 
-=head2 set_recipients(string recipients)
+=head2 set_recipients(string recipients) : self
 
-=head2 set_recipients(array_ref recipients)
+=head2 set_recipients(array_ref recipients) : self
 
 Sets the recipients of this message to I<recipients>.  The recipients
 are part of the "envelope" associated with the message.
@@ -468,7 +471,7 @@ sub set_recipients {
     my($self, $recipients) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{recipients} = $recipients;
-    return;
+    return $self;
 }
 
 =for html <a name="uninitialize"></a>
