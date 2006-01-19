@@ -143,6 +143,48 @@ sub vs_list_form {
     ) : $res;
 }
 
+sub vs_paged_list {
+    my(undef, $model, $columns, $attrs) = @_;
+    my($x) = "Model.$model";
+    my($p) = "$model.paged_list.";
+    return Tag(div => If(
+	[$x, '->get_result_set_size'],
+	Join([
+	    map(
+		ref($_) ? $_ : Tag(
+		    div => Join([
+			map(
+			    Link(
+				vs_text("$p$_"),
+				[$x, '->format_uri', uc($_) . '_LIST'], {
+				    control => [[$x, '->get_query'], "has_$_"],
+				    control_off_value => Tag(
+					span => String(vs_text("$p$_")), 'off'),
+				    class => $_,
+				},
+			    ),
+			    qw(prev next)
+			),
+		    ], {
+			join_separator => Image(
+			    vs_text($p . 'sep'), => '', 'sep'),
+		    }),
+		    $_,
+		),
+		'top',
+		Table(
+		    $model,
+		    $columns,
+		    # Cause Table() to generate XHTML
+		    {class => 'paged_list', %{$attrs || {}}},
+		 ),
+		'bottom',
+	    ),
+	]),
+	Tag(div => String(vs_text($p . 'empty'), 'empty')),
+    ), 'paged_list');
+}
+
 sub vs_simple_form {
     my($proto, $form, $rows) = @_;
     my($have_submit) = 0;
