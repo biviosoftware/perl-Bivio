@@ -672,9 +672,10 @@ sub _get_error {
 sub _has {
     my($which, $proto, $task_id, $req_or_facade) = @_;
     return defined(
-	$proto->internal_get_value(
-	    ref($task_id) ? $task_id->get_name : $task_id, $req_or_facade
-	)->{$which}
+	($proto->internal_get_self($req_or_facade)
+	    ->internal_unsafe_lc_get_value(
+		lc(ref($task_id) ? $task_id->get_name : $task_id))
+	|| {})->{$which}
     ) ? 1 : 0;
 }
 
