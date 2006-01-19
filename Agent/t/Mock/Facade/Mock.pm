@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::t::Mock::Facade::Mock;
 use strict;
@@ -76,6 +76,8 @@ my($_SELF) = __PACKAGE__->new({
                 MY_SITE
                 REDIRECT_TEST_1
                 REDIRECT_TEST_2
+                REDIRECT_TEST_3
+                REDIRECT_TEST_4
                 USER_HOME
                 LOGIN
             )) {
@@ -99,7 +101,7 @@ my($_SELF) = __PACKAGE__->new({
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Software Artisans, Inc.  All rights reserved.
+Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
