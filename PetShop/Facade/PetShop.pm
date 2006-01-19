@@ -169,8 +169,13 @@ my($_SELF) = __PACKAGE__->new({
 	    SOURCE => 'src',
 	    ADM_SUBSTITUTE_USER => 'su',
 	    MAIL_RECEIVE_DISPATCH => 'mail-handler',
+ 	    USER_MAIL_RECEIVE => '?/mail-handler-',
+ 	    FORUM_MAIL_RECEIVE => '?/mail-handler-',
+	    # Only needs to be defined for testing
 	    MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore',
-	    MAIL_RECEIVE => '?/mail-handler-',
+	    MAIL_RECEIVE_NOT_FOUND => undef,
+	    MAIL_RECEIVE_NO_RESOURCES => undef,
+	    MAIL_RECEIVE_FORWARD => undef,
 	    USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
 		'my/create-account-and-order',
 	    ORDER_HOME => '?',
@@ -268,6 +273,11 @@ my($_SELF) = __PACKAGE__->new({
 	    file_writer => 'Write Files?',
 	    administrator => 'Administrator?',
 	    'RealmUser.user_id' => 'Database Key',
+	],
+	EmailAliasList => [
+	    'EmailAlias.incoming' => 'From Email',
+	    'EmailAlias.outgoing' => 'To Email or Forum',
+	    'primary_key' => 'Database Key',
 	],
 
 	# Table headings
