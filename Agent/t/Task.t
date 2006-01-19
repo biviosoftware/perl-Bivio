@@ -31,7 +31,7 @@ Bivio::Test->new({
 	return Bivio::Agent::Task->get_by_id($object->[0]);
     },
     compute_params => sub {
-	my($case, $params) = @_;
+	my($case, $params, $method) = @_;
 	$case->put(expected_task => $params->[0]);
 	return [$req];
     },
@@ -56,9 +56,9 @@ Bivio::Test->new({
     }
 	[qw(SHELL_UTIL SITE_ROOT)],
 	[qw(REDIRECT_TEST_1 REDIRECT_TEST_2)],
-#TODO: this no longer works - it returns a FORBIDDEN diecode
 	[qw(REDIRECT_TEST_3 REDIRECT_TEST_1)],
 	[qw(REDIRECT_TEST_3 REDIRECT_TEST_2)],
+	[qw(REDIRECT_TEST_4 REDIRECT_TEST_2)],
 	[qw(REDIRECT_TEST_2 FORBIDDEN)],
 	[qw(TEST_TRANSIENT SITE_ROOT)],
     ),
@@ -72,5 +72,17 @@ Bivio::Test->new({
     ],
     DEVIANCE_1 => [
 	execute => => Bivio::DieCode->DIE,
+    ],
+    UNSAFE_GET_REDIRECT => [
+	{
+	    method => 'unsafe_get_redirect',
+	    compute_params => sub {[$_[1]->[0], $req]},
+	    compute_return => sub {[$_[1]->[0] && $_[1]->[0]->get_name]},
+        } => [
+	    next => 'SITE_ROOT',
+	    login_task => 'LOGIN',
+	    no_such_attr => [undef],
+	    self_task => [undef],
+	],
     ],
 ]);

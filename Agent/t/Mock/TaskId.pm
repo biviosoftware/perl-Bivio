@@ -119,6 +119,23 @@ sub get_delegate_info {
             Action.ClientRedirect->execute_next
             next=SITE_ROOT
 	)],
+	[qw(
+	    UNSAFE_GET_REDIRECT
+	    508
+	    GENERAL
+	    ANYBODY
+            Action.ClientRedirect->execute_next
+            next=SITE_ROOT
+	    self_task=UNSAFE_GET_REDIRECT
+	    login_task=LOGIN
+	)],
+	[qw(
+	    REDIRECT_TEST_4
+	    509
+	    GENERAL
+	    ANYBODY
+	    Bivio::Agent::t::Mock::ReturnRedirect
+	)],
     ]);
 }
 
