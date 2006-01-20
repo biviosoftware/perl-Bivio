@@ -1084,6 +1084,35 @@ sub is_test {
     return shift->is_production(@_) ? 0 : 1;
 }
 
+=for html <a name="process_cleanup"></a>
+
+=head2 process_cleanup(Bivio::Die die)
+
+Calls any cleanup outside of the database commit/rollback.
+
+=cut
+
+sub process_cleanup {
+    my($self, $die) = @_;
+    return unless $self->unsafe_get('process_cleanup')
+        && @{$self->get('process_cleanup')};
+    my($is_ok) = 1;
+
+    foreach my $cleaner (@{$self->get('process_cleanup')}) {
+        if (Bivio::Die->catch(
+            sub {
+                $cleaner->($self, $die);
+            })
+        ) {
+            $is_ok = 0;
+        }
+    }
+    $is_ok
+        ? Bivio::Agent::Task->commit($self)
+        : Bivio::Agent::Task->rollback($self);
+    return;
+}
+
 =for html <a name="push_txn_resource"></a>
 
 =head2 push_txn_resource(any resource)
