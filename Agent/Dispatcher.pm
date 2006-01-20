@@ -138,6 +138,9 @@ sub process_request {
 	    redo TRY;
 	}
     }
+
+    $req->process_cleanup($die)
+        if $req;
     Bivio::Agent::Request->clear_current;
     Bivio::IO::Alert->reset_warn_counter;
     return $die;
