@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.62  2006/01/19 21:46:05  nagler
+  * Bivio::Biz::Model::EmailAlias added
+  * Bivio::Biz::Model::MailReceiveDispatchForm checks for aliases if
+    an email_alias_task is attr defined and exists in the facade.  Also
+    manages ignore_task for ignored emails (see Type.Email for what is ignored).
+  * Bivio::Delegate::SimpleTaskId configured with MAIL_RECEIVE_DISPATCH tasks
+    that can be included completely by defining a few facade uris (see previous
+    item).  See Bivio::Petshop::Delegate::TaskId and PetShop facade for details
+  * Bivio::Agent::Task->unsafe_get_redirect added
+  * Bivio::Agent::Task->execute_items accepts a TaskId name (upper case only)
+    returned from the item.  It looks up an attribute by that name, first,
+    however.
+  * Bivio::Biz::Model::EditDAVList was calling row_update every row.
+    Refactored to use Bivio::Util::CSV->parse
+  * Bivio::UI::Task->has_* and is_defined_for_facade loosened up to allow the
+    task to not exist in facade.
+  * Bivio::UI::XHTML::ViewShortcuts->vs_paged_list added
+
   Revision 3.61  2006/01/18 20:55:19  dobbs
   * Bivio::Biz::Model::UserCreateForm name parsing now handles more suffixes
   * Bivio::SQL::Statement LT now correctly emits '<' (was '<=')
