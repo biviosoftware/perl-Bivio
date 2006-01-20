@@ -508,6 +508,7 @@ sub finish {
     my($self, $abort) = @_;
     my($fields) = $self->[$_IDI];
     $self->commit_or_rollback($abort);
+    $self->get_request->process_cleanup;
     Bivio::SQL::Connection->set_dbi_name($fields->{prior_db})
 	if $fields->{prior_db};
     return;
