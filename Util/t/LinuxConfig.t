@@ -105,14 +105,14 @@ other.host
 		['etc/bashrc', '/etc/bashrc.d/'],
 	    ],
 	], [
-	    'add_aliases', ['a: b:c', 'd:e'] => [
+	    'add_aliases', ['a: b:c', 'd:e', 'i::include:/foo'] => [
 		['etc/aliases', "a:\tb:c\n"],
 		['etc/aliases', "d:\te\n"],
+		['etc/aliases', "i:\t:include:/foo\n"],
 	    ],
 	], [
-	    'add_virtusers', ['a: b', 'c d', 'e:f'] => [
+	    'add_virtusers', ['a: b', 'e:f'] => [
 		['etc/mail/virtusertable', "a\tb\n"],
-		['etc/mail/virtusertable', "c\td\n"],
 		['etc/mail/virtusertable', "e\tf\n"],
 	    ],
 	], [

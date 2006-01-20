@@ -730,7 +730,7 @@ sub _add_aliases {
     my($file, $sep, $self) = splice(@_, 0, 3);
     return $self->append_lines(
 	$file,  qw(root root 0640),
-	map(join("$sep\t", split(/[:\s]+/, $_, 2)), @_));
+	map(join("$sep\t", split(/:\s*/, $_, 2)), @_));
 }
 
 # _add_file(self, string file, string owner, string group, int perms)
