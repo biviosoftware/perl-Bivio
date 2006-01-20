@@ -305,6 +305,34 @@ sub rm_rf {
     return $path;
 }
 
+=for html <a name="temp_file"></a>
+
+=head2 static temp_file() : string
+
+=head2 static temp_file(Bivio::Agent::Request req) : string
+
+Returns the name of a temp file. If a request is passed, the file
+is automatically removed when the request is completed.
+
+=cut
+
+sub temp_file {
+    my($proto, $req) = @_;
+    my($name) = '/tmp/' . Bivio::Type::DateTime->local_now_as_file_name
+        . '-' . $$ . '-' . rand();
+
+    if ($req) {
+        $req->put(process_cleanup => [])
+            unless $req->unsafe_get('process_cleanup');
+        push(@{$req->get('process_cleanup')},
+            sub {
+                _trace('removing ', $name) if $_TRACE;
+                unlink($name);
+            });
+    }
+    return $name;
+}
+
 =for html <a name="write"></a>
 
 =head2 static write(string file_name, any contents) : any
