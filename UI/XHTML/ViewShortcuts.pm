@@ -226,7 +226,7 @@ sub vs_paged_list {
 		'bottom',
 	    ),
 	]),
-	Tag(div => String(vs_text($p . 'empty'), 'empty')),
+	Tag(div => String(vs_text($p . 'empty')), 'empty'),
     ), 'paged_list');
 }
 
