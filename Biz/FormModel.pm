@@ -1092,8 +1092,8 @@ sub process {
 	    }
 	    _trace($msg);
 	}
-	Bivio::Die->die($self->as_string, ': called with invalid values, ',
-	    $self->get_errors, $self->internal_get);
+	Bivio::Die->die($self, ': called with invalid values, ',
+	    $self->get_errors, ' ', $self->internal_get);
 	# DOES NOT RETURN
     }
 
@@ -1416,6 +1416,7 @@ sub validate_not_zero {
 sub _apply_type_error {
     my($self, $die) = @_;
     my($attrs) = $die->get('attrs');
+    _trace($attrs) if $_TRACE;
     my($err) = $attrs->{type_error};
     Bivio::Die->die($err, ': die type_error not a Bivio::TypeError')
 	unless ref($err) && UNIVERSAL::isa($err, 'Bivio::TypeError');
@@ -1670,7 +1671,7 @@ sub _parse_timezone {
     return unless defined($v);
 
     unless ($v =~ /^[+-]?\d+$/) {
-	Bivio::IO::Alert->warn($v, ':timezone field in form invalid');
+	Bivio::IO::Alert->warn($v, ': timezone field in form invalid');
 	return;
     }
 
