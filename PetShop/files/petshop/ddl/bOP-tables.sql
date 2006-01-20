@@ -134,6 +134,19 @@ CREATE TABLE forum_t (
 )
 /
 
+CREATE TABLE job_lock_t (
+  realm_id NUMERIC(18) NOT NULL,
+  task_id NUMERIC(9) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  hostname VARCHAR(100) NOT NULL,
+  pid NUMERIC(9) NOT NULL,
+  percent_complete NUMERIC(20,6),
+  message VARCHAR(500),
+  die_code NUMERIC(9),
+  constraint job_lock_t1 PRIMARY key(realm_id, task_id)
+)
+/  
+
 CREATE TABLE lock_t (
   realm_id NUMERIC(18) primary key
 )

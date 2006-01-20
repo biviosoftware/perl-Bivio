@@ -202,6 +202,19 @@ CREATE INDEX forum_t3 on forum_t (
 /
 
 --
+-- job_lock_t
+--
+ALTER TABLE job_lock_t
+  add constraint job_lock_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX job_lock_t3 on job_lock_t (
+  realm_id
+)
+/
+
+--
 -- lock_t
 --
 -- These constraints intentionally left blank.
