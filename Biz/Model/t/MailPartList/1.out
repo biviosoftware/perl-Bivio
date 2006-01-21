@@ -1,0 +1,13 @@
+[
+    {
+        index => 0,
+	mime_type => 'x-message/rfc822-headers',
+	subject => "subj1\n",
+	mime_entity => '',
+    },
+    {
+        index => 1,
+	mime_type => 'text/plain',
+	mime_entity => "a1\n",
+    },
+];

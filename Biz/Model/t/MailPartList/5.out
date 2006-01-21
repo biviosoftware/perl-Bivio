@@ -1,0 +1,21 @@
+use MIME::Base64;
+[
+    {
+        index => 0,
+	mime_type => 'x-message/rfc822-headers',
+	mime_entity => '',
+	subject => "an image\n",
+	from => "Rob nagler <nagler\@bivio.biz\n",
+	date => "Sat, 21 Jan 2006 11:15:05 -0700\n",
+    },
+    {
+        index => 1,
+	mime_type => 'text/plain',
+	mime_entity => "text\n",
+    },
+    {
+        index => 2,
+	mime_type => 'image/gif',
+	mime_entity => MIME::Base64::decode('R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAEBMgA');
+    },
+];

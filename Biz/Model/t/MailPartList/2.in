@@ -1,0 +1,16 @@
+Content-Type: multipart/mixed; boundary="x"
+
+This is a multi-part message in MIME format.
+
+--x
+Content-Type: text/plain
+
+p1
+
+--x
+Content-Type: text/html
+
+p2
+
+--x--
+

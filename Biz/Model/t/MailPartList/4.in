@@ -1,0 +1,18 @@
+From: a@a.a
+Subject: Subj4
+Content-Type: multipart/alternative; boundary="x"
+
+This is a multi-part message in MIME format.
+
+--x
+Content-Type: text/plain
+
+p1
+
+--x
+Content-Type: text/html
+
+p2
+
+--x--
+

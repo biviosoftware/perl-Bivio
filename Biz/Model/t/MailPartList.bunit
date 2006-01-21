@@ -1,0 +1,32 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+[
+    {
+	method => 'load_all',
+	check_return => sub {
+	    my($case, $actual, $expect) = @_;
+	    $case->actual_return([
+		map({
+		    $_->{subject}
+			= $_->{mime_entity}->head->get('subject')
+			if exists($_->{subject});
+		    $_->{mime_entity}
+			= $_->{mime_entity}->bodyhandle
+		          && $_->{mime_entity}->bodyhandle->as_string
+		        if exists($_->{mime_entity});
+		    $_;
+		} @$actual),
+	    ]);
+	    return $expect;
+	},
+    } => [
+	map((
+	    [{
+		content_ref => Bivio::IO::File->read($_),
+		parent_id => 1,
+	    }],
+	    do(($_ =~ /(.*)in$/)[0] . 'out'),
+	), glob('MailPartList/*.in')),
+    ],
+];
