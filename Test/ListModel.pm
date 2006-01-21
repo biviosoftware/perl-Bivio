@@ -85,10 +85,17 @@ sub new {
 	    return $actual
 		unless @$expect != 1
 		|| ref($expect->[0]) eq 'HASH' || !@$expect;
+	    my($expect_copy) = [@$expect];
 	    return $case->get('object')->map_rows(
 		sub {
 		    my($row) = shift->get_shallow_copy;
-		    return {map(($_ => $row->{$_}), keys(%{$expect->[0]}))};
+		    return {
+			map(
+			    ($_ => $row->{$_}),
+			    keys(%{@$expect_copy == 1 ? $expect_copy->[0]
+			        : shift(@$expect_copy)}),
+			),
+		    };
 		},
 	    );
 	},
