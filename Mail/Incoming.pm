@@ -33,7 +33,7 @@ message.
 =cut
 
 #=IMPORTS
-use IO::Scalar;
+use IO::Scalar ();
 use Bivio::IO::Config;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
