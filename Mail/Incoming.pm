@@ -33,18 +33,19 @@ message.
 =cut
 
 #=IMPORTS
-use IO::Scalar ();
-use Bivio::IO::Config;
 use Bivio::IO::Alert;
+use Bivio::IO::Config;
 use Bivio::IO::Trace;
-use Bivio::Mail::RFC822;
-use Bivio::Mail::Common;
 use Bivio::Mail::Address;
-use Time::Local ();
+use Bivio::Mail::Common;
+use Bivio::Mail::RFC822;
+use Bivio::Type::DateTime;
+use IO::Scalar ();
 require 'ctime.pl';
 
 #=VARIABLES
 use vars qw($_TRACE);
+my($_DT) = 'Bivio::Type::DateTime';
 Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Bivio::IO::Config->register;
@@ -116,9 +117,8 @@ sub get_date_time {
 	_trace('no Date') if $_TRACE;
 	return $fields->{date_time} = undef;
     }
-    $fields->{date_time} = &_parse_date($date);
-    _trace($date, ' -> ', $fields->{date_time}) if $_TRACE;
-    return $fields->{date_time};
+    $date = ($_DT->from_literal($date))[0];
+    return $fields->{date_time} = $date && $_DT->to_unix($date);
 }
 
 =for html <a name="get_from"></a>
@@ -501,40 +501,6 @@ sub _get_field {
         ($fields->{$name}) = $fields->{header} =~ /^$name(?: |\t)*(.*)/im;
     }
     return defined($fields->{$name}) ? $fields->{$name} : '';
-}
-
-sub _parse_date {
-    local($_) = @_;
-    my($DATE_TIME) = Bivio::Mail::RFC822->DATE_TIME;
-    my($mday, $mon, $year, $hour, $min, $sec, $tz) = /^$DATE_TIME/os;
-    defined($mday) || return &_parse_complex_date($_);
-    $mon = uc($mon);
-    if (defined(Bivio::Mail::RFC822::MONTHS->{$mon})) {
-        $mon = Bivio::Mail::RFC822::MONTHS->{$mon};
-    }
-    else {
-        Bivio::IO::Alert->warn("month \"$mon\" unknown in date \"$_\"");
-        $mon = 0;
-    }
-    $tz = uc($tz);
-    if (defined(Bivio::Mail::RFC822::TIME_ZONES->{$tz})) {
-        $tz = Bivio::Mail::RFC822::TIME_ZONES->{$tz};
-    }
-    my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
-    if ($tz =~ /^(-|\+?)(\d\d?)(\d\d)/s) {
-        $date_time -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
-    } elsif ($tz != 0) {
-        Bivio::IO::Alert->warn("timezone \"$tz\" unknown in date \"$_\"");
-    }
-    return $date_time;
-}
-
-# strips out comments
-sub _parse_complex_date {
-#TODO: NEED TO IMPLEMENT!
-    local($_) = @_;
-    Bivio::IO::Alert->warn('unable to parse date: ', $_);
-    return time;
 }
 
 =head1 COPYRIGHT
