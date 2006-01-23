@@ -70,6 +70,12 @@ sub internal_initialize {
 		type => 'RealmOwner.name',
 		constraint => 'NONE',
 	    },
+	    {
+		# Match RealmUserDeleteForm
+		name => 'other_roles',
+		type => 'Array',
+		constraint => 'NONE',
+	    },
 	    'RealmUser.realm_id',
 	],
     });
@@ -79,7 +85,10 @@ sub _join_user {
     my($self, $user_id, $realm_id) = @_;
     $self->internal_put_field('RealmUser.realm_id' => $realm_id);
     $self->internal_put_field('User.user_id' => $user_id);
-    foreach my $r (@{$self->internal_get_roles}) {
+    foreach my $r (
+	@{$self->unsafe_get('other_roles') || []},
+	@{$self->internal_get_roles},
+    ) {
 	$self->new_other('RealmUser')->create_or_unauth_update({
 	    realm_id => $realm_id,
 	    user_id => $user_id,
