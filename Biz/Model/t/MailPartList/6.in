@@ -1,0 +1,52 @@
+From VM Sun Jan 22 21:51:17 2006
+Return-Path: <nagler@bivio.biz>
+Received: from ice.bivio.biz (ice.bivio.com [216.87.82.252])
+	by bivio.biz (8.11.6/8.11.6) with ESMTP id k0N4pHq03841
+	for <nagler@bivio.biz>; Sun, 22 Jan 2006 21:51:17 -0700
+Received: from dhcp88.bivio.com.bivio.biz (localhost.localdomain [127.0.0.1])
+	by ice.bivio.biz (8.11.6/8.11.6) with ESMTP id k0N4pAP05326
+	for <nagler@bivio.biz>; Sun, 22 Jan 2006 21:51:11 -0700
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="8vMsLim4EJ"
+Content-Transfer-Encoding: 7bit
+Message-ID: <17364.24766.6397.557265@dhcp88.bivio.com>
+X-Mailer: VM 7.19 under Emacs 22.0.50.1
+Status:   
+From: Rob Nagler <nagler@bivio.biz>
+To: Rob Nagler <nagler@bivio.biz>
+Subject: [fwd] first message
+Date: Sun, 22 Jan 2006 21:51:10 -0700
+
+
+--8vMsLim4EJ
+Content-Type: text/plain; charset=us-ascii
+Content-Description: message body text
+Content-Transfer-Encoding: 7bit
+
+second1
+
+
+--8vMsLim4EJ
+Content-Type: message/rfc822
+Content-Description: forwarded message
+Content-Transfer-Encoding: 7bit
+
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-Path: <nagler@bivio.biz>
+Received: from ice.bivio.biz (rh72.bivio.com [216.87.82.252])
+	by bivio.biz (8.11.6/8.11.6) with ESMTP id k0N4ovq03826
+	for <nagler@bivio.biz>; Sun, 22 Jan 2006 21:50:57 -0700
+Received: from dhcp88.bivio.com.bivio.biz (localhost.localdomain [127.0.0.1])
+	by ice.bivio.biz (8.11.6/8.11.6) with ESMTP id k0N4opP05323
+	for <nagler@bivio.biz>; Sun, 22 Jan 2006 21:50:52 -0700
+Message-ID: <17364.24746.665618.64508@dhcp88.bivio.com>
+X-Mailer: VM 7.19 under Emacs 22.0.50.1
+From: Rob Nagler <nagler@bivio.biz>
+To: Rob Nagler <nagler@bivio.biz>
+Subject: first message
+Date: Sun, 22 Jan 2006 21:50:50 -0700
+
+first1
+
+--8vMsLim4EJ--
