@@ -211,7 +211,7 @@ Internet time.
 =cut
 
 sub REGEX_RFC822 {
-    return qr{[a-z]{3},\s+(\d+)\s+([a-z]+)\s+(\d+)\s+(\d+):(\d+):(\d+)\s+GMT}i;
+    return qr{@{[Bivio::Mail::RFC822->DATE_TIME]}};
 }
 
 
@@ -277,6 +277,7 @@ sub UNIX_EPOCH_IN_JULIAN_DAYS {
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::Mail::RFC822;
 use Bivio::Type::Array;
 use Bivio::TypeError;
 use Time::HiRes ();
@@ -478,16 +479,17 @@ error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
 =cut
 
 sub date_from_parts {
-    my(undef, $mday, $mon, $year) = @_;
-    return (undef, Bivio::TypeError::YEAR_DIGITS())
+    my($proto, $mday, $mon, $year) = @_;
+    return (undef, Bivio::TypeError->YEAR_DIGITS)
 	unless($year) && $year > 99;
-    return (undef, Bivio::TypeError::YEAR_RANGE())
-	unless FIRST_YEAR() <= $year && $year <= LAST_YEAR();
-    return (undef, Bivio::TypeError::MONTH()) unless 1 <= $mon && $mon <= 12;
+    return (undef, Bivio::TypeError->YEAR_RANGE)
+	unless FIRST_YEAR() <= $year && $year <= $proto->LAST_YEAR;
+    return (undef, Bivio::TypeError->MONTH)
+	unless 1 <= $mon && $mon <= 12;
     $mon--;
-    $year -= Bivio::Type::DateTime::FIRST_YEAR();
+    $year -= $proto->FIRST_YEAR;
     my($ly) = $_IS_LEAP_YEAR[$year];
-    return (undef, Bivio::TypeError::DAY_OF_MONTH())
+    return (undef, Bivio::TypeError->DAY_OF_MONTH)
 	unless 1 <= $mday && $mday <= $_MONTH_DAYS[$ly]->[$mon];
     return ($_YEAR_BASE[$year] + $_MONTH_BASE[$ly]->[$mon] + --$mday)
 	. $_TIME_SUFFIX;
@@ -1520,9 +1522,25 @@ sub _from_or_die {
 # _from_rfc822(proto, string value) : string
 sub _from_rfc822 {
     my($proto, $value) = @_;
-    my($d, $m3, $y, $h, $m, $s) = $value =~ /^@{[REGEX_RFC822()]}$/o;
-    return defined($s) ? $proto->from_parts(
-	$s, $m, $h, $d, $proto->english_month3_to_int($m3), $y) : ();
+    my($DATE_TIME) = Bivio::Mail::RFC822->DATE_TIME;
+    my($mday, $mon, $year, $hour, $min, $sec, $tz)
+	= $value =~ /^@{[$proto->REGEX_RFC822]}/os;
+    return
+	unless defined($mday);
+    return (undef, Bivio::TypeError->MONTH)
+	unless defined($mon = Bivio::Mail::RFC822->MONTHS->{uc($mon)});
+    my($v, $e) = $proto->from_parts($sec, $min, $hour, $mday, $mon + 1, $year);
+    return (undef, $e)
+	if $e;
+    $tz = Bivio::Mail::RFC822::TIME_ZONES->{uc($tz)}
+	if defined(Bivio::Mail::RFC822->TIME_ZONES->{uc($tz)});
+    return $v
+	if $tz =~ /^0+$/;
+    return (undef, Bivio::TypeError->TIME_ZONE)
+	unless $tz =~ /^(-|\+?)(\d\d?)(\d\d)/s;
+    return $proto->add_seconds(
+	$v, - ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3));
+
 }
 
 # _from_string(proto, string value) : array
@@ -1569,7 +1587,7 @@ sub _initialize {
     }
     # 1800 is a leap year and is julian 2378497
     $_IS_LEAP_YEAR[0] = 0;
-    $_YEAR_BASE[0] = Bivio::Type::DateTime::FIRST_DATE_IN_JULIAN_DAYS();
+    $_YEAR_BASE[0] = Bivio::Type::DateTime->FIRST_DATE_IN_JULIAN_DAYS;
     foreach my $y (Bivio::Type::DateTime::FIRST_YEAR()+1
 	    ..Bivio::Type::DateTime::LAST_YEAR()) {
 	my($yy) = $y - Bivio::Type::DateTime::FIRST_YEAR();
