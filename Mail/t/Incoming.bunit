@@ -7,6 +7,7 @@ From: john+btest_forum-admin@localhost.localdomain
 To: private_forum@localhost.localdomain
 Subject: should bounce
 References: <a@a> <b@b>
+Date: Wed, 26 Oct 2005 04:19:47 EDT
 In-Reply-To: <c@c> <d@d>
 Message-ID: <m@m>
 
@@ -19,5 +20,6 @@ EOF
 	    [] => [qw(d@d b@b a@a)],
 	],
 	get_message_id => 'm@m',
+	get_date_time => 1130314787,
     ],
 ];
