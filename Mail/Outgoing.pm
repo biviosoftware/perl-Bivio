@@ -247,6 +247,7 @@ sub send {
     my($msg) = $self->as_string;
     Bivio::Mail::Common->send($fields->{recipients}, \$msg, 0,
                               $fields->{env_from}, $req);
+    return;
 }
 
 =for html <a name="set_body"></a>
