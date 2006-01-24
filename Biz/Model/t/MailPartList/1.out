@@ -2,7 +2,7 @@
     {
         index => 0,
 	mime_type => 'x-message/rfc822-headers',
-	subject => "subj1\n",
+	'->get_header subject' => 'subj1',
 	mime_entity => '',
     },
     {

@@ -1,21 +1,25 @@
+use strict;
 use MIME::Base64;
 [
     {
         index => 0,
 	mime_type => 'x-message/rfc822-headers',
 	mime_entity => '',
-	subject => "an image\n",
-	from => "Rob nagler <nagler\@bivio.biz\n",
-	date => "Sat, 21 Jan 2006 11:15:05 -0700\n",
+	'->get_header subject' => 'an image',
+	'->get_header from' => 'Rob Nagler <nagler@bivio.biz>',
+	'->get_header date' => '2453757 65705',
     },
     {
         index => 1,
 	mime_type => 'text/plain',
-	mime_entity => "text\n",
+	'->get_file_name' => 'attachment1.txt',
+	mime_entity => "text\n\n",
     },
     {
         index => 2,
 	mime_type => 'image/gif',
-	mime_entity => MIME::Base64::decode('R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAEBMgA');
+	'->get_file_name' => 'dot.gif',
+	'->format_uri_for_part SITE_ROOT' => '/dot.gif?p=1&t=2',
+	mime_entity => MIME::Base64::decode('R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAEBMgA7'),
     },
 ];

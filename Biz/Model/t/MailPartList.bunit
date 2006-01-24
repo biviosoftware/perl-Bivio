@@ -1,16 +1,20 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
+req()->initialize_fully;
 [
     {
 	method => 'load_all',
 	check_return => sub {
 	    my($case, $actual, $expect) = @_;
+	    my($o) = $case->get('object');
 	    $case->actual_return([
 		map({
-		    $_->{subject}
-			= $_->{mime_entity}->head->get('subject')
-			if exists($_->{subject});
+		    $o->set_cursor_or_not_found($_->{index});
+		    foreach my $k (grep(s/^\-\>//, keys(%$_))) {
+			my($m, @a) = split(' ', $k);
+			$_->{"->$k"} = $o->$m(@a);;
+		    }
 		    $_->{mime_entity}
 			= $_->{mime_entity}->bodyhandle
 		          && $_->{mime_entity}->bodyhandle->as_string
@@ -26,7 +30,7 @@ ListModel();
 		content_ref => Bivio::IO::File->read($_),
 		parent_id => 1,
 	    }],
-	    do(($_ =~ /(.*)in$/)[0] . 'out'),
+	    (do(($_ =~ /(.*)in$/)[0] . 'out') || die($@)),
 	), glob('MailPartList/*.in')),
     ],
 ];

@@ -4,7 +4,8 @@ use MIME::Base64;
         index => 0,
 	mime_type => 'x-message/rfc822-headers',
 	mime_entity => '',
-	subject => "[fwd] first message\n",
+	'->get_header subject' => '[fwd] first message',
+	'->get_header date' => '2453759 17470',
     },
     {
         index => 1,
@@ -15,7 +16,7 @@ use MIME::Base64;
         index => 2,
 	mime_type => 'x-message/rfc822-headers',
 	mime_entity => '',
-	subject => "first message\n",
+	'->get_header subject' => 'first message',
     },
     {
         index => 3,
