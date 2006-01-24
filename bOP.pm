@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.63  2006/01/20 20:42:03  moeller
+  * Bivio::Agent::Dispatcher calls Request->process_cleanup() when
+    request has completed
+  * Bivio::Agent::Request added process_cleanup() to do any work outside
+    of the database commit
+  * Bivio::Delegate::SimpleTaskId loosen up locks
+  * Bivio::IO::File added temp_file() which returns the name of a
+    temporary file which is automatically cleaned up when the request
+    completes
+  * Bivio::SQL::PropertySupport added JobLock to unused_classes
+  * Bivio::ShellUtil calls Request->process_cleanup() when the request
+    has completed
+  * Bivio::UI::XHTML::ViewShortcuts added vs_paged_detail()
+  * added Bivio::UI::HTML::Widget::ProgressBar
+  * Bivio::Util::LinuxConfig _add_aliases needs to handle :include:/foo
+
   Revision 3.62  2006/01/19 21:46:05  nagler
   * Bivio::Biz::Model::EmailAlias added
   * Bivio::Biz::Model::MailReceiveDispatchForm checks for aliases if
