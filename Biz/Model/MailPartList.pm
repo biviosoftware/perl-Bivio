@@ -4,6 +4,7 @@ package Bivio::Biz::Model::MailPartList;
 use strict;
 use base 'Bivio::Biz::ListModel';
 use MIME::Parser ();
+use Bivio::Mail::Address;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = Bivio::Type->get_instance('DateTime');
@@ -66,8 +67,13 @@ sub get_file_name {
 sub get_header {
     my($self, $name) = @_;
     return ''
-	unless defined(my $v = $self->get('mime_entity')->head->get($name));
+	unless defined(my $v = $self->get('mime_entity')->head->get(
+	    $name =~ /^from_(name|email)$/ ? 'from' : $name));
     chomp($v);
+    if ($name =~ /^from_(name|email)$/) {
+	my($e, $n) = Bivio::Mail::Address->parse($v);
+	return ($name eq 'from_name' ? $n : $e) || '';
+    }
     return $name eq 'date' ? (Bivio::Type::DateTime->from_literal($v))[0] || ''
 	: $v;
 }
