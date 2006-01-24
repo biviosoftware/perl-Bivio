@@ -133,7 +133,7 @@ sub send {
 
     my($is_scalar) = ref($o) eq 'SCALAR';
     die('no reply generated, missing UI item on Task')
-	unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::File');
+	unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::Handle');
     my($size) = $is_scalar ? length($$o) : -s $o;
     # NOTE: The -s $o and the "stat(_)" below must be near each other
     if ($is_scalar) {
@@ -318,7 +318,7 @@ sub set_output {
     my($fields) = $self->[$_IDI];
     die('too many calls to set_output')
 	if $fields->{output};
-    die('not an IO::File, GLOB, or SCALAR reference')
+    die('not an IO::Handle, GLOB, or SCALAR reference')
 	unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
 	    || UNIVERSAL::isa($value, 'IO::Handle');
     $fields->{output} = $value;
