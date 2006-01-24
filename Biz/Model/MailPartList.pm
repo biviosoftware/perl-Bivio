@@ -6,6 +6,71 @@ use base 'Bivio::Biz::ListModel';
 use MIME::Parser ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_FN) = Bivio::Type->get_instance('FileName');;
+
+sub execute_from_realm_mail_list {
+    my($proto, $req) = @_;
+    $proto->new($req)->load_all({
+	parent_id => $req->get_nested(
+	    qw(Model.RealmMailList RealmMail.realm_file_id)),
+    });
+    return;
+}
+
+sub execute_part {
+    my($proto, $req) = @_;
+    # It's bad to pull the result from the request, but it should be reliable
+    $proto->execute_load_this($req);
+    my($self) = $req->get(ref($proto) || $proto);
+    $req->get('reply')
+	->set_output_type($self->get('mime_type'))
+	->set_output(\((
+	    $self->get('mime_entity')->bodyhandle
+		|| $self->throw_die('MODEL_NOT_FOUND')
+	    )->as_string));
+    return 1;
+}
+
+sub format_uri_for_part {
+    my($self, $task_id) = @_;
+    my($req) = $self->get_request;
+    $self->die(
+	$self->get('RealmFile.realm_id'), ': not same as auth_realm',
+    ) unless $req->get('auth_id') eq $self->get('RealmFile.realm_id');
+    return $self->get_request->format_uri({
+	task_id => $task_id,
+	path_info => $self->get_file_name,
+	query => {
+	    'ListQuery.parent_id' => $self->get_query->get('parent_id'),
+	    'ListQuery.this' => $self->get('index'),
+	},
+    });
+}
+
+sub get_body {
+    my($v) = shift->get('mime_entity')->bodyhandle;
+    return $v ? $v->as_string : '';
+}
+
+sub get_file_name {
+    my($self) = @_;
+    return $_FN->get_tail(
+	$self->get('mime_entity')->head->recommended_filename
+	    || ('attachment' . $self->get('index') . '.'
+	       . (Bivio::MIME::Type->to_extension(
+		   $self->get('mime_type') || '')
+		   || Bivio::MIME::Type->to_extension('application/octet'))));
+}
+
+sub get_header {
+    my($self, $name) = @_;
+    return ''
+	unless defined(my $v = $self->get('mime_entity')->head->get($name));
+    chomp($v);
+    return $name eq 'date' ? (Bivio::Type::DateTime->from_literal($v))[0] || ''
+	: $v;
+}
 
 sub internal_initialize {
     my($self) = @_;
@@ -29,8 +94,10 @@ sub internal_initialize {
 sub internal_load_rows {
     my($self, $query) = @_;
     my($index) = 0;
-    return [map({
+    my($rid) = $query->get('auth_id');
+    my($res) = [map({
 	$_->{index} = $index++;
+	$_->{'RealmFile.realm_id'} = $rid;
 	$_;
     } @{_walk(
 	_parser(
@@ -42,6 +109,9 @@ sub internal_load_rows {
 		})->get_content},
 	))},
     )];
+    return $res
+	unless my $t = $query->unsafe_get('this');
+    return [$res->[$t->[0]] || $self->throw_die('MODEL_NOT_FOUND')];
 }
 
 sub _parser {
