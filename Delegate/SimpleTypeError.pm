@@ -355,6 +355,11 @@ sub get_delegate_info {
 	undef,
 	'Outgoing email alias values must be an email address or simple name',
     ],
+    TIME_ZONE => [
+	59,
+	undef,
+	'Unknown or invalid time zone in date',
+    ],
 ];
 }
 
