@@ -38,5 +38,9 @@ Widget({
 	width => 2,
 	height => 3,
     }] => '<img border="0" height="3" width="2" src="/i/dot.gif" />',
+    ['/i/foo.gif', {
+	width => 2,
+	height => 3,
+    }] => '<img border="0" height="3" width="2" src="/i/foo.gif" />',
 ];
 

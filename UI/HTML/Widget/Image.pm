@@ -91,7 +91,8 @@ The html ID attribute.
 
 Image to use for C<SRC> attribute of C<IMG> tag.  I<src>'s
 get_widget_value returns a string,  which is looked up via
-L<Bivio::UI::Icon|Bivio::UI::Icon>.
+L<Bivio::UI::Icon|Bivio::UI::Icon> if it is a qualified name
+or it is used verbatim if it is a URI.
 
 =item src : string
 
@@ -183,9 +184,11 @@ Render the image.
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($src) = ${$self->render_attr('src', $source)};
+    my($src_is_uri) = $src =~ m{[/:]};
+    my($src_name) = $src_is_uri ? $src =~ m{([^/]+)\.\w+$} || '' : $src;
     my($b) = '<img';
     $self->SUPER::control_on_render($source, \$b);
-    $b .= qq{ class="$src"}
+    $b .= qq{ class="$src_name"}
 	if $b !~ /class=|id=/ && $_VS->vs_xhtml($source);
     $$buffer .= $b;
     my($alt) = $self->has_keys('alt') ? $self->render_simple_attr('alt')
@@ -194,7 +197,7 @@ sub control_on_render {
 	    'Image_alt.'
 	    . (defined($self->unsafe_get('alt_text'))
 	        ? $self->render_simple_attr('alt_text', $source)
-		: $src,
+		: $src_name,
 	    ),
 	);
     $$buffer .= ' alt="' . Bivio::HTML->escape_attr_value($alt) . '"'
@@ -210,16 +213,13 @@ sub control_on_render {
 	Bivio::UI::Align->as_html(delete($a->{align})),
 	delete($a->{attributes}),
 	map((length($a->{$_}) ? qq{ $_="$a->{$_}"} : ()), sort(keys(%$a))),
-    );
-    if (defined($self->unsafe_get('width'))) {
-	$$buffer .= ' src="' . Bivio::HTML->escape(
-            Bivio::UI::Icon->get_value($src, $source)->{uri}) . '"';
-	$src = undef;
-    }
-    else {
-	$$buffer .= Bivio::UI::Icon->format_html($src, $source);
-    }
-    $$buffer .= ' />';
+    ) . (
+	$src_is_uri ? qq{ src="$src"}
+	    : defined($self->unsafe_get('width'))
+	    ? (' src="' . Bivio::HTML->escape(
+		Bivio::UI::Icon->get_value($src, $source)->{uri}) . '"')
+	    : Bivio::UI::Icon->format_html($src, $source)
+    ) . ' />';
     return;
 }
 
