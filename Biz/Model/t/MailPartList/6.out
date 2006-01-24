@@ -6,6 +6,8 @@ use MIME::Base64;
 	mime_entity => '',
 	'->get_header subject' => '[fwd] first message',
 	'->get_header date' => '2453759 17470',
+	'->get_header from_name' => 'Rob Nagler',
+	'->get_header from_email' => 'nagler@bivio.biz',
     },
     {
         index => 1,
