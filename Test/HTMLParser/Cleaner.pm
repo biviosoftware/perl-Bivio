@@ -80,7 +80,7 @@ sub new {
     my($html) = $parser->get('html');
     $html =~ s/\015//g;
     $html =~ s/&nbsp;/ /g;
-    $html =~ s/<\/?(?:br|p)>/\n/ig;
+    $html =~ s/<\/?(?:br|p) ?\/?>/\n/ig;
     $html =~ s/\&\#\d+\;/*/g;
     return $proto->SUPER::new({
 	html => $html,
