@@ -1,5 +1,9 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+#
+# This acceptance test includes forum and forum member test
+# cases, given the business logic is coupled.
+#
 test_setup('PetShop');
 home_page();
 my($root) = '/dav';
@@ -13,8 +17,9 @@ test_conformance();
 basic_authorization('root');
 send_request(PROPFIND => $root);
 verify_text($root_forums);
+# Create a test forum to support multiple test runs
+# TODO: NEED TO DELETE THE FORUM so we don't get a proliferation
 send_request(GET => $root_forums);
-#TODO: NEED TO DELETE THE FORUM so we don't get a proliferation
 my($top) = "btest_" . random_string();
 my($dn) = "DAV $top BTEST";
 send_request(PUT => $root_forums, undef, get_content() . <<"EOF");
@@ -29,7 +34,7 @@ $csv =~ s/$dn/$dn $tag/ || die;
 send_request(PUT => $root_forums, undef, $csv);
 send_request(GET => $root_forums);
 verify_text($tag);
-my($users) = [map((generate_local_email("$_-" . random_string()))[0], 0 .. 4)];
+my($users) = [map((generate_local_email("$_-" . random_string()))[0], 0 .. 5)];
 my($top_members) = "$top_uri/Members.csv";
 send_request(GET => $top_members);
 send_request(PUT => $top_members, undef, get_content() . <<"EOF");
@@ -50,7 +55,7 @@ foreach my $line (split(/\n/, get_content())) {
 }
 die("only found: $found: $csv")
     unless $found == 3;
-# Add a child forum
+# Add a child forum (1 level nested)
 my($top_forums) = "$top_uri/Forums.csv";
 send_request(GET => $top_forums);
 send_request(PUT => $top_forums, undef, get_content() . <<"EOF");
@@ -60,30 +65,83 @@ EOF
 send_request(GET => $top_forums);
 ($csv = get_content()) =~ s/^\Q$top-s1,s1,/$top-sub1,sub forum 1,/m || die;
 send_request(PUT => $top_forums, undef, $csv);
-# Verify existing admin shows up in child forum
+# Add another child forum (2 levels nested)
+my($sub1_forums) = "$top_uri/$top-sub1/Forums.csv";
+send_request(GET => $sub1_forums);
+send_request(PUT => $sub1_forums, undef, get_content() . <<"EOF");
+$top-sub1a,sub forum 1a
+EOF
+# Verify existing admin shows up in child forums
 my($sub1_members) = "$top_uri/$top-sub1/Members.csv";
 send_request(GET => $sub1_members);
 get_content() =~ /\Q$users->[1],1,1,/ || die;
-# Add an admin at the child forum level
+my($sub1a_members) = "$top_uri/$top-sub1/$top-sub1a/Members.csv";
+send_request(GET => $sub1a_members);
+get_content() =~ /\Q$users->[1],1,1,/ || die;
+# Add an admin at a child forum level
 send_request(GET => $sub1_members);
 send_request(PUT => $sub1_members, undef, get_content() . <<"EOF");
 $users->[3],1,0,1
 EOF
-# Verify that new admin appears in top forum
+# Verify add, noting that write permission auto-enabled for admins
+send_request(GET => $sub1_members);
+get_content() =~ /\Q$users->[3],1,1,1,/ || die;
+# Verify FILE_WRITER permission for existing admin can't be removed -- it currently can be
+send_request(GET => $sub1_members);
+($csv = get_content()) =~ s/^(\Q$users->[3]\E),1,1,1/$1,1,0,1/m || die;
+send_request(PUT => $sub1_members, undef, $csv);
+send_request(GET => $sub1_members);
+#get_content() =~ /\Q$users->[3],1,1,1,/ || die;  #TODO: can't disable?
+get_content() =~ /\Q$users->[3],1,0,1,/ || die;
+# Verify that new admin appears in top forum as non-admin
 send_request(GET => $top_members);
 get_content() =~ /\Q$users->[3],1,0,0,/ || die;
-# Add a member at top forum level
+# Add an admin at top forum level and verify in child forums
 send_request(PUT => $top_members, undef, get_content() . <<"EOF");
 $users->[4],0,0,1
 EOF
 send_request(GET => $sub1_members);
 get_content() =~ /\Q$users->[4],0,1,1,/ || die;
-# Remove a member at child forum level
+send_request(GET => $sub1a_members);
+get_content() =~ /\Q$users->[4],0,1,1,/ || die;
+# Remove new admin at child forum level
+send_request(GET => $sub1_members);
 ($csv = get_content()) =~ s/^\Q$users->[4]\E,.+\n//m || die;
 send_request(PUT => $sub1_members, undef, $csv);
 send_request(GET => $sub1_members);
-get_content() !~ /\Q$users->[4],0,1,1,/ || die;
+get_content() !~ /\Q$users->[4]/ || die;
+# Add a non-admin at the lowest child forum level
+send_request(GET => $sub1a_members);
+send_request(PUT => $sub1a_members, undef, get_content() . <<"EOF");
+$users->[5],0,0,0
+EOF
+# Make them an admin at the top level
+send_request(GET => $top_members);
+($csv = get_content()) =~ s/^(\Q$users->[5]\E),1,0,0/$1,1,1,1/m || die;
+send_request(PUT => $top_members, undef, $csv);
+# Verify how that update propagates -- this currently does not
+# NOTE: Add above did not specify that non-admin was subscribed,
+# but they were subscribed when added to the higher level forums.
+send_request(GET => $top_members);
+get_content() =~ /\Q$users->[5],1,1,1,/ || die;
+send_request(GET => $sub1_members);
+#get_content() =~ /\Q$users->[5],1,1,1,/ || die;  #TODO: update recurses?
+get_content() =~ /\Q$users->[5],1,0,0,/ || die;
+send_request(GET => $sub1a_members);
+#get_content() =~ /\Q$users->[5],1,1,1,/ || die;  #TODO: update recurses?
+get_content() =~ /\Q$users->[5],0,0,0,/ || die;
+# Delete admin member from top level
+send_request(GET => $top_members);
+($csv = get_content()) =~ s/^\Q$users->[5]\E,.+\n//m || die;
+send_request(PUT => $top_members, undef, $csv);
+send_request(GET => $top_members);
+get_content() !~ /\Q$users->[5]/ || die;
+send_request(GET => $sub1_members);
+get_content() !~ /\Q$users->[5]/ || die;
+send_request(GET => $sub1a_members);
+get_content() !~ /\Q$users->[5]/ || die;
 # Test ignore of empty line in CSV
+send_request(GET => $sub1_members);
 ($csv = get_content()) =~ s/^(\Q$users->[3]\E)/\n$1/m || die;
 send_request(PUT => $sub1_members, undef, $csv);
 send_request(GET => $sub1_members);
@@ -91,17 +149,13 @@ my($lc) = (get_content() =~ tr/\n//);
 die unless $lc == 4;  #3 members + header line
 # Test ignore of line with spaces in CSV
 ($csv = get_content()) =~ s/^(\Q$users->[3]\E)/   \n$1/m || die;
-Bivio::IO::Alert->info($csv);
 send_request(PUT => $sub1_members, undef, $csv);
 send_request(GET => $sub1_members);
 $lc = (get_content() =~ tr/\n//);
 die unless $lc == 4;
 # Test ignore of line with commas in CSV
 ($csv = get_content()) =~ s/^(\Q$users->[3]\E)/,,,\n$1/m || die;
-Bivio::IO::Alert->info($csv);
 send_request(PUT => $sub1_members, undef, $csv);
 send_request(GET => $sub1_members);
 $lc = (get_content() =~ tr/\n//);
 die unless $lc == 4;
-# TODO: Test writing .DS_Store and retrieval(?)
-# TODO: Test editing admin or mail recipient property for member
