@@ -630,8 +630,23 @@ sub _merge_statements {
     my($self, $other) = @_;
     return unless $other;
 
-    # TODO: more needs to be done here.
+    # merge WHERE
     $self->where($other->[$_IDI]->{where});
+
+    # merge FROM
+    # TODO: more needs to be done here.
+    foreach my $model (keys %{$other->[$_IDI]->{from}}) {
+	$self->[$_IDI]->{from}->{$model} = $self->[$_IDI]->{_models}->{$model}
+	    = $other->[$_IDI]->{from}->{$model}
+		unless exists $self->[$_IDI]->{_models}->{$model};
+    }
+
+#     foreach my $model (keys %{$other->[$_IDI]->{_models}}) {
+#         unless (grep($_ eq $model, keys %{$self->[$_IDI]->{_models}})) {
+#             Bivio::Die->die('failed to merge model: ', $model);
+#         }
+#     }
+
     return;
 }
 
