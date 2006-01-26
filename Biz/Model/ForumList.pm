@@ -18,6 +18,10 @@ sub internal_initialize {
 	    },
 	    'RealmOwner.display_name',
 	],
+	other => [
+	    'Forum.is_public_email',
+	    'Forum.want_reply_to',
+	],
 	auth_id => ['Forum.parent_realm_id'],
     });
 }

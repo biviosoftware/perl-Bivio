@@ -518,6 +518,8 @@ sub internal_upgrade_db_forum {
 CREATE TABLE forum_t (
   forum_id NUMERIC(18) NOT NULL,
   parent_realm_id NUMERIC(18) NOT NULL,
+  want_reply_to NUMERIC(1) NOT NULL,
+  is_public NUMERIC(1) NOT NULL,
   CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
 )
 /
@@ -595,6 +597,14 @@ CREATE INDEX forum_t3 on forum_t (
   parent_realm_id
 )
 /
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t4
+  CHECK (want_reply_to BETWEEN 0 AND 1)
+/
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t5
+  CHECK (is_public_email BETWEEN 0 AND 1)
+/
 EOF
     my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
     $rr->copy_all(club => 'forum');
@@ -641,6 +651,81 @@ sub internal_upgrade_db_file_writer {
     );
     return;
 }
+
+=for html <a name="internal_upgrade_db_forum_bits"></a>
+
+=head2 internal_upgrade_db_forum_bits()
+
+Adds Forum.is_public_email and want_reply_to
+
+=cut
+
+sub internal_upgrade_db_forum_bits {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE forum_t
+    ADD COLUMN want_reply_to NUMERIC(1)
+/
+ALTER TABLE forum_t
+    ADD COLUMN is_public_email NUMERIC(1)
+/
+UPDATE forum_t
+    SET want_reply_to = 0, is_public_email = 0;
+/
+ALTER TABLE forum_t
+    ALTER COLUMN want_reply_to SET NOT NULL
+/
+ALTER TABLE forum_t
+    ALTER COLUMN is_public_email SET NOT NULL
+/
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t4
+  CHECK (want_reply_to BETWEEN 0 AND 1)
+/
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t5
+  CHECK (is_public_email BETWEEN 0 AND 1)
+/
+EOF
+    return;
+}
+
+=for html <a name="internal_upgrade_db_job_lock"></a>
+
+=head2 internal_upgrade_db_job_lock()
+
+Adds Forum.is_public_email and want_reply_to
+
+=cut
+
+sub internal_upgrade_db_job_lock {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE job_lock_t (
+  realm_id NUMERIC(18) NOT NULL,
+  task_id NUMERIC(9) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  hostname VARCHAR(100) NOT NULL,
+  pid NUMERIC(9) NOT NULL,
+  percent_complete NUMERIC(20,6),
+  message VARCHAR(500),
+  die_code NUMERIC(9),
+  constraint job_lock_t1 PRIMARY key(realm_id, task_id)
+)
+/
+ALTER TABLE job_lock_t
+  add constraint job_lock_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX job_lock_t3 on job_lock_t (
+  realm_id
+)
+/
+EOF
+    return;
+}
+
 
 sub internal_upgrade_db_mail {
     my($self) = @_;

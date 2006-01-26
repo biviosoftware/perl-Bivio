@@ -15,12 +15,15 @@ sub PUBLIC_FOLDER {
 }
 
 sub create_realm {
-    my($self, $realm_owner) = @_;
+    my($self, $forum, $realm_owner) = @_;
+    $forum->{want_reply_to} ||= 0;
+    $forum->{is_public_email} ||= 0;
     my($req) = $self->get_request;
     my($ro) = $self->new_other('RealmOwner')->create({
 	%$realm_owner,
 	realm_type => Bivio::Auth::RealmType->FORUM,
 	realm_id => $self->create({
+	    %$forum,
 	    parent_realm_id => $req->get('auth_id'),
 	})->get('forum_id'),
     });
@@ -48,6 +51,8 @@ sub internal_initialize {
             forum_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    # Don't link
 	    parent_realm_id => ['PrimaryId', 'NOT_NULL'],
+	    want_reply_to => ['Boolean', 'NOT_NULL'],
+	    is_public_email => ['Boolean', 'NOT_NULL'],
         },
 	auth_id => 'forum_id',
     });

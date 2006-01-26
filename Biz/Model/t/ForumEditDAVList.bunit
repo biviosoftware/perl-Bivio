@@ -19,7 +19,7 @@ my($forum_count) = sub {
 	dav_put => [
 	    [\(my $x = <<'EOF')] => not_die(),
 ignore
-fedl1,ForumEditDAVList1
+fedl1,ForumEditDAVList1,0,1
 EOF
         ],
 
@@ -27,7 +27,7 @@ EOF
 	dav_put => [
 	    sub {[\(my $x = <<"EOF")]} => not_die(),
 ignore
-fedl1,ForumEditDAVList1 now,@{[Bivio::Biz::Model->new(req(), 'RealmOwner')->unauth_load_or_die({name => 'fedl1'})->get('realm_id')]}
+fedl1,ForumEditDAVList1 now,0,1,@{[Bivio::Biz::Model->new(req(), 'RealmOwner')->unauth_load_or_die({name => 'fedl1'})->get('realm_id')]}
 fedl2,My OTher forum
 EOF
         ],

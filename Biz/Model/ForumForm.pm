@@ -11,14 +11,8 @@ sub execute_empty {
     my($self) = @_;
     my($req) = $self->get_request;
     return unless _is_forum($req);
-    my($r) = $req->get('auth_realm');
-    $self->load_from_model_properties($r->get('owner'));
-    my($u) = $req->get('auth_user');
-    $req->set_user(undef);
-    $self->internal_put_field(
-	is_public => $r->does_user_have_permissions(['MAIL_SEND'], $req),
-    );
-    $req->set_user($u);
+    $self->load_from_model_properties($req->get_nested(qw(auth_realm owner)));
+    $self->load_from_model_properties('Forum');
     return unless _is_create($req);
     $self->internal_put_field('RealmOwner.name' =>
 	$self->get('RealmOwner.name') . '-');
@@ -36,16 +30,19 @@ sub execute_ok {
     my($req) = $self->get_request;
     if (_is_create($req)) {
 	my($f, $ro) = $self->new_other('Forum')->create_realm(
+	    $self->get_model_properties('Forum'),
 	    $self->get_model_properties('RealmOwner'),
 	);
 	$req->set_realm($ro);
     }
     else {
 	$self->update_model_properties('RealmOwner');
+	$self->update_model_properties('Forum');
     }
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Util::RealmRole')
         ->edit_categories(
-	    ($self->unsafe_get('is_public') ? '+' : '-') . 'public_forum',
+	    ($self->unsafe_get('Forum.is_public_email') ? '+' : '-')
+		. 'public_forum_email',
 	);
     return;
 }
@@ -60,11 +57,8 @@ sub internal_initialize {
 		name => 'RealmOwner.name',
 		type => 'ForumName',
 	    },
-	    {
-		name => 'is_public',
-		type => 'Boolean',
-		constraint => 'NOT_NULL',
-	    },
+	    'Forum.is_public_email',
+	    'Forum.want_reply_to',
 	],
 	auth_id => ['RealmOwner.realm_id', 'Forum.forum_id'],
 	other => [
