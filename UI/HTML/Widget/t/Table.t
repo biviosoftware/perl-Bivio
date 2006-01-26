@@ -26,7 +26,7 @@ Bivio::Test::Widget->unit(
 	    [{expand => 1}, {width => '95%'}],
 	    {width => '100%'},
 	    {border => 1},
-	    [{title => 'Reptiles'}, {title => qq{\n<tr><td colspan="2"><font face="arial,sans-serif"><b><br>Reptiles<br></b></font></td>\n</tr>}}],
+	    [{title => 'Reptiles'}, {title => qq{\n<tr><td colspan="2"><font face="arial,sans-serif"><b><br />Reptiles<br /></b></font></td>\n</tr>}}],
 	    [{class => 'reptiles'}, _chomp(<<'EOF')],
 
 <table class="reptiles">
