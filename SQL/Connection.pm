@@ -56,12 +56,12 @@ sub CAN_LIMIT_AND_OFFSET {
 Maximum length of a blob.  You cannot retrieve blobs larger than this.
 You can only have one blob per record.
 
-Returns 0x400_000
+Returns 0x4_000_000
 
 =cut
 
 sub MAX_BLOB {
-    return 0x400_000;
+    return 0x4_000_000;
 }
 
 =for html <a name="MAX_PARAMETERS"></a>
