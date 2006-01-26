@@ -257,8 +257,8 @@ Add CalendarEvent table
 
 sub internal_upgrade_db {
     my($self) = @_;
-    $self->internal_upgrade_db_calendar_event;
-    _init_demo_calendar($self);
+    $self->internal_upgrade_db_forum_bits;
+    $self->internal_upgrade_db_job_lock;
     return;
 }
 
