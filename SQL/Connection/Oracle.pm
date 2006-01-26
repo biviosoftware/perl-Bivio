@@ -95,9 +95,6 @@ my($_ERR_RETRY_SLEEP) = {
     12571 => 2,
 };
 
-# Allow for a bit larger space than maximum blob
-my($_MAX_BLOB) = int(__PACKAGE__->MAX_BLOB() * 1.1);
-
 =head1 METHODS
 
 =cut
@@ -126,7 +123,7 @@ sub internal_dbi_connect {
     my($dbh) = shift->SUPER::internal_dbi_connect(@_);
     # In later DBD::Oracle versions, this parameter is set here, not on
     # the $statement
-    $dbh->{LongReadLen} = $_MAX_BLOB;
+    $dbh->{LongReadLen} = __PACKAGE__->MAX_BLOB;
     $dbh->{LongTruncOk} = 0;
     return $dbh;
 }
