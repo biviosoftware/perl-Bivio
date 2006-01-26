@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.64  2006/01/24 05:34:15  nagler
+  * Bivio::Type::DateTime->from_literal supports full RFC822 date parsing
+    including time zone.
+  * Bivio::Mail::Incoming->get_date_time uses DateTime->from_literal
+  * Bivio::Biz::Model::MailPartList added
+  * Bivio::UI::HTML::Widget::Image supports any href, not just Icons
+  * Bivio::UI::Widget::List moved from Bivio::UI::Text::Widget::List
+  * Bivio::UI::HTML::Widget::String.hard_newlines convert generates
+    proper XHTML
+  * Bivio::Biz::Model::UserBaseDAVList added
+  * Bivio::Biz::Model::UserForumDAVList subclasses above
+  * Bivio::Biz::Model:RealmUserAddForm.other_roles allows arbitrary number
+    of roles to be added per user
+
   Revision 3.63  2006/01/20 20:42:03  moeller
   * Bivio::Agent::Dispatcher calls Request->process_cleanup() when
     request has completed
