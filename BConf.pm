@@ -215,7 +215,7 @@ sub merge_realm_role_category_map {
 	    return [
 	    $new ? @{$new->()} : (),
 	    [
-		public_forum =>
+		public_forum_email =>
 		    [[qw(ANONYMOUS USER)] => 'MAIL_SEND'],
 	    ],
         ];
