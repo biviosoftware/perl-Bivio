@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Language::HTTP;
 use strict;
@@ -548,6 +548,30 @@ sub reload_page {
     defined($uri) ? $self->visit_uri($uri) :
 	$self->visit_uri($self->get_uri());
     return;
+}
+
+=for html <a name="send_mail"></a>
+
+=head2 send_mail(string from_email, string to_email) : Bivio::Mail::Outgoing
+
+Send a message.  Returns the object.  Sets subject and body to unique values.
+
+=cut
+
+sub send_mail {
+    my($self, $from_email, $to_email) = @_;
+    my($r) = $self->random_string();
+    my($req) = Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
+	->get_current_or_new;
+    my($o) = Bivio::IO::ClassLoader ->simple_require('Bivio::Mail::Outgoing')
+	->new;
+    $o->set_recipients($to_email);
+    $o->set_header(To => $to_email);
+    $o->set_header(Subject => "subj-$r");
+    $o->set_body("Any unique $r body\n");
+    $o->add_missing_headers($from_email, $req);
+    $o->send($req);
+    return $o;
 }
 
 =for html <a name="send_request"></a>
@@ -1220,7 +1244,6 @@ sub _validate_text_field {
 #
 sub _verify_form_field {
     my($self, $control, $case) = @_;
-	
     if ($control->{type} eq 'checkbox') {
 	$case->{expected} = 0
 	    unless defined($case->{expected});
@@ -1252,7 +1275,7 @@ sub _verify_form_option {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
