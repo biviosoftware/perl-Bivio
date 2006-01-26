@@ -20,7 +20,7 @@ sub execute {
 	->set_headers_for_list_send(
 	    $n,
 	    $req->get_nested(qw(auth_realm owner display_name)),
-	    0,
+	    $mr->new_other('Forum')->load->get('want_reply_to'),
 	    "[$n]",
 	    $req,
         )->enqueue_send($req);
