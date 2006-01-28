@@ -115,7 +115,7 @@ sub _create_file {
 	    override_is_read_only => 1,
 	    path => $self->get_instance('Forum')->MAIL_FOLDER
 		. '/'
-		. join('-', $_DT->get_parts($date, qw(year month)))
+		. sprintf('%04d-%02d', $_DT->get_parts($date, qw(year month)))
 		. '/'
 		. _chomp_subject($in->get_subject, 1)
 		. ' '
