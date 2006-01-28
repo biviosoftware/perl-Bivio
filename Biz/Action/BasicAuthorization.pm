@@ -34,7 +34,7 @@ sub execute {
 	    if ($ro && !$f->in_error) {
 		$req->set_user($ro);
 		$req->get('r')->connection->user(
-		    ($su ? "sb-$su-" : '')
+		    ($su ? "su-$su-" : '')
 		    . 'ba-' . $req->get('auth_user_id'));
 		return 0;
 	    }
