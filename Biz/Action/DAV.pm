@@ -323,23 +323,19 @@ sub _load {
     $req->set_realm($realm);
     my($tid) = $req->get('task')->get('next');
     $req->put(path_info => defined($path) ? $path : '');
-    while (1) {
+    while ($tid) {
 	_trace($tid, ' ', $req) if $_TRACE;
 	my($t) = Bivio::Agent::Task->get_by_id($tid);
-	$realm = $req->get('auth_realm');
-	last if !$realm->can_user_execute_task($t, $req)
-	    || ($is_dest || $s->{method} =~ $_WRITABLE)
-	    && !_has_write_permission($realm, $t, $req);
+#TODO: It's not clear if this is over-restrictive.  However, 
+	last unless $req->get('auth_realm')->can_user_execute_task($t, $req);
 	$req->put(task_id => $tid, task => $t);
 	if ($t->unsafe_get('require_dav')
 	    || grep(($_->[0] || '') =~ /DAV/, @{$t->get('items')})) {
 	    $tid = ($req->get('task')->execute_items($req))[0];
-	    next if $tid;
+	    next;
 	}
-	else {
-	    Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
-	    $tid = undef;
-	}
+	Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
+	$tid = undef;
 	last;
     }
     my($task) = $req->get('task');
@@ -353,6 +349,16 @@ sub _load {
     my($m) = $req->unsafe_get('dav_model');
     unless ($m) {
 	_output($s, NOT_FOUND => 'No such resource: ', $path);
+	return;
+    }
+#TODO: This is the wrong place to test security, but it works.
+#      The problem is that the task has already executed, and we're rolling
+#      back the transaction.  It's unlikely the user will get here so it's
+#      probably ok, but we should review this at some point.
+    if (($is_dest || $s->{method} =~ $_WRITABLE)
+	&& !_has_write_permission($realm, $task, $req)
+    ) {
+	_output($s, FORBIDDEN => 'No write access');
 	return;
     }
     return $m;
