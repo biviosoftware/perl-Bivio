@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.66  2006/01/26 23:17:26  nagler
+  * Bivio::Test::Language::HTTP->send_mail added
+  * Bivio::Biz::Model::Forum.is_public_email and want_reply_to added with
+    support to all the Forum forms and lists
+  * Bivio::Util::SQL->internal_upgrade_db_job_lock and
+    internal_db_upgrade_forum_bits added
+  * Bivio::SQL::Statement supports "from" clause in anonymous models
+
   Revision 3.65  2006/01/26 17:38:04  moeller
   * Bivio::SQL::Connection increased database MAX_BLOB size to 0x4_000_000
   * Bivio::Test::HTMLParser::Cleaner match change to <br /> in
