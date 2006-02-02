@@ -424,6 +424,13 @@ sub get_delegate_info {
             Action.ForumMail
             Action.MailReceiveStatus->execute
         )],
+	[qw(
+            FORUM_EASY_FORM
+            43
+            FORUM
+            ANYBODY
+            Action.EasyForm
+        )],
     ];
 }
 

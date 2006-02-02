@@ -188,6 +188,7 @@ my($_SELF) = __PACKAGE__->new({
 	    USER_FILE_READ => '?/file/*',
 	    USER_DAV => '?/dav/*',
 	    DAV => 'dav/*',
+	    FORUM_EASY_FORM => '?/EasyForm/*',
         ]));
 	return;
     },
