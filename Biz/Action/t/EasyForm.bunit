@@ -1,0 +1,53 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+set_realm_and_user(qw(fourem root));
+my($csv) = '/EasyForm/bunit.csv';
+my($log) = '/EasyForm/Error.log';
+my($rf) = Bivio::Biz::Model->new('RealmFile');
+$rf->delete({path => $csv});
+$rf->delete({path => $log});
+$rf->create_with_content({
+    path => $csv,
+}, \(<<'EOF'));
+&date,&client_addr,&email,a,b,C
+EOF
+commit();
+ignore_redirects(1);
+[
+    class() => [
+	{
+	    method => 'execute',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->put_durable(
+		    form => $params->[0],
+		    path_info => $params->[1] || 'bunit',
+		    task_id => Bivio::Agent::TaskId->from_name(
+			$params->[2] || 'FORUM_EASY_FORM'),
+		    query => {goto => 'http://www.bivio.biz'},
+		    is_deviance => @$params > 1,
+		);
+		return [req()];
+	    },
+	    compute_return => sub {
+		commit();
+		return [$rf->load({
+		    path => req()->get('is_deviance') ? $log : $csv
+		})->get_content];
+	    },
+	} => [
+	    [
+		{a => '1'},
+	    ] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,1,,\n},
+	    [
+		{a => 1, B => 2, c => 3},
+	    ] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,1,2,3\n},
+	    [{a => 1, not_found => 3}, undef] =>
+		qr{EasyForm/bunit.csv: failed with error: \[not_found\]\: unexpected fields submitted\n\&client_addr,\&date,\&email,a,not_found\n127.0.0.1,.*,root\@bivio.biz,1,3\n}s,
+	    [{a => 1}, 'nosuchfile'] => qr{CSV file not found},
+	    [{a => 1}, undef, 'ROBOTS_TXT'] => qr{directory not found},
+	    [undef] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,,,\n},
+	],
+    ],
+];
