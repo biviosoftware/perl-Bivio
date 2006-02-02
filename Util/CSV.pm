@@ -93,25 +93,32 @@ sub colrm {
 
 =for html <a name="parse"></a>
 
-=head2 static parse(string_ref csv_text) : array_ref
+=head2 parse() : array_ref
 
-=head2 static parse(string_ref csv_text, boolean want_line_numbers) : array_ref
+=head2 parse(string_ref csv_text) : array_ref
 
-Parses the CSV text file into an array of array rows.
+=head2 parse(string_ref csv_text, boolean want_line_numbers) : array_ref
+
+Parses I<csv_text> into an array of array rows. if I<csv_text> not supplied,
+read_input is called.  I<csv_text> may also be a string (need not be a ref).
+Note that I<csv_text> may be appended with a trailing \n, if it is a ref.
+
 Embedded CR LF or CR values are converted to LF ("\n").
 Dies on failure with an appropriate message.
 
-If want_line_numbers is specified, then the first item of each row
+If I<want_line_numbers> is specified, then the first item of each row
 will contain the line number from the input text.
 
 =cut
 
 sub parse {
-    my($proto, $csv_text, $want_line_numbers) = @_;
-    $$csv_text .= "\n"
-        unless $$csv_text =~ /(\r|\n)$/;
+    my($self, $csv_text, $want_line_numbers) = @_;
+    my($buf) = !defined($csv_text) ? $self->read_input
+	: ref($csv_text) ? $csv_text : \$csv_text;
+    $$buf .= "\n"
+        unless $$buf =~ /(\r|\n)$/;
     my($state) = {
-        buffer => $csv_text,
+        buffer => $buf,
         want_line_numbers => $want_line_numbers,
         char_count => 0,
         line_number => 1,

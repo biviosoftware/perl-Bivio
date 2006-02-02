@@ -43,7 +43,7 @@ Bivio::Test->unit([
             ],
         ],
         parse => [
-            [\(qq{1,,2\n,,"\r\n\n\r",3,4\n\n"the,end"\n})]
+            [qq{1,,2\n,,"\r\n\n\r",3,4\n\n"the,end"\n}]
                 => [[
                     [1, '', 2],
                     ['', '', "\n\n\n",3,4],
