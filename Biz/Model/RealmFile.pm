@@ -15,9 +15,7 @@ our($_TRACE);
 sub append_content {
     my($self, $content) = @_;
 #TODO: Optimize to only append the file.
-    return $self->update_with_content({
-	override_is_read_only => 1,
-    }, \(${$self->get_content} . $$content));
+    return $self->update_with_content({}, \(${$self->get_content} . $$content));
 }
 
 sub copy_deep {
