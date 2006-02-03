@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Request;
 use strict;
@@ -116,6 +116,28 @@ sub capture_mail {
 	);
     }
     return $self;
+}
+
+=for html <a name="client_redirect"></a>
+
+=head2 client_redirect(...)
+
+Only does something if ignore_client_redirect is set on self.
+
+=cut
+
+sub client_redirect {
+    return shift->SUPER::client_redirect(@_)
+	unless $_[0]->unsafe_get('ignore_client_redirect');
+    my($self, $named) =  shift->internal_get_named_args(
+	ref($_[0]) && (ref($_[0]) ne 'HASH' || $_[0]->{task_id})
+	    ? [qw(task_id realm query path_info no_context require_context)]
+	    : [qw(uri query no_context)],
+	\@_,
+    );
+    $self->clear_nondurable_state;
+    $self->put_durable(%$named);
+    return;
 }
 
 =for html <a name="commit"></a>
@@ -411,7 +433,7 @@ sub unsafe_get_captured_mail {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
