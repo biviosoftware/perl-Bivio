@@ -1,0 +1,16 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+my($r) = random_string();
+foreach my $u ('', 'root') {
+    home_page();
+    login_as($u)
+	if $u;
+    visit_uri('/fourem/pub/EasyForm-btest.html');
+    submit_form(OK => {
+	'Input:' => "$u$r",
+    });
+    verify_text('completed');
+}
+visit_uri('/fourem/file/EasyForm/btest.csv');
+verify_text(qr{\n[^,]+,,$r,OK\n[^,]+,root\@bivio.biz,root$r,OK\n});
