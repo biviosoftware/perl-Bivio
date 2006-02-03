@@ -60,6 +60,7 @@ commands:
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
     info -- dump info on a realm
+    users -- dump users in realm
 EOF
 }
 
