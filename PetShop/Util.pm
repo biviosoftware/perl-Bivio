@@ -538,7 +538,7 @@ sub _init_forum {
     }, \(<<'EOF'));
 <html>
 <body>
-<form action="/fourem/EasyForm/btest?goto=/fourem/pub/EasyForm-btest-done.html">
+<form method="POST" action="/fourem/EasyForm/btest?goto=/fourem/pub/EasyForm-btest-done.html">
 <table>
 <tr>
 <td>Input:</td>
