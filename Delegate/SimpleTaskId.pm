@@ -431,6 +431,13 @@ sub get_delegate_info {
             ANYBODY
             Action.EasyForm
         )],
+ 	[qw(
+ 	    FORUM_PUBLIC_FILE
+ 	    44
+ 	    FORUM
+ 	    ANYBODY
+ 	    Action.RealmFile->execute_public
+ 	)],
     ];
 }
 
