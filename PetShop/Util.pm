@@ -526,10 +526,46 @@ sub _init_forum {
     my($self) = @_;
     my($req) = $self->get_request;
     $req->set_realm(undef);
+    $req->set_user($self->ROOT);
     Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
         'RealmOwner.display_name' => 'Unit Test Forum',
 	'RealmOwner.name' => $self->FOUREM,
     });
+    # Must agree with easy-form.btest (or test will fail)
+    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+	path => 'Public/EasyForm-btest.html',
+	is_public => 1,
+    }, \(<<'EOF'));
+<html>
+<body>
+<form action="/fourem/EasyForm/btest?goto=/fourem/pub/EasyForm-btest-done.html">
+<table>
+<tr>
+<td>Input:</td>
+<td><input type="text" name="input" /></td>
+</tr><tr>
+<td><input type="submit" name="ok" value="OK" /></td>
+</tr>
+</table>
+</form>
+</body>
+</html>
+EOF
+    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+	path => 'Public/EasyForm-btest-done.html',
+	is_public => 1,
+    }, \(<<'EOF'));
+<html>
+<body>
+completed
+</body>
+</html>
+EOF
+    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+	path => 'EasyForm/btest.csv',
+    }, \(<<'EOF'));
+&date,&email,input,ok
+EOF
     return;
 }
 
