@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.68  2006/01/28 21:34:51  nagler
+  * Rolled back 1.27 revision (bOP 3.58) of Bivio::Biz::Action::DAV,
+    because it was to strict, and didn't allow proper traversals (user
+    only needs read access to follow the path).
+
   Revision 3.67  2006/01/28 17:47:37  nagler
   * Bivio::Biz::Model::RealmMail->create was storing mail in folders
     without leading zeros (2006-1) after the 1/24 release.
