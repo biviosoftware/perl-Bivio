@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Util;
 use strict;
@@ -571,7 +571,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
