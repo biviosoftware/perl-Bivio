@@ -50,3 +50,30 @@ test_deviance('forbidden');
 send_request(COPY => '/guest/dav/files/private/file.html', {
     Destination => $x,
 });
+test_conformance();
+
+# Defect on 1/28/2005
+basic_authorization('root');
+my($user) = generate_local_email(random_string());
+send_request(GET => my $root_forums = '/dav/Forums.csv');
+my($top) = "btest_" . random_string();
+my($dn) = "DAV $top BTEST";
+send_request(PUT => $root_forums, undef, get_content() . <<"EOF");
+$top,$dn
+EOF
+send_request(GET => $root_forums);
+my($root_forums_csv) = get_content();
+my($top_uri) = "/dav/$top";
+my($top_members) = "$top_uri/Members.csv";
+send_request(GET => $top_members);
+send_request(PUT => $top_members, undef, get_content() . "$user,1,1,1\n");
+basic_authorization("root>$user");
+send_request(GET => $top_members);
+(my $csv = get_content()) =~ s/(?<=^\Q$user\E,)1/0/m || die;
+send_request(PUT => $top_members, undef, $csv);
+# End
+
+# Make sure an admin at a lower level can't get at a higher level
+test_deviance(qr{forbidden}i);
+send_request(GET => $root_forums);
+send_request(PUT => $root_forums, undef, $root_forums_csv . "davp1,DAV Permission\n");
