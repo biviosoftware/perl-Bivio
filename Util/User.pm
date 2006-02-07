@@ -16,16 +16,18 @@ EOF
 }
 
 sub create_from_email {
-    my($self, $email) = @_;
+    my($self, $email, $password) = @_;
     my($u) = $email =~ /^(\w+)/;
     $self->usage_error($email, ': does not begin with user name')
 	unless $u;
-    my($p1) = Bivio::IO::TTY->read_password("${u}'s password: ");
-    my($p2) = Bivio::IO::TTY->read_password("retype ${u}'s password: ");
-    $self->usage_error('password mismatch, try again')
-	unless $p1 eq $p2;
+    unless ($password) {
+	$password = Bivio::IO::TTY->read_password("${u}'s password: ");
+	my($p2) = Bivio::IO::TTY->read_password("retype ${u}'s password: ");
+	$self->usage_error('password mismatch, try again')
+	    unless $password eq $p2;
+    }
     $self->new_other('Bivio::Util::RealmAdmin')->create_user(
-	$email, $u, $p1, $u);
+	$email, $u, $password, $u);
     $self->set_realm_and_user($u, $u);
     Bivio::Biz::Model->new($self->get_request, 'RealmFile')->create_folder({
 	    path => Bivio::Biz::Model->get_instance('Forum')->PUBLIC_FOLDER,
