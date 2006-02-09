@@ -548,7 +548,8 @@ sub parse_uri {
     my($name) = $_RN->unsafe_from_uri($uri[0]);
     unless (defined($name) && $self->has_uri(Bivio::Agent::TaskId->USER_HOME)) {
 	# Not a realm, so try site_root
-	_trace($orig_uri, ' => site_root') if $_TRACE;
+	_trace($orig_uri, ' => site_root (no name or no USER_HOME uri')
+	    if $_TRACE;
 	return ($fields->{site_root}, $_GENERAL, '/'.$uri, $orig_uri);
     }
 
