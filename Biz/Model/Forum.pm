@@ -58,6 +58,11 @@ sub internal_initialize {
     });
 }
 
+sub is_root {
+    my($self) = @_;
+    return $self->get('parent_realm_id') == Bivio::Auth::RealmType->GENERAL->as_int ? 1 : 0;
+}
+
 sub update {
     my($self, $values) = @_;
     $values->{name_lc} = lc($values->{name})
