@@ -65,7 +65,7 @@ Return a CROSS JOIN (i.e. the default join when no join is specified).
 =cut
 
 sub CROSS_JOIN {
-    my($self, @joins) = @_;
+    my($proto, @joins) = @_;
     my($joins) = [@joins];
     return {
         joins => $joins,
@@ -84,7 +84,7 @@ sub CROSS_JOIN {
 =cut
 
 sub DISTINCT {
-    my($self, $column) = @_;
+    my($proto, $column) = @_;
     return {
         distinct => $column,
 	columns => [$column],
@@ -150,13 +150,7 @@ Return a ILIKE predicate.
 
 sub ILIKE {
     my($proto, $column, $match) = @_;
-    return {
-        column => $column,
-        match => $match,
-        build => sub {
-            return _build_column($column, @_) . ' ILIKE ' . "'$match'";
-        },
-    };
+    return _like($proto, 'ILIKE', $column, $match);
 }
 
 =for html <a name="IN"></a>
@@ -240,13 +234,7 @@ Return a LIKE predicate.
 
 sub LIKE {
     my($proto, $column, $match) = @_;
-    return {
-        column => $column,
-        match => $match,
-        build => sub {
-            return _build_column($column, @_) . ' LIKE ' . "'$match'";
-        },
-    };
+    return _like($proto, 'LIKE', $column, $match);
 }
 
 =for html <a name="LT"></a>
@@ -260,7 +248,7 @@ Return a Less Than predicate.
 =cut
 
 sub LT {
-    my($self, $left, $right) = @_;
+    my($proto, $left, $right) = @_;
     return _static_compare('<', $left, $right);
 }
 
@@ -275,7 +263,7 @@ Return a Less Than or Equal predicate.
 =cut
 
 sub LTE {
-    my($self, $left, $right) = @_;
+    my($proto, $left, $right) = @_;
     return _static_compare('<=', $left, $right);
 }
 
@@ -540,12 +528,13 @@ sub _add_model {
     return $models->{$model};
 }
 
-# _build_column(string column, Bivio::SQL::Support support) : string
+# _build_column(string column) : string
 #
-# Build column name
+# Build column name.
+# Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
 #
 sub _build_column {
-    my($column, $support) = @_;
+    my($column) = @_;
     my($func, $model, $index, $field, $paren)
 	= $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)(\)?)$/;
     $func ||= '';
@@ -556,18 +545,47 @@ sub _build_column {
 	. "$index.$field$paren";
 }
 
-# _build_model(string model, Bivio::SQL::Support support) : string
+# _build_column_info(string column) : hash_ref
 #
-# Return the sql table name for the model
+# Build column information.
+# Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
+# Returns a hash_ref with the following information:
+#   column_name  (:string 'field')
+#   model        (:Bivio::Biz::Model)
+#   name         (:string 'Model_#.field')
+#   sql_name     (:string)
+#   type         (:Bivio::Type)
+#
+sub _build_column_info {
+    my($column) = @_;
+    my($func, $model_name, $index, $field, $paren)
+	= $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)(\)?)$/;
+    $func ||= '';
+    $index ||= '';
+    $paren ||= '';
+    my($model) = Bivio::Biz::Model->get_instance($model_name); 
+    return {
+        column_name => $field,
+	model => $model,
+	name => $column,
+	sql_name => $func
+            . $model->get_info('table_name') . "$index.$field$paren",
+        type => $model->get_field_type($field),
+    }
+}
+
+# _build_model(string model) : string
+#
+# Return the sql table name for the model.
+# Understands 'Model' and 'Model_#'
 #
 sub _build_model {
-    my($model_name, $support) = @_;
+    my($model_name) = @_;
     my($model, $index) = $model_name =~ /^(\w+?)(_\d+)?$/;
     my($table) = Bivio::Biz::Model->get_instance($model)
 	->get_info('table_name');
-    return $table
-	. ($index ? " $table$index" : '');
-#    return $support->get('models')->{$model}->{sql_name};
+    $index ||= '';
+    return "$table$index";
 }
 
 # _build_value(string column, string value, Bivio::SQL::Support support) : string
@@ -576,7 +594,6 @@ sub _build_model {
 #
 sub _build_value {
     my($column, $value, $support, $params) = @_;
-#    my($col_type) = $support->get_column_info($column)->{type};
     my($func, $model, $index, $field) = $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)\)?$/;
     my($t) = ($func || '') =~ /^(length|count)\(/i ? 'Bivio::Type::Number'
 	: Bivio::Biz::Model->get_instance($model)->get_field_type($field);
@@ -619,6 +636,32 @@ sub _in {
 		. ')'
 		: $modifier ? 'TRUE' : 'FALSE';
         },
+    };
+}
+
+# _like(proto, string predicate, string column, string match) : hash_ref
+#
+# Build a LIKE or ILIKE predicate.
+# If column is a Bivio::Type::Enum, do an in-memory search on short_desc
+# and subsitute an IN.
+#
+sub _like {
+    my($proto, $predicate, $column, $match) = @_;
+    my($col_info) = _build_column_info($column);
+    if ($col_info->{type}->isa('Bivio::Type::Enum')) {
+	$match =~ s/%/\.\*/g;
+	my(@enums) = grep({$_->get_short_desc() =~ /$match/i}
+	    $col_info->{type}->get_list());
+	return $proto->IN($column, [@enums]);
+    }
+    else {
+	return {
+            build => sub {
+		my($support, $params) = @_;
+		push(@$params, $match);
+		return $col_info->{sql_name} . " $predicate ?";
+            },
+	};
     };
 }
 
