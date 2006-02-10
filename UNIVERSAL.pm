@@ -155,10 +155,10 @@ sub instance_data_index {
 
 =for html <a name="map_invoke"></a>
 
-=head2 static map_invoke(string method, array_ref args) : array_ref
+=head2 static map_invoke(string method, array_ref repeat_args, array_ref first_args, array_ref last_args) : array_ref
 
 Calls I<method> on I<self> with each element of I<args>.  If the element
-of I<args> is an array, it will be unrolled as its arguments.  Otherwise,
+of I<repeat_args> is an array, it will be unrolled as its arguments.  Otherwise,
 the individual argument is called.  For example,
 
     $math->map_invoke('add', [[1, 2], [3, 4]])
@@ -169,11 +169,19 @@ returns
 
 while
 
-    $math->map_invoke('sqrt', [4, 9])
+    $math->map_invoke('add', [2, 3], [1])
 
 returns
 
-    [2, 3]
+    [3, 4]
+
+and
+
+    $math->map_invoke('sub', [2, 3], undef, [1])
+
+returns
+
+    [1, 2]
 
 If I<method> takes a single array_ref as an argument, you need to wrap it
 twice, e.g.
@@ -184,13 +192,17 @@ returns
 
     ['ab', 'cd']
 
-Result is always called in a scalar context.
+Result is always called in an array context.
 
 =cut
 
 sub map_invoke {
-    my($proto, $method, $args) = @_;
-    return [map($proto->$method(ref($_) eq 'ARRAY' ? @$_ : $_), @$args)];
+    my($proto, $method, $repeat_args, $first_args, $last_args) = @_;
+    return [map($proto->$method(
+	$first_args ? @$first_args : (),
+	ref($_) eq 'ARRAY' ? @$_ : $_,
+	$last_args ? @$last_args : (),
+    ), @$repeat_args)];
 }
 
 =for html <a name="package_name"></a>

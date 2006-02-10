@@ -45,6 +45,9 @@ Bivio::Test->unit([
 	    ['concat', ['a']] => [['a']],
 	    ['concat', [qw(a b)]] => [[qw(a b)]],
 	    ['concat', [[qw(a b)], [qw(c d)]]] => [['a-b', 'c-d']],
+	    ['concat', [[qw(a b)], [qw(c d)]], ['x']] => [['x-a-b', 'x-c-d']],
+	    ['concat', [[qw(a b)], [qw(c d)]], ['x'], ['y']] => [['x-a-b-y', 'x-c-d-y']],
+	    ['concat', [[qw(a b)], [qw(c d)]], undef, ['y']] => [['a-b-y', 'c-d-y']],
 	],
     ],
     'Bivio::t::UNIVERSAL::t2' => [
