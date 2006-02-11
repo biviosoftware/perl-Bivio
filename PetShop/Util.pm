@@ -48,6 +48,18 @@ As you:
 
 =cut
 
+=for html <a name="BTEST_READ"></a>
+
+=head2 BTEST_READ : string
+
+BTEST_READ user's name.
+
+=cut
+
+sub BTEST_READ {
+    return 'btest_read';
+}
+
 =for html <a name="DEMO"></a>
 
 =head2 DEMO : string
@@ -210,8 +222,10 @@ Returns list of demo users.
 sub demo_users {
     my($self) = @_;
     return [
-	$self->DEMO, $self->GUEST, $self->MULTI_ROLE_USER,
-	$self->get_request->is_production ? () : ($self->ROOT),
+        map($self->$_(),
+	    qw(DEMO GUEST MULTI_ROLE_USER BTEST_READ),
+	    $self->get_request->is_production ? () : 'ROOT',
+	),
     ];
 }
 
@@ -430,7 +444,7 @@ sub _init_demo_files {
 	Bivio::IO::File->mkdir_parent_only($f);
 	Bivio::IO::File->write($f, $c);
     }
-    foreach my $u (qw(DEMO GUEST)) {
+    foreach my $u (qw(DEMO GUEST BTEST_READ)) {
 	$self->set_realm_and_user($self->$u(), $self->$u());
 	$self->new_other('Bivio::Util::RealmFile')->import_tree('');
 	Bivio::Biz::Model->new('RealmFile')->do_iterate(
