@@ -824,7 +824,7 @@ sub render_row {
 	    ? "\n<th" : "\n<td")
 	    . $cell->get_or_default('column_prefix', '')
 	    . $_VS->vs_html_attrs_render(
-		$self, $source,
+		$cell, $source,
 		['column_' . lc($class->get_name) . '_class']);
 	if ($cell->get_or_default('heading_expand', 0)) {
 	    $$buffer .= ' width="100%"'
