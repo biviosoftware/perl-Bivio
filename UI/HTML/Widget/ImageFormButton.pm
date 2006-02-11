@@ -1,165 +1,49 @@
-# Copyright (c) 2000-2005 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::ImageFormButton;
 use strict;
-$Bivio::UI::HTML::Widget::ImageFormButton::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+use base 'Bivio::UI::HTML::Widget::ControlBase';
 
-=head1 NAME
-
-Bivio::UI::HTML::Widget::ImageFormButton - renders an input type=image
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::ImageFormButton;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::ImageFormButton::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::ImageFormButton> renders a input of type
-image.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item alt : array_ref (required)
-
-Dereferenced and passed to C<$source-E<gt>get_widget_value>
-to get string to use (see below).
-
-=item alt : string (required)
-
-Literal text to use for C<ALT> attribute of C<IMG> tag.
-Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
-before rendering.
-
-May be C<undef>.
-
-=item field : string (required)
-
-Name of the field.  If not supplied, is assumed to be 'submit'.
-
-=item form_model : array_ref (required, inherited, get_request)
-
-Which form instance are we dealing with.
-
-=item image : string (required, get_request)
-
-Icon name.
-
-=back
-
-=cut
-
-#=IMPORTS
-use Bivio::HTML;
-
-#=VARIABLES
-
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::Widget::ImageFormButton
-
-Creates a new ImageFormButton.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
+sub control_on_render {
+    my($self, $source, $buffer) = @_;
+    my($req) = $self->get_request;
+    my($field) = $self->resolve_ancestral_attr('form_model', $req)
+	->get_field_name_for_html(${$self->render_attr('field', $source)});
+    my($super) = '';
+    my($alt) = $self->render_simple_attr('alt', $source);
+    $self->SUPER::control_on_render($source, \$super);
+    $$buffer .= '<input type="image" name="'
+	. $field
+	. '" src="'
+	. Bivio::UI::Icon->get_value(
+	    ${$self->render_attr('image', $source)}, $req)->{uri}
+	. (length($alt) ? '" alt="' . Bivio::HTML->escape_attr_value($alt) : '')
+	. ($super =~ /id=/ ? '' : ('" id="' . $field))
+	. ($super =~ /class=/ ? '' : '" border="0')
+	. '"'
+	. $super
+	. $self->render_simple_attr('attributes', $source)
+        . ' />';
+    return;
 }
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes static information.  In this case, prefix and suffix
-field values.
-
-=cut
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{model} = $self->ancestral_get('form_model');
-    $fields->{field} = $self->unsafe_get('field');
-    $fields->{image} = $self->get('image');
-    $fields->{prefix} = '<input type="image"';
-    my($alt) = $self->get('alt');
-    if (ref($alt)) {
-	$fields->{alt} = $alt;
-    }
-    elsif (defined($alt)) {
-	$fields->{prefix} .= ' alt="'.Bivio::HTML->escape_attr_value($alt).'"';
-    }
-    return;
+    $self->put_unless_exists(
+	field => sub {
+	    Bivio::IO::Alert->warn_deprecated('field must be specified');
+	    return 'submit';
+	});
+    $self->map_invoke(initialize_attr => [qw(field image)]);
+    $self->map_invoke(unsafe_initialize_attr => [qw(alt attributes)]);
+    return shift->SUPER::initialize(@_);
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, Text_ref buffer)
-
-Render the input field.
-
-=cut
-
-sub render {
-    my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
-    my($req) = $source->get_request;
-    my($form) = $req->get_widget_value(@{$fields->{model}});
-    my($field) = $fields->{field}
-	? $form->get_field_name_for_html($fields->{field})
-	: 'submit';
-    $$buffer .= qq{$fields->{prefix} name="$field" id="$field"};
-    my($c) = $self->render_simple_attr('class', $source);
-    $$buffer .= $c ? qq{ class="$c"} : ' border="0"';
-    $$buffer .= ' alt="'
-	. Bivio::HTML->escape_attr_value(
-	    $self->render_value('alt', $fields->{alt}, $source))
-	. '"'
-	if $fields->{alt};
-    $$buffer .= ' src="'
-	. Bivio::UI::Icon->get_value($fields->{image}, $req)->{uri}
-	. '" />';
-    return;
+sub internal_new_args {
+    return shift->SUPER::internal_new_args([qw(field image)], \@_);
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000-2005 bivio, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
