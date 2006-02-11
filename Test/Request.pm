@@ -228,8 +228,9 @@ sub get_form {
 
 =head2 static initialize_fully(string task_id, hash_ref req_attrs) : self
 
-Initializes L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher> fully
-with I<task_id> (defaults to SHELL_UTIL).
+Initializes L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher> fully with
+I<task_id> or with the task_id already on the request (defaults to SHELL_UTIL
+if task_id is not specified and not found on the request).
 
 =cut
 
@@ -238,7 +239,7 @@ sub initialize_fully {
     $self = $self->get_instance unless ref($self);
     my($task_id, $req_attrs) = @_;
     ($req_attrs ||= {})->{task_id} = Bivio::Agent::TaskId->from_any(
-	$task_id || 'SHELL_UTIL');
+	$task_id || $self->unsafe_get('task_id') || 'SHELL_UTIL');
     Bivio::IO::ClassLoader->simple_require(
 	'Bivio::Agent::Dispatcher')->initialize;
     $self->put(%$req_attrs)->setup_all_facades;
