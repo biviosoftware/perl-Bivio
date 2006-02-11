@@ -34,8 +34,8 @@ sub new {
 	    vs_text('site_copyright'),
 	    '<br />All rights reserved.<br />',
 	    Link('Developed by bivio', 'http://www.bivio.biz'),
-	]))
-     ],
+	]))],
+	[style => StyleSheet('/f/base.css')],
     ));
     return $proto->SUPER::new($attrs)->put_unless_exists(
 	head => Join([
@@ -65,7 +65,7 @@ sub new {
 		'foot',
 	    ),
 	]),
-	style => StyleSheet('/f/base.css'),
+	style => view_widget_value('page3_style'),
 	xhtml => 1,
     );
 }
