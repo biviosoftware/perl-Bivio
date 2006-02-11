@@ -1058,7 +1058,7 @@ sub iterate_next_and_load {
 	return 1;
     }
     $self->internal_clear_model_cache;
-    $self->internal_put($fields->{empty_properties});
+    $self->internal_put({%{$fields->{empty_properties}}});
     $fields->{rows} = undef;
     return 0;
 }
@@ -1266,7 +1266,7 @@ sub next_row {
     $self->internal_clear_model_cache;
     if (++$fields->{cursor} >= int(@{$fields->{rows}})) {
 	$fields->{cursor} = undef;
-	$self->internal_put($fields->{empty_properties});
+	$self->internal_put({%{$fields->{empty_properties}}});
 	return 0;
     }
     $self->internal_put($fields->{rows}->[$fields->{cursor}]);
@@ -1361,7 +1361,7 @@ sub prev_row {
     $self->internal_clear_model_cache;
     if (--$fields->{cursor} < 0) {
 	$fields->{cursor} = undef;
-	$self->internal_put($fields->{empty_properties});
+	$self->internal_put({%{$fields->{empty_properties}}});
 	return 0;
     }
     $self->internal_put($fields->{rows}->[$fields->{cursor}]);
@@ -1378,6 +1378,7 @@ Places the cursor before the start of the list.
 
 sub reset_cursor {
     my($self) = @_;
+    $self->internal_clear_model_cache;
     $self->[$_IDI]->{cursor} = -1;
     return $self;
 }
@@ -1399,7 +1400,8 @@ I<index> may also be L<LAST_ROW|"LAST_ROW">.
 sub set_cursor {
     my($self, $index) = @_;
     my($fields) = $self->[$_IDI];
-    Carp::croak('not loaded') unless $fields->{rows};
+    $self->die('not loaded')
+        unless $fields->{rows};
     $self->internal_clear_model_cache;
     my($n) = int(@{$fields->{rows}});
     if ($index == $self->LAST_ROW) {
@@ -1407,12 +1409,14 @@ sub set_cursor {
 	# Fall through to handle empty list case.
     }
     if ($index >= $n) {
-	Carp::croak("$index: invalid index") if $index > $n;
+	$self->die("$index: invalid index")
+	    if $index > $n;
 	$fields->{cursor} = undef;
-	$self->internal_put($fields->{empty_properties});
+	$self->internal_put({%{$fields->{empty_properties}}});
 	return 0;
     }
-    Carp::croak("$index: invalid index") if $index < 0;
+    $self->die("$index: invalid index")
+	if $index < 0;
     $self->internal_put($fields->{rows}->[$fields->{cursor} = $index]);
     return 1;
 }
@@ -1430,8 +1434,9 @@ Returns self.
 
 sub set_cursor_or_die {
     my($self) = shift;
-    return $self if $self->set_cursor(@_);
-    $self->throw_die('DIE', {message => 'no such row', entity => $_[0]});
+    $self->throw_die('DIE', {message => 'no such row', entity => $_[0]})
+	unless $self->set_cursor(@_);
+    return $self;
 }
 
 =for html <a name="set_cursor_or_not_found"></a>
@@ -1447,9 +1452,10 @@ Returns self.
 
 sub set_cursor_or_not_found {
     my($self) = shift;
-    return $self if $self->set_cursor(@_);
-    $self->throw_die('MODEL_NOT_FOUND', {message => 'no such row',
-	entity => $_[0]});
+    $self->throw_die(
+	'MODEL_NOT_FOUND', {message => 'no such row', entity => $_[0]},
+    ) unless $self->set_cursor(@_);
+    return $self;
 }
 
 =head2 unauth_iterate_start(hash_ref query) : ref
@@ -1642,7 +1648,7 @@ sub _new {
     my($self) = @_;
     # NOTE: fields are dynamically replaced.  See, e.g. load.
     $self->[$_IDI] = {
-	empty_properties => $self->internal_get,
+	empty_properties => {%{$self->internal_get}},
 	load_notes => '',
     };
     return $self;
