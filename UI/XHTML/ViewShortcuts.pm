@@ -294,4 +294,43 @@ sub vs_simple_form {
     );
 }
 
+sub vs_tree_list {
+    my($self, $model, $columns, $attrs) = @_;
+    my($c) = $columns->[0];
+    $c = ref($c) ? {field => $c->[0], %{$c->[1] || {}}} : {field => $c}
+	unless ref($c) eq 'HASH';
+    $columns->[0] = {
+	%$c,
+	column_widget => Join([
+#TODO: scroll down to open selected_index
+	    [sub {'<span class="sp" />' x shift->get('node_level')}],
+	    Director(
+		[[['->get_request'], 'form_model', '->set_cursor_or_die',
+		  ['full_list_index']], 'node_state', '->get_name'],
+		{
+		    LEAF_NODE => Image('leaf_node'),
+		    NODE_COLLAPSED =>
+			ImageFormButton(node_button => 'node_collapsed'),
+		    NODE_EXPANDED =>
+			ImageFormButton(node_button => 'node_expanded'),
+	        },
+	    ),
+	    Tag(span =>
+	        ($c->{column_widget}
+		     || Bivio::UI::HTML::WidgetFactory->create(
+			 $model . '.' . $c->{field}, %$c)),
+		'name'),
+	]),
+	column_data_class => 'node',
+    };
+    return Form(
+	$model . 'Form',
+	Table(
+	    $model,
+	    $columns,
+	    {class => 'tree_list', %{$attrs || {}}},
+	),
+    );
+}
+
 1;
