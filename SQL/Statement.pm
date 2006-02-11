@@ -660,9 +660,13 @@ sub _like {
     my($col_info) = _build_column_info($column);
     if ($col_info->{type}->isa('Bivio::Type::Enum')) {
 	$match =~ s/%/\.\*/g;
-	my(@enums) = grep({$_->get_short_desc() =~ /$match/i}
-	    $col_info->{type}->get_list());
-	return $proto->IN($column, [@enums]);
+	$match =~ s/_/./g;
+	my($re) =~ $predicate =~ /ILIKE/ ? qr/$match/i : qr/$match/;
+	my($m) = $predicate =~ /^NOT/ ? 'NOT_IN' : 'IN';
+	return $proto->$m(
+	    $column,
+	    [grep($_->get_short_desc() =~ $re,
+		  $col_info->{type}->get_list())]),
     }
     else {
 	return {
