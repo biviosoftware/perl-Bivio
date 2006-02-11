@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListFormModel;
 use strict;
@@ -60,6 +60,23 @@ the form processing using the list_model's I<next_row>.  If there is
 If there is too little, it will blow up.
 
 =cut
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="LAST_ROW"></a>
+
+=head2 LAST_ROW() : int
+
+Returns a constant which means the "last_row".
+
+=cut
+
+sub LAST_ROW {
+    return Bivio::Biz::ListModel->LAST_ROW;
+}
+
 
 #=IMPORTS
 use Bivio::IO::Trace;
@@ -562,8 +579,7 @@ available in row-qualified form, i.e. I<name>.I<row>.
 sub next_row {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-
-    die('no cursor')
+    $self->die('no cursor')
 	unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     my($lm) = $fields->{list_model};
@@ -573,23 +589,7 @@ sub next_row {
 	_clear_row($self);
 	return 0;
     }
-    my($row) = ++$fields->{cursor};
-
-    # Go to next row, so copy properties, literals and errors to simple names
-    my($literals) = $self->internal_get_literals;
-    my($values) = $self->internal_get;
-    my($errors) = $self->get_errors;
-    foreach my $f (@{$self->get_info('in_list')}) {
-	my($n, $fn) = @{$f}{'name', 'form_name'};
-	my($nr) = $n.$_SEP.$row;
-	$values->{$n} = $values->{$nr};
-	# No literals for "other" entries
-	$literals->{$fn} = $literals->{"$fn$_SEP$row"}
-	    if defined($fn);
-	$errors->{$n} = $errors->{$nr}
-	    if $errors;
-    }
-    return 1;
+    return _set_row($self, ++$fields->{cursor})
 }
 
 =for html <a name="reset_cursor"></a>
@@ -609,6 +609,39 @@ sub reset_cursor {
     $self->internal_clear_model_cache;
     _clear_row($self);
     return;
+}
+
+=for html <a name="set_cursor"></a>
+
+=head2 set_cursor(int index) : boolean
+
+=cut
+
+sub set_cursor {
+    my($self) = shift;
+    my($fields) = $self->[$_IDI];
+    $self->internal_clear_model_cache;
+    my($lm) = $self->get_list_model;
+    $lm->set_cursor(@_);
+    return _set_row($self, $fields->{cursor} = $lm->get_cursor);
+}
+
+=for html <a name="set_cursor_or_die"></a>
+
+=head2 set_cursor_or_die(int index) : Bivio::Biz::ListModel
+
+Calls L<set_cursor|"set_cursor"> and dies with DIE
+if it returns false.
+
+Returns self.
+
+=cut
+
+sub set_cursor_or_die {
+    my($self) = shift;
+    $self->throw_die('DIE', {message => 'no such row', entity => $_[0]})
+	unless $self->set_cursor(@_);
+    return $self;
 }
 
 =for html <a name="validate"></a>
@@ -840,9 +873,29 @@ sub _names {
     return ($name, $name.$_SEP.$fields->{cursor});
 }
 
+# _set_row()
+sub _set_row {
+    my($self, $cursor) = @_;
+    # Go to next row, so copy properties, literals and errors to simple names
+    my($literals) = $self->internal_get_literals;
+    my($values) = $self->internal_get;
+    my($errors) = $self->get_errors;
+    foreach my $f (@{$self->get_info('in_list')}) {
+	my($n, $fn) = @{$f}{'name', 'form_name'};
+	my($nr) = $n.$_SEP.$cursor;
+	$values->{$n} = $values->{$nr};
+	# No literals for "other" entries
+	$literals->{$fn} = $literals->{"$fn$_SEP$cursor"}
+	    if defined($fn);
+	$errors->{$n} = $errors->{$nr}
+	    if $errors;
+    }
+    return 1;
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
