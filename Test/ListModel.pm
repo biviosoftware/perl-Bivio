@@ -83,8 +83,7 @@ sub new {
 		@$expect = @{$expect->[0]};
 	    }
 	    return $actual
-		unless @$expect != 1
-		|| ref($expect->[0]) eq 'HASH' || !@$expect;
+		unless @$expect != 1 || ref($expect->[0]) eq 'HASH';
 	    my($expect_copy) = [@$expect];
 	    return $case->get('object')->map_rows(
 		sub {
