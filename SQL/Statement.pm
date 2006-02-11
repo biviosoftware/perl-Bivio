@@ -149,8 +149,7 @@ Return a ILIKE predicate.
 =cut
 
 sub ILIKE {
-    my($proto, $column, $match) = @_;
-    return _like($proto, 'ILIKE', $column, $match);
+    return _like(ILIKE => @_);
 }
 
 =for html <a name="IN"></a>
@@ -233,8 +232,7 @@ Return a LIKE predicate.
 =cut
 
 sub LIKE {
-    my($proto, $column, $match) = @_;
-    return _like($proto, 'LIKE', $column, $match);
+    return _like(LIKE => @_);
 }
 
 =for html <a name="LT"></a>
@@ -293,6 +291,18 @@ Return an NOT_IN predicate.
 
 sub NOT_IN {
     return _in(' NOT', @_);
+}
+
+=for html <a name="NOT_LIKE"></a>
+
+=head2 static NOT_LIKE(string column, string match) : hash_ref
+
+Return a NOT_LIKE predicate.
+
+=cut
+
+sub NOT_LIKE {
+    return _like('NOT LIKE', @_);
 }
 
 =for html <a name="OR"></a>
@@ -639,14 +649,14 @@ sub _in {
     };
 }
 
-# _like(proto, string predicate, string column, string match) : hash_ref
+# _like(string predicate, proto, string column, string match) : hash_ref
 #
 # Build a LIKE or ILIKE predicate.
 # If column is a Bivio::Type::Enum, do an in-memory search on short_desc
 # and subsitute an IN.
 #
 sub _like {
-    my($proto, $predicate, $column, $match) = @_;
+    my($predicate, $proto, $column, $match) = @_;
     my($col_info) = _build_column_info($column);
     if ($col_info->{type}->isa('Bivio::Type::Enum')) {
 	$match =~ s/%/\.\*/g;
