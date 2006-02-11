@@ -1,0 +1,34 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully->set_realm_and_user('guest', 'guest');
+class()->get_instance('RealmFileFullTreeList')->execute_load_all(req());
+my($n) = Bivio::Type->get_instance('TreeListNode');
+[
+    #	 0 1 	     2 	       3      	4	5
+    # qw(/ private file.html image.gif Public file.txt)),
+    load_all => [
+	sub {
+	    class()->get_instance('RealmFileTreeListForm')->execute(req());
+	    return [];
+	} => [
+	    map(+{base_name => $_},
+		qw(/ private Public)),
+	],
+	sub {
+	    class()->get_instance('RealmFileTreeListForm')->execute(req(), {
+		node_button_1 => 1,
+		node_state_0 => $n->NODE_EXPANDED,
+		node_state_1 => $n->NODE_COLLAPSED,
+		node_state_2 => $n->LEAF_NODE,
+		node_state_3 => $n->LEAF_NODE,
+		node_state_4 => $n->NODE_COLLAPSED,
+		node_state_5 => $n->LEAF_NODE,
+	    });
+	    return [];
+	} => [
+	    map(+{base_name => $_},
+		qw(/ private file.html image.gif Public)),
+	],
+    ],
+];
