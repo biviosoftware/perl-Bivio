@@ -423,8 +423,8 @@ sub _init_demo_files {
 	    my $d = File::Spec->rel2abs('demo_files.tmp'))));
     foreach my $x (
 	['Public/file.txt' => 'text/plain'],
-	['private/image.gif' => 'image/gif'],
 	['private/file.html' => '<html><body>text/html</body></html>'],
+	['private/image.gif' => 'image/gif'],
     ) {
 	my($f, $c) = @$x;
 	Bivio::IO::File->mkdir_parent_only($f);
