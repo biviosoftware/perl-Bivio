@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.69  2006/02/03 04:05:27  nagler
+  * Bivio::Biz::Action::EasyForm added (see easy-form.btest and
+    Bivio::PetShop::Util for an example)
+  * Bivio::Test::Request->client_redirect added, but only takes effect
+    if ignore_client_redirect is set
+  * Bivio::Util::CSV->parse can read from input or takes a string (not
+    just a ref)
+  * Bivio::Biz::Model::RealmFile->append_content added as a convenience
+    routine.  It is not more efficient than appending to get_content.
+
   Revision 3.68  2006/01/28 21:34:51  nagler
   * Rolled back 1.27 revision (bOP 3.58) of Bivio::Biz::Action::DAV,
     because it was to strict, and didn't allow proper traversals (user
