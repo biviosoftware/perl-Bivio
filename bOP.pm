@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.70  2006/02/11 05:39:08  nagler
+  * Bivio::Biz::ListModel cleaned up use of empty_properties so is always a copy
+  * Bivio::SQL::Statement->LIKE/ILIKE do an in-memory search on short_desc
+    if the field is a Bivio:::Type::Enum
+  * Bivio::SQL::Statement->NOT_LIKE added
+  * Bivio::Biz::Model::*TreeList* and
+    Bivio::UI::XHTML::ViewShortcuts->vs_tree_list added.  These routines
+    allow you to build a tree view with collapsible nodes.  No examples
+    in PetShop as yet, because API is still under development in other app.
+  * Bivio::Biz::ListFormModel->set_cursor/set_cursor_or_die/LAST_ROW added
+  * Bivio::UI::XHTML::Widget::Page3.style added
+  * Bivio::UI::HTML::Widget::Table.column_*_class works now
+  * Bivio::UI::HTML::Widget::ImageFormButton rewritten to look like Image
+    and FormButton.  Not specifying the "field" is deprecated.
+
   Revision 3.69  2006/02/03 04:05:27  nagler
   * Bivio::Biz::Action::EasyForm added (see easy-form.btest and
     Bivio::PetShop::Util for an example)
