@@ -322,9 +322,26 @@ sub clean_raw {
     return;
 }
 
+=for html <a name="format_uri"></a>
+
+=head2 format_uri(Bivio::SQL::Support support, hash_ref new_attrs) : string
+
+Lets you override any I<new_attrs>, useful for other_query_keys at this time.
+I<new_attrs> defaults to empty.
+
+=cut
+
+sub format_uri {
+    my($self, $support, $new_attrs) = @_;
+    return _format_uri({
+	%{$self->internal_get},
+	%{$new_attrs || {}},
+    }, $support);
+}
+
 =for html <a name="format_uri_for_any_list"></a>
 
-=head2 format_uri_for_any_list(Bivio::SQL::Support support) : hash_ref
+=head2 format_uri_for_any_list(Bivio::SQL::Support support) : string
 
 Returns the query without a this or page_number.
 
@@ -649,21 +666,13 @@ sub _format_uri {
     my($attrs, $support) = @_;
     my($res) = '';
     my($columns) = $support->get('columns');
-
-    # this?
-    $res .= 't='._format_uri_primary_key($attrs->{this}, $support).'&'
-	    if $attrs->{this};
-
-    # use parent_id if present
-    $res .= 'p='._get_parent_id_type($attrs, $support)->to_query(
-	    $attrs->{parent_id}).'&'
-		    if $attrs->{parent_id};
-
-    # page_number?
-    $res .= 'n='.Bivio::Type::Integer->to_query($attrs->{page_number}).'&'
-	    if defined($attrs->{page_number});
-
-    # order_by
+    $res .= 't=' . _format_uri_primary_key($attrs->{this}, $support) . '&'
+	if $attrs->{this};
+    $res .= 'p=' . _get_parent_id_type($attrs, $support)->to_query(
+	$attrs->{parent_id}) . '&'
+	if $attrs->{parent_id};
+    $res .= 'n=' . Bivio::Type::Integer->to_query($attrs->{page_number}) . '&'
+	if defined($attrs->{page_number});
     if ($attrs->{order_by} && @{$attrs->{order_by}}) {
 	my($ob) = $attrs->{order_by};
 	my($s) = 'o=';
@@ -671,32 +680,21 @@ sub _format_uri {
 	    $s .= $columns->{$ob->[$i]}->{order_by_index}
 		    . ($ob->[$i+1] ? 'a' : 'd');
 	}
-	$res .= $s.'&' if $s ne $support->get('default_order_by_query');
+	$res .= $s . '&'
+	    if $s ne $support->get('default_order_by_query');
     }
-
-    # search
-    $res .= 's='.Bivio::Type::String->to_query($attrs->{search}).'&'
-	    if defined($attrs->{search});
-
-    # begin_date (may be a DateTime)
-    $res .= 'b='.Bivio::Type::DateTime->to_query($attrs->{begin_date}).'&'
-	    if defined($attrs->{begin_date});
-
-    # date (may be a DateTime)
-    $res .= 'd='.Bivio::Type::DateTime->to_query($attrs->{date}).'&'
-	    if defined($attrs->{date});
-
-    # interval
-    $res .= 'i='.Bivio::Type::DateInterval->to_query($attrs->{interval}).'&'
-	    if defined($attrs->{interval});
-
-    # other query keys
-    foreach (@{$support->unsafe_get('other_query_keys')||[]}) {
-	$res .= $_."=".$attrs->{$_}.'&'
-	    if defined($attrs->{$_});
+    $res .= 's=' . Bivio::Type::String->to_query($attrs->{search}) . '&'
+	if defined($attrs->{search});
+    $res .= 'b=' . Bivio::Type::DateTime->to_query($attrs->{begin_date}) . '&'
+	if defined($attrs->{begin_date});
+    $res .= 'd=' . Bivio::Type::DateTime->to_query($attrs->{date}) . '&'
+	if defined($attrs->{date});
+    $res .= 'i=' . Bivio::Type::DateInterval->to_query($attrs->{interval}) . '&'
+	if defined($attrs->{interval});
+    foreach my $k (@{$support->unsafe_get('other_query_keys') || []}) {
+	$res .= $k . "=" . Bivio::Type::String->to_query($attrs->{$k}) . '&'
+	    if defined($attrs->{$k});
     }
-
-    # Delete trailing '&'
     chop($res);
     return $res;
 }
