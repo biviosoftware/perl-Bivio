@@ -652,6 +652,40 @@ sub internal_upgrade_db_file_writer {
     return;
 }
 
+sub internal_upgrade_db_folder_id {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE realm_file_t
+    ADD COLUMN folder_id NUMERIC(18)
+/
+CREATE INDEX realm_file_t12 ON realm_file_t (
+  folder_id
+)
+/
+EOF
+    my($fid) = {};
+    Bivio::Biz::Model->new($self->get_request, 'RealmFile')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    my($r, $p) = $it->get(qw(realm_id path_lc));
+	    unless ($p eq '/') {
+		$it->update({
+		    folder_id => $fid->{$r . ($p =~ m{(.*/)})[0]}
+			|| $it->die('no folder'),
+		    override_is_read_only => 1,
+		});
+		$p .= '/';
+	    }
+	    $fid->{"$r$p"} = $it->get('realm_file_id')
+		if $it->get('is_folder');
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id asc, path_lc asc',
+    );
+    return;
+}
+
 =for html <a name="internal_upgrade_db_forum_bits"></a>
 
 =head2 internal_upgrade_db_forum_bits()
