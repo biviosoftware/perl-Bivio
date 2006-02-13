@@ -302,34 +302,27 @@ sub vs_tree_list {
     $columns->[0] = {
 	%$c,
 	column_widget => Join([
-#TODO: scroll down to open selected_index
 	    [sub {'<span class="sp" />' x shift->get('node_level')}],
-	    Director(
-		[[['->get_request'], 'form_model', '->set_cursor_or_die',
-		  ['full_list_index']], 'node_state', '->get_name'],
-		{
-		    LEAF_NODE => Image('leaf_node'),
-		    NODE_COLLAPSED =>
-			ImageFormButton(node_button => 'node_collapsed'),
-		    NODE_EXPANDED =>
-			ImageFormButton(node_button => 'node_expanded'),
-	        },
+	    Link(
+#TODO: scroll down to open selected_index
+		Join([
+		    Image(['node_state', '->get_name']),
+		    Tag(span =>
+			($c->{column_widget}
+			      || Bivio::UI::HTML::WidgetFactory->create(
+				   $model . '.' . $c->{field}, %$c)),
+			'name',
+		    ),
+		]),
+		['node_uri'],
 	    ),
-	    Tag(span =>
-	        ($c->{column_widget}
-		     || Bivio::UI::HTML::WidgetFactory->create(
-			 $model . '.' . $c->{field}, %$c)),
-		'name'),
 	]),
 	column_data_class => 'node',
     };
-    return Form(
-	$model . 'Form',
-	Table(
-	    $model,
-	    $columns,
-	    {class => 'tree_list', %{$attrs || {}}},
-	),
+    return Table(
+	$model,
+	$columns,
+	{class => 'tree_list', %{$attrs || {}}},
     );
 }
 
