@@ -661,7 +661,7 @@ sub _like {
     if ($col_info->{type}->isa('Bivio::Type::Enum')) {
 	$match =~ s/%/\.\*/g;
 	$match =~ s/_/./g;
-	my($re) =~ $predicate =~ /ILIKE/ ? qr/$match/i : qr/$match/;
+	my($re) = $predicate =~ /ILIKE/ ? qr/$match/i : qr/$match/;
 	my($m) = $predicate =~ /^NOT/ ? 'NOT_IN' : 'IN';
 	return $proto->$m(
 	    $column,
