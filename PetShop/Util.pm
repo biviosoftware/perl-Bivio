@@ -271,8 +271,7 @@ Add CalendarEvent table
 
 sub internal_upgrade_db {
     my($self) = @_;
-    $self->internal_upgrade_db_forum_bits;
-    $self->internal_upgrade_db_job_lock;
+    $self->internal_upgrade_db_folder_id;
     return;
 }
 
