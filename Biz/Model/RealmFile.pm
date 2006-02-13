@@ -160,6 +160,11 @@ sub internal_initialize {
         columns => {
             realm_file_id => ['PrimaryId', 'PRIMARY_KEY'],
             realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+	    # Folders are denormalized in all paths, and all manips are based
+	    # on paths.  folder_id is only used by RealmFileTreeList
+	    # at this time, and you can safely ignore it, because this class
+	    # manages it internally.
+	    folder_id => ['PrimaryId', 'NONE'],
 	    # Don't cascade when User.user_id is deleted
 	    user_id =>  ['PrimaryId', 'NOT_NULL'],
             modified_date_time => ['DateTime', 'NOT_NULL'],
@@ -529,6 +534,7 @@ sub _verify_and_fix {
 	$values->{$k} = $values->{_parent}->get($k)
 	    unless exists($values->{$k});
     }
+    $values->{folder_id} = $values->{_parent}->get('realm_file_id');
     _trace($values) if $_TRACE;
     return $values;
 }

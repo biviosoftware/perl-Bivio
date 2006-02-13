@@ -1,34 +1,28 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->initialize_fully->set_realm_and_user('btest_read', 'btest_read');
-class()->get_instance('RealmFileFullTreeList')->execute_load_all(req());
-my($n) = Bivio::Type->get_instance('TreeListNode');
+req()->set_realm_and_user('btest_read', 'btest_read')->initialize_fully('USER_HOME');
+
 [
-    #	 0 1 	     2 	       3      	4	5
-    # qw(/ private file.html image.gif Public file.txt)),
     load_all => [
-	sub {
-	    class()->get_instance('RealmFileTreeListForm')->execute(req());
-	    return [];
-	} => [
-	    map(+{base_name => $_},
-		qw(/ private Public)),
+	[] => [
+	    map(+{'RealmFile.path_lc' => $_},
+		qw(/private /public)),
 	],
 	sub {
-	    class()->get_instance('RealmFileTreeListForm')->execute(req(), {
-		node_button_1 => 1,
-		node_state_0 => $n->NODE_EXPANDED,
-		node_state_1 => $n->NODE_COLLAPSED,
-		node_state_2 => $n->LEAF_NODE,
-		node_state_3 => $n->LEAF_NODE,
-		node_state_4 => $n->NODE_COLLAPSED,
-		node_state_5 => $n->LEAF_NODE,
-	    });
-	    return [];
+	    return [{
+		order_by => '0d',
+		this => join(',', @{shift->get('object')->map_rows(
+		    sub {
+			my($it) = @_;
+			return $it->get('RealmFile.path_lc') eq '/private'
+			    ? $it->get('RealmFile.realm_file_id') : ();
+		    },
+		)}),
+	     }];
 	} => [
-	    map(+{base_name => $_},
-		qw(/ private file.html image.gif Public)),
+	    map(+{'RealmFile.path_lc' => $_},
+		qw(/public /private /private/image.gif /private/file.html)),
 	],
     ],
 ];
