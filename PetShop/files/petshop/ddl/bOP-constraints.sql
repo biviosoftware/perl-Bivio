@@ -286,6 +286,10 @@ CREATE INDEX realm_file_t11 ON realm_file_t (
   user_id
 )
 /
+CREATE INDEX realm_file_t12 ON realm_file_t (
+  folder_id
+)
+/
 
 --
 -- realm_mail_t

@@ -166,6 +166,7 @@ CREATE TABLE realm_file_t (
   realm_file_id NUMERIC(18),
   realm_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
+  folder_id NUMERIC(18),
   modified_date_time DATE NOT NULL,
   path VARCHAR(500) NOT NULL,
   path_lc VARCHAR(500) NOT NULL,
