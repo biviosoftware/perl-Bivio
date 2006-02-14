@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.71  2006/02/13 21:59:11  dobbs
+  * Bivio::SQL::Statement fix typo in LIKE/ILIKE in-memory Enum search
+
   Revision 3.70  2006/02/11 05:39:08  nagler
   * Bivio::Biz::ListModel cleaned up use of empty_properties so is always a copy
   * Bivio::SQL::Statement->LIKE/ILIKE do an in-memory search on short_desc
