@@ -3,6 +3,7 @@
 package Bivio::UI::XHTML::ViewShortcuts;
 use strict;
 use base 'Bivio::UI::HTML::ViewShortcuts';
+use Bivio::UI::HTML::WidgetFactory;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
@@ -105,7 +106,7 @@ sub vs_form_error_title {
 }
 
 sub vs_list_form {
-    my($proto, $form, $columns, $empty_list) = @_;
+    my($proto, $form, $columns, $empty_list, $buttons, $table_attrs) = @_;
     my($f) = Bivio::Biz::Model->get_instance($form);
     my($l) = Bivio::Biz::Model->get_instance($f->get_list_class);
     my($res) = Form(
@@ -127,13 +128,14 @@ sub vs_list_form {
 		} @$columns),
 	    ], {
 		class => 'list',
+		%{$table_attrs || {}},
 	    }),
-	    Tag(
+	    $buttons ? $buttons : Tag(
 		'div',
 		# cell_class tells StandardSubmit to produce XHTML
 		StandardSubmit({cell_class => 'button'}),
 		'submit',
-	    )
+	    ),
 	])
     );
     return $empty_list ? If(
@@ -295,35 +297,49 @@ sub vs_simple_form {
 }
 
 sub vs_tree_list {
-    my($self, $model, $columns, $attrs) = @_;
-    my($c) = $columns->[0];
-    $c = ref($c) ? {field => $c->[0], %{$c->[1] || {}}} : {field => $c}
-	unless ref($c) eq 'HASH';
-    $columns->[0] = {
-	%$c,
-	column_widget => Join([
-	    [sub {'<span class="sp" />' x shift->get('node_level')}],
-	    Link(
-#TODO: scroll down to open selected_index
-		Join([
-		    Image(['node_state', '->get_name']),
-		    Tag(span =>
-			($c->{column_widget}
-			      || Bivio::UI::HTML::WidgetFactory->create(
-				   $model . '.' . $c->{field}, %$c)),
-			'name',
-		    ),
-		]),
-		['node_uri'],
-	    ),
-	]),
-	column_data_class => 'node',
-    };
+    my($proto, $model, $columns, $attrs) = @_;
+    $columns->[0] = $proto->vs_tree_list_control($model, $columns->[0]);
     return Table(
 	$model,
 	$columns,
 	{class => 'tree_list', %{$attrs || {}}},
     );
+}
+
+sub vs_tree_list_control {
+    my($proto, $model, $c) = @_;
+    $c = ref($c) ? {field => $c->[0], %{$c->[1] || {}}} : {field => $c}
+	unless ref($c) eq 'HASH';
+    return {
+	%$c,
+	column_widget => Join([
+	    [sub {
+		 return '<span class="sp" />'
+		     x shift->get_list_model->get('node_level');
+	    }],
+	    If([['->get_list_model'], 'node_uri'],
+	       map({
+		   my($x) = Join([
+		       Image(vs_text([
+			   sub {
+			       my($lm) = shift->get_list_model;
+			       return $lm->simple_package_name
+				   . '.' . $lm->get('node_state')->get_name;
+			   },
+		       ])),
+		       Tag(span =>
+		           ($c->{column_widget}
+			       || Bivio::UI::HTML::WidgetFactory->create(
+			       $model . '.' . $c->{field}, $c)),
+			   'name',
+		       ),
+		   ]);
+		   $_ ? Link($x, [['->get_list_model'], 'node_uri']) : $x;
+	       } 1, 0),
+	   ),
+	]),
+	column_data_class => 'node',
+    };
 }
 
 1;
