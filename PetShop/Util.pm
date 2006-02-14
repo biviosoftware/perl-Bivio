@@ -579,6 +579,19 @@ EOF
     }, \(<<'EOF'));
 &date,&email,input,ok
 EOF
+    Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
+        'RealmOwner.display_name' => 'Unit Test Sub Forum',
+	'RealmOwner.name' => $self->FOUREM . '-sub1',
+    });
+    Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
+        'RealmOwner.display_name' => 'Unit Test Sub1-1 Forum',
+	'RealmOwner.name' => $self->FOUREM . '-sub1-1',
+    });
+    $req->set_realm($self->FOUREM);
+    Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
+        'RealmOwner.display_name' => 'Unit Test Sub2 Forum',
+	'RealmOwner.name' => $self->FOUREM . '-sub2',
+    });
     return;
 }
 
