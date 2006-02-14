@@ -587,10 +587,19 @@ EOF
         'RealmOwner.display_name' => 'Unit Test Sub1-1 Forum',
 	'RealmOwner.name' => $self->FOUREM . '-sub1-1',
     });
+    $req->set_user($self->BTEST_READ);
+    Bivio::Biz::Model->get_instance('ForumUserAddForm')->execute($req, {
+	'RealmUser.realm_id' => $req->get('auth_id'),
+	'User.user_id' => $req->get('auth_user_id'),
+    });
     $req->set_realm($self->FOUREM);
     Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
         'RealmOwner.display_name' => 'Unit Test Sub2 Forum',
 	'RealmOwner.name' => $self->FOUREM . '-sub2',
+    });
+    Bivio::Biz::Model->get_instance('ForumUserAddForm')->execute($req, {
+	'RealmUser.realm_id' => $req->get('auth_id'),
+	'User.user_id' => $req->get('auth_user_id'),
     });
     return;
 }
