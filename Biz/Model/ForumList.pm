@@ -10,6 +10,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	can_iterate => 1,
 	primary_key => [['Forum.forum_id', 'RealmOwner.realm_id']],
 	order_by => [
 	    {
