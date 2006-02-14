@@ -595,7 +595,8 @@ sub _build_model {
     my($table) = Bivio::Biz::Model->get_instance($model)
 	->get_info('table_name');
     $index ||= '';
-    return "$table$index";
+    return $table
+        . ($index ? " $table$index" : '');
 }
 
 # _build_value(string column, string value, Bivio::SQL::Support support) : string
