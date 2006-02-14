@@ -77,7 +77,7 @@ sub create {
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
     $values->{password} = Bivio::Type::Password->INVALID
 	unless defined($values->{password});
-    return $self->SUPER::create($values);
+    return shift->SUPER::create(@_);
 }
 
 =for html <a name="format_email"></a>
@@ -481,10 +481,12 @@ sub unsafe_get_model {
 
     if ($name eq 'User' || $name eq 'Club') {
 	my($model) =  $self->new_other($name);
-	return $model->unauth_load(lc($name).'_id' => $self->get('realm_id'))
-            ? $model : undef;
+	$model->unauth_load({
+            lc($name).'_id' => $self->get('realm_id'),
+        });
+        return $model;
     }
-    return $self->SUPER::unsafe_get_model($name);
+    return shift->SUPER::unsafe_get_model(@_);
 }
 
 =for html <a name="update_password"></a>

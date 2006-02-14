@@ -60,7 +60,7 @@ sub create {
     $new_values->{creation_date_time} ||= Bivio::Type::DateTime->now;
     $new_values->{description} = $new_values->{service}->get_short_desc
 	unless defined($new_values->{description});
-    return $self->SUPER::create($new_values);
+    return shift->SUPER::create(@_);
 }
 
 =for html <a name="get_amount_sum"></a>
@@ -134,13 +134,13 @@ sub unsafe_get_model {
     if ($name eq 'ECSubscription' || $name eq 'ECCheckPayment'
 	|| $name eq 'ECCreditCardPayment') {
 
-	my($model) =  Bivio::Biz::Model->new($self->get_request, $name);
-	return $model->unauth_load({
-	    ec_payment_id => $self->get('ec_payment_id')})
-	    ? $model
-	    : undef;
+	my($model) =  $self->new_other($name);
+	$model->unauth_load({
+	    ec_payment_id => $self->get('ec_payment_id'),
+        });
+        return $model;
     }
-    return $self->SUPER::unsafe_get_model($name);
+    return shift->SUPER::unsafe_get_model(@_);
 }
 
 #=PRIVATE METHODS
