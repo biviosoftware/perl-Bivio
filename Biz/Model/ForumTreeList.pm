@@ -13,10 +13,10 @@ sub PARENT_NODE_ID_FIELD {
 
 sub internal_default_expand {
     my($self) = @_;
-    return _map_user_forums(
-	$self,
-	sub {return shift->get('RealmUser.realm_id')},
-    );
+    return [map(
+	$_->{is_parent} ? $_->{forum_id} : (),
+	values(%{_forum_map($self)}),
+    )];
 }
 
 sub internal_initialize {
@@ -46,7 +46,7 @@ sub internal_initialize {
 
 sub internal_is_parent {
     my($self, $row) = @_;
-    return grep($_ eq $row->{'Forum.forum_id'}, @{$self->[$_IDI]}) ? 1 : 0;
+    return _forum_map($self)->{$row->{'Forum.forum_id'}}->{is_parent};
 }
 
 sub internal_leaf_node_uri {
@@ -55,36 +55,25 @@ sub internal_leaf_node_uri {
 
 sub internal_load_rows {
     my($self) = @_;
-    $self->[$_IDI] = _map_user_forums(
-	$self,
-	sub {shift->get('Forum.parent_realm_id')},
-    );
     my($rows) = shift->SUPER::internal_load_rows(@_);
-    my($mr) = _map_user_forums(
-	$self,
-	sub {
-	    my($it) = @_;
-	    return grep($_->eq_mail_recipient, @{$it->get('roles')})
-		? $it->get('RealmUser.realm_id') : ();
-	},
-    );
+    my($map) = _forum_map($self);
     return [
 	map({
-	    my($fid) = $_->{'Forum.forum_id'};
-	    $_->{mail_recipient} = grep($_ eq $fid, @$mr) ? 1 : 0;
+	    $_->{mail_recipient} = $map->{
+		$_->{'Forum.forum_id'}}->{mail_recipient};
 	    $_;
-	} grep($_->{'RealmUser.role'}->eq_member, @$rows)),
+	} @$rows),
     ];
 }
 
 sub internal_parent_id {
     my($self, $id) = @_;
-    return $self->new_other('Forum')->load({forum_id => $id})
-	->get('parent_realm_id');
+    return _forum_map($self)->{$id}->{parent_id};
 }
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
+    $self->[$_IDI] = undef;
     $stmt->where($stmt->EQ('RealmUser.role', [Bivio::Auth::Role->MEMBER]));
     return shift->SUPER::internal_prepare_statement(@_);
 }
@@ -93,12 +82,36 @@ sub internal_root_parent_node_id {
     return Bivio::Auth::Realm->get_general->get('id');
 }
 
-sub _map_user_forums {
-    my($self) = shift;
-    return (
-	$self->get_request->unsafe_get('Model.UserForumList')
-	    || $self->new_other('UserForumList')->load_all
-    )->map_rows(@_);
+sub _forum_map {
+    my($self) = @_;
+    return $self->[$_IDI]
+	if $self->[$_IDI];
+    my($pid) =  {};
+    my($map) = {
+	@{(
+	    $self->get_request->unsafe_get('Model.UserForumList')
+		|| $self->new_other('UserForumList')->load_all
+        )->map_rows(
+	    sub {
+		my($it) = @_;
+		$pid->{$it->get('Forum.parent_realm_id')}++;
+		return (
+		    $it->get('RealmUser.realm_id') => {
+			forum_id => $it->get('RealmUser.realm_id'),
+			mail_recipient => grep(
+			    $_->eq_mail_recipient,
+			    @{$it->get('roles')},
+			) ? 1 : 0,
+			parent_id => $it->get('Forum.parent_realm_id'),
+		    }
+		);
+	    },
+	)},
+    };
+    while (my($k, $v) = each(%$map)) {
+	$v->{is_parent} = $pid->{$k} ? 1 : 0;
+    }
+    return $self->[$_IDI] = $map;
 }
 
 1;
