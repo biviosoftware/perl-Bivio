@@ -60,7 +60,7 @@ sub internal_initialize {
 	    'Forum.is_public_email',
 	    'Forum.want_reply_to',
 	],
-	auth_id => ['RealmOwner.realm_id', 'Forum.forum_id'],
+	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
 	other => [
 	    {
 		name => 'validate_called',
@@ -101,7 +101,7 @@ sub _is_forum {
 }
 
 sub _top {
-    my($self, $mode) = @_;
+    my($self) = @_;
     my($req) = $self->get_request;
     return ('', 1)
 	unless _is_forum($req);

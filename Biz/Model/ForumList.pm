@@ -10,7 +10,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	primary_key => [['RealmOwner.realm_id', 'Forum.forum_id']],
+	primary_key => [['Forum.forum_id', 'RealmOwner.realm_id']],
 	order_by => [
 	    {
 		name => 'RealmOwner.name',

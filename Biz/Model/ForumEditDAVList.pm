@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FM) = Bivio::Type->get_instance('FormMode');
 
 sub CSV_COLUMNS {
-    return [qw(RealmOwner.name RealmOwner.display_name Forum.want_reply_to Forum.is_public_email RealmOwner.realm_id)];
+    return [qw(RealmOwner.name RealmOwner.display_name Forum.want_reply_to Forum.is_public_email Forum.forum_id)];
 }
 
 sub LIST_CLASS {
@@ -28,7 +28,7 @@ sub row_update {
     my($self, $new) = @_;
     my($req) = $self->get_request;
     $_FM->execute_edit($req);
-    $req->set_realm($new->{'RealmOwner.realm_id'});
+    $req->set_realm($new->{'Forum.forum_id'});
     $self->new_other('ForumForm')->process({
 	%$new,
     });
