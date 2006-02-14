@@ -671,7 +671,7 @@ EOF
 	    unless ($p eq '/') {
 		$it->update({
 		    folder_id => $fid->{$r . ($p =~ m{(.*/)})[0]}
-			|| $it->die('no folder'),
+			|| $it->die($p, ': no folder'),
 		    override_is_read_only => 1,
 		});
 		$p .= '/';
