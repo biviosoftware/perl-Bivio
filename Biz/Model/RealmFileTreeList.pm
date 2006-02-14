@@ -55,6 +55,7 @@ sub internal_leaf_node_uri {
     return $self->get_request->format_uri({
 	task_id => $self->get_request->get('task')->get('next'),
 	path_info => $row->{'RealmFile.path_lc'},
+	query => undef,
     });
 }
 
