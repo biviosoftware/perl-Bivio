@@ -10,10 +10,6 @@ sub LOAD_ALL_SIZE {
     return 5000;
 }
 
-sub IS_PARENT_NODE_FIELD {
-    return 'RealmFile.is_folder';
-}
-
 sub PARENT_NODE_ID_FIELD {
     return 'RealmFile.folder_id';
 }
@@ -49,12 +45,17 @@ sub internal_initialize {
     });
 }
 
-sub internal_leaf_node_uri_args {
+sub internal_is_parent {
+    my(undef, $row) = @_;
+    return $row->{'RealmFile.is_folder'};
+}
+
+sub internal_leaf_node_uri {
     my($self, $row) = @_;
-    return {
+    return $self->get_request->format_uri({
 	task_id => $self->get_request->get('task')->get('next'),
 	path_info => $row->{'RealmFile.path_lc'},
-    };
+    });
 }
 
 sub internal_parent_id {

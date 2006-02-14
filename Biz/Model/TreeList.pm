@@ -38,24 +38,22 @@ sub internal_load_rows {
 #TODO: Clean expand of dead values, in case from bookmark
     return [map({
 	my($row) = $_;
-	$row->{node_state} = $row->{$self->IS_PARENT_NODE_FIELD}
+	$row->{node_state} = $self->internal_is_parent($row)
 	    ? grep($row->{$pkf} eq $_, @$e) ? $_N->NODE_EXPANDED
 	    : $_N->NODE_COLLAPSED : $_N->LEAF_NODE;
-	$row->{node_uri} = $req->format_uri(
-	    $row->{node_state}->eq_leaf_node
-		? $self->internal_leaf_node_uri_args($row)
-	       : {query => $query->format_uri(
-		   $self->internal_get_sql_support,
-		   {
-		       expand => join(',',
+	$row->{node_uri} = $row->{node_state}->eq_leaf_node
+	    ? $self->internal_leaf_node_uri($row)
+	    : $req->format_uri({
+		query => $query->format_uri(
+		    $self->internal_get_sql_support, {
+			expand => join(',',
 		           grep($row->{$pkf} ne $_, @$e),
 		           $row->{node_state}->eq_node_collapsed
 		           ? $row->{$pkf} : (),
 		       ),
 		       page_number => undef,
-		   },
-	       )},
-	);
+		   }),
+	    });
 	$row;
     } @{_sort(
 	$self->internal_root_parent_node_id,
@@ -71,7 +69,7 @@ sub internal_prepare_statement {
     if (my $this = $query->unsafe_get('this')) {
 	$query->put(
 	    this => undef,
-	    expand => join(',', @{_folders($self, $this->[0])}),
+	    expand => join(',', @{_parents($self, $this->[0])}),
 	);
     }
     my($e) = [split(
@@ -91,13 +89,13 @@ sub internal_prepare_statement {
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
-sub _folders {
+sub _parents {
     my($self, $id) = @_;
     my($pid) = $self->internal_parent_id($id);
     return [
 	$id,
 	$_P->compare($pid, $self->internal_root_parent_node_id) == 0 ? ()
-	    : @{_folders($self, $pid)},
+	    : @{_parents($self, $pid)},
     ];
 }
 
