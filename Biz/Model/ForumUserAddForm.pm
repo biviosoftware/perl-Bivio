@@ -8,7 +8,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     my($self) = @_;
-    my($req) = $self->get_request;
     my(@res) = shift->SUPER::execute_ok(@_);
     return @res
 	if $self->in_error;
