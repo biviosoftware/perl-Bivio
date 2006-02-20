@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UNIVERSAL;
 use strict;
@@ -205,6 +205,41 @@ sub map_invoke {
     ), @$repeat_args)];
 }
 
+=for html <a name="name_parameters"></a>
+
+=head2 static name_parameters(array_ref names, array_ref argv) : hash_ref
+
+Expects I<names> to be the keys in the first and only element of I<argv>, or
+uses I<names> to convert positional I<argv> into hash_ref.  Does not work if
+first positional parameter is allowed to be a hash_ref.
+
+Returns (self, named).
+
+=cut
+
+sub name_parameters {
+    my($self, $names, $argv) = @_;
+    my($map) = {map(($_ => 1), @$names)};
+    my($named) = @$argv;
+    if (ref($named) eq 'HASH') {
+	Bivio::Die->die('Too many parameters: ', $argv)
+	    unless @$argv == 1;
+	Bivio::Die->die(
+	    $named, ': unknown params passed to ',
+	    (caller(1))[3], ', which only accepts ', $names,
+	) if grep(!$map->{$_}, keys(%$named));
+        # make a copy to avoid changing the caller's value
+        $named = {%$named};
+    }
+    else {
+	Bivio::Die->die($argv, ': too many params passed to ', (caller(1))[3])
+	    unless @$argv <= @$names;
+	my(@x) = @$names;
+	$named = {map((shift(@x) => $_), @$argv)};
+    }
+    return ($self, $named);
+}
+
 =for html <a name="package_name"></a>
 
 =head2 static package_name() : string
@@ -256,7 +291,7 @@ C<UNIVERSAL>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
