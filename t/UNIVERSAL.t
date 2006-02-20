@@ -37,6 +37,12 @@ Bivio::Test->unit([
 	package_version => 3.154,
 	simple_package_name => 't1',
 	as_string => 'Bivio::t::UNIVERSAL::t1',
+	name_parameters => [
+	    [[qw(p1 p2)], [{p1 => 1}]] => ['Bivio::t::UNIVERSAL::t1', {p1 => 1}],
+	    [[qw(p1 p2)], [1]] => ['Bivio::t::UNIVERSAL::t1', {p1 => 1}],
+	    [[qw(p1 p2)], [1, 2]] => ['Bivio::t::UNIVERSAL::t1', {p1 => 1, p2 => 2}],
+	    [[qw(p1 p2)], [{p3 => 1}]] => Bivio::DieCode->DIE,
+	],
 	equals => [
 	    'Bivio::t::UNIVERSAL::t1' => 1,
 	    'Bivio::t::UNIVERSAL::t2' => 0,
