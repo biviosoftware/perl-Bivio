@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Request;
 use strict;
@@ -818,38 +818,19 @@ sub handle_config {
 
 =head2 internal_get_named_args(array_ref names, array_ref argv) : array
 
-Expects I<names> in hash_ref of first param of I<argv>, or uses
-I<names> to convert I<argv> in to hash_ref.  Returns (self, named).
-
-Converts I<task_id> to a task, if not already.
+Calls name_parameters in L<Bivio::UNIVERSAL|Bivio::UNIVERSAL> then
+converts I<task_id> to a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 
 =cut
 
 sub internal_get_named_args {
-    my($self, $names, $argv) = @_;
-    my($map) = {map(($_ => 1), @$names)};
-    my($named) = @$argv;
-    if (ref($named) eq 'HASH') {
-	Bivio::Die->die('Too many parameters: ', $argv)
-	    unless @$argv == 1;
-	Bivio::Die->die(
-	    $named, ': unknown params passed to ',
-	    (caller(1))[3], ', which only accepts ', $names,
-	) if grep(!$map->{$_}, keys(%$named));
-        # make a copy to avoid changing the caller's value
-        $named = {%$named};
-    }
-    else {
-	Bivio::Die->die($argv, ': too many params passed to ', (caller(1))[3])
-	    unless @$argv <= @$names;
-	my(@x) = @$names;
-	$named = {map((shift(@x) => $_), @$argv)};
-    }
+    my(undef, $names, $argv) = @_;
+    my($self, $named) = shift->name_parameters(@_);
     $named->{task_id} = !$named->{task_id} ? $self->get('task_id')
 	: UNIVERSAL::isa($named->{task_id}, 'Bivio::Agent::TaskId')
 	? $named->{task_id}
 	: Bivio::Agent::TaskId->from_name($named->{task_id})
-	if $map->{task_id};
+	if grep($_ eq 'task_id', @$names);
     _trace((caller(1))[3], $named) if $_TRACE;
     return ($self, $named);
 }
@@ -1396,7 +1377,7 @@ RFC2109 (Cookies), RFC1806 (Content-Disposition), RFC1521 (MIME)
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
