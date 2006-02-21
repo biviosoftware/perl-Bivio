@@ -89,7 +89,8 @@ Returns () if there is an error.
 =cut
 
 sub internal_create_models {
-    my($self) = @_;
+    my($self, $params) = @_;
+    $params ||= {};
     my($req) = $self->get_request;
     my($x) = $self->parse_display_name($self->get('RealmOwner.display_name'));
     unless (ref($x) eq 'HASH') {
@@ -107,7 +108,7 @@ sub internal_create_models {
 	    || $req->format_email(Bivio::Type::Email->IGNORE_PREFIX
 	    . $realm->get('name')
 	    . '-' . time),
-	want_bulletin => 0,
+	want_bulletin => $params->{'Email.want_bulletin'} || 0,
     }) unless ($self->unsafe_get('Email.email') || '')
 	eq Bivio::Type::Email->IGNORE_PREFIX;
     return ($realm, $user);
