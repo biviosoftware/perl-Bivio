@@ -56,15 +56,18 @@ sub USAGE {
     return <<'EOF';
 usage: b-linux-config [options] command [args...]
 commands:
-    allow_any_sendmail_smtp [max_message_size] -- open up sendmail while making more secure
+    add_aliases alias:value ... -- add entries to aliases
     add_crontab_line user entry... -- add entries to crontab
     add_group group[:gid] -- add a group
     add_sendmail_class_line filename line ... -- add values trusted-users, relay-domains, etc.
     add_sendmail_http_agent uri -- configures sendmail to pass mail b-sendmail-http
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
+    add_virtusers user@domain:value ... -- add entries to virtusertable
+    allow_any_sendmail_smtp [max_message_size] -- open up sendmail while making more secure
     append_lines file owner group perms line ... -- appends lines to a file if they don't already exist
     create_ssl_crt iso_country state city organization hostname -- create ssl certificate
+    delete_aliases user entry... -- delete entries from crontab
     delete_crontab_line user entry... -- delete entries from crontab
     delete_sendmail_class_line filename line ... -- delete values trusted-users, relay-domains, etc.
     disable_iptables_counters -- disables saving counters in iptables state file
@@ -387,6 +390,19 @@ sub disable_iptables_counters {
 	    [qr/(iptables-$_)\s+-c\b/m, sub {$1},
 		 qr/iptables-$_\s+[&>;]/];
 	} qw(save restore));
+}
+
+=for html <a name="delete_aliases"></a>
+
+=head2 delete_aliases(string alias, ...)
+
+Delete I<alias>es from this /etc/aliases.
+
+=cut
+
+sub delete_aliases {
+    my($self) = shift;
+    return _delete_lines($self, '/etc/aliases', [map(qr/^$_\:[^\n]+$/, @_)]);
 }
 
 =for html <a name="delete_crontab_line"></a>
@@ -761,7 +777,8 @@ sub _delete_lines {
 	     my($data) = @_;
 	     my($got);
 	     foreach my $l (@$lines) {
-		 $$data =~ s/^\Q$l\E(\n|$)//mg and $got++;
+		 my($x) = ref($l) ? $l : qr{^\Q$l\E(\n|$)};
+		 $$data =~ s/$x//mg and $got++;
 	     }
 	     return $got;
 	}]);

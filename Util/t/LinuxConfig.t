@@ -111,6 +111,10 @@ other.host
 		['etc/aliases', "i:\t:include:/foo\n"],
 	    ],
 	], [
+	    'delete_aliases', ['d'] => [
+		['etc/aliases', sub {${shift(@_)} !~ /\nd:/}],
+	    ],
+	], [
 	    'add_virtusers', ['a: b', 'e:f'] => [
 		['etc/mail/virtusertable', "a\tb\n"],
 		['etc/mail/virtusertable', "e\tf\n"],
