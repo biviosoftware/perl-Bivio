@@ -27,7 +27,7 @@ Request('initialize_fully');
 	],
     ],
     ['demo', req()] => [
-	format_email => qr/\bdemo@/,
+	format_email => qr/\bdemo\@/,
 	format_file => 'demo',
 	format_uri => '/demo',
 	as_string => qr/Bivio::Auth::Realm\[USER,demo,\d+\]/,
