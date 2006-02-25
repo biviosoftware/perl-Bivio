@@ -262,7 +262,7 @@ sub handle_config {
 
 =head2 static initialize_by_facade(Bivio::UI::Facade facade)
 
-Initializes all views in a facade, if caching turned on.
+Initializes all icons in a facade, if caching turned on.
 
 =cut
 
@@ -278,7 +278,7 @@ sub initialize_by_facade {
 		&& grep($1 eq $_, @$_FILE_SUFFIX_SEARCH_LIST);
 	_find($proto, $file, $facade);
     }
-    return;
+    return $proto;
 }
 
 #=PRIVATE METHODS

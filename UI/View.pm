@@ -388,7 +388,7 @@ Initializes all views in a facade.  Only called if caching turned on.
 sub initialize_by_facade {
     my($proto, $facade) = @_;
 #TODO: Need to implement
-    return;
+    return $proto;
 }
 
 =for html <a name="internal_set_parent"></a>
