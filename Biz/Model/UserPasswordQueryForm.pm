@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserPasswordQueryForm;
 use strict;
@@ -83,6 +83,16 @@ Sets the user's password to a random value. Saves the reset URI in the
 sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
+    my($e) = $self->new_other('Email');
+    unless ($e->unauth_load({email => $self->get('Email.email')})) {
+	$self->internal_put_error(qw(Email.email NOT_FOUND));
+	return;
+    }
+    if ($self->get_request->is_super_user($e->get('realm_id'))) {
+	$self->internal_put_error(qw(Email.email PASSWORD_QUERY_SUPER_USER));
+	return;
+    }
+    $self->get_request->set_realm($e->get('realm_id'));
     $self->internal_put_field(
 	uri => Bivio::Biz::Action->get_instance('UserPasswordQuery')
 	    ->format_uri($req),
@@ -116,34 +126,11 @@ sub internal_initialize {
     });
 }
 
-=for html <a name="validate"></a>
-
-=head2 validate()
-
-Ensure email exists.
-
-=cut
-
-sub validate {
-    my($self) = @_;
-    return if $self->in_error;
-    my($e) = $self->new_other('Email');
-    if ($e->unauth_load({email => $self->get('Email.email')})) {
-	$self->get_request->set_realm($e->get('realm_id'));
-	$self->internal_put_error(qw(Email.email PASSWORD_QUERY_SUPER_USER))
-	    if $self->get_request->is_super_user($e->get('realm_id'));
-    }
-    else {
-	$self->internal_put_error(qw(Email.email NOT_FOUND));
-    }
-    return;
-}
-
 #=PRIVATE SUBROUTINES
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
