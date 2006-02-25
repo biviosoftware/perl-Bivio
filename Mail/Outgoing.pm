@@ -340,36 +340,51 @@ I<list_in_subject>.  Sets I<Reply-To:> to I<list_name> if I<reply_to_list>.
 =cut
 
 sub set_headers_for_list_send {
-    my($self, $list_name, $list_title, $reply_to_list, $subject_prefix, $req) = @_;
-    if (($subject_prefix || '') eq 1) {
+    my($self, $np) = shift->name_parameters(
+	[qw(list_name list_title reply_to_list subject_prefix req list_email return_path sender reply_to)], \@_);
+    if (($np->{subject_prefix} || '') eq 1) {
 	Bivio::IO::Alert->warn_deprecated(
 	    'list_in_subject is now subject_prefix');
-	$subject_prefix = "$list_name:";
+	$np->{subject_prefix} = "$np->{list_name}:";
+    }
+    if ($np->{list_email}) {
+	$np->{reply_to} ||= $np->{list_email};
+	$np->{sender} ||= $np->{list_email};
+    }
+    else {
+	Bivio::Die->die($np->{list_name}, ': invalid list name')
+	   unless $np->{list_name} =~ /^[-\.\w]+$/s;
+	Bivio::Die->die($np->{list_title}, ': invalid list title')
+	    unless $np->{list_title} =~ /^[^\n]+$/s;
+	$np->{list_title} =~ s/(["\\])/\\$1/g;
+	$np->{list_email} = $np->{req}->format_email($np->{list_name});
     }
     my($fields) = $self->[$_IDI];
     my($headers) = $fields->{headers};
-    Bivio::Die->die($list_name, ': invalid list name')
-       unless $list_name =~ /^[-\.\w]+$/s;
-    Bivio::Die->die($list_title, ': invalid list title')
-        unless $list_title =~ /^[^\n]+$/s;
-    $list_title =~ s/(["\\])/\\$1/g;
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
-    my($sender) = $req->format_email("$list_name-owner");
+    my($sender) = $np->{sender}
+	|| $np->{req}->format_email("$np->{list_name}-owner");
     $headers->{sender} = "Sender: $sender\n";
     $self->set_envelope_from($sender);
-    $headers->{'reply-to'} = qq{Reply-To: "$list_title" <}
-	. $req->format_email($list_name)
-	. ">\n"
-	if $reply_to_list;
+    my($to) = qq{"$np->{list_title}" <$np->{list_email}>};
+    $np->{reply_to} = $to
+	if $np->{reply_to_list} && !$np->{reply_to};
+    $headers->{'reply-to'}
+	= "Reply-To: $np->{reply_to}\n"
+	if $np->{reply_to};
+    $headers->{'return-path'}
+	= "Return-Path: $np->{return_path}\n"
+	if $np->{return_path};
     $headers->{from} ||= "From: $sender\n";
+    $headers->{to} = "To: $to\n";
     return $self
-	unless $subject_prefix;
+	unless $np->{subject_prefix};
     if (defined($headers->{subject})) {
 	$headers->{subject}
-	    =~ s/^subject:(?!(\s*Re:\s*)*\Q$subject_prefix\E)/Subject: $subject_prefix/is;
+	    =~ s/^subject:(?!(\s*Re:\s*)*\Q$np->{subject_prefix}\E)/Subject: $np->{subject_prefix}/is;
     }
     else {
-	$headers->{subject} = "Subject: $subject_prefix\n";
+	$headers->{subject} = "Subject: $np->{subject_prefix}\n";
     }
     return $self;
 }

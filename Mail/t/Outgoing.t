@@ -47,7 +47,7 @@ Date: Thu, 1 Jul 1999 09:33:35 -0400
 From: "Fan Tango" <foo_bar\@example.net>
 Subject: [abc] This is my subject
 Sender: some-list-owner\@$host
-To: "Some-List" <some-list\@example.com>
+To: "My Fancy List" <some-list\@$host>
 Reply-To: "My Fancy List" <some-list\@$host>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
