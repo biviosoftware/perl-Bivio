@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.75  2006/02/25 04:27:06  nagler
+  * Bivio::Agent::Request->format_email uses Email facade component
+  * Bivio::UI::Email is a new FacadeComponent that allows email formatting
+    overrides.
+  * Bivio::Mail::Outgoing->set_headers_for_list_send allows named parameters
+    and sets To: to completely override any incoming context.
+  * Bivio::Biz::Model::MailReceiveDispatchForm->internal_set_realm allows
+    overrides for setting realm
+  * Bivio::UI::Icon/View->initialize_by_facade return static references
+    which are bound to facade.  Static facade components generalized with
+    Bivio::UI::Email being one of them.
+  * Bivio::UNIVERSAL->name_parameters converts positional to named params
+  * Bivio::Util::LinuxConfig->delete_aliases added
+  * Bivio::Biz::Model::UserCreateForm allows want_bulletin override
+
   Revision 3.74  2006/02/16 16:53:25  moeller
   * Bivio::Biz::Model::ECPayment Bivio::Biz::Model::RealmOwner corrected
     unsafe_get_model() to always return an instance
