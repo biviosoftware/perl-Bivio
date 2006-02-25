@@ -143,14 +143,11 @@ use Bivio::UI::LocalFileType;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_INITIALIZED) = 0;
-# Map of facade classes to instances
 my(%_CLASS_MAP);
-# Map of facade URIs to instances.
 my(%_URI_MAP);
-# Simple class name -> full class name for components
 my(%_COMPONENTS);
-# Simple class names sorted topologically (prereqs first)
 my(@_COMPONENTS);
+my($_STATIC_COMPONENTS) = [qw(Email Icon View)];
 Bivio::IO::Config->register(my $_CFG = {
     default => Bivio::IO::Config->REQUIRED,
     # Always ends in a trailing slash
@@ -261,10 +258,10 @@ sub new {
 	delete($config->{$x});
     }
 
-    # Load all components before initializing.  This modifies @ & %_COMPONENTS.
-    foreach my $comp (keys(%$config)) {
-	my($c) = Bivio::IO::ClassLoader->map_require('FacadeComponent', $comp);
-	$c->handle_register;
+    # Load all components before initializing.  Modifies @ & %_COMPONENTS.
+    foreach my $c (keys(%$config)) {
+	Bivio::IO::ClassLoader->map_require('FacadeComponent', $c)
+	    ->handle_register;
     }
     _initialize($self, $config, $clone);
 
@@ -531,34 +528,27 @@ in a server environment.>
 sub initialize {
     my($proto, $partially) = @_;
     return if $_INITIALIZED;
-    # Prevent recursion.  Initialization isn't re-entrant
     $_INITIALIZED = 1;
-
     if ($partially) {
 	Bivio::IO::ClassLoader->map_require('Facade', $_CFG->{default});
     }
     else {
 	Bivio::IO::ClassLoader->map_require_all('Facade');
     }
-
-    # Make sure the default facade is there and was properly initialized
-    Bivio::Die->die($_CFG->{default},
-	    ': unable to find or load default Facade')
-		unless ref($_CLASS_MAP{$_CFG->{default}});
-
-    Bivio::IO::ClassLoader->simple_require('Bivio::UI::Icon');
-    Bivio::IO::ClassLoader->simple_require('Bivio::UI::View');
-
-    # Make sure we loaded all components for all Facades and
-    # initialize Icons and Views.
+    Bivio::Die->die(
+	$_CFG->{default}, ': unable to find or load default Facade',
+    ) unless ref($_CLASS_MAP{$_CFG->{default}});
     foreach my $f (values(%_CLASS_MAP)) {
 	foreach my $c (@_COMPONENTS) {
 	    Bivio::Die->die($f, ': ', $c, ': failed to load component')
-			unless $f->get($c);
+	        unless $f->unsafe_get($c);
 	}
-	# Icons used before views
-	Bivio::UI::Icon->initialize_by_facade($f);
-	Bivio::UI::View->initialize_by_facade($f);
+	foreach my $c (@$_STATIC_COMPONENTS) {
+	    $f->put($c => Bivio::IO::ClassLoader->map_require(
+		'FacadeComponent', $c
+	    )->initialize_by_facade($f));
+	}
+	$f->set_read_only;
     }
     $_IS_FULLY_INITIALIZED = $partially ? 0 : 1;
     return;
@@ -795,8 +785,6 @@ sub _initialize {
     Bivio::Die->die($self, ': unknown config (modules not ',
 	    ' FacadeComponents(?): ', $config) if %$config;
 
-    # No more modifications allowed
-    $self->set_read_only();
     return;
 }
 
