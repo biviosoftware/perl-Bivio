@@ -81,7 +81,7 @@ sub execute_ok {
     _trace($redirect) if $_TRACE;
     return "server_redirect.$redirect"
 	if $redirect;
-    _set_realm($self, $realm);
+    $self->internal_set_realm($realm);
     my($copy) = ${$self->get('message')->{content}};
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
     $self->internal_put_field(mime_parser => $parser);
@@ -146,6 +146,27 @@ sub internal_initialize {
 	    },
 	],
     });
+}
+
+=for html <a name="internal_set_realm"></a>
+
+=head2 internal_set_realm(string realm)
+
+Sets I<realm> or throws not_found.
+
+=cut
+
+sub internal_set_realm {
+    my($self, $realm) = @_;
+    $realm = ref($realm) ? $realm
+	: $self->new_other('RealmOwner')
+	->unauth_load_by_id_or_name_or_die($realm);
+    $self->throw_die('NOT_FOUND', {
+	entity => $realm,
+        message => 'cannot mail to a default realm or offline user',
+    }) if $realm->is_default || $realm->is_offline_user;
+    $self->get_request->set_realm($realm);
+    return;
 }
 
 =for html <a name="parse_recipient"></a>
@@ -219,24 +240,6 @@ sub _from_email {
     my($from) = @_;
     ($from) = $from && Bivio::Mail::Address->parse($from);
     return $from && lc($from);
-}
-
-# _set_realm(self, any realm)
-#
-# Validates incoming realm is correct.
-#
-sub _set_realm {
-    my($self, $realm) = @_;
-    my($req) = $self->get_request;
-    $realm = ref($realm) ? $realm
-	: $self->new_other('RealmOwner')
-	->unauth_load_by_id_or_name_or_die($realm);
-    $self->throw_die('NOT_FOUND', {
-	entity => $realm,
-        message => 'cannot mail to a default realm or offline user',
-    }) if $realm->is_default || $realm->is_offline_user;
-    $req->set_realm($realm);
-    return;
 }
 
 # _task(self, string op) : Bivio::Agent::TaskId
