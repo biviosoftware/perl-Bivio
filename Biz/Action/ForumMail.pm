@@ -17,13 +17,14 @@ sub execute {
     my($n) = $req->get_nested(qw(auth_realm owner name));
     Bivio::Mail::Outgoing->new($in)
 	->set_recipients($to)
-	->set_headers_for_list_send(
-	    $n,
-	    $req->get_nested(qw(auth_realm owner display_name)),
-	    $mr->new_other('Forum')->load->get('want_reply_to'),
-	    "[$n]",
-	    $req,
-        )->enqueue_send($req);
+	->set_headers_for_list_send({
+	    list_name => $n,
+	    list_title => $req->get_nested(qw(auth_realm owner display_name)),
+	    reply_to_list => $mr->new_other('Forum')->load->get('want_reply_to'),
+	    subject_prefix => "[$n]",
+	    req => $req,
+# From, Return_path, etc.
+    })->enqueue_send($req);
     return;
 }
 
