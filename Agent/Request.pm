@@ -444,12 +444,11 @@ sub format_email {
     # Will bomb if no auth_realm.
     return $self->get('auth_realm')->format_email
 	unless defined($email);
-    $email .= '@'
-	. ($self->unsafe_get('Bivio::UI::Facade')
-	    ? Bivio::UI::Facade->get_value('mail_host', $self)
-	    : Sys::Hostname::hostname())
-	unless $email =~ /\@/;
-    return $email;
+    return $email
+	if $email =~ /\@/;
+    return $email . '@' . Sys::Hostname::hostname()
+	unless my $f =  $self->unsafe_get('Bivio::UI::Facade');
+    return $f->get('Email')->format($email);
 }
 
 =for html <a name="format_help_uri"></a>
