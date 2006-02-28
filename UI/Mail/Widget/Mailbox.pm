@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Mail::Widget::Mailbox;
 use strict;
@@ -57,29 +57,6 @@ for allowed attribute types.
 use Bivio::Mail::RFC822;
 
 #=VARIABLES
-my($_IDI) = __PACKAGE__->instance_data_index;
-
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attrs) : Bivio::UI::Mail::Widget::Mailbox
-
-=head2 static new(any email, any name) : Bivio::UI::Mail::Widget::Mailbox
-
-Creates a new Mailbox widget.  I<email> and I<name> will be set
-to the attributes by the same names.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(_new_args(@_));
-    $self->[$_IDI] = {};
-    return $self;
-}
 
 =head1 METHODS
 
@@ -95,10 +72,29 @@ Initializes child widgets.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{email} = $self->initialize_attr('email');
-    $fields->{name} = $self->unsafe_initialize_attr('name');
+    $self->initialize_attr('email');
+    $self->unsafe_initialize_attr('name');
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any args, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+
+sub internal_new_args {
+    my(undef, $email, $name, $attrs) = @_;
+    return '"email" attribute must be defined'
+	unless $email;
+    return {
+	email => $email,
+	(defined($name) ? (name => $name) : ()),
+	($attrs ? %$attrs : ()),
+    };
 }
 
 =for html <a name="render"></a>
@@ -112,42 +108,20 @@ I<source>.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
     my($b) = '';
-    if ($self->unsafe_render_value('name', $fields->{name}, $source, \$b)) {
-	$$buffer .= Bivio::Mail::RFC822->escape_header_phrase($b).' <';
-#TODO: Check syntax??
-	$self->render_value('email', $fields->{email}, $source, $buffer);
-	$$buffer .= '>';
-    }
-    else {
-	# No <> if no phrase.
-#TODO: Check syntax??
-	$self->render_value('email', $fields->{email}, $source, $buffer);
-    }
+    my($e) = $self->get_request->format_email(
+	${$self->render_attr('email', $source)});
+    $$buffer .= $self->unsafe_render_attr('name',  $source, \$b)
+	    ? Bivio::Mail::RFC822->escape_header_phrase($b) . " <$e>"
+	    : $e;
     return;
 }
 
 #=PRIVATE METHODS
 
-# _new_args(proto, any email, ...) : array
-#
-# Returns arguments to be passed to Attributes::new.
-#
-sub _new_args {
-    my($proto, $email, $name) = @_;
-    return ($proto, $email) if ref($email) eq 'HASH';
-    return ($proto, {
-	email => $email,
-	name => $name,
-    }) if defined($email);
-    Bivio::Die->die('invalid arguments to new (missing email)');
-    # DOES NOT RETURN
-}
-
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
