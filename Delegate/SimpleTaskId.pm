@@ -438,6 +438,15 @@ sub get_delegate_info {
  	    ANYBODY
  	    Action.RealmFile->execute_public
  	)],
+	[qw(
+	    GENERAL_CONTACT
+	    45
+	    GENERAL
+	    ANYBODY
+	    Model.ContactForm
+	    View.contact
+	    next=SITE_ROOT
+	)],
     ];
 }
 
