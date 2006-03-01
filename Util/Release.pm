@@ -515,10 +515,9 @@ sub install_facades {
 	    ->get_local_file_root;
 	_umask('facades_umask');
 	_chdir($facades_dir, $output);
-	_system("tar cf - . | (cd '$r' && tar xf -)", $output);
-	_chdir($r, $output);
 	_system("chown -h -R '$_CFG->{facades_user}' .", $output);
 	_system("chgrp -h -R '$_CFG->{facades_group}' .", $output);
+	_system("tar cf - . | (cd '$r' && tar xpf -)", $output);
 	return;
     });
 }
