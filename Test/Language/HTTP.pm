@@ -57,6 +57,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
     email_user => $ENV{LOGNAME} || $ENV{USER},
     home_page_uri => Bivio::IO::Config->REQUIRED,
+    local_mail_host => Sys::Hostname::hostname(),
     remote_mail_host => undef,
     mail_dir => "$ENV{HOME}/btest-mail/",
     mail_tries => 60,
@@ -304,7 +305,7 @@ sub generate_local_email {
 	. $_CFG->{email_tag}
 	. $suffix
 	. '@'
-	. Sys::Hostname::hostname();
+	. $_CFG->{local_mail_host};
     return wantarray ? ($email, "btest_$suffix") : $email;
 }
 
@@ -319,10 +320,7 @@ I<facade_uri>. prefix if it is supplied.
 
 sub generate_remote_email {
     my($self, $base, $facade_uri) = @_;
-    return $base
-	. '@'
-	. ($facade_uri ? "$facade_uri." : '')
-	. $_CFG->{remote_mail_host};
+    return _facade("$base\@$_CFG->{remote_mail_host}", $self, $facade_uri);
 }
 
 =for html <a name="get_content"></a>
@@ -511,12 +509,7 @@ I<facade_uri> is a valid facade.
 =cut
 
 sub home_page_uri {
-    my(undef, $facade_uri) = @_;
-    my($res) = $_CFG->{home_page_uri};
-    $res =~ s{(?<=://)}{$facade_uri.}
-	|| Bivio::Die->die($res, ': unable to create facade URI')
-	if $facade_uri;
-    return $res;
+    return _facade($_CFG->{home_page_uri}, @_)
 }
 
 =for html <a name="random_string"></a>
@@ -1069,10 +1062,26 @@ sub _create_form_request {
         : HTTP::Request::Common::POST($uri, $form);
 }
 
+# _facade(string, to_fix, self, facade) : string
+sub _facade {
+    my($to_fix, undef, $facade_uri) = @_;
+    return $to_fix
+	unless $facade_uri;
+    my($default) = Bivio::IO::ClassLoader->simple_require(
+	'Bivio::Test::Request')
+	->initialize_fully
+	->get('Bivio::UI::Facade')
+	->get('uri');
+    $to_fix =~ s{^(.*?)\b$default\b}{$1$facade_uri}ix
+	|| $to_fix =~ s{(?<=\://)|(?<=\@)}{$facade_uri.}ix
+	|| Bivio::Die->die($to_fix, ': unable to fixup uri with ', $facade_uri);
+    return $to_fix
+}
+
 # _find_row(string table_name, string find_heading, string find_value) : hashref
 #
 # Returns the hashref for row identified by I<table_name>, <I>find_heading
-# and <I>find_value, using L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.  
+# and <I>find_value, using L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.
 #
 sub _find_row {
     my($self, $table_name, $find_heading, $find_value) = @_;

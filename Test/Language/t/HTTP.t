@@ -15,6 +15,7 @@ BEGIN {
 	    email_user => 'hello',
 	    mail_dir => ($mail_dir = Cwd::getcwd() . '/tmp'),
 	    mail_tries => 1,
+	    remote_mail_host => 'petshop.example.com',
 	},
     });
 }
@@ -93,7 +94,6 @@ foreach my \$m (verify_local_mail(\$e1, 'You have mail', 2)) {
     \$m =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
         or Bivio::Die->die(\$m, ': bad return value from verify_local_mail()');
 }
-
 EOF
 	    [<<'EOF'] => [undef],
 test_setup('HTTP');
@@ -144,6 +144,10 @@ submit_form({
 });
 follow_link('MyAccount');
 debug_print('Forms');
+my($r) = generate_remote_email(my $p = random_string());
+$r eq $p . '@petshop.example.com' or die($r);
+$r = generate_remote_email($p, 'any_facade');
+$r eq $p . '@any_facade.example.com' or die($r);
 EOF
 	],
     ],
