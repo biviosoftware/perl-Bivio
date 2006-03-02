@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.76  2006/02/25 20:10:48  nagler
+  * Bivio::Biz::Model::UserPasswordQueryForm->execute_ok subsumes code
+    that was in validate so can be directly executed.
+
   Revision 3.75  2006/02/25 04:27:06  nagler
   * Bivio::Agent::Request->format_email uses Email facade component
   * Bivio::UI::Email is a new FacadeComponent that allows email formatting
