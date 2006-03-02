@@ -1,0 +1,99 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
+req()->set_realm('demo');
+req()->set_user('demo');
+my($m) = Bivio::Biz::Model->new(req(), 'RealmMail');
+$m->create_from_rfc822(\(<<'EOF'));
+From: a@a.a
+Message-ID: <a1@a.a>
+Date: Sun, 1 May 2005 10:11:41 -0600
+Subject: s
+
+B
+EOF
+my($rfid) = $m->get('realm_file_id');
+my($email) = $m->new_other('Email')->load->get('email');
+[{
+    compute_params => => sub {
+	my($case, $params) = @_;
+	my($rmb) = class()->new(req());
+	$rmb->new_other('MailReceiveDispatchForm')->execute(req(),  {
+	    recipient => $rmb->return_path(
+		req()->get('auth_id'),
+		$email,
+		$rfid,
+	    ),
+	    client_addr => '1.2.3.4',
+	    message => {
+		name => '',
+		content => \(<<'EOF'),
+From MAILER-DAEMON@bivio.biz  Sun Feb 26 06:02:39 2006
+Return-Path: <MAILER-DAEMON@bivio.biz>
+Date: Sun, 26 Feb 2006 06:02:38 -0700
+From: Mail Delivery Subsystem <MAILER-DAEMON@bivio.biz>
+Message-Id: <200602261302.k1QD2cv23383@bivio.biz>
+To: postmaster@bivio.biz
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+        boundary="k1QD2cv23383.1140958958/bivio.biz"
+Subject: Postmaster notify: see transcript for details
+Auto-Submitted: auto-generated (postmaster-notification)
+
+This is a MIME-encapsulated message
+
+--k1QD2cv23383.1140958958/bivio.biz
+
+The original message was received at Sun, 26 Feb 2006 06:02:38 -0700
+from localhost
+with id k1QD2cu23383
+
+   ----- The following addresses had permanent fatal errors -----
+no-such-user@ieee.bivio.biz
+    (reason: addressee unknown)
+
+   ----- Transcript of session follows -----
+Error: User Not Found
+550 5.1.1 no-such-user@bivio.biz... User unknown
+
+--k1QD2cv23383.1140958958/bivio.biz
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns; bivio.biz
+Arrival-Date: Sun, 26 Feb 2006 06:02:38 -0700
+
+Final-Recipient: RFC822; no-such-user@bivio.biz
+Action: failed
+Status: 5.1.1
+Diagnostic-Code: X-Unix; 67
+Last-Attempt-Date: Sun, 26 Feb 2006 06:02:38 -0700
+
+--k1QD2cv23383.1140958958/bivio.biz
+Content-Type: message/rfc822
+
+Return-Path: <from-user@example.com>
+Date: Sun, 26 Feb 2006 06:02:38 -0700
+From: from-user@example.com
+Message-Id: <200602261302.k1QD2cu23383@bivio.biz>
+To: no-such-user@bivio.biz
+Subject: Here ya go
+
+bla
+
+--k1QD2cv23383.1140958958/bivio.biz--
+EOF
+	    },
+	});
+	return [req()];
+    },
+    compute_return => sub {
+	return [req()->get(class())->get(qw(realm_file_id email reason))];
+    },
+    object => sub {
+	class();
+    },
+} => [
+    execute => [
+	[] => [$rfid, $email, 'addressee unknown'],
+    ],
+]];
