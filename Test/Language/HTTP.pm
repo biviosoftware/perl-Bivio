@@ -51,15 +51,14 @@ use Sys::Hostname ();
 use URI ();
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
-    email_user => $ENV{LOGNAME} || $ENV{USER},
+    # NOTE: There is no ENV when loaded under apache
+    email_user => $ENV{LOGNAME} || $ENV{USER} || 'btest',
     home_page_uri => Bivio::IO::Config->REQUIRED,
     local_mail_host => Sys::Hostname::hostname(),
     remote_mail_host => undef,
-    mail_dir => "$ENV{HOME}/btest-mail/",
+    mail_dir => $ENV{HOME} ? "$ENV{HOME}/btest-mail/" : '',
     mail_tries => 60,
     email_tag => '+btest_',
 });
