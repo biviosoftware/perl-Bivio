@@ -305,7 +305,7 @@ sub generate_local_email {
 	. $suffix
 	. '@'
 	. $_CFG->{local_mail_host};
-    return wantarray ? ($email, "btest_$suffix") : $email;
+    return $email;
 }
 
 =for html <a name="generate_remote_email"></a>
