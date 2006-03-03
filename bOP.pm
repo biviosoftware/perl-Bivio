@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.77  2006/03/02 06:18:01  aviggio
+  * Bivio::Delegate::SimpleTaskId GENERAL_CONTACT task added
+  * Bivio::Test::Language::HTTP support for email facade testing
+  * Bivio::UI::Mail::Widget::Mailbox->internal_new_args added
+  * Bivio::Util::Release preserve permissions
+
   Revision 3.76  2006/02/25 20:10:48  nagler
   * Bivio::Biz::Model::UserPasswordQueryForm->execute_ok subsumes code
     that was in validate so can be directly executed.
