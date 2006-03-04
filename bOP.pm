@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.78  2006/03/03 00:28:36  david
+  * Bivio::SQL::PropertySupport support for RealmMailBounce
+  * Bivio::Test::Language::HTTP->generate_local_email only returns the
+    generated email, not the email/username pair when called in list context
+
   Revision 3.77  2006/03/02 06:18:01  aviggio
   * Bivio::Delegate::SimpleTaskId GENERAL_CONTACT task added
   * Bivio::Test::Language::HTTP support for email facade testing
