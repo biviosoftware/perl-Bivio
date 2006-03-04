@@ -289,9 +289,7 @@ sub follow_link_in_table {
 
 =head2 generate_local_email(string suffix) : array
 
-Returns an email address based on I<email_user> and I<suffix> (test_name()
-by default) and a name based on I<suffix>.  Used in scalar context, just returns
-the email.
+Returns an email address based on I<email_user> and I<suffix>.
 
 =cut
 
@@ -299,13 +297,11 @@ sub generate_local_email {
     my($self, $suffix) = @_;
     Bivio::IO::Alert->warn_deprecated('you need to pass random_string(); random_string will not be supported in future')
         unless $suffix;
-    $suffix ||= $self->random_string;
-    my($email) = $_CFG->{email_user}
+    return $_CFG->{email_user}
 	. $_CFG->{email_tag}
-	. $suffix
+	. ($suffix || $self->random_string)
 	. '@'
 	. $_CFG->{local_mail_host};
-    return $email;
 }
 
 =for html <a name="generate_remote_email"></a>
