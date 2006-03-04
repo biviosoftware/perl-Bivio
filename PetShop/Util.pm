@@ -271,7 +271,7 @@ Add CalendarEvent table
 
 sub internal_upgrade_db {
     my($self) = @_;
-    $self->internal_upgrade_db_folder_id;
+    $self->internal_upgrade_db_mail_bounce;
     return;
 }
 
