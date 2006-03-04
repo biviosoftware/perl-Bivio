@@ -190,6 +190,17 @@ CREATE TABLE realm_mail_t (
 )
 /
 
+CREATE TABLE realm_mail_bounce_t (
+  realm_file_id NUMERIC(18) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  reason VARCHAR(100) NOT NULL,
+  CONSTRAINT realm_mail_bounce_t1 PRIMARY KEY(realm_file_id, email)
+)
+/
+
 CREATE TABLE realm_owner_t (
   realm_id NUMERIC(18),
   name VARCHAR(30) NOT NULL,
