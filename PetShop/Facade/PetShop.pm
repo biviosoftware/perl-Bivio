@@ -171,6 +171,8 @@ my($_SELF) = __PACKAGE__->new({
 	    MAIL_RECEIVE_DISPATCH => 'mail-handler',
  	    USER_MAIL_RECEIVE => '?/mail-handler-',
  	    FORUM_MAIL_RECEIVE => '?/mail-handler-',
+	    USER_MAIL_BOUNCE => '?/mail-handler-'
+                 . Bivio::Biz::Model->get_instance('RealmMailBounce')->TASK_URI,
 	    # Only needs to be defined for testing
 	    MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore',
 	    MAIL_RECEIVE_NOT_FOUND => undef,
