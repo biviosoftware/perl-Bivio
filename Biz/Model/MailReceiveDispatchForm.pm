@@ -75,7 +75,7 @@ sub execute_ok {
     Bivio::Type::UserAgent->MAIL->execute($req, 1);
     $req->put_durable(client_addr => $self->get('client_addr'));
     $self->put_on_request(1);
-    my($redirect, $realm, $op) = _email_alias($self);
+    my($redirect, $realm, $op, $plus_tag) = _email_alias($self);
     $redirect = _ignore_email($self)
 	unless $redirect;
     _trace($redirect) if $_TRACE;
@@ -86,6 +86,7 @@ sub execute_ok {
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
     $self->internal_put_field(mime_parser => $parser);
     $self->internal_put_field(task_id => _task($self, $op));
+    $self->internal_put_field(plus_tag => $plus_tag);
     $self->internal_put_field(from_email =>
 	_from_email(
 	    $parser->head->get('from')
@@ -144,6 +145,11 @@ sub internal_initialize {
 		type => 'Bivio::Agent::TaskId',
 		constraint => 'NONE',
 	    },
+	    {
+		name => 'plus_tag',
+		type => 'String',
+		constraint => 'NONE',
+	    },
 	],
     });
 }
@@ -171,7 +177,7 @@ sub internal_set_realm {
 
 =for html <a name="parse_recipient"></a>
 
-=head2 parse_recipient() : array
+=head2 parse_recipient(boolean ignore_dashes) : array
 
 Returns (realm, op, plus_tag, domain) from recipient.  I<op> may be undef.
 I<realm> may be a Model.RealmOwner, name, or realm_id.
@@ -179,7 +185,7 @@ I<realm> may be a Model.RealmOwner, name, or realm_id.
 Two addresses are parsed:
 
    op.realm+plus_tag@domain
-   realm-op+plus_tag@domain
+   realm-op+plus_tag@domain  (only if !$ignore_dashes)
 
 Where +plus_tag is like sendmail style +anything after the address.  You don't
 need +plus_tag.
@@ -187,14 +193,15 @@ need +plus_tag.
 =cut
 
 sub parse_recipient {
-    my($self) = @_;
+    my($self, $ignore_dashes) = @_;
     my($to) = $self->get('recipient');
-    $to =~ s/@(.*)$//;
-    my($domain) = $1;
-    $to =~ s/\+(.*)$//g;
-    my($plus_tag) = $1;
-    my($name, $op) = $to =~ /^(\w+)(?:-([^\.]+))?$/;
-    ($op, $name) = $to =~/^(?:(.+)\.)(\w+)$/
+    _trace('to: ', $to) if $_TRACE;
+    my($domain) = $1
+	if $to =~ s/\@(.*)$//;
+    my($plus_tag) = $1
+	if $to =~ s/\+(.*)$//;
+    my($name, $op) = $ignore_dashes ? () : $to =~ /^(\w+)(?:-([^\.]+))?$/;
+    ($op, $name) = $to =~/^(?:([^\.]+)\.)?([\w-]+)$/
 	unless $name;
     _trace('name: ', $name, ' op: ', $op, ' plus_tag: ', $plus_tag,
 	' domain: ', $domain)
@@ -211,7 +218,7 @@ sub _email_alias {
     my($realm, $op, $plus_tag, $domain) = $self->parse_recipient;
     Bivio::UI::Facade->setup_request($domain, $req);
     my($ea) = $self->new_other('EmailAlias');
-    return (undef, $realm, $op)
+    return (undef, $realm, $op, $plus_tag)
 	unless $req->get('task')->unsafe_get_redirect('email_alias_task', $req)
 	&& $ea->unsafe_load({incoming => $self->get('recipient')});
     my($n) = $ea->get('outgoing');
