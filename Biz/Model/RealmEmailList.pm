@@ -8,12 +8,14 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = Bivio::Biz::Model->get_instance('Email')->get_field_type('email');
 
 sub get_recipients {
-    my($self) = @_;
+    my($self, $iterate_handler) = @_;
     my($method) = 'map_' . ($self->is_loaded ? 'rows' : 'iterate');
     my($t) = $self->get_field_type('Email.email');
     return $self->$method(sub {
         my($e) = $self->get('Email.email');
-	return $t->is_ignore($e) ? () : $e;
+	return $t->is_ignore($e) ? ()
+	    : $iterate_handler ? $iterate_handler->($self)
+	    : $e;
     });
 }
 
