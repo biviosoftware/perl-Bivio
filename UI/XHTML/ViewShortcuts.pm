@@ -105,6 +105,15 @@ sub vs_form_error_title {
 	    'err_title'));
 }
 
+sub vs_list {
+    my($proto, $model, $columns, $attrs) = @_;
+    return Table(
+	$model,
+	$columns,
+	$proto->vs_table_attrs(list => $attrs),
+    );
+}
+
 sub vs_list_form {
     my($proto, $form, $columns, $empty_list, $buttons, $table_attrs) = @_;
     my($f) = Bivio::Biz::Model->get_instance($form);
@@ -126,10 +135,8 @@ sub vs_list_form {
 			unless exists($_->{label});
 		    $_;
 		} @$columns),
-	    ], {
-		class => 'list',
-		%{$table_attrs || {}},
-	    }),
+	    ], $proto->vs_table_attrs(list => $table_attrs),
+	    ),
 	    $buttons ? $buttons : Tag(
 		'div',
 		# cell_class tells StandardSubmit to produce XHTML
@@ -146,7 +153,7 @@ sub vs_list_form {
 }
 
 sub vs_paged_detail {
-    my(undef, $model, $detail) = @_;
+    my(undef, $model, $list_uri_args, $detail) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_detail.";
     return Tag(div => Join([
@@ -160,7 +167,8 @@ sub vs_paged_detail {
 				? (
 				    [
 					$x,
-					qw(->format_uri THIS_LIST FORUM_MAIL_LIST),
+					'->format_uri',
+					@$list_uri_args,
 				    ],
 				    $_,
 			        ) : (
@@ -191,7 +199,7 @@ sub vs_paged_detail {
 }
 
 sub vs_paged_list {
-    my(undef, $model, $columns, $attrs) = @_;
+    my($proto, $model, $columns, $attrs) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_list.";
     return Tag(div => If(
@@ -222,8 +230,7 @@ sub vs_paged_list {
 		Table(
 		    $model,
 		    $columns,
-		    # Cause Table() to generate XHTML
-		    {class => 'paged_list', %{$attrs || {}}},
+		    $proto->vs_table_attrs(paged_list => $attrs),
 		 ),
 		'bottom',
 	    ),
@@ -296,13 +303,23 @@ sub vs_simple_form {
     );
 }
 
+sub vs_table_attrs {
+    my(undef, $class, $attrs) = @_;
+    return {
+	class => $class,
+	even_row_class => 'even',
+	odd_row_class => 'odd',
+	%{$attrs || {}},
+    };
+}
+
 sub vs_tree_list {
     my($proto, $model, $columns, $attrs) = @_;
     $columns->[0] = $proto->vs_tree_list_control($model, $columns->[0]);
     return Table(
 	$model,
 	$columns,
-	{class => 'tree_list', %{$attrs || {}}},
+	$proto->vs_table_attrs(tree_list => $attrs),
     );
 }
 
