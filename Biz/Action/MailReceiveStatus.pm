@@ -61,6 +61,18 @@ sub execute {
     return 0;
 }
 
+=for html <a name="execute_forbidden"></a>
+
+=head2 static execute_forbidden(Bivio::Agent::Request req) : boolean
+
+Sets FORBIDDEN.
+
+=cut
+
+sub execute_forbidden {
+    return shift->execute(shift, Bivio::Ext::ApacheConstants->FORBIDDEN);
+}
+
 =for html <a name="execute_no_resources"></a>
 
 =head2 static execute_no_resources(Bivio::Agent::Request req) : boolean
