@@ -848,6 +848,73 @@ EOF
     return;
 }
 
+=for html <a name="internal_upgrade_db_mail_bounce"></a>
+
+=head2 internal_upgrade_db_mail_bounce()
+
+Adds EmailAlias table.
+
+=cut
+
+sub internal_upgrade_db_mail_bounce {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE realm_mail_bounce_t (
+  realm_file_id NUMERIC(18) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  reason VARCHAR(100) NOT NULL,
+  CONSTRAINT realm_mail_bounce_t1 PRIMARY KEY(realm_file_id, email)
+)
+/
+--
+-- realm_mail_bounce_t
+--
+ALTER TABLE realm_mail_bounce_t
+  ADD CONSTRAINT realm_mail_bounce_t2
+  foreign key (realm_file_id)
+  references realm_file_t(realm_file_id)
+/
+CREATE INDEX realm_mail_bounce_t3 ON realm_mail_bounce_t (
+  realm_file_id
+)
+/
+ALTER TABLE realm_mail_bounce_t
+  ADD CONSTRAINT realm_mail_bounce_t4
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX realm_mail_bounce_t5 ON realm_mail_bounce_t (
+  realm_id
+)
+/
+ALTER TABLE realm_mail_bounce_t
+  ADD CONSTRAINT realm_mail_bounce_t6
+  foreign key (user_id)
+  references user_t(user_id)
+/
+CREATE INDEX realm_mail_bounce_t7 ON realm_mail_bounce_t (
+  user_id
+)
+/
+CREATE INDEX realm_mail_bounce_t8 ON realm_mail_bounce_t (
+  modified_date_time
+)
+/
+CREATE INDEX realm_mail_bounce_t9 ON realm_mail_bounce_t (
+  reason
+)
+/
+CREATE INDEX realm_mail_bounce_t10 ON realm_mail_bounce_t (
+  email
+)
+/
+EOF
+    return;
+}
+
 =for html <a name="internal_upgrade_db_multiple_realm_roles"></a>
 
 =head2 internal_upgrade_db_multiple_realm_roles()
