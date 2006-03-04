@@ -383,7 +383,9 @@ sub get_delegate_info {
 	    Model.MailReceiveDispatchForm
             next=MAIL_RECEIVE_NOT_FOUND
             NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+            MODEL_NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
             NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
+	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
 	    email_alias_task=MAIL_RECEIVE_FORWARD
 	    ignore_task=MAIL_RECEIVE_IGNORE
 	)],
@@ -447,6 +449,21 @@ sub get_delegate_info {
 	    View.contact
 	    next=SITE_ROOT
 	)],
+	[qw(
+            USER_MAIL_BOUNCE
+            46
+            USER
+            ANYBODY
+            Model.RealmMailBounce
+            Action.MailReceiveStatus->execute
+        )],
+	[qw(
+            MAIL_RECEIVE_FORBIDDEN
+            47
+            GENERAL
+            ANYBODY
+            Action.MailReceiveStatus->execute_forbidden
+        )],
     ];
 }
 
