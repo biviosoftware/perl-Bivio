@@ -4,6 +4,7 @@ use strict;
 use Bivio::Test;
 use Bivio::Mail::Incoming;
 use Bivio::Test::Request;
+use Bivio::Test::Language::HTTP;
 
 my($req) = Bivio::Test::Request->initialize_fully;
 # use User::pwent ();
@@ -41,14 +42,14 @@ Fan Tango
 EOF
 
 
-my($host) = Sys::Hostname::hostname();
+my($host) = $req->format_email('x') =~ /\@(.+)/;
 my($_OUT) = <<"EOF";
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 From: "Fan Tango" <foo_bar\@example.net>
 Subject: [abc] This is my subject
 Sender: some-list-owner\@$host
 To: "My Fancy List" <some-list\@$host>
-Reply-To: "My Fancy List" <some-list\@$host>
+Reply-To: some-list\@$host
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
