@@ -16,7 +16,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::UserRealmList;
-    Bivio::Biz::Model::UserRealmList->new($req);
 
 =cut
 
