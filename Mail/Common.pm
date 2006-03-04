@@ -84,7 +84,7 @@ sub discard_queued_messages () {
 
 =for html <a name="enqueue_send"></a>
 
-=head2 enqueue_send(Bivio::Agent::Request req)
+=head2 enqueue_send(Bivio::Agent::Request req) : self
 
 Queues this message for sending with
 L<send_queued_messages|"send_queued_messages">.
@@ -101,7 +101,7 @@ sub enqueue_send {
         $req->push_txn_resource(ref($self));
     }
     push(@$_QUEUE, $self);
-    return;
+    return $self;
 }
 
 =for html <a name="format_as_bounce"></a>
@@ -130,7 +130,9 @@ Subject: ERROR: unable to send mail
 Sender: "$0" <$u>
 
 Error while trying to message to $recipients:
-    $err
+
+    (reason: $err)
+
 -------------------- Original Message Follows ----------------
 $$msg
 EOF
