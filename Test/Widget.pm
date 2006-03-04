@@ -57,6 +57,8 @@ override of I<class_name> via I<attrs>.
 sub new_unit {
     my($proto, $class_name, $attrs) = @_;
     ($attrs ||= {})->{class_name} ||= $class_name;
+    Bivio::Agent::Task->initialize;
+    Bivio::Test::Request->setup_facade;
     return $proto->new($attrs);
 }
 
