@@ -124,14 +124,24 @@ uses as the basis for the message.
 
 sub new {
     my($self) = shift->SUPER::new;
-    my($incoming) = @_;
+    my($msg) = @_;
     my($fields) = $self->[$_IDI] = {};
-    if (UNIVERSAL::isa($incoming, 'Bivio::Mail::Incoming')) {
+    if (UNIVERSAL::isa($msg, 'Bivio::Mail::Incoming')) {
 	my($body);
-	$incoming->get_body(\$body);
+	$msg->get_body(\$body);
 	$fields->{body} = $body;
-	$fields->{headers} = $incoming->get_headers();
-        $fields->{env_from} = $incoming->get_from();
+	$fields->{headers} = $msg->get_headers();
+        $fields->{env_from} = $msg->get_from();
+    }
+    elsif (UNIVERSAL::isa($msg, __PACKAGE__)) {
+	# NOTE: This shares \$body if it exists, which neither class nor
+	# its parents modify.  Action.ForumMail depends on this so that the
+	# server doesn't grow too large
+	while (my($k, $v) = each(%{$msg->[$_IDI]})) {
+	    $fields->{$k} = ref($v) eq 'ARRAY' ? [@$v]
+		: ref($v) eq 'HASH' ? {%$v}
+		: $v;
+	}
     }
     else {
 	$fields->{headers} = {};
@@ -308,7 +318,7 @@ sub set_from_with_user {
 
 =for html <a name="set_header"></a>
 
-=head2 set_header(string name, string value)
+=head2 set_header(string name, string value) : self
 
 Sets a particular header field.  The previous value of the field is
 deleted.  The newline will be appended to the value.
@@ -322,7 +332,7 @@ sub set_header {
     my($fields) = $self->[$_IDI];
 #TODO: Should assert header name is valid and quote value if need be
     $fields->{headers}->{lc($name)} = $name . ': ' . $value . "\n";
-    return;
+    return $self;
 }
 
 =for html <a name="set_headers_for_list_send"></a>
@@ -348,7 +358,6 @@ sub set_headers_for_list_send {
 	$np->{subject_prefix} = "$np->{list_name}:";
     }
     if ($np->{list_email}) {
-	$np->{reply_to} ||= $np->{list_email};
 	$np->{sender} ||= $np->{list_email};
     }
     else {
@@ -358,25 +367,22 @@ sub set_headers_for_list_send {
 	    unless $np->{list_title} =~ /^[^\n]+$/s;
 	$np->{list_title} =~ s/(["\\])/\\$1/g;
 	$np->{list_email} = $np->{req}->format_email($np->{list_name});
+	# Old style is with -owner.
+	$np->{sender} ||= $np->{req}->format_email("$np->{list_name}-owner");
     }
     my($fields) = $self->[$_IDI];
     my($headers) = $fields->{headers};
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
-    my($sender) = $np->{sender}
-	|| $np->{req}->format_email("$np->{list_name}-owner");
-    $headers->{sender} = "Sender: $sender\n";
-    $self->set_envelope_from($sender);
-    my($to) = qq{"$np->{list_title}" <$np->{list_email}>};
-    $np->{reply_to} = $to
-	if $np->{reply_to_list} && !$np->{reply_to};
-    $headers->{'reply-to'}
-	= "Reply-To: $np->{reply_to}\n"
-	if $np->{reply_to};
-    $headers->{'return-path'}
-	= "Return-Path: $np->{return_path}\n"
+    $headers->{sender} = "Sender: $np->{sender}\n";
+    $self->set_envelope_from($np->{sender});
+    my($to) = 
+    $np->{reply_to} ||= $np->{list_email};
+    $headers->{'reply-to'} = "Reply-To: $np->{reply_to}\n"
+	if $np->{reply_to_list};
+    $headers->{'return-path'} = "Return-Path: $np->{return_path}\n"
 	if $np->{return_path};
-    $headers->{from} ||= "From: $sender\n";
-    $headers->{to} = "To: $to\n";
+    $headers->{from} ||= "From: $np->{sender}\n";
+    $headers->{to} = qq{To: "$np->{list_title}" <$np->{list_email}>\n};
     return $self
 	unless $np->{subject_prefix};
     if (defined($headers->{subject})) {
