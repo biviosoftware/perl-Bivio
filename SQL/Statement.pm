@@ -354,6 +354,22 @@ sub SELECT_AS {
     }
 }
 
+=for html <a name="SELECT_LITERAL"></a>
+
+=head2 static SELECT_LITERAL(string literal) : hash_ref
+
+Return the select of a literal
+
+=cut
+
+sub SELECT_LITERAL {
+    my($proto, $literal) = @_;
+    return {
+	columns => [$literal],
+        build => sub {$literal},
+    }
+}
+
 =for html <a name="new"></a>
 
 =head2 static new() : Bivio::SQL::Statement
