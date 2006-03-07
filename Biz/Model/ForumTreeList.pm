@@ -15,7 +15,7 @@ sub internal_default_expand {
     my($self) = @_;
     return [map(
 	$_->{is_parent} ? $_->{forum_id} : (),
-	values(%{_forum_map($self)}),
+	values(%{$self->parent_map}),
     )];
 }
 
@@ -46,7 +46,7 @@ sub internal_initialize {
 
 sub internal_is_parent {
     my($self, $row) = @_;
-    return _forum_map($self)->{$row->{'Forum.forum_id'}}->{is_parent};
+    return $self->parent_map->{$row->{'Forum.forum_id'}}->{is_parent};
 }
 
 sub internal_leaf_node_uri {
@@ -56,7 +56,7 @@ sub internal_leaf_node_uri {
 sub internal_load_rows {
     my($self) = @_;
     my($rows) = shift->SUPER::internal_load_rows(@_);
-    my($map) = _forum_map($self);
+    my($map) = $self->parent_map;
     return [
 	map({
 	    $_->{mail_recipient} = $map->{
@@ -68,7 +68,7 @@ sub internal_load_rows {
 
 sub internal_parent_id {
     my($self, $id) = @_;
-    return _forum_map($self)->{$id}->{parent_id};
+    return $self->parent_map->{$id}->{parent_id};
 }
 
 sub internal_prepare_statement {
@@ -82,8 +82,9 @@ sub internal_root_parent_node_id {
     return Bivio::Auth::Realm->get_general->get('id');
 }
 
-sub _forum_map {
+sub parent_map {
     my($self) = @_;
+    # Shares data so don't modify
     return $self->[$_IDI]
 	if $self->[$_IDI];
     my($pid) =  {};
@@ -98,6 +99,7 @@ sub _forum_map {
 		return (
 		    $it->get('RealmUser.realm_id') => {
 			forum_id => $it->get('RealmUser.realm_id'),
+			roles => $it->get('roles'),
 			mail_recipient => grep(
 			    $_->eq_mail_recipient,
 			    @{$it->get('roles')},
