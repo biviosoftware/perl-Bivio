@@ -92,7 +92,7 @@ sub new {
 			map(
 			    ($_ => $row->{$_}),
 			    keys(%{@$expect_copy == 1 ? $expect_copy->[0]
-			        : shift(@$expect_copy)}),
+			        : shift(@$expect_copy) || {}}),
 			),
 		    };
 		},
