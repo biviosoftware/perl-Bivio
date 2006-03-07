@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListModel;
 use strict;
@@ -123,6 +123,9 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_LOAD_ALL_DIE_FACTOR) = 2;
+Bivio::IO::Config->register(my $_CFG = {
+    want_page_count => 1,
+});
 
 =head1 FACTORIES
 
@@ -731,6 +734,18 @@ sub get_summary {
     return Bivio::Biz::Model::SummaryList->new([$self]);
 }
 
+=for html <a name="handle_config"></a>
+
+=head2 handle_config(hash_ref cfg)
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 =for html <a name="has_cursor"></a>
 
 =head2 has_cursor() : boolean
@@ -1142,7 +1157,7 @@ sub load_page {
     my($self, $query) = @_;
     $query = $self
 	->parse_query($query)
-        ->put(want_page_count => 1);
+        ->put(want_page_count => $_CFG->{want_page_count});
 
     $self->throw_die('CORRUPT_QUERY', {message => 'unexpected this',
 	query => $query}) if $query->unsafe_get('this');
@@ -1732,7 +1747,7 @@ sub _where_and_params {
     my($support) = $self->internal_get_sql_support();
     $self->internal_prepare_statement($stmt, $self->get_query());
     my($where, $params) = $stmt->build_for_internal_load_rows($support);
-    $where = join(' AND ', grep({$_} $where, $self->internal_pre_load(
+    $where = join(' AND ', grep($_, $where, $self->internal_pre_load(
 	$self->get_query(),
 	$support,
 	$params,
@@ -1742,7 +1757,7 @@ sub _where_and_params {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
