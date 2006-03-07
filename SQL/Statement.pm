@@ -89,7 +89,7 @@ sub DISTINCT {
         distinct => $column,
 	columns => [$column],
         build => sub {
-            return join(' ', 'DISTINCT', _build_column($column, @_));
+            return join(' ', 'DISTINCT', _build_select_column($column, @_));
         },
     };
 }
@@ -336,6 +336,24 @@ sub PARENS {
     }
 }
 
+=for html <a name="SELECT_AS"></a>
+
+=head2 static SELECT_AS(any column, string alias) : hash_ref
+
+Return the select object
+
+=cut
+
+sub SELECT_AS {
+    my($proto, $column, $alias) = @_;
+    return {
+	columns => [$column],
+        build => sub {
+            return _build_select_column($column, @_) . ' AS ' . $alias;
+        },
+    }
+}
+
 =for html <a name="new"></a>
 
 =head2 static new() : Bivio::SQL::Statement
@@ -392,23 +410,27 @@ sub build_for_internal_load_rows {
     _merge_statements($self, $support->get_statement());
     my($fields) = $self->[$_IDI];
     my($params) = [];
-
     my($where) = $fields->{where};
     return ($where->{build}->($support, $params), $params)
-        unless scalar(keys %{$fields->{from}});
-
-    foreach my $model (keys %{$support->get('models')}) {
+        unless %{$fields->{from}};
+    foreach my $model (
+	$fields->{select} ? () : keys(%{$support->get('models')}),
+    ) {
         _add_model($self, $model);
     }
-
-    my($join) = $self->CROSS_JOIN(
-        map({$fields->{from}->{$_}}
-            sort keys %{$fields->{from}}));
-
     return (
-        join(' ', 'FROM', $join->{build}->($support, $params),
-            'WHERE', $where->{build}->($support, $params)),
-	$params);
+        join(' ',
+	     $fields->{select} ?
+		 (SELECT => $fields->{select}->{build}->($support, $params))
+		 : (),
+	     FROM => $self->CROSS_JOIN(
+		 map($fields->{from}->{$_},
+		     sort(keys(%{$fields->{from}}))),
+	     )->{build}->($support, $params),
+	     WHERE => $where->{build}->($support, $params),
+	),
+	$params,
+    );
 }
 
 =for html <a name="build_select_for_sql_support"></a>
@@ -449,7 +471,8 @@ sub config {
 =head2 from(any join, ...)
 
 Add the join(s) to the FROM clause.
-BAD: Assumes LEFT JOIN
+TODO: Generalize to any type of JOIN.  Currently only accepts LEFT_JOIN_ON
+and a simple table name  May also just be a table.
 
 =cut
 
@@ -457,24 +480,23 @@ sub from {
     my($self, @joins) = @_;
     my($models) = $self->[$_IDI]->{_models};
     foreach my $join (@joins) {
+	unless (ref($join)) {
+	    _add_model($self, $join);
+	    next;
+	}
 	my($left_table) = $join->{left_table};
 	my($right_table) = $join->{right_table};
-
 	Bivio::Die->die($right_table, ': is already left joined with ',
             $models->{$right_table}->{_joined_from},
-        )
-            if exists $models->{$right_table}
-                && exists $models->{$right_table}->{_joined_from};
-
-	my($left) = _add_model($self, $left_table);
+        ) if exists($models->{$right_table})
+	    && exists($models->{$right_table}->{_joined_from});
 	my($right) = _add_model($self, $right_table, $join);
-
-	$left->{joins}->{$right_table} = $right;
+	_add_model($self, $left_table)->{joins}->{$right_table} = $right;
 	$right->{_joined_from} = $left_table;
 
-	delete $self->[$_IDI]->{from}->{$right_table};
+	delete($self->[$_IDI]->{from}->{$right_table});
     }
-    return;
+    return $self;
 }
 
 =for html <a name="select"></a>
@@ -486,9 +508,48 @@ Add item to SELECT clause.
 =cut
 
 sub select {
-    my($self, $select_item) = @_;
-    $self->[$_IDI]->{select} = $select_item;
-    return;
+    my($self, @columns) = @_;
+    $self->[$_IDI]->{select} = {
+	columns => [map({_parse_column($_)} @columns)],
+	build => sub {
+	    return join(
+		',',
+		map(ref($_) ? $_->{build}->(@_) : _build_select_column($_),
+		    @columns),
+	    );
+	},
+    };
+    return $self;
+}
+
+=for html <a name="union_hack"></a>
+
+=head2 union_hack(Bivio::SQL::Statement stmt, ...)
+
+Add I<stmt>s to WHERE clause.  The statement has to be completely empty
+at this point.
+
+=cut
+
+sub union_hack {
+    my($self, @stmt) = @_;
+    Bivio::Die->die('statement must be empty to union')
+	 if @{$self->[$_IDI]->{where}->{predicates}};
+    $self->[$_IDI]->{where} = {
+	statements => [@stmt],
+	build => sub {
+	    my($support, $params) = @_;
+	    return join(
+		' UNION ',
+		map({
+		    my($s, $p) = $_->build_for_internal_load_rows($support);
+		    push(@$params, @$p);
+		    $s;
+		} @stmt),
+	    );
+	},
+    };
+    return $self;
 }
 
 =for html <a name="where"></a>
@@ -506,7 +567,7 @@ sub where {
         push(@{$self->[$_IDI]->{where}->{predicates}},
             _parse_predicate($self, $predicate));
     }
-    return;
+    return $self;
 }
 
 #=PRIVATE SUBROUTINES
@@ -612,6 +673,15 @@ sub _build_value {
     return $t->to_sql_value('?');
 }
 
+# _build_select_column(string column) : string
+#
+# Build select column name with appropriate type conversion.
+#
+sub _build_select_column {
+    my($i) = _build_column_info(@_);
+    return $i->{type}->from_sql_value($i->{sql_name});
+}
+
 # _combine_predicates(proto, string conjunctive, any predicate, ...) : hash_ref
 #
 # Combines the predicates with the conjunctive (AND or OR).
@@ -706,6 +776,20 @@ sub _merge_statements {
 #     }
 
     return;
+}
+
+# _parse_column($self, hash_ref column) : hash_ref
+# _parse_column($self, string column) : hash_ref
+sub _parse_column {
+    my($self, $column) = @_;
+    return $column
+	if ref($column) eq 'HASH';
+    return {
+	column => [$column],
+	build => sub {
+	    return _build_column($_, @_);
+	},
+    };
 }
 
 # _parse_predicate(proto, any predicate) : 

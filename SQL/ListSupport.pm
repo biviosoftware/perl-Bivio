@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::ListSupport;
 use strict;
@@ -420,28 +420,19 @@ sub _count_pages {
 # Prepare and execute the select statement.
 #
 sub _execute_select {
-    my($self, $query, $where, $params, $die) = @_;
-    my($attrs) = $self->internal_get;
-    my($select) = _select($self);
-    my($from_where) = $self->unsafe_get('from_where');
-    ($die || 'Bivio::Die')
-	->throw_die('DIE', 'must support select') unless $select;
-    _prepare_where($self, $query, \$from_where, \$where, $params);
-    return Bivio::SQL::Connection->execute("$select$from_where$where",
-	$params);
+    return Bivio::SQL::Connection->execute((_prepare_statement(@_))[0,1]);
 }
 
-# _find_list_start(self, Bivio::SQL::ListQuery query, string where, array_ref params, any die) : array
+# _find_list_start(self, Bivio::SQL::ListQuery query, string sql, array_ref params, any die) : array
 #
 # Returns $rows and $statement after finding first row to return.
 #
 sub _find_list_start {
-    my($self, $query, $where, $params, $die) = @_;
-
+    my($self, $query, $sql, $params, $die) = @_;
     my($db) = Bivio::SQL::Connection->get_instance;
-    my($select) = _select($self) . $where;
     my($statement, $row);
     my($page_number, $count) = $query->get(qw(page_number count));
+    my($can_limit_and_offset) = $db->CAN_LIMIT_AND_OFFSET;
     foreach my $is_second_try (0 .. 1) {
 	# Set prev first, because there is a return in the for loop
 	if ($page_number > $query->FIRST_PAGE) {
@@ -452,10 +443,10 @@ sub _find_list_start {
 		# Avoids problems if page_number is negative
 		page_number => ($page_number = $query->FIRST_PAGE));
 	}
-	if ($db->CAN_LIMIT_AND_OFFSET) {
+	if ($can_limit_and_offset) {
 	    # We always get one more, so has_next works
 	    $statement = $db->execute(
-		$select . sprintf(' OFFSET %d LIMIT %d',
+		$sql . sprintf(' OFFSET %d LIMIT %d',
 		    ($page_number - 1) * $count, $count + 1),
 		 $params);
 	    return ($row, $statement)
@@ -463,15 +454,13 @@ sub _find_list_start {
 	    $statement->finish;
 	    return (undef, undef)
 		if $is_second_try || $page_number == $query->FIRST_PAGE;
-	    $page_number = _count_pages($self, $query, $where, $params);
-	    next;
+	    $can_limit_and_offset = 0;
 	}
-
 	# No LIMIT/OFFSET, so go through rows serially
 	my($start) = ($page_number - $query->FIRST_PAGE()) * $count;
 #TODO: Is this needed?  $count has to be > 0, no?
 	$start = 0 if $start < 0;
-	$statement = $db->execute($select, $params);
+	$statement = $db->execute($sql, $params);
 	my($num_rows) = 0;
 
 	0 while $row = $statement->fetchrow_arrayref and ++$num_rows <= $start;
@@ -491,7 +480,7 @@ sub _find_list_start {
     ($die || 'Bivio::Die')->throw_die('DB_ERROR', {
 	message => 'unable to find page in list',
 	page_number => $page_number,
-	where => $where,
+	where => $sql,
 	params => $params,
     });
     # DOES NOT RETURN
@@ -659,17 +648,15 @@ sub _init_column_lists {
 # If the page_number exceeds the number of rows, read the last page.
 #
 sub _load_list {
-    my($self, $query, $where, $params, $die) = @_;
-    my($attrs) = $self->internal_get;
-    my($from_where) = $attrs->{from_where};
-    _prepare_where($self, $query, \$from_where, \$where, $params);
-    $where = $from_where . $where;
+    my($self, $query, undef, undef, $die) = @_;
+    my($sql, $params, $where) = _prepare_statement(@_);
     _count_pages($self, $query, $where, $params)
-	if $query->unsafe_get('want_page_count');
+	if $where && $query->unsafe_get('want_page_count');
+    my($attrs) = $self->internal_get;
     my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
     my($count, $parent_id) = $query->get(qw(count parent_id));
     my($row, $statement)
-	= _find_list_start($self, $query, $where, $params, $die);
+	= _find_list_start($self, $query, $sql, $params, $die);
     return []
 	unless $row;
 
@@ -809,40 +796,41 @@ sub _page_number {
     return int(--$num_rows/$query->get('count')) + $query->FIRST_PAGE();
 }
 
-# _prepare_group_by(self, string_ref where)
+# _prepare_ordinal_clauses(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query) : string
 #
-# Adds GROUP BY
+# Generates the order_by and group_by clauses.
 #
-sub _prepare_group_by {
-    my($self, $where, $params) = @_;
-    $$where .= ' GROUP BY '
-	. join(', ', map($_->{sql_name}, @{$self->get('group_by')}));
-    return;
+sub _prepare_ordinal_clauses {
+    my($self, $query, $where) = @_;
+    my($attrs) = $self->internal_get;
+    my($res) = '';
+    $res .= ' GROUP BY ' . join(',', map($_->{sql_name}, @{$attrs->{group_by}}))
+	if @{$attrs->{group_by}};
+    my($qob);
+    if (@{$attrs->{order_by}} and $qob = $query->get('order_by') and @$qob) {
+	my $max_i = $query->unsafe_get('want_only_one_order_by') ? 2 : @$qob;
+        $res .= ' ORDER BY';
+        for (my($i) = 0; $i < $max_i; $i += 2) {
+	    $res .= ' ' . $attrs->{columns}->{$qob->[$i]}->{sql_name}
+		. ($qob->[$i+1] ? ',' : ' desc,');
+	}
+	chop($res);
+    }
+    return $res;
 }
 
-# _prepare_order_by(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
-#
-# Generates the ORDER BY clause from the query and order_by columns.
-# If query is missing order by, no order by is generated.
-#
-sub _prepare_order_by {
-    my($self, $query, $where, $params) = @_;
+# _prepare_statement()
+sub _prepare_statement {
+    my($self, $query, $where, $params, $die) = @_;
+    return ($where . _prepare_ordinal_clauses($self, $query), $params, undef)
+	if $where =~ s/^(?:\s*and\s)\s*select/SELECT/i;
     my($attrs) = $self->internal_get;
-
-    # Formats order_by clause if there are order_by columns
-    my($qob) = $query->get('order_by');
-    return unless $qob && @$qob;
-    my $max_i = $query->unsafe_get('want_only_one_order_by') ? 2 : @$qob;
-    my($columns) = $attrs->{columns};
-    $$where .= ' ORDER BY';
-    for (my($i) = 0; $i < $max_i; $i += 2) {
-	# Append to order_by (name, order)
-	$$where .= ' '.$columns->{$qob->[$i]}->{sql_name}
-		.($qob->[$i+1] ? ',' : ' desc,');
-    }
-    # Remove trailing comma
-    chop($$where);
-    return;
+    ($die || 'Bivio::Die')->throw_die('DIE', 'must support select')
+	unless my $sql = _select($self);
+    my($from_where) = $self->unsafe_get('from_where');
+    _prepare_where($self, $query, \$from_where, \$where, $params);
+    $from_where .= $where . _prepare_ordinal_clauses($self, $query);
+    return ($sql . $from_where, $params, $from_where);
 }
 
 # _prepare_where(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref from_where, string_ref where, array_ref params)
@@ -886,10 +874,6 @@ sub _prepare_where {
     $$where =~ s/\s*\bAND\s*$//;
     _prepare_where_date($self, $query, $where, $params)
 	if $attrs->{date};
-    _prepare_group_by($self, $where)
-	if @{$attrs->{group_by}};
-    _prepare_order_by($self, $query, $where, $params)
-	if @{$attrs->{order_by}};
 
     # if there is no WHERE and the where variable starts with AND, replace it
     unless ($$from_where =~ /\bWHERE\b/i || $$where =~ /\bWHERE\b/i) {
@@ -942,7 +926,7 @@ sub _select {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
