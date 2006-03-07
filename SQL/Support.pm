@@ -546,6 +546,8 @@ sub _init_column_from_hash {
     __PACKAGE__->init_type($col, $decl->{type}) if $decl->{type};
     $col->{sort_order} = $decl->{sort_order} ? 1 : 0
 	    if exists($decl->{sort_order});
+    $col->{sql_name} = $decl->{sql_name}
+	if exists($decl->{sql_name});
     $col->{constraint} = Bivio::SQL::Constraint->from_any(
 	    $decl->{constraint}) if $decl->{constraint};
     $col->{in_list} = $decl->{in_list} ? 1 : 0;
