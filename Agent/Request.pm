@@ -446,9 +446,10 @@ sub format_email {
 	unless defined($email);
     return $email
 	if $email =~ /\@/;
-    return $email . '@' . Sys::Hostname::hostname()
-	unless my $f =  $self->unsafe_get('Bivio::UI::Facade');
-    return $f->get('Email')->format($email);
+    my($f) =  $self->unsafe_get('Bivio::UI::Facade');
+    return $f->get('Email')->format($email)
+        if $f && $f->unsafe_get('Email');
+    return $email . '@' . Sys::Hostname::hostname();
 }
 
 =for html <a name="format_help_uri"></a>
