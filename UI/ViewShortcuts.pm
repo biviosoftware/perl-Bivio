@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::ViewShortcuts;
 use strict;
@@ -140,7 +140,7 @@ sub vs_text {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
