@@ -95,6 +95,17 @@ sub vs_descriptive_field {
     ];
 }
 
+sub vs_empty_list_prose {
+    my($self, $model) = @_;
+    return Tag(
+	div => [
+	    # Prose widgets are not dynamic, so we have to render this way
+	    sub {Prose($_[1])},
+	    vs_text("$model.empty_list_prose"),
+	], 'empty_list',
+    );
+}
+
 sub vs_form_error_title {
     my($proto, $form) = @_;
     return $proto->vs_call(
@@ -110,7 +121,7 @@ sub vs_list {
     return Table(
 	$model,
 	$columns,
-	$proto->vs_table_attrs(list => $attrs),
+	$proto->vs_table_attrs($model, list => $attrs),
     );
 }
 
@@ -135,7 +146,7 @@ sub vs_list_form {
 			unless exists($_->{label});
 		    $_;
 		} @$columns),
-	    ], $proto->vs_table_attrs(list => $table_attrs),
+	    ], $proto->vs_table_attrs($form, list => $table_attrs),
 	    ),
 	    $buttons ? $buttons : Tag(
 		'div',
@@ -230,12 +241,12 @@ sub vs_paged_list {
 		Table(
 		    $model,
 		    $columns,
-		    $proto->vs_table_attrs(paged_list => $attrs),
+		    $proto->vs_table_attrs($model, paged_list => $attrs),
 		 ),
 		'bottom',
 	    ),
 	]),
-	Tag(div => String(vs_text($p . 'empty')), 'empty'),
+	$proto->vs_empty_list_prose($model),
     ), 'paged_list');
 }
 
@@ -304,11 +315,12 @@ sub vs_simple_form {
 }
 
 sub vs_table_attrs {
-    my(undef, $class, $attrs) = @_;
+    my($proto, $model, $class, $attrs) = @_;
     return {
 	class => $class,
 	even_row_class => 'even',
 	odd_row_class => 'odd',
+	empty_list_widget => $proto->vs_empty_list_prose($model),
 	%{$attrs || {}},
     };
 }
@@ -319,7 +331,7 @@ sub vs_tree_list {
     return Table(
 	$model,
 	$columns,
-	$proto->vs_table_attrs(tree_list => $attrs),
+	$proto->vs_table_attrs($model, tree_list => $attrs),
     );
 }
 
