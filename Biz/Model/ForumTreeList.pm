@@ -105,6 +105,8 @@ sub parent_map {
 			    @{$it->get('roles')},
 			) ? 1 : 0,
 			parent_id => $it->get('Forum.parent_realm_id'),
+			name => $it->get('RealmOwner.name'),
+			display_name => $it->get('RealmOwner.display_name'),
 		    }
 		);
 	    },
