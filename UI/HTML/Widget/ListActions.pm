@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::ListActions;
 use strict;
@@ -59,7 +59,7 @@ The third optional element of sub-array_ref is
 either a
 L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>
 (default value is C<THIS_DETAIL>)
-or a widget value which produces a URI.
+or a value renders to a URI.
 
 The fourth optional element is a control.  If the control returns
 true, the action is rendered.
@@ -122,13 +122,18 @@ sub initialize {
     my($target) = $_VS->vs_link_target_as_html($self);
     my($font) = $self->get_or_default('link_font', 'list_action');
 
+    my($i) = 0;
     foreach my $v (@{$self->get('values')}) {
+	$i++;
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
 	    label => _init_label($self, $v->[0], $font),
-	    ref($v->[2]) eq 'ARRAY' ? (format_uri => $v->[2])
-	    : (method => Bivio::Biz::QueryType->from_any(
+	    ref($v->[2]) eq 'ARRAY'
+		|| UNIVERSAL::isa($v->[2], 'Bivio::UI::Widget') ? (
+		format_uri => $self->initialize_value(
+		    "$i.format_uri", $v->[2]),
+	    ) : (method => Bivio::Biz::QueryType->from_any(
 		    $v->[2] || 'THIS_DETAIL')),
 	    control => $v->[3],
             realm => $v->[4],
@@ -187,7 +192,9 @@ sub render {
 
     # Write executable actions
     my($sep) = '';
+    my($i) = 0;
     foreach my $v (@$info) {
+	$i++;
 	my($v2) = $v->{value};
 	next if $v2->{control}
             && !$source->get_widget_value(@{$v2->{control}});
@@ -200,11 +207,13 @@ sub render {
 	$$buffer .= $sep
 	    . $v2->{prefix}
 	    . ($v2->{format_uri}
-		? $source->get_widget_value(@{$v2->{format_uri}})
+		? ${$self->render_value(
+		    "$i.format_uri", $v2->{format_uri}, $source)}
 		: $source->format_uri($v2->{method}, $v->{uri}))
 	    . '">';
-	ref($v2->{label}) ? $v2->{label}->render($source, $buffer)
-		: ($$buffer .= $v2->{label});
+	ref($v2->{label}) ? $self->unsafe_render_value(
+	    "$i.label", $v2->{label}, $source, $buffer
+	) : ($$buffer .= $v2->{label});
 	$$buffer .= "</a>";
 	$sep = ",\n";
     }
@@ -226,7 +235,7 @@ sub _init_label {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
