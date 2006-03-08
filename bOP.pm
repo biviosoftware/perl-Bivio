@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.79  2006/03/04 04:47:28  nagler
+  * Bivio::Biz::Model::RealmMailBounce implements automatic bounce processing
+    for Bivio::Biz::Action::ForumMail.  Bounces are stored in the database
+    bound to a user and email.
+  * Bivio::Mail::Outgoing->new accepts $self, and makes a copy of all fields
+    except the body.  set_headers_for_list_send handles sender and
+    return_path properly.
+  * Bivio::Biz::Model::MailReceiveDispatchForm lets subclasses assume dashes
+    in domain names.  Sets plus_tag as field.
+  * Bivio::Biz::Model::RealmUserList->get_recipients accepts iterate handler
+  * Bivio::Biz::Action::MailReceiveStatus->execute_forbidden added, and
+  * Bivio::Delegate::SimpleTaskId added MAIL_RECEIVE_FORBIDDEN and
+    USER_MAIL_BOUNCE
+  * Bivio::Mail::Common->format_as_bounce has better format so bounce software
+    can be tested more easily
+  * Bivio::Util::SQL->internal_upgrade_db_mail_bounce added
+  * Bivio::UI::XHTML::ViewShortcuts->vs_list and vs_table_attrs added.  All
+    tables have odd/even classes for rows.
+
   Revision 3.78  2006/03/03 00:28:36  david
   * Bivio::SQL::PropertySupport support for RealmMailBounce
   * Bivio::Test::Language::HTTP->generate_local_email only returns the
