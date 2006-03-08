@@ -1,0 +1,10 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    [{task_id => 'SITE_ROOT'}] => '/',
+    [{format_uri_hash => {task_id => 'SITE_ROOT'}}] => '/',
+    [{task_id => 'SITE_ROOT'}, {anything => ''}] => '/',
+    [{task_id => [sub {'SITE_ROOT'}]}] => '/',
+    [{task_id => 'SITE_ROOT', query => {'ListQuery.this' => 1}}] => '/?t=1',
+];
