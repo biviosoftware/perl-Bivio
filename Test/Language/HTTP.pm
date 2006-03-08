@@ -318,6 +318,19 @@ sub generate_remote_email {
     return _facade("$base\@$_CFG->{remote_mail_host}", $self, $facade_uri);
 }
 
+=for html <a name="generate_test_name"></a>
+
+=head2 generate_test_name(string suffix) : string
+
+return 'btest_'.I<suffix>.
+
+=cut
+
+sub generate_test_name {
+    my($self, $suffix) = @_;
+    return 'btest_'.$suffix;
+}
+
 =for html <a name="get_content"></a>
 
 =head2 get_content() : string
