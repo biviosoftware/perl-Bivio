@@ -35,6 +35,7 @@ C<Bivio::SQL::Statement>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -405,9 +406,9 @@ Return columns for ListModel
 sub build_decl_for_sql_support {
     my($self) = @_;
     return {
-        other => $self->[$_IDI]->{select}->{columns},
+        other => $self->[$_IDI]->{select}->{column_names},
 	# HACK: but I don't know what to do about it yet
-	primary_key => $self->[$_IDI]->{select}->{columns},
+	primary_key => $self->[$_IDI]->{select}->{column_names},
     }
 	if $self->[$_IDI]->{select};
     return {};
@@ -525,14 +526,12 @@ Add item to SELECT clause.
 
 sub select {
     my($self, @columns) = @_;
+    my($column_info) = [map({_parse_column($_)} @columns)];
     $self->[$_IDI]->{select} = {
-	columns => [map({_parse_column($_)} @columns)],
+	columns => [@$column_info],
+	column_names => [map({@{$_->{columns}}} @$column_info)],
 	build => sub {
-	    return join(
-		',',
-		map(ref($_) ? $_->{build}->(@_) : _build_select_column($_),
-		    @columns),
-	    );
+	    return join(',', map({$_->{build}->(@_)} @$column_info));
 	},
     };
     return $self;
@@ -794,16 +793,16 @@ sub _merge_statements {
     return;
 }
 
-# _parse_column($self, hash_ref column) : hash_ref
-# _parse_column($self, string column) : hash_ref
+# _parse_column(hash_ref column) : hash_ref
+# _parse_column(string column) : hash_ref
 sub _parse_column {
-    my($self, $column) = @_;
+    my($column) = @_;
     return $column
 	if ref($column) eq 'HASH';
     return {
-	column => [$column],
+	columns => [$column],
 	build => sub {
-	    return _build_column($_, @_);
+	    return _build_column($column, @_);
 	},
     };
 }
