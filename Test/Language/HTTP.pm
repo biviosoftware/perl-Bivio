@@ -728,7 +728,10 @@ sub verify_form {
 	_verify_form_field($self, $control, $case);
 	Bivio::Die->die($control->{type}, ' ', $field, ' expected: ',
 	    $case->{expected}, ' but got: ', $case->{result})
-		unless $case->{expected} eq $case->{result};
+		unless
+		    (ref($case->{expected}) eq 'Regexp'
+			 && $case->{result} =~ $case->{expected})
+		    || $case->{expected} eq $case->{result};
     }
     return;
 }
