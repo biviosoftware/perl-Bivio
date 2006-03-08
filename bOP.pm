@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.80  2006/03/08 06:57:14  nagler
+  * Bivio::SQL::Statement->union_hack is an attempt at supporting UNION which
+    works, but will be modified in the future.  select() has been generalized.
+    SELECT_AS() and SELECT_LITERAL() added.
+  * Bivio::SQL::ListSupport refactored to support complete statements
+    coming from internal_prepare_statement or internal_pre_load, but still
+    allows paging.
+  * Bivio::Biz::ListModel.want_page_count is configurable
+  * Bivio::SQL::Support.sql_name is settable
+  * Bivio::Biz::Model::ForumTreeList->parent_map added
+  * Bivio::UI::HTML::Format::CalendarEventDescription added
+  * Bivio::UI::Widget::URI added.  Calls req->format_uri with hash
+    args rendered as values
+  * Bivio::UI::XHTML::ViewShortcuts->vs_empty_list_prose added, and
+    paged_detail.list.empty changed to empty_list_prose.  vs_*_list changed
+    to use prose.
+  * Bivio::UI::HTML::Widget::ListAction.format_uri can now be a widget, e.g.
+    URI().
+
   Revision 3.79  2006/03/04 04:47:28  nagler
   * Bivio::Biz::Model::RealmMailBounce implements automatic bounce processing
     for Bivio::Biz::Action::ForumMail.  Bounces are stored in the database
