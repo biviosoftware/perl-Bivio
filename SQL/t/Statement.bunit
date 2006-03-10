@@ -5,11 +5,13 @@ Request();
     {
 	object => [],
 	compute_params => sub {
-	    shift->put(object => class()->new());
-	    return shift;
+	    my($case, $params, $method) = @_;
+	    $case->put(object => class()->new())
+		if $method eq 'union_hack';
+	    return $params;
 	},
 	compute_return => sub {
-	    my($case, $params, $method) = @_;
+	    my($case) = @_;
 	    return [$case->get('object')->build_for_internal_load_rows(
 		Bivio::Biz::Model->new(req(), 'RealmFileList')
 		    ->internal_get_sql_support,
@@ -17,6 +19,13 @@ Request();
 	},
 
     } => [
+	select => [
+#TODO: Currently select doesn't produce anthing without a from.
+	    'RealmOwner.creation_date_time' => ['', []],
+	],
+	from => [
+	    'RealmOwner' => [q{SELECT TO_CHAR(realm_owner_t.creation_date_time,'J SSSSS') FROM realm_owner_t WHERE }, []],
+	],
         union_hack => [
 	    [class()->new->where(class()->IN('RealmFile.realm_file_id', [1]))]
 		=> ['realm_file_t.realm_file_id IN (?)', [1]],
