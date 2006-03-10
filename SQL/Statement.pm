@@ -526,12 +526,12 @@ Add item to SELECT clause.
 
 sub select {
     my($self, @columns) = @_;
-    my($column_info) = [map({_parse_column($_)} @columns)];
+    my($columns) = [map({_parse_select_column($_)} @columns)];
     $self->[$_IDI]->{select} = {
-	columns => [@$column_info],
-	column_names => [map({@{$_->{columns}}} @$column_info)],
+	columns => $columns,
+	column_names => [map({@{$_->{columns}}} @$columns)],
 	build => sub {
-	    return join(',', map({$_->{build}->(@_)} @$column_info));
+	    return join(',', map({$_->{build}->(@_)} @$columns));
 	},
     };
     return $self;
@@ -793,16 +793,17 @@ sub _merge_statements {
     return;
 }
 
-# _parse_column(hash_ref column) : hash_ref
-# _parse_column(string column) : hash_ref
-sub _parse_column {
+# _parse_select_column(hash_ref column) : hash_ref
+# _parse_select_column(string column) : hash_ref
+sub _parse_select_column {
     my($column) = @_;
     return $column
 	if ref($column) eq 'HASH';
+    my($columns) = [$column];
     return {
-	columns => [$column],
+	columns => $columns,
 	build => sub {
-	    return _build_column($column, @_);
+	    return _build_select_column($column, @_);
 	},
     };
 }
