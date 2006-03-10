@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.81  2006/03/08 22:00:38  david
+  * Bivio::Agent::Request->format_email checks that the Email facade
+    component exists before using it to format email
+  * Bivio::SQL::Statement fixes a couple of bugs from Robs recent
+    changes, especially with regards to using new_anonymous(CODEREF)
+
   Revision 3.80  2006/03/08 06:57:14  nagler
   * Bivio::SQL::Statement->union_hack is an attempt at supporting UNION which
     works, but will be modified in the future.  select() has been generalized.
