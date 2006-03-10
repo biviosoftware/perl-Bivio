@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.82  2006/03/10 21:44:19  dobbs
+  * Bivio::Test::Language::HTTP->generate_test_name to replace list
+    context functionality removed from generate_local_email in bOP
+    revision 3.78
+  * Bivio::Test::Language::HTTP->verify_form now accepts a regexp for
+    the expected value of a form
+  * Bivio::UI::HTML::ViewShortcuts->vs_simple_form now accepts a
+    hash_ref which is passed on to the internal Table widget
+  * Bivio::UI::HTML::Widget::Page corrected spelling of uri for xhtml
+    transitional dtd
+  * Bivio::UI::XHTML::Widget::SimplePage added -- simpler version of Page3
+
   Revision 3.81  2006/03/08 22:00:38  david
   * Bivio::Agent::Request->format_email checks that the Email facade
     component exists before using it to format email
