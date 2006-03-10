@@ -542,7 +542,9 @@ list, then StandardSubmit will be appended to the list of fields.
 =cut
 
 sub vs_simple_form {
-    my($proto, $form, $rows) = @_;
+    my($proto, $form, $rows, $attr) = @_;
+    $attr ||= {};
+    $attr->{pad} = 2;
     my($have_submit) = 0;
     return $proto->vs_call('Form', $form,
 	$proto->vs_call('Grid', [
@@ -588,9 +590,7 @@ sub vs_simple_form {
 		cell_align => 'center',
 		cell_class => 'form_submit',
 	    })],
-	], {
-	    pad => 2,
-	}));
+	], $attr));
 }
 
 =for html <a name="vs_string"></a>
