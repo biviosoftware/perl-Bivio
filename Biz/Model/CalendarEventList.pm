@@ -19,13 +19,13 @@ sub internal_initialize {
 	order_by => [qw(
 	    CalendarEvent.dtstart
 	    CalendarEvent.dtend
+	    RealmOwner.display_name
+	    CalendarEvent.location
 	)],
 	other => [qw(
-	    RealmOwner.display_name
 	    RealmOwner.name
 	    RealmOwner.creation_date_time
 	    CalendarEvent.modified_date_time
-	    CalendarEvent.location
 	    CalendarEvent.description
 	    CalendarEvent.url
 	), {
