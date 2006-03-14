@@ -69,6 +69,7 @@ sub new {
 		next => 'MY_SITE',
 	    }));
 	    unless (@$params) {
+		$req->delete('form');
 		$case->put('execute_empty' => 1);
 		return [$req];
 	    }
