@@ -54,7 +54,7 @@ sub internal_leaf_node_uri {
     my($self, $row) = @_;
     return $self->get_request->format_uri({
 	task_id => $self->get_request->get('task')->get('next'),
-	path_info => $row->{'RealmFile.path_lc'},
+	path_info => $row->{'RealmFile.path'},
 	query => undef,
     });
 }
@@ -82,7 +82,7 @@ sub internal_prepare_statement {
     # All are available via DAV
     my($mf) = lc($self->get_instance('Forum')->MAIL_FOLDER);
     $stmt->where(@{$stmt->map_invoke(
-	NOT_LIKE => ['%/.%', $mf . '/%', $mf],
+	NOT_LIKE => ['/.%', '%/.%', $mf . '/%', $mf],
 	['RealmFile.path_lc'],
     )});
     return shift->SUPER::internal_prepare_statement(@_);
