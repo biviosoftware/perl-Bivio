@@ -8,7 +8,7 @@ use Bivio::Mail::RFC822;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = Bivio::Type->get_instance('WikiName')->REGEX;
 my($_EMAIL) = qr{@{[Bivio::Mail::RFC822->ATOM_ONLY_ADDR]}}o;
-my($_DOMAIN) = qr{@{[Bivio::Mail::RFC822->DOMAIN]}\.[a-z]+}o;
+my($_DOMAIN) = qr{@{[Bivio::Mail::RFC822->DOMAIN]}\.[a-z]{2,}}o;
 my($_PHRASE) = _hash([qw(
     a
     abbr
@@ -80,6 +80,11 @@ foreach my $t (qw(table dl ul ol div)) {
 }
 my($_TAGS) = {%$_EMPTY, %$_BLOCK, %$_PHRASE};
 my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
+my($_IMG) = __PACKAGE__->IMAGE_REGEX;
+
+sub IMAGE_REGEX {
+    return qr{\.(?:jpg|gif|jpeg|png|jpe)$};
+}
 
 sub render_html {
     my($self, $value) = @_;
@@ -125,7 +130,7 @@ sub _fmt_href {
     # legitimate URI.
     my($s, $m, $e) = $tok =~ m#(^[^\w/]*)(.+?)([\)\]\}\>\.,:;"'`~!\|]*$)#;
     return Bivio::HTML->escape($s)
-	. ($m =~ m{\.(?:jpg|gif|jpeg|png|jpe)$}i
+	. ($m =~ $_IMG
 	? qq{<img src="}
 	  . Bivio::HTML->escape_attr_value($m)
 	  . qq{" />}
