@@ -138,6 +138,7 @@ sub dev {
 	    },
 	    'Bivio::Test::Language::HTTP' => {
 		home_page_uri => "http://$host:$http_port",
+		server_startup_timeout => 30,
 	    },
 	    'Bivio::UI::FacadeComponent' => {
 		die_on_error => 1,

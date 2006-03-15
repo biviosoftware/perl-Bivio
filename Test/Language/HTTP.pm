@@ -55,6 +55,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
     # NOTE: There is no ENV when loaded under apache
     email_user => $ENV{LOGNAME} || $ENV{USER} || 'btest',
+    server_startup_timeout => 0,
     home_page_uri => Bivio::IO::Config->REQUIRED,
     local_mail_host => Sys::Hostname::hostname(),
     remote_mail_host => undef,
@@ -437,11 +438,16 @@ Base user name to use in email.  Emails will go to:
 
 Where suffix is supplied to L<generate_local_email|"generate_local_email">.
 
+=item server_startup_timeout : int [0]
+
+Maximum number of attempts to connect to the server on startup.
+Each try is about 1 second.
+
 =item home_page_uri : string (required)
 
 URI of home page.
 
-=item mail_tries : string [$ENV{HOME}/btest-mail]
+=item mail_dir : string [$ENV{HOME}/btest-mail]
 
 Directory in which mail resides.  Set up your .procmailrc to have a rule:
 
@@ -470,6 +476,10 @@ sub handle_config {
     Bivio::Die->die($cfg->{mail_tries},
 	': mail_tries must be a postive integer')
         if $cfg->{mail_tries} =~ /\D/ || $cfg->{mail_tries} <= 0;
+    Bivio::Die->die($cfg->{server_startup_timeout},
+	': server_startup_timeout must be a postive integer')
+        if $cfg->{server_startup_timeout} =~ /\D/
+	    || $cfg->{server_startup_timeout} <= 0;
     $cfg->{remote_mail_host} ||= URI->new($cfg->{home_page_uri})->host;
     $_CFG = $cfg;
     return;
@@ -484,11 +494,14 @@ Clears files in I<mail_dir>.
 =cut
 
 sub handle_setup {
+    my($self) = @_;
     shift->SUPER::handle_setup(@_);
     _grep_mail_dir(sub {
         unlink(shift);
 	return;
     });
+    _wait_for_server($self, $_CFG->{server_startup_timeout})
+	if $_CFG->{server_startup_timeout};
     return;
 }
 
@@ -1291,6 +1304,26 @@ sub _verify_form_option {
 	    if $control->{options}->{$o}->{selected};
     }
     return undef;
+}
+
+# _wait_for_server(self, int timeout)
+#
+# Wait for server to respond.  DOES NOT DIE.
+#
+sub _wait_for_server {
+    my($self, $timeout) = @_;
+    my($fields) = $self->[$_IDI];
+
+    my($request) = HTTP::Request->new(GET => $self->home_page_uri());
+    my($response);
+    foreach my $i (1..$timeout) {
+	$response = $fields->{user_agent}->request($request);
+	last
+	    if $response->is_success();
+	sleep(1);
+    }
+
+    return;
 }
 
 =head1 COPYRIGHT
