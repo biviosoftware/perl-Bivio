@@ -39,7 +39,7 @@ Bivio::Test::Widget->unit(
 	{
 	    1 => Bivio::UI::Widget::Join->new(['one']),
 	},
-	Bivio::UI::Widget::Join->new(['default_value']),
+	'default_value',
 	Bivio::UI::Widget::Join->new(['undef_value']),
     ] => [
 	initialize => undef,
