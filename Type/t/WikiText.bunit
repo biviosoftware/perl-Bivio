@@ -14,6 +14,7 @@ Type();
 	    'MixedCase' => qq{<p><a href="MixedCase">MixedCase</a>\n</p>},
 	    ' MiC ' => qq{<p><a href="MiC">MiC</a>\n</p>},
 	    '(MiC) ' => qq{<p>(<a href="MiC">MiC</a>)\n</p>},
+	    'e.g.' => qq{<p>e.g.\n</p>},
 	    '/a/b' => qq{<p><a href="/a/b">/a/b</a>\n</p>},
 	    '/a/b.' => qq{<p><a href="/a/b">/a/b</a>.\n</p>},
 	    'http://a.com' => qq{<p><a href="http://a.com">http://a.com</a>\n</p>},
