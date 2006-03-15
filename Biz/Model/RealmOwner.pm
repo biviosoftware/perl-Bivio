@@ -504,6 +504,28 @@ sub update_password {
     });
 }
 
+=for html <a name="validate_login"></a>
+
+=head2 validate_login(string login) : string
+
+Load the RealmOwner for <I>login (or email or id) if valid.
+Return error if invalid.
+
+=cut
+
+sub validate_login {
+    my($self, $login) = @_;
+    $self->unauth_load_by_email_id_or_name($login);
+
+    return 'NOT_FOUND'
+	if !$self->is_loaded()
+	    || $self->is_offline_user
+	    || $self->is_default
+	    || $self->get('realm_type') != Bivio::Auth::RealmType->USER;
+
+    return;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT

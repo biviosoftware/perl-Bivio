@@ -297,12 +297,12 @@ sub validate_login {
     return undef
 	unless defined($login);
     my($owner) = $self->new_other('RealmOwner');
+    my($error) = $owner->validate_login($self->get('login'));
+    $self->internal_put_error(login => $error)
+	if $error;
+
     return $owner
-	if $owner->unauth_load_by_email_id_or_name($self->get('login'))
-	    && !$owner->is_offline_user
-	    && !$owner->is_default
-	    && $owner->get('realm_type') == Bivio::Auth::RealmType->USER;
-    $self->internal_put_error(login => 'NOT_FOUND');
+	unless $error;
     return undef;
 }
 
