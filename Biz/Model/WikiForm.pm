@@ -31,6 +31,7 @@ sub execute_ok {
     my($m) = _is_edit($self) && $rf->unsafe_load({path => _curr_path($self)})
 	? 'update_with_content' : 'create_with_content';
     $rf->$m({path => $new}, \$c);
+    $self->get_request->put(path_info => $self->get('RealmFile.path_lc'));
     return;
 }
 
