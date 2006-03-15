@@ -184,8 +184,9 @@ rendered once.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($w) = _select($self, $source);
-    $w->render($source, $buffer) if defined($w);
+    my($v, $n) = _select($self, $source);
+    $self->unsafe_render_value($n, $v, $source, $buffer)
+	if defined($v);
     return;
 }
 
@@ -197,17 +198,16 @@ sub render {
 #
 sub _select {
     my($self, $source) = @_;
-    my($ctl, $v) = '';
+    my($ctl) = '';
+    my($n) = 'undef_value';
     if ($self->unsafe_render_attr('control', $source, \$ctl)) {
 	my($values) = $self->get('values');
-	return $values->{$ctl} || undef
+	return ($values->{$ctl} || undef, $ctl)
 	    if defined($values->{$ctl});
-	$v = $self->unsafe_get('default_value');
+	$n = 'default_value';
     }
-    else {
-	$v = $self->unsafe_get('undef_value');
-    }
-    return $v || undef
+    my($v) = $self->unsafe_get($n);
+    return ($v || undef, $n)
 	if defined($v);
     Bivio::Die->die($self->get('control'), ': invalid control value: ', $ctl);
     # DOES NOT RETURN
