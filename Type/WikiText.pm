@@ -94,7 +94,7 @@ sub render_html {
 	html => '',
     };
     while (defined(my $line = _next_line($state))) {
-	$state->{html} .= $line =~ s/^\@// ? _parse_tag($line, $state)
+	$state->{html} .= $line =~ s/^\@// ? _fmt_tag($line, $state)
 	    : _fmt_line($line, $state);
     }
     _close_tags($_CLOSE_ALL, $state);
@@ -173,31 +173,7 @@ sub _fmt_pre {
     return '';
 }
 
-sub _fmt_token {
-    my($tok) = @_;
-    my($hit) = 0;
-    foreach my $x (
-	[qw(\* strong)],
-	[qw(\_ em)],
-    ) {
-	my($c, $h) = @$x;
-	$tok =~ s{(^\W*)$c(\S+)$c(\W*$)}{
-	    "$1<$h>" . join(' ', split(/$c/, _fmt_href($2))) . "</$h>$3"
-	}e && $hit++;
-    }
-    return $hit ? $tok : _fmt_href($tok);
-}
-
-sub _hash {
-    my($a, $b) = @_;
-    return {map(($_ => +{map(($_ => 1), @$b, $_)}), @$a)};
-}
-
-sub _next_line {
-    return shift(@{shift(@_)->{lines}});
-}
-
-sub _parse_tag {
+sub _fmt_tag {
     my($line, $state) = @_;
     return "\n"
 	if $line =~ /^\s*$/;
@@ -228,10 +204,35 @@ sub _parse_tag {
  	$state->{html} .= _fmt_line($line, $state);
 	chomp($state->{html});
 	_close_top($tag, $state);
+	$state->{html} .= "\n";
     }
     $state->{html} .= _start_tag('p', '', $state)
 	if $tag =~ /^(?:td|th|li|dd|dt|blockquote|center)$/;
     return '';
+}
+
+sub _fmt_token {
+    my($tok) = @_;
+    my($hit) = 0;
+    foreach my $x (
+	[qw(\* strong)],
+	[qw(\_ em)],
+    ) {
+	my($c, $h) = @$x;
+	$tok =~ s{(^\W*)$c(\S+)$c(\W*$)}{
+	    "$1<$h>" . join(' ', split(/$c/, _fmt_href($2))) . "</$h>$3"
+	}e && $hit++;
+    }
+    return $hit ? $tok : _fmt_href($tok);
+}
+
+sub _hash {
+    my($a, $b) = @_;
+    return {map(($_ => +{map(($_ => 1), @$b, $_)}), @$a)};
+}
+
+sub _next_line {
+    return shift(@{shift(@_)->{lines}});
 }
 
 sub _start_p {

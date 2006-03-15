@@ -32,12 +32,12 @@ Type();
 	    'a @hr < b > c >= d =>' => "<p>a \@hr &lt; b &gt; c &gt;= d =&gt;\n</p>",
 	    '&amp;' => "<p>&amp;amp;\n</p>",
 	    '--' => "<hr /><br />\n",
-	    '@p *x*' => "<p><strong>x</strong></p>",
+	    '@p *x*' => "<p><strong>x</strong></p>\n",
 	    '@hr' => "<hr />\n",
 	    '@@' => "<p>\@\n</p>",
 	    "\n\@hr" => "<p><hr />\n</p>",
 	    "\@a" => qq{},
-	    "\@a href=/x y" => qq{<p><a href="/x">y</a></p>},
+	    "\@a href=/x y" => qq{<p><a href="/x">y</a>\n</p>},
 	    "\@a name=x" => qq{<p><a name="x"></a></p>},
 	    <<'IN' => _chomp(<<'OUT'),
 @h3 h 3
@@ -77,18 +77,22 @@ i2
 @pre
 @hr < & @ c *b* _i_
 IN
-<h3>h 3</h3><p>p1
+<h3>h 3</h3>
+<p>p1
 </p><p>p2
-</p><h2>h 2</h2><p>p3
+</p><h2>h 2</h2>
+<p>p3
 </p><table class="c1"><tr><td><p>1.1
 </p></td><td><p>1.2
-</p></td></tr><tr><td>2.1</td><td class="number"><p>2.2
+</p></td></tr><tr><td>2.1</td>
+<td class="number"><p>2.2
 </p></td></tr><tr><td><p>3.1p1
 </p><p>3.1p2
 </p></td></tr></table><ol><li><p>i1.1
 </p><p>i1.2
 </p></li><li><p>i2
-</p></li><li>i3</li></ol><pre>
+</p></li><li>i3</li>
+</ol><pre>
 @hr &lt; &amp; @ c *b* _i_
 </pre>
 OUT
