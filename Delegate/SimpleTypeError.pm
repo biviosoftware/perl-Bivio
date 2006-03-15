@@ -360,6 +360,11 @@ sub get_delegate_info {
 	undef,
 	'Unknown or invalid time zone in date',
     ],
+    WIKI_NAME => [
+	60,
+	undef,
+	'Wiki page names must be mixed case words starting with an upper-case letter, containing at least one lower case letter between two upper case letters, and containing only numbers and letters (no spaces, underscores, etc.)',
+    ],
 ];
 }
 
