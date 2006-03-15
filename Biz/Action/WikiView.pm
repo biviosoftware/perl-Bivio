@@ -16,6 +16,11 @@ sub execute {
 	return $req->get('task_id');
     }
     my($p) = $_WN->absolute_path($req->get('path_info'));
+    return $req->server_redirect({
+	task_id => $req->get_nested(qw(task image_task)),
+	query => undef,
+	path_info => $p,
+    }) if $p =~ $_WT->IMAGE_REGEX;
     my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
     $proto->new->put_on_request($req, 1)->put(
 	name => $_WN->get_tail($p),
