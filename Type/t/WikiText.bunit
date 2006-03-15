@@ -1,0 +1,102 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    class() => [
+	render_html => [
+	    '' => '',
+	    'a' => "<p>a\n</p>",
+	    "a\n\nb" => "<p>a\n</p><p>b\n</p>",
+	    '*a*bold*phrase*' => "<p><strong>a bold phrase</strong>\n</p>",
+	    '(*a*)' => "<p>(<strong>a</strong>)\n</p>",
+	    '_emphasis_' => "<p><em>emphasis</em>\n</p>",
+	    'a *bold* _emphasis_ mix' => "<p>a <strong>bold</strong> <em>emphasis</em> mix\n</p>",
+	    'MixedCase' => qq{<p><a href="MixedCase">MixedCase</a>\n</p>},
+	    ' MiC ' => qq{<p><a href="MiC">MiC</a>\n</p>},
+	    '(MiC) ' => qq{<p>(<a href="MiC">MiC</a>)\n</p>},
+	    '/a/b' => qq{<p><a href="/a/b">/a/b</a>\n</p>},
+	    '/a/b.' => qq{<p><a href="/a/b">/a/b</a>.\n</p>},
+	    'http://a.com' => qq{<p><a href="http://a.com">http://a.com</a>\n</p>},
+	    'http://a.com.' => qq{<p><a href="http://a.com">http://a.com</a>.\n</p>},
+	    'http://a.com?' => qq{<p><a href="http://a.com?">http://a.com?</a>\n</p>},
+	    '_http://a.com_' => qq{<p><em><a href="http://a.com">http://a.com</a></em>\n</p>},
+	    'http://a.com/a_x_y' => qq{<p><a href="http://a.com/a_x_y">http://a.com/a_x_y</a>\n</p>},
+	    'a@a.a,' => qq{<p><a href="mailto:a\@a.a">a\@a.a</a>,\n</p>},
+	    '<a@a.a>' => qq{<p>&lt;<a href="mailto:a\@a.a">a\@a.a</a>&gt;\n</p>},
+	    'icon.jpg' => qq{<p><img src="icon.jpg" />\n</p>},
+	    '/icon.jpg' => qq{<p><img src="/icon.jpg" />\n</p>},
+	    'a.com' => qq{<p><a href="http://a.com">a.com</a>\n</p>},
+	    'a.com.' => qq{<p><a href="http://a.com">a.com</a>.\n</p>},
+	    'a & b' => "<p>a &amp; b\n</p>",
+	    'a @hr < b > c >= d =>' => "<p>a \@hr &lt; b &gt; c &gt;= d =&gt;\n</p>",
+	    '&amp;' => "<p>&amp;amp;\n</p>",
+	    '--' => "<hr /><br />\n",
+	    '@p *x*' => "<p><strong>x</strong></p>",
+	    '@hr' => "<hr />\n",
+	    '@@' => "<p>\@\n</p>",
+	    "\n\@hr" => "<p><hr />\n</p>",
+	    "\@a" => qq{},
+	    "\@a href=/x y" => qq{<p><a href="/x">y</a></p>},
+	    "\@a name=x" => qq{<p><a name="x"></a></p>},
+	    <<'IN' => _chomp(<<'OUT'),
+@h3 h 3
+p1
+
+p2
+@h2 h 2
+p3
+@table class=c1
+@tr
+@td
+1.1
+@td
+1.2
+
+@td
+@tr
+@td 2.1
+@td class=number
+2.2
+@tr
+@td
+
+3.1p1
+
+3.1p2
+@/table
+@ol
+@li
+i1.1
+
+i1.2
+@li
+i2
+@li i3
+@/ol
+@pre
+@hr < & @ c *b* _i_
+IN
+<h3>h 3</h3><p>p1
+</p><p>p2
+</p><h2>h 2</h2><p>p3
+</p><table class="c1"><tr><td><p>1.1
+</p></td><td><p>1.2
+</p></td></tr><tr><td>2.1</td><td class="number"><p>2.2
+</p></td></tr><tr><td><p>3.1p1
+</p><p>3.1p2
+</p></td></tr></table><ol><li><p>i1.1
+</p><p>i1.2
+</p></li><li><p>i2
+</p></li><li>i3</li></ol><pre>
+@hr &lt; &amp; @ c *b* _i_
+</pre>
+OUT
+	],
+    ],
+];
+
+sub _chomp {
+    my($x) = @_;
+    chomp($x);
+    return $x;
+}
