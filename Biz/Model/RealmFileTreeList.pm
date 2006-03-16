@@ -25,13 +25,14 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
         primary_key => ['RealmFile.realm_file_id'],
-        auth_id => 'RealmFile.realm_id',
+        auth_id => ['RealmFile.realm_id', 'RealmOwner.realm_id'],
 	order_by => [qw(
 	    RealmFile.path_lc
 	    RealmFile.modified_date_time
             Email.email
 	)],
 	other => [
+	    'RealmOwner.name',
 	    'RealmFile.path',
 	    'RealmFile.folder_id',
             [qw(RealmFile.user_id Email.realm_id)],
@@ -90,6 +91,16 @@ sub internal_prepare_statement {
 
 sub internal_root_parent_node_id {
     return undef;
+}
+
+sub is_file {
+    my($self) = @_;
+    return $self->get_list_model->get('RealmFile.is_folder') ? 0 : 1;
+}
+
+sub is_folder {
+    my($self) = @_;
+    return $self->get_list_model->get('RealmFile.is_folder');
 }
 
 1;
