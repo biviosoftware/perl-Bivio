@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Inc.  All rights reserved.
+# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget::Prose;
 use strict;
@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget::Join>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::Widget::Join;
-@Bivio::UI::Widget::Prose::ISA = ('Bivio::UI::Widget::Join');
+use Bivio::UI::Widget;
+@Bivio::UI::Widget::Prose::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -107,35 +107,34 @@ on I<self> as I<values> for the Join widget (superclass).
 use Bivio::IO::Trace;
 use Bivio::UI::Widget;
 use Bivio::UI::ViewLanguage;
+use Bivio::UI::Widget::Join;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(string value, hash_ref attrs) : Bivio::UI::Widget::Prose
-
-Creates widget with I<value> and optionally attrs.
-
-=head2 static new(hash_ref attrs) : Bivio::UI::Widget::Prose
-
-Creates widget.  I<value> must be set at instantiation.
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    return $self->put(values => _parse($self->get('value')));
-}
-
 =head1 METHODS
 
 =cut
+
+=for html <a name="initialize"></a>
+
+=head2 initialize()
+
+Initializes widget state and children.
+
+=cut
+
+sub initialize {
+    my($self) = @_;
+    if (ref(my $v = $self->get('value'))) {
+	$self->initialize_attr('value');
+    }
+    else {
+	$self->put(_join => Bivio::UI::Widget::Join->new(_parse($v)));
+    }
+    return;
+}
 
 =for html <a name="internal_new_args"></a>
 
@@ -147,12 +146,29 @@ Implements positional argument parsing for L<new|"new">.
 
 sub internal_new_args {
     my(undef, $value, $attributes) = @_;
-    return "'value' must be a defined scalar"
-	unless defined($value) && !ref($value);
+    return "'value' must be defined"
+	unless defined($value);
     return {
         value => $value,
 	($attributes ? %$attributes : ()),
     };
+}
+
+=for html <a name="render"></a>
+
+=head2 render(string_ref buffer)
+
+=cut
+
+sub render {
+    my($self, $source, $buffer) = @_;
+    ($self->unsafe_get('_join') || $self->initialize_value(
+	'value',
+	Bivio::UI::Widget::Join->new(
+	    _parse($self->render_simple_attr('value', $source)),
+	),
+    ))->render($source, $buffer);
+    return;
 }
 
 #=PRIVATE METHODS
@@ -163,12 +179,10 @@ sub internal_new_args {
 #
 sub _parse {
     my($value) = @_;
-    my($res) = [];
-    foreach my $bit (split(/(?=\<\{)|(?<=\}\>)/,
-	    ref($value) ? $$value : $value)) {
-	push(@$res, $bit =~ s/^\<\{// ? _parse_code($bit)
-		: _parse_text($bit));
-    }
+    my($res) = [
+	map($_ =~ s/^\<\{// ? _parse_code($_) : _parse_text($_),
+	    split(/(?=\<\{)|(?<=\}\>)/, ref($value) ? $$value : $value)),
+    ];
     _trace($res) if $_TRACE;
     return $res;
 }
@@ -219,7 +233,7 @@ sub _parse_text {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Inc.  All rights reserved.
+Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
