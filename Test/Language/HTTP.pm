@@ -479,7 +479,7 @@ sub handle_config {
     Bivio::Die->die($cfg->{server_startup_timeout},
 	': server_startup_timeout must be a postive integer')
         if $cfg->{server_startup_timeout} =~ /\D/
-	    || $cfg->{server_startup_timeout} <= 0;
+	    || $cfg->{server_startup_timeout} < 0;
     $cfg->{remote_mail_host} ||= URI->new($cfg->{home_page_uri})->host;
     $_CFG = $cfg;
     return;
@@ -1314,12 +1314,16 @@ sub _wait_for_server {
     my($self, $timeout) = @_;
     my($fields) = $self->[$_IDI];
 
+    # Try to be smart about error message. 500 isn't unique to
+    # a down server and we don't want to wait around on a server
+    # that is live, but is dying on an Internal Server Error
+
     my($request) = HTTP::Request->new(GET => $self->home_page_uri());
-    my($response);
     foreach my $i (1..$timeout) {
-	$response = $fields->{user_agent}->request($request);
+	my($response) = $fields->{user_agent}->request($request);
 	last
-	    if $response->is_success();
+	    unless $response->code() == 500
+		&& $response->message() =~ /^Can't connect to/;
 	sleep(1);
     }
 
