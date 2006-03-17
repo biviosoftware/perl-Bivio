@@ -494,14 +494,14 @@ Clears files in I<mail_dir>.
 =cut
 
 sub handle_setup {
-    my($self) = @_;
-    shift->SUPER::handle_setup(@_);
+    my($self) = shift;
+    $self->SUPER::handle_setup(@_);
     _grep_mail_dir(sub {
         unlink(shift);
 	return;
     });
     _wait_for_server($self, $_CFG->{server_startup_timeout})
-	if $_CFG->{server_startup_timeout};
+	if $_CFG->{server_startup_timeout} && ref($self);
     return;
 }
 
