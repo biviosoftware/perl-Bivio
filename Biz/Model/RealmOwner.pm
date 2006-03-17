@@ -515,10 +515,9 @@ Return error if invalid.
 
 sub validate_login {
     my($self, $login) = @_;
-    $self->unauth_load_by_email_id_or_name($login);
 
     return 'NOT_FOUND'
-	if !$self->is_loaded()
+	if !$self->unauth_load_by_email_id_or_name($login),
 	    || $self->is_offline_user
 	    || $self->is_default
 	    || $self->get('realm_type') != Bivio::Auth::RealmType->USER;
