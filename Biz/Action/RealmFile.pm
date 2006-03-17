@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($self, $req, $is_public) = @_;
-    return shift->execute($req, $is_public, $req->get('auth_id'));
+    return shift->unauth_execute($req, $is_public, $req->get('auth_id'));
 }
 
 sub execute_public {
