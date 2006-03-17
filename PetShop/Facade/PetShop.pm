@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Facade::PetShop;
 use strict;
@@ -138,7 +138,7 @@ my($_SELF) = __PACKAGE__->new({
 	    DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef,
 	    FORBIDDEN => undef,
 	    MY_SITE => 'my-site/*',
-	    HELP => 'hp/*',
+	    HELP => 'help/*',
 	    FAVICON_ICO => 'favicon.ico',
 	    ROBOTS_TXT => 'robots.txt',
 	    TEST_BACKDOOR => '_test_backdoor',
@@ -193,6 +193,7 @@ my($_SELF) = __PACKAGE__->new({
 	    FORUM_EASY_FORM => '?/EasyForm/*',
 	    FORUM_PUBLIC_FILE => '?/pub/*',
 	    FORUM_FILE_READ => '?/file/*',
+	    FORUM_WIKI_VIEW => '?/wiki/*',
         ]));
 	return;
     },
@@ -203,6 +204,8 @@ my($_SELF) = __PACKAGE__->new({
 
 	support_email => 'webmaster@localhost.localdomain',
 	site_name => 'PetShop',
+	help_wiki_realm_id => Bivio::Biz::Model->new('RealmOwner')
+	    ->unauth_load_or_die({name => 'fourem'})->get('realm_id'),
 
 	# SITE_ROOT task calls View->execute_uri and we look for pages in
 	# the "site_root" directory.
@@ -296,6 +299,10 @@ my($_SELF) = __PACKAGE__->new({
 	    sort_up => 'This column sorted in descending order',
 	    sort_down => 'This column sorted in ascending order',
 	],
+	HelpWiki => [
+	    header => 'Help',
+	    footer => '',
+	],
 
 	# Misc Model support
 	'MailReceiveDispatchForm.uri_prefix' => 'mail-handler-',
@@ -313,6 +320,10 @@ my($_SELF) = __PACKAGE__->new({
 	    USER_PASSWORD => q{Your password has been changed.},
 	    password_nak => q{We're sorry, but the link you clicked on is no longer valid.  Please enter your email address and send again.},
 	],
+	title => [
+	    SHELL_UTIL => 'shell util',
+	    USER_HOME => 'user home',
+	],
     ]),
 });
 
@@ -324,7 +335,7 @@ my($_SELF) = __PACKAGE__->new({
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
