@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.85  2006/03/15 05:15:44  nagler
+  * Various Wiki fixes
+  * Bivio::Biz::Model::RealmFileTreeList uses path, not path_lc for links
+
   Revision 3.84  2006/03/15 04:16:13  nagler
   * Bivio::Biz::Model::WikiForm and Bivio::Biz::Action::WikiView added
     to create, edit, and view wiki pages.  Wiki pages are stored in the
