@@ -124,14 +124,16 @@ sub get_delegate_info {
 	    Action.ClientRedirect->execute_query
 	    next=SITE_ROOT
 	)],
-	# Help pages
-	[qw(
-	    HELP
-	    9
-	    GENERAL
-	    ANYBODY
-	    Action.LocalFilePlain
-	)],
+ 	[qw(
+ 	    HELP
+ 	    9
+ 	    GENERAL
+ 	    DATA_READ
+ 	    Action.WikiView->execute_help
+	    View.wiki
+	    want_author=0
+	    MODEL_NOT_FOUND=HELP_NOT_FOUND
+ 	)],
 	# Handy for demos and such.  You need to provide a link in the
 	# "plain" space to the view source, e.g.
 	#    cd plain; ln -s ../view vs
@@ -464,6 +466,42 @@ sub get_delegate_info {
             ANYBODY
             Action.MailReceiveStatus->execute_forbidden
         )],
+ 	[qw(
+ 	    FORUM_WIKI_VIEW
+ 	    48
+ 	    FORUM
+ 	    DATA_READ
+ 	    Action.WikiView
+	    View.wiki
+	    MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
+	    edit_task=FORUM_WIKI_EDIT
+	    want_author=1
+ 	)],
+ 	[qw(
+ 	    FORUM_WIKI_EDIT
+ 	    49
+ 	    FORUM
+ 	    DATA_READ&DATA_WRITE
+ 	    Model.WikiForm
+	    View.wiki-edit
+	    next=FORUM_WIKI_VIEW
+ 	)],
+ 	[qw(
+ 	    FORUM_WIKI_NOT_FOUND
+ 	    50
+ 	    FORUM
+ 	    DATA_READ
+	    View.wiki-not-found
+	    view_task=FORUM_WIKI_VIEW
+ 	)],
+ 	[qw(
+ 	    HELP_NOT_FOUND
+ 	    51
+ 	    GENERAL
+ 	    DATA_READ
+	    View.wiki-not-found
+	    view_task=HELP
+ 	)],
     ];
 }
 
