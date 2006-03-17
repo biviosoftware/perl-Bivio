@@ -579,6 +579,16 @@ EOF
     }, \(<<'EOF'));
 &date,&email,input,ok
 EOF
+    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+	path => Bivio::Type->get_instance('WikiName')->absolute_path('ShellUtilHelp'),
+    }, \(<<'EOF'));
+ShellUtil help.
+EOF
+    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+	path => Bivio::Type->get_instance('WikiName')->absolute_path('base.css'),
+    }, \(<<'EOF'));
+.fourem_wiki {}
+EOF
     Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
         'RealmOwner.display_name' => 'Unit Test Sub Forum',
 	'RealmOwner.name' => $self->FOUREM . '-sub1',
