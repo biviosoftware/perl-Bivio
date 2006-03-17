@@ -16,5 +16,9 @@ Type();
 	    Mixed => WIKI_NAME(),
 	    Mixed9 => WIKI_NAME(),
 	],
+	absolute_path => [
+	    'a' => '/Wiki/a',
+	    '' => '/Wiki',
+	],
     ],
 ];
