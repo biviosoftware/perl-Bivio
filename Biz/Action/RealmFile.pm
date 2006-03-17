@@ -8,15 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($self, $req, $is_public) = @_;
-    my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
-    $req->get('reply')->set_output(
-	$f->load({
-	    is_folder => 0,
-	    path_lc => lc($f->parse_path($req->get('path_info'))),
-	    defined($is_public) ? (is_public => $is_public) : (),
-	})->get_handle,
-    )->set_output_type($f->get_content_type);
-    return;
+    return shift->execute($req, $is_public, $req->get('auth_id'));
 }
 
 sub execute_public {
@@ -25,6 +17,20 @@ sub execute_public {
 	path_info => Bivio::Biz::Model->get_instance('Forum')->PUBLIC_FOLDER
 	    . '/' . $req->get('path_info'));
     return shift->execute(shift(@_), 1);
+}
+
+sub unauth_execute {
+    my($proto, $req, $is_public, $realm_id) = @_;
+    my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
+    $req->get('reply')->set_output(
+	$f->unauth_load_or_die({
+	    realm_id => $realm_id,
+	    is_folder => 0,
+	    path_lc => lc($f->parse_path($req->get('path_info'))),
+	    defined($is_public) ? (is_public => $is_public) : (),
+	})->get_handle,
+    )->set_output_type($f->get_content_type);
+    return;
 }
 
 1;
