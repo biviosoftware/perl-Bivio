@@ -180,10 +180,13 @@ sub unit {
 	)]);
     });
 #TODO: Shouldn't be hardwired, can setup above.
-    Bivio::UI::View->execute(\(<<'EOF'), $req);
-view_class_map('HTMLWidget');
+    Bivio::UI::View->execute(\(<<"EOF"), $req);
+view_class_map(q{@{[
+    ref($self) && $self->unsafe_get('view_class_map') || 'HTMLWidget'
+]}});
 view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
-view_main(SimplePage([
+use Bivio::UI::HTML::Widget::SimplePage;
+view_main(Bivio::UI::HTML::Widget::SimplePage->new([
     sub {
 	shift->get_request->get('Bivio::Test::Widget')->();
 	return '';
