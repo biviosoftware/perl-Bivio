@@ -7,19 +7,21 @@ use base 'Bivio::Biz::FormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = Bivio::Type->get_instance('WikiName');
 
-sub ROOT_FOLDER {
-    return '/Wiki';
+sub execute_cancel {
+    my($self) = @_;
+    # Need to clear path_info so we don't come right back to here with
+    # "auto-create" on the wiki workflow
+    $self->get_request->put(path_info => undef);
+    return 'next';
 }
 
 sub execute_empty {
     my($self) = @_;
     return unless _is_edit($self);
+    $self->internal_put_field('RealmFile.path_lc' => _authorized_name($self));
     $self->internal_put_field(
-	'RealmFile.path_lc' => _name($self),
-    );
-    my($rf) = $self->new_other('RealmFile');
-    return unless $rf->unsafe_load({path => _curr_path($self)});
-    $self->internal_put_field(content => ${$rf->get_content});
+	content => ${$self->get('realm_file')->get_content},
+    ) if $self->get('file_exists');
     return;
 }
 
@@ -27,10 +29,9 @@ sub execute_ok {
     my($self) = @_;
     my($new) = $_WN->absolute_path($self->get('RealmFile.path_lc'));
     my($c) = $self->get('content');
-    my($rf) = $self->new_other('RealmFile');
-    my($m) = _is_edit($self) && $rf->unsafe_load({path => _curr_path($self)})
+    my($m) = $self->get('file_exists')
 	? 'update_with_content' : 'create_with_content';
-    $rf->$m({path => $new}, \$c);
+    $self->get('realm_file')->$m({path => $new}, \$c);
     $self->get_request->put(path_info => $self->get('RealmFile.path_lc'));
     return;
 }
@@ -51,20 +52,45 @@ sub internal_initialize {
 		type => 'WikiName',
 	    },
 	],
+	other => [
+	    {
+		name => 'realm_file',
+		# PropertyModels may act as types.
+		type => 'Bivio::Biz::Model::RealmFile',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'file_exists',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+	],
     });
+}
+
+sub internal_pre_execute {
+    my($self) = @_;
+    my($rf) = $self->new_other('RealmFile');
+    $self->internal_put_field(realm_file => $rf);
+    $self->internal_put_field(file_exists =>
+        _is_edit($self) && $rf->unsafe_load({path => _curr_path($self)}));
+    return;
 }
 
 sub _curr_path {
     my($self) = @_;
-    return $_WN->absolute_path(_name($self));
+    return $_WN->absolute_path(_authorized_name($self));
 }
 
 sub _is_edit {
     return shift->get_request->unsafe_get('path_info') ? 1 : 0;
 }
 
-sub _name {
-    return $_WN->from_literal_or_die(shift->get_request->get('path_info') =~ m{^/*(.+)});
+sub _authorized_name {
+    # SECURITY: By validating the name, we are sure that we aren't opening
+    # up writes in any other directory.
+    return $_WN->from_literal_or_die(
+	shift->get_request->get('path_info') =~ m{^/*(.+)});
 }
 
 1;
