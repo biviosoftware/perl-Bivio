@@ -87,11 +87,14 @@ sub IMAGE_REGEX {
 }
 
 sub render_html {
-    my($self, $value) = @_;
+    my($self, $value, $req, $task_id) = @_;
     my($state) = {
 	lines => [split(/\r?\n/, ref($value) ? $$value : $value)],
 	tags => [],
+	attrs => [],
 	html => '',
+	req => $req,
+	task_id => $task_id || $req->unsafe_get('task_id'),
     };
     while (defined(my $line = _next_line($state))) {
 	$state->{html} .= $line =~ s/^\@// ? _fmt_tag($line, $state)
@@ -101,27 +104,40 @@ sub render_html {
     return $state->{html};
 }
 
+sub _abs_href {
+    my($uri, $state) = @_;
+    return $uri =~ m{[/:]} ? $uri : $state->{req}->format_uri({
+	task_id => $state->{task_id},
+	query => undef,
+	path_info => $uri,
+    });
+}
+
 sub _close_top {
     my($tag, $state) = @_;
-    $state->{html} .= '</' . shift(@{$state->{tags}}) . '>'
-	if ($state->{tags}->[0] || '') eq $tag;
-    $state->{html} =~ s{<$tag></$tag>$}{}s;
+    if (($state->{tags}->[0] || '') eq $tag) {
+	$state->{html} .= '</' . shift(@{$state->{tags}}) . '>';
+	shift(@{$state->{attrs}});
+    }
+    $state->{html} =~ s{<$tag(?: class="[^"]+")?></$tag>$}{}s;
     return '';
 }
 
 sub _close_tags {
-    my($to_close, $state) = @_;
+    my($to_close, $state, $attrs) = @_;
     $to_close = $_TAGS->{$to_close}
 	unless ref($to_close);
     my($tags) = $state->{tags};
     while (@$tags && $to_close->{$tags->[0]}) {
+	$$attrs = $state->{attrs}->[0]
+	    if $attrs;
 	_close_top($tags->[0], $state);
     }
     return '';
 }
 
 sub _fmt_href {
-    my($tok) = @_;
+    my($tok, $state) = @_;
     $tok = Bivio::HTML->unescape($tok);
     return shift(@_)
 	unless $tok =~ m{(^\W*(?:\w+://\w.+|/\w.+|$_EMAIL|$_DOMAIN|$_WN)\W*$)};
@@ -132,13 +148,13 @@ sub _fmt_href {
     return Bivio::HTML->escape($s)
 	. ($m =~ $_IMG
 	? qq{<img src="}
-	  . Bivio::HTML->escape_attr_value($m)
+	  . Bivio::HTML->escape_attr_value(_abs_href($m, $state))
 	  . qq{" />}
 	: ( '<a href="'
 	    . Bivio::HTML->escape_attr_value(
 		$m =~ qr{^$_EMAIL$}o ? "mailto:$m"
 		: $m =~ qr{^$_DOMAIN$}o ? "http://$m"
-		: $m
+		: _abs_href($m, $state)
 	    ) . '">'
 	    . Bivio::HTML->escape($m)
 	    . '</a>'
@@ -149,48 +165,59 @@ sub _fmt_line {
     my($line, $state) = @_;
     $line =~ s{^\s+|\s+$}{}sg;
     if (!length($line) || $line =~ s{^--+$}{<hr /><br />\n}) {
-	_close_tags('p', $state);
-	return $line . _start_tag('p', '', $state);
+	my($attrs);
+	_close_tags('p', $state, \$attrs);
+	$state->{html} .= $line;
+	return defined($attrs) ? _start_tag('p', $attrs, $state) : '';
     }
     _start_p($state);
     $line = Bivio::HTML->escape($line);
-    $line =~ s{(\S+)}{_fmt_token($1)}eg;
+    $line =~ s{(\S+)}{_fmt_token($1, $state)}eg;
     return "$line\n";
 }
 
 sub _fmt_pre {
     my($line, $state) = @_;
-    $state->{html} .= "\n";
+    my($tag) = $state->{tags}->[0];
+    my($res) = '';
     if (length($line)) {
-	$state->{html} .= Bivio::HTML->escape($line) . "\n";
+	$state->{html} .= Bivio::HTML->escape($line);
+	$res = "\n";
     }
     else {
-	$state->{html} .= Bivio::HTML->escape($line) . "\n"
+	$state->{html} .= "\n" . Bivio::HTML->escape($line) . "\n"
 	    while defined($line = _next_line($state))
-		&& $line !~ m{^\@/pre\s*$};
+		&& $line !~ m{^\@/$tag\s*$};
     }
-    _close_top('pre', $state);
-    return '';
+    _close_top($tag, $state);
+    return $res;
 }
 
 sub _fmt_tag {
     my($line, $state) = @_;
     return "\n"
 	if $line =~ /^\s*$/;
-    return _fmt_line(@_)
+    return "$1"
+	if $line =~ /^(\&\w+\;|\&\#\d+\;)/;
+    return ''
+	if $line =~ /^\!/;
+    return _fmt_line($line, $state)
 	if $line =~ /^@/ || !($line =~ s/^(\/?)(\w+)//);
     my($close) = $1;
     my($tag) = lc($2);
-    return _fmt_line(@_)
+    return _fmt_line('@' . $close . $tag . $line, $state)
 	unless $_TAGS->{$tag};
     _close_tags($tag, $state);
     return _close_top($tag, $state)
 	if $close;
     my($attrs) = '';
-    while ($line =~ s/^\s+(?:(\w+=)([^"\s]+)|(\w+="[^\"]+"))//) {
-	$attrs .= ' '
-	    . ($1 ? lc($1) . '"' . Bivio::HTML->escape_attr_value($2) . '"'
-	    : $3);
+    while ($line =~ s/^\s+(?:(\w+=)([^"\s]+)|(\w+=)"([^\"]+)")//) {
+	my($k) = $1 ? $1 : $3;
+	my($v) = defined($2) ? $2 : $4;
+	$attrs .= ' ' . lc($k) . '"'
+	    . Bivio::HTML->escape_attr_value(
+		$k =~ /^(?:src|href)=$/ ? _abs_href($v, $state) : $v)
+	    . '"';
     }
     $line =~ s/^\s+//;
     return "<$tag$attrs />\n"
@@ -199,7 +226,7 @@ sub _fmt_tag {
 	if $_PHRASE->{$tag};
     $state->{html} .= _start_tag($tag, $attrs, $state);
     return _fmt_pre($line, $state)
-	if $tag eq 'pre';
+	if $tag =~ /^(?:pre|code)$/;
     if (length($line)) {
  	$state->{html} .= _fmt_line($line, $state);
 	chomp($state->{html});
@@ -212,7 +239,7 @@ sub _fmt_tag {
 }
 
 sub _fmt_token {
-    my($tok) = @_;
+    my($tok, $state) = @_;
     my($hit) = 0;
     foreach my $x (
 	[qw(\* strong)],
@@ -220,10 +247,10 @@ sub _fmt_token {
     ) {
 	my($c, $h) = @$x;
 	$tok =~ s{(^\W*)$c(\S+)$c(\W*$)}{
-	    "$1<$h>" . join(' ', split(/$c/, _fmt_href($2))) . "</$h>$3"
+	    "$1<$h>" . join(' ', split(/$c/, _fmt_href($2, $state))) . "</$h>$3"
 	}e && $hit++;
     }
-    return $hit ? $tok : _fmt_href($tok);
+    return $hit ? $tok : _fmt_href($tok, $state);
 }
 
 sub _hash {
@@ -237,14 +264,15 @@ sub _next_line {
 
 sub _start_p {
     my($state) = @_;
-    $state->{html} .= _start_tag('p', '', $state)
+    $state->{html} .= _start_tag('p', ' class="prose"', $state)
 	unless $state->{tags}->[0];
-    return;
+    return '';
 }
 
 sub _start_tag {
     my($tag, $attrs, $state) = @_;
     unshift(@{$state->{tags}}, $tag);
+    unshift(@{$state->{attrs}}, $attrs);
     return "<$tag$attrs>";
 }
 
