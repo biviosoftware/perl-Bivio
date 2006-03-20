@@ -4,15 +4,9 @@ package Bivio::UI::XHTML::ViewShortcuts;
 use strict;
 use base 'Bivio::UI::HTML::ViewShortcuts';
 use Bivio::UI::HTML::WidgetFactory;
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD);
-
-sub AUTOLOAD {
-    return Bivio::UI::ViewLanguage->call_method(
-	$AUTOLOAD, 'Bivio::UI::ViewLanguage', @_,
-    );
-}
 
 sub vs_phone {
     my($proto) = @_;
