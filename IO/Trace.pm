@@ -382,14 +382,13 @@ sub _define_pkg_symbols {
 	        # caller(1) can return an empty array, hence '|| undef'
 		. '((caller), (caller(1))[$[+3] || undef, \@_)}';
     }
-    {
-	# Look Ma! No evals!!
-	no strict;
-	*{$pkg.'::_TRACE'} = \$trace;
-        # Suppress 'Subroutine %s redefined' warning
-	local $^W = 0;
-	*{$pkg.'::_trace'} = $sub;
-    }
+    # Look Ma! No evals!!
+    no strict qw(refs);
+    *{$pkg.'::_TRACE'} = \$trace;
+    # Suppress 'Subroutine %s redefined' warning
+    local($^W) = 0;
+    *{$pkg.'::_trace'} = $sub;
+    return;
 }
 
 
