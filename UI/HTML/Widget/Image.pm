@@ -169,7 +169,7 @@ Implements positional argument parsing for L<new|"new">.
 sub internal_new_args {
     return {
 	alt_text => ref($_[2]) eq 'HASH' ? undef : [splice(@_, 2, 1)]->[0],
-	%{shift->SUPER::internal_new_args([qw(src)], \@_)},
+	%{shift->internal_compute_new_args([qw(src)], \@_)},
     };
 }
 

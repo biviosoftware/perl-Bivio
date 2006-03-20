@@ -3,15 +3,9 @@
 package Bivio::UI::XHTML::Widget::RoundedBox;
 use strict;
 use base 'Bivio::UI::Widget::Join';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD);
-
-sub AUTOLOAD {
-    return Bivio::UI::ViewLanguage->call_method(
-	$AUTOLOAD, 'Bivio::UI::ViewLanguage', @_,
-    );
-}
 
 sub new {
     my($self) = shift->SUPER::new(@_);

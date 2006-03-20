@@ -3,15 +3,9 @@
 package Bivio::UI::XHTML::Widget::Acknowledgement;
 use strict;
 use base 'Bivio::UI::HTML::Widget::Tag';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD);
-
-sub AUTOLOAD {
-    return Bivio::UI::ViewLanguage->call_method(
-	$AUTOLOAD, 'Bivio::UI::ViewLanguage', @_,
-    );
-}
 
 sub new {
     return shift->SUPER::new(@_)->put_unless_exists(

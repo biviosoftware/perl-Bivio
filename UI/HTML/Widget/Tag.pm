@@ -103,7 +103,7 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    return shift->SUPER::internal_new_args([qw(tag value)], \@_);
+    return shift->internal_compute_new_args([qw(tag value)], \@_);
 }
 
 #=PRIVATE SUBROUTINES

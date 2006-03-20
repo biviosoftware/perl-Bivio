@@ -14,7 +14,7 @@ sub internal_as_string {
 
 sub internal_new_args {
     shift;
-    return Bivio::UI::HTML::Widget::ControlBase->internal_new_args(
+    return Bivio::UI::HTML::Widget::ControlBase->internal_compute_new_args(
 	[qw(field label)],
 	\@_,
     );

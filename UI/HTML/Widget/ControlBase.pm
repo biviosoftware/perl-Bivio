@@ -85,13 +85,13 @@ sub initialize {
     return shift->SUPER::initialize(@_);
 }
 
-=for html <a name="internal_new_args"></a>
+=for html <a name="internal_compute_new_args"></a>
 
-=head2 static internal_new_args(array_ref required, array_ref args) : hash_ref
+=head2 static internal_compute_new_args(array_ref required, array_ref args) : hash_ref
 
 =cut
 
-sub internal_new_args {
+sub internal_compute_new_args {
     my($proto, $required, $args) = @_;
     return {
 	map({
@@ -107,6 +107,17 @@ sub internal_new_args {
 		   : @$args == 2 ? return qq{"attributes" must be last} : (),
 	       %{shift(@$args) || {}}),
     };
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(array_ref required, array_ref args) : hash_ref
+
+=cut
+
+sub internal_new_args {
+    Bivio::IO::Alert->warn_deprecated('call internal_compute_new_args');
+    return shift->internal_compute_new_args(@_);
 }
 
 #=PRIVATE SUBROUTINES

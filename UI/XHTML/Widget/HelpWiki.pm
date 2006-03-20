@@ -3,18 +3,12 @@
 package Bivio::UI::XHTML::Widget::HelpWiki;
 use strict;
 use base 'Bivio::UI::HTML::Widget::Tag';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 use Bivio::UI::XHTML::Widget::WikiStyle;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD);
 my($_WT) = Bivio::Type->get_instance('WikiText');
 my($_WN) = Bivio::Type->get_instance('WikiName');
-
-sub AUTOLOAD {
-    return Bivio::UI::ViewLanguage->call_method(
-	$AUTOLOAD, 'Bivio::UI::ViewLanguage', @_,
-    );
-}
 
 sub new {
     my($self) = shift->SUPER::new(@_);

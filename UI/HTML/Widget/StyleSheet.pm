@@ -127,13 +127,7 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    my(undef, $value, $attributes) = @_;
-    return '"value" attribute must be defined'
-	unless defined($value);
-    return {
-	value => $value,
-	($attributes ? %$attributes : ()),
-    };
+    return shift->SUPER::internal_compute_new_args([qw(value)], \@_);
 }
 
 #=PRIVATE SUBROUTINES
