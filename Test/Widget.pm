@@ -49,8 +49,8 @@ our($AUTOLOAD);
 
 =head2 new_unit(string class_name, hash_ref attrs) : self
 
-Accepts I<setup_render> and I<compute_return> attributes.  Also allows
-override of I<class_name> via I<attrs>.
+Accepts I<setup_render>, I<compute_return>, and I<new_params> attributes.
+Also allows override of I<class_name> via I<attrs>.
 
 =cut
 
@@ -66,23 +66,6 @@ sub new_unit {
 
 =cut
 
-# =for html <a name="AUTOLOAD"></a>
-
-# =head2 AUTOLOAD(...) : any
-
-# The widget and shortcut methods are dynamically loaded.
-
-# =cut
-
-# sub AUTOLOAD {
-# #TODO: This doesn't work
-#     return Bivio::IO::ClassLoader->simple_require(
-# 	'Bivio::UI::ViewLanguage',
-#     )->call_method(
-# 	$AUTOLOAD, 'Bivio::UI::ViewLanguage', @_,
-#     );
-# }
-
 =for html <a name="run_unit"></a>
 
 =head2 run_unit(array_ref cases)
@@ -94,7 +77,7 @@ Calls L<unit|"unit"> with appropriate args.
 sub run_unit {
     my($self, $cases) = @_;
     return $self->unit(
-	$self->unsafe_get(qw(class_name setup_render compute_return)),
+	$self->unsafe_get(qw(class_name setup_render compute_return new_params)),
 	$cases,
     );
 }
@@ -117,7 +100,7 @@ sub setup_render {
 
 =head2 static unit(string class_name, code_ref setup_render, array_ref cases)
 
-=head2 static unit(string class_name, code_ref setup_render, code_ref compute_return, array_ref cases)
+=head2 static unit(string class_name, code_ref setup_render, code_ref compute_return, code_ref new_params, array_ref cases)
 
 Calls L<Bivio::Test::new|Bivio::Test/"new"> and
 L<Bivio::Test::unit|Bivio::Test/"unit"> with I<cases>.  Calls
@@ -147,14 +130,15 @@ sub unit {
     my($i) = 0;
     my($class_name) = shift;
     my($cases) = pop;
-    my($setup_render, $compute_return) = @_;
+    my($setup_render, $compute_return, $new_params) = @_;
     my($res);
     $req->put('Bivio::Test::Widget' => sub {
 	$res = Bivio::Test->new({
 	    create_object => sub {
 		my($case, $params) = @_;
-		return $case->get('class_name')->new(@$params)
-		    ->put_and_initialize(parent => undef);
+		return $case->get('class_name')->new(
+		    @{$new_params ? $new_params->(@_) : $params}
+		)->put_and_initialize(parent => undef);
 	    },
 	    class_name => $class_name,
 	    compute_params => sub {
