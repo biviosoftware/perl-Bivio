@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget::ControlBase>
+L<Bivio::UI::HTML::Widget::ControlBase>
 
 =cut
 
-use Bivio::UI::Widget::ControlBase;
-@Bivio::UI::HTML::Widget::StyleSheet::ISA = ('Bivio::UI::Widget::ControlBase');
+use Bivio::UI::HTML::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::StyleSheet::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -127,7 +127,7 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    return shift->SUPER::internal_compute_new_args([qw(value)], \@_);
+    return shift->internal_compute_new_args([qw(value)], \@_);
 }
 
 #=PRIVATE SUBROUTINES
