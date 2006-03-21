@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::HelpWiki;
 use strict;
-use base 'Bivio::UI::HTML::Widget::Tag';
+use base 'Bivio::UI::XHTML::Widget::RoundedBox';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 use Bivio::UI::XHTML::Widget::WikiStyle;
 
@@ -11,12 +11,14 @@ my($_WT) = Bivio::Type->get_instance('WikiText');
 my($_WN) = Bivio::Type->get_instance('WikiName');
 
 sub new {
-    my($self) = shift->SUPER::new(@_);
-    return $self->put_unless_exists(
-	tag => 'div',
-	id => 'help_wiki',
+    return shift->SUPER::new(@_ > 0 ? @_ : '');
+}
 
-	# You do not want to override these values
+sub initialize {
+    my($self) = @_;
+    $self->put_unless_exists(
+	class => 'help_wiki',
+    )->put(
 	control => [
 	    sub {
 		my($req) = shift->get_request;
@@ -35,12 +37,13 @@ sub new {
 		return 1;
 	    },
 	],
-        value => RoundedBox([
+        value => Join([
 	    Tag(div => Prose(vs_text('helpwiki.header')), 'header'),
 	    Tag(div => ["$self"], 'body'),
 	    Tag(div => Prose(vs_text('helpwiki.footer')), 'footer'),
 	]),
     );
+    return shift->SUPER::initialize(@_);
 }
 
 1;
