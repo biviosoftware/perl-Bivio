@@ -466,7 +466,11 @@ Returns I<self>.
 sub put_and_initialize {
     my($self) = shift;
     $self->put(@_);
-    $self->initialize;
+    # Protects against multiple initializations
+    $self->put_unless_exists(_initialized => sub {
+        $self->initialize;
+	return 1;
+    });
     return $self;
 }
 
