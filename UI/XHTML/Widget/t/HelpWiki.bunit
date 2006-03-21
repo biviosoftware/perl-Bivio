@@ -5,11 +5,11 @@ Widget({
     setup_render => sub {
 	my($req, undef, undef, undef, $object) = @_;
 	$req->put(task_id => Bivio::Agent::TaskId->from_name(
-	    $object->get('task')));
+	    $object->get_or_default(task => 'SHELL_UTIL')));
 	return;
     },
 });
 [
-    [{task => 'SHELL_UTIL'}] => qr{'<div id="help_wiki">.*<p class="prose"><a href="/help/ShellUtil">ShellUtil</a> help\.\n</p>.*</div>'}s,
+    [] => qr{'<div class="help_wiki">.*<p class="prose"><a href="/help/ShellUtil">ShellUtil</a> help\.\n</p>.*</div>'}s,
     [{task => 'USER_HOME'}] => '',
 ];
