@@ -1,0 +1,6 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    x => qr{<div class="rounded_box"><div class="top_left"></div><div class="top_right"></div><div class="body">x</div><div class="bottom_left"></div><div class="bottom_right"></div></div>},
+];
