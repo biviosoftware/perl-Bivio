@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,28 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.86  2006/03/17 06:24:53  nagler
+  * Bivio::Biz::Model::RealmFileTreeList->is_folder/file added
+  * Bivio::Biz::Model::RealmOwner and Bivio::Biz::Model::UserLoginForm
+    refactored to put login validation in RealmOwner.
+  * Bivio::Biz::Model::WikiForm->execute_cancel added and execute_* validates
+    names better
+  * Bivio::Test::Language::HTTP.server_startup_timeout lets setup
+    wait for remote server to start before continuing.
+  * Bivio::UI::XHTML::Widget::RoundedBox added
+  * Bivio::UI::Widget::Director accepts dynamic values
+  * Bivio::Type::WikiText enhanced to support @p class="prose" only for
+    non-enclosed paragraphs.  Also supports special chars (@&nbsp;)
+  * Bivio::Biz::Action::WikiView->execute_help added
+  * Bivio::UI::XHTML::Widget::WikiStyle inserts style tag in header if
+    base.css exists in directory from which Wiki Page is rendered.
+  * Bivio::UI::XHTML::Widget::HelpWiki inserts a RoundedBox with Wiki
+    content on any page (including WikiStyle) insert
+  * Bivio::Util::RealmFile->import_tree ignores CVS, *~, and .* files
+  * Bivio::Biz::Action::RealmFile->unauth_execute added
+  * Bivio::UI::Widget::Prose.value is now rendered dynamically.  If value is
+    static, still rendered statically so will not affect prior behavior.
+
   Revision 3.85  2006/03/15 05:15:44  nagler
   * Various Wiki fixes
   * Bivio::Biz::Model::RealmFileTreeList uses path, not path_lc for links
