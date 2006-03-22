@@ -323,6 +323,8 @@ my($_SELF) = __PACKAGE__->new({
 	title => [
 	    SHELL_UTIL => 'shell util',
 	    USER_HOME => 'user home',
+	    SITE_ROOT => 'home',
+	    ADM_SUBSTITUTE_USER => 'su',
 	],
     ]),
 });
