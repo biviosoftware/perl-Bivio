@@ -478,7 +478,8 @@ sub _initialize {
 #TODO: is_terminal needs to traverse hierarchy
     my($is_terminal) = 1;
     while (my($k, $v) = each(%$values)) {
-	$v->initialize if $v && UNIVERSAL::isa($v, 'Bivio::UI::Widget');
+	$v->put_and_initialize(parent => undef)
+	    if $v && UNIVERSAL::isa($v, 'Bivio::UI::Widget');
 	$is_terminal = 0 unless defined($v);
     }
 #TODO: broken.  Need to traverse parents to see if everything used
