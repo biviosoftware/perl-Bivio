@@ -1,0 +1,19 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    view_class_map => 'XHTMLWidget',
+    setup_render => sub {
+	my($req, undef, undef, undef, $object) = @_;
+	$req->server_redirect(
+	    $object->get('task_map')->[0]->get('_task_menu_task_id'));
+	return;
+    },
+});
+req()->set_realm_and_user(qw(demo demo));
+[
+# ADM_SUBSTITUTE_USER
+    [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>},
+    [[[qw(SITE_ROOT) => '/x']]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">home</a></div>},
+    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a></div>},
+    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT USER_HOME)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a><a target="_top" class="want_sep" href="/demo">user home</a></div>},
+];
