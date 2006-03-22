@@ -47,7 +47,8 @@ my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 =head2 control_on_render(any source, string_ref buffer)
 
-Render the link.
+Render the tag.  If I<self> can I<render_tag_value>, will call I<render_tag_value>
+instead of rendering I<value>.
 
 =cut
 
@@ -59,7 +60,8 @@ sub control_on_render {
     $$buffer .= "<$t";
     $self->SUPER::control_on_render($source, $buffer);
     $$buffer .= '>';
-    $self->render_attr('value', $source, $buffer);
+    $self->can('render_tag_value') ? $self->render_tag_value($source, $buffer)
+	: $self->render_attr('value', $source, $buffer);
     $$buffer .= "</$t>";
     return;
 }
@@ -68,7 +70,7 @@ sub control_on_render {
 
 =head2 initialize()
 
-Initialize children.  Wraps value in String widget if not already a widget.
+Initialize children if defined. 
 
 =cut
 
