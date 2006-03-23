@@ -201,11 +201,12 @@ sub initialize {
     }
 
     # Initialize prefix
-    my($p) = '<form method=';
-    $p .= $self->ancestral_get('form_method', 'POST');
-    $p .= $_VS->vs_link_target_as_html($self).' name="'.$name.'"';
     my($action) = $self->unsafe_get('action');
-    $p .= ' action="';
+    my($p) = '<form method="'
+	. $self->ancestral_get('form_method', 'POST')
+        . '"'
+	. $_VS->vs_link_target_as_html($self)
+	. qq{ name="$name" action="};
     if (ref($action)) {
 	# Task or widget value
 	$fields->{action} = $action;
