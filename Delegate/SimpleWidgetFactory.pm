@@ -165,7 +165,6 @@ sub internal_create_display {
     if (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')) {
 	return $_VS->vs_new('DateTime', {
 	    field => $field,
-	    mode => 'DATE',
 	    column_align => 'E',
 #TODO: This is broken in the case of $attrs->{value} existing
 	    value => [$field],
