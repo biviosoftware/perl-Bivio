@@ -29,7 +29,8 @@ sub new {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    $$buffer .= $source->get_request->format_uri(
+    my($method) = $self->render_simple_attr('format_method') || 'format_uri';
+    $$buffer .= $source->get_request->$method(
 	_render_hash(
 	    $self, 'format_uri_hash', $self->get('format_uri_hash'), $source));
     return;
