@@ -28,6 +28,7 @@ sub render {
 		[title => $req->get_nested(qw[auth_realm owner display_name]) . ' Calendar'],
 		[description => 'The RSS feed for the ' . $req->get_nested(qw[auth_realm owner display_name]) . ' Calendar'],
 		[language => 'en'],
+#TODO: Put a limit on this
 		@{$l->map_iterate(\&_render_item)},
 	    ]],
 	),
