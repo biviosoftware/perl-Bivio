@@ -24,6 +24,7 @@ sub internal_initialize {
 	)],
 	other => [qw(
             RealmMail.subject
+            RealmMail.thread_parent_id
 	)],
     });
 }
