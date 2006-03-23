@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.87  2006/03/22 06:18:06  nagler
+  * Bivio::UI::ViewLanguageAUTOLOAD allows you to refer to widgets and
+    ViewShortcuts in classes just like you can in bviews.  This is more
+    than an optimization, because it enforces the behavior of view_shortcuts
+    and view_class_map in widgets.
+  * Bivio::UI::Widget->put_and_initialize only calls $self->initialize once.
+    This
+  * Bivio::UI::XHTML::Widget::HelpWiki.class is help_wiki (as an id)
+  * Bivio::UI::XHTML::Widget::RoundedBox fixed to be subclass of Tag.  There's
+    a div on the outside (rounded_box) and on the inside (body).
+  * Bivio::UI::XHTML::Widget::TaskMenu added
+  * Bivio::UI::HTML::Widget::Tag->control_on_render calls $self->render_tag_value
+    if it can, otherwise renders "value" attribute
+  * Bivio::UI::Widget->put_and_initialize only calls initialize once.  This
+    codifies the concept that initialize() is idempotent without having all
+    widgets protect themselves.  initialize() semantics were meant to be
+    call once.
+  * Bivio::UI::HTML::Widget::ControlBase->internal_compute_new_args added
+    and all subclasses updated to new interface.  Old form of calling
+    shift->SUPER::internal_new_args is deprecated, because it didn't allow
+    sub-sub-classes to handle arguments properly.
+  * Bivio::Test::Widget->new_params hook added
+
   Revision 3.86  2006/03/17 06:24:53  nagler
   * Bivio::Biz::Model::RealmFileTreeList->is_folder/file added
   * Bivio::Biz::Model::RealmOwner and Bivio::Biz::Model::UserLoginForm
