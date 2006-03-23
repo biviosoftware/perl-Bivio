@@ -68,7 +68,19 @@ sub initialize {
     return;
 }
 
-=for html <a name="internal_new_args"></a>
+=for html <a name="internal_as_string"></a>
+
+=head2 static internal_as_string(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_as_string {
+    return shift->unsafe_get('list_class');
+}
+
+=for html <a name="internal_as_string"></a>
 
 =head2 static internal_new_args(any arg, ...) : any
 
