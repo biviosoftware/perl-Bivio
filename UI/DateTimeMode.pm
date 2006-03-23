@@ -1,78 +1,10 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::DateTimeMode;
 use strict;
-$Bivio::UI::DateTimeMode::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::DateTimeMode::VERSION;
+use base 'Bivio::Type::Enum';
 
-=head1 NAME
-
-Bivio::UI::DateTimeMode - list of display modes for date times
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::DateTimeMode;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Type::Enum>
-
-=cut
-
-use Bivio::Type::Enum;
-@Bivio::UI::DateTimeMode::ISA = ('Bivio::Type::Enum');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::DateTimeMode> are the different modes which
-L<Bivio::UI::HTML::Widget::DateTime|Bivio::UI::HTML::Widget::DateTime>
-operates in.
-
-The values are:
-
-=over 4
-
-=item DATE
-
-displays the date only.
-
-=item TIME
-
-displays the time only.
-
-=item DATE_TIME
-
-displays the date and time.
-
-=item MONTH_NAME_AND_DAY_NUMBER
-
-displays a long month name and day number, e.g. October 31
-
-=item MONTH_AND_DAY
-
-displays month/day.
-
-=item FULL_MONTH_DAY_AND_YEAR_UC
-
-displays MONTH day, year
-
-=item FULL_MONTH_AND_YEAR_UC
-
-displays MONTH, year
-
-=back
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     # DO NOT CHANGE THESE NUMBERS
     # unless you modify UI::Widget::HTML::DateTime
@@ -84,18 +16,29 @@ __PACKAGE__->compile([
     FULL_MONTH_DAY_AND_YEAR_UC => [6],
     FULL_MONTH_AND_YEAR_UC => [7],
     FULL_MONTH => [8],
+    DAY_MONTH3_YEAR => [9],
+    DAY_MONTH3_YEAR_TIME => [10],
+    RFC822 => [11],
 ]);
+Bivio::IO::Config->register(my $_CFG = {
+    default => __PACKAGE__->DATE_TIME,
+    widget_default => __PACKAGE__->DATE,
+});
 
-#=PRIVATE METHODS
+sub get_default {
+    return $_CFG->{default};
+}
 
-=head1 COPYRIGHT
+sub get_widget_default {
+    return $_CFG->{widget_default};
+}
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub handle_config {
+    my($proto, $cfg) = @_;
+    foreach my $x (qw(default widget_default)) {
+	$_CFG->{$x} = $proto->from_any($cfg->{$x});
+    }
+    return;
+}
 
 1;
