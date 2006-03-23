@@ -326,6 +326,12 @@ my($_SELF) = __PACKAGE__->new({
 	    SITE_ROOT => 'home',
 	    ADM_SUBSTITUTE_USER => 'su',
 	],
+	rsspage => [
+	    NumberedList => [
+		title => 'ht',
+		description => 'hd',
+	    ],
+	],
     ]),
 });
 
