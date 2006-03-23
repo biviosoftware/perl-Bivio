@@ -2,11 +2,6 @@
 # $Id$
 Widget();
 [
-    ['/f/base.css'] => <<'EOF',
-<style>
-<!--
-/* intentionally left blank */
--->
-</style>
-EOF
-]
+    ['/f/base.css'] => qr{'<style>\n<!--\n.+left blank.*\n-->\n</style>\n'}s,
+];
+
