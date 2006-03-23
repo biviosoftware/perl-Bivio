@@ -129,7 +129,7 @@ sub control_on_render {
     my($b) = '';
     $$buffer .= ' value="'
 	. ($form->get_field_error($field) ? $form->get_field_as_html($field)
-	    : $_D->to_literal(
+	    : $_D->to_html(
 		$form->get($field)
 		    or $self->unsafe_render_attr('allow_undef', $source, \$b)
 			&& $b ? undef
