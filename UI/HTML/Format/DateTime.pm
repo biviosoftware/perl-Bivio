@@ -1,47 +1,13 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Format::DateTime;
 use strict;
-$Bivio::UI::HTML::Format::DateTime::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Format::DateTime::VERSION;
-
-=head1 NAME
-
-Bivio::UI::HTML::Format::DateTime - transforms a DateTime to date/time string
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Format::DateTime;
-    Bivio::UI::HTML::Format::DateTime->get_widget_value($time);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::HTML::Format>
-
-=cut
-
-use Bivio::UI::HTML::Format;
-@Bivio::UI::HTML::Format::DateTime::ISA = ('Bivio::UI::HTML::Format');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Format::DateTime> formats a DateTime value
-to a date, time, or date and time string.
-
-=cut
-
-#=IMPORTS
+use base 'Bivio::UI::HTML::Format';
 use Bivio::Type::DateTime;
 use Bivio::UI::DateTimeMode;
 
-#=VARIABLES
-my(@_MONTH_NAMES) = qw(
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_MONTHS) = [qw(
     N/A
     January
     February
@@ -55,70 +21,40 @@ my(@_MONTH_NAMES) = qw(
     October
     November
     December
-);
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_widget_value"></a>
-
-=head2 static get_widget_value(string time) : string
-
-=head2 static get_widget_value(string time, Bivio::UI::DateTimeMode mode) : string
-
-=head2 static get_widget_value(string time, Bivio::UI::DateTimeMode mode, boolean no_timezone) : string
-
-Formats a date/time value as a string.  Unless I<no_timezone> is set,
-the timezone GMT will be appended.
-
-May pass string for I<mode> and it will be interpreted
-as a L<Bivio::UI::DateTimeMode|Bivio::UI::DateTimeMode>.
-
-=cut
+)];
+my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub get_widget_value {
     my(undef, $time, $mode, $no_timezone) = @_;
-    return '' unless defined($time);
-    my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime->to_parts($time);
-    $mode = Bivio::UI::DateTimeMode->from_any($mode || 'DATE_TIME');
+    return ''
+	unless defined($time);
+    $mode = defined($mode) ? Bivio::UI::DateTimeMode->from_any($mode)
+	: Bivio::UI::DateTimeMode->get_default;
+    return $_DT->rfc822($time)
+	if $mode->eq_rfc822;
+    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($time);
     my($m) = $mode->as_int;
     # ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
-    return (($m & 1) ? sprintf('%02d/%02d/%04d', $mon, $mday, $year) : '')
-	    .($m == 3 ? ' ' : '')
-	    .(($m & 2) ? sprintf('%02d:%02d:%02d', $hour, $min, $sec) : '')
-	    # This is even correct if just a time, no?
-	    .($no_timezone ? '': ' GMT') if $m <= 3;
-    return $_MONTH_NAMES[$mon].' '.$mday.($no_timezone ? '': ' GMT')
-	    if $mode == Bivio::UI::DateTimeMode->MONTH_NAME_AND_DAY_NUMBER;
-    return uc($_MONTH_NAMES[$mon]).' '.$mday.', '
-	.$year.($no_timezone ? '': ' GMT')
-	if $mode == Bivio::UI::DateTimeMode->FULL_MONTH_DAY_AND_YEAR_UC;
-    return uc($_MONTH_NAMES[$mon]).', '
-	.$year.($no_timezone ? '': ' GMT')
-	if $mode == Bivio::UI::DateTimeMode->FULL_MONTH_AND_YEAR_UC;
-    return $_MONTH_NAMES[$mon]
-        if $mode == Bivio::UI::DateTimeMode->FULL_MONTH;
-    return sprintf('%02d/%02d', $mon, $mday).($no_timezone ? '': ' GMT')
-	    if $mode == Bivio::UI::DateTimeMode->MONTH_AND_DAY;
-    Bivio::Die->throw_die('DIE', {
-	message => 'unknown DateTimeMode',
-	entity => $mode
-    });
-    # DOES NOT RETURN
+    return (
+	$m <= 3 ? (
+	    (($m & 1) ? sprintf('%02d/%02d/%04d', $mon, $mday, $year) : '')
+	    . ($m == 3 ? ' ' : '')
+	    . (($m & 2) ? sprintf('%02d:%02d:%02d', $hour, $min, $sec) : '')
+        ) : $mode->eq_month_name_and_day_number ? "$_MONTHS->[$mon] $mday"
+	: $mode->eq_full_month_day_and_year_uc
+	    ? uc($_MONTHS->[$mon]) . " $mday, $year"
+	: $mode->eq_full_month_and_year_uc ? uc($_MONTHS->[$mon]) . ", $year"
+	: $mode->eq_full_month ? $_MONTHS->[$mon]
+	: $mode->eq_month_and_day ? sprintf('%02d/%02d', $mon, $mday)
+	: $mode->eq_day_month3_year
+	    ? sprintf('%02d-%.3s-%04d', $mday, $_MONTHS->[$mon], $year)
+	: $mode->eq_day_month3_year_time
+	    ? sprintf('%02d-%.3s-%04d %02d:%02d:%02d',
+		      $mday, $_MONTHS->[$mon], $year, $hour, $min, $sec)
+        : Bivio::Die->throw_die('DIE', {
+	    message => 'unhandled DateTimeMode',
+	    entity => $mode
+	})) . ($no_timezone ? '': ' GMT');
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::DateTime;
 use strict;
@@ -132,6 +132,7 @@ function dt(m,j,t,gmt){
     //          FULL_MONTH_DAY_AND_YEAR_UC=6,
     //          FULL_MONTH_AND_YEAR_UC=7
     //          FULL_MONTH=8
+    //          DAY_MONTH3_YEAR=9
     // This renders more compact javascript and is possibly slower on client.
     document.write(
         m<=3?
@@ -144,6 +145,8 @@ function dt(m,j,t,gmt){
         :m==6?dt_mn(d).toUpperCase()+' '+dt_n(d.getDate())+', '+dt_y(d)
         :m==7?dt_mn(d).toUpperCase()+', '+dt_y(d)
         :m==8?dt_mn(d)
+        :m==9?dt_n(d.getDate())+'-'+dt_mn(d)+'-'+dt_y(d)
+        :m==10?dt_n(d.getDate())+'-'+dt_mn3(d)+'-'+dt_y(d)+' '+dt_n(d.getHours())+':'+dt_n(d.getMinutes())
         :'');
 }
 
@@ -181,6 +184,9 @@ function dt_mn(d){
     case 11: return 'December';
     }
     return 'N/A';
+}
+function dt_mn3(d){
+    return dt_mn(d).substring(0, 3);
 }
 EOF
 
@@ -225,8 +231,10 @@ sub initialize {
     my($fields) = $self->[$_IDI];
     return if exists($fields->{value});
     $fields->{value} = $self->get('value');
-    $fields->{mode} = Bivio::UI::DateTimeMode->from_any(
-	    $self->get_or_default('mode', 'DATE'))->as_int;
+    $fields->{mode} = ($self->unsafe_get('mode')
+	? Bivio::UI::DateTimeMode->from_any($self->get('mode'))
+	: Bivio::UI::DateTimeMode->get_widget_default
+    )->as_int;
     $fields->{undef_value} = $self->get_or_default('undef_value', '&nbsp;');
     $fields->{font} = $self->ancestral_get('string_font', undef);
     $fields->{no_timezone} = !$self->get_or_default('show_timezone', 1);
@@ -320,7 +328,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
