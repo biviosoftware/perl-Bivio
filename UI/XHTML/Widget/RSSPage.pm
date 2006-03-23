@@ -24,10 +24,10 @@ sub initialize {
 #TODO: Might it be better to render off the task?
 	    map(Tag($_ => Prose(vs_text('rsspage', $list, $_))),
 		qw(title description)),
-	    Tag(link => String(URI({
+	    $self->unsafe_get('source_task') ? Tag(link => String(URI({
 		task_id => $self->get('source_task'),
 		query => undef,
-	    }), {escape_html => 1})),
+	    }), {escape_html => 1})) : (),
 	    Tag(language => 'en-us'),
 	], {join_separator => "\n"}),
 	columns => [
