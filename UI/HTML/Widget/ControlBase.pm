@@ -44,6 +44,10 @@ HTML class attribute.
 
 HTML id attribute.
 
+=item html_attrs : array_ref [[class id]]
+
+List of attributes to render.
+
 =back
 
 =cut
@@ -67,7 +71,8 @@ Render class and id.
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    $$buffer .= $_VS->vs_html_attrs_render($self, $source);
+    $$buffer .= $_VS->vs_html_attrs_render(
+	$self, $source, $self->unsafe_get('html_attrs'));
     return;
 }
 
@@ -81,7 +86,7 @@ Initializes class attribute.
 
 sub initialize {
     my($self) = @_;
-    $_VS->vs_html_attrs_initialize($self);
+    $_VS->vs_html_attrs_initialize($self, $self->unsafe_get('html_attrs'));
     return shift->SUPER::initialize(@_);
 }
 
