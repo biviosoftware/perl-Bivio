@@ -214,6 +214,18 @@ sub FIRST_PAGE {
     return 1;
 }
 
+=for html <a name="DEFAULT_MAX_COUNT"></a>
+
+=head2 DEFAULT_MAX_COUNT : int
+
+=cut
+
+my($_COUNT_TYPE) = Bivio::Type->get_instance('Integer')->new(
+    1, Bivio::Type->get_instance('PageSize')->get_max);
+sub DEFAULT_MAX_COUNT {
+    return $_COUNT_TYPE->get_max;
+}
+
 #=IMPORTS
 use Bivio::Agent::HTTP::Query;
 use Bivio::Die;
@@ -234,6 +246,7 @@ Bivio::IO::Trace->register;
 my(%_QUERY_TO_FIELDS) = (
     'b' => 'begin_date',
     'd' => 'date',
+    'c' => 'count',
     'i' => 'interval',
     'n' => 'page_number',
     'o' => 'order_by',
@@ -258,8 +271,7 @@ my($_SEPARATOR_AS_QUERY) = Bivio::Type::String->to_query("\177");
 
 =head2 static new(hash_ref query, Bivio::SQL::Support support, ref die) : Bivio::SQL::ListQuery
 
-Creates a new ListQuery.  I<auth_id> and I<count> must be set in
-I<query>.  I<count> is the default page size to use.
+Creates a new ListQuery.  I<auth_id> must be set in I<query> if required.
 
 B<I<query> will be subsumed by this module.  Do not use it again.>
 
@@ -301,12 +313,14 @@ sub unauth_new {
 
 =for html <a name="clean_raw"></a>
 
-=head2 clean_raw(hash_ref query, Bivio::SQL::ListSupport support)
+=head2 clean_raw(hash_ref query, Bivio::SQL::ListSupport support) : hash_ref
 
 Removes any raw query keys that aren't part of the "valid" set.  If
 the model has I<other_query_keys>, these will not be removed.
 Used by
 L<Bivio::Biz::ListModel::parse_query_from_request|Bivio::Biz::ListModel/"parse_query_from_request">.
+
+Returns I<query>.
 
 =cut
 
@@ -317,9 +331,11 @@ sub clean_raw {
     my($oqk) = $support && $support->unsafe_get('other_query_keys');
     foreach my $k (keys(%$query)) {
 	delete($query->{$k})
-	    unless $_QUERY_TO_FIELDS{$k} || $oqk && grep($k eq $_, @$oqk);
+	    unless $_QUERY_TO_FIELDS{$k}
+		|| $_ATTR_TO_CHAR{$k}
+		|| $oqk && grep($k eq $_, @$oqk);
     }
-    return;
+    return $query;
 }
 
 =for html <a name="format_uri"></a>
@@ -765,6 +781,18 @@ sub _parse_begin_date {
     $attrs->{begin_date} = _parse_date_value(
 	    $attrs->{b} || $attrs->{begin_date} || undef,
 	    $support, $die, 0);
+    return;
+}
+
+# _parse_count(hash_ref attrs, Bivio::SQL::Support support, ref die)
+#
+# Parse the count string.
+#
+sub _parse_count {
+    my($attrs, $support, $die) = @_;
+    my($c) = $_COUNT_TYPE->from_literal($attrs->{'c'} || $attrs->{'count'});
+    $attrs->{count} = $c
+	if defined($c);
     return;
 }
 
