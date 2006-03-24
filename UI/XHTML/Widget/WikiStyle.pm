@@ -29,7 +29,7 @@ sub render_html {
 	realm_id => $realm_id,
     });
     my($res) = [
-	\($_WT->render_html($rf->get_content, $req, $task_id)),
+	\($_WT->render_html($rf->get_content, $name, $req, $task_id)),
 	$rf->get(qw(modified_date_time user_id)),
     ];
     if ($rf->unauth_load({
