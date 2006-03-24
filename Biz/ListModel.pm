@@ -94,7 +94,7 @@ May be overridden.
 =cut
 
 sub LOAD_ALL_SIZE {
-    return Bivio::Type->get_instance('PageSize')->get_max;
+    return Bivio::SQL::ListQuery->DEFAULT_MAX_COUNT;
 }
 
 =for html <a name="NOT_FOUND_IF_EMPTY"></a>
