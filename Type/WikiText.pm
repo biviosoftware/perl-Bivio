@@ -87,12 +87,14 @@ sub IMAGE_REGEX {
 }
 
 sub render_html {
-    my($self, $value, $req, $task_id) = @_;
+    my($self, $value, $name, $req, $task_id) = @_;
     my($state) = {
 	lines => [split(/\r?\n/, ref($value) ? $$value : $value)],
+	line_num => 0,
 	tags => [],
 	attrs => [],
 	html => '',
+	name => $name,
 	req => $req,
 	task_id => $task_id || $req->unsafe_get('task_id'),
     };
@@ -118,8 +120,10 @@ sub _close_top {
     if (($state->{tags}->[0] || '') eq $tag) {
 	$state->{html} .= '</' . shift(@{$state->{tags}}) . '>';
 	shift(@{$state->{attrs}});
+#TODO: This "class="prose"" is a pain
+	$state->{html} =~ s{<p(?: class="prose")?></p>$}{}s
+	    if $tag eq 'p';
     }
-    $state->{html} =~ s{<$tag(?: class="[^"]+")?></$tag>$}{}s;
     return '';
 }
 
@@ -133,6 +137,14 @@ sub _close_tags {
 	    if $attrs;
 	_close_top($tags->[0], $state);
     }
+    return '';
+}
+
+sub _fmt_err {
+    my($line, $err, $state) = @_;
+    $state->{req}->warn(
+	$state->{name}, ', line ', $state->{line_num}, ': ',
+	$err, ' data="', $line, '"');
     return '';
 }
 
@@ -201,11 +213,18 @@ sub _fmt_tag {
 	if $line =~ /^(\&\w+\;|\&\#\d+\;)/;
     return ''
 	if $line =~ /^\!/;
+#TODO: Special tags need some distinctive identifier.  ins-page does
+#      does not collide with the space of HTML tags.  This is hardwired
+#      because only one, generalize when needed.
+    return _ins_page($line, $state)
+	if $line =~ s{^ins-page\s+}{};
     return _fmt_line($line, $state)
-	if $line =~ /^@/ || !($line =~ s/^(\/?)(\w+)//);
+	if $line =~ /^@/;
+    return _fmt_err($line, 'invalid syntax', $state)
+        unless $line =~ s{^(/?)(\w+)(?=\s|$)}{};
     my($close) = $1;
     my($tag) = lc($2);
-    return _fmt_line('@' . $close . $tag . $line, $state)
+    return _fmt_err($close . $tag . $line, 'unknown tag', $state)
 	unless $_TAGS->{$tag};
     _close_tags($tag, $state);
     return _close_top($tag, $state)
@@ -258,8 +277,31 @@ sub _hash {
     return {map(($_ => +{map(($_ => 1), @$b, $_)}), @$a)};
 }
 
+sub _ins_page {
+    my($line, $state) = @_;
+#TODO: Could generalize to any URI.  For now, just local.
+    return _fmt_err($line, 'invalid URI, must begin with a /', $state)
+	unless $line =~ s{^/+}{/};
+    my($res);
+    my($die) = Bivio::Die->catch(sub {
+        # Missing leading /', just put in my
+        (my $uri = $line) =~ s{(?<=^/)my(?=/)}{
+	    $state->{req}->get_nested(qw(auth_realm owner name))
+	}sex;
+	$res = Bivio::IO::ClassLoader->simple_require(
+	    'Bivio::Agent::Embed::Dispatcher'
+	)->call_task($state->{req}, $uri);
+	return;
+    });
+    return _fmt_err($line, $die->as_string, $state)
+	if $die;
+    return $$res;
+}
+
 sub _next_line {
-    return shift(@{shift(@_)->{lines}});
+    my($state) = @_;
+    $state->{line_num}++;
+    return shift(@{$state->{lines}});
 }
 
 sub _start_p {

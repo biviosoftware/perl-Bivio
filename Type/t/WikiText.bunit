@@ -1,7 +1,7 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-set_realm_and_user(qw(fourem demo));
+set_realm_and_user(qw(fourem root));
 initialize_fully('FORUM_WIKI_VIEW');
 [
     class() => [
@@ -9,7 +9,7 @@ initialize_fully('FORUM_WIKI_VIEW');
 	    method => 'render_html',
 	    compute_params => sub {
 		my(undef, $params) = @_;
-		return [@$params, req()];
+		return [@$params, 'inline', req()];
 	    },
 	} => [
 	    '' => '',
@@ -41,14 +41,17 @@ initialize_fully('FORUM_WIKI_VIEW');
 	    '&amp;' => qq{<p class="prose">&amp;amp;\n</p>},
 	    '--' => qq{<hr /><br />\n},
 	    '@p *x*' => qq{<p><strong>x</strong></p>\n},
+	    "\@div\n\@/div" => qq{<div></div>},
 	    '@code *x*' => qq{<p class="prose"><code>*x*</code>\n</p>},
 	    '@&nbsp;' => qq{&nbsp;},
 	    '@&#174;' => qq{&#174;},
 	    '@hr' => qq{<hr />\n},
 	    '@@other' => qq{<p class="prose">\@other\n</p>},
-	    '@badtag' => qq{<p class="prose">\@badtag\n</p>},
+	    '@badtag' => qq{},
+	    '@my/wiki/ShellUtilHelp' => qq{},
+	    '@ins-page /my/wiki/ShellUtilHelp' => qr{shell utility help}i,
 	    "\n\@hr" => qq{<hr />\n},
-	    '@a' => qq{},
+	    '@a' => qq{<p class="prose"><a></a></p>},
 	    '@a href=/x y' => qq{<p class="prose"><a href="/x">y</a>\n</p>},
 	    '@a href=x y' => qq{<p class="prose"><a href="/fourem/wiki/x">y</a>\n</p>},
 	    '@img src="x"' => qq{<img src="/fourem/wiki/x" />\n},
@@ -100,7 +103,7 @@ IN
 <p class="prose">p3
 </p><table class="c1"><tr><td><p>1.1
 </p></td><td><p>1.2
-</p></td></tr><tr><td>2.1</td>
+</p></td><td></td></tr><tr><td>2.1</td>
 <td class="number"><p>2.2
 </p></td></tr><tr><td><p>3.1p1
 </p><p>3.1p2
