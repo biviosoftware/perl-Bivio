@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Reply;
 use strict;
@@ -46,8 +46,7 @@ use UNIVERSAL;
 # use Bivio::Agent::Job::Dispatcher
 
 #=VARIABLES
-use vars qw($_TRACE);
-my($_IDI) = __PACKAGE__->instance_data_index;
+our($_TRACE);
 # Can't initialize here, because get "deep recursion".  Don't ask me
 # why...
 my(%_DIE_TO_HTTP_CODE);
@@ -66,15 +65,10 @@ output operations.
 =cut
 
 sub new {
-    my($proto, $r) = @_;
-    my($self) = &Bivio::Agent::Reply::new($proto);
-    $self->[$_IDI] = {
-	output => '',
-	r => $r,
-    };
-    # default output is html
-    $self->set_output_type('text/html');
-    return $self;
+    return shift->SUPER::new->put(
+	output_type => 'text/html',
+	r => shift,
+    );
 }
 
 =head1 METHODS
@@ -91,12 +85,8 @@ Redirects the client to the specified uri.
 
 sub client_redirect {
     my($self, $req, $uri) = @_;
-    my($fields) = $self->[$_IDI];
-
-    my($r) = $fields->{r};
-
-    # don't let any more data be sent
-    $self->[$_IDI] = undef;
+    my($r) = $self->get('r');
+    $self->internal_put({});
 
     # have to do it the long way, there is a bug in using the REDIRECT
     # return value when handling a form
@@ -127,9 +117,7 @@ Sends the buffered reply data.
 
 sub send {
     my($self, $req) = @_;
-    my($fields) = $self->[$_IDI];
-    my($r) = $fields->{r};
-    my($o) = $fields->{output};
+    my($r, $o) = $self->unsafe_get(qw(r output));
 
     my($is_scalar) = ref($o) eq 'SCALAR';
     die('no reply generated, missing UI item on Task')
@@ -146,7 +134,7 @@ sub send {
     else {
 	# Files read from disk are never private
 	$self->set_last_modified((stat(_))[9])
-	    unless $fields->{headers} && $fields->{headers}->{'Last-Modified'};
+	    unless $self->get_if_exists_else_put('headers', {})->{'Last-Modified'};
     }
 
     # Don't keep the connection open on normal replies
@@ -173,7 +161,7 @@ sub send {
     # don't let any more data be sent.  Don't clear early in case
     # there is an error and we get called back in die_to_http_code
     # (then _error()).
-    $self->[$_IDI] = undef;
+    $self->internal_put({});
     return;
 }
 
@@ -250,19 +238,19 @@ sub set_expire_immediately {
     return;
 }
 
-=for html <a name="set_header"></a>
+=for html <a name="set_last_modified"></a>
 
-=head2 set_header(string name, string value) : self
+=head2 set_last_modified(string date_time)
 
-Sets an arbitrary header value.
+=head2 set_last_modified(int unix_time)
+
+Sets the last modified header.
 
 =cut
 
-sub set_header {
-    my($self, $name, $value) = @_;
-    my($fields) = $self->[$_IDI];
-    ($fields->{headers} ||= {})->{$name} = $value;
-    return $self;
+sub set_last_modified {
+    shift->set_header('Last-Modified', Bivio::Type::DateTime->rfc822(shift));
+    return;
 }
 
 =for html <a name="set_http_status"></a>
@@ -276,30 +264,13 @@ C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
 
 sub set_http_status {
     my($self, $status) = @_;
-    my($fields) = $self->[$_IDI];
     # It is error prone keeping a list up to date, so we just check
     # a reasonable range.
     Bivio::Die->die($status, ': unknown HTTP status')
         unless defined($status) && $status =~ /^\d+$/
 	&& 100 <= $status && $status < 600;
-    $fields->{status} = $status;
+    $self->put(status => $status);
     return $self;
-}
-
-=for html <a name="set_last_modified"></a>
-
-=head2 set_last_modified(string date_time)
-
-=head2 set_last_modified(int unix_time)
-
-Sets the last modified header.
-
-=cut
-
-sub set_last_modified {
-    my($self, $time) = @_;
-    $self->set_header('Last-Modified', Bivio::Type::DateTime->rfc822($time));
-    return;
 }
 
 =for html <a name="set_output"></a>
@@ -315,14 +286,12 @@ I<file> or I<value> will be owned by this method.
 
 sub set_output {
     my($self, $value) = @_;
-    my($fields) = $self->[$_IDI];
     die('too many calls to set_output')
-	if $fields->{output};
+	if $self->has_keys('output');
     die('not an IO::Handle, GLOB, or SCALAR reference')
 	unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
 	    || UNIVERSAL::isa($value, 'IO::Handle');
-    $fields->{output} = $value;
-    return $self;
+    return shift->SUPER::set_output(@_);
 }
 
 =for html <a name="unsafe_get_output"></a>
@@ -334,7 +303,7 @@ Returns the current output value.
 =cut
 
 sub unsafe_get_output {
-    return shift->[$_IDI]->{output};
+    return shift->unsafe_get('output');
 }
 
 #=PRIVATE METHODS
@@ -414,28 +383,23 @@ EOF
 sub _send_http_header {
     my($self, $req, $r) = @_;
     if ($req) {
-	my($fields) = $self->[$_IDI];
-	# Set the status if was set, otherwise defaults to 200 by Apache
-	$r->status($fields->{status})
-	    if defined($fields->{status});
-
-	# We set the cookie if we don't cache this answer.
+	$r->status($self->get('status'))
+	    if $self->has_keys('status');
 	$self->set_cache_private
 	    if $req->get('cookie')->header_out($req, $r);
-
-	# Set any optional headers
-	if ($fields->{headers}) {
-	    foreach my $k (sort(keys(%{$fields->{headers}}))) {
-		$r->header_out($k, $fields->{headers}->{$k});
+	my($h) = $self->unsafe_get('headers');
+	if ($h) {
+	    foreach my $k (sort(keys(%$h))) {
+		$r->header_out($k, $h->{$k});
 	    }
 	}
-	_trace($fields->{status}, ' ', $fields->{headers}) if $_TRACE;
+	_trace($self->unsafe_get('status'), ' ', $h) if $_TRACE;
     }
 
     # Turn off KeepAlive if there are jobs.  This is because IE doesn't
     # cycle connections.  It goes back to exactly the same one.
     $r->header_out('Connection', 'close')
-	    unless Bivio::Agent::Job::Dispatcher->queue_is_empty();
+	unless Bivio::Agent::Job::Dispatcher->queue_is_empty();
 
     $r->send_http_header;
     return;
@@ -444,7 +408,7 @@ sub _send_http_header {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
