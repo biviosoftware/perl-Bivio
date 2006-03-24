@@ -50,12 +50,14 @@ Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
 	    parent_id => [undef],
 	    search => [undef],
 	    this => [[35]],
+	    count => Bivio::DieCode->DIE(),
 	],
     ],
     [
 	{
 	    d => '12/12/2001 1:0:0',
 	    b => '12/1/2001',
+	    count => 3,
 	},
 	$_SUPPORT1,
 	'Bivio::Die',
@@ -63,6 +65,7 @@ Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
 	get => [
 	    begin_date => '2452245 79199',
 	    date => '2452256 3600',
+	    count => 3,
 	],
     ],
     [
@@ -74,6 +77,12 @@ Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
 	get => [
 	    begin_date => [undef],
 	    date => Bivio::Type::Date->local_end_of_today,
+	],
+    ],
+    'Bivio::SQL::ListQuery' => [
+	clean_raw => [
+	    [{auth_id => 1}] => [{}],
+	    [{auth_id => 1, count => 1}] => [{count => 1}],
 	],
     ],
 ]);
