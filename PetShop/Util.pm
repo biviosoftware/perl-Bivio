@@ -582,7 +582,7 @@ EOF
     Bivio::Biz::Model->new('RealmFile')->create_with_content({
 	path => Bivio::Type->get_instance('WikiName')->absolute_path('ShellUtilHelp'),
     }, \(<<'EOF'));
-ShellUtil help.
+Shell utility help.
 EOF
     Bivio::Biz::Model->new('RealmFile')->create_with_content({
 	path => Bivio::Type->get_instance('WikiName')->absolute_path('base.css'),
