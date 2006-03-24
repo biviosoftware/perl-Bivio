@@ -19,8 +19,8 @@ bOP
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Agent::Reply::ISA = qw(Bivio::UNIVERSAL);
+use Bivio::Collection::Attributes;
+@Bivio::Agent::Reply::ISA = qw(Bivio::Collection::Attributes);
 
 =head1 DESCRIPTION
 
@@ -30,13 +30,8 @@ L<Bivio::Agent::Request>, it is the output channel.
 =cut
 
 #=IMPORTS
-use Bivio::DieCode;
-use Bivio::IO::Trace;
 
 #=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
-my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -51,12 +46,9 @@ Creates a reply in an error state with the 'text/plain' output type.
 =cut
 
 sub new {
-    my($self) = Bivio::UNIVERSAL::new(@_);
-    $self->[$_IDI] = {
-        'output_type' => 'text/plain',
-        'die_code' => Bivio::DieCode->DIE,
-    };
-    return $self;
+    return shift->SUPER::new({
+        output_type => 'text/plain',
+    });
 }
 
 =head1 METHODS
@@ -72,9 +64,7 @@ Returns the reply format type.
 =cut
 
 sub get_output_type {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return $fields->{output_type};
+    return shift->get('output_type');
 }
 
 =for html <a name="send"></a>
@@ -86,6 +76,21 @@ Sends the buffered reply data.
 =cut
 
 sub send {
+    return;
+}
+
+=for html <a name="set_header"></a>
+
+=head2 set_header(string name, string value) : self
+
+Sets an arbitrary header value.
+
+=cut
+
+sub set_header {
+    my($self, $name, $value) = @_;
+    $self->get_if_exists_else_put('headers', {})->{$name} = $value;
+    return $self;
 }
 
 =for html <a name="set_output"></a>
@@ -100,7 +105,7 @@ I<file> or I<value> will be owned by this method.
 =cut
 
 sub set_output {
-    return shift;
+    return shift->put(output => shift);
 }
 
 =for html <a name="set_output_type"></a>
@@ -112,10 +117,7 @@ Sets the reply format type. For example this could be 'text/html'.
 =cut
 
 sub set_output_type {
-    my($self, $type) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{output_type} = $type;
-    return $self;
+    return shift->put(output_type => shift);
 }
 
 #=PRIVATE METHODS
