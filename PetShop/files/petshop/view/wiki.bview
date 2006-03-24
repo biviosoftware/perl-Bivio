@@ -1,0 +1,7 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+view_parent('menu');
+view_put(
+    header_title => 'Wiki',
+    menu_content => Tag(div => Simple(['Action.WikiView', 'html']), 'body'),
+);
