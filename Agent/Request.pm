@@ -366,9 +366,10 @@ Clears the state of the current request.  See L<get_current|"get_current">.
 =cut
 
 sub clear_current {
+    return unless $_CURRENT;
     # This breaks any circular references, so AGC can work
-    $_CURRENT->delete_all if $_CURRENT;
-    $_CURRENT = undef;
+    $_CURRENT->delete_all;
+    $_CURRENT->internal_clear_current;
     return;
 }
 
@@ -949,7 +950,7 @@ sub internal_initialize {
     my($self, $auth_realm, $auth_user) = @_;
     $self->set_user($auth_user);
     $self->set_realm($auth_realm);
-    return;
+    return $self;
 }
 
 =for html <a name="internal_server_redirect"></a>
@@ -987,6 +988,19 @@ sub internal_server_redirect {
     }
     $self->put_durable_server_redirect_state($named);
     return $named->{task_id};
+}
+
+=for html <a name="internal_clear_current"></a>
+
+=head2 internal_clear_current()
+
+B<DO NOT CALL THIS UNLESS YOU KNOW WHAT YOU ARE DOING.>
+
+=cut
+
+sub internal_clear_current {
+    $_CURRENT = undef;
+    return;
 }
 
 =for html <a name="internal_set_current"></a>
