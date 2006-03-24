@@ -104,7 +104,10 @@ sub process_request {
 	$die = Bivio::Die->catch(sub {
 	    die("too many dispatcher retries")
 		if ++$redirect_count > $self->MAX_SERVER_REDIRECTS;
-	    $req = $self->create_request(@protocol_args) unless $req;
+	    unless ($req) {
+		$req = $self->create_request(@protocol_args);
+		_trace('create_request: ', $req) if $_TRACE;
+	    }
 	    $task_id = $req->get('task_id') unless $task_id;
 	    _trace('Executing: ', $task_id) if $_TRACE;
 	    my($task) = Bivio::Agent::Task->get_by_id($task_id);
