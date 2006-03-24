@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.88  2006/03/23 05:06:04  nagler
+  * Bivio::UI::Widget::URI.format_method added.  Allows you to format_http,
+    if you need to.
+  * Bivio::UI::HTML::Widget::ControlBase.html_attrs added.  Allows you to
+    render any attributes, e.g. for meta links in header.
+  * Bivio::UI::XHTML::Widget::RSSPage added.  Allows you to render RSS feeds
+    from ListModels.
+  * Bivio::Delegate::SimpleWidgetFactory no longer defaults mode for
+    DateTime widget, which was already defaulting the mode.
+  * Bivio::UI::DateTimeMode.default and widget_default are configurable
+    parameters for how DateTime formatter and widget behave.
+  * Bivio::UI::HTML::{Widget,Format}::DateTime support RFC822, DAY_MONTH3_YEAR,
+    and DAY_MONTH3_YEAR_TIME
+  * Bivio::UI::HTML::Widget::Form.method now wrapped in quotes (for XHTML)
+  * Bivio::UI::HTML::Widget::DateField->render calls to_html (was incorrectly
+    calling to_literal)
+
   Revision 3.87  2006/03/22 06:18:06  nagler
   * Bivio::UI::ViewLanguageAUTOLOAD allows you to refer to widgets and
     ViewShortcuts in classes just like you can in bviews.  This is more
