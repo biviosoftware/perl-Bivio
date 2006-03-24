@@ -10,6 +10,6 @@ Widget({
     },
 });
 [
-    [] => qr{'<div class="help_wiki">.*<p class="prose"><a href="/help/ShellUtil">ShellUtil</a> help\.\n</p>.*</div>'}s,
+    [] => qr{'<div class="help_wiki">.*<p class="prose">shell utility help\.\n</p>.*</div>'}is,
     [{task => 'USER_HOME'}] => '',
 ];
