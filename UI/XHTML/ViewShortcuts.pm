@@ -235,7 +235,7 @@ sub vs_paged_list {
 		Table(
 		    $model,
 		    $columns,
-		    $proto->vs_table_attrs($model, paged_list => $attrs),
+		    $proto->vs_table_attrs($model, list => $attrs),
 		 ),
 		'bottom',
 	    ),
