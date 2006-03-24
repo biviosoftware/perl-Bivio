@@ -1,6 +1,6 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::XHTML::Widget::SimplePage;
+package Bivio::UI::XHTML::Widget::BasicPage;
 use strict;
 use base 'Bivio::UI::HTML::Widget::Page';
 use Bivio::UI::ViewLanguageAUTOLOAD;
