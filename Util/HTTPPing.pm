@@ -111,6 +111,7 @@ Truncate data returned from the server at 512 bytes.
 
 sub page {
     my($self, @pages) = @_;
+    $self->initialize_ui;
     my($user_agent) = Bivio::Ext::LWPUserAgent->new(1),
     my($status) = '';
 
