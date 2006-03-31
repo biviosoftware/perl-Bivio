@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::FormFieldLabel;
 use strict;
-use base 'Bivio::UI::HTML::Widget::String';
+use base 'Bivio::UI::Widget::Prose';
 use Bivio::UI::HTML::Widget::ControlBase;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -25,11 +25,7 @@ sub initialize {
     return if $self->unsafe_get('value');
     $self->put(
 	value => $self->get('label'),
-	string_font => 0,
-	cell_class => [sub {
-	    my($source, $err) = @_;
-	    return $err ? 'label_err' : 'label_ok';
-	}, [
+	cell_class => [sub {$_[1] ? 'label_err' : 'label_ok'}, [
 	    ['->get_request'],
 	    $self->ancestral_get('form_class'),
 	    '->get_field_error',
