@@ -16,7 +16,7 @@ sub new {
 	    [sub {"page3.title.$_[1]"}, ['task_id', '->get_name']])],
 	['meta_info'],
 	[head1 => Link(Tag(span => ''), 'SITE_ROOT')],
-	[head2 => Tag(div => view_widget_value('page3_title'), 'title')],
+	[head2 => Tag(div => Prose(view_widget_value('page3_title')), 'title')],
 	['head3'],
 	['content'],
 	[foot1 => Link(String('back to top'), '#top')],
