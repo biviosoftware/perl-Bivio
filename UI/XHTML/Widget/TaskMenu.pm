@@ -18,14 +18,14 @@ sub initialize {
     $self->put(
 	tag => 'div',
 	task_map => [map({
-	    my($t, $h) = ref($_) ? @$_ : $_;
-	    $t = Bivio::Agent::TaskId->$t();
-	    Bivio::Die->die($t, ': duplicate task')
-	        if $dup->{$t}++;
-	    $self->initialize_value($t->get_name, Link(
-		vs_text('title', $t->get_name),
-		$h || $t,
-		{_task_menu_task_id => $t},
+	    my($task, $href, $label) = ref($_) ? @$_ : $_;
+	    $task = Bivio::Agent::TaskId->$task();
+	    Bivio::Die->die($task, ': duplicate task')
+	        if $dup->{$task}++;
+	    $self->initialize_value($task->get_name, Link(
+		vs_text('task_menu', 'title', $label || $task->get_name),
+		$href || $task,
+		{_task_menu_task_id => $task},
 	    ));
 	} @{$self->get('task_map')})],
     );

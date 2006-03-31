@@ -11,9 +11,9 @@ Widget({
 });
 req()->set_realm_and_user(qw(demo demo));
 [
-# ADM_SUBSTITUTE_USER
     [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>},
     [[[qw(SITE_ROOT) => '/x']]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">home</a></div>},
+    [[[qw(SITE_ROOT) => '/x', 'site_name']]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">PetShop</a></div>},
     [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a></div>},
     [[qw(ADM_SUBSTITUTE_USER SITE_ROOT USER_HOME)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a><a target="_top" class="want_sep" href="/demo">user home</a></div>},
 ];
