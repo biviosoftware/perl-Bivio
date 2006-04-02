@@ -161,87 +161,61 @@ sub vs_paged_detail {
     my(undef, $model, $list_uri_args, $detail) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_detail.";
-    return Tag(div => Join([
+    view_put(pager => Tag(div => Join([
 	map(
-	    ref($_) ? $_ : Tag(
-		div => Join([
-		    map(
-			Link(
-			    vs_text("$p$_"),
-			    $_ eq 'list'
-				? (
-				    [
-					$x,
-					'->format_uri',
-					@$list_uri_args,
-				    ],
-				    $_,
-			        ) : (
-				    [$x, '->format_uri', uc($_) . '_DETAIL'],
-				    {
-					control =>
-					    [[$x, '->get_query'], "has_$_"],
-					control_off_value => Tag(
-					    span => String(
-						vs_text("$p$_")), 'off'),
-					class => $_,
-				    },
-				),
-			),
-			qw(prev next list)
+	    Link(
+		vs_text("$p$_"),
+		$_ eq 'list'
+		    ? (
+			[
+			    $x,
+			    '->format_uri',
+			    @$list_uri_args,
+			],
+			$_,
+		    ) : (
+			[$x, '->format_uri', uc($_) . '_DETAIL'],
+			{
+			    control =>
+				[[$x, '->get_query'], "has_$_"],
+			    control_off_value => Tag(
+				span => String(
+				    vs_text("$p$_")), "$_ off"),
+			    class => $_,
+			},
 		    ),
-		], {
-		    join_separator => Image(
-			vs_text($p . 'sep'), => '', 'sep'),
-		}),
-		$_,
 	    ),
-	    'top',
-	    $detail,
-	    'bottom',
+	    qw(prev next list)
 	),
-    ]), 'paged_detail');
+    ]), 'pager'));
+    return Tag(div => $detail, 'paged_detail');
 }
 
 sub vs_paged_list {
     my($proto, $model, $columns, $attrs) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_list.";
-    return Tag(div => If(
-	[$x, '->get_result_set_size'],
-	Join([
-	    map(
-		ref($_) ? $_ : Tag(
-		    div => Join([
-			map(
-			    Link(
-				vs_text("$p$_"),
-				[$x, '->format_uri', uc($_) . '_LIST'], {
-				    control => [[$x, '->get_query'], "has_$_"],
-				    control_off_value => Tag(
-					span => String(vs_text("$p$_")), 'off'),
-				    class => $_,
-				},
-			    ),
-			    qw(prev next)
-			),
-		    ], {
-			join_separator => Image(
-			    vs_text($p . 'sep'), => '', 'sep'),
-		    }),
-		    $_,
-		),
-		'top',
-		Table(
-		    $model,
-		    $columns,
-		    $proto->vs_table_attrs($model, list => $attrs),
-		 ),
-		'bottom',
+    view_put(pager => Tag(div => Join([
+	map(
+	    Link(
+		vs_text("$p$_"),
+		[$x, '->format_uri', uc($_) . '_LIST'], {
+		    control => [[$x, '->get_query'], "has_$_"],
+		    control_off_value => Tag(
+			span => String(vs_text("$p$_")), "$_ off"),
+		    class => $_,
+		},
 	    ),
-	]),
-	$proto->vs_empty_list_prose($model),
-    ), 'paged_list');
+	    qw(prev next)
+	),
+    ]), 'pager', {
+	control => [$x, '->get_result_set_size'],
+    }));
+    return Table(
+	$model,
+	$columns,
+	$proto->vs_table_attrs($model, paged_list => $attrs),
+    ),
 }
 
 sub vs_simple_form {
