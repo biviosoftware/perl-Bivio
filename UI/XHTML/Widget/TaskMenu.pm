@@ -17,12 +17,15 @@ sub initialize {
     $self->put(
 	tag => 'div',
 	task_map => [map({
-	    my($task, $href, $label) = ref($_) ? @$_ : $_;
+	    my($task, $href, $label, $control) = ref($_) ? @$_ : $_;
 	    $task = Bivio::Agent::TaskId->$task();
 	    $self->initialize_value($task->get_name, Link(
 		vs_text('task_menu', 'title', $label || $task->get_name),
 		$href || $task,
-		{_task_menu_task_id => $task},
+		{
+		    _task_menu_task_id => $task,
+		    $control ? (control => $control) : (),
+		},
 	    ));
 	} @{$self->get('task_map')})],
     );
@@ -40,12 +43,19 @@ sub render_tag_value {
     my($need_sep) = 0;
     foreach my $w (@{$self->get('task_map')}) {
 	my($t) = $w->get('_task_menu_task_id');
+	next unless $req->can_user_execute_task($t);
+	my($b) = '';
+#TODO: Shouldn't change global state.  Rather put a closure that renders
+#       with a value off the request (or lexical value ?)
 	$w->put(class => join(' ',
-	    $need_sep++ ? 'want_sep' : (),
+	    $need_sep ? 'want_sep' : (),
 	    $t->equals_by_name($selected) ? 'selected' : (),
 	))->render(
-	    $source, $buffer
-        ) if $req->can_user_execute_task($t);
+	    $source, \$b,
+        );
+	next unless $b;
+	$need_sep++;
+	$$buffer .= $b;
     }
     return;
 }
