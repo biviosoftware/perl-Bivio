@@ -13,11 +13,13 @@ sub initialize {
 	class => 'rounded_box',
     )->put(
         value => Join([
-	    Tag(div => '', 'top_left'),
-	    Tag(div => '', 'top_right'),
-	    Tag(div => $self->get('value'), 'body'),
-	    Tag(div => '', 'bottom_left'),
-	    Tag(div => '', 'bottom_right'),
+	    map(
+		Tag(div =>
+		    $_ eq 'body' ? $self->get('value') : '',
+		    $_,
+		    {tag_if_empty => 1}),
+		qw(top_left top_right body bottom_left bottom_right),
+	    ),
 	]),
     );
     return shift->SUPER::initialize(@_);

@@ -54,15 +54,16 @@ instead of rendering I<value>.
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
+    my($b) = '';
+    $self->can('render_tag_value') ? $self->render_tag_value($source, \$b)
+	: $self->render_attr('value', $source, \$b);
+    return unless length($b) || $self->render_simple_attr('tag_if_empty');
     my($t) = lc(${$self->render_attr('tag')});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
 	unless $t =~ /^[a-z]+\d*$/;
     $$buffer .= "<$t";
     $self->SUPER::control_on_render($source, $buffer);
-    $$buffer .= '>';
-    $self->can('render_tag_value') ? $self->render_tag_value($source, $buffer)
-	: $self->render_attr('value', $source, $buffer);
-    $$buffer .= "</$t>";
+    $$buffer .= ">$b</$t>";
     return;
 }
 
