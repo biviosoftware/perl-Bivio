@@ -7,7 +7,7 @@ req()->set_realm_and_user('btest_read', 'btest_read')->initialize_fully('USER_HO
     load_all => [
 	[] => [
 	    map(+{'RealmFile.path_lc' => $_},
-		qw(/private /public)),
+		qw(/ /private /public)),
 	],
 	sub {
 	    return [{
@@ -22,7 +22,7 @@ req()->set_realm_and_user('btest_read', 'btest_read')->initialize_fully('USER_HO
 	     }];
 	} => [
 	    map(+{'RealmFile.path_lc' => $_},
-		qw(/public /private /private/image.gif /private/file.html)),
+		qw(/ /public /private /private/image.gif /private/file.html)),
 	],
     ],
 ];

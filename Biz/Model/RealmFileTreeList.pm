@@ -68,10 +68,8 @@ sub internal_parent_id {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    return 0
-	if $row->{'RealmFile.path_lc'} eq '/';
-    $row->{base_name}
-	= Bivio::Type::FileName->get_tail($row->{'RealmFile.path'});
+    $row->{base_name} = $row->{'RealmFile.path'} eq '/' ? '/'
+	: Bivio::Type::FileName->get_tail($row->{'RealmFile.path'});
     return 1;
 }
 
