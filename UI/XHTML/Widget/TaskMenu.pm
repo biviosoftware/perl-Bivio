@@ -14,14 +14,11 @@ sub initialize {
 	class => 'task_menu',
     );
     $self->initialize_attr('task_name');
-    my($dup) = {};
     $self->put(
 	tag => 'div',
 	task_map => [map({
 	    my($task, $href, $label) = ref($_) ? @$_ : $_;
 	    $task = Bivio::Agent::TaskId->$task();
-	    Bivio::Die->die($task, ': duplicate task')
-	        if $dup->{$task}++;
 	    $self->initialize_value($task->get_name, Link(
 		vs_text('task_menu', 'title', $label || $task->get_name),
 		$href || $task,
