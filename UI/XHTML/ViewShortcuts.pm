@@ -44,70 +44,81 @@ sub vs_acknowledgement {
     );
 }
 
+sub vs_alphabetical_chooser {
+    my(undef, $list_model) = @_;
+    return Tag(div => Join([
+	map(
+	    Link(
+	        String($_),
+		URI({
+		    query => {
+			$_ eq 'All' ? () : ('ListQuery.search' => $_),
+#TODO: Need rest of list_model's query state, such as, dates, parent_id.
+		    },
+		}),
+		[sub {
+		     my(undef, $a, $search) = @_;
+		     return join(' ',
+			  $a eq 'All' ? 'all' : $a eq 'a' ? '' : 'want_sep',
+			  (lc($search || '') || 'All') eq $a ? 'selected' : (),
+		     );
+		},
+		    $_,
+		    [["Model.$list_model", '->get_query'], 'search'],
+	        ],
+	    ),
+	    'a'..'z', 'All',
+	),
+    ]), 'alphabetical_chooser');
+}
+
 sub vs_descriptive_field {
     my($proto, $field) = @_;
     my($name, $attrs) = ref($field) ? @$field : $field;
     $attrs ||= {};
     $name =~ /^(\w+)\.(.+)/;
-    my($label, $input)
-	= UNIVERSAL::isa(
-	    Bivio::Biz::Model->get_instance($1)->get_field_type($2),
-	    'Bivio::Type::Boolean',
-	) ? ($proto->vs_call(Join => ['']), $proto->vs_call(FormField => $name))
+    my($label, $input) = UNIVERSAL::isa(
+	Bivio::Biz::Model->get_instance($1)->get_field_type($2),
+	'Bivio::Type::Boolean',
+    ) ? (Simple(''), FormField($name))
 	: $proto->vs_form_field($name, $attrs);
     return [
 	$label->put(cell_class => 'label'),
-	$proto->vs_call(
-	    'Join',
-	    [
-		$input,
-		[sub {
-		     my($req) = shift->get_request;
-		     my($proto, $name) = @_;
+	Join([
+	    $input,
+	    [sub {
+		 my($req) = shift->get_request;
+		 my($proto, $name) = @_;
 #TODO: Need to create a separate space for field_descriptions so we don't
 #      default to something that we don't expect.
-		     my($v) = $req->get_nested('Bivio::UI::Facade', 'Text')
-			 ->unsafe_get_value($name, 'desc');
-		     return $v ?
-			 $proto->vs_call(
-			     'Join', [
-				 '<br />',
-				 $proto->vs_call(
-				     'Tag', 'p',
-				     $proto->vs_call('Prose', $v),
-				     'desc',
-				 ),
-			     ],
-			 ) :  '';
-		 }, $proto, $name],
-	    ], {
-		cell_class => 'field',
-		$attrs->{row_control} ? (row_control => $attrs->{row_control})
-		    : (),
-	    },
-	),
+		 my($v) = $req->get_nested('Bivio::UI::Facade', 'Text')
+		     ->unsafe_get_value($name, 'desc');
+		 return $v ? Join([
+		     '<br />',
+		     Tag(p => Prose($v), 'desc'),
+		 ]) :  '';
+	    }, $proto, $name],
+	], {
+	    cell_class => 'field',
+	    $attrs->{row_control} ? (row_control => $attrs->{row_control})
+		: (),
+	}),
     ];
 }
 
 sub vs_empty_list_prose {
     my($self, $model) = @_;
     return Tag(
-	div => [
-	    # Prose widgets are not dynamic, so we have to render this way
-	    sub {Prose($_[1])},
-	    vs_text("$model.empty_list_prose"),
-	], 'empty_list',
-    );
+	div => Prose(vs_text("$model.empty_list_prose")), 'empty_list');
 }
 
 sub vs_form_error_title {
     my($proto, $form) = @_;
-    return $proto->vs_call(
-	If => [['->get_request'], "Model.$form", '->in_error'],
-	$proto->vs_call(Tag => div =>
-	    $proto->vs_call(
-		String => $proto->vs_text('form_error_title'), 0),
-	    'err_title'));
+    return Tag(
+	div => String(vs_text('form_error_title')),
+	'err_title',
+	{control => [['->get_request'], "Model.$form", '->in_error']},
+    );
 }
 
 sub vs_list {
@@ -208,9 +219,7 @@ sub vs_paged_list {
 	    ),
 	    qw(prev next)
 	),
-    ]), 'pager', {
-	control => [$x, '->get_result_set_size'],
-    }));
+    ]), 'pager'));
     return Table(
 	$model,
 	$columns,
