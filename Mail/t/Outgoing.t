@@ -21,7 +21,7 @@ Received: from lists.bivio.com)
 	for <any@bivio.com>; Thu, 1 Jul 1999 07:43:09 -0600
 Message-ID: <123@example.com>
 From: "Fan Tango" <foo_bar@example.net>
-To: "Some-List" <some-list@example.com>
+To: "Some-List" <some-list@example.com>, to@example.com
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
@@ -31,6 +31,7 @@ X-Priority: 3
 X-MSMail-Priority: Normal
 X-Mimeole: Produced By Microsoft MimeOLE V4.72.3110.3
 List-Unsubscribe: <mailto:leave-some-list-14220S@example.com>
+CC: cc@example.com
 Subject: This is my subject
 Reply-To: " Some-List" <some-list@example.com>
 Sender: owner-some-list@bivio.com
@@ -112,5 +113,27 @@ Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
 	    [undef, $req] => undef,
 	],
 	as_string => qr{Return-Path: <foo_bar\@example.net>\nMessage-ID}is,
+    ],
+    [Bivio::Mail::Incoming->new(\$_IN)] => [
+	set_headers_for_list_send => [
+	    [{
+		list_name => 'some-list',
+		list_title => 'My Fancy List',
+		reply_to_list => 0,
+		req => $req,
+		keep_to_cc => 1,
+		sender => 'a@a.a',
+		reply_to => 'b@b.b',
+		return_path => 'c@c.c',
+	    }] => undef,
+	],
+	unsafe_get_header => [
+	    to => '"Some-List" <some-list@example.com>, to@example.com',
+	    cc => 'cc@example.com',
+	    'return-path' => 'c@c.c',
+	    from => '"Fan Tango" <foo_bar@example.net>',
+	    sender => 'a@a.a',
+	    'reply-to' => undef,
+	],
     ],
 ]);

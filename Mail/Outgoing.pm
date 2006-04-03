@@ -55,9 +55,9 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 # not in this list.
 #
 # NOTE: This list is sorted for maintenance convenience.
+# cc and to are optional, see below
 my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
     approved
-    cc
     encoding
     errors-to flags
     message-id
@@ -351,7 +351,7 @@ I<list_in_subject>.  Sets I<Reply-To:> to I<list_name> if I<reply_to_list>.
 
 sub set_headers_for_list_send {
     my($self, $np) = shift->name_parameters(
-	[qw(list_name list_title reply_to_list subject_prefix req list_email return_path sender reply_to)], \@_);
+	[qw(list_name list_title reply_to_list subject_prefix req list_email return_path sender reply_to keep_to_cc)], \@_);
     if (($np->{subject_prefix} || '') eq 1) {
 	Bivio::IO::Alert->warn_deprecated(
 	    'list_in_subject is now subject_prefix');
@@ -373,16 +373,17 @@ sub set_headers_for_list_send {
     my($fields) = $self->[$_IDI];
     my($headers) = $fields->{headers};
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
+    delete(@$headers{qw(to cc)})
+	unless $np->{keep_to_cc};
     $headers->{sender} = "Sender: $np->{sender}\n";
     $self->set_envelope_from($np->{sender});
-    my($to) = 
     $np->{reply_to} ||= $np->{list_email};
     $headers->{'reply-to'} = "Reply-To: $np->{reply_to}\n"
 	if $np->{reply_to_list};
     $headers->{'return-path'} = "Return-Path: $np->{return_path}\n"
 	if $np->{return_path};
     $headers->{from} ||= "From: $np->{sender}\n";
-    $headers->{to} = qq{To: "$np->{list_title}" <$np->{list_email}>\n};
+    $headers->{to} ||= qq{To: "$np->{list_title}" <$np->{list_email}>\n};
     return $self
 	unless $np->{subject_prefix};
     if (defined($headers->{subject})) {
