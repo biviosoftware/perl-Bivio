@@ -2,13 +2,20 @@
 # $Id$
 package Bivio::Biz::Model::ForumUserList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use base 'Bivio::Biz::Model::RoleBaseList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IDI) = __PACKAGE__->instance_data_index;
+my($_NUM_ROLES) = 3;
+#TODO: Need to make this times number of roles
+my($_PAGE_SIZE) = Bivio::Type->get_instance('PageSize')->get_default
+    * $_NUM_ROLES;
 
 sub LOAD_ALL_SIZE {
-    return 1000;
+    return 1000 * $_NUM_ROLES;
+}
+
+sub PAGE_SIZE {
+    return $_PAGE_SIZE;
 }
 
 sub internal_initialize {
@@ -31,16 +38,19 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    my($fields) = $self->[$_IDI] ||= {};
-    my($role) = lc($row->{'RealmUser.role'}->get_name);
-    my($r) = $fields->{$row->{'RealmUser.user_id'}} ||= $row;
-    $r->{$role} = 1;
-    return 0
-	if $r ne $row;
     foreach my $x (qw(administrator mail_recipient file_writer)) {
-	$r->{$x} ||= 0;
+	$row->{$x} = grep($_->equals_by_name($x), @{$row->{roles}}) ? 1 : 0;
     }
     return 1;
+}
+
+sub internal_prepare_statement {
+    my($self, $stmt) = @_;
+    $stmt->where($stmt->EQ(
+	'Email.location',
+	[$self->get_instance('Email')->DEFAULT_LOCATION],
+    ));
+    return shift->SUPER::internal_prepare_statement(@_);
 }
 
 1;
