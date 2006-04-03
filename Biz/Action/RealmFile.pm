@@ -14,7 +14,7 @@ sub execute {
 sub execute_public {
     my($self, $req) = @_;
     $req->put(
-	path_info => Bivio::Biz::Model->get_instance('Forum')->PUBLIC_FOLDER
+	path_info => Bivio::Biz::Model->get_instance('RealmFile')->PUBLIC_FOLDER
 	    . '/' . $req->get('path_info'));
     return shift->execute(shift(@_), 1);
 }

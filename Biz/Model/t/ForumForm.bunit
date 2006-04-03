@@ -64,11 +64,7 @@ my($check_perms) = sub {
 	'Model.Forum' => {
 	    parent_realm_id => Bivio::Auth::Realm->get_general->get('id'),
 	    want_reply_to => 1,
-	},
-	'Model.RealmFile' => {
-#There are several RealmFiles created here so I can only test this easily
-#Would be nice to know that I can find, say, 'Public' or 'Mail.
-	    realm_id => sub {
+	    forum_id => sub {
 		return $parent = req()->get_nested('Model.Forum', 'forum_id');
 	    },
 	},
@@ -121,9 +117,6 @@ my($check_perms) = sub {
 	},
 	'Model.RealmOwner' => {
 	    name => 'ff1-s1',
-	},
-	'Model.RealmFile' => {
-	    realm_id => sub {req()->get_nested(qw(Model.Forum forum_id))},
 	},
     }],
     $realm->('ff1'),

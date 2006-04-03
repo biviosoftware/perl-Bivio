@@ -109,11 +109,12 @@ sub _create_file {
     my($self, $rfc822) = @_;
     my($in) = Bivio::Mail::Incoming->new($rfc822);
     my($date) = Bivio::Type::DateTime->from_unix($in->get_date_time || time);
+    my($rf) = $self->new_other('RealmFile');
     return (
 	$in,
-	$self->new_other('RealmFile')->create_with_content({
+	$rf->create_with_content({
 	    override_is_read_only => 1,
-	    path => $self->get_instance('Forum')->MAIL_FOLDER
+	    path => $rf->MAIL_FOLDER
 		. '/'
 		. sprintf('%04d-%02d', $_DT->get_parts($date, qw(year month)))
 		. '/'

@@ -825,7 +825,7 @@ CREATE INDEX realm_mail_t11 ON realm_mail_t (
 )
 /
 EOF
-    my($mf) = Bivio::Biz::Model->get_instance('Forum')->MAIL_FOLDER;
+    my($mf) = Bivio::Biz::Model->get_instance('RealmFile')->MAIL_FOLDER;
     Bivio::Biz::Model->new($req, 'RealmFile')->do_iterate(
 	sub {
 	    my($it) = @_;

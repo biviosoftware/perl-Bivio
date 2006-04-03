@@ -28,11 +28,6 @@ sub create_from_email {
     }
     $self->new_other('Bivio::Util::RealmAdmin')->create_user(
 	$email, $u, $password, $u);
-    $self->set_realm_and_user($u, $u);
-    Bivio::Biz::Model->new($self->get_request, 'RealmFile')->create_folder({
-	    path => Bivio::Biz::Model->get_instance('Forum')->PUBLIC_FOLDER,
-	    is_public => 1,
-	});
     return;
 }
 

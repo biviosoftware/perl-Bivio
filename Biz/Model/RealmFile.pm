@@ -12,6 +12,16 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FP) = Bivio::Type->get_instance('FilePath');
 our($_TRACE);
 
+sub MAIL_FOLDER {
+    # Always is_read_only => 1
+    return '/Mail';
+}
+
+sub PUBLIC_FOLDER {
+    # Always is_public => 1
+    return '/Public';
+}
+
 sub append_content {
     my($self, $content) = @_;
 #TODO: Optimize to only append the file.
@@ -143,6 +153,14 @@ sub handle_commit {
 
 sub handle_rollback {
     return;
+}
+
+sub init_realm {
+    my($self, $realm_id) = @_;
+    return $self->create_folder({
+	path => '/',
+	realm_id => $realm_id,
+    });
 }
 
 sub internal_clear_model_cache {
@@ -422,6 +440,10 @@ sub _touch_parent {
     my($parent_path) = ($values->{path} =~ m{(^/.+)/})[0] || '/';
     return $parent->create_folder({
 	map(($_ => $values->{$_}), qw(user_id realm_id override_is_read_only)),
+	lc($parent_path) eq ($self->MAIL_FOLDER)
+	    ? (is_read_only => 1)
+	    : lc($parent_path) eq ($self->PUBLIC_FOLDER)
+	    ? (is_public => 1) : (),
 	path => $parent_path,
     }) unless $parent->unauth_load({
 	realm_id => $values->{realm_id},

@@ -79,7 +79,7 @@ sub internal_prepare_statement {
     # /Mail is probably large so we'll ignore it
     # dot-files are uninteresting, so we'll ignore them.
     # All are available via DAV
-    my($mf) = lc($self->get_instance('Forum')->MAIL_FOLDER);
+    my($mf) = lc($self->get_instance('RealmFile')->MAIL_FOLDER);
     $stmt->where(@{$stmt->map_invoke(
 	NOT_LIKE => ['/.%', '%/.%', $mf . '/%', $mf],
 	['RealmFile.path_lc'],
