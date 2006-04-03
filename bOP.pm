@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,37 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.89  2006/03/24 07:56:15  nagler
+  * Bivio::SQL::ListQuery->DEFAULT_MAX_COUNT defines this value and
+    Bivio::Biz::ListModel->LOAD_ALL_SIZE uses it by reference.  count
+    will never be allowed to be larger than this when coming in from
+    the request.  This is not likely to be used much, except perhaps
+    with @ins-page (see below).
+  * Bivio::Agent::Embed::Dispatcher->call_task lets you call any task
+    from another task and get the result.
+  * Bivio::Type::WikiText @ins-page uses call_task() to embed any page
+    into a wiki.  Errors are no longer written to html, but are instead
+    written to server log -- alternative is a potential security hole.
+    Errors have line numbers now, and a bit improved.
+  * Bivio::Agent::Reply is now a Bivio::Collection::Attributes.  This
+    was a minor refactoring, because it and its subclasses were
+    using fields before.
+  * Bivio::Agent::HTTP::Reply refactored to new Reply interface
+  * Bivio::UI::XHTML::Widget::BasicPage renamed from SimplePage to avoid
+    collisions with HTML SimplePage
+  * Bivio::UI::XHTML::ViewShortcuts->vs_paged_list puts table.list,
+    not table.paged_list, because already in a div.paged_list.
+  * Bivio::UI::Task->parse_uri was checking "facade" on $req, but
+    should have been checking for "Bivio::UI::Facade".  This only
+    seems to have an effect with Embed::Request.
+  * Bivio::Agent::Request->internal_clear_current added.
+  * Bivio::SQL::ListQuery fixed so it allows long names (e.g. this) to come
+    in from the request (clean_raw() fixed), and count can be passed in.
+  * Bivio::UI::HTML::Widget::Table.column_heading_class is gotten from
+    data column unless set on column_heading widget already.
+  * Bivio::Biz::Model::ForumTreeList.root_forum_id may be passed in, and
+    if so, the tree is limited to that forum.
+
   Revision 3.88  2006/03/23 05:06:04  nagler
   * Bivio::UI::Widget::URI.format_method added.  Allows you to format_http,
     if you need to.
