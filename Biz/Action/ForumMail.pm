@@ -19,6 +19,8 @@ sub execute {
 	list_email => $req->format_email($n),
 	list_title => $req->get_nested(qw(auth_realm owner display_name)),
 	reply_to_list => $mr->new_other('Forum')->load->get('want_reply_to'),
+#TODO: This should be configurable
+	keep_to_cc => 1,
 	subject_prefix => "[$n]",
 	req => $req,
     });
