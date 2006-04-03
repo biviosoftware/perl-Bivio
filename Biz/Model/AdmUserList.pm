@@ -121,6 +121,7 @@ sub internal_prepare_statement {
     return unless $search;
 
     if ($search eq $self->LOAD_ALL_SEARCH_STRING) {
+#TODO: Why is this here?
 	$query->put(count => $self->LOAD_ALL_SIZE);
     }
     elsif ($search =~ /^\d+$/) {
