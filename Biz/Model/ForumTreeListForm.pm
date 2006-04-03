@@ -40,11 +40,6 @@ sub internal_initialize {
     });
 }
 
-sub is_program {
-    my($self) = @_;
-    return $self->get_list_model->get('Forum.parent_realm_id') == Bivio::Auth::RealmType->GENERAL->as_int ? 1 : 0;
-}
-
 sub _mail_recipient {
     return shift->get_list_model->get('mail_recipient');
 }
