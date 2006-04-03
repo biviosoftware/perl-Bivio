@@ -204,8 +204,9 @@ my($_SELF) = __PACKAGE__->new({
 
 	support_email => 'webmaster@localhost.localdomain',
 	site_name => 'PetShop',
-	help_wiki_realm_id => Bivio::Biz::Model->new('RealmOwner')
-	    ->unauth_load_or_die({name => 'fourem'})->get('realm_id'),
+	help_wiki_realm_id => Bivio::Die->eval(sub{
+             Bivio::Biz::Model->new('RealmOwner')->unauth_load_or_die({
+		 name => 'fourem'})->get('realm_id')}) || 1,
 
 	# SITE_ROOT task calls View->execute_uri and we look for pages in
 	# the "site_root" directory.
