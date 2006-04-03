@@ -2,11 +2,31 @@
 # $Id$
 ListModel();
 use Bivio::PetShop::Util;
-req()->set_realm(Bivio::PetShop::Util->DEMO);
+req()->set_realm(Bivio::PetShop::Util->BTEST_READ);
 [
     load_all => [
-	# There may be orders;  We testing find_row_by_type, not load_all.
-	[] => not_die(),
+	[] => [
+	    {
+		'RealmOwner.name' => 'btest_read',
+		roles => [Bivio::Auth::Role->ADMINISTRATOR],
+	    },
+	    {
+		'RealmOwner.name' => 'fourem',
+		roles => [
+		    Bivio::Auth::Role->MEMBER,
+		    Bivio::Auth::Role->MAIL_RECIPIENT,
+		],
+	    },
+	    {
+		'RealmOwner.name' => 'fourem-sub1',
+	    },
+	    {
+		'RealmOwner.name' => 'fourem-sub1-1',
+	    },
+	    {
+		'RealmOwner.name' => 'fourem-sub2',
+	    },
+	],
     ],
     find_row_by_type => [
 	[Bivio::Auth::RealmType->USER] => sub {[shift->get('object')]},
