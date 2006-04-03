@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,27 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.90  2006/04/03 04:08:17  nagler
+  * Bivio::Biz::Model::UserRealmList/RealmUserList/ForumUserList subclass
+    RoleBaseList which produces "roles" field.  UserRealmList is now
+    order_by RealmOwner.name (previously unordered).
+  * Bivio::Type::ForumName->is_top added
+  * Bivio::UI::HTML::Widget::Tag.tag_if_empty must be true for the tag to
+    render in the event the value is empty (null string).
+  * Bivio::Biz::Model::RealmFileTreeList includes '/'
+  * Bivio::UI::XHTML::ViewShortcuts->vs_alphabetical_chooser added.  This
+    may break existing uses for XHTML users which were depending on
+    old HTML behavior.  Check your code.
+  * Bivio::UI::XHTML::ViewShortcuts->vs_paged* now put "pager" on view
+    which can be inserted anywhere (twice, if need be).  This breaks
+    previous paged behavior.
+  * Bivio::UI::XHTML::Widget::TaskMenu label and control allowed for
+    each task.
+  * Bivio::UI::XHTML::Widget::Page3.title is rendered as a Prose value
+  * Bivio::UI::XHTML::Widget::FormField.label is rendered as a Prose value
+    no longer a string.
+  * Bivio::Biz::Model::ForumUserList only loads default location emails
+
   Revision 3.89  2006/03/24 07:56:15  nagler
   * Bivio::SQL::ListQuery->DEFAULT_MAX_COUNT defines this value and
     Bivio::Biz::ListModel->LOAD_ALL_SIZE uses it by reference.  count
