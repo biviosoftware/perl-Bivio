@@ -27,4 +27,9 @@ sub from_literal {
     return lc($v);
 }
 
+sub is_top {
+    my($proto, $value) = @_;
+    return ($value =~ $_REGEXP_TOP)[0] eq $value ? 1 : 0;
+}
+
 1;

@@ -11,5 +11,9 @@ Type();
 	    'abc-def' => 'abc',
 	    '0def' => undef,
 	],
+	is_top => [
+	    'abc-def' => 0,
+	    'abc' => 1,
+	],
     ],
 ];
