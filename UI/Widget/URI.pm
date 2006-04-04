@@ -17,14 +17,22 @@ sub intitialize {
 
 sub new {
     my($proto, $format_uri_hash, $attrs) = @_;
+    return shift->SUPER::new(@_)
+	unless $format_uri_hash && ref($format_uri_hash) eq 'HASH';
     $attrs ||= ref($format_uri_hash) eq 'HASH'
 	&& ref($format_uri_hash->{format_uri_hash}) eq 'HASH'
 	? $format_uri_hash : {};
     $attrs->{format_uri_hash} ||= $format_uri_hash;
-    Bivio::Die->die(
-	$format_uri_hash, '"format_uri_args" attribute must be a hash_ref'
-    ) unless ref($attrs->{format_uri_hash}) eq 'HASH';
     return $proto->SUPER::new($attrs);
+}
+
+sub internal_new_args {
+    my(undef, $task_id) = @_;
+    return {
+	format_uri_hash => {
+	    task_id => Bivio::Agent::TaskId->from_any($task_id),
+        },
+    };
 }
 
 sub render {
@@ -42,6 +50,8 @@ sub _render_hash {
     return {map(
 	($_ => ref($hash->{$_}) eq 'HASH'
 	     ? _render_hash($self, "$name.$_", $hash->{$_}, $source)
+	     : UNIVERSAL::isa($hash->{$_}, 'Bivio::Agent::TaskId')
+	     ? $hash->{$_}
 	     : $self->unsafe_render_value(
 		 "$name.$_",
 		 $hash->{$_},
