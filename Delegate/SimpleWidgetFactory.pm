@@ -260,6 +260,15 @@ sub internal_create_edit {
 	});
     }
 
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Time')) {
+	return $_VS->vs_new('Text', {
+	    field => $field,
+	    # Allow HH:MM:SS a.m.
+	    size => 14,
+	    %$attrs,
+	});
+    }
+
     if (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')) {
 	return $_VS->vs_new('DateField', {
 	    field => $field,
