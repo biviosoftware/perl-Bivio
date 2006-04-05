@@ -109,6 +109,22 @@ sub delta_months {
     return $months;
 }
 
+=for html <a name="from_datetime"></a>
+
+=head2 static from_datetime(string date_time) : array
+
+Extracts date from C<Bivio::Type::DateTime> and returns C<Bivio::Type::Date>.
+
+=cut
+
+sub from_datetime {
+    my($proto, $date_time) = @_;
+    my($date, $time) = split(' ', $date_time);
+    my($v, $e) = Bivio::Type::DateTime->from_literal($date . ' ' . Bivio::Type::DateTime->DEFAULT_TIME);
+    return ($v, $e) if $e;
+    return $v;
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array

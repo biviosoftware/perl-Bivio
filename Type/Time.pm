@@ -48,6 +48,22 @@ my($_MAX) = $_DATE_PREFIX.(Bivio::Type::DateTime::SECONDS_IN_DAY()-1);
 
 =cut
 
+=for html <a name="from_datetime"></a>
+
+=head2 static from_datetime(string date_time) : array
+
+Extracts date from C<Bivio::Type::DateTime> and returns C<Bivio::Type::Time>.
+
+=cut
+
+sub from_datetime {
+    my($proto, $date_time) = @_;
+    my($date, $time) = split(' ', $date_time);
+    my($v, $e) = Bivio::Type::DateTime->from_literal(Bivio::Type::DateTime->DEFAULT_DATE . ' ' . $time);
+    return ($v, $e) if $e;
+    return $v;
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array
