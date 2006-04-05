@@ -613,6 +613,23 @@ sub from_local_literal {
     return $res ? _adjust_from_local($proto, $res) : ($res, $err);
 }
 
+=for html <a name="from_date_and_time"></a>
+
+=head2 static from_date_and_time(string date, string time) : array
+
+Merges GMT date and time values and returns new value.
+
+=cut
+
+sub from_date_and_time {
+    my($proto, $date, $time) = @_;
+    my($d1_d, $d1_t) = split(' ', $date);
+    my($d2_d, $d2_t) = split(' ', $time);
+    my($v, $e) = $proto->from_literal($d1_d . ' ' . $d2_t);
+    return ($v, $e) if $e;
+    return $v;
+}
+
 =for html <a name="from_parts"></a>
 
 =head2 static from_parts(int sec, int min, int hour, int mday, int mon, int year) : array
