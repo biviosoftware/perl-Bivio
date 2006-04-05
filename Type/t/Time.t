@@ -7,6 +7,9 @@ use Bivio::Type::Time;
 # Tests
 Bivio::Test->unit([
     'Bivio::Type::Time' => [
+	from_datetime => [
+	    ['2453740 44700'] => ['2378497 44700'],
+	],
 	from_literal => [
 	    ['1:1:1'] => ['2378497 3661'],
 	    ['24:0:0'] => ['2378497 0'],
