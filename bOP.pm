@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.91  2006/04/03 20:11:18  nagler
+  * Bivio::Biz::Model::RealmFile creates MAIL_FOLDER and PUBLIC_FOLDER on the
+    fly with appropriate permissions.  This is for all realms.  Forum no
+    longer creates folders the folders at create time
+  * Bivio::Biz::Model::RealmFile->init_realm added to create '/'
+  * Bivio::Test::Language::HTTP->follow_link_in_table allows you to select
+    a single link with $find_value even if there are multiple links in the
+    cell as long as the $find_value matches exactly.
+  * Bivio::Mail::Outgoing->set_headers_for_list_send $keep_to_cc added
+  * Bivio::Biz::Action::ForumMail sets $keep_to_cc to true
+
   Revision 3.90  2006/04/03 04:08:17  nagler
   * Bivio::Biz::Model::UserRealmList/RealmUserList/ForumUserList subclass
     RoleBaseList which produces "roles" field.  UserRealmList is now
