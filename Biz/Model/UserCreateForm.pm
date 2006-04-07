@@ -44,8 +44,6 @@ use Bivio::Type::Name;
 use Bivio::Type::Password;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 
 =head1 METHODS
 
