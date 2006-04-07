@@ -8,18 +8,21 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty {
     my($self) = @_;
-    $self->load_from_model_properties('CalendarEvent');
-    $self->load_from_model_properties('RealmOwner');
-    my($start) = $self->get('CalendarEvent.dtstart');
-    my($end) = $self->get('CalendarEvent.dtend');
-    $self->internal_put_field(
-	'start_date' => Bivio::Type::Date->from_datetime($start));
-    $self->internal_put_field(
-	'start_time' => Bivio::Type::Time->from_datetime($start));
-    $self->internal_put_field(
-	'end_date' => Bivio::Type::Date->from_datetime($end));
-    $self->internal_put_field(
-	'end_time' => Bivio::Type::Time->from_datetime($end));
+    my($e_id) = $self->unsafe_get('CalendarEvent.calendar_event_id');
+    if ($e_id) {
+	$self->load_from_model_properties('CalendarEvent');
+	$self->load_from_model_properties('RealmOwner');
+	my($start) = $self->get('CalendarEvent.dtstart');
+	my($end) = $self->get('CalendarEvent.dtend');
+	$self->internal_put_field(
+	    'start_date' => Bivio::Type::Date->from_datetime($start));
+	$self->internal_put_field(
+	    'start_time' => Bivio::Type::Time->from_datetime($start));
+	$self->internal_put_field(
+	    'end_date' => Bivio::Type::Date->from_datetime($end));
+	$self->internal_put_field(
+	    'end_time' => Bivio::Type::Time->from_datetime($end));
+    }
     return;
 }
 
@@ -27,14 +30,24 @@ sub execute_ok {
     my($self) = @_;
     shift->SUPER::execute_ok(@_);
     return if $self->in_error;
+#TODO: Date/time validations, e.g. start must precede end time
     $self->internal_put_field('CalendarEvent.dtstart' =>
         Bivio::Type::DateTime->from_date_and_time(
 	    $self->get('start_date'), $self->get('start_time')));
     $self->internal_put_field('CalendarEvent.dtend' =>
         Bivio::Type::DateTime->from_date_and_time(
 	    $self->get('end_date'), $self->get('end_time')));
-    foreach my $model(qw(RealmOwner CalendarEvent)) {
-	$self->update_model_properties($model);
+    if ($self->is_create) {
+	Bivio::IO::Alert->info('Create calendar event...');
+	my($ce, $ro) = $self->new_other('CalendarEvent')->create_realm({
+            realm_id => $self->get_request->get('auth_id'),
+            %{$self->get_model_properties('CalendarEvent')},
+        }, $self->get_model_properties('RealmOwner'));
+    }
+    else {
+	foreach my $model(qw(RealmOwner CalendarEvent)) {
+	    $self->update_model_properties($model);
+	}
     }
     return;
 }
@@ -80,11 +93,22 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
+    my($l) = $self->get_request->unsafe_get('Model.CalendarEventList');
     $self->internal_put_field(
 	'CalendarEvent.calendar_event_id' =>
-	    $self->get_request->get('Model.CalendarEventList')->get('CalendarEvent.calendar_event_id')
-	);
+	    $l->get('CalendarEvent.calendar_event_id')
+	) if $l;
     return;
+}
+
+#TODO: Copy modified from DAVBaseForm.pm
+sub is_create {
+    my($self) = @_;
+#    my($fm) = $self->get_request->unsafe_get('Type.FormMode');
+#    return !$fm || $fm->eq_create ? 1 : 0;
+    my($e_id) = $self->unsafe_get('CalendarEvent.calendar_event_id');
+    Bivio::IO::Alert->info($e_id);
+    return $e_id ? 0 : 1;
 }
 
 1;
