@@ -623,6 +623,10 @@ Merges GMT date and time values and returns new value.
 
 sub from_date_and_time {
     my($proto, $date, $time) = @_;
+    die($date, "Not a valid date-only value")
+	unless $proto->is_date($date);
+    die($time, "Not a valid time-only value")
+	unless $proto->is_time($time);
     my($d1_d, $d1_t) = split(' ', $date);
     my($d2_d, $d2_t) = split(' ', $time);
     my($v, $e) = $proto->from_literal($d1_d . ' ' . $d2_t);
@@ -1204,6 +1208,19 @@ Is this a date (with DEFAULT_TIME)?
 sub is_date {
     my(undef, $value) = @_;
     return defined($value) && $value =~ /$_TIME_SUFFIX$/o ? 1 : 0;
+}
+
+=for html <a name="is_time"></a>
+
+=head2 static is_time(string value) : boolean
+
+Is this a time (with DEFAULT_DATE)?
+
+=cut
+
+sub is_time {
+    my(undef, $value) = @_;
+    return defined($value) && $value =~ /$_DATE_PREFIX/o ? 1 : 0;
 }
 
 =for html <a name="time_from_parts"></a>
