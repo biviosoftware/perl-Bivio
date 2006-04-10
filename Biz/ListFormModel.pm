@@ -82,8 +82,6 @@ sub LAST_ROW {
 use Bivio::IO::Trace;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Separates row index from simple field name.  Must not be a regexp
 # special and must be valid for a javascript field id.  Guess what?
