@@ -302,7 +302,6 @@ sub get_delegate_info {
 	    forums_csv_task=DAV_FORUM_LIST_EDIT
 	    members_csv_task=DAV_FORUM_USER_LIST_EDIT
 	    calendar_ics_task=DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
-	    calendar_rss_task=FORUM_CALENDAR_EVENT_LIST_RSS
 	)],
 	[qw(
 	    DAV_FORUM_FILE
@@ -339,13 +338,14 @@ sub get_delegate_info {
 	    Model.ForumUserList->execute_load_all
 	    Model.ForumUserEditDAVList
 	)],
- 	[qw(
+	[qw(
 	    FORUM_CALENDAR_EVENT_LIST_RSS
-	    32
-	    FORUM
-	    DATA_READ
-	    Action.CalendarEventListRSS
-	)],
+            32
+            FORUM
+            DATA_READ
+            Model.CalendarEventList->execute_load_page
+            View.calendar-list-rss
+        )],
 	[qw(
 	    DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
 	    33
