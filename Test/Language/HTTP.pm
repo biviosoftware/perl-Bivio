@@ -288,7 +288,7 @@ sub follow_link_in_table {
 
 =for html <a name="generate_local_email"></a>
 
-=head2 generate_local_email(string suffix) : array
+=head2 generate_local_email(string suffix) : string
 
 Returns an email address based on I<email_user> and I<suffix>.
 
