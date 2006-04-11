@@ -31,6 +31,12 @@ sub internal_initialize {
 	), {
 	    name => 'uid',
 	    type => 'RealmOwner.name',
+	},
+	{
+	    name => 'item_uri',
+	    type => 'Text',
+	    in_select => 0,
+	    constraint => 'NOT_NULL',
 	}],
     });
 }
@@ -38,6 +44,17 @@ sub internal_initialize {
 sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{uid} = $_CE->id_to_uid($row->{'CalendarEvent.calendar_event_id'});
+    my($req) = $self->get_request;
+    my($fro) = $self->new_other('RealmOwner')->load;
+#TODO: Expand relative URI to absolute URI for RSS spec compliance
+    $row->{item_uri} = $req->format_uri({
+	task_id => 'FORUM_CALENDAR_EVENT_ICS',
+	realm => $fro->get('name'),
+	query => {
+	    'ListQuery.this' => $row->{'CalendarEvent.calendar_event_id'},
+	},
+#	path_info => $row->{'RealmFile.path'},
+    });
     return 1;
 }
 
