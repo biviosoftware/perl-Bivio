@@ -176,6 +176,32 @@ sub parse {
     return $state->{rows};
 }
 
+=for html <a name="parse_records"></a>
+
+=head2 parse_records() : array_ref
+
+=head2 parse_records(string_ref csv_text) : array_ref
+
+Parses the CSV data, treating the first row as headings and returns
+an array of hash_ref records.
+
+=cut
+
+sub parse_records {
+    my($self) = @_;
+    my($rows) = shift->parse(@_);
+    return $rows unless @$rows;
+    my($heading) = shift(@$rows);
+    return [
+        map({
+            my($row) = $_;
+            +{
+                map(($_, shift(@$row)), @$heading),
+            };
+        } @$rows),
+    ];
+}
+
 =for html <a name="to_csv_text"></a>
 
 =head2 static to_csv_text(array_ref list) : string_ref
