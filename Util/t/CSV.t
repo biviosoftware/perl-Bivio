@@ -42,6 +42,31 @@ Bivio::Test->unit([
                 \(qq{1,,2\n,,"\n\n\n",3,4\n\n"the,end"\n}),
             ],
         ],
+        parse_records => [
+            [<<'EOF']
+a,b,c
+1,2,3
+4,5,6,7
+8,9
+EOF
+            => [[
+                {
+                    a => 1,
+                    b => 2,
+                    c => 3,
+                },
+                {
+                    a => 4,
+                    b => 5,
+                    c => 6,
+                },
+                {
+                    a => 8,
+                    b => 9,
+                    c => undef,
+                },
+            ]],
+        ],
         parse => [
             [qq{1,,2\n,,"\r\n\n\r",3,4\n\n"the,end"\n}]
                 => [[
