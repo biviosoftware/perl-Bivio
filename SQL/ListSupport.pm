@@ -623,12 +623,6 @@ sub _init_column_lists {
         . ($decl->{want_select_distinct} ? $select : '*')
         . ')';
     $attrs->{select} = 'SELECT ' . $select;
-    if ($attrs->{date}) {
-	$attrs->{where_begin_date} = ' AND '
-		.$attrs->{date}->{sql_name}.' >= '.$_DATE_SQL_VALUE;
-	$attrs->{where_end_date} = ' AND '
-		.$attrs->{date}->{sql_name}.' <= '.$_DATE_SQL_VALUE;
-    }
     return;
 }
 
@@ -832,9 +826,9 @@ sub _prepare_query_values {
 
     # put dates on stmt
     if ($self->unsafe_get('date')) {
-	my($where_begin_date, $interval, $where_end_date)
+	my($begin_date, $interval, $end_date)
 	    = $query->get(qw(begin_date interval date));
-	unless ($where_end_date || $where_begin_date) {
+	unless ($end_date || $begin_date) {
 #TODO: make this a $req->warn  or fix Alert to have a hook to $req on warn
 	    Bivio::IO::Alert->warn('query has interval "',
 		$interval, '" but no date, ignoring')
@@ -842,10 +836,10 @@ sub _prepare_query_values {
 	}
 	else {
 	    # Won't have both a begin_date and interval (see ListQuery)
-	    $where_begin_date = $interval->dec($where_end_date)
+	    $begin_date = $interval->dec($end_date)
 		if $interval;
-	    foreach my $col (qw(where_begin_date where_end_date)) {
-		$stmt->where([$self->get($col), [${col}]])
+	    foreach my $col (qw(begin_date end_date)) {
+		$stmt->where([$self->get('date')->{sql_name}, [${col}]])
 		    if ${col};
 	    }
 	}
