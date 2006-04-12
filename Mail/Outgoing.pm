@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Outgoing;
 use strict;
@@ -72,7 +72,7 @@ my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
     x-mozilla-status2
     x-pmrqc
 ),
-    Bivio::Mail::Common->RECIPIENTS_HDR,
+    Bivio::Mail::Common->TEST_RECIPIENT_HDR,
 )];
 
 # 822:
@@ -155,21 +155,18 @@ sub new {
 
 =for html <a name="add_missing_headers"></a>
 
-=head2 add_missing_headers(Bivio::Agent::Request req, string from_email, string to_email) : self
+=head2 add_missing_headers(Bivio::Agent::Request req, string from_email) : self
 
 Sets Date, Message-ID, From, Return-Path, and X-Bivio-Recipient if not set.
 
 =cut
 
 sub add_missing_headers {
-    my($self, $req, $from_email, $to_email) = @_;
+    my($self, $req, $from_email) = @_;
     $from_email ||= (Bivio::Mail::Address->parse(
 	$self->unsafe_get_header('From')
 	|| $self->unsafe_get_header('Apparently-From')
 	|| ($self->user_email($req))[0],
-    ))[0];
-    $to_email ||= (Bivio::Mail::Address->parse(
-	$self->unsafe_get_header('To')
     ))[0];
     my($now) = $_DT->now;
     foreach my $x (
@@ -180,7 +177,6 @@ sub add_missing_headers {
 	     . '>'],
 	[From => "<$from_email>"],
 	['Return-Path' => "<$from_email>"],
-	[Bivio::Mail::Common->RECIPIENTS_HDR() => $to_email],
     ) {
  	$self->set_header(@$x)
 	    unless $self->unsafe_get_header($x->[0]);
@@ -260,8 +256,8 @@ sub send {
     my($self, $req) = shift->internal_req(@_);
     my($fields) = $self->[$_IDI];
     my($msg) = $self->as_string;
-    Bivio::Mail::Common->send($fields->{recipients}, \$msg, 0,
-                              $fields->{env_from}, $req);
+    Bivio::Mail::Common->send(
+	$fields->{recipients}, \$msg, 0, $fields->{env_from}, $req);
     return;
 }
 
@@ -403,9 +399,9 @@ sub set_headers_for_list_send {
 
 =for html <a name="set_recipients"></a>
 
-=head2 set_recipients(string email_list) : self
+=head2 set_recipients(string email_list, Bivio::Agent::Request req) : self
 
-=head2 set_recipients(array_ref email_list) : self
+=head2 set_recipients(array_ref email_list, Bivio::Agent::Request req) : self
 
 Sets the recipient of this mail message.  It does not modify the
 headers, i.e. To:, etc.  I<email_list> may be a single scalar
@@ -415,9 +411,12 @@ or an array whose elements may contain scalar lists.
 =cut
 
 sub set_recipients {
-    my($self, $email_list) = @_;
-    $self->[$_IDI]->{recipients}
-	= ref($email_list) ? join(',', @$email_list) : $email_list;
+    my($self, $email_list, $req) = @_;
+    my($r) = ref($email_list) ? join(',', @$email_list) : $email_list;
+    $self->[$_IDI]->{recipients} = $r;
+    # Set here for mock_sendmail.  Also set in Common::_send
+    $self->set_header($self->TEST_RECIPIENT_HDR, $r)
+	if $req->is_test && $r !~ /,/;
     return $self;
 }
 
@@ -542,7 +541,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
