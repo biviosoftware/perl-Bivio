@@ -19,6 +19,18 @@ my($new_mtime) = sub {
 	if $dt->diff_seconds($dt->now, $actual->[0]) > 5;
     return 1;
 };
+my($user) = sub {
+    my($u) = @_;
+    return (
+	sub {
+	    req()->set_user($u);
+	    return 1;
+	 } => 1,
+    );
+};
+my($auth_uid) = sub {
+    return [req()->get('auth_user_id')];
+};
 [
 #Tests: delete: existing, not existing, not existing and not existing parent (doesn't create parent, delete loaded, delete with args, delete loaded with args, delete read only, public, read only with override, delete with auth_id and without auth_id, not empty folder, empty folder
 #Tests: copy from one realm to another, simple file, to dest without parent, to dest with parent, to is_public parent, to is_read_only parent w/o override, with override,  to parent writable but child not writable, w/override
@@ -311,7 +323,30 @@ my($new_mtime) = sub {
 	    [$a->('ro1-update')] => not_die(),
 	],
 	delete_deep => not_die(),
+# Test users associated with file manipulations
+	$user->('demo'),
+        create_with_content => [
+	    [$a->('demo1'), \('demo1')] => $commit,
+	],
+	get => [
+	    user_id => $auth_uid,
+	],
+	$user->('root'),
+        update_with_content => [
+	    [$a->('demo1'), \('root1')] => $commit,
+	],
+	get => [
+	    user_id => $auth_uid,
+	],
+	$user->('demo'),
+        update_with_content => [
+	    [$a->('demo1'), \('demo2')] => $commit,
+	],
+	get => [
+	    user_id => $auth_uid,
+	],
     ],
+# Cleanup
     class() => [
 	delete_all => [
 	    [{path => '/'}] => DIE(),
