@@ -272,7 +272,9 @@ sub update {
 	&& ($new_values->{path} || 'invalid path') ne '/';
     return _update($self, {
 	map(($_ => $self->get($_)),
-	    qw(is_folder path realm_id user_id is_public is_read_only)),
+ 	    qw(is_folder path realm_id is_public is_read_only)),
+ 	user_id => $self->get_request->get('auth_user_id') ||
+ 	    $self->get('user_id'),
 	%$new_values,
     });
 }
