@@ -184,12 +184,12 @@ sub mock_sendmail {
     my($msg) = Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing')
         ->new(
 	    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Incoming')
-	        ->new($in))
-	->add_missing_headers($req, $from, $recipients);
+	        ->new($in)
+	)->add_missing_headers($req, $from, $recipients);
     foreach my $r (split(/,/, $recipients)) {
 	(my $email = $r) =~ s/\+([^\@]+)//;
 	my($extension) = $1 || '';
-	$msg->set_recipients($r);
+	$msg->set_recipients($r, $req);
 	my($res) = $self->piped_exec(
 	    "b-sendmail-http 127.0.0.1 '$r' '"
 	    . (Bivio::IO::ClassLoader
