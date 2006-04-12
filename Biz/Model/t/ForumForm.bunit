@@ -22,16 +22,17 @@ my($realm) = sub {
     );
 };
 my($check_perms) = sub {
+    my($case, $expect) = @_;
     my($id) = req()->get_nested(qw(auth_realm id));
     req()->set_realm(undef);
     req()->set_user(undef);
     # Clear cache
     req()->set_realm($id);
-    shift->actual_return([
+    $case->actual_return([
 	req()->get('auth_realm')->does_user_have_permissions(
 	    ['MAIL_SEND'], req())]);
     req()->set_user('demo');
-    return [shift];
+    return [$expect];
 };
 [
     # Starting deviance tests
