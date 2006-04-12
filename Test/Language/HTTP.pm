@@ -579,7 +579,7 @@ sub send_mail {
 	->get_current_or_new;
     my($o) = Bivio::IO::ClassLoader ->simple_require('Bivio::Mail::Outgoing')
 	->new;
-    $o->set_recipients($to_email);
+    $o->set_recipients($to_email, $req);
     $o->set_header(To => $to_email);
     $o->set_header(Subject => "subj-$r");
     $o->set_body("Any unique $r body\n");
@@ -802,30 +802,33 @@ messages found.
 
 sub verify_local_mail {
     my($self, $email, $body_regex, $count) = @_;
-    $count ||= 1;
+    $count ||= ref($email) eq 'ARRAY' ? int(@$email) : 1;
     Bivio::Die->die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
-    my($email_match);
-    $email = qr{\Q$email}i
-	unless ref($email);
+    my($match) = {};
+    my($regex) = {map(
+	($_ => qr{@{[Bivio::Mail::Common->TEST_RECIPIENT_HDR]}:
+	    \s+@{[ref($_) ? $_ : qr{\Q$_\E$}mi]}}mix),
+	ref($email) eq 'ARRAY' ? @$email : $email,
+    )};
     my(@found);
+    my($die) = sub {
+	Bivio::Die->die(@_, "\n", \@found);
+    };
     for (my $i = $_CFG->{mail_tries}; $i-- > 0;) {
 	# It takes a certain amount of time to hit, and on the same machine
 	# we're going to be competing for the CPU so let b-sendmail-http win
 	sleep(1);
-	$email_match = 0;
 	if (@found = map({
 	    my($msg) = Bivio::IO::File->read($_);
-	    ($email_match = $$msg =~ /^(?:to|cc):.*\b$email/mi)
-	        && $$msg =~ /$body_regex/
+	    grep($$msg =~ $regex->{$_} && ++$match->{$_}, keys(%$regex))
+		&& $$msg =~ /$body_regex/
 	        ? [$_, $msg] : ();
-	    } _grep_mail_dir(sub {-M shift(@_) <= 0}))
-	) {
+	    } _grep_mail_dir(sub {-M shift(@_) <= 0})
+	)) {
 	    next if @found < $count;
-	    Bivio::Die->die('too many messages found.  expected != actual: ',
-		$count, ' != ', int(@found), "\n", \@found)
-	        if @found > $count;
+	    last unless @found == $count && keys(%$regex) == keys(%$match);
 	    foreach (@found) {
 		unlink($_->[0]);
 		_log($self, 'msg', $_->[1])
@@ -836,14 +839,16 @@ sub verify_local_mail {
 		: ${$found[0]->[1]};
 	}
     }
-    Bivio::Die->die(
-	'too few messages found.  expected != actual: ',
-	$count, ' != ', int(@found), "\n", \@found,
-    ) if @found && @found < $count;
-    Bivio::Die->die(
-	$email_match ? ('Found mail for "', $email,
-	    '", but does not match ', qr/$body_regex/)
-	    : ('No mail for "', $email, '" found in ', $_CFG->{mail_dir}),
+    $die->(%$match
+        ? ('Found mail for "', $email, '", but does not match ',
+	   qr/$body_regex/)
+	: ('No mail for "', $email, '" found in ', $_CFG->{mail_dir}),
+    ) unless @found;
+    $die->('incorrect number of messages.  expected != actual: ',
+	$count, ' != ', int(@found)
+    ) if @found != $count;
+    $die->('correct number of messages, but emails expected != actual: ',
+	[sort(keys(%$regex))], ' != ', $match,
     );
     # DOES NOT RETURN
 }
