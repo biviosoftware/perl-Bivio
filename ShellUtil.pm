@@ -1320,13 +1320,14 @@ sub _email {
 	'Bivio::Mail::Outgoing',
 	'Bivio::MIME::Type',
     );
-    my($msg) = Bivio::Mail::Outgoing->new();
-    $msg->set_recipients($to_email);
+    my($msg) = Bivio::Mail::Outgoing->new;
+    my($req) = $self->get_request;
+    $msg->set_recipients($to_email, $req);
     $msg->set_header('Subject', $subject);
     $msg->set_header('To', $to_email);
-    $msg->set_from_with_user($self->get_request);
+    $msg->set_from_with_user($req);
     $body->($msg);
-    $msg->send($self->get_request);
+    $msg->send($req);
     return;
 }
 
