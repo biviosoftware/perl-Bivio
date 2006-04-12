@@ -21,17 +21,19 @@ my($_USER) = 'nobody@example.com';
 
 my($test) = 2;
 
-my($m) = Bivio::Mail::Outgoing->new();
-$m->set_recipients($_USER);
+my($m) = Bivio::Mail::Outgoing->new;
+my($req) = Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
+    ->get_current_or_new;
+$m->set_recipients($_USER, $req);
 $m->set_content_type('multipart/alternative');
 my($t) = 'abc';
 my($h) = '<!doctype html public "-//w3c//dtd html 4.0 transitional//en"><html>bbc</html>';
 $m->attach(\$t, 'text/plain');
 $m->attach(\$h, 'text/html', 'text.html');
-$m->send();
+$m->send($req);
 my($out) = $m->as_string;
-print $out;
 my($exp_out) = <<'EOF';
+X-Bivio-Test-Recipient: nobody@example.com
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
  boundary="------------8169AB88A610572B963B8638"
@@ -70,13 +72,13 @@ title:CEO
 fn:Some User
 end:vcard
 EOF
-my($m2) = Bivio::Mail::Outgoing->new();
-$m2->set_recipients($_USER);
+my($m2) = Bivio::Mail::Outgoing->new;
+$m2->set_recipients($_USER, $req);
 $m2->set_content_type('multipart/mixed');
 my($img);
 { local($/) = undef; open(F, 'img.gif'); $img = <F>; close(F); }
 $m2->attach(\$img, 'image/gif', 'img.gif');
 $m2->attach(\$vcf, 'text/x-vcard');
-$m2->send();
+$m2->send($req);
 print "ok $test\n";
 $test++;

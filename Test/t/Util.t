@@ -56,8 +56,6 @@ EOF
 	handle_setup => undef,
 	verify_local_mail => [
 	    ["$ENV{USER}+btest_bla\@localhost.localdomain", qr{First message.}i] => undef,
-	],
-	verify_local_mail => [
 	    # Want to make sure hits procmail
 	    ["$ENV{USER}+btest_bounce\@localhost.localdomain", qr{internal error}i] => undef,
 	],

@@ -55,6 +55,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 List-Unsubscribe: <mailto:leave-some-list-14220S\@example.com>
+X-Bivio-Test-Recipient: $_USER
 X-Mimeole: Produced By Microsoft MimeOLE V4.72.3110.3
 X-MSMail-Priority: Normal
 X-Priority: 3
@@ -74,11 +75,11 @@ Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
 	    [] => [undef],
 	],
 	set_recipients => [
-	    [[$_USER, 'joe@example.com']] => undef,
+	    [[$_USER, 'joe@example.com'], $req] => undef,
 	],
 	unsafe_get_recipients => $_USER . ',joe@example.com',
 	set_recipients => [
-	    [$_USER] => undef,
+	    [$_USER, $req] => undef,
 	],
 	unsafe_get_recipients => $_USER,
 	unsafe_get_header => [

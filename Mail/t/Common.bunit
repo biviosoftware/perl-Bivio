@@ -22,7 +22,7 @@ b
 IN
 From: b@b.b
 Recipients: a@a.a
-X-Bivio-Recipients: a@a.a
+X-Bivio-Test-Recipient: a@a.a
 s: 1
 
 b
@@ -31,14 +31,14 @@ OUT
 x
 IN
 Recipients: a@a.a
-X-Bivio-Recipients: a@a.a
+X-Bivio-Test-Recipient: a@a.a
 x
 OUT
 	    ['a@a.a', <<'IN', 1, undef, req()] => <<'OUT',
 zz
 IN
 Recipients: a@a.a
-X-Bivio-Recipients: a@a.a
+X-Bivio-Test-Recipient: a@a.a
 z
 OUT
 	],
