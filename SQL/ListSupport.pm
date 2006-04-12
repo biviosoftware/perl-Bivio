@@ -839,7 +839,7 @@ sub _prepare_query_values {
 	    $begin_date = $interval->dec($end_date)
 		if $interval;
 	    foreach my $col (qw(begin_date end_date)) {
-		$stmt->where([$self->get('date')->{sql_name}, [${col}]])
+		$stmt->where([$self->get('date')->{name}, [${col}]])
 		    if ${col};
 	    }
 	}
