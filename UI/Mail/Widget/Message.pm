@@ -149,10 +149,7 @@ sub execute {
 	    push(@recips, $value) unless $header eq 'subject';
 	}
     }
-    $msg->set_recipients(
-	$recipients
-	? $recipients
-        : join(',', @recips));
+    $msg->set_recipients($recipients || \@recips, $req);
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
 	    if $req->has_keys('client_addr');
 

@@ -11,7 +11,7 @@ sub execute {
     my($mr) = $req->get('Model.MailReceiveDispatchForm');
     # Let sendmail handle mail loop detection (for now)
     Bivio::Mail::Incoming->new($mr->get('message')->{content})
-        ->set_recipients($mr->get('recipient'))->enqueue_send($req);
+        ->set_recipients($mr->get('recipient'), $req)->enqueue_send($req);
     return;
 }
 

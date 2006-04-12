@@ -31,7 +31,7 @@ sub execute {
 	# Otherwise, we could blow out the memory if the list got too
 	# large.
 	$out->new($out)
-	    ->set_recipients($it->get('Email.email'))
+	    ->set_recipients($it->get('Email.email'), $req)
 	    ->set_header(
 		'Return-Path' => $rmb->return_path(
 		    $it->get(qw(RealmUser.user_id Email.email)),
