@@ -32,17 +32,17 @@ C<Bivio::Mail::Common>
 
 =cut
 
-=for html <a name="RECIPIENTS_HDR"></a>
+=for html <a name="TEST_RECIPIENT_HDR"></a>
 
-=head2 static RECIPIENTS_HDR()
+=head2 static TEST_RECIPIENT_HDR()
 
-Returns header where recipients are inserted into msg.  Only if
+Returns header where recipient is inserted into msg.  Only if
 $req.is_test.
 
 =cut
 
-sub RECIPIENTS_HDR {
-    return 'X-Bivio-Recipients';
+sub TEST_RECIPIENT_HDR {
+    return 'X-Bivio-Test-Recipient';
 }
 
 #=IMPORTS
@@ -316,8 +316,15 @@ sub user_email {
 sub _send {
     my($proto, $recipients, $msg, $offset, $from, $req) = @_;
     _trace('sending to ', $recipients) if $_TRACE;
-    if ($req->is_test) {
-	substr($$msg, $offset, 0) = $proto->RECIPIENTS_HDR . ": $recipients\n";
+    if ($req->is_test && $$msg !~ /^@{[$proto->TEST_RECIPIENT_HDR]}:/mo) {
+	return grep(
+	    _send($proto, $_, $msg, $offset, $from, $req),
+	    split(/,/, $recipients),
+	) if $recipients =~ /,/;
+	my($m) = $$msg;
+	$msg = \$m;
+	substr($$msg, $offset, 0)
+	    = $proto->TEST_RECIPIENT_HDR . ": $recipients\n";
     }
     my($command) = '| ' . $_CFG->{sendmail}
 	. ($from ? " '$from'" : '')
@@ -335,7 +342,7 @@ sub _send {
 	$offset += $res;
     }
     $fh->close;
-    return $? == 0 ? '' : "exit status non-zero ($?)";
+    return $? == 0 ? undef : "exit status non-zero ($?)";
 }
 
 # _txn_resources_corrupted() : boolean
