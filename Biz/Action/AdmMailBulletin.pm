@@ -175,7 +175,7 @@ sub _send_bulletin {
     my($site_name) = Bivio::UI::Text->get_value('site_name', $req);
     my($support_email) = Bivio::UI::Text->get_value('support_email', $req);
     my($msg) = Bivio::Mail::Outgoing->new();
-    $msg->set_recipients($email);
+    $msg->set_recipients($email, $req);
     $msg->set_envelope_from($support_email);
     $msg->set_header('From', qq!"$site_name" <$support_email>!);
     $msg->set_header('To', $email);
