@@ -110,7 +110,7 @@ Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
 	    return [$1 . $_BODY];
 	},
 	add_missing_headers => [
-	    [undef, $req] => undef,
+	    [$req, undef, undef] => undef,
 	],
 	as_string => qr{Return-Path: <foo_bar\@example.net>\nMessage-ID}is,
     ],

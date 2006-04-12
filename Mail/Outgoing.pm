@@ -155,18 +155,21 @@ sub new {
 
 =for html <a name="add_missing_headers"></a>
 
-=head2 add_missing_headers(string from_email, Bivio::Agent::Request req) : self
+=head2 add_missing_headers(Bivio::Agent::Request req, string from_email, string to_email) : self
 
-Sets Date, Message-ID, From, and Return-Path if not set.
+Sets Date, Message-ID, From, Return-Path, and X-Bivio-Recipient if not set.
 
 =cut
 
 sub add_missing_headers {
-    my($self, $from_email, $req) = @_;
+    my($self, $req, $from_email, $to_email) = @_;
     $from_email ||= (Bivio::Mail::Address->parse(
 	$self->unsafe_get_header('From')
 	|| $self->unsafe_get_header('Apparently-From')
 	|| ($self->user_email($req))[0],
+    ))[0];
+    $to_email ||= (Bivio::Mail::Address->parse(
+	$self->unsafe_get_header('To')
     ))[0];
     my($now) = $_DT->now;
     foreach my $x (
@@ -177,10 +180,12 @@ sub add_missing_headers {
 	     . '>'],
 	[From => "<$from_email>"],
 	['Return-Path' => "<$from_email>"],
+	[Bivio::Mail::Common->RECIPIENTS_HDR() => $to_email],
     ) {
-	$self->set_header(@$x)
+ 	$self->set_header(@$x)
 	    unless $self->unsafe_get_header($x->[0]);
     }
+
     return $self;
 }
 

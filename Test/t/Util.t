@@ -33,7 +33,7 @@ From: Joe <$user>
 To: Joe <$ENV{USER}+not-the-same\@localhost.localdomain>
 Subject: my subject
 
-msg
+First message.
 EOF
 		'mock_sendmail',
 		"-f$user",
@@ -45,7 +45,7 @@ From: Joe <$ENV{USER}+btest_bounce\@localhost.localdomain>
 To: Joe <no-such-user\@localhost.localdomain>
 Subject: my subject
 
-msg
+Secong message.
 EOF
 		'mock_sendmail',
 		"no-such-user\@localhost.localdomain",
@@ -54,6 +54,9 @@ EOF
     ],
     'Bivio::Test::Language::HTTP' => [
 	handle_setup => undef,
+	verify_local_mail => [
+	    ["$ENV{USER}+btest_bla\@localhost.localdomain", qr{First message.}i] => undef,
+	],
 	verify_local_mail => [
 	    # Want to make sure hits procmail
 	    ["$ENV{USER}+btest_bounce\@localhost.localdomain", qr{internal error}i] => undef,
