@@ -60,7 +60,6 @@ Bivio::IO::Config->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/lib/sendmail -U -oem -odb -i',
-    reroute_address => undef,
 });
 #TODO: get rid of global state - put it on the request instead
 my($_QUEUE) = [];
@@ -174,10 +173,6 @@ sub handle_commit {
 =item errors_to : string [postmaster]
 
 To whom should errors be sent.
-
-=item reroute_address : string []
-
-The email address to send all mail to. Used for testing.
 
 =item sendmail : string [/usr/lib/sendmail -O DeliveryMode=b -i]
 
@@ -322,8 +317,6 @@ sub _send {
     my($proto, $recipients, $msg, $offset, $from, $req) = @_;
     _trace('sending to ', $recipients) if $_TRACE;
     if ($req->is_test) {
-	$recipients = $_CFG->{reroute_address}
-	    if $_CFG->{reroute_address};
 	substr($$msg, $offset, 0) = $proto->RECIPIENTS_HDR . ": $recipients\n";
     }
     my($command) = '| ' . $_CFG->{sendmail}
