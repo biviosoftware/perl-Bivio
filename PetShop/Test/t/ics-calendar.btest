@@ -15,7 +15,6 @@ $top,$dn
 EOF
 my($forum_uri) = "$root/$top";
 my($calendar_ics) = "$forum_uri/Calendar.ics";
-my($calendar_rss) = "$forum_uri/Calendar.rss";
 # Verify that admin can view and get .ics with no calendar
 send_request(PROPFIND => $forum_uri);
 verify_text($calendar_ics);
@@ -91,17 +90,13 @@ EOF
 send_request(GET => $calendar_ics);
 # TODO: Test correct event order
 get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event3.*BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
-# Verify that admin can read generated .rss
-send_request(GET => $calendar_rss);
-get_content() =~ /title.*Event2.*title.*Event3.*title.*Event1/s || die;
-# Verify that non-admin, non-member can't access .ics or .rss
+# Verify that non-admin, non-member can't access .ics
 basic_authorization('demo');
 test_deviance(qr{not found}i);
 send_request(PROPFIND => $forum_uri);
 send_request(GET => $calendar_ics);
-send_request(GET => $calendar_rss);
 test_conformance();
-# Add non-admin member and verify read-only access of .ics and .rss
+# Add non-admin member and verify read-only access of .ics
 basic_authorization('root');
 my($forum_members) = "$forum_uri/Members.csv";
 send_request(GET => $forum_members);
@@ -111,10 +106,7 @@ EOF
 basic_authorization('demo');
 send_request(PROPFIND => $forum_uri);
 verify_text($calendar_ics);
-verify_text($calendar_rss);
 send_request(GET => $calendar_ics);
 $ics = get_content();
 test_deviance(qr{forbidden}i);
 send_request(PUT => $calendar_ics, undef, $ics);
-test_conformance();
-send_request(GET => $calendar_rss);
