@@ -1760,11 +1760,12 @@ sub _unauth_load {
 sub _where_and_params {
     my($self) = @_;
     my($params) = [];
-    return ($self->internal_pre_load(
+    my($where) = $self->internal_pre_load(
 	$self->get_query(),
 	$self->internal_get_sql_support(),
 	$params,
-    ), $params);
+    );
+    return ($where, $params);
 }
 
 =head1 COPYRIGHT
