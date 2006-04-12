@@ -97,18 +97,25 @@ sub DISTINCT {
 
 =for html <a name="EQ"></a>
 
-=head2 static EQ(string left, string right) : hash_ref
+=head2 static EQ(string left, list right) : hash_ref
 
 =head2 static EQ(string left, array_ref right) : hash_ref
 
 Return an EQ predicate.
 If I<right> is an array_ref, treat right as a value, not a column.
+Multiple right values are each compared against left.
 
 =cut
 
 sub EQ {
-    my($proto, $left, $right) = @_;
-    return _static_compare('=', $left, $right);
+    my($proto, $left, @right) = @_;
+    if (scalar(@right) == 1) {
+	return _static_equivalence('=', '', $left, shift(@right));
+    }
+    else {
+	return $proto->AND(map({_static_equivalence('=', 'IN', $left, $_)}
+	    @right));
+    }
 }
 
 =for html <a name="GT"></a>
@@ -450,6 +457,48 @@ sub build_for_internal_load_rows {
     );
 }
 
+=for html <a name="build_for_list_support_prepare_statement"></a>
+
+=head2 build_for_list_support_prepare_statement(Bivio::SQL::Support support, Bivio::SQL::Statement stmt, string where, array_ref params) : (string, array_ref)
+
+Return FROM/WHERE clause and parameter array for _prepare_statement
+
+=cut
+
+sub build_for_list_support_prepare_statement {
+    my($self, $support, $stmt, $_where, $_params) = @_;
+    _merge_statements($self, $stmt);
+
+    my($fields) = $self->[$_IDI];
+    my($params) = [];
+    my(@stmt) = ();
+
+    if (%{$fields->{from}}) {
+	foreach my $model (
+	    $fields->{select} ? () : keys(%{$support->get('models')}),
+        ) {
+            _add_model($self, $model);
+        }
+	push(@stmt,
+	     $fields->{select} ?
+		 (SELECT => $fields->{select}->{build}->($support, $params))
+		 : (),
+	     FROM => $self->CROSS_JOIN(
+		 map($fields->{from}->{$_},
+		     sort(keys(%{$fields->{from}}))),
+	     )->{build}->($support, $params)
+	 );
+    }
+
+    my($where) = join(' AND ', grep($_,
+        $fields->{where}->{build}->($support, $params),
+	$_where));
+    push(@stmt, WHERE => $where)
+	if $where;
+
+    return (join(' ', @stmt), [@$params, @$_params]);
+}
+
 =for html <a name="build_select_for_sql_support"></a>
 
 =head2 build_select_for_sql_support(Bivio::SQL::ListSupport support) : string
@@ -684,7 +733,7 @@ sub _build_value {
     my($func, $model, $index, $field) = $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)\)?$/;
     my($t) = ($func || '') =~ /^(length|count)\(/i ? 'Bivio::Type::Number'
 	: Bivio::Biz::Model->get_instance($model)->get_field_type($field);
-    push(@$params, $t->to_sql_param($value));
+    push(@$params, $t->to_sql_param($t->from_literal($value)));
     return $t->to_sql_value('?');
 }
 
@@ -842,6 +891,21 @@ sub _static_compare {
             return "$_left$comp$_right";
         },
     };
+}
+
+# _static_equivalence(string $cmp, string $modifier, $left, $right) : hash_ref
+#
+# Return an equivalence predicate.  Use =/!= for single values.
+# Use IN/NOT IN for multiple values
+#
+sub _static_equivalence {
+    my($comp, $modifier, $left, $right) = @_;
+    if (ref($right) eq 'ARRAY' && scalar(@$right) > 1) {
+	return _in($modifier, undef, $left, $right);
+    }
+    else {
+	return _static_compare($comp, $left, $right);
+    }
 }
 
 =head1 COPYRIGHT

@@ -258,7 +258,7 @@ models corresponding to the table names.
 sub new {
     my($proto, $decl, $stmt) = @_;
     my($attrs) = {
-	statement => $stmt || Bivio::SQL::Statement->new(),
+	statement => $stmt,
 	# All columns by qualified name
 	columns => {},
 	# All models by qualified name
@@ -369,7 +369,7 @@ sub iterate_start {
 
 =for html <a name="load"></a>
 
-=head2 load(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : array_ref
+=head2 load(Bivio::SQL::ListQuery query, Bivio::SQL::Statement stmt, string where, array_ref params, ref die) : array_ref
 
 Loads the specified rows with data using the parameterized where_clause
 and substitution values. At most the specified max rows will be loaded.
@@ -382,7 +382,7 @@ If I<want_this> or I<this> is set, only loads one element.
 =cut
 
 sub load {
-    my($self, $query, $where, $params, $die) = @_;
+    my($self, $query, $stmt, $where, $params, $die) = @_;
 
     # If no select such just return an empty list.  Only local fields.
     return [] unless _select($self);
@@ -395,14 +395,14 @@ sub load {
 
 #=PRIVATE METHODS
 
-# _count_pages(self, Bivio::SQL::ListQuery query, string where, array_ref params) : int
+# _count_pages(self, Bivio::SQL::ListQuery query, string from_where, array_ref params) : int
 #
 # Sets page_count and adjusts page_number.  Returns page_count.
 #
 sub _count_pages {
-    my($self, $query, $where, $params) = @_;
+    my($self, $query, $from_where, $params) = @_;
     my($statement) = Bivio::SQL::Connection->execute(
-	$self->get('select_count') . $where, $params);
+	$self->get('select_count') . ' ' . $from_where, $params);
     my($row_count) = $statement->fetchrow_array;
     my($page_count) = _page_number($query, $row_count);
     my($page_number) = $query->get('page_number');
@@ -415,7 +415,7 @@ sub _count_pages {
     return $page_count;
 }
 
-# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string where, array_ref params, any die) : DBI::Statement
+# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, Bivio::SQL::Statement stmt, string where, array_ref params, any die) : DBI::Statement
 #
 # Prepare and execute the select statement.
 #
@@ -494,23 +494,24 @@ sub _find_list_start {
 sub _init_column_classes {
     my($attrs, $decl) = @_;
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
-	    [qw(auth_id date parent_id primary_key order_by group_by other)]);
+	[qw(auth_id date parent_id primary_key order_by group_by other)]);
 
     if ($decl->{where}) {
-	$where .= length($where) ? ' AND ' : ' WHERE ';
+	my(@decl_where) = ();
 	foreach my $e (@{$decl->{where}}) {
 	    if (defined($attrs->{column_aliases}->{$e})) {
-		$where .= ' ' . $attrs->{column_aliases}->{$e}->{sql_name};
+		push(@decl_where, $attrs->{column_aliases}->{$e}->{sql_name});
 	    }
 	    elsif (defined($attrs->{models}->{$e})) {
 #TODO: This doesn't work for qualified columns, but it works for
 #      what I need right now.
-		$where .= ' ' . $attrs->{models}->{$e}->{sql_name};
+		push(@decl_where, $attrs->{models}->{$e}->{sql_name});
 	    }
 	    else {
-		$where .= ' ' . $e;
+		push(@decl_where, $e);
 	    }
 	}
+	$where = join(' AND ', grep($_, $where, join(' ', @decl_where)));
     }
     foreach my $c ('auth_id', 'parent_id', 'date') {
 	Bivio::Die->die("too many $c fields")
@@ -602,11 +603,7 @@ sub _init_column_lists {
         $_->{select_value} || $_->{type}->from_sql_value($_->{sql_name});
     } @{$attrs->{select_columns}};
 
-    # Create select from all columns and include auth_id and
-    # parent_id constraints (if defined) in where.
-    $where = ' AND '.$attrs->{parent_id}->{sql_name}.'='
-	    .$attrs->{parent_id_type}->to_sql_value('?').$where
-		    if $attrs->{parent_id};
+    # Create select from all columns
     my($from) = ' ' . (
 	$decl->{from}
 	|| 'FROM '. join(',',
@@ -616,17 +613,10 @@ sub _init_column_lists {
 				? $tn : $tn.' '.$_->{sql_name};
 		    } sort(values(%{$attrs->{models}})))
     );
-    if ($attrs->{auth_id}) {
-	$where =~ s/^\s*WHERE\s+/ AND /i;
-	$from .= ' WHERE '
-		.$attrs->{auth_id}->{sql_name}.'='.$_PRIMARY_ID_SQL_VALUE
-			.$where;
-    }
-    else {
-	$where =~ s/^\s*AND\s+/ WHERE /i;
-	$from .= $where;
-    }
-    $attrs->{from_where} = $from;
+    $attrs->{sql_from} = $from;
+    $where =~ s/^\s*AND\s+//i;
+    $attrs->{sql_where} = $where;
+
     my($select) = ($decl->{want_select_distinct} ? 'DISTINCT ' : '')
         . join(',', @select_sql_names);
     $attrs->{select_count} = 'SELECT COUNT('
@@ -642,16 +632,16 @@ sub _init_column_lists {
     return;
 }
 
-# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, string where, array_ref params, any die) : array_ref
+# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery query, Bivio::SQL::Statement statement, string where, array_ref params, any die) : array_ref
 #
 # Search the list until we find our page_number and then return count rows.
 # If the page_number exceeds the number of rows, read the last page.
 #
 sub _load_list {
-    my($self, $query, undef, undef, $die) = @_;
-    my($sql, $params, $where) = _prepare_statement(@_);
-    _count_pages($self, $query, $where, $params)
-	if $where && $query->unsafe_get('want_page_count');
+    my($self, $query, undef, undef, undef, $die) = @_;
+    my($sql, $params, $from_where) = _prepare_statement(@_);
+    _count_pages($self, $query, $from_where, $params)
+	if $from_where && $query->unsafe_get('want_page_count');
     my($attrs) = $self->internal_get;
     my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
     my($count, $parent_id) = $query->get(qw(count parent_id));
@@ -787,6 +777,17 @@ sub _load_this {
     return $rows;
 }
 
+# _merge_where() : string
+# Merge any internal, literal where predicates with where clause
+#   returned by internal_pre_load
+sub _merge_where {
+    my($self, $_where) = @_;
+    return $_where
+	unless $self->unsafe_get('sql_where');
+    _trace('sql_where: ', $self->get('sql_where'));
+    return join(' AND ', grep($_, $self->get('sql_where'), $_where));
+}
+
 # _page_number(Bivio::SQL::ListQuery query, int num_rows) : int
 #
 # Returns the page number that $num_rows is on.
@@ -801,7 +802,7 @@ sub _page_number {
 # Generates the order_by and group_by clauses.
 #
 sub _prepare_ordinal_clauses {
-    my($self, $query, $where) = @_;
+    my($self, $query) = @_;
     my($attrs) = $self->internal_get;
     my($res) = '';
     $res .= ' GROUP BY ' . join(',', map($_->{sql_name}, @{$attrs->{group_by}}))
@@ -819,99 +820,71 @@ sub _prepare_ordinal_clauses {
     return $res;
 }
 
-# _prepare_statement()
-sub _prepare_statement {
-    my($self, $query, $where, $params, $die) = @_;
-    return ($where . _prepare_ordinal_clauses($self, $query), $params, undef)
-	if $where =~ s/^(?:\s*and\s)\s*select/SELECT/i;
-    my($attrs) = $self->internal_get;
-    ($die || 'Bivio::Die')->throw_die('DIE', 'must support select')
-	unless my $sql = _select($self);
-    my($from_where) = $self->unsafe_get('from_where');
-    _prepare_where($self, $query, \$from_where, \$where, $params);
-    $from_where .= $where . _prepare_ordinal_clauses($self, $query);
-    return ($sql . $from_where, $params, $from_where);
-}
+# _prepare_query_values()
+# Put auth_id and parent_id on statement, if they exist
+sub _prepare_query_values {
+    my($self, $stmt, $query) = @_;
 
-# _prepare_where(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref from_where, string_ref where, array_ref params)
-#
-# Prepare select statement based on query, auth_id, and parent_id.  Assumes
-# where takes an "auth_id" as the first element and "parent_id" as second
-# element (if defined), so unshifts onto "params" instead of pushing unless
-# $where contains from iwc it pushes.
-#
-sub _prepare_where {
-    my($self, $query, $from_where, $where, $params) = @_;
-    _trace('from_where: ', $$from_where, "\n", 'where: ', $$where, "\n");
-    my($attrs) = $self->internal_get;
-
-    # Insert parent_id and auth_id
-    my($qualifiers) = [];
-    unshift(@$qualifiers, $attrs->{parent_id_type}->to_sql_param(
-	$query->get('parent_id')))
-	    if $attrs->{parent_id};
-    unshift(@$qualifiers, Bivio::Type::PrimaryId->to_sql_param(
-	    $query->get('auth_id')))
-	    if $attrs->{auth_id};
-    # Allows complex FROM clauses
-    if ($$where && $$where =~ s/^\s*AND(?=\s+FROM)//is) {
-	$$from_where =~ s/^\s*\bFROM\s+.*?(?:(?=\bWHERE\b)|$)//is
-	    || die($$from_where, ': bad where configuration');
-	push(@$params, @$qualifiers);
-	$$from_where =~ s/^\s*WHERE\b/ AND/
-	    if $$where =~ /WHERE\s*\w+/;
-	$$where .= ' ' . $$from_where;
-        _trace('new where: ', $$where, "\n");
-	$$where =~ s/\bWHERE\s+AND\b/AND/gis;
-	$$where =~ s/\bAND\s+WHERE\b/AND/gis;
-	$$where =~ s/\bWHERE\s+WHERE\b/WHERE/gis;
-	$$where =~ s/\bAND\s+AND\b/AND/gis;
-	$$from_where = '';
+    foreach my $col (qw(auth_id parent_id)) {
+	$stmt->where([$self->get($col)->{name}, [$query->get($col)]])
+	    if $self->unsafe_get($col);
     }
-    else {
-	unshift(@$params, @$qualifiers);
-    }
-    $$where =~ s/\s*\bAND\s*$//;
-    _prepare_where_date($self, $query, $where, $params)
-	if $attrs->{date};
 
-    # if there is no WHERE and the where variable starts with AND, replace it
-    unless ($$from_where =~ /\bWHERE\b/i || $$where =~ /\bWHERE\b/i) {
-        $$where =~ s/^\s*AND\s/ WHERE /is
-            if $$where;
-    }
-    return;
-}
-
-# _prepare_where_date(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
-#
-# Generates the where date qualification from the query and the date column.
-#
-sub _prepare_where_date {
-    my($self, $query, $where, $params) = @_;
-    my($attrs) = $self->internal_get;
-    my($date, $interval, $begin_date)
-	    = $query->get(qw(date interval begin_date));
-    unless ($date || $begin_date) {
+    # put dates on stmt
+    if ($self->unsafe_get('date')) {
+	my($where_begin_date, $interval, $where_end_date)
+	    = $query->get(qw(begin_date interval date));
+	unless ($where_end_date || $where_begin_date) {
 #TODO: make this a $req->warn  or fix Alert to have a hook to $req on warn
-	Bivio::IO::Alert->warn('query has interval "',
+	    Bivio::IO::Alert->warn('query has interval "',
 		$interval, '" but no date, ignoring')
 		    if $interval;
-	return;
+	}
+	else {
+	    # Won't have both a begin_date and interval (see ListQuery)
+	    $where_begin_date = $interval->dec($where_end_date)
+		if $interval;
+	    foreach my $col (qw(where_begin_date where_end_date)) {
+		$stmt->where([$self->get($col), [${col}]])
+		    if ${col};
+	    }
+	}
     }
-
-    # Won't have both a begin_date and interval (see ListQuery)
-    $begin_date = $interval->dec($date) if $interval;
-    if ($begin_date) {
-	$$where .= $attrs->{where_begin_date};
-	push(@$params, $begin_date);
-    }
-    # We don't add $date, if there is none
-    if ($date) {
-	$$where .= $attrs->{where_end_date};
-	push(@$params, $date);
-    }
+    
     return;
+}
+
+# _prepare_statement() : (string, array_ref, string)
+# Build sql.
+sub _prepare_statement {
+    my($self, $query, $stmt, $_where, $_params, $die) = @_;
+    _trace('where: ', $_where);
+    $stmt ||= Bivio::SQL::Statement->new();
+    _prepare_query_values($self, $stmt, $query);
+    my($where, $params) = $stmt->build_for_list_support_prepare_statement(
+        $self, $self->get('statement'), _merge_where($self, $_where),
+	$_params);
+
+    return ($where . _prepare_ordinal_clauses($self, $query), $params, undef)
+	if $where =~ s/^(?:\s*and\s)\s*select/SELECT/i;
+
+    ($die || 'Bivio::Die')->throw_die('DIE', 'must support select')
+	unless my $select = _select($self);
+
+    my(@from_where) = ();
+    # if $where has a FROM clause, ignore $sql_from
+    #   otherwise, append $where to $sql_from
+    unless ($where && $where =~ /^\s*FROM/is) {
+	push(@from_where, $self->get('sql_from'));
+    }
+    push(@from_where, $where);
+
+    return (
+        join(' ', $select, @from_where,
+	    _prepare_ordinal_clauses($self, $query)),
+	$params,
+        join(' ', @from_where)
+    );
 }
 
 # _select(self) : string

@@ -17,7 +17,6 @@ Request();
 		    ->internal_get_sql_support,
 	    )];
 	},
-
     } => [
 	select => [
 #TODO: Currently select doesn't produce anthing without a from.
@@ -35,6 +34,22 @@ Request();
 		    ->from('User')
 		    ->where(class()->EQ('User.first_name', ['x']))
 	    ] => ['realm_file_t.realm_file_id IN (?) UNION SELECT user_t.user_id FROM user_t WHERE user_t.first_name=?', [1, 'x']],
+	],
+    ],
+    {
+	object => [],
+	compute_return => sub {
+	    my($case) = @_;
+	    return [$case->get('object')->build_for_internal_load_rows(
+		Bivio::Biz::Model->new(req(), 'RealmFileList')
+		    ->internal_get_sql_support,
+	    )];
+	},
+    } => [
+	where => [
+	    [class()
+	        ->EQ('RealmUser.user_id', 'User.user_id', 'Email.realm_id')]
+	    => ['realm_user_t.user_id=user_t.user_id AND realm_user_t.user_id=email_t.realm_id', []],
 	],
     ],
 ];

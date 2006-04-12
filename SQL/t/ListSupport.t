@@ -164,7 +164,7 @@ my($query) = Bivio::SQL::ListQuery->new({
     count => 5,
 }, $support);
 
-my($rows) = $support->load($query, '', []);
+my($rows) = $support->load($query, undef, '', []);
 t(scalar(@$rows), 5);
 # Make sure both primary keys are returned, even though we only listed one.
 t($rows->[0]->{'TListT1.date_time'}, $rows->[0]->{'TListT2.date_time'});
@@ -174,7 +174,7 @@ $query = Bivio::SQL::ListQuery->new({
     auth_id => 2,
     count => 100,
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t(scalar(@$rows), 20);
 
 $query = Bivio::SQL::ListQuery->new({
@@ -182,7 +182,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 100,
     o => '0d',
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t($rows->[0]->{'TListT1.name'}, 'name09');
 t($rows->[3]->{'TListT1.name'}, 'name08');
 
@@ -192,7 +192,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 100,
     o => '0d1d',
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t($rows->[0]->{'TListT1.gender'}, Bivio::Type::Gender::MALE());
 t($rows->[1]->{'TListT1.gender'}, Bivio::Type::Gender::FEMALE());
 
@@ -210,7 +210,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 1,
     t => $now."\177".0,
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t(scalar(@$rows), 1);
 t($rows->[0]->{'TListT1.name'}, 'name00');
 t($rows->[0]->{'TListT1.toggle'}, 0);
@@ -221,7 +221,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 1,
     t => Bivio::Type::DateTime->add_seconds($now, 10000)."\177".0,
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t(scalar(@$rows), 0);
 
 # Check paging
@@ -230,7 +230,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 2,
     o => '0a',
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t(scalar(@$rows), 2);
 t('name00', $rows->[1]->{'TListT1.name'});
 t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
@@ -245,7 +245,7 @@ $query = Bivio::SQL::ListQuery->new({
     o => '0a',
     page_number => 2,
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t(scalar(@$rows), 2);
 t('name01', $rows->[1]->{'TListT1.name'});
 t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
@@ -261,7 +261,7 @@ $query = Bivio::SQL::ListQuery->new({
     o => '0a',
     page_number => 999999,
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t(scalar(@$rows), 2);
 t('name09', $rows->[1]->{'TListT1.name'});
 t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
@@ -273,7 +273,7 @@ $query = Bivio::SQL::ListQuery->new({
     page_number => 999999,
     want_page_count => 0,
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 t(scalar(@$rows), 2);
 t('name09', $rows->[1]->{'TListT1.name'});
 t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
@@ -287,7 +287,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 99999,
     o => '1d0d',
 }, $support);
-$rows = $support->load($query, '', []);
+$rows = $support->load($query, undef, '', []);
 # Now get with only one order by
 $query = Bivio::SQL::ListQuery->new({
     auth_id => 1,
@@ -295,7 +295,7 @@ $query = Bivio::SQL::ListQuery->new({
     o => '1d0d',
     want_only_one_order_by => 1,
 }, $support);
-my($rows2) = $support->load($query, '', []);
+my($rows2) = $support->load($query, undef, '', []);
 # Shouldn't be the same
 t(Bivio::IO::Ref->nested_equals($rows, $rows2), 0);
 
@@ -336,7 +336,7 @@ $rows = $support->load(Bivio::SQL::ListQuery->new({
     auth_id => 1,
     count => 99999,
     o => '0d',
-}, $support), '', []);
+}, $support), undef, '', []);
 t(Bivio::IO::Ref->nested_equals($rows, [
     map({
 	'TListT1.auth_id' => 1,

@@ -111,6 +111,7 @@ use Bivio::HTML;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
 use Bivio::SQL::ListQuery;
+use Bivio::SQL::Statement;
 use Bivio::Type;
 use Carp ();
 
@@ -329,20 +330,34 @@ sub init_column_classes {
 		$col = $proto->init_column($attrs, $first, $class, 0);
 	    }
 	    $column_aliases->{$first} = $col;
-	    my($alias);
-	    foreach $alias (@aliases) {
+
+	    # manually handle left joins, record aliases
+	    my(@equivs) = ();
+	    foreach my $alias (@aliases) {
+		if (ref($alias)) {
+		    push(@equivs, $alias);
+		    next;
+		}
+                # Creates a temporary column just to get sql_name and
+                # to make sure "model" is created if need be.
 		my($outer_join) = $alias =~ s/\Q(+)\E$// ? '(+)' : '';
-		# Creates a temporary column just to get sql_name and
-		# to make sure "model" is created if need be.
 		my($alias_col) = $proto->init_column(
-			$attrs, $alias, $class, 1);
-#TODO: Shouldn't allow where to be created for local columns
-		$where .= ' and '.$col->{sql_name}.'='
-			.$alias_col->{sql_name}.$outer_join;
+		    $attrs, $alias, $class, 1);
+		if ($outer_join) {
+		    $where .= ' and '.$col->{sql_name}.'='
+			    .$alias_col->{sql_name}.$outer_join;
+		}
+		else {
+		    push(@equivs, $alias);
+		}
 		# All aliases point to main column.  They don't exist
 		# outside of this context.
 		$column_aliases->{$alias} = $col;
 	    }
+	    # pass aliases config to Statement
+	    my($stmt) = $attrs->{statement};
+	    $stmt->where($stmt->EQ($first, @equivs))
+		if scalar(@equivs);
 	}
     }
     return $where;
@@ -376,6 +391,7 @@ sub init_common_attrs {
 #TODO: Validate the list
     $attrs->{as_string_fields} = $decl->{as_string_fields}
 	if $decl->{as_string_fields};
+    $attrs->{statement} ||= Bivio::SQL::Statement->new();
     return;
 }
 

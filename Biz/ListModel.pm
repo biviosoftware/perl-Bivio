@@ -150,10 +150,13 @@ sub new {
 =head2 static new_anonymous(hash_ref config, Bivio::Agent::Request req) : Bivio::Biz::ListModel
 
 Create a new_anonymous ListModel associated with the request.
+Defaults version to 1.
 
 =cut
 
 sub new_anonymous {
+    $_[1]->{version} = 1
+	unless exists $_[1]->{version};
     return _new(Bivio::Biz::Model::new_anonymous(@_));
 }
 
@@ -929,15 +932,15 @@ sub internal_pre_load {
 
 =for html <a name="internal_load_rows"></a>
 
-=head2 internal_load_rows(Bivio::SQL::ListQuery query, string where, array_ref params, Bivio::SQL::ListSupport sql_support) : array_ref
+=head2 internal_load_rows(Bivio::SQL::ListQuery query, Bivio::SQL::Statement stmt, string where, array_ref params, Bivio::SQL::ListSupport sql_support) : array_ref
 
 May be overriden.  Must return the rows loaded.
 
 =cut
 
 sub internal_load_rows {
-    my($self, $query, $where, $params, $sql_support) = @_;
-    return $sql_support->load($query, $where, $params, $self);
+    my($self, $query, $stmt, $where, $params, $sql_support) = @_;
+    return $sql_support->load($query, $stmt, $where, $params, $self);
 }
 
 =for html <a name="internal_prepare_statement"></a>
@@ -1679,10 +1682,22 @@ sub _iterate_start {
     return $self->internal_put_iterator(
 	$self->internal_get_sql_support->iterate_start(
 	    $fields->{query},
+	    _statement($self),
 	    _where_and_params($self),
 	    $self,
         ),
     );
+}
+
+# _statement(self) : Bivio::SQL::Statement
+#
+# Gather changes from internal_prepare_statment and internal_pre_load
+#
+sub _statement {
+    my($self) = @_;
+    my($stmt) = Bivio::SQL::Statement->new();
+    $self->internal_prepare_statement($stmt, $self->get_query());
+    return $stmt;
 }
 
 # _unauth_load(Bivio::Biz::ListModel self, hash_ref attrs) : int
@@ -1728,6 +1743,7 @@ sub _unauth_load {
     $self->internal_load(
 	$self->internal_load_rows(
 	    $query,
+	    _statement($self),
 	    _where_and_params($self),
 	    $sql_support,
 	),
@@ -1737,22 +1753,18 @@ sub _unauth_load {
     return scalar(@{$self->[$_IDI]->{rows}});
 }
 
-# _where_and_params(self, Bivio::SQL::Statement stmt) : (string, array_ref)
+# _where_and_params(self) : (string, array_ref)
 #
 # Gather changes from internal_prepare_statment and internal_pre_load
 #
 sub _where_and_params {
     my($self) = @_;
-    my($stmt) = Bivio::SQL::Statement->new();
-    my($support) = $self->internal_get_sql_support();
-    $self->internal_prepare_statement($stmt, $self->get_query());
-    my($where, $params) = $stmt->build_for_internal_load_rows($support);
-    $where = join(' AND ', grep($_, $where, $self->internal_pre_load(
+    my($params) = [];
+    return ($self->internal_pre_load(
 	$self->get_query(),
-	$support,
+	$self->internal_get_sql_support(),
 	$params,
-    )));
-    return (($where ? " AND $where" : ''), $params);
+    ), $params);
 }
 
 =head1 COPYRIGHT
