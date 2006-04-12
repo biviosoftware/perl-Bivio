@@ -61,6 +61,7 @@ my(\$m) = sub {
 Bivio::IO::File->write(q{$mail_file} . \$i++, <<"END");
 From: someone\\\@example.com
 To: \$x
+X-Bivio-Test-Recipient: \$x
 
 You have mail
 END
@@ -87,7 +88,7 @@ test_conformance();
 verify_local_mail(\$e1, 'You have mail');
 \$m->();
 \$m->();
-test_deviance(qr/too many messages found/);
+test_deviance(qr/incorrect number of messages/);
 verify_local_mail(\$e1, 'You have mail');
 test_conformance();
 foreach my \$m (verify_local_mail(\$e1, 'You have mail', 2)) {
