@@ -853,15 +853,16 @@ sub _prepare_query_values {
 # Build sql.
 sub _prepare_statement {
     my($self, $query, $stmt, $_where, $_params, $die) = @_;
-    _trace('where: ', $_where);
+    _trace('_where: ', $_where);
     $stmt ||= Bivio::SQL::Statement->new();
     _prepare_query_values($self, $stmt, $query);
     my($where, $params) = $stmt->build_for_list_support_prepare_statement(
         $self, $self->get('statement'), _merge_where($self, $_where),
 	$_params);
 
+    _trace('where: ', $where);
     return ($where . _prepare_ordinal_clauses($self, $query), $params, undef)
-	if $where =~ s/^(?:\s*and\s)\s*select/SELECT/i;
+	if $where =~ s/^WHERE SELECT\b/SELECT/;
 
     ($die || 'Bivio::Die')->throw_die('DIE', 'must support select')
 	unless my $select = _select($self);

@@ -421,42 +421,6 @@ sub build_decl_for_sql_support {
     return {};
 }
 
-=for html <a name="build_for_internal_load_rows"></a>
-
-=head2 build_for_internal_load_rows(Bivio::SQL::Support support) : (string, array_ref)
-
-Return FROM and WHERE clauses for internal_load_rows
-
-=cut
-
-sub build_for_internal_load_rows {
-    my($self, $support) = @_;
-    _merge_statements($self, $support->get_statement());
-    my($fields) = $self->[$_IDI];
-    my($params) = [];
-    my($where) = $fields->{where};
-    return ($where->{build}->($support, $params), $params)
-        unless %{$fields->{from}};
-    foreach my $model (
-	$fields->{select} ? () : keys(%{$support->get('models')}),
-    ) {
-        _add_model($self, $model);
-    }
-    return (
-        join(' ',
-	     $fields->{select} ?
-		 (SELECT => $fields->{select}->{build}->($support, $params))
-		 : (),
-	     FROM => $self->CROSS_JOIN(
-		 map($fields->{from}->{$_},
-		     sort(keys(%{$fields->{from}}))),
-	     )->{build}->($support, $params),
-	     WHERE => $where->{build}->($support, $params),
-	),
-	$params,
-    );
-}
-
 =for html <a name="build_for_list_support_prepare_statement"></a>
 
 =head2 build_for_list_support_prepare_statement(Bivio::SQL::Support support, Bivio::SQL::Statement stmt, string where, array_ref params) : (string, array_ref)
@@ -490,13 +454,16 @@ sub build_for_list_support_prepare_statement {
 	 );
     }
 
+    # get rid of extraneous spaces
+    $_where = join(' ', split(' ', $_where))
+	if $_where;
     my($where) = join(' AND ', grep($_,
         $fields->{where}->{build}->($support, $params),
 	$_where));
     push(@stmt, WHERE => $where)
 	if $where;
 
-    return (join(' ', @stmt), [@$params, @$_params]);
+    return (join(' ', @stmt), [@$params, @{$_params || []}]);
 }
 
 =for html <a name="build_select_for_sql_support"></a>
@@ -606,8 +573,10 @@ sub union_hack {
 	    return join(
 		' UNION ',
 		map({
-		    my($s, $p) = $_->build_for_internal_load_rows($support);
+		    my($s, $p) =
+		        $_->build_for_list_support_prepare_statement($support);
 		    push(@$params, @$p);
+		    $s =~ s/^WHERE //;
 		    $s;
 		} @stmt),
 	    );

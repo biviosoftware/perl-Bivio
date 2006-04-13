@@ -12,9 +12,10 @@ Request();
 	},
 	compute_return => sub {
 	    my($case) = @_;
-	    return [$case->get('object')->build_for_internal_load_rows(
-		Bivio::Biz::Model->new(req(), 'RealmFileList')
-		    ->internal_get_sql_support,
+	    return [$case->get('object')
+	        ->build_for_list_support_prepare_statement(
+		    Bivio::Biz::Model->new(req(), 'RealmFileList')
+		        ->internal_get_sql_support,
 	    )];
 	},
     } => [
@@ -23,33 +24,34 @@ Request();
 	    'RealmOwner.creation_date_time' => ['', []],
 	],
 	from => [
-	    'RealmOwner' => [q{SELECT TO_CHAR(realm_owner_t.creation_date_time,'J SSSSS') FROM realm_owner_t WHERE }, []],
+	    'RealmOwner' => [q{SELECT TO_CHAR(realm_owner_t.creation_date_time,'J SSSSS') FROM realm_owner_t}, []],
 	],
         union_hack => [
 	    [class()->new->where(class()->IN('RealmFile.realm_file_id', [1]))]
-		=> ['realm_file_t.realm_file_id IN (?)', [1]],
+		=> ['WHERE realm_file_t.realm_file_id IN (?)', [1]],
 	    [
 		class()->new->where(class()->IN('RealmFile.realm_file_id', [1])),
 		class()->new->select('User.user_id')
 		    ->from('User')
 		    ->where(class()->EQ('User.first_name', ['x']))
-	    ] => ['realm_file_t.realm_file_id IN (?) UNION SELECT user_t.user_id FROM user_t WHERE user_t.first_name=?', [1, 'x']],
+	    ] => ['WHERE realm_file_t.realm_file_id IN (?) UNION SELECT user_t.user_id FROM user_t WHERE user_t.first_name=?', [1, 'x']],
 	],
     ],
     {
 	object => [],
 	compute_return => sub {
 	    my($case) = @_;
-	    return [$case->get('object')->build_for_internal_load_rows(
-		Bivio::Biz::Model->new(req(), 'RealmFileList')
-		    ->internal_get_sql_support,
+	    return [$case->get('object')
+	        ->build_for_list_support_prepare_statement(
+		    Bivio::Biz::Model->new(req(), 'RealmFileList')
+		        ->internal_get_sql_support,
 	    )];
 	},
     } => [
 	where => [
 	    [class()
 	        ->EQ('RealmUser.user_id', 'User.user_id', 'Email.realm_id')]
-	    => ['realm_user_t.user_id=user_t.user_id AND realm_user_t.user_id=email_t.realm_id', []],
+	    => ['WHERE realm_user_t.user_id=user_t.user_id AND realm_user_t.user_id=email_t.realm_id', []],
 	],
     ],
 ];
