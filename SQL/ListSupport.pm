@@ -818,7 +818,6 @@ sub _prepare_ordinal_clauses {
 # Put auth_id and parent_id on statement, if they exist
 sub _prepare_query_values {
     my($self, $stmt, $query) = @_;
-    no strict qw(refs);
 
     foreach my $col (qw(auth_id parent_id)) {
 	$stmt->where([$self->get($col)->{name}, [$query->get($col)]])
@@ -839,10 +838,10 @@ sub _prepare_query_values {
 	    # Won't have both a begin_date and interval (see ListQuery)
 	    $begin_date = $interval->dec($end_date)
 		if $interval;
-	    foreach my $col (qw(begin_date end_date)) {
-		$stmt->where([$self->get('date')->{name}, [${$col}]])
-		    if ${$col};
-	    }
+	    $stmt->where($stmt->GTE($self->get('date')->{name}, [$begin_date]))
+		    if $begin_date;
+	    $stmt->where($stmt->LTE($self->get('date')->{name}, [$end_date]))
+		    if $end_date;
 	}
     }
     
