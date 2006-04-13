@@ -4,6 +4,7 @@ ListModel();
 req()->set_realm_and_user('btest_read', 'btest_read')
     ->initialize_fully('USER_HOME');
 [
+#TODO: sort order is not being preserved correctly on 7.2 systems
     load_all => [
 	[] => [
 	    map(+{'RealmOwner.name' => $_},
