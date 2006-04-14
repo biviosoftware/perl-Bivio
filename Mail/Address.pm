@@ -30,6 +30,7 @@ BNF syntax in RFC 822.
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::IO::Trace;
 use Bivio::Mail::RFC822;
 
 #=VARIABLES
@@ -99,33 +100,34 @@ could not be parse successfully.
 
 sub parse {
     my(undef, $addr) = @_;
+    my($REST) = '\s*(?:,\s*(.*)?)?$';
     local($_) = $addr;
     s/^\s+//s;
-    my($n, $a);
+    my($n, $a, $r);
     # Cases are optimized by their statistical counts.
     # Joe Bob <joe@bob.com>
-    if (($n, $a) = /^($ATOM_ONLY_PHRASE)\s*\<($ATOM_ONLY_ADDR)\>/os) {
-	return ($a, $n);
+    if (($n, $a, $r) = /^($ATOM_ONLY_PHRASE)\s*\<($ATOM_ONLY_ADDR)\>$REST/os) {
+	return ($a, $n, $r || ());
     }
     # "Joe Bob" <joe@bob.com>
-    if (($n, $a) = /^($QUOTED_STRING)\s*\<($ATOM_ONLY_ADDR)\>/os) {
-	return ($a, _clean_quoted_string($n));
+    if (($n, $a, $r) = /^($QUOTED_STRING)\s*\<($ATOM_ONLY_ADDR)\>$REST/os) {
+	return ($a, _clean_quoted_string($n), $r || ());
     }
     # joe@bob.com -- grab first addr, not allowing comment
-    if (($a) = m!^($ATOM_ONLY_ADDR)\s*(?:,|$)!os) {
-	return ($a, undef);
+    if (($a, $r) = m!^($ATOM_ONLY_ADDR)$REST!os) {
+	return ($a, undef, $r || ());
     }
     # joe@bob.com (Joe Bob)
-    if (($a, $n) = m!^($ATOM_ONLY_ADDR)\s*($NOT_NESTED_COMMENT)!os) {
-	return ($a, _clean_comment($n));
+    if (($a, $n, $r) = m!^($ATOM_ONLY_ADDR)\s*($NOT_NESTED_COMMENT)$REST!os) {
+	return ($a, _clean_comment($n), $r || ());
     }
-    if (($a, $n) = /^($MAILBOX)\s*((?:$NOT_NESTED_COMMENT)*)/os) {
+    if (($a, $n, $r) = /^($MAILBOX)\s*((?:$NOT_NESTED_COMMENT)*)$REST/os) {
 #TODO: Need to make sure we hit 99.99% of addresses with this
 #      We don't handle groups. ok?  What about "Undisclosed Recipients:;"?
 	# complex@addr (My comment) AND complex@addr
-	if ($a =~ /^$ADDR_SPEC$/) {
+	if ($a =~ /^$ADDR_SPEC$/os) {
 	    # $a is an address, no further parsing necessary
-	    return ($a, length($n) ? _clean_comment($n) : undef);
+	    return ($a, length($n) ? _clean_comment($n) : undef, $r || ());
 	}
 	# $MAILBOX: <complex@addr>
 	if (($a) = /^($ROUTE_ADDR)/) {
@@ -142,12 +144,38 @@ sub parse {
     # Illegal implementations follow:
     #
     # PoorImpl.com <hackers@foo.com>
-    if (($n, $a) = /^([^<>"]+)\s*\<($ATOM_ONLY_ADDR)\>/os) {
+    if (($n, $a, $r) = /^([^<>"]+)\s*\<($ATOM_ONLY_ADDR)\>$REST/os) {
 	$n =~ s/\s+$//;
-	return ($a, _clean_quoted_string(qq{"$n"}));
+	return ($a, _clean_quoted_string(qq{"$n"}), $r || ());
     }
     Bivio::IO::Alert->warn('Unable to parse address: ', $_);
     return (undef, undef);
+}
+
+=for html <a name="parse_list"></a>
+
+=head2 static parse_list(string addr_list) : array_ref
+
+Parse a list of email addresses
+
+=cut
+
+sub parse_list {
+    my($proto, $addr_list) = @_;
+    my($addrs) = [];
+    my($addr);
+    while ($addr_list) {
+	_trace('addr_list: ', $addr_list);
+	my($old_list) = $addr_list;
+	($addr, undef, $addr_list) = $proto->parse($addr_list);
+	push(@$addrs, $addr)
+	    if $addr;
+	# try to avoid infinite recursions
+	last
+	    if !$addr_list
+		|| $addr_list eq $old_list;
+    }
+    return $addrs;
 }
 
 =for html <a name="parse_list_strict"></a>

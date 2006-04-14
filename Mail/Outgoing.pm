@@ -412,11 +412,15 @@ or an array whose elements may contain scalar lists.
 
 sub set_recipients {
     my($self, $email_list, $req) = @_;
-    my($r) = ref($email_list) ? join(',', @$email_list) : $email_list;
-    $self->[$_IDI]->{recipients} = $r;
+
+    my($recipient) = join(',',
+        map({@{Bivio::Mail::Address->parse_list($_)}}
+	    ref($email_list) ? @$email_list : $email_list));
+
+    $self->[$_IDI]->{recipients} = $recipient;
     # Set here for mock_sendmail.  Also set in Common::_send
-    $self->set_header($self->TEST_RECIPIENT_HDR, $r)
-	if $req->is_test && $r !~ /,/;
+    $self->set_header($self->TEST_RECIPIENT_HDR, $recipient)
+	if $req->is_test && $recipient !~ /,/;
     return $self;
 }
 
