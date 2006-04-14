@@ -345,6 +345,22 @@ my($auth_uid) = sub {
 	get => [
 	    user_id => $auth_uid,
 	],
+# Verify that append_content doesn't change file owner
+	$user->('root'),
+        create_with_content => [
+	    [$a->('append'), \('a1')] => $commit,
+	],
+	get => [
+	    user_id => $auth_uid,
+	],
+	$user->('demo'),
+        append_content => [
+	    [\('a2')] => $commit,
+	],
+	$user->('root'),
+	get => [
+	    user_id => $auth_uid,
+	],
     ],
 # Cleanup
     class() => [
