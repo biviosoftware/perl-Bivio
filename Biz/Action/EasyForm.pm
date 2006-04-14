@@ -36,7 +36,11 @@ sub execute {
 	    });
 	my($p) = "${dir}Error.log";
 	$rf->unsafe_load({path => $p})
-	    || $rf->create_with_content({path => $p}, \(''));
+	    || $rf->create_with_content({
+		path => $p,
+		user_id => Bivio::Biz::Model::RealmUser->new
+		    ->get_any_online_admin->get('realm_id'),
+	    }, \(''));
 	my $keys = [sort(keys(%$form))]
 	    if $form;
 	$rf->append_content(
