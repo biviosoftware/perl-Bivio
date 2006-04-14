@@ -855,7 +855,7 @@ sub _static_compare {
         build => sub {
             my($_left) = _build_column($left, @_);
             my($_right) = ref($right) eq 'ARRAY'
-                ? _build_value($left, shift(@$right), @_)
+                ? _build_value($left, $right->[0], @_)
                 : _build_column($right, @_);
             return "$_left$comp$_right";
         },
