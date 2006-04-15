@@ -212,6 +212,11 @@ Bivio::Test->new({
              },
         ],
     ],
+    ['already-registered', 'Forms'] => [
+	get_ok_button => [
+	    [qr{email}i] => 'Register',
+        ],
+    ],
     ['petshop-cart', 'Tables'] => [
 	get_by_headings => [
 	    ['Remove'] => undef,

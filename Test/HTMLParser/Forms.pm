@@ -123,6 +123,25 @@ sub get_field {
     return $res->[0];
 }
 
+=for html <a name="get_ok_button"></a>
+
+=head2 get_ok_button(any form) : string
+
+Returns name of ok_button.  There cannot be more than one button, excluding
+cancel.
+
+=cut
+
+sub get_ok_button {
+    my($self, $form) = @_;
+    $form = $self->get_by_field_names($form)
+	unless ref($form) eq 'HASH';
+    my(@ok) = grep(!/cancel/i, keys(%{$form->{submit}}));
+    Bivio::Die->die('must be exactly one submit ', \@ok)
+        unless @ok == 1;
+    return $ok[0];
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
