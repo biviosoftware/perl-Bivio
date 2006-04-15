@@ -14,7 +14,7 @@ sub get_value {
 }
 sub handle_register {
     my($proto) = @_;
-    Bivio::UI::Facade->register($proto);
+    Bivio::UI::Facade->register($proto, ['Text']);
     return;
 }
 
