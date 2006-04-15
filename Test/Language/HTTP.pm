@@ -625,6 +625,7 @@ is not text/html, won't check for submission errors.
 sub submit_form {
     my($self, $submit_button, $form_fields, $expected_content_type) = @_;
     if (ref($submit_button) eq 'HASH') {
+	$expected_content_type = $form_fields;
 	$form_fields = $submit_button;
 	$submit_button = undef;
     }
@@ -634,10 +635,13 @@ sub submit_form {
     else {
 	$form_fields ||= {};
     }
-    my($form) = _assert_html($self)->get('Forms')->get_by_field_names(
+    my($forms) = _assert_html($self)->get('Forms');
+    my($form) = $forms->get_by_field_names(
 	keys(%$form_fields),
 	defined($submit_button) ? $submit_button : (),
     );
+    $submit_button = $forms->get_ok_button($form)
+	unless defined($submit_button);
     _send_request($self,
 	_create_form_request(
 	    $self, uc($form->{method}),
