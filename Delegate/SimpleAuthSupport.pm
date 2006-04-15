@@ -39,8 +39,6 @@ support.  Uses database to retrieve permissions.
 use Bivio::IO::Trace;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 my(%_DEFAULT_PERMISSIONS);
 
 =head1 METHODS
@@ -110,15 +108,7 @@ sub load_permissions {
 =head2 static task_permission_ok(Bivio::Auth::PermissionSet user, Bivio::Auth::PermissionSet task, Bivio::Agent::Request req) : boolean
 
 Returns true if I<user> has all permissions in I<task>.
-
-=cut
-
-=for html <a name="task_permission_ok"></a>
-
-=head2 static task_permission_ok(Bivio::Auth::PermissionSet user, Bivio::Auth::PermissionSet task, Bivio::Agent::Request req) : boolean
-
-Returns the permissions for this user loaded from the database.  Computes
-SUPER_USER_TRANSIENT and SUBSTITUTE_USER_TRANSIENT.
+Computes SUPER_USER_TRANSIENT and SUBSTITUTE_USER_TRANSIENT.
 
 =cut
 
