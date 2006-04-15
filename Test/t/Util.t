@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 #
 # Only works in PetShop config.
