@@ -126,14 +126,15 @@ Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
 
 sub vs_text {
     my($self, @tag) = @_;
-    return [['->get_request'], 'Bivio::UI::Facade', 'Text',
-	Bivio::UI::Text->join_tag(@tag)] if !ref($tag[0]);
-    # Pass widget value (array_ref) verbatim.  Will be evaluated by
-    # get_widget_value.
-    return [['->get_request'], 'Bivio::UI::Facade', 'Text', $tag[0]],
-	    if ref($tag[0]) eq 'ARRAY';
-    Bivio::Die->die(\@tag, ': tag must be a list of strings or array_ref');
-    # DOES NOT RETURN
+    my($refs) = scalar(grep(ref($_), @tag));
+    return [
+	['->get_request'], 'Bivio::UI::Facade', 'Text',
+	!$refs || $refs eq @tag ? @tag
+	    : [sub {
+		   my($s) = @_;
+		   return map(ref($_) ? $s->get_widget_value($_) : $_, @tag);
+	      }],
+    ];
 }
 
 #=PRIVATE METHODS
