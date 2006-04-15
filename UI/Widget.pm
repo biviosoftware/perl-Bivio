@@ -531,6 +531,22 @@ sub render_simple_attr {
     return $b;
 }
 
+=for html <a name="render_simple_value"></a>
+
+=head2 render_simple_value(any value, any source) : string
+
+Calls L<unsafe_render_value|"unsafe_render_value">, and returns a
+zero length string, never C<undef>, even $value is empty.
+
+=cut
+
+sub render_simple_value {
+    my($self, $value, $source) = @_;
+    my($b) = '';
+    $self->unsafe_render_value('<anon>', $value, $source, \$b);
+    return $b;
+}
+
 =for html <a name="render_value"></a>
 
 =head2 render_value(string attr_name, any value, any source, string_ref buffer) : string_ref
