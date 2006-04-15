@@ -5,17 +5,33 @@ Widget({
     setup_render => sub {
 	my($req, undef, undef, undef, $object) = @_;
 	$req->server_redirect(
-	    $object->get('task_map')->[0]->get('_task_menu_task_id'));
+	    $object->get('task_map')->[0]->get('_task_menu_cfg')->{task_id});
 	return;
     },
 });
-req()->set_realm_and_user(qw(demo demo));
+req()->set_realm_and_user(qw(demo guest));
 [
     [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>},
-    [[[qw(SITE_ROOT) => '/x']]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">home</a></div>},
-    [[[qw(SITE_ROOT) => '/x', 'site_name']]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">PetShop</a></div>},
-    [[[qw(SITE_ROOT) => '/x', 'site_name', [sub {0}]]]] => '',
-    [[[qw(SITE_ROOT) => '/x', 'site_name', [sub {1}]]]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">PetShop</a></div>},
+    [[[qw(SITE_ROOT site_name)]]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">PetShop</a></div>},
+    [[{
+	task_id => 'SITE_ROOT',
+	label => 'site_name',
+    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">PetShop</a></div>},
+    [[{
+	task_id => 'SITE_ROOT',
+	path_info => '/x',
+    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">home</a></div>},
+    [[{
+	task_id => 'SITE_ROOT',
+	control => [sub {0}],
+    }]] => '',
+    [[{
+	task_id => 'SITE_ROOT',
+	control => [sub {1}],
+    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>},
     [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a></div>},
-    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT USER_HOME)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a><a target="_top" class="want_sep" href="/demo">user home</a></div>},
+    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT), {
+	task_id => Bivio::Agent::TaskId->USER_HOME,
+	realm => 'demo',
+    }]] => qr{<div class="task_menu"><a target="_top" href="/">home</a><a target="_top" class="want_sep" href="/demo">user home</a></div>},
 ];
