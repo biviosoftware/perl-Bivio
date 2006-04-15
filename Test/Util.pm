@@ -185,7 +185,7 @@ sub mock_sendmail {
         ->new(
 	    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Incoming')
 	        ->new($in)
-	)->add_missing_headers($req, $from, $recipients);
+	)->add_missing_headers($req, $from);
     foreach my $r (split(/,/, $recipients)) {
 	(my $email = $r) =~ s/\+([^\@]+)//;
 	my($extension) = $1 || '';

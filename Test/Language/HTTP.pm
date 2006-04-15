@@ -583,7 +583,7 @@ sub send_mail {
     $o->set_header(To => $to_email);
     $o->set_header(Subject => "subj-$r");
     $o->set_body("Any unique $r body\n");
-    $o->add_missing_headers($req, $from_email, $to_email);
+    $o->add_missing_headers($req, $from_email);
     $o->send($req);
     return $o;
 }
