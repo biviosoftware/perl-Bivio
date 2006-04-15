@@ -159,15 +159,17 @@ sub delete_with_users {
 
 =for html <a name="info"></a>
 
-=head2 info()
+=head2 info(Bivio::Biz::Model realm_owner)
 
-info on realm.
+Info on I<realm_owner> or auth_realm.
 
 =cut
 
 sub info {
-    my($self) = @_;
-    return _info($self->get_request->get_nested(qw(auth_realm owner))) . "\n";
+    my($self, $owner) = @_;
+    return _info(
+	$owner || $self->get_request->get_nested(qw(auth_realm owner))
+    ) . "\n";
 }
 
 =for html <a name="invalidate_email"></a>
