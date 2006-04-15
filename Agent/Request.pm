@@ -208,6 +208,23 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="FORMAT_URI_PARAMETERS"></a>
+
+=head2 FORMAT_URI_PARAMETERS : array_ref
+
+Order and names of params passed to format_uri().
+
+=cut
+
+sub FORMAT_URI_PARAMETERS {
+    return [qw(
+        task_id query realm path_info no_context anchor require_context)];
+}
+
 #=IMPORTS
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::Task;
@@ -232,8 +249,7 @@ Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_IS_PRODUCTION) = 0;
 my($_CAN_SECURE);
-my($_FORMAT_URI_ARGS)
-    = [qw(task_id query realm path_info no_context anchor require_context)];
+my($_FORMAT_URI_ARGS) = __PACKAGE__->FORMAT_URI_PARAMETERS;
 Bivio::IO::Config->register({
     is_production => $_IS_PRODUCTION,
     can_secure => 1,
