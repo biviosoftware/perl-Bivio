@@ -308,8 +308,11 @@ sub new_other {
     my($self, $class) = @_;
     # explicit die if not found
     # ClassLoader calls throw_quietly() which has no output
+    my($c) = Bivio::Die->eval(sub {
+        Bivio::IO::ClassLoader->map_require('ShellUtil', $class);
+    });
     Bivio::Die->die('other ShellUtil not found or syntax error: ', $class)
-        unless Bivio::IO::ClassLoader->unsafe_simple_require($class);
+        unless $c;
     my($options) = [];
     if (ref($self)) {
 	my($standard) = __PACKAGE__->OPTIONS();
@@ -326,7 +329,7 @@ sub new_other {
 	    }
 	}
     }
-    my($other) = $class->new($options);
+    my($other) = $c->new($options);
     $other->put_request($self->get_request);
     $other->put(program => $self->unsafe_get('program'))
 	if ref($self) && $self->has_keys('program');
