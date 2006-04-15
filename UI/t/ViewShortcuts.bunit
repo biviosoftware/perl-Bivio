@@ -1,0 +1,23 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+[
+    class() => [
+        {
+	    method => 'vs_text',
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		my($a) = $actual->[0];
+		return [@$a[3 .. $#$a]];
+	    },
+	} => [
+	    'a' => 'a',
+	    [qw(a b)] => [qw(a b)],
+	    [['a']] => [['a']],
+	    [['a'], ['b']] => [['a'], ['b']],
+	    ['a', ['b']] => sub {
+		my(undef, $actual) = @_;
+		return ref($actual->[0]->[0]) eq 'CODE' ? 1 : 0;
+	    },
+	],
+    ],
+];
