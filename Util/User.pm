@@ -6,12 +6,14 @@ use base 'Bivio::ShellUtil';
 use Bivio::IO::TTY;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub USAGE {
     return <<'EOF';
 usage: b-user [options] command [args..]
 commands
    create_from_email email -- creates a new user, prompts for password
+   realms -- returns realms of the current user
 EOF
 }
 
@@ -26,9 +28,39 @@ sub create_from_email {
 	$self->usage_error('password mismatch, try again')
 	    unless $password eq $p2;
     }
-    $self->new_other('Bivio::Util::RealmAdmin')->create_user(
-	$email, $u, $password, $u);
+    $self->new_other('RealmAdmin')->create_user($email, $u, $password, $u);
     return;
+}
+
+sub realms {
+    my($self) = @_;
+    my($realms) = {};
+    my($req) = $self->get_request;
+    my($ru) = Bivio::Biz::Model->new($req, 'RealmUser');
+    $ru->do_iterate(
+	sub {
+	    my($it) = @_;
+	    push(@{$realms->{$it->get('realm_id')} ||= []},
+		 $it->get('role')->get_name
+		 . ' '
+		 . $_DT->to_xml($it->get('creation_date_time'))
+	    );
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'role asc',
+	{user_id => $req->get('auth_user_id')},
+    );
+    my($ro) = $ru->new_other('RealmOwner');
+    my($ra) = $self->new_other('RealmAdmin');
+    return join('',
+        map($ra->info($ro->unauth_load_or_die({realm_id => $_}))
+	    . '  '
+	    . join("\n  ", sort(@{$realms->{$_}}))
+	    . "\n",
+	    sort(keys(%$realms)),
+	),
+    );
 }
 
 1;
