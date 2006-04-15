@@ -197,6 +197,18 @@ my($_SELF) = __PACKAGE__->new({
         ]));
 	return;
     },
+    Constant => [
+	[help_wiki_realm_id => sub {
+	    my($req) = shift->get_request;
+	    return Bivio::Die->eval(
+		sub {
+		    return Bivio::Biz::Model->new($req, 'RealmOwner')
+		        ->unauth_load_or_die({name => 'fourem'})
+			->get('realm_id');
+		},
+	    ) || 1;
+	}],
+    ],
     Text => __PACKAGE__->make_groups([
 	# Where to redirect to when coming in via /,
 	# i.e. http://petshop.bivio.biz
@@ -204,10 +216,6 @@ my($_SELF) = __PACKAGE__->new({
 
 	support_email => 'webmaster@localhost.localdomain',
 	site_name => 'PetShop',
-	help_wiki_realm_id => Bivio::Die->eval(sub{
-             Bivio::Biz::Model->new('RealmOwner')->unauth_load_or_die({
-		 name => 'fourem'})->get('realm_id')}) || 1,
-
 	# SITE_ROOT task calls View->execute_uri and we look for pages in
 	# the "site_root" directory.
 	view_execute_uri_prefix => 'site_root/',

@@ -22,8 +22,7 @@ sub initialize {
 	control => [
 	    sub {
 		my($req) = shift->get_request;
-		my($t) = Bivio::UI::Text->get_from_source($req);
-		my($name) = $t->get_value(
+		my($name) = Bivio::UI::Text->get_from_source($req)->get_value(
 		    'title', $req->get('task_id')->get_name);
 		$name =~ s/\W//g;
 		return 0
@@ -32,7 +31,8 @@ sub initialize {
 			    $name . 'Help',
 			    $req,
 			    Bivio::Agent::TaskId->HELP,
-			    $t->get_value('help_wiki_realm_id'));
+			    Bivio::UI::Constant->get_from_source($req)
+				->get_value('help_wiki_realm_id'));
 		$req->put("$self" => $$html);
 		return 1;
 	    },
