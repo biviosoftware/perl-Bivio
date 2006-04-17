@@ -30,7 +30,6 @@ BNF syntax in RFC 822.
 
 #=IMPORTS
 use Bivio::Die;
-use Bivio::IO::Trace;
 use Bivio::Mail::RFC822;
 
 #=VARIABLES
@@ -43,6 +42,7 @@ my($MAILBOX) = Bivio::Mail::RFC822->MAILBOX;
 my($ADDR_SPEC) = Bivio::Mail::RFC822->ADDR_SPEC;
 my($ROUTE_ADDR) = Bivio::Mail::RFC822->ROUTE_ADDR;
 my($PHRASE) = Bivio::Mail::RFC822->PHRASE;
+my($LOCAL_PART) = Bivio::Mail::RFC822->LOCAL_PART;
 
 =head1 METHODS
 
@@ -107,19 +107,19 @@ sub parse {
     # Cases are optimized by their statistical counts.
     # Joe Bob <joe@bob.com>
     if (($n, $a, $r) = /^($ATOM_ONLY_PHRASE)\s*\<($ATOM_ONLY_ADDR)\>$REST/os) {
-	return ($a, $n, $r || ());
+	return ($a, $n, $r);
     }
     # "Joe Bob" <joe@bob.com>
     if (($n, $a, $r) = /^($QUOTED_STRING)\s*\<($ATOM_ONLY_ADDR)\>$REST/os) {
-	return ($a, _clean_quoted_string($n), $r || ());
+	return ($a, _clean_quoted_string($n), $r);
     }
     # joe@bob.com -- grab first addr, not allowing comment
     if (($a, $r) = m!^($ATOM_ONLY_ADDR)$REST!os) {
-	return ($a, undef, $r || ());
+	return ($a, undef, $r);
     }
     # joe@bob.com (Joe Bob)
     if (($a, $n, $r) = m!^($ATOM_ONLY_ADDR)\s*($NOT_NESTED_COMMENT)$REST!os) {
-	return ($a, _clean_comment($n), $r || ());
+	return ($a, _clean_comment($n), $r);
     }
     if (($a, $n, $r) = /^($MAILBOX)\s*((?:$NOT_NESTED_COMMENT)*)$REST/os) {
 #TODO: Need to make sure we hit 99.99% of addresses with this
@@ -127,18 +127,24 @@ sub parse {
 	# complex@addr (My comment) AND complex@addr
 	if ($a =~ /^$ADDR_SPEC$/os) {
 	    # $a is an address, no further parsing necessary
-	    return ($a, length($n) ? _clean_comment($n) : undef, $r || ());
+	    return ($a, length($n) ? _clean_comment($n) : undef, $r);
 	}
+#TODO: Die if $REST not empty?
 	# $MAILBOX: <complex@addr>
 	if (($a) = /^($ROUTE_ADDR)/) {
-	    return (_clean_route_addr($a), undef);
+	    return (_clean_route_addr($a), undef, undef);
 	}
 	# $MAILBOX: My Comment <complex@addr>
 	if (($n, $a) = /^($PHRASE)\s+($ROUTE_ADDR)/) {
-	    return (_clean_route_addr($a), $n);
+	    return (_clean_route_addr($a), $n, undef);
 	}
 #TODO: error or assert_fail
 	Bivio::Die->die('regexps incorrect, cannot parse: ', $_);
+    }
+
+    # Local delivery: root
+    if (($a, $r) = m!^($LOCAL_PART)$REST!os) {
+	return ($a, undef, $r);
     }
 
     # Illegal implementations follow:
@@ -146,34 +152,36 @@ sub parse {
     # PoorImpl.com <hackers@foo.com>
     if (($n, $a, $r) = /^([^<>"]+)\s*\<($ATOM_ONLY_ADDR)\>$REST/os) {
 	$n =~ s/\s+$//;
-	return ($a, _clean_quoted_string(qq{"$n"}), $r || ());
+	return ($a, _clean_quoted_string(qq{"$n"}), $r);
     }
+
     Bivio::IO::Alert->warn('Unable to parse address: ', $_);
-    return (undef, undef);
+    return (undef, undef, undef);
 }
 
 =for html <a name="parse_list"></a>
 
 =head2 static parse_list(string addr_list) : array_ref
 
-Parse a list of email addresses
+Parse a list of email addresses.  Dies on invalid address.
 
 =cut
 
 sub parse_list {
     my($proto, $addr_list) = @_;
+    return []
+	unless $addr_list;
     my($addrs) = [];
     my($addr);
-    while ($addr_list) {
-	_trace('addr_list: ', $addr_list);
+    while (1) {
 	my($old_list) = $addr_list;
 	($addr, undef, $addr_list) = $proto->parse($addr_list);
-	push(@$addrs, $addr)
-	    if $addr;
-	# try to avoid infinite recursions
-	last
-	    if !$addr_list
-		|| $addr_list eq $old_list;
+	Bivio::Die->die($old_list, ': invalid address')
+	    unless $addr;
+	push(@$addrs, $addr);
+	last unless $addr_list;
+	Bivio::Die->die($old_list, ': parse() did not trim addr_list')
+	    if length($addr_list) > length($old_list);
     }
     return $addrs;
 }
