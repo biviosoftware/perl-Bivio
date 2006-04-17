@@ -13,8 +13,11 @@ sub handle_register {
 }
 
 sub internal_initialize_value {
-    my($v) = shift->SUPER::internal_initialize_value(@_);
-    return UNIVERSAL::isa($v, 'Bivio::UI::Widget') ? $v->initialize : $v;
+    my($self, $value) = @_;
+    shift->SUPER::internal_initialize_value(@_);
+    $value->{value}->initialize
+	if UNIVERSAL::isa($value->{value}, 'Bivio::UI::Widget');
+    return;
 }
 
 1;
