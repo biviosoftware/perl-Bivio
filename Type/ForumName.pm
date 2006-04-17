@@ -7,12 +7,17 @@ use base 'Bivio::Type::Name';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SEP) = Bivio::Type->get_instance('RealmName')->SPECIAL_SEPARATOR;
 # This is same as SimpleRealmName, but this is loosely coupled
-my($_REGEXP_TOP) = qr/^([a-z][a-z0-9_]{2,})($_SEP|$)/io;
+my($_REGEXP_TOP) = qr/^([a-z][a-z0-9_]{2,})($_SEP|$)(.*)/io;
 my($_REGEXP) = qr/^([a-z][a-z0-9_]{2,})[\w$_SEP]*$/io;
 
 sub extract_top {
     my($proto, $value) = @_;
     return ($value =~ $_REGEXP_TOP)[0];
+}
+
+sub extract_bottom {
+    my($proto, $value) = @_;
+    return ($value =~ $_REGEXP_TOP)[2];
 }
 
 sub from_literal {
