@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 3.92  2006/04/07 23:56:52  aviggio
+  * Bivio::Biz::Action::CalendarEventICS added
+  * Bivio::Biz::Model::CalendarEvent->create_realm added
+  * Bivio::Biz::Model::CalendarEventForm added
+  * Bivio::Delegate::SimpleWidgetFactory added simple form case for Time types
+  * Bivio::PetShop::Facade::PetShop modified for create_test_db
+    bootstrap
+  * Bivio::Type::Date added from_datetime
+  * Bivio::Type::DateTime added from_date_and_time and is_time
+  * Bivio::Type::Time added from_datetime
+  * Bivio::UI::Widget::URI added internal_new_args
+
   Revision 3.91  2006/04/03 20:11:18  nagler
   * Bivio::Biz::Model::RealmFile creates MAIL_FOLDER and PUBLIC_FOLDER on the
     fly with appropriate permissions.  This is for all realms.  Forum no
@@ -2973,7 +2985,7 @@ http://www.bivio.biz for more info.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2005 bivio Software, Inc.  All Rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 
