@@ -38,7 +38,6 @@ sub execute_ok {
         Bivio::Type::DateTime->from_date_and_time(
 	    $self->get('end_date'), $self->get('end_time')));
     if ($self->is_create) {
-	Bivio::IO::Alert->info('Create calendar event...');
 	my($ce, $ro) = $self->new_other('CalendarEvent')->create_realm({
             realm_id => $self->get_request->get('auth_id'),
             %{$self->get_model_properties('CalendarEvent')},
@@ -101,14 +100,9 @@ sub internal_pre_execute {
     return;
 }
 
-#TODO: Copy modified from DAVBaseForm.pm
 sub is_create {
     my($self) = @_;
-#    my($fm) = $self->get_request->unsafe_get('Type.FormMode');
-#    return !$fm || $fm->eq_create ? 1 : 0;
-    my($e_id) = $self->unsafe_get('CalendarEvent.calendar_event_id');
-    Bivio::IO::Alert->info($e_id);
-    return $e_id ? 0 : 1;
+    return $self->unsafe_get('CalendarEvent.calendar_event_id') ? 0 : 1;
 }
 
 1;
