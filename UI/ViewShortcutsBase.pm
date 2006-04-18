@@ -54,7 +54,8 @@ Dies.  You can't instantiate a ViewShortcut.
 =cut
 
 sub new {
-    die("you can't instantiate a ViewShortcut; perhaps you meant vs_new()?");
+    Bivio::Die->die(
+	"you can't instantiate a ViewShortcut; perhaps you meant vs_new()?");
     # DOES NOT RETURN
 }
 
@@ -62,28 +63,19 @@ sub new {
 
 =cut
 
-=for html <a name="fixup_args"></a>
+=for html <a name="view_autoload"></a>
 
-=head2 fixup_args(any proto, ...) : list
+=head2 view_autoload(string method, array_ref args) : any
 
-Prepend the package name if the arg list doesn't already have an object or
-package name as the first element.
-
-This method can't be called as a function.
+Called as last resort when the method doesn't match the
+standard ViewLanguage patterns (vs_*, view_*, SomeWidget).
 
 =cut
 
-sub fixup_args {
-    my($package, $caller_proto) = (shift, @_);
-
-    return @_
-	if ref($caller_proto)
-	    && UNIVERSAL::isa($caller_proto, $package);
-    return @_
-	if defined($caller_proto)
-	    && !ref($caller_proto)
-	    && $package eq $caller_proto;
-    return ($package, @_);
+sub view_autoload {
+    my(undef, $method, $args) = @_;
+    Bivio::Die->die("$method invalid view function, widget, or shortcut.");
+    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
