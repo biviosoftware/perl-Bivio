@@ -7,12 +7,18 @@ use base 'Bivio::Biz::FormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = Bivio::Type->get_instance('ForumName');
 
+sub CREATE_REALM_MODELS {
+    return qw(Forum RealmOwner);
+}
+
 sub execute_empty {
     my($self) = @_;
     my($req) = $self->get_request;
     return unless _is_forum($req);
-    $self->load_from_model_properties($req->get_nested(qw(auth_realm owner)));
-    $self->load_from_model_properties('Forum');
+    $self->internal_put_field('Forum.forum_id' => $req->get('auth_id'));
+    foreach my $m ($self->CREATE_REALM_MODELS) {
+	$self->load_from_model_properties($m);
+    }
     return unless _is_create($req);
     $self->internal_put_field('RealmOwner.name' =>
 	$self->get('RealmOwner.name') . '-');
@@ -30,14 +36,15 @@ sub execute_ok {
     my($req) = $self->get_request;
     if (_is_create($req)) {
 	my($f, $ro) = $self->new_other('Forum')->create_realm(
-	    $self->get_model_properties('Forum'),
-	    $self->get_model_properties('RealmOwner'),
+	    map($self->get_model_properties($_),
+		$self->CREATE_REALM_MODELS),
 	);
 	$req->set_realm($ro);
     }
     else {
-	$self->update_model_properties('RealmOwner');
-	$self->update_model_properties('Forum');
+	foreach my $m ($self->CREATE_REALM_MODELS) {
+	    $self->update_model_properties($m);
+	}
     }
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Util::RealmRole')
         ->edit_categories(
