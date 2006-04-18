@@ -277,7 +277,9 @@ sub follow_link_in_table {
 	$link_heading, ': link column not found, or column empty',
     ) unless defined($row->{$link_heading});
     my($links) = $row->{$link_heading}->get('Links');
-    return $self->visit_uri($links->get($link_name || $find_value)->{href})
+    # link_name may be '0', so use defined() for comparison
+    return $self->visit_uri($links->get(
+        defined($link_name) ? $link_name : $find_value)->{href})
 	if defined($link_name) || $links->has_keys($find_value);
     my($k) = $links->get_keys;
     Bivio::Die->die(
