@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.1  2006/04/18 03:00:12  moeller
+  * Bivio::Biz::ListModel fixed bug which assumed arg to new_anonymous()
+    was HASH, it may be a CODEREF
+  * Bivio::Mail::Address Added local delivery address (root) renamed
+    from Address.t
+  * Bivio::Test::Language::HTTP fix follow_link_in_table() to allow
+    following link_text '0'
+  * Bivio::Type::ForumName Added extract_bottom()
+
   Revision 4.0  2006/04/17 04:12:52  nagler
   NOTE: The following change is not consistent with previous releases.
   * Bivio::Biz::ListModel->internal_load_rows signature is now:
