@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,48 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.0  2006/04/17 04:12:52  nagler
+  NOTE: The following change is not consistent with previous releases.
+  * Bivio::Biz::ListModel->internal_load_rows signature is now:
+      my($self, $query, $stmt, $where, $params, $sql_support) = @_;
+    $stmt is taking over for $where and $params.  Eventually, $where, $params,
+    and $sql_support will go away.
+  * Bivio::Biz::ListModel now generates all SQL dynamically which allows for
+    easy creation of queries that convert to/from types automatically.
+  * Bivio::SQL::ListSupport mostly rewritten to support dynamic statements.
+  * Bivio::Mail::Address->parse_list added
+  * Bivio::Mail::Common->TEST_RECIPIENT_HDR replaces RECIPIENTS_HDR.  In test
+    mode, msgs are sent individually by Common->send and an X-Bivio-Test-Recipient
+    header is added to allow Bivio::Test::Language::HTTP->verify_local_mail
+    validate the recipients of group sends individually.
+  * Bivio::Mail::Common.reroute_address removed.
+  * Bivio::Mail::Outgoing->set_recipients requires $req; splits the recipients
+    so they contain only addresses (see X-Bivio-Test-Recipient above).
+  * Bivio::UI::XHTML::Widget::HelpWiki uses Constant.help_wiki_realm_id,
+    instead of Text.help_wiki_realm_id.
+  * Bivio::UI::Constant is a new facade component for constants.  It behaves
+    like Bivio::UI::HTML in that you can compute values with code_refs attached
+    to the values.
+  * Bivio::Agent::Request->FORMAT_URI_PARAMETERS added.
+  * Bivio::Biz::Model::RealmFile->update sets the user_id to auth_user_id
+    by default, instead of keeping it the same.
+  * Bivio::Test::HTMLParser::Forms->get_ok_button added.  There must be one
+    and only one non-cancel button.
+  * Bivio::Test::Language::HTTP->verify_local_mail allows explicit list of
+    recipients instead of just a count
+  * Bivio::Test::Language::HTTP->submit_form({...}) signature calls
+    get_ok_button (see above) to find the ok button.
+  * Bivio::UI::ViewShortcuts->vs_text accepts multiple/mixed widget values
+    and strings, and will combine them into dotted form to find a qualified
+    name.
+  * Bivio::UI::Widget->render_simple_value added
+  * Bivio::UI::XHTML::Widget::TaskMenu supports hash for elements of menu.
+    Values are passed to URI, if 'uri' param not supplied.
+  * Bivio::Util::Backup->mirror no longer passes -C to rsync so all files
+    including CVS directories are copied.  This can fill up disk space,
+    but CVS directories contain too much data to lose.
+  *
+
   Revision 3.92  2006/04/07 23:56:52  aviggio
   * Bivio::Biz::Action::CalendarEventICS added
   * Bivio::Biz::Model::CalendarEvent->create_realm added
