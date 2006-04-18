@@ -155,8 +155,10 @@ Defaults version to 1.
 =cut
 
 sub new_anonymous {
-    $_[1]->{version} = 1
-	unless exists $_[1]->{version};
+    if (ref($_[1]) eq 'HASH') {
+        $_[1]->{version} = 1
+            unless exists $_[1]->{version};
+    }
     return _new(Bivio::Biz::Model::new_anonymous(@_));
 }
 
