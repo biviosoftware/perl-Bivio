@@ -61,7 +61,7 @@ sub execute_help {
     my($proto, $req) = @_;
     return $proto->execute(
 	$req,
-	Bivio::UI::Text->get_from_source($req)->get_value('help_wiki_realm_id'),
+	Bivio::UI::Constant->get_from_source($req)->get_value('help_wiki_realm_id'),
     );
 }
 
