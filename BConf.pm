@@ -239,11 +239,11 @@ Usage in your BConf.pm
 
     ...
     $proto->merge_class_loader({
-        maps => [
+        maps => {
              Facade => ['OurSite::Facade'],
              Model => ['OurSite::Model'],
              ...,
-        ],
+        },
     }),
     ...
 
