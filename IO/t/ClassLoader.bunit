@@ -1,0 +1,73 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+config({
+    'Bivio::IO::ClassLoader' => {
+	maps => {
+	    ClassLoaderBunit => ['Bivio::IO::t::ClassLoader'],
+	},
+	delegates => {
+	    'ClassLoaderBunit::Delegate' => 'Bivio::IO::t::ClassLoader::Valid',
+	},
+     },
+});
+[
+    class() => [
+	is_map_configured => [
+	    NoSuchMap => 0,
+	    ClassLoaderBunit => 1,
+	],
+	was_required => [
+	    'Bivio::IO::ClassLoader' => 1,
+	    'Bivio::IO::t::ClassLoader::Valid' => 0,
+	    'Bivio::IO::t::ClassLoader::SyntaxError' => 0,
+	],
+	unsafe_simple_require => [
+	    'Bivio::IO::t::ClassLoader::Valid' => 'Bivio::IO::t::ClassLoader::Valid',
+	],
+ 	map((
+  	    simple_require => [
+  	        @$_,
+  	    ],
+  	    unsafe_simple_require => [
+ 		$_->[0] => $_->[1]->eq_not_found ? [undef] : $_->[1],
+  	    ],
+ 	    was_required => [
+ 		$_->[0] => 0,
+ 	    ],
+ 	),
+ 	    ['Bivio::IO::t::ClassLoader::NotFound' => NOT_FOUND()],
+ 	    ['Bivio::IO::t::ClassLoader::SyntaxError' => DIE()],
+        ),
+	map((
+	    unsafe_map_require => [
+		$_ => 'Bivio::IO::t::ClassLoader::Valid',
+	    ],
+	    was_required => [
+		'Bivio::IO::t::ClassLoader::Valid' => 1,
+	    ],
+	    delete_require => [
+		'Bivio::IO::t::ClassLoader::Valid' => undef,
+	    ],
+	    was_required => [
+		'Bivio::IO::t::ClassLoader::Valid' => 0,
+	    ],
+	),
+	    [qw(ClassLoaderBunit Valid)],
+	    'ClassLoaderBunit.Valid',
+	    [qw(NoSuchMapButOK Bivio::IO::t::ClassLoader::Valid)],
+	    'Bivio::IO::t::ClassLoader::Valid',
+	),
+	map_require_all => [
+	    ClassLoaderBunit => DIE(),
+	    [ClassLoaderBunit => sub {shift !~ /SyntaxError/}]
+		=> [['Bivio::IO::t::ClassLoader::Valid']],
+	],
+	delete_require => [
+	    'Bivio::IO::t::ClassLoader::Valid' => undef,
+	],
+	delegate_require => [
+	    'ClassLoaderBunit::Delegate' => 'Bivio::IO::t::ClassLoader::Valid',
+	    'NotConfigured' => DIE(),
+	],
+    ],
+];
