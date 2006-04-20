@@ -106,9 +106,10 @@ $_ is localized in this call.  Do not assume it will be modified by I<code>.
 
 sub catch {
     my($proto, $code, $die) = @_;
-    Bivio::Die->die(Bivio::DieCode::CATCH_WITHIN_DIE(),
-	    {code => $code, program_error => 1}, (caller)[0], (caller)[2])
-		if $_IN_HANDLE_DIE;
+    Bivio::Die->die(
+	Bivio::DieCode->CATCH_WITHIN_DIE,
+	{code => $code, program_error => 1}, (caller)[0], (caller)[2],
+    ) if $_IN_HANDLE_DIE;
     $_IN_CATCH++;
     local($SIG{__DIE__}) = sub {
 	my($msg) = @_;
@@ -158,16 +159,20 @@ Returns Die object and all its subsequent errors as a string.
 sub as_string {
     my($self) = @_;
     my($res) = '';
-    for (my($curr) = $self; $curr; $curr = $curr->get('next')) {
-	eval {
-	    return 0 if $curr->is_destroyed;
-	    my($c, $a, $p, $f, $l) = $curr->get(
-		'code', 'attrs', 'package', 'file', 'line');
-	    $res .= Bivio::IO::Alert->format($p, $f, $l, undef,
-		    _as_string_args($c, $a));
-	    chomp($res);
-	    return 1;
-	} || ($res .= 'ERROR: ' . $curr . "\n");
+    for (my($curr) = $self; $curr; $curr = $curr->unsafe_get('next')) {
+	if ($curr->is_destroyed) {
+	    $res .= "$curr->is_destroyed returned true unexpectedly";
+	    next;
+	}
+	$res .= "$curr->as_string: $@\n"
+	    unless eval {
+		my($c, $a, $p, $f, $l) = $curr->unsafe_get(
+		    'code', 'attrs', 'package', 'file', 'line');
+		$res .= Bivio::IO::Alert->format($p, $f, $l, undef,
+			_as_string_args($c, $a));
+		chomp($res);
+		1;
+	    };
     }
     return $res;
 }
@@ -196,7 +201,7 @@ sub destroy {
 
     # Head of chain
     if ($_CURRENT_SELF eq $self) {
-	my($next) = $_CURRENT_SELF->get('next');
+	my($next) = $_CURRENT_SELF->unsafe_get('next');
 	$_CURRENT_SELF->put('next', undef);
 	$_CURRENT_SELF = $next;
 	return;
@@ -204,9 +209,9 @@ sub destroy {
 
     # Somewhere in the chain?
     my($curr, $next) = $_CURRENT_SELF;
-    while ($next = $curr->get('next')) {
+    while ($next = $curr->unsafe_get('next')) {
 	next unless $next eq $self;
-	$curr->put('next', $next->get('next'));
+	$curr->put('next', $next->unsafe_get('next'));
 	$self->put('next' => undef);
 	last;
     }
@@ -225,13 +230,14 @@ Wrapper for L<throw|"throw">.  Takes similar arguments to CORE::die.
 
 sub die {
     my($proto) = shift;
-    $proto->throw(Bivio::DieCode::DIE(), {
-	message => Bivio::IO::Alert->format_args(@_),
-	program_error => 1,
-    },
-	    (caller)[0,1,2],
-	    Carp::longmess('Bivio::Die::die'),
-	   );
+    $proto->throw(
+	Bivio::DieCode::DIE(), {
+	    message => Bivio::IO::Alert->format_args(@_),
+	    program_error => 1,
+	},
+        (caller)[0,1,2],
+	Carp::longmess('Bivio::Die::die'),
+    );
     # DOES NOT RETURN
 }
 
@@ -336,7 +342,7 @@ Returns true if the instance was destroyed.
 =cut
 
 sub is_destroyed {
-    return !shift->get('code');
+    return !shift->unsafe_get('code');
 }
 
 =for html <a name="set_code"></a>
@@ -349,7 +355,7 @@ Change the I<code> associated with I<self> and set new attributes.
 
 sub set_code {
     my($self, $code, @new_attrs) = @_;
-    my($attrs) = $self->get('attrs');
+    my($attrs) = $self->unsafe_get('attrs');
     $self->put(code => _check_code($code, $attrs));
     %$attrs = (%$attrs, @new_attrs) if @new_attrs;
     return;
@@ -419,7 +425,26 @@ C<$die> object (see e.g. L<Bivio::SQL::Connection|Bivio::SQL::Connection>).
 sub throw_die {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
     shift->throw($code, $attrs, $package, $file, $line,
-	    Carp::longmess('Bivio::Die::throw_die'));
+        Carp::longmess('Bivio::Die::throw_die'));
+    # DOES NOT RETURN
+}
+
+=for html <a name="throw_or_die"></a>
+
+=head2 static throw_or_die(any code, hash_ref attrs, string package, string file, int line)
+
+=head2 static throw_or_die(string arg1, ...)
+
+Calls L<throw|"throw"> if I<code> is a Bivio::DieCode name or reference.
+Otherwise, calls L<die|"die">.
+
+=cut
+
+sub throw_or_die {
+    my($proto, $code) = @_;
+    UNIVERSAL::isa($code, 'Bivio::DieCode')
+	|| Bivio::DieCode->is_valid_name($code)
+	? shift->throw(@_) : shift->die(@_);
     # DOES NOT RETURN
 }
 
@@ -442,7 +467,7 @@ sub throw_quietly {
 	# DOES NOT RETURN
     }
     my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
-	    Carp::longmess('Bivio::Die::throw_quietly'));
+        Carp::longmess('Bivio::Die::throw_quietly'));
     # Be quiet
     CORE::die($_IN_CATCH ? "$self\n" : "\n");
     # DOES NOT RETURN
@@ -458,9 +483,8 @@ sub throw_quietly {
 sub _as_string_args {
     my($code, $attrs) = @_;
     return [$code, ': ', $attrs->{message}]
-	    if $attrs->{message}
-		    && int(keys(%$attrs))
-			    <= 1 + ($attrs->{program_error} ? 1 : 0);
+	if $attrs->{message}
+	&& int(keys(%$attrs)) <= 1 + ($attrs->{program_error} ? 1 : 0);
     my($msg) = [$code];
     if (%$attrs) {
 	# Don't just "join", because we want Alert to call
@@ -471,6 +495,13 @@ sub _as_string_args {
 	pop(@$msg);
     }
     return $msg;
+}
+
+sub _caller {
+    my($i) = 0;
+    # Avoid insanity
+    0 while caller(++$i) eq __PACKAGE__ && $i < 1_000_000;
+    return [caller($i)];
 }
 
 # _catch_done() : Bivio::Die
@@ -494,22 +525,17 @@ sub _catch_done {
 #
 sub _check_code {
     my($code, $attrs) = @_;
-    if (defined($code)) {
-	unless (ref($code) && UNIVERSAL::isa($code, 'Bivio::DieCode')) {
-	    if (my $c = Bivio::DieCode->unsafe_from_any($code)) {
-		$code = $c;
-	    } else {
-		my($a) = {%$attrs};
-		%$attrs = (code => $code, attrs => $a, program_error => 1);
-		$code = Bivio::DieCode->INVALID_DIE_CODE;
-	    }
-	}
-    }
-    else {
-	$code = Bivio::DieCode::UNKNOWN();
+    unless (defined($code)) {
 	$attrs->{program_error} = 1;
+	return Bivio::DieCode->UNKNOWN;
     }
-    return $code;
+    return $code
+	if UNIVERSAL::isa($code, 'Bivio::DieCode');
+    my($c) = Bivio::DieCode->unsafe_from_any($code);
+    return $c
+	if $c;
+    %$attrs = (code => $code, attrs => {%$attrs}, program_error => 1);
+    return Bivio::DieCode->INVALID_DIE_CODE;
 }
 
 # _eval(any code) : any
@@ -519,12 +545,10 @@ sub _check_code {
 sub _eval {
     my($code) = @_;
     local($_);
-    return eval {&$code();} if ref($code) eq 'CODE';
-    my($i, $pkg) = 0;
-    0 while ($pkg = caller($i++)) eq __PACKAGE__;
     # Don't put in newline, because would change line numbering
-    $pkg = 'package '.$pkg.'; ';
-    return eval(ref($code) eq 'SCALAR' ? $pkg.$$code : $pkg.$code);
+    return ref($code) eq 'CODE' ? eval {$code->();} : eval(
+	'package ' . _caller()->[0] . '; ' . (ref($code) ? $$code : $code)
+    );
 }
 
 # _handle_die(self)
@@ -539,7 +563,9 @@ sub _handle_die {
 	local($SIG{__DIE__});
 	my($self) = @_;
 	_print_stack($self)
-		if $_STACK_TRACE_ERROR && $self->get('attrs')->{program_error};
+	    if $_STACK_TRACE_ERROR
+	    && ($self->unsafe_get('attrs') || {program_error => 1})
+		->{program_error};
 	my($i) = 0;
 	my(@a);
 	my($prev_proto) = '';
@@ -610,7 +636,7 @@ sub _handle_die {
 #
 sub _new {
     my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
-    my($self) = Bivio::Collection::Attributes::new($proto, {
+    my($self) = $proto->new({
 	next => undef,
 	code => $code,
 	attrs => $attrs,
@@ -622,7 +648,7 @@ sub _new {
     $self->put(throw_quietly => 1) if (caller(2))[3] =~ /throw_quietly/;
     if ($_CURRENT_SELF) {
 	my($curr, $next) = $_CURRENT_SELF;
-	$curr = $next while $next = $curr->get('next');
+	$curr = $next while $next = $curr->unsafe_get('next');
 	$curr->put('next' => $self);
     }
     else {
@@ -645,7 +671,7 @@ sub _new_from_core_die {
     my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
     if ($_CURRENT_SELF) {
 	my($msg) = $attrs->{message};
-	for (my($curr) = $_CURRENT_SELF; $curr; $curr = $curr->get('next')) {
+	for (my($curr) = $_CURRENT_SELF; $curr; $curr = $curr->unsafe_get('next')) {
 	    next unless $msg eq "$curr\n";
 	    return $curr;
 	}
@@ -667,7 +693,9 @@ sub _new_from_eval_syntax_error {
 	    {message => $@, program_error => 1},
 	    undef, undef, undef, Carp::longmess($@));
     _print_stack($self)
-	    if $_STACK_TRACE_ERROR && $self->get('attrs')->{program_error};
+	if $_STACK_TRACE_ERROR
+	&& ($self->unsafe_get('attrs') || {program_error => 1})
+	->{program_error};
     return $self;
 }
 
@@ -677,18 +705,19 @@ sub _new_from_eval_syntax_error {
 #
 sub _new_from_throw {
     my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
-    my($i) = 0;
-    $i++ while caller($i) eq __PACKAGE__;
-    $package ||= (caller($i))[0];
-    $file ||= (caller($i))[1];
-    $line ||= (caller($i))[2];
-    unless (ref($attrs) eq 'HASH') {
-	$attrs = defined($attrs)
-		? !ref($attrs) ? {message => $attrs}
-			:  {attrs => $attrs} : {};
-    }
-    $code = _check_code($code, $attrs);
-    return _new($proto, $code, $attrs, $package, $file, $line, $stack);
+    $attrs = defined($attrs) ? !ref($attrs) ? {message => $attrs}
+	:  {attrs => $attrs} : {}
+        unless ref($attrs) eq 'HASH';
+    my($caller) = _caller();
+    return _new(
+	$proto,
+	_check_code($code, $attrs),
+	$attrs,
+	$package || $caller->[0],
+	$file || $caller->[1],
+	$line || $caller->[2],
+	$stack,
+    );
 }
 
 # _print_stack(self)
@@ -700,7 +729,7 @@ sub _print_stack {
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
     return if $sp || $tq;
     Bivio::IO::Alert->print_literally($self->as_string."\n");
-    Bivio::IO::Alert->print_literally($self->get('stack'));
+    Bivio::IO::Alert->print_literally($self->unsafe_get('stack'));
     $self->put(stack_printed => 1);
     return;
 }
