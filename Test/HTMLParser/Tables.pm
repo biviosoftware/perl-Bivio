@@ -42,8 +42,6 @@ use Bivio::IO::Trace;
 use Bivio::Test::HTMLParser::Tables::Cell;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
 
@@ -85,10 +83,7 @@ sub do_rows {
     my($self, $table_name, $do_rows_callback) = @_;
     my($index) = -1;
 
-    Bivio::Die->die('table name: "', $table_name,
-        '" not found in ', $self->get_keys)
-        unless $self->unsafe_get($table_name);
-    my($t) = $self->get($table_name);
+    my($t) = _assert_table($self, $table_name);
     foreach my $row (@{$t->{rows}}) {
 	my($i) = -1;
 	$index++;
@@ -144,20 +139,16 @@ sub find_row {
 	: $self->get_by_headings($_[0])->{headings}->[0]->get('text');
     my($column_name, $column_value) = @_;
     my($found_row);
-    my($found_column);
+    _assert_column($self, $table_name, $column_name);
     $self->do_rows($table_name,
 	sub {
 	    my($row) = @_;
-            return 1 unless exists($row->{$column_name});
-            $found_column = 1;
 	    my($t) = $row->{$column_name}->get('text');
 	    $found_row = $row
 		if ref($column_value) eq 'Regexp' ? $t =~ $column_value
 		    : $t eq $column_value;
 	    return $found_row ? 0 : 1;
 	});
-    Bivio::Die->die('column name not found: ', $column_name)
-        unless $found_column;
     return $found_row || Bivio::Die->die(
 	$column_value, ': not found in column ', $column_name,
     );
@@ -242,6 +233,24 @@ sub html_parser_text {
 }
 
 #=PRIVATE METHODS
+
+# _assert_column(self, string table_name, string column_name)
+sub _assert_column {
+    my($self, $table_name, $column_name) = @_;
+    my($table) = _assert_table($self, $table_name);
+    Bivio::Die->die('column name not found: ', $column_name)
+        unless grep($column_name eq $_->get('text'), @{$table->{headings}});
+    return;
+}
+
+# _assert_table(self, string table) : hash_ref
+sub _assert_table {
+    my($self, $table_name) = @_;
+    Bivio::Die->die('table name: "', $table_name,
+        '" not found in ', $self->get_keys)
+        unless $self->unsafe_get($table_name);
+    return $self->get($table_name);
+}
 
 # _call_op(string prefix, string tag, any arg, ...) : boolean
 #
