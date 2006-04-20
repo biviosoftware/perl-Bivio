@@ -168,6 +168,8 @@ sub parse_display_name {
     # Split on spaces; reorder and remove comma if entered backwards
     # Only works if comma after first word (eg: 'la salle, jane' fails)
     my(@parts) = split(' ', $dn);
+    return Bivio::TypeError->UNSPECIFIED
+	unless scalar(@parts);
     if($parts[0] =~ /,$/) {
 	$parts[0] =~ s/,//;
 	push(@parts, shift(@parts));
