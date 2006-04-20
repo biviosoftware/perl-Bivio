@@ -286,8 +286,8 @@ sub die {
 	message => Bivio::IO::Alert->format_args(@msg),
 	entity => $attr_name,
 	widget => $self,
-	view => Bivio::IO::ClassLoader->is_loaded('Bivio::View')
-		&& Bivio::View->unsafe_get_current,
+	view => Bivio::IO::ClassLoader->was_required('Bivio::View')
+	    && Bivio::View->unsafe_get_current,
 	source => $source,
 	program_error => 1,
     });
