@@ -74,6 +74,34 @@ sub new {
 
 =cut
 
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Returns the string form of I<self>.  By default, this is just I<self>.
+
+=cut
+
+sub as_string {
+    return shift(@_) . '';
+}
+
+=for html <a name="die"></a>
+
+=head2 static die(any die_code, hash_ref attrs)
+
+=head2 static die(string arg1, ...)
+
+A convenient alias for L<Bivio::Die::throw_or_die|Bivio::Die/"throw_or_die">
+
+=cut
+
+sub die {
+    shift;
+    Bivio::Die->throw_or_die(@_);
+    # DOES NOT RETURN
+}
+
 =for html <a name="equals"></a>
 
 =head2 equals(UNIVERSAL that) : boolean
@@ -85,18 +113,6 @@ Returns true if I<self> is identical I<that>.
 sub equals {
     my($self, $that) = @_;
     return $self eq $that ? 1 : 0;
-}
-
-=for html <a name="as_string"></a>
-
-=head2 as_string() : string
-
-Returns the string form of I<self>.  By default, this is just I<self>.
-
-=cut
-
-sub as_string {
-    return shift(@_) . '';
 }
 
 =for html <a name="inheritance_ancestor_list"></a>
@@ -111,7 +127,7 @@ Asserts single inheritance.  Must be descended from this class.
 sub inheritance_ancestor_list {
     my($proto) = @_;
     my($class) = ref($proto) || $proto;
-    die('not a subclass of Bivio::UNIVERSAL')
+    CORE::die('not a subclass of Bivio::UNIVERSAL')
 	unless $class->isa(__PACKAGE__);
     # Broken if called from Bivio::UNIVERSAL
     my($res) = [];
@@ -120,8 +136,9 @@ sub inheritance_ancestor_list {
 	    no strict 'refs';
 	    \@{$class . '::ISA'};
 	};
-	die($class, ': does not define @ISA') unless @$isa;
-	die($class, ': multiple inheritance not allowed; @ISA=', "@$isa")
+	CORE::die($class, ': does not define @ISA')
+	    unless @$isa;
+	CORE::die($class, ': multiple inheritance not allowed; @ISA=', "@$isa")
 	    unless int(@$isa) == 1;
 	push(@$res, $class = $isa->[0]);
     }
@@ -147,7 +164,7 @@ Returns the index into the instance data.  Usage:
 sub instance_data_index {
     my($pkg) = @_;
     # Some sanity checks, since we don't access this often
-    die('must call statically from package body')
+    CORE::die('must call statically from package body')
 	unless $pkg eq (caller)[0];
     # This class doesn't have any instance data.
     return @{$pkg->inheritance_ancestor_list} - 1;
@@ -281,6 +298,19 @@ name for this class is C<UNIVERSAL>.
 sub simple_package_name {
     my($proto) = @_;
     return ((ref($proto) || $proto) =~ /([^:]+$)/)[0];
+}
+
+=for html <a name="use"></a>
+
+=head2 static use(string package, ...) : string
+
+An convenient alias for map_require (Bivio::IO::ClassLoader).
+
+=cut
+
+sub use {
+    shift;
+    return Bivio::IO::ClassLoader->map_require(@_);
 }
 
 #=PRIVATE METHODS

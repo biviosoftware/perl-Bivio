@@ -29,6 +29,18 @@ sub my_idi {
 package main;
 
 Bivio::Test->unit([
+    'Bivio::UNIVERSAL' => [
+	die => [
+	    [NOT_FOUND => {message => 'hey'}] => Bivio::DieCode->NOT_FOUND,
+	    [Bivio::DieCode->NOT_FOUND] => Bivio::DieCode->NOT_FOUND,
+	    [not_found => {message => 'hey'}] =>  Bivio::DieCode->DIE,
+	],
+	use => [
+	    'Type.String' => 'Bivio::Type::String',
+	    'Bivio::UNIVERSAL' => 'Bivio::UNIVERSAL',
+	    'Not::Known::Class' => Bivio::DieCode->NOT_FOUND,
+	],
+     ],
     'Bivio::t::UNIVERSAL::t1' => [
 	inheritance_ancestor_list => [
 	    [] => [[qw(Bivio::UNIVERSAL)]],
