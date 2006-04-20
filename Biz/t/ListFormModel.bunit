@@ -1,0 +1,16 @@
+# Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+Request();
+Bivio::Biz::Model->new(req(), 'NumberedList')->load_page({count=> 3});
+[
+    'Bivio::Biz::t::ListFormModel::T1ListForm' => [
+        get_fields_for_primary_keys => [
+	    [] => [{
+		index_0 => 0,
+		index_1 => 1,
+		index_2 => 2,
+	    }],
+	],
+    ],
+];
+

@@ -128,14 +128,9 @@ sub execute_empty {
     my($fields) = $self->[$_IDI];
     my($lm) = _execute_init($self);
 
-    # For each row, we have to copy primary_key values
-    my($primary_key_names) = $lm->get_info('primary_key_names');
     my($properties) = $self->internal_get;
-    foreach (my($row) = 0; $lm->next_row; $row++) {
-	foreach my $pkn (@$primary_key_names) {
-	    $properties->{$pkn.$_SEP.$row} = $lm->get($pkn);
-	}
-    }
+    %$properties = (%$properties,
+		    %{$self->get_fields_for_primary_keys($lm)});
 
 #TODO: Optimize.  Don't make calls if method doesn't exist
     # Do start/row/end
@@ -332,6 +327,27 @@ sub get_field_name_for_html {
 
     # Finally, return the row-qualified form field name
     return $col->{form_name}.$_SEP.$row;
+}
+
+=for html <a name="get_fields_for_primary_keys"></a>
+
+=head2 get_fields_for_primary_keys() : hash_ref
+
+Returns a hash_ref of the primary keys for the list class
+
+=cut
+
+sub get_fields_for_primary_keys {
+    my($self) = @_;
+    my($list) = $self->get_list_model || _execute_init($self);
+    my($primary_key_names) = $list->get_info('primary_key_names');
+    my($i) = 0;
+    return {@{$list->map_rows(
+	sub {
+	    my($list) = @_;
+	    return map(($_.$_SEP.$i++ => $list->get($_)),
+		       @$primary_key_names);
+	})}};
 }
 
 =for html <a name="get_list_class"></a>

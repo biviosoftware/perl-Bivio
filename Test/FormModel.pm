@@ -48,15 +48,19 @@ C<Bivio::Test::FormModel>
 
 =head2 static new() : Bivio::Test::FormModel
 
+Accepts I<setup_request> in attributes.
+
 =cut
 
 sub new {
     my($proto, $attrs) = @_;
+    # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
+    my($fn) = delete($attrs->{setup_request});
     my($model) = ref($attrs) ? delete($attrs->{model}) : $attrs;
     $attrs = {}
 	unless ref($attrs);
     my($req) = Bivio::Test::Request->get_instance();
-    my($m) = Bivio::Biz::Model->get_instance($model);
+    my($m) = Bivio::Biz::Model->new($req, $model);
     return $proto->SUPER::new({
 	class_name => $m->package_name,
 	compute_params => sub {
@@ -68,12 +72,19 @@ sub new {
 		form_model => ref($m),
 		next => 'MY_SITE',
 	    }));
+	    $fn->($case)
+		if ref($fn) eq 'CODE';
 	    unless (@$params) {
 		$req->delete('form');
 		$case->put('execute_empty' => 1);
 		return [$req];
 	    }
-	    my($hash) = $params->[0];
+	    my($hash) = {
+		$m->isa('Bivio::Biz::ListFormModel')
+		    ? %{$m->get_fields_for_primary_keys()}
+		    : (),
+		%{$params->[0]},
+	    };
 	    return $params
 		unless ref($hash) eq 'HASH';
 	    return [$req->put(
@@ -91,20 +102,39 @@ sub new {
 	    return $expect
 		unless $case->get('method') eq 'process';
 	    my($e) = $expect->[0];
-	    return $expect
-		unless ref($e) eq 'HASH' && @$expect == 1;
 	    my($o) = $case->get('object');
-	    $e = _walk_tree_expect($case, $e);
-	    $case->actual_return([
-		$case->unsafe_get('execute_empty')
-		    ? {map(($_ => $o->unsafe_get($_)), keys(%$e))}
-		    : $o->in_error
-			? {map(($_ => $o->get_field_error($_) ?
-				    $o->get_field_error($_)->get_name : undef),
+	    return $expect
+		unless (ref($e) eq 'HASH' && @$expect == 1)
+		    || ($o->isa('Bivio::Biz::ListFormModel')
+			    && ref($expect->[0]) eq 'HASH');
+
+	    # TODO: is the data munjing different enough for ListFormModel that
+	    # maybe need to create a separate bunit type for it?
+	    if ($o->isa('Bivio::Biz::ListFormModel')
+		    && $case->unsafe_get('execute_empty')) {
+		$e = [map(_walk_tree_expect($case, $_), @$expect)];
+		my($i) = 0;
+		$case->actual_return($o->get_list_model->map_rows(sub {
+		    my($list) = @_;
+		    return {map(($_ => $list->unsafe_get($_)),
+				keys(%{$e->[$i++]}))};
+		}));
+	    }
+	    else {
+		$e = _walk_tree_expect($case, $e);
+		$case->actual_return([
+		    $case->unsafe_get('execute_empty')
+			? {map(($_ => $o->unsafe_get($_)), keys(%$e))}
+			    : $o->in_error
+			? {map(($_ => $o->get_field_error($_)
+				    ? $o->get_field_error($_)->get_name
+				: undef),
 			       keys(%$e))}
 			: _walk_tree_actual($case, $e, [])
-	    ]);
-	    return [$e];
+		    ]);
+		$e = [$e];
+	    }
+	    return $e;
 	},
 	#TODO compute_return
 	%$attrs,
@@ -114,6 +144,19 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="setup_request"></a>
+
+=head2 callback setup_request(Bivio::Test::Case case)
+
+Used to setup the parameters for each request.  Handy for reloading a list
+model when unit testing ListFormModels
+
+=cut
+
+$_ = <<'}'; # emacs
+sub setup_request {
+}
 
 =for html <a name="unit"></a>
 
