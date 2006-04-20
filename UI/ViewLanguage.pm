@@ -124,22 +124,25 @@ sub call_method {
 	my($map) = $view->ancestral_get('view_class_map', undef);
 	_die("view_class_map() or view_parent() must be called before $method")
 	    unless $map;
-	return Bivio::IO::ClassLoader->map_require($map, $method)
-		->new(@args);
+	my($class) = Bivio::IO::ClassLoader->unsafe_map_require($map, $method);
+	return $class->new(@args)
+	    if $class;
     }
+    elsif ($method =~ /^view_/) {
+	return $proto->$method(@args)
+	    if $proto->can($method);
+    }
+    my($vs) = $view->ancestral_get('view_shortcuts', undef);
     if ($method =~ /^vs_/) {
-	my($vs) = $view->ancestral_get('view_shortcuts', undef);
 	_die("view_shortcuts() or view_parent() must be called before $method")
 	    unless $vs;
 	_die("$method is not implemented by $vs or its superclass(es)")
 	    unless $vs->can($method);
 	return $vs->$method(@args);
     }
-    # This is here for ViewShortcuts->vs_call.
-    return $proto->$method(@args)
-	if $method =~ /^view_/ && $proto->can($method);
-    _die("$method invalid view function, widget, or shortcut.");
-    # DOES NOT RETURN
+    return ($vs || Bivio::IO::ClassLoader->simple_require(
+	'Bivio::UI::ViewShortcutsBase')
+	)->view_autoload($method, \@args);
 }
 
 =for html <a name="eval"></a>
@@ -181,9 +184,9 @@ This attribute must be defined in the view or its parents.
 sub view_class_map {
     my($proto, $map_name) = _args(@_);
     _assert_value(view_class_map => $map_name);
-    _die($map_name.': not a valid view_class_map;'
-	    .' check Bivio::IO::ClassLoader configuration')
-	    unless Bivio::IO::ClassLoader->is_valid_map($map_name);
+    _die("$map_name: not a valid view_class_map;"
+        .' check Bivio::IO::ClassLoader configuration'
+    ) unless Bivio::IO::ClassLoader->is_map_configured($map_name);
     _put(view_class_map => $map_name);
     return;
 }
