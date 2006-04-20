@@ -7,10 +7,106 @@ use Bivio::UI::HTML::WidgetFactory;
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTML_TAGS) = join('|', qw(
+    A
+    ABBR
+    ACRONYM
+    ADDRESS
+    APPLET
+    AREA
+    B
+    BASE
+    BASEFONT
+    BDO
+    BIG
+    BLOCKQUOTE
+    BODY
+    BR
+    BUTTON
+    CAPTION
+    CENTER
+    CITE
+    CODE
+    COL
+    COLGROUP
+    DD
+    DEL
+    DFN
+    DIR
+    DIV
+    DL
+    DT
+    EM
+    FIELDSET
+    FONT
+    FORM
+    FRAME
+    FRAMESET
+    H1
+    H2
+    H3
+    H4
+    H5
+    H6
+    HEAD
+    HR
+    HTML
+    I
+    IFRAME
+    IMG
+    INPUT
+    INS
+    ISINDEX
+    KBD
+    LABEL
+    LEGEND
+    LI
+    LINK
+    MAP
+    MENU
+    META
+    NOFRAMES
+    NOSCRIPT
+    OBJECT
+    OL
+    OPTGROUP
+    OPTION
+    P
+    PARAM
+    PRE
+    Q
+    S
+    SAMP
+    SCRIPT
+    SELECT
+    SMALL
+    SPAN
+    STRIKE
+    STRONG
+    STYLE
+    SUB
+    SUP
+    TABLE
+    TBODY
+    TD
+    TEXTAREA
+    TFOOT
+    TH
+    THEAD
+    TITLE
+    TR
+    TT
+    U
+    UL
+    VAR
+));
 
-sub vs_phone {
-    my($proto) = @_;
-    return $proto->vs_call(Join => [$proto->vs_text('support_phone')]);
+sub view_autoload {
+    my(undef, $method, $args) = @_;
+    return Tag($1, @$args ? @$args : ('', {tag_if_empty => 1}))
+	->put_unless_exists($2 ? (class => $2) : ())
+	if $method =~ /^($_HTML_TAGS)?(?:_([a-z0-9_]{2,}))?$/os;
+    return shift->SUPER::view_autoload(@_);
 }
 
 sub vs_acknowledgement {
@@ -225,6 +321,16 @@ sub vs_paged_list {
 	$columns,
 	$proto->vs_table_attrs($model, paged_list => $attrs),
     ),
+}
+
+sub vs_phone {
+    my($proto) = @_;
+    return $proto->vs_call(Join => [$proto->vs_text('support_phone')]);
+}
+
+sub vs_prose {
+    my(undef, $prose) = @_;
+    return Tag(div => Prose($prose), 'prose');
 }
 
 sub vs_simple_form {
