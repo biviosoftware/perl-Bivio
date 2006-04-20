@@ -10,4 +10,8 @@ Widget();
     [{task_id => [sub {'SITE_ROOT'}]}] => '/',
     [{task_id => 'SITE_ROOT', query => {'ListQuery.this' => 1}}] => '/?t=1',
     ['SITE_ROOT'] => '/',
+    [{
+	task_id => 'SITE_ROOT',
+	query => [sub {{x => 'y'}}],
+    }] => '/?x=y',
 ];

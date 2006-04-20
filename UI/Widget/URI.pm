@@ -50,16 +50,20 @@ sub _render_hash {
     return {map(
 	($_ => ref($hash->{$_}) eq 'HASH'
 	     ? _render_hash($self, "$name.$_", $hash->{$_}, $source)
-	     : UNIVERSAL::isa($hash->{$_}, 'Bivio::Agent::TaskId')
-	     ? $hash->{$_}
-	     : $self->unsafe_render_value(
-		 "$name.$_",
-		 $hash->{$_},
-		 $source,
-		 ($b = '', \$b)[1]
-	     ) ? $b : undef),
+	     : _render_value($self, $_, $hash->{$_}, $source)),
 	keys(%$hash),
     )};
+}
+
+sub _render_value {
+    my($self, $name, $value, $source) = @_;
+    return $value
+	if UNIVERSAL::isa($value, 'Bivio::Agent::TaskId');
+    my($v) = $self->unsafe_resolve_widget_value($value, $source);
+    return $v
+	if !ref($v) || ref($v) eq 'HASH';
+    my($b) = '';
+    return $self->unsafe_render_value($name, $value, $source, \$b) ? $b : undef;
 }
 
 1;
