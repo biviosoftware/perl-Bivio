@@ -1,0 +1,24 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+[
+    {
+	object => sub {'Bivio::UI::View'},
+	compute_return => sub {
+	    return [${req()->get('reply')->get_output}];
+	},
+    } => [
+        call_main => [
+	    [\(<<'EOF'), req()] => '<big>x</big>',
+view_class_map('XHTMLWidget');
+view_shortcuts('Bivio::UI::XHTML::ViewShortcuts');
+view_main(SimplePage(BIG('x')));
+EOF
+	    [\(<<'EOF'), req()] => '<p class="zz">x</p>',
+view_class_map('XHTMLWidget');
+view_shortcuts('Bivio::UI::XHTML::ViewShortcuts');
+view_main(SimplePage(P_zz('x')));
+EOF
+	],
+    ],
+];
