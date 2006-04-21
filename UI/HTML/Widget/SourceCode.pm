@@ -258,6 +258,8 @@ sub _contains {
 sub _find_files {
     $_FILES = {};
     File::Find::find({
+        # follow symbolic links to source
+        follow => 1,
 	wanted => sub {
 	    my($name) = $File::Find::name;
 	    return
