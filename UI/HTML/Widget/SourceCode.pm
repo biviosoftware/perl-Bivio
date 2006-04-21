@@ -260,6 +260,7 @@ sub _find_files {
     File::Find::find({
         # follow symbolic links to source
         follow => 1,
+        follow_skip => 2,
 	wanted => sub {
 	    my($name) = $File::Find::name;
 	    return
