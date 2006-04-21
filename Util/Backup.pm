@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Backup;
 use strict;
@@ -61,6 +61,7 @@ EOF
 
 #=IMPORTS
 use Bivio::IO::Trace;
+use Bivio::IO::File;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -122,9 +123,16 @@ sub mirror {
     my($res) = '';
     foreach my $cfg_name (@cfg_name ? @cfg_name : ('')) {
 	my($cfg) = Bivio::IO::Config->get($cfg_name);
-	$self->piped_exec_remote($cfg->{mirror_dest_host},
-	    "mkdir -p $cfg->{mirror_dest_dir}");
-	$res .= ${$self->piped_exec("rsync -e ssh -azlSR --delete"
+	my($host, $dir) = @$cfg{qw(mirror_dest_host mirror_dest_dir)};
+	if ($host) {
+	    $self->piped_exec_remote($host, "mkdir -p $dir");
+	    $dir = "$host:$dir";
+	}
+	else {
+	    Bivio::IO::File->mkdir_p($dir, 0700);
+	}
+	$res .= ${$self->piped_exec(
+	    "rsync -e ssh -azlSR --delete"
 	    . ($self->unsafe_get('noexecute') ? ' -n' : '')
 	    . ($_TRACE ? ' --progress' : '')
 	    . " '"
@@ -133,7 +141,8 @@ sub mirror {
 		     unless $_ =~ m!^/!;
 		 $_;
 	      } @{$cfg->{mirror_include_dirs}})
-	    . "' '$cfg->{mirror_dest_host}:$cfg->{mirror_dest_dir}' 2>&1")};
+	    . "' $dir 2>&1",
+	)};
     }
     return \$res;
 }
@@ -142,7 +151,7 @@ sub mirror {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
