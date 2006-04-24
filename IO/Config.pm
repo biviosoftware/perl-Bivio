@@ -203,13 +203,19 @@ Returns list of hashes from bconf dir in sorted order.
 
 sub bconf_dir_hashes {
     my($proto) = @_;
+    my($dir) = _bconf_dir($proto);
+    my($only) = "$dir/" . File::Basename::basename(bconf_file(), '.bconf')
+	. '-only.bconf';
     return map({
 	my($file) = $_;
 	my($data) = do($file) || die($@);
 	die($file, ': did not return a hash_ref')
 	    unless ref($data) eq 'HASH';
 	$data;
-    } sort(<@{[_bconf_dir($proto)]}/*.bconf>));
+    }
+       -r $only ? $only : (),
+       sort(grep(!/-only.bconf$/, glob("$dir/*.bconf"))),
+    );
 }
 
 =for html <a name="bconf_file"></a>
