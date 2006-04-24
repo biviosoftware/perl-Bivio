@@ -79,12 +79,12 @@ sub new {
 		$case->put('execute_empty' => 1);
 		return [$req];
 	    }
-	    my($hash) = {
-		$m->isa('Bivio::Biz::ListFormModel')
-		    ? %{$m->get_fields_for_primary_keys()}
-		    : (),
-		%{$params->[0]},
-	    };
+	    my($hash) = $params->[0];
+	    $hash = {
+		%{$m->get_fields_for_primary_keys()},
+		%$hash,
+	    }
+		if $m->isa('Bivio::Biz::ListFormModel');
 	    return $params
 		unless ref($hash) eq 'HASH';
 	    return [$req->put(
