@@ -143,6 +143,8 @@ sub find_row {
     $self->do_rows($table_name,
 	sub {
 	    my($row) = @_;
+            # not all rows have all columns defined
+            return 1 unless exists($row->{$column_name});
 	    my($t) = $row->{$column_name}->get('text');
 	    $found_row = $row
 		if ref($column_value) eq 'Regexp' ? $t =~ $column_value
