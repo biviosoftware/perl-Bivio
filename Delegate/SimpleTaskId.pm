@@ -502,6 +502,13 @@ sub get_delegate_info {
 	    View.wiki-not-found
 	    view_task=HELP
  	)],
+ 	[qw(
+ 	    FORUM_FILE
+ 	    52
+ 	    FORUM
+ 	    DATA_READ
+ 	    Action.RealmFile
+        )],
     ];
 }
 
