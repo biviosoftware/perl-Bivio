@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.3  2006/04/21 23:47:12  aviggio
+  * Bivio::Biz::ListFormModel changes to better support testing
+  * Bivio::Biz::Model::UserCreateForm improved error when names not
+    specified
+  * Bivio::IO::ClassLoader major rewrite, renamed is_loaded =>
+    was_required, unsafe_simple_require dies on syntax errors,
+    unsafe_map_require added
+  * Bivio::Test::FormModel support for testing ListFormModels
+  * Bivio::Test::HTMLParser::Tables improved error for tables with no
+    rows
+  * Bivio::UI::HTML::Widget::SourceCode handle recursive symbolic links
+  * Bivio::UI::ViewLanguage->call_method calls
+    ViewShortcuts->view_autoload if the class or method can't be found
+  * Bivio::UI::ViewShortcutsBase removed fixup_args and added
+    view_autoload
+  * Bivio::UI::Widget is_loaded => was_required
+  * Bivio::UI::XHTML::ViewShortcuts added view_autoload which loads tags
+    explicitly
+  * Bivio::UNIVERSAL added use() and die()
+
   Revision 4.2  2006/04/18 06:37:03  aviggio
   * Bivio::Biz::Model::ForumForm refactored CREATE_REALM_MODELS to support subclasses
 
