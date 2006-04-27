@@ -344,7 +344,7 @@ sub get_delegate_info {
             FORUM
             DATA_READ
             Model.CalendarEventList->execute_load_page
-            View.calendar-list-rss
+            View.calendar-event-list-rss
         )],
 	[qw(
 	    DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
