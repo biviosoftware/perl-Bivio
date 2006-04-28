@@ -99,6 +99,30 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="invalidate"></a>
+
+=head2 invalidate()
+
+Invalidates the e-mail address be prefixing it with "invalid:".
+Checks to see if already invalidated.
+
+=cut
+
+sub invalidate {
+    my($self) = @_;
+    my($address) = $self->get('email');
+    my($prefix) = $self->get_field_type('email')->INVALID_PREFIX;
+    # Already invalidated?
+    return if $address =~ /^\Q$prefix/o;
+
+    # Nope, need to invalidate
+    my($other) = $self->new_other('Email');
+    my($i) = 0;
+    $i++ while $other->unauth_load({email => $prefix . $i . $address});
+    $self->update({email => $prefix . $i . $address});
+    return;
+}
+
 =for html <a name="is_ignore"></a>
 
 =head2 is_ignore() : boolean
