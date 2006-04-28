@@ -271,19 +271,9 @@ Checks to see if already invalidated.
 
 sub invalidate_email {
     my($self) = @_;
-    my($email) = $self->new_other('Email')->unauth_load_or_die({
+    $self->new_other('Email')->unauth_load_or_die({
         realm_id => $self->get('user_id'),
-    });
-    my($address) = $email->get('email');
-    my($prefix) = $email->get_field_type('email')->INVALID_PREFIX;
-    # Already invalidated?
-    return if $address =~ /^\Q$prefix/o;
-
-    # Nope, need to invalidate
-    my($other) = $self->new_other('Email');
-    my($i) = 0;
-    $i++ while $other->unauth_load({email => $prefix . $i . $address});
-    $email->update({email => $prefix . $i . $address});
+    })->invalidate;
     return;
 }
 
