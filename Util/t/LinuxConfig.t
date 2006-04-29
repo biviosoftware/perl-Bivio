@@ -12,8 +12,11 @@ Bivio::IO::Config->introduce_values({
 CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -pR LinuxConfig/* $_tmp; find $_tmp -name CVS -exec rm -rf {} \\; -prune");
 
 my($_true) = grep(-x $_, qw(/bin/true /usr/bin/true));
+my($user) = $ENV{USER};
+my($group) = `groups` =~ /^(\S+)/;
 die('could not find "true"')
     unless $_true;
+sub _not_exists {\&_not_exists}
 Bivio::Test->unit([
     'Bivio::Util::LinuxConfig' => [
 	(map {
@@ -23,7 +26,11 @@ Bivio::Test->unit([
 		check_return => sub {
 		    foreach my $v (@$tests) {
 			my($file, $exp) = @$v;
-			my($data) = Bivio::IO::File->read("$_tmp/$file");
+			my($f) = "$_tmp/$file";
+			if ($exp eq _not_exists()) {
+			    return -e $f ? 0 : 1;
+			}
+			my($data) = Bivio::IO::File->read($f);
 			if (ref($exp) eq 'CODE') {
 			    next if &$exp($data);
 			    print(STDERR "custom expect failed for $file\n");
@@ -45,6 +52,14 @@ Bivio::Test->unit([
 		[@$args] => [],
 	    ]);
 	} [
+	    'replace_file', ['/hello', $user, $group, 0600, 'hello'] => [
+		['hello' => 'hello'],
+	    ],
+	], [
+	    'delete_file', ['/hello'] => [
+		['hello' => _not_exists()],
+	    ],
+	], [
 #	    'postgresql_conf', ['large'] => [
 #		['etc/sysctl.conf', 'kernel/shmmax = 128000000'],
 #		['var/lib/pgsql/data/postgresql.conf', 'timezone = UTC'],

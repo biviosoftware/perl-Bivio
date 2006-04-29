@@ -69,11 +69,13 @@ commands:
     create_ssl_crt iso_country state city organization hostname -- create ssl certificate
     delete_aliases user entry... -- delete entries from crontab
     delete_crontab_line user entry... -- delete entries from crontab
+    delete_file file -- deletes file
     delete_sendmail_class_line filename line ... -- delete values trusted-users, relay-domains, etc.
     disable_iptables_counters -- disables saving counters in iptables state file
     disable_service service... -- calls chkconfig and stops services
     enable_service service ... -- enables service
     ifcfg_static device hostname ip_addr/bits [gateway] -- configure device with a static ip address
+    replace_file file owner group perms content -- replaces file with content
     resolv_conf domain nameserver ... -- updates resolv.conf with name servers
     rename_rpmnew all | file.rpmnew... -- renames rpmnew to orig and rpmsaves orig
     rhn_up2date_param param value ... -- update params in up2date config
@@ -418,6 +420,26 @@ sub delete_crontab_line {
     return _delete_lines($self, "/var/spool/cron/$user", \@entry);
 }
 
+=for html <a name="delete_file"></a>
+
+=head2 static delete_file(string file) : string
+
+Deletes I<file> if it exists.  Otherwise, does nothing.  If it can't delete,
+dies.
+
+=cut
+
+sub delete_file {
+    my($self, $file) = @_;
+    $file = _prefix_file($file);
+    return ''
+	unless -e $file;
+    return ($self->unsafe_get('noexecute')
+	? 'Would have '
+	: (unlink($file) || Bivio::Die->die("unlink($file): $!"))
+    ) . "Deleted: $file\n";
+}
+
 =for html <a name="delete_sendmail_class_line"></a>
 
 =head2 static delete_sendmail_class_line(string file, string line, ...)
@@ -667,6 +689,19 @@ sub rename_rpmnew {
     return $res;
 }
 
+=for html <a name="replace_file"></a>
+
+=head2 replace_file(string file, string owner, string group, int perms, string content) : string
+
+Add content to file; deleting old one if it exists.
+
+=cut
+
+sub replace_file {
+    my($self) = shift;
+    return $self->delete_file($_[0]) . _add_file($self, @_);
+}
+
 =for html <a name="rhn_up2date_param"></a>
 
 =head2 rhn_up2date_param(string param, string value, ...) : string
@@ -749,16 +784,16 @@ sub _add_aliases {
 	map(join("$sep\t", split(/:\s*/, $_, 2)), @_));
 }
 
-# _add_file(self, string file, string owner, string group, int perms)
+# _add_file(self, string file, string owner, string group, int perms, string content
 #
-# Creates the file if it doesn't exist.
+# Creates the file if it doesn't exist.  Always creates if $content.
 #
 sub _add_file {
-    my($self, $file, $owner, $group, $perms) = @_;
+    my($self, $file, $owner, $group, $perms, $content) = @_;
     $file = _prefix_file($file);
-    return '' if -e $file;
+    return '' if -e $file && !defined($content);
     return "Would have created: $file\n" if $self->unsafe_get('noexecute');
-    Bivio::IO::File->write($file, '');
+    Bivio::IO::File->write($file, defined($content) ? $content : '');
     Bivio::IO::File->chown_by_name($owner, $group, $file)
 	if $> == 0;
     Bivio::IO::File->chmod($perms, $file);
