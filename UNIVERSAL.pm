@@ -224,7 +224,7 @@ sub map_invoke {
 
 =for html <a name="name_parameters"></a>
 
-=head2 static name_parameters(array_ref names, array_ref argv) : hash_ref
+=head2 static name_parameters(array_ref names, array_ref argv) : (self, hash_ref)
 
 Expects I<names> to be the keys in the first and only element of I<argv>, or
 uses I<names> to convert positional I<argv> into hash_ref.  Does not work if
