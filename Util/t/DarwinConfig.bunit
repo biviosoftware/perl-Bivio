@@ -1,0 +1,21 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+my($_tmp) = "$ENV{PWD}/LinuxConfig.tmp/";
+config({
+    'Bivio::Util::LinuxConfig' => {
+	root_prefix => $_tmp,
+    },
+});
+CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -pR LinuxConfig/* $_tmp; find $_tmp -name CVS -exec rm -rf {} \\; -prune");
+Bivio::IO::File->mkdir_p("$_tmp/Library/LaunchDaemons");
+[
+    class() => [
+	'add_launch_daemon' => [
+	    [{ProgramArguments => 'a b c', Label => 'x'}] => sub {
+		my($d) = Bivio::IO::File->read("$_tmp/Library/LaunchDaemons/x");
+		return $$d =~ m{<string>a</string>\s+<string>b</string>}
+		    ? 1 : 0;
+	    },
+	],
+    ],
+];
