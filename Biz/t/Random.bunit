@@ -1,0 +1,30 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+my($prev) = {};
+[
+    {
+	object => class(),
+	compute_return => sub {
+	    my($case, $actual) = @_;
+	    die("duplicate")
+		if $prev->{$actual->[0]}++;
+	    return [length($actual->[0])];
+	},
+    } => [
+	bytes => [
+	    4 => 4,
+	    4 => 4,
+	    4 => 4,
+	    4 => 4,
+	    4 => 4,
+	    1 => 1,
+	],
+	password => [
+	    [] => 16,
+	    [] => 16,
+	    [] => 16,
+	    [] => 16,
+	    [] => 16,
+	],
+    ],
+];
