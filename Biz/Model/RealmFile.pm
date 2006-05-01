@@ -444,9 +444,9 @@ sub _touch_parent {
     my($parent_path) = ($values->{path} =~ m{(^/.+)/})[0] || '/';
     return $parent->create_folder({
 	map(($_ => $values->{$_}), qw(user_id realm_id override_is_read_only)),
-	lc($parent_path) eq ($self->MAIL_FOLDER)
+	lc($parent_path) eq lc($self->MAIL_FOLDER)
 	    ? (is_read_only => 1)
-	    : lc($parent_path) eq ($self->PUBLIC_FOLDER)
+	    : lc($parent_path) eq lc($self->PUBLIC_FOLDER)
 	    ? (is_public => 1) : (),
 	path => $parent_path,
     }) unless $parent->unauth_load({
