@@ -173,15 +173,26 @@ sub builtin_config {
 
 =head2 builtin_create_user(string user_name)
 
-Generate a btest, and sets realm and user to this user.
+Generate a btest, and sets realm and user to this user.  Deletes any user first.
 
 =cut
 
 sub builtin_create_user {
     my($self, $user) = @_;
+    my($req) = $self->builtin_req;
+    Bivio::Die->eval(sub {
+        $req->set_user(
+	    Bivio::Biz::Model->new('RealmOwner')->unauth_load({
+		name => $user,
+		realm_type => Bivio::Auth::RealmType->USER,
+	    }) ? $user : return,
+	);
+        $req->set_realm($user);
+	$req->get('auth_user')->cascade_delete;
+    });
     $self->use('Bivio::Util::RealmAdmin')
 	->create_user($self->builtin_email($user), $user, 'password', $user);
-    $self->builtin_req->set_realm_and_user($user, $user);
+    $req->set_realm_and_user($user, $user);
     return;
 }
 
