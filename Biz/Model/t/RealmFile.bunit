@@ -1,11 +1,11 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-set_realm_and_user('root', 'root');
+create_user('realm_file_bunit');
 my($a) = sub {
     my($p, $ro, $oro) = @_;
     return {
-	defined($p) ? (path => '/RealmFile/' . $p) : (),
+	defined($p) ? (path => "/RealmFile/$p") : (),
 	defined($ro) ? (is_read_only => $ro) : (),
 	defined($oro) ? (override_is_read_only => $oro) : (),
     };
@@ -41,10 +41,10 @@ my($auth_uid) = sub {
 	    '0' => '/0',
 	    '?' => CORRUPT_QUERY(),
 	],
-	# basic CRUD tests; First clean up from possibly bad test run
-	delete_deep => [
-	    [$a->('/', undef, 1)] => $commit,
-	],
+# 	# basic CRUD tests; First clean up from possibly bad test run
+# 	delete_deep => [
+# 	    [$a->('/', undef, 1)] => $commit,
+# 	],
 	unsafe_load => [
 	    [$a->('/')] => 0,
 	],
@@ -301,13 +301,13 @@ my($auth_uid) = sub {
 	],
 	update => [
 	    [$a->('ro1-update')] => FORBIDDEN(),
-# Recursive update of is_read_only and is_public?
+	    # Recursive update of is_read_only and is_public?
 	    [$a->('ro1-update', 0, 1)] => not_die(),
 	],
  	load => [
  	    [$a->('ro1-update/f1')] => not_die(),
  	],
-# This tests non-recursive update of is_read_only
+	# This tests non-recursive update of is_read_only
 	delete => FORBIDDEN(),
 	load => [
 	    [$a->('ro1-update')] => not_die(),
@@ -323,7 +323,7 @@ my($auth_uid) = sub {
 	    [$a->('ro1-update')] => not_die(),
 	],
 	delete_deep => not_die(),
-# Test users associated with file manipulations
+	# Verifying user_id set correctly with different users
 	$user->('demo'),
         create_with_content => [
 	    [$a->('demo1'), \('demo1')] => $commit,
@@ -331,7 +331,7 @@ my($auth_uid) = sub {
 	get => [
 	    user_id => $auth_uid,
 	],
-	$user->('root'),
+	$user->('realm_file_bunit'),
         update_with_content => [
 	    [$a->('demo1'), \('root1')] => $commit,
 	],
@@ -345,8 +345,8 @@ my($auth_uid) = sub {
 	get => [
 	    user_id => $auth_uid,
 	],
-# Verify that append_content doesn't change file owner
-	$user->('root'),
+	# Verify that append_content doesn't change file owner
+	$user->('realm_file_bunit'),
         create_with_content => [
 	    [$a->('append'), \('a1')] => $commit,
 	],
@@ -357,12 +357,29 @@ my($auth_uid) = sub {
         append_content => [
 	    [\('a2')] => $commit,
 	],
-	$user->('root'),
+	$user->('realm_file_bunit'),
 	get => [
 	    user_id => $auth_uid,
 	],
+	create_with_content => [
+	    [{path => '/public/foo'}, \('foo')] => $commit,
+	],
+	get => [
+	    is_public => 1,
+	],
+	load => [
+	    [{path => '/Public'}] => not_die(),
+	],
+	get => [
+	    is_public => 1,
+	],
+	load => [
+	    [{path => '/'}] => not_die(),
+	],
+	get => [
+	    is_public => 0,
+	],
     ],
-# Cleanup
     class() => [
 	delete_all => [
 	    [{path => '/'}] => DIE(),
