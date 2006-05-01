@@ -139,6 +139,22 @@ sub builtin_class {
     return $_CLASS;
 }
 
+=for html <a name="builtin_assert_eq"></a>
+
+=head2 builtin_assert_eq(any expect, any actual)
+
+Asserts expected equals actual using Bivio::IO::Ref->nested_equals.
+
+=cut
+
+sub builtin_assert_eq {
+    my($self, $expect, $actual) = @_;
+    my($res) = Bivio::IO::Ref->nested_differences($expect, $actual);
+    Bivio::Die->die("expected != actual:\n$$res")
+        if $res;
+    return;
+}
+
 =for html <a name="builtin_config"></a>
 
 =head2 builtin_config(hash_ref config)
@@ -153,6 +169,22 @@ sub builtin_config {
     return;
 }
 
+=for html <a name="builtin_create_user"></a>
+
+=head2 builtin_create_user(string user_name)
+
+Generate a btest, and sets realm and user to this user.
+
+=cut
+
+sub builtin_create_user {
+    my($self, $user) = @_;
+    $self->use('Bivio::Util::RealmAdmin')
+	->create_user($self->builtin_email($user), $user, 'password', $user);
+    $self->builtin_req->set_realm_and_user($user, $user);
+    return;
+}
+
 =for html <a name="builtin_email"></a>
 
 =head2 builtin_email(string suffix) : array
@@ -164,10 +196,8 @@ See Bivio::Test::Language::HTTP::generate_local_email.
 
 sub builtin_email {
     shift;
-    return [
-	Bivio::IO::ClassLoader->simple_require('Bivio::Test::Language::HTTP')
-            ->generate_local_email(@_),
-    ]->[0];
+    return Bivio::IO::ClassLoader->simple_require('Bivio::Test::Language::HTTP')
+	->generate_local_email(@_);
 }
 
 =for html <a name="builtin_not_die"></a>
