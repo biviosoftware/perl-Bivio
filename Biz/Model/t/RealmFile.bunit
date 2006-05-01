@@ -361,6 +361,7 @@ my($auth_uid) = sub {
 	get => [
 	    user_id => $auth_uid,
 	],
+	# Verify that public files and folder are is_public
 	create_with_content => [
 	    [{path => '/public/foo'}, \('foo')] => $commit,
 	],
@@ -378,6 +379,25 @@ my($auth_uid) = sub {
 	],
 	get => [
 	    is_public => 0,
+	],
+	# Verify that mail files and folder are is_read_only
+	create_with_content => [
+	    [{path => '/mail/foo'}, \('foo')] => $commit,
+	],
+	get => [
+	    is_read_only => 1,
+	],
+	load => [
+	    [{path => '/Mail'}] => not_die(),
+	],
+	get => [
+	    is_read_only => 1,
+	],
+	load => [
+	    [{path => '/'}] => not_die(),
+	],
+	get => [
+	    is_read_only => 0,
 	],
     ],
     class() => [
