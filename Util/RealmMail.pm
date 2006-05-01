@@ -13,6 +13,7 @@ usage: b-realm-mail [options] command [args..]
 commands
   delete_message_id message_id ... -- Message-ID: based removal of threads/msgs
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
+  import_mbox -- imports mbox input file containing
 EOF
 }
 
@@ -25,6 +26,46 @@ sub delete_message_id {
 	});
     }
     return;
+}
+
+sub import_mbox {
+#TODO: Why does this code result in bad RealmFile file contents?
+#     my($self, $file) = @_;
+#     my($i) = 0;
+#     my($msg);
+#     my($rm) = Bivio::Biz::Model->new($self->get_request, 'RealmMail');
+#     open(F, $file);
+#     while (<F>) {
+# 	$_ =~ s/\r//g;
+# 	if ($_ =~ /^From .*\d{4}$/ && $msg) {
+# 	    Bivio::IO::Alert->info("Migrating message $i - ");
+# 	    $rm->create_from_rfc822(\$msg);
+# 	    $self->commit_or_rollback
+# 		if ++$i % 100 == 0;
+# 	    $msg = undef;
+# 	}
+# 	else {
+# 	    $msg .= $_;
+# 	}
+#     }
+#     if ($msg) {
+# 	$i++;
+# 	Bivio::IO::Alert->info("Migrating last message\n");
+# 	$rm->create_from_rfc822(\$msg);
+#     }
+#     close(F);
+#     return "Imported $i messages";
+    my($self) = @_;
+    my($rm) = Bivio::Biz::Model->new($self->get_request, 'RealmMail');
+    my($i) = 0;
+    Bivio::IO::Alert->info('Before foreach');
+    foreach my $m (split(/(?<=\n)From [^\n]+\n/, ${$self->read_input})) {
+	Bivio::IO::Alert->info($i);
+ 	$rm->create_from_rfc822(\$m);
+ 	$self->commit_or_rollback
+ 	    if ++$i % 100 == 0;
+    }
+    return "Imported $i Messages";
 }
 
 sub import_rfc822 {
