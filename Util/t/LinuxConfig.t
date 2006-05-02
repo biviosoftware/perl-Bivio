@@ -161,6 +161,7 @@ other.host
 	    'allow_any_sendmail_smtp', [99999] => [
 		['etc/sendmail.cf', "\nO MaxMessageSize=99999\n"],
 		['etc/sendmail.cf', "O DaemonPortOptions=Port=smtp, Name=MTA"],
+		['etc/sendmail.cf', "O DoubleBounceAddress=devnull"],
 	    ],
 	],
 	[

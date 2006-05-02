@@ -322,7 +322,8 @@ sub allow_any_sendmail_smtp {
 	        qr/^\QO $option=$value\E$/m];
 	} 'PrivacyOptions=goaway,restrictmailq,restrictqrun',
 	    'SmtpGreetingMessage=$j',
-	    "MaxMessageSize=$max_message_size"
+	    "MaxMessageSize=$max_message_size",
+	    'DoubleBounceAddress=devnull',
         )
         . _exec($self, "chmod 0700 " . _prefix_file('/var/spool/mqueue'));
 }
