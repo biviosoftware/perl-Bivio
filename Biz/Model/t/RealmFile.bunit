@@ -41,6 +41,7 @@ my($auth_uid) = sub {
 	    '0' => '/0',
 	    '?' => CORRUPT_QUERY(),
 	],
+#TODO: Safe to delete this block, now that create_user handles realm clean up
 # 	# basic CRUD tests; First clean up from possibly bad test run
 # 	delete_deep => [
 # 	    [$a->('/', undef, 1)] => $commit,
@@ -361,7 +362,20 @@ my($auth_uid) = sub {
 	get => [
 	    user_id => $auth_uid,
 	],
-	# Verify that public files and folder are is_public
+	# Verify correct is_public state for public files and folder
+	# mimic how a WebDAV client would generate a random new folder name
+	create_folder => [
+	    [{path => '/Private'}] => not_die(),
+	],
+	get => [
+	    is_public => 0,
+	],
+	update => [
+	    [{path => '/Public'}] => $commit,
+	],
+	get => [
+	    is_public => 1,
+	],
 	create_with_content => [
 	    [{path => '/public/foo'}, \('foo')] => $commit,
 	],
@@ -380,9 +394,81 @@ my($auth_uid) = sub {
 	get => [
 	    is_public => 0,
 	],
-	# Verify that mail files and folder are is_read_only
+	load => [
+	    [{path => '/Public'}] => not_die(),
+	],
+	update => [
+	    [{path => '/Private'}] => $commit,
+	],
+	get => [
+	    is_public => 0,
+	],
+	load => [
+	    [{path => '/Private/foo'}] => not_die(),
+	],
+	get => [
+	    is_public => 0,
+	],
+	update => [
+	    [{path => '/foo'}] => $commit,
+	],
+	get => [
+	    is_public => 0,
+	],
+	create_folder => [
+	    [{path => '/Public'}] => not_die(),
+	],
+	get => [
+	    is_public => 1,
+	],
+	load => [
+	    [{path => '/foo'}] => not_die(),
+	],
+	get => [
+	    is_public => 0,
+	],
+	update => [
+	    [{path => '/Public/foo'}] => $commit,
+	],
+	get => [
+	    is_public => 1,
+	],
+	create_folder => [
+	    [{path => '/PublicCrack'}] => not_die(),
+	],
+	get => [
+	    is_public => 0,
+	],
 	create_with_content => [
-	    [{path => '/mail/foo'}, \('foo')] => $commit,
+	    [{path => '/public2/foo'}, \('foo')] => $commit,
+	],
+	get => [
+	    is_public => 0,
+	],
+	load => [
+	    [{path => '/public2'}] => not_die(),
+	],
+	get => [
+	    is_public => 0,
+	],
+	# Verify correct is_public state for mail files and folder
+	create_folder => [
+	    [{path => '/untitled folder'}] => not_die(),
+	],
+	get => [
+	    is_read_only => 0,
+	],
+	update => [
+	    [{path => '/Mail'}] => $commit,
+	],
+	get => [
+	    is_read_only => 1,
+	],
+	create_with_content => [
+	    [{
+		path => '/mail/foo',
+		override_is_read_only => 1,
+	    }, \('foo')] => $commit,
 	],
 	get => [
 	    is_read_only => 1,
