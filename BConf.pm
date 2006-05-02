@@ -334,6 +334,7 @@ sub merge_http_log {
 		    'Dispatcher::execute_queue:.*JOB_(?:START|END):',
 		    # Virii and such
 		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida|/sumthin|/scripts|/cgi|root.exe|/instmsg|/favicon2|site_root/default.bview)',
+		    '::NOT_FOUND:.*view..site_root/(\w+.html|robots.txt).bview',
 		    'DieCode::MISSING_COOKIES',
 		    'client sent HTTP/1.1 request without hostname',
 		    'mod_ssl: SSL handshake timed out',
@@ -345,6 +346,8 @@ sub merge_http_log {
                     'access to /favicon.ico failed',
 		    'Bivio::DieCode::FORBIDDEN',
 		    'Invalid URI in request',
+		    'Action::RealmFile:.*::MODEL_NOT_FOUND:.*model.*::RealmFile',
+		    'MODEL_NOT_FOUND: model.*::RealmOwner.*task=MAIL_RECEIVE_DISPATCH',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
