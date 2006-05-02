@@ -546,8 +546,8 @@ sub _verify {
 	= lc($values->{path} = $self->parse_path($values->{path}));
     $values->{is_read_only} = 1
 	if $p eq lc($self->MAIL_FOLDER);
-    $values->{is_public} = 1
-	if $p eq lc($self->PUBLIC_FOLDER);
+#TODO: This works, but forces all public files to reside under '/Public'
+    $values->{is_public} = $p =~ m{^@{[$self->PUBLIC_FOLDER]}($|/)}oi ? 1 : 0;
     return $values;
 }
 
