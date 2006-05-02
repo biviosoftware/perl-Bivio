@@ -444,10 +444,6 @@ sub _touch_parent {
     my($parent_path) = ($values->{path} =~ m{(^/.+)/})[0] || '/';
     return $parent->create_folder({
 	map(($_ => $values->{$_}), qw(user_id realm_id override_is_read_only)),
-	lc($parent_path) eq lc($self->MAIL_FOLDER)
-	    ? (is_read_only => 1)
-	    : lc($parent_path) eq lc($self->PUBLIC_FOLDER)
-	    ? (is_public => 1) : (),
 	path => $parent_path,
     }) unless $parent->unauth_load({
 	realm_id => $values->{realm_id},
@@ -546,8 +542,12 @@ sub _update {
 sub _verify {
     my($self, $values) = @_;
     $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
-    $values->{path_lc}
+    my($p) = $values->{path_lc}
 	= lc($values->{path} = $self->parse_path($values->{path}));
+    $values->{is_read_only} = 1
+	if $p eq lc($self->MAIL_FOLDER);
+    $values->{is_public} = 1
+	if $p eq lc($self->PUBLIC_FOLDER);
     return $values;
 }
 
