@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use Bivio::t::ShellUtil::T1;
 Request();
@@ -20,21 +20,21 @@ my($email) = email('shellutil');
 	],
 	lock_action => [
 	    [sub {
-		 -d '/tmp/Bivio.Test.__ANON__.lockdir'
-		     or die('wrong default name'),
+		 -d '/tmp/BivioTest__ANON__.lockdir'
+		     or die('wrong lock name'),
 	    }] => 1,
-	    [sub {return}] => 1,
-	    [sub {return}, 'Bivio::ShellUtil::t::ShellUtil'] => 1,
+	    [sub {'ok'}] => 'ok',
+	    [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
 	    [sub {die('bad')}, 'Bivio::ShellUtil::t::ShellUtil']
 	        => Bivio::DieCode->DIE,
-	    [sub {return}, 'Bivio::ShellUtil::t::ShellUtil'] => 1,
+	    [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
 	    [sub {
 		 Bivio::ShellUtil->lock_action(sub {
 		     die("shouldn't get here");
 		 }, 'Bivio::ShellUtil::t::ShellUtil'
 		 ) and die('lock should not be obtained');
-		 return;
-	    }, 'Bivio::ShellUtil::t::ShellUtil'] => 1,
+		 return 'ok';
+	    }, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
 	    sub {
 		# Test to see if we delete the lock when owner dies
 		my($child) = fork;
@@ -43,14 +43,14 @@ my($email) = email('shellutil');
 			or die('wrong process died');
 		    $? >> 8 == 0
 			or die($?, ": bad exit code");
-		    return [sub {return}, 'Bivio::ShellUtil::t::ShellUtil'];
+		    return [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'];
 	        }
 		Bivio::ShellUtil->lock_action(sub {
 		    kill('KILL', $$);
 		}, 'Bivio::ShellUtil::t::ShellUtil',
 		);
 	        die("shouldn't get here!");
-	    } => 1,
+	    } => 'ok',
 	    sub {
 		my($case) = @_;
 		$SIG{TERM} = sub {
