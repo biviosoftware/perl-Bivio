@@ -176,68 +176,71 @@ I<interval_minutes> must match the execute time in cron.
 =cut
 
 sub parse_errors {
-    my($self, $interval_minutes) = _parse_errors_init(@_);
-#TODO: dies later unless this is here
-    $self->get_request;
-    return _parse_errors_complete($self)
-	unless $interval_minutes;
-    my($fields) = $self->[$_IDI];
-    my($start) = Bivio::Type::DateTime->add_seconds(
-	$_CFG->{test_now} || Bivio::Type::DateTime->now,
-	-$interval_minutes * 60,
-    );
-    my($error_countdown) = $_CFG->{error_count_for_page};
-    my($date, $record, $in_interval);
-    my($last_error) = Bivio::Type::DateTime->get_min;
-    my($ignored) = {};
-    my(%error_times);
- RECORD: while (_parse_record($self, \$record, \$date)) {
-	unless ($in_interval) {
-	    next RECORD
-		    if Bivio::Type::DateTime->compare($start, $date) >= 0;
-	    $in_interval = 1;
+    my($self, $interval_minutes) = @_;
+    return $self->lock_action(sub {
+	$self->get_request;
+	#TODO: dies later unless this is here
+	return _parse_errors_complete($self)
+	    unless $interval_minutes = _parse_errors_init(
+		$self, $interval_minutes);
+	my($fields) = $self->[$_IDI];
+	my($start) = Bivio::Type::DateTime->add_seconds(
+	    $_CFG->{test_now} || Bivio::Type::DateTime->now,
+	    -$interval_minutes * 60,
+	);
+	my($error_countdown) = $_CFG->{error_count_for_page};
+	my($date, $record, $in_interval);
+	my($last_error) = Bivio::Type::DateTime->get_min;
+	my($ignored) = {};
+	my(%error_times);
+     RECORD: while (_parse_record($self, \$record, \$date)) {
+	    unless ($in_interval) {
+		next RECORD
+			if Bivio::Type::DateTime->compare($start, $date) >= 0;
+		$in_interval = 1;
+	    }
+	    _trace('record: ', $record) if $_TRACE;
+	    if ($_REGEXP->{ignore} && $record =~ $_REGEXP->{ignore}) {
+		_trace('ignoring: ', $1) if $_TRACE;
+		next RECORD;
+	    }
+	    if ($_REGEXP->{ignore_unless_count}
+		&& $record =~ $_REGEXP->{ignore_unless_count}) {
+		$ignored->{$1}++;
+		_trace('ignore_unless_count: ', $1) if $_TRACE;
+		next RECORD;
+	    }
+	    # Critical already avoids dups, so put before time check after.
+	    if ($_REGEXP->{critical} && $record =~ $_REGEXP->{critical}) {
+		_trace('critical: ', $1) if $_TRACE;
+		_pager_report($self, $1);
+		$record =~ s/^/***CRITICAL*** /;
+	    }
+	    if ($_REGEXP->{error} && $record =~ $_REGEXP->{error}) {
+		_trace('error: ', $1) if $_TRACE;
+		# Certain error messages don't pass the $_REGEXP->{error} on
+		# the first output.  die message comes out first and it's what
+		# we want in the email.  However, we need to count the error
+		# regexp on the second message.  This code does this correctly.
+		# We don't recount error REGEXPs output at the same time.
+		_pager_report($self, $1)
+		    if !$error_times{$date}++ && --$error_countdown == 0;
+	    }
+	    # Avoid duplicate error messages by checking $last_error
+	    if (Bivio::Type::DateTime->compare($last_error, $date) == 0) {
+		_trace('same time: ', $record) if $_TRACE;
+		next RECORD;
+	    }
+	    $last_error = $date;
+	    # Never send more than 256 bytes (three lines) in a record via email
+	    _report($self, substr($record, 0, 256));
 	}
-	_trace('record: ', $record) if $_TRACE;
-	if ($_REGEXP->{ignore} && $record =~ $_REGEXP->{ignore}) {
-	    _trace('ignoring: ', $1) if $_TRACE;
-	    next RECORD;
+	foreach my $k (sort(keys(%$ignored))) {
+	    _report($self, "[repeated $ignored->{$k} times] ", $k)
+		if $ignored->{$k} >= $_CFG->{ignore_unless_count};
 	}
-	if ($_REGEXP->{ignore_unless_count}
-	    && $record =~ $_REGEXP->{ignore_unless_count}) {
-	    $ignored->{$1}++;
-	    _trace('ignore_unless_count: ', $1) if $_TRACE;
-	    next RECORD;
-	}
-	# Critical already avoids dups, so put before time check after.
-	if ($_REGEXP->{critical} && $record =~ $_REGEXP->{critical}) {
-	    _trace('critical: ', $1) if $_TRACE;
-	    _pager_report($self, $1);
-	    $record =~ s/^/***CRITICAL*** /;
-	}
-	if ($_REGEXP->{error} && $record =~ $_REGEXP->{error}) {
-	    _trace('error: ', $1) if $_TRACE;
-	    # Certain error messages don't pass the $_REGEXP->{error} on the
-	    # first output.  die message comes out first and it's what we want
-	    # in the email.  However, we need to count the error regexp on the
-	    # second message.  This code does this correctly.  We don't recount
-	    # error REGEXPs output at the same time.
-	    _pager_report($self, $1)
-		if !$error_times{$date}++ && --$error_countdown == 0;
-	}
-	# Avoid duplicate error messages by checking $last_error
-	if (Bivio::Type::DateTime->compare($last_error, $date) == 0) {
-	    _trace('same time: ', $record) if $_TRACE;
-	    next RECORD;
-	}
-	$last_error = $date;
-	# Never send more than 256 bytes (three lines) in a record via email
-	_report($self, substr($record, 0, 256));
-    }
-    foreach my $k (sort(keys(%$ignored))) {
-	_report($self, "[repeated $ignored->{$k} times] ", $k)
-	    if $ignored->{$k} >= $_CFG->{ignore_unless_count};
-    }
-    return _parse_errors_complete($self);
+	return _parse_errors_complete($self);
+    }, __PACKAGE__ . 'parse_errors' . $_CFG->{error_file});
 }
 
 #=PRIVATE METHODS
@@ -304,9 +307,9 @@ sub _parse_errors_init {
 	my($err) = "$_CFG->{error_file}: $!";
 	_pager_report($self, $err);
 	_report($self, $err);
-	return ($self, 0);
+	return 0;
     }
-    return ($self, $interval_minutes);
+    return $interval_minutes;
 }
 
 # _parse_line(hash_ref fields) : boolean
