@@ -661,17 +661,16 @@ sub is_loadavg_ok {
 
 =for html <a name="lock_action"></a>
 
-=head2 static lock_action(code_ref op, string action) : boolean
+=head2 static lock_action(code_ref op, string action) : any
 
 Creates a file lock for I<name> in /tmp/.  If I<name> is undef,
 uses C<caller> subroutine name.  The usage is:
 
     sub my_action {
 	my($self, ...) = @_;
-	Bivio::ShellUtil->lock_action(sub {
+	return Bivio::ShellUtil->lock_action(sub {
 	     do something;
 	});
-	return;
     }
 
 Prints a warning of the lock couldn't be obtained.  If I<op> dies,
@@ -680,13 +679,13 @@ rethrows die after removing lock.
 The lock is a directory, and is owned by process.  If that process dies,
 the lock is removed and re-acquired by this process.
 
-Returns true if lock was obtained and I<op> executed without dying.
-Returns false if lock could not be acquired.
+Returns the result of $op if lock was obtained and I<op> executed without
+dying.  Returns () if lock could not be acquired.
 
 
 B<DEPRECATED USAGE BELOW>
 
-=head2 DEPRECATED static lock_action(string action) : boolean
+=head2 DEPRECATED static lock_action(string action) : string
 
 Creates a file lock for I<action> in I<lock_directory>.  If I<action> is undef,
 uses C<caller> sub.  The usage is:
@@ -738,12 +737,13 @@ sub lock_action {
 	kill('TERM', $$);
 	return;
     };
-    my($die) = Bivio::Die->catch($op);
+    my($die);
+    my(@res) = Bivio::Die->catch($op, \$die);
     unlink($lock_pid);
     rmdir($lock_dir);
     $die->throw
 	if $die;
-    return 1;
+    return @res;
 }
 
 =for html <a name="lock_realm"></a>
@@ -1300,8 +1300,10 @@ sub _compile_options {
 sub _deprecated_lock_action {
     my($action) = @_;
     my($dir) = _lock_files($action);
-    return _lock_warning($dir)
-	unless mkdir($dir, 0700);
+    unless (mkdir($dir, 0700)) {
+	_lock_warning($dir);
+	return 0;
+    }
     my($pid) = fork;
     defined($pid) || die("fork: $!");
     return 1 unless $pid;
@@ -1356,7 +1358,8 @@ sub _initialize {
 #
 sub _lock_files {
     my($name) = @_;
-    $name =~ s/::/./g;
+    # Strip illegal chars
+    $name =~ s{@{[Bivio::Type->get_instance('FileName')->ILLEGAL_CHAR_REGEXP]}+}{}og;
     my($d) = File::Spec->catdir($_CFG->{lock_directory}, "$name.lockdir");
     return ($d, File::Spec->catfile($d, 'pid'));
 }
@@ -1371,7 +1374,7 @@ sub _lock_warning {
 	time - (stat($lock_dir))[9],
 	's',
     );
-    return 0;
+    return;
 }
 
 # _method_ok(Bivio::ShellUtil self, string method) : boolean
