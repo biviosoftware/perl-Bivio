@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.5  2006/05/01 20:41:22  aviggio
+  * Bivio::Biz::Model::Email->invalidate an email address
+  * Bivio::Biz::Model::User moved email invalidate logic to
+    Email->invalidate()
+  * Bivio::Biz::Model 'missing key' trace replaced with a warning
+  * Bivio::Delegate::SimpleTaskId calendar list rss view renamed
+    calendar-event-list-rss
+  * Bivio::Delegate::SimpleTaskId added FORUM_FILE
+  * Bivio::Test::Unit->builtin_assert_eq added
+  * Bivio::Test::Unit->builtin_create_user added
+  * Bivio::Util::LinuxConfig added delete_file and replace_file
+  * Bivio::Util::RealmMail->import_mbox added
+
   Revision 4.4  2006/04/26 17:10:36  dobbs
   * Bivio::IO::Config now looks for application specific configuration
     in /etc/bconf.d/<project>-only.bconf where <project> is taken from
