@@ -18,7 +18,7 @@ sub bytes {
 }
 
 sub password {
-    return Bivio::MIME::Base64->http_encode(shift->bytes(10));
+    return Bivio::MIME::Base64->http_encode(shift->bytes(12));
 }
 
 1;
