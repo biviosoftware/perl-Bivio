@@ -8,6 +8,7 @@ my($prev) = {};
 	    my($case, $actual) = @_;
 	    die("duplicate")
 		if $prev->{$actual->[0]}++;
+	    assert_eq(qr{[^_]$}s, $actual->[0]);
 	    return [length($actual->[0])];
 	},
     } => [
