@@ -43,6 +43,8 @@ submit_form('submit');
 submit_form('submit' => {
     'Email:' => 'foobar',
 });
+test_deviance('invalid uri');
+visit_uri();
 EOF
 	    [<<"EOF"] => [undef],
 test_setup('HTTP');

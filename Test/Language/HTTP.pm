@@ -102,6 +102,8 @@ Clear the cookies
 
 sub absolute_uri {
     my($self, $uri) = @_;
+    die('invalid uri')
+	unless defined($uri) && length($uri);
     my($u) = URI->new($uri);
     return defined($u->scheme) ? $uri : $u->abs(
 	$self->[$_IDI]->{uri}
