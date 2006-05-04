@@ -45,6 +45,7 @@ EOF
 
 my($host) = $req->format_email('x') =~ /\@(.+)/;
 my($_OUT) = <<"EOF";
+Return-Path: <foo_bar\@example.net>
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 From: "Fan Tango" <foo_bar\@example.net>
 Subject: [abc] This is my subject
@@ -131,7 +132,7 @@ Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
 	unsafe_get_header => [
 	    to => '"Some-List" <some-list@example.com>, to@example.com',
 	    cc => 'cc@example.com',
-	    'return-path' => 'c@c.c',
+	    'return-path' => '<c@c.c>',
 	    from => '"Fan Tango" <foo_bar@example.net>',
 	    sender => 'a@a.a',
 	    'reply-to' => undef,

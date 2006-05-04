@@ -331,8 +331,11 @@ ASSUMES: I<name> and I<value> conform to RFC 822.
 sub set_header {
     my($self, $name, $value) = @_;
     my($fields) = $self->[$_IDI];
+    my($n) = lc($name);
 #TODO: Should assert header name is valid and quote value if need be
-    $fields->{headers}->{lc($name)} = $name . ': ' . $value . "\n";
+    $fields->{headers}->{$n} = $name . ': ' . $value . "\n";
+    $self->set_envelope_from((Bivio::Mail::Address->parse($value))[0])
+	if $n eq 'return-path';
     return $self;
 }
 
@@ -376,24 +379,31 @@ sub set_headers_for_list_send {
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
     delete(@$headers{qw(to cc)})
 	unless $np->{keep_to_cc};
-    $headers->{sender} = "Sender: $np->{sender}\n";
-    $self->set_envelope_from($np->{sender});
+    $self->set_header(Sender => $np->{sender});
     $np->{reply_to} ||= $np->{list_email};
-    $headers->{'reply-to'} = "Reply-To: $np->{reply_to}\n"
+    $self->set_header('Reply-To', $np->{reply_to})
 	if $np->{reply_to_list};
-    $headers->{'return-path'} = "Return-Path: $np->{return_path}\n"
-	if $np->{return_path};
-    $headers->{from} ||= "From: $np->{sender}\n";
-    $headers->{to} ||= qq{To: "$np->{list_title}" <$np->{list_email}>\n};
+    $self->set_header(From => $np->{sender})
+	unless $headers->{from};
+    $self->set_header(
+	'Return-Path',
+	'<' . (
+	    $np->{return_path} || (Bivio::Mail::Address->parse(
+		    $self->unsafe_get_header('from')))[0]
+	 ) . '>',
+    );
+    $self->set_header(To => qq{"$np->{list_title}" <$np->{list_email}>})
+	unless $headers->{to};
     return $self
 	unless $np->{subject_prefix};
-    if (defined($headers->{subject})) {
-	$headers->{subject}
-	    =~ s/^subject:(?!(\s*Re:\s*)*\Q$np->{subject_prefix}\E)/Subject: $np->{subject_prefix}/is;
+    my($s) = $self->unsafe_get_header('subject');
+    if (defined($s)) {
+	$s =~ s/^(?!(Re:\s*)*\Q$np->{subject_prefix}\E)/$np->{subject_prefix} /is;
     }
     else {
-	$headers->{subject} = "Subject: $np->{subject_prefix}\n";
+	$s = $np->{subject_prefix};
     }
+    $self->set_header(Subject => $s);
     return $self;
 }
 
@@ -412,7 +422,6 @@ or an array whose elements may contain scalar lists.
 
 sub set_recipients {
     my($self, $email_list, $req) = @_;
-
     my($recipient) = join(',',
         map({@{Bivio::Mail::Address->parse_list($_)}}
 	    ref($email_list) ? @$email_list : $email_list));
