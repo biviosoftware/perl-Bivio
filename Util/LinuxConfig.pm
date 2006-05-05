@@ -59,7 +59,7 @@ commands:
     add_aliases alias:value ... -- add entries to aliases
     add_crontab_line user entry... -- add entries to crontab
     add_group group[:gid] -- add a group
-    add_sendmail_class_line filename line ... -- add values trusted-users, relay-domains, etc.
+    add_sendmail_class_line filename line ... -- add values trusted-users, relay-domains, etc
     add_sendmail_http_agent uri -- configures sendmail to pass mail b-sendmail-http
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
@@ -85,11 +85,13 @@ EOF
 }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::IO::Config;
 
 #=VARIABLES
 Bivio::IO::Config->register(my $_CFG = {
     root_prefix => '',
+    networks => {},
 });
 
 =head1 METHODS
@@ -502,6 +504,64 @@ sub enable_service {
     return $res;
 }
 
+=for html <a name="generate_network"></a>
+
+=head2 static generate_network(string interface_and_domain)
+
+=head2 static generate_network(string interface_and_domain, string interface_and_domain2 ...)
+
+Expects interface and domain as follows: 'eth0 some.example.com', 'eth1
+other.example.com'.  Also expects 'networks' to be configured like this:
+
+	networks => {
+	    '192.168.0.64' => {
+		mask => 27,
+		gateway => 'gw1.example.com',
+		dns => [qw(ns1.exampe.com ns2.example.com)],
+		static_routes => {
+		    '10.0.1.0' => 'gw2.example.com',
+		},
+	    },
+	    '10.0.1.0' => {
+		mask => 24,
+		gateway => 'gw3.example.com',
+		dns => [qw(ns3.example.com ns4.example.com)],
+	    },
+	},
+
+Creates the following files from that information.  Relies on dig to resolve
+domain names (from command line and config) to ip addresses.
+
+etc/hosts
+etc/resolv.conf
+etc/sysconfig/network
+etc/sysconfig/network-scripts/ifcfg-en0
+etc/sysconfig/network-scripts/ifcfg-en0:1 (if necessary)
+etc/sysconfig/static-routes (if configured for ip of given domain)
+
+=cut
+sub generate_network {
+    my($self) = shift;
+
+    my(@domains);
+    foreach (@_) {
+	my($device, $domain) = $self->_assert_interface_and_domain($_);
+	$self->_assert_network_configured_for($domain);
+	$self->_assert_dns_configured_for($domain);
+	$self->_assert_network_configured_for($domain);
+	$self->_assert_netmask_and_gateway_for($domain);
+	if (!@domains) {
+	    _write($self->_file_resolv_conf($domain));
+	    _write($self->_file_network($domain));
+	}
+	_write($self->_file_ifcfg($device, $domain));
+	push(@domains, $domain);
+    }
+    _write($self->_file_hosts(@domains));
+    _maybe_write($self->_file_static_routes(@_));
+    return;
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -518,7 +578,19 @@ Prefix root directory.  Used for testing, e.g. /home/nagler/tmp
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_CFG = $cfg;
+    my($networks) = $cfg->{networks};
+    foreach my $network_ip (keys %$networks) {
+	my($net, $host) = $network_ip =~ /^((?:\d{1,3}\.){3})(\d{1,3})$/;
+	$networks->{$network_ip}->{network} = $network_ip;
+	my($i) = (1<<(32-$networks->{$network_ip}->{mask}))-1;
+	while(--$i) {
+	    $networks->{$net.++$host} = $networks->{$network_ip};
+	}
+    }
+    $_CFG = {
+	%$_CFG,
+	%$cfg
+    };
     return;
 }
 
@@ -594,6 +666,12 @@ Updates resolv.conf like:
     ...
 
 =cut
+
+sub mock_dns {
+    my($self, $dns) = @_;
+    my($cache) = $_CFG->{_dig_cache} = $dns;
+    return;
+}
 
 sub resolv_conf {
     my($self, $domain, @nameserver) = @_;
@@ -801,6 +879,62 @@ sub _add_file {
     return "Created: $file\n";
 }
 
+sub _assert_dns_configured_for {
+    my($self, $domain) = @_;
+    my($ip) = _dig($domain);
+    my($cfg) = _network_config_for($ip);
+    Bivio::DieCode->CONFIG_ERROR->throw_die(
+	"config missing DNS for subnet containing '$ip ($domain)'")
+	    unless exists($cfg->{dns}) && ref($cfg->{dns}) eq 'ARRAY';
+    return $cfg->{dns};
+}
+
+sub _assert_interface_and_domain {
+    my($self, $interface_and_domain) = @_;
+    Bivio::Die->die('must specify interface and domain -- remember to use quotes')
+	    unless defined($interface_and_domain)
+		&& $interface_and_domain =~ / /;
+    my($device, $domain) = split(" ", $interface_and_domain, 2);
+    Bivio::Die->die('failed to parse interface and domain.  Did you use quotes?  (e.g. "eth0 some.example.com")')
+	    unless defined($device) && defined($domain) && $domain !~ / /;
+    return $device, $domain;
+}
+
+sub _assert_netmask_and_gateway_for {
+    my($self, $domain) = @_;
+    my($ip) = _dig($domain);
+    my($cfg) = _network_config_for($ip);
+    Bivio::DieCode->CONFIG_ERROR->throw_die(
+	"subnet containing '$ip ($domain)' missing netmask or gateway")
+	    unless $cfg->{mask} && $cfg->{gateway};
+    _trace($ip, ' ', $cfg) if $_TRACE;
+    return (_bits2netmask($self, $cfg->{mask}),
+	    _dig($cfg->{gateway}));
+}
+
+sub _assert_network_configured_for {
+    my($self, $domain) = @_;
+    my($ip) = _dig($domain);
+    my($cfg) = _network_config_for($ip);
+    Bivio::DieCode->CONFIG_ERROR->throw_die(
+	"no subnet configured containing address '$ip ($domain)'")
+	    unless defined($cfg);
+    return $cfg;
+}
+
+sub _base_domain {
+    my($domain) = @_;
+    ($domain) = $domain =~ /(\w+\.\w+)$/;
+    return $domain;
+}
+
+sub _bits2netmask {
+    my($self, $bits) = @_;
+    Bivio::Die->die("$bits is not between 24 and 30")
+	    unless defined($bits) && $bits >= 24 && $bits <= 30;
+    return sprintf('255.255.255.%d', (1<<8) - (1<<(32-$bits)));
+}
+
 # _delete_lines(self, string file, array_ref lines) : string
 #
 # Removes lines to file.
@@ -818,6 +952,31 @@ sub _delete_lines {
 	     }
 	     return $got;
 	}]);
+}
+
+sub _device {
+    my($num) = @_;
+    return 'eth0' . ($num ? ":$num" : '');
+}
+
+sub _dig {
+    my($hostname) = @_;
+    Bivio::Die->die('missing hostname')
+	    unless defined($hostname);
+    # HACK: caching in the config is bad form, but this is run from the command
+    # line and won't be hanging around in memory for very long
+    my($cache) = $_CFG->{_dig_cache} ||= {};
+    unless (exists($cache->{$hostname})) {
+	my($ip) = `dig +short $hostname`;
+	_trace('dig ', $hostname, ': ', $ip)
+	    if $_TRACE;
+	Bivio::DieCode->NOT_FOUND->throw_die(
+	    "failed to resolve ip address for '$hostname': $!")
+		unless defined($ip);
+	chop($ip);
+	$cache->{$hostname} = $ip;
+    }
+    return $cache->{$hostname};
 }
 
 # _edit(self, string file, array_ref op)
@@ -878,6 +1037,104 @@ sub _exec {
     return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in, $ignore_exit_code)};
 }
 
+sub _file_hosts {
+    my($self, $hostname, @others) = @_;
+    _trace(join(' ', $hostname, @others))
+	if $_TRACE;
+    my($result) = _prepend_auto_generated_header(<<"EOF")
+# Do not remove the following line, or various programs
+# that require network functionality will fail.
+127.0.0.1		localhost.localdomain localhost
+EOF
+	. join('', map(sprintf("%s\t%s\n", _dig($_), $_),
+		       $hostname, @others
+		   ));
+    return 'etc/hosts', \$result;
+}
+
+sub _file_ifcfg {
+    my($self, $device, $domain) = @_;
+    my($ip) = _dig($domain);
+    my($netmask) = _bits2netmask($self, _mask_for($ip));
+    my($gateway) = _dig(_network_config_for($ip)->{gateway});
+    return 'etc/sysconfig/network-scripts/ifcfg_' . $device,
+	\(_prepend_auto_generated_header(<<"EOF"));
+DEVICE=$device
+ONBOOT=yes
+BOOTPROTO=none
+IPADDR=$ip
+NETMASK=$netmask
+GATEWAY=$gateway
+EOF
+}
+
+sub _file_network {
+    my($self, $hostname) = @_;
+    return 'etc/sysconfig/network', \(_prepend_auto_generated_header(<<"EOF"));
+NETWORKING=yes
+HOSTNAME=$hostname
+EOF
+}
+
+sub _file_resolv_conf {
+    my($self, $domain) = @_;
+    my($base_domain) = _base_domain($domain);
+    my($ns1, $ns2) =
+	map(_dig($_), @{_assert_dns_configured_for($self, $domain)});
+    return 'etc/resolv.conf', \(_prepend_auto_generated_header(<<"EOF"));
+search $base_domain
+domain $base_domain
+nameserver $ns1
+nameserver $ns2
+EOF
+}
+
+sub _file_static_routes {
+    my($self) = shift();
+    my($buf) = '';
+    my($seen_network) = {};
+    foreach (@_) {
+	my($device, $domain) = $self->_assert_interface_and_domain($_);
+	_trace($device, ' ', $domain)
+	    if $_TRACE;
+	my($ip) = _dig($domain);
+	my($routes) = _static_routes_for($ip);
+	next unless defined($routes);
+	_trace($routes)
+	    if $_TRACE;
+	foreach my $network (keys %$routes) {
+	    my($mask) = _mask_for($network);
+	    unless (exists($seen_network->{$network.'/'.$mask})) {
+		$buf .= sprintf("%s net %s netmask %s gw %s\n",
+				$device, $network,
+				_bits2netmask($self, $mask),
+				_dig($routes->{$network}));
+	    }
+	    $seen_network->{$network.'/'.$mask}++;
+	}
+    }
+    return $buf eq '' ? () : ('etc/sysconfig/static_routes',
+			      \(_prepend_auto_generated_header($buf)));
+}
+
+sub _gateway_for {
+    return _dig(_network_config_for(shift)->{gateway});
+}
+
+sub _get_networks_config {
+    return $_CFG->{networks};
+}
+
+sub _mask_for {
+    return _network_config_for(shift)->{mask};
+}
+
+sub _maybe_write {
+    my($filename, $data) = @_;
+    return unless defined($filename) && defined($data);
+    return _write($filename, $data);
+}
+
 # _mkdir(self, string dir, int perms) : string
 #
 # Creates dir if it doesn't exist
@@ -890,6 +1147,14 @@ sub _mkdir {
     return "Created " . Bivio::IO::File->mkdir_p($dir, $perms) . "\n";
 }
 
+sub _network_config_for {
+    return $_CFG->{networks}->{shift()};
+}
+
+sub _network_for {
+    return _network_config_for(shift)->{network};
+}
+
 # _prefix_file(string file) : string
 #
 # Adds root_prefix to $file.
@@ -897,6 +1162,31 @@ sub _mkdir {
 sub _prefix_file {
     my($file) = @_;
     return $_CFG->{root_prefix} ? "$_CFG->{root_prefix}$file" : $file;
+}
+
+sub _prepend_auto_generated_header {
+    my($data) = @_;
+    return <<'EOF' . $data;
+################################################################
+# Automatically Generated File; LOCAL CHANGES WILL BE LOST!
+# By: Bivio::Util::LinuxConfig
+################################################################
+EOF
+}
+
+sub _static_routes_for {
+    return _network_config_for(shift)->{static_routes};
+}
+
+#TODO: figure out the permissions and use _add_file() instead
+sub _write {
+    my($filename, $data) = @_;
+    $filename = _prefix_file($filename);
+    _trace($filename)
+	if $_TRACE;
+    Bivio::IO::File->mkdir_parent_only($filename);
+    Bivio::IO::File->write($filename, $data);
+    return;
 }
 
 =head1 COPYRIGHT
