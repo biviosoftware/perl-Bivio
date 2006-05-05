@@ -177,7 +177,7 @@ I<interval_minutes> must match the execute time in cron.
 
 sub parse_errors {
     my($self, $interval_minutes) = @_;
-    return $self->lock_action(sub {
+    return ($self->lock_action(sub {
 	$self->get_request;
 	#TODO: dies later unless this is here
 	return _parse_errors_complete($self)
@@ -240,7 +240,7 @@ sub parse_errors {
 		if $ignored->{$k} >= $_CFG->{ignore_unless_count};
 	}
 	return _parse_errors_complete($self);
-    }, __PACKAGE__ . 'parse_errors' . $_CFG->{error_file});
+    }, __PACKAGE__ . 'parse_errors' . $_CFG->{error_file}))[0];
 }
 
 #=PRIVATE METHODS
