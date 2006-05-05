@@ -1318,7 +1318,7 @@ may modify I<query> if it isn't already a ListQuery.
 
 See also L<parse_query_from_request|"parse_query_from_request">.
 
-Puts I<auth_id> from request on query in all cases.
+Puts I<auth_id> and I<auth_user_id> from request on query in all cases.
 
 =cut
 
@@ -1330,14 +1330,18 @@ sub parse_query {
     my($sql_support) = $self->internal_get_sql_support;
     my($auth_id) = $sql_support->get('auth_id')
 	? $self->get_request->get('auth_id') : undef;
+    my($auth_user_id) = $sql_support->get('auth_user_id')
+	? $self->get_request->get('auth_user_id') : undef;
     if (ref($query) eq 'HASH') {
 	$query->{auth_id} = $auth_id;
+	$query->{auth_user_id} = $auth_user_id;
 	# Let user override page count
 	return Bivio::SQL::ListQuery->new($query, $sql_support, $self);
     }
 
     # Already a list query, put auth_id on query
     $query->put(auth_id => $auth_id);
+    $query->put(auth_user_id => $auth_user_id);
     return $query;
 }
 

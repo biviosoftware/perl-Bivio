@@ -52,12 +52,19 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 
 =over 4
 
-=item auth_id : array_ref (required)
+=item auth_id : array_ref
 
-=item auth_id : string (required)
+=item auth_id : string
 
 A field or field identity which must be equal to
 request's I<auth_id> attribute.
+
+=item auth_user_id : array_ref
+
+=item auth_user_id : string
+
+A field or field identity which must be equal to
+request's I<auth_user_id> attribute.
 
 =item can_iterate : boolean [0]
 
@@ -494,7 +501,8 @@ sub _find_list_start {
 sub _init_column_classes {
     my($attrs, $decl) = @_;
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
-	[qw(auth_id date parent_id primary_key order_by group_by other)]);
+	[qw(auth_id auth_user_id date parent_id primary_key order_by group_by
+            other)]);
 
     if ($decl->{where}) {
 	my(@decl_where) = ();
@@ -513,7 +521,7 @@ sub _init_column_classes {
 	}
 	$where = join(' AND ', grep($_, $where, join(' ', @decl_where)));
     }
-    foreach my $c ('auth_id', 'parent_id', 'date') {
+    foreach my $c (qw(auth_id auth_user_id date parent_id)) {
 	Bivio::Die->die("too many $c fields")
 	    if @{$attrs->{$c}} > 1;
 	$attrs->{$c} = $attrs->{$c}->[0];
@@ -585,6 +593,7 @@ sub _init_column_lists {
     # tricky. <g>
     foreach my $col (@{$attrs->{primary_key}},
 	    $attrs->{auth_id} ? ($attrs->{auth_id}) : (),
+	    $attrs->{auth_user_id} ? ($attrs->{auth_user_id}) : (),
 	    $attrs->{parent_id} ? ($attrs->{parent_id}) : ()) {
 	@sel_cols = grep($_ ne $col, @sel_cols);
     }
@@ -819,7 +828,7 @@ sub _prepare_ordinal_clauses {
 sub _prepare_query_values {
     my($self, $stmt, $query) = @_;
 
-    foreach my $col (qw(auth_id parent_id)) {
+    foreach my $col (qw(auth_id auth_user_id parent_id)) {
 	$stmt->where([$self->get($col)->{name}, [$query->get($col)]])
 	    if $self->unsafe_get($col);
     }
