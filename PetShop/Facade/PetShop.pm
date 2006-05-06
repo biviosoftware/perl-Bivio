@@ -168,13 +168,13 @@ my($_SELF) = __PACKAGE__->new({
 	    DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies',
 	    SOURCE => 'src',
 	    ADM_SUBSTITUTE_USER => 'su',
-	    MAIL_RECEIVE_DISPATCH => 'mail-handler',
- 	    USER_MAIL_RECEIVE => '?/mail-handler-',
- 	    FORUM_MAIL_RECEIVE => '?/mail-handler-',
-	    USER_MAIL_BOUNCE => '?/mail-handler-'
+	    MAIL_RECEIVE_DISPATCH => '_mail_receive/*',
+ 	    USER_MAIL_RECEIVE => '?/_mail_receive_',
+ 	    FORUM_MAIL_RECEIVE => '?/_mail_receive_',
+	    USER_MAIL_BOUNCE => '?/_mail_receive_'
                  . Bivio::Biz::Model->get_instance('RealmMailBounce')->TASK_URI,
 	    # Only needs to be defined for testing
-	    MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore',
+	    MAIL_RECEIVE_IGNORE => '?/_mail_receive_ignore',
 	    MAIL_RECEIVE_NOT_FOUND => undef,
 	    MAIL_RECEIVE_NO_RESOURCES => undef,
 	    MAIL_RECEIVE_FORWARD => undef,
@@ -314,7 +314,7 @@ my($_SELF) = __PACKAGE__->new({
 	],
 
 	# Misc Model support
-	'MailReceiveDispatchForm.uri_prefix' => 'mail-handler-',
+	'MailReceiveDispatchForm.uri_prefix' => '_mail_receive_',
 	'WorkflowCallerForm.prev_task' => 'Previous Task',
 	test_text => 'Global',
 	Test_Text_Parent => [
