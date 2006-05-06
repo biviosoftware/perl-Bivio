@@ -830,7 +830,8 @@ sub verify_local_mail {
 	sleep(1);
 	if (@found = map({
 	    my($msg) = Bivio::IO::File->read($_);
-	    grep($$msg =~ $regex->{$_} && ++$match->{$_}, keys(%$regex))
+	    my($hdr) = split(/^$/m, $$msg, 2); 
+	    grep($hdr =~ $regex->{$_} && ++$match->{$_}, keys(%$regex))
 		&& $$msg =~ /$body_regex/
 	        ? [$_, $msg] : ();
 	    } _grep_mail_dir(sub {-M shift(@_) <= 0})
