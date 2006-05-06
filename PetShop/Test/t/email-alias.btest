@@ -14,3 +14,7 @@ EOF
 send_request(GET => $aliases);
 ($x = get_content()) =~ s/^\Q$incoming\E,.*//mg;
 send_request(PUT => $aliases, undef, $x);
+my($s) = send_mail(
+    generate_local_email('root'), $incoming,
+)->unsafe_get_header('Subject');
+verify_local_mail($incoming, $s);
