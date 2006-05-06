@@ -144,11 +144,20 @@ sub builtin_class {
 =head2 builtin_assert_eq(any expect, any actual)
 
 Asserts expected equals actual using Bivio::IO::Ref->nested_equals.
+If I<expect> is a regexp_ref and I<actual> is a string or string_ref, will
+use I<expect> as a regexp.
 
 =cut
 
 sub builtin_assert_eq {
     my($self, $expect, $actual) = @_;
+    if (ref($expect) eq 'Regexp'
+        and defined($actual) && (ref($actual) || 'SCALAR') eq 'SCALAR'
+    ) {
+	Bivio::Die->die("expected !~ actual:\n", $expect, ' !~ ', $actual)
+	    if (ref($actual) ? $$actual : $actual) !~ $expect;
+	return;
+    }
     my($res) = Bivio::IO::Ref->nested_differences($expect, $actual);
     Bivio::Die->die("expected != actual:\n$$res")
         if $res;
