@@ -311,7 +311,7 @@ sub server_redirect {
 sub _is_https_port {
     my($r) = @_;
     my($port) = unpack_sockaddr_in($r->connection->local_addr());
-    return $port == 81 ? 1 : 0;
+    return $port % 2 ? 1 : 0;
 }
 
 =head1 SEE ALSO
