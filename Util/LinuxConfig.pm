@@ -544,6 +544,7 @@ sub generate_network {
     my($self) = shift;
 
     my(@domains);
+    my($gw_seen) = {};
     foreach (@_) {
 	my($device, $domain) = $self->_assert_interface_and_domain($_);
 	$self->_assert_network_configured_for($domain);
@@ -554,7 +555,7 @@ sub generate_network {
 	    _write($self->_file_resolv_conf($domain));
 	    _write($self->_file_network($domain));
 	}
-	_write($self->_file_ifcfg($device, $domain));
+	_write($self->_file_ifcfg($device, $domain, $gw_seen));
 	push(@domains, $domain);
     }
     _write($self->_file_hosts(@domains));
@@ -963,8 +964,9 @@ sub _dig {
     my($hostname) = @_;
     Bivio::Die->die('missing hostname')
 	    unless defined($hostname);
-    # HACK: caching in the config is bad form, but this is run from the command
-    # line and won't be hanging around in memory for very long
+    # TODO: this is a HACK. caching in the config is bad form, but this is run
+    # from the command line and won't be hanging around in memory for very
+    # long.  As an added bonus, it also serves to spoof dns from the unit test
     my($cache) = $_CFG->{_dig_cache} ||= {};
     unless (exists($cache->{$hostname})) {
 	my($ip) = `dig +short $hostname`;
@@ -1053,10 +1055,15 @@ EOF
 }
 
 sub _file_ifcfg {
-    my($self, $device, $domain) = @_;
+    my($self, $device, $domain, $gateways_seen) = @_;
     my($ip) = _dig($domain);
     my($netmask) = _bits2netmask($self, _mask_for($ip));
     my($gateway) = _dig(_network_config_for($ip)->{gateway});
+    my($gw_line) = '';
+    unless (exists($gateways_seen->{$gateway})) {
+	$gw_line = 'GATEWAY=' . $gateway;
+	$gateways_seen->{$gateway} = 1;
+    }
     return 'etc/sysconfig/network-scripts/ifcfg-' . $device,
 	\(_prepend_auto_generated_header(<<"EOF"));
 DEVICE=$device
@@ -1064,7 +1071,7 @@ ONBOOT=yes
 BOOTPROTO=none
 IPADDR=$ip
 NETMASK=$netmask
-GATEWAY=$gateway
+$gw_line
 EOF
 }
 

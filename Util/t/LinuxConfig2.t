@@ -19,6 +19,7 @@ Bivio::Util::LinuxConfig->mock_dns({
     'ns2.private.example.com' => '192.168.1.91',
 });
 
+my($gw_seen) = {};
 Bivio::Test->unit([
     'Bivio::Util::LinuxConfig' => [
 	_assert_network_configured_for => [
@@ -142,7 +143,7 @@ EOF
 	    ['one.example.com'] => ['255.255.255.224', '192.168.0.33'],
 	],
 	_file_ifcfg => [
-	    [qw(eth0 one.example.com)] =>
+	    [qw(eth0 one.example.com), $gw_seen] =>
 		['etc/sysconfig/network-scripts/ifcfg-eth0', \(<<'EOF')],
 ################################################################
 # Automatically Generated File; LOCAL CHANGES WILL BE LOST!
@@ -155,7 +156,7 @@ IPADDR=192.168.0.34
 NETMASK=255.255.255.224
 GATEWAY=192.168.0.33
 EOF
-	    [qw(eth0:1 two.example.com)] =>
+	    [qw(eth0:1 two.example.com), $gw_seen] =>
 		['etc/sysconfig/network-scripts/ifcfg-eth0:1', \(<<'EOF')],
 ################################################################
 # Automatically Generated File; LOCAL CHANGES WILL BE LOST!
@@ -166,7 +167,7 @@ ONBOOT=yes
 BOOTPROTO=none
 IPADDR=192.168.0.35
 NETMASK=255.255.255.224
-GATEWAY=192.168.0.33
+
 EOF
 	],
 	_file_static_routes => [
@@ -194,15 +195,17 @@ EOF
 	    ['eth0 one.example.com', 'eth0:1 two.example.com'] => sub {
 		my($case) = @_;
 		my($o) = $case->get('object');
+		my($gw_seen) = {};
 		my($expect) = [map(
 		    [$_tmp . $_->[0], $_->[1]],
 		    [$o->_file_hosts('one.example.com', 'two.example.com')],
 		    [$o->_file_resolv_conf(qw(one.example.com))],
 		    [$o->_file_network(qw(one.example.com))],
-		    [$o->_file_ifcfg(qw(eth0 one.example.com))],
-		    [$o->_file_ifcfg(qw(eth0:1 two.example.com))],
+		    [$o->_file_ifcfg(qw(eth0 one.example.com), $gw_seen)],
+		    [$o->_file_ifcfg(qw(eth0:1 two.example.com), $gw_seen)],
 		    [$o->_file_static_routes('eth0 one.example.com')],
 		)];
+		Bivio::IO::Alert->info('FOO', $gw_seen);
 		$case->actual_return([
 		    map([$_->[0], Bivio::IO::File->read($_->[0])],  @$expect),
 		]);
