@@ -143,7 +143,7 @@ EOF
 	],
 	_file_ifcfg => [
 	    [qw(eth0 one.example.com)] =>
-		['etc/sysconfig/network-scripts/ifcfg_eth0', \(<<'EOF')],
+		['etc/sysconfig/network-scripts/ifcfg-eth0', \(<<'EOF')],
 ################################################################
 # Automatically Generated File; LOCAL CHANGES WILL BE LOST!
 # By: Bivio::Util::LinuxConfig
@@ -156,7 +156,7 @@ NETMASK=255.255.255.224
 GATEWAY=192.168.0.33
 EOF
 	    [qw(eth0:1 two.example.com)] =>
-		['etc/sysconfig/network-scripts/ifcfg_eth0:1', \(<<'EOF')],
+		['etc/sysconfig/network-scripts/ifcfg-eth0:1', \(<<'EOF')],
 ################################################################
 # Automatically Generated File; LOCAL CHANGES WILL BE LOST!
 # By: Bivio::Util::LinuxConfig

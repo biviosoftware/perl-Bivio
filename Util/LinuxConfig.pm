@@ -1057,7 +1057,7 @@ sub _file_ifcfg {
     my($ip) = _dig($domain);
     my($netmask) = _bits2netmask($self, _mask_for($ip));
     my($gateway) = _dig(_network_config_for($ip)->{gateway});
-    return 'etc/sysconfig/network-scripts/ifcfg_' . $device,
+    return 'etc/sysconfig/network-scripts/ifcfg-' . $device,
 	\(_prepend_auto_generated_header(<<"EOF"));
 DEVICE=$device
 ONBOOT=yes
