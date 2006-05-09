@@ -172,7 +172,7 @@ EOF
 	_file_static_routes => [
 	    ['eth0 three.private.example.com'] => [],
 	    ['eth0 one.example.com', 'eth0:1 two.example.com'] =>
-		['etc/sysconfig/static_routes', \(<<'EOF')],
+		['etc/sysconfig/static-routes', \(<<'EOF')],
 ################################################################
 # Automatically Generated File; LOCAL CHANGES WILL BE LOST!
 # By: Bivio::Util::LinuxConfig
@@ -180,7 +180,7 @@ EOF
 eth0 net 192.168.1.64 netmask 255.255.255.224 gw 192.168.0.62
 EOF
 	    ['eth0 one.example.com', 'eth1 three.private.example.com'] =>
-		['etc/sysconfig/static_routes', \(<<'EOF')],
+		['etc/sysconfig/static-routes', \(<<'EOF')],
 ################################################################
 # Automatically Generated File; LOCAL CHANGES WILL BE LOST!
 # By: Bivio::Util::LinuxConfig

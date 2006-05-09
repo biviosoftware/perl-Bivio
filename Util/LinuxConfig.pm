@@ -1113,7 +1113,7 @@ sub _file_static_routes {
 	    $seen_network->{$network.'/'.$mask}++;
 	}
     }
-    return $buf eq '' ? () : ('etc/sysconfig/static_routes',
+    return $buf eq '' ? () : ('etc/sysconfig/static-routes',
 			      \(_prepend_auto_generated_header($buf)));
 }
 
