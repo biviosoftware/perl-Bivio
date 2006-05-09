@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.9  2006/05/08 19:31:50  dobbs
+  * Bivio::Agent::HTTP::Request now considers all odd ports secure
+  * Bivio::Biz::ListModel can now use 'auth_user_id' in the same way as
+    'auth_id' to constrain a list
+  * Bivio::SQL::ListSupport now supports auth_user_id declaration
+  * Bivio::Test::Language::HTTP verify_local_mail() now looks for the
+    recipient only in the mail header
+  * Bivio::Test::Unit assert_eq() supports regexp_ref against strings
+    and string_refs
+  * Bivio::Test::Util mock_sendmail() now sets Return-Path mail header
+  * Bivio::Util::LinuxConfig generate_network() added to support
+    multiple ip addresses on a single network interface and also
+    generates all network related config files -- see also the unit tests
+
   Revision 4.8  2006/05/05 17:24:21  moeller
   * Bivio::Util::HTTPLog fixed return value for parse_errors()
 
