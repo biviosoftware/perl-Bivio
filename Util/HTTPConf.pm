@@ -80,6 +80,7 @@ my($_VARS) = {
 	app => 'httpd',
 	listen => '80',
     },
+    aux_http_conf => '',
     facade_redirects => '',
     # Trick to help _replace_vars
     '$' => '$',
@@ -342,6 +343,7 @@ DocumentRoot $document_root
 </Location>
 
 $content
+$aux_http_conf
 
 BrowserMatch "Mozilla/2" nokeepalive
 BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
