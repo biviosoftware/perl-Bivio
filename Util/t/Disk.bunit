@@ -114,8 +114,19 @@ B:ID:L  Device Type     Blocks    Bytes/Block Usage[64GShared Rate
 0:00:0	 Disk[24G	 71132959  512[47G Initialized    	NO     160 
 0:01:0	 Disk[24G	 71132959  512[47G Unconfigured    	NO     160 
 
-AFA0>  	    exit
-Executing: exit
+AFA0> task list
+Executing: task list
+
+Controller Tasks
+
+TaskId Function  Done%  Container State Specific1 Specific2
+------ -------- ------- --------- ----- --------- ---------
+  100	Rebuild	 20.9% [29G0	   RUN	 00000000  00000000 7[1;26r8
+[1;27r[26;1H7[1;26r8
+[1;27r[26;1HAFA0> exit7[1;26r8
+[1;27r[26;1H7[1;26r8
+[1;27r[25;1HExecuting: exit
+[27;1H[?1047l[?1048l[?1l>AFA0>  	    exit
 [27;1H[?1047l[?1048l[?1l>
 EOF
 	    }] => <<'EOF',
@@ -123,6 +134,7 @@ DRIVE FAILURE: md0 : active raid1 sdb2[1] sda2[0]
       2096384 blocks [1/2] [U_]
 DRIVE FAILURE: /dev/rd/c0d1: RAID-5, Critical, 248958976 blocks, Write Thru
 DRIVE FAILURE: 0:01:0	 Disk	 71132959  512 Unconfigured    	NO     160 
+DRIVE FAILURE:   100	Rebuild	 20.9% 0	   RUN	 00000000  00000000 
 EOF
 	],
     ],

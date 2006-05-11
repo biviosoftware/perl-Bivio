@@ -58,9 +58,9 @@ sub check_raid {
 	    if $d = _data($self, $test_data, "/proc/rd/c$n/current_status");
     }
     push(@$err, grep(
-	/\d+\s+Disk/ && !/Initialized/,
+	/\d+\s+Disk/ && !/Initialized/ || /Rebuild|RUN/,
 	map({
-	    $_ =~ s/\033\[\d+G//g;
+	    $_ =~ s/\033(?:\[[\d;]+[a-z]|\d+)//ig;
 	    $_;
 	} split(/\n/, $$d))
     )) if $test_data || -x '/usr/sbin/afacli'
