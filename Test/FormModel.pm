@@ -71,6 +71,7 @@ sub new {
 	    $req->put(task => Bivio::Collection::Attributes->new({
 		form_model => ref($m),
 		next => 'MY_SITE',
+		require_context => 0,
 	    }));
 	    $fn->($case)
 		if ref($fn) eq 'CODE';
@@ -90,10 +91,12 @@ sub new {
 	    return [$req->put(
 		form => {
 		    $m->VERSION_FIELD => $m->get_info('version'),
-		    map(
+		    map({
+			my($t) = $m->get_field_type($_);
 			($m->get_field_name_for_html($_) =>
-			     $m->get_field_type($_)->to_literal($hash->{$_})),
-			keys(%$hash),
+			     ($t->isa('Bivio::Type::FileField') ? $hash->{$_}
+				  : $t->to_literal($hash->{$_})));
+		    } keys(%$hash),
 		    )},
 	    )];
 	},
