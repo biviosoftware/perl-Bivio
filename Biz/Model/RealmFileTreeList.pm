@@ -101,4 +101,10 @@ sub is_folder {
     return $self->get_list_model->get('RealmFile.is_folder');
 }
 
+sub is_child_folder {
+    my($self) = @_;
+    return is_folder($self)
+	&& $self->get_list_model->get('RealmFile.path_lc') ne '/';
+}
+
 1;
