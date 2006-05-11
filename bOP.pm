@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.13  2006/05/09 21:10:42  dobbs
+  * Bivio::Util::LinuxConfig generate_network() now generates only one
+    GATEWAY= per net in /etc/sysconfig/network-scripts/ifcfg-eth0*
+
   Revision 4.12  2006/05/09 19:56:58  dobbs
   * Bivio::Util::LinuxConfig generate_network() now correctly names the
     file /etc/sysconfig/static-routes
