@@ -299,9 +299,8 @@ Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
 =cut
 
 sub run_unit {
-    return Bivio::IO::ClassLoader->simple_require('Bivio::Test')
-	->new(shift->get('class_name'))
-	->unit(shift);
+    shift;
+    return Bivio::Test::Unit->run_unit(@_);
 }
 
 =for html <a name="set_realm_and_user"></a>
