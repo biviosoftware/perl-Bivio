@@ -201,6 +201,8 @@ sub die_to_http_code {
 	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
 	Bivio::DieCode->INVALID_OP
 	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
+	Bivio::DieCode->INPUT_TOO_LARGE
+	    => Bivio::Ext::ApacheConstants->HTTP_REQUEST_ENTITY_TOO_LARGE,
     ) unless %_DIE_TO_HTTP_CODE;
     return _error($_DIE_TO_HTTP_CODE{$die}, $r)
 	if defined($_DIE_TO_HTTP_CODE{$die});
