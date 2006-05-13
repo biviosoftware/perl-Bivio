@@ -618,7 +618,7 @@ sub format_uri {
     my($self, $named) = shift->internal_get_named_args(
 	$_FORMAT_URI_ARGS,
 	\@_);
-    foreach my $x (qw(path_info query)) {
+    foreach my $x (qw(task_id path_info query)) {
 	$named->{$x} = $self->unsafe_get($x)
 	    unless exists($named->{$x});
     }
