@@ -345,8 +345,7 @@ Returns the current page content.
 =cut
 
 sub get_content {
-    my($self) = @_;
-    return _assert_response($self)->content;
+    return shift->get_response->content;
 }
 
 =for html <a name="get_html_parser"></a>
@@ -360,6 +359,18 @@ Returns the HTML parser for the current page.
 sub get_html_parser {
     my($self) = @_;
     return _assert_html($self);
+}
+
+=for html <a name="get_response"></a>
+
+=head2 get_response() : string
+
+Returns the current page response, or dies if response not valid.
+
+=cut
+
+sub get_response {
+    return shift->[$_IDI]->{response} || Bivio::Die->die('no valid response');
 }
 
 =for html <a name="get_table_row"></a>
@@ -732,7 +743,7 @@ Verifies the Content-Type of the reply.
 
 sub verify_content_type {
     my($self, $mime_type) = @_;
-    my($ct) = _assert_response($self)->content_type;
+    my($ct) = $self->get_response->content_type;
     Bivio::Die->die($ct, ': response not ', $mime_type)
 	unless $ct eq $mime_type;
     return;
@@ -1049,7 +1060,7 @@ sub _assert_form_response {
 	}
     }
     else {
-	my($content_type) = _assert_response($self)->content_type;
+	my($content_type) = $self->get_response->content_type;
 	Bivio::Die->die($content_type, ': response not ',
 	    $expected_content_type)
 		if $content_type ne $expected_content_type;
@@ -1063,20 +1074,8 @@ sub _assert_form_response {
 #
 sub _assert_html {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return $fields->{html_parser}
-	|| Bivio::Die->die(
-	    _assert_response($self)->content_type, ': response not html');
-}
-
-# _assert_response(self) : HTTP::Message
-#
-# Asserts response is valid.
-#
-sub _assert_response {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return $fields->{response} || Bivio::Die->die('no valid response');
+    return $self->[$_IDI]->{html_parser} || Bivio::Die->die(
+	$self->get_response->content_type, ': response not html');
 }
 
 # _create_form_request(self, string method, string uri, array_ref form) : HTTP::Request
