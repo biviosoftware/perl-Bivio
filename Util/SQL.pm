@@ -160,6 +160,27 @@ sub create_test_db {
     return $self->initialize_test_data;
 }
 
+=for html <a name="create_test_user"></a>
+
+=head2 create_test_user(string user, string password)
+
+Creates I<user> with I<password> (default: password).  Email is generated
+by Bivio::Test::Language::HTTP.
+
+=cut
+
+sub create_test_user {
+    my($self, $user, $password) = @_;
+    $self->initialize_ui;
+    $self->new_other('RealmAdmin')->create_user(
+	$self->use('Bivio::Test::Language::HTTP')->generate_local_email($user),
+	$user,
+	$password || 'password',
+	$user,
+    );
+    return;
+}
+
 =for html <a name="ddl_files"></a>
 
 =head2 static ddl_files(array_ref base_names) : array_ref
