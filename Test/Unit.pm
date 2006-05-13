@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Unit;
 use strict;
@@ -84,7 +84,7 @@ use File::Spec ();
 use File::Basename ();
 
 #=VARIABLES
-use vars (qw($AUTOLOAD $_TYPE $_CLASS $_PM));
+use vars (qw($AUTOLOAD $_TYPE $_CLASS $_PM $_OPTIONS));
 
 =head1 METHODS
 
@@ -115,30 +115,6 @@ sub AUTOLOAD {
 	       : $_TYPE);
 }
 
-=for html <a name="builtin_class"></a>
-
-=head2 static builtin_class() : string
-
-Returns builtin_class under test.
-
-=cut
-
-sub builtin_class {
-    return $_CLASS
-	if $_CLASS;
-    $_CLASS = Bivio::IO::ClassLoader->unsafe_simple_require(
-	(${Bivio::IO::File->read($_PM)}
-	     =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
-	    || Bivio::Die->die(
-		$_PM, ': unable to extract class to test; must',
-		' have "package <class::name>;" statement in class under test',
-	    ),
-    );
-    Bivio::Die->die($_PM, ': unable to load the pm')
-        unless $_CLASS;
-    return $_CLASS;
-}
-
 =for html <a name="builtin_assert_eq"></a>
 
 =head2 builtin_assert_eq(any expect, any actual)
@@ -162,6 +138,30 @@ sub builtin_assert_eq {
     Bivio::Die->die("expected != actual:\n$$res")
         if $res;
     return;
+}
+
+=for html <a name="builtin_class"></a>
+
+=head2 static builtin_class() : string
+
+Returns builtin_class under test.
+
+=cut
+
+sub builtin_class {
+    return $_CLASS
+	if $_CLASS;
+    $_CLASS = Bivio::IO::ClassLoader->unsafe_simple_require(
+	(${Bivio::IO::File->read($_PM)}
+	     =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
+	    || Bivio::Die->die(
+		$_PM, ': unable to extract class to test; must',
+		' have "package <class::name>;" statement in class under test',
+	    ),
+    );
+    Bivio::Die->die($_PM, ': unable to load the pm')
+        unless $_CLASS;
+    return $_CLASS;
 }
 
 =for html <a name="builtin_config"></a>
@@ -233,6 +233,20 @@ sub builtin_not_die {
     return undef;
 }
 
+=for html <a name="builtin_options"></a>
+
+=head2 builtin_options(hash_ref options) : hash_ref
+
+Sets global options to be based to Bivio::Test::unit.  Returns current
+options.
+
+=cut
+
+sub builtin_options {
+    my(undef, $options) = @_;
+    return {%$_OPTIONS = (%$_OPTIONS, $options ? %$options : ())};
+}
+
 =for html <a name="builtin_req"></a>
 
 =head2 static builtin_req() : Bivio::Agent::Request
@@ -274,6 +288,7 @@ sub run {
 	    File::Basename::dirname(File::Spec->rel2abs($bunit))),
 	File::Basename::basename($bunit, '.bunit'). '.pm');
     local($_TYPE, $_CLASS);
+    local($_OPTIONS) = {};
     my($t) = Bivio::Die->eval_or_die(
 	'package ' . __PACKAGE__ . ';use strict;'
 	. ${Bivio::IO::File->read($bunit)});
@@ -291,14 +306,17 @@ Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
 
 sub run_unit {
     my($self) = shift;
-    return $self->new($self->builtin_class)->unit(@_);
+    return $self->new({
+	class_name => $self->builtin_class,
+	%$_OPTIONS,
+    })->unit(@_);
 }
 
 #=PRIVATE SUBROUTINES
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
