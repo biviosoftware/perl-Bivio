@@ -136,6 +136,31 @@ sub get_delegate_info {
 	    ANYBODY
 	    Bivio::Agent::t::Mock::ReturnRedirect
 	)],
+	[qw(
+	    REDIRECT_TEST_5
+	    510
+	    GENERAL
+	    ANYBODY
+	), sub {
+	    return {
+		method => 'server_redirect',
+		task_id => 'SITE_ROOT',
+		path_info => 'new_path',
+	    },
+	}],
+	[qw(
+	    REDIRECT_TEST_6
+	    511
+	    GENERAL
+	    ANYBODY
+	), sub {
+	    return {
+		method => 'server_redirect',
+		task_id => 'my_task',
+	    },
+	},
+	   'my_task=REDIRECT_TEST_5',
+     ],
     ]);
 }
 

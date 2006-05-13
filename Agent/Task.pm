@@ -323,7 +323,8 @@ sub execute_items {
 	    ? $instance->$method(@$args, $req) : $method->(@$args, $req);
 	next unless $res;
 	my($next) = $res;
-	my($redirect) = 'client_redirect';
+	my($redirect) = ref($next) eq 'HASH' && delete($next->{method})
+	    || 'client_redirect';
 	unless (ref($res)) {
 	    # Boolean true means "I'm done"
 	    last if $res eq '1';
@@ -333,16 +334,19 @@ sub execute_items {
 		|| $_T->is_valid_name($res) && $_T->from_name($res)
 		|| $res;
 	}
+	elsif (ref($res) eq 'HASH' && ($res->{task_id} || '') =~ /_task$/) {
+	    $res->{task_id} = $self->unsafe_get($res->{task_id})
+		|| $res->{task_id};
+	}
 	_trace($redirect, '.', $next, ' ', $req->unsafe_get('query'))
 	    if $_TRACE;
 	Bivio::Die->die(
 	    $self->get('id'), ' item ',
 	    defined($instance) ? (ref($instance) || $instance) . '->' . $method
 		: 'code',
-	    ': must return boolean, Bivio::Agent::TaskId, or attribute',
-	    ', not ',
+	    ': must return boolean, hash_ref, Bivio::Agent::TaskId, or attribute not ',
 	    $res,
-	) unless ref($next) && UNIVERSAL::isa($next, $_T);
+	) unless ref($next) eq 'HASH' || UNIVERSAL::isa($next, $_T);
 	return ($next, $redirect);
     }
     return;

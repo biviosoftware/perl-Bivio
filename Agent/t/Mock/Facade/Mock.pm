@@ -78,6 +78,8 @@ my($_SELF) = __PACKAGE__->new({
                 REDIRECT_TEST_2
                 REDIRECT_TEST_3
                 REDIRECT_TEST_4
+                REDIRECT_TEST_5
+                REDIRECT_TEST_6
                 USER_HOME
                 LOGIN
             )) {
