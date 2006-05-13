@@ -3,6 +3,7 @@
 package Bivio::Biz::Action::UserPasswordQuery;
 use strict;
 use base ('Bivio::Biz::Action');
+use Bivio::Biz::Random;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_KEY) = 'x';
@@ -45,7 +46,7 @@ sub execute {
 
 sub format_uri {
     my(undef, $req) = @_;
-    my($pw) = sprintf('%08d', int(rand(100_000_000)) + 1);
+    my($pw) = Bivio::Biz::Random->password;
     $req->get_nested(qw(auth_realm owner))->update_password($pw);
     return $req->format_http({
 	task_id => $req->get_nested(qw(task reset_task)),
