@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::ListModel;
 use strict;
@@ -19,14 +19,7 @@ bOP
 
 =cut
 
-=head1 EXTENDS
-
-L<Bivio::Test>
-
-=cut
-
-use Bivio::Test::ModelBase;
-@Bivio::Test::ListModel::ISA = ('Bivio::Test::ModelBase');
+use base 'Bivio::Test::Unit';
 
 =head1 DESCRIPTION
 
@@ -59,10 +52,7 @@ I<model> will get mapped to I<class_name>.
 
 sub new {
     my($proto, $attrs) = @_;
-    my($model) = ref($attrs) ? delete($attrs->{model}) : $attrs;
-    $attrs = {}
-	unless ref($attrs);
-    Bivio::Test::Request->get_instance();
+    my($model) = $attrs->{class_name};
     return $proto->SUPER::new({
 	class_name => Bivio::Biz::Model->get_instance($model)->package_name,
 	create_object => sub {
@@ -111,22 +101,21 @@ Calls L<new|"new">.
 =cut
 
 sub new_unit {
-    my($self, $class_name, $attrs) = @_;
-    ($attrs ||= {})->{model} = $class_name;
-    return $self->new($attrs);
+    Bivio::Test::Request->get_instance;
+    return shift;
 }
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="unit"></a>
+=for html <a name="run_unit"></a>
 
-=head2 static unit(string model, array_ref method_groups)
+=head2 static run_unit(string model, array_ref method_groups)
 
-=head2 static unit(hash_ref new_attrs, array_ref method_groups)
+=head2 static run_unit(hash_ref new_attrs, array_ref method_groups)
 
-=head2 unit(array_ref method_groups)
+=head2 run_unit(array_ref method_groups)
 
 Instantiates this class with I<model> or I<new_attrs> (which must include
 I<model>), and calls the instance method form with I<method_groups>.
@@ -143,12 +132,12 @@ return.
 
 =cut
 
-sub unit {
-    return shift->new(shift)->unit(shift)
+sub run_unit {
+    return shift->SUPER::run_unit(@_)
 	if @_ == 3;
     my($self, $method_groups) = @_;
-    return $self->SUPER::unit([
-	$self->get('class_name') => $method_groups,
+    return $self->SUPER::run_unit([
+	$self->builtin_class => $method_groups,
     ]);
 }
 
@@ -156,7 +145,7 @@ sub unit {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

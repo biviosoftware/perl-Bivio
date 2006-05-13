@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::FormModel;
 use strict;
@@ -25,9 +25,8 @@ L<Bivio::Test>
 
 =cut
 
-use Bivio::Test::ModelBase;
-use Bivio::Test::Request;
-@Bivio::Test::FormModel::ISA = ('Bivio::Test::ModelBase');
+use Bivio::Test::Unit;
+@Bivio::Test::FormModel::ISA = ('Bivio::Test::Unit');
 
 =head1 DESCRIPTION
 
@@ -56,7 +55,7 @@ sub new {
     my($proto, $attrs) = @_;
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
     my($fn) = delete($attrs->{setup_request});
-    my($model) = ref($attrs) ? delete($attrs->{model}) : $attrs;
+    my($model) = $proto->builtin_class;
     $attrs = {}
 	unless ref($attrs);
     my($req) = Bivio::Test::Request->get_instance();
@@ -161,20 +160,20 @@ $_ = <<'}'; # emacs
 sub setup_request {
 }
 
-=for html <a name="unit"></a>
+=for html <a name="run_unit"></a>
 
-=head2 unit(array_ref case_group)
+=head2 run_unit(array_ref case_group)
 
 Example ForumCreateForm.bunit.
 
 =cut
 
-sub unit {
-    return shift->new(shift)->unit(shift)
+sub run_unit {
+    return shift->SUPER::run_unit(@_)
 	if @_ == 3;
     my($self, $case_group) = @_;
     my($req) = Bivio::Test::Request->initialize_fully;
-    return $self->SUPER::unit([
+    return $self->SUPER::run_unit([
 	map(([$req] => [
 	    ref($case_group->[0]) eq 'CODE' ? splice(@$case_group, 0, 2)
 		: (process => [splice(@$case_group, 0, 2)]),
@@ -203,7 +202,7 @@ sub _walk_tree_expect {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

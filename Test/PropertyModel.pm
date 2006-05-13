@@ -25,9 +25,7 @@ L<Bivio::Test>
 
 =cut
 
-use Bivio::Test::ModelBase;
-use Bivio::Test::Request;
-@Bivio::Test::PropertyModel::ISA = ('Bivio::Test::ModelBase');
+@Bivio::Test::PropertyModel::ISA = ('Bivio::Test::Unit');
 
 =head1 DESCRIPTION
 
@@ -36,6 +34,7 @@ C<Bivio::Test::PropertyModel>
 =cut
 
 #=IMPORTS
+use Bivio::Test::Request;
 
 #=VARIABLES
 Bivio::Test::Request->initialize_fully;
@@ -52,7 +51,7 @@ Bivio::Test::Request->initialize_fully;
 
 sub new {
     my($proto, $attrs) = @_;
-    my($model) = ref($attrs) ? delete($attrs->{model}) : $attrs;
+    my($model) = $proto->builtin_class;
     $attrs = {}
 	unless ref($attrs);
     my($m) = Bivio::Biz::Model->get_instance($model);
@@ -86,11 +85,11 @@ Example RealmMail.bunit.
 
 =cut
 
-sub unit {
+sub run_unit {
     return shift->new(shift)->unit(shift)
 	if @_ == 3;
     my($self, $method_groups) = @_;
-    return $self->SUPER::unit([
+    return $self->SUPER::run_unit([
 	[Bivio::Test::Request->get_instance] => $method_groups,
     ]);
 }
