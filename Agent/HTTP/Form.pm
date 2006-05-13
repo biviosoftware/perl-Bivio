@@ -80,26 +80,13 @@ sub parse {
     my($ct) = $r->header_in('Content-Type');
     if (defined($ct)) {
 	if ($ct =~ /^\s*application\/x-www-form-urlencoded/i) {
-
-            # Apache isn't doing length checking
-            # need to be careful that the data is >= content length
-            # if the client closes the socket early we don't want
-            # to process the data
-            my($buff);
-            $r->read($buff, $r->header_in("Content-length"));
-            $req->throw_die('CLIENT_ERROR', 'posted data < Content-length')
-                unless $buff
-                    && length($buff) >= $r->header_in("Content-length");
-            my(@form) = Apache::parse_args(1, $buff);
-
-	    # Let Apache do the parsing for us.  We protect against
-	    # "Odd number of elements" in form here.  The push fixes
-	    # that problem.  Users sometimes hack forms.
-	    push(@form, '') if int(@form) % 2;
+            my(@form) = Apache::parse_args(1, ${$req->get_content});
+	    push(@form, '')
+		if int(@form) % 2;
             my($form) = {@form};
-            $req->throw_die('CLIENT_ERROR',
-                    'client interrupt or timeout while reading form-data')
-                    if $r->connection->aborted();
+            $req->throw_die(CLIENT_ERROR =>
+                'client interrupt or timeout while reading form-data',
+	    ) if $r->connection->aborted;
             return $form;
 	}
 	elsif ($ct =~ /^\s*multipart\/form-data/i) {
@@ -120,29 +107,19 @@ sub parse {
 sub _parse {
     my($req, $r) = @_;
     my($max_field_size) = $req->get('form_model')->MAX_FIELD_SIZE;
-
-#TODO: This may not be correct although it should be.
-    my($len) = $r->header_in('Content-Length');
-    if ($len) {
-	$req->throw_die('CORRUPT_FORM',
-		{message => 'negative Content-Length', entity => $len})
-		if $len < 0;
-    }
-    else {
-	$req->throw_die('CORRUPT_FORM', 'Content-Length: not set or zero');
-    }
+    my($buf) = $req->get_content;
+    $req->throw_die('CORRUPT_FORM', 'Content-Length: not set or zero')
+	unless my $len = length($$buf);
     _trace('Content-Length=', $len) if $_TRACE;
-
     # Assume the boundary begins with the first -- line
     # Until it gets all the bytes to read
-    my($buf) = '';
     my($line, $boundary);
 
     # Get the boundary.  Should be in the first 10 lines!
 #TODO: Probably should check that it matches Content-Type's boundary...
     for (my $i = 10; $i > 0; $i--) {
 	# Read the header
-	last unless _parse_header_line($req, $r, \$buf, \$len, \$line);
+	last unless _parse_header_line($req, $r, $buf, \$len, \$line);
 	if ($line =~ /^--/) {
 	    $boundary = "\r\n".$line;
 	    last;
@@ -154,11 +131,11 @@ sub _parse {
     # Loop over the fields.
     my($form) = {};
     while (1) {
-	my($field) = _parse_header($req, $r, \$buf, \$len);
+	my($field) = _parse_header($req, $r, $buf, \$len);
 	last unless defined($field);
 
 	# Parse the content.
-	my($content) = _parse_content($req, $r, \$buf, \$len, $boundary);
+	my($content) = _parse_content($req, $r, $buf, \$len, $boundary);
 
 	if (int(keys(%$field)) > 1) {
 	    # Complex field
@@ -175,18 +152,18 @@ sub _parse {
 	    # Convert to simple field for ease of checking in FormModel
 	    $form->{$field->{name}} = $$content;
 	}
-        _read($r, \$buf, \$len, 0x10000, $req)
-                if $len && (length($buf) < 2);
+        _read($r, $buf, \$len, 0x10000, $req)
+                if $len && (length($$buf) < 2);
 
 	# Parse the trailing \r\n
-	next if $buf =~ s/^\r\n//;
+	next if $$buf =~ s/^\r\n//;
 
 	# Parse the closing boundary
-	last if $buf =~ s/^--//;
+	last if $$buf =~ s/^--//;
 
 	$req->throw_die('CORRUPT_FORM',
 		{message => 'invalid encapsulation or closing boundary',
-		    entity => substr($buf, 0, 20)});
+		    entity => substr($$buf, 0, 20)});
     }
     $req->throw_die('CLIENT_ERROR',
 	    'client interrupt or timeout while reading form-data')
