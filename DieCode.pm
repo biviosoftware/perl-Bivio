@@ -316,6 +316,12 @@ __PACKAGE__->compile([
 	undef,
 	'invalid operation',
     ],
+    INPUT_TOO_LARGE => [
+	# entity, message
+    	26,
+	undef,
+	'input too large',
+    ],
 ]);
 
 =head1 METHODS
