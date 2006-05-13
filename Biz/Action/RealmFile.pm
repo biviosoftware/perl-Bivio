@@ -30,7 +30,7 @@ sub unauth_execute {
 	    defined($is_public) ? (is_public => $is_public) : (),
 	})->get_handle,
     )->set_output_type($f->get_content_type);
-    return;
+    return 1;
 }
 
 1;
