@@ -20,6 +20,7 @@ my($_DIE) = {
     CORRUPT_QUERY => 'BAD_REQUEST',
     CORRUPT_FORM =>  'BAD_REQUEST',
     NO_RESOURCES => 'HTTP_REQUEST_ENTITY_TOO_LARGE',
+    INPUT_TOO_LARGE => 'HTTP_REQUEST_ENTITY_TOO_LARGE',
     DB_CONSTRAINT => 'HTTP_CONFLICT',
     UPDATE_COLLISION => 'HTTP_CONFLICT',
 };
@@ -38,9 +39,9 @@ sub execute {
     my($die) = Bivio::Die->catch(sub {
         return unless $s->{list} = _load(
 	    $s, $req->get('auth_realm'), $req->get('path_info'));
-	return if _content($s);
+	$s->{content} = $req->get_content;
 	_trace($s->{method}, ' ', $s->{uri}, ' ',
-	       {$s->{r}->headers_in}, "\n", \($s->{content})
+	    {$s->{r}->headers_in}, "\n", $s->{content}
 	) if $_TRACE;
 	my($op) = \&{'_dav_' . $s->{method}};
 	return _other_op($s)
@@ -65,22 +66,6 @@ sub _call {
     Bivio::Die->throw(FORBIDDEN => "$s->{method} not permitted on: $s->{uri}")
         unless $list->can($method);
     return $list->$method(@_);
-}
-
-sub _content {
-    my($s) = @_;
-    $s->{content} = '';
-    return unless my $l = $s->{r}->header_in('content-length');
-    return _output(
-	$s, HTTP_REQUEST_ENTITY_TOO_LARGE => "Content-Length too large: $l",
-    #TODO: Make this dependent on a config parameter in request
-    ) if $l > 100_000_000;
-    $s->{r}->read($s->{content}, $l);
-    return _output(
-	$s, BAD_REQUEST => "Content-Length ($l) >= actual length: ",
-	length($s->{content}),
-    ) if $l > length($s->{content});
-    return;
 }
 
 sub _copy_move {
@@ -144,8 +129,8 @@ sub _dav_head {
 sub _dav_lock {
     my($s) = @_;
     my($owner) = grep($_,
-	$s->{content} =~ /<owner>\s*([^<]+)\s*<|href>\s*([^<]+)\s*</s);
-    my($want_href) = $s->{content} =~ /href/;
+	${$s->{content}} =~ /<owner>\s*([^<]+)\s*<|href>\s*([^<]+)\s*</s);
+    my($want_href) = ${$s->{content}} =~ /href/;
     return _output(
 	$s, HTTP_OK => qq{text/xml; charset="utf-8"}, \(
 	join('',
@@ -269,7 +254,7 @@ sub _dav_propfind {
 
 sub _dav_put {
     my($s) = @_;
-    _call($s, put => \$s->{content});
+    _call($s, put => $s->{content});
     return _output($s, HTTP_OK => "PUT $s->{uri}");
 }
 
@@ -325,6 +310,7 @@ sub _load {
     $req->put(path_info => defined($path) ? $path : '');
     while ($tid) {
 	_trace($tid, ' ', $req) if $_TRACE;
+#TODO: Does not work with new Task->execute_items which return HASH
 	my($t) = Bivio::Agent::Task->get_by_id($tid);
 #TODO: It's not clear if this is over-restrictive.  However, 
 	last unless $req->get('auth_realm')->can_user_execute_task($t, $req);
