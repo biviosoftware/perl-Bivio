@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RealmFile;
 use strict;
@@ -27,19 +27,33 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-file [options] command [args...]
 commands:
-    create_folder folder -- creates folder and parents
+    create path -- creates file_path with input
+    create_folder path -- creates folder and parents
+    delete path ... -- deletes files specified
     import_tree [folder] -- imports files in current directory into folder [/]
+    list_folder folder -- lists a folder
+    read path -- returns file contents
 EOF
 }
 
+sub create {
+    my($self, $path) = @_;
+    _do($self, create_with_content => $path, $self->read_input);
+    return;
+}
+
 sub create_folder {
-    my($self, $folder) = @_;
-    return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFile')
-	->create_folder(
-	    _fix_values($self, {
-		path => $self->convert_literal('FilePath', $folder),
-	    }),
-	)->get('path');
+    my($self, $path) = @_;
+    _do($self, create_folder => $path);
+    return;
+}
+
+sub delete {
+    my($self) = shift;
+    foreach my $p (@_) {
+	_do($self, delete => $p);
+    }
+    return;
 }
 
 sub import_tree {
@@ -58,8 +72,7 @@ sub import_tree {
 		    path => $path,
 		}) && !($method =~ s/create_with/update_with/);
 	    $rf->$method(
-		_fix_values($self, {
-		    path => $path,
+		_fix_values($self, $path, {
 		    modified_date_time => Bivio::Type::DateTime->from_unix(
 			(stat($_))[9],
 		    ),
@@ -72,10 +85,31 @@ sub import_tree {
     return;
 }
 
+sub list_folder {
+    my($self, $path) = @_;
+    return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFileList')
+	->map_iterate(
+	    sub {shift->get('RealmFile.path')},
+	    {path_info => $self->convert_literal('FilePath', $path)},
+	);
+}
+
+sub read {
+    my($self, $path) = @_;
+    return _do($self, load => $path)->get_content;
+}
+
+sub _do {
+    my($self, $method, $path, @args) = @_;
+    return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFile')
+	->$method(_fix_values($self, $path), @args);
+}
+
 sub _fix_values {
-    my($self, $values) = @_;
+    my($self, $path, $values) = @_;
     return {
-	%$values,
+	$values ? %$values : (),
+	path => $self->convert_literal('FilePath', $path),
 	map(($_ => $self->get($_)), qw(is_public is_read_only)),
     };
 }
