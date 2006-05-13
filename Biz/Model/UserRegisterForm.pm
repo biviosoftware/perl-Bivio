@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::UserRegisterForm;
 use strict;
 use base 'Bivio::Biz::Model::UserCreateForm';
+use Bivio::Biz::Random;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -29,7 +30,7 @@ sub internal_create_models {
 	 ),
     ) unless $self->unsafe_get('RealmOwner.display_name');
     $self->internal_put_field(
-	'RealmOwner.password' => int(rand(100_000_000)),
+	'RealmOwner.password' => Bivio::Biz::Random->password,
     ) unless $self->unsafe_get('RealmOwner.password');
     return $self->SUPER::internal_create_models(@_);
 }
