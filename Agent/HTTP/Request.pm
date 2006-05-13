@@ -155,7 +155,7 @@ B<DOES NOT RETURN.>
 
 sub client_redirect {
     my($self, $named) =  shift->internal_get_named_args(
-	ref($_[0]) && (ref($_[0]) ne 'HASH' || $_[0]->{task_id})
+	ref($_[0]) && !(ref($_[0]) eq 'HASH' && $_[0]->{uri})
 	    ? [qw(task_id realm query path_info no_context require_context)]
 	    : [qw(uri query no_context)],
 	\@_,
@@ -235,6 +235,32 @@ sub format_http_toggling_secure {
 
     # Go into secure if not secure and vice-versa
     return ($is_secure ? 'http://' : 'https://').$host.$uri;
+}
+
+=for html <a name="get_content"></a>
+
+=head2 get_content() : string_ref
+
+Returns the content associated with request.  Throws INPUT_TOO_LARGE if the
+input is larger than a reasonable size.
+
+=cut
+
+sub get_content {
+    my($self) = @_;
+    return $self->get_if_exists_else_put(content => sub {
+        my($r) = $self->get('r');
+	my($c) = '';
+	return \$c
+	    unless my $l = $r->header_in('content-length');
+	$self->throw_die(INPUT_TOO_LARGE => "Content-Length too large: $l")
+	    if $l > 100_000_000;
+	$r->read($c, $l);
+	$self->throw_die(CORRUPT_QUERY =>
+	    "Content-Length ($l) >= actual length: " . length($c)
+	) if $l > length($c);
+	return \$c;
+    });
 }
 
 =for html <a name="get_form"></a>
