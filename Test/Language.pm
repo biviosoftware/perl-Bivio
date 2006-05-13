@@ -275,6 +275,7 @@ I<test_log_prefix>).
 
 sub test_log_output {
     my(undef, $file_name, $content) = _args(@_);
+    return unless $_SELF_IN_EVAL;
     my($self) = _assert_in_eval('test_log_output');
     return unless ref($self) && $self->unsafe_get('test_log_prefix');
     return Bivio::IO::File->write(
