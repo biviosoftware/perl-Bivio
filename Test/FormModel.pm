@@ -38,27 +38,26 @@ C<Bivio::Test::FormModel>
 
 #=VARIABLES
 
-
 =head1 FACTORIES
 
 =cut
 
-=for html <a name="new"></a>
+=for html <a name="new_unit"></a>
 
-=head2 static new() : Bivio::Test::FormModel
+=head2 static new_unit(string class, hash_ref attrs) : Bivio::Test::FormModel
 
 Accepts I<setup_request> in attributes.
 
 =cut
 
-sub new {
-    my($proto, $attrs) = @_;
+sub new_unit {
+    my($proto, $class, $attrs) = @_;
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
     my($fn) = delete($attrs->{setup_request});
-    my($model) = $proto->builtin_class;
+    my($model) = $class;
     $attrs = {}
 	unless ref($attrs);
-    my($req) = Bivio::Test::Request->get_instance();
+    my($req) = $proto->use('Bivio::Test::Request')->get_instance;
     my($m) = Bivio::Biz::Model->new($req, $model);
     return $proto->SUPER::new({
 	class_name => $m->package_name,
