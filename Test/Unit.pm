@@ -306,10 +306,12 @@ Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
 
 sub run_unit {
     my($self) = shift;
-    return $self->new({
-	class_name => $self->builtin_class,
-	%$_OPTIONS,
-    })->unit(@_);
+    return (
+	ref($self) ? $self : $self->new({
+	    class_name => $self->builtin_class,
+	    %$_OPTIONS,
+	})
+    )->unit(@_);
 }
 
 #=PRIVATE SUBROUTINES
