@@ -238,7 +238,6 @@ sub initialize {
     $fields->{undef_value} = $self->get_or_default('undef_value', '&nbsp;');
     $fields->{font} = $self->ancestral_get('string_font', undef);
     $fields->{no_timezone} = !$self->get_or_default('show_timezone', 1);
-    warn("initialized without parent") unless $self->get('parent');
     return;
 }
 
