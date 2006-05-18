@@ -167,7 +167,7 @@ sub _dav_mkcol {
     return _output($s, HTTP_CONFLICT => 'already exists')
 	if $s->{exists};
     return _output($s, 'HTTP_UNSUPPORTED_MEDIA_TYPE')
-	if length($s->{content});
+	if length(${$s->{content}});
     _call($s, 'mkcol');
     return _output($s, 'HTTP_CREATED');
 }
