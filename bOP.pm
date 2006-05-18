@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.15  2006/05/12 07:41:30  aviggio
+  * Biz::Model::RealmFileTreeList->is_child_folder added
+  * Bivio::Test::FormModel extended to support new unit tests, FileField
+  * Bivio::Util::Disk added "task list" to afacli in the event the drive
+    is rebuilding
+
   Revision 4.14  2006/05/11 01:28:07  nagler
   * Bivio::Util::Disk (b-disk) added.
 
