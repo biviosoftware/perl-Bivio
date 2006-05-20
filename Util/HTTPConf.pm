@@ -329,7 +329,7 @@ ErrorLog $log_directory/error_log
 LogLevel info
 ExtendedStatus On
 
-DocumentRoot $document_root
+DocumentRoot /var/www/html
 
 <Directory />
     AllowOverride None
