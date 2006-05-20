@@ -11,8 +11,8 @@ Bivio::IO::File->mkdir_p("$_tmp/Library/LaunchDaemons");
 [
     class() => [
 	'add_launch_daemon' => [
-	    [{ProgramArguments => 'a b c', Label => 'x'}] => sub {
-		my($d) = Bivio::IO::File->read("$_tmp/Library/LaunchDaemons/x");
+	    [{ProgramArguments => 'a b c', Label => 'x.y.z'}] => sub {
+		my($d) = Bivio::IO::File->read("$_tmp/Library/LaunchDaemons/x.y.z.plist");
 		return $$d =~ m{<string>a</string>\s+<string>b</string>}
 		    ? 1 : 0;
 	    },

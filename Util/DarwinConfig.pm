@@ -16,8 +16,11 @@ EOF
 
 sub add_launch_daemon {
     my($self, $vars) = shift->name_parameters([qw(Label ProgramArguments)], \@_);
+    $self->usage_error(
+	$vars->{Label}, ': label must be of the form com.company.daemon'
+    ) unless $vars->{Label} =~ /^[a-z0-9]+\.[a-z0-9]+\.[a-z0-9]+$/;
     return $self->replace_file(
-	"/Library/LaunchDaemons/$vars->{Label}",
+	"/Library/LaunchDaemons/$vars->{Label}.plist",
 	qw(root wheel), 0644,
 	_map_xml_vars(<<'EOF', $vars),
 <?xml version="1.0" encoding="UTF-8"?>
