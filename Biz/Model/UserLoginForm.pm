@@ -99,6 +99,22 @@ Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
 
 =cut
 
+=for html <a name="assert_can_substitute_user"></a>
+
+=head2 assert_can_substitute_user()
+
+Dies unless user is super user.  Subclasses can override this method to relax
+this constraint.
+
+=cut
+
+sub assert_can_substitute_user {
+    my($proto, $realm, $req) = @_;
+    Bivio::Die->die('not a super user')
+	unless $req->is_super_user;
+    return;
+}
+
 =for html <a name="execute_ok"></a>
 
 =head2 execute_ok() : boolean
@@ -217,8 +233,7 @@ to or undef (default).
 sub substitute_user {
     my($proto, $realm, $req) = @_;
     # A small sanity check, since this is an important function
-    Bivio::Die->die('not a super user')
-	unless $req->is_super_user;
+    $proto->assert_can_substitute_user($realm, $req);
     unless ($req->unsafe_get('super_user_id')) {
 	# Only set super_user_id field if not already set.  This keeps
 	# original user and doesn't allow someone to su to an admin and
