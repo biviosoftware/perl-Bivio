@@ -21,6 +21,7 @@ Bivio::Test->new('Bivio::Util::HTTPConf')->unit([
         mail_host => 'a2.com',
         root_prefix => 'A1',
         server_admin => 'a1@a1.com',
+        aux_http_conf => 'Listen 2020',
     },
     a2 => {
         is_production => 1,
