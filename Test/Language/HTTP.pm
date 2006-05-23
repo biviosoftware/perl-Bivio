@@ -871,6 +871,21 @@ sub verify_local_mail {
     # DOES NOT RETURN
 }
 
+=for html <a name="verify_no_link"></a>
+
+=head2 verify_no_link(string link_name)
+
+Verifies that none of the links on the page match I<link_name>.
+
+=cut
+
+sub verify_no_link {
+    my($self, $link_text) = @_;
+    Bivio::Die->die('found link "', $link_text, '".')
+	    if _assert_html($self)->get('Links')->unsafe_get($link_text);
+    return;
+}
+
 =for html <a name="verify_no_text"></a>
 
 =head2 verify_no_text(any text)
