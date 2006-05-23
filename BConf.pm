@@ -374,6 +374,7 @@ sub merge_http_log {
 		    'request aborted, rolling back',
 		    'Unable to parse address',
                     'Connection reset by peer',
+		    'reconnecting to database: pid=',
 		],
 	    },
 	    1,
