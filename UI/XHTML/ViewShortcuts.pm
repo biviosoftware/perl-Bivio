@@ -147,10 +147,8 @@ sub vs_alphabetical_chooser {
 	    Link(
 	        String($_),
 		URI({
-		    query => {
-			$_ eq 'All' ? () : ('ListQuery.search' => $_),
-#TODO: Need rest of list_model's query state, such as, dates, parent_id.
-		    },
+		    query => ["Model.$list_model", '->format_query', 'ANY_LIST',
+			      $_ eq 'All' ? () : {search => $_}],
 		}),
 		[sub {
 		     my(undef, $a, $search) = @_;
