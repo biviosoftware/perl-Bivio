@@ -72,7 +72,7 @@ sub merge_overrides {
     return {
 	$proto->default_merge_overrides('Bivio/PetShop' => 'pet' => 'bivio Software, Inc.'),
 	'Bivio::Ext::DBI' => {
-	    database => 'petdb',
+	    database => 'pet',
 	    user => 'petuser',
 	    password => 'petpass',
 	    connection => 'Bivio::SQL::Connection::Postgres',
