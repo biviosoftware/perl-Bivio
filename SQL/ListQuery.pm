@@ -357,17 +357,21 @@ sub format_uri {
 
 =for html <a name="format_uri_for_any_list"></a>
 
-=head2 format_uri_for_any_list(Bivio::SQL::Support support) : string
+=head2 format_uri_for_any_list(Bivio::SQL::Support support, hash_ref new_attrs) : string
 
-Returns the query without a this or page_number.
+Returns the query without a this or page_number with overrides in
+I<new_attrs>.
 
 =cut
 
 sub format_uri_for_any_list {
-    my($self, $support) = @_;
-    my(%attrs) = %{$self->internal_get()};
+    my($self, $support, $new_attrs) = @_;
+    my(%attrs) = %{$self->internal_get};
     $attrs{this} = undef;
     $attrs{page_number} = undef;
+    while ($new_attrs and my($k, $v) = each(%$new_attrs)) {
+	$attrs{$k} = $v;
+    }
     return _format_uri(\%attrs, $support);
 }
 
