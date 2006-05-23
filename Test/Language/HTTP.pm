@@ -300,13 +300,11 @@ Returns an email address based on I<email_user> and I<suffix>.
 
 sub generate_local_email {
     my($self, $suffix) = @_;
-    Bivio::IO::Alert->warn_deprecated('you need to pass random_string(); random_string will not be supported in future')
-        unless $suffix;
-    return $_CFG->{email_user}
+    return lc($_CFG->{email_user}
 	. $_CFG->{email_tag}
-	. ($suffix || $self->random_string)
+	. $suffix
 	. '@'
-	. $_CFG->{local_mail_host};
+	. $_CFG->{local_mail_host});
 }
 
 =for html <a name="generate_remote_email"></a>
