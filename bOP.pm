@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,38 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.16  2006/05/18 07:50:31  aviggio
+  * Bivio::Agent::HTTP::Form use req->get_content
+  * Bivio::Agent::HTTP::Reply added INPUT_TOO_LARGE
+  * Bivio::Agent::HTTP::Request->get_content added and client_redirect
+    handles hashes correctly
+  * Bivio::Agent::Request task_id is not a required parameter to
+    format_uri
+  * Bivio::Agent::Task changed interface to execute_items to allow
+    arbitrary format_uri args
+  * Bivio::Biz::Action::DAV use req->get_content and s->{content} now a
+    ref
+  * Bivio::Biz::Action::MailReceiveStatus subclasses EmptyReply
+  * Bivio::Biz::Action::RealmFile return 1 in unauth_execute
+  * Bivio::Biz::Action::UserPasswordQuery use Random
+  * Bivio::Biz::Action::WikiView copy default start page if not found
+  * Bivio::Biz::Model::UserRegisterForm use Random
+  * Bivio::DieCode added INPUT_TOO_LARGE
+  * Bivio::Test::Language::HTTP->get_response added
+  * Bivio::Test::Language test_log_output does nothing if not in eval
+  * Bivio::Test::FormModel renamed methods new => new_unit, unit =>
+    run_unit
+  * Bivio::Test::ListModel renamed method unit => run_unit
+  * Bivio::Test::PropertyModel renamed method unit => run_unit
+  * Bivio::Test::Request run_unit works more independently
+  * Bivio::Test::Unit don't new again in run_unit if already a ref
+  * Bivio::UI::HTML::Widget::DateTime removed warning if no parent is
+    set during initialize
+  * Bivio::UI::HTML::Widget::Table use column_heading_class for sort
+    headings
+  * Bivio::Util::RealmFile added create, delete, list_folder, and read
+  * Bivio::Util::SQL->create_test_user added
+
   Revision 4.15  2006/05/12 07:41:30  aviggio
   * Biz::Model::RealmFileTreeList->is_child_folder added
   * Bivio::Test::FormModel extended to support new unit tests, FileField
