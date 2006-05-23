@@ -27,7 +27,9 @@ sub add_launch_daemon {
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Disabled</key>
+	<key>ServiceIPC</key>
+	<false/>
+	<key>OnDemand</key>
 	<false/>
 	<key>Label</key>
 	<string>$Label</string>
