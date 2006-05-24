@@ -378,6 +378,7 @@ sub merge_http_log {
 		    'Unable to parse address',
                     'Connection reset by peer',
 		    'reconnecting to database: pid=',
+		    'caught SIGTERM, shutting down',
 		],
 	    },
 	    1,
