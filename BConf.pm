@@ -218,6 +218,8 @@ sub merge_realm_role_category_map {
 	    [
 		public_forum_email =>
 		    [[qw(ANONYMOUS USER)] => 'MAIL_SEND'],
+	    ],
+	    [
 		admin_only_forum_email => [
 		    MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)],
 		],
