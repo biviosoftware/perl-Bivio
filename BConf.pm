@@ -379,6 +379,7 @@ sub merge_http_log {
                     'Connection reset by peer',
 		    'reconnecting to database: pid=',
 		    'caught SIGTERM, shutting down',
+		    'server reached MaxClients setting, consider raising',
 		],
 	    },
 	    1,
