@@ -35,7 +35,7 @@ managing your PetShop.
 
 How to create the database.  As root:
 
-    su - postgres -c 'createuser --no-createdb --no-adduser --pwprompt petuser; createdb --owner petuser petdb'
+    su - postgres -c 'createuser --no-createdb --no-adduser --pwprompt petuser; createdb --owner petuser pet'
 
 As you:
 
