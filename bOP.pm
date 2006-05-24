@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.17  2006/05/23 18:38:50  nagler
+  * Bivio::PetShop::BConf configures database as pet, not petdb.  You
+    will need to rebuild your petshop databases with this new name or
+    configure locally.
+  * Bivio::Util::DarwinConfig->add_launch_daemon correctly configures
+    daemon to start on boot.
+  * Bivio::SQL::ListQuery->format_uri_for_any_list accepts optional new_attrs
+  * Bivio::BConf->merge_http_log ignores File does not exist:*.php due
+    to increase in php virii.
+
   Revision 4.16  2006/05/18 07:50:31  aviggio
   * Bivio::Agent::HTTP::Form use req->get_content
   * Bivio::Agent::HTTP::Reply added INPUT_TOO_LARGE
