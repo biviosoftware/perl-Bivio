@@ -101,7 +101,7 @@ sub get_by_number {
 =item supported_card_list : string
 
 List of supported card enum names.
-Defaults to 'VISA MASTERCARD AMEX'.
+Defaults to 'VISA MASTERCARD AMEX DISCOVER'.
 
 =back
 
