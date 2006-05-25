@@ -51,6 +51,19 @@ sub check_raid {
     my($self, $test_data) = @_;
     my($d);
     my($err) = [];
+#TODO: I don't think the current afa0 code does the right thing.
+# perhaps disk status does it?
+#
+# AFA0> disk show space
+# Executing: disk show space
+#
+# Scsi B:ID:L Usage      Size
+# ----------- ---------- -------------
+#   0:00:0     Container 64.0KB:33.8GB
+#   0:00:0     Free      33.8GB:59.0KB
+#   0:01:0     Rebuild   64.0KB:33.8GB
+#   0:01:0     Free      33.8GB:59.0KB
+
     push(@$err, grep(/md\d+.+_/s, split(/\n\s*\n/, $$d)))
 	if $d = _data($self, $test_data, '/proc/mdstat');
     foreach my $n (0, 1, 2, 3) {
