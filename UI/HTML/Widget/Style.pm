@@ -79,6 +79,7 @@ Otherwise will render a partial style sheet.
 #=IMPORTS
 
 #=VARIABLES
+my($_NO_HTML_KEY) = __PACKAGE__ . 'no_html';
 my($_TAGS) = join(',', qw(
     address
     blockquote
@@ -108,6 +109,26 @@ my($_TAGS) = join(',', qw(
 
 =cut
 
+=for html <a name="execute"></a>
+
+=head2 static execute(Bivio::Agent::Request req) : boolean
+
+Renders the table.
+
+Calls
+L<Bivio::UI::Widget::execute_with_content_type|Bivio::UI::Widget/"execute_with_content_type">
+as text/css
+
+=cut
+
+sub execute {
+    my($self, $req) = @_;
+    return $self->execute_with_content_type($req->put(
+        font_with_style => 1,
+        $_NO_HTML_KEY => 1,
+    ), 'text/css');
+}
+
 =for html <a name="render"></a>
 
 =head2 render(string_ref buffer)
@@ -124,7 +145,8 @@ sub render {
     return unless $req->unsafe_get('font_with_style');
 
     # Begin
-    $$buffer .= "<style>\n<!--\n";
+    $$buffer .= "<style>\n<!--\n"
+        unless $req->unsafe_get($_NO_HTML_KEY);
 
     # Font
     my($font) = Bivio::UI::Font->get_attrs('default', $req);
@@ -144,7 +166,8 @@ sub render {
     $self->unsafe_render_attr('other_styles', $source, $buffer);
 
     # End
-    $$buffer .= "\n-->\n</style>\n";
+    $$buffer .= "\n-->\n</style>\n"
+        unless $req->unsafe_get($_NO_HTML_KEY);
     return;
 }
 
