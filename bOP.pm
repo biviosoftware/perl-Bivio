@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.18  2006/05/24 20:27:34  dobbs
+  * Bivio::BConf added admin_only_forum_email to realm role categories
+    for use in announcement-style mail lists
+  * Bivio::BConf filters SIGTERM and MaxClients warnings unless they
+    exceed the standard count
+  * Bivio::Biz::Model::UserLoginForm->assert_can_substitute_user() added
+    so subclasses can relax the is_super_user() constraint for
+    substitute_user()
+  * Bivio::Test::Language::HTTP->verify_no_link() added
+  * Bivio::Test::Language::HTTP->generate_local_email() removed
+    deprecation warnings -- you now *must* pass a suffix for the address
+
   Revision 4.17  2006/05/23 18:38:50  nagler
   * Bivio::PetShop::BConf configures database as pet, not petdb.  You
     will need to rebuild your petshop databases with this new name or
