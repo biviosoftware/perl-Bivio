@@ -286,20 +286,14 @@ sub _parse {
     return $values;
 }
 
-# _parse_values(proto, string cookie) : hash_ref
+# _parse_items(proto, string cookie) : hash_ref
 #
-# Parses out our cookies values. Ignores other keys.
-# Returns undef on failure.
+# Parses our cookie key/value pairs. Issues a warning if a key is duplicated.
 #
-sub _parse_values {
+sub _parse_items {
     my($proto, $cookie) = @_;
-    my($values) = {};
+    my($items) = {};
 
-    # Our cookies don't have ';' in them.  If someone sends a cookie
-    # back with ';' in it, well, it won't initialize correctly
-    # New cookies have ',' to separate them.  The attributes of a cookie
-    # are separated by ';' and the names begin with '$'.  We ignore
-    # all attributes except our tag.
     foreach my $f (split(/\s*[;,]\s*/, $cookie)) {
 	my($k, $v) = split(/\s*=\s*/, $f, 2);
 
@@ -316,6 +310,35 @@ sub _parse_values {
 	    next;
 	}
 
+        # we only expect one cookie, if there are more, there may
+        # be a problem with a stale cookie with a switched cookie domain
+        if (exists($items->{$k})) {
+	    Bivio::IO::Alert->warn('duplicate cookie value for key: ', $k,
+                ', ', $items->{$k}, ' and ', $v);
+            next;
+        }
+        $items->{$k} = $v;
+    }
+    return $items;
+}
+
+# _parse_values(proto, string cookie) : hash_ref
+#
+# Parses out our cookies values. Ignores other keys.
+# Returns undef on failure.
+#
+sub _parse_values {
+    my($proto, $cookie) = @_;
+    my($values) = {};
+
+    # Our cookies don't have ';' in them.  If someone sends a cookie
+    # back with ';' in it, well, it won't initialize correctly
+    # New cookies have ',' to separate them.  The attributes of a cookie
+    # are separated by ';' and the names begin with '$'.  We ignore
+    # all attributes except our tag.
+    my($items) = _parse_items($proto, $cookie);
+
+    while (my($k, $v) = each(%$items)) {
 	# Some cookies come back with quotes, strip 'em.
 	$v =~ s/"//g;
 	my($s) = Bivio::Type::Secret->decrypt_http_base64($v);
