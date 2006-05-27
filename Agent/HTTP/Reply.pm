@@ -36,20 +36,23 @@ output type will be 'text/html'.
 =cut
 
 #=IMPORTS
-use Bivio::Ext::ApacheConstants;
 use Bivio::Die;
 use Bivio::DieCode;
+use Bivio::Ext::ApacheConstants;
+use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
 use UNIVERSAL;
-# Avoid import
-# use Bivio::Agent::Job::Dispatcher
 
 #=VARIABLES
 our($_TRACE);
 # Can't initialize here, because get "deep recursion".  Don't ask me
 # why...
 my(%_DIE_TO_HTTP_CODE);
+my($_CFG);
+Bivio::IO::Config->register({
+    additional_http_headers => undef,
+});
 
 =head1 FACTORIES
 
@@ -107,6 +110,27 @@ EOF
     return;
 }
 
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item additional_http_headers : array_ref []
+
+An array of [key => value] pairs to add to the http header for all
+replies.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 =for html <a name="send"></a>
 
 =head2 send(Bivio::Agent::Request req)
@@ -142,7 +166,6 @@ sub send {
 
     $r->header_out('Content-Length', $size);
     $r->content_type($self->get_output_type());
-
     _send_http_header($self, $req, $r);
 
     # M_HEAD not defined, so can't use method_number12
@@ -310,6 +333,23 @@ sub unsafe_get_output {
 
 #=PRIVATE METHODS
 
+# _add_additional_http_headers(self, Apache::Request r)
+#
+# Adds any additional http headers from the configuration.
+#
+sub _add_additional_http_headers {
+    my($self, $r) = @_;
+    return unless $_CFG->{additional_http_headers};
+
+    foreach my $pair (@{$_CFG->{additional_http_headers}}) {
+        my($key, $value) = @$pair;
+        $r->header_out($key => defined($r->header_out($key))
+            ? $r->header_out($key) . "\r\n$key: $value"
+            : $value);
+    }
+    return;
+}
+
 # _error(int code, Apache::Request r) : Bivio::Ext::ApacheConstants::OK
 #
 # Workaround for apache in error mode.  Sends the reply in line.
@@ -389,6 +429,7 @@ sub _send_http_header {
 	    if $self->has_keys('status');
 	$self->set_cache_private
 	    if $req->get('cookie')->header_out($req, $r);
+        _add_additional_http_headers($self, $r);
 	my($h) = $self->unsafe_get('headers');
 	if ($h) {
 	    foreach my $k (sort(keys(%$h))) {
