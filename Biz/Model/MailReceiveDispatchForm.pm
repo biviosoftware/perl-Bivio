@@ -180,7 +180,7 @@ sub internal_set_realm {
 =head2 parse_recipient(boolean ignore_dashes) : array
 
 Returns (realm, op, plus_tag, domain) from recipient.  I<op> may be undef.
-I<realm> may be a Model.RealmOwner, name, or realm_id.
+I<realm> may be a Model.RealmOwner, name, realm_id, or undef (invalid)
 
 Two addresses are parsed:
 
