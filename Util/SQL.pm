@@ -75,6 +75,7 @@ use Bivio::IO::File;
 use Bivio::IO::Ref;
 use Bivio::SQL::Connection;
 use Bivio::Type::PrimaryId;
+use Bivio::UI::LocalFileType;
 
 #=VARIABLES
 my($_REALM_ROLE_CONFIG);
@@ -154,9 +155,7 @@ sub create_test_db {
 	if $req->is_production;
     $self->destroy_db;
     $self->create_db;
-    Bivio::IO::File->rm_rf(
-	Bivio::UI::Facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->REALM_DATA, ''));
+    $self->delete_realm_files;
     return $self->initialize_test_data;
 }
 
@@ -202,6 +201,21 @@ sub ddl_files {
 	    $base.'-'.$_.'.sql';
 	} qw(tables constraints sequences);
     } @$base_names];
+}
+
+=for html <a name="delete_realm_files"></a>
+
+=head2 delete_realm_files()
+
+Delete realm data files.
+
+=cut
+
+sub delete_realm_files {
+    Bivio::IO::File->rm_rf(
+	Bivio::UI::Facade->get_local_file_name(
+	    Bivio::UI::LocalFileType->REALM_DATA, ''));
+    return;
 }
 
 =for html <a name="destroy_db"></a>
