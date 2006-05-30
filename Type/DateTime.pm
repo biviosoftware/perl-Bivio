@@ -1217,7 +1217,7 @@ Parses out test_now from query if it exists.
 sub handle_pre_execute_task {
     my($proto, $req) = @_;
     $_TEST_NOW = undef;
-    my($q) = $req->unsafe_get_query;
+    my($q) = $req->unsafe_get('query');
     return
 	unless $q;
     $_TEST_NOW = ($proto->from_literal(delete($q->{date_time_test_now})))[0];
