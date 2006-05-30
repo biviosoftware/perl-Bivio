@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.19  2006/05/26 17:44:56  moeller
+  * Bivio::UI::HTML::Widget::Style added execute(), can now be used as a
+    top-level widget within a page
+  * Bivio::Util::Disk doc afa0 status
+
   Revision 4.18  2006/05/24 20:27:34  dobbs
   * Bivio::BConf added admin_only_forum_email to realm role categories
     for use in announcement-style mail lists
