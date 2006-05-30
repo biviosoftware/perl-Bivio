@@ -24,6 +24,9 @@ sub execute {
 	subject_prefix => "[$n]",
 	req => $req,
     });
+    # Must commit here, because the mail starts going out immediately and
+    # may bounce back before we get done sending.
+    Bivio::Agent::Task->commit($req);
     my($rmb) = $mr->new_other('RealmMailBounce');
     $mr->new_other('RealmEmailList')->get_recipients(sub {
 	my($it) = @_;
