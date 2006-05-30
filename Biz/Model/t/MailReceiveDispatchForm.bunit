@@ -67,5 +67,5 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 	    'a@b.b' => ['a', undef, undef, 'b.b'],
 	    'a.b.c@d.d' => NOT_FOUND(),
 	],
-    ]
+    ],
 ];
