@@ -283,6 +283,8 @@ use Bivio::TypeError;
 use Time::HiRes ();
 
 #=VARIABLES
+my($_IS_TEST);
+my($_TEST_NOW);
 my($_MIN) = FIRST_DATE_IN_JULIAN_DAYS().' 0';
 my($_MAX) = LAST_DATE_IN_JULIAN_DAYS().' '.(SECONDS_IN_DAY() - 1);
 # Is this year (- FIRST_YEAR) a leap year?  Returns 0 or 1.
@@ -975,7 +977,14 @@ Returns date/time for now.
 =cut
 
 sub now {
-    return from_unix(__PACKAGE__, time);
+    my($proto) = @_;
+    if (!defined($_IS_TEST)
+        && UNIVERSAL::can('Bivio::Agent::Task', 'register')
+    ) {
+	Bivio::Agent::Task->register($proto)
+	    if $_IS_TEST = Bivio::Agent::Request->is_test;
+    }
+    return $_IS_TEST && $_TEST_NOW || $proto->from_unix(time);
 }
 
 =for html <a name="now_as_file_name"></a>
@@ -1195,6 +1204,24 @@ Returns 13.
 
 sub get_width {
     return 13;
+}
+
+=for html <a name="handle_pre_execute_task"></a>
+
+=head2 static handle_pre_execute_task(Bivio::Agent::Request req)
+
+Parses out test_now from query if it exists.
+
+=cut
+
+sub handle_pre_execute_task {
+    my($proto, $req) = @_;
+    $_TEST_NOW = undef;
+    my($q) = $req->unsafe_get_query;
+    return
+	unless $q;
+    $_TEST_NOW = ($proto->from_literal(delete($q->{date_time_test_now})))[0];
+    return;
 }
 
 =for html <a name="is_date"></a>
