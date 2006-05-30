@@ -180,7 +180,8 @@ sub internal_set_realm {
 =head2 parse_recipient(boolean ignore_dashes) : array
 
 Returns (realm, op, plus_tag, domain) from recipient.  I<op> may be undef.
-I<realm> may be a Model.RealmOwner, name, realm_id, or undef (invalid)
+I<realm> may be a Model.RealmOwner, name, or realm_id.  Dies with NOT_FOUND
+if recipient not syntactically valid.
 
 Two addresses are parsed:
 
@@ -203,6 +204,10 @@ sub parse_recipient {
     my($name, $op) = $ignore_dashes ? () : $to =~ /^(\w+)(?:-([^\.]+))?$/;
     ($op, $name) = $to =~/^(?:([^\.]+)\.)?([\w-]+)$/
 	unless $name;
+    $self->throw_die('NOT_FOUND', {
+	entity => $to,
+        message => 'invalid recipient',
+    }) unless defined($name);
     _trace('name: ', $name, ' op: ', $op, ' plus_tag: ', $plus_tag,
 	' domain: ', $domain)
 	if $_TRACE;

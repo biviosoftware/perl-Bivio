@@ -65,7 +65,7 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 	} => [
 	    'a.b+c@d.d' => [qw(b a c d.d)],
 	    'a@b.b' => ['a', undef, undef, 'b.b'],
-	    'a.b.c@d.d' => [undef, undef, undef, 'd.d'],
+	    'a.b.c@d.d' => NOT_FOUND(),
 	],
     ]
 ];
