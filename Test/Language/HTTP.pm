@@ -49,6 +49,7 @@ use HTTP::Request ();
 use HTTP::Request::Common ();
 use Sys::Hostname ();
 use URI ();
+use URI::QueryParam ();
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -104,7 +105,7 @@ sub absolute_uri {
     my($self, $uri) = @_;
     die('invalid uri')
 	unless defined($uri) && length($uri);
-    my($u) = URI->new($uri);
+    my($u) = URI->new(_append_query($self, $uri));
     return defined($u->scheme) ? $uri : $u->abs(
 	$self->[$_IDI]->{uri}
 	|| Bivio::Die->die($uri, ': unable to make absolute; no prior URI')
@@ -135,6 +136,20 @@ Clear the cookies
 
 sub clear_cookies {
     shift->[$_IDI]->{cookies}->clear();
+    return;
+}
+
+=for html <a name="clear_extra_query_params"></a>
+
+=head2 clear_extra_query_params()
+
+Clear the extra query params
+
+=cut
+
+sub clear_extra_query_params {
+    my($self) = @_;
+    delete($self->internal_get->{extra_query_params});
     return;
 }
 
@@ -193,6 +208,20 @@ sub do_test_backdoor {
 	. Bivio::IO::ClassLoader->simple_require('Bivio::Agent::HTTP::Query')
 	    ->format({%$form_fields, form_model => $form_model}),
     );
+    return;
+}
+
+=for html <a name="extra_query_params"></a>
+
+=head2 extra_query_params(string key, string value)
+
+Append extra query params.
+
+=cut
+
+sub extra_query_params {
+    my($self, $key, $value) = @_;
+    push(@{($self->internal_get->{extra_query_params} ||= [])}, $key, $value);
     return;
 }
 
@@ -1048,6 +1077,16 @@ sub visit_uri {
 
 #=PRIVATE SUBROUTINES
 
+# _append_query(string uri, array_ref query) : string
+# query should be [k1 => v1, k2 => v2, ...]
+sub _append_query {
+    my($self, $u) = @_;
+    my($q) = $self->internal_get->{extra_query_params};
+    my($uri) = URI->new($u);
+    $uri->query_param_append(@$q);
+    return $uri->as_string;
+}
+
 # _assert_form_field(hash_ref form, any name) : hash_ref
 #
 # Returns the named field from form->class or dies.
@@ -1102,8 +1141,10 @@ sub _create_form_request {
 	$uri =~ s/\?.*//;
         my($url) = URI->new('http:');
         $url->query_form(@$form);
-	return HTTP::Request->new(GET => $uri . '?' . $url->query);
+	return HTTP::Request->new(
+	    GET => _append_query($self, $uri . '?' . $url->query));
     }
+    $uri = _append_query($self, $uri);
     # file fields are array refs
     return scalar(grep({ref($_)} @$form))
         ? HTTP::Request::Common::POST($uri,

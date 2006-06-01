@@ -22,10 +22,17 @@ BEGIN {
 use Bivio::IO::File;
 use Bivio::Test;
 use Bivio::Test::Language;
+use Bivio::Test::Language::HTTP;
 Bivio::IO::File->mkdir_p(
     Bivio::IO::File->rm_rf($mail_dir));
 my($mail_file) = Bivio::IO::File->write("$mail_dir/1", 'should be deleted');
 Bivio::Test->unit([
+    Bivio::Test::Language::HTTP->new() => [
+	extra_query_params => [[K => 'V'] => undef],
+	_append_query => [['/foo/bar?k=v'] => '/foo/bar?k=v&K=V'],
+	clear_extra_query_params => undef,
+	_append_query => [['/foo/bar?k=v'] => '/foo/bar?k=v'],
+    ],
     'Bivio::Test::Language' => [
 	{
 	    method => 'test_run',
