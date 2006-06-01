@@ -43,6 +43,10 @@ __PACKAGE__->compile;
 
 =cut
 
+sub is_continuous {
+    return 0;
+}
+
 #=PRIVATE SUBROUTINES
 
 =head1 COPYRIGHT
