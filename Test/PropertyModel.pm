@@ -49,12 +49,12 @@ Bivio::Test::Request->initialize_fully;
 
 =cut
 
-sub new {
-    my($proto, $attrs) = @_;
+sub new_unit {
+    my($proto, $class, $attrs) = @_;
     my($model) = $proto->builtin_class;
     $attrs = {}
 	unless ref($attrs);
-    my($m) = Bivio::Biz::Model->get_instance($model);
+    my($m) = $class;
     return $proto->SUPER::new({
 	class_name => $m->package_name,
 	check_return => sub {
