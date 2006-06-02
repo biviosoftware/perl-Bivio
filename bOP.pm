@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.20  2006/05/30 15:32:33  moeller
+  * Bivio::Agent::HTTP::Reply added additional_http_headers config value
+    which allows adding additional items to the HTTP header for every
+    reply
+  * Bivio::Delegate::Cookie issue a warning if the cookie contains
+    duplicate keys
+
   Revision 4.19  2006/05/26 17:44:56  moeller
   * Bivio::UI::HTML::Widget::Style added execute(), can now be used as a
     top-level widget within a page
