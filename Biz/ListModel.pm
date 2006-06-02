@@ -150,14 +150,15 @@ sub new {
 =head2 static new_anonymous(hash_ref config, Bivio::Agent::Request req) : Bivio::Biz::ListModel
 
 Create a new_anonymous ListModel associated with the request.
-Defaults version to 1.
+Defaults version and can_iterate to 1.
 
 =cut
 
 sub new_anonymous {
-    $_[1]->{version} = 1
-        if ref($_[1]) eq 'HASH'
-            && !exists $_[1]->{version};
+    if (ref($_[1]) eq 'HASH') {
+	$_[1]->{version} ||= 1;
+	$_[1]->{can_iterate} ||= 1;
+    };
     return _new(Bivio::Biz::Model::new_anonymous(@_));
 }
 
