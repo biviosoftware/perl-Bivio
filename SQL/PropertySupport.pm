@@ -623,6 +623,7 @@ sub _prepare_select_param {
 	push(@$params, $column->{type}->to_sql_param($value));
 	return $column->{sql_name} . '=' . $column->{sql_pos_param};
     }
+    $value = [map($column->{type}->from_literal($_), @$value)];
     push(@$params, @{$column->{type}->to_sql_param_list($value)});
     return $column->{sql_name}
 	. ' IN '
