@@ -71,6 +71,7 @@ my($_VARS) = {
     server_admin => undef,
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
+    timeout => 120,
     servers => 4,
     httpd_init_rc => '/etc/rc.d/init.d/httpd',
     httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
@@ -309,7 +310,7 @@ Group apache
 ServerAdmin $server_admin
 ServerTokens Min
 
-Timeout 120
+Timeout $timeout
 KeepAlive On
 MaxKeepAliveRequests 100
 KeepAliveTimeout 15
