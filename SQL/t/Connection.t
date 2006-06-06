@@ -14,6 +14,9 @@ Bivio::Die->eval(
 );
 Bivio::Test->unit([
     Bivio::SQL::Connection->get_instance => [
+        # need to rollback first in case the drop above leaves the
+        # connection in a bad state
+        rollback => undef,
 	execute => [
 	    # We expect to get a statement back.
 	    [<<"EOF"] => \&_expect_statement,
