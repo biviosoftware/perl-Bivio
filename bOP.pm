@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.21  2006/06/02 02:18:03  dobbs
+  * Bivio::Biz::Action::ForumMail now commits changes before sending
+    messages because bounces may start getting returned before we're
+    done sending messages.
+  * Bivio::Biz::Model::MailReceiveDispatchForm->parse_recipient now dies
+    with NOT_FOUND if recipient is not syntactically valid.
+  * Bivio::Test::Language::HTTP added extra_query_params() and
+    clear_extra_query_params() to allow tests to pass in extra
+    information for testing, for example to control "today's" date.
+  * Bivio::Test::PropertyModel now allows tests to specify
+    compute_object or other directives in the attributes passed to the
+    constructor.
+  * Bivio::Type::DateTime now allows test code to override the current
+    date and time by passing date_time_test_now as a query parameter.
+  * Bivio::Type::ECService is no longer continuous so subclasses can
+    remove one service without affecting another.
+  * Bivio::Util::SQL->delete_realm_files() added to allow subclasses to
+    override the deletion of files.
+
   Revision 4.20  2006/05/30 15:32:33  moeller
   * Bivio::Agent::HTTP::Reply added additional_http_headers config value
     which allows adding additional items to the HTTP header for every
