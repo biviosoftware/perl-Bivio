@@ -329,6 +329,7 @@ Returns an email address based on I<email_user> and I<suffix>.
 
 sub generate_local_email {
     my($self, $suffix) = @_;
+    Bivio::Die->die('missing suffix') unless defined($suffix);
     return lc($_CFG->{email_user}
 	. $_CFG->{email_tag}
 	. $suffix
