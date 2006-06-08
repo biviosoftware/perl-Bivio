@@ -175,7 +175,8 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
+    my($info) = $self->merge_initialize_info(
+        shift->SUPER::internal_initialize(@_), {
 	# Form versions are checked and mismatches causes VERSION_MISMATCH
 	version => 1,
 
@@ -189,8 +190,12 @@ sub internal_initialize {
 		name => 'login',
 		type => 'Line',
 		constraint => 'NOT_NULL',
+                form_name => 'x1',
 	    },
-            'RealmOwner.password',
+            {
+                name => 'RealmOwner.password',
+                form_name => 'x2',
+            },
 	],
 
 	# Fields used internally which are computed dynamically.
@@ -216,9 +221,16 @@ sub internal_initialize {
 		constraint => 'NONE',
             },
 	],
-    };
-    return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+    });
+
+    foreach my $field (@{$info->{visible}}) {
+        $field = {
+            name => $field,
+        } unless ref($field);
+        next if $field->{form_name};
+        $field->{form_name} = $field->{name};
+    }
+    return $info;
 }
 
 =for html <a name="substitute_user"></a>
