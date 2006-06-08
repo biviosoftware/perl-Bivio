@@ -2,19 +2,23 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-my($outgoing) = generate_local_email(random_string());
-my($aliases) = '/dav/Email Aliases.csv';
-basic_authorization('root');
-send_request(GET => $aliases);
 my($incoming) = generate_remote_email(test_name());
-(my $x = get_content()) =~ s/^\Q$incoming\E,.*//mg;
-send_request(PUT => $aliases, undef, $x . <<"EOF");
+my($outgoing) = generate_local_email(random_string());
+my($aliases_uri) = '/dav/Email Aliases.csv';
+basic_authorization('root');
+send_request(GET => $aliases_uri);
+verify_no_text("$incoming,$outgoing");
+my($orig_aliases) = get_content();
+send_request(PUT => $aliases_uri, undef, $orig_aliases . <<"EOF");
 $incoming,$outgoing
 EOF
-send_request(GET => $aliases);
-($x = get_content()) =~ s/^\Q$incoming\E,.*//mg;
-send_request(PUT => $aliases, undef, $x);
+send_request(GET => $aliases_uri);
+verify_text("$incoming,$outgoing");
 my($s) = send_mail(
     generate_local_email('root'), $incoming,
 )->unsafe_get_header('Subject');
-verify_local_mail($incoming, $s);
+verify_local_mail($outgoing, $s);
+
+send_request(PUT => $aliases_uri, undef, $orig_aliases);
+send_request(GET => $aliases_uri);
+verify_no_text("$incoming,$outgoing");
