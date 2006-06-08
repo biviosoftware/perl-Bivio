@@ -3,6 +3,7 @@
 test_setup('PetShop');
 home_page();
 my($incoming) = generate_remote_email(test_name());
+my($incoming2) = generate_local_email(random_string());
 my($outgoing) = generate_local_email(random_string());
 my($aliases_uri) = '/dav/Email Aliases.csv';
 basic_authorization('root');
@@ -18,6 +19,15 @@ my($s) = send_mail(
     generate_local_email('root'), $incoming,
 )->unsafe_get_header('Subject');
 verify_local_mail($outgoing, $s);
+
+# check aliasing on the reply
+send_request(PUT => $aliases_uri, undef, $orig_aliases . <<"EOF");
+$incoming2,$outgoing
+EOF
+$s = send_mail(
+    $outgoing, $incoming2,
+)->unsafe_get_header('Subject');
+verify_local_mail($incoming2, $s);
 
 send_request(PUT => $aliases_uri, undef, $orig_aliases);
 send_request(GET => $aliases_uri);
