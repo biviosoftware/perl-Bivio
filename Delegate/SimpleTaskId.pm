@@ -425,7 +425,7 @@ sub get_delegate_info {
             42
             FORUM
             MAIL_SEND
-            Action.ForumMail
+            Action.RealmMail->execute_receive
             Action.MailReceiveStatus->execute
         )],
 	[qw(
@@ -508,6 +508,13 @@ sub get_delegate_info {
  	    FORUM
  	    DATA_READ
  	    Action.RealmFile
+        )],
+	[qw(
+            FORUM_MAIL_REFLECTOR
+            53
+            FORUM
+            MAIL_SEND
+            Action.RealmMail->execute_reflector
         )],
     ];
 }
