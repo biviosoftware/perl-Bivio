@@ -29,8 +29,11 @@ sub create_from_rfc822 {
 	    });
 	}
     }
+    else {
+	$email = undef;
+    }
     Bivio::IO::Alert->warn(
-	$mr->get('recipient'), ': ', $email ? 'unable parse' : 'no RealmMail');
+	$mr->get('recipient'), ': ', $email ? 'no RealmMail' : 'unable parse');
     return $self;
 }
 
