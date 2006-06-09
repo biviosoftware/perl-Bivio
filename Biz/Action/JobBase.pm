@@ -51,7 +51,6 @@ my($_SENTINEL) = __PACKAGE__ . '.internal_execute';
 =head2 execute(Bivio::Agent::Request req) : any
 
 Creates a job which will call L<internal_execute|"internal_execute">.
-payments in the background.
 
 =cut
 
@@ -60,8 +59,7 @@ sub execute {
     die($self, ': does not implement internal_execute')
 	unless $self->can('internal_execute');
     return $self->internal_execute($req)
-	if $req->unsafe_get($_SENTINEL)
-	    || $req->isa('Bivio::Agent::Job:a:Request');
+	if $req->unsafe_get($_SENTINEL);
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Job::Dispatcher');
     Bivio::Agent::Job::Dispatcher->enqueue(
 	$req, $req->get('task_id'), {$_SENTINEL => 1});
