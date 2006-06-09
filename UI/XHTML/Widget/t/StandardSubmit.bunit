@@ -1,19 +1,24 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget({
-    setup_render => sub {
-	Bivio::Biz::Model->new(req(), 'UserLoginForm');
-	return;
-    },
     new_params => sub {
-	my(undef, $params) = @_;
+	my($case, $params) = @_;
+	my($f) = shift(@$params);
+	$case->put('the_form', $f);
 	return [@$params, {
-	    form_class => 'UserLoginForm',
-	    form_model => [['->get_request'], 'Model.UserLoginForm'],
+	    form_class => $f,
+	    form_model => [['->get_request'], 'Model.'.$f],
 	}];
+    },
+    setup_render => sub {
+	my($req, $case, $params) = @_;
+	Bivio::Biz::Model->new(req(), $case->get('the_form'))->put_on_request;
+	return;
     },
 });
 [
-    [] => qr{<div class="standard_submit">.*<input type="submit" name="f3" value=" OK "\s+class="submit" />.*<input type="submit" name="f1" value="Cancel" onclick="reset\(\)" class="submit" />.*</div>},
-    ok_button => qr{<div class="standard_submit">.*<input type="submit" name="f3" value=" OK "\s+class="submit" />.*</div>},
+    ['ContactForm'] => qr{<div class="standard_submit">.*<input type="submit" name="f2" value=" OK "\s+class="submit" />.*<input type="submit" name="f0" value="Cancel" onclick="reset\(\)" class="submit" />.*</div>},
+    ['ContactForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="f2" value=" OK "\s+class="submit" />.*</div>},
+    ['UserLoginForm'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value=" OK "\s+class="submit" />.*<input type="submit" name="cancel_button" value="Cancel" onclick="reset\(\)" class="submit" />.*</div>},
+    ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value=" OK "\s+class="submit" />.*</div>},
 ];
