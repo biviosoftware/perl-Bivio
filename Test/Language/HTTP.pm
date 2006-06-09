@@ -49,7 +49,6 @@ use HTTP::Request ();
 use HTTP::Request::Common ();
 use Sys::Hostname ();
 use URI ();
-use URI::QueryParam ();
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -1084,7 +1083,7 @@ sub _append_query {
     my($self, $u) = @_;
     my($q) = $self->internal_get->{extra_query_params};
     my($uri) = URI->new($u);
-    $uri->query_param_append(@$q);
+    $uri->query_form($uri->query_form, @$q);  # XXX
     return $uri->as_string;
 }
 
