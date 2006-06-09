@@ -135,8 +135,8 @@ sub new {
     }
     elsif (UNIVERSAL::isa($msg, __PACKAGE__)) {
 	# NOTE: This shares \$body if it exists, which neither class nor
-	# its parents modify.  Action.ForumMail depends on this so that the
-	# server doesn't grow too large
+	# its parents modify.  Action.RealmMailReflector depends on this
+	# so that the server doesn't grow too large.
 	while (my($k, $v) = each(%{$msg->[$_IDI]})) {
 	    $fields->{$k} = ref($v) eq 'ARRAY' ? [@$v]
 		: ref($v) eq 'HASH' ? {%$v}
