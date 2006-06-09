@@ -502,8 +502,8 @@ must support L<handle_pre_execute_task|"handle_pre_execute_task">.
 
 sub register {
     my($proto, $handler) = @_;
-    return if grep($_ eq $handler, @_HANDLERS);
-    push(@_HANDLERS, $handler);
+    push(@_HANDLERS, $handler)
+	unless grep($_ eq $handler, @_HANDLERS);
     return;
 }
 
