@@ -59,8 +59,8 @@ use Bivio::IO::File;
 Bivio::Die->die(q{$mail_file: should not exist})
     if -e q{$mail_file};
 # Deprecated usage:
-generate_local_email() =~ /@/;
-my(\$e1, \$n1) = generate_local_email();
+generate_local_email(random_string()) =~ /@/;
+my(\$e1, \$n1) = generate_local_email(random_string());
 test_deviance(qr/No mail for /);
 verify_local_mail(\$e1, '');
 test_conformance();
