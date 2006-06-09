@@ -23,7 +23,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	can_iterate => 0,
-	primary_key => [['RealmUser.user_id', 'Email.realm_id']],
+	primary_key => [[qw(RealmUser.user_id Email.realm_id User.user_id)]],
 	order_by => [
 	    'Email.email',
 	    'RealmUser.role',
