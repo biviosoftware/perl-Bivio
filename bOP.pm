@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.23  2006/06/09 20:40:36  dobbs
+  * Bivio::Biz::Model::ForumUserList can now get the related User model
+  * Bivio::Biz::Model::UserLoginForm now sets explicit html form field
+    names to accommodate a bug in Firefox that could display the values
+    of password fields
+  * Bivio::Test::Language::HTTP no longer depends on URI::QueryForm for
+    compatibility with perl 5.6
+
   Revision 4.22  2006/06/07 17:13:57  moeller
   * Bivio::Biz::ListModel new_anonymous defaults can_iterate to true
   * Bivio::SQL::PropertySupport allow literal identifiers in value lists
