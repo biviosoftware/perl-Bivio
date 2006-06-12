@@ -444,7 +444,7 @@ sub detach_process {
 	if $pid;
     # Child
     open(STDIN, '< /dev/null');
-    open(STDOUT, '< /dev/null');
+    open(STDOUT, '+> /dev/null');
     open(STDERR, '>&STDOUT');
     chdir('/');
     eval {
