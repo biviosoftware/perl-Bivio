@@ -8,6 +8,14 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
 my($_FP) = $_RF->get_field_type('path');
 
+sub delete {
+    my($self) = @_;
+    $self->new_other('RealmFile')->delete({
+	map(($_ => $self->get("RealmFile.$_")), qw(realm_id realm_file_id)),
+    });
+    return;
+}
+
 sub get_content {
     return $_RF->get_content(shift, 'RealmFile.');
 }
@@ -30,6 +38,7 @@ sub internal_initialize {
 	order_by => [qw(
 	    RealmFile.path_lc
 	    RealmFile.modified_date_time
+	    RealmFile.realm_file_id
 	)],
 	other => [
 	    map("RealmFile.$_", @{$_RF->get_keys}),
