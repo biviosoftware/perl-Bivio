@@ -257,8 +257,9 @@ sub render {
     my($body) = $self->render_attr('body', $source);
     $req->put(xhtml => my $xhtml = $self->render_simple_attr('xhtml', 0));
     $$buffer .= ($xhtml
-	? '<!doctype html public "-//w3c//dtd xhtml 1.0 transitional//en" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-        : '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">')
+#	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
+	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+        : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">')
 	."\n<html><head>\n";
     my($x) = '';
     $self->map_invoke(
