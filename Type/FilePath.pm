@@ -28,4 +28,11 @@ sub get_width {
     return 500;
 }
 
+sub join {
+    my($proto, @parts) = @_;
+    (my $res = join('/', map(defined($_) && length($_) ? $_ : (), @parts)))
+	 =~ s{//+}{/}sg;
+    return $res;
+}
+
 1;
