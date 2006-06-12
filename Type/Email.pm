@@ -78,6 +78,19 @@ my($_ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
 
 =cut
 
+=for html <a name="format_ignore"></a>
+
+=head2 static format_ignore(string base, Bivio::Agent::Request req) : string
+
+Formats an ignore email.
+
+=cut
+
+sub format_ignore {
+    my($proto, $base, $req) = @_;
+    return $req->format_email($proto->IGNORE_PREFIX . $base);
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array
