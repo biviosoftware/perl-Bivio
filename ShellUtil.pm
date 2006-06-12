@@ -379,6 +379,21 @@ sub are_you_sure {
     return;
 }
 
+=for html <a name="assert_not_root"></a>
+
+=head2 assert_not_root()
+
+Ensure the current command-line user is not root.
+
+=cut
+
+sub assert_not_root {
+    my($self) = @_;
+    $self->usage_error('this utility method may not be run as root')
+        if $< == 0;
+    return;
+}
+
 =for html <a name="command_line"></a>
 
 =head2 command_line() : string
