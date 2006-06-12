@@ -38,7 +38,7 @@ sub execute_receive {
 sub execute_reflector {
     my($proto, $req) = @_;
     my($self) = $req->get($proto->package_name);
-    my($out, $rfid) = $self->get(qw(mail_receive outgoing realm_file_id));
+    my($out, $rfid) = $self->get(qw(outgoing realm_file_id));
     my($rmb) = Bivio::Biz::Model->new($req, 'RealmMailBounce');
     $rmb->new_other('RealmEmailList')->get_recipients(sub {
 	my($it) = @_;
