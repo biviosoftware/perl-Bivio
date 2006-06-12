@@ -27,7 +27,7 @@ sub internal_initialize {
 	    {
 		name => 'text',
 		type => 'TextArea',
-		constraint => 'NONE',
+		constraint => 'NOT_NULL',
 	    },
 	],
     });
