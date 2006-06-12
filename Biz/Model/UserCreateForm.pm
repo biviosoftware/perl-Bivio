@@ -42,8 +42,10 @@ use Bivio::IO::Trace;
 use Bivio::Type::Location;
 use Bivio::Type::Name;
 use Bivio::Type::Password;
+use Bivio::Biz::Random;
 
 #=VARIABLES
+my($_E) = Bivio::Type->get_instance('Email');
 
 =head1 METHODS
 
@@ -103,12 +105,12 @@ sub internal_create_models {
     $self->new_other('Email')->create({
 	realm_id => $user->get('user_id'),
 	email => $self->unsafe_get('Email.email')
-	    || $req->format_email(Bivio::Type::Email->IGNORE_PREFIX
-	    . $realm->get('name')
-	    . '-' . time),
+	    || $_E->format_ignore(
+		$realm->get('name') . '-' . Bivio::Biz::Random->hex_digits(8),
+		$req,
+	    ),
 	want_bulletin => $params->{'Email.want_bulletin'} || 0,
-    }) unless ($self->unsafe_get('Email.email') || '')
-	eq Bivio::Type::Email->IGNORE_PREFIX;
+    }) unless ($self->unsafe_get('Email.email') || '') eq $_E->IGNORE_PREFIX;
     return ($realm, $user);
 }
 
