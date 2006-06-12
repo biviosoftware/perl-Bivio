@@ -57,7 +57,6 @@ __PACKAGE__->compile([
     JUST_VISITOR => [1],
     LOGGED_OUT => [2],
     LOGGED_IN => [3],
-# SUBSTITUTED_USER?
 ]);
 
 #=PRIVATE METHODS
