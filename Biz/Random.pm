@@ -17,6 +17,15 @@ sub bytes {
 	? $res : $proto->die("/dev/random: $!");
 }
 
+sub hex_digits {
+    my($proto, $length) = @_;
+    return substr(
+	unpack('h*', shift->bytes(int(($length + 1) / 2))),
+	0,
+	$length,
+    );
+}
+
 sub password {
     return Bivio::MIME::Base64->http_encode(shift->bytes(12));
 }
