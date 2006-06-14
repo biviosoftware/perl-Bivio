@@ -115,7 +115,9 @@ sub get_clean_base {
     $value =~ s/(\w)\.\w{1,5}$/$1/;
     $value =~ s/^\W+|\W+$//g;
     $value =~ s/\W+/-/g;
-    return length($value) ? $value : undef;
+    my($n) = $proto->get_width - 6;
+    return length($value) > $n ? substr($value, 0, $n)
+	: length($value) ? $value : undef;
 }
 
 =for html <a name="get_tail"></a>
