@@ -40,16 +40,18 @@ sub execute {
     unless ($html) {
 	if ($name eq 'StartPage') {
 	    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
-	    $rf->unauth_load_or_die({
+	    $rf->unauth_load({
 		path_lc => '/wiki/defaultstartpage',
 		realm_id => Bivio::UI::Constant
 		    ->get_from_source($req)->get_value('help_wiki_realm_id'),
 	    });
-	    $rf->copy_deep({
-		path => '/wiki/' . $name,
-		realm_id => $realm_id,
-	    });
-	    return $req->get('task_id');
+	    if ($rf->is_loaded) {
+		$rf->copy_deep({
+		    path => '/wiki/' . $name,
+		    realm_id => $realm_id,
+		});
+		return $req->get('task_id');
+	    }
 	}
 	my($t) = $req->unsafe_get_nested(qw(task edit_task));
 	Bivio::Die->throw(MODEL_NOT_FOUND => {entity => $name})
