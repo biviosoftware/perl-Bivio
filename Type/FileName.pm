@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::FileName;
 use strict;
@@ -111,8 +111,7 @@ sub get_clean_base {
     my($proto, $value) = @_;
     return undef
 	unless defined($value);
-    $value = $proto->get_tail($value);
-    $value =~ s/(\w)\.\w{1,5}$/$1/;
+    $value = $proto->get_base($value);
     $value =~ s/^\W+|\W+$//g;
     $value =~ s/\W+/-/g;
     my($n) = $proto->get_width - 6;
@@ -125,13 +124,32 @@ sub get_clean_base {
 =head2 static get_tail(string value) : string
 
 Returns the basename including file suffix, stripping directories
-and drive names.
+and drive names.  '/' returns empty string.
 
 =cut
 
 sub get_tail {
     my(undef, $value) = @_;
-    $value =~ s!.*[:\/\\]!!;
+    $value =~ s{[:\/\\]+$}{};
+    $value =~ s{.*[:\/\\]}{};
+    return $value;
+}
+
+=for html <a name="get_base"></a>
+
+=head2 static get_base(string value) : string
+
+Returns the basename excluding file suffix, stripping directories
+and drive names.
+
+=cut
+
+sub get_base {
+    my($proto, $value) = @_;
+    $value = $proto->get_tail($value);
+    return $value
+	if $value =~ /^\.+[^\.]*$/;
+    $value =~ s/\.[^\.]+$//;
     return $value;
 }
 
@@ -139,7 +157,7 @@ sub get_tail {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
