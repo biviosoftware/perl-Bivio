@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::HTMLParser::Links;
 use strict;
@@ -199,7 +199,8 @@ sub _start_img {
     my($self, $attr) = @_;
     my($fields) = $self->[$_IDI];
     return unless $fields->{href};
-    Bivio::Die->die('missing src: ', $attr) unless $attr->{src};
+    Bivio::Die->die('missing src: ', $attr)
+        unless $attr->{src};
     # Delete the gif/jpg suffix and any directory prefix
     $attr->{src} =~ s/(?:.*\/)?([^\/]+)\.\w+$/$1/;
     _link($self, $attr->{src}, $attr->{alt});
@@ -208,7 +209,7 @@ sub _start_img {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
