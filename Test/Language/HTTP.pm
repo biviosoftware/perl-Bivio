@@ -226,17 +226,22 @@ sub extra_query_params {
 
 =for html <a name="file_field"></a>
 
+=head2 file_field(string file_name) : array_ref
+
 =head2 file_field(string name, string content) : array_ref
 
 =head2 file_field(string name, string_ref content) : array_ref
 
-Returns a definition for the named file field value.
-Uses a temporary file which is cleaned up at program exit.
+Returns a value to be used by submit_form() with I<file_name> or I<name> as the
+name.  Uses a temporary file which is cleaned up at program exit if I<content>
+is supplied.
 
 =cut
 
 sub file_field {
     my($self, $name, $content) = @_;
+    return [$name, $name]
+	unless defined($content);
     my($handle, $file) = File::Temp::tempfile(UNLINK => 1,
         SUFFIX => '-' . $name);
     print($handle ref($content) ? $$content : $content);
