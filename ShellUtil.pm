@@ -390,7 +390,7 @@ Ensure the current command-line user is not root.
 sub assert_not_root {
     my($self) = @_;
     $self->usage_error('this utility method may not be run as root')
-        if $< == 0;
+        if $> == 0;
     return;
 }
 
