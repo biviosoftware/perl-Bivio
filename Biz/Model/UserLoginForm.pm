@@ -110,7 +110,7 @@ this constraint.
 
 sub assert_can_substitute_user {
     my($proto, $realm, $req) = @_;
-    Bivio::Die->die('not a super user')
+    Bivio::Die->die('not a super user: ', $req)
 	unless $req->is_super_user;
     return;
 }
@@ -259,6 +259,19 @@ sub substitute_user {
     _trace($req->unsafe_get('super_user_id'), ' => ', $realm)
 	if $_TRACE;
     return $proto->execute($req, {realm_owner => $realm});
+}
+
+=for html <a name="unsafe_get_cookie_user_id"></a>
+
+=head2 static unsafe_get_cookie_user_id(Bivio::Agent::Request req) : string
+
+Returns user_id in cookie independent of login state.
+
+=cut
+
+sub unsafe_get_cookie_user_id {
+    my($proto, $req) = @_;
+    return _get($req->unsafe_get('cookie'), $proto->USER_FIELD);
 }
 
 =for html <a name="validate"></a>
