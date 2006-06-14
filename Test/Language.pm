@@ -58,8 +58,6 @@ use File::Spec ();
 use File::Basename ();
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 use vars ('$AUTOLOAD');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SELF_IN_EVAL);
@@ -139,6 +137,28 @@ Subclasses should implement:
 =cut
 
 sub DESTROY {
+    return;
+}
+
+=for html <a name="do_deviance"></a>
+
+=head2 do_deviance(self, code_ref dev_block, string regex)
+
+
+
+=cut
+
+sub do_deviance {
+    my($self, $dev_block, $regex) = @_;
+    $regex = defined($regex) ? qr/$regex/is : qr//
+        unless ref($regex);
+    my($die) = Bivio::Die->catch($dev_block);
+    _die($self, ' deviance call "', $regex, '" failed to die.')
+	unless $die;
+    _die($self, ' deviance call failed with "',
+	$die, '" but did not match pattern: ', $regex)
+	unless $die->as_string =~ $regex;
+
     return;
 }
 
