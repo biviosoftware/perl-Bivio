@@ -267,7 +267,7 @@ sub _parse_last {
     my($name, $parts) = @_;
     return if _is_conjunction($parts->[$#$parts - 1]);
     my($last) = pop(@$parts);
-    if ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|I|IV|V|\d..)$|\.|^I{2,}/i
+    if ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|pe|I|IV|V|\d..)$|\.|^I{2,}/i
 	    && defined($parts->[0])) {
 	my($penult) = pop(@$parts);
 	$penult =~ s/,//;
