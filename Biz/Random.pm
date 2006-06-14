@@ -11,10 +11,16 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub bytes {
     my($proto, $length) = @_;
     my($f, $res);
-    return ($f = IO::File->new('< /dev/random'))
-	&& defined($f->sysread($res, $length))
-	&& defined($f->close)
-	? $res : $proto->die("/dev/random: $!");
+    return -r '/dev/random'
+	? ($f = IO::File->new('< /dev/random'))
+	    && defined($f->sysread($res, $length))
+	    && defined($f->close)
+	    ? $res : $proto->die("/dev/random: $!")
+	: substr(
+	    pack('L', int(rand(0xffffffff))) x int(($length + 3)/4),
+	    0,
+	    $length,
+	);
 }
 
 sub hex_digits {
