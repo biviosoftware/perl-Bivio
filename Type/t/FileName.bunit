@@ -1,0 +1,19 @@
+# Copyright (c) 2006 TruAd LLC.  All Rights Reserved.
+# $Id$
+Type();
+[
+    class() => [
+	from_literal => [
+	    '' => [undef],
+	    a => 'a',
+	    '/a' => FILE_NAME(),
+	],
+	get_clean_base => [
+	    a => 'a',
+	    'b/a' => 'a',
+	    '/a.b' => 'a',
+	    '/.a' => 'a',
+	    'a b' => 'a-b',
+	],
+    ],
+];

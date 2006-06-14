@@ -96,11 +96,34 @@ sub from_literal {
     return $proto->SUPER::from_literal($value);
 }
 
+=for html <a name="get_clean_base"></a>
+
+=head2 static get_clean_base(string value) : array
+
+Returns the base name of value cleaned of any non-alpha-numeric input chars and
+without the suffix.
+
+May return undef, if the there are no clean chars in the tail.
+
+=cut
+
+sub get_clean_base {
+    my($proto, $value) = @_;
+    return undef
+	unless defined($value);
+    $value = $proto->get_tail($value);
+    $value =~ s/(\w)\.\w{1,5}$/$1/;
+    $value =~ s/^\W+|\W+$//g;
+    $value =~ s/\W+/-/g;
+    return length($value) ? $value : undef;
+}
+
 =for html <a name="get_tail"></a>
 
 =head2 static get_tail(string value) : string
 
-Returns the basename, stripping directories and drive names.
+Returns the basename including file suffix, stripping directories
+and drive names.
 
 =cut
 
