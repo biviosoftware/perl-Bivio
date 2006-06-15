@@ -7,11 +7,12 @@ use Bivio::MIME::Base64;
 use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DEV) = -r '/dev/random' ? 1 : 0;
 
 sub bytes {
     my($proto, $length) = @_;
     my($f, $res);
-    return -r '/dev/random'
+    return $_DEV
 	? ($f = IO::File->new('< /dev/random'))
 	    && defined($f->sysread($res, $length))
 	    && defined($f->close)
