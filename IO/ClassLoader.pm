@@ -251,10 +251,13 @@ Returns the names of the classes loaded.
 
 sub map_require_all {
     my($proto, $map_name, $filter) = @_;
+    my($seen) = {};
     return [map(
-	# map_require filters duplicates for us
-	map($proto->map_require($map_name, ($_->[0] =~ /(\w+)$/)[0]),
-	    grep(!$filter || $filter->(@$_), _map_glob($map_name, $_)),
+	map({
+	    my($c) = $proto->map_require($map_name, ($_->[0] =~ /(\w+)$/)[0]);
+	    $seen->{$c}++ ? () : $c;
+	}
+            grep(!$filter || $filter->(@$_), _map_glob($map_name, $_)),
 	),
 	@{$_CFG->{maps}->{$map_name} || _die($map_name, ': no such map')},
     )];
