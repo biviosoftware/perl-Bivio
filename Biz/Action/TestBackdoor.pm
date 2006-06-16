@@ -13,7 +13,7 @@ sub execute {
     my($m) = Bivio::Biz::Model->get_instance(
 	delete((my $q = $req->get('query'))->{form_model}));
     $m->execute($req, {
-	map(($_ => $m->get_field_type($_)->from_literal_or_die($q->{$_})),
+	map(($_ => ($m->get_field_type($_)->from_literal($q->{$_}))[0]),
 	    keys(%$q)),
     });
     return;
