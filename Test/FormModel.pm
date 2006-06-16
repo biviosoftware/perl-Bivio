@@ -2,53 +2,16 @@
 # $Id$
 package Bivio::Test::FormModel;
 use strict;
-$Bivio::Test::FormModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::FormModel::VERSION;
+use base 'Bivio::Test::Unit';
 
-=head1 NAME
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-Bivio::Test::FormModel - x
-
-=head1 RELEASE SCOPE
-
-Bivio
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::FormModel;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Test>
-
-=cut
-
-use Bivio::Test::Unit;
-@Bivio::Test::FormModel::ISA = ('Bivio::Test::Unit');
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::FormModel>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new_unit"></a>
-
-=head2 static new_unit(string class, hash_ref attrs) : Bivio::Test::FormModel
-
-Accepts I<setup_request> in attributes.
-
-=cut
+sub inline_commit {
+    return sub {
+	Bivio::Agent::Task->commit(req());
+	return 1;
+    } => 1,
+}
 
 sub new_unit {
     my($proto, $class, $attrs) = @_;
@@ -142,31 +105,6 @@ sub new_unit {
     });
 }
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="setup_request"></a>
-
-=head2 callback setup_request(Bivio::Test::Case case)
-
-Used to setup the parameters for each request.  Handy for reloading a list
-model when unit testing ListFormModels
-
-=cut
-
-$_ = <<'}'; # emacs
-sub setup_request {
-}
-
-=for html <a name="run_unit"></a>
-
-=head2 run_unit(array_ref case_group)
-
-Example ForumCreateForm.bunit.
-
-=cut
-
 sub run_unit {
     return shift->SUPER::run_unit(@_)
 	if @_ == 3;
@@ -179,8 +117,6 @@ sub run_unit {
 	    ]), 1 .. @$case_group/2),
     ]);
 }
-
-#=PRIVATE SUBROUTINES
 
 sub _walk_tree_actual {
     my($case, $e, $names) = @_;
@@ -198,15 +134,5 @@ sub _walk_tree_expect {
 	    ? $e->($case)
 	    : $e;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
