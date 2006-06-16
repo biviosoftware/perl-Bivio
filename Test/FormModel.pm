@@ -68,7 +68,7 @@ sub new_unit {
 	    $req->clear_nondurable_state;
 	    $req->put(task => Bivio::Collection::Attributes->new({
 		form_model => ref($m),
-		next => 'MY_SITE',
+		next => $req->get('task_id'),
 		require_context => 0,
 	    }));
 	    $fn->($case)
