@@ -140,19 +140,22 @@ sub find_row {
     my($column_name, $column_value) = @_;
     my($found_row);
     _assert_column($self, $table_name, $column_name);
+    my($misses) = [];
     $self->do_rows($table_name,
 	sub {
 	    my($row) = @_;
             # not all rows have all columns defined
             return 1 unless exists($row->{$column_name});
 	    my($t) = $row->{$column_name}->get('text');
+	    push(@$misses, $t);
 	    $found_row = $row
 		if ref($column_value) eq 'Regexp' ? $t =~ $column_value
 		    : $t eq $column_value;
 	    return $found_row ? 0 : 1;
 	});
     return $found_row || Bivio::Die->die(
-	$column_value, ': not found in column ', $column_name,
+	$column_value, ': not found in column "', $column_name,
+	'" values: ', $misses,
     );
 }
 
