@@ -317,6 +317,19 @@ sub test_name {
 	_assert_in_eval('test_name')->get('test_script'), '.btest');
 }
 
+=for html <a name="test_ok"></a>
+
+=head2 test_ok(any value, any msg, ...) : any
+
+Returns I<value> if true, else dies with I<msg>.
+
+=cut
+
+sub test_ok {
+    my($self) = shift;
+    return shift || _die($self, @_);
+}
+
 =for html <a name="test_run"></a>
 
 =head2 static test_run(string script_name) : Bivio::Die
