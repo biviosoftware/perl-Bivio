@@ -995,26 +995,28 @@ rows is not enforced and the order of columns do not need to match the order in
 the form (though the expected values do need to correspond to the expected
 column labels).
 
-
 =cut
 
 sub verify_table {
     my($self, $table_name, $expect) = @_;
-    my($columns) = shift(@$expect);
-    Bivio::Die->die('missing rows values') unless int(@$expect);
-
-    my($header_col) = shift(@$columns);
-    foreach my $expect_row (@$expect) {
-	my($row) = _find_row($self, $table_name, $header_col,
-            shift(@$expect_row));
+    my($cols) = shift(@$expect);
+    Bivio::Die->die('missing rows values')
+        unless int(@$expect);
+    my($first_col) = shift(@$cols);
+    foreach my $e (@$expect) {
+	my($a) = _find_row($self, $table_name, $first_col, shift(@$e));
 	my($diff) = Bivio::IO::Ref->nested_differences(
-	    $expect_row,
+	    $e,
 	    [map({
-                Bivio::Die->die('column not found: ', $_)
-                   unless defined($row->{$_});
-                $row->{$_}->get('text');
-            } @$columns)]);
-	Bivio::Die->die($diff) if defined($diff);
+		$self->test_ok(
+		    exists($a->{$_}), $_, ': column not found in row: ', $a);
+		$a->{$_}->get('text');
+	    }
+		@$cols,
+	    )]
+	);
+	Bivio::Die->die($diff)
+	    if $diff;
     }
     return;
 }
