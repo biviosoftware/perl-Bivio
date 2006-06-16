@@ -1112,6 +1112,8 @@ sub _assert_form_response {
     my($self, $expected_content_type) = @_;
     $expected_content_type ||= 'text/html';
     my($fields) = $self->[$_IDI];
+    return
+	if $fields->{redirect_count} > 0;
 
     if ($expected_content_type eq 'text/html') {
 	my($forms) = _assert_html($self)->get('Forms')->get_shallow_copy;
@@ -1333,6 +1335,7 @@ sub _send_request {
     $fields->{html_parser} =
 	Bivio::Test::HTMLParser->new($fields->{response}->content_ref)
         if $fields->{response}->content_type eq 'text/html';
+    $fields->{redirect_count} = $redirect_count;
     return;
 }
 
