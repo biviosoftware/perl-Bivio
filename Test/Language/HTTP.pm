@@ -1089,6 +1089,8 @@ sub visit_uri {
 sub _append_query {
     my($self, $u) = @_;
     my($q) = $self->internal_get->{extra_query_params};
+    return $u
+	unless defined($q);
     my($uri) = URI->new($u);
     $uri->query_form($uri->query_form, @$q);  # XXX
     return $uri->as_string;
