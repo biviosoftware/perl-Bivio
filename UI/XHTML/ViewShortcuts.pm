@@ -140,6 +140,14 @@ sub vs_acknowledgement {
     );
 }
 
+sub vs_actions_column {
+    my($self, $actions) = @_;
+    return {
+	column_heading => 'actions',
+	column_widget => ListActions($actions),
+    };
+}
+
 sub vs_alphabetical_chooser {
     my(undef, $list_model) = @_;
     return Tag(div => Join([
