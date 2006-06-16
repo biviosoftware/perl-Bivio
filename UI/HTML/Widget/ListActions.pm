@@ -123,7 +123,9 @@ sub initialize {
     my($font) = $self->get_or_default('link_font', 'list_action');
 
     my($i) = 0;
-    foreach my $v (@{$self->get('values')}) {
+    foreach my $value (@{$self->get('values')}) {
+	my($v) = ref($value) ? $value
+	    : [$_VS->vs_text('ListActions', $value), $value];
 	$i++;
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
