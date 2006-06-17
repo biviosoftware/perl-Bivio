@@ -37,4 +37,12 @@ sub password {
     return Bivio::MIME::Base64->http_encode(shift->bytes(12));
 }
 
+sub string {
+    my($proto, $length, $chars) = @_;
+    return join('', map(
+	$chars->[ord($_) % @$chars],
+	split(//, $proto->bytes($length)),
+    ));
+}
+
 1;
