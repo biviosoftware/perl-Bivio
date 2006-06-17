@@ -130,6 +130,8 @@ and drive names.  '/' returns empty string.
 
 sub get_tail {
     my(undef, $value) = @_;
+    return ''
+	unless defined($value);
     $value =~ s{[:\/\\]+$}{};
     $value =~ s{.*[:\/\\]}{};
     return $value;
