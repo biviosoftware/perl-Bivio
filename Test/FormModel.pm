@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub inline_commit {
     return sub {
-	Bivio::Agent::Task->commit(req());
+	Bivio::Agent::Task->commit(Bivio::Agent::Request->get_request);
 	return 1;
     } => 1,
 }
