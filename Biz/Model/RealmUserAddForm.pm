@@ -7,11 +7,13 @@ use base 'Bivio::Biz::Model::UserRegisterForm';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub copy_admins {
-    my($self, $realm_id) = @_;
+    my($self, $realm_id, $parent_realm_id) = @_;
     my($req) = $self->get_request;
     foreach my $admin_id (
 	@{$self->new_other('RealmAdminList')->map_iterate(
 	    sub {shift->get('RealmUser.user_id')},
+	    'unauth_iterate_start',
+	    {auth_id => $parent_realm_id || $req->get('auth_id')},
 	)},
     ) {
 	$self->new->process({
