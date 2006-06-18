@@ -379,6 +379,21 @@ sub are_you_sure {
     return;
 }
 
+=for html <a name="assert_not_general"></a>
+
+=head2 assert_not_general()
+
+Ensure auth_realm is not general.
+
+=cut
+
+sub assert_not_general {
+    my($self) = @_;
+    $self->usage_error('must select a realm with -realm')
+	if $self->get_request->get('auth_realm')->is_general;
+    return;
+}
+
 =for html <a name="assert_not_root"></a>
 
 =head2 assert_not_root()
