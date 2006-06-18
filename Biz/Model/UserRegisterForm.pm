@@ -12,6 +12,8 @@ sub execute_ok {
     my($req) = $self->get_request;
     my($r) = $self->internal_create_models;
     $req->set_realm($r);
+    return
+	if $self->unsafe_get('password_ok');
     $self->internal_put_field(
 	uri => Bivio::Biz::Action->get_instance('UserPasswordQuery')
 	    ->format_uri($req),
@@ -31,7 +33,8 @@ sub internal_create_models {
     ) unless $self->unsafe_get('RealmOwner.display_name');
     $self->internal_put_field(
 	'RealmOwner.password' => Bivio::Biz::Random->password,
-    ) unless $self->unsafe_get('RealmOwner.password');
+    ) unless $self->unsafe_get('RealmOwner.password')
+	&& $self->unsafe_get('password_ok');
     return $self->SUPER::internal_create_models(@_);
 }
 
@@ -52,6 +55,11 @@ sub internal_initialize {
 	    {
 		name => 'uri',
 		type => 'String',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'password_ok',
+		type => 'Boolean',
 		constraint => 'NONE',
 	    },
 	],
