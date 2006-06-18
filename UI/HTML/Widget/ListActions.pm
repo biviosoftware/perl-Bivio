@@ -78,6 +78,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_T) = 'Bivio::Agent::TaskId';
 
 my($_IDI) = __PACKAGE__->instance_data_index;
 
@@ -124,12 +125,14 @@ sub initialize {
 
     my($i) = 0;
     foreach my $value (@{$self->get('values')}) {
-	my($v) = ref($value) ? $value
-	    : [$_VS->vs_text('ListActions', $value), $value];
+	my($v) = ref($value) ? $value : [$value];
+	unshift(@$v, $_VS->vs_text('ListActions', $v->[0]))
+	    if !ref($v->[0]) && $_T->is_valid_name($v->[0])
+		&& $_T->unsafe_from_name($v->[0]);
 	$i++;
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
-	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
+	    task_id => $_T->from_name($v->[1]),
 	    label => _init_label($self, $v->[0], $font),
 	    ref($v->[2]) eq 'ARRAY'
 		|| UNIVERSAL::isa($v->[2], 'Bivio::UI::Widget') ? (
@@ -184,6 +187,7 @@ sub render {
 	    push (@$info, {
 		value => $v,
 		$v->{method}
+#TODO: This caching is wrong; Want to be able to have multiple realms
 		    ? (uri => $req->format_stateless_uri($v->{task_id}))
 		    : (),
 	    });
