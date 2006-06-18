@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.27  2006/06/18 21:12:35  nagler
+  *** empty log message ***
+
   Revision 4.26  2006/06/15 12:38:57  nagler
   * Action.WikiView doesn't die if neither StartPage nor DefaultStartPage exist
   * Model.UserLoginForm->unsafe_get_cookie_user_id added
