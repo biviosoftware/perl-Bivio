@@ -202,8 +202,8 @@ sub vs_descriptive_field {
 	    }, $proto, $name],
 	], {
 	    cell_class => 'field',
-	    $attrs->{row_control} ? (row_control => $attrs->{row_control})
-		: (),
+#TODO: Should this be on label, since it is the first cell in the row?
+	    map(($_ => $attrs->{$_}), grep(/^row_\w+$/, keys(%$attrs))),
 	}),
     ];
 }
