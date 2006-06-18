@@ -60,7 +60,7 @@ my($_PERL_MSG_AT_LINE, $_LOGGER, $_LOG_FILE,
     $_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
     $_STACK_TRACE_WARN, $_STACK_TRACE_WARN_DEPRECATED,
     $_MAX_WARNINGS, $_WARN_COUNTER, $_MAX_ARG_DEPTH, $_DEFAULT_MAX_ARG_DEPTH,
-    $_DEFAULT_MAX_ELEMENT_COUNT, $_MAX_ELEMENT_COUNT,
+    $_DEFAULT_MAX_ELEMENT_COUNT, $_MAX_ELEMENT_COUNT, $_STRIP_BIT8,
 );
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
@@ -76,6 +76,7 @@ BEGIN {
     $_STACK_TRACE_WARN_DEPRECATED = 0;
     $_MAX_WARNINGS = 1000;
     $_WARN_COUNTER = $_MAX_WARNINGS;
+    $_STRIP_BIT8 = 0;
 }
 
 #=IMPORTS
@@ -96,6 +97,7 @@ Bivio::IO::Config->register({
     want_pid => 0,
     want_time => 0,
     max_warnings => $_MAX_WARNINGS,
+    strip_bit8 => 0,
 });
 
 =head1 METHODS
@@ -230,6 +232,10 @@ Print a stack trace when L<warn_deprecated|"warn_deprecated"> is called.
 
 If true, implies B<intercept_warn> is true and will print a stack trace on
 C<CORE::warn>.  Only works on perl's warn, not on calls to L<warn|"warn">.
+
+=item stack_bit8 : boolean [false]
+
+If true, strips all chars 0x80 and above.
 
 =item want_stderr : boolean [false]
 
@@ -563,6 +569,8 @@ sub _format_string_simple {
     local($SIG{__WARN__});
     eval {$o = $o->as_string}
 	if ref($o) && UNIVERSAL::can($o, 'as_string');
+    $o =~ s/[\200-\377]//g
+	if $_STRIP_BIT8;
     return length($o) > $_MAX_ARG_LENGTH
 		? (substr($o, 0, $_MAX_ARG_LENGTH) . '<...>')
 			: $o;
