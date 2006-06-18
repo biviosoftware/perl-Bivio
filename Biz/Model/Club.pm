@@ -44,6 +44,35 @@ and delete interface to the C<club_t> table.
 
 =cut
 
+=for html <a name="create_realm"></a>
+
+=head2 create_realm(hash_ref club, hash_ref realm_owner) : array
+
+Creates the Club, RealmOwner, and RealmUser models.  I<realm_owner> may be an
+empty hash_ref.  I<realm_owner>.password will be invalid.
+
+B<Does not set the realm to the new club.>
+
+Returns (club, realm_owner) models.
+
+=cut
+
+sub create_realm {
+    my($self, $club, $realm_owner, $first_admin_id) = @_;
+    $self->create($club);
+    my($ro) = $self->new_other('RealmOwner')->create({
+	%$realm_owner,
+	realm_type => Bivio::Auth::RealmType->CLUB,
+	realm_id => $self->get('club_id'),
+    });
+    $self->new_other('RealmUser')->create({
+	realm_id => $self->get('club_id'),
+	user_id => $first_admin_id || $self->get_request->get('auth_user_id'),
+        role => Bivio::Auth::Role->ADMINISTRATOR,
+    });
+    return ($self, $ro);
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
