@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.26  2006/06/15 12:38:57  nagler
+  * Action.WikiView doesn't die if neither StartPage nor DefaultStartPage exist
+  * Model.UserLoginForm->unsafe_get_cookie_user_id added
+  * Bivio::Biz::Random->bytes only uses /dev/random if it exists, else uses rand()
+  * Bivio::Test::Language->do_deviance added.
+  * Type.FileName->get_clean-base and get_base() added.  get_tail()
+    now returns 'a' for '/a/'.
+  * Model.UserCreateForm parses PE (professional engineer) correctly
+
   Revision 4.25  2006/06/12 21:52:38  aviggio
   * Bivio::Biz::Action::RealmMail->execute_reflector error fixed
   * Bivio::Biz::Model::ContactForm message field is now required
