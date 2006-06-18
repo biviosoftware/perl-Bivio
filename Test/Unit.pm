@@ -164,6 +164,19 @@ sub builtin_class {
     return $_CLASS;
 }
 
+=for html <a name="builtin_commit"></a>
+
+=head2 builtin_commit()
+
+Calls Bivio::Agent::Task::commit
+
+=cut
+
+sub builtin_commit {
+    Bivio::Agent::Task->commit(shift->builtin_req);
+    return;
+}
+
 =for html <a name="builtin_config"></a>
 
 =head2 builtin_config(hash_ref config)
