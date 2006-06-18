@@ -351,6 +351,19 @@ sub is_default_id {
     return $id < Bivio::Type::PrimaryId->get_min ? 1 : 0;
 }
 
+=for html <a name="is_general"></a>
+
+=head2 is_general() : boolean
+
+Returns true if self is general realm.
+
+=cut
+
+sub is_general {
+    my($self) = @_;
+    return $self->get_general->get('id') eq $self->get('id') ? 1 : 0;
+}
+
 #=PRIVATE METHODS
 
 # _new($proto, $owner, $req) : Bivio::Auth::Realm
