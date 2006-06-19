@@ -140,28 +140,6 @@ sub DESTROY {
     return;
 }
 
-=for html <a name="do_deviance"></a>
-
-=head2 do_deviance(self, code_ref dev_block, string regex)
-
-
-
-=cut
-
-sub do_deviance {
-    my($self, $dev_block, $regex) = @_;
-    $regex = defined($regex) ? qr/$regex/is : qr//
-        unless ref($regex);
-    my($die) = Bivio::Die->catch($dev_block);
-    _die($self, ' deviance call "', $regex, '" failed to die.')
-	unless $die;
-    _die($self, ' deviance call failed with "',
-	$die, '" but did not match pattern: ', $regex)
-	unless $die->as_string =~ $regex;
-
-    return;
-}
-
 =for html <a name="handle_cleanup"></a>
 
 =head2 handle_cleanup()
@@ -275,9 +253,14 @@ L<test_conformance|"test_conformance">
 =cut
 
 sub test_deviance {
-    my(undef, $regex) = _args(@_);
-    _assert_in_eval('test_setup')->put(test_deviance =>
-	ref($regex) ? $regex : defined($regex) ? qr/$regex/is : qr//);
+    if (ref($_[1]) eq 'CODE') {
+	_do_deviance(@_);
+    }
+    else {
+        my(undef, $regex) = _args(@_);
+        _assert_in_eval('test_setup')->put(test_deviance =>
+	    ref($regex) ? $regex : defined($regex) ? qr/$regex/is : qr//);
+    }
     return;
 }
 
@@ -464,6 +447,22 @@ sub _die {
     Bivio::Die->die(ref($self) ? $self->get('test_script')
 	: __PACKAGE__, @msg);
     # DOES NOT RETURN
+}
+
+# _do_deviance(self, code_ref $dev_block, regex $regex)
+#
+sub _do_deviance {
+    my($self, $dev_block, $regex) = @_;
+    $regex = defined($regex) ? qr/$regex/is : qr//
+        unless ref($regex);
+    my($die) = Bivio::Die->catch($dev_block);
+    _die($self, ' deviance call "', $regex, '" failed to die.')
+	unless $die;
+    _die($self, ' deviance call failed with "',
+	$die, '" but did not match pattern: ', $regex)
+	unless $die->as_string =~ $regex;
+
+    return;
 }
 
 # _find_line_number(Bivio::Die die, string script_name)
