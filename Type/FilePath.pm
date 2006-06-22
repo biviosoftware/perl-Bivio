@@ -1,8 +1,8 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::FilePath;
 use strict;
-use base ('Bivio::Type::String');
+use base ('Bivio::Type::FileName');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -12,7 +12,7 @@ sub ILLEGAL_CHAR_REGEXP {
 
 sub from_literal {
     my($proto, $value) = @_;
-    my($v, $e) = shift->SUPER::from_literal(@_);
+    my($v, $e) = Bivio::Type::String->from_literal($value);
     return ($v, $e)
 	unless defined($v);
     return (undef, undef)
