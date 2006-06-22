@@ -32,6 +32,14 @@ use Bivio::UI::HTML::Widget::ControlBase;
 
 C<Bivio::UI::HTML::Widget::Tag>
 
+=head1 ATTRIBUTES
+
+=over 4
+
+=item want_whitespace : boolean [0]
+
+If true, render extra whitespace around tag
+
 =cut
 
 #=IMPORTS
@@ -61,9 +69,18 @@ sub control_on_render {
     my($t) = lc(${$self->render_attr('tag')});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
 	unless $t =~ /^[a-z]+\d*$/;
+    my($ws) = $self->unsafe_get('want_whitespace')
+	? "\n"
+	: '';
+    # $$buffer appears to be always empty
+#     $$buffer .= $ws
+# 	if $ws && $$buffer && $$buffer !~ /\n$/s;
     $$buffer .= "<$t";
     $self->SUPER::control_on_render($source, $buffer);
-    $$buffer .= ">$b</$t>";
+    $$buffer .= ">$ws$b";
+    $$buffer .= $ws
+	if $ws && $$buffer !~ /\n$/s;
+    $$buffer .= "</$t>$ws";
     return;
 }
 

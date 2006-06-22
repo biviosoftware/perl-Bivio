@@ -5,7 +5,6 @@ use strict;
 use base 'Bivio::Biz::FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_WN) = Bivio::Type->get_instance('WikiName');
 
 sub execute_cancel {
     my($self) = @_;
@@ -27,7 +26,8 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    my($new) = $_WN->absolute_path($self->get('RealmFile.path_lc'));
+    my($new) = $self->name_type
+	->absolute_path($self->get('RealmFile.path_lc'));
     my($c) = $self->get('content');
     my($m) = $self->get('file_exists')
 	? 'update_with_content' : 'create_with_content';
@@ -49,7 +49,7 @@ sub internal_initialize {
 	    {
 		# This is where the constraint is
 		name => 'RealmFile.path_lc',
-		type => 'WikiName',
+		type => $self->name_type,
 	    },
 	],
 	other => [
@@ -77,9 +77,13 @@ sub internal_pre_execute {
     return;
 }
 
+sub name_type {
+    return Bivio::Type->get_instance('WikiName');
+}
+
 sub _curr_path {
     my($self) = @_;
-    return $_WN->absolute_path(_authorized_name($self));
+    return $self->name_type->absolute_path(_authorized_name($self));
 }
 
 sub _is_edit {
@@ -89,7 +93,8 @@ sub _is_edit {
 sub _authorized_name {
     # SECURITY: By validating the name, we are sure that we aren't opening
     # up writes in any other directory.
-    return $_WN->from_literal_or_die(
+    my($self) = @_;
+    return $self->name_type->from_literal_or_die(
 	shift->get_request->get('path_info') =~ m{^/*(.+)});
 }
 

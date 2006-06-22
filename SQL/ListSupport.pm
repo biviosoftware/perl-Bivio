@@ -820,6 +820,7 @@ sub _prepare_ordinal_clauses {
 	}
 	chop($res);
     }
+    _trace('group_by/order_by: ', $res);
     return $res;
 }
 

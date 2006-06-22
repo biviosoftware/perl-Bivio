@@ -32,6 +32,13 @@ use Bivio::UI::Widget;
 
 C<Bivio::UI::Widget::List>
 
+=item empty_list_widget : Bivio::UI::Widget []
+
+If set, the widget to display instead of the list when the
+list_model is empty.
+
+The I<source> will be the original source, not the list_model.
+
 =cut
 
 #=IMPORTS
@@ -65,6 +72,7 @@ sub initialize {
 	    $_;
 	} @{$self->get('columns')})],
     );
+    $self->unsafe_initialize_attr('empty_list_widget');
     return;
 }
 
@@ -72,7 +80,7 @@ sub initialize {
 
 =head2 static internal_as_string(any arg, ...) : any
 
-Implements positional argument parsing for L<new|"new">.
+Widget description.
 
 =cut
 
@@ -80,7 +88,7 @@ sub internal_as_string {
     return shift->unsafe_get('list_class');
 }
 
-=for html <a name="internal_as_string"></a>
+=for html <a name="internal_new_args"></a>
 
 =head2 static internal_new_args(any arg, ...) : any
 
@@ -112,18 +120,26 @@ widget values.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    $source->get_request()->get(
-	'Model.' . $self->get('list_class')
-    )->do_rows(
-        sub {
+
+    my($list) = $source->get_request()
+	->get('Model.' . $self->get('list_class'));
+
+    # check for an empty list
+    if ($list->get_result_set_size == 0
+        && $self->unsafe_get('empty_list_widget')) {
+	$self->unsafe_render_attr('empty_list_widget', $source, $buffer);
+    }
+    else {
+	$list->do_rows(sub {
 	    my($list) = @_;
 	    my($name) = 0;
 	    foreach my $c (@{$self->get('columns')}) {
 		$self->render_value($name++, $c, $list, $buffer);
 	    }
 	    return 1;
-	},
-    );
+	});
+    }
+
     return;
 }
 

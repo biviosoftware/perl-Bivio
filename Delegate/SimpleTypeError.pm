@@ -365,6 +365,11 @@ sub get_delegate_info {
 	undef,
 	'Wiki page names must be mixed case words starting with an upper-case letter, containing at least one lower case letter between two upper case letters, and containing only numbers and letters (no spaces, underscores, etc.)',
     ],
+    BLOG_NAME => [
+	61,
+	undef,
+	'Blog page names may only containg letters, numbers and spaces.',
+    ],
 ];
 }
 

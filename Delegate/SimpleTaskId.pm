@@ -477,7 +477,7 @@ sub get_delegate_info {
 	    edit_task=FORUM_WIKI_EDIT
 	    want_author=1
  	)],
- 	[qw(
+  	[qw(
  	    FORUM_WIKI_EDIT
  	    49
  	    FORUM
@@ -516,6 +516,24 @@ sub get_delegate_info {
             MAIL_SEND
             Action.RealmMail->execute_reflector
         )],
+ 	[qw(
+ 	    FORUM_BLOG_VIEW
+ 	    54
+ 	    FORUM
+ 	    DATA_READ
+            Model.BlogEntryList->execute_load_entry_or_page
+	    View.blog
+ 	)],
+# 	    Action.WikiView
+  	[qw(
+ 	    FORUM_BLOG_EDIT
+ 	    55
+ 	    FORUM
+ 	    DATA_READ&DATA_WRITE
+ 	    Model.BlogForm
+	    View.blog-edit
+	    next=FORUM_BLOG_VIEW
+ 	)],
     ];
 }
 
