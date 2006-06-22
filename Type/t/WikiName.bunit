@@ -20,5 +20,10 @@ Type();
 	    'a' => '/Wiki/a',
 	    '' => '/Wiki',
 	],
+	is_absolute_path => [
+	    '/Wiki/StartPage' => 1,
+	    '/Wiki/' => 0,
+	    '/Wiki/AAA' => 0,
+	],
     ],
 ];
