@@ -68,7 +68,7 @@ sub default_merge_overrides {
 	'Bivio::Ext::DBI' => {
 	    database => $prefix,
 	    user => "${prefix}user",
-	    password => '${prefix}pass',
+	    password => "${prefix}pass",
 	    connection => 'Bivio::SQL::Connection::Postgres',
 	},
 	'Bivio::Test::HTMLParser::Forms' => {
