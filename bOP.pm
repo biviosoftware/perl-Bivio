@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.28  2006/06/18 21:13:07  nagler
+  * Bivio::ShellUtil->assert_not_general added
+  * Bivio::Auth::Realm->is_general added
+  * Model.UserRegisterForm->execute_ok requires password_ok to be set so
+    that RealmOwner.password will be used (and password reset_task ignored).
+  * Bivio::Biz::Model::RealmUserAddForm->copy_admins accepts parent_realm_id
+  * Bivio::IO::Alert.strip_bit8 will strip chars 0x80 to 0xff from any
+    info/warn/error output if set.
+  * Bivio::UI::XHTML::ViewShortcuts->vs_descriptive_field applies row_*
+    attributes instead of row_class to outer Join, e.g. row_class.
+  * Bivio::UI::XHTML::ViewShortcuts->vs_actions_column added
+  * Bivio::UI::HTML::Widget::ListActions accepts single value (SOME_TASK)
+    as a configurable element which will get the label ListActions.SOME_TASK
+    from the facade.  If the first element is a valid task name (upper case)
+    only, you don't need to supply a label.
+  * Bivio::Biz::Model::Club->create_realm added
+  * Bivio::Biz::Random->string added
+  * Bivio::Test::FormModel->inline_commit added
+  * Bivio::Test::Unit->builtin_commit added
+  * Bivio::Test::Language::HTTP->verify_table handles empty columns
+  * Bivio::Test::Language->test_ok added
+  * Bivio::Type::FileName->get_tail handles undef (returns '')
+
   Revision 4.27  2006/06/18 21:12:35  nagler
   *** empty log message ***
 
