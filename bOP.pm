@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.29  2006/06/22 07:12:36  dobbs
+  * Bivio::Biz::Model::WikiForm added name_type() to allow subclasses to
+    override
+  * Bivio::Delegate::SimpleTaskId added blog tasks
+  * Bivio::Delegate::SimpleTypeError added blog errors
+  * Bivio::HTML::Scraper added to_text() and modified html_parser_text()
+    for easier testing
+  * Bivio::MIME::Type added MIME suffix mappings for wiki markup and email
+  * Bivio::Test::Language moved do_deviance() functionality into
+    test_deviance() and removed do_deviance() function
+  * Bivio::Type::FileName added get_suffix()
+  * Bivio::Type::FilePath now subclasses Bivio::Type::FileName
+  * Bivio::Type::WikiName added is_absolute_path()
+  * Bivio::UI::HTML::Widget::Tag added want_whitespace declaration for
+    pretty html rendering
+  * Bivio::UI::Widget::List added empty_list_widget attribute
+
   Revision 4.28  2006/06/18 21:13:07  nagler
   * Bivio::ShellUtil->assert_not_general added
   * Bivio::Auth::Realm->is_general added
