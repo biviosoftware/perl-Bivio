@@ -217,6 +217,18 @@ sub html_parser_comment {
     return;
 }
 
+=for html <a name="html_parser_end"></a>
+
+=head2 abstract html_parser_end(string tag, string origtext)
+
+Does nothing.  Subclasses should override.
+
+=cut
+
+sub html_parser_end {
+    return;
+}
+
 =for html <a name="html_parser_eof"></a>
 
 =head2 html_parser_eof()
@@ -229,6 +241,33 @@ sub html_parser_eof {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{html_parser}->eof;
+    return;
+}
+
+=for html <a name="html_parser_start"></a>
+
+=head2 html_parser_start(string tag, hash_ref attr, array_ref attrseq, string origtext)
+
+Does nothing.  Subclasses should override.
+
+=cut
+
+sub html_parser_start {
+    return;
+}
+
+=for html <a name="html_parser_text"></a>
+
+=head2 html_parser_text(string text)
+
+Appends to stored text.  Used by to_text().
+
+=cut
+
+sub html_parser_text {
+    my($self) = shift;
+    $self->[$_IDI]->{to_text}
+	.= $self->strip_tags_and_whitespace(shift(@_)) . ' ';
     return;
 }
 
@@ -375,6 +414,23 @@ sub strip_tags_and_whitespace {
     $value =~ s/\s+/ /g;
     $value =~ s/^ | $//g;
     return $value;
+}
+
+=for html <a name="to_text"></a>
+
+=head2 static to_text(string_ref html) : string_ref
+
+Converts I<html> to plain text.
+
+=cut
+
+sub to_text {
+    my($self) = shift->SUPER::new;
+    my($fields) = $self->[$_IDI] = {
+	to_text => '',
+    };
+    $self->parse_html(shift(@_));
+    return \$fields->{to_text};
 }
 
 =for html <a name="unescape_html"></a>
