@@ -50,7 +50,6 @@ sub format_uri {
     $req->get_nested(qw(auth_realm owner))->update_password($pw);
     return $req->format_http({
 	task_id => $req->get_nested(qw(task reset_task)),
-	# sprintf ensures is at least six chars
 	query => {$_KEY => $pw},
 	no_context => 1,
     });
