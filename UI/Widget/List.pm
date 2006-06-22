@@ -32,12 +32,16 @@ use Bivio::UI::Widget;
 
 C<Bivio::UI::Widget::List>
 
+=over 4
+
 =item empty_list_widget : Bivio::UI::Widget []
 
 If set, the widget to display instead of the list when the
 list_model is empty.
 
 The I<source> will be the original source, not the list_model.
+
+=back
 
 =cut
 

@@ -40,6 +40,8 @@ C<Bivio::UI::HTML::Widget::Tag>
 
 If true, render extra whitespace around tag
 
+=back
+
 =cut
 
 #=IMPORTS
