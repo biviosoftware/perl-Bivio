@@ -94,6 +94,7 @@ my(%_TYPE_TO_EXT) = (
     'application/x-net-install',	'ins:Net Install file',
     'application/x-asap',		'asp:asap file',
     'application/x-bcpio', 		'bcpio:BCPIO file',
+    'application/x-bwiki', 		'bwiki:bOP Wiki',
     'application/x-cpio', 		'cpio:CPIO file',
     'application/x-csh', 		'csh:C-Shell script',
     'application/x-dot',		'dot:dot file',
@@ -221,6 +222,8 @@ my(%_TYPE_TO_EXT) = (
     'model/iges',			'iges:IGES model',
     'model/vrml',			'wrl:VRML model',
     'model/mesh',			'mesh:Mesh model',
+
+    'message/rfc822',			'eml:RFC822 Mail Message',
 
     'text/calendar',		        'ics:calendar rfc2445',
     'text/css',		                'css:cascading style sheet',
