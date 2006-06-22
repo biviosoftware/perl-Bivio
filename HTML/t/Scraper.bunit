@@ -3,7 +3,7 @@
 [
     class() => [
         to_text => [
-	    [\(<<'IN')] => [\(' a b c ')],
+	    [\(<<'IN')] => [\("\na b c\n")],
 <html>
 <body>
 a b

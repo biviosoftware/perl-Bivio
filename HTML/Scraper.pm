@@ -267,7 +267,7 @@ Appends to stored text.  Used by to_text().
 sub html_parser_text {
     my($self) = shift;
     $self->[$_IDI]->{to_text}
-	.= $self->strip_tags_and_whitespace(shift(@_)) . ' ';
+	.= $self->strip_tags_and_whitespace(shift(@_)) . "\n";
     return;
 }
 
