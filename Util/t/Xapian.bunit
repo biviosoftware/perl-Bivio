@@ -1,0 +1,98 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+set_realm_and_user('guest', 'guest');
+my($rf) = Bivio::Biz::Model->new(req(), 'RealmFile');
+my($files) = {};
+foreach my $x (
+    ['/Wiki/StartPage' => <<'EOF'],
+@h4    The Title
+of the page
+EOF
+    ['/TextFile' => <<'EOF'],
+ordinary text
+file with a couple
+of lines
+EOF
+    ['/msg.eml' => <<'EOF'],
+From: a@a.a
+Subject: s1
+Date: Thu, 25 May 2006 18:49:12 GMT
+MIME-Version: 1.0
+Content-Type: multipart/related;
+ boundary="----_=_NextPart_001_01C67A09.DA1773DA";
+ type="multipart/alternative"
+Message-ID: <foo@bar.com>
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C67A09.DA1773DA
+Content-Type: multipart/alternative;
+ boundary="----_=_NextPart_002_01C67A09.DA1773DA"
+Content-Transfer-Encoding: 7bit
+
+
+------_=_NextPart_002_01C67A09.DA1773DA
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+Text version, not seen.
+
+------_=_NextPart_002_01C67A09.DA1773DA
+Content-Type: text/html;
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<body>
+This is the html body.
+
+</body>
+</html>
+
+------_=_NextPart_001_01C67A09.DA1773DA--
+
+EOF
+) {
+    my($path, $content) = @$x;
+    $rf->delete({path => $path});
+    $files->{$path} = $rf->create_with_content({path => $path}, \$content)
+	->get_os_path;
+}
+commit();
+[
+    class() => [
+        realm_file_to_text => [
+	    $files->{'/Wiki/StartPage'} => <<'EOF',
+application/x-bwiki
+The Title
+The Title
+of the page
+EOF
+	    $files->{'/TextFile'} => <<'EOF',
+text/plain
+
+ordinary text
+file with a couple
+of lines
+EOF
+	    $files->{'/msg.eml'} => <<'EOF',
+message/rfc822
+s1
+a@a.a
+text/html
+
+
+This is the html body.
+
+EOF
+	],
+    ],
+];
+
+sub _c {
+    my($v) = @_;
+    chomp($v);
+    return $v;
+}
