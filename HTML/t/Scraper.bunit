@@ -1,0 +1,15 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+[
+    class() => [
+        to_text => [
+	    [\(<<'IN')] => [\(' a b c ')],
+<html>
+<body>
+a b
+c
+</html>
+IN
+	],
+    ],
+];
