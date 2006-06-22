@@ -762,7 +762,10 @@ sub _in {
 sub _like {
     my($predicate, $proto, $column, $match) = @_;
     my($col_info) = _build_column_info($column);
+    # be nice to user, substite * for %
+    $match =~ s/\*/\%/g;
     if ($col_info->{type}->isa('Bivio::Type::Enum')) {
+        $match =~ s/([^_%]+)/quotemeta($1)/ge;
 	$match =~ s/%/\.\*/g;
 	$match =~ s/_/./g;
 	my($re) = $predicate =~ /ILIKE/ ? qr/$match/i : qr/$match/;
