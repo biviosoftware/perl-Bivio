@@ -27,5 +27,18 @@ Type();
 	    'a b' => 'a-b',
 	    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 	],
+	get_suffix => [
+	    'a.x' => 'x',
+	    '/a.x' => 'x',
+	    'a' => '',
+	    '/a' => '',
+	    '/.' => '',
+	    '.' => '',
+	    '..' => '',
+	    '/..' => '',
+	    '/.x' => '',
+	    '.x' => '',
+	    'aaa.very-long-suffix' => 'very-long-suffix',
+	],
     ],
 ];

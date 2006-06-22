@@ -96,6 +96,24 @@ sub from_literal {
     return $proto->SUPER::from_literal($value);
 }
 
+=for html <a name="get_base"></a>
+
+=head2 static get_base(string value) : string
+
+Returns the basename excluding file suffix, stripping directories
+and drive names.
+
+=cut
+
+sub get_base {
+    my($proto, $value) = @_;
+    $value = $proto->get_tail($value);
+    return $value
+	if $value =~ /^\.+[^\.]*$/;
+    $value =~ s/\.[^\.]+$//;
+    return $value;
+}
+
 =for html <a name="get_clean_base"></a>
 
 =head2 static get_clean_base(string value) : array
@@ -119,6 +137,19 @@ sub get_clean_base {
 	: length($value) ? $value : undef;
 }
 
+=for html <a name="get_suffix"></a>
+
+=head2 static get_suffix(string value) : string
+
+Returns the suffix excluding the dot or the empty string.
+
+=cut
+
+sub get_suffix {
+    my($proto, $value) = @_;
+    return $value && $value =~ m{[^\./\\:]\.([^\.]+)$} ? $1 : '';
+}
+
 =for html <a name="get_tail"></a>
 
 =head2 static get_tail(string value) : string
@@ -134,24 +165,6 @@ sub get_tail {
 	unless defined($value);
     $value =~ s{[:\/\\]+$}{};
     $value =~ s{.*[:\/\\]}{};
-    return $value;
-}
-
-=for html <a name="get_base"></a>
-
-=head2 static get_base(string value) : string
-
-Returns the basename excluding file suffix, stripping directories
-and drive names.
-
-=cut
-
-sub get_base {
-    my($proto, $value) = @_;
-    $value = $proto->get_tail($value);
-    return $value
-	if $value =~ /^\.+[^\.]*$/;
-    $value =~ s/\.[^\.]+$//;
     return $value;
 }
 
