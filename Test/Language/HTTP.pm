@@ -648,7 +648,11 @@ sub send_request {
     _send_request(
 	$self, HTTP::Request->new(
 	    $method => $self->absolute_uri($uri),
-	    $header ? ref($header) eq 'ARRAY' ? $header : [%$header] : undef,
+	    $header
+                ? HTTP::Headers->new(@{
+                    ref($header) eq 'ARRAY' ? $header : [%$header]
+                })
+                : undef,
 	    $content,
 	),
     );
