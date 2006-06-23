@@ -127,14 +127,23 @@ May return undef, if the there are no clean chars in the tail.
 
 sub get_clean_base {
     my($proto, $value) = @_;
-    return undef
-	unless defined($value);
-    $value = $proto->get_base($value);
-    $value =~ s/^\W+|\W+$//g;
-    $value =~ s/\W+/-/g;
-    my($n) = $proto->get_width - 6;
-    return length($value) > $n ? substr($value, 0, $n)
-	: length($value) ? $value : undef;
+    return _clean($proto, $proto->get_base($value));
+}
+
+=for html <a name="get_clean_tail"></a>
+
+=head2 static get_clean_tail(string value) : array
+
+Returns the tail name of value cleaned of any non-alpha-numeric input chars and
+without the suffix.
+
+May return undef, if the there are no clean chars in the tail.
+
+=cut
+
+sub get_clean_tail {
+    my($proto, $value) = @_;
+    return _clean($proto, $proto->get_tail($value));
 }
 
 =for html <a name="get_suffix"></a>
@@ -169,6 +178,15 @@ sub get_tail {
 }
 
 #=PRIVATE METHODS
+
+sub _clean {
+    my($proto, $value) = @_;
+    $value =~ s/^\W+|\W+$//g;
+    $value =~ s/[^\w\.]+/-/g;
+    my($n) = $proto->get_width - 6;
+    return length($value) > $n ? substr($value, 0, $n)
+	: length($value) ? $value : undef;
+}
 
 =head1 COPYRIGHT
 

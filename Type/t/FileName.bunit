@@ -24,6 +24,7 @@ Type();
 	    'b/a' => 'a',
 	    '/a.b' => 'a',
 	    '/.a' => 'a',
+	    'a.b.c' => 'a.b',
 	    'a b' => 'a-b',
 	    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 	],
