@@ -1047,7 +1047,7 @@ Verifies that the specified title appears on the page.
 sub verify_title {
     my($self, $title) = @_;
     Bivio::Die->die($title, ': title not found in response')
-	    unless $self->get_content =~ /<title>.*$title.*<\/title>/i;
+	    unless $self->get_content =~ /\<title\>.*$title.*\<\/title\>/i;
     return;
 }
 
@@ -1205,16 +1205,10 @@ sub _format_form {
     while (my($k, $v) = each(%$form_fields)) {
 	my($f) = _assert_form_field($form, $k);
 	$match->{$f}++;
-	my($value) = $v;
-	if ($f->{options}) {
-	    # Radio or Select: Allow the use of the option label instead of value
-	    foreach my $o (keys(%{$f->{options}})) {
-		next unless ref($value) ? $o =~ $value : $o eq $value;
-		$value = $f->{options}->{$o}->{value};
-		_trace($o, ': mapped to ', $value) if $_TRACE;
-		last;
-	    }
-  	}
+        # Radio or Select: Allow the use of the option label instead of value
+	my($value) = $f->{options}
+            ? _lookup_option_value($f->{options}, $v)
+            : $v;
         _validate_text_field($f, $v)
             if $f->{type} eq 'text';
         push(@$result, $f->{name}, $value);
@@ -1284,6 +1278,33 @@ sub _log {
     return $self->test_log_output(
 	sprintf('http-%05d.%s', $fields->{log_index}++, $type),
 	UNIVERSAL::can($msg, 'as_string') ? $msg->as_string : $msg);
+}
+
+# _lookup_option_value(hash_ref options, any value) : string
+#
+# Lookup an option (select or radio) submit value
+# from the label or value. I<value> may be a regular expression.
+#
+sub _lookup_option_value {
+    my($options, $value) = @_;
+
+    # Radio or Select: Allow the use of the option label
+    # instead of value
+    foreach my $o (keys(%$options)) {
+        next unless ref($value) ? $o =~ $value : $o eq $value;
+        _trace($o, ': mapped to ', $options->{$o}->{value}) if $_TRACE;
+        return $options->{$o}->{value};
+    }
+
+    # otherwise verify that it is a valid submit value
+    foreach my $o (keys(%$options)) {
+        my($v) = $options->{$o}->{value};
+        next unless ref($value) ? $v =~ $value : $v eq $value;
+        _trace($v, ': mapped by value to label ', $o)
+            if $_TRACE;
+        return $v;
+    }
+    Bivio::Die->die('option value not found: ', $value);
 }
 
 # _send_request(self, HTTP::Request request)
