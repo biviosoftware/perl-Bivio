@@ -3,11 +3,14 @@
 Request('initialize_fully');
 req()->put_durable(ignore_client_redirect => 1);
 set_realm_and_user(qw(fourem root));
-my($csv) = '/EasyForm/bunit.csv';
+my($dir) = '/EasyForm/bunit';
+my($csv) = "$dir.csv";
 my($log) = '/EasyForm/Error.log';
-my($rf) = Bivio::Biz::Model->new('RealmFile');
+my($rf) = Bivio::Biz::Model->new(req(), 'RealmFile');
 $rf->delete({path => $csv});
 $rf->delete({path => $log});
+$rf->delete_deep({path => $dir});
+$rf->create_folder({path => $dir});
 $rf->create_with_content({
     path => $csv,
 }, \(<<'EOF'));
@@ -49,6 +52,21 @@ ignore_redirects(1);
 	    [{a => 1}, 'nosuchfile'] => qr{CSV file not found},
 	    [{a => 1}, undef, 'ROBOTS_TXT'] => qr{directory not found},
 	    [undef] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,,,\n},
+	    [{a => 1, c => {
+		filename => 'x.txt',
+		'content/type' => 'content-type/ignored',
+		content => \("some text\n"),
+	    }}] => sub {
+	        my($case, $actual) = @_;
+		my($file) = reverse(
+		    split(/,/, (reverse(split(/\n/, ${$actual->[0]})))[0]));
+		Bivio::Die->die($file, ': file name wrong')
+		    unless $file =~ m{^/EasyForm/bunit/\d+-c-x.txt$};
+		Bivio::Die->die($rf->get_content, ': wrong content for ', $file)
+		    unless "some text\n"
+		    eq ${$rf->load({path => $file})->get_content};
+		return 1;
+	    },
 	],
     ],
 ];

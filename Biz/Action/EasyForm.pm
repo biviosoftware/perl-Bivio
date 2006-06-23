@@ -6,6 +6,8 @@ use base 'Bivio::Biz::Action';
 use Bivio::Util::CSV;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_FP) = __PACKAGE__->use('Type.FilePath');
 
 sub execute {
     my($proto, $req) = @_;
@@ -16,7 +18,7 @@ sub execute {
 	# write in the wrong folder.
 	$dir = ($req->format_uri({query => '', path_info => ''})
 		    =~ m{([^/]+)$})[0] . '/';
-	$form = _form_fields($req);
+	$form = _form_fields($req, $dir);
 	($rf, $fields) = _csv_fields($req, $dir);
 	my($f) = {%$form};
 	$rf->append_content(
@@ -75,9 +77,12 @@ sub _csv_fields {
 }
 
 sub _form_fields {
-    my($req) = @_;
+    my($req, $dir) = @_;
     my($form) = $req->get_form();
-    $form = {map((lc($_) => $form->{$_}), keys(%$form))};
+    $form = {
+	map((lc($_) => _to_string(lc($_), $form->{$_}, $dir, $req)),
+	    keys(%$form)),
+    };
     $form->{'&date'} = Bivio::Type::DateTime->now_as_string;
     $form->{'&client_addr'} = $req->get('client_addr');
     my($e) = Bivio::Biz::Model->new($req, 'Email');
@@ -85,6 +90,29 @@ sub _form_fields {
 	&& $e->unauth_load({realm_id => $req->get('auth_user_id')})
 	? $e->get('email') : '';
     return $form;
+}
+
+sub _to_string {
+    my($name, $value, $dir, $req) = @_;
+    return $value
+	unless ref($value);
+    Bivio::Die->die($value, ': unknown reference format')
+	unless ref($value) eq 'HASH';
+    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile')
+	->load({path => $dir . $req->get('path_info')});
+    Bivio::Die->die($rf->get('path'), ': must be a folder to receive files')
+	unless $rf->get('is_folder');
+    return $rf->create_with_content({
+	path => $_FP->join(
+	    $rf->get('path'),
+	    join('-',
+		$_DT->now_as_file_name,
+	        $name,
+		$_FP->get_clean_tail($value->{filename}),
+	    ),
+	),
+    }, $value->{content})->get('path');
+    return;
 }
 
 1;
