@@ -10,6 +10,7 @@ basic_authorization('root');
 send_request(GET => $aliases_uri);
 verify_no_text("$incoming,$outgoing");
 my($orig_aliases) = get_content();
+$orig_aliases =~ s/^$incoming,.*$//m;
 send_request(PUT => $aliases_uri, undef, $orig_aliases . <<"EOF");
 $incoming,$outgoing
 EOF
@@ -18,6 +19,7 @@ verify_text("$incoming,$outgoing");
 my($s) = send_mail(
     generate_local_email('root'), $incoming,
 )->unsafe_get_header('Subject');
+
 verify_local_mail($outgoing, $s);
 
 # check aliasing on the reply
