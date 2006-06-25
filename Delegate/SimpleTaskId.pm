@@ -524,7 +524,6 @@ sub get_delegate_info {
             Model.BlogEntryList->execute_load_entry_or_page
 	    View.blog
  	)],
-# 	    Action.WikiView
   	[qw(
  	    FORUM_BLOG_EDIT
  	    55
