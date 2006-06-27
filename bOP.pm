@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.30  2006/06/22 20:37:31  moeller
+  * Bivio::SQL::Statement convert * in "like" to % for power users
+    call quotemeta() when searching enum values
+
   Revision 4.29  2006/06/22 07:12:36  dobbs
   * Bivio::Biz::Model::WikiForm added name_type() to allow subclasses to
     override
