@@ -111,6 +111,9 @@ sub _to_string {
 		$_FP->get_clean_tail($value->{filename}),
 	    ),
 	),
+	user_id => $req->get('auth_user_id')
+	    || Bivio::Biz::Model::RealmUser->new
+		    ->get_any_online_admin->get('realm_id'),
     }, $value->{content})->get('path');
     return;
 }
