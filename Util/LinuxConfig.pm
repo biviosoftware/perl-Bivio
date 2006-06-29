@@ -74,6 +74,7 @@ commands:
     disable_iptables_counters -- disables saving counters in iptables state file
     disable_service service... -- calls chkconfig and stops services
     enable_service service ... -- enables service
+    generate_network interface_and_domain ... -- create ifcfg files
     ifcfg_static device hostname ip_addr/bits [gateway] -- configure device with a static ip address
     replace_file file owner group perms content -- replaces file with content
     resolv_conf domain nameserver ... -- updates resolv.conf with name servers
@@ -545,21 +546,21 @@ sub generate_network {
 
     my(@domains);
     my($gw_seen) = {};
-    foreach (@_) {
-	my($device, $domain) = $self->_assert_interface_and_domain($_);
-	$self->_assert_network_configured_for($domain);
-	$self->_assert_dns_configured_for($domain);
-	$self->_assert_network_configured_for($domain);
-	$self->_assert_netmask_and_gateway_for($domain);
+    foreach my $x (@_) {
+	my($device, $domain) = _assert_interface_and_domain($self, $x);
+	_assert_network_configured_for($self, $domain);
+	_assert_dns_configured_for($self, $domain);
+	_assert_network_configured_for($self, $domain);
+	_assert_netmask_and_gateway_for($self, $domain);
 	if (!@domains) {
-	    _write($self->_file_resolv_conf($domain));
-	    _write($self->_file_network($domain));
+	    _write(_file_resolv_conf($self, $domain));
+	    _write(_file_network($self, $domain));
 	}
-	_write($self->_file_ifcfg($device, $domain, $gw_seen));
+	_write(_file_ifcfg($self, $device, $domain, $gw_seen));
 	push(@domains, $domain);
     }
-    _write($self->_file_hosts(@domains));
-    _maybe_write($self->_file_static_routes(@_));
+    _write(_file_hosts($self, @domains));
+    _maybe_write(_file_static_routes($self, @_));
     return;
 }
 
@@ -1100,8 +1101,8 @@ sub _file_static_routes {
     my($self) = shift();
     my($buf) = '';
     my($seen_network) = {};
-    foreach (@_) {
-	my($device, $domain) = $self->_assert_interface_and_domain($_);
+    foreach my $x (@_) {
+	my($device, $domain) = _assert_interface_and_domain($self, $x);
 	_trace($device, ' ', $domain)
 	    if $_TRACE;
 	my($ip) = _dig($domain);
