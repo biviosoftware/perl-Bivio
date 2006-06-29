@@ -59,7 +59,7 @@ END:VCALENDAR
 EOF
 # Verify that admin can read validated .ics
 send_request(GET => $calendar_ics);
-get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
+get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event(1|2).*BEGIN:VEVENT.*SUMMARY:Event(1|2)/s || die;
 # Verify putting unmodified .ics
 my($ics) = get_content();
 send_request(PUT => $calendar_ics, undef, $ics);
@@ -89,7 +89,7 @@ EOF
 # Verify that admin can read modified .ics
 send_request(GET => $calendar_ics);
 # TODO: Test correct event order
-get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event3.*BEGIN:VEVENT.*SUMMARY:Event2.*BEGIN:VEVENT.*SUMMARY:Event1/s || die;
+get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event(1|2|3).*BEGIN:VEVENT.*SUMMARY:Event(1|2|3).*BEGIN:VEVENT.*SUMMARY:Event(1|2|3)/s || die;
 # Verify that non-admin, non-member can't access .ics
 basic_authorization('demo');
 test_deviance(qr{not found}i);
