@@ -533,12 +533,12 @@ other.example.com'.  Also expects 'networks' to be configured like this:
 Creates the following files from that information.  Relies on dig to resolve
 domain names (from command line and config) to ip addresses.
 
-etc/hosts
-etc/resolv.conf
-etc/sysconfig/network
-etc/sysconfig/network-scripts/ifcfg-en0
-etc/sysconfig/network-scripts/ifcfg-en0:1 (if necessary)
-etc/sysconfig/static-routes (if configured for ip of given domain)
+    etc/hosts
+    etc/resolv.conf
+    etc/sysconfig/network
+    etc/sysconfig/network-scripts/ifcfg-en0
+    etc/sysconfig/network-scripts/ifcfg-en0:1 (if necessary)
+    etc/sysconfig/static-routes (if configured for ip of given domain)
 
 =cut
 
