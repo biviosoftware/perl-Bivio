@@ -541,6 +541,7 @@ etc/sysconfig/network-scripts/ifcfg-en0:1 (if necessary)
 etc/sysconfig/static-routes (if configured for ip of given domain)
 
 =cut
+
 sub generate_network {
     my($self) = shift;
 
