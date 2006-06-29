@@ -1063,7 +1063,8 @@ sub _file_ifcfg {
     my($gateway) = _dig(_network_config_for($ip)->{gateway});
     my($gw_line) = '';
     unless (exists($gateways_seen->{$gateway})) {
-	$gw_line = 'GATEWAY=' . $gateway;
+	$gw_line = 'GATEWAY=' . $gateway
+	    unless $gateway eq $ip;
 	$gateways_seen->{$gateway} = 1;
     }
     return 'etc/sysconfig/network-scripts/ifcfg-' . $device,
