@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.31  2006/06/27 17:21:15  moeller
+  * Bivio::BConf fixed db password string to interpolate
+  * Bivio::Biz::Action::EasyForm added file field upload
+  * Bivio::Biz::Action::MailForward fixup the bivio test recipient
+    header on the message to be forwarded
+  * Bivio::Mail::Incoming get_date_time uses DateTime->from_literal
+  * Bivio::Test::Language::HTTP send_request() now wraps $header in
+    HTTP::Headers for older versions of perl,
+    ensure that an option submit value matches the label or an existing
+    value
+  * Bivio::Type::FileName added get_clean_tail
+  * Bivio::Biz::Action::EasyForm added file field upload
+
   Revision 4.30  2006/06/22 20:37:31  moeller
   * Bivio::SQL::Statement convert * in "like" to % for power users
     call quotemeta() when searching enum values
