@@ -48,6 +48,11 @@ Full name of the form field. ex. 'LoginForm.RealmOwner.name'
 
 Value of the field label to be looked up in Facade.
 
+=item form_field_label_widget : array_ref
+
+Widget value field label.  Overrides Facade lookup of form_field_label,
+if present.
+
 =item row_control : array_ref
 
 Widget value boolean which dynamically determines if the row should render.
@@ -166,6 +171,8 @@ sub _get_field_name {
 #
 sub _get_label_value {
     my($self) = @_;
+    return $self->get('form_field_label_widget')
+	if $self->unsafe_get('form_field_label_widget');
     my($default_field) = $self->get('field');
     # strip out any suffix, not used for label lookup
     $default_field =~ s/_\d+(\.\w+)$/$1/;
