@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Form;
 use strict;
@@ -203,7 +203,7 @@ sub initialize {
     # Initialize prefix
     my($action) = $self->unsafe_get('action');
     my($p) = '<form method="'
-	. $self->ancestral_get('form_method', 'POST')
+	. lc($self->ancestral_get('form_method', 'post'))
         . '"'
 	. $_VS->vs_link_target_as_html($self)
 	. qq{ name="$name" action="};
@@ -299,7 +299,7 @@ sub render {
     while (@$hidden) {
 	# hidden fields have been converted to literal, but not  escaped.
 	$$buffer .= '<input type="hidden" name="'.shift(@$hidden).'" value="'
-		.Bivio::HTML->escape(shift(@$hidden))."\">\n";
+		.Bivio::HTML->escape(shift(@$hidden))."\" />\n";
     }
 
     # Rest of the form
@@ -313,7 +313,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
