@@ -78,6 +78,8 @@ sub _csv_fields {
 
 sub _form_fields {
     my($req, $dir) = @_;
+#TODO: get_form needs a static value from form_model for a file upload
+#     $req->put(form_model => 'Bivio::Biz::FormModel');
     my($form) = $req->get_form();
     $form = {
 	map((lc($_) => _to_string(lc($_), $form->{$_}, $dir, $req)),
