@@ -780,7 +780,10 @@ EOF
 #
 sub _build_tar_copy {
     my($cvs_dir, $project, $tgt) = @_;
+#     my($uri) = grep
+# 	Bivio::IO::File->read("$cvs_dir/$project->[0]/Facades/$project->[0].pm");
     File::Find::find(sub {
+
 	# The alg fails with '.'
 	return if $_ eq '.';
 	my($dst);
@@ -801,7 +804,6 @@ sub _build_tar_copy {
                     ),
                 ),
             ]}/)}{@{[
-                #TODO: Should be pulled from the facade.
                 lc($project->[0])
             ]}/}x;
 	    $dst = "$tgt/$_FACADES_DIR/$dst";
