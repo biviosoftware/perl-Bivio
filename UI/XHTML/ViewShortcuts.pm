@@ -308,7 +308,7 @@ sub vs_paged_list {
     my($proto, $model, $columns, $attrs) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_list.";
-    view_put(pager => Tag(div => Join([
+    view_put(pager => DIV_pager(Join([
 	map(
 	    Link(
 		vs_text("$p$_"),
@@ -321,12 +321,9 @@ sub vs_paged_list {
 	    ),
 	    qw(prev next)
 	),
-    ]), 'pager'));
-    return Table(
-	$model,
-	$columns,
-	$proto->vs_table_attrs($model, paged_list => $attrs),
-    ),
+    ])));
+    return (ref($columns) eq 'ARRAY' ? Table($model, $columns) : $columns)
+	->put(%{$proto->vs_table_attrs($model, paged_list => $attrs)});
 }
 
 sub vs_phone {
