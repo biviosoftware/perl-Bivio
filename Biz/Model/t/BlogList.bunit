@@ -24,4 +24,10 @@ my($entry) = [map({
 	map(([{this => $entry->[$_]->{file_name}}] => [$entry->[$_]]),
 	    0.. $#$entry),
     ],
+    execute_load_this => [
+	sub {[req()->put(
+	    query => undef,
+	    path_info => $entry->[0]->{file_name}
+	)]} => not_die(),
+    ],
 ];

@@ -9,6 +9,19 @@ my($_BFN) = Bivio::Type->get_instance('BlogFileName');
 my($_BC) = Bivio::Type->get_instance('BlogContent');
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
 
+sub execute_load_this {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    my($query) = $self->parse_query_from_request;
+    unless ($query->unsafe_get('this')) {
+	return shift->SUPER::execute_load_this(@_)
+	    unless my $t = $_BFN->from_literal($req->unsafe_get('path_info'));
+	$query->put(this => [$t]);
+    }
+    $self->load_this($query);
+    return 0;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
