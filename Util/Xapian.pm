@@ -23,8 +23,10 @@ sub realm_file_to_text {
 	'_from_'
 	. $self->use('Type.FilePath')->get_suffix($rf->get('path_lc'))
     };
-    Bivio::Die->die($file, ': unable to convert to text')
-        unless defined(&$op);
+    $rf->throw_die(NOT_FOUND => {
+	entity => $self->use('Type.FilePath')->get_suffix($rf->get('path_lc')),
+	message => 'unknown suffix',
+    }) unless defined(&$op);
     return join("\n", $op->($self, $file, $rf));
 }
 
