@@ -1,0 +1,27 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+require 'Blog.PL';
+my($entry) = [map({
+    my($x) = {
+	title => "Title $_ *?:/",
+	body => "body\n" x $_,
+    };
+    Bivio::Biz::Model->new(req(), 'BlogCreateForm')->process($x);
+    $x->{file_name} = Bivio::Type->get_instance('BlogFileName')->from_path(
+	req()->get('Model.RealmFile')->get('path'));
+    commit();
+    $x;
+} 1..3)];
+[
+    load_all => [
+	[] => [map(
+	    +{file_name => $entry->[$_]->{file_name}},
+	    reverse(0 .. $#$entry),
+	)],
+    ],
+    load_this => [
+	map(([{this => $entry->[$_]->{file_name}}] => [$entry->[$_]]),
+	    0.. $#$entry),
+    ],
+];

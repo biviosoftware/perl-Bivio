@@ -1,0 +1,27 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    class() => [
+	from_literal => [
+	    '' => [undef, undef],
+	    ' 20060504030201 ' => '20060504030201',
+	    ' 2006/05/04/03:02:01 ' => '20060504030201',
+	    ' 2006050403020 ' => BLOG_FILE_NAME(),
+	    bad => BLOG_FILE_NAME(),
+	],
+	from_path => [
+	    '' => DIE(),
+	    '/Blog/200605/04030201 ' => '20060504030201',
+	    '/20060504030201 ' => '20060504030201',
+	    'bad' => DIE(),
+	],
+	to_sql_like_path => [
+	    0 => '/blog/______/________',
+	    1 => '/public/blog/______/________',
+	],
+	from_sql_column => [
+	    '200605/04030201' => '20060504030201',
+	],
+    ],
+];
