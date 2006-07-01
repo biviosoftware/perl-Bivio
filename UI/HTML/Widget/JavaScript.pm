@@ -36,40 +36,9 @@ flag.
 
 =cut
 
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="VERSION_VAR"></a>
-
-=head2 VERSION_VAR : string
-
-Name of version variable
-
-=cut
-
-sub VERSION_VAR {
-    return 'jsv';
-}
-
 #=IMPORTS
 
 #=VARIABLES
-
-my($_VV) = VERSION_VAR();
-my($_JSV) = <<"EOF";
-<script language="JavaScript">
-<!--
-var $_VV=1.0;
-// -->
-</script><script language="JavaScript1.2">
-<!--
-$_VV=1.2;
-// -->
-</script>
-EOF
-chomp($_JSV);
 
 =head1 METHODS
 
@@ -124,19 +93,13 @@ sub render {
     # Render common code
     my($code);
     if (my $tag = _tag($req, $module_tag)) {
-	# Render "global" common code first
-	unless ($req->unsafe_get('javascript_jsv')) {
-	    # Always write here
-	    $$buffer .= $_JSV;
-	    $req->put(javascript_jsv => 1);
-	}
 	$code = $common_code;
 	$req->put($tag => 1);
     }
 
     # Render the code and script in a JavaScript section
     if (defined($script) || defined($code)) {
-	$$buffer .= "<script language=\"JavaScript\">\n<!--\n";
+	$$buffer .= "<script type=\"text/javascript\">\n<!--\n";
 	$$buffer .= $code if defined($code);
 	$$buffer .= $script if defined($script);
 	$$buffer .= "\n// -->\n</script>";
