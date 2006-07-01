@@ -393,17 +393,24 @@ sub get_keys {
 
 =head2 internal_get_target() : (proto, Bivio::Biz::Model, string)
 
-=head2 static internal_get_target(Bivio::Biz::Model model, string model_prefix) : (proto, Bivio::Biz::Model, string)
+=head2 static internal_get_target(Bivio::Biz::Model model, string model_prefix, hash_ref values) : (proto, Bivio::Biz::Model, string, values)
 
-Returns the class, target model and optional model prefix. This method is
-used by subclasses when defining a method which can operate on self, or
-on another model target. For an example, see RealmOwner.format_email.
+Returns the class, target model and optional model prefix. This method is used
+by subclasses when defining a method which can operate on self, on another
+model target, or $values. For an example, see RealmOwner.format_email.
+If values is undef, internal_get is called on the model.
 
 =cut
 
 sub internal_get_target {
-    my($self, $model, $model_prefix) = @_;
-    return (ref($self) || $self, $model || $self, $model_prefix || '');
+    my($self, $model, $model_prefix, $values) = @_;
+    $model ||= $self;
+    return (
+	ref($self) || $self,
+	$model,
+	$model_prefix || '',
+	$values || $model->internal_get,
+    );
 }
 
 =for html <a name="internal_initialize_sql_support"></a>
