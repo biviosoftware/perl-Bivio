@@ -3,9 +3,9 @@
 package Bivio::Biz::Model::BlogEntryList;
 use strict;
 use base 'Bivio::Biz::Model::RealmFileList';
-my($_BN) = Bivio::Type->get_instance('BlogName');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_BN) = Bivio::Type->get_instance('BlogName');
 
 sub execute_load_entry_or_page {
     my($proto, $req) = @_;
@@ -36,6 +36,7 @@ sub internal_initialize {
 	other => [
 	    [qw(RealmFile.user_id RealmOwner.realm_id)],
 	    'RealmOwner.display_name',
+	    'RealmFile.is_public',
 	    {
 	        name => 'title',
 	        type => 'String',
@@ -51,7 +52,7 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    ($row->{title}) = $row->{'RealmFile.path'} =~ m{.+/(.+)$};
+    ($row->{title}) = $row->{'RealmFile.path'} =~ m{(\d+[^/]+)$};
     return 1;
 }
 
