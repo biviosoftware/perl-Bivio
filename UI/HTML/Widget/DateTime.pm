@@ -106,7 +106,6 @@ use Bivio::UI::HTML::Widget::JavaScript;
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_UNIX_EPOCH) = Bivio::Type::DateTime->UNIX_EPOCH_IN_JULIAN_DAYS;
 my($_SECONDS) = Bivio::Type::DateTime->SECONDS_IN_DAY;
-my($_JSV) = Bivio::UI::HTML::Widget::JavaScript->VERSION_VAR;
 my($_FN) = JAVASCRIPT_FUNCTION_NAME();
 
 # Write once, run nowhere...  Date.getFullYear was not introduced
@@ -158,11 +157,6 @@ function dt_n(n){
 
 // Returns the year
 function dt_y(d){
-    // NS3 does bizarre things with dates.  Anyway,
-    // this is the solution.  Study it carefully before changing it.
-    if($_JSV>=1.2){
-        return d.getFullYear();
-    }
     var y=d.getYear();
     return y<1000?y+1900:y;
 }
