@@ -10,6 +10,15 @@ sub ILLEGAL_CHAR_REGEXP {
     return qr{(?:^|/)\.\.?$|[\\\:*?"<>\|\0-\037\177]};
 }
 
+sub MAIL_FOLDER {
+    return '/Mail';
+}
+
+sub PUBLIC_FOLDER {
+    # Always is_public => 1
+    return '/Public';
+}
+
 sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = Bivio::Type::String->from_literal($value);
