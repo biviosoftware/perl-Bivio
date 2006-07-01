@@ -147,6 +147,11 @@ sub get_handle {
 	});
 }
 
+sub get_os_path {
+    # TESTING ONLY, please :-)
+    return _filename(@_);
+}
+
 sub handle_commit {
     my($self) = @_;
     (_f($self)->{handle_commit} || sub {})->();
@@ -229,22 +234,6 @@ sub is_empty {
 	})->get_result_set_size > 0 ? 0 : 1;
 }
 
-sub old_filename {
-    my(undef, $model, $prefix) = shift->internal_get_target(@_);
-    foreach my $volume (qw(plain mail)) {
-	# Needed for db_upgrade
-	my($res) = _old_realm_dir($model->get($prefix . 'realm_id'))
-	    . '/'
-	    . $volume
-	    . lc($model->get($prefix . 'volume')->get_name)
-	    . '/'
-	    .  $model->get($prefix . 'realm_file_id');
-	return $res
-	    if -f $res;
-    }
-    $model->throw_die(DIE => 'old_filename MUST exist');
-}
-
 sub parse_path {
     my($proto, $path, $model) = @_;
     my($p, $e) = $_FP->from_literal(defined($path) ? $path : '/');
@@ -262,6 +251,21 @@ sub unauth_delete {
     # We don't support this to avoid the 'rm -rf /' problem that Unix has.
     # It's technically feasible, but not something you ever want to do.
     die('unsupported');
+}
+
+sub unauth_load_by_os_path {
+    my($self, $os_path) = @_;
+    # COUPLING: _realm_dir & _filename
+    # Use for search only
+    my($rid, $rfid) = $os_path =~ m{RealmFile/(\d+)/(\d+)};
+    $self->throw_die(CORRUPT_QUERY => {
+	message => 'Not a valid OS path for a RealmFile',
+	entity => $os_path,
+    }) unless $rid && $rfid;
+    return $self->unauth_load({
+	realm_id => $rid,
+	realm_file_id => $rfid,
+    });
 }
 
 sub update {
@@ -411,9 +415,10 @@ sub _f {
 
 sub _filename {
     my(undef, $model, $prefix) = shift->internal_get_target(@_);
-    my($res) = _realm_dir($model->get($prefix . 'realm_id'))
-	. '/'
-	.  $model->get($prefix . 'realm_file_id');
+    # COUPLING: _realm_dir & unauth_load_by_os_path
+    my($d, $f, $e)
+	= $model->get(map("$prefix$_", qw(realm_id realm_file_id)));
+    my($res) = _realm_dir($d) . '/' .  $f;
     _trace($res) if $_TRACE;
     return $res;
 }
@@ -425,15 +430,8 @@ sub _non_child_attrs {
 
 sub _realm_dir {
     my($realm_id) = @_;
+    # COUPLING: _filename & unauth_load_by_os_path
     return Bivio::Biz::File->absolute_path("RealmFile/$realm_id");
-}
-
-sub _old_realm_dir {
-    my($realm_id) = @_;
-    return Bivio::UI::Facade->get_local_file_name(
-	Bivio::UI::LocalFileType->REALM_DATA,
-	$realm_id,
-    );
 }
 
 sub _touch_parent {
