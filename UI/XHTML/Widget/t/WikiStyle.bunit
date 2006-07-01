@@ -7,7 +7,7 @@ req()->set_realm_and_user('fourem');
 class()->render_html(ShellUtilHelp => req(), 'HELP', req()->get('auth_id'));
 [
     [] => <<'EOF',
-<style>
+<style type="text/css">
 <!--
 .fourem_wiki {}
 

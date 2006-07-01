@@ -145,7 +145,7 @@ sub render {
     return unless $req->unsafe_get('font_with_style');
 
     # Begin
-    $$buffer .= "<style>\n<!--\n"
+    $$buffer .= qq{<style type="text/css">\n<!--\n}
         unless $req->unsafe_get($_NO_HTML_KEY);
 
     # Font

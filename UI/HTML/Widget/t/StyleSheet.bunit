@@ -2,6 +2,6 @@
 # $Id$
 Widget();
 [
-    ['/f/base.css'] => qr{'<style>\n<!--\n.+left blank.*\n-->\n</style>\n'}s,
+    ['/f/base.css'] => qr{'<style type="text/css">\n<!--\n.+left blank.*\n-->\n</style>\n'}s,
 ];
 

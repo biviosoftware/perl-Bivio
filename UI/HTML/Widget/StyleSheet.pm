@@ -62,7 +62,7 @@ Renders the style sheet inline.
 
 sub control_off_render {
     my($self, $source, $buffer) = @_;
-    $$buffer .= "<style>\n<!--\n"
+    $$buffer .= qq{<style type="text/css">\n<!--\n}
 	. ${Bivio::IO::File->read(
 	    Bivio::UI::Facade->get_local_file_name(
 		Bivio::UI::LocalFileType->PLAIN,

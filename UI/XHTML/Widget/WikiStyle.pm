@@ -14,7 +14,7 @@ sub render {
     return unless $styles && @$styles;
     $$buffer .= join(
 	"\n",
-	"<style>\n<!--",
+	qq{<style type="text/css">\n<!--},
 	@$styles,
 	"-->\n</style>\n"
     );
