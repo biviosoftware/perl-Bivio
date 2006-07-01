@@ -14,12 +14,12 @@ our($_TRACE);
 
 sub MAIL_FOLDER {
     # Always is_read_only => 1
-    return '/Mail';
+    return $_FP->MAIL_FOLDER;
 }
 
 sub PUBLIC_FOLDER {
     # Always is_public => 1
-    return '/Public';
+    return $_FP->PUBLIC_FOLDER;
 }
 
 sub append_content {
@@ -134,8 +134,8 @@ sub get_content_length {
 }
 
 sub get_content_type {
-    my(undef, $model, $prefix) = shift->internal_get_target(@_);
-    return Bivio::MIME::Type->from_extension($model->get($prefix . 'path'));
+    my(undef, undef, $prefix, $values) = shift->internal_get_target(@_);
+    return Bivio::MIME::Type->from_extension($values->{$prefix . 'path'});
 }
 
 sub get_handle {
@@ -414,10 +414,9 @@ sub _f {
 }
 
 sub _filename {
-    my(undef, $model, $prefix) = shift->internal_get_target(@_);
+    my(undef, $model, $prefix, $values) = shift->internal_get_target(@_);
     # COUPLING: _realm_dir & unauth_load_by_os_path
-    my($d, $f, $e)
-	= $model->get(map("$prefix$_", qw(realm_id realm_file_id)));
+    my($d, $f) = map($values->{"$prefix$_"}, qw(realm_id realm_file_id));
     my($res) = _realm_dir($d) . '/' .  $f;
     _trace($res) if $_TRACE;
     return $res;
