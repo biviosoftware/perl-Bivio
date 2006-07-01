@@ -29,15 +29,15 @@ sub internal_initialize {
 	can_iterate => 1,
         auth_id => 'RealmFile.realm_id',
         primary_key => [{
-	    name => 'file_name',
+	    name => 'path_info',
 	    type => 'BlogFileName',
 	    in_select => 1,
 	    select_value =>
-		qq{SUBSTRING(path_lc FROM '\%#"@{[$_BFN->SQL_LIKE_BASE]}#"' FOR '#') as file_name},
+		qq{SUBSTRING(path_lc FROM '\%#"@{[$_BFN->SQL_LIKE_BASE]}#"' FOR '#') as path_info},
 	    sort_order => 0,
 	}],
 	order_by => [qw(
-	    file_name
+	    path_info
 	    RealmFile.modified_date_time
 	)],
 	other => [qw(
@@ -60,7 +60,7 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    $row->{file_name} = $_BFN->from_path($row->{file_name});
+    $row->{path_info} = $_BFN->from_path($row->{path_info});
     ($row->{title}, $row->{body}) = $_BC->split(
 	$_RF->get_content($self, 'RealmFile.', $row),
     );

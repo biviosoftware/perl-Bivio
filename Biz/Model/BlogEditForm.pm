@@ -20,7 +20,7 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     my($id, $fn) = $self->get_request->get('Model.BlogList')
-	->get(qw(RealmFile.realm_file_id file_name));
+	->get(qw(RealmFile.realm_file_id path_info));
     my($public) = $self->get('RealmFile.is_public');
     $self->new_other('RealmFile')->load({
 	realm_file_id => $id,

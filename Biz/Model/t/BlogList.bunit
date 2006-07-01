@@ -8,7 +8,7 @@ my($entry) = [map({
 	body => "body\n" x $_,
     };
     Bivio::Biz::Model->new(req(), 'BlogCreateForm')->process($x);
-    $x->{file_name} = Bivio::Type->get_instance('BlogFileName')->from_path(
+    $x->{path_info} = Bivio::Type->get_instance('BlogFileName')->from_path(
 	req()->get('Model.RealmFile')->get('path'));
     commit();
     $x;
@@ -16,18 +16,18 @@ my($entry) = [map({
 [
     load_all => [
 	[] => [map(
-	    +{file_name => $entry->[$_]->{file_name}},
+	    +{path_info => $entry->[$_]->{path_info}},
 	    reverse(0 .. $#$entry),
 	)],
     ],
     load_this => [
-	map(([{this => $entry->[$_]->{file_name}}] => [$entry->[$_]]),
+	map(([{this => $entry->[$_]->{path_info}}] => [$entry->[$_]]),
 	    0.. $#$entry),
     ],
     execute_load_this => [
 	sub {[req()->put(
 	    query => undef,
-	    path_info => $entry->[0]->{file_name}
+	    path_info => $entry->[0]->{path_info}
 	)]} => not_die(),
     ],
 ];
