@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Script;
 use strict;
@@ -174,7 +174,7 @@ sub render {
     my($js) = $_VS->vs_call('JavaScript');
     $$buffer .= join(
 	"\n",
-	qq{<script language="JavaScript">\n<!--},
+	qq{<script type="text/javascript">\n<!--},
 	map($js->strip($self->$_()), @$names),
 	'window.onload=function(){',
 	grep(s/JAVASCRIPT_(.*)/\L$1\E_onload();/, @$names),
@@ -189,7 +189,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

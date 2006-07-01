@@ -20,7 +20,7 @@ Bivio::Test::Widget->unit(
 	[] => '',
 	page_print => '',
 	[] => <<'EOF',
-<script language="JavaScript">
+<script type="text/javascript">
 <!--
 function page_print_onload(){window.print()}
 window.onload=function(){

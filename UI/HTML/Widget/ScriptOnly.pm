@@ -105,7 +105,7 @@ sub render {
     my($self, $source, $buffer) = @_;
 
     $$buffer .= <<'EOF';
-<script language="JavaScript">
+<script type="text/javascript">
 <!--
 EOF
 
