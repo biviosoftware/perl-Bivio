@@ -370,6 +370,26 @@ sub get_delegate_info {
 	undef,
 	'Blog page names may only containg letters, numbers and spaces.',
     ],
+    BLOG_FILE_NAME => [
+	62,
+	undef,
+	'Blog identifiers must be of the form: YYYYMMDDHHMMSS',
+    ],
+    BLOG_TITLE_NULL => [
+	63,
+	undef,
+	'Blog must start with a title of the form: @h3 some title',
+    ],
+    BLOG_BODY_NULL => [
+	64,
+	undef,
+	'Blog body must contain some text after the title (@h3 line)',
+    ],
+    BLOG_TITLE_PREFIX => [
+	65,
+	undef,
+	'Blog must start with "@h3 " to indicate title',
+    ],
 ];
 }
 
