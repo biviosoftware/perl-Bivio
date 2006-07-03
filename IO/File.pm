@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Inc.  All rights reserved.
+# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::File;
 use strict;
@@ -335,6 +335,18 @@ sub temp_file {
 
 =for html <a name="write"></a>
 
+=head2 static unique_name_for_process() : string
+
+Unique file name for (host/process).
+
+=cut
+
+sub unique_name_for_process {
+    return $$ . '#' . Sys::Hostname::hostname();
+}
+
+=for html <a name="write"></a>
+
 =head2 static write(string file_name, any contents) : any
 
 =head2 static write(glob_ref file, any contents) : any
@@ -389,7 +401,7 @@ sub _err {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Inc.  All rights reserved.
+Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
