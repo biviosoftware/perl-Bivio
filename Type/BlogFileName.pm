@@ -6,6 +6,11 @@ use base 'Bivio::Type::Line';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = Bivio::Type->get_instance('FilePath');
+my($_IS_PATH) = qr{@{[$_FP->join(
+    '^(?:' . join('|', map(__PACKAGE__->to_path(undef, $_), 0, 1)) . ')',
+    '\d{6}',
+    '\d{8}$',
+)]}}oisx;
 
 sub PRIVATE_FOLDER {
     return '/Blog';
@@ -41,6 +46,11 @@ sub from_sql_column {
 
 sub get_width {
     return 14;
+}
+
+sub is_path {
+    my(undef, $path) = @_;
+    return $path =~ $_IS_PATH ? 1 : 0;
 }
 
 sub to_path {
