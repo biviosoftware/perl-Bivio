@@ -8,9 +8,11 @@ use Bivio::IO::Trace;
 use Bivio::Biz::File;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FP) = Bivio::Type->get_instance('FilePath');
-our($_TRACE);
+my($_TXN_PREFIX);
+my($_DELETED_SENTINEL) = 'DELETED IN TRANSACTION';
 
 sub MAIL_FOLDER {
     # Always is_read_only => 1
@@ -94,9 +96,7 @@ sub delete_all {
     $self->die('unsupported with a query: ', $query)
 	if $query && %$query;
     my($d) = _realm_dir($req->get('auth_id'));
-    _txn($self, sub {
-        Bivio::IO::File->rm_rf($d);
-    });
+    _txn($self, [delete => glob("$d/[0-9]*[0-9]")]);
     my(@res) = $self->SUPER::delete_all;
     $req->set_realm($realm)
 	if $realm;
@@ -126,11 +126,11 @@ sub delete_deep {
 }
 
 sub get_content {
-    return _f(@_)->{content} ||= Bivio::IO::File->read(_filename(@_));
+    return _read(_filename(@_));
 }
 
 sub get_content_length {
-    return -s _filename(@_);
+    return -s shift->get_os_path(@_);
 }
 
 sub get_content_type {
@@ -139,27 +139,48 @@ sub get_content_type {
 }
 
 sub get_handle {
-    my($p) = _filename(@_);
-    return IO::File->new($p, 'r')
-	|| (shift->internal_get_target(@_))[1]->throw_die(IO_ERROR => {
-	    entity => $p,
+    my($self) = shift;
+    my($os_path) = $self->get_os_path(@_);
+    return IO::File->new($os_path, 'r')
+	|| ($self->internal_get_target(@_))[1]->throw_die(IO_ERROR => {
+	    entity => $os_path,
 	    message => "$!",
 	});
 }
 
 sub get_os_path {
-    # TESTING ONLY, please :-)
-    return _filename(@_);
+    # Use with caution: May be transaction file or actual file
+    return _os_path(_filename(@_));
 }
 
 sub handle_commit {
-    my($self) = @_;
-    (_f($self)->{handle_commit} || sub {})->();
-    return;
+    return _txn_do(
+	shift(@_),
+	sub {
+	    my($file, $txn_file) = @_;
+	    return unless -r $txn_file;
+	    unlink($file);
+	    Bivio::IO::File->rename($txn_file, $file);
+	    return;
+	},
+	sub {
+	    my($file, $txn_file) = @_;
+	    unlink($file);
+	    unlink($txn_file);
+	    return;
+	}
+    );
 }
 
 sub handle_rollback {
-    return;
+    return _txn_do(
+	shift(@_),
+	sub {
+	    my(undef, undef, $txn_file) = @_;
+	    unlink($txn_file);
+	    return;
+	},
+    );
 }
 
 sub init_realm {
@@ -251,21 +272,6 @@ sub unauth_delete {
     # We don't support this to avoid the 'rm -rf /' problem that Unix has.
     # It's technically feasible, but not something you ever want to do.
     die('unsupported');
-}
-
-sub unauth_load_by_os_path {
-    my($self, $os_path) = @_;
-    # COUPLING: _realm_dir & _filename
-    # Use for search only
-    my($rid, $rfid) = $os_path =~ m{RealmFile/(\d+)/(\d+)};
-    $self->throw_die(CORRUPT_QUERY => {
-	message => 'Not a valid OS path for a RealmFile',
-	entity => $os_path,
-    }) unless $rid && $rfid;
-    return $self->unauth_load({
-	realm_id => $rid,
-	realm_file_id => $rfid,
-    });
 }
 
 sub update {
@@ -408,14 +414,8 @@ sub _delete_args {
     );
 }
 
-sub _f {
-    my(undef, $model) = shift->internal_get_target(@_);
-    return $model->isa(__PACKAGE__) ? ($model->[$_IDI] ||= {}) : {};
-}
-
 sub _filename {
     my(undef, $model, $prefix, $values) = shift->internal_get_target(@_);
-    # COUPLING: _realm_dir & unauth_load_by_os_path
     my($d, $f) = map($values->{"$prefix$_"}, qw(realm_id realm_file_id));
     my($res) = _realm_dir($d) . '/' .  $f;
     _trace($res) if $_TRACE;
@@ -427,9 +427,22 @@ sub _non_child_attrs {
     return {map(($_ => $v->{$_}), grep(!/^_|override/, keys(%$v)))};
 }
 
+sub _os_path {
+    my($file) = @_;
+    my($txn_file) = _txn_filename($file);
+    Bivio::Die->die(IO_ERROR => {
+	entity => $file,
+	message => 'file has been deleted in this transaction',
+    }) if -l $txn_file && -e $txn_file;
+    return  -r $txn_file ? $txn_file : $file;
+}
+
+sub _read {
+    return Bivio::IO::File->read(_os_path(shift(@_)));
+}
+
 sub _realm_dir {
     my($realm_id) = @_;
-    # COUPLING: _filename & unauth_load_by_os_path
     return Bivio::Biz::File->absolute_path("RealmFile/$realm_id");
 }
 
@@ -469,21 +482,66 @@ sub _touch_parent {
 }
 
 sub _txn {
-    my($self, $op) = @_;
+    my($self) = shift;
     # Need to create $new, because callers may modify or re-use $self after call
     my($new) = $self->new;
-    _f($new)->{handle_commit} = $op;
+    $new->[$_IDI] = [@_];
     $new->get_request->push_txn_resource($new);
+    return _txn_do(
+	$new,
+        sub {
+	    my($file, $txn_file, $content) = @_;
+	    Bivio::IO::File->mkdir_parent_only($txn_file);
+	    unlink($txn_file);
+	    Bivio::IO::File->write($txn_file, $content);
+	    return;
+	},
+	sub {
+	    my($file, $txn_file) = @_;
+	    Bivio::IO::File->mkdir_parent_only($txn_file);
+	    unlink($txn_file);
+	    symlink($_DELETED_SENTINEL, $txn_file);
+	    return;
+	},
+    );
+}
+
+sub _txn_do {
+    my($self, $create, $delete) = @_;
+    return unless ref($self) and my $cmds = $self->[$_IDI];
+    $delete ||= $create;
+    foreach my $cmd (@$cmds) {
+	my($op, @args) = @$cmd;
+	if ($op eq 'create') {
+	    # First time we get rid of content, which may be large.
+	    pop(@$cmd)
+		if $cmd->[2];
+	    $create->($args[0], _txn_filename($args[0]), $args[1]);
+	}
+	elsif ($op eq 'delete') {
+	    foreach my $f (@args) {
+		$delete->($f, _txn_filename($f));
+	    }
+	}
+	else {
+	    Bivio::Die->die($cmd, ': program error');
+	}
+    }
     return;
+}
+
+sub _txn_filename {
+    my($filename) = @_;
+    $_TXN_PREFIX ||= '.' . Bivio::IO::File->unique_name_for_process . '#';
+    $filename =~ s{(?=[^/]+$)}{$_TXN_PREFIX}o;
+    return $filename;
 }
 
 sub _unlink {
     my($self) = @_;
     my($p) = _filename($self);
-    _txn($self, sub {
-	# Don't check for errors, may not exist
-	unlink($p);
-    }) unless $self->get('is_folder');
+    _txn($self, [delete => $p])
+	unless $self->get('is_folder');
     return $self;
 }
 
@@ -509,8 +567,8 @@ sub _update {
     my($new_filename) = _filename($self);
     unless ($self->get('is_folder')) {
 	_txn($self,
-	     $c ? sub {unlink($old_filename)}
-		 : sub {Bivio::IO::File->rename($old_filename, $new_filename)}
+	     $c ? () : [create => $new_filename, _read($old_filename)],
+	     [delete => $old_filename],
 	) unless $new_filename eq $old_filename;
 	return defined($c) ? _write($self, $c) : $self;
     }
@@ -570,12 +628,7 @@ sub _write {
 	entity => $content,
 	message => 'content must be a defined scalar_ref',
     }) unless ref($content) eq 'SCALAR' && defined($$content);
-    _f($self)->{content} = $content;
-    my($p) = _filename($self);
-    _txn($self, sub {
-	Bivio::IO::File->mkdir_parent_only($p);
-	Bivio::IO::File->write($p, $content);
-    });
+    _txn($self, [create => _filename($self), $content]);
     return $self;
 }
 
