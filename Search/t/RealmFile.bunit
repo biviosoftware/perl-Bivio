@@ -12,7 +12,7 @@ model('RealmFile')->delete_deep({path => $dir});
 		my(undef, $params) = @_;
 		return [model('RealmFile')->create_with_content({
 		    path => ($params->[1] || $dir) . $params->[0],
-		}, read_file('Text/' . $params->[0]))];
+		}, read_file('RealmFile/' . $params->[0]))];
 	    },
 	    check_return => sub {
 		my(undef, undef, $expect) = @_;
