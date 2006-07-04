@@ -489,9 +489,13 @@ my($auth_uid) = sub {
     class() => [
 	delete_all => [
 	    [{path => '/'}] => DIE(),
-	    # Don't commit, since we don't know what other files need to
-	    # be there.
 	    [{realm_id => req()->get('auth_id')}] => not_die(),
 	],
+	# Don't commit, since we don't know what other files need to
+	# be there.
+	sub {
+	    Bivio::Agent::Task->rollback(req());
+	    return 1;
+	} => 1,
     ],
 ];
