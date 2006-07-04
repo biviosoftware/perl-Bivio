@@ -7,6 +7,8 @@ use Bivio::Type;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = Bivio::Type->get_instance('FilePath');
+my($_WN) = Bivio::Type->get_instance('WikiName');
+my($_BFN) = Bivio::Type->get_instance('BlogFileName');
 
 sub parse {
     my($proto, $realm_file) = @_;
@@ -20,6 +22,20 @@ sub parse {
     my($attr) = $op->($proto, $realm_file);
     return $attr ? {map(($_ => shift(@$attr)), qw(type title text))} : ();
 }
+
+sub _from_application_octet_stream {
+    my($proto, $rf) = @_;
+    if (-B $rf->get_os_path) {
+	Bivio::IO::Alert->info($rf, ': unhandled binary file');
+	return;
+    }
+    my($p) = $rf->get('path');
+    return _from_application_x_bwiki($proto, $rf)
+	if $_WN->is_absolute_path($p)
+	|| $_BFN->is_path($p);
+    return _from_text_plain($proto, $rf);
+}
+
 
 sub _from_application_x_bwiki {
     my($proto, $rf) = @_;
@@ -84,7 +100,7 @@ sub _from_text_plain {
     my(undef, $rf) = @_;
     my($ct) = $rf->get_content_type;
     return [
-	$ct eq 'application/octet' ? 'text/plain' : $ct,
+	$ct eq 'application/octet-stream' ? 'text/plain' : $ct,
 	'',
 	$rf->get_content,
     ];

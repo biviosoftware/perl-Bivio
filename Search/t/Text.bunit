@@ -11,19 +11,26 @@ model('RealmFile')->delete_deep({path => $dir});
 	    compute_params => sub {
 		my(undef, $params) = @_;
 		return [model('RealmFile')->create_with_content({
-		    path => $dir . $params->[0],
+		    path => ($params->[1] || $dir) . $params->[0],
 		}, read_file('Text/' . $params->[0]))];
+	    },
+	    check_return => sub {
+		my(undef, undef, $expect) = @_;
+		return @$expect == 2 ? [@$expect, "some text\n"] : $expect;
 	    },
 	    compute_return => sub {
 		my(undef, $actual) = @_;
-		return [@$actual ? @{$actual->[0]}{qw(type title text)} : ()];
+		return [$actual->[0] ? map(
+		    ref($_) ? $$_ : $_,
+		    @{$actual->[0]}{qw(type title text)},
+		) : ()];
 	    },
 	} => [
-	    't.txt' => ['text/plain', '', \"some text\n"],
-	    't.csv' => ['text/csv', '', \"some,text\n"],
-	    't.html' => ['text/html', 'TITLE', \"some text\n"],
-	    't.bwiki' => ['text/plain', 'TITLE', \"some text\n"],
-	    't.eml' => ['message/rfc822', 'TITLE', \<<'EOF'],
+	    't.txt' => ['text/plain', ''],
+	    't.csv' => ['text/csv', '', "some,text\n"],
+	    't.html' => ['text/html', 'TITLE'],
+	    't.bwiki' => ['text/plain', 'TITLE'],
+	    't.eml' => ['message/rfc822', 'TITLE', <<'EOF'],
 subject: TITLE
 to: hello
 from: John Doe <john@example.com>
@@ -31,6 +38,10 @@ from: John Doe <john@example.com>
 some text
 EOF
 	    't.gif' => [],
+	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
+	    TextFile => ['text/plain', ''],
+	    BinaryFile => [],
+	    [BinaryFile => '/Wiki/'] => [],
 	],
     ],
 ];
