@@ -233,6 +233,19 @@ sub builtin_email {
 	->generate_local_email(@_);
 }
 
+=for html <a name="builtin_model"></a>
+
+=head2 static builtin_model() : Bivio::Biz::Model
+
+Returns a new model instance.
+
+=cut
+
+sub builtin_model {
+    shift;
+    return Bivio::Biz::Model->new(Bivio::Agent::Request->get_current, @_);
+}
+
 =for html <a name="builtin_not_die"></a>
 
 =head2 static builtin_not_die() : undef
@@ -260,6 +273,19 @@ sub builtin_options {
     return {%$_OPTIONS = (%$_OPTIONS, $options ? %$options : ())};
 }
 
+=for html <a name="builtin_read_file"></a>
+
+=head2 static builtin_read_file(string path) : string_ref
+
+Read a file.
+
+=cut
+
+sub builtin_read_file {
+    shift;
+    return Bivio::IO::File->read(@_);
+}
+
 =for html <a name="builtin_req"></a>
 
 =head2 static builtin_req() : Bivio::Agent::Request
@@ -284,6 +310,19 @@ Returns class which was loaded.
 sub builtin_simple_require {
     my(undef, $class) = @_;
     return Bivio::IO::ClassLoader->simple_require($class);
+}
+
+=for html <a name="builtin_write_file"></a>
+
+=head2 static builtin_write_file(string path) : string_ref
+
+Write a file.
+
+=cut
+
+sub builtin_write_file {
+    shift;
+    return Bivio::IO::File->write(@_);
 }
 
 =for html <a name="run"></a>
