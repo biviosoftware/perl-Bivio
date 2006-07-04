@@ -1,0 +1,9 @@
+To: hello
+From: John Doe <john@example.com>
+subject: TITLE
+Content-Type: text/html
+
+<html>
+<body>
+some text
+</body></html>
