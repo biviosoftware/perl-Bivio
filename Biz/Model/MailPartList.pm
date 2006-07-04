@@ -92,7 +92,6 @@ sub internal_initialize {
 	)},
 	parent_id => 'RealmFile.realm_file_id',
 	auth_id => 'RealmFile.realm_id',
-	# Testing hook
 	other_query_keys => [qw(content_ref)],
     });
 }
@@ -118,6 +117,14 @@ sub internal_load_rows {
     return $res
 	unless my $t = $query->unsafe_get('this');
     return [$res->[$t->[0]] || $self->throw_die('MODEL_NOT_FOUND')];
+}
+
+sub load_from_content {
+    my($self, $content) = @_;
+    return $self->load_all({
+	content_ref => $content,
+	parent_id => 1,
+    });
 }
 
 sub _parser {

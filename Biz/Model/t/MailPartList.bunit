@@ -4,7 +4,7 @@ ListModel();
 req()->initialize_fully;
 [
     {
-	method => 'load_all',
+	method => 'load_from_content',
 	check_return => sub {
 	    my($case, $actual, $expect) = @_;
 	    my($o) = $case->get('object');
@@ -26,11 +26,7 @@ req()->initialize_fully;
 	},
     } => [
 	map((
-	    [{
-		content_ref => Bivio::IO::File->read($_),
-		parent_id => 1,
-	    }],
-	    (do(($_ =~ /(.*)in$/)[0] . 'out') || die($@)),
+	    [read_file($_)] => do(($_ =~ /(.*)in$/)[0] . 'out') || die($@),
 	), glob('MailPartList/*.in')),
     ],
 ];
