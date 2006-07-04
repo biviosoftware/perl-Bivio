@@ -176,7 +176,7 @@ sub handle_rollback {
     return _txn_do(
 	shift(@_),
 	sub {
-	    my(undef, undef, $txn_file) = @_;
+	    my(undef, $txn_file) = @_;
 	    unlink($txn_file);
 	    return;
 	},
