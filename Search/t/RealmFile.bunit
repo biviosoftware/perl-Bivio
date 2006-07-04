@@ -1,19 +1,22 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-req()->set_realm_and_user(qw(demo demo));
+req()->set_realm_and_user(qw(fourem demo));
 my($dir) = '/search-text/';
 model('RealmFile')->delete_deep({path => $dir});
 [
-    class() => [
+    {
+	object => class(),
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    Bivio::Agent::Task->rollback(req());
+	    return [model('RealmFile')->create_with_content({
+		path => ($params->[1] || $dir) . $params->[0],
+	    }, read_file('RealmFile/' . $params->[0]))];
+	},
+    } => [
 	{
-	    method => 'parse',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		return [model('RealmFile')->create_with_content({
-		    path => ($params->[1] || $dir) . $params->[0],
-		}, read_file('RealmFile/' . $params->[0]))];
-	    },
+	    method => 'parse_content',
 	    check_return => sub {
 		my(undef, undef, $expect) = @_;
 		return @$expect == 2 ? [@$expect, "some text\n"] : $expect;
@@ -42,6 +45,57 @@ EOF
 	    TextFile => ['text/plain', ''],
 	    BinaryFile => [],
 	    [BinaryFile => '/Wiki/'] => [],
+	],
+	{
+	    method => 'parse_for_xapian',
+	} => [
+	    'xapian.html' => sub {
+		my(undef, $actual) = @_;
+		shift->actual_return([
+		    +{map({
+			my($k, $v) = $_ =~ /^([A-Z])([^A-Z].*)$/;
+			$k ? ($k, $v) : split(/:/, $_, 2);
+		    } @{$actual->[0]})},
+		    $actual->[1],
+		]);
+		my($now) = Bivio::Type::DateTime->local_now_as_file_name;
+		return [
+		    {map(ref($_) ? lc(req()->get_widget_value(@$_)) : $_,
+			 XREALMID => ['auth_id'],
+			 XUSERID => ['auth_user_id'],
+			 XUSERFULLNAME => [qw(auth_user display_name)],
+			 XISPUBLIC => 0,
+			 XISREADONLY => 0,
+			 G => [qw(auth_realm owner name)],
+			 XREALMFULLNAME => [qw(auth_realm owner display_name)],
+			 XREALM => [qw(auth_realm owner name)],
+			 XUSER => [qw(auth_user name)],
+			 XEMAIL => 'demo@bivio.biz',
+			 A => req()->get_nested(qw(auth_user display_name))
+			     . ' demo@bivio.biz',
+			 XREALM => 'fourem',
+			 Q => [qw(Model.RealmFile realm_file_id)],
+			 S => 'a short title',
+			 T => 'text/html',
+			 D => substr($now, 0, 8),
+			 M => substr($now, 0, 6),
+			 Y => substr($now, 0, 4),
+			 P => '/search-text/xapian.html',
+		    )},
+		    [qw(
+			short
+			titl
+			f.u.d.
+			what
+			make
+			programm
+			worri
+			much
+			have
+			worri
+		    )],
+		];
+	    },
 	],
     ],
 ];
