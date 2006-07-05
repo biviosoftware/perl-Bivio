@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::IO::Ref;
 use strict;
@@ -38,76 +38,58 @@ use Bivio::IO::Alert;
 
 =cut
 
+=for html <a name="nested_contains"></a>
+
+=head2 nested_contains(any subset, any set) : string_ref
+
+If all elements of I<subset> are contained in I<set>, returns undef.  If not,
+returns the nested differences of the values.  Special cases are code references.
+If I<subset> value is a code reference, will execute the code reference on the
+value in I<set>, e.g.
+
+    {                                {
+        key1 => 1,		         key1 => 1,
+        key2 => sub {		         key2 => val2
+            my($val2) = @_;   },
+            assert on $val2;
+            return $val2;
+        },
+    },
+
+For array refs, this works out to:
+
+    [                                [
+        1,                               1,
+        sub {                            2,
+            my($val, $index) = @_;   ],
+            return 2;
+        },
+    ];
+
+If I<subset> contains a scalar, and I<set> is a ref that matches the
+scalar either by dereferencing or by calling to_string() or in the case of
+enums get_name(), then the match is ok.
+
+The purpose of contains is to find a general matching of values for unit
+testing.  See Bivio::Test::Unit::assert_contains for details.
+
+=cut
+
+sub nested_contains {
+    return _diff(@_);
+}
+
 =for html <a name="nested_differences"></a>
 
 =head2 nested_differences(any left, any right) : string_ref
 
 Returns differences between left and right.  If no differences, returns
-undef.
+undef.  Special cases for CODE on left and regexp on left. 
 
 =cut
 
 sub nested_differences {
-    my($proto, $left, $right, $name) = @_;
-    $name ||= '';
-    return _diff_res($proto, $left, $right, $name)
-        unless defined($left) eq defined($right);
-    return undef
-	unless defined($left);
-
-    # Regexp: match if right is not a reference
-    return $right =~ $left
-        ? undef
-        : _diff_res($proto, $left, $right, $name)
-            if (ref($left) eq 'Regexp' && !ref($right));
-
-    return _diff_res($proto, $left, $right, $name)
-        unless ref($left) eq ref($right);
-
-    # Scalar
-    return $left eq $right ? undef : _diff_res($proto, $left, $right, $name)
-	unless ref($left);
-
-    if (ref($left) eq 'ARRAY') {
-	my($res) = @$left == @$right ? undef
-	    : ${_diff_res(
-		$proto, scalar(@$left), scalar(@$right), $name . '->scalar()')};
-	for (my($i) = 0;
-	    $i <= ($#$left > $#$right ? $#$left : $#$right);
-	    $i++
-	) {
-	    my($r) = $proto->nested_differences(
-		$left->[$i], $right->[$i], $name . "->[$i]");
-	    $res .= ($res ? "\n" : '') . $$r
-		if $r;
-	}
-	return $res ? \$res : undef;
-    }
-    if (ref($left) eq 'HASH') {
-	my(@l_keys) = sort(keys(%$left));
-	my(@r_keys) = sort(keys(%$right));
-	my($res) = $proto->nested_differences(
-	    \@l_keys, \@r_keys, $name . '->keys()');
-	return $res
-	    if $res;
-	foreach my $k (@l_keys) {
-	    my($r) = $proto->nested_differences($left->{$k}, $right->{$k},
-	       $name . "->{'$k'}");
-	    $res .= ($res ? "\n" : '') . $$r
-		if $r;
-	}
-	return $res ? \$res : undef;
-    }
-    return $proto->nested_differences($$left, $$right, '->')
-	if ref($left) eq 'SCALAR';
-
-    # blessed ref: Check if can equals and compare that way
-    return $left->equals($right)
-	? undef : _diff_res($proto, $left, $right, $name)
-	if UNIVERSAL::can($left, 'equals');
-
-    # CODE, GLOB, Regexp, and blessed references should always be equal exactly
-    return $left eq $right ? undef : _diff_res($proto, $left, $right, $name);
+    return _diff(@_);
 }
 
 =for html <a name="nested_equals"></a>
@@ -219,16 +201,60 @@ sub to_string {
 
 #=PRIVATE METHODS
 
-# _diff_res(proto, any left, any right, string name) : string_ref
-#
-# Returns string, chomped if necessary
-#
+sub _diff {
+    my($proto, $left, $right) = @_;
+    $_[3] ||= '';
+    $_[4] ||= $proto->my_caller;
+    return ref($left) eq ref($right) ? _diff_similar(@_) : _diff_eval(@_);
+}
+
+sub _diff_array {
+    my($proto, $left, $right, $name, $method) = @_;
+    my($res) = @$left == @$right ? undef : ${_diff_res(
+	$proto, scalar(@$left), scalar(@$right), $name . '->scalar()')};
+    for (my($i) = 0; $i <= ($#$left > $#$right ? $#$left : $#$right); $i++) {
+	my($r) = $proto->$method($left->[$i], $right->[$i], $name . "->[$i]");
+	$res .= ($res ? "\n" : '') . $$r
+	    if $r;
+    }
+    return $res ? \$res : undef;
+}
+
+sub _diff_eval {
+    my($proto, $left, $right, $name) = @_;
+    return ref($left) eq 'CODE' && ($left = $left->($right)) eq $right
+	|| ref($left) eq 'Regexp' && _diff_to_string($proto, $right) =~ $left
+	? undef
+	: _diff_res($proto, $left, $right, $name);
+}
+
+sub _diff_hash {
+    my($proto, $left, $right, $name, $method) = @_;
+    my($res);
+    if ($method eq 'nested_differences') {
+	my(@l_keys) = sort(keys(%$left));
+	my(@r_keys) = sort(keys(%$right));
+	my($res) = $proto->$method(\@l_keys, \@r_keys, $name . '->keys()');
+	return $res
+	    if $res;
+    }
+    foreach my $k (sort(keys(%$left))) {
+	my($n) = $name . "->{'$k'}";
+	my($r) = exists($right->{$k})
+	    ? $proto->nested_contains($left->{$k}, $right->{$k}, $n)
+	    : _diff_res($proto, $left->{$k}, "<key '$k' not found>", $n);
+	$res .= ($res ? "\n" : '') . $$r
+	    if $r;
+    }
+    return $res ? \$res : undef;
+}
+
 sub _diff_res {
     my($proto, $left, $right, $name) = @_;
     my($res) = $name && $name =~ /\S/ ? " at $name" : '';
     if ($left && $right && !ref($left) && !ref($right)
 	&& $left =~ /\n/ && $right =~ /\n/
-	&& Bivio::IO::ClassLoader->unsafe_simple_require('Algorithm::Diff'),
+	&& $proto->use('Algorithm::Diff'),
     ) {
 	my($diff) = Algorithm::Diff->new(
 	    map([split(/(?<=\n)/, $_)], $left , $right),
@@ -267,9 +293,36 @@ sub _diff_res {
     return \$res;
 }
 
+sub _diff_similar {
+    my($proto, $left, $right, $name, $method) = @_;
+    return defined($left) ne defined($right)
+	? _diff_res($proto, $left, $right, $name)
+	: !defined($left)
+	? undef
+	: ref($left) eq 'ARRAY'
+	? _diff_array($proto, $left, $right, $name, $method)
+	: ref($left) eq 'HASH'
+	? _diff_hash($proto, $left, $right, $name, $method)
+        : ref($left) eq 'SCALAR'
+	? $proto->$method($$left, $$right, $name . '->', $method)
+	: UNIVERSAL::can($left, 'equals') && $left->equals($right)
+	    || $left eq $right
+	? undef
+	: _diff_res($proto, $left, $right, $name);
+}
+
+sub _diff_to_string {
+    my($proto, $s) = @_;
+    return !ref($s) ? defined($s) ? $s : '<undef>'
+	: ref($s) eq 'SCALAR' ? $$s
+	: UNIVERSAL::can($s, 'as_xml') ? $s->as_xml
+	: UNIVERSAL::can($s, 'as_string') ? $s->as_string
+	: $proto->to_string($s, 0, 1);
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2005 bivio Software, Inc.  All Rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 
