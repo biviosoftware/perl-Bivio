@@ -222,6 +222,21 @@ sub map_invoke {
     ), @$repeat_args)];
 }
 
+=for html <a name="my_caller"></a>
+
+=head2 static my_caller() : string
+
+Returns method (or simple subroutine) name of caller immediately before the
+caller of this routine.
+
+IMPLEMENTATION RESTRICTION: Does not work for evals.
+
+=cut
+
+sub my_caller {
+    return ((caller(2))[3] =~ /([^:]+)$/)[0];
+}
+
 =for html <a name="name_parameters"></a>
 
 =head2 static name_parameters(array_ref names, array_ref argv) : (self, hash_ref)

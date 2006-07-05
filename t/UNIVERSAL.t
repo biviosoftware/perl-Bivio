@@ -26,6 +26,14 @@ sub my_idi {
     return $_IDI2;
 }
 
+sub my_caller_t {
+    return _c(@_);
+}
+
+sub _c {
+    return shift->my_caller;
+}
+
 package main;
 
 Bivio::Test->unit([
@@ -73,6 +81,7 @@ Bivio::Test->unit([
 	    [] => [[qw(Bivio::t::UNIVERSAL::t1 Bivio::UNIVERSAL)]],
 	],
 	my_idi => 1,
+	my_caller_t => 'my_caller_t',
     ],
 ]);
 
