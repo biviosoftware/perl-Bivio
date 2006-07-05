@@ -6,13 +6,6 @@ use base 'Bivio::Test::Unit';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub inline_commit {
-    return sub {
-	Bivio::Agent::Task->commit(Bivio::Agent::Request->get_request);
-	return 1;
-    } => 1,
-}
-
 sub new_unit {
     my($proto, $class, $attrs) = @_;
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request

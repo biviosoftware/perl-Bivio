@@ -233,6 +233,37 @@ sub builtin_email {
 	->generate_local_email(@_);
 }
 
+=for html <a name="builtin_inline_commit"></a>
+
+=head2 builtin_inline_commit() : code_ref
+
+Commit database changes
+
+=cut
+
+sub builtin_inline_commit {
+    return sub {
+	Bivio::Agent::Task->commit(Bivio::Agent::Request->get_request);
+	return 1;
+    } => 1;
+}
+
+=for html <a name="builtin_inline_rollback"></a>
+
+=head2 builtin_inline_rollback() : code_ref
+
+Rollback database changes
+
+=cut
+
+sub builtin_inline_rollback {
+    return sub {
+	Bivio::Agent::Task->rollback(Bivio::Agent::Request->get_request);
+	return 1;
+    } => 1;
+}
+
+
 =for html <a name="builtin_model"></a>
 
 =head2 static builtin_model() : Bivio::Biz::Model
@@ -271,6 +302,20 @@ options.
 sub builtin_options {
     my(undef, $options) = @_;
     return {%$_OPTIONS = (%$_OPTIONS, $options ? %$options : ())};
+}
+
+=for html <a name="builtin_random_string"></a>
+
+=head2 builtin_random_string() : string
+
+=head2 builtin_random_string(int length) : string
+
+Return a random string
+
+=cut
+
+sub builtin_random_string {
+    return shift->use('Bivio::Biz::Random')->hex_digits(shift || 8);
 }
 
 =for html <a name="builtin_read_file"></a>
