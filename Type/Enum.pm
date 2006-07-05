@@ -190,6 +190,19 @@ sub as_string {
     return _get_info($self, undef)->[4];
 }
 
+=for html <a name="as_xml"></a>
+
+=head2 as_xml() : string
+
+Calls to_xml() on self
+
+=cut
+
+sub as_xml {
+    my($self) = @_;
+    return $self->to_xml($self);
+}
+
 =for html <a name="compare_defined"></a>
 
 =head2 static compare_defined(any left, any right) : int
