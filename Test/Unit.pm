@@ -115,6 +115,18 @@ sub AUTOLOAD {
 	       : $_TYPE);
 }
 
+=for html <a name="builtin_assert_contains"></a>
+
+=head2 builtin_assert_contains(any expect, any actual)
+
+Calls Bivio::IO::Ref::nested_contains.
+
+=cut
+
+sub builtin_assert_contains {
+    return _assert_expect(@_);
+}
+
 =for html <a name="builtin_assert_eq"></a>
 
 =head2 builtin_assert_eq(any expect, any actual)
@@ -126,29 +138,23 @@ use I<expect> as a regexp.
 =cut
 
 sub builtin_assert_eq {
-    my($self, $expect, $actual) = @_;
-    if (ref($expect) eq 'Regexp'
-        and defined($actual) && (ref($actual) || 'SCALAR') eq 'SCALAR'
-    ) {
-	Bivio::Die->die("expected !~ actual:\n", $expect, ' !~ ', $actual)
-	    if (ref($actual) ? $$actual : $actual) !~ $expect;
-	return;
-    }
-    my($res) = Bivio::IO::Ref->nested_differences($expect, $actual);
-    Bivio::Die->die("expected != actual:\n$$res")
-        if $res;
-    return;
+    return _assert_expect(@_);
 }
 
 =for html <a name="builtin_class"></a>
 
 =head2 static builtin_class() : string
 
-Returns builtin_class under test.
+=head2 static builtin_class(string class) : string
+
+Returns builtin_class under test without args.  With args, loads the
+classes (mapped classes acceptable), and returns the first one.
 
 =cut
 
 sub builtin_class {
+    return shift->use(@_)
+	if @_ > 1;
     return $_CLASS
 	if $_CLASS;
     $_CLASS = Bivio::IO::ClassLoader->unsafe_simple_require(
@@ -233,6 +239,23 @@ sub builtin_email {
 	->generate_local_email(@_);
 }
 
+=for html <a name="builtin_expect_contains"></a>
+
+=head2 builtin_expect_contains(any expect, ... ) : code_ref
+
+Returns a closure that calls assert_contains() on the actual return.
+
+=cut
+
+sub builtin_expect_contains {
+    my($proto, @expect) = @_;
+    return sub {
+	my(undef, $actual) = @_;
+	$proto->builtin_assert_contains(\@expect, $actual);
+	return 1;
+    };
+}
+
 =for html <a name="builtin_inline_commit"></a>
 
 =head2 builtin_inline_commit() : code_ref
@@ -242,8 +265,9 @@ Commit database changes
 =cut
 
 sub builtin_inline_commit {
+    my($proto) = @_;
     return sub {
-	Bivio::Agent::Task->commit(Bivio::Agent::Request->get_request);
+	$proto->commit;
 	return 1;
     } => 1;
 }
@@ -257,24 +281,50 @@ Rollback database changes
 =cut
 
 sub builtin_inline_rollback {
+    my($proto) = @_;
     return sub {
-	Bivio::Agent::Task->rollback(Bivio::Agent::Request->get_request);
+	$proto->rollback;
 	return 1;
     } => 1;
 }
 
-
 =for html <a name="builtin_model"></a>
 
-=head2 static builtin_model() : Bivio::Biz::Model
+=head2 static builtin_model(string name, hash_ref query, array_ref expect) : any
 
-Returns a new model instance.
+Returns a new model instance if just I<name>.  If I<query>, calls
+unauth_load_or_die (PropertyModel), unauth_load_all (ListModel), or process
+(FormModel).  If I<expected_values>, calls map_iterate (PropertyModel in order
+of primary key) or unauth_load_all (ListModel), and calls builtin_assert_contains(I<expected_values>, I<result>).  Returns the complete data set in this last
+case.
 
 =cut
 
 sub builtin_model {
-    shift;
-    return Bivio::Biz::Model->new(Bivio::Agent::Request->get_current, @_);
+    my($proto, $name, $query, $expect) = @_;
+    my($m) = Bivio::Biz::Model->new($proto->builtin_req, $name);
+    return $m
+	unless $query;
+    if ($m->isa('Bivio::Biz::FormModel')) {
+	$m->die($expect, ': expected not supported for FormModels')
+	    if $expect;
+	$m->process($query);
+	return $m;
+    }
+    my($actual);
+    if ($m->isa('Bivio::Biz::ListModel')) {
+	$m->unauth_load_all($query);
+	return $m->map_rows
+	    unless $expect;
+	$actual = $m->map_rows;
+    }
+    if ($m->isa('Bivio::Biz::PropertyModel')) {
+	return $m->unauth_load_or_die($query)->get_shallow_copy
+	    unless $expect;
+	$actual = $m->map_iterate(undef, unauth_iterate_start => undef, $query);
+    }
+    $proto->builtin_assert_contains($expect, $actual);
+    return $actual;
 }
 
 =for html <a name="builtin_not_die"></a>
@@ -342,6 +392,19 @@ Calls Bivio::Test::Request::get_instance;
 sub builtin_req {
     return Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
 	->get_instance;
+}
+
+=for html <a name="builtin_rollback"></a>
+
+=head2 builtin_rollback()
+
+Calls Bivio::Agent::Task::rollback
+
+=cut
+
+sub builtin_rollback {
+    Bivio::Agent::Task->rollback(shift->builtin_req);
+    return;
 }
 
 =for html <a name="builtin_simple_require"></a>
@@ -412,6 +475,16 @@ sub run_unit {
 }
 
 #=PRIVATE SUBROUTINES
+
+sub _assert_expect {
+    my($self, $expect, $actual) = @_;
+    my($m) = $self->my_caller eq 'builtin_assert_eq'
+	? 'nested_differences' : 'nested_contains';
+    my($res) = Bivio::IO::Ref->$m($expect, $actual);
+    Bivio::Die->die("expected != actual:\n$$res")
+        if $res;
+    return;
+}
 
 =head1 COPYRIGHT
 
