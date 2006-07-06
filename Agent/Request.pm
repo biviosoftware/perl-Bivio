@@ -1334,6 +1334,28 @@ sub throw_die {
     # DOES NOT RETURN
 }
 
+=for html <a name="unsafe_get_txn_resource"></a>
+
+=head2 unsafe_get_txn_resource(string class) : Bivio::UNIVERSAL
+
+Gets the transaction resource which implements I<class> on the
+request.  If multiple resources found, blows up.   Must only be used
+by singleton resources.  If none found, returns undef.
+
+=cut
+
+sub unsafe_get_txn_resource {
+    my($self, $class) = @_;
+    my($res)
+	= [grep(UNIVERSAL::isa($_, $class), @{$self->get('txn_resources')})];
+    $self->throw_die(DIE => {
+	message => 'too many transaction resources found',
+	entity => $res,
+	class => $class,
+    }) if @$res > 1;
+    return $res->[0];
+}
+
 =for html <a name="warn"></a>
 
 =head2 warn(any args, ...)
