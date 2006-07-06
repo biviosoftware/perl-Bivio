@@ -721,7 +721,7 @@ sub unauth_iterate_start {
     return $self->internal_put_iterator(
 	$self->internal_get_sql_support->iterate_start(
 	    $self,
-	    $order_by,
+	    $order_by || _default_order_by($self),
 	    $self->internal_prepare_query(_dup($query)),
 	),
     );
@@ -932,6 +932,14 @@ sub _die_not_found {
     $self->throw_die(Bivio::DieCode->MODEL_NOT_FOUND, $args, $pkg,
         $file, $line);
     # DOES NOT RETURN
+}
+
+#
+sub _default_order_by {
+    return join(
+	',',
+	map($_->{sql_name} . ' ' . ($_->{sort_order} ? 'ASC' : 'DESC'),
+	    @{shift->get_info('primary_key')}));
 }
 
 # _dup(hash_ref v) : hash_ref
