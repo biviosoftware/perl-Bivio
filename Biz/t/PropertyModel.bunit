@@ -3,7 +3,7 @@
 Request();
 req()->set_realm('demo');
 [
-    sub {class()->new(req(), 'RealmOwner')} => [
+    sub {model('RealmOwner')} => [
         map_iterate => [
 	    [] => expect_contains([{name => 'demo'}]),
 	],
