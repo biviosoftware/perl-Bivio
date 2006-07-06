@@ -1,0 +1,11 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+req()->set_realm('demo');
+[
+    sub {class()->new(req(), 'RealmOwner')} => [
+        map_iterate => [
+	    [] => expect_contains([{name => 'demo'}]),
+	],
+    ],
+];
