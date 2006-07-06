@@ -69,5 +69,13 @@ RIGHT
 + Line 5 is diffX
 EOF
         ],
+	nested_contains => [
+	    [{a => sub {2}}, {a => 2, b => 1}] => [undef],
+	    [{a => sub {shift}}, {a => 3, b => 1}] => [undef],
+	    [{a => qr{\d}}, {a => 1, b => 2}] => [undef],
+	    [{a => qr{a}}, {a => 1, b => 2}] => q{(?-xism:a) != 1 at ->{'a'}},
+	    ['a', \'a'] => [undef],
+	    [{a => sub {'1'}}, {a => 2, b => 2}] => q{1 != 2 at ->{'a'}},
+	],
     ],
 ]);
