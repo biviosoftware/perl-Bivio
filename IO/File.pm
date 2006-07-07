@@ -45,6 +45,19 @@ Bivio::IO::Trace->register;
 
 =cut
 
+=for html <a name="absolute_path"></a>
+
+=head2 static absolute_path(string file_name, string base) : string
+
+Makes I<file_name> absolute relative to I<base> (default: pwd)
+
+=cut
+
+sub absolute_path {
+    my(undef, $file_name, $base) = @_;
+    return File::Spec->rel2abs($file_name, $base);
+}
+
 =for html <a name="append"></a>
 
 =head2 static append(string file_name, string_ref contents)
