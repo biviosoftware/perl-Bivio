@@ -3,7 +3,6 @@
 Request();
 req()->set_realm_and_user(qw(fourem demo));
 my($dir) = '/search-text/';
-model('RealmFile')->delete_deep({path => $dir});
 [
     {
 	object => class(),
@@ -83,16 +82,21 @@ EOF
 			 P => '/search-text/xapian.html',
 		    )},
 		    [qw(
+                        a
 			short
-			titl
+			title
 			f.u.d.
+			is
 			what
-			make
-			programm
-			worri
+			makes
+			programmers
+			worry
+			so
 			much
+			i
 			have
-			worri
+			no
+			worries
 		    )],
 		];
 	    },
