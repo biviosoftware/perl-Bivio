@@ -13,7 +13,6 @@ my($_BFN) = Bivio::Type->get_instance('BlogFileName');
 my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_FP) = Bivio::Type->get_instance('FilePath');
 my($_WN) = Bivio::Type->get_instance('WikiName');
-my($_STEMMER) = Search::Xapian::Stem->new('english');
 
 sub parse_content {
     my($proto, $realm_file) = @_;
@@ -40,8 +39,10 @@ sub parse_for_xapian {
 }
 
 sub unique_term {
-    my($self, $realm_file) = @_;
-    return 'Q' . $realm_file->get('realm_file_id');
+    my(undef, $realm_file_or_id) = @_;
+    return 'Q'
+	. (ref($realm_file_or_id) ? $realm_file_or_id->get('realm_file_id')
+	: $realm_file_or_id);
 }
 
 sub _field_term {
@@ -49,55 +50,6 @@ sub _field_term {
     ($t = $f) =~ s/[^a-z]//ig
 	unless $t;
     return 'X' . uc($t) . ':' . lc($m->get($f));
-}
-
-sub _terms {
-    my($proto, $rf, $attr) = @_;
-    my($e) = $rf->new_other('Email');
-    my($r) = $rf->new_other('RealmOwner');
-    my($newsgroup, $author);
-    return [
-	_field_term($rf, 'realm_id'),
-	_field_term($rf, 'user_id'),
-	_field_term($rf, 'is_public'),
-	_field_term($rf, 'is_read_only'),
-	$e->unauth_load({realm_id => $rf->get('user_id')})
-	    ? _field_term($e, 'email') : (),
-	map({
-	    my($f) = $_;
-	    $r->unauth_load_or_die({realm_id => $rf->get($f . '_id')});
-	    $newsgroup ||= $r->get('name');
-	    $author = $r->get('display_name');
-	    (
-		_field_term($r, 'name', $f),
-		_field_term($r, 'display_name', $f . 'fullname'),
-	    );
-	} qw(realm user)),
-	_omega_terms(
-	    $proto,
-	    $rf,
-	    $attr,
-	    $author . ' ' . $e->get('email'),
-	    $newsgroup),
-    ];
-}
-
-sub _omega_terms {
-    my($proto, $rf, $attr, $author, $newsgroup) = @_;
-    my($d) = $_DT->to_local_file_name($rf->get('modified_date_time'));
-    return (
-	 'A' . lc($author),
-	 'G' . lc($newsgroup),
-#TODO: 'H' . ?????
-	 'P' . $rf->get('path_lc'),
-	 $proto->unique_term($rf),
-	 $attr->{title} ? 'S' . lc($attr->{title}) : (),
-	 'T' . lc($attr->{type}),
-	 map({
-	     my($t, $l) = split(//, $_);
-	     $t . substr($d, 0, $l);
-	 } qw(D8 M6 Y4)),
-    );
 }
 
 sub _from_application_octet_stream {
@@ -187,19 +139,67 @@ sub _from_text_tab_separated_values {
     return _from_text_plain(@_);
 }
 
+sub _omega_terms {
+    my($proto, $rf, $attr, $author, $newsgroup) = @_;
+    my($d) = $_DT->to_local_file_name($rf->get('modified_date_time'));
+    return (
+	 'A' . lc($author),
+	 'G' . lc($newsgroup),
+#TODO: 'H' . ?????
+	 'P' . $rf->get('path_lc'),
+	 $proto->unique_term($rf),
+	 $attr->{title} ? 'S' . lc($attr->{title}) : (),
+	 'T' . lc($attr->{type}),
+	 map({
+	     my($t, $l) = split(//, $_);
+	     $t . substr($d, 0, $l);
+	 } qw(D8 M6 Y4)),
+    );
+}
+
 sub _postings {
     return [
 	map(
 	    map(
 		map(
-		    length($_) <= 2 || length($_) > 64 ? ()
-			: $_STEMMER->stem_word(lc($_)),
+		    lc($_),
 		    $_ =~ /^\W*((?:[A-Z]\.){2,10})\W*$/ ? $1 : split(/\W+/, $_),
 		),
 		split(/\s+/, $$_),
 	    ),
 	    @_,
 	),
+    ];
+}
+
+sub _terms {
+    my($proto, $rf, $attr) = @_;
+    my($e) = $rf->new_other('Email');
+    my($r) = $rf->new_other('RealmOwner');
+    my($newsgroup, $author);
+    return [
+	_field_term($rf, 'realm_id'),
+	_field_term($rf, 'user_id'),
+	_field_term($rf, 'is_public'),
+	_field_term($rf, 'is_read_only'),
+	$e->unauth_load({realm_id => $rf->get('user_id')})
+	    ? _field_term($e, 'email') : (),
+	map({
+	    my($f) = $_;
+	    $r->unauth_load_or_die({realm_id => $rf->get($f . '_id')});
+	    $newsgroup ||= $r->get('name');
+	    $author = $r->get('display_name');
+	    (
+		_field_term($r, 'name', $f),
+		_field_term($r, 'display_name', $f . 'fullname'),
+	    );
+	} qw(realm user)),
+	_omega_terms(
+	    $proto,
+	    $rf,
+	    $attr,
+	    $author . ' ' . $e->get('email'),
+	    $newsgroup),
     ];
 }
 

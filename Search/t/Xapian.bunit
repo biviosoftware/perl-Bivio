@@ -1,0 +1,62 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+config({
+    'Bivio::Search::Xapian' => {
+	db_path => Bivio::IO::File->rm_rf(
+	    Bivio::IO::File->absolute_path('Xapian.tmp')),
+    },
+    'Bivio::Biz::Model::RealmFile' => {
+	search_class => class(),
+    },
+});
+req()->set_realm_and_user(qw(demo demo));
+my($demo) = req()->get('auth_id');
+my($guest) = model('RealmOwner', {name => 'guest'})->get('realm_id');
+my($files) = [];
+my($root) = '/xapian';
+model('RealmFile')->delete_deep({path => $root});
+model('RealmFile')->delete_deep({path => "/public$root"});
+foreach my $x (
+    'common word word',
+    'common word abcz defz ghiz jklz',
+    'common mnoz pqrz  words stuz vwxz',
+    'common a.b.c. d.e.f. g.h.i. j.k.l. word ',
+    'commonly worded m.n.o. worded place for p.q.r. s.t.u. v.w.x.',
+    'a public green is a place for the common word',
+) {
+    push(@$files, model('RealmFile')->create_with_content(
+	{path => ($x =~ /public/ ? '/public' : '')
+	     . "$root/" . @$files . '.txt'}, \$x)->get('realm_file_id'));
+}
+commit();
+[
+#TODO: cut off and stop words (the)
+    class() => [
+	{
+	    method => 'query',
+	    check_return => sub {
+		my($case, $actual, $expect) = @_;
+		$case->actual_return([map($_->{unique_id}, @{$actual->[0]})]);
+		return [map($files->[$_], @$expect)];
+	    },
+	} => [
+	    '"commonly worded"' => 4,
+ 	    '"place for"' => [5, 4],
+ 	    '"a place for"' => [5, 4],
+	    ['common word', 0, 1] => 0,
+ 	    ['common word', 0, 1, [], 0] => 0,
+ 	    ['common word', 0, 1, [], 1] => 5,
+ 	    ['common word', 0, 1, [$guest], 1] => [],
+ 	    ['common word', 0, 1, [$guest, $demo], 1] => 5,
+ 	    ['common word', 0, 1, [$guest, $demo], 0] => 0,
+	    abcz => 1,
+	    sub {
+		model('RealmFile', {realm_file_id => $files->[1]})
+		    ->delete;
+		commit();
+		return ['abcz'];
+	    } => [],
+	],
+    ],
+];
