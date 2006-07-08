@@ -294,9 +294,11 @@ sub builtin_inline_rollback {
 
 Returns a new model instance if just I<name>.  If I<query>, calls
 unauth_load_or_die (PropertyModel), unauth_load_all (ListModel), or process
-(FormModel).  If I<expected_values>, calls map_iterate (PropertyModel in order
-of primary key) or unauth_load_all (ListModel), and calls builtin_assert_contains(I<expected_values>, I<result>).  Returns the complete data set in this last
-case.
+(FormModel).
+
+If I<expect>, calls map_iterate (PropertyModel in order of primary key) or
+unauth_load_all (ListModel), and calls builtin_assert_contains(I<expect>,
+I<result>).  Returns the complete data set in this last case.
 
 =cut
 
@@ -314,12 +316,14 @@ sub builtin_model {
     my($actual);
     if ($m->isa('Bivio::Biz::ListModel')) {
 	$m->unauth_load_all($query);
-	return $m->map_rows
-	    unless $expect;
+	unless ($expect) {
+	    $m->set_cursor;
+	    return $m;
+	}
 	$actual = $m->map_rows;
     }
     if ($m->isa('Bivio::Biz::PropertyModel')) {
-	return $m->unauth_load_or_die($query)->get_shallow_copy
+	return $m->unauth_load_or_die($query)
 	    unless $expect;
 	$actual = $m->map_iterate(undef, unauth_iterate_start => undef, $query);
     }

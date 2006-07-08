@@ -33,17 +33,21 @@ req()->set_realm('btest_read');
 	    [RealmUserList => {
 		auth_id => model(
 		    RealmOwner => {name => 'btest_read'},
-		)->{realm_id},
-	    }] => expect_contains([{'RealmUser.role' => 'ADMINISTRATOR'}]),
+		)->get('realm_id'),
+	    }] => sub {
+		my($case, $actual) = @_;
+		$case->actual_return([$actual->[0]->get('RealmUser.role')]);
+		return [Bivio::Auth::Role->ADMINISTRATOR];
+	    },
 	    [RealmUserList => {
 		auth_id => model(
 		    RealmOwner => {name => 'btest_read'},
-		)->{realm_id},
+		)->get('realm_id'),
 	    }, []] => DIE(),
 	    [RealmUserList => {
 		auth_id => model(
 		    RealmOwner => {name => 'btest_read'},
-		)->{realm_id},
+		)->get('realm_id'),
 	    }, [{}]] => not_die(),
 	],
     ],
