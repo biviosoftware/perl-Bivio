@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.32  2006/06/30 20:52:34  aviggio
+  * Bivio::Biz::Action::EasyForm use admin user_id if form submitter is
+    not authenticated
+  * Bivio::UI::HTML::Widget::FormField allow widget value as form field
+    label instead of Facade text
+  * Bivio::Util::LinuxConfig don't add gateway line if it's this ip
+
   Revision 4.31  2006/06/27 17:21:15  moeller
   * Bivio::BConf fixed db password string to interpolate
   * Bivio::Biz::Action::EasyForm added file field upload
