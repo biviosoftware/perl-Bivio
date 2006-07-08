@@ -13,6 +13,9 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FP) = Bivio::Type->get_instance('FilePath');
 my($_TXN_PREFIX);
 my($_DELETED_SENTINEL) = 'DELETED IN TRANSACTION';
+Bivio::IO::Config->register(my $_CFG = {
+    search_class => undef,
+});
 
 sub MAIL_FOLDER {
     # Always is_read_only => 1
@@ -96,7 +99,7 @@ sub delete_all {
     $self->die('unsupported with a query: ', $query)
 	if $query && %$query;
     my($d) = _realm_dir($req->get('auth_id'));
-    _txn($self, [delete => glob("$d/[0-9]*[0-9]")]);
+    _txn($self, _search_delete($self, [delete => glob("$d/[0-9]*[0-9]")]));
     my(@res) = $self->SUPER::delete_all;
     $req->set_realm($realm)
 	if $realm;
@@ -170,6 +173,14 @@ sub handle_commit {
 	    return;
 	}
     );
+}
+
+sub handle_config {
+    my($proto, $cfg) = @_;
+    $proto->use($cfg->{search_class})
+	if $cfg->{search_class};
+    $_CFG = $cfg;
+    return;
 }
 
 sub handle_rollback {
@@ -390,9 +401,11 @@ sub _create {
 }
 
 sub _delete {
-    my($self) = @_;
+    my($self, $values) = @_;
     _trace($self) if $_TRACE;
-    return _unlink($self)->SUPER::delete;
+    _txn($self, _search_delete($self, [delete => _filename($self)]))
+	unless $values->{is_folder};
+    return $self->SUPER::delete;
 }
 
 sub _delete_args {
@@ -444,6 +457,24 @@ sub _read {
 sub _realm_dir {
     my($realm_id) = @_;
     return Bivio::Biz::File->absolute_path("RealmFile/$realm_id");
+}
+
+sub _search_delete {
+    my($self, $cmds) = @_;
+    $_CFG->{search_class}->map_invoke(
+	'delete_realm_file',
+	[map(/(\w+)$/, @$cmds[1..$#$cmds])],
+	undef,
+	[$self->get_request],
+    ) if $_CFG->{search_class};
+    return $cmds;
+}
+
+sub _search_update {
+    my($self) = @_;
+    $_CFG->{search_class}->update_realm_file($self)
+	if $_CFG->{search_class};
+    return $self;
 }
 
 sub _touch_parent {
@@ -537,14 +568,6 @@ sub _txn_filename {
     return $filename;
 }
 
-sub _unlink {
-    my($self) = @_;
-    my($p) = _filename($self);
-    _txn($self, [delete => $p])
-	unless $self->get('is_folder');
-    return $self;
-}
-
 sub _update {
     my($self, $values) = @_;
     _assert_writable($self, $values);
@@ -567,10 +590,11 @@ sub _update {
     my($new_filename) = _filename($self);
     unless ($self->get('is_folder')) {
 	_txn($self,
-	     $c ? () : [create => $new_filename, _read($old_filename)],
+	     # delete must come first for search to work right
 	     [delete => $old_filename],
+	     $c ? () : [create => $new_filename, _read($old_filename)],
 	) unless $new_filename eq $old_filename;
-	return defined($c) ? _write($self, $c) : $self;
+	return defined($c) ? _write($self, $c) : _search_update($self);
     }
     my($new_path) = $self->get('path');
     return $self
@@ -629,7 +653,7 @@ sub _write {
 	message => 'content must be a defined scalar_ref',
     }) unless ref($content) eq 'SCALAR' && defined($$content);
     _txn($self, [create => _filename($self), $content]);
-    return $self;
+    return _search_update($self);
 }
 
 1;
