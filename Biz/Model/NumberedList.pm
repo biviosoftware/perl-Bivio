@@ -90,11 +90,7 @@ Loads a list of I<count> numbers.
 
 sub internal_load_rows {
     my($self, $query, $where, $params, $sql_support) = @_;
-    my(@rows);
-    foreach my $i (0..($query->get('count')-1)) {
-	push(@rows, {index => $i});
-    }
-    return \@rows;
+    return [map(+{index => $_}, 0..($query->get('count')-1))];
 }
 
 #=PRIVATE METHODS
