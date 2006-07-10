@@ -105,7 +105,7 @@ sub query {
 	    } qw(percent rank collapse_count)),
 	    simple_class => $d->get_value(0),
 	    'RealmOwner.realm_id' => $d->get_value(1),
-	    unique_id => $d->get_value(2),
+	    primary_id => $d->get_value(2),
 	};
     } $db->enquire($q)->matches($offset, $length))];
     _trace($phrase, ', ', $offset, ', ', $length, ' => ', $res) if $_TRACE;
@@ -122,23 +122,23 @@ sub _op {
 }
 
 sub _delete {
-    my($proto, $req, $unique_id) = @_;
-    return unless $unique_id;
-    _op($proto, [delete_document_by_term => $unique_id], $req);
-    _trace($unique_id) if $_TRACE;
+    my($proto, $req, $primary_id) = @_;
+    return unless $primary_id;
+    _op($proto, [delete_document_by_term => $primary_id], $req);
+    _trace($primary_id) if $_TRACE;
     return;
 }
 
 sub _replace {
-    my($proto, $req, $class, $realm_id, $unique_id, $terms, $postings) = @_;
+    my($proto, $req, $class, $realm_id, $primary_id, $terms, $postings) = @_;
     return unless $terms;
     my($doc) = Search::Xapian::Document->new;
     $doc->set_data('');
     $doc->add_value(0, $class);
     $doc->add_value(1, $realm_id);
-    $doc->add_value(2, $unique_id);
-    $unique_id = "Q$unique_id";
-    foreach my $t ($unique_id, @$terms) {
+    $doc->add_value(2, $primary_id);
+    $primary_id = "Q$primary_id";
+    foreach my $t ($primary_id, @$terms) {
 	$doc->add_term($t);
     }
     my($i) = 1;
@@ -149,8 +149,8 @@ sub _replace {
 	    unless $s eq $p;
 	$doc->add_posting($s, $i++);
     }
-    _op($proto, [replace_document_by_term => $unique_id, $doc], $req);
-    _trace($unique_id) if $_TRACE;
+    _op($proto, [replace_document_by_term => $primary_id, $doc], $req);
+    _trace($primary_id) if $_TRACE;
     return;
 }
 
