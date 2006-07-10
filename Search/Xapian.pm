@@ -104,7 +104,7 @@ sub query {
 		($_  => $x->$m());
 	    } qw(percent rank collapse_count)),
 	    simple_class => $d->get_value(0),
-	    realm_id => $d->get_value(1),
+	    'RealmOwner.realm_id' => $d->get_value(1),
 	    unique_id => $d->get_value(2),
 	};
     } $db->enquire($q)->matches($offset, $length))];
