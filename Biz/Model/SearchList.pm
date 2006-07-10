@@ -11,6 +11,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	# COUPLING: names of fields defined in Bivio::Search::Xapian
 	@{$self->internal_initialize_local_fields(
 	    primary_key => [[qw(primary_id PrimaryId)]],
 	    other => [
