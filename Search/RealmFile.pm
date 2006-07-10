@@ -38,13 +38,6 @@ sub parse_for_xapian {
     );
 }
 
-sub unique_term {
-    my(undef, $realm_file_or_id) = @_;
-    return 'Q'
-	. (ref($realm_file_or_id) ? $realm_file_or_id->get('realm_file_id')
-	: $realm_file_or_id);
-}
-
 sub _field_term {
     my($m, $f, $t) = @_;
     ($t = $f) =~ s/[^a-z]//ig
@@ -146,8 +139,8 @@ sub _omega_terms {
 	 'A' . lc($author),
 	 'G' . lc($newsgroup),
 #TODO: 'H' . ?????
+	 # Q set by caller, since used in general to delete/add docs
 	 'P' . $rf->get('path_lc'),
-	 $proto->unique_term($rf),
 	 $attr->{title} ? 'S' . lc($attr->{title}) : (),
 	 'T' . lc($attr->{type}),
 	 map({

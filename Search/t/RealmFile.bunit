@@ -73,7 +73,6 @@ EOF
 			 A => req()->get_nested(qw(auth_user display_name))
 			     . ' demo@bivio.biz',
 			 XREALM => 'fourem',
-			 Q => [qw(Model.RealmFile realm_file_id)],
 			 S => 'a short title',
 			 T => 'text/html',
 			 D => substr($now, 0, 8),
