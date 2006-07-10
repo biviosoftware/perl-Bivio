@@ -6,6 +6,7 @@ use base 'Bivio::Collection::Attributes';
 use Bivio::Biz::File;
 use Search::Xapian ();
 use Bivio::IO::Trace;
+use Bivio::Type;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_LENGTH) = Bivio::Type->get_instance('PageSize')->get_default;
@@ -32,7 +33,10 @@ sub delete_realm_file {
     _delete(
 	$proto,
 	$req || $realm_file_or_id->get_request,
-	$proto->use('Bivio::Search::RealmFile')->unique_term($realm_file_or_id),
+	'Q' . (
+	    ref($realm_file_or_id) ? $realm_file_or_id->get('realm_file_id')
+	    : $realm_file_or_id
+	),
     );
     return;
 }
@@ -66,6 +70,7 @@ sub update_realm_file {
 	$proto,
 	$realm_file->get_request,
 	$realm_file->simple_package_name,
+	$realm_file->get(qw(realm_id realm_file_id)),
 	$proto->use('Bivio::Search::RealmFile')->parse_for_xapian($realm_file),
     );
     return;
@@ -90,21 +95,19 @@ sub query {
 	) : (),
 	$only_is_public ? Search::Xapian::Query->new("XISPUBLIC:1") : (),
     );
-    my($enq) = $db->enquire($q);
-#    my($enq) = $db->enquire($qp->parse_query($phrase, $_FLAGS));
-    #printf "Running query '%s'\n", $enq->get_query()->get_description();
     my($res) = [map({
 	my($x) = $_;
 	my($d) = $x->get_document;
 	+{
-	    map(
-		($_ => $x->$_()),
-		qw(get_percent get_rank get_collapse_count),
-	    ),
+	    map({
+		my($m) = "get_$_";
+		($_  => $x->$m());
+	    } qw(percent rank collapse_count)),
 	    simple_class => $d->get_value(0),
-	    unique_id => $d->get_value(1),
+	    realm_id => $d->get_value(1),
+	    unique_id => $d->get_value(2),
 	};
-    } $enq->matches($offset, $length))];
+    } $db->enquire($q)->matches($offset, $length))];
     _trace($phrase, ', ', $offset, ', ', $length, ' => ', $res) if $_TRACE;
     return $res;
 }
@@ -119,22 +122,23 @@ sub _op {
 }
 
 sub _delete {
-    my($proto, $req, $unique) = @_;
-    return unless $unique;
-    _op($proto, [delete_document_by_term => $unique], $req);
-    _trace($unique) if $_TRACE;
+    my($proto, $req, $unique_id) = @_;
+    return unless $unique_id;
+    _op($proto, [delete_document_by_term => $unique_id], $req);
+    _trace($unique_id) if $_TRACE;
     return;
 }
 
 sub _replace {
-    my($proto, $req, $class, $terms, $postings) = @_;
+    my($proto, $req, $class, $realm_id, $unique_id, $terms, $postings) = @_;
     return unless $terms;
-    my($unique, $id) = map(/^(Q(.+))/, @$terms);
-    Bivio::Die->die($terms, ': missing Q (unique) term')
-        unless $unique;
     my($doc) = Search::Xapian::Document->new;
     $doc->set_data('');
-    foreach my $t (@$terms) {
+    $doc->add_value(0, $class);
+    $doc->add_value(1, $realm_id);
+    $doc->add_value(2, $unique_id);
+    $unique_id = "Q$unique_id";
+    foreach my $t ($unique_id, @$terms) {
 	$doc->add_term($t);
     }
     my($i) = 1;
@@ -145,10 +149,8 @@ sub _replace {
 	    unless $s eq $p;
 	$doc->add_posting($s, $i++);
     }
-    $doc->add_value(0, $class);
-    $doc->add_value(1, $id);
-    _op($proto, [replace_document_by_term => $unique, $doc], $req);
-    _trace($unique) if $_TRACE;
+    _op($proto, [replace_document_by_term => $unique_id, $doc], $req);
+    _trace($unique_id) if $_TRACE;
     return;
 }
 
