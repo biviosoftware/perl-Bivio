@@ -1,0 +1,9 @@
+Type();
+[
+    class() => [
+	simple_package_name => 'Type',
+    ],
+    simple_package_name => 'Type',
+    UNDEF => sub {[[undef, undef]]},
+    sub {NULL()} => sub{[[undef, Bivio::TypeError->NULL]]},
+];
