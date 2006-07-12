@@ -32,6 +32,7 @@ ignore_redirects(1);
 		    query => {goto => 'http://www.bivio.biz'},
 		    is_deviance => @$params > 1,
 		);
+		req()->get('r')->method($params->[3] || 'POST');
 		return [req()];
 	    },
 	    compute_return => sub {
@@ -51,7 +52,11 @@ ignore_redirects(1);
 		qr{EasyForm/bunit.csv: failed with error: \[not_found\]\: unexpected fields submitted\n\&client_addr,\&date,\&email,a,not_found\n127.0.0.1,.*,root\@bivio.biz,1,3\n}s,
 	    [{a => 1}, 'nosuchfile'] => qr{CSV file not found},
 	    [{a => 1}, undef, 'ROBOTS_TXT'] => qr{directory not found},
-	    [undef] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,,,\n},
+	    [{}] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,,,\n},
+ 	    [undef, undef] =>
+ 		qr{EasyForm/bunit.csv: failed with error: undefined form submitted\n<no form data>\n}s,
+	    [{a => 'a', b => 'b', c => {filename => ''}}] =>
+		qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,a,b,\n},
 	    [{a => 1, c => {
 		filename => 'x.txt',
 		'content/type' => 'content-type/ignored',
@@ -65,6 +70,27 @@ ignore_redirects(1);
 		Bivio::Die->die($rf->get_content, ': wrong content for ', $file)
 		    unless "some text\n"
 		    eq ${$rf->load({path => $file})->get_content};
+		return 1;
+	    },
+	    [{a => 1}, undef, undef, 'GET'] => CORRUPT_FORM(),
+	    [
+		{a => '1'},
+	    ] =>  sub {
+		Bivio::Die->die(req(), ': missing required attributes')
+		    unless req()->get('easy_form');
+		foreach my $a (qw(mail_to file_path labels values)) {
+		    Bivio::Die->die($a, ': missing required attribute')
+			    unless req()->get_nested('easy_form', $a);
+		}
+		return 1;
+	    },
+	    [{a => 1, not_found => 3}, undef] => =>  sub {
+		Bivio::Die->die(req(), ': missing required attributes')
+		    unless req()->get('easy_form');
+		foreach my $a (qw(mail_to file_path error error_msg labels values)) {
+		    Bivio::Die->die($a, ': missing required attribute')
+			    unless req()->get_nested('easy_form', $a);
+		}
 		return 1;
 	    },
 	],
