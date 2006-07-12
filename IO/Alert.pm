@@ -130,6 +130,21 @@ sub bootstrap_die {
     # DOES NOT RETURN
 }
 
+=for html <a name="debug"></a>
+
+=head2 static debug(...) : any
+
+Calls L<info|"info">, and then returns its arguments.
+
+B<Not meant for production code.>
+
+=cut
+
+sub debug {
+    shift->info(@_);
+    return @_;
+}
+
 =for html <a name="format"></a>
 
 =head2 static format(string package, string file, int line, string sub, array msg) : string
