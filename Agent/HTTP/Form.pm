@@ -106,7 +106,9 @@ sub parse {
 #
 sub _parse {
     my($req, $r) = @_;
-    my($max_field_size) = $req->get('form_model')->MAX_FIELD_SIZE;
+    my($max_field_size) = $req->get_or_default(
+	'form_model', 'Bivio::Biz::FormModel',
+    )->MAX_FIELD_SIZE;
     my($buf) = $req->get_content;
     $req->throw_die('CORRUPT_FORM', 'Content-Length: not set or zero')
 	unless my $len = length($$buf);
