@@ -1,86 +1,34 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Type;
 use strict;
-$Bivio::Test::Type::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::Type::VERSION;
-
-=head1 NAME
-
-Bivio::Test::Type - test types
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::Type;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Test::Unit>
-
-=cut
-
-use Bivio::Test::Unit;
-@Bivio::Test::Type::ISA = ('Bivio::Test::Unit');
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::Type>
-
-=cut
-
-#=IMPORTS
+use base 'Bivio::Test::Unit';
 use Bivio::TypeError;
 
-#=VARIABLES
-use vars (qw($AUTOLOAD));
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="AUTOLOAD"></a>
-
-=head2 AUTOLOAD()
-
-Converts TypeErrors.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($AUTOLOAD);
 
 sub AUTOLOAD {
-    my($func) = $AUTOLOAD;
-    $func =~ s/.*:://;
+    my($func) = $AUTOLOAD =~ /(\w+)$/;
     return if $func eq 'DESTROY';
     return [undef, Bivio::TypeError->$func(@_)];
 }
-
-=for html <a name="UNDEF"></a>
-
-=head2 UNDEF()
-
-For not defined case.
-
-=cut
 
 sub UNDEF {
     return [undef, undef];
 }
 
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub unit {
+    return shift->SUPER::unit(@_)
+	if @_ > 2;
+    my($self, $group) = @_;
+    my($c) = $self->builtin_class;
+    return $self->SUPER::unit([
+	map({
+	    my($next) = [splice(@$group, 0, 2)];
+	    $c eq $next->[0] ? @$next : ($c => $next);
+	} 1 .. @$group/2),
+    ]);
+}
 
 1;
