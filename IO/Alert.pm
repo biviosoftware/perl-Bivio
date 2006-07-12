@@ -134,7 +134,7 @@ sub bootstrap_die {
 
 =head2 static debug(...) : any
 
-Calls L<info|"info">, and then returns its arguments.
+Calls L<info|"info">, and then returns its arguments (or first argument if !wantarray)
 
 B<Not meant for production code.>
 
@@ -142,7 +142,7 @@ B<Not meant for production code.>
 
 sub debug {
     shift->info(@_);
-    return @_;
+    return wantarray ? @_ : $_[0];
 }
 
 =for html <a name="format"></a>
