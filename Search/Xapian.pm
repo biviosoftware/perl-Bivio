@@ -112,6 +112,22 @@ sub query {
     return $res;
 }
 
+sub query_list_model_initialize {
+    my(undef, $list_model, $parent_info) = @_;
+    return $list_model->merge_initialize_info($parent_info, {
+	version => 1,
+	@{$list_model->internal_initialize_local_fields(
+	    primary_key => [[qw(primary_id PrimaryId)]],
+	    other => [
+		qw(rank percent collapse_count),
+		[simple_class => 'Name'],
+	    ],
+	    qw(Integer NOT_NULL),
+	)},
+	auth_id => 'RealmOwner.realm_id',
+    });
+}
+
 sub _op {
     my($proto, $op, $req) = @_;
     my($self) = $req->unsafe_get_txn_resource($proto);
