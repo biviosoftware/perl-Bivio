@@ -11,20 +11,23 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FP) = Bivio::Type->get_instance('FilePath');
+my($_DFN) = Bivio::Type->get_instance('DocletFileName');
 my($_TXN_PREFIX);
 my($_DELETED_SENTINEL) = 'DELETED IN TRANSACTION';
 Bivio::IO::Config->register(my $_CFG = {
     search_class => undef,
 });
 
+#DEPRECATED
 sub MAIL_FOLDER {
     # Always is_read_only => 1
-    return $_FP->MAIL_FOLDER;
+    return $_DFN->MAIL_FOLDER;
 }
 
+#DEPRECATED
 sub PUBLIC_FOLDER {
     # Always is_public => 1
-    return $_FP->PUBLIC_FOLDER;
+    return $_DFN->PUBLIC_FOLDER_ROOT;
 }
 
 sub append_content {
