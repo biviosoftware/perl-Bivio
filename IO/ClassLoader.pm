@@ -40,9 +40,6 @@ structure which defines the internals of, say, a
 L<Bivio::Type::Enum|Bivio::Type::Enum>.  A delegate may also completely
 implement the class.
 
-B<NOTE: You can only load classes which are of type
-L<Bivio::UNIVERSAL|Bivio::UNIVERSAL> with this module.>
-
 =cut
 
 =head1 CONSTANTS
