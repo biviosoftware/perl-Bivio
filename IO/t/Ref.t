@@ -41,6 +41,9 @@ EOF
 	    )],
 	    [qr/\d/, 1] => [undef],
 	    [qr/abc/, qr/abc/] => [undef],
+	    [qr/abc/, {abc => 1}] => [undef],
+	    [{abc => qr/^def$/}, {abc => 'def'}] => [undef],
+	    [qr/^\[1\]$/, [1]] => [undef],
 	    [qr/abc/, qr/abd/] => [\('(?-xism:abc) != (?-xism:abd)')],
 	    Bivio::IO::ClassLoader->unsafe_simple_require('Algorithm::Diff')
 	        ? ([<<'LEFT', <<'RIGHT'] => [\<<'EOF']) : (),
