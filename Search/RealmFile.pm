@@ -53,8 +53,8 @@ sub _from_application_octet_stream {
     }
     my($p) = $rf->get('path');
     return _from_application_x_bwiki($proto, $rf)
-	if $_WN->is_absolute_path($p)
-	|| $_BFN->is_path($p);
+	if $_WN->is_absolute($p)
+	|| $_BFN->is_absolute($p);
     return _from_text_plain($proto, $rf);
 }
 
