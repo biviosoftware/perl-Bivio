@@ -3,7 +3,8 @@
 req()->set_realm_and_user('demo', 'demo');
 foreach my $x (0, 1) {
     Bivio::Biz::Model->new(req(), 'RealmFile')->delete_deep({
-	path => Bivio::Type->get_instance('BlogFileName')->to_path(undef, $x),
+	path => Bivio::Type->get_instance('BlogFileName')
+	    ->to_absolute(undef, $x),
     });
 }
 commit();

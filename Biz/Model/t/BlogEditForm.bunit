@@ -28,7 +28,7 @@ req()->put(query => {this => $this});
 			),
 			req()->get('Model.RealmFile')->get_content,
 		    );
-		    return $_BFN->to_path($this, $x);
+		    return $_BFN->to_absolute($this, $x);
 		},
 		is_public => $x,
 	     },
