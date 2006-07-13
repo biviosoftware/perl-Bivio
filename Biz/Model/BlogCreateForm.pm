@@ -15,10 +15,10 @@ sub execute_ok {
     my($rf) = $self->new_other('RealmFile');
     my($bfn);
     foreach my $x (1..100) {
-	$bfn = $_DT->to_file_name($now);
+	$bfn = $_BFN->from_date_time($now);
 	my($die) = Bivio::Die->catch(sub {
 	    $rf->create_with_content(
-		{path => $_BFN->to_path($bfn)},
+		{path => $_BFN->to_absolute($bfn)},
 		$_BC->join($self->get(qw(title body))),
 	    );
 	});
@@ -29,8 +29,9 @@ sub execute_ok {
 		and $die->get('attrs')->{type_error}->eq_exists;
 	$now = $_DT->add_seconds($now, 1);
     }
-    $self->die($_DT->to_file_name($now), ': unable to create unique file')
-	unless $bfn;
+    $self->die(
+	$_BFN->from_date_time($now) , ': unable to create unique file',
+    ) unless $bfn;
     $self->get_request->put(path_info => $bfn);
     return;
 }
