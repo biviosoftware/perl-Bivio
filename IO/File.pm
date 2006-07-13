@@ -178,6 +178,7 @@ sub ls {
     $directory = '.' unless defined($directory);
     my($op) = 'opendir';
  TRY: {
+	local($Bivio::IO::File::IN);
         my($file) = \*Bivio::IO::File::IN;
         opendir($file, $directory) || last TRY;
         my(@files) = grep(-f, readdir($file));
