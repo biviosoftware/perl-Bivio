@@ -1,0 +1,8 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    to_unique_absolute => [
+	['2396759 79199', 'subj'] => qr{^/Mail/1850-01/subj 18500101215959\d{3}.eml$}s,
+    ],
+];
