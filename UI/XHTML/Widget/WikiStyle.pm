@@ -25,7 +25,7 @@ sub render_html {
     my($proto, $name, $req, $task_id, $realm_id) = @_;
     my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
     return unless $rf->unauth_load({
-	path => $_WN->absolute_path($name),
+	path => $_WN->to_absolute($name),
 	realm_id => $realm_id,
     });
     my($res) = [
@@ -33,7 +33,7 @@ sub render_html {
 	$rf->get(qw(modified_date_time user_id)),
     ];
     if ($rf->unauth_load({
-	path => $_WN->absolute_path('base.css'),
+	path => $_WN->to_absolute('base.css'),
 	realm_id => $realm_id,
     })) {
 	my($styles) = $req->get_if_exists_else_put(__PACKAGE__, []);
