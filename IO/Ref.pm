@@ -314,12 +314,12 @@ sub _diff_similar {
 }
 
 sub _diff_to_string {
-    my($proto, $s) = @_;
+    my($proto, $s) = @_; 
     return !ref($s) ? defined($s) ? $s : '<undef>'
 	: ref($s) eq 'SCALAR' ? $$s
 	: UNIVERSAL::can($s, 'as_xml') ? $s->as_xml
 	: UNIVERSAL::can($s, 'as_string') ? $s->as_string
-	: $proto->to_string($s, 0, 1);
+	: ${$proto->to_string($s, 0, 0)};
 }
 
 =head1 COPYRIGHT
