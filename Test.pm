@@ -1037,35 +1037,13 @@ sub _eval_result {
 
 	}
     }
-    if (defined(my $ok = _eval_result_regexp($case, $result, \$show))) {
-	return undef
-	    if $ok;
-    }
-    elsif (ref($case->get('expect')) eq ref($result)) {
-	my($res) = Bivio::IO::Ref->nested_differences(
-	    $case->get('expect'), $result);
-	return $res ? "expected != actual:\n$$res" : undef;
-    }
-    return "expected != actual:\n"
-	. Bivio::IO::Ref->to_short_string($case->get('expect'))
-	. ' != '
-	. ($show ? $$show : Bivio::IO::Ref->to_short_string($actual));
-}
-
-# _eval_result_regexp(Bivio::Test::Case case, any result, string_ref show) : boolean
-#
-# Returns true if result compares.  Returns false if doesn't compare.
-# Returns undef if not a Regexp or result is a DieCode.
-#
-sub _eval_result_regexp {
-    my($case, $result, $show) = @_;
-    return undef
-	unless ref($case->get('expect')) eq 'Regexp'
-	&& ref($result) ne 'Bivio::DieCode';
-#TODO: Replace when perl bug is fixed.
-    my($x) = $case->get('expect');
-    $x = "$x";
-    return ${$$show = Bivio::IO::Ref->to_string($result)} =~ /$x/ ? 1 : 0;
+    my($e) = $case->get('expect');
+    my($x) = Bivio::IO::Ref->nested_differences(
+	$e,
+	ref($result) eq 'ARRAY' && @$result == 1 && ref($e) eq 'Regexp'
+	    ? $result->[0] : $result,
+    );
+    return $x ? $$x : undef;
 }
 
 # _prepare_case(self, Bivio::Test::Case case, string_ref err) : boolean
