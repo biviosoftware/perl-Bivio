@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::FilePath;
 use strict;
-use base ('Bivio::Type::FileName');
+use base ('Bivio::Type::Line');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -10,27 +10,65 @@ sub ILLEGAL_CHAR_REGEXP {
     return qr{(?:^|/)\.\.?$|[\\\:*?"<>\|\0-\037\177]};
 }
 
-sub MAIL_FOLDER {
-    return '/Mail';
+sub ERROR {
+    return Bivio::TypeError->FILE_PATH;
 }
 
-sub PUBLIC_FOLDER {
-    # Always is_public => 1
-    return '/Public';
+sub add_trailing_slash {
+    my(undef, $path) = @_;
+    return $path =~ m,/$, ? $path : $path.'/';
 }
 
 sub from_literal {
     my($proto, $value) = @_;
-    my($v, $e) = Bivio::Type::String->from_literal($value);
+    my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
 	unless defined($v);
+    $v =~ s{^\s+|\s+$}{}g;
     return (undef, undef)
-	unless $v =~ m{\S};
-    $v =~ s{/^\s+|\s+$|^/+|/+$}{}g;
-    $v =~ s{/+}{/}g;
-    # No specials except forward '/'
-    return $v =~ $proto->ILLEGAL_CHAR_REGEXP
-	? (undef, Bivio::TypeError->FILE_PATH) : "/$v";
+	unless length($v);
+    return (undef, $proto->ERROR)
+	if $v =~ $proto->ILLEGAL_CHAR_REGEXP;
+    $v =~ s{(?=^[^/])|/+}{/}g;
+    $v =~ s{(?<=[^/])/$}{};
+    return $v;
+}
+
+sub get_base {
+    my($proto, $value) = @_;
+    $value = $proto->get_tail($value);
+    return $value
+	if $value =~ /^\.+[^\.]*$/;
+    $value =~ s/\.[^\.]+$//;
+    return $value;
+}
+
+sub get_clean_base {
+    my($proto, $value) = @_;
+    return _clean($proto, $proto->get_base($value));
+}
+
+sub get_clean_tail {
+    my($proto, $value) = @_;
+    return _clean($proto, $proto->get_tail($value));
+}
+
+sub get_component_width {
+    return shift->SUPER::get_width;
+}
+
+sub get_suffix {
+    my($proto, $value) = @_;
+    return $value && $value =~ m{[^\./\\:]\.([^\.]+)$} ? $1 : '';
+}
+
+sub get_tail {
+    my(undef, $value) = @_;
+    return ''
+	unless defined($value);
+    $value =~ s{[:\/\\]+$}{};
+    $value =~ s{.*[:\/\\]}{};
+    return $value;
 }
 
 sub get_width {
@@ -42,6 +80,15 @@ sub join {
     (my $res = join('/', map(defined($_) && length($_) ? $_ : (), @parts)))
 	 =~ s{//+}{/}sg;
     return $res;
+}
+
+sub _clean {
+    my($proto, $value) = @_;
+    $value =~ s/^\W+|\W+$//g;
+    $value =~ s/[^\w\.]+/-/g;
+    my($n) = $proto->get_component_width - 6;
+    return length($value) > $n ? substr($value, 0, $n)
+	: length($value) ? $value : undef;
 }
 
 1;
