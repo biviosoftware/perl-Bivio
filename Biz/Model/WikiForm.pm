@@ -27,7 +27,7 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     my($new) = $self->name_type
-	->absolute_path($self->get('RealmFile.path_lc'));
+	->to_absolute($self->get('RealmFile.path_lc'));
     my($c) = $self->get('content');
     my($m) = $self->get('file_exists')
 	? 'update_with_content' : 'create_with_content';
@@ -83,7 +83,7 @@ sub name_type {
 
 sub _curr_path {
     my($self) = @_;
-    return $self->name_type->absolute_path(_authorized_name($self));
+    return $self->name_type->to_absolute(_authorized_name($self));
 }
 
 sub _is_edit {
