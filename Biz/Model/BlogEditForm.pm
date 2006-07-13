@@ -25,7 +25,7 @@ sub execute_ok {
     $self->new_other('RealmFile')->load({
 	realm_file_id => $id,
     })->update_with_content({
-	path => $_BFN->to_path($fn, $public),
+	path => $_BFN->to_absolute($fn, $public),
 	'RealmFile.is_public' => $public,
     }, $_BC->join($self->get(qw(title body))))
 	->put_on_request;
