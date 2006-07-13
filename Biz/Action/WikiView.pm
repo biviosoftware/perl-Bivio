@@ -8,7 +8,6 @@ use Bivio::UI::XHTML::Widget::WikiStyle;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = Bivio::Type->get_instance('WikiName');
 my($_FN) = Bivio::Type->get_instance('FileName');
-my($_WT) = Bivio::Type->get_instance('WikiText');
 
 sub execute {
     my($proto, $req, $realm_id) = @_;
@@ -20,12 +19,9 @@ sub execute {
 	return $req->get('task_id');
     }
     $name =~ s{^/+}{};
-    Bivio::Die->throw(NOT_FOUND => {
-	message => 'illegal path_info',
-	entity => $name,
-    }) unless defined(($_FN->from_literal($name))[0]);
-    if ($name =~ $_WT->IMAGE_REGEX) {
-	$req->put(path_info => $_WN->absolute_path($name));
+    unless ($_WN->is_valid($name)) {
+#TODO: AccessMode
+	$req->put(path_info => $_WN->to_absolute($name));
 	$proto->get_instance('RealmFile')->unauth_execute(
 	    $req, undef, $realm_id);
 	return 1;
@@ -41,13 +37,15 @@ sub execute {
 	if ($name eq 'StartPage') {
 	    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
 	    $rf->unauth_load({
-		path_lc => '/wiki/defaultstartpage',
+#TODO: AccessMode
+		path => $_WN->to_absolute('defaultstartpage'),
 		realm_id => Bivio::UI::Constant
 		    ->get_from_source($req)->get_value('help_wiki_realm_id'),
 	    });
 	    if ($rf->is_loaded) {
 		$rf->copy_deep({
-		    path => '/wiki/' . $name,
+#TODO: AccessMode
+		    path => $_WN->to_absolute($name),
 		    realm_id => $realm_id,
 		});
 		return $req->get('task_id');
