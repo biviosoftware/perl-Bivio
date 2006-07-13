@@ -8,7 +8,287 @@ use Bivio::Mail::RFC822;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = Bivio::Type->get_instance('WikiName')->REGEX;
 my($_EMAIL) = qr{@{[Bivio::Mail::RFC822->ATOM_ONLY_ADDR]}}o;
-my($_DOMAIN) = qr{@{[Bivio::Mail::RFC822->DOMAIN]}\.[a-z]{2,}}o;
+my($_DOMAIN) = qr{(@{[
+    'www\.'
+    . Bivio::Mail::RFC822->DOMAIN
+    . '\.(?:'
+    . join('|', qw(
+	ar
+	fm
+	ma
+        ms
+	pl
+	pm
+	sh
+    ))
+    . ')|'
+    . Bivio::Mail::RFC822->DOMAIN
+    . '\.(?:'
+    . join('|', qw(
+	aero
+	biz
+	cat
+	com
+	coop
+	edu
+	gov
+	info
+	int
+	jobs
+	mil
+	mobi
+	museum
+	name
+	net
+	org
+	pro
+	travel
+	asia
+	post
+	tel
+	geo
+	ac
+	ad
+	ae
+	af
+	ag
+	ai
+	al
+	am
+	an
+	ao
+	aq
+	as
+	at
+	au
+	aw
+	az
+	ax
+	ba
+	bb
+	bd
+	be
+	bf
+	bg
+	bh
+	bi
+	bj
+	bm
+	bn
+	bo
+	br
+	bs
+	bt
+	bv
+	bw
+	by
+	bz
+	ca
+	cd
+	cf
+	cg
+	ch
+	ci
+	ck
+	cl
+	cm
+	cn
+	co
+	cr
+	cs
+	cu
+	cv
+	cx
+	cy
+	cz
+	de
+	dj
+	dk
+	dm
+	do
+	dz
+	ec
+	ee
+	eg
+	eh
+	er
+	es
+	et
+	eu
+	fi
+	fj
+	fk
+	fo
+	fr
+	ga
+	gb
+	gd
+	ge
+	gf
+	gg
+	gh
+	gi
+	gl
+	gm
+	gn
+	gp
+	gq
+	gr
+	gs
+	gt
+	gu
+	gw
+	gy
+	hk
+	hm
+	hn
+	hr
+	ht
+	hu
+	id
+	ie
+	il
+	im
+	in
+	io
+	iq
+	ir
+	is
+	it
+	je
+	jm
+	jo
+	jp
+	ke
+	kg
+	kh
+	ki
+	km
+	kn
+	kp
+	kr
+	kw
+	ky
+	kz
+	la
+	lb
+	lc
+	li
+	lk
+	lr
+	ls
+	lt
+	lu
+	lv
+	ly
+	mc
+	md
+	mg
+	mh
+	mk
+	ml
+	mm
+	mn
+	mo
+	mp
+	mq
+	mr
+	mt
+	mu
+	mv
+	mw
+	mx
+	my
+	mz
+	na
+	nc
+	ne
+	nf
+	ng
+	ni
+	nl
+	no
+	np
+	nr
+	nu
+	nz
+	om
+	pa
+	pe
+	pf
+	pg
+	ph
+	pk
+	pn
+	pr
+	ps
+	pt
+	pw
+	py
+	qa
+	re
+	ro
+	ru
+	rw
+	sa
+	sb
+	sc
+	sd
+	se
+	sg
+	si
+	sj
+	sk
+	sl
+	sm
+	sn
+	so
+	sr
+	st
+	sv
+	sy
+	sz
+	tc
+	td
+	tf
+	tg
+	th
+	tj
+	tk
+	tl
+	tm
+	tn
+	to
+	tp
+	tr
+	tt
+	tv
+	tw
+	tz
+	ua
+	ug
+	uk
+	um
+	us
+	uy
+	uz
+	va
+	vc
+	ve
+	vg
+	vi
+	vn
+	vu
+	wf
+	ws
+	ye
+	yt
+	yu
+	za
+	zm
+	zw
+    )) . ')'
+]})}x;
 my($_PHRASE) = _hash([qw(
     a
     abbr
@@ -80,11 +360,7 @@ foreach my $t (qw(table dl ul ol div)) {
 }
 my($_TAGS) = {%$_EMPTY, %$_BLOCK, %$_PHRASE};
 my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
-my($_IMG) = __PACKAGE__->IMAGE_REGEX;
-
-sub IMAGE_REGEX {
-    return qr{\.(?:jpg|gif|jpeg|png|jpe)$};
-}
+my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 
 sub render_html {
     my($self, $value, $name, $req, $task_id) = @_;
@@ -150,9 +426,11 @@ sub _fmt_err {
 
 sub _fmt_href {
     my($tok, $state) = @_;
+    return $tok
+	if ($state->{tags}->[0] || '') eq 'a';
     $tok = Bivio::HTML->unescape($tok);
     return shift(@_)
-	unless $tok =~ m{(^\W*(?:\w+://\w.+|/\w.+|$_EMAIL|$_DOMAIN|$_WN)\W*$)};
+	unless $tok =~ m{(^\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_WN)\W*$)};
     # Any &'s were turned into &amp;
     # The trailing punctuation can't be everything, because http://a//? is a
     # legitimate URI.
