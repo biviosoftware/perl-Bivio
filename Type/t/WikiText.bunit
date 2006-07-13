@@ -34,6 +34,8 @@ initialize_fully('FORUM_WIKI_VIEW');
 	    '<a@a.a>' => qq{<p class="prose">&lt;<a href="mailto:a\@a.a">a\@a.a</a>&gt;\n</p>},
 	    'icon.jpg' => qq{<p class="prose"><img src="/fourem/wiki/icon.jpg" />\n</p>},
 	    '/icon.jpg' => qq{<p class="prose"><img src="/icon.jpg" />\n</p>},
+	    'Module.pm' => qq{<p class="prose">Module.pm\n</p>},
+	    'Module.ch' => qq{<p class="prose"><a href="http://Module.ch">Module.ch</a>\n</p>},
 	    'a.com' => qq{<p class="prose"><a href="http://a.com">a.com</a>\n</p>},
 	    'a.com.' => qq{<p class="prose"><a href="http://a.com">a.com</a>.\n</p>},
 	    'a & b' => qq{<p class="prose">a &amp; b\n</p>},
@@ -43,6 +45,7 @@ initialize_fully('FORUM_WIKI_VIEW');
 	    '@p *x*' => qq{<p><strong>x</strong></p>\n},
 	    "\@div\n\@/div" => qq{<div></div>},
 	    '@code *x*' => qq{<p class="prose"><code>*x*</code>\n</p>},
+	    "\@li\n\@code *x*" => qq{<li><p><code>*x*</code>\n</p></li>},
 	    '@&nbsp;' => qq{&nbsp;},
 	    '@&#174;' => qq{&#174;},
 	    '@hr' => qq{<hr />\n},
@@ -54,8 +57,10 @@ initialize_fully('FORUM_WIKI_VIEW');
 	    '@a' => qq{<p class="prose"><a></a></p>},
 	    '@a href=/x y' => qq{<p class="prose"><a href="/x">y</a>\n</p>},
 	    '@a href=x y' => qq{<p class="prose"><a href="/fourem/wiki/x">y</a>\n</p>},
+	    '/foo.doc' => qq{<p class="prose"><a href="/foo.doc">/foo.doc</a>\n</p>},
 	    '@img src="x"' => qq{<img src="/fourem/wiki/x" />\n},
 	    "\@a name=x" => qq{<p class="prose"><a name="x"></a></p>},
+	    '@a href=/ foo.org' => qq{<p class="prose"><a href="/">foo.org</a>\n</p>},
 	    <<'IN' => _chomp(<<'OUT'),
 @h3 h 3
 p1
