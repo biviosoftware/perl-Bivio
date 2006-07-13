@@ -4,42 +4,9 @@ Type();
 [
     class() => [
 	from_literal => [
-	    '' => [undef],
+	    '' => UNDEF(),
 	    a => 'a',
 	    '/a' => FILE_NAME(),
-	],
-	get_tail => [
-	    '/a' => 'a',
-	    '/a/' => 'a',
-	    '/' => '',
-	    [undef] => '',
-	],
-	get_base => [
-	    '/a.gif' => 'a',
-	    '.gif' => '.gif',
-	    'x.very-long-suffix' => 'x',
-	],
-	get_clean_base => [
-	    a => 'a',
-	    'b/a' => 'a',
-	    '/a.b' => 'a',
-	    '/.a' => 'a',
-	    'a.b.c' => 'a.b',
-	    'a b' => 'a-b',
-	    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-	],
-	get_suffix => [
-	    'a.x' => 'x',
-	    '/a.x' => 'x',
-	    'a' => '',
-	    '/a' => '',
-	    '/.' => '',
-	    '.' => '',
-	    '..' => '',
-	    '/..' => '',
-	    '/.x' => '',
-	    '.x' => '',
-	    'aaa.very-long-suffix' => 'very-long-suffix',
 	],
     ],
 ];
