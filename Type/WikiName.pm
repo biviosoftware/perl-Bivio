@@ -2,19 +2,21 @@
 # $Id$
 package Bivio::Type::WikiName;
 use strict;
-use base 'Bivio::Type::FileName';
+use base 'Bivio::Type::DocletFileName';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FP) = Bivio::Type->get_instance('FilePath');
-my($_ABSOLUTE_PATH) = qr{^(?i:/Wiki/)@{[__PACKAGE__->REGEX]}$};
 
-sub REGEX {
-    return qr{[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*};
+sub PRIVATE_FOLDER {
+    return shift->WIKI_FOLDER;
 }
 
-sub absolute_path {
-    my(undef, $value) = @_;
-    return $_FP->from_literal_or_die('/Wiki/' . $value);
+sub PUBLIC_FOLDER {
+    my($proto) = @_;
+    return $proto->join($proto->SUPER::PUBLIC_FOLDER, $proto->PRIVATE_FOLDER);
+}
+
+sub REGEX {
+    return qr{(?-i:[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*)}o;
 }
 
 sub from_literal {
@@ -23,13 +25,17 @@ sub from_literal {
     return ($v, $e)
 	unless defined($v);
     $v =~ s/\s+//g;
-    return $v =~ qr{^@{[$proto->REGEX]}$}o
-	? $v : (undef, Bivio::TypeError->WIKI_NAME);
+    return $v =~ m{^@{[$proto->REGEX]}$}s ? $v
+	: (undef, Bivio::TypeError->WIKI_NAME);
 }
 
-sub is_absolute_path {
-    my($proto, $path) = @_;
-    return $path =~ $_ABSOLUTE_PATH ? 1 : 0;
+sub get_width {
+    return 50;
+}
+
+sub to_absolute {
+    my($proto, $value) = (shift, shift);
+    return $proto->SUPER::to_absolute($value, @_);
 }
 
 1;
