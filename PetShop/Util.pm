@@ -580,12 +580,12 @@ EOF
 &date,&email,input,ok
 EOF
     Bivio::Biz::Model->new('RealmFile')->create_with_content({
-	path => Bivio::Type->get_instance('WikiName')->absolute_path('ShellUtilHelp'),
+	path => Bivio::Type->get_instance('WikiName')->to_absolute('ShellUtilHelp'),
     }, \(<<'EOF'));
 Shell utility help.
 EOF
     Bivio::Biz::Model->new('RealmFile')->create_with_content({
-	path => Bivio::Type->get_instance('WikiName')->absolute_path('base.css'),
+	path => Bivio::Type->get_instance('WikiName')->to_absolute('base.css'),
     }, \(<<'EOF'));
 .fourem_wiki {}
 EOF
