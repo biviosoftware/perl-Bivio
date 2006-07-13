@@ -38,4 +38,3 @@ Bivio::IO::Config->introduce_values({
 });
 print Bivio::IO::Alert->format_args([[['hidden gem']]]) =~ /hidden gem/
     ? "ok 4\n" : "not ok 4\n";
-
