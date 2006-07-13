@@ -70,7 +70,9 @@ Always dies with specified I<code>.
 
 sub die {
     my($self, $code) = @_;
-    Bivio::Die->throw($code || Bivio::DieCode->DIE);
+    Bivio::Die->throw($code || Bivio::DieCode->DIE, {
+	message => $code,
+    });
     # DOES NOT RETURN
 }
 

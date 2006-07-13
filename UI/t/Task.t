@@ -16,9 +16,9 @@ Bivio::Test->new('Bivio::UI::Task')->unit([
         } => [
 	    [SITE_ROOT => {}], => '/',
 	    [SITE_ROOT => {path_info => 'abc'}] => '/abc',
-	    [LOGIN => {no_context => 0}] => qr{'/pub/login\?fc=.+},
+	    [LOGIN => {no_context => 0}] => qr{^/pub/login\?fc=.+},
 	    [LOGIN => {no_context => 1}] => '/pub/login',
-	    [SITE_ROOT => {require_context => 1}] => qr{'/\?fc=.+},
+	    [SITE_ROOT => {require_context => 1}] => qr{^/\?fc=.+},
 	],
      ],
 ]);

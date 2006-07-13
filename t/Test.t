@@ -84,7 +84,7 @@ t(
 		    return [];
 		} => [],
 	    ],
-	    ok => qr/\[.*3.*\]/s,
+	    ok => qr/^3$/s,
 	    ok => 3,
 	    # Deviance: 24
 	    ok => sub {
@@ -170,7 +170,7 @@ t(
         } => [
 	    # Conformance: 33
 	    ok => sub {
-		return qr/\[.*33.*\]/s;
+		return qr/^33$/;
 	    },
 	    ok => [
 		[] => ['hello'],
@@ -282,10 +282,15 @@ t(
 	sub {
 	    return Bivio::t::Test::Testee->new(5);
         } => [
-	    ok => 5,
+	    ok => [
+		[] => 5,
+		[qw(one-value)] => qr{^one-value$}s,
+		# 4
+		[qw(multiple values)] => qr{^\['multiple','values'\]$}s,
+	    ],
         ],
     ],
-    2,
+    4,
     [],
 );
 t(
@@ -371,12 +376,13 @@ t(
 		},
 	    ],
 	    die => [
-		# 13
 		[] => Bivio::DieCode->DIE,
+		# 14
+		[54321] => qr{Die.*message=>54321},
 	    ],
 	],
     ],
-    13,
+    14,
     [4, 6, 7, 11],
 );
 
