@@ -12,11 +12,11 @@ sub PRIVATE_FOLDER {
 }
 
 sub PATH_REGEX {
-    return qr{@{[shift->join('\d{6}', '\d{8}')]}}o;
+    return qr{@{[shift->join('(\d{6})', '(\d{8})')]}}o;
 }
 
 sub REGEX {
-    return qr{\d{14}};
+    return qr{(\d{14})};
 }
 
 sub SQL_LIKE_BASE {
@@ -33,20 +33,15 @@ sub from_literal {
     my($proto, $value) = @_;
     return (undef, undef)
 	unless defined($value) && length($value);
-    # This is overly friendly, but we are only parsing URLs and such
+    # This is overly friendly, but we are only parsing pretty much anything
+    # COUPLING: Assumes nothing in the path but the BFN has digits in it
     $value =~ s{\D}{}g;
     return $value =~ /^@{[$proto->REGEX]}$/ ? $value
 	: (undef, Bivio::TypeError->BLOG_FILE_NAME);
 }
 
-sub from_path {
-    my($proto, $path) = @_;
-    return $proto->from_literal_or_die(
-	$path ? $path =~ m{([\d/]+)$} ? $1 : $path : ());
-}
-
 sub from_sql_column {
-    return shift->from_path(@_);
+    return shift->from_absolute(@_);
 }
 
 sub get_width {
