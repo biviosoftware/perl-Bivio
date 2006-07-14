@@ -7,9 +7,13 @@ use Bivio::Search::Xapian;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub internal_auth_realm_ids {
+sub internal_realm_ids {
     my($self, $query) = @_;
-    return $query->unsafe_get('auth_id') ? [$query->get('auth_id')] : []
+    return (
+	$self->get_request->get('Type.AccessMode')->eq_private
+	    && $query->unsafe_get('auth_id') ? [$query->get('auth_id')] : [],
+	1,
+    );
 }
 
 sub internal_initialize {
@@ -27,8 +31,7 @@ sub internal_load_rows {
 	unless defined((Bivio::Type::String->from_literal($s))[0]);
     my($rows) = Bivio::Search::Xapian->query(
 	$s, ($pn - 1) * $c, $c + 1,
-	$self->internal_auth_realm_ids($query),
-	$self->get_request->get('Type.AccessMode')->eq_public,
+	$self->internal_realm_ids($query),
     );
     if (@$rows > $c) {
 	$query->put(has_next => 1);

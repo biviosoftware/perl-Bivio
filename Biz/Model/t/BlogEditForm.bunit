@@ -12,7 +12,7 @@ my($entry) = [map(
 my($_BFN) = Bivio::Type->get_instance('BlogFileName');
 Bivio::Biz::Model->new(req(), 'BlogCreateForm')->process($entry->[0]);
 commit();
-my($this) = $_BFN->from_path(req()->get('Model.RealmFile')->get('path'));
+my($this) = $_BFN->from_absolute(req()->get('Model.RealmFile')->get('path'));
 req()->put(query => {this => $this});
 [
     [] => [$entry->[0]],
