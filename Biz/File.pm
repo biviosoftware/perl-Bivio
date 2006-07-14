@@ -4,6 +4,7 @@ package Bivio::Biz::File;
 use strict;
 use base 'Bivio::UNIVERSAL';
 use Bivio::IO::Config;
+use Bivio::IO::File;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
@@ -19,6 +20,12 @@ sub handle_config {
 sub absolute_path {
     my(undef, $base) = @_;
     return "$_CFG->{root}/$base";
+}
+
+sub destroy_db {
+    my($proto) = @_;
+    Bivio::IO::File->rm_rf($_CFG->{root});
+    return;
 }
 
 1;
