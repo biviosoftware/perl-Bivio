@@ -6,6 +6,14 @@ use base 'Bivio::Type::FileName';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub ABSOLUTE_REGEX {
+    my($proto) = @_;
+    return qr{^@{[$proto->join(
+        '(?:' . join('|', map($proto->to_absolute(undef, $_), 0, 1)) . ')',
+	$proto->PATH_REGEX,
+    )]}$}is;
+}
+
 sub BLOG_FOLDER {
     return '/Blog';
 }
@@ -31,12 +39,18 @@ sub WIKI_FOLDER {
     return '/Wiki';
 }
 
+sub from_absolute {
+    my($proto, $path) = @_;
+    Bivio::Die->throw(DIE => {
+	message => 'not an absolute path',
+	entity => $path,
+    }) unless my(@x) = ($path || '') =~ $proto->PATH_REGEX;
+    return join('', @x);
+}
+
 sub is_absolute {
     my($proto, $value) = @_;
-    return $value =~ m{^@{[$proto->join(
-        '(?:' . join('|', map($proto->to_absolute(undef, $_), 0, 1)) . ')',
-	$proto->PATH_REGEX,
-    )]}$}isx ? 1 : 0;
+    return $value =~ $proto->ABSOLUTE_REGEX ? 1 : 0;
 }
 
 sub is_valid {
