@@ -62,7 +62,11 @@ sub import_tree {
     $folder = $folder ? $self->convert_literal(FilePath => $folder) : '/';
     File::Find::find({
 	wanted => sub {
-	    return if $_ =~ m{(^|/)(\.*|CVS|.*~)$};
+	    if ($_ =~ /^CVS$/) {
+		$File::Find::prune = 1;
+		return;
+	    }
+	    return if $_ =~ m{(^|/)(\.*|.*~)$};
 	    my($f) = $File::Find::name =~ m{^\./(.+)};
 	    my($path) = $self->convert_literal('FilePath', "$folder/$f");
 	    my($method) = -d $_ ? 'create_folder' : 'create_with_content';
