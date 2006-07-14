@@ -2,7 +2,7 @@
 # $Id$
 Request();
 my($files) = require('xapian.PL');
-my($demo) = req()->get('auth_id');
+my($demo) = model('RealmOwner', {name => 'demo'})->get('realm_id');
 my($guest) = model('RealmOwner', {name => 'guest'})->get('realm_id');
 [
 #TODO: cut off and stop words (the)
@@ -15,17 +15,20 @@ my($guest) = model('RealmOwner', {name => 'guest'})->get('realm_id');
 		return [map($files->[$_], @$expect)];
 	    },
 	} => [
-	    '"commonly worded"' => 4,
- 	    '"place for"' => [5, 4],
- 	    '"a place for"' => [5, 4],
-	    ['common word', 0, 1] => 0,
- 	    ['common word', 0, 1, [], 0] => 0,
- 	    ['common word', 0, 1, [], 1] => 5,
- 	    ['common word', 0, 1, [$guest], 1] => [],
- 	    ['common word', 0, 1, [$guest, $demo], 1] => 5,
- 	    ['common word', 0, 1, [$guest, $demo], 0] => 0,
-	    abcz => 1,
+	    '"commonly worded"' => [],
+	    # FRAGILE: The exact results depend on Xapians weighting algorithm
+	    # which doesn't weight all terms in a query equally
+	    ['"commonly worded"', 0, 0, [$demo], 1] => 4,
+	    ['"commonly worded"', 0, 0, [$demo], []] => 4,
+ 	    ['"place for"', 0, 0, [$demo], 0] => [5, 4],
+ 	    ['"place for"', 0, 0, [$demo], 1] => [5, 7, 4],
+ 	    ['"place for"', 0, 0, [$guest], 0] => [7, 6],
+ 	    ['"place for"', 0, 0, [], 1] => [7, 5],
+ 	    ['"place for"', 0, 0, [], [$demo]] => 5,
+ 	    ['"place for"', 0, 0, [$demo], [$guest]] => [7, 5, 4],
+	    ['abcz', 0, 0, [$demo]] => 1,
 	    sub {
+		model('Lock')->execute_general(req());
 		model('RealmFile', {realm_file_id => $files->[1]})
 		    ->delete;
 		commit();
