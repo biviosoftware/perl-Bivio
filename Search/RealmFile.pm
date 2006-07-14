@@ -19,7 +19,7 @@ sub parse_content {
     (my $ct = $realm_file->get_content_type) =~ s/\W+/_/g;
     my($op) = \&{'_from_' . $ct};
     unless (defined(&$op)) {
-	Bivio::IO::Alert->info($realm_file, ': unhandled content type')
+	Bivio::IO::Alert->info($realm_file, ': unhandled content type; ignoring')
 	    if $ct =~ /^(?:text|application)_/;
 	return;
     }
@@ -42,7 +42,7 @@ sub _field_term {
     my($m, $f, $t) = @_;
     ($t = $f) =~ s/[^a-z]//ig
 	unless $t;
-    return 'X' . uc($t) . ':' . lc($m->get($f));
+    return 'X' . uc($t) . ':' . lc($m->get_or_default($f, ''));
 }
 
 sub _from_application_octet_stream {
@@ -155,7 +155,7 @@ sub _postings {
 	map(
 	    map(
 		map(
-		    lc($_),
+		    length($_) ? lc($_) : (),
 		    $_ =~ /^\W*((?:[A-Z]\.){2,10})\W*$/ ? $1 : split(/\W+/, $_),
 		),
 		split(/\s+/, $$_),
@@ -191,7 +191,7 @@ sub _terms {
 	    $proto,
 	    $rf,
 	    $attr,
-	    $author . ' ' . $e->get('email'),
+	    $author . ' ' . $e->get_or_default('email', ''),
 	    $newsgroup),
     ];
 }
