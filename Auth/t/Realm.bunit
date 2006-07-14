@@ -46,11 +46,30 @@ Request('initialize_fully');
 	return Bivio::Auth::Realm->get_general;
     } => [
 	format_email => Bivio::DieCode->DIE,
+	id_from_any => 1,
     ],
     'Bivio::Auth::Realm' => [
 	is_default_id => [
 	    1 => 1,
 	    2 => 1,
+	    [] => DIE(),
+	    'Bivio::Auth::Realm' => DIE(),
+	],
+	{
+	    method => 'id_from_any',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->set_realm(undef);
+		return [req()->get(@$params)];
+	    },
+	} => [
+	    auth_realm => 1,
+	    auth_id => 1,
+	    sub {[req()->set_realm('demo')->get('owner')]}
+		=> sub {[req()->get('auth_id')]},
+	    auth_role => DIE(),
+	    task => DIE(),
+	    sub {[]} => DIE(),
 	],
     ],
     {

@@ -81,6 +81,7 @@ use vars qw($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_INITIALIZED) = 0;
 my($_GENERAL);
+my($_PI) = Bivio::Type->get_instance('PrimaryId');
 my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role->UNKNOWN(),
 	    Bivio::Auth::Role->get_list);
 
@@ -323,6 +324,31 @@ sub has_owner {
     return shift->is_default ? 0 : 1;
 }
 
+=for html <a name="id_from_any"></a>
+
+=head2 static id_from_any(any realm_or_id) : string
+
+=head2 id_from_any(any realm_or_id) : string
+
+Returns the realm_id from I<realm_or_id>.  Can be a realm_id,
+model with realm_id, instance, or self.
+
+=cut
+
+sub id_from_any {
+    my($proto) = shift;
+    my($realm_or_id) = @_ ? @_ : $proto;
+    return ref($realm_or_id)
+	? UNIVERSAL::isa($realm_or_id, 'Bivio::Auth::Realm')
+        ? $realm_or_id->get('id')
+	: UNIVERSAL::isa($realm_or_id, 'Bivio::Biz::Model')
+	? $realm_or_id->get('realm_id')
+        : Bivio::Die->die($realm_or_id, ': unhandled reference type')
+	: $_PI->is_specified($realm_or_id) || $proto->is_default_id($realm_or_id)
+	? $realm_or_id
+	: Bivio::Die->die($realm_or_id, ': not a PrimaryId');
+}
+
 =for html <a name="is_default"></a>
 
 =head2 is_default() : boolean
@@ -347,8 +373,10 @@ Returns true if I<id> is a default realm_id.
 
 sub is_default_id {
     my(undef, $id) = @_;
+    Bivio::Die->die($id, ': not an id')
+        unless defined($id) && $id !~ /\D/;
     # At least info is in one place...
-    return $id < Bivio::Type::PrimaryId->get_min ? 1 : 0;
+    return $id < $_PI->get_min ? 1 : 0;
 }
 
 =for html <a name="is_general"></a>
@@ -375,7 +403,7 @@ sub _new {
     my($proto, $owner, $req) = @_;
 
     # Instantiate and initialize with/out owner
-    my($self) = &Bivio::Collection::Attributes::new($proto);
+    my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {};
     unless ($owner) {
 	# If there is no owner, then permissions already retrieved from
@@ -405,7 +433,7 @@ sub _new {
 #
 sub _perm_set_from_all {
     my($permissions) = @_;
-    my($perm_set) = Bivio::Type::EnumSet->get_min();
+    my($perm_set) = Bivio::Auth::PermissionSet->get_min;
     foreach my $perms (@$permissions) {
  	$perm_set |= $perms;
     }
