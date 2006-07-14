@@ -116,7 +116,7 @@ use Bivio::UI::Align;
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_OLD_HTML) =
-    [qw(hspace vspace width height border align attributes alt)];
+    [qw(hspace vspace width height border align attributes)];
 
 =head1 METHODS
 
@@ -137,6 +137,7 @@ sub initialize {
     $self->map_invoke(
 	unsafe_initialize_attr => [
 	    @$_OLD_HTML,
+	    'alt',
 	    'alt_text',
 	]
     );
