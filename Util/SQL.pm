@@ -53,6 +53,7 @@ usage: b-sql [options] command [args...]
 commands:
     create_db -- initializes database (must be run from ddl directory)
     create_test_db -- destroys, creates, and initializes test database
+    create_test_user user-id [password] -- creates a test user with local email
     destroy_db -- drops all the tables, indexes, and sequences created
     drop -- drops objects which would be created by running input
     drop_and_run -- calls drop then run
@@ -125,7 +126,6 @@ See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
 sub create_db {
     my($self) = @_;
     $self->setup;
-
     foreach my $file (@{_ddl_files($self)}){
 	# Set up new file so read_input returns new value each time
 	$self->print('Executing ', $file, "\n");
@@ -228,7 +228,8 @@ Undoes the operations of L<create_db|"create_db">.
 
 sub destroy_db {
     my($self) = @_;
-    $self->get_request;
+    $self->usage_error('You cannot destroy a production database.')
+	if $self->get_request->is_production;
     $self->are_you_sure('DROP THE ENTIRE '
 	. Bivio::SQL::Connection->get_dbi_config->{database}
 	. ' DATABASE?');
@@ -240,6 +241,7 @@ sub destroy_db {
 	$self->put(input => $file);
 	$self->drop;
     }
+    $self->use('Bivio::Biz::File')->destroy_db;
     return;
 }
 
@@ -366,7 +368,8 @@ Restores the database from file.
 sub import_db {
     my($self, $backup_file) = @_;
     $self->import_tables_only($backup_file);
-    return $self->reinitialize_constraints;
+    return $self->reinitialize_constraints
+	. "You need to copy external files and run: b-search rebuild_db\n";
 }
 
 =for html <a name="import_tables_only"></a>
@@ -380,7 +383,8 @@ are not restored.
 
 sub import_tables_only {
     my($self, $backup_file) = @_;
-    $self->usage_error('missing file') unless $backup_file;
+    $self->usage_error('missing file')
+	unless $backup_file;
     my($db) = _assert_postgres($self);
     $self->destroy_db;
 
