@@ -8,7 +8,7 @@ my($entry) = [map({
 	body => "body\n" x $_,
     };
     Bivio::Biz::Model->new(req(), 'BlogCreateForm')->process($x);
-    $x->{path_info} = Bivio::Type->get_instance('BlogFileName')->from_path(
+    $x->{path_info} = Bivio::Type->get_instance('BlogFileName')->from_absolute(
 	req()->get('Model.RealmFile')->get('path'));
     commit();
     $x;
