@@ -16,6 +16,10 @@ sub absolute_path {
     return $_FP->from_literal_or_die('/Blog/' . $value);
 }
 
+sub to_absolute {
+    return shift->absolute_path(@_);
+}
+
 sub from_literal {
     my($proto) = shift;
     my($v, $e) = $proto->SUPER::from_literal(@_);
