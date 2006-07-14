@@ -16,7 +16,7 @@ sub PUBLIC_FOLDER {
 }
 
 sub REGEX {
-    return qr{(?-i:[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*)}o;
+    return qr{((?-i:[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*))}o;
 }
 
 sub from_literal {
