@@ -553,15 +553,13 @@ sub _call_txn_resources {
     my($req, $method) = @_;
     return unless $req;
     my($resources) = $req->unsafe_get('txn_resources');
+    $req->put(txn_resources => []);
     if (ref($resources) eq 'ARRAY') {
-	foreach my $r (@$resources) {
+	while (my $r = pop(@$resources)) {
 	    _trace($r, '->', $method) if $_TRACE;
 	    $r->$method($req);
 	}
     }
-
-    # Empty the list
-    $req->put(txn_resources => []);
     return;
 }
 
