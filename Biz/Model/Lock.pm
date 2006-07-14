@@ -194,15 +194,31 @@ sub internal_initialize {
 
 =head2 is_acquired() : boolean
 
-Returns true if the I<Request.auth_realm> is already acquired.
+=head2 is_acquired(any realm_or_id) : boolean
+
+Returns true if I<realm_or_id> (default: req.auth_realm) is already acquired.
 
 =cut
 
 sub is_acquired {
-    my($self) = @_;
+    my($self) = shift;
     my($req) = $self->get_request;
     return 0 unless my $other = $req->unsafe_get(ref($self));
-    return $other->get('realm_id') eq $req->get('auth_id') ? 1 : 0;
+    return $other->get('realm_id') eq $req->get('auth_realm')->id_from_any(@_)
+	? 1 : 0;
+}
+
+=for html <a name="is_general_acquired"></a>
+
+=head2 is_general_acquired() : boolean
+
+Returns true if general lock is acquired.
+
+=cut
+
+sub is_general_acquired {
+    my($self) = @_;
+    return $self->is_acquired(Bivio::Auth::Realm->get_general);
 }
 
 =for html <a name="release"></a>
