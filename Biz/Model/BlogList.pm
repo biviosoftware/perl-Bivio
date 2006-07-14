@@ -14,8 +14,9 @@ sub execute_load_this {
     my($self) = $proto->new($req);
     my($query) = $self->parse_query_from_request;
     unless ($query->unsafe_get('this')) {
+	my($t) = $_BFN->from_literal($req->unsafe_get('path_info'));
 	return shift->SUPER::execute_load_this(@_)
-	    unless my $t = $_BFN->from_literal($req->unsafe_get('path_info'));
+	    unless $t;
 	$query->put(this => [$t]);
     }
     $self->load_this($query);
@@ -32,6 +33,7 @@ sub internal_initialize {
 	    name => 'path_info',
 	    type => 'BlogFileName',
 	    in_select => 1,
+	    # Handles PUBLIC/PRIVATE sorting by blog creation date
 	    select_value =>
 		qq{SUBSTRING(path_lc FROM '\%#"@{[$_BFN->SQL_LIKE_BASE]}#"' FOR '#') as path_info},
 	    sort_order => 0,
@@ -60,7 +62,7 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    $row->{path_info} = $_BFN->from_path($row->{path_info});
+    $row->{path_info} = $_BFN->from_literal_or_die($row->{path_info});
     ($row->{title}, $row->{body}) = $_BC->split(
 	$_RF->get_content($self, 'RealmFile.', $row),
     );
