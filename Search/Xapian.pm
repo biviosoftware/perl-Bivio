@@ -151,7 +151,8 @@ sub query {
 	    primary_id => $d->get_value(2),
 	};
     } $db->enquire($q)->matches($offset, $length))];
-    _trace($phrase, ', ', $offset, ', ', $length, ' => ', $res) if $_TRACE;
+    _trace([$q->get_terms], '->[', $offset, '..', $offset + $length,
+	   ']: ', $res) if $_TRACE;
     return $res;
 }
 
