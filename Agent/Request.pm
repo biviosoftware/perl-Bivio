@@ -785,6 +785,21 @@ sub get_form_context_from_named {
         ? $fc : undef;
 }
 
+=for html <a name="get_user_realms"></a>
+
+=head2 get_user_realms() : hash_ref
+
+Returns a map of user_realms by realm_id to a record (hash_ref) of
+realm information.  See UserRealmList for fields returned.
+
+B<Use of $self-E<GT>get('user_realms') is deprecated>.
+
+=cut
+
+sub get_user_realms {
+    return {%{shift->get('user_realms')}};
+}
+
 =for html <a name="get_request"></a>
 
 =head2 static get_request() : Bivio::Agent::Request
@@ -879,7 +894,6 @@ sub internal_get_realm_for_task {
     # Use auth_user if the target realm is USER
     if ($trt->equals_by_name('USER')) {
 	my($auth_user) = $self->get('auth_user');
-
 	if ($auth_user) {
 	    my($realm) = $self->unsafe_get('auth_user_realm');
 	    unless ($realm) {
