@@ -11,13 +11,11 @@ my($guest) = model('RealmOwner', {name => 'guest'})->get('realm_id');
 	    method => 'query',
 	    check_return => sub {
 		my($case, $actual, $expect) = @_;
-		$case->actual_return([map($_->{primary_id}, @{$actual->[0]})]);
-		return [map($files->[$_], @$expect)];
+		$case->actual_return([sort(map($_->{primary_id}, @{$actual->[0]}))]);
+		return [sort(map($files->[$_], @$expect))];
 	    },
 	} => [
 	    '"commonly worded"' => [],
-	    # FRAGILE: The exact results depend on Xapians weighting algorithm
-	    # which doesn't weight all terms in a query equally
 	    ['"commonly worded"', 0, 0, [$demo], 1] => 4,
 	    ['"commonly worded"', 0, 0, [$demo], []] => 4,
  	    ['"place for"', 0, 0, [$demo], 0] => [5, 4],
