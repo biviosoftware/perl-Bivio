@@ -9,18 +9,13 @@ use Bivio::IO::Trace;
 use Bivio::Type;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+#TODO: What is the actual max term length; I've seen errors in the 400 range
+my($_MAX_WORD) = 240;
 my($_LENGTH) = Bivio::Type->get_instance('PageSize')->get_default;
 my($_STEMMER) = Search::Xapian::Stem->new('english');
-my($_STOPPER) = Search::Xapian::SimpleStopper->new;
-foreach my $w (qw(
-    a about an and are as at be by en for from how i in is it of on or that
-    the this to was what when where which who why will with
-)) {
-    $_STOPPER->add($w);
-}
 my($_FLAGS) = 0;
-foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD)) {
-    $_FLAGS += Search::Xapian->$f();
+foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD)) {
+    $_FLAGS |= Search::Xapian->$f();
 }
 our($_TRACE);
 Bivio::IO::Config->register(my $_CFG = {
@@ -116,9 +111,8 @@ sub query {
     $length ||= $_LENGTH;
     $private_realm_ids ||= [];
     my($db) = Search::Xapian::Database->new($_CFG->{db_path});
-    my($qp) = Search::Xapian::QueryParser->new();
+    my($qp) = Search::Xapian::QueryParser->new;
     $qp->set_stemmer($_STEMMER);
-    $qp->set_stopper($_STOPPER);
     $qp->set_default_op(Search::Xapian->OP_AND);
     my($q) = Search::Xapian::Query->new(
  	Search::Xapian->OP_AND,
@@ -199,13 +193,12 @@ sub _replace {
     $doc->add_value(2, $primary_id);
     $primary_id = "Q$primary_id";
     foreach my $t ($primary_id, @$terms) {
-#TODO: What is the actual max term length
-	$doc->add_term(substr($t, 0, 240));
+	$doc->add_term(substr($t, 0, $_MAX_WORD));
     }
     my($i) = 1;
     foreach my $p (@$postings) {
-	next if length($p) > 64 || $_STOPPER->stop_word($p);
 	my($s) = $_STEMMER->stem_word($p);
+	next if length($p) > $_MAX_WORD;
 	$doc->add_posting("$p", $i)
 	    unless $s eq $p;
 	$doc->add_posting($s, $i++);
