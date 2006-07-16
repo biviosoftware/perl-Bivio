@@ -70,7 +70,11 @@ sub handle_commit {
     $self->use('Bivio::Agent::Job::Dispatcher')->enqueue(
 	$req,
 	'JOB_XAPIAN_COMMIT',
-	{ref($self) => $self},
+	{
+	    ref($self) => $self,
+	    auth_id => Bivio::Auth::Realm->get_general->get('id'),
+	    auth_user_id => undef,
+	},
     );
     return;
 }
@@ -113,6 +117,7 @@ sub query {
     my($db) = Search::Xapian::Database->new($_CFG->{db_path});
     my($qp) = Search::Xapian::QueryParser->new;
     $qp->set_stemmer($_STEMMER);
+    $qp->set_stemming_strategy(Search::Xapian::STEM_ALL);
     $qp->set_default_op(Search::Xapian->OP_AND);
     my($q) = Search::Xapian::Query->new(
  	Search::Xapian->OP_AND,
