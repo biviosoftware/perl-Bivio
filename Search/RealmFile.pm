@@ -5,7 +5,6 @@ use strict;
 use base 'Bivio::UNIVERSAL';
 use Bivio::Type;
 use Bivio::IO::Trace;
-use Search::Xapian ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
