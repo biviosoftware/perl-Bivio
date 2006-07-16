@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2003 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Alert;
 use strict;
@@ -483,17 +483,17 @@ sub _call_format {
 sub _do_warn {
     my($proto, $args, $simply) = @_;
     int(@$args) == 1 && defined($args->[0]) && $args->[0] eq "\n" && return;
-    $_LAST_WARNING = _call_format($proto, $args, $simply);
-    &$_LOGGER($_LAST_WARNING);
+    $_LOGGER->($_LAST_WARNING = _call_format($proto, $args, $simply));
     return unless --$_WARN_COUNTER < 0;
 
     # This code is careful to avoid infinite loops.  Don't change it
-    # unless you understand all the relationships.
-    $_LAST_WARNING = 'Bivio::IO::Alert TOO MANY WARNINGS (max='
-	    .$_MAX_WARNINGS.")\n";
-    &$_LOGGER($_LAST_WARNING);
+    # unless you understand all the relationships.  5 is a slop on
+    # warnings in the handle_die calls during Bivio::Die.
+    $_WARN_COUNTER += 5;
+    $_LOGGER->($_LAST_WARNING
+	= "Bivio::IO::Alert TOO MANY WARNINGS (max=$_MAX_WARNINGS.)\n");
     CORE::die("\n");
-    return;
+    # DOES NOT RETURN
 }
 
 # _format(proto, string pkg, string file, string line, string sub, array_ref msg, boolean simply) : string
@@ -671,7 +671,7 @@ sub _warn_handler {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2003 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
