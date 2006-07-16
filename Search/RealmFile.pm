@@ -13,19 +13,27 @@ my($_BFN) = Bivio::Type->get_instance('BlogFileName');
 my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_FP) = Bivio::Type->get_instance('FilePath');
 my($_WN) = Bivio::Type->get_instance('WikiName');
+my($_TYPE_OK) = {};
 
 sub parse_content {
     my($proto, $realm_file) = @_;
-    (my $ct = $realm_file->get_content_type) =~ s/\W+/_/g;
-    my($op) = \&{'_from_' . $ct};
-    unless (defined(&$op)) {
-	Bivio::IO::Alert->info($realm_file, ': unhandled content type; ignoring')
-	    if $ct =~ /^(?:text|application)_/;
-	return;
+    my($ct) = $realm_file->get_content_type;
+    (my $op = $ct) =~ s/\W+/_/g;
+    $op = \&{'_from_' . $op};
+    if (defined(&$op)
+        and my $attr = Bivio::Die->eval(
+	    # realm_file_id is useful in warning generated stack traces
+	    sub {$op->($proto, $realm_file, $realm_file->get('realm_file_id'))})
+    ) {
+	$_TYPE_OK->{$ct} = 1;
+	_trace($realm_file, ' => ', $attr) if $_TRACE;
+	return $attr ? {map(($_ => shift(@$attr)), qw(type title text))} : ();
     }
-    my($attr) = $op->($proto, $realm_file);
-    _trace($realm_file, ' => ', $attr) if $_TRACE;
-    return $attr ? {map(($_ => shift(@$attr)), qw(type title text))} : ();
+    Bivio::IO::Alert->warn(
+	$realm_file, ': unhandled content type or error parsing; ignoring'
+    ) if $_TYPE_OK->{$ct} || !defined($_TYPE_OK->{$ct});
+    $_TYPE_OK->{$ct} ||= 0;
+    return;
 }
 
 sub parse_for_xapian {
@@ -59,12 +67,31 @@ sub _from_application_octet_stream {
 }
 
 
+sub _from_application_pdf {
+    my($proto, $rf) = @_;
+    my($path) = $rf->get_os_path;
+    my $x = `pdfinfo $path 2>&1`;
+    my($title) = !$? && $x =~ /^Title:\s*(.*)/im ? $1 : undef;
+    unless (defined($title)) {
+	my($ct) = $rf->get_content_type;
+	return if defined($_TYPE_OK->{$ct}) && !$_TYPE_OK->{$ct};
+	Bivio::IO::Alert->warn($rf, ': pdfinfo error: ', $x);
+	$title = '';
+    }
+    $x = `pdftotext -ascii7 $path - 2>&1`;
+    if ($? || $x =~ /^Error:/s) {
+	Bivio::IO::Alert->warn($rf, ': pdftotext error: ', $x);
+	return;
+    }
+    return ['application/pdf', $title, \$x];
+}
+
 sub _from_application_x_bwiki {
     my($proto, $rf) = @_;
     my($text) = $rf->get_content;
     $$text =~ s/(?:^|\n)\@h\d+\s+([^\n]+)\n//s;
     my($title) = $1;
-    $$text =~ s/^\@\S+(?:\s*\w+=\S+)*\s*//mg;
+    $$text =~ s/^\@(?:\!.*\n|\S+(?:\s*\w+=\S+)*\s*)//mg;
     return [
 	'text/plain',
 	$title || $_FP->get_base($rf->get('path')),
@@ -151,6 +178,7 @@ sub _omega_terms {
 }
 
 sub _postings {
+    use bytes;
     return [
 	map(
 	    map(
