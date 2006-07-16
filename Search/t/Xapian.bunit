@@ -16,8 +16,7 @@ my($guest) = model('RealmOwner', {name => 'guest'})->get('realm_id');
 	    },
 	} => [
 	    '"commonly worded"' => [],
-	    ['"commonly worded"', 0, 0, [$demo], 1] => 4,
-	    ['"commonly worded"', 0, 0, [$demo], []] => 4,
+	    ['"commonly worded"', 0, 0, [$demo], 1] => [0, 1, 4, 5],
  	    ['"place for"', 0, 0, [$demo], 0] => [5, 4],
  	    ['"place for"', 0, 0, [$demo], 1] => [5, 7, 4],
  	    ['"place for"', 0, 0, [$guest], 0] => [7, 6],
