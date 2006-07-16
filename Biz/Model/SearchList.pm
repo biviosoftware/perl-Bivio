@@ -34,12 +34,30 @@ sub internal_load_rows {
 	$self->internal_realm_ids($query),
     );
     if (@$rows > $c) {
-	$query->put(has_next => 1);
+	$query->put(
+	    has_next => 1,
+	    next_page => $pn + 1,
+	);
 	pop(@$rows);
     };
-    $query->put(has_prev => 1)
-	if $pn > 1;
+    $query->put(
+	has_prev => 1,
+	prev_page => $pn - 1,
+    ) if $pn > $query->FIRST_PAGE;
     return $rows;
+}
+
+sub parse_query_from_request {
+    my($self) = shift;
+    my($q) = $self->SUPER::parse_query_from_request(@_);
+    return unless my $f = $self->get_request->unsafe_get('Model.SearchForm');
+    if (defined(my $s = $q->unsafe_get('search'))) {
+	$f->put_search_value($s);
+    }
+    else {
+	$q->put(search => $f->unsafe_get('search'));
+    }
+    return $q;
 }
 
 1;
