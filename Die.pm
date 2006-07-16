@@ -617,16 +617,25 @@ sub _handle_die {
 		    _trace($proto, "->handle_die: ", $msg) if $_TRACE;
 		};
 		$msg =~ / at (\S+|\(eval \d+\)) line (\d+)\.\n$/;
-		_new_from_core_die($self,
-			Bivio::DieCode::DIE_WITHIN_HANDLE_DIE(),
-			{message => $msg, proto => $proto, program_error => 1},
-			ref($proto) || $proto, $1, $2,
-			Carp::longmess('Bivio::Die::_handle_die'));
+		_new_from_core_die(
+		    $self,
+		    Bivio::DieCode->DIE_WITHIN_HANDLE_DIE,
+		    {
+			message => $msg,
+			proto => $proto,
+			program_error => 1,
+			file => $1,
+			line => $2,
+		    },
+		    ref($proto) || $proto, $1, $2,
+		    Carp::longmess('Bivio::Die::_handle_die'),
+		);
 	    }
 	}
 	1;
     } || warn($@);
     $_IN_HANDLE_DIE--;
+    return;
 }
 
 # _new(proto, Bivio::DieCode code, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
