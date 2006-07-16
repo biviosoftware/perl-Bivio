@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Job::Dispatcher;
 use strict;
@@ -84,9 +84,9 @@ sub discard_queue {
 
 =head2 enqueue(Bivio::Agent::Request req, any task_id, hash_ref params)
 
-Enqueue I<task> with I<params>.  The I<auth_id> and such are extracted
-from I<req>.  I<params> may not contain any models.  All models must
-be freshly loaded for each job.
+Enqueue I<task> with I<params>.  The I<auth_id> and and auth_user_id are
+extracted from I<req>, if they are not supplied in I<params>.  I<params> may
+not contain any models.  All models must be freshly loaded for each job.
 
 May not be called during L<execute_queue|"execute_queue">.
 
@@ -95,12 +95,12 @@ May not be called during L<execute_queue|"execute_queue">.
 sub enqueue {
     my($self, $req, $task_id, $params) = @_;
     Bivio::Die->die('not allowed to call enqueue in execute_queue')
-		if $_IN_EXECUTE;
+	if $_IN_EXECUTE;
 
     # No models please
     while (my($k, $v) = each(%$params)) {
 	Bivio::Die->die('models may not be queued: ', $k, '=', $v)
-		    if UNIVERSAL::isa($v, 'Bivio::Biz::Model');
+	    if UNIVERSAL::isa($v, 'Bivio::Biz::Model');
     }
 
     # Validate task
@@ -108,9 +108,9 @@ sub enqueue {
 
     # Extract params from request
     $params->{task_id} = $task_id;
-    $params->{auth_id} = $req->get('auth_id');
+    $params->{auth_id} ||= $req->get('auth_id');
     my($u) = $req->get('auth_user');
-    $params->{auth_user_id} = $u ? $u->get('realm_id') : undef;
+    $params->{auth_user_id} ||= $u ? $u->get('realm_id') : undef;
     $params->{'Bivio::UI::Facade'} = $req->unsafe_get('Bivio::UI::Facade');
 
     # Enqueue and add as a txn resource (may end up calling handle_rollback
@@ -207,7 +207,7 @@ sub queue_is_empty {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
