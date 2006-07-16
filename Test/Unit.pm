@@ -447,10 +447,7 @@ Runs I<file> in bunit environment.
 
 sub run {
     my($proto, $bunit) = @_;
-    local($_PM) = File::Spec->catfile(
-	File::Basename::dirname(
-	    File::Basename::dirname(File::Spec->rel2abs($bunit))),
-	File::Basename::basename($bunit, '.bunit'). '.pm');
+    local($_PM) = _pm($bunit);
     local($_TYPE, $_CLASS);
     local($_OPTIONS) = {};
     my($t) = Bivio::Die->eval_or_die(
@@ -488,6 +485,20 @@ sub _assert_expect {
     Bivio::Die->die("expected != actual:\n$$res")
         if $res;
     return;
+}
+
+sub _pm {
+    my($bunit) = @_;
+    my($res) = File::Spec->catfile(
+	File::Basename::dirname(
+	    File::Basename::dirname(File::Spec->rel2abs($bunit))),
+	File::Basename::basename($bunit, '.bunit')
+	. '.pm');
+    return $res
+	if -f $res;
+    my($res2) = $res;
+    $res2 =~ s/\d(?=\.pm$)//;
+    return -f $res2 ? $res2 : $res;
 }
 
 =head1 COPYRIGHT
