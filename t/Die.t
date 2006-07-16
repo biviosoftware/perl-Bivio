@@ -5,7 +5,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..5\n"; }
+BEGIN { $| = 1; print "1..7\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Die;
@@ -18,11 +18,20 @@ use Bivio::IO::Config;
 
 package Bivio::Die::T1;
 
+my($warn_count) = 0;
+
 sub handle_die {
     my($self, $die) = @_;
+    if ($die->as_string =~ /TOO MANY WARNINGS/) {
+	foreach my $x (1..$warn_count) {
+	    Bivio::IO::Alert->warn("test warn $x");
+	}
+	return;
+    }
     $self eq 'Bivio::Die::T1' || die("huh?");
     $main::T1++;
-    grep(/test 2/, $die->as_string) && die('DEATH_TAG');
+    $die->as_string =~ /test 2/ && die('DEATH_TAG');
+    return;
 }
 
 sub sub_die {
@@ -35,18 +44,26 @@ sub sub {
     $proto->sub_die(@args);
 }
 
+sub warn_test {
+    my(undef, $wc, $op) = @_;
+    $warn_count = $wc;
+    $op->();
+    return;
+}
+
 package Bivio::Die::T2;
 
 sub handle_die {
     my($self, $die) = @_;
     $self eq 'Bivio::Die::T2' || die("huh?");
-    grep(/DEATH_TAG/, $die->as_string) && $main::T2++;
+    $die->as_string =~ /DEATH_TAG/ && $main::T2++;
     $main::T2++;
+    return;
 }
 
 sub sub {
     shift;
-    Bivio::Die::T1->sub(@_);
+    return Bivio::Die::T1->sub(@_);
 }
 
 package main;
@@ -82,3 +99,28 @@ HTML::Parser->new(
 )->parse('<html>x</html>');
 EOF
 print $die && $die->get('code')->equals_by_name('DIE') ? "ok 5\n" : "not ok 5\n";
+
+Bivio::IO::Config->introduce_values({
+    'Bivio::IO::Alert' => {
+	max_warnings => 1,
+    }
+});
+my($t) = 6;
+foreach my $warn_count (2, 10) {
+    Bivio::IO::Alert->reset_warn_counter;
+    $die = Bivio::Die->catch(sub {
+        Bivio::Die::T1->warn_test(
+	    $warn_count,
+	    sub {
+		Bivio::IO::Alert->warn('warn ok');
+		Bivio::IO::Alert->warn('warn dies');
+		# DOES NOT RETURN
+	    },
+	);
+    });
+    print(($t == 6 ? $die && !$die->unsafe_get('next')
+        : $die && $die->unsafe_get('next')
+	&& $die->get_nested(qw(next code))->eq_die_within_handle_die)
+        ? "ok $t\n" : "not ok $t\n");
+    $t++;
+}
