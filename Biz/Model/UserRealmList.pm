@@ -15,9 +15,9 @@ sub internal_initialize {
 	version => 1,
 	order_by => [qw(
 	    RealmOwner.name
+	    RealmUser.role
 	)],
 	other => [qw(
-	    RealmUser.role
 	    RealmOwner.realm_type
             RealmOwner.display_name
 	)],

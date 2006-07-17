@@ -13,7 +13,6 @@ req()->set_realm(Bivio::PetShop::Util->BTEST_READ);
 	    {
 		'RealmOwner.name' => 'fourem',
 		roles => [
-#TODO: sort order is not being preserved correctly on 7.2 systems
 		    Bivio::Auth::Role->MEMBER,
 		    Bivio::Auth::Role->MAIL_RECIPIENT,
 		],
