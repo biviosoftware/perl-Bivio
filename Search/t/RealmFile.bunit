@@ -20,7 +20,7 @@ my($dir) = '/search-text/';
 		my(undef, undef, $expect) = @_;
 		$expect = [@$expect, 'TITLE']
 		    if @$expect == 1;
-		return @$expect == 2 ? [@$expect, "some text\n"] : $expect;
+		return @$expect == 2 ? [@$expect, qr{^some text\s*$}s] : $expect;
 	    },
 	    compute_return => sub {
 		my(undef, $actual) = @_;
