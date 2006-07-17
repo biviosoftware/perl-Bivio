@@ -77,7 +77,7 @@ sub _from_application_pdf {
 	Bivio::IO::Alert->warn($rf, ': pdfinfo error: ', $x);
 	$title = '';
     }
-    $x = `pdftotext -ascii7 $path - 2>&1`;
+    $x = `pdftotext $path - 2>&1`;
     if ($? || $x =~ /^Error:/s) {
 	Bivio::IO::Alert->warn($rf, ': pdftotext error: ', $x);
 	return;
