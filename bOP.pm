@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,49 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.33  2006/07/08 19:07:49  aviggio
+  * Bivio::Agent::Request->unsafe_get_txn_resource added
+  * Bivio::Biz::Model::BlogCreateForm class added
+  * Bivio::Biz::Model::BlogEditForm class added
+  * Bivio::Biz::Model::BlogList class added
+  * Bivio::Biz::Model::BlogRecentList class added
+  * Bivio::Biz::Model::MailPartList->load_from_content added
+  * Bivio::Biz::Model::RealmFile added search_class hook,
+    corrected handle_rollback, use files instead of holding content in
+    memory, use internal_get_target values return so can be used in
+    internal_post_load_row in BlogList, added unauth_load_by_os_path and
+    removed old_filename
+  * Bivio::Biz::PropertyModel->default_order_by added for iterate
+  * Bivio::Delegate::SimpleTypeError added BLOG_TITLE/FILE/BODY errors
+  * Bivio::IO::File->absolute_path and unique_name_for_process added
+  * Bivio::IO::Ref handle scalar case in nested-*, added
+    nested_contains which shares code with nested_differences.
+    Refactored nested_differences into parts, and added ability to use
+    CODE to compare results
+  * Bivio::Test::FormModel added commit, rollback and random_string to
+    builtin functions
+  * Bivio::Test::Unit model(Model, query) returns model in all three
+    cases, added expect_contains, assert_contains, model, commit,
+    rollback, random_string, read_file and write_file
+  * Bivio::Type::AccessMode class added
+  * Bivio::Type::BlogBody class added
+  * Bivio::Type::BlogContent class added
+  * Bivio::Type::BlogFileName class added
+  * Bivio::Type::BlogTitle class added
+  * Bivio::Type::Enum->as_xml added
+  * Bivio::Type::FilePath added *_FOLDER
+  * Bivio::UI::HTML::Widget::DateTime removed NS3 hack
+  * Bivio::UI::HTML::Widget::Form proper method (downcase) and
+    trailing />
+  * Bivio::UI::HTML::Widget::JavaScript removed VERSION code
+  * Bivio::UI::HTML::Widget::Script style must have type=
+  * Bivio::UI::HTML::Widget::ScriptOnly style must have type=
+  * Bivio::UI::HTML::Widget::Style style must have type=
+  * Bivio::UI::HTML::Widget::StyleSheet style must have type=
+  * Bivio::UI::XHTML::ViewShortcuts allow List() for vs_paged_list
+  * Bivio::UI::XHTML::Widget::WikiStyle style must have type=
+  * Bivio::UNIVERSAL->my_caller added
+
   Revision 4.32  2006/06/30 20:52:34  aviggio
   * Bivio::Biz::Action::EasyForm use admin user_id if form submitter is
     not authenticated
