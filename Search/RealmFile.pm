@@ -82,6 +82,7 @@ sub _from_application_pdf {
 	Bivio::IO::Alert->warn($rf, ': pdftotext error: ', $x);
 	return;
     }
+    $x =~ s/^\s*\n$//mg;
     return ['application/pdf', $title, \$x];
 }
 
