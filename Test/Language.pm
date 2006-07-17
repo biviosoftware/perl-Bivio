@@ -264,6 +264,21 @@ sub test_deviance {
     return;
 }
 
+=for html <a name="test_equals"></a>
+
+=head2 test_equals(any expect, any actual)
+
+Asserts I<expect> and I<actual> are identical.
+
+=cut
+
+sub test_equals {
+    my($self, $expect, $actual);
+    return unless my $d = Bivio::IO::Ref->nested_differences($expect, $actual);
+    _die($self, $$d);
+    # DOES NOT RETURN
+}
+
 =for html <a name="test_log_output"></a>
 
 =head2 test_log_output(string file_name, string content) : string
