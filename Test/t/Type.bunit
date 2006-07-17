@@ -1,3 +1,5 @@
+# Copyright (c) 2006 Jack E. Farber  All Rights Reserved.
+# $Id$
 Type();
 [
     class() => [
