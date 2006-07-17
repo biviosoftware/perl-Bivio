@@ -582,14 +582,15 @@ sub home_page_uri {
 
 =for html <a name="random_string"></a>
 
-=head2 random_string() : string
+=head2 random_string(int chars) : string
 
-Returns a positive 8 digit random number that is always 8 digits.
+Returns a random lower case alphanumeric string I<chars> length (default: 8).
 
 =cut
 
 sub random_string {
-    return sprintf('%08d', int(rand(99_999_999)) + 1);
+    return shift->use('Bivio::Biz::Random')
+	->string(shift || 8, [0..9, 'a'..'z']);
 }
 
 =for html <a name="reload_page"></a>
