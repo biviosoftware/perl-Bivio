@@ -590,11 +590,11 @@ EOF
 .fourem_wiki {}
 EOF
     Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
-        'RealmOwner.display_name' => 'Unit Test Sub Forum',
+        'RealmOwner.display_name' => 'Unit Test Forum Sub1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1',
     });
     Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
-        'RealmOwner.display_name' => 'Unit Test Sub1-1 Forum',
+        'RealmOwner.display_name' => 'Unit Test Forum Sub1-1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1-1',
     });
     $req->set_user($self->BTEST_READ);
@@ -604,7 +604,7 @@ EOF
     });
     $req->set_realm($self->FOUREM);
     Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
-        'RealmOwner.display_name' => 'Unit Test Sub2 Forum',
+        'RealmOwner.display_name' => 'Unit Test Forum Sub2',
 	'RealmOwner.name' => $self->FOUREM . '-sub2',
     });
     Bivio::Biz::Model->get_instance('ForumUserAddForm')->execute($req, {
