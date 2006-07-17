@@ -533,14 +533,15 @@ sub get_delegate_info {
 	    View.blog-edit
 	    next=FORUM_BLOG_VIEW
  	)],
-  	[qw(
- 	    JOB_XAPIAN_COMMIT
- 	    56
- 	    GENERAL
- 	    ANYBODY
- 	    Model.Lock
-	    Bivio::Search::Xapian
- 	)],
+	Bivio::IO::ClassLoader->unsafe_simple_require('Bivio::Search::Xapian')
+	    ? [qw(
+		JOB_XAPIAN_COMMIT
+		56
+		GENERAL
+		ANYBODY
+		Model.Lock
+		Bivio::Search::Xapian
+	    )] : (),
     ];
 }
 
