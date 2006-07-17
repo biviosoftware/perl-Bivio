@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,87 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.34  2006/07/17 04:33:12  nagler
+  Note: the Xapian/Search unit test will fail if you don't have Xapian
+  installed.  See README.
+
+  * Bivio::Agent::Task::_call_txn_resources calls resources with pop(),
+    which is the reverse of how they were being called before.
+    This was a fairly serious defect, because locks should be released
+    last, not first.  Now a lock will be released after all resources
+    which depend on it.
+  * Bivio::Test::ShellUtil added
+  * Bivio::Util::Search (b-search) added
+  * Bivio::Auth::Realm->id_from_any added
+  * Bivio::Biz::File->destroy_db added
+  * Bivio::Util::SQL->destroy_db cannot be called on production, and
+    now calls Bivio::Biz::File->destroy_db
+  * Bivio::Biz::Model::BlogList->execute_load_this calls from_literal
+    to convert path_info to "this".
+  * Bivio::Delegate::SimpleTaskId->JOB_XAPIAN_COMMIT added
+  * Bivio::Search::Xapian calculates all data in background if the
+    general realm is not locked.  Xapian is single writer so general
+    must be locked, and we can't know a task needs a general lock until
+    there's a file modification.  The JOB_XAPIAN_COMMIT will process
+    all the files in background that it can load.  Given the way files
+    are managed, this is relatively safe, that is, once a file is
+    deleted, it never reappears with the same realm_file_id, which is
+    the unique identifier Xapian manages.  No files will be lost, but
+    there may be files added in a race condition with a subsequent
+    delete that could mean files remain in the Xapian db after they are
+    deleted in SQL.  This isn't a tragedy since you can't load a file
+    that doesn't exist.
+  * Bivio::Biz::Model::Lock->is_acquired accepts a realm/id as an
+    argument.
+  * Bivio::Biz::Model::Lock->is_general_acquired added
+  * Bivio::Search::RealmFile handles missing values now
+  * Bivio::Search::Xapian->query accepts list of public/private realms.
+    API was too simple before.  Need to restrict public realm list sometimes.
+  * Bivio::Type::BlogFileName->from_absolute replaces from_path()
+  * Bivio::Type::BlogTitle->from_content added
+  * Bivio::Type::DocletFileName->from_absolute added
+  * Bivio::UI::HTML::Widget::Image->render outputs "alt" only once
+  * Bivio::Util::RealmFile->import_tree prunes CVS dirs now
+  * Bivio::Biz::Action::WikiView correctly loads all types of files (not
+    just images) from wiki folder.  If the name isn't a wiki name, it
+    assumes it is a file to be loaded in the folder or subfolder of the
+    wiki folder.
+  * Bivio::Biz::Model::RealmMail uses MailSubject and MailFileName
+  * Bivio::Biz::Model::SearchList supports have_hext/prev and realm_id config
+  * Bivio::Biz::Model::WikiForm uses new Doclet interface
+  * Bivio::Search::RealmFile uses new DocletFileName interface
+  * Bivio::Search::Xapian->query_list_model_initialize added
+  * Bivio::IO::Ref->nested_differences/contains serializes in a line
+    (Data::Dumper format without indents)
+  * Bivio::Type::BlogFileName subclasses Bivio::Type::DocletFileName.
+    API standardized (to_absolute, is_absolute, PATH_REGEX, REGEX).
+  * Bivio::Type::FileName subclasses Bivio::Type::FilePath (was the
+    other way around)/Users/nagler/src/perl/Bivio/Type/MailFileName.pm
+  * Bivio::Type::FilePath is superclass Bivio::Type::FileName
+  * Bivio::Type::WikiName uses DocletFileName api
+  * Bivio::Type::WikiText handles automatic linking of domain names better
+  * Bivio::Test->unit uses nested_differences instead of doing some
+    compares locally
+  * Bivio::Agent::Request->get_user_realms added
+  * Bivio::Agent::Job::Dispatcher->enqueue accepts auth_id and auth_user_id in
+    params
+  * Bivio::IO::Alert now adds a "slop factor" (5) to the warn count when
+    warn count limit is hit.  This allows handle_die() routines to output
+    errors during handling of a TOO MANY WARNINGS error.
+  * Bivio::Test::Unit allows unit test to be <Module>N.bunit, where N is a
+    single digit.  It tries <Module>N.pm first, in case that's the name
+    of the module.
+  * Bivio::Biz::Model::SearchForm added
+  * Bivio::Biz::Model::SearchList plays nice with SearchForm.
+  * Bivio::Test::Language::HTTP->random_string accepts a length arg, and
+    generates string with [0-9a-z] chars
+  * Bivio::Biz::Model::UserRealmList now includes RealmUser.role in order_by
+    so sort order is predictable.
+  * Bivio::PetShop::Util->initialize_test_data sets test forum display names
+    so they order properly
+  * b-perl-agile.el has a ListModel template for bunit
+  * Bivio::Test::Language->test_equals added
+
   Revision 4.33  2006/07/08 19:07:49  aviggio
   * Bivio::Agent::Request->unsafe_get_txn_resource added
   * Bivio::Biz::Model::BlogCreateForm class added
