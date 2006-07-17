@@ -533,7 +533,7 @@ sub get_delegate_info {
 	    View.blog-edit
 	    next=FORUM_BLOG_VIEW
  	)],
-	Bivio::IO::ClassLoader->unsafe_simple_require('Bivio::Search::Xapian')
+	Bivio::IO::ClassLoader->unsafe_simple_require('Search::Xapian')
 	    ? [qw(
 		JOB_XAPIAN_COMMIT
 		56
