@@ -12,7 +12,7 @@ Widget();
 	rows => 2,
 	cols => 60,
 	wrap => '',
-	attributes => ' foo="bar"',
+	edit_attributes => ' foo="bar"',
     }] => '<textarea foo="bar" rows="2" cols="60" wrap="" name="f0"></textarea>',
     [{
 	form_model => ['Bivio::Biz::Model::BlogCreateForm'],

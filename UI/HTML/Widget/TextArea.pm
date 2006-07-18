@@ -116,7 +116,7 @@ sub control_on_render {
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 	my($attributes) = '';
-	$self->unsafe_render_attr('attributes', $source, \$attributes);
+	$self->unsafe_render_attr('edit_attributes', $source, \$attributes);
 #TODO: need get_width or is it something else?
 	$fields->{prefix} = '<textarea' . $attributes
 	    . ($_VS->vs_html_attrs_render($self, $source) || '')
@@ -148,7 +148,7 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return if $fields->{model};
-    $self->unsafe_initialize_attr('attributes');
+    $self->unsafe_initialize_attr('edit_attributes');
     $fields->{model} = $self->ancestral_get('form_model');
     ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
 	    'field', 'rows', 'cols');
