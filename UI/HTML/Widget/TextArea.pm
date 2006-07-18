@@ -26,8 +26,8 @@ L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::TextArea::ISA = ('Bivio::UI::Widget');
+use Bivio::UI::HTML::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::TextArea::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -87,8 +87,8 @@ Creates a new TextArea widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
+    my($self) = shift->SUPER::new(@_);
+    $self->[$_IDI] ||= {};
     return $self;
 }
 
@@ -96,36 +96,17 @@ sub new {
 
 =cut
 
-=for html <a name="initialize"></a>
+=for html <a name="control_on_render"></a>
 
-=head2 initialize()
-
-Initializes from attribute settings.
-
-=cut
-
-sub initialize {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{model};
-    $fields->{model} = $self->ancestral_get('form_model');
-    ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
-	    'field', 'rows', 'cols');
-    $fields->{wrap} = $self->get_or_default('wrap', 'virtual');
-    $fields->{readonly} = $self->get_or_default('readonly', 0);
-    return;
-}
-
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
+=head2 control_on_render(any source, string_ref buffer)
 
 Render the input field.
 
 =cut
 
-sub render {
+sub control_on_render {
     my($self, $source, $buffer) = @_;
+    $self->SUPER::control_on_render($source, $buffer);
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
@@ -135,7 +116,9 @@ sub render {
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 #TODO: need get_width or is it something else?
-	$fields->{prefix} = '<textarea'
+	my($attributes) = '';
+	$self->unsafe_render_attr('attributes', $source, \$attributes);
+	$fields->{prefix} = '<textarea' . $attributes
 	    . ($_VS->vs_html_attrs_render($self, $source) || '')
 	    . join('', map(qq{ $_="$fields->{$_}"}, qw(rows cols wrap)));
         $fields->{prefix} .= ' readonly="1"'
@@ -150,6 +133,27 @@ sub render {
 	    . $form->get_field_as_html($field)
 	    . '</textarea>'
 	    . $s;
+    return;
+}
+
+=for html <a name="initialize"></a>
+
+=head2 initialize()
+
+Initializes from attribute settings.
+
+=cut
+
+sub initialize {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    return if $fields->{model};
+    $self->unsafe_initialize_attr('attributes');
+    $fields->{model} = $self->ancestral_get('form_model');
+    ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
+	    'field', 'rows', 'cols');
+    $fields->{wrap} = $self->get_or_default('wrap', 'virtual');
+    $fields->{readonly} = $self->get_or_default('readonly', 0);
     return;
 }
 
