@@ -115,9 +115,9 @@ sub control_on_render {
     # need first time initialization to get field name from form model
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
-#TODO: need get_width or is it something else?
 	my($attributes) = '';
 	$self->unsafe_render_attr('attributes', $source, \$attributes);
+#TODO: need get_width or is it something else?
 	$fields->{prefix} = '<textarea' . $attributes
 	    . ($_VS->vs_html_attrs_render($self, $source) || '')
 	    . join('', map(qq{ $_="$fields->{$_}"}, qw(rows cols wrap)));
