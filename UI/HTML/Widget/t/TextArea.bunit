@@ -1,0 +1,24 @@
+# Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+req()->initialize_fully;
+Bivio::Biz::Model->new(req(), 'BlogCreateForm')->put_on_request;
+req()->put(font_with_style => 1); #suppress <font> tags in rendered output
+Widget();
+[
+    [{
+	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
+	model => 'BlogCreateForm',
+	field => 'body',
+	rows => 2,
+	cols => 60,
+	wrap => '',
+	attributes => ' foo="bar"',
+    }] => '<textarea foo="bar" rows="2" cols="60" wrap="" name="f0"></textarea>',
+    [{
+	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
+	model => 'BlogCreateForm',
+	field => 'body',
+	rows => 5,
+	cols => 20,
+    }] => '<textarea rows="5" cols="20" wrap="virtual" name="f0"></textarea>',
+];
