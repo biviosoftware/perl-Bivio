@@ -157,7 +157,7 @@ sub new {
 
 =head2 add_missing_headers(Bivio::Agent::Request req, string from_email) : self
 
-Sets Date, Message-ID, From, Return-Path, and X-Bivio-Recipient if not set.
+Sets Date, Message-ID, From and Return-Path if not set.
 
 =cut
 
