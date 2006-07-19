@@ -305,8 +305,12 @@ sub unsafe_map_require {
     my($proto, $map_name, $class_name, $map_class) = _map_args(@_);
     return $proto->unsafe_simple_require($class_name)
 	unless defined($map_name);
+    _trace('cached map_class=', $map_class)
+	if $_TRACE && $_MAP_CLASS->{$map_class};
     return $_MAP_CLASS->{$map_class}
 	if $_MAP_CLASS->{$map_class};
+    _trace('map_class=', $map_class)
+	if $_TRACE;
     my($map) = $_CFG->{maps}->{$map_name} || _die($map_name, ': no such map');
     foreach my $path (@$map) {
 	if (my $x = _require($proto, "$path\::$class_name")) {
