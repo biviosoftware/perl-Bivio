@@ -115,8 +115,11 @@ sub parse {
     my($self, $csv_text, $want_line_numbers) = @_;
     my($buf) = !defined($csv_text) ? $self->read_input
 	: ref($csv_text) ? $csv_text : \$csv_text;
-    $$buf .= "\n"
-        unless $$buf =~ /(\r|\n)$/;
+    $$buf =~ s/(?=[\r\n])\s+$//s;
+    $$buf .= "\n";
+    $$buf =~ s/^\s*[\r\n]+//s;
+    return []
+	unless length($$buf);
     my($state) = {
         buffer => $buf,
         want_line_numbers => $want_line_numbers,
