@@ -1,8 +1,13 @@
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2003-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-system('rm -rf File');
+my($x);
+my($abs_dir);
 [
     class() => [
+	rm_rf => [
+	   File => DIE(),
+	   sub {[$abs_dir = class()->pwd . "/File"]} => sub {[$abs_dir]},
+	],
 	{
 	    method => 'mkdir_p',
 	    check_return => sub {
@@ -16,24 +21,32 @@ system('rm -rf File');
 	    'File/1' => 'File/1',
 	],
 	rm_rf => [
-	    sub {
-		my($case) = @_;
-		return [$case->get('object')->pwd . '/File'];
-	    } => sub {
+	    sub {[$abs_dir]} => sub {
 		my($case) = @_;
 		die("File: directory exists")
 		    if -e 'File';
-		return $case->get('params');
+		return [$abs_dir];
 	    },
 	],
 	mkdir_parent_only => [
 	    'File/1.txt' => 'File',
 	],
-	write => [
-	    ['File/1.txt', 'hello'] => undef,
+	{
+	    method => 'write',
+	    check_return => sub {
+		my($case, undef, $expect) = @_;
+		my($p) = $case->get('params');
+		$case->actual_return([class()->read($expect->[0] || $p->[0])]);
+		return [\(my $x = substr(
+		    ref($p->[1]) ? ${$p->[1]} : $p->[1],
+		    $p->[2] || 0,
+		))];
+	    },
+	} => [
+	    ['File/1.txt', \('hello')] => [],
 	    sub {
 		return [IO::File->new('> File/2.txt'), "1\n2\n"];
-	    } => undef,
+	    } => 'File/2.txt',
 	    ['File/not-found/3.txt', 'x'] => IO_ERROR(),
 	    sub {
 		open(SAVE_STDOUT, '>&STDOUT') or die;
@@ -42,8 +55,10 @@ system('rm -rf File');
 		return ['-', 'stdout'];
 	    } => sub {
 		open(STDOUT, '>&SAVE_STDOUT') or die;
-		return 1;
+		shift->actual_return([class()->read('File/stdout.txt')]);
+		return ['stdout'];
 	    },
+	    ['File/4.txt', ' with an offset', 1] => [],
 	],
 	append => [
 	    ['File/1.txt', "\ngoodbye"] => undef,
@@ -54,23 +69,12 @@ system('rm -rf File');
 		return [IO::File->new('< File/2.txt')];
 	    } => [\("1\n2\n")],
 	    # deprecated form
-	    ['File/2.txt', IO::File->new('< File/2.txt')] => [\("1\n2\n")],
+	    ['File/2.txt', IO::File->new('< File/2.txt')] => DIE(),
 	    ['File/not-found/3.txt'] => IO_ERROR(),
 	    sub {
 		open(STDIN, '< File/stdout.txt') or die;
 		return ['-'];
 	    } => [\('stdout')],
-	],
-	{
-	    method => 'foreach_line',
-	    compute_params => sub {
-		my($acc) = '';
-		shift->put(acc => \$acc);
-		return ['File/1.txt', sub{$acc .= '--' . shift;}];
-	    },
-	    compute_return => sub {[shift->get('acc')];},
-	} => [
-	    [] => [\("--hello\n--goodbye")],
 	],
 	absolute_path => [
 	    r1 =>  class()->pwd . '/' . 'r1',
@@ -78,4 +82,3 @@ system('rm -rf File');
 	],
     ],
 ];
-
