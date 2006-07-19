@@ -1,0 +1,101 @@
+# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
+# $Id$
+[
+    [] => [
+	{
+	    method => 'colrm',
+	    compute_params => sub {
+		my($case, $params) = @_;
+		my($expect) = $case->get('expect');
+		$case->expect([\$expect->[0]]);
+		# First parameter is -input value
+		$case->get('object')->put(input => \$params->[0]);
+		shift(@$params);
+		return $params;
+	    },
+	} => [
+	    ["a,b,c\n", 0, 1] => ["b,c\n"],
+	    ["a,b,c\n", 1, 2] => ["a\n"],
+	    ["a,b,c,d\nw,x,y,z\n", 2] => ["a,b\nw,x\n"],
+	],
+        to_csv_text => [
+            [[]] => => [\("\n")],
+            [['']] => => [\("\n")],
+            [[undef]] => => [\("\n")],
+            [[0]] => => [\("0\n")],
+            [[1, 2, 3]] => [\("1,2,3\n")],
+            [['ab"c', ' blah', 'blah ', "foo\n"]]
+                => [\(qq{"ab""c"," blah","blah ","foo\n"\n})],
+            [[
+                [1, undef, 2],
+                [undef, undef, "\n\n\n",3,4],
+                [],
+                ['the,end'],
+            ]] => [
+                \(qq{1,,2\n,,"\n\n\n",3,4\n\n"the,end"\n}),
+            ],
+        ],
+        parse_records => [
+            [string_ref(<<'EOF')]
+a,b,c
+1,2,3
+4,5,6,7
+8,9
+EOF
+            => [[
+                {
+                    a => 1,
+                    b => 2,
+                    c => 3,
+                },
+                {
+                    a => 4,
+                    b => 5,
+                    c => 6,
+                },
+                {
+                    a => 8,
+                    b => 9,
+                    c => undef,
+                },
+            ]],
+        ],
+        {
+	    method => 'parse',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		my($x) = shift(@$params);
+		return [$x, @$params];
+	    },
+	    check_return => sub {
+		my(undef, undef, $expect) = @_;
+		return [$expect];
+	    },
+	} => [
+	    '' => [],
+	    ' ' => [],
+	    " \n \r\n  \n a \n   \n \r\n\n \n" => [[' a ']],
+	    'a' => [['a']],
+	    [string_ref('a')] => [['a']],
+	    'a,b,c' => [[qw(a b c)]],
+	    'a,b,c,' => [[qw(a b c), '']],
+            [qq{1,,2\n,,"\r\n\n\r",3,4\n\n"the,end"\n}]
+                => [
+                    [1, '', 2],
+                    ['', '', "\n\n\n",3,4],
+                    [''],
+                    ['the,end'],
+                ],
+            [qq{1,,2\n,,"\r\n\n\r",3,4\n\n"the,end"\n}, 1]
+                => [
+                    [1, 1, '', 2],
+                    [2, '', '', "\n\n\n",3,4],
+                    [6, ''],
+                    [7, 'the,end'],
+                ],
+            '1""2,3' => DIE(),
+            '"abc"2,3' => DIE(),
+            '"abc2,3' => DIE(),
+        ],
+    ],
+];
