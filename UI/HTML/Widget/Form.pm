@@ -113,7 +113,6 @@ L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
 #=IMPORTS
 use Bivio::HTML;
-use Bivio::UI::HTML::Widget::TimezoneField;
 use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
@@ -292,7 +291,7 @@ sub render {
     $$buffer .= $fields->{middle};
 
     # Timezone is computed on every form
-    Bivio::UI::HTML::Widget::TimezoneField->render($source, $buffer);
+    $_VS->vs_new('TimezoneField')->render($source, $buffer);
 
     # Hidden fields (if any)
     my($hidden) = $model->get_hidden_field_values();
