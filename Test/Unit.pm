@@ -117,9 +117,9 @@ sub AUTOLOAD {
 
 =for html <a name="builtin_assert_contains"></a>
 
-=head2 builtin_assert_contains(any expect, any actual)
+=head2 builtin_assert_contains(any expect, any actual) : boolean
 
-Calls Bivio::IO::Ref::nested_contains.
+Calls Bivio::IO::Ref::nested_contains.  Returns 1.
 
 =cut
 
@@ -129,15 +129,26 @@ sub builtin_assert_contains {
 
 =for html <a name="builtin_assert_eq"></a>
 
-=head2 builtin_assert_eq(any expect, any actual)
-
-Asserts expected equals actual using Bivio::IO::Ref->nested_equals.
-If I<expect> is a regexp_ref and I<actual> is a string or string_ref, will
-use I<expect> as a regexp.
+B<DEPRECATED>.
 
 =cut
 
 sub builtin_assert_eq {
+    Bivio::IO::Alert->warn_deprecated('use assert_equals');
+    return shift->builtin_assert_equals(@_);
+}
+
+=for html <a name="builtin_assert_equals"></a>
+
+=head2 builtin_assert_equals(any expect, any actual) : 1
+
+Asserts expected equals actual using Bivio::IO::Ref->nested_equals.
+If I<expect> is a regexp_ref and I<actual> is a string or string_ref, will
+use I<expect> as a regexp.   Returns 1.
+
+=cut
+
+sub builtin_assert_equals {
     return _assert_expect(@_);
 }
 
@@ -251,8 +262,7 @@ sub builtin_expect_contains {
     my($proto, @expect) = @_;
     return sub {
 	my(undef, $actual) = @_;
-	$proto->builtin_assert_contains(\@expect, $actual);
-	return 1;
+	return $proto->builtin_assert_contains(\@expect, $actual);
     };
 }
 
@@ -372,6 +382,31 @@ sub builtin_random_string {
     return shift->use('Bivio::Biz::Random')->hex_digits(shift || 8);
 }
 
+=for html <a name="builtin_string_ref"></a>
+
+=head2 builtin_string_ref(string value) : string_ref
+
+Converts value to string_ref.
+
+=cut
+
+sub builtin_string_ref {
+    my(undef, $value) = @_;
+    return \$value;
+}
+
+=for html <a name="builtin_rm_rf"></a>
+
+=head2 builtin_rm_rf(string io_name)
+
+Calls Bivio::IO::File-E<GT>rm_rf
+
+=cut
+
+sub builtin_rm_rf {
+    return shift->use('Bivio::IO::File')->rm_rf(@_);
+}
+
 =for html <a name="builtin_read_file"></a>
 
 =head2 static builtin_read_file(string path) : string_ref
@@ -484,7 +519,7 @@ sub _assert_expect {
     my($res) = Bivio::IO::Ref->$m($expect, $actual);
     Bivio::Die->die("expected != actual:\n$$res")
         if $res;
-    return;
+    return 1;
 }
 
 sub _pm {
