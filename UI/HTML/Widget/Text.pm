@@ -93,6 +93,7 @@ my(@_ATTRS) = qw(
     form_model
     format
     size
+    class
 );
 
 =head1 FACTORIES
@@ -194,6 +195,11 @@ sub render {
 	. ' name="'
 	. $form->get_field_name_for_html($field)
 	. '"';
+    if ($self->unsafe_get('class')) {
+	$$buffer .= ' class="';
+	$self->unsafe_render_attr('class', $source, $buffer);
+	$$buffer .= '"';
+    }
     $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
 	$field, $source) if $fields->{handler};
     $$buffer .= ' disabled="1"'

@@ -1,0 +1,23 @@
+# Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+req()->initialize_fully;
+my($form) = Bivio::Biz::Model->new(req(), 'BlogCreateForm');
+my($name) = $form->get_field_name_for_html('title');
+$form->put_on_request;
+req()->put(font_with_style => 1); #suppress <font> tags in rendered output
+Widget();
+[
+    [{
+	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
+	model => 'BlogCreateForm',
+	size => 40,
+	field => 'title',
+    }] => qq(<input type="text" size="40" maxlength="100" name="$name" value="" />),
+    [{
+	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
+	model => 'BlogCreateForm',
+	size => 40,
+	field => 'title',
+	class => 'foo',
+    }] => qq(<input type="text" size="40" maxlength="100" name="$name" class="foo" value="" />),
+];
