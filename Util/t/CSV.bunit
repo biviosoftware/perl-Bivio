@@ -36,7 +36,7 @@
             ],
         ],
         parse_records => [
-            [string_ref(<<'EOF')]
+            [\(<<'EOF')]
 a,b,c
 1,2,3
 4,5,6,7
@@ -59,25 +59,41 @@ EOF
                     c => undef,
                 },
             ]],
+            ["a,b,c\n1,2,3"] => [[
+                {
+                    a => 1,
+                    b => 2,
+                    c => 3,
+                },
+            ]],
+            ["a,b,c\n1,2,3", 1] => [[
+                {
+                    a => 1,
+                    b => 2,
+                    c => 3,
+                    1 => 2,
+                },
+            ]],
         ],
         {
 	    method => 'parse',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		my($x) = shift(@$params);
-		return [$x, @$params];
-	    },
 	    check_return => sub {
 		my(undef, undef, $expect) = @_;
 		return [$expect];
 	    },
 	} => [
 	    '' => [],
+	    ['', 1] => [],
 	    ' ' => [],
+	    "\n \r \n" => [],
+	    ',' => [['','']],
+	    [",,\n", 1] => [[1, '','','']],
 	    " \n \r\n  \n a \n   \n \r\n\n \n" => [[' a ']],
+	    [" \n \r\n  \n a \n   \n \r\n\n \n", 1] => [[4, ' a ']],
 	    'a' => [['a']],
-	    [string_ref('a')] => [['a']],
+	    [\('a')] => [['a']],
 	    'a,b,c' => [[qw(a b c)]],
+	    "a,b,c\n" => [[qw(a b c)]],
 	    'a,b,c,' => [[qw(a b c), '']],
             [qq{1,,2\n,,"\r\n\n\r",3,4\n\n"the,end"\n}]
                 => [
