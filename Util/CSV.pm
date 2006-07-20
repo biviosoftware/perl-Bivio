@@ -308,10 +308,9 @@ sub _peek_char {
 #
 sub _next_char {
     my($state) = @_;
-    my($char) = $state->{char_count} > length(${$state->{buffer}})
+    return $state->{char_count} > length(${$state->{buffer}})
         ? undef
         : substr(${$state->{buffer}}, $state->{char_count}++, 1);
-    return $char;
 }
 
 # _next_line(hash_ref state, string char)
