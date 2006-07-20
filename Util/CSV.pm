@@ -114,7 +114,6 @@ sub parse {
     my($buf) = !defined($csv_text) ? $self->read_input
 	: ref($csv_text) ? $csv_text : \$csv_text;
     my($state) = {
-        in_data => 0,
         buffer => $buf,
         want_line_numbers => $want_line_numbers,
         char_count => 0,
@@ -176,11 +175,15 @@ sub parse {
         _end_row($state);
     }
 
-    # remove trailing empty rows
+    # remove leading and trailing empty rows
     while (scalar(@{$state->{rows}})) {
-        last if scalar(@{$state->{rows}->[-1]}) > ($want_line_numbers ? 2 : 1)
-            || $state->{rows}->[-1]->[$want_line_numbers ? 1 : 0] =~ /\S/;
+        last if _is_row_empty($state, -1);
         pop(@{$state->{rows}});
+    }
+
+    while (scalar(@{$state->{rows}})) {
+        last if _is_row_empty($state, 0);
+        shift(@{$state->{rows}});
     }
     return $state->{rows};
 }
@@ -270,11 +273,24 @@ sub _end_value {
 #
 sub _end_row {
     my($state) = @_;
-    push(@{$state->{rows}}, $state->{current_row})
-        if $state->{in_data};
+    push(@{$state->{rows}}, $state->{current_row});
     $state->{current_row} = [
         $state->{want_line_numbers} ? $state->{line_number} : ()];
     return;
+}
+
+# _is_row_empty(hash_ref state, int index) : boolean
+#
+# Returns true if the row is empty, or contains a single entry composed
+# of space.
+#
+sub _is_row_empty {
+    my($state, $index) = @_;
+    return scalar(@{$state->{rows}->[$index]})
+            > ($state->{want_line_numbers} ? 2 : 1)
+        || $state->{rows}->[$index]->[$state->{want_line_numbers} ? 1 : 0]
+            =~ /\S/
+        ? 1 : 0;
 }
 
 # _peek_char(hash_ref state) : string
@@ -295,10 +311,6 @@ sub _next_char {
     my($char) = $state->{char_count} > length(${$state->{buffer}})
         ? undef
         : substr(${$state->{buffer}}, $state->{char_count}++, 1);
-
-    if (! $state->{in_data} && defined($char) && $char =~ /\S/) {
-        $state->{in_data} = 1;
-    }
     return $char;
 }
 
