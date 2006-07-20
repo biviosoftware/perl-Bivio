@@ -101,9 +101,7 @@ sub colrm {
 
 Parses I<csv_text> into an array of array rows. if I<csv_text> not supplied,
 read_input is called.  I<csv_text> may also be a string (need not be a ref).
-Note that I<csv_text> may be appended with a trailing \n, if it is a ref.
 
-Embedded CR LF or CR values are converted to LF ("\n").
 Dies on failure with an appropriate message.
 
 If I<want_line_numbers> is specified, then the first item of each row
@@ -115,12 +113,8 @@ sub parse {
     my($self, $csv_text, $want_line_numbers) = @_;
     my($buf) = !defined($csv_text) ? $self->read_input
 	: ref($csv_text) ? $csv_text : \$csv_text;
-    $$buf =~ s/(?=[\r\n])\s+$//s;
-    $$buf .= "\n";
-    $$buf =~ s/^\s*[\r\n]+//s;
-    return []
-	unless length($$buf);
     my($state) = {
+        in_data => 0,
         buffer => $buf,
         want_line_numbers => $want_line_numbers,
         char_count => 0,
@@ -174,8 +168,20 @@ sub parse {
             _append_char($state, $char);
         }
     }
-    _die($state, 'unterminated input: "', $state->{current_value}, '"')
-        if length($state->{current_value});
+
+    # add last row if input is missing end-of-line
+    if (length($state->{current_value})
+        || scalar(@{$state->{current_row}}) > ($want_line_numbers ? 1 : 0)) {
+        _end_value($state);
+        _end_row($state);
+    }
+
+    # remove trailing empty rows
+    while (scalar(@{$state->{rows}})) {
+        last if scalar(@{$state->{rows}->[-1]}) > ($want_line_numbers ? 2 : 1)
+            || $state->{rows}->[-1]->[$want_line_numbers ? 1 : 0] =~ /\S/;
+        pop(@{$state->{rows}});
+    }
     return $state->{rows};
 }
 
@@ -264,7 +270,8 @@ sub _end_value {
 #
 sub _end_row {
     my($state) = @_;
-    push(@{$state->{rows}}, $state->{current_row});
+    push(@{$state->{rows}}, $state->{current_row})
+        if $state->{in_data};
     $state->{current_row} = [
         $state->{want_line_numbers} ? $state->{line_number} : ()];
     return;
@@ -285,9 +292,14 @@ sub _peek_char {
 #
 sub _next_char {
     my($state) = @_;
-    return $state->{char_count} > length(${$state->{buffer}})
+    my($char) = $state->{char_count} > length(${$state->{buffer}})
         ? undef
         : substr(${$state->{buffer}}, $state->{char_count}++, 1);
+
+    if (! $state->{in_data} && defined($char) && $char =~ /\S/) {
+        $state->{in_data} = 1;
+    }
+    return $char;
 }
 
 # _next_line(hash_ref state, string char)
