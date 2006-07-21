@@ -177,12 +177,12 @@ sub parse {
 
     # remove leading and trailing empty rows
     while (scalar(@{$state->{rows}})) {
-        last if _is_row_empty($state, -1);
+        last unless _is_row_empty($state, -1);
         pop(@{$state->{rows}});
     }
 
     while (scalar(@{$state->{rows}})) {
-        last if _is_row_empty($state, 0);
+        last unless _is_row_empty($state, 0);
         shift(@{$state->{rows}});
     }
     return $state->{rows};
@@ -290,7 +290,7 @@ sub _is_row_empty {
             > ($state->{want_line_numbers} ? 2 : 1)
         || $state->{rows}->[$index]->[$state->{want_line_numbers} ? 1 : 0]
             =~ /\S/
-        ? 1 : 0;
+        ? 0 : 1;
 }
 
 # _peek_char(hash_ref state) : string
