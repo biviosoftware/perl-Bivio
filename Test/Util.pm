@@ -181,11 +181,9 @@ sub mock_sendmail {
 	$from = undef;
     }
     _trace($in) if $_TRACE;
-    my($msg) = Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing')
-        ->new(
-	    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Incoming')
-	        ->new($in)
-	)->add_missing_headers($req, $from);
+    my($msg) = $self->use('Bivio::Mail::Outgoing')
+        ->new($self->use('Bivio::Mail::Incoming')->new($in))
+	->add_missing_headers($req, $from);
     $msg->set_header('Return-Path', $from)
 	if $from;
     foreach my $r (split(/,/, $recipients)) {
