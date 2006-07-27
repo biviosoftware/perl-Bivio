@@ -1277,7 +1277,6 @@ sub _grep_msgs {
 	foreach my $k (@$_VERIFY_MAIL_HEADERS) {
 	    next unless $hdr =~ /^$k:\s*(\S+)/mi;
 	    my($e) = lc($1);
-Bivio::IO::Alert->info($e);
 	    my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
 	    next unless $m;
 	    $matched_emails->{$m}++;
