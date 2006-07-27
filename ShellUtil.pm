@@ -650,21 +650,22 @@ sub handle_config {
 
 =for html <a name="initialize_ui"></a>
 
-=head2 initialize_ui() : Bivio::Agent::Request
+=head2 initialize_ui(boolean fully) : Bivio::Agent::Request
 
-Initializes the UI and sets up the default facade.  This takes some time,
-so classes should use this sparingly.
-
-B<This only initializes the default facade.  It does not setup tasks
-for execution.>
+Initializes the UI and sets up the default facade.  This takes some time, so
+classes should use this sparingly.  If I<fully> is true, initializes all
+facades.  Otherwise, only initializes the default facade, and does not setup
+tasks for execution.
 
 =cut
 
 sub initialize_ui {
-    my($self) = @_;
+    my($self, $fully) = @_;
     my($req) = $self->get_request;
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Dispatcher');
-    Bivio::Agent::Dispatcher->initialize(1);
+    Bivio::Agent::Dispatcher->initialize(!$fully);
+    $req->setup_all_facades
+	if $fully;
     Bivio::UI::Facade->setup_request(undef, $req);
     $req->put_durable(
 	task => Bivio::Agent::Task->get_by_id($req->get('task_id')))
