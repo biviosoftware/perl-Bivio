@@ -108,7 +108,6 @@ sub dev {
     my($proto, $http_port, $overrides) = @_;
 
     my($pwd) = Cwd::getcwd();
-#TODO: local_file_root is wrong.  Base on $INC{ref($proto)}
     my($host) = Sys::Hostname::hostname();
     my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
     my($home) = $ENV{HOME} || $pwd;
@@ -458,11 +457,15 @@ sub _base {
 	    key => 'alphabet',
 	},
 	'Bivio::UI::Facade' => {
+	    local_file_root => '/var/www/facades',
 	    http_suffix => 'localhost',
 	    mail_host => 'localhost',
 	},
 	'Bivio::Util::Release' => {
 	    rpm_home_dir => '/usr/src/redhat/RPMS/noarch',
+	    projects => [
+		[ProjEx => project => 'bivio Software, Inc.'],
+	    ],
 	    rpm_user => 'nobody',
 	},
 	'Bivio::ShellUtil' => {
