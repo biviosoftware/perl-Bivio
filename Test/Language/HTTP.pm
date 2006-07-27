@@ -63,6 +63,7 @@ Bivio::IO::Config->register(my $_CFG = {
     mail_tries => 60,
     email_tag => '+btest_',
 });
+my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
 
 =head1 FACTORIES
 
@@ -543,7 +544,7 @@ Clears files in I<mail_dir>.
 sub handle_setup {
     my($self) = shift;
     $self->SUPER::handle_setup(@_);
-    _grep_mail_dir(sub {
+    _map_mail_dir(sub {
         unlink(shift);
 	return;
     });
@@ -858,54 +859,40 @@ messages found.
 
 sub verify_local_mail {
     my($self, $email, $body_regex, $count) = @_;
+    my($body_re) = ref($body_regex) ? $body_regex : qr{$body_regex};
     $count ||= ref($email) eq 'ARRAY' ? int(@$email) : 1;
     Bivio::Die->die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
     my($match) = {};
-    my($regex) = {map(
-	($_ => qr{@{[Bivio::Mail::Common->TEST_RECIPIENT_HDR]}:
-	    \s+@{[ref($_) ? $_ : qr{\Q$_\E$}mi]}}mix),
-	ref($email) eq 'ARRAY' ? @$email : $email,
-    )};
-    my(@found);
-    my($die) = sub {
-	Bivio::Die->die(@_, "\n", \@found);
-    };
+    $email = [$email]
+	unless ref($email) eq 'ARRAY';
+    my($found) = [];
+    my($die) = sub {Bivio::Die->die(@_, "\n", $found)};
     for (my $i = $_CFG->{mail_tries}; $i-- > 0;) {
 	# It takes a certain amount of time to hit, and on the same machine
 	# we're going to be competing for the CPU so let b-sendmail-http win
 	sleep(1);
-	if (@found = map({
-	    my($msg) = Bivio::IO::File->read($_);
-	    my($hdr) = split(/^$/m, $$msg, 2); 
-	    grep($hdr =~ $regex->{$_} && ++$match->{$_}, keys(%$regex))
-		&& $$msg =~ /$body_regex/
-	        ? [$_, $msg] : ();
-	    } _grep_mail_dir(sub {-M shift(@_) <= 0})
-	)) {
-	    next if @found < $count;
-	    last unless @found == $count && keys(%$regex) == keys(%$match);
-	    foreach (@found) {
-		unlink($_->[0]);
-		_log($self, 'msg', $_->[1])
-		    if ref($self);
-	    }
-	    return wantarray
-		? map(${$_->[1]}, @found)
-		: ${$found[0]->[1]};
+	$found = _grep_msgs($email, $body_re, $match);
+	next if @$found < $count;
+	last unless @$found == $count && @$email == keys(%$match);
+	foreach my $f (@$found) {
+	    unlink($f->[0]);
+	    _log($self, 'msg', $f->[1])
+		if ref($self);
 	}
+	return wantarray ? map(${$_->[1]}, @$found) : ${$found->[0]->[1]};
     }
     $die->(%$match
         ? ('Found mail for "', $email, '", but does not match ',
-	   qr/$body_regex/)
+	   $body_re, ' matches=', $match)
 	: ('No mail for "', $email, '" found in ', $_CFG->{mail_dir}),
-    ) unless @found;
+    ) unless @$found;
     $die->('incorrect number of messages.  expected != actual: ',
-	$count, ' != ', int(@found)
-    ) if @found != $count;
+	$count, ' != ', int(@$found)
+    ) if @$found != $count;
     $die->('correct number of messages, but emails expected != actual: ',
-	[sort(keys(%$regex))], ' != ', $match,
+	[sort(@$email)], ' != ', $match,
     );
     # DOES NOT RETURN
 }
@@ -1261,15 +1248,44 @@ sub _get_script_line {
     return '?';
 }
 
-# _grep_mail_dir(code_ref op) : array
+# _map_mail_dir(code_ref op) : array
 #
 # Returns results of grep on mail_dir files.  Only includes valid
 # mail files.
 #
-sub _grep_mail_dir {
+sub _map_mail_dir {
     my($op) = @_;
-    return grep(Bivio::Type::FileName->get_tail($_) =~ /^\d+$/ && $op->($_),
-	glob("$_CFG->{mail_dir}/*"));
+    return map(
+	Bivio::Type::FileName->get_tail($_) =~ /^\d+$/ ? $op->($_) : (),
+	glob("$_CFG->{mail_dir}/*"),
+    );
+}
+
+# _grep_msgs(hash_ref regexes, hash_ref match) : array_ref
+#
+# Returns results of grep on mail_dir files.  Only includes valid
+# mail files.
+#
+sub _grep_msgs {
+    my($emails, $msg_re, $matched_emails) = @_;
+    return [_map_mail_dir(sub {
+        my($file) = @_;
+	next unless -M $file <= 0;
+	my($msg) = Bivio::IO::File->read($file);
+	my($hdr) = split(/^$/m, $$msg, 2);
+	my($res);
+	foreach my $k (@$_VERIFY_MAIL_HEADERS) {
+	    next unless $hdr =~ /^$k:\s*(\S+)/mi;
+	    my($e) = lc($1);
+Bivio::IO::Alert->info($e);
+	    my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
+	    next unless $m;
+	    $matched_emails->{$m}++;
+	    return [$file, $msg]
+		if $$msg =~ $msg_re;
+	}
+	return;
+    })];
 }
 
 # _log(self, string type, any msg) : string
