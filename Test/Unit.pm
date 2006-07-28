@@ -424,13 +424,16 @@ sub builtin_read_file {
 
 =head2 static builtin_req() : Bivio::Agent::Request
 
-Calls Bivio::Test::Request::get_instance;
+=head2 static builtin_req(any wiget_value, ...) : any
+
+Calls Bivio::Test::Request::get_instance.
 
 =cut
 
 sub builtin_req {
-    return Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
-	->get_instance;
+    my($self, @args) = @_;
+    my($req) = $self->use('Bivio::Test::Request')->get_instance;
+    return @args ? $req->get_widget_value(@args) : $req;
 }
 
 =for html <a name="builtin_rollback"></a>
