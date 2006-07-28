@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::HTTPPing;
 use strict;
@@ -51,7 +51,7 @@ sub USAGE {
 usage: b-http-ping [options] command [args...]
 commands:
     page url ... -- request url(s)
-    process_status -- check load avg and process status
+    process_status -- check load avg
 EOF
 }
 
@@ -69,6 +69,7 @@ Bivio::IO::Trace->register;
 Bivio::IO::Config->register(my $_CFG = {
     host_map => {},
     status_file => '/var/tmp/httpd.status',
+    loadavg_file => '/proc/loadavg',
 });
 
 =head1 METHODS
@@ -87,8 +88,7 @@ Name mapping for paged hosts.
 
 =item status_file : string [/var/tmp/httpd.status]
 
-Location of file which is "diffed" with previous run of
-L<process_status|"process_status">.
+Location of process_status cache.
 
 =back
 
@@ -114,7 +114,6 @@ sub page {
     $self->initialize_ui;
     my($user_agent) = Bivio::Ext::LWPUserAgent->new(1),
     my($status) = '';
-
     foreach my $page (@pages) {
         my($host) = $page =~ m!^\w+://([^:/]+)!;
         $host = $_CFG->{host_map}->{$host}
@@ -133,28 +132,26 @@ sub page {
 
 =head2 process_status() : string
 
-Returns load average and httpd process_status changes.
+Returns significant load average changes.
 
 =cut
 
 sub process_status {
-    my($self) = @_;
-    my($s) = ${$self->piped_exec('/etc/rc.d/init.d/httpd status', undef, 1)};
-    $s =~ s#^(httpd\s+\(pid\s+).*(\)\s+is\s+running...)$#$1${
-         Bivio::IO::File->read('/var/run/httpd.pid')}$2#;
-    $s =~ s/\n//g;
-    ${Bivio::IO::File->read('/proc/loadavg')} =~ /^\S+\s+\S+\s+(\S+)/;
-    my($new) = "System load above @{[int($1)]}\n$s\n";
-    my($res) = $self->piped_exec("diff '$_CFG->{status_file}' -", $new,	1);
+    my($new) = int(
+	(split(' ', ${Bivio::IO::File->read($_CFG->{loadavg_file})}))[2]);
+    my($old) = Bivio::Die->eval(sub {
+        ${Bivio::IO::File->read($_CFG->{status_file}, $new)}
+    }) || 0;
+    my($res) = $new != $old && ($new > 3 || $old > 3) ? "Load average $new\n" : '';
     Bivio::IO::File->write($_CFG->{status_file}, $new);
-    return $$res;
+    return $res;
 }
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
