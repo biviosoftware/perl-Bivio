@@ -235,6 +235,8 @@ sub format_help_uri {
 
 =for html <a name="format_realmless_uri"></a>
 
+=head2 static format_realmless_uri(string task_id, string path_info, Bivio::Agent::Request req) : string
+
 =head2 static format_realmless_uri(Bivio::Agent::TaskId task_id, string path_info, Bivio::Agent::Request req) : string
 
 Formats a stateless, realmless URI.  It uses I<Text.my_club_site> or
@@ -250,7 +252,7 @@ sub format_realmless_uri {
     my($fields) = $self->[$_IDI];
     return $proto->format_uri(
 	{
-	    task_id => $task_id,
+	    task_id => Bivio::Agent::TaskId->from_any($task_id),
 	    realm => $fields->{realmless_uri}->{
 		Bivio::Agent::Task->get_by_id($task_id)->get('realm_type')
 	    },
