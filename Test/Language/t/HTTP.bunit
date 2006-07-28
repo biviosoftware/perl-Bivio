@@ -1,0 +1,154 @@
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+my($mail_dir) = tmp_dir();
+config({
+    'Bivio::IO::ClassLoader' => {
+	maps => {
+	    TestLanguage => ['Bivio::Test::Language'],
+	},
+    },
+    'Bivio::Test::Language::HTTP' => {
+	home_page_uri => 'http://petshop.bivio.biz',
+	email_user => 'hello',
+	mail_dir => $mail_dir,
+	mail_tries => 1,
+	remote_mail_host => 'petshop.example.com',
+    },
+});
+my($mail_file) = Bivio::IO::File->write("$mail_dir/1", 'should be deleted');
+[
+    [] => [
+	extra_query_params => [[K => 'V'] => undef],
+	_append_query => [['/foo/bar?k=v'] => '/foo/bar?k=v&K=V'],
+	clear_extra_query_params => undef,
+	_append_query => [['/foo/bar?k=v'] => '/foo/bar?k=v'],
+    ],
+    sub {'Bivio::Test::Language'} => [
+	{
+	    method => 'test_run',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [\$params->[0]],
+	    },
+	} => [
+	    [<<"EOF"] => [undef],
+test_setup('HTTP');
+home_page();
+follow_link('Sign-in');
+test_deviance('Please enter a password.');
+submit_form('submit');
+submit_form('submit' => {
+    'Email:' => 'foobar',
+});
+test_deviance('invalid uri');
+visit_uri();
+EOF
+	    [<<"EOF"] => [undef],
+test_setup('HTTP');
+use Bivio::IO::File;
+Bivio::Die->die(q{$mail_file: should not exist})
+    if -e q{$mail_file};
+# Deprecated usage:
+generate_local_email(random_string()) =~ /@/;
+my(\$e1) = generate_local_email(random_string());
+test_deviance(qr/No mail for /);
+verify_local_mail(\$e1, '');
+test_conformance();
+my(\$i) = 1;
+my(\$m) = sub {
+   my(\$x) = \$_[0] || \$e1;
+Bivio::IO::File->write(q{$mail_file} . \$i++, <<"END");
+From: someone\\\@example.com
+To: \$x
+X-Bivio-Test-Recipient: \$x
+
+You have mail
+END
+};
+\$m->();
+my(\$mail) = verify_local_mail(\$e1, 'You have mail');
+\$mail =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
+    or die('bad return value from verify_local_mail()');
+test_deviance(qr/No mail for /);
+verify_local_mail(\$e1, 'You have mail');
+test_conformance();
+my(\$e2) = generate_local_email('.*');
+\$m->();
+test_deviance(qr/No mail for /);
+verify_local_mail(\$e2, '');
+test_deviance(qr/Found mail for .* but does not match /);
+verify_local_mail(\$e1, 'this should not match');
+test_conformance();
+\$m->(\$e2);
+verify_local_mail(\$e2, 'You have mail');
+test_deviance(qr/No mail for /);
+verify_local_mail(\$e2, 'You have mail');
+test_conformance();
+verify_local_mail(\$e1, 'You have mail');
+\$m->();
+\$m->();
+test_deviance(qr/incorrect number of messages/);
+verify_local_mail(\$e1, 'You have mail');
+test_conformance();
+foreach my \$m (verify_local_mail(\$e1, 'You have mail', 2)) {
+    \$m =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
+        or Bivio::Die->die(\$m, ': bad return value from verify_local_mail()');
+}
+EOF
+	    [<<'EOF'] => [undef],
+test_setup('HTTP');
+home_page();
+follow_link('Sign-in');
+go_back();
+verify_text(qr/View\.main/);
+test_deviance(qr/no page to go back to/);
+go_back();
+test_conformance();
+home_page();
+follow_link('Sign-in');
+follow_link('New User');
+go_back();
+follow_link(qr/New Use/);
+my($id) = "test_http_$$";
+submit_form(submit => {
+    'Password:' => 'password',
+    'Email:' => "ignore-$id\@bivio.biz",
+    'First Name:' => 'HTTP',
+    'Last Name:' => 'UnitTest',
+    'Street Address:' => '1313 Mockingbird Lane',
+    'City:' => 'Gotham',
+    'State/Province:' => 'CO',
+    'Postal Code:' => '80000',
+    'Country:' => 'US',
+    'Telephone Number:' => '555-1212',
+});
+home_page();
+follow_link('MyAccount');
+submit_form(search => {
+});
+submit_form(qr/\bsearch\b/ => {
+    _anon => 'dogs',
+});
+verify_text('Adult Female German Shepherd');
+submit_form(search => {
+    qr/_ano/ => 'dogs',
+});
+verify_text('Adult Female German Shepherd');
+follow_link_in_table('Item ID', 'Item Name', 'Male Adult Corgi');
+verify_text('Friendly dog from Wales');
+follow_link('Sign-out');
+follow_link('Sign-in');
+submit_form({
+    'Email:' => 'demo',
+    'Password:' => 'password',
+});
+follow_link('MyAccount');
+debug_print('Forms');
+my($r) = generate_remote_email(my $p = random_string());
+$r eq $p . '@petshop.example.com' or die($r);
+$r = generate_remote_email($p, 'any_facade');
+$r eq $p . '@any_facade.example.com' or die($r);
+EOF
+	],
+    ],
+];
