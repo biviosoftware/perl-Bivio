@@ -395,11 +395,10 @@ Returns default facade, if I<simple_class> is C<undef> or false.
 
 sub get_instance {
     my($proto, $simple_class) = @_;
-    return $proto->get_default
-	unless $simple_class;
-    Bivio::Die->die($simple_class, ': no such facade')
-        unless $_CLASS_MAP{$simple_class};
-    return $_CLASS_MAP{$simple_class};
+    return $simple_class
+	? $_CLASS_MAP{$simple_class}
+	    || Bivio::Die->die($simple_class, ': no such facade')
+	: $proto->get_default
 }
 
 =for html <a name="get_local_file_name"></a>
@@ -430,9 +429,10 @@ May not be called statically if I<req> is C<undef>.
 sub get_local_file_name {
     my($self, $type, $name, $req) = @_;
     $self = $self->get_from_request_or_self($req)
-	    if defined($req) || !ref($self);
-    return $_CFG->{local_file_root} . $self->get('local_file_prefix')
-	    . $type->get_path.$name;
+	if defined($req) || !ref($self);
+    return $self->get_local_file_root . $self->get('local_file_prefix')
+	. Bivio::UI::LocalFileType->from_any($type)->get_path
+	. $name;
 }
 
 =for html <a name="get_local_file_root"></a>
@@ -504,12 +504,12 @@ For development, you probably want to set I<want_local_file_cache> to false.
 
 sub handle_config {
     my(undef, $cfg) = @_;
+    Bivio::IO::Alert->warn(
+	$cfg->{local_file_root}, ': local_file_root is not a directory'
+    ) unless $cfg->{local_file_root} && -d $cfg->{local_file_root};
+    $cfg->{local_file_root}
+	= Bivio::Type::FileName->add_trailing_slash($cfg->{local_file_root});
     $_CFG = {%{$cfg}};
-    Bivio::Die->die($_CFG->{local_file_root},
-	": local_file_root is not a directory")
-	unless $_CFG->{local_file_root} && -d $_CFG->{local_file_root};
-    $_CFG->{local_file_root} = Bivio::Type::FileName->add_trailing_slash(
-	$_CFG->{local_file_root});
     return;
 }
 
