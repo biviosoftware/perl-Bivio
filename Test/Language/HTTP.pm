@@ -40,6 +40,7 @@ use Bivio::Ext::LWPUserAgent;
 use Bivio::IO::Config;
 use Bivio::IO::Ref;
 use Bivio::IO::Trace;
+use Bivio::Mail::Address;
 use Bivio::Mail::Common;
 use Bivio::Type::FileName;
 use Bivio::Test::HTMLParser;
@@ -1275,8 +1276,10 @@ sub _grep_msgs {
 	my($hdr) = split(/^$/m, $$msg, 2);
 	my($res);
 	foreach my $k (@$_VERIFY_MAIL_HEADERS) {
-	    next unless $hdr =~ /^$k:\s*(\S+)/mi;
-	    my($e) = lc($1);
+	    next unless $hdr =~ /^$k:\s*(.*)/mi;
+	    my($e) = Bivio::Mail::Address->parse_list($1);
+	    die("$hdr: malformed-header")
+		unless $e && ($e = lc($e->[0]));
 	    my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
 	    next unless $m;
 	    $matched_emails->{$m}++;
