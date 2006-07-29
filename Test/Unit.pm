@@ -462,6 +462,22 @@ sub builtin_simple_require {
     return Bivio::IO::ClassLoader->simple_require($class);
 }
 
+=for html <a name="builtin_tmp_dir"></a>
+
+=head2 static builtin_tmp_dir() : string
+
+Creates TestName.tmp in the current directory, removing it if it exists
+already.
+
+=cut
+
+sub builtin_tmp_dir {
+    return Bivio::IO::File->mkdir_p(
+	Bivio::IO::File->rm_rf(
+	    Bivio::IO::File->absolute_path(
+		shift->builtin_class->simple_package_name . '.tmp')));
+}
+
 =for html <a name="builtin_write_file"></a>
 
 =head2 static builtin_write_file(string path) : string_ref
