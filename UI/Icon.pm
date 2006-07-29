@@ -268,14 +268,10 @@ Initializes all icons in a facade, if caching turned on.
 
 sub initialize_by_facade {
     my($proto, $facade) = @_;
-    my($d) = $facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->PLAIN, $_URI);
-    Bivio::Die->die($d, ": $!")
-		unless opendir(IN, $d);
-    foreach my $file (grep(/[^\.].*\.\w+$/, readdir(IN))) {
-	# Only look up files which match search prefixes
-	next unless $file =~ s/(\.\w+)$//
-		&& grep($1 eq $_, @$_FILE_SUFFIX_SEARCH_LIST);
+    foreach my $file (map(
+	m{/(\w+)\.(?:@{[join('|', @$_FILE_SUFFIX_SEARCH_LIST)]})$} ? $1 : (),
+	glob($facade->get_local_file_name(PLAIN => "$_URI/*.*")),
+    )) {
 	_find($proto, $file, $facade);
     }
     return $proto;
