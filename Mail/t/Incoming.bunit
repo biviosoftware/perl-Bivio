@@ -3,7 +3,7 @@
 Request('initialize_fully');
 [
     [\(<<'EOF')] => [
-From: john+btest_forum-admin@localhost.localdomain
+From: John Doe <john+btest_forum-admin@localhost.localdomain>
 To: private_forum@localhost.localdomain
 Subject: should bounce
 References: <a@a> <b@b>
@@ -14,12 +14,19 @@ Message-ID: <m@m>
 any body
 EOF
         get_from => [
-	    [] => ['john+btest_forum-admin@localhost.localdomain', undef],
+	    [] => ['john+btest_forum-admin@localhost.localdomain', 'John Doe'],
 	],
 	get_references => [
-	    [] => [qw(d@d b@b a@a)],
+	    [] => [[qw(d@d b@b a@a)]],
 	],
 	get_message_id => 'm@m',
 	get_date_time => 1130314787,
+    ],
+    [\(<<'EOF')] => [
+Message-ID: <m@m>
+
+any body
+EOF
+        get_from => not_die(),
     ],
 ];

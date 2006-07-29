@@ -151,4 +151,30 @@ $r eq $p . '@any_facade.example.com' or die($r);
 EOF
 	],
     ],
+    [] => [
+	{
+	    method => 'verify_local_mail',
+	    compute_params => sub {
+		my($case, $params) = @_;
+		tmp_dir();
+		my($msg) = <<"EOF";
+Message-ID: <20060728173345.182193871\@localhost.localdomain>
+Date: Fri, 28 Jul 2006 17:33:45 GMT
+Subject: any
+@{[shift(@$params)]}\@localhost.localdomain
+@{[shift(@$params)]}\@localhost.localdomain
+
+@{[shift(@$params)]}
+EOF
+		$params->[0] .= '@localhost.localdomain';
+                write_file("$mail_dir/1", $msg);
+		$case->expect([$msg])
+		    unless defined($case->get('expect'));
+		return $params;
+	    },
+	} => [
+	    ['To: a2', '', qw(x a2 x)] => not_die(),
+	    ['X-Bivio-Test-Recipient: a1', 'To: a2', qw(x a1 x)] => not_die(),
+	],
+    ],
 ];
