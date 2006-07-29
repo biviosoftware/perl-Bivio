@@ -113,7 +113,7 @@ sub _create_file {
 sub _thread_values {
     my($values, $in) = @_;
     my($row);
-    foreach my $ref ($in->get_references) {
+    foreach my $ref (@{$in->get_references}) {
         last if $row = Bivio::SQL::Connection->execute_one_row(
             'SELECT realm_file_id, thread_root_id, message_id
             FROM realm_mail_t
