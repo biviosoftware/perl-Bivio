@@ -60,9 +60,9 @@ sub absolute_path {
 
 =for html <a name="append"></a>
 
-=head2 static append(string file_name, string_ref contents)
+=head2 static append(string file_name, any contents, int offset)
 
-=head2 static append(string file_name, string contents)
+=head2 static append(IO::File file, string contents, int offset)
 
 Appends to a file with I<file_name> and appends I<contents> to it.
 Dies with an IO_ERROR on errors.  Turns on binmode.
@@ -72,14 +72,7 @@ If the file name is '-', appends to C<STDOUT>.
 =cut
 
 sub append {
-    my($proto, $file_name, $contents) = @_;
-    my($file) = $file_name;
-    unless (ref($file_name)) {
-	$file = IO::File->new(
-	    $file_name eq '-' ? '>>-' : ('>> ' . $file_name));
-	binmode($file_name);
-    }
-    return $proto->write($file, ref($contents) ? $contents : \$contents);
+    return shift->write(_open(shift, 'a'), @_);
 }
 
 =for html <a name="chdir"></a>
@@ -93,9 +86,9 @@ Change to I<directory> or die.  Returns I<directory>.
 sub chdir {
     my(undef, $directory) = @_;
     Bivio::Die->die('no directory supplied')
-	    unless defined($directory) && length($directory);
+        unless defined($directory) && length($directory);
     Bivio::Die->die('chdir(', $directory, "): $!")
-		unless Cwd::chdir($directory);
+	unless Cwd::chdir($directory);
     _trace($directory) if $_TRACE;
     return $directory;
 }
@@ -139,59 +132,6 @@ sub chown_by_name {
 	    or Bivio::Die->die($file, ": unable to set owner: $!");
     }
     return;
-}
-
-=for html <a name="foreach_line"></a>
-
-=head2 foreach_line(string file_name, code_ref fn)
-
-Call I<fn> on each line in I<file_name> like so:
-
-$fn->($line);
-
-Ensures that file_name is closed but does no other error handling.
-
-=cut
-
-sub foreach_line {
-    my($self, $file_name, $fn) = @_;
-    my($fh) = IO::File->new('<'.$file_name)
-	or _err('open', undef, $file_name);
-    my($die) = Bivio::Die->catch(sub {while (<$fh>) {$fn->($_);}});
-    close($fh);
-    $die->throw
-	if $die;
-    return;
-}
-
-=for html <a name="ls"></a>
-
-=head2 static ls(string directory) : array_ref
-
-Returns list of files in I<directory> (only regular files,
-no directories or specials)
-
-=cut
-
-sub ls {
-    my(undef, $directory) = @_;
-    $directory = '.' unless defined($directory);
-    my($op) = 'opendir';
- TRY: {
-	local($Bivio::IO::File::IN);
-        my($file) = \*Bivio::IO::File::IN;
-        opendir($file, $directory) || last TRY;
-        my(@files) = grep(-f, readdir($file));
-	$op = 'closedir';
-        closedir($file) || last TRY;
-        return \@files;
-    }
-    Bivio::Die->throw_die('IO_ERROR', {
-	message => "$!",
-	operation => $op,
-	entity => $directory,
-    });
-    # DOES NOT RETURN
 }
 
 =for html <a name="mkdir_p"></a>
@@ -250,25 +190,21 @@ sub pwd {
 
 =head2 static read(string file_name) : string_ref
 
-=head2 static read(glob_ref file) : string_ref
+=head2 static read(IO::File file) : string_ref
 
 Returns the contents of the file.  If the file name is '-',
 input is read from STDIN (new handle)
 
-If I<file> is supplied, must be a glob_ref to an open file and
+If I<file> is supplied, must be a IO::File to an open file and
 file_name must be supplied.
 
 =cut
 
 sub read {
-    my(undef, $file_name, $file) = @_;
-    if ($file) {
-	Bivio::IO::Alert->warn_deprecated('pass glob_ref as first param');
-	$file_name = $file;
-    }
-    $file = ref($file_name) ? $file_name
-	: IO::File->new($file_name eq '-' ? '-' : '< '.$file_name)
-		|| _err('open', $file, $file_name);
+    my(undef, $file_name, $unused) = @_;
+    Bivio::Die->die($unused, ': pass IO::File as first parameter')
+	if ref($unused);
+    my($file) = _open($file_name, 'r');
     my($offset, $read, $buf) = (0, 0, '');
     $offset += $read
 	while $read = CORE::read($file, $buf, 0x1000, $offset);
@@ -361,12 +297,12 @@ sub unique_name_for_process {
 
 =for html <a name="write"></a>
 
-=head2 static write(string file_name, any contents) : any
+=head2 static write(string file_name, any data, int data_offset) : any
 
-=head2 static write(glob_ref file, any contents) : any
+=head2 static write(IO::File file, any data, int data_offset) : any
 
-Creates a file with I<file_name> and writes I<contents> to it.
-Dies with an IO_ERROR on errors.
+Creates a file with I<file_name> and writes I<data> to it.
+Dies with an IO_ERROR on errors.  I<data_offset> defaults to 0.
 
 If the file name is '-', writes to C<STDOUT>.  Calls C<binmode> just after
 opening file.  If you don't want this, pass I<file> as a glob_ref.
@@ -376,16 +312,22 @@ Returns its first argument.
 =cut
 
 sub write {
-    my(undef, $file_name, $contents) = @_;
-    my($c) = ref($contents) ? $contents : \$contents;
-    my($file) = $file_name;
-    unless (ref($file)) {
-	$file = IO::File->new($file_name eq '-' ? '>-' : '> '.$file_name)
-	    or _err('open', $file, $file_name);
-	binmode($file);
+    my(undef, $file_name, $data, $data_offset) = @_;
+    my($c) = ref($data) ? $data : \$data;
+    my($file) = _open($file_name, 'w');
+    if (defined($data_offset)) {
+	my($length) = length($$c) - $data_offset;
+	while ($length > 0) {
+	    my $l = syswrite($file, $$c, $length, $data_offset)
+		or _err('syswrite', $file, $file_name);
+	    $data_offset += $l;
+	    $length -= $l;
+	}
     }
-    (print $file $$c)
-	or _err('print', $file, $file_name);
+    else {
+	print($file $$c)
+	     or _err('print', $file, $file_name);
+    }
     close($file)
 	or _err('close', $file, $file_name);
     _trace('Wrote ', length($$c), ' bytes to ', $file_name)
@@ -395,7 +337,7 @@ sub write {
 
 #=PRIVATE METHODS
 
-# _err(string op, glob_ref file, string file_name)
+# _err(string op, IO::File file, string file_name)
 #
 # close $file if defined, and dies.
 #
@@ -407,10 +349,23 @@ sub _err {
 	if $file;
     Bivio::Die->throw_die('IO_ERROR', {
 	message => $err,
+	method => __PACKAGE__->my_caller,
 	operation => $op,
 	entity => ref($file_name) ? "$file_name" : $file_name,
     });
     return;
+}
+
+sub _open {
+    my($file_name, $mode, $is_text) = @_;
+    return $file_name
+	if ref($file_name);
+    my $file = IO::File->new(
+	$file_name eq '-' ? $mode eq 'r' ? '<-' : '>-' : ($file_name, $mode),
+    ) or _err('open', undef, $file_name);
+    binmode($file)
+	if $is_text;
+    return $file;
 }
 
 =head1 COPYRIGHT
