@@ -4,6 +4,7 @@
 # $Id$
 #
 use strict;
+use Bivio::IO::Ref;
 
 BEGIN { $| = 1; print "1..3\n"; }
 my($loaded) = 0;
@@ -33,7 +34,6 @@ $m->attach(\$h, 'text/html', 'text.html');
 $m->send($req);
 my($out) = $m->as_string;
 my($exp_out) = <<'EOF';
-X-Bivio-Test-Recipient: nobody@example.com
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
  boundary="------------8169AB88A610572B963B8638"
@@ -54,7 +54,8 @@ Content-Transfer-Encoding: 7bit
 
 --------------8169AB88A610572B963B8638--
 EOF
-print $out eq $exp_out ? '' : 'not ', "ok $test\n";
+my($d) = Bivio::IO::Ref->nested_differences($out, $exp_out);
+print $d ? "not ok $test $$d\n" : "ok $test\n";
 
 $test++;
 my($vcf) = <<'EOF';
