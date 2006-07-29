@@ -16,17 +16,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::Mail::Outgoing;
-    my($bmo) = Bivio::Mail::Outgoing->new();
-    my($bmo) = Bivio::Mail::Outgoing->new($incoming);
-    $bmo->set_headers_for_list_send('my-list', 'My List', 1, 1);
-    $bmo->set_header('X-Magic', 'hello');
-    $bmo->set_recipients([qw(larry mo curly)]);
-    $bmo->set_body('what a body');
-    $bmo->remove_headers('Subject', 'x-mailer');
-
-    $bmo->set_content_type('multipart/mixed');
-    $bmo->attach( \$buffer1, 'image/jpg', 'my.jpg');
-    $bmo->attach( \$buffer2, 'application/pdf', 'my.pdf');
 
 =cut
 
@@ -49,7 +38,6 @@ use MIME::Base64;
 
 #=VARIABLES
 my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_IDI) = __PACKAGE__->instance_data_index;
 # Some of these were taken from majordomo's resend.  Others, just make
 # sense.  Check set_headers_for_list_send for headers which set but
 # not in this list.
@@ -123,30 +111,28 @@ uses as the basis for the message.
 =cut
 
 sub new {
-    my($self) = shift->SUPER::new;
-    my($msg) = @_;
-    my($fields) = $self->[$_IDI] = {};
+    my($proto, $msg) = @_;
+    my($attrs) = {};
     if (UNIVERSAL::isa($msg, 'Bivio::Mail::Incoming')) {
 	my($body);
 	$msg->get_body(\$body);
-	$fields->{body} = $body;
-	$fields->{headers} = $msg->get_headers();
-        $fields->{env_from} = $msg->get_from();
+	$attrs->{body} = \$body;
+	$attrs->{headers} = $msg->get_headers;
+        $attrs->{envelope_from} = $msg->get_from;
     }
     elsif (UNIVERSAL::isa($msg, __PACKAGE__)) {
 	# NOTE: This shares \$body if it exists, which neither class nor
 	# its parents modify.  Action.RealmMailReflector depends on this
 	# so that the server doesn't grow too large.
-	while (my($k, $v) = each(%{$msg->[$_IDI]})) {
-	    $fields->{$k} = ref($v) eq 'ARRAY' ? [@$v]
+	my($c) = $msg->get_shallow_copy;
+	while (my($k, $v) = each(%$c)) {
+	    $attrs->{$k} = ref($v) eq 'ARRAY' ? [@$v]
 		: ref($v) eq 'HASH' ? {%$v}
 		: $v;
 	}
     }
-    else {
-	$fields->{headers} = {};
-    }
-    return $self;
+    $attrs->{headers} ||= {};
+    return $proto->SUPER::new($attrs);
 }
 
 =head1 METHODS
@@ -199,14 +185,12 @@ Anything which is not of type text/* is encoded automatically.
 
 sub attach {
     my($self, $content, $type, $name, $binary) = @_;
-    my($fields) = $self->[$_IDI];
-
     defined($binary) || ($binary = 0);
     my($part) = { content => $content, type => $type, binary => $binary };
     if (defined($name)) {
         $part->{name} = $name;
     }
-    push(@{$fields->{parts}}, $part);
+    push(@{$self->get_if_exists_else_put('parts', [])}, $part);
     return;
 }
 
@@ -219,10 +203,7 @@ Returns the receiver's body.
 =cut
 
 sub get_body {
-    my($body) = shift->[$_IDI]->{body};
-    return (ref($body) eq 'SCALAR')
-        ? $body
-        : \$body
+    return shift->get('body');
 }
 
 =for html <a name="remove_headers"></a>
@@ -235,10 +216,8 @@ Removes the named header fields.
 
 sub remove_headers {
     my($self, @names) = @_;
-    my($fields) = $self->[$_IDI];
-    my($name);
-    foreach $name (@names) {
-	delete($fields->{lc($name)});
+    foreach my $name (@names) {
+	$self->delete(lc($name));
     }
     return;
 }
@@ -254,11 +233,7 @@ e-mailed except if recipients are not set.
 
 sub send {
     my($self, $req) = shift->internal_req(@_);
-    my($fields) = $self->[$_IDI];
-    my($msg) = $self->as_string;
-    Bivio::Mail::Common->send(
-	$fields->{recipients}, \$msg, 0, $fields->{env_from}, $req);
-    return;
+    return $self->SUPER::send(undef, undef, 0, $self->unsafe_get('envelope_from'), $req);
 }
 
 =for html <a name="set_body"></a>
@@ -274,8 +249,7 @@ If I<body> is a reference, it will be retained.
 
 sub set_body {
     my($self, $body) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{body} = $body;
+    $self->put(body => ref($body) eq 'SCALAR' ? $body : \$body);
     return;
 }
 
@@ -289,11 +263,11 @@ Sets the Content-Type header field. Any previous setting is overridden.
 
 sub set_content_type {
     my($self, $value) = @_;
-    my($fields) = $self->[$_IDI];
     # Remove possibly existing Content-Type setting from the headers
-    exists($fields->{headers}->{'content-type'})
-            && delete($fields->{headers}->{'content-type'});
-    $fields->{content_type} = $value;
+    if (my $h = $self->unsafe_get('headers')) {
+	delete($h->{'content-type'});
+    }
+    $self->put(content_type => $value);
     return;
 }
 
@@ -330,10 +304,9 @@ ASSUMES: I<name> and I<value> conform to RFC 822.
 
 sub set_header {
     my($self, $name, $value) = @_;
-    my($fields) = $self->[$_IDI];
     my($n) = lc($name);
 #TODO: Should assert header name is valid and quote value if need be
-    $fields->{headers}->{$n} = $name . ': ' . $value . "\n";
+    $self->get('headers')->{$n} = $name . ': ' . $value . "\n";
     $self->set_envelope_from((Bivio::Mail::Address->parse($value))[0])
 	if $n eq 'return-path';
     return $self;
@@ -374,8 +347,7 @@ sub set_headers_for_list_send {
 	# Old style is with -owner.
 	$np->{sender} ||= $np->{req}->format_email("$np->{list_name}-owner");
     }
-    my($fields) = $self->[$_IDI];
-    my($headers) = $fields->{headers};
+    my($headers) = $self->get('headers');
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
     delete(@$headers{qw(to cc)})
 	unless $np->{keep_to_cc};
@@ -407,32 +379,6 @@ sub set_headers_for_list_send {
     return $self;
 }
 
-=for html <a name="set_recipients"></a>
-
-=head2 set_recipients(string email_list, Bivio::Agent::Request req) : self
-
-=head2 set_recipients(array_ref email_list, Bivio::Agent::Request req) : self
-
-Sets the recipient of this mail message.  It does not modify the
-headers, i.e. To:, etc.  I<email_list> may be a single scalar
-containing multiple addresses (separated by commas)
-or an array whose elements may contain scalar lists.
-
-=cut
-
-sub set_recipients {
-    my($self, $email_list, $req) = @_;
-    my($recipient) = join(',',
-        map({@{Bivio::Mail::Address->parse_list($_)}}
-	    ref($email_list) ? @$email_list : $email_list));
-
-    $self->[$_IDI]->{recipients} = $recipient;
-    # Set here for mock_sendmail.  Also set in Common::_send
-    $self->set_header($self->TEST_RECIPIENT_HDR, $recipient)
-	if $req->is_test && $recipient !~ /,/;
-    return $self;
-}
-
 =for html <a name="set_envelope_from"></a>
 
 =head2 set_envelope_from(string email)
@@ -445,8 +391,7 @@ is used by MTAs to return bounces.
 
 sub set_envelope_from {
     my($self, $from) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{env_from} = $from;
+    $self->put(envelope_from => $from);
     return;
 }
 
@@ -460,31 +405,24 @@ Returns string representation of the mail message, suitable for sending.
 
 sub as_string {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    my($res) = '';
-    my(%headers) = %{$fields->{headers}};
-    my($name);
-    foreach $name (@_FIRST_HEADERS) {
-	defined($headers{$name}) || next;
-	$res .= $headers{$name};
-	delete($headers{$name});
+    my($headers) = {%{$self->get('headers')}};
+    my($res) = join(
+	'',
+	map(delete($headers->{$_}) || '',
+	    @_FIRST_HEADERS, sort(keys(%$headers))),
+    );
+    my($body, $ct, $parts) = $self->unsafe_get(qw(body content_type parts));
+    if ($parts) {
+	die("'content_type' must be set for attachments")
+	    unless $ct;
+	Bivio::IO::Alert->warn("ignoring body, have attachments")
+	    if $body;
+        _encapsulate_parts(\$res, $ct, $parts);
     }
-    foreach $name (sort keys %headers) {
-	$res .= $headers{$name};
-    }
-
-    if (defined($fields->{parts})) {
-        defined($fields->{content_type})
-                || die("'content_type' must be set for attachments");
-        defined($fields->{body}) &&
-                Bivio::IO::Alert->warn("ignoring body, have attachments");
-        _encapsulate_parts(\$res, $fields->{content_type}, $fields->{parts});
-    }
-    elsif (defined($fields->{body})) {
-	defined($fields->{content_type})
-		&& ($res .= "Content-Type: $fields->{content_type}\n");
-	$res .= "\n" . (ref($fields->{body}) ?
-		${$fields->{body}} : $fields->{body});
+    elsif ($body) {
+	$res .= "Content-Type: $ct\n"
+	    if $ct;
+	$res .= "\n" . $$body;
     }
     return $res;
 }
@@ -499,21 +437,9 @@ Returns header value or undef.
 
 sub unsafe_get_header {
     return [
-	((shift->[$_IDI]->{headers}->{lc(shift)})[0] || '')
+	((shift->get('headers')->{lc(shift)})[0] || '')
         =~ /^(?:.*?):\s+(.*)\n$/s
     ]->[0];
-}
-
-=for html <a name="unsafe_get_recipients"></a>
-
-=head2 unsafe_get_recipients() : string
-
-Returns recipients.
-
-=cut
-
-sub unsafe_get_recipients {
-    return shift->[$_IDI]->{recipients};
 }
 
 #=PRIVATE METHODS

@@ -47,7 +47,6 @@ require 'ctime.pl';
 use vars qw($_TRACE);
 my($_DT) = 'Bivio::Type::DateTime';
 Bivio::IO::Trace->register;
-my($_IDI) = __PACKAGE__->instance_data_index;
 # Bivio::IO::Config->register;
 
 =head1 FACTORIES
@@ -89,12 +88,10 @@ Returns the body of the message or puts a copy in I<body>.
 
 sub get_body {
     my($self, $body) = @_;
-    my($fields) = $self->[$_IDI];
-    if (defined($body)) {
-	$$body = substr(${$fields->{rfc822}}, $fields->{body_offset});
-	return;
-    }
-    return substr(${$fields->{rfc822}}, $fields->{body_offset});
+    return substr(${$self->get('rfc822')}, $self->get('body_offset'))
+	unless defined($body);
+    $$body = substr(${$self->get('rfc822')}, $self->get('body_offset'));
+    return;
 }
 
 =for html <a name="get_date_time"></a>
@@ -107,18 +104,13 @@ Returns the date specified by the message
 
 sub get_date_time {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    exists($fields->{date_time}) && return $fields->{date_time};
-    my($date) = _get_field($fields, 'date:');
-#TODO: If no Date: or bad Date: search Received: for valid dates
-#hello
-    unless ($date) {
-	Bivio::IO::Alert->warn("no Date");
-	_trace('no Date') if $_TRACE;
-	return $fields->{date_time} = undef;
-    }
-    $date = ($_DT->from_literal($date))[0];
-    return $fields->{date_time} = $date && $_DT->to_unix($date);
+    return $self->get_if_exists_else_put(date_time => sub {
+        return $_DT->to_unix(
+	    ($_DT->from_literal(
+		_get_field($self, 'date:') || return undef,
+	    ))[0] || return undef,
+	);
+    });
 }
 
 =for html <a name="get_from"></a>
@@ -133,28 +125,13 @@ Return <I>From:</I> email address and name or just email if not array context.
 
 sub get_from {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    if (exists($fields->{from_email})) {
-	return wantarray ? ($fields->{from_email}, $fields->{from_name})
-	    : $fields->{from_email};
-    }
-
     # 822: The  "Sender"  field  mailbox  should  NEVER  be  used
     #      automatically, in a recipient's reply message.
-    my($from) = _get_field($fields, 'from:')
-	    || _get_field($fields, 'apparently-from:');
-    unless (defined($from)) {
-	Bivio::IO::Alert->warn('no From: ', $fields);
-	$fields->{from_email} = undef;
-	$fields->{from_name} = undef;
-	return wantarray ? (undef, undef) : undef;
-    }
-    ($fields->{from_email}, $fields->{from_name})
-	= Bivio::Mail::Address->parse($from);
-    _trace($from, ' -> (', $fields->{from_email}, ',',
-	   $fields->{from_name}, ')') if $_TRACE;
-    return wantarray ? ($fields->{from_email}, $fields->{from_name})
-	    : $fields->{from_email};
+    return _two_parter(
+	$self,
+	qw(from_email from_name),
+	['from:', 'apparently-from:'],
+    );
 }
 
 =for html <a name="get_headers"></a>
@@ -178,15 +155,15 @@ defined, fills in and returns I<headers>.
 sub get_headers {
     my($self, $headers) = @_;
     $headers ||= {};
-    my($fields) = $self->[$_IDI];
-    # Important to include the newline
-    my($f);
     my($fn) = Bivio::Mail::RFC822->FIELD_NAME;
-    foreach $f (split(/^(?=$fn)/om, $fields->{header})) {
+    # Important to include the newline in $f
+    foreach my $f (split(/^(?=$fn)/om, $self->get('header'))) {
 	my($n) = $f =~ /^($fn)/o;
-	Bivio::IO::Alert->warn("invalid 822 field: $f"), next
-	    unless defined($n);
-	chop($n);
+	unless (defined($n)) {
+	    Bivio::IO::Alert->warn($f, ': invalid RFC822 field');
+	    next;
+	}
+	$n =~ s/:$//;
 	$headers->{lc($n)} .= $f;
     }
     return $headers;
@@ -202,37 +179,9 @@ Returns the Message-Id for this message.
 
 sub get_message_id {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return $fields->{message_id}
-	if exists($fields->{message_id});
-    my($id) = _get_field($fields, 'message-id:');
-    unless ($id =~ /<([^<>]+)>/) {
-	Bivio::IO::Alert->warn($id, ': bad or missing Message-Id');
-	return $fields->{message_id} = undef;
-    }
-    $fields->{message_id} = $1;
-    _trace($fields->{message_id}) if $_TRACE;
-    return $fields->{message_id};
-}
-
-=for html <a name="get_recipients"></a>
-
-=head2 get_recipients() : array
-
-Returns the "envelope" recipients that were set with
-L<set_recipients|"set_recipients">.
-
-=cut
-
-sub get_recipients {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    my($r) = $fields->{recipients};
-    if (ref($r) ne 'ARRAY' && defined($r)) {
-	# Force to be an array for convenience of caller
-	$fields->{recipients} = $r = [$r];
-    }
-    return $r;
+    return $self->get_if_exists_else_put(message_id => sub {
+	(_get_field($self, 'message-id:') =~ /<([^<>]+)>/)[0];
+    });
 }
 
 =for html <a name="get_references"></a>
@@ -249,13 +198,14 @@ or (if In-Reply-To does not exist) the last (most recent) id in the
 
 sub get_references {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    my($seen) = {};
-    return map(
-	$seen->{$_}++ ? () : $_,
-	_get_field($fields, 'in-reply-to:') =~ /.*<([^<>]+)>/,
-	reverse(_get_field($fields, 'references:') =~ /<([^<>]+)>/g),
-    );
+    return $self->get_if_exists_else_put(references => sub {
+	my($seen) = {};
+        return [map(
+	    $seen->{$_}++ ? () : $_,
+	    _get_field($self, 'in-reply-to:') =~ /.*<([^<>]+)>/,
+	    reverse(_get_field($self, 'references:') =~ /<([^<>]+)>/g),
+	)];
+    });
 }
 
 =for html <a name="get_reply_to"></a>
@@ -271,25 +221,11 @@ if not array context.
 
 sub get_reply_to {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    if (exists($fields->{reply_to})) {
-	return wantarray
-		? ($fields->{reply_to_email}, $fields->{reply_to_name})
-		: $fields->{reply_to_email};
-    }
-    my($reply_to) = _get_field($fields, 'reply-to:');
-    unless ($reply_to) {
-	_trace('no Reply-To') if $_TRACE;
-	$fields->{reply_to_email} = undef;
-	$fields->{reply_to_name} = undef;
-	return wantarray ? (undef, undef) : undef;
-    }
-    ($fields->{reply_to_email}, $fields->{reply_to_name})
-	    = Bivio::Mail::Address->parse($reply_to);
-    _trace($reply_to, ' -> (', $fields->{reply_to_email}, ',',
-	   $fields->{reply_to_name}, ')') if $_TRACE;
-    return wantarray ? ($fields->{reply_to_email}, $fields->{reply_to_name})
-	    : $fields->{reply_to_email};
+    return _two_parter(
+	$self,
+	qw(reply_to_email reply_to_name),
+	['reply-to:'],
+    );
 }
 
 =for html <a name="get_rfc822"></a>
@@ -303,23 +239,23 @@ the entire RFC822, offset by the header_offset.
 
 sub get_rfc822 {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return substr(${$fields->{rfc822}}, $fields->{header_offset});
+    return substr(${$self->get('rfc822')}, $self->get('header_offset'));
 }
 
 =for html <a name="get_rfc822_io"></a>
 
-=head2 get_rfc822_io() : 
+=head2 get_rfc822_io() : IO::File
 
-
+Return IO::File opend
 
 =cut
 
 sub get_rfc822_io {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    my $file = IO::Scalar->new($fields->{rfc822});
-    $file->setpos($fields->{header_offset});
+#TODO: Read only?
+    my($file) = IO::Scalar->new($self->get('rfc822'));
+#TODO: setpos uses opaque ;  SEEK whence?
+    $file->setpos($self->get('header_offset'));
     return $file;
 
 }
@@ -333,9 +269,7 @@ Returns length of C<rfc822>.
 =cut
 
 sub get_rfc822_length {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return length(${$fields->{rfc822}}) - $fields->{header_offset};
+    return shift->get('rfc822_length');
 }
 
 =for html <a name="get_subject"></a>
@@ -348,18 +282,14 @@ Returns I<Subject> of message or C<undef>.
 
 sub get_subject {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    exists($fields->{subject}) && return $fields->{subject};
-    my($subject) = _get_field($fields, 'subject:');
-    unless (length($subject)) {
-	_trace('no Subject') if $_TRACE;
-	return $fields->{subject} = undef;
-    }
-    $subject =~ s/^\s+//s;
-    $subject =~ s/\s+$//s;
-    $fields->{subject} = $subject;
-    _trace($fields->{subject}) if $_TRACE;
-    return $subject;
+    return $self->get_if_exists_else_put(
+	subject => sub {
+	    my($subject) = _get_field($self, 'subject:');
+	    return undef
+		unless length($subject);
+	    $subject =~ s/^\s+|\s+$//sg;
+	    return $subject;
+    });
 }
 
 =for html <a name="get_unix_mailbox"></a>
@@ -372,11 +302,10 @@ Returns the message in unix mailbox format.  Always ends in a newline.
 
 sub get_unix_mailbox {
     my($self, $buffer, $offset) = @_;
-    my($fields) = $self->[$_IDI];
     # ctime already has newline
-    return 'From unknown ' . ctime($fields->{time})
-	    . substr(${$fields->{rfc822}}, $fields->{header_offset})
-	    . (substr(${$fields->{rfc822}}, -1) eq "\n" ? '' : "\n");
+    return 'From unknown ' . ctime($self->get('time'))
+	    . substr(${$self->get('rfc822')}, $self->get('header_offset'))
+	    . (substr(${$self->get('rfc822')}, -1) eq "\n" ? '' : "\n");
 }
 
 =for html <a name="initialize"></a>
@@ -424,15 +353,16 @@ sub initialize {
     #      The effect will be to lose quoted LF and replace it with a
     #      quoted space.
     $h =~ s/\r?\n[ \t]/ /gs;
-    $self->[$_IDI] = {
-	'rfc822' => $rfc822,
-	'header' => $h,
-	'header_offset' => $offset,
+    return $self->put(
+	rfc822 => $rfc822,
+	header => $h,
+	header_offset => $offset,
+	rfc822_length => length($$rfc822) - $offset,
 	# If there is no body, get_body will return empty string.
-	'body_offset' => $i,
-	'time' => time,
-    };
-    return $self;
+	body_offset => $i,
+	time => time,
+
+    );
 }
 
 =for html <a name="send"></a>
@@ -447,31 +377,13 @@ for "alias-like" forwarding only.
 =cut
 
 sub send {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    Bivio::Mail::Common->send(
-	@{$fields}{qw(recipients rfc822 header_offset)},
+    my($self, $req) = shift->internal_req(@_);
+    return $self->SUPER::send(
+	undef,
+	$self->get(qw(rfc822 header_offset)),
 	($self->get_from)[0],
+	$req,
     );
-    return $self;
-}
-
-=for html <a name="set_recipients"></a>
-
-=head2 set_recipients(string recipients) : self
-
-=head2 set_recipients(array_ref recipients) : self
-
-Sets the recipients of this message to I<recipients>.  The recipients
-are part of the "envelope" associated with the message.
-
-=cut
-
-sub set_recipients {
-    my($self, $recipients) = @_;
-    my($fields) = $self->[$_IDI];
-    $fields->{recipients} = $recipients;
-    return $self;
 }
 
 =for html <a name="uninitialize"></a>
@@ -483,24 +395,32 @@ Clear any state associated with this object.
 =cut
 
 sub uninitialize {
-    my($self) = @_;
-    $self->[$_IDI] = undef;
+    shift->delete_all;
     return;
 }
 
 #=PRIVATE METHODS
 
-# $name must be lc and ending with a ':'
 sub _get_field {
-    my($fields, $name) = @_;
-    # May be that the field is undefined.
-    unless (exists($fields->{$name})) {
-        # Must not be \s, because maps to newline.  If the field is
-        # empty, will grab next field (line).
-        # CPERL-BUG: (?: |\t) is necessary because $name[ \t] would be bad
-        ($fields->{$name}) = $fields->{header} =~ /^$name(?: |\t)*(.*)/im;
-    }
-    return defined($fields->{$name}) ? $fields->{$name} : '';
+    my($self, $name) = @_;
+    return $self->get_if_exists_else_put(
+	$name,
+	sub {scalar(($self->get('header') =~ m{^$name(?: |\t)*(.*)}im)[0])},
+    );
+}
+
+sub _two_parter {
+    my($self, $field1, $field2, $headers) = @_;
+    my($f1) = $self->get_if_exists_else_put($field1 => sub {
+	my($v);
+        foreach my $f (@$headers) {
+	    last if $v = _get_field($self, $f);
+        }
+	my($f1, $f2) = $v ? Bivio::Mail::Address->parse($v) : ();
+	$self->put($field2 => $f2);
+	return $f1;
+    });
+    return wantarray ? ($f1, $self->get($field2)) : $f1;
 }
 
 =head1 COPYRIGHT
