@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Common;
 use strict;
@@ -19,8 +19,7 @@ bOP
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Mail::Common::ISA = qw(Bivio::UNIVERSAL);
+use base 'Bivio::Collection::Attributes';
 
 =head1 DESCRIPTION
 
@@ -62,44 +61,23 @@ Bivio::IO::Config->register(my $_CFG = {
     sendmail => '/usr/lib/sendmail -U -oem -odb -i',
 });
 #TODO: get rid of global state - put it on the request instead
-my($_QUEUE) = [];
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="discard_queued_messages"></a>
-
-=head2 static discard_queued_messages()
-
-Empties the send queue, throwing away all messages in the queue.
-
-=cut
-
-sub discard_queued_messages () {
-    $_QUEUE = [];
-    return;
-}
-
 =for html <a name="enqueue_send"></a>
 
 =head2 enqueue_send(Bivio::Agent::Request req) : self
 
-Queues this message for sending with
-L<send_queued_messages|"send_queued_messages">.
+Queues I<self> for sending on commit.
 
 =cut
 
 sub enqueue_send {
     my($self, $req) = shift->internal_req(@_);
-    if (int(@$_QUEUE)) {
-        $req->push_txn_resource(ref($self))
-            if _txn_resources_corrupted($self, $req);
-    }
-    else {
-        $req->push_txn_resource(ref($self));
-    }
-    push(@$_QUEUE, $self);
+    $req->push_txn_resource($self);
     return $self;
 }
 
@@ -138,29 +116,16 @@ EOF
 }
 
 
-=for html <a name="get_last_queued_message"></a>
-
-=head2 get_last_queued_message() : Bivio::Mail::Outgoing
-
-Return the last queued message.
-
-=cut
-
-sub get_last_queued_message {
-    return $_QUEUE->[-1];
-}
-
 =for html <a name="handle_commit"></a>
 
 =head2 handle_commit(Bivio::Agent::Request req)
 
-Commit called, delete lock from request before DB commit
+Send self.
 
 =cut
 
 sub handle_commit {
-    my($proto, $req) = @_;
-    $proto->send_queued_messages($req);
+    shift->send(shift);
     return;
 }
 
@@ -195,13 +160,11 @@ sub handle_config {
 
 =head2 handle_rollback()
 
-Rollback called, calls L<discard_queued_messages|"discard_queued_messages">.
+Do nothing.
 
 =cut
 
 sub handle_rollback {
-    my($proto) = @_;
-    $proto->discard_queued_messages;
     return;
 }
 
@@ -225,11 +188,11 @@ sub internal_req {
 
 =for html <a name="send"></a>
 
-=head2 static send(string or array_ref recipients, string msg)
+=head2 static send(string or array_ref recipients, string msg) : self
 
-=head2 static send(string or array_ref recipients, string_ref msg, int offset)
+=head2 static send(string or array_ref recipients, string_ref msg, int offset, Bivio::Agent::Request req) : self
 
-=head2 static send(string or array_ref recipients, string_ref msg, int offset, string from)
+=head2 static send(string or array_ref recipients, string_ref msg, int offset, string from, Bivio::Agent::Request req) : self
 
 Sends a message via configured C<sendmail> program.  Errors are
 mailed back to configured C<errors_to>--except if no I<recipients>
@@ -241,27 +204,26 @@ the -f argument given to sendmail.
 =cut
 
 sub send {
-    my($proto, $recipients, $msg, $offset, $from, $req) = @_;
-    Bivio::Die->die('no recipients')
-        unless defined($recipients);
-    Bivio::Die->die('no message')
-        unless defined($msg);
-    my($msg_ref) = ref($msg) ? $msg : \$msg;
+    my($self, $recipients, $msg, $offset, $from, $req) = @_;
+    $recipients ||= $self->unsafe_get_recipients
+	|| Bivio::Die->die('no recipients');
     $recipients = join(',', @$recipients)
 	if ref($recipients);
-    $recipients =~ s/'/'\\''/g;
+    $msg ||= $self->as_string;
+    my($msg_ref) = ref($msg) ? $msg : \$msg;
     $offset ||= 0;
+    $from = defined($from) ? '-f' . $from : '';
+    $recipients =~ s/'/'\\''/g;
     Bivio::Die->die('negative offset: ', $offset)
         if $offset < 0;
-    $from = defined($from) ? '-f' . $from : '';
     $from =~ s/'/'\\''/g;
     $req ||= Bivio::Agent::Request->get_current_or_new;
-    my($err) = _send($proto, $recipients, $msg_ref, $offset, $from, $req);
+    my($err) = _send($self, $recipients, $msg_ref, $offset, $from, $req);
     if ($err) {
         $err = _send(
-	    $proto,
+	    $self,
 	    $_CFG->{errors_to},
-            $proto->format_as_bounce(
+            $self->format_as_bounce(
 		$err, $recipients, $msg_ref, undef,
 		$req,
 	    ),
@@ -272,26 +234,44 @@ sub send {
         Bivio::Die->die('errors_to mail failed: ', $err, "\n", $msg_ref)
             if $err;
     }
-    return;
+    return $self;
 }
 
-=for html <a name="send_queued_messages"></a>
+=for html <a name="set_recipients"></a>
 
-=head2 static send_queued_messages()
+=head2 set_recipients(string email_list) : self
 
-Sends messages that have been queued with L<enqueue|"enqueue">.  This should be
-called after at the end of request processing.  Any errors are mailed to the
-postmaster.
+=head2 set_recipients(array_ref email_list) : self
+
+Sets the recipient of this mail message.  It does not modify the
+headers, i.e. To:, etc.  I<email_list> may be a single scalar
+containing multiple addresses (separated by commas)
+or an array whose elements may contain scalar lists.
 
 =cut
 
-sub send_queued_messages {
-    my(undef, $req) = shift->internal_req(@_);
-    while (@$_QUEUE) {
-	shift(@$_QUEUE)->send($req);
-    }
-    return;
+sub set_recipients {
+    my($self, $email_list) = @_;
+    return $self->put(recipients => join(
+	',',
+	map(@{Bivio::Mail::Address->parse_list($_)},
+	    ref($email_list) ? @$email_list : $email_list,
+        ),
+    ));
 }
+
+=for html <a name="unsafe_get_recipients"></a>
+
+=head2 unsafe_get_recipients() : string
+
+Returns recipients.
+
+=cut
+
+sub unsafe_get_recipients {
+    return shift->unsafe_get('recipients');
+}
+
 
 =for html <a name="user_email"></a>
 
@@ -316,7 +296,7 @@ sub user_email {
 sub _send {
     my($proto, $recipients, $msg, $offset, $from, $req) = @_;
     _trace('sending to ', $recipients) if $_TRACE;
-    if ($req->is_test && $$msg !~ /^@{[$proto->TEST_RECIPIENT_HDR]}:/mo) {
+    if ($req->is_test) {
 	return grep(
 	    _send($proto, $_, $msg, $offset, $from, $req),
 	    split(/,/, $recipients),
@@ -330,39 +310,20 @@ sub _send {
 	. ($from ? " '$from'" : '')
 	. " '$recipients'";
     _trace($command) if $_TRACE;
-    my($fh) = IO::File->new($command);
-    return "$command failed: $!"
-	unless $fh;
-    while (length($$msg) > $offset) {
-	my($res) = $fh->syswrite($$msg, length($$msg) - $offset, $offset);
-	unless (defined($res)) {
-	    $fh->close;
-	    return "write failed: $!";
-	}
-	$offset += $res;
-    }
-    $fh->close;
-    return $? == 0 ? undef : "exit status non-zero ($?)";
-}
-
-# _txn_resources_corrupted() : boolean
-#
-# Returns true if the request's transaction resources do not include
-# self.
-#
-sub _txn_resources_corrupted {
-    my($self, $req) = @_;
-
-    foreach my $resource (@{$req->get('txn_resources')}) {
-        return 0 if $resource eq ref($self);
-    }
-    $req->warn('Mail queue has items, but is not a txn resource: ', $self);
-    return 1;
+    return unless my $die = Bivio::Die->catch(sub {
+	Bivio::IO::File->write(
+	    IO::File->new($command) || die("$command: open failed"),
+	    $msg,
+	    $offset,
+	);
+    }) or $?;
+    Bivio::IO::Alert->warn($die ? $die->as_string : "$command: status = $?");
+    return 'I/O error';
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
