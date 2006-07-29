@@ -30,7 +30,7 @@ Bivio::Test->unit([
 	    [
 		'-input' => \(<<"EOF"),
 From: Joe <$user>
-To: Joe <$ENV{USER}+not-the-same\@localhost.localdomain>
+To: Joe <$ENV{USER}+btest_bla\@localhost.localdomain>
 Subject: my subject
 
 First message.
