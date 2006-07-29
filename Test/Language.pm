@@ -60,7 +60,7 @@ use File::Basename ();
 #=VARIABLES
 use vars ('$AUTOLOAD');
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_SELF_IN_EVAL);
+our($_SELF_IN_EVAL);
 Bivio::IO::Config->register(my $_CFG = {
     log_dir => 'log',
 });
@@ -341,6 +341,7 @@ everything goes ok.  Otherwise, returns the die instance created by the script.
 
 sub test_run {
     my($proto, $script) = @_;
+    local($_SELF_IN_EVAL);
     my($script_name) = ref($script) ? $_INLINE++ : $script;
     my($die) = Bivio::Die->catch(sub {
 	_die($_SELF_IN_EVAL, 'called ', $script_name,
@@ -361,7 +362,6 @@ sub test_run {
     });
     _trace($die) if $_TRACE;
     Bivio::Die->eval(sub {$_SELF_IN_EVAL->test_cleanup});
-    $_SELF_IN_EVAL = undef;
     _find_line_number($die, $script_name) if $die;
     _trace($script, ' ', $die) if $die && $_TRACE;
     return $die;
