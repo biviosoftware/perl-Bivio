@@ -1,16 +1,14 @@
-# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
-use Bivio::Test;
-use Bivio::Test::Language;
-Bivio::IO::Config->introduce_values({
-    Bivio::IO::ClassLoader => {
+config({
+    'Bivio::IO::ClassLoader' => {
 	maps => {
 	    TestLanguage => ['Bivio::Test::t::Language'],
 	},
     },
 });
-Bivio::Test->unit([
-    'Bivio::Test::Language' => [
+[
+    class() => [
 	{
 	    method => 'test_run',
 	    compute_params => sub {
@@ -47,4 +45,5 @@ Bivio::Test->unit([
             }] => qr/Bivio::Die.*not match pattern:.*NO WAY/is,
 	],
     ],
-]);
+];
+
