@@ -54,13 +54,12 @@ use Bivio::IO::Trace;
 use Carp ();
 
 #=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
+our($_TRACE);
+our($_CURRENT_SELF);
+our($_IN_CATCH);
+our($_IN_HANDLE_DIE);
 my($_STACK_TRACE) = 0;
 my($_STACK_TRACE_ERROR) = 0;
-my($_CURRENT_SELF);
-my($_IN_CATCH) = 0;
-my($_IN_HANDLE_DIE) = 0;
 Bivio::IO::Config->register({
     'stack_trace' => $_STACK_TRACE,
     'stack_trace_error' => $_STACK_TRACE_ERROR,
@@ -106,11 +105,8 @@ $_ is localized in this call.  Do not assume it will be modified by I<code>.
 
 sub catch {
     my($proto, $code, $die) = @_;
-    Bivio::Die->die(
-	Bivio::DieCode->CATCH_WITHIN_DIE,
-	{code => $code, program_error => 1}, (caller)[0], (caller)[2],
-    ) if $_IN_HANDLE_DIE;
-    $_IN_CATCH++;
+    local($_CURRENT_SELF);
+    local($_IN_CATCH) = 1;
     local($SIG{__DIE__}) = sub {
 	my($msg) = @_;
 	_handle_die(_new_from_core_die($proto, Bivio::DieCode::DIE(),
@@ -265,16 +261,8 @@ Returns C<undef> in the event of an error, just like C<CORE::eval>.
 sub eval {
     my(undef, $code) = @_;
     local($SIG{__DIE__});
-    my($current_self) = $_CURRENT_SELF;
-
-    if (wantarray) {
-	my(@res) = _eval($code);
-	$_CURRENT_SELF = $current_self;
-	return @res;
-    }
-    my $res = _eval($code);
-    $_CURRENT_SELF = $current_self;
-    return $res;
+    local($_CURRENT_SELF) = $_CURRENT_SELF;
+    return _eval($code);
 }
 
 =for html <a name="eval_or_die"></a>
@@ -395,11 +383,14 @@ In the second form, I<self> is "rethrown".
 
 sub throw {
     my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
+    local($_CURRENT_SELF)
+	unless $_IN_CATCH;
     if (ref($proto)) {
 	# Rethrow of an existing die.  If inside a catch, set as current
 	# and pass by name.
 	$_CURRENT_SELF = $proto;
-	CORE::die("$proto\n") if $_IN_CATCH;
+	CORE::die("$proto\n")
+	    if $_IN_CATCH;
 	# Not in a catch, so must call handle_die explicitly
 	_handle_die($proto);
 	# _handle_die returns, but user called die.  So need to
@@ -410,6 +401,7 @@ sub throw {
     my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
 	    $stack || Carp::longmess('Bivio::Die::throw'));
     CORE::die($_IN_CATCH ? "$self\n" : $self->as_string."\n");
+    # DOES NOT RETURN
 }
 
 =for html <a name="throw_die"></a>
@@ -512,11 +504,7 @@ sub _caller {
 #
 sub _catch_done {
     my($proto) = @_;
-    my($self) =  $_CURRENT_SELF
-	|| ($@ ? _new_from_eval_syntax_error($proto) : undef);
-    $_CURRENT_SELF = undef;
-    $_IN_CATCH--;
-    return $self;
+    return $_CURRENT_SELF || ($@ ? _new_from_eval_syntax_error($proto) : undef);
 }
 
 # _check_code(any code, hash_ref attrs) : Bivio::DieCode
@@ -558,7 +546,7 @@ sub _eval {
 # occur, chains them on to $_CURRENT_SELF by calling _new_from_core_die.
 #
 sub _handle_die {
-    $_IN_HANDLE_DIE++;
+    local($_IN_HANDLE_DIE) = 1;
     eval {
 	local($SIG{__DIE__});
 	my($self) = @_;
@@ -634,7 +622,6 @@ sub _handle_die {
 	}
 	1;
     } || warn($@);
-    $_IN_HANDLE_DIE--;
     return;
 }
 
