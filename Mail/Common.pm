@@ -115,6 +115,20 @@ $$msg
 EOF
 }
 
+=for html <a name="get_last_queued_message"></a>
+
+=head2 get_last_queued_message(Bivio::Agent::Request req) : Bivio::Mail::Common
+
+Return the last message queued.
+
+=cut
+
+sub get_last_queued_message {
+    my($self, $req) = @_;
+    return pop(@{[
+        grep(UNIVERSAL::isa($_, $self), @{$req->get('txn_resources')})]});
+}
+
 
 =for html <a name="handle_commit"></a>
 
