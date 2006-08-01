@@ -1281,10 +1281,12 @@ sub _grep_msgs {
 	    die("$hdr: malformed-header")
 		unless $e && ($e = lc($e->[0]));
 	    my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
-	    next unless $m;
-	    $matched_emails->{$m}++;
-	    return [$file, $msg]
-		if $$msg =~ $msg_re;
+	    if ($m) {
+		$matched_emails->{$m}++;
+		return [$file, $msg]
+		    if $$msg =~ $msg_re;
+	    }
+	    last;
 	}
 	return;
     })];

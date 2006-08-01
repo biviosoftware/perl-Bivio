@@ -157,24 +157,36 @@ EOF
 	    compute_params => sub {
 		my($case, $params) = @_;
 		tmp_dir();
-		my($msg) = <<"EOF";
+		my($i) = 1;
+		$params->[3] ||= 1;
+		foreach my $mp (@{shift(@$params)}) {
+		    my($msg) = <<"EOF";
 Message-ID: <20060728173345.182193871\@localhost.localdomain>
 Date: Fri, 28 Jul 2006 17:33:45 GMT
 Subject: any
-@{[shift(@$params)]}\@localhost.localdomain
-@{[shift(@$params)]}\@localhost.localdomain
+@{[shift(@$mp)]}\@localhost.localdomain
+@{[shift(@$mp)]}\@localhost.localdomain
 
-@{[shift(@$params)]}
+x
 EOF
+		    $case->expect([map($msg, 1..$params->[2])])
+			unless defined($case->get('expect'));
+		    write_file("$mail_dir/" . $i++, $msg);
+		}
 		$params->[0] .= '@localhost.localdomain';
-                write_file("$mail_dir/1", $msg);
-		$case->expect([$msg])
-		    unless defined($case->get('expect'));
 		return $params;
 	    },
 	} => [
-	    ['To: a2', '', qw(x a2 x)] => not_die(),
-	    ['X-Bivio-Test-Recipient: a1', 'To: a2', qw(x a1 x)] => not_die(),
+	    [[['To: a2', '']], qw(a2 x)] => not_die(),
+	    [[['X-Bivio-Test-Recipient: a1', 'To: a2']], qw(a1 x)] => not_die(),
+	    [[
+		['X-Bivio-Test-Recipient: a1', 'To: a2'],
+		['X-Bivio-Test-Recipient: a1', 'To: a2'],
+	    ], qw(a1 x 2)] => not_die(),
+	    [[
+		['X-Bivio-Test-Recipient: a2', 'To: a2'],
+		['X-Bivio-Test-Recipient: a1', 'To: a2'],
+	    ], qw(a2 x 1)] => not_die(),
 	],
     ],
 ];
