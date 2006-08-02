@@ -327,7 +327,7 @@ LockFile $lock_file
 ScoreBoardFile $log_directory/apache_runtime_status
 TypesConfig /etc/mime.types
 DefaultType text/plain
-LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat "%v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 CustomLog $log_directory/access_log combined
 ErrorLog $log_directory/error_log
 LogLevel info
