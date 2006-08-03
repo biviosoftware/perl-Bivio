@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.35  2006/07/17 20:53:16  moeller
+  * Bivio::Delegate::SimpleTaskId changed optional search task to be
+    dependent on Search::Xapian
+  * Bivio::Search::RealmFile removed ascii7 option to pdftotext
+
   Revision 4.34  2006/07/17 04:33:12  nagler
   Note: the Xapian/Search unit test will fail if you don't have Xapian
   installed.  See README.
