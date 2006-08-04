@@ -20,6 +20,16 @@ options({
 	    get_nested => $_->[1],
         ];
     } [
+	'assign-reviewer' => [
+	    ['Forms', 'Email Address:', 'visible', 'Email Address:', 'type']
+		=> 'text',
+	],
+    ],[
+ 	'applicants' => [
+ 	    ['Forms', '<prev', 'visible',
+ 		 'Role of the co-applicants:', 'type'] => 'textarea',
+ 	],
+    ],[
         'div-err' => [
             ['Forms', 'Email Address:', 'visible', 'Email Address:', 'error']
 	        => ['You must supply a value for Email Address.'],

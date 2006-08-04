@@ -47,6 +47,7 @@ Bivio::IO::Config->register(my $_CFG = {
     error_color => '#990000',
     # Set by XHTMLWidget.FormFieldError
     error_class => 'field_err',
+    label_class => 'label',
     disable_checkbox_heading => {},
 });
 
@@ -210,6 +211,9 @@ sub html_parser_start {
     my($self, $tag, $attr) = @_;
     my($fields) = $self->[$_IDI];
     _fixup_attr($tag, $attr);
+    if (($attr->{class} || '') eq 'label') {
+	$fields->{text} = undef;
+    }
     return _start_tx($fields, $attr, $tag)
 	if $tag =~ /^t(?:d|r|h|able)$/;
     return _start_form($fields, $attr)
@@ -631,6 +635,10 @@ sub _start_input {
 #
 sub _start_maybe_err {
     my($fields, $attr) = @_;
+    if (($fields->{text} || '') =~ m/:$/) {
+	$fields->{prev_cell_text} = $fields->{text};
+	$fields->{text} = undef;
+    }
     push(@{$fields->{maybe_err}}, $attr);
     return;
 }
