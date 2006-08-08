@@ -147,7 +147,8 @@ Load the default value of any fields that were not present on the form.
 
 sub internal_pre_execute {
     my($self) = @_;
-    return unless $self->get_request->get('form');
+    return unless $self->get_request->unsafe_get('form')
+	&& $self->equals($self->get_request->get('form'));
 
     foreach my $field (@{_get_visible_fields($self)}) {
         next if defined($self->unsafe_get($field));
