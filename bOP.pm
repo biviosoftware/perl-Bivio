@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,54 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.36  2006/08/03 19:38:32  moeller
+  * Bivio::Biz::Action::MailForward undo X-Bivio-Test-Recipient hack
+  * Bivio::Biz::FormModel internal_catch_field_constraint_error can now
+    handle extra error information
+  * Bivio::Biz::Model::RealmMail get_references ifc change
+  * Bivio::Die catch can be called within handle_die
+  * Bivio::IO::ClassLoader include map_class in the trace output
+  * Bivio::IO::File append/write take offset,
+    ls and foreach_line gone,
+    _open() refactoring
+  * Bivio::Mail::Common queue of msgs is now queue of Common instances,
+    reimplemented get_last_queued_message
+  * Bivio::Mail::Incoming pushed more in Mail::Common, and is Attributes
+    now
+  * Bivio::Mail::Outgoing pushed more in Mail::Common, and is Attributes
+    now
+  * Bivio::ShellUtil initialize_ui accepts boolean for initialization of
+    all facades and tasks.
+  * Bivio::Test::Language::HTTP fix matching in verify_local_mail to
+    match only the first keyword that exists,
+    verify_local_mail checks X-Bivio-Test-Recipient:
+     then To: in that order.  MTA may bounce msg, and
+     X-Bivio-Test-Recipient: won't be set.
+  * Bivio::Test::Language SELF_IN_EVAL is dynamic var
+  * Bivio::Test::Unit tmp_dir,
+    req() now accepts parameters so you can get_widget_value off the
+     requests,
+    string_ref, rm_rf, assert_equals
+  * Bivio::Test::Util refactor
+  * Bivio::UI::Facade missing local_file_root is now a warning
+  * Bivio::UI::HTML::Widget::Form use ViewShortcuts to render the
+    TimezoneField so that projects can customize the TimezoneField
+  * Bivio::UI::HTML::Widget::Text let Text widgets have a class
+  * Bivio::UI::HTML::Widget::TextArea use edit_attributes instead of
+    attributes so they work with FormField,
+    change superclass from Widget to ControlBase and allow arbitrary
+    attributes to be included in the opening tag
+  * Bivio::UI::Icon Simplified initialize_by_facade and removed die
+  * Bivio::UI::Task format_realmless_id can take a simple string for
+    task_id
+  * Bivio::Util::CSV changed calls to _is_row_empty() to reflect the
+    actual method name,
+    fixed blank line problem,
+    no longer modifies input buffer during parse()
+  * Bivio::Util::HTTPConf Added VirtualHost to common log format
+    (combined) in LogFormat
+  * Bivio::Util::HTTPPing process_status compares loadavg only
+
   Revision 4.35  2006/07/17 20:53:16  moeller
   * Bivio::Delegate::SimpleTaskId changed optional search task to be
     dependent on Search::Xapian
