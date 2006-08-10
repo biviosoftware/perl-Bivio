@@ -99,19 +99,6 @@ sub from_name {
     return $info->[5];
 }
 
-=for html <a name="get_instance"></a>
-
-=head2 static get_instance() : Bivio::Type::Enum
-
-Returns I<proto>, i.e. class method invoked on.
-
-=cut
-
-sub get_instance {
-    my($proto) = @_;
-    return $proto;
-}
-
 =for html <a name="unsafe_from_any"></a>
 
 =head2 static unsafe_from_any(any thing) : Bivio::Type::Enum
