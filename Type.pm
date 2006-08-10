@@ -51,6 +51,8 @@ use Bivio::HTML;
 
 =head2 static get_instance(any type) : Bivio::Type
 
+=head2 get_instance() : Bivio::Type
+
 Returns an instance of I<type>.  I<type> may be just the simple name or a fully
 qualified class name.  It will be loaded with
 L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Type> map.
@@ -62,11 +64,12 @@ classes are equivalent in perl.
 
 sub get_instance {
     my($self, $type) = @_;
+    $type ||= $self;
     $type = Bivio::IO::ClassLoader->map_require('Type', $type)
-	    unless ref($type);
+	unless ref($type);
     Bivio::IO::Alert->bootstrap_die($type, ': not a Bivio::Type')
-		unless UNIVERSAL::isa($type, 'Bivio::Type')
-			|| UNIVERSAL::isa($type, 'Bivio::Delegator');
+	unless UNIVERSAL::isa($type, 'Bivio::Type')
+	    || UNIVERSAL::isa($type, 'Bivio::Delegator');
     return $type;
 }
 
