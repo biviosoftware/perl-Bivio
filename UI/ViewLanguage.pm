@@ -353,6 +353,19 @@ sub view_shortcuts {
     return;
 }
 
+=for html <a name="view_use"></a>
+
+=head2 static view_use(string class)
+
+Calls L<use> with I<class> which may be a map.class or a package::name.
+
+=cut
+
+sub view_use {
+    my($proto, $class) = _args(@_);
+    return $proto->use($class);
+}
+
 =for html <a name="view_widget_value"></a>
 
 =head2 static view_widget_value(string attr) : array_ref
