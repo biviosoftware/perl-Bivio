@@ -345,7 +345,7 @@ sub _end_maybe_err {
 	    : 0
 	) && !_empty($fields->{text})
 	&& !_have_prefix_label($fields);
-    $fields->{input_error} = $fields->{text};
+    $fields->{input_error} = substr($fields->{text}, $f->{text_start_length});
     $fields->{text} = undef;
     return;
 }
@@ -639,7 +639,10 @@ sub _start_maybe_err {
 	$fields->{prev_cell_text} = $fields->{text};
 	$fields->{text} = undef;
     }
-    push(@{$fields->{maybe_err}}, $attr);
+    push(@{$fields->{maybe_err}}, {
+	%$attr,
+	text_start_length => length($fields->{text} || ''),
+    });
     return;
 }
 

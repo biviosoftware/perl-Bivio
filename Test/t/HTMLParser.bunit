@@ -20,6 +20,11 @@ options({
 	    get_nested => $_->[1],
         ];
     } [
+	'text-before-error' => [
+	    ['Forms', 'I have fullfilled all of the Classroom Mini-Grant Requirements as enumerated above.', 'visible', 'I have fullfilled all of the Classroom Mini-Grant Requirements as enumerated above.', 'error']
+		=> 'We are not accepting final submission of any applications at this time. You will be notified by email when you will be allowed to complete this application.',
+	],
+    ],[
 	'assign-reviewer' => [
 	    ['Forms', 'Email Address:', 'visible', 'Email Address:', 'type']
 		=> 'text',
