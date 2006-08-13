@@ -39,6 +39,7 @@ sub password {
 
 sub string {
     my($proto, $length, $chars) = @_;
+    $chars ||= [0..9, 'a' .. 'z'];
     return join('', map(
 	$chars->[ord($_) % @$chars],
 	split(//, $proto->bytes($length)),
