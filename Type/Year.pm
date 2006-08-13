@@ -29,6 +29,10 @@ sub from_literal {
     );
 }
 
+sub get_default {
+    return shift->now;
+}
+
 sub get_max {
     return '9999';
 }

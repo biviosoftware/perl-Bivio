@@ -133,6 +133,18 @@ sub get_decimals {
     return 0;
 }
 
+=for html <a name="get_default"></a>
+
+=head2 static get_default : int
+
+Returns 0 (false).
+
+=cut
+
+sub get_default {
+    return 0;
+}
+
 =for html <a name="get_max"></a>
 
 =head2 static get_max : int
