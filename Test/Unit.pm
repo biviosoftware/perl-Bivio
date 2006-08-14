@@ -108,7 +108,10 @@ sub AUTOLOAD {
 	: Bivio::DieCode->is_valid_name($func) && Bivio::DieCode->can($func)
 	? Bivio::DieCode->$func()
 	: $_TYPE
-	? $_TYPE->$func(@_)
+	? $_TYPE->can($func)
+        ? $_TYPE->$func(@_)
+	: Bivio::Die->die(
+	    $func, ': not a valid method of ', ref($_TYPE) || $_TYPE)
 	: ($_TYPE = Bivio::IO::ClassLoader->map_require('TestUnit', $func)
 	   and $_TYPE->can('new_unit')
 	       ? ($_TYPE = $_TYPE->new_unit(__PACKAGE__->builtin_class(), @_))
