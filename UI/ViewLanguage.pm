@@ -357,7 +357,7 @@ sub view_shortcuts {
 
 =head2 static view_use(string class)
 
-Calls L<use> with I<class> which may be a map.class or a package::name.
+Calls I<use> with I<class> which may be a map.class or a package::name.
 
 =cut
 

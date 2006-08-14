@@ -7,7 +7,7 @@ $_ = $Bivio::Test::Reload::VERSION;
 
 =head1 NAME
 
-Bivio::Test::Reload - 
+Bivio::Test::Reload - x
 
 =head1 RELEASE SCOPE
 
