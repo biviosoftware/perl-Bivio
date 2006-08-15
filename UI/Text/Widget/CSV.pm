@@ -49,6 +49,10 @@ The class name of the list model to be rendered. The list_class is used to
 determine the column cell types for the table.  If the model I<has_iterator>,
 will use the iterator to render the rows.
 
+=item header : array_ref
+
+Header widger to be rendered at the top of the file.
+
 =back
 
 =cut
@@ -117,6 +121,7 @@ sub initialize {
 	# Make sure we can convert a value to a string.
 	$list->get_field_type($col)->to_string(undef);
     }
+    $self->unsafe_initialize_attr('header');
     return;
 }
 
@@ -153,6 +158,13 @@ widget values.
 sub render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
+
+    # render header
+    if ($self->unsafe_get('header')) {
+        $self->unsafe_render_attr('header', $source, $buffer);
+	$$buffer .= "\n\n";
+    }
+
     my($list) = $source->get_widget_value(
 	ref(Bivio::Biz::Model->get_instance($self->get('list_class'))));
     my($method) = $list->has_iterator
