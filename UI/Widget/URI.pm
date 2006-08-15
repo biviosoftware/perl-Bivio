@@ -63,7 +63,8 @@ sub _render_value {
     return $v
 	if !ref($v) || ref($v) eq 'HASH';
     my($b) = '';
-    return $self->unsafe_render_value($name, $value, $source, \$b) ? $b : undef;
+    return $self->unsafe_render_value($name, $value, $source, \$b)
+	? $b : undef;
 }
 
 1;
