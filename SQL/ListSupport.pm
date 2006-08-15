@@ -502,7 +502,7 @@ sub _init_column_classes {
     my($attrs, $decl) = @_;
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
 	[qw(auth_id auth_user_id date parent_id primary_key order_by group_by
-            other)]);
+            other count_distinct)]);
 
     if ($decl->{where}) {
 	my(@decl_where) = ();
@@ -521,7 +521,7 @@ sub _init_column_classes {
 	}
 	$where = join(' AND ', grep($_, $where, join(' ', @decl_where)));
     }
-    foreach my $c (qw(auth_id auth_user_id date parent_id)) {
+    foreach my $c (qw(auth_id auth_user_id date parent_id count_distinct)) {
 	Bivio::Die->die("too many $c fields")
 	    if @{$attrs->{$c}} > 1;
 	$attrs->{$c} = $attrs->{$c}->[0];
@@ -628,10 +628,13 @@ sub _init_column_lists {
 
     my($select) = ($decl->{want_select_distinct} ? 'DISTINCT ' : '')
         . join(',', @select_sql_names);
-    $attrs->{select_count} = 'SELECT COUNT('
-        . ($decl->{want_select_distinct} ? $select : '*')
-        . ')';
-    $attrs->{select} = 'SELECT ' . $select;
+    my($select_count) = $decl->{want_select_distinct}
+	? $attrs->{count_distinct}
+	    ? 'DISTINCT ' . $attrs->{count_distinct}->{sql_name}
+	    : $select
+	: '*';
+    $attrs->{select} = "SELECT $select";
+    $attrs->{select_count} = "SELECT COUNT($select_count)";
     return;
 }
 
