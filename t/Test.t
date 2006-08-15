@@ -264,10 +264,20 @@ t(
 	    # Deviance 55
 	    ok => Bivio::DieCode->DIE,
 	],
+	{
+	    object => Bivio::t::Test::Testee->new('33'),
+        } => [
+	    die => [
+		# Deviance: 56
+	        'some message' => sub {die('FAILURE')},
+		# 57
+		'this-message' => qr{this-message},
+	    ],
+	],
 #TODO: Need more deviance tests
     ],
-    55,
-    [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28, 37, 40, 41, 42, 43, 44, 52, 53, 54, 55],
+    57,
+    [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28, 37, 40, 41, 42, 43, 44, 52, 53, 54, 55, 56],
 );
 t(
     {
@@ -402,6 +412,9 @@ sub t {
 		    $err .= "Incorrect test header: ".$msg
 			if $msg ne "1..$num_tests\n";
 		    $start = 0;
+		}
+		elsif ($msg =~ /FAILURE/i) {
+		    $err .= "case failure: $msg";
 		}
 		elsif ($msg =~ /^not ok (\d+)/s) {
 		    my($n) = $1;

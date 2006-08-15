@@ -1038,12 +1038,19 @@ sub _eval_result {
 	}
     }
     my($e) = $case->get('expect');
-    my($x) = Bivio::IO::Ref->nested_differences(
-	$e,
-	ref($result) eq 'ARRAY' && @$result == 1 && ref($e) eq 'Regexp'
-	    ? $result->[0] : $result,
-    );
-    return $x ? $$x : undef;
+    if (ref($e) eq 'CODE') {
+	return "unexpected die: " . Bivio::IO::Ref->to_short_string($result);
+    }
+    my($x);
+    my($diff_die) = Bivio::Die->catch(sub {
+        $x = Bivio::IO::Ref->nested_differences(
+	    $e,
+	    ref($result) eq 'ARRAY' && @$result == 1 && ref($e) eq 'Regexp'
+		? $result->[0] : $result,
+	);
+    });
+    return $diff_die ? "nested_differences died: " . $diff_die->as_string
+	: $x ? $$x : undef;
 }
 
 # _prepare_case(self, Bivio::Test::Case case, string_ref err) : boolean
