@@ -84,7 +84,7 @@ use File::Spec ();
 use File::Basename ();
 
 #=VARIABLES
-use vars (qw($AUTOLOAD $_TYPE $_CLASS $_PM $_OPTIONS));
+use vars (qw($AUTOLOAD $_TYPE $_TYPE_CAN_AUTOLOAD $_CLASS $_PM $_OPTIONS));
 
 =head1 METHODS
 
@@ -108,14 +108,11 @@ sub AUTOLOAD {
 	: Bivio::DieCode->is_valid_name($func) && Bivio::DieCode->can($func)
 	? Bivio::DieCode->$func()
 	: $_TYPE
-	? $_TYPE->can($func)
+	? $_TYPE->can($func) || $_TYPE_CAN_AUTOLOAD
         ? $_TYPE->$func(@_)
 	: Bivio::Die->die(
 	    $func, ': not a valid method of ', ref($_TYPE) || $_TYPE)
-	: ($_TYPE = Bivio::IO::ClassLoader->map_require('TestUnit', $func)
-	   and $_TYPE->can('new_unit')
-	       ? ($_TYPE = $_TYPE->new_unit(__PACKAGE__->builtin_class(), @_))
-	       : $_TYPE);
+	: _load_type_class($func, \@_);
 }
 
 =for html <a name="builtin_assert_contains"></a>
@@ -542,6 +539,17 @@ sub _assert_expect {
     Bivio::Die->die("expected != actual:\n$$res")
         if $res;
     return 1;
+}
+
+sub _load_type_class {
+    my($func, $args) = @_;
+    $_TYPE = Bivio::IO::ClassLoader->map_require('TestUnit', $func);
+    $_TYPE = $_TYPE->new_unit(__PACKAGE__->builtin_class(), @$args)
+	if $_TYPE->can('new_unit');
+    $_TYPE_CAN_AUTOLOAD = $_TYPE->package_name ne __PACKAGE__
+	&& defined(&{\&{$_TYPE->package_name . '::AUTOLOAD'}})
+        ? 1 : 0;
+    return $_TYPE;
 }
 
 sub _pm {
