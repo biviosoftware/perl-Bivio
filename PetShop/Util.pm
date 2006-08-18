@@ -653,3 +653,5 @@ b-realm-role -r ORDER -u user edit ADMINISTRATOR - \
 b-realm-role -r USER -u user edit GUEST - \
     +WITHDRAWN \
     +DATA_READ
+b-realm-role -r USER -u user edit TEST_ROLE1 -
+b-realm-role -r USER -u user edit TEST_ROLE2 -
