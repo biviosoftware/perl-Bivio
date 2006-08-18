@@ -22,6 +22,8 @@ initialize_fully('FORUM_WIKI_VIEW');
 	    'MixedCase' => qq{<p class="prose"><a href="/fourem/wiki/MixedCase">MixedCase</a>\n</p>},
 	    ' MiC ' => qq{<p class="prose"><a href="/fourem/wiki/MiC">MiC</a>\n</p>},
 	    '(MiC) ' => qq{<p class="prose">(<a href="/fourem/wiki/MiC">MiC</a>)\n</p>},
+	    '=MixedCaseOnly=' => qq{<p class="prose">MixedCaseOnly\n</p>},
+	    'This is not =WikiText= ok' => qq{<p class="prose">This is not WikiText ok\n</p>},
 	    'e.g.' => qq{<p class="prose">e.g.\n</p>},
 	    '/a/b' => qq{<p class="prose"><a href="/a/b">/a/b</a>\n</p>},
 	    '/a/b.' => qq{<p class="prose"><a href="/a/b">/a/b</a>.\n</p>},
