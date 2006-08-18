@@ -3,15 +3,14 @@
 Request('initialize_fully');
 [
     {
-	check_return => sub {
-	    my($case, $actual, $expect) = @_;
+	compute_return => sub {
+	    my($case, $actual) = @_;
 	    my($o) = $actual->[0];
-	    $case->actual_return([
+	    return [
 		$o->get('type')->get_name,
 		$o->is_default,
-		Bivio::Die->eval(sub {$o->format_file}),
-	    ]);
-	    return $expect;
+		Bivio::Die->eval(sub {$o->format_file}) || undef,
+	    ];
 	},
         object => 'Bivio::Auth::Realm',
     } => [
@@ -21,9 +20,11 @@ Request('initialize_fully');
 	    ['user', req()] => ['USER', 1, 'user'],
 	    ['club', req()] => ['CLUB', 1, 'club'],
 	    ['general', req()] => ['GENERAL', 1, 'general'],
+	    sub {[class()->get_general, req()]} => ['GENERAL', 1, undef],
+	    sub {[class()->new('demo', req()), req()]} => ['USER', 0, 'demo'],
 	],
 	get_general => [
-	    [] => ['GENERAL', 1],
+	    [] => ['GENERAL', 1, undef],
 	],
     ],
     ['demo', req()] => [
@@ -40,6 +41,14 @@ Request('initialize_fully');
 	    sub {
 		return [shift->get_nested(qw(object id))];
 	    } => 0,
+	],
+	get_default_id => [
+	    [] => [Bivio::Auth::RealmType->USER->as_int],
+	],
+    ],
+    ['club', req()] => [
+	get_default_id => [
+	    [] => [Bivio::Auth::RealmType->CLUB->as_int],
 	],
     ],
     sub {
