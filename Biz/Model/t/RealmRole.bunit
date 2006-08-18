@@ -1,0 +1,64 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+PropertyModel();
+use Bivio::Auth::Role;
+use Bivio::Auth::RoleSet;
+my($p) = Bivio::Auth::Permission->DATA_READ;
+my($users) = [map(
+    +{
+	user => create_user("realm_role_bunit$_"),
+	set => ${Bivio::Auth::PermissionSet->from_array($_ ? [$p] : [])},
+    },
+    0..1,
+)];
+my($r) = Bivio::Auth::Role->TEST_ROLE1;
+[
+    initialize_permissions => [
+        [$users->[1]->{user}] => not_die(),
+    ],
+    add_permissions => [
+        [$users->[1]->{user}, [$r->get_name], $users->[1]->{set}] => not_die(),
+    ],
+    {
+	method => 'get_permission_map',
+	compute_params => sub {
+	    my($case, $params) = @_;
+	    my($user) = $params->[0];
+	    $case->expect([
+		$users->[$user]->{set},
+		[sort(map("$_", grep(!$_->eq_unknown, Bivio::Auth::Role->get_list())))],
+	    ]);
+	    return [req()->set_realm($users->[$user]->{user})];
+	},
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [$actual->[0]->{$r}, [sort(keys(%{$actual->[0]}))]];
+	},
+    } => [
+	0 => [],
+	1 => [],
+    ],
+    {
+	method => 'get_roles_for_permission',
+	compute_params => sub {
+	    my($case, $params) = @_;
+	    my($user) = $params->[0];
+	    $case->expect(
+		[sort(
+		    qw(ACCOUNTANT ADMINISTRATOR GUEST MEMBER),
+		    Bivio::Auth::PermissionSet->is_set($users->[0]->{set}, $p)
+		        ? $r : ())]);
+	    return [$users->[0]->{user}, $p];
+	},
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [sort(map(
+		$_->get_name,
+		@{Bivio::Auth::RoleSet->to_array($actual->[0])},
+	    ))];
+	}
+    } => [
+	0 => [],
+	1 => [],
+    ],
+];
