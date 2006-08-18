@@ -59,6 +59,29 @@ sub add_permissions {
     return _do('add', @_);
 }
 
+=for html <a name="get_permission_map"></a>
+
+=head2 get_permission_map(Bivio::Biz::Model::RealmOwner realm) : hash_ref
+
+Returns (role, permission_set) hash_ref for I<realm>.
+
+=cut
+
+sub get_permission_map {
+    my($self, $realm_or_id) = @_;
+    my($realm) = Bivio::Auth::Realm->new($realm_or_id, $self->get_request);
+    return {
+	%{$realm->is_default ? {}
+	      : $self->get_permission_map($realm->get_default_id)},
+	@{$self->new->map_iterate(
+	    sub {shift->get(qw(role permission_set))},
+	    'unauth_iterate_start',
+	    'role',
+	    {realm_id => $realm->get('id')},
+	)}
+    };
+}
+
 =for html <a name="get_roles_for_permission"></a>
 
 =head2 get_roles_for_permission(Bivio::Biz::Model::RealmOwner realm, Bivio::Auth::Permission permission) : Bivio::Auth::RoleSet
@@ -69,16 +92,12 @@ Return all roles for I<realm> which have I<permission> set.
 
 sub get_roles_for_permission {
     my($self, $realm, $permission) = @_;
-    my($type_id) = $realm->get('realm_type')->as_int;
-    my($realm_id) = $realm->get('realm_id');
-    my($roles) = '';
+    my($map) = $self->get_permission_map($realm);
+    my($roles) = Bivio::Auth::RoleSet->get_min;
     foreach my $role (Bivio::Auth::Role->get_list()) {
         next if $role eq Bivio::Auth::Role->UNKNOWN();
-	$self->unauth_load(realm_id => $realm_id, role => $role)
-                || $self->unauth_load_or_die(realm_id => $type_id, role => $role);
-        my($p) = $self->get('permission_set');
-        Bivio::Auth::RoleSet->set(\$roles, $role)
-                if Bivio::Auth::RoleSet->is_set(\$p, $permission);
+	Bivio::Auth::RoleSet->set(\$roles, $role)
+            if Bivio::Auth::RoleSet->is_set($map->{$role}, $permission);
     }
     return $roles;
 }
@@ -155,7 +174,7 @@ sub _do {
     my($which, $self, $realm, $roles, $permissions) = @_;
     $self->initialize_permissions($realm);
     my($realm_id) = $realm->get('realm_id');
-    foreach my $role (@$roles) {
+    foreach my $role (map(Bivio::Auth::Role->from_any($_), @$roles)) {
 	$self->unauth_load_or_die(realm_id => $realm_id, role => $role);
 	$self->update({
 	    permission_set => $which eq 'add'
