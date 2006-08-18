@@ -34,6 +34,14 @@ C<Bivio::Biz::Model::UserPasswordForm>
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+sub PASSWORD_FIELD_LIST {
+    return qw(new_password old_password confirm_new_password);
+}
+
 #=IMPORTS
 
 #=VARIABLES
