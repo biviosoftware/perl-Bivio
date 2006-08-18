@@ -232,7 +232,7 @@ sub builtin_create_user {
     $self->use('Bivio::Util::RealmAdmin')
 	->create_user($self->builtin_email($user), $user, 'password', $user);
     $req->set_realm_and_user($user, $user);
-    return;
+    return $req->get('auth_user');
 }
 
 =for html <a name="builtin_email"></a>
