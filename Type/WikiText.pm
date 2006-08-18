@@ -428,6 +428,12 @@ sub _fmt_href {
     my($tok, $state) = @_;
     return $tok
 	if ($state->{tags}->[0] || '') eq 'a';
+    my($notwiki) = '\=';
+    if ($tok =~ s{(^\W*)$notwiki(\S+)$notwiki(\W*$)}{
+	"$1" . join(' ', split(/$notwiki/, $2)) . "$3"
+    }e) {
+	return $tok;
+    }
     $tok = Bivio::HTML->unescape($tok);
     return shift(@_)
 	unless $tok =~ m{(^\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_WN)\W*$)};
