@@ -91,6 +91,19 @@ my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role->UNKNOWN(),
 
 =for html <a name="new"></a>
 
+=head2 static clone() : Bivio::Auth::Realm
+
+=cut
+
+sub clone {
+    my($other) = shift;
+    my($self) = $other->SUPER::new($other->get_shallow_copy);
+    $self->[$_IDI] = {%{$other->[$_IDI]}};
+    return $self;
+}
+
+=for html <a name="new"></a>
+
 =head2 static new() : Bivio::Auth::Realm
 
 =head2 static new(Bivio::Biz::Model owner) : Bivio::Auth::Realm
@@ -116,7 +129,8 @@ sub new {
 	$owner = Bivio::Biz::Model->new($req, 'RealmOwner')
 	     ->unauth_load_by_id_or_name_or_die(lc($owner));
     }
-
+    return $owner->clone
+	if UNIVERSAL::isa($owner, __PACKAGE__);
     return _new($proto, $owner, $req);
 }
 
@@ -265,6 +279,19 @@ sub format_uri {
     $uri = $self->get('owner')->format_uri();
     $self->put(_uri => $uri);
     return $uri;
+}
+
+=for html <a name="get_default_id"></a>
+
+=head2 get_default_id() : string
+
+Returns the default id for this realm.
+
+=cut
+
+sub get_default_id {
+    my($self) = @_;
+    return $self->get('type')->as_int;
 }
 
 =for html <a name="get_default_name"></a>
