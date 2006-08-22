@@ -46,11 +46,11 @@ sub execute_ok {
 	    $self->update_model_properties($m);
 	}
     }
+#TODO: Apply map of local permission category fields
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Util::RealmRole')
-        ->edit_categories(
-	    ($self->unsafe_get('Forum.is_public_email') ? '+' : '-')
-		. 'public_forum_email',
-	);
+        ->edit_categories({
+	    public_forum_email => $self->unsafe_get('Forum.is_public_email')
+	});
     return;
 }
 
@@ -64,6 +64,7 @@ sub internal_initialize {
 		name => 'RealmOwner.name',
 		type => 'ForumName',
 	    },
+#TODO: Replace denormalized db fields with locals (permission category based)
 	    'Forum.is_public_email',
 	    'Forum.want_reply_to',
 	],
