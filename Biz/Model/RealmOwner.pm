@@ -37,6 +37,7 @@ and delete interface to the C<realm_owner_t> table.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
+use Bivio::Auth::RealmType;
 
 #=VARIABLES
 my($_DT) = Bivio::Type->get_instance('DateTime');
