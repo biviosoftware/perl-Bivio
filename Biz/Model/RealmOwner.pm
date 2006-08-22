@@ -36,16 +36,11 @@ and delete interface to the C<realm_owner_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::Agent::TaskId;
-use Bivio::Auth::RealmType;
-use Bivio::Die;
-use Bivio::SQL::Connection;
-use Bivio::Type::DateTime;
-use Bivio::Type::Password;
-use Bivio::Type::RealmName;
 
 #=VARIABLES
-
+my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_RN) = Bivio::Type->get_instance('RealmName');
+my($_P) = Bivio::Type->get_instance('Password');
 my($_HOME_TASK_MAP) = {
     map({
         $_ => Bivio::Agent::TaskId->from_name($_->get_name . '_HOME'),
@@ -61,7 +56,7 @@ my($_HOME_TASK_MAP) = {
 
 =head2 create(hash_ref new_values)
 
-Sets I<creation_date_time>, I<password> (to invalid),
+Sets I<creation_date_time>, I<password (to invalid),
 I<display_name>, I<name> if not set, downcases I<name>, then calls SUPER.
 
 =cut
@@ -71,11 +66,11 @@ sub create {
     $values->{name} =
 	substr($values->{realm_type}->get_name, 0, 1) . $values->{realm_id}
 	unless defined($values->{name});
-    $values->{name} = Bivio::Type::RealmName->process_name($values->{name});
+    $values->{name} = $_RN->process_name($values->{name});
     $values->{display_name} = $values->{name}
 	unless defined($values->{display_name});
-    $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
-    $values->{password} = Bivio::Type::Password->INVALID
+    $values->{creation_date_time} ||= $_DT->now;
+    $values->{password} = $_P->INVALID
 	unless defined($values->{password});
     return shift->SUPER::create(@_);
 }
@@ -158,7 +153,7 @@ Other Models can declare a method of the form:
 
 sub format_name {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return Bivio::Type::RealmName->to_string(
+    return $_RN->to_string(
         $model->get($model_prefix . 'name'));
 }
 
@@ -196,7 +191,7 @@ Returns true if self's password is valid.
 
 sub has_valid_password {
     my($self) = @_;
-    return Bivio::Type::Password->is_valid($self->get('password'));
+    return $_P->is_valid($self->get('password'));
 }
 
 =for html <a name="init_db"></a>
@@ -273,7 +268,7 @@ Invalidates I<self>'s password.
 
 sub invalidate_password {
     my($self) = @_;
-    $self->update({password => Bivio::Type::Password->INVALID});
+    $self->update({password => $_P->INVALID});
     return;
 }
 
@@ -363,7 +358,7 @@ See L<format_name|"format_name"> for params.
 
 sub is_offline_user {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return Bivio::Type::RealmName->is_offline(
+    return $_RN->is_offline(
         $model->get($model_prefix . 'name'));
 }
 
@@ -421,7 +416,7 @@ sub unauth_load_by_email {
     # Is it a valid user/club?
     return $self->unauth_load({
         %$query,
-        name => Bivio::Type::RealmName->process_name($email),
+        name => $_RN->process_name($email),
     });
 }
 
@@ -441,7 +436,7 @@ sub unauth_load_by_email_id_or_name {
     return $self->unauth_load({realm_id => $email_id_or_name})
         if $email_id_or_name =~ /^\d+$/;
     return $self->unauth_load({
-        name => Bivio::Type::RealmName->process_name($email_id_or_name),
+        name => $_RN->process_name($email_id_or_name),
     });
 }
 
@@ -460,7 +455,7 @@ sub unauth_load_by_id_or_name_or_die {
     return $self->unauth_load_or_die({
         ($id_or_name =~ /^\d+$/
             ? (realm_id => $id_or_name)
-            : (name => Bivio::Type::RealmName->process_name($id_or_name))),
+            : (name => $_RN->process_name($id_or_name))),
         $realm_type
 	    ? (realm_type => Bivio::Auth::RealmType->from_any($realm_type))
 	    : (),
@@ -500,7 +495,7 @@ Sets self's clear_text password to a new value.
 sub update_password {
     my($self, $clear_text) = @_;
     return $self->update({
-	password => Bivio::Type::Password->encrypt($clear_text)
+	password => $_P->encrypt($clear_text)
     });
 }
 
