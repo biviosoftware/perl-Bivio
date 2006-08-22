@@ -196,18 +196,23 @@ sub do_table_rows {
 
 =for html <a name="do_xxx"></a>
 
-=head2 do_test_backdoor(string form_model, string fields)
+=head2 do_test_backdoor(string form_model, hash_ref form_fields)
 
-Executes _do_test_backdoor.
+=head2 do_test_backdoor(string shell_util, string command)
+
+Executes ShellUtil or FormModel based on $args.
 
 =cut
 
 sub do_test_backdoor {
-    my($self, $form_model, $form_fields) = @_;
+    my($self, $op, $args) = @_;
     $self->visit_uri(
 	'/_test_backdoor?'
-	. Bivio::IO::ClassLoader->simple_require('Bivio::Agent::HTTP::Query')
-	    ->format({%$form_fields, form_model => $form_model}),
+	. $self->use('Bivio::Agent::HTTP::Query')->format(
+	    ref($args) eq 'HASH' ? {%$args, form_model => $op}
+	        : ref($args) eq '' ? {shell_util => $op, command => $args}
+		: Bivio::Die->die($args, ': unable to parse args'),
+	)
     );
     return;
 }
@@ -860,7 +865,8 @@ messages found.
 
 sub verify_local_mail {
     my($self, $email, $body_regex, $count) = @_;
-    my($body_re) = ref($body_regex) ? $body_regex : qr{$body_regex};
+    my($body_re) = !defined($body_regex) ? qr{}
+	: ref($body_regex) ? $body_regex : qr{$body_regex};
     $count ||= ref($email) eq 'ARRAY' ? int(@$email) : 1;
     Bivio::Die->die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
