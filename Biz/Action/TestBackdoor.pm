@@ -8,14 +8,24 @@ use base ('Bivio::Biz::Action');
 
 sub execute {
     my($proto, $req) = @_;
-    # Extract form_model from $req.query and execute with remaining query
-    # arguments.
-    my($m) = Bivio::Biz::Model->get_instance(
-	delete((my $q = $req->get('query'))->{form_model}));
-    $m->execute($req, {
-	map(($_ => ($m->get_field_type($_)->from_literal($q->{$_}))[0]),
-	    keys(%$q)),
-    });
+    # Little bit o' extra sanity
+    Bivio::Die->die('cannot be executed in production mode')
+        unless $req->is_test;
+#TODO: Limit to a specific set of IPs or test client or basic auth?
+    my($q) = $req->get('query');
+    if (my $m = delete($q->{form_model})) {
+	$m = Bivio::Biz::Model->get_instance($m);
+	$m->execute($req, {
+	    map(($_ => ($m->get_field_type($_)->from_literal($q->{$_}))[0]),
+		keys(%$q)),
+	});
+    }
+    elsif (my $u = delete($q->{shell_util})) {
+	Bivio::ShellUtil->new_other($u)->main(split(' ', $q->{command}));
+    }
+    else {
+	Bivio::Die->die($q, ': invalid query');
+    }
     return;
 }
 
