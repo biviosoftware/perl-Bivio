@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.39  2006/08/17 17:03:21  moeller
+  * Bivio::SQL::ListSupport added count_distinct option to list
+    declarationto support paging on lists that use want_select_distinct
+  * Bivio::Test::Unit $_TYPE_CAN_AUTOLOAD needed to avoid recursion on
+    AUTOLOAD when the function does not exist
+  * Bivio::Test wrap nested_differences, which can execute code, so we
+    don't get caught with bad code in test.
+    Fixed test harness t() to handle FAILURE in output as a failure
+    Don't call nested_differences if custom check return and die
+  * Bivio::UI::Text::Widget::CSV added header option
+  * Bivio::UI::Widget::URI coding standard cleanup
+
   Revision 4.38  2006/08/14 02:09:50  nagler
   * Bivio::Type::Boolean->get_default added
   * Bivio::Type::Year->get_default/now added
