@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.40  2006/08/23 04:55:53  aviggio
+  * Bivio::Auth::Realm->clone added and called from new
+  * Bivio::Auth::Realm->get_default_id added
+  * Bivio::Biz::Action::TestBackdoor accepts shell_util in query to
+    execute shell_util
+  * Bivio::Biz::Model::ForumForm pass hash to RealmRole.edit_categories
+  * Bivio::Biz::Model::RealmOwner use map lookup for types
+  * Bivio::Biz::Model::RealmRole->get_permission_map added and modified
+    get_roles_for_permission to call it
+  * Bivio::Biz::Model::UserPasswordForm->PASSWORD_FIELD_LIST added
+  * Bivio::Biz::Util::RealmRole->list_all_categories and
+    list_enabled_categories added, edit_categories now accepts hash refs
+  * Bivio::Test::Language::HTTP->do_test_backdoor accepts ShellUtil class
+    and command string to passed to Action.TestBackdoor
+  * Bivio::Test::Unit->builtin_create_user returns auth_user
+  * Bivio::Util::SQL->create_test_user accepts an email, and generates
+    user and display_name from that
+
   Revision 4.39  2006/08/17 17:03:21  moeller
   * Bivio::SQL::ListSupport added count_distinct option to list
     declarationto support paging on lists that use want_select_distinct
