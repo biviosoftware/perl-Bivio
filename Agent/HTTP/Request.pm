@@ -256,6 +256,9 @@ sub get_content {
 	$self->throw_die(INPUT_TOO_LARGE => "Content-Length too large: $l")
 	    if $l > 100_000_000;
 	$r->read($c, $l);
+        $self->throw_die(CLIENT_ERROR =>
+            'timeout occurred while reading request content')
+            unless defined($c);
 	$self->throw_die(CORRUPT_QUERY =>
 	    "Content-Length ($l) >= actual length: " . length($c)
 	) if $l > length($c);
