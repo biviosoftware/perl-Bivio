@@ -273,6 +273,8 @@ sub html_parser_text {
 
 =for html <a name="http_get"></a>
 
+=head2 http_get(string uri) : string_ref
+
 =head2 http_get(string uri, string file_name) : string_ref
 
 Executes an GET and returns the result.
@@ -288,6 +290,8 @@ sub http_get {
 }
 
 =for html <a name="http_post"></a>
+
+=head2 http_post(string uri, array_ref form) : string_ref
 
 =head2 http_post(string uri, array_ref form, string file_name) : string_ref
 
@@ -319,6 +323,8 @@ sub http_post {
 
 =for html <a name="http_request"></a>
 
+=head2 http_request(HTTP::Request hreq) : string_ref
+
 =head2 http_request(HTTP::Request hreq, string file_name) : string_ref
 
 Execute I<hreq> and return the response (including headers).  Writes the
@@ -336,7 +342,8 @@ sub http_request {
     my($hres) = _http_request($self, $hreq);
     my($rs) = $hres->as_string;
     # Always write the file (even on failure)
-    $self->write_file($file_name, \$rs);
+    $self->write_file($file_name, \$rs)
+        if defined($file_name);
     my($hres_string) = \$rs;
     $self->client_error('request failed', {entity => $hres_string})
 	    unless $hres->is_success;
