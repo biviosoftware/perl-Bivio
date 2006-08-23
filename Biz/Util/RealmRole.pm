@@ -64,7 +64,9 @@ usage: b-realm-role [options] command [args...]
 commands:
     copy_all src dst -- copies all records from src to dst realm
     edit role operation ... -- changes the permissions for realm/role
-    edit_categories [category_op ...] -- disable or enable classes of permissions
+    edit_categories [category_op ...] -- disable or enable permission categories
+    list_all_categories -- lists all defined permission categories
+    list_enabled_categories -- list enabled permission categories for this realm
     list [role] -- lists permissions for this realm and role or all
     list_all [realm_type] -- lists permissions for all realms of realm_type
     make_super_user -- gives current user super_user privileges
@@ -237,12 +239,8 @@ Returns string of what operations were performed, including current realm.
 =cut
 
 sub edit_categories {
-    my($self) = shift;
-    $self->usage('missing category_ops')
-	unless @_;
-    my($category_ops) = [map((ref($_) ? @$_ : $_), @_)];
-    return
-	unless @$category_ops;
+    my($self, $category_ops) = _edit_categories_args(@_);
+    return unless @$category_ops;
     my($req) = $self->get_request;
     my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
     my($o) = $req->get('auth_realm')->get('owner');
@@ -326,6 +324,50 @@ EOF
 	$sep = "\n";
     }
     return \$res;
+}
+
+=for html <a name="list_all_categories"></a>
+
+=head2 list_all_categories() : string_ref
+
+Print all defined permission categories.
+
+=cut
+
+sub list_all_categories {
+    my($self) = @_;
+    my($res) = '';
+    foreach my $x (@{CATEGORIES()}) {
+	$res .= "$x\n";
+    }
+    return \$res;
+}
+
+=for html <a name="list_enabled_categories"></a>
+
+=head2 list_enabled_categories() : array_ref
+
+Shows permission categories which are enabled for the current realm.
+
+=cut
+
+sub list_enabled_categories {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($rp) = Bivio::Biz::Model->new($req, 'RealmRole')->
+	get_permission_map( $req->get('auth_realm'));
+    my($cm) = _category_map($self);
+    return [map({
+	my($k) = $_;
+	my($ops) = $cm->{$k}->{'+'};
+	@$ops == grep({
+	    my($op, $roles, $permissions) = @$_;
+	    @$roles == grep(
+		((($rp->{$_} & $permissions) eq $permissions)
+		    xor ($op eq 'remove_permissions')),
+		@$roles);
+	} @$ops) ? $k : ();
+    } sort(keys(%$cm)))];
 }
 
 =for html <a name="make_super_user"></a>
@@ -427,6 +469,19 @@ sub _category_map {
 	    } qw(+ -)),
 	});
     } @{$_CFG->{category_map}->()})};
+}
+
+sub _edit_categories_args {
+    my($self) = shift;
+    $self->usage('missing category_ops')
+	unless @_;
+    return $self, [map({
+	my($a) = $_;
+	ref($a) eq 'ARRAY' ? @$a
+	    : ref($a) eq 'HASH' ? map(($a->{$_} ? '+' : '-') . $_,
+				      sort(keys(%$a)))
+		: $a;
+    } @_)];
 }
 
 # _get_permission_set(self, string realm_id, Bivio::Auth::Role role, boolean dont_die) : string
