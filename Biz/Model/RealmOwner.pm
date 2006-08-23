@@ -58,7 +58,7 @@ my($_HOME_TASK_MAP) = {
 
 =head2 create(hash_ref new_values)
 
-Sets I<creation_date_time>, I<password (to invalid),
+Sets I<creation_date_time>, I<password> (to invalid),
 I<display_name>, I<name> if not set, downcases I<name>, then calls SUPER.
 
 =cut
@@ -505,7 +505,7 @@ sub update_password {
 
 =head2 validate_login(string login) : string
 
-Load the RealmOwner for <I>login (or email or id) if valid.
+Load the RealmOwner for I<login> (or email or id) if valid.
 Return error if invalid.
 
 =cut
