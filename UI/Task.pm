@@ -338,7 +338,7 @@ sub format_uri {
 		$self,
 		$task_name,
 		$args->{realm},
-		'not a simple realm name or placeholder'
+		' not a simple realm name or placeholder'
 	    ) unless $ro = $_RN->unsafe_from_uri($args->{realm});
 	}
 	$uri =~ s/.*?$_REALM_PLACEHOLDER_PAT/\/$ro/og;
