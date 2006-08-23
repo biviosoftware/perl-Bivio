@@ -127,7 +127,9 @@ sub new {
         Bivio::Die->die('cannot create model without request')
 	    unless ref($req);
 	$owner = Bivio::Biz::Model->new($req, 'RealmOwner')
-	     ->unauth_load_by_id_or_name_or_die(lc($owner));
+	     ->unauth_load_by_id_or_name_or_die(
+                 Bivio::Auth::RealmType->unsafe_from_name($owner)
+                     ? lc($owner) : $owner);
     }
     return $owner->clone
 	if UNIVERSAL::isa($owner, __PACKAGE__);
