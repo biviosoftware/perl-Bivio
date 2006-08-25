@@ -173,9 +173,10 @@ sub create_test_user {
     my($self, $user_or_email, $password) = @_;
     $self->initialize_ui;
     my($t) = $self->use('Bivio::Test::Language::HTTP');
+    my($display_name);
     my($email) = $user_or_email =~ /\@/ ? $user_or_email
-	: $t->generate_local_email($user_or_email);
-    my($display_name) = ($email =~ /(.*)@/)[0];
+	: $t->generate_local_email($display_name = $user_or_email);
+    $display_name ||= ($email =~ /(.*)@/)[0];
     (my $user_name = substr(
 	$display_name, 0, Bivio::Type->get_instance('RealmName')->get_width
     )) =~ s/\W+//g;
