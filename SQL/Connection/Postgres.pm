@@ -301,9 +301,10 @@ sub _fixup_outer_join {
 	    || Bivio::Die->die('failed to insert outer join "',
 		$joins->{$source_table}, '" into ', $from_where);
     }
-    # remove extra commas, trailing where
+    # remove extra commas, trailing where, trailing and
     $from_where =~ s/\bFROMPOSTGRES-FIXME\b/FROM/sg;
     $from_where =~ s/,\s*(?=\sWHERE\s)//is;
+    $from_where =~ s/\s+AND\s+OFFSET/ OFFSET/is;
     # Really should have an SQL lexicon...
     $from_where =~ s/\s(?:WHERE|AND)(?=\s*$|\s*\)|\s*(?:HAVING|GROUP|ORDER|UNION|INTERSECT)\b)//is;
     return $prefix . $from_where;
