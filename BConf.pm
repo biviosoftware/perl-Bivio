@@ -219,6 +219,11 @@ sub merge_realm_role_category_map {
 		    [[qw(ANONYMOUS USER)] => 'MAIL_SEND'],
 	    ],
 	    [
+		system_user_forum_email =>
+		    [ANONYMOUS => '-MAIL_SEND'],
+		    [USER => 'MAIL_SEND'],
+	    ],
+	    [
 		admin_only_forum_email => [
 		    MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)],
 		],
