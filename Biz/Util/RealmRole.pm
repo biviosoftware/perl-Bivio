@@ -471,17 +471,24 @@ sub _category_map {
     } @{$_CFG->{category_map}->()})};
 }
 
+# _edit_categories_args(self, any category_ops) : array_ref
+#
+# Returns a list of permission_categories, which have been  properly sorted
+# such that categories to be enabled following any categories to be disabled.
+#
+# See edit_categories for more info on I<category_ops>.
+#
 sub _edit_categories_args {
     my($self) = shift;
     $self->usage('missing category_ops')
 	unless @_;
-    return $self, [map({
+    return $self, [reverse(sort(map({
 	my($a) = $_;
 	ref($a) eq 'ARRAY' ? @$a
 	    : ref($a) eq 'HASH' ? map(($a->{$_} ? '+' : '-') . $_,
 				      sort(keys(%$a)))
 		: $a;
-    } @_)];
+    } @_)))];
 }
 
 # _get_permission_set(self, string realm_id, Bivio::Auth::Role role, boolean dont_die) : string
