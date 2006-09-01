@@ -536,7 +536,7 @@ sub _assert_expect {
     my($m) = $self->my_caller eq 'builtin_assert_eq'
 	? 'nested_differences' : 'nested_contains';
     my($res) = Bivio::IO::Ref->$m($expect, $actual);
-    Bivio::Die->die("expected != actual:\n$$res")
+    Bivio::Die->throw_quietly(DIE => "expected != actual:\n$$res")
         if $res;
     return 1;
 }
