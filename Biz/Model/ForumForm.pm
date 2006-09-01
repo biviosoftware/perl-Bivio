@@ -110,7 +110,7 @@ sub validate {
     ) unless $top_ok || $old_top eq $new_top;
     my($x) = 0;
     foreach my $pc ($_EM->OPTIONAL_MODES) {
-	$x += $self->get($pc);
+	$x += $self->unsafe_get($pc) ? $self->get($pc) : 0;
 	return $self->internal_put_error($pc,
 					 Bivio::TypeError->MUTUALLY_EXCLUSIVE)
 	    if $x > 1;
