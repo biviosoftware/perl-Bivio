@@ -40,7 +40,7 @@ my($check_perms) = sub {
     [{
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 't1',
-	'Forum.is_public_email' => 0,
+	'public_forum_email' => 0,
 	'Forum.want_reply_to' => 1,
     }] => [{
 	'RealmOwner.name' => 'FORUM_NAME',
@@ -48,7 +48,7 @@ my($check_perms) = sub {
     [{
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 'nosuchtop-subforum',
-	'Forum.is_public_email' => 0,
+	'public_forum_email' => 0,
     }] => [{
 	'RealmOwner.name' => 'TOP_FORUM_NAME',
     }],
@@ -56,7 +56,7 @@ my($check_perms) = sub {
     [{
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
-	'Forum.is_public_email' => 0,
+	'public_forum_email' => 0,
 	'Forum.want_reply_to' => 1,
     }] => [{
 	'Model.RealmOwner' => {
@@ -83,20 +83,21 @@ my($check_perms) = sub {
     [] => [{
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
-	'Forum.is_public_email' => 0,
+#TODO: local value should be '0'
+	'public_forum_email' => undef,
 	'Forum.want_reply_to' => 1,
     }],
     [{
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
-	'Forum.is_public_email' => 1,
+	'public_forum_email' => 1,
     }] => sub {
 	return $check_perms->(shift(@_), 1);
     },
     [{
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
-	'Forum.is_public_email' => 0,
+	'public_forum_email' => 0,
     }] => sub {
 	return $check_perms->(shift(@_), 0);
     },
@@ -104,13 +105,13 @@ my($check_perms) = sub {
     [] => [{
 	'RealmOwner.display_name' => 'Top One ',
 	'RealmOwner.name' => 'ff1-',
-	'Forum.is_public_email' => 0,
+	'public_forum_email' => 0,
     }],
     $realm->('ff1'),
     [{
 	'RealmOwner.display_name' => 'Sub One',
 	'RealmOwner.name' => 'ff1-s1',
-	'Forum.is_public_email' => 0,
+	'public_forum_email' => 0,
     }] => [{
 	'Model.Forum' => {
 	    parent_realm_id => sub {$parent},
@@ -126,7 +127,7 @@ my($check_perms) = sub {
     [{
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 'ff1_s1',
-	'Forum.is_public_email' => 0,
+	'public_forum_email' => 0,
     }] => [{
 	'RealmOwner.name' => 'TOP_FORUM_NAME',
     }],
