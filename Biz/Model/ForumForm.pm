@@ -6,6 +6,7 @@ use base 'Bivio::Biz::FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = Bivio::Type->get_instance('ForumName');
+my($_EM) = Bivio::Type->get_instance('ForumEmailMode');
 
 sub CREATE_REALM_MODELS {
     return qw(Forum RealmOwner);
@@ -24,6 +25,12 @@ sub execute_empty {
 	$self->get('RealmOwner.name') . '-');
     $self->internal_put_field('RealmOwner.display_name' =>
         $self->get('RealmOwner.display_name') . ' ');
+    my($cats) = Bivio::IO::ClassLoader
+	->simple_require('Bivio::Biz::Util::RealmRole')
+	    ->list_enabled_categories();
+    foreach my $pc ($_EM->OPTIONAL_MODES) {
+	$self->internal_put_field($pc => grep($_ eq $pc, @$cats) ? 1 : 0);
+    }
     return;
 }
 
@@ -46,11 +53,12 @@ sub execute_ok {
 	    $self->update_model_properties($m);
 	}
     }
-#TODO: Apply map of local permission category fields
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Util::RealmRole')
-        ->edit_categories({
-	    public_forum_email => $self->unsafe_get('Forum.is_public_email')
-	});
+	    ->edit_categories({
+		map({
+		    $_ => $self->unsafe_get($_);
+		} $_EM->OPTIONAL_MODES)
+	    });
     return;
 }
 
@@ -64,9 +72,13 @@ sub internal_initialize {
 		name => 'RealmOwner.name',
 		type => 'ForumName',
 	    },
-#TODO: Replace denormalized db fields with locals (permission category based)
-	    'Forum.is_public_email',
 	    'Forum.want_reply_to',
+#TODO: Using Booleans instead of proper enum to support WebDAV CSV UI
+	    map(+{
+		name => $_,
+		type => 'Boolean',
+		constraint => 'NONE',
+	    }, $_EM->OPTIONAL_MODES),
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
 	other => [
@@ -96,6 +108,13 @@ sub validate {
 	$top_ok ? Bivio::TypeError->TOP_FORUM_NAME_CHANGE
 	    : Bivio::TypeError->TOP_FORUM_NAME
     ) unless $top_ok || $old_top eq $new_top;
+    my($x) = 0;
+    foreach my $pc ($_EM->OPTIONAL_MODES) {
+	$x += $self->get($pc);
+	return $self->internal_put_error($pc,
+					 Bivio::TypeError->MUTUALLY_EXCLUSIVE)
+	    if $x > 1;
+    }
     return;
 }
 

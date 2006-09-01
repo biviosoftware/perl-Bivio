@@ -284,7 +284,9 @@ my($_SELF) = __PACKAGE__->new({
 	    'RealmOwner.name' => 'Forum',
 	    'RealmOwner.display_name' => 'Title',
 	    'Forum.want_reply_to' => 'Reply-To List?',
-	    'Forum.is_public_email' => 'Public Email?',
+	    'admin_only_forum_email' => 'Admin Only Email?',
+	    'system_user_forum_email' => 'System User Email?',
+	    'public_forum_email' => 'Public Email?',
 	    'Forum.forum_id' => 'Database Key',
 	],
 	ForumUserList => [
