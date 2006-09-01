@@ -1363,7 +1363,8 @@ sub _email {
     $msg->set_header('To', $to_email);
     $msg->set_from_with_user($req);
     $body->($msg);
-    $msg->send($req);
+    $msg->send($req)
+        unless $self->unsafe_get('noexecute');
     return;
 }
 
