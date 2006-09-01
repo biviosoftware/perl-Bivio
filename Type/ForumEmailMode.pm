@@ -14,4 +14,9 @@ __PACKAGE__->compile([
     PUBLIC_FORUM_EMAIL => [4, "Anyone"],
 ]);
 
+sub OPTIONAL_MODES {
+    return qw(admin_only_forum_email system_user_forum_email
+	      public_forum_email);
+}
+
 1;
