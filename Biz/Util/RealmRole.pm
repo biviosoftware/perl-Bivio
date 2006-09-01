@@ -355,7 +355,7 @@ sub list_enabled_categories {
     my($self) = @_;
     my($req) = $self->get_request;
     my($rp) = Bivio::Biz::Model->new($req, 'RealmRole')->
-	get_permission_map( $req->get('auth_realm'));
+	get_permission_map($req->get('auth_realm'));
     my($cm) = _category_map($self);
     return [map({
 	my($k) = $_;
