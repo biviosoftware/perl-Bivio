@@ -390,6 +390,11 @@ sub get_delegate_info {
 	undef,
 	'Blog must start with "@h3 " to indicate title',
     ],
+    MUTUALLY_EXCLUSIVE => [
+	66,
+	undef,
+	'Two or more mutually exclusive values cannot be specified',
+    ],
 ];
 }
 
