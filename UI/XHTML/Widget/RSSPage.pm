@@ -24,10 +24,14 @@ sub initialize {
 #TODO: Might it be better to render off the task?
 	    map(Tag($_ => Prose(vs_text('rsspage', $list, $_))),
 		qw(title description)),
-	    $self->unsafe_get('source_task') ? Tag(link => String(URI({
-		task_id => $self->get('source_task'),
-		query => undef,
-	    }), {escape_html => 1})) : (),
+#TODO: Refactor or add XML(?) link widget that formats full http URI
+# as required by some RSS readers
+	    $self->unsafe_get('source_task') ? Tag(link => String(
+#TODO: URI or Link, instead of format_ call?
+		$self->get_request->format_http({
+		    task_id => $self->get('source_task'),
+		    query => undef,
+		}), {escape_html => 1})) : (),
 	    Tag(language => 'en-us'),
 	], {join_separator => "\n"}),
 	columns => [
