@@ -363,7 +363,7 @@ my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 
 sub render_html {
-    my($self, $value, $name, $req, $task_id) = @_;
+    my($self, $value, $name, $req, $task_id, $no_auto_links) = @_;
     my($state) = {
 	lines => [split(/\r?\n/, ref($value) ? $$value : $value)],
 	line_num => 0,
@@ -372,6 +372,7 @@ sub render_html {
 	html => '',
 	name => $name,
 	req => $req,
+	no_auto_links => $no_auto_links ? 1 : 0,
 	task_id => $task_id || $req->unsafe_get('task_id'),
     };
     while (defined(my $line = _next_line($state))) {
@@ -427,7 +428,8 @@ sub _fmt_err {
 sub _fmt_href {
     my($tok, $state) = @_;
     return $tok
-	if ($state->{tags}->[0] || '') eq 'a';
+	if $state->{no_auto_links}
+	    || ($state->{tags}->[0] || '') eq 'a';
     my($notwiki) = '\=';
     if ($tok =~ s{(^\W*)$notwiki(\S+)$notwiki(\W*$)}{
 	"$1" . join(' ', split(/$notwiki/, $2)) . "$3"
