@@ -124,6 +124,29 @@ IN
 OUT
 	],
     ],
+    class() => [
+	{
+	    # Test auto link creation override
+	    method => 'render_html',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [@$params, 'inline', req(), undef, 1];
+	    },
+	} => [
+	    'MixedCaseOnly' => qq{<p class="prose">MixedCaseOnly\n</p>},
+	    ' MiC ' => qq{<p class="prose">MiC\n</p>},
+	    '/a/b' => qq{<p class="prose">/a/b\n</p>},
+	    'http://a.com' => qq{<p class="prose">http://a.com\n</p>},
+	    'a@a.a' => qq{<p class="prose">a\@a.a\n</p>},
+	    'Module.ch' => qq{<p class="prose">Module.ch\n</p>},
+	    'a.com' => qq{<p class="prose">a.com\n</p>},
+	    '@a href=/x y' => qq{<p class="prose"><a href="/x">y</a>\n</p>},
+	    '@a href=x y' => qq{<p class="prose"><a href="/fourem/wiki/x">y</a>\n</p>},
+	    '/foo.doc' => qq{<p class="prose">/foo.doc\n</p>},
+	    '@img src="x"' => qq{<img src="/fourem/wiki/x" />\n},
+	    '@a href=/ foo.org' => qq{<p class="prose"><a href="/">foo.org</a>\n</p>},
+	],
+    ],
 ];
 
 sub _chomp {
