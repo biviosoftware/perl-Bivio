@@ -552,10 +552,10 @@ Subtract I<right> from I<left> and return the number of seconds.
 =cut
 
 sub diff_seconds {
-    my(undef, $left, $right) = @_;
+    my($proto, $left, $right) = @_;
     my($lj, $ls) = split(' ', $left);
     my($rj, $rs) = split(' ', $right);
-    return ($lj - $rj) * SECONDS_IN_DAY() + $ls - $rs;
+    return ($lj - $rj) * $proto->SECONDS_IN_DAY + $ls - $rs;
 }
 
 =for html <a name="english_day_of_week"></a>
