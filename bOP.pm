@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.42  2006/09/01 17:12:53  aviggio
+  * Bivio::BConf added system_user_forum_email permission category
+  * Bivio::Biz::Model::ForumEditDAVList added email related columns
+  * Bivio::Biz::Model::ForumForm reference permission categories directly
+    instead of denormalizing permission settings in the database
+  * Bivio::Biz::Model::ForumList added local fields for permission settings
+  * Bivio::Biz::Util::RealmRole->edit_categories sorts permission
+    category list order to prevent side effects
+  * Bivio::Delegate::SimpleTypeError define new MUTUALLY_EXCLUSIVE error
+  * Bivio::SQL::Connection::Postgres fixed case where (+) left join was
+    last term in WHERE clause--when (+) was removed, it left an AND
+  * Bivio::Util::SQL->create_test_user needs to preserve old behavior of
+    $user, and not put generated email local part into display_name and
+    user_name, if an email wasn't supplied
+
   Revision 4.41  2006/08/23 17:05:54  moeller
   * Bivio::Agent::HTTP::Request throws a CLIENT_ERROR if a timeout
     occurs while reading the request body
