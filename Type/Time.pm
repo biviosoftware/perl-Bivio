@@ -81,9 +81,10 @@ sub from_literal {
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;
     return (undef, Bivio::TypeError->TIME) unless
-	    $value =~ m!^(\d+):(\d+)(?::(\d+))?(?:([ap])(?:|m|\.m\.))?$!i;
+	    $value =~ m!^(\d+)(?::(\d+))?(?::(\d+))?(?:([ap])(?:|m|\.m\.))?$!i;
     my($h, $m, $s, $am_pm) = ($1, $2, $3, $4);
     $s = 0 unless defined($s);
+    $m = 0 unless defined($m);
     if (defined($am_pm)) {
 	return (undef, Bivio::TypeError->HOUR) if $h > 12;
 	if ($h == 12) {
@@ -171,7 +172,7 @@ sub to_literal {
     return $proto->SUPER::to_literal(@_)
 	unless defined($value);
     my($s, $m, $h) = $proto->to_parts($value);
-    return sprintf('%02d:%02d:%02d', $h, $m, $s);
+    return sprintf('%02d:%02d' . ($s ? ':%02d' : ''), $h, $m, $s ? $s : ());
 }
 
 =for html <a name="to_sql_param"></a>
