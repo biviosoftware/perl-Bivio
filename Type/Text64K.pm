@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::Type::String>
+L<Bivio::Type::Text>
 
 =cut
 
-use Bivio::Type::String;
-@Bivio::Type::Text64K::ISA = ('Bivio::Type::String');
+use Bivio::Type::Text;
+@Bivio::Type::Text64K::ISA = ('Bivio::Type::Text');
 
 =head1 DESCRIPTION
 
