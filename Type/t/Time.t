@@ -22,6 +22,8 @@ Bivio::Test->unit([
 	    ['24:0:0 ax'] => [undef, Bivio::TypeError->TIME],
 	    ['24:0:1'] => [undef, Bivio::TypeError->HOUR],
 	    ['24:1:0'] => [undef, Bivio::TypeError->HOUR],
+            ['10:00'] => ['2378497 36000'],
+            ['10'] => ['2378497 36000'],
 	],
     ],
 ]);
