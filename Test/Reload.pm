@@ -39,11 +39,15 @@ use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 
 #=VARIABLES
-my($_CONF) = `ls httpd*.conf`;
-chomp($_CONF);
-my($_PRJ) = `pwd`;
-$_PRJ =~ s{.*/}{};
-chomp($_PRJ);
+my($_CONF) = map({chomp($_); $_} `ls httpd*.conf`);
+my($_WATCH) = [
+    map({$_ =~ s{/BConf.pm$}{}; $_}
+        map({$INC{$_}}
+	     grep({$_ =~ /BConf.pm$/} keys(%INC))))
+];
+
+_trace('httpd.conf: ', $_CONF);
+_trace('watched directories: ', $_WATCH);
 
 =head1 METHODS
 
@@ -71,23 +75,19 @@ sub handler {
 #=PRIVATE SUBROUTINES
 
 # _modified() : ...
-#
-#
-#
 sub _modified {
-   return
-       `(cd ..; find $_PRJ -name 'Test' -prune -o -name 'files' -prune -o -name '.*' -prune -o \\( -name '*pm' -a -newer $_PRJ/$_CONF \\) -print)`;
+    return map({
+        _trace("Searching $_ for changed files...");
+	`find $_ -name 'Test' -prune -o -name 'files' -prune -o -name '.*' -prune -o \\( -name '*pm' -a -newer $_CONF \\) -print`;
+    } @$_WATCH);
 }
 
-# _reload(string module)
-#
-#
-#
+# _reload(string path)
 sub _reload {
-    my($module) = @_;
-    chomp($module);
-    $module =~ s{/}{::}g;
-    $module =~ s/\.pm$//;
+    my($path) = @_;
+    my($module) = grep({$_ =~ s{/}{::} if $_; $_}
+        map({$path =~ m{^$_/(.*)\.pm$}; $1} @INC));
+    _trace('module: ', $module);
     Bivio::IO::ClassLoader->delete_require($module);
     Bivio::IO::ClassLoader->simple_require($module);
     return;
