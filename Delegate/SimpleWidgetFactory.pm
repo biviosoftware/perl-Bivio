@@ -162,6 +162,24 @@ sub internal_create_display {
 	    %$attrs,
 	});
     }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Date')) {
+        return $_VS->vs_new('String', {
+            field => $field,
+            value => [[$field], 'HTMLFormat.DateTime',
+                $attrs->{mode}, defined($attrs->{no_timezone})
+                ? $attrs->{no_timezone} : 1],
+	    column_align => 'E',
+	    %$attrs,
+        });
+    }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Time')) {
+        return $_VS->vs_new('String', {
+	    field => $field,
+            value => ['Bivio::Type::Time', '->to_string', [$field]],
+	    column_align => 'E',
+	    %$attrs,
+        });
+    }
     if (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')) {
 	return $_VS->vs_new('DateTime', {
 	    field => $field,
