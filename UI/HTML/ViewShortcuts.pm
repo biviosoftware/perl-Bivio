@@ -344,27 +344,20 @@ sub vs_task_link {
     });
 }
 
-#TODO: Why doesn't this work right?
-#=for html <a name="vs_display"></a>
-#
-#=head2 static vs_display(any model, string field, hash_ref attrs) : Bivio::UI::Widget
-#
-#Uses L<Bivio::UI::HTML::WidgetFactory|Bivio::UI::HTML::WidgetFactory> to
-#create a display widget.
-#
-#=cut
-#
-#sub vs_display {
-#    my(undef, $model, $field, $attrs) = @_;
-#    $field = [ref(Bivio::Biz::Model->get_instance($model)), $field];
-#    return Bivio::IO::ClassLoader->simple_require(
-#	'Bivio::UI::HTML::WidgetFactory')->create(
-#	    join('.', @$field), {
-#		$attrs ? %$attrs : (),
-#		value => $field,
-#		field => $field->[0],
-#	    });
-#}
+=for html <a name="vs_display"></a>
+
+=head2 static vs_display(any model, string field, hash_ref attrs) : Bivio::UI::Widget
+
+Uses L<Bivio::UI::HTML::WidgetFactory|Bivio::UI::HTML::WidgetFactory> to
+create a display widget.
+
+=cut
+
+sub vs_display {
+    my($proto, $field, $attrs) = @_;
+    return Bivio::IO::ClassLoader->simple_require(
+	'Bivio::UI::HTML::WidgetFactory')->create($field, $attrs);
+}
 
 =for html <a name="vs_escape_html"></a>
 
