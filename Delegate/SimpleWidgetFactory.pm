@@ -166,8 +166,8 @@ sub internal_create_display {
         return $_VS->vs_new('String', {
             field => $field,
             value => [[$field], 'HTMLFormat.DateTime',
-                $attrs->{mode}, defined($attrs->{no_timezone})
-                ? $attrs->{no_timezone} : 1],
+                $attrs->{mode} || 'DATE', defined($attrs->{no_timezone})
+                    ? $attrs->{no_timezone} : 1],
 	    column_align => 'E',
 	    %$attrs,
         });
