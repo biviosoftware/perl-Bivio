@@ -82,6 +82,7 @@ sub internal_initialize {
 	    modified_date_time => ['DateTime', 'NOT_NULL'],
 	    dtstart => ['DateTime', 'NOT_NULL'],
 	    dtend => ['DateTime', 'NOT_NULL'],
+	    time_zone => ['TimeZone', 'NONE'],
 	    location => ['Text', 'NONE'],
 	    description => ['LongText', 'NONE'],
 	    url => ['HTTPURI', 'NONE'],
