@@ -3,9 +3,6 @@
 package Bivio::Biz::Model::CalendarEventForm;
 use strict;
 use base 'Bivio::Biz::FormModel';
-#TODO: couple to bOP?
-use DateTime;
-use DateTime::TimeZone;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -15,10 +12,12 @@ sub execute_empty {
     if ($e_id) {
 	$self->load_from_model_properties('CalendarEvent');
 	$self->load_from_model_properties('RealmOwner');
-	my($start) = _convert_from_utc($self->get('CalendarEvent.dtstart'),
-				   $self->get('CalendarEvent.time_zone'));
-	my($end) = _convert_from_utc($self->get('CalendarEvent.dtend'),
-				   $self->get('CalendarEvent.time_zone'));
+	my($start) = _convert_from_utc(
+	    $self->get('CalendarEvent.dtstart'),
+	    $self->get('CalendarEvent.time_zone'));
+	my($end) = _convert_from_utc(
+	    $self->get('CalendarEvent.dtend'),
+	    $self->get('CalendarEvent.time_zone'));
 	$self->internal_put_field(
 	    'start_date' => Bivio::Type::Date->from_datetime($start));
 	$self->internal_put_field(
@@ -120,35 +119,15 @@ sub is_create {
 }
 
 sub _convert_from_utc {
-    my($date_time, $time_zone) = @_;
-    return _convert_datetime($date_time, 'UTC', $time_zone->get_long_desc);
+    my($dt, $tz) = @_;
+    return Bivio::Type->get_instance('TimeZone')->convert_datetime(
+	$dt, 'UTC', $tz->get_long_desc);
 }
 
 sub _convert_to_utc {
-    my($date_time, $time_zone) = @_;
-    return _convert_datetime($date_time, $time_zone->get_long_desc, 'UTC');
-}
-
-sub _convert_datetime {
-    my($date_time, $time_zone_in, $time_zone_out) = @_;
-    my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime->to_parts($date_time);
-    my $dt = DateTime->new(
-	year   => $year,
-	month  => $mon,
-	day    => $mday,
-	hour   => $hour,
-	minute => $min,
-	second => $sec,
-	time_zone => $time_zone_in,
-    );
-    $dt->set_time_zone($time_zone_out);
-    return Bivio::Type::DateTime->from_parts_or_die($dt->second,
-						    $dt->minute,
-						    $dt->hour,
-						    $dt->day,
-						    $dt->month,
-						    $dt->year);
+    my($dt, $tz) = @_;
+    return Bivio::Type->get_instance('TimeZone')->convert_datetime(
+	$dt, $tz->get_long_desc, 'UTC');
 }
 
 1;
