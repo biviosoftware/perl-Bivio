@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.43  2006/09/08 00:25:03  aviggio
+  * Bivio::ShellUtil don't send email if running -noexecute
+  * Bivio::Test::Unit throw_quietly if error in assert_expect/equals
+  * Bivio::Type::WikiText->render_html now takes parameter to override
+    automatic wiki link creation
+  * Bivio::UI::XHTML::Widget::RSSPage renders link as absolute URI
+
   Revision 4.42  2006/09/01 17:12:53  aviggio
   * Bivio::BConf added system_user_forum_email permission category
   * Bivio::Biz::Model::ForumEditDAVList added email related columns
