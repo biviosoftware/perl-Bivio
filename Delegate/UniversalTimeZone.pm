@@ -12,4 +12,12 @@ sub get_delegate_info {
     ];
 }
 
+sub convert_datetime {
+    my($proto, $date_time, $time_zone_in, $time_zone_out) = @_;
+    # Does nothing by default since we don't know what type of time zone
+    # handling is in place. This method should be overridden if subclass adds
+    # other time zones besides implicit UTC.
+    return $date_time;
+}
+
 1;
