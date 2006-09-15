@@ -1125,12 +1125,7 @@ sub _perl_make {
 	    sort(keys(%Config::Config))))
 	.  ' POD2MAN=true pure_install && '
         . ' find $RPM_BUILD_ROOT%{_libdir}/perl? -name "*.bs" '
-	. " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n"
-	. '%define perl_build_install '
-	. _umask_string()
-	. '; ./Build pure_install --destdir $RPM_BUILD_ROOT' . "\n";
-#TODO: What does this do wrt perl_make_install? Is it needed for Module::Build?
-# find $RPM_BUILD_ROOT%{_libdir}/perl? -name "*.bs" -o -name .packlist -o -name perllocal.pod | xargs rm -f
+	. " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
 }
 
 # _project_args(boolean want_die, self, string project, ...) : array
