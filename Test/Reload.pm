@@ -85,7 +85,7 @@ sub _modified {
 # _reload(string path)
 sub _reload {
     my($path) = @_;
-    my($module) = grep({$_ =~ s{/}{::} if $_; $_}
+    my($module) = grep({$_ =~ s{/}{::}g if $_; $_}
         map({$path =~ m{^$_/(.*)\.pm$}; $1} @INC));
     _trace('module: ', $module);
     Bivio::IO::ClassLoader->delete_require($module);
