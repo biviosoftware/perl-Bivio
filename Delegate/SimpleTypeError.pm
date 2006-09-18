@@ -395,6 +395,11 @@ sub get_delegate_info {
 	undef,
 	'Two or more mutually exclusive values cannot be specified',
     ],
+    INVALID_END_DATETIME => [
+	67,
+	undef,
+	'The end date and time cannot be before or equal to the start date and time',
+    ],
 ];
 }
 
