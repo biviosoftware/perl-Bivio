@@ -35,6 +35,7 @@ C<Bivio::Test::Reload>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 
@@ -68,7 +69,7 @@ sub handler {
 	_reload($module);
     }
 
-    `touch $_CONF`;
+    system('touch', "$_CONF");
     return 1;
 }
 
@@ -87,7 +88,7 @@ sub _reload {
     my($path) = @_;
     my($module) = grep({$_ =~ s{/}{::}g if $_; $_}
         map({$path =~ m{^$_/(.*)\.pm$}; $1} @INC));
-    _trace('module: ', $module);
+    Bivio::IO::Alert->warn('Reloading module: ', $module);
     Bivio::IO::ClassLoader->delete_require($module);
     Bivio::IO::ClassLoader->simple_require($module);
     return;
