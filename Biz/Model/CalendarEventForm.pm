@@ -5,6 +5,7 @@ use strict;
 use base 'Bivio::Biz::FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub execute_empty {
     my($self) = @_;
@@ -12,12 +13,10 @@ sub execute_empty {
     if ($e_id) {
 	$self->load_from_model_properties('CalendarEvent');
 	$self->load_from_model_properties('RealmOwner');
-	my($start) = _convert_from_utc(
-	    $self->get('CalendarEvent.dtstart'),
-	    $self->get('CalendarEvent.time_zone'));
-	my($end) = _convert_from_utc(
-	    $self->get('CalendarEvent.dtend'),
-	    $self->get('CalendarEvent.time_zone'));
+	my($start) = $self->get('CalendarEvent.time_zone')
+	    ->date_time_from_utc($self->get('CalendarEvent.dtstart'));
+	my($end) = $self->get('CalendarEvent.time_zone')
+	    ->date_time_from_utc($self->get('CalendarEvent.dtend'));
 	$self->internal_put_field(
 	    'start_date' => Bivio::Type::Date->from_datetime($start));
 	$self->internal_put_field(
@@ -34,17 +33,16 @@ sub execute_ok {
     my($self) = @_;
     shift->SUPER::execute_ok(@_);
     return if $self->in_error;
-#TODO: Date/time validations, e.g. start must precede end time
     $self->internal_put_field(
-	'CalendarEvent.dtstart' => _convert_to_utc(
-	    Bivio::Type::DateTime->from_date_and_time($self->get('start_date'),
-						      $self->get('start_time')),
-	    $self->get('CalendarEvent.time_zone')));
+	'CalendarEvent.dtstart' =>
+	    $self->get('CalendarEvent.time_zone')->date_time_to_utc(
+		$_DT->from_date_and_time($self->get('start_date'),
+					 $self->get('start_time'))));
     $self->internal_put_field(
-	'CalendarEvent.dtend' => _convert_to_utc(
-	    Bivio::Type::DateTime->from_date_and_time($self->get('end_date'),
-						      $self->get('end_time')),
-	    $self->get('CalendarEvent.time_zone')));
+	'CalendarEvent.dtend' =>
+	    $self->get('CalendarEvent.time_zone')->date_time_to_utc(
+		$_DT->from_date_and_time($self->get('end_date'),
+					 $self->get('end_time'))));
     if ($self->is_create) {
 	my($ce, $ro) = $self->new_other('CalendarEvent')->create_realm({
             realm_id => $self->get_request->get('auth_id'),
@@ -118,16 +116,16 @@ sub is_create {
     return $self->unsafe_get('CalendarEvent.calendar_event_id') ? 0 : 1;
 }
 
-sub _convert_from_utc {
-    my($dt, $tz) = @_;
-    return Bivio::Type->get_instance('TimeZone')->convert_datetime(
-	$dt, 'UTC', $tz->get_long_desc);
-}
-
-sub _convert_to_utc {
-    my($dt, $tz) = @_;
-    return Bivio::Type->get_instance('TimeZone')->convert_datetime(
-	$dt, $tz->get_long_desc, 'UTC');
+sub validate {
+    my($self) = @_;
+    return if $self->in_error;
+    my($sdt) = $_DT->from_date_and_time($self->get('start_date'),
+					$self->get('start_time'));
+    my($edt) = $_DT->from_date_and_time($self->get('end_date'),
+					$self->get('end_time'));
+    $self->internal_put_error('end_date', 'INVALID_END_DATETIME')
+	unless $_DT->compare($sdt, $edt) == -1;
+    return;
 }
 
 1;
