@@ -272,7 +272,7 @@ Add time_zone field to CalendarEvent table
 sub internal_upgrade_db {
     my($self) = @_;
     $self->run(<<'EOF');
-ALTER TABLE website_t
+ALTER TABLE calendar_event_t
   ADD time_zone NUMERIC(4) NONE,
 ;
 EOF
