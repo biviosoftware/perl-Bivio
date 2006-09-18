@@ -265,13 +265,17 @@ sub initialize_test_data {
 
 =head2 internal_upgrade_db()
 
-Add CalendarEvent table
+Add time_zone field to CalendarEvent table
 
 =cut
 
 sub internal_upgrade_db {
     my($self) = @_;
-    $self->internal_upgrade_db_mail_bounce;
+    $self->run(<<'EOF');
+ALTER TABLE website_t
+  ADD time_zone NUMERIC(4) NONE,
+;
+EOF
     return;
 }
 
