@@ -43,7 +43,7 @@ CREATE TABLE calendar_event_t (
   location VARCHAR(500),
   description VARCHAR(4000),
   url VARCHAR(255),
-  time_zone CHAR(2),
+  time_zone NUMERIC(4),
   CONSTRAINT calendar_event_t1 PRIMARY KEY(calendar_event_id)
 )
 /
