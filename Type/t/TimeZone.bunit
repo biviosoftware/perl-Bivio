@@ -1,0 +1,27 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+[
+    class() => [
+	from_literal => [
+	    UTC => [class()->UTC],
+	    EUROPE_LONDON => [class()->EUROPE_LONDON],
+	    ASIA_TOKYO => [class()->ASIA_TOKYO],
+	],
+    ],
+    sub {class()->UTC} => [
+	date_time_to_utc => [
+	    ['2452260 24455'] => '2452260 24455',
+	],
+	date_time_from_utc => [
+	    ['2452260 24455'] => '2452260 24455',
+	],
+    ],
+    sub {class()->AMERICA_DENVER} => [
+	date_time_to_utc => [
+	    ['2452260 24455'] => '2452260 49655',
+	],
+	date_time_from_utc => [
+	    ['2452260 49655'] => '2452260 24455',
+	],
+    ],
+];
