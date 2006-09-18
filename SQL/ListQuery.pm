@@ -299,6 +299,8 @@ B<I<attrs> will be subsumed by this module.  Do not use it again.>
 
 sub unauth_new {
     my($proto, $attrs, $model, $support) = @_;
+    # Rob said to set this for ordering anon list models, but it didn't work
+#    $attrs->{order_by} ||= '';
     # Always set these
     foreach my $k (@_QUERY_FIELDS) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $model)
