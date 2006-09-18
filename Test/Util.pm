@@ -74,10 +74,6 @@ use File::Find ();
 use File::Spec ();
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 Bivio::IO::Config->register({
     nightly_output_dir => '/tmp/test-run',
     nightly_cvs_dir => 'perl/Bivio',
