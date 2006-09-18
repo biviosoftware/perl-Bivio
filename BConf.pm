@@ -425,7 +425,6 @@ sub _base {
 		'Bivio::Auth::Role' => 'Bivio::Delegate::Role',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
 		'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
-		'Bivio::Type::TimeZone' => 'Bivio::Delegate::UniversalTimeZone',
 		'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
 		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
 		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
