@@ -19,6 +19,7 @@ __PACKAGE__->compile([
     DAY_MONTH3_YEAR => [9],
     DAY_MONTH3_YEAR_TIME => [10],
     RFC822 => [11],
+    DAY_MONTH3_YEAR_TIME_PERIOD => [12],
 ]);
 Bivio::IO::Config->register(my $_CFG = {
     default => __PACKAGE__->DATE_TIME,
