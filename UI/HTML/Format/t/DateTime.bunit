@@ -27,6 +27,63 @@
 	    DAY_MONTH3_YEAR => '06-Mar-2006',
 	    DAY_MONTH3_YEAR_TIME => '06-Mar-2006 12:00:01',
 	    RFC822 => 'Mon,  6 Mar 2006 12:00:01 GMT',
+	    DAY_MONTH3_YEAR_TIME_PERIOD => '06-Mar-2006 12:00:01 PM',
+	],
+	{
+	    method => 'get_widget_value',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [
+		    Bivio::Type::DateTime->from_literal_or_die(
+			'4/15/2006 00:00:00'),
+		    $params->[0],
+		    !$params->[1],
+		];
+	    },
+	} => [
+	    DAY_MONTH3_YEAR_TIME_PERIOD => '15-Apr-2006 12:00:00 AM',
+	],
+	{
+	    method => 'get_widget_value',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [
+		    Bivio::Type::DateTime->from_literal_or_die(
+			'4/15/2006 11:59:59'),
+		    $params->[0],
+		    !$params->[1],
+		];
+	    },
+	} => [
+	    DAY_MONTH3_YEAR_TIME_PERIOD => '15-Apr-2006 11:59:59 AM',
+	],
+	{
+	    method => 'get_widget_value',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [
+		    Bivio::Type::DateTime->from_literal_or_die(
+			'4/15/2006 13:00:00'),
+		    $params->[0],
+		    !$params->[1],
+		];
+	    },
+	} => [
+	    DAY_MONTH3_YEAR_TIME_PERIOD => '15-Apr-2006 01:00:00 PM',
+	],
+	{
+	    method => 'get_widget_value',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [
+		    Bivio::Type::DateTime->from_literal_or_die(
+			'4/15/2006 23:59:59'),
+		    $params->[0],
+		    !$params->[1],
+		];
+	    },
+	} => [
+	    DAY_MONTH3_YEAR_TIME_PERIOD => '15-Apr-2006 11:59:59 PM',
 	],
     ],
 ];
