@@ -51,10 +51,26 @@ sub get_widget_value {
 	: $mode->eq_day_month3_year_time
 	    ? sprintf('%02d-%.3s-%04d %02d:%02d:%02d',
 		      $mday, $_MONTHS->[$mon], $year, $hour, $min, $sec)
+	: $mode->eq_day_month3_year_time_period
+	    ? sprintf('%02d-%.3s-%04d %02d:%02d:%02d %.2s',
+		      $mday, $_MONTHS->[$mon], $year,
+		      _to_twelve_hour($hour), $min, $sec, _period($hour))
         : Bivio::Die->throw_die('DIE', {
 	    message => 'unhandled DateTimeMode',
 	    entity => $mode
 	})) . ($no_timezone ? '': ' GMT');
+}
+
+sub _period {
+    my($hour) = @_;
+    return $hour > 11 && $hour < 24 ? 'PM' : 'AM';
+}
+
+sub _to_twelve_hour {
+    my($hour) = @_;
+    return $hour > 0 && $hour < 13 ? $hour
+	: $hour == 0 ? 12
+	    : $hour - 12;
 }
 
 1;
