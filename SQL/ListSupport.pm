@@ -613,7 +613,7 @@ sub _init_column_lists {
     } @{$attrs->{select_columns}};
 
     # Create select from all columns
-    my($from) = ' ' . (
+    $attrs->{sql_from} = ' ' . (
 	$decl->{from}
 	|| 'FROM '. join(',',
 		    map {
@@ -622,7 +622,6 @@ sub _init_column_lists {
 				? $tn : $tn.' '.$_->{sql_name};
 		    } sort(values(%{$attrs->{models}})))
     );
-    $attrs->{sql_from} = $from;
     $where =~ s/^\s*AND\s+//i;
     $attrs->{sql_where} = $where;
 
