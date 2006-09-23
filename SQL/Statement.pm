@@ -185,7 +185,11 @@ sub IS_NOT_NULL {
     return {
         column => $column,
         build => sub {
-            return _build_column($column, @_) . ' IS NOT NULL';
+	    my($col) = _build_column($column, @_);
+            return {
+	        models => [$col->{model_name}],
+		sql_string => $col->{sql_string} . ' IS NOT NULL',
+	    };
         },
     };
 }
@@ -203,7 +207,11 @@ sub IS_NULL {
     return {
         column => $column,
         build => sub {
-            return _build_column($column, @_) . ' IS NULL';
+	    my($col) = _build_column($column, @_);
+            return {
+	        models => [$col->{model_name}],
+		sql_string => $col->{sql_string} . ' IS NULL',
+	    };
         },
     };
 }
@@ -226,7 +234,7 @@ sub LEFT_JOIN_ON {
         build => sub {
             return
                 'LEFT JOIN ' . _build_model($right_table, @_) .
-                ' ON (' . $join_predicate->{build}->(@_) . ')';
+                ' ON (' . $join_predicate->{build}->(@_)->{sql_string} . ')';
         },
     };
 }
@@ -339,7 +347,11 @@ sub PARENS {
     return {
         predicate => $predicate,
         build => sub {
-            return '(' . $predicate->{build}->(@_) . ')';
+	    my($pred) = $predicate->{build}->(@_);
+            return {
+	        models => $pred->{models},
+		sql_string => '(' . $pred->{sql_string} . ')',
+	    };
         },
     }
 }
@@ -434,36 +446,40 @@ sub build_for_list_support_prepare_statement {
     _merge_statements($self, $stmt);
 
     my($fields) = $self->[$_IDI];
-    my($params) = [];
+    my($pred_params) = [];
     my(@stmt) = ();
 
+    # get rid of extraneous spaces
+    $_where = join(' ', split(' ', $_where))
+	if $_where;
+    my($predicate) = $fields->{where}->{build}->($support, $pred_params);
+    my($where) = join(' AND ', grep($_, $predicate->{sql_string}, $_where));
+    unshift(@stmt, WHERE => $where)
+	if $where;
+
+    foreach my $model (@{$predicate->{models}}) {
+	_add_model($self, $model);
+    }
+
+    my($fr_params) = [];
     if (%{$fields->{from}}) {
 	foreach my $model (
 	    $fields->{select} ? () : keys(%{$support->get('models')}),
         ) {
             _add_model($self, $model);
         }
-	push(@stmt,
+	unshift(@stmt,
 	     $fields->{select} ?
-		 (SELECT => $fields->{select}->{build}->($support, $params))
+		 (SELECT => $fields->{select}->{build}->($support, $fr_params))
 		 : (),
 	     FROM => $self->CROSS_JOIN(
 		 map($fields->{from}->{$_},
 		     sort(keys(%{$fields->{from}}))),
-	     )->{build}->($support, $params)
+	     )->{build}->($support, $fr_params)
 	 );
     }
 
-    # get rid of extraneous spaces
-    $_where = join(' ', split(' ', $_where))
-	if $_where;
-    my($where) = join(' AND ', grep($_,
-        $fields->{where}->{build}->($support, $params),
-	$_where));
-    push(@stmt, WHERE => $where)
-	if $where;
-
-    return (join(' ', @stmt), [@$params, @{$_params || []}]);
+    return (join(' ', @stmt), [@$fr_params, @$pred_params, @{$_params || []}]);
 }
 
 =for html <a name="build_select_for_sql_support"></a>
@@ -596,9 +612,10 @@ with any other existing conditions.
 
 sub where {
     my($self, @predicates) = @_;
-    foreach my $predicate (grep({$_} @predicates)) {
-        push(@{$self->[$_IDI]->{where}->{predicates}},
-            _parse_predicate($self, $predicate));
+    foreach my $predicate (
+        map({_parse_predicate($self, $_)} grep({$_} @predicates))
+    ) {
+        push(@{$self->[$_IDI]->{where}->{predicates}}, $predicate);
     }
     return $self;
 }
@@ -632,23 +649,29 @@ sub _add_model {
     return $models->{$model};
 }
 
-# _build_column(string column) : string
+# _build_column(string column) : hash_ref
 #
 # Build column name.
 # Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
 #
 sub _build_column {
     my($column) = @_;
-    my($func, $model, $index, $field, $paren)
-	= $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)(\)?)$/;
+    my($func, $model_ref, $field, $paren)
+	= $column =~ /^(\w+\()?(\w+(?:_\d+)?)\.(\w+)(\)?)$/;
+    my($model, $index)
+	= $model_ref =~ /^(\w+?)(_\d+)?$/;
     $func ||= '';
     $index ||= '';
     $paren ||= '';
-    return $func
-        . Bivio::Biz::Model->get_instance($model)->get_info('table_name')
-	. "$index.$field$paren";
+    return {
+        model_name => $model_ref,
+        sql_string => $func
+            . Bivio::Biz::Model->get_instance($model)->get_info('table_name')
+	    . "$index.$field$paren",
+    };
 }
 
+# TODO: Merge _build_column and _build_column_info
 # _build_column_info(string column) : hash_ref
 #
 # Build column information.
@@ -657,22 +680,25 @@ sub _build_column {
 #   column_name  (:string 'field')
 #   model        (:Bivio::Biz::Model)
 #   name         (:string 'Model_#.field')
-#   sql_name     (:string)
+#   sql_string   (:string)
 #   type         (:Bivio::Type)
 #
 sub _build_column_info {
     my($column) = @_;
-    my($func, $model_name, $index, $field, $paren)
-	= $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)(\)?)$/;
+    my($func, $model_ref, $field, $paren)
+	= $column =~ /^(\w+\()?(\w+(?:_\d+)?)\.(\w+)(\)?)$/;
+    my($model_name, $index)
+	= $model_ref =~ /^(\w+?)(_\d+)?$/;
     $func ||= '';
     $index ||= '';
     $paren ||= '';
     my($model) = Bivio::Biz::Model->get_instance($model_name); 
     return {
         column_name => $field,
+	model_name => $model_ref,
 	model => $model,
 	name => $column,
-	sql_name => $func
+	sql_string => $func
             . $model->get_info('table_name') . "$index.$field$paren",
         type => $model->get_field_type($field),
     }
@@ -712,13 +738,13 @@ sub _build_value {
 #
 sub _build_select_column {
     my($i) = _build_column_info(@_);
-    return $i->{type}->from_sql_value($i->{sql_name});
+    return $i->{type}->from_sql_value($i->{sql_string});
 }
 
 # _combine_predicates(proto, string conjunctive, any predicate, ...) : hash_ref
 #
 # Combines the predicates with the conjunctive (AND or OR).
-# OR values are wappred in parenthesis.
+# OR values are wrapped in parenthesis.
 #
 sub _combine_predicates {
       my($proto, $conjunctive) = (shift, shift);
@@ -726,9 +752,13 @@ sub _combine_predicates {
       return {
           predicates => $p,
           build => sub {
+	      my($preds) = [map($_->{build}->(@_), @$p)];
               my($str) = join(" $conjunctive ",
-  		grep($_, map($_->{build}->(@_), @$p)));
-              return $conjunctive eq 'OR' ? "($str)" : $str;
+  		grep($_, map($_->{sql_string}, @$preds)));
+              return {
+		  models => [map({@{$_->{models}}} @$preds)],
+	          sql_string => $conjunctive eq 'OR' ? "($str)" : $str,
+	      };
           },
       };
 }
@@ -743,12 +773,16 @@ sub _in {
         column => $column,
         values => $values,
         build => sub {
-            return @$values
-		? _build_column($column, @_)
-		. "$modifier IN ("
-		. join(',', map(_build_value($column, $_, @_), @$values))
-		. ')'
-		: $modifier ? 'TRUE' : 'FALSE';
+	    my($col) = _build_column($column, @_);
+            return {
+	        models => [$col->{model_name}],
+		sql_string => @$values
+		    ? $col->{sql_string}
+		    . "$modifier IN ("
+		    . join(',', map(_build_value($column, $_, @_), @$values))
+		    . ')'
+		    : $modifier ? 'TRUE' : 'FALSE',
+	    };
         },
     };
 }
@@ -780,7 +814,10 @@ sub _like {
             build => sub {
 		my($support, $params) = @_;
 		push(@$params, $match);
-		return $col_info->{sql_name} . " $predicate ?";
+		return {
+		    models => [$col_info->{model_name}],
+		    sql_string => $col_info->{sql_string} . " $predicate ?",
+	        };
             },
 	};
     };
@@ -860,7 +897,16 @@ sub _static_compare {
             my($_right) = ref($right) eq 'ARRAY'
                 ? _build_value($left, $right->[0], @_)
                 : _build_column($right, @_);
-            return "$_left$comp$_right";
+            return {
+		models => [
+	            $_left->{model_name},
+		    (ref($_right) eq 'HASH'
+		        ? $_right->{model_name} : ()),
+		],
+	        sql_string => $_left->{sql_string} . $comp
+		    . (ref($_right) eq 'HASH'
+		        ? $_right->{sql_string} : $_right),
+	    };
         },
     };
 }
