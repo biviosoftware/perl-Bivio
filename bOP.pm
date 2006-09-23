@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,28 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.44  2006/09/14 23:07:05  aviggio
+  * Added time_zone type field to calendar_event_t bOP table definition
+  * Bivio::BConf added UniversalTimeZone delegate
+  * Bivio::Biz::Model::CalendarEvent maps new time zone field
+  * Bivio::Biz::Model::CalendarEventForm exposes time zone field and
+    calls convert_datetime method delegated by Bivio::Type::TimeZone
+  * Bivio::Delegate::SimpleWidgetFactory default Date type display mode
+    is DATE, render Date and Time values separately, avoiding timezone
+    adjustment DateTime
+  * Bivio::Delegate::UniversalTimeZone enum delegate added
+  * Bivio::Test::Reload fixed move to httpd/; now searches for BConf.pm
+    to build list of watched directories
+  * Bivio::Type::DateTime $proto-> missing
+  * Bivio::Type::Text64K now derived from Text so the WidgetFactory uses
+    a TextArea
+  * Bivio::Type::Time allow literals with no minutes when rendering,
+    don't show sends if 0
+  * Bivio::Type::TimeZone enum delegator type added
+  * Bivio::UI::HTML::ViewShortcuts->vs_display() added back
+  * Bivio::Util::Release modified to generate perl_build_install for
+    Module::Build non-traditional makefile support
+
   Revision 4.43  2006/09/08 00:25:03  aviggio
   * Bivio::ShellUtil don't send email if running -noexecute
   * Bivio::Test::Unit throw_quietly if error in assert_expect/equals
