@@ -201,8 +201,8 @@ the C<if $_TRACE> predicate is one of the fastest statements in perl.
 
 sub import {
     my($pkg) = caller();
-    grep($pkg eq $_, @_REGISTERED) && return;
-    push(@_REGISTERED, $pkg);
+    push(@_REGISTERED, $pkg)
+	unless grep($pkg eq $_, @_REGISTERED);
     _define_pkg_symbols($pkg, $Bivio::IO::Trace::_CALL_SUB, $_PKG_SUB);
     return;
 }
