@@ -586,16 +586,19 @@ sub union_hack {
 	statements => [@stmt],
 	build => sub {
 	    my($support, $params) = @_;
-	    return join(
-		' UNION ',
-		map({
-		    my($s, $p) =
-		        $_->build_for_list_support_prepare_statement($support);
-		    push(@$params, @$p);
-		    $s =~ s/^WHERE //;
-		    $s;
-		} @stmt),
-	    );
+	    return {
+		models => [],  #TODO: capture models?
+	        sql_string => join(
+		    ' UNION ',
+		    map({
+		        my($s, $p) =
+		            $_->build_for_list_support_prepare_statement($support);
+		        push(@$params, @$p);
+		        $s =~ s/^(?:FROM .*?)?WHERE //;
+		        $s;
+		    } @stmt),
+	        ),
+	    };
 	},
     };
     return $self;
