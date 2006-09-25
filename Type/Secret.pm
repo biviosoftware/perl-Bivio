@@ -262,7 +262,7 @@ sub _decrypt {
         next unless ref($cipher->{key});
         my($s) = $is_hex ? $cipher->{key}->decrypt_hex($encoded)
             : $cipher->{key}->decrypt(
-                Bivio::MIME::Base64->http_decode($encoded));
+                Bivio::MIME::Base64->http_decode($encoded) || '');
         my($magic) = $cipher->{magic};
 
         unless ($s =~ s/^\Q$magic\E//o && $s =~ s/\Q$magic\E(\d+)$//o
