@@ -132,6 +132,7 @@ function dt(m,j,t,gmt){
     //          FULL_MONTH_AND_YEAR_UC=7
     //          FULL_MONTH=8
     //          DAY_MONTH3_YEAR=9
+    //          DAY_MONTH3_YEAR_TIME=10
     // This renders more compact javascript and is possibly slower on client.
     document.write(
         m<=3?
@@ -144,7 +145,7 @@ function dt(m,j,t,gmt){
         :m==6?dt_mn(d).toUpperCase()+' '+dt_n(d.getDate())+', '+dt_y(d)
         :m==7?dt_mn(d).toUpperCase()+', '+dt_y(d)
         :m==8?dt_mn(d)
-        :m==9?dt_n(d.getDate())+'-'+dt_mn(d)+'-'+dt_y(d)
+        :m==9?dt_n(d.getDate())+'-'+dt_mn3(d)+'-'+dt_y(d)
         :m==10?dt_n(d.getDate())+'-'+dt_mn3(d)+'-'+dt_y(d)+' '+dt_n(d.getHours())+':'+dt_n(d.getMinutes())
         :'');
 }
