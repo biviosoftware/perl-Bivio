@@ -599,10 +599,13 @@ sub initialize {
 
 	push(@$cells, $cell);
 
+	my($want_column_sorted) = defined($cell->unsafe_get('want_sorting')) ?
+	    $cell->unsafe_get('want_sorting') : $want_sorting;
+
         # Can we sort on this column?
         my($sort_fields) = $cell->unsafe_get('column_order_by')
 		|| [grep($col eq $_, @$sort_columns)]
-                        if $want_sorting && defined($sort_columns);
+                        if $want_column_sorted && defined($sort_columns);
 
         push(@$headings, _get_heading($self, $lm, $col, $cell, $sort_fields));
 	push(@$summary_cells, _get_summary_cell($self, $cell));
