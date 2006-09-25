@@ -52,6 +52,7 @@ Returns C<undef> if the data couldn't be parsed.
 
 sub http_decode {
     my(undef, $encoded) = @_;
+    return undef unless $encoded && length($encoded) >= 4;
     $encoded =~ tr/_*-/=+\//;
     my($err) = 0;
     local($SIG{__WARN__}) = sub {
