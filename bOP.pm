@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.45  2006/09/23 00:25:47  aviggio
+  * calendar_event_t.time_zone field converted to NUMERIC(4)
+  * Bivio::BConf removed UniversalTimeZone delegate, now a normal enum
+  * Bivio::Biz::Model::CalendarEventForm validates start vs end datetime
+  * Bivio::Delegate::SimpleTypeError added INVALID_END_DATETIME error
+  * Bivio::Test::Reload and Bivio::Test::HTTPd now allow dynamic
+    reloading of changed modules
+  * Bivio::Test::Util removed Trace->register
+  * Bivio::Type::TimeZone converted to subclass standard enum and to
+    encapsulate Olson time zone database with conversion methods
+    date_time_to_utc and date_time_from_utc
+  * Bivio::UI::DateTimeMode added DAY_MONTH3_YEAR_TIME_PERIOD mode
+  * Bivio::UI::HTML::Format::DateTime handle DAY_MONTH3_YEAR_TIME_PERIOD
+    formatting mode
+  * Bivio::Util::Release back out new %define for Module::Build
+
   Revision 4.44  2006/09/14 23:07:05  aviggio
   * Added time_zone type field to calendar_event_t bOP table definition
   * Bivio::BConf added UniversalTimeZone delegate
