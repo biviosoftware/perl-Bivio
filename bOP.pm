@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.46  2006/09/26 17:36:53  aviggio
+  * Bivio::IO::Trace allow Reloaded modules to be reprocessed
+  * Bivio::MIME::Base64 don't try decoding something under 4 bytes
+  * Bivio::SQL::Statement now correctly includes tables in FROM that are
+    only mentioned at request time (e.g. in internal_prepare_statement)
+  * Bivio::Type::Secret protect against undef returned from
+    Base64->http_decode()
+  * Bivio::UI::HTML::Format::Link remove 'site' arguments and app
+    specific methods
+  * Bivio::UI::HTML::Widget::DateTime correct DAY_MONTH3_YEAR rendering
+  * Bivio::UI::HTML::Widget::Table allow sorting to be overridden for a
+    specific table column
+
   Revision 4.45  2006/09/23 00:25:47  aviggio
   * calendar_event_t.time_zone field converted to NUMERIC(4)
   * Bivio::BConf removed UniversalTimeZone delegate, now a normal enum
