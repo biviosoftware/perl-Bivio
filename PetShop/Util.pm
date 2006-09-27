@@ -273,7 +273,7 @@ sub internal_upgrade_db {
     my($self) = @_;
     $self->run(<<'EOF');
 ALTER TABLE calendar_event_t
-  ADD time_zone NUMERIC(4) NONE,
+  ADD time_zone NUMERIC(4)
 ;
 EOF
     return;
