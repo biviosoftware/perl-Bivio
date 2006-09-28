@@ -613,6 +613,7 @@ sub _init_column_lists {
     } @{$attrs->{select_columns}};
 
     # Create select from all columns
+    $attrs->{decl_from} = $decl->{from};
     $attrs->{sql_from} = ' ' . (
 	$decl->{from}
 	|| 'FROM '. join(',',

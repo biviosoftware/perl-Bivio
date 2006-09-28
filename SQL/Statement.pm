@@ -463,20 +463,28 @@ sub build_for_list_support_prepare_statement {
 
     my($fr_params) = [];
     if (%{$fields->{from}}) {
-	foreach my $model (
-	    $fields->{select} ? () : keys(%{$support->get('models')}),
-        ) {
-            _add_model($self, $model);
-        }
-	unshift(@stmt,
-	     $fields->{select} ?
-		 (SELECT => $fields->{select}->{build}->($support, $fr_params))
-		 : (),
-	     FROM => $self->CROSS_JOIN(
+	my(@select) = $fields->{select}
+	     ? (SELECT => $fields->{select}->{build}->($support, $fr_params))
+	     : ();
+	my($from);
+	if ($support->unsafe_get('decl_from')) {
+	    $from = $support->get('decl_from');
+	}
+	else {
+	    foreach my $model (
+	        $fields->{select} ? () : keys(%{$support->get('models')}),
+            ) {
+                _add_model($self, $model);
+            }
+	    $from = $self->CROSS_JOIN(
 		 map($fields->{from}->{$_},
 		     sort(keys(%{$fields->{from}}))),
-	     )->{build}->($support, $fr_params)
-	 );
+	         )->{build}->($support, $fr_params);
+	}
+	unshift(@stmt,
+	    @select,
+	    FROM => $from,
+	);
     }
 
     return (join(' ', @stmt), [@$fr_params, @$pred_params, @{$_params || []}]);
