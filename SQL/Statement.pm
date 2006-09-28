@@ -466,9 +466,9 @@ sub build_for_list_support_prepare_statement {
 	my(@select) = $fields->{select}
 	     ? (SELECT => $fields->{select}->{build}->($support, $fr_params))
 	     : ();
-	my($from);
+	my(@from);
 	if ($support->unsafe_get('decl_from')) {
-	    $from = $support->get('decl_from');
+	    push(@from, $support->get('decl_from'));
 	}
 	else {
 	    foreach my $model (
@@ -476,14 +476,14 @@ sub build_for_list_support_prepare_statement {
             ) {
                 _add_model($self, $model);
             }
-	    $from = $self->CROSS_JOIN(
+	    push(@from, FROM => $self->CROSS_JOIN(
 		 map($fields->{from}->{$_},
 		     sort(keys(%{$fields->{from}}))),
-	         )->{build}->($support, $fr_params);
+	         )->{build}->($support, $fr_params));
 	}
 	unshift(@stmt,
 	    @select,
-	    FROM => $from,
+	    @from,
 	);
     }
 
