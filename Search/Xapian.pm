@@ -4,9 +4,10 @@ package Bivio::Search::Xapian;
 use strict;
 use base 'Bivio::Collection::Attributes';
 use Bivio::Biz::File;
-use Search::Xapian ();
 use Bivio::IO::Trace;
 use Bivio::Type;
+use File::Spec ();
+use Search::Xapian ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 #TODO: What is the actual max term length; I've seen errors in the 400 range
@@ -44,27 +45,11 @@ sub destroy_db {
     return;
 }
 
-sub execute {
-    my($proto, $req) = @_;
-    my($self) = $req->get(ref($proto) || $proto);
-    my($db) = Search::Xapian::WritableDatabase->new(
-	$_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
-    $self->put(db => $db);
-    foreach my $op (@{$self->get('ops')}) {
-	_trace($op) if $_TRACE;
-	my($method) = shift(@$op);
-	$self->$method(@$op);
-    }
-    $self->delete('db');
-    $db->flush;
-    return 0;
-}
-
 sub handle_commit {
     my($self, $req) = @_;
     if (Bivio::Biz::Model->new($req, 'Lock')->is_general_acquired) {
 	$req->put(ref($self) => $self);
-	$self->execute($req);
+	_execute($self, $req);
 	return;
     }
     $self->use('Bivio::Agent::Job::Dispatcher')->enqueue(
@@ -210,6 +195,23 @@ sub _replace {
     }
     $self->get('db')->replace_document_by_term($primary_id, $doc);
     return;
+}
+
+sub _execute {
+    my($proto, $req) = @_;
+    my($self) = $req->get(ref($proto) || $proto);
+    unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
+    my($db) = Search::Xapian::WritableDatabase->new(
+	$_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
+    $self->put(db => $db);
+    foreach my $op (@{$self->get('ops')}) {
+	_trace($op) if $_TRACE;
+	my($method) = shift(@$op);
+	$self->$method(@$op);
+    }
+    $self->delete('db');
+    $db->flush;
+    return 0;
 }
 
 1;
