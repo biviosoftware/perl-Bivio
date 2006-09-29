@@ -638,6 +638,9 @@ hash_ref.
 
 sub merge_initialize_info {
     my($proto, $parent, $child) = @_;
+    Bivio::Die->die('columns => takes a hash_ref')
+        unless ref($parent->{columns} || {}) eq 'HASH'
+	    && ref($child->{columns} || {}) eq 'HASH';
     return {
 	%$parent,
         %$child,
