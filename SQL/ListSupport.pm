@@ -234,8 +234,6 @@ use Bivio::Type::Date;
 use Bivio::Type::PrimaryId;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 my($_PRIMARY_ID_SQL_VALUE) = Bivio::Type::PrimaryId->to_sql_value('?');
 my($_DATE_SQL_VALUE) = Bivio::Type::Date->to_sql_value('?');
 
