@@ -1,4 +1,4 @@
-# Copyright (c) 2004 IEEE SA, Inc.  All Rights Reserved.
+# Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Delegate::Permission;
 use strict;
@@ -57,7 +57,7 @@ sub get_delegate_info {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004 IEEE SA, Inc.  All Rights Reserved.
+Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
