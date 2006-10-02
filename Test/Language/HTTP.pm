@@ -178,7 +178,7 @@ Returns the default password.
 =cut
 
 sub default_password {
-    return 'password';
+    return shift->use('Bivio::Util::SQL')->TEST_PASSWORD;
 }
 
 =for html <a name="do_table_rows"></a>
