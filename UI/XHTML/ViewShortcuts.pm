@@ -379,6 +379,12 @@ sub vs_simple_form {
 			    },
 			)];
 		    }
+		    elsif ($_ =~ s/^'//) {
+			$x = [Prose(vs_text($form, 'prose', $_), {
+			    cell_colspan => 2,
+			    cell_class => 'form_prose',
+			})];
+		    }
 		    elsif (ref($_) eq 'ARRAY' && ref($_->[0])) {
 			$x = $_;
 		    }
