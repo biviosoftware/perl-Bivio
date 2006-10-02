@@ -39,6 +39,18 @@ C<Bivio::Util::SQL> executes SQL using the configured db.
 
 =cut
 
+=for html <a name="TEST_PASSWORD"></a>
+
+=head2 TEST_PASSWORD : string
+
+Returns password for test data.
+
+=cut
+
+sub TEST_PASSWORD {
+    return 'password';
+}
+
 =for html <a name="USAGE"></a>
 
 =head2 USAGE : string
@@ -172,10 +184,9 @@ not an email address.
 sub create_test_user {
     my($self, $user_or_email, $password) = @_;
     $self->initialize_ui;
-    my($t) = $self->use('Bivio::Test::Language::HTTP');
     my($display_name);
     my($email) = $user_or_email =~ /\@/ ? $user_or_email
-	: $t->generate_local_email($display_name = $user_or_email);
+	: $self->format_test_email($display_name = $user_or_email);
     $display_name ||= ($email =~ /(.*)@/)[0];
     (my $user_name = substr(
 	$display_name, 0, Bivio::Type->get_instance('RealmName')->get_width
@@ -183,7 +194,7 @@ sub create_test_user {
     $self->new_other('RealmAdmin')->create_user(
 	$email,
 	$display_name,
-	$password || $t->default_password,
+	$password || $self->TEST_PASSWORD,
 	$user_name,
     );
     return;
