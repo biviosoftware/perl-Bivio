@@ -178,7 +178,7 @@ the calling package:
 is defined if tracing is turned on in the calling package.
 It is common place to use it as the qualifier to any trace statement,
 since it is faster than calling the subroutine if tracing is off
-in thecalling package.
+in the calling package.
 
 =item _trace()
 
