@@ -45,7 +45,7 @@ use Bivio::SQL::Statement;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
-my(%_CLASS_INFO);
+#my(%_CLASS_INFO);
 my($_LOADED_ALL_PROPERTY_MODELS);
 
 =head1 FACTORIES
@@ -77,8 +77,9 @@ sub get_instance {
     else {
 	$class = ref($proto) || $proto;
     }
-    _initialize_class_info($class) unless $_CLASS_INFO{$class};
-    return $_CLASS_INFO{$class}->{singleton};
+#     _initialize_class_info($class) unless $_CLASS_INFO{$class};
+#     return $_CLASS_INFO{$class}->{singleton};
+    return _get_class_info($class)->{singleton};
 }
 
 =for html <a name="new"></a>
@@ -102,9 +103,11 @@ sub new {
     return $proto->get_instance($class)->new($req)
 	if defined($class);
     $class = ref($proto) || $proto;
-    _initialize_class_info($class)
-        unless $_CLASS_INFO{$class};
-    my($ci) = $_CLASS_INFO{$class};
+#     _initialize_class_info($class)
+#         unless $_CLASS_INFO{$class};
+#     my($ci) = $_CLASS_INFO{$class};
+    my($ci) = _get_class_info($class);
+
     # Make a copy of the properties for this instance.  properties
     # is an array_ref for efficiency
     my($self) = Bivio::Collection::Attributes::new($class,
@@ -973,6 +976,18 @@ sub _assert_class_name {
     return;
 }
 
+# _get_class_info() : 
+#
+#
+#
+sub _get_class_info {
+    my($class) = @_;
+    no strict qw(refs);
+    _initialize_class_info($class)
+	unless defined *{$class . '::'}{HASH}->{_CLASS_INFO};
+    return *{$class . '::'}{HASH}->{_CLASS_INFO};
+}
+
 # _get_model_query(self, string name) : array
 #
 # Returns the model (query, instance) by looking for the model.
@@ -1024,7 +1039,11 @@ sub _initialize_class_info {
     _load_all_property_models();
 
     # Have here for safety to avoid infinite recursion if called badly.
-    return if !$config && $_CLASS_INFO{$class};
+#    return if !$config && $_CLASS_INFO{$class};
+    {
+	no strict qw(refs);
+        return if !$config && defined *{$class . '::'}{HASH}->{_CLASS_INFO};
+    }
 
     _assert_class_name($class) unless $config;
 
@@ -1042,7 +1061,11 @@ sub _initialize_class_info {
     };
     return $ci if $config;
     # $_CLASS_INFO{$class} is sentinel to stop recursion
-    $_CLASS_INFO{$class} = $ci;
+#    $_CLASS_INFO{$class} = $ci;
+    {
+	no strict qw(refs);
+        *{$class . '::'}{HASH}->{_CLASS_INFO} = $ci;
+    }
     $ci->{singleton} = $class->new;
     $ci->{singleton}->[$_IDI]->{is_singleton} = 1;
     return;
