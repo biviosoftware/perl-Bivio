@@ -120,23 +120,18 @@ so that it can be reloaded.
 
 sub delete_require {
     my(undef, $pkg) = @_;
+
     delete($_SIMPLE_CLASS->{$pkg});
     while (my($k, $v) = each(%$_MAP_CLASS)) {
 	delete($_MAP_CLASS->{$k})
 	    if $v eq $pkg;
     }
     delete($INC{_file($pkg)});
+
+    # clear entries in package hash
     no strict 'refs';
-    my($stash) = *{$pkg . '::'}{HASH};
-    foreach my $name (keys(%$stash)) {
-	my($qual) = $pkg . '::' . $name;
-	# Get rid of everything with that name.
-	undef($$qual);
-	undef(@$qual);
-	undef(%$qual);
-	undef(&$qual);
-	undef(*$qual);
-    }
+    *{"${pkg}::"} = {};
+
     return;
 }
 
