@@ -56,9 +56,11 @@ same as the empty string.
 =cut
 
 sub compare {
-    my(undef, $left, $right) = @_;
-    return (defined($left) ? $left : '')
-	cmp (defined($right) ? $right : '');
+    my($proto, $left, $right) = @_;
+    return $proto->compare_defined(
+	defined($left) ? $left : '',
+	defined($right) ? $right : '',
+    );
 }
 
 =for html <a name="from_literal"></a>
