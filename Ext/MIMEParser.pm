@@ -20,7 +20,7 @@ bOP
 =cut
 
 =head1 EXTENDS
-2
+
 L<MIME::Parser>
 
 =cut
