@@ -70,7 +70,7 @@ binary to be used if it exists and is executable
 #=IMPORTS
 use Bivio::IO::Config;
 use Bivio::IO::ClassLoader;
-use Cwd ();
+use Bivio::IO::File;
 use Sys::Hostname ();
 
 #=VARIABLES
@@ -89,20 +89,6 @@ Bivio::IO::Config->register({
 
 =cut
 
-=for html <a name="PRJ_ROOT"></a>
-
-=head2 PRJ_ROOT() : string
-
-Return $PRJ_ROOT env variable
-
-=cut
-
-sub PRJ_ROOT {
-    Bivio::Die->die('$PRJ_ROOT not defined in env')
-        unless $ENV{PRJ_ROOT};
-    return $ENV{PRJ_ROOT};
-}
-
 # We don't do dynamic reconfiguration
 sub handle_config {
 #    shift->SUPER::handle_config(@_);
@@ -113,11 +99,9 @@ sub main {
     my($execute) = 1;
     my($background) = 0;
     my($server_name) = undef;
-#    my($pwd) = &Cwd::cwd();
-    my($pwd) = $self->PRJ_ROOT . '/httpd';
-    mkdir($pwd)
-	unless -e $pwd;
-
+    my($pwd) = _project_root() . '/httpd';
+    Bivio::IO::File->mkdir_p($pwd);
+#TODO: Let ShellUtil handle options; Create a default handler for commands
     local($_);
     while (@argv) {
 	$_ = shift(@argv);
@@ -141,6 +125,7 @@ sub main {
 	    "$pwd/modules") unless $] < 5.006;
     }
     else {
+#TODO: Shouldn't this just be an Bivio::IO::File->rm_rf($pwd)?
 	print <<"EOF";
 (cd $pwd;
   rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem;
@@ -285,6 +270,12 @@ sub _get_facade_uri_list {
     }
     close(IN);
     return \@uri;
+}
+
+sub _project_root {
+    return File::Basename::dirname(
+	(grep(m{\bBConf.pm$} && !m{Bivio.BConf.pm$}, values(%INC)))[0]
+	    || die('You need to set $BCONF to your project *.bconf'));
 }
 
 sub _usage {
