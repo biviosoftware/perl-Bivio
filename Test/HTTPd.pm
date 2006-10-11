@@ -89,6 +89,18 @@ Bivio::IO::Config->register({
 
 =cut
 
+=for html <a name="PROJ_ROOT"></a>
+
+=head2 PROJ_ROOT() : string
+
+return project root
+
+=cut
+
+sub PROJ_ROOT {
+    return _project_root();
+}
+
 # We don't do dynamic reconfiguration
 sub handle_config {
 #    shift->SUPER::handle_config(@_);
