@@ -274,7 +274,7 @@ sub _get_facade_uri_list {
 
 sub _project_root {
     return File::Basename::dirname(
-	(grep(m{\bBConf.pm$} && !m{Bivio.BConf.pm$}, values(%INC)))[0]
+	(grep(m{\bBConf.pm$} && !m{Bivio.BConf.pm$}, sort(values(%INC))))[0]
 	    || die('You need to set $BCONF to your project *.bconf'));
 }
 
