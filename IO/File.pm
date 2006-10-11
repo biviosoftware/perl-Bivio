@@ -136,6 +136,32 @@ sub chown_by_name {
 
 =for html <a name="mkdir_p"></a>
 
+=head2 static do_lines(string file_name, code_ref op)
+
+=head2 static do_lines(IO::File file, code_ref op)
+
+Call I<op> for each line in I<file>.  Lines are "chomped" before I<op> is
+called. If I<op> returns false, stops iterating, and closes file.  Dies on
+errors.
+
+=cut
+
+sub do_lines {
+    my($self, $file_name, $op) = @_;
+    my($file) = _open($file_name, 'r');
+    while (defined(my $line = readline($file))) {
+	_err('readline', $file, $file_name)
+	    if $!;
+	chomp($line);
+	last unless $op->($line);
+    }
+    close($file)
+	or _err('close', $file, $file_name);
+    return;
+}
+
+=for html <a name="mkdir_p"></a>
+
 =head2 static mkdir_p(string path) : string
 
 =head2 static mkdir_p(string path, int permissions) : string

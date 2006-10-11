@@ -2,6 +2,7 @@
 # $Id$
 my($x);
 my($abs_dir);
+my($do_lines);
 [
     class() => [
 	rm_rf => [
@@ -61,10 +62,20 @@ my($abs_dir);
 	    ['File/4.txt', ' with an offset', 1] => [],
 	],
 	append => [
-	    ['File/1.txt', "\ngoodbye"] => undef,
+	    ['File/1.txt', "\ngoodbye\nto you"] => undef,
         ],
+	do_lines => [
+	    ['File/1.txt', sub {
+		 my($line) = @_;
+		 push(@{$do_lines ||= []}, $line);
+		 return $line =~ /goodbye/ ? 0 : 1;
+	    }] => sub {
+		shift->actual_return($do_lines);
+		return ['hello', 'goodbye'];
+	    },
+	],
 	read => [
-	    ['File/1.txt'] => [\("hello\ngoodbye")],
+	    ['File/1.txt'] => [\("hello\ngoodbye\nto you")],
 	    sub {
 		return [IO::File->new('< File/2.txt')];
 	    } => [\("1\n2\n")],
