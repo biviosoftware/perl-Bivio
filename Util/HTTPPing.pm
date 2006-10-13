@@ -52,6 +52,7 @@ usage: b-http-ping [options] command [args...]
 commands:
     page url ... -- request url(s)
     process_status -- check load avg
+    db_status -- check for too many INSERT waiting
 EOF
 }
 
@@ -75,6 +76,20 @@ Bivio::IO::Config->register(my $_CFG = {
 =head1 METHODS
 
 =cut
+
+=for html <a name="db_status"></a>
+
+=head2 db_status()
+
+Checks for too many INSERT waiting.
+
+=cut
+
+sub db_status {
+    my($self) = @_;
+    my $count = grep(/INSERT waiting/, `ps ax`);
+    return $count ? "$count process(es) waiting on db insert\n" : ();
+}
 
 =for html <a name="handle_config"></a>
 
