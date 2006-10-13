@@ -678,6 +678,18 @@ sub get_auth_roles {
     return $auth_id eq $realm_id ? $auth_roles : _get_roles($self, $realm_id);
 }
 
+=for html <a name="get_content"></a>
+
+=head2 get_content() : hash_ref
+
+Returns undef.
+
+=cut
+
+sub get_content {
+    return undef;
+}
+
 =for html <a name="get_current"></a>
 
 =head2 static get_current() : Bivio::Agent::Request
