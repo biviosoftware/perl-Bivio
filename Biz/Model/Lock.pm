@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::Lock;
 use strict;
@@ -74,6 +74,7 @@ sub acquire {
 	    message => 'more than one lock on the request',
 	}) if $req->unsafe_get(ref($self));
     my($values) = {realm_id => $req->get('auth_id')};
+    _read_request_input($req);
     # try to get the lock
     my($die) = Bivio::Die->catch(sub {$self->create($values)});
     if ($die) {
@@ -125,15 +126,15 @@ sub execute_general {
     return;
 }
 
-=for html <a name="execute_if_not_acquired"></a>
+=for html <a name="execute_unless_acquired"></a>
 
-=head2 static execute_if_not_acquired(Bivio::Agent::Request req)
+=head2 static execute_unless_acquired(Bivio::Agent::Request req)
 
 Executes the lock on I<req.auth_realm> if not already acquired on I<req>.
 
 =cut
 
-sub execute_if_not_acquired {
+sub execute_unless_acquired {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
     $self->acquire unless $self->is_acquired;
@@ -257,9 +258,18 @@ sub release {
 
 #=PRIVATE METHODS
 
+sub _read_request_input {
+    my($req) = @_;
+    my($r) = $req->unsafe_get('r');
+    return unless $r;
+    my($m) = lc($r->method) eq 'post' ? 'get_form' : 'get_content';
+    $req->$m();
+    return;
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
