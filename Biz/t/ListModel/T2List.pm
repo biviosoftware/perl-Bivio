@@ -21,7 +21,7 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::Biz::t::ListModel::T1List;
+L<Bivio::Biz::t::ListModel::T1List>;
 
 =cut
 

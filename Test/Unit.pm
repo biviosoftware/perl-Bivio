@@ -399,7 +399,7 @@ sub builtin_string_ref {
 
 =head2 builtin_rm_rf(string io_name)
 
-Calls Bivio::IO::File-E<GT>rm_rf
+Calls Bivio::IO::File-E<gt>rm_rf
 
 =cut
 

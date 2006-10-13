@@ -792,7 +792,7 @@ sub get_form_context_from_named {
 Returns a map of user_realms by realm_id to a record (hash_ref) of
 realm information.  See UserRealmList for fields returned.
 
-B<Use of $self-E<GT>get('user_realms') is deprecated>.
+B<Use of $self-E<gt>get('user_realms') is deprecated>.
 
 =cut
 
