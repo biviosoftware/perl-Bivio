@@ -35,11 +35,14 @@ C<Bivio::Biz::Action::Acknowledgement>
 
 =cut
 
+sub QUERY_KEY {
+    return 'ack';
+}
+
 #=IMPORTS
 use Bivio::IO::Trace;
 
 #=VARIABLES
-my($_QUERY) = 'ack';
 our($_TRACE);
 
 =head1 METHODS
@@ -70,11 +73,11 @@ I<label> attribute on self.
 
 sub extract_label {
     my($proto, $req) = @_;
-    if (my $l = delete(($req->unsafe_get('query') || {})->{$_QUERY})) {
+    if (my $l = delete(($req->unsafe_get('query') || {})->{$proto->QUERY_KEY})) {
 	$l = Bivio::Agent::TaskId->from_int($l)->get_name
 	    if $l && $l =~ /^\d+$/;
 	$proto->new($req)->put_on_request($req)->put(label => $l);
-	_trace($_QUERY, '=', $l) if $_TRACE;
+	_trace($proto->QUERY_KEY, '=', $l) if $_TRACE;
 	return $l;
     }
     $proto->delete_from_request($req);
@@ -94,7 +97,7 @@ Bivio::UI::Text is a label.
 =cut
 
 sub save_label {
-    my(undef, $label, $req) = @_ >= 3 ? @_ : (undef, undef, pop(@_));
+    my($proto, $label, $req) = @_ >= 3 ? @_ : (shift(@_), undef, pop(@_));
     unless ($label) {
 	return unless Bivio::UI::Text->get_from_source($req)
 	    ->unsafe_get_widget_value_by_name(
@@ -102,13 +105,13 @@ sub save_label {
 	    );
 	$label = $req->get('task_id')->as_int;
     }
-    _trace($_QUERY, '=', $label) if $_TRACE;
+    _trace($proto->QUERY_KEY, '=', $label) if $_TRACE;
     # Add to FormContext (if exists) and request
     my($x) = $req->unsafe_get('form_model');
     $x &&= $x->unsafe_get_context;
     foreach my $y ($x, $req) {
 	($y->unsafe_get('query') || $y->put(query => {})->get('query'))
-	    ->{$_QUERY} = $label
+	    ->{$proto->QUERY_KEY} = $label
 	    if $y;
     }
     return;
