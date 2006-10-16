@@ -126,15 +126,15 @@ sub execute_general {
     return;
 }
 
-=for html <a name="execute_unless_acquired"></a>
+=for html <a name="execute_if_not_acquired"></a>
 
-=head2 static execute_unless_acquired(Bivio::Agent::Request req)
+=head2 static execute_if_not_acquired(Bivio::Agent::Request req)
 
 Executes the lock on I<req.auth_realm> if not already acquired on I<req>.
 
 =cut
 
-sub execute_unless_acquired {
+sub execute_if_not_acquired {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
     $self->acquire unless $self->is_acquired;
