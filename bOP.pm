@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.48  2006/09/29 20:30:48  dobbs
+    * Bivio::SQL::ListSupport and Bivio::SQL::Statement both fixed to
+      re-enable internal_initialize to override FROM
+    * Bivio::Search::Xapian now deletes Xapian's db_lock before calling
+      Search::Xapian.  The lock may be left over from a dead process
+
   Revision 4.47  2006/09/27 23:30:48  aviggio
   * Bivio::PetShop::Util fixed db upgrade syntax error
   * Bivio::SQL::ListSupport fixed sorting on tables in FROM clause
@@ -2788,7 +2794,7 @@ http://www.bivio.biz for more info.
     project.
   * Bivio::Util::Release.projects is new config of the form:
       projects => [
-  	[Bivio => b => 'bivio Software Artisans, Inc.'],
+  	[Bivio => b => 'bivio Software, Inc.'],
       ],
   * Bivio::Util::Release->list_projects_el prints a list of projects
     from the new config parameter.
