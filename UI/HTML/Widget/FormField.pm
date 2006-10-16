@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software Artisans Inc.  All rights reserved.
+# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::FormField;
 use strict;
@@ -182,7 +182,7 @@ sub _get_label_value {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Software Artisans Inc.  All rights reserved.
+Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

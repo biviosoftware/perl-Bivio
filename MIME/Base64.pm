@@ -1,4 +1,4 @@
-# Copyright (c) 2000,2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2000,2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::MIME::Base64;
 use strict;
@@ -84,7 +84,7 @@ sub http_encode {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000,2001 bivio Inc.  All rights reserved.
+Copyright (c) 2000,2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

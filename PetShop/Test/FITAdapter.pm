@@ -1,4 +1,4 @@
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Test::FITAdapter;
 $VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -96,7 +96,7 @@ sub do_login {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

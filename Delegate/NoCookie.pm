@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegate::NoCookie;
 use strict;
@@ -65,7 +65,7 @@ sub header_out {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

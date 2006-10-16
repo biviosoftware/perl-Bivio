@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Ext::MIMEParser;
 use strict;
@@ -89,7 +89,7 @@ sub parse_data {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

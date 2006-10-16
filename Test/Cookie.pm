@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Cookie;
 use strict;
@@ -72,7 +72,7 @@ sub execute_handle_cookie_in {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

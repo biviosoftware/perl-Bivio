@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2002 bivio Inc.  All rights reserved.
+# Copyright (c) 2000-2002 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade;
 use strict;
@@ -815,7 +815,7 @@ sub _setup_request {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Inc.  All rights reserved.
+Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

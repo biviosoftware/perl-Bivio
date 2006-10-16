@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Collection::SingletonMap;
 use strict;
@@ -110,7 +110,7 @@ sub put {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Form;
 use strict;
@@ -376,7 +376,7 @@ RFC2109 (Cookies), RFC1806 (Content-Disposition), RFC1521 (MIME)
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

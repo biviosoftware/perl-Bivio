@@ -1,4 +1,4 @@
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2003 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::Connection::None;
 use strict;
@@ -48,7 +48,7 @@ for when there is no database.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 bivio Software Artisans, Inc.  All rights reserved.
+Copyright (c) 2003 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

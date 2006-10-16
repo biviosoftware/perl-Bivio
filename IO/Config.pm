@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2003 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2003 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Config;
 use strict;
@@ -731,7 +731,7 @@ sub _process_argv {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2003 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2003 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

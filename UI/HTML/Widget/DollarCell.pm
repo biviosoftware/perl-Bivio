@@ -1,4 +1,4 @@
-# Copyright (c) 2004 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::DollarCell;
 use strict;
@@ -102,7 +102,7 @@ sub internal_new_args {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

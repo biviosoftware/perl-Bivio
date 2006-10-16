@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::CartItemList;
 use strict;
@@ -152,7 +152,7 @@ sub internal_post_load_row {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

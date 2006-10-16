@@ -1,4 +1,4 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::BLOB;
 use strict;
@@ -112,7 +112,7 @@ sub to_uri {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

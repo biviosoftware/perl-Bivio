@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::t::Mock::TaskId;
 use strict;
@@ -168,7 +168,7 @@ sub get_delegate_info {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All rights reserved.
+Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

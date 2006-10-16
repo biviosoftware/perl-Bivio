@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Action::ECPaymentProcessAll;
 use strict;
@@ -108,7 +108,7 @@ sub internal_execute {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Software Artisans, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

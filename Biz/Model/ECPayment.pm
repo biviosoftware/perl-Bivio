@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2002 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2000-2002 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::ECPayment;
 use strict;
@@ -147,7 +147,7 @@ sub unsafe_get_model {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2002 bivio Software Artisans, Inc.  All rights reserved.
+Copyright (c) 2000-2002 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

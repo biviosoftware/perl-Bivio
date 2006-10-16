@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::TaskInfo;
 use strict;
@@ -163,7 +163,7 @@ sub _get_task_info {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

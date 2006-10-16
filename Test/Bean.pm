@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Bean;
 use strict;
@@ -89,7 +89,7 @@ sub AUTOLOAD {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

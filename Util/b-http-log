@@ -1,5 +1,5 @@
 #!perl -w
-# Copyright (c) 2001 bivio, LLC.  All rights reserved.
+# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 use strict;
 
@@ -33,7 +33,7 @@ Bivio::Util::HTTPLog
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio, LLC.  All rights reserved.
+Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

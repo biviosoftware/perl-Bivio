@@ -1,4 +1,4 @@
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2003 bivio Software, Inc.  All rights reserved.
 # $Id$
 #
 # Test static utils, e.g. merge, that can be tested with Bivio::Test.

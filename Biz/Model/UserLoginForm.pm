@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2002 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::UserLoginForm;
 use strict;
@@ -516,7 +516,7 @@ sub _super_user_field {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2002 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

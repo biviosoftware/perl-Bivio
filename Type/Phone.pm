@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Phone;
 use strict;
@@ -70,7 +70,7 @@ sub from_literal {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

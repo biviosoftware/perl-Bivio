@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model;
 use strict;
@@ -1134,7 +1134,7 @@ sub _new_args {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Format::Link;
 use strict;
@@ -93,7 +93,7 @@ sub _format_task {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Inc.  All rights reserved.
+Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

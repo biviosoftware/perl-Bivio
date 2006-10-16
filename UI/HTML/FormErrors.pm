@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::FormErrors;
 use strict;
@@ -225,7 +225,7 @@ sub _mail_to {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

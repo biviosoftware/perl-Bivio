@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Reload;
 use strict;
@@ -96,7 +96,7 @@ sub _reload {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

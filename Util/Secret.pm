@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Secret;
 use strict;
@@ -104,7 +104,7 @@ sub encrypt_hex {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

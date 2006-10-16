@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::Release;
 use strict;
@@ -120,7 +120,7 @@ Bivio::IO::Config->register(my $_CFG = {
     facades_umask => 027,
     tmp_dir => "/var/tmp/build-$$",
     projects => [
-	[Bivio => b => 'bivio Software Artisans, Inc.'],
+	[Bivio => b => 'bivio Software, Inc.'],
     ],
 });
 
@@ -372,7 +372,7 @@ User to use if I<http_realm> set.
 Umask for builds and installs of binaries and libraries.  See also
 I<facades_umask>.
 
-=item projects : array_ref [[[Bivio => b => 'bivio Software Artisans, Inc.']]]
+=item projects : array_ref [[[Bivio => b => 'bivio Software, Inc.']]]
 
 Array_ref of array_refs of the form:
 
@@ -1247,7 +1247,7 @@ sub _would_run {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Inc.  All rights reserved.
+Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

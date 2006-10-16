@@ -1,4 +1,4 @@
--- Copyright (c) 2001 bivio Inc.  All rights reserved.
+-- Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 -- $Id$
 --
 -- Sequences for common bOP Models

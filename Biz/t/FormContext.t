@@ -1,5 +1,5 @@
 # $Id$
-# Copyright (c) 2004 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2004 bivio Software, Inc.  All rights reserved.
 use strict;
 use Bivio::Test::Request;
 my($req) = Bivio::Test::Request->initialize_fully;

@@ -1,4 +1,4 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Format::Printf;
 use strict;
@@ -59,7 +59,7 @@ sub get_widget_value {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

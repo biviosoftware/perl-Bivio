@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::JobLock;
 use strict;
@@ -187,7 +187,7 @@ sub update_and_commit {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

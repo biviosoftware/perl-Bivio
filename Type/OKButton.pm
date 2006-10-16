@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::OKButton;
 use strict;
@@ -45,7 +45,7 @@ C<Bivio::Type::OKButton> OK button
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

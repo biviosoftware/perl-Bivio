@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::t::Language::T1;
 use strict;
@@ -164,7 +164,7 @@ sub handle_setup {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

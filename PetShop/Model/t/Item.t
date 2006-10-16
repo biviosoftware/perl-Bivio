@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
 # $Id$
 #
 # Enum property test

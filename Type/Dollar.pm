@@ -1,4 +1,4 @@
-# Copyright (c) 2004 bivio Inc.  All Rights Reserved.
+# Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::Dollar;
 use strict;
@@ -82,7 +82,7 @@ sub get_min {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004 bivio Inc.  All Rights Reserved.
+Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::Month;
 use strict;
@@ -61,7 +61,7 @@ __PACKAGE__->compile([
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

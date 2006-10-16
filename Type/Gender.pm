@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Gender;
 use strict;
@@ -57,7 +57,7 @@ __PACKAGE__->compile([
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

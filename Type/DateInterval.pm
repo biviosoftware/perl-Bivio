@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2004 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000-2004 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::DateInterval;
 use strict;
@@ -342,7 +342,7 @@ sub _inc_year {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2004 bivio, Inc.  All rights reserved.
+Copyright (c) 2000-2004 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

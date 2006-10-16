@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Inc.  All Rights Reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Hidden;
 use strict;
@@ -139,7 +139,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Inc.  All Rights Reserved.
+Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::SelectSearchForm;
 use strict;
@@ -70,7 +70,7 @@ sub internal_initialize {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

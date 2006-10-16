@@ -1,4 +1,4 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::Address;
 use strict;
@@ -131,7 +131,7 @@ sub internal_initialize {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

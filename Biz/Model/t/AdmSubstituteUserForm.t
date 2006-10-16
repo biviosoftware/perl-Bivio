@@ -1,5 +1,5 @@
 # $Id$
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
 #
 # Only works for petshop (needs demo and root) users
 #

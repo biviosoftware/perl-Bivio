@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Format;
 use strict;
@@ -286,7 +286,7 @@ sub _new_page {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Inc.  All rights reserved.
+Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

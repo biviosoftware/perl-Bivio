@@ -1,4 +1,4 @@
-# Copyright (c) 2004 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Format::Dollar;
 use strict;
@@ -61,7 +61,7 @@ sub get_widget_value {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

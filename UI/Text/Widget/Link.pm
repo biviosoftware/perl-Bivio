@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software Artisans, Inc.  All rights reserved.
+# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Text::Widget::Link;
 use strict;
@@ -164,7 +164,7 @@ sub _initialize_value {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software Artisans, Inc.  All rights reserved.
+Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

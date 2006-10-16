@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::RFC822;
 use strict;
@@ -546,7 +546,7 @@ sub escape_header_phrase {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

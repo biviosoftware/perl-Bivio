@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software.  All Rights Reserved.
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmEmailList;
 use strict;

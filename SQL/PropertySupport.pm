@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::PropertySupport;
 use strict;
@@ -654,7 +654,7 @@ sub _register_with_parents {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

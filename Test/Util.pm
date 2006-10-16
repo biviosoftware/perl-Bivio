@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software Artisans Inc.  All Rights reserved.
+# Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::Test::Util;
 use strict;
@@ -462,7 +462,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Software Artisans Inc.  All Rights reserved.
+Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::t::ListFormModel::T1ListForm;
 use strict;

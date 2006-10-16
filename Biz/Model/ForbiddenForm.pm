@@ -1,4 +1,4 @@
-# Copyright (c) 2004 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ForbiddenForm;
 use strict;
@@ -152,7 +152,7 @@ sub _really_forbidden {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

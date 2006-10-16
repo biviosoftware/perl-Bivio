@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::Text::Widget::File;
 use strict;
@@ -132,7 +132,7 @@ sub want_render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

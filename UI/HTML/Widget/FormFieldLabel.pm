@@ -1,4 +1,4 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::FormFieldLabel;
 use strict;
@@ -107,7 +107,7 @@ sub initialize {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 

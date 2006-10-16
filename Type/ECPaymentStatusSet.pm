@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software Artisans Inc.  All Rights reserved.
+# Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::Type::ECPaymentStatusSet;
 use strict;
@@ -73,7 +73,7 @@ sub get_width {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Software Artisans Inc.  All Rights reserved.
+Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 

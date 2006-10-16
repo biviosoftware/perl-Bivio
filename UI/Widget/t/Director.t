@@ -1,4 +1,4 @@
-# Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 use Bivio::Test::Widget;

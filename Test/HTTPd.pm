@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::HTTPd;
 use strict;
@@ -301,7 +301,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 2006 bivio Software Artisans, Inc.  All Rights Reserved.
+Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
