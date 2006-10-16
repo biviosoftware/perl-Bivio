@@ -1,5 +1,4 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
 use strict;
 use Bivio::Test;
 Bivio::Test->new('Bivio::Type')->unit([
@@ -22,5 +21,6 @@ Bivio::Test->new('Bivio::Type')->unit([
 	    ['', ''] => 0,
 	    ['x', 'x'] => 0,
 	],
+	# See String.bunit for more tests
     ],
 ]);
