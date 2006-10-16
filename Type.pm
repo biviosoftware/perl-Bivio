@@ -199,24 +199,25 @@ sub from_literal {
 
 =for html <a name="from_literal_or_die"></a>
 
-=head2 static from_literal_or_die(string value) : any
+=head2 static from_literal_or_die(string value, boolean null_ok) : any
 
 Checks the return value of L<from_literal|"from_literal">
 and calls die with an appropriate message if from_literal
-conversion failed.  Dies with TypeError::NULL if not defined.
+conversion failed.  Dies with TypeError::NULL if not defined and
+!I<null_ok>.
 
 Returns a scalar, not an array.
 
 =cut
 
 sub from_literal_or_die {
-    my($proto, $value) = @_;
+    my($proto, $value, $null_ok) = @_;
     my($v, $e) = $proto->from_literal($value);
-    return $v if defined($v);
-    Bivio::IO::ClassLoader->simple_require(qw(Bivio::Die Bivio::TypeError));
-    $e ||= Bivio::TypeError::NULL();
-    Bivio::Die->throw_die('DIE', {
-	message => 'from_literal failed: '.$e->get_long_desc,
+    return $v
+	if defined($v) || $null_ok && !$e;
+    $e ||= $proto->use('Bivio::TypeError')->NULL;
+    $proto->use('Bivio::Die')->throw_die('DIE', {
+	message => 'from_literal failed: ' . $e->get_long_desc,
 	program_error => 1,
 	error_enum => $e,
 	entity => $value,
@@ -544,6 +545,8 @@ sub to_sql_value_list {
 
 Returns the L<to_literal|"to_literal"> representation of the value.
 Always returns a defined value.  I<undef> is returned as the empty string.
+
+B<Use for debugging only.>
 
 =cut
 
