@@ -25,7 +25,7 @@ sub from_literal {
     my($v, $e) = $proto->SUPER::from_literal(@_);
     return ($v, $e)
 	unless defined($v);
-    return $v =~ qr{^@{[$proto->REGEX]}$}o
+    return $v =~ m{^@{[$proto->REGEX]}$}
 	? $v : (undef, Bivio::TypeError->BLOG_NAME);
 }
 
