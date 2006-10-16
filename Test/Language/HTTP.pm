@@ -693,8 +693,8 @@ sub submit_form {
     elsif (ref($submit_button) eq 'HASH') {
 	$expected_content_type = $form_fields;
 	$form_fields = $submit_button;
-	$submit_button = $forms->get_ok_button($form);
         $form = $forms->get_by_field_names(keys(%$form_fields));
+	$submit_button = $forms->get_ok_button($form);
     }
     else {
 	$form_fields ||= {};
