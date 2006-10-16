@@ -683,24 +683,26 @@ is not text/html, won't check for submission errors.
 
 sub submit_form {
     my($self, $submit_button, $form_fields, $expected_content_type) = @_;
-    if (ref($submit_button) eq 'HASH') {
+
+    my($forms) = _assert_html($self)->get('Forms');
+    my($form);
+
+    if (!defined($submit_button)) {
+        $form = $forms->get_by_field_names(keys(%$form_fields));
+    }
+    elsif (ref($submit_button) eq 'HASH') {
 	$expected_content_type = $form_fields;
 	$form_fields = $submit_button;
-	$submit_button = undef;
-    }
-    elsif (!defined($submit_button)) {
-	Bivio::Die->die('submit button not defined');
+	$submit_button = $forms->get_ok_button($form);
+        $form = $forms->get_by_field_names(keys(%$form_fields));
     }
     else {
 	$form_fields ||= {};
+	$form = $forms->get_by_field_names(
+	    keys(%$form_fields),
+	    $submit_button,
+	);
     }
-    my($forms) = _assert_html($self)->get('Forms');
-    my($form) = $forms->get_by_field_names(
-	keys(%$form_fields),
-	defined($submit_button) ? $submit_button : (),
-    );
-    $submit_button = $forms->get_ok_button($form)
-	unless defined($submit_button);
     _send_request($self,
 	_create_form_request(
 	    $self, uc($form->{method}),
