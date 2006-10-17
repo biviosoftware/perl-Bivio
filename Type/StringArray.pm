@@ -62,10 +62,10 @@ sub _clean_copy {
     my($copy) = [map({
 	$_ =~ s/^\s+|\s+$//gs
 	    if defined($_);
-	defined($_) && length($_) ? $_ : undef;
+	defined($_) && length($_) ? $_ : '';
     } @$value)];
     pop(@$copy)
-	while @$copy && !defined($copy->[$#$copy]);
+	while @$copy && !length($copy->[$#$copy]);
     Bivio::Die->die($copy, ": separator ($sep) in element")
         if grep(/$sep/, @$copy);
     return @$copy ? $copy : undef;
