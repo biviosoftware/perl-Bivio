@@ -1,0 +1,45 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    from_literal => [
+        '' => UNDEF(),
+	' ' => UNDEF(),
+	'0' => [[qw(0)]],
+	' a,b ', [[qw(a b)]],
+    ],
+    compare_defined => [
+	[[qw(a b)], [qw(a b)]] => 0,
+	[[qw(a a)], [qw(a b)]] => -1,
+	[[qw(a c)], [qw(a b)]] => 1,
+	[[qw(a)], [qw(a b)]] => -1,
+	[[qw(a b c)], [qw(a b)]] => 1,
+	[['a', undef], ['a']] => 0,
+	[['a'], ['a', '']] => 0,
+	[[''], []] => 0,
+    ],
+    to_sql_param => [
+	[] => [undef],
+	[[]] => [undef],
+	[[qw(a)]] => 'a',
+	[[qw(a b)]] => "a$;b",
+	[["a$;b"]] => DIE(),
+	['a'] => DIE(),
+    ],
+    from_sql_column => [
+	[] => [undef],
+	[''] => [undef],
+	['a'] => [[qw(a)]],
+	"a$;b" => [[qw(a b)]],
+	"$;a" => [[undef, 'a']],
+    ],
+    to_literal => [
+	[] => '',
+	[[]] => '',
+	[[undef,undef]] => '',
+	[[qw(a)]] => 'a',
+	[[qw(a b)]] => 'a, b',
+	[['a,b']] => DIE(),
+	['a'] => DIE(),
+    ],
+];
