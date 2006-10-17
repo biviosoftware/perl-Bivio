@@ -46,12 +46,12 @@ C<Bivio::Type::Text64K>
 
 =head2 static get_width : int
 
-Returns 64K.
+Returns 64K - 1 so length fits in two bytes.
 
 =cut
 
 sub get_width {
-    return 64 * 1024;
+    return 0xffff;
 }
 
 #=PRIVATE SUBROUTINES
