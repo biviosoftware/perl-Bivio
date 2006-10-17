@@ -243,7 +243,7 @@ sub _dynamic_modules {
 
 sub _symlink {
     my($file, $link) = @_;
-    -e $link || CORE::symlink($file, $link)
+    -l $link || CORE::symlink($file, $link)
 	|| die("symlink($file, $link): $!");
 }
 
