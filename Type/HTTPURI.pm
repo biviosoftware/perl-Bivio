@@ -69,7 +69,7 @@ sub from_literal {
 
 =head2 static get_width : int
 
-Returns 100.
+Returns 255.
 
 =cut
 
