@@ -18,6 +18,7 @@ sub internal_initialize {
 	list_class => 'NumberedList',
 	version => 1,
 	visible => [
+	    'RealmOwner.name',
 	    {
 		name => 'form_index',
 	        type => 'Integer',

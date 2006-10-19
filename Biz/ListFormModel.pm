@@ -293,6 +293,20 @@ sub get_field_info {
     return $self->SUPER::get_field_info($name, @_);
 }
 
+=for html <a name="get_field_name_in_list"></a>
+
+=head2 get_field_name_in_list(string property) : string
+
+Returns the indexed field name.  If this is not an "in_list" field, just
+returns I<property>.  If no cursor, also returns I<property>.
+
+=cut
+
+sub get_field_name_in_list {
+    my($n, $nr) = _names(@_);
+    return defined($nr) ? $nr : $n;
+}
+
 =for html <a name="get_field_name_for_html"></a>
 
 =head2 get_field_name_for_html(string name) : string
@@ -604,6 +618,28 @@ sub next_row {
 	return 0;
     }
     return _set_row($self, ++$fields->{cursor})
+}
+
+=for html <a name="map_rows"></a>
+
+=head2 map_rows(code_ref map_iterate_handler) : array_ref
+
+Just like ListModel's
+
+=cut
+
+sub map_rows {
+#TODO: Delegate this.
+    my($self, $map_iterate_handler) = @_;
+    my($res) = [];
+    $map_iterate_handler ||= sub {
+	return shift->get_shallow_copy;
+    };
+    $self->reset_cursor;
+    while ($self->next_row) {
+	push(@$res, $map_iterate_handler->($self));
+    }
+    return $res;
 }
 
 =for html <a name="reset_cursor"></a>

@@ -11,6 +11,16 @@ Bivio::Biz::Model->new(req(), 'NumberedList')->load_page({count=> 3});
 		index_2 => 2,
 	    }],
 	],
+	get_field_name_in_list => [
+	    index => DIE(),
+	    'RealmOwner.name' => 'RealmOwner.name',
+	],
+	set_cursor => [
+	    0 => undef,
+	],
+	get_field_name_in_list => [
+	    index => 'index_0',
+	],
     ],
 ];
 
