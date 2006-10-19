@@ -26,7 +26,8 @@ sub from_literal {
 	if defined($value);
     return (undef, undef)
 	unless length($value);
-    return [split(/\s*(?:,|$;)\s*/, $value)];
+    my($sep) = $value =~ /$;/ ? $; : ',';
+    return [split(/\s*$sep\s*/, $value)];
 }
 
 sub from_sql_column {

@@ -258,6 +258,7 @@ sub initialize_test_data {
     _init_demo_calendar($self);
     _init_forum($self);
     _init_email_alias($self);
+    _init_tuple($self);
     return;
 }
 
@@ -615,6 +616,36 @@ EOF
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
     });
+    return;
+}
+
+sub _init_tuple {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $req->set_realm($self->FOUREM);
+    $req->set_user($self->ROOT);
+    $self->initialize_tuple_slot_types;
+    Bivio::Biz::Model->new($req, 'TupleSlotType')->create_from_hash({
+	Status => {
+	    type_class => 'TupleSlot',
+	    default_value => 's1',
+	    choices => join($;, qw(s0 s1 s2 s3)),
+	    is_required => 0,
+	},
+	Author => {
+	    type_class => 'Email',
+	    default_value => undef,
+	    choices => undef,
+	    is_required => 1,
+	},
+    });
+    Bivio::Biz::Model->new($req, 'TupleDef')->create_from_hash({
+	'PSR#PetShopReport' => [
+	    [qw(author Author)],
+	    [qw(status Status)],
+	],
+    });
+    Bivio::Biz::Model->new($req, 'TupleUse')->create_from_label('PetShopReport');
     return;
 }
 

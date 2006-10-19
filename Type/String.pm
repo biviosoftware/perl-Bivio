@@ -76,7 +76,7 @@ sub from_literal {
     my($proto, $value) = @_;
     $proto->internal_from_literal_warning
         unless wantarray;
-    return undef
+    return (undef, undef)
 	unless defined($value) && length($value);
     return (undef, Bivio::TypeError->TOO_LONG)
 	if length($value) > $proto->get_width;

@@ -6,7 +6,8 @@ Type();
         '' => UNDEF(),
 	' ' => UNDEF(),
 	'0' => [[qw(0)]],
-	' a,b ', [[qw(a b)]],
+	' a,b ' => [[qw(a b)]],
+	"a,b$;c" => [['a,b', 'c']],
     ],
     compare_defined => [
 	[[qw(a b)], [qw(a b)]] => 0,

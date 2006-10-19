@@ -163,6 +163,76 @@ CREATE TABLE phone_t (
 )
 /
 
+CREATE TABLE tuple_t (
+  realm_id NUMERIC(18) NOT NULL,
+  tuple_def_id NUMERIC(18) NOT NULL,
+  tuple_num NUMERIC(9) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  thread_root_id NUMERIC(18),
+  slot1 VARCHAR(500),
+  slot2 VARCHAR(500),
+  slot3 VARCHAR(500),
+  slot4 VARCHAR(500),
+  slot5 VARCHAR(500),
+  slot6 VARCHAR(500),
+  slot7 VARCHAR(500),
+  slot8 VARCHAR(500),
+  slot9 VARCHAR(500),
+  slot10 VARCHAR(500),
+  slot11 VARCHAR(500),
+  slot12 VARCHAR(500),
+  slot13 VARCHAR(500),
+  slot14 VARCHAR(500),
+  slot15 VARCHAR(500),
+  slot16 VARCHAR(500),
+  slot17 VARCHAR(500),
+  slot18 VARCHAR(500),
+  slot19 VARCHAR(500),
+  slot20 VARCHAR(500),
+  CONSTRAINT tuple_t1 PRIMARY KEY(realm_id, tuple_def_id, tuple_num)
+)
+/
+
+CREATE TABLE tuple_def_t (
+  tuple_def_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  moniker VARCHAR(100) NOT NULL,
+  CONSTRAINT tuple_def_t1 PRIMARY KEY(tuple_def_id)
+)
+/
+
+CREATE TABLE tuple_slot_def_t (
+  tuple_def_id NUMERIC(18) NOT NULL,
+  tuple_slot_num NUMERIC(2) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  tuple_slot_type_id NUMERIC(18) NOT NULL,
+  CONSTRAINT tuple_slot_t1 PRIMARY KEY(tuple_def_id, tuple_slot_num)
+)
+/
+
+CREATE TABLE tuple_slot_type_t (
+  tuple_slot_type_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  type_class VARCHAR(100) NOT NULL,
+  choices VARCHAR(65535),
+  default_value VARCHAR(500),
+  is_required NUMERIC(1) NOT NULL,
+  CONSTRAINT tuple_slot_type_t1 PRIMARY KEY(tuple_slot_type_id)
+)
+/
+
+CREATE TABLE tuple_use_t  (
+  realm_id NUMERIC(18) NOT NULL,
+  tuple_def_id NUMERIC(18) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  moniker VARCHAR(100) NOT NULL,
+  CONSTRAINT tuple_use_t1 PRIMARY KEY(realm_id, tuple_def_id)
+)
+/
+
 CREATE TABLE realm_file_t (
   realm_file_id NUMERIC(18),
   realm_id NUMERIC(18) NOT NULL,

@@ -1,0 +1,40 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+options({class_name => 'Bivio::Biz::Model::RealmMail'});
+PropertyModel();
+req()->set_realm_and_user(qw(fourem root));
+[
+    create_from_rfc822 => [
+	[\(<<'EOF')]
+From: a@a.a
+Message-ID: <1@a.a>
+Subject: PSR#
+
+Author: b@b.b
+
+Some text
+EOF
+	=> [{
+	    'Model.Tuple' => {
+		tuple_num => 1,
+		slot1 => 'b@b.b',
+		slot2 => 's1',
+	    },
+	}],
+	[\(<<'EOF')]
+From: a@a.a
+Message-ID: <2@a.a>
+Subject: PSR#1
+
+Status: s2
+
+Some text
+EOF
+	=> [{
+	    'Model.Tuple' => {
+		tuple_num => 1,
+		slot2 => 's2',
+	    },
+	}],
+    ],
+];
