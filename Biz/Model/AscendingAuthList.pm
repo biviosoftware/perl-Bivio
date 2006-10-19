@@ -5,10 +5,11 @@ use strict;
 use base 'Bivio::Biz::ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_GID) = Bivio::Auth::Realm->get_general->get('id');
+my($_GID);
 
 sub internal_initialize {
     my($self) = @_;
+    $_GID = Bivio::Auth::Realm->get_general->get('id');
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	# We expect this to be overwritten
