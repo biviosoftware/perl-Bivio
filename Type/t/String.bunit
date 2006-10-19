@@ -1,0 +1,20 @@
+# Copyright (c) 2004-2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    compare => [
+	[undef, undef] => 0,
+	[undef, ''] => 0,
+	['', undef] => 0,
+	['', 'x'] => -1,
+	['x', ''] => 1,
+    ],
+    from_literal => [
+        '' => UNDEF(),
+        'x' => 'x',
+    ],
+    from_literal_or_die => [
+	'' => DIE(),
+	['', 1] => [undef],
+    ],
+];
