@@ -1,0 +1,34 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->set_realm(qw(fourem root));
+my($tdid) = model(TupleUseList => {auth_id => req('auth_id')})
+    ->moniker_to_id('PSR');
+foreach my $x (0..3) {
+    model('Tuple')->create({
+	tuple_def_id => $tdid,
+	slot1 => "a$x\@a.a",
+	slot2 => "s$x",
+    });
+}
+[
+    load_all => [
+	[{parent_id => $tdid}] => [{
+	    'Tuple.tuple_num' => 1,
+	    'Tuple.slot1' => 'a0@a.a',
+	    'Tuple.slot2' => 's0',
+	}, {
+	    'Tuple.tuple_num' => 2,
+	}, {
+	    'Tuple.tuple_num' => 3,
+	}, {
+	    'Tuple.tuple_num' => 4,
+	    'Tuple.slot2' => 's3',
+	}],
+    ],
+    is_slot_defined => [
+	1 => 1,
+	2 => 1,
+	3 => 0,
+    ],
+];
