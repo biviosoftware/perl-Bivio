@@ -326,10 +326,8 @@ sub builtin_model {
     my($actual);
     if ($m->isa('Bivio::Biz::ListModel')) {
 	$m->unauth_load_all($query);
-	unless ($expect) {
-	    $m->set_cursor;
-	    return $m;
-	}
+	return $m
+	    unless $expect;
 	$actual = $m->map_rows;
     }
     if ($m->isa('Bivio::Biz::PropertyModel')) {
@@ -364,7 +362,9 @@ options.
 =cut
 
 sub builtin_options {
-    my(undef, $options) = @_;
+    my($proto, $options) = @_;
+    $_CLASS = $proto->use($options->{class_name})
+	if $options->{class_name};
     return {%$_OPTIONS = (%$_OPTIONS, $options ? %$options : ())};
 }
 
