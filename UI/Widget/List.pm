@@ -77,6 +77,7 @@ sub initialize {
 	} @{$self->get('columns')})],
     );
     $self->unsafe_initialize_attr('empty_list_widget');
+    $self->unsafe_initialize_attr('source_name');
     return;
 }
 
@@ -124,9 +125,9 @@ widget values.
 
 sub render {
     my($self, $source, $buffer) = @_;
-
-    my($list) = $source->get_request()
-	->get('Model.' . $self->get('list_class'));
+    my($n) = $self->unsafe_get('source_name');
+    my($list) = $n ? $source->get_widget_value($n)
+	: $source->get_request->get('Model.' . $self->get('list_class'));
 
     # check for an empty list
     if ($list->get_result_set_size == 0
