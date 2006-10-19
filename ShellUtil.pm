@@ -792,7 +792,7 @@ sub lock_realm {
     Bivio::Die->die("can't lock general realm")
 	    if $req->get('auth_realm')->get('type')
 		    == Bivio::Auth::RealmType->GENERAL();
-    Bivio::Biz::Model->get_instance('Lock')->execute_if_not_acquired($req);
+    Bivio::Biz::Model->get_instance('Lock')->execute_unless_acquired($req);
     return;
 }
 
