@@ -465,6 +465,47 @@ sub initialize_test_data {
     return;
 }
 
+=for html <a name="initialize_tuple_slot_types"></a>
+
+=head2 initialize_tuple_slot_types()
+
+Creates default TupleSlotType enteries in general realm.
+
+=cut
+
+sub initialize_tuple_slot_types {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $req->set_realm(undef);
+    Bivio::Biz::Model->new($req, 'TupleSlotType')->create_from_hash({
+	Integer => {
+	    type_class => 'Integer',
+	    default_value => undef,
+	    choices => undef,
+	    is_required => 0,
+	},
+	Date => {
+	    type_class => 'Date',
+	    default_value => undef,
+	    choices => undef,
+	    is_required => 0,
+	},
+	String => {
+	    type_class => 'TupleSlot',
+	    default_value => undef,
+	    choices => undef,
+	    is_required => 0,
+	},
+	Email => {
+	    type_class => 'Email',
+	    default_value => undef,
+	    choices => undef,
+	    is_required => 0,
+	},
+    });
+    return;
+}
+
 =for html <a name="internal_upgrade_db"></a>
 
 =head2 abstract internal_upgrade_db()
