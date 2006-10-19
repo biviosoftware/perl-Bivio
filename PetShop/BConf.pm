@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::BConf;
 use strict;
@@ -107,6 +107,13 @@ sub merge_overrides {
 	'Bivio::SQL::PropertySupport' => {
 	    unused_classes => [],
 	},
+	'Bivio::Biz::Model::RealmMail' => {
+	    create_hook => sub {
+		my($m) = @_;
+		$m->get_instance('Tuple')->realm_mail_hook(@_);
+		return;
+	    },
+	},
 	'Bivio::UI::Facade' => {
 	    default => 'PetShop',
 	    http_suffix => 'bivio.biz',
@@ -119,7 +126,7 @@ sub merge_overrides {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
