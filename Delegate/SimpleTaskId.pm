@@ -316,7 +316,7 @@ sub get_delegate_info {
 	    29
 	    GENERAL
 	    ADMIN_READ
-	    Model.Lock->execute_if_not_acquired
+	    Model.Lock->execute_unless_acquired
 	    Model.ForumList->execute_load_all
 	    Model.ForumEditDAVList
 	)],
@@ -325,7 +325,7 @@ sub get_delegate_info {
 	    30
 	    FORUM
 	    ADMIN_READ
-	    Model.Lock->execute_if_not_acquired
+	    Model.Lock->execute_unless_acquired
 	    Model.ForumList->execute_load_all
 	    Model.ForumEditDAVList
 	)],
@@ -334,7 +334,7 @@ sub get_delegate_info {
 	    31
 	    FORUM
 	    ADMIN_READ
-	    Model.Lock->execute_if_not_acquired
+	    Model.Lock->execute_unless_acquired
 	    Model.ForumUserList->execute_load_all
 	    Model.ForumUserEditDAVList
 	)],
@@ -351,7 +351,7 @@ sub get_delegate_info {
 	    33
 	    FORUM
 	    DATA_READ
-	    Model.Lock->execute_if_not_acquired
+	    Model.Lock->execute_unless_acquired
 	    Model.CalendarEventDAVList
 	)],
 # 	[qw(
