@@ -326,8 +326,10 @@ sub builtin_model {
     my($actual);
     if ($m->isa('Bivio::Biz::ListModel')) {
 	$m->unauth_load_all($query);
-	return $m
-	    unless $expect;
+	unless ($expect) {
+	    $m->set_cursor(0);
+	    return $m;
+	}
 	$actual = $m->map_rows;
     }
     if ($m->isa('Bivio::Biz::PropertyModel')) {
