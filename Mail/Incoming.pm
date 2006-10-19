@@ -405,7 +405,10 @@ sub _get_field {
     my($self, $name) = @_;
     return $self->get_if_exists_else_put(
 	$name,
-	sub {scalar(($self->get('header') =~ m{^$name(?: |\t)*(.*)}im)[0])},
+	sub {
+	    my($v) = $self->get('header') =~ m{^$name(?: |\t)*(.*)}im;
+	    return defined($v) ? $v : '';
+	},
     );
 }
 
