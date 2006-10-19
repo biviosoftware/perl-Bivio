@@ -12,6 +12,9 @@ my($_MAX_LINE) = Bivio::Type->get_instance('Line')->get_width;
 my($_MAX_EMAIL) = Bivio::Type->get_instance('Email')->get_width;
 my($_MS) = Bivio::Type->get_instance('MailSubject');
 my($_MFN) = Bivio::Type->get_instance('MailFileName');
+Bivio::IO::Config->register(my $_CFG = {
+    create_hook => sub {},
+});
 
 sub cascade_delete {
     my($self, $query) = @_;
@@ -53,6 +56,12 @@ sub create_from_rfc822 {
     return _create($self, _create_file($self, $rfc822));
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -78,6 +87,22 @@ sub internal_initialize {
     });
 }
 
+sub update {
+    my($self, $values) = @_;
+    if (defined($values->{subject})) {
+	$values->{subject} = $_MS->trim_literal($values->{subject});
+	$values->{subject_lc} = $_MS->clean_and_trim($values->{subject});
+	# Used by Tuple, but makes sense to cut the thread if
+	# the subject is changed.
+#TODO: Update children of thread to have correct thread_root_id
+	$values->{thread_root_id} = $self->get('realm_file_id')
+	    unless $self->get('subject_lc') eq $values->{subject_lc};
+    }
+    $values->{thread_parent_id} = undef
+	if $self->get('realm_file_id') eq $values->{thread_root_id};
+    return shift->SUPER::update(@_);
+}
+
 sub _create {
     my($self, $in, $file) = @_;
     $self->create(
@@ -89,6 +114,7 @@ sub _create {
 	    subject_lc => $_MS->clean_and_trim($in->get_subject),
 	}, $in),
     );
+    $_CFG->{create_hook}->($self, $in);
     return $in;
 }
 
