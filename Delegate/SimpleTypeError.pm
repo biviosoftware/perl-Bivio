@@ -400,6 +400,21 @@ sub get_delegate_info {
 	undef,
 	'The end date and time cannot be before or equal to the start date and time',
     ],
+    TUPLE_LABEL => [
+	68,
+	undef,
+	'Labels must begin with a letter, consist of letters, numbers, dashes(-), or underscores',
+    ],
+    SIMPLE_CLASS_NAME => [
+	69,
+	undef,
+	'Class names must consist of letters, numbers, or underscores',
+    ],
+    NOT_TUPLE_CHOICE => [
+	70,
+	undef,
+	'Value is not list of acceptable choices',
+    ],
 ];
 }
 
