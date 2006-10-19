@@ -62,7 +62,7 @@ sub new {
 	compute_return => sub {
 	    my($case, $actual, $expect) = @_;
 	    return $actual
-		unless $case->get('method') =~ /^(?:unauth_)?load/
+		unless $case->get('method') =~ /^(?:(?:unauth_)?load|find_row_by)/
 		&& ref($expect) eq 'ARRAY';
 	    if (ref($expect->[0]) eq 'ARRAY' && @$expect == 1
 		&& (!@{$expect->[0]} || ref($expect->[0]->[0]) eq 'HASH')) {
@@ -75,18 +75,19 @@ sub new {
 	    return $actual
 		unless @$expect != 1 || ref($expect->[0]) eq 'HASH';
 	    my($expect_copy) = [@$expect];
-	    return $case->get('object')->map_rows(
-		sub {
-		    my($row) = shift->get_shallow_copy;
-		    return {
-			map(
-			    ($_ => $row->{$_}),
-			    keys(%{@$expect_copy == 1 ? $expect_copy->[0]
-			        : shift(@$expect_copy) || {}}),
-			),
-		    };
-		},
-	    );
+	    my($extract) = sub {
+		my($row) = shift->get_shallow_copy;
+		return {
+		    map(
+			($_ => $row->{$_}),
+			keys(%{@$expect_copy == 1 ? $expect_copy->[0]
+			    : shift(@$expect_copy) || {}}),
+		    ),
+		};
+	    };
+	    my($o) = $case->get('object');
+	    return $case->get('method') =~ /^find_row_by/ ? [$extract->($o)]
+		: $o->map_rows($extract);
 	},
 	%$attrs,
     });
