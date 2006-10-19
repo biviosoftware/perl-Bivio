@@ -51,7 +51,6 @@ Bivio::Test::Request->initialize_fully;
 
 sub new_unit {
     my($proto, $class, $attrs) = @_;
-    my($model) = $proto->builtin_class;
     $attrs = {}
 	unless ref($attrs);
     my($m) = $class;
