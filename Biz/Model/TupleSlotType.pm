@@ -9,8 +9,7 @@ my($_TS) = Bivio::Type->get_instance('TupleSlot');
 
 sub LIST_FIELDS {
     return [map(
-	"TupleSlotType.$_",
-	qw(label type_class choices default_value is_required))];
+	"TupleSlotType.$_", qw(label type_class choices))];
 }
 
 sub create_from_hash {
@@ -20,7 +19,7 @@ sub create_from_hash {
 	my($v) = {
 	    map(($_
 	        => $self->get_field_type($_)->from_literal_or_die($values->{$_}, 1)),
-		qw(label type_class choices default_value is_required)),
+		qw(label type_class choices)),
 	};
 	@{$v->{choices}} = map(
 	    $self->validate_slot_or_die(
@@ -30,9 +29,6 @@ sub create_from_hash {
 		}),
 	    ), @{$v->{choices}},
 	) if $v->{choices};
-	$v->{default_value} = $self->validate_slot_or_die(
-	    $v->{default_value}, Bivio::Collection::Attributes->new({%$v}),
-	);
 	$self->create($v);
     }
     return $self;
@@ -48,8 +44,6 @@ sub internal_initialize {
 	    label => ['TupleLabel', 'NOT_NULL'],
 	    type_class => ['SimpleClassName', 'NOT_NULL'],
 	    choices => ['TupleSlotArray', 'NONE'],
-	    default_value => ['TupleSlot', 'NONE'],
-	    is_required => ['Boolean', 'NOT_NULL'],
         },
     });
 }
@@ -62,10 +56,8 @@ sub validate_slot {
     my($v, $e) = $t->from_literal($value);
     return (undef, $e)
 	if $e;
-    return ($model->get($prefix . 'default_value'), undef)
-	unless defined($v);
     return ($v, undef)
-	unless my $c = $model->get($prefix . 'choices');
+	unless defined($v) and my $c = $model->get($prefix . 'choices');
     return grep($t->compare($v, $_) == 0, @$c) ? ($v, undef)
 	: (undef, Bivio::TypeError->NOT_TUPLE_CHOICE);
 }

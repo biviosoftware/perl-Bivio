@@ -622,30 +622,31 @@ EOF
 sub _init_tuple {
     my($self) = @_;
     my($req) = $self->get_request;
+    $self->initialize_tuple_slot_types;
     $req->set_realm($self->FOUREM);
     $req->set_user($self->ROOT);
-    $self->initialize_tuple_slot_types;
     Bivio::Biz::Model->new($req, 'TupleSlotType')->create_from_hash({
 	Status => {
 	    type_class => 'TupleSlot',
-	    default_value => 's1',
 	    choices => join($;, qw(s0 s1 s2 s3)),
-	    is_required => 0,
-	},
-	Author => {
-	    type_class => 'Email',
-	    default_value => undef,
-	    choices => undef,
-	    is_required => 1,
 	},
     });
     Bivio::Biz::Model->new($req, 'TupleDef')->create_from_hash({
 	'PSR#PetShopReport' => [
-	    [qw(author Author)],
-	    [qw(status Status)],
+	    {
+		label => 'Author',
+		type => 'Email',
+		is_required => 1,
+	    },
+	    {
+		label => 'Status',
+		type => 'Status',
+		default_value => 's1',
+	    },
 	],
     });
-    Bivio::Biz::Model->new($req, 'TupleUse')->create_from_label('PetShopReport');
+    Bivio::Biz::Model->new($req, 'TupleUse')
+        ->create_from_label('PetShopReport');
     return;
 }
 

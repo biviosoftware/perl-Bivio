@@ -4,9 +4,10 @@ PropertyModel();
 req()->set_realm_and_user(qw(demo demo));
 [
     create_from_hash => [
-	[{'td1#TupleDef1' => [
-	    [qw(s1 Date)],
-	]}] => [{
+	[{'td1#TupleDef1' => [{
+	    label => 's1',
+	    type => 'Date',
+	}]}] => [{
 	    'Model.TupleDef' => {
 		moniker => 'td1',
 		label => 'TupleDef1',

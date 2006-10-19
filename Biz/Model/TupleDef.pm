@@ -9,22 +9,13 @@ my($_TL) = Bivio::Type->get_instance('TupleLabel');
 
 sub create_from_hash {
     my($self, $defs, $tstl) = @_;
-    $tstl ||= $self->new_other('TupleSlotTypeList')->load_all;
     while (my($k, $slots) = each(%$defs)) {
 	my($moniker, $label) = split(m{#}, $k);
 	$self->create({
 	    moniker => $moniker,
 	    label => $label,
 	});
-	my($i) = 1;
-	foreach my $s (@$slots) {
-	    $self->new_other('TupleSlotDef')->create({
-		map(($_ => $self->get($_)), qw(realm_id tuple_def_id)),
-		label => $_TL->from_literal_or_die($s->[0]),
-		tuple_slot_num => $i++,
-		tuple_slot_type_id => $tstl->label_to_id($s->[1]),
-	    });
-	}
+	$self->new_other('TupleSlotDef')->create_from_array($self, $slots),
     }
     return;
 }

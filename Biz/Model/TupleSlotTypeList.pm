@@ -5,6 +5,7 @@ use strict;
 use base 'Bivio::Biz::Model::AscendingAuthList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_TST) = __PACKAGE__->get_instance('TupleSlotType');
 
 sub AUTH_ID_FIELD {
     return 'TupleSlotType.realm_id';
@@ -31,6 +32,11 @@ sub label_to_id {
     return ($self->find_row_by_label($label)
        || $self->die($label, ': no such tuple slot type')
     )->get('TupleSlotType.tuple_slot_type_id');
+}
+
+sub validate_slot_or_die {
+    my($self, $value) = @_;
+    return $_TST->validate_slot_or_die($value, $self, 'TupleSlotType.');
 }
 
 1;

@@ -26,4 +26,8 @@ sub internal_initialize {
     });
 }
 
+sub label_to_id {
+    return shift->find_row_by_label(@_)->get('TupleDef.tuple_def_id');
+}
+
 1;

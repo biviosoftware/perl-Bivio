@@ -7,7 +7,6 @@ req()->set_realm_and_user(qw(demo demo));
 	[{tst1 => {
 	    type_class => 'Integer',
 	    choices => undef,
-	    is_required => 0,
 	}}] => [{
 	    choices => undef,
 	}],
@@ -20,10 +19,8 @@ req()->set_realm_and_user(qw(demo demo));
 	[{tst2 => {
 	    type_class => 'Integer',
 	    choices => "1$;2",
-	    is_required => 1,
 	}}] => [{
 	    choices => [1, 2],
-	    is_required => 1,
 	}],
     ],
     validate_slot => [
@@ -34,18 +31,13 @@ req()->set_realm_and_user(qw(demo demo));
 	[{tst3 => {
 	    type_class => 'Date',
 	    choices => "9/1/2006$;10/1/2006",
-	    default_value => "10/1/2006",
-	    is_required => 1,
 	}}] => [{
 	    choices => ['2453980 79199', '2454010 79199'],
-	    default_value => '2454010 79199',
-	    is_required => 1,
 	}],
     ],
     validate_slot => [
 	'9/1/2006' => ['2453980 79199', undef],
 	'9/2/2006' => [undef, Bivio::TypeError->NOT_TUPLE_CHOICE],
 	'9/2' => [undef, Bivio::TypeError->DATE],
-	'' => ['2454010 79199', undef],
     ],
 ];

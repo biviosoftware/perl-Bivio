@@ -4,12 +4,14 @@ package Bivio::Biz::Model::Tuple;
 use strict;
 use base 'Bivio::Biz::PropertyModel';
 use Bivio::Ext::MIMEParser;
+use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_LABEL_RE)
     = qr{^\s*(@{[Bivio::Type->get_instance('TupleLabel')->REGEX]}):\s*}om;
 my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_TSN) = Bivio::Type->get_instance('TupleSlotNum');
+our($_TRACE);
 
 sub LIST_FIELDS {
     return $_TSN->map_list(sub {'Tuple.' . shift(@_)});
@@ -52,32 +54,34 @@ sub internal_initialize {
 
 sub realm_mail_hook {
     my($proto, $realm_mail, $incoming) = @_;
+    my($tul) = $realm_mail->new_other('TupleUseList');
+    my($m) = join('|', @{$tul->monikers});
+    _trace($realm_mail->get('subject'), ' matching with ', $m) if $_TRACE;
+    return unless $m && $realm_mail->get('subject') =~ m{^\s*($m)\#(\d*)}x;
     my($state) = {
 	realm_mail => $realm_mail,
 	incoming => $incoming,
+	moniker => $1,
+	tuple_num => $2,
+	is_update => $2 ? 1 : 0,
+	tuple_def_id => $tul->moniker_to_id($1),
+	self => $proto->new($realm_mail->get_request),
     };
-    my($tul) = $realm_mail->new_other('TupleUseList');
-    my($m) = join('|', $tul->monikers);
-    return unless $m && $realm_mail->get('subject') =~ m{^\s*($m)\#(\d*)}x;
-    $state->{moniker} = $1;
-    $state->{tuple_num} = $2;
-    $state->{tuple_def_id} = $tul->find_row_by_moniker($state->{moniker})
-	->get('tuple_def_id');
     my($die);
     return _mail_err($state, $die ? $die->as_string : 'no text/plain part')
 	unless $state->{body} = Bivio::Die->catch(
 	    sub {_text_plain($incoming)}, \$die);
-    $state->{self} = $proto->new($realm_mail->get_request);
-    if ($state->{is_update} = $state->{tuple_num} ? 1 : 0) {
+    if ($state->{is_update}) {
 #TODO: Need proper warning output to user
 	return _mail_err($state, 'unable to load model')
 	    unless $state->{self}->unsafe_load(
-		{tuple_num => $state->{tuple_num}});
+		{map(($_ => $state->{$_}), qw(tuple_def_id tuple_num))});
     }
     else {
 	# thread_root_id is this message.  Subject will be unique after
 	# update.  This is a bit incestuous, but it works.
 	$state->{tuple_num} = $state->{self}->create({
+	    tuple_def_id => $state->{tuple_def_id},
 	    thread_root_id => $realm_mail->get('realm_file_id'),
 	})->get('tuple_num');
 	(my $s = $realm_mail->get('subject'))
@@ -101,32 +105,29 @@ sub update {
 sub _create_or_update_slots {
     my($state, $slots) = @_;
     my($self) = $state->{self};
-    $slots = [
-	map([lc(shift(@$slots)), shift(@$slots)], 1 .. int((@$slots + 1)/ 2)),
-    ];
-    my($tsdl) = $state->{self}->new_other('TupleSlotDefList')->load_all;
+    $slots = $self->map_by_two(sub {[lc($_[0]), $_[1]]}, $slots);
+    my($tsdl) = $state->{self}->new_other('TupleSlotDefList')->load_all({
+	parent_id => $state->{tuple_def_id},
+    });
     my($err);
     my($values) = {};
     $tsdl->do_rows(sub {
         my($l) = $tsdl->get('TupleSlotDef.label');
-	my($matches) = grep($_->[0] eq lc($l), @$slots);
-	if (@$matches) {
-	    if (@$matches > 1) {
-		$err = "$l: duplicate field in message";
-		return 0;
-	    }
-	    my($v, $e) = $tsdl->validate_slot($matches->[0]->[1]);
-	    if ($e) {
-		$err = "$l: contains an invalid value ($matches->[0]->[1]): "
-		    . $e->as_string;
-		return 0;
-	    }
-	    $values->{$tsdl->field_from_num} = $v;
-	    return 1;
+	my($m) = [grep($_->[0] eq lc($l), @$slots)];
+	_trace($l, ' matches: ', $m) if $_TRACE;
+	if (@$m > 1) {
+	    $err = "$l: duplicate field in message";
+	    return 0;
 	}
-	$values->{$tsdl->field_from_num}
-	    = $tsdl->get('TupleSlotType.default_value')
-	    if !$state->{is_update} && $tsdl->get('TupleSlotType.is_required');
+	$m = ($m->[0] || [])->[1];
+	my($v, $e) = $tsdl->validate_slot($m, $state->{is_update});
+	if ($e) {
+	    $err = "$l: "
+		. (defined($m) ? "contains an invalid value ($m): " : '')
+		. $e->as_string;
+	    return 0;
+	}
+	$values->{$tsdl->field_from_num} = $v;
         return 1;
     });
     return _mail_err($state, $err)
@@ -139,7 +140,7 @@ sub _mail_err {
     Bivio::IO::Alert->die(
         $state->{realm_mail}, ": $msg for $state->{moniker}#",
 	($state->{tuple_num} || ''));
-#TODO: better return msg
+#TODO: return msg via b-sendmail-http
     return;
 }
 

@@ -343,6 +343,10 @@ CREATE INDEX tuple_slot_def_t8 on tuple_slot_def_t (
   tuple_slot_type_id
 )
 /
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t9
+  CHECK (is_required BETWEEN 0 AND 1)
+/
 
 --
 -- tuple_slot_type_t
@@ -360,10 +364,6 @@ CREATE UNIQUE INDEX tuple_slot_type_t4 on tuple_slot_type_t (
   realm_id,
   label
 )
-/
-ALTER TABLE tuple_slot_type_t
-  ADD CONSTRAINT tuple_slot_type_t5
-  CHECK (is_required BETWEEN 0 AND 1)
 /
 
 --

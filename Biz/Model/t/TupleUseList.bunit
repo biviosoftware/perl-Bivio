@@ -1,0 +1,23 @@
+# Copyright (c) 2006 Jack E. Farber  All Rights Reserved.
+# $Id$
+ListModel();
+req()->set_user('root');
+[
+    {
+	method => 'load_all',
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    req()->set_realm($params->[0]);
+	    return [];
+	},
+    } => [
+	'fourem-sub1' => [],
+	fourem => [{
+	    'TupleUse.moniker' => 'PSR',
+	    'TupleUse.label' => 'PetShopReport',
+	}],
+    ],
+    monikers => [
+	[] => [[qw(PSR)]],
+    ],
+];

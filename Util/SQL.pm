@@ -476,6 +476,7 @@ Creates default TupleSlotType enteries in general realm.
 sub initialize_tuple_slot_types {
     my($self) = @_;
     my($req) = $self->get_request;
+    my($prev) = $req->get('auth_realm');
     $req->set_realm(undef);
     Bivio::Biz::Model->new($req, 'TupleSlotType')->create_from_hash({
 	Integer => {
@@ -503,6 +504,7 @@ sub initialize_tuple_slot_types {
 	    is_required => 0,
 	},
     });
+    $req->set_realm($prev);
     return;
 }
 

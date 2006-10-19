@@ -6,18 +6,32 @@ use base 'Bivio::Biz::Model::RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TL) = Bivio::Type->get_instance('TupleLabel');
+my($_TST) = __PACKAGE__->get_instance('TupleSlotType');
+
+sub LIST_FIELDS {
+    return [map(
+	"TupleSlotDef.$_", qw(label is_required default_value)),
+	@{$_TST->LIST_FIELDS},
+    ];
+}
 
 sub create_from_array {
-    my($self, $tuple_def, $slots) = @_;
+    my($self, $tuple_def, $slots, $tstl) = @_;
     my($tsn) = 1;
-    my($tstl) = $self->new_other('TupleSlotTypeList')->load_all;
+    $tstl ||= $self->new_other('TupleSlotTypeList')->load_all;
+    my($n) = 1;
     foreach my $s (@$slots) {
+	$self->die($s->{type}, ': no such type')
+	    unless $tstl->find_row_by_label($s->{type});
 	$self->create({
-	    tuple_slot_num => $tsn++,
+	    tuple_slot_num => $n++,
 	    tuple_def_id => $tuple_def->get('tuple_def_id'),
 	    realm_id => $tuple_def->get('realm_id'),
-	    label => $_TL->from_literal_or_die($s->[0]),
-	    tuple_slot_type_id => $tstl->find_row_by_label($s->[1])->get('tuple_slot_type_id'),
+	    tuple_slot_type_id => $tstl->get('TupleSlotType.tuple_slot_type_id'),
+	    default_value => $tstl->validate_slot_or_die($s->{default_value}),
+	    map(($_ =>
+	        $self->get_field_type($_)->from_literal_or_die($s->{$_})),
+		qw(label is_required)),
 	});
     }
     return;
@@ -33,6 +47,8 @@ sub internal_initialize {
 	    tuple_slot_num => ['TupleSlotNum', 'PRIMARY_KEY'],
 	    label => ['TupleLabel', 'NOT_NULL'],
 	    tuple_slot_type_id => ['TupleSlotType.tuple_slot_type_id', 'NOT_NULL'],
+	    default_value => ['TupleSlot', 'NONE'],
+	    is_required => ['Boolean', 'NOT_NULL'],
         },
     });
 }
