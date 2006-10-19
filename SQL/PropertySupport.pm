@@ -85,7 +85,7 @@ Bivio::IO::Trace->register;
 my($_EMPTY_ARRAY) = [];
 my($_MIN_PRIMARY_ID) = Bivio::Type::PrimaryId->get_min;
 Bivio::IO::Config->register(my $_CFG = {
-    unused_classes => [qw(RealmFile RealmMail RealmMailBounce Website Forum CalendarEvent JobLock)],
+    unused_classes => [qw(RealmFile RealmMail RealmMailBounce Website Forum CalendarEvent JobLock Tuple TupleDef TupleSlotType TupleSlotDef TupleUse)],
 });
 
 =head1 FACTORIES
