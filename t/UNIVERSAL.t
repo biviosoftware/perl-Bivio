@@ -48,6 +48,13 @@ Bivio::Test->unit([
 	    'Bivio::UNIVERSAL' => 'Bivio::UNIVERSAL',
 	    'Not::Known::Class' => Bivio::DieCode->NOT_FOUND,
 	],
+	map_by_two => [
+	    [sub {$_[0]}, []] => [[]],
+	    [sub {$_[0]}, [qw(a)]] => [[qw(a)]],
+	    [sub {$_[1]}, [qw(a)]] => [[undef]],
+	    [sub {$_[0]}, [qw(a 1 b 2)]] => [[qw(a b)]],
+	    [sub {$_[1]}, [qw(a 1 b 2)]] => [[qw(1 2)]],
+	],
      ],
     'Bivio::t::UNIVERSAL::t1' => [
 	inheritance_ancestor_list => [

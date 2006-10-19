@@ -170,6 +170,23 @@ sub instance_data_index {
     return @{$pkg->inheritance_ancestor_list} - 1;
 }
 
+=for html <a name="map_by_two"></a>
+
+=head2 static map_by_two(code_ref op, array_ref values) : array_ref
+
+Passes I<values> two by two to I<op>.  Returns cummulative results
+of I<op>.  If array is odd, last element will be C<undef>.
+
+=cut
+
+sub map_by_two {
+    my(undef, $op, $values) = @_;
+    return [map(
+	$op->($values->[2 * $_], $values->[2 * $_ + 1]),
+	0 .. int((@{$values || []} + 1) / 2) - 1,
+    )];
+}
+
 =for html <a name="map_invoke"></a>
 
 =head2 static map_invoke(string method, array_ref repeat_args, array_ref first_args, array_ref last_args) : array_ref
