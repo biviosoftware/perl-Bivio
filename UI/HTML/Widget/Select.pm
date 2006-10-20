@@ -344,10 +344,12 @@ sub _load_items {
     return _load_items_from_enum($self, $choices)
 	if UNIVERSAL::isa($choices, 'Bivio::Type::Enum');
     if (UNIVERSAL::isa($choices, 'Bivio::TypeValue')) {
-	my($t) = $choices->get('type');
+ 	my($t) = $choices->get('type');
 	return _load_items_from_enum_set($self, $choices)
 	    if $t->isa('Bivio::Type::EnumSet');
 	if (ref($choices->get('value')) eq 'ARRAY') {
+	    return _load_items_from_enum_list($self, $choices->get('value'))
+		if $t->isa('Bivio::Type::Enum');
 	    return _load_items_from_integer_array($self, $choices)
 		if $t->isa('Bivio::Type::Integer');
 	    return _load_items_from_string_array($self, $choices)
