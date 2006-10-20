@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,27 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.49  2006/10/16 20:56:51  moeller
+  * Bivio::Agent::Request added get_content()
+  * Bivio::Biz::Action::Acknowledgement export QUERY_KEY
+  * Bivio::Biz::Model::Lock read any input from request before acquiring
+    lock
+  * Bivio::Biz::Model preliminary fix to enable Model reloading
+  * Bivio::IO::ClassLoader fix delete_require to not stomp on shared
+    references
+  * Bivio::IO::File added do_lines()
+  * Bivio::SQL::ListSupport removed $_TRACE and ->register
+  * Bivio::Test::HTTPd export PROJ_ROOT
+  * Bivio::Test::Language::HTTP allow submit without button to allow AT
+    of auto_submit fields
+  * Bivio::Type::BlogName don't compile value in from_literal
+  * Bivio::Type::String compare should call compare_defined
+  * Bivio::UI::XHTML::ViewShortcuts vs_simple_form accepts 'TEXT_TAG
+    which gets mapped to vs_text($form, 'prose', TEXT_TAG) to allow
+    inline form_prose
+  * Bivio::Util::HTTPPing added db_status()
+  * Bivio::Util::SQL added TEST_PASSWORD
+
   Revision 4.48  2006/09/29 20:30:48  dobbs
     * Bivio::SQL::ListSupport and Bivio::SQL::Statement both fixed to
       re-enable internal_initialize to override FROM
