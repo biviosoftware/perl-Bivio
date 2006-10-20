@@ -65,6 +65,8 @@ is removed and rewritten with new pid
 
 binary to be used if it exists and is executable
 
+=back
+
 =cut
 
 #=IMPORTS
