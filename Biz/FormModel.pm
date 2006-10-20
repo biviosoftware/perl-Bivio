@@ -1708,10 +1708,15 @@ sub _parse_version {
 	my($v) = Bivio::Type::Integer->from_literal($value);
 	return if (defined($v) && $v eq $sql_support->get('version'));
     }
-    $self->throw_die(Bivio::DieCode->VERSION_MISMATCH,
-	    {field => $self->VERSION_FIELD,
-		expected => $sql_support->get('version'),
-		actual => $value});
+    $self->throw_die('VERSION_MISMATCH', {
+        field => $self->VERSION_FIELD,
+        expected => $sql_support->get('version'),
+        actual => $value,
+        entity => $self->get_request->get('r')
+            ? $self->get_request->get('r')->as_string
+            : undef,
+        content => $self->get_request->get_content
+    });
     return;
 }
 
