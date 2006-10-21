@@ -48,11 +48,16 @@ sub internal_initialize {
     });
 }
 
+sub type_class_instance {
+    my(undef, $model, $prefix) = @_;
+    return Bivio::Type->get_instance($model->get($prefix . 'type_class'));
+}
+
 sub validate_slot {
     my($proto, $value, $model, $prefix) = @_;
     $model ||= $proto;
     $prefix ||= '';
-    my($t) = Bivio::Type->get_instance($model->get($prefix . 'type_class'));
+    my($t) = $proto->type_class_instance($model, $prefix);
     my($v, $e) = $t->from_literal($value);
     return (undef, $e)
 	if $e;

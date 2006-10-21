@@ -4,6 +4,7 @@ ListModel();
 req()->set_realm(qw(fourem root));
 my($tdid) = model(TupleUseList => {auth_id => req('auth_id')})
     ->moniker_to_id('PSR');
+model('Tuple')->delete_all;
 foreach my $x (0..3) {
     model('Tuple')->create({
 	tuple_def_id => $tdid,

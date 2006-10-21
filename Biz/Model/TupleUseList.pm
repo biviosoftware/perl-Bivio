@@ -28,10 +28,7 @@ sub moniker_to_id {
 }
 
 sub monikers {
-    my($self) = @_;
-    $self->load_all
-	unless $self->is_loaded;
-    return $self->map_rows(sub {shift->get('TupleUse.moniker')});
+    return shift->map_rows(sub {shift->get('TupleUse.moniker')});
 }
 
 1;

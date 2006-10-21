@@ -8,6 +8,17 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TST) = __PACKAGE__->get_instance('TupleSlotType');
 my($_TSD) = __PACKAGE__->get_instance('TupleSlotDef');
 my($_TSN) = Bivio::Type->get_instance('TupleSlotNum');
+my($_EK) = __PACKAGE__->get_instance('TupleSlotChoiceSelectList')
+    ->EMPTY_KEY_VALUE;
+
+sub empty_slot {
+    my($self, $value) = @_;
+    return $value
+	if defined($value);
+    return $value
+	if defined($value = $self->get('TupleSlotDef.default_value'));
+    return $self->get('TupleSlotType.choices') ? $_EK : undef;
+}
 
 sub field_from_num {
     my($self) = @_;
@@ -44,14 +55,21 @@ sub internal_prepare_statement {
     return;
 }
 
+sub type_class_instance {
+    my($self) = @_;
+    return $_TST->type_class_instance($self, 'TupleSlotType.');
+}
+
 sub validate_slot {
     my($self, $value, $null_ok) = @_;
+    $value = undef
+	if $value && $self->get('TupleSlotType.choices') && $value eq $_EK;
     my($v, $e) = $_TST->validate_slot($value, $self, 'TupleSlotType.');
     return $e ? ($v, $e)
 	: defined($v)
 	|| defined($v = $self->get('TupleSlotDef.default_value'))
 	|| $null_ok
-	|| $self->get('TupleSlotDef.is_required')
+	|| !$self->get('TupleSlotDef.is_required')
 	? ($v, undef)
 	: (undef, Bivio::TypeError->NULL);
 }

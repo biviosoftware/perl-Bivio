@@ -19,11 +19,28 @@ req()->set_realm('fourem');
 	}],
     ],
     find_row_by_label => [
-	'Author' => [{
+	Author => [{
 	    'TupleSlotDef.tuple_slot_num' => 1,
 	}],
     ],
     validate_slot => [
-	'a' => [undef, Bivio::TypeError->EMAIL],
+	'a@a.a' => ['a@a.a', undef],
+	a => [undef, Bivio::TypeError->EMAIL],
+    ],
+    empty_slot => [
+	[undef] => [undef],
+    ],
+    find_row_by_label => [
+	Status => [{
+	    'TupleSlotDef.tuple_slot_num' => 2,
+	}],
+    ],
+    validate_slot => [
+	s1 => [s1 => undef],
+	a => [undef, Bivio::TypeError->NOT_TUPLE_CHOICE],
+    ],
+    empty_slot => [
+	[undef] => 's1',
+	s2 => 's2',
     ],
 ];

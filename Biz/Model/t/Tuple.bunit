@@ -3,6 +3,7 @@
 options({class_name => 'Bivio::Biz::Model::RealmMail'});
 PropertyModel();
 req()->set_realm_and_user(qw(fourem root));
+model('Tuple')->delete_all;
 [
     create_from_rfc822 => [
 	[\(<<'EOF')]
@@ -19,6 +20,9 @@ EOF
 		tuple_num => 1,
 		slot1 => 'b@b.b',
 		slot2 => 's1',
+	    },
+	    'Model.RealmMail' => {
+		subject => 'PSR#1',
 	    },
 	}],
 	[\(<<'EOF')]

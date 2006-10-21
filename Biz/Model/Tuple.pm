@@ -52,9 +52,20 @@ sub internal_initialize {
     });
 }
 
+sub mail_slot {
+    my(undef, $label, $value) = @_;
+    return "$label: $value\n";
+}
+
+sub mail_subject {
+    my($proto, $tuple_use) = @_;
+    return $tuple_use->get('moniker') . '#'
+	. (ref($proto) && $proto->is_loaded ? $proto->get('tuple_num') : '');
+}
+
 sub realm_mail_hook {
     my($proto, $realm_mail, $incoming) = @_;
-    my($tul) = $realm_mail->new_other('TupleUseList');
+    my($tul) = $realm_mail->new_other('TupleUseList')->load_all;
     my($m) = join('|', @{$tul->monikers});
     _trace($realm_mail->get('subject'), ' matching with ', $m) if $_TRACE;
     return unless $m && $realm_mail->get('subject') =~ m{^\s*($m)\#(\d*)}x;
@@ -72,7 +83,6 @@ sub realm_mail_hook {
 	unless $state->{body} = Bivio::Die->catch(
 	    sub {_text_plain($incoming)}, \$die);
     if ($state->{is_update}) {
-#TODO: Need proper warning output to user
 	return _mail_err($state, 'unable to load model')
 	    unless $state->{self}->unsafe_load(
 		{map(($_ => $state->{$_}), qw(tuple_def_id tuple_num))});
@@ -85,15 +95,15 @@ sub realm_mail_hook {
 	    thread_root_id => $realm_mail->get('realm_file_id'),
 	})->get('tuple_num');
 	(my $s = $realm_mail->get('subject'))
-	    =~ s/(?=$state->{moniker}\#)/$state->{tuple_num}/;
+	    =~ s/(?<=$state->{moniker}\#)/$state->{tuple_num}/;
 	$realm_mail->update({subject => $s});
+	# These headers are not identical
+	($s = $incoming->get('header'))
+	    =~ s/^(subject:.*$state->{moniker}\#)/$1$state->{tuple_num}/im;
+	$incoming->put(header => $s);
+#TODO: Need to update the subject in the disk file
     }
     return _parse_slots($state);
-}
-
-sub slot_header {
-    my(undef, $label, $value) = @_;
-    return "$label: $value\n";
 }
 
 sub update {
@@ -127,7 +137,9 @@ sub _create_or_update_slots {
 		. $e->as_string;
 	    return 0;
 	}
-	$values->{$tsdl->field_from_num} = $v;
+#TODO: Is this right?  What do do if update is "undef" on a required slot?
+	$values->{$tsdl->field_from_num} = $v
+	    if defined($v) || !$tsdl->get('TupleSlotDef.is_required');
         return 1;
     });
     return _mail_err($state, $err)
