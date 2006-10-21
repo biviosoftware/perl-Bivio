@@ -82,7 +82,6 @@ sub new_unit {
 	    $e = [$e];
 	    return $e;
 	},
-	#TODO compute_return
 	%$attrs,
     });
 }
