@@ -103,12 +103,15 @@ sub run_unit {
 	if @_ == 3;
     my($self, $case_group) = @_;
     my($req) = Bivio::Test::Request->initialize_fully;
-    return $self->SUPER::run_unit([
-	map(([$req] => [
-	    ref($case_group->[0]) eq 'CODE' ? splice(@$case_group, 0, 2)
-		: (process => [splice(@$case_group, 0, 2)]),
-	    ]), 1 .. @$case_group/2),
-    ]);
+    return $self->SUPER::run_unit(
+	$self->map_by_two(sub {
+            my($params, $return) = @_;
+	    return ([$req] => [
+		ref($params) eq 'ARRAY' ? (process => [$params => $return])
+		    : ($params, $return),
+	    ]);
+	}, $case_group),
+    );
 }
 
 sub _walk_tree_actual {
