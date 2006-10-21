@@ -6,6 +6,20 @@ use base 'Bivio::Test::Unit';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub empty_case {
+    my($proto, $return) = @_;
+    return ([] => [{
+	$proto->builtin_class() => $return,
+    }]);
+}
+
+sub simple_case {
+    my($proto, $input, $return) = @_;
+    return ([$input] => [{
+	$proto->builtin_class() => $return,
+    }]);
+}
+
 sub new_unit {
     my($proto, $class, $attrs) = @_;
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
@@ -31,7 +45,6 @@ sub new_unit {
 		if ref($fn) eq 'CODE';
 	    unless (@$params) {
 		$req->delete('form');
-		$case->put('execute_empty' => 1);
 		return [$req];
 	    }
 	    my($hash) = $params->[0];
@@ -64,33 +77,9 @@ sub new_unit {
 		unless (ref($e) eq 'HASH' && @$expect == 1)
 		    || ($o->isa('Bivio::Biz::ListFormModel')
 			    && ref($expect->[0]) eq 'HASH');
-
-	    # TODO: is the data munjing different enough for ListFormModel that
-	    # maybe need to create a separate bunit type for it?
-	    if ($o->isa('Bivio::Biz::ListFormModel')
-		    && $case->unsafe_get('execute_empty')) {
-		$e = [map(_walk_tree_expect($case, $_), @$expect)];
-		my($i) = 0;
-		$case->actual_return($o->get_list_model->map_rows(sub {
-		    my($list) = @_;
-		    return {map(($_ => $list->unsafe_get($_)),
-				keys(%{$e->[$i++]}))};
-		}));
-	    }
-	    else {
-		$e = _walk_tree_expect($case, $e);
-		$case->actual_return([
-		    $case->unsafe_get('execute_empty')
-			? {map(($_ => $o->unsafe_get($_)), keys(%$e))}
-			    : $o->in_error
-			? {map(($_ => $o->get_field_error($_)
-				    ? $o->get_field_error($_)->get_name
-				: undef),
-			       keys(%$e))}
-			: _walk_tree_actual($case, $e, [])
-		    ]);
-		$e = [$e];
-	    }
+	    $e = _walk_tree_expect($case, $e);
+	    $case->actual_return([_walk_tree_actual($case, $e, $req)]);
+	    $e = [$e];
 	    return $e;
 	},
 	#TODO compute_return
@@ -115,11 +104,20 @@ sub run_unit {
 }
 
 sub _walk_tree_actual {
-    my($case, $e, $names) = @_;
+    my($case, $e, $o) = @_;
     return ref($e) eq 'HASH'
-	? {map(($_ => _walk_tree_actual($case, $e->{$_}, [@$names, $_])),
-	       keys(%$e))}
-	: Bivio::Test::Request->get_instance->unsafe_get_nested(@$names);
+	? {map(($_ => _walk_tree_actual(
+	    $case, $e->{$_},
+	    !defined($o) ? undef
+		: UNIVERSAL::can($o, 'unsafe_get')
+		? $o->can('get_field_error') && $o->get_field_error($_)
+		? $o->get_field_error($_)->get_name
+		: $o->unsafe_get($_)
+		: ref($o) eq 'HASH' ? $o->{$_}
+		: ref($o) eq 'ARRAY' && $_ =~ /^\d+$/ ? $o->[$_]
+		: Bivio::IO::Alert->format_args($_, ': not index of ', $o))),
+	    keys(%$e),
+	)} : $o;
 }
 
 sub _walk_tree_expect {
