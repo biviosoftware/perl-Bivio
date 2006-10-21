@@ -15,14 +15,14 @@ commit();
 my($this) = $_BFN->from_absolute(req()->get('Model.RealmFile')->get('path'));
 req()->put(query => {this => $this});
 [
-    [] => [$entry->[0]],
+    empty_case($entry->[0]),
     map({
 	my($x) = $_;
 	([$entry->[$x]] => [{
 	    'Model.RealmFile' => {
 		path => sub {
 		    commit();
-		    assert_eq(
+		    assert_equals(
 			$_BFN->get_instance('BlogContent')->join(
 			    @{$entry->[$x]}{qw(title body)},
 			),

@@ -80,13 +80,13 @@ my($check_perms) = sub {
     }],
     $realm->('ff1'),
     $mode->('EDIT'),
-    [] => [{
+    empty_case({
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
 #TODO: local value should be '0'
 	'public_forum_email' => undef,
 	'Forum.want_reply_to' => 1,
-    }],
+    }),
     [{
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
@@ -102,11 +102,11 @@ my($check_perms) = sub {
 	return $check_perms->(shift(@_), 0);
     },
     $mode->('CREATE'),
-    [] => [{
+    empty_case({
 	'RealmOwner.display_name' => 'Top One ',
 	'RealmOwner.name' => 'ff1-',
 	'public_forum_email' => 0,
-    }],
+    }),
     $realm->('ff1'),
     [{
 	'RealmOwner.display_name' => 'Sub One',

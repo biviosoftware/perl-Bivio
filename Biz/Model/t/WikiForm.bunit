@@ -18,11 +18,11 @@ Bivio::Biz::Model->new('RealmFile')->delete_deep({
 });
 [
     $path->(),
-    [] => [{
+    empty_case({
 	'RealmFile.path_lc' => undef,
 	content => undef,
 	file_exists => 0,
-    }],
+    }),
     [{
 	'RealmFile.path_lc' => 'BunitOne',
 	content => 'b1',
@@ -32,11 +32,11 @@ Bivio::Biz::Model->new('RealmFile')->delete_deep({
 	},
     }],
     $path->('/BunitOne'),
-    [] => [{
+    empty_case({
 	'RealmFile.path_lc' => 'BunitOne',
 	content => 'b1',
 	file_exists => 1,
-    }],
+    }),
     $path->(),
     [{
 	'RealmFile.path_lc' => 'BunitOne',
@@ -45,11 +45,11 @@ Bivio::Biz::Model->new('RealmFile')->delete_deep({
 	'RealmFile.path_lc' => 'EXISTS',
     }],
     $path->('/BunitTwo'),
-    [] => [{
+    empty_case({
 	'RealmFile.path_lc' => 'BunitTwo',
 	content => undef,
 	file_exists => 0,
-    }],
+    }),
     [{
 	'RealmFile.path_lc' => 'BunitTwo',
 	content => 'b2',
