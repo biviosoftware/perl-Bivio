@@ -38,12 +38,12 @@ Bivio::Biz::Model->new('RealmFile')->delete_deep({
 	file_exists => 1,
     }),
     $path->(),
-    [{
+    simple_case({
 	'RealmFile.path_lc' => 'BunitOne',
 	content => 'b1',
-    }] => [{
+    }, {
 	'RealmFile.path_lc' => 'EXISTS',
-    }],
+    }),
     $path->('/BunitTwo'),
     empty_case({
 	'RealmFile.path_lc' => 'BunitTwo',
