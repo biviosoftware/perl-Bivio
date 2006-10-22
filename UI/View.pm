@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::View;
 use strict;
@@ -244,25 +244,19 @@ Returns C<.bview>, the suffix for view files.
 =cut
 
 sub SUFFIX {
-    return '.bview';
+    return shift->use('View.LocalFile')->SUFFIX;
 }
 
 #=IMPORTS
 use Bivio::Die;
 use Bivio::IO::Trace;
-use Bivio::Type::FileName;
 use Bivio::UI::Facade;
-use Bivio::UI::LocalFileType;
 use Bivio::UI::ViewLanguage;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
-my($_SUFFIX) = __PACKAGE__->SUFFIX;
-my($_CURRENT);
-# Only used during compiles
-my($_CURRENT_FACADE);
-my(%_CACHE);
+our($_TRACE, $_CURRENT, $_CURRENT_FACADE);
+my($_CACHE) = {};
+my($_CLASSES);
 
 =head1 METHODS
 
@@ -278,7 +272,10 @@ Shows file name for I<self>.
 
 sub as_string {
     my($self) = @_;
-    return 'View['.$self->get('view_name').']';
+    return 'View.'
+	. $self->simple_package_name
+	. (ref($self) ? '[' . ($self->unsafe_get('view_name') || '?') . ']'
+	       : '');
 }
 
 =for html <a name="call_main"></a>
@@ -294,33 +291,45 @@ sub call_main {
     my($result);
     my($self) = _get_instance($proto, $view_name, $req);
     Bivio::Die->die($self, ': view is not terminal, contains undef values')
-		unless $self->get('view_is_executable');
+        unless $self->get('view_is_executable');
     _trace($self) if $_TRACE;
-    # Used by the view values
-    my($prev_current) = $_CURRENT;
-    $_CURRENT = $self;
-    $req->put(__PACKAGE__, $self);
-
-    # Execute user defined code
-    my($die) = Bivio::Die->catch(sub {
-	_pre_execute($self, $req);
-	$result = $self->ancestral_get('view_main')->execute($req);
-	return;
-    });
-
-    if ($prev_current) {
-	$req->put(__PACKAGE__, $prev_current);
+    my($die) = do {
+	# Used by the view values
+	local($_CURRENT) = $self;
+	$req->put(__PACKAGE__, $self);
+	Bivio::Die->catch(sub {
+	    $self->pre_call_main($req);
+	    _pre_execute($self, $req);
+	    $result = $self->ancestral_get('view_main')->execute($req);
+	    $self->post_call_main($result, $req);
+	    return;
+	});
+    };
+    if ($_CURRENT) {
+	$req->put(__PACKAGE__, $_CURRENT);
     }
     else {
 	$req->delete(__PACKAGE__);
     }
-    $_CURRENT = $prev_current;
     if ($die) {
 	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
 	$die->throw;
 	# DOES NOT RETURN
     }
     return $result;
+}
+
+=for html <a name="compile"></a>
+
+=head2 abstract compile() : string_ref
+
+Returns the view's perl code.  If the result is a string_ref, will be eval'd by
+ViewLanguage.  Otherwise, the result is ignored.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub compile {
 }
 
 =for html <a name="compile_die"></a>
@@ -409,6 +418,30 @@ sub internal_set_parent {
     return;
 }
 
+=for html <a name="post_call_main"></a>
+
+=head2 post_call_main(Bivio::Agent::Request req)
+
+Called after view_main is executed, but only if view doesn't throw an exception.
+
+=cut
+
+sub post_call_main {
+    return;
+}
+
+=for html <a name="pre_call_main"></a>
+
+=head2 pre_call_main(Bivio::Agent::Request req)
+
+Called before view_main is executed and before pre_execute subs, if any.
+
+=cut
+
+sub pre_call_main {
+    return;
+}
+
 =for html <a name="unsafe_get_current"></a>
 
 =head2 static unsafe_get_current() : Bivio::UI::View
@@ -425,87 +458,52 @@ sub unsafe_get_current {
 
 #=PRIVATE METHODS
 
-# _clean_name(self, string_ref view_name)
-#
-# Removes extra slashes, checks syntax.
-#
-sub _clean_name {
-    my($self, $view_name) = @_;
-    $self->compile_die("view_name may not contain '.' or '..'")
-	    if $$view_name =~ m!(^|/)\.\.?(/|$)!;
-    $$view_name =~ s!^/|/$!!g;
-    $$view_name =~ s!/+!/!g;
-    $$view_name =~ s/$_SUFFIX//og;
-    return;
-}
-
 # _get_instance(proto, any view_name, Bivio::Collection::Attributes req_or_facade) : Bivio::UI::View
 #
 # Returns an instance of view_name for this facade.  req_or_facade may
 # be undef iwc $_CURRENT_FACADE is used.
 #
 sub _get_instance {
-    my($proto, $view_name, $req_or_facade) = @_;
-
-    # Canonicalize to help with caching and recursion checking
-    my($code, $view_file_name);
-    if (ref($view_name) eq 'SCALAR') {
-	$code = $view_name;
-	$view_file_name = $view_name = '<inline>';
-    }
-    else {
-	_clean_name($proto, \$view_name);
-    }
+    my($proto, $name, $req_or_facade) = @_;
+    # $name may be a ref so avoid string conversions
+    my($name_arg) = $name;
+    $proto->compile_die($name_arg, ": view_name may not contain '.' or '..'")
+	if $name =~ m!(^|/)\.\.?(/|$)!;
     my($facade) = $req_or_facade
 	? Bivio::UI::Facade->get_from_request_or_self($req_or_facade)
 	: $_CURRENT_FACADE;
-
-    unless ($code) {
-	$view_file_name = $facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->VIEW, $view_name).$_SUFFIX;
-	# In the cache and up to date?  We use the cache as a recursion
-	# sentinel
-	if (!$code && $_CACHE{$view_file_name}) {
-	    my($cache) = $_CACHE{$view_file_name};
-	    $proto->compile_die('called recursively') unless ref($cache);
-	    return $cache;
-	}
-	Bivio::Die->throw('NOT_FOUND', {
-	    message => 'view file not found',
-	    entity => $view_file_name,
-	    facade => $facade,
-	    view => $view_name,
-	}) unless -r $view_file_name && -f _;
+    # $name may be a scalar_ref iwc it will never be found in cache
+    my($unique) = join($;, $facade->get('uri'), $name);
+    if ($_CACHE->{$unique}) {
+	$proto->compile_die($name_arg, ': called recursively')
+	    unless ref(my $cache = $_CACHE->{$unique});
+	return $cache;
     }
-
-    my($self) = $proto->new({
-	view_name => $view_name,
-	view_file_name => $view_file_name,
-	$code ? (view_code => $code) : (),
-    });
-
-    # Set global state. We use the cache as a recursion sentinel, too.
-    my($prev_current) = $_CURRENT;
-    $_CURRENT = $_CACHE{$view_file_name} = -1;
-    my($prev_facade) = $_CURRENT_FACADE;
-    $_CURRENT_FACADE = $facade;
-
-    # Try to compile
-    my($die) = Bivio::UI::ViewLanguage->eval($self);
-
-    # Unset global state
-    $_CURRENT = $prev_current;
-    $_CURRENT_FACADE = $prev_facade;
-    delete($_CACHE{$view_file_name});
-
+    my($self);
+    foreach my $class (
+	@{$_CLASSES ||= Bivio::IO::ClassLoader->map_require_all('View')},
+    ) {
+	last if $self = $class->unsafe_new($name_arg, $facade);
+    }
+    Bivio::Die->throw('NOT_FOUND', {
+	message => 'view not found',
+	entity => $name_arg,
+	facade => $facade,
+    }) unless $self;
+    $self->put_unless_exists(view_name => $name_arg);
+    my($die) = do {
+	local($_CURRENT) = $_CACHE->{$unique} = -1;
+	local($_CURRENT_FACADE) = $facade;
+	Bivio::UI::ViewLanguage->eval($self);
+    };
+    delete($_CACHE->{$unique});
     if ($die) {
-	# view_stack is used for debugging only
 	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
 	$die->throw;
-	# DOES NOT RETURN
     }
-    $_CACHE{$view_file_name} = $self
-	if !$code && $facade->get('want_local_file_cache');
+    # Don't store $name_arg if it is a ref (only can be scalar_ref)
+    $_CACHE->{$unique} = $self
+	if !ref($name_arg) && $facade->get('want_local_file_cache');
     return $self;
 }
 
@@ -524,7 +522,7 @@ sub _pre_execute {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
