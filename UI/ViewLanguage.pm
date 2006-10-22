@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::ViewLanguage;
 use strict;
@@ -62,10 +62,7 @@ use Bivio::IO::File;
 use Bivio::IO::Trace;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
-my($_VIEW_IN_EVAL);
-use vars ('$AUTOLOAD');
+our($_TRACE, $_VIEW_IN_EVAL, $AUTOLOAD);
 
 
 =head1 FACTORIES
@@ -161,10 +158,9 @@ Compiles I<code> within context of the current view being compiled.
 
 sub eval {
     my(undef, $value) = @_;
-    return _eval_view($value) if UNIVERSAL::isa($value, 'Bivio::UI::View');
-    return _eval_code($value) if ref($value) eq 'SCALAR';
-    _die('eval: invalid argument (not a string_ref or view)');
-    # DOES NOT RETURN
+    return UNIVERSAL::isa($value, 'Bivio::UI::View') ? _eval_view($value)
+	: ref($value) eq 'SCALAR' ? _eval_code($value)
+	: _die('eval: invalid argument (not a string_ref or view)');
 }
 
 =for html <a name="view_class_map"></a>
@@ -450,8 +446,7 @@ sub _die {
 #
 sub _eval_code {
     my($code) = @_;
-#    _assert_in_eval('eval');
-    my($copy) = 'use strict; '.$$code;
+    my($copy) = 'use strict;' . $$code;
     _trace($copy) if $_TRACE;
     return Bivio::Die->eval_or_die(\$copy);
 }
@@ -462,25 +457,20 @@ sub _eval_code {
 #
 sub _eval_view {
     my($view) = @_;
-    $view->compile_die('view already compiled!') if $view->is_read_only;
-
-    my($old_current) = $_VIEW_IN_EVAL;
-    $_VIEW_IN_EVAL = $view;
-    my($die) = Bivio::Die->catch(sub {
-	my($code) = $view->unsafe_get('view_code')
-	    || Bivio::IO::File->read($view->get('view_file_name'));
-	_eval_code($code);
+    $view->compile_die('view already compiled!')
+	if $view->is_read_only;
+    local($_VIEW_IN_EVAL) = $view;
+    return Bivio::Die->catch(sub {
+	my($code) = $view->compile;
+	_eval_code($code)
+	    if ref($code) eq 'SCALAR';
 	_initialize($view);
 	return;
     });
-    $_VIEW_IN_EVAL = $old_current;
-    return $die;
 }
 
 sub _in_eval {
-    return $_VIEW_IN_EVAL if $_VIEW_IN_EVAL;
-    return Bivio::UI::View->unsafe_get_current
-	if Bivio::UI::View->unsafe_get_current;
+    return $_VIEW_IN_EVAL || Bivio::UI::View->unsafe_get_current;
 }
 
 # _initialize($view)
@@ -491,19 +481,14 @@ sub _in_eval {
 sub _initialize {
     my($view) = @_;
     my($values) = $view->get_shallow_copy;
-#TODO: is_terminal needs to traverse hierarchy
-    my($is_terminal) = 1;
     while (my($k, $v) = each(%$values)) {
 	$v->put_and_initialize(parent => undef)
 	    if $v && UNIVERSAL::isa($v, 'Bivio::UI::Widget');
-	$is_terminal = 0 unless defined($v);
     }
-#TODO: broken.  Need to traverse parents to see if everything used
-    $view->put(view_is_executable => 1);
-
     _die('view_main or view_parent must be specified')
-	    unless $view->has_keys('view_main')
-		    || $view->has_keys('view_parent');
+	unless $view->has_keys('view_main') || $view->has_keys('view_parent');
+#TODO: Traverse parents to see if all attributes defined
+    $view->put(view_is_executable => 1);
     $view->set_read_only;
     return;
 }
@@ -526,7 +511,7 @@ sub _put {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
