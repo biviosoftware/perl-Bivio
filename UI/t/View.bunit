@@ -1,0 +1,42 @@
+# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+config({
+    'Bivio::IO::ClassLoader' => {
+	maps => {
+	    View => ['Bivio::UI::t::View', 'Bivio::UI::View'],
+        },
+    },
+});
+Request('setup_facade');
+die('only works in PetShop facade')
+    unless req('Bivio::UI::Facade', 'uri') =~ /petshop/;
+# For ViewSource widget in PetShop
+symlink('.', 'src')
+    unless -e 'src';
+[
+    class() => [
+	{
+	    method => 'execute',
+	    compute_return => sub {[req('reply')->get_output]},
+	} => [
+	    [\(<<'EOF'), req()]
+view_class_map('HTMLWidget');
+view_main(Page({
+    head => Join(['hello']),
+    body => Join(['goodbye']),
+}));
+EOF
+	    =>  qr{hello.*goodbye}s,
+            ['main', req()] => undef,
+	    [sub {
+		 # Can't AUTOLOAD, because Bivio::Test::Unit already has it.
+		 # This works well enough, but normally, you would just
+		 # "use Bivio::UI::ViewLanguageAUTOLOAD;" to get this behavior.
+		 package Bivio::UI::ViewLanguage;
+		 view_class_map('HTMLWidget');
+		 view_main(SimplePage('Simple'));
+	    }, req()] => qr{^Simple$}s,
+	    [t1_txt => req()] => qr{^t1$}s,
+	],
+    ],
+];
