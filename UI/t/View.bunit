@@ -13,12 +13,12 @@ die('only works in PetShop facade')
 # For ViewSource widget in PetShop
 symlink('.', 'src')
     unless -e 'src';
+options({
+    compute_return => sub {[req('reply')->get_output]},
+});
 [
     class() => [
-	{
-	    method => 'execute',
-	    compute_return => sub {[req('reply')->get_output]},
-	} => [
+	execute => [
 	    [\(<<'EOF'), req()]
 view_class_map('HTMLWidget');
 view_main(Page({
@@ -36,7 +36,11 @@ EOF
 		 view_class_map('HTMLWidget');
 		 view_main(SimplePage('Simple'));
 	    }, req()] => qr{^Simple$}s,
-	    [t1_txt => req()] => qr{^t1$}s,
+	],
+    ],
+    sub {class('View.T1')} => [
+	execute => [
+	    [t1_html => req()] => qr{^t1$}s,
 	],
     ],
 ];
