@@ -280,7 +280,7 @@ sub group {
 
     # Initialize the value
     $value = {config => $value, names => $names};
-    $self->internal_initialize_value($value);
+    _initialize_value($self, $value);
 
     # Map the names
     foreach my $name (@$names) {
@@ -555,9 +555,9 @@ sub value {
 	unless $map->{$name};
 
     # Clear out old state and reinitialize
-    my($old_value) = $map->{$name};
-    %$old_value = (config => $value, names => $old_value->{names});
-    $self->internal_initialize_value($old_value);
+    my($v) = $map->{$name};
+    %$v = (config => $value, names => $v->{names});
+    _initialize_value($self, $v);
     return;
 }
 
@@ -596,6 +596,13 @@ sub _error {
     Bivio::Die->die(@msg) if $_DIE_ON_ERROR;
     Bivio::IO::Alert->warn(@msg);
     return;
+}
+
+sub _initialize_value {
+    my($self, $value) = @_;
+    $value->{config} = $value->{config}->($self)
+	if ref($value->{config}) eq 'CODE';
+    return $self->internal_initialize_value($value);
 }
 
 # _init_from_clone(self, Bivio::UI::FacadeComponent clone)
