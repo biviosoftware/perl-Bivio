@@ -13,6 +13,10 @@ sub empty_case {
     }]);
 }
 
+sub error_case {
+    return shift->simple_case(@_);
+}
+
 sub simple_case {
     my($proto, $input, $return) = @_;
     return ([$input] => [{
