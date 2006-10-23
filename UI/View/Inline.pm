@@ -7,6 +7,10 @@ use Bivio::UI::LocalFileType;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub absolute_path {
+    return shift->get('view_code') . '';
+}
+
 sub compile {
     my($self) = @_;
     my($c) = $self->get('view_code');

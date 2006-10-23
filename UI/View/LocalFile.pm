@@ -11,6 +11,10 @@ sub SUFFIX {
     return '.bview';
 }
 
+sub absolute_path {
+    return shift->get('view_file_name');
+}
+
 sub compile {
     my($self) = @_;
     return Bivio::IO::File->read($self->get('view_file_name'));
