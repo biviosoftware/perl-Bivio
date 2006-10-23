@@ -37,7 +37,7 @@ my($check_perms) = sub {
 [
     # Starting deviance tests
     $mode->('CREATE'),
-    simple_case({
+    error_case({
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 't1',
 	'public_forum_email' => 0,
@@ -45,7 +45,7 @@ my($check_perms) = sub {
     }, {
 	'RealmOwner.name' => 'FORUM_NAME',
     }),
-    simple_case({
+    error_case({
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 'nosuchtop-subforum',
 	'public_forum_email' => 0,
@@ -124,7 +124,7 @@ my($check_perms) = sub {
     $realm->('ff1'),
     $mode->('CREATE'),
     # Trailing deviance tests
-    simple_case({
+    error_case({
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 'ff1_s1',
 	'public_forum_email' => 0,
