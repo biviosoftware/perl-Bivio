@@ -46,7 +46,7 @@ Returns the task declarations.
 
 sub get_delegate_info {
     my($proto) = @_;
-    return $proto->merge_task_info($proto->SUPER::get_delegate_info, [
+    return $proto->merge_task_info(qw(base tuple xapian), [
 	# Overwrite default MY_SITE which is a no-op
 	[qw(
 	    MY_SITE
