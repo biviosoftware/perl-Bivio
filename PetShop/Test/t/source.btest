@@ -3,12 +3,12 @@
 test_setup('PetShop');
 home_page();
 follow_link('Fish');
-follow_link('Model.ProductList');
+follow_link(qr{ProductList});
 verify_text('package Bivio::PetShop::Model::ProductList;');
 follow_link('Bivio::Biz::ListModel');
 verify_text('package Bivio::Biz::ListModel;');
 home_page();
-follow_link('View.main');
+follow_link(qr{View.*main});
 verify_text('main.bview');
 follow_link('header');
 verify_text('header.bview');
