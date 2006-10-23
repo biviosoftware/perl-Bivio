@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::PetShop::Facade::PetShop;
 use strict;
-use base 'Bivio::UI::FacadeBase';
+use base 'Bivio::UI::Facade';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
