@@ -1,59 +1,26 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::SimpleTaskId;
+# Defines the common tasks.  You subclass this module, and call merge_task_info
+# as follows:
+#	package MyProject::Delegate::TaskId;
+#	sub get_delegate_info {
+#	    return shift->merge_task_info(qw(base xapian), [
+#	        Your tasks here.  Use numbers > 500
+#	    ]);
+#	}
 use strict;
-$Bivio::Delegate::SimpleTaskId::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Delegate::SimpleTaskId::VERSION;
+use base 'Bivio::Delegate';
 
-=head1 NAME
-
-Bivio::Delegate::SimpleTaskId - default required tasks
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Delegate::SimpleTaskId;
-
-=cut
-
-use Bivio::Delegate;
-@Bivio::Delegate::SimpleTaskId::ISA = ('Bivio::Delegate');
-
-=head1 DESCRIPTION
-
-C<Bivio::Delegate::SimpleTaskId> defines the standard tasks typically used by a
-site.  If you subclass this class, you need to define you tasks with numbers
-500 and above.
-
-If you want to replace a task here, use the same name and number, so that
-L<merge_task_info|"merge_task_info"> doesn't tried to create two tasks with the
-same name.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_delegate_info"></a>
-
-=head2 static get_delegate_info() : array_ref
-
-Returns the task declarations which are needed for the
-simplest site.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
+    # For backwards compatibility
+    return shift->info_base(@_);
+}
+
+sub info_base {
     return [
-	# used by UI::Task
 	[qw(
 	    SHELL_UTIL
 	    1
@@ -533,51 +500,59 @@ sub get_delegate_info {
 	    View.blog-edit
 	    next=FORUM_BLOG_VIEW
  	)],
-	Bivio::IO::ClassLoader->unsafe_simple_require('Search::Xapian')
-	    ? [qw(
-		JOB_XAPIAN_COMMIT
-		56
-		GENERAL
-		ANYBODY
-		Model.Lock
-		Bivio::Search::Xapian
-	    )] : (),
     ];
 }
 
-=for html <a name="merge_task_info"></a>
-
-=head2 static merge_task_info(array_ref default, array_ref source) : array_ref
-
-Merges the two task definitions into source, overwriting defaults with
-source entries.
-
-=cut
-
-sub merge_task_info {
-    my($proto, $default, $source) = @_;
-
-    my($ids) = {};
-    foreach my $task (@$source) {
-	$ids->{$task->[1]} = 1;
-    }
-    foreach my $task (@$default) {
-	next if $ids->{$task->[1]};
-	push(@$source, $task);
-    }
-    return $source;
+sub info_tuple {
+    return [
+    ];
 }
 
-#=PRIVATE METHODS
+sub info_xapian {
+    return [
+	[qw(
+	    JOB_XAPIAN_COMMIT
+	    56
+	    GENERAL
+	    ANYBODY
+	    Model.Lock
+	    Bivio::Search::Xapian
+	)],
+    ];
+}
 
-=head1 COPYRIGHT
+sub bunit_validate_all {
+    # Sanity check to make sure the the list of info_ methods don't collide
+    my($proto) = @_;
+    my($seen) = {};
+    foreach my $m (grep(/^info_/, keys(%Bivio::Delegate::SimpleTaskId::))) {
+	foreach my $t (@{_arg($proto, $m)}) {
+	    my($n) = $t->[0];
+	    Bivio::Die->die($m, ' and ', $seen->{$n}, ': both define ', $n)
+	        if $seen->{$n};
+	    $seen->{$n} = $m;
+	}
+    }
+    return;
+}
 
-Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+sub merge_task_info {
+    my($proto) = shift;
+    my($seen) = {};
+    return [map(
+	$seen->{$_->[0]}++ ? () : $_,
+	map(@{_arg($proto, $_)}, reverse(@_)),
+    )];
+}
 
-=head1 VERSION
-
-$Id$
-
-=cut
+sub _arg {
+    my($proto, $a) = @_;
+    return $a
+	if ref($a);
+    my($m) = $a =~ /^info_/ ? $a : "info_$a";
+    Bivio::Die->die($a, ': no such info_* category')
+        unless $proto->can($m);
+    return $proto->$m();
+}
 
 1;
