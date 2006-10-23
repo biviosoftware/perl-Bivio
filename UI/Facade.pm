@@ -704,6 +704,26 @@ sub setup_request {
     return _setup_request($self, $req);
 }
 
+=for html <a name="unload_perl_package"></a>
+
+=head2 unload_perl_package()
+
+Delete this class from cache
+
+=cut
+
+sub unload_perl_package {
+    my($self) = @_;
+    my($simple_class) = $self->simple_package_name;
+    # if new() dies, this method will be called as cleanup
+    if (ref($_CLASS_MAP{$simple_class})) {
+	delete($_URI_MAP{$_CLASS_MAP{$simple_class}->get('uri')});
+	delete($_COMPONENTS{$simple_class});
+    }
+    delete($_CLASS_MAP{$simple_class});
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _get_class_pattern() : string

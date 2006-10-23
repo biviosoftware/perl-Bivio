@@ -65,6 +65,7 @@ Always returns true.
 sub handler {
 
     foreach my $module (_modified()) {
+	Bivio::Agent::Request->get_current_or_new;
 	_trace('Modified: ', $module);
 	_reload($module);
     }
