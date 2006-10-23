@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
@@ -146,7 +146,6 @@ Custom task value for redirects.
 use Bivio::Agent::TaskId;
 use Bivio::Auth::PermissionSet;
 use Bivio::Auth::RealmType;
-use Bivio::Collection::SingletonMap;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::ClassLoader;
@@ -225,7 +224,7 @@ sub new {
 	}
 	push(@executables, $i);
     }
-    my($new_items) = _init_executables($attrs, \@executables);
+    my($new_items) = _init_executables($proto, $attrs, \@executables);
     # Set form
     _init_form_attrs($attrs);
 
@@ -319,8 +318,7 @@ sub execute_items {
     foreach my $i (@{$self->get('items')}) {
 	my($instance, $method, $args) = @$i;
 	# Don't continue if returns true.
-	my($res) = defined($instance)
-	    ? $instance->$method(@$args, $req) : $method->(@$args, $req);
+	my($res) = $instance->$method(@$args, $req);
 	next unless $res;
 	my($next) = $res;
 	my($redirect) = ref($next) eq 'HASH' && delete($next->{method})
@@ -352,6 +350,23 @@ sub execute_items {
     return;
 }
 
+=for html <a name="execute_task_item"></a>
+
+=head2 static execute_task_item(any arg, Bivio::Agent::Request req) : any
+
+General: Executes a task item.  Classes which implement this method will get
+called with I<arg> instead of the more traditional C<execute> method name.
+See Bivio::UI::View for an example.
+
+Specific: This module has a handle_task_item which is used to execute
+inline subs that are task items.
+
+=cut
+
+sub execute_task_item {
+    my($proto, $arg, $req) = @_;
+    return $arg->($req);
+}
 
 =for html <a name="get_by_id"></a>
 
@@ -563,37 +578,42 @@ sub _call_txn_resources {
     return;
 }
 
-# _init_executables(hash_ref attrs, array_ref executables) : array_ref
+# _init_executables(proto, hash_ref attrs, array_ref executables) : array_ref
 #
 # Returns the parsed and initialized executables.
 #
 sub _init_executables {
-    my($attrs, $executables) = @_;
+    my($proto, $attrs, $executables) = @_;
     my(@new_items);
     foreach my $i (@$executables) {
 	if (ref($i) eq 'CODE') {
-	    push(@new_items, [undef, $i, []]);
+	    push(@new_items, [$proto, execute_task_item => [$i]]);
 	    next;
 	}
-
-	# Views have a special syntax
-	if ($i =~ /^View\.(.*)/) {
-	    push(@new_items, ['Bivio::UI::View', 'execute', [$1]]);
+	if ($i =~ /^View\.([a-z].*)/) {
+	    my($view) = $1;
+	    push(@new_items,
+	        [$proto->use('View.LocalFile'), 'execute_task_item', [$view]]);
 	    next;
 	}
-
-	# Executable item
 	my($class, $method) = split(/->/, $i, 2);
-	my($c) = Bivio::Collection::SingletonMap->get($class);
-	$method ||= 'execute';
-	Bivio::Die->die($i, ": can't be executed (missing $method method)")
-	    unless $c->can($method) || $c->can('AUTOLOAD');
+	my($c) = $proto->use($class);
+	$c = $c->get_instance
+	    if $c->can('get_instance');
+	if ($c->can('execute_task_item') && $method) {
+	    push(@new_items, [$c, execute_task_item => [$method]]);
+	}
+	else {
+	    $method ||= 'execute';
+	    Bivio::Die->die($i, ": can't be executed (missing $method method)")
+	        unless $c->can($method) || $c->can('AUTOLOAD');
+	    push(@new_items, [$c, $method, []]);
+	}
 	if ($c->isa('Bivio::Biz::FormModel')) {
 	    Bivio::Die->die($attrs->{id}, ': too many form models')
 	        if $attrs->{form_model};
 	    $attrs->{form_model} = ref($c) || $c;
 	}
-	push(@new_items, [$c, $method, []]);
     }
     return \@new_items;
 }
@@ -695,7 +715,7 @@ sub _put_attr {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
