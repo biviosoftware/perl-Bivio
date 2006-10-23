@@ -350,6 +350,18 @@ sub compile_die {
     # DOES NOT RETURN
 }
 
+=for html <a name="execute_task_item"></a>
+
+=head2 static execute_task_item(any view_name, Bivio::Agent::Request req) : any
+
+Calls execute.
+
+=cut
+
+sub execute_task_item {
+    return shift->execute(@_);
+}
+
 =for html <a name="execute"></a>
 
 =head2 static execute(any view_name, Bivio::Agent::Request req) : boolean
@@ -465,31 +477,27 @@ sub unsafe_get_current {
 #
 sub _get_instance {
     my($proto, $name, $req_or_facade) = @_;
-    # $name may be a ref so avoid string conversions
+    $proto = $proto->use(View => ref($name) ? 'Inline' : 'LocalFile')
+	if (ref($proto) || $proto) eq __PACKAGE__;
     my($name_arg) = $name;
     $proto->compile_die($name_arg, ": view_name may not contain '.' or '..'")
 	if $name =~ m!(^|/)\.\.?(/|$)!;
     my($facade) = $req_or_facade
 	? Bivio::UI::Facade->get_from_request_or_self($req_or_facade)
 	: $_CURRENT_FACADE;
-    # $name may be a scalar_ref iwc it will never be found in cache
-    my($unique) = join($;, $facade->get('uri'), $name);
-    if ($_CACHE->{$unique}) {
-	$proto->compile_die($name_arg, ': called recursively')
-	    unless ref(my $cache = $_CACHE->{$unique});
-	return $cache;
-    }
-    my($self);
-    foreach my $class (
-	@{$_CLASSES ||= Bivio::IO::ClassLoader->map_require_all('View')},
-    ) {
-	last if $self = $class->unsafe_new($name_arg, $facade);
-    }
     Bivio::Die->throw('NOT_FOUND', {
 	message => 'view not found',
 	entity => $name_arg,
+	class => $proto,
 	facade => $facade,
-    }) unless $self;
+    }) unless my $self = $proto->unsafe_new($name_arg, $facade);
+    my($unique) = join('->', ref($self), $self->absolute_path);
+    if ($_CACHE->{$unique}) {
+	$proto->compile_die($name_arg, ': called recursively')
+	    unless ref(my $cache = $_CACHE->{$unique});
+	_trace($unique, ': cache hit=', $cache) if $_TRACE;
+	return $cache;
+    }
     $self->put_unless_exists(view_name => $name_arg);
     my($die) = do {
 	local($_CURRENT) = $_CACHE->{$unique} = -1;
@@ -501,10 +509,12 @@ sub _get_instance {
 	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
 	$die->throw;
     }
-    # Don't store $name_arg if it is a ref (only can be scalar_ref)
-    $_CACHE->{$unique} = $self
-	if !ref($name_arg) && $facade->get('want_local_file_cache');
-    return $self;
+    # Don't store if $unique contains a stringified reference
+    return $self
+	if $unique =~ /\(0x\w+\)/i
+	|| !$facade->get('want_local_file_cache');
+    _trace($unique, ': cached as ', $self) if $_TRACE;
+    return $_CACHE->{$unique} = $self;
 }
 
 # _pre_execute(self, Bivio::Agent::Request req)
