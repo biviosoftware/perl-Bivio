@@ -490,7 +490,9 @@ sub _get_instance {
 	entity => $name_arg,
 	class => $proto,
 	facade => $facade,
-    }) unless my $self = $proto->unsafe_new($name_arg, $facade);
+    }) unless my $self = $proto->unsafe_new($name_arg, $facade)
+	|| !$proto->isa('Bivio::UI::View::LocalFile')
+	&& $proto->use('View.LocalFile')->unsafe_new($name_arg, $facade);
     my($unique) = join('->', ref($self), $self->absolute_path);
     if ($_CACHE->{$unique}) {
 	$proto->compile_die($name_arg, ': called recursively')

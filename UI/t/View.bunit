@@ -41,6 +41,8 @@ EOF
     sub {class('View.T1')} => [
 	execute => [
 	    [t1_html => req()] => qr{^t1$}s,
+	    [t2_html => req()] => qr{Pet Shop Demo.*<div>t2</div>}is,
+	    [t3_html => req()] => qr{^main$}s,
 	],
     ],
 ];

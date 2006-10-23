@@ -12,9 +12,26 @@ sub pre_compile {
     return;
 }
 
+sub main {
+    view_class_map('HTMLWidget');
+    view_main(SimplePage('main'));
+    return;
+}
+
 sub t1_html {
     view_class_map('HTMLWidget');
     view_main(SimplePage('t1'));
+    return;
+}
+
+sub t2_html {
+    view_parent('header');
+    view_put(header_content => Tag(DIV => 't2'));
+    return;
+}
+
+sub t3_html {
+    view_parent('main');
     return;
 }
 
