@@ -53,7 +53,6 @@ use Bivio::UI::LocalFileType;
 use File::Find ();
 
 #=VARIABLES
-my($_IDI) = __PACKAGE__->instance_data_index;
 my($_IGNORE_POD) = {
     '=for' => 1,
     '=over' => 1,
@@ -66,24 +65,6 @@ my($_SOURCE_DIR);
 Bivio::IO::Config->register({
     source_dir => Bivio::IO::Config->REQUIRED,
 });
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::SourceCode
-
-Creates a new SourceCode renderer.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
 
 =head1 METHODS
 
