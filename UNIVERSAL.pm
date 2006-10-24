@@ -172,15 +172,18 @@ sub instance_data_index {
 
 =for html <a name="is_blessed"></a>
 
-=head2 static final is_blessed(any value) : boolean
+=head2 static final is_blessed(any value, any object) : boolean
 
-Returns true if I<value> is a blessed reference.
+Returns true if I<value> is a blessed reference.  If I<object> supplied,
+then test if I<value> isa I<object>.
 
 =cut
 
 sub is_blessed {
-    my(undef, $value) = @_;
-    return ref($value) && $value =~ /=/ ? 1 : 0;
+    my(undef, $value, $object) = @_;
+    my($v) = $value;
+    return ref($value) && $v =~ /=/
+	&& (!$object || $value->isa(ref($object) || $object)) ? 1 : 0;
 }
 
 =for html <a name="map_by_two"></a>
