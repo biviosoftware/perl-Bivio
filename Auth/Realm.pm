@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::Realm;
 use strict;
@@ -497,7 +497,7 @@ sub _perm_set_from_all {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
