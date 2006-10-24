@@ -6,6 +6,10 @@ use base 'Bivio::Biz::Model::TupleSlotChoiceList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub EMPTY_KEY_VALUE {
+    return 'Select Value';
+}
+
 sub internal_load {
     my($self) = @_;
     my(@res) = shift->SUPER::internal_load(@_);
