@@ -20,6 +20,8 @@ options({
 	'0' => [[qw(0)]],
 	' a,b ' => [[qw(a b)]],
 	"a,b$;c" => [['a,b', 'c']],
+	[[qw(a b)]] => [[qw(a b)]],
+	[class()->new([qw(a b)])] => [[qw(a b)]],
     ],
     compare_defined => [
 	[class->()->new([qw(a b)]), [qw(a b)]] => 0,
