@@ -20,10 +20,7 @@ sub handle_register {
 
 sub internal_initialize_value {
     my($self, $value) = @_;
-    my($v) = $value->{config};
-    $v = $v->($self)
-	if ref($v) eq 'CODE';
-    $value->{value} = $v;
+    $value->{value} = $value->{config};
     return;
 }
 
