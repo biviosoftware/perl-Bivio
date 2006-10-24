@@ -507,7 +507,7 @@ sub internal_initialize_list {
     my($self) = @_;
     my($lm) = $self->get_request->get($self->get_info('list_class'));
     $lm->reset_cursor;
-    return $lm
+    return $lm;
 }
 
 =for html <a name="internal_pre_parse_columns"></a>
