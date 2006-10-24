@@ -204,7 +204,7 @@ Or even shorter:
 
 sub new {
     my($proto, $config) = @_;
-    my($self) = Bivio::Collection::Attributes::new($proto);
+    my($self) = $proto->SUPER::new();
     my($class) = ref($self);
     my($simple_class) = $self->simple_package_name;
     Bivio::Die->die($class, ': duplicate initialization')
@@ -513,6 +513,18 @@ sub handle_config {
     return;
 }
 
+=for html <a name="handle_unload_package"></a>
+
+=head2 handle_unload_package()
+
+Delete this class from cache
+
+=cut
+
+sub handle_unload_package {
+    return;
+}
+
 =for html <a name="initialize"></a>
 
 =head2 static initialize(boolean partially)
@@ -702,26 +714,6 @@ sub setup_request {
 	$self = $_CLASS_MAP{$_CFG->{default}};
     }
     return _setup_request($self, $req);
-}
-
-=for html <a name="unload_perl_package"></a>
-
-=head2 unload_perl_package()
-
-Delete this class from cache
-
-=cut
-
-sub unload_perl_package {
-    my($self) = @_;
-    my($simple_class) = $self->simple_package_name;
-    # if new() dies, this method will be called as cleanup
-    if (ref($_CLASS_MAP{$simple_class})) {
-	delete($_URI_MAP{$_CLASS_MAP{$simple_class}->get('uri')});
-	delete($_COMPONENTS{$simple_class});
-    }
-    delete($_CLASS_MAP{$simple_class});
-    return;
 }
 
 #=PRIVATE METHODS

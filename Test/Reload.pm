@@ -64,10 +64,18 @@ Always returns true.
 
 sub handler {
 
-    foreach my $module (_modified()) {
-	Bivio::Agent::Request->get_current_or_new;
-	_trace('Modified: ', $module);
-	_reload($module);
+    my($unload) = [_modified()];
+    return 1
+        unless @$unload;
+
+    foreach my $module (@$unload) {
+	Bivio::IO::Alert->warn('Unloading: ', $module);
+	Bivio::IO::ClassLoader->delete_require($module);
+    }
+
+    foreach my $module (@$unload) {
+	Bivio::IO::Alert->warn('Loading: ', $module);
+	Bivio::IO::ClassLoader->simple_require($module);
     }
 
     system('touch', "$_CONF");
@@ -78,21 +86,20 @@ sub handler {
 
 # _modified() : ...
 sub _modified {
-    return map({
+    return _to_module(map({
         _trace("Searching $_ for changed files...");
 	`find $_ -name 'Test' -prune -o -name 'files' -prune -o -name '.*' -prune -o \\( -name '*pm' -a -newer $_CONF \\) -print`;
-    } @$_WATCH);
+    } @$_WATCH));
 }
 
-# _reload(string path)
-sub _reload {
-    my($path) = @_;
-    my($module) = grep({$_ =~ s{/}{::}g if $_; $_}
-        map({$path =~ m{^$_/(.*)\.pm$}; $1} @INC));
-    Bivio::IO::Alert->warn('Reloading module: ', $module);
-    Bivio::IO::ClassLoader->delete_require($module);
-    Bivio::IO::ClassLoader->simple_require($module);
-    return;
+# _to_module() : 
+sub _to_module {
+    my(@paths) = @_;
+    return map({
+        my($path) = $_;
+        grep({$_ =~ s{/}{::}g if $_; $_}
+            map({$path =~ m{^$_/(.*)\.pm$}; $1} @INC));
+    } @paths);
 }
 
 =head1 COPYRIGHT
