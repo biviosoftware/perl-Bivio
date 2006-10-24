@@ -22,6 +22,11 @@ sub as_array {
     return [@{shift->[$_IDI]}];
 }
 
+sub as_html {
+    my($self) = @_;
+    return $self->to_html($self);
+}
+
 sub as_string {
     my($self) = @_;
     return $self->simple_package_name . $self->to_string($self);
