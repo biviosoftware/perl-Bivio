@@ -59,8 +59,11 @@ Bivio::Test->unit([
 	    [undef] => 0,
 	    [''] => 0,
 	    [qr{any}] => 0,
+	    [qr{any}, 'UNIVERSAL'] => 0,
 	    [\('any')] => 0,
 	    [Bivio::UNIVERSAL->new] => 1,
+	    [Bivio::UNIVERSAL->new, 'Bivio::Type'] => 0,
+	    [Bivio::UNIVERSAL->new, 'Bivio::UNIVERSAL'] => 1,
 	]
      ],
     'Bivio::t::UNIVERSAL::t1' => [
