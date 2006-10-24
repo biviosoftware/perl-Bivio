@@ -121,8 +121,6 @@ so that it can be reloaded.
 sub delete_require {
     my(undef, $pkg) = @_;
 
-    $pkg->unload_perl_package()
-	if UNIVERSAL::can($pkg, 'unload_perl_package');
     delete($_SIMPLE_CLASS->{$pkg});
     while (my($k, $v) = each(%$_MAP_CLASS)) {
 	delete($_MAP_CLASS->{$k})
