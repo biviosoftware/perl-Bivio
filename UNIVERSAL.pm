@@ -170,6 +170,19 @@ sub instance_data_index {
     return @{$pkg->inheritance_ancestor_list} - 1;
 }
 
+=for html <a name="is_blessed"></a>
+
+=head2 static final is_blessed(any value) : boolean
+
+Returns true if I<value> is a blessed reference.
+
+=cut
+
+sub is_blessed {
+    my(undef, $value) = @_;
+    return ref($value) && $value =~ /=/ ? 1 : 0;
+}
+
 =for html <a name="map_by_two"></a>
 
 =head2 static map_by_two(code_ref op, array_ref values) : array_ref

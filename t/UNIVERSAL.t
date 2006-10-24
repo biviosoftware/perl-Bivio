@@ -55,6 +55,13 @@ Bivio::Test->unit([
 	    [sub {$_[0]}, [qw(a 1 b 2)]] => [[qw(a b)]],
 	    [sub {$_[1]}, [qw(a 1 b 2)]] => [[qw(1 2)]],
 	],
+	is_blessed => [
+	    [undef] => 0,
+	    [''] => 0,
+	    [qr{any}] => 0,
+	    [\('any')] => 0,
+	    [Bivio::UNIVERSAL->new] => 1,
+	]
      ],
     'Bivio::t::UNIVERSAL::t1' => [
 	inheritance_ancestor_list => [
