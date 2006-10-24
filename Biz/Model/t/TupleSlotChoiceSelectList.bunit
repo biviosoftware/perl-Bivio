@@ -5,7 +5,8 @@ ListModel();
     load_all_from_slot_type => [
 	[Bivio::Collection::Attributes->new({
 	    'TupleSlotType.type_class' => 'String',
-	    'TupleSlotType.choices' => ['a'],
+	    'TupleSlotType.choices' =>
+		class('Type.TupleSlotArray')->new([qw(a)]),
 	})] => [{
 	    value => 'Select Value',
 	}, {

@@ -2,6 +2,7 @@
 # $Id$
 PropertyModel();
 req()->set_realm_and_user(qw(demo demo));
+my($tsa) = class('Type.TupleSlotArray');
 [
     create_from_hash => [
 	[{tst1 => {
@@ -20,7 +21,7 @@ req()->set_realm_and_user(qw(demo demo));
 	    type_class => 'Integer',
 	    choices => "1$;2",
 	}}] => [{
-	    choices => [1, 2],
+	    choices => $tsa->new([1, 2]),
 	}],
     ],
     validate_slot => [
@@ -32,7 +33,7 @@ req()->set_realm_and_user(qw(demo demo));
 	    type_class => 'Date',
 	    choices => "9/1/2006$;10/1/2006",
 	}}] => [{
-	    choices => ['2453980 79199', '2454010 79199'],
+	    choices => $tsa->new(['2453980 79199', '2454010 79199']),
 	}],
     ],
     validate_slot => [

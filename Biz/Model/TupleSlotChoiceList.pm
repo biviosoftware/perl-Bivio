@@ -35,7 +35,7 @@ sub load_all_from_slot_type {
     my($tc) = Bivio::Type->get_instance($list->get('TupleSlotType.type_class'));
     $self->[$_IDI] = [sort {
 	$tc->compare($a, $b)
-    } @{$list->get('TupleSlotType.choices')}];
+    } @{$list->get('TupleSlotType.choices')->as_array}];
     return $self->load_all;
 }
 
