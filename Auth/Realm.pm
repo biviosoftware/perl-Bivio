@@ -178,6 +178,34 @@ sub can_user_execute_task {
     return $self->does_user_have_permissions($task->get('permission_set'), $req);
 }
 
+=for html <a name="do_default"></a>
+
+=head2 static do_default(code_ref op, Bivio::Agent::Request req)
+
+Iterates all default realms, setting realms to default user.
+
+=cut
+
+sub do_default {
+    my($proto, $op, $req) = @_;
+    my($realm, $user) = $req->get(qw(auth_realm auth_user));
+    $req->set_user('user');
+    my($die) = Bivio::Die->catch(sub {
+	foreach my $r (
+	    grep(!$_->eq_unknown, Bivio::Auth::RealmType->get_list)
+        ) {
+	    $req->set_realm($r->get_name);
+	    last unless $op->($req->get('auth_realm'));
+	}
+	return;
+    });
+    $req->set_realm($realm);
+    $req->set_user($user);
+    $die->throw
+	if $die;
+    return;
+}
+
 =for html <a name="does_user_have_permissions"></a>
 
 =head2 does_user_have_permissions(Bivio::Auth::PermissionSet perms, Bivio::Agent::Request req) : boolean
