@@ -16,7 +16,7 @@ sub empty_slot {
     return $value
 	if defined($value);
     return $value
-	if defined($value = $self->get('TupleSlotDef.default_value'));
+	if defined($value = $self->get('TupleSlotType.default_value'));
     return $self->get('TupleSlotType.choices') ? $_EK : undef;
 }
 
@@ -67,7 +67,6 @@ sub validate_slot {
     my($v, $e) = $_TST->validate_slot($value, $self, 'TupleSlotType.');
     return $e ? ($v, $e)
 	: defined($v)
-	|| defined($v = $self->get('TupleSlotDef.default_value'))
 	|| $null_ok
 	|| !$self->get('TupleSlotDef.is_required')
 	? ($v, undef)

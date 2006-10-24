@@ -208,7 +208,6 @@ CREATE TABLE tuple_slot_def_t (
   realm_id NUMERIC(18) NOT NULL,
   label VARCHAR(100) NOT NULL,
   tuple_slot_type_id NUMERIC(18) NOT NULL,
-  default_value VARCHAR(500),
   is_required NUMERIC(1) NOT NULL,
   CONSTRAINT tuple_slot_t1 PRIMARY KEY(tuple_def_id, tuple_slot_num)
 )
@@ -220,6 +219,7 @@ CREATE TABLE tuple_slot_type_t (
   label VARCHAR(100) NOT NULL,
   type_class VARCHAR(100) NOT NULL,
   choices VARCHAR(65535),
+  default_value VARCHAR(500),
   CONSTRAINT tuple_slot_type_t1 PRIMARY KEY(tuple_slot_type_id)
 )
 /

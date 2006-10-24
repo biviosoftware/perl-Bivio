@@ -10,12 +10,12 @@ req()->set_realm('fourem');
 	    'TupleSlotDef.tuple_slot_num' => 1,
 	    'TupleSlotDef.label' => 'Author',
 	    'TupleSlotDef.is_required' => 1,
-	    'TupleSlotDef.default_value' => undef,
+	    'TupleSlotType.default_value' => undef,
 	}, {
 	    'TupleSlotDef.tuple_slot_num' => 2,
 	    'TupleSlotDef.label' => 'Status',
 	    'TupleSlotDef.is_required' => 0,
-	    'TupleSlotDef.default_value' => 's1',
+	    'TupleSlotType.default_value' => 's1',
 	}],
     ],
     find_row_by_label => [

@@ -23,7 +23,13 @@ sub internal_initialize {
         order_by => [qw(
 	    TupleSlotType.label
 	)],
-	other => $self->new_other('TupleSlotType')->LIST_FIELDS,
+	other => [
+	    @{$_TST->LIST_FIELDS},
+#TODO: Move to separate list
+	    [qw(TupleSlotType.realm_id RealmOwner.realm_id)],
+	    'RealmOwner.name',
+	    'RealmOwner.realm_type',
+	],
     });
 }
 

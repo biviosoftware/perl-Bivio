@@ -10,7 +10,7 @@ my($_TST) = __PACKAGE__->get_instance('TupleSlotType');
 
 sub LIST_FIELDS {
     return [map(
-	"TupleSlotDef.$_", qw(label is_required default_value)),
+	"TupleSlotDef.$_", qw(label is_required)),
 	@{$_TST->LIST_FIELDS},
     ];
 }
@@ -28,7 +28,6 @@ sub create_from_array {
 	    tuple_def_id => $tuple_def->get('tuple_def_id'),
 	    realm_id => $tuple_def->get('realm_id'),
 	    tuple_slot_type_id => $tstl->get('TupleSlotType.tuple_slot_type_id'),
-	    default_value => $tstl->validate_slot_or_die($s->{default_value}),
 	    map(($_ =>
 	        $self->get_field_type($_)->from_literal_or_die($s->{$_})),
 		qw(label is_required)),
@@ -47,7 +46,6 @@ sub internal_initialize {
 	    tuple_slot_num => ['TupleSlotNum', 'PRIMARY_KEY'],
 	    label => ['TupleLabel', 'NOT_NULL'],
 	    tuple_slot_type_id => ['TupleSlotType.tuple_slot_type_id', 'NOT_NULL'],
-	    default_value => ['TupleSlot', 'NONE'],
 	    is_required => ['Boolean', 'NOT_NULL'],
         },
     });

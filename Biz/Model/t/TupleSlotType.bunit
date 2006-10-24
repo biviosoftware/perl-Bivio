@@ -8,8 +8,10 @@ my($tsa) = class('Type.TupleSlotArray');
 	[{tst1 => {
 	    type_class => 'Integer',
 	    choices => undef,
+	    default_value => 1,
 	}}] => [{
 	    choices => undef,
+	    default_value => 1,
 	}],
     ],
     validate_slot => [
@@ -40,5 +42,20 @@ my($tsa) = class('Type.TupleSlotArray');
 	'9/1/2006' => ['2453980 79199', undef],
 	'9/2/2006' => [undef, Bivio::TypeError->NOT_TUPLE_CHOICE],
 	'9/2' => [undef, Bivio::TypeError->DATE],
+    ],
+    create_from_hash => [
+	[{tst4 => {
+	    type_class => 'Integer',
+	    choices => "1$;x",
+	}}] => DIE(),
+	[{tst5 => {
+	    type_class => 'Integer',
+	    default_value => 'x',
+	}}] => DIE(),
+	[{tst5 => {
+	    type_class => 'Integer',
+	    choices => "1$;2",
+	    default_value => '3',
+	}}] => DIE(),
     ],
 ];
