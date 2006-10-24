@@ -13,11 +13,9 @@ my($_EK) = __PACKAGE__->get_instance('TupleSlotChoiceSelectList')
 
 sub empty_slot {
     my($self, $value) = @_;
-    return $value
-	if defined($value);
-    return $value
-	if defined($value = $self->get('TupleSlotType.default_value'));
-    return $self->get('TupleSlotType.choices') ? $_EK : undef;
+    return defined($value) ? $value
+	: defined($value = $self->get('TupleSlotType.default_value')) ? $value
+	: $self->get('TupleSlotType.choices') ? $_EK : undef;
 }
 
 sub field_from_num {

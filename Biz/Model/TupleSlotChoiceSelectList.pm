@@ -10,18 +10,23 @@ sub EMPTY_KEY_VALUE {
     return 'Select Value';
 }
 
-sub internal_load {
-    my($self) = @_;
-    my(@res) = shift->SUPER::internal_load(@_);
-    my($rows) = $self->internal_get_rows;
-    unshift(
-	@$rows,
-	{
-	    map(($_ => undef), @{$self->get_keys}),
-	    value => $self->EMPTY_KEY_VALUE,
-	},
-    ) if @$rows;
-    return @res;
+sub internal_initialize {
+    return {
+        version => 1,
+	primary_key => [{
+	    name => 'value',
+	    type => 'TupleSlot',
+	    constraint => 'NONE',
+	}],
+    };
+}
+sub internal_load_rows {
+    my($self) = shift;
+    return [
+	{value => $self->EMPTY_KEY_VALUE},
+	map(+{value => $_->{value}},
+	    @{$self->SUPER::internal_load_rows(@_)}),
+    ];
 }
 
 1;

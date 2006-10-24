@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub EMPTY_KEY_VALUE {
-    return ' ';
+    return -1;
 }
 
 sub internal_initialize {
@@ -16,6 +16,11 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	primary_key => [{
+	    name => 'key',
+	    type => 'Integer',
+	    constraint => 'NOT_NULL',
+	}],
+	order_by => [{
 	    name => 'value',
 	    type => 'TupleSlot',
 	    constraint => 'NOT_NULL',
@@ -25,8 +30,10 @@ sub internal_initialize {
 
 sub internal_load_rows {
     my($self) = @_;
+    my($k) = 1;
     return [map(+{
 	value => $_,
+	key => $k++,
     }, sort(@{$self->[$_IDI]}))];
 }
 

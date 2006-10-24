@@ -8,10 +8,13 @@ ListModel();
 	    'TupleSlotType.choices' =>
 		class('Type.TupleSlotArray')->new([qw(b a c)]),
 	})] => [{
+	    key => 1,
 	    value => 'a',
 	}, {
+	    key => 2,
 	    value => 'b',
 	}, {
+	    key => 3,
 	    value => 'c',
 	}],
     ],
