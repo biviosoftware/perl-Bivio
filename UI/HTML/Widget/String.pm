@@ -182,7 +182,9 @@ sub initialize {
     if ($fields->{is_literal} = !ref($fields->{value})) {
         # do nothing, formatter may be dynamic
     }
-    elsif ($fields->{is_widget} = ref($fields->{value}) ne 'ARRAY') {
+    elsif ($fields->{is_widget} = $self->is_blessed(
+	$fields->{value}, 'Bivio::UI::Widget')
+    ) {
 	$fields->{value}->put_and_initialize(parent => $self);
     }
     Bivio::IO::Alert->warn('is_widget and has formatter')
@@ -295,8 +297,11 @@ sub _format {
 	$value = $fields->{format}->get_widget_value($value);
 	return $value if $fields->{format}->result_is_html;
     }
-    Bivio::Die->die('got ref where scalar expected: ', $value)
-	if ref($value);
+    if (ref($value)) {
+	Bivio::Die->die('got ref where scalar expected: ', $value)
+	    unless __PACKAGE__->is_blessed($value) && $value->can('as_html');
+	return $value->as_html;
+    }
     # Note the treatment of escape when -1 or +1.
     return $fields->{escape} ? _escape($fields, $value) : $value;
 }
