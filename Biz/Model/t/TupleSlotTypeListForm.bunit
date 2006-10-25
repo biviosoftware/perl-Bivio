@@ -71,6 +71,6 @@ my($string) = model('TupleSlotTypeClassList')->DEFAULT_LABEL;
 	choice_0 => 1,
 	choice_1 => 2,
     }, {
-	choice_1 => 'EXISTS',
+	'TupleSlotType.default_value' => 'NOT_FOUND',
     }),
 ];
