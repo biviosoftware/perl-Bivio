@@ -14,7 +14,7 @@ sub internal_initialize {
     return {
         version => 1,
 	primary_key => [{
-	    name => 'value',
+	    name => 'choice',
 	    type => 'TupleSlot',
 	    constraint => 'NONE',
 	}],
@@ -23,8 +23,8 @@ sub internal_initialize {
 sub internal_load_rows {
     my($self) = shift;
     return [
-	{value => $self->EMPTY_KEY_VALUE},
-	map(+{value => $_->{value}},
+	{choice => $self->EMPTY_KEY_VALUE},
+	map(+{choice => $_->{choice}},
 	    @{$self->SUPER::internal_load_rows(@_)}),
     ];
 }
