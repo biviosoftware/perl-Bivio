@@ -36,7 +36,7 @@ sub info_base {
 	    GENERAL
 	    ANYBODY
 	    Action.ClientRedirect->execute_home_page_if_site_root
-	    Bivio::UI::View->execute_uri
+	    Action.LocalFilePlain->execute_uri_as_view
 	)],
 	[qw(
 	    LOCAL_FILE_PLAIN
@@ -532,6 +532,14 @@ sub info_tuple {
 	    View.Tuple->slot_type_edit
 	    next=FORUM_TUPLE_SLOT_TYPE_LIST
 	)],
+# 	[qw(
+# 	    FORUM_TUPLE_DEF_LIST
+# 	    72
+# 	    FORUM
+# 	    TUPLE_ADMIN
+# 	    Model.TupleDefList
+# 	    View.Tuple->def_list
+# 	)],
     ];
 }
 
