@@ -143,7 +143,7 @@ use Bivio::IO::Config;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_SHOW_TIME) = 0;
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
 Bivio::IO::Config->register({
     'show_time' => $_SHOW_TIME,
 });
