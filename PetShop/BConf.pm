@@ -102,17 +102,11 @@ sub merge_overrides {
 		Facade => ['Bivio::PetShop::Facade'],
 		Action => ['Bivio::PetShop::Action'],
 		TestLanguage => ['Bivio::PetShop::Test'],
+		View => ['Bivio::PetShop::View'],
 	    },
 	}),
 	'Bivio::SQL::PropertySupport' => {
 	    unused_classes => [],
-	},
-	'Bivio::Biz::Model::RealmMail' => {
-	    create_hook => sub {
-		my($m) = @_;
-		$m->get_instance('Tuple')->realm_mail_hook(@_);
-		return;
-	    },
 	},
 	'Bivio::UI::Facade' => {
 	    default => 'PetShop',
