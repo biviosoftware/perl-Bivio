@@ -37,7 +37,7 @@ C<Bivio::UI::FormError>
 #=IMPORTS
 
 #=VARIABLES
-my($_IN_EVAL);
+our($_IN_EVAL);
 
 =head1 METHODS
 
@@ -89,16 +89,15 @@ sub to_html {
 	$form_class->simple_package_name, $field, $error->get_name);
     if (defined($v)) {
 	my($buf) = '';
-	$_IN_EVAL = {
+	local($_IN_EVAL) = {
 	    label => $label,
 	};
 	my($die) = Bivio::Die->catch(sub {
-	    Bivio::UI::ViewShortcuts->vs_call('Prose', $v)
+	    $proto->use('Bivio::UI::ViewShortcuts')->vs_call('Prose', $v)
 		->put_and_initialize(parent => undef)
 		->render($source, \$buf);
 	    return;
         });
-	$_IN_EVAL = undef;
 	return $buf
 	    unless $die;
 	Bivio::IO::Alert->warn(
