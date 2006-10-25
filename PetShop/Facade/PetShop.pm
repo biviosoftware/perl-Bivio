@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::PetShop::Facade::PetShop;
 use strict;
-use base 'Bivio::UI::Facade';
+use base 'Bivio::UI::FacadeBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -59,6 +59,7 @@ my($_SELF) = __PACKAGE__->new({
 	    mailto
 	    link
 	    form_submit
+	    list_action
 	)] => []],
 	[menu_link => ['smaller']],
 	[heading_link => ['larger', 'bold']],
@@ -160,6 +161,7 @@ my($_SELF) = __PACKAGE__->new({
 	[FORUM_PUBLIC_FILE => '?/pub/*'],
 	[FORUM_FILE_READ => '?/file/*'],
 	[FORUM_WIKI_VIEW => '?/wiki/*'],
+	[EXAMPLE_EG1 => '/pub/eg1'],
     ],
     Constant => [
 	[help_wiki_realm_id => sub {
@@ -180,14 +182,23 @@ my($_SELF) = __PACKAGE__->new({
 
 	[support_email => 'webmaster@localhost.localdomain'],
 	[site_name => 'PetShop'],
+	[site_copyright => q{bivio Software, Inc.}],
 	# SITE_ROOT task calls View->execute_uri and we look for pages in
 	# the "site_root" directory.
 	[view_execute_uri_prefix => 'site_root/'],
 	[favicon_uri => '/i/favicon.ico'],
 
+	[form_error_title => 'Please correct the errors below:'],
+
 	# No label is convenient to have
 	[none => ''],
 
+	[[qw(paged_detail paged_list)] => [
+	    prev => 'back',
+	    next => 'next',
+	    list => 'back to list',
+	]],
+	[sep => 'foot2_menu_sep'],
 	[Address => [
 	    street1 => 'Street Address',
 	    city => 'City',
@@ -298,6 +309,7 @@ my($_SELF) = __PACKAGE__->new({
 	    USER_HOME => 'user home',
 	    SITE_ROOT => 'home',
 	    ADM_SUBSTITUTE_USER => 'su',
+	    EXAMPLE_EG1 => 'Example 1',
 	]],
 	[rsspage => [
 	    NumberedList => [

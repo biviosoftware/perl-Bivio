@@ -1,6 +1,327 @@
-/*
- * Copyright (c) 2006 bivio Software, Inc.  All rights reserved.
- *
- * $Id$
- */
-/* intentionally left blank */
+a:link, a:visited, a:hover, a:active {
+  text-decoration: none;
+  color: blue;
+}
+a:hover {
+  color: aqua;
+  text-decoration: underline;
+}
+a img {
+  border: 1px solid #FFFFFF;
+}
+a:hover img {
+  border: 1px solid aqua;
+}
+body {
+  font-family: Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif;
+  background-color: white;
+  color: black;
+  margin: 1em;
+  font-size: small;
+}
+img, table {
+  border-style: none;
+}
+table {
+  margin: auto;
+}
+p {
+  margin: 0;
+}
+th {
+  font-weight: bold;
+}
+.acknowledgement {
+  padding: .2em;
+  width: 20em;
+  margin: auto;
+  margin-top: 2ex;
+  margin-bottom: 2ex;
+  text-align: center;
+}
+.notice {
+  padding: .2em;
+  width: 14em;
+  text-align: right;
+  text-transform: none;
+  color: blue;
+}
+.acknowledgement .text {
+  border: 2px solid blue;
+  padding: .5em;
+}
+.content {
+  padding: 0 1em 1ex 1em;
+}
+form .check {
+  padding-left: 3em;
+}
+form .desc {
+  margin: .1em 0 0 0;
+  font-size: 90%;
+  color: #666666;
+  clear: left;
+  float: left;
+  width: 30em;
+}
+.field_err, .label_err, .err_title, .err {
+  color: #990000;
+}
+.err {
+  font-weight: bold;
+}
+.err_title {
+  color: #990000;
+  font-weight: bold;
+  width: 30em;
+  margin-bottom: 1ex;
+}
+.field_err {
+  font-weight: normal;
+  font-size: 80%;
+  width: 30em;
+}
+form .field {
+  padding-bottom: 1em;
+}
+.label_ok, .label_err, .label {
+  text-align: right;
+  padding-right: .2em;
+}
+.label_ok {
+  vertical-align: top;
+}
+.label_err {
+  vertical-align: middle;
+  font-style: italic;
+}
+.form_prose, .list_prose, div.press {
+  margin: auto;
+  width: 80%;
+  text-align: left;
+  padding: 1ex;
+}
+.foot {
+  margin-bottom: 3ex;
+  position: relative;
+}
+.head {
+  position: relative;
+}
+.foot {
+  font-size: 80%;
+  padding-top: .3ex;
+  padding-bottom: 7ex;
+  border-top: 1px solid #666666;
+  clear: both;
+}
+.foot1, .foot2, .foot3,
+.head1, .head2, .head3 {
+  position: absolute;
+}
+.head2 img,
+.foot2 img {
+  margin: 0 5px 2px 5px;
+}
+.head1 {
+  left: 0%;
+  width: 30%;
+}
+.head2 {
+  left: 30%;
+  text-align: center;
+  width: 40%;
+}
+.head3 {
+  left: 70%;
+  text-align: right;
+  width: 30%;
+}
+.foot1 {
+  left: 0%;
+  width: 30%;
+}
+.foot2 {
+  left: 30%;
+  text-align: center;
+  width: 40%;
+}
+.foot3 {
+  left: 70%;
+  text-align: right;
+  width: 30%;
+}
+.head3 {
+  font-weight: bold;
+  text-transform: uppercase;
+  vertical-align: top;
+}
+.head {
+  height: 72px;
+}
+.menu a {
+  white-space: nowrap;
+}
+.head2 .realm {
+  font-weight: bold;
+  color: #666666;
+  font-size: 150%;
+  padding-bottom: 1ex;
+}
+.topic {
+  text-align: center;
+  margin: auto;
+  color: #666666;
+  font-size: 150%;
+  margin-bottom: 1ex;
+}
+.foot2 .menu img {
+  margin: 0 .2em 0 .2em;
+}
+.foot3, .foot2, .head2 {
+  white-space: normal;
+}
+.prose p, .index p {
+  text-indent: 2em;
+  margin: 2ex 0 2ex 0;
+  text-align: left;
+}
+form .sep {
+  text-align: left;
+  font-weight: normal;
+  color: aqua;
+  padding: .5ex 0 1.5ex 0;
+  border-top: 1px solid #33CC00;
+}
+.warn {
+  font-style: italic;
+  color: #990000;
+}
+.head1 a.su,
+tr.su {
+  background-color: #666666;
+}
+.head1 .su .body {
+  font-size: 120%;
+  color: white;
+  text-align: center;
+  white-space: normal;
+  vertical-align: middle;
+  clear: both;
+}
+.task_menu a {
+  white-space: nowrap;
+}
+.foot2 .task_menu {
+  text-transform: lowercase;
+}
+.foot {
+  font-size: 80%;
+  padding-top: .3ex;
+  padding-bottom: 7ex;
+}
+.foot2 .task_menu a.want_sep,
+.top .task_menu a.want_sep,
+.bottom .task_menu a.want_sep,
+.pager .next, .pager .list,
+.alphabetical_chooser a.all,
+.tools span.want_sep {
+  background: url(/i/point7.gif) left no-repeat;
+  padding-left: 12px;
+  margin-left: 4px;
+}
+.head2 .task_menu {
+  text-transform: lowercase;
+  border-bottom: 1px solid #666666;
+  font-size: 120%;
+}
+.head2 .task_menu a.want_sep {
+  background: url(/i/point11.gif) left no-repeat;
+  padding-left: 20px;
+  margin-left: 5px;
+}
+.head2 .task_menu .selected, .foot2 .task_menu .selected {
+  font-weight: bold;
+}
+.head, .head1, .head1 a.logo {
+  height: 80px;
+}
+.submit, .empty_list {
+  text-align: center;
+}
+.tools div.sep {
+  background: url(/i/point7.gif) left center no-repeat;
+  padding-left: 12px;
+  margin-left: 4px;
+  display: inline;
+}
+.list .label {
+  padding-top: .2em;
+  padding-right: .5em;
+  text-align: right;
+  width: 50%;
+}
+/*I*/
+.list .value {
+  padding-top: .2em;
+  width: 50%;
+  padding-left: .5em;
+  text-align: left;
+}
+/*I*/
+form .list th, form .list td {
+  padding: 0 .5em 0 .5em;
+}
+.note {
+   font-weight: bold;
+  padding: .2em;
+   margin-bottom: 1ex;
+  border: 1px solid red;
+  text-align: center;
+}
+.submit {
+  text-align: center;
+}
+.top .task_menu, .top .pager {
+  text-align: right;
+  white-space: nowrap;
+  display: inline;
+}
+.bottom .pager, .bottom .task_menu {
+  text-align: left;
+  white-space: nowrap;
+  display: inline;
+}
+.off {
+  color: #999999;
+}
+.empty_list {
+  text-align: center;
+  padding-bottom: 1ex;
+}
+pre .text {
+  font-family: "Courier New", Courier, monospace, fixed;
+}
+.head1 a.logo {
+  background: url(/i/banner2.gif) top left no-repeat;
+  display: block;
+}
+.standard_submit {
+  text-align: center;
+}
+form .submit {
+  margin: .5em;
+}
+table.radio_grid {
+  margin-left: 0;
+}
+div.left {
+  width: 50%;
+}
+div.right {
+  width: 50%;
+  float: right;
+}
+td.list_actions {
+  font-size: 120%;
+}

@@ -628,7 +628,8 @@ sub _init_tuple {
     Bivio::Biz::Model->new($req, 'TupleSlotType')->create_from_hash({
 	Status => {
 	    type_class => 'TupleSlot',
-	    choices => join($;, qw(s0 s1 s2 s3)),
+	    choices => [qw(s0 s1 s2 s3)],
+	    default_value => 's1',
 	},
     });
     Bivio::Biz::Model->new($req, 'TupleDef')->create_from_hash({
@@ -641,7 +642,6 @@ sub _init_tuple {
 	    {
 		label => 'Status',
 		type => 'Status',
-		default_value => 's1',
 	    },
 	],
     });

@@ -1,0 +1,68 @@
+# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
+# $Id$
+view_class_map('XHTMLWidget');
+view_shortcuts('Bivio::UI::XHTML::ViewShortcuts');
+view_declare('page3_title');
+view_put(
+    map(($_ => ''), qw(top body bottom)),
+    base_realm => 'bOP Pet Shop',
+    base_tools => '',
+    pager => '',
+    base_menu => '',
+#    TaskMenu([qw(
+#	TUPLE_DEF_LIST
+#    )]),
+);
+view_main(Page3({
+    head1 => If(['->is_substitute_user'],
+	Link(
+	    RoundedBox(Join([
+		'Acting as User: <br />',
+		String(['auth_user', 'display_name']),
+		'<br />Click here to exit',
+	    ])),
+	    'LOGOUT',
+	    'su',
+	),
+	Link('', '/', 'logo'),
+    ),
+    head2 => Join([
+	P_realm(view_widget_value('base_realm')),
+	P_menu(view_widget_value('base_menu')),
+	P_topic(String(
+	    vs_text([sub {"page3.title.$_[1]"}, ['task_id', '->get_name']]),
+	)),
+    ]),
+    head3 => Join([
+	Director(
+	['user_state', '->get_name'],
+	{
+	    JUST_VISITOR => Link('Login', {task_id => 'LOGIN', no_context => 1}),
+	    LOGGED_OUT => Link('Login', {task_id => 'LOGIN', no_context => 1}),
+	    LOGGED_IN => vs_link('Logout', 'LOGOUT'),
+	},
+    )]),
+    content => DIV_base_content(Join([
+	DIV_top(Join([
+	    DIV_tools(Join([
+		view_widget_value('base_tools'),
+		view_widget_value('pager'),
+	    ], {
+		join_separator => EmptyTag(DIV => 'sep'),
+	    })),
+	])),
+	DIV_body(view_widget_value('body')),
+	DIV_bottom(
+	    DIV_tools(Join([
+		view_widget_value('base_tools'),
+		view_widget_value('pager'),
+	    ], {
+		join_separator => EmptyTag(DIV => 'sep'),
+	    })),
+	),
+    ])),
+    foot2 => TaskMenu([
+	'SITE_ROOT',
+	{task_id => 'LOGIN', no_context => 1},
+    ]),
+}));

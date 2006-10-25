@@ -383,6 +383,13 @@ sub get_delegate_info {
 	    Model.UserTaskDAVList
 	    detail_html_task=ORDER_COMMIT
 	)],
+	[qw(
+	    EXAMPLE_EG1
+	    541
+	    GENERAL
+	    ANYBODY
+	    View.Example->eg1
+	)],
     ]);
 }
 

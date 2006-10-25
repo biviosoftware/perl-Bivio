@@ -120,6 +120,26 @@ sub checkout_as_demo {
     return;
 }
 
+=for html <a name="create_forum"></a>
+
+=head2 create_forum()
+
+Logs out if logged in.
+
+=cut
+
+sub create_forum {
+    my($self) = @_;
+    $self->home_page();
+    $self->login_as('root');
+    $self->basic_authorization('root');
+    (my $f = $self->test_name . $self->random_string) =~ s/\W+//g;
+    my($u) = '/dav/Forums.csv';
+    $self->send_request(GET => $u);
+    $self->send_request(PUT => $u, undef, $self->get_content() . "$f,$f\n");
+    return $f;
+}
+
 =for html <a name="do_logout"></a>
 
 =head2 do_logout()
