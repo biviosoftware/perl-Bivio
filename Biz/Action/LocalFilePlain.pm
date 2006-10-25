@@ -131,6 +131,27 @@ EOF
     return 1;
 }
 
+=for html <a name="execute_uri_as_view"></a>
+
+=head2 static execute_uri_as_view(Bivio::Agent::Request req) : boolean
+
+Uses I<Request.uri> as the view name and executes it.  May compile the
+view dynamically.  The I<Request.uri> is prefixed with
+I<Text.view_execute_uri_as_view_prefix>.
+
+Dies with NOT_FOUND, if uri is not found as uri.
+
+=cut
+
+sub execute_uri_as_view {
+    my($proto, $req) = @_;
+    return $proto->use('View.LocalFile')->execute(
+	Bivio::UI::Text->get_value('view_execute_uri_prefix', $req)
+        . '/'
+	. $req->get('uri'),
+	$req);
+}
+
 #=PRIVATE METHODS
 
 # _open(Bivio::Agent::Request req, string file_name, string_ref mime_type) : file_handle

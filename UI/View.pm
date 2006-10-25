@@ -379,25 +379,6 @@ sub execute {
     return 0;
 }
 
-=for html <a name="execute_uri"></a>
-
-=head2 static execute_uri(Bivio::Agent::Request req) : boolean
-
-Uses I<Request.uri> as the view name and executes it.  May compile the
-view dynamically.  The I<Request.uri> is prefixed with
-I<Text.view_execute_uri_prefix>.
-
-Dies with NOT_FOUND, if uri is not found as uri.
-
-=cut
-
-sub execute_uri {
-    my($proto, $req) = @_;
-    return $proto->execute(
-	    Bivio::UI::Text->get_value('view_execute_uri_prefix', $req)
-	    .'/'.$req->get('uri'), $req);
-}
-
 =for html <a name="initialize_by_facade"></a>
 
 =head2 static initialize_by_facade(Bivio::UI::Facade facade)
