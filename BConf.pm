@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::BConf;
 use strict;
@@ -231,6 +231,12 @@ sub merge_realm_role_category_map {
 	    [
 		admin_only_forum_email => [
 		    MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)],
+		],
+	    ],
+	    [
+		tuple => [
+		    ADMINISTRATOR => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)],
+		    MEMBER => [qw(TUPLE_WRITE TUPLE_READ)],
 		],
 	    ],
         ];
@@ -520,7 +526,7 @@ sub _validate_config {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
