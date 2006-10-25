@@ -410,11 +410,6 @@ sub get_delegate_info {
 	undef,
 	'Class names must consist of letters, numbers, or underscores',
     ],
-    NOT_TUPLE_CHOICE => [
-	70,
-	undef,
-	'Value is not list of acceptable choices',
-    ],
 ];
 }
 
