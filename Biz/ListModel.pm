@@ -1140,6 +1140,22 @@ sub load_all {
 
 =for html <a name="load_page"></a>
 
+=head2 load_empty(any query) : self
+
+Loads instance with empty list.
+
+=cut
+
+sub load_empty {
+    my($self, $query) = @_;
+    $self->internal_load([], $self->parse_query({
+	parent_id => 1,
+    }));
+    return $self;
+}
+
+=for html <a name="load_page"></a>
+
 =head2 load_page(hash_ref query)
 
 =head2 load_page(Bivio::SQL::ListQuery query) : self

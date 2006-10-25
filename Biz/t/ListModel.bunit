@@ -3,6 +3,7 @@
 Request();
 [
     map(($_ => [
+	load_empty => undef,
 	load_all => undef,
 	map(($_ => [
 	    [] => [[{
@@ -11,4 +12,7 @@ Request();
 	    }]],
 	]), qw(map_rows	map_iterate)),
     ]), qw(Bivio::Biz::t::ListModel::T1List Bivio::Biz::t::ListModel::T2List)),
+    'Bivio::Biz::t::ListModel::T3List' => [
+	load_empty => undef,
+    ],
 ];
