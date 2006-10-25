@@ -39,11 +39,18 @@ sub internal_load_rows {
 
 sub load_all_from_slot_type {
     my($self, $list) = @_;
-    my($tc) = Bivio::Type->get_instance($list->get('TupleSlotType.type_class'));
-    $self->[$_IDI] = [sort {
-	$tc->compare($a, $b)
-    } @{$list->get('TupleSlotType.choices')->as_array}];
+    $self->[$_IDI] = $list ? _list($list) : [];
     return $self->load_all;
+}
+
+sub _list {
+    my($list) = @_;
+    my($tc) = Bivio::Type
+	->get_instance($list->get('TupleSlotType.type_class'));
+    my($c) = $list->get('TupleSlotType.choices');
+    return [sort {
+	$tc->compare($a, $b)
+    } @{$c ? $c->as_array : []}];
 }
 
 1;

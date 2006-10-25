@@ -13,25 +13,22 @@ sub LIST_FIELDS {
 	"TupleSlotType.$_", qw(label type_class choices default_value))];
 }
 
+sub create {
+    _assert_values(@_);
+    return shift->SUPER::create(@_);
+}
+
 sub create_from_hash {
     my($self, $types) = @_;
     while (my($label, $values) = each(%$types)) {
 	$values->{label} = $label;
-	my($v) = {
-	    map(($_ => $self->get_field_type($_)
-	        ->from_literal_or_die($values->{$_}, 1)),
-		qw(label type_class choices default_value)),
-	};
-	my($mock) = Bivio::Collection::Attributes->new(
-	    {%$v, choices => undef});
-	$v->{choices} &&= $_TSA->new($v->{choices}->map_iterate(
-	    sub {$self->validate_slot_or_die(shift(@_), $mock)}));
-	;
-	$v->{default_value} = $self->validate_slot_or_die(
-	    $v->{default_value}, $mock->put(choices => $v->{choices}));
-	$self->create($v);
+	$self->create({map(
+	    ($_ => $self->get_field_type($_)->from_literal_or_die(
+		$values->{$_}, 1)),
+	    qw(label type_class choices default_value),
+	)});
     }
-    return $self;
+    return;
 }
 
 sub internal_initialize {
@@ -54,6 +51,13 @@ sub type_class_instance {
     return Bivio::Type->get_instance($model->get($prefix . 'type_class'));
 }
 
+sub update {
+    my($self, $values, @rest) = @_;
+    my($v) = {%{$self->get_shallow_copy}, %$values};
+    _assert_values($self, $v);
+    return $self->SUPER::update($v, @rest);
+}
+
 sub validate_slot {
     my($proto, $value, $model, $prefix) = @_;
     $model ||= $proto;
@@ -68,14 +72,49 @@ sub validate_slot {
 	unless defined($v) and my $c = $model->get($prefix . 'choices');
     return @{$c->map_iterate(sub {$t->is_equal($v, $_[0]) ? 1 : ()})}
 	? ($v, undef)
-	: (undef, Bivio::TypeError->NOT_TUPLE_CHOICE);
+	: (undef, Bivio::TypeError->NOT_FOUND);
 }
 
-sub validate_slot_or_die {
-    my($v, $e) = shift->validate_slot(@_);
-    Bivio::Die->die(validate_slot => \@_, ': ', $e)
-        if $e;
-    return $v;
+sub _assert_values {
+    my($self, $values) = @_;
+    my($mock) = Bivio::Collection::Attributes->new({%$values});
+    defined($values->{label}) or _err($self, label => 'NULL');
+    defined($values->{type_class}) or _err($self, type_class => 'NULL');
+    Bivio::IO::ClassLoader->unsafe_map_require('Type', $values->{type_class})
+        or _err($self, type_class => 'NOT_FOUND');
+    if (defined($values->{choices})) {
+	$mock->put(choices => undef);
+	my($seen) = {};
+	$mock->put(choices => $values->{choices} = $_TSA->from_literal_or_die(
+	    $values->{choices}->map_iterate(
+		sub {
+		    my($c) = @_;
+		    my($v, $e) = $self->validate_slot($c, $mock);
+		    $e and _err($self, choices => $e);
+		    return unless defined($v);
+		    $seen->{$v}++ and _err($self, choices => 'EXISTS');
+		    return $v;
+		},
+	    ),
+	    1,
+	));
+    }
+    if (defined($values->{default_value})) {
+	my($v, $e) = $self->validate_slot($values->{default_value}, $mock);
+	$e and _err($self, default_value => $e);
+	$values->{default_value} = $v;
+    }
+    return;
+}
+
+sub _err {
+    my($self, $field, $err) = @_;
+    Bivio::Die->throw(DB_CONSTRAINT => {
+	type_error => Bivio::TypeError->from_any($err),
+	table => $self->get_info('table_name'),
+	columns => [$field],
+    });
+    # DOES NOT RETURN
 }
 
 1;

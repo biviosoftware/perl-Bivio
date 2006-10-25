@@ -40,9 +40,4 @@ sub label_to_id {
     )->get('TupleSlotType.tuple_slot_type_id');
 }
 
-sub validate_slot_or_die {
-    my($self, $value) = @_;
-    return $_TST->validate_slot_or_die($value, $self, 'TupleSlotType.');
-}
-
 1;

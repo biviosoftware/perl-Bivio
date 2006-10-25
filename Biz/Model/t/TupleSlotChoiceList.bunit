@@ -3,6 +3,7 @@
 ListModel();
 [
     load_all_from_slot_type => [
+	[] => [],
 	[Bivio::Collection::Attributes->new({
 	    'TupleSlotType.type_class' => 'String',
 	    'TupleSlotType.choices' =>

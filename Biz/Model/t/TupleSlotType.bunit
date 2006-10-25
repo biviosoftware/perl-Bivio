@@ -21,14 +21,14 @@ my($tsa) = class('Type.TupleSlotArray');
     create_from_hash => [
 	[{tst2 => {
 	    type_class => 'Integer',
-	    choices => "1$;2",
+	    choices => [1, 2],
 	}}] => [{
 	    choices => $tsa->new([1, 2]),
 	}],
     ],
     validate_slot => [
 	1 => [1, undef],
-	3 => [undef, Bivio::TypeError->NOT_TUPLE_CHOICE],
+	3 => [undef, Bivio::TypeError->NOT_FOUND],
     ],
     create_from_hash => [
 	[{tst3 => {
@@ -40,22 +40,25 @@ my($tsa) = class('Type.TupleSlotArray');
     ],
     validate_slot => [
 	'9/1/2006' => ['2453980 79199', undef],
-	'9/2/2006' => [undef, Bivio::TypeError->NOT_TUPLE_CHOICE],
+	'9/2/2006' => [undef, Bivio::TypeError->NOT_FOUND],
 	'9/2' => [undef, Bivio::TypeError->DATE],
     ],
     create_from_hash => [
 	[{tst4 => {
-	    type_class => 'Integer',
-	    choices => "1$;x",
-	}}] => DIE(),
+	    choices => [qw(1 x)],
+	}}] => DB_CONSTRAINT(),
 	[{tst5 => {
+	    type_class => 'Integer',
+	    choices => [qw(1 x)],
+	}}] => DB_CONSTRAINT(),
+	[{tst6 => {
 	    type_class => 'Integer',
 	    default_value => 'x',
-	}}] => DIE(),
-	[{tst5 => {
+	}}] => DB_CONSTRAINT(),
+	[{tst7 => {
 	    type_class => 'Integer',
-	    choices => "1$;2",
+	    choices => [1, 2],
 	    default_value => '3',
-	}}] => DIE(),
+	}}] => DB_CONSTRAINT(),
     ],
 ];
