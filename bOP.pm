@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,27 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.50  2006/10/20 19:38:04  moeller
+  * New PropertyModels Tuple, TupleDef, TupleSlotDef, TupleSlotType, and
+    TupleUse
+  * Bivio::Biz::FormModel show more info about HTTP request when
+    VERSION_MISMATCH occurs
+  * Bivio::Biz::ListFormModel added map_rows and get_field_name_in_list
+  * Bivio::Biz::Model::Lock read any input from request before acquiring
+    lock, renamed to execute_unless_acquired
+  * Bivio::Biz::Model::RealmMail added create_hook config
+  * Bivio::Mail::Incoming get_field always returns a defined value
+  * Bivio::SQL::PropertySupport more unused_classes
+  * Bivio::Test::HTTPd linux or perl 5.6 compatibility change
+  * Bivio::Test::Language::HTTP allow submit without button to allow AT
+    of auto_submit fields
+  * Bivio::Test::ListModel support for find_row_by
+  * Bivio::Type::Text64K updated get_width to be -1.
+  * Bivio::UI::HTML::Widget::Select allow TypeValue with array of Enum value
+  * Bivio::UI::Widget::List added source_name like Table
+  * Bivio::UNIVERSAL added map_by_two()
+  * Bivio::Util::SQL initialize_tuple_slot_types
+
   Revision 4.49  2006/10/16 20:56:51  moeller
   * Bivio::Agent::Request added get_content()
   * Bivio::Biz::Action::Acknowledgement export QUERY_KEY
