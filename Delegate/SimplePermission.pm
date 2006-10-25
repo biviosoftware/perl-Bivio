@@ -1,124 +1,10 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::SimplePermission;
 use strict;
-$Bivio::Delegate::SimplePermission::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Delegate::SimplePermission::VERSION;
+use base 'Bivio::Delegate';
 
-=head1 NAME
-
-Bivio::Delegate::SimplePermission - default permissions for simplest site
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Delegate::SimplePermission;
-
-=cut
-
-use Bivio::Delegate;
-@Bivio::Delegate::SimplePermission::ISA = ('Bivio::Delegate');
-
-=head1 DESCRIPTION
-
-C<Bivio::Delegate::SimplePermission> returns default permissions for
-simplest bOP site.
-
-You can extend this delegate with:
-
-    sub get_delegate_info {
-	return [
-	    @{Bivio::Delegate::SimplePermission->get_delegate_info()},
-	    ...my permissions...
-	];
-    }
-
-Start your permissions at 21.  Don't worry about dups, because
-L<Bivio::Type::Enum|Bivio::Type::Enum> will die if you overlap.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_delegate_info"></a>
-
-=head2 static get_delegate_info() : array_ref
-
-Returns the permissions which are specified in
-L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>,
-checked by L<Bivio::Agent::Task|Bivio::Agent::Task>,
-and configured for each realm/role in
-L<Bivio::Biz::Model::RealmRole|Bivio::Biz::Model::RealmRole>.
-
-=over 4
-
-=item ANYBODY
-
-This permission should be set for all roles.
-
-=item ANY_USER
-
-Set for all roles which are played by users logged into the site,
-whether they are L<RealmUser|Bivio::Biz::Model::RealmUser> or not.
-
-=item DATA_READ
-
-The role can read, but not modify data in the realm.
-
-=item DATA_WRITE
-
-The role can write, but not read data in the realm.
-
-=item ADMIN_READ
-
-Read data about the realm
-
-=item ADMIN_WRITE
-
-Edit data about the realm.
-
-=item SUBSTITUTE_USER_TRANSIENT
-
-Set when the user executing the request is a super_user which is
-substituted as another user.
-
-=item SUPER_USER_TRANSIENT
-
-Set when the user executing the request is a super_user.
-
-=item TEST_TRANSIENT
-
-Is the system running in test mode? (not
-L<Bivio::Agent::Request::is_production|Bivio::Agent::Request/"is_production">).
-
-=item MAIL_READ
-
-Read mails sent to the realm.
-
-=item MAIL_WRITE
-
-Write and delete mails (in the application) to the realm
-
-=item MAIL_SEND
-
-Send mails to the realm via an MTA.
-
-=item MAIL_POST
-
-Send mails to the realm via authenticated web interface.
-
-=back
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     return [
@@ -135,19 +21,10 @@ sub get_delegate_info {
 	MAIL_WRITE => [11],
 	MAIL_SEND => [12],
 	MAIL_POST => [13],
+	TUPLE_READ => [14],
+	TUPLE_WRITE => [15],
+	TUPLE_ADMIN => [16],
     ];
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
