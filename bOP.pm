@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,27 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.51  2006/10/25 19:02:14  moeller
+  * Bivio::Agent::Task Added execute_task_item api
+  * Bivio Auth::Realm added do_default()
+  * Bivio::BConf added View map, added tuple category
+  * Bivio::Biz::ExpandableListForm call get_form
+  * Bivio::Biz::Model::TupleSlotType creating TupleSlotType from ListForm
+  * Bivio::Delegate::SimplePermission added TUPLE_READ
+  * Bivio::Delegate::SImpleTaskId support categories of tasks
+  * Bivio::SQL::Connection added handle_commit() and handle_rollback()
+    so a connection can be a Request's transaction resource
+  * Bivio::Type::StringArray from_literal supports []
+  * Bivio::UI::HTML::Widget::String fixed widget check with is_blessed
+    If ref implements to_html, then won't blow up in _format
+  * Bivio::UI::View Delegated compilation to subclasses: Inline, Method,
+    and LocalFile, added support for execute_item,
+    allow the case where the view wants a LocalFile parent
+  * Bivio::UI::ViewLanaguage Delegated compilation to subclasses.
+    Use local() for stack
+  * Bivio::UNIVERSAL added is_blessed
+  * Bivio::Util::SQL initialize_tuple_permissions
+
   Revision 4.50  2006/10/20 19:38:04  moeller
   * New PropertyModels Tuple, TupleDef, TupleSlotDef, TupleSlotType, and
     TupleUse
