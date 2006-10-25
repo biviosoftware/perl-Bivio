@@ -500,11 +500,29 @@ sub info_base {
 	    View.blog-edit
 	    next=FORUM_BLOG_VIEW
  	)],
+#55-59 free
     ];
 }
 
 sub info_tuple {
     return [
+	[qw(
+	    FORUM_TUPLE_SLOT_TYPE_LIST
+	    70
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleSlotTypeList->execute_load_page
+	    View.Tuple->slot_type_list
+	)],
+	[qw(
+	    FORUM_TUPLE_SLOT_TYPE_EDIT
+	    71
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleSlotTypeListForm
+	    View.Tuple->slot_type_edit
+	    next=FORUM_TUPLE_SLOT_TYPE_LIST
+	)],
     ];
 }
 
@@ -512,12 +530,13 @@ sub info_xapian {
     return [
 	[qw(
 	    JOB_XAPIAN_COMMIT
-	    56
+	    60
 	    GENERAL
 	    ANYBODY
 	    Model.Lock
 	    Bivio::Search::Xapian
 	)],
+#60-69 free
     ];
 }
 
