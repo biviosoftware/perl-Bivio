@@ -17,6 +17,8 @@ options({
     from_literal => [
         '' => UNDEF(),
 	' ' => UNDEF(),
+	[[]] => UNDEF(),
+	[class()->new([])] => UNDEF(),
 	'0' => [[qw(0)]],
 	' a,b ' => [[qw(a b)]],
 	"a,b$;c" => [['a,b', 'c']],

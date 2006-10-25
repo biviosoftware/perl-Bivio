@@ -51,8 +51,10 @@ sub equals {
 
 sub from_literal {
     my($proto, $value) = @_;
-    return $proto->new($value)
-	if ref($value);
+    if (ref($value)) {
+	$value = $proto->new($value);
+	return $value->equals([]) ? (undef, undef) : $value;
+    }
     return (undef, undef)
 	unless defined($value);
     $value =~ s/^\s+|\s+$//sg
