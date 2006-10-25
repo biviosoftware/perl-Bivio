@@ -452,6 +452,8 @@ sub init_realm_role {
     }
     $rr->copy_all(forum => 'calendar_event')
 	if Bivio::Auth::RealmType->unsafe_from_name('CALENDAR_EVENT');
+    $self->initialize_tuple_permissions
+	if Bivio::Agent::TaskId->unsafe_from_name('FORUM_TUPLE_SLOT_TYPE_LIST');
     return;
 }
 
@@ -464,6 +466,25 @@ Initializes test data.  A hook for the subclasses.
 =cut
 
 sub initialize_test_data {
+    return;
+}
+
+=for html <a name="initialize_tuple_permissions"></a>
+
+=head2 initialize_tuple_permissions()
+
+Sets up default permissions of tuples.
+
+=cut
+
+sub initialize_tuple_permissions {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
+    Bivio::Auth::Realm->do_default(sub {
+        $rr->edit_categories('+tuple');
+	return 1;
+    }, $req);
     return;
 }
 
