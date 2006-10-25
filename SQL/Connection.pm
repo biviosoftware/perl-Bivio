@@ -416,6 +416,32 @@ $_ = <<'}'; # emacs
 sub get_dbi_prefix {
 }
 
+=for html <a name="handle_commit"></a>
+
+=head2 handle_commit()
+
+Callback for transaction resources.
+
+=cut
+
+sub handle_commit {
+    shift->commit(@_);
+    return;
+}
+
+=for html <a name="handle_rollback"></a>
+
+=head2 handle_rollback()
+
+Callback for transaction resources.
+
+=cut
+
+sub handle_rollback {
+    shift->rollback(@_);
+    return;
+}
+
 =for html <a name="increment_db_time"></a>
 
 =head2 increment_db_time(int start_time) : int
