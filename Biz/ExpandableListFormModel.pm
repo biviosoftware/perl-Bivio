@@ -198,7 +198,7 @@ sub internal_initialize_list {
     return if $fields->{list_initialized};
     $fields->{list_initialized} = 1;
     my($req) = $self->get_request;
-    my($form) = $req->get('form');
+    my($form) = $req->get_form;
     my($prev_self) = $req->unsafe_get(_key($self));
     my($erc) = $prev_self ? $prev_self->get('empty_row_count')
 	: $form ? $form->{$self->get_field_name_for_html('empty_row_count')}
