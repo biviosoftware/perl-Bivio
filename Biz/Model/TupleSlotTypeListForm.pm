@@ -27,12 +27,6 @@ sub execute_empty_end {
     return;
 }
 
-sub execute_empty_row {
-    my($self) = @_;
-    $self->internal_load_field('choice', 'value');
-    return;
-}
-
 sub execute_ok_end {
     my($self) = @_;
     my($req) = $self->get_request;
@@ -57,7 +51,7 @@ sub execute_ok_row {
     my($self) = @_;
     return unless defined(my $v = $self->get('choice'));
     return _err($self, choice => 'EXISTS')
-	if grep($v, @{$self->[$_IDI]});
+	if grep($v eq $_, @{$self->[$_IDI]});
     push(@{$self->[$_IDI]}, $v);
     return;
 }
@@ -108,7 +102,8 @@ sub internal_initialize_list {
 
 sub _err {
     my($self, $field, $err) = @_;
-    $self->internal_put_error($field => $err);
+    $self->internal_put_error(
+	$field eq 'choice' ? $field : "TupleSlotType.$field" => $err);
     return;
 }
 

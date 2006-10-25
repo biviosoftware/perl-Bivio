@@ -21,7 +21,7 @@ sub internal_initialize {
 	    constraint => 'NOT_NULL',
 	}],
 	order_by => [{
-	    name => 'value',
+	    name => 'choice',
 	    type => 'TupleSlot',
 	    constraint => 'NOT_NULL',
 	}],
@@ -32,7 +32,7 @@ sub internal_load_rows {
     my($self) = @_;
     my($k) = 1;
     return [map(+{
-	value => $_,
+	choice => $_,
 	key => $k++,
     }, sort(@{$self->[$_IDI]}))];
 }

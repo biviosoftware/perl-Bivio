@@ -10,13 +10,13 @@ ListModel();
 		class('Type.TupleSlotArray')->new([qw(b a c)]),
 	})] => [{
 	    key => 1,
-	    value => 'a',
+	    choice => 'a',
 	}, {
 	    key => 2,
-	    value => 'b',
+	    choice => 'b',
 	}, {
 	    key => 3,
-	    value => 'c',
+	    choice => 'c',
 	}],
     ],
 ];
