@@ -233,41 +233,44 @@ sub vs_list {
 }
 
 sub vs_list_form {
-    my($proto, $form, $columns, $empty_list, $buttons, $table_attrs) = @_;
+    my($proto, $form, $columns, $table_attrs) = @_;
     my($f) = Bivio::Biz::Model->get_instance($form);
     my($l) = Bivio::Biz::Model->get_instance($f->get_list_class);
-    my($res) = Form(
-	$form,
-	Join([
-	    $proto->vs_form_error_title($form),
-	    Table($form => [
-		map({
-		    $_ = ref($_) eq 'ARRAY' ? {
+    my($list) = [];
+    my($simple) = [map({
+	my($n);
+	if ($n = !ref($_) && ($_ =~ /^\w+\.(.*)/)[0]
+	    and $f->has_fields($n) && $f->get_field_info($n, 'in_list')
+        ) {
+	    push(@$list, $n);
+	}
+	else {
+	    $n = undef;
+	}
+	$n ? () : $_;
+    } @$columns)];
+    foreach my $c (@$columns) {
+    }
+    my($button) = pop(@$simple)
+	if $simple->[$#$simple] =~ /^\*/;
+    return $proto->vs_simple_form($form => [
+	@$simple,
+	Table($form => [
+	    map({
+		my($x) = ref($_) eq 'HASH' ? $_
+		    : ref($_) eq 'ARRAY' ? {
 			field => $_->[0],
 			$_->[1] ? %{$_->[1]} : (),
-		    } : {field => $_}
-			unless ref($_) eq 'HASH';
-		    $_->{column_class} ||= 'field';
-		    # So checkboxes don't have labels in the fields, just hdr
-		    $_->{label} = ''
-			unless exists($_->{label});
-		    $_;
-		} @$columns),
-	    ], $proto->vs_table_attrs($form, list => $table_attrs),
-	    ),
-	    $buttons ? $buttons : Tag(
-		'div',
-		# cell_class tells StandardSubmit to produce XHTML
-		StandardSubmit({cell_class => 'button'}),
-		'submit',
-	    ),
-	])
-    );
-    return $empty_list ? If(
-	[$f->get_list_class, '->get_result_set_size'],
-	$res,
-	Tag(div => $empty_list, 'empty_list'),
-    ) : $res;
+		    } : {field => $_};
+		$x->{column_class} ||= 'field';
+		# So checkboxes don't have labels in the fields, just hdr
+		$x->{label} = ''
+		    unless exists($x->{label});
+		$_;
+	    } @$list),
+	], $proto->vs_table_attrs($form, list => $table_attrs),),
+	$button ? $button : (),
+    ]);
 }
 
 sub vs_paged_detail {
