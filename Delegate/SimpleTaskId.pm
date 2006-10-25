@@ -505,6 +505,15 @@ sub info_base {
 }
 
 sub info_tuple {
+    Bivio::IO::Config->introduce_values({
+	'Bivio::Biz::Model::RealmMail' => {
+	    create_hook => sub {
+		my($m) = @_;
+		$m->get_instance('Tuple')->realm_mail_hook(@_);
+		return;
+	    },
+	},
+    });
     return [
 	[qw(
 	    FORUM_TUPLE_SLOT_TYPE_LIST
