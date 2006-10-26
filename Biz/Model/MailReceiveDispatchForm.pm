@@ -45,6 +45,9 @@ use Bivio::UI::Task;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_E) = Bivio::Type->get_instance('Email');
+Bivio::IO::Config->register(my $_CFG = {
+    ignore_dashes_in_recipient => 0,
+});
 
 =head1 METHODS
 
@@ -96,6 +99,12 @@ sub execute_ok {
 	login => $self->internal_get_login,
     });
     return 'server_redirect.' . $self->get('task_id')->get_name;
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 =for html <a name="internal_get_login"></a>
@@ -195,6 +204,8 @@ need +plus_tag.
 
 sub parse_recipient {
     my($self, $ignore_dashes) = @_;
+    $ignore_dashes = $_CFG->{ignore_dashes_in_recipient}
+	unless defined($ignore_dashes);
     my($to) = $self->get('recipient');
     _trace('to: ', $to) if $_TRACE;
     my($domain) = $1
