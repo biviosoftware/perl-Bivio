@@ -65,6 +65,7 @@ sub mail_subject {
 
 sub realm_mail_hook {
     my($proto, $realm_mail, $incoming) = @_;
+    # AUTH: TupleUseList authenticates access to schema
     my($tul) = $realm_mail->new_other('TupleUseList')->load_all;
     my($m) = join('|', @{$tul->monikers});
     _trace($realm_mail->get('subject'), ' matching with ', $m) if $_TRACE;

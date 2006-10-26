@@ -97,6 +97,7 @@ sub internal_initialize_list {
     my($self) = @_;
     my($q) = $self->new_other('TupleList')->parse_query_from_request;
     my($tdid, $tn) = $q->unsafe_get(qw(parent_id this));
+    # AUTH: Make sure this realm can use this schema
     $self->new_other('TupleUse')->load({
 	tuple_def_id => $tdid,
     });

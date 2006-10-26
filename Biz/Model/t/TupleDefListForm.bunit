@@ -1,0 +1,77 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+require './TupleListForm.PL';
+model('TupleDef')->delete_all;
+model('TupleDef')->create_from_hash({
+    'X1#exist1' => [
+	{
+	    label => 'x1',
+	    type => 'Integer',
+	},
+    ],
+});
+my($exists_id) = req(qw(Model.TupleDef tuple_def_id));
+my($integer_id) = req(qw(Model.TupleSlotTypeList TupleSlotType.tuple_slot_type_id));
+[
+    empty_case({
+	'TupleDef.label' => undef,
+	'TupleDef.moniker' => undef,
+	map((
+	    "TupleSlotDef.tuple_slot_num_$_"
+		=> model('TupleSlotDefList')->EMPTY_KEY_VALUE),
+	    0 .. class()->ROW_INCREMENT - 1),
+    }),
+    simple_case($exists_id, {
+	'TupleDef.label' => 'exist1',
+	'TupleDef.moniker' => 'X1',
+	'TupleSlotDef.label_0' => 'x1',
+	'TupleSlotDef.tuple_slot_type_id_0' => $integer_id,
+	'TupleSlotDef.tuple_slot_num_0' => 1,
+	'TupleSlotDef.is_required_0' => 0,
+	map((
+	    "TupleSlotDef.tuple_slot_num_$_"
+		=> model('TupleSlotDefList')->EMPTY_KEY_VALUE),
+	    1 .. 1 + class()->ROW_INCREMENT - 1),
+    }),
+    [{
+	'TupleDef.label' => 'td1',
+	'TupleDef.moniker' => 'TD1',
+	'TupleSlotDef.label_0' => 'x1',
+	'TupleSlotDef.tuple_slot_type_id_0' => $integer_id,
+	'TupleSlotDef.is_required_0' => 0,
+	'TupleSlotDef.label_1' => 'x2',
+	'TupleSlotDef.tuple_slot_type_id_1' => $integer_id,
+	'TupleSlotDef.is_required_1' => 1,
+	empty_row_count => 2,
+    }] => [{
+	'Model.TupleDef' => {
+	    label => 'td1',
+	    moniker => 'TD1',
+	},
+	'Model.TupleSlotDef' => {
+	    label => 'x2',
+	    tuple_slot_num => 2,
+	    is_required => 1,
+	},
+    }],
+    simple_case({
+	'TupleDef.label' => 'td2',
+	'TupleDef.moniker' => 'TD2',
+	'TupleSlotDef.label_0' => 'x1',
+	'TupleSlotDef.tuple_slot_type_id_0' => $integer_id,
+	'TupleSlotDef.is_required_0' => 0,
+	'TupleSlotDef.label_1' => 'x1',
+	'TupleSlotDef.tuple_slot_type_id_1' => $integer_id,
+	'TupleSlotDef.is_required_1' => 1,
+	empty_row_count => 2,
+    }, {
+	'TupleSlotDef.label_1' => 'EXISTS',
+    }),
+    error_case({
+	'TupleDef.label' => 'td2',
+	'TupleDef.moniker' => 'TD2',
+	empty_row_count => 0,
+    }, {
+	'TupleSlotDef.label_0' => 'NOT_FOUND',
+    }),
+];

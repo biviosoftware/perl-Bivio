@@ -11,6 +11,10 @@ sub AUTH_ID_FIELD {
     return 'TupleSlotType.realm_id';
 }
 
+sub find_row_by_id {
+    return shift->find_row_by('TupleSlotType.tuple_slot_type_id', shift);
+}
+
 sub find_row_by_label {
     return shift->find_row_by('TupleSlotType.label', shift);
 }
@@ -23,13 +27,7 @@ sub internal_initialize {
         order_by => [qw(
 	    TupleSlotType.label
 	)],
-	other => [
-	    @{$_TST->LIST_FIELDS},
-#TODO: Move to separate list
-	    [qw(TupleSlotType.realm_id RealmOwner.realm_id)],
-	    'RealmOwner.name',
-	    'RealmOwner.realm_type',
-	],
+	other => $_TST->LIST_FIELDS,
     });
 }
 

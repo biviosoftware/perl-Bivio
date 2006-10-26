@@ -11,6 +11,11 @@ my($_TSN) = Bivio::Type->get_instance('TupleSlotNum');
 my($_EK) = __PACKAGE__->get_instance('TupleSlotChoiceSelectList')
     ->EMPTY_KEY_VALUE;
 
+sub EMPTY_KEY_VALUE {
+    #NOTE: You have to relax constraint on tuple_slot_num if you use this
+    return -1;
+}
+
 sub empty_slot {
     my($self, $value) = @_;
     return defined($value) ? $value
@@ -35,7 +40,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-        parent_id => ['TupleSlotDef.tuple_def_id', 'TupleUse.tuple_def_id'],
+        parent_id => ['TupleSlotDef.tuple_def_id'],
 	primary_key => ['TupleSlotDef.tuple_slot_num'],
 	order_by => ['TupleSlotDef.tuple_slot_num'],
 	other => [
@@ -43,14 +48,6 @@ sub internal_initialize {
 	    @{$_TSD->LIST_FIELDS},
 	],
     });
-}
-
-sub internal_prepare_statement {
-    my($self, $stmt) = @_;
-#TODO: Always Auth?
-    $stmt->where(
-	$stmt->EQ('TupleUse.realm_id', [$self->get_request->get('auth_id')]));
-    return;
 }
 
 sub type_class_instance {

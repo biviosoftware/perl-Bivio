@@ -2,27 +2,28 @@
 # $Id$
 package Bivio::Biz::Model::TupleSlotTypeListForm;
 use strict;
-use base 'Bivio::Biz::ExpandableListFormModel';
+use base 'Bivio::Biz::Model::TupleExpandableListForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
-sub ROW_INCREMENT {
-    return 10;
+sub MUST_BE_SPECIFIED_FIELDS {
+    return [qw(choice)];
+}
+
+sub PARENT_LIST {
+    return 'TupleSlotTypeList';
 }
 
 sub execute_empty_end {
     my($self) = @_;
     my($req) = $self->get_request;
-    my($t) = $req->get('Model.TupleSlotTypeClassList');
     if (my $m = $req->unsafe_get('Model.TupleSlotType')) {
 	$self->load_from_model_properties($m);
-	$self->internal_put_field('TupleSlotType.type_class'
-	    => $t->type_class_to_label($self->get('TupleSlotType.type_class')));
     }
     else {
-	$self->internal_put_field(
-	    'TupleSlotType.type_class' => $t->DEFAULT_LABEL);
+	$self->internal_put_field('TupleSlotType.type_class' =>
+            $self->get_instance('TupleSlotTypeClassList')->DEFAULT);
     }
     return;
 }
@@ -37,8 +38,7 @@ sub execute_ok_end {
     };
     my($tstcl) = $req->get('Model.TupleSlotTypeClassList');
     return _err($self, 'TupleSlotType.type_class', 'NOT_FOUND')
-	unless $v->{type_class}
-	= $tstcl->unsafe_label_to_type_class($v->{type_class});
+	unless $tstcl->find_row_by_class($v->{type_class});
     my($m) = $req->unsafe_get('Model.TupleSlotType');
     _err($self, 'type_class' => 'MUTUALLY_EXCLUSIVE')
 	if $m && $tstcl->is_upgrade($m->get('type_class'), $v->{type_class});
@@ -49,7 +49,8 @@ sub execute_ok_end {
 
 sub execute_ok_row {
     my($self) = @_;
-    return unless defined(my $v = $self->get('choice'));
+    return if $self->is_empty_row;
+    my($v) = $self->get('choice');
     return _err($self, choice => 'EXISTS')
 	if grep($v eq $_, @{$self->[$_IDI]});
     push(@{$self->[$_IDI]}, $v);
@@ -86,18 +87,16 @@ sub internal_initialize {
 }
 
 sub internal_initialize_list {
-    my($self) = @_;
+    my($self) = shift;
     $self->new_other('TupleSlotTypeClassList')->load_all;
-    my($tstl) = $self->new_other('TupleSlotTypeList');
-    my($q) = $tstl->parse_query_from_request;
-    if ($q->get('this') && $tstl->unsafe_load_this($q)) {
-	$tstl->get_model('TupleSlotType');
-	$self->new_other($self->get_list_class)->load_all_from_slot_type($tstl);
-    }
-    else {
-	$self->new_other($self->get_list_class)->load_all_from_slot_type();
-    }
-    return shift->SUPER::internal_initialize_list(@_);
+    return $self->SUPER::internal_initialize_list(@_);
+}
+
+sub internal_initialize_this_list {
+    my($self, $parent_list, $this_list) = @_;
+    $parent_list->get_model('TupleSlotType');
+    $this_list->load_all_from_slot_type($parent_list);
+    return;
 }
 
 sub _err {

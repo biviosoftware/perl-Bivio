@@ -16,7 +16,12 @@ sub internal_initialize {
 	primary_key => ['RealmOwner.realm_id'],
 	# Make sure this is in the select, since it can vary, not like
 	# regular auth_id which is constant
-	other => [$self->AUTH_ID_FIELD],
+	other => [
+	    [$self->AUTH_ID_FIELD, 'RealmOwner.realm_id'],
+	    # Convenient for generating links
+	    'RealmOwner.name',
+	    'RealmOwner.realm_type',
+	],
     });
 }
 

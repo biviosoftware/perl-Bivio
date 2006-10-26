@@ -1,17 +1,6 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-my($exists_id);
-FormModel({
-    setup_request => sub {
-	my($params) = shift->get('params');
-	req()->put(
-	    query => ref($params->[0]) || !defined($params->[0]) ? undef
-		: {this => shift(@$params)},
-	);
-	return;
-    },
-});
-req()->set_realm_and_user(qw(demo demo));
+require './TupleListForm.PL';
 model('TupleSlotType')->delete_all;
 model('TupleSlotType')->create_from_hash({
     exist1 => {
@@ -20,8 +9,8 @@ model('TupleSlotType')->create_from_hash({
 	default_value => -2,
     },
 });
-$exists_id = req(qw(Model.TupleSlotType tuple_slot_type_id));
-my($string) = model('TupleSlotTypeClassList')->DEFAULT_LABEL;
+my($exists_id) = req(qw(Model.TupleSlotType tuple_slot_type_id));
+my($string) = model('TupleSlotType')->DEFAULT_CLASS;
 [
     empty_case({
 	'TupleSlotType.type_class' => $string,
@@ -45,10 +34,11 @@ my($string) = model('TupleSlotTypeClassList')->DEFAULT_LABEL;
 	'TupleSlotType.label' => 'tstl1',
 	'TupleSlotType.type_class' => $string,
 	'TupleSlotType.default_value' => '',
+	empty_row_count => 0,
     }] => [{
 	'Model.TupleSlotType' => {
 	    label => 'tstl1',
-	    type_class => 'TupleSlot',
+	    type_class => 'String',
 	    choices => undef,
 	    default_value => undef,
 	},
@@ -57,9 +47,9 @@ my($string) = model('TupleSlotTypeClassList')->DEFAULT_LABEL;
 	'TupleSlotType.label' => 'tstl2',
 	'TupleSlotType.type_class' => $string,
 	'TupleSlotType.default_value' => 1,
-	empty_row_count => 2,
 	choice_0 => 1,
 	choice_1 => 1,
+	empty_row_count => 2,
     }, {
 	choice_1 => 'EXISTS',
     }),
@@ -67,9 +57,9 @@ my($string) = model('TupleSlotTypeClassList')->DEFAULT_LABEL;
 	'TupleSlotType.label' => 'tstl2',
 	'TupleSlotType.type_class' => $string,
 	'TupleSlotType.default_value' => 3,
-	empty_row_count => 2,
 	choice_0 => 1,
 	choice_1 => 2,
+	empty_row_count => 2,
     }, {
 	'TupleSlotType.default_value' => 'NOT_FOUND',
     }),

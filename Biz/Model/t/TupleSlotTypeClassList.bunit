@@ -3,22 +3,13 @@
 ListModel();
 [
     load_all => [
-	[] => [map(+{'TupleSlotType.label' => $_},
+	[] => [map(+{'TupleSlotType.type_class' => $_},
 		   sort(qw(String Date Integer Email)))],
     ],
-    type_class_to_label => [
-	TupleSlot => 'String',
-	String => DIE(),
-    ],
-    unsafe_label_to_type_class => [
-	String => 'TupleSlot',
-	NotFound => [undef],
-	class()->DEFAULT_LABEL => 'TupleSlot',
-    ],
     is_upgrade => [
-	[qw(TupleSlot TupleSlot)] => 0,
-	[qw(TupleSlot Email)] => 1,
+	[qw(String String)] => 0,
+	[qw(String Email)] => 1,
 	[qw(Email Email)] => 0,
-	[qw(Email TupleSlot)] => 0,
+	[qw(Email String)] => 0,
     ],
 ];

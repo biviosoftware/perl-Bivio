@@ -13,6 +13,10 @@ sub LIST_FIELDS {
 	"TupleSlotType.$_", qw(label type_class choices default_value))];
 }
 
+sub DEFAULT_CLASS {
+    return 'String';
+}
+
 sub create {
     _assert_values(@_);
     return shift->SUPER::create(@_);
@@ -47,8 +51,9 @@ sub internal_initialize {
 }
 
 sub type_class_instance {
-    my(undef, $model, $prefix) = @_;
-    return Bivio::Type->get_instance($model->get($prefix . 'type_class'));
+    my($proto, $model, $prefix) = @_;
+    return Bivio::Type->get_instance(
+	_class($proto, $model->get($prefix . 'type_class')));
 }
 
 sub update {
@@ -78,10 +83,13 @@ sub validate_slot {
 sub _assert_values {
     my($self, $values) = @_;
     my($mock) = Bivio::Collection::Attributes->new({%$values});
-    defined($values->{label}) or _err($self, label => 'NULL');
-    defined($values->{type_class}) or _err($self, type_class => 'NULL');
-    Bivio::IO::ClassLoader->unsafe_map_require('Type', $values->{type_class})
-        or _err($self, type_class => 'NOT_FOUND');
+    defined($values->{label})
+	or _err($self, label => 'NULL');
+    defined($values->{type_class})
+	or _err($self, type_class => 'NULL');
+    Bivio::IO::ClassLoader->unsafe_map_require(
+	'Type', _class($self, $values->{type_class}),
+    ) or _err($self, type_class => 'NOT_FOUND');
     if (defined($values->{choices})) {
 	$mock->put(choices => undef);
 	my($seen) = {};
@@ -105,6 +113,11 @@ sub _assert_values {
 	$values->{default_value} = $v;
     }
     return;
+}
+
+sub _class {
+    my($proto, $c) = @_;
+    return $c eq $proto->DEFAULT_CLASS ? 'TupleSlot' : $c;
 }
 
 sub _err {
