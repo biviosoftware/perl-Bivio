@@ -238,35 +238,43 @@ sub vs_list_form {
     my($l) = Bivio::Biz::Model->get_instance($f->get_list_class);
     my($list) = [];
     my($simple) = [map({
-	my($n);
-	if ($n = !ref($_) && ($_ =~ /^\w+\.(.*)/)[0]
-	    and $f->has_fields($n) && $f->get_field_info($n, 'in_list')
+#TODO: Need to enapsulate this!
+ 	my($n) = ref($_) eq 'ARRAY' && !ref($_->[0]) && ref($_->[1]) eq 'HASH'
+ 	    ? \$_->[0]
+ 	    : !ref($_) && $_ =~ /^\w/
+ 	    ? \$_
+ 	    : ref($_) eq 'HASH'
+	    ? \$_->{fields}
+	    : undef;
+	my($x);
+	if ($n and $x = ($$n =~ /^$form\.(.*)/i)[0]
+	    and $f->has_fields($x) && $f->get_field_info($x, 'in_list')
         ) {
-	    push(@$list, $n);
+	    $$n = $x;
+	    push(@$list, $_);
 	}
 	else {
 	    $n = undef;
 	}
 	$n ? () : $_;
     } @$columns)];
-    foreach my $c (@$columns) {
-    }
     my($button) = pop(@$simple)
 	if $simple->[$#$simple] =~ /^\*/;
     return $proto->vs_simple_form($form => [
 	@$simple,
 	Table($form => [
 	    map({
-		my($x) = ref($_) eq 'HASH' ? $_
-		    : ref($_) eq 'ARRAY' ? {
-			field => $_->[0],
-			$_->[1] ? %{$_->[1]} : (),
-		    } : {field => $_};
+#TODO: Need to enapsulate this!
+		my($x) = ref($_) eq 'ARRAY'
+		    ? {field => $_->[0], $_->[1] ? %{$_->[1]} : ()}
+		    : !ref($_)
+		    ? {field => $_}
+		    : $_;
 		$x->{column_class} ||= 'field';
 		# So checkboxes don't have labels in the fields, just hdr
 		$x->{label} = ''
 		    unless exists($x->{label});
-		$_;
+		$x;
 	    } @$list),
 	], $proto->vs_table_attrs($form, list => $table_attrs),),
 	$button ? $button : (),
@@ -309,6 +317,24 @@ sub vs_paged_detail {
 
 sub vs_paged_list {
     my($proto, $model, $columns, $attrs) = @_;
+    $proto->vs_put_pager($model)
+	unless delete($attrs->{no_pager});
+    return (ref($columns) eq 'ARRAY' ? Table($model, $columns) : $columns)
+	->put(%{$proto->vs_table_attrs($model, paged_list => $attrs)});
+}
+
+sub vs_phone {
+    my($proto) = @_;
+    return $proto->vs_call(Join => [$proto->vs_text('support_phone')]);
+}
+
+sub vs_prose {
+    my(undef, $prose) = @_;
+    return Tag(div => Prose($prose), 'prose');
+}
+
+sub vs_put_pager {
+    my(undef, $model) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_list.";
     view_put(pager => DIV_pager(Join([
@@ -325,18 +351,7 @@ sub vs_paged_list {
 	    qw(prev next)
 	),
     ])));
-    return (ref($columns) eq 'ARRAY' ? Table($model, $columns) : $columns)
-	->put(%{$proto->vs_table_attrs($model, paged_list => $attrs)});
-}
-
-sub vs_phone {
-    my($proto) = @_;
-    return $proto->vs_call(Join => [$proto->vs_text('support_phone')]);
-}
-
-sub vs_prose {
-    my(undef, $prose) = @_;
-    return Tag(div => Prose($prose), 'prose');
+    return;
 }
 
 sub vs_simple_form {
