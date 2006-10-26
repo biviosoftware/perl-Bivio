@@ -3,25 +3,58 @@
 test_setup('PetShop');
 my($forum) = create_forum();
 visit_uri("/$forum/db-types");
-follow_link(qr{\badd\b}i);
-submit_form(OK => {
+follow_link(qr{add}i);
+submit_form(Save => {
     qr{name}i => 'i1',
-    qr{category}i => 'Integer',
-    qr{default}i => '1',
-    qr{pick.*_0}i => '1',
-    qr{pick.*_1}i => '2',
+    qr{class}i => 'Integer',
+    qr{default}i => 1,
+    qr{pick.*_0}i => 1,
+    qr{pick.*_1}i => 2,
 });
 follow_link_in_table('Type Name', 'Type Name', 'i1', 'Actions', 'Modify');
-submit_form(OK => {
+submit_form(Save => {
     qr{name}i => 'i1a',
 });
 follow_link_in_table('Type Name', 'Type Name', 'i1a', 'Actions', 'Modify');
 test_deviance(qr{default value.*pick list}is);
-submit_form(OK => {
-    qr{default}i => '3',
+submit_form(Save => {
+    qr{default}i => 3,
 });
 test_deviance(qr{duplicate.*pick list}is);
-submit_form(OK => {
-    qr{default}i => '1',
-    qr{pick.*_1$}i => '1',
+submit_form(Save => {
+    qr{default}i => 1,
+    qr{pick.*_1$}i => 1,
 });
+test_conformance();
+follow_link(qr{types}i);
+follow_link(qr{add}i);
+submit_form(Save => {
+    qr{name}i => 'i1',
+});
+follow_link(qr{schemas}i);
+follow_link(qr{add}i);
+submit_form(Save => {
+    qr{name}i => 'Database1',
+    qr{prefix}i => 'd1',
+    qr{field.*_0$}i => 'f1',
+    qr{type.*_0$}i => 'i1',
+    qr{required.*_0$}i => 0,
+    qr{field.*_1$}i => 'f2',
+    qr{type.*_1$}i => 'Date',
+    qr{required.*_1$}i => 1,
+});
+follow_link(qr{tables}i);
+follow_link(qr{add}i);
+submit_form(Save => {
+    qr{schema}i => 'Database1',
+});
+follow_link_in_table('Table Name', 'Database1');
+follow_link(qr{add}i);
+submit_form(Save => {
+    'f1:' => 1,
+    'f2:' => '1/1/2001',
+    'Comment:' => 'first update',
+});
+sleep(5);
+submit_form('Refresh');
+verify_text('01/01/2001');
