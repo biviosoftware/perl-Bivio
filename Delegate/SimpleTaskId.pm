@@ -519,7 +519,7 @@ sub info_tuple {
 	    FORUM_TUPLE_SLOT_TYPE_LIST
 	    70
 	    FORUM
-	    TUPLE_ADMIN
+	    TUPLE_READ
 	    Model.TupleSlotTypeList->execute_load_page
 	    View.Tuple->slot_type_list
 	)],
@@ -532,14 +532,67 @@ sub info_tuple {
 	    View.Tuple->slot_type_edit
 	    next=FORUM_TUPLE_SLOT_TYPE_LIST
 	)],
-# 	[qw(
-# 	    FORUM_TUPLE_DEF_LIST
-# 	    72
-# 	    FORUM
-# 	    TUPLE_ADMIN
-# 	    Model.TupleDefList
-# 	    View.Tuple->def_list
-# 	)],
+	[qw(
+	    FORUM_TUPLE_DEF_LIST
+	    72
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleDefList->execute_load_page
+	    View.Tuple->def_list
+	)],
+	[qw(
+	    FORUM_TUPLE_DEF_EDIT
+	    73
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleDefListForm
+	    View.Tuple->def_edit
+	    next=FORUM_TUPLE_DEF_LIST
+	)],
+	[qw(
+	    FORUM_TUPLE_USE_LIST
+	    74
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleUseList->execute_load_page
+	    View.Tuple->use_list
+	)],
+	[qw(
+	    FORUM_TUPLE_USE_EDIT
+	    75
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleUseForm
+	    View.Tuple->use_edit
+	    next=FORUM_TUPLE_USE_LIST
+	)],
+	[qw(
+	    FORUM_TUPLE_LIST
+	    76
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleList->execute_load_page
+	    View.Tuple->list
+	)],
+	[qw(
+	    FORUM_TUPLE_EDIT
+	    77
+	    FORUM
+	    TUPLE_READ&TUPLE_WRITE
+	    Model.TupleSlotListForm
+	    View.Tuple->edit
+	    next=FORUM_TUPLE_EDIT_DONE
+	    want_workflow=1
+	)],
+	[qw(
+	    FORUM_TUPLE_EDIT_DONE
+	    78
+	    FORUM
+	    TUPLE_READ&TUPLE_WRITE
+	    Model.TupleEditDoneForm
+	    View.Tuple->edit_done
+	    next=FORUM_TUPLE_LIST
+	)],
     ];
 }
 
