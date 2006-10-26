@@ -177,50 +177,38 @@ sub render {
     my($fields) = $self->[$_IDI];
     my($values) = $fields->{values};
     my($req) = $source->get_request;
-
-    # Have we already cached information?
-    my($info) = $req->unsafe_get($self);
-    unless ($info) {
-	$info = [];
-
-	foreach my $v (@$values) {
-	    push (@$info, {
-		value => $v,
-		$v->{method}
-#TODO: This caching is wrong; Want to be able to have multiple realms
-		    ? (uri => $req->format_stateless_uri($v->{task_id}))
-		    : (),
-	    });
-	}
-	# Only compute once
-	$req->put($self => $info);
-    }
-
-    # Write executable actions
     my($sep) = '';
     my($i) = 0;
-    foreach my $v (@$info) {
+    foreach my $v (
+	map(+{
+	    value => $_,
+	    $_->{method} ? (uri => $req->format_stateless_uri($_->{task_id}))
+		: (),
+	}, @$values),
+    ) {
 	$i++;
 	my($v2) = $v->{value};
 	next if $v2->{control}
-            && !$source->get_widget_value(@{$v2->{control}});
-        next unless $req->can_user_execute_task($v2->{task_id},
+            && !$self->render_simple_value($v2->{control}, $source);
+        next unless $req->can_user_execute_task(
+	    $v2->{task_id},
             $v2->{realm}
                 ? (ref($v2->{realm})
-                    ? $source->get_widget_value($v2->{realm})
+                    ? $self->render_simple_value($v2->{realm}, $source) || undef
                     : $v2->{realm})
-                : ());
+                : (),
+	);
 	$$buffer .= $sep
 	    . $v2->{prefix}
 	    . ($v2->{format_uri}
 		? ${$self->render_value(
 		    "$i.format_uri", $v2->{format_uri}, $source)}
 		: $source->format_uri($v2->{method}, $v->{uri}))
-	    . '">';
-	ref($v2->{label}) ? $self->unsafe_render_value(
-	    "$i.label", $v2->{label}, $source, $buffer
-	) : ($$buffer .= $v2->{label});
-	$$buffer .= "</a>";
+	    . '">'
+	    . (ref($v2->{label})
+		? $self->render_simple_value($v2->{label}, $source)
+		: $v2->{label})
+	    . '</a>';
 	$sep = ",\n";
     }
     return;
