@@ -346,7 +346,7 @@ sub vs_task_link {
 
 =for html <a name="vs_display"></a>
 
-=head2 static vs_display(any model, string field, hash_ref attrs) : Bivio::UI::Widget
+=head2 static vs_display(string field, hash_ref attrs) : Bivio::UI::Widget
 
 Uses L<Bivio::UI::HTML::WidgetFactory|Bivio::UI::HTML::WidgetFactory> to
 create a display widget.
