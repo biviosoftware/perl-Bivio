@@ -266,6 +266,22 @@ sub builtin_expect_contains {
     };
 }
 
+=for html <a name="builtin_inline_case"></a>
+
+=head2 builtin_inline_case(code_ref op) : code_ref
+
+Execute I<op> imperatively.  Note that
+
+=cut
+
+sub builtin_inline_case {
+    my($proto, $op) = @_;
+    return sub {
+	$op->($proto->current_case, $proto->current_self);
+	return 1;
+    } => 1;
+}
+
 =for html <a name="builtin_inline_commit"></a>
 
 =head2 builtin_inline_commit() : code_ref

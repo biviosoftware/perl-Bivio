@@ -12,6 +12,14 @@ req()->set_realm('btest_read');
     class() => [
 	simple_package_name => 'Unit',
 	simple_package_name => not_die(),
+	inline_case(sub {
+            my($case, $self) = @_;
+	    die('Not a Bivio::Test::Case')
+		unless $case->isa('Bivio::Test::Case');
+	    die('Not a Bivio::Test')
+		unless $self->isa('Bivio::Test');
+	    return;
+	}),
 	builtin_create_user => [
 	    'unit_bunit' => sub {
 		foreach my $c (
