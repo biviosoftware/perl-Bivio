@@ -23,7 +23,19 @@ sub compile {
 sub unsafe_new {
     my($proto, $name, $facade) = @_;
     my($file) = $facade->get_local_file_name(VIEW => $name) . $proto->SUFFIX;
-    return -r $file && -f _ ? $proto->new({view_file_name => $file}) : undef;
+    return -r $file && -f _
+	? $proto->new({
+	    view_file_name => $file,
+	    view_name => _clean_name($proto, $name),
+	}) : undef;
+}
+
+sub _clean_name {
+    my($proto, $n) = @_;
+    $n =~ s!^/|/$!!g;
+    $n =~ s!/+!/!g;
+    $n =~ s/\Q@{[$proto->SUFFIX]}\E$//og;
+    return $n;
 }
 
 1;
