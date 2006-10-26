@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegate::SimpleWidgetFactory;
 use strict;
@@ -82,7 +82,8 @@ sub create {
     my($proto, $field, $attrs) = @_;
     $attrs ||= {};
 
-    my($model, $field_name, $field_type) = _get_model_and_field_type($field);
+    my($model, $field_name, $field_type)
+	= _get_model_and_field_type($field, $attrs);
     my($widget);
     if (! $attrs->{wf_want_display}
 	    && UNIVERSAL::isa($model, 'Bivio::Biz::FormModel')) {
@@ -394,25 +395,29 @@ sub _default_size {
     return $w <= 15 ? $w : $w <= Bivio::Type::Name->get_width ? 15 : 30;
 }
 
-# _get_model_and_field_type(string field) : (Bivio::Biz::Model, string, Bivio::Type)
+# _get_model_and_field_type(string field, hash_ref attrs) : (Bivio::Biz::Model, string, Bivio::Type)
 #
 # Returns a model instance, field name and type for the specified field.
 #
 sub _get_model_and_field_type {
-    my($field) = @_;
+    my($field, $attrs) = @_;
 
     # parse out the model (everything up to the first ".") and field names
     my($model_name, $field_name) = $field =~ /^([^\.]+)\.(.+)$/;
     Bivio::Die->die($field, ": couldn't parse")
-                unless defined($model_name) && defined($field_name);
+        unless defined($model_name) && defined($field_name);
 
     my($model) = Bivio::Biz::Model->get_instance($model_name);
-    return ($model, $field_name, $model->get_field_type($field_name));
+    return (
+	$model,
+	$field_name,
+	$attrs->{wf_type} || $model->get_field_type($field_name),
+    );
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
