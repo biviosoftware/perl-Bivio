@@ -515,7 +515,7 @@ sub initialize_tuple_slot_types {
 	    is_required => 0,
 	},
 	String => {
-	    type_class => 'TupleSlot',
+	    type_class => 'String',
 	    default_value => undef,
 	    choices => undef,
 	    is_required => 0,
