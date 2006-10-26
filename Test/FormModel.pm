@@ -52,13 +52,15 @@ sub new_unit {
 		return [$req];
 	    }
 	    my($hash) = $params->[0];
+	    return $params
+		unless ref($hash) eq 'HASH';
 	    $hash = {
 		%{$m->get_fields_for_primary_keys()},
 		%$hash,
-	    }
-		if $m->isa('Bivio::Biz::ListFormModel');
-	    return $params
-		unless ref($hash) eq 'HASH';
+	    } if $m->isa('Bivio::Biz::ListFormModel');
+	    Bivio::Die->die('You must set empty_row_count on case: ', $case)
+	        if $m->isa('Bivio::Biz::ExpandableListFormModel')
+	        && !exists($hash->{empty_row_count});
 	    return [$req->put(
 		form => {
 		    $m->VERSION_FIELD => $m->get_info('version'),
