@@ -315,6 +315,8 @@ use Bivio::DieCode;
 use Bivio::Test::Case;
 
 #=VARIABLES
+our($_CASE);
+our($_SELF);
 my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
@@ -452,6 +454,30 @@ B<Called as a I<sub>, not a method>.
 
 $_ = <<'}'; # emacs
 sub compute_return {
+}
+
+=for html <a name="current_case"></a>
+
+=head2 static current_case() : Bivio::Test::Case
+
+Returns current case or dies.
+
+=cut
+
+sub current_case {
+    return $_CASE || Bivio::Die->die('no current case');
+}
+
+=for html <a name="current_self"></a>
+
+=head2 static current_self() : Bivio::Test
+
+Returns current running instance of this class or dies.
+
+=cut
+
+sub current_self {
+    return $_SELF || Bivio::Die->die('no current self');
 }
 
 =for html <a name="default_create_object"></a>
@@ -812,7 +838,10 @@ sub _eval {
 	failed => [],
 	passed => [],
     };
+    local($_SELF) = $self;
+    local($_CASE);
     foreach my $case (@$tests) {
+	$_CASE = $case;
 	$c++;
 	my($result);
 	next unless _prepare_case($self, $case, \$err);
