@@ -29,7 +29,7 @@ view_main(Page3({
     head2 => Join([
 	P_realm(view_widget_value('base_realm')),
 	P_menu(view_widget_value('base_menu')),
-	P_topic(String(
+	P_topic(Prose(
 	    vs_text([sub {"page3.title.$_[1]"}, ['task_id', '->get_name']]),
 	)),
     ]),
