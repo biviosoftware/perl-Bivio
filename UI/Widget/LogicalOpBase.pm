@@ -31,7 +31,7 @@ sub internal_render_start {
 sub internal_render_true {
     my($self, $state) = @_;
     ${$state->{buffer}} = '1';
-    return;
+    return 0;
 }
 
 sub render {
