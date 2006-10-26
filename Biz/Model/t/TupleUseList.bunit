@@ -1,7 +1,8 @@
 # Copyright (c) 2006 Jack E. Farber  All Rights Reserved.
 # $Id$
 ListModel();
-req()->set_user('root');
+req()->set_realm_and_user(qw(fourem root));
+model('Tuple')->delete_all;
 [
     {
 	method => 'load_all',
@@ -15,6 +16,7 @@ req()->set_user('root');
 	fourem => [{
 	    'TupleUse.moniker' => 'PSR',
 	    'TupleUse.label' => 'PetShopReport',
+	    tuple_count => 0,
 	}],
     ],
     monikers => [

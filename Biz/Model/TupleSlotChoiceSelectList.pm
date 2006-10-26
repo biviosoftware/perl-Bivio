@@ -20,6 +20,7 @@ sub internal_initialize {
 	}],
     };
 }
+
 sub internal_load_rows {
     my($self) = shift;
     return [

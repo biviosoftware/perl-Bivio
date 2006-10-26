@@ -1,11 +1,5 @@
-FormModel({
-    setup_request => sub {
-	my($params) = shift->get('params');
-	req()->put(
-	    query => ref($params->[0]) || !defined($params->[0]) ? undef
-		: {this => shift(@$params)},
-	);
-	return;
-    },
-});
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+require './TupleForm.PL';
 req()->set_realm_and_user(qw(demo demo));
+1;

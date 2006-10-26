@@ -1,0 +1,19 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+view_class_map('MailWidget');
+view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
+view_declare(qw(mail_body mail_to mail_subject));
+view_put(
+    mail_from => Mailbox(
+	vs_text('support_email'),
+	Join([vs_site_name(), ' Support']),
+    ),
+    mail_recipients => '',
+);
+view_main(Message({
+    from => view_widget_value('mail_from'),
+    to => view_widget_value('mail_to'),
+    subject => view_widget_value('mail_subject'),
+    body => view_widget_value('mail_body'),
+    recipients => view_widget_value('mail_recipients'),
+}));

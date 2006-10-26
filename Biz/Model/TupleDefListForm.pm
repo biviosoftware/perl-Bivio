@@ -12,7 +12,6 @@ sub MUST_BE_SPECIFIED_FIELDS {
     return [qw(
 	TupleSlotDef.label
 	TupleSlotDef.tuple_slot_type_id
-	TupleSlotDef.is_required
     )];
 }
 
@@ -40,7 +39,7 @@ sub execute_ok_row {
     my($self) = @_;
     return if $self->is_empty_row || $self->in_error;
     return _err($self, tuple_slot_type_id => 'NOT_FOUND')
-	unless $self->get_request->get('Model.TupleSlotTypeList')
+	unless $self->get_request->get('Model.TupleSlotTypeSelectList')
 	->find_row_by_id($self->get('TupleSlotDef.tuple_slot_type_id'));
     $self->internal_put_field(
 	'TupleSlotDef.tuple_slot_num' => $self->[$_IDI]++);
@@ -77,7 +76,10 @@ sub internal_initialize {
 	visible => [
 	    'TupleDef.label',
 	    'TupleDef.moniker',
-	    map({name => $_, in_list => 1}, @{$self->MUST_BE_SPECIFIED_FIELDS}),
+	    map({name => $_, in_list => 1},
+		@{$self->MUST_BE_SPECIFIED_FIELDS},
+		'TupleSlotDef.is_required',
+	    ),
 	],
 	other => [
 	    'TupleSlotDef.tuple_def_id',
@@ -92,7 +94,7 @@ sub internal_initialize {
 
 sub internal_initialize_list {
     my($self) = shift;
-    $self->new_other('TupleSlotTypeList')->load_all;
+    $self->new_other('TupleSlotTypeSelectList')->load_all;
     return $self->SUPER::internal_initialize_list(@_);
 }
 

@@ -26,13 +26,14 @@ sub execute_ok_end {
 	'RealmMail.subject' => $self->get_request->unsafe_get_nested(
 	    'Model.RealmMail', 'subject'
 	) || ($req->unsafe_get('Model.Tuple') || $_T)
-	->mail_subject($req->get('Model.TupleUse')));
+	->mail_subject($req->get('Model.TupleUseList')->get_model('TupleUse')));
     $self->internal_put_field('RealmMail.from_email' =>
         $self->new_other('Email')->unauth_load_or_die({
 	    realm_id => $self->get_request->get('auth_user_id'),
 	})->get('email'),
     );
-    return 'server_redirect.next';
+    $self->use('View.Tuple')->execute(edit_mail => $req);
+    return;
 }
 
 sub execute_ok_row {
@@ -61,6 +62,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         list_class => 'TupleSlotDefList',
+	require_context => 1,
 	visible => [
 	    {
 		name => 'comment',
@@ -98,8 +100,8 @@ sub internal_initialize_list {
     my($q) = $self->new_other('TupleList')->parse_query_from_request;
     my($tdid, $tn) = $q->unsafe_get(qw(parent_id this));
     # AUTH: Make sure this realm can use this schema
-    $self->new_other('TupleUse')->load({
-	tuple_def_id => $tdid,
+    $self->new_other('TupleUseList')->load_this({
+	this => $tdid,
     });
     $self->new_other('TupleSlotDefList')->load_all({
 	parent_id => $tdid,

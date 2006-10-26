@@ -31,7 +31,7 @@ model('Tuple')->delete_all;
 	    slot_headers => "Author: a\@a.a\nStatus: s1\n",
 	    'RealmMail.from_email' => 'btest_read@bivio.biz',
 	    'RealmMail.subject' => 'PSR#',
-	 },
+	},
     }],
     empty_case({
 	slot_0 => 'a@a.a',

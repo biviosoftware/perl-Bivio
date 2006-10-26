@@ -1,0 +1,42 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+require './TupleForm.PL';
+req()->set_realm_and_user(qw(fourem root));
+my($psr) = model('TupleDef', {
+    realm_id => req('auth_id'),
+    label => 'PetShopReport',
+})->get('tuple_def_id');
+req()->set_realm('fourem-sub1');
+model('Tuple')->delete_all;
+model('TupleUse')->delete_all;
+[
+    empty_case({
+	'TupleUse.tuple_def_id' => undef,
+	'TupleUse.moniker' => undef,
+	'TupleUse.label' => undef,
+    }),
+    [{
+	'TupleUse.tuple_def_id' => $psr,
+	'TupleUse.moniker' => 'PSR1',
+    }] => [{
+	'Model.TupleUse' => {
+	    realm_id => req('auth_id'),
+	    tuple_def_id => $psr,
+	    moniker => 'PSR1',
+	    label => 'PetShopReport',
+	},
+    }],
+    simple_case($psr => {
+	'TupleUse.tuple_def_id' => $psr,
+	'TupleUse.moniker' => 'PSR1',
+	'TupleUse.label' => 'PetShopReport',
+    }),
+    [$psr, {
+	'TupleUse.tuple_def_id' => $psr,
+	'TupleUse.moniker' => 'PSR2',
+    }] => [{
+	'Model.TupleUse' => {
+	    moniker => 'PSR2',
+	},
+    }],
+];

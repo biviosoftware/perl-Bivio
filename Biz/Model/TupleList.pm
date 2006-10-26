@@ -27,6 +27,9 @@ sub internal_initialize {
 
 sub internal_prepare_statement {
     my($self, undef, $query) = @_;
+    $self->new_other('TupleUseList')->load_this({
+	this => $query->get('parent_id'),
+    });
     $self->new_other('TupleSlotDefList')->unauth_load_all({
 	map(($_ => $query->get($_)), qw(parent_id auth_id)),
     });

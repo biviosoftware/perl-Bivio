@@ -11,10 +11,6 @@ sub AUTH_ID_FIELD {
     return 'TupleSlotType.realm_id';
 }
 
-sub find_row_by_id {
-    return shift->find_row_by('TupleSlotType.tuple_slot_type_id', shift);
-}
-
 sub find_row_by_label {
     return shift->find_row_by('TupleSlotType.label', shift);
 }

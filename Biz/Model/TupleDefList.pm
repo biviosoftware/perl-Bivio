@@ -23,6 +23,18 @@ sub internal_initialize {
 	    TupleDef.label
 	    TupleDef.moniker
 	)],
+	other => [
+	    {
+		name => 'use_count',
+		type => 'Integer',
+		constraint => 'NOT_NULL',
+		in_select => 1,
+		select_value => '(SELECT COUNT(*)
+                    FROM tuple_use_t
+                    WHERE tuple_use_t.tuple_def_id = tuple_def_t.tuple_def_id)
+                    AS use_count',
+	    },
+	],
     });
 }
 
