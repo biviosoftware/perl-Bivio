@@ -12,8 +12,8 @@ sub new {
     view_declare(qw(page3_title));
     view_put(map(
 	("page3_$_->[0]" => delete($attrs->{$_->[0]}) || $_->[1] || Join([''])),
-	[title => vs_text(
-	    [sub {"page3.title.$_[1]"}, ['task_id', '->get_name']])],
+	[title => Prose(vs_text(
+	    [sub {"page3.title.$_[1]"}, ['task_id', '->get_name']]))],
 	['meta_info'],
 	[head1 => Link(Tag(span => ''), 'SITE_ROOT')],
 	[head2 => Tag(div => Prose(view_widget_value('page3_title')), 'title')],
