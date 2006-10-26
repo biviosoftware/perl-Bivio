@@ -7,6 +7,13 @@ use base 'Bivio::Biz::ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_GID);
 
+sub find_row_by_id {
+    my($self, $id) = @_;
+    my($pk) = @{$self->get_info('primary_key_names')};
+    return $self->get_field_type($pk)->is_specified($id)
+	&& $self->find_row_by($pk, $id);
+}
+
 sub internal_initialize {
     my($self) = @_;
     $_GID = Bivio::Auth::Realm->get_general->get('id');
