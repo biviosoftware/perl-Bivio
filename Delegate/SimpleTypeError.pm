@@ -403,7 +403,7 @@ sub get_delegate_info {
     TUPLE_LABEL => [
 	68,
 	undef,
-	'Labels must begin with a letter, consist of letters, numbers, dashes(-), or underscores',
+	'Labels must be at least two characters and begin with a letter, consist of letters, numbers, dashes(-), or underscores',
     ],
     SIMPLE_CLASS_NAME => [
 	69,
