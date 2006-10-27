@@ -233,31 +233,24 @@ sub vs_list {
 }
 
 sub vs_list_form {
-    my($proto, $form, $columns, $table_attrs) = @_;
+    my($proto, $form, $fields, $table_attrs) = @_;
+    # Elements in $fields which are hash_refs or are "in_list" appear
+    # as columns.  Elements which are arrays or are not "in_list" appear
+    # as simple form entries.
     my($f) = Bivio::Biz::Model->get_instance($form);
     my($l) = Bivio::Biz::Model->get_instance($f->get_list_class);
     my($list) = [];
     my($simple) = [map({
 #TODO: Need to enapsulate this!
- 	my($n) = ref($_) eq 'ARRAY' && !ref($_->[0]) && ref($_->[1]) eq 'HASH'
- 	    ? \$_->[0]
- 	    : !ref($_) && $_ =~ /^\w/
- 	    ? \$_
- 	    : ref($_) eq 'HASH'
-	    ? \$_->{fields}
-	    : undef;
-	my($x);
-	if ($n and $x = ($$n =~ /^$form\.(.*)/i)[0]
-	    and $f->has_fields($x) && $f->get_field_info($x, 'in_list')
-        ) {
-	    $$n = $x;
-	    push(@$list, $_);
+	my($d) = $_;
+	if (ref($d) eq 'HASH' || !ref($d)
+	    && $f->has_fields($d) && $f->get_field_info($d, 'in_list')
+	) {
+	    push(@$list, $d);
+	    $d = undef;
 	}
-	else {
-	    $n = undef;
-	}
-	$n ? () : $_;
-    } @$columns)];
+	$d ? $d : ();
+    } @$fields)];
     my($button) = pop(@$simple)
 	if $simple->[$#$simple] =~ /^\*/;
     return $proto->vs_simple_form($form => [
@@ -265,11 +258,7 @@ sub vs_list_form {
 	Table($form => [
 	    map({
 #TODO: Need to enapsulate this!
-		my($x) = ref($_) eq 'ARRAY'
-		    ? {field => $_->[0], $_->[1] ? %{$_->[1]} : ()}
-		    : !ref($_)
-		    ? {field => $_}
-		    : $_;
+		my($x) = !ref($_) ? {field => $_} : $_;
 		$x->{column_class} ||= 'field';
 		# So checkboxes don't have labels in the fields, just hdr
 		$x->{label} = ''
