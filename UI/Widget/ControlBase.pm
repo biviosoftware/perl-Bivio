@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget::ControlBase;
 use strict;
@@ -129,7 +129,10 @@ default renders nothing.
 sub render {
     my($self, $source, $buffer) = @_;
     my($c) = $self->unsafe_get('control');
-    return !defined($c) || $self->unsafe_resolve_widget_value($c, $source)
+    return !defined($c)
+	|| ($c = $self->unsafe_resolve_widget_value($c, $source))
+	&& (!$self->is_blessed($c, 'Bivio::UI::Widget')
+        || $self->render_simple_value($c, $source))
 	? $self->control_on_render($source, $buffer)
 	: $self->control_off_render($source, $buffer);
 }
@@ -138,7 +141,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
