@@ -23,7 +23,7 @@ sub def_edit {
 }
 
 sub def_list {
-    view_put(body => vs_paged_list(TupleDefList => [qw(
+    view_put(body => vs_list(TupleDefList => [qw(
 	TupleDef.label
 	TupleDef.moniker
     ),
@@ -52,8 +52,9 @@ sub edit {
 		}),
 	    ],
 	    @{$lfm->map_rows(sub {
+		my($it) = @_;
 		my($label) = $lm->get('TupleSlotDef.label');
-		my($field) = $lfm->get_field_name_in_list('slot');
+		my($field) = $it->get_field_name_in_list('slot');
 		return [
 		    FormFieldLabel({
 			field => $field,
@@ -73,9 +74,8 @@ sub edit {
 			    ],
 			    list_id_field => 'choice',
 			    list_display_field => 'choice',
-			}) : Text({
-			    field => $field,
-			    size => 30,
+			}) : vs_display("TupleSlotListForm.$field", {
+			    wf_type => $it->get_list_model->type_class_instance,
 			}),
 		    ], {cell_class => 'field'}),
 		];
@@ -83,11 +83,6 @@ sub edit {
 	    'TupleSlotListForm.comment',
 	]);
     }]);
-    return;
-}
-
-sub edit_done {
-    view_put(body => vs_simple_form(TupleEditDoneForm => ['*ok_button']));
     return;
 }
 
@@ -102,6 +97,16 @@ String(['Model.TupleSlotListForm', 'slot_headers']);
 String(['Model.TupleSlotListForm', 'comment']);
 EOF
     );
+    return;
+}
+
+sub history_list {
+    view_put(body => vs_list(TupleHistoryList => [qw(
+        RealmFile.modified_date_time
+        RealmMail.from_email
+        slot_headers
+        comment
+    )]));
     return;
 }
 
@@ -126,7 +131,10 @@ sub list {
 		}];
 	    },
 	)},
-	    _list_actions(TupleList => [qw(FORUM_TUPLE_EDIT)]),
+	    _list_actions(TupleList => [
+		'FORUM_TUPLE_HISTORY',
+                'FORUM_TUPLE_EDIT',
+	    ]),
 	], {
 	    no_pager => 1,
 	}),
@@ -156,6 +164,15 @@ sub pre_compile {
     )),
         {
 	    task_id => 'FORUM_TUPLE_EDIT',
+	    label => 'TupleHistoryList.FORUM_TUPLE_EDIT',
+	    control => ['task_id', '->eq_forum_tuple_history'],
+	    query => {
+		'ListQuery.parent_id' => [qw(Model.TupleList Tuple.tuple_def_id)],
+		'ListQuery.this' => [qw(Model.TupleList Tuple.tuple_num)],
+	    },
+	},
+        {
+	    task_id => 'FORUM_TUPLE_EDIT',
 	    control => ['task_id', '->eq_forum_tuple_list'],
 	    query => {
 		'ListQuery.parent_id'
@@ -163,8 +180,12 @@ sub pre_compile {
 	    },
 	},
         {
+	    label => 'TupleHistoryList.FORUM_TUPLE_LIST',
 	    task_id => 'FORUM_TUPLE_LIST',
-	    control => [qw(task_id ->eq_forum_tuple_edit)],
+	    control => Or(
+		[qw(task_id ->eq_forum_tuple_edit)],
+		[qw(task_id ->eq_forum_tuple_history)],
+	    ),
 	    query => {
 		'ListQuery.parent_id'
 		    => [qw(Model.TupleUseList TupleUse.tuple_def_id)],
@@ -190,7 +211,7 @@ sub slot_type_edit {
 }
 
 sub slot_type_list {
-    view_put(body => vs_paged_list(TupleSlotTypeList => [qw(
+    view_put(body => vs_list(TupleSlotTypeList => [qw(
 	TupleSlotType.label
 	TupleSlotType.choices
 	TupleSlotType.default_value
@@ -216,7 +237,7 @@ sub use_edit {
 }
 
 sub use_list {
-    view_put(body => vs_paged_list(TupleUseList => [
+    view_put(body => vs_list(TupleUseList => [
 	['TupleUse.label', => {
 	    wf_list_link => {
 		query => 'THIS_CHILD_LIST',
@@ -256,7 +277,8 @@ sub _list_actions {
 		    URI({
 			task_id => $t,
 			$r ? (realm => ['RealmOwner.name']) : (),
-			query => ['->format_query', $q || 'THIS_DETAIL'],
+			query => ref($q) ? $q
+			    : ['->format_query', $q || 'THIS_DETAIL'],
 		    }),
 		    $c && (@$c > 1 ? And(@$c) : $c->[0]),
 		    $r ? ['RealmOwner.name'] : (),

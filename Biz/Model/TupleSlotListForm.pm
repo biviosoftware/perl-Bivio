@@ -46,8 +46,10 @@ sub execute_ok_row {
 	return;
     }
     my($tsv) = _slot_value($self);
-    $self->[$_IDI] .= $_T->mail_slot($lm->get('TupleSlotDef.label'), $v)
-	unless $tsv && $lm->type_class_instance->is_equal($v, $$tsv);
+    $self->[$_IDI] .= $_T->mail_slot(
+	$lm->get('TupleSlotDef.label'),
+        $lm->type_class_instance->to_literal($v),
+    ) unless $tsv && $lm->type_class_instance->is_equal($v, $$tsv);
     return;
 }
 
@@ -55,6 +57,20 @@ sub execute_ok_start {
     my($self) = @_;
     $self->[$_IDI] = '';
     return;
+}
+
+sub get_field_info {
+    my($self, $field, $which) = @_;
+    return shift->SUPER::get_field_info(@_)
+	unless $which && $which eq 'type' && $field =~ /^slot(?:_(\d+))?$/;
+    my($n) = $1;
+    my($lm) = $self->get_list_model;
+    return $lm->type_class_instance
+	unless defined($n) && (my $c = $lm->get_cursor || -1) ne $n;
+    $lm->set_cursor($n);
+    my($res) = $lm->type_class_instance;
+    $lm->internal_set_cursor($c);
+    return $res;
 }
 
 sub internal_initialize {

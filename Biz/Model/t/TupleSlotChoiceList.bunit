@@ -1,22 +1,26 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
+my($d) = class('Type.Date');
 [
     load_all_from_slot_type => [
 	[] => [],
 	[Bivio::Collection::Attributes->new({
-	    'TupleSlotType.type_class' => 'String',
+	    'TupleSlotType.type_class' => 'Date',
 	    'TupleSlotType.choices' =>
-		class('Type.TupleSlotArray')->new([qw(b a c)]),
+		class('Type.TupleSlotArray') ->new([map(
+		    $d->from_literal_or_die($_),
+		    qw(1/1/2006 2/1/2006 3/1/2006),
+		)]),
 	})] => [{
 	    key => 1,
-	    choice => 'a',
+	    choice => '01/01/2006',
 	}, {
 	    key => 2,
-	    choice => 'b',
+	    choice => '02/01/2006',
 	}, {
 	    key => 3,
-	    choice => 'c',
+	    choice => '03/01/2006',
 	}],
     ],
 ];

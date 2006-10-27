@@ -18,7 +18,7 @@ sub _cfg_tuple {
 	    [FORUM_TUPLE_DEF_EDIT => '?/edit-db-schemas'],
 	    [FORUM_TUPLE_DEF_LIST => '?/db-schemas'],
 	    [FORUM_TUPLE_EDIT => '?/edit-db-record'],
-	    [FORUM_TUPLE_EDIT_DONE => '?/edit-db-record-done'],
+	    [FORUM_TUPLE_HISTORY => '?/db-record-history'],
 	    [FORUM_TUPLE_LIST => '?/db-records'],
 	    [FORUM_TUPLE_SLOT_TYPE_EDIT => '?/edit-db-type'],
 	    [FORUM_TUPLE_SLOT_TYPE_LIST => '?/db-types'],
@@ -33,8 +33,10 @@ sub _cfg_tuple {
 		    q{Edit String(['Model.TupleUseList', 'TupleUse.label']); Record},
 		FORUM_TUPLE_LIST =>
 		    q{String(['Model.TupleUseList', 'TupleUse.label']); Records},
-		FORUM_TUPLE_EDIT_DONE =>
-		    q{Updating String(['Model.TupleUseList', 'TupleUse.label']); Record},
+		FORUM_TUPLE_HISTORY =>
+		    q{String([qw(Model.TupleUseList TupleUse.label)]); Record#String([qw(Model.TupleList Tuple.tuple_num)]); History},
+		FORUM_TUPLE_MAIL_THREAD =>
+		    q{String(['Model.TupleUseList', 'TupleUse.label']); Record #String(['Model.Tuple', 'tuple_num']);},
 		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Modify Database Type',
 		FORUM_TUPLE_SLOT_TYPE_LIST => 'Database Types',
 		FORUM_TUPLE_USE_EDIT => 'Modify Table',
@@ -49,6 +51,16 @@ sub _cfg_tuple {
 		FORUM_TUPLE_SLOT_TYPE_LIST => 'Types',
 		FORUM_TUPLE_USE_EDIT => 'Add Table',
 		FORUM_TUPLE_USE_LIST => 'Tables',
+		TupleHistoryList => [
+		    FORUM_TUPLE_EDIT => 'Modify Record',
+		    FORUM_TUPLE_LIST => 'back to list',
+		],
+	    ]],
+	    [TupleHistoryList => [
+		'RealmFile.modified_date_time' => 'Date',
+		'RealmMail.from_email' => 'Who',
+		slot_headers => 'Updated Fields',
+		comment => 'Comment',
 	    ]],
 	    [[qw(TupleDefList TupleDefListForm)] => [
 		'TupleDef.label' => 'Schema Name',
@@ -111,9 +123,7 @@ sub _cfg_tuple {
 		[qw(FORUM_TUPLE_DEF_EDIT FORUM_TUPLE_SLOT_TYPE_EDIT FORUM_TUPLE_USE_EDIT FORUM_TUPLE_EDIT)]
 		    => 'Modify',
 		FORUM_TUPLE_LIST => 'Records',
-	    ]],
-	    [TupleEditDoneForm => [
-		ok_button => 'Refresh',
+		FORUM_TUPLE_HISTORY => 'History',
 	    ]],
 	    [acknowledgement => [
 		FORUM_TUPLE_DEF_EDIT => 'Schema definition has been saved.',

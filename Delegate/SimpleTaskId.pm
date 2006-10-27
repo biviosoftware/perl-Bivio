@@ -519,8 +519,8 @@ sub info_tuple {
 	    FORUM_TUPLE_SLOT_TYPE_LIST
 	    70
 	    FORUM
-	    TUPLE_READ
-	    Model.TupleSlotTypeList->execute_load_page
+	    TUPLE_ADMIN
+	    Model.TupleSlotTypeList->execute_load_all_with_query
 	    View.Tuple->slot_type_list
 	)],
 	[qw(
@@ -536,8 +536,8 @@ sub info_tuple {
 	    FORUM_TUPLE_DEF_LIST
 	    72
 	    FORUM
-	    TUPLE_READ
-	    Model.TupleDefList->execute_load_page
+	    TUPLE_ADMIN
+	    Model.TupleDefList->execute_load_all_with_query
 	    View.Tuple->def_list
 	)],
 	[qw(
@@ -554,7 +554,7 @@ sub info_tuple {
 	    74
 	    FORUM
 	    TUPLE_READ
-	    Model.TupleUseList->execute_load_page
+	    Model.TupleUseList->execute_load_all_with_query
 	    View.Tuple->use_list
 	)],
 	[qw(
@@ -581,17 +581,15 @@ sub info_tuple {
 	    TUPLE_READ&TUPLE_WRITE
 	    Model.TupleSlotListForm
 	    View.Tuple->edit
-	    next=FORUM_TUPLE_EDIT_DONE
-	    want_workflow=1
+	    next=FORUM_TUPLE_LIST
 	)],
 	[qw(
-	    FORUM_TUPLE_EDIT_DONE
+	    FORUM_TUPLE_HISTORY
 	    78
 	    FORUM
-	    TUPLE_READ&TUPLE_WRITE
-	    Model.TupleEditDoneForm
-	    View.Tuple->edit_done
-	    next=FORUM_TUPLE_LIST
+	    TUPLE_READ
+	    Model.TupleList->execute_load_history_list
+	    View.Tuple->history_list
 	)],
     ];
 }

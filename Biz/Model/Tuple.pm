@@ -79,10 +79,10 @@ sub realm_mail_hook {
 	tuple_def_id => $tul->moniker_to_id($1),
 	self => $proto->new($realm_mail->get_request),
     };
-    my($die);
-    return _mail_err($state, $die ? $die->as_string : 'no text/plain part')
-	unless $state->{body} = Bivio::Die->catch(
-	    sub {_text_plain($incoming)}, \$die);
+    my($body) = _text_plain(\($incoming->get_rfc822));
+    return _mail_err($state, $body ? $body->as_string : 'no text/plain part')
+	unless $body && ref($body) eq 'SCALAR';
+    $state->{body} = $body;
     if ($state->{is_update}) {
 	return _mail_err($state, 'unable to load model')
 	    unless $state->{self}->unsafe_load(
@@ -104,7 +104,19 @@ sub realm_mail_hook {
 	$incoming->put(header => $s);
 #TODO: Need to update the subject in the disk file
     }
-    return _parse_slots($state);
+    return _create_or_update_slots($state, _parse_slots($state->{body}));
+}
+
+sub split_rfc822 {
+    my(undef, $rfc822) = @_;
+    my($body) = (split(/\n\n/, $$rfc822, 2))[1];
+    $body ||= '';
+    $body =~ s/^(.*?)(?=$_LABEL_RE)//s;
+    my($c1) = $1 || '';
+    my($slots, $c2) = split(/\n\n/, $body, 2);
+    $c1 .= $c2 || '';
+    $c1 =~ s/^\s+|\s+$//sg;
+    return ($slots ||'') =~ $_LABEL_RE ? ($slots, $c1) : ();
 }
 
 sub update {
@@ -138,7 +150,7 @@ sub _create_or_update_slots {
 		. $e->as_string;
 	    return 0;
 	}
-#TODO: Is this right?  What do do if update is "undef" on a required slot?
+#TODO: Is this right?  What to do if update is "undef" on a required slot?
 	$values->{$tsdl->field_from_num} = $v
 	    if defined($v) || !$tsdl->get('TupleSlotDef.is_required');
         return 1;
@@ -158,25 +170,27 @@ sub _mail_err {
 }
 
 sub _parse_slots {
-    my($state) = @_;
-    ${$state->{body}} =~ s/^.*?(?=$_LABEL_RE)//s;
-    my($slots) = [split(
-	$_LABEL_RE,
-	(split(/\n\n/, ${$state->{body}}, 2))[0] || '')];
+    my($body) = @_;
+    $$body =~ s/^.*?(?=$_LABEL_RE)//s;
+    my($slots) = [split($_LABEL_RE, (split(/\n\n/, $$body, 2))[0] || '')];
     return
 	unless @$slots > 1;
     shift(@$slots);
-    return _create_or_update_slots($state, $slots);
+    return $slots;
 }
 
 sub _text_plain {
-    my($in) = @_;
-    my($me) = Bivio::Ext::MIMEParser->parse_data(\($in->get_rfc822));
-    foreach my $p ($me->mime_type =~ m{^multipart/}i ? $me->parts : $me) {
-	return \($p->body_as_string)
-	    if $p->mime_type eq 'text/plain';
-    }
-    return undef;
+    my($rfc822) = @_;
+    my($res);
+    my($die) = Bivio::Die->catch(sub {
+        my($me) = Bivio::Ext::MIMEParser->parse_data($rfc822);
+	foreach my $p ($me->mime_type =~ m{^multipart/}i ? $me->parts : $me) {
+	    return $res = \($p->body_as_string)
+		if $p->mime_type eq 'text/plain';
+	}
+	return;
+    });
+    return $res || $die;
 }
 
 1;

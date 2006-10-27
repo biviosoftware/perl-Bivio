@@ -112,7 +112,7 @@ sub control_on_render {
 
 #TODO: Merge with Text.  Too much duplicated code.
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
-    my($width) = $form->get_field_type($field)->get_width();
+    my($width) = $_D->get_width;
     $$buffer .= $p
 	. '<input name="'
 	. $form->get_field_name_for_html($field)

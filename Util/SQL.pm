@@ -1078,6 +1078,258 @@ EOF
     return;
 }
 
+=for html <a name="internal_upgrade_db_tuple"></a>
+
+=head2 internal_upgrade_db_tuple()
+
+Adds Tuple tables, etc.
+
+=cut
+
+sub internal_upgrade_db_tuple {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE tuple_t (
+  realm_id NUMERIC(18) NOT NULL,
+  tuple_def_id NUMERIC(18) NOT NULL,
+  tuple_num NUMERIC(9) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  thread_root_id NUMERIC(18),
+  slot1 VARCHAR(500),
+  slot2 VARCHAR(500),
+  slot3 VARCHAR(500),
+  slot4 VARCHAR(500),
+  slot5 VARCHAR(500),
+  slot6 VARCHAR(500),
+  slot7 VARCHAR(500),
+  slot8 VARCHAR(500),
+  slot9 VARCHAR(500),
+  slot10 VARCHAR(500),
+  slot11 VARCHAR(500),
+  slot12 VARCHAR(500),
+  slot13 VARCHAR(500),
+  slot14 VARCHAR(500),
+  slot15 VARCHAR(500),
+  slot16 VARCHAR(500),
+  slot17 VARCHAR(500),
+  slot18 VARCHAR(500),
+  slot19 VARCHAR(500),
+  slot20 VARCHAR(500),
+  CONSTRAINT tuple_t1 PRIMARY KEY(realm_id, tuple_def_id, tuple_num)
+)
+/
+
+CREATE TABLE tuple_def_t (
+  tuple_def_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  moniker VARCHAR(100) NOT NULL,
+  CONSTRAINT tuple_def_t1 PRIMARY KEY(tuple_def_id)
+)
+/
+
+CREATE TABLE tuple_slot_def_t (
+  tuple_def_id NUMERIC(18) NOT NULL,
+  tuple_slot_num NUMERIC(2) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  tuple_slot_type_id NUMERIC(18) NOT NULL,
+  is_required NUMERIC(1) NOT NULL,
+  CONSTRAINT tuple_slot_t1 PRIMARY KEY(tuple_def_id, tuple_slot_num)
+)
+/
+
+CREATE TABLE tuple_slot_type_t (
+  tuple_slot_type_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  type_class VARCHAR(100) NOT NULL,
+  choices VARCHAR(65535),
+  default_value VARCHAR(500),
+  CONSTRAINT tuple_slot_type_t1 PRIMARY KEY(tuple_slot_type_id)
+)
+/
+
+CREATE TABLE tuple_use_t  (
+  realm_id NUMERIC(18) NOT NULL,
+  tuple_def_id NUMERIC(18) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  moniker VARCHAR(100) NOT NULL,
+  CONSTRAINT tuple_use_t1 PRIMARY KEY(realm_id, tuple_def_id)
+)
+/
+--
+-- tuple_t
+--
+ALTER TABLE tuple_t
+  ADD CONSTRAINT tuple_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_t3 on tuple_t (
+  realm_id
+)
+/
+ALTER TABLE tuple_t
+  ADD CONSTRAINT tuple_t4
+  FOREIGN KEY (tuple_def_id)
+  REFERENCES tuple_def_t(tuple_def_id)
+/
+CREATE INDEX tuple_t5 on tuple_t (
+  tuple_def_id
+)
+/
+CREATE INDEX tuple_t6 on tuple_t (
+  modified_date_time
+)
+/
+ALTER TABLE tuple_t
+  ADD CONSTRAINT tuple_t7
+  FOREIGN KEY (thread_root_id)
+  REFERENCES realm_mail_t(realm_file_id)
+/
+CREATE INDEX tuple_t8 on tuple_t (
+  thread_root_id
+)
+/
+ALTER TABLE tuple_t
+  ADD CONSTRAINT tuple_t9
+  FOREIGN KEY (realm_id, tuple_def_id)
+  REFERENCES tuple_use_t(realm_id, tuple_def_id)
+/
+CREATE INDEX tuple_t10 on tuple_t (
+  realm_id,
+  tuple_def_id
+)
+/
+
+--
+-- tuple_def_t
+--
+ALTER TABLE tuple_def_t
+  ADD CONSTRAINT tuple_def_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_def_t3 on tuple_def_t (
+  realm_id
+)
+/
+CREATE UNIQUE INDEX tuple_def_t4 on tuple_def_t (
+  realm_id,
+  label
+)
+/
+CREATE UNIQUE INDEX tuple_def_t5 on tuple_def_t (
+  realm_id,
+  moniker
+)
+/
+
+--
+-- tuple_slot_def_t
+--
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t2
+  FOREIGN KEY (tuple_def_id)
+  REFERENCES tuple_def_t(tuple_def_id)
+/
+CREATE INDEX tuple_slot_def_t3 on tuple_slot_def_t (
+  tuple_def_id
+)
+/
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t4
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_slot_def_t5 on tuple_slot_def_t (
+  realm_id
+)
+/
+CREATE UNIQUE INDEX tuple_slot_def_t6 on tuple_slot_def_t (
+  tuple_def_id,
+  label
+)
+/
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t7
+  FOREIGN KEY (tuple_slot_type_id)
+  REFERENCES tuple_slot_type_t(tuple_slot_type_id)
+/
+CREATE INDEX tuple_slot_def_t8 on tuple_slot_def_t (
+  tuple_slot_type_id
+)
+/
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t9
+  CHECK (is_required BETWEEN 0 AND 1)
+/
+
+--
+-- tuple_slot_type_t
+--
+ALTER TABLE tuple_slot_type_t
+  ADD CONSTRAINT tuple_slot_type_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_slot_type_t3 on tuple_slot_type_t (
+  realm_id
+)
+/
+CREATE UNIQUE INDEX tuple_slot_type_t4 on tuple_slot_type_t (
+  realm_id,
+  label
+)
+/
+
+--
+-- tuple_use_t
+--
+ALTER TABLE tuple_use_t
+  ADD CONSTRAINT tuple_use_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_use_t3 on tuple_use_t (
+  realm_id
+)
+/
+ALTER TABLE tuple_use_t
+  ADD CONSTRAINT tuple_use_t4
+  FOREIGN KEY (tuple_def_id)
+  REFERENCES tuple_def_t(tuple_def_id)
+/
+CREATE INDEX tuple_use_t5 on tuple_use_t (
+  tuple_def_id
+)
+/
+CREATE UNIQUE INDEX tuple_use_t6 on tuple_use_t (
+  realm_id,
+  label
+)
+/
+CREATE UNIQUE INDEX tuple_use_t7 on tuple_use_t (
+  realm_id,
+  moniker
+)
+/
+
+CREATE SEQUENCE tuple_def_s
+  MINVALUE 100006
+  CACHE 1 INCREMENT BY 100000
+/
+
+CREATE SEQUENCE tuple_slot_type_s
+  MINVALUE 100007
+  CACHE 1 INCREMENT BY 100000
+/
+
+EOF
+    return;
+}
+
 =for html <a name="realm_role_config"></a>
 
 =head2 realm_role_config() : array_ref

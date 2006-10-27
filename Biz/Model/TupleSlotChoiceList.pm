@@ -48,9 +48,12 @@ sub _list {
     my($tc) = Bivio::Type
 	->get_instance($list->get('TupleSlotType.type_class'));
     my($c) = $list->get('TupleSlotType.choices');
-    return [sort {
-	$tc->compare($a, $b)
-    } @{$c ? $c->as_array : []}];
+    return [map(
+	$tc->to_literal($_),
+	sort {
+	    $tc->compare($a, $b)
+	} @{$c ? $c->as_array : []},
+    )];
 }
 
 1;
