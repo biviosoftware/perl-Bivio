@@ -146,6 +146,11 @@ sub create_db {
     }
     Bivio::Biz::Model->new($self->get_request, 'RealmOwner')->init_db;
     $self->init_realm_role;
+#TODO: Needs to be after subclasses init_realm_role for new realmtypes
+    if (Bivio::Agent::TaskId->unsafe_from_name('FORUM_TUPLE_SLOT_TYPE_LIST')) {
+	$self->initialize_tuple_permissions;
+	$self->initialize_tuple_slot_types;
+    }
     return;
 }
 
@@ -452,8 +457,6 @@ sub init_realm_role {
     }
     $rr->copy_all(forum => 'calendar_event')
 	if Bivio::Auth::RealmType->unsafe_from_name('CALENDAR_EVENT');
-    $self->initialize_tuple_permissions
-	if Bivio::Agent::TaskId->unsafe_from_name('FORUM_TUPLE_SLOT_TYPE_LIST');
     return;
 }
 
