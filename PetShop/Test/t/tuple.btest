@@ -50,11 +50,16 @@ submit_form(Save => {
 });
 follow_link_in_table('Table Name', 'Database1');
 follow_link(qr{add}i);
-submit_form(Save => {
-    'f1:' => 1,
-    'f2:' => '1/1/2001',
-    'Comment:' => 'first update',
-});
-sleep(5);
-submit_form('Refresh');
-verify_text('01/01/2001');
+my($range) = [1 .. 5];
+foreach my $i (@$range) {
+    go_back() if $i > 1;
+    submit_form(Save => {
+	'f1:' => $i,
+	'f2:' => "12/$i/2001",
+	'Comment:' => "update #$i",
+    });
+    sleep(1);
+}
+sleep(3);
+reload_page();
+verify_text(qr{@{[join('.*', map("12/0$_/2001", @$range))]}}s);
