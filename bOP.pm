@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.52  2006/10/25 21:05:57  nagler
+  * Tuple support partially in.  You need to rebuild your petshop databases.
+  * Bivio::UI::View->execute_uri moved to Bivio::Biz::Action::LocalFilePlain
+    You will get errors if you used execute_uri in tasks elsewhere.  It
+    will likely be a NOT_FOUND with entity=>execute_uri in the message.
+
   Revision 4.51  2006/10/25 19:02:14  moeller
   * Bivio::Agent::Task Added execute_task_item api
   * Bivio Auth::Realm added do_default()
