@@ -11,4 +11,7 @@ req()->put(false => 0);
     [{control => 0, control_off_value => 'f'}] => 'f',
     [{control => ['true']}] => 'CB',
     [{control => ['false']}] => '',
-]
+    [{control => class('HTMLWidget.Or')->new(0)}] => '',
+    [{control => class('HTMLWidget.Or')->new(1)}] => 'CB',
+];
+
