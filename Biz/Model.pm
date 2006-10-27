@@ -1067,6 +1067,7 @@ sub _initialize_class_info {
         *{$class . '::'}{HASH}->{_CLASS_INFO} = $ci;
     }
     $ci->{singleton} = $class->new;
+    delete($ci->{singleton}->[$_IDI]->{request});
     $ci->{singleton}->[$_IDI]->{is_singleton} = 1;
     return;
 }
