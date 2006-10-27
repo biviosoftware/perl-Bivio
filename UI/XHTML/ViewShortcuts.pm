@@ -252,7 +252,7 @@ sub vs_list_form {
 	$d ? $d : ();
     } @$fields)];
     my($button) = pop(@$simple)
-	if $simple->[$#$simple] =~ /^\*/;
+	if ($simple->[$#$simple] || '') =~ /^\*/;
     return $proto->vs_simple_form($form => [
 	@$simple,
 	Table($form => [
@@ -306,7 +306,7 @@ sub vs_paged_detail {
 
 sub vs_paged_list {
     my($proto, $model, $columns, $attrs) = @_;
-    $proto->vs_put_pager($model)
+    $proto->vs_put_pager($model, $attrs)
 	unless delete($attrs->{no_pager});
     return (ref($columns) eq 'ARRAY' ? Table($model, $columns) : $columns)
 	->put(%{$proto->vs_table_attrs($model, paged_list => $attrs)});
@@ -323,7 +323,7 @@ sub vs_prose {
 }
 
 sub vs_put_pager {
-    my(undef, $model) = @_;
+    my(undef, $model, $attrs) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_list.";
     view_put(pager => DIV_pager(Join([
@@ -335,6 +335,8 @@ sub vs_put_pager {
 		    control_off_value => Tag(
 			span => String(vs_text("$p$_")), "$_ off"),
 		    class => $_,
+#TODO: get inherited attribs instead of relying on param, e.g. link_target?
+		    %{$attrs || {}},
 		},
 	    ),
 	    qw(prev next)
