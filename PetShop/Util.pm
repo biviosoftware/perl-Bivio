@@ -622,7 +622,6 @@ EOF
 sub _init_tuple {
     my($self) = @_;
     my($req) = $self->get_request;
-    $self->initialize_tuple_slot_types;
     $req->set_realm($self->FOUREM);
     $req->set_user($self->ROOT);
     Bivio::Biz::Model->new($req, 'TupleSlotType')->create_from_hash({
