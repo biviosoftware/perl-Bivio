@@ -8,7 +8,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub def_edit {
-    view_put(body => vs_list_form(TupleDefListForm => [qw(
+    view_put(base_content => vs_list_form(TupleDefListForm => [qw(
 	TupleDefListForm.TupleDef.label
 	TupleDefListForm.TupleDef.moniker
 	TupleSlotDef.label
@@ -24,7 +24,7 @@ sub def_edit {
 }
 
 sub def_list {
-    view_put(body => vs_list(TupleDefList => [qw(
+    view_put(base_content => vs_list(TupleDefList => [qw(
 	TupleDef.label
 	TupleDef.moniker
     ),
@@ -39,7 +39,7 @@ sub def_list {
 }
 
 sub edit {
-    view_put(body => [sub {
+    view_put(base_content => [sub {
 	my($req) = shift->get_request;
 	my($lfm) = $req->get('Model.TupleSlotListForm');
 	my($lm) = $lfm->get_list_model;
@@ -102,7 +102,7 @@ EOF
 }
 
 sub history_list {
-    view_put(body => vs_list(TupleHistoryList => [qw(
+    view_put(base_content => vs_list(TupleHistoryList => [qw(
         RealmFile.modified_date_time
         RealmMail.from_email
         slot_headers
@@ -113,7 +113,7 @@ sub history_list {
 
 sub list {
     vs_put_pager('TupleList');
-    view_put(body => [sub {
+    view_put(base_content => [sub {
 	my($req) = @_;
 	return vs_paged_list(TupleList => [qw(
 	    Tuple.tuple_num
@@ -150,19 +150,7 @@ sub pre_compile {
 	return;
     }
     my(@res) = shift->SUPER::pre_compile(@_);
-    view_put(base_tools => TaskMenu([map(+{
-	task_id => $_,
-	($_ =~ /(.+)_(\w+)$/)[1] eq 'LIST' ? ()
-	    : (control =>
-	    ['task_id', lc("->eq_${1}_list")]),
-    }, qw(
-	FORUM_TUPLE_USE_LIST
-	FORUM_TUPLE_DEF_LIST
-	FORUM_TUPLE_SLOT_TYPE_LIST
-	FORUM_TUPLE_USE_EDIT
-	FORUM_TUPLE_DEF_EDIT
-	FORUM_TUPLE_SLOT_TYPE_EDIT
-    )),
+    view_put(base_tools => TaskMenu([
         {
 	    task_id => 'FORUM_TUPLE_EDIT',
 	    label => 'TupleHistoryList.FORUM_TUPLE_EDIT',
@@ -192,12 +180,24 @@ sub pre_compile {
 		    => [qw(Model.TupleUseList TupleUse.tuple_def_id)],
 	    },
 	},
+	map(+{
+	    task_id => $_,
+	    ($_ =~ /(.+)_(\w+)$/)[1] eq 'LIST' ? ()
+		: (control => ['task_id', lc("->eq_${1}_list")]),
+	}, qw(
+	    FORUM_TUPLE_SLOT_TYPE_EDIT
+	    FORUM_TUPLE_DEF_EDIT
+	    FORUM_TUPLE_USE_EDIT
+	    FORUM_TUPLE_SLOT_TYPE_LIST
+	    FORUM_TUPLE_DEF_LIST
+	    FORUM_TUPLE_USE_LIST
+	)),
     ]));
     return @res;
 }
 
 sub slot_type_edit {
-    view_put(body => vs_list_form(TupleSlotTypeListForm => [
+    view_put(base_content => vs_list_form(TupleSlotTypeListForm => [
 	'TupleSlotTypeListForm.TupleSlotType.label',
 	['TupleSlotTypeListForm.TupleSlotType.type_class' => {
 	    wf_class => 'Select',
@@ -212,7 +212,7 @@ sub slot_type_edit {
 }
 
 sub slot_type_list {
-    view_put(body => vs_list(TupleSlotTypeList => [qw(
+    view_put(base_content => vs_list(TupleSlotTypeList => [qw(
 	TupleSlotType.label
 	TupleSlotType.choices
 	TupleSlotType.default_value
@@ -225,7 +225,7 @@ sub slot_type_list {
 }
 
 sub use_edit {
-    view_put(body => vs_simple_form(TupleUseForm => [
+    view_put(base_content => vs_simple_form(TupleUseForm => [
 	['TupleUseForm.TupleUse.tuple_def_id' => {
 	    choices => ['Model.TupleDefSelectList'],
 	    list_display_field => 'TupleDef.label',
@@ -238,7 +238,7 @@ sub use_edit {
 }
 
 sub use_list {
-    view_put(body => vs_list(TupleUseList => [
+    view_put(base_content => vs_list(TupleUseList => [
 	['TupleUse.label', => {
 	    wf_list_link => {
 		query => 'THIS_CHILD_LIST',
