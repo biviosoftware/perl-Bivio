@@ -106,7 +106,7 @@ sub initialize {
 	    ['->get_request'],
 	    '->can_user_execute_task',
 	    Bivio::Agent::TaskId->from_any($c)
-	]) unless ref($c) eq 'ARRAY';
+	]) if !ref($c) || $self->is_blessed($c, 'Bivio::Agent::TaskId');
     }
     $self->map_invoke(
 	unsafe_initialize_attr => [qw(control control_off_value)],
