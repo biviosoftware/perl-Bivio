@@ -11,13 +11,14 @@ sub def_edit {
     view_put(body => vs_list_form(TupleDefListForm => [qw(
 	TupleDefListForm.TupleDef.label
 	TupleDefListForm.TupleDef.moniker
-	TupleDefListForm.TupleSlotDef.label
-	TupleDefListForm.TupleSlotDef.is_required
+	TupleSlotDef.label
+	TupleSlotDef.is_required
     ),
-	['TupleDefListForm.TupleSlotDef.tuple_slot_type_id' => {
+	{
+	    field => 'TupleSlotDef.tuple_slot_type_id',
 	    choices => ['Model.TupleSlotTypeSelectList'],
 	    list_display_field => 'TupleSlotType.label',
-	}],
+	},
     ]));
     return;
 }
@@ -205,7 +206,7 @@ sub slot_type_edit {
 	    list_id_field => 'TupleSlotType.type_class',
 	}],
 	'TupleSlotTypeListForm.TupleSlotType.default_value',
-	'TupleSlotTypeListForm.choice',
+	'choice',
     ]));
     return;
 }
