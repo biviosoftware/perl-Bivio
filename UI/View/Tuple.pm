@@ -91,7 +91,7 @@ sub edit_mail {
     view_put(
 	mail_to => Mailbox(['->format_email']),
 	mail_from => Mailbox(['Model.TupleSlotListForm', 'RealmMail.from_email']),
-	mail_subject => Mailbox(['Model.TupleSlotListForm', 'RealmMail.subject']),
+	mail_subject => String(['Model.TupleSlotListForm', 'RealmMail.subject']),
 	mail_body => Prose(<<'EOF'),
 String(['Model.TupleSlotListForm', 'slot_headers']);
 
