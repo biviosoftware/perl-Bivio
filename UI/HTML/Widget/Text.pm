@@ -154,7 +154,6 @@ sub initialize {
 	$fields->{handler}->initialize;
     }
 
-    $self->unsafe_initialize_attr('field_type');
     $fields->{format} = $self->unsafe_get('format');
     $fields->{format}
 	    = Bivio::UI::HTML::Format->get_instance($fields->{format})
