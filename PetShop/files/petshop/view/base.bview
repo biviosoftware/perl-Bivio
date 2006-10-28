@@ -9,6 +9,7 @@ view_put(
     base_tools => '',
     pager => '',
     base_menu => '',
+    base_content => '',
 #    TaskMenu([qw(
 #	TUPLE_DEF_LIST
 #    )]),
@@ -51,7 +52,7 @@ view_main(Page3({
 		join_separator => EmptyTag(DIV => 'sep'),
 	    })),
 	])),
-	DIV_body(view_widget_value('body')),
+	DIV_body(view_widget_value('base_content')),
 	DIV_bottom(
 	    DIV_tools(Join([
 		view_widget_value('base_tools'),
