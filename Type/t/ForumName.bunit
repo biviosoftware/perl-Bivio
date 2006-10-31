@@ -6,6 +6,7 @@ Type();
         from_literal => [
 	    'a-b' => FORUM_NAME(),
 	    'abc-DEF' => 'abc-def',
+	    'abc-1' => 'abc-1',
 	],
 	extract_top => [
 	    'abc-def' => 'abc',
