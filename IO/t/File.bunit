@@ -3,8 +3,17 @@
 my($x);
 my($abs_dir);
 my($do_lines);
+my($pwd);
 [
     class() => [
+	pwd => sub {
+	    my(undef, $actual) = @_;
+	    $pwd = $actual->[0] || die('no pwd?');
+	    return 1;
+	},
+	chdir => [
+	    sub {[$pwd]} => sub {[$pwd]},
+	],
 	rm_rf => [
 	   File => DIE(),
 	   sub {[$abs_dir = class()->pwd . "/File"]} => sub {[$abs_dir]},
@@ -20,6 +29,10 @@ my($do_lines);
 	} => [
 	    File => 'File',
 	    'File/1' => 'File/1',
+	],
+	do_in_dir => [
+	    [File => sub {class()->pwd}] => sub {["$pwd/File"]},
+	    [No_Such_Dir => sub {class()->pwd}] => DIE(),
 	],
 	rm_rf => [
 	    sub {[$abs_dir]} => sub {

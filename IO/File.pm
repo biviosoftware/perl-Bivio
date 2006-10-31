@@ -134,7 +134,29 @@ sub chown_by_name {
     return;
 }
 
-=for html <a name="mkdir_p"></a>
+=for html <a name="do_in_dir"></a>
+
+=head2 static do_in_dir(string dir, code_ref op)
+
+Change to to I<dir> and call I<op>.  Goes back to previous dir,
+and then returns result (always array context) or throws exception
+if that's what happened.
+
+=cut
+
+sub do_in_dir {
+    my($proto, $dir, $op) = @_;
+    my($pwd) = $proto->pwd;
+    my($die);
+    $proto->chdir($dir);
+    my(@res) = Bivio::Die->catch($op, \$die);
+    $proto->chdir($pwd);
+    $die->throw
+	if $die;
+    return @res;
+}
+
+=for html <a name="do_lines"></a>
 
 =head2 static do_lines(string file_name, code_ref op)
 
@@ -147,7 +169,7 @@ errors.
 =cut
 
 sub do_lines {
-    my($self, $file_name, $op) = @_;
+    my(undef, $file_name, $op) = @_;
     my($file) = _open($file_name, 'r');
     while (defined(my $line = readline($file))) {
 	_err('readline', $file, $file_name)
