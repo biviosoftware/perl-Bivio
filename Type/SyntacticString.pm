@@ -6,6 +6,7 @@ use base 'Bivio::Type::String';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+
 sub from_literal {
     my($proto, $value) = splice(@_, 0, 2);
     if (defined($value)) {
