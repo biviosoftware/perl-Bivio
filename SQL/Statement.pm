@@ -435,15 +435,15 @@ sub build_decl_for_sql_support {
 
 =for html <a name="build_for_list_support_prepare_statement"></a>
 
-=head2 build_for_list_support_prepare_statement(Bivio::SQL::Support support, Bivio::SQL::Statement stmt, string where, array_ref params) : (string, array_ref)
+=head2 build_for_list_support_prepare_statement(Bivio::SQL::Support support, Bivio::SQL::Statement other_stmt, string where, array_ref params) : (string, array_ref)
 
 Return FROM/WHERE clause and parameter array for _prepare_statement
 
 =cut
 
 sub build_for_list_support_prepare_statement {
-    my($self, $support, $stmt, $_where, $_params) = @_;
-    _merge_statements($self, $stmt);
+    my($self, $support, $other_stmt, $_where, $_params) = @_;
+    _merge_statements($self, $other_stmt);
 
     my($fields) = $self->[$_IDI];
     my($pred_params) = [];
@@ -840,7 +840,7 @@ sub _like {
 #
 sub _merge_statements {
     my($self, $other) = @_;
-    return unless $other;
+    return unless $other && $other != $self;
 
     # merge WHERE
     $self->where($other->[$_IDI]->{where});
