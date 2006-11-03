@@ -11,27 +11,13 @@ sub execute_ok {
     my(@res) = shift->SUPER::execute_ok(@_);
     return @res
 	if $self->in_error;
-    _down($self)
+    $self->internal_execute_children
 	if $self->unsafe_get('administrator');
-    _up($self);
+    $self->internal_execute_parent;
     return @res;
 }
 
-sub internal_initialize {
-    my($self) = @_;
-    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-        version => 1,
-        other => [
-	    {
-		name => 'realm',
-		type => 'ForumName',
-		constraint => 'NONE',
-	    },
-	],
-    });
-}
-
-sub _down {
+sub internal_execute_children {
     my($self) = @_;
     foreach my $cid (@{$self->new_other('Forum')->map_iterate(
 	sub {
@@ -55,7 +41,7 @@ sub _down {
     return;
 }
 
-sub _up {
+sub internal_execute_parent {
     my($self) = @_;
     my($f) = $self->new_other('Forum')
 	->unauth_load_or_die({forum_id => $self->get('RealmUser.realm_id')});
@@ -72,6 +58,20 @@ sub _up {
 	    role => $self->internal_get_roles->[0],
         });
     return;
+}
+
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+        other => [
+	    {
+		name => 'realm',
+		type => 'ForumName',
+		constraint => 'NONE',
+	    },
+	],
+    });
 }
 
 1;
