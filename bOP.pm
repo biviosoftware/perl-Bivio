@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,27 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.53  2006/10/27 17:04:49  nagler
+  * Bivio::UI::Widget::ControlBase.control will be rendered after it is
+    resolved as a widget value.
+  * Bivio::UI::Widget::Or and And added
+  * Bivio::Test::Unit->builtin_inline_case (inline_case) added
+  * Bivio::Biz::Model::MailReceiveDispatchForm.ignore_dashes_in_recipient added
+  * Bivio::UI::View view names are cleaned if they are LocalFiles
+  * Bivio::UI::HTML::Widget::ListActions renders more dynamically
+  * Bivio::UI::HTML::Widget::DateField does not get width from field type,
+    because it relies on a cached constant (Type.Date) anyway, and the
+    width wasn't appropriate for TupleSlot support
+  * Bivio::Test->current_case/self added
+  * Bivio::Delegate::SimpleWidgetFactory.wf_type added
+  * Bivio::Biz::Model singleton creation no longer caches the request
+    from startup.  Singletones should be request-state free.
+  * Bivio::Biz::ListModel->load_empty added
+  * Tuple support complete: see tuple.btest
+  * Bivio::UI::ViewShortcuts->vs_list_form calls vs_simple_form with the
+    fields which are not hashes or which aren't in_list in the form.
+    See View.Tuple for examples.
+
   Revision 4.52  2006/10/25 21:05:57  nagler
   * Tuple support partially in.  You need to rebuild your petshop databases.
   * Bivio::UI::View->execute_uri moved to Bivio::Biz::Action::LocalFilePlain
