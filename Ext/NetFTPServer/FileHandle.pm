@@ -3,11 +3,9 @@
 package Bivio::Ext::NetFTPServer::FileHandle;
 use strict;
 use base 'Net::FTPServer::FileHandle';
+use IO::Scalar;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-use Bivio::Type::DateTime;
-use IO::Scalar;
 
 # Return the directory handle for this file.
 
@@ -22,10 +20,10 @@ sub dir {
 sub open {
     my($self, $mode) = @_;
     return undef unless $mode eq "r";
-    return IO::Scalar->new(Bivio::Biz::Model->new(
-	$self->{ftps}->get_request, 'RealmFile')->load({
-	path => $self->pathname,
-    })->get_content);
+    my($realm_file) = $self->{ftps}->get_realm_file($self->pathname);
+    return $realm_file
+	? IO::Scalar->new($realm_file->get_content)
+	: undef;
 }
 
 sub status {
@@ -46,4 +44,3 @@ sub delete {
 }
 
 1;
-
