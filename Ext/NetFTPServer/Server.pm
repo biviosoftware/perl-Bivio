@@ -4,16 +4,17 @@ package Bivio::Ext::NetFTPServer::Server;
 use strict;
 use base 'Net::FTPServer';
 use Bivio::Agent::Request;
-use Bivio::Ext::NetFTPServer::DirHandle;
+use Bivio::Biz::Model;
+use Bivio::Ext::NetFTPServer::RootHandle;
 use Bivio::IO::Config;
 use Bivio::Type::DateTime;
+use Bivio::Type::DocletFileName;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_CFG);
 Bivio::IO::Config->register({
     user_group => 'anonymous',
-    realm => 'demo',
 });
 
 # Perform login against the database.
@@ -31,10 +32,8 @@ sub authentication_hook {
 
 sub get_handle_status {
     my($self, $handle) = @_;
-    my($realm_file) = Bivio::Biz::Model->new(
-	$self->get_request, 'RealmFile')->load({
-	    path => $handle->pathname,
-	});
+    my($realm_file) = $self->get_realm_file($handle->pathname);
+    return () unless $realm_file;
     my(@status);
     @status[0, 1, 5] = $realm_file->get('is_folder')
 	? ('d', 0555, 1024)
@@ -44,6 +43,24 @@ sub get_handle_status {
 	Bivio::Type::DateTime->to_unix($realm_file->get('modified_date_time'))
     );
     return @status;
+}
+
+# Sets the realm to the forum and return the appropriate RealmFile
+
+sub get_realm_file {
+    my($self, $path) = @_;
+    my($forum_name, $file_path) = $path =~ m,^/([^/]+)(.*),;
+    return undef unless $forum_name;
+    my($realm) = Bivio::Biz::Model->new($self->get_request, 'RealmOwner');
+    return undef unless $realm->unauth_load({
+	name => $forum_name,
+    });
+    $self->get_request->set_realm($realm);
+    my($realm_file) = $realm->new_other('RealmFile');
+    return $realm_file->unsafe_load({
+	path => Bivio::Type::DocletFileName->PUBLIC_FOLDER_ROOT
+	    . (defined($file_path) ? ('/' . $file_path) : ''),
+    }) ? $realm_file : undef;
 }
 
 sub get_request {
@@ -74,7 +91,7 @@ sub post_accept_hook {
     my($self) = @_;
     _clear_request($self);
     $self->{request} = Bivio::Agent::Request->get_current_or_new;
-    $self->{request}->set_realm($_CFG->{realm});
+    $self->{request}->set_realm(undef);
     return;
 }
 
@@ -96,7 +113,7 @@ sub quit_hook {
 
 sub root_directory_hook {
     my($self) = @_;
-    return Bivio::Ext::NetFTPServer::DirHandle->new($self);
+    return Bivio::Ext::NetFTPServer::RootHandle->new($self);
 }
 
 # Called just after user C<$user> has successfully logged in.
