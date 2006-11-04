@@ -46,4 +46,9 @@ sub list_status {
     });
 }
 
+sub status {
+    my($self) = @_;
+    return ('d', 0555, 1, '', '', 1024, 0);
+}
+
 1;
