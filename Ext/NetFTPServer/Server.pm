@@ -14,16 +14,14 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_CFG);
 Bivio::IO::Config->register({
-    user_group => 'anonymous',
+    ftp_user => 'anonymous',
 });
-
-# Perform login against the database.
 
 sub authentication_hook {
     my($self) = @_;
     # all access allowed
     $self->{user_is_anonymous} = 1;
-    $self->{user} = $_CFG->{user_group};
+    $self->{user} = $_CFG->{ftp_user};
     return 0;
 }
 
@@ -74,18 +72,7 @@ sub handle_config {
     return;
 }
 
-# This is called before configuration.
-
-sub pre_configuration_hook {
-    my($self) = @_;
-    # disable all site commands
-    $self->{site_command_table} = {};
-    $self->{version_string} = '1';
-    return;
-}
-
-# This is called just after accepting a new connection. We connect
-# to the database here.
+# This is called just after accepting a new connection.
 
 sub post_accept_hook {
     my($self) = @_;
@@ -95,9 +82,11 @@ sub post_accept_hook {
     return;
 }
 
-# This is called after executing every command.
-
-sub post_command_hook {
+sub post_configuration_hook {
+    my($self) = @_;
+    $self->{site_command_table} = {};
+    $self->{version_string} = '1';
+    return;
 }
 
 # Called on normal exits (not crashes)
@@ -114,11 +103,6 @@ sub quit_hook {
 sub root_directory_hook {
     my($self) = @_;
     return Bivio::Ext::NetFTPServer::RootHandle->new($self);
-}
-
-# Called just after user C<$user> has successfully logged in.
-
-sub user_login_hook {
 }
 
 sub _clear_request {
