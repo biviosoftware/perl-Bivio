@@ -3,8 +3,9 @@
 package Bivio::Ext::NetFTPServer::DirHandle;
 use strict;
 use base 'Net::FTPServer::DirHandle';
-use Bivio::Biz::Model::RealmFileList;
+use Bivio::Biz::Model;
 use Bivio::Ext::NetFTPServer::FileHandle;
+use Bivio::Type::FilePath;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -13,12 +14,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub get {
     my($self, $filename) = @_;
     my($path) = Bivio::Type::FilePath->join($self->pathname, $filename);
-    my($realm_file) = Bivio::Biz::Model->new(
-	$self->{ftps}->get_request, 'RealmFile');
-    return undef
-	unless $realm_file->unsafe_load({
-	    path => $path,
-	});
+    my($realm_file) = $self->{ftps}->get_realm_file($path);
+    return undef unless $realm_file;
     return $realm_file->get('is_folder')
 	? __PACKAGE__->new($self->{ftps}, $path)
 	: Bivio::Ext::NetFTPServer::FileHandle->new($self->{ftps}, $path);
@@ -28,8 +25,10 @@ sub get {
 
 sub parent {
     my($self) = @_;
-    return $self if $self->is_root;
-    return __PACKAGE__->new($self->{ftps}, $self->dirname);
+    my($path) = $self->dirname;
+    return $path eq '/'
+	? Bivio::Ext::NetFTPServer::RootHandle->new($self->{ftps}, $path)
+	: __PACKAGE__->new($self->{ftps}, $path);
 }
 
 sub list {
@@ -42,26 +41,28 @@ sub _list_status {
 
 sub list_status {
     my($self, $wildcard) = @_;
+    my($folder) = $self->{ftps}->get_realm_file($self->pathname);
+    return undef unless $folder;
 
     if ($wildcard) {
 	$wildcard = $self->{ftps}->wildcard_to_regex($wildcard);
     }
     return Bivio::Biz::Model->new(
-	$self->{ftps}->get_request, 'RealmFileList')->map_iterate(sub {
-	my($list) = @_;
+	$self->{ftps}->get_request, 'RealmFile')->map_iterate(sub {
+	my($realm_file) = @_;
 	my($name) = Bivio::Type::FilePath->get_tail(
-	    $list->get('RealmFile.path'));
+	    $realm_file->get('path'));
     	return () if $wildcard && $name !~ /$wildcard/;
-	my($handle) = $list->get('RealmFile.is_folder')
-	    ? __PACKAGE__->new($self->{ftps}, $list->get('RealmFile.path'))
+	my($path) = Bivio::Type::FilePath->join($self->pathname, $name);
+	my($handle) = $realm_file->get('is_folder')
+	    ? __PACKAGE__->new($self->{ftps}, $path)
 	    : Bivio::Ext::NetFTPServer::FileHandle->new($self->{ftps},
-		$list->get('RealmFile.path'));
+		$path);
   	return [$name, $handle, [$handle->status]];
-    }, {
-	path_info => $self->pathname,
+    }, 'is_folder DESC, path_lc', {
+	folder_id => $folder->get('realm_file_id'),
     });
 }
-
 
 sub status {
     my($self) = @_;
