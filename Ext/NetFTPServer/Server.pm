@@ -57,7 +57,7 @@ sub get_realm_file {
     my($realm_file) = $realm->new_other('RealmFile');
     return $realm_file->unsafe_load({
 	path => Bivio::Type::DocletFileName->PUBLIC_FOLDER_ROOT
-	    . (defined($file_path) ? ('/' . $file_path) : ''),
+            . (defined($file_path) ? $file_path : ''),
     }) ? $realm_file : undef;
 }
 
