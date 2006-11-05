@@ -163,10 +163,8 @@ sub dev {
 		    port => $http_port,
 		},
 	    },
-    	    'Bivio::Test::HTTPd' => {
-		http => {
-		    port => $http_port,
-		},
+     	    'Bivio::Test::HTTPd' => {
+		port => $http_port,
 	    },
 	},
 	$proto->merge_overrides($host),
