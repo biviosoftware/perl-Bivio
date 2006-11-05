@@ -20,7 +20,7 @@ my($email) = email('shellutil');
 	],
 	lock_action => [
 	    [sub {
-		 -d '/tmp/BivioTest__ANON__.lockdir'
+		 -d '/tmp/BivioTest_eval_method.lockdir'
 		     or die('wrong lock name'),
 	    }] => 1,
 	    [sub {'ok'}] => 'ok',
@@ -87,6 +87,16 @@ my($email) = email('shellutil');
 		    && $$r =~ /@{[join('.*', map("Sent SIGTERM", 0..4))]}/s
 		    ? 1 : 0;
 	    },
+	],
+	model => [
+	    RealmOwner => sub {
+		shift;
+		return shift->[0]->isa('Bivio::Biz::Model');
+	     },
+	    ['RealmOwner', {name => 'demo'}] => sub {
+		shift;
+		return shift->[0]->get('realm_type')->eq_user;
+	     },
 	],
     ],
 ];
