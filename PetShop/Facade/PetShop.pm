@@ -174,6 +174,15 @@ my($_SELF) = __PACKAGE__->new({
 		 },
 	     ) || 1;
 	}],
+	[xlink_bunit1 => {
+	    task_id => 'LOGIN',
+	    query => undef,
+	    no_context => 1,
+	}],
+	[xlink_bunit2 => {
+	    uri => '',
+	    anchor => 'a1',
+	}],
     ],
     Text => [
 	# Where to redirect to when coming in via /,
@@ -316,6 +325,11 @@ my($_SELF) = __PACKAGE__->new({
 		title => 'ht',
 		description => 'hd',
 	    ],
+	]],
+	[xlink => [
+	    bunit1 => 'one',
+	    SITE_ROOT => 'home',
+	    bunit2 => 'anchor',
 	]],
     ],
 });
