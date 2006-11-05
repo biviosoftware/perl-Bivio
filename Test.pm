@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::Test;
 use strict;
@@ -321,7 +321,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my(@_CALLBACKS) = qw(check_return check_die_code compute_params compute_return create_object);
-my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name want_scalar);
+my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name want_scalar comparator);
 my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', @_PLAIN_OPTIONS);
 my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
 
@@ -621,9 +621,7 @@ sub _compile {
     my($self, $objects) = @_;
     my($state) = {
 	object_num => 0,
-	map {
-	    ($_ => $self->unsafe_get($_));
-	} @_CASE_OPTIONS
+	map(($_ => $self->unsafe_get($_)), @_CASE_OPTIONS),
     };
     _compile_assert_even($objects, $state);
     my(@objects) = @$objects;
@@ -697,6 +695,7 @@ sub _compile_die {
 sub _compile_method {
     my($state, $tests, $method, $cases) = @_;
     $state = _compile_options($state, 'method', $method);
+    $state->{comparator} ||= 'nested_differences';
     $method = $state->{method};
     if (ref($cases) eq 'ARRAY') {
 	_compile_assert_even($cases, $state);
@@ -847,18 +846,8 @@ sub _eval {
 	next unless _prepare_case($self, $case, \$err);
 	my($die) = Bivio::Die->catch(sub {
 	    _trace($case) if $_TRACE;
-            my($method) = $case->get('method');
-	    $result = [
-		$case->unsafe_get('want_scalar')
-		? scalar(
-		    ref($method) eq 'CODE'
-		    ? $method->($case, $case->get('object'))
-		    : $case->get('object')->$method(
-			@{$case->get('params')}))
-		: ref($method) eq 'CODE'
-		? $method->($case, $case->get('object'))
-		: $case->get('object')->$method(@{$case->get('params')}),
-	    ];
+	    $result = [$case->unsafe_get('want_scalar')
+	        ? scalar(_eval_method($case)) : _eval_method($case)];
 	    return;
 	});
 	_trace('returned ', $die || $result) if $_TRACE;
@@ -958,6 +947,18 @@ sub _eval_custom {
     $$err = "$which did not return ${$err}: "
 	. Bivio::IO::Ref->to_short_string($res);
     return undef;
+}
+
+# _eval_method(Bivio::Test::Case case)
+#
+# Calls the method based on whether it is a sub or not.
+#
+sub _eval_method {
+    my($case) = @_;
+    my($method) = $case->get('method');
+    return ref($method) eq 'CODE'
+	? $method->($case, $case->get('object'), @{$case->get('params')})
+	    : $case->get('object')->$method(@{$case->get('params')});
 }
 
 # _eval_object(self, Bivio::Test::Case case, string_ref err) : boolean
@@ -1071,14 +1072,15 @@ sub _eval_result {
 	return "unexpected die: " . Bivio::IO::Ref->to_short_string($result);
     }
     my($x);
+    my($comparator) = $case->get('comparator');
     my($diff_die) = Bivio::Die->catch(sub {
-        $x = Bivio::IO::Ref->nested_differences(
+        $x = Bivio::IO::Ref->$comparator(
 	    $e,
 	    ref($result) eq 'ARRAY' && @$result == 1 && ref($e) eq 'Regexp'
 		? $result->[0] : $result,
 	);
     });
-    return $diff_die ? "nested_differences died: " . $diff_die->as_string
+    return $diff_die ? "$comparator died: " . $diff_die->as_string
 	: $x ? $$x : undef;
 }
 
@@ -1103,7 +1105,7 @@ sub _prepare_case {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
+Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 
