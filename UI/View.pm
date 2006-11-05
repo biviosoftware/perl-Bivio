@@ -458,9 +458,14 @@ sub unsafe_get_current {
 #
 sub _get_instance {
     my($proto, $name, $req_or_facade) = @_;
-    $proto = $proto->use(View => ref($name) ? 'Inline' : 'LocalFile')
-	if (ref($proto) || $proto) eq __PACKAGE__;
     my($name_arg) = $name;
+    if ($name =~ /^(\w+)->(.+)/) {
+	$name = $name_arg = $2;
+	$proto = $proto->use("View.$1");
+    }
+    elsif ((ref($proto) || $proto) eq __PACKAGE__) {
+	$proto = $proto->use(View => ref($name) ? 'Inline' : 'LocalFile');
+    }
     $proto->compile_die($name_arg, ": view_name may not contain '.' or '..'")
 	if $name =~ m!(^|/)\.\.?(/|$)!;
     my($facade) = $req_or_facade
