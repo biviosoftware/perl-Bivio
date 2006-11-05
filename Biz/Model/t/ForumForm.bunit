@@ -1,7 +1,8 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-FormModel();
-my($parent);
+FormModel({
+    comparator => 'nested_contains',
+});
 req()->set_realm_and_user(undef, 'root');
 my($mode) = sub {
     my($m) = @_;
@@ -65,9 +66,7 @@ my($check_perms) = sub {
 	'Model.Forum' => {
 	    parent_realm_id => Bivio::Auth::Realm->get_general->get('id'),
 	    want_reply_to => 1,
-	    forum_id => sub {
-		return $parent = req()->get_nested('Model.Forum', 'forum_id');
-	    },
+	    forum_id => var('parent'),
 	},
         'Model.RealmUser' => {
             user_id => req()->get('auth_user_id'),
@@ -114,7 +113,7 @@ my($check_perms) = sub {
 	'public_forum_email' => 0,
     }] => [{
 	'Model.Forum' => {
-	    parent_realm_id => sub {$parent},
+	    parent_realm_id => var('parent'),
 	    want_reply_to => 0,
 	},
 	'Model.RealmOwner' => {
