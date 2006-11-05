@@ -62,6 +62,20 @@ sub vs_call {
     return Bivio::UI::ViewLanguage->AUTOLOAD(@args);
 }
 
+=for html <a name="vs_constant"></a>
+
+=head2 static vs_constant(string label) : array_ref
+
+Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
+
+=cut
+
+sub vs_constant {
+    my($proto, $label) = @_;
+    return [['->get_request'], 'Bivio::UI::Facade', 'Constant',
+	'->get_value', $label],
+}
+
 =for html <a name="vs_fe"></a>
 
 =head2 vs_fe(string item) : string
