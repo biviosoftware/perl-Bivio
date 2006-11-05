@@ -599,6 +599,19 @@ sub vs_simple_form {
 	], $attr));
 }
 
+=for html <a name="vs_ts"></a>
+
+=head2 static vs_ts(any label, ...) : Bivio::UI::Widget::String
+
+Wraps vs_text() in a String().  All arguments passed to vs_text(),
+
+=cut
+
+sub vs_ts {
+    my($proto) = shift;
+    return $proto->vs_new('String', $proto->vs_text(@_));
+}
+
 =for html <a name="vs_string"></a>
 
 =head2 static vs_string(any value) : Bivio::UI::Widget::String
