@@ -3,19 +3,31 @@
 Request();
 my($email) = simple_require('Bivio::PetShop::Util')->DEMO_EMAIL;
 my($name) = Bivio::PetShop::Util->DEMO;
+my($id) = model(RealmOwner => {name => $name})->get('realm_id');
 [
-    [req()] => [
-	{
-	    method => 'unauth_load_by_email',
-	    compute_return => sub {
-		return [shift->get('object')->unsafe_get('name')];
-	    },
-	}, => [
+    {
+	object => [req()],
+	compute_return => sub {
+	    return [shift->get('object')->unsafe_get('name')];
+	},
+    } => [
+	unauth_load_by_email => [
 	    $email => $name,
 	    [$email, realm_type => Bivio::Auth::RealmType->USER] => $name,
 	    [$email, realm_type => Bivio::Auth::RealmType->CLUB] => [undef],
 	    [$email, {realm_type => Bivio::Auth::RealmType->USER}] => $name,
 	    [$email, {realm_type => Bivio::Auth::RealmType->CLUB}] => [undef],
 	],
+	unauth_load_by_id_or_name_or_die => [
+	    not_a_user => MODEL_NOT_FOUND(),
+	    $name => $name,
+	    $id => $name,
+	],
+	unauth_load_by_email_id_or_name => [
+	    not_a_user => [undef],
+	    $name => $name,
+	    $id => $name,
+	    $email => $name,
+	],
     ],
-]
+];

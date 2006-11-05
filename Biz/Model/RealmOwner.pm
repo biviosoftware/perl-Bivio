@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::RealmOwner;
 use strict;
@@ -42,6 +42,7 @@ use Bivio::Auth::RealmType;
 #=VARIABLES
 my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_RN) = Bivio::Type->get_instance('RealmName');
+my($_PI) = Bivio::Type->get_instance('PrimaryId');
 my($_P) = Bivio::Type->get_instance('Password');
 my($_HOME_TASK_MAP) = {
     map({
@@ -249,7 +250,7 @@ sub internal_initialize {
             name => ['RealmName', 'NOT_NULL_UNIQUE'],
             password => ['Password', 'NOT_NULL'],
             realm_type => ['Bivio::Auth::RealmType', 'NOT_NULL'],
-	    display_name => ['Line', 'NOT_NULL'],
+	    display_name => ['DisplayName', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
@@ -433,13 +434,9 @@ Otherwise, tries to load by id or name.
 
 sub unauth_load_by_email_id_or_name {
     my($self, $email_id_or_name) = @_;
-    return $self->unauth_load_by_email($email_id_or_name)
-        if $email_id_or_name =~ /@/;
-    return $self->unauth_load({realm_id => $email_id_or_name})
-        if $email_id_or_name =~ /^\d+$/;
-    return $self->unauth_load({
-        name => $_RN->process_name($email_id_or_name),
-    });
+    return $email_id_or_name =~ /@/
+	? $self->unauth_load_by_email($email_id_or_name)
+	: _unauth_load($self, $email_id_or_name, {});
 }
 
 =for html <a name="unauth_load_by_id_or_name_or_die"></a>
@@ -454,14 +451,12 @@ Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, furt
 
 sub unauth_load_by_id_or_name_or_die {
     my($self, $id_or_name, $realm_type) = @_;
-    return $self->unauth_load_or_die({
-        ($id_or_name =~ /^\d+$/
-            ? (realm_id => $id_or_name)
-            : (name => $_RN->process_name($id_or_name))),
-        $realm_type
-	    ? (realm_type => Bivio::Auth::RealmType->from_any($realm_type))
-	    : (),
-    });
+    _unauth_load($self, $id_or_name, $realm_type
+        ? {realm_type => Bivio::Auth::RealmType->from_any($realm_type)}
+	: {},
+	1,
+    );
+    return $self;
 }
 
 =for html <a name="unsafe_get_model"></a>
@@ -524,9 +519,32 @@ sub validate_login {
 
 #=PRIVATE METHODS
 
+sub _unauth_load {
+    my($self, $id_or_name, $query, $want_die) = @_;
+    if ($_PI->is_valid($id_or_name)) {
+	$query->{realm_id} = $id_or_name;
+	return 1
+	    if $self->unauth_load($query);
+    }
+    $query->{name} = $_RN->process_name($id_or_name);
+    return 1
+	if $self->unauth_load($query);
+    if ($id_or_name =~ /^\d+$/) {
+	delete($query->{name});
+	$query->{realm_id} = $id_or_name;
+	if ($self->unauth_load($query)) {
+	    Bivio::IO::Alert->warn_deprecated('use the RealmType name to load default Realms');
+	    return 1;
+	}
+    }
+    $self->throw_die(MODEL_NOT_FOUND => $query)
+	if $want_die;
+    return 0;
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
