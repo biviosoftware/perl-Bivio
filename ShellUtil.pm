@@ -648,6 +648,18 @@ sub handle_config {
     return;
 }
 
+=for html <a name="initialize_fully"></a>
+
+=head2 initialize_fully() : Bivio::Agent::Request
+
+Same as initialize_ui(1).
+
+=cut
+
+sub initialize_fully {
+    return shift->initialize_ui(1);
+}
+
 =for html <a name="initialize_ui"></a>
 
 =head2 initialize_ui(boolean fully) : Bivio::Agent::Request
@@ -863,6 +875,35 @@ sub main {
     return $res
 	if $res = $self->result($cmd, $res) and wantarray;
     return;
+}
+
+=for html <a name="model"></a>
+
+=head2 model(any model, any query) : Bivio::Biz::Model
+
+Instantiates I<model> and loads/processes I<query> if supplied.
+
+=cut
+
+sub model {
+    my($self, $name, $query) = @_;
+    my($m) = Bivio::Biz::Model->new($self->get_request, $name);
+    return $m
+	unless $query;
+    if ($m->isa('Bivio::Biz::FormModel')) {
+	$m->process($query);
+    }
+    elsif ($m->isa('Bivio::Biz::ListModel')) {
+	$m->unauth_load_all($query);
+	$m->set_cursor(0);
+    }
+    elsif ($m->isa('Bivio::Biz::PropertyModel')) {
+	$m->unauth_load_or_die($query);
+    }
+    else {
+	Bivio::Die->die($m, ': does not support query argument: ', $query);
+    }
+    return $m;
 }
 
 =for html <a name="piped_exec"></a>
@@ -1497,20 +1538,18 @@ sub _parse_option_value {
     return $v;
 }
 
-# _parse_realm_id(Bivio::ShellUtil self, string attr) : string
+# _parse_realm(Bivio::ShellUtil self, string attr) : string
 #
 # Returns the id or undef for realm.
 #
-sub _parse_realm_id {
+sub _parse_realm {
     my($self, $attr) = @_;
-    my($realm) = $self->unsafe_get($attr);
-    # Any "false" realm is not found
-    return undef unless $realm;
-    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model');
-    my($ro) = Bivio::Biz::Model->get_instance('RealmOwner')->new();
+    return undef
+	unless my $realm = $self->unsafe_get($attr);
+    my($ro) = $self->model('RealmOwner');
     $self->usage_error($realm, ': no such ', $attr)
-		unless $ro->unauth_load_by_email_id_or_name($realm);
-    return $ro->get('realm_id');
+	unless $ro->unauth_load_by_email_id_or_name($realm);
+    return $ro;
 }
 
 # _process_exists(string pid) : boolean
@@ -1649,8 +1688,7 @@ sub _setup_for_main {
     $fields->{prior_db} = $p unless $fields->{prior_db};
     $self->put_request(Bivio::Test::Request->get_instance)
         unless $self->unsafe_get('req');
-    $self->set_realm_and_user(_parse_realm_id($self, 'realm'),
-	_parse_realm_id($self, 'user'));
+    $self->set_realm_and_user(map(_parse_realm($self, $_), qw(realm user)));
     return;
 }
 
