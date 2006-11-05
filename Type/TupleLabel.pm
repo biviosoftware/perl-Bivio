@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::TupleLabel;
 use strict;
-use base 'Bivio::Type::Line';
+use base 'Bivio::Type::SyntacticString';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -13,14 +13,6 @@ sub REGEX {
 sub compare_defined {
     my(undef, $left, $right) = @_;
     return lc($left) cmp lc($right);
-}
-
-sub from_literal {
-    my($proto) = shift;
-    my($v, $e) = $proto->SUPER::from_literal(@_);
-    return !defined($v) ? ($v, $e)
-	: $v =~ /^@{[$proto->REGEX]}$/ ? $v
-	: (undef, Bivio::TypeError->TUPLE_LABEL);
 }
 
 1;

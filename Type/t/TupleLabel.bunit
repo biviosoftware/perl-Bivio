@@ -4,7 +4,7 @@ Type();
 [
     from_literal => [
         '' => UNDEF(),
-	x => TUPLE_LABEL(),
+	x => SYNTAX_ERROR(),
 	x1 => 'x1',
     ],
     compare_defined => [
