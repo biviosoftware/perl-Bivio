@@ -400,9 +400,16 @@ sub setup_http {
 	client_addr => $c->remote_ip,
     );
     # Sets user after cookie clears it
-    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($self, {
-	realm_owner => $user,
-    });
+    if ($user) {
+	if ($user->is_default) {
+	    $self->set_user($user);
+	}
+	else {
+	    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($self, {
+		realm_owner => $user,
+	    });
+	}
+    }
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Action')
 	->get_instance('JobBase')->set_sentinel($self);
     return $self;
