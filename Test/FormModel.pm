@@ -82,11 +82,8 @@ sub new_unit {
 		unless $case->get('method') eq 'process';
 	    my($e) = $expect->[0];
 	    if ($case->get('comparator') eq 'nested_contains') {
-		my($s) = Bivio::IO::Ref->nested_contains(
-		    $e, _walk_tree_actual($case, $e, $req));
-		Bivio::Die->die($$s)
-		    if $s;
-		return 1;
+		$case->actual_return([_walk_tree_actual($case, $e, $req)]);
+		return [$e];
 	    }
 	    my($o) = $case->get('object');
 	    return $expect
