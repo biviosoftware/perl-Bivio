@@ -400,10 +400,10 @@ sub get_delegate_info {
 	undef,
 	'The end date and time cannot be before or equal to the start date and time',
     ],
-    TUPLE_LABEL => [
+    SYNTAX_ERROR => [
 	68,
 	undef,
-	'Labels must be at least two characters and begin with a letter, consist of letters, numbers, dashes(-), or underscores',
+	'Invalid value',
     ],
     SIMPLE_CLASS_NAME => [
 	69,
