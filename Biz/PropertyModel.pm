@@ -389,6 +389,18 @@ sub get_keys {
     return [@{shift->get_info('column_names')}];
 }
 
+=for html <a name="get_qualified_field_name"></a>
+
+=head2 get_qualified_field_name(string field) : string
+
+Returns qualified field name (Model.field) for field.
+
+=cut
+
+sub get_qualified_field_name {
+    return shift->simple_package_name . '.' . shift(@_);
+}
+
 =for html <a name="internal_get_target"></a>
 
 =head2 internal_get_target() : (proto, Bivio::Biz::Model, string)
