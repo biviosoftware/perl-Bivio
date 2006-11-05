@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::PrimaryId;
 use strict;
@@ -208,6 +208,18 @@ sub is_specified {
 	? 1 : 0;
 }
 
+=for html <a name="is_valid"></a>
+
+=head2 static is_valid(any value) : boolean
+
+Stricter test than is_specified().  If unsafe_to_parts() fails, returns false.
+
+=cut
+
+sub is_valid {
+    return shift->unsafe_to_parts(@_) ? 1 : 0;
+}
+
 =for html <a name="to_html"></a>
 
 =head2 to_html(any value) : string
@@ -245,16 +257,7 @@ Returns the primary_id decomposed into parts: number, site, version, type
 =cut
 
 sub to_parts {
-    my(undef, $value) = @_;
-    Bivio::Die->die($value, 'bad value')
-        unless $value =~ /^(\d+)(\d)(\d{2})(\d{2})$/;
-    return {
-	# Convert all but number, because number may be larger than range
-	number => $1,
-	version => $3 + 0,
-	site => $2 + 0,
-	type => $4 + 0,
-    };
+    return shift->unsafe_to_parts(@_) || Bivio::Die->die($_[0], ': bad value');
 }
 
 =for html <a name="to_query"></a>
@@ -285,11 +288,31 @@ sub to_uri {
     return defined($value) ? $value : '';
 }
 
+=for html <a name="unsafe_to_parts"></a>
+
+=head2 static unsafe_to_parts(string value) : hash_ref
+
+Returns the primary_id decomposed into parts: number, site, version, type
+Returns undef if invalid.
+
+=cut
+
+sub unsafe_to_parts {
+    my(undef, $value) = @_;
+    return $value =~ /^(\d+)(\d)(\d{2})(\d{2})$/ ? {
+	# Convert all but number, because number may be larger than range
+	number => $1,
+	version => $3 + 0,
+	site => $2 + 0,
+	type => $4 + 0,
+    } : undef;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
