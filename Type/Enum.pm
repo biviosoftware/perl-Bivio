@@ -703,7 +703,7 @@ Returns true if I<name> is a correctly formed enumerated type name.
 
 sub is_valid_name {
     my(undef, $name) = @_;
-    return $name =~ /^[A-Z][A-Z0-9_]*$/ ? 1 : 0;
+    return $name && $name =~ /^[A-Z][A-Z0-9_]*$/ ? 1 : 0;
 }
 
 =for html <a name="to_literal"></a>
