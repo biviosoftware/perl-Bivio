@@ -277,7 +277,7 @@ CREATE TABLE realm_owner_t (
   name VARCHAR(30) NOT NULL,
   password VARCHAR(30) NOT NULL,
   realm_type NUMERIC(2) NOT NULL,
-  display_name VARCHAR(100) NOT NULL,
+  display_name VARCHAR(500) NOT NULL,
   creation_date_time DATE NOT NULL,
   CONSTRAINT realm_owner_t1 PRIMARY KEY(realm_id)
 )
