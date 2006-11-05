@@ -981,9 +981,10 @@ sub _parse_pk {
 #TODO: Need to check for correct number of $_SEPARATOR values
 	my($literal) = shift(@$pk);
 	my($v, $err) = $t->from_literal($literal);
-	_die($die, Bivio::DieCode::CORRUPT_QUERY(),
-		{message => "invalid $name", error => $err},
-		$attrs->{$tag}) unless defined($v);
+	_die($die, Bivio::DieCode->CORRUPT_QUERY, {
+	    message => "invalid $name",
+	    error => $err,
+	}, $literal) unless defined($v);
 	push(@$res, $v);
     }
     return;
