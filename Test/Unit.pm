@@ -84,7 +84,7 @@ use File::Spec ();
 use File::Basename ();
 
 #=VARIABLES
-use vars (qw($AUTOLOAD $_TYPE $_TYPE_CAN_AUTOLOAD $_CLASS $_PM $_OPTIONS));
+our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS);
 
 =head1 METHODS
 
@@ -330,28 +330,22 @@ I<result>).  Returns the complete data set in this last case.
 
 sub builtin_model {
     my($proto, $name, $query, $expect) = @_;
-    my($m) = Bivio::Biz::Model->new($proto->builtin_req, $name);
+    my($m) = Bivio::ShellUtil->model($name);
     return $m
 	unless $query;
-    if ($m->isa('Bivio::Biz::FormModel')) {
-	$m->die($expect, ': expected not supported for FormModels')
-	    if $expect;
-	$m->process($query);
-	return $m;
-    }
     my($actual);
-    if ($m->isa('Bivio::Biz::ListModel')) {
-	$m->unauth_load_all($query);
-	unless ($expect) {
-	    $m->set_cursor(0);
-	    return $m;
-	}
-	$actual = $m->map_rows;
-    }
     if ($m->isa('Bivio::Biz::PropertyModel')) {
-	return $m->unauth_load_or_die($query)
+	return Bivio::ShellUtil->model($name, $query)
 	    unless $expect;
 	$actual = $m->map_iterate(undef, unauth_iterate_start => undef, $query);
+    }
+    else {
+	$m = Bivio::ShellUtil->model($name, $query);
+	return $m
+	    unless $expect;
+	$m->die($expect, ': expected not supported for FormModels')
+	    if $m->isa('Bivio::Biz::FormModel');
+	$actual = $m->map_rows;
     }
     $proto->builtin_assert_contains($expect, $actual);
     return $actual;
@@ -509,6 +503,53 @@ sub builtin_write_file {
     return Bivio::IO::File->write(@_);
 }
 
+=for html <a name="builtin_var"></a>
+
+=head2 builtin_var(string name) : any
+
+Stores or retrieves global state depending on context.
+
+=cut
+
+sub builtin_var {
+    my($proto) = shift;
+    Bivio::Die->die(\@_, ': var called with too many arguments')
+        if @_ > 2;
+    Bivio::Die->die(\@_, ': var called with too few arguments')
+        if @_ < 1;
+    my($name, $value) = @_;
+    return _var_put($proto, $name, $value)
+	if @_ == 2;
+    return _var_get($proto, $name)
+	if (caller(2))[3] eq 'Bivio::Test::Unit::__ANON__';
+    return sub {
+	my($c) = (caller(1))[3];
+	return _var_get_or_put($proto, $name, $_[0])
+	    if $c eq 'Bivio::IO::Ref::_diff_eval';
+	if ($proto->is_blessed($_[0], 'Bivio::Test::Case')) {
+	    foreach my $i (0 .. 10) {
+		$c = (caller($i))[3];
+		next unless $c =~ /^Bivio::Test::_eval_(\w+)$/;
+		$c = $1;
+		return _var_get($proto, $name)
+		    if $c eq 'method';
+		if ($c eq 'params') {
+		    my($p) = _var_array(_var_get($proto, $name));
+#TODO: Seems a bit dicey, but may be the obvious thingx
+		    my($case) = $_[0];
+		    return $p
+			unless my $cp = $case->unsafe_get('compute_params');
+		    return $cp->($case, $p, $case->get(qw(method object)));
+		}
+		return _var_array(_var_get_or_put($proto, $name, $_[1]->[0]))
+		    if $c =~ /^(?:return|result)$/;
+	    }
+	}
+	Bivio::Die->die($name, ': var called in an incorrect context: ', $c);
+	# DOES NOT RETURN
+    };
+}
+
 =for html <a name="run"></a>
 
 =head2 static run(string bunit)
@@ -582,6 +623,55 @@ sub _pm {
     my($res2) = $res;
     $res2 =~ s/\d(?=\.pm$)//;
     return -f $res2 ? $res2 : $res;
+}
+
+sub _var_array {
+    my($value) = @_;
+    return ref($value) eq 'ARRAY' ? $value : [$value];
+}
+
+sub _var_exists {
+    my($proto, $name) = @_;
+    return exists(_var_hash($proto)->{$name});
+}
+
+sub _var_get {
+    my($proto, $name, $not_die) = @_;
+    if (defined($name)) {
+	return [map(_var_get($proto, $_, 1), @$name)]
+	    if ref($name) eq 'ARRAY';
+	return {
+	    map((_var_get($proto, $_, 1), _var_get($proto, $name->{$_}, $1)),
+		sort(keys(%$name))),
+	} if ref($name) eq 'HASH';
+	return _var_hash($proto)->{$name}
+	    if !ref($name) && _var_exists($proto, $name);
+    }
+    Bivio::Die->die($name, ': var value is defined')
+        unless $not_die;
+    return $name;
+}
+
+sub _var_get_or_put {
+    my($proto, $name, $value) = @_;
+    return ref($name) || _var_exists($proto, $name)
+	? _var_get($proto, $name)
+	: _var_put($proto, $name, $value);
+}
+
+sub _var_hash {
+    return shift->current_self->get_if_exists_else_put(
+	__PACKAGE__ . '.var' => {},
+    );
+}
+
+sub _var_put {
+    my($proto, $name, $value) = @_;
+    Bivio::Die->die($name, ': name must be a (perl) identifier')
+	unless $name =~ /^\w+$/s;
+    Bivio::Die->die($name, ': var may only be set once')
+	if _var_exists($proto, $name);
+    return _var_hash($proto)->{$name} = $value;
 }
 
 =head1 COPYRIGHT
