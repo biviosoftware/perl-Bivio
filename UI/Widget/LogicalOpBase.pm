@@ -29,8 +29,8 @@ sub internal_render_start {
 }
 
 sub internal_render_true {
-    my($self, $state) = @_;
-    ${$state->{buffer}} = '1';
+    my($self, $state, $value) = @_;
+    ${$state->{buffer}} .= $value;
     return 0;
 }
 
@@ -41,13 +41,14 @@ sub render {
 	buffer => $buffer,
     };
     $self->internal_render_start($state);
+    my($last_value);
     foreach my $v (@{$self->get('values')}) {
 	return unless $self->internal_render_operand(
-	    $self->render_simple_value($v, $source),
+	    $last_value = $self->render_simple_value($v, $source),
 	    $state,
 	);
     }
-    $self->internal_render_end($state);
+    $self->internal_render_end($state, $last_value);
     return;
 }
 
