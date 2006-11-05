@@ -68,4 +68,43 @@ req()->set_realm('btest_read');
     sub {'Bivio::Die'} => [
 	die => DIE(),
     ],
+    class() => [
+	sub {$_[2]} => [
+	    abc => expect_contains(var('g1')),
+	    abc => var('g1'),
+	    var('g1') => 'abc',
+	    sub {[var('g1')]} => 'abc',
+	    abc => sub {[var('g1')]},
+	    var({g1 => 1}) => [{abc => 1}],
+	    var({1 => 'g1'}) => [{1 => 'abc'}],
+	    var([qw(g1 ignored)]) => 'abc',
+	    def => var('g2'),
+	],
+	{
+	    method => sub {['not seen']},
+	    compute_return => var('g2'),
+	} => [
+	    anything => 'def',
+	],
+	sub {'Bivio::UNIVERSAL'} => var('g3'),
+	{
+	    method => sub {@{shift->get('params')}},
+	    compute_params => sub {
+                my(undef, $params) = @_;
+                return [map("!$_!", @$params)];
+            },
+	} => [
+	    def => '!def!',
+            var('g2') => var('g4'),
+            var(['g4', 'g1']) => ['!!def!!', '!abc!'],
+            sub {
+                var(g5 => '!3!');
+                return shift->get('compute_params')->(undef, [3]);
+            } => var('g5'),
+	],
+    ],
+#TODO: create_object needs to be deferred
+#     var('g2') => [
+# 	package_name => var('g2'),
+#     ],
 ];
