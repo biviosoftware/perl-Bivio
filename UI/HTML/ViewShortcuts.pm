@@ -291,12 +291,25 @@ Initializes I<attrs> (default: [class, id]) using unsafe_initialize_attr.
 =cut
 
 sub vs_html_attrs_initialize {
-    my(undef, $widget, $attrs) = @_;
+    my($proto, $widget, $attrs) = @_;
     $widget->map_invoke(
 	'unsafe_initialize_attr',
-	$attrs || [qw(class id)],
+	$attrs || $proto->vs_html_attrs_merge,
     );
     return;
+}
+
+=for html <a name="vs_html_attrs_merge"></a>
+
+=head2 static vs_html_attrs_merge(array_ref other) : array_ref
+
+Returns [class, id].
+
+=cut
+
+sub vs_html_attrs_merge {
+    shift;
+    return [qw(class id), @{shift || []}];
 }
 
 =for html <a name="vs_html_attrs_render"></a>
@@ -315,7 +328,7 @@ k1_class, then the full name will be rendered, but the string will be:
 =cut
 
 sub vs_html_attrs_render {
-    my(undef, $widget, $source, $attrs) = @_;
+    my($proto, $widget, $source, $attrs) = @_;
     return join(
 	'',
 	map({
@@ -323,7 +336,7 @@ sub vs_html_attrs_render {
 	    my($b) = undef;
 	    $widget->unsafe_render_attr($_, $source, \$b) && length($b)
 		? qq{ $h="@{[Bivio::HTML->escape($b)]}"} : '';
-	} $attrs ? @$attrs : qw(class id)),
+	} @{$attrs || $proto->vs_html_attrs_merge}),
     );
     return;
 }
