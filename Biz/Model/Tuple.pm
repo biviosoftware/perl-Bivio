@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::Tuple;
 use strict;
-use base 'Bivio::Biz::PropertyModel';
+use base 'Bivio::Biz::Model::OrdinalBase';
 use Bivio::Ext::MIMEParser;
 use Bivio::IO::Trace;
 
@@ -17,21 +17,13 @@ sub LIST_FIELDS {
     return $_TSN->map_list(sub {'Tuple.' . shift(@_)});
 }
 
+sub ORD_FIELD {
+    return 'tuple_num';
+}
+
 sub create {
     my($self, $values) = @_;
-    my($req) = $self->get_request;
-    $self->die($values, ': realm_id may not be set')
-	if $values->{realm_id};
-    $values->{realm_id} = $req->get('auth_id');
-    $self->get_instance('Lock')->execute_unless_acquired($req);
-    $values->{modified_date_time} = $_DT->now;
-    $values->{tuple_num} = (Bivio::SQL::Connection->execute_one_row(
-	'SELECT MAX(tuple_num)
-        FROM tuple_t
-        WHERE realm_id = ?
-        AND tuple_def_id = ?',
-	[$values->{realm_id}, $values->{tuple_def_id}],
-    )->[0] || 0) + 1;
+    $values->{modified_date_time} ||= $_DT->now;
     return shift->SUPER::create(@_);
 }
 
@@ -41,15 +33,22 @@ sub internal_initialize {
         version => 1,
         table_name => 'tuple_t',
 	columns => {
-	    realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    tuple_def_id => ['PrimaryId', 'PRIMARY_KEY'],
 	    tuple_num => ['TupleNum', 'PRIMARY_KEY'],
 	    modified_date_time => ['DateTime', 'NOT_NULL'],
 	    thread_root_id => ['RealmMail.thread_root_id', 'NONE'],
 	    @{$_TSN->map_list(sub {shift(@_) => ['TupleSlot', 'NONE']})},
         },
-	auth_id => 'realm_id',
     });
+}
+
+sub internal_prepare_max_ord {
+    my($self, $stmt, $values) = @_;
+    $stmt->where([
+	$self->get_qualified_field_name('tuple_def_id'),
+	[$values->{tuple_def_id}],
+    ]);
+    return shift->SUPER::internal_prepare_max_ord(@_);
 }
 
 sub mail_slot {
