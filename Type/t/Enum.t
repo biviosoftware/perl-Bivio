@@ -4,7 +4,7 @@
 # $Id$
 #
 use strict;
-BEGIN { $| = 1; print "1..39\n"; }
+BEGIN { $| = 1; print "1..40\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Type::Enum;
@@ -155,3 +155,4 @@ $req->clear_nondurable_state;
 t($req->get('Type.T3') == $t3);
 t($t1->E0->eq_e0 == 1);
 t($t1->E0->eq_e1 == 0);
+t($t1->is_valid_name == 0);
