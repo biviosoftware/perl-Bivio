@@ -39,6 +39,9 @@ sub new_unit {
 	    my($case, $params, $method, $object) = @_;
 	    return $params
 		unless $method eq 'process';
+	    if (my $l = $req->unsafe_get('Model.Lock')) {
+		$l->release;
+	    }
 	    $req->clear_nondurable_state;
 	    $req->put(task => Bivio::Collection::Attributes->new({
 		form_model => ref($m),
@@ -78,6 +81,13 @@ sub new_unit {
 	    return $expect
 		unless $case->get('method') eq 'process';
 	    my($e) = $expect->[0];
+	    if ($case->get('comparator') eq 'nested_contains') {
+		my($s) = Bivio::IO::Ref->nested_contains(
+		    $e, _walk_tree_actual($case, $e, $req));
+		Bivio::Die->die($$s)
+		    if $s;
+		return 1;
+	    }
 	    my($o) = $case->get('object');
 	    return $expect
 		unless (ref($e) eq 'HASH' && @$expect == 1)
