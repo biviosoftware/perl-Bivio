@@ -7,11 +7,14 @@ use base 'Bivio::UI::Widget::LogicalOpBase';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_render_end {
-    return shift->internal_render_true(@_);
+    my($self, $state, $last_value) = @_;
+    $self->internal_render_true($state, $last_value)
+	if $last_value;
+    return; 
 }
 
 sub internal_render_operand {
-    my($self, $value) = @_;
+    my(undef, $value) = @_;
     return $value ? 1 : 0;
 }
 
