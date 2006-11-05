@@ -970,12 +970,16 @@ sub _parse_parent_id {
 sub _parse_pk {
     my($attrs, $support, $die, $tag, $name) = @_;
     my($value) = $attrs->{$tag} || $attrs->{$name};
-    $attrs->{$name} = undef, return unless defined($value);
+    unless (defined($value)) {
+	$attrs->{$name} = undef;
+	return;
+    }
     my($res) = $attrs->{$name} = [];
-    my(@pk) = split(/$_SEPARATOR/o, $value);
+    my($pk)
+	= [ref($value) eq 'ARRAY' ? @$value : split(/$_SEPARATOR/o, $value)];
     foreach my $t (@{$support->get('primary_key_types')}) {
 #TODO: Need to check for correct number of $_SEPARATOR values
-	my($literal) = shift(@pk);
+	my($literal) = shift(@$pk);
 	my($v, $err) = $t->from_literal($literal);
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(),
 		{message => "invalid $name", error => $err},
