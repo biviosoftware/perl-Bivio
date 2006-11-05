@@ -145,6 +145,11 @@ sub _cfg_tuple {
 		'You must specify at least one Field.'],
 	    ['TupleUseForm.TupleUse.tuple_def_id.EXISTS' =>
 		'This Table is in use so you cannot change the Schema.'],
+	    [[qw(Tuple TupleSlotDef TupleSlotType)] => [
+		[qw(label moniker)] => [
+		    SYNTAX_ERROR => 'Labels must be at least two characters and begin with a letter, consist of letters, numbers, dashes(-), or underscores',
+		],
+	    ]],
 	],
     };
 }
