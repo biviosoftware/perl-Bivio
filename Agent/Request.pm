@@ -222,7 +222,7 @@ Order and names of params passed to format_uri().
 
 sub FORMAT_URI_PARAMETERS {
     return [qw(
-        task_id query realm path_info no_context anchor require_context)];
+        task_id query realm path_info no_context anchor require_context uri)];
 }
 
 #=IMPORTS
@@ -618,27 +618,28 @@ sub format_uri {
     my($self, $named) = shift->internal_get_named_args(
 	$_FORMAT_URI_ARGS,
 	\@_);
-    foreach my $x (qw(task_id path_info query)) {
-	$named->{$x} = $self->unsafe_get($x)
-	    unless exists($named->{$x});
+    my($uri);
+    unless (defined($uri = $named->{uri})) {
+	foreach my $x (qw(task_id path_info query)) {
+	    $named->{$x} = $self->unsafe_get($x)
+		unless exists($named->{$x});
+	}
+	$named->{realm} = $self->internal_get_realm_for_task($named->{task_id})
+	    unless defined($named->{realm});
+	$uri = Bivio::UI::Task->format_uri($named, $self);
+	my($task) = Bivio::Agent::Task->get_by_id($named->{task_id});
+	$uri = $self->format_http_prefix(1) . $uri
+	    if $task->get('require_secure') && !$self->unsafe_get('is_secure')
+		&& $self->get('can_secure');
+	delete($named->{query})
+	    unless $task->get('want_query');
     }
-    $named->{realm} = $self->internal_get_realm_for_task($named->{task_id})
-	unless defined($named->{realm});
-
-    my($uri) = Bivio::UI::Task->format_uri($named, $self);
-
-    my($task) = Bivio::Agent::Task->get_by_id($named->{task_id});
-    $uri = $self->format_http_prefix(1) . $uri
-	if $task->get('require_secure') && !$self->unsafe_get('is_secure')
-	    && $self->get('can_secure');
-
-    if (defined($named->{query}) && $task->get('want_query')) {
+    if (defined($named->{query})) {
         $named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
             if ref($named->{query});
         $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
 	    if length($named->{query});
     }
-
     $uri .= '#' . Bivio::HTML->escape_query($named->{anchor})
         if defined($named->{anchor}) && length($named->{anchor});
     return $uri;

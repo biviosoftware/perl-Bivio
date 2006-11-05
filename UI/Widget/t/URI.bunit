@@ -14,4 +14,9 @@ Widget();
 	task_id => 'SITE_ROOT',
 	query => [sub {{x => 'y'}}],
     }] => '/?x=y',
+    [{uri => '/abc'}] => '/abc',
+    [{
+	uri => '/abc',
+	query => [sub {{x => 'y'}}],
+    }] => '/abc?x=y',
 ];
