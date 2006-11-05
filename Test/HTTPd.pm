@@ -80,11 +80,10 @@ my($_HTTPD) = _find_file(qw(
     /usr/local/apache/bin/httpd
     /usr/sbin/httpd
 ));
-Bivio::IO::Config->register({
-    Bivio::IO::Config->NAMED => {
-	'port' => Bivio::IO::Config->REQUIRED,
-	'handler' => 'Bivio::Agent::HTTP::Dispatcher',
-    },
+Bivio::IO::Config->register(my $_CFG = {
+    port => Bivio::IO::Config->REQUIRED,
+    handler => 'Bivio::Agent::HTTP::Dispatcher',
+    pre_execute_hook => sub {},
 });
 
 =head1 METHODS
@@ -103,9 +102,10 @@ sub PROJ_ROOT {
     return _project_root();
 }
 
-# We don't do dynamic reconfiguration
 sub handle_config {
-#    shift->SUPER::handle_config(@_);
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub main {
@@ -125,8 +125,6 @@ sub main {
 	defined($server_name) && &_usage('too many arguments');
 	$server_name = $_;
     }
-    my($cfg) = Bivio::IO::Config->get(
-	defined($server_name) ? $server_name : 'http');
     if ($ENV{PERLLIB}) {
 	my($httpd) = $ENV{PERLLIB} . '../external/apache/src/httpd';
 	-x $httpd && ($_HTTPD = $httpd);
@@ -150,12 +148,12 @@ EOF
     my($log) = $background ? 'stderr.log' : '|cat';
     my($mime_types) = _find_file('/etc/mime.types', '/etc/httpd/mime.types');
     my($keepalive) = $background ? 'on' : 'off';
-    my($port) = $cfg->{port};
+    my($port) = $_CFG->{port};
     my($user) = getpwuid($>) || $>;
     my($group) = getgrgid($)) || $);
     my($hostname) = Sys::Hostname::hostname();
-    my($handler) = $cfg->{handler};
-    my($perl_module) = $handler =~ /^\+/ ? "" : "PerlModule $cfg->{handler}";
+    my($handler) = $_CFG->{handler};
+    my($perl_module) = $handler =~ /^\+/ ? "" : "PerlModule $_CFG->{handler}";
     my(@start_mode) = $background ? () : ('-X');
     my($bconf) = $ENV{'BCONF'}
 	? "PerlSetEnv BCONF $ENV{'BCONF'}" : '';
@@ -199,8 +197,9 @@ EOF
 	print(STDERR "Starting: $_HTTPD @start_mode -d $pwd -f $pwd/$conf on port $port\n");
 	print(STDERR "tail -f stderr.log\n")
 	    if $background;
-#	exec("$_HTTPD", @start_mode, '-d', $pwd, '-f', "$conf");
-	exec("(cd $pwd; $_HTTPD @start_mode -d $pwd -f $conf)");
+	Bivio::IO::File->chdir($pwd);
+	$_CFG->{pre_execute_hook}->();
+	exec($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
 	die("$_HTTPD: $!");
     }
     else {
