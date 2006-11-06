@@ -34,7 +34,7 @@ sub execute {
     my($html, $dt, $uid) = Bivio::UI::XHTML::Widget::WikiStyle->render_html(
 	$name, $req, $req->get('task_id'), $realm_id,
     );
-    return $self->internal_model_not_found($req)
+    return $self->internal_model_not_found($req, $realm_id)
 	unless $html;
     $self->put(
 	html => $$html,
@@ -58,7 +58,7 @@ sub execute_help {
 }
 
 sub internal_model_not_found {
-    my($self, $req) = @_;
+    my($self, $req, $realm_id) = @_;
     my($name) = $self->get('name');
     my($t) = $req->unsafe_get_nested(qw(task edit_task));
     Bivio::Die->throw(MODEL_NOT_FOUND => {entity => $name})
