@@ -219,7 +219,7 @@ sub merge_realm_role_category_map {
 	    $new ? @{$new->()} : (),
 	    [
 		public_forum_email =>
-		    [[qw(ANONYMOUS USER)] => 'MAIL_SEND'],
+		    [[qw(ANONYMOUS USER WITHDRAWN GUEST)] => 'MAIL_SEND'],
 	    ],
 	    [
 		system_user_forum_email =>
