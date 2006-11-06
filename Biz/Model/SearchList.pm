@@ -50,7 +50,7 @@ sub internal_load_rows {
 sub parse_query_from_request {
     my($self) = shift;
     my($q) = $self->SUPER::parse_query_from_request(@_);
-    return unless my $f = $self->get_request->unsafe_get('Model.SearchForm');
+    return unless my $f = $self->get_request->unsafe_get('form_model');
     if (defined(my $s = $q->unsafe_get('search'))) {
 	$f->put_search_value($s);
     }
