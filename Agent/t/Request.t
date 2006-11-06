@@ -28,31 +28,18 @@ my($resource) = Bivio::Agent::t::Mock::Resource->new;
 $req->setup_facade();
 Bivio::Agent::Task->initialize;
 Bivio::Test->new()->unit([
-    sub {
-	$req->set_user('guest');
-	return $req;
-    },
-        => [
-	can_user_execute_task => [
-            ['TEST_MULTI_ROLES1'] => [0],
-	],
-    ],
-    sub {
-	$req->set_user('multi_role_user');
-	return $req;
-    },
-        => [
-	can_user_execute_task => [
-            ['TEST_MULTI_ROLES1'] => [1],
-	],
-    ],
-    sub {
-	$req->set_user('multi_role_user');
-	return $req;
-    },
-        => [
-	can_user_execute_task => [
-            ['TEST_MULTI_ROLES2'] => [1],
+    $req => [
+	{
+	    method => 'can_user_execute_task',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		$req->set_user(shift(@$params));
+		return $params;
+	    },
+	} => [
+            [qw(guest TEST_MULTI_ROLES1)] => 0,
+            [qw(multi_role_user TEST_MULTI_ROLES1)] => 1,
+            [qw(multi_role_user TEST_MULTI_ROLES2)] => 1,
 	],
 	{
 	    method => 'unsafe_get_txn_resource',
