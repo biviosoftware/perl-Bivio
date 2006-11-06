@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,51 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.55  2006/11/05 21:59:47  nagler
+  * Bivio::UI::XHTML::Widget::XLink added.  Interesting example of a
+    new style widget implementation
+  * Bivio::Type::DisplayName added
+  * Bivio::Biz::Model::RealmOwner->unauth_load_by_email_id_or_name and
+    unauth_load_by_id_or_name_or_die allow for numeric RealmNames
+  * Bivio::Biz::Model::RealmOwner.display_name is Type.DisplayName which is
+    500 chars
+  * Bivio::Test::Unit->builtin_var allows bunits to save state between
+    cases in a convenient manner.  See Unit.bunit and ForumForm.bunit
+    for examples.
+  * Bivio::ShellUtil->initialize_fully added as alias for intialize_ui(1)
+  * Bivio::ShellUtil->model instantiates and (optionally) loads models.
+    Refactored from Bivio::Test::Unit->builtin_model
+  * Bivio::Agent::Request->format_uri accepts uri as named argument which
+    avoids all task specific params.  See URI.bunit for example.
+  * Bivio::UI::ViewShortcuts->vs_constant added (like vs_text)
+  * Bivio::UI::HTML::Widget::Tag.want_whitespace removed
+  * Bivio::UI::HTML::ViewShortcuts->vs_html_attrs_merge added (for XLink)
+  * Bivio::Test::HTTPd no longer uses named configuration
+  * Bivio::Test::HTTPd.pre_execute_hook added
+  * Bivio::Test->unit accepts comparator (nested_contains or nested_equals)
+    for checking results
+  * Bivio::Biz::PropertyModel->get_qualified_field_name added
+  * Bivio::Biz::Action::WikiView->internal_model_not_found added
+  * Bivio::Biz::Action::WikiName->START_PAGE added
+  * Bivio::Biz::ListQuery.this may be an array_ref
+  * Bivio::Test::FormModel releases Model.Lock if held on clear non-durable state.
+    If comparator is set to nested_contains, uses it to check results of process.
+  * Bivio::Test::Request->setup_http will not UserLogin if there is no user
+    or if the user is the "default" user
+  * Bivio::Type::ForumName cleans up the name and supports FIRST_CHAR_REGEXP
+  * Bivio::Type::SyntacticString added
+  * Bivio::Delegate::SimpleTypeError->SYNTAX_ERROR should be used when there
+    are syntactic errors (see SyntacticString) and Facade's FormError component
+    should be assigned the UI error message
+  * Bivio::Type::PrimaryId->is_valid added
+  * Bivio::Type::TupleLabel->isa SyntacticString
+  * Bivio::UI::View views can call other view classes with Class->name syntax
+  * Bivio::UI::Widget::LogicalBase/And/Or return last true value, not (1)
+  * Bivio::UI::Widget::Prose renders single capital letter functions, e.g. P()
+  * Bivio::UI::XHTML::Widget::BasicPage.basic_page_* attributes replace
+    simple_page_* attributes
+  * Bivio::MIME::Type refactored to be simpler (with unit test)
+
   Revision 4.54  2006/11/03 23:13:12  aviggio
   * Bivio::Biz::Model::ForumUserAddForm made _up and _down private methods
     into internal methods to allow override by subclasses
