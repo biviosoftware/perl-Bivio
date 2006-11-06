@@ -120,12 +120,14 @@ The owner must exist.
 
 sub new {
     my($proto, $owner, $req) = @_;
-
     Bivio::Die->die("must have owner or call type explicitly")
         unless $owner;
     unless (ref($owner)) {
         Bivio::Die->die('cannot create model without request')
 	    unless ref($req);
+	my($g) = $proto->get_general;
+	return $g
+	    if $g->get('id') eq $owner;
 	$owner = Bivio::Biz::Model->new($req, 'RealmOwner')
 	     ->unauth_load_by_id_or_name_or_die($owner);
     }
