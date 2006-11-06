@@ -383,6 +383,22 @@ sub has_keys {
     return 1;
 }
 
+=for html <a name="internal_clear_read_only"></a>
+
+=head2 internal_clear_read_only() : self
+
+Reset is_read_only.  Use with caution.
+
+=cut
+
+sub internal_clear_read_only {
+    my($self) = @_;
+    _die($self, "protected method")
+	unless caller(0)->isa(__PACKAGE__);
+    delete($self->[$_IDI]->{$_READ_ONLY_ATTR});
+    return $self;
+}
+
 =for html <a name="internal_get"></a>
 
 =head2 protected internal_get() : hash_ref
@@ -417,7 +433,8 @@ Modifying the hash will modify the attributes.
 
 sub internal_put {
     my($self, $fields) = @_;
-    _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
+    _die($self, "protected method")
+	unless caller(0)->isa(__PACKAGE__);
     _writable($self);
     $self->[$_IDI] = $fields;
     return $self;
