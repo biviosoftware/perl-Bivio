@@ -595,6 +595,11 @@ sub info_tuple {
 }
 
 sub info_xapian {
+    Bivio::IO::Config->introduce_values({
+	'Bivio::Biz::Model::RealmFile' => {
+	    search_class => 'Bivio::Search::Xapian',
+	},
+    });
     return [
 	[qw(
 	    JOB_XAPIAN_COMMIT
