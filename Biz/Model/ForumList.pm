@@ -36,7 +36,7 @@ sub internal_post_load_row {
     my($self, $row) = @_;
     my($req) = $self->get_request;
     my($a) = $req->get('auth_id');
-    $req->set_realm($row->{'Forum.forum_id'});
+    $req->set_realm($row->{'RealmOwner.name'});
     my($cats) = Bivio::IO::ClassLoader
 	->simple_require('Bivio::Biz::Util::RealmRole')
 	    ->list_enabled_categories();

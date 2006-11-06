@@ -68,11 +68,12 @@ Returns (role, permission_set) hash_ref for I<realm>.
 =cut
 
 sub get_permission_map {
-    my($self, $realm_or_id) = @_;
-    my($realm) = Bivio::Auth::Realm->new($realm_or_id, $self->get_request);
+    my($self, $realm) = @_;
+    $realm = Bivio::Auth::Realm->new($realm, $self->get_request)
+	unless $self->is_blessed($realm, 'Bivio::Auth::Realm');
     return {
-	%{$realm->is_default ? {}
-	      : $self->get_permission_map($realm->get_default_id)},
+	$realm->is_default ? ()
+	      : %{$self->get_permission_map($realm->get_default_name)},
 	@{$self->new->map_iterate(
 	    sub {shift->get(qw(role permission_set))},
 	    'unauth_iterate_start',
