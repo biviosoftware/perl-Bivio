@@ -7,6 +7,7 @@ use Bivio::Agent::Request;
 use Bivio::Biz::Model;
 use Bivio::Ext::NetFTPServer::RootHandle;
 use Bivio::IO::Config;
+use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::DocletFileName;
 
@@ -14,14 +15,15 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_CFG);
 Bivio::IO::Config->register({
-    ftp_user => 'anonymous',
+    file_owner => 'anonymous',
+    ftp_user => 'apache',
 });
 
 sub authentication_hook {
     my($self) = @_;
     # all access allowed
     $self->{user_is_anonymous} = 1;
-    $self->{user} = $_CFG->{ftp_user};
+    $self->{user} = $_CFG->{file_owner};
     return 0;
 }
 
@@ -76,6 +78,15 @@ sub handle_config {
 
 sub post_accept_hook {
     my($self) = @_;
+    my($login, undef, $uid, $gid) = CORE::getpwnam($_CFG->{ftp_user});
+
+    if ($login) {
+        $self->_drop_privs ($uid, $gid, $login);
+    }
+    else {
+        Bivio::IO::Alert->info(
+            'drop privs failed, running ftp as current user');
+    }
     _clear_request($self);
     $self->{request} = Bivio::Agent::Request->get_current_or_new;
     $self->{request}->set_realm(undef);
@@ -108,6 +119,7 @@ sub root_directory_hook {
 sub _clear_request {
     my($self) = @_;
     return unless $self->{request};
+    Bivio::SQL::Connection->rollback($self->{request});
     $self->{request}->clear_current;
     delete($self->{request});
     return;
