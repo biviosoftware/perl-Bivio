@@ -9,14 +9,17 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub create {
     my($self, $values) = @_;
     my($req) = $self->get_request;
-    $self->die($values, ': realm_id may not be set differently from auth_realm')
-	if $values->{realm_id} && $req->get('auth_id') ne $values->{realm_id};
-    $values->{realm_id} = $req->get('auth_id');
-    $self->get_instance('Lock')->execute_unless_acquired($req);
-    my($v) = $self->unsafe_max_ord($values);
     my($f) = $self->ORD_FIELD;
-    my($t) = $self->get_field_type($f);
-    $values->{$f} = defined($v) ? $t->add($v, 1) : $t->get_min;
+    unless (defined($values->{$f})) {
+	$self->die($values, ': realm_id must be auth_id')
+	    if $values->{realm_id}
+	    && $req->get('auth_id') ne $values->{realm_id};
+	$self->get_instance('Lock')->execute_unless_acquired($req);
+	$values->{realm_id} = $req->get('auth_id');
+	my($v) = $self->unsafe_max_ord($values);
+	my($t) = $self->get_field_type($f);
+	$values->{$f} = defined($v) ? $t->add($v, 1) : $t->get_min;
+    }
     return shift->SUPER::create(@_);
 }
 
