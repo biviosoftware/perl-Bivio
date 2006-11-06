@@ -312,7 +312,7 @@ sub call_main {
 	$req->delete(__PACKAGE__);
     }
     if ($die) {
-	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
+	push(@{$die->get('attrs')->{view_stack} ||= []}, $self->as_string);
 	$die->throw;
 	# DOES NOT RETURN
     }
@@ -451,6 +451,36 @@ sub unsafe_get_current {
 
 #=PRIVATE METHODS
 
+sub _clear_parents {
+    my($object, $seen) = @_;
+    return if $seen->{$object}++;
+    $object->internal_clear_read_only->delete('parent');
+    foreach my $v (values(%{$object->get_shallow_copy})) {
+	next unless ref($v);
+	foreach my $o (
+	    ref($v) eq 'ARRAY' ? @$v : ref($v) eq 'HASH' ? values(%$v) : $v,
+	) {
+	    _clear_parents($v, $seen)
+		if $object->is_blessed($o, 'Bivio::UI::Widget');
+	}
+    }
+    return;
+}
+
+sub _destroy {
+    my($self, $die) = @_;
+    push(@{$die->get('attrs')->{view_stack} ||= []}, $self->as_string)
+	if $die;
+    delete($_CACHE->{$self->get_or_default(view_cache_name => '')});
+    if (my $req = Bivio::Agent::Request->get_current) {
+	$req->delete(__PACKAGE__);
+    }
+    _clear_parents($self, {});
+    $die->throw
+	if $die;
+    return;
+}
+
 # _get_instance(proto, any view_name, Bivio::Collection::Attributes req_or_facade) : Bivio::UI::View
 #
 # Returns an instance of view_name for this facade.  req_or_facade may
@@ -486,23 +516,25 @@ sub _get_instance {
 	_trace($unique, ': cache hit=', $cache) if $_TRACE;
 	return $cache;
     }
-    $self->put_unless_exists(view_name => $name_arg);
+    $self->put_unless_exists(
+	view_name => $name_arg,
+	view_cache_name => $unique,
+    );
     my($die) = do {
 	local($_CURRENT) = $_CACHE->{$unique} = -1;
 	local($_CURRENT_FACADE) = $facade;
 	Bivio::UI::ViewLanguage->eval($self);
     };
     delete($_CACHE->{$unique});
-    if ($die) {
-	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
-	$die->throw;
-    }
+    _destroy($self, $die)
+	if $die;
     # Don't store if $unique contains a stringified reference
     return $self
 	if $unique =~ /\(0x\w+\)/i
 	|| !$facade->get('want_local_file_cache');
     _trace($unique, ': cached as ', $self) if $_TRACE;
-    return $_CACHE->{$unique} = $self;
+    return $_CACHE->{$unique} = $self->internal_clear_read_only
+	->put(view_is_cached => 1)->set_read_only;
 }
 
 # _pre_execute(self, Bivio::Agent::Request req)
