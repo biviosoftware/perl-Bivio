@@ -337,7 +337,7 @@ Print all defined permission categories.
 sub list_all_categories {
     my($self) = @_;
     my($res) = '';
-    foreach my $x (@{CATEGORIES()}) {
+    foreach my $x (@{$self->CATEGORIES}) {
 	$res .= "$x\n";
     }
     return \$res;
@@ -354,8 +354,8 @@ Shows permission categories which are enabled for the current realm.
 sub list_enabled_categories {
     my($self) = @_;
     my($req) = $self->get_request;
-    my($rp) = Bivio::Biz::Model->new($req, 'RealmRole')->
-	get_permission_map($req->get('auth_realm'));
+    my($rp) = Bivio::Biz::Model->new($req, 'RealmRole')
+	->get_permission_map($req->get('auth_realm'));
     my($cm) = _category_map($self);
     return [map({
 	my($k) = $_;
