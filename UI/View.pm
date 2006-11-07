@@ -461,7 +461,7 @@ sub _clear_parents {
 	    ref($v) eq 'ARRAY' ? @$v : ref($v) eq 'HASH' ? values(%$v) : $v,
 	) {
 	    _clear_parents($v, $seen)
-		if $object->is_blessed($o, 'Bivio::UI::Widget');
+		if $object->is_blessed($o, 'Bivio::Collection::Attributes');
 	}
     }
     return;
