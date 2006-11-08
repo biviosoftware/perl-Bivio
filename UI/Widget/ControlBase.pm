@@ -102,11 +102,20 @@ Initializes the control field
 sub initialize {
     my($self) = @_;
     if (my $c = $self->unsafe_get('control')) {
-	$self->put(control => [
-	    ['->get_request'],
-	    '->can_user_execute_task',
-	    Bivio::Agent::TaskId->from_any($c)
-	]) if !ref($c) || $self->is_blessed($c, 'Bivio::Agent::TaskId');
+	unless (ref($c)) {
+	    if ($c =~ /^[a-z_0-9]{3,}$/
+	        and Bivio::Agent::TaskId->is_valid_name(uc($c))
+	    ) {
+		Bivio::IO::Alert->warn_deprecated(
+		    $c, ': change task name to upper case');
+		$c = uc($c);
+	    }
+	    $c = Bivio::Agent::TaskId->from_name($c)
+		if Bivio::Agent::TaskId->is_valid_name($c);
+	}
+	$self->put(
+	    control => [['->get_request'], '->can_user_execute_task', $c],
+	) if $self->is_blessed($c, 'Bivio::Agent::TaskId');
     }
     $self->map_invoke(
 	unsafe_initialize_attr => [qw(control control_off_value)],
