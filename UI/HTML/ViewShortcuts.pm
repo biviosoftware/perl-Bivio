@@ -332,7 +332,7 @@ sub vs_html_attrs_render {
     return join(
 	'',
 	map({
-	    my($h) = ($_ =~ /([^_]+)$/);
+	    my($h) = lc(($_ =~ /([^_]+)$/)[0]);
 	    my($b) = undef;
 	    $widget->unsafe_render_attr($_, $source, \$b) && length($b)
 		? qq{ $h="@{[Bivio::HTML->escape($b)]}"} : '';
