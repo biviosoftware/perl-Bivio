@@ -39,7 +39,6 @@ sub control_on_render {
 
 sub initialize {
     my($self) = @_;
-    my($init) = [qw(tag value)];
     unless ($self->unsafe_get('html_attrs')) {
 	my($a) = $self->map_each(sub {
             my(undef, $k) = @_;
@@ -50,7 +49,8 @@ sub initialize {
     }
     $self->put_unless_exists(tag_if_empty => 1)
 	if _empty($self->get('tag'));
-    $self->map_invoke(initialize_attr => [qw(tag value)]);
+    $self->initialize_attr('tag');
+    $self->unsafe_initialize_attr('value');
     $self->unsafe_initialize_attr('tag_if_empty');
     return shift->SUPER::initialize(@_);
 }
