@@ -20,9 +20,10 @@ my($do_default);
 	    ['demo', req()] => ['USER', 0, 'demo'],
 	    ['user', req()] => ['USER', 1, 'user'],
 	    ['club', req()] => ['CLUB', 1, 'club'],
-	    ['general', req()] => ['GENERAL', 1, 'general'],
+	    ['general', req()] => ['GENERAL', 1, undef],
 	    sub {[class()->get_general, req()]} => ['GENERAL', 1, undef],
 	    sub {[class()->new('demo', req()), req()]} => ['USER', 0, 'demo'],
+	    [Bivio::Auth::RealmType->USER, req()] => ['USER', 1, 'user'],
 	],
 	get_general => [
 	    [] => ['GENERAL', 1, undef],

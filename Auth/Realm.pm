@@ -122,12 +122,17 @@ sub new {
     my($proto, $owner, $req) = @_;
     Bivio::Die->die("must have owner or call type explicitly")
         unless $owner;
-    unless (ref($owner)) {
+    if (ref($owner)) {
+	return $proto->new(lc($owner->get_name()), $req)
+	    if $proto->is_blessed($owner, 'Bivio::Auth::RealmType');
+    }
+    else {
+#TODO: Deprecate default names to be special, e.g. =user
         Bivio::Die->die('cannot create model without request')
 	    unless ref($req);
 	my($g) = $proto->get_general;
 	return $g
-	    if $g->get('id') eq $owner;
+	    if $g->get('id') eq $owner || $owner eq 'general';
 	$owner = Bivio::Biz::Model->new($req, 'RealmOwner')
 	     ->unauth_load_by_id_or_name_or_die($owner);
     }
@@ -346,9 +351,7 @@ Returns the singleton instance of the GENERAL realm.
 =cut
 
 sub get_general {
-    my($proto) = @_;
-    $_GENERAL = _new($proto) unless $_GENERAL;
-    return $_GENERAL;
+    return $_GENERAL ||= _new(shift(@_));
 }
 
 =for html <a name="get_type"></a>
