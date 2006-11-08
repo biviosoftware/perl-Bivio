@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::ControlBase;
 use strict;
@@ -129,7 +129,7 @@ sub internal_new_args {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
