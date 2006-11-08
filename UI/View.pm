@@ -451,7 +451,7 @@ sub unsafe_get_current {
 
 #=PRIVATE METHODS
 
-sub _clear_parents {
+sub _clear_children {
     my($object, $seen) = @_;
     return if $seen->{$object}++;
     $object->internal_clear_read_only->delete('parent');
@@ -460,7 +460,7 @@ sub _clear_parents {
 	foreach my $o (
 	    ref($v) eq 'ARRAY' ? @$v : ref($v) eq 'HASH' ? values(%$v) : $v,
 	) {
-	    _clear_parents($v, $seen)
+	    _clear_children($v, $seen)
 		if $object->is_blessed($o, 'Bivio::Collection::Attributes');
 	}
     }
@@ -475,7 +475,7 @@ sub _destroy {
     if (my $req = Bivio::Agent::Request->get_current) {
 	$req->delete(__PACKAGE__);
     }
-    _clear_parents($self, {});
+    _clear_children($self, {});
     $die->throw
 	if $die;
     return;
