@@ -18,6 +18,7 @@ sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
 	class => 'help_wiki',
+	tag => 'div',
     )->put(
 	control => [
 	    sub {
