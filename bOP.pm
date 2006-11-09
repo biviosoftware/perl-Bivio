@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.56  2006/11/06 08:11:41  nagler
+  * Bivio::Biz::Model::SearchForm->parse_query_from_request checks form_model
+    instead of explicit Model.SearchForm.
+  * Bivio::Auth::Realm->new returns general realm singleton if realm_id is
+    passed in and matches general realm_id (1).
+  * Bivio::Delegate::SimpleTaskId->info_xapian introduces search_class config
+
   Revision 4.55  2006/11/05 21:59:47  nagler
   * Bivio::UI::XHTML::Widget::XLink added.  Interesting example of a
     new style widget implementation
