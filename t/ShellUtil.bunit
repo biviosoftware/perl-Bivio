@@ -99,6 +99,7 @@ my($email) = email('shellutil');
 	    },
 	    # LAST: because redirects Bivio::IO::Alert output
 	    sub {
+		unlink('T1.tmp');
 		[qw(-detach -output T1.tmp echo), var(now => time)];
 	    } => sub {
 		assert_equals(var('now'), ${read_file('T1.tmp')});
