@@ -86,7 +86,7 @@ use Carp ();
 
 #=VARIABLES
 my($_LAST_WARNING);
-my($_NOT_HANDLE_CONFIG) = 0;
+my($_FIRST_CONFIG) = 1;
 Bivio::IO::Config->register({
     intercept_warn => 1,
     stack_trace_warn => 0,
@@ -284,7 +284,6 @@ Includes the time in the log messages.
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    return if $_NOT_HANDLE_CONFIG++;
     $Carp::MaxArgLen = $Carp::MaxEvalLen = $_MAX_ARG_LENGTH
 	    = $cfg->{max_arg_length} + 0;
     $_MAX_ARG_DEPTH = $cfg->{max_arg_depth} + 0;
@@ -296,22 +295,24 @@ sub handle_config {
 
     $_STACK_TRACE_WARN = $cfg->{stack_trace_warn};
     $_STACK_TRACE_WARN_DEPRECATED = $cfg->{stack_trace_warn_deprecated};
-
     $SIG{__WARN__} = \&_warn_handler
 	    if $cfg->{intercept_warn} || $cfg->{stack_trace_warn};
-
-    if ($cfg->{want_stderr}) {
-	$_LOGGER = \&_log_stderr;
-    }
-    elsif (exists($ENV{MOD_PERL})) {
-	$_LOGGER = \&_log_apache;
-    }
-    else {
-	# Default logger is stderr
-	$_LOGGER = \&_log_stderr;
-    }
     $_WANT_PID = $cfg->{want_pid};
     $_WANT_TIME = $cfg->{want_time};
+
+    if ($_FIRST_CONFIG) {
+	if ($cfg->{want_stderr}) {
+	    $_LOGGER = \&_log_stderr;
+	}
+	elsif (exists($ENV{MOD_PERL})) {
+	    $_LOGGER = \&_log_apache;
+	}
+	else {
+	    # Default logger is stderr
+	    $_LOGGER = \&_log_stderr;
+	}
+	$_FIRST_CONFIG = 0;
+    }
     return;
 }
 
