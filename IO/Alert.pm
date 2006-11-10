@@ -86,6 +86,7 @@ use Carp ();
 
 #=VARIABLES
 my($_LAST_WARNING);
+my($_NOT_HANDLE_CONFIG) = 0;
 Bivio::IO::Config->register({
     intercept_warn => 1,
     stack_trace_warn => 0,
@@ -283,6 +284,7 @@ Includes the time in the log messages.
 
 sub handle_config {
     my(undef, $cfg) = @_;
+    return if $_NOT_HANDLE_CONFIG++;
     $Carp::MaxArgLen = $Carp::MaxEvalLen = $_MAX_ARG_LENGTH
 	    = $cfg->{max_arg_length} + 0;
     $_MAX_ARG_DEPTH = $cfg->{max_arg_depth} + 0;
