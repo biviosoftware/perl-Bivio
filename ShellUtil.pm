@@ -1541,7 +1541,8 @@ sub _parse_options {
 	next unless defined($opt->[2]);
 	$res->{$opt->[0]} = $opt->[2];
     }
-
+    $res->{output} = Bivio::IO::File->absolute_path($res->{output})
+	if defined($res->{output}) && $res->{output} ne '-';
     _trace($res) if $_TRACE;
     return $res;
 }
