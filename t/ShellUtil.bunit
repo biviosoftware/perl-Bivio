@@ -73,21 +73,6 @@ my($email) = email('shellutil');
 		return 1;
 	    },
 	],
-    ],
-    sub {'Bivio::t::ShellUtil::T1'} => [
-	main => [
-	    t1 => [],
-	    # If these tests are failing, check ShellUtil/mylog.log
-	    [-email => $email, 'rd1'] => $myarg_re,
-	    ['rd1', 'rd2'] => $myarg_re,
-	    ['rd1', 'rd3'] => sub {
-		my($case, $actual) = @_;
-		my($r) = $actual->[0];
-		return $$r !~ /myarg/
-		    && $$r =~ /@{[join('.*', map("Sent SIGTERM", 0..4))]}/s
-		    ? 1 : 0;
-	    },
-	],
 	model => [
 	    RealmOwner => sub {
 		shift;
@@ -97,6 +82,28 @@ my($email) = email('shellutil');
 		shift;
 		return shift->[0]->get('realm_type')->eq_user;
 	     },
+	],
+    ],
+    sub {'Bivio::t::ShellUtil::T1'} => [
+	main => [
+	    t1 => [],
+	    # If these tests are failing, check ShellUtil/mylog.log
+	    ['-email' => $email, 'rd1'] => $myarg_re,
+	    ['rd1', 'rd2'] => $myarg_re,
+	    ['rd1', 'rd3'] => sub {
+		my($case, $actual) = @_;
+		my($r) = $actual->[0];
+		return $$r !~ /myarg/
+		    && $$r =~ /@{[join('.*', map("Sent SIGTERM", 0..4))]}/s
+		    ? 1 : 0;
+	    },
+	    # LAST: because redirects Bivio::IO::Alert output
+	    sub {
+		[qw(-detach -output T1.tmp echo), var(now => time)];
+	    } => sub {
+		assert_equals(var('now'), ${read_file('T1.tmp')});
+		return qr{^\d+$};
+	    },
 	],
     ],
 ];

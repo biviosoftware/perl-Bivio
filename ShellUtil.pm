@@ -68,6 +68,10 @@ Unmodified argument vector.
 
 Name of database to connect to.
 
+=item detach : boolean [0]
+
+Detach the process from standard output.  Output will receive all output.
+
 =item email : string [undef]
 
 Where to mail the output.  Uses I<result_subject>, I<result_type> and
@@ -139,15 +143,16 @@ L<Bivio::Biz::Model::RealmAdminList|Bivio::Biz::Model::RealmAdminList>.
 Called by L<usage|"usage"> and returns the string:
 
   options:
-	  -db - name of database connection
-	  -email - who to mail the results to (may be a comma separated list)
-          -force - don't ask "are you sure?"
-          -input - a file to read from ("-" is STDIN)
-          -live - don't die on errors (used in weird circumstances)
-          -noexecute - don't commit
-          -output - a file to write the output to ("-" is STDOUT)
-	  -realm - realm_id or realm name
-	  -user - user_id or user name
+      -db - name of database connection
+      -detach - calls detach process before executing command
+      -email - who to mail the results to (may be a comma separated list)
+      -force - don't ask "are you sure?"
+      -input - a file to read from ("-" is STDIN)
+      -live - don't die on errors (used in weird circumstances)
+      -noexecute - don't commit
+      -output - a file to write the output to ("-" is STDOUT)
+      -realm - realm_id or realm name
+      -user - user_id or user name
 
 =cut
 
@@ -155,6 +160,7 @@ sub OPTIONS_USAGE {
     return <<'EOF';
 options:
     -db - name of database connection
+    -detach - calls detach process before executing command
     -email - who to mail the results to (may be a comma separated list)
     -force - don't ask "are you sure?"
     -input - a file to read from ("-" is STDIN)
@@ -175,6 +181,7 @@ The default values are:
 
     {
 	db => ['Name', undef],
+	detach => ['Boolean', 0],
 	email => ['Text', undef],
 	force => ['Boolean', 0],
 	input => ['Line', '-'],
@@ -203,6 +210,7 @@ letter version is also supported.
 sub OPTIONS {
     return {
 	db => ['Name', undef],
+	detach => ['Boolean', 0],
 	email => ['Text', undef],
 	force => ['Boolean', 0],
 	input => ['Line', '-'],
@@ -460,23 +468,24 @@ sub convert_literal {
 
 =for html <a name="detach_process"></a>
 
-=head2 detach_process()
+=head2 static detach_process() : int
 
-Forks, closes tty, stdin, out, etc.
+Forks, closes tty, stdin, out, etc.  Returns child pid to parent, and child
+gets undef.
 
 =cut
 
 sub detach_process {
+    my(undef) = @_;
     my($pid) = fork;
     die("fork: $!")
 	unless defined($pid);
-    CORE::exit(0)
+    return $pid
 	if $pid;
     # Child
     open(STDIN, '< /dev/null');
     open(STDOUT, '+> /dev/null');
     open(STDERR, '>&STDOUT');
-    chdir('/');
     eval {
 	require POSIX;
 	POSIX::setsid();
@@ -846,20 +855,34 @@ sub main {
     my($die) = Bivio::Die->catch(sub {
 	if (@argv && _method_ok($self, $argv[0])) {
 	    $cmd = shift(@argv);
-	    $res = $self->$cmd(@argv);
-	}
-	elsif (@argv) {
-	    $self->usage($argv[0], ': unknown command');
 	}
 	else {
-	    $self->usage('missing command');
+	    $self->usage(@argv ? ($argv[0], ': unknown command')
+	        : 'missing command');
 	}
 	return;
     });
+    unless ($die) {
+	my($pid);
+	if ($self->unsafe_get('detach')) {
+	    my($log) = $self->use('Bivio::IO::Log')->file_name(
+		$_CFG->{daemon_log_file} || "$p.log");
+	    Bivio::IO::Alert->info('logging to: ', $log);
+	    Bivio::IO::Alert->set_printer('FILE', $log);
+	    if ($pid = $self->detach_process) {
+		$res = "$pid\n";
+		$self->SUPER::delete(qw(output email req));
+	    }
+	}
+	$die = Bivio::Die->catch(sub {
+	    $res = $self->$cmd(@argv);
+	}) unless $pid;
+    }
     $fields->{in_main} = 0;
 
     # Don't finish if setup never called.
-    $self->finish($die ? 1 : 0) if $self->unsafe_get('req');;
+    $self->finish($die ? 1 : 0)
+	if $self->unsafe_get('req');;
     if ($die) {
 	# Email error and re-throw
 	$self->put(result_type => undef,
@@ -1129,12 +1152,11 @@ I<cfg_name> (see L<handle_config|"handle_config">.
 sub run_daemon {
     my($self, $next_command, $cfg_name) = @_;
     $self->get_request;
-    Bivio::IO::ClassLoader->simple_require('Bivio::IO::Log');
     my($cfg) = Bivio::IO::Config->get($cfg_name);
     # Makes log rotating simple: All processes share a log
     Bivio::IO::Alert->set_printer(
 	'FILE',
-	Bivio::IO::Log->file_name($cfg->{daemon_log_file}),
+	$self->use('Bivio::IO::Log')->file_name($cfg->{daemon_log_file}),
     ) if $cfg->{daemon_log_file};
     _check_cfg($cfg, $cfg_name);
     my($children) = {};
@@ -1680,11 +1702,8 @@ sub _setup_for_main {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
-    Bivio::IO::ClassLoader->simple_require(qw{
-        Bivio::Test::Request
-        Bivio::SQL::Connection
-    });
-    my($p) = Bivio::SQL::Connection->set_dbi_name($db);
+    $self->use('Bivio::Test::Request');
+    my($p) = $self->use('Bivio::SQL::Connection')->set_dbi_name($db);
     $fields->{prior_db} = $p unless $fields->{prior_db};
     $self->put_request(Bivio::Test::Request->get_instance)
         unless $self->unsafe_get('req');
