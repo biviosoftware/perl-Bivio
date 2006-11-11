@@ -104,8 +104,15 @@ config({
 	    [['-force']] => [qw(T1 1)],
 	    ['T2'] => [qw(T2 0)],
 	    [T2 => ['-force']] => [qw(T2 1)],
+	    sub {
+		Bivio::Agent::Request->clear_current;
+		return [];
+	    } => DIE(),
+	    ['T2'] => DIE(),
 	],
 	main => [
+	    [qw(simple_package_name)] => 'T1',
+	    [qw(T2 simple_package_name)] => 'T2',
 	    t1 => [],
 	    # If these tests are failing, check ShellUtil/mylog.log
 	    ['-email' => $email, 'rd1'] => $myarg_re,
