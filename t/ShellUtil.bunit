@@ -6,6 +6,13 @@ Request();
 Bivio::IO::Alert->set_printer(sub {});
 my($myarg_re) = qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s;
 my($email) = email('shellutil');
+config({
+    'Bivio::IO::ClassLoader' => {
+	maps => {
+	    ShellUtil => ['Bivio::t::ShellUtil', 'Bivio::Util'],
+	},
+    },
+});
 [
     'Bivio::ShellUtil' => [
 	email_file => [
@@ -83,8 +90,20 @@ my($email) = email('shellutil');
 		return shift->[0]->get('realm_type')->eq_user;
 	     },
 	],
+	new => DIE(),
     ],
     sub {'Bivio::t::ShellUtil::T1'} => [
+	{
+	    method => 'new',
+	    compute_return => sub {
+		my($o) = $_[1]->[0];
+		return [$o->simple_package_name, $o->get('force')];
+	    },
+	} => [
+	    [['force']] => [qw(T1 1)],
+	    ['T2'] => [qw(T2 0)],
+	    [T2 => ['force']] => [qw(T2 1)],
+	],
 	main => [
 	    t1 => [],
 	    # If these tests are failing, check ShellUtil/mylog.log
