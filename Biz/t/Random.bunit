@@ -38,5 +38,19 @@ my($prev) = {};
 	    [1, [qw(a b)]] => qr/^[ab]$/s,
 	    [2, ['a']] => 'aa',
 	],
+	{
+	    method => 'integer',
+	    check_return => sub {
+		my($case, $actual) = @_;
+		my($ceiling) = shift->get('params')->[0];
+		return $actual->[0] >= 0 && $actual->[0] < $ceiling ? 1 : 0;
+	    },
+	} => [
+	    1 => [],
+	    2 => [],
+	    3 => [],
+	    0 => DIE(),
+	    -1 => DIE(),
+	],
     ],
 ];

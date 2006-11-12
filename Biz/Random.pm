@@ -33,6 +33,13 @@ sub hex_digits {
     );
 }
 
+sub integer {
+    my($proto, $ceiling) = @_;
+    Bivio::Die->die($ceiling, ': ceiling must be positive')
+        unless $ceiling > 0;
+    return unpack('L', $proto->bytes(4)) % $ceiling;
+}
+
 sub password {
     return Bivio::MIME::Base64->http_encode(shift->bytes(12));
 }
