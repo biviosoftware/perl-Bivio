@@ -37,8 +37,36 @@ EOF
 	=> [{
 	    'Model.Tuple' => {
 		tuple_num => 1,
+		slot1 => 'b@b.b',
 		slot2 => 's2',
 	    },
 	}],
+	[\(<<'EOF')]
+From: a@a.a
+Message-ID: <2@a.a>
+Subject: PSR#1
+
+Status:
+
+Some text
+EOF
+	=> [{
+	    'Model.Tuple' => {
+		tuple_num => 1,
+		slot1 => 'b@b.b',
+		slot2 => undef,
+	    },
+	}],
+	[\(<<'EOF')]
+From: a@a.a
+Message-ID: <2@a.a>
+Subject: PSR#1
+
+Author:
+Status: s3
+
+Some text
+EOF
+	=> qr{Author: contains an invalid value},
     ],
 ];
