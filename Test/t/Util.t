@@ -68,6 +68,7 @@ EOF
 	],
 	unit => [
 	    ['should-pass.t'] => [],
+	    ['subdir-pass.t'] => [],
 	    ['should-fail.t-data'] => Bivio::DieCode->DIE,
 	    ['.'] => [],
 	],
