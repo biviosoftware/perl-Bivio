@@ -25,10 +25,8 @@ req()->set_realm('fourem');
     ],
     validate_slot => [
 	'a@a.a' => ['a@a.a', undef],
+	'' => [undef, Bivio::TypeError->NULL],
 	a => [undef, Bivio::TypeError->EMAIL],
-    ],
-    empty_slot => [
-	[undef] => [undef],
     ],
     find_row_by_label => [
 	Status => [{
@@ -37,10 +35,7 @@ req()->set_realm('fourem');
     ],
     validate_slot => [
 	s1 => [s1 => undef],
+	'' => [undef, undef],
 	a => [undef, Bivio::TypeError->NOT_FOUND],
-    ],
-    empty_slot => [
-	[undef] => 's1',
-	s2 => 's2',
     ],
 ];

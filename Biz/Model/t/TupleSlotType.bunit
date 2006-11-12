@@ -8,15 +8,16 @@ my($tsa) = class('Type.TupleSlotArray');
 	[{tst1 => {
 	    type_class => 'Integer',
 	    choices => undef,
-	    default_value => 1,
+	    default_value => 3,
 	}}] => [{
 	    choices => undef,
-	    default_value => 1,
+	    default_value => 3,
 	}],
     ],
     validate_slot => [
 	x => [undef, Bivio::TypeError->INTEGER],
 	1 => [1, undef],
+	[''] => [undef, undef],
     ],
     create_from_hash => [
 	[{tst2 => {

@@ -16,13 +16,6 @@ sub EMPTY_KEY_VALUE {
     return -1;
 }
 
-sub empty_slot {
-    my($self, $value) = @_;
-    return defined($value) ? $value
-	: defined($value = $self->get('TupleSlotType.default_value')) ? $value
-	: $self->get('TupleSlotType.choices') ? $_EK : undef;
-}
-
 sub field_from_num {
     my($self) = @_;
     return  $_TSN->field_name($self->get('TupleSlotDef.tuple_slot_num'));
@@ -56,13 +49,13 @@ sub type_class_instance {
 }
 
 sub validate_slot {
-    my($self, $value, $null_ok) = @_;
+    my($self, $value) = @_;
     $value = undef
 	if $value && $self->get('TupleSlotType.choices') && $value eq $_EK;
-    my($v, $e) = $_TST->validate_slot($value, $self, 'TupleSlotType.');
+    my($v, $e)
+	= $_TST->validate_slot($value, $self, 'TupleSlotType.');
     return $e ? ($v, $e)
 	: defined($v)
-	|| $null_ok
 	|| !$self->get('TupleSlotDef.is_required')
 	? ($v, undef)
 	: (undef, Bivio::TypeError->NULL);

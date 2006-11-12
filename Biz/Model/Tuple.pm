@@ -136,22 +136,23 @@ sub _create_or_update_slots {
     $tsdl->do_rows(sub {
         my($l) = $tsdl->get('TupleSlotDef.label');
 	my($m) = [grep($_->[0] eq lc($l), @$slots)];
+	return 1
+	    unless @$m || !$state->{is_update};
 	_trace($l, ' matches: ', $m) if $_TRACE;
 	if (@$m > 1) {
 	    $err = "$l: duplicate field in message";
 	    return 0;
 	}
 	$m = ($m->[0] || [])->[1];
-	my($v, $e) = $tsdl->validate_slot($m, $state->{is_update});
+	my($v, $e) = $tsdl->validate_slot($m);
 	if ($e) {
 	    $err = "$l: "
 		. (defined($m) ? "contains an invalid value ($m): " : '')
 		. $e->as_string;
 	    return 0;
 	}
-#TODO: Is this right?  What to do if update is "undef" on a required slot?
-	$values->{$tsdl->field_from_num} = $v
-	    if defined($v) || !$tsdl->get('TupleSlotDef.is_required');
+	$values->{$tsdl->field_from_num} = defined($v) || $state->{is_update}
+	    ? $v : $tsdl->get('TupleSlotType.default_value');
         return 1;
     });
     return _mail_err($state, $err)

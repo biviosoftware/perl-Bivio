@@ -1,16 +1,16 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-my($tn, $tdid);
+my($tdid);
 FormModel({
     setup_request => sub {
 	my($case) = @_;
-	$tn = model('Tuple')->create(
-	    {
-		tuple_def_id => $tdid,
-		slot1 => 'a@a.a',
-		slot2 => 's1',
-	    })->get('tuple_num')
-	    unless @{$case->get('params')};
+	my($p) = $case->get('params');
+	my($tn) = model('Tuple')->create({
+	    tuple_def_id => $tdid,
+	    slot1 => 'a@a.a',
+	    slot2 => @$p ? shift(@$p) : 's1',
+	})->get('tuple_num')
+	    if !@$p || !ref($p->[0]);
 	req()->put(query => {
 	    parent_id => $tdid,
 	    $tn ? (this => $tn) : (),
@@ -33,12 +33,18 @@ model('Tuple')->delete_all;
 	    'RealmMail.subject' => 'PSR#',
 	},
     }],
-    empty_case({
+    # Next two are empty_cases; see setup_request above
+    simple_case(s1 => {
 	slot_0 => 'a@a.a',
 	slot_1 => 's1',
 	comment => undef,
     }),
-    [{
+    simple_case('' => {
+	slot_0 => 'a@a.a',
+	slot_1 => '',
+	comment => undef,
+    }),
+    [s1 => {
 	comment => 'hello',
 	slot_0 => 'a@a.a',
 	slot_1 => 's2',
@@ -46,7 +52,18 @@ model('Tuple')->delete_all;
 	'Model.TupleSlotListForm' => {
 	    slot_headers => "Status: s2\n",
 	    'RealmMail.from_email' => 'btest_read@bivio.biz',
-	    'RealmMail.subject' => 'PSR#1',
+	    'RealmMail.subject' => 'PSR#3',
+	 },
+    }],
+    [s2 => {
+	comment => 'hello',
+	slot_0 => 'b@a.a',
+	slot_1 => '',
+    }] => [{
+	'Model.TupleSlotListForm' => {
+	    slot_headers => "Author: b\@a.a\nStatus: \n",
+	    'RealmMail.from_email' => 'btest_read@bivio.biz',
+	    'RealmMail.subject' => 'PSR#4',
 	 },
     }],
 ];

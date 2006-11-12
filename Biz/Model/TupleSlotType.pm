@@ -71,8 +71,6 @@ sub validate_slot {
     my($v, $e) = $t->from_literal($value);
     return (undef, $e)
 	if $e;
-    $v = $model->get($prefix . 'default_value')
-	unless defined($v);
     return ($v, undef)
 	unless defined($v) and my $c = $model->get($prefix . 'choices');
     return @{$c->map_iterate(sub {$t->is_equal($v, $_[0]) ? 1 : ()})}

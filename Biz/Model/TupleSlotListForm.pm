@@ -9,19 +9,24 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_T) = __PACKAGE__->get_instance('Tuple');
 my($_TSN) = Bivio::Type->get_instance('TupleSlotNum');
 my($_UNDEF) = undef;
+my($_EK) = __PACKAGE__->get_instance('TupleSlotChoiceSelectList')
+    ->EMPTY_KEY_VALUE;
 
 sub execute_empty_row {
     my($self) = @_;
+    my($lm) = $self->get_list_model;
+    my($v) = _slot_value($self);
+    $v = $v ? $$v : $lm->get('TupleSlotType.default_value');
     $self->internal_put_field(
-	slot => $self->get_list_model->empty_slot(
-	    ${_slot_value($self) || \$_UNDEF}));
+	slot => defined($v) || !$self->get('TupleSlotType.choices') ? $v : $_EK,
+    );
     return;
 }
 
 sub execute_ok_end {
     my($self) = @_;
     my($req) = $self->get_request;
-    $self->internal_put_field(slot_headers => $self->[$_IDI]);
+    $self->internal_put_field(slot_headers => $self->[$_IDI]->{headers});
     $self->internal_put_field(
 	'RealmMail.subject' => $self->get_request->unsafe_get_nested(
 	    'Model.RealmMail', 'subject'
@@ -38,24 +43,29 @@ sub execute_ok_end {
 
 sub execute_ok_row {
     my($self) = @_;
+    my($fields) = $self->[$_IDI];
     my($lm) = $self->get_list_model;
-    # Never want blanks so never "null_ok" on this form
     my($v, $e) = $lm->validate_slot($self->get('slot'));
     if ($e) {
 	$self->internal_put_error(slot => $e);
 	return;
     }
     my($tsv) = _slot_value($self);
-    $self->[$_IDI] .= $_T->mail_slot(
+    $fields->{headers} .= $_T->mail_slot(
 	$lm->get('TupleSlotDef.label'),
-        $lm->type_class_instance->to_literal($v),
+        $lm->type_class_instance->to_literal(
+	    defined($v) || $fields->{is_update} ? $v
+		: $lm->get('TupleSlotType.default_value')),
     ) unless $tsv && $lm->type_class_instance->is_equal($v, $$tsv);
     return;
 }
 
 sub execute_ok_start {
     my($self) = @_;
-    $self->[$_IDI] = '';
+    $self->[$_IDI] = {
+	is_update => $self->get_request->has_keys('Model.Tuple') ? 1 : 0,
+	headers => '',
+    };
     return;
 }
 
