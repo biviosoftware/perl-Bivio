@@ -98,7 +98,7 @@ When only one test is run, shows the output of the test.
 =cut
 
 sub acceptance {
-    my($self, $tests) = _find_files(\@_, 'btest');
+    my($self, $tests) = _find_files(\@_, qr{\.btest$});
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
 	my($ok) = 0;
@@ -293,7 +293,7 @@ When only one test is run, shows the output of the test.
 =cut
 
 sub unit {
-    my($self, $tests) = _find_files(\@_, '(?:t|bunit)');
+    my($self, $tests) = _find_files(\@_, qr{\.(?:t|bunit)$});
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
 	my($max, $ok) = (-1, 0);
@@ -329,31 +329,35 @@ sub _expunge {
     return;
 }
 
-# _find_files(array_ref args, string pattern) : array
+# _find_files(array_ref args, regex_ref pattern) : array
 #
 # Returns self, and hash of tests to run (dir, tests).
 #
 sub _find_files {
     my($args, $pattern) = @_;
     my($self) = shift(@$args);
-    $self->usage_error('must supply test files or directories') unless @$args;
+    $self->usage_error('must supply test files or directories')
+	unless @$args;
     my($tests) = {};
     my($pwd) = Bivio::IO::File->pwd;
     foreach my $arg (@$args) {
+	$arg = "t/$arg"
+	    if !-e $arg && $arg =~ $pattern && -e "t/$arg";
 	my($is_file) = -f $arg;
 	File::Find::find({
 	    no_chdir => 1,
 	    wanted => sub {
 		return
 		    unless $is_file
-			|| $File::Find::name =~ /\.$pattern$/
+			|| $File::Find::name =~ $pattern
 			&& -r $File::Find::name;
 		my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
 		$d = File::Spec->rel2abs($d, $pwd);
 		push(@{$tests->{$d} ||= []}, $f);
 		return;
 	    }},
-	    $arg);
+	    $arg,
+        );
     }
     return ($self, $tests);
 }
@@ -417,25 +421,26 @@ sub _run {
     $self->usage_error('no tests found') unless $max;
     foreach my $d (sort(keys(%$tests))) {
 	$self->print("*** Entering: $d\n") unless $one_dir;
-	Bivio::IO::File->chdir($d);
-	foreach my $t (sort(@{$tests->{$d}})) {
-	    $self->print(sprintf('%20s: ', $t));
-	    my($res) = 'FAILED';
-	    my($out);
-	    if ($action->($self, $t, \$out)) {
-		$res = 'PASSED';
-		$ok++;
+	Bivio::IO::File->do_in_dir($d => sub {
+	    foreach my $t (sort(@{$tests->{$d}})) {
+		$self->print(sprintf('%20s: ', $t));
+		my($res) = 'FAILED';
+		my($out);
+		if ($action->($self, $t, \$out)) {
+		    $res = 'PASSED';
+		    $ok++;
+		}
+		else {
+		    push(@$failed, File::Spec->catfile($d, $t));
+		}
+		$self->print($res, "\n");
+		$out ||= '';
+		$out =~ s/^/  /mg;
+		if ($max == 1) {
+		    $self->print("Output:\n", $out);
+		}
 	    }
-	    else {
-		push(@$failed, File::Spec->catfile($d, $t));
-	    }
-	    $self->print($res, "\n");
-	    $out ||= '';
-	    $out =~ s/^/  /mg;
-	    if ($max == 1) {
-		$self->print("Output:\n", $out);
-	    }
-        }
+	});
 	$self->print("*** Leaving: $d\n\n") unless $one_dir;
     }
     $self->print(
