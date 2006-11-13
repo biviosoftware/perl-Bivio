@@ -144,7 +144,7 @@ sub control_on_render {
     $$buffer .= $handler->get_html_field_attributes(undef, $source)
 	if $handler;
     $$buffer .= '>';
-    $self->render_attr('value', $source, $buffer); 
+    $self->render_attr('value', $source, $buffer);
     $$buffer .= '</a>';
     $handler->render($source, $buffer)
 	if $handler;
