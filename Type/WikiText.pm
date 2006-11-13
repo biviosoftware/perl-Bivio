@@ -504,6 +504,7 @@ sub _fmt_tag {
 #      because only one, generalize when needed.
     return _ins_page($line, $state)
 	if $line =~ s{^ins-page\s+}{};
+#TODO: Does this incorrectly interpret @-----?
     return _fmt_line($line, $state)
 	if $line =~ /^@/;
     return _fmt_err($line, 'invalid syntax', $state)
