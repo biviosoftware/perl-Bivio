@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.57  2006/11/09 00:13:13  nagler
+  * Bivio::UI::Widget::HTML::Tag supports arbitrary HTML attribute
+    values.  See unit test.  Also renders empty tags as <tag />.
+  * Bivio::Auth::Realm->new accepts a RealmType iwc it will return the
+    default realm for that type.
+  * Bivio::Util::Backup sets a --timeout on rsync
+  * Bivio::Test::Reload refactored to use File::Find
+  * Bivio::Collection::Attributes->internal_clear_read_only added
+  * Bivio::UI::View->call_main will remove cycles (parent) when a
+    view is destroyed
+
   Revision 4.56  2006/11/06 08:11:41  nagler
   * Bivio::Biz::Model::SearchForm->parse_query_from_request checks form_model
     instead of explicit Model.SearchForm.
