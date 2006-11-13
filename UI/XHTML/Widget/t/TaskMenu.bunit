@@ -34,4 +34,13 @@ req()->set_realm_and_user(qw(demo guest));
 	task_id => Bivio::Agent::TaskId->USER_HOME,
 	realm => 'demo',
     }]] => qr{<div class="task_menu"><a target="_top" href="/">home</a><a target="_top" class="want_sep" href="/demo">user home</a></div>},
+    [[{
+	task_id => 'USER_HOME',
+	label => [sub {'x'}],
+     }, {
+	task_id => 'SITE_ROOT',
+	label => [sub {'y'}],
+     }], {
+	 selected_item => [sub {'y'}],
+     }] => qr{<div class="task_menu"><a target="_top" href="/guest">x</a><a target="_top" class="want_sep selected" href="/">y</a></div>},
 ];

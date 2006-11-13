@@ -30,29 +30,47 @@ sub internal_as_string {
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	selected_task_name => [['->get_request'], 'task_id', '->get_name'],
+	selected_item => [['->get_request'], 'task_id'],
 	class => 'task_menu',
     );
-    $self->initialize_attr('selected_task_name');
+    $self->initialize_attr('selected_item');
+    my($need_sep, $selected);
     $self->put(
 	tag => 'div',
+	_init => sub {
+	    my($source) = @_;
+	    $need_sep = 0;
+	    $selected = $self->resolve_attr('selected_item', $source);
+	    return \$need_sep;
+	},
 	task_map => [map({
 	    my(undef, $cfg) = $self->name_parameters(
 		$_PARAMS, ref($_) eq 'ARRAY' ? $_ : [$_]);
 	    $cfg->{task_id} = Bivio::Agent::TaskId->from_any($cfg->{task_id});
 	    $cfg->{label} ||= $cfg->{task_id}->get_name;
 	    $cfg->{uri} ||= URI({
-#TODO: Should this default get moved to URI?
+#TODO: Remove when format_uri no longer carries query by default
 		query => undef,
 		path_info => undef,
 		_cfg($cfg, @$_URI),
 	    });
-	    $self->initialize_value($cfg->{label}, Link(
-		vs_text('task_menu', 'title', $cfg->{label}),
+	    my($w);
+	    $self->initialize_value($cfg->{label}, $w = Link(
+		ref($cfg->{label}) ? $cfg->{label}
+		    : vs_text('task_menu', 'title', $cfg->{label}),
 		$cfg->{uri},
 		{
 		    _task_menu_cfg => $cfg,
 		    _cfg($cfg, 'control'),
+		    class => [sub {
+			join(' ',
+			     $need_sep ? 'want_sep' : (),
+			     (ref($selected) ? $cfg->{task_id} == $selected
+				 : $selected eq ${$w->render_attr(
+				     value => shift(@_))})
+				 ? 'selected' : (),
+			);
+		    }],
 		},
 	    ));
 	} @{$self->get('task_map')})],
@@ -67,8 +85,7 @@ sub internal_new_args {
 sub render_tag_value {
     my($self, $source, $buffer) = @_;
     my($req) = $self->get_request;
-    my($selected) = $self->render_simple_attr('selected_task_name', $source);
-    my($need_sep) = 0;
+    my($need_sep) = $self->get('_init')->($source);
     foreach my $w (@{$self->get('task_map')}) {
 	my($cfg) = $w->get('_task_menu_cfg');
 	my($r) = $self->render_simple_value($cfg->{realm}, $source);
@@ -77,16 +94,9 @@ sub render_tag_value {
 	    $r || undef,
 	);
 	my($b) = '';
-#TODO: Shouldn't change global state.  Rather put a closure that renders
-#       with a value off the request (or lexical value ?)
-	$w->put(class => join(' ',
-	    $need_sep ? 'want_sep' : (),
-	    $cfg->{task_id}->equals_by_name($selected) ? 'selected' : (),
-	))->render(
-	    $source, \$b,
-        );
+	$w->render($source, \$b);
 	next unless $b;
-	$need_sep++;
+	$$need_sep++;
 	$$buffer .= $b;
     }
     return;
