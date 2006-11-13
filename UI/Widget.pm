@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget;
 use strict;
@@ -657,13 +657,23 @@ Returns I<buffer>.  If I<buffer> is I<undef>, will create one.
 =cut
 
 sub resolve_ancestral_attr {
-    my($self, $attr_name, $source) = @_;
-    my($res) = $self->unsafe_resolve_widget_value(
-	$self->ancestral_get($attr_name), $source,
-    );
-    $self->die($attr_name, $source, 'attribute resolves as undef')
-	unless defined($res);
-    return $res;
+    return _resolve_attr(ancestral_get => @_);
+}
+
+=for html <a name="resolve_attr"></a>
+
+=head2 resolve_attr(string attr_name, any source) : string
+
+Calls unsafe_resolve_widget_value.
+
+Dies if there was no attribute or is C<undef>.
+
+Returns I<buffer>.  If I<buffer> is I<undef>, will create one.
+
+=cut
+
+sub resolve_attr {
+    return _resolve_attr(get => @_);
 }
 
 =for html <a name="unsafe_resolve_widget_value"></a>
@@ -690,9 +700,19 @@ sub unsafe_resolve_widget_value {
 
 #=PRIVATE METHODS
 
+sub _resolve_attr {
+    my($method, $self, $attr_name, $source) = @_;
+    my($res) = $self->unsafe_resolve_widget_value(
+	$self->$method($attr_name), $source,
+    );
+    $self->die($attr_name, $source, 'attribute resolves as undef')
+	unless defined($res);
+    return $res;
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
