@@ -31,7 +31,7 @@ sub control_on_render {
     my($t) = lc(${$self->render_attr('tag')});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
 	unless $t =~ /^[a-z]+\d*$/;
-    my($end) = length($b) ? ">$b</$t>" : ' />';
+    my($end) = length($b) || !_empty($t) ? ">$b</$t>" : ' />';
     $self->SUPER::control_on_render($source, \$t);
     $$buffer .= "<$t$end";
     return;
