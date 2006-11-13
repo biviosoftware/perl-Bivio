@@ -18,7 +18,7 @@ sub execute_empty_row {
     my($v) = _slot_value($self);
     $v = $v ? $$v : $lm->get('TupleSlotType.default_value');
     $self->internal_put_field(
-	slot => defined($v) || !$self->get('TupleSlotType.choices') ? $v : $_EK,
+	slot => defined($v) || !$lm->get('TupleSlotType.choices') ? $v : $_EK,
     );
     return;
 }
