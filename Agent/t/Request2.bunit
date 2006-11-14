@@ -1,0 +1,23 @@
+# Copyright (c) 2006 bivio Software, Inc.  All rights reserved.
+# $Id$
+Request();
+[
+    sub {req()} => [
+	{
+	    method => 'set_realm',
+	    compute_return => sub {
+		return [$_[1]->[0]->get('type')->get_name];
+	    },
+	} => [
+	    [undef] => 'GENERAL',
+	    demo => 'USER',
+	    fourem => 'FORUM',
+	    1 => 'GENERAL',
+	    2 => 'USER',
+	],
+	with_realm => [
+	    [fourem => sub {req(qw(auth_realm owner_name))}] => 'fourem',
+	],
+    ],
+];
+

@@ -432,6 +432,30 @@ sub client_redirect {
     return $self->server_redirect($named);
 }
 
+=for html <a name="with_realm"></a>
+
+=head2 with_realm(any realm, code_ref op) : any
+
+Calls set_realm(realm) and then op.   Restores prior realm, even on exception.
+Returns what I<op> returns (in array context always).
+
+=cut
+
+sub with_realm {
+    my($self, $realm, $op) = @_;
+    my($prev) = $self->get('auth_realm');
+    my(@res);
+    my($die) = Bivio::Die->catch(sub {
+        $self->set_realm($realm);
+	@res = $op->();
+	return;
+    });
+    $self->set_realm($prev);
+    $die->throw
+	if $die;
+    return @res;
+}
+
 =for html <a name="elapsed_time"></a>
 
 =head2 elapsed_time() : float
