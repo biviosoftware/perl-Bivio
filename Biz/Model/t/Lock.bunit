@@ -1,24 +1,23 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
+set_realm('demo');
 [
     [req()] => [
 	is_general_acquired => 0,
-	execute_general => [
-	    [req()] => [],
-	],
+	acquire_general => not_die(),
 	is_general_acquired => 1,
+	is_acquired => 0,
 	inline_rollback(),
 	is_general_acquired => 0,
-	inline_case(sub {set_realm('demo')}),
 	is_acquired => 0,
-	acquire => undef,
+	acquire => not_die(),
 	is_acquired => 1,
-	acquire_unless_exists => undef,
+	acquire_unless_exists => not_die(),
 	acquire => ALREADY_EXISTS(),
-	release => undef,
+	release => not_die(),
 	is_acquired => 0,
-	acquire_unless_exists => undef,
+	acquire_unless_exists => not_die(),
 	is_acquired => 1,
     ],
 ];
