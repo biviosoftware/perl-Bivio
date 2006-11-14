@@ -17,6 +17,7 @@ Request();
 	],
 	with_realm => [
 	    [fourem => sub {req(qw(auth_realm owner_name))}] => 'fourem',
+	    [fourem => sub {die('here we go')}] => qr{DIE:.*here we go},
 	],
     ],
 ];
