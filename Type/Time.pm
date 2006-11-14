@@ -76,7 +76,7 @@ sub from_literal {
     my($proto, $value) = @_;
     $proto->internal_from_literal_warning
         unless wantarray;
-    return undef
+    return (undef, undef)
 	unless defined($value) && $value =~ /\S/;
     $value =~ s/\s+//g;
     return (undef, Bivio::TypeError->TIME) unless
