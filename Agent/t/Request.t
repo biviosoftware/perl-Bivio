@@ -54,17 +54,5 @@ Bivio::Test->new()->unit([
 	    [$resource] => [$resource],
 	    [$resource] => Bivio::DieCode->DIE,
 	],
-	{
-	    method => 'set_realm',
-	    compute_return => sub {
-		return [$_[1]->[0]->get('type')->get_name];
-	    },
-	} => [
-	    [undef] => 'GENERAL',
-	    demo => 'USER',
-	    fourem => 'FORUM',
-	    1 => 'GENERAL',
-	    2 => 'USER',
-	],
     ],
 ]);
