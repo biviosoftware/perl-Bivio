@@ -69,13 +69,14 @@ task item.  Put this instance on the Task:
 sub acquire {
     my($self) = @_;
     my($req) = $self->get_request;
-    $req->get(ref($self))->throw_die(
-	'EXISTS', {
+    if (my $other = $req->unsafe_get(ref($self))) {
+	$other->throw_die(ALREADY_EXISTS => {
 	    message => 'more than one lock on the request',
-	}) if $req->unsafe_get(ref($self));
+	});
+	# DOES NOT RETURN
+    }
     my($values) = {realm_id => $req->get('auth_id')};
     _read_request_input($req);
-    # try to get the lock
     my($die) = Bivio::Die->catch(sub {$self->create($values)});
     if ($die) {
 	# someone already has it or are we trying to acquire it again?
@@ -91,6 +92,40 @@ sub acquire {
     }
     _trace($self) if $_TRACE;
     $req->push_txn_resource($self);
+    return;
+}
+
+=for html <a name="acquire_unless_exists"></a>
+
+=head2 acquire_unless_exists()
+
+Acquires the lock on I<req.auth_realm> if not already acquired on I<req>.
+
+=cut
+
+sub acquire_unless_exists {
+    my($self) = @_;
+    $self->acquire
+	unless $self->is_acquired;
+    return;
+}
+
+=for html <a name="acquire_general"></a>
+
+=head2 acquire_general()
+
+Acquires lock on the GENERAL realm, used for locking access on entire
+database so use sparingly.
+
+=cut
+
+sub acquire_general {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($old_realm) = $req->get('auth_realm');
+    $req->set_realm(Bivio::Auth::Realm->get_general);
+    $self->acquire;
+    $req->set_realm($old_realm);
     return;
 }
 
@@ -112,17 +147,13 @@ sub execute {
 
 =head2 static execute_general(Bivio::Agent::Request req)
 
-Acquires lock on the GENERAL realm, used for locking access on entire
-database so use sparingly.
+Calls I<acquire_general>.
 
 =cut
 
 sub execute_general {
     my($proto, $req) = @_;
-    my($old_realm) = $req->get('auth_realm');
-    $req->set_realm(Bivio::Auth::Realm->get_general);
-    $proto->new($req)->acquire;
-    $req->set_realm($old_realm);
+    $proto->new($req)->acquire_general;
     return;
 }
 
@@ -130,14 +161,13 @@ sub execute_general {
 
 =head2 static execute_unless_acquired(Bivio::Agent::Request req)
 
-Executes the lock on I<req.auth_realm> if not already acquired on I<req>.
+Calls I<acquire_unless_exists>.
 
 =cut
 
 sub execute_unless_acquired {
     my($proto, $req) = @_;
-    my($self) = $proto->new($req);
-    $self->acquire unless $self->is_acquired;
+    $proto->new($req)->acquire_unless_exists;
     return;
 }
 
