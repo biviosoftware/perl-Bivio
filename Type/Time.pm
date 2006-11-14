@@ -76,12 +76,12 @@ sub from_literal {
     my($proto, $value) = @_;
     $proto->internal_from_literal_warning
         unless wantarray;
-#TODO: Improve the checks here
-    return undef unless defined($value) && $value =~ /\S/;
-    # Get rid of all blanks to be nice to user
+    return undef
+	unless defined($value) && $value =~ /\S/;
     $value =~ s/\s+//g;
     return (undef, Bivio::TypeError->TIME) unless
-	    $value =~ m!^(\d+)(?::(\d+))?(?::(\d+))?(?:([ap])(?:|m|\.m\.))?$!i;
+	$value =~ m{^(\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?(?:([ap])(?:|m|\.m\.))?$}i
+	|| $value =~ m{^(\d{2})(\d{2})(\d{2})$};
     my($h, $m, $s, $am_pm) = ($1, $2, $3, $4);
     $s = 0 unless defined($s);
     $m = 0 unless defined($m);
