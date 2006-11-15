@@ -22,12 +22,13 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
+#TODO: Look into rendering of attachments
     @$row{qw(slot_headers comment)} = $self->get_instance('Tuple')
 	->split_rfc822($self->new_other('RealmFile')->unauth_load_or_die({
 	    realm_id => $row->{'RealmMail.realm_id'},
 	    realm_file_id => $row->{'RealmMail.realm_file_id'},
 	})->get_content);
-    return $row->{slot_headers} ? 1 : 0;
+    return 1;
 }
 
 1;
