@@ -822,21 +822,6 @@ sub get_form_context_from_named {
         ? $fc : undef;
 }
 
-=for html <a name="get_user_realms"></a>
-
-=head2 get_user_realms() : hash_ref
-
-Returns a map of user_realms by realm_id to a record (hash_ref) of
-realm information.  See UserRealmList for fields returned.
-
-B<Use of $self-E<gt>get('user_realms') is deprecated>.
-
-=cut
-
-sub get_user_realms {
-    return {%{shift->get('user_realms')}};
-}
-
 =for html <a name="get_request"></a>
 
 =head2 static get_request() : Bivio::Agent::Request
@@ -1144,6 +1129,25 @@ Opposite of L<is_production|"is_production">.
 
 sub is_test {
     return shift->is_production(@_) ? 0 : 1;
+}
+
+=for html <a name="map_user_realms"></a>
+
+=head2 map_user_realms(code_ref op) : array_ref
+
+Calls with each row UserRealmList as a hash sorted by RealmOwner.name
+
+B<Use of $self-E<gt>get_user_realms is deprecated>.
+
+=cut
+
+sub map_user_realms {
+    my($self, $op) = @_;
+    my($atomic_copy) = [map(+{%$_}, values(%{$self->get('user_realms')}))];
+    return [map($op->($_),
+        sort {$a->{'RealmOwner.name'} cmp $b->{'RealmOwner.name'}}
+	@$atomic_copy,
+    )];
 }
 
 =for html <a name="process_cleanup"></a>
