@@ -1133,21 +1133,26 @@ sub is_test {
 
 =for html <a name="map_user_realms"></a>
 
-=head2 map_user_realms(code_ref op) : array_ref
+=head2 map_user_realms(code_ref op, hash_ref filter) : array_ref
 
-Calls with each row UserRealmList as a hash sorted by RealmOwner.name
+Calls I<op> with each row UserRealmList as a hash sorted by RealmOwner.name.
+If I<filter> supplied, only supplies rows which match filter.
 
 B<Use of $self-E<gt>get_user_realms is deprecated>.
 
 =cut
 
 sub map_user_realms {
-    my($self, $op) = @_;
-    my($atomic_copy) = [map(+{%$_}, values(%{$self->get('user_realms')}))];
-    return [map($op->($_),
-        sort {$a->{'RealmOwner.name'} cmp $b->{'RealmOwner.name'}}
-	@$atomic_copy,
-    )];
+    my($self, $op, $filter) = @_;
+    my($atomic_copy) = [
+	map(+{%$_},
+	    sort(
+		{$a->{'RealmOwner.name'} cmp $b->{'RealmOwner.name'}}
+	        grep({
+		    my($x) = $_;
+		    !$filter || grep($filter->{$_} eq $x->{$_}, keys(%$filter));
+		} values(%{$self->get('user_realms')}))))];
+    return [map($op->($_), @$atomic_copy)];
 }
 
 =for html <a name="process_cleanup"></a>

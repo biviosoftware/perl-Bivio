@@ -27,6 +27,9 @@ Request();
 	],
 	map_user_realms => [
 	    [sub {$_->{'RealmOwner.name'}}] => [[qw(btest_read fourem fourem-sub1 fourem-sub1-1 fourem-sub2)]],
+	    [sub {$_->{'RealmOwner.name'}},
+	     {'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER}] 
+		=> [[qw(btest_read)]],
 	],
     ],
 ];
