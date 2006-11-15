@@ -115,7 +115,7 @@ sub split_rfc822 {
     my($slots, $c2) = split(/\n\n/, $body, 2);
     $c1 .= $c2 || '';
     $c1 =~ s/^\s+|\s+$//sg;
-    return ($slots ||'') =~ $_LABEL_RE ? ($slots, $c1) : ();
+    return ($slots || '') =~ $_LABEL_RE ? ($slots, $c1) : (undef, $c1);
 }
 
 sub update {
