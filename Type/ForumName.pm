@@ -11,9 +11,15 @@ sub FIRST_CHAR_REGEXP {
     return qr{[a-z]};
 }
 
+sub SEP_CHAR_REGEXP {
+    return qr{$_SEP};
+}
+
 sub REGEXP {
-    my($c) = shift->FIRST_CHAR_REGEXP;
-    return qr/^($c\w{2,})(?:$_SEP(\w+($_SEP\w+)*)|)$/is;
+    my($proto) = @_;
+    my($c) = $proto->FIRST_CHAR_REGEXP;
+    my($s) = $proto->SEP_CHAR_REGEXP;
+    return qr/^($c\w{2,})(?:$s(\w+($s\w+)*)|)$/is;
 }
 
 sub extract_rest {
