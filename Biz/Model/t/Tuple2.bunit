@@ -3,18 +3,55 @@
 [
     class() => [
 	split_rfc822 => [
-	    [\(<<'EOF')] => ['s1: 2', 'c1'],
-any: junk
+	    [\(<<'EOF')] => ['s1: x', 'c1'],
+h1: a
+h2: b
 
-s1: 2
+s1: x
 
 c1
 EOF
-	    [\(<<'EOF')] => [],
-any: junk
-s1: 2
+	    [\(<<'EOF')] => ['s1: x', ''],
+h1: a
+h2: b
+
+s1: x
+
+EOF
+	    [\(<<'EOF')] => [undef, 'c1'],
+h1: a
+h2: b
+
+
 
 c1
+EOF
+#TODO: It seems that the split_rfc822 method is overly sensitive to white
+# space. Is this intentional? For example, these cases appear valid but fail:
+#
+# 	    [\(<<'EOF')] => ['s1: x', ''],
+# h1: a
+# h2: b
+#
+# s1: x
+# EOF
+# 	    [\(<<'EOF')] => [undef, 'c1'],
+# h1: a
+# h2: b
+# s1: x
+#
+# c1
+# EOF
+
+#TODO: Silly cases?
+	    [\(<<'EOF')] => [undef, ''],
+h1: a
+h2: b
+s1: x
+c1
+EOF
+	    [\(<<'EOF')] => [undef, ''],
+s1: x
 EOF
 	],
     ],
