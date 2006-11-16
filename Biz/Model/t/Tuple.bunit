@@ -4,6 +4,7 @@ options({class_name => 'Bivio::Biz::Model::RealmMail'});
 PropertyModel();
 req()->set_realm_and_user(qw(fourem root));
 model('Tuple')->delete_all;
+# See tuple2.bunit for other Tuple unit tests
 [
     create_from_rfc822 => [
 	[\(<<'EOF')]
