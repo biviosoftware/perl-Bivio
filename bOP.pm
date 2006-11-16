@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,27 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.58  2006/11/13 22:48:46  nagler
+  * Bivio::UI::XHTML::Widget::TaskMenu.selected_item replaces
+    selected_task_name.  If the widget value resolves to a TaskId, it
+    behaves as before.  Otherwise, it string compares the labels against
+    the resolution of selected_item
+  * Bivio::UI::HTML::Widget::Tag generates empty tags like <br />
+    instead of <br></br> if the tag is listed as empty in the XHTML DTD.
+  * ShellUtil.bunit is broken pending fixes
+  * Various Tuple fixes to handle empty slots properly
+  * Bivio::Biz::Random->integer added
+  * Bivio::ShellUtil -detach added.  Calls detach_process() to
+    disconnect from tty and run in separate process group.  Also writes
+    a log file automatically using Bivio::IO::Log.
+  * Bivio::IO::Alert does no re-initialize $_LOGGER after the first call
+    to handle_config
+  * Bivio::Biz::Model::UserTaskDAVList no longer puts spaces between
+    CamelCase-generated directory elements.
+  * Bivio::Test::Util looks in "t" directory for Foo.bunit/t/btest if it
+    doesn't find it in the current directory.
+  * Bivio::UI::Widget->resolve_attr added
+
   Revision 4.57  2006/11/09 00:13:13  nagler
   * Bivio::UI::Widget::HTML::Tag supports arbitrary HTML attribute
     values.  See unit test.  Also renders empty tags as <tag />.
