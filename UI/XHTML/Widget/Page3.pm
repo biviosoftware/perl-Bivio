@@ -33,7 +33,7 @@ sub new {
     ));
     return $proto->SUPER::new($attrs)->put_unless_exists(
 	head => Join([
-	    Title([vs_site_name(), view_widget_value('page3_title')]),
+	    Title([vs_site_name(), Prose(view_widget_value('page3_title'))]),
 	    view_widget_value('page3_meta_info'),
 	]),
 	body => Join([
