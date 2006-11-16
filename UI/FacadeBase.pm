@@ -30,13 +30,13 @@ sub _cfg_tuple {
 		FORUM_TUPLE_DEF_EDIT => 'Modify Database Schema',
 		FORUM_TUPLE_DEF_LIST => 'Database Schemas',
 		FORUM_TUPLE_EDIT =>
-		    q{Edit String(['Model.TupleUseList', 'TupleUse.label']); Record},
+		    q{Edit String([qw(Model.TupleUseList TupleUse.label)]); Record},
 		FORUM_TUPLE_LIST =>
-		    q{String(['Model.TupleUseList', 'TupleUse.label']); Records},
+		    q{String([qw(Model.TupleUseList TupleUse.label)]); Records},
 		FORUM_TUPLE_HISTORY =>
-		    q{String([qw(Model.TupleUseList TupleUse.label)]); Record#String([qw(Model.TupleList Tuple.tuple_num)]); History},
+		    q{String([qw(Model.TupleUseList TupleUse.label)]); Record #String([qw(Model.TupleList Tuple.tuple_num)]); History},
 		FORUM_TUPLE_MAIL_THREAD =>
-		    q{String(['Model.TupleUseList', 'TupleUse.label']); Record #String(['Model.Tuple', 'tuple_num']);},
+		    q{String([qw(Model.TupleUseList TupleUse.label)]); Record #String([qw(Model.Tuple tuple_num)]);},
 		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Modify Database Type',
 		FORUM_TUPLE_SLOT_TYPE_LIST => 'Database Types',
 		FORUM_TUPLE_USE_EDIT => 'Modify Table',
