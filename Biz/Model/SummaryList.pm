@@ -90,7 +90,7 @@ sub get {
     my($fields) = $self->[$_IDI];
 
     foreach my $name (@keys) {
-	$self->put($name, _sum($fields->{source}, $name))
+	$self->put($name, $self->internal_sum($fields->{source}, $name))
             unless $self->has_keys($name);
     }
     return $self->SUPER::get(@keys);
@@ -183,6 +183,32 @@ sub get_widget_value {
     return $self->SUPER::get_widget_value($name, @params);
 }
 
+=for html <a name="internal_sum"></a>
+
+=head2 internal_sum(array_ref source, string name) : string
+
+Returns the summed value for all the values for the specified column
+across all the source list models.
+
+=cut
+
+sub internal_sum {
+    my($self, $source, $name) = @_;
+    my($result) = 0;
+
+    foreach my $list (@$source) {
+	$list->reset_cursor;
+
+	while ($list->next_row) {
+            next unless $list->get($name);
+	    $result = $list->get_field_type($name)->add(
+                $result, $list->get($name));
+	}
+	$list->reset_cursor;
+    }
+    return $result;
+}
+
 =for html <a name="next_row"></a>
 
 =head2 next_row() : boolean
@@ -220,28 +246,6 @@ sub reset_cursor {
 }
 
 #=PRIVATE METHODS
-
-# _sum(array_ref source, string name) : string
-#
-# Returns the summed value for all the values for the specified column
-# across all the source list models.
-#
-sub _sum {
-    my($source, $name) = @_;
-    my($result) = 0;
-
-    foreach my $list (@$source) {
-	$list->reset_cursor;
-
-	while ($list->next_row) {
-            next unless $list->get($name);
-	    $result = $list->get_field_type($name)->add(
-                $result, $list->get($name));
-	}
-	$list->reset_cursor;
-    }
-    return $result;
-}
 
 =head1 COPYRIGHT
 
