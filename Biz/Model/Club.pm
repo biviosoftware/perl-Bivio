@@ -89,6 +89,9 @@ sub internal_initialize {
             club_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    start_date => ['Date', 'NONE'],
         },
+	other => [
+            [qw(club_id RealmOwner.realm_id)],
+	],
 	auth_id => 'club_id',
     };
 }
