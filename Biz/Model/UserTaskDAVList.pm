@@ -72,7 +72,7 @@ sub _fmt {
       : ($name =~ s/_([a-z]{3,4})$/.$1/
 	 && Bivio::MIME::Type->unsafe_from_extension($name));
     $name = ucfirst($name);
-    $name =~ s/_(\w?)/\u$1/g;
+    $name =~ s/_(\w?)/ \u$1/g;
     return {
 	getlastmodified => Bivio::Type::DateTime->now,
 	uri => $name,
