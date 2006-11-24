@@ -19,6 +19,10 @@ Request();
 	    [fourem => sub {req(qw(auth_realm owner_name))}] => 'fourem',
 	    [fourem => sub {die('here we go')}] => qr{DIE:.*here we go},
 	],
+	with_user => [
+	    [root => sub {req(qw(auth_user name))}] => 'root',
+	    [demo => sub {die('here we go')}] => qr{DIE:.*here we go},
+	],
 	map_user_realms => [
 	    [sub {$_->{'RealmOwner.name'}}] => [[]],
 	],
@@ -33,4 +37,3 @@ Request();
 	],
     ],
 ];
-

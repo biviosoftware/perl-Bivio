@@ -442,18 +442,20 @@ Returns what I<op> returns (in array context always).
 =cut
 
 sub with_realm {
-    my($self, $realm, $op) = @_;
-    my($prev) = $self->get('auth_realm');
-    my(@res);
-    my($die) = Bivio::Die->catch(sub {
-        $self->set_realm($realm);
-	@res = $op->();
-	return;
-    });
-    $self->set_realm($prev);
-    $die->throw
-	if $die;
-    return @res;
+    return _with(realm => @_);
+}
+
+=for html <a name="with_user"></a>
+
+=head2 with_user(any user, code_ref op) : any
+
+Calls set_user(user) and then op.   Restores prior user, even on exception.
+Returns what I<op> returns (in array context always).
+
+=cut
+
+sub with_user {
+    return _with(user => @_);
 }
 
 =for html <a name="elapsed_time"></a>
@@ -1480,6 +1482,23 @@ sub _get_roles {
 
     # User has no special privileges in realm
     return [Bivio::Auth::Role->USER];
+}
+
+sub _with {
+    my($which, $self, $with_value, $op) = @_;
+    my($prev) = $self->get("auth_$which");
+    my($set) = "set_$which";
+    my(@res);
+    my($die) = Bivio::Die->catch(sub {
+        $self->$set($with_value);
+	@res = $op->();
+	return;
+    });
+    $self->$set($prev);
+    $die->throw
+	if $die;
+    return @res;
+
 }
 
 =head1 SEE ALSO
