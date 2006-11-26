@@ -43,6 +43,8 @@ my($prev) = {};
 	    check_return => sub {
 		my($case, $actual) = @_;
 		my($ceiling) = shift->get('params')->[0];
+		$ceiling = class('Type.Integer')->get_max
+		    unless defined($ceiling);
 		return $actual->[0] >= 0 && $actual->[0] < $ceiling ? 1 : 0;
 	    },
 	} => [
@@ -51,6 +53,7 @@ my($prev) = {};
 	    3 => [],
 	    0 => DIE(),
 	    -1 => DIE(),
+	    [undef] => [],
 	],
     ],
 ];

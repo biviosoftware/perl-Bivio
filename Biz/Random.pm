@@ -35,8 +35,13 @@ sub hex_digits {
 
 sub integer {
     my($proto, $ceiling) = @_;
-    Bivio::Die->die($ceiling, ': ceiling must be positive')
-        unless $ceiling > 0;
+    if (defined($ceiling)) {
+	Bivio::Die->die($ceiling, ': ceiling must be positive')
+            unless $ceiling > 0;
+    }
+    else {
+	$ceiling = $proto->use('Type.Integer')->get_max;
+    }
     return unpack('L', $proto->bytes(4)) % $ceiling;
 }
 
