@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.59  2006/11/16 18:31:01  aviggio
+  * Bivio::Agent::Request added with_realm, replaced get_user_realms
+    with map_user_realms, added filter to map_user_realms
+  * Bivio::Biz::Model::Lock added acquire_unless_exists and
+    acquire_general
+  * Bivio::Biz::Model::Tuple return comment-only updates
+  * Bivio::Biz::Model::TupleHistoryList does not filter out comment-only
+    rows
+  * Bivio::Type::Time accept 121212 format, from_literal returns (undef,
+    undef) in appropriate case
+  * Bivio::UI::XHTML/Widget/Page3 support Prose in page meta title
+
   Revision 4.58  2006/11/13 22:48:46  nagler
   * Bivio::UI::XHTML::Widget::TaskMenu.selected_item replaces
     selected_task_name.  If the widget value resolves to a TaskId, it
