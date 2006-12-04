@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::PropertyModel;
 use strict;
@@ -249,10 +249,7 @@ Loads this auth user's data as if realm_id.
 
 sub execute_auth_user {
     my($proto, $req) = @_;
-    my($user) = $req->get('auth_user');
-    Bivio::Die->die('no auth_user') unless $user;
-    my($self) = $proto->new($req);
-    $self->unauth_load({realm_id => $user->get('realm_id')});
+    $proto->new($req)->load_for_auth_user;
     return 0;
 }
 
@@ -597,6 +594,23 @@ sub load {
     return $self if $self->unsafe_load(@_);
     _die_not_found($self, \@_, caller);
     # DOES NOT RETURN
+}
+
+=for html <a name="load_for_auth_user"></a>
+
+=head2 load_for_auth_user() : self
+
+Loads the model for auth_user.
+
+=cut
+
+sub load_for_auth_user {
+    my($self) = @_;
+    return $self->unauth_load({
+	realm_id => (
+	    $self->get_request('auth_user') || $self->die('no auth_user')
+	)->get('realm_id'),
+    });
 }
 
 =for html <a name="load_parent_from_request"></a>
@@ -1095,7 +1109,7 @@ sub _unload {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
