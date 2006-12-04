@@ -1,0 +1,43 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+set_user('btest_read');
+[
+    class() => [
+	{
+	    method => 'get_realm_for_task',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [Bivio::Agent::TaskId->from_name($params->[0]), req()];
+	    },
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		return [$actual->[0]->unsafe_get('owner_name') || 'general'];
+	    },
+	} => [
+	    SHELL_UTIL => 'general',
+	    USER_HOME => 'btest_read',
+	    # map_user_realms sorts alphabetically, and fourem is always first
+	    FORUM_HOME => 'fourem',
+	    ORDER_COMMIT => NOT_FOUND(),
+	],
+	{
+	    method => 'execute_path_info',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		Bivio::Auth::RealmType->from_name($params->[0])->execute(req());
+		req()->put(path_info => $params->[1]);
+		return [req()];
+	    },
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		return [$actual->[0]->{task}];
+	    },
+	} => [
+	    [qw(USER account)] => 'USER_ACCOUNT_EDIT',
+	    [qw(CLUB account)] => NOT_FOUND(),
+	    [qw(FORUM EasyForm)] => 'FORUM_EASY_FORM',
+	    [qw(GENERAL /pub/eg1)] => 'EXAMPLE_EG1',
+	],
+    ],
+];
