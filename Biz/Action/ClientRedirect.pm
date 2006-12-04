@@ -1,235 +1,90 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::ClientRedirect;
 use strict;
-$Bivio::Biz::Action::ClientRedirect::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Action::ClientRedirect::VERSION;
+use base 'Bivio::Biz::Action';
 
-=head1 NAME
-
-Bivio::Biz::Action::ClientRedirect - client redirect to specific task or URI
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Action::ClientRedirect;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::Action>
-
-=cut
-
-use Bivio::Biz::Action;
-@Bivio::Biz::Action::ClientRedirect::ISA = ('Bivio::Biz::Action');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Action::ClientRedirect> redirects to the cancel or
-next task values.
-
-You may also redirect to a specific task:
-
-    Bivio::Biz::Action::ClientRedirect->SOME_TASK($req);
-
-The subroutines are dynamically compiled from the lists of
-tasks in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
-
-See also L<new|"new"> for instance-based redirects.
-
-=cut
-
-=head1 CONSTANTS
-
-=for html <a name="QUERY_TAG"></a>
-
-=head2 QUERY_TAG : string
-
-Returns tag to be used in query string
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub QUERY_TAG {
-    return 'x';
+   return 'x';
 }
-
-#=IMPORTS
-use Bivio::IO::Trace;
-use Bivio::Agent::TaskId;
-
-#=VARIABLES
-my($_IDI) = __PACKAGE__->instance_data_index;
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
-_compile();
-
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(string uri) : Bivio::Biz::Action::ClientRedirect
-
-If I<uri> is supplied, creates an instance which will redirect
-to I<uri> every time L<execute|"execute"> is called.
-
-If I<uri> is C<undef>, L<execute|"execute"> will throw an exception.
-
-=cut
-
-sub new {
-    my($proto, $uri) = @_;
-    my($self) = Bivio::UNIVERSAL::new($proto);
-    if ($uri) {
-	$self->[$_IDI] = {
-	    uri => $uri,
-	};
-    }
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute"></a>
-
-=head2 execute(Bivio::Agent::Request req) : boolean
-
-Redirects only if created with a I<uri>.
-
-=cut
-
-sub execute {
-    my($self, $req) = @_;
-    Bivio::Die->die('cannot be called statically or without uri')
-		unless ref($self) && $self->[$_IDI];
-    $req->client_redirect($self->[$_IDI]->{uri});
-    # DOES NOT RETURN
-}
-
-=for html <a name="execute_cancel"></a>
-
-=head2 execute_cancel(Bivio::Agent::Request req)
-
-Redirect to I<cancel> task.
-
-=cut
 
 sub execute_cancel {
     my(undef, $req) = @_;
     return 'cancel';
 }
 
-=for html <a name="execute_home_page_if_site_root"></a>
-
-=head2 static execute_home_page_if_site_root(Bivio::Agent::Request req) : boolean
-
-Redirects to I<Text.home_page_uri> if the I<$req.uri> is '/' or the empty
-string.  Otherwise, does nothing.
-
-=cut
-
 sub execute_home_page_if_site_root {
     my($proto, $req) = @_;
-    $req->client_redirect(Bivio::UI::Text->get_value('home_page_uri', $req))
-	if $req->get('uri') =~ m!^/?$!;
+    return {
+	uri => Bivio::UI::Text->get_value('home_page_uri', $req),
+    } if $req->get('uri') =~ m!^/?$!;
     return;
 }
-
-=for html <a name="execute_next"></a>
-
-=head2 execute_next(Bivio::Agent::Request req)
-
-Redirect to I<next> task.
-
-=cut
 
 sub execute_next {
     return 'next';
 }
 
-=for html <a name="execute_next_stateless"></a>
-
-=head2 execute_next_stateless(Bivio::Agent::Request req)
-
-Redirect to I<next> task without a query.
-
-=cut
-
 sub execute_next_stateless {
     my(undef, $req) = @_;
-    $req->put(query => undef);
-    return 'next';
+    return {
+	task_id => 'next',
+	query => undef,
+    };
 }
 
-=for html <a name="execute_query"></a>
-
-=head2 execute_query(Bivio::Agent::Request req)
-
-Redirects to URI in query string or to I<next> task if no query string.
-
-=cut
+sub execute_path_info {
+    my($proto, $req) = @_;
+    my($uri) = $req->unsafe_get('path_info');
+    my($task) = Bivio::UI::Task->unsafe_get_from_uri(
+	$uri,
+        $req->get('Bivio::Auth::RealmType'),
+	$req,
+    );
+    $req->throw_die(NOT_FOUND => {
+	entity => $uri,
+	message => 'no task for URI',
+    }) unless $task;
+    return {
+	task => $task,
+	realm => $proto->get_realm_for_task($task, $req),
+	query => $req->unsafe_get('query'),
+	path_info => undef,
+	no_context => 1,
+    };
+}
 
 sub execute_query {
-    my(undef, $req) = @_;
-
-    # If there is a query, use that as the name of the realm
+    my($proto, $req) = @_;
     my($query) = $req->unsafe_get('query');
-    if ($query && defined($query->{QUERY_TAG()})) {
-	my($uri) = $query->{QUERY_TAG()};
-	# Insert absolute path if not already absolute
-	$uri =~ s,^(?!\w+:|\/),\/,;
-	_trace($uri) if $_TRACE;
-	$req->client_redirect($uri);
-	# DOES NOT RETURN
-    }
-
-    # Just redirect to the configured default
-    return 'next';
+    return 'next'
+	unless $query && defined(my $uri = $query->{$proto->QUERY_TAG});
+    $uri =~ s,^(?!\w+:|\/),\/,;
+    return {
+	uri => $uri,
+    };
 }
 
-#=PRIVATE METHODS
-
-# _compile()
-#
-# Create autoredirect functions for all the tasks in TaskId.
-#
-sub _compile {
-    foreach my $t (Bivio::Agent::TaskId->get_list) {
-#TODO: Would like to not define subs for for that don't have URIs,
-#      but can't do this because Tasks is not fully initialized by
-#      the time this module has been called.  It is called during
-#      initialization and Location hasn't fully initialized either.
-#      Probably want to do two passes in Location.  First setting
-#      URIs and second initializing the tasks.
-	my($n) = $t->get_name;
-	eval(<<"EOF") || die($@);
-	    sub $n {
-                my(undef, \$req) = \@_;
-                \$req->client_redirect(Bivio::Agent::TaskId::$n());
-            }
-            1;
-EOF
-    }
-    return;
+sub get_realm_for_task {
+    my($proto, $task, $req) = @_;
+    my($t) = Bivio::Agent::Task->get_by_id($task);
+    my($rt) = $t->get('realm_type');
+    my($done);
+    return $req->map_user_realms(sub {
+	 my($row) = @_;
+	 return
+	     if $done;
+	 my($realm) = Bivio::Auth::Realm->new($row->{'RealmOwner.name'}, $req);
+	 return $realm->can_user_execute_task($t, $req) ? $realm : ();
+    }, {
+	'RealmOwner.realm_type' => $rt,
+    })->[0] || $rt->eq_general && Bivio::Auth::Realm->get_general
+    || Bivio::Die->throw(NOT_FOUND => {
+	entity => $task,
+	message => 'no appropriate realm for task',
+    });
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
