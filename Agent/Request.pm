@@ -931,19 +931,22 @@ sub internal_get_realm_for_task {
 
 #TODO: remove this section and die at some point
 #      it makes incorrect assumptions about role order
+#      rjn 11/26/06 might be able to make work by asking if have permissions
+#      for the target realm type required by task.
     Bivio::IO::Alert->warn_deprecated(
 	$task_id, ': use explicit realm');
 
     my($role) = Bivio::Auth::Role->UNKNOWN->as_int;
     my($realm_id);
-
-    foreach my $realm (values(%{$self->get('user_realms')})) {
-        next unless $realm->{'RealmOwner.realm_type'} eq $trt;
+    $self->map_user_realms(sub {
+        my($realm) = @_;
         my($rr) = $realm->{'RealmUser.role'}->as_int;
         next unless  $rr > $role;
         $realm_id = $realm->{'RealmUser.realm_id'};
         $role = $rr;
-    }
+    }, {
+	'RealmOwner.realm_type' => $trt,
+    });
     return $realm_id
         ? Bivio::Auth::Realm->new($realm_id, $self)
         : undef;
@@ -1138,7 +1141,8 @@ sub is_test {
 =head2 map_user_realms(code_ref op, hash_ref filter) : array_ref
 
 Calls I<op> with each row UserRealmList as a hash sorted by RealmOwner.name.
-If I<filter> supplied, only supplies rows which match filter.
+If no I<op>, returns row.  If I<filter> supplied, only supplies rows
+which match filter.
 
 B<Use of $self-E<gt>get_user_realms is deprecated>.
 
@@ -1146,6 +1150,7 @@ B<Use of $self-E<gt>get_user_realms is deprecated>.
 
 sub map_user_realms {
     my($self, $op, $filter) = @_;
+    $op ||= sub {shift(@_)};
     my($atomic_copy) = [
 	map(+{%$_},
 	    sort(
