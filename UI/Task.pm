@@ -634,12 +634,12 @@ sub unsafe_get_from_uri {
     my($proto, $uri, $realm_type, $req_or_facade) = @_;
     my($self) = $proto->internal_get_self($req_or_facade);
     my($from_uri) = $self->[$_IDI]->{from_uri};
-    $uri = $_REALM_PLACEHOLDER.'/'.$uri if $realm_type ne $_GENERAL;
+    $uri = "$_REALM_PLACEHOLDER/$uri"
+	unless $realm_type->eq_general;
     _clean_uri(\$uri);
-    my($info) = $from_uri->{$uri};
-    return undef unless $info;
+    return undef
+	unless my $info = $from_uri->{$uri};
     $info = $info->[$realm_type->as_int];
-
 #TODO: Is this really the same as what parse_uri() does?
     return $info ? _task($self, $info) : undef;
 }
