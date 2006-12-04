@@ -332,7 +332,7 @@ sub execute_items {
 		|| $_T->is_valid_name($res) && $_T->from_name($res)
 		|| $res;
 	}
-	elsif (ref($res) eq 'HASH' && ($res->{task_id} || '') =~ /_task$/) {
+	elsif (ref($res) eq 'HASH' && ($res->{task_id} || '') =~ /(?:^next|^cancel|_task)$/) {
 	    $res->{task_id} = $self->unsafe_get($res->{task_id})
 		|| $res->{task_id};
 	}
