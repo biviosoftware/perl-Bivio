@@ -6,10 +6,19 @@ use base 'Bivio::Biz::FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub execute_empty {
+    my($self) = @_;
+    $self->internal_put_field('Email.email'
+        => $self->new_other('Email.email')->load_for_auth_user->get('email'))
+	if $self->get_request('auth_user');
+    return;
+}
+
 sub execute_ok {
     my($self) = @_;
-    my($req) = $self->get_request;
-    Bivio::UI::View->execute('contact-mail', $req);
+    $self->internal_put_field(subject => 'Web Contact')
+	unless $self->unsafe_get('subject');
+    Bivio::UI::View->execute('contact-mail', $self->get_request);
     return;
 }
 
@@ -28,6 +37,11 @@ sub internal_initialize {
 		name => 'text',
 		type => 'TextArea',
 		constraint => 'NOT_NULL',
+	    },
+	    {
+		name => 'subject',
+		type => 'Line',
+		constraint => 'NONE',
 	    },
 	],
     });
