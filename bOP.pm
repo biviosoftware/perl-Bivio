@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.60  2006/12/01 23:32:52  dobbs
+  * Bivio::Agent::Request added with_user() to match with_realm()
+  * Bivio::Biz::Model::Club defined equivalence for club_id and RealmOwner.realm_id
+  * Bivio::Biz::Model::SummaryList added internal_sum() so subclasses can override
+  * Bivio::Biz::Model::UserTaskDAVList reverted to revision 1.4
+  * Bivio::Biz::Random integer() ceiling now defaults to Bivio::Type::Integer->get_max()
+  * Bivio::Type::ForumName now allows subclasses to override SEP_CHAR_REGEXP
+  * Bivio::Util::SQL moved data population into initialize_db()
+
   Revision 4.59  2006/11/16 18:31:01  aviggio
   * Bivio::Agent::Request added with_realm, replaced get_user_realms
     with map_user_realms, added filter to map_user_realms
