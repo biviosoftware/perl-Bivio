@@ -187,10 +187,6 @@ sub internal_new_args {
 	unless defined($value)
 	    && (!ref($value) || ref($value) eq 'ARRAY'
 		|| UNIVERSAL::isa($value, 'Bivio::Type::Enum'));
-    return '"value" must be a scalar, array_ref, or Bivio::UI::Widget'
-	unless defined($value)
-	    && (!ref($value) || ref($value) eq 'ARRAY'
-		|| UNIVERSAL::isa($value, 'Bivio::UI::Widget'));
     return {
 	field => $field,
 	value => $value,
