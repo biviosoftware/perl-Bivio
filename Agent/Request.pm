@@ -941,7 +941,7 @@ sub internal_get_realm_for_task {
     $self->map_user_realms(sub {
         my($realm) = @_;
         my($rr) = $realm->{'RealmUser.role'}->as_int;
-        next unless  $rr > $role;
+        return unless  $rr > $role;
         $realm_id = $realm->{'RealmUser.realm_id'};
         $role = $rr;
     }, {
