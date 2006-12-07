@@ -107,6 +107,25 @@ sub from_sql_column {
     return pack('h*', $value);
 }
 
+=for html <a name="get_empty"></a>
+
+=head2 get_empty() : string_ref
+
+Return an empty EnumSet.
+
+=cut
+
+sub get_empty {
+    my($proto) = @_;
+    my($enum) = $proto->get_enum_type;
+    my($length) = $enum->get_max->as_int + 1;
+    my($vector) = '';
+    foreach my $i (0..$length) {
+	vec($vector, $i, 1) = 0;
+    }
+    return \$vector;
+}
+
 =for html <a name="get_enum_type"></a>
 
 =head2 static abstract get_enum_type() : Bivio::Type::Enum
