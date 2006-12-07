@@ -38,6 +38,7 @@ and delete interface to the C<realm_role_t> table.
 
 #=IMPORTS
 use Bivio::Auth::PermissionSet;
+use Bivio::IO::Trace;
 
 #=VARIABLES
 
@@ -179,11 +180,59 @@ sub _do {
 	$self->unauth_load_or_die(realm_id => $realm_id, role => $role);
 	$self->update({
 	    permission_set => $which eq 'add'
-	            ? ($self->get('permission_set') | $permissions)
-	            : ($self->get('permission_set') & ~$permissions),
+	            ? ($self->get('permission_set')
+		        | _permissions($realm, $role, $permissions))
+	            : ($self->get('permission_set')
+		        & ~_permissions($realm, $role, $permissions)),
 	});
+    _trace('permissions: ',
+        Bivio::Auth::PermissionSet->to_array($self->get('permission_set')))
+	if $_TRACE;
     }
     return;
+}
+
+# _get_permission_set(Bivio::Biz::Model::RealmOwner realm, Bivio::Auth::Role role) : string
+#
+# Returns the permission_set for the realm and role.
+#
+sub _get_permission_set {
+    my($realm, $role) = @_;
+    my($rr) = $realm->new_other('RealmRole');
+    return $rr->get('permission_set')
+	    if $rr->unauth_load(
+	        realm_id => $realm->get('realm_id'),
+		role => $role,
+	    );
+    Bivio::Die->die($role->as_string, ": not set for realm");
+    # DOES NOT RETURN
+}
+
+# _permissions(Bivio::Biz::Model::RealmOwner realm, Bivio::Auth::Role role, Bivio::Auth::PermissionSet permissions) : string
+# _permissions(Bivio::Biz::Model::RealmOwner realm, Bivio::Auth::Role role, array_ref permissions) : string
+#
+#
+sub _permissions {
+    my($realm, $role, $permissions) = @_;
+    
+    return $permissions
+	if UNIVERSAL::isa($permissions, 'Bivio::Auth:::PermissionSet');
+
+    my($ps) = Bivio::Auth::PermissionSet->get_empty();
+    foreach my $operand (@$permissions) {
+	my($permission) = Bivio::Auth::Permission->unsafe_from_any($operand);
+	if ($permission && $permission->get_name eq $operand) {
+	    Bivio::Auth::PermissionSet->set($ps, $permission);
+	}
+	else {
+	    my($r) = Bivio::Auth::Role->unsafe_from_any($operand);
+	    Bivio::Die->die($operand, ': neither a Role nor Permission')
+		unless $r && $r->get_name eq $operand;
+	    $$ps &= _get_permission_set($realm, $r);
+	}
+    }
+
+    return $$ps;
 }
 
 =head1 COPYRIGHT
