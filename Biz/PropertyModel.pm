@@ -608,7 +608,7 @@ sub load_for_auth_user {
     my($self) = @_;
     return $self->unauth_load({
 	realm_id => (
-	    $self->get_request('auth_user') || $self->die('no auth_user')
+	    $self->get_request->get('auth_user') || $self->die('no auth_user')
 	)->get('realm_id'),
     });
 }
