@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub execute_empty {
     my($self) = @_;
     $self->internal_put_field('Email.email'
-        => $self->new_other('Email.email')->load_for_auth_user->get('email'))
+        => $self->new_other('Email')->load_for_auth_user->get('email'))
 	if $self->get_request('auth_user');
     return;
 }
