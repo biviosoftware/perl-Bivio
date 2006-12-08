@@ -216,6 +216,8 @@ sub _permissions {
     my($realm, $role, $permissions) = @_;
     
     return $permissions
+	unless ref($permissions);
+    return $permissions
 	if UNIVERSAL::isa($permissions, 'Bivio::Auth:::PermissionSet');
 
     my($ps) = Bivio::Auth::PermissionSet->get_empty();
