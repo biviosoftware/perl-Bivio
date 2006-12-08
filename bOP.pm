@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.61  2006/12/06 22:59:16  moeller
+  * Bivio::Agent::Request use map_user_realms in internal_get_realm_for_task
+    map_user_realms defaults to return entire array
+  * Bivio::Agent::Task allow next/cancel for return task_id
+  * Bivio::Biz::Action::ClientRedirect use returns, not redirect
+  * Bivio::Biz::Model::ContactForm load email if logged in
+  * Bivio::Biz::PropertyModel load_for_auth_user
+  * Bivio::UI::HTML::Widget::Radio fixed internal_new_args() to accept an
+    Enum value
+  * Bivio::UI::Task general not handled correctly for realmless
+
   Revision 4.60  2006/12/01 23:32:52  dobbs
   * Bivio::Agent::Request added with_user() to match with_realm()
   * Bivio::Biz::Model::Club defined equivalence for club_id and RealmOwner.realm_id
