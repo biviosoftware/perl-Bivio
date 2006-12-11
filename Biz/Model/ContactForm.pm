@@ -10,9 +10,8 @@ sub execute_empty {
     my($self) = @_;
     if ($self->get_request->get('auth_user')) {
 	my($e) = $self->new_other('Email');
-	$e->load_for_auth_user;
 	$self->internal_put_field('from' => $e->get('email'))
-	    if $e->is_loaded;
+	    if $e->load_for_auth_user;
     }
     return;
 }
