@@ -8,9 +8,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty {
     my($self) = @_;
-    $self->internal_put_field('Email.email'
-        => $self->new_other('Email')->load_for_auth_user->get('email'))
-	if $self->get_request->get('auth_user');
+    if ($self->get_request->get('auth_user')) {
+	my($e) = $self->new_other('Email');
+	$e->load_for_auth_user;
+	$self->internal_put_field('from' => $e->get('email'))
+    }
     return;
 }
 
