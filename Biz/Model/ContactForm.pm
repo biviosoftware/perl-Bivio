@@ -12,6 +12,7 @@ sub execute_empty {
 	my($e) = $self->new_other('Email');
 	$e->load_for_auth_user;
 	$self->internal_put_field('from' => $e->get('email'))
+	    if $e->is_loaded;
     }
     return;
 }
