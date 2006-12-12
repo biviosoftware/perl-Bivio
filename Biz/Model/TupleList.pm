@@ -11,23 +11,14 @@ sub execute_load_history_list {
     my($proto, $req) = @_;
     my($thl) = $proto->new($req, 'TupleHistoryList');
     my($q) = $thl->parse_query_from_request;
-    if ($q->get('this')) {
-	shift->execute_load_this(@_);
-	$thl->load_all({
-	    parent_id => $req->get($proto->package_name)
-		->get('Tuple.thread_root_id'),
-	});
-    }
-    else {
-	$thl->load_all($q);
-	my($t) = $thl->new_other('Tuple')->load({
-	    thread_root_id => $q->get('parent_id'),
-	});
-	$proto->new($req)->load_this({
-	    parent_id => $t->get('tuple_def_id'),
-	    this => $t->get('tuple_num'),
-	}),
-    }
+    $thl->load_all($q);
+    my($t) = $thl->new_other('Tuple')->load({
+	thread_root_id => $q->get('parent_id'),
+    });
+    $proto->new($req)->load_this({
+	parent_id => $t->get('tuple_def_id'),
+	this => $t->get('tuple_num'),
+    });
     return;
 }
 
