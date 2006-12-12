@@ -133,7 +133,13 @@ sub list {
 	    },
 	)},
 	    _list_actions(TupleList => [
-		'FORUM_TUPLE_HISTORY',
+		{
+		    task_id => 'FORUM_TUPLE_HISTORY',
+		    controls => undef,
+		    query => {
+			'ListQuery.parent_id' => ['Tuple.thread_root_id'],
+		    },
+		},
                 'FORUM_TUPLE_EDIT',
 	    ]),
 	], {
