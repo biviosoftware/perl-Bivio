@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.62  2006/12/08 05:46:13  aviggio
+  * Bivio::Biz::Model::RealmRole allow permissions to be specified by a
+    list of roles and/or permissions
+  * Bivio::Type::EnumSet->get_empty added
+
   Revision 4.61  2006/12/06 22:59:16  moeller
   * Bivio::Agent::Request use map_user_realms in internal_get_realm_for_task
     map_user_realms defaults to return entire array
