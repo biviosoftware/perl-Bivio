@@ -258,8 +258,6 @@ use POSIX ();
 use Sys::Hostname ();
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Map of class to Attributes which contains result of _parse_options()
 my(%_DEFAULT_OPTIONS);
@@ -285,12 +283,29 @@ Bivio::IO::Config->register(my $_CFG = {
 
 =head2 static new(array_ref argv) : Bivio::ShellUtil
 
+=head2 static new(string class, array_ref argv) : Bivio::ShellUtil
+
 Initializes a new instance with these command line arguments.
 
 =cut
 
 sub new {
-    my($proto, $argv) = @_;
+    my($proto, $class, $argv) = @_;
+
+    if ($class && !ref($class)) {
+        # explicit die if not found
+        # ClassLoader calls throw_quietly() which has no output
+        my($c) = Bivio::Die->eval(sub {
+            Bivio::IO::ClassLoader->map_require('ShellUtil', $class);
+        });
+        Bivio::Die->die('other ShellUtil not found or syntax error: ', $class)
+            unless $c;
+	$proto = $c;
+    }
+    else {
+	$argv = $class;
+    }
+
     return _initialize($proto->SUPER::new, $argv);
 }
 
@@ -836,9 +851,17 @@ This backward compatible feature was added to ease testing.
 sub main {
     my($proto, @argv) = @_;
     local($|) = 1;
+
+    my(@new_args);
+    unless (ref($proto)) {
+	push(@new_args, shift(@argv))
+	    if $argv[0] =~ /^[A-Z]/;
+	push(@new_args, \@argv);
+    }
+
     # Forces a setup, if called as $self
     my($self) = ref($proto) ? $proto->setup(_initialize($proto, \@argv))
-	: $proto->new(\@argv);
+	: $proto->new(@new_args);
     my($fields) = $self->[$_IDI];
     $fields->{in_main} = 1;
 

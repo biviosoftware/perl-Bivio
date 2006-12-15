@@ -100,6 +100,7 @@ config({
 		return [$o->simple_package_name, $o->get('force')];
 	    },
 	} => [
+	    #16
 	    [] => [qw(T1 0)],
 	    [['-force']] => [qw(T1 1)],
 	    ['T2'] => [qw(T2 0)],
@@ -111,6 +112,7 @@ config({
 	    ['T2'] => DIE(),
 	],
 	main => [
+	    #22
 	    [qw(simple_package_name)] => 'T1',
 	    [qw(T2 simple_package_name)] => 'T2',
 	    t1 => [],
