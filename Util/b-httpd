@@ -1,11 +1,11 @@
 #!perl -w
-# Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2006 bivio Software, Inc.  All Rights reserved.
 # $Id$
 use strict;
 
 =head1 NAME
 
-b-httpd - calls Bivio::Test::HTTPd
+b-httpd - calls Bivio::Util::HTTPD
 
 =head1 RELEASE SCOPE
 
@@ -18,7 +18,7 @@ s-http-dispatcher [--config] [-n] [server-name]
 
 =head1 DESCRIPTION
 
-See L<Bivio::Test::HTTPd|Bivio::Test::HTTPd>
+See L<Bivio::Util::HTTPD|Bivio::Util::HTTPD>
 
 =head1 DESCRIPTION
 
@@ -58,14 +58,15 @@ L<Bivio::Agent::HTTP::Dispatcher|Bivio::Agent::HTTP::Dispatcher>.
 =cut
 
 #=IMPORTS
-use Bivio::Test::HTTPd;
+use Bivio::Util::HTTPD;
 
 #=VARIABLES
-Bivio::Test::HTTPd->main(@ARGV);
+Bivio::ShellUtil->new('HTTPD')->main(@ARGV);
+#Bivio::ShellUtil->main(HTTPD => @ARGV);
 
 =head1 SEE ALSO
 
-Bivio::Test::HTTPd
+Bivio::Util::HTTPD
 
 =head1 COPYRIGHT
 

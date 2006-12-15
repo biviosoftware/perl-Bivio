@@ -1,13 +1,13 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::HTTPd;
+package Bivio::Util::HTTPD;
 use strict;
-$Bivio::Test::HTTPd::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::HTTPd::VERSION;
+$Bivio::Util::HTTPD::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Util::HTTPD::VERSION;
 
 =head1 NAME
 
-Bivio::Test::HTTPd - starts Apache running Bivio::Agent::HTTP::Dispatcher
+Bivio::Util::HTTPD - starts Apache running Bivio::Agent::HTTP::Dispatcher
 
 =head1 RELEASE SCOPE
 
@@ -15,7 +15,7 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::Test::HTTPd;
+    use Bivio::Util::HTTPD;
 
 =cut
 
@@ -26,11 +26,11 @@ L<Bivio::ShellUtil>
 =cut
 
 use Bivio::ShellUtil;
-@Bivio::Test::HTTPd::ISA = ('Bivio::ShellUtil');
+@Bivio::Util::HTTPD::ISA = ('Bivio::ShellUtil');
 
 =head1 DESCRIPTION
 
-C<Bivio::Test::HTTPd>
+C<Bivio::Util::HTTPD>
 
 =cut
 
@@ -83,8 +83,13 @@ my($_HTTPD) = _find_file(qw(
 Bivio::IO::Config->register(my $_CFG = {
     port => Bivio::IO::Config->REQUIRED,
     handler => 'Bivio::Agent::HTTP::Dispatcher',
-    pre_execute_hook => sub {},
 });
+Bivio::IO::Config->introduce_values({
+    'Bivio::UI::Facade' => {
+	want_local_file_cache => 1,
+    },
+})
+    if 0;
 
 =head1 METHODS
 
@@ -108,11 +113,17 @@ sub handle_config {
     return;
 }
 
+sub internal_pre_execute {
+    ## Perform operations before httpd is started.
+    return;
+}
+
 sub main {
     my($self, @argv) = @_;
     my($execute) = 1;
     my($background) = 0;
     my($server_name) = undef;
+    my($at_mode) = 0;
     my($pwd) = _project_root() . '/httpd';
     Bivio::IO::File->mkdir_p($pwd);
 #TODO: Let ShellUtil handle options; Create a default handler for commands
@@ -121,6 +132,7 @@ sub main {
 	$_ = shift(@argv);
 	/^-n/ && ($execute = 0, next);
 	/^-(?:b|bg|background)/ && ($background = 1, next);
+	/^--at/ && ($at_mode = 1, next);
 	/^-/ && &_usage("unknown option \"$_\"");
 	defined($server_name) && &_usage('too many arguments');
 	$server_name = $_;
@@ -131,7 +143,7 @@ sub main {
     }
     if ($execute) {
         -f "$pwd/httpd.pid" && (kill('TERM', `cat $pwd/httpd.pid`), sleep(5));
-	CORE::system("(cd $pwd; rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem modules)");
+	CORE::system("(cd $pwd; rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem modules)");
 	_symlink($pwd, "$pwd/logs");
 	_symlink(_find_file('/usr/lib/apache', '/usr/libexec/httpd'),
 	    "$pwd/modules") unless $] < 5.006;
@@ -140,7 +152,7 @@ sub main {
 #TODO: Shouldn't this just be an Bivio::IO::File->rm_rf($pwd)?
 	print <<"EOF";
 (cd $pwd;
-  rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem;
+  rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem;
   ln -s . logs;
 )
 EOF
@@ -155,8 +167,19 @@ EOF
     my($handler) = $_CFG->{handler};
     my($perl_module) = $handler =~ /^\+/ ? "" : "PerlModule $_CFG->{handler}";
     my(@start_mode) = $background ? () : ('-X');
-    my($bconf) = $ENV{'BCONF'}
-	? "PerlSetEnv BCONF $ENV{'BCONF'}" : '';
+
+    # write custom bconf
+    my($bconf_data) = Bivio::IO::File->read($ENV{'BCONF'});
+    $$bconf_data =~
+	s/want_local_file_cache\s+=>\s+\d,/want_local_file_cache => $at_mode/;
+    Bivio::IO::File->write("$pwd/httpd$$.bconf", $bconf_data);
+    my($bconf) = "PerlSetEnv BCONF $pwd/httpd$$.bconf";
+#     my($bconf) = $ENV{'BCONF'}
+# 	? "PerlSetEnv BCONF $ENV{'BCONF'}" : '';
+
+     my($reload) = $at_mode
+         ? ''
+         : 'PerlInitHandler Bivio::Test::Reload';
     my($hostip) = sprintf("%d.%d.%d.%d",
             unpack('C4', (gethostbyname($hostname))[4]));
 
@@ -198,7 +221,7 @@ EOF
 	print(STDERR "tail -f stderr.log\n")
 	    if $background;
 	Bivio::IO::File->chdir($pwd);
-	$_CFG->{pre_execute_hook}->();
+	$self->internal_pre_execute();
 	exec($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
 	die("$_HTTPD: $!");
     }
@@ -330,7 +353,7 @@ PerlWarn on
 # Can't be on and use PERLLIB.
 PerlFreshRestart off
 <$bconf>
-PerlInitHandler Bivio::Test::Reload
+<$reload>
 <$perl_module>
 #RJN: This doesn't work for some reason
 PassEnv HOME

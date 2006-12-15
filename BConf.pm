@@ -163,7 +163,7 @@ sub dev {
 		    port => $http_port,
 		},
 	    },
-     	    'Bivio::Test::HTTPd' => {
+     	    'Bivio::Util::HTTPD' => {
 		port => $http_port,
 	    },
 	},
