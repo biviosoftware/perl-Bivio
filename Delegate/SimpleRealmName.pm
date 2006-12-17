@@ -137,6 +137,22 @@ sub is_offline {
     return defined($value) && $value =~ /^$_OFFLINE_PREFIX/o ? 1 : 0;
 }
 
+=for html <a name="make_offline"></a>
+
+=head2 make_offline(string value) : string
+
+Returns an offline realm name.
+
+=cut
+
+sub make_offline {
+    my($proto, $value) = @_;
+    return $value if $proto->is_offline($value);
+    $value = substr($value, 0, $proto->get_width - 1)
+	if length($value) >= $proto->get_width;
+    return $_OFFLINE_PREFIX . $value;
+}
+
 =for html <a name="process_name"></a>
 
 =head2 static process_name(string value) : string
