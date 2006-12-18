@@ -84,13 +84,19 @@ config({
 	    RealmOwner => sub {
 		shift;
 		return shift->[0]->isa('Bivio::Biz::Model');
-	     },
+	    },
 	    ['RealmOwner', {name => 'demo'}] => sub {
 		shift;
 		return shift->[0]->get('realm_type')->eq_user;
-	     },
+	    },
 	],
-	new => DIE(),
+	new => [
+	    [] => DIE(),
+	    'T1' =>sub {
+		shift;
+		return shift->[0]->isa('Bivio::t::ShellUtil::T1');
+	    },
+	],
     ],
     sub {'Bivio::t::ShellUtil::T1'} => [
 	{
@@ -100,7 +106,7 @@ config({
 		return [$o->simple_package_name, $o->get('force')];
 	    },
 	} => [
-	    #16
+	    #17
 	    [] => [qw(T1 0)],
 	    [['-force']] => [qw(T1 1)],
 	    ['T2'] => [qw(T2 0)],
@@ -112,9 +118,9 @@ config({
 	    ['T2'] => DIE(),
 	],
 	main => [
-	    #22
-	    [qw(simple_package_name)] => 'T1',
-	    [qw(T2 simple_package_name)] => 'T2',
+	    #23
+	    [qw(my_package)] => "T1\n",
+	    [qw(T2 my_package)] => "T2\n",
 	    t1 => [],
 	    # If these tests are failing, check ShellUtil/mylog.log
 	    ['-email' => $email, 'rd1'] => $myarg_re,

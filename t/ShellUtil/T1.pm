@@ -37,6 +37,10 @@ sub echo {
     return shift;
 }
 
+sub my_package {
+    return shift->simple_package_name . "\n";
+}
+
 sub rd1 {
     my($self, $cfg_name) = @_;
     my($count) = 0;

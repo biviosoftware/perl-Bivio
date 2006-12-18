@@ -304,6 +304,8 @@ sub new {
     }
     else {
 	$argv = $class;
+	Bivio::Die->die('new() must be called on a ShellUtil subclass')
+	    if $proto eq __PACKAGE__;
     }
 
     return _initialize($proto->SUPER::new, $argv);
