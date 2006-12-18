@@ -484,7 +484,7 @@ sub _destroy {
 # _get_instance(proto, any view_name, Bivio::Collection::Attributes req_or_facade) : Bivio::UI::View
 #
 # Returns an instance of view_name for this facade.  req_or_facade may
-# be undef iwc $_CURRENT_FACADE is used.
+# be undef in which case $_CURRENT_FACADE is used.
 #
 sub _get_instance {
     my($proto, $name, $req_or_facade) = @_;
