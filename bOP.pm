@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.63  2006/12/12 05:33:00  aviggio
+  * Bivio::Biz::Model::ContactForm put auth user email, if it exists, in
+    local 'from' field
+  * Bivio::Biz::Model::TupleList->execute_load_history_list updated to
+    match new query
+  * Bivio::UI::XHTML::View::Tuple pass thread root id as query parent id
+    for history list view
+
   Revision 4.62  2006/12/08 05:46:13  aviggio
   * Bivio::Biz::Model::RealmRole allow permissions to be specified by a
     list of roles and/or permissions
