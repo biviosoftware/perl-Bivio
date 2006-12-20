@@ -102,50 +102,71 @@ EOF
 }
 
 sub history_list {
-    view_put(base_content => vs_list(TupleHistoryList => [qw(
-        RealmFile.modified_date_time
-        RealmMail.from_email
-        slot_headers
-        comment
-    )]));
+    view_put(
+	_meta_info(),
+	base_content =>
+	    vs_list(TupleHistoryList =>
+			[qw(RealmFile.modified_date_time
+			    RealmMail.from_email
+			    slot_headers
+			    comment)]));
+    return;
+}
+
+sub history_list_csv {
+    view_main(CSV(TupleHistoryList =>
+		      [qw(RealmFile.modified_date_time
+			  RealmMail.from_email
+			  slot_headers
+			  comment)]));
     return;
 }
 
 sub list {
     vs_put_pager('TupleList');
-    view_put(base_content => [sub {
-	my($req) = @_;
-	return vs_paged_list(TupleList => [qw(
-	    Tuple.tuple_num
-	    Tuple.modified_date_time
-	),
-	@{$req->get('Model.TupleSlotDefList')->map_rows(
+    view_put(
+	_meta_info(),
+	base_content => [
 	    sub {
-		my($it) = @_;
-		my($field) = 'Tuple.' . $it->field_from_num;
-		return [$field => {
-		    column_heading =>
-			String($it->get('TupleSlotDef.label')),
-		    column_widget => vs_display('TupleList.'. $field => {
-			wf_type => $it->type_class_instance
-		    }),
-		}];
-	    },
-	)},
-	    _list_actions(TupleList => [
-		{
-		    task_id => 'FORUM_TUPLE_HISTORY',
-		    controls => undef,
-		    query => {
-			'ListQuery.parent_id' => ['Tuple.thread_root_id'],
-		    },
-		},
-                'FORUM_TUPLE_EDIT',
-	    ]),
-	], {
-	    no_pager => 1,
-	}),
-    }]);
+		my($req) = @_;
+		return vs_paged_list(TupleList => [
+		    _list_columns($req, 1),
+		    _list_actions(TupleList => [
+			{
+			    task_id => 'FORUM_TUPLE_HISTORY',
+			    controls => undef,
+			    query => {
+				'ListQuery.parent_id'
+				    => ['Tuple.thread_root_id'],
+			    },
+			},
+			'FORUM_TUPLE_EDIT',
+		    ]),
+		], {
+		    no_pager => 1,
+		}),
+	    }
+	]);
+    return;
+}
+
+sub list_csv {
+    view_declare('base_content');
+    view_main(SimplePage(view_widget_value('base_content')));
+    view_put(base_content => Indirect([
+	sub {
+	    my($req) = @_;
+	    return CSV(TupleList => [_list_columns($req)]);
+	},
+    ]));
+#TODO: Extend CSV widget to support code references
+#     view_main(CSV(
+#  	TupleList => [
+# 	    sub {
+# 		my($req) = @_;
+# 		return [_list_columns($req)];
+# 	    },
+# 	]));
     return;
 }
 
@@ -155,6 +176,10 @@ sub pre_compile {
 	view_parent('mail');
 	return;
     }
+    elsif ($self->get('view_method') =~ /_csv$/) {
+	view_class_map('TextWidget');
+	return;
+    }
     my(@res) = shift->SUPER::pre_compile(@_);
     view_put(base_tools => TaskMenu([
         {
@@ -162,8 +187,17 @@ sub pre_compile {
 	    label => 'TupleHistoryList.FORUM_TUPLE_EDIT',
 	    control => ['task_id', '->eq_forum_tuple_history'],
 	    query => {
-		'ListQuery.parent_id' => [qw(Model.TupleList Tuple.tuple_def_id)],
+		'ListQuery.parent_id'
+		    => [qw(Model.TupleList Tuple.tuple_def_id)],
 		'ListQuery.this' => [qw(Model.TupleList Tuple.tuple_num)],
+	    },
+	},
+        {
+	    task_id => 'FORUM_TUPLE_HISTORY_CSV',
+	    control => ['task_id', '->eq_forum_tuple_history'],
+	    query => {
+		'ListQuery.parent_id'
+		    => [qw(Model.TupleList Tuple.thread_root_id)],
 	    },
 	},
         {
@@ -172,6 +206,14 @@ sub pre_compile {
 	    query => {
 		'ListQuery.parent_id'
 		    => [[qw(Model.TupleList ->get_query)], 'parent_id'],
+	    },
+	},
+        {
+	    task_id => 'FORUM_TUPLE_LIST_CSV',
+	    control => ['task_id', '->eq_forum_tuple_list'],
+	    query => {
+		'ListQuery.parent_id'
+		    => [qw(Model.TupleUseList TupleUse.tuple_def_id)],
 	    },
 	},
         {
@@ -294,6 +336,44 @@ sub _list_actions {
 	]),
 	column_data_class => 'list_actions',
     };
+}
+
+sub _list_columns {
+    my($req, $html) = @_;
+    return (
+	qw(Tuple.tuple_num Tuple.modified_date_time),
+	@{$req->get('Model.TupleSlotDefList')->map_rows(
+	    sub {
+		my($it) = @_;
+		my($field) = 'Tuple.' . $it->field_from_num;
+		return [$field => {
+		    column_heading =>
+			$html ? String($it->get('TupleSlotDef.label')) :
+			    $it->get('TupleSlotDef.label'),
+		    $html ? (column_widget =>
+			vs_display('TupleList.'. $field => {
+			    wf_type => $it->type_class_instance
+			})) : (),
+		}];
+	    },
+	)}
+    );
+}
+
+sub _meta_info {
+#TODO: Primitive hack to account for mail not being persisted in the db
+# initially, resulting in client visible lag time. Would client side Javascript
+# be more elegant? Hidden iframe AJAX?
+    return (
+	page3_meta_info =>
+	    If(
+		[['->get_request'], '->unsafe_get', 'Action.Acknowledgement'],
+		EmptyTag(meta => {
+		    html_attrs => [qw(http-equiv content)],
+		    'http-equiv' => 'Refresh',
+		    content => '5',
+		})
+	    ));
 }
 
 1;
