@@ -39,9 +39,15 @@ Extracts the cells and summary cells and produces a table.
 
 =over 4
 
+=item column_heading : string
+
+The heading label to use for the columns heading. By default, the column
+field name is used to look up the heading label from the facade.
+
 =item columns : array_ref (required)
 
-List of fields to render.
+List of fields to render. Individual columns may optionally be array_refs
+including an attributes hash_ref with a I<column_heading> value.
 
 =item list_class : string (required)
 
@@ -119,7 +125,8 @@ sub initialize {
     my($list) = Bivio::Biz::Model->get_instance($self->get('list_class'));
     foreach my $col (@{$self->get('columns')}) {
 	# Make sure we can convert a value to a string.
-	$list->get_field_type($col)->to_string(undef);
+	$list->get_field_type(ref($col) eq 'ARRAY'
+				  ? $col->[0] : $col)->to_string(undef);
     }
     $self->unsafe_initialize_attr('header');
     return;
@@ -170,11 +177,13 @@ sub render {
     my($method) = $list->has_iterator
 	? 'iterate_next_and_load' : ('next_row', $list->reset_cursor);
     $$buffer .= ${Bivio::Util::CSV->to_csv_text([map({
+	ref($_) eq 'ARRAY' ? $_->[1]->{column_heading} :
 	Bivio::UI::Text->get_value($list->simple_package_name, $_, $req);
     } @{$self->get('columns')})])};
     while ($list->$method()) {
 	$$buffer .= ${Bivio::Util::CSV->to_csv_text([map({
-	    $list->get_field_type($_)->to_string($list->get($_));
+	    my($f) = ref($_) eq 'ARRAY' ? $_->[0] : $_;
+	    $list->get_field_type($f)->to_string($list->get($f));
 	} @{$self->get('columns')})])};
     }
     return;
