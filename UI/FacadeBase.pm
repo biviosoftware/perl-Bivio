@@ -19,7 +19,9 @@ sub _cfg_tuple {
 	    [FORUM_TUPLE_DEF_LIST => '?/db-schemas'],
 	    [FORUM_TUPLE_EDIT => '?/edit-db-record'],
 	    [FORUM_TUPLE_HISTORY => '?/db-record-history'],
+	    [FORUM_TUPLE_HISTORY_CSV => '?/db-record-history.csv'],
 	    [FORUM_TUPLE_LIST => '?/db-records'],
+	    [FORUM_TUPLE_LIST_CSV => '?/db-records.csv'],
 	    [FORUM_TUPLE_SLOT_TYPE_EDIT => '?/edit-db-type'],
 	    [FORUM_TUPLE_SLOT_TYPE_LIST => '?/db-types'],
 	    [FORUM_TUPLE_USE_EDIT => '?/edit-db-table'],
@@ -46,6 +48,8 @@ sub _cfg_tuple {
 		FORUM_TUPLE_DEF_EDIT => 'Add Schema',
 		FORUM_TUPLE_DEF_LIST => 'Schemas',
 		FORUM_TUPLE_LIST => 'Records',
+		[qw(FORUM_TUPLE_LIST_CSV FORUM_TUPLE_HISTORY_CSV)]
+		    => 'Download .csv',
 		FORUM_TUPLE_EDIT => 'Add Record',
 		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Add Type',
 		FORUM_TUPLE_SLOT_TYPE_LIST => 'Types',
@@ -129,7 +133,7 @@ sub _cfg_tuple {
 		FORUM_TUPLE_DEF_EDIT => 'Schema definition has been saved.',
 		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Type definition has been saved.',
 		FORUM_TUPLE_USE_EDIT => 'Table definition has been saved.',
-		FORUM_TUPLE_EDIT => 'An email was sent to update the record.  Please wait a few seconds and then click Refresh.',
+		FORUM_TUPLE_EDIT => 'An email was sent to update the record.  Please wait a few seconds and the browser will update this listing.',
 	    ]],
 	],
 	FormError => [

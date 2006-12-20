@@ -575,21 +575,37 @@ sub info_tuple {
 	    View.Tuple->list
 	)],
 	[qw(
-	    FORUM_TUPLE_EDIT
+	    FORUM_TUPLE_LIST_CSV
 	    77
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleList->execute_load_page
+	    View.Tuple->list_csv
+	)],
+	[qw(
+	    FORUM_TUPLE_EDIT
+	    78
 	    FORUM
 	    TUPLE_READ&TUPLE_WRITE
 	    Model.TupleSlotListForm
 	    View.Tuple->edit
 	    next=FORUM_TUPLE_LIST
 	)],
-	[qw(
+ 	[qw(
 	    FORUM_TUPLE_HISTORY
-	    78
+	    79
 	    FORUM
 	    TUPLE_READ
 	    Model.TupleList->execute_load_history_list
 	    View.Tuple->history_list
+	)],
+ 	[qw(
+	    FORUM_TUPLE_HISTORY_CSV
+	    80
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleList->execute_load_history_list
+	    View.Tuple->history_list_csv
 	)],
     ];
 }
