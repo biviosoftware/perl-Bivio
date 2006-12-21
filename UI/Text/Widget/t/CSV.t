@@ -22,4 +22,13 @@ Bivio::Test->new({
 	    [$_req, \(my $x = '')] => qr/Product Name,Product ID\nCorgi,K9-BD-01\nDalmation.*Poodle/s,
 	],
     ],
+    ['ProductList', [
+	['Product.name', {column_heading => 'Name'}],
+	['Product.product_id', {column_heading => 'Id'}],
+    ]] => [
+	initialize => undef,
+	render => [
+	    [$_req, \(my $y = '')] => qr/Name,Id\nCorgi,K9-BD-01\nDalmation.*Poodle/s,
+	],
+    ],
 ]);
