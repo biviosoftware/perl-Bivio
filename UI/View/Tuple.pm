@@ -54,7 +54,7 @@ sub edit {
 	    ],
 	    @{$lfm->map_rows(sub {
 		my($it) = @_;
-		my($label) = $lm->get('TupleSlotDef.label');
+		my($label) = _sub_spaces($lm->get('TupleSlotDef.label'));
 		my($field) = $it->get_field_name_in_list('slot');
 		return [
 		    FormFieldLabel({
@@ -88,6 +88,7 @@ sub edit {
 }
 
 sub edit_mail {
+#TODO: Support up to three file attachments
     view_put(
 	mail_to => Mailbox(['->format_email']),
 	mail_from => Mailbox(['Model.TupleSlotListForm', 'RealmMail.from_email']),
@@ -346,10 +347,9 @@ sub _list_columns {
 	    sub {
 		my($it) = @_;
 		my($field) = 'Tuple.' . $it->field_from_num;
+		my($label) = _sub_spaces($it->get('TupleSlotDef.label'));
 		return [$field => {
-		    column_heading =>
-			$html ? String($it->get('TupleSlotDef.label')) :
-			    $it->get('TupleSlotDef.label'),
+		    column_heading => $html ? String($label) : $label,
 		    $html ? (column_widget =>
 			vs_display('TupleList.'. $field => {
 			    wf_type => $it->type_class_instance
@@ -359,6 +359,8 @@ sub _list_columns {
 	)}
     );
 }
+
+
 
 sub _meta_info {
 #TODO: Primitive hack to account for mail not being persisted in the db
@@ -374,6 +376,12 @@ sub _meta_info {
 		    content => '5',
 		})
 	    ));
+}
+
+sub _sub_spaces {
+    my($label) = @_;
+    $label =~ s/[_-]/ /g;
+    return $label;
 }
 
 1;
