@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.65  2006/12/22 05:55:36  aviggio
+  * Bivio::Biz::Model::TupleHistoryList.pm replace hyphens and dashes in
+    field names for display purposes
+  * Bivio::Delegate::SimpleTaskId add tuple record and history .csv views
+  * Bivio::ShellUtil support test cleanup
+  * Bivio::UI::FacadeBase add tuple record and history .csv views
+  * Bivio::UI::Text::Widget::CSV accept column heading attributes
+  * Bivio::UI::XHTML::View::Tuple add tuple record and history .csv views
+
   Revision 4.64  2006/12/18 16:57:00  moeller
   * Bivio::Delegate::SimpleRealmName added make_offline()
   * Bivio::ShellUtil new() and main() can now take class arguments to
