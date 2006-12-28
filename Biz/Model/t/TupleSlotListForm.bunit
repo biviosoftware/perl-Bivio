@@ -30,7 +30,7 @@ model('Tuple')->delete_all;
 	'Model.TupleSlotListForm' => {
 	    slot_headers => "Author: a\@a.a\nStatus: s1\n",
 	    'RealmMail.from_email' => 'btest_read@bivio.biz',
-	    'RealmMail.subject' => 'PSR#',
+	    'RealmMail.subject' => 'PSR# - s1',
 	},
     }],
     # Next two are empty_cases; see setup_request above
@@ -52,7 +52,7 @@ model('Tuple')->delete_all;
 	'Model.TupleSlotListForm' => {
 	    slot_headers => "Status: s2\n",
 	    'RealmMail.from_email' => 'btest_read@bivio.biz',
-	    'RealmMail.subject' => 'PSR#3',
+	    'RealmMail.subject' => 'PSR#3 - s2',
 	 },
     }],
     [s2 => {
@@ -63,7 +63,7 @@ model('Tuple')->delete_all;
 	'Model.TupleSlotListForm' => {
 	    slot_headers => "Author: b\@a.a\nStatus: \n",
 	    'RealmMail.from_email' => 'btest_read@bivio.biz',
-	    'RealmMail.subject' => 'PSR#4',
+	    'RealmMail.subject' => 'PSR#4 - ',
 	 },
     }],
 ];
