@@ -58,7 +58,7 @@ L<Bivio::Agent::HTTP::Dispatcher|Bivio::Agent::HTTP::Dispatcher>.
 =cut
 
 #=IMPORTS
-use Bivio::Util::HTTPD;
+use Bivio::ShellUtil;
 
 #=VARIABLES
 Bivio::ShellUtil->new('HTTPD')->main(@ARGV);
