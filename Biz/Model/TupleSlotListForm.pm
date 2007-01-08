@@ -27,12 +27,15 @@ sub execute_ok_end {
     my($self) = @_;
     my($req) = $self->get_request;
     $self->internal_put_field(slot_headers => $self->[$_IDI]->{headers});
+    _validate_subject($self);
     $self->internal_put_field('RealmMail.subject' => $self->[$_IDI]->{subject});
     $self->internal_put_field('RealmMail.from_email' =>
         $self->new_other('Email')->unauth_load_or_die({
 	    realm_id => $self->get_request->get('auth_user_id'),
 	})->get('email'),
     );
+#TODO: Add it to db here, but not when it comes in because tuple update already
+# done -- msg already in queue?
     $self->use('View.Tuple')->execute(edit_mail => $req);
     return;
 }
@@ -53,28 +56,7 @@ sub execute_ok_row {
 	    defined($v) || $fields->{is_update} ? $v
 		: $lm->get('TupleSlotType.default_value')),
     ) unless $tsv && $lm->type_class_instance->is_equal($v, $$tsv);
-    # Set the subject line based on the first 'string' slot
-#TODO: Ensure that long lines don't present a problem to subject in mail header
-# Use Text::Wrap? e.g.:
-#   use Text::Wrap
-#   $Text::Wrap::columns = 72;
-#   print wrap('', '', @text);
-#
-# RFC2822 addressed the lack of clarity on this basic point:
-#   2.1.1. Line Length Limits
-#   There are two limits that this standard places on the number of characters
-#   in a line. Each line of characters MUST be no more than 998 characters, and
-#   SHOULD be no more than 78 characters, excluding the CRLF.
-    if ($lm->type_class_instance eq Bivio::Type->get_instance('TupleSlot')) {
-	my($req) = $self->get_request;
-	$fields->{subject} = ($req->unsafe_get('Model.Tuple') || $_T)
-	    ->mail_subject($req->get('Model.TupleUseList')
-			       ->get_model('TupleUse'))
-		. ' - ' . $lm->type_class_instance->to_literal(
-		    defined($v) || $fields->{is_update} ? $v
-			: $lm->get('TupleSlotType.default_value'))
-		    unless $fields->{subject};
-    }
+    _set_subject_if_string_slot($self, $lm, $v);
     return;
 }
 
@@ -185,6 +167,28 @@ sub _put_choice_lists {
     return;
 }
 
+sub _get_subject_prefix {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    return ($req->unsafe_get('Model.Tuple') || $_T)
+	->mail_subject($req->get('Model.TupleUseList')->get_model('TupleUse'));
+}
+
+sub _set_subject_if_string_slot {
+    # Set the subject line based on the first 'string' slot
+    my($self, $lm, $v) = @_;
+    my($fields) = $self->[$_IDI];
+    my($req) = $self->get_request;
+    if ($lm->type_class_instance eq Bivio::Type->get_instance('TupleSlot')) {
+	$fields->{subject} = _get_subject_prefix($self)
+	    . ' - ' . $lm->type_class_instance->to_literal(
+		defined($v) || $fields->{is_update} ? $v
+		    : $lm->get('TupleSlotType.default_value'))
+		unless $fields->{subject};
+    }
+    return;
+}
+
 sub _slot_value {
     my($self) = @_;
     my($t) = $self->get_request->unsafe_get('Model.Tuple');
@@ -193,6 +197,27 @@ sub _slot_value {
     my($v) = $t->get(
 	$_TSN->field_name($self->get('TupleSlotDef.tuple_slot_num')));
     return \$v;
+}
+
+sub _validate_subject {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    $fields->{subject} = _get_subject_prefix($self)
+	unless $fields->{subject};
+#TODO: Do we need to ensure that long lines don't present a problem to
+# subject in mail header
+#
+# Use Text::Wrap? e.g.:
+#   use Text::Wrap
+#   $Text::Wrap::columns = 72;
+#   print wrap('', '', @text);
+#
+# RFC2822 addressed the lack of clarity on this basic point:
+#   2.1.1. Line Length Limits
+#   There are two limits that this standard places on the number of characters
+#   in a line. Each line of characters MUST be no more than 998 characters, and
+#   SHOULD be no more than 78 characters, excluding the CRLF.
+    return;
 }
 
 1;
