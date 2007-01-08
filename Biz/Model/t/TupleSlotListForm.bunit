@@ -24,7 +24,7 @@ $tdid = model(TupleUseList => {auth_id => req('auth_id')})
 model('Tuple')->delete_all;
 [
     [{
-	comment => 'hello',
+	comment => 'hello1',
         slot_0 => 'a@a.a',
     }] => [{
 	'Model.TupleSlotListForm' => {
@@ -45,7 +45,7 @@ model('Tuple')->delete_all;
 	comment => undef,
     }),
     [s1 => {
-	comment => 'hello',
+	comment => 'hello2',
 	slot_0 => 'a@a.a',
 	slot_1 => 's2',
     }] => [{
@@ -56,7 +56,7 @@ model('Tuple')->delete_all;
 	 },
     }],
     [s2 => {
-	comment => 'hello',
+	comment => 'hello3',
 	slot_0 => 'b@a.a',
 	slot_1 => '',
     }] => [{
@@ -64,6 +64,17 @@ model('Tuple')->delete_all;
 	    slot_headers => "Author: b\@a.a\nStatus: \n",
 	    'RealmMail.from_email' => 'btest_read@bivio.biz',
 	    'RealmMail.subject' => 'PSR#4 - ',
+	 },
+    }],
+    [s3 => {
+	comment => 'hello4',
+	slot_0 => 'c@a.a',
+	slot_1 => 's0',
+    }] => [{
+	'Model.TupleSlotListForm' => {
+	    slot_headers => "Author: c\@a.a\nStatus: s0\n",
+	    'RealmMail.from_email' => 'btest_read@bivio.biz',
+	    'RealmMail.subject' => 'PSR#5 - s0',
 	 },
     }],
 ];
