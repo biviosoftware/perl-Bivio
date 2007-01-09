@@ -19,6 +19,14 @@ sub execute_from_realm_mail_list {
     return;
 }
 
+sub execute_from_realm_file_id {
+    my($proto, $req, $rfid) = @_;
+    $proto->new($req)->load_all({
+	parent_id => $rfid,
+    });
+    return;
+}
+
 sub execute_part {
     my($proto, $req) = @_;
     # It's bad to pull the result from the request, but it should be reliable
