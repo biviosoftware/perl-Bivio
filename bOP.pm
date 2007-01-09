@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.66  2006/12/28 16:49:37  aviggio
+  * Bivio::Biz::Model::TupleSlotListForm sets the mail subject based on the
+    first Bivio::Type::TupleSlot (string line) slot value
+  * Bivio::Util::Class added as a home for helpers in introspecting bOP
+    classes
+
   Revision 4.65  2006/12/22 05:55:36  aviggio
   * Bivio::Biz::Model::TupleHistoryList.pm replace hyphens and dashes in
     field names for display purposes
