@@ -160,14 +160,6 @@ sub list_csv {
 	    return CSV(TupleList => [_list_columns($req)]);
 	},
     ]));
-#TODO: Extend CSV widget to support code references
-#     view_main(CSV(
-#  	TupleList => [
-# 	    sub {
-# 		my($req) = @_;
-# 		return [_list_columns($req)];
-# 	    },
-# 	]));
     return;
 }
 
