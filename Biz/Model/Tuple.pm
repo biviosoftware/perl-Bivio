@@ -106,16 +106,22 @@ sub realm_mail_hook {
     return _create_or_update_slots($state, _parse_slots($state->{body}));
 }
 
-sub split_rfc822 {
-    my(undef, $rfc822) = @_;
-    my($body) = (split(/\n\n/, $$rfc822, 2))[1];
-    $body ||= '';
+sub split_body {
+    my(undef, $body) = @_;
     $body =~ s/^(.*?)(?=$_LABEL_RE)//s;
     my($c1) = $1 || '';
     my($slots, $c2) = split(/\n\n/, $body, 2);
     $c1 .= $c2 || '';
     $c1 =~ s/^\s+|\s+$//sg;
     return ($slots || '') =~ $_LABEL_RE ? ($slots, $c1) : (undef, $c1);
+}
+
+#TODO: Should probably deprecate since only client is now calling split_body
+sub split_rfc822 {
+    my($self, $rfc822) = @_;
+    my($body) = (split(/\n\n/, $$rfc822, 2))[1];
+    $body ||= '';
+    return $self->split_body($body);
 }
 
 sub update {
