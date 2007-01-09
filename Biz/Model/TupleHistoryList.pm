@@ -22,12 +22,20 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-#TODO: Look into rendering of attachments
+    my($body);
+    $self->new_other('MailPartList')->execute_from_realm_file_id(
+	$self->get_request, $row->{'RealmMail.realm_file_id'});
+    $self->get_request->get('Model.MailPartList')->do_rows(
+	sub {
+#TODO: Handle multi-part MIME attachments
+	    my($list) = @_;
+	    $body = $list->get_body
+		if $list->get('mime_type') eq 'text/plain';
+	    return 1;
+	}
+    );
     my($slot_headers, $comment) = $self->get_instance('Tuple')
-	->split_rfc822($self->new_other('RealmFile')->unauth_load_or_die({
-	    realm_id => $row->{'RealmMail.realm_id'},
-	    realm_file_id => $row->{'RealmMail.realm_file_id'},
-	})->get_content);
+	->split_body($body);
     $slot_headers =~ s/[_-]/ /g;
     @$row{qw(slot_headers comment)} = ($slot_headers, $comment);
     return 1;
