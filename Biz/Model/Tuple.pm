@@ -86,6 +86,10 @@ sub realm_mail_hook {
 	return _mail_err($state, 'unable to load model')
 	    unless $state->{self}->unsafe_load(
 		{map(($_ => $state->{$_}), qw(tuple_def_id tuple_num))});
+	# Override given possible subject change
+	$realm_mail->update({
+	    thread_root_id => $state->{self}->get('thread_root_id'),
+	});
     }
     else {
 	# thread_root_id is this message.  Subject will be unique after
