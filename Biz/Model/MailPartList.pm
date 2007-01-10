@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::MailPartList;
 use strict;
 use base 'Bivio::Biz::ListModel';
+#TODO: Why not use Bivio::Ext::MIMEParser?
 use MIME::Parser ();
 use Bivio::Mail::Address;
 
