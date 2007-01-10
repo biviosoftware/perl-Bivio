@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.67  2007/01/09 05:46:53  aviggio
+  * Bivio::Biz::Model::MailPartList->execute_from_realm_file_id added
+  * Bivio::Biz::Model::Tuple->split_body added
+  * Bivio::Biz::Model::TupleHistoryList re-use MailPartList to parse
+    message body
+  * Bivio::Biz::Model::TupleSlotListForm improve message subject rendering
+
   Revision 4.66  2006/12/28 16:49:37  aviggio
   * Bivio::Biz::Model::TupleSlotListForm sets the mail subject based on the
     first Bivio::Type::TupleSlot (string line) slot value
