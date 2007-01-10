@@ -341,13 +341,14 @@ DocumentRoot /var/www/html
     Options FollowSymLinks
 </Directory>
 
+$content
+
 <Location $server_status_location>
     SetHandler server-status
     deny from all
     allow from $server_status_allow
 </Location>
 
-$content
 $aux_http_conf
 
 BrowserMatch "Mozilla/2" nokeepalive
