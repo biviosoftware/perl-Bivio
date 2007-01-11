@@ -342,10 +342,12 @@ sub _list_columns {
 		my($label) = _sub_spaces($it->get('TupleSlotDef.label'));
 		return [$field => {
 		    column_heading => $html ? String($label) : $label,
-		    $html ? (column_widget =>
-			vs_display('TupleList.'. $field => {
-			    wf_type => $it->type_class_instance
-			})) : (),
+		    $html ? (
+			column_widget => vs_display('TupleList.' . $field => {
+			    wf_type => $it->type_class_instance})
+		    ) : (
+			type => $it->type_class_instance,
+		    ),
 		}];
 	    },
 	)}
