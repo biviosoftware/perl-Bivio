@@ -59,6 +59,11 @@ will use the iterator to render the rows.
 
 Header widger to be rendered at the top of the file.
 
+=item type : Bivio::Type
+
+The field type to use for rendering. By default, the column field name is
+used to look up the type from the list model.
+
 =back
 
 =cut
@@ -164,32 +169,44 @@ widget values.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($req) = $source->get_request;
-
-    # render header
     if ($self->unsafe_get('header')) {
         $self->unsafe_render_attr('header', $source, $buffer);
 	$$buffer .= "\n\n";
     }
-
     my($list) = $source->get_widget_value(
 	ref(Bivio::Biz::Model->get_instance($self->get('list_class'))));
+    $$buffer .= ${Bivio::Util::CSV->to_csv_text([
+	map({_get_column_heading($_, $list, $source->get_request)}
+		@{$self->get('columns')})])};
     my($method) = $list->has_iterator
 	? 'iterate_next_and_load' : ('next_row', $list->reset_cursor);
-    $$buffer .= ${Bivio::Util::CSV->to_csv_text([map({
-	ref($_) eq 'ARRAY' ? $_->[1]->{column_heading} :
-	Bivio::UI::Text->get_value($list->simple_package_name, $_, $req);
-    } @{$self->get('columns')})])};
     while ($list->$method()) {
-	$$buffer .= ${Bivio::Util::CSV->to_csv_text([map({
-	    my($f) = ref($_) eq 'ARRAY' ? $_->[0] : $_;
-	    $list->get_field_type($f)->to_string($list->get($f));
-	} @{$self->get('columns')})])};
+	$$buffer .= ${Bivio::Util::CSV->to_csv_text([
+	    map({_get_column_value($_, $list)}
+		    @{$self->get('columns')})])};
     }
     return;
 }
 
 #=PRIVATE METHODS
+
+sub _get_column_heading {
+    my($it, $list, $req) = @_;
+    my($field) = ref($it) eq 'ARRAY' ? $it->[0] : $it;
+    return ref($it) eq 'ARRAY' && $it->[1]->{column_heading}
+	? $it->[1]->{column_heading}
+	    : Bivio::UI::Text->get_value(
+		$list->simple_package_name, $field, $req);
+}
+
+sub _get_column_value {
+    my($it, $list) = @_;
+    my($field) = ref($it) eq 'ARRAY' ? $it->[0] : $it;
+    my($type) = ref($it) eq 'ARRAY' && $it->[1]->{type}
+	? $it->[1]->{type}
+	    : $list->get_field_type($field);
+    return $type->to_string($list->get($field));
+}
 
 =head1 COPYRIGHT
 
