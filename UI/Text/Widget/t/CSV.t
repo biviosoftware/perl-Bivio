@@ -31,4 +31,33 @@ Bivio::Test->new({
 	    [$_req, \(my $y = '')] => qr/Name,Id\nCorgi,K9-BD-01\nDalmation.*Poodle/s,
 	],
     ],
+    ['ProductList', [
+	# Specify compatible type instead of Line
+	['Product.name', {type => Bivio::Type->get_instance('Name')}],
+	'Product.product_id',
+    ]] => [
+	initialize => undef,
+	render => [
+	    [$_req, \(my $z = '')] => qr/Product Name,Product ID\nCorgi,K9-BD-01\nDalmation.*Poodle/s,
+	],
+    ],
+    ['ProductList', [
+	['Product.name', {
+	    column_heading => 'Product',
+	    type => Bivio::Type->get_instance('Name'),
+	}],
+	'Product.product_id',
+    ]] => [
+	initialize => undef,
+	render => [
+	    [$_req, \(my $z = '')] => qr/Product,Product ID\nCorgi,K9-BD-01\nDalmation.*Poodle/s,
+	],
+    ],
+    ['ProductList', [
+	# Test invalid type
+	['Product.name', {type => Bivio::Type->get_instance('Date')}],
+    ]] => [
+	initialize => undef,
+	render => Bivio::DieCode->DIE,
+    ],
 ]);
