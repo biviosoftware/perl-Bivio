@@ -77,11 +77,33 @@ sub edit {
 			    list_display_field => 'choice',
 			}) : vs_display("TupleSlotListForm.$field", {
 			    wf_type => $it->get_list_model->type_class_instance,
+			    allow_undef => 1,
 			}),
+		       $lm->get('TupleSlotDef.is_required') ? SPAN_required(
+			   String('*'),
+		       ) : (),
 		    ], {cell_class => 'field'}),
 		];
 	    })},
-	    'TupleSlotListForm.comment',
+	    [
+		FormFieldLabel({
+		    field => 'comment',
+		    label => String('Comment:', 0),
+		    cell_class => 'label',
+		}),
+		Join([
+		    FormFieldError({
+			field => 'comment',
+			label => 'Comment',
+		    }),
+		    vs_display('TupleSlotListForm.comment'),
+		    SPAN_required(String('*')),
+		], {cell_class => 'field'}),
+	    ],
+	    DIV_footer(Join([
+		SPAN_required(String('*')),
+		String(' marks fields that are required'),
+	    ])),
 	]);
     }]);
     return;
