@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.70  2007/01/17 05:49:39  aviggio
+  * Bivio::Biz::Model::MailPartList attachment file name not required in
+    task URI path_info
+  * Bivio::UI::XHTML::View::Tuple identify required fields on edit view
+
   Revision 4.69  2007/01/11 02:21:34  aviggio
   * Bivio::UI::Text::Widget::CSV support field type attribute
   * Bivio::UI::XHTML::View::Tuple specify type for CSV record list
