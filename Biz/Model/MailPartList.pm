@@ -50,9 +50,10 @@ sub format_uri_for_part {
     ) unless $req->get('auth_id') eq $self->get('RealmFile.realm_id');
     return $self->get_request->format_uri({
 	task_id => $task_id,
-#TODO: path_info not required, but causes problems if HTTP unfriendly file name
+#TODO: path_info required to pass along original attachment file name on
+# download, but can cause problems if the file name is  HTTP unfriendly
 # so this should be re-evaluated
-#	path_info => $self->get_file_name,
+	path_info => $self->get_file_name,
 	query => {
 	    'ListQuery.parent_id' => $self->get_query->get('parent_id'),
 	    'ListQuery.this' => $self->get('index'),
