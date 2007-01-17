@@ -137,8 +137,10 @@ sub new {
     my($save_count) = int(keys(%{$attrs->{columns}}));
     __PACKAGE__->init_column_classes($attrs, $decl, [qw(auth_id other)]);
     __PACKAGE__->init_model_primary_key_maps($attrs);
-    Carp::croak('columns may not be added in "other" or "auth_id" category')
-		unless $save_count == int(keys(%{$attrs->{columns}}));
+    Bivio::Die->die(
+        'columns may not be added in "other" or "auth_id" category: ',
+        [keys(%{$attrs->{columns}})])
+        unless $save_count == int(keys(%{$attrs->{columns}}));
 
     # auth_id must be at most one column.  Turn into that column or undef.
     Carp::croak('too many auth_id fields')
