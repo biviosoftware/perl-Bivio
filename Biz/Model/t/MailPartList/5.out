@@ -19,7 +19,7 @@ use MIME::Base64;
         index => 2,
 	mime_type => 'image/gif',
 	'->get_file_name' => 'dot.gif',
-	'->format_uri_for_part SITE_ROOT' => '/dot.gif?p=1&t=2',
+	'->format_uri_for_part SITE_ROOT' => '/?p=1&t=2',
 	mime_entity => MIME::Base64::decode('R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAEBMgA7'),
     },
 ];
