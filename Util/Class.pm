@@ -7,6 +7,7 @@ package Bivio::Util::Class;
 use strict;
 use base 'Bivio::ShellUtil';
 use Bivio::UI::Facade;
+use Bivio::Agent::TaskId;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -30,11 +31,14 @@ sub task {
     $req->initialize_fully;
     #TODO: BAD PROGRAMMER!  No hacking the internal data structures!
     my($map) = $req->get_nested(qw(Bivio::UI::Facade Text))->[1]->{map};
-    return [map(@{$map->{$_}->{names}},
+    #TODO: BAD PROGRAMMER AGAIN!  TaskId says only Tasks can call get_cfg_list
+    my($task) = {map(($_->[0] => $_), @{Bivio::Agent::TaskId->get_cfg_list})};
+    return [map($task->{$_},
+		map(@{$map->{$_}->{names}},
 		grep({
 		    defined($map->{$_})
 			&& lc($map->{$_}->{value}) eq lc($text)
-		} keys(%$map)))];
+		} keys(%$map))))];
 }
 
 1;
