@@ -579,7 +579,7 @@ sub info_tuple {
 	    77
 	    FORUM
 	    TUPLE_READ
-	    Model.TupleList->execute_load_page
+	    Model.TupleList->execute_load_all_with_query
 	    View.Tuple->list_csv
 	)],
 	[qw(
