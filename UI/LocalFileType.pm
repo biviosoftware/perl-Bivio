@@ -50,11 +50,11 @@ L<Bivio::UI::View|Bivio::UI::View> loads views from this tree.
 
 =item CACHE
 
-Denormalized files which can be rebuilt.
+B<DEPRECATED>.  Denormalized files which can be rebuilt.
 
 =item REALM_DATA
 
-Files by realm.
+B<DEPRECATED>.  Files by realm.
 
 =item DDL
 
