@@ -1,0 +1,36 @@
+Return-Path: <nagler@bivio.biz>
+Received: from ice.bivio.biz (bkp.test.bivio.com [216.87.82.252])
+	by bivio.biz (8.11.6/8.11.6) with ESMTP id k0LIFCq13191
+	for <nagler@bivio.biz>; Sat, 21 Jan 2006 11:15:12 -0700
+Received: from dhcp72.n.bivio.com.bivio.biz (localhost.localdomain [127.0.0.1])
+	by ice.bivio.biz (8.11.6/8.11.6) with ESMTP id k0LIF5P24345;
+	Sat, 21 Jan 2006 11:15:06 -0700
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="0__=0ABBF8F6DFC246528f9e8a93df938690918c0ABBF8F6DFC24652"
+Content-Transfer-Encoding: 7bit
+Message-ID: <17362.31273.581812.210650@dhcp72.n.bivio.com>
+X-Mailer: VM 7.19 under Emacs 22.0.50.1
+Status:  O
+From: Rob Nagler <nagler@bivio.biz>
+To: Rob Nagler <nagler@bivio.biz>
+Subject: an image
+Date: Sat, 21 Jan 2006 11:15:05 -0700
+
+
+--0__=0ABBF8F6DFC246528f9e8a93df938690918c0ABBF8F6DFC24652
+Content-type: application/pdf; 
+	name="=?UTF-8?B?U0NPUEUgQWxsaWFuY2UgSmFuMDcgTW5ndF9JbnYuICMxMDUwMS5wZGY=?="
+Content-Disposition: attachment; filename="=?UTF-8?B?U0NPUEUgQWxsaWFuY2UgSmFuMDcgTW5ndF9JbnYuICMxMDUwMS5wZGY=?="
+Content-transfer-encoding: base64
+
+JVBERi0xLjQNJeLjz9MNCjYgMCBvYmoNPDwgDS9MaW5lYXJpemVkIDEgDS9PIDkgDS9IIFsgMTAy
+
+--0__=0ABBF8F6DFC246528f9e8a93df938690918c0ABBF8F6DFC24652
+Content-type: application/pdf; 
+	name="=?UTF-8?B?U0NPUEUgQWxsaWFuY2UgU3RhdGVtZW50IDEuMTUuMDcucGRm?="
+Content-Disposition: attachment; filename="=?UTF-8?B?U0NPUEUgQWxsaWFuY2UgU3RhdGVtZW50IDEuMTUuMDcucGRm?="
+Content-transfer-encoding: base64
+
+JVBERi0xLjQNJeLjz9MNCjYgMCBvYmoNPDwgDS9MaW5lYXJpemVkIDEgDS9PIDkgDS9IIFsgMTAw
+
+--0__=0ABBF8F6DFC246528f9e8a93df938690918c0ABBF8F6DFC24652--

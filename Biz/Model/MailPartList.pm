@@ -5,6 +5,7 @@ use strict;
 use base 'Bivio::Biz::ListModel';
 #TODO: Why not use Bivio::Ext::MIMEParser?
 use MIME::Parser ();
+use MIME::WordDecoder;
 use Bivio::Mail::Address;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -50,9 +51,6 @@ sub format_uri_for_part {
     ) unless $req->get('auth_id') eq $self->get('RealmFile.realm_id');
     return $self->get_request->format_uri({
 	task_id => $task_id,
-#TODO: path_info required to pass along original attachment file name on
-# download, but can cause problems if the file name is  HTTP unfriendly
-# so this should be re-evaluated
 	path_info => $self->get_file_name,
 	query => {
 	    'ListQuery.parent_id' => $self->get_query->get('parent_id'),
@@ -68,12 +66,10 @@ sub get_body {
 
 sub get_file_name {
     my($self) = @_;
-    return $_FN->get_tail(
-	$self->get('mime_entity')->head->recommended_filename
-	    || ('attachment' . $self->get('index') . '.'
-	       . (Bivio::MIME::Type->to_extension(
-		   $self->get('mime_type') || '')
-		   || Bivio::MIME::Type->to_extension('application/octet'))));
+    my($fn) = $self->get('mime_entity')->head->recommended_filename;
+    $fn = unmime($fn)
+	if $fn;
+    return $_FN->get_tail($fn || _default_file_name($self));
 }
 
 sub get_header {
@@ -137,6 +133,13 @@ sub load_from_content {
 	content_ref => $content,
 	parent_id => 1,
     });
+}
+
+sub _default_file_name {
+    my($self) = @_;
+    return 'attachment' . $self->get('index') . '.'
+	. (Bivio::MIME::Type->to_extension($self->get('mime_type') || '')
+		|| Bivio::MIME::Type->to_extension('application/octet'));
 }
 
 sub _parser {
