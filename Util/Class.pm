@@ -10,14 +10,34 @@ use Bivio::UI::Facade;
 use Bivio::Agent::TaskId;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub USAGE {
     return <<'EOF';
 usage: b-class [options] command [args..]
 commands
   super package -- return the list of superclasses for given package
-  task key -- return the TaskId from the given string based on Facade.Text map
+  tasks_for_label text -- find TaskIds from text in Facade.Text map
+  tasks_for_view view -- find TaskIds from view name (View.<view name>)
 EOF
+}
+
+sub internal_initialize_index {
+    my($self) = @_;
+    #TODO: BAD PROGRAMMER!  TaskId docs say only Tasks can call get_cfg_list
+    my @tasks = @{Bivio::Agent::TaskId->get_cfg_list};
+    my($fields) = $self->[$_IDI] ||= {
+	view => {},
+	task => {},
+    };
+    foreach my $task (@tasks) {
+	$fields->{task}->{$task->[0]} = $task;
+	my($view) = grep(/^View\./, @$task)
+	    or next;
+	$view =~ s/^View\.//;
+	push(@{($fields->{view}->{$view} ||= [])}, $task);
+    }
+    return;
 }
 
 sub super {
@@ -25,20 +45,30 @@ sub super {
     return $self->model($package)->inheritance_ancestor_list;
 }
 
-sub task {
+sub tasks_for_label {
     my($self, $text) = @_;
     my($req) = $self->get_request;
     $req->initialize_fully;
+    $self->internal_initialize_index;
+    my($fields) = $self->[$_IDI];
     #TODO: BAD PROGRAMMER!  No hacking the internal data structures!
-    my($map) = $req->get_nested(qw(Bivio::UI::Facade Text))->[1]->{map};
-    #TODO: BAD PROGRAMMER AGAIN!  TaskId says only Tasks can call get_cfg_list
-    my($task) = {map(($_->[0] => $_), @{Bivio::Agent::TaskId->get_cfg_list})};
-    return [map($task->{$_},
-		map(@{$map->{$_}->{names}},
+    #  does this use case justify exposing a reverse lookup on Facade?
+    my($task_text) = $req->get_nested(qw(Bivio::UI::Facade Text))
+	->[1]->{map};
+    return [map($fields->{task}->{$_},
+		map(@{$task_text->{$_}->{names}},
 		grep({
-		    defined($map->{$_})
-			&& lc($map->{$_}->{value}) eq lc($text)
-		} keys(%$map))))];
+		    defined($task_text->{$_})
+			&& lc($task_text->{$_}->{value}) eq lc($text)
+		} keys(%$task_text))))];
+}
+
+sub tasks_for_view {
+    my($self, $view) = @_;
+    $self->internal_initialize_index;
+    my($fields) = $self->[$_IDI];
+#    return [keys(%{$fields->{view}})];
+    return $fields->{view}->{$view};
 }
 
 1;
