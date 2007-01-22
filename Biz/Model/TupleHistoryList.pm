@@ -27,7 +27,6 @@ sub internal_post_load_row {
 	$self->get_request, $row->{'RealmMail.realm_file_id'});
     $self->get_request->get('Model.MailPartList')->do_rows(
 	sub {
-#TODO: Handle multi-part MIME attachments
 	    my($list) = @_;
 	    $body = $list->get_body
 		if $list->get('mime_type') eq 'text/plain';
