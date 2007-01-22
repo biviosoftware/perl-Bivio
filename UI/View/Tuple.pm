@@ -128,11 +128,56 @@ sub history_list {
     view_put(
 	_meta_info(),
 	base_content =>
-	    vs_list(TupleHistoryList =>
-			[qw(RealmFile.modified_date_time
-			    RealmMail.from_email
-			    slot_headers
-			    comment)]));
+	    vs_list(TupleHistoryList => [
+		qw(RealmFile.modified_date_time
+		   RealmMail.from_email
+		   slot_headers),
+		[
+		    'comment' => {
+			column_widget => Join([
+			    String({
+				field => 'comment',
+				value => [['comment']],
+			    }),
+			    [sub {
+				 my($source) = @_;
+				 my($thl) = $source->get_list_model();
+				 $thl->new_other('MailPartList')
+				     ->execute_from_realm_file_id(
+					 $source->get_request,
+					 $thl->get('RealmMail.realm_file_id'));
+				 return '';
+			    }],
+			    DIV_tuple(List('MailPartList', [
+				DIV_part(Director(
+				    ['mime_type'] => {
+					'text/plain' =>
+					    String(''),
+					'text/html' =>
+					    String(''),
+					'x-message/rfc822-headers' =>
+					    String(''),
+					map(
+					    ("image/$_" => Link(
+						Image(['->format_uri_for_part',
+						       'FORUM_MAIL_MSG_PART']),
+						['->format_uri_for_part',
+						 'FORUM_MAIL_MSG_PART']),
+					 ), qw(png jpeg gif)),
+				    },
+				    Link(
+					Join([
+					    'Attachment: ',
+					    String(['->get_file_name']),
+					]),
+					['->format_uri_for_part',
+					 'FORUM_MAIL_MSG_PART']),
+				)),
+			    ])),
+			]),
+		    },
+		],
+	    ]));
     return;
 }
 
