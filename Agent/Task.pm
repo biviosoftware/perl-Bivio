@@ -288,7 +288,7 @@ sub execute {
     $req->client_redirect_if_not_secure
 	if $self->get('require_secure')
 	&& $req->can('client_redirect_if_not_secure');
-    _invoke_handlers(handle_pre_auth__task => $req);
+    _invoke_handlers(handle_pre_auth_task => $req);
     unless ($req->get('auth_realm')->can_user_execute_task($self, $req)) {
 	Bivio::Die->throw_quietly('FORBIDDEN', {
 	    map(($_ => $req->get($_)),
