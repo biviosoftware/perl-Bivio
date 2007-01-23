@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.72  2007/01/19 05:55:11  aviggio
+  * Bivio::Biz::Model::MailPartList decode MIME attachment file names if
+    needed, e.g. may be UTF-8 encoded
+  * Bivio::Delegate::SimpleTaskId FORUM_TUPLE_LIST_CSV task loads all
+    records instead of loading a page
+  * Bivio::SQL::PropertySupport use Bivio::Die->die and added debug info
+  * Bivio::UI::LocalFileType identify CACHE and REALM_DATA values as
+    deprecated for future development
+  * Bivio::Util::Class added TaskId config info to output for task
+
   Revision 4.71  2007/01/17 06:24:34  aviggio
   * Bivio::Biz::Model::MailPartList 4.70 change rolled back
 
