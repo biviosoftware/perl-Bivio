@@ -288,6 +288,7 @@ sub execute {
     $req->client_redirect_if_not_secure
 	if $self->get('require_secure')
 	&& $req->can('client_redirect_if_not_secure');
+    _invoke_handlers(handle_pre_auth__task => $req);
     unless ($req->get('auth_realm')->can_user_execute_task($self, $req)) {
 	Bivio::Die->throw_quietly('FORBIDDEN', {
 	    map(($_ => $req->get($_)),
@@ -295,10 +296,11 @@ sub execute {
 	    operation => $self->get('id'),
 	});
     }
-    _invoke_pre_execute_handlers($req);
+    _invoke_handlers(handle_pre_execute_task => $req);
     my($next, $method) = $self->execute_items($req);
     $req->$method($next)
 	if $next;
+    _invoke_handlers(handle_post_execute_task => $req);
     $self->commit($req);
     $req->get('reply')->send($req);
     return;
@@ -511,7 +513,8 @@ sub initialize {
 =head2 static register(proto handler)
 
 Registers a pre execution handler if not already registered. The I<handler>
-must support L<handle_pre_execute_task|"handle_pre_execute_task">.
+must support L<handle_pre_execute_task|"handle_pre_execute_task"> or
+L<handle_pre_auth_task|"handle_pre_auth_task">.
 
 =cut
 
@@ -649,15 +652,15 @@ sub _init_form_attrs {
     return;
 }
 
-# _invoke_pre_execute_handlers(Bivio::Agent::Request req)
+# _invoke_handlers(string method, Bivio::Agent::Request req)
 #
-# Calls the L<handle_pre_execute_task|"handle_pre_execute_task"> method
-# on all the registered handlers.
+# Calls $method on the registered handlers.
 #
-sub _invoke_pre_execute_handlers {
-    my($req) = @_;
+sub _invoke_handlers {
+    my($method, $req) = @_;
     foreach my $handler (@_HANDLERS) {
-	$handler->handle_pre_execute_task($req);
+	$handler->$method($req)
+	    if $handler->can($method);
     }
     return;
 }
