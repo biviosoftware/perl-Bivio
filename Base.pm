@@ -11,9 +11,9 @@ sub import {
     my($first, $class) = @_;
     Bivio::Die->eval_or_die(
 	'package ' . (caller(0))[0] . ";use base '"
-	. __PACKAGE__->use($class || Bivio::Die->die(
-	    'must supply a class name as an argument to use Bivio::Base'
-        )) . "';1");
+	. __PACKAGE__->use($class || 'Bivio::UNIVERSAL')
+        . "';1",
+    );
     return shift->SUPER::import($first);
 }
 
