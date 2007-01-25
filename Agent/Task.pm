@@ -154,8 +154,7 @@ use Bivio::SQL::Connection;
 use Bivio::Type::Boolean;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+our($_TRACE);
 my($_T) = 'Bivio::Agent::TaskId';
 my(%_ID_TO_TASK) = ();
 my($_INITIALIZED);
