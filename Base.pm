@@ -14,7 +14,7 @@ sub import {
 	. __PACKAGE__->use($class || 'Bivio::UNIVERSAL')
         . "';1",
     );
-    return shift->SUPER::import($first);
+    return;
 }
 
 1;
