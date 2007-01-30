@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 use Bivio::Test::Widget;
@@ -17,7 +17,7 @@ Bivio::Test::Widget->unit(
 	['txt', '#', {link_target => [sub {''}]}] => '<a href="#">txt</a>',
 	['txt', [sub {'/url'}]]
 	    => '<a target="_top" href="/url">txt</a>',
-	map(($_ => '<a target="_top" href="/pub/login?fc=aNTE4!bMg__">txt</a>'),
+	map(($_ => qr{^<a target="_top" href="/pub/login\?fc=[^"]+">txt</a>$}s),
 	    ['txt', 'LOGIN'],
 	    ['txt', [sub {'LOGIN'}]],
 	    ['txt', Bivio::Agent::TaskId->LOGIN],

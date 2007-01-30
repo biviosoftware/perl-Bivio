@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget({
     view_class_map => 'XHTMLWidget',
@@ -11,7 +11,7 @@ Widget({
 });
 req()->set_realm_and_user(qw(demo guest));
 [
-    [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>},
+    [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>}i,
     [[[qw(SITE_ROOT site_name)]]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">PetShop</a></div>},
     [[{
 	task_id => 'SITE_ROOT',
@@ -20,7 +20,7 @@ req()->set_realm_and_user(qw(demo guest));
     [[{
 	task_id => 'SITE_ROOT',
 	path_info => '/x',
-    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">home</a></div>},
+    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">home</a></div>}i,
     [[{
 	task_id => 'SITE_ROOT',
 	control => [sub {0}],
@@ -28,12 +28,12 @@ req()->set_realm_and_user(qw(demo guest));
     [[{
 	task_id => 'SITE_ROOT',
 	control => [sub {1}],
-    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>},
-    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a></div>},
+    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>}i,
+    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a></div>}i,
     [[qw(ADM_SUBSTITUTE_USER SITE_ROOT), {
 	task_id => Bivio::Agent::TaskId->USER_HOME,
 	realm => 'demo',
-    }]] => qr{<div class="task_menu"><a target="_top" href="/">home</a><a target="_top" class="want_sep" href="/demo">user home</a></div>},
+    }]] => qr{<div class="task_menu"><a target="_top" href="/">home</a><a target="_top" class="want_sep" href="/demo">user home</a></div>}i,
     [[{
 	task_id => 'USER_HOME',
 	label => [sub {'x'}],
