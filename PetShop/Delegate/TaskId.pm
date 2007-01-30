@@ -1,52 +1,14 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Delegate::TaskId;
 use strict;
-$Bivio::PetShop::Delegate::TaskId::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Delegate::TaskId::VERSION;
+use Bivio::Base 'Bivio::Delegate::TaskId';
 
-=head1 NAME
-
-Bivio::PetShop::Delegate::TaskId - demo tasks
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Delegate::TaskId;
-
-=cut
-
-use Bivio::Delegate::SimpleTaskId;
-@Bivio::PetShop::Delegate::TaskId::ISA = ('Bivio::Delegate::SimpleTaskId');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Delegate::TaskId>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_delegate_info"></a>
-
-=head2 static get_delegate_info() : array_ref
-
-Returns the task declarations.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     my($proto) = @_;
-    return $proto->merge_task_info(qw(base tuple xapian), [
+    return $proto->merge_task_info(@{$proto->ALL_INFO}, [
 	# Overwrite default MY_SITE which is a no-op
 	[qw(
 	    MY_SITE
@@ -55,6 +17,25 @@ sub get_delegate_info {
 	    ANY_USER
 	    Action.UserRedirect
 	    next=USER_ACCOUNT_EDIT
+	)],
+	[qw(
+	    LOGIN
+	    90
+	    GENERAL
+	    ANYBODY
+	    Action.UserLogout
+	    Model.UserLoginForm
+	    View.login
+	    next=CART
+	)],
+	[qw(
+	    LOGOUT
+	    91
+	    GENERAL
+	    ANYBODY
+	    Action.UserLogout->execute
+	    Action.ClientRedirect->execute_next
+	    next=MAIN
 	)],
 	[qw(
 	    PRODUCTS
@@ -198,25 +179,6 @@ sub get_delegate_info {
             Model.ECPayment->execute_load
             Model.ECCreditCardPayment->execute_load
 	    View.order-commit
-	)],
-	[qw(
-	    LOGIN
-	    517
-	    GENERAL
-	    ANYBODY
-	    Action.UserLogout
-	    Model.UserLoginForm
-	    View.login
-	    next=CART
-	)],
-	[qw(
-	    LOGOUT
-	    518
-	    GENERAL
-	    ANYBODY
-	    Action.UserLogout->execute
-	    Action.ClientRedirect->execute_next
-	    next=MAIN
 	)],
 	[qw(
             SOURCE
@@ -392,17 +354,5 @@ sub get_delegate_info {
 	)],
     ]);
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
