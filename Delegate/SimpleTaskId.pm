@@ -500,7 +500,7 @@ sub info_base {
 	    View.blog-edit
 	    next=FORUM_BLOG_VIEW
  	)],
-#55-59 free
+#56-59 free
     ];
 }
 
@@ -608,6 +608,7 @@ sub info_tuple {
 	    View.Tuple->history_list_csv
 	)],
     ];
+#81-89 free
 }
 
 sub info_xapian {
