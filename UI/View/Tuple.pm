@@ -2,13 +2,13 @@
 # $Id$
 package Bivio::UI::XHTML::View::Tuple;
 use strict;
-use base 'Bivio::UI::View::Method';
+use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub def_edit {
-    view_put(base_content => vs_list_form(TupleDefListForm => [qw(
+    return shift->internal_body(vs_list_form(TupleDefListForm => [qw(
 	TupleDefListForm.TupleDef.label
 	TupleDefListForm.TupleDef.moniker
 	TupleSlotDef.label
@@ -20,11 +20,10 @@ sub def_edit {
 	    list_display_field => 'TupleSlotType.label',
 	},
     ]));
-    return;
 }
 
 sub def_list {
-    view_put(base_content => vs_list(TupleDefList => [qw(
+    return shift->internal_body(vs_list(TupleDefList => [qw(
 	TupleDef.label
 	TupleDef.moniker
     ),
@@ -35,11 +34,10 @@ sub def_list {
 	   ],
 	}]),
     ]));
-    return;
 }
 
 sub edit {
-    view_put(base_content => [sub {
+    return shift->internal_body([sub {
 	my($req) = shift->get_request;
 	my($lfm) = $req->get('Model.TupleSlotListForm');
 	my($lm) = $lfm->get_list_model;
@@ -106,7 +104,6 @@ sub edit {
 	    ])),
 	]);
     }]);
-    return;
 }
 
 sub edit_mail {
@@ -125,123 +122,108 @@ EOF
 }
 
 sub history_list {
-    view_put(
-	_meta_info(),
-	base_content =>
-	    vs_list(TupleHistoryList => [
-		qw(RealmFile.modified_date_time
-		   RealmMail.from_email
-		   slot_headers),
-		[
-		    'comment' => {
-			column_widget => Join([
-			    String({
-				field => 'comment',
-				value => [['comment']],
-			    }),
-			    [sub {
-				 my($source) = @_;
-				 my($thl) = $source->get_list_model();
-				 $thl->new_other('MailPartList')
-				     ->execute_from_realm_file_id(
-					 $source->get_request,
-					 $thl->get('RealmMail.realm_file_id'));
-				 return '';
-			    }],
-			    DIV_tuple(List('MailPartList', [
-				DIV_part(Director(
-				    ['mime_type'] => {
-					'text/plain' =>
-					    String(''),
-					'text/html' =>
-					    String(''),
-					'x-message/rfc822-headers' =>
-					    String(''),
-					map(
-					    ("image/$_" => Link(
-						Image(['->format_uri_for_part',
-						       'FORUM_MAIL_MSG_PART']),
-						['->format_uri_for_part',
-						 'FORUM_MAIL_MSG_PART']),
-					 ), qw(png jpeg gif)),
-				    },
-				    Link(
-					Join([
-					    'Attachment: ',
-					    String(['->get_file_name']),
-					]),
-					['->format_uri_for_part',
-					 'FORUM_MAIL_MSG_PART']),
-				)),
-			    ])),
-			]),
-		    },
-		],
-	    ]));
-    return;
+    _meta_info();
+    return shift->internal_body(vs_list(TupleHistoryList => [qw(
+        RealmFile.modified_date_time
+	RealmMail.from_email
+	slot_headers
+    ), [
+	comment => {
+	    column_widget => Join([
+		String({
+		    field => 'comment',
+		    value => [['comment']],
+		}),
+		[sub {
+		     my($source) = @_;
+		     my($thl) = $source->get_list_model();
+		     $thl->new_other('MailPartList')
+			 ->execute_from_realm_file_id(
+			     $source->get_request,
+			     $thl->get('RealmMail.realm_file_id'));
+		     return '';
+		}],
+		DIV_tuple(List('MailPartList', [
+		    DIV_part(Director(
+			['mime_type'] => {
+			    'text/plain' =>
+				String(''),
+			    'text/html' =>
+				String(''),
+			    'x-message/rfc822-headers' =>
+				String(''),
+			    map(
+				("image/$_" => Link(
+				    Image(['->format_uri_for_part',
+					   'FORUM_MAIL_MSG_PART']),
+				    ['->format_uri_for_part',
+				     'FORUM_MAIL_MSG_PART']),
+			     ), qw(png jpeg gif)),
+			},
+			Link(
+			    Join([
+				'Attachment: ',
+				String(['->get_file_name']),
+			    ]),
+			    ['->format_uri_for_part',
+			     'FORUM_MAIL_MSG_PART']),
+		    )),
+		])),
+	    ]),
+	},
+    ]]));
 }
 
 sub history_list_csv {
-    view_main(CSV(TupleHistoryList =>
-		      [qw(RealmFile.modified_date_time
-			  RealmMail.from_email
-			  slot_headers
-			  comment)]));
+    view_main(CSV(TupleHistoryList => [qw(
+        RealmFile.modified_date_time
+	RealmMail.from_email
+	slot_headers
+	comment
+    )]));
     return;
 }
 
 sub list {
     vs_put_pager('TupleList');
-    view_put(
-	_meta_info(),
-	base_content => [
-	    sub {
-		my($req) = @_;
-		return vs_paged_list(TupleList => [
-		    _list_columns($req, 1),
-		    _list_actions(TupleList => [
-			{
-			    task_id => 'FORUM_TUPLE_HISTORY',
-			    controls => undef,
-			    query => {
-				'ListQuery.parent_id'
-				    => ['Tuple.thread_root_id'],
-			    },
+    _meta_info();
+    return shift->internal_body([
+	sub {
+	    my($req) = @_;
+	    return vs_paged_list(TupleList => [
+		_list_columns($req, 1),
+		_list_actions(TupleList => [
+		    {
+			task_id => 'FORUM_TUPLE_HISTORY',
+			controls => undef,
+			query => {
+			    'ListQuery.parent_id'
+				=> ['Tuple.thread_root_id'],
 			},
-			'FORUM_TUPLE_EDIT',
-		    ]),
-		], {
-		    no_pager => 1,
-		}),
-	    }
-	]);
-    return;
+		    },
+		    'FORUM_TUPLE_EDIT',
+		]),
+	    ], {
+		no_pager => 1,
+	    }),
+	}
+    ]);
 }
 
 sub list_csv {
-    view_declare('base_content');
-    view_main(SimplePage(view_widget_value('base_content')));
-    view_put(base_content => Indirect([
-	sub {
-	    my($req) = @_;
-	    return CSV(TupleList => [_list_columns($req)]);
-	},
-    ]));
+    view_main(SimplePage([sub {
+        my($req) = @_;
+	return CSV(TupleList => [_list_columns($req)]);
+    }]));
     return;
 }
 
 sub pre_compile {
     my($self) = @_;
-    if ($self->get('view_method') =~ /_mail$/) {
-	view_parent('mail');
-	return;
-    }
-    elsif ($self->get('view_method') =~ /_csv$/) {
-	view_class_map('TextWidget');
-	return;
-    }
     my(@res) = shift->SUPER::pre_compile(@_);
-    view_put(base_tools => TaskMenu([
+#TODO: Remove "base" is deprecated
+    return unless $self->internal_base_type =~ /^(xhtml|base)$/;
+    $self->internal_put_base_attr(tools => TaskMenu([
         {
 	    task_id => 'FORUM_TUPLE_EDIT',
 	    label => 'TupleHistoryList.FORUM_TUPLE_EDIT',
@@ -305,7 +287,7 @@ sub pre_compile {
 }
 
 sub slot_type_edit {
-    view_put(base_content => vs_list_form(TupleSlotTypeListForm => [
+    return shift->internal_body(vs_list_form(TupleSlotTypeListForm => [
 	'TupleSlotTypeListForm.TupleSlotType.label',
 	['TupleSlotTypeListForm.TupleSlotType.type_class' => {
 	    wf_class => 'Select',
@@ -316,11 +298,10 @@ sub slot_type_edit {
 	'TupleSlotTypeListForm.TupleSlotType.default_value',
 	'choice',
     ]));
-    return;
 }
 
 sub slot_type_list {
-    view_put(base_content => vs_list(TupleSlotTypeList => [qw(
+    return shift->internal_body(vs_list(TupleSlotTypeList => [qw(
 	TupleSlotType.label
 	TupleSlotType.choices
 	TupleSlotType.default_value
@@ -329,11 +310,10 @@ sub slot_type_list {
 	    FORUM_TUPLE_SLOT_TYPE_EDIT
 	)]),
     ]));
-    return;
 }
 
 sub use_edit {
-    view_put(base_content => vs_simple_form(TupleUseForm => [
+    return shift->internal_body(vs_simple_form(TupleUseForm => [
 	['TupleUseForm.TupleUse.tuple_def_id' => {
 	    choices => ['Model.TupleDefSelectList'],
 	    list_display_field => 'TupleDef.label',
@@ -342,11 +322,10 @@ sub use_edit {
 	TupleUseForm.TupleUse.label
 	TupleUseForm.TupleUse.moniker
     )]));
-    return;
 }
 
 sub use_list {
-    view_put(base_content => vs_list(TupleUseList => [
+    return shift->internal_body(vs_list(TupleUseList => [
 	['TupleUse.label', => {
 	    wf_list_link => {
 		query => 'THIS_CHILD_LIST',
@@ -366,7 +345,6 @@ sub use_list {
 	    },
 	]),
     ]));
-    return;
 }
 
 sub _list_actions {
@@ -425,18 +403,16 @@ sub _list_columns {
 
 sub _meta_info {
 #TODO: Primitive hack to account for mail not being persisted in the db
-# initially, resulting in client visible lag time. Would client side Javascript
-# be more elegant? Hidden iframe AJAX?
-    return (
-	page3_meta_info =>
-	    If(
-		[['->get_request'], '->unsafe_get', 'Action.Acknowledgement'],
-		EmptyTag(meta => {
-		    html_attrs => [qw(http-equiv content)],
-		    'http-equiv' => 'Refresh',
-		    content => '5',
-		})
-	    ));
+#      initially, resulting in client visible lag time.
+    view_put(page3_meta_info => If(
+	[['->get_request'], '->unsafe_get', 'Action.Acknowledgement'],
+	MetaTags({
+	    html_attrs => [qw(http-equiv content)],
+	    'http-equiv' => 'Refresh',
+	    content => '5',
+	}),
+    ));
+    return;
 }
 
 sub _sub_spaces {
