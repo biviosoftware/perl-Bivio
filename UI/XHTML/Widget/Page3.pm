@@ -15,13 +15,14 @@ sub new {
 	[title => Prose(vs_text(
 	    [sub {"page3.title.$_[1]"}, ['task_id', '->get_name']]))],
 	['meta_info'],
+#TODO: Move this all to Base.bview.  Doesn't belong here
 	[head1 => Link(Tag(span => ''), 'SITE_ROOT')],
 	[head2 => Tag(div => Prose(view_widget_value('page3_title')), 'title')],
 	['head3'],
 	['content'],
 	[foot1 => Link(String('back to top'), '#top')],
 	['foot2'],
-	[foot3 => Tag(p => Join([
+	[foot3 => P(Join([
 	    'Copyright &copy; ',
 	    Bivio::Type::DateTime->now_as_year,
 	    ' ',
