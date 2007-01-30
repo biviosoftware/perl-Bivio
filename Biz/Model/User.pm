@@ -177,7 +177,7 @@ sub format_full_name {
 
     foreach my $name ($model->unsafe_get($model_prefix.'first_name',
         $model_prefix . 'middle_name', $model_prefix . 'last_name')) {
-	$res .= $name . ' ' if defined($name);
+	$res .= $name . ' ' if defined($name) && length($name);
     }
     # Get rid of last ' '
     chop($res);
