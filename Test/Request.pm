@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Request;
 use strict;
@@ -398,6 +398,7 @@ sub setup_http {
 	query => $self->unsafe_get('query'),
 	cookie => Bivio::Agent::HTTP::Cookie->new($self, $r),
 	client_addr => $c->remote_ip,
+	user_state => Bivio::Type->get_instance('UserState')->JUST_VISITOR,
     );
     # Sets user after cookie clears it
     if ($user) {
@@ -409,6 +410,7 @@ sub setup_http {
 		realm_owner => $user,
 	    });
 	}
+	$self->put_durable(user_state => $self->get('user_state')->LOGGED_IN); 
     }
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Action')
 	->get_instance('JobBase')->set_sentinel($self);
