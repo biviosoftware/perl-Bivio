@@ -130,16 +130,16 @@ sub vs_site_name {
 
 =for html <a name="vs_text"></a>
 
-=head2 vs_text(string tag_part, ...) : array_ref
+=head2 static vs_text(string tag_part, ...) : array_ref
 
-=head2 vs_text(array_ref tag_widget_value) : array_ref
+=head2 static vs_text(array_ref tag_widget_value) : array_ref
 
 Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
 
 =cut
 
 sub vs_text {
-    my($self, @tag) = @_;
+    my(undef, @tag) = @_;
     my($refs) = scalar(grep(ref($_), @tag));
     return [
 	['->get_request'], 'Bivio::UI::Facade', 'Text',
@@ -149,6 +149,21 @@ sub vs_text {
 		   return map(ref($_) ? $s->get_widget_value($_) : $_, @tag);
 	      }],
     ];
+}
+
+=for html <a name="vs_text_as_prose"></a>
+
+=head2 vs_text_as_prose(string tag) : Widget::Prose
+
+Prefixes "Prose." onto I<tag> and passes to Prose widget.
+
+=cut
+
+sub vs_text_as_prose {
+    my($proto, $tag) = @_;
+    Bivio::Die->die($tag, ': must not be reference')
+        if ref($tag);
+    return $proto->vs_call(Prose => $proto->vs_text("prose.$tag"));
 }
 
 #=PRIVATE METHODS
