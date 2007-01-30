@@ -361,12 +361,15 @@ foreach my $t (qw(table dl ul ol div)) {
 my($_TAGS) = {%$_EMPTY, %$_BLOCK, %$_PHRASE};
 my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
+my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_WN)\W*$)};
 
 sub render_html {
     my($self, $value, $name, $req, $task_id, $no_auto_links) = @_;
+    my($v) = ref($value) ? $value : \$value;
     my($state) = {
-	lines => [split(/\r?\n/, ref($value) ? $$value : $value)],
+	lines => [split(/\r?\n/, $$v)],
 	line_num => 0,
+	prefix_word_mode => $$v =~ /\^/s ? 1 : 0,
 	tags => [],
 	attrs => [],
 	html => '',
@@ -438,7 +441,8 @@ sub _fmt_href {
     }
     $tok = Bivio::HTML->unescape($tok);
     return shift(@_)
-	unless $tok =~ m{(^\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_WN)\W*$)};
+	unless $state->{prefix_word_mode}
+	? $tok =~ s{^\^}{}o : $tok =~ $_HREF;
     # Any &'s were turned into &amp;
     # The trailing punctuation can't be everything, because http://a//? is a
     # legitimate URI.
