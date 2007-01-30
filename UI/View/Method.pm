@@ -21,13 +21,16 @@ sub compile {
 
 sub pre_compile {
     my($self) = @_;
-    view_parent('base');
+    view_parent('base')
+	unless $self->unsafe_get('view_parent');
     return;
 }
 
 sub unsafe_new {
     my($proto, $name, $facade) = @_;
-    return $proto->can($name) ? $proto->new({view_method => $name}) : undef;
+    return $name !~ /^internal_/ && $proto->can($name)
+	? $proto->new({view_method => $name})
+	: undef;
 }
 
 1;
