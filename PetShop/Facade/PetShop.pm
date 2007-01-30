@@ -7,8 +7,6 @@ use base 'Bivio::UI::FacadeBase';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_SELF) = __PACKAGE__->new({
-    clone => undef,
-    is_production => 1,
     uri => 'petshop',
     http_host => 'petshop.bivio.biz',
     mail_host => 'bivio.biz',
@@ -77,39 +75,11 @@ my($_SELF) = __PACKAGE__->new({
 	[page_left_margin => 20],
     ],
     Task => [
-	# The task which utilities run as.
-	[SHELL_UTIL => undef],
-
-	# The task is called to execute views by name.  Bivio::UI::View
-	# prefixes any uri with Text.view_uri_prefix, which should be the
-	# root of the tree of all directly executed views.  These are views
-	# which aren't associated with an explicitly Task.
-	[SITE_ROOT => '/*'],
-
-	# Only icons are plain files.  We use /i as the URI, because it is
-	# short and we it makes named-based routing easy for multi-tiered
-	# systems.  /i must agree with the configured values
-	# of Bivio::UI::Icon.
-	[LOCAL_FILE_PLAIN => '/i/*'],
-
-	[MY_CLUB_SITE => 'my-club-site/*'],
-	[LOGIN => 'pub/login'],
-	[LOGOUT => 'pub/logout'],
-	[USER_HOME => '?'],
-	[CLUB_HOME => '?'],
 	[CLIENT_REDIRECT => 'goto/*'],
-	[DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
-	[FORBIDDEN => undef],
-	[MY_SITE => 'my-site/*'],
 	[HELP => 'help/*'],
 	[FAVICON_ICO => 'favicon.ico'],
 	[ROBOTS_TXT => 'robots.txt'],
 	[TEST_BACKDOOR => '_test_backdoor'],
-	[GENERAL_USER_PASSWORD_QUERY => '/pub/forgot-password'],
-	[GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
-	[GENERAL_USER_PASSWORD_QUERY_ACK => '/pub/forgot-password-ack'],
-	[USER_PASSWORD_RESET => '?/new-password'],
-	[USER_PASSWORD => '?/change-password'],
 	[PRODUCTS => 'pub/products'],
 	[ITEM_SEARCH => 'pub/search'],
 	[ITEMS => 'items'],
@@ -195,24 +165,10 @@ my($_SELF) = __PACKAGE__->new({
 	# SITE_ROOT task calls View->execute_uri and we look for pages in
 	# the "site_root" directory.
 	[view_execute_uri_prefix => 'site_root/'],
-	[favicon_uri => '/i/favicon.ico'],
-
-	[form_error_title => 'Please correct the errors below:'],
-
-	# No label is convenient to have
-	[none => ''],
-
-	[[qw(paged_detail paged_list)] => [
-	    prev => 'back',
-	    next => 'next',
-	    list => 'back to list',
-	]],
 	[sep => 'foot2_menu_sep'],
 	[Address => [
 	    street1 => 'Street Address',
-	    city => 'City',
 	    state => 'State/Province',
-	    country => 'Country',
 	    zip => 'Postal Code',
 	]],
 	[CartItem => [
@@ -235,7 +191,7 @@ my($_SELF) = __PACKAGE__->new({
 	    name => 'Product Name',
 	    product_id => 'Product ID',
 	]],
-	[[qw(login email)] => 'Email'],
+	[[qw(login Email.email email)] => 'Email'],
 	[RealmOwner => [
 	    name => 'User ID',
 	    password => 'Password',
@@ -252,51 +208,19 @@ my($_SELF) = __PACKAGE__->new({
 	[ship_to_billing_address => 'Ship to Billing Address'],
 	[total_cost => 'Total Cost'],
 	[update_cart => 'Update Cart'],
-	[UserPasswordQueryForm => [
-	    ok_button => 'Reset Password',
-	]],
 	[UserPasswordForm => [
-	    old_password => 'Current Password',
-	    new_password => 'New Password',
-	    confirm_new_password => 'Re-enter New Password',
 	    ok_button => 'Change',
 	]],
-	[ForumList => [
-	    'RealmOwner.name' => 'Forum',
-	    'RealmOwner.display_name' => 'Title',
-	    'Forum.want_reply_to' => 'Reply-To List?',
-	    'admin_only_forum_email' => 'Admin Only Email?',
-	    'system_user_forum_email' => 'System User Email?',
-	    'public_forum_email' => 'Public Email?',
-	    'Forum.forum_id' => 'Database Key',
+	[UserLoginForm => [
+	    ok_button => '  OK  ',
 	]],
-	[ForumUserList => [
-	    'Email.email' => 'Email',
-	    mail_recipient => 'Subscribed?',
-	    file_writer => 'Write Files?',
-	    administrator => 'Administrator?',
-	    'RealmUser.user_id' => 'Database Key',
-	]],
-	[EmailAliasList => [
-	    'EmailAlias.incoming' => 'From Email',
-	    'EmailAlias.outgoing' => 'To Email or Forum',
-	    'primary_key' => 'Database Key',
-	]],
-
 	# Table headings
 	['ItemListForm.add_to_cart' => ' '],
 	['CartItemListForm.remove' => ' '],
 	[Image_alt => [
 	    bivio_power => 'Powered by bivio Software, Inc.',
 	    image_bunit => 'Image.bunit',
-	    sort_up => 'This column sorted in descending order',
-	    sort_down => 'This column sorted in ascending order',
 	]],
-	[HelpWiki => [
-	    header => 'Help',
-	    footer => '',
-	]],
-
 	# Misc Model support
 	['MailReceiveDispatchForm.uri_prefix' => '_mail_receive_'],
 	['WorkflowCallerForm.prev_task' => 'Previous Task'],
@@ -305,19 +229,12 @@ my($_SELF) = __PACKAGE__->new({
 	    test_text => 'Child',
 	    test_text_only_child => 'Only Child',
 	]],
-	[ok_button => ' OK '],
-	[cancel_button => 'Cancel'],
 	[acknowledgement => [
 	    SHELL_UTIL => 'shell util ack',
-	    GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)], 'strong'); with a link to reset your password.},
-	    USER_PASSWORD => q{Your password has been changed.},
-	    password_nak => q{We're sorry, but the link you clicked on is no longer valid.  Please enter your email address and send again.},
 	]],
 	[title => [
 	    SHELL_UTIL => 'shell util',
 	    USER_HOME => 'user home',
-	    SITE_ROOT => 'home',
-	    ADM_SUBSTITUTE_USER => 'su',
 	    EXAMPLE_EG1 => 'Example 1',
 	]],
 	[rsspage => [
@@ -335,3 +252,4 @@ my($_SELF) = __PACKAGE__->new({
 });
 
 1;
+
