@@ -35,7 +35,8 @@ sub internal_post_load_row {
     );
     my($slot_headers, $comment) = $self->get_instance('Tuple')
 	->split_body($body);
-    $slot_headers =~ s/[_-]/ /g;
+    $slot_headers =~ s/[_-]/ /g
+	if $slot_headers;
     @$row{qw(slot_headers comment)} = ($slot_headers, $comment);
     return 1;
 }
