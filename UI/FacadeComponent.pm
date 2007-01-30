@@ -161,30 +161,6 @@ sub assert_name {
     return;
 }
 
-=for html <a name="delete_group"></a>
-
-=head2 delete_group(string name)
-
-Removes I<name> and its associated value and any other names in the group.
-If you want to save part of a group, use L<regroup|"regroup"> and
-then I<delete_group>.
-
-If I<name> is not found, does nothing.
-
-=cut
-
-sub delete_group {
-    my($self, $name) = @_;
-    _assert_writable($self);
-    my($map) = $self->[$_IDI]->{map};
-    my($value) = $map->{$name};
-    return unless $value;
-    foreach my $n (@{$value->{names}}) {
-	delete($map->{$n});
-    }
-    return;
-}
-
 =for html <a name="die"></a>
 
 =head2 die(hash_ref value, string msg, ...)
@@ -520,20 +496,7 @@ All names must exist.
 =cut
 
 sub regroup {
-    my($self, $names, $new_value) = @_;
-    _assert_writable($self);
-    my($map) = $self->[$_IDI]->{map};
-    $names = ref($names) ? $names : [$names];
-
-    # Delete the names from the map
-    foreach my $name (@$names) {
-	$self->die($name, 'name not found') unless $map->{$name};
-	delete($map->{$name});
-    }
-
-    # Now can just create a new group
-    $self->group($names, $new_value);
-    return;
+    return shift->group(@_);
 }
 
 =for html <a name="value"></a>
@@ -547,18 +510,7 @@ Sets I<value> for the group which contains I<name>.
 =cut
 
 sub value {
-    my($self, $name, $value) = @_;
-    _assert_writable($self);
-    my($map) = $self->[$_IDI]->{map};
-    $name = lc($name);
-    $self->die($name, 'group not found')
-	unless $map->{$name};
-
-    # Clear out old state and reinitialize
-    my($v) = $map->{$name};
-    %$v = (config => $value, names => $v->{names});
-    _initialize_value($self, $v);
-    return;
+    return shift->group(@_);
 }
 
 #=PRIVATE METHODS
@@ -581,7 +533,11 @@ sub _assert_writable {
 sub _assign {
     my($self, $map, $name, $value) = @_;
     $name = lc($name);
-    $self->die($name, 'duplicate name') if $map->{$name};
+    if ($map->{$name}) {
+	# Delete name from previous map entry
+	my($n) = $map->{$name}->{names};
+	@$n = grep($name ne $_, @$n);
+    }
     $self->assert_name($name);
     $map->{$name} = $value;
     return;
