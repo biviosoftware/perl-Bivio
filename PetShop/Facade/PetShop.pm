@@ -129,8 +129,6 @@ my($_SELF) = __PACKAGE__->new({
 	[DAV => 'dav/*'],
 	[FORUM_EASY_FORM => '?/EasyForm/*'],
 	[FORUM_PUBLIC_FILE => '?/pub/*'],
-	[FORUM_FILE_READ => '?/file/*'],
-	[FORUM_WIKI_VIEW => '?/wiki/*'],
 	[EXAMPLE_EG1 => '/pub/eg1'],
     ],
     Constant => [
