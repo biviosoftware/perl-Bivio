@@ -187,14 +187,7 @@ sub get_delegate_info {
 	    ANYBODY
 	    View.source
 	)],
-	[qw(
-            FORUM_FILE_READ
-            520
-	    FORUM
-	    DATA_READ
-	    Action.RealmFile
-	)],
-#521-524
+#520-524
 	[qw(
 	    USER_ACCOUNT_CREATE_AND_PLACE_ORDER
 	    524
