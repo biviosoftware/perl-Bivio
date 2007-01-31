@@ -25,7 +25,7 @@ sub new {
 	    } qw(
 		forum_tuple_list
 		forum_wiki_view
-		login
+		user_create
 		mail_receive_dispatch
                 dav
 	    )),
@@ -178,6 +178,13 @@ You may contact customer support by replying to this message.
 Thank you,
 vs_site_name(); Support
 EOF
+		page3 => [
+		    foot3 => <<"EOF"
+Copyright &copy; @{[Bivio::Type::DateTime->now_as_year]} vs_text('site_copyright');<br />
+All rights reserved.<br />
+Link('Developed by bivio', 'http://www.bivio.biz');
+EOF
+		],
 	    ]],
 	],
     };
@@ -214,125 +221,6 @@ sub _cfg_dav {
     };
 }
 
-sub _cfg_login {
-    return {
-	Constant => [
-	    [my_site_login => {
-		task_id => 'MY_SITE',
-	    }],
-	    [xlink_login_no_context => {
-		task_id => 'LOGIN',
-		no_context => 1,
-	    }],
-	    [xlink_user_create_no_context => {
-		task_id => 'USER_CREATE',
-		no_context => 1,
-	    }],
-	],
-	FormError => [
-	    ['UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH' => 
-		 q{The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".},],
-	],
-	Task => [
-	    [LOGIN => 'pub/login'],
-	    [LOGOUT => 'pub/logout'],
-	    [USER_CREATE => 'pub/register'],
-	    [USER_CREATE_DONE => undef],
-	    [GENERAL_USER_PASSWORD_QUERY => 'pub/forgot-password'],
-	    [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
-	    [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
-	    [USER_PASSWORD_RESET => '?/new-password'],
-	    [USER_PASSWORD => '?/password'],
-	    [ADM_SUBSTITUTE_USER => 'adm/su'],
-	    [DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
-	],
-	Text => [
-	    [UserLoginForm => [
-		ok_button => 'Login',
-		prose => [
-		    prologue => q{P(XLink('user_create_no_context'));},
-		    epilogue => q{P(XLink('GENERAL_USER_PASSWORD_QUERY'));},
-		],
-	    ]],
-	    [password => 'Password'],
-	    [[qw(UserCreateForm UserRegisterForm)]  => [
-		ok_button => 'Register',
-		'confirm_password.field_description' => q{Enter your password again.},
-		confirm_password => 'Re-enter Password',
-		prose => [
-		    prologue => q{P(XLink('GENERAL_USER_PASSWORD_QUERY'));},
-		    epilogue => q{P(XLink('login_no_context'));},
-		],
-	    ]],
-	    [UserPasswordForm => [
-		old_password => 'Current Password',
-		new_password => 'New Password',
-		confirm_new_password => 'Re-enter New Password',
-		ok_button => 'Update',
-	    ]],
-	    [UserPasswordQueryForm => [
-		ok_button => 'Reset Password',
-	    ]],
-	    [acknowledgement => [
-		GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to reset your password.},
-		USER_PASSWORD_RESET => q{Your password has been reset.  Please choose a new one.},
-		USER_PASSWORD => q{Your password has been changed.},
-		password_nak => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to reset your password again.},
-		USER_FORUM_TREE => q{Your subscriptions have been updated.},
-		user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},
-		GENERAL_CONTACT => 'Your inquiry has been sent.  Thank you!',
-	    ]],
-	    [title => [
-		 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
-	     ]],
-	    [[qw(title xlink)] => [
-		GENERAL_CONTACT => 'Contact Us',
-		USER_PASSWORD  => 'Password',
-		[qw(LOGIN my_site_login)] => 'Login',
-		LOGOUT => 'Logout',
-		USER_CREATE => 'Register',
-		GENERAL_USER_PASSWORD_QUERY_ACK => 'Password Assistance Sent',
-		ADM_SUBSTITUTE_USER => 'Act as User',
-		SITE_ROOT => 'Home',
-	    ]],
-	    [xlink => [
-		GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
-		login_no_context => 'Already registered?  Click here to login.',
-		user_create_no_context => 'Not registered? Click here to register.',
-	    ]],
-	    ['page3.title' => [
-		LOGIN => 'Please Login',
-		USER_CREATE => 'Please Register',
-		GENERAL_CONTACT => 'Please Contact Us',
-		USER_PASSWORD  => 'Your Password',
-		USER_CREATE_DONE => 'Registration Email Sent',
-		SITE_ROOT => '',
-	    ]],
-	],
-    };
-}
-
-sub _cfg_mail_receive_dispatch {
-    my($proto) = @_;
-    return {
-	Task => [
-	    [FORUM_EASY_FORM => '?/Forms/*'],
-	    [FORUM_FILE => '?/file/*'],
-	    [FORUM_MAIL_RECEIVE => '?/' . $proto->MAIL_RECEIVE_PREFIX],
-	    [FORUM_MAIL_REFLECTOR => undef],
-	    [FORUM_PUBLIC_FILE => '?/public/*'],
-	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
-	    [MAIL_RECEIVE_FORWARD => undef],
-	    [MAIL_RECEIVE_IGNORE => undef],
-	    [MAIL_RECEIVE_NOT_FOUND => undef],
-	    [MAIL_RECEIVE_NO_RESOURCES => undef],
-	    [USER_MAIL_BOUNCE => '?/' . $proto->MAIL_RECEIVE_PREFIX . Bivio::Biz::Model->get_instance('RealmMailBounce')->TASK_URI],
-	],
-	Text => [
-	    ['MailReceiveDispatchForm.uri_prefix' => $proto->MAIL_RECEIVE_PREFIX],
-	],
-    };
-}
 sub _cfg_forum_tuple_list {
     return {
 	Task => [
@@ -526,6 +414,126 @@ sub _cfg_forum_wiki_view {
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
 		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
+	    ]],
+	],
+    };
+}
+
+sub _cfg_mail_receive_dispatch {
+    my($proto) = @_;
+    return {
+	Task => [
+	    [FORUM_EASY_FORM => '?/Forms/*'],
+	    [FORUM_FILE => '?/file/*'],
+	    [FORUM_MAIL_RECEIVE => '?/' . $proto->MAIL_RECEIVE_PREFIX],
+	    [FORUM_MAIL_REFLECTOR => undef],
+	    [FORUM_PUBLIC_FILE => '?/public/*'],
+	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
+	    [MAIL_RECEIVE_FORWARD => undef],
+	    [MAIL_RECEIVE_IGNORE => undef],
+	    [MAIL_RECEIVE_NOT_FOUND => undef],
+	    [MAIL_RECEIVE_NO_RESOURCES => undef],
+	    [USER_MAIL_BOUNCE => '?/' . $proto->MAIL_RECEIVE_PREFIX . Bivio::Biz::Model->get_instance('RealmMailBounce')->TASK_URI],
+	],
+	Text => [
+	    ['MailReceiveDispatchForm.uri_prefix' => $proto->MAIL_RECEIVE_PREFIX],
+	],
+    };
+}
+
+sub _cfg_user_create {
+    return {
+	Constant => [
+	    [xlink_my_site_login => {
+		task_id => 'MY_SITE',
+	    }],
+	    [xlink_login_no_context => {
+		task_id => 'LOGIN',
+		no_context => 1,
+	    }],
+	    [xlink_user_create_no_context => {
+		task_id => 'USER_CREATE',
+		no_context => 1,
+	    }],
+	],
+	FormError => [
+	    ['UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH' => 
+		 q{The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".},],
+	],
+	Task => [
+	    [LOGIN => 'pub/login'],
+	    [LOGOUT => 'pub/logout'],
+	    [USER_CREATE => 'pub/register'],
+	    [USER_CREATE_DONE => undef],
+	    [GENERAL_USER_PASSWORD_QUERY => 'pub/forgot-password'],
+	    [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
+	    [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
+	    [USER_PASSWORD_RESET => '?/new-password'],
+	    [USER_PASSWORD => '?/password'],
+	    [ADM_SUBSTITUTE_USER => 'adm/su'],
+	    [DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
+	],
+	Text => [
+	    [UserLoginForm => [
+		ok_button => 'Login',
+		prose => [
+		    prologue => q{P(XLink('user_create_no_context'));},
+		    epilogue => q{P(XLink('GENERAL_USER_PASSWORD_QUERY'));},
+		],
+	    ]],
+	    [password => 'Password'],
+	    [[qw(UserCreateForm UserRegisterForm)]  => [
+		ok_button => 'Register',
+		'confirm_password.field_description' => q{Enter your password again.},
+		confirm_password => 'Re-enter Password',
+		prose => [
+		    prologue => q{P(XLink('GENERAL_USER_PASSWORD_QUERY'));},
+		    epilogue => q{P(XLink('login_no_context'));},
+		],
+	    ]],
+	    [UserPasswordForm => [
+		old_password => 'Current Password',
+		new_password => 'New Password',
+		confirm_new_password => 'Re-enter New Password',
+		ok_button => 'Update',
+	    ]],
+	    [UserPasswordQueryForm => [
+		ok_button => 'Reset Password',
+	    ]],
+	    [acknowledgement => [
+		GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to reset your password.},
+		USER_PASSWORD_RESET => q{Your password has been reset.  Please choose a new one.},
+		USER_PASSWORD => q{Your password has been changed.},
+		password_nak => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to reset your password again.},
+		USER_FORUM_TREE => q{Your subscriptions have been updated.},
+		user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},
+		GENERAL_CONTACT => 'Your inquiry has been sent.  Thank you!',
+	    ]],
+	    [title => [
+		 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
+	     ]],
+	    [[qw(title xlink)] => [
+		GENERAL_CONTACT => 'Contact Us',
+		USER_PASSWORD  => 'Password',
+		[qw(LOGIN my_site_login)] => 'Login',
+		LOGOUT => 'Logout',
+		USER_CREATE => 'Register',
+		GENERAL_USER_PASSWORD_QUERY_ACK => 'Password Assistance Sent',
+		ADM_SUBSTITUTE_USER => 'Act as User',
+		SITE_ROOT => 'Home',
+	    ]],
+	    [xlink => [
+		GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
+		login_no_context => 'Already registered?  Click here to login.',
+		user_create_no_context => 'Not registered? Click here to register.',
+	    ]],
+	    ['page3.title' => [
+		LOGIN => 'Please Login',
+		USER_CREATE => 'Please Register',
+		GENERAL_CONTACT => 'Please Contact Us',
+		USER_PASSWORD  => 'Your Password',
+		USER_CREATE_DONE => 'Registration Email Sent',
+		SITE_ROOT => '',
 	    ]],
 	],
     };
