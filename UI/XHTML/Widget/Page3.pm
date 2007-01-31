@@ -16,20 +16,13 @@ sub new {
 	    [sub {"page3.title.$_[1]"}, ['task_id', '->get_name']]))],
 	['meta_info'],
 #TODO: Move this all to Base.bview.  Doesn't belong here
-	[head1 => Link(Tag(span => ''), 'SITE_ROOT')],
-	[head2 => Tag(div => Prose(view_widget_value('page3_title')), 'title')],
+	[head1 => Link(SPAN(), 'SITE_ROOT')],
+	[head2 => DIV_title(Prose(view_widget_value('page3_title')))],
 	['head3'],
 	['content'],
 	[foot1 => Link(String('back to top'), '#top')],
 	['foot2'],
-	[foot3 => P(Join([
-	    'Copyright &copy; ',
-	    Bivio::Type::DateTime->now_as_year,
-	    ' ',
-	    vs_text('site_copyright'),
-	    '<br />All rights reserved.<br />',
-	    Link('Developed by bivio', 'http://www.bivio.biz'),
-	]))],
+	[foot3 => vs_text_as_prose('page3.foot3')],
 	[style => StyleSheet('/f/base.css')],
     ));
     return $proto->SUPER::new($attrs)->put_unless_exists(
@@ -39,26 +32,20 @@ sub new {
 	]),
 	body => Join([
 	    '<a name="top"></a>',
-	    Tag('div',
-		Join([
-		    map(
-			Tag(div => view_widget_value("page3_head$_"), "head$_"),
-			1..3,
-		    ),
-		]),
-		'head',
-	    ),
+	    DIV_head(Join([
+		map(
+		    DIV(view_widget_value("page3_head$_"), "head$_"),
+		    1..3,
+		),
+	    ])),
 	    Acknowledgement(),
-	    Tag(div => [view_widget_value('page3_content')], 'content'),
-	    Tag(div =>
-		Join([
-		    map(
-			Tag(div => view_widget_value("page3_foot$_"), "foot$_"),
-			1..3,
-		    ),
-		]),
-		'foot',
-	    ),
+	    DIV_content([view_widget_value('page3_content')]),
+	    DIV_foot(Join([
+		map(
+		    DIV(view_widget_value("page3_foot$_"), "foot$_"),
+		    1..3,
+		),
+	    ])),
 	]),
 	style => view_widget_value('page3_style'),
 	xhtml => 1,
