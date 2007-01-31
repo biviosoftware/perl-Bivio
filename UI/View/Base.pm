@@ -107,7 +107,7 @@ sub xhtml {
 	    head2 => Join([
 		P_realm(view_widget_value('xhtml_realm')),
 		P_menu(view_widget_value('xhtml_menu')),
-		P_topic(Prose(
+		P_title(Prose(
 		    vs_text([sub {"page3.title.$_[1]"}, ['task_id', '->get_name']]),
 		)),
 	    ]),
