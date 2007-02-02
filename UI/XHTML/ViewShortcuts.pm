@@ -156,7 +156,7 @@ sub vs_alphabetical_chooser {
 	        String($_),
 		URI({
 		    query => ["Model.$list_model", '->format_query', 'ANY_LIST',
-			      $_ eq 'All' ? () : {search => $_}],
+			      {search => $_ eq 'All' ? undef : $_}],
 		}),
 		[sub {
 		     my(undef, $a, $search) = @_;
