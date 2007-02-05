@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.73  2007/01/23 05:11:03  aviggio
+  * Bivio::UI::XHTML::View::Tuple renders MIME attachments in history
+    list view
+  * Bivio::Util::Class added tasks_for_view, renamed task to tasks_for_label
+
   Revision 4.72  2007/01/19 05:55:11  aviggio
   * Bivio::Biz::Model::MailPartList decode MIME attachment file names if
     needed, e.g. may be UTF-8 encoded
