@@ -109,6 +109,8 @@ Bivio::IO::Config->register({
 
 =head2 static bootstrap_die(string arg1, ...)
 
+=head2 static bootstrap_die(any code, hash_ref attrs, string package, string file, int line)
+
 You should use L<Bivio::Die::die|Bivio::Die/"die">, not this method.
 
 Called by I<low level classes> in bOP which are used by
@@ -121,12 +123,9 @@ it is defined and loaded.  Bivio::Die does not call this method.
 
 sub bootstrap_die {
     my($proto) = shift;
-    # If Bivio::Die is loaded, call it so we get cleaner error handling
-    Bivio::Die->die(@_)
-		if UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
-			&& UNIVERSAL::can('Bivio::Die', 'die');
-
-    # Otherwise, call CORE::DIE
+    Bivio::Die->throw_or_die(@_)
+	if UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
+	&& UNIVERSAL::can('Bivio::Die', 'throw_or_die');
     CORE::die(_call_format($proto, \@_, 0));
     # DOES NOT RETURN
 }

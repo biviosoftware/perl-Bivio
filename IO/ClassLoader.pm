@@ -358,10 +358,7 @@ sub _catch {
 }
 
 sub _die {
-    eval('require Bivio::Die') || die(@_, "; SECONDARY ERROR: $@")
-	unless UNIVERSAL::can('Bivio::Die', 'throw_or_die');
-    Bivio::Die->throw_or_die(@_);
-    # DOES NOT RETURN
+    Bivio::IO::Alert->bootstrap_die(@_);
 }
 
 sub _file {
