@@ -7,6 +7,8 @@ use base 'Bivio::Biz::FormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = Bivio::Type->get_instance('ForumName');
 my($_EM) = Bivio::Type->get_instance('ForumEmailMode');
+my($_RR) = Bivio::IO::ClassLoader
+    ->simple_require('Bivio::Biz::Util::RealmRole');
 
 sub CREATE_REALM_MODELS {
     return qw(Forum RealmOwner);
@@ -25,9 +27,7 @@ sub execute_empty {
 	$self->get('RealmOwner.name') . '-');
     $self->internal_put_field('RealmOwner.display_name' =>
         $self->get('RealmOwner.display_name') . ' ');
-    my($cats) = Bivio::IO::ClassLoader
-	->simple_require('Bivio::Biz::Util::RealmRole')
-	    ->list_enabled_categories();
+    my($cats) = $_RR->list_enabled_categories();
     foreach my $pc ($_EM->OPTIONAL_MODES) {
 	$self->internal_put_field($pc => grep($_ eq $pc, @$cats) ? 1 : 0);
     }
@@ -53,12 +53,10 @@ sub execute_ok {
 	    $self->update_model_properties($m);
 	}
     }
-    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Util::RealmRole')
-	    ->edit_categories({
-		map({
-		    $_ => $self->unsafe_get($_);
-		} $_EM->OPTIONAL_MODES)
-	    });
+    $_RR->edit_categories({
+	map({
+	    $_ => $self->unsafe_get($_);
+	} $_EM->OPTIONAL_MODES)});
     return;
 }
 
@@ -73,7 +71,7 @@ sub internal_initialize {
 		type => 'ForumName',
 	    },
 	    'Forum.want_reply_to',
-#TODO: Using Booleans instead of proper enum to support WebDAV CSV UI
+	    # Using Booleans instead of proper enum to support WebDAV CSV UI
 	    map(+{
 		name => $_,
 		type => 'Boolean',
@@ -95,6 +93,13 @@ sub validate {
     my($self) = @_;
     $self->internal_put_field(validate_called => 1);
     return if $self->get_field_error('RealmOwner.name');
+    # A sub forum must begin with its corresponding root forum prefix, but
+    # does not need to prepend its other parent forum names, i.e.:
+    # base ---> base-sub1 (valid)
+    #  |         |--> base-sub1alpha (valid)
+    #  |         |--> base-sub1-beta (also valid)
+    #  |--> base-sub2 (valid)
+    #  |--> sub3 (INVALID)
     my($req) = $self->get_request;
     my($n) = $self->get('RealmOwner.name');
     my($new_top) = $_FN->extract_top($n);
