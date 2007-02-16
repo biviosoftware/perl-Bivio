@@ -408,7 +408,16 @@ sub _httpd_init_rc {
 sub _httpd_vars {
     my($vars) = @_;
     my($v) = $vars->{httpd};
-    %$v = (%$_VARS, %$_HTTPD_VARS, %$v);
+    %$v = (
+	%$_VARS,
+	%$_HTTPD_VARS,
+	map(($_ => $vars->{$_}), qw(
+            server_status_allow
+	    server_status_location
+	    server_admin
+        )),
+	%$v,
+    );
     _app_vars($v);
     my($t);
     $v->{content} = join(
@@ -443,15 +452,14 @@ EOF
 	),
     );
     my($n) = 0;
-    my($max) = 0;
     foreach my $s (@{$vars->{apps}}) {
 	$n += $vars->{$s}->{servers};
-	$max = $vars->{$s}->{limit_request_body}
-	    if $vars->{$s}->{limit_request_body} > $max;
+	foreach my $var (qw(limit_request_body timeout)) {
+	    $v->{$var} = $vars->{$s}->{$var}
+		if $vars->{$s}->{$var} > ($v->{$var} || 0);
+	}
     }
-    $v->{limit_request_body} = $max;
-    $v->{server_admin} ||= $vars->{server_admin}
-	|| 'webmaster@' . $v->{host_name};
+    $v->{server_admin} ||= 'webmaster@' . $v->{host_name};
     $v->{servers} = $n * 2;
     return;
 }
