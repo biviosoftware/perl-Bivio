@@ -945,9 +945,14 @@ sub _add_auth_id {
     $query = _dup($query);
     my($sql_support) = $self->internal_get_sql_support;
     my($auth_field) = $sql_support->get('auth_id');
-    # Will override existing value for auth_id if model has an auth_id
-    $query->{$auth_field->{name}} = $self->get_request->get('auth_id')
-	if $auth_field;
+    # Warn if we are overriding an existing value for auth_id
+    if ($auth_field) {
+	Bivio::IO::Alert->warn(<<"EOF")
+$self: overriding $auth_field->{name} with auth_id from request.  You might need to call unauth_load instead.
+EOF
+            if exists($query->{$auth_field->{name}});
+        $query->{$auth_field->{name}} = $self->get_request->get('auth_id');
+    }
     return $query;
 }
 
