@@ -143,8 +143,8 @@ sub _top {
 	my($fid) = $f->get('forum_id');
 	return (
 	    $_FN->extract_top(
-		$f->new_other('RealmOwner')->load({realm_id => $fid})
-		    ->get('name'),
+		$f->new_other('RealmOwner')
+		    ->unauth_load_or_die({realm_id => $fid})->get('name'),
 	    ),
 	    $is_top,
 	) unless $f->unauth_load({forum_id => $f->get('parent_realm_id')});
