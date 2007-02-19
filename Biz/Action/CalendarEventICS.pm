@@ -25,6 +25,7 @@ sub render {
 	'BEGIN:VCALENDAR',
 	'VERSION:2.0',
 	'PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN',
+	'METHOD:PUBLISH',
 	'BEGIN:VEVENT',
 	map({
 	    my($k, $f) = ref($_) ? @$_ : (uc($_), "CalendarEvent.$_");
@@ -54,17 +55,19 @@ sub render {
 sub _dt {
     my($it, $key, $field) = @_;
     my($v) = $it->get($field);
-    unless ($key =~ /DTSTART|DTEND/) {
-	$v = $_DT->to_file_name($v) . 'Z';
-	substr($v, 8, 0) = 'T';
-    }
-    elsif ($_DT->is_date($v)) {
+#     unless ($key =~ /DTSTART|DTEND/) {
+# 	$v = $_DT->to_file_name($v) . 'Z';
+# 	substr($v, 8, 0) = 'T';
+#     }
+#     elsif ($_DT->is_date($v)) {
+    if ($_DT->is_date($v)) {
 	$key .= ";VALUE=DATE";
 	$v = $_D->to_file_name($v);
     }
     else {
 #TODO: timezone
-	$v = $_DT->to_local_file_name($v, 0);
+#	$v = $_DT->to_local_file_name($v, 0);
+ 	$v = $_DT->to_file_name($v) . 'Z';
 	substr($v, 8, 0) = 'T';
     }
     return "$key:$v";
