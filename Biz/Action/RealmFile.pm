@@ -20,13 +20,14 @@ sub execute_public {
 }
 
 sub unauth_execute {
-    my($proto, $req, $is_public, $realm_id) = @_;
+    my($proto, $req, $is_public, $realm_id, $path_info) = @_;
     my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
+    $path_info ||= $req->get('path_info');
     $req->get('reply')->set_output(
 	$f->unauth_load_or_die({
 	    realm_id => $realm_id,
 	    is_folder => 0,
-	    path_lc => lc($f->parse_path($req->get('path_info'))),
+	    path_lc => lc($f->parse_path($path_info)),
 	    defined($is_public) ? (is_public => $is_public) : (),
 	})->get_handle,
     )->set_output_type($f->get_content_type);

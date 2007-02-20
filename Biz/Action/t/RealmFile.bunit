@@ -1,0 +1,39 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+req()->set_realm_and_user('fourem', undef);
+model('RealmFile')->create_with_content({
+    path => '/0000/00/000000.html',
+}, \(<<EOF));
+<html><body>this space intentionally left blank</body></html>
+EOF
+options({
+    compute_params => sub {
+	my($case, $params) = @_;
+	req()->put_durable(path_info => shift(@$params));
+	return [req(), @$params];
+    },
+    compute_return => sub {
+	my($case, $actual, $expect) = @_;
+	return [$expect]
+	    if Bivio::UNIVERSAL->is_blessed($expect, 'Bivio::DieCode');
+	$case->actual_return([req()->get('reply')->get_output]);
+	return [$expect];
+    },
+});
+[
+    class() => [
+	execute => [
+	    '/0000/00/000000.html' => qr{this space intentionally left blank},
+	    '/0000/00/not_found.html' => Bivio::DieCode->MODEL_NOT_FOUND,
+	],
+	unauth_execute => [
+	    ['/0000/00/000000.html', undef, req()->get('auth_id')]
+		=> qr{this space intentionally left blank},
+	    ['/Some/path', undef, req()->get('auth_id'), '/0000/00/000000.html']
+		=> qr{this space intentionally left blank},
+	    ['/0000/00/000000.html', undef, req()->get('auth_id'), '/not_found']
+		=> Bivio::DieCode->MODEL_NOT_FOUND,
+	],
+    ],
+];
