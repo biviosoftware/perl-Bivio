@@ -99,6 +99,7 @@ sub _cfg_base {
 	    [USER_HOME => '?'],
 	    [ROBOTS_TXT => 'robots.txt'],
 	    [TEST_BACKDOOR => '_test_backdoor'],
+	    [PERMANENT_REDIRECT => undef],
 	],
 	Text => [
 	    [support_email => 'support'],
