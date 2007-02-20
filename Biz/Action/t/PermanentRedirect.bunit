@@ -1,0 +1,28 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+config({
+    'Bivio::Biz::Action::PermanentRedirect' => {
+    redirects => {
+	'/fourem/2003/12/000045.html' => '/fourem/2003/12/who',
+    },
+    redirect_patterns => [
+	qr{^(.*)\.html$} => sub{$_[0]},
+    ],
+},
+});
+Request();
+options({
+    compute_params => sub {
+	my($case, $params) = @_;
+	req()->put_durable(uri => $params->[0]);
+	return [req()];
+    },
+});
+[
+    class() => [
+	execute => [
+	    '/fourem/0000/00/test.html' => [{uri=>'/fourem/0000/00/test'}],
+	    '/fourem/2003/12/000045.html' => [{uri=>'/fourem/2003/12/who'}],
+	],
+    ],
+];

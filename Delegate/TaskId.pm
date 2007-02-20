@@ -154,6 +154,14 @@ sub info_base {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
+	[qw(
+            PERMANENT_REDIRECT
+            56
+	    GENERAL
+	    ANYBODY
+	    Action.PermanentRedirect
+	)],
+
     ];
 }
 
@@ -176,7 +184,7 @@ sub info_blog {
 	    View.Blog->edit
 	    next=FORUM_BLOG_VIEW
  	)],
-#56-59 free
+#57-59 free
     ];
 }
 
