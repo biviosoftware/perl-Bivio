@@ -231,6 +231,7 @@ image/tiff:tif,tiff:TIFF image
 image/vnd:dwg:VND image
 image/wavelet:wi:Wavelet image
 image/x-cmu-raster:ras:CMU raster
+image/x-icon:ico:Windows icon
 image/x-pbm:pbm:Portable bitmap
 image/x-pcx:pcx:PCX image
 image/x-pgm:pgm:Portable graymap
