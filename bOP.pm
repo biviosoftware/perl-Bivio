@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.74  2007/02/05 05:55:33  aviggio
+  * Bivio::Agent::SimpleTaskId is deprecated by Bivio::Agent::TaskId. The
+    deprecated tasks now use Method views, and we will be moving to a
+    Method view system to promote more sharing across applications.
+  * Bivio::Biz::Model::TupleHistoryList handle undefined slot headers
+  * Bivio::Biz::Model::User when creating display_name, don't put spaces
+    between ''
+  * Bivio::Test::Request->user_state added
+  * Bivio::Type::WikiText is deprecating plain text format links, and
+    instead all links, WikiWords, etc. must be prefixed with a caret (^).
+    Type.WikiText runs in deprecated mode if there are no carets in the
+    wiki file.
+  * Bivio::UI::FacadeComponent has been simplified so that value, group,
+    and regroup are one in the same.  value and regroup are deprecated.
+    group no longer checks duplicates.
+  * Bivio::UI::FacadeBase implements all strings, tasks, etc. for a complete
+    application. TaskId components (base, blog, dav, mail, tuple, wiki,
+    user_auth, xapian) bring in the requisite FacadeBase components
+    automatically.  See Bivio::PetShop::Delegate::TaskId for an example.
+  * Bivio::UI::View::Method added Special case methods that begin with
+    internal_, and simplified pre_compile to only insert base if there
+    is no view_parent
+  * Bivio::UI::ViewShortcuts->vs_text_as_prose added
+  * Bivio::UI::XHTML::ViewShortcuts properly reset alpha searches to All
+    in vs_alphabetical_chooser
+
   Revision 4.73  2007/01/23 05:11:03  aviggio
   * Bivio::UI::XHTML::View::Tuple renders MIME attachments in history
     list view
