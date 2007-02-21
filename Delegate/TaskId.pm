@@ -154,6 +154,13 @@ sub info_base {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
+	[qw(
+            PERMANENT_REDIRECT
+            56
+	    GENERAL
+	    ANYBODY
+	    Action.PermanentRedirect
+	)],
     ];
 }
 

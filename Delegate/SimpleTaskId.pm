@@ -1,6 +1,8 @@
 # Copyright (c) 2001-2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::SimpleTaskId;
+# DEPRECATED: Subclass Bivio::Delegate::TaskId for new projects.
+#
 # Defines the common tasks.  You subclass this module, and call merge_task_info
 # as follows:
 #	package MyProject::Delegate::TaskId;
@@ -500,14 +502,7 @@ sub info_base {
 	    View.blog-edit
 	    next=FORUM_BLOG_VIEW
  	)],
-	[qw(
-            PERMANENT_REDIRECT
-            56
-	    GENERAL
-	    ANYBODY
-	    Action.PermanentRedirect
-	)],
-#57-59 free
+#56-59 free
     ];
 }
 
