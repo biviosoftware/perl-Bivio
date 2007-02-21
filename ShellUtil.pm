@@ -857,7 +857,7 @@ sub main {
     my(@new_args);
     unless (ref($proto)) {
 	push(@new_args, shift(@argv))
-	    if $argv[0] =~ /^[A-Z]/;
+	    if $argv[0] && $argv[0] =~ /^[A-Z]/;
 	push(@new_args, \@argv);
     }
 
