@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.75  2007/02/21 18:04:41  aviggio
+  * Bivio::Biz::Action::CalendarEventICS modify .ics format to support
+    reading by Outlook 2003
+  * Bivio::Biz::Action::RealmFile->unauth_execute accepts a new argument
+    'path_info' so clients can override the default
+  * Bivio::Biz::PropertyModel Warn if auth_id field is present when
+    adding auth_id to query when loading
+  * Bivio::Delegate::TaskId Added Task.PERMANENT_REDIRECT and
+    Action.PermanentRedirect
+  * Bivio::IO::Alert->bootstrap_die has been expanded to use
+    Bivio::Die->throw_or_die to support the usage in ClassLoader
+  * Bivio::IO::ClassLoader->_die now delegates to
+    Bivio::IO::Alert->bootstrap_die
+  * Bivio::IO::Ref nested_contains and nested_differences can now
+    usefully compare a HASH_REF to a Bivio::Collection::Attributes via
+    ->get_shallow_copy
+  * Bivio::Test::Reply->set_output will now accept an IO::File in the
+    same way as a GLOB, and now returns $self like
+    Bivio::Agent::Reply->set_output
+  * Bivio::UI::FacadeBase undefined PERMANENT_REDIRECT by default
+  * Bivio::Util::HTTPConf allow server_status_allow to be overriden for
+    the entire app
+
   Revision 4.74  2007/02/05 05:55:33  aviggio
   * Bivio::Agent::SimpleTaskId is deprecated by Bivio::Agent::TaskId. The
     deprecated tasks now use Method views, and we will be moving to a
