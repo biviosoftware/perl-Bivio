@@ -7,6 +7,37 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub edit {
+    return shift->internal_body(vs_simple_form(WikiForm => [
+	'WikiForm.RealmFile.path_lc',
+	Join([
+	    FormFieldError({
+		field => 'content',
+		label => 'text',
+	    }),
+	    TextArea({
+		field => 'content',
+		rows => 30,
+		cols => 60,
+	    }),
+	]),
+    ]));
+}
+
+sub not_found {
+    return shift->internal_body(DIV_prose(
+        Tag(p => Prose(<<'EOF'), 'not_found'),
+The page Tag(strong => String(['Action.WikiView', 'name'])); was not
+found, and you do not have permission to create it.  Please
+Link('contact us', '/pub/contact'); for more information about this error.
+</p><p>
+To return to the previous page, click on your browser's back button, or
+Link('click here', [['->get_request'], 'task', 'view_task']); to
+return to the start page.
+EOF
+	));
+}
+
 sub view {
     view_put(
 #TODO: Move to facade
