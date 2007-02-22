@@ -144,6 +144,15 @@ Acting as User: <br />
 String(['auth_user', 'display_name']);<br />
 Click here to exit.
 EOF
+		not_found => <<'EOF',
+The page Tag(strong => String(['Action.WikiView', 'name'])); was not
+found, and you do not have permission to create it.  Please
+Link('contact us', '/pub/contact'); for more information about this error.
+<br /><br />
+To return to the previous page, click on your browser's back button, or
+Link('click here', [['->get_request'], 'task', 'view_task']); to
+return to the start page.
+EOF
 		user_create_done => <<'EOF',
 We have sent a confirmation email to
 String(['Model.UserRegisterForm', 'Email.email']);.

@@ -25,17 +25,7 @@ sub edit {
 }
 
 sub not_found {
-    return shift->internal_body(DIV_prose(
-        Tag(p => Prose(<<'EOF'), 'not_found'),
-The page Tag(strong => String(['Action.WikiView', 'name'])); was not
-found, and you do not have permission to create it.  Please
-Link('contact us', '/pub/contact'); for more information about this error.
-</p><p>
-To return to the previous page, click on your browser's back button, or
-Link('click here', [['->get_request'], 'task', 'view_task']); to
-return to the start page.
-EOF
-	));
+    return shift->internal_body_from_name_as_prose;
 }
 
 sub view {
