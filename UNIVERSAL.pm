@@ -197,9 +197,10 @@ of I<op>.  If array is odd, last element will be C<undef>.
 
 sub map_by_two {
     my(undef, $op, $values) = @_;
+    $values ||= [];
     return [map(
 	$op->($values->[2 * $_], $values->[2 * $_ + 1]),
-	0 .. int((@{$values || []} + 1) / 2) - 1,
+	0 .. int((@$values + 1) / 2) - 1,
     )];
 }
 
