@@ -466,8 +466,6 @@ sub _base {
 	'Bivio::IO::Log' => {
 	    directory => '/var/log',
 	},
-	'Bivio::IO::Trace' => {
-	},
 	'Bivio::Type::Secret' => {
 	    key => 'alphabet',
 	},
