@@ -91,7 +91,7 @@ sub _join_user {
 	@{$self->unsafe_get('other_roles') || []},
 	@{$self->internal_get_roles},
     ) {
-	$self->new_other('RealmUser')->create_or_unauth_update({
+	$self->new_other('RealmUser')->unauth_create_or_update({
 	    realm_id => $realm_id,
 	    user_id => $user_id,
 	    role => $r,

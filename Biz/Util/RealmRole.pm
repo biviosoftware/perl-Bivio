@@ -136,7 +136,7 @@ sub copy_all {
     Bivio::Biz::Model->new($self->get_request, 'RealmRole')->do_iterate(
 	sub {
 	    my($m) = @_;
-	    $m->new_other('RealmRole')->create_or_unauth_update({
+	    $m->new_other('RealmRole')->unauth_create_or_update({
 		%{$m->get_shallow_copy},
 		realm_id => $dst,
 	    });

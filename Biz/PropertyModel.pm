@@ -149,21 +149,13 @@ sub create_from_literals {
 
 =head2 create_or_unauth_update(hash_ref new_values) : self
 
-Tries to load the model based on its primary key values.
-If the load is successful, the model will be updated with
-the new values. Otherwise, a new model is created.
-
-Calls L<unauth_load|"unauth_load">.
-
-See also L<create_or_update|"create_or_update">.
+B<DEPRECATED>
 
 =cut
 
 sub create_or_unauth_update {
-    my($self, $new_values) = @_;
-    my($pk_values) = _get_primary_keys($self, $new_values);
-    return $pk_values && $self->unauth_load($pk_values)
-	    ? $self->update($new_values) : $self->create($new_values);
+    Bivio::IO::Alert->warn_deprecated('Use unauth_create_or_update instead.');
+    return shift->unauth_create_or_update(@_);
 }
 
 =for html <a name="create_or_update"></a>
@@ -174,17 +166,15 @@ Tries to load the model based on its primary key values.
 If the load is successful, the model will be updated with
 the new values. Otherwise, a new model is created.
 
-Calls L<unsafe_load|"unsafe_load">.
+Adds auth_id to I<new_values>. 
 
-See also L<create_or_unauth_update|"create_or_unauth_update">.
+See also L<unauth_create_or_update|"unauth_create_or_update">.
 
 =cut
 
 sub create_or_update {
     my($self, $new_values) = @_;
-    my($pk_values) = _get_primary_keys($self, $new_values);
-    return $pk_values && $self->unsafe_load($pk_values)
-        ? $self->update($new_values) : $self->create($new_values);
+    return $self->unauth_create_or_update(_add_auth_id($self, $new_values));
 }
 
 =for html <a name="delete"></a>
@@ -690,6 +680,27 @@ sub register_child_model {
     my($self, $child, $key_map) = @_;
     $self->internal_get_sql_support->register_child_model($child, $key_map);
     return;
+}
+
+=for html <a name="unauth_create_or_update"></a>
+
+=head2 unauth_create_or_update(hash_ref new_values) : self
+
+Tries to load the model based on its primary key values.
+If the load is successful, the model will be updated with
+the new values. Otherwise, a new model is created.
+
+Calls L<unauth_load|"unauth_load">.
+
+See also L<create_or_update|"create_or_update">.
+
+=cut
+
+sub unauth_create_or_update {
+    my($self, $new_values) = @_;
+    my($pk_values) = _get_primary_keys($self, $new_values);
+    return $pk_values && $self->unauth_load($pk_values)
+	    ? $self->update($new_values) : $self->create($new_values);
 }
 
 =for html <a name="unauth_delete"></a>
