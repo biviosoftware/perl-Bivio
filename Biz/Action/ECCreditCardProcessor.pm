@@ -35,7 +35,7 @@ For credit card payments, it accesses the Authorize.Net payment
 gateway to submit the transactions via ADC direct response method.
 
 Technical details can be found in
-  https://secure.authorize.net/docs/developersguide.pml
+  http://www.authorize.net/support/AIM_guide.pdf
 
 =cut
 
