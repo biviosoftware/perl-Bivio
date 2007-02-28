@@ -40,7 +40,7 @@ sub initialize {
 	],
         value => Join([
 	    Tag(div => Prose(vs_text('helpwiki.header')), 'header'),
-	    Tag(div => [['->get_request'], "$self"], 'body'),
+	    Tag(div => [['->get_request'], "$self"], 'help_wiki_body'),
 	    Tag(div => Prose(vs_text('helpwiki.footer')), 'footer'),
 	]),
     );
