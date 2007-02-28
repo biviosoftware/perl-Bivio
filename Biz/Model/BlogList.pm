@@ -5,9 +5,15 @@ use strict;
 use base 'Bivio::Biz::ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_BFN) = Bivio::Type->get_instance('BlogFileName');
 my($_BC) = Bivio::Type->get_instance('BlogContent');
+my($_BFN) = Bivio::Type->get_instance('BlogFileName');
+my($_WT) = Bivio::Type->get_instance('WikiText');
+my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
+
+sub PAGE_SIZE {
+    return 5;
+}
 
 sub execute_load_this {
     my($proto, $req) = @_;
@@ -21,6 +27,10 @@ sub execute_load_this {
     }
     $self->load_this($query);
     return 0;
+}
+
+sub get_creation_date_time {
+    return $_DT->from_literal_or_die(shift->get('path_info'));
 }
 
 sub internal_initialize {
@@ -46,6 +56,9 @@ sub internal_initialize {
 	    RealmFile.is_public
 	    RealmFile.realm_file_id
         ),
+	    [qw(RealmFile.user_id RealmOwner.realm_id Email.realm_id)],
+	    'Email.email',
+	    'RealmOwner.display_name',
 	    {
 		name => 'title',
 		type => 'BlogTitle',
@@ -82,10 +95,26 @@ sub internal_prepare_statement {
 		    1,
 		    ($am->eq_private ? 0 : ())),
 	    ),
-	    $am->eq_public ? $stmt->EQ('RealmFile.is_public', [1]) : (),
+	    $am->eq_public ? ['RealmFile.is_public', [1]] : (),
 	),
+	['Email.location', [$self->get_instance('Email')->DEFAULT_LOCATION]],
     );
     return;
+}
+
+sub render_html {
+    my($self) = @_;
+    return $_WT->render_html(
+	$self->get(qw(body path_info)), $self->get_request, undef, 1);
+}
+
+sub render_html_excerpt {
+    my($self) = @_;
+    my($body, $path) = $self->get(qw(body path_info));
+    $body = substr($body, 0, 600);
+#TODO: Is this good enough?
+    $body =~ s/\n[^\n]*$//s;
+    return $_WT->render_html($body, $path, $self->get_request, undef, 1);
 }
 
 1;
