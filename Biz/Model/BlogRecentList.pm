@@ -6,6 +6,10 @@ use base 'Bivio::Biz::Model::BlogList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub PAGE_SIZE {
+    return 10;
+}
+
 sub execute_load_all {
     my($proto, $req) = @_;
     $proto->new($req)->load_page;
