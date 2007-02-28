@@ -1,6 +1,6 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::XHTML::View::UserAuth;
+package Bivio::UI::View::UserAuth;
 use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;

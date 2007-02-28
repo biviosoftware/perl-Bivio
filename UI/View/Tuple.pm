@@ -1,6 +1,6 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::XHTML::View::Tuple;
+package Bivio::UI::View::Tuple;
 use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;

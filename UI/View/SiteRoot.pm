@@ -1,6 +1,6 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::XHTML::View::SiteRoot;
+package Bivio::UI::View::SiteRoot;
 use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;

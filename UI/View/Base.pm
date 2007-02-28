@@ -1,6 +1,6 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::XHTML::View::Base;
+package Bivio::UI::View::Base;
 use strict;
 use base 'Bivio::UI::View::Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
@@ -8,7 +8,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub VIEW_SHORTCUTS {
-    return 'Bivio::UI::XHTML::ViewShortcuts';
+    return 'Bivio::UI::ViewShortcuts';
 }
 
 sub csv {

@@ -1,6 +1,6 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::XHTML::View::Search;
+package Bivio::UI::View::Search;
 use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
