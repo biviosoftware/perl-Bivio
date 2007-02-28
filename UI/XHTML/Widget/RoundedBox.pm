@@ -15,10 +15,10 @@ sub initialize {
         value => Join([
 	    map(
 		Tag(div =>
-		    $_ eq 'body' ? $self->get('value') : '',
+		    $_ eq 'rounded_box_body' ? $self->get('value') : '',
 		    $_,
 		    {tag_if_empty => 1}),
-		qw(top_left top_right body bottom_left bottom_right),
+		qw(top_left top_right rounded_box_body bottom_left bottom_right),
 	    ),
 	]),
     );
