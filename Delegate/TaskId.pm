@@ -161,30 +161,90 @@ sub info_base {
 	    ANYBODY
 	    Action.PermanentRedirect
 	)],
+#57-59 free
     ];
 }
 
 sub info_blog {
     return [
-     	[qw(
- 	    FORUM_BLOG_VIEW
- 	    54
- 	    FORUM
- 	    DATA_READ
-            Model.BlogEntryList->execute_load_entry_or_page
-	    View.Blog->view
- 	)],
-  	[qw(
+ 	[qw(
  	    FORUM_BLOG_EDIT
- 	    55
+ 	    100
  	    FORUM
  	    DATA_READ&DATA_WRITE
- 	    Model.BlogForm
+            Model.BlogEditForm
 	    View.Blog->edit
-	    next=FORUM_BLOG_VIEW
+	    next=FORUM_BLOG_DETAIL
  	)],
-#57-59 free
+ 	[qw(
+ 	    FORUM_BLOG_CREATE
+ 	    101
+ 	    FORUM
+ 	    DATA_READ&DATA_WRITE
+            Model.BlogCreateForm
+	    View.Blog->create
+	    next=FORUM_BLOG_DETAIL
+	    want_query=0
+ 	)],
+ 	[qw(
+ 	    FORUM_BLOG_DETAIL
+ 	    102
+ 	    FORUM
+ 	    DATA_READ
+	    Type.AccessMode->execute_private
+            Model.BlogRecentList->execute_load_all
+            Model.BlogList->execute_load_this
+	    View.Blog->detail
+ 	)],
+ 	[qw(
+ 	    FORUM_BLOG_LIST
+ 	    103
+ 	    FORUM
+ 	    DATA_READ
+	    Type.AccessMode->execute_private
+            Model.BlogRecentList->execute_load_all
+            Model.BlogList->execute_load_page
+	    View.Blog->list
+ 	)],
+ 	[qw(
+ 	    FORUM_PUBLIC_BLOG_LIST
+ 	    104
+ 	    FORUM
+ 	    ANYBODY
+	    Type.AccessMode->execute_public
+            Model.BlogRecentList->execute_load_all
+            Model.BlogList->execute_load_page
+	    View.Blog->list
+ 	)],
+ 	[qw(
+ 	    FORUM_PUBLIC_BLOG_DETAIL
+ 	    105
+ 	    FORUM
+ 	    ANYBODY
+	    Type.AccessMode->execute_public
+            Model.BlogList->execute_load_this
+	    View.Blog->detail
+ 	)],
+	[qw(
+	    FORUM_PUBLIC_BLOG_RSS
+            106
+            FORUM
+ 	    ANYBODY
+	    Type.AccessMode->execute_public
+            Model.BlogList->execute_load_page
+            View.Blog->recent_rss
+        )],
+	[qw(
+	    FORUM_BLOG_RSS
+            107
+            FORUM
+ 	    DATA_READ
+	    Type.AccessMode->execute_private
+            Model.BlogList->execute_load_page
+            View.Blog->recent_rss
+        )],
     ];
+#107-109 free
 }
 
 sub info_dav {
@@ -499,7 +559,7 @@ sub info_user_auth {
 	    ANYBODY
 	    Action.UserLogout
 	    Model.UserRegisterForm
-	    View.UserAuth->user_create
+	    View.UserAuth->create
 	    next=USER_CREATE_DONE
 	    reset_task=USER_PASSWORD_RESET
 	    reset_next_task=GENERAL_USER_PASSWORD_QUERY_MAIL
@@ -509,8 +569,8 @@ sub info_user_auth {
 	    93
 	    GENERAL
 	    ANYBODY
-	    View.UserAuth->user_create_mail
-	    View.UserAuth->user_create_done
+	    View.UserAuth->create_mail
+	    View.UserAuth->create_done
 	)],
 #94-99
     ];
