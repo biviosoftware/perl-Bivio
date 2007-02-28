@@ -105,17 +105,17 @@ sub password_query_mail {
     return _mail(shift(@_), 'UserPasswordQueryForm');
 }
 
-sub user_create {
+sub create {
     return shift->internal_body(vs_simple_form(UserRegisterForm => [
 	'UserCreateForm.Email.email',
     ]));
 }
 
-sub user_create_done {
+sub create_done {
     return shift->internal_body_from_name_as_prose;
 }
 
-sub user_create_mail {
+sub create_mail {
     return _mail(shift(@_), 'UserRegisterForm');
 }
 
@@ -124,7 +124,7 @@ sub _mail {
     my($n) = $self->my_caller;
     view_put(
 	mail_to => Mailbox(["Model.$form", 'Email.email']),
-	mail_subject => vs_text_as_prose($n . '_subject'),
+	mail_subject => $self->internal_text_as_prose($n . '_subject'),
     );
     return shift->internal_body_from_name_as_prose($n);
 }
