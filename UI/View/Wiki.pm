@@ -31,11 +31,11 @@ sub not_found {
 sub view {
     view_put(
 #TODO: Move to facade
-	base_topic => If(
+	xhtml_topic => If(
 	    ['!', 'Action.WikiView', 'is_start_page'],
 	    String(['Action.WikiView', 'name']),
 	),
-	base_byline => If(
+	xhtml_byline => If(
 	    ['!', 'Action.WikiView', 'is_start_page'],
 	    Join([
 		'last edited ',
@@ -49,7 +49,7 @@ sub view {
 		DateTime(['Action.WikiView', 'modified_date_time']),
 	    ]),
 	),
-	base_tools => If(
+	xhtml_tools => If(
 	    ['!', 'auth_realm', 'type', '->equals_by_name', 'GENERAL'],
 	    TaskMenu([
 		{
