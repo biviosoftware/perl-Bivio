@@ -28,6 +28,8 @@ sub new {
 		user_create
 		mail_receive_dispatch
                 dav
+		forum_blog_edit
+		search_list
 	    )),
 	    $config,
 	),
@@ -104,6 +106,7 @@ sub _cfg_base {
 	Text => [
 	    [support_email => 'support'],
 #TODO:	    [support_phone => '(800) 555-1212'],
+	    [[qw(prologue epilogue)] => ''],
 	    [home_page_uri => '/hm/index'],
 	    [view_execute_uri_prefix => 'SiteRoot->'],
 	    [favicon_uri => '/i/favicon.ico'],
@@ -138,43 +141,37 @@ sub _cfg_base {
 		list => 'back to list',
 	    ]],
 	    [prose => [
-		mail_from_name => 'String(vs_site_name()); Support',
-		xhtml_su_logout => <<'EOF',
-Acting as User: <br />
-String(['auth_user', 'display_name']);<br />
-Click here to exit.
+		Base => [
+		    support_name => 'String(vs_site_name()); Support',
+		    xhtml_logo => q{DIV_logo_su(If(
+			['->is_substitute_user'],
+			Link(
+			    RoundedBox(Join([
+				"Acting as User: <br />\n",
+				String(['auth_user', 'display_name']),
+				"<br />\nClick here to exit.\n",
+			    ])),
+			    'LOGOUT',
+			    'su',
+			),
+			Link(' ', '/', 'logo'),
+		    ));},
+		    xhtml_head_title => q{Title([vs_site_name(), Prose(vs_text([sub {"xhtml_head.title.$_[1]"}, ['task_id', '->get_name']]))]);},
+		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
+		    xhtml_copyright => <<"EOF",
+Copyright &copy; @{[__PACKAGE__->use('Type.DateTime')->now_as_year]} vs_text('site_copyright');<br />
+All rights reserved.<br />
+Link('Developed by bivio', 'http://www.bivio.biz');
 EOF
-		not_found => <<'EOF',
-The page Tag(strong => String(['Action.WikiView', 'name'])); was not
-found, and you do not have permission to create it.  Please
-Link('contact us', '/pub/contact'); for more information about this error.
-<br /><br />
-To return to the previous page, click on your browser's back button, or
-Link('click here', [['->get_request'], 'task', 'view_task']); to
-return to the start page.
-EOF
-		user_create_done => <<'EOF',
+		],
+		UserAuth => [
+		    create_done => <<'EOF',
 We have sent a confirmation email to
 String(['Model.UserRegisterForm', 'Email.email']);.
 Please follow the instructions in this email message to complete
 your registration with vs_site_name();.
 EOF
-		password_query_mail_subject => 'vs_site_name(); Password Assistance',
-		password_query_mail => <<'EOF',
-Please follow the link to reset your password:
-
-Join([['Model.UserPasswordQueryForm', 'uri']]);
-
-For your security, this link may be used one time only to set your
-password.
-
-You may contact customer support by replying to this message.
-
-Thank you,
-vs_site_name(); Support
-EOF
-		user_create_mail_subject => 'vs_site_name(); Registration Verification',
-		user_create_mail => <<'EOF',
+		    create_mail => <<'EOF',
 Thank you for registering with vs_site_name();.
 In order to complete your registration, please click on the following link:
 
@@ -188,12 +185,21 @@ You may contact customer support by replying to this message.
 Thank you,
 vs_site_name(); Support
 EOF
-		page3 => [
-		    foot3 => <<"EOF"
-Copyright &copy; @{[Bivio::Type::DateTime->now_as_year]} vs_text('site_copyright');<br />
-All rights reserved.<br />
-Link('Developed by bivio', 'http://www.bivio.biz');
+		    password_query_mail => <<'EOF',
+Please follow the link to reset your password:
+
+Join([['Model.UserPasswordQueryForm', 'uri']]);
+
+For your security, this link may be used one time only to set your
+password.
+
+You may contact customer support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
 EOF
+		    password_query_mail_subject => 'vs_site_name(); Password Assistance',
+		    create_mail_subject => 'vs_site_name(); Registration Verification',
 		],
 	    ]],
 	],
@@ -226,6 +232,51 @@ sub _cfg_dav {
 		'EmailAlias.incoming' => 'From Email',
 		'EmailAlias.outgoing' => 'To Email or Forum',
 		'primary_key' => 'Database Key',
+	    ]],
+	],
+    };
+}
+
+sub _cfg_forum_blog_edit {
+    return {
+	Task => [
+	    [FORUM_BLOG_LIST => '?/blog'],
+	    [FORUM_BLOG_DETAIL => '?/blog-entry/*'],
+	    [FORUM_BLOG_CREATE => '?/add-blog-entry'],
+	    [FORUM_BLOG_EDIT => '?/edit-blog-entry/*'],
+	    [FORUM_BLOG_RSS => '?/blog.rss'],
+	    [FORUM_PUBLIC_BLOG_LIST => '?/public-blog'],
+	    [FORUM_PUBLIC_BLOG_DETAIL => '?/public-blog-entry/*'],
+	    [FORUM_PUBLIC_BLOG_RSS => '?/public-blog.rss'],
+	],
+	Text => [
+	    [[qw(BlogCreateForm BlogEditForm)] => [
+		'title' => 'Title',
+		'body' => '',
+		'RealmFile.is_public' => 'Public?',
+	    ]],
+	    [BlogList => [
+		empty_list_prose => 'No entries in this blog.',
+	    ]],
+	    [title => [
+		[qw(FORUM_BLOG_LIST FORUM_PUBLIC_BLOG_LIST FORUM_PUBLIC_BLOG_RSS)]
+		    => 'Blog',
+		[qw(FORUM_BLOG_DETAIL FORUM_PUBLIC_BLOG_DETAIL)]
+		    => 'Blog Detail',
+	    ]],
+	    [FORUM_BLOG_EDIT => 'Edit This Entry'],
+	    [FORUM_BLOG_CREATE => 'New Blog Entry'],
+#	    ['task_menu.title' => [
+	    [rsspage => [
+		[qw(BlogList BlogRecentList)] => [
+		    title => 'vs_site_name(); Blog',
+		    description => 'Recent Blog Entries at vs_site_name();',
+		],
+	    ]],
+	    [FORUM_ADM_FORUM_ADD => 'Add Forum'],
+	    [acknowledgement => [
+		FORUM_BLOG_CREATE => 'The blog entry has been added.',
+		FORUM_BLOG_EDIT => 'The blog entry update has been saved.',
 	    ]],
 	],
     };
@@ -382,7 +433,7 @@ sub _cfg_forum_wiki_view {
     my($proto) = @_;
     return {
 	Task => [
-	    [FORUM_WIKI_EDIT => '?/wiki-edit/*'],
+	    [FORUM_WIKI_EDIT => '?/edit-wiki/*'],
 	    [FORUM_WIKI_VIEW => ['?/wiki/*']],
 	    [FORUM_WIKI_NOT_FOUND => undef],
 	    [HELP => 'help/*'],
@@ -405,6 +456,19 @@ sub _cfg_forum_wiki_view {
 	    [HelpWiki => [
 		header => 'Help',
 		footer => '',
+	    ]],
+	    [prose => [
+		Wiki => [
+		    not_found => <<'EOF',
+The page Tag(strong => String(['Action.WikiView', 'name'])); was not
+found, and you do not have permission to create it.  Please
+Link('contact us', 'GENERAL_CONTACT'); for more information about this error.
+<br /><br />
+To return to the previous page, click on your browser's back button, or
+Link('click here', [['->get_request'], 'task', 'view_task']); to
+return to the start page.
+EOF
+		],
 	    ]],
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
@@ -447,6 +511,25 @@ sub _cfg_mail_receive_dispatch {
 	],
 	Text => [
 	    ['MailReceiveDispatchForm.uri_prefix' => $proto->MAIL_RECEIVE_PREFIX],
+	],
+    };
+}
+
+sub _cfg_search_list {
+    return {
+	Task => [
+	    [SEARCH_LIST => 'pub/search'],
+	    [JOB_XAPIAN_COMMIT => undef],
+	],
+	Text => [
+	    [SearchList => [
+		'RealmFile.modified_date_time' => 'Last Update',
+		'RealmFile.path' => 'Item',
+	    ]],
+	    [SearchForm => [
+		search => '',
+		ok_button => 'Search',
+	    ]],
 	],
     };
 }
@@ -522,7 +605,7 @@ sub _cfg_user_create {
 	    [title => [
 		 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
 	     ]],
-	    [[qw(title xlink)] => [
+	    [[qw(title xlink )] => [
 		GENERAL_CONTACT => 'Contact Us',
 		USER_PASSWORD  => 'Password',
 		[qw(LOGIN my_site_login)] => 'Login',
@@ -537,7 +620,7 @@ sub _cfg_user_create {
 		login_no_context => 'Already registered?  Click here to login.',
 		user_create_no_context => 'Not registered? Click here to register.',
 	    ]],
-	    ['page3.title' => [
+	    [[qw(page3.title xhtml_head.title xhtml.title)] => [
 		LOGIN => 'Please Login',
 		USER_CREATE => 'Please Register',
 		GENERAL_CONTACT => 'Please Contact Us',
