@@ -5,16 +5,18 @@ require 'Blog.PL';
 [
     map({
 	my($x) = $_;
+	my($p) = $x % 2 ? 1 : 0;
 	[{
 	    title => "t$x",
 	    body => "b$x",
+	    'RealmFile.is_public' => $p,
 	}] => [{
 	    'Model.RealmFile' => {
 		path => sub {
 		    my($rf) = req()->get('Model.RealmFile');
 		    my($c) = $rf->get_content;
 		    assert_equals("\@h3 t$x\nb$x", $$c);
-		    return $rf->get('path');
+		    return $p ? qr{^/Public/Blog/} : qr{^/Blog/};
 		},
 	    },
 	}];

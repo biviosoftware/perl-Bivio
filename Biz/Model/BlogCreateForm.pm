@@ -14,11 +14,15 @@ sub execute_ok {
     my($now) = $_DT->now;
     my($rf) = $self->new_other('RealmFile');
     my($bfn);
+    my($p) = $self->unsafe_get('RealmFile.is_public') ? 1 : 0;
     foreach my $x (1..100) {
 	$bfn = $_BFN->from_date_time($now);
 	my($die) = Bivio::Die->catch(sub {
 	    $rf->create_with_content(
-		{path => $_BFN->to_absolute($bfn)},
+		{
+		    path => $_BFN->to_absolute($bfn, $p),
+		    is_public => $p,
+		},
 		$_BC->join($self->get(qw(title body))),
 	    );
 	});
@@ -50,6 +54,10 @@ sub internal_initialize {
 		name => 'body',
 		type => 'BlogBody',
 		constraint => 'NOT_NULL',
+	    },
+	    {
+		name => 'RealmFile.is_public',
+		constraint => 'NONE',
 	    },
 	],
     });
