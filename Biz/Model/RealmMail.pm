@@ -149,15 +149,6 @@ sub _thread_values {
 	    [@{$values}{qw(realm_id realm_file_id)}, $ref],
 	);
     }
-    $row = Bivio::SQL::Connection->execute_one_row(
-	'SELECT realm_file_id, thread_root_id, subject_lc
-        FROM realm_mail_t
-        WHERE realm_id = ?
-	AND realm_file_id < ?
-        AND subject_lc = ?
-	ORDER BY realm_file_id DESC',
-	[@{$values}{qw(realm_id realm_file_id subject_lc)}],
-    ) unless $row;
     $row ||= [];
     _trace($values->{realm_file_id}, ' ', $row) if $_TRACE;
     $values->{thread_parent_id} = $row->[0];
