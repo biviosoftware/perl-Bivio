@@ -369,13 +369,12 @@ sub render_html {
     my($state) = {
 	lines => [split(/\r?\n/, $$v)],
 	line_num => 0,
-	prefix_word_mode => $$v =~ /\^/s ? 1 : 0,
+	prefix_word_mode => $no_auto_links || $$v =~ /\^/s ? 1 : 0,
 	tags => [],
 	attrs => [],
 	html => '',
 	name => $name,
 	req => $req,
-	no_auto_links => $no_auto_links ? 1 : 0,
 	task_id => $task_id || $req->unsafe_get('task_id'),
     };
     while (defined(my $line = _next_line($state))) {
@@ -431,8 +430,7 @@ sub _fmt_err {
 sub _fmt_href {
     my($tok, $state) = @_;
     return $tok
-	if $state->{no_auto_links}
-	    || ($state->{tags}->[0] || '') eq 'a';
+	if ($state->{tags}->[0] || '') eq 'a';
     my($notwiki) = '\=';
     if ($tok =~ s{(^\W*)$notwiki(\S+)$notwiki(\W*$)}{
 	"$1" . join(' ', split(/$notwiki/, $2)) . "$3"
