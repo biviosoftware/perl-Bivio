@@ -34,6 +34,22 @@ C<Bivio::Type::ECCreditCardNumber> interprets a string as a credit card number.
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="TEST_NUMBER"></a>
+
+=head2 TEST_NUMBER : string
+
+Returns a valid test credit card number.
+
+=cut
+
+sub TEST_NUMBER {
+    return '4222 2222 2222 2';
+}
+
 #=IMPORTS
 
 #=VARIABLES
