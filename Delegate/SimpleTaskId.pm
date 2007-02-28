@@ -628,7 +628,17 @@ sub info_xapian {
 	    Model.Lock
 	    Bivio::Search::Xapian
 	)],
-#60-69 free
+  	[qw(
+ 	    SEARCH_LIST
+ 	    61
+ 	    GENERAL
+ 	    ANYBODY
+	    Model.SearchForm
+	    Model.SearchList->execute_load_page
+	    View.Search->list
+	    next=SEARCH_LIST
+ 	)],
+#62-69 free
     ];
 }
 
