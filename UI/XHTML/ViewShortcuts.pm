@@ -182,10 +182,12 @@ sub vs_descriptive_field {
     my($label, $input) = UNIVERSAL::isa(
 	Bivio::Biz::Model->get_instance($1)->get_field_type($2),
 	'Bivio::Type::Boolean',
-    ) ? (Simple(''), FormField($name))
-	: $proto->vs_form_field($name, $attrs);
+    ) ? (
+	undef,
+	FormField($name),
+    ) : $proto->vs_form_field($name, $attrs);
     return [
-	$label->put(cell_class => 'label'),
+	$label ? ($label->put(cell_class => 'label')) : (),
 	Join([
 	    $input,
 	    [sub {
@@ -202,6 +204,7 @@ sub vs_descriptive_field {
 	    }, $proto, $name],
 	], {
 	    cell_class => 'field',
+	    $label ? () : (cell_colspan => 2),
 #TODO: Should this be on label, since it is the first cell in the row?
 	    map(($_ => $attrs->{$_}), grep(/^row_\w+$/, keys(%$attrs))),
 	}),
@@ -349,6 +352,16 @@ sub vs_simple_form {
     my($proto, $form, $rows) = @_;
     my($have_submit) = 0;
     my($m) = Bivio::Biz::Model->get_instance($form);
+    unshift(@$rows, q{'prologue})
+        unless grep(!ref($_) && $_ eq q{'prologue}, @$rows);
+    splice(
+	@$rows,
+	$#$rows + (_has_submit([$rows->[$#$rows]]) ? 0 : 1),
+	0,
+	q{'epilogue},
+    ) unless grep(!ref($_) && $_ eq q{'epilogue}, @$rows);
+    push(@$rows, '*')
+        unless _has_submit($proto, $rows);
     return Form(
 	$form,
 	Join([
@@ -379,7 +392,6 @@ sub vs_simple_form {
 			)];
 		    }
 		    elsif ($_ =~ s/^\*//) {
-			$have_submit = 1;
 			$x = [StandardSubmit(
 			    {
 				cell_colspan => 2,
@@ -402,14 +414,9 @@ sub vs_simple_form {
 		    }
 		    $x;
 		} @$rows),
-		$have_submit ? () : [
-		    StandardSubmit({
-			cell_colspan => 2,
-			cell_class => 'submit',
-		    }),
-		],
 	    ], {
 		class => 'simple',
+		hide_empty_cells => 1,
 	    }),
 	]),
     );
@@ -470,6 +477,15 @@ sub vs_tree_list_control {
 	]),
 	column_data_class => 'node',
     };
+}
+
+sub _has_submit {
+    my($proto, $rows) = @_;
+    return grep(
+	ref($_) ? $proto->is_blessed(ref($_))
+	    ? $_->simple_package_name eq 'StandardSubmit'
+	    : ref($_) eq 'ARRAY' && _has_submit($proto, $_)
+	    : $_ =~ /^\*/, @$rows) ? 1 : 0;
 }
 
 1;
