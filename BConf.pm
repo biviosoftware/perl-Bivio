@@ -290,7 +290,7 @@ sub merge_class_loader {
 		    TestLanguage => ['Bivio::Test::Language'],
 		    TestUnit => ['Bivio::Test'],
 		    Type => ['Bivio::Type'],
-		    View => ['Bivio::UI::XHTML::View', 'Bivio::UI::View'],
+		    View => ['Bivio::UI::View'],
 		},
 	    },
 	    1,
