@@ -326,25 +326,6 @@ sub join_tag {
 	: join($proto->SEPARATOR, map((length($_) ? lc($_) : ()), @tag));
 }
 
-=for html <a name="regroup"></a>
-
-=head2 regroup(string name, any new_value)
-
-=head2 regroup(array_ref names, any new_value)
-
-Takes existing I<names> and re-associates with I<new_value>.
-All names must exist.
-
-=cut
-
-sub regroup {
-    my($self, $name, $value) = @_;
-    foreach my $group (@{_group($self, $name, $value)}) {
-	$self->SUPER::regroup(@$group);
-    }
-    return;
-}
-
 =for html <a name="unsafe_get_value"></a>
 
 =head2 unsafe_get_value(string tag_part, ...) : string
