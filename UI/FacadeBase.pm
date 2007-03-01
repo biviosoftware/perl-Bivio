@@ -266,7 +266,6 @@ sub _cfg_forum_blog_edit {
 	    ]],
 	    [FORUM_BLOG_EDIT => 'Edit This Entry'],
 	    [FORUM_BLOG_CREATE => 'New Blog Entry'],
-#	    ['task_menu.title' => [
 	    [rsspage => [
 		[qw(BlogList BlogRecentList)] => [
 		    title => 'vs_site_name(); Blog',
