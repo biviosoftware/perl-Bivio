@@ -111,13 +111,14 @@ config({
 	    [['-force']] => [qw(T1 1)],
 	    ['T2'] => [qw(T2 0)],
 	    [T2 => ['-force']] => [qw(T2 1)],
-	    sub {
-		Bivio::Agent::Request->clear_current;
-		return [];
-	    } => DIE(),
-	    ['T2'] => DIE(),
+# 	    sub {
+# 		Bivio::Agent::Request->clear_current;
+# 		return [];
+# 	    } => DIE(),
+#	    ['T2'] => DIE(),
 	],
 	main => [
+#21
 	    #23
 	    [qw(my_package)] => "T1\n",
 	    [qw(T2 my_package)] => "T2\n",
