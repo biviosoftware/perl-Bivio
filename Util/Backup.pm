@@ -114,7 +114,7 @@ sub handle_config {
 Mirror files to I<cfg_name>'d host and directory.  I<cfg_name> may be
 C<undef> iwc defaults are used.
 
-Uses the command: rsync -e ssh -azlSR --delete --timeout 3600
+Uses the command: rsync -e ssh -azlSR --delete --timeout 43200
 
 =cut
 
@@ -132,7 +132,7 @@ sub mirror {
 	    Bivio::IO::File->mkdir_p($dir, 0700);
 	}
 	$res .= ${$self->piped_exec(
-	    "rsync -e ssh -azlSR --delete --timeout 3600"
+	    "rsync -e ssh -azlSR --delete --timeout 43200"
 	    . ($self->unsafe_get('noexecute') ? ' -n' : '')
 	    . ($_TRACE ? ' --progress' : '')
 	    . " '"
