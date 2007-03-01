@@ -84,24 +84,6 @@ EOF
 	    from_email => "d$domain",
 	    subject => $subject,
 	}],
-	sub {$parent = shift->get('object')->get('realm_file_id'); [\(<<"EOF")]}
-From: e$domain
-Date: Sun, 1 May 2005 10:11:43 -0600
-Message-ID: <e$domain>
-Subject: [joe] Re: $subject
-
-Body
-EOF
-	=> [{
-	    message_id => "e$domain",
-	    'Model.RealmFile' => {
-		modified_date_time => '2453492 58303',
-	    },
-	    thread_root_id => sub {$root},
-	    thread_parent_id => sub {$parent},
-	    from_email => "e$domain",
-	    subject => $subject,
-	}],
     ],
     load => [
 	[{message_id => "b$domain"}] => not_die(),
