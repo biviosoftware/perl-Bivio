@@ -93,13 +93,26 @@ sub internal_post_load_row_with_model {
     foreach my $f (@$_REALM_OWNER_FIELDS) {
 	$row->{"RealmOwner.$f"} = $ro->get($f);
     }
-    $row->{result_uri} = $self->get_request->format_uri({
-	task_id => 'FORUM_BLOG_DETAIL',
-	realm => $row->{'RealmOwner.name'},
-	query => undef,
-	path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
-    });
-    $row->{result_excerpt} = $_BT->from_content($model->get_content);
+    if ($_BFN->is_absolute($row->{'RealmFile.path'})) {
+	$row->{result_uri} = $self->get_request->format_uri({
+	    task_id => $row->{'RealmFile.is_public'}
+		? 'FORUM_PUBLIC_BLOG_DETAIL' : 'FORUM_BLOG_DETAIL',
+	    realm => $row->{'RealmOwner.name'},
+	    query => undef,
+	    path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
+	});
+	$row->{result_excerpt} = $_BT->from_content($model->get_content);
+    }
+    else {
+	$row->{result_uri} = $self->get_request->format_uri({
+	    task_id => $row->{'RealmFile.is_public'}
+		? 'FORUM_PUBLIC_FILE' : 'FORUM_FILE',
+	    realm => $row->{'RealmOwner.name'},
+	    query => undef,
+	    path_info => $row->{'RealmFile.path'},
+	});
+	$row->{result_excerpt} = substr(${$model->get_content}, 0, 500);
+    }
     return 1;
 }
 
