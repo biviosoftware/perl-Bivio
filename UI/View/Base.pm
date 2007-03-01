@@ -8,7 +8,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub VIEW_SHORTCUTS {
-    return 'Bivio::UI::ViewShortcuts';
+    return 'Bivio::UI::XHTML::ViewShortcuts';
 }
 
 sub csv {
@@ -87,7 +87,6 @@ sub internal_xhtml_adorned {
 	]),
     );
     return Page3({
-	head1 => $self->internal_text_as_prose('page3.head1'),
 	head2 => Join([
 	    P_realm(view_widget_value('xhtml_realm')),
 	    P_menu(view_widget_value('xhtml_menu')),
