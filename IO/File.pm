@@ -182,6 +182,23 @@ sub do_lines {
     return;
 }
 
+=for html <a name="do_read_write"></a>
+
+=head2 static do_read_write(string file_name, code_ref op)
+
+Calls read() then write() on the results.  If $op returns undef, does
+not write.  op->() must return a scalar ref or scalar.
+
+=cut
+
+sub do_read_write {
+    my($proto, $file_name, $op) = @_;
+    my($res) = $op->($proto->read($file_name));
+    $proto->write($file_name, $res)
+	if defined($res);
+    return;
+}
+
 =for html <a name="mkdir_p"></a>
 
 =head2 static mkdir_p(string path) : string
