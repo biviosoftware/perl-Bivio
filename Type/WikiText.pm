@@ -438,9 +438,12 @@ sub _fmt_href {
 	return $tok;
     }
     $tok = Bivio::HTML->unescape($tok);
-    return shift(@_)
-	unless $state->{prefix_word_mode}
-	? $tok =~ s{^\^}{}o : $tok =~ $_HREF;
+    unless ($state->{prefix_word_mode} ? $tok =~ s{^\^}{}o && $tok !~ /^\^/
+	    : $tok =~ $_HREF) {
+	$tok = shift(@_);
+	$tok =~ s{^\^}{}o;
+	return $tok;
+    }
     # Any &'s were turned into &amp;
     # The trailing punctuation can't be everything, because http://a//? is a
     # legitimate URI.
