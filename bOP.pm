@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.78  2007/02/23 05:50:25  aviggio
+  * Bivio::Biz::Model::RealmUserAddForm create_or_update fix and new
+    unauth_create_or_update
+  * Bivio::Biz::PropertyModel create_or_update fix and new
+    unauth_create_or_update
+  * Bivio::Biz::Util::RealmRole create_or_update fix and new
+    unauth_create_or_update
+  * Bivio::MIME::Type added x-icon for favicon.ico
+  * Bivio::UI::FacadeBase added wiki not found prose
+  * Bivio::UI::XHTML::View::Wiki wiki not found prose moved to facade
+  * Bivio::UNIVERSAL map_by_two should init $values properly
+
   Revision 4.77  2007/02/21 23:12:07  aviggio
   * Bivio::Delegate::SimpleTaskId change rolled back
 
