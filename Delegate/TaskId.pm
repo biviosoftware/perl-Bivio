@@ -7,7 +7,7 @@ use base 'Bivio::Delegate::SimpleTaskId';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ALL_INFO {
-    return [qw(base blog dav mail tuple wiki user_auth xapian)];
+    return [qw(base blog dav mail motion tuple wiki user_auth xapian)];
 }
 
 sub info_base {
@@ -244,7 +244,6 @@ sub info_blog {
             View.Blog->recent_rss
         )],
     ];
-#107-109 free
 }
 
 sub info_dav {
@@ -454,6 +453,74 @@ sub info_mail {
             MAIL_SEND
             Action.RealmMail->execute_reflector
         )],
+    ];
+}
+
+sub info_motion {
+    return [
+ 	[qw(
+ 	    FORUM_MOTION_LIST
+ 	    57
+ 	    FORUM
+ 	    MOTION_WRITE
+            Model.MotionList->execute_load_page
+	    View.Motion->list
+ 	)],
+ 	[qw(
+ 	    FORUM_MOTION_ADD
+ 	    58
+ 	    FORUM
+ 	    MOTION_ADMIN
+	    Type.FormMode->execute_create
+            Model.MotionForm
+	    View.Motion->form
+	    next=FORUM_MOTION_LIST
+ 	)],
+ 	[qw(
+ 	    FORUM_MOTION_EDIT
+ 	    59
+ 	    FORUM
+ 	    MOTION_ADMIN
+	    Type.FormMode->execute_edit
+	    Model.MotionList->execute_load_this
+            Model.MotionForm
+	    View.Motion->form
+	    next=FORUM_MOTION_LIST
+ 	)],
+ 	[qw(
+ 	    FORUM_MOTION_VOTE
+ 	    62
+ 	    FORUM
+ 	    MOTION_WRITE
+	    Model.MotionList->execute_load_this
+            Model.MotionVoteForm
+	    View.Motion->vote_form
+	    next=FORUM_MOTION_VOTE_CONFIRM
+	    require_context=0
+ 	)],
+ 	[qw(
+ 	    FORUM_MOTION_VOTE_CONFIRM
+ 	    63
+ 	    FORUM
+ 	    ANYBODY
+	    View.Motion->confirm
+ 	)],
+ 	[qw(
+ 	    FORUM_MOTION_VOTE_LIST
+ 	    64
+ 	    FORUM
+ 	    MOTION_READ
+            Model.MotionVoteList->execute_load_all_with_query
+	    View.Motion->vote_result
+ 	)],
+ 	[qw(
+ 	    FORUM_MOTION_VOTE_LIST_CSV
+ 	    65
+ 	    FORUM
+ 	    MOTION_READ
+            Model.MotionVoteList->execute_load_all_with_query
+	    View.Motion->vote_result_csv
+ 	)],
     ];
 }
 
