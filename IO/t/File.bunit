@@ -104,5 +104,14 @@ my($pwd);
 	    r1 =>  class()->pwd . '/' . 'r1',
 	    [r1 => 'x'] =>  class()->pwd . '/' . 'x/r1',
 	],
+	{
+	    method => 'do_read_write',
+	    compute_return => sub {
+		return [${class()->read('File/1.txt')}];
+	    },
+	} => [
+	    ['File/1.txt', sub {undef}] => "hello\ngoodbye\nto you",
+	    ['File/1.txt', sub {'abc'}] => 'abc',
+	],
     ],
 ];
