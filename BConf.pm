@@ -237,6 +237,16 @@ sub merge_realm_role_category_map {
 		    MEMBER => [qw(TUPLE_WRITE TUPLE_READ)],
 		],
 	    ],
+	    [
+		closed_results_motion =>
+		    [MEMBER => [qw(MOTION_WRITE -MOTION_READ)]],
+		[ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
+	    ],
+	    [
+		open_results_motion =>
+		    [MEMBER => [qw(MOTION_WRITE MOTION_READ)]],
+		[ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
+	    ],
         ];
     }};
 }
@@ -444,6 +454,12 @@ sub _base {
 		    'Bivio::Delegate::SimpleFormErrors',
 		'Bivio::UI::HTML::WidgetFactory' =>
 		    'Bivio::Delegate::SimpleWidgetFactory',
+		'Bivio::Type::MotionVote' =>
+		    'Bivio::Delegate::SimpleMotionVote',
+		'Bivio::Type::MotionStatus' =>
+		    'Bivio::Delegate::SimpleMotionStatus',
+		'Bivio::Type::MotionType' =>
+		    'Bivio::Delegate::NoMotionType',
 	    },
 	}),
 	$proto->merge_realm_role_category_map(),
