@@ -27,6 +27,7 @@ sub new {
 		forum_wiki_view
 		user_create
 		mail_receive_dispatch
+		forum_motion_list
                 dav
 		forum_blog_edit
 		search_list
@@ -165,6 +166,7 @@ Link('Developed by bivio', 'http://www.bivio.biz');
 EOF
 		],
 		UserAuth => [
+		    support_name => 'String(vs_site_name()); Support',
 		    create_done => <<'EOF',
 We have sent a confirmation email to
 String(['Model.UserRegisterForm', 'Email.email']);.
@@ -276,6 +278,53 @@ sub _cfg_forum_blog_edit {
 	    [acknowledgement => [
 		FORUM_BLOG_CREATE => 'The blog entry has been added.',
 		FORUM_BLOG_EDIT => 'The blog entry update has been saved.',
+	    ]],
+	],
+    };
+}
+
+sub _cfg_forum_motion_list {
+    return {
+	Task => [
+	    [FORUM_MOTION_LIST => '?/votes'],
+	    [FORUM_MOTION_ADD => '?/vote-add'],
+	    [FORUM_MOTION_EDIT => '?/vote-edit'],
+	    [FORUM_MOTION_VOTE => '?/vote'],
+	    [FORUM_MOTION_VOTE_CONFIRM => '?/vote-confirm'],
+	    [FORUM_MOTION_VOTE_LIST => '?/results'],
+	    [FORUM_MOTION_VOTE_LIST_CSV => '?/results.csv'],
+	],
+	Text => [
+	    [MotionList => [
+		empty_list_prose => 'No votes for this forum.',
+		'Motion.name' => 'Name',
+		'Motion.question' => 'Question',
+		'Motion.status' => 'Status',
+	    ]],
+	    [MotionForm => [
+		'Motion.name' => 'Name',
+		'Motion.question' => 'Question',
+		'Motion.status' => 'Status',
+		'Motion.type' => 'Type',
+	    ]],
+	    [MotionVoteForm => [
+		'MotionVote.vote' => 'Vote',
+	    ]],
+	    [MotionVoteList => [
+		empty_list_prose => 'No vote results.',
+		'MotionVote.vote' => 'Vote',
+		'Email.email' => 'Email',
+	    ]],
+	    [title => [
+		FORUM_MOTION_LIST => 'Votes',
+		FORUM_MOTION_ADD => 'Add Vote',
+		FORUM_MOTION_EDIT => 'Edit Vote',
+		FORUM_MOTION_VOTE => 'Vote',
+		FORUM_MOTION_VOTE_CONFIRM => 'Vote Confirmation',
+		FORUM_MOTION_VOTE_LIST => 'Vote Results',
+	    ]],
+	    ['task_menu.title' => [
+		FORUM_MOTION_VOTE_LIST_CSV => 'Download .csv',
 	    ]],
 	],
     };
