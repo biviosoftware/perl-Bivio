@@ -24,6 +24,9 @@ sub get_delegate_info {
 	TUPLE_READ => [14],
 	TUPLE_WRITE => [15],
 	TUPLE_ADMIN => [16],
+	MOTION_READ => [17],
+	MOTION_WRITE => [18],
+	MOTION_ADMIN => [19],
     ];
 }
 
