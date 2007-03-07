@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,61 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.79  2007/03/06 20:16:24  aviggio
+  * Bivio::BConf add permission categories and delegation for motions,
+    views are now in Bivio::UI::View only
+  * Bivio::Biz::Model::BlogList->render_html and render_html_excerpt added
+  * Bivio::Biz::Model::BlogList includes email and display_name of owner
+  * Bivio::Delegate::SimplePermission added motions permisions
+  * Bivio::Delegate::SimpleTaskId added search_list
+  * Bivio::Delegate::TaskId added motion tasks
+  * Bivio::Delegate::NoMotionType added
+  * Bivio::Delegate::SimpleMotionStatus added
+  * Bivio::Delegate::SimpleMotionVote added
+  * Bivio::IO::File->do_read_write added
+  * Bivio::Type::ECCreditCardNumber test number constant added
+  * Bivio::Type::WikiText allow ^^ map to ^
+  * Bivio::Type::MotionStatus added
+  * Bivio::Type::MotionType added
+  * Bivio::Type::MotionVote added
+  * Bivio::Type::RealmMotionMode added
+  * Bivio::UI::FacadeBase added facade elements for motions and blog
+  * Bivio::UI::View::Base->internal_body_from_name_as_prose prefixes name (caller)
+    with simple_package_name, e.g. Wiki->not_found => wiki.not_found
+  * Bivio::Biz::Model::Motion added
+  * Bivio::Biz::Model::MotionForm added
+  * Bivio::Biz::Model::MotionList added
+  * Bivio::Biz::Model::MotionVote added
+  * Bivio::Biz::Model::MotionVoteForm added
+  * Bivio::Biz::Model::MotionVoteList added
+  * Bivio::Biz::Model::RealmMail no longer threads subjects, just in-reply-to
+    and references
+  * Bivio::Biz::Model::SearchList->internal_post_load_row_with_model added
+  * Bivio::Biz::Model::SearchList->internal_realm_ids returns all user realms,
+    not just current one.
+  * Bivio::UI::Text->regroup removed (superclass does it all)
+  * Bivio::UI::View::Base moved from Bivio::UI::XHTML::View
+  * Bivio::UI::View::Blog moved from Bivio::UI::XHTML::View
+  * Bivio::UI::View::Calendar moved from Bivio::UI::XHTML::View
+  * Bivio::UI::View::Motion added
+  * Bivio::UI::View::Search moved from Bivio::UI::XHTML::View
+  * Bivio::UI::View::SiteRoot moved from Bivio::UI::XHTML::View
+  * Bivio::UI::View::Tuple moved from Bivio::UI::XHTML::View
+  * Bivio::UI::View::UserAuth moved from Bivio::UI::XHTML::View
+  * Bivio::UI::View::Wiki moved from Bivio::UI::XHTML::View
+  * Bivio::UI::HTML::Widget::Checkbox hardwires class to "checkbox" (no ability
+    to set class before
+  * Bivio::UI::XHTML::ViewShortcuts->vs_simple_form adds epilogue & prologue
+    unless already there.  Checkboxes handled correctly (single cell, instead
+    of two cells)
+  * Bivio::UI::XHTML::Widget::HelpWiki puts body in class=help_wiki_body
+  * Bivio::UI::XHTML::Widget::RoundedBox puts body in class=rounded_box_body
+  * Bivio::UI::XHTML::Widget::Page3.foot3 is now inlined again.  We'll
+    be deprecating Page3 eventually
+  * Bivio::UI::XHTML::View::Base->internal_xhtml_adorned and
+    internal_text_as_prose added
+  * Bivio::Util::Backup adjust timeout to 12 hours
+
   Revision 4.78  2007/02/23 05:50:25  aviggio
   * Bivio::Biz::Model::RealmUserAddForm create_or_update fix and new
     unauth_create_or_update
