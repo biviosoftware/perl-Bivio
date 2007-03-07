@@ -49,8 +49,13 @@ CREATE SEQUENCE tuple_slot_type_s
   CACHE 1 INCREMENT BY 100000
 /
 
+CREATE SEQUENCE motion_s
+  MINVALUE 100008
+  CACHE 1 INCREMENT BY 100000
+/
+
 --
--- 100008-14 available
+-- 100009-14 available
 --
 
 CREATE SEQUENCE ec_payment_s
