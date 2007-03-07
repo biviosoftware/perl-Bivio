@@ -155,6 +155,29 @@ CREATE TABLE lock_t (
 )
 /
 
+CREATE TABLE motion_t (
+  motion_id NUMERIC(18),
+  realm_id NUMERIC(18) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  name_lc VARCHAR(100) NOT NULL,
+  question VARCHAR(500) NOT NULL,
+  status NUMERIC(2) NOT NULL,
+  type NUMERIC(2) NOT NULL,
+  CONSTRAINT motion_t1 PRIMARY KEY(motion_id)
+)
+/
+
+CREATE TABLE motion_vote_t (
+  motion_id NUMERIC(18),
+  user_id NUMERIC(18) NOT NULL,
+  affiliated_realm_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  vote NUMERIC(2) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  CONSTRAINT motion_vote_t1 PRIMARY KEY(motion_id, user_id)
+)
+/
+
 CREATE TABLE phone_t (
   realm_id NUMERIC(18) NOT NULL,
   location NUMERIC(2) NOT NULL,
