@@ -86,7 +86,7 @@ sub list {
 			    'Results',
 			    'FORUM_MOTION_VOTE_LIST',
 			    [$action, 'FORUM_MOTION_VOTE_LIST', {
-				'ListQuery.parent_id' => 'Motion.motion_id'
+				'ListQuery.parent_id' => 'Motion.motion_id',
 			    }],
 			],
 			[
@@ -137,8 +137,14 @@ sub vote_result {
 	tools => TaskMenu([
 	    'FORUM_MOTION_VOTE_LIST_CSV',
 	]),
+	topic => Join([
+	    String([qw(Model.MotionList Motion.name)]),
+	    ': ',
+	    String([qw(Model.MotionList Motion.question)]),
+	]),
 	body => vs_paged_list(
 	    MotionVoteList => [
+		'MotionVote.creation_date_time',
 		'MotionVote.vote',
 		'Email.email',
 	    ],
