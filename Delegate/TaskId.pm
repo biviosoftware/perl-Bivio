@@ -495,19 +495,11 @@ sub info_motion {
 	    Model.MotionList->execute_load_this
             Model.MotionVoteForm
 	    View.Motion->vote_form
-	    next=FORUM_MOTION_VOTE_CONFIRM
-	    require_context=0
- 	)],
- 	[qw(
- 	    FORUM_MOTION_VOTE_CONFIRM
- 	    63
- 	    FORUM
- 	    ANYBODY
-	    View.Motion->confirm
+	    next=FORUM_MOTION_LIST
  	)],
  	[qw(
  	    FORUM_MOTION_VOTE_LIST
- 	    64
+ 	    63
  	    FORUM
  	    MOTION_READ
 	    Model.MotionList->execute_load_parent
@@ -516,7 +508,7 @@ sub info_motion {
  	)],
  	[qw(
  	    FORUM_MOTION_VOTE_LIST_CSV
- 	    65
+ 	    64
  	    FORUM
  	    MOTION_READ
             Model.MotionVoteList->execute_load_all_with_query
