@@ -6,6 +6,14 @@ use base 'Bivio::Biz::ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub execute_load_parent {
+    my($proto, $req) = @_;
+    $proto->new($req)->load_this({
+	this => $req->unsafe_get('query')->{'p'},
+    });
+    return;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
