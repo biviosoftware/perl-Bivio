@@ -510,6 +510,7 @@ sub info_motion {
  	    64
  	    FORUM
  	    MOTION_READ
+	    Model.MotionList->execute_load_parent
             Model.MotionVoteList->execute_load_all_with_query
 	    View.Motion->vote_result
  	)],
