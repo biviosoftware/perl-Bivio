@@ -14,25 +14,12 @@ sub internal_initialize {
 	can_iterate => 0,
 	primary_key => [[qw(MotionVote.user_id Email.realm_id)]],
 	order_by => [
+ 	    'MotionVote.creation_date_time',
 	    'MotionVote.vote',
 	    'Email.email',
 	],
-#         other => [
-# 	    'RealmUser.creation_date_time',
-# 	],
 	auth_id => ['MotionVote.realm_id'],
     });
 }
-
-# sub internal_post_load_row {
-#     my($self, $row) = @_;
-#     my($fields) = $self->[$_IDI] ||= {};
-#     my($role) = lc($row->{'RealmUser.role'}->get_name);
-#     my($r) = $fields->{$row->{'RealmUser.user_id'}} ||= $row;
-#     $r->{$role} = 1;
-#     return 0
-# 	if $r ne $row;
-#     return 1;
-# }
 
 1;

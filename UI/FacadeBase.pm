@@ -312,6 +312,7 @@ sub _cfg_forum_motion_list {
 	    ]],
 	    [MotionVoteList => [
 		empty_list_prose => 'No vote results.',
+		'MotionVote.creation_date_time' => 'Date',
 		'MotionVote.vote' => 'Vote',
 		'Email.email' => 'Email',
 	    ]],
