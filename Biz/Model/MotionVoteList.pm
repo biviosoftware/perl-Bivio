@@ -12,6 +12,7 @@ sub internal_initialize {
         version => 1,
 	can_iterate => 0,
 	parent_id => 'MotionVote.motion_id',
+	primary_key => [qw(MotionVote.motion_id MotionVote.user_id)],
 	order_by => [
  	    'MotionVote.creation_date_time',
 	    'MotionVote.vote',
