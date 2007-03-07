@@ -290,7 +290,6 @@ sub _cfg_forum_motion_list {
 	    [FORUM_MOTION_ADD => '?/vote-add'],
 	    [FORUM_MOTION_EDIT => '?/vote-edit'],
 	    [FORUM_MOTION_VOTE => '?/vote'],
-	    [FORUM_MOTION_VOTE_CONFIRM => '?/vote-confirm'],
 	    [FORUM_MOTION_VOTE_LIST => '?/results'],
 	    [FORUM_MOTION_VOTE_LIST_CSV => '?/results.csv'],
 	],
@@ -316,12 +315,16 @@ sub _cfg_forum_motion_list {
 		'MotionVote.vote' => 'Vote',
 		'Email.email' => 'Email',
 	    ]],
+	    [acknowledgement => [
+		FORUM_MOTION_EDIT => 'Vote updates have been saved.',
+		FORUM_MOTION_VOTE =>
+		    'Thank you for your participation in the vote.',
+	    ]],
 	    [title => [
 		FORUM_MOTION_LIST => 'Votes',
 		FORUM_MOTION_ADD => 'Add Vote',
 		FORUM_MOTION_EDIT => 'Edit Vote',
 		FORUM_MOTION_VOTE => 'Vote',
-		FORUM_MOTION_VOTE_CONFIRM => 'Vote Confirmation',
 		FORUM_MOTION_VOTE_LIST => 'Vote Results',
 	    ]],
 	    ['task_menu.title' => [
