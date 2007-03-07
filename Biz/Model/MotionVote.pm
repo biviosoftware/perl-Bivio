@@ -5,6 +5,7 @@ use strict;
 use base 'Bivio::Biz::PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub create {
     my($self, $values) = @_;
@@ -13,6 +14,7 @@ sub create {
     $values->{user_id} = $req->get('auth_user_id');
     $values->{affiliated_realm_id} = $values->{user_id}
 	unless defined($values->{affiliated_realm_id});
+    $values->{creation_date_time} ||= $_DT->now;
     return $self->SUPER::create($values);
 }
 
@@ -27,6 +29,7 @@ sub internal_initialize {
 	    affiliated_realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    vote => ['MotionVote', 'NOT_NULL'],
+	    creation_date_time => ['DateTime', 'NOT_NULL'],
 	},
 	auth_id => 'realm_id',
     });
