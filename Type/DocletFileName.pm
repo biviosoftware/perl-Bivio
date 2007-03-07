@@ -44,6 +44,7 @@ sub from_absolute {
     Bivio::Die->throw(DIE => {
 	message => 'not an absolute path',
 	entity => $path,
+#TODO: This is too lax
     }) unless my(@x) = ($path || '') =~ $proto->PATH_REGEX;
     return join('', @x);
 }
