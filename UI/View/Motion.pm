@@ -7,18 +7,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub confirm {
-    return shift->internal_put_base_attr(
-	topic => String('Vote Submitted'),
-	body => Join([
-	    Tag(p => <<EOF),
-Thank you for your participation in the vote.
-EOF
-	    Tag(p => Link('Back to list', 'FORUM_MOTION_LIST')),
-	])
-    );
-}
-
 sub form {
     return shift->internal_body(vs_simple_form(
 	MotionForm => [
@@ -135,7 +123,13 @@ sub vote_form {
 sub vote_result {
     return shift->internal_put_base_attr(
 	tools => TaskMenu([
-	    'FORUM_MOTION_VOTE_LIST_CSV',
+	    {
+		task_id => 'FORUM_MOTION_VOTE_LIST_CSV',
+		query => {
+		    'ListQuery.parent_id'
+			=> [qw(Model.MotionList Motion.motion_id)],
+		},
+	    },
 	]),
 	topic => Join([
 	    String([qw(Model.MotionList Motion.name)]),
@@ -153,7 +147,11 @@ sub vote_result {
 }
 
 sub vote_result_csv {
-    view_main(CSV(MotionVoteList => [qw(MotionVote.vote Email.email)]));
+    view_main(CSV(MotionVoteList => [
+	qw(MotionVote.creation_date_time
+	   MotionVote.vote
+	   Email.email)
+    ]));
     return;
 }
 
