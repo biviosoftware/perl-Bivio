@@ -1347,6 +1347,107 @@ EOF
     return;
 }
 
+=for html <a name="internal_upgrade_db_motion"></a>
+
+=head2 internal_upgrade_db_motion()
+
+Adds Motion tables, etc.
+
+=cut
+
+sub internal_upgrade_db_motion {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE motion_t (
+  motion_id NUMERIC(18),
+  realm_id NUMERIC(18) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  name_lc VARCHAR(100) NOT NULL,
+  question VARCHAR(500) NOT NULL,
+  status NUMERIC(2) NOT NULL,
+  type NUMERIC(2) NOT NULL,
+  CONSTRAINT motion_t1 PRIMARY KEY(motion_id)
+)
+/
+
+CREATE TABLE motion_vote_t (
+  motion_id NUMERIC(18),
+  user_id NUMERIC(18) NOT NULL,
+  affiliated_realm_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  vote NUMERIC(2) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  CONSTRAINT motion_vote_t1 PRIMARY KEY(motion_id, user_id)
+)
+/
+
+--
+-- motion_t
+--
+ALTER TABLE motion_t
+  add constraint motion_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX motion_t3 on motion_t (
+  realm_id
+)
+/
+CREATE UNIQUE INDEX motion_t4 ON motion_t (
+  realm_id,
+  name_lc
+)
+/
+
+--
+-- motion_vote_t
+--
+ALTER TABLE motion_vote_t
+  add constraint motion_vote_t2
+  foreign key (motion_id)
+  references motion_t(motion_id)
+/
+CREATE INDEX motion_vote_t3 on motion_vote_t (
+  motion_id
+)
+/
+ALTER TABLE motion_vote_t
+  add constraint motion_vote_t4
+  foreign key (user_id)
+  references user_t(user_id)
+/
+CREATE INDEX motion_vote_t5 on motion_vote_t (
+  user_id
+)
+/
+ALTER TABLE motion_vote_t
+  add constraint motion_vote_t6
+  foreign key (affiliated_realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX motion_vote_t7 on motion_vote_t (
+  affiliated_realm_id
+)
+/
+ALTER TABLE motion_vote_t
+  add constraint motion_vote_t8
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX motion_vote_t9 on motion_vote_t (
+  realm_id
+)
+/
+
+CREATE SEQUENCE motion_s
+  MINVALUE 100008
+  CACHE 1 INCREMENT BY 100000
+/
+
+EOF
+    return;
+}
+
 =for html <a name="realm_role_config"></a>
 
 =head2 realm_role_config() : array_ref
