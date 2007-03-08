@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.80  2007/03/07 06:00:17  aviggio
+  * Bivio::Biz::Model::MotionList added execute_load_parent
+  * Bivio::Biz::Model::MotionVote added creation date timestamp
+  * Bivio::Biz::Model::MotionVoteList added creation date
+  * Bivio::Delegate::TaskId FORUM_MOTION_VOTE_LIST loads parent model
+  * Bivio::UI::FacadeBase added creation date
+  * Bivio::UI::View::Motion creation date and motion info added to
+    results list view
+
   Revision 4.79  2007/03/06 20:16:24  aviggio
   * Bivio::BConf add permission categories and delegation for motions,
     views are now in Bivio::UI::View only
