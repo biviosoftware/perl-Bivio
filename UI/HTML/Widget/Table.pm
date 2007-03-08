@@ -258,6 +258,10 @@ See also I<heading_align>.
 
 Sets the cell background color.
 
+=item column_height : any []
+
+Sets the cell height.
+
 =item column_data_class : any []
 
 HTML class for column data cells.
@@ -840,6 +844,10 @@ sub render_row {
 	    if $class == Bivio::UI::TableRowClass->DATA
 		&& $cell->unsafe_render_attr(
 		    'column_bgcolor', $source, \$bg) && $bg;
+	my($h);
+	$$buffer .= qq{ height="$h"}
+           if $class == Bivio::UI::TableRowClass->DATA
+	   && $cell->render_simple_attr('column_height', $source, \$h) && $h;
         $$buffer .= '>';
 
 	# Insert a "&nbsp;" if the widget doesn't render.  This
