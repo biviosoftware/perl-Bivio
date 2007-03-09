@@ -502,7 +502,14 @@ sub info_base {
 	    View.blog-edit
 	    next=FORUM_BLOG_VIEW
  	)],
-#56-59 free
+	[qw(
+            PERMANENT_REDIRECT
+            56
+	    GENERAL
+	    ANYBODY
+	    Action.PermanentRedirect
+	)],
+#57-59 free
     ];
 }
 
