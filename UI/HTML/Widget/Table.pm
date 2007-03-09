@@ -844,10 +844,9 @@ sub render_row {
 	    if $class == Bivio::UI::TableRowClass->DATA
 		&& $cell->unsafe_render_attr(
 		    'column_bgcolor', $source, \$bg) && $bg;
-	my($h);
+	my($h) = $cell->render_simple_attr('column_height', $source);
 	$$buffer .= qq{ height="$h"}
-           if $class == Bivio::UI::TableRowClass->DATA
-	   and $h = $cell->render_simple_attr('column_height', $source);
+           if $class == Bivio::UI::TableRowClass->DATA && $h;
         $$buffer .= '>';
 
 	# Insert a "&nbsp;" if the widget doesn't render.  This
