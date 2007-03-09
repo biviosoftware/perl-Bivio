@@ -29,7 +29,7 @@ sub new {
 		mail_receive_dispatch
 		forum_motion_list
                 dav
-		forum_blog_edit
+		forum_blog_list
 		search_list
 	    )),
 	    $config,
@@ -239,7 +239,7 @@ sub _cfg_dav {
     };
 }
 
-sub _cfg_forum_blog_edit {
+sub _cfg_forum_blog_list {
     return {
 	Task => [
 	    [FORUM_BLOG_LIST => '?/blog'],
