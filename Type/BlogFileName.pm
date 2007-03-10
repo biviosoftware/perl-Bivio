@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::BlogFileName;
 use strict;
@@ -6,6 +6,10 @@ use base 'Bivio::Type::DocletFileName';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = Bivio::Type->get_instance('DateTime');
+
+sub ERROR {
+    return Bivio::TypeError->BLOG_FILE_NAME;
+}
 
 sub PRIVATE_FOLDER {
     return shift->BLOG_FOLDER;
@@ -29,15 +33,12 @@ sub from_date_time {
     return $_DT->to_file_name($date_time);
 }
 
-sub from_literal {
-    my($proto, $value) = @_;
-    return (undef, undef)
-	unless defined($value) && length($value);
+sub from_literal_stripper {
+    my(undef, $v) = @_;
     # This is overly friendly, but we are only parsing pretty much anything
     # COUPLING: Assumes nothing in the path but the BFN has digits in it
-    $value =~ s{\D}{}g;
-    return $value =~ /^@{[$proto->REGEX]}$/ ? $value
-	: (undef, Bivio::TypeError->BLOG_FILE_NAME);
+    $v =~ s{\D}{}g;
+    return $v;
 }
 
 sub from_sql_column {
