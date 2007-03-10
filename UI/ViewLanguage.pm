@@ -221,6 +221,20 @@ sub view_get {
 	->ancestral_get($attr);
 }
 
+=for html <a name="view_instance"></a>
+
+=head2 view_instance() : Bivio::UI::View
+
+Returns the view_instance being evaluated.
+
+This works during evaluation of a view as well as during execution.
+
+=cut
+
+sub view_instance {
+    return _assert_in_eval('view_instance');
+}
+
 =for html <a name="view_main"></a>
 
 =head2 static view_main(Bivio::UI::Widget widget)
