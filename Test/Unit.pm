@@ -152,6 +152,20 @@ sub builtin_assert_equals {
     return _assert_expect(@_);
 }
 
+=for html <a name="builtin_chomp_and_return"></a>
+
+=head2 builtin_chomp_and_return(string value) : string
+
+Calls chomp and returns its argument
+
+=cut
+
+sub builtin_chomp_and_return {
+    my(undef, $value) = @_;
+    chomp($value);
+    return $value;
+}
+
 =for html <a name="builtin_class"></a>
 
 =head2 static builtin_class() : string
