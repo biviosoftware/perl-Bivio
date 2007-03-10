@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::WikiText;
 use strict;
@@ -6,7 +6,7 @@ use base 'Bivio::Type::Text64K';
 use Bivio::Mail::RFC822;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_WN) = Bivio::Type->get_instance('WikiName')->REGEX;
+my($_CAMEL_CASE) = qr{((?-i:[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*))};
 my($_EMAIL) = qr{@{[Bivio::Mail::RFC822->ATOM_ONLY_ADDR]}}o;
 my($_DOMAIN) = qr{(@{[
     'www\.'
@@ -361,7 +361,7 @@ foreach my $t (qw(table dl ul ol div)) {
 my($_TAGS) = {%$_EMPTY, %$_BLOCK, %$_PHRASE};
 my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
-my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_WN)\W*$)};
+my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*$)};
 
 sub render_html {
     my($self, $value, $name, $req, $task_id, $no_auto_links) = @_;
