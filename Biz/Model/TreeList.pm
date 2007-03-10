@@ -20,6 +20,11 @@ sub internal_initialize {
 		constraint => 'NOT_NULL',
 	    },
 	    {
+		name => 'node_level',
+		type => 'Integer',
+		constraint => 'NOT_NULL',
+	    },
+	    {
 		name => 'node_uri',
 		type => 'LongText',
 		constraint => 'NONE',
