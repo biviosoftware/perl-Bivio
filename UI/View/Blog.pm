@@ -49,7 +49,7 @@ sub detail {
 	]),
 	body => vs_paged_detail(
 	    'BlogList',
-	    [qw(THIS_LIST FORUM_BLOG_LIST)],
+	    [THIS_LIST => _access_mode('FORUM_BLOG_LIST')],
 #TODO: Replace with proper blog widget that *partially* reuses wiki markup
  	    DIV_blog(
 		DIV(DIV_text([qw(Model.BlogList ->render_html)]),
@@ -64,14 +64,15 @@ sub detail {
 
 sub list {
     return shift->internal_put_base_attr(
-	rss_task => 'FORUM_BLOG_RSS',
+#TODO: Fix this
+	rss_task => _access_mode('FORUM_BLOG_RSS'),
 	tools => TaskMenu(['FORUM_BLOG_CREATE']),
 	menu => Join([
 #TODO: Move to FacadeBase
 	    DIV_heading('Recent Entries'),
 	    UL(List('BlogRecentList', [
 		LI(vs_link(['title'], URI({
-		    task_id => 'FORUM_BLOG_DETAIL',
+		    task_id => _access_mode('FORUM_BLOG_DETAIL'),
 		    path_info => ['path_info'],
 		}))),
 	    ])),
@@ -79,33 +80,20 @@ sub list {
 	body => DIV_blog(Join([
 	    DIV_list(vs_paged_list(BlogList => List(BlogList => [
 		DIV(Join([
-#		    DIV_heading(Join([
-# 			DIV_status(
-# 			    If(['RealmFile.is_public'],
-# 			       String('public'),
-# 			       String('private'),
-# 			   ),
-# 			),
-			DIV_heading(vs_link(['title'], URI({
-			    task_id => 'FORUM_BLOG_DETAIL',
+		    DIV_heading(Join([
+			vs_link(['title'], URI({
+			    task_id => _access_mode('FORUM_BLOG_DETAIL'),
 			    path_info => ['path_info'],
-			}))),
-#		    ])),
-		    DIV_text(['->render_html_excerpt']),
-# 		    DIV_byline2(Join([
-# #TODO: Move text to FacadeBase.  PRobably share with wiki
-# 			DIV(Join([
-# 			    'last edited by ',
-# 			    MailTo(['Email.email'],
-# 			    ['RealmOwner.display_name']),
-# 			    ' on ',
-# 			    DateTime(['RealmFile.modified_date_time']),
-# 			])),
-# 			DIV(Join([
-# 			    'created on ',
-# 			    DateTime(['->get_creation_date_time']),
-# 			])),
-# 		    ])),
+			})),
+		    ])),
+		    DIV_text(Join([
+			DIV_excerpt(['->render_html_excerpt']),
+			' ... ',
+			Link('[more]', URI({
+			    task_id => _access_mode('FORUM_BLOG_DETAIL'),
+			    path_info => ['path_info'],
+			}), 'more'),
+		    ])),
 		    DIV_menu(Link(vs_text('title.FORUM_BLOG_EDIT'), URI({
 			task_id => 'FORUM_BLOG_EDIT',
 			path_info => ['path_info'],
@@ -133,7 +121,7 @@ sub recent_rss {
 #TODO: Refactor or add XML(?) link widget that formats full http URI
 # as required by some RSS readers
 		return $list->get_request->format_http({
-		    task_id => 'FORUM_BLOG_DETAIL',
+		    task_id => _access_mode('FORUM_BLOG_DETAIL'),
 		    path_info => $list->get('path_info'),
 		});
 	    },
@@ -144,9 +132,22 @@ sub recent_rss {
 	    ']]>',
 	]),
     }, {
+#TODO: BROKEN
 	source_task => 'FORUM_BLOG_LIST',
     }));
     return;
+}
+
+sub _access_mode {
+    my($task) = @_;
+    (my $p = $task) =~ s/(?<=^FORUM_)/PUBLIC_/;
+    return [sub {
+        my($source, $private, $public) = @_;
+	shift->get_request->get('Type.AccessMode')->eq_private
+	    ? $private : $public,
+	},
+        $task, $p,
+    ];
 }
 
 sub _edit {
