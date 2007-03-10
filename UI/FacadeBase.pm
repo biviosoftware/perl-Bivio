@@ -509,6 +509,11 @@ sub _cfg_forum_wiki_view {
 		header => 'Help',
 		footer => '',
 	    ]],
+	    [WikiForm => [
+		'RealmFile.path_lc' => 'Title',
+		'content' => '',
+		'RealmFile.is_public' => 'Make this article publicly available?',
+	    ]],
 	    [prose => [
 		Wiki => [
 		    not_found => <<'EOF',
