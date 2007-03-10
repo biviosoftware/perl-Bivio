@@ -362,9 +362,19 @@ my($_TAGS) = {%$_EMPTY, %$_BLOCK, %$_PHRASE};
 my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*$)};
+Bivio::IO::Config->register(my $_CFG = {
+    deprecated_auto_link_mode => 0,
+});
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
 
 sub render_html {
     my($self, $value, $name, $req, $task_id, $no_auto_links) = @_;
+    $no_auto_links ||= !$_CFG->{deprecated_auto_link_mode};
     my($v) = ref($value) ? $value : \$value;
     my($state) = {
 	lines => [split(/\r?\n/, $$v)],
