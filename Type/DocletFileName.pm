@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::DocletFileName;
 use strict;
@@ -49,9 +49,26 @@ sub from_absolute {
     return join('', @x);
 }
 
+sub from_literal {
+    my($proto, $value) = @_;
+    return (undef, undef)
+	unless defined($value) && length($value);
+    $value = $proto->from_literal_stripper($value);
+    return (undef, $proto->ERROR)
+	unless length($value);
+    my($v, $e) = $proto->SUPER::from_literal($value);
+    return ($v, $e)
+	unless defined($v);
+    return $v =~ m{^@{[$proto->REGEX]}$}s ? $v : (undef, $proto->ERROR);
+}
+
+sub from_literal_stripper {
+    return $_[1];
+}
+
 sub is_absolute {
     my($proto, $value) = @_;
-    return $value =~ $proto->ABSOLUTE_REGEX ? 1 : 0;
+    return defined($value) && $value =~ $proto->ABSOLUTE_REGEX ? 1 : 0;
 }
 
 sub is_valid {

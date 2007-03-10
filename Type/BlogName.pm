@@ -7,6 +7,10 @@ use base 'Bivio::Type::FileName';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = Bivio::Type->get_instance('FilePath');
 
+sub ERROR {
+    return Bivio::TypeError->BLOG_NAME;
+}
+
 sub REGEX {
     return qr{[A-Z0-9a-z0-9 ]+};
 }
@@ -18,15 +22,6 @@ sub absolute_path {
 
 sub to_absolute {
     return shift->absolute_path(@_);
-}
-
-sub from_literal {
-    my($proto) = shift;
-    my($v, $e) = $proto->SUPER::from_literal(@_);
-    return ($v, $e)
-	unless defined($v);
-    return $v =~ m{^@{[$proto->REGEX]}$}
-	? $v : (undef, Bivio::TypeError->BLOG_NAME);
 }
 
 1;
