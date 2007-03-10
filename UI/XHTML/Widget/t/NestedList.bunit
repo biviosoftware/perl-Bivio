@@ -1,0 +1,20 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+req()->set_realm_and_user('btest_read', 'btest_read')->client_redirect({
+    task_id => 'USER_HOME',
+});
+model('ForumTreeList')->load_all;
+[
+    [ForumTreeList => [vs_new(String => ['RealmOwner.name'])]]
+	=> chomp_and_return(<<'EOF'),
+<ul>
+<li>fourem</li>
+<ul>
+<li>fourem-sub1</li>
+<ul>
+<li>fourem-sub1-1</li>
+</ul><li>fourem-sub2</li>
+</ul></ul>
+EOF
+];
