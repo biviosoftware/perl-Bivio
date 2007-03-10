@@ -3,6 +3,11 @@
 Request();
 set_realm_and_user(qw(fourem root));
 initialize_fully('FORUM_WIKI_VIEW');
+config({
+    class() => {
+	deprecated_auto_link_mode => 1,
+    },
+});
 [
     class() => [
 	{
