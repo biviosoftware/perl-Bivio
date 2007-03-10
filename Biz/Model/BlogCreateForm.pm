@@ -17,27 +17,23 @@ sub execute_ok {
     my($p) = $self->unsafe_get('RealmFile.is_public') ? 1 : 0;
     foreach my $x (1..100) {
 	$bfn = $_BFN->from_date_time($now);
-	my($die) = Bivio::Die->catch(sub {
+	my($v) = {
+	    path => $_BFN->to_absolute($bfn, $p),
+	    is_public => $p,
+	};
+	unless ($rf->unsafe_load($v)) {
 	    $rf->create_with_content(
-		{
-		    path => $_BFN->to_absolute($bfn, $p),
-		    is_public => $p,
-		},
-		$_BC->join($self->get(qw(title body))),
-	    );
-	});
-	last unless $die;
+		$v, $_BC->join($self->get(qw(title body))));
+	    $self->get_request->put(path_info => $bfn);
+	    return;
+	}
 	$bfn = undef;
-	$die->throw
-	    unless $die->get('code')->eq_db_constraint
-		and $die->get('attrs')->{type_error}->eq_exists;
 	$now = $_DT->add_seconds($now, 1);
     }
     $self->die(
 	$_BFN->from_date_time($now) , ': unable to create unique file',
-    ) unless $bfn;
-    $self->get_request->put(path_info => $bfn);
-    return;
+    );
+    # DOES NOT RETURN
 }
 
 sub internal_initialize {
