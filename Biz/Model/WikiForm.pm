@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::WikiForm;
 use strict;
@@ -18,20 +18,29 @@ sub execute_empty {
     my($self) = @_;
     return unless _is_edit($self);
     $self->internal_put_field('RealmFile.path_lc' => _authorized_name($self));
-    $self->internal_put_field(
-	content => ${$self->get('realm_file')->get_content},
-    ) if $self->get('file_exists');
+    if ($self->get('file_exists')) {
+	$self->internal_put_field(
+	    content => ${$self->get('realm_file')->get_content},
+	);
+	$self->internal_put_field(
+	    'RealmFile.is_public' => $self->get('realm_file')->get('is_public'),
+	);
+    }
     return;
 }
 
 sub execute_ok {
     my($self) = @_;
+    my($p) = $self->unsafe_get('RealmFile.is_public') ? 1 : 0;
     my($new) = $self->name_type
-	->to_absolute($self->get('RealmFile.path_lc'));
+	->to_absolute($self->get('RealmFile.path_lc'), $p);
     my($c) = $self->get('content');
     my($m) = $self->get('file_exists')
 	? 'update_with_content' : 'create_with_content';
-    $self->get('realm_file')->$m({path => $new}, \$c);
+    $self->get('realm_file')->$m({
+	path => $new,
+	is_public => $p,
+    }, \$c);
     $self->get_request->put(path_info => $self->get('RealmFile.path_lc'));
     return;
 }
@@ -50,6 +59,10 @@ sub internal_initialize {
 		# This is where the constraint is
 		name => 'RealmFile.path_lc',
 		type => $self->name_type,
+	    },
+	    {
+		name => 'RealmFile.is_public',
+		constraint => 'NONE',
 	    },
 	],
 	other => [

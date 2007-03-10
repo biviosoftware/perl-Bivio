@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 FormModel();
 my($path) = sub {
@@ -56,6 +56,15 @@ Bivio::Biz::Model->new('RealmFile')->delete_deep({
     }] => [{
 	'Model.RealmFile' => {
 	    path => '/Wiki/BunitTwo',
+	},
+    }],
+    [{
+	'RealmFile.path_lc' => 'BunitTwo',
+	'RealmFile.is_public' => 1,
+	content => 'b2',
+    }] => [{
+	'Model.RealmFile' => {
+	    path => '/Public/Wiki/BunitTwo',
 	},
     }],
 ];
