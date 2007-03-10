@@ -22,7 +22,7 @@ sub new {
 	['content'],
 	[foot1 => Link(String('back to top'), '#top')],
 	['foot2'],
-	[foot3 => <<'EOF'],
+	[foot3 => Prose(<<"EOF")],
 Copyright &copy; @{[__PACKAGE__->use('Type.DateTime')->now_as_year]} vs_text('site_copyright');<br />
 All rights reserved.<br />
 Link('Developed by bivio', 'http://www.bivio.biz');
