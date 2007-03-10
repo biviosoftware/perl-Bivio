@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.81  2007/03/08 05:55:59  aviggio
+  * Bivio::SQL::PropertySupport add Motion models to unused_classes
+  * Bivio::Util::SQL->internal_upgrade_db_motion added
+
   Revision 4.80  2007/03/07 06:00:17  aviggio
   * Bivio::Biz::Model::MotionList added execute_load_parent
   * Bivio::Biz::Model::MotionVote added creation date timestamp
