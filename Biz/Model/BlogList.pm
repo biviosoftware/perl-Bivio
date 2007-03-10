@@ -111,7 +111,8 @@ sub render_html {
 sub render_html_excerpt {
     my($self) = @_;
     my($body, $path) = $self->get(qw(body path_info));
-    $body = substr($body, 0, 600);
+#TODO: Split on words
+    $body = substr($body, 0, 300);
 #TODO: Is this good enough?
     $body =~ s/\n[^\n]*$//s;
     return $_WT->render_html($body, $path, $self->get_request, undef, 1);
