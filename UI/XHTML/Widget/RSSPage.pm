@@ -16,6 +16,7 @@ sub initialize {
     my($ih) = $self->get('item_hash');
     my($seen) = {};
     my($list) = $self->get('list_class');
+#TODO: Check $list is a scalar here.  Not clear why this has to be
     $self->put(
 	head => Join([
 	    q{<?xml version="1.0" encoding="UTF-8"?>
