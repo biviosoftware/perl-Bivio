@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ForumForm;
 use strict;
@@ -6,7 +6,7 @@ use base 'Bivio::Biz::FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = Bivio::Type->get_instance('ForumName');
-my($_EM) = Bivio::Type->get_instance('ForumEmailMode');
+my($_FEM) = Bivio::Type->get_instance('ForumEmailMode');
 my($_RR) = Bivio::IO::ClassLoader
     ->simple_require('Bivio::Biz::Util::RealmRole');
 
@@ -28,7 +28,7 @@ sub execute_empty {
     $self->internal_put_field('RealmOwner.display_name' =>
         $self->get('RealmOwner.display_name') . ' ');
     my($cats) = $_RR->list_enabled_categories();
-    foreach my $pc ($_EM->OPTIONAL_MODES) {
+    foreach my $pc ($_FEM->OPTIONAL_MODES) {
 	$self->internal_put_field($pc => grep($_ eq $pc, @$cats) ? 1 : 0);
     }
     return;
@@ -56,7 +56,7 @@ sub execute_ok {
     $_RR->edit_categories({
 	map({
 	    $_ => $self->unsafe_get($_);
-	} $_EM->OPTIONAL_MODES)});
+	} $_FEM->OPTIONAL_MODES)});
     return;
 }
 
@@ -76,7 +76,7 @@ sub internal_initialize {
 		name => $_,
 		type => 'Boolean',
 		constraint => 'NONE',
-	    }, $_EM->OPTIONAL_MODES),
+	    }, $_FEM->OPTIONAL_MODES),
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
 	other => [
@@ -113,13 +113,9 @@ sub validate {
 	$top_ok ? Bivio::TypeError->TOP_FORUM_NAME_CHANGE
 	    : Bivio::TypeError->TOP_FORUM_NAME
     ) unless $top_ok || $old_top eq $new_top;
-    my($x) = 0;
-    foreach my $pc ($_EM->OPTIONAL_MODES) {
-	$x += $self->unsafe_get($pc) ? $self->get($pc) : 0;
-	return $self->internal_put_error($pc,
-					 Bivio::TypeError->MUTUALLY_EXCLUSIVE)
-	    if $x > 1;
-    }
+    my($x) = [grep($self->unsafe_get($_), $_FEM->OPTIONAL_MODES)];
+    $self->internal_put_error($x->[1], Bivio::TypeError->MUTUALLY_EXCLUSIVE)
+	if @$x > 1;
     return;
 }
 
