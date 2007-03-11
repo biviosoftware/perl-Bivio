@@ -99,6 +99,7 @@ Bivio::Test->unit([
 	],
 	grep_methods => [
 	    [qr{^my_}] => [[qw(my_caller my_caller_t my_idi)]],
+	    [qr{^my_(.*)}] => [[qw(caller caller_t idi)]],
 	],
 	my_idi => 1,
 	my_caller_t => 'my_caller_t',
