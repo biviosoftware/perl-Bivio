@@ -72,16 +72,17 @@ sub AUTOLOAD {
 
 =for html <a name="compile"></a>
 
-=head2 static compile()
+=head2 static compile(array_ref values)
 
 Compiles using delegate information.  May only be called statically.
 
 =cut
 
 sub compile {
-    my($proto) = @_;
+    my($proto, $values) = @_;
     return $proto->SUPER::compile(
-	Bivio::IO::ClassLoader->delegate_require_info($proto));
+	$values || Bivio::IO::ClassLoader->delegate_require_info($proto),
+    );
 }
 
 #=PRIVATE SUBROUTINES
