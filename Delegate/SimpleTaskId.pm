@@ -42,6 +42,10 @@ sub get_delegate_info {
     return shift->info_base(@_);
 }
 
+sub included_components {
+    return [sort(keys(%$_INCLUDED))];
+}
+
 sub info_base {
     return [
 	[qw(
@@ -671,7 +675,7 @@ sub info_xapian {
 }
 
 sub is_component_included {
-    my($self, $component) = @_;
+    my(undef, $component) = @_;
     return $_INCLUDED->{$component} || 0;
 }
 
