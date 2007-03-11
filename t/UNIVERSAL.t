@@ -67,7 +67,7 @@ Bivio::Test->unit([
 	]
      ],
     'Bivio::t::UNIVERSAL::t1' => [
-	inheritance_ancestor_list => [
+	inheritance_ancestors => [
 	    [] => [[qw(Bivio::UNIVERSAL)]],
 	],
 	my_idi => 0,
@@ -94,8 +94,11 @@ Bivio::Test->unit([
 	],
     ],
     'Bivio::t::UNIVERSAL::t2' => [
-	inheritance_ancestor_list => [
+	inheritance_ancestors => [
 	    [] => [[qw(Bivio::t::UNIVERSAL::t1 Bivio::UNIVERSAL)]],
+	],
+	grep_methods => [
+	    [qr{^my_}] => [[qw(my_caller my_caller_t my_idi)]],
 	],
 	my_idi => 1,
 	my_caller_t => 'my_caller_t',
