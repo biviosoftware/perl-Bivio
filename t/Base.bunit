@@ -3,7 +3,7 @@
 options({class_name => 'Bivio::t::Base::T1'});
 [
     class() => [
-	inheritance_ancestor_list => [
+	inheritance_ancestors => [
 	    [] => [[qw(Bivio::Type::String Bivio::Type Bivio::UI::WidgetValueSource Bivio::UNIVERSAL)]],
 	],
     ],

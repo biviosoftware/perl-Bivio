@@ -1507,7 +1507,7 @@ sub _method_ok {
     return 0 unless $method =~ /^([a-z]\w*)$/i;
     return 0 if $method =~ /^handle_/;
     return 1 if $method eq 'usage';
-    foreach my $c (ref($self), @{$self->inheritance_ancestor_list}) {
+    foreach my $c (ref($self), @{$self->inheritance_ancestors}) {
 	last if $c eq __PACKAGE__;
 #TODO: Need to deprecate calls which __PACKAGE__->can($method) && $c->can.
 	return 1 if $c->can($method);
