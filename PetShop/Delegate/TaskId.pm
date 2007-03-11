@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     my($proto) = @_;
-    return $proto->merge_task_info(@{$proto->ALL_INFO}, [
+    return $proto->merge_task_info(@{$proto->all_components}, [
 	# Overwrite default MY_SITE which is a no-op
 	[qw(
 	    MY_SITE
