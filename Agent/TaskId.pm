@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::Type::Enum>
+L<Bivio::Type::EnumDelegator>
 
 =cut
 
-use Bivio::Type::Enum;
-@Bivio::Agent::TaskId::ISA = ('Bivio::Type::Enum');
+use Bivio::Type::EnumDelegator;
+@Bivio::Agent::TaskId::ISA = ('Bivio::Type::EnumDelegator');
 
 =head1 DESCRIPTION
 
@@ -53,14 +53,12 @@ See L<Bivio::Agent::Task|Bivio::Agent::Task> for a description.
 =cut
 
 #=IMPORTS
-use Bivio::IO::ClassLoader;
 
 #=VARIABLES
-my($_CFG) = Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__);
-
+my($_CFG);
+$_CFG ||= Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__);
 __PACKAGE__->compile([
-    map {($_->[0], [$_->[1]])} @$_CFG
-]);
+    map(($_->[0], [$_->[1]]), @{__PACKAGE__->get_cfg_list})]);
 
 =head1 METHODS
 
