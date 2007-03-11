@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ALL_INFO {
     #DEPREDCATED
-    return shift->ALL_COMPONENTS;
+    return shift->all_components;
 }
 
 sub info_base {
