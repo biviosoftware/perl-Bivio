@@ -15,7 +15,7 @@ sub MAIL_RECEIVE_PREFIX {
 }
 
 sub new {
-    my($proto, $config, @rest) = @_;
+    my($proto, $config) = @_;
     return $proto->SUPER::new(
 	_merge(
 	    map({
