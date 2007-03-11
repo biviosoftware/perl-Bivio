@@ -675,7 +675,9 @@ sub info_xapian {
 }
 
 sub is_component_included {
-    my(undef, $component) = @_;
+    my($proto, $component) = @_;
+    Bivio::Die->die($component, ': no such component')
+        unless grep($component eq $_, $proto->all_components);
     return $_INCLUDED->{$component} || 0;
 }
 
