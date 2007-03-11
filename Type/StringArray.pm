@@ -44,12 +44,6 @@ sub compare_defined {
     return @$left <=> @$right;
 }
 
-sub delete_duplicates {
-    my(undef, $value) = @_;
-    my($seen) = {};
-    return [grep(!$seen->{$_}++, @$value)];
-}
-
 sub equals {
     my($self, $other) = @_;
     return $self->is_equal($self, $other);
@@ -83,6 +77,11 @@ sub get_width {
 sub map_iterate {
     my($self, $op) = @_;
     return [map($op->($_), @{$self->as_array})];
+}
+
+sub sort_unique {
+    my(undef, $value) = @_;
+    return [sort(keys(%{+{map(($_ => undef), @$value)}}))];
 }
 
 sub to_literal {

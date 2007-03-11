@@ -62,9 +62,9 @@ options({
 	[['a,b']] => DIE(),
 	['a'] => DIE(),
     ],
-    delete_duplicates => [
+    sort_unique => [
 	[[]] => [[]],
 	[[qw(a b)]] => [[qw(a b)]],
-	[[qw(a a b)]] => [[qw(a b)]],
+	[[qw(b a a)]] => [[qw(a b)]],
     ],
 ];
