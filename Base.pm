@@ -4,6 +4,7 @@ package Bivio::Base;
 use strict;
 use base 'Bivio::UNIVERSAL';
 use Bivio::IO::ClassLoader;
+use Bivio::Die;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
