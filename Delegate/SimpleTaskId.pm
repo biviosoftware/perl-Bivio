@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::SimpleTaskId;
 # DEPRECATED: Subclass Bivio::Delegate::TaskId for new projects.
@@ -15,6 +15,27 @@ use strict;
 use base 'Bivio::Delegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_INFO_RE) = qr{^info_(.*)};
+my($_INCLUDED) = {};
+
+sub ALL_COMPONENTS {
+    return shift->grep_methods($_INFO_RE);
+}
+
+sub bunit_validate_all {
+    # Sanity check to make sure the the list of info_ methods don't collide
+    my($proto) = @_;
+    my($seen) = {};
+    foreach my $c (@{$proto->ALL_COMPONENTS}) {
+	foreach my $t (@{_component_info($proto, $c)}) {
+	    my($n) = $t->[0];
+	    Bivio::Die->die($c, ' and ', $seen->{$n}, ': both define ', $n)
+	        if $seen->{$n};
+	    $seen->{$n} = $c;
+	}
+    }
+    return;
+}
 
 sub get_delegate_info {
     # For backwards compatibility
@@ -649,19 +670,9 @@ sub info_xapian {
     ];
 }
 
-sub bunit_validate_all {
-    # Sanity check to make sure the the list of info_ methods don't collide
-    my($proto) = @_;
-    my($seen) = {};
-    foreach my $m (grep(/^info_/, keys(%Bivio::Delegate::SimpleTaskId::))) {
-	foreach my $t (@{_arg($proto, $m)}) {
-	    my($n) = $t->[0];
-	    Bivio::Die->die($m, ' and ', $seen->{$n}, ': both define ', $n)
-	        if $seen->{$n};
-	    $seen->{$n} = $m;
-	}
-    }
-    return;
+sub is_component_included {
+    my($self, $component) = @_;
+    return $_INCLUDED->{$component} || 0;
 }
 
 sub merge_task_info {
@@ -669,16 +680,17 @@ sub merge_task_info {
     my($seen) = {};
     return [map(
 	$seen->{$_->[0]}++ ? () : $_,
-	map(@{_arg($proto, $_)}, reverse(@_)),
+	map(@{ref($_) ? $_
+	    : ($_INCLUDED->{$_} = 1, _component_info($proto, $_))[1]},
+	    reverse(@_),
+	),
     )];
 }
 
-sub _arg {
-    my($proto, $a) = @_;
-    return $a
-	if ref($a);
-    my($m) = $a =~ /^info_/ ? $a : "info_$a";
-    Bivio::Die->die($a, ': no such info_* category')
+sub _component_info {
+    my($proto, $component) = @_;
+    my($m) = "info_$component";
+    Bivio::Die->die($component, ': no such info_* component')
         unless $proto->can($m);
     return $proto->$m();
 }
