@@ -2,7 +2,7 @@
 # $Id$
 [
     class() => [
-	ALL_COMPONENTS => [
+	all_components => [
 	    [] => [[qw(base tuple xapian)]],
 	],
 	bunit_validate_all => undef,

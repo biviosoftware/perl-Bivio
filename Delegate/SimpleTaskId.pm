@@ -18,7 +18,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_INFO_RE) = qr{^info_(.*)};
 my($_INCLUDED) = {};
 
-sub ALL_COMPONENTS {
+sub all_components {
     return shift->grep_methods($_INFO_RE);
 }
 
@@ -26,7 +26,7 @@ sub bunit_validate_all {
     # Sanity check to make sure the the list of info_ methods don't collide
     my($proto) = @_;
     my($seen) = {};
-    foreach my $c (@{$proto->ALL_COMPONENTS}) {
+    foreach my $c (@{$proto->all_components}) {
 	foreach my $t (@{_component_info($proto, $c)}) {
 	    my($n) = $t->[0];
 	    Bivio::Die->die($c, ' and ', $seen->{$n}, ': both define ', $n)
