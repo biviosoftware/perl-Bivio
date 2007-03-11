@@ -7,7 +7,8 @@ use base 'Bivio::Delegate::SimpleTaskId';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ALL_INFO {
-    return [qw(base blog dav mail motion tuple wiki user_auth xapian)];
+    #DEPREDCATED
+    return shift->ALL_COMPONENTS;
 }
 
 sub info_base {
@@ -222,6 +223,7 @@ sub info_blog {
  	    FORUM
  	    ANYBODY
 	    Type.AccessMode->execute_public
+            Model.BlogRecentList->execute_load_all
             Model.BlogList->execute_load_this
 	    View.Blog->detail
  	)],
