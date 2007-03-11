@@ -419,6 +419,7 @@ sub _require {
 
 sub _require_eval {
     my($proto, $pkg) = @_;
+    local($_);
     my($code) = <<"EOF";
     {
 	local(\$_);
