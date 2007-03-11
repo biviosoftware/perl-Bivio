@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UNIVERSAL;
 use strict;
@@ -119,7 +119,8 @@ sub equals {
 
 =head2 static grep_methods(regexp to_match) : array_ref
 
-Returns list of methods that match I<to_match>.
+Returns list of methods that match I<to_match>.  If a match is found, returns
+$+ (last matching paren) if defined, otherwise returns complete method name.
 
 =cut
 
@@ -127,7 +128,7 @@ sub grep_methods {
     my($proto, $to_match) = @_;
     no strict 'refs';
     return $proto->use('Type.StringArray')->sort_unique([
-	grep($_ =~ $to_match,
+	map($_ =~ $to_match ? defined($+) ? $+ : $_ : (),
 	    map(keys(%{*{$_ . '::'}}),
 	        $proto->package_name,
 		@{$proto->inheritance_ancestors}))]);
@@ -388,7 +389,7 @@ C<UNIVERSAL>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
