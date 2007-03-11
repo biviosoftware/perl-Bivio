@@ -35,9 +35,10 @@ sub from_date_time {
 
 sub from_literal_stripper {
     my(undef, $v) = @_;
-    # This is overly friendly, but we are only parsing pretty much anything
-    # COUPLING: Assumes nothing in the path but the BFN has digits in it
+    # This is overly friendly, but we are parsing pretty much anything following
+    # the name.
     $v =~ s{\D}{}g;
+    $v = substr($v, 0, 14);
     return $v;
 }
 
