@@ -268,8 +268,8 @@ arguments.
 =cut
 
 sub simple_require {
-    my($proto) = shift;
-    my(@res) = map(_require($proto, $_, 1), @_);
+    my($proto, @package) = @_;
+    my(@res) = map(_require($proto, $_, 1), @package);
     return wantarray ? @res : $res[0];
 }
 
