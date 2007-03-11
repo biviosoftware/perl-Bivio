@@ -44,6 +44,12 @@ sub compare_defined {
     return @$left <=> @$right;
 }
 
+sub delete_duplicates {
+    my(undef, $value) = @_;
+    my($seen) = {};
+    return [grep(!$seen->{$_}++, @$value)];
+}
+
 sub equals {
     my($self, $other) = @_;
     return $self->is_equal($self, $other);
