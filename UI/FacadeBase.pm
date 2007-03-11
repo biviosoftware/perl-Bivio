@@ -18,20 +18,10 @@ sub new {
     my($proto, $config, @rest) = @_;
     return $proto->SUPER::new(
 	_merge(
-	    _cfg_base(),
 	    map({
 		my($x) = \&{"_cfg_$_"};
-		Bivio::Agent::TaskId->unsafe_from_name($_) ? $x->($proto) : ();
-	    } qw(
-		forum_tuple_list
-		forum_wiki_view
-		user_create
-		mail_receive_dispatch
-		forum_motion_list
-                dav
-		forum_blog_list
-		search_list
-	    )),
+		$x->($proto);
+	    } @{Bivio::Agent::TaskId->included_components}),
 	    $config,
 	),
     );
@@ -208,38 +198,7 @@ EOF
     };
 }
 
-sub _cfg_dav {
-    return {
-	Task => [
-	    [DAV => 'dv/*'],
-	],
-	Text => [
-	    [ForumList => [
-		'RealmOwner.name' => 'Forum',
-		'RealmOwner.display_name' => 'Title',
-		'Forum.want_reply_to' => 'Reply-To List?',
-		'admin_only_forum_email' => 'Admin Only Email?',
-		'system_user_forum_email' => 'System User Email?',
-		'public_forum_email' => 'Public Email?',
-		'Forum.forum_id' => 'Database Key',
-	    ]],
-	    [ForumUserList => [
-		'Email.email' => 'Email',
-		mail_recipient => 'Subscribed?',
-		file_writer => 'Write Files?',
-		administrator => 'Administrator?',
-		'RealmUser.user_id' => 'Database Key',
-	    ]],
-	    [EmailAliasList => [
-		'EmailAlias.incoming' => 'From Email',
-		'EmailAlias.outgoing' => 'To Email or Forum',
-		'primary_key' => 'Database Key',
-	    ]],
-	],
-    };
-}
-
-sub _cfg_forum_blog_list {
+sub _cfg_blog {
     return {
 	Task => [
 	    [FORUM_BLOG_LIST => '?/blog'],
@@ -283,7 +242,60 @@ sub _cfg_forum_blog_list {
     };
 }
 
-sub _cfg_forum_motion_list {
+sub _cfg_dav {
+    return {
+	Task => [
+	    [DAV => 'dv/*'],
+	],
+	Text => [
+	    [ForumList => [
+		'RealmOwner.name' => 'Forum',
+		'RealmOwner.display_name' => 'Title',
+		'Forum.want_reply_to' => 'Reply-To List?',
+		'admin_only_forum_email' => 'Admin Only Email?',
+		'system_user_forum_email' => 'System User Email?',
+		'public_forum_email' => 'Public Email?',
+		'Forum.forum_id' => 'Database Key',
+	    ]],
+	    [ForumUserList => [
+		'Email.email' => 'Email',
+		mail_recipient => 'Subscribed?',
+		file_writer => 'Write Files?',
+		administrator => 'Administrator?',
+		'RealmUser.user_id' => 'Database Key',
+	    ]],
+	    [EmailAliasList => [
+		'EmailAlias.incoming' => 'From Email',
+		'EmailAlias.outgoing' => 'To Email or Forum',
+		'primary_key' => 'Database Key',
+	    ]],
+	],
+    };
+}
+
+sub _cfg_mail {
+    my($proto) = @_;
+    return {
+	Task => [
+	    [FORUM_EASY_FORM => '?/Forms/*'],
+	    [FORUM_FILE => '?/file/*'],
+	    [FORUM_MAIL_RECEIVE => '?/' . $proto->MAIL_RECEIVE_PREFIX],
+	    [FORUM_MAIL_REFLECTOR => undef],
+	    [FORUM_PUBLIC_FILE => '?/public/*'],
+	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
+	    [MAIL_RECEIVE_FORWARD => undef],
+	    [MAIL_RECEIVE_IGNORE => undef],
+	    [MAIL_RECEIVE_NOT_FOUND => undef],
+	    [MAIL_RECEIVE_NO_RESOURCES => undef],
+	    [USER_MAIL_BOUNCE => '?/' . $proto->MAIL_RECEIVE_PREFIX . Bivio::Biz::Model->get_instance('RealmMailBounce')->TASK_URI],
+	],
+	Text => [
+	    ['MailReceiveDispatchForm.uri_prefix' => $proto->MAIL_RECEIVE_PREFIX],
+	],
+    };
+}
+
+sub _cfg_motion {
     return {
 	Task => [
 	    [FORUM_MOTION_LIST => '?/votes'],
@@ -334,7 +346,7 @@ sub _cfg_forum_motion_list {
     };
 }
 
-sub _cfg_forum_tuple_list {
+sub _cfg_tuple {
     return {
 	Task => [
 	    [FORUM_TUPLE_DEF_EDIT => '?/edit-db-schemas'],
@@ -481,117 +493,7 @@ sub _cfg_forum_tuple_list {
     };
 }
 
-sub _cfg_forum_wiki_view {
-    my($proto) = @_;
-    return {
-	Task => [
-	    [FORUM_WIKI_EDIT => '?/edit-wiki/*'],
-	    [FORUM_WIKI_VIEW => ['?/wiki/*']],
-	    [FORUM_WIKI_NOT_FOUND => undef],
-	    [HELP => 'help/*'],
-	    [HELP_NOT_FOUND => undef],
-	],
-	Constant => [
-	    [help_wiki_realm_id => sub {
-		 my($req) = shift->get_request;
-		 return Bivio::Die->eval(
-		     sub {
-			 return Bivio::Biz::Model->new($req, 'RealmOwner')
-			     ->unauth_load_or_die({
-				 name => $proto->HELP_WIKI_REALM_NAME
-			     })->get('realm_id');
-		     },
-		 ) || 1;
-	    }],
-	],
-	Text => [
-	    [HelpWiki => [
-		header => 'Help',
-		footer => '',
-	    ]],
-	    [WikiForm => [
-		'RealmFile.path_lc' => 'Title',
-		'content' => '',
-		'RealmFile.is_public' => 'Make this article publicly available?',
-	    ]],
-	    [prose => [
-		Wiki => [
-		    not_found => <<'EOF',
-The page Tag(strong => String(['Action.WikiView', 'name'])); was not
-found, and you do not have permission to create it.  Please
-Link('contact us', 'GENERAL_CONTACT'); for more information about this error.
-<br /><br />
-To return to the previous page, click on your browser's back button, or
-Link('click here', [['->get_request'], 'task', 'view_task']); to
-return to the start page.
-EOF
-		],
-	    ]],
-	    [acknowledgement => [
-		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
-		FORUM_WIKI_NOT_FOUND => 'Page not found.  Please create it.',
-	    ]],
-	    [title => [
-		FORUM_WIKI_NOT_FOUND => 'Wiki Page Not Found',
-		HELP_NOT_FOUND => 'Help Page Not Found',
-		HELP => 'Help',
-		FORUM_WIKI_EDIT => 'Edit Wiki Page',
-		FORUM_WIKI_VIEW => 'Wiki',
-	    ]],
-	    ['task_menu.title' => [
-		FORUM_WIKI_EDIT => 'Add New Page',
-		FORUM_WIKI_EDIT_PAGE => 'edit this page',
-	    ]],
-	    [acknowledgement => [
-		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
-		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
-	    ]],
-	],
-    };
-}
-
-sub _cfg_mail_receive_dispatch {
-    my($proto) = @_;
-    return {
-	Task => [
-	    [FORUM_EASY_FORM => '?/Forms/*'],
-	    [FORUM_FILE => '?/file/*'],
-	    [FORUM_MAIL_RECEIVE => '?/' . $proto->MAIL_RECEIVE_PREFIX],
-	    [FORUM_MAIL_REFLECTOR => undef],
-	    [FORUM_PUBLIC_FILE => '?/public/*'],
-	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
-	    [MAIL_RECEIVE_FORWARD => undef],
-	    [MAIL_RECEIVE_IGNORE => undef],
-	    [MAIL_RECEIVE_NOT_FOUND => undef],
-	    [MAIL_RECEIVE_NO_RESOURCES => undef],
-	    [USER_MAIL_BOUNCE => '?/' . $proto->MAIL_RECEIVE_PREFIX . Bivio::Biz::Model->get_instance('RealmMailBounce')->TASK_URI],
-	],
-	Text => [
-	    ['MailReceiveDispatchForm.uri_prefix' => $proto->MAIL_RECEIVE_PREFIX],
-	],
-    };
-}
-
-sub _cfg_search_list {
-    return {
-	Task => [
-	    [SEARCH_LIST => 'pub/search'],
-	    [JOB_XAPIAN_COMMIT => undef],
-	],
-	Text => [
-	    [SearchList => [
-		'RealmFile.modified_date_time' => 'Last Update',
-		'RealmFile.path' => 'Item',
-	    ]],
-	    [SearchForm => [
-		search => '',
-		ok_button => 'Search',
-	    ]],
-	],
-    };
-}
-
-sub _cfg_user_create {
+sub _cfg_user_auth {
     return {
 	Constant => [
 	    [xlink_my_site_login => {
@@ -684,6 +586,95 @@ sub _cfg_user_create {
 		USER_PASSWORD  => 'Your Password',
 		USER_CREATE_DONE => 'Registration Email Sent',
 		SITE_ROOT => '',
+	    ]],
+	],
+    };
+}
+
+sub _cfg_wiki {
+    my($proto) = @_;
+    return {
+	Task => [
+	    [FORUM_WIKI_EDIT => '?/edit-wiki/*'],
+	    [FORUM_WIKI_VIEW => ['?/wiki/*']],
+	    [FORUM_WIKI_NOT_FOUND => undef],
+	    [HELP => 'help/*'],
+	    [HELP_NOT_FOUND => undef],
+
+	],
+	Constant => [
+	    [help_wiki_realm_id => sub {
+		 my($req) = shift->get_request;
+		 return Bivio::Die->eval(
+		     sub {
+			 return Bivio::Biz::Model->new($req, 'RealmOwner')
+			     ->unauth_load_or_die({
+				 name => $proto->HELP_WIKI_REALM_NAME
+			     })->get('realm_id');
+		     },
+		 ) || 1;
+	    }],
+	],
+	Text => [
+	    [HelpWiki => [
+		header => 'Help',
+		footer => '',
+	    ]],
+	    [WikiForm => [
+		'RealmFile.path_lc' => 'Title',
+		'content' => '',
+		'RealmFile.is_public' => 'Make this article publicly available?',
+	    ]],
+	    [prose => [
+		Wiki => [
+		    not_found => <<'EOF',
+The page Tag(strong => String(['Action.WikiView', 'name'])); was not
+found, and you do not have permission to create it.  Please
+Link('contact us', 'GENERAL_CONTACT'); for more information about this error.
+<br /><br />
+To return to the previous page, click on your browser's back button, or
+Link('click here', [['->get_request'], 'task', 'view_task']); to
+return to the start page.
+EOF
+		],
+	    ]],
+	    [acknowledgement => [
+		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
+		FORUM_WIKI_NOT_FOUND => 'Page not found.  Please create it.',
+	    ]],
+	    [title => [
+		FORUM_WIKI_NOT_FOUND => 'Wiki Page Not Found',
+		HELP_NOT_FOUND => 'Help Page Not Found',
+		HELP => 'Help',
+		FORUM_WIKI_EDIT => 'Edit Wiki Page',
+		FORUM_WIKI_VIEW => 'Wiki',
+	    ]],
+	    ['task_menu.title' => [
+		FORUM_WIKI_EDIT => 'Add New Page',
+		FORUM_WIKI_EDIT_PAGE => 'edit this page',
+	    ]],
+	    [acknowledgement => [
+		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
+		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
+	    ]],
+	],
+    };
+}
+
+sub _cfg_xapian {
+    return {
+	Task => [
+	    [SEARCH_LIST => 'pub/search'],
+	    [JOB_XAPIAN_COMMIT => undef],
+	],
+	Text => [
+	    [SearchList => [
+		'RealmFile.modified_date_time' => 'Last Update',
+		'RealmFile.path' => 'Description',
+	    ]],
+	    [SearchForm => [
+		search => '',
+		ok_button => 'Search',
 	    ]],
 	],
     };
