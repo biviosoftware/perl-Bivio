@@ -115,16 +115,34 @@ sub equals {
     return $self eq $that ? 1 : 0;
 }
 
-=for html <a name="inheritance_ancestor_list"></a>
+=for html <a name="grep_methods"></a>
 
-=head2 inheritance_ancestor_list() : array_ref
+=head2 static grep_methods(regexp to_match) : array_ref
+
+Returns list of methods that match I<to_match>.
+
+=cut
+
+sub grep_methods {
+    my($proto, $to_match) = @_;
+    no strict 'refs';
+    return $proto->use('Type.StringArray')->sort_unique([
+	grep($_ =~ $to_match,
+	    map(keys(%{*{$_ . '::'}}),
+	        $proto->package_name,
+		@{$proto->inheritance_ancestors}))]);
+}
+
+=for html <a name="inheritance_ancestors"></a>
+
+=head2 inheritance_ancestors() : array_ref
 
 Returns list of anscestors of I<class>, closest ancestor is at index 0.
 Asserts single inheritance.  Must be descended from this class.
 
 =cut
 
-sub inheritance_ancestor_list {
+sub inheritance_ancestors {
     my($proto) = @_;
     my($class) = ref($proto) || $proto;
     CORE::die('not a subclass of Bivio::UNIVERSAL')
@@ -167,7 +185,7 @@ sub instance_data_index {
     CORE::die('must call statically from package body')
 	unless $pkg eq (caller)[0];
     # This class doesn't have any instance data.
-    return @{$pkg->inheritance_ancestor_list} - 1;
+    return @{$pkg->inheritance_ancestors} - 1;
 }
 
 =for html <a name="is_blessed"></a>
