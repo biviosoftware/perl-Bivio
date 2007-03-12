@@ -81,7 +81,7 @@ sub internal_xhtml_adorned {
 	xhtml_tools => '',
 	xhtml_topic => '',
 	xhtml_byline => '',
-	xhtml_pager => '',
+	vs_pager => '',
 	xhtml_menu => TaskMenu([
 	    'USER_PASSWORD',
 	]),
@@ -101,7 +101,7 @@ sub internal_xhtml_adorned {
 	    DIV_top(Join([
 		DIV_tools(Join([
 		    view_widget_value('xhtml_tools'),
-		    view_widget_value('xhtml_pager'),
+		    view_widget_value('vs_pager'),
 		], {
 		    join_separator => EmptyTag(DIV => 'sep'),
 		})),
@@ -114,7 +114,7 @@ sub internal_xhtml_adorned {
 	    DIV_bottom(
 		DIV_tools(Join([
 		    view_widget_value('xhtml_tools'),
-		    view_widget_value('xhtml_pager'),
+		    view_widget_value('vs_pager'),
 		], {
 		    join_separator => EmptyTag(DIV => 'sep'),
 		})),
