@@ -65,7 +65,8 @@ again. Works around mozilla/firefox layout bug.
 sub JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG {
     return <<'EOF';
 function correct_table_layout_bug_onload() {
-    document.body.innerHTML += "\n";
+    if (navigator.appName == "Netscape")
+      document.body.innerHTML += "\n";
 }
 EOF
 }
