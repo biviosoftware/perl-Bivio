@@ -277,8 +277,7 @@ sub vs_paged_detail {
     my(undef, $model, $list_uri_args, $detail) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_detail.";
-    view_instance()->internal_put_base_attr(
-	pager => Tag(div => Join([
+    view_put(vs_pager => Tag(div => Join([
 	map(
 	    Link(
 		vs_text("$p$_"),
@@ -330,8 +329,7 @@ sub vs_put_pager {
     my(undef, $model, $attrs) = @_;
     my($x) = "Model.$model";
     my($p) = "$model.paged_list.";
-    view_instance()->internal_put_base_attr(
-	pager => DIV_pager(Join([
+    view_put(vs_pager => DIV_pager(Join([
 	map(
 	    Link(
 		vs_text("$p$_"),
