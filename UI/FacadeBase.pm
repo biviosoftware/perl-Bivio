@@ -122,6 +122,7 @@ sub _cfg_base {
 	    [state => 'State'],
 	    [zip => 'Zip'],
 	    [country => 'Country'],
+            [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
 	    [xlink => [
 		SITE_ROOT => 'Home',
@@ -637,10 +638,6 @@ Link('click here', [['->get_request'], 'task', 'view_task']); to
 return to the start page.
 EOF
 		],
-	    ]],
-	    [acknowledgement => [
-		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
-		FORUM_WIKI_NOT_FOUND => 'Page not found.  Please create it.',
 	    ]],
 	    [title => [
 		FORUM_WIKI_NOT_FOUND => 'Wiki Page Not Found',
