@@ -453,17 +453,25 @@ sub _category_map {
 		my($op) = $_;
 		($op => [
 		    map({
-			my($roles, $perms) = map(ref($_) ? $_ : [$_], @$_);
+			my($roles, $perms, @rest) = map(ref($_) ? $_ : [$_], @$_);
+			Bivio::Die->die(
+			    $cat,
+			    ': invalid category_map entry; extra params: ',
+			    \@rest,
+			) if @rest;
 			$roles = [map(Bivio::Auth::Role->$_(), @$roles)];
-			map({[
-			    ($_ =~ s/^-// xor $op eq '-')
-			        ? 'remove_permissions' : 'add_permissions',
-			    $roles,
-			    ${Bivio::Auth::PermissionSet->set(
-				Bivio::Auth::PermissionSet->get_min,
-				Bivio::Auth::Permission->$_(),
-			    )},
-			]} @{[@$perms]});
+			map({
+			    my($x) = $_;
+			    [
+				($x =~ s/^-// xor $op eq '-')
+				    ? 'remove_permissions' : 'add_permissions',
+				$roles,
+				${Bivio::Auth::PermissionSet->set(
+				    Bivio::Auth::PermissionSet->get_min,
+				    Bivio::Auth::Permission->$x(),
+				)},
+			    ];
+			} @$perms);
 		    } @ops),
 		]);
 	    } qw(+ -)),
