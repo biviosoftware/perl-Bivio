@@ -227,26 +227,22 @@ sub merge_realm_role_category_map {
 		    [USER => 'MAIL_SEND'],
 	    ],
 	    [
-		admin_only_forum_email => [
-		    MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)],
-		],
+		admin_only_forum_email =>
+		    [MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)]],
 	    ],
 	    Bivio::Agent::TaskId->is_component_included('tuple') ? ([
-		tuple => [
-		    ADMINISTRATOR => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)],
-		    MEMBER => [qw(TUPLE_WRITE TUPLE_READ)],
-		],
+		tuple =>
+		    [ADMINISTRATOR => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
+		    [MEMBER => [qw(TUPLE_WRITE TUPLE_READ)]],
 	    ]) : (),
 	    Bivio::Agent::TaskId->is_component_included('motion') ? ([
-		closed_results_motion => [
-		    MEMBER => [qw(MOTION_WRITE -MOTION_READ)],
-		    ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)],
-		],
+		closed_results_motion =>
+		    [MEMBER => [qw(MOTION_WRITE -MOTION_READ)]],
+		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
 	    ], [
-		open_results_motion => [
-		    MEMBER => [qw(MOTION_WRITE MOTION_READ)],
-		    ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)],
-		],
+		open_results_motion =>
+		    [MEMBER => [qw(MOTION_WRITE MOTION_READ)]],
+		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
 	    ]) : (),
         ];
     }};
