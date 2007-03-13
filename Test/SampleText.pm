@@ -182,5 +182,4 @@ sub _data {
     return $a->[Bivio::Biz::Random->integer(scalar(@$a))];
 }
 
-
 1;
