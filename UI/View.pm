@@ -460,7 +460,7 @@ sub _clear_children {
 	foreach my $o (
 	    ref($v) eq 'ARRAY' ? @$v : ref($v) eq 'HASH' ? values(%$v) : $v,
 	) {
-	    _clear_children($v, $seen)
+	    _clear_children($o, $seen)
 		if $object->is_blessed($o, 'Bivio::Collection::Attributes');
 	}
     }
