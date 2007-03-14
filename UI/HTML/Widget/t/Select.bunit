@@ -1,0 +1,19 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+model(TestWidgetForm => {
+    'User.gender' => class('Type.Gender')->MALE,
+});
+[
+    [{
+	field => 'User.gender',
+	choices => 'Type.Gender',
+	form_model => ['Model.TestWidgetForm'],
+    }] => qr{<select name="\w+" size="1">\n<option value="0" />Unspecified\n<option value="1" />Female\n<option value="2" selected="1" />Male\n</select>}s,
+    [{
+	field => 'User.gender',
+	choices => 'Type.Gender',
+	form_model => ['Model.TestWidgetForm'],
+	empty_key_label => 'Hello',
+    }] => qr{<select name="\w+" size="1">\n<option value="" />Hello\n<option value="1" />Female\n<option value="2" selected="1" />Male\n</select>}s,
+];
