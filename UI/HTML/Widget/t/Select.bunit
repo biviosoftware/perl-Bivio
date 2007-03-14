@@ -14,6 +14,6 @@ model(TestWidgetForm => {
 	field => 'User.gender',
 	choices => 'Type.Gender',
 	form_model => ['Model.TestWidgetForm'],
-	empty_key_label => 'Hello',
+	unknown_label => 'Hello',
     }] => qr{<select name="\w+" size="1">\n<option value="" />Hello\n<option value="1" />Female\n<option value="2" selected="1" />Male\n</select>}s,
 ];
