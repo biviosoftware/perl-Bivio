@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.84  2007/03/13 22:17:40  moeller
+  * Bivio::IO::ClassLoader simple_require had too much dynamic binding
+    going on
+  * Bivio::Biz::Model::BlogCreateForm can't die to see if exists,
+    because transaction fails. This is problematic, but there's not
+    much that can be done.
+  * Bivio::Biz::Random use /dev/urandom when available, because
+    /dev/random blocks
+  * Bivio::Test::Unit added builtin_chomp_and_return
+  * Bivio::Type::BlogFileName share from_literal and added
+    from_literal_stripper
+  * Bivio::Type::EnumDelegator call static method on delegate if $proto
+    is a string; otherwise use instance strip POD
+  * Bivio::UI::XHTML::Widget::WikiStyle wiki can be private/public
+  * Bivio::UNIVERSAL grep_methods added and inheritance_ancestors replaces
+    inheritance_ancestor_list
+
   Revision 4.83  2007/03/13 17:54:52  moeller
   more info later
 
