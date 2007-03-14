@@ -83,24 +83,14 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    my($rf) = $self->new_other('RealmFile');
-    $self->internal_put_field(realm_file => $rf);
+    $self->internal_put_field(realm_file => $self->new_other('RealmFile'));
     $self->internal_put_field(file_exists =>
-        _is_edit($self) && $rf->unsafe_load({path => _curr_path($self)}));
+				  _is_edit($self) && _is_loaded($self));
     return;
 }
 
 sub name_type {
     return Bivio::Type->get_instance('WikiName');
-}
-
-sub _curr_path {
-    my($self) = @_;
-    return $self->name_type->to_absolute(_authorized_name($self));
-}
-
-sub _is_edit {
-    return shift->get_request->unsafe_get('path_info') ? 1 : 0;
 }
 
 sub _authorized_name {
@@ -109,6 +99,20 @@ sub _authorized_name {
     my($self) = @_;
     return $self->name_type->from_literal_or_die(
 	shift->get_request->get('path_info') =~ m{^/*(.+)});
+}
+
+sub _is_edit {
+    return shift->get_request->unsafe_get('path_info') ? 1 : 0;
+}
+
+sub _is_loaded {
+    my($self) = @_;
+    my($rf) = $self->get('realm_file');
+    return $rf->unsafe_load({
+	path => $self->name_type->to_absolute(_authorized_name($self))
+    }) || $rf->unsafe_load({
+	path => $self->name_type->to_absolute(_authorized_name($self), 1)
+    });
 }
 
 1;
