@@ -10,7 +10,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub edit {
     return shift->internal_body(vs_simple_form(WikiForm => [
 	'WikiForm.RealmFile.path_lc',
-	'RealmFile.is_public',
+	'WikiForm.RealmFile.is_public',
 	Join([
 	    FormFieldError({
 		field => 'content',
