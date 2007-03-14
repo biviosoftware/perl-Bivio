@@ -110,6 +110,21 @@ EOF
     return;
 }
 
+=for html <a name="delete_output"></a>
+
+=head2 delete_output() : scalar_ref
+
+Delete and return output.
+
+=cut
+
+sub delete_output {
+    my($self) = @_;
+    my($output) = $self->unsafe_get('output');
+    $self->delete('output');
+    return $output;
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
