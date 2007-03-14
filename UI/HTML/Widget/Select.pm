@@ -128,6 +128,11 @@ Should the UNKNOWN type be displayed?
 
 How many rows should be visible
 
+=item unknown_label : any []
+
+The label for the first element, whose value will always be the empty string
+(undef, null).  Will default I<show_unknown> to false, if defined (see code).
+
 =back
 
 =cut
@@ -234,6 +239,7 @@ sub initialize {
         }
         $self->initialize_attr('list_display_field');
     }
+    $self->unsafe_initialize_attr('unknown_label');
     return;
 }
 
@@ -274,22 +280,17 @@ sub render {
     my($editable) = $form->is_field_editable($field)
 #TODO: Why this?
 	|| $field_value eq '';
-    for (my($i) = 0; $i < int(@$items); $i += 2) {
-	my($v) = $items->[$i];
-	if ($editable || $field_value eq $v) {
-	    $$buffer .= '<option value="' . $v . '"';
-	    $$buffer .= ' selected="1"'
-		if $field_value eq $v;
-	    $$buffer .= ' />' . $items->[$i+1] . "\n";
-	}
-    }
-    # No newline, don't know what follows.
+    my($ekl) = $self->render_simple_attr('unknown_label', $source);
+    $self->map_by_two(sub {
+        my($v, $k) = @_;
+	$$buffer .= qq{<option value="$v"}
+	    . ($field_value eq $v ? ' selected="1"' : '')
+	    . " />$k\n"
+	    if $editable || $field_value eq $v;
+	return;
+    }, $ekl ? ['', $ekl, @$items] : $items);
     $$buffer .= '</select>'.$s;
-
-    # Handler is rendered after, because it probably needs to reference the
-    # field.
     $fields->{handler}->render($source, $buffer) if $fields->{handler};
-
     return;
 }
 
@@ -338,7 +339,8 @@ sub _enum_sort_by_int {
 #
 sub _load_items {
     my($self, $choices) = @_;
-    # Most common dynamic case is first
+    $choices = $self->use($choices)
+	unless ref($choices);
     return _load_items_from_list($self, $choices)
 	if UNIVERSAL::isa($choices, 'Bivio::Biz::ListModel');
     return _load_items_from_enum($self, $choices)
@@ -383,22 +385,21 @@ sub _load_items_from_enum {
 sub _load_items_from_enum_list {
     my($self, $list) = @_;
     my($fields) = $self->[$_IDI];
-
     my(@values) = sort {
 	$fields->{enum_sort}->($a, $b);
     } @$list;
-
-    shift(@values) unless $self->get_or_default('show_unknown', 1);
-
-    # id, display pairs
-    my(@items);
-    foreach my $item (@values) {
-	push(@items, $item->as_int,
-		Bivio::HTML->escape($item->get_short_desc));
+    unless ($self->get_or_default(
+	'show_unknown', $self->unsafe_get('unknown_label') ? 0 : 1)
+    ) {
+	my($x) = shift(@values);
+#TODO: Eventually make the test stricter.  Popping first value is too fragile
+	Bivio::IO::Alert->warn_deprecated(
+	    $x, ': unknown value as_int is not 0 (', $x->as_int, ')'
+	) unless $x->as_int == 0;
     }
-
-    # Result
-    return \@items;
+    return [
+	map(($_->as_int, Bivio::HTML->escape($_->get_short_desc)), @values),
+    ];
 }
 
 # _load_items_from_enum_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
@@ -444,23 +445,12 @@ sub _load_items_from_list {
     my($id_name) = $self->get('list_id_field');
     my($id_type) = $list->get_field_info($id_name, 'type');
     my($control) = $self->unsafe_get('list_item_control');
-
-    # id, display pairs
-    my(@items);
-    $list->reset_cursor;
-    while($list->next_row) {
-	# skip rows unless the control value is set
-	if ($control) {
-	    next unless $list->get($control);
-	}
-	push(@items, $id_type->to_html($list->get($id_name)),
-            ${$self->render_attr('list_display_field', $list)});
-    }
-
-    # reset the list cursor for the next guy
-    $list->reset_cursor;
-
-    return \@items;
+    return $list->map_rows(sub {
+	$control && !$list->get($control) ? () : (
+	    $id_type->to_html($list->get($id_name)),
+	    ${$self->render_attr('list_display_field', $list)},
+	);
+    });
 }
 
 # _load_items_from_string_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
