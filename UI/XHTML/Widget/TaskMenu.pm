@@ -14,6 +14,7 @@ my($_PARAMS) = [
     @$_URI[1..$#$_URI],
     'control',
     'uri',
+    'xlink',
 ];
 
 sub internal_as_string {
@@ -54,25 +55,25 @@ sub initialize {
 		path_info => undef,
 		_cfg($cfg, @$_URI),
 	    });
-	    my($w);
-	    $self->initialize_value($cfg->{label}, $w = Link(
+	    my($w) = $cfg->{xlink} ? XLink($cfg->{xlink}) : Link(
 		ref($cfg->{label}) ? $cfg->{label}
 		    : vs_text('task_menu', 'title', $cfg->{label}),
 		$cfg->{uri},
-		{
-		    _task_menu_cfg => $cfg,
-		    _cfg($cfg, 'control'),
-		    class => [sub {
-			join(' ',
-			     $need_sep ? 'want_sep' : (),
-			     (ref($selected) ? $cfg->{task_id} == $selected
-				 : $selected eq ${$w->render_attr(
-				     value => shift(@_))})
-				 ? 'selected' : (),
-			);
-		    }],
-		},
-	    ));
+	    );
+	    $w->put(
+		_task_menu_cfg => $cfg,
+		_cfg($cfg, 'control'),
+		class => [sub {
+		    join(' ',
+			 $need_sep ? 'want_sep' : (),
+			 (ref($selected) ? $cfg->{task_id} == $selected
+			     : $selected eq ${$w->render_attr(
+				 value => shift(@_))})
+			     ? 'selected' : (),
+		    );
+		}],
+	    );
+	    $self->initialize_value($cfg->{label}, $w);
 	} @{$self->get('task_map')})],
     );
     return shift->SUPER::initialize(@_);

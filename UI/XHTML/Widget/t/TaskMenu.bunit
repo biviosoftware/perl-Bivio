@@ -43,4 +43,13 @@ req()->set_realm_and_user(qw(demo guest));
      }], {
 	 selected_item => [sub {'y'}],
      }] => qr{<div class="task_menu"><a target="_top" href="/guest">x</a><a target="_top" class="want_sep selected" href="/">y</a></div>},
+    [[{
+	task_id => 'SITE_ROOT',
+	xlink => 'back_to_top',
+    }]] => '<div class="task_menu"><a class="selected" href="#top">back to top</a></div>',
+    [[{
+	task_id => 'SITE_ROOT',
+	xlink => 'back_to_top',
+	control => 0,
+    }]] => '',
 ];
