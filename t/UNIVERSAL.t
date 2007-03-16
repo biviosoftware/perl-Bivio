@@ -35,6 +35,7 @@ sub _c {
 }
 
 package main;
+require './UNIVERSAL/DataSectionOK.pm';
 
 Bivio::Test->unit([
     'Bivio::UNIVERSAL' => [
@@ -103,6 +104,12 @@ Bivio::Test->unit([
 	],
 	my_idi => 1,
 	my_caller_t => 'my_caller_t',
+    ],
+    'Bivio::t::UNIVERSAL::DataSectionOK' => [
+	internal_data_section => qr{data ok},
+    ],
+    'Bivio::t::UNIVERSAL::DataSectionMissing' => [
+	internal_data_section => Bivio::DieCode->DIE,
     ],
 ]);
 

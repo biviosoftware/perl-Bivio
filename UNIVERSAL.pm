@@ -189,6 +189,21 @@ sub instance_data_index {
     return @{$pkg->inheritance_ancestors} - 1;
 }
 
+=for html <a name="internal_data_section"></a>
+
+=head2 static internal_data_section() : string_ref
+
+Reads the __DATA__ section of $proto.
+
+=cut
+
+sub internal_data_section {
+    my($proto) = @_;
+    no strict 'refs';
+    return ${$proto->use('Bivio::IO::File')->read(
+	\${$proto->package_name . '::'}{DATA})};
+}
+
 =for html <a name="is_blessed"></a>
 
 =head2 static final is_blessed(any value, any object) : boolean
@@ -364,8 +379,7 @@ name for this class is C<UNIVERSAL>.
 =cut
 
 sub simple_package_name {
-    my($proto) = @_;
-    return ((ref($proto) || $proto) =~ /([^:]+$)/)[0];
+    return (shift->package_name =~ /([^:]+$)/)[0];
 }
 
 =for html <a name="use"></a>
