@@ -6,8 +6,7 @@ use base 'Bivio::Type::EnumDelegator';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-#__PACKAGE__->compile;
-__PACKAGE__->compile_with_numbers([qw(YES NO ABSTAIN)]);
+__PACKAGE__->compile;
 
 sub is_continuous {
     return 0;
