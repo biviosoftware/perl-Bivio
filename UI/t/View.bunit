@@ -14,7 +14,11 @@ die('only works in PetShop facade')
 symlink('.', 'src')
     unless -e 'src';
 options({
-    compute_return => sub {[req('reply')->get_output]},
+    compute_return => sub {
+	my($case, $actual) = @_;
+	return $case->get('method') eq 'execute'
+	    ? [req('reply')->get_output] : $actual;
+    },
 });
 [
     class() => [
@@ -43,6 +47,13 @@ EOF
 	    [t1_html => req()] => qr{^t1$}s,
 	    [t2_html => req()] => qr{Pet Shop Demo.*<div>t2</div>}is,
 	    [t3_html => req()] => qr{^main$}s,
+	],
+	render => [
+	    [t1_html => req()] => DIE(),
+	],
+	inline_case(sub {req()->get('reply')->delete_output}),
+	render => [
+	    [t1_html => req()] => qr{^t1$}s,
 	],
     ],
 ];

@@ -435,6 +435,27 @@ sub pre_call_main {
     return;
 }
 
+=for html <a name="render"></a>
+
+=head2 static render(any view_name, Bivio::Agent::Request req) : string_ref
+
+Renders view identified by I<view_name> and returns the result.
+
+Always returns false.
+
+=cut
+
+sub render {
+    my($proto, $view_name, $req) = @_;
+    my($reply) = $req->get('reply');
+    my($o) = $reply->unsafe_get_output;
+    Bivio::Die->die($view_name, ': output already exists: ', $o)
+        if $o;
+    shift->call_main(@_);
+    return $reply->delete_output
+	|| Bivio::Die->die($view_name, ': no output was rendered');
+}
+
 =for html <a name="unsafe_get_current"></a>
 
 =head2 static unsafe_get_current() : Bivio::UI::View
