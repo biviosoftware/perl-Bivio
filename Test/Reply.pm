@@ -63,6 +63,21 @@ sub new {
 
 =cut
 
+=for html <a name="delete_output"></a>
+
+=head2 delete_output() : string_ref
+
+Returns the reply as a string ref.  Always reads the contents.
+
+=cut
+
+sub delete_output {
+    my($self) = @_;
+    my($res) = $self->unsafe_get_output;
+    $self->[$_IDI]->{output} = undef;
+    return $res;
+}
+
 =for html <a name="get_output"></a>
 
 =head2 get_output() : string_ref
@@ -108,6 +123,18 @@ sub set_output {
 	: ref($value) eq 'SCALAR' ? $value
 	: Bivio::Die->die('not a GLOB or SCALAR reference');
     return $self;
+}
+
+=for html <a name="unsafe_get_output"></a>
+
+=head2 unsafe_get_output() : string_ref
+
+Returns the reply as a string ref.  Always reads the contents.
+
+=cut
+
+sub unsafe_get_output {
+    return shift->[$_IDI]->{output};
 }
 
 #=PRIVATE SUBROUTINES
