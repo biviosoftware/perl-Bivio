@@ -1,4 +1,4 @@
-# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::QuerySearchBaseForm;
 use strict;
@@ -87,7 +87,7 @@ Sets the query.
 sub execute_ok {
     my($self) = @_;
     # Build query hash from form data.
-    return _redirect($self, {
+    _redirect($self, {
         map({
             my($v) = $self->unsafe_get($_);
             my($t) = $self->get_field_info($_, 'type');
@@ -98,6 +98,7 @@ sub execute_ok {
                 : ($name => $t->to_literal($v));
         } @{_get_visible_fields($self)}),
     });
+    return;
 }
 
 =for html <a name="execute_other"></a>
@@ -110,7 +111,7 @@ Reset all form fields to their default value if the reset button was clicked.
 
 sub execute_other {
     my($self, $button_field) = @_;
-    return _redirect($self)
+    _redirect($self)
         if $button_field eq 'reset_button';
     return $self->SUPER::execute_other($button_field);
 }
@@ -166,13 +167,12 @@ sub internal_pre_execute {
 #
 sub _get_visible_fields {
     my($self) = @_;
-    return [grep(
-	!$self->is_blessed(
-	    $self->get_field_info($_, 'type'),
-	    'Bivio::Type::FormButton',
-	),
-	@{$self->get_info('visible_field_names')},
-    )];
+    return [
+        grep(! ($self->get_field_info($_, 'type')
+            && $self->get_field_info($_, 'type')
+                ->isa('Bivio::Type::FormButton')),
+            @{$self->get_info('visible_field_names')}),
+    ];
 }
 
 # _load_query_value(self, string field)
@@ -210,19 +210,16 @@ sub _load_query_value {
 sub _redirect {
     my($self, $query) = @_;
     my($req) = $self->get_request;
-    return {
-	task_id => 'CLIENT_REDIRECT',
-	query => {
-	    $self->use('Action.ClientRedirect')->QUERY_TAG => $req->format_uri({
-		query => $query || {},
-	    }),
-        },
-    };
+    $req->client_redirect(Bivio::Agent::TaskId->CLIENT_REDIRECT, undef, {
+        Bivio::Biz::Action::ClientRedirect->QUERY_TAG =>
+            $req->format_uri($req->get('task_id'), $query || {}),
+    });
+    return;
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
