@@ -70,6 +70,7 @@ __PACKAGE__->compile([
     NOT_NULL => [2],
     NOT_NULL_UNIQUE => [3],
     NOT_ZERO_ENUM => [4],
+    NOT_NULL_SET => [5],
 ]);
 
 #=PRIVATE METHODS

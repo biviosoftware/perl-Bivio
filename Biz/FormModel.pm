@@ -1569,6 +1569,7 @@ sub _parse_cols {
     my($fields) = $self->[$_IDI];
     my($method) = $is_hidden ? 'internal_get_hidden_field_names'
 	    : 'internal_get_visible_field_names';
+    my($null_set) = {};
     foreach my $n (@{$self->$method()}) {
 	$n =~ s/^(.*)\.x\=/$1/;
 	my($fn) = $self->get_field_name_for_html($n);
@@ -1612,6 +1613,29 @@ sub _parse_cols {
 	unless (defined($v) || defined($err)) {
 	    ($v, $err) = $type->from_literal($form->{$fn.'.x'});
 	    $values->{$n} = $v;
+	}
+
+	# NOT_NULL_SET
+	# May need to include NOT_ZERO_ENUM and UNSPECIFIED checks
+	# from Success? case below
+	if (
+	    $self->get_field_info($n, 'constraint')
+		== Bivio::SQL::Constraint->NOT_NULL_SET
+	) {
+	    my($primary_field) =
+		$self->get_field_info($n, 'null_set_primary_field');
+#	    my($primary_field) = $sql_support->get('null_set_map')->{$n};
+	    $null_set->{$primary_field} ||= {passed_flag => 0};
+	    next
+		if $null_set->{$primary_field}->{passed_flag};
+	    if (defined($v)) {
+		$null_set->{$primary_field}->{passed_flag} = 1;
+		$self->internal_clear_error($primary_field);
+	    }
+	    else {
+		$self->internal_put_error($primary_field,
+		    Bivio::TypeError->NULL);
+	    }
 	}
 
 	# Success?

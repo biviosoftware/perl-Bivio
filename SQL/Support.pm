@@ -567,6 +567,8 @@ sub _init_column_from_hash {
     $col->{constraint} = Bivio::SQL::Constraint->from_any(
 	    $decl->{constraint}) if $decl->{constraint};
     $col->{in_list} = $decl->{in_list} ? 1 : 0;
+    $col->{null_set_primary_field} = $decl->{null_set_primary_field}
+	if exists $decl->{null_set_primary_field};
     $col->{select_value} = $decl->{select_value}
         if $decl->{select_value};
 
