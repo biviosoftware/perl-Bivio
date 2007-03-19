@@ -72,6 +72,12 @@ sub _cfg_base {
 		list_action
 	    }] => []],
 	],
+	Constant => [
+	    [xlink_back_to_top => {
+		uri => '',
+		anchor => 'top',
+	    }],
+	],
 	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
 	],
@@ -125,6 +131,7 @@ sub _cfg_base {
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
 	    [xlink => [
+		back_to_top => 'back to top',
 		SITE_ROOT => 'Home',
 	    ]],
 	    [[qw(paged_detail paged_list)] => [
