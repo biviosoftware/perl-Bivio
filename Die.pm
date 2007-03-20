@@ -434,9 +434,11 @@ Otherwise, calls L<die|"die">.
 
 sub throw_or_die {
     my($proto, $code) = @_;
-    UNIVERSAL::isa($code, 'Bivio::DieCode')
+    my($m) = UNIVERSAL::isa($code, 'Bivio::DieCode')
 	|| Bivio::DieCode->is_valid_name($code)
-	? shift->throw(@_) : shift->die(@_);
+	&& Bivio::DieCode->unsafe_from_name($code)
+	? 'throw' : 'die';
+    shift->$m(@_);
     # DOES NOT RETURN
 }
 
