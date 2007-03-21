@@ -191,6 +191,18 @@ sub exists {
     return defined(shift->[$_IDI]->{map}->{lc(shift(@_))}) ? 1 : 0;
 }
 
+=for html <a name="format_css"></a>
+
+=head2 static format_css(string name, .., Bivio::Collection::Attributes req_or_facade) : string
+
+=head2 format_css(string name, ... ) : array
+
+=cut
+
+sub format_css {
+    return shift->get_value(@_);
+}
+
 =for html <a name="get_error"></a>
 
 =head2 get_error(any name, string msg, ...) : any
