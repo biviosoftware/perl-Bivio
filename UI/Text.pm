@@ -184,6 +184,21 @@ sub assert_name {
 
 =head2 get_value(string tag_part, ..., Bivio::Collection::Attributes facade_or_req) : string
 
+=cut
+
+sub format_css {
+    my($v) = shift->get_value(@_);
+    return ''
+	unless length($v);
+    $v =~ s/(?=["\\])/\\/sg;
+    $v =~ s/\n/\\A/sg;
+    return qq{"$v"};
+}
+
+=for html <a name="get_value"></a>
+
+=head2 get_value(string tag_part, ..., Bivio::Collection::Attributes facade_or_req) : string
+
 The simple case is a single I<tag_part> with no L<SEPARATOR|"SEPARATOR">s
 passed to an
 instance of this FacadeComponent, i.e.  I<facade_or_req> is C<undef>.  The
