@@ -43,6 +43,7 @@ errors.  Feel free to add to the list in internal_initialize:
     family=list
     color=color-name
     size=string
+    size%
     class=string
     id=string
     bold
@@ -82,7 +83,7 @@ This is the key.
 The first problem is that Netscape reads the C<font-color> property
 strangely, e.g.
 
-    font-color: "#FF0000";
+    font-color: #FF0000;
 
 is green, not red as in IE.  This is why we don't allow the default
 font to have a color.  It will be plain wrong in Netscape.  Instead
@@ -150,6 +151,16 @@ my(%_TAG_MAP) = (
     strike => 'strike',
     underline => 'u',
 );
+# CSS-only
+my($_CSS_MAP) = {
+    lowercase => 'text-transform: lowercase',
+    uppercase => 'text-transform: uppercase',
+    nowrap => 'white-space: nowrap',
+    inline => 'display: inline',
+    normal => 'font-weight: normal',
+    none => 'text-decoration: none',
+};
+
 # Attribute should only be used by this module
 my($_CONFIG_ATTR) = '_config';
 
@@ -157,24 +168,24 @@ my($_CONFIG_ATTR) = '_config';
 
 =cut
 
-=for html <a name="format_html"></a>
+=for html <a name="format_css"></a>
 
-=head2 static format_html(string name, Bivio::Collection::Attributes req_or_facade) : array
+=head2 static format_css(string name, Bivio::Collection::Attributes req_or_facade) : string
+
+=head2 format_css(string name) : array
+
+=cut
+
+sub format_css {
+    my($proto, $name, $req) = @_;
+    return ''
+	unless $name and my $v = $proto->internal_get_value($name, $req);
+    return $v->{css};
+}
+
+=head2 static format_html(string name, Bivio::Collection::Attributes req_or_facade) : string
 
 =head2 format_html(string name) : array
-
-Returns the font as prefix and suffix strings to surround the text with.
-
-If I<thing> returns false (zero or C<undef>), returns two empty
-strings.
-
-See
-L<Bivio::UI::FacadeComponent::internal_get_value|Bivio::UI::FacadeComponent/"internal_get_value">
-for description of last argument.
-
-=head2 REQUEST ATTRIBUTES
-
-=over 4
 
 =item font_with_style : boolean [0]
 
@@ -187,13 +198,8 @@ was set in an inline style.
 
 sub format_html {
     my($proto, $name, $req) = @_;
-    return ('', '') unless $name;
-
-    # Lookup name
-    my($v) = $proto->internal_get_value($name, $req);
-    return ('', '') unless $v;
-
-    # Figure out which form of html we have
+    return ''
+	unless $name and my $v = $proto->internal_get_value($name, $req);
     $req ||= Bivio::Agent::Request->get_current;
     return $req->unsafe_get('font_with_style') ? @{$v->{html_with_style}}
 	    : @{$v->{html_no_style}};
@@ -243,22 +249,17 @@ the values to html and such.
 
 sub initialization_complete {
     my($self) = @_;
-
-    # Initialize default first
     my($default) = $self->internal_get_value('default');
     $self->initialization_error(
-	    {names => ['default']}, ': default font not defined')
-	    unless $default;
+	{names => ['default']}, ': default font not defined'
+    ) unless $default;
     _initialize($self, $default, $default);
     $self->initialization_error(
-	    $default, 'do not set color on default, use page_text')
-	    if defined($default->{attrs}->{color});
-
-    # Initialize the rest of the values
+	$default, 'do not set color on default, use page_text'
+    ) if defined($default->{attrs}->{color});
     foreach my $v (@{$self->internal_get_all}) {
 	_initialize($self, $v, $default);
     }
-
     $self->SUPER::initialization_complete();
     return;
 }
@@ -274,14 +275,15 @@ Initializes the internal value from the configuration.
 sub internal_initialize_value {
     my($self, $value) = @_;
     my($v) = $value->{config};
-    unless (ref($v) eq 'ARRAY') {
+    unless (ref($v)) {
+	$v = $value->{config} = [$v];
+    }
+    elsif (ref($v) ne 'ARRAY') {
 	$self->initialization_error($value, 'not an array_ref');
 	$value->{config} = [];
     }
-
     # Special case the UNDEF_CONFIG.  The names list is empty in this case.
-    return if int(@{$value->{names}});
-
+    return if @{$value->{names}};
     $value->{attrs} = {};
     $value->{html_no_style} = ['', ''];
     $value->{html_with_style} = ['', ''];
@@ -296,10 +298,7 @@ sub internal_initialize_value {
 #
 sub _initialize {
     my($self, $value, $default) = @_;
-    # Already initialized?  (Happens for default)
     return if $value->{html};
-
-    # Do we need to set the color implicitly?
     my(@c) = @{$value->{config}};
     if (int(@{$value->{names}}) == 1 && !grep(/^color=/, @c)) {
 	my($name) = $value->{names}->[0];
@@ -308,21 +307,25 @@ sub _initialize {
 	    push(@c, 'color='.$name);
 	}
     }
-
-    # Parse the config
     my(%attrs, @tags);
     $attrs{$_CONFIG_ATTR} = \@c;
     foreach my $a (@c) {
 	if ($_TAG_MAP{$a}) {
 	    $attrs{'tag_'.$_TAG_MAP{$a}} = 1;
 	}
-	elsif ($a =~ /^(family|size|class|id|style)=(.*)/) {
+	elsif ($a =~ /^(family|weight|size|class|id|style)=(.*)/) {
 	    # May be blank
 	    $attrs{$1} = $2;
+	}
+	elsif ($a =~ /^\d+\%$/ || $_SIZE_MAP{$a}) {
+	    $attrs{size} = $a;
 	}
 	elsif ($a =~ /^color=(.+)/) {
 	    $attrs{color} = Bivio::UI::Color->format_html(
 		    $1, '', $self->get_facade);
+	}
+	elsif ($_CSS_MAP->{$a}) {
+	    push(@{$attrs{other_styles} ||= []}, $_CSS_MAP->{$a});
 	}
 	else {
 	    $self->initialization_error($value, 'unknown attribute: ', $a);
@@ -331,9 +334,35 @@ sub _initialize {
 	}
     }
     $value->{attrs} = \%attrs;
-
     _initialize_html_no_style($value, $default);
+    _initialize_css($self, $value);
     _initialize_html_with_style($value, $default);
+    return;
+}
+
+# _initialize_css(hash attrs) : array_ref
+#
+# Returns 
+#
+sub _initialize_css {
+    my($self, $value) = @_;
+    my($a) = $value->{attrs};
+    $value->{css} = join(' ', map(
+	$_ =~ /;$/ ? $_ : "$_;",
+        map($a->{$_} ? ($_ eq 'color' ? '' : 'font-') . "$_: $a->{$_}" : (),
+	    qw(family weight color size)),
+	map($a->{"tag_$_->[0]"} ? $_->[1] : (),
+	    [b => 'font-weight: bold'],
+	    [big => 'font-size: bigger'],
+	    [i => 'font-style: italic'],
+	    [small => 'font-size: smaller'],
+	    [strike => 'text-decoration: line-through'],
+	    [tt => 'font-family: monospace'],
+	    [u => 'text-decoration: underline'],
+	),
+	@{$a->{other_styles} || []},
+	$a->{style} ? $a->{style} : (),
+    ));
     return;
 }
 
@@ -344,11 +373,7 @@ sub _initialize {
 sub _initialize_html {
     my(%attrs) = @_;
     my($p, $s) = ('', '');
-
-    # <FONT> attributes
     foreach my $k (qw(family size color class id style)) {
-	# We don't allow "0" either.  This allows us to override
-	# the default.
 	next unless $attrs{$k};
 	unless ($p) {
 	    $p = '<font';
@@ -357,12 +382,11 @@ sub _initialize_html {
 	my($n) = $k eq 'family' ? 'face' : $k;
 	my($v) = $attrs{$k};
 	# Map to numeric sizes, but only in <FONT> attributes
-	$v = $_SIZE_MAP{$v} if $k eq 'size' && $_SIZE_MAP{$v};
+	$v = $_SIZE_MAP{$v}
+	    if $k eq 'size' && $_SIZE_MAP{$v};
 	$p .= ' '.$n.'="'.$v.'"';
     }
     $p .= '>' if $p;
-
-    # Copy the tag-based attributes
     foreach my $k (keys(%attrs)) {
 	next unless $k =~ /^tag_(\w+)$/;
 	$p .= "<$1>";
@@ -377,13 +401,8 @@ sub _initialize_html {
 #
 sub _initialize_html_no_style {
     my($value, $default) = @_;
-    my(%attrs) = %{$value->{attrs}};
-
-    while (my($k, $v) = each(%{$default->{attrs}})) {
-	$attrs{$k} = $v unless defined($attrs{$k});
-    }
-
-    $value->{html_no_style} = _initialize_html(%attrs);
+    $value->{html_no_style}
+	= _initialize_html(%{$default->{attrs}}, %{$value->{attrs}});
     return;
 }
 
@@ -393,7 +412,6 @@ sub _initialize_html_no_style {
 #
 sub _initialize_html_with_style {
     my($value, $default) = @_;
-    # No defaulting needed.  This is handled by style sheet
     $value->{html_with_style} = _initialize_html(%{$value->{attrs}});
     return;
 }
