@@ -46,6 +46,18 @@ sub _cfg_base {
 		error
 		warning
 	    )] => -1],
+	    # CSS
+	    [body => 0],
+	    [[qw(body_background header_su)] => 0xffffff],
+	    [[qw(off footer_border_top)] => 0x999999],
+	    [even_background => 0xeeeeee],
+	    [odd_background => -1],
+	    [[qw(a_link topic)] => 0x444444],
+	    [a_hover => 0x888888],
+	    [acknowledgement_border => 0x0],
+	    [[qw(err warn)] => 0x990000],
+	    [header_su_background => 0x00ff00],
+	    [[qw(form_desc form_sep_border)]  =>  0x666666],
 	],
 	Font => [
 	    map([$_->[0] => [qq{class=$_->[1]}]],
@@ -71,6 +83,24 @@ sub _cfg_base {
 		table_heading
 		list_action
 	    }] => []],
+	    # CSS
+	    [warn => 'italic'],
+	    [err => 'bold'],
+	    [body => ['family=Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small']],
+	    [pre_text => 'family="Courier New", Courier, monospace, fixed'],
+	    [a_link => 'none'],
+	    [a_hover => ['underline']],
+	    [[qw(form_err form_label_ok)] => 'bold'],
+	    [form_field_err => ['normal', '80%']],
+	    [label_ok => 'bold'],
+	    [form_footer => ['smaller', 'italic']],
+	    [footer => 'smaller'],
+	    [header_su => 'larger'],
+	    [selected => 'bold'],
+	    [topic => 'bold', 'larger'],
+	    [byline => 'bold'],
+	    [main_title => ['140%', 'bold']],
+	    [pager => ['nowrap', 'inline']],
 	],
 	Constant => [
 	    [xlink_back_to_top => {
@@ -99,9 +129,12 @@ sub _cfg_base {
 	    [ROBOTS_TXT => 'robots.txt'],
 	    [TEST_BACKDOOR => '_test_backdoor'],
 	    [PERMANENT_REDIRECT => undef],
+	    [CLIENT_REDIRECT => 'go/*'],
+	    [SITE_CSS => 'pub/site.css'],
 	],
 	Text => [
 	    [support_email => 'support'],
+	    [support_name => 'String(vs_site_name()); Support'],
 #TODO:	    [support_phone => '(800) 555-1212'],
 	    [[qw(prologue epilogue)] => ''],
 	    [home_page_uri => '/hm/index'],
@@ -140,8 +173,11 @@ sub _cfg_base {
 		list => 'back to list',
 	    ]],
 	    [prose => [
-		Base => [
-		    support_name => 'String(vs_site_name()); Support',
+		@{__PACKAGE__->map_by_two(sub {
+		    my($k, $v) = @_;
+		    # Base. is deprecated usage
+		    return ([$k, "Base.$k"] => $v);
+	        }, [
 		    xhtml_logo => q{DIV_logo_su(If(
 			['->is_substitute_user'],
 			Link(
@@ -153,7 +189,7 @@ sub _cfg_base {
 			    'LOGOUT',
 			    'su',
 			),
-			Link(' ', '/', 'logo'),
+			Link('', '/', 'logo'),
 		    ));},
 		    xhtml_head_title => q{Title([vs_site_name(), Prose(vs_text([sub {"xhtml_head.title.$_[1]"}, ['task_id', '->get_name']]))]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
@@ -162,45 +198,7 @@ Copyright &copy; @{[__PACKAGE__->use('Type.DateTime')->now_as_year]} vs_text('si
 All rights reserved.<br />
 Link('Developed by bivio', 'http://www.bivio.biz');
 EOF
-		],
-		UserAuth => [
-		    support_name => 'String(vs_site_name()); Support',
-		    create_done => <<'EOF',
-We have sent a confirmation email to
-String(['Model.UserRegisterForm', 'Email.email']);.
-Please follow the instructions in this email message to complete
-your registration with vs_site_name();.
-EOF
-		    create_mail => <<'EOF',
-Thank you for registering with vs_site_name();.
-In order to complete your registration, please click on the following link:
-
-String(['Model.UserRegisterForm', 'uri']);
-
-For your security, this link may be used one time only to set your
-password.
-
-You may contact customer support by replying to this message.
-
-Thank you,
-vs_site_name(); Support
-EOF
-		    password_query_mail => <<'EOF',
-Please follow the link to reset your password:
-
-Join([['Model.UserPasswordQueryForm', 'uri']]);
-
-For your security, this link may be used one time only to set your
-password.
-
-You may contact customer support by replying to this message.
-
-Thank you,
-vs_site_name(); Support
-EOF
-		    password_query_mail_subject => 'vs_site_name(); Password Assistance',
-		    create_mail_subject => 'vs_site_name(); Registration Verification',
-		],
+		])},
 	    ]],
 	],
     };
@@ -208,6 +206,9 @@ EOF
 
 sub _cfg_blog {
     return {
+	Font => [
+	    [blog_list_heading => ['size=100%', 'bold']],
+	],
 	Task => [
 	    [FORUM_BLOG_LIST => '?/blog'],
 	    [FORUM_BLOG_DETAIL => '?/blog-entry/*'],
@@ -281,15 +282,25 @@ sub _cfg_dav {
     };
 }
 
-sub _cfg_mail {
-    my($proto) = @_;
+sub _cfg_file {
     return {
 	Task => [
 	    [FORUM_EASY_FORM => '?/Forms/*'],
 	    [FORUM_FILE => '?/file/*'],
+	    [FORUM_PUBLIC_FILE => '?/pub/*'],
+        ],
+    };
+}
+
+sub _cfg_mail {
+    my($proto) = @_;
+    return {
+	Font => [
+	    [mail_msg_field => 'bold'],
+	],
+	Task => [
 	    [FORUM_MAIL_RECEIVE => '?/' . $proto->MAIL_RECEIVE_PREFIX],
 	    [FORUM_MAIL_REFLECTOR => undef],
-	    [FORUM_PUBLIC_FILE => '?/public/*'],
 	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
 	    [MAIL_RECEIVE_FORWARD => undef],
 	    [MAIL_RECEIVE_IGNORE => undef],
@@ -516,6 +527,9 @@ sub _cfg_user_auth {
 		no_context => 1,
 	    }],
 	],
+	Font => [
+	    [user_state => ['140%', 'uppercase']],
+	],
 	FormError => [
 	    ['UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH' => 
 		 q{The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".},],
@@ -595,6 +609,17 @@ sub _cfg_user_auth {
 		USER_CREATE_DONE => 'Registration Email Sent',
 		SITE_ROOT => '',
 	    ]],
+	    [prose => [
+		xhtml_user_state => q{DIV_user_state(
+		    Director([qw(user_state ->get_name)], {
+			LOGGED_IN => XLink('LOGOUT'),
+			LOGGED_OUT => XLink('LOGIN'),
+			JUST_VISITOR => XLink('USER_CREATE'),
+		    }),
+		);},
+		password_query_mail_subject => 'vs_site_name(); Password Assistance',
+		create_mail_subject => 'vs_site_name(); Registration Verification',
+	    ]],
 	],
     };
 }
@@ -632,19 +657,6 @@ sub _cfg_wiki {
 		'RealmFile.path_lc' => 'Title',
 		'content' => '',
 		'RealmFile.is_public' => 'Make this article publicly available?',
-	    ]],
-	    [prose => [
-		Wiki => [
-		    not_found => <<'EOF',
-The page Tag(strong => String(['Action.WikiView', 'name'])); was not
-found, and you do not have permission to create it.  Please
-Link('contact us', 'GENERAL_CONTACT'); for more information about this error.
-<br /><br />
-To return to the previous page, click on your browser's back button, or
-Link('click here', [['->get_request'], 'task', 'view_task']); to
-return to the start page.
-EOF
-		],
 	    ]],
 	    [title => [
 		FORUM_WIKI_NOT_FOUND => 'Wiki Page Not Found',
