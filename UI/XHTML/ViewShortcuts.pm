@@ -226,6 +226,21 @@ sub vs_form_error_title {
     );
 }
 
+sub vs_grid3 {
+    my(undef, $qualifier) = @_;
+    return Grid([[
+	map(
+	    Join([
+		view_widget_value("xhtml_${qualifier}_$_"),
+	    ], {cell_class => "${qualifier}_$_"}),
+	    qw(left middle right),
+	),
+    ]], {
+	class => $qualifier,
+	hide_empty_cells => 1,
+    });
+}
+
 sub vs_list {
     my($proto, $model, $columns, $attrs) = @_;
     return Table(
