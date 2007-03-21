@@ -1,15 +1,14 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::View::Example;
 use strict;
-use base 'Bivio::UI::View::Method';
+use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub eg1 {
-    view_put(body => Simple('hello, world!'));
-    return;
+    return shift->internal_body(Simple('hello, world!'));
 }
 
 1;
