@@ -27,8 +27,21 @@ my($_SELF) = __PACKAGE__->new({
 	[header_background => 0xEDE4B5],
 	[category_background => 0xD5EEFF],
 	[acknowledgement => 0x009900],
+	[bunit_complex => 0xFF0000],
+	[bunit_border => 0x00ff00],
+	[example_background => 0xFFCCFF],
     ],
     Font => [
+	map(["bunit_$_" => [$_]], qw(
+	    bold
+	    code
+	    italic
+	    larger
+	    smaller
+	    strike
+	    underline
+        )),
+	[bunit_complex => ['family=arial', 'style=text-align: center', 'lowercase']],
 	[default => ['family=arial,sans-serif']],
 	[error_icon => ['color=error', 'larger', 'bold']],
 	[page_heading => ['bold']],
@@ -153,6 +166,9 @@ my($_SELF) = __PACKAGE__->new({
 	}],
     ],
     Text => [
+	[bunit_simple => 'simple text'],
+	[bunit_escape => '"quoted"\backslash'],
+	[bunit_newline => "new\nline"],
 	# Where to redirect to when coming in via /,
 	# i.e. http://petshop.bivio.biz
 	[home_page_uri => '/pub'],
