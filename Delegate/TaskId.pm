@@ -156,6 +156,14 @@ sub info_base {
 	    next=SITE_ROOT
 	)],
 	[qw(
+            SITE_CSS
+            54
+	    GENERAL
+	    ANYBODY
+	    View.CSS->site_css
+	)],
+#55
+	[qw(
             PERMANENT_REDIRECT
             56
 	    GENERAL
@@ -245,6 +253,7 @@ sub info_blog {
             Model.BlogList->execute_load_page
             View.Blog->recent_rss
         )],
+#108-109 free
     ];
 }
 
@@ -359,6 +368,32 @@ sub info_dav {
     ];
 }
 
+sub info_file {
+    return [
+	[qw(
+            FORUM_EASY_FORM
+            43
+            FORUM
+            ANYBODY
+            Action.EasyForm
+        )],
+ 	[qw(
+ 	    FORUM_PUBLIC_FILE
+ 	    44
+ 	    FORUM
+ 	    ANYBODY
+ 	    Action.RealmFile->execute_public
+ 	)],
+ 	[qw(
+ 	    FORUM_FILE
+ 	    52
+ 	    FORUM
+ 	    DATA_READ
+ 	    Action.RealmFile
+        )],
+    ];
+}
+
 sub info_mail {
     return [
 	[qw(
@@ -413,20 +448,6 @@ sub info_mail {
             Action.MailReceiveStatus->execute
         )],
 	[qw(
-            FORUM_EASY_FORM
-            43
-            FORUM
-            ANYBODY
-            Action.EasyForm
-        )],
- 	[qw(
- 	    FORUM_PUBLIC_FILE
- 	    44
- 	    FORUM
- 	    ANYBODY
- 	    Action.RealmFile->execute_public
- 	)],
-	[qw(
             USER_MAIL_BOUNCE
             46
             USER
@@ -440,13 +461,6 @@ sub info_mail {
             GENERAL
             ANYBODY
             Action.MailReceiveStatus->execute_forbidden
-        )],
- 	[qw(
- 	    FORUM_FILE
- 	    52
- 	    FORUM
- 	    DATA_READ
- 	    Action.RealmFile
         )],
 	[qw(
             FORUM_MAIL_REFLECTOR
@@ -462,7 +476,7 @@ sub info_motion {
     return [
  	[qw(
  	    FORUM_MOTION_LIST
- 	    57
+ 	    110
  	    FORUM
  	    MOTION_WRITE
             Model.MotionList->execute_load_page
@@ -470,7 +484,7 @@ sub info_motion {
  	)],
  	[qw(
  	    FORUM_MOTION_ADD
- 	    58
+ 	    111
  	    FORUM
  	    MOTION_ADMIN
 	    Type.FormMode->execute_create
@@ -480,7 +494,7 @@ sub info_motion {
  	)],
  	[qw(
  	    FORUM_MOTION_EDIT
- 	    59
+ 	    112
  	    FORUM
  	    MOTION_ADMIN
 	    Type.FormMode->execute_edit
@@ -491,7 +505,7 @@ sub info_motion {
  	)],
  	[qw(
  	    FORUM_MOTION_VOTE
- 	    62
+ 	    113
  	    FORUM
  	    MOTION_WRITE
 	    Model.MotionList->execute_load_this
@@ -501,7 +515,7 @@ sub info_motion {
  	)],
  	[qw(
  	    FORUM_MOTION_VOTE_LIST
- 	    63
+ 	    114
  	    FORUM
  	    MOTION_READ
 	    Model.MotionList->execute_load_parent
@@ -510,12 +524,13 @@ sub info_motion {
  	)],
  	[qw(
  	    FORUM_MOTION_VOTE_LIST_CSV
- 	    64
+ 	    115
  	    FORUM
  	    MOTION_READ
             Model.MotionVoteList->execute_load_all_with_query
 	    View.Motion->vote_result_csv
  	)],
+#116-119 free
     ];
 }
 
