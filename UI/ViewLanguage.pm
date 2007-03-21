@@ -301,25 +301,7 @@ and may not begin with I<view_>.
 =cut
 
 sub view_put {
-    my($proto, @args) = _args(@_);
-    _die('view_put not supplied any arguments') unless int(@args) > 1;
-    _die('view_put not supplied an even number of arguments')
-	    if int(@args) % 2 != 0;
-    while (@args) {
-	my($n, $v) = (shift(@args), shift(@args));
-	# The syntax is very rigid to allow for expansion
-	_die($n, ': attr_name is not a perl identifier')
-	    if $n =~ /\W/;
-	_die($n, ': attr_name does not begin with a letter')
-	    unless $n =~ /^[a-z]/;
-	_die($n, ': attr_name is not all lower case')
-	    if $n =~ /[A-Z]/;
-	_die($n, ': attr_name may not begin with view_')
-	    if $n =~ /^view_/;
-	_die($n, ': is a reserved attribute name')
-	    if $n eq 'parent';
-	_put($n, $v);
-    }
+    _validated_put(\@_, 0);
     return;
 }
 
@@ -346,6 +328,21 @@ sub view_shortcuts {
     _assert_value('view_shortcuts', $class_name,
 	    'Bivio::UI::ViewShortcutsBase');
     _put(view_shortcuts => $class_name);
+    return;
+}
+
+=for html <a name="view_unsafe_put"></a>
+
+=head2 static view_unsafe_put(string attr_name, string attr_value, ....)
+
+Sets (I<attr_name>, I<attr_value>) attributes.
+
+I<attr_name>s may already exist, but must follow view_put's syntax.
+
+=cut
+
+sub view_unsafe_put {
+    _validated_put(\@_, 1);
     return;
 }
 
@@ -493,19 +490,45 @@ sub _initialize {
     return;
 }
 
-# _put(string name, any value) : any
+# _put(string name, any value, boolean overwrite) : any
 #
 # Asserts in eval and puts the attribute.  Cannot be called twice.
 #
 sub _put {
-    my($name, $value) = @_;
+    my($name, $value, $overwrite) = @_;
     my($view) = _assert_in_eval();
     # We allow an attribute to be view_declared (undef) and then
     # assigned later in the view.
     _die($name, ': view attribute already defined in this view',
 	 ' (no overrides within view)')
-	if defined($view->unsafe_get($name));
+	unless $overwrite || !defined($view->unsafe_get($name));
     $view->put($name => $value);
+    return;
+}
+
+sub _validated_put {
+    my($args, $overwrite) = @_;
+    my($proto, @args) = _args(@$args);
+    _die('view_put not supplied any arguments')
+	unless @args > 1;
+    _die('view_put not supplied an even number of arguments')
+	    if @args % 2 != 0;
+    $proto->map_by_two(sub {
+	my($n, $v) = @_;
+	# The syntax is very rigid to allow for expansion
+	_die($n, ': attr_name is not a perl identifier')
+	    if $n =~ /\W/;
+	_die($n, ': attr_name does not begin with a letter')
+	    unless $n =~ /^[a-z]/;
+	_die($n, ': attr_name is not all lower case')
+	    if $n =~ /[A-Z]/;
+	_die($n, ': attr_name may not begin with view_')
+	    if $n =~ /^view_/;
+	_die($n, ': is a reserved attribute name')
+	    if $n eq 'parent';
+	_put($n, $v, $overwrite);
+	return;
+    }, \@args);
     return;
 }
 
