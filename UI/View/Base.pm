@@ -7,8 +7,25 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub PARENT_CLASS {
+    # Do not override this unless you know what you are doing.
+    return __PACKAGE__->simple_package_name;
+}
+
 sub VIEW_SHORTCUTS {
     return 'Bivio::UI::XHTML::ViewShortcuts';
+}
+
+sub css {
+    my($self) = @_;
+    view_class_map('CSSWidget');
+    view_shortcuts('Bivio::UI::CSS::ViewShortcuts');
+    view_declare('content');
+    view_main(SimplePage({
+	content_type => 'text/css',
+	value => view_widget_value('content'),
+    }));
+    return;
 }
 
 sub csv {
@@ -36,7 +53,7 @@ sub mail {
     view_put(
 	mail_from => Mailbox(
 	    vs_text('support_email'),
-	    $self->internal_text_as_prose('support_name'),
+	    vs_text_as_prose('support_name'),
 	),
 	mail_recipients => '',
     );
@@ -54,10 +71,8 @@ sub internal_body {
     return shift->internal_put_base_attr(body => @_);
 }
 
-sub internal_body_from_name_as_prose {
-    my($self, $name) = @_;
-    return $self->internal_body(
-	$self->internal_text_as_prose($name || $self->get('view_name')));
+sub internal_body_prose {
+    return shift->internal_body(Prose(@_));
 }
 
 sub internal_put_base_attr {
@@ -90,7 +105,7 @@ sub internal_xhtml_adorned {
 	head2 => Join([
 	    P_realm(view_widget_value('xhtml_realm')),
 	    P_menu(view_widget_value('xhtml_menu')),
-	    P_title($self->internal_text_as_prose('xhtml_title')),
+	    P_title(vs_text_as_prose('xhtml_title')),
 	]),
 	head3 => Director(['user_state', '->get_name'], {
 	    JUST_VISITOR => XLink('USER_CREATE'),
@@ -129,10 +144,11 @@ sub internal_xhtml_adorned {
 sub pre_compile {
     my($self) = @_;
     my($n) = $self->get('view_name');
-    return
-	if __PACKAGE__->can($n);
-    view_parent('Base->' . ($n =~ /_(mail|csv|rss)$/ ? $1 : 'xhtml'));
-#    view_parent(($n =~ /_(mail|csv|rss)$/ ? $1 : 'xhtml'));
+    view_parent(
+	$self->PARENT_CLASS
+	. '->'
+	. ($n =~ /_(mail|csv|rss|css)$/ ? $1 : 'xhtml')
+    ) unless $self->use('View.' . $self->PARENT_CLASS)->can($n);
     return;
 }
 
