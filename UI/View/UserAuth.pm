@@ -102,7 +102,19 @@ sub password_query_ack {
 }
 
 sub password_query_mail {
-    return _mail(shift(@_), 'UserPasswordQueryForm');
+    return _mail(shift(@_), 'UserPasswordQueryForm', <<'EOF');
+Please follow the link to reset your password:
+
+Join([['Model.UserPasswordQueryForm', 'uri']]);
+
+For your security, this link may be used one time only to set your
+password.
+
+You may contact customer support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
+EOF
 }
 
 sub create {
@@ -112,21 +124,39 @@ sub create {
 }
 
 sub create_done {
-    return shift->internal_body_from_name_as_prose;
+    return shift->internal_body_prose(<<'EOF');
+We have sent a confirmation email to
+String(['Model.UserRegisterForm', 'Email.email']);.
+Please follow the instructions in this email message to complete
+your registration with vs_site_name();.
+EOF
 }
 
 sub create_mail {
-    return _mail(shift(@_), 'UserRegisterForm');
+    return _mail(shift(@_), 'UserRegisterForm', <<'EOF');
+Thank you for registering with vs_site_name();.
+In order to complete your registration, please click on the following link:
+
+String(['Model.UserRegisterForm', 'uri']);
+
+For your security, this link may be used one time only to set your
+password.
+
+You may contact customer support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
+EOF
 }
 
 sub _mail {
-    my($self, $form) = @_;
+    my($self, $form, $body) = @_;
     my($n) = $self->my_caller;
     view_put(
 	mail_to => Mailbox(["Model.$form", 'Email.email']),
-	mail_subject => $self->internal_text_as_prose($n . '_subject'),
+	mail_subject => vs_text_as_prose($n . '_subject'),
     );
-    return shift->internal_body_from_name_as_prose($n);
+    return $self->internal_body_prose($body);
 }
 
 1;
