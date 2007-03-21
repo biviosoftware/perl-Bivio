@@ -62,6 +62,33 @@ use Bivio::UI::Facade;
 
 =cut
 
+=for html <a name="format_css"></a>
+
+=head2 static format_css(string name, Bivio::Collection::Attributes req_or_facade) : string
+
+=head2 format_css(string name) : string
+
+Returns color: #<color>;
+
+If name is hyphenated, the name is hyphens are converted to underscores, and
+the attribute is the rest of the hyphenation, e.g.
+
+    format_css('acknowledgement-border') -> border-color: #0;
+
+The value of acknowledgement_border is #0.
+
+=cut
+
+sub format_css {
+    my($proto, $name, $req_or_facade) = @_;
+    my($attr) = 'color:';
+    if ($name =~ /-(.*)/) {
+	$attr = "$1-$attr";
+	$name =~ s/-/_/g;
+    }
+    return $proto->format_html($name, $attr, $req_or_facade);
+}
+
 =for html <a name="format_html"></a>
 
 =head2 static format_html(string name, string attr, Bivio::Collection::Attributes req_or_facade) : string
@@ -73,7 +100,7 @@ with a I<leading space>.
 
 If I<attr> contains a ':', returns a style attribute instead, e.g.
 
-    color: "#abcdef";
+    color: #abcdef;
 
 If I<attr> is the empty string, returns just the number sans quotes:
 
@@ -90,13 +117,8 @@ for description of last argument.
 
 sub format_html {
     my($proto, $name, $attr, $req) = @_;
-    return '' unless $name;
-
-    # Lookup name
-    my($v) = $proto->internal_get_value($name, $req);
-    return '' unless $v;
-
-    # Return cached value
+    return ''
+	unless $name and my $v = $proto->internal_get_value($name, $req);
     return defined($attr) && defined($v->{$attr}) ? $v->{$attr}
 	    : _format_html($v->{config}, $attr);
 }
@@ -146,10 +168,10 @@ sub internal_initialize_value {
 #
 sub _format_html {
     my($num, $attr) = @_;
-    return '' if $num < 0;
-    return sprintf('#%06X', $num) unless length($attr);
-    return sprintf($attr =~ /:/ ? '%s "#%06X";' : ' %s="#%06X"',
-	    $attr, $num);
+    return $num < 0 ? ''
+        : length($attr)
+	? sprintf($attr =~ /:/ ? '%s #%06X;' : ' %s="#%06X"', $attr, $num)
+	: sprintf('#%06X', $num);
 }
 
 =head1 COPYRIGHT
