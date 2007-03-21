@@ -89,6 +89,26 @@ my(%_CACHE);
 
 =cut
 
+=for html <a name="format_css"></a>
+
+=head2 static format_css(string name, string attr, Bivio::Collection::Attributes req_or_facade) : string
+
+If $attr is undef, Returns the image url as follows:
+
+     url (uri)
+
+With explicit I<attr> returns the value, raw.
+
+=cut
+
+sub format_css {
+    my($proto, $name, $attr, $req_or_facade) = @_;
+    my($v) = _find($proto, $name, $req_or_facade)->{value};
+    return !$attr ? 'url(' . $v->{uri} . ')'
+	: defined($v->{$attr}) ? $v->{$attr}
+        : $proto->die($v, $attr, ': no such attribute');
+}
+
 =for html <a name="format_html"></a>
 
 =head2 static format_html(string name, Bivio::Collection::Attributes req_or_facade) : string

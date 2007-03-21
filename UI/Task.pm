@@ -202,6 +202,27 @@ sub assert_defined_for_facade {
     return;
 }
 
+=for html <a name="format_css"></a>
+
+=head2 format_css(string task, Bivio::Agent::Request req) : string
+
+Formats the uri for this task.  no_context is asumed
+
+If I<task> is C<undef>, returns the root uri of the help tree.
+
+=cut
+
+sub format_css {
+    my($proto, $task_name, $req) = @_;
+    return $proto->format_uri({
+	task_id => $task_name,
+	realm => undef,
+	path_info => undef,
+	query => undef,
+	no_context => 1,
+    }, $req);
+}
+
 =for html <a name="format_help_uri"></a>
 
 =head2 format_help_uri(Bivio::Agent::TaskId task, Bivio::Agent::Request req) : string
