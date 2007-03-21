@@ -366,17 +366,20 @@ sub initialize {
 
 =for html <a name="initialize_attr"></a>
 
-=head2 initialize_attr(string attr_name) : any
+=head2 initialize_attr(string attr_name, any default_value) : any
 
 Calls L<unsafe_initialize_attr|"unsafe_initialize_attr">.
-Dies if I<attr_name> doesn't exist or is C<undef>.
+Dies if I<attr_name> doesn't exist or is C<undef> and there is no
+I<default_value>.
 
 Returns attribute value.
 
 =cut
 
 sub initialize_attr {
-    my($self, $attr_name) = @_;
+    my($self, $attr_name, $default_value) = @_;
+    $self->put_unless_exists($attr_name => $default_value)
+	if defined($default_value);
     my($res) = $self->unsafe_initialize_attr($attr_name);
     $self->die($attr_name, undef, 'attribute must be defined')
 	unless defined($res);
