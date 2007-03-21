@@ -180,9 +180,9 @@ sub assert_name {
     return;
 }
 
-=for html <a name="get_value"></a>
+=for html <a name="format_css"></a>
 
-=head2 get_value(string tag_part, ..., Bivio::Collection::Attributes facade_or_req) : string
+=head2 format_css(string tag_part, ..., Bivio::Collection::Attributes facade_or_req) : string
 
 =cut
 
