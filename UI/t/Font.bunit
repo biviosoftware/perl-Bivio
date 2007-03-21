@@ -1,0 +1,20 @@
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('setup_facade');
+[
+    sub {req('Bivio::UI::Facade', 'Font')} => [
+	format_html => [
+	    page_text => ['<font face="arial,sans-serif">', '</font>'],
+	],
+	format_css => [
+	    bunit_bold => 'font-weight: bold;',
+	    bunit_code => 'font-family: monospace;',
+	    bunit_italic => 'font-style: italic;',
+	    bunit_larger => 'font-size: bigger;',
+	    bunit_smaller => 'font-size: smaller;',
+	    bunit_strike => 'text-decoration: line-through;',
+	    bunit_underline => 'text-decoration: underline;',
+	    bunit_complex => 'font-family: arial; color: #FF0000; text-transform: lowercase; text-align: center;',
+	],
+    ],
+];
