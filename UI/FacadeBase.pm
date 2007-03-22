@@ -131,6 +131,8 @@ sub _cfg_base {
 	    [PERMANENT_REDIRECT => undef],
 	    [CLIENT_REDIRECT => 'go/*'],
 	    [SITE_CSS => 'pub/site.css'],
+	    # Share this name across all realm types
+	    [FORUM_CSS => '?/realm.css'],
 	],
 	Text => [
 	    [support_email => 'support'],
@@ -287,7 +289,7 @@ sub _cfg_file {
 	Task => [
 	    [FORUM_EASY_FORM => '?/Forms/*'],
 	    [FORUM_FILE => '?/file/*'],
-	    [FORUM_PUBLIC_FILE => '?/pub/*'],
+	    [FORUM_PUBLIC_FILE => ['?/public/*', '?/Public/*', '?/pub/*']],
         ],
     };
 }
