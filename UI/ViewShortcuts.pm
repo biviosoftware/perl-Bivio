@@ -71,9 +71,7 @@ Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
 =cut
 
 sub vs_constant {
-    my($proto, $label) = @_;
-    return [['->get_request'], 'Bivio::UI::Facade', 'Constant',
-	'->get_value', $label],
+    return _fc(qw(Constant ->get_value), $_[1]);
 }
 
 =for html <a name="vs_fe"></a>
@@ -99,9 +97,7 @@ L<Bivio::UI::HTML::get_value|Bivio::UI::HTML/"get_value">.
 =cut
 
 sub vs_html {
-    my(undef, $attr) = @_;
-    return [['->get_request'], 'Bivio::UI::Facade', 'HTML',
-	'->get_value', $attr];
+    return _fc(qw(HTML ->get_value), $_[1]);
 }
 
 =for html <a name="vs_mail_host"></a>
@@ -113,7 +109,19 @@ Returns a widget value for mail_host.
 =cut
 
 sub vs_mail_host {
-    return [['->get_request'], 'Bivio::UI::Facade', 'mail_host'];
+    return _fc(qw(mail_host));
+}
+
+=for html <a name="vs_realm_type"></a>
+
+=head2 vs_realm_type(any type) : array_ref
+
+Returns a widget value to test realm type against I<type>
+
+=cut
+
+sub vs_realm_type {
+    return _req(qw(auth_realm type ->equals_by_name), $_[1]);
 }
 
 =for html <a name="vs_site_name"></a>
@@ -126,6 +134,18 @@ Returns a widget value that
 
 sub vs_site_name {
     return shift->vs_text('site_name');
+}
+
+=for html <a name="vs_task_has_uri"></a>
+
+=head2 vs_task_has_uri(any task) : array_ref
+
+Returns true if task has uri.
+
+=cut
+
+sub vs_task_has_uri {
+    return _fc(qw(Task ->has_uri), $_[1]);
 }
 
 =for html <a name="vs_text"></a>
@@ -167,6 +187,14 @@ sub vs_text_as_prose {
 }
 
 #=PRIVATE METHODS
+
+sub _fc {
+    return _req('Bivio::UI::Facade', @_);
+}
+
+sub _req {
+    return [['->get_request'], @_];
+}
 
 =head1 COPYRIGHT
 
