@@ -54,6 +54,24 @@ This class is initialized by L<Bivio::UI::Facade|Bivio::UI::Facade>.
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="FILE_SUFFIX_REGEXP"></a>
+
+=head2 FILE_SUFFIX_REGEXP : regexp_ref
+
+Returns regular expression used for file suffixes
+
+=cut
+
+my($_FILE_SUFFIX_REGEXP);
+
+sub FILE_SUFFIX_REGEXP {
+    return $_FILE_SUFFIX_REGEXP;
+}
+
 #=IMPORTS
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
@@ -74,6 +92,9 @@ my($_CLEAR_DOT) = {
 };
 my($_MISSING) = '/missing-image';
 my($_FILE_SUFFIX_SEARCH_LIST) = ['.gif', '.jpg', '.jpeg', '.png'];
+$_FILE_SUFFIX_REGEXP = qr{
+    \.(?:@{[join('|', map(substr($_, 1), @$_FILE_SUFFIX_SEARCH_LIST))]})$
+}ix;
 Bivio::IO::Config->register({
     uri => $_URI,
     missing_uri => $_MISSING,
