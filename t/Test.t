@@ -90,6 +90,8 @@ t(
 	    ok => sub {
 		return 3;
 	    },
+	],
+	Bivio::t::Test::Testee->new('3a') => [
 	    # Deviance: 25
 	    ok => sub {
 		my($case, $return) = @_;
@@ -109,12 +111,12 @@ t(
 	    # Deviance: 28
 	    ok => sub {
 		my($case, $return) = @_;
-		return '3';
+		return '3a';
 	    },
 	    {
 		method => 'die',
 		compute_params => sub {
-		    return 3;
+		    return '3a';
 		},
 		check_die_code => sub {
 		    my($case, $die, $expect) = @_;
@@ -127,7 +129,7 @@ t(
 	    ],
 	],
 	{
-	    object => '3',
+	    object => '4',
 	    create_object => sub {
 		my($case, $object) = @_;
 		return Bivio::t::Test::Testee->new(@$object),
@@ -137,7 +139,7 @@ t(
 		# Conformance: 30
 		[] => sub {
 		    $_OBJECT = shift->get('object');
-		    return [3];
+		    return [4];
 		},
 		[] => sub {
 		    my($case) = @_;
@@ -189,7 +191,7 @@ t(
 		[] => Bivio::DieCode->DIE,
 	    ],
 	],
-	Bivio::t::Test::Testee->new('33') => [
+	Bivio::t::Test::Testee->new('34') => [
 	    # Deviance: 40
 	    ok => qr/not-found/,
 	    # Deviance: 41
@@ -231,7 +233,7 @@ t(
 	    } 0, 1),
 	],
 	{
-	    object => Bivio::t::Test::Testee->new('33'),
+	    object => Bivio::t::Test::Testee->new('35'),
 	    check_return => sub {
 		return 1;
 	    },
@@ -242,16 +244,16 @@ t(
 	    ],
 	],
 	{
-	    object => Bivio::t::Test::Testee->new('33'),
+	    object => Bivio::t::Test::Testee->new('36'),
 	    check_die_code => sub {
 		return 1;
 	    },
         } => [
 	    # Deviance 53
-	    die => '33',
+	    die => '36',
 	],
 	{
-	    object => Bivio::t::Test::Testee->new('33'),
+	    object => Bivio::t::Test::Testee->new('37'),
 	    check_return => sub {
 		return 1;
 	    },
@@ -265,11 +267,11 @@ t(
 	    ok => Bivio::DieCode->DIE,
 	],
 	{
-	    object => Bivio::t::Test::Testee->new('33'),
+	    object => Bivio::t::Test::Testee->new('38'),
         } => [
 	    die => [
 		# Deviance: 56
-	        'some message' => sub {die('FAILURE')},
+	        'some message' => sub {die('xxxxxxxxxxxx FAILURE')},
 		# 57
 		'this-message' => qr{this-message},
 	    ],
