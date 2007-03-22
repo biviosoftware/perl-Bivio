@@ -259,6 +259,7 @@ sub initialize_test_data {
     _init_forum($self);
     _init_email_alias($self);
     _init_tuple($self);
+    _init_logo($self);
     return;
 }
 
@@ -545,12 +546,12 @@ sub _init_forum {
     my($req) = $self->get_request;
     $req->set_realm(undef);
     $req->set_user($self->ROOT);
-    Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
+    $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum',
 	'RealmOwner.name' => $self->FOUREM,
     });
     # Must agree with easy-form.btest (or test will fail)
-    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+    $self->model('RealmFile')->create_with_content({
 	path => 'Public/EasyForm-btest.html',
 	is_public => 1,
     }, \(<<'EOF'));
@@ -569,7 +570,7 @@ sub _init_forum {
 </body>
 </html>
 EOF
-    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+    $self->model('RealmFile')->create_with_content({
 	path => 'Public/EasyForm-btest-done.html',
 	is_public => 1,
     }, \(<<'EOF'));
@@ -579,43 +580,63 @@ completed
 </body>
 </html>
 EOF
-    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+    $self->model('RealmFile')->create_with_content({
 	path => 'EasyForm/btest.csv',
     }, \(<<'EOF'));
 &date,&email,input,ok
 EOF
-    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+    $self->model('RealmFile')->create_with_content({
 	path => Bivio::Type->get_instance('WikiName')->to_absolute('ShellUtilHelp'),
     }, \(<<'EOF'));
 Shell utility help.
 EOF
-    Bivio::Biz::Model->new('RealmFile')->create_with_content({
+    $self->model('RealmFile')->create_with_content({
 	path => Bivio::Type->get_instance('WikiName')->to_absolute('base.css'),
     }, \(<<'EOF'));
 .fourem_wiki {}
 EOF
-    Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
+    $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1',
     });
-    Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
+    $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1-1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1-1',
     });
     $req->set_user($self->BTEST_READ);
-    Bivio::Biz::Model->get_instance('ForumUserAddForm')->execute($req, {
+    $self->model('ForumUserAddForm', {
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
     });
     $req->set_realm($self->FOUREM);
-    Bivio::Biz::Model->get_instance('ForumForm')->execute($req, {
+    $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub2',
 	'RealmOwner.name' => $self->FOUREM . '-sub2',
     });
-    Bivio::Biz::Model->get_instance('ForumUserAddForm')->execute($req, {
+    $self->model('ForumUserAddForm', {
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
     });
+    return;
+}
+
+sub _init_logo {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $req->set_realm($self->FOUREM);
+    $req->set_user($self->ROOT);
+    my($logo) = Bivio::IO::File->read('fourem.png');
+    foreach my $x (
+	[png => $logo],
+	[bad => $logo],
+	[gif => \('not an image')],
+    ) {
+	# Need different modified_date_time
+	sleep(1);
+	$self->model('RealmFile')->create_with_content({
+	    path => "/Public/logo.$x->[0]",
+	}, $x->[1]);
+    }
     return;
 }
 
@@ -624,14 +645,14 @@ sub _init_tuple {
     my($req) = $self->get_request;
     $req->set_realm($self->FOUREM);
     $req->set_user($self->ROOT);
-    Bivio::Biz::Model->new($req, 'TupleSlotType')->create_from_hash({
+    $self->model('TupleSlotType')->create_from_hash({
 	Status => {
 	    type_class => 'TupleSlot',
 	    choices => [qw(s0 s1 s2 s3)],
 	    default_value => 's1',
 	},
     });
-    Bivio::Biz::Model->new($req, 'TupleDef')->create_from_hash({
+    $self->model('TupleDef')->create_from_hash({
 	'PSR#PetShopReport' => [
 	    {
 		label => 'Author',
@@ -644,8 +665,7 @@ sub _init_tuple {
 	    },
 	],
     });
-    Bivio::Biz::Model->new($req, 'TupleUse')
-        ->create_from_label('PetShopReport');
+    $self->model('TupleUse')->create_from_label('PetShopReport');
     return;
 }
 
