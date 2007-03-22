@@ -1636,6 +1636,7 @@ sub _parse_cols {
 	    else {
 		$self->internal_put_error($primary_field,
 		    Bivio::TypeError->NULL);
+		next;
 	    }
 	}
 
