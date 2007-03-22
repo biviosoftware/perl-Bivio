@@ -1624,7 +1624,8 @@ sub _parse_cols {
 	) {
 	    my($primary_field) =
 		$self->get_field_info($n, 'null_set_primary_field');
-#	    my($primary_field) = $sql_support->get('null_set_map')->{$n};
+	    $primary_field .= $1
+		if $n =~ /(_\d+)$/;
 	    $null_set->{$primary_field} ||= {passed_flag => 0};
 	    next
 		if $null_set->{$primary_field}->{passed_flag};
