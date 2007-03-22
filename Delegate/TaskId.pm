@@ -162,7 +162,13 @@ sub info_base {
 	    ANYBODY
 	    View.CSS->site_css
 	)],
-#55
+	[qw(
+            FORUM_CSS
+            55
+	    FORUM
+	    ANYBODY
+	    View.CSS->realm_css
+	)],
 	[qw(
             PERMANENT_REDIRECT
             56
