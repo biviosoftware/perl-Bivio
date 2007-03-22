@@ -6,19 +6,62 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_SITE) = join('', map({
-    my($x) = \&{"_site_$_"};
-    defined(&$x) ? $x->() : '',
-} @{Bivio::Agent::TaskId->included_components}));
+my($_PROSE) = {
+    map({
+	my($which) = $_;
+	($which => join('', map({
+	    my($x) = \&{"_${which}_$_"};
+	    defined(&$x) ? $x->() : '',
+	} @{Bivio::Agent::TaskId->included_components})));
+    } qw(site realm)),
+};
+
+sub realm_css {
+    my($proto) = @_;
+    view_put(content => Prose($proto->internal_realm_css));
+    return;
+}
+
+sub internal_realm_css {
+    view_pre_execute(sub {
+	my($req) = shift->get_request;
+	# Just need a few, and load_all could technically be too many
+	Bivio::Biz::Model->new($req, 'RealmLogoList')->load_page
+	    unless $req->unsafe_get('Model.RealmLogoList');
+    });
+    return $_PROSE->{realm};
+}
 
 sub internal_site_css {
-    return $_SITE;
+    return $_PROSE->{site};
 }
 
 sub site_css {
     my($proto) = @_;
     view_put(content => Prose($proto->internal_site_css));
     return;
+}
+
+# If(public RealmFile exists /Public/logo.gif/jpg/png)
+# Need to size it.  ViewShortcut.
+# td.header_left {
+#   background: url (String([qw(Model.RealmLogoList ->get_uri)]);) left no-repeat;
+#   height: String([qw(Model.RealmLogoList ->get_height)]);px;
+#   width: String([qw(Model.RealmLogoList ->get_width)]);px;
+# }
+sub _realm_base {
+    return <<'EOF';
+/* Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved. */
+If([qw(Model.RealmLogoList ->is_ok_to_render)],
+   Prose(<<'INNER'),
+td.header_left {
+  background: url<<(>>String([qw(Model.RealmLogoList uri)])<;>) left no-repeat;
+  height: String([qw(Model.RealmLogoList height)])<;>px;
+  width: String([qw(Model.RealmLogoList width)])<;>px;
+}
+INNER
+);
+EOF
 }
 
 sub _site_base {
