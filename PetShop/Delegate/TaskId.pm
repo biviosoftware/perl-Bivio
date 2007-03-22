@@ -345,6 +345,13 @@ sub get_delegate_info {
 	    ANYBODY
 	    View.Example->eg1
 	)],
+	[qw(
+	    FORUM_PUBLIC_EXAMPLE_EG1
+	    542
+	    FORUM
+	    ANYBODY
+	    View.Example->eg1
+	)],
     ]);
 }
 

@@ -141,8 +141,8 @@ my($_SELF) = __PACKAGE__->new({
 	[USER_DAV => '?/dav/*'],
 	[DAV => 'dav/*'],
 	[FORUM_EASY_FORM => '?/EasyForm/*'],
-	[FORUM_PUBLIC_FILE => '?/pub/*'],
 	[EXAMPLE_EG1 => '/pub/eg1'],
+	[FORUM_PUBLIC_EXAMPLE_EG1 => '?/pub/eg1'],
     ],
     Constant => [
 	[help_wiki_realm_id => sub {
@@ -250,6 +250,7 @@ my($_SELF) = __PACKAGE__->new({
 	    SHELL_UTIL => 'shell util',
 	    USER_HOME => 'user home',
 	    EXAMPLE_EG1 => 'Example 1',
+	    FORUM_PUBLIC_EXAMPLE_EG1 => 'Example 1',
 	]],
 	[rsspage => [
 	    NumberedList => [
