@@ -9,6 +9,9 @@ options({
 });
 req()->set_realm('btest_read');
 [
+    inline_case(sub {
+	return;
+    }),
     class() => [
 	simple_package_name => 'Unit',
 	simple_package_name => not_die(),
