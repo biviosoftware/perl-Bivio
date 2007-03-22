@@ -292,8 +292,8 @@ sub builtin_inline_case {
     my($proto, $op) = @_;
     return sub {
 	$op->($proto->current_case, $proto->current_self);
-	return 1;
-    } => 1;
+	return $proto->IGNORE_RETURN;
+    } => $proto->IGNORE_RETURN;
 }
 
 =for html <a name="builtin_inline_commit"></a>
