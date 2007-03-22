@@ -60,6 +60,11 @@ sub new {
 
 =cut
 
+sub as_string {
+    my($self) = @_;
+    return ref($self) ? ref($self) . '[' . (($self->[$_IDI] || {})->{default_return} || '') . ']' : ref($self);
+}
+
 =for html <a name="die"></a>
 
 =head2 die(Bivio::DieCode code)
