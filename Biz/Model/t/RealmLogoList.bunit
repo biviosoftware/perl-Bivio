@@ -1,0 +1,19 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->setup_facade->set_realm('fourem');
+[
+    load_all => [
+	[] => [
+	    {'RealmFile.path' => '/Public/logo.gif'},
+	    {'RealmFile.path' => '/Public/logo.bad'},
+	    {'RealmFile.path' => '/Public/logo.png'},
+	],
+    ],
+    is_ok_to_render => 1,
+    get => [
+	uri => '/fourem/public/logo.png',
+	height => 50,
+	width => 160,
+    ],
+];
