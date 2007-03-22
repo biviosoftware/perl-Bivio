@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::Test;
 use strict;
@@ -306,6 +306,24 @@ Numbers for the cases which I<passed>.  Case numbers start at 1.
 =back
 
 =cut
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="IGNORE_RETURN"></a>
+
+=head2 IGNORE_RETURN : any
+
+B<EXPERIMENTAL>
+
+Return value to use when you want to ignore a return.
+
+=cut
+
+sub IGNORE_RETURN {
+    return \&IGNORE_RETURN;
+}
 
 #=IMPORTS
 use Bivio::IO::Trace;
@@ -925,7 +943,8 @@ sub _eval_custom {
     if ($which =~ /params/ && ref($res) ne 'ARRAY') {
 	$$err = 'an array_ref';
     }
-    elsif ($which =~ /object/ && !UNIVERSAL::isa($res, 'UNIVERSAL')) {
+    elsif ($which =~ /object/ && !(UNIVERSAL::isa($res, 'UNIVERSAL')
+       || ($res || '') == __PACKAGE__->IGNORE_RETURN)) {
 	$$err = 'a subclass of UNIVERSAL (forgot to "use"?)';
     }
     elsif ($which eq 'compute_return' && ref($res) ne 'ARRAY') {
@@ -1097,15 +1116,15 @@ sub _prepare_case {
 	if $case->unsafe_get('method_is_autoloaded')
 	|| UNIVERSAL::can($case->get('object'), $case->get('method'))
 	|| ref($case->get('method')) eq 'CODE';
-    $$err = $case->get('method')
-	. ': not implemented by '
-	    . (ref($case->get('object')) || $case->get('object'));
+    my($o) = $case->get('object');
+    $$err = $case->get('method') . ': not implemented by ' . (ref($o) || $o)
+	unless $o == __PACKAGE__->IGNORE_RETURN;
     return 0;
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
+Copyright (c) 2001-2007 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 
