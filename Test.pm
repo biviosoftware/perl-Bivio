@@ -322,7 +322,7 @@ Return value to use when you want to ignore a return.
 =cut
 
 sub IGNORE_RETURN {
-    return \&IGNORE_RETURN;
+    return @_ == 1 ? \&IGNORE_RETURN : 1;
 }
 
 #=IMPORTS
