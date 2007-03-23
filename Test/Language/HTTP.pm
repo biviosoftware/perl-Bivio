@@ -1279,7 +1279,7 @@ sub _grep_msgs {
     my($emails, $msg_re, $matched_emails) = @_;
     return [_map_mail_dir(sub {
         my($file) = @_;
-	next unless -M $file <= 0;
+	return unless -M $file <= 0;
 	my($msg) = Bivio::IO::File->read($file);
 	my($hdr) = split(/^$/m, $$msg, 2);
 	my($res);
