@@ -242,9 +242,13 @@ sub map_by_two {
 
 =head2 static map_invoke(string method, array_ref repeat_args, array_ref first_args, array_ref last_args) : array_ref
 
-Calls I<method> on I<self> with each element of I<args>.  If the element
-of I<repeat_args> is an array, it will be unrolled as its arguments.  Otherwise,
-the individual argument is called.  For example,
+=head2 static map_invoke(code_ref method, array_ref repeat_args, array_ref first_args, array_ref last_args) : array_ref
+
+Calls I<method> on I<self> with each element of I<args>.  If I<method> is a
+ref, will call the sub.
+
+If the element of I<repeat_args> is an array, it will be unrolled as its
+arguments.  Otherwise, the individual argument is called.  For example,
 
     $math->map_invoke('add', [[1, 2], [3, 4]])
 
@@ -283,11 +287,14 @@ Result is always called in an array context.
 
 sub map_invoke {
     my($proto, $method, $repeat_args, $first_args, $last_args) = @_;
-    return [map($proto->$method(
-	$first_args ? @$first_args : (),
-	ref($_) eq 'ARRAY' ? @$_ : $_,
-	$last_args ? @$last_args : (),
-    ), @$repeat_args)];
+    return [map(
+	ref($method) ? $method->(@$_) : $proto->$method(@$_),
+	map([
+	    $first_args ? @$first_args : (),
+	    ref($_) eq 'ARRAY' ? @$_ : $_,
+	    $last_args ? @$last_args : (),
+	], @$repeat_args),
+    )];
 }
 
 =for html <a name="my_caller"></a>
