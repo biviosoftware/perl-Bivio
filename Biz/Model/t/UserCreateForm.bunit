@@ -51,6 +51,14 @@ Request('initialize_fully');
                 ['DONALD', 'E', 'EASTLAKE, 3RD'],
             'MICHAEL J BIO PE' =>
                 ['MICHAEL', 'J', 'BIO, PE'],
+            'MICHAEL J BIO, PE' =>
+                ['MICHAEL', 'J', 'BIO, PE'],
+            'Lana Fisher, MA, LICSW' =>
+                ['Lana', undef, 'Fisher, MA, LICSW'],
+            'Judy and Larry' =>
+                ['Judy and Larry', undef, undef],
+            'Bob And' =>
+                ['Bob', undef, 'And'],
 	],
 	execute => [
 	    [req(), {
