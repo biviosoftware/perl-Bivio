@@ -84,8 +84,8 @@ sub internal_initialize {
 sub internal_pre_execute {
     my($self) = @_;
     $self->internal_put_field(realm_file => $self->new_other('RealmFile'));
-    $self->internal_put_field(file_exists =>
-				  _is_edit($self) && _is_loaded($self));
+    $self->internal_put_field(
+	file_exists => _is_edit($self) && _is_loaded($self));
     return;
 }
 
