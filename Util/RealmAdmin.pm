@@ -265,36 +265,37 @@ sub reset_password {
 
 =for html <a name="users"></a>
 
-=head2 users()
+=head2 users(string role)
 
-users for realm.
+Users for realm.  Filter by role
 
 =cut
 
 sub users {
-    my($self) = @_;
-    my($users) = {};
-    my($ru) = Bivio::Biz::Model->new($self->get_request, 'RealmUser');
-    $ru->do_iterate(
+    my($self, $role) = @_;
+    $role &&= uc($role);
+    my($roles) = {};
+    $self->model('RealmUser')->do_iterate(
 	sub {
 	    my($it) = @_;
-	    push(@{$users->{$it->get('user_id')} ||= []},
-		 $it->get('role')->get_name
-		 . ' '
-		 . $_DT->to_xml($it->get('creation_date_time'))
+	    push(@{$roles->{$it->get('user_id')} ||= []},
+		 [$it->get('role')->get_name, $_DT->to_xml($it->get('creation_date_time'))],
 	    );
 	    return 1;
 	},
 	'role asc',
     );
-    my($ro) = $ru->new_other('RealmOwner');
     return join('',
-        map(join("\n  ",
-		 _info($ro->unauth_load_or_die({realm_id => $_})),
-		 sort(@{$users->{$_}}),
-	    ) . "\n",
-	    sort(keys(%$users)),
-	),
+        map({
+	    my($ro, $roles) = @$_;
+	    join("\n  ", _info($ro), map(join(' ', @$_), sort(@$roles))) . "\n";
+	} sort {
+	    $a->[0]->get('name') cmp $b->[0]->get('name')
+	} map(
+	    [$self->model(RealmOwner => {realm_id => $_}), $roles->{$_}],
+	    !$role ? keys(%$roles)
+		: grep(grep($_->[0] eq $role, @{$roles->{$_}}), keys(%$roles)),
+	)),
     );
 }
 
