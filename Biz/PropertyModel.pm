@@ -958,13 +958,13 @@ sub _add_auth_id {
     my($auth_field) = $sql_support->get('auth_id');
     # Warn if we are overriding an existing value for auth_id
     if ($auth_field) {
-	Bivio::IO::Alert->warn(<<"EOF")
-$self: overriding $auth_field->{name} with auth_id from request.  You might need to call an unauth_* method instead.
-EOF
-            if exists($query->{$auth_field->{name}})
-		&& $query->{$auth_field->{name}}
-		    ne $self->get_request->get('auth_id');
-        $query->{$auth_field->{name}} = $self->get_request->get('auth_id');
+	my($id) = $self->get_request->get('auth_id');
+	my($n) = $auth_field->{name};
+	Bivio::IO::Alert->warn(
+	    $self, ": overriding $n=$query->{$n} in query with auth_id=$id",
+	    " from request.  You might need to call an unauth_* method instead"
+	) if exists($query->{$n}) && $query->{$n} ne $id;
+        $query->{$n} = $id;
     }
     return $query;
 }
