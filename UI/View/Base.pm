@@ -31,7 +31,12 @@ sub css {
 sub csv {
     my($self) = @_;
     view_class_map('TextWidget');
+    view_declare('csv_body');
     view_shortcuts($self->VIEW_SHORTCUTS);
+    view_main(SimplePage({
+	content_type => 'text/csv',
+	value => view_widget_value('csv_body'),
+    }));
     return;
 }
 
