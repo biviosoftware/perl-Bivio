@@ -50,7 +50,7 @@ Bivio::Test->new({
     ]] => [
 	initialize => undef,
 	render => [
-	    [$_req, \(my $z = '')] => qr/Product,Product ID\nCorgi,K9-BD-01\nDalmation.*Poodle/s,
+	    [$_req, \(my $z2 = '')] => qr/Product,Product ID\nCorgi,K9-BD-01\nDalmation.*Poodle/s,
 	],
     ],
     ['ProductList', [
