@@ -1,0 +1,45 @@
+# Copyright (c) 2002-2007 bivio Software, Inc.  All rights reserved.
+# $Id$
+[
+    class() => [
+	initialize_fully => sub {
+	    my($case, $actual) = @_;
+	    return $actual->[0]->isa(class()) ? 1 : 0;
+        },
+	set_realm_and_user => [
+	    demo => undef,
+	],
+    ],
+    sub {req()} => [
+	{
+	    method => 'set_user_state_and_cookie',
+	    compute_return => sub {
+		my($c) = model('UserLoginForm')->unsafe_get_cookie_user_id(req());
+		return [
+		    req()->get('user_state')->get_name,
+		    req()->unsafe_get_nested(qw(auth_user name)),
+		    $c && model(RealmOwner => {realm_id => $c})->get('name'),
+		];
+	    },
+	} => [
+	    just_visitor => [qw(JUST_VISITOR), undef, undef],
+	    [logged_out => 'demo'] => [LOGGED_OUT => undef, 'demo'],
+	    [logged_in => 'demo'] => [qw(LOGGED_IN demo demo)],
+	],
+    ],
+    sub {
+	my($req) = class()->get_instance;
+	$req->capture_mail;
+        my($msg) = Bivio::Mail::Outgoing->new(
+            Bivio::Mail::Incoming->new(\(<<'EOF')));
+From: Joe Blow <joe@example.com>
+To: mary@example.com
+
+What a body!
+EOF
+        $msg->send;
+        return $req;
+    } => [
+	unsafe_get_captured_mail => qr/From.*What/s,
+    ],
+];

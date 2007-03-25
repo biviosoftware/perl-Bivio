@@ -417,6 +417,24 @@ sub setup_http {
     return $self;
 }
 
+=for html <a name="set_user_state_and_cookie"></a>
+
+=head2 set_user_state_and_cookie() : self
+
+=cut
+
+sub set_user_state_and_cookie {
+    my($self, $user_state, $user) = @_;
+    $user_state = $self->use('Type.UserState')->from_any($user_state);
+    $self->put(disable_assert_cookie => 1);
+    $self->put_unless_exists(cookie => Bivio::Collection::Attributes->new);
+    my($ulf) = Bivio::Biz::Model->new($self, 'UserLoginForm');
+    $ulf->process({login => $user});
+    $ulf->process({login => undef})
+	if $user_state->eq_logged_out;
+    return $self;
+}
+
 =for html <a name="unsafe_get_captured_mail"></a>
 
 =head2 unsafe_get_captured_mail() : array_ref
