@@ -267,22 +267,17 @@ sub _parse_last {
     my($name, $parts) = @_;
     return if @$parts > 2 && _is_conjunction($parts->[-2]);
     my($last) = pop(@$parts);
+    $name->{last_name} = $last;
 
-    if ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|pe|I|IV|V|\d..)$|\.|^I{2,}/i
-	    && defined($parts->[0])) {
-	my($penult) = pop(@$parts);
-	$penult =~ s/,//;
-	$name->{last_name} = $penult.', ';
+    if (scalar(@$parts)) {
+        while ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|pe|I|IV|V|\d..)$|\.|^I{2,}/i
+            || ((@$parts)[-1] && (@$parts)[-1] =~ /\,$/)) {
+            $last = pop(@$parts);
+            $name->{last_name} = $last . ($last =~ /\,$/ ? ' ' : ', ')
+                . $name->{last_name};
+        }
     }
-
-    # tag on any trailing suffixes, look for , at end of previous word
-    while ((@$parts)[-1] && (@$parts)[-1] =~ /\,$/) {
-	$name->{last_name} = pop(@$parts) . ' '
-            . (defined($name->{last_name}) ? $name->{last_name} : '');
-    }
-    $name->{last_name} .= $last;
-
-    return unless defined($parts->[0]);
+    return unless scalar(@$parts);
     # Check for patronymics in last place: van, von, de la
     if ($parts->[-1] =~ /^(van|von|la|de|du)$/i) {
 	my($patr) = pop(@$parts);

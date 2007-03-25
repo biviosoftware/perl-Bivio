@@ -59,6 +59,8 @@ Request('initialize_fully');
                 ['Judy and Larry', undef, undef],
             'Bob And' =>
                 ['Bob', undef, 'And'],
+            'Ole Moeller III, MD' =>
+                ['Ole', undef, 'Moeller, III, MD'],
 	],
 	execute => [
 	    [req(), {
