@@ -352,6 +352,28 @@ sub get_delegate_info {
 	    ANYBODY
 	    View.Example->eg1
 	)],
+	[qw(
+            USER_ROLE_IN_REALM
+	    543
+	    USER
+	    ANYBODY
+	    Action.ClientRedirect->execute_unauth_role_in_realm
+	    just_visitor_task=USER_ACCOUNT_CREATE
+	    guest_task=EXAMPLE_EG1
+	    administrator_task=USER_ACCOUNT_EDIT
+	    next=SITE_ROOT
+        )],
+	[qw(
+            FORUM_ROLE_IN_REALM
+	    544
+	    FORUM
+	    ANYBODY
+	    Action.ClientRedirect->execute_unauth_role_in_realm
+	    just_visitor_task=USER_ACCOUNT_CREATE
+	    member_task=USER_ACCOUNT_EDIT
+	    administrator_task=USER_ACCOUNT_EDIT
+	    next=SITE_ROOT
+        )],
     ]);
 }
 

@@ -143,6 +143,8 @@ my($_SELF) = __PACKAGE__->new({
 	[FORUM_EASY_FORM => '?/EasyForm/*'],
 	[EXAMPLE_EG1 => '/pub/eg1'],
 	[FORUM_PUBLIC_EXAMPLE_EG1 => '?/pub/eg1'],
+	[USER_ROLE_IN_REALM => '?/role-in-realm'],
+	[FORUM_ROLE_IN_REALM => '?/role-in-realm'],
     ],
     Constant => [
 	[help_wiki_realm_id => sub {
