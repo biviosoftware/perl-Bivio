@@ -14,9 +14,16 @@ sub execute_ok {
 	$self->internal_put_field('RealmUser.realm_id' => $r->get('realm_id'));
     }
     unless ($self->unsafe_get('User.user_id')) {
-	my($e) = $self->new_other('Email');
-	return unless $e->unauth_load({email => lc($self->get('Email.email'))});
-	$self->internal_put_field('User.user_id' => $e->get('realm_id'));
+	my($m);
+	if (my $e = $self->unsafe_get('Email.email')) {
+	    $m = $self->new_other('Email');
+	    return unless $m->unauth_load({email => lc($e)});
+	}
+	elsif (my $n = $self->unsafe_get('user_name')) {
+	    $m = $self->new_other('RealmOwner');
+	    return unless $m->unauth_load({name => $n});
+	}
+	$self->internal_put_field('User.user_id' => $m->get('realm_id'));
     }
     my($req) = $self->get_request;
     my($old_realm) = $req->get('auth_id');
@@ -38,6 +45,11 @@ sub internal_initialize {
 	    # Match RealmUserAddForm
 	    {
 		name => 'realm',
+		type => 'RealmOwner.name',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'user_name',
 		type => 'RealmOwner.name',
 		constraint => 'NONE',
 	    },
