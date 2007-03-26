@@ -697,6 +697,7 @@ Returns auth roles for I<realm>.
 
 sub get_auth_roles {
     my($self, $realm) = @_;
+    $realm ||= $self->get('auth_realm');
     my($realm_id) = ref($realm) ? $realm->get('id') : $realm;
     my($auth_id, $auth_roles) = $self->unsafe_get(qw(auth_id auth_roles));
 
@@ -972,19 +973,8 @@ sub internal_redirect_realm {
 	Bivio::Die->die($new_task->as_string, ' realm_type mismatch (',
 		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
     }
-    else {
-        $new_realm = $self->internal_get_realm_for_task($new_task);
-#TODO: We should not guess here, but blow up
-
-        # No new realm, do something reasonable
-        unless (defined($new_realm)) {
-            # Need to login as a user.
-            $self->server_redirect(Bivio::Agent::TaskId->LOGIN)
-                if $trt eq Bivio::Auth::RealmType->USER;
-
-            # GO TO HOME instead of a club.  He can choose realm chooser
-            $self->client_redirect(Bivio::Agent::TaskId->USER_HOME)
-	}
+    elsif (!defined($new_realm = $self->internal_get_realm_for_task($new_task))) {
+	$new_realm = $self->internal_redirect_realm_guess($trt);
     }
     # Change realms before formatting uri
     $self->set_realm($new_realm) if $new_realm;
@@ -993,6 +983,25 @@ sub internal_redirect_realm {
         task => Bivio::Agent::Task->get_by_id($new_task),
     );
     return;
+}
+
+=for html <a name="internal_redirect_realm_guess"></a>
+
+=head2 internal_redirect_realm_guess(Bivio::Auth::RealmType target)
+
+Redirects based on I<target>
+
+=cut
+
+sub internal_redirect_realm_guess {
+    my($self, $target) = @_;
+#TODO: We should not guess here, but blow up
+    # Need to login as a user.
+    $self->server_redirect(Bivio::Agent::TaskId->LOGIN)
+	if $target eq Bivio::Auth::RealmType->USER;
+    # GO TO HOME instead of a club.  He can choose realm chooser
+    $self->client_redirect(Bivio::Agent::TaskId->USER_HOME);
+    # DOES NOT RETURN
 }
 
 =for html <a name="internal_initialize"></a>
