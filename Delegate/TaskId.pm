@@ -695,7 +695,7 @@ sub info_wiki {
  	    FORUM_WIKI_NOT_FOUND
  	    50
  	    FORUM
- 	    DATA_READ
+ 	    ANYBODY
 	    View.Wiki->not_found
 	    view_task=FORUM_WIKI_VIEW
  	)],
@@ -707,7 +707,20 @@ sub info_wiki {
 	    View.Wiki->not_found
 	    view_task=HELP
  	)],
+ 	[qw(
+ 	    FORUM_PUBLIC_WIKI_VIEW
+ 	    120
+ 	    FORUM
+ 	    ANYBODY
+	    Type.AccessMode->execute_public
+ 	    Action.WikiView
+	    View.Wiki->view
+	    MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
+	    edit_task=FORUM_WIKI_EDIT
+	    want_author=1
+ 	)],
     ];
+#121-129 free
 }
 
 1;
