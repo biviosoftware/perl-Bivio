@@ -1,23 +1,30 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+Request('initialize_fully');
+set_realm_and_user(qw(demo demo));
 [
-    class() => [
-        {
-	    method => 'vs_text',
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		my($a) = $actual->[0];
-		return [@$a[3 .. $#$a]];
-	    },
-	} => [
-	    'a' => 'a',
-	    [qw(a b)] => [qw(a b)],
-	    [['a']] => [['a']],
-	    [['a'], ['b']] => [['a'], ['b']],
-	    ['a', ['b']] => sub {
-		my(undef, $actual) = @_;
-		return ref($actual->[0]->[0]) eq 'CODE' ? 1 : 0;
-	    },
+    {
+	object => class(),
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [req()->get_widget_value($actual)];
+	},
+    } => [
+	vs_text => [
+	    bunit_simple => 'simple text',
+	    [[sub {'bunit_simple'}]] => 'simple text',
+	    [[sub {'Address'}], 'street1'] => 'Street Address',
+	],
+	vs_realm => [
+	    [] => 'Demo User',
+	    name => 'demo',
+	],
+	vs_model => [
+	    sub {
+		model('Email')->execute_auth_user(req());
+		return [[sub {'Email.email'}]];
+	    } => qr{.*demo\@},
+	    ['Email', 'email'] => qr{.*demo\@},
 	],
     ],
 ];
