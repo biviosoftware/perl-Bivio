@@ -67,6 +67,16 @@ sub execute_query {
     };
 }
 
+sub execute_unauth_role_in_realm {
+    my($proto, $req) = @_;
+    my($us) = $req->get('user_state');
+    return {
+	query => undef,
+	path_info => undef,
+	task_id => _role_in_realm_user_state($req),
+    };
+}
+
 sub get_realm_for_task {
     my($proto, $task, $req) = @_;
     my($t) = Bivio::Agent::Task->get_by_id($task);
@@ -85,6 +95,30 @@ sub get_realm_for_task {
 	entity => $task,
 	message => 'no appropriate realm for task',
     });
+}
+
+sub _role_in_realm {
+    my($req) = @_;
+    my($t) = $req->get('task');
+    my($r) = [grep(
+	$t->unsafe_get($_),
+	map(lc($_->get_name) . '_task', @{$req->get_auth_roles}),
+    )];
+    return @$r == 0 ? 'next'
+	: @$r == 1 ? $r->[0]
+        : Bivio::Die->die($r, ': too many roles match task attributes');
+}
+
+sub _role_in_realm_user_state {
+    my($req) = @_;
+    my($us) = $req->get('user_state');
+    return $us->eq_just_visitor ? 'just_visitor_task'
+	: $us->eq_logged_in ? _role_in_realm($req)
+        : $req->with_user(
+	    Bivio::Biz::Model->new($req, 'UserLoginForm')
+	        ->unsafe_get_cookie_user_id($req),
+	    sub {_role_in_realm($req)},
+	);
 }
 
 1;

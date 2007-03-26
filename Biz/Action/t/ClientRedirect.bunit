@@ -39,5 +39,27 @@ set_user('btest_read');
 	    [qw(FORUM EasyForm)] => 'FORUM_EASY_FORM',
 	    [qw(GENERAL /pub/eg1)] => 'EXAMPLE_EG1',
 	],
+	{
+	    method => 'execute_unauth_role_in_realm',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->set_realm('demo');
+		req()->set_user_state_and_cookie(@$params)
+		    ->server_redirect('USER_ROLE_IN_REALM');
+		return [req()];
+	    },
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		return [$actual->[0]->{task_id}];
+	    },
+	} => [
+	    just_visitor => 'just_visitor_task',
+	    [qw(logged_in demo)] => 'administrator_task',
+	    [qw(logged_out demo)] => 'administrator_task',
+	    [qw(logged_in guest)] => 'guest_task',
+	    [qw(logged_out guest)] => 'guest_task',
+	    [qw(logged_in root)] => 'next',
+	    [qw(logged_out root)] => 'next',
+	],
     ],
 ];
