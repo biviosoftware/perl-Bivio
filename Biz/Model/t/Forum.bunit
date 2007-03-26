@@ -1,0 +1,24 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+PropertyModel();
+req()->set_user('root');
+my($parent) = 'bunit_' . random_string();
+[
+    create_realm => [
+	[{}, {name => $parent}] => undef,
+    ],
+    inline_case(sub {
+        req()->set_realm($parent);
+	var(id => req(qw(auth_realm id)));
+	return;
+    }),
+    create_realm => [
+	[{}, {name => "$parent-s1"}] => undef,
+    ],
+    inline_commit(),
+    unauth_load_or_die => [
+	sub {[{forum_id => var('id')}]} => undef,
+    ],
+    unauth_cascade_delete => undef,
+    inline_commit(),
+];
