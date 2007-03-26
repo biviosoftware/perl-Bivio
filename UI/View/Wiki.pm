@@ -7,10 +7,15 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub HIDE_IS_PUBLIC {
+    return 0;
+}
+
 sub edit {
-    return shift->internal_body(vs_simple_form(WikiForm => [
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(WikiForm => [
 	'WikiForm.RealmFile.path_lc',
-	'WikiForm.RealmFile.is_public',
+	$self->HIDE_IS_PUBLIC ? () : 'WikiForm.RealmFile.is_public',
 	Join([
 	    FormFieldError({
 		field => 'content',
@@ -28,49 +33,18 @@ sub edit {
 sub not_found {
     return shift->internal_body_prose(<<'EOF');
 The page Tag(strong => String(['Action.WikiView', 'name'])); was not
-found, and you do not have permission to create it.  Please
-Link('contact us', 'GENERAL_CONTACT'); for more information about this error.
-<br /><br />
-To return to the previous page, click on your browser's back button, or
-Link('click here', [['->get_request'], 'task', 'view_task']); to
-return to the start page.
+found, and you do not have permission to create it.
 EOF
 }
 
 sub view {
+    my($self) = shift;
     view_put(
-#TODO: Move to facade
-	xhtml_topic => If(
-	    ['!', 'Action.WikiView', 'is_start_page'],
-	    String(['Action.WikiView', 'name']),
-	),
-	xhtml_byline => If(
-	    ['!', 'Action.WikiView', 'is_start_page'],
-	    Join([
-		'last edited ',
-		If(['Action.WikiView', 'author'],
-		   Join([
-		       ' by ',
-		       MailTo(['Action.WikiView', 'author']),
-		   ]),
-	       ),
-		' on ',
-		DateTime(['Action.WikiView', 'modified_date_time']),
-	    ]),
-	),
-	xhtml_tools => If(
-	    ['!', 'auth_realm', 'type', '->equals_by_name', 'GENERAL'],
-	    TaskMenu([
-		{
-		    task_id => 'FORUM_WIKI_EDIT',
-		    path_info => [qw(Action.WikiView name)],
-		    label => 'forum_wiki_edit_page',
-		},
-		'FORUM_WIKI_EDIT',
-	    ]),
-	),
+	xhtml_topic => vs_text_as_prose('wiki_view_topic'),
+	xhtml_byline => vs_text_as_prose('wiki_view_byline'),
+	xhtml_tools => vs_text_as_prose('wiki_view_tools'),
     );
-    return shift->internal_body(DIV_wiki(['Action.WikiView', 'html']));
+    return $self->internal_body(DIV_wiki(['Action.WikiView', 'html']));
 }
 
 1;
