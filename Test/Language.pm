@@ -458,9 +458,8 @@ sub _check_autoload {
 # Call die with appropriate prefix.
 #
 sub _die {
-    my($self, @msg) = @_;
-    Bivio::Die->die(ref($self) ? $self->get('test_script')
-	: __PACKAGE__, @msg);
+    my(undef, @msg) = @_;
+    Bivio::Die->die(@msg);
     # DOES NOT RETURN
 }
 
