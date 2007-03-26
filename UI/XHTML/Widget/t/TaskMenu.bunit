@@ -52,4 +52,5 @@ req()->set_realm_and_user(qw(demo guest));
 	xlink => 'back_to_top',
 	control => 0,
     }]] => '',
+    [[{xlink => 'bunit2'}]] => qr{<a href="#a1">anchor</a>},
 ];

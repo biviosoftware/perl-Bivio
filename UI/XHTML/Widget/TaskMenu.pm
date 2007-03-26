@@ -20,9 +20,11 @@ my($_PARAMS) = [
 sub internal_as_string {
     my($self) = @_;
     return map(
-	(ref($_) =~ /Link/ ? $_->get('_task_menu_cfg')->{task_id}->get_name
+	(ref($_) =~ /Link/ ?
+	    $_->get('_task_menu_cfg')->{xlink}
+	    || $_->get('_task_menu_cfg')->{task_id}->get_name
 	    : ref($_) eq 'ARRAY' ? $_->[0]
-	    : ref($_) eq 'HASH' ? $_->{task_id}
+	    : ref($_) eq 'HASH' ?  $_->{xlink} || $_->{task_id}
 	    : $_),
 	@{$self->unsafe_get('task_map') || []},
     );
@@ -47,29 +49,36 @@ sub initialize {
 	task_map => [map({
 	    my(undef, $cfg) = $self->name_parameters(
 		$_PARAMS, ref($_) eq 'ARRAY' ? $_ : [$_]);
-	    $cfg->{task_id} = Bivio::Agent::TaskId->from_any($cfg->{task_id});
-	    $cfg->{label} ||= $cfg->{task_id}->get_name;
-	    $cfg->{uri} ||= URI({
-#TODO: Remove when format_uri no longer carries query by default
-		query => undef,
-		path_info => undef,
-		_cfg($cfg, @$_URI),
-	    });
-	    my($w) = $cfg->{xlink} ? XLink($cfg->{xlink}) : Link(
-		ref($cfg->{label}) ? $cfg->{label}
-		    : vs_text('task_menu', 'title', $cfg->{label}),
-		$cfg->{uri},
-	    );
+	    if ($cfg->{task_id}) {
+		$cfg->{task_id}
+		    = Bivio::Agent::TaskId->from_any($cfg->{task_id});
+		$cfg->{label} ||= $cfg->{task_id}->get_name;
+		$cfg->{uri} ||= URI({
+#TODO: Remove query when format_uri no longer carries query by default
+		    query => undef,
+		    path_info => undef,
+		    _cfg($cfg, @$_URI),
+		});
+	    }
+ 	    my($w) = $cfg->{xlink} ? XLink($cfg->{xlink})
+		: $cfg->{task_id} ? Link(
+		    ref($cfg->{label}) ? $cfg->{label}
+			: vs_text('task_menu', 'title', $cfg->{label}),
+		    $cfg->{uri}
+	        ) : $self->die(
+		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
 	    $w->put(
 		_task_menu_cfg => $cfg,
 		_cfg($cfg, 'control'),
 		class => [sub {
-		    join(' ',
+		    my($source) = @_;
+		    return join(' ',
 			 $need_sep ? 'want_sep' : (),
-			 (ref($selected) ? $cfg->{task_id} == $selected
-			     : $selected eq ${$w->render_attr(
-				 value => shift(@_))})
-			     ? 'selected' : (),
+			 ($cfg->{task_id} && ref($selected)
+			     ? $cfg->{task_id} == $selected
+			     : $selected
+				 eq $w->render_simple_attr(value => $source)
+			 ) ? 'selected' : (),
 		    );
 		}],
 	    );
@@ -90,7 +99,7 @@ sub render_tag_value {
     foreach my $w (@{$self->get('task_map')}) {
 	my($cfg) = $w->get('_task_menu_cfg');
 	my($r) = $self->render_simple_value($cfg->{realm}, $source);
-	next unless $req->can_user_execute_task(
+	next unless !$cfg->{task_id} || $req->can_user_execute_task(
 	    $cfg->{task_id},
 	    $r || undef,
 	);
