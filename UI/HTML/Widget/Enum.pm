@@ -145,12 +145,13 @@ sub render {
 
     # check for an overridden display value
     my($value) = $source->get_widget_value($self->get('field'));
+    return unless defined($value);
     my($display_values) = $self->unsafe_get('display_values');
 
     if (defined($display_values) && exists($display_values->{$value})) {
 	$display_values->{$value}->render($source, $buffer);
     }
-    elsif (defined($value)) {
+    else {
 	$self->SUPER::render($source, $buffer);
     }
     return;
