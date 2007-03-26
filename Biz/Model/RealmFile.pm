@@ -198,10 +198,14 @@ sub handle_rollback {
 }
 
 sub init_realm {
-    my($self, $realm_id) = @_;
+    my($self) = shift;
+    $self->die(DIE => {
+	entity => \@_,
+	message => 'init_realm must be called from within realm, use $req->with_realm',
+    }) if @_;
     return $self->create_folder({
 	path => '/',
-	realm_id => $realm_id,
+	realm_id => $self->get_request->get('auth_id'),
     });
 }
 
