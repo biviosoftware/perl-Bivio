@@ -26,6 +26,22 @@
 	    [logged_out => 'demo'] => [LOGGED_OUT => undef, 'demo'],
 	    [logged_in => 'demo'] => [qw(LOGGED_IN demo demo)],
 	],
+	{
+	    method => 'client_redirect',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->set_user('btest_read');
+		req()->set_realm(undef);
+		req()->set_user_state_and_cookie('just_visitor');
+		return $params;
+	    },
+	    compute_return => sub {
+		return [req('task_id')->get_name];
+	    },
+	} => [
+	    USER_ACCOUNT_EDIT => FORBIDDEN(),
+	    SITE_ROOT => 'SITE_ROOT',
+	],
     ],
     sub {
 	my($req) = class()->get_instance;
