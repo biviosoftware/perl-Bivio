@@ -447,7 +447,7 @@ sub init_realm_role {
     }
     if (Bivio::Auth::RealmType->unsafe_from_name('FORUM')) {
 	$rr->copy_all(club => 'forum');
-	$rr->main(qw(-r FORUM -u user edit MEMBER -ADMIN_READ -DATA_WRITE));
+	$rr->main(qw(-realm FORUM -user user edit MEMBER -ADMIN_READ -DATA_WRITE));
     }
     $rr->copy_all(forum => 'calendar_event')
 	if Bivio::Auth::RealmType->unsafe_from_name('CALENDAR_EVENT');
@@ -751,7 +751,7 @@ ALTER TABLE forum_t
 EOF
     my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
     $rr->copy_all(club => 'forum');
-    $rr->main(qw(-r FORUM -u user edit MEMBER -ADMIN_READ -DATA_WRITE));
+    $rr->main(qw(-realm FORUM -user user edit MEMBER -ADMIN_READ -DATA_WRITE));
     return;
 }
 
@@ -1747,47 +1747,47 @@ __DATA__
 #
 # GENERAL Permissions
 #
-b-realm-role -r GENERAL -u user edit ANONYMOUS - \
+b-realm-role -realm GENERAL -user user edit ANONYMOUS - \
     +ANYBODY \
     +DATA_READ \
     +MAIL_POST \
     +MAIL_SEND
-b-realm-role -r GENERAL -u user edit USER - \
+b-realm-role -realm GENERAL -user user edit USER - \
     +ANONYMOUS \
     +ANY_USER
-b-realm-role -r GENERAL -u user edit WITHDRAWN - \
+b-realm-role -realm GENERAL -user user edit WITHDRAWN - \
     +USER
-b-realm-role -r GENERAL -u user edit GUEST - \
+b-realm-role -realm GENERAL -user user edit GUEST - \
     +WITHDRAWN
-b-realm-role -r GENERAL -u user edit MEMBER - \
+b-realm-role -realm GENERAL -user user edit MEMBER - \
     +GUEST \
     +DATA_WRITE
-b-realm-role -r GENERAL -u user edit ACCOUNTANT - \
+b-realm-role -realm GENERAL -user user edit ACCOUNTANT - \
     +MEMBER
-b-realm-role -r GENERAL -u user edit ADMINISTRATOR - \
+b-realm-role -realm GENERAL -user user edit ADMINISTRATOR - \
     +ACCOUNTANT \
     +ADMIN_READ \
     +ADMIN_WRITE \
     +DATA_WRITE \
     +MAIL_READ \
     +MAIL_WRITE
-b-realm-role -r GENERAL -u user edit MAIL_RECIPIENT -
-b-realm-role -r GENERAL -u user edit FILE_WRITER - \
+b-realm-role -realm GENERAL -user user edit MAIL_RECIPIENT -
+b-realm-role -realm GENERAL -user user edit FILE_WRITER - \
     +DATA_WRITE
 
 #
 # USER Permissions
 #
-b-realm-role -r USER -u user edit ANONYMOUS - \
+b-realm-role -realm USER -user user edit ANONYMOUS - \
     +ANYBODY
-b-realm-role -r USER -u user edit USER - \
+b-realm-role -realm USER -user user edit USER - \
     +ANONYMOUS \
     +ANY_USER
-b-realm-role -r USER -u user edit WITHDRAWN - \
+b-realm-role -realm USER -user user edit WITHDRAWN - \
     +USER
-b-realm-role -r USER -u user edit GUEST - \
+b-realm-role -realm USER -user user edit GUEST - \
     +WITHDRAWN
-b-realm-role -r USER -u user edit MEMBER - \
+b-realm-role -realm USER -user user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
     +DATA_READ \
@@ -1796,28 +1796,28 @@ b-realm-role -r USER -u user edit MEMBER - \
     +MAIL_READ \
     +MAIL_SEND \
     +MAIL_WRITE
-b-realm-role -r USER -u user edit ACCOUNTANT - \
+b-realm-role -realm USER -user user edit ACCOUNTANT - \
     +MEMBER \
     +ADMIN_WRITE
-b-realm-role -r USER -u user edit ADMINISTRATOR - \
+b-realm-role -realm USER -user user edit ADMINISTRATOR - \
     +ACCOUNTANT
-b-realm-role -r USER -u user edit MAIL_RECIPIENT -
-b-realm-role -r USER -u user edit FILE_WRITER - \
+b-realm-role -realm USER -user user edit MAIL_RECIPIENT -
+b-realm-role -realm USER -user user edit FILE_WRITER - \
     +DATA_WRITE
 
 #
 # CLUB Permissions
 #
-b-realm-role -r CLUB -u user edit ANONYMOUS - \
+b-realm-role -realm CLUB -user user edit ANONYMOUS - \
     +ANYBODY
-b-realm-role -r CLUB -u user edit USER - \
+b-realm-role -realm CLUB -user user edit USER - \
     +ANONYMOUS \
     +ANY_USER
-b-realm-role -r CLUB -u user edit WITHDRAWN - \
+b-realm-role -realm CLUB -user user edit WITHDRAWN - \
     +USER
-b-realm-role -r CLUB -u user edit GUEST - \
+b-realm-role -realm CLUB -user user edit GUEST - \
     +WITHDRAWN
-b-realm-role -r CLUB -u user edit MEMBER - \
+b-realm-role -realm CLUB -user user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
     +DATA_READ \
@@ -1826,11 +1826,11 @@ b-realm-role -r CLUB -u user edit MEMBER - \
     +MAIL_READ \
     +MAIL_SEND \
     +MAIL_WRITE
-b-realm-role -r CLUB -u user edit ACCOUNTANT - \
+b-realm-role -realm CLUB -user user edit ACCOUNTANT - \
     +MEMBER \
     +ADMIN_WRITE
-b-realm-role -r CLUB -u user edit ADMINISTRATOR - \
+b-realm-role -realm CLUB -user user edit ADMINISTRATOR - \
     +ACCOUNTANT
-b-realm-role -r CLUB -u user edit MAIL_RECIPIENT -
-b-realm-role -r CLUB -u user edit FILE_WRITER - \
+b-realm-role -realm CLUB -user user edit MAIL_RECIPIENT -
+b-realm-role -realm CLUB -user user edit FILE_WRITER - \
     +DATA_WRITE
