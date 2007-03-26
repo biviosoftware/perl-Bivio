@@ -494,6 +494,7 @@ sub _init_demo_users {
 	# test accounts have real names, for ease of logging in
 	$req->get('auth_user')->update({
 	    name => $u,
+	    display_name => ucfirst($u) . ' User',
 	});
 	my($uid) = $req->get('auth_user_id');
 	if ($u eq $self->DEMO) {
