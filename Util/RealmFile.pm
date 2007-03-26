@@ -103,18 +103,24 @@ sub read {
     return _do($self, load => $path)->get_content;
 }
 
+sub update {
+    my($self, $path) = @_;
+    _do($self, load => $path)->update_with_content({}, $self->read_input);
+    return;
+}
+
 sub _do {
     my($self, $method, $path, @args) = @_;
     return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFile')
-	->$method(_fix_values($self, $path), @args);
+	->$method(_fix_values($self, $path, {}, $method eq 'load'), @args);
 }
 
 sub _fix_values {
-    my($self, $path, $values) = @_;
+    my($self, $path, $values, $ignore_is) = @_;
     return {
 	$values ? %$values : (),
 	path => $self->convert_literal('FilePath', $path),
-	map(($_ => $self->get($_)), qw(is_public is_read_only)),
+	$ignore_is ? () : map(($_ => $self->get($_)), qw(is_public is_read_only)),
     };
 }
 
