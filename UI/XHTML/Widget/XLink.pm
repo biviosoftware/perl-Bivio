@@ -10,7 +10,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub initialize {
     my($self) = @_;
     my($l) = $self->get('facade_label');
-    $self->put(
+    $self->put_unless_exists(
 	tag => 'a',
 	value => Prose(vs_text(xlink => $l)),
 	href => Bivio::Agent::TaskId->is_valid_name($l) ? URI({
