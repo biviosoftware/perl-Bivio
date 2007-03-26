@@ -35,12 +35,13 @@ Bivio::Test->new({
 	$case->put(expected_task => $params->[0]);
 	return [$req];
     },
-    check_die_code => sub {
-	my($case, $die, $expect) = @_;
+    check_return => sub {
+	my($case, $actual, $expect) = @_;
 	return $expect
-	    unless $expect->equals_by_name('SERVER_REDIRECT_TASK');
-	my($t) = $die->get('attrs')->{task_id};
-	return 0 unless $t;
+	    unless $case->get('method') eq 'execute';
+	my($t) = $req->get('task_id');
+	return 0
+	    unless $t;
 	# The $t produces a better error message
 	return $t->equals_by_name($case->get('expected_task')) ? 1 : $t;
     },
@@ -50,7 +51,7 @@ Bivio::Test->new({
 	$this => [
 	    execute => [
 		$next => $next eq 'FORBIDDEN' ? Bivio::DieCode->FORBIDDEN
-		    : Bivio::DieCode->SERVER_REDIRECT_TASK,
+		    : [],
 	    ],
 	];
     }
