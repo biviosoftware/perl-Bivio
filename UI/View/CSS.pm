@@ -17,9 +17,8 @@ my($_PROSE) = {
 };
 
 sub realm_css {
-    my($proto) = @_;
-    view_put(content => Prose($proto->internal_realm_css));
-    return;
+    my($self) = @_;
+    return $self->internal_body(Prose($self->internal_realm_css));
 }
 
 sub internal_realm_css {
@@ -37,9 +36,8 @@ sub internal_site_css {
 }
 
 sub site_css {
-    my($proto) = @_;
-    view_put(content => Prose($proto->internal_site_css));
-    return;
+    my($self) = @_;
+    return $self->internal_body(Prose($self->internal_site_css));
 }
 
 # If(public RealmFile exists /Public/logo.gif/jpg/png)
@@ -172,9 +170,9 @@ form .footer {
 .list td, .paged_list td {
   padding: .5em;
 }
-div.prose, .form_prose, .list_prose, .paged_list .empty {
+.prose, .form_prose, .list_prose, .paged_list .empty {
   text-align: left;
-  max-width: 40em;
+  width: 40em;
   padding-bottom: .5ex;
 }
 .header,
@@ -191,7 +189,15 @@ table.header {
   padding-bottom: 7ex;
   text-align: center;
 }
-table.header td.menu {
+td.header_middle div.title {
+  Font('title');
+  margin: .5ex 0 .5ex 0;
+  text-align: center;
+}
+td.header_middle div.nav {
+  Font('nav');
+  border-top: 1px solid;
+  padding-top: .2em;
   vertical-align: top;
 }
 td.header_left a.su {
@@ -322,10 +328,11 @@ pre .text {
   Color('odd-background');
 }
 div.main_body {
-  text-align: center;
-  margin-top: 1ex;
-  margin-bottom: 1ex;
   display: inline;
+}
+td.main_middle {
+  padding-top: 1ex;
+  padding-bottom: 1ex;
 }
 p {
   text-align: left;
@@ -362,11 +369,6 @@ p {
 p.prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
-}
-div.main_title {
-  Font('main_title');
-  margin: .5ex 0 .5ex 0;
-  text-align: center;
 }
 table.simple td.field {
   white-space: nowrap;
