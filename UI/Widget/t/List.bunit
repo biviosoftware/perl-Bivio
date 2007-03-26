@@ -6,4 +6,5 @@ my($l2) = Bivio::Biz::Model->new(req(), 'NumberedList')->load_page({count => 3})
     [NumberedList => []] => '',
     [NumberedList => ['index']] => qr{0.*1.*2},
     [NumberedList => [vs_new('Join', [['index']])]] => '012',
+    [NumberedList => [vs_new('Join', [['index']])], ', '] => '0, 1, 2',
 ];

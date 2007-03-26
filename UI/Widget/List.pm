@@ -41,6 +41,10 @@ list_model is empty.
 
 The I<source> will be the original source, not the list_model.
 
+=item separator : any []
+
+Widget which renders between values.
+
 =back
 
 =cut
@@ -78,6 +82,7 @@ sub initialize {
     );
     $self->unsafe_initialize_attr('empty_list_widget');
     $self->unsafe_initialize_attr('source_name');
+    $self->unsafe_initialize_attr('separator');
     return;
 }
 
@@ -102,14 +107,20 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    my(undef, $list_class, $columns, $attributes) = @_;
+    my(undef, $list_class, $columns, $separator, $attributes) = @_;
     return '"list_class" must be a defined scalar'
 	unless defined($list_class) && !ref($list_class);
     return '"columns" must be an array_ref'
 	unless ref($columns) eq 'ARRAY';
+
+    if (ref($separator) eq 'HASH') {
+	$attributes = $separator;
+	$separator = undef;
+    }
     return {
 	list_class => $list_class,
 	columns => $columns,
+	($separator ? (separator => $separator) : ()),
 	($attributes ? %$attributes : ()),
     };
 }
@@ -128,18 +139,23 @@ sub render {
     my($n) = $self->unsafe_get('source_name');
     my($list) = $n ? $source->get_widget_value($n)
 	: $source->get_request->get('Model.' . $self->get('list_class'));
+    my($row_count) = $list->get_result_set_size;
 
     # check for an empty list
-    if ($list->get_result_set_size == 0
-        && $self->unsafe_get('empty_list_widget')) {
+    if ($row_count == 0 && $self->unsafe_get('empty_list_widget')) {
 	$self->unsafe_render_attr('empty_list_widget', $source, $buffer);
     }
     else {
+        my($count) = 0;
 	$list->do_rows(sub {
 	    my($list) = @_;
 	    my($name) = 0;
+
 	    foreach my $c (@{$self->get('columns')}) {
 		$self->render_value($name++, $c, $list, $buffer);
+                next unless $self->has_keys('separator')
+                    && ++$count < $row_count;
+		$self->unsafe_render_attr('separator', $source, $buffer);
 	    }
 	    return 1;
 	});
