@@ -76,6 +76,14 @@ sub is_valid {
     return defined($value) && $value =~ qr{^@{[$proto->REGEX]}$} ? 1 : 0;
 }
 
+sub public_path_info {
+    my($proto, $value) = @_;
+    return $value
+	unless $value;
+    $value =~ s{^\Q@{[$proto->PUBLIC_FOLDER_ROOT]}\E}{}i;
+    return $value;
+}
+
 sub to_absolute {
     my($proto, $value, $is_public) = @_;
     return $proto->join(
