@@ -15,20 +15,20 @@ sub internal_xhtml_adorned {
     my($self) = @_;
     view_put(
 	xhtml_title => Join([
-	    DIV_realm(String([qw(auth_realm owner display_name)]), {
+	    SPAN_realm(String([qw(auth_realm owner display_name)]), {
 		control => vs_realm_type('forum'),
 	    }),
 	    vs_text_as_prose('xhtml_title'),
-	]),
+	], {join_separator => ' '}),
 	vs_pager => '',
 	xhtml_head_tags => '',
 	xhtml_rss_task => '',
 	xhtml_tools => '',
+	xhtml_nav => '',
 	xhtml_topic => '',
 	xhtml_byline => '',
 	xhtml_selector => '',
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
-	xhtml_header_middle => '',
 	xhtml_header_right => vs_text_as_prose('xhtml_user_state'),
 	xhtml_main_left => '',
 	xhtml_main_right => HelpWiki(),
@@ -37,6 +37,10 @@ sub internal_xhtml_adorned {
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
     );
     view_put(
+	xhtml_header_middle => Join([
+	    DIV_title(view_widget_value('xhtml_title')),
+	    DIV_nav(view_widget_value('xhtml_nav')),
+	]),
 	xhtml_style => Join([
 	    StyleSheet('SITE_CSS'),
 	    StyleSheet('FORUM_CSS'),
@@ -44,7 +48,6 @@ sub internal_xhtml_adorned {
 	]),
 	xhtml_main_middle => Join([
 	    Acknowledgement(),
-	    DIV_main_title(view_widget_value('xhtml_title')),
 	    DIV_top(Join([
 		DIV_selector(
 		    view_widget_value('xhtml_selector')),
