@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::ViewShortcuts;
 use strict;
@@ -71,7 +71,7 @@ Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
 =cut
 
 sub vs_constant {
-    return _fc(qw(Constant ->get_value), $_[1]);
+    return _fc(\@_, qw(Constant ->get_value));
 }
 
 =for html <a name="vs_fe"></a>
@@ -97,7 +97,7 @@ L<Bivio::UI::HTML::get_value|Bivio::UI::HTML/"get_value">.
 =cut
 
 sub vs_html {
-    return _fc(qw(HTML ->get_value), $_[1]);
+    return _fc(\@_, qw(HTML ->get_value));
 }
 
 =for html <a name="vs_mail_host"></a>
@@ -109,7 +109,41 @@ Returns a widget value for mail_host.
 =cut
 
 sub vs_mail_host {
-    return _fc(qw(mail_host));
+    return _fc(\@_, qw(mail_host));
+}
+
+=for html <a name="vs_model"></a>
+
+=head2 vs_model(any model, any field_name) : array_ref
+
+=head2 vs_model(any model_field) : array_ref
+
+Returns widget value to return field_name of model on the request.  If
+model_field is passed or returned by the widget value model_field,
+(e.g. RealmUserList.RealmOwner.display_name), the first part of the name
+will be stripped off and looked up as the model.
+
+=cut
+
+sub vs_model {
+    return shift->vs_req(sub {
+        my($req, $model, $field) = @_;
+	($model, $field) = $model =~ /^(\w+)\.(.+)/
+	    unless defined($field);
+	return $req->get_nested("Model.$model", $field);
+    }, @_);
+}
+
+=for html <a name="vs_realm"></a>
+
+=head2 vs_realm(any field_name) : array_ref
+
+Returns widget value to return field_name value for this realm owner. field_name defaults to display_name.
+
+=cut
+
+sub vs_realm {
+    return shift->vs_req(qw(auth_realm owner), shift || 'display_name');
 }
 
 =for html <a name="vs_realm_type"></a>
@@ -121,14 +155,27 @@ Returns a widget value to test realm type against I<type>
 =cut
 
 sub vs_realm_type {
-    return _req(qw(auth_realm type ->equals_by_name), $_[1]);
+    return shift->vs_req(qw(auth_realm type ->equals_by_name), @_);
+}
+
+=for html <a name="vs_req"></a>
+
+=head2 vs_req(any type) : array_ref
+
+Returns a widget value pulled from the request..
+
+=cut
+
+sub vs_req {
+    shift;
+    return [['->get_request'], @_];
 }
 
 =for html <a name="vs_site_name"></a>
 
 =head2 vs_site_name() : array_ref
 
-Returns a widget value that 
+Returns a widget value that returns Text.site_name.
 
 =cut
 
@@ -145,30 +192,30 @@ Returns true if task has uri.
 =cut
 
 sub vs_task_has_uri {
-    return _fc(qw(Task ->has_uri), $_[1]);
+    return _fc(\@_, qw(Task ->has_uri));
 }
 
 =for html <a name="vs_text"></a>
 
-=head2 static vs_text(string tag_part, ...) : array_ref
-
-=head2 static vs_text(array_ref tag_widget_value) : array_ref
+=head2 static vs_text(any tag_part, ...) : array_ref
 
 Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
 
 =cut
 
 sub vs_text {
-    my(undef, @tag) = @_;
-    my($refs) = scalar(grep(ref($_), @tag));
-    return [
-	['->get_request'], 'Bivio::UI::Facade', 'Text',
-	!$refs || $refs eq @tag ? @tag
-	    : [sub {
-		   my($s) = @_;
-		   return map(ref($_) ? $s->get_widget_value($_) : $_, @tag);
-	      }],
-    ];
+    my($proto, @tag) = @_;
+    return _fc([$proto], 'Text', [sub {shift; @_}, @tag]);
+#     my($refs) = scalar(grep(ref($_), @tag));
+#     return _fc(
+# 	[$proto],
+# 	'Text',
+# 	!$refs || $refs eq @tag ? @tag
+# 	    : [sub {
+# 		   my($s) = @_;
+# 		   return map(ref($_) ? $s->get_widget_value($_) : $_, @tag);
+# 	      }],
+#     );
 }
 
 =for html <a name="vs_text_as_prose"></a>
@@ -189,16 +236,13 @@ sub vs_text_as_prose {
 #=PRIVATE METHODS
 
 sub _fc {
-    return _req('Bivio::UI::Facade', @_);
-}
-
-sub _req {
-    return [['->get_request'], @_];
+    my($args) = shift;
+    return shift(@$args)->vs_req('Bivio::UI::Facade', @_, @$args);
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 
 =head1 VERSION
 
