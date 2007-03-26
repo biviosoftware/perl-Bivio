@@ -213,15 +213,13 @@ sub vs_descriptive_field {
 
 sub vs_empty_list_prose {
     my($self, $model) = @_;
-    return Tag(
-	div => Prose(vs_text("$model.empty_list_prose")), 'empty_list');
+    return DIV_empty_list(Prose(vs_text("$model.empty_list_prose")));
 }
 
 sub vs_form_error_title {
     my($proto, $form) = @_;
-    return Tag(
-	div => String(vs_text('form_error_title')),
-	'err_title',
+    return DIV_err_title(
+	String(vs_text('form_error_title')),
 	{control => [['->get_request'], "Model.$form", '->in_error']},
     );
 }
