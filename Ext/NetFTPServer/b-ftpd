@@ -33,6 +33,7 @@ error log: /var/log/ftpd.error
 pidfile: /var/run/ftpd.pid
 passive port range: 8000-8088
 enable syslog: 0
+daemon: 1
 
 =cut
 
