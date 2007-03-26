@@ -3,7 +3,6 @@
 package Bivio::Biz::Action::WikiView;
 use strict;
 use base 'Bivio::Biz::Action';
-use Bivio::UI::XHTML::Widget::WikiStyle;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = Bivio::Type->get_instance('WikiName');
@@ -31,7 +30,7 @@ sub execute {
 	name => $name,
 	exists => 0,
     );
-    my($html, $dt, $uid) = Bivio::UI::XHTML::Widget::WikiStyle->render_html(
+    my($html, $dt, $uid) = $proto->use('XHTMLWidget.WikiStyle')->render_html(
 	$name, $req, $req->get('task_id'), $realm_id,
     );
     return $self->internal_model_not_found($req, $realm_id)
