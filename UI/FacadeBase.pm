@@ -52,7 +52,7 @@ sub _cfg_base {
 	    [[qw(off footer_border_top)] => 0x999999],
 	    [even_background => 0xeeeeee],
 	    [odd_background => -1],
-	    [[qw(a_link topic)] => 0x444444],
+	    [[qw(a_link topic nav)] => 0x444444],
 	    [a_hover => 0x888888],
 	    [acknowledgement_border => 0x0],
 	    [[qw(err warn)] => 0x990000],
@@ -99,7 +99,8 @@ sub _cfg_base {
 	    [selected => 'bold'],
 	    [topic => 'bold', 'larger'],
 	    [byline => 'bold'],
-	    [main_title => ['140%', 'bold']],
+	    [title => ['140%', 'bold']],
+	    [nav => '120%'],
 	    [pager => ['nowrap', 'inline']],
 	],
 	Constant => [
@@ -256,7 +257,7 @@ sub _cfg_blog {
 sub _cfg_dav {
     return {
 	Task => [
-	    [DAV => 'dv/*'],
+	    [DAV => 'dav/*', '/dv/*'],
 	],
 	Text => [
 	    [ForumList => [
@@ -632,6 +633,7 @@ sub _cfg_wiki {
 	Task => [
 	    [FORUM_WIKI_EDIT => '?/edit-wiki/*'],
 	    [FORUM_WIKI_VIEW => ['?/wiki/*']],
+	    [FORUM_PUBLIC_WIKI_VIEW => ['?/public-wiki/*']],
 	    [FORUM_WIKI_NOT_FOUND => undef],
 	    [HELP => 'help/*'],
 	    [HELP_NOT_FOUND => undef],
@@ -665,7 +667,7 @@ sub _cfg_wiki {
 		HELP_NOT_FOUND => 'Help Page Not Found',
 		HELP => 'Help',
 		FORUM_WIKI_EDIT => 'Edit Wiki Page',
-		FORUM_WIKI_VIEW => 'Wiki',
+		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_WIKI_EDIT => 'Add New Page',
@@ -674,6 +676,18 @@ sub _cfg_wiki {
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
 		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
+	    ]],
+	    [prose => [
+		wiki_view_topic => q{String(['Action.WikiView', 'name']);},
+		wiki_view_byline => q{edited DateTime(['Action.WikiView', 'modified_date_time']); by MailTo(['Action.WikiView', 'author']);},
+		wiki_view_tools => q{TaskMenu([
+                    {
+	                task_id => 'FORUM_WIKI_EDIT',
+		        path_info => [qw(Action.WikiView name)],
+		        label => 'forum_wiki_edit_page',
+		    },
+		    'FORUM_WIKI_EDIT',
+		]);},
 	    ]],
 	],
     };
