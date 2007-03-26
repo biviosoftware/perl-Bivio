@@ -298,7 +298,7 @@ sub merge_class_loader {
 		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
 		    TestLanguage => ['Bivio::Test::Language'],
 		    TestUnit => ['Bivio::Test'],
-		    Type => ['Bivio::Type'],
+		    Type => ['Bivio::Type', 'Bivio::Auth'],
 		    View => ['Bivio::UI::View'],
 		},
 	    },
