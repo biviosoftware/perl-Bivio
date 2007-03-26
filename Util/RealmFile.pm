@@ -33,6 +33,7 @@ commands:
     import_tree [folder] -- imports files in current directory into folder [/]
     list_folder folder -- lists a folder
     read path -- returns file contents
+    update path --  updates path with input
 EOF
 }
 
