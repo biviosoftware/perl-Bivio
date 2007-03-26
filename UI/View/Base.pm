@@ -20,10 +20,10 @@ sub css {
     my($self) = @_;
     view_class_map('CSSWidget');
     view_shortcuts('Bivio::UI::CSS::ViewShortcuts');
-    view_declare('content');
+    view_declare('css_body');
     view_main(SimplePage({
 	content_type => 'text/css',
-	value => view_widget_value('content'),
+	value => view_widget_value('css_body'),
     }));
     return;
 }
@@ -161,6 +161,7 @@ sub rss {
     my($self) = @_;
     view_class_map('XHTMLWidget');
     view_shortcuts($self->VIEW_SHORTCUTS);
+#TODO: rss_body.  Need to generalize interface
     return;
 }
 
