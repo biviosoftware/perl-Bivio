@@ -2,40 +2,7 @@
 # $Id$
 package Bivio::Test::Request;
 use strict;
-$Bivio::Test::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::Request::VERSION;
-
-=head1 NAME
-
-Bivio::Test::Request - manages requests for tests
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::Request;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Agent::Job::Request>
-
-=cut
-
-use Bivio::Agent::Job::Request;
-@Bivio::Test::Request::ISA = ('Bivio::Agent::Job::Request');
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::Request> manages requests for tests.  Simply importing creates a
-new request running in general realm.
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Agent::Job::Request';
 use Bivio::Agent::TaskId;
 use Bivio::Type::DateTime;
 use Bivio::UI::Task;
@@ -46,34 +13,12 @@ use Bivio::Test::Reply;
 use Bivio::ShellUtil;
 use Socket ();
 
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MSG_QUEUE_ATTR) = __PACKAGE__ . '.msg_queue';
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="get_instance"></a>
-
-=head2 static get_instance() : Bivio::Test::Request
-
-Same as L<get_current_or_new|"get_current_or_new">.
-
-TODO: Probably should be deprecated.
-
-=cut
 
 sub get_instance {
     return shift->get_current_or_new(@_);
 }
-
-=for html <a name="new_unit"></a>
-
-=head2 static new_unit(string class_name, string method, string args) : self
-
-Creates new instance of self, unless one already exists iwc dies.
-
-=cut
 
 sub new_unit {
     my($proto, $class_name, $method, @args) = @_;
@@ -82,19 +27,6 @@ sub new_unit {
     $method ||= 'get_instance';
     return $proto->$method(@args)->put(class_name => $class_name);
 }
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="capture_mail"></a>
-
-=head2 capture_mail() : self
-
-Captures mail from L<Bivio::Mail::Outgoing|Bivio::Mail::Outgoing> using
-Mock object.
-
-=cut
 
 sub capture_mail {
     my($self) = @_;
@@ -118,49 +50,13 @@ sub capture_mail {
     return $self;
 }
 
-=for html <a name="client_redirect"></a>
-
-=head2 client_redirect(...)
-
-Only does something if ignore_client_redirect is set on self.
-
-=cut
-
 sub client_redirect {
-    return shift->SUPER::client_redirect(@_)
-	unless $_[0]->unsafe_get('ignore_client_redirect');
-    my($self, $named) =  shift->internal_get_named_args(
-	ref($_[0]) && (ref($_[0]) ne 'HASH' || $_[0]->{task_id})
-	    ? [qw(task_id realm query path_info no_context require_context)]
-	    : [qw(uri query no_context)],
-	\@_,
-    );
-    $self->clear_nondurable_state;
-    $self->put_durable(%$named);
-    return;
+    return _redirect_check(shift)->server_redirect(@_);
 }
-
-=for html <a name="commit"></a>
-
-=head2 commit()
-
-=cut
 
 sub commit {
     return Bivio::Agent::Task->commit(shift(@_));
 }
-
-=for html <a name="execute_task"></a>
-
-=head2 static execute_task(any task_id, hash_ref req_attrs) : array_ref
-
-Executes I<task_id> in the context of a fully initialized instance.
-I<req_attrs> allows you to add any configuration, e.g. query.
-
-Returns an array_ref with Reply output string reference followed by
-any messages queued by the request.
-
-=cut
 
 sub execute_task {
     my($self) = shift->initialize_fully(@_);
@@ -170,28 +66,10 @@ sub execute_task {
     return [$o ? $$o : undef, @{$self->unsafe_get_captured_mail || []}];
 }
 
-=for html <a name="format_http_toggling_secure"></a>
-
-=head2 format_http_toggling_secure() : string
-
-Nop.
-
-=cut
-
 sub format_http_toggling_secure {
     my($self) = @_;
     return '';
 }
-
-=for html <a name="get_current_or_new"></a>
-
-=head2 static get_current_or_new() : Bivio::Agent::Request
-
-Returns
-L<Bivio::Agent::Request::get_current|Bivio::Agent::Request/"get_current"> or a
-new instance of this class, which is set to current.
-
-=cut
 
 sub get_current_or_new {
     my($proto) = @_;
@@ -212,27 +90,9 @@ sub get_current_or_new {
     return $self;
 }
 
-=for html <a name="get_form"></a>
-
-=head2 get_form() : hash_ref
-
-Returns value of I<form> key.
-
-=cut
-
 sub get_form {
     return shift->unsafe_get('form');
 }
-
-=for html <a name="initialize_fully"></a>
-
-=head2 static initialize_fully(string task_id, hash_ref req_attrs) : self
-
-Initializes L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher> fully with
-I<task_id> or with the task_id already on the request (defaults to SHELL_UTIL
-if task_id is not specified and not found on the request).
-
-=cut
 
 sub initialize_fully {
     my($self) = shift(@_);
@@ -252,27 +112,18 @@ sub initialize_fully {
     return $self;
 }
 
-=for html <a name="is_test"></a>
-
-=head2 is_test() : boolean
-
-Return value of is_test attribute or SUPER::is_test if not defined.
-
-=cut
+sub internal_redirect_realm_guess {
+    shift->throw_die(FORBIDDEN => {
+	entity => shift,
+	message => 'no realm to guess',
+    });
+    # DOES NOT RETURN
+}
 
 sub is_test {
     my($self) = @_;
     return $self->get_or_default('is_test', shift->SUPER::is_test(@_));
 }
-
-=for html <a name="put_form"></a>
-
-=head2 put_form(Bivio::Biz::FormModel form, hash_ref fields) : self
-
-Converts I<fields> to names in I<form>.  Then puts hash_ref of new fields on
-result.  Converts to literal any values, which will need to be parsed.
-
-=cut
 
 sub put_form {
     my($self, $form, $fields) = @_;
@@ -290,29 +141,26 @@ sub put_form {
     });
 }
 
-=for html <a name="run_unit"></a>
-
-=head2 static run_unit(array_ref cases)
-
-Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
-
-=cut
-
 sub run_unit {
     shift;
     return Bivio::Test::Unit->run_unit(@_);
 }
 
-=for html <a name="set_realm_and_user"></a>
-
-=head2 static set_realm_and_user(any realm, any user) : self
-
-Sets the realm and user.  See
-L<Bivio::ShellUtil|Bivio::ShellUtil> for details.
-
-If called statically, will call L<get_instance|"get_instance"> first.
-
-=cut
+sub server_redirect {
+    my($self) = _redirect_check(shift);
+    my($first) = @_;
+    my(undef, $named) = $self->internal_get_named_args(
+ 	ref($first) && (ref($first) ne 'HASH' || $first->{task_id})
+	    || Bivio::Agent::TaskId->is_valid_name($first)
+  	    ? [qw(task_id realm query path_info no_context require_context)]
+  	    : [qw(uri query no_context)],
+  	\@_,
+    );
+    Bivio::Die->die($named, ': uris not supported yet')
+        if exists($named->{uri});
+    $self->internal_server_redirect($named);
+    return;
+}
 
 sub set_realm_and_user {
     my($self) = shift;
@@ -321,14 +169,6 @@ sub set_realm_and_user {
     return $self;
 }
 
-=for html <a name="setup_all_facades"></a>
-
-=head2 setup_all_facades() : self
-
-Same as L<setup_facade|"setup_facade">, but initializes all facades.
-
-=cut
-
 sub setup_all_facades {
     my($self) = shift->setup_http;
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Dispatcher')
@@ -336,39 +176,16 @@ sub setup_all_facades {
     return $self->setup_facade;
 }
 
-=for html <a name="setup_facade"></a>
-
-=head2 setup_facade() : self
-
-Sets up the default facade.  Sets up http unless already setup.
-
-=cut
-
 sub setup_facade {
     my($self) = shift->setup_http;
     Bivio::ShellUtil->initialize_ui;
     return $self;
 }
 
-=for html <a name="setup_http"></a>
-
-=head2 static setup_http(string cookie_class) : self
-
-Sets up self to look like an http request.  You probably don't need
-to pass I<cookie_class>.  See UserLoginForm.t and
-PersistentCookie.t for examples.
-
-If called statically, will call L<get_instance|"get_instance"> first.
-
-Redirects are ignored.
-
-=cut
-
 sub setup_http {
     my($self, $cookie_class) = @_;
     $self = $self->get_instance unless ref($self);
     return $self if $self->unsafe_get('r');
-    $self->ignore_redirects(1);
     # What's required by bOP infrastructure.
     Bivio::Type::UserAgent->BROWSER_HTML4->execute($self, 1);
     my($r) = Bivio::Test::Bean->new;
@@ -417,12 +234,6 @@ sub setup_http {
     return $self;
 }
 
-=for html <a name="set_user_state_and_cookie"></a>
-
-=head2 set_user_state_and_cookie() : self
-
-=cut
-
 sub set_user_state_and_cookie {
     my($self, $user_state, $user) = @_;
     $user_state = $self->use('Type.UserState')->from_any($user_state);
@@ -435,18 +246,6 @@ sub set_user_state_and_cookie {
     return $self;
 }
 
-=for html <a name="unsafe_get_captured_mail"></a>
-
-=head2 unsafe_get_captured_mail() : array_ref
-
-Returns captured mail and clears queue.
-
-Returns empty array_ref if no queue mail.
-
-Returns undef if L<capture_mail|"capture_mail"> hasn't been called.
-
-=cut
-
 sub unsafe_get_captured_mail {
     my($self) = @_;
     my($res) = $self->unsafe_get($_MSG_QUEUE_ATTR);
@@ -456,16 +255,20 @@ sub unsafe_get_captured_mail {
     return $res;
 }
 
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub _redirect_check {
+    my($self) = @_;
+    my($n) = ref($self) . '._redirect_check';
+    my($r) = $self->get_if_exists_else_put($n => 1);
+    if ((caller(1))[0]->isa('Bivio::Agent::Request')) {
+	# high number b/c client_redirect calls server_redirect
+	$self->throw_die(DIE => {
+	    message => 'too many directs',
+	}) if ++$r > 10;
+    }
+    else {
+	$r = 1;
+    }
+    return $self->put($n => $r);
+}
 
 1;
