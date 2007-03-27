@@ -1,6 +1,6 @@
 # Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::HTML::Widget::SimplePage;
+package Bivio::UI::Widget::SimplePage;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget::Simple';
 
