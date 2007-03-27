@@ -220,6 +220,32 @@ td.header_left .logo_su .logo {
 td.header_left .logo_su .logo {
   display: block;
 }
+div.main_top {
+  text-align: right;
+}
+div.main_top .task_menu, div.main_top .pager {
+  text-align: right;
+  Font('pager');
+}
+div.main_bottom .pager, div.main_bottom .task_menu {
+  text-align: left;
+  Font('pager');
+}
+td.main_middle {
+  padding-top: 1ex;
+  padding-bottom: 1ex;
+}
+div.main_bottom, div.main_top, div.main_body {
+  float: left;
+  clear: both;
+}
+div.main_top div.tools {
+  float: right;
+}
+div.main_top div.selector {
+  float: left;
+  text-align: left;
+}
 div.alphabetical_chooser {
   display: inline;
 }
@@ -261,9 +287,6 @@ td.footer_left {
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
 }
-div.top {
-  text-align: right;
-}
 .tools div.sep {
   display: inline;
 }
@@ -294,14 +317,6 @@ form .submit {
 pre .text {
   Font('pre_text');
 }
-.top .task_menu, .top .pager {
-  text-align: right;
-  Font('pager');
-}
-.bottom .pager, .bottom .task_menu {
-  text-align: left;
-  Font('pager');
-}
 .off {
   Color('off');
 }
@@ -326,13 +341,6 @@ pre .text {
 }
 .odd {
   Color('odd-background');
-}
-div.main_body {
-  display: inline;
-}
-td.main_middle {
-  padding-top: 1ex;
-  padding-bottom: 1ex;
 }
 p {
   text-align: left;
@@ -378,9 +386,6 @@ table.simple td.label_ok, table.simple td.label_err {
 }
 table.header td.right div.search {
   padding-top: 2ex;
-}
-div.top div.tools {
-  float: right;
 }
 .topic {
   Font('topic');
