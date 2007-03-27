@@ -192,7 +192,7 @@ sub _cfg_base {
 			    'LOGOUT',
 			    'su',
 			),
-			Link('', '/', 'logo'),
+			Link(' ', '/', 'logo'),
 		    ));},
 		    xhtml_head_title => q{Title([vs_site_name(), Prose(vs_text([sub {"xhtml_head.title.$_[1]"}, ['task_id', '->get_name']]))]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
