@@ -238,6 +238,11 @@ td.main_middle {
 div.main_bottom, div.main_top, div.main_body {
   float: left;
   clear: both;
+  width: 100%;
+}
+div.main_body {
+  margin-top: 1ex;
+  margin-bottom: 1ex;
 }
 div.main_top div.tools {
   float: right;
