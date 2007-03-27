@@ -48,7 +48,7 @@ sub internal_xhtml_adorned {
 	]),
 	xhtml_main_middle => Join([
 	    Acknowledgement(),
-	    DIV_top(Join([
+	    DIV_main_top(Join([
 		DIV_selector(
 		    view_widget_value('xhtml_selector')),
 		DIV_tools(Join([
@@ -61,7 +61,7 @@ sub internal_xhtml_adorned {
 		DIV_byline(view_widget_value('xhtml_byline')),
 	    ])),
 	    DIV_main_body(view_widget_value('xhtml_body')),
-	    DIV_bottom(
+	    DIV_main_bottom(
 		DIV_tools(Join([
 		    view_widget_value('xhtml_tools'),
 		    view_widget_value('vs_pager'),
