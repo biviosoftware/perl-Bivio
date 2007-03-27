@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,55 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.85  2007/03/14 22:08:07  aviggio
+  * Bivio::Biz::Model::TestWidgetForm added to support UI widget unit
+    testing
+  * Bivio::Test::SampleText added to provide placeholder text content
+  * Bivio::UI::Widget::Replicator added to support unit testing
+  * Bivio::UI::XHTML::Widget::NestedList added to allow the application
+    of dynamic lists based on a single-column XHTML list of items
+    containing realm names or other unique identifiers
+  * Bivio::Agent::HTTP::Reply->delete_output added
+  * Bivio::Agent::TaskId now subclasses Bivio::Type::EnumDelegator
+    instead of Enum
+  * Bivio::BConf corrected permission category syntax
+  * Bivio::Biz::Model::BlogList shorten excerpt length
+  * Bivio::Biz::Model::ForumForm refactored ForumEmailMode comparison
+  * Bivio::Biz::Model::QuerySearchBaseForm use "return {}" instead of
+    calling client_redirect, making it easier to test and simplifying
+  * Bivio::Biz::Model::TreeList node_level not in other
+  * Bivio::Biz::Model::WikiForm added is_public visible field
+  * Bivio::Biz::Model::WikiForm->internal_pre_execute will check for a public
+    RealmFile if it is not found in the default private path
+  * Bivio::Biz::Util::RealmRole category mapping dies with explicit
+    error on invalid params
+  * Bivio::Delegate::SimpleTaskId added PERMANENT_REDIRECT task
+  * Bivio::Delegate::SimpleTaskId->is_component_included,
+    included_components and all_components
+  * Bivio::Delegate::SimpleTaskId can't have no such component check,
+    because components could be included by subclasses (Delegate:TaskId)
+  * Bivio::Delegate::TaskId->ALL_INFO deprecated, calls all_components
+  * Bivio::ShellUtil->inheritance_ancestors replaces
+    inheritance_ancestor_list
+  * Bivio::Type::BlogName share from_literal and added ERROR()
+  * Bivio::Type::DocletFileName share from_literal and added ERROR()
+  * Bivio::Type::StringArray->sort_unique added
+  * Bivio::Type::WikiName share from_literal and added ERROR()
+  * Bivio::Type::WikiText naming is now more flexible, but maintain
+    old behavior in here, added deprecated_auto_link_mode
+  * Bivio::UI::HTML::Widget::Script only run correct table layout for
+    netscape/mozilla
+  * Bivio::UI::HTML::Widget::Select->unknown_label added, refactored
+    some of the list code
+  * Bivio::UI::View::Base vs_pager replaces overloaded pager as
+    attribute name
+  * Bivio::UI::View::Blog added public/private support
+  * Bivio::UI::View::Wiki added public/private support
+  * Bivio::UI::View fixed bug in _clear_children, passing wrong value
+  * Bivio::UI::ViewLanguage->view_instance removed
+  * Bivio::UI::XHTML::ViewShortcuts view_instance was a bad idea,
+    vs_pager replaces overloaded pager as attribute name
+
   Revision 4.84  2007/03/13 22:17:40  moeller
   * Bivio::IO::ClassLoader simple_require had too much dynamic binding
     going on
