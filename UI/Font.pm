@@ -299,7 +299,7 @@ sub internal_initialize_value {
 # Intializes the value.
 #
 sub _initialize {
-
+    my($self, $value, $default) = @_;
     return if $value->{html};
     my(@c) = @{$value->{config}};
     if (int(@{$value->{names}}) == 1 && !grep(/^color=/, @c)) {
