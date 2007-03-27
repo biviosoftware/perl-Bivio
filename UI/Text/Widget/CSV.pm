@@ -39,6 +39,10 @@ Extracts the cells and summary cells and produces a table.
 
 =over 4
 
+=item column_control : value
+
+A widget value which, if set, must be a true value to render the column.
+
 =item column_heading : string
 
 The heading label to use for the columns heading. By default, the column
@@ -129,9 +133,10 @@ sub initialize {
     my($self) = @_;
     my($list) = Bivio::Biz::Model->get_instance($self->get('list_class'));
     foreach my $col (@{$self->get('columns')}) {
+        $col = [$col, {}]
+            unless ref($col) eq 'ARRAY';
 	# Make sure we can convert a value to a string.
-	$list->get_field_type(ref($col) eq 'ARRAY'
-				  ? $col->[0] : $col)->to_string(undef);
+	$list->get_field_type($col->[0])->to_string(undef);
     }
     $self->unsafe_initialize_attr('header');
     return;
@@ -175,37 +180,47 @@ sub render {
     }
     my($list) = $source->get_widget_value(
 	ref(Bivio::Biz::Model->get_instance($self->get('list_class'))));
+
+    my($render_columns) = {
+        map(($_->[0] => 1), grep(_get_column_control($self, $_, $list),
+            @{$self->get('columns')})),
+    };
     $$buffer .= ${Bivio::Util::CSV->to_csv_text([
 	map({_get_column_heading($_, $list, $source->get_request)}
-		@{$self->get('columns')})])};
+            grep($render_columns->{$_->[0]}, @{$self->get('columns')}))])};
     my($method) = $list->has_iterator
 	? 'iterate_next_and_load' : ('next_row', $list->reset_cursor);
     while ($list->$method()) {
 	$$buffer .= ${Bivio::Util::CSV->to_csv_text([
 	    map({_get_column_value($_, $list)}
-		    @{$self->get('columns')})])};
+                grep($render_columns->{$_->[0]}, @{$self->get('columns')}))])};
     }
     return;
 }
 
 #=PRIVATE METHODS
 
+sub _get_column_control {
+    my($self, $it, $list) = @_;
+    my($control) = $it->[1]->{'column_control'};
+    return $self->unsafe_resolve_widget_value($control, $list)
+        if $control;
+    return 1;
+}
+
 sub _get_column_heading {
     my($it, $list, $req) = @_;
-    my($field) = ref($it) eq 'ARRAY' ? $it->[0] : $it;
-    return ref($it) eq 'ARRAY' && $it->[1]->{column_heading}
-	? $it->[1]->{column_heading}
-	    : Bivio::UI::Text->get_value(
-		$list->simple_package_name, $field, $req);
+    my($heading) = $it->[1]->{column_heading};
+    return defined($heading)
+        ? $heading
+        : Bivio::UI::Text->get_value(
+            $list->simple_package_name, $it->[0], $req);
 }
 
 sub _get_column_value {
     my($it, $list) = @_;
-    my($field) = ref($it) eq 'ARRAY' ? $it->[0] : $it;
-    my($type) = ref($it) eq 'ARRAY' && $it->[1]->{type}
-	? $it->[1]->{type}
-	    : $list->get_field_type($field);
-    return $type->to_string($list->get($field));
+    return ($it->[1]->{type} || $list->get_field_type($it->[0]))
+        ->to_string($list->get($it->[0]));
 }
 
 =head1 COPYRIGHT
