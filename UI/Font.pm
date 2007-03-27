@@ -187,6 +187,8 @@ sub format_css {
 
 =head2 format_html(string name) : array
 
+=over 4
+
 =item font_with_style : boolean [0]
 
 If set to true, the fonts will be rendered assuming the default font
@@ -297,7 +299,7 @@ sub internal_initialize_value {
 # Intializes the value.
 #
 sub _initialize {
-    my($self, $value, $default) = @_;
+
     return if $value->{html};
     my(@c) = @{$value->{config}};
     if (int(@{$value->{names}}) == 1 && !grep(/^color=/, @c)) {
