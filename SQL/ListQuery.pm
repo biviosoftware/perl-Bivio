@@ -309,6 +309,17 @@ sub unauth_new {
     return _new($proto, $attrs, $support, $model);
 }
 
+=for html <a name="clone"></a>
+
+=head2 clone() : Bivio::SQL::ListQuery
+
+=cut
+
+sub clone {
+    my($self) = @_;
+    return $self->SUPER::new($self->get_shallow_copy);
+}
+
 =head1 METHODS
 
 =cut
