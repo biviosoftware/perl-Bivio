@@ -384,6 +384,7 @@ div.top div.tools {
 }
 .topic {
   Font('topic');
+  text-align: left;
 }
 .byline, .byline2  {
   Font('byline');
