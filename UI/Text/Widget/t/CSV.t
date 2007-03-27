@@ -54,10 +54,25 @@ Bivio::Test->new({
 	],
     ],
     ['ProductList', [
+	['Product.name', {
+            column_control => [sub {return 0}],
+	}],
+	['Product.product_id', {
+            column_control => [sub {return 1}],
+        }],
+    ]] => [
+	initialize => undef,
+	render => [
+	    [$_req, \(my $z3 = '')] => qr/Product ID\nK9-BD-01\n/s,
+	],
+    ],
+    ['ProductList', [
 	# Test invalid type
 	['Product.name', {type => Bivio::Type->get_instance('Date')}],
     ]] => [
 	initialize => undef,
-	render => Bivio::DieCode->DIE,
+	render => [
+            [$_req, \(my $z4 = '')] => Bivio::DieCode->DIE,
+        ],
     ],
 ]);
