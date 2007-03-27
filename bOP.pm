@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,78 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.86  2007/03/27 21:30:14  nagler
+  * Bivio::UI::Widget::SimplePage replaces Bivio::UI::HTML::Widget::SimplePage
+    IMPORTANT: If you install from a tarball, make sure you delete the
+    old SimplePage.
+  * Bivio::UI::Widget::SimplePage.content_type allows any mime type.
+  * Bivio::Agent::Embed::Reply->set_output supports GLOB references
+  * Bivio::Delegate::TaskId renumbered MOTION tasks, split off file component
+    from mail, added SITE_CSS
+  * Bivio::UI::View::Base->internal_body_from_name_as_prose deleted.  The
+    views should define the text, not the Facade.  Individual reusable elements
+    should be vs_text_as_prose.  Use internal_body_prose instead.  See
+    examples in View.UserAuth.
+  * Bivio::UI::View::Base->css added
+  * Bivio::UI::View::Base->PARENT_CLASS added, but don't use it.  It's
+    to get around potential problems with multiple Base.pm modules in a
+    single application.
+  * Bivio::UI::View::CSS added
+  * Bivio::UI::FacadeComponent->format_css added, and added to all components
+    (Color, Font, etc.)
+  * Bivio::UI::FacadeBase added support for CSS views; Added CLIENT_REDIRECT
+    (/go) and SITE_CSS (pub/site.css); Removed view bodies; Deprecated
+    internal_text_as_prose usage that was requiring view name as a qualifier
+    (backward compatible, but should remove if using)
+  * Bivio::UI::Font->format_css has larger feature set (lowercase, none, etc.)
+    which helps CSS generation
+  * Bivio::UI::ViewLanguage->view_unsafe_put for overriding values within
+    method views
+  * Bivio::UI::Widget->initialize_attr can be supplied with a default_value
+  * Bivio::UI::HTML::Widget::StyleSheet->control_off_render (dev mode) can
+    render any task, instead of hardwiring that the style sheet is a file.
+    You can also supply your own control now.
+  * Bivio::UI::View::ThreePartPage added
+  * Bivio::UI::XHTML::ViewShortcuts->vs_grid3 added
+  * Bivio::Test->IGNORE_RETURN added to allow inline_case to work at object level.
+    Bivio::Test::Unit also modified.
+  * Bivio::Delegate::TaskId->FORUM_CSS added
+  * Bivio::UI::Icon->FILE_SUFFIX_REGEXP added
+  * Bivio::Biz::Model::RealmLogoList added
+  * Bivio::UI::View::CSS->forum_css added
+  * Bivio::UI::ViewShortcuts->vs_task_has_uri added
+  * Bivio::UNIVERSAL->map_invoke also takes a closure for method
+  * Bivio::Util::RealmAdmin->users allows you to filter by a role, e.g.
+    b-realm-admin -r general users administator -- lists all super users
+  * Bivio::Test::Request->set_user_state_and_cookie added
+  * Bivio::Type::DocletFileName->public_path_info added
+  * Bivio::Biz::Action::ClientRedirect->execute_unauth_role_in_realm added
+  * Bivio::UI:XHTML::Widget::XLink now allows overrides of value, href, etc.
+  * Bivio::UI:XHTML::Widget::TaskMenu.xlink can used instead of task_id/label
+  * Bivio::Biz::Model::ForumDeleteForm added
+  * Bivio::Biz::Model::Forum->unauth_cascade_delete
+  * Bivio::Agent::Request->internal_redirect_realm_guess added to allow override
+    by Bivio::Test::Request
+  * Bivio::Test::Request->set_user_state_and_cookie added
+  * Bivio::Test::Request->server_redirect added and same as client_redirect.
+    Added redirect loop test.  ignore_redirects no longer needed
+  * Bivio::Biz::Action::ClientRedirect->execute_unauth_role_in_realm added
+  * Bivio::Biz::Model::RealmUserDeleteForm.user_name added
+  * Bivio::Delegate::TaskId->FORUM_PUBLIC_WIKI_VIEW added. FORUM_WIKI_NOT_FOUND
+    has ANYBODY permissions now.
+  * Bivio::UI::ViewShortcuts->vs_realm and vs_model added
+  * Bivio::UI::ViewShortcuts->vs_text simplified
+  * Bivio::UI::View::Wiki->HIDE_IS_PUBLIC added.  Moved text to FacadeBase
+  * Bivio::Biz::Util::RealmFile->update added
+  * Bivio::Biz::Model::RealmFile->init_realm must be executed within realm
+  * Bivio::SQL::ListQuery->clone added
+  * Bivio::UI::Widget::List.separator added
+  * Bivio::UI::Text::Widget::CSV.column_control added
+  * Bivio::UI::HTML::Widget::String.hard_newlines & hard_spaces were conflicting
+  * Bivio::Biz::Model::UserCreateForm improved name parsing
+  * Bivio::Biz::Model::QuerySearchBaseForm rolled back previous redirect changes
+  * Bivio::Biz::FormModel supports Bivio::SQL::Constraint->NOT_NULL_SET
+
   Revision 4.85  2007/03/14 22:08:07  aviggio
   * Bivio::Biz::Model::TestWidgetForm added to support UI widget unit
     testing
