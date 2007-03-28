@@ -11,6 +11,10 @@ Widget();
     [[sub {['is_secure']}], undef, {format => 'Amount'}] => '0.00',
     [[sub {undef}], undef, {undef_value => 'x'}] => 'x',
     [class('Type.StringArray')->new([qw(x y z)])] => 'x, y, z',
+    [' '] => '&nbsp;',
+    ['  '] => '&nbsp;',
+    ['  ', {hard_spaces => 1}] => '&nbsp;&nbsp;',
+    ["\n"] => '<br />',
 ];
 sub _t {
     return vs_new(Tag => @_);

@@ -280,9 +280,9 @@ sub render {
 sub _escape {
     my($fields, $value) = @_;
     $value = Bivio::HTML->escape($value);
-    $fields->{hard_spaces} ? ($value =~ s/ /&nbsp;/sg)
-	: ($value =~ s/^\s+$/&nbsp;/s);
+    $value =~ s/ /&nbsp;/sg if $fields->{hard_spaces};
     $value =~ s{\n}{<br />}mg if $fields->{hard_newlines};
+    $value =~ s/^\s+$/&nbsp;/s;
     return $value;
 }
 
