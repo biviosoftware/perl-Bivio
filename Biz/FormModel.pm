@@ -839,6 +839,28 @@ sub internal_initialize_sql_support {
     return Bivio::SQL::FormSupport->new($config);
 }
 
+=for html <a name="internal_parse"></a>
+
+=head2 internal_parse(hash_ref fields)
+
+Run field validation.  Useful for forms that want to show errors
+automatically on execute_empty
+
+=cut
+
+sub internal_parse {
+    my($self, $fields) = @_;
+
+    my($values) = $self->internal_get;
+    _parse($self, $fields || $self->internal_get_field_values());
+    # need to restore previous values because _parse() will remove invalid ones
+    # for example, if the secondary email is invalid
+    $self->internal_put($values);
+    $self->validate
+	unless $self->in_error;
+    return;
+}
+
 =for html <a name="internal_post_execute"></a>
 
 =head2 internal_post_execute(string method)
