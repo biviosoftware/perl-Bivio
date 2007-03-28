@@ -152,6 +152,30 @@ sub builtin_assert_equals {
     return _assert_expect(@_);
 }
 
+=for html <a name="builtin_auth_realm"></a>
+
+=head2 builtin_auth_realm() : RealmOwner
+
+Return the current auth realm.
+
+=cut
+
+sub builtin_auth_realm {
+    return shift->builtin_req()->get('auth_realm')->get('owner');
+}
+
+=for html <a name="builtin_auth_user"></a>
+
+=head2 builtin_auth_user() : RealmOwner
+
+Return the current auth user.
+
+=cut
+
+sub builtin_auth_user {
+    return shift->builtin_req()->get('auth_user');
+}
+
 =for html <a name="builtin_chomp_and_return"></a>
 
 =head2 builtin_chomp_and_return(string value) : string
