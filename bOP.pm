@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.87  2007/03/27 23:19:03  moeller
+  * Bivio::UI::View::Base use explicit SimplePage implementation for CSS and CSV
+
   Revision 4.86  2007/03/27 21:30:14  nagler
   * Bivio::UI::Widget::SimplePage replaces Bivio::UI::HTML::Widget::SimplePage
     IMPORTANT: If you install from a tarball, make sure you delete the
