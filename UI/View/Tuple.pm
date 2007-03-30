@@ -211,10 +211,13 @@ sub list {
 }
 
 sub list_csv {
-    view_main(SimplePage([sub {
-        my($req) = @_;
-	return CSV(TupleList => [_list_columns($req)]);
-    }]));
+    view_main(SimplePage({
+	content_type => 'text/csv',
+	value => [sub {
+		      my($req) = @_;
+		      return CSV(TupleList => [_list_columns($req)]);
+		  }],
+    }));
     return;
 }
 
