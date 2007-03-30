@@ -4,6 +4,7 @@ package Bivio::UI::View::Base;
 use strict;
 use base 'Bivio::UI::View::Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
+use Bivio::UI::Widget::SimplePage;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
