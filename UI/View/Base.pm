@@ -22,7 +22,7 @@ sub css {
     view_class_map('CSSWidget');
     view_shortcuts('Bivio::UI::CSS::ViewShortcuts');
     view_declare('css_body');
-    view_main(Bivio::UI::Widget::SimplePage->new({
+    view_main(SimplePage({
 	content_type => 'text/css',
 	value => view_widget_value('css_body'),
     }));
@@ -34,7 +34,7 @@ sub csv {
     view_class_map('TextWidget');
     view_declare('csv_body');
     view_shortcuts($self->VIEW_SHORTCUTS);
-    view_main(Bivio::UI::Widget::SimplePage->new({
+    view_main(SimplePage({
 	content_type => 'text/csv',
 	value => view_widget_value('csv_body'),
     }));
