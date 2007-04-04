@@ -80,7 +80,7 @@ sub _header {
     _do_until($self, 'begin', sub {
 	my($k, $v) = @_;
 	_e($self, 'unknown element')
-	    unless $k =~ /^(version|prodid)$/;
+	    unless $k =~ /^(version|prodid|method)$/;
 	return 1;
     });
     _do_until($self, 'end', sub {
