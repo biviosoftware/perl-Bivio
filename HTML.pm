@@ -160,6 +160,7 @@ sub unescape {
     # we want to unescape, not decode
     my(undef, $text) = @_;
     $text =~ s/&amp;/&/g;
+    $text =~ s/&quot;/"/g;
     return $text;
 }
 
