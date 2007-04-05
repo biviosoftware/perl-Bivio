@@ -157,8 +157,10 @@ Returns the unescaped HTML string.  See also L<escape|"escape">.
 =cut
 
 sub unescape {
-    shift;
-    return HTML::Entities::decode(shift);
+    # we want to unescape, not decode
+    my(undef, $text) = @_;
+    $text =~ s/&amp;/&/g;
+    return $text;
 }
 
 =for html <a name="unescape_query"></a>
