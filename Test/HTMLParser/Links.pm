@@ -129,7 +129,6 @@ of text (like Forms), so we append until the end_a.
 sub html_parser_text {
     my($self, $text) = @_;
     my($fields) = $self->[$_IDI];
-    $text = $self->get('cleaner')->text($text);
     $fields->{text} .= $text if $fields->{href};
     return;
 }
