@@ -1,8 +1,5 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-
-# introspection helpers for bOP
-
 package Bivio::Util::Class;
 use strict;
 use base 'Bivio::ShellUtil';
@@ -16,6 +13,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-class [options] command [args..]
 commands
+  qualified_name class -- return fully qualified name for class
   super package -- return the list of superclasses for given package
   tasks_for_label text -- find TaskIds from text in Facade.Text map
   tasks_for_view view -- find TaskIds from view name (View.<view name>)
@@ -38,6 +36,11 @@ sub internal_initialize_index {
 	push(@{($fields->{view}->{$view} ||= [])}, $task);
     }
     return;
+}
+
+sub qualified_name {
+    my($self, $name) = @_;
+    return $self->use($name);
 }
 
 sub super {
