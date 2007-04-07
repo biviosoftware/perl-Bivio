@@ -7,7 +7,7 @@ use strict;
 
 BEGIN {
     $| = 1;
-    print "1..8\n";
+    print "1..10\n";
 }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
@@ -107,17 +107,22 @@ Bivio::IO::Config->introduce_values({
 
 foreach my $x (
     [p1 => 999],
-    ['freddy.p3' => 777],
+    [[qw(freddy p3)] => 777],
     [p1_1 => 1],
     [p2_2 => 2],
+    ['Bivio::IO::Config::t::T1.p2_2' => 2],
 ) {
-    my($expect) = pop(@$x);
-    my($a, $b) = $x->[0] =~ /(\w+)/g;
+    my($name, $expect) = @$x;
+    my($a, $b) = ref($name) ? @$name : $name;
     my($actual) = main::conf_get($a);
     $actual = $actual->{$b}
 	if $b;
-    die($actual, ": $x->[0] not $expect")
+    die($actual, ": $a not $expect")
 	unless $actual == $expect;
 }
+
+my($actual) = main::conf_get('Bivio::IO::Config::t::T1');
+die($actual, ': unexpected config')
+    unless $actual->{p1} eq 999;
 
 1;

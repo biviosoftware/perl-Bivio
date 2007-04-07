@@ -247,9 +247,9 @@ sub command_line_args {
 
 =head2 static get(string name) : hash
 
-Looks up configuration for the caller's package.  If name is provided, returns
-the configuration hash bound to I<name> within the package's configuration
-space, e.g. given the config:
+Looks up configuration for the caller's package (default).  If name is
+provided, returns the configuration hash bound to I<name> within the package's
+configuration space, e.g. given the config:
 
     'Bivio::IPC::Server' => {
         'listen' => 35,
@@ -278,30 +278,49 @@ parameters will be returned.
 If I<name> is not passed, then the entire configuration will be returned,
 including specific named sections.
 
+If I<name> is prefixed by a package separated by a '.', then the
+config for that element of that package is returned.
+
 =cut
 
 sub get {
     my($proto, $name) = @_;
     my($pkg);
-    my($i) = 0;
-    0 while ($pkg = caller($i++)) eq __PACKAGE__;
-    my($pkg_cfg) = &_get_pkg($pkg);
-    int(@_) < 2 && return $pkg_cfg;
+    if (($name || '') =~ /^([\w:]+)\.(\w+)$/) {
+	$pkg = $1;
+	$name = $2;
+    }
+    elsif (($name || '') =~ /::/) {
+	$pkg = $name;
+	$name = undef;
+	pop(@_);
+    }
+    else {
+	my($i) = 0;
+	0 while ($pkg = caller($i++)) eq __PACKAGE__;
+    }
+    my($pkg_cfg) = _get_pkg($pkg);
+    return $pkg_cfg
+	if @_ < 2;
     my($spec) = $_SPEC{$pkg};
-    defined($spec) && defined($spec->{&NAMED})
-	    || die("$pkg: NAMED config not specified");
+    Bivio::IO::Alert->info($spec->{$proto->NAMED})
+        if $pkg eq 'Bivio::IO::ClassLoader';
+    die("$pkg: NAMED config not specified by this package.  You can't retrieve values from a config hash with get().  Only for named configuration or whole package")
+	unless defined($spec) && defined($spec->{$proto->NAMED});
     if (defined($name)) {
 	defined($pkg_cfg->{$name})
-		|| die("$pkg.$name: named config not found");
+	    || die("$pkg.$name: named config not found");
 	return $pkg_cfg->{$name};
     }
     # Retrieve the "undef" config, see _get_pkg
-    my($cfg) = $pkg_cfg->{&NAMED};
-    my(@bad) = grep(defined($cfg->{$_}) && $cfg->{$_} eq &REQUIRED,
-	    keys(%$cfg));
-    @bad || return $cfg;
-    @bad = sort @bad;
-    die("$pkg.(@bad): named config required");
+    my($cfg) = $pkg_cfg->{$proto->NAMED};
+    my(@bad) = grep(
+	defined($cfg->{$_}) && $cfg->{$_} eq $proto->REQUIRED,
+	keys(%$cfg),
+    );
+    die("$pkg.(" . join(' ', sort(@bad)), ': named config required')
+	if @bad;
+    return $cfg;
 }
 
 =for html <a name="handle_config"></a>
