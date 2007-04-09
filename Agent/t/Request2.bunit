@@ -26,14 +26,22 @@ Request();
 	map_user_realms => [
 	    [sub {$_->{'RealmOwner.name'}}] => [[]],
 	],
-	set_user => [
-	    btest_read => not_die(),
-	],
-	map_user_realms => [
-	    [sub {$_->{'RealmOwner.name'}}] => [[qw(btest_read fourem fourem-sub1 fourem-sub1-1 fourem-sub2)]],
-	    [sub {$_->{'RealmOwner.name'}},
-	     {'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER}] 
-		=> [[qw(btest_read)]],
+	{
+	    method => 'map_user_realms',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->set_user(shift(@$params));
+		return [sub {$_->{'RealmOwner.name'}}, @$params];
+	    },
+	} => [
+	    btest_read => [[qw(btest_read fourem fourem-sub1 fourem-sub1-1 fourem-sub2)]],
+	    [btest_read => {
+		 'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER,
+	    }] => [[qw(btest_read)]],
+	    [root => {
+		 'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER,
+		 'RealmUser.role' => Bivio::Auth::Role->ADMINISTRATOR,
+	    }] => [[qw(root)]],
 	],
     ],
 ];

@@ -1166,7 +1166,9 @@ sub map_user_realms {
 		{$a->{'RealmOwner.name'} cmp $b->{'RealmOwner.name'}}
 	        grep({
 		    my($x) = $_;
-		    !$filter || grep($filter->{$_} eq $x->{$_}, keys(%$filter));
+		    !$filter ||
+			keys(%$filter)
+			== grep($filter->{$_} eq $x->{$_}, keys(%$filter));
 		} values(%{$self->get('user_realms')}))))];
     return [map($op->($_), @$atomic_copy)];
 }
