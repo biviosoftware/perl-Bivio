@@ -55,7 +55,7 @@ sub _cfg_base {
 	    [[qw(a_link topic nav)] => 0x444444],
 	    [a_hover => 0x888888],
 	    [acknowledgement_border => 0x0],
-	    [[qw(err warn)] => 0x990000],
+	    [[qw(err warn empty_list_border)] => 0x990000],
 	    [header_su_background => 0x00ff00],
 	    [[qw(form_desc form_sep_border)]  =>  0x666666],
 	],
