@@ -220,6 +220,40 @@ td.header_left .logo_su .logo {
 td.header_left .logo_su .logo {
   display: block;
 }
+td.header_right {
+  width: 30%;
+  text-align: right;
+}
+td.header_middle {
+  width: 40%;
+  text-align: center;
+}
+td.footer_left {
+  width: 30%;
+}
+td.footer_right {
+  width: 30%;
+  text-align: right;
+}
+td.footer_middle {
+  width: 40%;
+  vertical-align: top;
+  text-align: center;
+}
+td.header_right {
+  vertical-align: top;
+  text-align: right;
+}
+td.header_right div.user_state {
+  Font('user_state');
+  padding-bottom: 2ex;
+}
+td.header_right div.search input {
+  vertical-align: bottom;
+}
+td.header_right div.search .go {
+  margin-left: .5em;
+}
 div.main_top {
   text-align: right;
 }
@@ -241,6 +275,11 @@ div.main_bottom, div.main_top, div.main_body {
   width: 100%;
 }
 div.main_body {
+  margin-top: 1ex;
+  margin-bottom: 1ex;
+}
+div.main_body {
+  width: 100%;
   margin-top: 1ex;
   margin-bottom: 1ex;
 }
@@ -316,8 +355,11 @@ form .submit {
   margin: .5em;
 }
 .empty_list {
-  text-align: center;
-  padding-bottom: 1ex;
+  border: 2px solid;
+  Color('empty_list-border');
+  padding: .5em;
+  width: 30em;
+  margin: auto;
 }
 pre .text {
   Font('pre_text');
@@ -388,9 +430,6 @@ table.simple td.field {
 }
 table.simple td.label_ok, table.simple td.label_err {
   vertical-align: middle;
-}
-table.header td.right div.search {
-  padding-top: 2ex;
 }
 .topic {
   Font('topic');
