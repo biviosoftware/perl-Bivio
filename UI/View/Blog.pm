@@ -26,6 +26,15 @@ sub create {
 
 sub detail {
     return shift->internal_put_base_attr(
+	menu => Join([
+	    DIV_heading('Recent Entries'),
+	    UL(List('BlogRecentList', [
+		LI(vs_link(['title'], URI({
+		    task_id => _access_mode('FORUM_BLOG_DETAIL'),
+		    path_info => ['path_info'],
+		}))),
+	    ])),
+	]),
 	topic => String([qw(Model.BlogList title)]),
 	byline => Join([
 	    'posted on ',
