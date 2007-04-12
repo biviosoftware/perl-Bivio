@@ -1,0 +1,219 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- Silver Version, last changed: 9 April, 2004 -->
+<head>
+<link rel="stylesheet" type="text/css" href="/scripts/ProStyles.css" />
+<link rel="stylesheet" type="text/css" href="/screens/styles.css" />
+<script language="JavaScript" type="text/javascript" src="/scripts/common.js"></script>
+<script language="JavaScript" type="text/javascript" src="/scripts/features.js"></script>
+<title>FLC - Flatirons Library Consortium - Remote Database Login</title>
+<meta http-equiv="Content-Type" content="text/html" />
+<link rel="stylesheet" href="/screens/styles.css" type="text/css" />
+</head>
+
+<body onLoad="document.forms[0].elements[0].focus();">
+<html  dir="LTR">
+<head>
+<title>Boulder Public Library                                           /All Locations</title>
+<base target="_self"/>
+<link rel="stylesheet" type="text/css" href="/scripts/ProStyles.css" />
+<link rel="stylesheet" type="text/css" href="/screens/styles.css" />
+<link rel="shortcut icon" type="ximage/icon" href="/screens/favicon.ico" />
+<script language="JavaScript" type="text/javascript" src="/scripts/common.js"></script>
+<script language="JavaScript" type="text/javascript" src="/scripts/features.js"></script>
+<script language="JavaScript">
+<!-- Hide the JS
+startTimeout(3000000, "/");
+// -->
+</script>
+<noscript>
+<meta http-equiv="Refresh" content="3000;URL=/" />
+</noscript>
+</head>
+<body bgcolor="#FFFFFF" onLoad='if (document.forms.length > 0) { for (var i=0; i<document.forms[0].elements.length; i++) { if (document.forms[0].elements[i].type == "text") { document.forms[0].elements[i].focus(); document.forms[0].elements[i].select(); return; } } }'>
+<title>FLC - Flatirons Library Consortium</title>
+
+<SCRIPT LANGUAGE="javascript"><!-- Hide from old browsers
+function hiLiteOn(imgName) {
+ if (document.images) {
+  hiLiteImage = eval(imgName + "On.src")
+  document [imgName].src = hiLiteImage
+  }
+ }
+ 
+function hiLiteOff(imgName) {
+ if (document.images) {
+  originalImage = eval(imgName + "Off.src")
+  document [imgName].src = originalImage
+  }
+ }
+ 
+if(document.images) {
+ 
+ advancedOn = new Image()
+ advancedOn.src = "/screens/tab_advanced_on.gif"
+ advancedOff = new Image()
+ advancedOff.src = "/screens/tab_advanced_off.gif"
+    
+ helpOn = new Image()
+ helpOn.src = "/screens/tab_help_on.gif"
+ helpOff = new Image()
+ helpOff.src = "/screens/tab_help_off.gif"
+ 
+ databasesOn = new Image()
+ databasesOn.src = "/screens/tab_databases_on.gif"
+ databasesOff = new Image()
+ databasesOff.src = "/screens/tab_databases_off.gif"
+ 
+ recordOn = new Image()
+ recordOn.src = "/screens/tab_record_on.gif"
+ recordOff = new Image()
+ recordOff.src = "/screens/tab_record_off.gif"
+ 
+ boulderOn = new Image()
+ boulderOn.src = "/screens/FLC_header_boulder_on.gif"
+ boulderOff = new Image()
+ boulderOff.src = "/screens/FLC_header_boulder_off.gif"
+ 
+ broomfieldOn = new Image()
+ broomfieldOn.src = "/screens/FLC_header_broomfield_on.gif"
+ broomfieldOff = new Image()
+ broomfieldOff.src = "/screens/FLC_header_broomfield_off.gif"
+ 
+ louisvilleOn = new Image()
+ louisvilleOn.src = "/screens/FLC_header_louisville_on.gif"
+ louisvilleOff = new Image()
+ louisvilleOff.src = "/screens/FLC_header_louisville_off.gif"
+ 
+ }
+// Stop hiding from old browsers -->
+</SCRIPT>
+
+<br />
+
+<CENTER>
+<!-- ASB - make this a table with fixed width -->
+<table width="704" padding="0" cellspacing="0" cellpadding="0">
+<tr>
+<td padding="0" colspan="4" align="center">
+<a href="/"><img src="/screens/FLC_header_logo.gif" width="429" height="48" border="0" alt="Click here to link to FLC - Flatirons Library Consortium homepage"></a>
+<a href="http://www.boulder.lib.co.us"><img src="/screens/FLC_header_boulder_off.gif" name="boulder" border="0" alt="Boulder Public Library" width="54" height="15" ONMOUSEOVER="hiLiteOn ('boulder')" ONMOUSEOUT="hiLiteOff ('boulder')"></a><a href="http://www.ci.broomfield.co.us/library/"><img src="/screens/FLC_header_broomfield_off.gif" border="0" name="broomfield" alt="Mamie Doud Eisenhower/Broomfield Public Library" width="66" height="15" ONMOUSEOVER="hiLiteOn ('broomfield')" ONMOUSEOUT="hiLiteOff ('broomfield')"></a><a href="http://www.ci.louisville.co.us/library/"><img src="/screens/FLC_header_louisville_off.gif" border="0" name="louisville" alt="Louisville Public Library" width="142" height="15" ONMOUSEOVER="hiLiteOn ('louisville')" ONMOUSEOUT="hiLiteOff ('louisville')"></a>
+</td>
+</tr>
+<tr>
+<td padding=0><a href="/search/X" ONMOUSEOVER="hiLiteOn ('advanced')" ONMOUSEOUT="hiLiteOff ('advanced')"><img border="0" src="/screens/tab_advanced_off.gif" name="advanced" alt="Search Catalog using Advanced Keyword Searching" width="166" height="22"></a></td>
+<td padding=0><a href="/screens/search_tips.html" ONMOUSEOVER="hiLiteOn ('help')" ONMOUSEOUT="hiLiteOff ('help')"><img border="0" src="/screens/tab_help_on.gif" name="help" alt="Catalog help and search tips" width="134" height="22"></a></td>
+<td padding=0><a href="/screens/Dbase.html" ONMOUSEOVER="hiLiteOn ('databases')" ONMOUSEOUT="hiLiteOff ('databases')"><img border="0" src="/screens/tab_databases_off.gif" name="databases" alt="Search our subscription databases and internet rsources." width="117" height="22"></a></td>
+<td padding=0><a href="/patroninfo" ONMOUSEOVER="hiLiteOn ('record')" ONMOUSEOUT="hiLiteOff ('record')"><img border="0" src="/screens/tab_record_off.gif" name="record" alt="View your library record (and information on due dates, renewals, holds, and more." width="288" height="22"></a></td>
+</tr>
+</table>
+</CENTER>
+
+
+
+
+
+
+<br>
+
+<!--Begin the main content table-->
+<FORM METHOD=POST>
+<table width="700" border="0" cellspacing="0" cellpadding="5" align="center">
+<tr valign="top" class="pageMainArea">
+<td class="pageMainArea" colspan="2">
+<!--Beginning main page content-->
+<span class="pageMainAreaHeader"><img src="/screens/remoteDBlogin.gif" width="196" height="20" alt="Login to remote database"></span>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+</td>
+</tr>
+<tr>
+<td>
+<TABLE WIDTH=100%>
+<TR><TD WIDTH=25%></TD><TD><FONT SIZE=-1>
+For example, type "Jane Smith" and then press the TAB key.</FONT></TD></TR><TR><TD>
+YOUR NAME:</TD><TD>
+<input name="name" value="" size="20" maxlength="20"></TD></TR>
+<TR><TD></TD><TD><FONT SIZE=-1>
+For example, type "D001234567" and click the Display or Submit button below.</FONT></TD></TR>
+<TR><TD>
+LIBRARY CARD NUMBER:</TD><TD>
+<input name="code" type="PASSWORD" value="" size="20" maxlength="20"></TD></TR>
+<tr>
+<td>
+</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td>
+<input type="image" src="/screens/pat_submit.gif" border="0" name="submit" value="submit" />
+&nbsp;
+<a href="http://nell.boulder.lib.co.us:80/search"><img src="/screens/pat_search.gif" alt="Start Over" border="0" /></a>
+</td></tr>
+</TABLE>
+</td></tr>
+<!--End of main page content-->
+</table>
+<!--End the main content table-->
+
+</FORM>
+
+<br />
+
+<SCRIPT LANGUAGE="javascript"><!-- Hide from old browsers
+function hiLiteOn(imgName) {
+ if (document.images) {
+  hiLiteImage = eval(imgName + "On.src")
+  document [imgName].src = hiLiteImage
+  }
+ }
+ 
+function hiLiteOff(imgName) {
+ if (document.images) {
+  originalImage = eval(imgName + "Off.src")
+  document [imgName].src = originalImage
+  }
+ }
+ 
+if(document.images) {
+    
+ bplOn = new Image()
+ bplOn.src = "/screens/flc_footer_bpl_on.gif"
+ bplOff = new Image()
+ bplOff.src = "/screens/flc_footer_bpl_off.gif"
+ 
+ lsvOn = new Image()
+ lsvOn.src = "/screens/flc_footer_louisville_on.gif"
+ lsvOff = new Image()
+ lsvOff.src = "/screens/flc_footer_louisville_off.gif"
+ 
+ mdeOn = new Image()
+ mdeOn.src = "/screens/flc_footer_broomfield_on.gif"
+ mdeOff = new Image()
+ mdeOff.src = "/screens/flc_footer_broomfield_off.gif"
+ 
+ }
+// Stop hiding from old browsers -->
+</SCRIPT>
+<p>
+
+<CENTER>
+
+<IMG SRC="/screens/FLC_Footer_logo.gif" width="252" height="41" alt="Flatirons Library Consortium" BORDER="0">
+<table padding="0" cellspacing="0" cellpadding="0" >
+<tr>
+<td padding=0><a href="http://www.boulder.lib.co.us" ONMOUSEOVER="hiLiteOn ('bpl')" ONMOUSEOUT="hiLiteOff ('bpl')"><img border="0" src="/screens/flc_footer_bpl_off.gif" name="bpl" alt="Boulder Public Library website" width="145" height="20"></a></td>
+<td padding=0><a href="http://www.ci.louisville.co.us/library" ONMOUSEOVER="hiLiteOn ('lsv')" ONMOUSEOUT="hiLiteOff ('lsv')"><img border="0" src="/screens/flc_footer_louisville_off.gif" name="lsv" alt="Louisville Public Library website" width="160" height="20"></a></td>
+<td padding=0><a href="http://www.ci.broomfield.co.us/library" ONMOUSEOVER="hiLiteOn ('mde')" ONMOUSEOUT="hiLiteOff ('mde')"><img border="0" src="/screens/flc_footer_broomfield_off.gif" name="mde" alt="Mamie Doud Eisenhower/Broomfield Public Library website" width="310" height="20"></a></td>
+</tr>
+</table>
+<IMG SRC="/screens/FLC_Footer_clicktext.gif" width="276" height="12" alt="Click " BORDER="0">
+</CENTER>
+
+
+
+
+</body>
+</html>
+<!--this is customized <screens/pverify2_web.html>-->
