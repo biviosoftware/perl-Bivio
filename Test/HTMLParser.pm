@@ -118,15 +118,19 @@ sub new {
 
 =cut
 
-=for html <a name="html_parser_comment"></a>
-
-=head2 html_parser_comment(string comment)
-
-Does nothing.  Subclasses may override, but typically don't care about.
-
-=cut
-
 sub html_parser_comment {
+    return;
+}
+
+sub html_parser_end {
+    return;
+}
+
+sub html_parser_start {
+    return;
+}
+
+sub html_parser_text {
     return;
 }
 
