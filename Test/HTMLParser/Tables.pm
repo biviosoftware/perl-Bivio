@@ -370,6 +370,15 @@ sub _in_data {
     return ($fields->{in_data_table} || 0) == 1 ? 1 : 0;
 }
 
+sub _links {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    return $fields->{links} ||= Bivio::Test::HTMLParser::Links->new->internal_put({
+	cleaner => $self->get('cleaner'),
+	elements => {},
+    });
+}
+
 # _save_cell(self, hash_ref fields, array_ref row) : string
 #
 # Checks colspan to see if needs filling.  Returns the found text,
@@ -382,8 +391,8 @@ sub _save_cell {
     my($t) = $self->get('cleaner')->text(_text($fields));
     push(@$row, Bivio::Test::HTMLParser::Tables::Cell->new({
 	text => $t,
-	Links => $fields->{links}->internal_put(
-	    $fields->{links}->get('elements'))->set_read_only,
+	Links => _links($self)->internal_put(
+	    _links($self)->get('elements'))->set_read_only,
     }));
     $fields->{links} = undef;
     _trace($t) if $_TRACE;
@@ -429,10 +438,7 @@ sub _start_td {
     return unless _in_data($fields);
     $fields->{text} = '';
     $fields->{colspan} = $attr->{colspan} || 1;
-    $fields->{links} = Bivio::Test::HTMLParser::Links->new->internal_put({
-	cleaner => $self->get('cleaner'),
-	elements => {},
-    });
+    _links($self);
     return;
 }
 
