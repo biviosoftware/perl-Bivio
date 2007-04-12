@@ -110,7 +110,7 @@ sub absolute_uri {
     return defined($u->scheme) ? $uri : $u->abs(
 	$self->[$_IDI]->{uri}
 	|| Bivio::Die->die($uri, ': unable to make absolute; no prior URI')
-    )->as_string;
+    )->canonical->as_string;
 }
 
 =for html <a name="basic_authorization"></a>
@@ -269,6 +269,15 @@ L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"fin
 
 sub find_table_row {
     return shift->get_html_parser()->get('Tables')->find_row(@_);
+}
+
+sub follow_frame {
+    my($self, $name) = @_;
+    return $self->visit_uri(
+	_assert_html($self)->get('Frames')
+	->get($name)
+	->{src},
+    );
 }
 
 =for html <a name="follow_link"></a>
@@ -559,15 +568,6 @@ sub handle_setup {
     return;
 }
 
-=for html <a name="home_page"></a>
-
-=head2 home_page(string facade_uri)
-
-Requests the the home page.  See L<home_page_uri|"home_page_uri"> for
-arguments.
-
-=cut
-
 sub home_page {
     my($self) = shift;
     return $self->visit_uri($self->home_page_uri(@_));
@@ -706,7 +706,7 @@ sub submit_form {
     _send_request($self,
 	_create_form_request(
 	    $self, uc($form->{method}),
-	    $self->absolute_uri($form->{action}),
+	    $self->absolute_uri($form->{action} || $self->unsafe_get_uri),
             _format_form($form, $submit_button, $form_fields)));
     _assert_form_response($self, $expected_content_type);
     return;
@@ -777,6 +777,14 @@ Calls method, and if it dies, returns false.  Otherwise, true.
 sub unsafe_op {
     my($self, $method, @args) = @_;
     return Bivio::Die->catch(sub {$self->$method(@args)}) ? 0 : 1;
+}
+
+sub user_agent {
+    my($self) = @_;
+    return 'Mozilla/4.0 (compatible; '
+	. $self->get('test_script')
+        . ':'
+	. _get_script_line($self);
 }
 
 =for html <a name="verify_content_type"></a>
@@ -1094,7 +1102,7 @@ sub _append_query {
 	unless defined($q);
     my($uri) = URI->new($u);
     $uri->query_form($uri->query_form, @$q);  # XXX
-    return $uri->as_string;
+    return $uri->canonical->as_string;
 }
 
 # _assert_form_field(hash_ref form, any name) : hash_ref
@@ -1348,10 +1356,10 @@ sub _lookup_option_value {
 sub _send_request {
     my($self, $request) = @_;
     my($fields) = $self->[$_IDI];
-    $fields->{user_agent}->agent('Mozilla/4.0 (compatible; '
-	. $self->get('test_script') . ':' . _get_script_line($self)
-	. ')');
+    $fields->{user_agent}->agent($self->user_agent);
     my($redirect_count) = 0;
+    my($prev_uri) = $self->absolute_uri($fields->{uri})
+	if $fields->{uri};
     push(@{$fields->{history}}, {
 	map({
 	    my($x) = $fields->{$_};
@@ -1364,7 +1372,9 @@ sub _send_request {
     while () {
 	$request->header(Authorization => $self->get('Authorization'))
 	    if $self->has_keys('Authorization');
-	$fields->{uri} = $request->uri->as_string;
+	$request->header(Referer => $prev_uri)
+	    if $prev_uri;
+	$fields->{uri} = $request->uri->canonical->as_string;
 	$fields->{cookies}->add_cookie_header($request);
 	_log($self, 'req', $request);
 	$fields->{response} = $fields->{user_agent}->request($request);
@@ -1375,7 +1385,7 @@ sub _send_request {
 	$fields->{cookies}->extract_cookies($fields->{response});
 	my($uri) = $fields->{response}->as_string
 	    =~ /(?:^|\n)Location: (\S*)/si;
-	$request = HTTP::Request->new(GET => $self->absolute_uri($uri));
+	$request = HTTP::Request->new(GET => $prev_uri = $self->absolute_uri($uri));
     }
     Bivio::Die->die(
 	$request->uri,
