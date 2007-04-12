@@ -48,17 +48,7 @@ sub internal_load_rows {
 	    : $_N->NODE_COLLAPSED : $_N->LEAF_NODE;
 	$row->{node_uri} = $row->{node_state}->eq_leaf_node
 	    ? $self->internal_leaf_node_uri($row)
-	    : $req->format_uri({
-		query => $query->format_uri(
-		    $self->internal_get_sql_support, {
-			expand => join(',',
-		           grep($row->{$pkf} ne $_, @$e),
-		           $row->{node_state}->eq_node_collapsed
-		           ? $row->{$pkf} : (),
-		       ),
-		       page_number => undef,
-		   }),
-	    });
+	    : $self->internal_parent_node_uri($row);
 	$row;
     } @{_sort(
 	$self->internal_root_parent_node_id,
@@ -67,6 +57,25 @@ sub internal_load_rows {
 	$pkf,
 	$self->PARENT_NODE_ID_FIELD,
     )})]
+}
+
+sub internal_parent_node_uri {
+    #EXPERIMENTAL: Only override to return undef
+    my($self, $row) = @_;
+    my($e) = $self->[$_IDI];
+    my($pkf) = $self->get_info('primary_key_names')->[0];
+    return $self->get_request->format_uri({
+	query => $self->get_query->format_uri(
+	    $self->internal_get_sql_support, {
+		expand => join(
+		    ',',
+		    grep($row->{$pkf} ne $_, @$e),
+		    $row->{node_state}->eq_node_collapsed
+			? $row->{$pkf} : (),
+		),
+		page_number => undef,
+	    }),
+    });
 }
 
 sub internal_prepare_statement {
