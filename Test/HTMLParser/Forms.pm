@@ -129,7 +129,7 @@ sub get_field {
 =head2 get_ok_button(any form) : string
 
 Returns name of ok_button.  There cannot be more than one button, excluding
-cancel.
+cancel.  If there are no submit buttons, returns undef.
 
 =cut
 
@@ -138,8 +138,8 @@ sub get_ok_button {
     $form = $self->get_by_field_names($form)
 	unless ref($form) eq 'HASH';
     my(@ok) = grep(!/cancel/i, keys(%{$form->{submit}}));
-    Bivio::Die->die('must be exactly one submit ', \@ok)
-        unless @ok == 1;
+    Bivio::Die->die('must not be more than one submit ', \@ok)
+        if @ok > 1;
     return $ok[0];
 }
 
@@ -221,7 +221,7 @@ sub html_parser_start {
     return _start_option($fields, $attr)
 	if $tag eq 'option';
     return _start_input($self, $attr)
-	if $attr->{type} && $tag !~ /^(?:link|style)/;
+	if $tag eq 'input' || ($attr->{type} && $tag !~ /^(?:link|style|script)$/);
     return _start_maybe_err($fields, $attr)
 	if $tag =~ /^(font|span|div)$/;
     return;
@@ -581,6 +581,7 @@ sub _start_form {
 #
 sub _start_input {
     my($self, $attr) = @_;
+    $attr->{type} ||= 'text';
     my($fields) = $self->[$_IDI];
     _trace($fields->{text}, ' ', $fields->{input}, ' ',
 	$fields->{prev_cell_text}, ' ', $attr)
