@@ -739,7 +739,9 @@ sub _build_value {
     my($func, $model, $index, $field) = $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)\)?$/;
     my($t) = ($func || '') =~ /^(length|count)\(/i ? 'Bivio::Type::Number'
 	: Bivio::Biz::Model->get_instance($model)->get_field_type($field);
-    push(@$params, $t->to_sql_param($t->from_literal($value)));
+    my($v, $e) = $t->from_literal($value);
+    Bivio::Die->die($column, $value, $e) if $e;
+    push(@$params, $t->to_sql_param($v));
     return $t->to_sql_value('?');
 }
 
