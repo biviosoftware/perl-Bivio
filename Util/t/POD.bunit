@@ -1,0 +1,22 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ShellUtil();
+Bivio::IO::File->mkdir_p('tmp');
+options({
+    compute_params => sub {
+	my(undef, $params) = @_;
+	my($pm) = $params->[0];
+	system("cp POD/in/$pm POD/tmp/$pm");
+	return [to_comments => "POD/tmp/$pm"];
+    },
+    check_return => sub {
+	my($case) = @_;
+	my($pm) = $case->get('params')->[1];
+	$case->actual_return([Bivio::IO::File->read($pm)]);
+	$pm =~ s/tmp/out/;
+	return [Bivio::IO::File->read($pm)];
+    },
+});
+[
+    'Model.pm' => [],
+];
