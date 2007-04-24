@@ -80,6 +80,7 @@ sub internal_initialize {
             ECCreditCardPayment.processed_date_time
         )],
         other => [
+            'RealmOwner.display_name',
             [qw(ECPayment.user_id RealmOwner.realm_id)],
 	    [qw{ECPayment.ec_payment_id ECSubscription.ec_payment_id(+)}],
 	    [qw{ECPayment.ec_payment_id ECCheckPayment.ec_payment_id(+)}],
