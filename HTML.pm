@@ -161,6 +161,8 @@ sub unescape {
     my(undef, $text) = @_;
     $text =~ s/&amp;/&/g;
     $text =~ s/&quot;/"/g;
+    $text =~ s/&lt;/</g;
+    $text =~ s/&gt;/>/g;
     return $text;
 }
 
