@@ -137,9 +137,9 @@ widget values.
 sub render {
     my($self, $source, $buffer) = @_;
     my($n) = $self->unsafe_get('source_name');
-    my($list) = $n ? $source->get_widget_value($n)
+    my($model) = $n ? $source->get_widget_value($n)
 	: $source->get_request->get('Model.' . $self->get('list_class'));
-    my($row_count) = $list->get_result_set_size;
+    my($row_count) = $model->get_result_set_size;
 
     # check for an empty list
     if ($row_count == 0 && $self->unsafe_get('empty_list_widget')) {
@@ -147,11 +147,14 @@ sub render {
     }
     else {
         my($count) = 0;
-	$list->do_rows(sub {
-	    my($list) = @_;
+	$model->do_rows(sub {
 	    my($name) = 0;
 
 	    foreach my $c (@{$self->get('columns')}) {
+		my($list) = $model;
+		$list = $model->get_list_model()
+		    if UNIVERSAL::isa($model, 'Bivio::Biz::ListFormModel')
+			&& !$model->has_fields($c);
 		$self->render_value($name++, $c, $list, $buffer);
                 next unless $self->has_keys('separator')
                     && ++$count < $row_count;
