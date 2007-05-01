@@ -110,6 +110,30 @@ sub new {
 
 =cut
 
+=for html <a name="do_rows"></a>
+
+=head2 do_rows(code_ref do_rows_handler) : self
+
+Delegated to ListModel
+
+=cut
+
+sub do_rows {
+    &_delegate;
+}
+
+=for html <a name="do_rows_handler"></a>
+
+=head2 callback do_rows_handler(self) : boolean
+
+Delegated to ListModel
+
+=cut
+
+sub do_rows_handler {
+    &_delegate;
+}
+
 =for html <a name="execute_empty"></a>
 
 =head2 execute_empty()
@@ -355,13 +379,16 @@ sub get_fields_for_primary_keys {
     my($self) = @_;
     my($list) = $self->get_list_model || _execute_init($self);
     my($primary_key_names) = $list->get_info('primary_key_names');
-    my($i) = 0;
-    return {@{$list->map_rows(
-	sub {
-	    my($list) = @_;
-	    return map(($_.$_SEP.$i++ => $list->get($_)),
-		       @$primary_key_names);
-	})}};
+    my(@list_keys) = ();
+    my($row) = 0;
+    $list->do_rows(sub {
+        push(@list_keys,
+	    map(($_.$_SEP.$row => $list->get($_)), @$primary_key_names),
+	);
+	$row++;
+	return 1;
+    });
+    return {@list_keys};
 }
 
 =for html <a name="get_list_class"></a>
@@ -624,22 +651,12 @@ sub next_row {
 
 =head2 map_rows(code_ref map_iterate_handler) : array_ref
 
-Just like ListModel's
+Delegated to ListModel
 
 =cut
 
 sub map_rows {
-#TODO: Delegate this.
-    my($self, $map_iterate_handler) = @_;
-    my($res) = [];
-    $map_iterate_handler ||= sub {
-	return shift->get_shallow_copy;
-    };
-    $self->reset_cursor;
-    while ($self->next_row) {
-	push(@$res, $map_iterate_handler->($self));
-    }
-    return $res;
+    &_delegate;
 }
 
 =for html <a name="reset_cursor"></a>
@@ -818,6 +835,15 @@ sub _collision {
 	list_attrs => $self->get_list_model->internal_get,
     });
     return;
+}
+
+# _delegate() : any
+sub _delegate {
+    # Delegate the caller function to ListModel
+    return &{\&{join('::',
+        'Bivio::Biz::ListModel',
+	(caller(1))[3] =~ /.*::(.*)$/,
+    )}};
 }
 
 # _execute_init(Bivio::Biz::ListFormModel self) : Bivio::Biz::ListModel
