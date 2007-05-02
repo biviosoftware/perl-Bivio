@@ -11,18 +11,22 @@ sub VALID_METHOD_REGEXP {
     return qr{^hm_}s;
 }
 
+sub unsafe_new {
+    my($proto, $name) = (shift, shift);
+    $name =~ s/[\W_]+/_/g;
+    $name =~ s/^_//;
+    return undef
+	unless $name =~ $proto->VALID_METHOD_REGEXP;
+    my($self) = $proto->SUPER::unsafe_new($name, @_);
+    return $self && $self->put(view_name => $name);
+}
+
 sub execute_task_item {
     my($proto, $view_name, $req) = @_;
-    return shift->SUPER::execute_task_item(@_)
-	unless $view_name eq 'execute_uri';
-    (my $uri = $req->get('uri')) =~ s/\W+/_/g;
-    $uri =~ s/^_+//;
-    Bivio::Die->throw('NOT_FOUND', {
-	message => 'view not found',
-	entity => $uri,
-	class => $proto,
-    }) unless $uri =~ $proto->VALID_METHOD_REGEXP;
-    return shift->SUPER::execute_task_item($uri, $req);
+    return shift->SUPER::execute_task_item(
+	$view_name eq 'execute_uri' ? $req->get('uri') : $view_name, $req)
 }
 
 1;
+
+
