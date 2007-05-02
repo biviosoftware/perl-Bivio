@@ -35,6 +35,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-pod [options] command [args...]
 commands:
+    to_comments File.pm -- converts POD in-place to # comments
     to_html input_dir output_dir -- converts input_dir pods to output_dir html
 EOF
 }
@@ -166,8 +167,10 @@ sub to_comments {
 		next;
 	    }
 	}
-	# sort subs and imports
-	# print sections
+	$parts->{import} = [sort(@{$parts->{import}})];
+	foreach my $p (qw(constant method private)) {
+	    $parts->{$p} = [sort {$a->[0] cmp $b->[0]} @{$parts->{$p}}];
+	}
 	$parts->{import} = [sort(@{$parts->{import}})];
 	return join(
 	    "\n",

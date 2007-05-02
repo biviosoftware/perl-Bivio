@@ -28,81 +28,6 @@ sub OPTIONS {
     return $res;
 }
 
-sub get_instance {
-    my($proto, $class) = @_;
-    # Returns the singleton for I<class>.  If I<class> is supplied, it may be just
-    # the simple name or a fully qualified class name.  It will be loaded with
-    # L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Model> map.
-    # I<class> may also be an instance of a model.
-    #
-    # May not be called on anonymous Models without I<class> argument.
-    if (defined($class)) {
-	$class = Bivio::IO::ClassLoader->map_require('Model', $class)
-		unless ref($class);
-	$class = ref($class) if ref($class);
-    }
-    else {
-	$class = ref($proto) || $proto;
-    }
-#     _initialize_class_info($class) unless $_CLASS_INFO{$class};
-#     return $_CLASS_INFO{$class}->{singleton};
-    return _get_class_info($class)->{singleton};
-}
-
-sub new {
-    my($proto, $req, $class) = _new_args(@_);
-    # Creates a Model with I<req>, if supplied.  The class of the model is defined by
-    # C<$proto>.  If I<class> is supplied, L<get_instance|"get_instance"> is called
-    # with I<class> as its argument and the resultant class is instantiated.
-    return $proto->get_instance($class)->new($req)
-	if defined($class);
-    $class = ref($proto) || $proto;
-#     _initialize_class_info($class)
-#         unless $_CLASS_INFO{$class};
-#     my($ci) = $_CLASS_INFO{$class};
-    my($ci) = _get_class_info($class);
-
-    # Make a copy of the properties for this instance.  properties
-    # is an array_ref for efficiency
-    my($self) = Bivio::Collection::Attributes::new($class,
-	    {@{$ci->{properties}}});
-    $self->[$_IDI] = {
-	class_info => $ci,
-        request => $req || (ref($proto) ? $proto->unsafe_get_request : undef),
-    };
-    return $self;
-}
-
-sub new_anonymous {
-    my($proto, $config, $req) = @_;
-    # Creates an "anonymous" Model.  There are two modes: initialization
-    # and creation from existing.  To initialize, you must supply
-    # I<config>.  This will create the first anonymous instance.
-    # I<proto> must be a class name, not a reference.
-    #
-    # To create an instance from an existing instance, I<proto> must
-    # be an instance, not a class name.  I<config> is ignored.
-    my($ci) = ref($proto) ? $proto->[$_IDI]->{class_info}
-	    : _initialize_class_info($proto, $config);
-    # Make a copy of the properties for this instance.  properties
-    # is an array_ref for efficiency.
-    my($self) = Bivio::Collection::Attributes::new($proto,
-	    {@{$ci->{properties}}});
-    $self->[$_IDI] = {
-	class_info => $ci,
-	# Never save the request for first time anonymous classes
-        request => ref($proto) ? $req : undef,
-	anonymous => 1,
-    };
-    return $self;
-}
-
-sub new_other {
-    my($self, $class) = @_;
-    # Creates a model instance of the specified class.
-    return $self->get_instance($class)->new($self->get_request);
-}
-
 sub as_string {
     my($self) = @_;
     # Pretty prints an identifier for this model.
@@ -220,6 +145,27 @@ sub get_info {
     #
     # B<Do not modify references returned by this method.>
     return shift->[$_IDI]->{class_info}->{sql_support}->get(shift);
+}
+
+sub get_instance {
+    my($proto, $class) = @_;
+    # Returns the singleton for I<class>.  If I<class> is supplied, it may be just
+    # the simple name or a fully qualified class name.  It will be loaded with
+    # L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Model> map.
+    # I<class> may also be an instance of a model.
+    #
+    # May not be called on anonymous Models without I<class> argument.
+    if (defined($class)) {
+	$class = Bivio::IO::ClassLoader->map_require('Model', $class)
+		unless ref($class);
+	$class = ref($class) if ref($class);
+    }
+    else {
+	$class = ref($proto) || $proto;
+    }
+#     _initialize_class_info($class) unless $_CLASS_INFO{$class};
+#     return $_CLASS_INFO{$class}->{singleton};
+    return _get_class_info($class)->{singleton};
 }
 
 sub get_model {
@@ -375,6 +321,14 @@ sub internal_initialize_local_fields {
     ];
 }
 
+sub internal_initialize_sql_support {
+    # B<FOR INTERNAL USE ONLY>.
+    #
+    # Returns the L<Bivio::SQL::Support|Bivio::SQL::Support> object
+    # for this model.
+    Bivio::Die->die(shift, ': abstract method');
+}
+
 sub internal_iterate_next {
     my($self, $it, $row, $converter) = @_;
     # Returns (I<self>, I<row>) on success or () if no more.
@@ -394,14 +348,6 @@ sub internal_put_iterator {
     my($self, $it) = @_;
     # Sets the iterator and returns its argument.
     return $self->[$_IDI]->{iterator} = $it;
-}
-
-sub internal_initialize_sql_support {
-    # B<FOR INTERNAL USE ONLY>.
-    #
-    # Returns the L<Bivio::SQL::Support|Bivio::SQL::Support> object
-    # for this model.
-    Bivio::Die->die(shift, ': abstract method');
 }
 
 sub is_instance {
@@ -484,6 +430,60 @@ sub merge_initialize_info {
 	}
     }
     return $res;
+}
+
+sub new {
+    my($proto, $req, $class) = _new_args(@_);
+    # Creates a Model with I<req>, if supplied.  The class of the model is defined by
+    # C<$proto>.  If I<class> is supplied, L<get_instance|"get_instance"> is called
+    # with I<class> as its argument and the resultant class is instantiated.
+    return $proto->get_instance($class)->new($req)
+	if defined($class);
+    $class = ref($proto) || $proto;
+#     _initialize_class_info($class)
+#         unless $_CLASS_INFO{$class};
+#     my($ci) = $_CLASS_INFO{$class};
+    my($ci) = _get_class_info($class);
+
+    # Make a copy of the properties for this instance.  properties
+    # is an array_ref for efficiency
+    my($self) = Bivio::Collection::Attributes::new($class,
+	    {@{$ci->{properties}}});
+    $self->[$_IDI] = {
+	class_info => $ci,
+        request => $req || (ref($proto) ? $proto->unsafe_get_request : undef),
+    };
+    return $self;
+}
+
+sub new_anonymous {
+    my($proto, $config, $req) = @_;
+    # Creates an "anonymous" Model.  There are two modes: initialization
+    # and creation from existing.  To initialize, you must supply
+    # I<config>.  This will create the first anonymous instance.
+    # I<proto> must be a class name, not a reference.
+    #
+    # To create an instance from an existing instance, I<proto> must
+    # be an instance, not a class name.  I<config> is ignored.
+    my($ci) = ref($proto) ? $proto->[$_IDI]->{class_info}
+	    : _initialize_class_info($proto, $config);
+    # Make a copy of the properties for this instance.  properties
+    # is an array_ref for efficiency.
+    my($self) = Bivio::Collection::Attributes::new($proto,
+	    {@{$ci->{properties}}});
+    $self->[$_IDI] = {
+	class_info => $ci,
+	# Never save the request for first time anonymous classes
+        request => ref($proto) ? $req : undef,
+	anonymous => 1,
+    };
+    return $self;
+}
+
+sub new_other {
+    my($self, $class) = @_;
+    # Creates a model instance of the specified class.
+    return $self->get_instance($class)->new($self->get_request);
 }
 
 sub put {
