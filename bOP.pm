@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,35 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.90  2007/05/02 16:59:02  moeller
+    * Bivio::Agent::Request map_user_realms wasn't handling multiple
+      keys in $filter properly (too loose)
+    * Bivio::Biz::Action::LocalFilePlain use view for
+      execute_uri_as_view
+    * Bivio::Biz::ListFormModel fixed bug for ListModels with compound
+      primary keys; also implemented delegation to ListModel for do_rows
+      and map_rows
+    * Bivio::HTML do not encode HTML entities -- the ascii version is
+      easier to test
+    * Bivio::IO::Config get any package's config
+    * Bivio::SQL::Statement die() if an invalid value is passed to
+      _build_value()
+    * Bivio::Test::HTMLParser::Forms there can be *no* submits
+    * Bivio::Test::HTMLParser::Tables odd case with links if the HTML is
+      bad.  Makes more flexible for scraping
+    * Bivio::Test::Language::HTTP added follow_frame, Convert uris to
+      canonical before converting to string.  Removes :80/:443
+    * Bivio::UI::FacadeBase my-site has path_info,
+      EXISTS NOT_FOUND added to FormErrors
+    * Bivio::UI::View::Blog added menu
+    * Bivio::UI::View::CSS some std formatting for ThreePartPage
+    * Bivio::UI::View::SiteRoot unsafe_new takes over work of
+      execute_task_item
+    * Bivio::UI::Widget::List extend List widget to handle ListForm
+      models
+    * Bivio::Util::Class added qualified_name
+    * Bivio::Util::POD to_comments added
+
   Revision 4.89  2007/04/04 04:55:31  aviggio
   * Bivio::Biz::Model::CalendarEventDAVList add 'method' header and
     export all datetimes as UTC
