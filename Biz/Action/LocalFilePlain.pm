@@ -145,7 +145,7 @@ Dies with NOT_FOUND, if uri is not found as uri.
 
 sub execute_uri_as_view {
     my($proto, $req) = @_;
-    return $proto->use('View.LocalFile')->execute(
+    return $proto->use('Bivio::UI::View')->execute(
 	Bivio::UI::Text->get_value('view_execute_uri_prefix', $req)
         . '/'
 	. $req->get('uri'),
