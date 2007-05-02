@@ -111,6 +111,8 @@ sub _cfg_base {
 	],
 	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
+	    [EXISTS => 'vs_fe("label"); already exists in our database.'],
+	    [NOT_FOUND => 'vs_fe("label"); was not found in our database.'],
 	],
 	HTML => [
 	    [want_secure => 0],
@@ -122,7 +124,7 @@ sub _cfg_base {
 	    [FAVICON_ICO => 'favicon.ico'],
 	    [FORBIDDEN => undef],
 	    [LOCAL_FILE_PLAIN => ['i/*', 'f/*']],
-	    [MY_SITE => 'my-site'],
+	    [MY_SITE => 'my-site/*'],
 	    [MY_CLUB_SITE => undef],
 	    [SHELL_UTIL => undef],
 	    [SITE_ROOT => '*'],
@@ -171,9 +173,9 @@ sub _cfg_base {
 		SITE_ROOT => 'Home',
 	    ]],
 	    [[qw(paged_detail paged_list)] => [
-		prev => 'back',
-		next => 'next',
-		list => 'back to list',
+		prev => 'Back',
+		next => 'Next',
+		list => 'Back to list',
 	    ]],
 	    [prose => [
 		@{__PACKAGE__->map_by_two(sub {
@@ -194,7 +196,7 @@ sub _cfg_base {
 			),
 			Link(' ', '/', 'logo'),
 		    ));},
-		    xhtml_head_title => q{Title([vs_site_name(), Prose(vs_text([sub {"xhtml_head.title.$_[1]"}, ['task_id', '->get_name']]))]);},
+		    xhtml_head_title => q{Title([vs_site_name(), vs_text_as_prose('xhtml_title')]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
 		    xhtml_copyright => <<"EOF",
 Copyright &copy; @{[__PACKAGE__->use('Type.DateTime')->now_as_year]} vs_text('site_copyright');<br />
@@ -577,6 +579,11 @@ sub _cfg_user_auth {
 	    [UserPasswordQueryForm => [
 		ok_button => 'Reset Password',
 	    ]],
+	    [ContactForm => [
+		from => 'Your Email',
+		text => 'Message',
+		ok_button => 'Send',
+	    ]],
 	    [acknowledgement => [
 		GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to reset your password.},
 		USER_PASSWORD_RESET => q{Your password has been reset.  Please choose a new one.},
@@ -604,7 +611,7 @@ sub _cfg_user_auth {
 		login_no_context => 'Already registered?  Click here to login.',
 		user_create_no_context => 'Not registered? Click here to register.',
 	    ]],
-	    [[qw(page3.title xhtml_head.title xhtml.title)] => [
+	    [[qw(page3.title xhtml.title)] => [
 		LOGIN => 'Please Login',
 		USER_CREATE => 'Please Register',
 		GENERAL_CONTACT => 'Please Contact Us',
