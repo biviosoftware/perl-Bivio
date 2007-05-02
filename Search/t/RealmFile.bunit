@@ -75,7 +75,7 @@ EOF
 			 XREALM => [qw(auth_realm owner name)],
 			 XUSER => [qw(auth_user name)],
 			 XEMAIL => 'demo@bivio.biz',
-			 A => req()->get_nested(qw(auth_user display_name))
+			 A => lc(req()->get_nested(qw(auth_user display_name)))
 			     . ' demo@bivio.biz',
 			 XREALM => 'fourem',
 			 S => 'a short title',
