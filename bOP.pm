@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.89  2007/04/04 04:55:31  aviggio
+  * Bivio::Biz::Model::CalendarEventDAVList add 'method' header and
+    export all datetimes as UTC
+  * Bivio::MIME::Calendar add 'method' to known header elements
+  * Bivio::UI::View::Base reflects removal of SimplePage text widget
+  * Bivio::UI::View::Tuple reflects removal of SimplePage text widget
+  * Bivio::UI::Text::Widget::SimplePage removed, replaced by
+    Bivio::UI::Widget::SimplePage
+
   Revision 4.88  2007/03/29 16:44:01  dobbs
   * Bivio::Biz::FormModel added internal_parse for forms that want to
     show errors on execute_empty
