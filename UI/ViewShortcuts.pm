@@ -206,16 +206,6 @@ Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
 sub vs_text {
     my($proto, @tag) = @_;
     return _fc([$proto], 'Text', [sub {shift; @_}, @tag]);
-#     my($refs) = scalar(grep(ref($_), @tag));
-#     return _fc(
-# 	[$proto],
-# 	'Text',
-# 	!$refs || $refs eq @tag ? @tag
-# 	    : [sub {
-# 		   my($s) = @_;
-# 		   return map(ref($_) ? $s->get_widget_value($_) : $_, @tag);
-# 	      }],
-#     );
 }
 
 =for html <a name="vs_text_as_prose"></a>
