@@ -59,7 +59,7 @@ sub new_unit {
 	check_return => sub {
 	    my($case, $actual, $expect) = @_;
 	    return $expect
-		unless $case->get('method') =~ /^(create|update)/;
+		unless $case->get('method') =~ /^(create|update|load)/;
 	    my($e) = $expect->[0];
 	    return $expect
 		unless ref($e) eq 'HASH' && @$expect == 1;
