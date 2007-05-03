@@ -265,6 +265,9 @@ my($_SELF) = __PACKAGE__->new({
 	    SITE_ROOT => 'home',
 	    bunit2 => 'anchor',
 	]],
+	[SiteRoot => [
+	    hm_bunit1 => 'bunit1',
+	]],
     ],
 });
 
