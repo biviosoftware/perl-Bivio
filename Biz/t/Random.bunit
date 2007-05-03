@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 my($prev) = {};
 [
@@ -42,17 +42,25 @@ my($prev) = {};
 	    method => 'integer',
 	    check_return => sub {
 		my($case, $actual) = @_;
-		my($ceiling) = shift->get('params')->[0];
+		my($ceiling) = $case->get('params')->[0];
+		my($floor) = $case->get('params')->[1];
 		$ceiling = class('Type.Integer')->get_max
 		    unless defined($ceiling);
-		return $actual->[0] >= 0 && $actual->[0] < $ceiling ? 1 : 0;
+		$floor = 0
+		    unless defined($floor);
+		return $actual->[0] >= $floor && $actual->[0] < $ceiling
+		    ? 1 : 0;
 	    },
 	} => [
+	    [1, 0] => [],
+	    [2, 1] => [],
 	    1 => [],
 	    2 => [],
 	    3 => [],
 	    0 => DIE(),
 	    -1 => DIE(),
+	    [2, 2] => DIE(),
+	    [2, -1] => DIE(),
 	    [undef] => [],
 	],
     ],
