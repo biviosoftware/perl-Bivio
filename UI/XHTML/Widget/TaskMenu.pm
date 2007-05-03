@@ -60,7 +60,9 @@ sub initialize {
 		    _cfg($cfg, @$_URI),
 		});
 	    }
- 	    my($w) = $cfg->{xlink} ? XLink($cfg->{xlink})
+ 	    my($w) = $self->is_blessed($cfg->{xlink}, 'Bivio::UI::Widget')
+		? $cfg->{xlink}
+		: $cfg->{xlink} ? XLink($cfg->{xlink})
 		: $cfg->{task_id} ? Link(
 		    ref($cfg->{label}) ? $cfg->{label}
 			: vs_text('task_menu', 'title', $cfg->{label}),
