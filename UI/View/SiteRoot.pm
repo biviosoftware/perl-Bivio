@@ -27,6 +27,18 @@ sub execute_task_item {
 	$view_name eq 'execute_uri' ? $req->get('uri') : $view_name, $req)
 }
 
+sub format_uri {
+    my($proto, $view_name, $req) = @_;
+    Bivio::Die->die($view_name, ': invalid view name')
+        unless $view_name =~ $proto->VALID_METHOD_REGEXP
+        && $proto->can($view_name);
+    $view_name =~ s{_}{/}g;
+    return $req->format_uri({
+	task_id => Bivio::Agent::TaskId->SITE_ROOT,
+	path_info => $view_name,
+	no_context => 1,
+	query => undef,
+    });
+}
+
 1;
-
-
