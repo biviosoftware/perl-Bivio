@@ -67,9 +67,7 @@ sub unit {
     });
 #TODO: Shouldn't be hardwired, can setup above.
     Bivio::UI::View->execute(\(<<"EOF"), $req);
-view_class_map(q{@{[
-    ref($self) && $self->unsafe_get('view_class_map') || 'HTMLWidget'
-]}});
+view_class_map(q{@{[$self->view_class_map]}});
 view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
 view_main(SimplePage([
     sub {
@@ -81,12 +79,17 @@ EOF
     return $res;
 }
 
+sub view_class_map {
+    my($self) = @_;
+    return ref($self) && $self->unsafe_get('view_class_map') || 'HTMLWidget';
+}
+
 sub vs_new {
 #TODO: Remove this after AUTOLOAD works
-    shift;
-    return Bivio::IO::ClassLoader->simple_require(
-	'Bivio::UI::HTML::ViewShortcuts',
-    )->vs_new(@_);
+    my($self, $class, @args) = @_;
+    $class = Bivio::IO::ClassLoader->map_require($self->view_class_map, $class)
+        unless $class =~ /::/;
+    return $class->new(@args);
 }
 
 sub _is_render {
