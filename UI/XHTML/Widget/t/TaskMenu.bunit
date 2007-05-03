@@ -4,8 +4,10 @@ Widget({
     view_class_map => 'XHTMLWidget',
     setup_render => sub {
 	my($req, undef, undef, undef, $object) = @_;
-	$req->server_redirect(
-	    $object->get('task_map')->[0]->get('_task_menu_cfg')->{task_id});
+	my($t) = $object->get('task_map')->[0]->get('_task_menu_cfg')
+	    ->{task_id};
+	$req->server_redirect($t)
+	    if $t;
 	return;
     },
 });
@@ -48,10 +50,14 @@ req()->set_realm_and_user(qw(demo guest));
 	xlink => 'back_to_top',
     }]] => '<div class="task_menu"><a class="selected" href="#top">back to top</a></div>',
     [[{
-	task_id => 'SITE_ROOT',
 	xlink => 'back_to_top',
 	control => 0,
     }]] => '',
-#Broken b/c of clientredirect
-#    [[{xlink => 'bunit2'}]] => qr{<a href="#a1">anchor</a>},
+    [[{xlink => 'bunit2'}]] => qr{<a href="#a1">anchor</a>},
+    [[{
+	xlink => vs_new(qw(XLink back_to_top)),
+    }]] => '<div class="task_menu"><a href="#top">back to top</a></div>',
+    [[{
+	xlink => vs_new(qw(SiteRoot hm_bunit1)),
+    }]] => '<div class="task_menu"><a target="_top" href="/hm/bunit1">bunit1</a></div>',
 ];
