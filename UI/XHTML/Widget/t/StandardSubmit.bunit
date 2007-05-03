@@ -17,8 +17,8 @@ Widget({
     },
 });
 [
-    ['ContactForm'] => qr{<div class="standard_submit">.*<input type="submit" name="f2" value="\s*Send\s*"\s+class="submit" />.*<input type="submit" name="f0" value="\s*Cancel\s*" onclick="reset\(\)" class="submit" />.*</div>},
-    ['ContactForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="f2" value="\s*Send\s*"\s+class="submit" />.*</div>},
-    ['UserLoginForm'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value="\s*OK\s*"\s+class="submit" />.*<input type="submit" name="cancel_button" value="\s*Cancel\s*" onclick="reset\(\)" class="submit" />.*</div>},
-    ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value="\s*OK\s*"\s+class="submit" />.*</div>},
+    ['ContactForm'] => qr{<div class="standard_submit">.*<input type="submit" name="f\d+" value="\s*\w+\s*"\s+class="submit" />.*<input type="submit" name="f\d+" value="\s*Cancel\s*" onclick="reset\(\)" class="submit" />.*</div>},
+    ['ContactForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="f2" value="\s*\w+\s*"\s+class="submit" />.*</div>},
+    ['UserLoginForm'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value="\s*\w+\s*"\s+class="submit" />.*<input type="submit" name="cancel_button" value="\s*Cancel\s*" onclick="reset\(\)" class="submit" />.*</div>},
+    ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value="\s*\w+\s*"\s+class="submit" />.*</div>},
 ];
