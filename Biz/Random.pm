@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Random;
 use strict;
@@ -35,7 +35,7 @@ sub hex_digits {
 }
 
 sub integer {
-    my($proto, $ceiling) = @_;
+    my($proto, $ceiling, $floor) = @_;
     if (defined($ceiling)) {
 	Bivio::Die->die($ceiling, ': ceiling must be positive')
             unless $ceiling > 0;
@@ -43,7 +43,16 @@ sub integer {
     else {
 	$ceiling = $proto->use('Type.Integer')->get_max;
     }
-    return unpack('L', $proto->bytes(4)) % $ceiling;
+    if (defined($floor)) {
+	Bivio::Die->die($floor, ': floor must be non-negative')
+            unless $floor >= 0;
+    }
+    else {
+	$floor = 0;
+    }
+    Bivio::Die->die($floor, ': floor must be less than ceiling: ', $ceiling)
+	unless $ceiling > $floor;
+    return unpack('L', $proto->bytes(4)) % ($ceiling - $floor) + $floor;
 }
 
 sub password {
