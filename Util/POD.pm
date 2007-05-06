@@ -56,8 +56,9 @@ sub to_comments {
 	    end => ['1;', ''],
 	};
 	my($header_done) = 0;
-	my($copy_to_end);
 	my($lineno) = 0;
+	my($in_init) = 0;
+	my($at_end) = 0;
 	my($err) = sub {
 	    Bivio::Die->die("$file_pm:$lineno ", @_, "\n", $parts);
 	};
@@ -80,10 +81,14 @@ sub to_comments {
 		while @$c && $c->[0] =~ /^#\s*(?:$|_\w+\()/;
 	    return $c;
 	};
-	my($line);
-	foreach $line (split(/\n/, ${shift(@_)})) {
+	foreach my $line (split(/\n/, ${shift(@_)})) {
 	    $lineno++;
+	    if ($at_end) {
+		$push->('end', $line);
+		next;
+	    }
 	    if ($line =~ /^=/ && !$parts->{pod}) {
+		$in_init = 0;
 		$which_hash = 'comment'
 		    if $line =~ /^=head1 (?:METHOD|FACTORIES)/;
 		$push->('pod', undef);
@@ -108,6 +113,10 @@ sub to_comments {
 		}
 		next;
 	    }
+	    if ($in_init) {
+		$push->('init', $line);
+		next;
+	    }
 	    unless ($header_done) {
 		$push->(header => $line)
 		    if $line =~ /^(?:# Copyright|package |use strict|# \$Id)/;
@@ -124,7 +133,11 @@ sub to_comments {
 		next;
 	    }
 	    next
-		if $line =~ /^(?:Bivio::IO::Trace|1;)/;
+		if $line =~ /^(?:Bivio::IO::Trace)/;
+	    if ($line =~ /^1;/) {
+		$at_end = 1;
+		next;
+	    }
 	    if ($line =~ /^\$_\s*=\s*\<\<\'\}/) {
 		$toss_for_emacs = 1;
 		next;
@@ -164,9 +177,12 @@ sub to_comments {
 	    }
 	    if ($line =~ /^\S/ && $parts->{init}) {
 		$push->(init => $line);
+		$in_init = 1;
 		next;
 	    }
 	}
+	pop(@{$parts->{init}})
+	    unless length($parts->{init}->[$#{$parts->{init}}]);
 	$parts->{import} = [sort(@{$parts->{import}})];
 	foreach my $p (qw(constant method private)) {
 	    $parts->{$p} = [sort {$a->[0] cmp $b->[0]} @{$parts->{$p}}];
