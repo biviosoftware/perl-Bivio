@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::WikiName;
 use strict;
-use base 'Bivio::Type::DocletFileName';
+use Bivio::Base 'Type.DocletFileName';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -15,7 +15,7 @@ sub PRIVATE_FOLDER {
 }
 
 sub REGEX {
-    return qr{\w+}o;
+    return qr{\w+};
 }
 
 sub START_PAGE {

@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::DocletFileName;
 use strict;
-use base 'Bivio::Type::FileName';
+use Bivio::Base 'Type.FileName';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

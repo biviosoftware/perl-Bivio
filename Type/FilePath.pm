@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::FilePath;
 use strict;
-use base ('Bivio::Type::Line');
+use Bivio::Base 'Type.Line';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
