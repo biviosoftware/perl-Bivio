@@ -335,7 +335,7 @@ sub vs_html_attrs_render {
 	    my($h) = lc(($_ =~ /([^_]+)$/)[0]);
 	    my($b) = undef;
 	    $widget->unsafe_render_attr($_, $source, \$b) && length($b)
-		? qq{ $h="@{[Bivio::HTML->escape($b)]}"} : '';
+		? qq{ $h="@{[Bivio::HTML->escape_attr_value($b)]}"} : '';
 	} @{$attrs || $proto->vs_html_attrs_merge}),
     );
     return;
