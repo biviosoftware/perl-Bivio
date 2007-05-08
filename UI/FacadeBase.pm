@@ -83,13 +83,25 @@ sub _cfg_base {
 		table_heading
 		list_action
 	    }] => []],
-	    # CSS
+	    # HTML4
+	    [a_hover => 'underline'],
+	    [a_link => 'none'],
+	    [em => 'italic'],
+	    [h1 => ['140%', 'bold']],
+	    [h2 => ['130%', 'bold']],
+	    [h3 => ['120%', 'bold']],
+	    [h4 => ['110%', 'bold']],
+	    [normal => ['normal', 'none']],
+	    [[qw(strong th)] => 'bold'],
+	    # Our tags
 	    [warn => 'italic'],
 	    [err => 'bold'],
 	    [body => ['family=Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small']],
-	    [pre_text => 'family="Courier New", Courier, monospace, fixed'],
-	    [a_link => 'none'],
-	    [a_hover => ['underline']],
+	    [tools => ['nowrap', 'inline', 'lowercase']],
+	    [[qw(code pre_text)] => [
+		'family="Courier New",Courier,monospace,fixed',
+		'120%',
+	    ]],
 	    [[qw(form_err form_label_ok)] => 'bold'],
 	    [form_field_err => ['normal', '80%']],
 	    [label_ok => 'bold'],
@@ -101,7 +113,7 @@ sub _cfg_base {
 	    [byline => 'bold'],
 	    [title => ['140%', 'bold']],
 	    [nav => '120%'],
-	    [pager => ['nowrap', 'inline']],
+	    [off => []],
 	],
 	Constant => [
 	    [xlink_back_to_top => {
