@@ -11,10 +11,18 @@ my($_PROSE) = {
 	my($which) = $_;
 	($which => join('', map({
 	    my($x) = \&{"_${which}_$_"};
-	    defined(&$x) ? $x->() : '',
+	    defined(&$x) ? __PACKAGE__->internal_compress($x->()) : '',
 	} @{Bivio::Agent::TaskId->included_components})));
     } qw(site realm)),
 };
+
+sub internal_compress {
+    my(undef, $v) = @_;
+    $v =~ s/^\!.*\n//mg;
+    $v =~ s/^\s+//mg;
+    $v =~ s/(?<=[\,\;\:\{])\s+//mg;
+    return $v;
+}
 
 sub realm_css {
     my($self) = @_;
@@ -51,20 +59,40 @@ sub _realm_base {
     return <<'EOF';
 /* Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved. */
 If([qw(Model.RealmLogoList ->is_ok_to_render)],
-   Prose(<<'INNER'),
+   Prose(q{
 td.header_left {
-  background: url<<(>>String([qw(Model.RealmLogoList uri)])<;>) left no-repeat;
-  height: String([qw(Model.RealmLogoList height)])<;>px;
-  width: String([qw(Model.RealmLogoList width)])<;>px;
-}
-INNER
-);
+  background: url<<(>>String<(>['Model.RealmLogoList', 'uri'])<;>) left no-repeat;
+  height: String<(>['Model.RealmLogoList', 'height'])<;>px;
+  width: String<(>['Model.RealmLogoList', 'width'])<;>px;
+}}));
 EOF
 }
 
 sub _site_base {
     return <<'EOF';
 /* Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved. */
+blockquote, body, dd, div, dl, dt, fieldset, form, h1, h2, h3, h4,
+h5, h6, input, li, ol, p, pre, td, textarea, th, ul {
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+address, caption, cite, code, dfn, em, h1, h2, h3, h4, h5, h6, strong, th, var {
+  Font('normal');
+}
+ol {
+  list-style-type: decimal;
+}
+ul {
+  list-style-type: disc;
+}
+ul.none, ol.none {
+  list-style-type: none;
+}
+abbr, acronym, fieldset, iframe, img, table {
+  border-style: none;
+  border: 0;
+}
 a:link, a:visited, a:active {
   Font('a_link');
 }
@@ -77,26 +105,40 @@ body {
   margin: .5em;
   min-width: 50em;
 }
-form {
-  padding: 0;
-  margin: 0;
+caption, th {
+  text-align: center;
 }
 code {
-  font-size: 120%;
+  Font('code');
 }
-iframe, img, table {
-  border-style: none;
+em {
+  Font('em');
+}
+h1, h2, h3, h4, h5, h6 {
+  margin: 1ex 0 .5ex 0;
+}
+h1 {
+  Font('h1');
+}
+h2 {
+  Font('h2');
+}
+h3 {
+  Font('h3');
+}
+strong {
+  Font('strong');
 }
 table {
   border-collapse: collapse;
-}
-p {
-  margin: 0;
+  border-spacing: 0;
+  margin: left;
 }
 th {
-  font-weight: bold;
+  Font('th');
   padding: .5em;
 }
+! CLASSES
 .acknowledgement {
   margin: auto;
   text-align: center;
@@ -127,7 +169,6 @@ form .desc, .byline {
 }
 form table.simple {
   text-align: center;
-  margin: auto;
 }
 form table.simple td.field  {
   text-align: left;
@@ -140,8 +181,7 @@ form table.simple td.field  {
   Font('form_err');
 }
 .err_title {
-  margin-bottom: 2ex;
-  text-align: center;
+  margin-bottom: 1ex;
 }
 .field_err {
   Font('form_field_err');
@@ -175,16 +215,23 @@ form .footer {
   width: 40em;
   padding-bottom: .5ex;
 }
-.header,
-.footer,
-.main {
+table.header,
+table.footer,
+table.main {
   width: 100%;
   margin: auto;
+}
+table.main {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+td.main_left {
+  vertical-align: top;
 }
 table.header {
   padding-bottom: 1ex;
 }
-.footer {
+table.footer {
   Font('footer');
   padding-bottom: 7ex;
   text-align: center;
@@ -194,11 +241,12 @@ td.header_middle div.title {
   margin: .5ex 0 .5ex 0;
   text-align: center;
 }
-td.header_middle div.nav {
+td.header_middle div.nav div.task_menu {
   Font('nav');
   border-top: 1px solid;
   padding-top: .2em;
   vertical-align: top;
+  text-align: center;
 }
 td.header_left a.su {
   Color('header_su-background');
@@ -216,8 +264,6 @@ td.header_left {
 }
 td.header_left .logo_su .logo {
   text-align: left;
-}
-td.header_left .logo_su .logo {
   display: block;
 }
 td.header_right {
@@ -227,6 +273,10 @@ td.header_right {
 td.header_middle {
   width: 40%;
   text-align: center;
+}
+td.header_right {
+  vertical-align: top;
+  text-align: right;
 }
 td.footer_left {
   width: 30%;
@@ -244,35 +294,22 @@ td.header_right {
   vertical-align: top;
   text-align: right;
 }
-td.header_right div.user_state {
-  Font('user_state');
-  padding-bottom: 2ex;
-}
-td.header_right div.search input {
-  vertical-align: bottom;
-}
-td.header_right div.search .go {
-  margin-left: .5em;
+div.main_bottom, div.main_top, div.main_body {
+  float: left;
+  clear: both;
+  width: 100%;
 }
 div.main_top {
   text-align: right;
 }
 div.main_top .task_menu, div.main_top .pager {
   text-align: right;
-  Font('pager');
 }
 div.main_bottom .pager, div.main_bottom .task_menu {
   text-align: left;
-  Font('pager');
 }
-td.main_middle {
-  padding-top: 1ex;
-  padding-bottom: 1ex;
-}
-div.main_bottom, div.main_top, div.main_body {
-  float: left;
-  clear: both;
-  width: 100%;
+.footer .task_menu, div.tools .task_menu a, div.tools .task_menu, div.pager {
+  Font('tools');
 }
 div.main_body {
   margin-top: 1ex;
@@ -280,6 +317,7 @@ div.main_body {
 }
 div.main_body {
   width: 100%;
+  text-align: left;
   margin-top: 1ex;
   margin-bottom: 1ex;
 }
@@ -295,12 +333,6 @@ div.alphabetical_chooser {
 }
 .task_menu .selected, .alphabetical_chooser .selected {
   Font('selected');
-}
-.task_menu a {
-  white-space: nowrap;
-}
-.footer .task_menu, .tools .task_menu {
-  text-transform: lowercase;
 }
 .footer {
   border-top: 1px solid;
@@ -334,7 +366,7 @@ td.footer_left {
 .tools div.sep {
   display: inline;
 }
-.prose p {
+.prose p, p.prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
 }
@@ -359,13 +391,12 @@ form .submit {
   Color('empty_list-border');
   padding: .5em;
   width: 30em;
-  margin: auto;
 }
 pre .text {
   Font('pre_text');
 }
-.off {
-  Color('off');
+span.off {
+  Font('off');
 }
 .tree_list {
   margin: 0;
@@ -508,7 +539,7 @@ EOF
 
 sub _site_user_auth {
     return <<'EOF';
-td.header_right {
+td.header_right div.user_state {
   vertical-align: top;
   text-align: right;
 }
