@@ -157,7 +157,7 @@ my($_CSS_MAP) = {
     uppercase => 'text-transform: uppercase',
     nowrap => 'white-space: nowrap',
     inline => 'display: inline',
-    normal => 'font-weight: normal',
+    normal => 'font-weight:normal;font-style:normal',
     none => 'text-decoration: none',
 };
 
