@@ -1,163 +1,94 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Form;
 use strict;
-$Bivio::UI::HTML::Widget::Form::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::Form::VERSION;
-
-=head1 NAME
-
-Bivio::UI::HTML::Widget::Form - renders an HTML form
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::Form;
-    Bivio::UI::HTML::Widget::Form->new($attrs);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::Form::ISA = qw(Bivio::UI::Widget);
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::Form> is an HTML C<FORM> tag surrounding
-a widget, which is usually a
-L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>,
-but might be a
-L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
-The widget or its children should contain a
-L<Bivio::UI::HTML::Widget::FormButton|Bivio::UI::HTML::Widget::FormButton>.
-
-No special formatting is implemented.  For layout, use, e.g.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item action : string [$req->format_uri]
-
-Literal text to use as
-the C<ACTION> attribute of the C<FORM> tag.
-
-=item action : Bivio::Agent::TaskId [$req->format_uri]
-
-Task to format_stateless_uri.
-
-=item action : array_ref [$req->format_uri]
-
-Dereferenced, passed to C<$source-E<gt>get_widget_value>, and
-used as the C<ACTION> attribute of the C<FORM> tag.
-
-=item cell_end_form : boolean [0]
-
-Same value as L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
-Used to set default for I<end_tag>.
-
-=item end_tag : boolean [see below]
-
-Renders the C<FORM> end tag if true.  Default is true unless
-I<cell_end_form> is true iwc is set to false.  See
-L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
-
-=item form_class : Bivio::Biz::FormModel (inherited, get_request)
-
-The simple name of the class or the mapped name, e.g. I<Model.FooForm>.
-This value is computed from I<form_model> if it can be.
-
-=item form_end_cell : boolean [0]
-
-Opposite of I<cell_end_form>.  Will end the cell as well as the form.
-Do not set I<end_tag> or I<cell_end_form> with this value.  You should
-set I<cell_end> on a Grid to false.
-
-=item form_method : string [POST] (inherited)
-
-The value to be passed to the C<METHOD> attribute of the C<FORM> tag.
-
-=item form_model : array_ref [*computed*] (required, inherited, get_request)
-
-B<DEPRECATED>. Which form are we dealing with.
-Use I<form_class>.
-
-=item form_name : string [fnNNN] (inherited)
-
-Name of the form which can be used within JavaScript.  Set dynamically
-to C<fn>I<NNN> where I<NNN> is globally assigned starting at 1.
-The value is set on the I<self>, so it can be used by fields.
-
-=item link_target : string [] (inherited)
-
-The value to be passed to the C<TARGET> attribute of C<A> tag.
-
-=item value : Bivio::UI::Widget (required)
-
-How to render the form.  Usually a
-L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>
-or
-L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::HTML;
 use Bivio::UI::HTML::ViewShortcuts;
 
-#=VARIABLES
+# C<Bivio::UI::HTML::Widget::Form> is an HTML C<FORM> tag surrounding
+# a widget, which is usually a
+# L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>,
+# but might be a
+# L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
+# The widget or its children should contain a
+# L<Bivio::UI::HTML::Widget::FormButton|Bivio::UI::HTML::Widget::FormButton>.
+#
+# No special formatting is implemented.  For layout, use, e.g.
+#
+#
+#
+# action : string [$req->format_uri]
+#
+# Literal text to use as
+# the C<ACTION> attribute of the C<FORM> tag.
+#
+# action : Bivio::Agent::TaskId [$req->format_uri]
+#
+# Task to format_stateless_uri.
+#
+# action : array_ref [$req->format_uri]
+#
+# Dereferenced, passed to C<$source-E<gt>get_widget_value>, and
+# used as the C<ACTION> attribute of the C<FORM> tag.
+#
+# cell_end_form : boolean [0]
+#
+# Same value as L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
+# Used to set default for I<end_tag>.
+#
+# end_tag : boolean [see below]
+#
+# Renders the C<FORM> end tag if true.  Default is true unless
+# I<cell_end_form> is true iwc is set to false.  See
+# L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
+#
+# form_class : Bivio::Biz::FormModel (inherited, get_request)
+#
+# The simple name of the class or the mapped name, e.g. I<Model.FooForm>.
+# This value is computed from I<form_model> if it can be.
+#
+# form_end_cell : boolean [0]
+#
+# Opposite of I<cell_end_form>.  Will end the cell as well as the form.
+# Do not set I<end_tag> or I<cell_end_form> with this value.  You should
+# set I<cell_end> on a Grid to false.
+#
+# form_method : string [POST] (inherited)
+#
+# The value to be passed to the C<METHOD> attribute of the C<FORM> tag.
+#
+# form_model : array_ref [*computed*] (required, inherited, get_request)
+#
+# B<DEPRECATED>. Which form are we dealing with.
+# Use I<form_class>.
+#
+# form_name : string [fnNNN] (inherited)
+#
+# Name of the form which can be used within JavaScript.  Set dynamically
+# to C<fn>I<NNN> where I<NNN> is globally assigned starting at 1.
+# The value is set on the I<self>, so it can be used by fields.
+#
+# link_target : string [] (inherited)
+#
+# The value to be passed to the C<TARGET> attribute of C<A> tag.
+#
+# value : Bivio::UI::Widget (required)
+#
+# How to render the form.  Usually a
+# L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>
+# or
+# L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FORM_NAME_INDEX) = 0;
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(any form_class, Bivio::UI::Widget value, hash_ref attributes) : Bivio::UI::HTML::Widget::Form
-
-Passes I<form_class> and I<value> as attributes.  And optionally, set extra
-I<attributes>.
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Form
-
-Creates a new Form widget using I<attributes>.
-
-=cut
-
-sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes static information.
-
-=cut
-
 sub initialize {
     my($self) = @_;
+    # Initializes static information.
     my($fields) = $self->[$_IDI];
     return if $fields->{prefix};
 
@@ -217,16 +148,9 @@ sub initialize {
     return;
 }
 
-=for html <a name="internal_new_args"></a>
-
-=head2 static internal_new_args(any arg, ...) : any
-
-Implements positional argument parsing for L<new|"new">.
-
-=cut
-
 sub internal_new_args {
     my(undef, $class, $value, $attributes) = @_;
+    # Implements positional argument parsing for L<new|"new">.
     return '"form_class" attribute must be defined' unless defined($class);
     return '"value" attribute must be defined' unless defined($value);
     return {
@@ -236,16 +160,20 @@ sub internal_new_args {
     };
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-Render the form.
-
-=cut
+sub new {
+    my($self) = Bivio::UI::Widget::new(@_);
+    # Passes I<form_class> and I<value> as attributes.  And optionally, set extra
+    # I<attributes>.
+    #
+    #
+    # Creates a new Form widget using I<attributes>.
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub render {
     my($self, $source, $buffer) = @_;
+    # Render the form.
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($model) = $req->get_widget_value($fields->{class});
@@ -274,17 +202,5 @@ sub render {
 	if $fields->{end_tag};
     return;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
