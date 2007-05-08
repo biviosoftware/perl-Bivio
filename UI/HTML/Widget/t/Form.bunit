@@ -1,0 +1,19 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+model('UserLoginForm')->process;
+req()->server_redirect({
+    task_id => 'LOGIN',
+    no_context => 1,
+});
+[
+    [{
+	form_class => 'UserLoginForm',
+	value => vs_new(Join => ['abc']),
+    }] => qr{^<form method="post" target="_top" name="\w+" action="/pub/login">.*<input type="hidden" name="v" value="\d+" />\n<input type="hidden" name="c" value="[^"]+" />\nabc</form>$}is,
+    [{
+	form_class => 'UserLoginForm',
+	action => vs_new(URI => {uri => '#'}),
+	value => vs_new(Join => ['abc']),
+    }] => qr{^<form .*action="#">}s,
+];
