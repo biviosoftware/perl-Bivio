@@ -199,30 +199,18 @@ sub initialize {
 	$self->put(form_name => $name);
     }
 
-    # Initialize prefix
-    my($action) = $self->unsafe_get('action');
+    $self->initialize_attr(
+	action => [['->get_request'], '->format_stateless_uri']);
     my($p) = '<form method="'
 	. lc($self->ancestral_get('form_method', 'post'))
         . '"'
 	. $_VS->vs_link_target_as_html($self)
 	. qq{ name="$name" action="};
-    if (ref($action)) {
-	# Task or widget value
-	$fields->{action} = $action;
-    }
-    elsif (defined($action)) {
-	$p .= $action;
-    }
-    else {
-	$fields->{action} = 1;
-    }
     $fields->{prefix} = $p;
     $fields->{end_tag} = $self->get_or_default('end_tag',
 	    $self->get_or_default('cell_end_form', 0)
 	    ? 0 : 1);
     $fields->{form_end_cell} = $self->get_or_default('form_end_cell', 0);
-
-    # Initialize renderer
     $fields->{value} = $self->get('value');
     $fields->{value}->put(parent => $self);
     $fields->{value}->initialize;
@@ -261,50 +249,29 @@ sub render {
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($model) = $req->get_widget_value($fields->{class});
-
-    # Method
-    $$buffer .= $fields->{prefix};
-
-    # Action (if not static)
-    my($action) = $fields->{action};
-    if ($action) {
-	# If there is an action, get it or format the task.
-	# Otherwise, the action is this current task's action.
-	$action = ref($action) eq 'ARRAY'
-		? $source->get_widget_value(@$action)
-			: ref($action) ? $req->format_stateless_uri($action)
-				: $req->format_uri();
+    my($action) = ${$self->render_attr('action', $source)};
 #TODO: Tightly Coupled with FormModel & Location.  Do not propagate form
 #      context when you have a form to store the context in fields.
 #      Context management is hard....
-	$action =~ s/[&?]fc=[^&=]+//;
-	$$buffer .= $action;
-    }
-
-    # Set encoding type if form has a file field
-    unless ($fields->{middle}) {
-	$fields->{middle} = '"';
-	$fields->{middle} .= ' enctype="multipart/form-data"'
-		if $model->get_info('file_fields');
-	$fields->{middle} .= ">\n";
-    }
-    $$buffer .= $fields->{middle};
-
-    # Timezone is computed on every form
+    $action =~ s/[&?]fc=[^&=]+//;
+    $$buffer .= $fields->{prefix}
+	. $action
+	. '"'
+	. ($model->get_info('file_fields')
+	       ? ' enctype="multipart/form-data"' : '')
+        . ">\n";
     $_VS->vs_new('TimezoneField')->render($source, $buffer);
-
-    # Hidden fields (if any)
     my($hidden) = $model->get_hidden_field_values();
     while (@$hidden) {
 	# hidden fields have been converted to literal, but not  escaped.
 	$$buffer .= '<input type="hidden" name="'.shift(@$hidden).'" value="'
 		.Bivio::HTML->escape(shift(@$hidden))."\" />\n";
     }
-
-    # Rest of the form
     $fields->{value}->render($source, $buffer);
-    $$buffer .= '</td>' if $fields->{form_end_cell};
-    $$buffer .= '</form>' if $fields->{end_tag};
+    $$buffer .= '</td>'
+	if $fields->{form_end_cell};
+    $$buffer .= '</form>'
+	if $fields->{end_tag};
     return;
 }
 
