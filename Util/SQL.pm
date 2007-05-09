@@ -253,7 +253,7 @@ sub destroy_db {
 	. Bivio::SQL::Connection->get_dbi_config->{database}
 	. ' DATABASE?');
     # We drop in opposite order.  Some constraint drops will
-    # fail, but that's ok.  We need to drop the foreign key
+    # fail, but that's ok.  We need to drop the FOREIGN KEY
     # constraints so we can drop the tables.
     foreach my $file (reverse(@{_ddl_files($self)})) {
 	$self->print('Dropping ', $file, "\n");
@@ -690,8 +690,8 @@ CREATE SEQUENCE forum_s
 /
 ALTER TABLE realm_file_t
   ADD CONSTRAINT realm_file_t2
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX realm_file_t3 ON realm_file_t (
   realm_id
@@ -724,17 +724,21 @@ ALTER TABLE realm_file_t
 /
 ALTER TABLE realm_file_t
   ADD CONSTRAINT realm_file_t10
-  foreign key (user_id)
-  references realm_owner_t(realm_id)
+  FOREIGN KEY (user_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX realm_file_t11 ON realm_file_t (
   user_id
 )
 /
+CREATE INDEX realm_file_t12 ON realm_file_t (
+  folder_id
+)
+/
 ALTER TABLE forum_t
-  add constraint forum_t2
-  foreign key (parent_realm_id)
-  references realm_owner_t(realm_id)
+  ADD CONSTRAINT forum_t2
+  FOREIGN KEY (parent_realm_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX forum_t3 on forum_t (
   parent_realm_id
@@ -892,8 +896,8 @@ CREATE TABLE job_lock_t (
 /
 ALTER TABLE job_lock_t
   add constraint job_lock_t2
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX job_lock_t3 on job_lock_t (
   realm_id
@@ -925,13 +929,13 @@ CREATE TABLE realm_mail_t (
 --
 ALTER TABLE realm_mail_t
   ADD CONSTRAINT realm_mail_t2
-  foreign key (realm_file_id)
-  references realm_file_t(realm_file_id)
+  FOREIGN KEY (realm_file_id)
+  REFERENCES realm_file_t(realm_file_id)
 /
 ALTER TABLE realm_mail_t
   ADD CONSTRAINT realm_mail_t3
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX realm_mail_t4 ON realm_mail_t (
   realm_id
@@ -943,8 +947,8 @@ CREATE INDEX realm_mail_t5 ON realm_mail_t (
 /
 ALTER TABLE realm_mail_t
   ADD CONSTRAINT realm_mail_t6
-  foreign key (thread_root_id)
-  references realm_file_t(realm_file_id)
+  FOREIGN KEY (thread_root_id)
+  REFERENCES realm_file_t(realm_file_id)
 /
 CREATE INDEX realm_mail_t7 ON realm_mail_t (
   thread_root_id
@@ -952,8 +956,8 @@ CREATE INDEX realm_mail_t7 ON realm_mail_t (
 /
 ALTER TABLE realm_mail_t
   ADD CONSTRAINT realm_mail_t8
-  foreign key (thread_parent_id)
-  references realm_file_t(realm_file_id)
+  FOREIGN KEY (thread_parent_id)
+  REFERENCES realm_file_t(realm_file_id)
 /
 CREATE INDEX realm_mail_t9 ON realm_mail_t (
   thread_parent_id
@@ -1017,8 +1021,8 @@ CREATE TABLE realm_mail_bounce_t (
 --
 ALTER TABLE realm_mail_bounce_t
   ADD CONSTRAINT realm_mail_bounce_t2
-  foreign key (realm_file_id)
-  references realm_file_t(realm_file_id)
+  FOREIGN KEY (realm_file_id)
+  REFERENCES realm_file_t(realm_file_id)
 /
 CREATE INDEX realm_mail_bounce_t3 ON realm_mail_bounce_t (
   realm_file_id
@@ -1026,8 +1030,8 @@ CREATE INDEX realm_mail_bounce_t3 ON realm_mail_bounce_t (
 /
 ALTER TABLE realm_mail_bounce_t
   ADD CONSTRAINT realm_mail_bounce_t4
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX realm_mail_bounce_t5 ON realm_mail_bounce_t (
   realm_id
@@ -1035,8 +1039,8 @@ CREATE INDEX realm_mail_bounce_t5 ON realm_mail_bounce_t (
 /
 ALTER TABLE realm_mail_bounce_t
   ADD CONSTRAINT realm_mail_bounce_t6
-  foreign key (user_id)
-  references user_t(user_id)
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
 /
 CREATE INDEX realm_mail_bounce_t7 ON realm_mail_bounce_t (
   user_id
@@ -1386,8 +1390,8 @@ CREATE TABLE motion_vote_t (
 --
 ALTER TABLE motion_t
   add constraint motion_t2
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX motion_t3 on motion_t (
   realm_id
@@ -1404,8 +1408,8 @@ CREATE UNIQUE INDEX motion_t4 ON motion_t (
 --
 ALTER TABLE motion_vote_t
   add constraint motion_vote_t2
-  foreign key (motion_id)
-  references motion_t(motion_id)
+  FOREIGN KEY (motion_id)
+  REFERENCES motion_t(motion_id)
 /
 CREATE INDEX motion_vote_t3 on motion_vote_t (
   motion_id
@@ -1413,8 +1417,8 @@ CREATE INDEX motion_vote_t3 on motion_vote_t (
 /
 ALTER TABLE motion_vote_t
   add constraint motion_vote_t4
-  foreign key (user_id)
-  references user_t(user_id)
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
 /
 CREATE INDEX motion_vote_t5 on motion_vote_t (
   user_id
@@ -1422,8 +1426,8 @@ CREATE INDEX motion_vote_t5 on motion_vote_t (
 /
 ALTER TABLE motion_vote_t
   add constraint motion_vote_t6
-  foreign key (affiliated_realm_id)
-  references realm_owner_t(realm_id)
+  FOREIGN KEY (affiliated_realm_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX motion_vote_t7 on motion_vote_t (
   affiliated_realm_id
@@ -1431,8 +1435,8 @@ CREATE INDEX motion_vote_t7 on motion_vote_t (
 /
 ALTER TABLE motion_vote_t
   add constraint motion_vote_t8
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX motion_vote_t9 on motion_vote_t (
   realm_id
