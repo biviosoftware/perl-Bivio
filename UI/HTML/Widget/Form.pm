@@ -130,8 +130,10 @@ sub initialize {
 	$self->put(form_name => $name);
     }
 
-    $self->initialize_attr(
-	action => [['->get_request'], '->format_stateless_uri']);
+    $self->initialize_attr(action => [['->get_request'], '->format_uri']);
+    my($a) = $self->get('action');
+    $self->put(action => [['->get_request'], '->format_stateless_uri', $a])
+	if $self->is_blessed($a, 'Bivio::Agent::TaskId');
     my($p) = '<form method="'
 	. lc($self->ancestral_get('form_method', 'post'))
         . '"'
