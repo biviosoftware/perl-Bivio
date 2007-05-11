@@ -80,6 +80,9 @@ h5, h6, input, li, ol, p, pre, td, textarea, th, ul {
 address, caption, cite, code, dfn, em, h1, h2, h3, h4, h5, h6, strong, th, var {
   Font('normal');
 }
+ol, ul {
+  margin-left: 2.5em;
+}
 ol {
   list-style-type: decimal;
 }
@@ -125,6 +128,9 @@ h2 {
 }
 h3 {
   Font('h3');
+}
+h4 {
+  Font('h4');
 }
 strong {
   Font('strong');
@@ -177,35 +183,33 @@ form table.simple td.field  {
   Color('err');
   vertical-align: top;
 }
-.err, .err_title {
+form .err, form .err_title {
   Font('form_err');
 }
-.err_title {
+form .err_title {
   margin-bottom: 1ex;
 }
-.field_err {
+form .field_err {
   Font('form_field_err');
 }
 form .label_ok, form .label_err, form .field {
   padding-bottom: 1em;
 }
-form .label_ok {
-  Font('form_label_ok');
-}
 form .footer {
   Font('form_footer');
   margin-bottom: 1.0em;
 }
-.label_ok, .label_err, .label {
+form .label_ok, form .label_err, form .label {
   text-align: right;
   padding-right: .2em;
 }
-.label_ok {
+form .label_ok {
   vertical-align: top;
+  Font('form_label_ok');
 }
 .label_err {
   vertical-align: middle;
-  font-style: italic;
+  Font('form_label_err');
 }
 .list td, .paged_list td {
   padding: .5em;
@@ -225,7 +229,7 @@ table.main {
   margin-top: 1em;
   margin-bottom: 1em;
 }
-td.main_left {
+td.main_left, td.main_middle, td.main_right {
   vertical-align: top;
 }
 table.header {
@@ -391,6 +395,7 @@ form .submit {
   Color('empty_list-border');
   padding: .5em;
   width: 30em;
+  text-align: center;
 }
 pre .text {
   Font('pre_text');
@@ -455,12 +460,6 @@ p {
 p.prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
-}
-table.simple td.field {
-  white-space: nowrap;
-}
-table.simple td.label_ok, table.simple td.label_err {
-  vertical-align: middle;
 }
 .topic {
   Font('topic');
@@ -543,7 +542,7 @@ td.header_right div.user_state {
   vertical-align: top;
   text-align: right;
 }
-td.header_right div.user_state {
+td.header_right div.user_state a {
   Font('user_state');
 }
 EOF
