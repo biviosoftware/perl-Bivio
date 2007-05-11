@@ -131,7 +131,13 @@ submit_form(qr/\bsearch\b/ => {
 });
 verify_text('Adult Female German Shepherd');
 submit_form(search => {
-    qr/_ano/ => 'dogs',
+    qr{_ano} => 'dogs',
+});
+submit_form(search => {
+    ano => 'dogs',
+});
+submit_form(search => {
+    'n$' => 'dogs',
 });
 verify_text('Adult Female German Shepherd');
 follow_link_in_table('Item ID', 'Item Name', 'Male Adult Corgi');
