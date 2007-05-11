@@ -357,6 +357,19 @@ sub initialize_tuple_slot_types {
     return;
 }
 
+sub internal_upgrade_db_bundle {
+    my($self) = @_;
+    $self->internal_upgrade_db_forum;
+    $self->internal_upgrade_db_mail;
+    $self->internal_upgrade_db_mail_bounce;
+    $self->internal_upgrade_db_calendar_event;
+    $self->internal_upgrade_db_email_alias;
+    $self->internal_upgrade_db_job_lock;
+    $self->internal_upgrade_db_tuple;
+    $self->internal_upgrade_db_motion;
+    return;
+}
+
 sub internal_upgrade_db_calendar_event {
     my($self) = @_;
     # Adds CalendarEvent table.
@@ -370,7 +383,7 @@ CREATE TABLE calendar_event_t (
   location VARCHAR(500),
   description VARCHAR(4000),
   url VARCHAR(255),
-  column time_zone NUMERIC(4),
+  time_zone NUMERIC(4),
   CONSTRAINT calendar_event_t1 PRIMARY KEY(calendar_event_id)
 )
 /
@@ -512,7 +525,7 @@ CREATE TABLE forum_t (
   forum_id NUMERIC(18) NOT NULL,
   parent_realm_id NUMERIC(18) NOT NULL,
   want_reply_to NUMERIC(1) NOT NULL,
-  is_public NUMERIC(1) NOT NULL,
+  is_public_email NUMERIC(1) NOT NULL,
   CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
 )
 /
@@ -520,6 +533,7 @@ CREATE TABLE realm_file_t (
   realm_file_id NUMERIC(18),
   realm_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
+  folder_id NUMERIC(18),
   modified_date_time DATE NOT NULL,
   path VARCHAR(500) NOT NULL,
   path_lc VARCHAR(500) NOT NULL,
@@ -603,6 +617,8 @@ ALTER TABLE forum_t
   CHECK (is_public_email BETWEEN 0 AND 1)
 /
 EOF
+    $self->model('RealmOwner')
+        ->init_realm_type(Bivio::Auth::RealmType->FORUM);
     my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
     $rr->copy_all(club => 'forum');
     $rr->main(qw(-realm FORUM -user user edit MEMBER -ADMIN_READ -DATA_WRITE));
