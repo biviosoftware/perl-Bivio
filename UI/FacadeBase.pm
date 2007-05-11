@@ -55,7 +55,7 @@ sub _cfg_base {
 	    [[qw(a_link topic nav)] => 0x444444],
 	    [a_hover => 0x888888],
 	    [acknowledgement_border => 0x0],
-	    [[qw(err warn empty_list_border)] => 0x990000],
+	    [[qw(err warn empty_list_border form_field_err)] => 0x990000],
 	    [header_su_background => 0x00ff00],
 	    [[qw(form_desc form_sep_border)]  =>  0x666666],
 	],
@@ -85,13 +85,13 @@ sub _cfg_base {
 	    }] => []],
 	    # HTML4
 	    [a_hover => 'underline'],
-	    [a_link => 'none'],
+	    [a_link => 'normal'],
 	    [em => 'italic'],
 	    [h1 => ['140%', 'bold']],
 	    [h2 => ['130%', 'bold']],
 	    [h3 => ['120%', 'bold']],
 	    [h4 => ['110%', 'bold']],
-	    [normal => ['normal', 'none']],
+	    [normal => ['normal']],
 	    [[qw(strong th)] => 'bold'],
 	    # Our tags
 	    [warn => 'italic'],
@@ -102,9 +102,10 @@ sub _cfg_base {
 		'family="Courier New",Courier,monospace,fixed',
 		'120%',
 	    ]],
-	    [[qw(form_err form_label_ok)] => 'bold'],
+	    [form_err => 'bold'],
+	    [form_label_ok => ['bold', 'nowrap']],
 	    [form_field_err => ['normal', '80%']],
-	    [label_ok => 'bold'],
+	    [form_label_err => ['italic', 'nowrap']],
 	    [form_footer => ['smaller', 'italic']],
 	    [footer => 'smaller'],
 	    [header_su => 'larger'],
@@ -548,8 +549,10 @@ sub _cfg_user_auth {
 	    [user_state => ['140%', 'uppercase']],
 	],
 	FormError => [
-	    ['UserLoginForm.RealmOwner.password.PASSWORD_MISMATCH' => 
-		 q{The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".},],
+	    [[qw(ContextlessUserLoginForm UserLoginForm)] => [
+		'RealmOwner.password.PASSWORD_MISMATCH' => 
+		 q{The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".},
+	    ]],
 	],
 	Task => [
 	    [LOGIN => 'pub/login'],
@@ -565,7 +568,7 @@ sub _cfg_user_auth {
 	    [DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
 	],
 	Text => [
-	    [UserLoginForm => [
+	    [[qw(UserLoginForm ContextlessUserLoginForm)] => [
 		ok_button => 'Login',
 		prose => [
 		    prologue => q{P(XLink('user_create_no_context'));},
@@ -630,6 +633,7 @@ sub _cfg_user_auth {
 		USER_PASSWORD  => 'Your Password',
 		USER_CREATE_DONE => 'Registration Email Sent',
 		SITE_ROOT => '',
+		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser Missing Cookies',
 	    ]],
 	    [prose => [
 		xhtml_user_state => q{DIV_user_state(
