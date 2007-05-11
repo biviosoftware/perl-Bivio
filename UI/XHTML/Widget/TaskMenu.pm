@@ -48,7 +48,11 @@ sub initialize {
 	},
 	task_map => [map({
 	    my(undef, $cfg) = $self->name_parameters(
-		$_PARAMS, ref($_) eq 'ARRAY' ? $_ : [$_]);
+		$_PARAMS, ref($_) eq 'ARRAY' ? $_
+		    : [$self->is_blessed($_, 'Bivio::UI::Widget') ? {
+			xlink => $_,
+		    } : $_],
+	    );
 	    if ($cfg->{task_id}) {
 		$cfg->{task_id}
 		    = Bivio::Agent::TaskId->from_any($cfg->{task_id});

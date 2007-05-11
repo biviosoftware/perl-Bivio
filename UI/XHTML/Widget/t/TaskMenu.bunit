@@ -13,6 +13,7 @@ Widget({
 });
 req()->set_realm_and_user(qw(demo guest));
 [
+    [[vs_new(qw(XLink back_to_top))]] => '<div class="task_menu"><a href="#top">back to top</a></div>',
     [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>}i,
     [[[qw(SITE_ROOT site_name)]]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">PetShop</a></div>},
     [[{
