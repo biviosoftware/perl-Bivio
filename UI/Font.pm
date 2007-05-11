@@ -157,8 +157,7 @@ my($_CSS_MAP) = {
     uppercase => 'text-transform: uppercase',
     nowrap => 'white-space: nowrap',
     inline => 'display: inline',
-    normal => 'font-weight:normal;font-style:normal',
-    none => 'text-decoration: none',
+    normal => 'text-decoration:none;font-weight:normal;font-style:normal;white-space:normal;text-transform:none;font-size:100%',
 };
 
 # Attribute should only be used by this module
