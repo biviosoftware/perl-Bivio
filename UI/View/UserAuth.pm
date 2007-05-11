@@ -28,14 +28,13 @@ sub login {
 }
 
 sub missing_cookies {
-    return shift->internal_body(Join([
-	H4('Browser Missing Cookies'),
+    return shift->internal_body(DIV_prose(Join([
 	P('It seems that your browser does not support cookies, or cookies have been disabled. Cookies are required for you to sign-in.'),
-	H4('Enabling Cookies in your Browser'),
+	H3('Enabling Cookies in your Browser'),
 	P(q{The members area application requires the use of Cookies. By default, cookies are enabled in your browser. If you were directed to this page by our software, you or someone else has disable cookies in your browser. The following instructions are meant as a guide only. Please consult your browser's help system for a complete description. Scroll down this page until you find your browser. We apologize if your browser isn't in our list yet.}),
 	map((
-	    H5(shift(@$_)),
-	    OL(map(LI($_), @$_)),
+	    H4(shift(@$_)),
+	    OL(Join([map(LI($_), @$_)])),
 	), [
 	    'Internet Explorer 6.0',
 	    'Click on the Tools menu (at the very top of your window)',
@@ -76,7 +75,7 @@ sub missing_cookies {
 	    'Click on Advanced in the Category box',
 	    'Click on Accept all cookies in the Cookies box',
 	]),
-    ]));
+    ])));
 }
 
 sub password {
@@ -124,7 +123,7 @@ sub create {
 }
 
 sub create_done {
-    return shift->internal_body_prose(<<'EOF');
+    return shift->internal_body(DIV_prose(Prose(<<'EOF')));
 We have sent a confirmation email to
 String(['Model.UserRegisterForm', 'Email.email']);.
 Please follow the instructions in this email message to complete
@@ -135,7 +134,8 @@ EOF
 sub create_mail {
     return _mail(shift(@_), 'UserRegisterForm', <<'EOF');
 Thank you for registering with vs_site_name();.
-In order to complete your registration, please click on the following link:
+In order to complete your registration, please click on the
+following link:
 
 String(['Model.UserRegisterForm', 'uri']);
 
