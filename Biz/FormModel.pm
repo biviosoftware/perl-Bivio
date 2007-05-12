@@ -1,382 +1,205 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::FormModel;
 use strict;
-$Bivio::Biz::FormModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::FormModel::VERSION;
-
-=head1 NAME
-
-Bivio::Biz::FormModel - an abstract model of a user input screen
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::Model>
-
-=cut
-
-use Bivio::Biz::Model;
-@Bivio::Biz::FormModel::ISA = ('Bivio::Biz::Model');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::FormModel> is the business logic behind HTML forms.  A FormModel
-has fields like other models.  Fields are either I<visible> or
-I<hidden>.  A FormModel may have a primary_key which is useful to know
-how to load the form values from the database.
-
-If there is a form associated with the request, the individual fields are
-validated and then the form-specific L<validate|"validate"> method is
-called to do cross-field validation.
-
-If the validation passes, i.e. no errors are put with
-L<internal_put_error|"internal_put_error">, then
-L<execute_ok|"execute_ok"> is called.
-
-A form may have a context.  This is specified by the C<require_context> in
-L<internal_initialize_sql_support|"internal_initialize_sql_support">, or on
-the task as I<require_context> or I<want_workflow>.  The
-context is how we got to this form, e.g. from another form and the contents of
-that form.  Forms with context return to the uri specified in the context on
-"ok" completion.  If the request has FormModel.require_context set to false,
-no context will be required.  If the task has require_context set to false
-and this is the primary form (Task.form_model), no context will be required.
-If the context exists and is I<want_workflow>, we'll accept the context.
-
-A query may have a context as well.  The form's context overrides
-the query's context.  The query's context is usually only valid
-for empty forms.
-
-If the context contains a form, it may be manipulated with
-L<unsafe_get_context_field|"unsafe_get_context_field"> and
-L<put_context_fields|"put_context_fields">.
-For example, a symbol lookup form might set the symbol selected
-in the form which requested the lookup.
-
-If a form is executed as a the result of a server redirect
-and L<SUBMIT_UNWIND|"SUBMIT_UNWIND"> is set,
-no data transforms will occur and the form will render literally
-as it was entered before.  User gets a new opportunity to OK or
-CANCEL.
-
-The only tight connection to HTML is the way submit buttons are rendered.
-The problem is that the value of a submit type field is the text that
-appears in the button.  This means what the user sees is what we get
-back.  The routines L<SUBMIT|"SUBMIT">, L<SUBMIT_OK|"SUBMIT_OK">, and
-L<SUBMIT_CANCEL|"SUBMIT_CANCEL"> can be overridden by subclasses if
-they would like different text to appear.
-
-Form field errors are always one of the enums in
-L<Bivio::TypeError|Bivio::TypeError>.
-
-Free text input widgets (Text and TextArea) retrieve field values with
-L<get_field_as_html|"get_field_as_html">, because the field may be in error
-and the errant literal value may not be valid for the type.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="CONTEXT_FIELD"></a>
-
-=head2 CONTEXT_FIELD : string
-
-Returns "context".
-
-=cut
-
-sub CONTEXT_FIELD {
-    return 'c';
-}
-
-=for html <a name="GLOBAL_ERROR_FIELD"></a>
-
-=head2 GLOBAL_ERROR_FIELD : string
-
-Returns field name for errors not applied to a specific field.
-
-=cut
-
-sub GLOBAL_ERROR_FIELD {
-    return '_';
-}
-
-=for html <a name="MAX_FIELD_SIZE"></a>
-
-=head2 MAX_FIELD_SIZE : int
-
-To avoid tossing around huge chunks of invalid data, we have an maximum
-size of a field for non-FileField values.
-
-I<Subclasses may override this method and should if they expect
-huge fields, e.g. mail message bodies.>
-
-=cut
-
-sub MAX_FIELD_SIZE {
-    return 0x10000;
-}
-
-=for html <a name="NEXT_FIELD"></a>
-
-=head2 NEXT_FIELD : string
-
-Returns the next task to execute.
-
-=cut
-
-sub NEXT_FIELD {
-    return '.next';
-}
-
-=for html <a name="OK_BUTTON_NAME"></a>
-
-=head2 OK_BUTTON_NAME : string
-
-Default name of the ok_button.
-
-=cut
-
-sub OK_BUTTON_NAME {
-    return 'ok_button';
-}
-
-=for html <a name="TIMEZONE_FIELD"></a>
-
-=head2 TIMEZONE_FIELD : string
-
-Returns field used in forms to set timezone.
-
-=cut
-
-sub TIMEZONE_FIELD {
-    return 'tz';
-}
-
-=for html <a name="VERSION_FIELD"></a>
-
-=head2 VERSION_FIELD : string
-
-Returns 'version'
-
-=cut
-
-sub VERSION_FIELD {
-    return 'v';
-}
-
-#=IMPORTS
-use Bivio::Die;
-use Bivio::HTML;
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::Task;
+use Bivio::Base 'Bivio::Biz::Model';
 use Bivio::Biz::FormContext;
+use Bivio::Die;
+use Bivio::HTML;
 use Bivio::IO::Trace;
 use Bivio::SQL::FormSupport;
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::Biz::FormModel> is the business logic behind HTML forms.  A FormModel
+# has fields like other models.  Fields are either I<visible> or
+# I<hidden>.  A FormModel may have a primary_key which is useful to know
+# how to load the form values from the database.
+#
+# If there is a form associated with the request, the individual fields are
+# validated and then the form-specific L<validate|"validate"> method is
+# called to do cross-field validation.
+#
+# If the validation passes, i.e. no errors are put with
+# L<internal_put_error|"internal_put_error">, then
+# L<execute_ok|"execute_ok"> is called.
+#
+# A form may have a context.  This is specified by the C<require_context> in
+# L<internal_initialize_sql_support|"internal_initialize_sql_support">, or on
+# the task as I<require_context> or I<want_workflow>.  The
+# context is how we got to this form, e.g. from another form and the contents of
+# that form.  Forms with context return to the uri specified in the context on
+# "ok" completion.  If the request has FormModel.require_context set to false,
+# no context will be required.  If the task has require_context set to false
+# and this is the primary form (Task.form_model), no context will be required.
+# If the context exists and is I<want_workflow>, we'll accept the context.
+#
+# A query may have a context as well.  The form's context overrides
+# the query's context.  The query's context is usually only valid
+# for empty forms.
+#
+# If the context contains a form, it may be manipulated with
+# L<unsafe_get_context_field|"unsafe_get_context_field"> and
+# L<put_context_fields|"put_context_fields">.
+# For example, a symbol lookup form might set the symbol selected
+# in the form which requested the lookup.
+#
+# If a form is executed as a the result of a server redirect
+# and L<SUBMIT_UNWIND|"SUBMIT_UNWIND"> is set,
+# no data transforms will occur and the form will render literally
+# as it was entered before.  User gets a new opportunity to OK or
+# CANCEL.
+#
+# The only tight connection to HTML is the way submit buttons are rendered.
+# The problem is that the value of a submit type field is the text that
+# appears in the button.  This means what the user sees is what we get
+# back.  The routines L<SUBMIT|"SUBMIT">, L<SUBMIT_OK|"SUBMIT_OK">, and
+# L<SUBMIT_CANCEL|"SUBMIT_CANCEL"> can be overridden by subclasses if
+# they would like different text to appear.
+#
+# Form field errors are always one of the enums in
+# L<Bivio::TypeError|Bivio::TypeError>.
+#
+# Free text input widgets (Text and TextArea) retrieve field values with
+# L<get_field_as_html|"get_field_as_html">, because the field may be in error
+# and the errant literal value may not be valid for the type.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::FormModel
-
-Create a new FormModel associated with the request.
-
-=cut
-
-sub new {
-    my($self) = &Bivio::Biz::Model::new(@_);
-    # NOTE: fields are dynamically replaced.  See, e.g. load.
-    $self->[$_IDI] = {
-	empty_properties => $self->internal_get,
-	stay_on_page => 0,
-    };
-    return $self;
+sub CONTEXT_FIELD {
+    # Returns "context".
+    return 'c';
 }
 
-=head1 METHODS
+sub GLOBAL_ERROR_FIELD {
+    # Returns field name for errors not applied to a specific field.
+    return '_';
+}
 
-=cut
+sub MAX_FIELD_SIZE {
+    # To avoid tossing around huge chunks of invalid data, we have an maximum
+    # size of a field for non-FileField values.
+    #
+    # I<Subclasses may override this method and should if they expect
+    # huge fields, e.g. mail message bodies.>
+    return 0x10000;
+}
 
-=for html <a name="clear_errors"></a>
+sub NEXT_FIELD {
+    # Returns the next task to execute.
+    return '.next';
+}
 
-=head2 clear_errors()
+sub OK_BUTTON_NAME {
+    # Default name of the ok_button.
+    return 'ok_button';
+}
 
-Remove any errors on fields on the form.
+sub TIMEZONE_FIELD {
+    # Returns field used in forms to set timezone.
+    return 'tz';
+}
 
-=cut
+sub VERSION_FIELD {
+    # Returns 'version'
+    return 'v';
+}
 
 sub clear_errors {
+    # Remove any errors on fields on the form.
     delete(shift->[$_IDI]->{errors});
     return;
 }
 
-=for html <a name="execute"></a>
-
-=head2 static execute(Bivio::Agent::Request req) : boolean
-
-=head2 static execute(Bivio::Agent::Request req, hash_ref values) : boolean
-
-There are two modes:
-
-=over 4
-
-=item html form
-
-I<values> is not passed.  Form values are processed from I<req.form>.
-Loads a new instance of this model using the request.
-If the form processing ends in errors, any transactions are rolled back.
-
-The value I<form_model> is "put" on I<req> in this case only.
-
-=item action
-
-This method is called as an action with I<values>.  I<values>
-passed must match the properties of this FormModel.  If an error
-occurs parsing the form, I<die> is called--internal program error
-due to incorrect parameter passing.  On success, this method
-returns normally.  This method should only be used if the caller
-knows I<values> is valid.   L<validate|"validate"> is not called.
-
-=back
-
-=cut
-
 sub execute {
     my($proto, $req, $values) = @_;
+    # There are two modes:
+    #
+    #
+    # html form
+    #
+    # I<values> is not passed.  Form values are processed from I<req.form>.
+    # Loads a new instance of this model using the request.
+    # If the form processing ends in errors, any transactions are rolled back.
+    #
+    # The value I<form_model> is "put" on I<req> in this case only.
+    #
+    # action
+    #
+    # This method is called as an action with I<values>.  I<values>
+    # passed must match the properties of this FormModel.  If an error
+    # occurs parsing the form, I<die> is called--internal program error
+    # due to incorrect parameter passing.  On success, this method
+    # returns normally.  This method should only be used if the caller
+    # knows I<values> is valid.   L<validate|"validate"> is not called.
     return $proto->new($req)->process($values);
 }
 
-=for html <a name="execute_cancel"></a>
-
-=head2 execute_cancel(string button_field) : boolean
-
-Default cancel processing, redirects to the cancel task.
-
-=cut
-
 sub execute_cancel {
     my($self, $button_field) = @_;
+    # Default cancel processing, redirects to the cancel task.
     # client redirect on cancel, no state is saved
     _redirect($self, 'cancel');
     # DOES NOT RETURN
 }
 
-
-=for html <a name="execute_empty"></a>
-
-=head2 execute_empty() : boolean
-
-Processes an empty form.  By default is a no-op.
-
-B<Return true if you want the Form to execute immediately>
-
-=cut
-
 sub execute_empty {
+    # Processes an empty form.  By default is a no-op.
+    #
+    # B<Return true if you want the Form to execute immediately>
     return 0;
 }
-
-=for html <a name="execute_ok"></a>
-
-=head2 execute_ok(string button_field) : boolean
-
-Processes the form after validation.  By default is an no-op.
-
-Return true if you want the Form to exit immediately.
-Return a Bivio::Agent::TaskId, if you want to change next.
-
-=cut
 
 sub execute_ok {
+    # Processes the form after validation.  By default is an no-op.
+    #
+    # Return true if you want the Form to exit immediately.
+    # Return a Bivio::Agent::TaskId, if you want to change next.
     return 0;
 }
-
-=for html <a name="execute_other"></a>
-
-=head2 execute_other(string button_field) : boolean
-
-Processes the form after a cancel or other button is pressed.
-The button string is passed.  It will redirect to the cancel
-task for the form.
-
-Although it is unlikely, you'll ever want to do this.
-Return true if you want the Form to execute immediately.
-
-=cut
 
 sub execute_other {
+    # Processes the form after a cancel or other button is pressed.
+    # The button string is passed.  It will redirect to the cancel
+    # task for the form.
+    #
+    # Although it is unlikely, you'll ever want to do this.
+    # Return true if you want the Form to execute immediately.
     return 0;
 }
-
-=for html <a name="execute_unwind"></a>
-
-=head2 execute_unwind() : boolean
-
-Called in the L<SUBMIT_UNWIND|"SUBMIT_UNWIND"> case.  The form
-is already parsed, but not validated.  You cannot assume any
-fields are valid.
-
-This method is called right before L<execute|"execute"> is
-about to return.  You can modify fields with
-L<internal_put_field|"internal_put_field">.
-
-Although it is unlikely, you'll ever want to do this.
-Return true if you want the Form to execute immediately.
-
-=cut
 
 sub execute_unwind {
+    # Called in the L<SUBMIT_UNWIND|"SUBMIT_UNWIND"> case.  The form
+    # is already parsed, but not validated.  You cannot assume any
+    # fields are valid.
+    #
+    # This method is called right before L<execute|"execute"> is
+    # about to return.  You can modify fields with
+    # L<internal_put_field|"internal_put_field">.
+    #
+    # Although it is unlikely, you'll ever want to do this.
+    # Return true if you want the Form to execute immediately.
     return 0;
 }
-
-=for html <a name="format_context_as_query"></a>
-
-=head2 static format_context_as_query(Bivio::Biz::FormContext context, Bivio::Agent::Request req) : string
-
-B<Only to be called by Bivio::UI::Task.>
-
-Takes context (which may be null), and formats as query string.
-
-=cut
 
 sub format_context_as_query {
     my(undef, $fc, $req) = @_;
+    # B<Only to be called by Bivio::UI::Task.>
+    #
+    # Takes context (which may be null), and formats as query string.
     return $fc ? '?fc=' . Bivio::HTML->escape_query($fc->as_literal($req)) : '';
 }
 
-=for html <a name="get_context_from_request"></a>
-
-=head2 static get_context_from_request(hash_ref named, Bivio::Agent::Request req) : Bivio::Biz::FormContext
-
-Extract the context from C<req.form_model> depending on various state params.
-If I<named.no_form> is true, we don't add in the form to the context.  This is
-used by L<format_context_as_query|"format_context_as_query"> to limit the size.
-
-Does not modify I<named>.
-
-=cut
-
 sub get_context_from_request {
     my(undef, $named, $req) = @_;
+    # Extract the context from C<req.form_model> depending on various state params.
+    # If I<named.no_form> is true, we don't add in the form to the context.  This is
+    # used by L<format_context_as_query|"format_context_as_query"> to limit the size.
+    #
+    # Does not modify I<named>.
     my($self) = $req->unsafe_get('form_model');
     # If there is a model, make sure not redirecting
     my($form, $context);
@@ -430,33 +253,19 @@ sub get_context_from_request {
     return Bivio::Biz::FormContext->new_from_form($self, $form, $context, $req);
 }
 
-=for html <a name="get_errors"></a>
-
-=head2 get_errors() : hash_ref
-
-Returns the list of field errors.  C<undef> if no errors.
-
-B<DO NOT MODIFY>.
-
-=cut
-
 sub get_errors {
+    # Returns the list of field errors.  C<undef> if no errors.
+    #
+    # B<DO NOT MODIFY>.
     return shift->[$_IDI]->{errors};
 }
 
-=for html <a name="get_field_as_html"></a>
-
-=head2 get_field_as_html(string name) : string
-
-Returns the field value as html.  If the field is in error and there
-is no value, returns the literal value escaped for html.
-
-Always returns a valid string, but may be undef.
-
-=cut
-
 sub get_field_as_html {
     my($self, $name) = @_;
+    # Returns the field value as html.  If the field is in error and there
+    # is no value, returns the literal value escaped for html.
+    #
+    # Always returns a valid string, but may be undef.
     my($fields) = $self->[$_IDI];
     my($value) = $self->unsafe_get($name);
     return $self->get_field_info($name, 'type')->to_html($value)
@@ -465,20 +274,13 @@ sub get_field_as_html {
     return Bivio::HTML->escape(_get_literal($fields, $fn));
 }
 
-=for html <a name="get_field_as_literal"></a>
-
-=head2 get_field_as_literal(string name) : string
-
-Returns the field value.  If the field is in error and there
-is no value, returns the literal value that was entered by
-the user.
-
-Always returns a valid string, but may be the empty string.
-
-=cut
-
 sub get_field_as_literal {
     my($self, $name) = @_;
+    # Returns the field value.  If the field is in error and there
+    # is no value, returns the literal value that was entered by
+    # the user.
+    #
+    # Always returns a valid string, but may be the empty string.
     my($fields) = $self->[$_IDI];
     my($value) = $self->unsafe_get($name);
     return $self->get_field_info($name, 'type')->to_literal($value)
@@ -487,32 +289,23 @@ sub get_field_as_literal {
     return _get_literal($fields, $fn);
 }
 
-=for html <a name="get_field_error"></a>
-
-=head2 get_field_error(string name) : Bivio::TypeError
-
-Returns the error associated with a field.
-Returns undef if field has no error associated with it.
-
-=cut
-
 sub get_field_error {
     my($self, $name) = @_;
+    # Returns the error associated with a field.
+    # Returns undef if field has no error associated with it.
     my($e) = $self->get_errors;
     return $e ? $e->{$name} : undef;
 }
 
-=for html <a name="get_hidden_field_values"></a>
-
-=head2 get_hidden_field_values() : array_ref
-
-Returns an array_ref of name, (literal) value pairs (even element is name,
-odd element is value).
-
-=cut
+sub get_field_name_for_html {
+    # Get name for form appropriate to html.
+    return shift->get_field_info(shift, 'form_name');
+}
 
 sub get_hidden_field_values {
     my($self) = @_;
+    # Returns an array_ref of name, (literal) value pairs (even element is name,
+    # odd element is value).
     my($fields) = $self->[$_IDI];
     my($sql_support) = $self->internal_get_sql_support();
     my(@res);
@@ -528,30 +321,9 @@ sub get_hidden_field_values {
     return \@res;
 }
 
-=for html <a name="get_field_name_for_html"></a>
-
-=head2 get_field_name_for_html(string name) : string
-
-Get name for form appropriate to html.
-
-=cut
-
-sub get_field_name_for_html {
-    return shift->get_field_info(shift, 'form_name');
-}
-
-=for html <a name="get_model_properties"></a>
-
-=head2 get_model_properties(string model) : hash_ref
-
-=head2 get_model_properties(Bivio::Biz::Model model) : hash_ref
-
-Returns the properties for this model that were passed in with the form.
-
-=cut
-
 sub get_model_properties {
     my($self, $model) = @_;
+    # Returns the properties for this model that were passed in with the form.
     $model = $model->simple_package_name()
 	if ref($model);
     my($sql_support) = $self->internal_get_sql_support();
@@ -570,45 +342,24 @@ sub get_model_properties {
     return \%res;
 }
 
-=for html <a name="get_stay_on_page"></a>
-
-=head2 get_stay_on_page() : boolean
-
-Returns state of L<internal_stay_on_page|"internal_stay_on_page">.
-
-=cut
-
 sub get_stay_on_page {
+    # Returns state of L<internal_stay_on_page|"internal_stay_on_page">.
     # May not be set
     return shift->[$_IDI]->{stay_on_page} ? 1 : 0;
 }
 
-=for html <a name="handle_cookie_in"></a>
-
-=head2 handle_cookie_in(Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req)
-
-Looks for timezone in I<cookie> and sets I<timezone> on I<req>.
-
-=cut
-
 sub handle_cookie_in {
     my($self, $cookie, $req) = @_;
+    # Looks for timezone in I<cookie> and sets I<timezone> on I<req>.
     my($v) = $cookie->unsafe_get($self->TIMEZONE_FIELD);
     $req->put_durable(timezone => $v) if defined($v);
     return;
 }
 
-=for html <a name="has_context_field"></a>
-
-=head2 has_context_field(string name) : boolean
-
-Returns true if there is a form in the context and it has a context
-field I<name>.
-
-=cut
-
 sub has_context_field {
     my($self, $name) = @_;
+    # Returns true if there is a form in the context and it has a context
+    # field I<name>.
     my($fields) = $self->[$_IDI];
     return 0 unless $fields->{context};
     my($c) = $fields->{context};
@@ -616,36 +367,20 @@ sub has_context_field {
     return $model ? $model->get_instance->has_fields($name) : 0
 }
 
-=for html <a name="in_error"></a>
-
-=head2 in_error() : boolean
-
-Returns true if any of the form fields are in error.
-
-=cut
-
 sub in_error {
+    # Returns true if any of the form fields are in error.
     return shift->get_errors ? 1 : 0;
 }
 
-=for html <a name="internal_catch_field_constraint_error"></a>
-
-=head2 internal_catch_field_constraint_error(string field, code_ref op) : boolean
-
-=head2 internal_catch_field_constraint_error(string field, code_ref op, string info_field) : boolean
-
-Executes I<op> and catches a die.  If the die is a I<DB_CONSTRAINT>, applies
-resultant I<type_error> to I<field>, and returns true.
-
-If I<info_field> is supplied, additional error information from the die is
-appended to that field.
-
-Returns false if I<op> executes without dying.
-
-=cut
-
 sub internal_catch_field_constraint_error {
     my($self, $field, $op, $info_field) = @_;
+    # Executes I<op> and catches a die.  If the die is a I<DB_CONSTRAINT>, applies
+    # resultant I<type_error> to I<field>, and returns true.
+    #
+    # If I<info_field> is supplied, additional error information from the die is
+    # appended to that field.
+    #
+    # Returns false if I<op> executes without dying.
     my($die) = Bivio::Die->catch($op);
     return 0
 	unless $die;
@@ -662,18 +397,11 @@ sub internal_catch_field_constraint_error {
     return 1;
 }
 
-=for html <a name="internal_clear_error"></a>
-
-=head2 internal_clear_error(string property)
-
-Clears the error on I<property> if any.
-
-If I<property> is null, clears the "form" error.
-
-=cut
-
 sub internal_clear_error {
     my($self, $property) = @_;
+    # Clears the error on I<property> if any.
+    #
+    # If I<property> is null, clears the "form" error.
     return unless $self->in_error;
     $property ||= $self->GLOBAL_ERROR_FIELD;
     my($e) = $self->get_errors;
@@ -683,47 +411,26 @@ sub internal_clear_error {
     return;
 }
 
-=for html <a name="internal_clear_literal"></a>
-
-=head2 internal_clear_literal(string property)
-
-Clears I<property>'s literal value.
-
-=cut
-
 sub internal_clear_literal {
     my($self, $property) = @_;
+    # Clears I<property>'s literal value.
     my($fields) = $self->[$_IDI];
     _put_literal($fields, $self->get_field_name_for_html($property), '');
     return;
 }
 
-=for html <a name="internal_field_constraint_error"></a>
-
-=head2 internal_field_constraint_error(string property, Bivio::TypeError error)
-
-This method is called when a DB constraint is encountered during the
-form's execution.
-
-The default action is a no-op.  The error is already "put" on the
-field.
-
-=cut
-
 sub internal_field_constraint_error {
+    # This method is called when a DB constraint is encountered during the
+    # form's execution.
+    #
+    # The default action is a no-op.  The error is already "put" on the
+    # field.
     return;
 }
 
-=for html <a name="internal_get_field_values"></a>
-
-=head2 internal_get_field_values() : hash_ref
-
-Returns the form as literals
-
-=cut
-
 sub internal_get_field_values {
     my($self) = @_;
+    # Returns the form as literals
     my($fields) = $self->[$_IDI];
     my($properties) = $self->internal_get;
     my($res) = {
@@ -738,71 +445,36 @@ sub internal_get_field_values {
     return $res;
 }
 
-=for html <a name="internal_get_file_field_names"></a>
-
-=head2 internal_get_file_field_names() : array_ref
-
-B<Used internally to this module and ListFormModel.>
-
-Returns I<file_field_names> attribute.
-
-=cut
-
 sub internal_get_file_field_names {
+    # B<Used internally to this module and ListFormModel.>
+    #
+    # Returns I<file_field_names> attribute.
     return shift->internal_get_sql_support()->unsafe_get('file_field_names');
 }
 
-=for html <a name="internal_get_hidden_field_names"></a>
-
-=head2 internal_get_hidden_field_names() : array_ref
-
-B<Used internally to this module and ListFormModel.>
-
-Returns I<hidden_field_names> attribute.
-
-=cut
-
 sub internal_get_hidden_field_names {
+    # B<Used internally to this module and ListFormModel.>
+    #
+    # Returns I<hidden_field_names> attribute.
     return shift->get_info('hidden_field_names');
 }
 
-=for html <a name="internal_get_literals"></a>
-
-=head2 internal_get_literals() : hash_ref
-
-B<Used internally to this module and ListFormModel.>
-
-Returns the literals hash_ref.
-
-=cut
-
 sub internal_get_literals {
+    # B<Used internally to this module and ListFormModel.>
+    #
+    # Returns the literals hash_ref.
     return shift->[$_IDI]->{literals};
 }
 
-=for html <a name="internal_get_visible_field_names"></a>
-
-=head2 internal_get_visible_field_names() : array_ref
-
-B<Used internally to this module and ListFormModel.>
-
-Returns I<visible_field_names> attribute.
-
-=cut
-
 sub internal_get_visible_field_names {
+    # B<Used internally to this module and ListFormModel.>
+    #
+    # Returns I<visible_field_names> attribute.
     return shift->get_info('visible_field_names');
 }
 
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref;
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
-
 sub internal_initialize {
+    # B<FOR INTERNAL USE ONLY>
     return {
 	visible => [
 	    {
@@ -819,37 +491,21 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="internal_initialize_sql_support"></a>
-
-=head2 static internal_initialize_sql_support(Bivio::SQL::Statement stmt) : Bivio::SQL::Support
-
-=head2 static internal_initialize_sql_support(Bivio::SQL::Statement stmt, hash_ref config) : Bivio::SQL::Support
-
-Returns the L<Bivio::SQL::FormSupport|Bivio::SQL::FormSupport>
-for this class.  Calls L<internal_initialize|"internal_initialize">
-to get the hash_ref to initialize the sql support instance.
-
-=cut
-
 sub internal_initialize_sql_support {
     my($proto, $stmt, $config) = @_;
+    # Returns the L<Bivio::SQL::FormSupport|Bivio::SQL::FormSupport>
+    # for this class.  Calls L<internal_initialize|"internal_initialize">
+    # to get the hash_ref to initialize the sql support instance.
     die('cannot create anonymous PropertyModels') if $config;
     $config = $proto->internal_initialize;
     $config->{class} = ref($proto) || $proto;
     return Bivio::SQL::FormSupport->new($config);
 }
 
-=for html <a name="internal_parse"></a>
-
-=head2 internal_parse(hash_ref fields)
-
-Run field validation.  Useful for forms that want to show errors
-automatically on execute_empty
-
-=cut
-
 sub internal_parse {
     my($self, $fields) = @_;
+    # Run field validation.  Useful for forms that want to show errors
+    # automatically on execute_empty
 
     my($values) = $self->internal_get;
     _parse($self, $fields || $self->internal_get_field_values());
@@ -861,77 +517,49 @@ sub internal_parse {
     return;
 }
 
-=for html <a name="internal_post_execute"></a>
-
-=head2 internal_post_execute(string method)
-
-Called to initialize info I<after> a validate_and_execute_ok, execute_empty,
-execute_unwind, execute_other, or execute_cancel.
-
-This routine must be robust against data errors and the like.
-I<method> is which method was just invoked, if the method did not
-end in an exception (including redirects).
-
-Does nothing by default.
-
-See also L<internal_pre_execute|"internal_pre_execute">.
-
-=cut
-
 sub internal_post_execute {
+    # Called to initialize info I<after> a validate_and_execute_ok, execute_empty,
+    # execute_unwind, execute_other, or execute_cancel.
+    #
+    # This routine must be robust against data errors and the like.
+    # I<method> is which method was just invoked, if the method did not
+    # end in an exception (including redirects).
+    #
+    # Does nothing by default.
+    #
+    # See also L<internal_pre_execute|"internal_pre_execute">.
     return;
 }
-
-=for html <a name="internal_pre_execute"></a>
-
-=head2 internal_pre_execute(string method)
-
-Called to initialize info before a validate_and_execute_ok, execute_empty,
-execute_unwind, execute_other, or execute_cancel.
-
-This routine must be robust against data errors and the like.
-I<method> is which method that is about to be invoked.
-
-Does nothing by default.
-
-See also L<internal_post_execute|"internal_post_execute">.
-
-=cut
 
 sub internal_pre_execute {
+    # Called to initialize info before a validate_and_execute_ok, execute_empty,
+    # execute_unwind, execute_other, or execute_cancel.
+    #
+    # This routine must be robust against data errors and the like.
+    # I<method> is which method that is about to be invoked.
+    #
+    # Does nothing by default.
+    #
+    # See also L<internal_post_execute|"internal_post_execute">.
     return;
 }
-
-=for html <a name="internal_pre_parse_columns"></a>
-
-=head2 internal_pre_parse_columns()
-
-B<Used internally to this module and ListFormModel.>
-
-Called just before C<_parse_cols> is called, so C<ListFormModel> can
-initialize its list_model to determine number of rows to expect.
-
-=cut
 
 sub internal_pre_parse_columns {
+    # B<Used internally to this module and ListFormModel.>
+    #
+    # Called just before C<_parse_cols> is called, so C<ListFormModel> can
+    # initialize its list_model to determine number of rows to expect.
     return;
 }
-
-=for html <a name="internal_put_error"></a>
-
-=head2 internal_put_error(string property, any error)
-
-Associate I<error> with I<property>.
-
-If I<property> is C<undef>, error applies to entire form.
-
-I<error> must be a L<Bivio::TypeError|Bivio::TypeError> or
-a name thereof.
-
-=cut
 
 sub internal_put_error {
     my($self, $property, $error) = @_;
+    # Associate I<error> with I<property>.
+    #
+    # If I<property> is C<undef>, error applies to entire form.
+    #
+    # I<error> must be a L<Bivio::TypeError|Bivio::TypeError> or
+    # a name thereof.
     my($fields) = $self->[$_IDI];
     $error = Bivio::TypeError->from_any($error);
     $property ||= $self->GLOBAL_ERROR_FIELD;
@@ -940,79 +568,42 @@ sub internal_put_error {
     return;
 }
 
-=for html <a name="internal_put_field"></a>
-
-=head2 internal_put_field(string property, any value)
-
-Puts a value on a field.  No validation checking.
-
-=cut
-
 sub internal_put_field {
     my($self, $property, $value) = @_;
+    # Puts a value on a field.  No validation checking.
     $self->internal_get->{$property} = $value;
     return;
 }
 
-=for html <a name="internal_redirect_next"></a>
-
-=head2 internal_redirect_next()
-
-Redirects to the next form task. This can be used to double unwind
-a form context, popping another level when called from
-L<execute_unwind|"execute_unwind">.
-
-=cut
-
 sub internal_redirect_next {
     my($self) = @_;
+    # Redirects to the next form task. This can be used to double unwind
+    # a form context, popping another level when called from
+    # L<execute_unwind|"execute_unwind">.
     _redirect($self, 'next');
     return;
 }
 
-=for html <a name="internal_stay_on_page"></a>
-
-=head2 internal_stay_on_page()
-
-Directs the form to remain on the current page regardless of the error state.
-Any changes are committed to the database. This is useful for non-submit
-buttons which need to perform calculations on the current data.
-
-=cut
-
 sub internal_stay_on_page {
     my($self) = @_;
+    # Directs the form to remain on the current page regardless of the error state.
+    # Any changes are committed to the database. This is useful for non-submit
+    # buttons which need to perform calculations on the current data.
     my($fields) = $self->[$_IDI];
     $fields->{stay_on_page} = 1;
     return;
 }
 
-=for html <a name="is_field_editable"></a>
-
-=head2 is_field_editable(string field) : boolean
-
-Returns true if the field is editable. By default all fields are editable,
-subclasses may override this to provide this value dynamically.
-
-=cut
-
 sub is_field_editable {
+    # Returns true if the field is editable. By default all fields are editable,
+    # subclasses may override this to provide this value dynamically.
     return 1;
 }
 
-=for html <a name="load_from_model_properties"></a>
-
-=head2 load_from_model_properties(string model)
-
-=head2 load_from_model_properties(Bivio::Biz::Model model)
-
-Gets I<model> and copies all properties from I<model> to I<properties>.
-If I<model> is not a reference, calls L<get_model|"get_model"> first.
-
-=cut
-
 sub load_from_model_properties {
     my($self, $model) = @_;
+    # Gets I<model> and copies all properties from I<model> to I<properties>.
+    # If I<model> is not a reference, calls L<get_model|"get_model"> first.
     my($sql_support) = $self->internal_get_sql_support();
     my($models) = $sql_support->get('models');
     my($m);
@@ -1035,17 +626,10 @@ sub load_from_model_properties {
     return;
 }
 
-=for html <a name="merge_initialize_info"></a>
-
-=head2 static merge_initialize_info(hash_ref parent, hash_ref child) : hash_ref
-
-Merges two model field definitions (I<child> into I<parent>) into a new
-hash_ref.
-
-=cut
-
 sub merge_initialize_info {
     my($proto, $parent, $child) = @_;
+    # Merges two model field definitions (I<child> into I<parent>) into a new
+    # hash_ref.
     my($names) = {};
     foreach my $i ($child, $parent) {
 	foreach my $class (qw(visible other hidden)) {
@@ -1079,20 +663,20 @@ sub merge_initialize_info {
     return $proto->SUPER::merge_initialize_info($parent, $child);
 }
 
-=for html <a name="process"></a>
-
-=head2 process(Bivio::Agent::Request req) : boolean
-
-=head2 process(Bivio::Agent::Request req, hash_ref values) : boolean
-
-=head2 process(hash_ref values) : boolean
-
-Does the work for L<execute|"execute"> after execute creates a I<self>.
-
-=cut
+sub new {
+    my($self) = &Bivio::Biz::Model::new(@_);
+    # Create a new FormModel associated with the request.
+    # NOTE: fields are dynamically replaced.  See, e.g. load.
+    $self->[$_IDI] = {
+	empty_properties => $self->internal_get,
+	stay_on_page => 0,
+    };
+    return $self;
+}
 
 sub process {
     my($self, $req, $values) = @_;
+    # Does the work for L<execute|"execute"> after execute creates a I<self>.
     if (ref($req) eq 'HASH') {
 	$values = $req;
 	$req = undef;
@@ -1212,19 +796,12 @@ sub process {
     return _call_execute($self, 'execute_other', $button);
 }
 
-=for html <a name="put_context_fields"></a>
-
-=head2 put_context_fields(string name, any value, ....)
-
-Allows you to put multiple context fields on this form's context.
-
-B<Does not work for I<in_list> ListForm fields unless you specify
-the field name explicitly, e.g. RealmOwner.name.1>.
-
-=cut
-
 sub put_context_fields {
     my($self) = shift;
+    # Allows you to put multiple context fields on this form's context.
+    #
+    # B<Does not work for I<in_list> ListForm fields unless you specify
+    # the field name explicitly, e.g. RealmOwner.name.1>.
     # Allow zero fields (see _redirect)
     $self->die('must be an even number of parameters')
 	unless @_ % 2 == 0;
@@ -1251,32 +828,18 @@ sub put_context_fields {
     return;
 }
 
-=for html <a name="unsafe_get_context"></a>
-
-=head2 unsafe_get_context() : Bivio::Biz::FormContext
-
-Returns the context object for this form.
-
-=cut
-
 sub unsafe_get_context {
+    # Returns the context object for this form.
     return shift->[$_IDI]->{context};
 }
 
-=for html <a name="unsafe_get_context_field"></a>
-
-=head2 unsafe_get_context_field(string name) : array
-
-Returns the value of the context field.  Result is the same as
-L<Bivio::Type::from_literal|Bivio::Type/"from_literal">.
-
-Note: this is a heavy operation, because it converts the form value
-each time.
-
-=cut
-
 sub unsafe_get_context_field {
     my($self, $name) = @_;
+    # Returns the value of the context field.  Result is the same as
+    # L<Bivio::Type::from_literal|Bivio::Type/"from_literal">.
+    #
+    # Note: this is a heavy operation, because it converts the form value
+    # each time.
     my($fields) = $self->[$_IDI];
     die('form does not have context')
 	unless $fields->{context};
@@ -1294,56 +857,33 @@ sub unsafe_get_context_field {
     return $type->from_literal($c->get('form')->{$fn});
 }
 
-=for html <a name="update_model_properties"></a>
-
-=head2 update_model_properties(Bivio::Biz::Model model) : Bivio::Biz::Model
-
-=head2 update_model_properties(string model) : Bivio::Biz::Model
-
-Update model from values on self.
-
-=cut
-
 sub update_model_properties {
     my($self, $model) = @_;
+    # Update model from values on self.
     $model = $self->get_model($model)
 	unless ref($model);
     return $model->update($self->get_model_properties($model));
 }
 
-=for html <a name="validate"></a>
-
-=head2 validate(string form_button)
-
-By default this method does nothing. Subclasses should override it to provide
-form specific validation. I<form_button> is the name of the button clicked.
-
-C<validate> is always called, even if some of the fields do not
-meet the SQL constraints.  This allows us to return as many errors
-as possible to the user.
-
-B<Care must be taken when checking fields, because they may be undef.>
-In general, fields should not be checked by C<validate> if they are
-C<undef>.
-
-=cut
-
 sub validate {
+    # By default this method does nothing. Subclasses should override it to provide
+    # form specific validation. I<form_button> is the name of the button clicked.
+    #
+    # C<validate> is always called, even if some of the fields do not
+    # meet the SQL constraints.  This allows us to return as many errors
+    # as possible to the user.
+    #
+    # B<Care must be taken when checking fields, because they may be undef.>
+    # In general, fields should not be checked by C<validate> if they are
+    # C<undef>.
     return;
 }
 
-=for html <a name="validate_and_execute_ok"></a>
-
-=head2 validate_and_execute_ok(string form_button) : boolean
-
-Validates the form, calling L<validate|"validate">, then executes
-it, catching any exceptions and adding them to errors. Rolls back
-changes on errors.
-
-=cut
-
 sub validate_and_execute_ok {
     my($self, $form_button) = @_;
+    # Validates the form, calling L<validate|"validate">, then executes
+    # it, catching any exceptions and adding them to errors. Rolls back
+    # changes on errors.
     my($req) = $self->get_request;
     my($fields) = $self->[$_IDI];
 
@@ -1382,71 +922,38 @@ sub validate_and_execute_ok {
     return 0;
 }
 
-=for html <a name="validate_greater_than_zero"></a>
-
-=head2 validate_greater_than_zero(string field) : boolean
-
-Ensures the specified field is greater than 0. Puts an error on the form
-if it fails.  Returns false if the field is in error or if an error is
-put on the field. An undef value is valid.
-
-=cut
-
 sub validate_greater_than_zero {
+    # Ensures the specified field is greater than 0. Puts an error on the form
+    # if it fails.  Returns false if the field is in error or if an error is
+    # put on the field. An undef value is valid.
     return _validate(1, sub {shift(@_) <= 0 && 'GREATER_THAN_ZERO'}, @_);
 }
 
-=for html <a name="validate_not_negative"></a>
-
-=head2 validate_not_negative(string field) : boolean
-
-Ensures the specified field isn't negative. Puts an error on the form
-if it fails. Returns false if the field is in error or if an error is
-put on the field. An undef value is valid.
-
-=cut
-
 sub validate_not_negative {
+    # Ensures the specified field isn't negative. Puts an error on the form
+    # if it fails. Returns false if the field is in error or if an error is
+    # put on the field. An undef value is valid.
     return _validate(1, sub {shift(@_) < 0 && 'NOT_NEGATIVE'}, @_);
 }
 
-=for html <a name="validate_not_null"></a>
-
-=head2 validate_not_null(string field)
-
-Ensures the specified field isn't undef and isn't in error. Puts an error on
-the form if it fails.  Returns false if the field is in error or if an error is
-put on the field.
-
-=cut
-
 sub validate_not_null {
+    # Ensures the specified field isn't undef and isn't in error. Puts an error on
+    # the form if it fails.  Returns false if the field is in error or if an error is
+    # put on the field.
     return _validate(0, sub {!defined(shift(@_)) && 'NULL'}, @_);
 }
 
-=for html <a name="validate_not_zero"></a>
-
-=head2 validate_not_zero(string field) : boolean
-
-Ensures the specified field isn't 0. Puts an error on the form if it fails.
-Returns false if the field is in error or if an error is
-put on the field. An undef value is valid.
-
-=cut
-
 sub validate_not_zero {
+    # Ensures the specified field isn't 0. Puts an error on the form if it fails.
+    # Returns false if the field is in error or if an error is
+    # put on the field. An undef value is valid.
     return _validate(1, sub {shift(@_) == 0 && 'NOT_ZERO'}, @_);
 }
 
-#=PRIVATE METHODS
-
-# _apply_type_error(Bivio::Biz::FormModel self, Bivio::Die die)
-#
-# Looks up the columns and table in this form model.  If found,
-# applies the errors to the form model.
-#
 sub _apply_type_error {
     my($self, $die) = @_;
+    # Looks up the columns and table in this form model.  If found,
+    # applies the errors to the form model.
     my($attrs) = $die->get('attrs');
     _trace($attrs) if $_TRACE;
     my($err) = $attrs->{type_error};
@@ -1473,25 +980,19 @@ sub _apply_type_error {
     return;
 }
 
-# _call_execute(self, string method, string args, ...) : any
-#
-# Calls internal_pre_execute, $method($args, ...), then internal_post_execute.
-#
 sub _call_execute {
     my($self, $method) = (shift, shift);
+    # Calls internal_pre_execute, $method($args, ...), then internal_post_execute.
     $self->internal_pre_execute($method);
     my($res) = $self->$method(@_);
     $self->internal_post_execute($method);
     return $res;
 }
 
-# _call_execute_ok(self, string form_button) : any
-#
-# Calls "execute_ok" without wrappers, and catches any DB_CONSTRAINT
-# violations.
-#
 sub _call_execute_ok {
     my($self, $form_button) = @_;
+    # Calls "execute_ok" without wrappers, and catches any DB_CONSTRAINT
+    # violations.
     my($res);
     my($die) = Bivio::Die->catch(sub {
         $res = $self->execute_ok($form_button);
@@ -1510,13 +1011,10 @@ sub _call_execute_ok {
     return $res;
 }
 
-# _get_literal(hash_ref fields, string form_name) : string
-#
-# Returns the literal value of the named form field.  Special care
-# is taken to return only the filename attribute of complex form fields.
-#
 sub _get_literal {
     my($fields, $form_name) = @_;
+    # Returns the literal value of the named form field.  Special care
+    # is taken to return only the filename attribute of complex form fields.
     my($value) = $fields->{literals}->{$form_name};
     return '' unless defined($value);
     return $value unless ref($value);
@@ -1527,13 +1025,10 @@ sub _get_literal {
     return defined($value->{filename}) ? $value->{filename} : '';
 }
 
-# _initial_context(Bivio::Biz::FormModel self) : hash_ref
-#
-# Return a context if available from the request.  If there is not context,
-# creates one if the form or task wants it.
-#
 sub _initial_context {
     my($self) = @_;
+    # Return a context if available from the request.  If there is not context,
+    # creates one if the form or task wants it.
     my($fields) = $self->[$_IDI];
     my($req) = $self->get_request;
     return $req->unsafe_get('form_context')
@@ -1542,15 +1037,12 @@ sub _initial_context {
 	       ? Bivio::Biz::FormContext->new_empty($self) : undef);
 }
 
-# _parse(Bivio::Biz::FormModel self, hash_ref form) : boolean
-#
-# Parses the form.
-#
-# Returns 0 if unwind.
-# Returns 1 otherwise
-#
 sub _parse {
     my($self, $form) = @_;
+    # Parses the form.
+    #
+    # Returns 0 if unwind.
+    # Returns 1 otherwise
     my($fields) = $self->[$_IDI];
     # Clear any incoming errors
     $self->clear_errors;
@@ -1581,13 +1073,10 @@ sub _parse {
     return 1;
 }
 
-# _parse_col(Bivio::Biz::FormModel self, hash_ref form, Bivio::SQL::FormSupport sql_support, hash_ref values, boolean is_hidden)
-#
-# Parses the form field and returns the value.  Stores errors in the
-# fields->{errors}.
-#
 sub _parse_cols {
     my($self, $form, $sql_support, $values, $is_hidden) = @_;
+    # Parses the form field and returns the value.  Stores errors in the
+    # fields->{errors}.
     my($fields) = $self->[$_IDI];
     my($method) = $is_hidden ? 'internal_get_hidden_field_names'
 	    : 'internal_get_visible_field_names';
@@ -1694,13 +1183,10 @@ sub _parse_cols {
     return;
 }
 
-# _parse_context(Bivio::Biz::FormModel self, string value, hash_ref form, Bivio::SQL::FormSupport sql_support)
-#
-# Parses the form's context.  If there is no context, creates it only
-# if !want_workflow.
-#
 sub _parse_context {
     my($self, $form) = @_;
+    # Parses the form's context.  If there is no context, creates it only
+    # if !want_workflow.
     my($fields) = $self->[$_IDI];
     $fields->{context} = $form->{$self->CONTEXT_FIELD}
 	# If there is an incoming context, must be syntactically valid.
@@ -1715,12 +1201,9 @@ sub _parse_context {
     return;
 }
 
-# _parse_timezone(Bivio::Biz::FormModel self, string value)
-#
-# If it is set, will set in cookie.  Otherwise, not set in cookie.
-#
 sub _parse_timezone {
     my($self, $value) = @_;
+    # If it is set, will set in cookie.  Otherwise, not set in cookie.
 
     # Parse the integer
     my($v) = Bivio::Type::Integer->from_literal($value);
@@ -1746,12 +1229,9 @@ sub _parse_timezone {
     return;
 }
 
-# _parse_version(Bivio::Biz::FormModel self, string value, Bivio::SQL::FormSupport sql_support)
-#
-# Parse the version number.  Throws VERSION_MISMATCH on error.
-#
 sub _parse_version {
     my($self, $value, $sql_support) = @_;
+    # Parse the version number.  Throws VERSION_MISMATCH on error.
     if (defined($value)) {
 	my($v) = Bivio::Type::Integer->from_literal($value);
 	return if (defined($v) && $v eq $sql_support->get('version'));
@@ -1768,12 +1248,9 @@ sub _parse_version {
     return;
 }
 
-# _put_file_field_reset_errors(Bivio::Biz::FormModel self)
-#
-# Puts FILE_FIELD_RESET_FOR_SECURITY on file fields not in error.
-#
 sub _put_file_field_reset_errors {
     my($self) = @_;
+    # Puts FILE_FIELD_RESET_FOR_SECURITY on file fields not in error.
     # If there were errors, provide feedback to the user about
     # file fields which are special.
     my($file_fields) = $self->internal_get_file_field_names;
@@ -1792,13 +1269,10 @@ sub _put_file_field_reset_errors {
     return;
 }
 
-# _put_literal(hash_ref fields, string form_name, string value)
-#
-# Modifies the literal value of the named form field.  In the event
-# of a file field, sets filename.
-#
 sub _put_literal {
     my($fields, $form_name, $value) = @_;
+    # Modifies the literal value of the named form field.  In the event
+    # of a file field, sets filename.
     # If a complex form field has a filename, set it and clear content.
     # We never return the "content" back to the user with FileFields.
     $fields->{literals}->{$form_name}
@@ -1807,13 +1281,10 @@ sub _put_literal {
     return;
 }
 
-# _redirect(Bivio::Biz::FormModel self, string which)
-#
-# Redirect to the "next" or "cancel" task depending on "which" if there
-# is no context.  Otherwise, redirect to context.
-#
 sub _redirect {
     my($self, $which) = @_;
+    # Redirect to the "next" or "cancel" task depending on "which" if there
+    # is no context.  Otherwise, redirect to context.
     my($fields) = $self->[$_IDI];
     my($req) = $self->get_request;
     $req->put(form_model => $self);
@@ -1832,13 +1303,10 @@ sub _redirect {
     # DOES NOT RETURN
 }
 
-# _redirect_same(Bivio::Biz::FormModel self)
-#
-# Redirects to "this" task, because we've encountered a caching (hidden fields)
-# problem.
-#
 sub _redirect_same {
     my($self) = @_;
+    # Redirects to "this" task, because we've encountered a caching (hidden fields)
+    # problem.
     my($req) = $self->get_request;
     # The form was corrupt.  Throw away the context and
     # the form and redirect back to this task.
@@ -1858,15 +1326,5 @@ sub _validate {
     $self->internal_put_error($field, $e);
     return 0;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
