@@ -2,62 +2,27 @@
 # $Id$
 package Bivio::Delegate::SimpleTypeError;
 use strict;
-$Bivio::Delegate::SimpleTypeError::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Delegate::SimpleTypeError::VERSION;
+use Bivio::Base 'Bivio::Delegate';
 
-=head1 NAME
+# C<Bivio::Delegate::SimpleTypeError> returns default TypeErrors for
+# simplest bOP site.
+#
+# You can extend this delegate with:
+#
+#     sub get_delegate_info {
+# 	return [
+# 	    @{Bivio::Delegate::SimpleTypeError->get_delegate_info()},
+# 	    ...my TypeErrors...
+# 	];
+#     }
+#
+# Start your TypeErrors at 501.  Don't worry about dups, because
+# L<Bivio::Type::Enum|Bivio::Type::Enum> will die if you overlap.
 
-Bivio::Delegate::SimpleTypeError - default type errors
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Delegate::SimpleTypeError;
-
-=cut
-
-use Bivio::Delegate;
-@Bivio::Delegate::SimpleTypeError::ISA = ('Bivio::Delegate');
-
-=head1 DESCRIPTION
-
-C<Bivio::Delegate::SimpleTypeError> returns default TypeErrors for
-simplest bOP site.
-
-You can extend this delegate with:
-
-    sub get_delegate_info {
-	return [
-	    @{Bivio::Delegate::SimpleTypeError->get_delegate_info()},
-	    ...my TypeErrors...
-	];
-    }
-
-Start your TypeErrors at 501.  Don't worry about dups, because
-L<Bivio::Type::Enum|Bivio::Type::Enum> will die if you overlap.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_delegate_info"></a>
-
-=head2 static get_delegate_info() : array_ref
-
-Returns the task declarations.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
+    # Returns the task declarations.
     return [
     UNKNOWN => [
 	0,
@@ -412,17 +377,5 @@ sub get_delegate_info {
     ],
 ];
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
