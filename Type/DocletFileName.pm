@@ -18,6 +18,10 @@ sub BLOG_FOLDER {
     return '/Blog';
 }
 
+sub IMAGE_FOLDER {
+    return '/Image';
+}
+
 sub MAIL_FOLDER {
     return '/Mail';
 }
