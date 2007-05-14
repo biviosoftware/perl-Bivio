@@ -68,13 +68,14 @@ sub create_folder {
     });
 }
 
+sub create_or_update_with_content {
+    my($self, $values) = _with_content(@_);
+    return $self->create_or_update($values);
+}
+
 sub create_with_content {
-    my($self, $values, $content) = @_;
-    return $self->create({
-        %$values,
-	is_folder => 0,
-	_content => $content,
-    });
+    my($self, $values) = _with_content(@_);
+    return $self->create($values);
 }
 
 sub delete {
@@ -310,8 +311,8 @@ sub update {
 }
 
 sub update_with_content {
-    my($self, $values, $content) = @_;
-    return $self->update({$values ? %$values : (), _content => $content});
+    my($self, $values) = _with_content(@_);
+    return $self->update($values);
 }
 
 sub _assert_not_root {
@@ -649,6 +650,15 @@ sub _verify_and_fix {
     $values->{folder_id} = $values->{_parent}->get('realm_file_id');
     _trace($values) if $_TRACE;
     return $values;
+}
+
+sub _with_content {
+    my($self, $values, $content) = @_;
+    return ($self, {
+	$values ? %$values : (),
+	is_folder => 0,
+	_content => $content,
+    });
 }
 
 sub _write {
