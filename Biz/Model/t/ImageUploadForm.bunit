@@ -1,0 +1,50 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel();
+my($file) = sub {
+    my($f) = 'ImageUploadForm/' . shift(@_);
+    return {
+	name => $f,
+	content => read_file($f),
+    };
+};
+req()->set_realm_and_user(qw(demo demo));
+my($rf) = model('RealmFile');
+$rf->delete_deep
+    if $rf->unsafe_load({path => class('Type.ImageFileName')->PRIVATE_FOLDER});
+[
+    [{
+	image_file => $file->('t1.gif'),
+    }] => [{
+	'Model.RealmFile' => {
+	    path => sub {
+		my($a) = req()->get('Model.RealmFile')->get_content_length;
+		my($e) = length(${$file->('t1.gif')->{content}});
+		Bivio::Die->die("$a: actual not equal expected ($e)")
+		    unless abs($a - $e) < 10;
+		return '/Image/t1.gif';
+	    },
+        },
+    }],
+    [{
+	image_file => $file->('t2.png'),
+    }] => [{
+	'Model.RealmFile' => {
+	    path => sub {
+		my($f) = req()->get('Model.RealmFile')->get_os_path;
+		chomp(my $a = `imgsize $f`);
+		assert_equals('width="640" height="240"', $a);
+		return '/Image/t2.png';
+	    },
+        },
+    }],
+    map(
+	error_case({
+	    image_file => $file->($_->[0]),
+	} => {
+	    image_file => $_->[1],
+	}),
+	[qw(t3.tif SYNTAX_ERROR)],
+	[qw(t4m.gif TOO_MANY)],
+    ),
+];
