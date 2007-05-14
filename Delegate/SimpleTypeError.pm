@@ -375,6 +375,11 @@ sub get_delegate_info {
 	undef,
 	'Class names must consist of letters, numbers, or underscores',
     ],
+    TOO_MANY => [
+	70,
+	undef,
+	'field has too many values',
+    ],
 ];
 }
 
