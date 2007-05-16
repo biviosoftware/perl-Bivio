@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::Website;
 use strict;
-use base 'Bivio::Biz::Model::LocationBase';
+use Bivio::Base 'Model.LocationBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
