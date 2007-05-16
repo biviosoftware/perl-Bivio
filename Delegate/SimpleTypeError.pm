@@ -303,7 +303,7 @@ sub get_delegate_info {
     FORUM_NAME => [
 	55,
 	undef,
-	'The first part of a forum name must be three or more characters and consist of alphanumeric characters followed by any number of hyphens and alpha numeric characters.',
+	'The first part of a forum name must be three or more characters and consist of alphanumeric characters followed by any number of hyphens and alphanumeric characters.',
     ],
     TOP_FORUM_NAME => [
 	56,
