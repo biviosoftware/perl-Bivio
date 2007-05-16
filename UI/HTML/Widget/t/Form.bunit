@@ -21,4 +21,10 @@ req()->server_redirect({
 	action => vs_new(URI => {uri => '#'}),
 	value => vs_new(Join => ['abc']),
     }] => qr{^<form .*action="#">}s,
+    [{
+	form_class => 'UserLoginForm',
+	action => vs_new(URI => {uri => '#'}),
+	value => vs_new(Join => ['abc']),
+	want_timezone => 0,
+    }] => qr{^<form .*action="#">\n<input type}s,
 ];

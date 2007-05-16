@@ -91,6 +91,7 @@ sub initialize {
     # Initializes static information.
     my($fields) = $self->[$_IDI];
     return if $fields->{prefix};
+    $self->initialize_attr(want_timezone => 1);
 
     # Compute form_class from form_model or vice-versa
     my($class) = $self->unsafe_get('form_class');
@@ -190,7 +191,8 @@ sub render {
 	. ($model->get_info('file_fields')
 	       ? ' enctype="multipart/form-data"' : '')
         . ">\n";
-    $_VS->vs_new('TimezoneField')->render($source, $buffer);
+    $_VS->vs_new('TimezoneField')->render($source, $buffer)
+	if $self->render_simple_attr('want_timezone', $source);
     my($hidden) = $model->get_hidden_field_values();
     while (@$hidden) {
 	# hidden fields have been converted to literal, but not  escaped.
