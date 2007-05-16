@@ -164,12 +164,12 @@ Returns I<attr> for I<column> or all attrs if attr not defined.
 sub get_column_info {
     my($self, $name, $attr) = @_;
     my($col) = $self->get('columns')->{$name};
-
-    Bivio::Die->die($name, ': no such column') unless $col;
-    return $col unless defined($attr);
-
+    Bivio::Die->die($name, ': no such column in ', $self->get('table_name'))
+	unless $col;
+    return $col
+	unless defined($attr);
     Bivio::Die->die($name, '.', $attr, ': no such attribute')
-		unless exists($col->{$attr});
+        unless exists($col->{$attr});
     return $col->{$attr};
 }
 
