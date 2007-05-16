@@ -245,7 +245,7 @@ sub init_column {
     unless ($col = $columns->{$qual_col}) {
 	my($qual_model, $column) = $qual_col =~ m!^(\w+(?:_\d+)?)\.(\w+)$!;
 	Bivio::Die->die($qual_col, ': invalid qualified column name')
-		    unless $qual_model && $column;
+	    unless $qual_model && $column;
 	my($model);
 	unless ($model = $attrs->{models}->{$qual_model}) {
 	    my($package) = $qual_model;
