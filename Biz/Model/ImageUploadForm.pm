@@ -10,16 +10,12 @@ use Bivio::Biz::Action;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IFN) = Bivio::Type->get_instance('ImageFileName');
 
-sub IMAGE_FILE_IS_REQUIRED {
-    return 1;
-}
-
 sub execute_ok {
     my($self) = @_;
     $self->validate
-	unless $self->unsafe_get('imagemagick');
-    return if $self->in_error;
-    my($im) = $self->get('imagemagick');
+	unless $self->unsafe_get('image_magick');
+    return if $self->in_error || !$self->unsafe_get('image_file');
+    my($im) = $self->get('image_magick');
     return _e($self, FILE_NAME => 'internal_image_path failed')
 	unless my $path = $self->internal_image_path;
     $im->Set(magick => ($path =~ /\.(w+)$/)[0]);
@@ -28,6 +24,10 @@ sub execute_ok {
     $self->new_other('RealmFile')->create_or_update_with_content(
 	$self->internal_image_properties($path), \$blob);
     return;
+}
+
+sub internal_image_is_required {
+    return 1;
 }
 
 sub internal_image_max_height {
@@ -75,13 +75,12 @@ sub internal_initialize {
 	    {
 		name => 'image_file',
 		type => 'FileField',
-		constraint => $self->IMAGE_FILE_IS_REQUIRED ? 'NOT_NULL'
-		    : 'NONE',
+		constraint => 'NONE',
 	    },
 	],
 	other => [
 	    {
-		name => 'imagemagick',
+		name => 'image_magick',
 		type => 'BLOB',
 	    },
 	],
@@ -91,8 +90,13 @@ sub internal_initialize {
 sub validate {
     my($self) = @_;
     shift->SUPER::validate(@_);
-    return if $self->get_field_error('image_file')
-	or !(my $f = $self->unsafe_get('image_file'));
+    return if $self->get_field_error('image_file');
+    my($f) = $self->unsafe_get('image_file');
+    unless ($f) {
+	return $self->internal_put_error(image => 'NULL')
+	    if $self->internal_image_is_required;
+	return;
+    }
     my($im) = Image::Magick->new;
     my($e);
     return _e($self, 'SYNTAX_ERROR', $e || 'unknown format')
@@ -101,7 +105,7 @@ sub validate {
     my($h) = $im->Get('height');
     return _e($self, TOO_MANY => scalar(@$im), ' images in file')
 	if @$im > 1;
-    $self->internal_put_field(imagemagick => $im);
+    $self->internal_put_field(image_magick => $im);
     return;
 }
 
