@@ -70,12 +70,10 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
 
 sub CONTEXT_FIELD {
-    # Returns "context".
     return 'c';
 }
 
 sub GLOBAL_ERROR_FIELD {
-    # Returns field name for errors not applied to a specific field.
     return '_';
 }
 
@@ -89,35 +87,36 @@ sub MAX_FIELD_SIZE {
 }
 
 sub NEXT_FIELD {
-    # Returns the next task to execute.
     return '.next';
 }
 
 sub OK_BUTTON_NAME {
-    # Default name of the ok_button.
     return 'ok_button';
 }
 
 sub TIMEZONE_FIELD {
-    # Returns field used in forms to set timezone.
     return 'tz';
 }
 
 sub VERSION_FIELD {
-    # Returns 'version'
     return 'v';
 }
 
 sub clear_errors {
-    # Remove any errors on fields on the form.
     delete(shift->[$_IDI]->{errors});
     return;
+}
+
+sub create_or_update_model_properties {
+    my($self, $model) = @_;
+    $model = $self->new_other($model)
+	unless ref($model);
+    return $model->create_or_update($self->get_model_properties($model));
 }
 
 sub execute {
     my($proto, $req, $values) = @_;
     # There are two modes:
-    #
     #
     # html form
     #
