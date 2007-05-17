@@ -71,6 +71,7 @@ Sets I<location> if not set, then calls SUPER.
 sub create {
     my($self, $values) = @_;
     $values->{location} ||= $_DEFAULT_LOCATION;
+    $values->{realm_id} ||= $self->get_request->get('auth_id');
     return $self->SUPER::create($values);
 }
 
