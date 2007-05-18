@@ -6,6 +6,11 @@ use base 'Bivio::Biz::Model::UserRealmList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub LOAD_ALL_SIZE {
+#TODO: Needs to be high to account for admins in all forums
+    return 5000;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
