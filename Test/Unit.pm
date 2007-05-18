@@ -2,104 +2,63 @@
 # $Id$
 package Bivio::Test::Unit;
 use strict;
-$Bivio::Test::Unit::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::Unit::VERSION;
-
-=head1 NAME
-
-Bivio::Test::Unit - declarative unit tests
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::Unit;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Test>
-
-=cut
-
-use Bivio::Test;
-@Bivio::Test::Unit::ISA = ('Bivio::Test');
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::Unit> is a simple wrapper for
-L<Bivio::Test::unit|Bivio::Test/"unit"> that allows you to declare different
-test types.  You create a ".bunit" file which looks like:
-
-    [
-	4 => [
-	    compute => [
-		5 => 5,
-		5 => 5,
-		10 => 7,
-	    ],
-	    value => 7,
-	],
-	class() => [
-	    new => [
-		-2 => DIE(),
-		0 => DIE(),
-		1 => undef,
-		2.5 => DIE(),
-	    ],
-	],
-	50 => [
-	    value => DIE(),
-	],
-    ];
-
-Or for widgets:
-
-    Widget();
-    [
-	[['']] => '',
-	[['a', 'b']] => 'ab',
-	[['a', 'b'], '-'] => 'a-b',
-	[['a'], '-'] => 'a',
-	[['a', 'b'], [sub {return undef}]] => 'ab',
-	[['a', 'b'], [sub {Bivio::UI::Widget::Join->new(['x'])}]] => 'axb',
-	[['a', 'b'], [sub {Bivio::UI::Widget::Join->new([''])}]] => 'ab',
-	[[
-	   [sub {Bivio::UI::Widget::Join->new([''])}],
-	    'a',
-	   'b',
-	   '',
-	], '-'] => 'a-b',
-    ];
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::File;
+use Bivio::Base 'Bivio::Test';
 use Bivio::DieCode;
-use File::Spec ();
+use Bivio::IO::File;
 use File::Basename ();
+use File::Spec ();
 
-#=VARIABLES
+# C<Bivio::Test::Unit> is a simple wrapper for
+# L<Bivio::Test::unit|Bivio::Test/"unit"> that allows you to declare different
+# test types.  You create a ".bunit" file which looks like:
+#
+#     [
+# 	4 => [
+# 	    compute => [
+# 		5 => 5,
+# 		5 => 5,
+# 		10 => 7,
+# 	    ],
+# 	    value => 7,
+# 	],
+# 	class() => [
+# 	    new => [
+# 		-2 => DIE(),
+# 		0 => DIE(),
+# 		1 => undef,
+# 		2.5 => DIE(),
+# 	    ],
+# 	],
+# 	50 => [
+# 	    value => DIE(),
+# 	],
+#     ];
+#
+# Or for widgets:
+#
+#     Widget();
+#     [
+# 	[['']] => '',
+# 	[['a', 'b']] => 'ab',
+# 	[['a', 'b'], '-'] => 'a-b',
+# 	[['a'], '-'] => 'a',
+# 	[['a', 'b'], [sub {return undef}]] => 'ab',
+# 	[['a', 'b'], [sub {Bivio::UI::Widget::Join->new(['x'])}]] => 'axb',
+# 	[['a', 'b'], [sub {Bivio::UI::Widget::Join->new([''])}]] => 'ab',
+# 	[[
+# 	   [sub {Bivio::UI::Widget::Join->new([''])}],
+# 	    'a',
+# 	   'b',
+# 	   '',
+# 	], '-'] => 'a-b',
+#     ];
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS);
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="AUTOLOAD"></a>
-
-=head2 AUTOLOAD(...) : any
-
-Tries to find Bivio::DieCode or class or type or type function.
-
-=cut
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
+    # Tries to find Bivio::DieCode or class or type or type function.
     $func =~ s/.*:://;
     return if $func eq 'DESTROY';
     my($b) = "builtin_$func";
@@ -115,93 +74,44 @@ sub AUTOLOAD {
 	: _load_type_class($func, \@_);
 }
 
-=for html <a name="builtin_assert_contains"></a>
-
-=head2 builtin_assert_contains(any expect, any actual) : boolean
-
-Calls Bivio::IO::Ref::nested_contains.  Returns 1.
-
-=cut
-
 sub builtin_assert_contains {
+    # Calls Bivio::IO::Ref::nested_contains.  Returns 1.
     return _assert_expect(@_);
 }
 
-=for html <a name="builtin_assert_eq"></a>
-
-B<DEPRECATED>.
-
-=cut
-
 sub builtin_assert_eq {
+    # B<DEPRECATED>.
     Bivio::IO::Alert->warn_deprecated('use assert_equals');
     return shift->builtin_assert_equals(@_);
 }
 
-=for html <a name="builtin_assert_equals"></a>
-
-=head2 builtin_assert_equals(any expect, any actual) : 1
-
-Asserts expected equals actual using Bivio::IO::Ref->nested_equals.
-If I<expect> is a regexp_ref and I<actual> is a string or string_ref, will
-use I<expect> as a regexp.   Returns 1.
-
-=cut
-
 sub builtin_assert_equals {
+    # Asserts expected equals actual using Bivio::IO::Ref->nested_equals.
+    # If I<expect> is a regexp_ref and I<actual> is a string or string_ref, will
+    # use I<expect> as a regexp.   Returns 1.
     return _assert_expect(@_);
 }
 
-=for html <a name="builtin_auth_realm"></a>
-
-=head2 builtin_auth_realm() : RealmOwner
-
-Return the current auth realm.
-
-=cut
-
 sub builtin_auth_realm {
+    # Return the current auth realm.
     return shift->builtin_req()->get('auth_realm')->get('owner');
 }
 
-=for html <a name="builtin_auth_user"></a>
-
-=head2 builtin_auth_user() : RealmOwner
-
-Return the current auth user.
-
-=cut
-
 sub builtin_auth_user {
+    # Return the current auth user.
     return shift->builtin_req()->get('auth_user');
 }
 
-=for html <a name="builtin_chomp_and_return"></a>
-
-=head2 builtin_chomp_and_return(string value) : string
-
-Calls chomp and returns its argument
-
-=cut
-
 sub builtin_chomp_and_return {
     my(undef, $value) = @_;
+    # Calls chomp and returns its argument
     chomp($value);
     return $value;
 }
 
-=for html <a name="builtin_class"></a>
-
-=head2 static builtin_class() : string
-
-=head2 static builtin_class(string class) : string
-
-Returns builtin_class under test without args.  With args, loads the
-classes (mapped classes acceptable), and returns the first one.
-
-=cut
-
 sub builtin_class {
+    # Returns builtin_class under test without args.  With args, loads the
+    # classes (mapped classes acceptable), and returns the first one.
     return shift->use(@_)
 	if @_ > 1;
     return $_CLASS
@@ -219,43 +129,22 @@ sub builtin_class {
     return $_CLASS;
 }
 
-=for html <a name="builtin_commit"></a>
-
-=head2 builtin_commit()
-
-Calls Bivio::Agent::Task::commit
-
-=cut
-
 sub builtin_commit {
+    # Calls Bivio::Agent::Task::commit
     Bivio::Agent::Task->commit(shift->builtin_req);
     return;
 }
 
-=for html <a name="builtin_config"></a>
-
-=head2 builtin_config(hash_ref config)
-
-Calls Bivio::IO::Config::introduce_values.
-
-=cut
-
 sub builtin_config {
     my(undef, $config) = @_;
+    # Calls Bivio::IO::Config::introduce_values.
     Bivio::IO::Config->introduce_values($config);
     return;
 }
 
-=for html <a name="builtin_create_user"></a>
-
-=head2 builtin_create_user(string user_name)
-
-Generate a btest, and sets realm and user to this user.  Deletes any user first.
-
-=cut
-
 sub builtin_create_user {
     my($self, $user) = @_;
+    # Generate a btest, and sets realm and user to this user.  Deletes any user first.
     my($req) = $self->builtin_req;
     Bivio::Die->eval(sub {
         $req->set_user(
@@ -273,101 +162,59 @@ sub builtin_create_user {
     return $req->get('auth_user');
 }
 
-=for html <a name="builtin_email"></a>
-
-=head2 builtin_email(string suffix) : array
-
-Generate a btest email.
-See Bivio::Test::Language::HTTP::generate_local_email.
-
-=cut
-
 sub builtin_email {
+    # Generate a btest email.
+    # See Bivio::Test::Language::HTTP::generate_local_email.
     shift;
     return Bivio::IO::ClassLoader->simple_require('Bivio::Test::Language::HTTP')
 	->generate_local_email(@_);
 }
 
-=for html <a name="builtin_expect_contains"></a>
-
-=head2 builtin_expect_contains(any expect, ... ) : code_ref
-
-Returns a closure that calls assert_contains() on the actual return.
-
-=cut
-
 sub builtin_expect_contains {
     my($proto, @expect) = @_;
+    # Returns a closure that calls assert_contains() on the actual return.
     return sub {
 	my(undef, $actual) = @_;
 	return $proto->builtin_assert_contains(\@expect, $actual);
     };
 }
 
-=for html <a name="builtin_inline_case"></a>
-
-=head2 builtin_inline_case(code_ref op) : code_ref
-
-Execute I<op> imperatively.  Note that
-
-=cut
-
 sub builtin_inline_case {
     my($proto, $op) = @_;
+    # Execute I<op> imperatively.  Note that
     return sub {
 	$op->($proto->current_case, $proto->current_self);
 	return $proto->IGNORE_RETURN;
     } => $proto->IGNORE_RETURN;
 }
 
-=for html <a name="builtin_inline_commit"></a>
-
-=head2 builtin_inline_commit() : code_ref
-
-Commit database changes
-
-=cut
-
 sub builtin_inline_commit {
     my($proto) = @_;
+    # Commit database changes
     return sub {
 	$proto->commit;
 	return 1;
     } => 1;
 }
 
-=for html <a name="builtin_inline_rollback"></a>
-
-=head2 builtin_inline_rollback() : code_ref
-
-Rollback database changes
-
-=cut
-
 sub builtin_inline_rollback {
     my($proto) = @_;
+    # Rollback database changes
     return sub {
 	$proto->rollback;
 	return 1;
     } => 1;
 }
 
-=for html <a name="builtin_model"></a>
-
-=head2 static builtin_model(string name, hash_ref query, array_ref expect) : any
-
-Returns a new model instance if just I<name>.  If I<query>, calls
-unauth_load_or_die (PropertyModel), unauth_load_all (ListModel), or process
-(FormModel).
-
-If I<expect>, calls map_iterate (PropertyModel in order of primary key) or
-unauth_load_all (ListModel), and calls builtin_assert_contains(I<expect>,
-I<result>).  Returns the complete data set in this last case.
-
-=cut
-
 sub builtin_model {
     my($proto, $name, $query, $expect) = @_;
+    # Returns a new model instance if just I<name>.  If I<query>, calls
+    # unauth_load_or_die (PropertyModel), unauth_load_all (ListModel), or process
+    # (FormModel).
+    #
+    # If I<expect>, calls map_iterate (PropertyModel in order of primary key) or
+    # unauth_load_all (ListModel), and calls builtin_assert_contains(I<expect>,
+    # I<result>).  Returns the complete data set in this last case.
     my($m) = Bivio::ShellUtil->model($name);
     return $m
 	unless $query;
@@ -389,168 +236,74 @@ sub builtin_model {
     return $actual;
 }
 
-=for html <a name="builtin_not_die"></a>
-
-=head2 static builtin_not_die() : undef
-
-Returns C<undef> which is the value L<Bivio::Test::unit|Bivio::Test/"unit">
-uses for ignoring result, but not allowing a die.
-
-=cut
-
 sub builtin_not_die {
+    # Returns C<undef> which is the value L<Bivio::Test::unit|Bivio::Test/"unit">
+    # uses for ignoring result, but not allowing a die.
     return undef;
 }
 
-=for html <a name="builtin_options"></a>
-
-=head2 builtin_options(hash_ref options) : hash_ref
-
-Sets global options to be based to Bivio::Test::unit.  Returns current
-options.
-
-=cut
-
 sub builtin_options {
     my($proto, $options) = @_;
+    # Sets global options to be based to Bivio::Test::unit.  Returns current
+    # options.
     $_CLASS = $proto->use($options->{class_name})
 	if $options->{class_name};
     return {%$_OPTIONS = (%$_OPTIONS, $options ? %$options : ())};
 }
 
-=for html <a name="builtin_random_string"></a>
-
-=head2 builtin_random_string() : string
-
-=head2 builtin_random_string(int length) : string
-
-Return a random string
-
-=cut
-
 sub builtin_random_string {
+    # Return a random string
     return shift->use('Bivio::Biz::Random')->hex_digits(shift || 8);
 }
 
-=for html <a name="builtin_string_ref"></a>
-
-=head2 builtin_string_ref(string value) : string_ref
-
-Converts value to string_ref.
-
-=cut
-
-sub builtin_string_ref {
-    my(undef, $value) = @_;
-    return \$value;
-}
-
-=for html <a name="builtin_rm_rf"></a>
-
-=head2 builtin_rm_rf(string io_name)
-
-Calls Bivio::IO::File-E<gt>rm_rf
-
-=cut
-
-sub builtin_rm_rf {
-    return shift->use('Bivio::IO::File')->rm_rf(@_);
-}
-
-=for html <a name="builtin_read_file"></a>
-
-=head2 static builtin_read_file(string path) : string_ref
-
-Read a file.
-
-=cut
-
 sub builtin_read_file {
+    # Read a file.
     shift;
     return Bivio::IO::File->read(@_);
 }
 
-=for html <a name="builtin_req"></a>
-
-=head2 static builtin_req() : Bivio::Agent::Request
-
-=head2 static builtin_req(any wiget_value, ...) : any
-
-Calls Bivio::Test::Request::get_instance.
-
-=cut
-
 sub builtin_req {
     my($self, @args) = @_;
+    # Calls Bivio::Test::Request::get_instance.
     my($req) = $self->use('Bivio::Test::Request')->get_instance;
     return @args ? $req->get_widget_value(@args) : $req;
 }
 
-=for html <a name="builtin_rollback"></a>
-
-=head2 builtin_rollback()
-
-Calls Bivio::Agent::Task::rollback
-
-=cut
+sub builtin_rm_rf {
+    # Calls Bivio::IO::File-E<gt>rm_rf
+    return shift->use('Bivio::IO::File')->rm_rf(@_);
+}
 
 sub builtin_rollback {
+    # Calls Bivio::Agent::Task::rollback
     Bivio::Agent::Task->rollback(shift->builtin_req);
     return;
 }
 
-=for html <a name="builtin_simple_require"></a>
-
-=head2 static builtin_simple_require(string class) : Bivio::UNIVERSAL
-
-Returns class which was loaded.
-
-=cut
-
 sub builtin_simple_require {
     my(undef, $class) = @_;
+    # Returns class which was loaded.
     return Bivio::IO::ClassLoader->simple_require($class);
 }
 
-=for html <a name="builtin_tmp_dir"></a>
-
-=head2 static builtin_tmp_dir() : string
-
-Creates TestName.tmp in the current directory, removing it if it exists
-already.
-
-=cut
+sub builtin_string_ref {
+    my(undef, $value) = @_;
+    # Converts value to string_ref.
+    return \$value;
+}
 
 sub builtin_tmp_dir {
+    # Creates TestName.tmp in the current directory, removing it if it exists
+    # already.
     return Bivio::IO::File->mkdir_p(
 	Bivio::IO::File->rm_rf(
 	    Bivio::IO::File->absolute_path(
 		shift->builtin_class->simple_package_name . '.tmp')));
 }
 
-=for html <a name="builtin_write_file"></a>
-
-=head2 static builtin_write_file(string path) : string_ref
-
-Write a file.
-
-=cut
-
-sub builtin_write_file {
-    shift;
-    return Bivio::IO::File->write(@_);
-}
-
-=for html <a name="builtin_var"></a>
-
-=head2 builtin_var(string name) : any
-
-Stores or retrieves global state depending on context.
-
-=cut
-
 sub builtin_var {
     my($proto) = shift;
+    # Stores or retrieves global state depending on context.
     Bivio::Die->die(\@_, ': var called with too many arguments')
         if @_ > 2;
     Bivio::Die->die(\@_, ': var called with too few arguments')
@@ -588,16 +341,15 @@ sub builtin_var {
     };
 }
 
-=for html <a name="run"></a>
-
-=head2 static run(string bunit)
-
-Runs I<file> in bunit environment.
-
-=cut
+sub builtin_write_file {
+    # Write a file.
+    shift;
+    return Bivio::IO::File->write(@_);
+}
 
 sub run {
     my($proto, $bunit) = @_;
+    # Runs I<file> in bunit environment.
     local($_PM) = _pm($bunit);
     local($_TYPE, $_CLASS);
     local($_OPTIONS) = {};
@@ -608,16 +360,9 @@ sub run {
     return $_TYPE->run_unit($t);
 }
 
-=for html <a name="run_unit"></a>
-
-=head2 static run_unit(array_ref cases)
-
-Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
-
-=cut
-
 sub run_unit {
     my($self) = shift;
+    # Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
     return (
 	ref($self) ? $self : $self->new({
 	    class_name => $self->builtin_class,
@@ -625,8 +370,6 @@ sub run_unit {
 	})
     )->unit(@_);
 }
-
-#=PRIVATE SUBROUTINES
 
 sub _assert_expect {
     my($self, $expect, $actual) = @_;
@@ -711,15 +454,5 @@ sub _var_put {
 	if _var_exists($proto, $name);
     return _var_hash($proto)->{$name} = $value;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
