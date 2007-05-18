@@ -359,6 +359,13 @@ sub initialize_tuple_slot_types {
 
 sub internal_upgrade_db_bundle {
     my($self) = @_;
+    my($req) = $self->get_request;
+    foreach my $realm (qw(forum calendar_event)) {
+	$req->with_realm($realm, sub {
+	    $req->get_nested('auth_realm', 'owner')->cascade_delete;
+        })
+	    if $self->model('RealmOwner')->unauth_load({name => $realm});
+    }
     $self->internal_upgrade_db_forum;
     $self->internal_upgrade_db_mail;
     $self->internal_upgrade_db_mail_bounce;
