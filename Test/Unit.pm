@@ -280,6 +280,11 @@ sub builtin_rollback {
     return;
 }
 
+sub builtin_shellutil {
+    my($self, $module, $args) = @_;
+    return Bivio::ShellUtil->new_other($module)->main(@$args);
+}
+
 sub builtin_simple_require {
     my(undef, $class) = @_;
     # Returns class which was loaded.
