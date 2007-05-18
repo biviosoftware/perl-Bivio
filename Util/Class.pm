@@ -45,7 +45,7 @@ sub qualified_name {
 
 sub super {
     my($self, $package) = @_;
-    return $self->model($package)->inheritance_ancestor_list;
+    return $self->use($package)->inheritance_ancestors;
 }
 
 sub tasks_for_label {
