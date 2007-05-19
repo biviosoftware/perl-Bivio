@@ -146,7 +146,9 @@ sub validate_row {
     return unless my $cols = $self->MUST_BE_SPECIFIED_FIELDS;
     return unless $self->is_empty_row;
     foreach my $f (@$cols) {
-	$self->internal_clear_error($f);
+	next unless my $e = $self->get_field_error($f);
+	$self->internal_clear_error($f)
+	    if $e->eq_null || $e->eq_unspecified;
     }
     return;
 }
