@@ -146,7 +146,13 @@ sub initialize {
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     ($fields->{field}, $fields->{size}) = $self->get('field', 'size');
-
+    $self->initialize_attr(is_read_only => [
+	'!',
+	[['->get_request'],
+	@{$fields->{model}}],
+	'->is_field_editable',
+	$fields->{field},
+    ]);
     # Initialize handler, if any
     $fields->{handler} = $self->unsafe_get('event_handler');
     if ($fields->{handler}) {
@@ -203,8 +209,7 @@ sub render {
     $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
 	$field, $source) if $fields->{handler};
     $$buffer .= ' disabled="1"'
-	if $self->get_or_default('is_read_only',
-            ! $form->is_field_editable($field));
+	if $self->render_simple_attr('is_read_only', $source);
     my($v);
     if ($fields->{format} && !$form->get_field_error($field)) {
 	my($f) = ref($fields->{format}) eq 'ARRAY'
