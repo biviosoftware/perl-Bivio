@@ -115,14 +115,12 @@ sub is_empty_row {
     return 1;
 }
 
-sub new {
-    my($proto, @args) = @_;
-    # Creates a new ExpandableListFormModel.
-    my($self) = $proto->SUPER::new(@args);
+sub reset_instance_state {
+    my($self) = shift;
     $self->[$_IDI] = {
 	list_initialized => 0,
     };
-    return $self;
+    return $self->SUPER::reset_instance_state(@_);
 }
 
 sub validate {

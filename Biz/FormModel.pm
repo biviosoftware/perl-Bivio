@@ -663,14 +663,7 @@ sub merge_initialize_info {
 }
 
 sub new {
-    my($self) = &Bivio::Biz::Model::new(@_);
-    # Create a new FormModel associated with the request.
-    # NOTE: fields are dynamically replaced.  See, e.g. load.
-    $self->[$_IDI] = {
-	empty_properties => $self->internal_get,
-	stay_on_page => 0,
-    };
-    return $self;
+    return shift->SUPER::new(@_)->reset_instance_state;
 }
 
 sub process {
@@ -825,6 +818,15 @@ sub put_context_fields {
     }
     _trace('new form: ', $c->get('form')) if $_TRACE;
     return;
+}
+
+sub reset_instance_state {
+    my($self) = @_;
+    $self->[$_IDI] = {
+	empty_properties => $self->internal_get,
+	stay_on_page => 0,
+    };
+    return $self;
 }
 
 sub unsafe_get_context {

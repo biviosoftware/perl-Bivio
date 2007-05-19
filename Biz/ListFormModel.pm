@@ -342,13 +342,6 @@ sub map_rows {
     &_delegate;
 }
 
-sub new {
-    my($self) = Bivio::Biz::FormModel::new(@_);
-    # Creates a new ListFormModel.
-    $self->[$_IDI] = {};
-    return $self;
-}
-
 sub next_row {
     my($self) = @_;
     # Advances to the next row in the list.  Also advances I<list_model>.
@@ -381,6 +374,12 @@ sub reset_cursor {
     $self->internal_clear_model_cache;
     _clear_row($self);
     return;
+}
+
+sub reset_instance_state {
+    my($self) = shift;
+    $self->[$_IDI] = {};
+    return $self->SUPER::reset_instance_state(@_);
 }
 
 sub set_cursor {
