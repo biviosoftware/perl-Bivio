@@ -20,6 +20,7 @@ sub internal_initialize {
 	other => [qw(
 	    RealmOwner.realm_type
             RealmOwner.display_name
+	    RealmUser.creation_date_time
 	)],
 	primary_key => [
 	    [qw(RealmUser.realm_id RealmOwner.realm_id)],
