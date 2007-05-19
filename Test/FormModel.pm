@@ -37,6 +37,7 @@ sub new_unit {
 	class_name => $m->package_name,
 	compute_params => sub {
 	    my($case, $params, $method, $object) = @_;
+	    $m->reset_instance_state;
 	    return $params
 		unless $method eq 'process';
 	    if (my $l = $req->unsafe_get('Model.Lock')) {
