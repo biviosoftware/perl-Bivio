@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 4.91  2007/05/02 17:45:51  moeller
+  * fixed broken units tests
+
   Revision 4.90  2007/05/02 16:59:02  moeller
     * Bivio::Agent::Request map_user_realms wasn't handling multiple
       keys in $filter properly (too loose)
