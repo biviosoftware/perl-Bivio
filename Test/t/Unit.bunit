@@ -64,7 +64,7 @@ req()->set_realm('btest_read');
 	builtin_string_ref => [
 	    '' => [\''],
 	],
-	builtin_shellutil => [
+	builtin_shell_util => [
 	    [Class => [qw(qualified_name Model.RealmOwner)]] => qr{Bivio::Biz::Model::RealmOwner},
 	],
     ],

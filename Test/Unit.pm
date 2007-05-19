@@ -280,7 +280,7 @@ sub builtin_rollback {
     return;
 }
 
-sub builtin_shellutil {
+sub builtin_shell_util {
     my($self, $module, $args) = @_;
     return Bivio::ShellUtil->new_other($module)->main(@$args);
 }
