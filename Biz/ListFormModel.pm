@@ -2,153 +2,68 @@
 # $Id$
 package Bivio::Biz::ListFormModel;
 use strict;
-$Bivio::Biz::ListFormModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::ListFormModel::VERSION;
-
-=head1 NAME
-
-Bivio::Biz::ListFormModel - a form with repeated properties
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::ListFormModel;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::FormModel>
-
-=cut
-
-use Bivio::Biz::FormModel;
-@Bivio::Biz::ListFormModel::ISA = ('Bivio::Biz::FormModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::ListFormModel> is a form which can have repeated properties.
-The repeated properties are indexed with the primary key of an
-associated I<list_model> (see L<get_list_model|"get_list_model">).
-The primary key properties are identically named in the I<list_model>
-and the form model.
-
-Currently, we only implement a I<small> subset of C<ListModel>
-methods.  This is due to lack of time.
-
-The implementation is a subclass of FormModel and not ListModel, because more
-support is provided by FormModel.  We have had to copy a few methods from
-ListModel.  You can refer to any field in the FormModel by a name of the form
-I<field>.I<N> where I<N> is the row, starting at 0.  When you call
-L<next_row|"next_row"> the I<field>.I<row> is copied to I<field> where
-I<row> is
-the row you are on.  This makes life simpler when dealing with FormModel, which
-needs access to all values at one time and doesn't know about this module.  For
-example,
-L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
-gets all the primary keys and stuffs them at the start of the form.  The list
-of hidden fields are returned by
-L<internal_get_hidden_field_names|"internal_get_hidden_field_names"> which is
-overriden by this module.
-
-To ensure consistency, there are a few sanity checks.  Also, we always drive
-the form processing using the list_model's I<next_row>.  If there is
-"too much" form data, it will be checked at the end of the iterations.
-If there is too little, it will blow up.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="LAST_ROW"></a>
-
-=head2 LAST_ROW() : int
-
-Returns a constant which means the "last_row".
-
-=cut
-
-sub LAST_ROW {
-    return Bivio::Biz::ListModel->LAST_ROW;
-}
-
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Biz::FormModel';
 use Bivio::IO::Trace;
 
-#=VARIABLES
+# C<Bivio::Biz::ListFormModel> is a form which can have repeated properties.
+# The repeated properties are indexed with the primary key of an
+# associated I<list_model> (see L<get_list_model|"get_list_model">).
+# The primary key properties are identically named in the I<list_model>
+# and the form model.
+#
+# Currently, we only implement a I<small> subset of C<ListModel>
+# methods.  This is due to lack of time.
+#
+# The implementation is a subclass of FormModel and not ListModel, because more
+# support is provided by FormModel.  We have had to copy a few methods from
+# ListModel.  You can refer to any field in the FormModel by a name of the form
+# I<field>.I<N> where I<N> is the row, starting at 0.  When you call
+# L<next_row|"next_row"> the I<field>.I<row> is copied to I<field> where
+# I<row> is
+# the row you are on.  This makes life simpler when dealing with FormModel, which
+# needs access to all values at one time and doesn't know about this module.  For
+# example,
+# L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
+# gets all the primary keys and stuffs them at the start of the form.  The list
+# of hidden fields are returned by
+# L<internal_get_hidden_field_names|"internal_get_hidden_field_names"> which is
+# overriden by this module.
+#
+# To ensure consistency, there are a few sanity checks.  Also, we always drive
+# the form processing using the list_model's I<next_row>.  If there is
+# "too much" form data, it will be checked at the end of the iterations.
+# If there is too little, it will blow up.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Separates row index from simple field name.  Must not be a regexp
 # special and must be valid for a javascript field id.  Guess what?
 # You can't change this value. ;-)
 my($_SEP) = '_';
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::Biz::ListFormModel
-
-Creates a new ListFormModel.
-
-=cut
-
-sub new {
-    my($self) = Bivio::Biz::FormModel::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
+sub LAST_ROW {
+    # Returns a constant which means the "last_row".
+    return Bivio::Biz::ListModel->LAST_ROW;
 }
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="do_rows"></a>
-
-=head2 do_rows(code_ref do_rows_handler) : self
-
-Delegated to ListModel
-
-=cut
 
 sub do_rows {
+    # Delegated to ListModel
     &_delegate;
 }
-
-=for html <a name="do_rows_handler"></a>
-
-=head2 callback do_rows_handler(self) : boolean
-
-Delegated to ListModel
-
-=cut
 
 sub do_rows_handler {
+    # Delegated to ListModel
     &_delegate;
 }
-
-=for html <a name="execute_empty"></a>
-
-=head2 execute_empty()
-
-Calls L<execute_empty_start|"execute_empty_start">,
-L<execute_empty_row|"execute_empty_row"> for each
-element in I<list_model>, and
-L<execute_empty_end|"execute_empty_end">.
-
-On exit, the cursor will be reset.
-
-=cut
 
 sub execute_empty {
     my($self) = @_;
+    # Calls L<execute_empty_start|"execute_empty_start">,
+    # L<execute_empty_row|"execute_empty_row"> for each
+    # element in I<list_model>, and
+    # L<execute_empty_end|"execute_empty_end">.
+    #
+    # On exit, the cursor will be reset.
     my($fields) = $self->[$_IDI];
     my($lm) = _execute_init($self);
 
@@ -168,64 +83,36 @@ sub execute_empty {
     return;
 }
 
-=for html <a name="execute_empty_end"></a>
-
-=head2 execute_empty_end()
-
-Subclasses should override if they need to perform an
-operation during L<execute_empty|"execute_empty">
-B<after> all rows have been processed.
-
-=cut
-
 sub execute_empty_end {
+    # Subclasses should override if they need to perform an
+    # operation during L<execute_empty|"execute_empty">
+    # B<after> all rows have been processed.
     return;
 }
 
-=for html <a name="execute_empty_row"></a>
-
-=head2 execute_empty_row()
-
-Subclasses should override if they need to perform an
-operation during L<execute_empty|"execute_empty">
-B<for each row>.
-
-By default, loads field data from model.
-
-=cut
-
 sub execute_empty_row {
     my($self) = @_;
+    # Subclasses should override if they need to perform an
+    # operation during L<execute_empty|"execute_empty">
+    # B<for each row>.
+    #
+    # By default, loads field data from model.
     $self->load_from_list_model_properties();
     return;
 }
 
-=for html <a name="execute_empty_start"></a>
-
-=head2 execute_empty_start()
-
-Subclasses should override if they need to perform an
-operation during L<execute_empty|"execute_empty">
-B<before> all rows have been processed.
-
-=cut
-
 sub execute_empty_start {
+    # Subclasses should override if they need to perform an
+    # operation during L<execute_empty|"execute_empty">
+    # B<before> all rows have been processed.
     return;
 }
 
-=for html <a name="execute_ok"></a>
-
-=head2 execute_ok(string button) : boolean
-
-calls L<execute_ok_start|"execute_ok_start">,
-L<execute_ok_row|"execute_ok_row"> and then
-L<execute_ok_end|"execute_ok_end">.
-
-=cut
-
 sub execute_ok {
     my($self, $button) = @_;
+    # calls L<execute_ok_start|"execute_ok_start">,
+    # L<execute_ok_row|"execute_ok_row"> and then
+    # L<execute_ok_end|"execute_ok_end">.
     $self->reset_cursor;
     $self->execute_ok_start($button);
     while ($self->next_row) {
@@ -236,112 +123,49 @@ sub execute_ok {
     return $result;
 }
 
-=for html <a name="execute_ok_end"></a>
-
-=head2 execute_ok_end() : boolean
-
-Subclasses should override if they need to perform an
-operation during L<execute_ok|"execute_ok">
-B<after> all rows have been processed.
-
-=cut
-
 sub execute_ok_end {
+    # Subclasses should override if they need to perform an
+    # operation during L<execute_ok|"execute_ok">
+    # B<after> all rows have been processed.
     return 0;
 }
 
-=for html <a name="execute_ok_row"></a>
-
-=head2 execute_ok_row()
-
-Subclasses should override if they need to perform an
-operation during L<execute_ok|"execute_ok">
-B<for each row>.
-
-=cut
-
 sub execute_ok_row {
+    # Subclasses should override if they need to perform an
+    # operation during L<execute_ok|"execute_ok">
+    # B<for each row>.
     return;
 }
-
-=for html <a name="execute_ok_start"></a>
-
-=head2 execute_ok_start()
-
-Subclasses should override if they need to perform an
-operation during L<execute_ok|"execute_ok">
-B<before> all rows have been processed.
-
-=cut
 
 sub execute_ok_start {
+    # Subclasses should override if they need to perform an
+    # operation during L<execute_ok|"execute_ok">
+    # B<before> all rows have been processed.
     return;
 }
-
-=for html <a name="format_uri"></a>
-
-=head2 format_uri() : 
-
-Proxy to ListModel::format_uri, see there for details.
-
-=cut
 
 sub format_uri {
     my($self) = shift;
+    # Proxy to ListModel::format_uri, see there for details.
     return $self->get_list_model->format_uri(@_);
 }
 
-=for html <a name="format_uri_for_sort"></a>
-
-=head2 format_uri_for_sort() : 
-
-Proxy to ListModel::format_uri_for_sort, see there for details.
-
-=cut
-
 sub format_uri_for_sort {
+    # Proxy to ListModel::format_uri_for_sort, see there for details.
     return shift->get_list_model->format_uri_for_sort(@_);
 }
 
-=for html <a name="get_field_info"></a>
-
-=head2 get_field_info(string field, string attr) : any
-
-Returns I<attr> for I<field>.
-
-=cut
-
 sub get_field_info {
     my($self, $name) = (shift, shift);
+    # Returns I<attr> for I<field>.
     $name =~ s/$_SEP\d+$//o;
     return $self->SUPER::get_field_info($name, @_);
 }
 
-=for html <a name="get_field_name_in_list"></a>
-
-=head2 get_field_name_in_list(string property) : string
-
-Returns the indexed field name.  If this is not an "in_list" field, just
-returns I<property>.  If no cursor, also returns I<property>.
-
-=cut
-
-sub get_field_name_in_list {
-    my($n, $nr) = _names(@_);
-    return defined($nr) ? $nr : $n;
-}
-
-=for html <a name="get_field_name_for_html"></a>
-
-=head2 get_field_name_for_html(string name) : string
-
-Returns the html name for this field with appropriate
-row id.
-
-=cut
-
 sub get_field_name_for_html {
     my($self, $name) = @_;
+    # Returns the html name for this field with appropriate
+    # row id.
 
     # Parse out the row number
     my($row);
@@ -367,16 +191,16 @@ sub get_field_name_for_html {
     return $col->{form_name}.$_SEP.$row;
 }
 
-=for html <a name="get_fields_for_primary_keys"></a>
-
-=head2 get_fields_for_primary_keys() : hash_ref
-
-Returns a hash_ref of the primary keys for the list class
-
-=cut
+sub get_field_name_in_list {
+    my($n, $nr) = _names(@_);
+    # Returns the indexed field name.  If this is not an "in_list" field, just
+    # returns I<property>.  If no cursor, also returns I<property>.
+    return defined($nr) ? $nr : $n;
+}
 
 sub get_fields_for_primary_keys {
     my($self) = @_;
+    # Returns a hash_ref of the primary keys for the list class
     my($list) = $self->get_list_model || _execute_init($self);
     my($primary_key_names) = $list->get_info('primary_key_names');
     my(@list_keys) = ();
@@ -391,69 +215,34 @@ sub get_fields_for_primary_keys {
     return {@list_keys};
 }
 
-=for html <a name="get_list_class"></a>
-
-=head2 get_list_class() : string
-
-Returns the name of the list class.
-
-=cut
-
 sub get_list_class {
     my($self) = @_;
+    # Returns the name of the list class.
     return $self->get_info('list_class');
 }
 
-=for html <a name="get_list_model"></a>
-
-=head2 get_list_model() : Bivio::Biz::ListModel
-
-Returns the instance of the list model associated with this instance
-of the list model.
-
-=cut
-
 sub get_list_model {
+    # Returns the instance of the list model associated with this instance
+    # of the list model.
     return shift->[$_IDI]->{list_model};
 }
 
-=for html <a name="get_query"></a>
-
-=head2 get_query() : Bivio::SQL::ListQuery
-
-Returns the
-L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
-associated with the list model.
-
-=cut
-
 sub get_query {
+    # Returns the
+    # L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+    # associated with the list model.
     return shift->get_list_model->get_query;
 }
 
-=for html <a name="get_result_set_size"></a>
-
-=head2 get_result_set_size() : int
-
-Returns the result set size for I<list_model>.
-
-=cut
-
 sub get_result_set_size {
+    # Returns the result set size for I<list_model>.
     return shift->get_list_model->get_result_set_size;
 }
 
-=for html <a name="has_fields"></a>
-
-=head2 has_fields(string name, ...) : boolean
-
-Does the model have these fields?  This means does it have the
-possibility of having these fields, not whether they are in the list.
-
-=cut
-
 sub has_fields {
     my($self) = shift;
+    # Does the model have these fields?  This means does it have the
+    # possibility of having these fields, not whether they are in the list.
     my(@args) = map {
 	my($x) = $_;
 	$x =~ s/$_SEP\d+$//o;
@@ -462,16 +251,9 @@ sub has_fields {
     return $self->SUPER::has_fields(@args);
 }
 
-=for html <a name="internal_clear_error"></a>
-
-=head2 internal_clear_error(string property)
-
-Clears the error on I<property> if any.
-
-=cut
-
 sub internal_clear_error {
     my($self, $property) = @_;
+    # Clears the error on I<property> if any.
     foreach my $n (_names($self, $property)) {
 	$self->SUPER::internal_clear_error($n)
 	    if $n;
@@ -479,108 +261,59 @@ sub internal_clear_error {
     return;
 }
 
-=for html <a name="internal_get_file_field_names"></a>
-
-=head2 internal_get_file_field_names() : array_ref
-
-B<Used internally to this module and FormModel.>
-
-=cut
-
 sub internal_get_file_field_names {
+    # B<Used internally to this module and FormModel.>
     return shift->[$_IDI]->{file_field_names};
 }
 
-=for html <a name="internal_get_hidden_field_names"></a>
-
-=head2 internal_get_hidden_field_names() : array_ref
-
-B<Used internally to this module and FormModel.>
-
-Returns all the hidden fields for this instance of the form,
-i.e. all list fields and the non-list fields.
-
-=cut
-
 sub internal_get_hidden_field_names {
+    # B<Used internally to this module and FormModel.>
+    #
+    # Returns all the hidden fields for this instance of the form,
+    # i.e. all list fields and the non-list fields.
     return shift->[$_IDI]->{hidden_field_names};
 }
 
-=for html <a name="internal_get_visible_field_names"></a>
-
-=head2 internal_get_visible_field_names() : array_ref
-
-B<Used internally to this module and FormModel.>
-
-Returns all the visible fields for this instance of the form,
-i.e. all list fields and the non-list fields.
-
-=cut
-
 sub internal_get_visible_field_names {
+    # B<Used internally to this module and FormModel.>
+    #
+    # Returns all the visible fields for this instance of the form,
+    # i.e. all list fields and the non-list fields.
     return shift->[$_IDI]->{visible_field_names};
 }
 
-=for html <a name="internal_initialize_list"></a>
-
-=head2 internal_initialize_list() : Bivio::Biz::Model::ListModel
-
-Finds and prepares the ListModel used for this form. Subclasses may
-override this to provide custom list loading.
-
-=cut
-
 sub internal_initialize_list {
     my($self) = @_;
+    # Finds and prepares the ListModel used for this form. Subclasses may
+    # override this to provide custom list loading.
     my($lm) = $self->get_request->get($self->get_info('list_class'));
     $lm->reset_cursor;
     return $lm;
 }
 
-=for html <a name="internal_pre_parse_columns"></a>
-
-=head2 internal_pre_parse_columns()
-
-B<Used internally to this module and FormModel.>
-
-Initializes the list model and what we expect for rows.
-I<literals> is available.
-
-=cut
-
 sub internal_pre_parse_columns {
     my($self) = @_;
+    # B<Used internally to this module and FormModel.>
+    #
+    # Initializes the list model and what we expect for rows.
+    # I<literals> is available.
     _execute_init($self);
     return;
 }
 
-=for html <a name="internal_put_error"></a>
-
-=head2 internal_put_error(string property, any error)
-
-See
-L<Bivio::Biz::FormModel::internal_put_error|Bivio::Biz::FormModel/"internal_put_error">.
-
-=cut
-
 sub internal_put_error {
     my($self, $property, $error) = @_;
+    # See
+    # L<Bivio::Biz::FormModel::internal_put_error|Bivio::Biz::FormModel/"internal_put_error">.
     my($n, $nr) = _names($self, $property);
     $self->SUPER::internal_put_error($n, $error) if $n;
     $self->SUPER::internal_put_error($nr, $error) if $nr;
     return;
 }
 
-=for html <a name="internal_put_field"></a>
-
-=head2 internal_put_field(string property, any value)
-
-Puts a value on a field.  No validation checking.
-
-=cut
-
 sub internal_put_field {
     my($self, $property, $value) = @_;
+    # Puts a value on a field.  No validation checking.
     my($n, $nr) = _names($self, $property);
     my($properties) = $self->internal_get;
     $properties->{$n} = $value if $n;
@@ -588,28 +321,14 @@ sub internal_put_field {
     return;
 }
 
-=for html <a name="is_empty_row"></a>
-
-=head2 is_empty_row : boolean
-
-Calls get_list_model.is_empty_row.
-
-=cut
-
 sub is_empty_row {
+    # Calls get_list_model.is_empty_row.
     return shift->get_list_model->is_empty_row;
 }
 
-=for html <a name="load_from_list_model_properties"></a>
-
-=head2 load_from_list_model_properties(Bivio::Biz::Model model)
-
-Load form values from model.
-
-=cut
-
 sub load_from_list_model_properties {
     my($self, $model) = @_;
+    # Load form values from model.
     $model ||= $self->get_list_model();
     foreach my $field (@{$self->get_info('visible_field_names')}) {
 	$self->internal_put_field($field, $model->get($field))
@@ -618,21 +337,26 @@ sub load_from_list_model_properties {
     return;
 }
 
-=for html <a name="next_row"></a>
+sub map_rows {
+    # Delegated to ListModel
+    &_delegate;
+}
 
-=head2 next_row() : boolean
-
-Advances to the next row in the list.  Also advances I<list_model>.
-The form properties which are
-not I<in_list> are always available.  I<in_list> properties are
-available as non-qualified names, i.e. sans row number suffix,
-for the current row only.  All I<in_list> properties are always
-available in row-qualified form, i.e. I<name>.I<row>.
-
-=cut
+sub new {
+    my($self) = Bivio::Biz::FormModel::new(@_);
+    # Creates a new ListFormModel.
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub next_row {
     my($self) = @_;
+    # Advances to the next row in the list.  Also advances I<list_model>.
+    # The form properties which are
+    # not I<in_list> are always available.  I<in_list> properties are
+    # available as non-qualified names, i.e. sans row number suffix,
+    # for the current row only.  All I<in_list> properties are always
+    # available in row-qualified form, i.e. I<name>.I<row>.
     my($fields) = $self->[$_IDI];
     $self->die('no cursor')
 	unless defined($fields->{cursor});
@@ -647,29 +371,10 @@ sub next_row {
     return _set_row($self, ++$fields->{cursor})
 }
 
-=for html <a name="map_rows"></a>
-
-=head2 map_rows(code_ref map_iterate_handler) : array_ref
-
-Delegated to ListModel
-
-=cut
-
-sub map_rows {
-    &_delegate;
-}
-
-=for html <a name="reset_cursor"></a>
-
-=head2 reset_cursor()
-
-Places the cursor at the start of the list.  Also resets cursor
-of I<list_model>.
-
-=cut
-
 sub reset_cursor {
     my($self) = @_;
+    # Places the cursor at the start of the list.  Also resets cursor
+    # of I<list_model>.
     my($fields) = $self->[$_IDI];
     $fields->{list_model}->reset_cursor;
     $fields->{cursor} = -1;
@@ -677,12 +382,6 @@ sub reset_cursor {
     _clear_row($self);
     return;
 }
-
-=for html <a name="set_cursor"></a>
-
-=head2 set_cursor(int index) : boolean
-
-=cut
 
 sub set_cursor {
     my($self) = shift;
@@ -693,37 +392,23 @@ sub set_cursor {
     return _set_row($self, $fields->{cursor} = $lm->get_cursor);
 }
 
-=for html <a name="set_cursor_or_die"></a>
-
-=head2 set_cursor_or_die(int index) : Bivio::Biz::ListModel
-
-Calls L<set_cursor|"set_cursor"> and dies with DIE
-if it returns false.
-
-Returns self.
-
-=cut
-
 sub set_cursor_or_die {
     my($self) = shift;
+    # Calls L<set_cursor|"set_cursor"> and dies with DIE
+    # if it returns false.
+    #
+    # Returns self.
     $self->throw_die('DIE', {message => 'no such row', entity => $_[0]})
 	unless $self->set_cursor(@_);
     return $self;
 }
 
-=for html <a name="validate"></a>
-
-=head2 validate()
-
-Calls L<validate_start|"validate_start">,
-L<validate_row|"validate_row"> for each
-element in I<list_model>, and
-L<validate_end|"validate_end">.
-
-=cut
-
 sub validate {
     my($self) = @_;
+    # Calls L<validate_start|"validate_start">,
+    # L<validate_row|"validate_row"> for each
+    # element in I<list_model>, and
+    # L<validate_end|"validate_end">.
     my($fields) = $self->[$_IDI];
     my($lm) = $self->get_list_model;
 
@@ -763,54 +448,28 @@ sub validate {
     return;
 }
 
-=for html <a name="validate_end"></a>
-
-=head2 validate_end()
-
-Subclasses should override if they need to do validation B<after>
-all rows are validated.
-
-=cut
-
 sub validate_end {
+    # Subclasses should override if they need to do validation B<after>
+    # all rows are validated.
     return;
 }
-
-=for html <a name="validate_row"></a>
-
-=head2 validate_row()
-
-Subclasses should override if they need to do validation
-B<for each row>.
-
-=cut
 
 sub validate_row {
+    # Subclasses should override if they need to do validation
+    # B<for each row>.
     return;
 }
-
-=for html <a name="validate_start"></a>
-
-=head2 validate_start()
-
-Subclasses should override if they need to do validation B<before>
-all rows are validated.
-
-=cut
 
 sub validate_start {
+    # Subclasses should override if they need to do validation B<before>
+    # all rows are validated.
     return;
 }
 
-#=PRIVATE METHODS
-
-# _clear_row(Bivio::Biz::ListFormModel self)
-#
-# Clear the row, i.e. make it so literals and values do not contain
-# in_list values which are not qualified by a row number.
-#
 sub _clear_row {
     my($self) = @_;
+    # Clear the row, i.e. make it so literals and values do not contain
+    # in_list values which are not qualified by a row number.
     my($literals) = $self->internal_get_literals;
     my($values) = $self->internal_get;
     foreach my $f (@{$self->get_info('in_list')}) {
@@ -823,12 +482,9 @@ sub _clear_row {
     return;
 }
 
-# _collision(Bivio::Biz::ListFormModel self, string msg, int row)
-#
-# Blows up with UPDATE_COLLISION.
-#
 sub _collision {
     my($self, $msg, $row) = @_;
+    # Blows up with UPDATE_COLLISION.
     $self->throw_die('UPDATE_COLLISION', {
 	message => $msg.' row #'.$row.' in ListFormModel',
 	list_model => ref($self->get_list_model),
@@ -837,7 +493,6 @@ sub _collision {
     return;
 }
 
-# _delegate() : any
 sub _delegate {
     # Delegate the caller function to ListModel
     return &{\&{join('::',
@@ -846,13 +501,10 @@ sub _delegate {
     )}};
 }
 
-# _execute_init(Bivio::Biz::ListFormModel self) : Bivio::Biz::ListModel
-#
-# Finds the list model by looking up list_class in the request.
-# Initializes rows and cursor.
-#
 sub _execute_init {
     my($self) = @_;
+    # Finds the list model by looking up list_class in the request.
+    # Initializes rows and cursor.
     my($req) = $self->get_request;
 
     # Get the the list_class instance
@@ -903,13 +555,10 @@ sub _execute_init {
     return $lm;
 }
 
-# _names(Bivio::Biz::ListFormModel self, string name) : array
-#
-# Returns the unqualified and qualified names.  Uses cursor to
-# know whether we are on the row specified by property (if specified).
-#
 sub _names {
     my($self, $name) = @_;
+    # Returns the unqualified and qualified names.  Uses cursor to
+    # know whether we are on the row specified by property (if specified).
 
     # If there is no property name, global error
     return ($self->GLOBAL_ERROR_FIELD, undef)
@@ -949,7 +598,6 @@ sub _names {
     return ($name, $name.$_SEP.$fields->{cursor});
 }
 
-# _set_row()
 sub _set_row {
     my($self, $cursor) = @_;
     # Go to next row, so copy properties, literals and errors to simple names
@@ -968,15 +616,5 @@ sub _set_row {
     }
     return 1;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
