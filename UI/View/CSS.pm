@@ -154,6 +154,7 @@ th {
   border: 2px solid;
   Color('acknowledgement-border');
   padding: .5em;
+  text-align: center;
 }
 .trailer {
   margin: 1ex 0;
