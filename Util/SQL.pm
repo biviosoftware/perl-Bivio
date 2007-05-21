@@ -374,6 +374,7 @@ sub internal_upgrade_db_bundle {
     $self->internal_upgrade_db_job_lock;
     $self->internal_upgrade_db_tuple;
     $self->internal_upgrade_db_motion;
+    $self->internal_upgrade_db_website;
     return;
 }
 
@@ -1204,6 +1205,32 @@ CREATE SEQUENCE tuple_slot_type_s
   CACHE 1 INCREMENT BY 100000
 /
 
+EOF
+    return;
+}
+
+sub internal_upgrade_db_website {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE website_t (
+  realm_id NUMERIC(18) NOT NULL,
+  location NUMERIC(2) NOT NULL,
+  url VARCHAR(255),
+  CONSTRAINT website_t1 primary key(realm_id, location)
+)
+/
+--
+-- website_t
+--
+ALTER TABLE website_t
+  ADD CONSTRAINT website_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX website_t3 on website_t (
+  realm_id
+)
+/
 EOF
     return;
 }
