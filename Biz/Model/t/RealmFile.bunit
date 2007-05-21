@@ -141,7 +141,7 @@ my($auth_uid) = sub {
 	    [$a->('new1/F1')] => not_die(),
 	],
 	update => [
-	    [{is_public => 1}] => not_die(),
+	    [{is_public => 1}] => FORBIDDEN(),
 	],
 	map((
 	    load => [
@@ -373,8 +373,15 @@ my($auth_uid) = sub {
 	update => [
 	    [{path => '/Public'}] => $commit,
 	],
+	load => [
+	    [{path => '/Public'}] => not_die(),
+	],
 	get => [
 	    is_public => 1,
+	],
+	delete_deep => not_die(),
+	load => [
+	    [{path => '/Public'}] => MODEL_NOT_FOUND(),
 	],
 	create_with_content => [
 	    [{path => '/public/foo'}, \('foo')] => $commit,
