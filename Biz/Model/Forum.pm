@@ -18,7 +18,7 @@ sub create {
 }
 
 sub create_realm {
-    my($self, $forum, $realm_owner, $admin_id) = @_;
+    my($self, $forum, $realm_owner, $admin_user_id) = @_;
     $forum->{want_reply_to} ||= 0;
     $forum->{is_public_email} ||= 0;
     my($req) = $self->get_request;
@@ -35,7 +35,7 @@ sub create_realm {
 	return;
     });
     $self->new_other('ForumUserAddForm')->copy_admins(
-	$ro->get('realm_id'), $admin_id);
+	$ro->get('realm_id'), $admin_user_id);
     # Reset state after ForumUserAddForm messed it up
     $self->put_on_request;
     $ro->put_on_request;
