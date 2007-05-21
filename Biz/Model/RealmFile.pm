@@ -301,6 +301,9 @@ sub update {
     $self->throw_die(FORBIDDEN => 'may not change root path')
 	if $self->get('path') eq '/' && exists($new_values->{path})
 	&& ($new_values->{path} || 'invalid path') ne '/';
+    $self->throw_die(FORBIDDEN => 'public files must live under /Public')
+ 	if $new_values->{is_public}
+ 	&& $new_values->{path} !~ m{^@{[$self->PUBLIC_FOLDER]}($|/)}oi;
     return _update($self, {
 	map(($_ => $self->get($_)),
  	    qw(is_folder path realm_id is_public is_read_only)),
