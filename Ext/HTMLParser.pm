@@ -67,8 +67,8 @@ I<client> is stored and must implement html_parser_* interface.
 =cut
 
 sub new {
-    my($proto, $client) = @_;
-    my($self) = HTML::Parser::new($proto);
+    my(undef, $client) = @_;
+    my($self) = shift->SUPER::new;
     $self->{$_PACKAGE} = {
 	client => $client,
     };
