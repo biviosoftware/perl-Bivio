@@ -17,6 +17,16 @@ sub error_case {
     return shift->simple_case(@_);
 }
 
+sub file_field {
+    my($self, $file_name) = @_;
+    return {
+	filename => $self->use('Type.FilePath')->get_tail($file_name),
+	content_type => $self->use('Bivio::MIME::Type')
+	    ->unsafe_from_extension($file_name),
+        content => $self->builtin_read_file($file_name),
+    };
+}
+
 sub simple_case {
     my($proto, $input, $return) = @_;
     return ([$input] => [{
