@@ -404,10 +404,10 @@ sub _load_cookie_user {
     my($proto, $cookie, $req) = @_;
     return undef unless $cookie->unsafe_get($proto->USER_FIELD);
     my($auth_user) = Bivio::Biz::Model->new($req, 'RealmOwner');
-    if ($auth_user->unauth_load(
+    if ($auth_user->unauth_load({
 	realm_id => $cookie->get($proto->USER_FIELD),
 	realm_type => Bivio::Auth::RealmType->USER,
-    )) {
+    })) {
 	return $auth_user
 	    if $req->is_substitute_user;
 
