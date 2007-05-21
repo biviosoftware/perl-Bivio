@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::HOWTO::CodingStyle;
 use strict;
@@ -768,7 +768,7 @@ cases (like format statements).
 =item *
 
 In general, pass and return references to arrays and hashes. For example,
-Bivio::Collection::Attributes::new takes a hash_ref, which it assumes ownership
+Bivio::Collection::Attributes-E<GT>new takes a hash_ref, which it assumes ownership
 of.
 
 There are exceptions, e.g. multi-variable method results, e.g.
@@ -866,7 +866,7 @@ There are a few exceptions. In constructors, you may pass the arguments
 on as follows:
 
      sub new {
-     my($self) = Bivio::UNIVERSAL::new(@_);
+     my($self) = shift->SUPER::new(@_);
      }
 
 If the function is overloaded or takes unlimited arguments, i.e. it checks
@@ -892,7 +892,7 @@ state</a>). If you don't need $self, you may use:
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 

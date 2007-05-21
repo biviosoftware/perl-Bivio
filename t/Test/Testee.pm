@@ -48,8 +48,8 @@ Instance created with I<default_return>
 =cut
 
 sub new {
-    my($proto, $default_return) = @_;
-    my($self) = Bivio::UNIVERSAL::new(@_);
+    my(undef, $default_return) = @_;
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {
 	default_return => $default_return,
     };
