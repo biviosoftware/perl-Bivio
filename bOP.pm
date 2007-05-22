@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.1  2007/05/22 03:09:49  nagler
+  * Bivio::Biz::Model::UserPasswordForm fixed (reset_instance_state()
+    not available for all Models).
+  * Bivio::Biz::Model::RealmFile no longer allows is_public to be true
+    outside of the /Public folder.
+  * All modules updated from Bivio::*::new() to use shift->SUPER::new
+  * Bivio::Test::FormModel->file_field added
+
   Revision 5.0  2007/05/19 16:20:39  nagler
   * Bivio::Biz::Action::RealmlessRedirect->internal_choose_realm factored out,
     and chooses most recently joined realm with longest name.  This
