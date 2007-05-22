@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,45 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.0  2007/05/19 16:20:39  nagler
+  * Bivio::Biz::Action::RealmlessRedirect->internal_choose_realm factored out,
+    and chooses most recently joined realm with longest name.  This
+    means a sub-forum is chosen over a top-forum.
+  * Bivio::Biz::FormModel->reset_instance_state added.  This allows
+    FormModel.bunits to reuse the instance.  Also added to ListFormModel
+    and ExpandableListFormModel.
+  * Bivio::Biz::Model::LocationBase->create sets realm_id if not set.
+  * Bivio::Biz::Model::RealmBase->create sets creation_date_time,
+    user_id, and (update, too) modified_date_time.
+  * Bivio::Biz::Model::RealmFile->create_or_update_with_content added
+  * Bivio::Biz::Model::UserForumList->LOAD_ALL_SIZE set to 5000.
+  * Bivio::Biz::Random->integer accepts an (inclusive) floor.
+  * Bivio::Test::Language::HTTP->submit_form recognizes lower case
+    strings as regular expressions.  See examples in HTTP.bunit
+  * Bivio::Test::Unit->builtin_shell_util added
+  * Bivio::Type::ImageFileName added
+  * Bivio::Type::FormMode->setup_by_list_this added
+  * Bivio::UI::FacadeBase/Font reset more CSS attributes for "normal"
+    fonts.  Added more default fonts.  Font "none" is gone.
+  * Bivio::UI::HTML::Widget::Form.want_timezone added (defaults true).
+    action is now dynamic
+  * Bivio::UI::HTML::Widget::Test.is_read_only is now dynamic
+  * Bivio::UI::View::CSS->internal_compress added.  Output is
+    compressed by default now.
+  * Bivio::UI::View::CSS resets all HTML tags to a known state (no
+    margin, padding, etc.) and then sets "reasonable" defaults.
+    h1-h4 can be controlled with facade Fonts.
+  * Bivio::UI::View::SiteRoot->format_uri added.  You can now say
+    SiteRoot(view_method) and the view_method will be validated along
+    with it being formatted properly as a uri.
+  * Bivio::UI::XHTML::Widget::TaskMenu now accepts a Link or XLink
+    as an element. It doesn't do a good job of label highlighting,
+    but this feature is more flexible for URI generation.
+  * Bivio::Util::Class->super was broken.
+  * Bivio::Util::POD->to_comments improved.  Methods are now sorted.
+  * Bivio::Util::SQL->internal_upgrade_db_bundle added.  It calls
+    all the more recent upgrades (forum to motion).
+
   Revision 4.91  2007/05/02 17:45:51  moeller
   * fixed broken units tests
 
