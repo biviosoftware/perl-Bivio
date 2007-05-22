@@ -78,7 +78,7 @@ the map, so don't modify the hash after invoking this.
 
 sub new {
     my($proto, $map) = @_;
-    my($self) = Bivio::UNIVERSAL::new($proto);
+    my($self) = $proto->SUPER::new;
     $map = {} unless ref($map) eq 'HASH';
     $self->[$_IDI] = $map;
     return $self;

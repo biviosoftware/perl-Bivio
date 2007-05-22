@@ -83,7 +83,7 @@ Creates a new StandardSubmit widget from I<attributes>.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::Grid::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }

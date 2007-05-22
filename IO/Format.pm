@@ -118,7 +118,7 @@ Returns a new Bivio::IO::Format.
 =cut
 
 sub new {
-    my($self) = Bivio::Collection::Attributes::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {
 	lines => [],
 	result => '',

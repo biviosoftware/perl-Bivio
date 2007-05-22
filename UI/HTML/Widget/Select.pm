@@ -175,7 +175,7 @@ Creates a new Select widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }

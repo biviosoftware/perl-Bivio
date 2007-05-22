@@ -72,7 +72,7 @@ Creates a new Enum renderer.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::String::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }

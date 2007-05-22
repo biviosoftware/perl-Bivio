@@ -61,7 +61,7 @@ sub new {
     my($proto, $type, $value) = @_;
     Bivio::Die->die($type, ': not a type')
 	unless UNIVERSAL::isa($type, 'Bivio::Type');
-    return Bivio::Collection::Attributes::new($proto, {
+    return $proto->SUPER::new({
 	type => $type,
 	value => $value,
     });

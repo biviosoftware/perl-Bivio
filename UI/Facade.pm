@@ -288,7 +288,7 @@ sub new_child {
     # Will blow up if not a parent (main facade).
     my($children) = $parent->get('children');
 
-    my($self) = Bivio::Collection::Attributes::new($parent);
+    my($self) = $parent->SUPER::new;
 
     # Initialize this instance's attributes
     my($type) = Bivio::UI::FacadeChildType->from_any($config->{child_type});

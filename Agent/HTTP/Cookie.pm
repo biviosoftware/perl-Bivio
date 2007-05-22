@@ -62,7 +62,7 @@ for instance notification.
 
 sub new {
     my($proto, $req, $r) = @_;
-    my($self) = Bivio::Delegator::new($proto, $req, $r);
+    my($self) = shift->SUPER::new(@_);
     $self->internal_notify_handlers($req);
     return $self;
 }

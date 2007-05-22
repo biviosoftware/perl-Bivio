@@ -76,7 +76,8 @@ really.  If it is a hash_ref, it must contain a I<value> attribute.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(_new_args(@_));
+    my($proto, @args) = _new_args(@_);
+    my($self) = $proto->SUPER::new(@args);
     $self->[$_IDI] = {};
     return $self;
 }

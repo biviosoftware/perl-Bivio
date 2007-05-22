@@ -140,7 +140,7 @@ Create a new ListModel associated with the request.
 =cut
 
 sub new {
-    return _new(Bivio::Biz::Model::new(@_));
+    return _new(shift->SUPER::new(@_));
 }
 
 =for html <a name="new_anonymous"></a>
@@ -159,7 +159,7 @@ sub new_anonymous {
 	$_[1]->{version} ||= 1;
 	$_[1]->{can_iterate} ||= 1;
     };
-    return _new(Bivio::Biz::Model::new_anonymous(@_));
+    return _new(shift->SUPER::new_anonymous(@_));
 }
 
 =head1 METHODS

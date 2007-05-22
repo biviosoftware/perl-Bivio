@@ -231,7 +231,7 @@ sub new {
     # Finish up by creating in_list_columns
     _init_list_columns($attrs, $decl);
 
-    return Bivio::SQL::Support::new($proto, $attrs);
+    return $proto->SUPER::new($attrs);
 }
 
 =head1 METHODS

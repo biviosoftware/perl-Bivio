@@ -165,7 +165,7 @@ Do not call this method directly, use L<connect|"connect">.
 
 sub internal_new {
     my($proto, $dbi_name) = @_;
-    my($self) = Bivio::UNIVERSAL::new($proto);
+    my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
 	dbi_name => $dbi_name,
 	db_is_read_only => 0,

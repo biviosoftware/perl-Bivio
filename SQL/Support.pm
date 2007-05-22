@@ -132,7 +132,7 @@ Pass through "new".
 =cut
 
 sub new {
-    return Bivio::Collection::Attributes::new(@_);
+    return shift->SUPER::new(@_);
 }
 
 =head1 METHODS

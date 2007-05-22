@@ -279,7 +279,8 @@ B<I<query> will be subsumed by this module.  Do not use it again.>
 
 sub new {
     my($proto, $attrs, $support, $die) = @_;
-    die('missing auth_id') if $support->get('auth_id') && !$attrs->{auth_id};
+    die('missing auth_id')
+	if $support->get('auth_id') && !$attrs->{auth_id};
     foreach my $k (@_QUERY_FIELDS) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $die);
     }
@@ -781,12 +782,12 @@ sub _new {
     # Reset attrs that are set by Support
     @{$attrs}{qw(has_prev has_next prev next prev_page next_page list_support)}
 	   = (0, 0, undef, undef, undef, undef, $support);
-    _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
+    _die($die, Bivio::DieCode->CORRUPT_QUERY, {
 	message => 'cannot have both interval and begin_date',
 	begin_date => $attrs->{begin_date},
     },
 	    $attrs->{interval}) if $attrs->{interval} && $attrs->{begin_date};
-    return Bivio::Collection::Attributes::new($proto, $attrs);
+    return $proto->SUPER::new($attrs);
 }
 
 # _parse_begin_date(hash_ref attrs, Bivio::SQL::Support support, ref die)

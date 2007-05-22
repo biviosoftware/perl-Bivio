@@ -60,8 +60,7 @@ Sets the static_properties to values supplied.
 
 sub new {
     my($proto, $source, $static_properties) = @_;
-    my($self) = &Bivio::Collection::Attributes::new($proto,
-	    $static_properties);
+    my($self) = $proto->SUPER::new($static_properties);
     $self->[$_IDI] = {
 	source => $source,
 	request => $source->[0]->get_request,

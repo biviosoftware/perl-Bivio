@@ -91,7 +91,7 @@ Creates a new Director widget with named attributes.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }

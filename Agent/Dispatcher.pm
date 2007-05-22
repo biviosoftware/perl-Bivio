@@ -76,7 +76,7 @@ Creates a new dispatcher.
 =cut
 
 sub new {
-    my($self) = &Bivio::UNIVERSAL::new(@_);
+    my($self) = shift->SUPER::new(@_);
     return $self;
 }
 

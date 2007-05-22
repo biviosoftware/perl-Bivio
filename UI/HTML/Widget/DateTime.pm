@@ -203,7 +203,7 @@ Creates a new DateTime widget with I<attributes>.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }

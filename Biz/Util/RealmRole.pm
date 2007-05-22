@@ -108,7 +108,7 @@ Initializes fields.
 =cut
 
 sub new {
-    my($self) = Bivio::ShellUtil::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }

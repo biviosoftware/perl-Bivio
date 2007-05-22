@@ -109,7 +109,7 @@ Set up the grid.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::Grid::new(@_);
+    my($self) = shift->SUPER::new(@_);
     my($field) = $self->get('field');
     my($choices) = $self->get('choices');
 

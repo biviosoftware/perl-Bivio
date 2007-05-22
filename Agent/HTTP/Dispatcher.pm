@@ -77,7 +77,7 @@ Creates a new dispatcher.
 =cut
 
 sub new {
-    return &Bivio::Agent::Dispatcher::new(@_);
+    return shift->SUPER::new(@_);
 }
 
 =head1 METHODS

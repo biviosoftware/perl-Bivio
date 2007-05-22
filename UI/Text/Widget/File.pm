@@ -74,7 +74,7 @@ sub new {
 	unless exists($attributes->{filename});
     $attributes->{content_type} = [$file, '->content_type']
 	unless exists($attributes->{content_type});
-    my($self) = Bivio::UI::Widget::new($proto, $attributes);
+    my($self) = $proto->SUPER::new($attributes);
     return $self;
 }
 

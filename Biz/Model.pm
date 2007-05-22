@@ -102,16 +102,8 @@ sub new {
     my($proto, $req, $class) = _new_args(@_);
     return $proto->get_instance($class)->new($req)
 	if defined($class);
-    $class = ref($proto) || $proto;
-#     _initialize_class_info($class)
-#         unless $_CLASS_INFO{$class};
-#     my($ci) = $_CLASS_INFO{$class};
-    my($ci) = _get_class_info($class);
-
-    # Make a copy of the properties for this instance.  properties
-    # is an array_ref for efficiency
-    my($self) = Bivio::Collection::Attributes::new($class,
-	    {@{$ci->{properties}}});
+    my($ci) = _get_class_info(ref($proto) || $proto);
+    my($self) = $proto->SUPER::new({@{$ci->{properties}}});
     $self->[$_IDI] = {
 	class_info => $ci,
         request => $req || (ref($proto) ? $proto->unsafe_get_request : undef),
@@ -141,8 +133,7 @@ sub new_anonymous {
 	    : _initialize_class_info($proto, $config);
     # Make a copy of the properties for this instance.  properties
     # is an array_ref for efficiency.
-    my($self) = Bivio::Collection::Attributes::new($proto,
-	    {@{$ci->{properties}}});
+    my($self) = $proto->SUPER::new({@{$ci->{properties}}});
     $self->[$_IDI] = {
 	class_info => $ci,
 	# Never save the request for first time anonymous classes

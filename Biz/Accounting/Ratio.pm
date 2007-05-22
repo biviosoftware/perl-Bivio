@@ -49,7 +49,7 @@ Creates the ratio with the specified numerator / denominator.
 
 sub new {
     my($proto, $numerator, $denominator) = @_;
-    my($self) = Bivio::UNIVERSAL::new($proto);
+    my($self) = $proto->SUPER::new;
 
     # need to shift 1 decimal point to correctly round value
     # Bivio::Type::Amount truncates past precision

@@ -164,7 +164,7 @@ sub internal_new_args {
 }
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = shift->SUPER::new(@_);
     # Passes I<form_class> and I<value> as attributes.  And optionally, set extra
     # I<attributes>.
     #

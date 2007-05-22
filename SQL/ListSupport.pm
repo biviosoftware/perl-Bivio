@@ -306,7 +306,7 @@ sub new {
     }
 
     _init_column_lists($attrs, $decl, _init_column_classes($attrs, $decl));
-    my($self) = Bivio::SQL::Support::new($proto, $attrs);
+    my($self) = $proto->SUPER::new($attrs);
     Bivio::SQL::ListQuery->initialize_support($self);
 #TODO: make $self read_only?
     return $self;

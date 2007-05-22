@@ -150,7 +150,7 @@ sub new {
 
     # Cache as much of the statements as possible
     _init_statements($attrs);
-    return &Bivio::SQL::Support::new($proto, $attrs);
+    return $proto->SUPER::new($attrs);
 }
 
 =head1 METHODS

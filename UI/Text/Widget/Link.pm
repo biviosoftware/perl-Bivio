@@ -75,7 +75,7 @@ If I<attributes> supplied, creates with attribute (name, value) pairs.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }

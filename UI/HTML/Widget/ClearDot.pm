@@ -88,7 +88,8 @@ Creates a new ClearDot widget using I<attributes>.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(_new_args(@_));
+    my($proto, @args) = _new_args(@_);
+    my($self) = $proto->SUPER::new(@args);
     $self->[$_IDI] = {};
     return $self;
 }

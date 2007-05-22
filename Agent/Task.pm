@@ -204,7 +204,7 @@ sub new {
 	    unless $realm_type->isa('Bivio::Auth::RealmType');
     die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
 
-    my($self) = Bivio::Collection::Attributes::new($proto, {
+    my($self) = $proto->SUPER::new({
 	id => $id,
 	realm_type => $realm_type,
 	permission_set => $perm,

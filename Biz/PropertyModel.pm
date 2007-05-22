@@ -60,7 +60,7 @@ Create a new PropertyModel associated with the request.
 =cut
 
 sub new {
-    my($self) = Bivio::Biz::Model::new(@_);
+    my($self) = shift->SUPER::new(@_);
     _unload($self, 0);
     return $self;
 }

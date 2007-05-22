@@ -100,7 +100,7 @@ and then I<initialize> is called, if supplied.
 
 sub new {
     my($proto, $facade, $clone, $initialize) = @_;
-    my($self) = Bivio::UNIVERSAL::new($proto);
+    my($self) = $proto->SUPER::new;
     $proto->die($facade, 'missing or invalid facade')
 	    unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
 
