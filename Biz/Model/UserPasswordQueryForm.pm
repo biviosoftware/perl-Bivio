@@ -61,7 +61,7 @@ sub execute_empty {
     my($user_id) = $cookie->unsafe_get(
         $self->get_instance('UserLoginForm')->USER_FIELD);
     return unless $user_id;
-    my($email) = $self->new($req, 'Email');
+    my($email) = $self->new_other('Email');
     return unless $email->unauth_load({
         realm_id => $user_id,
     });
