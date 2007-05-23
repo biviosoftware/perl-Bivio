@@ -35,10 +35,6 @@ sub PUBLIC_FOLDER {
     return $proto->join($proto->PUBLIC_FOLDER_ROOT, $proto->PRIVATE_FOLDER);
 }
 
-sub PUBLIC_FOLDER_ROOT {
-    return '/Public';
-}
-
 sub WIKI_FOLDER {
     return '/Wiki';
 }
