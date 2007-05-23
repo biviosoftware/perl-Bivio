@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::FilePath;
 use strict;
@@ -14,9 +14,23 @@ sub ERROR {
     return Bivio::TypeError->FILE_PATH;
 }
 
+sub PUBLIC_FOLDER_ROOT {
+    return '/Public';
+}
+
 sub add_trailing_slash {
     my(undef, $path) = @_;
     return $path =~ m,/$, ? $path : $path.'/';
+}
+
+sub to_public {
+    my($proto, $path) = @_;
+    my($p) = $proto->PUBLIC_FOLDER_ROOT;
+    return $p
+	unless defined($path);
+    $path = $proto->join($p, $path);
+    $path =~ s{^\Q$p$p\E(/|$)}{$p$1}i;
+    return $path;
 }
 
 sub from_literal {
