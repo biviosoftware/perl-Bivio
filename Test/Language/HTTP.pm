@@ -116,10 +116,8 @@ sub file_field {
     # is supplied.
     return [$name, $name]
 	unless defined($content);
-    my($handle, $file) = File::Temp::tempfile(UNLINK => 1,
-        SUFFIX => '-' . $name);
-    print($handle ref($content) ? $$content : $content);
-    close($handle);
+    my($handle, $file) = $self->tmp_file($name);
+    Bivio::IO::File->write($handle, $content);
     return [$file, $name];
 }
 
@@ -471,6 +469,13 @@ sub text_exists {
 	$pattern = qr/\Q$pattern/;
     }
     return $self->get_content =~ $pattern ? 1 : 0;
+}
+
+sub tmp_file {
+    my($self, $name) = @_;
+    $name ||= 'test.txt';
+    # returns $handle, $file_name
+    return File::Temp::tempfile(UNLINK => 1, SUFFIX => "-$name");
 }
 
 sub unsafe_get_uri {
