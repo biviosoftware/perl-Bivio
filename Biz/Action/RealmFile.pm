@@ -5,6 +5,7 @@ use strict;
 use base 'Bivio::Biz::Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_FP) = Bivio::Type->get_instance('FilePath');
 
 sub execute {
     my($self, $req, $is_public) = @_;
@@ -13,10 +14,8 @@ sub execute {
 
 sub execute_public {
     my($self, $req) = @_;
-    $req->put(
-	path_info => Bivio::Biz::Model->get_instance('RealmFile')->PUBLIC_FOLDER
-	    . '/' . $req->get('path_info'));
-    return shift->execute(shift(@_), 1);
+    $req->put(path_info => $_FP->to_public($req->get('path_info')));
+    return $self->execute($req, 1);
 }
 
 sub unauth_execute {
