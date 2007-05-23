@@ -18,13 +18,7 @@ sub error_case {
 }
 
 sub file_field {
-    my($self, $file_name) = @_;
-    return {
-	filename => $self->use('Type.FilePath')->get_tail($file_name),
-	content_type => $self->use('Bivio::MIME::Type')
-	    ->unsafe_from_extension($file_name),
-        content => $self->builtin_read_file($file_name),
-    };
+    return shift->use('Bivio::Biz::FormModel')->format_file_field(@_);
 }
 
 sub simple_case {
