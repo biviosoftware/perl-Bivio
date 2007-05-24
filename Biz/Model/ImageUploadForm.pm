@@ -21,8 +21,18 @@ sub execute_ok {
     $im->Set(magick => ($path =~ /\.(w+)$/)[0]);
     $self->internal_image_scale($im);
     my($blob) = $im->ImageToBlob;
-    $self->new_other('RealmFile')->create_or_update_with_content(
-	$self->internal_image_properties($path), \$blob);
+    my($rf) = $self->new_other('RealmFile');
+    my($p) = $self->internal_image_properties($path);
+    my($m) = $self->get_request->get('Type.FormMode')->eq_edit
+	&& $rf->unsafe_load({path => $p->{path}})
+	? 'update_with_content'
+	: 'create_with_content';
+    $self->internal_catch_field_constraint_error(
+	image_file => sub {
+	    $rf->$m($p, \$blob);
+	    return;
+	},
+    );
     return;
 }
 
