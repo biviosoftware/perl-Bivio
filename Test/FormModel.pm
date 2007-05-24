@@ -18,7 +18,7 @@ sub error_case {
 }
 
 sub file_field {
-    return shift->use('Bivio::Biz::FormModel')->format_file_field(@_);
+    return shift->use('Type.FileField')->from_disk(@_);
 }
 
 sub simple_case {

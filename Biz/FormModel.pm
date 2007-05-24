@@ -192,16 +192,6 @@ sub format_context_as_query {
     return $fc ? '?fc=' . Bivio::HTML->escape_query($fc->as_literal($req)) : '';
 }
 
-sub format_file_field {
-    my($proto, $file_name) = @_;
-    return {
-	filename => $proto->use('Type.FilePath')->get_tail($file_name),
-	content_type => $proto->use('Bivio::MIME::Type')
-	    ->unsafe_from_extension($file_name),
-        content => $proto->use('Bivio::IO::File')->read($file_name),
-    };
-}
-
 sub get_context_from_request {
     my(undef, $named, $req) = @_;
     # Extract the context from C<req.form_model> depending on various state params.
