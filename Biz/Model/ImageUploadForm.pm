@@ -40,7 +40,7 @@ sub internal_image_max_width {
 
 sub internal_image_path {
     return $_IFN->to_absolute(
-	$_IFN->get_clean_tail(shift->get('image_file')->{name}));
+	$_IFN->get_clean_tail(shift->get('image_file')->{filename}));
 }
 
 sub internal_image_properties {
