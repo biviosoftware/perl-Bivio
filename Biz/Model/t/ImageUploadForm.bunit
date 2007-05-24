@@ -1,6 +1,14 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-FormModel();
+FormModel({
+    setup_request => sub {
+	my(undef, $params) = @_;
+	class('Type.FormMode')->from_name(
+	    $params->[1] ? pop(@$params) : 'create'
+	)->execute(req());
+	return;
+    },
+});
 req()->set_realm_and_user(qw(demo demo));
 my($rf) = model('RealmFile');
 $rf->delete_deep
@@ -32,12 +40,21 @@ $rf->delete_deep
 	    },
         },
     }],
+    [{
+	image_file => file_field('ImageUploadForm/t2.png'),
+    }, 'edit'] => [{
+	'Model.RealmFile' => {
+	    # Update touches /Image last
+	    path => '/Image',
+        },
+    }],
     map(
 	error_case({
 	    image_file => file_field("ImageUploadForm/$_->[0]"),
 	} => {
 	    image_file => $_->[1],
 	}),
+	[qw(t2.png EXISTS)],
 	[qw(t3.tif SYNTAX_ERROR)],
 	[qw(t4m.gif TOO_MANY)],
     ),
