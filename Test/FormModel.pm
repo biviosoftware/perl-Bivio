@@ -31,7 +31,7 @@ sub simple_case {
 sub new_unit {
     my($proto, $class, $attrs) = @_;
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
-    my($fn) = delete($attrs->{setup_request});
+    my($setup_request) = delete($attrs->{setup_request});
     my($model) = $class;
     $attrs = {}
 	unless ref($attrs);
@@ -53,8 +53,8 @@ sub new_unit {
 		next => $req->get('task_id'),
 		require_context => 0,
 	    }));
-	    $fn->($case)
-		if ref($fn) eq 'CODE';
+	    $setup_request->($case, $params)
+		if $setup_request;
 	    unless (@$params) {
 		$req->delete('form');
 		return [$req];
