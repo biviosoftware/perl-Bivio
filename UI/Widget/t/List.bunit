@@ -4,7 +4,18 @@ Widget();
 my($l2) = Bivio::Biz::Model->new(req(), 'NumberedList')->load_page({count => 3});
 [
     [NumberedList => []] => '',
-    [NumberedList => ['index']] => qr{0.*1.*2},
-    [NumberedList => [vs_new('Join', [['index']])]] => '012',
-    [NumberedList => [vs_new('Join', [['index']])], ', '] => '0, 1, 2',
+    [NumberedList => ['index']] => qr{\b0.*\b1.*\b2\b},
+    [NumberedList => [prose(['index'])]] => '012',
+    [NumberedList =>
+	 [prose(q{If(['index'], ['index']);})],
+         {row_separator => '|'},
+    ] => '1|2',
+    [NumberedList =>
+	 [prose(q{If([sub {$_[1] % 2}, ['index']], ['index']);})],
+         {row_separator => '|'},
+    ] => '1',
+    [NumberedList =>
+	 [prose(q{If([sub {!($_[1] % 2)}, ['index']], ['index']);})],
+         {row_separator => '|'},
+    ] => '0|2',
 ];
