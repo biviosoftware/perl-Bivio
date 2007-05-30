@@ -401,7 +401,10 @@ form .submit {
 pre .text {
   Font('pre_text');
 }
-span.off {
+.pager .next, .pager .prev {
+  Font('pager');
+}
+.pager .off {
   Font('off');
 }
 .tree_list {
