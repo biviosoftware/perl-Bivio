@@ -109,13 +109,13 @@ Multiple right values are each compared against left.
 
 sub EQ {
     my($proto, $left, @right) = @_;
-    if (scalar(@right) == 1) {
-	return _static_equivalence('=', '', $left, shift(@right));
+    if (@right == 1) {
+	my($right) = @right;
+	return $proto->IS_NULL($left)
+	    if ref($right) eq 'ARRAY' && @$right == 1 && !defined($right->[0]);
+	return _static_equivalence('=', '', $left, $right);
     }
-    else {
-	return $proto->AND(map({_static_equivalence('=', 'IN', $left, $_)}
-	    @right));
-    }
+    return $proto->AND(map({_static_equivalence('=', 'IN', $left, $_)} @right));
 }
 
 =for html <a name="GT"></a>
