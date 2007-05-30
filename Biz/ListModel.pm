@@ -155,9 +155,11 @@ Defaults version and can_iterate to 1.
 =cut
 
 sub new_anonymous {
-    if (ref($_[1]) eq 'HASH') {
-	$_[1]->{version} ||= 1;
-	$_[1]->{can_iterate} ||= 1;
+    my(undef, $config) = @_;
+    if (ref($config) eq 'HASH') {
+	$config->{version} ||= 1;
+	# Always can_iterate, since pure SQL
+	$config->{can_iterate} = 1;
     };
     return _new(shift->SUPER::new_anonymous(@_));
 }
