@@ -40,4 +40,10 @@ sub internal_post_load_row {
     return $_E->is_ignore($row->{'Email.email'}) ? 0 : 1;
 }
 
+sub is_ignore {
+    my($self) = @_;
+    return $self->get_field_type('Email.email')
+	->is_ignore($self->get('Email.email'));
+}
+
 1;
