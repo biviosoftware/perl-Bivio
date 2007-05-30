@@ -703,6 +703,32 @@ sub unauth_create_or_update {
 	    ? $self->update($new_values) : $self->create($new_values);
 }
 
+=for html <a name="unauth_create_or_update_keys"></a>
+
+=head2 unauth_create_or_update_keys(hash_ref values, string modified_key)
+
+Create or update keys.  I<modified_key> is the key that could be
+changed/updated.
+
+=cut
+
+sub unauth_create_or_update_keys {
+    my($self, $values, $modified_key) = @_;
+
+    $self->do_iterate(sub {
+	my($model) = @_;
+	$model->delete()
+	    unless $model->get($modified_key) eq $values->{$modified_key};
+	return 1;
+    }, 'unauth_iterate_start', undef, {
+	map({$_ => $values->{$_}}
+	    grep({$_ ne $modified_key}
+	        @{$self->get_info('primary_key_names')}))
+    });
+
+    return $self->unauth_create_or_update($values);
+}
+
 =for html <a name="unauth_delete"></a>
 
 =head2 unauth_delete()
@@ -964,6 +990,7 @@ sub _add_auth_id {
 	    $self, ": overriding $n=$query->{$n} in query with auth_id=$id",
 	    " from request.  You might need to call an unauth_* method instead"
 	) if exists($query->{$n}) && $query->{$n} ne $id;
+#        Bivio::Die->die() if exists($query->{$n}) && $query->{$n} ne $id;
         $query->{$n} = $id;
     }
     return $query;
