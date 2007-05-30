@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.3  2007/05/24 19:52:51  nagler
+  * Bivio::Biz::Model::ImageUploadForm now handles updates correctly
+  * Bivio::Type::FilePath->PUBLIC_FOLDER_ROOT & to_public moved up from DocletFileName
+  * Bivio::Type::FileField->from_disk creates a file field from a "disk" file
+  * Bivio::Test::Language::HTTP->tmp_file factored out of file_field
+
   Revision 5.2  2007/05/22 04:41:44  aviggio
   * Bivio::Biz::Model::RealmFile public bit update validation extended
     to use current path if no new path is specified
