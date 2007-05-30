@@ -114,7 +114,7 @@ sub _cfg_base {
 	    [byline => 'bold'],
 	    [title => ['140%', 'bold']],
 	    [nav => '120%'],
-	    [off => []],
+	    [[qw(off pager)] => ['lowercase']],
 	],
 	Constant => [
 	    [xlink_back_to_top => {
