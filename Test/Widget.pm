@@ -17,6 +17,10 @@ sub new_unit {
     return $proto->new($attrs);
 }
 
+sub prose {
+    return shift->vs_new(Prose => @_);
+}
+
 sub run_unit {
     my($self, $cases) = @_;
     return $self->unit(
