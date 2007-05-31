@@ -401,7 +401,7 @@ form .submit {
 pre .text {
   Font('pre_text');
 }
-.pager .next, .pager .prev {
+.pager .next, .pager .prev, .pager .list {
   Font('pager');
 }
 .pager .off {
