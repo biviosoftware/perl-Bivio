@@ -82,6 +82,12 @@ sub default_password {
     return shift->use('Bivio::Util::SQL')->TEST_PASSWORD;
 }
 
+sub do_logout {
+    my($self) = @_;
+    $self->follow_link(qr{logout}i);
+    return;
+}
+
 sub do_table_rows {
     # Conveniently calls
     # L<Bivio::Test::HTMLParser::Tables::do_rows|Bivio::Test::HTMLParser::Tables/"do_rows">.
@@ -336,6 +342,17 @@ sub home_page_uri {
     # supplied, will modify configured URI to download from facade.  Doesn't validate
     # I<facade_uri> is a valid facade.
     return _facade($_CFG->{home_page_uri}, @_)
+}
+
+sub login_as {
+    my($self, $email) = @_;
+    $self->home_page;
+    $self->follow_link(qr{login}i);
+    $self->submit_form(Login => {
+	qr{Email}i => $email,
+	qr{password}i => $self->default_password,
+    });
+    return;
 }
 
 sub new {
