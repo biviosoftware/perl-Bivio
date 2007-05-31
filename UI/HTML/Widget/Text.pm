@@ -2,90 +2,54 @@
 # $Id$
 package Bivio::UI::HTML::Widget::Text;
 use strict;
-$Bivio::UI::HTML::Widget::Text::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::Text::VERSION;
-
-=head1 NAME
-
-Bivio::UI::HTML::Widget::Text - text and password form input fields
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::Text;
-    Bivio::UI::HTML::Widget::Text->new($attrs);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::Text::ISA = qw(Bivio::UI::Widget);
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::Text> draws a C<INPUT> tag with
-attribute C<TYPE=TEXT>.  If I<field> I<isa>
-L<Bivio::Type::Password|Bivio::Type::Password>,
-will render as a C<TYPE=PASSWORD>.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item event_handler : Bivio::UI::Widget []
-
-If set, this widget will be initialized as a child and must
-support a method C<get_html_field_attributes> which returns a
-string to be inserted in this fields declaration.
-I<event_handler> will be rendered before this field.
-
-=item field : string (required)
-
-Name of the form field.
-
-=item form_model : array_ref (required, inherited, get_request)
-
-Which form are we dealing with.
-
-=item format : string []
-
-=item format : array_ref []
-
-Widget value which returns the formatter to format the field
-if it is not in error.  May return C<undef> iwc no formatting
-will done.
-
-Only in the first case will the formatter be dymically loaded.
-This is to prevent unnecessary transient state.
-
-The second form may be deprecated, so try to avoid it.
-
-=item is_read_only : boolean [!is_field_editable()]
-
-=item size : int (required)
-
-How wide is the field represented.  (maxlength comes from the
-field's type.)
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::HTML;
-use Bivio::UI::HTML::Format;
 use Bivio::Type::Password;
+use Bivio::UI::HTML::Format;
 
-#=VARIABLES
+# C<Bivio::UI::HTML::Widget::Text> draws a C<INPUT> tag with
+# attribute C<TYPE=TEXT>.  If I<field> I<isa>
+# L<Bivio::Type::Password|Bivio::Type::Password>,
+# will render as a C<TYPE=PASSWORD>.
+#
+#
+#
+# event_handler : Bivio::UI::Widget []
+#
+# If set, this widget will be initialized as a child and must
+# support a method C<get_html_field_attributes> which returns a
+# string to be inserted in this fields declaration.
+# I<event_handler> will be rendered before this field.
+#
+# field : string (required)
+#
+# Name of the form field.
+#
+# form_model : array_ref (required, inherited, get_request)
+#
+# Which form are we dealing with.
+#
+# format : string []
+#
+# format : array_ref []
+#
+# Widget value which returns the formatter to format the field
+# if it is not in error.  May return C<undef> iwc no formatting
+# will done.
+#
+# Only in the first case will the formatter be dymically loaded.
+# This is to prevent unnecessary transient state.
+#
+# The second form may be deprecated, so try to avoid it.
+#
+# is_read_only : boolean [!is_field_editable()]
+#
+# size : int (required)
+#
+# How wide is the field represented.  (maxlength comes from the
+# field's type.)
 
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my(@_ATTRS) = qw(
     event_handler
@@ -96,56 +60,21 @@ my(@_ATTRS) = qw(
     class
 );
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Text
-
-Creates a new Text widget.
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="accepts_attribute"></a>
-
-=head2 static accepts_attribute(string attr) : boolean
-
-Does the widget accept this attribute?
-
-=cut
-
 sub accepts_attribute {
     my(undef, $attr) = @_;
+    # Does the widget accept this attribute?
     return grep($_ eq $attr, @_ATTRS);
 }
 
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes static information.  In this case, prefix and suffix
-field values.
-
-=cut
-
 sub initialize {
     my($self) = @_;
+    # Initializes static information.  In this case, prefix and suffix
+    # field values.
     my($fields) = $self->[$_IDI];
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     ($fields->{field}, $fields->{size}) = $self->get('field', 'size');
+    $self->unsafe_initialize_attr('max_width');
     $self->initialize_attr(is_read_only => [
 	'!',
 	[['->get_request'],
@@ -167,17 +96,17 @@ sub initialize {
     return;
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, Text_ref buffer)
-
-Render the input field.  First render is special, because we need
-to extract the field's type and can only do that when we have a form.
-
-=cut
+sub new {
+    my($self) = shift->SUPER::new(@_);
+    # Creates a new Text widget.
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub render {
     my($self, $source, $buffer) = @_;
+    # Render the input field.  First render is special, because we need
+    # to extract the field's type and can only do that when we have a form.
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
@@ -187,7 +116,7 @@ sub render {
 
 	# It works better to have one extra space if the size == max.
 	my($s) = $fields->{size};
-	my($w) = $type->get_width();
+	my($w) = $self->render_simple_attr('max_width') || $type->get_width();
 	$s++ if $s == $w;
 
 	$fields->{prefix} = '<input type="'
@@ -230,17 +159,5 @@ sub render {
     $fields->{handler}->render($source, $buffer) if $fields->{handler};
     return;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
