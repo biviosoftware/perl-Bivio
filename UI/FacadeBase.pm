@@ -613,8 +613,9 @@ sub _cfg_user_auth {
 	    ]],
 	    [title => [
 		 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
-	     ]],
-	    [[qw(title xlink )] => [
+		 USER_CREATE_DONE => 'Registration Email Sent',
+	    ]],
+	    [[qw(title xlink)] => [
 		GENERAL_CONTACT => 'Contact Us',
 		USER_PASSWORD  => 'Password',
 		[qw(LOGIN my_site_login)] => 'Login',
@@ -628,13 +629,13 @@ sub _cfg_user_auth {
 		GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
 		login_no_context => 'Already registered?  Click here to login.',
 		user_create_no_context => 'Not registered? Click here to register.',
+		[qw(USER_CREATE_DONE GENERAL_USER_PASSWORD_QUERY)] => 'Check Your Mail',
 	    ]],
 	    [[qw(page3.title xhtml.title)] => [
 		LOGIN => 'Please Login',
 		USER_CREATE => 'Please Register',
 		GENERAL_CONTACT => 'Please Contact Us',
 		USER_PASSWORD  => 'Your Password',
-		USER_CREATE_DONE => 'Registration Email Sent',
 		SITE_ROOT => '',
 		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser Missing Cookies',
 	    ]],
