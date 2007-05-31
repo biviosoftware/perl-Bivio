@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.4  2007/05/30 05:51:56  nagler
+  * Bivio::UI::Mail::Widget::MailboxList added
+  * Bivio::Biz::ListModel->new_anonymous forces can_iterate to be true
+  * Bivio::Biz::Model::RealmAdminEmailList added
+  * Bivio::Biz::Model::RealmEmailList->is_ignore added
+  * Bivio::SQL::Statement->EQ maps [undef] to IS_NULL
+  * Bivio::Test::Widget->prose added
+  * Bivio::UI::Widget::List.row_separator added. source_name and
+    separator were deleted (widget will die if these attributes are supplied)
+
   Revision 5.3  2007/05/24 19:52:51  nagler
   * Bivio::Biz::Model::ImageUploadForm now handles updates correctly
   * Bivio::Type::FilePath->PUBLIC_FOLDER_ROOT & to_public moved up from DocletFileName
