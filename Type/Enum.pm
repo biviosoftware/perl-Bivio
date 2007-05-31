@@ -718,7 +718,8 @@ sub to_literal {
     my($proto, $value) = @_;
     return shift->SUPER::to_literal(@_)
 	unless defined($value);
-    return $proto->to_sql_param($value);
+    return $proto->to_sql_param(
+	ref($value) ? $value : $proto->from_literal_or_die($value));
 }
 
 =for html <a name="to_sql_param"></a>
