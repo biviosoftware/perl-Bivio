@@ -372,7 +372,7 @@ sub internal_create_edit {
 	});
     }
 
-    if (UNIVERSAL::isa($type, 'Bivio::Type::Integer')) {
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Number')) {
 	return $_VS->vs_new('Text', {
 	    field => $field,
 	    size => $type->get_width,
