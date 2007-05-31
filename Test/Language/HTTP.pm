@@ -38,7 +38,6 @@ my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
 
 sub absolute_uri {
     my($self, $uri) = @_;
-    # Clear the cookies
     die('invalid uri')
 	unless defined($uri) && length($uri);
     my($u) = URI->new(_append_query($self, $uri));
@@ -407,17 +406,20 @@ sub send_mail {
 
 sub send_request {
     my($self, $method, $uri, $header, $content) = @_;
-    # Wraps HTTP::Request
+    my($fields) = $self->[$_IDI];
+    $uri = $self->absolute_uri($uri);
+    $header = [%$header]
+	if ref($header) eq 'HASH';
+    $header ||= [];
     _send_request(
-	$self, HTTP::Request->new(
-	    $method => $self->absolute_uri($uri),
-	    $header
-                ? HTTP::Headers->new(@{
-                    ref($header) eq 'ARRAY' ? $header : [%$header]
-                })
-                : undef,
-	    $content,
-	),
+	$self,
+	uc($method) eq 'POST' && ref($content) eq 'ARRAY'
+	    ? _create_form_post($uri, $content, $header)
+	    : HTTP::Request->new(
+		$method => $uri,
+		HTTP::Headers->new(@$header),
+		$content,
+	    ),
     );
     return;
 }
@@ -770,6 +772,17 @@ sub _assert_html {
 	$self->get_response->content_type, ': response not html');
 }
 
+sub _create_form_post {
+    my($uri, $form, $header) = @_;
+    return grep(ref($_), @$form)
+        ? HTTP::Request::Common::POST(
+	    $uri,
+            Content_Type => 'form-data',
+            Content => $form,
+	    @$header,
+	) : HTTP::Request::Common::POST($uri, $form, @$header);
+}
+
 sub _create_form_request {
     my($self, $method, $uri, $form) = @_;
     # Creates appropriate form request based on method (uc).
@@ -781,13 +794,8 @@ sub _create_form_request {
 	return HTTP::Request->new(
 	    GET => _append_query($self, $uri . '?' . $url->query));
     }
-    $uri = _append_query($self, $uri);
-    # file fields are array refs
-    return scalar(grep({ref($_)} @$form))
-        ? HTTP::Request::Common::POST($uri,
-            Content_Type => 'form-data',
-            Content => $form)
-        : HTTP::Request::Common::POST($uri, $form);
+    return _create_form_post(_append_query($self, $uri), $form, []);
+
 }
 
 sub _facade {
