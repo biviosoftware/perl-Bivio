@@ -141,8 +141,10 @@ table {
   margin: left;
 }
 th {
-  Font('th');
   padding: .5em;
+}
+th, th>a:link, th>a:visited, th>a:active, th>a:hover {
+  Font('th');
 }
 ! CLASSES
 .acknowledgement {
@@ -241,18 +243,6 @@ table.footer {
   padding-bottom: 7ex;
   text-align: center;
 }
-td.header_middle div.title {
-  Font('title');
-  margin: .5ex 0 .5ex 0;
-  text-align: center;
-}
-td.header_middle div.nav div.task_menu {
-  Font('nav');
-  border-top: 1px solid;
-  padding-top: .2em;
-  vertical-align: top;
-  text-align: center;
-}
 td.header_left a.su {
   Color('header_su-background');
   Font('header_su');
@@ -295,6 +285,13 @@ td.footer_middle {
   vertical-align: top;
   text-align: center;
 }
+td.header_middle {
+  vertical-align: top;
+}
+td.header_middle div.nav div.task_menu {
+  Font('nav');
+  text-align: center;
+}
 td.header_right {
   vertical-align: top;
   text-align: right;
@@ -326,7 +323,28 @@ div.main_body {
   margin-top: 1ex;
   margin-bottom: 1ex;
 }
+div.main_top {
+  margin-top: .5ex;
+}
+div.main_top div.topic,
+div.main_top div.byline,
+div.main_top div.byline2,
+div.main_top div.selector,
+div.main_top div.title {
+  margin-bottom: .5ex;
+  text-align: left;
+}
+div.main_top .topic {
+  Font('topic');
+}
+div.main_top div.byline, div.main_top div.byline2  {
+  Font('byline');
+}
+div.main_top div.title {
+  Font('title');
+}
 div.main_top div.tools {
+  text-align: right;
   float: right;
 }
 div.main_top div.selector {
@@ -464,14 +482,6 @@ p {
 p.prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
-}
-.topic {
-  Font('topic');
-  text-align: left;
-}
-.byline, .byline2  {
-  Font('byline');
-  text-align: left;
 }
 td.item {
   text-align: left;
