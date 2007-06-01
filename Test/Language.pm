@@ -2,63 +2,16 @@
 # $Id$
 package Bivio::Test::Language;
 use strict;
-$Bivio::Test::Language::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::Language::VERSION;
-
-=head1 NAME
-
-Bivio::Test::Language - superclass of all acceptance test languages
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::Language;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Collection::Attributes>
-
-=cut
-
-use Bivio::Collection::Attributes;
-@Bivio::Test::Language::ISA = ('Bivio::Collection::Attributes');
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::Language> is a framework for acceptance testing.  A test script
-is a Perl program which is evaluated within the context of this class.  The
-first line consists of a call to L<test_setup|"test_setup">, which identifies a
-subclass of this class.  The subclass defines methods which are called with an
-instance created during L<test_setup|"test_setup">.  The instance contains
-state about the test, e.g. cookies and connections to servers.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item test_script : string
-
-file name of the script
-
-=back
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Config;
-use Bivio::IO::Trace;
-use Bivio::IO::File;
+use Bivio::Base 'Bivio::Collection::Attributes';
 use Bivio::IO::ClassLoader;
-use File::Spec ();
+use Bivio::IO::Config;
+use Bivio::IO::File;
+use Bivio::IO::Trace;
 use File::Basename ();
+use File::Spec ();
 
-#=VARIABLES
-use vars ('$AUTOLOAD');
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($AUTOLOAD);
 my($_IDI) = __PACKAGE__->instance_data_index;
 our($_SELF_IN_EVAL);
 Bivio::IO::Config->register(my $_CFG = {
@@ -66,39 +19,9 @@ Bivio::IO::Config->register(my $_CFG = {
 });
 my($_INLINE) = 'inline00000';
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attrs) : Bivio::Test::Language
-
-Instantiates this class.
-
-=cut
-
-sub new {
-    my($proto, $attrs) = @_;
-    my($self) = $proto->SUPER::new($attrs);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="AUTOLOAD"></a>
-
-=head2 AUTOLOAD(...) : any
-
-Calls the test language function.
-
-=cut
-
 sub AUTOLOAD {
     my(undef, @args) = _args(@_);
+    # Calls the test language function.
     my($func) = $AUTOLOAD;
     $func =~ s/.*:://;
     my($self) = _assert_in_eval($func);
@@ -119,140 +42,93 @@ sub AUTOLOAD {
     return;
 }
 
-=for html <a name="DESTROY"></a>
-
-=head2 DESTROY()
-
-You probably don't want to define a DESTROY method.  Instead create a
-L<handle_cleanup|"handle_cleanup">.
-
-Subclasses should implement:
-
-    sub DESTROY {
-        my($self) = @_;
-        my destroy code....
-        return $self->SUPER::DESTROY;
-    }
-
-=cut
-
 sub DESTROY {
+    # You probably don't want to define a DESTROY method.  Instead create a
+    # L<handle_cleanup|"handle_cleanup">.
+    #
+    # Subclasses should implement:
+    #
+    #     sub DESTROY {
+    #         my($self) = @_;
+    #         my destroy code....
+    #         return $self->SUPER::DESTROY;
+    #     }
     return;
 }
 
-=for html <a name="handle_cleanup"></a>
-
-=head2 handle_cleanup()
-
-Processes cleanup arguments.  See L<test_cleanup|"test_cleanup">.
-Inverse operation of L<handle_setup|"handle_setup">.
-
-Test language classes should implement:
-
-    sub handle_cleanup {
-        my($self, @cleanup_args) = @_;
-        my cleanup up...;
-        return $self->SUPER::handle_cleanup;
-    }
-
-All values will be deleted.
-
-=cut
-
 sub handle_cleanup {
     my($self) = @_;
+    # Processes cleanup arguments.  See L<test_cleanup|"test_cleanup">.
+    # Inverse operation of L<handle_setup|"handle_setup">.
+    #
+    # Test language classes should implement:
+    #
+    #     sub handle_cleanup {
+    #         my($self, @cleanup_args) = @_;
+    #         my cleanup up...;
+    #         return $self->SUPER::handle_cleanup;
+    #     }
+    #
+    # All values will be deleted.
     $self->delete_all;
     return;
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item log_dir : string [log]
-
-Subdir of test which contains log files.  The log files are prefixed with the
-test name.
-
-=back
-
-=cut
-
 sub handle_config {
     my(undef, $cfg) = @_;
+    # log_dir : string [log]
+    #
+    # Subdir of test which contains log files.  The log files are prefixed with the
+    # test name.
     $_CFG = $cfg;
     return;
 }
 
-=for html <a name="handle_setup"></a>
-
-=head2 handle_setup(any setup_arg, ...)
-
-Processes setup arguments.  See L<test_setup|"test_setup">.
-
-Test language classes should implement:
-
-    sub handle_setup {
-        my($self, @setup_args) = @_;
-	$self->SUPER::handle_setup;
-        my setup up...;
-        return;
-    }
-
-=cut
-
 sub handle_setup {
+    # Processes setup arguments.  See L<test_setup|"test_setup">.
+    #
+    # Test language classes should implement:
+    #
+    #     sub handle_setup {
+    #         my($self, @setup_args) = @_;
+    # 	$self->SUPER::handle_setup;
+    #         my setup up...;
+    #         return;
+    #     }
     return;
 }
 
-=for html <a name="test_cleanup"></a>
-
-=head2 static test_cleanup()
-
-Clean up state, such as external files, database values, etc.
-Must not rely on state of instance, but be able to clean up globally.
-
-This method is called automatically at the end of every test script.
-
-See L<handle_cleanup|"handle_cleanup"> for what subclasses should implement.
-
-=cut
+sub new {
+    my($proto, $attrs) = @_;
+    # Instantiates this class.
+    my($self) = $proto->SUPER::new($attrs);
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub test_cleanup {
     my($proto) = _args(@_);
+    # Clean up state, such as external files, database values, etc.
+    # Must not rely on state of instance, but be able to clean up globally.
+    #
+    # This method is called automatically at the end of every test script.
+    #
+    # See L<handle_cleanup|"handle_cleanup"> for what subclasses should implement.
     return $proto->handle_cleanup;
 }
 
-=for html <a name="test_conformance"></a>
-
-=head2 test_conformance()
-
-Turn off deviance testing mode.  See also L<test_deviance|"test_deviance">.
-
-=cut
-
 sub test_conformance {
+    # Turn off deviance testing mode.  See also L<test_deviance|"test_deviance">.
     _assert_in_eval('test_setup')->delete('test_deviance');
     return;
 }
 
-=for html <a name="test_deviance"></a>
-
-=head2 static test_deviance(string regex)
-
-=head2 static test_deviance(regex_ref regex)
-
-Sets up test for deviance testing.  Expect all functions to fail.  If I<regex>
-supplied, expect the exception (L<Bivio::Die|Bivio::Die>)
-to contain I<regex>.  If I<regex> is a
-string, will be compiled with qr/$regex/is.  See also
-L<test_conformance|"test_conformance">
-
-=cut
-
 sub test_deviance {
+    # Sets up test for deviance testing.  Expect all functions to fail.  If I<regex>
+    # supplied, expect the exception (L<Bivio::Die|Bivio::Die>)
+    # to contain I<regex>.  If I<regex> is a
+    # string, will be compiled with qr/$regex/is.  See also
+    # L<test_conformance|"test_conformance">
     if (ref($_[1]) eq 'CODE') {
 	_do_deviance(@_);
     }
@@ -264,35 +140,19 @@ sub test_deviance {
     return;
 }
 
-=for html <a name="test_equals"></a>
-
-=head2 test_equals(any expect, any actual)
-
-Asserts I<expect> and I<actual> are identical.
-
-=cut
-
 sub test_equals {
     my($self, $expect, $actual);
+    # Asserts I<expect> and I<actual> are identical.
     return unless my $d = Bivio::IO::Ref->nested_differences($expect, $actual);
     _die($self, $$d);
     # DOES NOT RETURN
 }
 
-=for html <a name="test_log_output"></a>
-
-=head2 test_log_output(string file_name, string content) : string
-
-=head2 test_log_output(string file_name, string_ref content) : string
-
-Writes output to a separate log file in I<test_log_prefix> directory.  Returns
-the file name that was written or undef if no file was written (no
-I<test_log_prefix>).
-
-=cut
-
 sub test_log_output {
     my(undef, $file_name, $content) = _args(@_);
+    # Writes output to a separate log file in I<test_log_prefix> directory.  Returns
+    # the file name that was written or undef if no file was written (no
+    # I<test_log_prefix>).
     return unless $_SELF_IN_EVAL;
     my($self) = _assert_in_eval('test_log_output');
     return unless ref($self) && $self->unsafe_get('test_log_prefix');
@@ -302,45 +162,22 @@ sub test_log_output {
     );
 }
 
-=for html <a name="test_name"></a>
-
-=head2 test_name() : string
-
-Returns the basename of the test_script.
-
-=cut
-
 sub test_name {
+    # Returns the basename of the test_script.
     return File::Basename::basename(
 	_assert_in_eval('test_name')->get('test_script'), '.btest');
 }
 
-=for html <a name="test_ok"></a>
-
-=head2 test_ok(any value, any msg, ...) : any
-
-Returns I<value> if true, else dies with I<msg>.
-
-=cut
-
 sub test_ok {
     my($self) = shift;
+    # Returns I<value> if true, else dies with I<msg>.
     return shift || _die($self, @_);
 }
 
-=for html <a name="test_run"></a>
-
-=head2 static test_run(string script_name) : Bivio::Die
-
-=head2 static test_run(string_ref script) : Bivio::Die
-
-Runs a script.  Cannot be called from within a script.  Returns undef if
-everything goes ok.  Otherwise, returns the die instance created by the script.
-
-=cut
-
 sub test_run {
     my($proto, $script) = @_;
+    # Runs a script.  Cannot be called from within a script.  Returns undef if
+    # everything goes ok.  Otherwise, returns the die instance created by the script.
     local($_SELF_IN_EVAL);
     my($script_name) = ref($script) ? $_INLINE++ : $script;
     my($die) = Bivio::Die->catch(sub {
@@ -367,30 +204,16 @@ sub test_run {
     return $die;
 }
 
-=for html <a name="test_script"></a>
-
-=head2 test_script() : string
-
-Returns name of test script.
-
-=cut
-
 sub test_script {
+    # Returns name of test script.
    return _assert_in_eval('test_script')->get('test_script');
 }
 
-=for html <a name="test_setup"></a>
-
-=head2 static test_setup(string map_class, array setup_args) : Bivio::Test::Language
-
-Loads TestLanguage I<map_class>.  Calls L<new|"new"> on the loaded class and
-then calls L<handle_setup|"handle_setup"> with I<setup_args> on newly created
-test instance.
-
-=cut
-
 sub test_setup {
     my($proto, $map_class, @setup_args) = _args(@_);
+    # Loads TestLanguage I<map_class>.  Calls L<new|"new"> on the loaded class and
+    # then calls L<handle_setup|"handle_setup"> with I<setup_args> on newly created
+    # test instance.
     my($self) = _assert_in_eval('test_setup');
     _die($proto, 'called test_setup() twice') if $self->[$_IDI]->{setup_called}++;
     my($subclass) = Bivio::IO::ClassLoader->map_require(
@@ -411,35 +234,24 @@ sub test_setup {
     return $_SELF_IN_EVAL;
 }
 
-#=PRIVATE METHODS
-
-# _args(...) : array
-#
-# Detects if first argument is $proto or not.  When view_*() methods
-# are called from view files or templates, they are not given a $proto.
-#
 sub _args {
+    # Detects if first argument is $proto or not.  When view_*() methods
+    # are called from view files or templates, they are not given a $proto.
     return defined($_[0]) && UNIVERSAL::isa(ref($_[0]) || $_[0], __PACKAGE__)
 	? @_ : (__PACKAGE__, @_);
 }
 
-# _assert_in_eval() : Bivio::Test::Language
-#
-# Returns the current test or terminates.
-#
 sub _assert_in_eval {
     my($op) = @_;
+    # Returns the current test or terminates.
     Bivio::Die->die($op, ': attempted operation outside test script')
 	unless $_SELF_IN_EVAL;
     return $_SELF_IN_EVAL;
 }
 
-# _check_autoload(self, string func) : string
-#
-# Returns false if ok.
-#
 sub _check_autoload {
     my($self, $func) = @_;
+    # Returns false if ok.
     return 'test_setup() must be first function called in test script'
 	if ref($self) eq __PACKAGE__;
     return 'language function cannot begin with test_ or handle_'
@@ -453,18 +265,13 @@ sub _check_autoload {
     return;
 }
 
-# _die(self, array msg)
-#
-# Call die with appropriate prefix.
-#
 sub _die {
     my(undef, @msg) = @_;
+    # Call die with appropriate prefix.
     Bivio::Die->die(@msg);
     # DOES NOT RETURN
 }
 
-# _do_deviance(self, code_ref $dev_block, regex $regex)
-#
 sub _do_deviance {
     my($self, $dev_block, $regex) = @_;
     $regex = defined($regex) ? qr/$regex/is : qr//
@@ -479,12 +286,9 @@ sub _do_deviance {
     return;
 }
 
-# _find_line_number(Bivio::Die die, string script_name)
-#
-# Find the line number of error in the test script.
-#
 sub _find_line_number {
     my($die, $script_name) = @_;
+    # Find the line number of error in the test script.
     return unless my($stack) = $die->get('stack');
     my($line) = $stack =~ /.* at \(eval \d+\) line (\d+)\s+eval '/s;
     substr($die->get('attrs')->{message}, 0, 0) = "$script_name, line $line: "
@@ -492,12 +296,9 @@ sub _find_line_number {
     return;
 }
 
-# _log_prefix(string script_name) : string
-#
-# Parses test_script and writes log prefix.
-#
 sub _log_prefix {
     my($script_name) = @_;
+    # Parses test_script and writes log prefix.
     my($v, $d, $f) = File::Spec->splitpath(File::Spec->rel2abs($script_name));
     $f =~ s/(?<=.)\.[^\.]+$//g;
     return Bivio::IO::File->mkdir_p(
@@ -508,15 +309,5 @@ sub _log_prefix {
 		    $v, $d, $_CFG->{log_dir}),
 		$f)));
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
