@@ -92,7 +92,7 @@ sub _cfg_base {
 	    [h3 => ['120%', 'bold']],
 	    [h4 => ['110%', 'bold']],
 	    [normal => ['normal']],
-	    [[qw(strong th)] => 'bold'],
+	    [strong => 'bold'],
 	    # Our tags
 	    [warn => 'italic'],
 	    [err => 'bold'],
@@ -115,6 +115,7 @@ sub _cfg_base {
 	    [title => ['140%', 'bold']],
 	    [nav => '120%'],
 	    [[qw(off pager)] => ['lowercase']],
+	    [th => 'bold'],
 	],
 	Constant => [
 	    [xlink_back_to_top => {
@@ -629,7 +630,7 @@ sub _cfg_user_auth {
 		GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
 		login_no_context => 'Already registered?  Click here to login.',
 		user_create_no_context => 'Not registered? Click here to register.',
-		[qw(USER_CREATE_DONE GENERAL_USER_PASSWORD_QUERY)] => 'Check Your Mail',
+		USER_CREATE_DONE => 'Check Your Mail',
 	    ]],
 	    [[qw(page3.title xhtml.title)] => [
 		LOGIN => 'Please Login',
