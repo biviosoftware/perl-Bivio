@@ -37,10 +37,7 @@ sub internal_xhtml_adorned {
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
     );
     view_put(
-	xhtml_header_middle => Join([
-	    DIV_title(view_widget_value('xhtml_title')),
-	    DIV_nav(view_widget_value('xhtml_nav')),
-	]),
+	xhtml_header_middle => DIV_nav(view_widget_value('xhtml_nav')),
 	xhtml_style => Join([
 	    StyleSheet('SITE_CSS'),
 	    StyleSheet('FORUM_CSS'),
@@ -49,14 +46,15 @@ sub internal_xhtml_adorned {
 	xhtml_main_middle => Join([
 	    Acknowledgement(),
 	    DIV_main_top(Join([
-		DIV_selector(
-		    view_widget_value('xhtml_selector')),
 		DIV_tools(Join([
 		    view_widget_value('xhtml_tools'),
 		    view_widget_value('vs_pager'),
 		], {
 		    join_separator => EmptyTag(DIV => 'sep'),
 		})),
+		DIV_title(view_widget_value('xhtml_title')),
+		DIV_selector(
+		    view_widget_value('xhtml_selector')),
 		DIV_topic(view_widget_value('xhtml_topic')),
 		DIV_byline(view_widget_value('xhtml_byline')),
 	    ])),
