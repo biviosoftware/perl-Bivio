@@ -7,7 +7,7 @@ use base 'Bivio::Type::Enum';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     # DO NOT CHANGE THESE NUMBERS
-    # unless you modify UI::Widget::HTML::DateTime
+    # unless you modify UI::HTML::Widget::DateTime
     DATE => [1],
     TIME => [2],
     DATE_TIME => [3],
