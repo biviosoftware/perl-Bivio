@@ -125,7 +125,6 @@ sub main {
     my($server_name) = undef;
     my($at_mode) = 0;
     my($pwd) = _project_root() . '/httpd';
-    Bivio::IO::File->mkdir_p($pwd);
 #TODO: Let ShellUtil handle options; Create a default handler for commands
     local($_);
     while (@argv) {
@@ -143,19 +142,12 @@ sub main {
     }
     if ($execute) {
         -f "$pwd/httpd.pid" && (kill('TERM', `cat $pwd/httpd.pid`), sleep(5));
+	Bivio::IO::File->rm_rf($pwd);
+	Bivio::IO::File->mkdir_p($pwd);
 	CORE::system("(cd $pwd; rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem modules)");
 	_symlink($pwd, "$pwd/logs");
 	_symlink(_find_file('/usr/lib/apache', '/usr/libexec/httpd'),
 	    "$pwd/modules") unless $] < 5.006;
-    }
-    else {
-#TODO: Shouldn't this just be an Bivio::IO::File->rm_rf($pwd)?
-	print <<"EOF";
-(cd $pwd;
-  rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem;
-  ln -s . logs;
-)
-EOF
     }
     my($log) = $background ? 'stderr.log' : '|cat';
     my($mime_types) = _find_file('/etc/mime.types', '/etc/httpd/mime.types');
@@ -173,6 +165,11 @@ EOF
     $$bconf_data =~
 	s/want_local_file_cache\s+=>\s+\d,/want_local_file_cache => $at_mode/;
     Bivio::IO::File->write("$pwd/httpd$$.bconf", $bconf_data);
+    _symlink(
+	Bivio::IO::File->absolute_path(File::Basename::dirname($ENV{'BCONF'}))
+	    . '/bconf.d',
+	"$pwd/bconf.d",
+    ) unless -l "$pwd/bconf.d";
     my($bconf) = "PerlSetEnv BCONF $pwd/httpd$$.bconf";
 #     my($bconf) = $ENV{'BCONF'}
 # 	? "PerlSetEnv BCONF $ENV{'BCONF'}" : '';
