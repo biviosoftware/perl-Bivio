@@ -40,7 +40,7 @@ sub get_delegate_info {
     DATE_TIME => [
 	3,
 	undef,
-	'date time must be number of seconds since Jan 1, 1970',
+	'invalid date-time. Some possible formats are: mm/dd/yyyy hh:mm:ss and yyyymmddhhmmss',
     ],
     DATE => [
 	4,
