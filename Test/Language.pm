@@ -141,7 +141,7 @@ sub test_deviance {
 }
 
 sub test_equals {
-    my($self, $expect, $actual);
+    my($self, $expect, $actual) = _args(@_);
     # Asserts I<expect> and I<actual> are identical.
     return unless my $d = Bivio::IO::Ref->nested_differences($expect, $actual);
     _die($self, $$d);
@@ -169,9 +169,8 @@ sub test_name {
 }
 
 sub test_ok {
-    my($self) = shift;
-    # Returns I<value> if true, else dies with I<msg>.
-    return shift || _die($self, @_);
+    my($self, $cond, @msg) = _args(@_);
+    return $cond || _die($self, @msg);
 }
 
 sub test_run {
@@ -232,6 +231,11 @@ sub test_setup {
     _trace($_SELF_IN_EVAL);
     $_SELF_IN_EVAL->handle_setup(@setup_args);
     return $_SELF_IN_EVAL;
+}
+
+sub test_use {
+    my($self, $class) = _args(@_);
+    return $self->use($class);
 }
 
 sub _args {
