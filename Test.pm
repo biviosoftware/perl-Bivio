@@ -1118,7 +1118,7 @@ sub _prepare_case {
 	|| ref($case->get('method')) eq 'CODE';
     my($o) = $case->get('object');
     $$err = $case->get('method') . ': not implemented by ' . (ref($o) || $o)
-	unless $o == __PACKAGE__->IGNORE_RETURN;
+	unless $o eq __PACKAGE__->IGNORE_RETURN;
     return 0;
 }
 
