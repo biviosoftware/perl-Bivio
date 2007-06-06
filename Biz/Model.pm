@@ -152,8 +152,7 @@ Creates a model instance of the specified class.
 =cut
 
 sub new_other {
-    my($self, $class) = @_;
-    return $self->get_instance($class)->new($self->get_request);
+    return $_[0]->new(shift->get_request, @_);
 }
 
 =head1 METHODS
@@ -909,6 +908,11 @@ L<Bivio::Biz::PropertyModel::is_loaded|Bivio::Biz::PropertyModel/"is_loaded">.
 =cut
 
 sub unsafe_get_model {
+#     my($self, $class, $query) = @_;
+#     $query ||= {};
+#     return $self->new_other($class)
+#         ->unsafe_load({map({($_ => $query->{$_} || $self)}
+#             @{$self->get_instance($class)->get_model_keys()})});
     my($self, $name) = @_;
     my($fields) = $self->[$_IDI];
     return ($fields->{models} ||= {})->{$name}
