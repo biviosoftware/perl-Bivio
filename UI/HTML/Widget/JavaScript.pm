@@ -40,6 +40,10 @@ flag.
 
 #=VARIABLES
 
+sub COMMON_CODE {
+    return __PACKAGE__ . '::JAVASCRIPT_HEAD';
+}
+
 =head1 METHODS
 
 =cut
@@ -72,7 +76,8 @@ returns true if common code has been rendered.
 
 sub has_been_rendered {
     my(undef, $source, $module_tag) = @_;
-    return _tag($source->get_request, $module_tag) ? 0 : 1;
+    return exists(($source->get_request->unsafe_get(COMMON_CODE()) || {})
+	->{$module_tag});
 }
 
 =for html <a name="render"></a>
@@ -90,18 +95,21 @@ sub render {
 	    $script, $no_script_html) = @_;
     my($req) = $source->get_request;
 
+    return _render_script_in_head($req, $buffer)
+	unless defined($module_tag)
+	    || defined($common_code)
+	    || defined($script)
+	    || defined($no_script_html);
+
     # Render common code
-    my($code);
-    if (my $tag = _tag($req, $module_tag)) {
-	$code = $common_code;
-	$req->put($tag => 1);
-    }
+    my($defns) = $req->get_if_exists_else_put(COMMON_CODE(), {});
+    $defns->{$module_tag} ||= $common_code
+	if defined($module_tag) && defined($common_code);
 
     # Render the code and script in a JavaScript section
-    if (defined($script) || defined($code)) {
+    if (defined($script)) {
 	$$buffer .= "<script type=\"text/javascript\">\n<!--\n";
-	$$buffer .= $code if defined($code);
-	$$buffer .= $script if defined($script);
+	$$buffer .= $script;
 	$$buffer .= "\n// -->\n</script>";
     }
 
@@ -133,14 +141,22 @@ sub strip {
 
 #=PRIVATE METHODS
 
-# _tag(Bivio::Agent::Request req, string module_tag) : string
+# _render_script_in_head() : 
 #
-# returns the tag if it hasn't already been rendered
+# render the common code in <script> tags
+# intended to be called in the html <head> block
 #
-sub _tag {
-    my($req, $module_tag) = @_;
-    my($tag) = 'javascript_'.$module_tag;
-    return $req->unsafe_get($tag) ? undef : $tag;
+sub _render_script_in_head {
+    my($req, $buffer) = @_;
+    my($defns) = $req->unsafe_get(COMMON_CODE());
+    return
+	unless defined($defns);
+    $$buffer .= "<script type=\"text/javascript\">\n<!--\n";
+    foreach my $v (values(%$defns)) {
+        $$buffer .= $v;
+    }
+    $$buffer .= "\n// -->\n</script>";
+    return;
 }
 
 =head1 COPYRIGHT

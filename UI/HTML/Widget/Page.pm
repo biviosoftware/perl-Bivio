@@ -140,8 +140,6 @@ use Bivio::IO::Config;
 
 #=VARIABLES
 
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 my($_SHOW_TIME) = 0;
 my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
 Bivio::IO::Config->register({
@@ -210,6 +208,9 @@ sub initialize {
 	    sub {$_VS->vs_call(ucfirst($x))});
 	$self->unsafe_initialize_attr($x);
     }
+    $self->get_if_exists_else_put('javascript',
+        sub {$_VS->vs_call('JavaScript')});
+    $self->unsafe_initialize_attr('javascript');
     if ($self->unsafe_initialize_attr('want_page_print')) {
 	$self->put(
 	    _page_print_script => $self->get('script')->new('page_print'),
@@ -271,6 +272,7 @@ sub render {
 		$self->unsafe_render_attr('want_page_print', $source, \$x)
 		    && $x ? '_page_print_script' : (),
 		'script',
+		'javascript',
 	    ),
 	],
     );
