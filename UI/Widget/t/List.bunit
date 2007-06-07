@@ -1,7 +1,8 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget();
-my($l2) = Bivio::Biz::Model->new(req(), 'NumberedList')->load_page({count => 3});
+my($l2) = model('NumberedList')->load_page({count => 3});
+model('UnitTestListForm')->process;
 [
     [NumberedList => []] => '',
     [NumberedList => ['index']] => qr{\b0.*\b1.*\b2\b},
@@ -18,4 +19,9 @@ my($l2) = Bivio::Biz::Model->new(req(), 'NumberedList')->load_page({count => 3})
 	 [prose(q{If([sub {!($_[1] % 2)}, ['index']], ['index']);})],
          {row_separator => '|'},
     ] => '0|2',
+    [{
+	list_class => 'UnitTestListForm',
+	form_model => ['Model.UnitTestListForm'],
+	columns => ['concat', 'letters'],
+    }] => qr{value="AA!0".*\bAA\b.*value="BB!1".*\bBB\b.*value="CC!2".*\bCC\b}s,
 ];
