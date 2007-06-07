@@ -47,17 +47,24 @@ sub internal_new_args {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($model) = $source->get_request->get('Model.' . $self->get('list_class'));
+    my($model) = $source->get_request
+	->get('Model.' . $self->get('list_class'));
+
     unless ($model->get_result_set_size) {
 	$self->unsafe_render_attr('empty_list_widget', $source, $buffer);
 	return;
     }
+
     my($need_sep) = 0;
     $model->do_rows(sub {
         my($name) = 0;
 	my($b) = '';
 	foreach my $c (@{$self->get('columns')}) {
-	    $self->unsafe_render_value($name++, $c, $model, \$b);
+	    my($list) = $model;
+            $list = $model->get_list_model()
+                if UNIVERSAL::isa($model, 'Bivio::Biz::ListFormModel')
+                    && !$model->has_fields($c);
+	    $self->unsafe_render_value($name++, $c, $list, \$b);
 	}
 	$self->unsafe_render_attr('row_separator', $model, $buffer)
 	    if length($b) && $need_sep;
