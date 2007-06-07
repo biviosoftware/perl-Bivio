@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmFile;
 use strict;
@@ -484,7 +484,7 @@ sub _search_delete {
 
 sub _search_update {
     my($self) = @_;
-    $_CFG->{search_class}->update_realm_file($self)
+    $_CFG->{search_class}->update_realm_file($self, $self->get_request)
 	if $_CFG->{search_class};
     return $self;
 }
