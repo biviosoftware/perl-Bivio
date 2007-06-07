@@ -205,11 +205,11 @@ sub initialize {
     $self->unsafe_initialize_attr('background');
     foreach my $x (qw(style script)) {
 	$self->get_if_exists_else_put($x,
-	    sub {$_VS->vs_call(ucfirst($x))});
+	    sub {$_VS->vs_new(ucfirst($x))});
 	$self->unsafe_initialize_attr($x);
     }
     $self->get_if_exists_else_put('javascript',
-        sub {$_VS->vs_call('JavaScript')});
+        sub {$_VS->vs_new('JavaScript')});
     $self->unsafe_initialize_attr('javascript');
     if ($self->unsafe_initialize_attr('want_page_print')) {
 	$self->put(
