@@ -49,19 +49,18 @@ EOF
 
 sub backup_model {
     my($self, $model, $order_by) = @_;
-    # Backs up the model, and prints a message stating where it was backed up to.
     $self->print(
 	"$model written to ",
 	Bivio::IO::File->write(
 	    "$model-" . Bivio::Type::DateTime->local_now_as_file_name . '.pl',
 	    Bivio::IO::Ref->to_string(
-		Bivio::Biz::Model->new($self->get_request, $model)
+		my $rows = Bivio::Biz::Model->new($self->get_request, $model)
 		    ->map_iterate(undef, 'unauth_iterate_start', $order_by),
 	    ),
 	),
 	"\n",
     );
-    return;
+    return $rows;
 }
 
 sub create_db {
@@ -1296,10 +1295,9 @@ sub reinitialize_sequences {
 }
 
 sub restore_model {
-    my($self, $model, $filename) = @_;
-    # Restores I<model> table with I<filename>.  Rows are not deleted first.
+    my($self, $model, $file_or_rows) = @_;
     my($m) = Bivio::Biz::Model->new($self->get_request, $model);
-    foreach my $r (@{do($filename)}) {
+    foreach my $r (ref($file_or_rows) ? @$file_or_rows : @{do($file_or_rows)}) {
 	$m->create($r);
     }
     $self->print("Restored $model\n");
