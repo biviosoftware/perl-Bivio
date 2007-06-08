@@ -268,10 +268,14 @@ sub internal_prepare_query {
 
 sub is_empty {
     my($self) = @_;
-    return $self->get('is_folder')
-	&& $self->new_other('RealmFileList')->load_all({
-	    path_info => $self->get('path'),
-	})->get_result_set_size > 0 ? 0 : 1;
+    return 1
+	unless $self->get('is_folder');
+    my($got_one) = 0;
+    $self->new_other('RealmFileList')->do_iterate(
+	sub {$got_one++},
+	{path_info => $self->get('path')},
+    );
+    return $got_one ? 0 : 1;
 }
 
 sub parse_path {
