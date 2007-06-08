@@ -52,7 +52,7 @@ sub create_folder {
 sub delete {
     my($self) = shift;
     foreach my $p (@_) {
-	_do($self, delete => $p);
+	_do($self, $self->get('force') ? 'delete_deep' : 'delete', $p);
     }
     return;
 }
@@ -122,6 +122,7 @@ sub _fix_values {
 	$values ? %$values : (),
 	path => $self->convert_literal('FilePath', $path),
 	$ignore_is ? () : map(($_ => $self->get($_)), qw(is_public is_read_only)),
+	$self->get('force') ? (override_is_read_only => 1) : (),
     };
 }
 
