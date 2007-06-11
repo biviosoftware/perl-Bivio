@@ -37,12 +37,12 @@ my($dir) = '/search-text/';
 	    't.csv' => ['text/csv', '', "some,text\n"],
 	    't.html' => 'text/html',
 	    't.bwiki' => 'text/plain',
-	    't.eml' => ['message/rfc822', 'TITLE', <<'EOF'],
+	    't.eml' => ['message/rfc822', 'TITLE', (sub {chomp(my $x = shift); $x})->(<<'EOF')],
 subject: TITLE
 to: hello
 from: John Doe <john@example.com>
 
-some text
+ some text 
 EOF
 	    't.gif' => [],
 	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],

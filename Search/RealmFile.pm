@@ -91,6 +91,7 @@ sub _from_application_x_bwiki {
     my($text) = $rf->get_content;
     $$text =~ s/(?:^|\n)\@h\d+\s+([^\n]+)\n//s;
     my($title) = $1;
+    $$text =~ s/(?=\@p)/\n/mg;
     $$text =~ s/^\@(?:\!.*\n|\S+(?:\s*\w+=\S+)*\s*)//mg;
     return [
 	'text/plain',
@@ -103,7 +104,7 @@ sub _from_message_rfc822 {
     my($proto, $rf) = @_;
     my($subject) = '';
     my($msg) = join(
-	"\n",
+	"\n\n",
 	@{$rf->new_other('MailPartList')->load_from_content($rf->get_content)
 	->map_rows(sub {
 	    my($it) = @_;
@@ -115,10 +116,10 @@ sub _from_message_rfc822 {
 	    # Subject must be first
 	    if ($mt eq 'x-message/rfc822-headers') {
 		$subject ||= $it->get_header('subject');
-		return map(
-		    ($_ . ': ' . $it->get_header($_)),
+		return join("\n", map(
+		    $_ . ': ' . $it->get_header($_),
 		    qw(subject to from),
-		);
+		));
 	    }
 #TODO: handle other parts like pdf, doc, zip, etc.
 	    return '';
@@ -135,13 +136,17 @@ sub _from_text_html {
     my($proto, $rf_or_text) = @_;
     my($t) = ref($rf_or_text) ? $rf_or_text->get_content : \$rf_or_text;
     $$t =~ s{<title\s*>([^<]+)</title\s*>}{}is;
+    $$t =~ s/<p[^>]*>|<br[^>]*>\s*(&nbsp;?)*<br[^>]*>/ PARAGRAPH_SPLIT_HERE /isg;
     my($title) = $1;
     $title =~ s/^\s+|\s+$//gs
 	if defined($title);
+    $t = $proto->use('Bivio::HTML::Scraper')->to_text($t);
+    $$t =~ s/\s+/ /sg;
+    $$t =~ s/ *\bPARAGRAPH_SPLIT_HERE\b */\n\n/sg;
     return [
 	'text/html',
 	$title || '',
-	$proto->use('Bivio::HTML::Scraper')->to_text($t),
+	$t,
     ];
 }
 
