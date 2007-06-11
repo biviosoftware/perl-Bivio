@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.5  2007/05/31 08:10:37  nagler
+  * Bivio::UI::HTML::Widget::Text.max_width added
+  * Bivio::UI::Widget::WithModel added
+  * Bivio::Delegate::SimpleWidgetFactory supports any Type.Number for edits
+  * Bivio::Type::Enum->to_literal calls from_literal_or_die if $value not ref
+  * Bivio::Biz::Action::EmptyReply->execute_task_item added
+  * Bivio::Test::Language::HTTP->login_as and do_logout added
+  * Bivio::Test::Language::HTTP->send_request now accepts form data in the
+    form of an array.
+  * Bivio::UI::ViewShortcuts->vs_use added
+  * Bivio::Biz::PropertyModel->unauth_create_or_update_keys added
+
   Revision 5.4  2007/05/30 05:51:56  nagler
   * Bivio::UI::Mail::Widget::MailboxList added
   * Bivio::Biz::ListModel->new_anonymous forces can_iterate to be true
