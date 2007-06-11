@@ -95,7 +95,7 @@ and variables are renamed.
     my($favorite_color) = 'green';
     ### not
     #
-    # my($name) = 'Paul';
+    # my($name)           = 'Paul';
     # my($favorite_color) = 'green';
 
 
@@ -125,42 +125,7 @@ C<'#End:'>. to make it fontify correctly
 Use the bivio's builtin functions in emacs mode. bivio functions begin
 with C<b-perl-> when C<cperl-mode> is loaded.
 
-=item *
-
-Sometimes you have to help out emacs. If you have an abstract method, you
-can use the following form to declare the routine:
-
-    =for html <a name="my_abstract"></a>
-
-    =head2 abstract my_abstract() : string
-
-    My abstract method description
-
-    =cut
-
-    $_ = <<'}'; # emacs
-    sub my_abstract {
-    }
-
-
-Use C<#emacs> on lines where emacs gets confused. It seems
-to straighten it out as far as quoting is concerned.
-
 =back
-
-=head3 bivio macros:
-
-Type C-h m to get the macros, but here's the list:
-
-    C-c v		b-perl-insert-variable
-    C-c s		b-perl-insert-method
-    C-c r		b-perl-rename-method
-    C-c p		b-perl-insert-program
-    C-c o		b-perl-insert-release-scope
-    C-c m		b-perl-insert-module
-    C-c l		b-perl-insert-pod-link
-    C-c c		b-perl-insert-constant
-
 
 =head3 Special method names:
 
@@ -176,7 +141,6 @@ C<$_TRACE>.
 C<handle_config> does an Bivio::IO::Config-E<gt>register
 
 =back
-
 
 =head2 Naming
 
@@ -263,114 +227,14 @@ Normally, we don't "protect" a protected method with an assertion like this.
 
 =head2 Documentation
 
-=head3 Perldoc (POD):
-
-=over 4
-
 =item *
 
-Keep =head1 NAME particularly succinct.
-
-
-=item *
-
-Avoid redundancy, except with Facades, e.g. Bivio::PetShop::Facade::PetShop
-is ok, but Bivio::Math::MathEMA is bad.
-
-=item *
-
-Name parameters explicitly in descriptions, e.g.
-
-     Tests to see if I<match_user> matches the user stored in the login.
-
-=item *
-
-Static methods and constants should be documented as such. In perl, static
-methods and constants may be overridden by subclasses.
-
-
-     =head2 static do_static()
-
-     Class method.x
-
-     =cut
-
-     sub do_static {
-         my($proto) = @_;
-     }
-
-=item *
-
-Abstract methods and constants should be documented as such, and should
-die with a descriptive message if called. The purpose of an abstract method
-is to document and enforce (at runtime, unfortunately) a required interface
-for an object.
-
-    =head2 abstract do_something()
-
-    This method does something which is subclass specific.
-
-    =cut
-
-    $_ = <<'}'; # emacs
-    sub my_abstract {
-    }
-
-=item *
-
-The die can be used with a check to see if the caller is a subclass.
-This should be used sparingly as it imposes a run-time overhead and in
-general, perl is a "friendly" language.
-
-=item *
-
-When documenting variable types, consider using the following identifiers:
-I<int, string, string_ref, float, hash_ref, array_ref, any>.
-If the value is an instance, use the module name, e.g. I<Bivio::Type::Name>.
-
-=item *
-
-Within the method description, describe the contents of hash and array
-parameters.
-
-=item *
-
-Don't use perl symbols C<$ % @ \ ;> in method documentation.
-
-     =head2 foo(string name, int count, hash_ref cache) : float
-
-     ...
-
-     =cut
-
-     sub foo {
-         my($self, $name, $count, $cache) = @_;
-         ...
-     }
-
-=item *
-
-Don't include the C<$self> variable in method documentation, it is
-considered implicit for member methods.
-
-=item *
-
-Overloaded methods should include multipleC< =head2> documentation comments in
-some cases.  You may want to use C<any> declarations if the overloading is
-complex. The shortest versions should be first. For an extreme case, see
-C<Bivio::Agent::Request-E<gt>format_uri.>
+Write the code so that it doesn't need to be 
 
 =item *
 
 Don't use method prototypes. Perl doesn't use this when dynamically dispatching
 an object method anyway.
-
-=item *
-
-For USAGE methods, include the output usage statement in the pod description
-(but remember to maintain it!).
-
-=back
 
 =head3 Comments:
 
@@ -753,14 +617,14 @@ cases (like format statements).
 
      ex.
      sub add_error {
-     my($self, $error) = @_;
+	 my($self, $error) = @_;
 
-     ### like this
-     push(@{ $self->{__PACKAGE__}{'errors'}}, $error);
+	 ### like this
+	 push(@{$self->[$_IDI]->{'errors'}}, $error);
 
-     ### not this
-     #my($temp_ref) = $self->{__PACKAGE__}{'errors'};
-     # push(@$temp_ref, $error);
+	 ### not this
+	 #my($temp_ref) = $self->[$_IDI]->{'errors'};
+	 # push(@$temp_ref, $error);
      }
 
 
@@ -858,15 +722,15 @@ Always unwrap arguments as the first statement.
 
 
      sub foo {
-     my($self, $count, $file_name) = @_;
-     ...
+	 my($self, $count, $file_name) = @_;
+	 ...
      }
 
 There are a few exceptions. In constructors, you may pass the arguments
 on as follows:
 
      sub new {
-     my($self) = shift->SUPER::new(@_);
+         my($self) = shift->SUPER::new(@_);
      }
 
 If the function is overloaded or takes unlimited arguments, i.e. it checks
@@ -875,14 +739,14 @@ the number and type of its parameters, it may make sense to check @_ explicitly.
 If you have no need for $self or $proto, you may say
 
      sub my_static_func {
-     my(undef, $other_arg) = @_;
+         my(undef, $other_arg) = @_;
      }
 
 Another special case is the use of $fields (see discussion of instance
 state</a>). If you don't need $self, you may use:
 
      sub my_func {
-     my($fields) = shift->[$_IDI]
+         my($fields) = shift->[$_IDI]
      }
 
 
