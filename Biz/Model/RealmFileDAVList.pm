@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::RealmFileDAVList;
 use strict;
-use base 'Bivio::Biz::Model::DAVList';
+use Bivio::Base 'Model.DAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
@@ -84,7 +84,7 @@ sub internal_initialize {
 	    RealmFile.is_folder
 	    RealmFile.is_read_only
         )],
-	other_query_keys => ['path_info'],
+	other_query_keys => ['realm_file_id'],
     });
 }
 
@@ -114,10 +114,11 @@ sub internal_pre_load {
 sub load_dav {
     my($self) = @_;
     my($p) = $_RF->parse_path($self->get_request->get('path_info'), $self);
-    $self->unsafe_load_this({
-	this => lc($p),
-	path_info => $p,
-    });
+    $self->get_query->put(realm_file_id => $self->get('RealmFile.realm_file_id'))
+	if $self->unsafe_load_this({
+	    this => lc($p),
+	    path_info => $p,
+	});
     return 1;
 }
 
