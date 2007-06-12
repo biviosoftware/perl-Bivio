@@ -747,7 +747,7 @@ sub _merge {
 	    if (ref($child->{$k}) eq 'ARRAY') {
 		unshift(@{$child->{$k}}, @{$cfg->{$k}});
 	    }
-	    else {
+	    elsif (!defined($child->{$k})) {
 		$child->{$k} = $cfg->{$k};
 	    }
 	}
