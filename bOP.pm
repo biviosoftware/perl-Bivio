@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.6  2007/06/11 17:40:02  moeller
+  * Bivio::Biz::Model::RealmFile is_empty() iterates, doesn't load list
+  * Bivio::Biz::Model remove duplication from new_other
+  * Bivio::Delegate::SimpleTypeError fix DATE_TIME error
+  * Bivio::Test::Language added test_user
+  * Bivio::Test == must be eq in _prepare_case
+  * Bivio::Type::StringArray factored out separators and regexps so can
+    override
+  * Bivio::TYpe::SyntacticString added internal_post_from_literal and
+    internal_pre_from_literal
+  * Bivio::UI::FacadeBase title to USER_CREATE_DONE
+  * Bivio::UI::HTML::Widget::JavaScript render javascript function
+    definitions in HEAD
+  * Bivio::UI::HTML::Widget::Page render javascript function definitions
+    in HEAD
+  * Bivio::UI::View::CSS fix th with a, move title to main_middle
+  * Bivio::UI::View::ThreePartPage move title to main_middle
+  * Bivio::UI::Widget::List support ListFormModel
+  * Bivio::Util::RealmFile added -force support to delete()
+
   Revision 5.5  2007/05/31 08:10:37  nagler
   * Bivio::UI::HTML::Widget::Text.max_width added
   * Bivio::UI::Widget::WithModel added
