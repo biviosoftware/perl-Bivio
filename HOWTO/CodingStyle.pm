@@ -227,6 +227,8 @@ Normally, we don't "protect" a protected method with an assertion like this.
 
 =head2 Documentation
 
+=over 4
+
 =item *
 
 Write the code so that it doesn't need to be 
@@ -235,6 +237,8 @@ Write the code so that it doesn't need to be
 
 Don't use method prototypes. Perl doesn't use this when dynamically dispatching
 an object method anyway.
+
+=back
 
 =head3 Comments:
 
