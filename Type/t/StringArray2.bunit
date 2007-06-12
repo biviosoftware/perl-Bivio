@@ -5,7 +5,7 @@
 	map_iterate => [
 	    [sub {@_}] => [[qw(3 1 2)]],
 	],
-	as_string => 'StringArray[3,1,2]',
+	as_string => 'StringArray[3, 1, 2]',
 	equals => [
 	    [class()->new([qw(3 1 2)])] => 1,
 	    [undef] => 0,
