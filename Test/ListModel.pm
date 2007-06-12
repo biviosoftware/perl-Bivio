@@ -15,8 +15,10 @@ sub new {
     # Simple model name, which is loaded.  Sets up create_object and compute_return.
     # I<model> will get mapped to I<class_name>.
     my($model) = $attrs->{class_name};
+    my($class) = Bivio::Biz::Model->get_instance($model)->package_name;
     return $proto->SUPER::new({
-	class_name => Bivio::Biz::Model->get_instance($model)->package_name,
+	class_name => $class,
+	$class =~ /DAVList$/ ? (comparator => 'nested_contains') : (),
 	create_object => sub {
 	    my(undef, $object) = @_;
 	    return $object->[0]->new(Bivio::Test::Request->get_instance);
