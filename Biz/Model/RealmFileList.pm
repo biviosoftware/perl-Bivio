@@ -43,7 +43,7 @@ sub internal_initialize {
 	other => [
 	    map("RealmFile.$_", @{$_RF->get_keys}),
 	],
-	other_query_keys => ['path_info'],
+	other_query_keys => [qw(path_info realm_file_id)],
     });
 }
 
@@ -51,6 +51,10 @@ sub internal_pre_load {
     my($self, $query, undef, $params) = @_;
     my($p) = $_RF->parse_path($query->unsafe_get('path_info'), $self);
     $query->put(path_info => $p);
+    if (my $rfid = $query->unsafe_get('realm_file_id')) {
+	push(@$params, $rfid);
+	return q{folder_id = ?};
+    }
     return q{POSITION('/' IN SUBSTRING(path_lc FROM 2)) = 0 AND path_lc != '/'}
 	if $p eq '/';
     push(@$params, $p, lc($p) . '/', $p);
