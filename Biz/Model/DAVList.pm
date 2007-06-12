@@ -39,7 +39,7 @@ sub dav_propfind_children {
     return $self->new->map_iterate(
 	sub {shift->dav_propfind},
 	unauth_iterate_start => {
-	    map(($_ => $q->get($_)),
+	    map(($_ => $q->unsafe_get($_)),
 		'auth_id',
 		@{$self->internal_get_sql_support->get('other_query_keys')},
 	    ),
