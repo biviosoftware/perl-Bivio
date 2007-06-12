@@ -18,5 +18,8 @@ options({
     },
 });
 [
-    'Model.pm' => [],
+    map({
+	$_ =~ s{POD/in/}{};
+	($_ => []);
+    } glob('POD/in/*.pm')),
 ];
