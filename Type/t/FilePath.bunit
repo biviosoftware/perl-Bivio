@@ -71,6 +71,13 @@ Type();
 	    '/public' => '/Public',
 	    '/public/foo' => '/Public/foo',
 	],
+	from_public => [
+	    '/Public' => '/',
+	    '/public' => '/',
+	    '/public/Foo' => '/Foo',
+	    '/a' => DIE(),
+	    [undef] => DIE(),
+	],
     ],
 ];
 

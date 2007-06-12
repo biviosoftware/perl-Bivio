@@ -23,16 +23,6 @@ sub add_trailing_slash {
     return $path =~ m,/$, ? $path : $path.'/';
 }
 
-sub to_public {
-    my($proto, $path) = @_;
-    my($p) = $proto->PUBLIC_FOLDER_ROOT;
-    return $p
-	unless defined($path);
-    $path = $proto->join($p, $path);
-    $path =~ s{^\Q$p$p\E(/|$)}{$p$1}i;
-    return $path;
-}
-
 sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = $proto->SUPER::from_literal($value);
@@ -46,6 +36,14 @@ sub from_literal {
     $v =~ s{(?=^[^/])|/+}{/}g;
     $v =~ s{(?<=[^/])/$}{};
     return $v;
+}
+
+sub from_public {
+    my($proto, $path) = @_;
+    my($p) = $proto->PUBLIC_FOLDER_ROOT;
+    Bivio::Die->die($path, ": must contain $p in the path")
+        unless $path =~ s{^\Q$p\E(/|$)}{$1}i;
+    return length($path) ? $path : '/';
 }
 
 sub get_base {
@@ -94,6 +92,16 @@ sub join {
     (my $res = join('/', map(defined($_) && length($_) ? $_ : (), @parts)))
 	 =~ s{//+}{/}sg;
     return $res;
+}
+
+sub to_public {
+    my($proto, $path) = @_;
+    my($p) = $proto->PUBLIC_FOLDER_ROOT;
+    return $p
+	unless defined($path);
+    $path = $proto->join($p, $path);
+    $path =~ s{^\Q$p$p\E(/|$)}{$p$1}i;
+    return $path;
 }
 
 sub _clean {
