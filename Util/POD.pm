@@ -142,13 +142,13 @@ sub to_comments {
 		$toss_for_emacs = 1;
 		next;
 	    }
+	    if ($line =~ /^(?:\@.*::ISA =|use base) (?:qw.|\(?')([\w:]+)/) {
+		$push->(import => qq{use Bivio::Base '$1';});
+		next;
+	    }
 	    if ($line =~ /^use /) {
 		$push->(import => $line)
 		     if $parts->{import};
-		next;
-	    }
-	    if ($line =~ /^\@.*::ISA = (?:qw.|\(')([\w:]+)/) {
-		$push->(import => qq{use Bivio::Base '$1';});
 		next;
 	    }
 	    $push->('sub')
