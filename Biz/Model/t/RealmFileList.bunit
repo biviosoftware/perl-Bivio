@@ -2,17 +2,25 @@
 # $Id$
 ListModel();
 req()->initialize_fully->set_realm_and_user('guest', 'guest');
+my($rfid) = model(RealmFile => {
+    realm_id => req('auth_id'),
+    path => '/private',
+})->get('realm_file_id');
 [
     {
 	method => 'load_all',
 	compute_params => sub {
 	    my(undef, $params) = @_;
-	    return [{path_info => $params->[0]}];
+	    return [{
+		path_info => $params->[0],
+		$params->[1] ? (realm_file_id => $params->[1]) : (),
+	    }];
 	},
     } => [
 	'/not-found' => [],
 	'/' => not_die(),
 	'/private' => [map(+{'RealmFile.path' => "/private/$_"}, qw(file.html image.gif))],
+	['/private', $rfid] => [map(+{'RealmFile.path' => "/private/$_"}, qw(file.html image.gif))],
     ],
     map((
 	set_cursor_or_not_found => [
