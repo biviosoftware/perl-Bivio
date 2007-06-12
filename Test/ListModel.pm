@@ -2,56 +2,18 @@
 # $Id$
 package Bivio::Test::ListModel;
 use strict;
-$Bivio::Test::ListModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::ListModel::VERSION;
-
-=head1 NAME
-
-Bivio::Test::ListModel - simplify testing of ListModels
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::ListModel;
-
-=cut
-
-use base 'Bivio::Test::Unit';
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::ListModel>
-
-=cut
-
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Test::Unit';
 use Bivio::Biz::Model;
 use Bivio::Test::Request;
 
-#=VARIABLES
+# C<Bivio::Test::ListModel>
 
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(string model) : Bivio::Test::ListModel
-
-=head2 static new(hash_ref attrs) : Bivio::Test::ListModel
-
-Simple model name, which is loaded.  Sets up create_object and compute_return.
-I<model> will get mapped to I<class_name>.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new {
     my($proto, $attrs) = @_;
+    # Simple model name, which is loaded.  Sets up create_object and compute_return.
+    # I<model> will get mapped to I<class_name>.
     my($model) = $attrs->{class_name};
     return $proto->SUPER::new({
 	class_name => Bivio::Biz::Model->get_instance($model)->package_name,
@@ -93,47 +55,25 @@ sub new {
     });
 }
 
-=for html <a name="new_unit"></a>
-
-=head2 new_unit(string class_name, hash_ref attrs) : self
-
-Calls L<new|"new">.
-
-=cut
-
 sub new_unit {
+    # Calls L<new|"new">.
     Bivio::Test::Request->get_instance;
     return shift;
 }
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="run_unit"></a>
-
-=head2 static run_unit(string model, array_ref method_groups)
-
-=head2 static run_unit(hash_ref new_attrs, array_ref method_groups)
-
-=head2 run_unit(array_ref method_groups)
-
-Instantiates this class with I<model> or I<new_attrs> (which must include
-I<model>), and calls the instance method form with I<method_groups>.
-
-Wraps I<method_groups> in an object group, with a call to the list model's,
-new.  See L<Bivio::Test::unit|Bivio::Test/"unit"> for details.
-
-I<method_groups> are just like normal method groups with the exception that if
-the expect is an array of hashes and the method begins with C<load>
-or C<unauth_load)>, the actual return is the result of
-L<Bivio::Biz::ListModel::map_rows|Bivio::Biz::ListModel/"map_rows">
-filtered to only include the keys contained the first row of the expected
-return.
-
-=cut
-
 sub run_unit {
+    # Instantiates this class with I<model> or I<new_attrs> (which must include
+    # I<model>), and calls the instance method form with I<method_groups>.
+    #
+    # Wraps I<method_groups> in an object group, with a call to the list model's,
+    # new.  See L<Bivio::Test::unit|Bivio::Test/"unit"> for details.
+    #
+    # I<method_groups> are just like normal method groups with the exception that if
+    # the expect is an array of hashes and the method begins with C<load>
+    # or C<unauth_load)>, the actual return is the result of
+    # L<Bivio::Biz::ListModel::map_rows|Bivio::Biz::ListModel/"map_rows">
+    # filtered to only include the keys contained the first row of the expected
+    # return.
     return shift->SUPER::run_unit(@_)
 	if @_ == 3;
     my($self, $method_groups) = @_;
@@ -141,17 +81,5 @@ sub run_unit {
 	$self->builtin_class => $method_groups,
     ]);
 }
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
