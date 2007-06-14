@@ -23,11 +23,16 @@ __PACKAGE__->compile([
 ]);
 Bivio::IO::Config->register(my $_CFG = {
     default => __PACKAGE__->DATE_TIME,
+    date_default => __PACKAGE__->DATE,
     widget_default => __PACKAGE__->DATE,
 });
 
 sub get_default {
     return $_CFG->{default};
+}
+
+sub get_date_default {
+    return $_CFG->{date_default};
 }
 
 sub get_widget_default {
@@ -36,7 +41,7 @@ sub get_widget_default {
 
 sub handle_config {
     my($proto, $cfg) = @_;
-    foreach my $x (qw(default widget_default)) {
+    foreach my $x (qw(default date_default widget_default)) {
 	$_CFG->{$x} = $proto->from_any($cfg->{$x});
     }
     return;

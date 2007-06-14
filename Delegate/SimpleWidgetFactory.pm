@@ -45,6 +45,7 @@ use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 use Bivio::Type::Name;
 use Bivio::Type::TextArea;
+use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::ViewShortcuts;
 use Bivio::UI::Widget;
 
@@ -167,7 +168,8 @@ sub internal_create_display {
         return $_VS->vs_new('String', {
             field => $field,
             value => [[$field], 'HTMLFormat.DateTime',
-                $attrs->{mode} || 'DATE', defined($attrs->{no_timezone})
+                $attrs->{mode} || Bivio::UI::DateTimeMode->get_date_default,
+		defined($attrs->{no_timezone})
                     ? $attrs->{no_timezone} : 1],
 	    column_align => 'E',
 	    %$attrs,
