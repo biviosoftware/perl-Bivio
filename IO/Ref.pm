@@ -8,20 +8,6 @@ use Data::Dumper ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub deep_copy {
-    my($proto, $value, $seen) = @_;
-    $seen ||= {};
-    return ref($value) eq 'ARRAY' ? [
-	    map($proto->deep_copy($_), @{_seen($value, $seen)}),
-	] : ref($value) eq 'HASH' ? {
-	    map(($_ => $proto->deep_copy($value->{$_})),
-		keys(%{_seen($value, $seen)}))
-	} : ref($value) eq 'SCALAR' ? \(my $x = $$value)
-	: ref($value) !~ /=/ || !ref($value) ? $value
-	: $value->can('clone') ? _seen($value, $seen)->clone
-	: $value;
-}
-
 sub nested_contains {
     # If all elements of I<subset> are contained in I<set>, returns undef.  If not,
     # returns the nested differences of the values.  Special cases are code references.
@@ -54,6 +40,20 @@ sub nested_contains {
     # The purpose of contains is to find a general matching of values for unit
     # testing.  See Bivio::Test::Unit::assert_contains for details.
     return _diff(@_);
+}
+
+sub nested_copy {
+    my($proto, $value, $seen) = @_;
+    $seen ||= {};
+    return ref($value) eq 'ARRAY' ? [
+	    map($proto->nested_copy($_), @{_seen($value, $seen)}),
+	] : ref($value) eq 'HASH' ? {
+	    map(($_ => $proto->nested_copy($value->{$_})),
+		keys(%{_seen($value, $seen)}))
+	} : ref($value) eq 'SCALAR' ? \(my $x = $$value)
+	: ref($value) !~ /=/ || !ref($value) ? $value
+	: $value->can('clone') ? _seen($value, $seen)->clone
+	: $value;
 }
 
 sub nested_differences {

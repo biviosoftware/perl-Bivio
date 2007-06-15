@@ -80,7 +80,7 @@ EOF
 	[{a => sub {'1'}}, {a => 2, b => 2}] => q{1 != 2 at ->{'a'}},
     ],
     {
-	method => 'deep_copy',
+	method => 'nested_copy',
 	check_return => sub {
 	    my(undef, $actual, $expect) = @_;
 	    die('ref test failed')
