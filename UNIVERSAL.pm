@@ -18,7 +18,7 @@ sub as_string {
 sub clone {
     my($self) = @_;
     return bless(
-	[map($self->use('Bivio::IO::Ref')->deep_copy($_), @$self)],
+	[map($self->use('Bivio::IO::Ref')->nested_copy($_), @$self)],
 	ref($self),
     );
 }
