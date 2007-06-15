@@ -1084,7 +1084,7 @@ sub _unauth_load {
     my($sql_support) = $self->internal_get_sql_support;
 
     # Convert to listQuery
-    $query = Bivio::SQL::ListQuery->unauth_new($query, $self, $sql_support)
+    $query = Bivio::SQL::ListQuery->unauth_new($query, $sql_support, $self)
 	if ref($query) eq 'HASH';
 
     # Add in count if not there
