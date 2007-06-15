@@ -12,7 +12,6 @@ use Bivio::SQL::ListQuery;
 use Bivio::SQL::Statement;
 use Bivio::Type::DateTime;
 use Bivio::Type;
-use Carp ();
 
 # C<Bivio::SQL::Support> contains common attributes and routines for
 # L<Bivio::SQL::Support|Bivio::SQL::PropertySupport> and
@@ -80,6 +79,11 @@ use Carp ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+
+sub clone {
+    # Always a singleton
+    return shift;
+}
 
 sub get_column_constraint {
     # Returns the constraint of the column.

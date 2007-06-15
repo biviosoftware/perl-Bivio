@@ -44,6 +44,11 @@ sub as_xml {
     return $self->to_xml($self);
 }
 
+sub clone {
+    # Instances are constant
+    return shift;
+}
+
 sub compare_defined {
     my(undef, $left, $right) = @_;
     # Performs the numeric comparison of the enum values.  C<undef> is treated as

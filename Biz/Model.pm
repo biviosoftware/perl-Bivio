@@ -38,6 +38,11 @@ sub assert_not_singleton {
     return;
 }
 
+sub clone {
+    my($self) = shift;
+    return $self->is_instance ? $self->SUPER::clone(@_) : $self;
+}
+
 sub delete {
     # Not supported.
     die('not supported');

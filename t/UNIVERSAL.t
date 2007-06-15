@@ -112,5 +112,11 @@ Bivio::Test->unit([
     'Bivio::t::UNIVERSAL::DataSectionMissing' => [
 	internal_data_section => Bivio::DieCode->DIE,
     ],
+    sub {Bivio::UNIVERSAL->use('Bivio::t::UNIVERSAL::Clonee')->new} => [
+	equals => [
+	    sub {[Bivio::t::UNIVERSAL::Clonee->new]} => 0,
+	    sub {[shift->get('object')->clone]} => 1,
+	],
+    ],
 ]);
 

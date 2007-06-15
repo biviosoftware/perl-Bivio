@@ -15,6 +15,14 @@ sub as_string {
     return shift(@_) . '';
 }
 
+sub clone {
+    my($self) = @_;
+    return bless(
+	[map($self->use('Bivio::IO::Ref')->deep_copy($_), @$self)],
+	ref($self),
+    );
+}
+
 sub die {
     # A convenient alias for L<Bivio::Die::throw_or_die|Bivio::Die/"throw_or_die">
     shift;
