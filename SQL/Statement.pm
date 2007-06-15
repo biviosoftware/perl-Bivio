@@ -2,71 +2,21 @@
 # $Id$
 package Bivio::SQL::Statement;
 use strict;
-$Bivio::SQL::Statement::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::SQL::Statement::VERSION;
-
-=head1 NAME
-
-Bivio::SQL::Statement - smart SQL statement builder
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::SQL::Statement;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UNIVERSAL>
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::SQL::Statement::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::SQL::Statement>
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::IO::Trace;
 
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="AND"></a>
-
-=head2 static AND(any predicate, ... ) : hash_ref
-
-Return a list of predicates joined by AND.
-
-=cut
 
 sub AND {
     my($proto) = shift;
+    # Return a list of predicates joined by AND.
     return _combine_predicates($proto, 'AND', @_);
 }
 
-=for html <a name="CROSS_JOIN"></a>
-
-=head2 static CROSS_JOIN(any join, ...) : hash_ref
-
-Return a CROSS JOIN (i.e. the default join when no join is specified).
-
-=cut
-
 sub CROSS_JOIN {
     my($proto, @joins) = @_;
+    # Return a CROSS JOIN (i.e. the default join when no join is specified).
     my($joins) = [@joins];
     return {
         joins => $joins,
@@ -75,14 +25,6 @@ sub CROSS_JOIN {
         },
     };
 }
-
-=for html <a name="DISTINCT"></a>
-
-=head2 static DISTINCT(string column) : hash_ref
-
-
-
-=cut
 
 sub DISTINCT {
     my($proto, $column) = @_;
@@ -95,20 +37,11 @@ sub DISTINCT {
     };
 }
 
-=for html <a name="EQ"></a>
-
-=head2 static EQ(string left, list right) : hash_ref
-
-=head2 static EQ(string left, array_ref right) : hash_ref
-
-Return an EQ predicate.
-If I<right> is an array_ref, treat right as a value, not a column.
-Multiple right values are each compared against left.
-
-=cut
-
 sub EQ {
     my($proto, $left, @right) = @_;
+    # Return an EQ predicate.
+    # If I<right> is an array_ref, treat right as a value, not a column.
+    # Multiple right values are each compared against left.
     if (@right == 1) {
 	my($right) = @right;
 	return $proto->IS_NULL($left)
@@ -118,70 +51,31 @@ sub EQ {
     return $proto->AND(map({_static_equivalence('=', 'IN', $left, $_)} @right));
 }
 
-=for html <a name="GT"></a>
-
-=head2 static GT(string left, string right) : hash_ref
-
-=head2 static GT(string left, array_ref right) : hash_ref
-
-Return a Greater Than predicate.
-
-=cut
-
 sub GT {
     my($proto, $left, $right) = @_;
+    # Return a Greater Than predicate.
     return _static_compare('>', $left, $right);
 }
 
-=for html <a name="GTE"></a>
-
-=head2 static GTE(string left, string right) : hash_ref
-
-=head2 static GTE(string left, array_ref right) : hash_ref
-
-Return a Greater Than or Equal predicate.
-
-=cut
-
 sub GTE {
     my($proto, $left, $right) = @_;
+    # Return a Greater Than or Equal predicate.
     return _static_compare('>=', $left, $right);
 }
 
-=for html <a name="ILIKE"></a>
-
-=head2 static ILIKE(string column, string match) : hash_ref
-
-Return a ILIKE predicate.
-
-=cut
-
 sub ILIKE {
+    # Return a ILIKE predicate.
     return _like(ILIKE => @_);
 }
 
-=for html <a name="IN"></a>
-
-=head2 static IN(string column, array_ref list) : hash_ref
-
-Return an IN predicate.
-
-=cut
-
 sub IN {
+    # Return an IN predicate.
     return _in('', @_);
 }
 
-=for html <a name="IS_NOT_NULL"></a>
-
-=head2 static IS_NOT_NULL(string column) : hash_ref
-
-Return an IS NOT NULL predicate
-
-=cut
-
 sub IS_NOT_NULL {
     my($proto, $column) = @_;
+    # Return an IS NOT NULL predicate
     return {
         column => $column,
         build => sub {
@@ -194,16 +88,9 @@ sub IS_NOT_NULL {
     };
 }
 
-=for html <a name="IS_NULL"></a>
-
-=head2 static IS_NULL(string column) : hash_ref
-
-Return an IS NULL predicate
-
-=cut
-
 sub IS_NULL {
     my($proto, $column) = @_;
+    # Return an IS NULL predicate
     return {
         column => $column,
         build => sub {
@@ -216,16 +103,9 @@ sub IS_NULL {
     };
 }
 
-=for html <a name="LEFT_JOIN_ON"></a>
-
-=head2 static LEFT_JOIN_ON(string left_table, string right_table, any join_predicate) : hash_ref
-
-Return a LEFT JOIN ON join.
-
-=cut
-
 sub LEFT_JOIN_ON {
     my($proto, $left_table, $right_table, $join_predicate) = @_;
+    # Return a LEFT JOIN ON join.
     $join_predicate = _parse_predicate($proto, $join_predicate);
     return {
         left_table => $left_table,
@@ -239,111 +119,49 @@ sub LEFT_JOIN_ON {
     };
 }
 
-=for html <a name="LIKE"></a>
-
-=head2 static LIKE(string column, string match) : hash_ref
-
-Return a LIKE predicate.
-
-=cut
-
 sub LIKE {
+    # Return a LIKE predicate.
     return _like(LIKE => @_);
 }
 
-=for html <a name="LT"></a>
-
-=head2 static LT(string left, string right) : hash_ref
-
-=head2 static LT(string left, array_ref right) : hash_ref
-
-Return a Less Than predicate.
-
-=cut
-
 sub LT {
     my($proto, $left, $right) = @_;
+    # Return a Less Than predicate.
     return _static_compare('<', $left, $right);
 }
 
-=for html <a name="LTE"></a>
-
-=head2 static LTE(string left, string right) : hash_ref
-
-=head2 static LTE(string left, array_ref right) : hash_ref
-
-Return a Less Than or Equal predicate.
-
-=cut
-
 sub LTE {
     my($proto, $left, $right) = @_;
+    # Return a Less Than or Equal predicate.
     return _static_compare('<=', $left, $right);
 }
 
-=for html <a name="NE"></a>
-
-=head2 static NE(string left, string right) : hash_ref
-
-=head2 static NE(string left, array_ref right) : hash_ref
-
-Return an != predicate.
-If I<right> is an array_ref, treat right as a value, not a column.
-
-=cut
-
 sub NE {
     my($proto, $left, $right) = @_;
+    # Return an != predicate.
+    # If I<right> is an array_ref, treat right as a value, not a column.
     return _static_compare('!=', $left, $right);
 }
 
-=for html <a name="NOT_IN"></a>
-
-=head2 static NOT_IN(string column, array_ref list) : hash_ref
-
-Return an NOT_IN predicate.
-
-=cut
-
 sub NOT_IN {
+    # Return an NOT_IN predicate.
     return _in(' NOT', @_);
 }
 
-=for html <a name="NOT_LIKE"></a>
-
-=head2 static NOT_LIKE(string column, string match) : hash_ref
-
-Return a NOT_LIKE predicate.
-
-=cut
-
 sub NOT_LIKE {
+    # Return a NOT_LIKE predicate.
     return _like('NOT LIKE', @_);
 }
 
-=for html <a name="OR"></a>
-
-=head2 OR(any predicate, ... ) : hash_ref
-
-Return a list of predicates joined by OR.
-
-=cut
-
 sub OR {
     my($proto) = shift;
+    # Return a list of predicates joined by OR.
     return _combine_predicates($proto, 'OR', @_);
 }
 
-=for html <a name="PARENS"></a>
-
-=head2 static PARENS(any predicate, ... ) : hash_ref
-
-Return a single predicate grouped inside parentheses.
-
-=cut
-
 sub PARENS {
     my($proto, $predicate) = @_;
+    # Return a single predicate grouped inside parentheses.
     return {
         predicate => $predicate,
         build => sub {
@@ -356,16 +174,9 @@ sub PARENS {
     }
 }
 
-=for html <a name="SELECT_AS"></a>
-
-=head2 static SELECT_AS(any column, string alias) : hash_ref
-
-Return the select object
-
-=cut
-
 sub SELECT_AS {
     my($proto, $column, $alias) = @_;
+    # Return the select object
     return {
 	columns => [$column],
         build => sub {
@@ -374,56 +185,18 @@ sub SELECT_AS {
     }
 }
 
-=for html <a name="SELECT_LITERAL"></a>
-
-=head2 static SELECT_LITERAL(string literal) : hash_ref
-
-Return the select of a literal
-
-=cut
-
 sub SELECT_LITERAL {
     my($proto, $literal) = @_;
+    # Return the select of a literal
     return {
 	columns => [$literal],
         build => sub {$literal},
     }
 }
 
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::SQL::Statement
-
-Return a new instance.
-
-=cut
-
-sub new {
-    my($proto) = @_;
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {
-        from => {},
-        select => undef,
-        where => $self->AND(),
-        _models => {},
-    };
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="build_decl_for_sql_support"></a>
-
-=head2 build_decl_for_sql_support() : hash_ref
-
-Return columns for ListModel
-
-=cut
-
 sub build_decl_for_sql_support {
     my($self) = @_;
+    # Return columns for ListModel
     return {
         other => $self->[$_IDI]->{select}->{column_names},
 	# HACK: but I don't know what to do about it yet
@@ -433,16 +206,9 @@ sub build_decl_for_sql_support {
     return {};
 }
 
-=for html <a name="build_for_list_support_prepare_statement"></a>
-
-=head2 build_for_list_support_prepare_statement(Bivio::SQL::Support support, Bivio::SQL::Statement other_stmt, string where, array_ref params) : (string, array_ref)
-
-Return FROM/WHERE clause and parameter array for _prepare_statement
-
-=cut
-
 sub build_for_list_support_prepare_statement {
     my($self, $support, $other_stmt, $_where, $_params) = @_;
+    # Return FROM/WHERE clause and parameter array for _prepare_statement
     _merge_statements($self, $other_stmt);
 
     my($fields) = $self->[$_IDI];
@@ -490,16 +256,9 @@ sub build_for_list_support_prepare_statement {
     return (join(' ', @stmt), [@$fr_params, @$pred_params, @{$_params || []}]);
 }
 
-=for html <a name="build_select_for_sql_support"></a>
-
-=head2 build_select_for_sql_support(Bivio::SQL::ListSupport support) : string
-
-Build SELECT clause.
-
-=cut
-
 sub build_select_for_sql_support {
     my($self, $support) = @_;
+    # Build SELECT clause.
     my($fields) = $self->[$_IDI];
     return join(' ',
         'SELECT', $fields->{select}->{build}->($support, []))
@@ -507,34 +266,20 @@ sub build_select_for_sql_support {
     return $support->unsafe_get('select');
 }
 
-=for html <a name="config"></a>
-
-=head2 config(hash_ref config)
-
-Parse and apply config data
-
-=cut
-
 sub config {
     my($self, $config) = @_;
+    # Parse and apply config data
     foreach my $method (keys %$config) {
 	$self->$method(@{$config->{$method}});
     }
     return;
 }
 
-=for html <a name="from"></a>
-
-=head2 from(any join, ...)
-
-Add the join(s) to the FROM clause.
-TODO: Generalize to any type of JOIN.  Currently only accepts LEFT_JOIN_ON
-and a simple table name  May also just be a table.
-
-=cut
-
 sub from {
     my($self, @joins) = @_;
+    # Add the join(s) to the FROM clause.
+    # TODO: Generalize to any type of JOIN.  Currently only accepts LEFT_JOIN_ON
+    # and a simple table name  May also just be a table.
     my($models) = $self->[$_IDI]->{_models};
     foreach my $join (@joins) {
 	unless (ref($join)) {
@@ -556,16 +301,22 @@ sub from {
     return $self;
 }
 
-=for html <a name="select"></a>
-
-=head2 select(any select_item)
-
-Add item to SELECT clause.
-
-=cut
+sub new {
+    my($proto) = @_;
+    # Return a new instance.
+    my($self) = shift->SUPER::new(@_);
+    $self->[$_IDI] = {
+        from => {},
+        select => undef,
+        where => $self->AND(),
+        _models => {},
+    };
+    return $self;
+}
 
 sub select {
     my($self, @columns) = @_;
+    # Add item to SELECT clause.
     my($columns) = [map({_parse_select_column($_)} @columns)];
     $self->[$_IDI]->{select} = {
 	columns => $columns,
@@ -577,17 +328,10 @@ sub select {
     return $self;
 }
 
-=for html <a name="union_hack"></a>
-
-=head2 union_hack(Bivio::SQL::Statement stmt, ...)
-
-Add I<stmt>s to WHERE clause.  The statement has to be completely empty
-at this point.
-
-=cut
-
 sub union_hack {
     my($self, @stmt) = @_;
+    # Add I<stmt>s to WHERE clause.  The statement has to be completely empty
+    # at this point.
     Bivio::Die->die('statement must be empty to union')
 	 if @{$self->[$_IDI]->{where}->{predicates}};
     $self->[$_IDI]->{where} = {
@@ -612,17 +356,10 @@ sub union_hack {
     return $self;
 }
 
-=for html <a name="where"></a>
-
-=head2 where(any predicate, ...)
-
-Add I<predicate>s to WHERE clause.  This condition will be ANDed
-with any other existing conditions.
-
-=cut
-
 sub where {
     my($self, @predicates) = @_;
+    # Add I<predicate>s to WHERE clause.  This condition will be ANDed
+    # with any other existing conditions.
     foreach my $predicate (
         map({_parse_predicate($self, $_)} grep({$_} @predicates))
     ) {
@@ -631,15 +368,10 @@ sub where {
     return $self;
 }
 
-#=PRIVATE SUBROUTINES
-
-# _add_model(self, string model, hash_ref join) : hash_ref
-#
-# Add model to _models and from (if new).
-# Return the hash_ref representation.
-#
 sub _add_model {
     my($self, $model, $join) = @_;
+    # Add model to _models and from (if new).
+    # Return the hash_ref representation.
     my($models) = $self->[$_IDI]->{_models};
     my($joins) = {};
     my($build_model) = $join
@@ -660,13 +392,10 @@ sub _add_model {
     return $models->{$model};
 }
 
-# _build_column(string column) : hash_ref
-#
-# Build column name.
-# Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
-#
 sub _build_column {
     my($column) = @_;
+    # Build column name.
+    # Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
     my($func, $model_ref, $field, $paren)
 	= $column =~ /^(\w+\()?(\w+(?:_\d+)?)\.(\w+)(\)?)$/;
     my($model, $index)
@@ -682,20 +411,19 @@ sub _build_column {
     };
 }
 
-# TODO: Merge _build_column and _build_column_info
-# _build_column_info(string column) : hash_ref
-#
-# Build column information.
-# Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
-# Returns a hash_ref with the following information:
-#   column_name  (:string 'field')
-#   model        (:Bivio::Biz::Model)
-#   name         (:string 'Model_#.field')
-#   sql_string   (:string)
-#   type         (:Bivio::Type)
-#
 sub _build_column_info {
     my($column) = @_;
+    # TODO: Merge _build_column and _build_column_info
+    # _build_column_info(string column) : hash_ref
+    #
+    # Build column information.
+    # Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
+    # Returns a hash_ref with the following information:
+    #   column_name  (:string 'field')
+    #   model        (:Bivio::Biz::Model)
+    #   name         (:string 'Model_#.field')
+    #   sql_string   (:string)
+    #   type         (:Bivio::Type)
     my($func, $model_ref, $field, $paren)
 	= $column =~ /^(\w+\()?(\w+(?:_\d+)?)\.(\w+)(\)?)$/;
     my($model_name, $index)
@@ -715,13 +443,10 @@ sub _build_column_info {
     }
 }
 
-# _build_model(string model) : string
-#
-# Return the sql table name for the model.
-# Understands 'Model' and 'Model_#'
-#
 sub _build_model {
     my($model_name) = @_;
+    # Return the sql table name for the model.
+    # Understands 'Model' and 'Model_#'
     my($model, $index) = $model_name =~ /^(\w+?)(_\d+)?$/;
     my($table) = Bivio::Biz::Model->get_instance($model)
 	->get_info('table_name');
@@ -730,12 +455,15 @@ sub _build_model {
         . ($index ? " $table$index" : '');
 }
 
-# _build_value(string column, string value, Bivio::SQL::Support support) : string
-#
-# Build placeholder and add value to I<params>.
-#
+sub _build_select_column {
+    my($i) = _build_column_info(@_);
+    # Build select column name with appropriate type conversion.
+    return $i->{type}->from_sql_value($i->{sql_string});
+}
+
 sub _build_value {
     my($column, $value, $support, $params) = @_;
+    # Build placeholder and add value to I<params>.
     my($func, $model, $index, $field) = $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)\)?$/;
     my($t) = ($func || '') =~ /^(length|count)\(/i ? 'Bivio::Type::Number'
 	: Bivio::Biz::Model->get_instance($model)->get_field_type($field);
@@ -745,22 +473,10 @@ sub _build_value {
     return $t->to_sql_value('?');
 }
 
-# _build_select_column(string column) : string
-#
-# Build select column name with appropriate type conversion.
-#
-sub _build_select_column {
-    my($i) = _build_column_info(@_);
-    return $i->{type}->from_sql_value($i->{sql_string});
-}
-
-# _combine_predicates(proto, string conjunctive, any predicate, ...) : hash_ref
-#
-# Combines the predicates with the conjunctive (AND or OR).
-# OR values are wrapped in parenthesis.
-#
 sub _combine_predicates {
       my($proto, $conjunctive) = (shift, shift);
+    # Combines the predicates with the conjunctive (AND or OR).
+    # OR values are wrapped in parenthesis.
       my($p) = [map(_parse_predicate($proto, $_), @_)];
       return {
           predicates => $p,
@@ -776,12 +492,9 @@ sub _combine_predicates {
       };
 }
 
-# _in(string modifier, proto, string column, any values) : hash_ref
-#
-# Create "IN" or "NOT IN" clause
-#
 sub _in {
     my($modifier, undef, $column, $values) = @_;
+    # Create "IN" or "NOT IN" clause
     return {
         column => $column,
         values => $values,
@@ -800,14 +513,11 @@ sub _in {
     };
 }
 
-# _like(string predicate, proto, string column, string match) : hash_ref
-#
-# Build a LIKE or ILIKE predicate.
-# If column is a Bivio::Type::Enum, do an in-memory search on short_desc
-# and subsitute an IN.
-#
 sub _like {
     my($predicate, $proto, $column, $match) = @_;
+    # Build a LIKE or ILIKE predicate.
+    # If column is a Bivio::Type::Enum, do an in-memory search on short_desc
+    # and subsitute an IN.
     my($col_info) = _build_column_info($column);
     # be nice to user, substite * for %
     $match =~ s/\*/\%/g;
@@ -836,12 +546,9 @@ sub _like {
     };
 }
 
-# _merge_statements(self, Bivio::SQL::Statement)
-#
-# Merge statement data
-#
 sub _merge_statements {
     my($self, $other) = @_;
+    # Merge statement data
     return unless $other && $other != $self;
 
     # merge WHERE
@@ -864,8 +571,20 @@ sub _merge_statements {
     return;
 }
 
-# _parse_select_column(hash_ref column) : hash_ref
-# _parse_select_column(string column) : hash_ref
+sub _parse_predicate {
+    my($proto, $predicate) = @_;
+    # Parse a literal predicate, according to the following defaults:
+    # 1) Unspecified predicates are EQ
+    # 2) Unspecified lists of predicates are joined by AND
+    return $predicate
+        if ref($predicate) eq 'HASH';
+    Bivio::Die->die($predicate, ': not an array reference')
+        unless ref($predicate) eq 'ARRAY';
+    return $proto->EQ(@$predicate)
+        unless ref($predicate->[0]);
+    return $proto->AND(map({_parse_predicate($proto, $_)} @$predicate));
+}
+
 sub _parse_select_column {
     my($column) = @_;
     return $column
@@ -879,29 +598,9 @@ sub _parse_select_column {
     };
 }
 
-# _parse_predicate(proto, any predicate) : 
-#
-# Parse a literal predicate, according to the following defaults:
-# 1) Unspecified predicates are EQ
-# 2) Unspecified lists of predicates are joined by AND
-#
-sub _parse_predicate {
-    my($proto, $predicate) = @_;
-    return $predicate
-        if ref($predicate) eq 'HASH';
-    Bivio::Die->die($predicate, ': not an array reference')
-        unless ref($predicate) eq 'ARRAY';
-    return $proto->EQ(@$predicate)
-        unless ref($predicate->[0]);
-    return $proto->AND(map({_parse_predicate($proto, $_)} @$predicate));
-}
-
-# _static_compare(string comp, string left, string right) : hash_ref
-#
-# Return a comparison predicate.
-#
 sub _static_compare {
     my($comp, $left, $right) = @_;
+    # Return a comparison predicate.
     return {
         left => $left,
         right => $right,
@@ -924,13 +623,10 @@ sub _static_compare {
     };
 }
 
-# _static_equivalence(string $cmp, string $modifier, $left, $right) : hash_ref
-#
-# Return an equivalence predicate.  Use =/!= for single values.
-# Use IN/NOT IN for multiple values
-#
 sub _static_equivalence {
     my($comp, $modifier, $left, $right) = @_;
+    # Return an equivalence predicate.  Use =/!= for single values.
+    # Use IN/NOT IN for multiple values
     if (ref($right) eq 'ARRAY' && scalar(@$right) > 1) {
 	return _in($modifier, undef, $left, $right);
     }
@@ -938,15 +634,5 @@ sub _static_equivalence {
 	return _static_compare($comp, $left, $right);
     }
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
