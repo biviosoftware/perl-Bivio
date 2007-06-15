@@ -38,6 +38,7 @@ sub dav_propfind_children {
     my($q) = $self->get_query;
     return $self->new->map_iterate(
 	sub {shift->dav_propfind},
+#TODO: get_auth_id?  Why is this unauth_iterate_start anyway?
 	unauth_iterate_start => {
 	    map(($_ => $q->unsafe_get($_)),
 		'auth_id',
