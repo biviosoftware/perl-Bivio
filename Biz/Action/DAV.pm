@@ -27,6 +27,7 @@ my($_DIE) = {
 # This list should be complete, even though we don't implement them all
 # NOTE: copy is not a write operation.  It's write on Destination, not source
 my($_WRITABLE) = qr/^(delete|edit|lock|mkcol|move|put|proppatch|save|unlock)$/i;
+
 sub execute {
     my(undef, $req) = @_;
     my($s) = {
@@ -271,7 +272,7 @@ sub _depth {
 sub _fix_http {
     my($s, $v) = @_;
     # Must match what the user asked for exactly
-    $v =~ s{^(https?://)[^/:]+}{$1@{[$s->{r}->hostname]}}
+    $v =~ s{^https?://[^/]+}{@{[$s->{req}->format_http_prefix]}}
 	|| Bivio::Die->throw_die(DIE => $v);
     return $v;
 }
