@@ -2,167 +2,93 @@
 # $Id$
 package Bivio::SQL::Support;
 use strict;
-$Bivio::SQL::Support::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::SQL::Support::VERSION;
-
-=head1 NAME
-
-Bivio::SQL::Support - common interface to Support and ListSupport
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::SQL::Support;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Collection::Attributes>
-
-=cut
-
-use Bivio::Collection::Attributes;
-@Bivio::SQL::Support::ISA = ('Bivio::Collection::Attributes');
-
-=head1 DESCRIPTION
-
-C<Bivio::SQL::Support> contains common attributes and routines for
-L<Bivio::SQL::Support|Bivio::SQL::PropertySupport> and
-L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
-
-=head1 ATTRIBUTES
-
-All of these attributes should be treated as read-only.  They are made
-available via L<Bivio::Collection::Attributes|Bivio::Collection::Attributes>
-for simplicity and code re-use.
-
-=over 4
-
-=item auth_id : hash_ref
-
-Column which identifies the auth_id field.  On some Support instances,
-this may not be defined.
-
-=item columns : hash_ref
-
-All columns in the model.  For forms, this includes I<visible> and
-I<hidden>.  For other models, this includes I<other>, I<primary_key>,
-etc.
-
-=item column_names : array_ref
-
-List of names in I<columns>.  This list is sorted.
-
-=item primary_key_names : array_ref
-
-List of primary key column names, which uniquely identify a row
-or value. This list is in order that they were declared by
-the Model.
-
-=item primary_key : array_ref
-
-List of primary key columns.  Same order as I<primary_key_names>.
-
-=item version : int
-
-Version of this support declaration.
-
-=back
-
-=head1 FIELD ATTRIBUTES
-
-These attributes apply to fields (INCOMPLETE!)
-
-=over 4
-
-=item in_list : boolean
-
-Used by ListFormModel to indicate a column is in the list.
-
-=item in_select : boolean
-
-Used by ListModel to indicate a column is in the select.
-Can be used to force C<LEVEL> to be in select.
-
-=item is_searchable : boolean [0]
-
-True, if the PropertyModel column should be included in the global search
-index.
-
-=item sort_order : boolean
-
-Default order by option.
-True means ascending (normal) and false means descending.
-NOT NORMALLY USED.
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Collection::Attributes';
 use Bivio::Die;
-use Bivio::IO::ClassLoader;
-use Bivio::Type::DateTime;
 use Bivio::HTML;
+use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
 use Bivio::SQL::ListQuery;
 use Bivio::SQL::Statement;
+use Bivio::Type::DateTime;
 use Bivio::Type;
 use Carp ();
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::SQL::Support> contains common attributes and routines for
+# L<Bivio::SQL::Support|Bivio::SQL::PropertySupport> and
+# L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
+#
+#
+# All of these attributes should be treated as read-only.  They are made
+# available via L<Bivio::Collection::Attributes|Bivio::Collection::Attributes>
+# for simplicity and code re-use.
+#
+#
+# auth_id : hash_ref
+#
+# Column which identifies the auth_id field.  On some Support instances,
+# this may not be defined.
+#
+# columns : hash_ref
+#
+# All columns in the model.  For forms, this includes I<visible> and
+# I<hidden>.  For other models, this includes I<other>, I<primary_key>,
+# etc.
+#
+# column_names : array_ref
+#
+# List of names in I<columns>.  This list is sorted.
+#
+# primary_key_names : array_ref
+#
+# List of primary key column names, which uniquely identify a row
+# or value. This list is in order that they were declared by
+# the Model.
+#
+# primary_key : array_ref
+#
+# List of primary key columns.  Same order as I<primary_key_names>.
+#
+# version : int
+#
+# Version of this support declaration.
+#
+#
+#
+# These attributes apply to fields (INCOMPLETE!)
+#
+#
+# in_list : boolean
+#
+# Used by ListFormModel to indicate a column is in the list.
+#
+# in_select : boolean
+#
+# Used by ListModel to indicate a column is in the select.
+# Can be used to force C<LEVEL> to be in select.
+#
+# is_searchable : boolean [0]
+#
+# True, if the PropertyModel column should be included in the global search
+# index.
+#
+# sort_order : boolean
+#
+# Default order by option.
+# True means ascending (normal) and false means descending.
+# NOT NORMALLY USED.
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attrs) : Bivio::SQL::Support
-
-Pass through "new".
-
-=cut
-
-sub new {
-    return shift->SUPER::new(@_);
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_column_constraint"></a>
-
-=head2 get_column_constraint(string name) : Bivio::SQL::Constraint
-
-Returns the constraint of the column.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
 sub get_column_constraint {
+    # Returns the constraint of the column.
     return shift->get_column_info(@_, 'constraint');
 }
 
-=for html <a name="get_column_info"></a>
-
-=head2 get_column_info(string column) : hash_ref
-
-=head2 get_column_info(string column, string attr) : any
-
-Returns I<attr> for I<column> or all attrs if attr not defined.
-
-=cut
-
 sub get_column_info {
     my($self, $name, $attr) = @_;
+    # Returns I<attr> for I<column> or all attrs if attr not defined.
     my($col) = $self->get('columns')->{$name};
     Bivio::Die->die(
 	$name, ': no such column in ', $self->unsafe_get('table_name')
@@ -174,48 +100,27 @@ sub get_column_info {
     return $col->{$attr};
 }
 
-=for html <a name="get_column_name"></a>
-
-=head2 get_column_name(string name) : string
-
-Returns the name of the column.  This maps all aliases (including
-main column names) to the original column name.
-
-=cut
-
 sub get_column_name {
     my($self, $name) = @_;
+    # Returns the name of the column.  This maps all aliases (including
+    # main column names) to the original column name.
     my($col) = $self->get('column_aliases')->{$name};
     Bivio::Die->die($name, ': no such column alias')
         unless $col;
     return $col->{name};
 }
 
-=for html <a name="get_column_type"></a>
-
-=head2 get_column_type(string name) : Bivio::UNIVERSAL
-
-Returns the type of the column.  May be a
-L<Bivio::Type|Bivio::Type> or a
-L<Bivio::Biz::Model|Bivio::Biz::Model>.  The latter may only be
-used for non-database fields.
-
-=cut
-
 sub get_column_type {
+    # Returns the type of the column.  May be a
+    # L<Bivio::Type|Bivio::Type> or a
+    # L<Bivio::Biz::Model|Bivio::Biz::Model>.  The latter may only be
+    # used for non-database fields.
     return shift->get_column_info(@_, 'type');
 }
 
-=for html <a name="has_columns"></a>
-
-=head2 has_columns(string column_name, ...) : boolean
-
-Does the model have the specified columns
-
-=cut
-
 sub has_columns {
     my($columns) = shift->get('columns');
+    # Does the model have the specified columns
     my($n);
     foreach $n (@_) {
 	return 0 unless exists($columns->{$n});
@@ -223,24 +128,17 @@ sub has_columns {
     return 1;
 }
 
-=for html <a name="init_column"></a>
-
-=head2 static init_column(hash_ref attrs, string qual_col, string class, boolean is_alias) : hash_ref
-
-B<INTERNAL USE ONLY>
-
-Initializes I<qual_col> which is of the form C<Model_N.column> or
-C<Model.column> in I<attr>'s C<columns> if not already defined.
-Also updates I<class> and C<models> I<attrs>.
-Only modifies C<models> if I<is_alias>.
-
-Always returns a column hash_ref, but for I<is_alias> is not stored in
-I<attrs>.
-
-=cut
-
 sub init_column {
     my(undef, $attrs, $qual_col, $class, $is_alias) = @_;
+    # B<INTERNAL USE ONLY>
+    #
+    # Initializes I<qual_col> which is of the form C<Model_N.column> or
+    # C<Model.column> in I<attr>'s C<columns> if not already defined.
+    # Also updates I<class> and C<models> I<attrs>.
+    # Only modifies C<models> if I<is_alias>.
+    #
+    # Always returns a column hash_ref, but for I<is_alias> is not stored in
+    # I<attrs>.
     my($columns) = $attrs->{columns};
     my($col);
     unless ($col = $columns->{$qual_col}) {
@@ -288,19 +186,12 @@ sub init_column {
     return $col;
 }
 
-=for html <a name="init_column_classes"></a>
-
-=head2 init_column_classes(hash_ref attrs, hash_ref decl, array_ref classes) : string
-
-Initialize the column classes.
-Returns the beginnings of the where clause (alias field identities)
-
-Supports outer joins for aliases.  The alias must end with "(+)".
-
-=cut
-
 sub init_column_classes {
     my($proto, $attrs, $decl, $classes) = @_;
+    # Initialize the column classes.
+    # Returns the beginnings of the where clause (alias field identities)
+    #
+    # Supports outer joins for aliases.  The alias must end with "(+)".
     my($column_aliases) = $attrs->{column_aliases};
     my($where) = '';
     # Initialize all columns and put into appropriate column classes
@@ -364,21 +255,14 @@ sub init_column_classes {
     return $where;
 }
 
-=for html <a name="init_common_attrs"></a>
-
-=head2 static init_common_attrs(hash_ref attrs, hash_ref decl)
-
-B<INTERNAL USE ONLY>
-
-Validates C<version> in I<decl> is syntactically correct and
-sets in I<attrs>.
-
-Also initializes I<as_string_fields>.
-
-=cut
-
 sub init_common_attrs {
     my($proto, $attrs, $decl) = @_;
+    # B<INTERNAL USE ONLY>
+    #
+    # Validates C<version> in I<decl> is syntactically correct and
+    # sets in I<attrs>.
+    #
+    # Also initializes I<as_string_fields>.
     Bivio::Die->die(
 	$decl->{class},
 	' does not have a declared version--did you forget to ',
@@ -396,21 +280,14 @@ sub init_common_attrs {
     return;
 }
 
-=for html <a name="init_model_primary_key_maps"></a>
-
-=head2 static init_model_primary_key_maps(hash_ref attrs)
-
-B<INTERNAL USE ONLY>
-
-Initializes C<primary_key_map> for C<models> in I<attrs>.
-
-Primary key names are put in the C<other> category if they are not already
-in C<column_aliases> of I<attrs>
-
-=cut
-
 sub init_model_primary_key_maps {
     my($proto, $attrs) = @_;
+    # B<INTERNAL USE ONLY>
+    #
+    # Initializes C<primary_key_map> for C<models> in I<attrs>.
+    #
+    # Primary key names are put in the C<other> category if they are not already
+    # in C<column_aliases> of I<attrs>
     # Ensure that (qual) columns defined for all (qual) models and their
     # primary keys and initialize primary_key_map.
     my($n);
@@ -429,16 +306,9 @@ sub init_model_primary_key_maps {
     return;
 }
 
-=for html <a name="init_type"></a>
-
-=head2 init_type(hash_ref col, any type_cfg)
-
-Sets I<type> and I<sort_order> attributes on I<col> based on I<type_cfg>.
-
-=cut
-
 sub init_type {
     my(undef, $col, $type_cfg) = @_;
+    # Sets I<type> and I<sort_order> attributes on I<col> based on I<type_cfg>.
 
     # allow the type to be defined on another model, ex RealmOwner.realm_id
     if ($type_cfg =~ /^(.*)\.(.*)$/) {
@@ -454,37 +324,21 @@ sub init_type {
     return;
 }
 
-=for html <a name="iterate_end"></a>
-
-=head2 iterate_end(ref iterator)
-
-Terminates the iterator.
-
-=cut
-
 sub iterate_end {
     my($self, $iterator) = @_;
+    # Terminates the iterator.
     $iterator->finish;
     return;
 }
 
-=for html <a name="iterate_next"></a>
-
-=head2 iterate_next(Bivio::Biz::Model model, ref iterator, hash_ref row) : boolean
-
-=head2 iterate_next(Bivio::Biz::Model model, ref iterator, hash_ref row, string converter) : boolean
-
-I<iterator> was returned by L<iterate_start|"iterate_start">.
-I<row> is the resultant values by field name.
-I<converter> is optional and is the name of a
-L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
-
-Returns false if there is no next.
-
-=cut
-
 sub iterate_next {
     my($self, $model, $iterator, $row, $converter) = @_;
+    # I<iterator> was returned by L<iterate_start|"iterate_start">.
+    # I<row> is the resultant values by field name.
+    # I<converter> is optional and is the name of a
+    # L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
+    #
+    # Returns false if there is no next.
     my($start_time) = Bivio::Type::DateTime->gettimeofday();
     my($r) = $iterator->fetchrow_arrayref;
     Bivio::SQL::Connection->increment_db_time($start_time);
@@ -507,25 +361,22 @@ sub iterate_next {
     return 1;
 }
 
-#=PRIVATE METHODS
+sub new {
+    # Pass through "new".
+    return shift->SUPER::new(@_);
+}
 
-# _add_to_class(hash_ref attrs, string class, hash_ref col)
-#
-# Adds to class if not already in class.
-#
 sub _add_to_class {
     my($attrs, $class, $col) = @_;
+    # Adds to class if not already in class.
     return if grep($col->{name} eq $_->{name}, @{$attrs->{$class}});
     push(@{$attrs->{$class}}, $col);
     return;
 }
 
-# _init_column_from_hash(hash_ref attrs, hash_ref decl, string class, array_ref aliases) : hash_ref
-#
-# Initializes the column from a hash reference of (name, type, constraint).
-#
 sub _init_column_from_hash {
     my($attrs, $decl, $class, $aliases) = @_;
+    # Initializes the column from a hash reference of (name, type, constraint).
     my($col, $first);
     # case: "{ name => }"
     if (ref($first = $decl->{name})) {
@@ -580,15 +431,5 @@ sub _init_column_from_hash {
     _add_to_class($attrs, $class, $col);
     return $col;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
