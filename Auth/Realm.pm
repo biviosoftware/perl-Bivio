@@ -91,19 +91,6 @@ my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role->UNKNOWN(),
 
 =for html <a name="new"></a>
 
-=head2 static clone() : Bivio::Auth::Realm
-
-=cut
-
-sub clone {
-    my($other) = shift;
-    my($self) = $other->SUPER::new($other->get_shallow_copy);
-    $self->[$_IDI] = {%{$other->[$_IDI]}};
-    return $self;
-}
-
-=for html <a name="new"></a>
-
 =head2 static new() : Bivio::Auth::Realm
 
 =head2 static new(Bivio::Biz::Model owner) : Bivio::Auth::Realm

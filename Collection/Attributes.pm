@@ -154,22 +154,6 @@ sub are_defined {
     return 1;
 }
 
-=for html <a name="clone"></a>
-
-=head2 clone() : Bivio::Collection::Attributes
-
-Creates a duplicate copy of this instance.
-
-I<Subclasses must override this method if their C<new> is different
-from this class' C<new>.>
-
-=cut
-
-sub clone {
-    my($self) = @_;
-    return $self->new($self->get_shallow_copy);
-}
-
 =for html <a name="delete"></a>
 
 =head2 delete(string key, ...) : self
