@@ -170,6 +170,7 @@ sub is_sole_admin {
     # Check to see if an admin at all.  This avoids a db query for most
     # realm users.
     return 0 unless $model->get($model_prefix . 'role')->is_admin;
+#TODO: fix this code;  Should do_rows.  Indeed, should be RealmUserList.
     return Bivio::SQL::Connection->execute_one_row('
         SELECT count(*)
         FROM realm_owner_t, realm_user_t
