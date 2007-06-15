@@ -129,8 +129,8 @@ sub from_datetime {
 
 =head2 static from_literal(string value) : array
 
-Handles I<value> in mm/dd/yyyy, mm-dd-yyyy, or yyyymmdd
-or C<Bivio::Type::DateTime> format.
+Handles I<value> in mm/dd/yyyy, mm-dd-yyyy, yyyymmdd,
+dd-mmm-yyyy or C<Bivio::Type::DateTime> format.
 
 =cut
 
@@ -149,6 +149,12 @@ sub from_literal {
 	if $value =~ m!^(\d+)[/-](\d+)[/-](\d+)$!i;
     return Bivio::Type::DateTime->date_from_parts($3, $2, $1)
 	if $value =~ m!^(\d{4})(\d{2})(\d{2})$!i;
+    return Bivio::Type::DateTime->date_from_parts(
+        $1,
+	Bivio::Type::DateTime->english_month3_to_int($2),
+	$3,
+    )
+	if $value =~ m!^(\d{2})-(\w{3})-(\d{4})$!i;
     return (undef, Bivio::TypeError::DATE());
 }
 
