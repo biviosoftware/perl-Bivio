@@ -733,6 +733,7 @@ sub piped_exec {
     $$in = '' unless defined($$in);
     my($pid) = open(IN, "-|");
     defined($pid) || die("fork: $!");
+#TODO: Use IO::File and Bivio::IO::File
     unless ($pid) {
 	open(OUT, "| exec $command") || die("open $command: $!");
 	print OUT $$in;
