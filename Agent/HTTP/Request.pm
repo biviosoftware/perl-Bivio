@@ -254,7 +254,7 @@ sub get_content {
 	return \$c
 	    unless my $l = $r->header_in('content-length');
 	$self->throw_die(INPUT_TOO_LARGE => "Content-Length too large: $l")
-	    if $l > 100_000_000;
+	    if $l > 120_000_000;
 	$r->read($c, $l);
         $self->throw_die(CLIENT_ERROR =>
             'timeout occurred while reading request content')
