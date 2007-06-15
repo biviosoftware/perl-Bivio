@@ -229,11 +229,6 @@ sub clean_raw {
     return $query;
 }
 
-sub clone {
-    my($self) = @_;
-    return $self->SUPER::new($self->get_shallow_copy);
-}
-
 sub format_uri {
     my($self, $support, $new_attrs) = @_;
     # Lets you override any I<new_attrs>, useful for other_query_keys at this time.
@@ -452,16 +447,13 @@ sub to_char {
 }
 
 sub unauth_new {
-    my($proto, $attrs, $model, $support) = @_;
-    # Creates a new ListQuery using the I<attrs> supplied.  No checking
-    # is done on the values.  I<auth_id> may or may not be set.
-    #
-    # B<I<attrs> will be subsumed by this module.  Do not use it again.>
-    # Rob said to set this for ordering anon list models, but it didn't work
-#    $attrs->{order_by} ||= '';
-    # Always set these
+    my($proto, $attrs, $support, $model) = @_;
+    if ($proto->is_blessed($support, 'Bivio::Biz::Model')) {
+	Bivio::IO::Alert->warn_deprecated('switch $model and $support');
+	($support, $model) = ($model, $support);
+    }
     foreach my $k (@_QUERY_FIELDS) {
-	&{\&{'_parse_'.$k}}($attrs, $support, $model)
+	(\&{'_parse_'.$k})->($attrs, $support, $model)
 		unless exists($attrs->{$k});
     }
     return _new($proto, $attrs, $support, $model);
