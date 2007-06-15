@@ -2,63 +2,18 @@
 # $Id$
 package Bivio::UI::HTML::Widget::JavaScript;
 use strict;
-$Bivio::UI::HTML::Widget::JavaScript::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::JavaScript::VERSION;
+use Bivio::Base 'Bivio::UI::Widget';
 
-=head1 NAME
-
-Bivio::UI::HTML::Widget::JavaScript - renders a JavaScript version flag
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::JavaScript;
-    Bivio::UI::HTML::Widget::JavaScript->new($attrs);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::JavaScript::ISA = qw(Bivio::UI::Widget);
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::JavaScript> renders a JavaScript version
-flag.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub COMMON_CODE {
     return __PACKAGE__ . '::JAVASCRIPT_HEAD';
 }
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="escape_string"></a>
-
-=head2 escape_string(string_ref unescaped_text) : string_ref
-
-Converts a text string into something safely escaped.
-Returns its first argument.
-
-=cut
-
 sub escape_string {
     my($self, $text) = @_;
+    # Converts a text string into something safely escaped.
+    # Returns its first argument.
     $$text =~ s/\\/\\\\/g;
     $$text =~ s/'/\\'/g;
     $$text =~ s/\n/\\n/g;
@@ -66,32 +21,18 @@ sub escape_string {
     return $text;
 }
 
-=for html <a name="has_been_rendered"></a>
-
-=head2 has_been_rendered(any source, string module_tag) : boolean
-
-returns true if common code has been rendered.
-
-=cut
-
 sub has_been_rendered {
     my(undef, $source, $module_tag) = @_;
+    # returns true if common code has been rendered.
     return exists(($source->get_request->unsafe_get(COMMON_CODE()) || {})
 	->{$module_tag});
 }
 
-=for html <a name="render"></a>
-
-=head2 static render(any source, string_ref buffer, string module_tag, string common_code, string script, string no_script_html)
-
-Render the JavaScript version tag if not already rendered.
-Renders the I<common_code> for I<module_tag> if not already
-rendered.  Renders I<script> and I<no_script_html> if defined.
-
-=cut
-
 sub render {
     my(undef, $source, $buffer, $module_tag, $common_code,
+    # Render the JavaScript version tag if not already rendered.
+    # Renders the I<common_code> for I<module_tag> if not already
+    # rendered.  Renders I<script> and I<no_script_html> if defined.
 	    $script, $no_script_html) = @_;
     my($req) = $source->get_request;
 
@@ -120,16 +61,9 @@ sub render {
     return;
 }
 
-=for html <a name="strip"></a>
-
-=head2 static strip(string code) : string
-
-Strips leading blanks and comments.
-
-=cut
-
 sub strip {
     my(undef, $code) = @_;
+    # Strips leading blanks and comments.
     # Strip leading blanks and blank lines
     $code =~ s/^\s+//sg;
     $code =~ s/\n\s+/\n/g;
@@ -139,15 +73,10 @@ sub strip {
     return $code;
 }
 
-#=PRIVATE METHODS
-
-# _render_script_in_head() : 
-#
-# render the common code in <script> tags
-# intended to be called in the html <head> block
-#
 sub _render_script_in_head {
     my($req, $buffer) = @_;
+    # render the common code in <script> tags
+    # intended to be called in the html <head> block
     my($defns) = $req->unsafe_get(COMMON_CODE());
     return
 	unless defined($defns);
@@ -158,15 +87,5 @@ sub _render_script_in_head {
     $$buffer .= "\n// -->\n</script>";
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
