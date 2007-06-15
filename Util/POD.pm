@@ -183,7 +183,7 @@ sub to_comments {
 	}
 	pop(@{$parts->{init}})
 	    unless length($parts->{init}->[$#{$parts->{init}}]);
-	$parts->{import} = [sort(@{$parts->{import}})];
+	$parts->{import} = [sort(@{$parts->{import} || []})];
 	foreach my $p (qw(constant method private)) {
 	    $parts->{$p} = [sort {$a->[0] cmp $b->[0]} @{$parts->{$p}}];
 	}
