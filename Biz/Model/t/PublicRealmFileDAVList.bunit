@@ -10,6 +10,6 @@ req()->put(path_info => '/');
     dav_propfind_children => [
 	[] => [[map(+{
 	    uri => $_,
-	}, qw(logo.gif logo.bad logo.png EasyForm-btest-done.html EasyForm-btest.html))]],
+	}, qw(EasyForm-btest-done.html EasyForm-btest.html logo.bad logo.gif logo.png))]],
     ],
 ];
