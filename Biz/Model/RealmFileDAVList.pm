@@ -77,6 +77,7 @@ sub internal_initialize {
 	can_iterate => 1,
 	auth_id => 'RealmFile.realm_id',
 	primary_key => ['RealmFile.path_lc'],
+	order_by => ['RealmFile.path_lc'],
 	other => [qw(
 	    RealmFile.path
 	    RealmFile.realm_file_id
