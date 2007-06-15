@@ -2,109 +2,72 @@
 # $Id$
 package Bivio::IO::Ref;
 use strict;
-$Bivio::IO::Ref::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::IO::Ref::VERSION;
-
-=head1 NAME
-
-Bivio::IO::Ref - manipulate references
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::IO::Ref;
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::IO::Ref::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::IO::Ref> manipulates references.
-
-=cut
-
-#=IMPORTS
-use Data::Dumper ();
+use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::IO::Alert;
+use Data::Dumper ();
 
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="nested_contains"></a>
-
-=head2 nested_contains(any subset, any set) : string_ref
-
-If all elements of I<subset> are contained in I<set>, returns undef.  If not,
-returns the nested differences of the values.  Special cases are code references.
-If I<subset> value is a code reference, will execute the code reference on the
-value in I<set>, e.g.
-
-    {                                {
-        key1 => 1,		         key1 => 1,
-        key2 => sub {		         key2 => val2
-            my($val2) = @_;   },
-            assert on $val2;
-            return $val2;
-        },
-    },
-
-For array refs, this works out to:
-
-    [                                [
-        1,                               1,
-        sub {                            2,
-            my($val, $index) = @_;   ],
-            return 2;
-        },
-    ];
-
-If I<subset> contains a scalar, and I<set> is a ref that matches the
-scalar either by dereferencing or by calling to_string() or in the case of
-enums get_name(), then the match is ok.
-
-The purpose of contains is to find a general matching of values for unit
-testing.  See Bivio::Test::Unit::assert_contains for details.
-
-=cut
+sub deep_copy {
+    my($proto, $value, $seen) = @_;
+    $seen ||= {};
+    return ref($value) eq 'ARRAY' ? [
+	    map($proto->deep_copy($_), @{_seen($value, $seen)}),
+	] : ref($value) eq 'HASH' ? {
+	    map(($_ => $proto->deep_copy($value->{$_})),
+		keys(%{_seen($value, $seen)}))
+	} : ref($value) eq 'SCALAR' ? \(my $x = $$value)
+	: ref($value) !~ /=/ || !ref($value) ? $value
+	: $value->can('clone') ? _seen($value, $seen)->clone
+	: $value;
+}
 
 sub nested_contains {
+    # If all elements of I<subset> are contained in I<set>, returns undef.  If not,
+    # returns the nested differences of the values.  Special cases are code references.
+    # If I<subset> value is a code reference, will execute the code reference on the
+    # value in I<set>, e.g.
+    #
+    #     {                                {
+    #         key1 => 1,		         key1 => 1,
+    #         key2 => sub {		         key2 => val2
+    #             my($val2) = @_;   },
+    #             assert on $val2;
+    #             return $val2;
+    #         },
+    #     },
+    #
+    # For array refs, this works out to:
+    #
+    #     [                                [
+    #         1,                               1,
+    #         sub {                            2,
+    #             my($val, $index) = @_;   ],
+    #             return 2;
+    #         },
+    #     ];
+    #
+    # If I<subset> contains a scalar, and I<set> is a ref that matches the
+    # scalar either by dereferencing or by calling to_string() or in the case of
+    # enums get_name(), then the match is ok.
+    #
+    # The purpose of contains is to find a general matching of values for unit
+    # testing.  See Bivio::Test::Unit::assert_contains for details.
     return _diff(@_);
 }
-
-=for html <a name="nested_differences"></a>
-
-=head2 nested_differences(any left, any right) : string_ref
-
-Returns differences between left and right.  If no differences, returns
-undef.  Special cases for CODE on left and regexp on left. 
-
-=cut
 
 sub nested_differences {
+    # Returns differences between left and right.  If no differences, returns
+    # undef.  Special cases for CODE on left and regexp on left. 
     return _diff(@_);
 }
-
-=for html <a name="nested_equals"></a>
-
-=head2 nested_equals(any left, any right) : boolean
-
-Returns true if I<left> is structurally equal to I<right>, i.e. the contents of
-all the data.
-
-B<Does not handle cyclic data structures.>
-
-=cut
 
 sub nested_equals {
     my($proto, $left, $right) = @_;
+    # Returns true if I<left> is structurally equal to I<right>, i.e. the contents of
+    # all the data.
+    #
+    # B<Does not handle cyclic data structures.>
     return 0 unless defined($left) eq defined($right);
     return 1 unless defined($left);
 
@@ -144,50 +107,29 @@ sub nested_equals {
     return $left eq $right ? 1 : 0;
 }
 
-=for html <a name="to_scalar_ref"></a>
-
-=head2 to_scalar_ref(string scalar) : scalar_ref
-
-DEPRECATED: Use \('bla').
-
-Returns its argument as a scalar_ref.
-
-=cut
-
 sub to_scalar_ref {
     my(undef, $scalar) = @_;
+    # DEPRECATED: Use \('bla').
+    #
+    # Returns its argument as a scalar_ref.
     return \$scalar;
 }
 
-=for html <a name="to_short_string"></a>
-
-=head2 to_short_string(any value) : string
-
-Returns a string summary of the ref.  Uses
-L<Bivio::IO::Alert::format_args|Bivio::IO::Alert/"format_args">,
-but doesn't include ending newline.
-
-=cut
-
 sub to_short_string {
     my(undef, $value) = @_;
+    # Returns a string summary of the ref.  Uses
+    # L<Bivio::IO::Alert::format_args|Bivio::IO::Alert/"format_args">,
+    # but doesn't include ending newline.
     my($res) = Bivio::IO::Alert->format_args($value);
     chomp($res);
     return $res;
 }
 
-=for html <a name="to_string"></a>
-
-=head2 static to_string(any ref, integer max_depth, integer indent) : string_ref
-
-Converts I<ref> into a string_ref.  The string is formatted "tersely"
-using C<Data::Dumper>.  I<max_depth> is passed to Data::Dumper::Maxdepth.
-I<indent> is passed to Data::Dumper::Indent (defaults 1);
-
-=cut
-
 sub to_string {
     my(undef, $ref, $max_depth, $indent) = @_;
+    # Converts I<ref> into a string_ref.  The string is formatted "tersely"
+    # using C<Data::Dumper>.  I<max_depth> is passed to Data::Dumper::Maxdepth.
+    # I<indent> is passed to Data::Dumper::Indent (defaults 1);
     my($dd) = Data::Dumper->new([$ref]);
     $dd->Deepcopy(1);
     $dd->Indent(defined($indent) ? $indent : 1);
@@ -198,8 +140,6 @@ sub to_string {
     my($res) = $dd->Dumpxs();
     return \$res;
 }
-
-#=PRIVATE METHODS
 
 sub _diff {
     my($proto, $left, $right) = @_;
@@ -325,14 +265,11 @@ sub _diff_to_string {
 	: ${$proto->to_string($s, 0, 0)};
 }
 
-=head1 COPYRIGHT
-
-Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub _seen {
+    my($value, $seen) = @_;
+    Bivio::Die->die($value, ': value already seen, recursion')
+        if $seen->{$value}++;
+    return $value;
+}
 
 1;
