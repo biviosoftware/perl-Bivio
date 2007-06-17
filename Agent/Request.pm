@@ -198,7 +198,6 @@ our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_IS_PRODUCTION) = 0;
 my($_CAN_SECURE);
-my($_FORMAT_URI_ARGS) = __PACKAGE__->FORMAT_URI_PARAMETERS;
 Bivio::IO::Config->register({
     is_production => $_IS_PRODUCTION,
     can_secure => 1,
@@ -207,8 +206,7 @@ my($_CURRENT);
 
 sub FORMAT_URI_PARAMETERS {
     # Order and names of params passed to format_uri().
-    return [qw(
-        task_id query realm path_info no_context anchor require_context uri)];
+    return [qw(task_id query realm path_info no_context anchor require_context uri)];
 }
 
 sub as_string {
@@ -401,7 +399,6 @@ sub format_stateless_uri {
 }
 
 sub format_uri {
-    my($self, $named) = shift->internal_get_named_args(
     # Pass in parameters in a hash I<named>.  This is preferred format for anything
     # complicated.
     #
@@ -421,7 +418,10 @@ sub format_uri {
     #
     # I<no_context> and I<require_context> as described by
     # L<Bivio::UI::Task::format_uri|Bivio::UI::Task/"format_uri">.
-	$_FORMAT_URI_ARGS,
+    my($self) = shift;
+    my($named);
+    ($self, $named) = $self->internal_get_named_args(
+	$self->FORMAT_URI_PARAMETERS,
 	\@_);
     my($uri);
     unless (defined($uri = $named->{uri})) {
@@ -730,7 +730,7 @@ sub internal_server_redirect {
     $named->{uri} = Bivio::UI::Task->has_uri($named->{task_id})
 	? $self->format_uri({
 	    map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
-		@$_FORMAT_URI_ARGS),
+		@{$self->FORMAT_URI_PARAMETERS}),
         }) : $self->get('uri');
     $named->{form_context} = $fc;
     foreach my $x (qw(form path_info)) {
