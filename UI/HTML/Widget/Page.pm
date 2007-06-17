@@ -121,27 +121,24 @@ sub handle_config {
 }
 
 sub initialize {
-    my($self) = @_;
-    # Initializes child widgets.
+    my($self) = shift;
     $self->initialize_attr('head');
     $self->initialize_attr('body');
+    $self->unsafe_initialize_attr('background');
+    $self->internal_initialize_head_attrs(@_);
+    return;
+}
+
+sub internal_initialize_head_attrs {
+    my($self) = @_;
     $self->unsafe_initialize_attr('style');
     $self->unsafe_initialize_attr('xhtml');
-    $self->unsafe_initialize_attr('background');
-    foreach my $x (qw(style script)) {
-	$self->get_if_exists_else_put($x,
-	    sub {$_VS->vs_new(ucfirst($x))});
-	$self->unsafe_initialize_attr($x);
+    foreach my $x (qw(Style Script JavaScript)) {
+	$self->initialize_attr(lc($x), sub {$_VS->vs_new($x)});
     }
-    $self->get_if_exists_else_put('javascript',
-        sub {$_VS->vs_new('JavaScript')});
-    $self->unsafe_initialize_attr('javascript');
-    if ($self->unsafe_initialize_attr('want_page_print')) {
-	$self->put(
-	    _page_print_script => $self->get('script')->new('page_print'),
-	);
-	$self->initialize_attr('_page_print_script');
-    }
+    $self->initialize_attr(
+       _page_print_script => $self->get('script')->new('page_print'),
+    ) if $self->unsafe_initialize_attr('want_page_print');
     return;
 }
 
@@ -159,26 +156,14 @@ sub internal_new_args {
     };
 }
 
-sub render {
-    my($self, $source, $buffer) = @_;
-    my($req) = $source->get_request;
-    $req->put(font_with_style =>
-        $req->get('Type.UserAgent')->is_css_compatible
-	    && $self->unsafe_get('style')
-	    ? 1 : 0,
-    );
-    my($body) = $self->render_attr('body', $source);
-    $req->put(xhtml => my $xhtml = $self->render_simple_attr('xhtml', 0));
-    $$buffer .= ($xhtml
-#	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
-	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-        : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">')
-	."\n<html><head>\n";
+sub internal_render_head_attrs {
+    my($self, $source) = @_;
+    my($b);
     my($x) = '';
     $self->map_invoke(
 	unsafe_render_attr => [
 	    map(
-		[$_, $source, $buffer],
+		[$_, $source, \$b],
 		'head',
 		'style',
 		$self->unsafe_render_attr('want_page_print', $source, \$x)
@@ -189,10 +174,24 @@ sub render {
 	],
     );
     # IE caches too much.
-    $$buffer .= qq{<meta name="MSSmartTagsPreventParsing" content="TRUE">\n}
+    $b .= qq{<meta name="MSSmartTagsPreventParsing" content="TRUE">\n}
 	.qq{<meta http-equiv="pragma" content="no-cache">\n}
-	if $req->get('Type.UserAgent')->has_over_caching_bug;
-    $$buffer .= '</head><body';
+	if $source->get_request->get('Type.UserAgent')->has_over_caching_bug;
+    return $b;
+}
+
+sub render {
+    my($self, $source, $buffer) = @_;
+    my($req) = $source->get_request;
+    my($xhtml) = $self->internal_setup_xhtml($req);
+    my($body) = $self->render_attr('body', $source);
+    $$buffer .= ($xhtml
+#	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
+	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+        : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">')
+	. "\n<html><head>\n"
+	. $self->internal_render_head_attrs($source)
+	. '</head><body';
     # Always have a background color
     $$buffer .= Bivio::UI::Color->format_html(
 	$self->get_or_default('page_bgcolor', 'page_bg'), 'bgcolor', $req);
@@ -201,7 +200,7 @@ sub render {
 	$$buffer .= Bivio::UI::Color->format_html(
 	    $self->get_or_default($n.'_color', $n), $c, $req);
     }
-    $x = '';
+    my($x) = '';
     $$buffer .= Bivio::UI::Icon->format_html_attribute(
 	$x, 'background', $req
     ) if $self->unsafe_render_attr('background', $source, \$x) && $x;
@@ -211,6 +210,17 @@ sub render {
 	. $self->show_time_as_html($req)
 	. "</body></html>\n";
     return;
+}
+
+sub internal_setup_xhtml {
+    my($self, $req) = @_;
+    $req->put(font_with_style =>
+        $req->get('Type.UserAgent')->is_css_compatible
+	    && $self->unsafe_get('style')
+	    ? 1 : 0,
+    );
+    $req->put(xhtml => my $xhtml = $self->render_simple_attr('xhtml', 0));
+    return $xhtml;
 }
 
 sub show_time_as_html {
