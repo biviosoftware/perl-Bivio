@@ -21,7 +21,7 @@ sub control_off_render {
 sub control_on_render {
     return _do(sub {
 	my($self, $source, $buffer, $value) = @_;
-	$$buffer .= qq{<link href="$value" rel="stylesheet" type="text/css">\n};
+	$$buffer .= qq{<link href="$value" rel="stylesheet" type="text/css" />\n};
 	return;
     }, @_);
 }
