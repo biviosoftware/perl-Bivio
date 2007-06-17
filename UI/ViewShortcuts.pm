@@ -71,6 +71,15 @@ sub vs_req {
     return [['->get_request'], @_];
 }
 
+sub vs_resolve_fully {
+    my(undef, $value) = @_;
+    return [sub {
+	return ref($value) eq 'ARRAY'
+	    ? Bivio::UI::Widget->unsafe_resolve_widget_value($value, shift(@_))
+	    : $value;
+    }];
+}
+
 sub vs_site_name {
     # Returns a widget value that returns Text.site_name.
     return shift->vs_text('site_name');
