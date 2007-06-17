@@ -109,7 +109,7 @@ sub clear_errors {
 
 sub create_model_properties {
     my($self, $model, $other_properties) = @_;
-    $model = $self->get_model($model)
+    $model = $self->new_other($model)
 	unless ref($model);
     return $model->create({
 	%{$self->get_model_properties($model)},
