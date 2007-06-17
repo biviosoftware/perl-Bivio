@@ -29,16 +29,17 @@ sub render {
     my($req) = $source->get_request;
     $self->internal_setup_xhtml($req);
     my($rid) = $self->render_simple_attr('realm_id', $source);
+    my($p) = $self->render_simple_attr('path', $source);
     my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
-    $rf->unauth_load({
+    $p && $rf->unauth_load({
 	realm_id => $rid,
-	path => $self->render_simple_attr('path', $source),
+	path => $p,
     }) or $rf->unauth_load_or_die({
 	realm_id => $rid,
 	path => $self->render_simple_attr('default_path', $source),
     });
     my($b) = $rf->get_content;
-    my($p) = $rf->get('path');
+    $p = $rf->get('path');
 #TODO: Encapsulate
     $p = $_FP->from_public($p)
 	if $rf->get('is_public');
