@@ -276,7 +276,7 @@ sub as_string {
 
 =for html <a name="die"></a>
 
-=head2 die(string attr_name, any source, string msg, ...)
+=head2 die(string entity, any source, string msg, ...)
 
 Dies with I<msg> and context including I<attr_name> and I<source>
 which both may be C<undef>.
@@ -284,10 +284,10 @@ which both may be C<undef>.
 =cut
 
 sub die {
-    my($self, $attr_name, $source, @msg) = @_;
+    my($self, $entity, $source, @msg) = @_;
     Bivio::Die->throw('DIE', {
 	message => Bivio::IO::Alert->format_args(@msg),
-	entity => $attr_name,
+	entity => $entity,
 	widget => $self,
 	view => Bivio::IO::ClassLoader->was_required('Bivio::View')
 	    && Bivio::View->unsafe_get_current,
