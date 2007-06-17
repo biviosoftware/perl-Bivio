@@ -38,7 +38,12 @@ sub render {
 	path => $self->render_simple_attr('default_path', $source),
     });
     my($b) = $rf->get_content;
-    $$b =~ s{(\b(?:href|src)=")([^"]+)}{$1 . _render_uri($2, $rf)}sige;
+    my($p) = $rf->get('path');
+#TODO: Encapsulate
+    $p = $_FP->from_public($p)
+	if $rf->get('is_public');
+    $p = URI->new($rf->get_request->format_http({uri => $p}));
+    $$b =~ s{(\b(?:href|src)=")([^"]+)}{$1 . _render_uri($2, $p)}sige;
     my($vap) = $self->render_simple_attr('view_attr_prefix');
     $$b =~ s{
         \<\!--\s*bivio-([\w-]+)\s*--\>
@@ -52,15 +57,11 @@ sub render {
 }
 
 sub _render_uri {
-    my($rel, $rf) = @_;
+    my($rel, $file_uri) = @_;
     my($abs) = URI->new($rel);
     return $rel
 	if $abs->scheme || $abs->path =~ m{^(/|$)};
-    my($p) = $rf->get('path');
-#TODO: Encapsulate
-    $p = $_FP->from_public($p)
-	if $rf->get('is_public');
-    $abs = $abs->abs(URI->new($rf->get_request->format_http({uri => $p})));
+    $abs = $abs->abs($file_uri);
     my($q) = $abs->query;
     my($f) = $abs->fragment;
     return $abs->path . (defined($q) ? "?$q" : '') . (defined($f) ? "#$f" : '');
