@@ -136,7 +136,7 @@ sub validate_vars {
 
 sub _app_bconf {
     my($vars) = @_;
-    return _replace_vars($vars, bconf => <<'EOF');
+    return _replace_vars_for_file($vars, bconf => <<'EOF');
 use $root_prefix::BConf;
 $root_prefix::BConf->merge_dir({
     'Bivio::Agent::Request' => {
@@ -177,13 +177,6 @@ sub _app_vars {
 	log_directory => "/var/log/$app",
 	logrotate => "/etc/logrotate.d/$app",
 	pid_file => "/var/run/$app.pid",
-	permanent_redirects => ($vars->{http_suffix} || '') =~ /^www\.(.*)$/
-	    ? <<"EOF" : '',
-<VirtualHost *>
-    ServerName $1
-    RedirectPermanent / http://www.$1/
-</VirtualHost>
-EOF
 	process_name => "$app-httpd",
 	content => <<"EOF",
 PerlWarn on
@@ -204,7 +197,7 @@ EOF
 
 sub _app_init_rc {
     my($vars) = @_;
-    return _replace_vars($vars, init_rc => <<'EOF');
+    return _replace_vars_for_file($vars, init_rc => <<'EOF');
 #!/bin/bash
 #
 # Startup script for the $app App Server
@@ -224,7 +217,7 @@ EOF
 
 sub _httpd_conf {
     my($vars) = @_;
-    return _replace_vars($vars, 'httpd_conf', <<'EOF');
+    return _replace_vars_for_file($vars, 'httpd_conf', <<'EOF');
 ResourceConfig /dev/null
 AccessConfig /dev/null
 
@@ -284,10 +277,9 @@ BrowserMatch "JDK/1\.0" force-response-1.0
 EOF
 }
 
-sub _logrotate
-    {
+sub _logrotate {
     my($vars) = @_;
-    return _replace_vars($vars, logrotate => <<'EOF');
+    return _replace_vars_for_file($vars, logrotate => <<'EOF');
 $log_directory/access_log $log_directory/agent_log $log_directory/error_log $log_directory/referer_log {
     missingok
     sharedscripts
@@ -328,21 +320,23 @@ sub _httpd_vars {
 	%$v,
     );
     _app_vars($v);
-    my($t);
-    $v->{content} = join(
-	"\n",
-	map(
-	    $_ =~ /\n/ ? ($t = $_, '')[1]
-		: ${(_replace_vars($vars->{$_}, "_httpd_vars($_)", $t))[1]},
-	    <<'EOF', 'httpd',
-
-NameVirtualHost *
+    foreach my $a (@{$vars->{apps}}) {
+	my($av) = $vars->{$a};
+	$av->{rewrite_rules}
+	    = _replace_vars($av, "rewrite_rules($a)", <<'EOF');
+    RewriteRule ^/./ - [L]
+    RewriteRule .*favicon.ico$$ /i/favicon.ico [L]
+    RewriteRule ^(.*) http://$http_suffix:$listen$$1 [proxy]
+EOF
+	$av->{permanent_redirects} = $av->{http_suffix} ne "www.$av->{mail_host}"
+	    ? '' : _replace_vars($av, "permanent_redirects($a)", <<'EOF');
 <VirtualHost *>
-    ServerName $host_name
-    DocumentRoot /var/www/html
+    ServerName $mail_host
+    RedirectPermanent / http://$http_suffix/
 </VirtualHost>
 EOF
-	    <<'EOF', @{$vars->{apps}},
+	$av->{httpd_content}
+	    = _replace_vars($av, "httpd_content($a)", <<'EOF');
 <VirtualHost *>
     ServerName $http_suffix
     DocumentRoot /var/www/facades/$app/plain
@@ -350,15 +344,24 @@ EOF
     ProxyIOBufferSize 4194304
     RewriteEngine On
     RewriteOptions inherit
-    $legacy_rewrite_rules
-    RewriteRule ^/./ - [L]
-    RewriteRule .*favicon.ico$$ /i/favicon.ico [L]
-    RewriteRule ^(.*) http://$http_suffix:$listen$$1 [proxy]
+$legacy_rewrite_rules
+$rewrite_rules
 </VirtualHost>
 $permanent_redirects
 $facade_redirects
 EOF
-	),
+    }
+    my($t);
+    $v->{content} = join(
+	"\n",
+	_replace_vars($vars->{httpd}, "httpd_content", <<'EOF'),
+NameVirtualHost *
+<VirtualHost *>
+    ServerName $host_name
+    DocumentRoot /var/www/html
+</VirtualHost>
+EOF
+	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
     );
     my($n) = 0;
     foreach my $s (@{$vars->{apps}}) {
@@ -380,7 +383,12 @@ sub _replace_vars {
 	defined($vars->{$1}) ? $vars->{$1}
 	    : Bivio::Die->die("$1: in template ($name), but not in ", $vars)
     }xseg;
-    return ($vars->{$name}, \$template);
+    return $template;
+}
+
+sub _replace_vars_for_file {
+    my($vars, $name) = @_;
+    return ($vars->{$name}, \(_replace_vars(@_)));
 }
 
 sub _write {
