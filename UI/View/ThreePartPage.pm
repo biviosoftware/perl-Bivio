@@ -34,8 +34,7 @@ sub internal_xhtml_adorned {
 	    }),
 	]),
 	body => Join([
-	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
-            vs_first_focus(),
+	    view_widget_value('xhtml_body_first'),
 	    vs_grid3('header'),
 	    vs_grid3('main'),
 	    vs_grid3('footer'),
@@ -67,6 +66,10 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_footer_left => XLink('back_to_top'),
 	xhtml_footer_middle => '',
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
+	xhtml_body_first => Join([
+	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
+            vs_first_focus(),
+	]),
     );
     view_put(
 	xhtml_header_middle => DIV_nav(view_widget_value('xhtml_nav')),
