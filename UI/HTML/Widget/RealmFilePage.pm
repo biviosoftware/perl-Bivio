@@ -5,10 +5,11 @@ use strict;
 use Bivio::Base 'HTMLWidget.Page';
 use Bivio::UI::HTML::Widget::ControlBase;
 use Bivio::UI::ViewLanguageAUTOLOAD;
+use URI ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATTRS) = [qw(view_attr_prefix realm_id path default_path)];
-my($_D) = Bivio::Type->get_instance('Date');
+my($_FP) = Bivio::Type->get_instance('FilePath');
 
 sub initialize {
     my($self) = shift;
@@ -37,16 +38,32 @@ sub render {
 	path => $self->render_simple_attr('default_path', $source),
     });
     my($b) = $rf->get_content;
+    $$b =~ s{(\b(?:href|src)=")([^"]+)}{$1 . _render_uri($2, $rf)}sige;
     my($vap) = $self->render_simple_attr('view_attr_prefix');
     $$b =~ s{
         \<\!--\s*bivio-([\w-]+)\s*--\>
 	| \<\!--\s*start-bivio-([\w-]+)\s*--\>
 	.*?\<\!--\s*end-bivio-([\w-]+)\s*--\>
     }{_render_view_attr($self, $source, $vap, [$1, $2, $3])}sigex;
-    $$b =~ s{(?=<head\>)}{\n@{[$self->internal_render_head_attrs($source)]}}is
-	or $self->die($b, $source, 'missing <head>');
+    $$b =~ s{(?<=\<head\>)}{\n@{[$self->internal_render_head_attrs($source)]}}is
+	or $self->die($b, $source, 'missing <xhead>');
     $$buffer .= $$b;
     return;
+}
+
+sub _render_uri {
+    my($rel, $rf) = @_;
+    my($abs) = URI->new($rel);
+    return $rel
+	if $abs->scheme || $abs->path =~ m{^(/|$)};
+    my($p) = $rf->get('path');
+#TODO: Encapsulate
+    $p = $_FP->from_public($p)
+	if $rf->get('is_public');
+    $abs = $abs->abs(URI->new($rf->get_request->format_http({uri => $p})));
+    my($q) = $abs->query;
+    my($f) = $abs->fragment;
+    return $abs->path . (defined($q) ? "?$q" : '') . (defined($f) ? "#$f" : '');
 }
 
 sub _render_view_attr {
