@@ -1,65 +1,11 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::HTTPConf;
 use strict;
-$Bivio::Util::HTTPConf::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::HTTPConf::VERSION;
-
-=head1 NAME
-
-Bivio::Util::HTTPConf - start httpd (apache)
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::HTTPConf;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::HTTPConf::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::HTTPConf>
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-See below
-
-=cut
-
-sub USAGE {
-    return <<'EOF';
-usage: b-http-conf [options] command [args...]
-commands:
-    gen_app app-name [root-prefix] -- writes config for app-name
-EOF
-}
-
-#=IMPORTS
-use Bivio::IO::Config;
+use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::IO::File;
 
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DATA);
 my($_VARS) = {
     is_production => 0,
@@ -87,17 +33,13 @@ my($_VARS) = {
     '$' => '$',
 };
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="generate"></a>
-
-=head2 create_files(string vars)
-
-Creates the files
-
-=cut
+sub USAGE {
+    return <<'EOF';
+usage: b-http-conf [options] command [args...]
+commands:
+    gen_app app-name [root-prefix] -- writes config for app-name
+EOF
+}
 
 sub generate {
     my($vars) = shift->validate_vars(@_);
@@ -120,61 +62,61 @@ sub generate {
 
 =head2 static validate_vars(string vars) : hash_ref
 
-The configuration for an application server is provided via I<vars>, and
-returned by this routine as a hash_ref.  I<vars> is a perl hash_ref whose keys
-are the applications to configure, and values are hash_refs containing the
-config, e.g.
-
-    {
-        petshop => {
-            listen => 8080,
-            server_admin => 'webmaster@bivio.biz',
-        },
-    }
-
-I<vars> may also contain default entries for the attributes defined below, e.g.
-
-    {
-        server_admin => 'webmaster@bivio.biz',
-        petshop => {
-            listen => 8080,
-        },
-        my_app => {
-            listen => 8081,
-        },
-    }
-
-The attributes and their global defaults are defined as follows:
-
-=over 4
-
-=item listen : int (required)
-
-Port the app server listens on.
-
-=item servers : int [4]
-
-Number of application servers to start.  The number of front-end httpd
-servers will be 2 x the sum of I<servers> for all apps being configured.
-
-=item server_status_allow : string [127.0.0.1]
-
-Addresses from which we allow access to I<server_status_location>
-
-=item server_status_location : string [/s]
-
-Location of Apache server-status
-
-=item server_admin : string (required)
-
-Email address of webmaster to be set to ServerAdmin.
-
-=back
-
 =cut
 
 sub validate_vars {
     my($self, $vars) = @_;
+    # The configuration for an application server is provided via I<vars>, and
+    # returned by this routine as a hash_ref.  I<vars> is a perl hash_ref whose keys
+    # are the applications to configure, and values are hash_refs containing the
+    # config, e.g.
+    #
+    #     {
+    #         petshop => {
+    #             listen => 8080,
+    #             server_admin => 'webmaster@bivio.biz',
+    #         },
+    #     }
+    #
+    # I<vars> may also contain default entries for the attributes defined below, e.g.
+    #
+    #     {
+    #         server_admin => 'webmaster@bivio.biz',
+    #         petshop => {
+    #             listen => 8080,
+    #         },
+    #         my_app => {
+    #             listen => 8081,
+    #         },
+    #     }
+    #
+    # The attributes and their global defaults are defined as follows:
+    #
+    # =over 4
+    #
+    # =item listen : int (required)
+    #
+    # Port the app server listens on.
+    #
+    # =item servers : int [4]
+    #
+    # Number of application servers to start.  The number of front-end httpd
+    # servers will be 2 x the sum of I<servers> for all apps being configured.
+    #
+    # =item server_status_allow : string [127.0.0.1]
+    #
+    # Addresses from which we allow access to I<server_status_location>
+    #
+    # =item server_status_location : string [/s]
+    #
+    # Location of Apache server-status
+    #
+    # =item server_admin : string (required)
+    #
+    # Email address of webmaster to be set to ServerAdmin.
+    #
+    # =back
+    #
     $vars = {
 	%$_VARS,
 	%{Bivio::Die->eval_or_die($vars)},
@@ -192,12 +134,6 @@ sub validate_vars {
     return $vars
 }
 
-#=PRIVATE SUBROUTINES
-
-# _app_bconf(hash_ref vars) : array
-#
-#
-#
 sub _app_bconf {
     my($vars) = @_;
     return _replace_vars($vars, bconf => <<'EOF');
@@ -225,13 +161,10 @@ $root_prefix::BConf->merge_dir({
 EOF
 }
 
-# _app_vars(hash_ref vars) : hash_ref
-#
-# Augments vars for a single app ($vars->{$app}) to include _app_vars.  Returns
-# a $vars with updated config.
-#
 sub _app_vars {
     my($vars) = @_;
+    # Augments vars for a single app ($vars->{$app}) to include _app_vars.  Returns
+    # a $vars with updated config.
     my($app) = $vars->{app};
     my($bconf) = "/etc/$app.bconf";
     %$vars = (
@@ -269,10 +202,6 @@ EOF
     return $vars;
 }
 
-# _app_init_rc(hash_ref vars) : array
-#
-# Copies template for vars.
-#
 sub _app_init_rc {
     my($vars) = @_;
     return _replace_vars($vars, init_rc => <<'EOF');
@@ -293,10 +222,6 @@ b_httpd_app=$app
 EOF
 }
 
-# _httpd_conf(hash_ref vars) : array
-#
-# Replace vars in template, and return (name, data)
-#
 sub _httpd_conf {
     my($vars) = @_;
     return _replace_vars($vars, 'httpd_conf', <<'EOF');
@@ -359,10 +284,6 @@ BrowserMatch "JDK/1\.0" force-response-1.0
 EOF
 }
 
-# _logrotate(hash_ref vars) : array
-#
-# Copies template for vars.
-#
 sub _logrotate
     {
     my($vars) = @_;
@@ -377,20 +298,12 @@ $log_directory/access_log $log_directory/agent_log $log_directory/error_log $log
 EOF
 }
 
-# _mkdir(string name) : string
-#
-# Makes directory
-#
 sub _mkdir {
     my($name) = @_;
     $name =~ s,^/,,;
     return Bivio::IO::File->mkdir_p($name);
 }
 
-# _httpd_init_rc() : string
-#
-# Return <DATA>
-#
 sub _httpd_init_rc {
     unless ($_DATA) {
 	local($/);
@@ -401,10 +314,6 @@ sub _httpd_init_rc {
     return \$d;
 }
 
-# _httpd_vars(hash_ref vars)
-#
-# Create the $vars->{httpd} values
-#
 sub _httpd_vars {
     my($vars) = @_;
     my($v) = $vars->{httpd};
@@ -464,10 +373,6 @@ EOF
     return;
 }
 
-# _replace_vars(hash_ref vars, string name, string template) : array
-#
-# Replaces vars in template to generate $vars->{$name} file.
-#
 sub _replace_vars {
     my($vars, $name, $template) = @_;
     # One of the $_VARS is '$'
@@ -478,10 +383,6 @@ sub _replace_vars {
     return ($vars->{$name}, \$template);
 }
 
-# _write(string name, any data) : string
-#
-# Writes name, stripping off leading /.
-#
 sub _write {
     my($name, $data) = @_;
     $name =~ s{^/}{};
