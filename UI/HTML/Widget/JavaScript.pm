@@ -1,14 +1,11 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::JavaScript;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-sub COMMON_CODE {
-    return __PACKAGE__ . '::JAVASCRIPT_HEAD';
-}
+my($_COMMON_CODE) = __PACKAGE__ . '.common_code';
 
 sub escape_string {
     my($self, $text) = @_;
@@ -24,7 +21,7 @@ sub escape_string {
 sub has_been_rendered {
     my(undef, $source, $module_tag) = @_;
     # returns true if common code has been rendered.
-    return exists(($source->get_request->unsafe_get(COMMON_CODE()) || {})
+    return exists(($source->get_request->unsafe_get($_COMMON_CODE) || {})
 	->{$module_tag});
 }
 
@@ -43,7 +40,7 @@ sub render {
 	    || defined($no_script_html);
 
     # Render common code
-    my($defns) = $req->get_if_exists_else_put(COMMON_CODE(), {});
+    my($defns) = $req->get_if_exists_else_put($_COMMON_CODE, {});
     $defns->{$module_tag} ||= $common_code
 	if defined($module_tag) && defined($common_code);
 
@@ -77,7 +74,7 @@ sub _render_script_in_head {
     my($req, $buffer) = @_;
     # render the common code in <script> tags
     # intended to be called in the html <head> block
-    my($defns) = $req->unsafe_get(COMMON_CODE());
+    my($defns) = $req->unsafe_get($_COMMON_CODE);
     return
 	unless defined($defns);
     $$buffer .= "<script type=\"text/javascript\">\n<!--\n";
