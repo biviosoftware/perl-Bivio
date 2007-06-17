@@ -118,7 +118,7 @@ EOF
 
 sub create {
     return shift->internal_body(vs_simple_form(UserRegisterForm => [
-	'UserCreateForm.Email.email',
+	'UserRegisterForm.Email.email',
     ]));
 }
 
