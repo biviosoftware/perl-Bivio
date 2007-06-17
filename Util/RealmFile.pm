@@ -29,7 +29,7 @@ usage: b-realm-file [options] command [args...]
 commands:
     create path -- creates file_path with input
     create_folder path -- creates folder and parents
-    delete path ... -- deletes files specified
+    delete_deep path ... -- deletes files or folders specified
     import_tree [folder] -- imports files in current directory into folder [/]
     list_folder folder -- lists a folder
     read path -- returns file contents
@@ -49,10 +49,10 @@ sub create_folder {
     return;
 }
 
-sub delete {
+sub delete_deep {
     my($self) = shift;
     foreach my $p (@_) {
-	_do($self, $self->get('force') ? 'delete_deep' : 'delete', $p);
+	_do($self, 'delete_deep', $p);
     }
     return;
 }
@@ -113,7 +113,7 @@ sub update {
 sub _do {
     my($self, $method, $path, @args) = @_;
     return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFile')
-	->$method(_fix_values($self, $path, {}, $method eq 'load'), @args);
+	->$method(_fix_values($self, $path, {}, $method =~ /^(delete|load)/), @args);
 }
 
 sub _fix_values {
