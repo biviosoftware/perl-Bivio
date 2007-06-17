@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::View::Base;
 use strict;
-use base 'Bivio::UI::View::Method';
+use Bivio::Base 'View.Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 use Bivio::UI::Widget::SimplePage;
 
