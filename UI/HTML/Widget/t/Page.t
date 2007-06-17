@@ -16,9 +16,9 @@ Bivio::Test::Widget->unit(
 	return [$r];
     },
     [
-	['head', 'hello', {style => undef}] => qr{head</head><body bgcolor="#FFFFFF" text="#000000" link="#330099" alink="#330099" vlink="#330099">\nhello}is,
+ 	['head', 'hello', {style => ''}] => qr{head</head><body bgcolor="#FFFFFF" text="#000000" link="#330099" alink="#330099" vlink="#330099">\nhello}is,
 	['', '', {
-	    style => undef,
+	    style => '',
 	    want_page_print => [sub {0}],
 	}] => sub {
 	    my(undef, $actual) = @_;
@@ -29,7 +29,7 @@ Bivio::Test::Widget->unit(
 	    Bivio::UI::HTML::Widget::Script->new('first_focus'),
 	    {
 		want_page_print => 1,
-		style => undef,
+		style => '',
 	    },
 	] => qr/first_focus_onload.*page_print_onload.*<body/is,
     ],
