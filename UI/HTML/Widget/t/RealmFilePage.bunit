@@ -1,0 +1,36 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+req()->set_realm_and_user(qw(demo demo));
+my($rf) = model('RealmFile');
+my($p) = '/tmp/RealmFilePage.bunit';
+$rf->delete({path => $p});
+$rf->create_with_content({path => $p}, \(<<'EOF'));
+<html>
+<head>
+</head>
+<body>
+<!--bivio-wv1--><!--start-bivio-wv2-->
+ignore this
+<!--end-bivio-wv2-->
+</body></html>
+EOF
+[
+    class() => [
+	sub {
+	    class('Bivio::UI::View')->render(\(<<"EOF"), req());
+view_class_map('HTMLWidget');
+view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
+view_put(vap_wv1 => 'aaa');
+view_put(vap_wv2 => 'bbb');
+view_main(RealmFilePage({
+    view_attr_prefix => 'vap_',
+    path => q{$p},
+    default_path => q{$p},
+    realm_id => @{[req('auth_id')]},
+    xhtml => 1,
+}));
+EOF
+	} => qr{text/css.*</head>\n<body>\naaabbb\n</body>}s,
+    ],
+];
