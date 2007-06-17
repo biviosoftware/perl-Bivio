@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.7  2007/06/12 21:19:53  nagler
+  * Bivio::Biz::Model::RealmFileList supports realm_file_id query key.
+    RealmFileDAVList also changed to support realm_file_id.
+  * Bivio::Biz::Model::PublicRealmFileDAVList added
+  * Bivio::Biz::Model::PublicRealmDAVList added
+  * Bivio::Biz::Model::RealmDAVList factored out of UserRealmDAVList
+  * Bivio::Test::ListModel support DAVList testing
+  * Bivio::Type::FilePath->from_public added
+
   Revision 5.6  2007/06/11 17:40:02  moeller
   * Bivio::Biz::Model::RealmFile is_empty() iterates, doesn't load list
   * Bivio::Biz::Model remove duplication from new_other
