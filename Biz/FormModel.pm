@@ -107,6 +107,16 @@ sub clear_errors {
     return;
 }
 
+sub create_model_properties {
+    my($self, $model, $other_properties) = @_;
+    $model = $self->get_model($model)
+	unless ref($model);
+    return $model->create({
+	%{$self->get_model_properties($model)},
+	$other_properties ? %{$other_properties} : (),
+    });
+}
+
 sub create_or_update_model_properties {
     my($self, $model) = @_;
     $model = $self->new_other($model)
