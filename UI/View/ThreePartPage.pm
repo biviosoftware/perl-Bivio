@@ -12,7 +12,39 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_xhtml_adorned {
-    my($self) = @_;
+    shift->internal_xhtml_adorned_attrs;
+    return Page({
+	style => view_widget_value('xhtml_style'),
+	head => Join([
+	    vs_text_as_prose('xhtml_head_title'),
+	    view_widget_value('xhtml_head_tags'),
+	    EmptyTag(link => {
+		control => view_widget_value('xhtml_rss_task'),
+		html_attrs => [qw(rel type title href)],
+		rel => 'alternate',
+		type => 'application/rss+xml',
+		title => Prose(
+		    vs_text(
+			'rsslink', 'title', view_widget_value('xhtml_rss_task')),
+		),
+		href => URI({
+		    task_id => view_widget_value('xhtml_rss_task'),
+		    query => undef,
+		}),
+	    }),
+	]),
+	body => Join([
+	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
+            vs_first_focus(),
+	    vs_grid3('header'),
+	    vs_grid3('main'),
+	    vs_grid3('footer'),
+	]),
+	xhtml => 1,
+    });
+}
+
+sub internal_xhtml_adorned_attrs {
     view_put(
 	xhtml_title => Join([
 	    SPAN_realm(String([qw(auth_realm owner display_name)]), {
@@ -69,35 +101,7 @@ sub internal_xhtml_adorned {
 	    ),
 	]),
     );
-    return Page({
-	style => view_widget_value('xhtml_style'),
-	head => Join([
-	    vs_text_as_prose('xhtml_head_title'),
-	    view_widget_value('xhtml_head_tags'),
-	    EmptyTag(link => {
-		control => view_widget_value('xhtml_rss_task'),
-		html_attrs => [qw(rel type title href)],
-		rel => 'alternate',
-		type => 'application/rss+xml',
-		title => Prose(
-		    vs_text(
-			'rsslink', 'title', view_widget_value('xhtml_rss_task')),
-		),
-		href => URI({
-		    task_id => view_widget_value('xhtml_rss_task'),
-		    query => undef,
-		}),
-	    }),
-	]),
-	body => Join([
-	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
-            vs_first_focus(),
-	    vs_grid3('header'),
-	    vs_grid3('main'),
-	    vs_grid3('footer'),
-	]),
-	xhtml => 1,
-    });
+    return;
 }
 
 1;
