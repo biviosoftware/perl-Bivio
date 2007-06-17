@@ -562,6 +562,7 @@ sub _cfg_user_auth {
 	    [LOGIN => 'pub/login'],
 	    [LOGOUT => 'pub/logout'],
 	    [USER_CREATE => 'pub/register'],
+	    [GENERAL_CONTACT => 'pub/contact'],
 	    [USER_CREATE_DONE => undef],
 	    [GENERAL_USER_PASSWORD_QUERY => 'pub/forgot-password'],
 	    [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
