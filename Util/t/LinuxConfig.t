@@ -19,6 +19,9 @@ die('could not find "true"')
 sub _not_exists {\&_not_exists}
 Bivio::Test->unit([
     'Bivio::Util::LinuxConfig' => [
+	split_file => [
+	    'LinuxConfig/split_file.txt' => [['c', 'a a', 'b']],
+	],
 	(map {
 	    my($method, $args, $tests) = @$_;
 	    ({

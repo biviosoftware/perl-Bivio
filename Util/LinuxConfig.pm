@@ -36,11 +36,12 @@ commands:
     enable_service service ... -- enables service
     generate_network interface_and_domain ... -- create ifcfg files
     ifcfg_static device hostname ip_addr/bits [gateway] -- configure device with a static ip address
+    rename_rpmnew all | file.rpmnew... -- renames rpmnew to orig and rpmsaves orig
     replace_file file owner group perms content -- replaces file with content
     resolv_conf domain nameserver ... -- updates resolv.conf with name servers
-    rename_rpmnew all | file.rpmnew... -- renames rpmnew to orig and rpmsaves orig
     rhn_up2date_param param value ... -- update params in up2date config
     serial_console [speed] -- configure grub and init for serial port console
+    split_file file -- splits a file into an array, ignoring # comments
     sshd_param param value ... -- add or delete a parameter from sshd config
 EOF
 }
@@ -554,6 +555,14 @@ sub serial_console {
   		"terminal --timeout=1 serial\n",
   	    ],
         );
+}
+
+sub split_file {
+    my(undef, $file) = @_;
+    return [grep(
+	length($_) && $_ !~ /^\s*#/,
+	split(/\n+/, ${Bivio::IO::File->read($file)}),
+    )];
 }
 
 sub sshd_param {
