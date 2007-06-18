@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.8  2007/06/17 20:07:50  nagler
+  * Bivio::Biz::FormModel->create_model_properties added
+  * Bivio::UI::HTML::Widget::RealmFilePage added.
+  * Bivio::UI::HTML::Widget::Page refactored to support RealmFilePage
+  * Bivio::UI::View::ThreePartPage refactored to support RealmFilePage
+  * Bivio::Util::RealmFile->delete_deep replaces delete (which
+    conflicted with Collection::Attributes->delete and also didn't work.
+  * Bivio::UNIVERSAL->clone added -- ListQuery, Request, Attributes,
+    Model, Enum, Realm, etc. fixed to use clone() or to simple return self.
+  * Bivio::IO::Ref->nested_copy added
+  * Bivio::Biz::ListModel->unauth_iterate_start now works with order_by
+  * Bivio::SQL::ListQuery->unauth_new takes same paramater order as ->new
+  * Bivio::Delegate::SimpleWidgetFactory uses
+    Bivio::UI::DateTimeMode->get_date_default instead of hardwiring 'DATE'
+
   Revision 5.7  2007/06/12 21:19:53  nagler
   * Bivio::Biz::Model::RealmFileList supports realm_file_id query key.
     RealmFileDAVList also changed to support realm_file_id.
