@@ -63,57 +63,6 @@ sub generate {
 
 sub validate_vars {
     my($self, $vars) = @_;
-    # The configuration for an application server is provided via I<vars>, and
-    # returned by this routine as a hash_ref.  I<vars> is a perl hash_ref whose keys
-    # are the applications to configure, and values are hash_refs containing the
-    # config, e.g.
-    #
-    #     {
-    #         petshop => {
-    #             listen => 8080,
-    #             server_admin => 'webmaster@bivio.biz',
-    #         },
-    #     }
-    #
-    # I<vars> may also contain default entries for the attributes defined below, e.g.
-    #
-    #     {
-    #         server_admin => 'webmaster@bivio.biz',
-    #         petshop => {
-    #             listen => 8080,
-    #         },
-    #         my_app => {
-    #             listen => 8081,
-    #         },
-    #     }
-    #
-    # The attributes and their global defaults are defined as follows:
-    #
-    # =over 4
-    #
-    # =item listen : int (required)
-    #
-    # Port the app server listens on.
-    #
-    # =item servers : int [4]
-    #
-    # Number of application servers to start.  The number of front-end httpd
-    # servers will be 2 x the sum of I<servers> for all apps being configured.
-    #
-    # =item server_status_allow : string [127.0.0.1]
-    #
-    # Addresses from which we allow access to I<server_status_location>
-    #
-    # =item server_status_location : string [/s]
-    #
-    # Location of Apache server-status
-    #
-    # =item server_admin : string (required)
-    #
-    # Email address of webmaster to be set to ServerAdmin.
-    #
-    # =back
-    #
     $vars = {
 	%$_VARS,
 	%{Bivio::Die->eval_or_die($vars)},
@@ -187,8 +136,8 @@ PerlTransHandler Apache::OK
 PerlModule Bivio::Agent::HTTP::Dispatcher
 
 <Location />
-  SetHandler perl-script
-  PerlHandler Bivio::Agent::HTTP::Dispatcher
+    SetHandler perl-script
+    PerlHandler Bivio::Agent::HTTP::Dispatcher
 </Location>
 EOF
     Bivio::Die->die(
@@ -202,6 +151,10 @@ EOF
 		'@' . $vars->{mail_host} => $app,
 	    ),
     ];
+    Bivio::Die->die(
+	$app, ': virtual_hosts must be an array_ref of pairs'
+    ) unless ref($vars->{virtual_hosts}) eq 'ARRAY'
+        && @{$vars->{virtual_hosts}} % 2 == 0;
     my($redirects) = '';
     __PACKAGE__->map_by_two(
 	sub {
@@ -222,11 +175,9 @@ EOF
 	    }
 	    my($is_mail) = $left =~ s/^\@//;
 	    my($mh) = $left =~ /^www\.(.+)$/;
-	    my($cfg) = ref($right) ? $right : {
-		facade_uri => $right,
-		http_suffix => $left,
-		mail_host => $mh || $left,
-	    };
+	    my($cfg) = ref($right) ? $right : {facade_uri => $right};
+	    $cfg->{http_suffix} = $left;
+	    $cfg->{mail_host} = $mh || $left;
 	    map($vars->{$_} = $cfg->{$_}, qw(http_suffix mail_host));
 	    my($http) = "http://$cfg->{http_suffix}:$vars->{listen}\$1";
 	    if ($is_mail) {
@@ -235,8 +186,8 @@ EOF
 	    }
 	    $redirects .= <<"EOF" if $mh;
 <VirtualHost *>
-  ServerName $mh
-  RedirectPermanent / http://$cfg->{http_suffix}/
+    ServerName $mh
+    RedirectPermanent / http://$cfg->{http_suffix}/
 </VirtualHost>
 EOF
 	    my($lrr) = $cfg->{legacy_rewrite_rules}
@@ -244,18 +195,18 @@ EOF
 	    $lrr =~ s{(?<=[^\n])$}{\n}s;
 	    my($rules) = ($lrr || '')
 	        . ($cfg->{facade_uri} eq 'dav' ? '' : <<'EOF')
-  RewriteRule ^/./ - [L]
-  RewriteRule .*favicon.ico$ /i/favicon.ico [L]
+    RewriteRule ^/./ - [L]
+    RewriteRule .*favicon.ico$ /i/favicon.ico [L]
 EOF
-		. "RewriteRule ^(.*) $http \[proxy\]\n";
+		. "    RewriteRule ^(.*) $http \[proxy\]\n";
 	    $vars->{httpd_content} .= <<"EOF";
 <VirtualHost *>
-  ServerName $cfg->{http_suffix}
-  DocumentRoot /var/www/facades/$cfg->{facade_uri}/plain
-  ProxyVia on
-  ProxyIOBufferSize 4194304
-  RewriteEngine On
-  RewriteOptions inherit
+    ServerName $cfg->{http_suffix}
+    DocumentRoot /var/www/facades/$cfg->{facade_uri}/plain
+    ProxyVia on
+    ProxyIOBufferSize 4194304
+    RewriteEngine On
+    RewriteOptions inherit
 $rules
 </VirtualHost>
 $redirects
@@ -332,16 +283,16 @@ ExtendedStatus On
 DocumentRoot /var/www/html
 
 <Directory />
-  AllowOverride None
-  Options FollowSymLinks
+    AllowOverride None
+    Options FollowSymLinks
 </Directory>
 
 $content
 
 <Location $server_status_location>
-  SetHandler server-status
-  deny from all
-  allow from $server_status_allow
+    SetHandler server-status
+    deny from all
+    allow from $server_status_allow
 </Location>
 
 $aux_http_conf
@@ -402,24 +353,24 @@ sub _httpd_vars {
 	_replace_vars($vars->{httpd}, "httpd_content", <<'EOF'),
 NameVirtualHost *
 <VirtualHost *>
-  ServerName $host_name
-  DocumentRoot /var/www/html
+    ServerName $host_name
+    DocumentRoot /var/www/html
 </VirtualHost>
 EOF
 	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
 	join('',
 	    <<'EOF',
 <VirtualHost *>
-  ServerName localhost.localdomain
-  DocumentRoot /var/www/html
-  ProxyVia on
-  ProxyIOBufferSize 4194304
-  RewriteEngine On
-  RewriteOptions inherit
+    ServerName localhost.localdomain
+    DocumentRoot /var/www/html
+    ProxyVia on
+    ProxyIOBufferSize 4194304
+    RewriteEngine On
+    RewriteOptions inherit
 EOF
 	     map({
 		 my($mh, $vh) = split(' ', $_);
-		 "  RewriteRule ^(.*_mail_receive/.*\@$mh.*) $vh \[proxy,nocase\]\n";
+		 "    RewriteRule ^(.*_mail_receive/.*\@$mh.*) $vh \[proxy,nocase\]\n";
 	     } sort(map(
 		 @{$vars->{$_}->{mail_receive} || []}, @{$vars->{apps}},
 	     ))),
@@ -516,7 +467,7 @@ INITLOG_ARGS=""
 
 # Source additional OPTIONS if we have them.
 if [ -f /etc/sysconfig/apache ] ; then
-	. /etc/sysconfig/apache
+    . /etc/sysconfig/apache
 fi
 
 httpd=${b_httpd_app:-/usr/sbin/httpd}
@@ -525,61 +476,61 @@ RETVAL=0
 
 # Change the major functions into functions.
 moduleargs() {
-	moduledir=/usr/lib/apache
-	moduleargs=`
-	/usr/bin/find ${moduledir} -type f -perm -0100 -name "*.so" | env -i tr '[:lower:]' '[:upper:]' | awk '{\
-		gsub(/.*\//,"");\
-		gsub(/^MOD_/,"");\
-		gsub(/^LIB/,"");\
-		gsub(/\.SO$/,"");\
-		print "-DHAVE_" $0}'`
-	echo ${moduleargs}
+    moduledir=/usr/lib/apache
+    moduleargs=`
+    /usr/bin/find ${moduledir} -type f -perm -0100 -name "*.so" | env -i tr '[:lower:]' '[:upper:]' | awk '{\
+	gsub(/.*\//,"");\
+	gsub(/^MOD_/,"");\
+	gsub(/^LIB/,"");\
+	gsub(/\.SO$/,"");\
+	print "-DHAVE_" $0}'`
+    echo ${moduleargs}
 }
 start() {
-	echo -n $"Starting $prog: "
-	# The goal of this is to change the process name
-	daemon --check=$prog perl -e "'exec {q{/usr/sbin/httpd}} (qw{$prog $(moduleargs) $OPTIONS -f /etc/httpd/conf/$prog.conf}) or die(qq{exec: \$!})'"
-	RETVAL=$?
-	echo
-	[ $RETVAL = 0 ] && touch /var/lock/subsys/$prog
-	return $RETVAL
+    echo -n $"Starting $prog: "
+    # The goal of this is to change the process name
+    daemon --check=$prog perl -e "'exec {q{/usr/sbin/httpd}} (qw{$prog $(moduleargs) $OPTIONS -f /etc/httpd/conf/$prog.conf}) or die(qq{exec: \$!})'"
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && touch /var/lock/subsys/$prog
+    return $RETVAL
 }
 stop() {
-	echo -n $"Stopping $prog: "
-	killproc $prog
-	RETVAL=$?
-	echo
-	[ $RETVAL = 0 ] && rm -f /var/lock/subsys/$prog /var/run/$prog.pid
+    echo -n $"Stopping $prog: "
+    killproc $prog
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && rm -f /var/lock/subsys/$prog /var/run/$prog.pid
 }
 
 # See how we were called.
 case "$1" in
-  start)
+    start)
 	start
 	;;
-  stop)
+    stop)
 	stop
 	;;
-  status)
+    status)
 	status $prog
 	;;
-  restart)
+    restart)
 	stop
 	start
 	;;
-  reload)
+    reload)
 	echo -n $"Reloading $prog: "
 	killproc $process -HUP
 	RETVAL=$?
 	echo
 	;;
-  condrestart)
+    condrestart)
 	if [ -f /var/run/$prog.pid ] ; then
-		stop
-		start
+	    stop
+	    start
 	fi
 	;;
-  *)
+    *)
 	echo $"Usage: $prog {start|stop|restart|reload|condrestart|status}"
 	exit 1
 esac
