@@ -1,56 +1,16 @@
-# Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::LinuxConfig;
 use strict;
-$Bivio::Util::LinuxConfig::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::LinuxConfig::VERSION;
+use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::IO::Config;
+use Bivio::IO::Trace;
 
-=head1 NAME
-
-Bivio::Util::LinuxConfig - manipulate Linux configuration files
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::LinuxConfig;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::LinuxConfig::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::LinuxConfig> manipulates various config files in Linux.
-Syntax is rigid, but the commands die if anything is out of the
-ordinary.
-
-TODO:
-   see files in LinuxConfig dir
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns usage.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+Bivio::IO::Config->register(my $_CFG = {
+    root_prefix => '',
+    networks => {},
+});
 
 sub USAGE {
     return <<'EOF';
@@ -85,42 +45,14 @@ commands:
 EOF
 }
 
-#=IMPORTS
-use Bivio::IO::Trace;
-use Bivio::IO::Config;
-
-#=VARIABLES
-Bivio::IO::Config->register(my $_CFG = {
-    root_prefix => '',
-    networks => {},
-});
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="add_aliases"></a>
-
-=head2 add_aliases(string alias, ....) : string
-
-Adds aliases: 'foo: bar'.  Ensures a \t is between : and destination.
-
-=cut
-
 sub add_aliases {
+    # Adds aliases: 'foo: bar'.  Ensures a \t is between : and destination.
     return _add_aliases('/etc/aliases', ':', @_);
 }
 
-=for html <a name="add_bashrc_d"></a>
-
-=head2 add_bashrc_d() : string
-
-Updates /etc/bashrc to search /etc/bashrc.d.
-
-=cut
-
 sub add_bashrc_d {
     my($self) = @_;
+    # Updates /etc/bashrc to search /etc/bashrc.d.
     return _mkdir($self, '/etc/bashrc.d', 0755)
 	. _edit($self, '/etc/bashrc', ['$', <<'EOF', qr#/etc/bashrc.d/#]);
 
@@ -135,34 +67,20 @@ unset i
 EOF
 }
 
-=for html <a name="add_crontab_line"></a>
-
-=head2 add_crontab_line(string user, string entry, ...) : string
-
-Add I<entry>s to this I<user>'s crontab.
-
-=cut
-
 sub add_crontab_line {
     my($self, $user, @entry) = @_;
+    # Add I<entry>s to this I<user>'s crontab.
     return $self->append_lines("/var/spool/cron/$user", 'root', $user, 0600,
 	@entry);
 }
 
-=for html <a name="add_group"></a>
-
-=head2 add_group(string group) : string
-
-If you want a specific gid, append it with a colon, e.g.
-
-   add_group support:498
-
-Returns string if it created the group.  Does nothing if group exists.
-
-=cut
-
 sub add_group {
     my($self, $group) = @_;
+    # If you want a specific gid, append it with a colon, e.g.
+    #
+    #    add_group support:498
+    #
+    # Returns string if it created the group.  Does nothing if group exists.
     $self->usage_error('must supply a group') unless $group;
     my($gname, $gid) = split(/:/, $group);
     my($real) = (getgrnam($gname))[2];
@@ -176,31 +94,17 @@ sub add_group {
 	    . "'$gname'")
 }
 
-=for html <a name="add_sendmail_class_line"></a>
-
-=head2 static add_sendmail_class_line(string file, string value, ...)
-
-Adds I<value>s to class file (e.g. trusted-users),
-creating if it doesn't exist.
-
-=cut
-
 sub add_sendmail_class_line {
     my($self, $file, @value) = @_;
+    # Adds I<value>s to class file (e.g. trusted-users),
+    # creating if it doesn't exist.
     return $self->append_lines("/etc/mail/$file", 'root', 'mail', 0640,
 	@value);
 }
 
-=for html <a name="add_sendmail_http_agent"></a>
-
-=head2 add_sendmail_http_agent(string uri) : string
-
-Sets up C<b-sendmail-http> agent interface in sendmail.cf.
-
-=cut
-
 sub add_sendmail_http_agent {
     my($self, $uri, $program) = @_;
+    # Sets up C<b-sendmail-http> agent interface in sendmail.cf.
     $program ||= '/usr/bin/b-sendmail-http';
     die($program, ': not executable or not an absolute path')
 	unless -x $program && ! -d $program && $program =~ m{^/};
@@ -234,21 +138,14 @@ EOF
     );
 }
 
-=for html <a name="add_user"></a>
-
-=head2 add_user(string user, string group, string shell) : string
-
-Adds I<user> with optional I<group> and I<shell>.  Set I<group> is '', if you
-want to set I<shell>.  User isn't added if it exists.
-
-If you want a specific uid or gid, append it with a colon, e.g.
-
-   add_user support:498 support:498
-
-=cut
-
 sub add_user {
     my($self, $user, $group, $shell) = @_;
+    # Adds I<user> with optional I<group> and I<shell>.  Set I<group> is '', if you
+    # want to set I<shell>.  User isn't added if it exists.
+    #
+    # If you want a specific uid or gid, append it with a colon, e.g.
+    #
+    #    add_user support:498 support:498
     $self->usage_error('must at least supply a user') unless $user;
     my($res) = '';
     $group = $user unless $group;
@@ -268,16 +165,9 @@ sub add_user {
 	    . "'$uname'");
 }
 
-=for html <a name="add_users_to_group"></a>
-
-=head2 add_users_to_group(string group, string user, ...) : string
-
-Adds users to /etc/group.
-
-=cut
-
 sub add_users_to_group {
     my($self, $group, @user) = @_;
+    # Adds users to /etc/group.
     my($res) = _edit($self, '/etc/group', map {
 	my($user) = $_;
 	[
@@ -290,30 +180,16 @@ sub add_users_to_group {
     return $res;
 }
 
-=for html <a name="add_virtusers"></a>
-
-=head2 add_virtusers(string virtuser, ...) : string
-
-Adds virtusers: 'foo bar'.  Ensures a \t is between target and destination
-
-=cut
-
 sub add_virtusers {
+    # Adds virtusers: 'foo bar'.  Ensures a \t is between target and destination
     return _add_aliases('/etc/mail/virtusertable', '', @_);
 }
 
-=for html <a name="allow_any_sendmail_smtp"></a>
-
-=head2 allow_any_sendmail_smtp(string max_message_size) : string
-
-Enable sendmail's smtp to listen from anywhere.  Makes privacy options
-stricter.  Closes off /var/spool/mqueue.  Sets max message size,
-defaults to 10000000.
-
-=cut
-
 sub allow_any_sendmail_smtp {
     my($self, $max_message_size) = @_;
+    # Enable sendmail's smtp to listen from anywhere.  Makes privacy options
+    # stricter.  Closes off /var/spool/mqueue.  Sets max message size,
+    # defaults to 10000000.
     $max_message_size ||= 10000000;
     return _edit($self, '/etc/sendmail.cf',
 	[qr/^\#?(O\s+DaemonPortOptions\s*=.*),Addr=127.0.0.1/m,
@@ -331,16 +207,9 @@ sub allow_any_sendmail_smtp {
         . _exec($self, "chmod 0700 " . _prefix_file('/var/spool/mqueue'));
 }
 
-=for html <a name="append_lines"></a>
-
-=head2 append_lines(string file, string owner, string group, int perms, array lines) : string
-
-Adds lines to file, creating if necessary.
-
-=cut
-
 sub append_lines {
     my($self, $file, $owner, $group, $perms, @lines) = @_;
+    # Adds lines to file, creating if necessary.
     $perms = oct($perms) if $perms =~ /^0/;
     return _add_file($self, $file, $owner, $group, $perms)
 	. _edit($self, $file, map {
@@ -348,16 +217,9 @@ sub append_lines {
 	 } @lines);
 }
 
-=for html <a name="create_ssl_crt"></a>
-
-=head2 create_ssl_crt(string iso_country, string state, string city, string organization, string hostname) : string
-
-Creates SSL key, csr, and crt in ssl.* dirs.
-
-=cut
-
 sub create_ssl_crt {
     my($self, $iso_country, $state, $city, $organization, $hostname) = @_;
+    # Creates SSL key, csr, and crt in ssl.* dirs.
     my($res) = '';
     my($f) = {};
     foreach my $w (qw(key crt csr)) {
@@ -381,60 +243,22 @@ EOF
 	    . "-signkey $f->{key} -out $f->{crt}");
 }
 
-=for html <a name="disable_iptables_counters"></a>
-
-=head2 disable_iptables_counters() : string
-
-Updates /etc/rc.d/init.d/iptables to not save/restore with counters.
-
-=cut
-
-sub disable_iptables_counters {
-    my($self) = @_;
-    return _edit($self, '/etc/rc.d/init.d/iptables',
-	map {
-	    [qr/(iptables-$_)\s+-c\b/m, sub {$1},
-		 qr/iptables-$_\s+[&>;]/];
-	} qw(save restore));
-}
-
-=for html <a name="delete_aliases"></a>
-
-=head2 delete_aliases(string alias, ...)
-
-Delete I<alias>es from this /etc/aliases.
-
-=cut
-
 sub delete_aliases {
     my($self) = shift;
+    # Delete I<alias>es from this /etc/aliases.
     return _delete_lines($self, '/etc/aliases', [map(qr/^$_\:[^\n]+$/, @_)]);
 }
 
-=for html <a name="delete_crontab_line"></a>
-
-=head2 delete_crontab_line(string user, string entry, ...) : string
-
-Delete I<entry>s from this I<user>'s crontab.
-
-=cut
-
 sub delete_crontab_line {
     my($self, $user, @entry) = @_;
+    # Delete I<entry>s from this I<user>'s crontab.
     return _delete_lines($self, "/var/spool/cron/$user", \@entry);
 }
 
-=for html <a name="delete_file"></a>
-
-=head2 static delete_file(string file) : string
-
-Deletes I<file> if it exists.  Otherwise, does nothing.  If it can't delete,
-dies.
-
-=cut
-
 sub delete_file {
     my($self, $file) = @_;
+    # Deletes I<file> if it exists.  Otherwise, does nothing.  If it can't delete,
+    # dies.
     $file = _prefix_file($file);
     return ''
 	unless -e $file;
@@ -444,30 +268,25 @@ sub delete_file {
     ) . "Deleted: $file\n";
 }
 
-=for html <a name="delete_sendmail_class_line"></a>
-
-=head2 static delete_sendmail_class_line(string file, string line, ...)
-
-Deletes I<line>s to class file (e.g. trusted-users).
-
-
-=cut
-
 sub delete_sendmail_class_line {
     my($self, $file, @line) = @_;
+    # Deletes I<line>s to class file (e.g. trusted-users).
     return _delete_lines($self, "/etc/mail/$file", \@line);
 }
 
-=for html <a name="disable_service"></a>
-
-=head2 disable_service(string service, ...) : string
-
-Disables services.
-
-=cut
+sub disable_iptables_counters {
+    my($self) = @_;
+    # Updates /etc/rc.d/init.d/iptables to not save/restore with counters.
+    return _edit($self, '/etc/rc.d/init.d/iptables',
+	map {
+	    [qr/(iptables-$_)\s+-c\b/m, sub {$1},
+		 qr/iptables-$_\s+[&>;]/];
+	} qw(save restore));
+}
 
 sub disable_service {
     my($self, @service) = @_;
+    # Disables services.
     my($res);
     foreach my $s (@service) {
 	# Ignore uninstalled services
@@ -483,16 +302,9 @@ sub disable_service {
     return $res;
 }
 
-=for html <a name="enable_service"></a>
-
-=head2 enable_service(string service, ...) : string
-
-Enables I<service>s and starts them running at 2345 run levels.
-
-=cut
-
 sub enable_service {
     my($self, @service) = @_;
+    # Enables I<service>s and starts them running at 2345 run levels.
     my($res);
     foreach my $s (@service) {
 	# Should blow up if service doesn't exist
@@ -505,45 +317,36 @@ sub enable_service {
     return $res;
 }
 
-=for html <a name="generate_network"></a>
-
-=head2 static generate_network(string interface_and_domain)
-
-=head2 static generate_network(string interface_and_domain, string interface_and_domain2 ...)
-
-Expects interface and domain as follows: 'eth0 some.example.com', 'eth1
-other.example.com'.  Also expects 'networks' to be configured like this:
-
-	networks => {
-	    '192.168.0.64' => {
-		mask => 27,
-		gateway => 'gw1.example.com',
-		dns => [qw(ns1.exampe.com ns2.example.com)],
-		static_routes => {
-		    '10.0.1.0' => 'gw2.example.com',
-		},
-	    },
-	    '10.0.1.0' => {
-		mask => 24,
-		gateway => 'gw3.example.com',
-		dns => [qw(ns3.example.com ns4.example.com)],
-	    },
-	},
-
-Creates the following files from that information.  Relies on dig to resolve
-domain names (from command line and config) to ip addresses.
-
-    etc/hosts
-    etc/resolv.conf
-    etc/sysconfig/network
-    etc/sysconfig/network-scripts/ifcfg-en0
-    etc/sysconfig/network-scripts/ifcfg-en0:1 (if necessary)
-    etc/sysconfig/static-routes (if configured for ip of given domain)
-
-=cut
-
 sub generate_network {
     my($self) = shift;
+    # Expects interface and domain as follows: 'eth0 some.example.com', 'eth1
+    # other.example.com'.  Also expects 'networks' to be configured like this:
+    #
+    # 	networks => {
+    # 	    '192.168.0.64' => {
+    # 		mask => 27,
+    # 		gateway => 'gw1.example.com',
+    # 		dns => [qw(ns1.exampe.com ns2.example.com)],
+    # 		static_routes => {
+    # 		    '10.0.1.0' => 'gw2.example.com',
+    # 		},
+    # 	    },
+    # 	    '10.0.1.0' => {
+    # 		mask => 24,
+    # 		gateway => 'gw3.example.com',
+    # 		dns => [qw(ns3.example.com ns4.example.com)],
+    # 	    },
+    # 	},
+    #
+    # Creates the following files from that information.  Relies on dig to resolve
+    # domain names (from command line and config) to ip addresses.
+    #
+    #     etc/hosts
+    #     etc/resolv.conf
+    #     etc/sysconfig/network
+    #     etc/sysconfig/network-scripts/ifcfg-en0
+    #     etc/sysconfig/network-scripts/ifcfg-en0:1 (if necessary)
+    #     etc/sysconfig/static-routes (if configured for ip of given domain)
 
     my(@domains);
     my($gw_seen) = {};
@@ -565,22 +368,11 @@ sub generate_network {
     return;
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item root_prefix : string []
-
-Prefix root directory.  Used for testing, e.g. /home/nagler/tmp
-
-=back
-
-=cut
-
 sub handle_config {
     my(undef, $cfg) = @_;
+    # root_prefix : string []
+    #
+    # Prefix root directory.  Used for testing, e.g. /home/nagler/tmp
     my($networks) = $cfg->{networks};
     foreach my $network_ip (keys %$networks) {
 	my($net, $host) = $network_ip =~ /^((?:\d{1,3}\.){3})(\d{1,3})$/;
@@ -597,26 +389,19 @@ sub handle_config {
     return;
 }
 
-=for html <a name="ifcfg_static"></a>
-
-=head2 ifcfg_static(string device, string hostnames, string ip_cfg, string gateway) : string
-
-I<ip_addr> is of form w.x.y.z/n, e.g. 1.2.3.4/29 for a 3 bit subnet for
-host 1.2.3.4.  Updates:
-
-    /etc/sysconfig/network
-    /etc/sysconfig/network-scripts/ifcfg-$device
-    /etc/hosts
-
-I<hostnames> may contain space separated list.  First name is the primary host
-name.
-
-I<gateway> is an optional number identifying the gateway on the local net.
-
-=cut
-
 sub ifcfg_static {
     my($self, $device, $hostnames, $ip_addr, $gateway) = @_;
+    # I<ip_addr> is of form w.x.y.z/n, e.g. 1.2.3.4/29 for a 3 bit subnet for
+    # host 1.2.3.4.  Updates:
+    #
+    #     /etc/sysconfig/network
+    #     /etc/sysconfig/network-scripts/ifcfg-$device
+    #     /etc/hosts
+    #
+    # I<hostnames> may contain space separated list.  First name is the primary host
+    # name.
+    #
+    # I<gateway> is an optional number identifying the gateway on the local net.
     my($ip, $net, $mask)
 	= $ip_addr =~ m!^(((?:\d{1,3}\.){3})\d{1,3})/(\d{2})$!;
     $self->usage_error($ip_addr, ": ip address must be of form 1.2.3.4/28")
@@ -657,96 +442,33 @@ EOF
 	);
 }
 
-=for html <a name="resolv_conf"></a>
-
-=head2 resolv_conf(string string domain, string nameserver, ...) : string
-
-Updates resolv.conf like:
-
-    search $domain
-    domain $domain
-    nameserver $nameserver
-    ...
-
-=cut
-
 sub mock_dns {
     my($self, $dns) = @_;
+    # Updates resolv.conf like:
+    #
+    #     search $domain
+    #     domain $domain
+    #     nameserver $nameserver
+    #     ...
     my($cache) = $_CFG->{_dig_cache} = $dns;
     return;
 }
 
-sub resolv_conf {
-    my($self, $domain, @nameserver) = @_;
-    $self->usage_error('missing name servers')
-	unless @nameserver;
-    return _edit($self, "/etc/resolv.conf",
-	[sub {
-	     my($data) = @_;
-	     $$data = <<"EOF";
-search $domain
-domain $domain@{[join('', map("\nnameserver $_", @nameserver))]}
-EOF
-	     return 1;
-	 }]);
-}
-
-#=for html <a name="postgresql_conf"></a>
-#
-#=head2 postgresql_conf(string shared_buffers) : string
-#
-#Sets /var/lib/pgsql/data/postgresql.conf
-#
-#    shared_buffers = $shared_buffers
-#    sort_mem = $shared_buffers
-#    vacuum_mem = $shared_buffers * 8
-#    autocommit = false
-#
-#Ensures /proc/sys/kernel/shmmax has enough space for I<shared_buffers>, and
-#updates /etc/sysctl.conf for a permanent value if a change is needed.
-#
-#=cut
-#
-#sub postgresql_conf {
-#    my($self, $shared_buffers) = @_;
-## These may be commented out
-#shared_buffers = 8000           # 2*max_connections, min 16, typically 8KB each
-#sort_mem = 8000                 # min 64, size in KB
-#vacuum_mem = 64000              # min 1024, size in KB
-#autocommit = false
-#
-## Change system.redhat7 to create the file, and set here.
-#sysctl.conf
-#kernel/shmmax = 128000000
-#
-#So we always use the same timezone.
-#timezone = UTC		# actually, defaults to TZ environment setting
-#
-#    return;
-#}
-
-=for html <a name="rename_rpmnew"></a>
-
-=head2 rename_rpmnew(string rpmnew_file, ...) : string
-
-Renames rpmnew files to actual file.
-
-Usage is typically:
-
-    b-linux-config rename_rpmnew all
-
-Returns list of actions.  "all" is the following:
-
-    find /etc /var /usr -name \*.rpmnew
-
-You can also say:
-
-    b-linux-config rename_rpmnew /etc
-
-=cut
-
 sub rename_rpmnew {
     my($self, @rpmnew_file) = @_;
+    # Renames rpmnew files to actual file.
+    #
+    # Usage is typically:
+    #
+    #     b-linux-config rename_rpmnew all
+    #
+    # Returns list of actions.  "all" is the following:
+    #
+    #     find /etc /var /usr -name \*.rpmnew
+    #
+    # You can also say:
+    #
+    #     b-linux-config rename_rpmnew /etc
     @rpmnew_file = ('/etc', '/var', '/usr')
 	if "@rpmnew_file" eq 'all';
     chomp(@rpmnew_file = `find @rpmnew_file -name '*.rpmnew'`)
@@ -771,49 +493,43 @@ sub rename_rpmnew {
     return $res;
 }
 
-=for html <a name="replace_file"></a>
-
-=head2 replace_file(string file, string owner, string group, int perms, string content) : string
-
-Add content to file; deleting old one if it exists.
-
-=cut
-
 sub replace_file {
     my($self) = shift;
+    # Add content to file; deleting old one if it exists.
     return $self->delete_file($_[0]) . _add_file($self, @_);
 }
 
-=for html <a name="rhn_up2date_param"></a>
-
-=head2 rhn_up2date_param(string param, string value, ...) : string
-
-Set I<param> to I<value> in up2date config.  Knows how to replace only
-those parameters which already exist in the file.
-
-Very prelim.  See test for example in use.
-
-=cut
+sub resolv_conf {
+    my($self, $domain, @nameserver) = @_;
+    $self->usage_error('missing name servers')
+	unless @nameserver;
+    return _edit($self, "/etc/resolv.conf",
+	[sub {
+	     my($data) = @_;
+	     $$data = <<"EOF";
+search $domain
+domain $domain@{[join('', map("\nnameserver $_", @nameserver))]}
+EOF
+	     return 1;
+	 }]);
+}
 
 sub rhn_up2date_param {
     my($self, @args) = @_;
+    # Set I<param> to I<value> in up2date config.  Knows how to replace only
+    # those parameters which already exist in the file.
+    #
+    # Very prelim.  See test for example in use.
     return _edit($self, '/etc/sysconfig/rhn/up2date', map {
 	my($param, $value) = @$_;
 	[qr/\n$param\s*=\s*.*/m, "\n$param=$value"],
     } @{$self->group_args(2, \@args)});
 }
 
-=for html <a name="serial_console"></a>
-
-=head2 serial_console(string speed) : string
-
-Makes a serial console on ttyS0.  Modifies grub.conf, securetty, and
-inittab.   May be called repeatedly.  I<speed> defaults to 38400.
-
-=cut
-
 sub serial_console {
     my($self, $speed) = @_;
+    # Makes a serial console on ttyS0.  Modifies grub.conf, securetty, and
+    # inittab.   May be called repeatedly.  I<speed> defaults to 38400.
     $speed ||= '38400';
     return _edit($self, '/etc/securetty', ['$', "ttyS0\n", "ttyS0\n"])
 	. _edit($self, '/etc/inittab',
@@ -840,24 +556,15 @@ sub serial_console {
         );
 }
 
-=for html <a name="sshd_param"></a>
-
-=head2 static sshd_param(string param, string value, ...) : string
-
-Set I<param> to I<value> in sshd_config.  Knows how to replace only
-those parameters which already exist in the file.
-
-=cut
-
 sub sshd_param {
     my($self, @args) = @_;
+    # Set I<param> to I<value> in sshd_config.  Knows how to replace only
+    # those parameters which already exist in the file.
     return _edit($self, '/etc/ssh/sshd_config', map {
 	my($param, $value) = @$_;
 	["(?<=\n)\\s*#?\\s*$param\[^\n]+", "$param $value"],
     } @{$self->group_args(2, \@args)});
 }
-
-#=PRIVATE METHODS
 
 sub _add_aliases {
     my($file, $sep, $self) = splice(@_, 0, 3);
@@ -866,12 +573,9 @@ sub _add_aliases {
 	map(join("$sep\t", split(/:\s*/, $_, 2)), @_));
 }
 
-# _add_file(self, string file, string owner, string group, int perms, string content
-#
-# Creates the file if it doesn't exist.  Always creates if $content.
-#
 sub _add_file {
     my($self, $file, $owner, $group, $perms, $content) = @_;
+    # Creates the file if it doesn't exist.  Always creates if $content.
     $file = _prefix_file($file);
     return '' if -e $file && !defined($content);
     return "Would have created: $file\n" if $self->unsafe_get('noexecute');
@@ -938,13 +642,10 @@ sub _bits2netmask {
     return sprintf('255.255.255.%d', (1<<8) - (1<<(32-$bits)));
 }
 
-# _delete_lines(self, string file, array_ref lines) : string
-#
-# Removes lines to file.
-#TODO: Should it delete the file???
-#
 sub _delete_lines {
     my($self, $file, $lines) = @_;
+    # Removes lines to file.
+    #TODO: Should it delete the file???
     return _edit($self, $file,
 	[sub {
 	     my($data) = @_;
@@ -983,12 +684,9 @@ sub _dig {
     return $cache->{$hostname};
 }
 
-# _edit(self, string file, array_ref op)
-#
-# Inserts a value into a file.
-#
 sub _edit {
     my($self, $file, @op) = @_;
+    # Inserts a value into a file.
     $file = _prefix_file($file);
     my($data) = Bivio::IO::File->read($file);
     my($orig_data) = $$data;
@@ -1028,12 +726,9 @@ sub _edit {
     return "Updated: $file\n";
 }
 
-# _exec(self, string command, string in, boolean ignore_exit_code) : string
-#
-# Execute obeying noexecute.
-#
 sub _exec {
     my($self, $cmd, $in, $ignore_exit_code) = @_;
+    # Execute obeying noexecute.
     $in ||= '';
     $cmd .= ' 2>&1';
     return "Would have executed: $cmd\n"
@@ -1145,12 +840,9 @@ sub _maybe_write {
     return _write($filename, $data);
 }
 
-# _mkdir(self, string dir, int perms) : string
-#
-# Creates dir if it doesn't exist
-#
 sub _mkdir {
     my($self, $dir, $perms) = @_;
+    # Creates dir if it doesn't exist
     $dir = _prefix_file($dir);
     return '' if -d $dir;
     return "Would have created: $dir\n" if $self->unsafe_get('noexecute');
@@ -1165,12 +857,9 @@ sub _network_for {
     return _network_config_for(shift)->{network};
 }
 
-# _prefix_file(string file) : string
-#
-# Adds root_prefix to $file.
-#
 sub _prefix_file {
     my($file) = @_;
+    # Adds root_prefix to $file.
     return $_CFG->{root_prefix} ? "$_CFG->{root_prefix}$file" : $file;
 }
 
@@ -1188,9 +877,9 @@ sub _static_routes_for {
     return _network_config_for(shift)->{static_routes};
 }
 
-#TODO: figure out the permissions and use _add_file() instead
 sub _write {
     my($filename, $data) = @_;
+    #TODO: figure out the permissions and use _add_file() instead
     $filename = _prefix_file($filename);
     _trace($filename)
 	if $_TRACE;
@@ -1198,15 +887,5 @@ sub _write {
     Bivio::IO::File->write($filename, $data);
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
