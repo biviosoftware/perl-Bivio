@@ -159,13 +159,8 @@ EOF
     __PACKAGE__->map_by_two(
 	sub {
 	    my($left, $right) = @_;
-	    # dav special case on rewrite_rules
-	    # legacy_rules per host
-	    # set mail_host and http_suffix in global (if not set)
-	    # append to httpd_content
-	    #
 	    if (!ref($right) && $right =~ /\./) {
-	        $redirects .= <<'EOF';
+		$redirects .= <<"EOF";
 <VirtualHost *>
     ServerName $left
     RedirectPermanent / http://$right/
@@ -178,7 +173,21 @@ EOF
 	    my($cfg) = ref($right) ? $right : {facade_uri => $right};
 	    $cfg->{http_suffix} = $left;
 	    $cfg->{mail_host} = $mh || $left;
-	    map($vars->{$_} = $cfg->{$_}, qw(http_suffix mail_host));
+	    __PACKAGE__->map_by_two(
+		sub {
+		    my($k, $v) = @_;
+		    $cfg->{$k} = $v
+			unless defined($cfg->{$k});
+	        },
+		$cfg->{facade_uri} eq 'dav' ? [
+		    local_file_prefix => $app,
+		    rewrite_icons => 0,
+		] : [
+		    local_file_prefix => $cfg->{facade_uri},
+		    rewrite_icons => 1,
+		],
+	    );
+	    map($vars->{$_} ||= $cfg->{$_}, qw(http_suffix mail_host));
 	    my($http) = "http://$cfg->{http_suffix}:$vars->{listen}\$1";
 	    if ($is_mail) {
 		_push($vars, mail_hosts => $cfg->{mail_host});
@@ -194,7 +203,7 @@ EOF
 		 || $vars->{legacy_rewrite_rules};
 	    $lrr =~ s{(?<=[^\n])$}{\n}s;
 	    my($rules) = ($lrr || '')
-	        . ($cfg->{facade_uri} eq 'dav' ? '' : <<'EOF')
+	        . ($cfg->{rewrite_icons} ? <<'EOF' : '')
     RewriteRule ^/./ - [L]
     RewriteRule .*favicon.ico$ /i/favicon.ico [L]
 EOF
@@ -202,19 +211,18 @@ EOF
 	    $vars->{httpd_content} .= <<"EOF";
 <VirtualHost *>
     ServerName $cfg->{http_suffix}
-    DocumentRoot /var/www/facades/$cfg->{facade_uri}/plain
+    DocumentRoot /var/www/facades/$cfg->{local_file_prefix}/plain
     ProxyVia on
     ProxyIOBufferSize 4194304
     RewriteEngine On
     RewriteOptions inherit
-$rules
-</VirtualHost>
-$redirects
+$rules</VirtualHost>
 EOF
 	    return;
 	},
 	$vars->{virtual_hosts},
     );
+    $vars->{httpd_content} .= $redirects;
     return $vars;
 }
 
@@ -379,7 +387,7 @@ EOF
     );
     $v->{mail_hosts} = [sort(
 	map(@{$vars->{$_}->{mail_hosts} || []}, @{$vars->{apps}}))];
-    $v->{app_names} = [sort(@{$vars->{apps}})];
+    $v->{app_names} = [@{$vars->{apps}}];
     my($n) = 0;
     foreach my $s (@{$vars->{apps}}) {
 	$n += $vars->{$s}->{servers};
