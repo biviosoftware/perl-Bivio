@@ -12,7 +12,6 @@ my($_VARS) = {
     legacy_rewrite_rules => '',
     cookie_tag => undef,
     listen => undef,
-    mail_host => undef,
     root_prefix => undef,
     server_admin => undef,
     server_status_allow => '127.0.0.1',
@@ -21,6 +20,8 @@ my($_VARS) = {
     servers => 4,
     httpd_init_rc => '/etc/rc.d/init.d/httpd',
     httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
+    mail_hosts_txt => '/etc/httpd/conf/local-host-names.txt',
+    app_names_txt => '/etc/httpd/conf/app-names.txt',
     limit_request_body => 4194304,
     # Users can supply certain params here
     httpd => my $_HTTPD_VARS = {
@@ -55,14 +56,10 @@ sub generate {
     _write($vars->{httpd_init_rc}, _httpd_init_rc());
     _write(_httpd_conf($vars->{httpd}));
     _write(_logrotate($vars->{httpd}));
+    _write(_app_names_txt($vars->{httpd}));
+    _write(_mail_hosts_txt($vars->{httpd}));
     return;
 }
-
-=for html <a name="validate_vars"></a>
-
-=head2 static validate_vars(string vars) : hash_ref
-
-=cut
 
 sub validate_vars {
     my($self, $vars) = @_;
@@ -178,7 +175,10 @@ sub _app_vars {
 	logrotate => "/etc/logrotate.d/$app",
 	pid_file => "/var/run/$app.pid",
 	process_name => "$app-httpd",
-	content => <<"EOF",
+    );
+    return $vars
+	if $app eq $_HTTPD_VARS->{app};
+    $vars->{content} = <<"EOF";
 PerlWarn on
 PerlFreshRestart off
 PerlSetEnv BCONF $bconf
@@ -187,10 +187,82 @@ PerlTransHandler Apache::OK
 PerlModule Bivio::Agent::HTTP::Dispatcher
 
 <Location />
-    SetHandler perl-script
-    PerlHandler Bivio::Agent::HTTP::Dispatcher
+  SetHandler perl-script
+  PerlHandler Bivio::Agent::HTTP::Dispatcher
 </Location>
 EOF
+    Bivio::Die->die(
+	$app, ': virtual_hosts and mail_host/http_suffix incompatible'
+    ) if $vars->{virtual_hosts} && ($vars->{mail_host} || $vars->{http_suffix});
+    $vars->{virtual_hosts} ||= [
+	$vars->{http_suffix} =~ /^(?:www\.)?\Q$vars->{mail_host}\E$/
+	    ? ('@' . $vars->{http_suffix} => $app)
+	    : (
+		$vars->{http_suffix} => $app,
+		'@' . $vars->{mail_host} => $app,
+	    ),
+    ];
+    my($redirects) = '';
+    __PACKAGE__->map_by_two(
+	sub {
+	    my($left, $right) = @_;
+	    # dav special case on rewrite_rules
+	    # legacy_rules per host
+	    # set mail_host and http_suffix in global (if not set)
+	    # append to httpd_content
+	    #
+	    if (!ref($right) && $right =~ /\./) {
+	        $redirects .= <<'EOF';
+<VirtualHost *>
+    ServerName $left
+    RedirectPermanent / http://$right/
+</VirtualHost>
+EOF
+		return;
+	    }
+	    my($is_mail) = $left =~ s/^\@//;
+	    my($mh) = $left =~ /^www\.(.+)$/;
+	    my($cfg) = ref($right) ? $right : {
+		facade_uri => $right,
+		http_suffix => $left,
+		mail_host => $mh || $left,
+	    };
+	    map($vars->{$_} = $cfg->{$_}, qw(http_suffix mail_host));
+	    my($http) = "http://$cfg->{http_suffix}:$vars->{listen}\$1";
+	    if ($is_mail) {
+		_push($vars, mail_hosts => $cfg->{mail_host});
+		_push($vars, mail_receive => "$cfg->{mail_host} $http");
+	    }
+	    $redirects .= <<"EOF" if $mh;
+<VirtualHost *>
+  ServerName $mh
+  RedirectPermanent / http://$cfg->{http_suffix}/
+</VirtualHost>
+EOF
+	    my($lrr) = $cfg->{legacy_rewrite_rules}
+		 || $vars->{legacy_rewrite_rules};
+	    $lrr =~ s{(?<=[^\n])$}{\n}s;
+	    my($rules) = ($lrr || '')
+	        . ($cfg->{facade_uri} eq 'dav' ? '' : <<'EOF')
+  RewriteRule ^/./ - [L]
+  RewriteRule .*favicon.ico$ /i/favicon.ico [L]
+EOF
+		. "RewriteRule ^(.*) $http \[proxy\]\n";
+	    $vars->{httpd_content} .= <<"EOF";
+<VirtualHost *>
+  ServerName $cfg->{http_suffix}
+  DocumentRoot /var/www/facades/$cfg->{facade_uri}/plain
+  ProxyVia on
+  ProxyIOBufferSize 4194304
+  RewriteEngine On
+  RewriteOptions inherit
+$rules
+</VirtualHost>
+$redirects
+EOF
+	    return;
+	},
+	$vars->{virtual_hosts},
     );
     return $vars;
 }
@@ -213,6 +285,11 @@ b_httpd_app=$app
 # Source function library.
 . $httpd_init_rc
 EOF
+}
+
+sub _app_names_txt {
+    my($vars) = @_;
+    return ($vars->{app_names_txt}, \(join("\n", @{$vars->{app_names}}, '')));
 }
 
 sub _httpd_conf {
@@ -255,16 +332,16 @@ ExtendedStatus On
 DocumentRoot /var/www/html
 
 <Directory />
-    AllowOverride None
-    Options FollowSymLinks
+  AllowOverride None
+  Options FollowSymLinks
 </Directory>
 
 $content
 
 <Location $server_status_location>
-    SetHandler server-status
-    deny from all
-    allow from $server_status_allow
+  SetHandler server-status
+  deny from all
+  allow from $server_status_allow
 </Location>
 
 $aux_http_conf
@@ -320,49 +397,38 @@ sub _httpd_vars {
 	%$v,
     );
     _app_vars($v);
-    foreach my $a (@{$vars->{apps}}) {
-	my($av) = $vars->{$a};
-	$av->{rewrite_rules}
-	    = _replace_vars($av, "rewrite_rules($a)", <<'EOF');
-    RewriteRule ^/./ - [L]
-    RewriteRule .*favicon.ico$$ /i/favicon.ico [L]
-    RewriteRule ^(.*) http://$http_suffix:$listen$$1 [proxy]
-EOF
-	$av->{permanent_redirects} = $av->{http_suffix} ne "www.$av->{mail_host}"
-	    ? '' : _replace_vars($av, "permanent_redirects($a)", <<'EOF');
-<VirtualHost *>
-    ServerName $mail_host
-    RedirectPermanent / http://$http_suffix/
-</VirtualHost>
-EOF
-	$av->{httpd_content}
-	    = _replace_vars($av, "httpd_content($a)", <<'EOF');
-<VirtualHost *>
-    ServerName $http_suffix
-    DocumentRoot /var/www/facades/$app/plain
-    ProxyVia on
-    ProxyIOBufferSize 4194304
-    RewriteEngine On
-    RewriteOptions inherit
-$legacy_rewrite_rules
-$rewrite_rules
-</VirtualHost>
-$permanent_redirects
-$facade_redirects
-EOF
-    }
-    my($t);
     $v->{content} = join(
 	"\n",
 	_replace_vars($vars->{httpd}, "httpd_content", <<'EOF'),
 NameVirtualHost *
 <VirtualHost *>
-    ServerName $host_name
-    DocumentRoot /var/www/html
+  ServerName $host_name
+  DocumentRoot /var/www/html
 </VirtualHost>
 EOF
 	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
+	join('',
+	    <<'EOF',
+<VirtualHost *>
+  ServerName localhost.localdomain
+  DocumentRoot /var/www/html
+  ProxyVia on
+  ProxyIOBufferSize 4194304
+  RewriteEngine On
+  RewriteOptions inherit
+EOF
+	     map({
+		 my($mh, $vh) = split(' ', $_);
+		 "  RewriteRule ^(.*_mail_receive/.*\@$mh.*) $vh \[proxy,nocase\]\n";
+	     } sort(map(
+		 @{$vars->{$_}->{mail_receive} || []}, @{$vars->{apps}},
+	     ))),
+	     "</VirtualHost>\n",
+        ),
     );
+    $v->{mail_hosts} = [sort(
+	map(@{$vars->{$_}->{mail_hosts} || []}, @{$vars->{apps}}))];
+    $v->{app_names} = [sort(@{$vars->{apps}})];
     my($n) = 0;
     foreach my $s (@{$vars->{apps}}) {
 	$n += $vars->{$s}->{servers};
@@ -373,6 +439,17 @@ EOF
     }
     $v->{server_admin} ||= 'webmaster@' . $v->{host_name};
     $v->{servers} = $n * 2;
+    return;
+}
+
+sub _mail_hosts_txt {
+    my($vars) = @_;
+    return ($vars->{mail_hosts_txt}, \(join("\n", @{$vars->{mail_hosts}}, '')));
+}
+
+sub _push {
+    my($vars, $name, $value) = @_;
+    push(@{$vars->{$name} ||= []}, $value);
     return;
 }
 
