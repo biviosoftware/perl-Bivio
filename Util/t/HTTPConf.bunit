@@ -1,0 +1,88 @@
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Bivio::IO::File->chdir(tmp_dir());
+[
+    class() => [
+	generate => [
+	    <<'EOF',
+{
+    httpd => {
+        host_name => 'proxy.com',
+    },
+    a1 => {
+        cookie_tag => 'A1T',
+        listen => 2121,
+        root_prefix => 'A1',
+        server_admin => 'a1@a1.com',
+        aux_http_conf => 'Listen 2020',
+        virtual_hosts => [
+            '@www.a1.com' => 'a1',
+        ],
+    },
+    a2 => {
+        is_production => 1,
+        cookie_tag => 'A2T',
+        root_prefix => 'A2',
+        listen => 1010,
+        legacy_rewrite_rules => 
+             'RewriteRule ^(/[^/]+\.html)$ /hm$1 [R=permanent,L]',
+        mail_host => 'a2.com',
+        http_suffix => 'a2.com',
+        servers => 333,
+        limit_request_body => 1_000_000_000,
+        timeout => 1_000,
+    },
+    server_admin => 'default@default.com',
+    limit_request_body => 9999,
+    timeout => 99,
+};
+EOF
+            sub {
+		my($vars) = Bivio::Die->eval_or_die(shift->get('params')->[0]);
+		$vars->{a1}->{mail_host} = 'a1.com';
+		$vars->{a1}->{http_suffix} = 'www.a1.com';
+		my($h) = $vars->{httpd};
+		$h->{listen} = 80;
+		# Doubles on the last round so matches 2 * sum(servers)
+		$h->{servers} = 0;
+		foreach my $app (grep(/^a\d+$/, sort(keys(%$vars))), 'httpd') {
+		    $h->{servers} += ($vars->{$app}->{servers} ||= 4);
+		    foreach my $var (qw(limit_request_body timeout)) {
+			$h->{$var} = $vars->{$app}->{$var}
+			    if ($h->{$var} || 0) < ($vars->{$app}->{$var} || 0);
+		    }
+		    foreach my $x (
+			["etc/httpd/conf/$app.conf", qw(listen server_admin servers limit_request_body)],
+			["etc/$app.bconf", qw(cookie_tag http_suffix mail_host)],
+			["etc/rc.d/init.d/$app"],
+			["etc/logrotate.d/$app"],
+		    ) {
+			my($file) = shift(@$x);
+			next if $file eq 'etc/httpd.bconf';
+			my($c) = Bivio::IO::File->read($file);
+			foreach my $k (@$x) {
+			    my($n) = ($k =~ /([a-z]+)$/)[0];
+			    # 4 is default servers, only default being tested
+			    my($v) = $vars->{$app}->{$k} || $vars->{$k};
+			    die("$n $v: not found in $file")
+				unless $$c =~ /${n}[^\n]+$v/is;
+			}
+		    }
+		    assert_equals(
+			qr{mail_receive.*\@a1.*a1.com:2121.*\n.*\@a2.com.*a2.com:1010}m,
+			read_file('etc/httpd/conf/httpd.conf'),
+		    );
+		    assert_equals(
+			qr{\na1\na2\n$}s,
+			read_file('etc/httpd/conf/app-names.txt'),
+		    );
+		    assert_equals(
+			qr{\na1.com\na2.com\n$}s,
+			read_file('etc/httpd/conf/local-host-names.txt'),
+		    );
+		}
+		return 1;
+	    },
+	],
+    ],
+];
