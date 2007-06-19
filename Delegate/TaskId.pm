@@ -28,6 +28,7 @@ sub info_base {
 	    GENERAL
 	    ANYBODY
 	    Action.ClientRedirect->execute_home_page_if_site_root
+	    Action.SiteRoot->execute_realm_file
 	    View.SiteRoot->execute_uri
 	)],
 	[qw(
