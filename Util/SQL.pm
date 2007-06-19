@@ -374,6 +374,7 @@ sub internal_upgrade_db_bundle {
     $self->internal_upgrade_db_tuple;
     $self->internal_upgrade_db_motion;
     $self->internal_upgrade_db_website;
+    $self->internal_upgrade_db_realm_dag;
     return;
 }
 
@@ -959,6 +960,37 @@ ALTER TABLE realm_user_t
 ALTER TABLE realm_user_t
   DROP COLUMN honorific
 ;
+EOF
+    return;
+}
+
+sub internal_upgrade_db_realm_dag {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE realm_dag_t (
+  parent_id NUMERIC(18) NOT NULL,
+  child_id NUMERIC(18) NOT NULL,
+  constraint realm_dag_t1 primary key (parent_id, child_id)
+)
+/
+ALTER TABLE realm_dag_t
+  ADD CONSTRAINT realm_dag_t2
+  FOREIGN KEY (parent_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX realm_dag_t3 ON realm_dag_t (
+  parent_id
+)
+/
+ALTER TABLE realm_dag_t
+  ADD CONSTRAINT realm_dag_t4
+  FOREIGN KEY (child_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX realm_dag_t5 ON realm_dag_t (
+  child_id
+)
+/
 EOF
     return;
 }
