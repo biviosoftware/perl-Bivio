@@ -457,6 +457,29 @@ CREATE UNIQUE INDEX tuple_use_t7 on tuple_use_t (
 /
 
 --
+-- realm_dag_t
+--
+
+ALTER TABLE realm_dag_t
+  ADD CONSTRAINT realm_dag_t2
+  FOREIGN KEY (parent_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX realm_dag_t3 ON realm_dag_t (
+  parent_id
+)
+/
+ALTER TABLE realm_dag_t
+  ADD CONSTRAINT realm_dag_t4
+  FOREIGN KEY (child_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX realm_dag_t5 ON realm_dag_t (
+  child_id
+)
+/
+
+--
 -- realm_file_t
 --
 ALTER TABLE realm_file_t

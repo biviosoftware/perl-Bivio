@@ -256,6 +256,13 @@ CREATE TABLE tuple_use_t  (
 )
 /
 
+CREATE TABLE realm_dag_t (
+  parent_id NUMERIC(18) NOT NULL,
+  child_id NUMERIC(18) NOT NULL,
+  constraint realm_dag_t1 primary key (parent_id, child_id)
+)
+/
+
 CREATE TABLE realm_file_t (
   realm_file_id NUMERIC(18),
   realm_id NUMERIC(18) NOT NULL,
