@@ -276,7 +276,7 @@ sub _cfg_blog {
 sub _cfg_dav {
     return {
 	Task => [
-	    [DAV => 'dav/*', '/dv/*'],
+	    [DAV => ['dav/*', 'dv/*']],
 	],
 	Text => [
 	    [ForumList => [
