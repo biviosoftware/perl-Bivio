@@ -14,6 +14,7 @@ my($_VARS) = {
     listen => undef,
     root_prefix => undef,
     server_admin => undef,
+    ssl_listen => '',
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     timeout => 120,
@@ -159,27 +160,18 @@ EOF
     __PACKAGE__->map_by_two(
 	sub {
 	    my($left, $right) = @_;
-	    if (!ref($right) && $right =~ /\./) {
-		$redirects .= <<"EOF";
-<VirtualHost *>
-    ServerName $left
-    RedirectPermanent / http://$right/
-</VirtualHost>
-EOF
-		return;
-	    }
 	    my($is_mail) = $left =~ s/^\@//;
 	    my($mh) = $left =~ /^www\.(.+)$/;
 	    my($cfg) = ref($right) ? $right : {facade_uri => $right};
-	    $cfg->{http_suffix} = $left;
-	    $cfg->{mail_host} = $mh || $left;
+	    $cfg->{http_suffix} ||= $left;
+	    $cfg->{mail_host} ||= $mh || $cfg->{http_suffix};
 	    __PACKAGE__->map_by_two(
 		sub {
 		    my($k, $v) = @_;
 		    $cfg->{$k} = $v
 			unless defined($cfg->{$k});
 	        },
-		$cfg->{facade_uri} eq 'dav' ? [
+		($cfg->{facade_uri} || '') eq 'dav' ? [
 		    local_file_prefix => $app,
 		    rewrite_icons => 0,
 		] : [
@@ -193,31 +185,56 @@ EOF
 		_push($vars, mail_hosts => $cfg->{mail_host});
 		_push($vars, mail_receive => "$cfg->{mail_host} $http");
 	    }
-	    $redirects .= <<"EOF" if $mh;
+	    my($seen) = {$cfg->{http_suffix} => 1};
+	    foreach my $a (
+		$mh ? $mh : (),
+		map(($_, $_ =~ /^www\.(.+)$/),
+		    sort(@{$cfg->{aliases} || []})),
+	    ) {
+		next if $seen->{$a}++;
+	        $redirects .= <<"EOF";
 <VirtualHost *>
-    ServerName $mh
+    ServerName $a
     RedirectPermanent / http://$cfg->{http_suffix}/
 </VirtualHost>
 EOF
+	    }
 	    my($lrr) = $cfg->{legacy_rewrite_rules}
 		 || $vars->{legacy_rewrite_rules};
 	    $lrr =~ s{(?<=[^\n])$}{\n}s;
 	    my($rules) = ($lrr || '')
-	        . ($cfg->{rewrite_icons} ? <<'EOF' : '')
+	        . ($cfg->{no_proxy} ? ''
+	            : (($cfg->{rewrite_icons} ? <<'EOF' : '')
     RewriteRule ^/./ - [L]
     RewriteRule .*favicon.ico$ /i/favicon.ico [L]
 EOF
-		. "    RewriteRule ^(.*) $http \[proxy\]\n";
-	    $vars->{httpd_content} .= <<"EOF";
-<VirtualHost *>
-    ServerName $cfg->{http_suffix}
+		. "    RewriteRule ^(.*) $http \[proxy\]\n"));
+	    my($proxy) = $cfg->{no_proxy} ? '' : qq{
     DocumentRoot /var/www/facades/$cfg->{local_file_prefix}/plain
     ProxyVia on
-    ProxyIOBufferSize 4194304
+    ProxyIOBufferSize 4194304};
+	    my($hc) = <<"EOF";
+<VirtualHost *>
+    ServerName $cfg->{http_suffix}$proxy
     RewriteEngine On
     RewriteOptions inherit
 $rules</VirtualHost>
 EOF
+	    $vars->{httpd_content} .= $hc;
+            if ($cfg->{ssl_crt}) {
+		$vars->{ssl_listen} = "\nListen " . ($vars->{listen} + 1);
+		my($chain) = !$cfg->{ssl_chain} ? ''
+		    : "\n    SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}";
+		(my $key = $cfg->{ssl_crt}) =~ s/crt$/key/;
+		$hc =~ s{\*}{$cfg->{http_suffix}:443};
+		$hc =~ s{(?=^\s+Rewrite)}{    SSLEngine on
+    SSLCertificateFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_crt}
+    SSLCertificateKeyFile /etc/httpd/conf/ssl.key/$key$chain
+    SetEnv nokeepalive 1
+    SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
+}mx;
+		$vars->{httpd_content} .= $hc;
+	    }
 	    return;
 	},
 	$vars->{virtual_hosts},
@@ -257,7 +274,7 @@ sub _httpd_conf {
 ResourceConfig /dev/null
 AccessConfig /dev/null
 
-Listen $listen
+Listen $listen$ssl_listen
 
 User apache
 Group apache
@@ -364,6 +381,14 @@ NameVirtualHost *
     ServerName $host_name
     DocumentRoot /var/www/html
 </VirtualHost>
+EOF
+	grep($vars->{$_}->{ssl_listen}, @{$vars->{apps}}) ? <<'EOF' : '',
+Listen 443
+SSLSessionCache shm:logs/ssl_scache(512000)
+SSLSessionCacheTimeout 300
+SSLMutex file:logs/ssl_mutex
+SSLLog logs/ssl_log
+SSLLogLevel warn
 EOF
 	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
 	join('',

@@ -11,12 +11,21 @@ Bivio::IO::File->chdir(tmp_dir());
     },
     a1 => {
         cookie_tag => 'A1T',
-        listen => 2121,
+        listen => 2120,
         root_prefix => 'A1',
         server_admin => 'a1@a1.com',
-        aux_http_conf => 'Listen 2020',
+        aux_http_conf => 'ScriptAlias /cgi-bin/foo.pl /usr/local/bin/bar',
         virtual_hosts => [
-            '@www.a1.com' => 'a1',
+            '@www.a1.com' => {
+                facade_uri => 'a1',
+                ssl_crt => 'www1.a1.com.crt',
+                ssl_chain => 'sf_issuing.crt',
+                aliases => [qw(www.a3.com a4.com)],
+            },
+            'old.a6.com' => {
+                no_proxy => 1,
+                legacy_rewrite_rules => q{RedirectPermanent / http://www.a7.com}
+            },
         ],
     },
     a2 => {
@@ -38,50 +47,14 @@ Bivio::IO::File->chdir(tmp_dir());
 };
 EOF
             sub {
-		my($vars) = Bivio::Die->eval_or_die(shift->get('params')->[0]);
-		$vars->{a1}->{mail_host} = 'a1.com';
-		$vars->{a1}->{http_suffix} = 'www.a1.com';
-		my($h) = $vars->{httpd};
-		$h->{listen} = 80;
-		# Doubles on the last round so matches 2 * sum(servers)
-		$h->{servers} = 0;
-		foreach my $app (grep(/^a\d+$/, sort(keys(%$vars))), 'httpd') {
-		    $h->{servers} += ($vars->{$app}->{servers} ||= 4);
-		    foreach my $var (qw(limit_request_body timeout)) {
-			$h->{$var} = $vars->{$app}->{$var}
-			    if ($h->{$var} || 0) < ($vars->{$app}->{$var} || 0);
-		    }
-		    foreach my $x (
-			["etc/httpd/conf/$app.conf", qw(listen server_admin servers limit_request_body)],
-			["etc/$app.bconf", qw(cookie_tag http_suffix mail_host)],
-			["etc/rc.d/init.d/$app"],
-			["etc/logrotate.d/$app"],
-		    ) {
-			my($file) = shift(@$x);
-			next if $file eq 'etc/httpd.bconf';
-			my($c) = Bivio::IO::File->read($file);
-			foreach my $k (@$x) {
-			    my($n) = ($k =~ /([a-z]+)$/)[0];
-			    # 4 is default servers, only default being tested
-			    my($v) = $vars->{$app}->{$k} || $vars->{$k};
-			    die("$n $v: not found in $file")
-				unless $$c =~ /${n}[^\n]+$v/is;
-			}
-		    }
-		    assert_equals(
-			qr{mail_receive.*\@a1.*a1.com:2121.*\n.*\@a2.com.*a2.com:1010}m,
-			read_file('etc/httpd/conf/httpd.conf'),
-		    );
-		    assert_equals(
-			qr{\na1\na2\n$}s,
-			read_file('etc/httpd/conf/app-names.txt'),
-		    );
-		    assert_equals(
-			qr{\na1.com\na2.com\n$}s,
-			read_file('etc/httpd/conf/local-host-names.txt'),
-		    );
-		}
-		return 1;
+		my($d) = 'HTTPConf-expect';
+		Bivio::IO::File->do_in_dir('..', sub {
+		    rm_rf(Bivio::IO::File->absolute_path($d));
+		    system("tar xzf $d.tgz") == 0 || die;
+		    return;
+		});
+	        my($diff) = scalar(`diff '--ignore-matching-lines=# By:' -r ../$d .`);
+		return $diff ? [$diff] : [];
 	    },
 	],
     ],
