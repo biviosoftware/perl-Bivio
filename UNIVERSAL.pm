@@ -247,6 +247,14 @@ sub package_version {
     };
 }
 
+sub req {
+    my($proto) = shift;
+    my($req) = ref($proto) && $proto->can('get_request') && $proto->get_request
+	|| Bivio::Agent::Request->get_current
+	|| Bivio::Die->die('no request');
+    return @_ ? $req->get_nested(@_) : $req
+}
+
 sub simple_package_name {
     # Returns the package name sans directory prefixes, e.g. the simple package
     # name for this class is C<UNIVERSAL>.
