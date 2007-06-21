@@ -29,43 +29,24 @@ sub delete_message_id {
 }
 
 sub import_mbox {
-#TODO: Why does this code result in bad RealmFile file contents?
-#     my($self, $file) = @_;
-#     my($i) = 0;
-#     my($msg);
-#     my($rm) = Bivio::Biz::Model->new($self->get_request, 'RealmMail');
-#     open(F, $file);
-#     while (<F>) {
-# 	$_ =~ s/\r//g;
-# 	if ($_ =~ /^From .*\d{4}$/ && $msg) {
-# 	    Bivio::IO::Alert->info("Migrating message $i - ");
-# 	    $rm->create_from_rfc822(\$msg);
-# 	    $self->commit_or_rollback
-# 		if ++$i % 100 == 0;
-# 	    $msg = undef;
-# 	}
-# 	else {
-# 	    $msg .= $_;
-# 	}
-#     }
-#     if ($msg) {
-# 	$i++;
-# 	Bivio::IO::Alert->info("Migrating last message\n");
-# 	$rm->create_from_rfc822(\$msg);
-#     }
-#     close(F);
-#     return "Imported $i messages";
     my($self) = @_;
     my($rm) = Bivio::Biz::Model->new($self->get_request, 'RealmMail');
-    my($i) = 0;
-    Bivio::IO::Alert->info('Before foreach');
+    my($t) = 0;
+    my($n) = 0;
     foreach my $m (split(/(?<=\n)From [^\n]+\n/, ${$self->read_input})) {
-	Bivio::IO::Alert->info($i);
- 	$rm->create_from_rfc822(\$m);
- 	$self->commit_or_rollback
- 	    if ++$i % 100 == 0;
+        my($die) = Bivio::Die->catch(
+            sub {
+                $t++;
+                $rm->create_from_rfc822(\$m);
+                Bivio::IO::Alert->info("imported $t");
+                $n++;
+            });
+        Bivio::IO::Alert->info("skipped $t\n", $die, \$m)
+            if $die;
+        $self->commit_or_rollback
+            if $t % 100 == 0;
     }
-    return "Imported $i Messages";
+    return "Imported $n of $t Messages\n";
 }
 
 sub import_rfc822 {
