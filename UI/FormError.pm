@@ -1,64 +1,11 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::FormError;
 use strict;
-$Bivio::UI::FormError::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::FormError::VERSION;
+use Bivio::Base 'Bivio::UI::Text';
 
-=head1 NAME
-
-Bivio::UI::FormError - form errors
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::FormError;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Text>
-
-=cut
-
-use Bivio::UI::Text;
-@Bivio::UI::FormError::ISA = ('Bivio::UI::Text');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::FormError>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_IN_EVAL);
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="field_value"></a>
-
-=head2 static field_value(string item) : string
-
-Returns an attribute for the currently executing form error.  Dies if
-in not evaluating or if I<item> is unknown.
-
-=over 4
-
-=item label : string
-
-Field label, not escaped.
-
-=back
-
-=cut
 
 sub field_value {
     my(undef, $item) = @_;
@@ -69,19 +16,10 @@ sub field_value {
     return $_IN_EVAL->{$item};
 }
 
-=for html <a name="to_html"></a>
-
-=head2 to_html(any source, Bivio::Biz::FormModel form, string field) : string
-
-=head2 to_html(any source, Bivio::Biz::FormModel form, string field, string label, Bivio::TypeError error) : string
-
-Returns the error string for this tuple.  If none is found,
-C<get_long_desc> is called.
-
-=cut
-
 sub to_html {
     my($proto, $source, $form, $field, $label, $error) = @_;
+    # Returns the error string for this tuple.  If none is found,
+    # C<get_long_desc> is called.
     my($self) = $proto->internal_get_self($source->get_request);
     my($form_class) = ref($form) || $form;
     $error ||= $form->get_field_error($field);
@@ -105,17 +43,5 @@ sub to_html {
     }
     return Bivio::HTML->escape($error->get_long_desc)
 }
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
