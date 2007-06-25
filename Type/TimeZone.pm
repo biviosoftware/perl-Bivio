@@ -8,8 +8,6 @@ use DateTime ();  #Olson DateTime::TimeZone CPAN module
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile;
 my($_DT) = Bivio::Type->get_instance('DateTime');
-#TODO: Would like this, but it creates compile errors for subclasses
-#my($_UTC) = Bivio::Type->get_instance('TimeZone')->UTC;
 
 sub compile {
     my($i) = 2;
@@ -26,26 +24,17 @@ sub compile {
 
 sub date_time_from_utc {
     my($self, $date_time) = @_;
-    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
-    my($utc) = Bivio::Type->get_instance('TimeZone')->UTC;
-    my($dt) = scalar(DateTime->new(
-	year   => $year,
-	month  => $mon,
-	day    => $mday,
-	hour   => $hour,
-	minute => $min,
-	second => $sec,
-	time_zone => $utc->get_short_desc,
-    ));
-    $dt->set_time_zone($self->get_short_desc);
-    return $_DT->from_parts_or_die(
-	$dt->second, $dt->minute, $dt->hour, $dt->day, $dt->month, $dt->year);
+    return _convert($self, $date_time, $self->UTC, $self);
 }
 
 sub date_time_to_utc {
     my($self, $date_time) = @_;
+    return _convert($self, $date_time, $self, $self->UTC);
+}
+
+sub _convert {
+    my($self, $date_time, $source, $target) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
-    my($utc) = Bivio::Type->get_instance('TimeZone')->UTC;
     my($dt) = scalar(DateTime->new(
 	year   => $year,
 	month  => $mon,
@@ -53,9 +42,9 @@ sub date_time_to_utc {
 	hour   => $hour,
 	minute => $min,
 	second => $sec,
-	time_zone => $self->get_short_desc,
+	time_zone => $source->get_short_desc,
     ));
-    $dt->set_time_zone($utc->get_short_desc);
+    $dt->set_time_zone($target->get_short_desc);
     return $_DT->from_parts_or_die(
 	$dt->second, $dt->minute, $dt->hour, $dt->day, $dt->month, $dt->year);
 }
