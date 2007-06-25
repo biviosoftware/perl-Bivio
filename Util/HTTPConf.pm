@@ -227,7 +227,9 @@ EOF
 		my($chain) = !$cfg->{ssl_chain} ? ''
 		    : "\n    SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}";
 		(my $key = $cfg->{ssl_crt}) =~ s/crt$/key/;
-		$hc =~ s{\*}{$cfg->{http_suffix}:443};
+		$hc =~ s{\*\>}{$cfg->{http_suffix}:443>};
+		(my $https = $http) =~ s{(?<=\:)(\d+)}{$1 + 1}e;
+		$hc =~ s{\Q$http\E}{$https}g;
 		$hc =~ s{(?=^\s+Rewrite)}{    SSLEngine on
     SSLCertificateFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_crt}
     SSLCertificateKeyFile /etc/httpd/conf/ssl.key/$key$chain
