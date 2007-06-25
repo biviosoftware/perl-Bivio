@@ -205,6 +205,7 @@ EOF
 	    my($rules) = ($lrr || '')
 	        . ($cfg->{no_proxy} ? ''
 	            : (($cfg->{rewrite_icons} ? <<'EOF' : '')
+    RewriteRule ^/_.* - [forbidden]
     RewriteRule ^/./ - [L]
     RewriteRule .*favicon.ico$ /i/favicon.ico [L]
 EOF
