@@ -16,10 +16,10 @@ sub get_form {
 }
 
 sub new {
-    my(undef, $req, $full_uri) = @_;
+    my(undef, $req, $full_uri, $params) = @_;
     my($query) = $1
 	if $full_uri =~ s/\?(.*)//;
-    my($self) = shift->internal_new({});
+    my($self) = shift->internal_new($params || {});
     $self->put_durable(
 	@{$req->map_each(sub {
 	    my(undef, $k, $v) = @_;
