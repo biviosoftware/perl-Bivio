@@ -300,6 +300,9 @@ sub get_widget_value {
 	    $value = ($value->{$param2});
 	}
 	elsif (ref($value) eq 'ARRAY') {
+	    Bivio::IO::Alert->warn_deprecated(
+		$value, ': argument will eventually be resolved fully',
+	    );
 	    # index must exist (and be a number)
 	    _die($self, $param1, '->[', $param2, ']: does not exist')
 			unless $param2 <= $#$value;
@@ -318,9 +321,11 @@ sub get_widget_value {
     # must be a widget value which returns something that can return
     # a widget value.
     my($param2) = shift(@_);
-    return &$param2($value, _eval_args($self, @_)) if ref($param2) eq 'CODE';
+    return $param2->($value, _eval_args($self, @_))
+	if ref($param2) eq 'CODE';
 
-    $param2 = $self->get_widget_value(@$param2) if ref($param2) eq 'ARRAY';
+    $param2 = $self->get_widget_value(@$param2)
+	if ref($param2) eq 'ARRAY';
     unless (UNIVERSAL::can($param2, 'get_widget_value')) {
 	my($tmp) = Bivio::IO::ClassLoader->map_require($param2);
 	_die($self, $tmp, ": can't get_widget_value (not a formatter)")
@@ -354,7 +359,12 @@ sub _eval_args {
     # Returns the arguments evaluated as widget values if they are
     # array_ref.
     return map {
-	ref($_) eq 'ARRAY' ? $self->get_widget_value(@$_) : $_;
+	ref($_) eq 'ARRAY' ? map({
+	    Bivio::IO::Alert->warn_deprecated(
+		$_, ': argument will eventually be resolved fully',
+	    ) if ref($_) eq 'ARRAY';
+	    $_;
+	} $self->get_widget_value(@$_)) : $_;
     } @_;
 }
 
