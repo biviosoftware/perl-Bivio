@@ -33,7 +33,8 @@ sub new {
 	unless ref($value);
     my($self) = shift->SUPER::new;
     $self->[$_IDI]
-	= (ref($value) eq 'ARRAY' ? _clean_copy($proto, $value) : $value->as_array)
+	= (ref($value) eq 'ARRAY'
+	       ? _clean_copy($proto, $value) : $value->as_array)
 	|| [];
     return $self;
 }
@@ -45,6 +46,11 @@ sub as_array {
 sub as_html {
     my($self) = @_;
     return $self->to_html($self);
+}
+
+sub as_literal {
+    my($self) = @_;
+    return $self->to_literal($self);
 }
 
 sub as_string {
@@ -65,26 +71,37 @@ sub compare_defined {
 }
 
 sub equals {
-    my($self, $other) = @_;
-    return $self->is_equal($self, $other);
+    my($self, $that) = @_;
+    return $self->is_equal($self, $that);
 }
 
 sub from_literal {
     my($proto, $value) = @_;
     if (ref($value)) {
-	$value = $proto->new($value);
-	return $value->equals([]) ? (undef, undef) : $value;
+	$value = _new($proto, $value);
+	return $value
+	    if $value;
     }
     return (undef, undef)
-	unless defined($value);
-    $value =~ s/^\s+|\s+$//sg
-	if defined($value);
+	unless defined($value) && length($value);
+    $value = $proto->from_literal_stripper($value);
     return (undef, undef)
 	unless length($value);
     my($sep) = $proto->SQL_SEPARATOR_REGEX;
     $sep = $proto->LITERAL_SEPARATOR_REGEX
 	unless $value =~ $sep;
     return _new($proto, [split($sep, $value)]);
+}
+
+sub from_literal_stripper {
+    my(undef, $value) = @_;
+    $value =~ s/^\s+|\s+$//sg;
+    return $value;
+}
+
+sub from_literal_validator {
+    shift;
+    return shift;
 }
 
 sub from_sql_column {
