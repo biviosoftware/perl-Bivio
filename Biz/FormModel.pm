@@ -103,7 +103,9 @@ sub VERSION_FIELD {
 }
 
 sub clear_errors {
-    delete(shift->[$_IDI]->{errors});
+    my($fields) = shift->[$_IDI];
+    delete($fields->{errors});
+    delete($fields->{error_details});
     return;
 }
 
@@ -304,6 +306,12 @@ sub get_field_error {
     # Returns undef if field has no error associated with it.
     my($e) = $self->get_errors;
     return $e ? $e->{$name} : undef;
+}
+
+sub get_field_error_detail {
+    my($self, $name) = @_;
+    my($fields) = $self->[$_IDI];
+    return ($fields->{error_details} || {})->{$name};
 }
 
 sub get_field_name_for_html {
@@ -562,18 +570,19 @@ sub internal_pre_parse_columns {
 }
 
 sub internal_put_error {
-    my($self, $property, $error) = @_;
-    # Associate I<error> with I<property>.
-    #
-    # If I<property> is C<undef>, error applies to entire form.
-    #
-    # I<error> must be a L<Bivio::TypeError|Bivio::TypeError> or
-    # a name thereof.
+    return shift->internal_put_error_and_detail(shift, shift);
+}
+
+sub internal_put_error_and_detail {
+    my($self, $property, $error, $detail) = @_;
     my($fields) = $self->[$_IDI];
     $error = Bivio::TypeError->from_any($error);
     $property ||= $self->GLOBAL_ERROR_FIELD;
-    _trace($property, ': ', $error) if $_TRACE;
     ($fields->{errors} ||= {})->{$property} = $error;
+    ($fields->{error_details} ||= {})->{$property} = $detail;
+    # Details don't have types.  They are application specific.
+    _trace($property, ': ', $error, defined($detail) ? ('; ', $detail) : ())
+	if $_TRACE;
     return;
 }
 
