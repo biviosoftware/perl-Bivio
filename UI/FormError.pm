@@ -18,8 +18,6 @@ sub field_value {
 
 sub to_html {
     my($proto, $source, $form, $field, $label, $error) = @_;
-    # Returns the error string for this tuple.  If none is found,
-    # C<get_long_desc> is called.
     my($self) = $proto->internal_get_self($source->get_request);
     my($form_class) = ref($form) || $form;
     $error ||= $form->get_field_error($field);
@@ -29,13 +27,18 @@ sub to_html {
 	my($buf) = '';
 	local($_IN_EVAL) = {
 	    label => $label,
+	    error => $error,
+	    detail => $form->get_field_error_detail($field),
 	};
-	my($die) = Bivio::Die->catch(sub {
-	    $proto->use('Bivio::UI::ViewShortcuts')->vs_call('Prose', $v)
-		->put_and_initialize(parent => undef)
-		->render($source, \$buf);
-	    return;
-        });
+	my($die) = Bivio::Die->catch(
+	    sub {
+	        $proto->use('Bivio::UI::ViewShortcuts')
+		    ->vs_call('Prose', $v)
+		    ->put_and_initialize(parent => undef)
+		    ->render($source, \$buf);
+		return;
+            },
+	);
 	return $buf
 	    unless $die;
 	Bivio::IO::Alert->warn(
