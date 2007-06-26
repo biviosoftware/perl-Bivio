@@ -1295,10 +1295,12 @@ Returns date in DD MMM YYYY format
 =cut
 
 sub to_dd_mmm_yyyy {
-    my($proto, $value) = @_;
+    my($proto, $value, $sep) = @_;
+    $sep = ' '
+	unless defined($sep);
     my($mday, $mon, $year) = ($proto->to_parts($value))[3..5];
-    return sprintf('%2d %s %04d',
-	    $mday, $_NUM_TO_MONTH->[$mon-1], $year);
+    my($format) = "%2d${sep}%s${sep}%04d";
+    return sprintf($format, $mday, $_NUM_TO_MONTH->[$mon-1], $year);
 }
 
 =for html <a name="to_file_name"></a>
