@@ -206,7 +206,11 @@ my($_CURRENT);
 
 sub FORMAT_URI_PARAMETERS {
     # Order and names of params passed to format_uri().
-    return [qw(task_id query realm path_info no_context anchor require_context uri)];
+    return [qw(task_id query realm path_info no_context anchor require_context uri form_in_query)];
+}
+
+sub FORM_IN_QUERY_FLAG {
+    return 'form_post';
 }
 
 sub as_string {
@@ -424,6 +428,8 @@ sub format_uri {
 	$self->FORMAT_URI_PARAMETERS,
 	\@_);
     my($uri);
+    Bivio::Die->die($named, ': must supply query with form_in_query')
+        if $named->{form_in_query} && !$named->{query};
     unless (defined($uri = $named->{uri})) {
 	foreach my $x (qw(task_id path_info query)) {
 	    $named->{$x} = $self->unsafe_get($x)
@@ -440,6 +446,11 @@ sub format_uri {
 	    unless $task->get('want_query');
     }
     if (defined($named->{query})) {
+	if ($named->{form_in_query}) {
+	    Bivio::Die->die($named, ': query must be hash_ref with form_in_query')
+	        unless ref($named->{query}) eq 'HASH';
+	    $named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1;
+	}
         $named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
             if ref($named->{query});
         $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
