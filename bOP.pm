@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.10  2007/06/25 17:36:11  moeller
+  * Added RealmDAG model for Realm/Realm relationships
+  * Bivio::UNIVERSAL added req()
+  * Bivio::Util::HTTPConf added aliases, no_proxy, ssl_crt and ssl_chain
+  * Bivio::Util::RealmMail Handle errors in mbox import
+  * Bivio::Util::SQL added internal_upgrade_db_realm_dag()
+
   Revision 5.9  2007/06/18 22:23:35  nagler
   * Bivio::UI::HTML::Widget::StyleSheet now generates XHTML <link>
   * Bivio::UI::WidgetValueSource->get_widget_value deprecated arrays
