@@ -23,6 +23,7 @@ sub new {
 	&& ref($format_uri_hash->{format_uri_hash}) eq 'HASH'
 	? $format_uri_hash : {};
     $attrs->{format_uri_hash} ||= $format_uri_hash;
+    $attrs->{format_method} ||= delete($attrs->{format_uri_hash}->{format_method});
     return $proto->SUPER::new($attrs);
 }
 

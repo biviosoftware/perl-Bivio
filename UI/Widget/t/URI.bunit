@@ -5,6 +5,8 @@ Widget();
     [{task_id => 'SITE_ROOT'}] => '/',
     [{task_id => 'SITE_ROOT'}, {format_method => 'format_http'}] =>
 	qr{^http://[^/]+/$}s,
+    [{task_id => 'SITE_ROOT', format_method => 'format_http'}] =>
+	qr{^http://[^/]+/$}s,
     [{format_uri_hash => {task_id => 'SITE_ROOT'}}] => '/',
     [{task_id => 'SITE_ROOT'}, {anything => ''}] => '/',
     [{task_id => [sub {'SITE_ROOT'}]}] => '/',
