@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Form;
 use strict;
@@ -29,17 +29,15 @@ my($_TOKEN) = '([^][()<>@,;:\\\\"/?=\\000-\\040\\177-\\377]+)';
 
 sub parse {
     my(undef, $req) = @_;
-    # Parses the input form.  Handles file fields.
-    #
-    # B<Call before executing any DB transactions.>  Otherwise, may
-    # get hanging transactions.  No way to hit database.
     my($r) = $req->get('r');
-
-    # Only accept forms via POST
-    return undef unless $r->method_number()
-        eq Bivio::Ext::ApacheConstants::M_POST();
-
-    # Check content type
+    my($m) = lc($r->method);
+    unless ($m eq 'post') {
+	my($q) = $req->unsafe_get('query');
+	return undef
+	    unless $q && $q->{$req->FORM_IN_QUERY_FLAG};
+	$req->put(query => {});
+	return $q;
+    }
     my($ct) = $r->header_in('Content-Type');
     if (defined($ct)) {
 	if ($ct =~ /^\s*application\/x-www-form-urlencoded/i) {
@@ -56,8 +54,7 @@ sub parse {
 	    return _parse($req, $r);
 	}
     }
-
-    Bivio::IO::Alert->warn('unknown form Content-Type: ', $ct);
+    Bivio::IO::Alert->warn($ct, ': unknown form Content-Type');
     return undef;
 }
 
