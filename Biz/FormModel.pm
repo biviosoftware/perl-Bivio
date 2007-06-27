@@ -265,18 +265,11 @@ sub get_context_from_request {
 }
 
 sub get_errors {
-    # Returns the list of field errors.  C<undef> if no errors.
-    #
-    # B<DO NOT MODIFY>.
     return shift->[$_IDI]->{errors};
 }
 
 sub get_field_as_html {
     my($self, $name) = @_;
-    # Returns the field value as html.  If the field is in error and there
-    # is no value, returns the literal value escaped for html.
-    #
-    # Always returns a valid string, but may be undef.
     my($fields) = $self->[$_IDI];
     my($value) = $self->unsafe_get($name);
     return $self->get_field_info($name, 'type')->to_html($value)
@@ -287,23 +280,15 @@ sub get_field_as_html {
 
 sub get_field_as_literal {
     my($self, $name) = @_;
-    # Returns the field value.  If the field is in error and there
-    # is no value, returns the literal value that was entered by
-    # the user.
-    #
-    # Always returns a valid string, but may be the empty string.
     my($fields) = $self->[$_IDI];
     my($value) = $self->unsafe_get($name);
     return $self->get_field_info($name, 'type')->to_literal($value)
 	    if defined($value);
-    my($fn) = $self->get_field_name_for_html($name);
-    return _get_literal($fields, $fn);
+    return _get_literal($fields, $self->get_field_name_for_html($name));
 }
 
 sub get_field_error {
     my($self, $name) = @_;
-    # Returns the error associated with a field.
-    # Returns undef if field has no error associated with it.
     my($e) = $self->get_errors;
     return $e ? $e->{$name} : undef;
 }
@@ -315,27 +300,29 @@ sub get_field_error_detail {
 }
 
 sub get_field_name_for_html {
-    # Get name for form appropriate to html.
     return shift->get_field_info(shift, 'form_name');
 }
 
 sub get_hidden_field_values {
     my($self) = @_;
-    # Returns an array_ref of name, (literal) value pairs (even element is name,
-    # odd element is value).
     my($fields) = $self->[$_IDI];
-    my($sql_support) = $self->internal_get_sql_support();
-    my(@res);
-    push(@res, $self->VERSION_FIELD => $sql_support->get('version'));
-    push(@res, $self->CONTEXT_FIELD =>
-	$fields->{context}->as_literal($self->get_request),
-    ) if $fields->{context};
-    my($properties) = $self->internal_get();
-    foreach my $n (@{$self->internal_get_hidden_field_names}) {
-	push(@res, $self->get_field_name_for_html($n),
-		$self->get_field_as_literal($n));
-    }
-    return \@res;
+    my($sql_support) = $self->internal_get_sql_support;
+    return [
+        $self->VERSION_FIELD => $sql_support->get('version'),
+        $fields->{context} ? (
+	    $self->CONTEXT_FIELD =>
+		$fields->{context}->as_literal($self->get_request),
+	) : (),
+	map((
+	    $self->get_field_name_for_html($_),
+	    $self->get_field_as_literal($_),
+	), @{$self->internal_get_hidden_field_names}),
+    ];
+}
+
+sub get_literals_copy {
+    # Does not copy file fields
+    return {%{shift->internal_get_literals}};
 }
 
 sub get_model_properties {
