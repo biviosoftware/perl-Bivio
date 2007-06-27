@@ -96,6 +96,9 @@ sub internal_initialize {
 	    want_bulletin => ['Boolean', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
+        other => [
+            [qw(realm_id RealmOwner.realm_id)],
+        ],
     };
 }
 
