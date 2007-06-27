@@ -13,16 +13,17 @@ my($_RO) = Bivio::Biz::Model->get_instance('RealmOwner');
 #TODO: Refactor to merge dupe code in class
 sub create_realm {
     my($self, $calendar_event, $realm_owner) = @_;
+    $self->create({
+        modified_date_time => $_DT->now,
+        %$calendar_event,
+        realm_id => $self->get_request->get('auth_id'),
+    });
     my($ro) = $self->new_other('RealmOwner')->create({
+	name => $self->id_to_uid,
 	%$realm_owner,
 	realm_type => Bivio::Auth::RealmType->CALENDAR_EVENT,
-	realm_id => $self->create({
-	    modified_date_time => $_DT->now,
-	    %$calendar_event,
-	    realm_id => $self->get_request->get('auth_id'),
-	})->get('calendar_event_id'),
+	realm_id => $self->get('calendar_event_id'),
 #	%$rv,
-	name => $self->id_to_uid,
     });
     $self->new_other('RealmUserAddForm')
 	->copy_admins($self->get('calendar_event_id'));
