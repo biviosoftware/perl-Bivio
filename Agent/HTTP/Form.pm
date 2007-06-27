@@ -2,74 +2,37 @@
 # $Id$
 package Bivio::Agent::HTTP::Form;
 use strict;
-$Bivio::Agent::HTTP::Form::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::HTTP::Form::VERSION;
-
-=head1 NAME
-
-Bivio::Agent::HTTP::Form - parses incoming form data
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Agent::HTTP::Form;
-    Bivio::Agent::HTTP::Form->parse(Bivio::Agent::Request req);
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::Agent::HTTP::Form::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::Agent::HTTP::Form> parses an incoming form.
-The request must have a I<form_model> attribute.  Handles both
-C<application/x-www-form-urlencoded> and C<multipart/form-data>
-(RFC 1867).
-
-A form is a hash_ref.  The name of the field is the key.  The
-value is either a scalar or a hash_ref.  A string is returned
-in the "normal" case, i.e. non-file fields.  A hash_ref is returned
-in the file field case or with forms which contain file fields
-(see FormModel::_parse_cols for handling).  This is tightly coupled with
-L<Bivio::Type::FileField|Bivio::Type::FileField>.  The hash_ref
-contains the attributes: name, content_type, filename, and content.
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::Ext::ApacheConstants;
+use Bivio::IO::Trace;
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::Agent::HTTP::Form> parses an incoming form.
+# The request must have a I<form_model> attribute.  Handles both
+# C<application/x-www-form-urlencoded> and C<multipart/form-data>
+# (RFC 1867).
+#
+# A form is a hash_ref.  The name of the field is the key.  The
+# value is either a scalar or a hash_ref.  A string is returned
+# in the "normal" case, i.e. non-file fields.  A hash_ref is returned
+# in the file field case or with forms which contain file fields
+# (see FormModel::_parse_cols for handling).  This is tightly coupled with
+# L<Bivio::Type::FileField|Bivio::Type::FileField>.  The hash_ref
+# contains the attributes: name, content_type, filename, and content.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 # Taken from RFC1521.  NOT the same as 822_ATOM, btw.
 my($_TOKEN) = '([^][()<>@,;:\\\\"/?=\\000-\\040\\177-\\377]+)';
 # This is the same as Mail::RFC822::QUOTED_STRING, except
 # we parse out the surrounding quotes.
 #my($_QUOTED_STRING) = '"((?:(?:\\\\{2})+|\\\\[^\\\\]|[^\\\\"])*)"';
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="parse"></a>
-
-=head2 parse(Bivio::Agent::Request req) : hash_ref
-
-Parses the input form.  Handles file fields.
-
-B<Call before executing any DB transactions.>  Otherwise, may
-get hanging transactions.  No way to hit database.
-
-=cut
-
 sub parse {
     my(undef, $req) = @_;
+    # Parses the input form.  Handles file fields.
+    #
+    # B<Call before executing any DB transactions.>  Otherwise, may
+    # get hanging transactions.  No way to hit database.
     my($r) = $req->get('r');
 
     # Only accept forms via POST
@@ -98,14 +61,9 @@ sub parse {
     return undef;
 }
 
-#=PRIVATE METHODS
-
-# _parse(Bivio::Agent::HTTP::Request req, Apache r) : hash_ref
-#
-# Returns the parsed multipart/form-data.  See RFC1867 for a spec.
-#
 sub _parse {
     my($req, $r) = @_;
+    # Returns the parsed multipart/form-data.  See RFC1867 for a spec.
     my($max_field_size) = $req->get_or_default(
 	'form_model', 'Bivio::Biz::FormModel',
     )->MAX_FIELD_SIZE;
@@ -175,12 +133,9 @@ sub _parse {
     return %$form ? $form : undef;
 }
 
-# _parse_content(Bivio::Agent::Request req, Apache r, scalar_ref buf, int_ref len, string boundary) : scalar_ref
-#
-# Returns the content as a scalar ref.
-#
 sub _parse_content {
     my($req, $r, $buf, $len, $boundary) = @_;
+    # Returns the content as a scalar ref.
 
     # We use a separate scalar instance to avoid a copy of the bulk
     # of the data.  There will always be a copy, but max size is
@@ -217,14 +172,11 @@ sub _parse_content {
     return;
 }
 
-# _parse_header(Bivio::Agent::Request req, Apache r, scalar_ref buf, int_ref len) : any
-#
-# Returns a string if it is a "simple" value, i.e. not a file.  Otherwise,
-# returns a hash_ref with the header values.  Returns undef if no header
-# is found.
-#
 sub _parse_header {
     my($req, $r, $buf, $len) = @_;
+    # Returns a string if it is a "simple" value, i.e. not a file.  Otherwise,
+    # returns a hash_ref with the header values.  Returns undef if no header
+    # is found.
     my(@header);
     my($line);
 
@@ -322,15 +274,12 @@ sub _parse_header {
     return $field;
 }
 
-# _parse_header_line(Bivio::Agent::Request req, Apache r, scalar_ref buf, int_ref len, scalar_ref line) : boolean
-#
-# Returns the next line.   This should only be used for reading mime headers.
-# We blow up if the mime header is too large.
-#
-# $$len ignored if zero.
-#
 sub _parse_header_line {
     my($req, $r, $buf, $len, $line) = @_;
+    # Returns the next line.   This should only be used for reading mime headers.
+    # We blow up if the mime header is too large.
+    #
+    # $$len ignored if zero.
     if ($$buf =~ s/^(.*)\r\n//) {
 	$$line = $1;
 	return 1;
@@ -353,12 +302,9 @@ sub _parse_header_line {
     $req->throw_die('CORRUPT_FORM', 'header too long');
 }
 
-# _read(Apache r, string_ref buf, int_ref len, int read_max, Bivio::Agent::Request req)
-#
-# Reads or dies.  Appends to $$buf.
-#
 sub _read {
     my($r, $buf, $len, $read_max, $req) = @_;
+    # Reads or dies.  Appends to $$buf.
     my($read_bytes) = $$len < $read_max ? $$len : $read_max;
     # Newer mod_perl requires offset param.  Older mod_perl ignores.
     $r->read($$buf, $read_bytes, length($$buf))
@@ -368,20 +314,5 @@ sub _read {
     $$len -= $read_bytes;
     return;
 }
-
-=head1 SEE ALSO
-
-RFC2616 (HTTP/1.1), RFC1945 (HTTP/1.0), RFC1867 (multipart/form-data),
-RFC2109 (Cookies), RFC1806 (Content-Disposition), RFC1521 (MIME)
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
