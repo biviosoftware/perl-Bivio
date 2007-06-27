@@ -19,7 +19,7 @@ sub create_from_rfc822 {
     if ($email && $email =~ s/(?=.*)=/@/) {
 	my($rm) = $self->new_other('RealmMail');
 	if ($rm->unauth_load({realm_file_id => $rfid})) {
-	    return $self->create_or_update({
+	    return $self->unauth_create_or_update({
 		realm_file_id => $rfid,
 		email => _trunc($self, $email, 'email'),
 		realm_id => $rm->get('realm_id'),
