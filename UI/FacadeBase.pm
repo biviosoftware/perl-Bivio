@@ -537,17 +537,16 @@ sub _cfg_tuple {
 sub _cfg_user_auth {
     return {
 	Constant => [
-	    [xlink_my_site_login => {
-		task_id => 'MY_SITE',
-	    }],
-	    [xlink_login_no_context => {
-		task_id => 'LOGIN',
+	    map([$_->[0] => {
+		task_id => $_->[1],
+		query => undef,
+		path_info => undef,
 		no_context => 1,
 	    }],
-	    [xlink_user_create_no_context => {
-		task_id => 'USER_CREATE',
-		no_context => 1,
-	    }],
+		[xlink_my_site_login => 'MY_SITE'],
+		[xlink_login_no_context => 'LOGIN'],
+		[xlink_user_create_no_context => 'USER_CREATE'],
+	    ),
 	],
 	Font => [
 	    [user_state => ['140%', 'uppercase']],
