@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::FormField;
 use strict;
@@ -40,8 +40,10 @@ sub get_label_and_field {
     # Creates a label for the field, and returns the (label, field) pair.
     return ($_VS->vs_new('FormFieldLabel', {
 	field => _get_field_name($self),
-	label => $_VS->vs_join(
-            $_VS->vs_string(_get_label_value($self), 0), ':'),
+	label => $_VS->vs_new(After =>
+	    $_VS->vs_new(String => _get_label_value($self), 0),
+	    ':',
+	),
 	($self->unsafe_get('row_control')
 	    ? (row_control => $self->get('row_control'))
 	    : ()),
