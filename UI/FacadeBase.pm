@@ -645,7 +645,7 @@ sub _cfg_user_auth {
 		xhtml_user_state => q{DIV_user_state(
 		    Director([qw(user_state ->get_name)], {
 			LOGGED_IN => XLink('LOGOUT'),
-			LOGGED_OUT => XLink('LOGIN'),
+			LOGGED_OUT => XLink('my_site_login'),
 			JUST_VISITOR => XLink('USER_CREATE'),
 		    }),
 		);},
