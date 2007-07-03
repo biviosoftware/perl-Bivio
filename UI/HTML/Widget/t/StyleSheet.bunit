@@ -5,12 +5,12 @@ Widget();
     ['/f/base.css'] => qr{^<style type="text/css">\n<!--\n.*\n-->\n</style>$}s,
     [SITE_CSS => {
 	control => 1,
-    }] => qq{<link href="/pub/site.css" rel="stylesheet" type="text/css">\n},
+    }] => qq{<link href="/pub/site.css" rel="stylesheet" type="text/css" />\n},
     FORUM_CSS => '',
     [FORUM_CSS => {control => 1}] => '',
     inline_case(sub {
 	req()->set_realm('fourem');
         return;
     }),
-    [FORUM_CSS => {control => 1}] => qq{<link href="/fourem/realm.css" rel="stylesheet" type="text/css">\n},
+    [FORUM_CSS => {control => 1}] => qq{<link href="/fourem/realm.css" rel="stylesheet" type="text/css" />\n},
 ];
