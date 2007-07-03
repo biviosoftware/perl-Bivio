@@ -99,8 +99,12 @@ EOF
 test_setup('HTTP');
 home_page();
 follow_link('Sign-in');
+save_excursion(sub {
+    go_back();
+    verify_text(qr/View.*main/);
+});
 go_back();
-verify_text(qr/View\.main/);
+verify_text(qr/View.*main/);
 test_deviance(qr/no page to go back to/);
 go_back();
 test_conformance();

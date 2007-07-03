@@ -387,6 +387,20 @@ sub reload_page {
     return;
 }
 
+sub save_excursion {
+    my($self, $op) = @_;
+    my($fields) = $self->[$_IDI];
+    Bivio::Die->die('no history to save')
+        unless @{$fields->{history}};
+    _save_history($fields);
+    my($save) = Bivio::IO::Ref->nested_copy($fields->{history});
+    $self->go_back;
+    $op->();
+    $fields->{history} = $save;
+    $self->go_back;
+    return;
+}
+
 sub send_mail {
     my($self, $from_email, $to_email) = @_;
     # Send a message.  Returns the object.  Sets subject and body to unique values.
@@ -530,6 +544,7 @@ sub verify_form {
     # Verifies the state of I<form_fields>. Only fields specified will be
     # verified.
     my($fields) = $self->[$_IDI];
+    $form_fields = _fixup_form_fields($form_fields || {});
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names(keys(%$form_fields));
     _trace($form->{visible}) if $_TRACE;
@@ -581,6 +596,7 @@ sub verify_local_mail {
     my($match) = {};
     $email = [$email]
 	unless ref($email) eq 'ARRAY';
+    $email = [map($_ =~ /\@/ ? $_ : $self->generate_local_email($_), @$email)];
     my($found) = [];
     my($die) = sub {Bivio::Die->die(@_, "\n", $found)};
     for (my $i = $_CFG->{mail_tries}; $i-- > 0;) {
@@ -960,15 +976,8 @@ sub _map_mail_dir {
     );
 }
 
-sub _send_request {
-    my($self, $request) = @_;
-    # Sends the specified request.  Handles redirects, because we need to add in
-    # cookies.
-    my($fields) = $self->[$_IDI];
-    $fields->{user_agent}->agent($self->user_agent);
-    my($redirect_count) = 0;
-    my($prev_uri) = $self->absolute_uri($fields->{uri})
-	if $fields->{uri};
+sub _save_history {
+    my($fields) = @_;
     push(@{$fields->{history}}, {
 	map({
 	    my($x) = $fields->{$_};
@@ -978,6 +987,19 @@ sub _send_request {
     }) if $fields->{response};
     shift(@{$fields->{history}})
 	while @{$fields->{history}} > $fields->{history_length};
+    return;
+}
+
+sub _send_request {
+    my($self, $request) = @_;
+    # Sends the specified request.  Handles redirects, because we need to add in
+    # cookies.
+    my($fields) = $self->[$_IDI];
+    $fields->{user_agent}->agent($self->user_agent);
+    my($redirect_count) = 0;
+    my($prev_uri) = $self->absolute_uri($fields->{uri})
+	if $fields->{uri};
+    _save_history($fields);
     while () {
 	$request->header(Authorization => $self->get('Authorization'))
 	    if $self->has_keys('Authorization');
