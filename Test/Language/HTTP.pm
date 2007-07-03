@@ -611,7 +611,8 @@ sub verify_local_mail {
 	    _log($self, 'msg', $f->[1])
 		if ref($self);
 	}
-	return wantarray ? map(${$_->[1]}, @$found) : ${$found->[0]->[1]};
+	return @$found ? wantarray ? map(${$_->[1]}, @$found) : ${$found->[0]->[1]}
+            : ();
     }
     $die->(%$match
         ? ('Found mail for "', $email, '", but does not match ',
