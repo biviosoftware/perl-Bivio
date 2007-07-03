@@ -32,24 +32,21 @@ Bivio::Test->new('Bivio::UI::FormError')->unit([
 	to_html => [
 	    [
 		$req,
-		Bivio::IO::ClassLoader->simple_require(
-		    'Bivio::Biz::Model::UserLoginForm',
-		),
+		Bivio::Biz::Model->new($req, 'UserLoginForm'),
 		'RealmOwner.password',
 		'Password',
 		Bivio::TypeError->NULL,
 	    ] => qr/Please enter a password/,
 	    [
 		$req,
-		'Bivio::Biz::Model::UserLoginForm',
+		Bivio::Biz::Model->new($req, 'UserLoginForm'),
 		'no_such_field',
 		'No Such Field',
 		Bivio::TypeError->NULL,
 	    ] => 'You must supply a value for No Such Field.',
 	    [
 		$req,
-		Bivio::IO::ClassLoader->simple_require(
-		    'Bivio::Biz::Model::UserCreateForm'),
+		Bivio::Biz::Model->new($req, 'UserCreateForm'),
 		'no_such_field',
 		'No Such Field',
 		Bivio::TypeError->NULL,
