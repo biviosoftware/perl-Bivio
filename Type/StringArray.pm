@@ -29,13 +29,11 @@ sub WANT_SORTED {
 
 sub new {
     my($proto, $value) = @_;
-    return $proto->from_literal_or_die($value, 1) || $proto->new([])
+    return $proto->from_literal_or_die($value)
 	unless ref($value);
     my($self) = shift->SUPER::new;
-    $self->[$_IDI]
-	= (ref($value) eq 'ARRAY'
-	       ? _clean_copy($proto, $value) : $value->as_array)
-	|| [];
+    $self->[$_IDI] = ref($value) eq 'ARRAY'
+	? _clean_copy($proto, $value) : $value->as_array;
     return $self;
 }
 
@@ -77,20 +75,15 @@ sub equals {
 
 sub from_literal {
     my($proto, $value) = @_;
-    if (ref($value)) {
-	$value = _new($proto, $value);
-	return $value
-	    if $value;
-    }
-    return (undef, undef)
+    return ($proto->new([]), undef)
 	unless defined($value) && length($value);
     $value = $proto->from_literal_stripper($value);
-    return (undef, undef)
+    return ($proto->new([]), undef)
 	unless length($value);
     my($sep) = $proto->SQL_SEPARATOR_REGEX;
     $sep = $proto->LITERAL_SEPARATOR_REGEX
 	unless $value =~ $sep;
-    return _new($proto, [split($sep, $value)]);
+    return ($proto->new([split($sep, $value)]), undef);
 }
 
 sub from_literal_stripper {
@@ -106,8 +99,9 @@ sub from_literal_validator {
 
 sub from_sql_column {
     my($proto, $param) = @_;
-    return !defined($param) ? undef
-	: _new($proto, [split($proto->SQL_SEPARATOR_REGEX, $param)]);
+    return $proto->new([split(
+	$proto->SQL_SEPARATOR_REGEX, defined($param) ? $param : '',
+    )]);
 }
 
 sub get_width {
@@ -128,28 +122,27 @@ sub to_literal {
     my($proto, $value) = @_;
     return join(
 	$proto->LITERAL_SEPARATOR,
-	@{_clean_copy($proto, $value, $proto->LITERAL_SEPARATOR_REGEX) || []});
+	@{_clean_copy($proto, $value, $proto->LITERAL_SEPARATOR_REGEX)});
 }
 
 sub to_sql_param {
     my($proto, $param_value) = @_;
-    return join(
-	$proto->SQL_SEPARATOR,
-	@{_clean_copy($proto, $param_value) || return undef});
+    my($res) = join($proto->SQL_SEPARATOR, @{_clean_copy($proto, $param_value)});
+    return length($res) ? $res : undef;
 }
 
 sub to_string {
     my($proto, $value) = @_;
     # Different than to_literal so we can print arrays during debugging
     return '['
-	. join($proto->LITERAL_SEPARATOR, @{_clean_copy($proto, $value) || []})
+	. join($proto->LITERAL_SEPARATOR, @{_clean_copy($proto, $value)})
 	. ']';
 }
 
 sub _clean_copy {
     my($proto, $value, $sep) = @_;
     $sep ||= $proto->SQL_SEPARATOR_REGEX;
-    return undef
+    return []
 	unless defined($value);
     my($copy);
     if (ref($value) eq 'ARRAY') {
@@ -168,12 +161,7 @@ sub _clean_copy {
     }
     Bivio::Die->die($copy, ": separator ($sep) in element")
         if grep($_ =~ $sep, @$copy);
-    return @$copy ? $copy : undef;
-}
-
-sub _new {
-    my($proto, $value) = @_;
-    return @$value ? $proto->new($value) : undef;
+    return $copy;
 }
 
 1;
