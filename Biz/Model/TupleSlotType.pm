@@ -72,7 +72,8 @@ sub validate_slot {
     return (undef, $e)
 	if $e;
     return ($v, undef)
-	unless defined($v) and my $c = $model->get($prefix . 'choices');
+	unless defined($v)
+	and (my $c = $model->get($prefix . 'choices'))->is_specified;
     return @{$c->map_iterate(sub {$t->is_equal($v, $_[0]) ? 1 : ()})}
 	? ($v, undef)
 	: (undef, Bivio::TypeError->NOT_FOUND);
@@ -85,29 +86,31 @@ sub _assert_values {
 	or _err($self, label => 'NULL');
     defined($values->{type_class})
 	or _err($self, type_class => 'NULL');
-    Bivio::IO::ClassLoader->unsafe_map_require(
-	'Type', _class($self, $values->{type_class}),
-    ) or _err($self, type_class => 'NOT_FOUND');
-    if (defined($values->{choices})) {
-	$mock->put(choices => undef);
+    _err($self, type_class => 'SIMPLE_CLASS_NAME')
+	unless Bivio::IO::ClassLoader->unsafe_map_require(
+	    'Type', _class($self, $values->{type_class}),
+	);
+    if ($values->{choices}->is_specified) {
+	$mock->put(choices => $values->{choices}->new([]));
 	my($seen) = {};
-	$mock->put(choices => $values->{choices} = $_TSA->from_literal_or_die(
+	$mock->put(choices => $values->{choices} = $_TSA->new(
 	    $values->{choices}->map_iterate(
 		sub {
 		    my($c) = @_;
 		    my($v, $e) = $self->validate_slot($c, $mock);
-		    $e and _err($self, choices => $e);
+		    _err($self, choices => $e)
+			if $e;
 		    return unless defined($v);
 		    $seen->{$v}++ and _err($self, choices => 'EXISTS');
 		    return $v;
 		},
 	    ),
-	    1,
 	));
     }
     if (defined($values->{default_value})) {
 	my($v, $e) = $self->validate_slot($values->{default_value}, $mock);
-	$e and _err($self, default_value => $e);
+	_err($self, default_value => $e)
+	    if $e;
 	$values->{default_value} = $v;
     }
     return;

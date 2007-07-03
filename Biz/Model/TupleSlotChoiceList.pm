@@ -52,7 +52,7 @@ sub _list {
 	$tc->to_literal($_),
 	sort {
 	    $tc->compare($a, $b)
-	} @{$c ? $c->as_array : []},
+	} @{$c->as_array},
     )];
 }
 

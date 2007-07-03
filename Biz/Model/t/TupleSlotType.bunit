@@ -10,7 +10,7 @@ my($tsa) = class('Type.TupleSlotArray');
 	    choices => undef,
 	    default_value => 3,
 	}}] => [{
-	    choices => undef,
+	    choices => $tsa->new([]),
 	    default_value => 3,
 	}],
     ],

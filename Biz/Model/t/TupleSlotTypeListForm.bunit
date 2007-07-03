@@ -39,7 +39,7 @@ my($string) = model('TupleSlotType')->DEFAULT_CLASS;
 	'Model.TupleSlotType' => {
 	    label => 'tstl1',
 	    type_class => 'String',
-	    choices => undef,
+	    choices => class('Type.TupleSlotArray')->new([]),
 	    default_value => undef,
 	},
     }],

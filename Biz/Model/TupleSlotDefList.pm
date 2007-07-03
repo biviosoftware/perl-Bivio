@@ -51,7 +51,8 @@ sub type_class_instance {
 sub validate_slot {
     my($self, $value) = @_;
     $value = undef
-	if $value && $self->get('TupleSlotType.choices') && $value eq $_EK;
+	if $value && $self->get('TupleSlotType.choices')->is_specified
+	&& $value eq $_EK;
     my($v, $e)
 	= $_TST->validate_slot($value, $self, 'TupleSlotType.');
     return $e ? ($v, $e)

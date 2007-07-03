@@ -18,7 +18,8 @@ sub execute_empty_row {
     my($v) = _slot_value($self);
     $v = $v ? $$v : $lm->get('TupleSlotType.default_value');
     $self->internal_put_field(
-	slot => defined($v) || !$lm->get('TupleSlotType.choices') ? $v : $_EK,
+	slot => defined($v) || !$lm->get('TupleSlotType.choices')->is_specified
+	    ? $v : $_EK,
     );
     return;
 }
@@ -158,7 +159,7 @@ sub _put_choice_lists {
     my($lm) = $self->get_list_model;
     while ($self->next_row) {
 	$self->internal_put_field(
-	    choice_list => $lm->get('TupleSlotType.choices')
+	    choice_list => $lm->get('TupleSlotType.choices')->is_specified
 		? $self->new_other('TupleSlotChoiceSelectList')
 		    ->load_all_from_slot_type($lm)
 		: undef,
