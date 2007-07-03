@@ -75,6 +75,8 @@ sub equals {
 
 sub from_literal {
     my($proto, $value) = @_;
+    return ($proto->new($value), undef)
+	if ref($value);
     return ($proto->new([]), undef)
 	unless defined($value) && length($value);
     $value = $proto->from_literal_stripper($value);
@@ -106,6 +108,10 @@ sub from_sql_column {
 
 sub get_width {
     return 4000;
+}
+
+sub is_specified {
+    return @{shift->as_array} ? 1 : 0;
 }
 
 sub map_iterate {
