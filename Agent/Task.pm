@@ -1,151 +1,11 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
-$Bivio::Agent::Task::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::Task::VERSION;
-
-=head1 NAME
-
-Bivio::Agent::Task - defines the tuple (id, @items)
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Agent::Task;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Collection::Attributes>
-
-=cut
-
-use Bivio::Collection::Attributes;
-@Bivio::Agent::Task::ISA = ('Bivio::Collection::Attributes');
-
-=head1 DESCRIPTION
-
-C<Bivio::Agent::Task> defines a tuple which is configured by
-L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
-
-The following fields are returned by L<get|"get">:
-
-=over 4
-
-=item cancel : Bivio::Agent::TaskId [next]
-
-The task_id to go to in other cases.  In the case forms, is the "Cancel" task
-of a form.
-
-=item die_actions : hash_ref (see below for configuration)
-
-The map of die codes (any enums, actually) to tasks executed when
-the die code is encountered for this task.  I<Only maps if the
-request is from HTTP.>
-Specified in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>
-and passed to L<new|"new"> as:
-
-    DIE_CODE=TASK_ID
-
-The name of a L<Bivio::DieCode|Bivio::DieCode> or a fully
-specified enum, e.g. C<Bivio::TypeError::EXISTS>.  The action
-will be executed if this enum is thrown.
-
-=item form_model : Bivio::Biz::FormModel (computed)
-
-The form model in I<items> or C<undef>.
-
-=item id : Bivio::Agent::TaskId (required)
-
-L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
-
-=item items : array_ref (required)
-
-A list of actions.  An action is the tuple (singleton instance,
-method name).  When the task is executed, the methods are
-called on the singletons.  If the singleton is undefined,
-it means the method is a subroutine to be called without
-an instance.
-
-=item next : Bivio::Agent::TaskId []
-
-The next task_id to go to in certain cases.  Required only if
-there is a FormModel in I<items>.
-
-=item permission_set : Bivio::Auth::Permission (required)
-
-L<Bivio::Auth::Permission|Bivio::Auth::PermissionSet> for this task.
-Specified in TaskId and passed to L<new|"new"> as:
-
-    PERMISSION_1&PERMISSION_2
-
-where PERMISSION_n are names of
-L<Bivio::Auth::Permission|Bivio::Auth::Permission>.  All permissions
-must be set for the task to be executable by the current
-L<Bivio::Auth::Role|Bivio::Auth::Role>.
-
-=item realm_type : Bivio::Auth::RealmType (required)
-
-L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
-Specified in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>
-and passed to L<new|"new"> as:
-
-     REALM_TYPE
-
-where REALM_TYPE is one of the names of
-L<Bivio::Auth::RealmType|Bivio::Auth::RealmType>.  This defines
-the security realm, and the names space to find the
-L<Bivio::Biz::Model::RealmOwner|Bivio::Biz::Model::RealmOwner>.
-
-=item require_context : boolean [form_model's require_context]
-
-The I<form_model> has C<require_context> defined, unless
-overriden by the configuration.  You can't turn on I<require_context>
-if the I<form_model> doesn't require it already.
-
-=item want_query : boolean [1]
-
-L<Bivio::Agent::Request|Bivio::Agent::Request> will not add the query
-(even if supplied) if this is false.
-
-=item want_workflow : boolean [0]
-
-If true, the current task is part of a multi-task workflow.  Go to the next
-task on L<Bivio::Biz::FormModel|Bivio::Biz::FormModel> execute_ok, even if
-there is L<Bivio::Biz::FormContext|Bivio::Biz::FormContext>.  The FormContext
-is copied to the new task verbatim.  It's like a "goto" the next task (think:
-tail recursion) and only return when you are at the end of the workflow
-(want_workflow is false on that task).
-
-=item want_[a-z0-9_]+ : boolean []
-
-Custom boolean attribute.
-
-=item require_secure : boolean [0]
-
-Task must be in secure mode to function.
-
-=item require_[a-z0-9_]+ : boolean []
-
-Custom boolean attribute.
-
-=item [a-z0-9_]+_task : Bivio::Agent::TaskId []
-
-Custom task value for redirects.
-
-=back
-
-=cut
-
-#=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Auth::PermissionSet;
 use Bivio::Auth::RealmType;
+use Bivio::Base 'Bivio::Collection::Attributes';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::ClassLoader;
@@ -153,7 +13,114 @@ use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::Boolean;
 
-#=VARIABLES
+# C<Bivio::Agent::Task> defines a tuple which is configured by
+# L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+#
+# The following fields are returned by L<get|"get">:
+#
+#
+# cancel : Bivio::Agent::TaskId [next]
+#
+# The task_id to go to in other cases.  In the case forms, is the "Cancel" task
+# of a form.
+#
+# die_actions : hash_ref (see below for configuration)
+#
+# The map of die codes (any enums, actually) to tasks executed when
+# the die code is encountered for this task.  I<Only maps if the
+# request is from HTTP.>
+# Specified in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>
+# and passed to L<new|"new"> as:
+#
+#     DIE_CODE=TASK_ID
+#
+# The name of a L<Bivio::DieCode|Bivio::DieCode> or a fully
+# specified enum, e.g. C<Bivio::TypeError::EXISTS>.  The action
+# will be executed if this enum is thrown.
+#
+# form_model : Bivio::Biz::FormModel (computed)
+#
+# The form model in I<items> or C<undef>.
+#
+# id : Bivio::Agent::TaskId (required)
+#
+# L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
+#
+# items : array_ref (required)
+#
+# A list of actions.  An action is the tuple (singleton instance,
+# method name).  When the task is executed, the methods are
+# called on the singletons.  If the singleton is undefined,
+# it means the method is a subroutine to be called without
+# an instance.
+#
+# next : Bivio::Agent::TaskId []
+#
+# The next task_id to go to in certain cases.  Required only if
+# there is a FormModel in I<items>.
+#
+# permission_set : Bivio::Auth::Permission (required)
+#
+# L<Bivio::Auth::Permission|Bivio::Auth::PermissionSet> for this task.
+# Specified in TaskId and passed to L<new|"new"> as:
+#
+#     PERMISSION_1&PERMISSION_2
+#
+# where PERMISSION_n are names of
+# L<Bivio::Auth::Permission|Bivio::Auth::Permission>.  All permissions
+# must be set for the task to be executable by the current
+# L<Bivio::Auth::Role|Bivio::Auth::Role>.
+#
+# realm_type : Bivio::Auth::RealmType (required)
+#
+# L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
+# Specified in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>
+# and passed to L<new|"new"> as:
+#
+#      REALM_TYPE
+#
+# where REALM_TYPE is one of the names of
+# L<Bivio::Auth::RealmType|Bivio::Auth::RealmType>.  This defines
+# the security realm, and the names space to find the
+# L<Bivio::Biz::Model::RealmOwner|Bivio::Biz::Model::RealmOwner>.
+#
+# require_context : boolean [form_model's require_context]
+#
+# The I<form_model> has C<require_context> defined, unless
+# overriden by the configuration.  You can't turn on I<require_context>
+# if the I<form_model> doesn't require it already.
+#
+# want_query : boolean [1]
+#
+# L<Bivio::Agent::Request|Bivio::Agent::Request> will not add the query
+# (even if supplied) if this is false.
+#
+# want_workflow : boolean [0]
+#
+# If true, the current task is part of a multi-task workflow.  Go to the next
+# task on L<Bivio::Biz::FormModel|Bivio::Biz::FormModel> execute_ok, even if
+# there is L<Bivio::Biz::FormContext|Bivio::Biz::FormContext>.  The FormContext
+# is copied to the new task verbatim.  It's like a "goto" the next task (think:
+# tail recursion) and only return when you are at the end of the workflow
+# (want_workflow is false on that task).
+#
+# want_[a-z0-9_]+ : boolean []
+#
+# Custom boolean attribute.
+#
+# require_secure : boolean [0]
+#
+# Task must be in secure mode to function.
+#
+# require_[a-z0-9_]+ : boolean []
+#
+# Custom boolean attribute.
+#
+# [a-z0-9_]+_task : Bivio::Agent::TaskId []
+#
+# Custom task value for redirects.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_T) = 'Bivio::Agent::TaskId';
 my(%_ID_TO_TASK) = ();
@@ -165,96 +132,10 @@ my(%_REDIRECT_DIE_CODES) = (
 my($_REQUEST_LOADED);
 my(@_HANDLERS);
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(Bivio::Agent::TaskId id, Bivio::Auth::RealmType realm_type, string perm, any item1, ...) : Bivio::Agent::Task
-
-Creates a new task for I<id> with I<perm> and I<realm_type>.
-A task must not already be
-bound to the I<id>.   The rest of the arguments are
-items to be executed (in order) or mapped.  An executable item must be a
-class with an C<execute> method, of the form C<class-E<gt>method>,
-or a C<CODE> reference, i.e. a C<sub> which takes a C<$req> as
-a parameter.  Here are some examples:
-
-    Model.UserLoginForm
-    View.user-login
-
-See L<Bivio::Delegate::SimpleTaskId|Bivio::Delegate::SimpleTaskId>
-and L<Bivio::PetShop::Agent::TaskId|Bivio::PetShop::Agent::TaskId>
-for complete examples.
-
-There may only be one FormModel in the items of a task.
-
-A mapping item is of the form I<name>=I<action>, where I<name>
-and I<action> are attributes as defined above.
-
-=cut
-
-sub new {
-    my($proto, $id, $realm_type, $perm, @items) = @_;
-
-    # Validate $id
-    die("id invalid") unless $id->isa($_T);
-    die("realm_type invalid")
-	    unless $realm_type->isa('Bivio::Auth::RealmType');
-    die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
-
-    my($self) = $proto->SUPER::new({
-	id => $id,
-	realm_type => $realm_type,
-	permission_set => $perm,
-	die_actions => {},
-	form_model => undef,
-    });
-    my($attrs) = $self->internal_get;
-    # Make the task visible to the items being initialized
-    $_ID_TO_TASK{$id} = $self;
-    my(@executables);
-    foreach my $i (@items) {
-	if ($i =~ /=/) {
-	    # Map item
-	    _parse_map_item($attrs, split(/=/, $i, 2));
-	    next;
-	}
-	push(@executables, $i);
-    }
-    my($new_items) = _init_executables($proto, $attrs, \@executables);
-    # Set form
-    _init_form_attrs($attrs);
-
-    foreach my $x (
-	[want_query => 1],
-	[require_secure => 0],
-	[want_workflow => 0],
-    ) {
-	$attrs->{$x->[0]} = $x->[1]
-	    unless defined($attrs->{$x->[0]});
-    }
-    $attrs->{items} = $new_items;
-    $self->set_read_only;
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="commit"></a>
-
-=head2 static commit(Bivio::Agent::request req)
-
-Commits transactions to storage if necessary, but first calls
-handle_commit for txn_resources.
-
-=cut
-
 sub commit {
     my(undef, $req) = @_;
+    # Commits transactions to storage if necessary, but first calls
+    # handle_commit for txn_resources.
     # These modules are intelligent and won't do anything if there
     # were no modifications.
     #
@@ -265,25 +146,18 @@ sub commit {
     return;
 }
 
-=for html <a name="execute"></a>
-
-=head2 execute(Bivio::Agent::Request req)
-
-Executes the task for the specified request.  Checks that the request is
-authorized.  Calls C<commit> and C<send_queued_messages> if there is an action.
-Calls C<reply-E<gt>send>.
-
-If I<execute> returns true, stops item execution.  If the return result
-is a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>, control will be
-redirected to with L<Bivio::Agent::Request::client_redirect|Bivio::Agent::Request/"client_redirect">.
-
-B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.> Depends on
-the fact that L<handle_die|"handle_die"> is called to execute rollback.
-
-=cut
-
 sub execute {
     my($self, $req) = @_;
+    # Executes the task for the specified request.  Checks that the request is
+    # authorized.  Calls C<commit> and C<send_queued_messages> if there is an action.
+    # Calls C<reply-E<gt>send>.
+    #
+    # If I<execute> returns true, stops item execution.  If the return result
+    # is a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>, control will be
+    # redirected to with L<Bivio::Agent::Request::client_redirect|Bivio::Agent::Request/"client_redirect">.
+    #
+    # B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.> Depends on
+    # the fact that L<handle_die|"handle_die"> is called to execute rollback.
     $req->client_redirect_if_not_secure
 	if $self->get('require_secure')
 	&& $req->can('client_redirect_if_not_secure');
@@ -305,17 +179,10 @@ sub execute {
     return;
 }
 
-=for html <a name="execute_items"></a>
-
-=head2 execute_items(Bivio::Agent::request req) : array
-
-Executes the items on the task.  Does not call the preexecute handler and
-does not authorize (does not call can_user_execute_task).
-
-=cut
-
 sub execute_items {
     my($self, $req) = @_;
+    # Executes the items on the task.  Does not call the preexecute handler and
+    # does not authorize (does not call can_user_execute_task).
     foreach my $i (@{$self->get('items')}) {
 	my($instance, $method, $args) = @$i;
 	# Don't continue if returns true.
@@ -351,34 +218,20 @@ sub execute_items {
     return;
 }
 
-=for html <a name="execute_task_item"></a>
-
-=head2 static execute_task_item(any arg, Bivio::Agent::Request req) : any
-
-General: Executes a task item.  Classes which implement this method will get
-called with I<arg> instead of the more traditional C<execute> method name.
-See Bivio::UI::View for an example.
-
-Specific: This module has a handle_task_item which is used to execute
-inline subs that are task items.
-
-=cut
-
 sub execute_task_item {
     my($proto, $arg, $req) = @_;
+    # General: Executes a task item.  Classes which implement this method will get
+    # called with I<arg> instead of the more traditional C<execute> method name.
+    # See Bivio::UI::View for an example.
+    #
+    # Specific: This module has a handle_task_item which is used to execute
+    # inline subs that are task items.
     return $arg->($req);
 }
 
-=for html <a name="get_by_id"></a>
-
-=head2 static get_by_id(Bivio::Agent::TaskId id) : Bivio::Agent::Task
-
-Returns the task associated with the id.
-
-=cut
-
 sub get_by_id {
     my(undef, $id) = @_;
+    # Returns the task associated with the id.
     $id = $_T->from_name($id)
         unless ref($id);
     Bivio::Die->die($id, ": no task associated with id")
@@ -386,27 +239,20 @@ sub get_by_id {
     return $_ID_TO_TASK{$id};
 }
 
-=for html <a name="handle_die"></a>
-
-=head2 static handle_die(Bivio::Die die)
-
-Something happened while executing a request, so we have to rollback
- unless is a C<CLIENT_REDIRECT_TASK> or C<SERVER_REDIRECT_TASK>.
-
-If I<proto> is a reference which can map the I<die> code in
-one of its I<die_actions> (cannot be redirect code) if the
-request is from HTTP.
-
-The die code is converted to C<SERVER_REDIRECT_TASK>
-with the mapped die_action set as its I<task_id> attribute.
-
-If no specific I<die_action> is found, the C<DEFAULT_ERROR_REDIRECT_>
-task id is sought.
-
-=cut
-
 sub handle_die {
     my($proto, $die) = @_;
+    # Something happened while executing a request, so we have to rollback
+    #  unless is a C<CLIENT_REDIRECT_TASK> or C<SERVER_REDIRECT_TASK>.
+    #
+    # If I<proto> is a reference which can map the I<die> code in
+    # one of its I<die_actions> (cannot be redirect code) if the
+    # request is from HTTP.
+    #
+    # The die code is converted to C<SERVER_REDIRECT_TASK>
+    # with the mapped die_action set as its I<task_id> attribute.
+    #
+    # If no specific I<die_action> is found, the C<DEFAULT_ERROR_REDIRECT_>
+    # task id is sought.
     my($die_code) = $die->get('code');
     unless ($_REQUEST_LOADED) {
 	Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
@@ -475,21 +321,14 @@ sub handle_die {
     return;
 }
 
-=for html <a name="initialize"></a>
-
-=head2 initialize(boolean partially)
-
-Initializes task list from the configuration in
-L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
-
-I<partially> allows this module to initialize only part of the
-task state.  This is only used by L<Bivio::ShellUtil|Bivio::ShellUtil>
-to speed up command line initialization.  B<Never use in a server.>
-
-=cut
-
 sub initialize {
     my($proto, $partially) = @_;
+    # Initializes task list from the configuration in
+    # L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+    #
+    # I<partially> allows this module to initialize only part of the
+    # task state.  This is only used by L<Bivio::ShellUtil|Bivio::ShellUtil>
+    # to speed up command line initialization.  B<Never use in a server.>
     return if $_INITIALIZED;
     $_INITIALIZED = 1;
 
@@ -507,36 +346,86 @@ sub initialize {
     return;
 }
 
-=for html <a name="register"></a>
+sub new {
+    my($proto, $id, $realm_type, $perm, @items) = @_;
+    # Creates a new task for I<id> with I<perm> and I<realm_type>.
+    # A task must not already be
+    # bound to the I<id>.   The rest of the arguments are
+    # items to be executed (in order) or mapped.  An executable item must be a
+    # class with an C<execute> method, of the form C<class-E<gt>method>,
+    # or a C<CODE> reference, i.e. a C<sub> which takes a C<$req> as
+    # a parameter.  Here are some examples:
+    #
+    #     Model.UserLoginForm
+    #     View.user-login
+    #
+    # See L<Bivio::Delegate::SimpleTaskId|Bivio::Delegate::SimpleTaskId>
+    # and L<Bivio::PetShop::Agent::TaskId|Bivio::PetShop::Agent::TaskId>
+    # for complete examples.
+    #
+    # There may only be one FormModel in the items of a task.
+    #
+    # A mapping item is of the form I<name>=I<action>, where I<name>
+    # and I<action> are attributes as defined above.
 
-=head2 static register(proto handler)
+    # Validate $id
+    die("id invalid") unless $id->isa($_T);
+    die("realm_type invalid")
+	    unless $realm_type->isa('Bivio::Auth::RealmType');
+    die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
 
-Registers a pre execution handler if not already registered. The I<handler>
-must support L<handle_pre_execute_task|"handle_pre_execute_task"> or
-L<handle_pre_auth_task|"handle_pre_auth_task">.
+    my($self) = $proto->SUPER::new({
+	id => $id,
+	realm_type => $realm_type,
+	permission_set => $perm,
+	die_actions => {},
+	form_model => undef,
+    });
+    my($attrs) = $self->internal_get;
+    # Make the task visible to the items being initialized
+    $_ID_TO_TASK{$id} = $self;
+    my(@executables);
+    foreach my $i (@items) {
+	if ($i =~ /=/) {
+	    # Map item
+	    _parse_map_item($attrs, split(/=/, $i, 2));
+	    next;
+	}
+	push(@executables, $i);
+    }
+    my($new_items) = _init_executables($proto, $attrs, \@executables);
+    # Set form
+    _init_form_attrs($attrs);
 
-=cut
+    foreach my $x (
+	[want_query => 1],
+	[require_secure => 0],
+	[want_workflow => 0],
+    ) {
+	$attrs->{$x->[0]} = $x->[1]
+	    unless defined($attrs->{$x->[0]});
+    }
+    $attrs->{items} = $new_items;
+    $self->set_read_only;
+    return $self;
+}
 
 sub register {
     my($proto, $handler) = @_;
+    # Registers a pre execution handler if not already registered. The I<handler>
+    # must support L<handle_pre_execute_task|"handle_pre_execute_task"> or
+    # L<handle_pre_auth_task|"handle_pre_auth_task">.
     push(@_HANDLERS, $handler)
 	unless grep($_ eq $handler, @_HANDLERS);
     return;
 }
 
-=for html <a name="rollback"></a>
-
-=head2 rollback(Bivio::Agent::Request req)
-
-Rollback the current transaction.  Call C<handle_rollback> with
-L<txn_resources|"txn_resources">.
-
-Called from L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
-
-=cut
-
 sub rollback {
     my(undef, $req) = @_;
+    # Rollback the current transaction.  Call C<handle_rollback> with
+    # L<txn_resources|"txn_resources">.
+    #
+    # Called from L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
     # NOTE: Bivio::Biz::Model::Lock::release behaves a particular way
     # and this code must stay in synch with it.
     _call_txn_resources($req, 'handle_rollback');
@@ -544,30 +433,18 @@ sub rollback {
     return;
 }
 
-=for html <a name="unsafe_get_redirect"></a>
-
-=head2 unsafe_get_redirect(string attr, Bivio::Agent::Request req) : Bivio::Agent::TaskId
-
-Returns the task associated with I<attr> on I<self>, if it exists and is
-defined in the facade.
-
-=cut
-
 sub unsafe_get_redirect {
     my($self, $attr, $req) = @_;
+    # Returns the task associated with I<attr> on I<self>, if it exists and is
+    # defined in the facade.
     return undef
 	unless my $v = $self->unsafe_get($attr);
      return Bivio::UI::Task->is_defined_for_facade($v, $req) ? $v : undef;
 }
 
-#=PRIVATE METHODS
-
-# _call_txn_resources(Bivio::Agent::Request req, string method) 
-#
-# Call the transaction resource handlers.
-#
 sub _call_txn_resources {
     my($req, $method) = @_;
+    # Call the transaction resource handlers.
     return unless $req;
     my($resources) = $req->unsafe_get('txn_resources');
     $req->put(txn_resources => []);
@@ -580,12 +457,9 @@ sub _call_txn_resources {
     return;
 }
 
-# _init_executables(proto, hash_ref attrs, array_ref executables) : array_ref
-#
-# Returns the parsed and initialized executables.
-#
 sub _init_executables {
     my($proto, $attrs, $executables) = @_;
+    # Returns the parsed and initialized executables.
     my(@new_items);
     foreach my $i (@$executables) {
 	if (ref($i) eq 'CODE') {
@@ -620,12 +494,9 @@ sub _init_executables {
     return \@new_items;
 }
 
-# _init_form_attrs(hash_ref attrs)
-#
-# Initializes the form_model attributes.
-#
 sub _init_form_attrs {
     my($attrs) = @_;
+    # Initializes the form_model attributes.
     unless ($attrs->{form_model}) {
 	$attrs->{require_context} = 0;
 	return;
@@ -651,12 +522,9 @@ sub _init_form_attrs {
     return;
 }
 
-# _invoke_handlers(string method, Bivio::Agent::Request req)
-#
-# Calls $method on the registered handlers.
-#
 sub _invoke_handlers {
     my($method, $req) = @_;
+    # Calls $method on the registered handlers.
     foreach my $handler (@_HANDLERS) {
 	$handler->$method($req)
 	    if $handler->can($method);
@@ -664,12 +532,9 @@ sub _invoke_handlers {
     return;
 }
 
-# _parse_map_item(hash_ref attrs, string cause, string action)
-#
-# Parses a new map item for this task.
-#
 sub _parse_map_item {
     my($attrs, $cause, $action) = @_;
+    # Parses a new map item for this task.
     return _put_attr(
 	$attrs, $cause,
 	Bivio::Type::Boolean->from_literal_or_die($action),
@@ -696,9 +561,6 @@ sub _parse_map_item {
     return _put_attr($attrs, 'die_actions', $cause, $action);
 }
 
-# _put_attr(hash_ref attrs, string key, ..., any value)
-#
-#
 sub _put_attr {
     my($attrs, @keys) = @_;
     my($a) = $attrs;
@@ -714,15 +576,5 @@ sub _put_attr {
     $a->{$final} = $value;
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
