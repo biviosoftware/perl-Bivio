@@ -1,51 +1,16 @@
-# Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2002-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::t::Mock::TaskId;
 use strict;
-$Bivio::Agent::t::Mock::TaskId::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::t::Mock::TaskId::VERSION;
+use Bivio::Base 'Bivio::Delegate::SimpleTaskId';
 
-=head1 NAME
+# C<Bivio::Agent::t::Mock::TaskId> unit test tasks
 
-Bivio::Agent::t::Mock::TaskId - unit test tasks
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Agent::t::Mock::TaskId;
-
-=cut
-
-use Bivio::Delegate::SimpleTaskId;
-@Bivio::Agent::t::Mock::TaskId::ISA = ('Bivio::Delegate::SimpleTaskId');
-
-=head1 DESCRIPTION
-
-C<Bivio::Agent::t::Mock::TaskId> unit test tasks
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_delegate_info"></a>
-
-=head2 static get_delegate_info() : array_ref
-
-Returns the task declarations.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     my($proto) = @_;
+    # Returns the task declarations.
     return $proto->merge_task_info($proto->SUPER::get_delegate_info, [
 	[qw(
 	    LOGIN
@@ -163,17 +128,5 @@ sub get_delegate_info {
      ],
     ]);
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
