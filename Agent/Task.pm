@@ -130,7 +130,7 @@ my(%_REDIRECT_DIE_CODES) = (
     Bivio::DieCode->SERVER_REDIRECT_TASK => 1,
 );
 my($_REQUEST_LOADED);
-my(@_HANDLERS);
+my($_HANDLERS) = [__PACKAGE__];
 
 sub commit {
     my(undef, $req) = @_;
@@ -148,51 +148,34 @@ sub commit {
 
 sub execute {
     my($self, $req) = @_;
-    # Executes the task for the specified request.  Checks that the request is
-    # authorized.  Calls C<commit> and C<send_queued_messages> if there is an action.
-    # Calls C<reply-E<gt>send>.
-    #
-    # If I<execute> returns true, stops item execution.  If the return result
-    # is a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>, control will be
-    # redirected to with L<Bivio::Agent::Request::client_redirect|Bivio::Agent::Request/"client_redirect">.
-    #
-    # B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.> Depends on
-    # the fact that L<handle_die|"handle_die"> is called to execute rollback.
-    $req->client_redirect_if_not_secure
-	if $self->get('require_secure')
-	&& $req->can('client_redirect_if_not_secure');
-    _invoke_handlers(handle_pre_auth_task => $req);
-    unless ($req->get('auth_realm')->can_user_execute_task($self, $req)) {
-	Bivio::Die->throw_quietly('FORBIDDEN', {
-	    map(($_ => $req->get($_)),
-		qw(auth_realm auth_user auth_roles auth_role)),
-	    operation => $self->get('id'),
-	});
-    }
-    _invoke_handlers(handle_pre_execute_task => $req);
-    my($next, $method) = $self->execute_items($req);
+    my($next, $method) = $self->execute_items(
+	$req,
+	[map({
+	    my($i) = $_;
+	    ref($i) ? $i : map($_->can($i) ? [$_, $i, [$self]] : (), @$_HANDLERS);
+	}
+	'handle_pre_auth_task',
+	'handle_pre_execute_task',
+	@{$self->get('items')},
+	'handle_post_execute_task',
+    )]);
     $req->$method($next)
 	if $next;
-    _invoke_handlers(handle_post_execute_task => $req);
     $self->commit($req);
     $req->get('reply')->send($req);
     return;
 }
 
 sub execute_items {
-    my($self, $req) = @_;
-    # Executes the items on the task.  Does not call the preexecute handler and
-    # does not authorize (does not call can_user_execute_task).
-    foreach my $i (@{$self->get('items')}) {
+    my($self, $req, $items) = @_;
+    foreach my $i (@{$items || $self->get('items')}) {
 	my($instance, $method, $args) = @$i;
-	# Don't continue if returns true.
 	my($res) = $instance->$method(@$args, $req);
 	next unless $res;
 	my($next) = $res;
 	my($redirect) = ref($next) eq 'HASH' && delete($next->{method})
 	    || 'client_redirect';
 	unless (ref($res)) {
-	    # Boolean true means "I'm done"
 	    last if $res eq '1';
 	    $redirect = 'server_redirect'
 		if $res =~ s/^(server_redirect)\.//;
@@ -200,7 +183,9 @@ sub execute_items {
 		|| $_T->is_valid_name($res) && $_T->from_name($res)
 		|| $res;
 	}
-	elsif (ref($res) eq 'HASH' && ($res->{task_id} || '') =~ /(?:^next|^cancel|_task)$/) {
+	elsif (ref($res) eq 'HASH'
+            && ($res->{task_id} || '') =~ /(?:^next|^cancel|_task)$/
+	) {
 	    $res->{task_id} = $self->unsafe_get($res->{task_id})
 		|| $res->{task_id};
 	}
@@ -212,7 +197,7 @@ sub execute_items {
 		: 'code',
 	    ': must return boolean, hash_ref, Bivio::Agent::TaskId, or attribute not ',
 	    $res,
-	) unless ref($next) eq 'HASH' || UNIVERSAL::isa($next, $_T);
+	) unless ref($next) eq 'HASH' || $self->is_blessed($next, $_T);
 	return ($next, $redirect);
     }
     return;
@@ -321,6 +306,24 @@ sub handle_die {
     return;
 }
 
+sub handle_pre_auth_task {
+    my(undef, $task, $req) = @_;
+    $req->client_redirect_if_not_secure
+	if $task->get('require_secure')
+	&& $req->can('client_redirect_if_not_secure');
+    return;
+}
+
+sub handle_pre_execute_task {
+    my(undef, $task, $req) = @_;
+    Bivio::Die->throw_quietly(FORBIDDEN => {
+	map(($_ => $req->get($_)),
+	    qw(auth_realm auth_user auth_roles auth_role)),
+	operation => $task->get('id'),
+    }) unless $req->get('auth_realm')->can_user_execute_task($task, $req);
+    return;
+}
+
 sub initialize {
     my($proto, $partially) = @_;
     # Initializes task list from the configuration in
@@ -412,11 +415,8 @@ sub new {
 
 sub register {
     my($proto, $handler) = @_;
-    # Registers a pre execution handler if not already registered. The I<handler>
-    # must support L<handle_pre_execute_task|"handle_pre_execute_task"> or
-    # L<handle_pre_auth_task|"handle_pre_auth_task">.
-    push(@_HANDLERS, $handler)
-	unless grep($_ eq $handler, @_HANDLERS);
+    push(@$_HANDLERS, $handler)
+	unless grep($_ eq $handler, @$_HANDLERS);
     return;
 }
 
@@ -518,16 +518,6 @@ sub _init_form_attrs {
     }
     else {
 	$attrs->{require_context} = $form_require;
-    }
-    return;
-}
-
-sub _invoke_handlers {
-    my($method, $req) = @_;
-    # Calls $method on the registered handlers.
-    foreach my $handler (@_HANDLERS) {
-	$handler->$method($req)
-	    if $handler->can($method);
     }
     return;
 }
