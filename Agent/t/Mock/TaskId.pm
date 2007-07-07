@@ -4,8 +4,6 @@ package Bivio::Agent::t::Mock::TaskId;
 use strict;
 use Bivio::Base 'Bivio::Delegate::SimpleTaskId';
 
-# C<Bivio::Agent::t::Mock::TaskId> unit test tasks
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
@@ -125,7 +123,7 @@ sub get_delegate_info {
 	    },
 	},
 	   'my_task=REDIRECT_TEST_5',
-     ],
+        ],
     ]);
 }
 
