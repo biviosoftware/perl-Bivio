@@ -1,8 +1,8 @@
-# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::DateTime;
 use strict;
-use Bivio::Base 'Bivio::Type';
+use base 'Bivio::Type';
 use Bivio::Die;
 use Bivio::Mail::RFC822;
 use Bivio::Type::Array;
@@ -582,7 +582,7 @@ sub gettimeofday_diff_seconds {
 }
 
 sub handle_pre_execute_task {
-    my($proto, $req) = @_;
+    my($proto, undef, $req) = @_;
     # Parses out test_now from query if it exists.
     $_TEST_NOW = undef;
     my($q) = $req->unsafe_get('query');
