@@ -1,134 +1,73 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Mail::Widget::Message;
 use strict;
-$Bivio::UI::Mail::Widget::Message::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Mail::Widget::Message::VERSION;
-
-=head1 NAME
-
-Bivio::UI::Mail::Widget::Message - creates and enqueues a mail message
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::Mail::Widget::Message;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::Mail::Widget::Message::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::Mail::Widget::Message> creates and enqueues a plain text
-mail message.  Eventually, this widget will be expanded to support
-attachments and other content types.
-
-See L<Bivio::Mail::Outgoing|Bivio::Mail::Outgoing>.
-
-=head1 ATTRIBUTES
-
-All attributes are rendered identically.  They may be widget values,
-constants, widgets, or widget values which return widgets.
-
-=over 4
-
-=item body : any []
-
-The body of the message.
-
-=item cc : any []
-
-The Cc: address(es) in the header.  See I<recipients> for
-the actual send-to addresses.
-
-=item from : any (required)
-
-The From: address in the header.
-
-=item headers : any []
-
-I<Deprecated>
-Any additional headers.  Returns a string in RFC 822 header format.  Each
-header appears on its own line.
-
-=item log_file : any []
-
-Where to log the message, if defined.  Calls
-L<Bivio::IO::Log::write|Bivio::IO::Log/"write"> with the formatted
-message.
-
-=item recipients : any (required)
-
-The recipients is a string of addresses separated by a comma.
-Use a L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join> with
-a comma separator if you have more than one address.
-
-=item subject : any []
-
-The Subject: address in the header.
-
-=item to : any []
-
-The To: address(es) in the header.  See I<recipients> for
-the actual send-to addresses.
-
-=item want_aol_munge : boolean [true]
-
-munge body by wrapping urls and email addresses in HTMl.
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::Die;
+use Bivio::IO::Log;
 use Bivio::Mail::Address;
 use Bivio::Mail::Outgoing;
-use Bivio::IO::Log;
 
-#=VARIABLES
+# C<Bivio::UI::Mail::Widget::Message> creates and enqueues a plain text
+# mail message.  Eventually, this widget will be expanded to support
+# attachments and other content types.
+#
+# See L<Bivio::Mail::Outgoing|Bivio::Mail::Outgoing>.
+#
+#
+# All attributes are rendered identically.  They may be widget values,
+# constants, widgets, or widget values which return widgets.
+#
+#
+# body : any []
+#
+# The body of the message.
+#
+# cc : any []
+#
+# The Cc: address(es) in the header.  See I<recipients> for
+# the actual send-to addresses.
+#
+# from : any (required)
+#
+# The From: address in the header.
+#
+# headers : any []
+#
+# I<Deprecated>
+# Any additional headers.  Returns a string in RFC 822 header format.  Each
+# header appears on its own line.
+#
+# log_file : any []
+#
+# Where to log the message, if defined.  Calls
+# L<Bivio::IO::Log::write|Bivio::IO::Log/"write"> with the formatted
+# message.
+#
+# recipients : any (required)
+#
+# The recipients is a string of addresses separated by a comma.
+# Use a L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join> with
+# a comma separator if you have more than one address.
+#
+# subject : any []
+#
+# The Subject: address in the header.
+#
+# to : any []
+#
+# The To: address(es) in the header.  See I<recipients> for
+# the actual send-to addresses.
+#
+# want_aol_munge : boolean [true]
+#
+# munge body by wrapping urls and email addresses in HTMl.
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::Mail::Widget::Message
-
-Create a widget.
-
-=cut
-
-sub new {
-    return shift->SUPER::new(@_);
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute"></a>
-
-=head2 execute(Bivio::Agent::Request req)
-
-Creates and sends a mail message.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($self, $req) = @_;
+    # Creates and sends a mail message.
     my($msg) = Bivio::Mail::Outgoing->new();
     my($from) = $self->render_attr('from', $req);
     $msg->set_header('From', $$from);
@@ -183,16 +122,9 @@ sub execute {
     return;
 }
 
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes child widgets.
-
-=cut
-
 sub initialize {
     my($self) = @_;
+    # Initializes child widgets.
     $self->initialize_attr('from');
     foreach my $f (qw(recipients body cc to subject headers log_file)) {
 	$self->unsafe_initialize_attr($f);
@@ -200,42 +132,32 @@ sub initialize {
     return;
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-This widget is not renderable.
-This method must be here to satisfy ->can('render').
-
-=cut
+sub new {
+    # Create a widget.
+    return shift->SUPER::new(@_);
+}
 
 sub render {
+    # This widget is not renderable.
+    # This method must be here to satisfy ->can('render').
     Bivio::Die->die('This widget is only executable, it cannot be rendered');
     # DOES NOT RETURN
 }
 
-#=PRIVATE METHODS
-
-# _add_mail_headers(self, Bivio::Mail::Outgoing msg, arrayref headers) : 
-#
-# Sets headers
-#
 sub _add_mail_headers {
     my($self, $msg, $headers) = @_;
+    # Sets headers
     foreach my $header (@$headers) {
 	$msg->set_header(@$header);
     }
     return;
 }
 
-# _text_to_aol(string_ref text) : string_ref
-#
-# Generates something that AOL's mail reader can understand.  AOL
-# does not highlight links unless they are in an <a href>.  It also
-# doesn't understand all tags.  The tags it does understand, it strips.
-#
 sub _text_to_aol {
     my($text) = @_;
+    # Generates something that AOL's mail reader can understand.  AOL
+    # does not highlight links unless they are in an <a href>.  It also
+    # doesn't understand all tags.  The tags it does understand, it strips.
     my($html) = "<html>\n";
     foreach my $line (split(/\n/, $$text)) {
 	# Put in minimal tags to generate links.  Don't replace anything
@@ -247,15 +169,5 @@ sub _text_to_aol {
     $html .= "</html>\n";
     return \$html;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
