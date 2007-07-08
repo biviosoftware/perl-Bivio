@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::Widget::Join;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
+use Bivio::Base 'Widget.ControlBase';
 
 # C<Bivio::UI::Widget::Join> is a sequence of widgets and literal text.
 #
@@ -27,14 +27,11 @@ sub initialize {
 	$self->initialize_value($name++, $v);
     }
     $self->unsafe_initialize_attr('join_separator');
-    return;
+    return shift->SUPER::initialize(@_);
 }
 
 sub internal_as_string {
     my($self) = @_;
-    # Returns the first two values in the join
-    #
-    # See L<Bivio::UI::Widget::as_string|Bivio::UI::Widget/"as_string">.
     my($values) = $self->unsafe_get('values');
     # A little bit of safety.  Don't want to crash in "as_string".
     return ($values) unless ref($values) eq 'ARRAY';
@@ -58,7 +55,7 @@ sub internal_new_args {
     };
 }
 
-sub render {
+sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($name) = 0;
     if ($self->has_keys('join_separator')) {
