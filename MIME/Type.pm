@@ -115,6 +115,7 @@ application/studiom:smp:Studio M file
 application/timbuktu:tbt:timbuktu file
 application/vis5d:v5d:Vis5D dataset
 application/vnd.framemaker:fm:FrameMaker document
+application/vnd.google-earth.kml+xml:kml:Google Earth
 application/vnd.hp-hpgl:hpg,hpgl:HPGL file
 application/vnd.mif:mif:Frame MIF document
 application/vnd.ms-excel:xls:MS-Excel spreadsheet
