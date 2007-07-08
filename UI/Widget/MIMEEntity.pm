@@ -2,111 +2,86 @@
 # $Id$
 package Bivio::UI::Widget::MIMEEntity;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget::Join';
+use Bivio::Base 'Widget.Join';
 use MIME::Entity ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-sub headers_as_string {
-    my($self, $source) = @_;
-    # Return MIME headers as string.  B<Must call L<render|"render"> before calling
-    # this routine>, and returns the last rendered value put on the request.
-    return $source->get_request->get("$self.headers");
-}
+my($_ATTR) = [qw(Type Encoding Filename Disposition Path Data)];
 
 sub initialize {
     my($self) = @_;
-    # Initializes mime_type and mime_encoding if not already set.
-    foreach my $x (
-	[mime_type => 'multipart/mixed'],
-	[mime_encoding => '7bit'],
-    ) {
-	$self->get_if_exists_else_put(@$x);
-    }
+    $self->map_invoke(initialize_attr => [
+	map([_a($_) => ''], @$_ATTR),
+	[values => []],
+    ]);
     return shift->SUPER::initialize(@_);
 }
 
+sub mime_entity {
+    my($self, $source) = @_;
+    return $source->get_request->unsafe_get("$self");
+}
+
+sub mail_headers {
+    my($entity) = shift->mime_entity(@_);
+    return [
+	map({
+	    my($value) = $entity->head->get(lc($_));
+	    chomp($value)
+		if $value;
+	    $value ? ($_, $value) : ();
+	} qw(
+	    MIME-Version
+	    Content-Type
+	    Content-Transfer-Encoding
+	    Content-Disposition
+	)),
+    ];
+}
+
 sub render {
     my($self, $source, $buffer) = @_;
-    # Renders this instance into I<buffer> using I<source> to evaluate
-    # widget values.  Saves mime headers on the request.
+    my($entity) = MIME::Entity->build(%{_render($self, undef, $self, $source)});
     my($name) = 0;
-    my($entity) = MIME::Entity->build(
-        map({
-	    ($_ => ${$self->render_attr('mime_' . lc($_), $source)});
-	} qw(Type Encoding)),
-    );
-    foreach my $v (@{$self->get('values')}) {
-	my($e);
-	if (UNIVERSAL::isa($v, 'Bivio::UI::HTML::Widget::FileAttachment')) {
-	    $entity->attach(
-	        Path => ${$v->render_attr('path', $source)},
-                Disposition => 'attachment',
-	    map({
-		($_ => ${$v->render_attr('mime_' . lc($_), $source)});
-	    } qw(Type Encoding)),
-        );} else {
-            $entity->attach(
-	        Data => ${$self->render_value($name++, $v, $source)},
-	        map({
-		    ($_ => ${$v->render_attr('mime_' . lc($_), $source)});
-	        } qw(Type Encoding)),
-	    );
-        }
+    foreach my $value (@{$self->get('values')}) {
+	my($v) = _render(
+	    $self,
+	    $name++,
+	    $self->unsafe_resolve_widget_value($value, $source),
+	    $source,
+	);
+	if ($v->{entity}) {
+	    $entity->make_multipart;
+	    $entity->add_part($v->{entity});
+	}
+	else {
+	    $entity->attach(%$v);
+	}
     }
     $$buffer .= $entity->body_as_string;
-    $source->get_request->put(
-	"$self.headers" => join('',
-	    map({
-		$_ . ': ', $entity->head->get(lc($_));
-	    } 'MIME-Version', 'Content-Type', 'Content-Transfer-Encoding'),
-	),
-    );
+    $source->get_request->put("$self" => $entity);
     return;
+}
+
+sub _a {
+    return 'mime_' . lc(shift(@_));
+}
+
+sub _render {
+    my($self, $name, $value, $source) = @_;
+    my($d);
+    $self->unsafe_render_value($name, $value, $source, \$d)
+	unless $self eq $value;
+    return {
+	Type => 'multipart/mixed',
+	defined($d) && length($d) ? (Data => \$d) : (),
+	$self ne $value && $value->can('mime_entity')
+            ? (entity => $value->mime_entity($source))
+	    : map({
+		my($v) = $value->render_simple_attr(_a($_), $source);
+		length($v) ? ($_ => $v) : ();
+	    } @$_ATTR),
+    };
 }
 
 1;
-
-
-__END__
-
-sub render {
-    my($self, $source, $buffer) = @_;
-    my($name) = 0;
-    my($entity) = MIME::Entity->new;
-    foreach my $v (@{$self->get('values')}) {
-        next if $v->can('want_render') && !$v->want_render($source);
-	my($data) = '';
-	$v->render($source, \$data);
-        $self->die($v, ': empty mime part')
-	    unless length($data);
-	$entity->attach({
-	        Data => $data,
-	        map({
-		     my($x) = '';
-		     ($_ => $v->unsafe_render_attr('mime_' . lc($_), $source, \$x) => $x : $_DEFAULT->{$_});
-	        } qw(Type Encoding)),
-        });
-    );
-    if ($self->has_keys('mime_type')) {
-	map({
-	    ($_ => ${$self->render_attr('mime_' . lc($_), $source)});
-	} qw(Type Encoding));
-    }
-    else {
-        if (scalar($entity->parts) == 1) {
-            $entity->make_singlepart;
-        else {
-             $entity->make_multipart;
-        }
-    }
-    $$buffer .= $entity->body_as_string;
-    $source->get_request->put(
-	"$self.headers" => join('',
-	    map({
-		$_ . ': ', $entity->head->get(lc($_));
-	    } 'MIME-Version', 'Content-Type', 'Content-Transfer-Encoding'),
-	),
-    );
-    return;
-}
