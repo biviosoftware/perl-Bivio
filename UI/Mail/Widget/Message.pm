@@ -58,64 +58,38 @@ use Bivio::Mail::Outgoing;
 #
 # The To: address(es) in the header.  See I<recipients> for
 # the actual send-to addresses.
-#
-# want_aol_munge : boolean [true]
-#
-# munge body by wrapping urls and email addresses in HTMl.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($self, $req) = @_;
-    # Creates and sends a mail message.
-    my($msg) = Bivio::Mail::Outgoing->new();
-    my($from) = $self->render_attr('from', $req);
-    $msg->set_header('From', $$from);
-    my($email) = Bivio::Mail::Address->parse($$from);
-    $self->die('from', $req, 'no email in From: ', $$from)
-	unless $email;
+    $self->map_invoke(obsolete_attr => [qw(headers want_aol_munge)]);
+    my($msg) = Bivio::Mail::Outgoing->new;
+    my($from) = $self->render_simple_attr('from', $req);
+    $msg->set_header('From', $from);
+    my($email) = (Bivio::Mail::Address->parse($from))[0]
+	|| $self->die('from', $req, 'no email in From: ', $from);
     $msg->set_envelope_from($email);
-
-    my($recipients) = '';
-    $self->unsafe_render_attr('recipients', $req, \$recipients);
-    my(@recips) = ();
-
+    my($recips) = [];
     foreach my $header (qw(to cc subject)) {
 	my($value) = '';
-
 	if ($self->unsafe_render_attr($header, $req, \$value) && $value) {
 	    $msg->set_header(ucfirst($header), $value);
-	    push(@recips, $value) unless $header eq 'subject';
+	    push(@$recips, $value)
+		unless $header eq 'subject';
 	}
     }
-    $msg->set_recipients($recipients || \@recips, $req);
+    $msg->set_recipients(
+	$self->render_simple_attr('recipients', $req) || $recips, $req);
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
-	    if $req->has_keys('client_addr');
-
-    #Body must be rendered first in case the widget has mail headers.
+	if $req->has_keys('client_addr');
+    # Body must be rendered first in case the widget has mail headers.
     my($body) = $self->render_attr('body', $req);
-
-    #Deprecated attribute
-    my($b) = '';
-    $self->die($self, ': headers attribute is deprecated')
-	if $self->unsafe_render_attr('headers', $req, \$b) && $b;
-
-    my($body_widget) = $self->unsafe_resolve_widget_value(
-        $self->get('body'), $req);
-    if (UNIVERSAL::can($body_widget, 'mail_headers')) {
-	_add_mail_headers($self, $msg, $body_widget->mail_headers($req));
+    if (my $w = $self->unsafe_resolve_widget_value($self->get('body'), $req)) {
+	$msg->map_invoke(set_header => $w->mail_headers($req))
+	    if UNIVERSAL::can($w, 'mail_headers');
     }
-
-    #TODO: Eliminate
-    if ($self->get_or_default('want_aol_munge', 1)
-	&&  $recipients =~ /\@(?:aol|compuserve|cs).com$/i) {
-	# AOL and compuserv are totally brain dead.
-	$body = _text_to_aol($body);
-    }
-
     $msg->set_body($$body);
     $msg->enqueue_send($req);
-
     my($lf);
     Bivio::IO::Log->write($lf, $msg->as_string)
         if $self->unsafe_render_attr('log_file', $req, \$lf) && $lf;
@@ -124,50 +98,16 @@ sub execute {
 
 sub initialize {
     my($self) = @_;
-    # Initializes child widgets.
     $self->initialize_attr('from');
-    foreach my $f (qw(recipients body cc to subject headers log_file)) {
-	$self->unsafe_initialize_attr($f);
-    }
+    $self->map_invoke(unsafe_initialize_attr =>
+	[qw(recipients body cc to subject headers log_file)]);
     return;
-}
-
-sub new {
-    # Create a widget.
-    return shift->SUPER::new(@_);
 }
 
 sub render {
     # This widget is not renderable.
     # This method must be here to satisfy ->can('render').
     Bivio::Die->die('This widget is only executable, it cannot be rendered');
-    # DOES NOT RETURN
-}
-
-sub _add_mail_headers {
-    my($self, $msg, $headers) = @_;
-    # Sets headers
-    foreach my $header (@$headers) {
-	$msg->set_header(@$header);
-    }
-    return;
-}
-
-sub _text_to_aol {
-    my($text) = @_;
-    # Generates something that AOL's mail reader can understand.  AOL
-    # does not highlight links unless they are in an <a href>.  It also
-    # doesn't understand all tags.  The tags it does understand, it strips.
-    my($html) = "<html>\n";
-    foreach my $line (split(/\n/, $$text)) {
-	# Put in minimal tags to generate links.  Don't replace anything
-	# else.
-	$line =~ s/(https?:\S+\w)/<a href="$1">$1<\/a>/g;
-	$line =~ s/(\w\S+@\S+\w)/<a href="mailto:$1">$1<\/a>/g;
-	$html .= $line ."\n";
-    }
-    $html .= "</html>\n";
-    return \$html;
 }
 
 1;
