@@ -1,0 +1,88 @@
+# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    [[
+	prose('Part one', {
+	    mime_type => 'text/html; charset="us-ascii"',
+	    mime_encoding => '7bit',
+	}),
+	prose("From: a\@b.c\n\nPart two.", {
+	    mime_type => 'message/rfc822',
+	    mime_encoding => '7bit',
+	}),
+    ]] => sub {
+	assert_equals(
+	    [
+		qw(MIME-Version 1.0),
+		'Content-Type' =>  qr{multipart/mixed;\s*boundary}is,
+		qw(Content-Transfer-Encoding binary),
+	    ],
+	    shift->get('object')->mail_headers(req()),
+	);
+	return qr{text/html.*\n\nPart one\n--}is;
+    },
+    [[
+	prose('Part one', {
+	    mime_type => 'text/plain; charset="us-ascii"',
+	    mime_encoding => '7bit',
+	}),
+	prose('<html><body>Part one</body></html>', {
+	    mime_type => 'text/html; charset="us-ascii"',
+	    mime_encoding => '7bit',
+	}),
+    ], {
+	mime_type => 'multipart/alternative',
+    }] => sub {
+	assert_equals(
+	    [
+		qw(MIME-Version 1.0),
+		'Content-Type' =>  qr{multipart/alternative;\s*boundary}is,
+		qw(Content-Transfer-Encoding binary),
+	    ],
+	    shift->get('object')->mail_headers(req()),
+	);
+	return qr{text/plain;.*\nPart One\n.*text/html;.*<body>Part One</body>}is;
+    },
+    [[], {
+	mime_data => prose('My Body'),
+	mime_type => 'text/plain; charset="us-ascii"',
+	mime_encoding => '7bit',
+    }] => sub {
+	assert_equals(
+	    [
+		qw(MIME-Version 1.0),
+		'Content-Type' =>  qr{^text/plain; charset="us-ascii"$}is,
+		qw(Content-Transfer-Encoding 7bit),
+		qw(Content-Disposition inline),
+	    ],
+	    shift->get('object')->mail_headers(req()),
+	);
+	return qr{^My Body$}is;
+    },
+    [[
+	vs_new(MIMEEntity => [
+	    prose('ONE', {
+		mime_type => 'text/html; charset="us-ascii"',
+		mime_encoding => '7bit',
+	    }),
+	    prose('TWO', {
+		mime_type => 'text/html; charset="us-ascii"',
+		mime_encoding => 'quoted-printable',
+	    }),
+	]),
+    ], {
+	mime_data => prose('My Body'),
+	mime_type => 'text/plain; charset="us-ascii"',
+	mime_encoding => '7bit',
+    }] => sub {
+	assert_equals(
+	    [
+		qw(MIME-Version 1.0),
+		'Content-Type' =>  qr{multipart/mixed}is,
+	    ],
+	    shift->get('object')->mail_headers(req()),
+	);
+	return qr{7bit.*My Body.*ONE.*TWO}is;
+    },
+];
