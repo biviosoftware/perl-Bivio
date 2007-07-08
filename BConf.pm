@@ -286,14 +286,13 @@ sub merge_class_loader {
 		    Model => ['Bivio::Biz::Model'],
 		    map(
 			("${_}Widget" => [
-#TODO: Do we need CSS Widgets?
-			    $_ ne 'CSS' ? "Bivio::UI::${_}::Widget" : (),
+			    $_ && $_ ne 'CSS' ? "Bivio::UI::${_}::Widget" : (),
 			    $_ eq 'XHTML' ? 'Bivio::UI::HTML::Widget' : (),
 			    $_ eq 'Mail' ? 'Bivio::UI::Text::Widget' : (),
 			    $_ eq 'CSS' ? 'Bivio::UI::Text::Widget' : (),
 			    'Bivio::UI::Widget',
 			]),
-			qw(CSS HTML XHTML Mail Text)),
+			'', qw(CSS HTML XHTML Mail Text)),
 		    ShellUtil => ['Bivio::Util', 'Bivio::Biz::Util'],
 		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
 		    TestLanguage => ['Bivio::Test::Language'],
