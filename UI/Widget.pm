@@ -289,6 +289,14 @@ sub new {
     return $proto->SUPER::new($res);
 }
 
+sub obsolete_attr {
+    my($self, $attr) = @_;
+    # False is ok
+    $self->die($attr, ': attribute is obsolete')
+	if $self->unsafe_get($attr);
+    return;
+}
+
 sub put_and_initialize {
     my($self) = shift;
     # Puts the attributes and initializes.  Typically used in the form:
