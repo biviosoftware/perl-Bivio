@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.11  2007/06/27 23:41:49  david
+  * Bivio::Agent::Embed::Request now accepts data to be put on a newly
+    created request
+  * Bivio::Agent::HTTP::Form accepts a uri in the query if the method is
+    post
+  * Bivio::Agent::Request added form_in_query
+  * Bivio::Biz::FormModel added get_literals_copy
+  * Bivio::Biz::Model::RealmMailBounce wasn't calling
+    unauth_create_or_update so it is likely there were wrong user ids on
+    bounces
+  * Bivio::Type::DateTime->to_dd_mmm_yyyy now accepts a separator
+  * Bivio::Type::StringArray was cleaned up
+  * Bivio::UI::FormError added support for error_details
+  * Bivio::UI::Widget::URI now allows format_method to be passed in
+    params
+  * Bivio::UI::WidgetValueSource deprecates using array with index
+  * Bivio::Util::HTTPConf fixed problem where https wasn't redirecting
+    to the odd port after the refactoring to $hc
+
   Revision 5.10  2007/06/25 17:36:11  moeller
   * Added RealmDAG model for Realm/Realm relationships
   * Bivio::UNIVERSAL added req()
