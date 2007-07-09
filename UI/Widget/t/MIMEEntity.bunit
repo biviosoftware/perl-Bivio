@@ -14,9 +14,9 @@ Widget();
     ]] => sub {
 	assert_equals(
 	    [
-		qw(MIME-Version 1.0),
-		'Content-Type' =>  qr{multipart/mixed;\s*boundary}is,
-		qw(Content-Transfer-Encoding binary),
+		[qw(MIME-Version 1.0)],
+		['Content-Type' =>  qr{multipart/mixed;\s*boundary}is],
+		[qw(Content-Transfer-Encoding binary)],
 	    ],
 	    shift->get('object')->mail_headers(req()),
 	);
@@ -36,9 +36,9 @@ Widget();
     }] => sub {
 	assert_equals(
 	    [
-		qw(MIME-Version 1.0),
-		'Content-Type' =>  qr{multipart/alternative;\s*boundary}is,
-		qw(Content-Transfer-Encoding binary),
+		[qw(MIME-Version 1.0)],
+		['Content-Type' =>  qr{multipart/alternative;\s*boundary}is],
+		[qw(Content-Transfer-Encoding binary)],
 	    ],
 	    shift->get('object')->mail_headers(req()),
 	);
@@ -51,10 +51,10 @@ Widget();
     }] => sub {
 	assert_equals(
 	    [
-		qw(MIME-Version 1.0),
-		'Content-Type' =>  qr{^text/plain; charset="us-ascii"$}is,
-		qw(Content-Transfer-Encoding 7bit),
-		qw(Content-Disposition inline),
+		[qw(MIME-Version 1.0)],
+		['Content-Type' =>  qr{^text/plain; charset="us-ascii"$}is],
+		[qw(Content-Transfer-Encoding 7bit)],
+		[qw(Content-Disposition inline)],
 	    ],
 	    shift->get('object')->mail_headers(req()),
 	);
@@ -78,8 +78,8 @@ Widget();
     }] => sub {
 	assert_equals(
 	    [
-		qw(MIME-Version 1.0),
-		'Content-Type' =>  qr{multipart/mixed}is,
+		[qw(MIME-Version 1.0)],
+		['Content-Type' =>  qr{multipart/mixed}is],
 	    ],
 	    shift->get('object')->mail_headers(req()),
 	);

@@ -29,7 +29,7 @@ sub mail_headers {
 	    my($value) = $entity->head->get(lc($_));
 	    chomp($value)
 		if $value;
-	    $value ? ($_, $value) : ();
+	    $value ? [$_, $value] : ();
 	} qw(
 	    MIME-Version
 	    Content-Type
