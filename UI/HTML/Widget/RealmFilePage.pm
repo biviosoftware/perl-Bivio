@@ -51,8 +51,8 @@ sub render {
 	| \<\!--\s*start-bivio-([\w-]+)\s*--\>
 	.*?\<\!--\s*end-bivio-([\w-]+)\s*--\>
     }{_render_view_attr($self, $source, $vap, [$1, $2, $3])}sigex;
-    $$b =~ s{(?<=\<head\>)}{\n@{[$self->internal_render_head_attrs($source)]}}is
-	or $self->die($b, $source, 'missing <head>');
+    # It's ok to be missing a <head> so we can use for XML
+    $$b =~ s{(?<=\<head\>)}{\n@{[$self->internal_render_head_attrs($source)]}}is;
     $$buffer .= $$b;
     return;
 }
