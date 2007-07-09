@@ -1012,23 +1012,15 @@ sub warn {
 }
 
 sub with_realm {
-    my($self, $realm, $op) = @_;
     # Calls set_realm(realm) and then op.   Restores prior realm, even on exception.
     # Returns what I<op> returns (in array context always).
-    return _with($self, $realm, undef, $op);
-}
-
-sub with_realm_and_user {
-    # Calls set_realm(realm) and set_user(realm) and then op.   Restores prior realm and user, even on exception.
-    # Returns what I<op> returns (in array context always).
-    return _with(@_);
+    return _with(realm => @_);
 }
 
 sub with_user {
-    my($self, $user, $op) = @_;
     # Calls set_user(user) and then op.   Restores prior user, even on exception.
     # Returns what I<op> returns (in array context always).
-    return _with($self, undef, $user, $op);
+    return _with(user => @_);
 }
 
 sub _form_for_warning {
@@ -1073,24 +1065,20 @@ sub _get_roles {
 }
 
 sub _with {
-    my($self, $realm, $user, $op) = @_;
-    my($prev_realm, $prev_user) = $self->get(qw(auth_realm auth_user));
+    my($which, $self, $with_value, $op) = @_;
+    my($prev) = $self->get("auth_$which");
+    my($set) = "set_$which";
     my(@res);
     my($die) = Bivio::Die->catch(sub {
-        $self->set_realm($realm)
-	    if $realm;
-	$self->set_user($user)
-	    if $user;
+        $self->$set($with_value);
 	@res = $op->();
 	return;
     });
-    $self->set_realm($prev_realm)
-	if $realm;
-    $self->set_user($prev_user)
-	if $user;
+    $self->$set($prev);
     $die->throw
 	if $die;
     return @res;
+
 }
 
 1;
