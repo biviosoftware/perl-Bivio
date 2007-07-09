@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.12  2007/07/09 02:48:30  nagler
+  * Bivio::Type::StringArray->from_literal now always returns an instance,
+    even if the initial value is undef.  This enables null object
+    comparisons.  The Tuple code was fixed to support this change.
+  * Bivio::Agent::Request->with_realm_and_user added
+  * Bivio::UI::Widget->obsolete_attr added
+  * Bivio::UI::Widget::MIMEEntity->header_as_string removed.
+    mail_headers and mime_entity added.  Now supports nested
+    MIME::Entities properly.
+  * Bivio::UI::Widget::Join subclass of ControlBase
+  * Widget is now a default class map
+  * Bivio::UI::Mail::Widget::Message.want_aol_munge is obsolete.  Module
+    significantly refactored.
+  * Bivio::UI::Widget::After prints value "after" only if main value is
+    non-null.
+  * Bivio::UI::HTML::Widget::FormField uses Widget.After to print :
+  * Bivio::Agent::Task->handle_*_task are now just like regular task
+    items.  All behavior is encapsulated by execute_items including
+    throwing FORBIDDEN exceptions.  As such, these handlers may return
+    "next" actions and control the execution flow of the task in
+    addition to throwing exceptions.  handle_*_task have an API change
+    that passes the task they are executing.
+  * Bivio::Test::Language::HTTP->save_excursion added
+
   Revision 5.11  2007/06/27 23:41:49  david
   * Bivio::Agent::Embed::Request now accepts data to be put on a newly
     created request
