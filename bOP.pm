@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.13  2007/07/09 04:11:39  nagler
+  * Bivio::Agent::Request->with_realm_and_user deleted
+
   Revision 5.12  2007/07/09 02:48:30  nagler
   * Bivio::Type::StringArray->from_literal now always returns an instance,
     even if the initial value is undef.  This enables null object
