@@ -55,6 +55,11 @@ Request();
 	],
     ], [
 	where => [
+	    [['RealmFile.folder_id', [1, 2]]]
+		=> ['FROM realm_file_t WHERE realm_file_t.folder_id IN (?,?)', [1, 2]],
+	],
+    ], [
+	where => [
 	    [class()
 	        ->EQ('RealmUser.user_id', 'User.user_id', 'Email.realm_id')]
 	    => ['FROM email_t,realm_file_t,realm_user_t,user_t WHERE realm_user_t.user_id=user_t.user_id AND realm_user_t.user_id=email_t.realm_id', []],
