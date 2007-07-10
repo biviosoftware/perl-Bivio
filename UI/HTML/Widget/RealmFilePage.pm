@@ -11,6 +11,13 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATTRS) = [qw(view_attr_prefix realm_id path default_path)];
 my($_FP) = Bivio::Type->get_instance('FilePath');
 
+sub execute {
+    my($self, $req) = @_;
+    $self->execute_with_content_type($req, 'text/html');
+    $req->get('reply')->set_output_type($req->get("$self"));
+    return;
+}
+
 sub initialize {
     my($self) = shift;
     $self->map_invoke(initialize_attr => $_ATTRS);
@@ -38,6 +45,7 @@ sub render {
 	realm_id => $rid,
 	path => $self->render_simple_attr('default_path', $source),
     });
+    $req->put("$self" => $rf->get_content_type);
     my($b) = $rf->get_content;
     $p = $rf->get('path');
 #TODO: Encapsulate
@@ -52,7 +60,10 @@ sub render {
 	.*?\<\!--\s*end-bivio-([\w-]+)\s*--\>
     }{_render_view_attr($self, $source, $vap, [$1, $2, $3])}sigex;
     # It's ok to be missing a <head> so we can use for XML
-    $$b =~ s{(?<=\<head\>)}{\n@{[$self->internal_render_head_attrs($source)]}}is;
+    if (my $h = $self->internal_render_head_attrs($source)) {
+	$$b =~ s{(?<=\<head\>)}{\n$h}is
+	    or $self->die($b, $source, 'missing <head>');
+    }
     $$buffer .= $$b;
     return;
 }
