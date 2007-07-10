@@ -6,7 +6,7 @@ use Bivio::Base 'Widget.Join';
 use MIME::Entity ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_ATTR) = [qw(Type Encoding Filename Disposition Path Data)];
+my($_ATTR) = [qw(Type Encoding Filename Disposition Charset Path Data)];
 
 sub initialize {
     my($self) = @_;
@@ -19,6 +19,7 @@ sub initialize {
 
 sub mime_entity {
     my($self, $source) = @_;
+    # Might not have rendered
     return $source->get_request->unsafe_get("$self");
 }
 
@@ -39,7 +40,7 @@ sub mail_headers {
     ];
 }
 
-sub render {
+sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($entity) = MIME::Entity->build(%{_render($self, undef, $self, $source)});
     my($name) = 0;
@@ -54,8 +55,8 @@ sub render {
 	    $entity->make_multipart;
 	    $entity->add_part($v->{entity});
 	}
-	else {
-	    $entity->attach(%$v);
+	elsif (defined($v->{Data}) || defined($v->{Path})) {
+	    $entity->attach(%$v)
 	}
     }
     $$buffer .= $entity->body_as_string;

@@ -28,7 +28,8 @@ Widget();
 	    mime_encoding => '7bit',
 	}),
 	prose('<html><body>Part one</body></html>', {
-	    mime_type => 'text/html; charset="us-ascii"',
+	    mime_type => 'text/html',
+	    mime_charset => 'iso-8859-1',
 	    mime_encoding => '7bit',
 	}),
     ], {
@@ -42,7 +43,7 @@ Widget();
 	    ],
 	    shift->get('object')->mail_headers(req()),
 	);
-	return qr{text/plain;.*\nPart One\n.*text/html;.*<body>Part One</body>}is;
+	return qr{text/plain;.*us-ascii.*\nPart One\n.*text/html;.*iso-8859-1.*<body>Part One</body>}is;
     },
     [[], {
 	mime_data => prose('My Body'),
@@ -70,6 +71,12 @@ Widget();
 		mime_type => 'text/html; charset="us-ascii"',
 		mime_encoding => 'quoted-printable',
 	    }),
+	    vs_new(MIMEEntity => {
+		mime_data => 'THREE',
+		mime_type => 'text/plain; charset="us-ascii"',
+		mime_encoding => 'quoted-printable',
+		control => 0,
+	    }),
 	]),
     ], {
 	mime_data => prose('My Body'),
@@ -83,6 +90,6 @@ Widget();
 	    ],
 	    shift->get('object')->mail_headers(req()),
 	);
-	return qr{7bit.*My Body.*ONE.*TWO}is;
+	return qr{7bit.*My Body.*ONE.*TWO(?!.*THREE)}is;
     },
 ];
