@@ -28,20 +28,10 @@ sub copy_admins {
 
 sub execute_ok {
     my($self) = @_;
-    my($e) = $self->new_other('Email');
     _join_user(
 	$self,
-	$self->unsafe_get('User.user_id')
-	    || ($e->unauth_load({email => $self->get('Email.email')})
-		? $e->get('realm_id')
-		: (($self->internal_create_models)[0] || return)
-		    ->get('realm_id')),
-	$self->unsafe_get('RealmUser.realm_id')
-	    || $self->unsafe_get('realm')
-		&& $self->new_other('RealmOwner')->unauth_load_or_die({
-		    name => $self->get('realm'),
-		})->get('realm_id')
-	    || $self->get_request->get('auth_id'),
+	$self->internal_user_id,
+	$self->internal_realm_id,
     );
     return;
 }
@@ -82,6 +72,31 @@ sub internal_initialize {
 	    'RealmUser.realm_id',
 	],
     });
+}
+
+sub internal_realm_id {
+    my($self) = @_;
+    my($id) = $self->unsafe_get('RealmUser.realm_id');
+    $self->internal_put_field('RealmUser.realm_id' =>
+	 $id = $self->unsafe_get('realm')
+	     && $self->new_other('RealmOwner')
+	     ->unauth_load_or_die({name => $self->get('realm')})
+	     ->get('realm_id')
+	     || $self->get_request->get('auth_id'),
+    ) unless $id;
+    return $id;
+}
+
+sub internal_user_id {
+    my($self) = @_;
+    my($id) = $self->unsafe_get('User.user_id');
+    my($e) = $self->new_other('Email');
+    $self->internal_put_field('User.user_id' =>
+	$id = $e->unauth_load({email => $self->get('Email.email')})
+	    ? $e->get('realm_id')
+	    : (($self->internal_create_models)[0] || return)->get('realm_id'),
+    ) unless $id;
+    return $id;
 }
 
 sub _join_user {
