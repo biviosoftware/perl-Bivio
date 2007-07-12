@@ -62,6 +62,18 @@
 	    [cc => 'c', dd => 'd'] => [qw(c d)],
 	    [cc => 'c', 'odd'] => DIE(),
 	],
+	get_if_defined_else_put => [
+	    [aa => undef] => 33,
+        ],
+	put => [
+	    [aa => undef] => not_die(),
+	],
+	get_if_exists_else_put => [
+	    [aa => 33] => [undef],
+        ],
+	get_if_defined_else_put => [
+	    [aa => 99] => 99,
+	],
 	map_each => [
 	    [sub {
 		 shift;
@@ -75,7 +87,7 @@
 	],
 	get_by_regexp => [
 	    [qr/a/] => DIE(),
-	    [qr/aa/] => 33,
+	    [qr/aa/] => 99,
 	],
 	delete_all => not_die(),
 	unsafe_get_by_regexp => [

@@ -135,6 +135,11 @@ sub get_by_regexp {
 	: _die($self, $pattern, ': pattern not found');
 }
 
+sub get_if_defined_else_put {
+    return shift->put_unless_defined(@_)
+	->get(map($_[2 * $_], 0 .. (@_/2 - 1)));
+}
+
 sub get_if_exists_else_put {
     # Returns value of I<key> if it exists.  Otherwise, calls I<value> if it
     # is a code_ref or just puts I<value>.
@@ -274,6 +279,17 @@ sub put_unless_exists {
 	my($k, $v) = (splice(@$args, 0, 2));
 	$self->put($k => ref($v) eq 'CODE' ? $v->() : $v)
 	    unless $self->has_keys($k);
+    }
+    return $self;
+}
+
+sub put_unless_defined {
+    my($self, $args) = _even(\@_);
+    _writable($self);
+    while (@$args) {
+	my($k, $v) = (splice(@$args, 0, 2));
+	$self->put($k => ref($v) eq 'CODE' ? $v->() : $v)
+	    unless defined($self->unsafe_get($k));
     }
     return $self;
 }
