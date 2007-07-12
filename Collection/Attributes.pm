@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Collection::Attributes;
 use strict;
-use Bivio::Base 'Bivio::UI::WidgetValueSource';
+use base 'Bivio::UI::WidgetValueSource';
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
