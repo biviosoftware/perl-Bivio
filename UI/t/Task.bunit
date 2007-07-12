@@ -18,5 +18,33 @@ Request('initialize_fully');
 	    [LOGIN => {no_context => 1}] => '/pub/login',
 	    [SITE_ROOT => {require_context => 1}] => qr{^/\?fc=.+},
 	],
+	{
+	    method => 'parse_uri',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		push(@$params, req());
+		return $params;
+	    },
+	    compute_return => sub {
+		my($case, $actual, $expect) = @_;
+		push(@$actual, shift(@$actual)->get_name);
+		return $expect;
+	    },
+	} => [
+	    '/' => [
+		'SITE_ROOT',
+		Bivio::Auth::Realm->get_general,
+		'',
+		'/',
+	    ],
+	    '' => [
+		'SITE_ROOT',
+		Bivio::Auth::Realm->get_general,
+		'',
+		'/',
+	    ],
+	    'foo/?/baz' => Bivio::DieCode->NOT_FOUND,
+	    'foo//?/baz' => Bivio::DieCode->NOT_FOUND,
+	],
      ],
 ];
