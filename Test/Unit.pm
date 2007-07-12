@@ -274,10 +274,6 @@ sub builtin_rm_rf {
     return shift->use('Bivio::IO::File')->rm_rf(@_);
 }
 
-sub builtin_role {
-    return shift->use('Bivio::Auth::Role')->from_name(shift);
-}
-
 sub builtin_rollback {
     # Calls Bivio::Agent::Task::rollback
     Bivio::Agent::Task->rollback(shift->builtin_req);
