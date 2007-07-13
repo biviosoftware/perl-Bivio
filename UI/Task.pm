@@ -2,158 +2,80 @@
 # $Id$
 package Bivio::UI::Task;
 use strict;
-$Bivio::UI::Task::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Task::VERSION;
-
-=head1 NAME
-
-Bivio::UI::Task - provides URIs for tasks
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::Task;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::FacadeComponent>
-
-=cut
-
-use Bivio::UI::FacadeComponent;
-@Bivio::UI::Task::ISA = ('Bivio::UI::FacadeComponent');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::Task> provides URIs for tasks.  There are two uris currently
-provided: L<format_uri|"format_uri"> and L<format_help_uri|"format_help_uri">.
-
-Tasks are configured as follows:
-
-     group(<TASK_NAME> => <uri>);
-     group(<TASK_NAME> => {
-         uri => <uri>,
-         help => <help-path-info>,
-     });
-     group(<TASK_NAME> => {
-         uri => [<primary-uri>, <alias1>, <alias2>, ...],
-         help => <help-path-info>,
-     });
-
-The first case is simply a shorthand for the second without a I<help>
-attribute.
-
-The I<uri> is a relative path to the task which starts at the root of the site
-(/).  The I<uri> may be a list in which case the first URI is the one returned
-by L<format_uri|"format_uri">.
-
-Choose your I<uri>s carefully.  We recommend using dash/minus (-) to separate
-values within the same uri component, e.g. my-component vs. my_component.
-Dashes are readable when underlined and they are legal URI characters.
-
-A I<uri> may contain a realm name (see special characters below).  We restrict
-this to the top level name in the space.  This is an efficiency concern, but it
-is also pragmatic.  It enforces a practical naming convention which allows you
-to avoid collisions between reserved realm names (see
-L<Bivio::Type::RealmName|Bivio::Type::RealmName>) and URI components.  Indeed
-we give these URIs a special name: I<realm owner relative> (ROR).
-
-I<uri> may contain special characters as follows:
-
-=over 4
-
-=item ?
-
-Question mark (?) identifies a I<realm owner relative> (ROR) uri.  The URI
-operates in a security realm (CLUB, USER, etc.).  The question mark (?) is a
-placeholder for a realm owner name, e.g.  ?/accounting would map to
-my_club/accounting if my_club were the current realm owner name.  It may appear
-as the first component of the path only, e.g. C<?/edit/address> but not
-C<edit/?/address>.  During rendering, the value will be filled in with the
-passed in realm name or the I<auth_realm> on the request.
-
-=item *
-
-May appear as the trailing component of the URI, e.g. /help/*.  We restrict
-path info to the second component in ownerless URIs (no question marks) and the
-third component in ROR uris.  An incoming URI will be parsed and the
-I<path_info> will be placed on the request.  An outgoing URI will have
-I<path_info> appended (see L<format_uri|"format_uri">).
-
-=back
-
-=head1 REQUIRED TASKS
-
-=over 4
-
-=item HELP
-
-The task which L<format_help_uri|"format_help_uri"> uses to format uris.
-This task must have a I<help> attribute which is where help is routed
-to.
-
-=back
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="HELP_INDEX"></a>
-
-=head2 HELP_INDEX : string
-
-Index for help tree.
-
-=cut
-
-sub HELP_INDEX {
-    return '/index.html';
-}
-
-=for html <a name="UNDEF_CONFIG"></a>
-
-=head2 UNDEF_CONFIG : hash_ref
-
-Returns a hash with a special key.
-
-=cut
-
-sub UNDEF_CONFIG {
-    return {
-	undef_config => 1,
-    };
-}
-
-=for html <a name="UNDEF_URI"></a>
-
-=head2 UNDEF_URI : string
-
-URI to use when task is not found or error converting to URI.
-
-=cut
-
-sub UNDEF_URI {
-    return 'TASK-ERR';
-}
-
-#=IMPORTS
 use Bivio::Agent::Request;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
+use Bivio::Base 'Bivio::UI::FacadeComponent';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::HTML;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
-#=VARIABLES
+# C<Bivio::UI::Task> provides URIs for tasks.  There are two uris currently
+# provided: L<format_uri|"format_uri"> and L<format_help_uri|"format_help_uri">.
+#
+# Tasks are configured as follows:
+#
+#      group(<TASK_NAME> => <uri>);
+#      group(<TASK_NAME> => {
+#          uri => <uri>,
+#          help => <help-path-info>,
+#      });
+#      group(<TASK_NAME> => {
+#          uri => [<primary-uri>, <alias1>, <alias2>, ...],
+#          help => <help-path-info>,
+#      });
+#
+# The first case is simply a shorthand for the second without a I<help>
+# attribute.
+#
+# The I<uri> is a relative path to the task which starts at the root of the site
+# (/).  The I<uri> may be a list in which case the first URI is the one returned
+# by L<format_uri|"format_uri">.
+#
+# Choose your I<uri>s carefully.  We recommend using dash/minus (-) to separate
+# values within the same uri component, e.g. my-component vs. my_component.
+# Dashes are readable when underlined and they are legal URI characters.
+#
+# A I<uri> may contain a realm name (see special characters below).  We restrict
+# this to the top level name in the space.  This is an efficiency concern, but it
+# is also pragmatic.  It enforces a practical naming convention which allows you
+# to avoid collisions between reserved realm names (see
+# L<Bivio::Type::RealmName|Bivio::Type::RealmName>) and URI components.  Indeed
+# we give these URIs a special name: I<realm owner relative> (ROR).
+#
+# I<uri> may contain special characters as follows:
+#
+#
+# ?
+#
+# Question mark (?) identifies a I<realm owner relative> (ROR) uri.  The URI
+# operates in a security realm (CLUB, USER, etc.).  The question mark (?) is a
+# placeholder for a realm owner name, e.g.  ?/accounting would map to
+# my_club/accounting if my_club were the current realm owner name.  It may appear
+# as the first component of the path only, e.g. C<?/edit/address> but not
+# C<edit/?/address>.  During rendering, the value will be filled in with the
+# passed in realm name or the I<auth_realm> on the request.
+#
+# *
+#
+# May appear as the trailing component of the URI, e.g. /help/*.  We restrict
+# path info to the second component in ownerless URIs (no question marks) and the
+# third component in ROR uris.  An incoming URI will be parsed and the
+# I<path_info> will be placed on the request.  An outgoing URI will have
+# I<path_info> appended (see L<format_uri|"format_uri">).
+#
+#
+#
+#
+# HELP
+#
+# The task which L<format_help_uri|"format_help_uri"> uses to format uris.
+# This task must have a I<help> attribute which is where help is routed
+# to.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 my($_RN) = Bivio::Type->get_instance('RealmName');
@@ -164,36 +86,26 @@ my($_REALM_PLACEHOLDER_PAT) = $_REALM_PLACEHOLDER;
 $_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
 # Map of realm types to default realm placeholders
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::Task
-
-Returns a new Task instance.
-
-=cut
-
-sub new {
-    return shift->SUPER::new(@_);
+sub HELP_INDEX {
+    # Index for help tree.
+    return '/index.html';
 }
 
-=head1 METHODS
+sub UNDEF_CONFIG {
+    # Returns a hash with a special key.
+    return {
+	undef_config => 1,
+    };
+}
 
-=cut
-
-=for html <a name="assert_defined_for_facade"></a>
-
-=head2 assert_defined_for_facade(Bivio::Agent::TaskId task, Bivio::Collection::Attributes req_or_facade)
-
-Dies if task is not defined for this facade.
-
-=cut
+sub UNDEF_URI {
+    # URI to use when task is not found or error converting to URI.
+    return 'TASK-ERR';
+}
 
 sub assert_defined_for_facade {
     my($proto, $task, $req_or_facade) = @_;
+    # Dies if task is not defined for this facade.
     my($v) = $proto->internal_get_value(lc($task->get_name), $req_or_facade);
     Bivio::Die->throw_die('NOT_FOUND', {
 	entity => $task,
@@ -202,18 +114,11 @@ sub assert_defined_for_facade {
     return;
 }
 
-=for html <a name="format_css"></a>
-
-=head2 format_css(string task, Bivio::Agent::Request req) : string
-
-Formats the uri for this task.  no_context is asumed
-
-If I<task> is C<undef>, returns the root uri of the help tree.
-
-=cut
-
 sub format_css {
     my($proto, $task_name, $req) = @_;
+    # Formats the uri for this task.  no_context is asumed
+    #
+    # If I<task> is C<undef>, returns the root uri of the help tree.
     return $proto->format_uri({
 	task_id => $task_name,
 	realm => undef,
@@ -223,21 +128,12 @@ sub format_css {
     }, $req);
 }
 
-=for html <a name="format_help_uri"></a>
-
-=head2 format_help_uri(Bivio::Agent::TaskId task, Bivio::Agent::Request req) : string
-
-=head2 format_help_uri(string task, Bivio::Agent::Request req) : string
-
-Formats the help uri for this task.  If the task doesn't have a specific help,
-returns the root of the help tree.
-
-If I<task> is C<undef>, returns the root uri of the help tree.
-
-=cut
-
 sub format_help_uri {
     my($proto, $task, $req) = @_;
+    # Formats the help uri for this task.  If the task doesn't have a specific help,
+    # returns the root of the help tree.
+    #
+    # If I<task> is C<undef>, returns the root uri of the help tree.
     my($self) = $proto->internal_get_self($req);
     my($info) = $task
 	? $self->internal_get_value(ref($task) ? $task->get_name  : $task)
@@ -254,21 +150,12 @@ sub format_help_uri {
     );
 }
 
-=for html <a name="format_realmless_uri"></a>
-
-=head2 static format_realmless_uri(string task_id, string path_info, Bivio::Agent::Request req) : string
-
-=head2 static format_realmless_uri(Bivio::Agent::TaskId task_id, string path_info, Bivio::Agent::Request req) : string
-
-Formats a stateless, realmless URI.  It uses I<Text.my_club_site> or
-I<Text.my_site> for the realm in the URI if it isn't the general realm.
-
-B<This is an experimental method.>
-
-=cut
-
 sub format_realmless_uri {
     my($proto, $task_id, $path_info, $req) = @_;
+    # Formats a stateless, realmless URI.  It uses I<Text.my_club_site> or
+    # I<Text.my_site> for the realm in the URI if it isn't the general realm.
+    #
+    # B<This is an experimental method.>
     my($self) = $proto->internal_get_self($req);
     my($fields) = $self->[$_IDI];
     return $proto->format_uri(
@@ -284,44 +171,35 @@ sub format_realmless_uri {
     );
 }
 
-=for html <a name="format_uri"></a>
-
-=head2 static format_uri(hash_ref named, Bivio::Agent::Request req) : string
-
-Transforms I<task_id> and I<realm> (if needed) into a URI.
-I<realm> must be a legitimate realm name.
-
-I<named> is not modified.
-
-Accepts the following I<named> keys:
-
-=over 4
-
-=item task_id : Bivio::Agent::TaskId (required)
-
-=item realm :  any []
-
-May be a Bivio::Biz::Model or a string.
-
-=item path_info : string []
-
-=item no_context : boolean [0]
-
-Don't append context, even if I<task_id> requires it.
-
-=item require_context : boolean [0]
-
-Always append contxt, even if I<task_id> does not require it and/or
-I<no_context> is true.
-
-=back
-
-B<path_info is not escaped.>
-
-=cut
-
 sub format_uri {
     my($proto, $named, $req) = @_;
+    # Transforms I<task_id> and I<realm> (if needed) into a URI.
+    # I<realm> must be a legitimate realm name.
+    #
+    # I<named> is not modified.
+    #
+    # Accepts the following I<named> keys:
+    #
+    #
+    # task_id : Bivio::Agent::TaskId (required)
+    #
+    # realm :  any []
+    #
+    # May be a Bivio::Biz::Model or a string.
+    #
+    # path_info : string []
+    #
+    # no_context : boolean [0]
+    #
+    # Don't append context, even if I<task_id> requires it.
+    #
+    # require_context : boolean [0]
+    #
+    # Always append contxt, even if I<task_id> does not require it and/or
+    # I<no_context> is true.
+    #
+    #
+    # B<path_info is not escaped.>
     my($args);
     if (ref($named) eq 'HASH') {
 	$args = {%$named};
@@ -381,58 +259,26 @@ sub format_uri {
 	    $req->get_form_context_from_named($args), $req);
 }
 
-=for html <a name="handle_register"></a>
-
-=head2 static handle_register()
-
-Registers with Facade.
-
-=cut
-
 sub handle_register {
     my($proto) = @_;
+    # Registers with Facade.
     Bivio::UI::Facade->register($proto, ['Text']);
     return;
 }
 
-=for html <a name="has_help"></a>
-
-=head2 has_help(Bivio::Agent::TaskId task_id, Bivio::Collection::Attributes req_or_facade) : boolean
-
-=head2 has_help(string task_id, Bivio::Collection::Attributes req_or_facade) : boolean
-
-Does the task have a help topic?
-
-=cut
-
 sub has_help {
+    # Does the task have a help topic?
     return _has('help', @_);
 }
 
-=for html <a name="has_uri"></a>
-
-=head2 has_uri(Bivio::Agent::TaskId task_id, Bivio::Collection::Attributes req_or_facade) : boolean
-
-=head2 has_uri(string task_id, Bivio::Collection::Attributes req_or_facade) : boolean
-
-Does the task have a uri?
-
-=cut
-
 sub has_uri {
+    # Does the task have a uri?
     return _has('uri', @_);
 }
 
-=for html <a name="initialization_complete"></a>
-
-=head2 initialization_complete()
-
-Generates internal tables.
-
-=cut
-
 sub initialization_complete {
     my($self) = @_;
+    # Generates internal tables.
     my($fields) = _initialize_fields($self);
     delete($fields->{to_realm_type});
     _init_from_uri($self, $self->internal_get_all_groups);
@@ -452,19 +298,12 @@ sub initialization_complete {
     return shift->SUPER::initialization_complete(@_);
 }
 
-=for html <a name="internal_initialize_value"></a>
-
-=head2 internal_initialize_value(hash_ref value)
-
-Sets up the attributes for this value.  There can be no grouped values, so we
-check to make sure I<names> is a single value.  C<undef> causes
-L<UNDEF_URI|"UNDEF_URI"> to be mapped.  We set I<from_uri>
-and I<placeholder> here.
-
-=cut
-
 sub internal_initialize_value {
     my($self, $value) = @_;
+    # Sets up the attributes for this value.  There can be no grouped values, so we
+    # check to make sure I<names> is a single value.  C<undef> causes
+    # L<UNDEF_URI|"UNDEF_URI"> to be mapped.  We set I<from_uri>
+    # and I<placeholder> here.
     my($fields) = _initialize_fields($self);
     # Special case undefined value
     return _init_err($self, $value)
@@ -478,30 +317,21 @@ sub internal_initialize_value {
     return;
 }
 
-=for html <a name="is_defined_for_facade"></a>
-
-=head2 is_defined_for_facade(any task, Bivio::Collection::Attributes req_or_facade) : boolean
-
-Returns true if I<task> is defined in this facade and I<is_valid>.
-
-=cut
-
 sub is_defined_for_facade {
+    # Returns true if I<task> is defined in this facade and I<is_valid>.
     return _has('is_valid', @_);
 }
 
-=for html <a name="parse_uri"></a>
-
-=head2 static parse_uri(string uri, Bivio::Agent::Request req) : array
-
-Returns I<task_id>, I<auth_realm>, I<path_info>, and new I<uri> for I<uri>.
-
-Note that the I<path_info> is left on the URI.
-
-=cut
+sub new {
+    # Returns a new Task instance.
+    return shift->SUPER::new(@_);
+}
 
 sub parse_uri {
     my($proto, $uri, $req) = @_;
+    # Returns I<task_id>, I<auth_realm>, I<path_info>, and new I<uri> for I<uri>.
+    #
+    # Note that the I<path_info> is left on the URI.
     # We don't set the facade if the request already has one,
     # because parse_uri is currently called from more than one place
     # during the request.
@@ -636,23 +466,16 @@ sub parse_uri {
     # DOES NOT RETURN
 }
 
-=for html <a name="unsafe_get_from_uri"></a>
-
-=head2 static unsafe_get_from_uri(string uri, Bivio::Auth::RealmType realm_type, Bivio::Collection::Attributes req_or_facade) : Bivio::Agent::TaskId
-
-B<This is experimental.  Don't use widely just yet.>
-
-Returns the TaskId for task identified by I<uri> and I<realm_type>.  Returns
-C<undef> if no task is found.  Tasks with path_info should not include the
-trailing "/*".
-
-I<uri> will be implicitly prefixed by '?/' (realm placeholder) depending on
-realm_type.
-
-=cut
-
 sub unsafe_get_from_uri {
     my($proto, $uri, $realm_type, $req_or_facade) = @_;
+    # B<This is experimental.  Don't use widely just yet.>
+    #
+    # Returns the TaskId for task identified by I<uri> and I<realm_type>.  Returns
+    # C<undef> if no task is found.  Tasks with path_info should not include the
+    # trailing "/*".
+    #
+    # I<uri> will be implicitly prefixed by '?/' (realm placeholder) depending on
+    # realm_type.
     my($self) = $proto->internal_get_self($req_or_facade);
     my($from_uri) = $self->[$_IDI]->{from_uri};
     $uri = "$_REALM_PLACEHOLDER/$uri"
@@ -665,14 +488,9 @@ sub unsafe_get_from_uri {
     return $info ? _task($self, $info) : undef;
 }
 
-#=PRIVATE METHODS
-
-# _clean_uri(string_ref uri)
-#
-# Removes dup and leading slashes
-#
 sub _clean_uri {
     my($uri) = @_;
+    # Removes dup and leading slashes
     # Delete dup slashes and leading / (except '/' uri)
     $$uri =~ s/\/{2,}/\//g;
     $$uri =~ s/^\/(.)/$1/g;
@@ -680,20 +498,14 @@ sub _clean_uri {
     return;
 }
 
-# _get_error(self, array args) : string
-#
-# Returns a uri
-#
 sub _get_error {
+    # Returns a uri
     return shift->get_error(@_)->{uri};
 }
 
-# _has(string which, proto, any value, any req_or_facade) : boolean
-#
-# Tests whether $which exists for $task_id
-#
 sub _has {
     my($which, $proto, $task_id, $req_or_facade) = @_;
+    # Tests whether $which exists for $task_id
     return defined(
 	($proto->internal_get_self($req_or_facade)
 	    ->internal_unsafe_lc_get_value(
@@ -702,15 +514,12 @@ sub _has {
     ) ? 1 : 0;
 }
 
-# _init_config(hash_ref fields, hash_ref value) : string
-#
-# Canonicalizes $value->{config} so that $value contains "uri" (array_ref)
-# and maybe "help".
-#
-# Returns error message or success (undef).
-#
 sub _init_config {
     my($fields, $value) = @_;
+    # Canonicalizes $value->{config} so that $value contains "uri" (array_ref)
+    # and maybe "help".
+    #
+    # Returns error message or success (undef).
     my($c) = $value->{config};
     if (ref($c) eq 'HASH') {
 	# path_info must begin with '/'
@@ -735,13 +544,10 @@ sub _init_config {
     return;
 }
 
-# _init_err(self, hash_ref value, string msg, ...)
-#
-# Initializes $value as undef config and calls initialization_error,
-# unless @msg is empty.
-#
 sub _init_err {
     my($self, $value, @msg) = @_;
+    # Initializes $value as undef config and calls initialization_error,
+    # unless @msg is empty.
     my($fields) = $self->[$_IDI];
     # Print message before changing $value
     $self->initialization_error($value, @msg) if @msg;
@@ -755,12 +561,9 @@ sub _init_err {
     return;
 }
 
-# _init_from_uri(self, array_ref groups)
-#
-# Creates the from_uri map.
-#
 sub _init_from_uri {
     my($self, $groups) = @_;
+    # Creates the from_uri map.
     my($fields) = $self->[$_IDI];
     my(%from_uri);
 #TODO: Remove
@@ -816,14 +619,11 @@ sub _init_from_uri {
     return;
 }
 
-# _init_name(hash_ref fields, hash_ref value) : string
-#
-# Ensures $value->{names} is correct.  Sets realm_type.
-#
-# Returns error message or success (undef).
-#
 sub _init_name {
     my($fields, $value) = @_;
+    # Ensures $value->{names} is correct.  Sets realm_type.
+    #
+    # Returns error message or success (undef).
 
     return 'must be exactly one name' unless int(@{$value->{names}}) == 1;
 
@@ -838,15 +638,12 @@ sub _init_name {
     return;
 }
 
-# _init_uri(hash_ref fields, hash_ref value) : string
-#
-# Parses value->{uri} and sets uri, path_info, and possibly aliases.
-# Updates fields->{from_uri} and fields->{path_info_uri}
-#
-# Returns error message or success (undef).
-#
 sub _init_uri {
     my($field, $value) = @_;
+    # Parses value->{uri} and sets uri, path_info, and possibly aliases.
+    # Updates fields->{from_uri} and fields->{path_info_uri}
+    #
+    # Returns error message or success (undef).
     unless ($value->{aliases}) {
 	$value->{has_path_info} = 0;
 	return;
@@ -900,12 +697,9 @@ sub _init_uri {
     return;
 }
 
-# _initialize_fields(self) : hash_ref
-#
-# Initializes $self->[$_IDI] during new. 
-#
 sub _initialize_fields {
     my($self) = @_;
+    # Initializes $self->[$_IDI] during new. 
     return $self->[$_IDI] if $self->[$_IDI];
     return $self->[$_IDI] = {
 	# Used only at initialization
@@ -915,26 +709,12 @@ sub _initialize_fields {
     };
 }
 
-
-# _task(self, hash_ref info) : Bivio::Agent::TaskId
-#
-# Returns task or site_root
-#
 sub _task {
     my($self, $info, $orig_uri) = @_;
+    # Returns task or site_root
     _trace($orig_uri, ' => ', $info->{task})
 	if $orig_uri && $_TRACE;
     return $info->{task} || $self->[$_IDI]->{site_root};
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
