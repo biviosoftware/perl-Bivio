@@ -46,12 +46,16 @@ Request('initialize_fully');
 	    # foo/bar    fixed URIs
 	    'pub/products' => [qw(PRODUCTS GENERAL), '', 'pub/products'],
 	    'pub///products' => [qw(PRODUCTS GENERAL), '', 'pub///products'],
+	    'pub/products/with_path_info' => Bivio::DieCode->NOT_FOUND,
 
 	    # foo/*    URIs with path_info
 	    'my-site/account' => [qw(MY_SITE GENERAL /account my-site/account)],
 
 	    # ?/foo    realm URIs
-	    '/demo/account' => [qw(USER_ACCOUNT_EDIT USER), '', '/demo/account'],
+	    '/demo/account' => [qw(USER_ACCOUNT_EDIT USER),
+				'', '/demo/account'],
+	    '/non_existant/account' => Bivio::DieCode->NOT_FOUND,
+
 	    # ?/foo/*   realm URIs with path_info
 	    '/demo/dav/pub/foo.csv' => [qw(USER_DAV USER
 					   /pub/foo.csv /demo/dav/pub/foo.csv)],
