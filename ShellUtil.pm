@@ -715,7 +715,8 @@ sub new_other {
 	}
     }
     my($other) = $c->new($options);
-    $other->put_request($self->get_request);
+    $other->put_request($self->get_request)
+	if $self->unsafe_get('req');
     $other->put(program => $self->unsafe_get('program'))
 	if ref($self) && $self->has_keys('program');
     return $other;
