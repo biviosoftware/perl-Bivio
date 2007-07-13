@@ -27,16 +27,37 @@ Request('initialize_fully');
 	    },
 	    compute_return => sub {
 		my($case, $actual, $expect) = @_;
-		push(@$actual,
-		     shift(@$actual)->get_name,
-		     shift(@$actual)->get_default_name);
-		return $expect;
+		return [
+		    $actual->[0]->get_name,
+		    $actual->[1]->get('type')->get_name,
+		    $actual->[2],
+		    $actual->[3],
+		];
 	    },
 	} => [
-	    '/' => [qw(SITE_ROOT GENERAL), '', '/'],
+	    # /    special case
 	    '' => [qw(SITE_ROOT GENERAL), '', '/'],
+	    '/' => [qw(SITE_ROOT GENERAL), '', '/'],
+	    'index.html' => [qw(SITE_ROOT GENERAL /index.html index.html)],
+
+	    # refuse URIs that would complicate the parser
 	    'foo/?/baz' => Bivio::DieCode->NOT_FOUND,
-	    'foo//?/baz' => Bivio::DieCode->NOT_FOUND,
+
+	    # foo/bar    fixed URIs
+	    'pub/products' => [qw(PRODUCTS GENERAL), '', 'pub/products'],
+	    'pub///products' => [qw(PRODUCTS GENERAL), '', 'pub///products'],
+
+	    # foo/*    URIs with path_info
+	    'my-site/account' => [qw(MY_SITE GENERAL /account my-site/account)],
+
+	    # ?/foo    realm URIs
+	    '/demo/account' => [qw(USER_ACCOUNT_EDIT USER), '', '/demo/account'],
+	    # ?/foo/*   realm URIs with path_info
+	    '/demo/dav/pub/foo.csv' => [qw(USER_DAV USER
+					   /pub/foo.csv /demo/dav/pub/foo.csv)],
+
+	    # ?/foo/bar/*    should fail fast when Facace initializes
+	    #                not tested here, but documented here
 	],
      ],
 ];
