@@ -16,7 +16,7 @@ sub MAIL_RECEIVE_PREFIX {
 
 sub new {
     my($proto, $config) = @_;
-    return $proto->SUPER::new(
+    return $config->{clone} ? $proto->SUPER::new($config) : $proto->SUPER::new(
 	_merge(
 	    map({
 		my($x) = \&{"_cfg_$_"};
@@ -745,7 +745,7 @@ sub _merge {
     foreach my $cfg (@_) {
 	foreach my $k (keys(%$cfg)) {
 	    if (ref($child->{$k}) eq 'ARRAY') {
-		unshift(@{$child->{$k}}, @{$cfg->{$k}});
+		unshift(@{$child->{$k} ||= []}, @{$cfg->{$k}});
 	    }
 	    elsif (!defined($child->{$k})) {
 		$child->{$k} = $cfg->{$k};
