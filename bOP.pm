@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.14  2007/07/10 03:01:30  nagler
+  * Bivio::UI::Widget::MIMEEntityView added
+  * Bivio::UI::Widget::MIMEEntity will not attach empty children
+  * Bivio::UI::HTML::Widget::RealmFilePage sets output type based on
+    RealmFile suffix.  <head> only fixed up if internal_render_head_attrs
+    is non-empty.
+
   Revision 5.13  2007/07/09 04:11:39  nagler
   * Bivio::Agent::Request->with_realm_and_user deleted
 
