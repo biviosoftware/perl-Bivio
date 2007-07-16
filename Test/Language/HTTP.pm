@@ -608,7 +608,7 @@ sub verify_local_mail {
 	last unless @$found == $count && @$email == keys(%$match);
 	foreach my $f (@$found) {
 	    unlink($f->[0]);
-	    _log($self, 'msg', $f->[1])
+	    _log($self, 'eml', $f->[1])
 		if ref($self);
 	}
 	return @$found ? wantarray ? map(${$_->[1]}, @$found) : ${$found->[0]->[1]}
