@@ -130,7 +130,9 @@ sub execute {
             });
         my($die_error) = $@;
 
-	$self->increment_db_time($start_time);
+	my($delta) = $self->increment_db_time($start_time);
+	Bivio::IO::Alert->warn($delta, 's: query took a long time: ', $sql, $params)
+	    if $delta > 30;
 	return $statement if $ok;
 
 	# Extract the errors
@@ -240,29 +242,25 @@ sub get_instance {
 }
 
 sub handle_commit {
-    # Callback for transaction resources.
     shift->commit(@_);
     return;
 }
 
 sub handle_rollback {
-    # Callback for transaction resources.
     shift->rollback(@_);
     return;
 }
 
 sub increment_db_time {
     my($self) = shift;
-    # If tracing is enabled, this increments the database time counter and
-    # returns its new value.
     return _get_instance($self)->increment_db_time(@_)
 	unless ref($self);
     my($start_time) = @_;
     my($fields) = $self->[$_IDI];
     die('invalid start_time') unless $start_time;
-    $fields->{db_time} += Bivio::Type::DateTime->gettimeofday_diff_seconds(
-	    $start_time);
-    return $fields->{db_time};
+    my($res) = Bivio::Type::DateTime->gettimeofday_diff_seconds($start_time);
+    $fields->{db_time} += $res;
+    return $res;
 }
 
 sub internal_clear_ping {
