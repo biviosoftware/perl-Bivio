@@ -366,6 +366,9 @@ sub parse_uri {
     my($info);
     $req->put_durable(initial_uri => '/'.$uri);
 
+    return ($fields->{site_root}, $_GENERAL, $uri, $uri)
+	if _check_site_root_realm($req, $uri);
+
     # General realm simple map; no placeholders or path_info.
     if (defined($info = $fields->{from_uri}->{$uri}->[$_GENERAL_INT])) {
 	return (_task($self, $info, $orig_uri), $_GENERAL, '', $orig_uri);
@@ -486,6 +489,24 @@ sub unsafe_get_from_uri {
     $info = $info->[$realm_type->as_int];
 #TODO: Is this really the same as what parse_uri() does?
     return $info ? _task($self, $info) : undef;
+}
+
+sub _check_site_root_realm {
+    my($req, $uri) = @_;
+    my($site_root_realm) = Bivio::UI::Text->get_from_source($req)
+	->unsafe_get_value('site_root_realm');
+    return
+	unless defined($site_root_realm);
+    my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner')
+	->unauth_load_or_die({name => $site_root_realm});
+    my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
+    return $f->unauth_load({
+	realm_id => $ro->get('realm_id'),
+	is_folder => 0,
+	is_public => 1,
+	path_lc => lc($f->parse_path(
+	    Bivio::Type->get_instance('FilePath')->to_public($uri))),
+    });
 }
 
 sub _clean_uri {
