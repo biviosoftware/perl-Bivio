@@ -1,23 +1,18 @@
 # Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-req()->set_realm_and_user(undef, 'demo');
-model(ForumForm => {
-    'RealmOwner.display_name' => 'site',
-    'RealmOwner.name' => 'site',
-});
-my($example_file) = 'images/example.png';
-model('RealmFile')->create_with_content({
-    path => '/Public/'.$example_file,
-}, \('this space intentionally left blank'));
 [
     class() => [
 	{
 	    method => 'format_uri',
 	    compute_params => sub {
 		my(undef, $params) = @_;
-		my($task_id, $args) = @$params;
-		$args->{task_id} = Bivio::Agent::TaskId->$task_id();
+		my($args) = shift(@$params);
+		unless (ref($args)) {
+		    my($t) = $args;
+		    $args = shift(@$params);
+		    $args->{task_id} = Bivio::Agent::TaskId->from_name($t);
+		}
 		return [$args, req()];
 	    },
         } => [
@@ -26,6 +21,14 @@ model('RealmFile')->create_with_content({
 	    [LOGIN => {no_context => 0}] => qr{^/pub/login\?fc=.+},
 	    [LOGIN => {no_context => 1}] => '/pub/login',
 	    [SITE_ROOT => {require_context => 1}] => qr{^/\?fc=.+},
+	    [FORUM_EASY_FORM => {realm => 'abc', query => '', path_info => ''}]
+		=> '/abc/EasyForm',
+	    [FORUM_EASY_FORM => {realm => 'abc', query => '', path_info => '0'}]
+		=> '/abc/EasyForm/0',
+	    [{uri => '0'}] => '0',
+	    [{uri => ''}] => '',
+	    [{uri => '#'}] => '#',
+	    [{uri => 'http://a/'}] => 'http://a/',
 	],
 	{
 	    method => 'parse_uri',
@@ -45,38 +48,19 @@ model('RealmFile')->create_with_content({
 		];
 	    },
 	} => [
-	    # /    special case
 	    '' => [qw(SITE_ROOT GENERAL), '', '/'],
 	    '/' => [qw(SITE_ROOT GENERAL), '', '/'],
 	    'index.html' => [qw(SITE_ROOT GENERAL /index.html index.html)],
-
-	    # refuse URIs that would complicate the parser
 	    'foo/?/baz' => Bivio::DieCode->NOT_FOUND,
-
-	    # foo/bar    fixed URIs
 	    'pub/products' => [qw(PRODUCTS GENERAL), '', 'pub/products'],
 	    'pub///products' => [qw(PRODUCTS GENERAL), '', 'pub///products'],
 	    'pub/products/with_path_info' => Bivio::DieCode->NOT_FOUND,
-
-	    # foo/*    URIs with path_info
 	    'my-site/account' => [qw(MY_SITE GENERAL /account my-site/account)],
-
-	    # ?/foo    realm URIs
 	    '/demo/account' => [qw(USER_ACCOUNT_EDIT USER),
 				'', '/demo/account'],
 	    '/non_existant/account' => Bivio::DieCode->NOT_FOUND,
-
-	    # ?/foo/*   realm URIs with path_info
 	    '/demo/dav/pub/foo.csv' => [qw(USER_DAV USER
 					   /pub/foo.csv /demo/dav/pub/foo.csv)],
-
-	    # ?/foo/bar/*    should fail fast when Facace initializes
-	    #                not tested here, but documented here
-
-	    # subfolder in site_root_realm
-	    [test => $example_file] =>
-		[qw(SITE_ROOT GENERAL), $example_file, $example_file],
-	    [test => '/images/missing.gif'] => Bivio::DieCode->NOT_FOUND,
 	],
-     ],
+    ],
 ];
