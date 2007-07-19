@@ -397,7 +397,9 @@ sub render_html {
 
 sub _abs_href {
     my($uri, $state) = @_;
-    return $uri =~ m{[/:]} ? $uri : $state->{req}->format_uri({
+    return $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
+	uri => $uri,
+    }) : $state->{req}->format_uri({
 	task_id => $state->{task_id},
 	query => undef,
 	path_info => $uri,
@@ -465,9 +467,12 @@ sub _fmt_href {
 	  . qq{" />}
 	: ( '<a href="'
 	    . Bivio::HTML->escape_attr_value(
-		$m =~ qr{^$_EMAIL$}o ? "mailto:$m"
-		: $m =~ qr{^$_DOMAIN$}o ? "http://$m"
-		: _abs_href($m, $state)
+		_abs_href(
+		    $m =~ qr{^$_EMAIL$}o ? "mailto:$m"
+		    : $m =~ qr{^$_DOMAIN$}o ? "http://$m"
+		    : $m,
+		    $state,
+	        )
 	    ) . '">'
 	    . Bivio::HTML->escape($m)
 	    . '</a>'
