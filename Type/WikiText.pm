@@ -592,7 +592,12 @@ sub _ins_page {
 	}sex;
 	$res = Bivio::IO::ClassLoader->simple_require(
 	    'Bivio::Agent::Embed::Dispatcher'
-	)->call_task($state->{req}, $uri);
+	)->call_task($state->{req}, $state->{req}->format_uri({
+	    uri => $uri,
+	    no_context => 1,
+	    query => undef,
+	    path_info => undef,
+	}));
 	return;
     });
     return _fmt_err($line, $die->as_string, $state)
