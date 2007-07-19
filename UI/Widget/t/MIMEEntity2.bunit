@@ -2,5 +2,5 @@
 # $Id$
 Widget();
 [
-    [[vs_new(MIMEEntityView => 'Example->eg1')]] => qr{hello.*world}i,
+    [[vs_new(MIMEEntityView => 'Example->eg1')]] => qr{hello.*world.*"#top">back to top</a>}is,
 ];
