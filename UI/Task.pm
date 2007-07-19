@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Task;
 use strict;
@@ -105,7 +105,6 @@ sub UNDEF_URI {
 
 sub assert_defined_for_facade {
     my($proto, $task, $req_or_facade) = @_;
-    # Dies if task is not defined for this facade.
     my($v) = $proto->internal_get_value(lc($task->get_name), $req_or_facade);
     Bivio::Die->throw_die('NOT_FOUND', {
 	entity => $task,
@@ -116,9 +115,6 @@ sub assert_defined_for_facade {
 
 sub format_css {
     my($proto, $task_name, $req) = @_;
-    # Formats the uri for this task.  no_context is asumed
-    #
-    # If I<task> is C<undef>, returns the root uri of the help tree.
     return $proto->format_uri({
 	task_id => $task_name,
 	realm => undef,
@@ -129,12 +125,9 @@ sub format_css {
 }
 
 sub format_help_uri {
-    my($proto, $task, $req) = @_;
-    # Formats the help uri for this task.  If the task doesn't have a specific help,
-    # returns the root of the help tree.
-    #
-    # If I<task> is C<undef>, returns the root uri of the help tree.
-    my($self) = $proto->internal_get_self($req);
+    my($self, $task, $req) = @_;
+    return shift->internal_get_self($req)->format_help_uri(@_)
+	unless ref($self);
     my($info) = $task
 	? $self->internal_get_value(ref($task) ? $task->get_name  : $task)
 	: undef;
@@ -151,14 +144,11 @@ sub format_help_uri {
 }
 
 sub format_realmless_uri {
-    my($proto, $task_id, $path_info, $req) = @_;
-    # Formats a stateless, realmless URI.  It uses I<Text.my_club_site> or
-    # I<Text.my_site> for the realm in the URI if it isn't the general realm.
-    #
-    # B<This is an experimental method.>
-    my($self) = $proto->internal_get_self($req);
+    my($self, $task_id, $path_info, $req) = @_;
+    return shift->internal_get_self($req)->format_realmless_uri(@_)
+	unless ref($self);
     my($fields) = $self->[$_IDI];
-    return $proto->format_uri(
+    return $self->format_uri(
 	{
 	    task_id => Bivio::Agent::TaskId->from_any($task_id),
 	    realm => $fields->{realmless_uri}->{
@@ -172,107 +162,73 @@ sub format_realmless_uri {
 }
 
 sub format_uri {
-    my($proto, $named, $req) = @_;
-    # Transforms I<task_id> and I<realm> (if needed) into a URI.
-    # I<realm> must be a legitimate realm name.
-    #
-    # I<named> is not modified.
-    #
-    # Accepts the following I<named> keys:
-    #
-    #
-    # task_id : Bivio::Agent::TaskId (required)
-    #
-    # realm :  any []
-    #
-    # May be a Bivio::Biz::Model or a string.
-    #
-    # path_info : string []
-    #
-    # no_context : boolean [0]
-    #
-    # Don't append context, even if I<task_id> requires it.
-    #
-    # require_context : boolean [0]
-    #
-    # Always append contxt, even if I<task_id> does not require it and/or
-    # I<no_context> is true.
-    #
-    #
-    # B<path_info is not escaped.>
-    my($args);
-    if (ref($named) eq 'HASH') {
-	$args = {%$named};
-    }
-    else {
-	Bivio::IO::Alert->warn_deprecated('named parameters only');
-	shift;
-	$args = {
-	    task_id => shift,
-	    realm => shift,
-	    path_info => shift,
-	    no_context => shift,
-	};
-	$req = shift;
-    }
-    my($self) = $proto->internal_get_self($req);
-    my($task_name) = $args->{task_id}->get_name;
+    my($self, $named, $req) = @_;
+    return shift->internal_get_self($req)->format_uri(@_)
+	unless ref($self);
+    Bivio::Die->die('named parameters only')
+	unless ref($named) eq 'HASH';
+    return $named->{uri}
+	if defined($named->{uri});
+    my($task_name) = $named->{task_id}->get_name;
     my($info) = $self->internal_get_value($task_name);
     return _get_error($self, $task_name)
 	unless defined($info->{uri});
     my($uri) = $info->{uri};
     if ($uri =~ /$_REALM_PLACEHOLDER_PAT/o) {
-	$args->{realm} = $self->[$_IDI]->{realmless_uri}->{$info->{realm_type}}
+	$named->{realm} = $self->[$_IDI]->{realmless_uri}->{$info->{realm_type}}
 	    || return _get_error($self, $task_name,
 		'uri requires a realm but not defined nor is there a'
 		. ' realmless_uri configured for ', $info->{realm_type})
-	    unless defined($args->{realm});
+	    unless defined($named->{realm});
 	my($ro);
-	if (ref($args->{realm})) {
+	if (ref($named->{realm})) {
 	    # If the realm doesn't have an owner, there's a bug somewhere
-	    $ro = $args->{realm}->get('owner_name');
+	    $ro = $named->{realm}->get('owner_name');
 	}
 	else {
 	    return _get_error(
 		$self,
 		$task_name,
-		$args->{realm},
+		$named->{realm},
 		' not a simple realm name or placeholder'
-	    ) unless $ro = $_RN->unsafe_from_uri($args->{realm});
+	    ) unless $ro = $_RN->unsafe_from_uri($named->{realm});
 	}
 	$uri =~ s/.*?$_REALM_PLACEHOLDER_PAT/\/$ro/og;
     }
     $uri = '/' . $uri
 	unless $uri =~ /^\//;
-    if ($info->{has_path_info}) {
-	if ($args->{path_info}) {
-	    $uri =~ s/\/$//;
-	    $uri .= Bivio::HTML->escape_uri(
-		($args->{path_info} =~ /^\// ? '' : '/') . $args->{path_info},
-	    );
-	}
+    if ($info->{has_path_info} && defined($named->{path_info})) {
+	$uri =~ s{/$}{};
+	$uri .= Bivio::HTML->escape_uri(
+	    ($named->{path_info} =~ m{^/} ? '' : '/') . $named->{path_info},
+	);
+	$uri =~ s{(.)/$}{$1};
     }
-    $args->{no_form} = 1;
     $uri =~ s{//+}{/}g;
-    return $uri
-	. Bivio::Biz::FormModel->format_context_as_query(
-	    $req->get_form_context_from_named($args), $req);
+    $named->{no_form} = 1;
+    return $uri . Bivio::Biz::FormModel->format_context_as_query(
+	$req->get_form_context_from_named($named),
+	$req,
+    );
 }
 
 sub handle_register {
     my($proto) = @_;
-    # Registers with Facade.
     Bivio::UI::Facade->register($proto, ['Text']);
     return;
 }
 
 sub has_help {
-    # Does the task have a help topic?
+    my($self, undef, $req) = @_;
+    return shift->internal_get_self($req)->has_help(@_)
+	unless ref($self);
     return _has('help', @_);
 }
 
 sub has_uri {
-    # Does the task have a uri?
+    my($self, undef, $req) = @_;
+    return shift->internal_get_self($req)->has_uri(@_)
+	unless ref($self);
     return _has('uri', @_);
 }
 
@@ -318,7 +274,9 @@ sub internal_initialize_value {
 }
 
 sub is_defined_for_facade {
-    # Returns true if I<task> is defined in this facade and I<is_valid>.
+    my($self, undef, $req) = @_;
+    return shift->internal_get_self($req)->is_defined_for_facade(@_)
+	unless ref($self);
     return _has('is_valid', @_);
 }
 
@@ -328,24 +286,15 @@ sub new {
 }
 
 sub parse_uri {
-    my($proto, $uri, $req) = @_;
-    # Returns I<task_id>, I<auth_realm>, I<path_info>, and new I<uri> for I<uri>.
-    #
-    # Note that the I<path_info> is left on the URI.
-    # We don't set the facade if the request already has one,
-    # because parse_uri is currently called from more than one place
-    # during the request.
-    my($facade) = $req->unsafe_get('Bivio::UI::Facade')
-	|| Bivio::UI::Facade->setup_request(
-	    $uri =~ s/^\/*\*([\w\.]+)// ? $1
-	        : ($req->unsafe_get('r') && $req->get('r')->hostname || undef),
-	    $req);
-    my($self) = $facade->get('Task');
+    my($self, $uri, $req) = @_;
+    return ($req->unsafe_get('Bivio::UI::Facade')
+	 || Bivio::UI::Facade->setup_request(
+	 $req->unsafe_get('r') && $req->get('r')->hostname || undef, $req)
+    )->get('Task')->parse_uri($uri, $req)
+        unless ref($self);
     my($fields) = $self->[$_IDI];
-
     my($orig_uri) = $uri;
     $uri =~ s!^/+!!;
-
     # Special case: '/' or ''
     unless (length($uri)) {
 	_trace($orig_uri,  '=> special case root') if $_TRACE;
@@ -365,9 +314,6 @@ sub parse_uri {
     $uri = join('/', @uri);
     my($info);
     $req->put_durable(initial_uri => '/'.$uri);
-
-    return ($fields->{site_root}, $_GENERAL, $uri, $uri)
-	if _check_site_root_realm($req, $uri);
 
     # General realm simple map; no placeholders or path_info.
     if (defined($info = $fields->{from_uri}->{$uri}->[$_GENERAL_INT])) {
@@ -489,24 +435,6 @@ sub unsafe_get_from_uri {
     $info = $info->[$realm_type->as_int];
 #TODO: Is this really the same as what parse_uri() does?
     return $info ? _task($self, $info) : undef;
-}
-
-sub _check_site_root_realm {
-    my($req, $uri) = @_;
-    my($site_root_realm) = Bivio::UI::Text->get_from_source($req)
-	->unsafe_get_value('site_root_realm');
-    return
-	unless defined($site_root_realm);
-    my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner')
-	->unauth_load_or_die({name => $site_root_realm});
-    my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
-    return $f->unauth_load({
-	realm_id => $ro->get('realm_id'),
-	is_folder => 0,
-	is_public => 1,
-	path_lc => lc($f->parse_path(
-	    Bivio::Type->get_instance('FilePath')->to_public($uri))),
-    });
 }
 
 sub _clean_uri {
