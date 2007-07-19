@@ -2,13 +2,11 @@
 # $Id$
 Type();
 [
-    class() => [
-        from_literal => [
-	    '' => 0,
-	    ' ' => 0,
-	    [undef] => 0,
-	    1 => 1,
-	    2 => NUMBER_RANGE(),
-	],
+    from_literal => [
+	'' => 0,
+	' ' => 0,
+	[undef] => 0,
+	1 => 1,
+	2 => NUMBER_RANGE(),
     ],
-]
+];
