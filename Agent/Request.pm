@@ -430,7 +430,16 @@ sub format_uri {
     my($uri);
     Bivio::Die->die($named, ': must supply query with form_in_query')
         if $named->{form_in_query} && !$named->{query};
-    unless (defined($uri = $named->{uri})) {
+    if (defined($uri = $named->{uri})) {
+	Bivio::Die->die($named, ': require secure not supported')
+	    if defined($named->{require_secure});
+	$named->{no_context} = 1
+	    unless defined($named->{no_context})
+	    || defined($named->{require_context});
+	$named->{uri} = $uri;
+	$uri = Bivio::UI::Task->format_uri($named, $self);
+    }
+    else {
 	foreach my $x (qw(task_id path_info query)) {
 	    $named->{$x} = $self->unsafe_get($x)
 		unless exists($named->{$x});
