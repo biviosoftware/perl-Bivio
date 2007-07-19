@@ -6,6 +6,8 @@ use base 'Bivio::Biz::FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_D) = Bivio::Type->get_instance('Date');
+my($_T) = Bivio::Type->get_instance('Time');
 
 sub execute_empty {
     my($self) = @_;
@@ -17,14 +19,10 @@ sub execute_empty {
 	    ->date_time_from_utc($self->get('CalendarEvent.dtstart'));
 	my($end) = $self->get('CalendarEvent.time_zone')
 	    ->date_time_from_utc($self->get('CalendarEvent.dtend'));
-	$self->internal_put_field(
-	    'start_date' => Bivio::Type::Date->from_datetime($start));
-	$self->internal_put_field(
-	    'start_time' => Bivio::Type::Time->from_datetime($start));
-	$self->internal_put_field(
-	    'end_date' => Bivio::Type::Date->from_datetime($end));
-	$self->internal_put_field(
-	    'end_time' => Bivio::Type::Time->from_datetime($end));
+	$self->internal_put_field('start_date' => $_D->from_datetime($start));
+	$self->internal_put_field('start_time' => $_T->from_datetime($start));
+	$self->internal_put_field('end_date' => $_D->from_datetime($end));
+	$self->internal_put_field('end_time' => $_T->from_datetime($end));
     }
     return;
 }
