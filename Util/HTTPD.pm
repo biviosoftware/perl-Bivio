@@ -180,25 +180,6 @@ sub main {
     my($hostip) = sprintf("%d.%d.%d.%d",
             unpack('C4', (gethostbyname($hostname))[4]));
 
-    my($facades) = '';
-    # TIGHT COUPLING with Bivio::UI::Facade
-    foreach my $facade (@{_get_facade_uri_list()}) {
-        my($server) = $facade =~ /\./ ? $facade : $facade . '.' . $hostname;
-	$facades .= <<"EOF";
-	    <VirtualHost *:$port>
-		ServerName $server
-		RewriteEngine On
-		RewriteLog rewrite.log
-		RewriteLogLevel 0
-
-		RewriteRule ^(.*) /*$facade\$1 [NS,PT]
-
-		SetHandler perl-script
-		PerlHandler $handler
-	    </VirtualHost>
-EOF
-    }
-
     my($modules) = _dynamic_modules($_HTTPD);
 
     local($_);
@@ -276,33 +257,6 @@ sub _find_file {
     }
     die('Could not find any of: ', \@path);
     # DOES NOT RETURN
-}
-
-# _get_facade_uri_list()
-#
-# Returns list of facade uris by reaching inside the Facades.
-#
-sub _get_facade_uri_list {
-    my(@files, @uri);
-
-    # The filter is used as a hack to load, just get the names of the uris,
-    # but return false so nothing loads.
-    Bivio::IO::ClassLoader->map_require_all('Facade', sub {
-	my($class, $file) = @_;
-	push(@files, $file);
-	return 0;
-    });
-
-    foreach my $file (@files) {
-	open(IN, $file) || next;
-	# Find the uri if set, otherwise the package base name in lower case.
-	my($uri) = $file;
-	$uri =~ s/.*\/(\w+)\.pm$/\L$1/;
-	my($uri2) = grep(s/^\s*uri\s*=>\s*['"]([^'"]+).*\n/\L$1/, <IN>);
-	push(@uri, $uri2 || $uri);
-    }
-    close(IN);
-    return \@uri;
 }
 
 sub _project_root {
@@ -408,7 +362,13 @@ NameVirtualHost *:<$port>
     PerlHandler <$handler>
 </VirtualHost>
 
-<$facades>
+<VirtualHost *:<$port>>
+    RewriteEngine On
+    RewriteLog rewrite.log
+    RewriteLogLevel 0
+    SetHandler perl-script
+    PerlHandler Bivio::Agent::HTTP::Dispatcher
+</VirtualHost>
 
 BrowserMatch "Mozilla/2" nokeepalive
 BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
