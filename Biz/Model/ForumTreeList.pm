@@ -19,6 +19,12 @@ sub internal_default_expand {
     )];
 }
 
+sub internal_extend_where {
+    my($self, $stmt) = @_;
+    $stmt->where($stmt->EQ('RealmUser.role', [Bivio::Auth::Role->MEMBER]));
+    return;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -77,7 +83,7 @@ sub internal_parent_id {
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $self->[$_IDI] = undef;
-    $stmt->where($stmt->EQ('RealmUser.role', [Bivio::Auth::Role->MEMBER]));
+    $self->internal_extend_where($stmt);
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
