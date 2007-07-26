@@ -2,10 +2,14 @@
 # $Id$
 Request();
 req()->set_realm('demo');
+my($id) = req('auth_id');
 [
     sub {model('RealmOwner')} => [
         map_iterate => [
 	    [] => expect_contains([{name => 'demo'}]),
+	    ['name'] => [['demo']],
+	    [sub {shift->get('realm_id')}] => [[$id]],
+	    [sub {shift->get('realm_id')}, 'realm_type'] => [[$id]],
 	],
     ],
 ];

@@ -392,11 +392,11 @@ sub map_iterate {
 	&& $self->can($_[0]) ? shift : 'iterate_start';
     my($res) = [];
     $self->$iterate_start(@_);
-    $map_iterate_handler ||= sub {
-	return shift->get_shallow_copy;
-    };
+    my($op) = ref($map_iterate_handler) ? $map_iterate_handler
+	: defined($map_iterate_handler) ? sub {shift->get($map_iterate_handler)}
+	: sub {shift->get_shallow_copy};
     while ($self->iterate_next_and_load) {
-	push(@$res, $map_iterate_handler->($self));
+	push(@$res, $op->($self));
     }
     $self->iterate_end;
     return $res;
