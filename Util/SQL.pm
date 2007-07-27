@@ -1271,7 +1271,8 @@ sub postgres_db_and_user {
     my($self) = @_;
     my($db, $dbuser, $dbpass) =
  	@{Bivio::SQL::Connection->get_dbi_config}{qw(database user password)};
-    unless (${$self->piped_exec("psql --username postgres -c '\\du $dbuser'")}
+    unless (${$self->piped_exec(
+	"psql --username postgres -c '\\du $dbuser' template1")}
 		=~ /$dbuser/) {
 	my($no_adduser) = (
 	    ${$self->piped_exec("psql --version")} =~ /PostgreSQL\W+7/
