@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.15  2007/07/14 17:53:25  nagler
+  * Bivio::Collection::Attributes->get_if_defined_else_put/put_unless_defined added
+  * Bivio::UI::FacadeBase->new checks if clone is true, iwc it does not
+    merge default config.  Cloned facades already have default config.
+  * Bivio::Biz::Model::RealmUserAddForm->internal_user/realm_id factored
+    out of execute_ok
+  * Bivio::ShellUtil->new_other can be called from a static ShellUtil
+
   Revision 5.14  2007/07/10 03:01:30  nagler
   * Bivio::UI::Widget::MIMEEntityView added
   * Bivio::UI::Widget::MIMEEntity will not attach empty children
