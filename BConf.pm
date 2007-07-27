@@ -216,7 +216,6 @@ sub merge_realm_role_category_map {
     return 'Bivio::Biz::Util::RealmRole' => {
 	category_map => sub {
 	    return [
-	    $new ? @{$new->()} : (),
 	    [
 		public_forum_email =>
 		    [[qw(ANONYMOUS USER WITHDRAWN GUEST)] => 'MAIL_SEND'],
@@ -244,6 +243,7 @@ sub merge_realm_role_category_map {
 		    [MEMBER => [qw(MOTION_WRITE MOTION_READ)]],
 		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
 	    ]) : (),
+	    $new ? @{$new->()} : (),
         ];
     }};
 }
