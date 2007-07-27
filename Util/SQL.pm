@@ -37,6 +37,7 @@ commands:
     export_db dir -- exports database (only works for pg right now)
     import_db file -- imports database (ditto)
     import_tables_only file -- imports tables and sequences only
+    postgres_db_and_user -- execute createuser and createdb
     reinitialize_constraints -- creates constraints
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
@@ -1264,6 +1265,25 @@ CREATE INDEX website_t3 on website_t (
 /
 EOF
     return;
+}
+
+sub postgres_db_and_user {
+    my($self) = @_;
+    my($db, $dbuser, $dbpass) =
+ 	@{Bivio::SQL::Connection->get_dbi_config}{qw(database user password)};
+    unless (${$self->piped_exec("psql --username postgres -c '\\du $dbuser'")}
+		=~ /$dbuser/) {
+	my($no_adduser) = (
+	    ${$self->piped_exec("psql --version")} =~ /PostgreSQL\W+7/
+		? '--no-adduser'
+		: '--no-superuser --no-createrole'
+	    );
+	$self->piped_exec(
+	    "createuser --username postgres --createdb $no_adduser $dbuser");
+	print "created PostgreSQL user '$dbuser'\n";
+    }
+    $self->piped_exec("createdb --username $dbuser $db");
+    return "created PostgreSQL database '$db'\n";
 }
 
 sub realm_role_config {
