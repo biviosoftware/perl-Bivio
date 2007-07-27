@@ -106,6 +106,12 @@ sub get_width {
     return length($min) > length($max) ? length($min) : length($max);
 }
 
+
+sub is_odd {
+    my($proto, $value) = @_;
+    return $value % 2;
+}
+
 sub new {
     my($proto, $min, $max) = @_;
     # Creates a new subrange between I<min> and I<max>, inclusive.
