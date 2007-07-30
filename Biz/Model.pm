@@ -31,11 +31,11 @@ sub as_string {
 }
 
 sub assert_not_singleton {
-    my($fields) = shift->[$_IDI];
+    my($self) = @_;
     # Throws an exception if this is the singleton instance.
     die("can't create, update, read, or delete singleton instance")
-	if $fields->{is_singleton};
-    return;
+	if $self->[$_IDI]->{is_singleton};
+    return $self;
 }
 
 sub clone {
@@ -213,17 +213,15 @@ sub internal_clear_model_cache {
 
 sub internal_get_iterator {
     my($self) = @_;
-    # Returns the iterator.
     return $self->[$_IDI]->{iterator} || $self->die('iteration not started');
 }
 
 sub internal_get_sql_support {
-    my($self) = @_;
-    # Returns L<Bivio::SQL::Support|Bivio::SQL::Support> for this instance
-    # only if this is not the singleton.  If it is the singleton, dies.
-    my($fields) = $self->[$_IDI];
-    $self->assert_not_singleton if $fields->{is_singleton};
-    return $fields->{class_info}->{sql_support};
+    return shift->assert_not_singleton->internal_get_sql_support_no_assert;
+}
+
+sub internal_get_sql_support_no_assert {
+    return shift->[$_IDI]->{class_info}->{sql_support};
 }
 
 sub internal_get_statement {
