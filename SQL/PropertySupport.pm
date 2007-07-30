@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::SQL::PropertySupport;
 use strict;
-use Bivio::Base 'Bivio::SQL::Support';
+use base 'Bivio::SQL::Support';
 use Bivio::Die;
 use Bivio::HTML;
 use Bivio::IO::Trace;
@@ -135,9 +135,7 @@ sub delete_all {
 }
 
 sub get_children {
-    my($self) = @_;
-    # Returns an array of (model class, key map) pairs.
-    return $self->get('children');
+    return shift->get('children');
 }
 
 sub handle_config {
@@ -197,6 +195,7 @@ sub new {
 	primary_key => [],
 	column_aliases => {},
 	has_blob => 0,
+	cascade_delete_children => $decl->{cascade_delete_children} || 0,
     };
     $proto->init_common_attrs($attrs, $decl);
     die("$attrs->{table_name}: invalid table name, must end in _t")
@@ -225,9 +224,7 @@ sub new {
 }
 
 sub register_child_model {
-    my($self, $child, $key_map) = @_;
-    # Adds the (child, key_map) pair to the model's child list.
-    push(@{$self->get('children')}, $child, $key_map);
+    unshift(@{shift->get('children')}, [@_]);
     return;
 }
 
@@ -336,23 +333,16 @@ sub update {
 
 sub _add_parent_model {
     my($attrs, $field, $parent_model, $parent_field) = @_;
-    # Adds the specified (parent_model, parent_field) mapping to the current
-    # model's parent list.
     my($parents) = $attrs->{parents};
     $parents->{$parent_model} ||= {};
-
-    # use field name to uniquely identify if field already in use
-    if (int(grep(/$field/, values(%{$parents->{$parent_model}})))) {
-	$parent_model .= '#'.$field;
-    }
+    $parent_model .= " $field"
+	if grep(/$field/, values(%{$parents->{$parent_model}}));
     $parents->{$parent_model}->{$field} = $parent_field;
     return;
 }
 
 sub _equals {
     my($v, $v2) = @_;
-    # Returns true if v is exactly the same as v2
-    # oracle treats '' and null the same
     $v = '' unless defined($v);
     $v2 = '' unless defined($v2);
     return $v eq $v2;
@@ -365,7 +355,6 @@ sub _init_columns {
     # Oracle caching of prepared statements.  We sort first, so
     # primary keys are sorted as well.
     $attrs->{column_names} = [sort(keys(%$column_cfg))];
-
     foreach my $n (@{$attrs->{column_names}}) {
 	my($cfg) = $column_cfg->{$n};
 	my($col) = ref($cfg) eq 'HASH' ? $cfg : {
@@ -386,12 +375,8 @@ sub _init_columns {
 			? 1 : 0;
 	push(@{$attrs->{primary_key}}, $col)
 		if $col->{is_primary_key};
-
-	# related model field type
-	if ($cfg->[0] =~ /^(.*)\.(.*)$/) {
-	    my($parent_model, $parent_field) = ($1, $2);
-	    _add_parent_model($attrs, $n, $parent_model, $parent_field);
-	}
+	_add_parent_model($attrs, $n, $1, $2)
+	    if $cfg->[0] =~ /^(.*)\.(.*)$/;
     }
     _register_with_parents($attrs);
     Bivio::Die->die($attrs->{table_name}, ': too many BLOBs')
@@ -405,9 +390,6 @@ sub _init_columns {
 
 sub _init_statements {
     my($attrs) = @_;
-    # Initializes select, update etc.
-
-    # Select
     $attrs->{select_columns} = [map {
 	$attrs->{columns}->{$_};
     } @{$attrs->{column_names}}];
@@ -415,16 +397,12 @@ sub _init_statements {
     $attrs->{select} = 'select '.join (',', map {
 	$attrs->{columns}->{$_}->{type}->from_sql_value($_);
     } @{$attrs->{column_names}})." from $attrs->{table_name} ";
-
-    # Insert
     $attrs->{insert} = "insert into $attrs->{table_name} ("
 	    .join(',', @{$attrs->{column_names}}).') values ('
 	    .join(',', map {
 		$attrs->{columns}->{$_}->{sql_pos_param}
 	    } @{$attrs->{column_names}})
 	    .')';
-
-    # Delete & update
     $attrs->{primary_where} = ' where ' . join(' and ',
 	    map {
 		$_.'='.$attrs->{columns}->{$_}->{sql_pos_param}
@@ -432,18 +410,13 @@ sub _init_statements {
     $attrs->{delete} = "delete from $attrs->{table_name} "
 	    .$attrs->{primary_where};
     $attrs->{update} = "update $attrs->{table_name} set ";
-
-    # Need to lock records for update if has blob.  Coupled with
-    # Connection
     $attrs->{update_lock} = "select ".$attrs->{primary_key_names}->[0]
 	    ." from $attrs->{table_name} "
 		    .$attrs->{primary_where}." for update";
-
     my($primary_id_name) = $attrs->{table_name};
     $primary_id_name =~ s/_t$/_id/;
-    if ($attrs->{columns}->{$primary_id_name}) {
-	$attrs->{primary_id_name} = $primary_id_name;
-    }
+    $attrs->{primary_id_name} = $primary_id_name
+	if $attrs->{columns}->{$primary_id_name};
     return;
 }
 
@@ -484,19 +457,13 @@ sub _prepare_select_param {
 
 sub _register_with_parents {
     my($attrs) = @_;
-    # Registers the current model class with the each parent model/field
-    # added during L<"_add_parent_model">.
     return if grep(
 	!$attrs->{class} || $_ eq $attrs->{class}->simple_package_name,
 	@{$_CFG->{unused_classes}},
     );
-    my($parents) = $attrs->{parents};
-    foreach my $parent (keys(%$parents)) {
-	my($parent_class) = $parent;
-	$parent_class =~ s/^(.*)\#\w+$/$1/;
-	Bivio::Biz::Model->get_instance($parent_class)->new()
-		    ->register_child_model($attrs->{class},
-			    $parents->{$parent});
+    while (my($parent, $key_map) = each(%{$attrs->{parents}})) {
+	Bivio::Biz::Model->get_instance($parent =~ /^(\S+)/)
+	    ->register_child_model($attrs->{class}, $key_map);
     }
     return;
 }
