@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::PropertyModel;
 use strict;
-use Bivio::Base 'Bivio::Biz::Model';
+use base 'Bivio::Biz::Model';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
@@ -14,23 +14,22 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 
 sub cascade_delete {
-    my($self) = @_;
-    # Deletes all related child models and then the current model.
-    my($children) = $self->internal_get_sql_support->get_children;
-
-    # iterate backward, dependencies are reversed
-    for (my $i = int(@$children) - 2; $i >= 0; $i -= 2) {
-	my($child) = $children->[$i];
-	my($key_map) = $children->[$i + 1];
-
-	# copy the current model's key values into the query
-	my($query) = {};
-	foreach my $key (keys(%$key_map)) {
-	    $query->{$key} = $self->get($key_map->{$key});
-	}
-	$child->delete_all($query);
+    my($self, $query) = @_;
+    my($support) = $self->internal_get_sql_support;
+    my($method) = $support->get('cascade_delete_children') ? 'cascade_delete'
+	: 'delete_all';
+    my($properties) = $query || $self->get_shallow_copy;
+    foreach my $c (@{$support->get_children}) {
+	my($child) = $self->new_other($c->[0]);
+	my($key_map) = $c->[1];
+	$child->$method({
+	    map({
+		my($ck) = $key_map->{$_};
+		exists($properties->{$ck}) ? ($_ => $properties->{$ck}) : ();
+	    } keys(%$key_map)),
+	});
     }
-    $self->delete;
+    $query ? $self->delete_all($query) : $self->delete;
     return;
 }
 
@@ -367,19 +366,16 @@ sub load_this_from_request {
 
 sub merge_initialize_info {
     my($proto, $parent, $child) = @_;
-    # Merges two model field definitions (I<child> into I<parent>) into a new
-    # hash_ref.
-    Bivio::Die->die('columns => takes a hash_ref')
+    Bivio::Die->die('columns, if defined, must be a hash_ref')
         unless ref($parent->{columns} || {}) eq 'HASH'
 	    && ref($child->{columns} || {}) eq 'HASH';
-    return {
-	%$parent,
-        %$child,
+    return shift->SUPER::merge_initialize_info($parent, {
+	%$child,
 	columns => {
-	    %{$parent->{columns} || {}},
+	    %{delete($parent->{columns}) || {}},
 	    %{$child->{columns} || {}},
 	},
-    };
+    });
 }
 
 sub new {
@@ -390,11 +386,7 @@ sub new {
 }
 
 sub register_child_model {
-    my($self, $child, $key_map) = @_;
-    # Adds the specified (child, key_map) pair to the child list. Called by
-    # PropertySupport.
-    $self->internal_get_sql_support->register_child_model($child, $key_map);
-    return;
+    return shift->internal_get_sql_support_no_assert->register_child_model(@_);
 }
 
 sub unauth_create_or_update {
