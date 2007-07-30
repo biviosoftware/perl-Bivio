@@ -24,7 +24,7 @@ sub prose {
 sub run_unit {
     my($self, $cases) = @_;
     return $self->unit(
-	$self->unsafe_get(qw(class_name setup_render compute_return new_params)),
+	$self->unsafe_get(qw(class_name setup_render compute_return new_params check_return)),
 	$cases,
     );
 }
@@ -36,7 +36,7 @@ sub unit {
     my($i) = 0;
     my($class_name) = shift;
     my($cases) = pop;
-    my($setup_render, $compute_return, $new_params) = @_;
+    my($setup_render, $compute_return, $new_params, $check_return) = @_;
     my($res);
     $req->put('Bivio::Test::Widget' => sub {
 	$res = Bivio::Test->new({
@@ -64,6 +64,7 @@ sub unit {
 		return $compute_return ? $compute_return->($case, $actual, @_)
 		    : $actual;
 	    },
+	    $check_return ? (check_return => $check_return) : (),
 	})->unit([map(
 	    $i++ % 2 && ref($_) ne 'ARRAY' ? [render => [[] => $_]] : $_,
 	    @$cases,
