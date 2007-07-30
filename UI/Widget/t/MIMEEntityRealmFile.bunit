@@ -1,0 +1,30 @@
+# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    check_return => sub {
+	my(undef, undef, $expect) = @_;
+	my($e) = [split(/\|/, $expect->[0])];
+	my($merf, $attr) = req()->get_by_regexp(qr{MIMEEntityRealmFile});
+	req()->delete($attr);
+	my($mh) = $merf->head;
+	foreach my $a (qw(content-type content-transfer-encoding)) {
+	    assert_equals(shift(@$e) . "\n", $mh->get($a));
+	}
+	return 1;
+    },
+});
+req()->set_realm_and_user('demo');
+req()->put(
+    map(
+	($_ => model('RealmFile', {
+	    realm_id => req('auth_id'),
+	    path => "/private/$_",
+	})),
+	'image.gif',
+	'file.html',
+    ),
+);
+[
+    [['image.gif']] => 'image/gif; name="image.gif"|base64',
+    [['file.html']] => 'text/html; name="file.html"|7bit',
+];
