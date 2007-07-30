@@ -380,6 +380,11 @@ sub get_delegate_info {
 	undef,
 	'field has too many values',
     ],
+    UNSUPPORTED_TYPE => [
+	71,
+	undef,
+	'Value not supported by application',
+    ],
 ];
 }
 
