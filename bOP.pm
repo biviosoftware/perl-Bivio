@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.16  2007/07/27 01:15:48  aviggio
+  * Bivio::Agent::Request call Bivio::UI::Task always when formatting uris
+  * Bivio::BConf allow subclasses to override values in RealmRole
+    category_map
+  * Bivio::Biz::Model::ForumTreeList extract method to support override of
+    default where clause by subclasses
+  * Bivio::Biz::Model map_iterate with a single string argument will get
+    an array of that argument
+  * Bivio::SQL::Connection print a warning if a query takes longer than
+    30s
+  * Bivio::Test::Language::HTTP made suffix be .eml, not .msg
+  * Bivio::Type::WikiText call Bivio::UI::Task to allow uris to be cleaned
+    up, always call Bivio::UI::Text if not calling req->format_uir
+  * Bivio::UI::Task is now completely overridable by apps, format_uri
+    accepts {uri => } and returns it unchanged, but subclasses could
+    change it
+  * Bivio::UI::Task if site_root_realm is configured in the facade, then
+    search the corresponding realm file before checking for realms
+  * Bivio::Util::HTTPD no longer need explicit facade VirtualHost sections
+
   Revision 5.15  2007/07/14 17:53:25  nagler
   * Bivio::Collection::Attributes->get_if_defined_else_put/put_unless_defined added
   * Bivio::UI::FacadeBase->new checks if clone is true, iwc it does not
