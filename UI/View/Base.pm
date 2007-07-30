@@ -153,7 +153,7 @@ sub pre_compile {
     view_parent(
 	$self->PARENT_CLASS
 	. '->'
-	. ($n =~ /_(mail|csv|rss|css)$/ ? $1 : 'xhtml')
+	. ($n =~ /_(mail|csv|rss|css|xml)$/ ? $1 : 'xhtml')
     ) unless $self->use('View.' . $self->PARENT_CLASS)->can($n);
     return;
 }
@@ -163,6 +163,19 @@ sub rss {
     view_class_map('XHTMLWidget');
     view_shortcuts($self->VIEW_SHORTCUTS);
 #TODO: rss_body.  Need to generalize interface
+    return;
+}
+
+sub xml {
+    my($self) = @_;
+#TODO: Real XML support
+    view_class_map('XHTMLWidget');
+    view_declare('xml_body');
+    view_shortcuts($self->VIEW_SHORTCUTS);
+    view_main(SimplePage({
+	content_type => 'text/xml',
+	value => view_widget_value('xml_body'),
+    }));
     return;
 }
 
