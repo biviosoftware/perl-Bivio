@@ -87,6 +87,12 @@
 	],
 	get_by_regexp => [
 	    [qr/a/] => DIE(),
+	    [qr/aa/] => [99, 'aa'],
+	],
+	{
+	    method => 'get_by_regexp',
+	    want_scalar => 1,
+	} => [
 	    [qr/aa/] => 99,
 	],
 	delete_all => not_die(),

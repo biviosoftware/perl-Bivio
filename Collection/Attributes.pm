@@ -128,11 +128,7 @@ sub get {
 }
 
 sub get_by_regexp {
-    my($self, $pattern) = @_;
-    # Returns a single value by regular expression.  If not found, throws die.
-    my($match) = _unsafe_get_by_regexp($self, $pattern);
-    return defined($match) ? $self->get($match)
-	: _die($self, $pattern, ': pattern not found');
+    return _unsafe_get_by_regexp(0, @_);
 }
 
 sub get_if_defined_else_put {
@@ -310,13 +306,7 @@ sub unsafe_get {
 }
 
 sub unsafe_get_by_regexp {
-    my($self, $pattern) = @_;
-    # Returns a single value by regular expression.  If not found, returns
-    # undef.
-    #
-    # If multiple found, throws exception.
-    my($match) = _unsafe_get_by_regexp(@_);
-    return defined($match) ? $self->get($match) : undef;
+    return _unsafe_get_by_regexp(1, @_);
 }
 
 sub unsafe_get_nested {
@@ -401,7 +391,7 @@ sub _get_nested {
 }
 
 sub _unsafe_get_by_regexp {
-    my($self, $pattern) = @_;
+    my($unsafe, $self, $pattern) = @_;
     # Returns the field for unsafe_get_by_regexp and get_by_regexp.
     my($match);
     foreach my $k (@{$self->get_keys}) {
@@ -413,7 +403,10 @@ sub _unsafe_get_by_regexp {
 		&& $self->get($match) ne $self->get($k);
 	$match = $k;
     }
-    return $match;
+    return !defined($match) ? $unsafe ? undef
+	: _die($self, $pattern, ': pattern not found')
+	: wantarray ? ($self->get($match), $match)
+	: $self->get($match);
   }
 
 # _writable($self) : $fields
