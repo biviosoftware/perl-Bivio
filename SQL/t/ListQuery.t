@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 use strict;
 use Bivio::Test;
@@ -24,7 +24,6 @@ my($_SUPPORT1) = Bivio::SQL::ListSupport->new({
     ],
 });
 
-# Tests
 Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
     [
 	{
@@ -37,6 +36,7 @@ Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
 	$_SUPPORT1,
 	'Bivio::Die',
     ] => [
+	as_string => qr{^ListQuery\[b=[^=]+\&d=},
 	get => [
 	    begin_date => '2452245 79199',
 	    date => '2452256 79199',

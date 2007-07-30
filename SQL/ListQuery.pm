@@ -209,6 +209,21 @@ sub FIRST_PAGE {
     return 1;
 }
 
+sub as_string {
+    my($self) = @_;
+    my($sep) = 0;
+    return !ref($self) ? $self
+	: Bivio::IO::Alert->format_args(
+	    'ListQuery[',
+	    map({
+		my($c, $n) = ($_, $_QUERY_TO_FIELDS{$_});
+		my($v) = $self->unsafe_get($n);
+		!defined($v) ? () : (($sep++ ? '&' : ''), $c, '=', $v);
+	    } sort(keys(%_QUERY_TO_FIELDS))),
+	    ']',
+	);
+}
+
 sub clean_raw {
     my(undef, $query, $support) = @_;
     # Removes any raw query keys that aren't part of the "valid" set.  If
