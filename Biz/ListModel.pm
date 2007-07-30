@@ -169,7 +169,7 @@ sub execute_load_this {
     my($query) = $self->parse_query_from_request();
     $self->throw_die('CORRUPT_QUERY', {
 	message => 'missing this',
-	query => $req->unsafe_get('query'),
+	query => $self->get_request->unsafe_get('query'),
     }) unless $query->unsafe_get('this');
     $self->load_this($query);
     return 0;
