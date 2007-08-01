@@ -147,7 +147,7 @@ sub _cfg_base {
 	    [SITE_ROOT => '*'],
 	    [USER_HOME => '?'],
 	    [ROBOTS_TXT => 'robots.txt'],
-	    [TEST_BACKDOOR => '_test_backdoor'],
+	    [TEST_BACKDOOR => 'test_backdoor'],
 	    [PERMANENT_REDIRECT => undef],
 	    [CLIENT_REDIRECT => 'go/*'],
 	    [SITE_CSS => 'pub/site.css'],

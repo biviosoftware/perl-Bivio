@@ -97,7 +97,7 @@ sub do_test_backdoor {
     my($self, $op, $args) = @_;
     # Executes ShellUtil or FormModel based on $args.
     $self->visit_uri(
-	'/_test_backdoor?'
+	'/test_backdoor?'
 	. $self->use('Bivio::Agent::HTTP::Query')->format(
 	    ref($args) eq 'HASH' ? {%$args, form_model => $op}
 	        : ref($args) eq '' ? {shell_util => $op, command => $args}
