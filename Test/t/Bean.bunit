@@ -1,0 +1,42 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+options({
+    method_is_autoloaded => 1,
+});
+[
+    [{
+	'x()' => ['a'],
+	'x(b)' => ['b'],
+	'x(b,c)' => ['c'],
+	'y()' => sub {
+	    return shift;
+	}
+    }] => [
+	x => [
+	    [] => 'a',
+	    b => 'b',
+	    [qw(b c)] => 'c',
+	],
+	y => [
+	    a => [['a']],
+	],
+	not_found => [
+	    ['anything'] => [],
+	],
+	{
+	    method => 'not_found',
+	    want_scalar => 1,
+	} => [
+	    [] => [undef],
+	],
+    ],
+    [] => [
+	x => [
+	    [] => [],
+	    a => [],
+	    [] => 'a',
+	    b => 'a',
+	    c => 'b',
+	],
+    ],
+];

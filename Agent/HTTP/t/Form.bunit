@@ -1,0 +1,33 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    class() => [
+	{
+	    method => 'parse',
+	    compute_params => sub {
+		my($case, $params) = @_;
+		my($values) = require($params->[0]);
+		my($r) = {};
+		my($x) = delete($values->{content});
+		$x =~ s/\n/\r\n/g
+		    if $x;
+		req()->put(content => \$x);
+		while (my($k, $v) = each(%$values)) {
+		    $v = [$v]
+			unless ref($v) eq 'ARRAY';
+		    $k =~ /^\w+\(/ ? $r->{$k} = $v : $case->put($k => $v);
+		}
+		$r->{'method()'} ||= ['post'];
+		req()->put(r => Bivio::Test::Bean->new($r));
+		return [
+		    req(),
+		    # Ease debugging test so pass extra (not used) arg
+		    $params->[0],
+		];
+	    },
+	} => [
+	    map(($_ => []), glob('./Form/*.pl')),
+	],
+    ],
+];
