@@ -488,8 +488,7 @@ sub get_auth_roles {
 }
 
 sub get_content {
-    # Returns undef.
-    return undef;
+    return shift->unsafe_get('content');
 }
 
 sub get_current {
