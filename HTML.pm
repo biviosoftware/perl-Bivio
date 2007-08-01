@@ -36,6 +36,28 @@ sub escape_uri {
     return $value;
 }
 
+sub parse_www_form_urlencoded {
+    my($proto, $value) = @_;
+    return {map({
+	my(@x);
+	if (defined($_) && length($_)) {
+	    @x = map($proto->unescape_query($_), split(/=/, $_));
+	    Bivio::Die->throw(CORRUPT_FORM => {
+		message => 'too many equal signs(=) in value',
+		entity => $_,
+		full_entity => $value,
+	    }) if @x > 2;
+	    Bivio::Die->throw(CORRUPT_FORM => {
+		message => 'missing key value (nothing before =)',
+		entity => $_,
+		full_entity => $value,
+	    }) unless defined($x[0]) && length($x[0]);
+	}
+	@x == 1 ? (@x, undef) : @x;
+	} split(/[\&\;]/, defined($value) ? $value : ''),
+    )};
+}
+
 sub unescape_uri {
     my(undef, $value) = @_;
     $value = URI::Escape::uri_unescape($value);
