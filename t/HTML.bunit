@@ -16,5 +16,20 @@ Type();
 	'hello%26bye' => 'hello&bye',
 	'hello%3Fbye' => 'hello?bye',
     ],
+    parse_www_form_urlencoded => [
+	[undef] => [{}],
+	'' => [{}],
+	'a=1' => [{a => 1}],
+	'a&b' => [{a => undef, b => undef}],
+	'a;b' => [{a => undef, b => undef}],
+	'a&b=1' => [{a => undef, b => 1}],
+	'a;b=1&c=2' => [{a => undef, b => 1, c => 2}],
+	'a=1;' => [{a => 1}],
+	'a=1&' => [{a => 1}],
+	'&' => [{}],
+	';' => [{}],
+	';a=1' => [{a => 1}],
+	'a&=1' => CORRUPT_FORM(),
+	'=' => CORRUPT_FORM(),
+    ],
 ];
-
