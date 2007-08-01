@@ -251,17 +251,23 @@ sub get_content {
     return $self->get_if_exists_else_put(content => sub {
         my($r) = $self->get('r');
 	my($c) = '';
+	my($l) = $r->header_in('content-length');
+	_trace('Content-Length=', $l) if $_TRACE;
 	return \$c
-	    unless my $l = $r->header_in('content-length');
+	    unless $l;
 	$self->throw_die(INPUT_TOO_LARGE => "Content-Length too large: $l")
 	    if $l > 120_000_000;
 	$r->read($c, $l);
+	$self->throw_die(CLIENT_ERROR =>
+	    'client interrupt or timeout while reading form-data',
+	) if $r->connection->aborted;
         $self->throw_die(CLIENT_ERROR =>
-            'timeout occurred while reading request content')
-            unless defined($c);
+            'timeout occurred while reading request content'
+	) unless defined($c);
 	$self->throw_die(CORRUPT_QUERY =>
 	    "Content-Length ($l) >= actual length: " . length($c)
 	) if $l > length($c);
+	_trace('length', length($c)) if $_TRACE;
 	return \$c;
     });
 }
