@@ -12,13 +12,15 @@ sub control_on_render {
     my($rf) = $self->resolve_attr('realm_file', $source);
     my($t) = $rf->get_content_type;
     my($c) = $rf->get_content;
+    my($id) = $self->render_simple_attr(mime_id => $source);
     $self->get_request->put(
 	"$self" => MIME::Entity->build(
 	    Type => $t,
 	    Filename => $_FP->get_tail($rf->get('path')),
 	    Data => $c,
 	    Encoding => Bivio::MIME::Type->suggest_encoding($t, $c),
-	    Disposition => $self->render_simple_attr('mime_disposition'),
+	    Disposition => $self->render_simple_attr(mime_disposition => $source),
+	    $id ? (Id => "<$id>") : (),
 	),
     );
     return;
@@ -28,6 +30,7 @@ sub initialize {
     my($self) = @_;
     $self->initialize_attr('realm_file');
     $self->initialize_attr(mime_disposition => 'attachment');
+    $self->unsafe_initialize_attr('mime_id');
     return shift->SUPER::initialize(@_);
 }
 
