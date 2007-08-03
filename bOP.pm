@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.17  2007/07/30 15:27:39  nagler
+  * Bivio::Biz::Model->assert_not_singleton returns $self
+  * Bivio::Biz::Model->internal_get_sql_support_no_assert added
+  * Bivio::Biz::PropertyModel.cacade_delete_children added so children
+    will call cascade_delete
+  * Bivio::Biz::PropertyModel->cacade_delete takes query arg iwc it call
+    delete_all with $query
+  * Bivio::Collection::Attributes->*get_by_regexp returns key it found
+    as second return value if in array context
+  * Bivio::Delegate::SimpleTypeError->UNSUPPORTED_TYPE added.  Use this for
+    values which can't be converted.  For example, CREDITCARD_UNSUPPORTED_TYPE
+    could be deprecated with this value, and use FormError to render the error.
+  * Bivio::Test::Widget.check_return supported
+  * Bivio::SQL::ListQuery->as_string added
+  * Bivio::UI::View::Base->xml added -- uses XHTML widgets for now
+  * Bivio::SQL::PropertySupport.children format changed to array_ref of
+    array_refs in proper (reverse) order.
+  * Bivio::Util::SQL->postgres_db_and_user added
+  * Bivio::Type::Integer->is_odd added
+
   Revision 5.16  2007/07/27 01:15:48  aviggio
   * Bivio::Agent::Request call Bivio::UI::Task always when formatting uris
   * Bivio::BConf allow subclasses to override values in RealmRole
