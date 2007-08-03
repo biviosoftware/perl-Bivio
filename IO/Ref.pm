@@ -165,7 +165,8 @@ sub _diff_eval {
     return ref($left) eq 'HASH' && $proto->is_blessed($right)
 	&& $right->can('get_shallow_copy')
 	    ? _diff_similar($proto, $left, $right->get_shallow_copy, $name, $method)
-	: ref($left) eq 'CODE' && ($left = $left->($right)) eq $right
+	: ref($left) eq 'CODE' && (return
+	    $proto->$method($left = $left->($right), $right, $name.'->()'))
 	|| ref($left) eq 'Regexp' && _diff_to_string($proto, $right) =~ $left
 	|| defined($left) && !ref($left)
 	    && $left eq _diff_to_string($proto, $right)
