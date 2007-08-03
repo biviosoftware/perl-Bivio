@@ -39,8 +39,6 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
 Bivio::IO::Config->register(my $_CFG = {
@@ -85,24 +83,13 @@ forms.  See interpretation of I<name> in L<unsafe_get_field|"unsafe_get_field">.
 
 sub get_by_field_names {
     my($self, @name) = @_;
-    my($found);
-    my($forms) = $self->get_shallow_copy;
- FORM: while (my($form, $values) = each(%$forms)) {
-	foreach my $n (@name) {
-	    next FORM
-		unless @{$self->unsafe_get_field($values, $n)};
-	}
-	Bivio::Die->die(\@name, ': too many forms matched fields')
-	    if $found;
-	$found = $values;
-    }
-    return $found if $found;
-    Bivio::IO::Alert->info($forms);
-    my(@fields) = map({[sort(keys(%{$_->{visible}}), keys(%{$_->{submit}}))]}
-            values(%$forms));
-    _trace(join("\n", map({@$_} @fields)));
+    my($form) = shift->unsafe_get_by_field_names(@_);
+    return $form
+	if $form;
+
     Bivio::Die->die(\@name, ': no form matches named fields; all visible form fields: ',
-        @fields);
+        map({[sort(keys(%{$_->{visible}}), keys(%{$_->{submit}}))]}
+            values(%{$self->get_shallow_copy})));
 }
 
 =for html <a name="get_field"></a>
@@ -259,6 +246,30 @@ sub html_parser_text {
     return _label_option($fields) if $fields->{option} || $fields->{radio};
     return _label_visible($fields) if $fields->{input};
     return;
+}
+
+=for html <a name="unsafe_get_by_field_names"></a>
+
+=head2 unsafe_get_by_field_names()
+
+Look for form by field names
+
+=cut
+
+sub unsafe_get_by_field_names {
+    my($self, @name) = @_;
+    my($found);
+    my($forms) = $self->get_shallow_copy;
+    FORM: while (my($form, $values) = each(%$forms)) {
+	foreach my $n (@name) {
+	    next FORM
+		unless @{$self->unsafe_get_field($values, $n)};
+	}
+	Bivio::Die->die(\@name, ': too many forms matched fields')
+	    if $found;
+	$found = $values;
+    }
+    return $found;
 }
 
 =for html <a name="unsafe_get_field"></a>
