@@ -7,8 +7,9 @@ Widget({
 	my($merf, $attr) = req()->get_by_regexp(qr{MIMEEntityRealmFile});
 	req()->delete($attr);
 	my($mh) = $merf->head;
-	foreach my $a (qw(content-type content-transfer-encoding content-disposition)) {
-	    assert_equals(shift(@$e) . "\n", $mh->get($a));
+	foreach my $a (qw(content-type content-transfer-encoding content-disposition content-id)) {
+	    next unless my $av = $mh->get($a);
+	    assert_equals(shift(@$e). "\n", $av);
 	}
 	return 1;
     },
@@ -28,5 +29,6 @@ req()->put(
     [['image.gif']] => 'image/gif; name="image.gif"|base64|attachment; filename="image.gif"',
     [['file.html'], {
         mime_disposition => 'inline',
-    }] => 'text/html; name="file.html"|7bit|inline; filename="file.html"',
+	mime_id => '1.1@a.a',
+    }] => 'text/html; name="file.html"|7bit|inline; filename="file.html"|<1.1@a.a>',
 ];
