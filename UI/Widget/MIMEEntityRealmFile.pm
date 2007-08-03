@@ -18,7 +18,7 @@ sub control_on_render {
 	    Filename => $_FP->get_tail($rf->get('path')),
 	    Data => $c,
 	    Encoding => Bivio::MIME::Type->suggest_encoding($t, $c),
-	    Disposition => 'attachment',
+	    Disposition => $self->render_simple_attr('mime_disposition'),
 	),
     );
     return;
@@ -27,6 +27,7 @@ sub control_on_render {
 sub initialize {
     my($self) = @_;
     $self->initialize_attr('realm_file');
+    $self->initialize_attr(mime_disposition => 'attachment');
     return shift->SUPER::initialize(@_);
 }
 
