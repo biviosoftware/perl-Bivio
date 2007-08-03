@@ -12,14 +12,13 @@ sub control_on_render {
     my($rf) = $self->resolve_attr('realm_file', $source);
     my($t) = $rf->get_content_type;
     my($c) = $rf->get_content;
-    my($d) = $self->render_simple_attr('mime_disposition');
     $self->get_request->put(
 	"$self" => MIME::Entity->build(
 	    Type => $t,
-	    $d eq 'inline' ? () : (Filename => $_FP->get_tail($rf->get('path'))),
+	    Filename => $_FP->get_tail($rf->get('path')),
 	    Data => $c,
 	    Encoding => Bivio::MIME::Type->suggest_encoding($t, $c),
-	    Disposition => $d,
+	    Disposition => $self->render_simple_attr('mime_disposition'),
 	),
     );
     return;

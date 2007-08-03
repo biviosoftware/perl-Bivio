@@ -28,5 +28,5 @@ req()->put(
     [['image.gif']] => 'image/gif; name="image.gif"|base64|attachment; filename="image.gif"',
     [['file.html'], {
         mime_disposition => 'inline',
-    }] => 'text/html|7bit|inline',
+    }] => 'text/html; name="file.html"|7bit|inline; filename="file.html"',
 ];
