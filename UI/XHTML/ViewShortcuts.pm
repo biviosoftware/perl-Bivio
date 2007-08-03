@@ -495,7 +495,7 @@ sub vs_tree_list_control {
 sub _has_submit {
     my($proto, $rows) = @_;
     return grep(
-	ref($_) ? $proto->is_blessed(ref($_))
+	ref($_) ? $proto->is_blessed($_)
 	    ? $_->simple_package_name eq 'StandardSubmit'
 	    : ref($_) eq 'ARRAY' && _has_submit($proto, $_)
 	    : $_ =~ /^\*/, @$rows) ? 1 : 0;
