@@ -70,6 +70,9 @@ sub render {
 
 sub _render_uri {
     my($rel, $file_uri) = @_;
+    # URI doesn't support cid:
+    return $rel
+	if $rel =~ /^cid:/;
     my($abs) = URI->new($rel);
     return $rel
 	if $abs->scheme || $abs->path =~ m{^(/|$)};
