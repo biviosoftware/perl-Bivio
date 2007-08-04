@@ -1,0 +1,79 @@
+# Copyright (c) 2007 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+
+use Bivio::Type::Date;
+my($_D) = 'Bivio::Type::Date';
+my($_DT) = 'Bivio::Type::DateTime';
+
+sub _fix_newlines {
+    my($str) = @_;
+    $str =~ s/\n/\r\n/g;
+    return $str;
+}
+
+my($d) = '08/01/2007';
+my($now) = $_DT->now;
+my($dt) = $_DT->to_local_string($now);
+$dt =~ s/\s.*$//;
+
+[
+    [[
+        [qw(TRNS TRNSID TRNSTYPE DATE ACCNT NAME AMOUNT MEMO DOCNUM)],
+        [qw(SPL SPLID TRNSTYPE DATE ACCNT NAME AMOUNT MEMO DOCNUM)],
+        [qw(ENDTRNS)],
+    ]] => [
+        to_string => [
+            [] => '',
+        ],
+        add_record => [
+            [TRNS => {
+                TRNSTYPE => 'PAYMENT',
+                DATE => $_D->from_literal_or_die($d),
+                ACCNT => 'Funds for Deposit',
+                NAME => "Moeller, Ole",
+                AMOUNT => '95.00',
+                DOCNUM => '101',
+            }] => [],
+            [SPL => {
+                SPLID => '9600015',
+                TRNSTYPE => 'PAYMENT',
+                DATE => $now,
+                ACCNT => 'Accounts Receivable',
+                NAME => 'Moeller, Ole',
+                AMOUNT => '-95.00',
+            }] => [],
+            ['ENDTRNS'] => [],
+        ],
+        to_string => [
+            [] => _fix_newlines(<<"EOF"),
+!TRNS	TRNSID	TRNSTYPE	DATE	ACCNT	NAME	AMOUNT	MEMO	DOCNUM
+!SPL	SPLID	TRNSTYPE	DATE	ACCNT	NAME	AMOUNT	MEMO	DOCNUM
+!ENDTRNS
+TRNS		PAYMENT	$d	Funds for Deposit	Moeller, Ole	95		101
+SPL	9600015	PAYMENT	$dt	Accounts Receivable	Moeller, Ole	-95		
+ENDTRNS
+EOF
+        ],
+        add_record => [
+            [FOO => {}] => Bivio::DieCode->DIE,
+            [TRNS => {
+                ACCT => 'Funds for Deposit',
+            }] => Bivio::DieCode->DIE,
+            [TRNS => {
+                NAME => "Ole\tMoeller",
+            }] => Bivio::DieCode->DIE,
+            [TRNS => {
+                AMOUNT => '',
+            }] => Bivio::DieCode->DIE,
+            [TRNS => {
+                AMOUNT => 'x',
+            }] => Bivio::DieCode->DIE,
+            [TRNS => {
+                AMOUNT => undef,
+            }] => [],
+            [TRNS => {
+                SERVICEDATE => '12/31/2006',
+            }] => Bivio::DieCode->DIE,
+        ],
+    ],
+];
