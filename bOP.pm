@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.18  2007/08/03 15:40:37  moeller
+  * Bivio::Agent::HTTP::Form new implementation on local parsing
+  * Bivio::Agent::HTTP::Request fixed trace and such of get_content
+  * Bivio::Agent::Request get_content returns unsafe_get('content') for
+    easy tesing
+  * Bivio::HTML added parse_www_form_urlencoded
+  * Bivio::Test::Bean added ability for signatures
+  * Bivio::UI::FacadeBase fixed TEST_BACKDOOR uri
+  * Bivio::UI::XHTML::ViewShortcuts fixed _has_submit() when checking
+    blessed references
+  * Bivio::Util::HTTPD no longer need explicit facade VirtualHost
+    sections
+  * Bivio::Util::SQL rename postgres_db_and_user to init_dbms
+
   Revision 5.17  2007/07/30 15:27:39  nagler
   * Bivio::Biz::Model->assert_not_singleton returns $self
   * Bivio::Biz::Model->internal_get_sql_support_no_assert added
