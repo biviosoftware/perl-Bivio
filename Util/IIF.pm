@@ -67,12 +67,13 @@ sub _parse {
     if ($type =~ /^(DATE|SERVICEDATE|DUEDATE|SHIPDATE)$/) {
         return $_D->to_string($value)
             if $_DT->is_date($value);
-        my($d, $m, $y) = ($_DT->local_to_parts($value))[3 .. 6];
-        return sprintf('%02d/%02d/%04d', $m, $d, $y);
+        return sprintf('%02d/%02d/%04d',
+            ($_DT->local_to_parts($value))[4, 3, 5]);
     }
     elsif ($type =~ /^(AMOUNT|QNTY|PRICE)$/) {
-        $value = $_M->to_literal($_M->from_literal_or_die($value)),
+        return $_M->to_literal($_M->from_literal_or_die($value)),
     }
+    $value =~ s/"//g;
     return $value;
 }
 
