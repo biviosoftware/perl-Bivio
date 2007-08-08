@@ -882,6 +882,16 @@ sub put_durable_server_redirect_state {
     return;
 }
 
+sub redirect {
+    my($self, $args) = @_;
+    my($method) = delete($args->{method}) || '';
+    $self->throw_die(DIE => {
+	message => 'missing or invalid method',
+	entity => {%$args, method => $method},
+    }) unless $method =~ /^(?:server_redirect|client_redirect)$/;
+    return $self->$method($args);
+}
+
 sub server_redirect {
     my($task) = shift->internal_server_redirect(@_);
     # Server_redirect the current task to the new task.
