@@ -80,6 +80,7 @@ my($pwd);
 	do_lines => [
 	    ['File/1.txt', sub {
 		 my($line) = @_;
+		 $! = 1;
 		 push(@{$do_lines ||= []}, $line);
 		 return $line =~ /goodbye/ ? 0 : 1;
 	    }] => sub {

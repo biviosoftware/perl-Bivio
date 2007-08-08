@@ -83,13 +83,15 @@ sub do_in_dir {
 
 sub do_lines {
     my(undef, $file_name, $op) = @_;
-    # Call I<op> for each line in I<file>.  Lines are "chomped" before I<op> is
-    # called. If I<op> returns false, stops iterating, and closes file.  Dies on
-    # errors.
     my($file) = _open($file_name, 'r');
-    while (defined(my $line = readline($file))) {
-	_err('readline', $file, $file_name)
-	    if $!;
+    while (1) {
+	undef($!);
+	my $line = readline($file);
+	unless (defined($line)) {
+	    _err('readline', $file, $file_name)
+		if $!;
+	    last;
+	}
 	chomp($line);
 	last unless $op->($line);
     }
