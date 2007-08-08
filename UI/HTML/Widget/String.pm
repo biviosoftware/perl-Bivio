@@ -217,7 +217,8 @@ sub _format {
     }
     if (ref($value)) {
 	Bivio::Die->die('got ref where scalar expected: ', $value)
-	    unless __PACKAGE__->is_blessed($value) && $value->can('as_html');
+	    unless Bivio::UNIVERSAL->is_blessed($value)
+	    && $value->can('as_html');
 	return $value->as_html;
     }
     # Note the treatment of escape when -1 or +1.
