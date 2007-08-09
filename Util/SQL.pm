@@ -37,7 +37,7 @@ commands:
     export_db dir -- exports database (only works for pg right now)
     import_db file -- imports database (ditto)
     import_tables_only file -- imports tables and sequences only
-    init_dbms -- execute createuser and createdb
+    init_dbms [clone_db] -- execute createuser and createdb optionally copying clone_db (only works for pg right now)
     reinitialize_constraints -- creates constraints
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
@@ -268,7 +268,7 @@ sub import_tables_only {
 }
 
 sub init_dbms {
-    my($self) = @_;
+    my($self, $clone_db) = @_;
     my($db, $dbuser, $dbpass) =
  	@{Bivio::SQL::Connection->get_dbi_config}{qw(database user password)};
     unless (${$self->piped_exec(
@@ -283,8 +283,11 @@ sub init_dbms {
 	    "createuser --username postgres --createdb $no_adduser $dbuser");
 	print "created PostgreSQL user '$dbuser'\n";
     }
-    $self->piped_exec("createdb --username $dbuser $db");
-    return "created PostgreSQL database '$db'\n";
+    $self->piped_exec("createdb "
+			  . (defined($clone_db) ? "--template $clone_db " : '')
+			  . "--username $dbuser $db");
+    return "created PostgreSQL database '$db'"
+	. (defined($clone_db) ? " copied from '$clone_db'\n" : "\n");
 }
 
 sub init_realm_role {
