@@ -83,6 +83,8 @@ my($_HTTPD) = _find_file(qw(
 Bivio::IO::Config->register(my $_CFG = {
     port => Bivio::IO::Config->REQUIRED,
     handler => 'Bivio::Agent::HTTP::Dispatcher',
+    additional_locations => '',
+    additional_directives => '',
 });
 Bivio::IO::Config->introduce_values({
     'Bivio::UI::Facade' => {
@@ -153,6 +155,8 @@ sub main {
     my($mime_types) = _find_file('/etc/mime.types', '/etc/httpd/mime.types');
     my($keepalive) = $background ? 'on' : 'off';
     my($port) = $_CFG->{port};
+    my($additional_directives) = $_CFG->{additional_directives};
+    my($additional_locations) = $_CFG->{additional_locations};
     my($user) = getpwuid($>) || $>;
     my($group) = getgrgid($)) || $);
     my($hostname) = Sys::Hostname::hostname();
@@ -346,28 +350,21 @@ LockFile httpd.lock
     Options FollowSymLinks
 </Directory>
 
+<$additional_directives>
+
 ErrorDocument 502 /m/maintenance.html
 ErrorDocument 413 /m/upload-too-large.html
 
-<Location /s>
-    SetHandler perl-script
-    PerlHandler Apache::Status
-</Location>
-
-NameVirtualHost *:<$port>
-
 <VirtualHost *:<$port>>
-    ServerName <$hostname>
-    SetHandler perl-script
-    PerlHandler <$handler>
-</VirtualHost>
-
-<VirtualHost *:<$port>>
-    RewriteEngine On
-    RewriteLog rewrite.log
-    RewriteLogLevel 0
-    SetHandler perl-script
-    PerlHandler Bivio::Agent::HTTP::Dispatcher
+    <Location />
+        SetHandler perl-script
+        PerlHandler <$handler>
+    </Location>
+    <Location /s>
+        SetHandler perl-script
+        PerlHandler Apache::Status
+    </Location>
+    <$additional_locations>
 </VirtualHost>
 
 BrowserMatch "Mozilla/2" nokeepalive
