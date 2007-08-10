@@ -235,6 +235,7 @@ sub _dynamic_modules {
 	rewrite
 	setenvif
 	perl:libperl
+        alias
     )) {
 	my($base, $so, $mod) = split(/:/, $module);
 	$mod ||= "mod_$base.c";
