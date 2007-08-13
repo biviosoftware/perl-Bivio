@@ -109,6 +109,7 @@ sub get_delegate_info {
 		method => 'server_redirect',
 		task_id => 'SITE_ROOT',
 		path_info => 'new_path',
+		query => undef,
 	    },
 	}],
 	[qw(
@@ -120,10 +121,31 @@ sub get_delegate_info {
 	    return {
 		method => 'server_redirect',
 		task_id => 'my_task',
-	    },
+		query => undef,
+	    };
 	},
 	   'my_task=REDIRECT_TEST_5',
         ],
+	[qw(
+	    TEST_ITEMS_1
+	    512
+	    GENERAL
+	    ANYBODY
+	), sub {
+	    return {method => 'last_item_execute'};
+	}, sub {
+	    die('should not get here');
+	}],
+	[qw(
+	    TEST_ITEMS_2
+	    513
+	    GENERAL
+	    ANYBODY
+	), sub {
+	    return {method => 'next_item_execute'};
+	}, sub {
+	    return 'LOGIN';
+	}],
     ]);
 }
 
