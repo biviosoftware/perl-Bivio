@@ -432,12 +432,20 @@ Puts out a message warning of a deprecated usage.
 =cut
 
 sub warn_deprecated {
-    my($proto, $message) = @_;
+    my($proto, @message) = @_;
     my($pkg) = caller(0);
     my($i) = 0;
     $i++ while caller($i) eq $pkg;
-    $proto->warn('DEPRECATED: ', (caller($i-1))[3], ': ', $message,
-	    ' called from ', (caller($i))[0], ':', (caller($i))[2]);
+    $proto->warn(
+	'DEPRECATED: ',
+	(caller($i-1))[3],
+	': ',
+	$proto->format_args(@message),
+	'; called from ',
+	(caller($i))[0],
+	':',
+	(caller($i))[2],
+    );
     _trace_stack() if $_STACK_TRACE_WARN;
     return;
 }
