@@ -98,12 +98,11 @@ sub internal_data_section {
 }
 
 sub is_blessed {
-    my(undef, $value, $object) = @_;
-    # Returns true if I<value> is a blessed reference.  If I<object> supplied,
-    # then test if I<value> isa I<object>.
+    my($proto, $value, $object) = @_;
+    $object ||= $proto;
     my($v) = $value;
-    return ref($value) && $v =~ /=/
-	&& (!$object || $value->isa(ref($object) || $object)) ? 1 : 0;
+    return ref($value) && $v =~ /=/ && $value->isa(ref($object) || $object)
+	? 1 : 0;
 }
 
 sub map_by_two {
