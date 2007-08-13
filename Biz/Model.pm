@@ -21,13 +21,13 @@ my($_LOADED_ALL_PROPERTY_MODELS);
 
 sub as_string {
     my($self) = @_;
-    # Pretty prints an identifier for this model.
     my($ci) = $self->[$_IDI]->{class_info};
-    # All primary keys must be defined or just return ref($self).
-    return ref($self) . '(' . join(',', map {
-	return ref($self) unless defined($_);
-	$_;
-    } $self->unsafe_get(@{$ci->{as_string_fields}})) . ')';
+    return ref($self)
+	. '('
+	. join(',',
+	    map($self->get_field_type($_)->to_string($self->unsafe_get($_)),
+		@{$ci->{as_string_fields}}),
+	) . ')';
 }
 
 sub assert_not_singleton {
@@ -105,7 +105,6 @@ sub format_uri_for_this_property_model {
 
 sub get_as {
     my($self, $field, $format) = @_;
-    # Returns I<field> using the I<converter> (to_xml, to_string).
     return $self->get_field_info($field, 'type')->$format($self->get($field));
 }
 
