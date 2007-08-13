@@ -110,6 +110,10 @@ my($category_count) = 0;
 	    [req(), 'RealmUser'] => qr/RealmUser/,
 	    ['junk', 'RealmUser'] => Bivio::DieCode->DIE,
 	],
+	unauth_load => [
+	    [{name => 'demo'}] => 1,
+	],
+       as_string => qr{^Bivio::Biz::Model::RealmOwner\(demo,\d+\)$}s,
     ],
     [req(), 'Category'] => [
 	iterate_start => [
