@@ -2,121 +2,49 @@
 # $Id$
 package Bivio::UI::HTML::Widget::ListActions;
 use strict;
-$Bivio::UI::HTML::Widget::ListActions::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::ListActions::VERSION;
-
-=head1 NAME
-
-Bivio::UI::HTML::Widget::ListActions - actions which appear in a list
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::ListActions;
-    Bivio::UI::HTML::Widget::ListActions->new();
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::ListActions::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::ListActions>
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item link_target : string [] (inherited)
-
-The value to be passed to the C<TARGET> attribute of C<A> tag.
-
-=item link_font : string [list_action]
-
-Font to use for rendering links in the list.
-
-=item values : array_ref (required)
-
-An array_ref of array_refs where the order is the order of the
-actions to appear.
-
-The first element of sub-array_ref is the name of the action.
-It may also be a widget.
-
-The second element is the task name.
-
-The third optional element of sub-array_ref is
-either a
-L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>
-(default value is C<THIS_DETAIL>)
-or a value renders to a URI.
-
-The fourth optional element is a control.  If the control returns
-true, the action is rendered.
-
-The fifth optional element is a widget value which returns the realm
-for the task.
-
-=back
-
-=cut
-
-#=IMPORTS
-use Bivio::HTML;
+use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::Biz::QueryType;
 use Bivio::UI::HTML::ViewShortcuts;
 
-#=VARIABLES
+# link_target : string [] (inherited)
+#
+# The value to be passed to the C<TARGET> attribute of C<A> tag.
+#
+# link_font : string [list_action]
+#
+# Font to use for rendering links in the list.
+#
+# values : array_ref (required)
+#
+# An array_ref of array_refs where the order is the order of the
+# actions to appear.
+#
+# The first element of sub-array_ref is the name of the action.
+# It may also be a widget.
+#
+# The second element is the task name.
+#
+# The third optional element of sub-array_ref is
+# either a
+# L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>
+# (default value is C<THIS_DETAIL>)
+# or a value renders to a URI.
+#
+# The fourth optional element is a control.  If the control returns
+# true, the action is rendered.
+#
+# The fifth optional element is a widget value which returns the realm
+# for the task.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_T) = 'Bivio::Agent::TaskId';
 
 my($_IDI) = __PACKAGE__->instance_data_index;
 
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(array_ref values, hash_ref attributes) : Bivio::UI::HTML::Widget::ListActions
-
-=head2 static new() : Bivio::UI::HTML::Widget::ListActions
-
-Creates a new ListActions widget.
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes "values" in field.
-
-=cut
-
 sub initialize {
     my($self) = @_;
+    # Initializes "values" in field.
     my($fields) = $self->[$_IDI];
     return if exists($fields->{values});
     $fields->{values} = [];
@@ -147,16 +75,9 @@ sub initialize {
     return;
 }
 
-=for html <a name="internal_new_args"></a>
-
-=head2 static internal_new_args() : 
-
-Implements positional argument parsing for L<new|"new">.
-
-=cut
-
 sub internal_new_args {
     my(undef, $values, $attributes) = @_;
+    # Implements positional argument parsing for L<new|"new">.
     return '"values" must be defined' unless defined($values);
     return {
 	values => $values,
@@ -164,16 +85,16 @@ sub internal_new_args {
     };
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-Renders the list, skipping those tasks that are invalid.
-
-=cut
+sub new {
+    my($self) = shift->SUPER::new(@_);
+    # Creates a new ListActions widget.
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub render {
     my($self, $source, $buffer) = @_;
+    # Renders the list, skipping those tasks that are invalid.
     my($fields) = $self->[$_IDI];
     my($values) = $fields->{values};
     my($req) = $source->get_request;
@@ -214,27 +135,12 @@ sub render {
     return;
 }
 
-#=PRIVATE METHODS
-
-# _init_label(self, any label, any font) : any
-#
-# Returns the label value.  Initializing appropriately.
-#
 sub _init_label {
     my($self, $label, $font) = @_;
+    # Returns the label value.  Initializing appropriately.
     $label = $_VS->vs_new('String', $label, $font, {hard_spaces => 1})
 	unless UNIVERSAL::isa($label, 'Bivio::UI::Widget');
     return $label->put_and_initialize(parent => $self);
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
