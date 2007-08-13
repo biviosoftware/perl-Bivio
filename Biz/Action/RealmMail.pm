@@ -21,7 +21,7 @@ sub execute_receive {
 	reply_to_list => $mr->new_other('Forum')->load->get('want_reply_to'),
 #TODO: This should be configurable
 	keep_to_cc => 1,
-	subject_prefix => "[$n]",
+	subject_prefix => $proto->internal_subject_prefix($req),
 	req => $req,
     });
     $proto->use('Bivio::Agent::Job::Dispatcher')->enqueue(
@@ -29,7 +29,7 @@ sub execute_receive {
 	    $proto->package_name => $proto->new({
 		outgoing => $out,
 		realm_file_id => $rm->get('realm_file_id'),
-	    })
+	    }),
 	},
     );
     return;
@@ -56,6 +56,11 @@ sub execute_reflector {
 	return;
     });
     return;
+}
+
+sub internal_subject_prefix {
+    my(undef, $req) = @_;
+    return '[' . $req->get_nested(qw(auth_realm owner name)) . ']';
 }
 
 1;
