@@ -13,8 +13,9 @@ sub create {
     $values->{realm_id} ||= $req->get('auth_id');
     $values->{user_id} ||= $req->get('auth_user_id')
 	if $self->has_fields('user_id');
+    my($t);
     foreach my $f (qw(modified_date_time creation_date_time)) {
-	$values->{$f} ||= $_DT->now
+	$values->{$f} ||= ($t ||= $_DT->now)
 	    if $self->has_fields($f);
     }
     return shift->SUPER::create(@_);
