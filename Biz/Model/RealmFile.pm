@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmFile;
 use strict;
@@ -86,7 +86,7 @@ sub delete {
 	entity => $self->get('path'),
 	message => 'folder is not empty',
     }) unless $self->is_empty;
-    return _delete($self, $values);
+    return _delete_one($self, $values);
 }
 
 sub delete_all {
@@ -115,7 +115,7 @@ sub delete_deep {
     return 0
 	unless $self;
     my($v) = $self->get_shallow_copy;
-    my($count) = _delete($self, $values);
+    my($count) = _delete_one($self, $values);
     return $count
 	unless $v->{is_folder};
     foreach my $child (@{
@@ -267,6 +267,7 @@ sub internal_prepare_query {
 }
 
 sub is_empty {
+    _assert_loaded(@_);
     my($self) = @_;
     return 1
 	unless $self->get('is_folder');
@@ -298,6 +299,7 @@ sub unauth_delete {
 }
 
 sub update {
+    _assert_loaded(@_);
     my($self, $new_values) = @_;
     $self->throw_die(INVALID_OP => 'may not modify "is_folder"')
 	if exists($new_values->{is_folder})
@@ -321,6 +323,13 @@ sub update {
 sub update_with_content {
     my($self, $values) = _with_content(@_);
     return $self->update($values);
+}
+
+sub _assert_loaded {
+    my($self) = @_;
+    $self->die('not loaded')
+	unless $self->is_loaded;
+    return;
 }
 
 sub _assert_not_root {
@@ -416,7 +425,7 @@ sub _create {
     return $self->SUPER::create($v);
 }
 
-sub _delete {
+sub _delete_one {
     my($self, $values) = @_;
     _trace($self) if $_TRACE;
     _txn($self, _search_delete($self, [delete => _filename($self)]))
@@ -636,13 +645,13 @@ sub _update {
 
 sub _verify {
     my($self, $values) = @_;
-    $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
     my($p) = $values->{path_lc}
 	= lc($values->{path} = $self->parse_path($values->{path}));
     $values->{is_read_only} = 1
 	if $p eq lc($self->MAIL_FOLDER);
 #TODO: This works, but forces all public files to reside under '/Public'
     $values->{is_public} = $p =~ m{^@{[$self->PUBLIC_FOLDER]}($|/)}oi ? 1 : 0;
+    $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
     return $values;
 }
 
