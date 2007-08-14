@@ -8,7 +8,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 
 # link_target : string [] (inherited)
 #
-# The value to be passed to the C<TARGET> attribute of C<A> tag.
+# The value to be passed to the TARGET attribute of <A> tag.
 #
 # link_font : string [list_action]
 #
@@ -25,9 +25,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 # The second element is the task name.
 #
 # The third optional element of sub-array_ref is
-# either a
-# L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>
-# (default value is C<THIS_DETAIL>)
+# either a Bivio::Biz::QueryType (default value is THIS_DETAIL)
 # or a value renders to a URI.
 #
 # The fourth optional element is a control.  If the control returns
@@ -96,41 +94,25 @@ sub render {
     my($self, $source, $buffer) = @_;
     # Renders the list, skipping those tasks that are invalid.
     my($fields) = $self->[$_IDI];
-    my($values) = $fields->{values};
-    my($req) = $source->get_request;
-    my($sep) = '';
     my($i) = 0;
-    foreach my $v (
-	map(+{
-	    value => $_,
-	    $_->{method} ? (uri => $req->format_stateless_uri($_->{task_id}))
-		: (),
-	}, @$values),
-    ) {
+    my($sep) = '';
+
+    foreach my $v (@{$fields->{values}}) {
 	$i++;
-	my($v2) = $v->{value};
-	next if $v2->{control}
-            && !$self->render_simple_value($v2->{control}, $source);
-        next unless $req->can_user_execute_task(
-	    $v2->{task_id},
-            $v2->{realm}
-                ? (ref($v2->{realm})
-                    ? $self->render_simple_value($v2->{realm}, $source) || undef
-                    : $v2->{realm})
-                : (),
-	);
-	$$buffer .= $sep
-	    . $v2->{prefix}
-	    . ($v2->{format_uri}
-		? ${$self->render_value(
-		    "$i.format_uri", $v2->{format_uri}, $source)}
-		: $source->format_uri($v2->{method}, $v->{uri}))
-	    . '">'
-	    . (ref($v2->{label})
-		? $self->render_simple_value($v2->{label}, $source)
-		: $v2->{label})
-	    . '</a>';
-	$sep = ",\n";
+        my($realm) = ref($v->{realm})
+            ? $self->render_simple_value($v->{realm}, $source) || undef
+            : $v->{realm};
+
+        if ($realm) {
+            next unless $source->get_request->with_realm($realm,
+                sub {
+                    _render_link($self, $source, $i, $v, $sep, $buffer);
+                });
+        }
+        else {
+            next unless _render_link($self, $source, $i, $v, $sep, $buffer);
+        }
+        $sep = ",\n";
     }
     return;
 }
@@ -141,6 +123,26 @@ sub _init_label {
     $label = $_VS->vs_new('String', $label, $font, {hard_spaces => 1})
 	unless UNIVERSAL::isa($label, 'Bivio::UI::Widget');
     return $label->put_and_initialize(parent => $self);
+}
+
+sub _render_link {
+    my($self, $source, $i, $v, $sep, $buffer) = @_;
+    return 0 if $v->{control}
+        && ! $self->render_simple_value($v->{control}, $source);
+    return 0 unless $source->req->can_user_execute_task($v->{task_id});
+    $$buffer .= $sep
+        . $v->{prefix}
+	. ($v->{format_uri}
+            ? ${$self->render_value(
+                "$i.format_uri", $v->{format_uri}, $source)}
+            : $source->format_uri($v->{method},
+                $source->req->format_stateless_uri($v->{task_id})))
+        . '">'
+        . (ref($v->{label})
+            ? $self->render_simple_value($v->{label}, $source)
+            : $v->{label})
+        . '</a>';
+    return 1;
 }
 
 1;
