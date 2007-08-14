@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.20  2007/08/13 21:50:18  nagler
+  * Bivio::Agent::Request->redirect added
+  * Bivio::Biz::Action::RealmMail->internal_subject_prefix added
+  * Bivio::Biz::Model::RealmBase->create sets creation_date_time and
+    modified_date_time to exactly same value
+  * Bivio::Biz::Model->as_string renders values with Type->to_string
+  * Bivio::IO::Alert->warn_deprecated formats arguments like info(), etc.
+  * Bivio::IO::File->do_lines handles $! properly now
+  * Bivio::UNIVERSAL->is_blessed asks if is_blessed of $proto if no
+    second argument.  Call Bivio::UNIVERSAL->is_blessed statically if
+    you just want to know if object is blessed, but don't care what class.
+  * Bivio::Util::HTTPD.additiona_directives/locations added
+  * Bivio::Util::IIF handles quotes
+  * Bivio::Util::SQL->init_dbms takes database to clone as argument
+
   Revision 5.19  2007/08/06 19:03:58  nagler
   * Bivio::UI::HTML::Widet::RealmFilePage does not modify cid: references
   * Bivio::UI::Widget::MIMEEntityRealmFile.mime_disposition/id added
