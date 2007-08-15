@@ -98,21 +98,8 @@ sub render {
     my($sep) = '';
 
     foreach my $v (@{$fields->{values}}) {
-	$i++;
-        my($realm) = ref($v->{realm})
-            ? $self->render_simple_value($v->{realm}, $source) || undef
-            : $v->{realm};
-
-        if ($realm) {
-            next unless $source->get_request->with_realm($realm,
-                sub {
-                    _render_link($self, $source, $i, $v, $sep, $buffer);
-                });
-        }
-        else {
-            next unless _render_link($self, $source, $i, $v, $sep, $buffer);
-        }
-        $sep = ",\n";
+        $sep = ",\n"
+            if _render_link($self, $source, ++$i, $v, $sep, $buffer);
     }
     return;
 }
@@ -125,18 +112,46 @@ sub _init_label {
     return $label->put_and_initialize(parent => $self);
 }
 
+sub _realm_name {
+    my($self, $source, $realm) = @_;
+    # realm must be a name, not an ID for format_uri() below
+    return undef
+        unless $realm;
+
+    if (Bivio::Type->get_instance('PrimaryId')->is_valid($realm)) {
+        # chances are, it is already on the request at this point
+        # (loaded from can_user_execute_task())
+        if ($source->req->unsafe_get('Model.RealmOwner')
+            && $source->req(qw(Model.RealmOwner realm_id)) eq $realm) {
+            return $source->req(qw(Model.RealmOwner name));
+        }
+        # otherwise go to the database
+        return Bivio::Biz::Model->new($source->req, 'RealmOwner')
+            ->unauth_load_by_id_or_name_or_die($realm)->get('name');
+    }
+    return $realm;
+}
+
 sub _render_link {
     my($self, $source, $i, $v, $sep, $buffer) = @_;
     return 0 if $v->{control}
         && ! $self->render_simple_value($v->{control}, $source);
-    return 0 unless $source->req->can_user_execute_task($v->{task_id});
+    my($realm) = ref($v->{realm})
+        ? $self->render_simple_value($v->{realm}, $source) || undef
+        : $v->{realm};
+    return 0 unless $source->req->can_user_execute_task($v->{task_id}, $realm);
     $$buffer .= $sep
         . $v->{prefix}
 	. ($v->{format_uri}
             ? ${$self->render_value(
                 "$i.format_uri", $v->{format_uri}, $source)}
             : $source->format_uri($v->{method},
-                $source->req->format_stateless_uri($v->{task_id})))
+                $source->req->format_uri({
+                    task_id => $v->{task_id},
+                    query => undef,
+                    realm => _realm_name($self, $source, $realm),
+                    path_info => undef,
+                })))
         . '">'
         . (ref($v->{label})
             ? $self->render_simple_value($v->{label}, $source)
