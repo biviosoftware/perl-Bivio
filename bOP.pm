@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.21  2007/08/14 17:02:45  moeller
+  * Bivio::Biz::Model::RealmFile Add _assert_loaded, call from update
+    and is_empty
+  * Bivio::UI::HTML::Widget::ListActions if realm is supplied, the links
+    will be evaluated within that realm
+
   Revision 5.20  2007/08/13 21:50:18  nagler
   * Bivio::Agent::Request->redirect added
   * Bivio::Biz::Action::RealmMail->internal_subject_prefix added
