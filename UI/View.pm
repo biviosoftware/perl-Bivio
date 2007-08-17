@@ -330,7 +330,7 @@ sub unsafe_get_current {
 sub _clear_children {
     my($object, $seen) = @_;
     return if $seen->{$object}++;
-    $object->internal_clear_read_only->delete('parent');
+    $object->internal_clear_read_only->delete(qw(parent view_parent));
     foreach my $v (values(%{$object->get_shallow_copy})) {
 	next unless ref($v);
 	foreach my $o (
