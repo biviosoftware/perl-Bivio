@@ -19,6 +19,7 @@ sub execute_home_page_if_site_root {
     my($proto, $req) = @_;
     return {
 	uri => Bivio::UI::Text->get_value('home_page_uri', $req),
+	query => undef,
     } if $req->get('uri') =~ m!^/?$!;
     return;
 }
@@ -64,6 +65,7 @@ sub execute_query {
     $uri =~ s,^(?!\w+:|\/),\/,;
     return {
 	uri => $uri,
+	query => undef,
     };
 }
 
