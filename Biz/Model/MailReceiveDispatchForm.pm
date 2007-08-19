@@ -82,8 +82,11 @@ sub execute_ok {
     $redirect = _ignore_email($self)
 	unless $redirect;
     _trace($redirect) if $_TRACE;
-    return "server_redirect.$redirect"
-	if $redirect;
+    return {
+	method => 'server_redirect',
+	task_id => $redirect,
+	query => undef,
+    } if $redirect;
     $self->internal_set_realm($realm);
     my($copy) = ${$self->get('message')->{content}};
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
@@ -98,7 +101,11 @@ sub execute_ok {
     Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
 	login => $self->internal_get_login,
     });
-    return 'server_redirect.' . $self->get('task_id')->get_name;
+    return {
+	method => 'server_redirect',
+	task_id => $self->get('task_id'),
+	query => undef,
+    };
 }
 
 sub handle_config {
