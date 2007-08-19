@@ -20,6 +20,7 @@ BEGIN {
     });
 }
 use Bivio::Test;
+use Bivio::Test::Unit;
 use Bivio::Test::Request;
 use Bivio::Agent::Task;
 my($req) = Bivio::Test::Request->get_instance;
@@ -33,6 +34,7 @@ Bivio::Test->new({
     compute_params => sub {
 	my($case, $params, $method) = @_;
 	$case->put(expected_task => $params->[0]);
+	$req->clear_nondurable_state;
 	return [$req];
     },
     check_return => sub {
@@ -42,8 +44,9 @@ Bivio::Test->new({
 	my($t) = $req->get('task_id');
 	return 0
 	    unless $t;
-	# The $t produces a better error message
-	return $t->equals_by_name($case->get('expected_task')) ? 1 : $t;
+	Bivio::Test::Unit->builtin_assert_equals(
+	    $case->get('expected_task'), $t->get_name);
+	return 1;
     },
 })->unit([
     (map {
@@ -55,6 +58,8 @@ Bivio::Test->new({
 	    ],
 	];
     }
+	[qw(TEST_ITEMS_1 SHELL_UTIL)],
+	[qw(TEST_ITEMS_2 LOGIN)],
 	[qw(SHELL_UTIL SITE_ROOT)],
 	[qw(REDIRECT_TEST_1 REDIRECT_TEST_2)],
 	[qw(REDIRECT_TEST_3 REDIRECT_TEST_1)],

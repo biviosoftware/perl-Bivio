@@ -318,7 +318,7 @@ sub _load {
 	$req->put(task_id => $tid, task => $t);
 	if ($t->unsafe_get('require_dav')
 	    || grep(($_->[0] || '') =~ /DAV/, @{$t->get('items')})) {
-	    $tid = ($req->get('task')->execute_items($req))[0];
+	    $tid = ($req->get('task')->execute_items($req) || {})->{task_id};
 	    next;
 	}
 	Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
