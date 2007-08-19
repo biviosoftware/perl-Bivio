@@ -148,7 +148,7 @@ sub commit {
 
 sub execute {
     my($self, $req) = @_;
-    my($next, $method) = $self->execute_items(
+    my($next) = $self->execute_items(
 	$req,
 	[map({
 	    my($i) = $_;
@@ -159,7 +159,7 @@ sub execute {
 	@{$self->get('items')},
 	'handle_post_execute_task',
     )]);
-    $req->$method($next)
+    $req->redirect($next)
 	if $next;
     $self->commit($req);
     $req->get('reply')->send($req);
@@ -170,35 +170,45 @@ sub execute_items {
     my($self, $req, $items) = @_;
     foreach my $i (@{$items || $self->get('items')}) {
 	my($instance, $method, $args) = @$i;
-	my($res) = $instance->$method(@$args, $req);
-	next unless $res;
-	my($next) = $res;
-	my($redirect) = ref($next) eq 'HASH' && delete($next->{method})
-	    || 'client_redirect';
-	unless (ref($res)) {
+	next
+	    unless my $res = $instance->$method(@$args, $req);
+	if (ref($res) eq 'HASH') {
+	    $res->{method} ||= '';
+	    next if $res->{method} eq 'next_item_execute';
+	    last if $res->{method} eq 'last_item_execute';
+	    Bivio::IO::Alert->warn_deprecated(
+		$res, ': query must be set explicitly by ',
+		_item_as_string($self, $i),
+	    ) unless exists($res->{query});
+	}
+	else {
 	    last if $res eq '1';
-	    $redirect = 'server_redirect'
-		if $res =~ s/^(server_redirect)\.//;
- 	    $next = $self->unsafe_get($res)
-		|| $_T->is_valid_name($res) && $_T->from_name($res)
-		|| $res;
+	    my($next) = $res;
+	    $res = {task_id => $next};
+	    if ($next =~ s/^(server_redirect)\.(.+)//) {
+		$res->{method} = $1;
+		$res->{task_id} = $2;
+		Bivio::IO::Alert->warn_deprecated(
+		    'server_redirect.*: invalid, use ', $res, ' by ',
+		    _item_as_string($self, $i));
+	    }
+	    $res->{query} = $req->unsafe_get('query');
 	}
-	elsif (ref($res) eq 'HASH'
-            && ($res->{task_id} || '') =~ /(?:^next|^cancel|_task)$/
-	) {
-	    $res->{task_id} = $self->unsafe_get($res->{task_id})
-		|| $res->{task_id};
+	unless ($res->{uri} || $_T->is_blessed($res->{task_id})) {
+	    Bivio::Die->die(
+		$res,
+		': invalid task_id returned by ',
+		_item_as_string($self, $i),
+	    ) unless
+		my $t = ($res->{task_id} || '') =~ /(?:^next|^cancel|_task)$/
+		? $self->unsafe_get($res->{task_id})
+		: $_T->unsafe_from_name($res->{task_id});
+	    $res->{task_id} = $t;
 	}
-	_trace($redirect, '.', $next, ' ', $req->unsafe_get('query'))
+	$res->{method} ||= 'client_redirect';
+	_trace($res)
 	    if $_TRACE;
-	Bivio::Die->die(
-	    $self->get('id'), ' item ',
-	    defined($instance) ? (ref($instance) || $instance) . '->' . $method
-		: 'code',
-	    ': must return boolean, hash_ref, Bivio::Agent::TaskId, or attribute not ',
-	    $res,
-	) unless ref($next) eq 'HASH' || $self->is_blessed($next, $_T);
-	return ($next, $redirect);
+	return $res;
     }
     return;
 }
@@ -520,6 +530,17 @@ sub _init_form_attrs {
 	$attrs->{require_context} = $form_require;
     }
     return;
+}
+
+sub _item_as_string {
+    my($self, $item) = @_;
+    my($instance, $method, $args) = @$item;
+    return $self->get('id')->as_string
+	. '['
+	. (defined($instance)
+	  ? (ref($instance) || $instance) . '->' . $method
+	  : 'code'
+        ) . ']';
 }
 
 sub _parse_map_item {
