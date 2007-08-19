@@ -31,7 +31,7 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 		$case->actual_return([
 		    req()->get('auth_user') && req()->get('auth_user')->get('name'),
 		    req()->get('auth_realm')->unsafe_get('owner_name'),
-		    ($actual->[0] =~ /^server_redirect\.(.*)/)[0],
+		    $actual->[0]->{task_id},
 		    $case->get('object')->get('recipient'),
 		]);
 		return [
