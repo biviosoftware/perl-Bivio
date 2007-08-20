@@ -4,7 +4,6 @@
 # Product search results
 #
 view_parent('menu');
-view_parent('menu');
 view_put(
     header_title => 'Search Results',
     menu_heading => Join([
