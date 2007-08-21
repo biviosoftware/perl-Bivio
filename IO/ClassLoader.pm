@@ -36,6 +36,7 @@ Bivio::IO::Config->register(my $_CFG = {
     maps => Bivio::IO::Config->REQUIRED,
     delegates => Bivio::IO::Config->REQUIRED,
 });
+my($_WARNED);
 
 sub MAP_SEPARATOR {
     # Returns the separator character (.)
@@ -258,7 +259,8 @@ sub _map_init {
     my($map_name, $paths) = @_;
     return $map_name => [map(
 	_map_glob($map_name, $_) ? $_
-	    : _die($_, ': empty path in map ', $map_name),
+	    : ($_WARNED ||= {})->{$_}++ ? ()
+	    : Bivio::IO::Alert->warn($_, ': empty path in map ', $map_name),
 	@$paths,
     )];
 }
