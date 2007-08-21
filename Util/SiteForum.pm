@@ -19,6 +19,7 @@ sub USAGE {
 usage: b-site-forum [options] command [args..]
 commands
   init -- create site forums, files, and aliases
+  realm_names -- which realm names created by init
 EOF
 }
 
@@ -28,15 +29,22 @@ sub init {
     $req->with_realm(undef, sub {
         $self->model('ForumForm', {
 	    'RealmOwner.name' => $self->SITE_REALM,
-	    'RealmOwner.display_name' => 'Web Site Forum',
+	    'RealmOwner.display_name' => 'Web Site',
 	});
     });
     $req->with_realm($self->SITE_REALM, sub {
         $self->model('ForumForm', {
-	   'RealmOwner.display_name' => 'Web Contact Forum',
+	   'RealmOwner.display_name' => 'Web Contacts',
 	   'RealmOwner.name' => $self->CONTACT_REALM,
 	   'Forum.want_reply_to' => 1,
 	   'public_forum_email' => 1,
+	});
+    });
+    $req->with_realm($self->SITE_REALM, sub {
+        $self->model('ForumForm', {
+	   'RealmOwner.display_name' => 'Help',
+	   'RealmOwner.name' => Bivio::UI::Facade->get_default->HELP_WIKI_REALM_NAME,
+	   'Forum.want_reply_to' => 1,
 	});
     });
     $self->model('EmailAlias')->create({
@@ -45,6 +53,16 @@ sub init {
 	outgoing => $self->CONTACT_REALM,
     });
     return;
+}
+
+sub realm_names {
+    my($self) = @_;
+    $self->initialize_fully;
+    return [
+	$self->SITE_REALM,
+	$self->CONTACT_REALM,
+	Bivio::UI::Facade->get_default->HELP_WIKI_REALM_NAME,
+    ];
 }
 
 1;

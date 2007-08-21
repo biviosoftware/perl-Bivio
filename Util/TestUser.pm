@@ -24,13 +24,14 @@ sub init {
 	$req->with_user(adm => sub {
             $self->new_other('RealmRole')->make_super_user;
 	    my($u) = 'adm';
-	    foreach my $r (qw(ADMIN SITE CONTACT)) {
-		my($m) = $r . "_REALM";
-		$req->set_realm_and_user($self->new_other('SiteForum')->$m, $u);
-		$self->model('ForumUserAddForm', {
-		    'RealmUser.realm_id' => $req->get('auth_id'),
-		    'User.user_id' => $req->get('auth_user_id'),
-		    administrator => 1,
+	    foreach my $r (@{$self->new_other('SiteForum')->realm_names}) {
+		$req->with_realm($r => sub {
+		    $self->model('ForumUserAddForm', {
+			'RealmUser.realm_id' => $req->get('auth_id'),
+			'User.user_id' => $req->get('auth_user_id'),
+			administrator => 1,
+		    });
+		    return;
 		});
 	    }
 	});
