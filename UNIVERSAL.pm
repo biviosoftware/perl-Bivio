@@ -21,8 +21,9 @@ sub call_super_before {
     my($sub);
     foreach my $a (@{$proto->inheritance_ancestors}) {
 	$sub = \&{$a . '::' . $method};
-	return @{$op->($proto, $args, [$sub->($proto, @$args)])}
-	    if defined(&$sub);
+	next unless defined(&$sub);
+	my($res) = [$sub->($proto, @$args)];
+	return @{$op->($proto, $args, $res) || $res};
     }
     Bivio::Die->die($method, ': not implemented by SUPER');
 }

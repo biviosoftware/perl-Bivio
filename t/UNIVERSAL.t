@@ -38,7 +38,7 @@ sub equals {
     return shift->call_super_before(
 	\@_, sub {
 	    my($proto, $args, $res) = @_;
-	    return $args->[0] eq $proto ? $res : [$args->[0]];
+	    return $args->[0] eq $proto ? () : [$args->[0]];
 	},
     );
 }
