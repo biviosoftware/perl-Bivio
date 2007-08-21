@@ -7,7 +7,7 @@ use base 'Bivio::UI::Facade';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub HELP_WIKI_REALM_NAME {
-    die('HELP_WIKI_REALM_NAME: must be defined if using wiki');
+    return 'site-help';
 }
 
 sub MAIL_RECEIVE_PREFIX {
@@ -185,6 +185,7 @@ sub _cfg_base {
 	    [country => 'Country'],
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
+	    [actions => 'Actions'],
 	    [xlink => [
 		back_to_top => 'back to top',
 		SITE_ROOT => 'Home',
@@ -251,7 +252,7 @@ sub _cfg_blog {
 		empty_list_prose => 'No entries in this blog.',
 	    ]],
 	    [title => [
-		[qw(FORUM_BLOG_LIST FORUM_PUBLIC_BLOG_LIST FORUM_PUBLIC_BLOG_RSS)]
+		[qw(FORUM_BLOG_LIST FORUM_PUBLIC_BLOG_LIST FORUM_BLOG_RSS FORUM_PUBLIC_BLOG_RSS)]
 		    => 'Blog',
 		[qw(FORUM_BLOG_DETAIL FORUM_PUBLIC_BLOG_DETAIL)]
 		    => 'Blog Detail',
