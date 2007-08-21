@@ -15,6 +15,18 @@ sub as_string {
     return shift(@_) . '';
 }
 
+sub call_super_before {
+    my($proto, $args, $op) = @_;
+    my($method) = ((caller(1))[3] =~ /([^:]+)$/)[0];
+    my($sub);
+    foreach my $a (@{$proto->inheritance_ancestors}) {
+	$sub = \&{$a . '::' . $method};
+	return @{$op->($proto, $args, [$sub->($proto, @$args)])}
+	    if defined(&$sub);
+    }
+    Bivio::Die->die($method, ': not implemented by SUPER');
+}
+
 sub clone {
     my($self) = @_;
     return bless(

@@ -34,6 +34,15 @@ sub _c {
     return shift->my_caller;
 }
 
+sub equals {
+    return shift->call_super_before(
+	\@_, sub {
+	    my($proto, $args, $res) = @_;
+	    return $args->[0] eq $proto ? $res : [$args->[0]];
+	},
+    );
+}
+
 package main;
 require './UNIVERSAL/DataSectionOK.pm';
 
@@ -105,6 +114,10 @@ Bivio::Test->unit([
 	],
 	my_idi => 1,
 	my_caller_t => 'my_caller_t',
+	equals => [
+	    'Bivio::t::UNIVERSAL::t2' => 1,
+	    'other' => 'other',
+	],
     ],
     'Bivio::t::UNIVERSAL::DataSectionOK' => [
 	internal_data_section => qr{data ok},
