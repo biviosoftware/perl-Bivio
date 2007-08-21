@@ -6,10 +6,6 @@ use Bivio::Base 'Bivio::ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub ADMIN_REALM {
-    return 'admin';
-}
-
 sub CONTACT_REALM {
     return 'site-contact';
 }
@@ -29,13 +25,6 @@ EOF
 sub init {
     my($self) = @_;
     my($req) = $self->initialize_fully;
-    $req->with_realm(undef, sub {
-	my($n) = $self->ADMIN_REALM;
-	$self->model('ForumForm', {
-	    'RealmOwner.display_name' => ucfirst($n),
-	    'RealmOwner.name' => $n,
-	});
-    });
     $req->with_realm(undef, sub {
         $self->model('ForumForm', {
 	    'RealmOwner.name' => $self->SITE_REALM,
