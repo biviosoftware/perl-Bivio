@@ -1,68 +1,27 @@
-# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::ClassLoader;
 use strict;
-$Bivio::IO::ClassLoader::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::IO::ClassLoader::VERSION;
-
-=head1 NAME
-
-Bivio::IO::ClassLoader - implements dynamic class loading
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::IO::ClassLoader;
-    Bivio::IO::ClassLoader->new();
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::IO::ClassLoader::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::IO::ClassLoader> implements dynamic class loading.
-L<simple_require|"simple_require"> implements a dynamic C<use> clause.
-
-L<map_require|"map_require"> is an indirect load via mapped name.  The classes
-loaded have names of the form I<Map>.I<Class>.  The I<map> is a simple perl
-identifier which identifies a class path or handler class which does the
-loading.  map_require calls simple_require if the I<map_class> is a
-simple class.
-
-L<delegate_require|"delegate_require"> is called by classes which delegate
-(part of) their implementations.  A I<delegate> may provide I<info>, a data
-structure which defines the internals of, say, a
-L<Bivio::Type::Enum|Bivio::Type::Enum>.  A delegate may also completely
-implement the class.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="MAP_SEPARATOR"></a>
-
-=head2 MAP_SEPARATOR : string
-
-Returns the separator character (.)
-
-=cut
-
-sub MAP_SEPARATOR {
-    return '.';
-}
-
-#=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
 
-#=VARIABLES
+# C<Bivio::IO::ClassLoader> implements dynamic class loading.
+# L<simple_require|"simple_require"> implements a dynamic C<use> clause.
+#
+# L<map_require|"map_require"> is an indirect load via mapped name.  The classes
+# loaded have names of the form I<Map>.I<Class>.  The I<map> is a simple perl
+# identifier which identifies a class path or handler class which does the
+# loading.  map_require calls simple_require if the I<map_class> is a
+# simple class.
+#
+# L<delegate_require|"delegate_require"> is called by classes which delegate
+# (part of) their implementations.  A I<delegate> may provide I<info>, a data
+# structure which defines the internals of, say, a
+# L<Bivio::Type::Enum|Bivio::Type::Enum>.  A delegate may also completely
+# implement the class.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 # Bivio::Die can't be loaded at startup, but it can be loaded before
 # the first *_require.  We load it dynamically, because Bivio::Type
@@ -78,48 +37,28 @@ Bivio::IO::Config->register(my $_CFG = {
     delegates => Bivio::IO::Config->REQUIRED,
 });
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="delegate_require"></a>
-
-=head2 delegate_require(string class) : Bivio::UNIVERSAL
-
-Returns the delegate for the specified class.
-
-=cut
+sub MAP_SEPARATOR {
+    # Returns the separator character (.)
+    return '.';
+}
 
 sub delegate_require {
     my($proto, $class) = @_;
+    # Returns the delegate for the specified class.
     return $proto->simple_require($_CFG->{delegates}->{$class}
 	|| _die($class, ': delegates not configured'));
 }
 
-=for html <a name="delegate_require_info"></a>
-
-=head2 delegate_require_info(string class) : any
-
-Returns the class specific delegate information. The delegate should
-define L<get_delegate_info|"get_delegate_info">.
-
-=cut
-
 sub delegate_require_info {
+    # Returns the class specific delegate information. The delegate should
+    # define L<get_delegate_info|"get_delegate_info">.
     return shift->delegate_require(shift)->get_delegate_info;
 }
 
-=for html <a name="delete_require"></a>
-
-=head2 static delete_require(string pkg)
-
-Clears the state of I<pkg> (which must be a fully qualified class)
-so that it can be reloaded.
-
-=cut
-
 sub delete_require {
     my(undef, $pkg) = @_;
+    # Clears the state of I<pkg> (which must be a fully qualified class)
+    # so that it can be reloaded.
 
     delete($_SIMPLE_CLASS->{$pkg});
     while (my($k, $v) = each(%$_MAP_CLASS)) {
@@ -135,31 +74,20 @@ sub delete_require {
     return;
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item maps : hash_ref []
-
-A map is a named path, e.g.
-
-   AccountScraper => ['Bivio::Data::AccountScraper'],
-
-A class path is a list (array_ref)
-of module prefixes to insert in front of the simple class names to load.
-
-=item delegates : hash_ref []
-
-A map of class names to delegate class names.
-
-=back
-
-=cut
-
 sub handle_config {
     my($proto, $cfg) = @_;
+    # maps : hash_ref []
+    #
+    # A map is a named path, e.g.
+    #
+    #    AccountScraper => ['Bivio::Data::AccountScraper'],
+    #
+    # A class path is a list (array_ref)
+    # of module prefixes to insert in front of the simple class names to load.
+    #
+    # delegates : hash_ref []
+    #
+    # A map of class names to delegate class names.
     $_CFG = {
 	%$cfg,
 	maps => {map(
@@ -169,43 +97,25 @@ sub handle_config {
     return;
 }
 
-=for html <a name="is_map_configured"></a>
-
-=head2 static is_map_configured(string map_name) : boolean
-
-Returns true if I<map_name> exists.
-
-=cut
-
 sub is_map_configured {
     my(undef, $map_name) = @_;
+    # Returns true if I<map_name> exists.
     return $_CFG->{maps}->{$map_name} ? 1 : 0;
 }
 
-=for html <a name="map_require"></a>
-
-=head2 static map_require(string map_class) : string
-
-=head2 static map_require(string class_name) : string
-
-=head2 static map_require(string map_name, string class_name) : string
-
-Returns the fully qualified class loaded.
-
-A I<map_class> is of the form:
-
-    map_name.class_name
-
-Throws an exception if the class can't be found or doesn't load.
-
-If I<class_name> is passed without a I<map_name> or if I<class_name>
-is a qualified class name (contains ::), the class will be loaded
-with L<simple_require|"simple_require">.
-
-=cut
-
 sub map_require {
     my($proto) = shift;
+    # Returns the fully qualified class loaded.
+    #
+    # A I<map_class> is of the form:
+    #
+    #     map_name.class_name
+    #
+    # Throws an exception if the class can't be found or doesn't load.
+    #
+    # If I<class_name> is passed without a I<map_name> or if I<class_name>
+    # is a qualified class name (contains ::), the class will be loaded
+    # with L<simple_require|"simple_require">.
     my($res) = $proto->unsafe_map_require(@_);
     return $res
 	if $res;
@@ -217,32 +127,23 @@ sub map_require {
     # DOES NOT RETURN
 }
 
-=for html <a name="map_require_all"></a>
-
-=head2 static map_require_all(string map_name) : array_ref
-
-=head2 static map_require_all(string map_name, code_ref filter) : array_ref
-
-Discovers and loads all classes in I<map_name> by searching in
-C<@INC>.
-
-I<filter> is optional.  I<filter> is called with:
-
-    $filter->($class, $file_name)
-
-where I<class> is the fully qualified perl class name and I<file_name>
-is the absolute path name to the class.
-
-If I<filter> returns true, the class will be loaded with
-L<map_require|"map_require">.  Otherwise, no action is taken.
-See L<Bivio::Biz::Model|Bivio::Biz::Model> for an example.
-
-Returns the names of the classes loaded.
-
-=cut
-
 sub map_require_all {
     my($proto, $map_name, $filter) = @_;
+    # Discovers and loads all classes in I<map_name> by searching in
+    # C<@INC>.
+    #
+    # I<filter> is optional.  I<filter> is called with:
+    #
+    #     $filter->($class, $file_name)
+    #
+    # where I<class> is the fully qualified perl class name and I<file_name>
+    # is the absolute path name to the class.
+    #
+    # If I<filter> returns true, the class will be loaded with
+    # L<map_require|"map_require">.  Otherwise, no action is taken.
+    # See L<Bivio::Biz::Model|Bivio::Biz::Model> for an example.
+    #
+    # Returns the names of the classes loaded.
     my($seen) = {};
     return [map(
 	map({
@@ -255,49 +156,31 @@ sub map_require_all {
     )];
 }
 
-=for html <a name="simple_require"></a>
-
-=head2 static simple_require(string package, ...) : array
-
-Loads the packages and throws an exception if any one couldn't be loaded.
-I<package> must be a fully-qualified perl package name.
-
-Returns its first argument in scalar context. Else returns all of its
-arguments.
-
-=cut
-
 sub simple_require {
     my($proto, @package) = @_;
+    # Loads the packages and throws an exception if any one couldn't be loaded.
+    # I<package> must be a fully-qualified perl package name.
+    #
+    # Returns its first argument in scalar context. Else returns all of its
+    # arguments.
     my(@res) = map(_require($proto, $_, 1), @package);
     return wantarray ? @res : $res[0];
 }
 
-=for html <a name="unsafe_map_require"></a>
-
-=head2 static unsafe_map_require(string map_class) : string
-
-=head2 static unsafe_map_require(string class_name) : string
-
-=head2 static unsafe_map_require(string map_name, string class_name) : string
-
-Returns the fully qualified class loaded.
-
-A I<map_class> is of the form:
-
-    map_name.class_name
-
-Throws an exception if the class doesn't load properly.  Returns C<undef>
-if the file can't be found.
-
-If I<class_name> is passed without a I<map_name> or if I<class_name>
-is a qualified class name (contains ::), the class will be loaded
-with L<unsafe_simple_require|"unsafe_simple_require">.
-
-=cut
-
 sub unsafe_map_require {
     my($proto, $map_name, $class_name, $map_class) = _map_args(@_);
+    # Returns the fully qualified class loaded.
+    #
+    # A I<map_class> is of the form:
+    #
+    #     map_name.class_name
+    #
+    # Throws an exception if the class doesn't load properly.  Returns C<undef>
+    # if the file can't be found.
+    #
+    # If I<class_name> is passed without a I<map_name> or if I<class_name>
+    # is a qualified class name (contains ::), the class will be loaded
+    # with L<unsafe_simple_require|"unsafe_simple_require">.
     return $proto->unsafe_simple_require($class_name)
 	unless defined($map_name);
     _trace('cached map_class=', $map_class)
@@ -315,41 +198,23 @@ sub unsafe_map_require {
     return undef;
 }
 
-=for html <a name="unsafe_simple_require"></a>
-
-=head2 static unsafe_simple_require(string package) : string
-
-Returns I<package> if it could be loaded.  Else, returns C<undef>.
-
-=cut
-
 sub unsafe_simple_require {
     my($proto, $package) = @_;
+    # Returns I<package> if it could be loaded.  Else, returns C<undef>.
     return _require($proto, $package);
 }
 
-=for html <a name="was_required"></a>
-
-=head2 static was_required(string simple_class) : boolean
-
-=head2 static was_required(string map_class) : boolean
-
-Returns true if I<simple_class> has been loaded into the perl interpreter
-or if I<map_class> has been loaded by I<map_require>.
-
-Returns false if class is not loaded or if class isn't a
-L<Bivio::UNIVERSAL|Bivio::UNIVERSAL>.
-
-=cut
-
 sub was_required {
     my($proto, $class) = @_;
+    # Returns true if I<simple_class> has been loaded into the perl interpreter
+    # or if I<map_class> has been loaded by I<map_require>.
+    #
+    # Returns false if class is not loaded or if class isn't a
+    # L<Bivio::UNIVERSAL|Bivio::UNIVERSAL>.
     return ($class =~ /\Q$_SEP/o ? $_MAP_CLASS->{$class}
         : $_SIMPLE_CLASS->{$class} || UNIVERSAL::isa($class, 'Bivio::UNIVERSAL')
     ) ? 1 : 0;
 }
-
-#=PRIVATE METHODS
 
 sub _catch {
     eval('require Bivio::Die;') || die("$@")
@@ -442,15 +307,5 @@ EOF
     $_SIMPLE_CLASS->{$pkg}++;
     return $pkg;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
