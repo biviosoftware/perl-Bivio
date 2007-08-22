@@ -568,6 +568,35 @@ sub _site_wiki {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
 }
+div.help_wiki {
+  width: 18em;
+  margin-left: 2em;
+  background-color: #6b9fea;
+  float: right;
+}
+.help_wiki_body {
+  text-align: left;
+  margin: .5ex 0 .5ex 0;
+  font-size: 90%;
+  padding-right: .5em;
+  padding-left: .5em;
+}
+.help_wiki .header {
+  padding-top: .5ex;
+  padding-bottom: .5ex;
+  text-align: center;
+  font-weight: bold;
+  font-size: 120%;
+}
+.help_wiki .footer {
+  padding-top: .5ex;
+  padding-bottom: .5ex;
+  text-align: center;
+}
+div.wiki {
+  padding-top: .5ex;
+  padding-bottom: .5ex;
+}
 EOF
 }
 
