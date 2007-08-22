@@ -20,7 +20,10 @@ sub internal_compress {
     my(undef, $v) = @_;
     $v =~ s/^\!.*\n//mg;
     $v =~ s/^\s+//mg;
-    $v =~ s/(?<=[\,\;\:\{])\s+//mg;
+    # IE BUG: Don't include ';', because "Icon('bla'); left" will get convereted to
+    # "Icon('bla');left" which then becomes "url(/i/bla.gif)left" which IE doesn't
+    # interpret properly and doesn't render the image
+    $v =~ s/(?<!\))(?<=[\,\:\{])\s+//mg;
     return $v;
 }
 
