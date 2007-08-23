@@ -58,6 +58,7 @@ sub _cfg_base {
 	    [[qw(err warn empty_list_border form_field_err)] => 0x990000],
 	    [header_su_background => 0x00ff00],
 	    [[qw(form_desc form_sep_border)]  =>  0x666666],
+            [help_wiki_background => 0x6b9fea],
 	],
 	Font => [
 	    map([$_->[0] => [qq{class=$_->[1]}]],
