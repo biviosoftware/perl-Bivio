@@ -19,6 +19,7 @@ sub initialize {
     $self->put_unless_exists(
 	class => 'help_wiki',
 	tag => 'div',
+        id => 'help_wiki',
     )->put(
 	control => [
 	    sub {
@@ -39,9 +40,9 @@ sub initialize {
 	    },
 	],
         value => Join([
-	    Tag(div => Prose(vs_text('helpwiki.header')), 'header'),
-	    Tag(div => [['->get_request'], "$self"], 'help_wiki_body'),
-	    Tag(div => Prose(vs_text('helpwiki.footer')), 'footer'),
+	    DIV_header(Prose(vs_text('helpwiki.header'))),
+	    DIV_help_wiki_body([['->get_request'], "$self"]),
+	    DIV_footer(Prose(vs_text('helpwiki.footer'))),
 	]),
     );
     return shift->SUPER::initialize(@_);
