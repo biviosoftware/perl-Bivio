@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.23  2007/08/22 17:30:55  nagler
+  * Bivio::Agent::Task->execute_items API change.  items which return a
+    hash must set query.  Defaulting query in this case is deprecated,
+    use query => $req->get('query'), if you must, but your probably
+    don't want this.  server_redirect.<task> is deprecated.  Use
+    {method => 'server_redirect', task_id => <task>}
+  * Bivio::IO::ClassLoader map init issues a warning (used to die) when
+    map directory is empty.
+  * Bivio::UNIVERSAL->call_super_before added
+  * Bivio::UI::View destroys views properly now.  This was a complicated
+    failure that looked like the parent was going away.
+
   Revision 5.22  2007/08/16 03:40:00  moeller
   * Bivio::UI::HTML::Widget::ListActions no longer renders in target realm,
     instead passes target realm to format_uri()
