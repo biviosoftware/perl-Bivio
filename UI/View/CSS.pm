@@ -567,20 +567,27 @@ EOF
 
 sub _site_wiki {
     return <<'EOF';
+.help_link {
+  Color('help_wiki-background');
+  padding-left: .5em;
+  padding-right: .5em;
+}
 .wiki .prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
 }
 div.help_wiki {
-  width: 18em;
-  margin-left: 2em;
-  background-color: #6b9fea;
-  float: right;
+  Color('help_wiki-background');
+  width: 40em;
+  position: absolute;
+  top: 2em;
+  right: 4em;
+  visibility: hidden;
 }
 .help_wiki_body {
   text-align: left;
   margin: .5ex 0 .5ex 0;
-  font-size: 90%;
+  font-size: 95%;
   padding-right: .5em;
   padding-left: .5em;
 }
