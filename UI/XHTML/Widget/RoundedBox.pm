@@ -25,7 +25,6 @@ sub initialize {
     return shift->SUPER::initialize(@_);
 }
 
-
 sub internal_new_args {
     return shift->SUPER::internal_new_args(div => @_);
 }
