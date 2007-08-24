@@ -144,8 +144,8 @@ sub init_column {
     # Always returns a column hash_ref, but for I<is_alias> is not stored in
     # I<attrs>.
     my($columns) = $attrs->{columns};
-    my($col);
-    unless ($col = $columns->{$qual_col}) {
+    my($col) = $columns->{$qual_col};
+    unless ($col) {
 	my($qual_model, $column) = $qual_col =~ m!^(\w+(?:_\d+)?)\.(\w+)$!;
 	Bivio::Die->die($qual_col, ': invalid qualified column name; attrs=', $attrs)
 	    unless $qual_model && $column;
@@ -212,20 +212,10 @@ sub init_column_classes {
 	    ' is not an ARRAY. Did you forget to use square brackets?')
 	unless ref($list) eq 'ARRAY';
 	foreach my $decl (@$list) {
-	    my(@aliases, $first, $col);
-	    if (ref($decl) eq 'HASH') {
-		$col = _init_column_from_hash($attrs, $decl, $class,
-			\@aliases);
-		$first = $col->{name};
-	    }
-	    else {
-		# case: [] or Model.name
-		@aliases = ref($decl) ? @$decl : ($decl);
-		# First column is the official name.  The rest are aliases.
-		$first = shift(@aliases);
-		$col = $proto->init_column($attrs, $first, $class, 0);
-	    }
-	    $column_aliases->{$first} = $col;
+	    my(@aliases) = ref($decl) eq 'ARRAY' ? @$decl : ($decl);
+	    my($col) = _init_column_from_decl($proto, $attrs, shift(@aliases),
+	        $class, 0);
+	    $column_aliases->{$col->{name}} = $col;
 
 	    # manually handle left joins, record aliases
 	    my(@equivs) = ();
@@ -252,7 +242,7 @@ sub init_column_classes {
 	    }
 	    # pass aliases config to Statement
 	    my($stmt) = $attrs->{statement};
-	    $stmt->where($stmt->EQ($first, @equivs))
+	    $stmt->where($stmt->EQ($col->{name}, @equivs))
 		if scalar(@equivs);
 	}
     }
@@ -378,20 +368,26 @@ sub _add_to_class {
     return;
 }
 
+sub _init_column_from_decl {
+    my($proto, undef, $decl) = @_;
+    return shift->init_column(@_)
+	unless ref($decl) eq 'HASH';
+    return _init_column_from_hash(@_);
+}
+
 sub _init_column_from_hash {
-    my($attrs, $decl, $class, $aliases) = @_;
+    my(undef, $attrs, $decl, $class, $is_alias) = @_;
     # Initializes the column from a hash reference of (name, type, constraint).
-    my($col, $first);
-    # case: "{ name => }"
-    if (ref($first = $decl->{name})) {
+    # $is_alias is unused; it is a placeholder to match init_column args
+    my($col);
+    my($col_name) = $decl->{name};
+    if (ref($decl->{name}) eq 'ARRAY') {
 	# case: "{name => [a, b]}"
-#TODO: Does this work???  Where are aliases being referenced?
-	@$aliases = @$first;
-	$first = shift(@$aliases);
+	Bivio::Die('Invalid attepmt to alias. Use [{}, ...] instead');
     }
-    if ($first =~ /\./) {
+    if ($col_name =~ /\./) {
 	# case: "{name => Model.column}"
-	$col = __PACKAGE__->init_column($attrs, $first, $class, 0);
+	$col = __PACKAGE__->init_column($attrs, $col_name, $class, 0);
 	# in_select is set to true by init_column.  Only turn off
 	# if set explicitly.
 	$col->{in_select} = 0 if defined($decl->{in_select})
@@ -399,15 +395,15 @@ sub _init_column_from_hash {
     }
     else {
 	# case: "{name => local_field}"
-	Bivio::Die->die($first, ': column declared at least twice')
-	    if $attrs->{columns}->{$first};
+	Bivio::Die->die($col_name, ': column declared at least twice')
+	    if $attrs->{columns}->{$col_name};
 	foreach my $x (qw(type name)) {
-	    Bivio::Die->die($x, ': must be defined for "', $first, '"')
+	    Bivio::Die->die($x, ': must be defined for "', $col_name, '"')
 		unless $decl->{$x};
 	}
-	$col = {name => $first};
+	$col = {name => $col_name};
 	push(@{$attrs->{local_columns}}, $col);
-	$attrs->{columns}->{$first} = $col;
+	$attrs->{columns}->{$col_name} = $col;
 
 	# Local columns are not in the select by default
 	$col->{in_select} = $decl->{in_select} ? 1 : 0;
