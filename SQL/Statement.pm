@@ -278,8 +278,9 @@ sub config {
 sub from {
     my($self, @joins) = @_;
     # Add the join(s) to the FROM clause.
-    # TODO: Generalize to any type of JOIN.  Currently only accepts LEFT_JOIN_ON
-    # and a simple table name  May also just be a table.
+    # TODO: Generalize to any type of JOIN.
+    #   Currently only accepts LEFT_JOIN_ON and a simple table name.
+    # May also just be a table.
     my($models) = $self->[$_IDI]->{_models};
     foreach my $join (@joins) {
 	unless (ref($join)) {
