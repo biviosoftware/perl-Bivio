@@ -132,8 +132,8 @@ sub map_by_two {
 
 sub map_invoke {
     my($proto, $method, $repeat_args, $first_args, $last_args) = @_;
-    # Calls I<method> on I<self> with each element of I<args>.  If I<method> is a
-    # ref, will call the sub.
+    # Calls I<method> on I<self> with each element of I<args>.  If I<method>
+    # is a ref, will call the sub.
     #
     # If the element of I<repeat_args> is an array, it will be unrolled as its
     # arguments.  Otherwise, the individual argument is called.  For example,
