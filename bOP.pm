@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.24  2007/08/23 19:39:12  moeller
+  * Bivio::UI::FacadeBase added help_wiki_background color
+  * Bivio::UI::View::CSS added help wiki definitions, work-around IE bug
+  * Bivio::UI::XHTML::Widget::HelpWiki added 'id' attribute
+
   Revision 5.23  2007/08/22 17:30:55  nagler
   * Bivio::Agent::Task->execute_items API change.  items which return a
     hash must set query.  Defaulting query in this case is deprecated,
