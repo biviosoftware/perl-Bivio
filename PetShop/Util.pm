@@ -597,6 +597,10 @@ EOF
 .fourem_wiki {}
 EOF
     $self->model('ForumForm', {
+        'RealmOwner.display_name' => 'Site Help Forum',
+	'RealmOwner.name' => $self->FOUREM . '-site-help',
+    });
+    $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1',
     });
