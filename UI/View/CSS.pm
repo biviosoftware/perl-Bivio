@@ -592,7 +592,8 @@ div.help_wiki {
   padding-left: .5em;
 }
 .help_wiki .header {
-  padding-top: .5ex;
+  margin: 0;
+  padding-top: 0;
   padding-bottom: .5ex;
   text-align: center;
   font-weight: bold;
@@ -602,10 +603,15 @@ div.help_wiki {
   padding-top: .5ex;
   padding-bottom: .5ex;
   text-align: center;
-}
+}    
 div.wiki {
   padding-top: .5ex;
   padding-bottom: .5ex;
+}
+.help_close {
+  text-align: right;
+  padding-right: .5ex;
+  font-size: 90%;
 }
 EOF
 }
