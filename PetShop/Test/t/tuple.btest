@@ -3,7 +3,7 @@
 test_setup('PetShop');
 my($forum) = create_forum();
 visit_uri("/$forum/db-types");
-follow_link(qr{add}i);
+follow_link(qr{add.*type}i);
 submit_form(Save => {
     qr{name}i => 'i1',
     qr{class}i => 'Integer',
@@ -27,12 +27,12 @@ submit_form(Save => {
 });
 test_conformance();
 follow_link(qr{types}i);
-follow_link(qr{add}i);
+follow_link(qr{add.*type}i);
 submit_form(Save => {
     qr{name}i => 'i1',
 });
 follow_link(qr{schemas}i);
-follow_link(qr{add}i);
+follow_link(qr{add.*schema}i);
 submit_form(Save => {
     qr{name}i => 'Database1',
     qr{prefix}i => 'd1',
@@ -44,12 +44,12 @@ submit_form(Save => {
     qr{required.*_1$}i => 1,
 });
 follow_link(qr{tables}i);
-follow_link(qr{add}i);
+follow_link(qr{add.*table}i);
 submit_form(Save => {
     qr{schema}i => 'Database1',
 });
 follow_link_in_table('Table Name', 'Database1');
-follow_link(qr{add}i);
+follow_link(qr{add.*record}i);
 my($range) = [1 .. 5];
 foreach my $i (@$range) {
     go_back() if $i > 1;
