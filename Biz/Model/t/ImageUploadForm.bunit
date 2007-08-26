@@ -35,7 +35,7 @@ $rf->delete_deep
 	    path => sub {
 		my($f) = req()->get('Model.RealmFile')->get_os_path;
 		chomp(my $a = `imgsize $f`);
-		assert_equals('width="640" height="240"', $a);
+		assert_equals(qr/width.*640.* height.*240/i, $a);
 		return '/Image/t2.png';
 	    },
         },
