@@ -7,7 +7,7 @@ req()->set_realm_and_user('btest_read', 'btest_read')
     load_all => [
 	[] => [
 	    map(+{'RealmOwner.name' => $_},
-		qw(fourem fourem-sub1 fourem-sub1-1 fourem-sub2)),
+		qw(fourem fourem-site-help fourem-sub1 fourem-sub1-1 fourem-sub2)),
 	],
 	sub {
 	    return [{
@@ -16,7 +16,7 @@ req()->set_realm_and_user('btest_read', 'btest_read')
 	    }],
 	} => [
 	    map(+{'RealmOwner.name' => $_},
-		qw(fourem-sub1 fourem-sub1-1)),
+		qw(fourem-site-help fourem-sub1 fourem-sub1-1)),
 	],
     ],
 ];
