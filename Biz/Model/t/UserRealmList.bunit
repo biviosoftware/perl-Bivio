@@ -18,6 +18,9 @@ req()->set_realm(Bivio::PetShop::Util->BTEST_READ);
 		],
 	    },
 	    {
+		'RealmOwner.name' => 'fourem-site-help',
+	    },
+	    {
 		'RealmOwner.name' => 'fourem-sub1',
 	    },
 	    {

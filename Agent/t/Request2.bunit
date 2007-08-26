@@ -36,7 +36,7 @@ Request();
 		return [sub {$_->{'RealmOwner.name'}}, @$params];
 	    },
 	} => [
-	    btest_read => [[qw(btest_read fourem fourem-sub1 fourem-sub1-1 fourem-sub2)]],
+	    btest_read => [[qw(btest_read fourem fourem-site-help fourem-sub1 fourem-sub1-1 fourem-sub2)]],
 	    [btest_read => {
 		 'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER,
 	    }] => [[qw(btest_read)]],
