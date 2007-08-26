@@ -40,9 +40,14 @@ sub initialize {
 	    },
 	],
         value => Join([
-	    DIV_header(Prose(vs_text('helpwiki.header'))),
-	    DIV_help_wiki_body([['->get_request'], "$self"]),
-	    DIV_footer(Prose(vs_text('helpwiki.footer'))),
+#TODO: These should be valid, but cause unit test to fail with:
+# Bivio::DieCode::DIE: DIV_header invalid view function, widget, or shortcut.
+# 	    DIV_header(Prose(vs_text('helpwiki.header'))),
+# 	    DIV_help_wiki_body([['->get_request'], "$self"]),
+# 	    DIV_footer(Prose(vs_text('helpwiki.footer'))),
+	    Tag(div => Prose(vs_text('helpwiki.header')), 'header'),
+	    Tag(div => [['->get_request'], "$self"], 'help_wiki_body'),
+	    Tag(div => Prose(vs_text('helpwiki.footer')), 'footer'),
 	]),
     );
     return shift->SUPER::initialize(@_);
