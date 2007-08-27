@@ -10,6 +10,10 @@ sub CONTACT_REALM {
     return 'site-contact';
 }
 
+sub HELP_REALM {
+    return Bivio::UI::Facade->get_default->HELP_WIKI_REALM_NAME;
+}
+
 sub SITE_REALM {
     return 'site';
 }
@@ -43,7 +47,7 @@ sub init {
     $req->with_realm($self->SITE_REALM, sub {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => 'Help',
-	   'RealmOwner.name' => Bivio::UI::Facade->get_default->HELP_WIKI_REALM_NAME,
+	   'RealmOwner.name' => $self->HELP_REALM,
 	   'Forum.want_reply_to' => 1,
 	});
     });
