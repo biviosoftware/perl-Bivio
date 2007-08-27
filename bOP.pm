@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.25  2007/08/26 05:38:32  aviggio
+  * Bivio/SQL/Statement allow [{}, ...] in declaration
+
   Revision 5.24  2007/08/23 19:39:12  moeller
   * Bivio::UI::FacadeBase added help_wiki_background color
   * Bivio::UI::View::CSS added help wiki definitions, work-around IE bug
