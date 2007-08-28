@@ -1,0 +1,32 @@
+Return-Path: any@ski.local
+Message-ID: <20070828202742.775069441@ski.local>
+Date: Tue, 28 Aug 2007 20:27:42 GMT
+From: "any@ski.local" <any@ski.local>
+Subject: bla
+To: any@ski.local
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----------=_1188332861-9064-4"
+Content-Transfer-Encoding: binary
+X-Bivio-Test-Recipient: any@ski.local
+
+This is a multi-part message in MIME format...
+
+------------=_1188332861-9064-4
+Content-Type: multipart/related; boundary="----------=_1188332861-9064-5"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.418 (Entity 5.418)
+
+This is a multi-part message in MIME format...
+
+------------=_1188332861-9064-5
+Content-Type: text/html; charset="us-ascii"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+</html>
+
+------------=_1188332861-9064-5--
+
+------------=_1188332861-9064-4--
