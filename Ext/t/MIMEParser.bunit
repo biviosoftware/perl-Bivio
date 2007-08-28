@@ -2,12 +2,19 @@
 # $Id$
 Type();
 [
-     parse_data => [
-         [read_file('MIMEParser/1.eml')] => sub {
-	     my($case, $return) = @_;
-	     return $return->[0]->head->get('to') eq "NAGLER\@BIVIO.COM\n"
-		 ? 1 : 0;
+     {
+         method => 'parse_data',
+         compute_params => sub {
+	     my(undef, $params) = @_;
+	     return [read_file("MIMEParser/$params->[0].eml")];
 	 },
+         compute_return => sub {
+	     my(undef, $actual) = @_;
+	     return [$actual->[0]->head->get('to')];
+	 },
+     } => [
+	 1 => "NAGLER\@BIVIO.COM\n",
+	 2 => "any\@ski.local\n",
     ],
 ];
 
