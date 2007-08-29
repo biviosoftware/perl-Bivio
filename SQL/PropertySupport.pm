@@ -319,7 +319,7 @@ sub update {
     }
     push(@params, @pk);
 
-    # Need to lock the row before updating if lob
+    # Need to lock the row before updating if blob
     if ($attrs->{has_blob}) {
 	Bivio::SQL::Connection->execute(
 		$attrs->{update_lock}, \@pk, $die)->finish();
@@ -375,8 +375,19 @@ sub _init_columns {
 			? 1 : 0;
 	push(@{$attrs->{primary_key}}, $col)
 		if $col->{is_primary_key};
+
 	_add_parent_model($attrs, $n, $1, $2)
 	    if $cfg->[0] =~ /^(.*)\.(.*)$/;
+
+# 	# related model field type
+# 	if ($cfg->[0] =~ /^(.*)\.(.*)$/) {
+# 	    my($parent_model, $parent_field) = ($1, $2);
+# 	    _add_parent_model($attrs, $n, $parent_model, $parent_field);
+# 	    if ($attrs->{class} eq 'Bivio::Biz::Model::User') {
+# 		__PACKAGE__->init_column($attrs, $cfg->[0], 'other', 1);
+# 		$attrs->{column_aliases}->{$cfg->[0]} = $col;
+# 	    }
+# 	}
     }
     _register_with_parents($attrs);
     Bivio::Die->die($attrs->{table_name}, ': too many BLOBs')
