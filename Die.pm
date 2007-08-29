@@ -506,7 +506,8 @@ sub _caller {
 #
 sub _catch_done {
     my($proto) = @_;
-    return $_CURRENT_SELF || ($@ ? _new_from_eval_syntax_error($proto) : undef);
+    return $_CURRENT_SELF
+        || ($@ ? _new_from_eval_syntax_error($proto) : undef);
 }
 
 # _check_code(any code, hash_ref attrs) : Bivio::DieCode
@@ -536,7 +537,7 @@ sub _eval {
     my($code) = @_;
     local($_);
     # Don't put in newline, because would change line numbering
-    return ref($code) eq 'CODE' ? eval {$code->();} : eval(
+    return ref($code) eq 'CODE' ? eval {$code->();} : eval (
 	'package ' . _caller()->[0] . '; ' . (ref($code) ? $$code : $code)
     );
 }
@@ -726,8 +727,11 @@ sub _print_stack {
     my($self) = @_;
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
     return if $sp || $tq;
-    Bivio::IO::Alert->print_literally($self->as_string."\n");
-    Bivio::IO::Alert->print_literally($self->unsafe_get('stack'));
+    Bivio::IO::Alert->print_literally(
+        $self->as_string, "\n",
+        $self->unsafe_get('stack'),
+        "\n  ==== END OF STACK ====\n",
+    );
     $self->put(stack_printed => 1);
     return;
 }
