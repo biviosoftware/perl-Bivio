@@ -404,22 +404,34 @@ sub unauth_create_or_update {
 }
 
 sub unauth_create_or_update_keys {
-    my($self, $values, $modified_key) = @_;
-    # Create or update keys.  I<modified_key> is the key that could be
-    # changed/updated.
+    my($self, $values, $load_pkeys) = @_;
+    # Create model or update values that may include primary keys.
+    # I<load_pkeys> is the set of primary key/value pairs to use when
+    #   trying to load the model.
+    # If I<load_pkeys> is supplied, deletes the model specified by
+    # I<load_pkeys> and not the current model.
 
-    $self->do_iterate(sub {
-	my($model) = @_;
-	$model->delete()
-	    unless $model->get($modified_key) eq $values->{$modified_key};
-	return 1;
-    }, 'unauth_iterate_start', undef, {
-	map({$_ => $values->{$_}}
-	    grep({$_ ne $modified_key}
-	        @{$self->get_info('primary_key_names')}))
-    });
+    return $self->unauth_create_or_update($values)
+	unless grep({exists($values->{$_})}
+	    @{$self->get_info('primary_key_names')});
 
-    return $self->unauth_create_or_update($values);
+    $self->unauth_load({
+	map({$_ => exists($load_pkeys->{$_})
+	    ? $load_pkeys->{$_}
+	    : $values->{$_}
+	} @{$self->get_info('primary_key_names')}),
+    })
+	unless $load_pkeys;
+
+    if ($self->is_loaded()) {
+	foreach my $field (@{$self->get_info('column_names')}) {
+	    $values->{$field} = $self->get($field)
+		unless exists($values->{field});
+	}
+	$self->delete();
+    }
+
+    return $self->create($values);
 }
 
 sub unauth_delete {
