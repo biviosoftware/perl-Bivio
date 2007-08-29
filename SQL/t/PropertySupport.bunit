@@ -1,0 +1,82 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+
+use Bivio::SQL::Connection;
+
+my($_TABLE) = 't_support_t';
+my($_SEQUENCE) = 't_support_s';
+my($_ID) = 't_support_id';
+my($_MIN_ID) = '100099';
+
+eval {
+    Bivio::SQL::Connection->execute("drop table $_TABLE");
+};
+eval {
+    Bivio::SQL::Connection->execute("drop sequence $_SEQUENCE");
+};
+Bivio::SQL::Connection->commit;
+
+Bivio::SQL::Connection->execute(<<"EOF");
+create table $_TABLE (
+    $_ID NUMERIC(18) primary key,
+    name VARCHAR(30),
+    line VARCHAR(100),
+    text VARCHAR(500),
+    amount NUMERIC(20,7),
+    boolean NUMERIC(1) CHECK (boolean BETWEEN 0 AND 1) NOT NULL,
+    date_time DATE,
+    dt DATE,
+    tm DATE,
+    gender NUMERIC(1) CHECK (gender BETWEEN 0 AND 2) NOT NULL
+)
+EOF
+Bivio::SQL::Connection->execute(<<"EOF");
+create sequence $_SEQUENCE minvalue $_MIN_ID increment by 100000
+EOF
+Bivio::SQL::Connection->commit;  # Can't see table until commit
+
+my($support);
+
+[
+    inline_case(sub {
+        $support = Bivio::SQL::PropertySupport->new({
+            version => 1,
+            table_name => $_TABLE,
+            columns => {
+	        $_ID => ['Bivio::Type::PrimaryId',
+		    Bivio::SQL::Constraint::PRIMARY_KEY()],
+	        name => ['Bivio::Type::Name',
+		    Bivio::SQL::Constraint::NONE()],
+	        line => ['Bivio::Type::Line',
+		    Bivio::SQL::Constraint::NONE()],
+	        text => ['Bivio::Type::Text',
+		    Bivio::SQL::Constraint::NONE()],
+	        amount => ['Bivio::Type::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	        boolean => ['Bivio::Type::Boolean',
+		    Bivio::SQL::Constraint::NOT_NULL()],
+	        date_time => ['Bivio::Type::DateTime',
+		    Bivio::SQL::Constraint::NONE()],
+	        dt => ['Bivio::Type::Date',
+		    Bivio::SQL::Constraint::NONE()],
+	        tm => ['Bivio::Type::Time',
+		    Bivio::SQL::Constraint::NONE()],
+	        gender => ['Bivio::Type::Gender',
+                    Bivio::SQL::Constraint::NOT_NULL()],
+            },
+        });
+	# unsafe_load returns undefined if no data is loaded
+	assert_equals(1, !defined($support->unsafe_load({$_ID => $_MIN_ID})));
+    }),
+    inline_case(sub {
+	$support->create({
+            gender => Bivio::Type::Gender->FEMALE,
+            boolean => 0,
+        });
+        assert_equals(Bivio::Type::Gender->FEMALE,
+	    $support->unsafe_load({
+	        gender => Bivio::Type::Gender->FEMALE,
+	    })->{gender},
+	);
+    }),
+];
