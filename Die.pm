@@ -60,9 +60,11 @@ our($_IN_CATCH);
 our($_IN_HANDLE_DIE);
 my($_STACK_TRACE) = 0;
 my($_STACK_TRACE_ERROR) = 0;
+my($_STACK_TRACE_SEPARATOR) = "  ==== END OF STACK ====\n";
 Bivio::IO::Config->register({
     'stack_trace' => $_STACK_TRACE,
     'stack_trace_error' => $_STACK_TRACE_ERROR,
+    'stack_trace_separator' => $_STACK_TRACE_SEPARATOR,
 });
 
 =head1 FACTORIES
@@ -318,6 +320,7 @@ sub handle_config {
     $_STACK_TRACE = $cfg->{stack_trace} ? 1 : 0;
     $_STACK_TRACE_ERROR = $cfg->{stack_trace_error} ? 1 : 0;
     $_STACK_TRACE_ERROR = 0 if $_STACK_TRACE;
+    $_STACK_TRACE_SEPARATOR = $cfg->{stack_trace_separator};
     return;
 }
 
@@ -730,7 +733,7 @@ sub _print_stack {
     Bivio::IO::Alert->print_literally(
         $self->as_string, "\n",
         $self->unsafe_get('stack'),
-        "\n  ==== END OF STACK ====\n",
+        $_STACK_TRACE_SEPARATOR,
     );
     $self->put(stack_printed => 1);
     return;
