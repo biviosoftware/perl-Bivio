@@ -480,7 +480,7 @@ sub _initialize {
     my($values) = $view->get_shallow_copy;
     while (my($k, $v) = each(%$values)) {
 	$v->put_and_initialize(parent => undef)
-	    if $v && UNIVERSAL::isa($v, 'Bivio::UI::Widget');
+	    if __PACKAGE__->is_blessed($v, 'Bivio::UI::Widget');
     }
     _die('view_main or view_parent must be specified')
 	unless $view->has_keys('view_main') || $view->has_keys('view_parent');
