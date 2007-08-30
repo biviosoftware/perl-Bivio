@@ -59,7 +59,7 @@ function toggle_help_popup() {
 EOF
 	    If([\&_wiki_text, $self],
 		Join([
-		    '<iframe class="help_wiki_iframe" id="help_wiki_iframe" marginewidth="0" scrolling="no" frameborder="0" src="',
+		    '<iframe id="help_wiki_iframe" marginewidth="0" scrolling="no" frameborder="0" src="',
 		    URI({
   			task_id => 'FORUM_HELP_IFRAME',
 			realm => [\&_help_realm_name],
