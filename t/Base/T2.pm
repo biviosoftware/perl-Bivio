@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::t::Base::T2;
 use strict;
-use Bivio::Base;
+use Bivio::Base 'BaseBunit';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
