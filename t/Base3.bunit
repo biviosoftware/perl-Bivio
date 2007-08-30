@@ -1,0 +1,12 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+options({
+    class_name => 'Bivio::IO::ClassLoader',
+});
+[
+    class() => [
+	simple_require => [
+	    'Bivio::t::Base::T3' => qr{must specify class or map},
+	],
+    ],
+];
