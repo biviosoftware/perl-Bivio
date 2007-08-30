@@ -210,7 +210,6 @@ form .label_ok, form .label_err, form .label {
   padding-right: .2em;
 }
 form .label_ok {
-  vertical-align: top;
   Font('form_label_ok');
 }
 .label_err {
@@ -411,6 +410,7 @@ form .sep {
 }
 form .submit {
   margin: .5em;
+  text-align: center;
 }
 .empty_list {
   border: 2px solid;
@@ -571,22 +571,24 @@ sub _site_wiki {
   Color('help_wiki-background');
   padding-left: .5em;
   padding-right: .5em;
+  text-align: center;
 }
 .wiki .prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
 }
-div.help_wiki {
-  Color('help_wiki-background');
-  width: 40em;
+#help_wiki_iframe {
   position: absolute;
   top: 2em;
-  right: 4em;
-  visibility: hidden;
+  right: 1ex;
+  width: 40em;
+  z-index: 1;
 }
-.help_wiki_body {
+div.help_wiki {
+  Color('help_wiki-background');
+}
+.help_wiki .help_wiki_body {
   text-align: left;
-  margin: .5ex 0 .5ex 0;
   font-size: 95%;
   padding-right: .5em;
   padding-left: .5em;
@@ -603,7 +605,7 @@ div.help_wiki {
   padding-top: .5ex;
   padding-bottom: .5ex;
   text-align: center;
-}    
+}
 div.wiki {
   padding-top: .5ex;
   padding-bottom: .5ex;
