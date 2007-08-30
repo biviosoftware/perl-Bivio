@@ -43,6 +43,27 @@ sub MAP_SEPARATOR {
     return '.';
 }
 
+sub after_in_map {
+    my($proto, $map_name, $this_package) = @_;
+    my($class) = $this_package =~ /(\w+)$/;
+    my($found) = 0;
+    foreach my $path (_map_path_list($map_name)) {
+	my($pkg) = "$path\::$class";
+	if ($this_package eq $pkg) {
+	    $found = 1;
+	    next;
+	}
+	next unless $found;
+	my($file) = _file($pkg);
+	foreach my $i (@INC) {
+	    return $pkg
+		if -r "$i/$file";
+	}
+    }
+    _die($map_name, ': unable to find package after ', $this_package);
+    # DOES NOT RETURN
+}
+
 sub delegate_require {
     my($proto, $class) = @_;
     # Returns the delegate for the specified class.
@@ -153,7 +174,7 @@ sub map_require_all {
 	}
             grep(!$filter || $filter->(@$_), _map_glob($map_name, $_)),
 	),
-	@{$_CFG->{maps}->{$map_name} || _die($map_name, ': no such map')},
+	_map_path_list($map_name),
     )];
 }
 
@@ -190,11 +211,15 @@ sub unsafe_map_require {
 	if $_MAP_CLASS->{$map_class};
     _trace('map_class=', $map_class)
 	if $_TRACE;
-    my($map) = $_CFG->{maps}->{$map_name} || _die($map_name, ': no such map');
-    foreach my $path (@$map) {
-	if (my $x = _require($proto, "$path\::$class_name")) {
-	    return $_MAP_CLASS->{$map_class} = $x;
-	}
+    foreach my $path (_map_path_list($map_name)) {
+	my($try) = $path . '::' . $class_name;
+	$_MAP_CLASS->{$map_class} = $try;
+	my($die) = Bivio::Die->catch(sub {$try = _require($proto, $try)});
+	return $try
+	    if $try && !$die;
+	delete($_MAP_CLASS->{$map_class});
+	$die->throw
+	    if $die;
     }
     return undef;
 }
@@ -263,6 +288,11 @@ sub _map_init {
 	    : Bivio::IO::Alert->warn($_, ': empty path in map ', $map_name),
 	@$paths,
     )];
+}
+
+sub _map_path_list {
+    my($name) = @_;
+    return @{$_CFG->{maps}->{$name} || _die($name, ': no such map')};
 }
 
 sub _require {

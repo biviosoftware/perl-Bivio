@@ -3,7 +3,10 @@
 config({
     'Bivio::IO::ClassLoader' => {
 	maps => {
-	    ClassLoaderBunit => ['Bivio::IO::t::ClassLoader'],
+	    ClassLoaderBunit => [
+	        'Bivio::IO::t::ClassLoader',
+	        'Bivio::IO::t::ClassLoader::After',
+	    ],
 	},
 	delegates => {
 	    'ClassLoaderBunit::Delegate' => 'Bivio::IO::t::ClassLoader::Valid',
@@ -68,6 +71,12 @@ config({
 	delegate_require => [
 	    'ClassLoaderBunit::Delegate' => 'Bivio::IO::t::ClassLoader::Valid',
 	    'NotConfigured' => DIE(),
+	],
+        after_in_map => [
+	    ['ClassLoaderBunit', 'Bivio::IO::t::ClassLoader::Valid'] =>
+		'Bivio::IO::t::ClassLoader::After::Valid',
+	    ['ClassLoaderBunit', 'Bivio::IO::t::ClassLoader::After::Valid'] =>
+		 qr{find package after},
 	],
     ],
 ];
