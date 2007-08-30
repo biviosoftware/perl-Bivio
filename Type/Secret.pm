@@ -147,6 +147,10 @@ sub _assert_cipher {
     # DOES NOT RETURN
 }
 
+sub _cbc_new {
+    return Crypt::CBC->new(shift, shift->{algorithm});
+}
+
 sub _decrypt {
     my($encoded, $is_hex) = @_;
     # Decrypts $encoded based on $is_hex.
@@ -181,7 +185,7 @@ sub _decrypt_key {
     # cipher can be reset.
     my($key_out) = Bivio::Die->eval(
         sub {
-            $cipher->{key} = Crypt::CBC->new($phrase, $cipher->{algorithm});
+            $cipher->{key} = _cbc_new($phrase, $cipher);
             return __PACKAGE__->from_sql_column($key_in);
         });
     $cipher->{key} = undef;
@@ -227,7 +231,7 @@ sub _init_cipher {
             $key = _decrypt_key($cipher, $phrase, $key);
         }
         return 0 unless $key;
-        $cipher->{key} = Crypt::CBC->new($key, $cipher->{algorithm});
+        $cipher->{key} = _cbc_new($key, $cipher);
     }
     return 1;
 }
