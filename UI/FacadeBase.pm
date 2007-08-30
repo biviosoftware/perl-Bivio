@@ -667,7 +667,7 @@ sub _cfg_wiki {
 	    [FORUM_WIKI_NOT_FOUND => undef],
 	    [HELP => 'help/*'],
 	    [HELP_NOT_FOUND => undef],
-
+	    [FORUM_HELP_IFRAME => '?/help-iframe'],
 	],
 	Constant => [
 	    [help_wiki_realm_id => sub {
@@ -698,6 +698,7 @@ sub _cfg_wiki {
 		HELP => 'Help',
 		FORUM_WIKI_EDIT => 'Edit Wiki Page',
 		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
+		FORUM_HELP_IFRAME => 'Help',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_WIKI_EDIT => 'Add New Page',

@@ -720,6 +720,13 @@ sub info_wiki {
 	    edit_task=FORUM_WIKI_EDIT
 	    want_author=1
  	)],
+ 	[qw(
+ 	    FORUM_HELP_IFRAME
+ 	    121
+ 	    FORUM
+ 	    ANYBODY
+            View.Help->iframe
+ 	)],
     ];
 #121-129 free
 }
