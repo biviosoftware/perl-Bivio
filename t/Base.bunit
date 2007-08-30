@@ -1,10 +1,17 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-options({class_name => 'Bivio::t::Base::T1'});
+options({
+    class_name => 'Bivio::t::Base::T1',
+});
 [
     class() => [
 	inheritance_ancestors => [
-	    [] => [[qw(Bivio::Type::String Bivio::Type Bivio::UI::WidgetValueSource Bivio::UNIVERSAL)]],
+	    [] => [[qw(
+	        Bivio::Type::String
+	        Bivio::Type
+		Bivio::UI::WidgetValueSource
+		Bivio::UNIVERSAL
+	    )]],
 	],
     ],
 ];
