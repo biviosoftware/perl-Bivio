@@ -9,4 +9,6 @@ ShellUtil();
         .*Bivio::UNIVERSAL
     }xs,
     [qw(info ShellUtil.Class)] => qr{^\d+.\d+ .*/Bivio/Util/Class\.pm$},
+    [qw(info Bivio::UNIVERSAL)] => qr{^\d+.\d+ .*/Bivio/UNIVERSAL\.pm$},
+    [qw(info Bivio::Not_A_Class)] => [],
 ];
