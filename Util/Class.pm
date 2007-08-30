@@ -13,11 +13,22 @@ sub USAGE {
     return <<'EOF';
 usage: b-class [options] command [args..]
 commands
+  info class -- return information about the class
   qualified_name class -- return fully qualified name for class
   super package -- return the list of superclasses for given package
   tasks_for_label text -- find TaskIds from text in Facade.Text map
   tasks_for_view view -- find TaskIds from view name (View.<view name>)
 EOF
+}
+
+sub info {
+    my($self, $class) = @_;
+    return
+	unless my $pkg = Bivio::IO::ClassLoader->unsafe_map_require($class);
+    my($file) = "$pkg.pm";
+    $file =~ s{::}{/}g;
+    no strict 'refs';
+    return ${\${$pkg . '::VERSION'}} . ' ' . $INC{$file} . "\n";
 }
 
 sub internal_initialize_index {

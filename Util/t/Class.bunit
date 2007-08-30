@@ -8,4 +8,5 @@ ShellUtil();
         .*Bivio::UI::WidgetValueSource
         .*Bivio::UNIVERSAL
     }xs,
+    [qw(info ShellUtil.Class)] => qr{^\d+.\d+ .*/Bivio/Util/Class\.pm$},
 ];
