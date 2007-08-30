@@ -254,7 +254,7 @@ sub get_widget_value {
     }
 
     unless ($exists) {
-	if (UNIVERSAL::can($param1, 'get_widget_value')) {
+	if (_can_recurse($param1)) {
 	    # Have to have params to call get_widget_value
 	    return $param1->get_widget_value(_eval_args($self, @_)) if @_;
 
@@ -326,10 +326,10 @@ sub get_widget_value {
 
     $param2 = $self->get_widget_value(@$param2)
 	if ref($param2) eq 'ARRAY';
-    unless (UNIVERSAL::can($param2, 'get_widget_value')) {
+    unless (_can_recurse($param2)) {
 	my($tmp) = Bivio::IO::ClassLoader->map_require($param2);
 	_die($self, $tmp, ": can't get_widget_value (not a formatter)")
-		unless UNIVERSAL::can($tmp, 'get_widget_value');
+	    unless _can_recurse($tmp);
 	$param2 = $tmp;
     }
     return $param2->get_widget_value($value, _eval_args($self, @_))
@@ -343,6 +343,10 @@ sub unsafe_get_widget_value_by_name {
     # Default implementation is deprecated form.
     Bivio::IO::Alert->warn_deprecated('first argument must begin with ->');
     return ($self->$name(), 1);
+}
+
+sub _can_recurse {
+    return UNIVERSAL::can(shift(@_), 'get_widget_value');
 }
 
 sub _die {
