@@ -245,8 +245,8 @@ sub initialize_value {
     # I<attr_name> is used only for debugging.
     #
     # Returns value.
-    return $value unless defined($value);
-    return $value unless UNIVERSAL::isa($value, __PACKAGE__);
+    return $value
+	unless __PACKAGE__->is_blessed($value);
     return $value->put_and_initialize(parent => $self);
 }
 
@@ -417,7 +417,7 @@ sub unsafe_render_value {
     return 0 unless defined($value);
     $value = $self->unsafe_resolve_widget_value($value, $source);
     return 0 unless defined($value);
-    if (ref($value) && UNIVERSAL::isa($value, __PACKAGE__)) {
+    if (__PACKAGE__->is_blessed($value)) {
 	$value->put_and_initialize(parent => undef)
 	    unless $value->has_keys('parent');
 	$value->render($source, $buffer);
