@@ -1,0 +1,86 @@
+# Copyright (c) 2007 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+
+Request();
+
+[
+    class() => [
+        canonical_hex => [
+            [undef] => undef,
+            ['0F31CF4D32A97E4'] => undef,
+            ['0F31CF4D32A97E4Z'] => undef,
+            ['0F31CF4D32A97E42'] => '0F31CF4D32A97E42',
+            ['0F31 CF4D 32A9 7E42'] => '0F31CF4D32A97E42',
+            [" 0f 31c\tF4d \t32a 97e 42\t"] => '0F31CF4D32A97E42',
+            ["\tDOG gone\t RoWs \tCHAT HIGH JOY "] => '0F31CF4D32A97E42',
+        ],
+        compute => [
+            ['This is a test.', 'TeSt', -1]    => undef,
+            ['This is a test.', 'TeSt', 0]     => '9E876134D90499DD',
+            ['This is a test.', 'TeSt', 1]     => '7965E05436F5029F',
+            ['This is a test.', 'TeSt', 99]    => '50FE1962C4965880',
+            ['AbCdEfGhIjK', 'alpha1', 0]       => '87066DD9644BF206',
+            ['AbCdEfGhIjK', 'alpha1', 1]       => '7CD34C1040ADD14B',
+            ['AbCdEfGhIjK', 'alpha1', 99]      => '5AA37A81F212146C',
+            ['OTP\'s are good', 'correct', 0]  => 'F205753943DE4CF9',
+            ['OTP\'s are good', 'correct', 1]  => 'DDCDAC956F234937',
+            ['OTP\'s are good', 'correct', 99] => 'B203E28FA525BE47',
+            ['password', 'petshop', 499]       => '0F31CF4D32A97E42',
+            ['password', 'petshop', 498]       => '414C61F2C59ECB58',
+        ],
+        checksum => [
+            ['9E876134D90499DD'] => '0',
+            ['7965E05436F5029F'] => '4',
+            ['50FE1962C4965880'] => '8',
+            ['87066DD9644BF206'] => '0',
+            ['7CD34C1040ADD14B'] => 'C',
+            ['5AA37A81F212146C'] => 'C',
+            ['F205753943DE4CF9'] => '0',
+            ['DDCDAC956F234937'] => '0',
+            ['B203E28FA525BE47'] => '8',
+        ],
+	from_six_word_format => [
+            ['INCH SEA ANNE LONG AHEM TOUR'] => '9E876134D90499DD',
+            ['EASE OIL FUM CURE AWRY AVIS']  => '7965E05436F5029F',
+            ['BAIL TUFT BITS GANG CHEF THY'] => '50FE1962C4965880',
+            ['FULL PEW DOWN ONCE MORT ARC']  => '87066DD9644BF206',
+            ['FACT HOOF AT FIST SITE KENT']  => '7CD34C1040ADD14B',
+            ['BODE HOP JAKE STOW JUT RAP']   => '5AA37A81F212146C',
+            ['ULAN NEW ARMY FUSE SUIT EYED'] => 'F205753943DE4CF9',
+            ['SKIM CULT LOB SLAM POE HOWL']  => 'DDCDAC956F234937',
+            ['LONG IVY JULY AJAR BOND LEE']  => 'B203E28FA525BE47',
+	],
+        to_six_word_format => [
+            ['9E876134D90499DD'] => 'INCH SEA ANNE LONG AHEM TOUR',
+            ['7965E05436F5029F'] => 'EASE OIL FUM CURE AWRY AVIS',
+            ['50FE1962C4965880'] => 'BAIL TUFT BITS GANG CHEF THY',
+            ['87066DD9644BF206'] => 'FULL PEW DOWN ONCE MORT ARC',
+            ['7CD34C1040ADD14B'] => 'FACT HOOF AT FIST SITE KENT',
+            ['5AA37A81F212146C'] => 'BODE HOP JAKE STOW JUT RAP',
+            ['F205753943DE4CF9'] => 'ULAN NEW ARMY FUSE SUIT EYED',
+            ['DDCDAC956F234937'] => 'SKIM CULT LOB SLAM POE HOWL',
+            ['B203E28FA525BE47'] => 'LONG IVY JULY AJAR BOND LEE',
+            ['0F31CF4D32A97E42'] => 'DOG GONE ROWS CHAT HIGH JOY',
+            ['414C61F2C59ECB58'] => 'TOG CANE FACE GIFT TIRE LEEK',
+        ],
+	verify => [
+	    ['414C61F2C59ECB58', '0F31CF4D32A97E42'] => 1,
+	],
+    ],
+];
+
+__END__
+
+RFC2289 MD5 Test Data
+
+Pass Phrase     Seed    Cnt Hex                 Six Word Format
+========================================================================
+This is a test. TeSt     0  9E87 6134 D904 99DD INCH SEA ANNE LONG AHEM TOUR
+This is a test. TeSt     1  7965 E054 36F5 029F EASE OIL FUM CURE AWRY AVIS 
+This is a test. TeSt    99  50FE 1962 C496 5880 BAIL TUFT BITS GANG CHEF THY
+AbCdEfGhIjK     alpha1   0  8706 6DD9 644B F206 FULL PEW DOWN ONCE MORT ARC 
+AbCdEfGhIjK     alpha1   1  7CD3 4C10 40AD D14B FACT HOOF AT FIST SITE KENT 
+AbCdEfGhIjK     alpha1  99  5AA3 7A81 F212 146C BODE HOP JAKE STOW JUT RAP  
+OTP's are good  correct  0  F205 7539 43DE 4CF9 ULAN NEW ARMY FUSE SUIT EYED
+OTP's are good  correct  1  DDCD AC95 6F23 4937 SKIM CULT LOB SLAM POE HOWL 
+OTP's are good  correct 99  B203 E28F A525 BE47 LONG IVY JULY AJAR BOND LEE 

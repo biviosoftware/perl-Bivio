@@ -385,6 +385,11 @@ sub get_delegate_info {
 	undef,
 	'Value not supported by application',
     ],
+    OTP_PASSWORD_MISMATCH => [
+	72,
+	undef,
+	'Your OTP did not match.',
+    ],
 ];
 }
 

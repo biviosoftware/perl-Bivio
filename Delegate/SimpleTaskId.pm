@@ -19,7 +19,7 @@ my($_INFO_RE) = qr{^info_(.*)};
 my($_INCLUDED) = {};
 
 sub all_components {
-    return shift->grep_methods($_INFO_RE);
+    return [grep({$_ ne 'info_otp'} @{shift->grep_methods($_INFO_RE)})];
 }
 
 sub bunit_validate_all {
@@ -536,6 +536,10 @@ sub info_base {
 	)],
 #57-59 free
     ];
+}
+
+sub info_otp {
+    return [];
 }
 
 sub info_tuple {

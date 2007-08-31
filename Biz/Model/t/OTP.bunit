@@ -1,0 +1,36 @@
+# Copyright (c) 2007 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+
+PropertyModel();
+create_user('x'.random_string())->get('realm_id');
+
+[
+    create => [
+        [{
+            realm_id => req('auth_user_id'),
+	    otp => '0F31CF4D32A97E42',
+	    seed => 'petshop',
+            count => '498',
+	}] => not_die(),
+    ],
+    verify => [
+        ['TOG CANE FACE GIFT TIRE LEEK'] => 1,
+    ],
+    load => [
+        [] => [{
+	    otp => '414C61F2C59ECB58',
+	    seed => 'petshop',
+            count => '497',
+	}],
+    ],
+    verify => [
+        ['TOG CANE FACE GIFT TIRE LEEK'] => 0,
+    ],
+    load => [
+        [] => [{
+	    otp => '414C61F2C59ECB58',
+	    seed => 'petshop',
+            count => '497',
+	}],
+    ],
+]
