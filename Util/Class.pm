@@ -28,7 +28,7 @@ sub info {
     my($file) = "$pkg.pm";
     $file =~ s{::}{/}g;
     no strict 'refs';
-    return ${\${$pkg . '::VERSION'}} . ' ' . $INC{$file} . "\n";
+    return ${\${$pkg . '::VERSION'}} . ' ' . $INC{$file};
 }
 
 sub internal_initialize_index {
