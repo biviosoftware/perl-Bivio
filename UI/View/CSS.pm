@@ -579,6 +579,7 @@ sub _site_wiki {
 }
 #help_wiki_iframe {
   position: absolute;
+  visibility: hidden;
   top: 2em;
   right: 1ex;
   width: 40em;
@@ -586,6 +587,9 @@ sub _site_wiki {
 }
 div.help_wiki {
   Color('help_wiki-background');
+}
+.help_wiki table {
+  font-size: 100%;
 }
 .help_wiki .help_wiki_body {
   text-align: left;
