@@ -1,33 +1,29 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-use strict;
-use Bivio::Test::Widget;
-Bivio::Test::Widget->unit(
-    'Bivio::UI::HTML::Widget::Table',
-    sub {
-	my($req) = @_;
-	$req->put(task_id => Bivio::Agent::TaskId->PRODUCTS);
-	Bivio::Biz::Model->new($req, 'ProductList')->load_all({
-	    parent_id => 'REPTILES',
-	}) unless $req->unsafe_get('Model.ProductList');
+Widget({
+    setup_render => sub {
+	req()->put(task_id => Bivio::Agent::TaskId->PRODUCTS);
+	model('ProductList', {parent_id => 'REPTILES'})
+	    unless req()->unsafe_get('Model.ProductList');
 	return;
     },
-    [
-	map({
-	    my($left, $right) = ref($_) eq 'ARRAY' ? @$_ : $_;
-	    $right ||= {%$left};
-	    ([ProductList => ['Product.product_id', 'Product.name'], $left]
-		 => ref($right) ? _t($right) : $right);
-	}
-	    {},
-	    {cellpadding => 2},
-	    {cellspacing => 3},
-	    [{align => 'n'}, {align => 'center', valign => 'top'}],
-	    [{expand => 1}, {width => '95%'}],
-	    {width => '100%'},
-	    {border => 1},
-	    [{title => 'Reptiles'}, {title => qq{\n<tr><td colspan="2"><font face="arial,sans-serif"><b><br />Reptiles<br /></b></font></td>\n</tr>}}],
-	    [{class => 'reptiles'}, _chomp(<<'EOF')],
+});
+[
+    map({
+	my($left, $right) = ref($_) eq 'ARRAY' ? @$_ : $_;
+	$right ||= {%$left};
+	([ProductList => ['Product.product_id', 'Product.name'], $left]
+	     => ref($right) ? _t($right) : $right);
+    }
+	{},
+	{cellpadding => 2},
+	{cellspacing => 3},
+	[{align => 'n'}, {align => 'center', valign => 'top'}],
+	[{expand => 1}, {width => '95%'}],
+	{width => '100%'},
+	{border => 1},
+	[{title => 'Reptiles'}, {title => qq{\n<tr><td colspan="2"><font face="arial,sans-serif"><b><br />Reptiles<br /></b></font></td>\n</tr>}}],
+	[{class => 'reptiles'}, _chomp(<<'EOF')],
 
 <table class="reptiles">
 <tr>
@@ -44,9 +40,8 @@ Bivio::Test::Widget->unit(
 </tr>
 </table>
 EOF
-	),
-    ],
-);
+    ),
+];
 
 sub _chomp {
     my($x) = @_;
