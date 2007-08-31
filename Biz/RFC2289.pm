@@ -88,11 +88,11 @@ sub _checksum {
 }
 
 sub _compute {
-    # Recursively compute otp
-    no warnings "recursion";
     my($text, $count) = @_;
-    return _fold(
-        Digest::MD5::md5($count == 0 ? $text : _compute($text, --$count)));
+    foreach my $c (0 .. $count) {
+	$text = _fold(Digest::MD5::md5($text));
+    }
+    return $text;
 }
 
 sub _fold {
