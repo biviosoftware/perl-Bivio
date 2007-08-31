@@ -291,10 +291,11 @@ sub validate {
 	$self->internal_put_field(login => $login);
 	$self->internal_put_field('RealmOwner.password' => $password);
     }
-    return if $self->in_error;
 
     my($owner) = $self->validate_login;
-    return unless $owner;
+    return
+	if $self->in_error
+	    || !$owner;
 
     unless (Bivio::Type::Password->is_equal(
 	$owner->get('password'),
@@ -303,7 +304,6 @@ sub validate {
 	$self->internal_put_error('RealmOwner.password', 'PASSWORD_MISMATCH');
 	return;
     }
-    $self->internal_put_field(realm_owner => $owner);
     $self->internal_put_field(validate_called => 1);
     return;
 }
@@ -317,14 +317,14 @@ sub validate {
 =head2 static validate_login(Bivio::Biz::FormModel model) : Bivio::Biz::Model
 
 Looks at I<login> field of I<model> and loads.
-Returns a RealmOwner model, if valid.  If I<model> is not passed, uses
-I<self>.
+If valid, puts RealmOwner in I<realm_owner> and returns it.
+If I<model> is not passed, uses I<self>.
 
 =cut
 
 sub validate_login {
     my($self, $model_or_login) = @_;
-    if (@_ >= 2) {
+    if ($model_or_login) {
 	if (ref($model_or_login)) {
 	    $self = $model_or_login;
 	}
@@ -338,12 +338,13 @@ sub validate_login {
 	unless defined($login);
     my($owner) = $self->new_other('RealmOwner');
     my($error) = $owner->validate_login($self->get('login'));
-    $self->internal_put_error(login => $error)
-	if $error;
+    if ($error) {
+	$self->internal_put_error(login => $error);
+	return undef;
+    }
 
-    return $owner
-	unless $error;
-    return undef;
+    $self->internal_put_field(realm_owner => $owner);
+    return $owner;
 }
 
 #=PRIVATE METHODS
