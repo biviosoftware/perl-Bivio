@@ -1051,7 +1051,8 @@ sub _form_for_warning {
 
     foreach my $field (@{$form_model->get_keys}) {
         next unless $form_model->has_fields($field);
-        next unless $form_model->get_field_type($field)->is_secure_data;
+        next unless my $t = $form_model->get_field_type($field);
+	next unless $t->can('is_secure_data') && $t->is_secure_data;
         # hide the secure data from the logs if defined
         my($html_name) = $form_model->get_field_name_for_html($field);
         $result->{$html_name} = '<secure data>'
