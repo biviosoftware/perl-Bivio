@@ -4,6 +4,7 @@ package Bivio::OTP::RFC2289;
 use strict;
 use Bivio::Base 'Bivio::Collection::Attributes';
 use Digest::MD5 ();
+use Bivio::IO::File;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DICTIONARY) = [map(@$_, @{Bivio::IO::File->map_lines(\*DATA, qr{\s+})})];

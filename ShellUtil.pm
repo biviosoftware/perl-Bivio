@@ -848,7 +848,7 @@ sub result {
     $res = _result_ref($self, $res);
     return undef
 	unless $res;
-    print(STDOUT $$res, $$res =~ /\n$/s ? '' : "\n")
+    print(STDOUT $$res, $$res =~ /\n$/s ? () : "\n")
 	unless _result_email($self, $cmd, $res)
 	+ _result_output($self, $cmd, $res);
     return $res;
