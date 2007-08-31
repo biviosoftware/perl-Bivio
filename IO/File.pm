@@ -110,6 +110,34 @@ sub do_read_write {
     return;
 }
 
+sub map_lines {
+    my(undef, $file_name, $op) = @_;
+    unless ($op) {
+	$op = sub {shift};
+    }
+    elsif (ref($op) eq 'Regexp') {
+	my($qr) = $op;
+	$op = sub {[split($qr, shift)]};
+    }
+    my($file) = _open($file_name, 'r');
+    my($res) = [];
+    while (1) {
+	undef($!);
+	my $line = readline($file);
+	unless (defined($line)) {
+	    _err('readline', $file, $file_name)
+		if $!;
+	    last;
+	}
+	chomp($line);
+	push(@$res, $op->($line));
+    }
+    close($file)
+	or _err('close', $file, $file_name);
+    return $res;
+    return;
+}
+
 sub mkdir_p {
     my(undef, $path, $permissions) = @_;
     # Creates I<path> including parent directories.  Returns I<path>.
