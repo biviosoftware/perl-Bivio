@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::Text;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::HTML;
-use Bivio::Type::Password;
 use Bivio::UI::HTML::Format;
 
 # C<Bivio::UI::HTML::Widget::Text> draws a C<INPUT> tag with
