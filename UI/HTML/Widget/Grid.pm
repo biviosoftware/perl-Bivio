@@ -374,6 +374,8 @@ sub render {
 	    # Look up widget value
 	    my($is_widget_value) = ref($c) eq 'ARRAY';
 	    my($w) = $is_widget_value ? $source->get_widget_value(@$c) : $c;
+	    my($cell) = '';
+
 	    if (ref($w)) {
 		# Render widget
 		my($rc) = $w->unsafe_get('row_control');
@@ -384,25 +386,24 @@ sub render {
 		    $row =~ s/^<tr>/<tr class="$b">/
 			if $c->unsafe_render_attr(
 			    'row_class', $source, \$b) && $b;
-		    $row .= Bivio::UI::Color->format_html($b, 'bgcolor', $req)
+		    $cell .= Bivio::UI::Color->format_html($b, 'bgcolor', $req)
 			if $b = $c->render_simple_attr('cell_bgcolor', $source);
-		    $row .= qq{ class="$b"}
+		    $cell .= qq{ class="$b"}
 			if $b = $c->render_simple_attr('cell_class', $source);
 		    # Close cell start always.  See initialization.
-		    $row .= '>';
+		    $cell .= '>';
 		}
-		$w->render($source, \$row);
+		$w->render($source, \$cell);
 	    }
 	    elsif (defined($w)) {
-		$row .= $w;
+		$cell = $w;
 	    }
 	    # else undefined, render nothing
+	    next if $self->unsafe_get('hide_empty_cells')
+		&& $cell =~ m{^<td[^>]*></td>$}s;
+	    $row .= $cell;
 	}
 	$row .= '</tr>';
-
-	# don't redner empty cells for 'hide_empty_cells'
-	$row =~ s!<td[^>]*></td>!!gs
-	    if $self->unsafe_get('hide_empty_cells');
 
 	# If row is completely empty, don't render it.
 	$$buffer .= $row unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
