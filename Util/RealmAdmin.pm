@@ -1,53 +1,21 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RealmAdmin;
 use strict;
-$Bivio::Util::RealmAdmin::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::RealmAdmin::VERSION;
+use Bivio::Auth::Role;
+use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Biz::Model;
+use Bivio::Type::DateTime;
+use Bivio::Type::Password;
 
-=head1 NAME
+# C<Bivio::Util::RealmAdmin> is a generic interface to administration tasks.
+# It's likely you'll have to subclass this class.
 
-Bivio::Util::RealmAdmin - realm/user tools
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::RealmAdmin;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::RealmAdmin::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::RealmAdmin> is a generic interface to administration tasks.
-It's likely you'll have to subclass this class.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns usage string.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = 'Bivio::Type::DateTime';
 
 sub USAGE {
+    # Returns usage string.
     return <<'EOF';
 usage: b-realm-admin [options] command [args...]
 commands:
@@ -64,31 +32,11 @@ commands:
 EOF
 }
 
-#=IMPORTS
-use Bivio::Auth::Role;
-use Bivio::Biz::Model;
-use Bivio::Type::DateTime;
-use Bivio::Type::Password;
-
-#=VARIABLES
-my($_DT) = 'Bivio::Type::DateTime';
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="create_user"></a>
-
-=head2 create_user(string email, string display_name, string password, string user_name)
-
-Creates a new user.  Does not validate the arguments.  AuthUser is
-new users (L<Bivio::Biz::Model::UserCreateForm|Bivio::Biz::Model::UserCreateForm>).  Last option is optional.  It allows you to force the I<user_name>
-to be something specific.
-
-=cut
-
 sub create_user {
     my($self, $email, $display_name, $password, $user_name) = @_;
+    # Creates a new user.  Does not validate the arguments.  AuthUser is
+    # new users (L<Bivio::Biz::Model::UserCreateForm|Bivio::Biz::Model::UserCreateForm>).  Last option is optional.  It allows you to force the I<user_name>
+    # to be something specific.
     $self->usage_error("missing argument")
 	unless $email && $display_name && $password;
     my($req) = $self->get_request;
@@ -105,16 +53,9 @@ sub create_user {
     return;
 }
 
-=for html <a name="delete_user"></a>
-
-=head2 delete_user()
-
-Deletes current user.
-
-=cut
-
 sub delete_user {
     my($self) = @_;
+    # Deletes current user.
     my($req) = $self->get_request;
     my($email) = Bivio::Biz::Model->new($req, 'Email')
 	->unauth_load_or_die({realm_id => $req->get('auth_user_id')});
@@ -126,17 +67,10 @@ sub delete_user {
     return;
 }
 
-=for html <a name="delete_with_users"></a>
-
-=head2 delete_with_users()
-
-Deletes current realm and its users and sets realm to general,
-and user to nobody afterwards.
-
-=cut
-
 sub delete_with_users {
     my($self) = @_;
+    # Deletes current realm and its users and sets realm to general,
+    # and user to nobody afterwards.
     my($req) = $self->get_request;
     $self->usage_error(
 	$req->get_nested('auth_realm'),
@@ -157,60 +91,32 @@ sub delete_with_users {
     return;
 }
 
-=for html <a name="info"></a>
-
-=head2 info(Bivio::Biz::Model realm_owner)
-
-Info on I<realm_owner> or auth_realm.
-
-=cut
-
 sub info {
     my($self, $owner) = @_;
+    # Info on I<realm_owner> or auth_realm.
     return _info(
 	$owner || $self->get_request->get_nested(qw(auth_realm owner))
     ) . "\n";
 }
 
-=for html <a name="invalidate_email"></a>
-
-=head2 invalidate_email()
-
-Invalidates the user's email address.
-
-=cut
-
 sub invalidate_email {
     my($self) = @_;
+    # Invalidates the user's email address.
     _validate_user($self, 'Invalidate Email')
         ->get_model('User')->invalidate_email;
     return;
 }
 
-=for html <a name="invalidate_password"></a>
-
-=head2 invalidate_password()
-
-Invalidate the user's password.
-
-=cut
-
 sub invalidate_password {
     my($self) = @_;
+    # Invalidate the user's password.
     _validate_user($self, 'Invalidate Password')->invalidate_password;
     return;
 }
 
-=for html <a name="join_user"></a>
-
-=head2 join_user(string role)
-
-Adds user to realm with I<role>.
-
-=cut
-
 sub join_user {
     my($self, $role) = @_;
+    # Adds user to realm with I<role>.
     my($req) = $self->get_request;
     Bivio::Biz::Model->new($req, 'RealmUser')->create({
 	realm_id => $req->get('auth_id'),
@@ -220,16 +126,9 @@ sub join_user {
     return;
 }
 
-=for html <a name="leave_user"></a>
-
-=head2 leave_user()
-
-Drops I<user> from I<realm>.
-
-=cut
-
 sub leave_user {
     my($self) = @_;
+    # Drops I<user> from I<realm>.
     my($req) = $self->get_request;
     my($realm_user) = Bivio::Biz::Model->new($req, 'RealmUser');
     $realm_user->unauth_iterate_start('realm_id', {
@@ -245,16 +144,9 @@ sub leave_user {
     return;
 }
 
-=for html <a name="reset_password"></a>
-
-=head2 reset_password(string password)
-
-Changes a user's password.
-
-=cut
-
 sub reset_password {
     my($self, $password) = @_;
+    # Changes a user's password.
     $self->usage_error("missing new password")
         unless defined($password);
     _validate_user($self, 'Reset Password')->update({
@@ -263,16 +155,9 @@ sub reset_password {
     return;
 }
 
-=for html <a name="users"></a>
-
-=head2 users(string role)
-
-Users for realm.  Filter by role
-
-=cut
-
 sub users {
     my($self, $role) = @_;
+    # Users for realm.  Filter by role
     $role &&= uc($role);
     my($roles) = {};
     $self->model('RealmUser')->do_iterate(
@@ -299,8 +184,6 @@ sub users {
     );
 }
 
-#=PRIVATE SUBROUTINES
-
 sub _info {
     my($user) = @_;
     return join("\n  ",
@@ -321,14 +204,11 @@ sub _info {
     );
 }
 
-# _validate_user(self, string message) : Bivio::Biz::Model::RealmOwner
-#
-# Ensures the user is present, displays the are_you_sure using the
-# specified message.
-# Returns the user's realm.
-#
 sub _validate_user {
     my($self, $message) = @_;
+    # Ensures the user is present, displays the are_you_sure using the
+    # specified message.
+    # Returns the user's realm.
     my($req) = $self->get_request;
     $self->usage_error("missing user")
         unless $self->unsafe_get('user');
@@ -339,15 +219,5 @@ sub _validate_user {
 	. '?');
     return $req->get('auth_user');
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
