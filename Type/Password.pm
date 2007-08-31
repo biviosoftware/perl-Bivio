@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::Password;
 use strict;
-use Bivio::Base 'Bivio::Type::Name';
+use Bivio::Base 'Type.Name';
 use Bivio::TypeError;
 
 # C<Bivio::Type::Password> indicates the input is a password entry.
