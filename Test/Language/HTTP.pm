@@ -83,7 +83,12 @@ sub default_password {
 
 sub do_logout {
     my($self) = @_;
-    $self->follow_link(qr{logout}i);
+    if (text_exists(qr{logout}i)) {
+	$self->follow_link(qr{logout}i);
+    }
+    else {
+	$self->visit_uri('/pub/logout');
+    }
     return;
 }
 
@@ -344,12 +349,18 @@ sub home_page_uri {
 }
 
 sub login_as {
-    my($self, $email) = @_;
+    my($self, $email, $password) = @_;
     $self->home_page;
-    $self->follow_link(qr{login}i);
+    if (text_exists(qr{login}i)) {
+	$self->follow_link(qr{login}i);
+    }
+    else {
+	$self->visit_uri('/pub/login');
+    }
     $self->submit_form(Login => {
 	qr{Email}i => $email,
-	qr{password}i => $self->default_password,
+	qr{password}i =>
+	    defined($password) ? $password : $self->default_password,
     });
     return;
 }
