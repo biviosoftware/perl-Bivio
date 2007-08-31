@@ -174,13 +174,11 @@ sub validate {
 	$self->internal_put_field(login => $login);
 	$self->internal_put_field('RealmOwner.password' => $password);
     }
-
     my($owner) = $self->validate_login;
     return
 	if $self->in_error
 	    || !$owner;
-
-    unless ($self->use('Type.Password')->is_equal(
+    unless ($owner->get_field_type('password')->is_equal(
 	$owner->get('password'),
 	$self->get('RealmOwner.password'),
     )) {
