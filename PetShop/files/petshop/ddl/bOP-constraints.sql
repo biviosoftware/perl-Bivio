@@ -286,6 +286,19 @@ CREATE INDEX motion_vote_t9 on motion_vote_t (
 /
 
 --
+-- otp_t
+--
+ALTER TABLE otp_t
+  ADD CONSTRAINT otp_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX otp_t3 ON otp_t (
+  realm_id
+)
+/
+
+--
 -- phone_t
 --
 ALTER TABLE phone_t
@@ -295,164 +308,6 @@ ALTER TABLE phone_t
 /
 CREATE INDEX phone_t3 on phone_t (
   realm_id
-)
-/
-
---
--- tuple_t
---
-ALTER TABLE tuple_t
-  ADD CONSTRAINT tuple_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX tuple_t3 on tuple_t (
-  realm_id
-)
-/
-ALTER TABLE tuple_t
-  ADD CONSTRAINT tuple_t4
-  FOREIGN KEY (tuple_def_id)
-  REFERENCES tuple_def_t(tuple_def_id)
-/
-CREATE INDEX tuple_t5 on tuple_t (
-  tuple_def_id
-)
-/
-CREATE INDEX tuple_t6 on tuple_t (
-  modified_date_time
-)
-/
-ALTER TABLE tuple_t
-  ADD CONSTRAINT tuple_t7
-  FOREIGN KEY (thread_root_id)
-  REFERENCES realm_mail_t(realm_file_id)
-/
-CREATE INDEX tuple_t8 on tuple_t (
-  thread_root_id
-)
-/
-ALTER TABLE tuple_t
-  ADD CONSTRAINT tuple_t9
-  FOREIGN KEY (realm_id, tuple_def_id)
-  REFERENCES tuple_use_t(realm_id, tuple_def_id)
-/
-CREATE INDEX tuple_t10 on tuple_t (
-  realm_id,
-  tuple_def_id
-)
-/
-
---
--- tuple_def_t
---
-ALTER TABLE tuple_def_t
-  ADD CONSTRAINT tuple_def_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX tuple_def_t3 on tuple_def_t (
-  realm_id
-)
-/
-CREATE UNIQUE INDEX tuple_def_t4 on tuple_def_t (
-  realm_id,
-  label
-)
-/
-CREATE UNIQUE INDEX tuple_def_t5 on tuple_def_t (
-  realm_id,
-  moniker
-)
-/
-
---
--- tuple_slot_def_t
---
-ALTER TABLE tuple_slot_def_t
-  ADD CONSTRAINT tuple_slot_def_t2
-  FOREIGN KEY (tuple_def_id)
-  REFERENCES tuple_def_t(tuple_def_id)
-/
-CREATE INDEX tuple_slot_def_t3 on tuple_slot_def_t (
-  tuple_def_id
-)
-/
-ALTER TABLE tuple_slot_def_t
-  ADD CONSTRAINT tuple_slot_def_t4
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX tuple_slot_def_t5 on tuple_slot_def_t (
-  realm_id
-)
-/
-CREATE UNIQUE INDEX tuple_slot_def_t6 on tuple_slot_def_t (
-  tuple_def_id,
-  label
-)
-/
-ALTER TABLE tuple_slot_def_t
-  ADD CONSTRAINT tuple_slot_def_t7
-  FOREIGN KEY (tuple_slot_type_id)
-  REFERENCES tuple_slot_type_t(tuple_slot_type_id)
-/
-CREATE INDEX tuple_slot_def_t8 on tuple_slot_def_t (
-  tuple_slot_type_id
-)
-/
-ALTER TABLE tuple_slot_def_t
-  ADD CONSTRAINT tuple_slot_def_t9
-  CHECK (is_required BETWEEN 0 AND 1)
-/
-
---
--- tuple_slot_type_t
---
-ALTER TABLE tuple_slot_type_t
-  ADD CONSTRAINT tuple_slot_type_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX tuple_slot_type_t3 on tuple_slot_type_t (
-  realm_id
-)
-/
-CREATE UNIQUE INDEX tuple_slot_type_t4 on tuple_slot_type_t (
-  realm_id,
-  label
-)
-/
-
---
--- tuple_use_t
---
-ALTER TABLE tuple_use_t
-  ADD CONSTRAINT tuple_use_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX tuple_use_t3 on tuple_use_t (
-  realm_id
-)
-/
-ALTER TABLE tuple_use_t
-  ADD CONSTRAINT tuple_use_t4
-  FOREIGN KEY (tuple_def_id)
-  REFERENCES tuple_def_t(tuple_def_id)
-/
-CREATE INDEX tuple_use_t5 on tuple_use_t (
-  tuple_def_id
-)
-/
-CREATE UNIQUE INDEX tuple_use_t6 on tuple_use_t (
-  realm_id,
-  label
-)
-/
-CREATE UNIQUE INDEX tuple_use_t7 on tuple_use_t (
-  realm_id,
-  moniker
 )
 /
 
@@ -677,6 +532,164 @@ ALTER TABLE realm_user_t
 /
 CREATE INDEX realm_user_t8 ON realm_user_t (
   creation_date_time
+)
+/
+
+--
+-- tuple_t
+--
+ALTER TABLE tuple_t
+  ADD CONSTRAINT tuple_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_t3 on tuple_t (
+  realm_id
+)
+/
+ALTER TABLE tuple_t
+  ADD CONSTRAINT tuple_t4
+  FOREIGN KEY (tuple_def_id)
+  REFERENCES tuple_def_t(tuple_def_id)
+/
+CREATE INDEX tuple_t5 on tuple_t (
+  tuple_def_id
+)
+/
+CREATE INDEX tuple_t6 on tuple_t (
+  modified_date_time
+)
+/
+ALTER TABLE tuple_t
+  ADD CONSTRAINT tuple_t7
+  FOREIGN KEY (thread_root_id)
+  REFERENCES realm_mail_t(realm_file_id)
+/
+CREATE INDEX tuple_t8 on tuple_t (
+  thread_root_id
+)
+/
+ALTER TABLE tuple_t
+  ADD CONSTRAINT tuple_t9
+  FOREIGN KEY (realm_id, tuple_def_id)
+  REFERENCES tuple_use_t(realm_id, tuple_def_id)
+/
+CREATE INDEX tuple_t10 on tuple_t (
+  realm_id,
+  tuple_def_id
+)
+/
+
+--
+-- tuple_def_t
+--
+ALTER TABLE tuple_def_t
+  ADD CONSTRAINT tuple_def_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_def_t3 on tuple_def_t (
+  realm_id
+)
+/
+CREATE UNIQUE INDEX tuple_def_t4 on tuple_def_t (
+  realm_id,
+  label
+)
+/
+CREATE UNIQUE INDEX tuple_def_t5 on tuple_def_t (
+  realm_id,
+  moniker
+)
+/
+
+--
+-- tuple_slot_def_t
+--
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t2
+  FOREIGN KEY (tuple_def_id)
+  REFERENCES tuple_def_t(tuple_def_id)
+/
+CREATE INDEX tuple_slot_def_t3 on tuple_slot_def_t (
+  tuple_def_id
+)
+/
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t4
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_slot_def_t5 on tuple_slot_def_t (
+  realm_id
+)
+/
+CREATE UNIQUE INDEX tuple_slot_def_t6 on tuple_slot_def_t (
+  tuple_def_id,
+  label
+)
+/
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t7
+  FOREIGN KEY (tuple_slot_type_id)
+  REFERENCES tuple_slot_type_t(tuple_slot_type_id)
+/
+CREATE INDEX tuple_slot_def_t8 on tuple_slot_def_t (
+  tuple_slot_type_id
+)
+/
+ALTER TABLE tuple_slot_def_t
+  ADD CONSTRAINT tuple_slot_def_t9
+  CHECK (is_required BETWEEN 0 AND 1)
+/
+
+--
+-- tuple_slot_type_t
+--
+ALTER TABLE tuple_slot_type_t
+  ADD CONSTRAINT tuple_slot_type_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_slot_type_t3 on tuple_slot_type_t (
+  realm_id
+)
+/
+CREATE UNIQUE INDEX tuple_slot_type_t4 on tuple_slot_type_t (
+  realm_id,
+  label
+)
+/
+
+--
+-- tuple_use_t
+--
+ALTER TABLE tuple_use_t
+  ADD CONSTRAINT tuple_use_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_use_t3 on tuple_use_t (
+  realm_id
+)
+/
+ALTER TABLE tuple_use_t
+  ADD CONSTRAINT tuple_use_t4
+  FOREIGN KEY (tuple_def_id)
+  REFERENCES tuple_def_t(tuple_def_id)
+/
+CREATE INDEX tuple_use_t5 on tuple_use_t (
+  tuple_def_id
+)
+/
+CREATE UNIQUE INDEX tuple_use_t6 on tuple_use_t (
+  realm_id,
+  label
+)
+/
+CREATE UNIQUE INDEX tuple_use_t7 on tuple_use_t (
+  realm_id,
+  moniker
 )
 /
 

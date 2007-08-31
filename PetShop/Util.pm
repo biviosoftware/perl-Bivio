@@ -133,6 +133,10 @@ sub MULTI_ROLE_USER {
     return 'multi_role_user';
 }
 
+sub OTP {
+    return 'otp';
+}
+
 =for html <a name="PASSWORD"></a>
 
 =head2 PASSWORD : string
@@ -223,7 +227,7 @@ sub demo_users {
     my($self) = @_;
     return [
         map($self->$_(),
-	    qw(DEMO GUEST MULTI_ROLE_USER BTEST_READ),
+	    qw(DEMO GUEST MULTI_ROLE_USER BTEST_READ OTP),
 	    $self->get_request->is_production ? () : 'ROOT',
 	),
     ];
@@ -494,7 +498,7 @@ sub _init_demo_users {
 	# test accounts have real names, for ease of logging in
 	$req->get('auth_user')->update({
 	    name => $u,
-	    display_name => ucfirst($u) . ' User',
+	    display_name => join(' ', ucfirst($u), $self->DEMO_LAST_NAME),
 	});
 	my($uid) = $req->get('auth_user_id');
 	if ($u eq $self->DEMO) {
@@ -520,6 +524,14 @@ sub _init_demo_users {
                 realm_id => Bivio::Auth::Realm->get_general->get('id'),
                 user_id => $uid,
                 role => Bivio::Auth::Role->TEST_ROLE2,
+            });
+	}
+	elsif ($u eq $self->OTP) {
+            Bivio::Biz::Model->new($req, 'OTP')->create({
+                realm_id => $uid,
+		otp => '0F31CF4D32A97E42',
+	        seed => 'petshop',
+		count => '498',
             });
 	}
     }
