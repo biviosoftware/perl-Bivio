@@ -63,7 +63,7 @@ sub validate {
     my($req) = $self->get_request;
     unless ($req->is_substitute_user) {
 	return unless $self->validate_not_null('old_password');
-	unless (Bivio::Type::Password->is_equal(
+	unless ($self->use('Type.Password')->is_equal(
 	    $req->get_nested(qw(auth_realm owner password)),
 	    $self->get('old_password'),
         )) {
