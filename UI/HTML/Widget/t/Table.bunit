@@ -7,23 +7,37 @@ Widget({
 	    unless req()->unsafe_get('Model.ProductList');
 	return;
     },
+    new_params => sub {
+	my($case, $params) = @_;
+	$case->put(_expect_args => $params->[0]);
+	return [ProductList => ['Product.product_id', 'Product.name'],
+		@$params];
+    },
+    check_return => sub {
+	my($case, $actual, $expect) = @_;
+	my($expect_args) = $case->get('_expect_args');
+	return defined($expect->[0])
+	    ? $expect
+	    : [_t($expect_args)];
+    },
 });
 [
-    map({
-	my($left, $right) = ref($_) eq 'ARRAY' ? @$_ : $_;
-	$right ||= {%$left};
-	([ProductList => ['Product.product_id', 'Product.name'], $left]
-	     => ref($right) ? _t($right) : $right);
-    }
+    map(([$_] => undef),
 	{},
 	{cellpadding => 2},
 	{cellspacing => 3},
-	[{align => 'n'}, {align => 'center', valign => 'top'}],
-	[{expand => 1}, {width => '95%'}],
 	{width => '100%'},
 	{border => 1},
+    ),
+    map({
+	my($left, $right) = @$_;
+	([$left] => _t($right));
+    }
+	[{align => 'n'}, {align => 'center', valign => 'top'}],
+	[{expand => 1}, {width => '95%'}],
 	[{title => 'Reptiles'}, {title => qq{\n<tr><td colspan="2"><font face="arial,sans-serif"><b><br />Reptiles<br /></b></font></td>\n</tr>}}],
-	[{class => 'reptiles'}, _chomp(<<'EOF')],
+    ),
+    [{class => 'reptiles'}] => _chomp(<<'EOF'),
 
 <table class="reptiles">
 <tr>
@@ -40,7 +54,6 @@ Widget({
 </tr>
 </table>
 EOF
-    ),
 ];
 
 sub _chomp {
