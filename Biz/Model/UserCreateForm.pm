@@ -2,17 +2,10 @@
 # $Id$
 package Bivio::Biz::Model::UserCreateForm;
 use strict;
-use Bivio::Auth::RealmType;
-use Bivio::Auth::Role;
 use Bivio::Base 'Bivio::Biz::FormModel';
-use Bivio::Biz::Random;
 use Bivio::IO::Trace;
-use Bivio::Type::Location;
-use Bivio::Type::Name;
-use Bivio::Type::Password;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_E) = Bivio::Type->get_instance('Email');
 
 sub execute_ok {
     my($self) = @_;
@@ -51,15 +44,19 @@ sub internal_create_models {
 	$self->get_model_properties('RealmOwner'),
     );
     $self->internal_put_field('User.user_id' => $user->get('user_id'));
-    $self->new_other('Email')->create({
+    my($e) = $self->new_other('Email');
+    my($et) = $e->get_field_type('email');
+    $e->create({
 	realm_id => $user->get('user_id'),
 	email => $self->unsafe_get('Email.email')
-	    || $_E->format_ignore(
-		$realm->get('name') . '-' . Bivio::Biz::Random->hex_digits(8),
+	    || $et->format_ignore(
+		$realm->get('name')
+		    . '-'
+		    . $self->use('Bivio::Biz::Random')->hex_digits(8),
 		$req,
 	    ),
 	want_bulletin => $params->{'Email.want_bulletin'} || 0,
-    }) unless ($self->unsafe_get('Email.email') || '') eq $_E->IGNORE_PREFIX;
+    }) unless ($self->unsafe_get('Email.email') || '') eq $et->IGNORE_PREFIX;
     return ($realm, $user);
 }
 

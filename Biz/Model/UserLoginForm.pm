@@ -2,13 +2,8 @@
 # $Id$
 package Bivio::Biz::Model::UserLoginForm;
 use strict;
-use Bivio::Agent::HTTP::Cookie;
-use Bivio::Auth::RealmType;
-use Bivio::Auth::RealmType;
 use Bivio::Base 'Bivio::Biz::FormModel';
 use Bivio::IO::Trace;
-use Bivio::Type::Password;
-use Bivio::Type::UserState;
 
 # C<Bivio::Biz::Model::UserLoginForm> is used to login which changes the
 # cookie.  Modules which "login" users should call <tt>execute</tt>
@@ -19,10 +14,9 @@ use Bivio::Type::UserState;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
+__PACKAGE__->use('Bivio::Agent::HTTP::Cookie')->register(__PACKAGE__);
 
 sub PASSWORD_FIELD {
-    # Returns the cookie key for the encrypted password field.
     return 'p';
 }
 
@@ -30,7 +24,7 @@ sub SUPER_USER_FIELD {
     # B<DEPRECATED>:
     # L<Bivio::Biz::Model::AdmSubstituteUserForm::SUPER_USER_FIELD|Bivio::Biz::Model::AdmSubstituteUserForm/SUPER_USER_FIELD>
     Bivio::IO::Alert->warn_deprecated(
-	'use Bivio::Biz::Model::AdmSubstituteUserForm->SUPER_USER_FIELD');
+	q{use Bivio::Biz::Model->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD});
     return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
 }
 
@@ -186,7 +180,7 @@ sub validate {
 	if $self->in_error
 	    || !$owner;
 
-    unless (Bivio::Type::Password->is_equal(
+    unless ($self->use('Type.Password')->is_equal(
 	$owner->get('password'),
 	$self->get('RealmOwner.password'),
     )) {
@@ -330,7 +324,7 @@ sub _set_log_user {
     );
     $r->connection->user(
 	($super_user_id ? 'su-' . $super_user_id . '-' : '')
-	. ($req->get('user_state') == Bivio::Type::UserState->LOGGED_IN
+	. ($req->get('user_state') == $proto->use('Type.UserState')->LOGGED_IN
 	    ? 'li-' : 'lo-')
         . _get($cookie, $proto->USER_FIELD));
     return;
@@ -344,10 +338,10 @@ sub _set_user {
 	# Cookie overrides but may not have a cookie so super_user_id
 	super_user_id => _get($cookie, _super_user_field($proto))
 	    || $req->unsafe_get('super_user_id'),
-	user_state => $user ? Bivio::Type::UserState->LOGGED_IN
+	user_state => $proto->use('Type.UserState')->from_name(
+	    $user ? 'LOGGED_IN'
 	    : _get($cookie, $proto->USER_FIELD)
-	    ? Bivio::Type::UserState->LOGGED_OUT
-	    : Bivio::Type::UserState->JUST_VISITOR,
+	    ? 'LOGGED_OUT' : 'JUST_VISITOR'),
     );
     _set_log_user($proto, $cookie, $req);
     return $user;
