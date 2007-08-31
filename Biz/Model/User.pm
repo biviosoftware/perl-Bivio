@@ -72,9 +72,9 @@ sub create_realm {
     # Returns (user, realm_owner) models.
     $self->create($user);
     $realm_owner ||= {};
-    $realm_owner->{password} = Bivio::Type::Password->encrypt(
-	$realm_owner->{password}
-    ) if defined($realm_owner->{password});
+    $realm_owner->{password}
+	= $self->use('Type.Password')->encrypt($realm_owner->{password})
+        if defined($realm_owner->{password});
     $realm_owner->{display_name} = $self->format_full_name
 	unless defined($realm_owner->{display_name});
     my($ro) = $self->new_other('RealmOwner')->create({
