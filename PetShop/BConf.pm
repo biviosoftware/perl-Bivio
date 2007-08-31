@@ -108,6 +108,9 @@ sub merge_overrides {
 		View => ['Bivio::PetShop::View'],
 	    },
 	}),
+	'Bivio::Test::HTMLParser::Forms' => {
+	    error_color => '#993300',
+	},
 	'Bivio::SQL::PropertySupport' => {
 	    unused_classes => [],
 	},
