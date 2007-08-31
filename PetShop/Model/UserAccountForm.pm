@@ -1,64 +1,21 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::UserAccountForm;
 use strict;
-$Bivio::PetShop::Model::UserAccountForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::UserAccountForm::VERSION;
-
-=head1 NAME
-
-Bivio::PetShop::Model::UserAccountForm - user account entry
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::UserAccountForm;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::FormModel>
-
-=cut
-
-use Bivio::Biz::FormModel;
-@Bivio::PetShop::Model::UserAccountForm::ISA = ('Bivio::Biz::FormModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::UserAccountForm> creates a new user account.
-
-=cut
-
-#=IMPORTS
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
+use Bivio::Base 'Bivio::Biz::FormModel';
 use Bivio::Die;
 use Bivio::PetShop::Type::UserStatus;
 use Bivio::PetShop::Type::UserType;
 use Bivio::Type::Location;
 use Bivio::Type::Password;
 
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute_empty"></a>
-
-=head2 execute_empty()
-
-Loads values for the current user, if present.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty {
     my($self) = @_;
+    # Loads values for the current user, if present.
     return unless _is_editing($self);
     _do_models(
 	$self,
@@ -67,16 +24,9 @@ sub execute_empty {
     return;
 }
 
-=for html <a name="execute_ok"></a>
-
-=head2 execute_ok()
-
-Saves the current values into the models.
-
-=cut
-
 sub execute_ok {
     my($self) = @_;
+    # Saves the current values into the models.
     _create_user($self)
 	unless _is_editing($self);
     my($account) = $self->new_other('UserAccount')->load;
@@ -89,16 +39,9 @@ sub execute_ok {
     return;
 }
 
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref;
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
-
 sub internal_initialize {
     my($self) = @_;
+    # B<FOR INTERNAL USE ONLY>
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	visible => [
@@ -135,29 +78,17 @@ sub internal_initialize {
     });
 }
 
-=for html <a name="validate"></a>
-
-=head2 validate()
-
-Ensures password is valid if required.
-
-=cut
-
 sub validate {
     my($self) = @_;
+    # Ensures password is valid if required.
     $self->validate_not_null('RealmOwner.password')
         unless _is_editing($self);
     return;
 }
 
-#=PRIVATE METHODS
-
-# _create_user()
-#
-# Creates the models necessary for a new user.
-#
 sub _create_user {
     my($self) = @_;
+    # Creates the models necessary for a new user.
     my($user) = $self->new_other('User')->create(
 	$self->get_model_properties('User'));
     my($realm) = $self->new_other('RealmOwner')->create({
@@ -195,12 +126,9 @@ sub _create_user {
     return;
 }
 
-# _do_models(self, code_ref op)
-#
-# Operate on User, Address, Email, Phone
-#
 sub _do_models {
     my($self, $op) = @_;
+    # Operate on User, Address, Email, Phone
     foreach my $model (qw(User Address Email Phone)) {
 	$op->(
 	    $self->new_other($model)->load({
@@ -213,25 +141,12 @@ sub _do_models {
     return;
 }
 
-# _is_editing() : boolean
-#
-# Returns true if the account is being edited.
-#
 sub _is_editing {
     my($self) = @_;
+    # Returns true if the account is being edited.
     return 0 if $self->unsafe_get('force_create');
     my($s) = $self->get_request->unsafe_get('user_state');
     return $s && $s == Bivio::Type::UserState->LOGGED_IN;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

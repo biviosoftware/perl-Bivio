@@ -1,65 +1,18 @@
-# Copyright (c) 2003-2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserPasswordForm;
 use strict;
-$Bivio::Biz::Model::UserPasswordForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::UserPasswordForm::VERSION;
+use Bivio::Base 'Bivio::Biz::FormModel';
 
-=head1 NAME
-
-Bivio::Biz::Model::UserPasswordForm - change user password
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Model::UserPasswordForm;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::FormModel>
-
-=cut
-
-use Bivio::Biz::FormModel;
-@Bivio::Biz::Model::UserPasswordForm::ISA = ('Bivio::Biz::FormModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::UserPasswordForm>
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
 }
 
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute_ok"></a>
-
-=head2 execute_ok()
-
-Updates the password in the database and the cookie.
-
-=cut
-
 sub execute_ok {
     my($self) = @_;
+    # Updates the password in the database and the cookie.
     my($req) = $self->get_request;
     $self->get_instance('UserLoginForm')->execute($req, {
 	realm_owner => $req->get_nested(qw(auth_realm owner))
@@ -68,16 +21,9 @@ sub execute_ok {
     return;
 }
 
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-Return config.
-
-=cut
-
 sub internal_initialize {
     my($self) = @_;
+    # Return config.
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	require_context => 1,
@@ -95,17 +41,10 @@ sub internal_initialize {
     });
 }
 
-=for html <a name="internal_pre_execute"></a>
-
-=head2 internal_pre_execute(string method)
-
-Sets the 'display_old_password' field based on if the user is the
-super user.
-
-=cut
-
 sub internal_pre_execute {
     my($self, $method) = @_;
+    # Sets the 'display_old_password' field based on if the user is the
+    # super user.
     my($req) = $self->get_request;
     my($qp) = $req->unsafe_get_nested(qw(Action.UserPasswordQuery password));
     $self->internal_put_field(query_password => $qp)
@@ -117,17 +56,10 @@ sub internal_pre_execute {
     return;
 }
 
-=for html <a name="validate"></a>
-
-=head2 validate()
-
-Validates the old password for normal users.
-Ensures the new password and confirm password matches.
-
-=cut
-
 sub validate {
     my($self) = @_;
+    # Validates the old password for normal users.
+    # Ensures the new password and confirm password matches.
     my($req) = $self->get_request;
     unless ($req->is_substitute_user) {
 	return unless $self->validate_not_null('old_password');
@@ -144,17 +76,5 @@ sub validate {
         || $self->get('new_password') eq $self->get('confirm_new_password');
      return;
 }
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2003-2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
