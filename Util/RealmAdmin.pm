@@ -2,17 +2,13 @@
 # $Id$
 package Bivio::Util::RealmAdmin;
 use strict;
-use Bivio::Auth::Role;
 use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::Biz::Model;
-use Bivio::Type::DateTime;
-use Bivio::Type::Password;
 
 # C<Bivio::Util::RealmAdmin> is a generic interface to administration tasks.
 # It's likely you'll have to subclass this class.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = 'Bivio::Type::DateTime';
+my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub USAGE {
     # Returns usage string.
@@ -150,7 +146,7 @@ sub reset_password {
     $self->usage_error("missing new password")
         unless defined($password);
     _validate_user($self, 'Reset Password')->update({
-        password => Bivio::Type::Password->encrypt($password),
+        password => $self->use('Type.Password')->encrypt($password),
     });
     return;
 }
