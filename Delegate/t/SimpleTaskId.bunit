@@ -3,7 +3,7 @@
 [
     class() => [
 	all_components => [
-	    [] => [[qw(base tuple xapian)]],
+	    [] => [[qw(base otp tuple xapian)]],
 	],
 	bunit_validate_all => undef,
 	merge_task_info => [
