@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.27  2007/08/31 01:44:52  moeller
+  * Bivio::Base new format use Bivio::Base 'Map';
+  * Bivio::Biz::PropertyModel fixed bad assumption in
+    unauth_create_or_update_keys
+  * Bivio::Delegate::TaskId added FORUM_HELP_IFRAME
+  * Bivio::Die defined $cfg->{stack_trace_separator}
+  * Bivio::IO::ClassLoader after_in_map
+  * Bivio::SQL::PropertySupport potential code for better use of meta
+    data when loading related models
+  * Bivio::Type::Secret encapsulate Crypt->new, because we will need to
+    deal with this at some point.  Tried Crypt::CBC-2.14 and 2.22,
+    neither works with Secret.bunit
+  * Bivio::UI::FacadeBase added FORUM_HELP_IFRAM
+  * Bivio::UI::HTML::Widget::Link is_blessed
+  * Bivio::UI::View::CSS fixed text align for IE, help now uses an
+    ilayer
+  * Bivio::UI::ViewLanguage use is_blessed
+  * Bivio::UI::Widget is_blessed
+  * Bivio::UI::WidgetValueSource encapsulate _can_recurse
+  * Bivio::UI::XHTML::Widget::HelpWiki now uses an ilayer to display
+    help box
+  * Bivio::Util::Class added info()
+  * Bivio::Util::SiteForum addd HELP_REALM
+
   Revision 5.26  2007/08/27 01:57:41  moeller
   * Bivio::UI::XHTML::Widget::HelpWiki now renders as a link which shows help in a popup
 
