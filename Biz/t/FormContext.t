@@ -46,7 +46,7 @@ Bivio::Test->new({
 			Bivio::Agent::TaskId->LOGIN),
 		)];
 	    } => [{
-		form_model => 'Bivio::Biz::Model::UserLoginForm',
+		form_model => qr{Bivio::\w+::Model::UserLoginForm},
 		form => undef,
 		form_context => undef,
 		query => undef,
