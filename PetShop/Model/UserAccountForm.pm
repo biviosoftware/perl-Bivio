@@ -2,14 +2,7 @@
 # $Id$
 package Bivio::PetShop::Model::UserAccountForm;
 use strict;
-use Bivio::Auth::RealmType;
-use Bivio::Auth::Role;
-use Bivio::Base 'Bivio::Biz::FormModel';
-use Bivio::Die;
-use Bivio::PetShop::Type::UserStatus;
-use Bivio::PetShop::Type::UserType;
-use Bivio::Type::Location;
-use Bivio::Type::Password;
+use Bivio::Base 'Model.UserCreateForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -26,22 +19,18 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    # Saves the current values into the models.
-    _create_user($self)
+    return shift->SUPER::execute_ok(@_)
 	unless _is_editing($self);
-    my($account) = $self->new_other('UserAccount')->load;
     _do_models(
 	$self,
 	sub {shift->update($self->get_model_properties(shift))},
     );
-    Bivio::Die->die("invalid password")
-	unless $self->get_request->get('auth_user')->has_valid_password;
+    $self->new_other('UserAccount')->load;
     return;
 }
 
 sub internal_initialize {
     my($self) = @_;
-    # B<FOR INTERNAL USE ONLY>
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	visible => [
@@ -53,7 +42,6 @@ sub internal_initialize {
                 name => 'User.last_name',
                 constraint => 'NOT_NULL',
             },
-	    'Email.email',
             'Address.street1',
             'Address.street2',
             'Address.city',
@@ -61,10 +49,10 @@ sub internal_initialize {
             'Address.zip',
             'Address.country',
             'Phone.phone',
-	    {
-		name => 'RealmOwner.password',
+	    map(+{
+		name => $_,
 		constraint => 'NONE',
-	    },
+	    }, qw(RealmOwner.password RealmOwner.display_name confirm_password)),
 	],
 	other => [
 	    {
@@ -78,6 +66,10 @@ sub internal_initialize {
     });
 }
 
+sub parse_display_name {
+    return shift->get_model_properties('User');
+}
+
 sub validate {
     my($self) = @_;
     # Ensures password is valid if required.
@@ -86,55 +78,29 @@ sub validate {
     return;
 }
 
-sub _create_user {
-    my($self) = @_;
-    # Creates the models necessary for a new user.
-    my($user) = $self->new_other('User')->create(
-	$self->get_model_properties('User'));
-    my($realm) = $self->new_other('RealmOwner')->create({
-	%{$self->get_model_properties('RealmOwner')},
-        name => 'u' . $user->get('user_id'),
-	realm_id => $user->get('user_id'),
-	realm_type => Bivio::Auth::RealmType->USER,
-	password => Bivio::Type::Password->encrypt(
-	    $self->get('RealmOwner.password')),
-    });
-    $self->new_other('RealmUser')->create({
-	realm_id => $user->get('user_id'),
-	user_id => $user->get('user_id'),
-	role => Bivio::Auth::Role->ADMINISTRATOR,
-    });
-
-    foreach my $model (qw(Address Email Phone)) {
+sub internal_create_models {
+    my($self) = shift;
+    $self->internal_put_field('RealmOwner.display_name', '');
+    my($realm, @rest) = $self->SUPER::internal_create_models(@_);
+    $self->req->set_realm($realm);
+    foreach my $model (qw(Address Phone)) {
 	$self->new_other($model)->create({
-            realm_id => $user->get('user_id'),
-            location => Bivio::Type::Location->PRIMARY,
             %{$self->get_model_properties($model)},
 	});
     }
     $self->new_other('UserAccount')->create({
-	user_id => $user->get('user_id'),
-	status => Bivio::PetShop::Type::UserStatus->CUSTOMER,
-	user_type => Bivio::PetShop::Type::UserType->HOME_CONSUMER,
+	user_id => $realm->get('realm_id'),
+	status => $self->use('Type.UserStatus')->CUSTOMER,
+	user_type => $self->use('Type.UserType')->HOME_CONSUMER,
     });
-
-    my($req) = $self->get_request;
-    $self->get_instance('UserLoginForm')->execute($req, {
-	realm_owner => $realm,
-    });
-    $req->set_realm($realm);
-    return;
+    return ($realm, @rest);
 }
 
 sub _do_models {
     my($self, $op) = @_;
-    # Operate on User, Address, Email, Phone
     foreach my $model (qw(User Address Email Phone)) {
 	$op->(
-	    $self->new_other($model)->load({
-		$model eq 'User' ? ()
-		    : (location => Bivio::Type::Location->PRIMARY),
-	    }),
+	    $self->new_other($model)->load({}),
 	    $model,
 	);
     }
@@ -143,10 +109,10 @@ sub _do_models {
 
 sub _is_editing {
     my($self) = @_;
-    # Returns true if the account is being edited.
-    return 0 if $self->unsafe_get('force_create');
+    return 0
+	if $self->unsafe_get('force_create');
     my($s) = $self->get_request->unsafe_get('user_state');
-    return $s && $s == Bivio::Type::UserState->LOGGED_IN;
+    return $s && $s->eq_logged_in;
 }
 
 1;
