@@ -3,7 +3,7 @@
 Request();
 [
     class() => [
-	max_integer => [
+	max_number => [
 	    [] => [undef],
 	    [1] => 1,
 	    [1, 2] => 2,

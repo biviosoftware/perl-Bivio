@@ -188,7 +188,7 @@ sub map_together {
     } 0 .. $self->max_integer(map($#$_, @arrays)))];
 }
 
-sub max_integer {
+sub max_number {
     my(undef, @values) = @_;
     my($max) = shift(@values);
     foreach my $v (@values) {
