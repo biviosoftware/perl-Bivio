@@ -5,16 +5,7 @@ use strict;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 use base 'Bivio::Biz::PropertyModel';
 
-# C<Bivio::OTP::Model::OTP>
-
-#=IMPORTS
 use Bivio::OTP::RFC2289;
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
 
 sub get_challenge {
     my($self) = @_;
@@ -27,10 +18,10 @@ sub internal_initialize {
         version => 1,
 	table_name => 'otp_t',
 	columns => {
-            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
-            otp => ['Line', 'NONE'],   #VARCHAR(16),
-            seed => ['Line', 'NONE'],   #VARCHAR(16),
-            count => ['Number', 'NONE'],   #NUMERIC(4),
+            user_id => ['User.user_id', 'PRIMARY_KEY'],
+            otp_md5 => ['Line', 'NONE'],
+            seed => ['Line', 'NONE'],
+            count => ['Number', 'NONE'],
 	},
 	auth_id => 'realm_id',
     });
@@ -38,18 +29,16 @@ sub internal_initialize {
 
 sub verify {
     my($self, $input) = @_;
-    my($otp) = Bivio::OTP::RFC2289->canonical_hex($input);
+    my($otp_md5) = Bivio::OTP::RFC2289->canonical_hex($input);
     return 0
-	unless $otp;
+	unless $otp_md5;
     return 0
-	unless Bivio::OTP::RFC2289->verify($otp, $self->get('otp'));
+	unless Bivio::OTP::RFC2289->verify($otp_md5, $self->get('otp_md5'));
     $self->update({
-        otp => $otp,
+        otp_md5 => $otp_md5,
         count => $self->get('count') - 1,
     });
     return 1;
 }
-
-#=PRIVATE SUBROUTINES
 
 1;
