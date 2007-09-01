@@ -1,0 +1,89 @@
+# $Id$
+# Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
+Request('initialize_fully');
+options({
+    compute_params => sub {
+	my($case, $params) = @_;
+	my($realm) = $params->[0] ? Bivio::Biz::Model->new(req(), 'RealmOwner')
+	    ->unauth_load_or_die({name => $params->[0]})
+	    : undef;
+	return $case->get('method') eq 'execute'
+	    ? [req(), {realm_owner => $realm}]
+	    : [$realm, req()];
+    },
+    check_return => sub {
+	my($case, undef, $expect) = @_;
+	my($cookie) = req()->get('cookie');
+	my($p) = $cookie->unsafe_get(
+	    Bivio::Biz::Model::UserLoginForm->PASSWORD_FIELD);
+	Bivio::Die->die('password=', $p, ' and auth_user=',
+	    req()->get('auth_user'), ' disagree')
+		if $p xor req()->get('auth_user');
+	my($u) = $cookie->unsafe_get(
+	    Bivio::Biz::Model::UserLoginForm->USER_FIELD);
+	Bivio::Die->die('cookie_user=', $u, ' and auth_user_id=',
+	    req()->get('auth_user_id'), ' disagree')
+		if $p && !Bivio::IO::Ref->nested_equals(
+		    $u, req()->get('auth_user_id'));
+	Bivio::Die->die('bad is_substitute_user=', req()->is_substitute_user),
+	    if req()->is_substitute_user
+		xor $case->get('method') eq 'substitute_user';
+	Bivio::Die->die('bad is_super_user=', req()->is_super_user)
+	    if req()->is_super_user
+		xor ($expect->[0] || '') eq 'root';
+	$case->actual_return([req()->get('auth_user')
+	    && req()->get('auth_user')->get('name')]);
+	return $expect;
+    },
+});
+[
+    class() => [
+	execute => [
+	    demo => 'demo',
+	    [undef] => [undef],
+	    sub {
+		# This case simulates the request not being fully initialized
+		# when the cookie is set.
+		my($case) = @_;
+		req()->put(auth_realm => undef, auth_id => undef);
+		return $case->get('compute_params')->($case, ['demo']);
+	    } => 'demo',
+	    root => 'root',
+	],
+	substitute_user => [
+	    demo => 'demo',
+	    demo => FORBIDDEN(),
+        ],
+	execute => [
+	    # Exit from su
+	    [undef] => 'root',
+	    [undef] => [undef],
+	],
+	substitute_user => [
+	    demo => FORBIDDEN(),
+	],
+	execute => [
+	    demo => 'demo',
+	],
+	substitute_user => [
+	    demo => FORBIDDEN(),
+	],
+    ],
+    {
+	compute_params => sub {
+	    my($case, $params) = @_;
+	    return [req(), @$params];
+        },
+	object => class(),
+    } => [
+	execute => [
+	    # Logs out previous test
+	    [{login => undef}] => [undef],
+	    [{login => 'demo'}] => 'demo',
+	    [{login => 'user'}] => Bivio::DieCode->NOT_FOUND,
+	    [{login => 'club'}] => Bivio::DieCode->NOT_FOUND,
+	    [{}] => Bivio::DieCode->DIE,
+	    [{login => 'bad%realm!name'}] => Bivio::DieCode->NOT_FOUND,
+	],
+    ],
+];
