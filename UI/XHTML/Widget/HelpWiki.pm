@@ -38,6 +38,13 @@ sub initialize {
 <script>
 function resize_help_popup() {
   var o = document.getElementById('help_wiki_iframe');
+  var node = document.getElementById('help_link');
+  var top = node.offsetHeight;
+  while (node) {
+    top += node.offsetTop;
+    node = node.offsetParent;
+  }
+  o.style.top = top + 'px';
 
   if (document.all) {
     var b = help_wiki_iframe.document.body;
@@ -71,7 +78,8 @@ EOF
 		]),
 	    ),
             If(['->unsafe_get', "$self"],
-                DIV_help_link(Link('Help', 'javascript: toggle_help_popup()')),
+                DIV_help_link(Link('Help', 'javascript: toggle_help_popup()')
+		   ->put(attributes => ' id="help_link"')),
                 If([\&_is_help_author],
                     DIV_help_link(Link('Add Help',
 		        ['->format_uri', 'FORUM_WIKI_EDIT', '',
