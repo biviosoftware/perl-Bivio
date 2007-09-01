@@ -2,18 +2,14 @@
 # $Id$
 package Bivio::OTP::Model::OTP;
 use strict;
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 use base 'Bivio::Biz::PropertyModel';
-
 use Bivio::OTP::RFC2289;
-use Bivio::Type::DateTime;
 
-#=VARIABLES
-my($_DT) = 'Bivio::Type::DateTime';
-
-=head1 METHODS
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = Bivio::Type->get_instance('DateTime');
+Bivio::IO::Config->register(my $_CFG = {
+    login_timeout_seconds => 3600,
+});
 
 sub create {
     my($self, $values) = @_;
@@ -27,10 +23,23 @@ sub get_challenge {
     return join(' ', 'otp-md5', $self->get('count'), $self->get('seed'));
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub has_timed_out {
     my($self) = @_;
     return $_DT->diff_seconds($_DT->now, $self->get('last_login'))
-	> 60*60;
+	> $_CFG->{login_timeout_seconds};
+}
+
+sub init_user {
+    my($self, $realm, $values) = @_;
+    $values->{user_id} = $realm->get('realm_id');
+    $realm->update({password => $realm->get_field_type('password')->OTP_VALUE});
+    return $self->create($values);
 }
 
 sub internal_initialize {
