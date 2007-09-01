@@ -394,12 +394,8 @@ sub _cfg_otp {
     return {
         FormError => [
 	    ['UserLoginForm.RealmOwner.password.OTP_PASSWORD_MISMATCH'
-	        => <<'EOF'],
-You need the response from an OTP generator.<BR />
-New secret pass phrase:<BR />
-&nbsp;&nbsp;&nbsp;&nbsp;String(['otp-challenge']);
-EOF
-	],
+	        => q{Please respond to this OTP challenge: String(['Model.OTP', '->get_challenge']);},
+	]],
     };
 }
 
