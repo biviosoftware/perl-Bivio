@@ -251,14 +251,14 @@ sub arg_list {
 	@{$proto->map_together(sub {
 	    my($arg, $decl) = @_;
 	    $decl ||= $last_decl;
-	    my($name, $type, $default) = ref($decl) ? @$decl : [$decl];
+	    my($name, $type, $default) = ref($decl) ? @$decl : $decl;
 	    $type ||= $name;
 	    my($v, $e) = Bivio::Type->get_instance($type)
 		->from_literal($arg);
 	    return $v
 		if defined($v);
 	    unless ($e) {
-		return ref($default) eq 'CODE' ? $default->() : $default
+		return ref($default) eq 'CODE' ? $default->($proto) : $default
 		    if @$decl > 2;
 		$e = Bivio::TypeError->NULL;
 	    }

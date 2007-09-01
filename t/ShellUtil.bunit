@@ -16,6 +16,7 @@ config({
 [
     class() => [
 	arg_list => [
+	    [['a'], ['String']] => [class(), 'a'],
 	    [[1, 2, 3], [[qw(arg Integer)]]] => [class(), 1, 2, 3],
 	    [['a'], [[qw(arg Integer)]]] => DIE(),
 	    [[undef], [[qw(arg Integer)]]] => DIE(),
