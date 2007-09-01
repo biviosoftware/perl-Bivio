@@ -22,7 +22,7 @@ sub execute_empty {
     foreach my $m ($self->CREATE_REALM_MODELS) {
 	$self->load_from_model_properties($m);
     }
-    return unless _is_create($req);
+    return unless $self->is_create;
     $self->internal_put_field('RealmOwner.name' =>
 	$self->get('RealmOwner.name') . '-');
     $self->internal_put_field('RealmOwner.display_name' =>
@@ -41,7 +41,7 @@ sub execute_ok {
 	return if $self->in_error;
     }
     my($req) = $self->get_request;
-    if (_is_create($req)) {
+    if ($self->is_create) {
 	my($f, $ro) = $self->new_other('Forum')->create_realm(
 	    map($self->get_model_properties($_),
 		$self->CREATE_REALM_MODELS),
@@ -77,6 +77,7 @@ sub internal_initialize {
 		type => 'Boolean',
 		constraint => 'NONE',
 	    }, $_FEM->OPTIONAL_MODES),
+	    'Forum.require_otp',
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
 	other => [
@@ -87,6 +88,12 @@ sub internal_initialize {
 	    },
 	],
     });
+}
+
+sub is_create {
+    my($self) = @_;
+    my($fm) = $self->req->unsafe_get('Type.FormMode');
+    return !$fm || $fm->eq_create;
 }
 
 sub validate {
@@ -107,7 +114,7 @@ sub validate {
 	'RealmOwner.name', Bivio::TypeError->TOP_FORUM_NAME
     ) unless $new_top;
     my($old_top, $is_top) = _top($self);
-    my($top_ok) = $is_top && _is_create($req) && $n eq $new_top;
+    my($top_ok) = $is_top && $self->is_create && $n eq $new_top;
     return $self->internal_put_error(
 	'RealmOwner.name',
 	$top_ok ? Bivio::TypeError->TOP_FORUM_NAME_CHANGE
@@ -119,11 +126,6 @@ sub validate {
     return;
 }
 
-sub _is_create {
-    my($fm) = shift->unsafe_get('Type.FormMode');
-    return !$fm || $fm->eq_create;
-}
-
 sub _is_forum {
     return shift->get_nested(qw(auth_realm type))->eq_forum;
 }
@@ -133,7 +135,7 @@ sub _top {
     my($req) = $self->get_request;
     return ('', 1)
 	unless _is_forum($req);
-    my($is_top) = _is_create($req) ? 0 : 1;
+    my($is_top) = $self->is_create ? 0 : 1;
     my($f) = $self->new_other('Forum')->load;
     foreach my $x (1..10) {
 	my($fid) = $f->get('forum_id');
