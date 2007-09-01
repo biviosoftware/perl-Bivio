@@ -34,25 +34,24 @@ sub USER_FIELD {
 }
 
 sub assert_can_substitute_user {
-    my($proto, $realm, $req) = @_;
+    my($proto, $new_user, $req) = @_;
     # Dies unless user is super user.  Subclasses can override this method
     # to relax this constraint.
-    Bivio::Die->die('not a super user: ', $req)
-	unless $req->is_super_user;
+    Bivio::Die->throw(FORBIDDEN => {
+	message => 'not a super user',
+	entity => $req->get('auth_user'),
+	request => $req,
+    }) unless $req->is_super_user;
+    return;
+}
+
+sub disable_assert_cookie {
+    shift->internal_put_field(disable_assert_cookie => 1);
     return;
 }
 
 sub execute_ok {
     my($self) = @_;
-    # Sets the realm to logged in user.  If I<realm_owner> is C<undef>,
-    # is same as logout.
-    #
-    # Note: If you call this method explicitly (via I<execute>), the cookie
-    # will be checked.  Don't call this method unless you want the cookie
-    # set.
-    #
-    # If call this method with a I<login>, but no I<realm_owner>,
-    # I<realm_owner> will be loaded, a die will happen if not found.
     my($req) = $self->get_request;
     my($realm) = $self->unsafe_get('validate_called')
 	? $self->get('realm_owner')
@@ -64,6 +63,10 @@ sub execute_ok {
     _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
     _set_cookie_user($self, $req, $realm);
     return 0;
+}
+
+sub get_basic_auth_realm {
+    return '*';
 }
 
 sub handle_cookie_in {
@@ -154,24 +157,28 @@ sub internal_validate_cookie_passwd {
 }
 
 sub substitute_user {
-    my($proto, $realm, $req) = @_;
+    my($proto, $new_user, $req) = @_;
+    my($self) = ref($proto) ? $proto : $proto->new($req);
     # Become another user if you are super_user.  Returns the task to switch
     # to or undef (default).
     # A small sanity check, since this is an important function
-    $proto->assert_can_substitute_user($realm, $req);
+    $self->assert_can_substitute_user($new_user, $req);
     unless ($req->unsafe_get('super_user_id')) {
 	# Only set super_user_id field if not already set.  This keeps
 	# original user and doesn't allow someone to su to an admin and
 	# then su as that admin.
 	my($super_user_id) = $req->get('auth_user')->get('realm_id');
 	my($cookie) = $req->unsafe_get('cookie');
-	$cookie->put(_super_user_field($proto) => $super_user_id)
+	$cookie->put(_super_user_field($self) => $super_user_id)
 	    if $cookie;
 	$req->put_durable(super_user_id => $super_user_id);
     }
-    _trace($req->unsafe_get('super_user_id'), ' => ', $realm)
+    _trace($req->unsafe_get('super_user_id'), ' => ', $new_user)
 	if $_TRACE;
-    return $proto->execute($req, {realm_owner => $realm});
+    return $self->process({
+	realm_owner => $new_user,
+	disable_assert_cookie => $self->unsafe_get('disable_assert_cookie') || 0,
+    });
 }
 
 sub unsafe_get_cookie_user_id {
