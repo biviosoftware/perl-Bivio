@@ -65,7 +65,7 @@ req()->set_realm('btest_read');
 	    '' => [\''],
 	],
 	builtin_shell_util => [
-	    [Class => [qw(qualified_name Model.RealmOwner)]] => qr{Bivio::Biz::Model::RealmOwner},
+	    [Class => [qw(qualified_name Model.RealmOwner)]] => qr{RealmOwner},
 	],
     ],
     sub {'Bivio::UNIVERSAL'} => [

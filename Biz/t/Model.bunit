@@ -30,8 +30,8 @@ my($category_count) = 0;
 		    };
 	        } qw(a b)),
 	    ]],
-	    [['a']] => Bivio::DieCode->DIE,
-	    [['a'], 'String'] => Bivio::DieCode->DIE,
+	    [['a']] => DIE(),
+	    [['a'], 'String'] => DIE(),
 	    [c1 => ['d1'], c2 => ['d2'], 'String', 'NOT_NULL'] => [
 		[map({
 		    ("c$_" => [
@@ -60,8 +60,8 @@ my($category_count) = 0;
 	new => [
 	    ['RealmOwner'] => qr/RealmOwner/,
 	    [req(), 'RealmOwner'] => qr/RealmOwner/,
-	    ['junk', 'RealmOwner'] => Bivio::DieCode->DIE,
-	    [] => Bivio::DieCode->DIE,
+	    ['junk', 'RealmOwner'] => DIE(),
+	    [] => DIE(),
 	],
     ],
     'Bivio::Biz::Model::UserLoginForm' => [
@@ -94,10 +94,10 @@ my($category_count) = 0;
     ],
     'Bivio::Biz::Model::RealmOwner' => [
 	new => [
-	    [] => qr/Bivio::Biz::Model::RealmOwner/,
+	    [] => qr{Model::RealmOwner},
 	    [req()] => qr/RealmOwner/,
 	    [req(), 'RealmUser'] => qr/RealmUser/,
-	    ['junk', 'RealmUser'] => Bivio::DieCode->DIE,
+	    ['junk', 'RealmUser'] => DIE(),
 	],
     ],
     ['RealmOwner'] => [
@@ -105,15 +105,15 @@ my($category_count) = 0;
 	    ['name', 'type'] => 'Bivio::Type::RealmName',
         ],
 	new => [
-	    [] => qr/Bivio::Biz::Model::RealmOwner/,
+	    [] => qr{Model::RealmOwner},
 	    [req()] => qr/RealmOwner/,
 	    [req(), 'RealmUser'] => qr/RealmUser/,
-	    ['junk', 'RealmUser'] => Bivio::DieCode->DIE,
+	    ['junk', 'RealmUser'] => DIE(),
 	],
 	unauth_load => [
 	    [{name => 'demo'}] => 1,
 	],
-       as_string => qr{^Bivio::Biz::Model::RealmOwner\(demo,\d+\)$}s,
+       as_string => qr{^Bivio::\w+::Model::RealmOwner\(demo,\d+\)$}s,
     ],
     [req(), 'Category'] => [
 	iterate_start => [
