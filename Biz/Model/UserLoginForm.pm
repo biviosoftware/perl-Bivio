@@ -35,8 +35,8 @@ sub USER_FIELD {
 
 sub assert_can_substitute_user {
     my($proto, $realm, $req) = @_;
-    # Dies unless user is super user.  Subclasses can override this method to relax
-    # this constraint.
+    # Dies unless user is super user.  Subclasses can override this method
+    # to relax this constraint.
     Bivio::Die->die('not a super user: ', $req)
 	unless $req->is_super_user;
     return;
@@ -62,20 +62,26 @@ sub execute_ok {
     return _su_logout($self)
 	if !$realm && $req->is_substitute_user;
     _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
-    _set_cookie_user($self, $realm, $req);
+    _set_cookie_user($self, $req, $realm);
     return 0;
 }
 
 sub handle_cookie_in {
-    my($proto, $cookie, $req) = @_;
     # Sets the I<auth_user_id> if user is logged in.   Sets the user
     # in the log (via I<r> record).
     #
     # Doesn't read the database to validate ids, simply translates values
     # from cookie to real code.
+    my($proto, $cookie, $req) = @_;
+    $proto = Bivio::Biz::Model->get_instance('UserLoginForm');
     _set_user($proto, _load_cookie_user($proto, $cookie, $req),
 	$cookie, $req);
     return;
+}
+
+sub internal_get_cookie_passwd {
+    my($self, $req, $realm) = @_;
+    return $realm->get('password');
 }
 
 sub internal_initialize {
@@ -137,6 +143,14 @@ sub internal_initialize {
         $field->{form_name} = $field->{name};
     }
     return $info;
+}
+
+sub internal_validate_cookie_passwd {
+    my($proto, $req, $cookie_passwd, $auth_user) = @_;
+    return 1
+	if $auth_user->has_valid_password
+            && $cookie_passwd eq $auth_user->get('password');
+    return 0;
 }
 
 sub substitute_user {
@@ -273,8 +287,7 @@ sub _load_cookie_user {
 	return undef
 	    unless $cp;
 	return $auth_user
-	    if $auth_user->has_valid_password
-		&& $cp eq $auth_user->get('password');
+	    if $proto->internal_validate_cookie_passwd($req, $cp, $auth_user);
 	$req->warn($auth_user, ': user is not valid');
     }
     else {
@@ -289,7 +302,7 @@ sub _load_cookie_user {
 }
 
 sub _set_cookie_user {
-    my($self, $realm, $req) = @_;
+    my($self, $req, $realm) = @_;
     # Checks to see if the cookie was received.  If so, set the state.
 
     # If there's no cookie, just ignore (probably command line app)
@@ -302,7 +315,8 @@ sub _set_cookie_user {
     if ($realm) {
 	$cookie->put(
 	    $self->USER_FIELD => $realm->get('realm_id'),
-	    $self->PASSWORD_FIELD => $realm->get('password'),
+	    $self->PASSWORD_FIELD =>
+	        $self->internal_get_cookie_passwd($req, $realm),
 	);
     }
     else {
