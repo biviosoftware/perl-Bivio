@@ -208,6 +208,10 @@ ALTER TABLE forum_t
   ADD CONSTRAINT forum_t5
   CHECK (is_public_email BETWEEN 0 AND 1)
 /
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t6
+  CHECK (require_otp BETWEEN 0 AND 1)
+/
 
 --
 -- job_lock_t
