@@ -399,6 +399,7 @@ sub internal_upgrade_db_bundle {
     $self->internal_upgrade_db_motion;
     $self->internal_upgrade_db_website;
     $self->internal_upgrade_db_realm_dag;
+    $self->internal_upgrade_db_otp;
     return;
 }
 
@@ -984,6 +985,23 @@ ALTER TABLE realm_user_t
 ALTER TABLE realm_user_t
   DROP COLUMN honorific
 ;
+EOF
+    return;
+}
+
+sub internal_upgrade_db_otp {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE forum_t ADD COLUMN require_otp NUMERIC(1)
+/
+UPDATE forum_t SET require_otp = 0
+/
+ALTER TABLE forum_t ALTER COLUMN require_otp SET NOT NULL
+/
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t6
+  CHECK (require_otp BETWEEN 0 AND 1)
+/
 EOF
     return;
 }
