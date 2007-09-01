@@ -2,8 +2,12 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-test_deviance();
+test_deviance(my $challenge = qr{otp-md5\s+(\d+)\s+(\w+)});
 login_as('otp');
 test_conformance();
-test_ok(get_content() =~ /otp-md5\s+(\d+)\s+(\S+)/);
-login_as('otp', test_use('Bivio::Util::OTP')->to_six_word($1, $2, 'password'));
+login_as(
+    'otp',
+    test_use('Bivio::OTP::Util::OTP')->six_word_key(
+	get_content() =~ $challenge,
+	'password'),
+);
