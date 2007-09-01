@@ -65,6 +65,8 @@ Request();
         ],
 	verify => [
 	    ['414C61F2C59ECB58', '0F31CF4D32A97E42'] => 1,
+	    # pack 'A' doesn't work, use pack 'a'
+	    ['B30CE8F53C73500C', '6AF16DA17D8813A5'] => 1,
 	],
     ],
 ];

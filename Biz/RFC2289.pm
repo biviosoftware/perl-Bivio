@@ -29,7 +29,7 @@ sub checksum {
     my(undef, $hex_otp) = @_;
     my($sum) = 0;
     foreach my $bin (
-        unpack('A2'x32, unpack('B64', pack('H16', $hex_otp)))
+        unpack('a2'x32, unpack('B64', pack('H16', $hex_otp)))
     ) {
 	$sum += unpack('n', pack('B16', '0'x14 . $bin));
     }
@@ -41,7 +41,7 @@ sub compute {
     my(undef, $passwd, $seed, $count) = @_;
     return undef
 	unless $count >= 0;
-    return uc(unpack('H*', _compute(lc($seed) . $passwd, $count))),
+    return uc(unpack('H16', _compute(lc($seed) . $passwd, $count)));
 }
 
 sub from_six_word_format {
@@ -68,7 +68,7 @@ sub to_six_word_format {
 sub verify {
     my($proto, $hex_otp, $hex_last_otp) = @_;
     return 1
-	if uc(unpack('H*', _compute(unpack('A*', pack('H16', $hex_otp)), 0)))
+	if uc(unpack('H16', _compute(unpack('a8', pack('H16', $hex_otp)), 0)))
 	    eq $hex_last_otp;
     return 0;
 }
@@ -106,7 +106,7 @@ sub _split11 {
     # Split otp + checksum into 6 11-bit words
     my($otp) = @_;
     return (map({unpack('N', pack('B32', '0'x21 . $_))}
-        unpack('A11'x6, unpack('B*', pack('H*', $otp)))));
+        unpack('a11'x6, unpack('B66', pack('H17', $otp)))));
 }
 
 1;
