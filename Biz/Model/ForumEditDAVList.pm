@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FM) = Bivio::Type->get_instance('FormMode');
 
 sub CSV_COLUMNS {
-    return [qw(RealmOwner.name RealmOwner.display_name Forum.want_reply_to admin_only_forum_email system_user_forum_email public_forum_email Forum.forum_id)];
+    return [qw(RealmOwner.name RealmOwner.display_name Forum.want_reply_to admin_only_forum_email system_user_forum_email public_forum_email Forum.require_otp Forum.forum_id)];
 }
 
 sub LIST_CLASS {
