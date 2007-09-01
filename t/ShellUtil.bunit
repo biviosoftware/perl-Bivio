@@ -3,7 +3,7 @@
 use Bivio::t::ShellUtil::T1;
 Request();
 # Needed for the usage_error (DIE below).  Take out for debugging
-Bivio::IO::Alert->set_printer(sub {});
+#Bivio::IO::Alert->set_printer(sub {});
 my($myarg_re) = qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s;
 my($email) = email('shellutil');
 config({
@@ -14,7 +14,14 @@ config({
     },
 });
 [
-    'Bivio::ShellUtil' => [
+    class() => [
+	arg_list => [
+	    [[1, 2, 3], [[qw(arg Integer)]]] => [class(), 1, 2, 3],
+	    [['a'], [[qw(arg Integer)]]] => DIE(),
+	    [[undef], [[qw(arg Integer)]]] => DIE(),
+	    [[undef], [[qw(arg Integer 1)]]] => [class(), 1],
+	    [[undef], [[qw(arg Integer), sub {2}]]] => [class(), 2],
+	],
 	email_file => [
 	    [$email => 'any subject' => $INC{'Bivio/Test.pm'}] => undef,
 	],

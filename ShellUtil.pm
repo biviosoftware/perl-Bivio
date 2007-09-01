@@ -243,6 +243,33 @@ sub are_you_sure {
     return;
 }
 
+sub arg_list {
+    my($proto, $args, $decls) = @_;
+    my($last_decl) = $decls->[$#$decls];
+    return (
+	$proto,
+	@{$proto->map_together(sub {
+	    my($arg, $decl) = @_;
+	    $decl ||= $last_decl;
+	    my($name, $type, $default) = ref($decl) ? @$decl : [$decl];
+	    $type ||= $name;
+	    my($v, $e) = Bivio::Type->get_instance($type)
+		->from_literal($arg);
+	    return $v
+		if defined($v);
+	    unless ($e) {
+		return ref($default) eq 'CODE' ? $default->() : $default
+		    if @$decl > 2;
+		$e = Bivio::TypeError->NULL;
+	    }
+	    $proto->usage_error(
+		$arg, ': invalid ', $name, ': ',
+		$e->get_long_desc, '; see Type.', $type, "\n");
+	    # DOES NOT RETURN
+	}, $args, $decls)},
+    );
+}
+
 sub assert_not_general {
     my($self) = @_;
     # Ensure auth_realm is not general.
@@ -964,16 +991,12 @@ sub unsafe_get {
 
 sub usage {
     my($proto) = shift;
-    # Dies with I<msg> followed by L<USAGE|"USAGE">.
     $proto->usage_error(@_, "\n", $proto->USAGE(), $proto->OPTIONS_USAGE());
     # DOES NOT RETURN
 }
 
 sub usage_error {
-    my($self) = shift;
-    # Terminates caller with a usage error.  Doesn't print usage.
-    #
-    # TODO: Need to avoid stack trace.
+    shift;
     Bivio::IO::Alert->print_literally('ERROR: ', @_);
     Bivio::Die->throw_quietly('DIE');
     # DOES NOT RETURN
