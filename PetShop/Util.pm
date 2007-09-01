@@ -527,12 +527,21 @@ sub _init_demo_users {
             });
 	}
 	elsif ($u eq $self->OTP) {
-            Bivio::Biz::Model->new($req, 'OTP')->create({
-                user_id => $uid,
-		otp_md5 => '0F31CF4D32A97E42',
-	        seed => 'petshop',
-		count => '498',
-            });
+	    my($otp) = Bivio::Biz::Model->new($req, 'OTP');
+	    my($v) = {
+		seed => 'yourseed',
+		count => $otp->get_field_type('count')->get_max,
+	    };
+            $otp->init_user(
+		$req->get('auth_user'), {
+		    otp_md5 => $self->new_other('OTP')->hex_key(
+			$v->{count}--,
+			$v->{seed},
+			$self->PASSWORD,
+		    ),
+		    %$v,
+		},
+	    );
 	}
     }
     return;
