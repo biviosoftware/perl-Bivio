@@ -349,7 +349,7 @@ B<Use sparingly.>  Much better to us L<warn|"warn"> and L<info|"info">.
 
 sub print_literally {
     shift;
-    &$_LOGGER(join('', @_));
+    $_LOGGER->(join('', map(defined($_) ? $_ : '<undef>', @_)));
     return;
 }
 
