@@ -527,15 +527,11 @@ sub _init_demo_users {
             });
 	}
 	elsif ($u eq $self->OTP) {
-	    my($v) = {
-		seed => 'petshop',
-		count => '498',
-	    };
             Bivio::Biz::Model->new($req, 'OTP')->create({
-                realm_id => $uid,
-		otp => Bivio::OTP::RFC2289->compute(
-		    $self->PASSWORD, $v->{seed}, $v->{count}),
-		%$v,
+                user_id => $uid,
+		otp_md5 => '0F31CF4D32A97E42',
+	        seed => 'petshop',
+		count => '498',
             });
 	}
     }

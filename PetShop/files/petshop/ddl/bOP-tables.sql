@@ -179,11 +179,12 @@ CREATE TABLE motion_vote_t (
 /
 
 CREATE TABLE otp_t (
-  realm_id NUMERIC(18) NOT NULL,
-  otp VARCHAR(16),
+  user_id NUMERIC(18) NOT NULL,
+  otp_md5 VARCHAR(16),
   seed VARCHAR(16),
   count NUMERIC(4),
-  CONSTRAINT otp_t1 primary key(realm_id)
+  last_login DATE NOT NULL,
+  CONSTRAINT otp_t1 primary key(user_id)
 )
 /
 
