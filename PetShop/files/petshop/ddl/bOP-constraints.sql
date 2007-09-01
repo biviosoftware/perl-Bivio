@@ -290,11 +290,11 @@ CREATE INDEX motion_vote_t9 on motion_vote_t (
 --
 ALTER TABLE otp_t
   ADD CONSTRAINT otp_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
 /
 CREATE INDEX otp_t3 ON otp_t (
-  realm_id
+  user_id
 )
 /
 
