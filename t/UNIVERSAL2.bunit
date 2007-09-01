@@ -3,6 +3,15 @@
 Request();
 [
     class() => [
+	max_integer => [
+	    [] => [undef],
+	    [1] => 1,
+	    [1, 2] => 2,
+	],
+	map_together => [
+	    [sub {(shift(@_) || '') . shift(@_)}, [qw(a b)], [qw(1 2 3)]]
+		=> [[qw(a1 b2 3)]],
+	],
 	req => [
 	    [] => [req()],
 	    is_production => 0,

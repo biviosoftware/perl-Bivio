@@ -180,6 +180,24 @@ sub map_invoke {
     )];
 }
 
+sub map_together {
+    my($self, $op, @arrays) = @_;
+    return [map({
+	my($i) = $_;
+	$op->(map($_->[$i], @arrays));
+    } 0 .. $self->max_integer(map($#$_, @arrays)))];
+}
+
+sub max_integer {
+    my(undef, @values) = @_;
+    my($max) = shift(@values);
+    foreach my $v (@values) {
+	$max = $v
+	    if $max < $v;
+    }
+    return $max;
+}
+
 sub my_caller {
     # Returns method (or simple subroutine) name of caller immediately before the
     # caller of this routine.
