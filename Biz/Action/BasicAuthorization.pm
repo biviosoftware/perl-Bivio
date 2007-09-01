@@ -10,44 +10,54 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($proto, $req) = @_;
+    return 0
+	if $req->unsafe_get('auth_user');
     my($auth) = $req->get('r')->header_in('Authorization');
+    my($f) = Bivio::Biz::Model->new($req, 'UserLoginForm');
+    $f->disable_assert_cookie;
     if ($auth) {
 	my($u, $p)
 	    = (MIME::Base64::decode(($auth =~ /Basic\s*(\S+)/)[0] || '') || '')
 		=~ /^([^:]+):(.*)$/;
 	if ($u) {
-	    my($f) = Bivio::Biz::Model->new($req, 'UserLoginForm');
 	    my($su);
 	    my($ro);
 	    if ($u =~ s/^(.*)\>//) {
-		$f->validate($1, $p);
+		my($su) = $1;
+		$f->validate($su, $p);
 		unless ($f->in_error) {
-		    $req->put(super_user_id =>
-		        $su = $f->get_nested(qw(realm_owner realm_id)));
-		    $ro = $f->validate_login($u);
+		    $f->execute_ok;
+		    if ($req->is_super_user) {
+			$f->validate_login($u);
+			$f->substitute_user($ro = $f->get('realm_owner'), $req)
+			    unless $f->in_error;
+		    }
+		    else {
+			Bivio::IO::Alert->warn(
+			    $su, ': attempted to substitute user to: ', $u);
+		    }
 		}
 	    }
 	    else {
 		$f->validate($u, $p);
-		$ro = $f->unsafe_get('realm_owner');
+		unless ($f->in_error) {
+		    $f->execute_ok;
+		    $ro = $f->unsafe_get('realm_owner');
+		}
 	    }
-	    if ($ro && !$f->in_error) {
-		$req->set_user($ro);
-		$req->get('r')->connection->user(
-		    ($su ? "su-$su-" : '')
-		    . 'ba-' . $req->get('auth_user_id'));
-		return 0;
-	    }
-	    else {
-		Bivio::IO::Alert->warn($f->get_errors);
-	    }
+	    return 0
+		if $ro;
+	    Bivio::IO::Alert->warn($f->get_errors)
+	        if $f->in_error;
 	}
 	else {
 	    Bivio::IO::Alert->warn($auth, ': could not parse user');
 	}
     }
-    $req->get('reply')->set_header('WWW-Authenticate', 'Basic realm="*"')
-	->set_http_status(Bivio::Ext::ApacheConstants->HTTP_UNAUTHORIZED)
+    $req->get('reply')->set_header(
+	'WWW-Authenticate',
+	'Basic realm="@{[$f->get_basic_auth_realm]}"'
+    )->set_http_status(Bivio::Ext::ApacheConstants->HTTP_UNAUTHORIZED)
 	->set_output_type('text/plain')
         ->set_output(\(''));
     return 1;
