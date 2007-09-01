@@ -580,7 +580,6 @@ sub _site_wiki {
 #help_wiki_iframe {
   position: absolute;
   visibility: hidden;
-  top: 2em;
   right: 1ex;
   width: 40em;
   z-index: 1;
