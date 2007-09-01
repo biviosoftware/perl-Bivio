@@ -4,33 +4,38 @@ test_setup('PetShop');
 home_page();
 my($root) = '/demo/dav/files';
 my($x) = absolute_uri("$root/pub2");
-test_deviance(qr{authorization}i);
+test_deviance('401 Authorization Required');
 send_request(OPTIONS => "$root");
 test_conformance();
-basic_authorization('root>guest', 'bad pass');
 $root =~ s{/files}{};
-test_deviance();
-send_request(PROPFIND => $root);
+basic_authorization('root>guest', 'bad pass');
+test_deviance('401 Authorization Required');
+send_request(PROPFIND => '/dav');
 test_conformance();
 basic_authorization('root');
-test_deviance();
-send_request(PROPFIND => $root);
+send_request(PROPFIND => '/dav');
+test_deviance('403 Forbidden');
+send_request(OPTIONS => "$root");
+test_conformance();
+basic_authorization('demo>guest');
+test_deviance('401 Authorization Required');
+send_request(PROPFIND => '/dav');
 test_conformance();
 basic_authorization('root>guest');
 send_request(PROPFIND => $root);
 basic_authorization('guest');
 send_request(PROPFIND => $root);
 verify_no_text('orders');
-test_deviance(qr{forbidden}i);
+test_deviance('403 Forbidden');
 send_request(PROPFIND => "$root/orders");
 test_conformance();
 $root .= '/files';
 visit_uri("$root/private/file.html");
 send_request(PROPFIND => "$root/private");
 my($rand) = random_string();
-test_deviance(qr{not.found}i);
+test_deviance('404 Not Found');
 send_request(PROPFIND => "$root/pub/dav-permission.$rand");
-test_deviance(qr{forbidden}i);
+test_deviance('403 Forbidden');
 send_request(MKCOL => "$root/pub/dav-permission.$rand");
 send_request(PUT => "$root/pub/dav-permission.$rand", undef, '');
 send_request(DELETE => "$root/pub/file.txt");
@@ -46,7 +51,7 @@ send_request(COPY => "$root/private/file.html", {
     Destination => absolute_uri('/guest/dav/files/dav-permission'),
 });
 $x = absolute_uri("$root/dav-permission");
-test_deviance('forbidden');
+test_deviance('403 Forbidden');
 send_request(COPY => '/guest/dav/files/private/file.html', {
     Destination => $x,
 });
@@ -74,6 +79,6 @@ send_request(PUT => $top_members, undef, $csv);
 # End
 
 # Make sure an admin at a lower level can't get at a higher level
-test_deviance(qr{forbidden}i);
+test_deviance('403 Forbidden');
 send_request(GET => $root_forums);
 send_request(PUT => $root_forums, undef, $root_forums_csv . "davp1,DAV Permission\n");
