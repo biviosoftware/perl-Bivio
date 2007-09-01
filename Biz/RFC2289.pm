@@ -37,8 +37,7 @@ sub checksum {
 }
 
 sub compute {
-    # Return a One Time Password
-    my(undef, $passwd, $seed, $count) = @_;
+    my(undef, $count, $seed, $passwd) = @_;
     return undef
 	unless $count >= 0;
     return uc(unpack('H16', _compute(lc($seed) . $passwd, $count)));
