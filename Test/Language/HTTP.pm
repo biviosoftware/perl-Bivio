@@ -49,6 +49,7 @@ sub absolute_uri {
 
 sub basic_authorization {
     my($self, $user, $password) = @_;
+    $self->clear_cookies;
     $self->put(Authorization =>
         'Basic ' . MIME::Base64::encode(
 	    $user . ':' . ($password || $self->default_password)));
