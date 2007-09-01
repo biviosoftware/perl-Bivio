@@ -7,8 +7,8 @@ create_user('x'.random_string())->get('realm_id');
 [
     create => [
         [{
-            realm_id => req('auth_user_id'),
-	    otp => '0F31CF4D32A97E42',
+            user_id => req('auth_user_id'),
+	    otp_md5 => '0F31CF4D32A97E42',
 	    seed => 'petshop',
             count => '498',
 	}] => not_die(),
@@ -18,7 +18,7 @@ create_user('x'.random_string())->get('realm_id');
     ],
     load => [
         [] => [{
-	    otp => '414C61F2C59ECB58',
+	    otp_md5 => '414C61F2C59ECB58',
 	    seed => 'petshop',
             count => '497',
 	}],
@@ -28,7 +28,7 @@ create_user('x'.random_string())->get('realm_id');
     ],
     load => [
         [] => [{
-	    otp => '414C61F2C59ECB58',
+	    otp_md5 => '414C61F2C59ECB58',
 	    seed => 'petshop',
             count => '497',
 	}],
