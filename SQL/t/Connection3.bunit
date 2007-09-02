@@ -8,8 +8,6 @@ Request();
 		'SELECT name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
 		['root', 'demo'],
 	    ] => [[['demo'], ['root']]],
-	],
-	map_execute => [
 	    [
 		sub {shift->[0]},
 		'SELECT name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
