@@ -7,7 +7,10 @@ use Bivio::Base 'Bivio::Biz::Action';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_next {
-    return 'server_redirect.next';
+    return {
+	method => 'server_redirect',
+	task_id => 'next',
+    };
 }
 
 1;
