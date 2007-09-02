@@ -1,0 +1,17 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+basic_authorization('otp');
+test_deviance('401 Authorization Required');
+send_request(PROPFIND => '/dav');
+test_conformance();
+Bivio::IO::Alert->info(get_response()->header('WWW-Authenticate'));
+test_ok(get_response()->header('WWW-Authenticate') =~ m{otp-md5\s+(\d+)\s+(\w+)});
+basic_authorization(
+    'otp',
+    test_use('Bivio::OTP::Util::OTP')->six_word_key($1, $2, 'password'),
+);
+send_request(PROPFIND => '/dav');
+send_request(PROPFIND => '/otp/dav');
+
