@@ -77,6 +77,7 @@ sub execute {
 	}));
     return {
 	uri => $req->get('query')->{goto},
+	query => undef,
     };
 }
 
