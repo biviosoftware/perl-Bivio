@@ -99,7 +99,7 @@ sub merge_overrides {
 	    	    => 'Bivio::PetShop::Delegate::FormErrors',
 	    },
 	    maps => {
-		Action => [qw(Bivio::PetShop::Action Bivio::OTP::Action)],
+		Action => ['Bivio::PetShop::Action'],
 		Facade => ['Bivio::PetShop::Facade'],
 		HTMLWidget => ['Bivio::PetShop::Widget'],
 		Model => [qw(Bivio::PetShop::Model Bivio::OTP::Model)],
