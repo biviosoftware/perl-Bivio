@@ -407,8 +407,8 @@ sub internal_upgrade_db_bundle {
     my($tables) = {map(($_ => 1), @{$self->tables})};
     foreach my $type (qw(
 	forum
-	mail
-	mail_bounce
+	realm_mail
+	realm_mail_bounce
 	calendar_event
 	email_alias
 	job_lock
@@ -717,7 +717,7 @@ EOF
     return;
 }
 
-sub internal_upgrade_db_mail {
+sub internal_upgrade_db_realm_mail {
     my($self) = @_;
     $self->run(<<'EOF');
 CREATE TABLE realm_mail_t (
@@ -803,7 +803,7 @@ EOF
     return;
 }
 
-sub internal_upgrade_db_mail_bounce {
+sub internal_upgrade_db_realm_mail_bounce {
     my($self) = @_;
     # Adds EmailAlias table.
     $self->run(<<'EOF');
