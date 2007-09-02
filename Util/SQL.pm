@@ -1002,6 +1002,24 @@ ALTER TABLE forum_t
   ADD CONSTRAINT forum_t6
   CHECK (require_otp BETWEEN 0 AND 1)
 /
+CREATE TABLE otp_t (
+  user_id NUMERIC(18) NOT NULL,
+  otp_md5 VARCHAR(16) NOT NULL,
+  seed VARCHAR(8) NOT NULL,
+  sequence NUMERIC(3) NOT NULL,
+  last_login DATE NOT NULL,
+  CONSTRAINT otp_t1 primary key(user_id)
+)
+/
+ALTER TABLE otp_t
+  ADD CONSTRAINT otp_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX otp_t3 ON otp_t (
+  user_id
+)
+/
 EOF
     return;
 }
