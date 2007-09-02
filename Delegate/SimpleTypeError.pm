@@ -395,6 +395,11 @@ sub get_delegate_info {
 	undef,
 	'invalid OTP',
     ],
+    FORUM_FOR_OTP_USERS => [
+	74,
+	undef,
+	'this forum is for OTP users only',
+    ],
 ];
 }
 
