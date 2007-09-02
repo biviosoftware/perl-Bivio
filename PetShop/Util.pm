@@ -2,132 +2,43 @@
 # $Id$
 package Bivio::PetShop::Util;
 use strict;
-$Bivio::PetShop::Util::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Util::VERSION;
+use Bivio::Auth::Role;
+use Bivio::Base 'Bivio::Util::SQL';
+use Bivio::Biz::Util::RealmRole;
+use Bivio::Type::DateTime;
+use Bivio::Util::CSV;
 
-=head1 NAME
-
-Bivio::PetShop::Util - initializes and manages PetShop
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Util;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Util::SQL>
-
-=cut
-
-use Bivio::Util::SQL;
-@Bivio::PetShop::Util::ISA = ('Bivio::Util::SQL');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Util> are utilities for initializing and
-managing your PetShop.
-
-How to create the database.  As root:
-
-    su - postgres -c 'createuser --no-createdb --no-adduser --pwprompt petuser; createdb --owner petuser pet'
-
-As you:
-
-    cd files/ddl
-    b-petshop create_db
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="BTEST_READ"></a>
-
-=head2 BTEST_READ : string
-
-BTEST_READ user's name.
-
-=cut
+# export BCONF=~/bconf/petshop.bconf
+# cd files/ddl
+# perl -w ../../Util/b-petshop init_dbms
+# perl -w ../../Util/b-petshop create_test_db
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = 'Bivio::Type::DateTime';
 
 sub BTEST_READ {
     return 'btest_read';
 }
 
-=for html <a name="DEMO"></a>
-
-=head2 DEMO : string
-
-Returns 'demo'.
-
-=cut
-
 sub DEMO {
     return 'demo';
 }
-
-=for html <a name="DEMO_EMAIL"></a>
-
-=head2 DEMO_EMAIL : string
-
-Returns email for DEMO.
-
-=cut
 
 sub DEMO_EMAIL {
     my($proto) = @_;
     return $proto->format_email($proto->DEMO);
 }
 
-=for html <a name="DEMO_LAST_NAME"></a>
-
-=head2 DEMO_LAST_NAME : string
-
-Returns last name of DEMO
-
-=cut
-
 sub DEMO_LAST_NAME {
     return 'User';
 }
-
-=for html <a name="FOUREM"></a>
-
-=head2 FOUREM : string
-
-Fourem RealmOwner.name.
-
-=cut
 
 sub FOUREM {
     return 'fourem';
 }
 
-=for html <a name="GUEST"></a>
-
-=head2 GUEST : string
-
-Guest user's name.
-
-=cut
-
 sub GUEST {
     return 'guest';
 }
-
-=for html <a name="MULTI_ROLE_USER"></a>
-
-=head2 MULTI_ROLE_USER : string
-
-Test super user
-
-=cut
 
 sub MULTI_ROLE_USER {
     return 'multi_role_user';
@@ -137,75 +48,24 @@ sub OTP {
     return 'otp';
 }
 
-=for html <a name="PASSWORD"></a>
-
-=head2 PASSWORD : string
-
-Default password.
-
-=cut
-
 sub PASSWORD {
     return 'password';
 }
 
-=for html <a name="ROOT"></a>
-
-=head2 ROOT : string
-
-Test super user
-
-=cut
-
 sub ROOT {
     return 'root';
 }
-
-=for html <a name="ROOT_EMAIL"></a>
-
-=head2 ROOT_EMAIL : string
-
-Test super user's email
-
-=cut
 
 sub ROOT_EMAIL {
     my($proto) = @_;
     return $proto->format_email($proto->ROOT);
 }
 
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-=cut
-
 sub USAGE {
     return shift->SUPER::USAGE . <<'EOF';
     demo_users -- lists demo user names
 EOF
 }
-
-#=IMPORTS
-use Bivio::Auth::Role;
-use Bivio::Biz::Util::RealmRole;
-use Bivio::Type::DateTime;
-use Bivio::Util::CSV;
-
-#=VARIABLES
-my($_DT) = 'Bivio::Type::DateTime';
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="ddl_files"></a>
-
-=head2 ddl_files() : array_ref
-
-Returns DDL SQL files used to create/destroy database.
-
-=cut
 
 sub ddl_files {
     return [map {
@@ -215,14 +75,6 @@ sub ddl_files {
 	} qw(tables constraints sequences);
     } qw(bOP petshop)];
 }
-
-=for html <a name="demo_users"></a>
-
-=head2 demo_users() : array_ref
-
-Returns list of demo users.
-
-=cut
 
 sub demo_users {
     my($self) = @_;
@@ -234,24 +86,10 @@ sub demo_users {
     ];
 }
 
-=for html <a name="format_email"></a>
-
-=head2 static format_email(string user) : string
-
-Formats email.
-
-=cut
-
 sub format_email {
     my(undef, $user) = @_;
     return "$user\@bivio.biz";
 }
-
-=for html <a name="initialize_test_data"></a>
-
-=head2 initialize_test_data()
-
-=cut
 
 sub initialize_test_data {
     my($self) = @_;
@@ -268,16 +106,9 @@ sub initialize_test_data {
     return;
 }
 
-=for html <a name="internal_upgrade_db"></a>
-
-=head2 internal_upgrade_db()
-
-Add time_zone field to CalendarEvent table
-
-=cut
-
 sub internal_upgrade_db {
     my($self) = @_;
+    # Add time_zone field to CalendarEvent table
     $self->run(<<'EOF');
 ALTER TABLE calendar_event_t
   ADD time_zone NUMERIC(4)
@@ -286,23 +117,15 @@ EOF
     return;
 }
 
-=for html <a name="realm_role_config"></a>
-
-=head2 realm_role_config() : array_ref
-
-Add test realm roles
-
-=cut
-
 sub realm_role_config {
     my($self) = @_;
+    # Add test realm roles
     return [
         @{$self->SUPER::realm_role_config()},
         <DATA>,
     ];}
 
 
-#=PRIVATE METHODS
 
 # _init_demo_calendar(self)
 #
@@ -328,12 +151,9 @@ sub _init_demo_calendar {
     return;
 }
 
-# _init_demo_categories(self)
-#
-# Initializes Model.Category.
-#
 sub _init_demo_categories {
     my($self) = @_;
+    # Initializes Model.Category.
     my($model) = Bivio::Biz::Model->new($self->get_request, 'Category');
     foreach my $enum (Bivio::Type->get_instance('Category')->get_list) {
 	# Don't create the '0' (UNKNOWN) case
@@ -347,12 +167,41 @@ sub _init_demo_categories {
     return;
 }
 
-# _init_demo_items()
-#
-# Init Model.Item and Model.inventory.
-#
+sub _init_demo_files {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    Bivio::IO::File->chdir(
+	Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf(
+	    my $d = File::Spec->rel2abs('demo_files.tmp'))));
+    foreach my $x (
+	['Public/file.txt' => 'text/plain'],
+	['private/file.html' => '<html><body>text/html</body></html>'],
+	['private/image.gif' => 'image/gif'],
+    ) {
+	my($f, $c) = @$x;
+	Bivio::IO::File->mkdir_parent_only($f);
+	Bivio::IO::File->write($f, $c);
+    }
+    foreach my $u (qw(DEMO GUEST BTEST_READ)) {
+	$self->set_realm_and_user($self->$u(), $self->$u());
+	$self->new_other('Bivio::Util::RealmFile')->import_tree('');
+	Bivio::Biz::Model->new('RealmFile')->do_iterate(
+	    sub {
+		my($f) = @_;
+		$f->update({is_public => 1})
+		    if $f->get('path') =~ /public/i;
+		return 1;
+	    },
+	    'path',
+	);
+    }
+    Bivio::IO::File->chdir('..');
+    return;
+}
+
 sub _init_demo_items {
     my($self) = @_;
+    # Init Model.Item and Model.inventory.
 
     foreach my $record (@{Bivio::Util::CSV->parse_records(<<'EOF')}) {
 item_id,product_id,list_price,unit_cost,attr1
@@ -390,12 +239,9 @@ EOF
     return;
 }
 
-# _init_demo_products(self)
-#
-# Initializes Model.Product.
-#
 sub _init_demo_products {
     my($self) = @_;
+    # Initializes Model.Product.
 
     foreach my $record (@{Bivio::Util::CSV->parse_records(<<'EOF')}) {
 product_id,category_id,name,image_name,description
@@ -420,47 +266,10 @@ EOF
     return;
 }
 
-# _init_demo_files(self)
-#
-sub _init_demo_files {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    Bivio::IO::File->chdir(
-	Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf(
-	    my $d = File::Spec->rel2abs('demo_files.tmp'))));
-    foreach my $x (
-	['Public/file.txt' => 'text/plain'],
-	['private/file.html' => '<html><body>text/html</body></html>'],
-	['private/image.gif' => 'image/gif'],
-    ) {
-	my($f, $c) = @$x;
-	Bivio::IO::File->mkdir_parent_only($f);
-	Bivio::IO::File->write($f, $c);
-    }
-    foreach my $u (qw(DEMO GUEST BTEST_READ)) {
-	$self->set_realm_and_user($self->$u(), $self->$u());
-	$self->new_other('Bivio::Util::RealmFile')->import_tree('');
-	Bivio::Biz::Model->new('RealmFile')->do_iterate(
-	    sub {
-		my($f) = @_;
-		$f->update({is_public => 1})
-		    if $f->get('path') =~ /public/i;
-		return 1;
-	    },
-	    'path',
-	);
-    }
-    Bivio::IO::File->chdir('..');
-    return;
-}
-
-# _init_demo_users(self)
-#
-# Creates user demo@bivio.biz with password "password".  Creates user
-# root@bivio.biz.
-#
 sub _init_demo_users {
     my($self) = @_;
+    # Creates user demo@bivio.biz with password "password".  Creates user
+    # root@bivio.biz.
     my($req) = $self->get_request;
     my($demo_id);
     foreach my $u (@{$self->demo_users()}) {
@@ -599,10 +408,6 @@ EOF
 .fourem_wiki {}
 EOF
     $self->model('ForumForm', {
-        'RealmOwner.display_name' => 'Site Help Forum',
-	'RealmOwner.name' => $self->FOUREM . '-site-help',
-    });
-    $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1',
     });
@@ -676,17 +481,8 @@ sub _init_tuple {
     return;
 }
 
-=head1 COPYRIGHT
-
-Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
 1;
+
 __DATA__
 # The following is returned by realm_role_config().
 b-realm-role -r GENERAL edit TEST_ROLE1 - \
