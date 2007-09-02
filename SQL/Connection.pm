@@ -393,6 +393,22 @@ sub is_read_only {
     return $fields->{db_is_read_only};
 }
 
+sub map_execute {
+    my($self) = shift;
+    return _get_instance($self)->map_execute(@_)
+	unless ref($self);
+    my($op) = ref($_[0]) eq 'CODE' ? shift : sub {[@{shift(@_)}]};
+    my($st) = $self->execute(@_);
+    my($res) = [];
+    while (my $row = $st->fetchrow_arrayref) {
+	push(@$res, $op->($row));
+    }
+    $st->finish;
+#TODO: Clears cached handle
+#    $self->finish_statement($st);
+    return $res;
+}
+
 sub next_primary_id {
     my($self) = shift;
     # Subclasses should return the next sequence number for the specified
