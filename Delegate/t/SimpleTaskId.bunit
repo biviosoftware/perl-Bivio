@@ -2,14 +2,9 @@
 # $Id$
 [
     class() => [
-	all_components => [
-	    [] => [[qw(base otp tuple xapian)]],
+	standard_components => [
+	    [] => [[qw(base)]],
 	],
 	bunit_validate_all => undef,
-	merge_task_info => [
-	    xapian => [class()->info_xapian()],
-	    [[[a => 1]], [[b => 2]]] => [[[b => 2], [a => 1]]],
-	    [[[a => 1]], [[a => 3], [b => 2]]] => [[[a => 3], [b => 2]]],
-	],
     ],
 ];
