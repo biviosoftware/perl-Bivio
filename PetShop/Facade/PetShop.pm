@@ -6,10 +6,6 @@ use base 'Bivio::UI::FacadeBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub HELP_WIKI_REALM_NAME {
-    return 'fourem-site-help';
-}
-
 my($_SELF) = __PACKAGE__->new({
     uri => 'petshop',
     http_host => 'petshop.bivio.biz',
