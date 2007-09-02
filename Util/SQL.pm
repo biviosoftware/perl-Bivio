@@ -381,44 +381,52 @@ sub initialize_tuple_slot_types {
     return;
 }
 
+sub internal_db_upgrade_bulletin {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE bulletin_t (
+  bulletin_id NUMERIC(18) NOT NULL,
+  date_time DATE NOT NULL,
+  subject VARCHAR(100) NOT NULL,
+  body TEXT64K NOT NULL,
+  body_content_type VARCHAR(100) NOT NULL,
+  CONSTRAINT bulletin_t1 PRIMARY KEY(bulletin_id)
+)
+/
+CREATE SEQUENCE bulletin_s
+  MINVALUE 100016
+  CACHE 1 INCREMENT BY 100000
+/
+EOF
+    return;
+}
+
 sub internal_upgrade_db_bundle {
     my($self) = @_;
+    $self->initialize_ui;
     my($tables) = {map(($_ => 1), @{$self->tables})};
-    my($req) = $self->get_request;
-    unless ($tables->{website_t}) {
-	$self->print("Running: forum...website\n");
-	foreach my $realm (qw(forum calendar_event)) {
-	    $req->with_realm($realm, sub {
-		$req->get_nested('auth_realm', 'owner')->cascade_delete;
-	    }) if $self->model('RealmOwner')->unauth_load({name => $realm});
-	}
-	$self->internal_upgrade_db_forum;
-	$self->internal_upgrade_db_mail;
-	$self->internal_upgrade_db_mail_bounce;
-	$self->internal_upgrade_db_calendar_event;
-	$self->internal_upgrade_db_email_alias;
-	$self->internal_upgrade_db_job_lock;
-	$self->internal_upgrade_db_tuple;
-	$self->internal_upgrade_db_motion;
-	$self->internal_upgrade_db_website;
-    }
     foreach my $type (qw(
+	forum
+	mail
+	mail_bounce
+	calendar_event
+	email_alias
+	job_lock
+	tuple
+	motion
+	website
         realm_dag
         otp
+	site_forum
+	file_writer
+	bulletin
     )) {
-	next if $tables->{"${type}_t"};
+	my($sentinel) = \&{"_sentinel_$type"};
+	next if defined(&$sentinel) ? $sentinel->($self)
+	    : $tables->{"${type}_t"};
 	$self->print("Running: $type\n");
 	my($m) = "internal_upgrade_db_$type";
 	$self->$m;
-    }
-    unless ($self->model('RealmOwner')->unauth_load({name => 'site-help'})) {
-	$self->print("Running: site-help\n");
-	$req->with_realm(undef, sub {
-	    $req->with_user($self->model('RealmUser')->get_any_online_admin, sub {
-	        $self->new_other('SiteForum')->init;
-	    });
-	    return;
-	});
     }
     return;
 }
@@ -518,7 +526,7 @@ sub internal_upgrade_db_file_writer {
 	    }) if $it->new_other('RealmOwner')
 		->unauth_load_or_die({realm_id => $rid})
 		->get('realm_type')->eq_forum;
-	    $it->new->create({
+	    $it->new->unauth_create_or_update({
 		realm_id => $rid,
 		role => Bivio::Auth::Role->FILE_WRITER,
 		permission_set => $p,
@@ -527,40 +535,6 @@ sub internal_upgrade_db_file_writer {
 	},
 	unauth_iterate_start => 'realm_id',
 	{role => Bivio::Auth::Role->MEMBER},
-    );
-    return;
-}
-
-sub internal_upgrade_db_folder_id {
-    my($self) = @_;
-    $self->run(<<'EOF');
-ALTER TABLE realm_file_t
-    ADD COLUMN folder_id NUMERIC(18)
-/
-CREATE INDEX realm_file_t12 ON realm_file_t (
-  folder_id
-)
-/
-EOF
-    my($fid) = {};
-    Bivio::Biz::Model->new($self->get_request, 'RealmFile')->do_iterate(
-	sub {
-	    my($it) = @_;
-	    my($r, $p) = $it->get(qw(realm_id path_lc));
-	    unless ($p eq '/') {
-		$it->update({
-		    folder_id => $fid->{$r . ($p =~ m{(.*/)})[0]}
-			|| $it->die($p, ': no folder'),
-		    override_is_read_only => 1,
-		});
-		$p .= '/';
-	    }
-	    $fid->{"$r$p"} = $it->get('realm_file_id')
-		if $it->get('is_folder');
-	    return 1;
-	},
-	'unauth_iterate_start',
-	'realm_id asc, path_lc asc',
     );
     return;
 }
@@ -574,14 +548,6 @@ sub internal_upgrade_db_forum {
     #         unused_classes => [],
     #    },
     $self->run(<<'EOF');
-CREATE TABLE forum_t (
-  forum_id NUMERIC(18) NOT NULL,
-  parent_realm_id NUMERIC(18) NOT NULL,
-  want_reply_to NUMERIC(1) NOT NULL,
-  is_public_email NUMERIC(1) NOT NULL,
-  CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
-)
-/
 CREATE TABLE realm_file_t (
   realm_file_id NUMERIC(18),
   realm_id NUMERIC(18) NOT NULL,
@@ -596,15 +562,45 @@ CREATE TABLE realm_file_t (
   CONSTRAINT realm_file_t1 PRIMARY KEY(realm_file_id)
 )
 /
+CREATE TABLE forum_t (
+  forum_id NUMERIC(18) NOT NULL,
+  parent_realm_id NUMERIC(18) NOT NULL,
+  want_reply_to NUMERIC(1) NOT NULL,
+  is_public_email NUMERIC(1) NOT NULL,
+  CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
+)
+/
 CREATE SEQUENCE realm_file_s
   MINVALUE 100003
   CACHE 1 INCREMENT BY 100000
 /
-
 CREATE SEQUENCE forum_s
   MINVALUE 100004
   CACHE 1 INCREMENT BY 100000
 /
+--
+-- forum_t
+--
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t2
+  FOREIGN KEY (parent_realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX forum_t3 on forum_t (
+  parent_realm_id
+)
+/
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t4
+  CHECK (want_reply_to BETWEEN 0 AND 1)
+/
+ALTER TABLE forum_t
+  ADD CONSTRAINT forum_t5
+  CHECK (is_public_email BETWEEN 0 AND 1)
+/
+--
+-- realm_file_t
+--
 ALTER TABLE realm_file_t
   ADD CONSTRAINT realm_file_t2
   FOREIGN KEY (realm_id)
@@ -651,23 +647,6 @@ CREATE INDEX realm_file_t11 ON realm_file_t (
 CREATE INDEX realm_file_t12 ON realm_file_t (
   folder_id
 )
-/
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t2
-  FOREIGN KEY (parent_realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX forum_t3 on forum_t (
-  parent_realm_id
-)
-/
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t4
-  CHECK (want_reply_to BETWEEN 0 AND 1)
-/
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t5
-  CHECK (is_public_email BETWEEN 0 AND 1)
 /
 EOF
     $self->model('RealmOwner')
@@ -740,7 +719,6 @@ EOF
 
 sub internal_upgrade_db_mail {
     my($self) = @_;
-    my($req) = $self->initialize_ui;
     $self->run(<<'EOF');
 CREATE TABLE realm_mail_t (
   realm_file_id NUMERIC(18),
@@ -803,10 +781,10 @@ CREATE INDEX realm_mail_t11 ON realm_mail_t (
 /
 EOF
     my($mf) = Bivio::Biz::Model->get_instance('RealmFile')->MAIL_FOLDER;
-    Bivio::Biz::Model->new($req, 'RealmFile')->do_iterate(
+    $self->model('RealmFile')->do_iterate(
 	sub {
 	    my($it) = @_;
-	    $req->set_realm($it->get('realm_id'));
+	    $self->req->set_realm($it->get('realm_id'));
 	    $it->new_other('RealmFile')->do_iterate(
 		sub {
 		    my($it) = @_;
@@ -979,36 +957,6 @@ EOF
     return;
 }
 
-sub internal_upgrade_db_multiple_realm_roles {
-    my($self) = @_;
-    # Changes schema to upgrade multiple realm roles and drops honorifics.
-    $self->run(<<'EOF');
-ALTER TABLE realm_role_t
-  DROP CONSTRAINT realm_role_t4
-;
-ALTER TABLE realm_user_t
-  DROP CONSTRAINT realm_user_t6
-;
-ALTER TABLE realm_user_t
-  DROP CONSTRAINT realm_user_t1
-;
-ALTER TABLE realm_user_t
-  ADD CONSTRAINT realm_user_t1
-  PRIMARY KEY(realm_id, user_id, role)
-;
-ALTER TABLE realm_owner_t
-  DROP CONSTRAINT realm_owner_t4
-;
-ALTER TABLE realm_user_t
-  DROP CONSTRAINT realm_user_t7
-;
-ALTER TABLE realm_user_t
-  DROP COLUMN honorific
-;
-EOF
-    return;
-}
-
 sub internal_upgrade_db_otp {
     my($self) = @_;
     $self->run(<<'EOF');
@@ -1072,6 +1020,18 @@ CREATE INDEX realm_dag_t5 ON realm_dag_t (
 )
 /
 EOF
+    return;
+}
+
+sub internal_upgrade_db_site_forum {
+    my($self) = @_;
+    my($req) = $self->req;
+    $req->with_realm(undef, sub {
+	$req->with_user($self->model('RealmUser')->get_any_online_admin, sub {
+	    $self->new_other('SiteForum')->init;
+	});
+	return;
+    });
     return;
 }
 
@@ -1560,6 +1520,33 @@ sub _parse {
     }
     $self->usage($s, ': left over statement') if $s;
     return @res;
+}
+
+sub _sentinel_file_writer {
+    my($self) = @_;
+    # Don't add it unless FILE_WRITER is a role in this app
+    return 1
+	unless Bivio::Auth::Role->unsafe_from_name('FILE_WRITER');
+    my($ok) = 0;
+    $self->model('RealmUser')->do_iterate(
+	sub {
+	    $ok = 1;
+	    return 0;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+	{role => Bivio::Auth::Role->FILE_WRITER},
+    );
+    return $ok;
+}
+
+sub _sentinel_site_forum {
+    my($self) = @_;
+    # Don't add it unless HELP_WIKI_REALM_NAME exists
+    return 1
+	unless $self->req('Bivio::UI::Facade')->get_default
+	->can('HELP_WIKI_REALM_NAME');
+    return $self->model('RealmOwner')->unauth_load({name => 'site-help'});
 }
 
 1;
