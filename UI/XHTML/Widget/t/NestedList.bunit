@@ -11,12 +11,10 @@ model('ForumTreeList')->load_all;
 <ul>
 <li>fourem</li>
 <ul>
-<li>fourem-site-help</li>
-<ul>
 <li>fourem-sub1</li>
 <ul>
 <li>fourem-sub1-1</li>
-</ul></ul><li>fourem-sub2</li>
+</ul><li>fourem-sub2</li>
 </ul></ul>
 EOF
 ];

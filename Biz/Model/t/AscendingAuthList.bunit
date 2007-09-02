@@ -19,8 +19,6 @@ ListModel();
 	'fourem-sub1' => [{
 	    'RealmOwner.name' => 'fourem',
 	}, {
-	    'RealmOwner.name' => 'fourem-site-help',
-	}, {
 	    'RealmOwner.name' => 'fourem-sub1',
 	}, {
 	    'RealmOwner.name' => 'general',

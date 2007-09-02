@@ -27,6 +27,6 @@ req()->set_user('btest_read');
     dav_propfind_children => [
 	[] => [[map(+{
 	    uri => $_,
-	}, qw(fourem fourem-site-help fourem-sub1 fourem-sub1-1 fourem-sub2))]],
+	}, qw(fourem fourem-sub1 fourem-sub1-1 fourem-sub2))]],
     ],
 ];
