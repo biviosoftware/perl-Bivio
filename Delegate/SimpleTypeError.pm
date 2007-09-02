@@ -388,7 +388,12 @@ sub get_delegate_info {
     OTP_PASSWORD_MISMATCH => [
 	72,
 	undef,
-	'Your OTP did not match.',
+	'Your OTP did not match',
+    ],
+    OTP_PASSWORD => [
+	73,
+	undef,
+	'invalid OTP',
     ],
 ];
 }

@@ -539,7 +539,18 @@ sub info_base {
 }
 
 sub info_otp {
-    return [];
+    return [
+	[qw(
+	    OTP_PASSWORD
+	    130
+	    USER
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.UserPasswordForm
+            View.UserAuth->otp_password
+	    next=SITE_ROOT
+	)],
+#131-139 free
+    ];
 }
 
 sub info_tuple {
