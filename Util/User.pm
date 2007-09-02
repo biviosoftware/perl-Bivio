@@ -28,6 +28,7 @@ sub create_from_email {
 	$self->usage_error('password mismatch, try again')
 	    unless $password eq $p2;
     }
+    $self->initialize_ui;
     $self->new_other('RealmAdmin')->create_user($email, $u, $password, $u);
     return;
 }
