@@ -406,7 +406,7 @@ EOF
 	    [UserOTPForm => [
 		old_password => 'Current Password/Key',
 		new_password => 'New Key',
-		confirm_password => 'Confirm Key',
+		confirm_new_password => 'Confirm Key',
 		prose => [
 		    prologue => q{To start or re-initialize your one-time password process, you need to enter your current password or the last OTP key you used},
 		    challenge => q{Please respond to this OTP challenge: String(['Model.UserOTPForm', 'new_otp_challenge']);},
