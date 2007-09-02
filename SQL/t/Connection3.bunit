@@ -7,12 +7,16 @@ Request();
 	    [
 		'SELECT name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
 		['root', 'demo'],
-	    ] => [[['demo'], ['root']]],
-	    [
-		sub {shift->[0]},
-		'SELECT name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
-		['root', 'demo'],
 	    ] => [[qw(demo root)]],
+	    [
+		'SELECT name, display_name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
+		['root', 'demo'],
+	    ] => [[['demo', 'Demo User'], ['root', 'Root User']]],
+	    [
+		sub {join(' ', @{shift(@_)})},
+		'SELECT name, display_name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
+		['root', 'demo'],
+	    ] => [['demo Demo User', 'root Root User']],
 	],
     ],
 ];

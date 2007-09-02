@@ -397,7 +397,10 @@ sub map_execute {
     my($self) = shift;
     return _get_instance($self)->map_execute(@_)
 	unless ref($self);
-    my($op) = ref($_[0]) eq 'CODE' ? shift : sub {[@{shift(@_)}]};
+    my($op) = ref($_[0]) eq 'CODE' ? shift : sub {
+	my($row) = @_;
+	return @$row == 1 ? $row->[0] : [@$row];
+    };
     my($st) = $self->execute(@_);
     my($res) = [];
     while (my $row = $st->fetchrow_arrayref) {

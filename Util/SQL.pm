@@ -42,6 +42,7 @@ commands:
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
     run_command sql -- executes sql in command line interpreter (shell)
+    tables - list tables of current database
     upgrade_db -- upgrade the database
     vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
     vacuum_db_continuously -- run vacuum_db as a daemon
@@ -1433,7 +1434,6 @@ sub run_command {
 
 sub tables {
     return Bivio::SQL::Connection->map_execute(
-	sub {shift(@_)->[0]},
 	'SELECT tablename
         FROM pg_tables
         WHERE tableowner = ?
