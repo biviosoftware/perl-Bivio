@@ -243,7 +243,11 @@ Formats email.
 
 sub format_email {
     my(undef, $user) = @_;
-    return "$user\@bivio.biz";
+#     return "$user\@bivio.biz"
+# 	 if Bivio::Agent::Request->get_current->is_production;
+    return Bivio::IO::ClassLoader
+        ->simple_require('Bivio::Test::Language::HTTP')
+	    ->generate_local_email($user);
 }
 
 =for html <a name="initialize_test_data"></a>
@@ -530,12 +534,10 @@ sub _init_demo_users {
 	    my($otp) = Bivio::Biz::Model->new($req, 'OTP');
 	    my($v) = {
 		seed => 'yourseed',
-		count => $otp->get_field_type('count')->get_max,
 	    };
             $otp->init_user(
 		$req->get('auth_user'), {
 		    otp_md5 => $self->new_other('OTP')->hex_key(
-			$v->{count}--,
 			$v->{seed},
 			$self->PASSWORD,
 		    ),

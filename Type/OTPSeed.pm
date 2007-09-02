@@ -10,6 +10,10 @@ sub REGEX {
     return qr{[0-9a-z]{8}};
 }
 
+sub generate {
+    return shift->use('Bivio::Biz::Random')->string(8, [0..9, 'a'..'z']);
+}
+
 sub get_width {
     return 16;
 }

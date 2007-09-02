@@ -22,6 +22,10 @@ DO NOT ENTER REAL DATA.
 
 EOF
 	], [
+	    Link('Convert your account to OTP', 'OTP_PASSWORD'),
+	], [
+	    vs_blank_cell(),
+	], [
 	    String('Account Information:', 'page_heading', {
 		cell_colspan => 2,
 	    }),
