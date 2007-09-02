@@ -91,6 +91,13 @@ sub format_email {
     return "$user\@bivio.biz";
 }
 
+sub initialize_db {
+    return shift->call_super_before(\@_, sub {
+        shift->new_other('SiteForum')->init;
+	return;
+    });
+}
+
 sub initialize_test_data {
     my($self) = @_;
     _init_demo_categories($self);
