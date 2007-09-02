@@ -244,11 +244,7 @@ Formats email.
 
 sub format_email {
     my(undef, $user) = @_;
-#     return "$user\@bivio.biz"
-# 	 if Bivio::Agent::Request->get_current->is_production;
-    return Bivio::IO::ClassLoader
-        ->simple_require('Bivio::Test::Language::HTTP')
-	    ->generate_local_email($user);
+    return "$user\@bivio.biz";
 }
 
 =for html <a name="initialize_test_data"></a>
