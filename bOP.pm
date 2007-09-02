@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.28  2007/08/31 19:20:58  moeller
+  * Bivio::Agent::Request call "can" on is_secure when printing warning
+  * Bivio::IO::File added map_lines
+  * Bivio::Test::Language::HTTP added password param to login_as
+  * Bivio::UI::FacadeBase OTP in bOP
+  * Bivio::UI::HTML::Widget::Grid fixed hide_empty_cells
+
   Revision 5.27  2007/08/31 01:44:52  moeller
   * Bivio::Base new format use Bivio::Base 'Map';
   * Bivio::Biz::PropertyModel fixed bad assumption in
