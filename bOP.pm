@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,39 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.29  2007/09/02 18:24:21  nagler
+  * RFC2289 One-time passwords supported.  Use winkey32.exe or Opie
+    (*nix) for client or use b-otp (which only works with bOP OTP
+    seeds and sequences -- used only for testing).  Various classes
+    added including UserOTP.pm.
+  * Apply "b-sql upgrade_db bundle" to get all the latest stuff.
+    Bivio::Util::SQL->upgrade_db supports typed versions, and
+    "bundle" is a special type that only applies upgrades based on
+    features (table or row existence tests).
+  * Bivio::Biz::Model::Forum->require_otp added
+  * Bivio::Biz::Model::Forum->is_leaf added
+  * Bivio::Biz::Model::ForumDeleteForm->execute_ok cascades into Forum
+    and RealmOwner
+  * Bivio::Biz::Model::ForumForm->is_create added (supports OTP)
+  * Bivio::Biz::Model::ForumUserAddForm only lets OTP users join
+    require_otp forums
+  * Bivio::Biz::Model::RealmOwner->require_otp added
+  * Fixed up various modules to get types with get_field_type instead
+    of hardwired
+  * Bivio::Biz::Model::UserLoginForm supports OTP
+  * Bivio::Delegate::TaskId has tasks that were in SimpleTaskId except
+    for info_base, which is used for deprecated apps.
+  * Bivio::Delegate::SimpleTaskId->standard_components deprecates all_components
+  * Bivio::IO::Alert->print_literally prints undefined values as <undef>
+  * PetShop supports OTP, go to the accounts page
+  * Bivio::SQL::Connection->map_execute added
+  * Various HelpWiki fixes
+  * Bivio::UNIVERSAL->max_number and map_together added
+  * Bivio::Biz::Action::BasicAuthorization security exploit fixed.
+    Module refactored to use UserLoginForm more intensely for OTP
+    and to share code which was correct in UserLoginForm, but not in
+    BasicAuthorization.
+
   Revision 5.28  2007/08/31 19:20:58  moeller
   * Bivio::Agent::Request call "can" on is_secure when printing warning
   * Bivio::IO::File added map_lines
