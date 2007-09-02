@@ -2,74 +2,26 @@
 # $Id$
 package Bivio::PetShop::Model::Item;
 use strict;
-$Bivio::PetShop::Model::Item::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::Item::VERSION;
+use Bivio::Base 'Bivio::Biz::PropertyModel';
 
-=head1 NAME
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-Bivio::PetShop::Model::Item - item for sale
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::Item;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::PetShop::Model::Item::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::Item>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="format_name"></a>
-
-=head2 format_name() : string
-
-=head2 static format_name(string attr1, string product_name) : string
-
-Returns the "attr1 Product.name" combination.
-
-=cut
+sub create {
+    my($self, $values) = @_;
+    return $self->SUPER::create({
+	status => Bivio::Type->get_instance('ItemStatus')->OK,
+	%$values,
+    });
+}
 
 sub format_name {
     my($self, $attr1, $product_name) = @_;
-    return $attr1.' '.$product_name if defined($attr1);
-
+    return join(' ', $attr1, $product_name) if defined($attr1);
     Bivio::Die->die("expected item instance") unless ref($self);
-
     # call method again with arguments from instance
     return $self->format_name($self->get('attr1'),
 	    $self->get_model('Product')->get('name'));
 }
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
 
 sub internal_initialize {
     return {
@@ -91,17 +43,5 @@ sub internal_initialize {
 	other => [['product_id', 'Product.product_id']],
     };
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
