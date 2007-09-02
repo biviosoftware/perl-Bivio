@@ -1,20 +1,18 @@
 # Copyright (c) 2007 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::OTP::Model::OTP;
+package Bivio::Biz::Model::OTP;
 use strict;
 use base 'Bivio::Biz::PropertyModel';
-use Bivio::OTP::RFC2289;
+use Bivio::Biz::RFC2289;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
 Bivio::IO::Config->register(my $_CFG = {
     login_timeout_seconds => 3600,
 });
 
 sub create {
-    my($self, $values) = @_;
-    _values($values);
-    return shift->SUPER::create(@_);
+    my($self, $values) = (shift, shift);
+    return $self->SUPER::create(_values($self, $values), @_);
 }
 
 sub get_challenge {
@@ -23,7 +21,7 @@ sub get_challenge {
 	$sequence ||= $self->get('sequence');
 	$seed ||= $self->get('seed');
     }
-    $sequence ||= Bivio::OTP::Type::OTPSequence->get_max;
+    $sequence ||= $self->get_field_type('sequence')->get_max;
     return join(' ', 'otp_md5', $sequence, lc($seed));
 }
 
@@ -33,10 +31,14 @@ sub handle_config {
     return;
 }
 
-sub has_timed_out {
-    my($self) = @_;
-    return $_DT->diff_seconds($_DT->now, $self->get('last_login'))
-	> $_CFG->{login_timeout_seconds};
+sub validate_password {
+    my($self, $passwd, $auth_user) = @_;
+    $self->unauth_load_or_die({user_id => $auth_user->get('realm_id')});
+    my($t) = $self->get_field_type('last_login');
+    return $self->get('otp_md5') eq $passwd
+	&& $t->diff_seconds($t->now, $self->get('last_login'))
+	    <= $_CFG->{login_timeout_seconds}
+	? 1 : 0;
 }
 
 sub init_user {
@@ -64,18 +66,17 @@ sub internal_initialize {
 }
 
 sub update {
-    my($self, $values) = @_;
-    _values($values);
-    return shift->SUPER::update(@_);
+    my($self, $values) = (shift, shift);
+    return $self->SUPER::update(_values($self, $values), @_);
 }
 
 sub verify {
     my($self, $input) = @_;
-    my($otp_md5) = Bivio::OTP::RFC2289->canonical_hex($input);
+    my($otp_md5) = Bivio::Biz::RFC2289->canonical_hex($input);
     return 0
 	unless $otp_md5;
     return 0
-	unless Bivio::OTP::RFC2289->verify($otp_md5, $self->get('otp_md5'));
+	unless Bivio::Biz::RFC2289->verify($otp_md5, $self->get('otp_md5'));
     $self->update({
         otp_md5 => $otp_md5,
         sequence => $self->get('sequence') - 1,
@@ -84,10 +85,11 @@ sub verify {
 }
 
 sub _values {
-    my($values) = @_;
-    $values->{sequence} ||= Bivio::OTP::Type::OTPSequence->get_max - 1;
-    $values->{last_login} ||= Bivio::Type::DateTime->now();
-    return;
+    my($self, $values) = @_;
+#TODO: Is this a good idea to hardcode here?  Shouldn't it be pulled from OTPForm? 
+    $values->{sequence} ||= $self->get_field_type('sequence')->get_max - 1;
+    $values->{last_login} ||= $self->get_field_type('last_login')->now();
+    return $values;
 }
 
 1;

@@ -1,6 +1,6 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::OTP::Type::OTPPassphrase;
+package Bivio::Type::OTPPassphrase;
 use strict;
 use Bivio::Base 'Type.String';
 

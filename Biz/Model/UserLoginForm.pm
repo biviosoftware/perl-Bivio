@@ -66,7 +66,12 @@ sub execute_ok {
 }
 
 sub get_basic_authorization_realm {
-    return '*';
+    my($self) = shift;
+    my($ro) = $self->unsafe_get('realm_owner');
+    return $ro && $ro->require_otp
+	# Extra space helps out on Mac, which puts a '.' right after realm
+	? 'Challenge: ' . $self->req('Model.OTP')->get_challenge . ' '
+	: '*';
 }
 
 sub handle_cookie_in {
@@ -80,11 +85,6 @@ sub handle_cookie_in {
     _set_user($proto, _load_cookie_user($proto, $cookie, $req),
 	$cookie, $req);
     return;
-}
-
-sub internal_get_cookie_passwd {
-    my($self, $req, $realm) = @_;
-    return $realm->get('password');
 }
 
 sub internal_initialize {
@@ -148,14 +148,6 @@ sub internal_initialize {
     return $info;
 }
 
-sub internal_validate_cookie_passwd {
-    my($proto, $req, $cookie_passwd, $auth_user) = @_;
-    return 1
-	if $auth_user->has_valid_password
-            && $cookie_passwd eq $auth_user->get('password');
-    return 0;
-}
-
 sub substitute_user {
     my($proto, $new_user, $req) = @_;
     my($self) = ref($proto) ? $proto : $proto->new($req);
@@ -203,8 +195,14 @@ sub validate {
 	$owner->get('password'),
 	$self->get('RealmOwner.password'),
     )) {
-	$self->internal_put_error('RealmOwner.password', 'PASSWORD_MISMATCH');
-	return;
+	return $self->internal_put_error(
+	    'RealmOwner.password', 'PASSWORD_MISMATCH',
+	) unless $owner->require_otp;
+	return $self->internal_put_error(
+	    'RealmOwner.password' => 'OTP_PASSWORD_MISMATCH'
+	) unless $self->new_other('OTP')->unauth_load_or_die({
+	    user_id => $owner->get('realm_id')
+	})->verify($self->get('RealmOwner.password'));
     }
     $self->internal_put_field(validate_called => 1);
     return;
@@ -270,6 +268,15 @@ sub _assert_realm {
     return $realm;
 }
 
+sub _cookie_password {
+    my($realm) = @_;
+    return $realm->require_otp
+	? $realm->new_other('OTP')
+	    ->unauth_load_or_die({user_id => $realm->get('realm_id')})
+	    ->get('otp_md5')
+	: $realm->get('password')
+}
+
 sub _get {
     my($cookie, $field) = @_;
     # Returns cookie field, if there is a cookie.
@@ -294,7 +301,7 @@ sub _load_cookie_user {
 	return undef
 	    unless $cp;
 	return $auth_user
-	    if $proto->internal_validate_cookie_passwd($req, $cp, $auth_user);
+	    if _validate_cookie_password($cp, $auth_user);
 	$req->warn($auth_user, ': user is not valid');
     }
     else {
@@ -322,8 +329,7 @@ sub _set_cookie_user {
     if ($realm) {
 	$cookie->put(
 	    $self->USER_FIELD => $realm->get('realm_id'),
-	    $self->PASSWORD_FIELD =>
-	        $self->internal_get_cookie_passwd($req, $realm),
+	    $self->PASSWORD_FIELD => _cookie_password($realm),
 	);
     }
     else {
@@ -375,6 +381,13 @@ sub _su_logout {
 sub _super_user_field {
     # Returns SUPER_USER_FIELD
     return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
+}
+
+sub _validate_cookie_password {
+    my($passwd, $auth_user) = @_;
+    return $auth_user->require_otp
+	? $auth_user->new_other('OTP')->validate_password($passwd, $auth_user)
+	: $passwd eq $auth_user->get('password') ? 1 : 0;
 }
 
 1;

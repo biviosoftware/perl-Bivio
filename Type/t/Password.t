@@ -27,5 +27,11 @@ Bivio::Test->new('Bivio::Type::Password')->unit([
 	    # Special case when both or undefined.
 	    [undef, undef] => 0,
 	],
+	is_valid => [
+	    kzltIzEfODKJg => 1,
+	    abcdefg => 0,
+	    otp => 1,
+	    xx => 0,
+	],
     ],
 ]);

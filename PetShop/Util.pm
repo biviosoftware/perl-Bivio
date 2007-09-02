@@ -515,14 +515,12 @@ sub _init_demo_users {
             });
 	}
 	elsif ($u eq $self->OTP) {
-	    my($otp) = Bivio::Biz::Model->new($req, 'OTP');
-	    my($v) = {
-		seed => 'yourseed',
-	    };
+	    my($otp) = $self->model('OTP');
+	    my($v) = {seed => 'yourseed'};
             $otp->init_user(
 		$req->get('auth_user'), {
 		    otp_md5 => $self->new_other('OTP')->hex_key(
-			Bivio::OTP::Type::OTPSequence->get_max,
+			$otp->get_field_type('sequence')->get_max,
 			$v->{seed},
 			$self->PASSWORD,
 		    ),

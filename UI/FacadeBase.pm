@@ -399,11 +399,20 @@ Please respond to this OTP challenge: String(['Model.OTP', '->get_challenge']);
 EOF
 	],
 	Task => [
-	    [OTP_PASSWORD => '?/otp-password'],
+	    [USER_OTP => '?/setup-otp'],
 	],
 	Text => [
+	    [UserOTPForm => [
+		old_password => 'Current Password/Key',
+		new_password => 'New Key',
+		confirm_password => 'Confirm Key',
+		prose => [
+		    prologue => q{To start or re-initialize your one-time password process, you need to enter your current password or the last OTP key you used},
+		    challenge => q{Please respond to this OTP challenge: String(['Model.UserOTPForm', 'new_otp_challenge']);},
+		],
+	    ]],
 	    [title => [
-		OTP_PASSWORD => 'OTP Password',
+		USER_OTP => 'Set up One-Time Password',
 	    ]],
 	],
     };

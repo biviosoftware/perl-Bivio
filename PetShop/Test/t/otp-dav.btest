@@ -7,10 +7,10 @@ test_deviance('401 Authorization Required');
 send_request(PROPFIND => '/dav');
 test_conformance();
 Bivio::IO::Alert->info(get_response()->header('WWW-Authenticate'));
-test_ok(get_response()->header('WWW-Authenticate') =~ m{otp-md5\s+(\d+)\s+(\w+)});
+test_ok(get_response()->header('WWW-Authenticate') =~ m{otp_md5\s+(\d+)\s+(\w+)});
 basic_authorization(
     'otp',
-    test_use('Bivio::OTP::Util::OTP')->six_word_key($1, $2, 'password'),
+    test_use('Bivio::Util::OTP')->six_word_key($1, $2, 'password'),
 );
 send_request(PROPFIND => '/dav');
 send_request(PROPFIND => '/otp/dav');

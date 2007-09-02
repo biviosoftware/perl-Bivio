@@ -23,6 +23,10 @@ sub INVALID {
     return 'xx';
 }
 
+sub OTP_VALUE {
+    return 'otp';
+}
+
 sub compare {
     my(undef, $encrypted, $incoming) = @_;
     # Encrypts I<incoming> using I<salt> from I<encrypted>.
@@ -60,6 +64,11 @@ sub from_literal {
     return $value;
 }
 
+sub is_otp {
+    my($proto, $value) = @_;
+    return $proto->OTP_VALUE eq ($value || '') ? 1 : 0;
+}
+
 sub is_password {
     # Returns true.
     return 1;
@@ -71,9 +80,10 @@ sub is_secure_data {
 }
 
 sub is_valid {
-    my(undef, $value) = @_;
-    # Returns true if I<value> is valid.
-    return $value && length($value) == $_VALID_LENGTH ? 1 : 0;
+    my($proto, $value) = @_;
+    return $value && (
+	length($value) == $_VALID_LENGTH || $value eq $proto->OTP_VALUE
+    ) ? 1 : 0;
 }
 
 1;

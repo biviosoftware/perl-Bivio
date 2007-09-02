@@ -2,44 +2,14 @@
 # $Id$
 package Bivio::Biz::Model::RealmOwner;
 use strict;
-$Bivio::Biz::Model::RealmOwner::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::RealmOwner::VERSION;
-
-=head1 NAME
-
-Bivio::Biz::Model::RealmOwner - interface to realm_owner_t SQL table
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Model::RealmOwner;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::RealmOwner::ISA = qw(Bivio::Biz::PropertyModel);
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::RealmOwner> is the create, read, update,
-and delete interface to the C<realm_owner_t> table.
-
-=cut
-
-#=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
+use Bivio::Base 'Bivio::Biz::PropertyModel';
 
-#=VARIABLES
+# C<Bivio::Biz::Model::RealmOwner> is the create, read, update,
+# and delete interface to the C<realm_owner_t> table.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_RN) = Bivio::Type->get_instance('RealmName');
 my($_PI) = Bivio::Type->get_instance('PrimaryId');
@@ -51,21 +21,10 @@ my($_HOME_TASK_MAP) = {
         Bivio::Auth::RealmType->get_list))),
 };
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="create"></a>
-
-=head2 create(hash_ref new_values)
-
-Sets I<creation_date_time>, I<password> (to invalid),
-I<display_name>, I<name> if not set, downcases I<name>, then calls SUPER.
-
-=cut
-
 sub create {
     my($self, $values) = @_;
+    # Sets I<creation_date_time>, I<password> (to invalid),
+    # I<display_name>, I<name> if not set, downcases I<name>, then calls SUPER.
     $values->{name} =
 	substr($values->{realm_type}->get_name, 0, 1) . $values->{realm_id}
 	unless defined($values->{name});
@@ -78,102 +37,57 @@ sub create {
     return shift->SUPER::create(@_);
 }
 
-=for html <a name="format_email"></a>
-
-=head2 format_email() : string
-
-=head2 static format_email(Bivio::Biz::Model model, string model_prefix) : string
-
-Returns fully-qualified email address for this realm or '' if the
-realm is an offline user.
-
-See L<format_name|"format_name"> for params.
-
-=cut
-
 sub format_email {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns fully-qualified email address for this realm or '' if the
+    # realm is an offline user.
+    #
+    # See L<format_name|"format_name"> for params.
     my($name) = $proto->format_name($model, $model_prefix);
     return $name ? $model->get_request->format_email($name) : '';
 }
 
-=for html <a name="format_http"></a>
-
-=head2 format_http() : string
-
-=head2 static format_http(Bivio::Biz::Model model, string model_prefix) : string
-
-Returns the absolute URL (with http) to access (the root of) this realm.
-
-HACK!
-
-See L<format_name|"format_name"> for params.
-
-=cut
-
 sub format_http {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns the absolute URL (with http) to access (the root of) this realm.
+    #
+    # HACK!
+    #
+    # See L<format_name|"format_name"> for params.
     return $model->get_request->format_http_prefix
         . $proto->format_uri($model, $model_prefix);
 }
 
-=for html <a name="format_mailto"></a>
-
-=head2 format_mailto() : string
-
-=head2 static format_mailto(Bivio::Biz::Model model, string model_prefix) : string
-
-Returns email address with C<mailto:> prefix.
-
-See L<format_name|"format_name"> for params.
-
-=cut
-
 sub format_mailto {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns email address with C<mailto:> prefix.
+    #
+    # See L<format_name|"format_name"> for params.
     return $model->get_request->format_mailto($proto->format_email(
         $model, $model_prefix));
 }
 
-=for html <a name="format_name"></a>
-
-=head2 format_name() : string
-
-=head2 static format_name(Bivio::Biz::Model model, string model_prefix) : string
-
-Returns the name formatted for display. Accounting offline users
-return ''.
-
-In the second form, I<model> is used to get the values, not I<self>.
-Other Models can declare a method of the form:
-
-    sub format_name {
-	my($self) = shift;
-	Bivio::Biz::Model::RealmOwner->format($self, 'RealmOwner.', @_);
-    }
-
-=cut
-
 sub format_name {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns the name formatted for display. Accounting offline users
+    # return ''.
+    #
+    # In the second form, I<model> is used to get the values, not I<self>.
+    # Other Models can declare a method of the form:
+    #
+    #     sub format_name {
+    # 	my($self) = shift;
+    # 	Bivio::Biz::Model::RealmOwner->format($self, 'RealmOwner.', @_);
+    #     }
     return $_RN->to_string(
         $model->get($model_prefix . 'name'));
 }
 
-=for html <a name="format_uri"></a>
-
-=head2 format_uri() : string
-
-=head2 static format_uri(Bivio::Biz::Model model, string model_prefix) : string
-
-Returns the URI to access the HOME task for this realm.
-
-See L<format_name|"format_name"> for params.
-
-=cut
-
 sub format_uri {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns the URI to access the HOME task for this realm.
+    #
+    # See L<format_name|"format_name"> for params.
     my($name) = $proto->format_name($model, $model_prefix);
     Bivio::Die->die($model->get($model_prefix . 'name'),
         ': must not be offline user') unless $name;
@@ -184,30 +98,16 @@ sub format_uri {
     return $model->get_request->format_uri($task, undef, $name, undef);
 }
 
-=for html <a name="has_valid_password"></a>
-
-=head2 has_valid_password() : boolean
-
-Returns true if self's password is valid.
-
-=cut
-
 sub has_valid_password {
     my($self) = @_;
+    # Returns true if self's password is valid.
     return $_P->is_valid($self->get('password'));
 }
 
-=for html <a name="init_db"></a>
-
-=head2 init_db()
-
-Initializes database with default realms.  The default realms
-have special realm_ids.
-
-=cut
-
 sub init_db {
     my($self) = @_;
+    # Initializes database with default realms.  The default realms
+    # have special realm_ids.
 
     foreach my $rt (Bivio::Auth::RealmType->get_list) {
 	$self->init_realm_type($rt)
@@ -216,16 +116,9 @@ sub init_db {
     return;
 }
 
-=for html <a name="init_realm_type"></a>
-
-=head2 init_realm_type(Bivio::Auth::RealmType rt) : self
-
-Adds I<rt> to the database.
-
-=cut
-
 sub init_realm_type {
     my($self, $rt) = @_;
+    # Adds I<rt> to the database.
     return $self->create({
 	name => lc($rt->get_name),
 	realm_id => $rt->as_int,
@@ -233,15 +126,8 @@ sub init_realm_type {
     });
 }
 
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
-
 sub internal_initialize {
+    # B<FOR INTERNAL USE ONLY>
     return {
 	version => 1,
 	table_name => 'realm_owner_t',
@@ -261,85 +147,44 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="invalidate_password"></a>
-
-=head2 invalidate_password()
-
-Invalidates I<self>'s password.
-
-=cut
-
 sub invalidate_password {
     my($self) = @_;
+    # Invalidates I<self>'s password.
     $self->update({password => $_P->INVALID});
     return;
 }
 
-=for html <a name="is_auth_realm"></a>
-
-=head2 is_auth_realm() : boolean
-
-=head2 static is_auth_realm(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Returns true if the current row is the request's auth_realm.
-
-=cut
-
 sub is_auth_realm {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns true if the current row is the request's auth_realm.
     my($auth_id) = $model->get_request->get('auth_id');
     return 0 unless $auth_id;
     return $model->get($model_prefix . 'realm_id') eq $auth_id ? 1 : 0;
 }
 
-=for html <a name="is_auth_user"></a>
-
-=head2 is_auth_user() : boolean
-
-=head2 static is_auth_user(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Returns true if the current row is the request's auth_user.
-
-=cut
-
 sub is_auth_user {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns true if the current row is the request's auth_user.
     my($auth_user) = $model->get_request->get('auth_user');
     return 0 unless $auth_user;
     return $model->get($model_prefix . 'realm_id')
         eq $auth_user->get('realm_id') ? 1 : 0;
 }
 
-=for html <a name="is_default"></a>
-
-=head2 is_default() : boolean
-
-=head2 static is_default(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Returns true if the realm is one of the default realms (general,
-user, club).
-
-=cut
-
 sub is_default {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns true if the realm is one of the default realms (general,
+    # user, club).
     # Default realms have ids same as their types as_int.
     return $model->get($model_prefix . 'realm_type')->as_int
 	eq $model->get($model_prefix . 'realm_id') ? 1 : 0;
 }
 
-=for html <a name="is_name_eq_email"></a>
-
-=head2 static is_name_eq_email(Bivio::Agent::Request req, string name, string email) : boolean
-
-If I<name> points to I<email>, returns true.  Caller should
-put error C<EMAIL_LOOP> on the email.  If I<name> or I<email>
-C<undef>, returns false.
-
-=cut
-
 sub is_name_eq_email {
     my(undef, $req, $name, $email) = @_;
+    # If I<name> points to I<email>, returns true.  Caller should
+    # put error C<EMAIL_LOOP> on the email.  If I<name> or I<email>
+    # C<undef>, returns false.
     return 0 unless defined($name) && defined($email);
     my($mail_host) = Bivio::UI::Facade->get_value('mail_host', $req);
 #TODO: ANY OTHER mail_host aliases?
@@ -347,58 +192,42 @@ sub is_name_eq_email {
         || $email eq $name . '@www.' . $mail_host;
 }
 
-=for html <a name="is_offline_user"></a>
-
-=head2 is_offline_user() : boolean
-
-=head2 static is_offline_user(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Returns true if is a offline realm.
-
-See L<format_name|"format_name"> for params.
-
-=cut
-
 sub is_offline_user {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    # Returns true if is a offline realm.
+    #
+    # See L<format_name|"format_name"> for params.
     return $_RN->is_offline(
         $model->get($model_prefix . 'name'));
 }
 
-=for html <a name="unauth_load_by_email"></a>
-
-=head2 unauth_load_by_email(string email) : boolean
-
-=head2 unauth_load_by_email(string email, hash_ref query) : boolean
-
-Tries to load this realm using I<email> and any other I<query> parameters,
-e.g. (realm_type, Bivio::Auth::RealmType->USER()).
-
-I<email> is interpreted as follows:
-
-=over 4
-
-=item *
-
-An C<Bivio::Biz::Model::Email> is loaded with I<email>.  If found,
-loads the I<realm_id> of the model.
-
-=item *
-
-Parsed for the I<mail_host> associated with this request.
-If it matches, the mailhost is stripped and the (syntactically
-valid realm) name is used to find a realm owner.
-
-=item *
-
-Returns false.
-
-=back
-
-=cut
+sub require_otp {
+    my($self) = @_;
+    return $self->get_field_type('password')->is_otp($self->get('password'));
+}
 
 sub unauth_load_by_email {
     my($self, $email, @query) = @_;
+    # Tries to load this realm using I<email> and any other I<query> parameters,
+    # e.g. (realm_type, Bivio::Auth::RealmType->USER()).
+    #
+    # I<email> is interpreted as follows:
+    #
+    #
+    # *
+    #
+    # An C<Bivio::Biz::Model::Email> is loaded with I<email>.  If found,
+    # loads the I<realm_id> of the model.
+    #
+    # *
+    #
+    # Parsed for the I<mail_host> associated with this request.
+    # If it matches, the mailhost is stripped and the (syntactically
+    # valid realm) name is used to find a realm owner.
+    #
+    # *
+    #
+    # Returns false.
     my($query) = @query == 1
 	? ref($query[0]) eq 'HASH'
 	? $query[0]
@@ -423,34 +252,18 @@ sub unauth_load_by_email {
     });
 }
 
-=for html <a name="unauth_load_by_email_id_or_name"></a>
-
-=head2 unauth_load_by_email_id_or_name(string email_id_or_name) : boolean
-
-If email_id_or_name has an '@', will try to unauth_load_by_email.
-Otherwise, tries to load by id or name.
-
-=cut
-
 sub unauth_load_by_email_id_or_name {
     my($self, $email_id_or_name) = @_;
+    # If email_id_or_name has an '@', will try to unauth_load_by_email.
+    # Otherwise, tries to load by id or name.
     return $email_id_or_name =~ /@/
 	? $self->unauth_load_by_email($email_id_or_name)
 	: _unauth_load($self, $email_id_or_name, {});
 }
 
-=for html <a name="unauth_load_by_id_or_name_or_die"></a>
-
-=head2 unauth_load_by_id_or_name_or_die(string id_or_name) : Bivio::Biz::Model::RealmOwner
-
-=head2 unauth_load_by_id_or_name_or_die(string id_or_name, any realm_type) : Bivio::Biz::Model::RealmOwner
-
-Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, further qualifies the query.
-
-=cut
-
 sub unauth_load_by_id_or_name_or_die {
     my($self, $id_or_name, $realm_type) = @_;
+    # Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, further qualifies the query.
     _unauth_load($self, $id_or_name, $realm_type
         ? {realm_type => Bivio::Auth::RealmType->from_any($realm_type)}
 	: {},
@@ -459,17 +272,10 @@ sub unauth_load_by_id_or_name_or_die {
     return $self;
 }
 
-=for html <a name="unsafe_get_model"></a>
-
-=head2 unsafe_get_model(string name) : Bivio::Biz::PropertyModel
-
-Overridden to support getting the related User or Club.
-For backward compatibility.
-
-=cut
-
 sub unsafe_get_model {
     my($self, $name) = @_;
+    # Overridden to support getting the related User or Club.
+    # For backward compatibility.
 
     if ($name eq 'User' || $name eq 'Club') {
 	my($model) =  $self->new_other($name);
@@ -481,32 +287,18 @@ sub unsafe_get_model {
     return shift->SUPER::unsafe_get_model(@_);
 }
 
-=for html <a name="update_password"></a>
-
-=head2 update_password(string clear_text) : self
-
-Sets self's clear_text password to a new value.
-
-=cut
-
 sub update_password {
     my($self, $clear_text) = @_;
+    # Sets self's clear_text password to a new value.
     return $self->update({
 	password => $_P->encrypt($clear_text)
     });
 }
 
-=for html <a name="validate_login"></a>
-
-=head2 validate_login(string login) : string
-
-Load the RealmOwner for I<login> (or email or id) if valid.
-Return error if invalid.
-
-=cut
-
 sub validate_login {
     my($self, $login) = @_;
+    # Load the RealmOwner for I<login> (or email or id) if valid.
+    # Return error if invalid.
 
     return 'NOT_FOUND'
 	if !$self->unauth_load_by_email_id_or_name($login)
@@ -516,8 +308,6 @@ sub validate_login {
 
     return;
 }
-
-#=PRIVATE METHODS
 
 sub _unauth_load {
     my($self, $id_or_name, $query, $want_die) = @_;
@@ -541,15 +331,5 @@ sub _unauth_load {
 	if $want_die;
     return 0;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

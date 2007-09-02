@@ -1,6 +1,6 @@
 # Copyright (c) 2007 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::OTP::RFC2289;
+package Bivio::Biz::RFC2289;
 use strict;
 use Bivio::Base 'Bivio::Collection::Attributes';
 use Digest::MD5 ();

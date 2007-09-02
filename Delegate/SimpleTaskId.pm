@@ -541,13 +541,13 @@ sub info_base {
 sub info_otp {
     return [
 	[qw(
-	    OTP_PASSWORD
+	    USER_OTP
 	    130
 	    USER
 	    ADMIN_READ&ADMIN_WRITE
-	    Model.UserPasswordForm
-            View.UserAuth->otp_password
-	    next=SITE_ROOT
+	    Model.UserOTPForm
+            View.OTP->form
+	    next=MY_SITE
 	)],
 #131-139 free
     ];

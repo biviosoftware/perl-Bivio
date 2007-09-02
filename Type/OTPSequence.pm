@@ -1,6 +1,6 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::OTP::Type::OTPSequence;
+package Bivio::Type::OTPSequence;
 use strict;
 use Bivio::Base 'Type.Integer';
 
