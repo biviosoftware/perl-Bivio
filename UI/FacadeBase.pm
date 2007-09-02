@@ -289,6 +289,7 @@ sub _cfg_dav {
 		'system_user_forum_email' => 'System User Email?',
 		'public_forum_email' => 'Public Email?',
 		'Forum.forum_id' => 'Database Key',
+#TODO: Make visible only if OTP is enabled.  Requires change to DAVList
 		'Forum.require_otp' => 'Require OTP?',
 	    ]],
 	    [ForumUserList => [
