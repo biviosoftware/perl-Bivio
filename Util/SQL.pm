@@ -402,6 +402,15 @@ sub internal_upgrade_db_bundle {
 	    $self->internal_upgrade_db_website;
 	}
     }
+    unless (self->model('RealmOwner')->unauth_load('site-help')) {
+	$self->print("Running: site-help\n");
+	$req->with_realm(undef, sub {
+	    $req->with_user($self->model('RealmUser')->get_any_online_admin, sub {
+	        $self->new_other('SiteForum')->init;
+	    });
+	    return;
+	});
+    }
     foreach my $type (qw(
         realm_dag
         otp
