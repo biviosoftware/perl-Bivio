@@ -382,24 +382,29 @@ sub initialize_tuple_slot_types {
 
 sub internal_upgrade_db_bundle {
     my($self) = @_;
+    my($tables) = {map(($_ => 1), @{$self->tables})};
     my($req) = $self->get_request;
-    foreach my $realm (qw(forum calendar_event)) {
-	$req->with_realm($realm, sub {
-	    $req->get_nested('auth_realm', 'owner')->cascade_delete;
-        })
-	    if $self->model('RealmOwner')->unauth_load({name => $realm});
+    unless ($tables->{website_t}) {
+	foreach my $realm (qw(forum calendar_event)) {
+	    $req->with_realm($realm, sub {
+		$req->get_nested('auth_realm', 'owner')->cascade_delete;
+	    })
+		if $self->model('RealmOwner')->unauth_load({name => $realm});
+	    $self->internal_upgrade_db_forum;
+	    $self->internal_upgrade_db_mail;
+	    $self->internal_upgrade_db_mail_bounce;
+	    $self->internal_upgrade_db_calendar_event;
+	    $self->internal_upgrade_db_email_alias;
+	    $self->internal_upgrade_db_job_lock;
+	    $self->internal_upgrade_db_tuple;
+	    $self->internal_upgrade_db_motion;
+	    $self->internal_upgrade_db_website;
+	}
     }
-    $self->internal_upgrade_db_forum;
-    $self->internal_upgrade_db_mail;
-    $self->internal_upgrade_db_mail_bounce;
-    $self->internal_upgrade_db_calendar_event;
-    $self->internal_upgrade_db_email_alias;
-    $self->internal_upgrade_db_job_lock;
-    $self->internal_upgrade_db_tuple;
-    $self->internal_upgrade_db_motion;
-    $self->internal_upgrade_db_website;
-    $self->internal_upgrade_db_realm_dag;
-    $self->internal_upgrade_db_otp;
+    $self->internal_upgrade_db_realm_dag
+	unless $tables->{realm_dag_t};
+    $self->internal_upgrade_db_otp
+	unless $tables->{otp_t};
     return;
 }
 
@@ -1421,30 +1426,35 @@ sub run_command {
     );
 }
 
+sub tables {
+    return Bivio::SQL::Connection->map_execute(
+	sub {shift(@_)->[0]},
+	'SELECT tablename
+        FROM pg_tables
+        WHERE tableowner = ?
+        ORDER by tablename',
+	[Bivio::Ext::DBI->get_config->{user}],
+    );
+}
+
 sub upgrade_db {
-    my($self, $method) = @_;
-    # Handles common setup for database upgrades.  Calls
-    # L<internal_upgrade_db|"internal_upgrade_db">.
-    my($req) = $self->get_request();
-
-    # want to avoid accidentally running this script
-    $self->are_you_sure('Upgrade the database?');
-
-    # Must be first, because pg_dump closes all db connections.
+    my($self, $type) = @_;
+    my($req) = $self->req;
+    my($method) = $type ? "internal_upgrade_db_$type" : 'internal_upgrade_db';
+    my($upgrade) = $self->model('DbUpgrade');
+    my($v) = $type ? ($type eq 'bundle' ? $VERSION : '') . $type
+	: $self->package_version;
+    $self->usage_error($v, ': already ran.')
+	if $upgrade->unauth_load({version => $v});
+    $self->are_you_sure(
+	qq{Upgrade the database@{[$type ? " with $type" : '']}?});
     $self->main('export_db')
 	if $_CFG->{export_db_on_upgrade};
-
-    my($upgrade) = Bivio::Biz::Model->new($req, 'DbUpgrade');
-    $self->usage_error($self->package_version(), ': already ran.')
-	if $upgrade->unauth_load({version => $self->package_version});
-
-    $self->internal_upgrade_db();
-
+    $self->$method();
     $upgrade->create({
-	version => $self->package_version,
-	run_date_time => Bivio::Type::DateTime->now
+	version => $v,
+	run_date_time => $upgrade->get_field_type('run_date_time')->now,
     });
-
     return;
 }
 
