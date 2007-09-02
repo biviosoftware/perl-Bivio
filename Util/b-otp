@@ -5,7 +5,7 @@ use strict;
 
 =head1 NAME
 
-b-otp - calls Bivio::OTP::Util::OTP
+b-otp - calls Bivio::Util::OTP
 
 =head1 SYNOPSIS
 
@@ -13,19 +13,19 @@ b-otp [options] command [args...]
 
 =head1 DESCRIPTION
 
-See L<Bivio::OTP::Util::OTP|Bivio::OTP::Util::OTP>
+See L<Bivio::Util::OTP|Bivio::Util::OTP>
 
 =cut
 
 #=IMPORTS
-use Bivio::OTP::Util::OTP;
+use Bivio::Util::OTP;
 
 #=VARIABLES
-Bivio::OTP::Util::OTP->main(@ARGV);
+Bivio::Util::OTP->main(@ARGV);
 
 =head1 SEE ALSO
 
-Bivio::OTP::Util::OTP
+Bivio::Util::OTP
 
 =head1 COPYRIGHT
 
