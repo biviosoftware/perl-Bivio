@@ -56,7 +56,7 @@ sub execute {
     }
     $req->get('reply')->set_header(
 	'WWW-Authenticate',
-	'Basic realm="@{[$f->get_basic_auth_realm]}"'
+	qq{Basic realm="@{[$f->get_basic_authorization_realm]}"},
     )->set_http_status(Bivio::Ext::ApacheConstants->HTTP_UNAUTHORIZED)
 	->set_output_type('text/plain')
         ->set_output(\(''));

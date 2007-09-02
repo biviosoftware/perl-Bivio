@@ -65,7 +65,7 @@ sub execute_ok {
     return 0;
 }
 
-sub get_basic_auth_realm {
+sub get_basic_authorization_realm {
     return '*';
 }
 
