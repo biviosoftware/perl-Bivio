@@ -522,6 +522,7 @@ sub _init_demo_users {
             $otp->init_user(
 		$req->get('auth_user'), {
 		    otp_md5 => $self->new_other('OTP')->hex_key(
+			Bivio::OTP::Type::OTPSequence->get_max,
 			$v->{seed},
 			$self->PASSWORD,
 		    ),
