@@ -386,21 +386,21 @@ sub internal_upgrade_db_bundle {
     my($tables) = {map(($_ => 1), @{$self->tables})};
     my($req) = $self->get_request;
     unless ($tables->{website_t}) {
+	$self->print("Running: forum...website\n");
 	foreach my $realm (qw(forum calendar_event)) {
 	    $req->with_realm($realm, sub {
 		$req->get_nested('auth_realm', 'owner')->cascade_delete;
-	    })
-		if $self->model('RealmOwner')->unauth_load({name => $realm});
-	    $self->internal_upgrade_db_forum;
-	    $self->internal_upgrade_db_mail;
-	    $self->internal_upgrade_db_mail_bounce;
-	    $self->internal_upgrade_db_calendar_event;
-	    $self->internal_upgrade_db_email_alias;
-	    $self->internal_upgrade_db_job_lock;
-	    $self->internal_upgrade_db_tuple;
-	    $self->internal_upgrade_db_motion;
-	    $self->internal_upgrade_db_website;
+	    }) if $self->model('RealmOwner')->unauth_load({name => $realm});
 	}
+	$self->internal_upgrade_db_forum;
+	$self->internal_upgrade_db_mail;
+	$self->internal_upgrade_db_mail_bounce;
+	$self->internal_upgrade_db_calendar_event;
+	$self->internal_upgrade_db_email_alias;
+	$self->internal_upgrade_db_job_lock;
+	$self->internal_upgrade_db_tuple;
+	$self->internal_upgrade_db_motion;
+	$self->internal_upgrade_db_website;
     }
     unless (self->model('RealmOwner')->unauth_load('site-help')) {
 	$self->print("Running: site-help\n");
