@@ -13,14 +13,18 @@ Bivio::IO::Config->register(my $_CFG = {
 
 sub create {
     my($self, $values) = @_;
-    $values->{last_login} = Bivio::Type::DateTime->now()
-	unless exists($values->{last_login});
+    _values($values);
     return shift->SUPER::create(@_);
 }
 
 sub get_challenge {
-    my($self) = @_;
-    return join(' ', 'otp-md5', $self->get('count'), $self->get('seed'));
+    my($self, $sequence, $seed) = @_;
+    if ($self->is_loaded) {
+	$sequence ||= $self->get('sequence');
+	$seed ||= $self->get('seed');
+    }
+    $sequence ||= Bivio::OTP::Type::OTPSequence->get_max;
+    return join(' ', 'otp_md5', $sequence, lc($seed));
 }
 
 sub handle_config {
@@ -38,8 +42,9 @@ sub has_timed_out {
 sub init_user {
     my($self, $realm, $values) = @_;
     $values->{user_id} = $realm->get('realm_id');
-    $realm->update({password => $realm->get_field_type('password')->OTP_VALUE});
-    return $self->create($values);
+    $realm->update({password => $realm->get_field_type('password')
+       ->OTP_VALUE});
+    return $self->create_or_update($values);
 }
 
 sub internal_initialize {
@@ -51,11 +56,17 @@ sub internal_initialize {
             user_id => ['User.user_id', 'PRIMARY_KEY'],
             otp_md5 => ['OTPMD5', 'NONE'],
             seed => ['OTPSeed', 'NONE'],
-            count => ['OTPSequence', 'NONE'],
+            sequence => ['OTPSequence', 'NONE'],
 	    last_login => ['DateTime', 'NOT_NULL'],
 	},
 	auth_id => 'user_id',
     });
+}
+
+sub update {
+    my($self, $values) = @_;
+    _values($values);
+    return shift->SUPER::update(@_);
 }
 
 sub verify {
@@ -67,10 +78,16 @@ sub verify {
 	unless Bivio::OTP::RFC2289->verify($otp_md5, $self->get('otp_md5'));
     $self->update({
         otp_md5 => $otp_md5,
-        count => $self->get('count') - 1,
-        last_login => Bivio::Type::DateTime->now(),
+        sequence => $self->get('sequence') - 1,
     });
     return 1;
+}
+
+sub _values {
+    my($values) = @_;
+    $values->{sequence} ||= Bivio::OTP::Type::OTPSequence->get_max - 1;
+    $values->{last_login} ||= Bivio::Type::DateTime->now();
+    return;
 }
 
 1;
