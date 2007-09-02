@@ -214,7 +214,7 @@ sub export_db {
     $self->piped_exec(
 	"pg_dump --username '$db->{user}' --clean --format=c --blobs "
 	. " --file='$f' '$db->{database}'");
-    return "Exported $db->{database} to $f\n";
+    return "Exported $db->{database} to $f";
 }
 
 sub format_test_email {
@@ -402,7 +402,7 @@ sub internal_upgrade_db_bundle {
 	$self->internal_upgrade_db_motion;
 	$self->internal_upgrade_db_website;
     }
-    unless (self->model('RealmOwner')->unauth_load('site-help')) {
+    unless ($self->model('RealmOwner')->unauth_load({name => 'site-help'})) {
 	$self->print("Running: site-help\n");
 	$req->with_realm(undef, sub {
 	    $req->with_user($self->model('RealmUser')->get_any_online_admin, sub {
@@ -1462,8 +1462,12 @@ sub upgrade_db {
 	if $upgrade->unauth_load({version => $v});
     $self->are_you_sure(
 	qq{Upgrade the database@{[$type ? " with $type" : '']}?});
-    $self->main('export_db')
+    $self->print($self->export_db . "\n")
 	if $_CFG->{export_db_on_upgrade};
+    # After an export, you need to rollback or there will be errors.
+    Bivio::Die->eval(sub {Bivio::SQL::Connection->rollback});
+    # re-establish connection
+    Bivio::SQL::Connection->ping_connection;
     $self->$method();
     $upgrade->create({
 	version => $v,
