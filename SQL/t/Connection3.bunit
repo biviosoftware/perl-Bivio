@@ -1,0 +1,20 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    class() => [
+	map_execute => [
+	    [
+		'SELECT name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
+		['root', 'demo'],
+	    ] => [[['demo'], ['root']]],
+	],
+	map_execute => [
+	    [
+		sub {shift->[0]},
+		'SELECT name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
+		['root', 'demo'],
+	    ] => [[qw(demo root)]],
+	],
+    ],
+];
