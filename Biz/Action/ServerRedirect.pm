@@ -10,6 +10,7 @@ sub execute_next {
     return {
 	method => 'server_redirect',
 	task_id => 'next',
+	query => shift->get_request->get('query'),
     };
 }
 
