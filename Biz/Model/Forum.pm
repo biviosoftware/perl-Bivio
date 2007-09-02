@@ -94,6 +94,33 @@ sub update {
     my($self, $values) = @_;
     $values->{name_lc} = lc($values->{name})
 	if defined($values->{name});
+
+    # don't allow non OTP people to be in an OTP forum (su excepted)
+    if ($values->{require_otp}
+	&& Bivio::Type->compare($values->{require_otp},
+	    $self->get('require_otp')) != 0) {
+	Bivio::Biz::ListModel->new_anonymous({
+	    primary_key => [qw(
+		RealmUser.user_id
+		RealmUser.realm_id
+		RealmUser.role
+	    )],
+	    other => [
+		['RealmUser.realm_id', [$self->get('forum_id')]],
+		[qw(RealmUser.user_id RealmOwner.realm_id)],
+		'RealmOwner.password',
+	    ],
+	}, $self->req)->do_iterate(
+	    sub {
+		my($list) = @_;
+		return 1 if Bivio::Type->get_instance('Password')->is_otp(
+		    $list->get('RealmOwner.password'))
+		    || $self->req->is_super_user(
+			$list->get('RealmUser.user_id'));
+		$list->get_model('RealmUser')->delete;
+		return 1;
+	    });
+    }
     return shift->SUPER::update(@_);
 }
 
