@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ALL_INFO {
     #DEPREDCATED
-    return shift->all_components;
+    return shift->standard_components;
 }
 
 sub info_base {
@@ -541,6 +541,128 @@ sub info_motion {
     ];
 }
 
+sub info_otp {
+    return [
+	[qw(
+	    USER_OTP
+	    130
+	    USER
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.UserOTPForm
+            View.OTP->form
+	    next=MY_SITE
+	)],
+#131-139 free
+    ];
+}
+
+sub info_tuple {
+    Bivio::IO::Config->introduce_values({
+	'Bivio::Biz::Model::RealmMail' => {
+	    create_hook => sub {
+		my($m) = @_;
+		$m->get_instance('Tuple')->realm_mail_hook(@_);
+		return;
+	    },
+	},
+    });
+    return [
+	[qw(
+	    FORUM_TUPLE_SLOT_TYPE_LIST
+	    70
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleSlotTypeList->execute_load_all_with_query
+	    View.Tuple->slot_type_list
+	)],
+	[qw(
+	    FORUM_TUPLE_SLOT_TYPE_EDIT
+	    71
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleSlotTypeListForm
+	    View.Tuple->slot_type_edit
+	    next=FORUM_TUPLE_SLOT_TYPE_LIST
+	)],
+	[qw(
+	    FORUM_TUPLE_DEF_LIST
+	    72
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleDefList->execute_load_all_with_query
+	    View.Tuple->def_list
+	)],
+	[qw(
+	    FORUM_TUPLE_DEF_EDIT
+	    73
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleDefListForm
+	    View.Tuple->def_edit
+	    next=FORUM_TUPLE_DEF_LIST
+	)],
+	[qw(
+	    FORUM_TUPLE_USE_LIST
+	    74
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleUseList->execute_load_all_with_query
+	    View.Tuple->use_list
+	)],
+	[qw(
+	    FORUM_TUPLE_USE_EDIT
+	    75
+	    FORUM
+	    TUPLE_ADMIN
+	    Model.TupleUseForm
+	    View.Tuple->use_edit
+	    next=FORUM_TUPLE_USE_LIST
+	)],
+	[qw(
+	    FORUM_TUPLE_LIST
+	    76
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleList->execute_load_page
+	    View.Tuple->list
+	)],
+	[qw(
+	    FORUM_TUPLE_LIST_CSV
+	    77
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleList->execute_load_all_with_query
+	    View.Tuple->list_csv
+	)],
+	[qw(
+	    FORUM_TUPLE_EDIT
+	    78
+	    FORUM
+	    TUPLE_READ&TUPLE_WRITE
+	    Model.TupleSlotListForm
+	    View.Tuple->edit
+	    next=FORUM_TUPLE_LIST
+	)],
+ 	[qw(
+	    FORUM_TUPLE_HISTORY
+	    79
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleList->execute_load_history_list
+	    View.Tuple->history_list
+	)],
+ 	[qw(
+	    FORUM_TUPLE_HISTORY_CSV
+	    80
+	    FORUM
+	    TUPLE_READ
+	    Model.TupleList->execute_load_history_list
+	    View.Tuple->history_list_csv
+	)],
+    ];
+#81-89 free
+}
+
 sub info_user_auth {
     return [
 	[qw(
@@ -729,6 +851,35 @@ sub info_wiki {
  	)],
     ];
 #121-129 free
+}
+
+sub info_xapian {
+    Bivio::IO::Config->introduce_values({
+	'Bivio::Biz::Model::RealmFile' => {
+	    search_class => 'Bivio::Search::Xapian',
+	},
+    });
+    return [
+	[qw(
+	    JOB_XAPIAN_COMMIT
+	    60
+	    GENERAL
+	    ANYBODY
+	    Model.Lock
+	    Bivio::Search::Xapian
+	)],
+  	[qw(
+ 	    SEARCH_LIST
+ 	    61
+ 	    GENERAL
+ 	    ANYBODY
+	    Model.SearchForm
+	    Model.SearchList->execute_load_page
+	    View.Search->list
+	    next=SEARCH_LIST
+ 	)],
+#62-69 free
+    ];
 }
 
 1;
