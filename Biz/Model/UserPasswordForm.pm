@@ -74,7 +74,7 @@ sub validate {
     $self->internal_put_error(qw(confirm_new_password CONFIRM_PASSWORD))
         unless $self->in_error
         || $self->get('new_password') eq $self->get('confirm_new_password');
-     return;
+    return;
 }
 
 1;
