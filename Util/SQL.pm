@@ -401,10 +401,15 @@ sub internal_upgrade_db_bundle {
 	    $self->internal_upgrade_db_website;
 	}
     }
-    $self->internal_upgrade_db_realm_dag
-	unless $tables->{realm_dag_t};
-    $self->internal_upgrade_db_otp
-	unless $tables->{otp_t};
+    foreach my $type (qw(
+        realm_dag
+        otp
+    )) {
+	next if $tables->{"${type}_t"};
+	$self->print("Running: $type\n");
+	my($m) = "internal_upgrade_db_$type";
+	$self->$m;
+    }
     return;
 }
 
