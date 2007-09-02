@@ -1543,10 +1543,11 @@ sub _sentinel_file_writer {
 sub _sentinel_site_forum {
     my($self) = @_;
     # Don't add it unless HELP_WIKI_REALM_NAME exists
+    my($f) = $self->req('Bivio::UI::Facade')->get_default;
     return 1
-	unless $self->req('Bivio::UI::Facade')->get_default
-	->can('HELP_WIKI_REALM_NAME');
-    return $self->model('RealmOwner')->unauth_load({name => 'site-help'});
+	unless $f->can('HELP_WIKI_REALM_NAME')
+	&& $f->HELP_WIKI_REALM_NAME eq 'site-help';
+    return $self->model('RealmOwner')->unauth_load({name => 'site'});
 }
 
 1;
