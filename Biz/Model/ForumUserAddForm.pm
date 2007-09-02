@@ -11,6 +11,17 @@ sub execute_ok {
     my(@res) = shift->SUPER::execute_ok(@_);
     return @res
 	if $self->in_error;
+
+    if (_forum($self)->get('require_otp')
+	&& ! $self->req->is_super_user($self->get('User.user_id'))) {
+
+	unless ($self->new_other('RealmOwner')->unauth_load_or_die({
+	    realm_id => $self->get('User.user_id'),
+	})->require_otp) {
+	    $self->internal_put_error('Email.email' => 'FORUM_FOR_OTP_USERS');
+	    return @res;
+	}
+    }
     $self->internal_execute_children
 	if $self->unsafe_get('administrator');
     $self->internal_execute_parent;
@@ -43,8 +54,7 @@ sub internal_execute_children {
 
 sub internal_execute_parent {
     my($self) = @_;
-    my($f) = $self->new_other('Forum')
-	->unauth_load_or_die({forum_id => $self->get('RealmUser.realm_id')});
+    my($f) = _forum($self);
     $self->execute($self->get_request, {
 	'User.user_id' => $self->get('User.user_id'),
 	# Exclude ADMINISTRATOR (see above)
@@ -71,6 +81,13 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	],
+    });
+}
+
+sub _forum {
+    my($self) = @_;
+    return $self->new_other('Forum')->unauth_load_or_die({
+	forum_id => $self->get('RealmUser.realm_id'),
     });
 }
 
