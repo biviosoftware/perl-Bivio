@@ -1,57 +1,14 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserPasswordQueryForm;
 use strict;
-$Bivio::Biz::Model::UserPasswordQueryForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::UserPasswordQueryForm::VERSION;
+use Bivio::Base 'Bivio::Biz::FormModel';
 
-=head1 NAME
-
-Bivio::Biz::Model::UserPasswordQueryForm - request password reset
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Model::UserPasswordQueryForm;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::FormModel>
-
-=cut
-
-use Bivio::Biz::FormModel;
-@Bivio::Biz::Model::UserPasswordQueryForm::ISA = ('Bivio::Biz::FormModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::UserPasswordQueryForm>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute_empty"></a>
-
-=head2 execute_empty()
-
-Default the email address to the user in the cookie if present.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty {
     my($self) = @_;
+    # Default the email address to the user in the cookie if present.
     # don't overwrite if already set by subclass
     return if $self->unsafe_get('Email.email');
     my($req) = $self->get_request;
@@ -71,17 +28,10 @@ sub execute_empty {
     return;
 }
 
-=for html <a name="execute_ok"></a>
-
-=head2 execute_ok() : string
-
-Sets the user's password to a random value. Saves the reset URI in the
-'uri' field. Performs a server redirect to the next task when done.
-
-=cut
-
 sub execute_ok {
     my($self) = @_;
+    # Sets the user's password to a random value. Saves the reset URI in the
+    # 'uri' field. Performs a server redirect to the next task when done.
     my($req) = $self->get_request;
     my($e) = $self->new_other('Email');
     unless ($e->unauth_load({email => $self->get('Email.email')})) {
@@ -105,16 +55,9 @@ sub execute_ok {
     return 'server_redirect.next';
 }
 
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-Returns config
-
-=cut
-
 sub internal_initialize {
     my($self) = @_;
+    # Returns config
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	visible => [
@@ -129,17 +72,5 @@ sub internal_initialize {
 	],
     });
 }
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
