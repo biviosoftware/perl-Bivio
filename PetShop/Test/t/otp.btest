@@ -36,7 +36,7 @@ follow_link('Convert your account to OTP');
 my($new_key) = test_use('Bivio::Util::OTP')
     ->six_word_key(get_content() =~ $challenge, 'password');
 test_deviance();
-verify_text(qr/Please respond.*Please respond/s);
+verify_text(my $dual_challenge = qr/Last OTP challenge.*New OTP challenge/is);
 test_deviance('The password you entered does not match the value stored');
 submit_form(OK => {
     'Current Password/Key:' => 'badpassword',
@@ -79,7 +79,7 @@ login_as(
 );
 follow_link('MyAccount');
 follow_link('Convert your account to OTP');
-verify_text(qr/Please respond.*Please respond/s);
+verify_text($dual_challenge);
 my($old_seq, $old_seed, $new_seq, $new_seed) =
     get_content() =~ /$challenge.*$challenge/s;
 
