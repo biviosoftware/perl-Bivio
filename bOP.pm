@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.30  2007/09/02 22:31:22  nagler
+  * Bivio::Util::SQL->internal_upgrade_db_bundle has sentinel mechanism
+    for feature tests if tables are too coarsed grained.
+  * Fixed a bunch of broken unit tests
+
   Revision 5.29  2007/09/02 18:24:21  nagler
   * RFC2289 One-time passwords supported.  Use winkey32.exe or Opie
     (*nix) for client or use b-otp (which only works with bOP OTP
