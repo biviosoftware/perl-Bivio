@@ -15,6 +15,7 @@ my($_VARS) = {
     root_prefix => undef,
     server_admin => undef,
     ssl_listen => '',
+    ssl_only => 0,
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     timeout => 120,
@@ -221,7 +222,8 @@ EOF
     RewriteOptions inherit
 $rules</VirtualHost>
 EOF
-	    $vars->{httpd_content} .= $hc;
+	    $vars->{httpd_content} .= $hc
+		unless $cfg->{ssl_only};
             if ($cfg->{ssl_crt}) {
 		$vars->{ssl_listen} = "\nListen " . ($vars->{listen} + 1);
 		my($chain) = !$cfg->{ssl_chain} ? ''
