@@ -79,6 +79,4 @@ sub validate {
     return;
 }
 
-#=PRIVATE SUBROUTINES
-
 1;
