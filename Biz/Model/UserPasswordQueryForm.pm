@@ -93,6 +93,10 @@ sub execute_ok {
 	return;
     }
     $self->get_request->set_realm($e->get('realm_id'));
+    if ($e->get_model('RealmOwner')->require_otp) {
+	$self->internal_put_error(qw(Email.email PASSWORD_QUERY_OTP));
+	return;
+    }
     $self->internal_put_field(
 	uri => Bivio::Biz::Action->get_instance('UserPasswordQuery')
 	    ->format_uri($req),
