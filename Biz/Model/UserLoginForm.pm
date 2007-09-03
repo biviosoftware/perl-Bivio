@@ -135,6 +135,11 @@ sub internal_initialize {
 		type => 'Boolean',
 		constraint => 'NONE',
             },
+	    {
+		name => 'via_mta',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
 	],
     });
 
