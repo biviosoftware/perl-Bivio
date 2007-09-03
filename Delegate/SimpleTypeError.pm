@@ -400,6 +400,11 @@ sub get_delegate_info {
 	undef,
 	'this forum is for OTP users only',
     ],
+    PASSWORD_QUERY_OTP => [
+	75,
+	undef,
+	'You are not allowed to reset your password.  Please contact your system administrator for password assistance.',
+    ],
 ];
 }
 
