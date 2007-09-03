@@ -30,29 +30,16 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    # Sets the user's password to a random value. Saves the reset URI in the
-    # 'uri' field. Performs a server redirect to the next task when done.
-    my($req) = $self->get_request;
-    my($e) = $self->new_other('Email');
-    unless ($e->unauth_load({email => $self->get('Email.email')})) {
-	$self->internal_put_error(qw(Email.email NOT_FOUND));
-	return;
-    }
-    if ($self->get_request->is_super_user($e->get('realm_id'))) {
-	$self->internal_put_error(qw(Email.email PASSWORD_QUERY_SUPER_USER));
-	return;
-    }
-    $self->get_request->set_realm($e->get('realm_id'));
-    if ($e->get_model('RealmOwner')->require_otp) {
-	$self->internal_put_error(qw(Email.email PASSWORD_QUERY_OTP));
-	return;
-    }
-    $self->internal_put_field(
-	uri => Bivio::Biz::Action->get_instance('UserPasswordQuery')
-	    ->format_uri($req),
-    );
+    return unless $self->validate_email_and_put_uri;
     $self->put_on_request(1);
-    return 'server_redirect.next';
+    return {
+ 	method => 'server_redirect',
+ 	task_id => 'next',
+#TODO: This doesn't work, because the ack is not set at this point.
+#   Action.Acknowledgement is called after the return, and that
+#   puts the ack on the query.
+# 	query => $self->get_request->unsafe_get('query'),
+     };
 }
 
 sub internal_initialize {
@@ -71,6 +58,32 @@ sub internal_initialize {
 	    },
 	],
     });
+}
+
+sub validate_email_and_put_uri {
+    my($self, $form) = @_;
+    $form ||= $self;
+    my($req) = $form->get_request;
+    my($e) = $form->new_other('Email');
+    unless ($e->unauth_load({email => $form->get('Email.email')})) {
+	$form->internal_put_error(qw(Email.email NOT_FOUND));
+	return 0;
+    }
+    $form->internal_put_field(
+	uri => $req->with_realm(
+	    $e->get('realm_id'),
+	    sub {
+		my($ro) = $form->req(qw(auth_realm owner));
+		return Bivio::Biz::Action->get_instance('UserPasswordQuery')
+		    ->format_uri($req)
+		    unless $req->is_super_user($ro->get('realm_id'))
+		    || $ro->require_otp;
+		$form->internal_put_error(qw(Email.email FORBIDDEN));
+		return;
+	    },
+	) || return 0,
+    );
+    return 1;
 }
 
 1;
