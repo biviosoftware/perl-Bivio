@@ -15,6 +15,9 @@ my($_TASK_ID_FROM_REQ) = [sub {
 
 sub initialize {
     my($self) = @_;
+    # attributes:
+    #   position_over_link: boolean [0]
+    #   visibility: string [hidden]
     $self->put_unless_exists(
 	help_box => If([\&_wiki_text, $self, $_TASK_ID_FROM_REQ],
 	    DIV_help_wiki(Join([
@@ -39,7 +42,8 @@ sub initialize {
 function resize_help_popup() {
   var o = document.getElementById('help_wiki_iframe');
   var node = document.getElementById('help_link');
-  var top = node.offsetHeight;
+  var top = @{[$self->unsafe_get('position_over_link')
+      ? '0' : 'node.offsetHeight']};;
   while (node) {
     top += node.offsetTop;
     node = node.offsetParent;
