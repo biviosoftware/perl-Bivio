@@ -8,6 +8,7 @@ use Bivio::Biz::RFC2289;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
     login_timeout_seconds => 3600,
+    reinitialize_sequence => 10,
 });
 
 sub create {
@@ -29,6 +30,10 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     return;
+}
+
+sub should_reinit {
+    return shift->get('sequence') <= $_CFG->{reinitialize_sequence}
 }
 
 sub validate_password {
@@ -87,7 +92,8 @@ sub verify {
 sub _values {
     my($self, $values) = @_;
 #TODO: Is this a good idea to hardcode here?  Shouldn't it be pulled from OTPForm? 
-    $values->{sequence} ||= $self->get_field_type('sequence')->get_max - 1;
+    $values->{sequence} = $self->get_field_type('sequence')->get_max - 1
+	unless exists($values->{sequence});
     $values->{last_login} ||= $self->get_field_type('last_login')->now();
     return $values;
 }

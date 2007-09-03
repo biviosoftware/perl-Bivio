@@ -62,7 +62,16 @@ sub execute_ok {
 	if !$realm && $req->is_substitute_user;
     _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
     _set_cookie_user($self, $req, $realm);
-    return 0;
+    return 0
+	unless $realm && $realm->require_otp;
+    return 0
+	unless $self->new_other('OTP')->unauth_load_or_die({
+	    user_id => $realm->get('realm_id'),
+	})->should_reinit;
+    return {
+        task_id => 'USER_OTP',
+	query => undef,
+    };
 }
 
 sub get_basic_authorization_realm {

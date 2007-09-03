@@ -112,3 +112,28 @@ submit_form(OK => {
     'New Key:' => $new_key,
     'Confirm Key:' => $new_key,
 });
+
+#
+# Test re-initialize sequence
+#
+
+Bivio::IO::Alert->debug(get_uri());
+get_uri() =~ m{.*/(.*)/account};
+my($uid) = $1;
+do_test_backdoor(OTP => "-realm $uid reset_otp 11 yourseed password");
+do_logout();
+home_page();
+follow_link('Sign-in');
+test_deviance('otp_md5 11 yourseed');
+submit_form(submit => {
+    'Email:' => $email,
+});
+test_conformance();
+submit_form(submit => {
+    'Email:' => $email,
+    'Password:' => test_use('Bivio::Util::OTP')->six_word_key(
+        get_content() =~ $challenge, 'password'),
+});
+verify_uri('/setup-otp');
+verify_text('You MUST re-initialize your one-time password now.');
+

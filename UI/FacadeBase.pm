@@ -408,7 +408,17 @@ EOF
 		new_password => 'New Key',
 		confirm_new_password => 'Confirm Key',
 		prose => [
-		    prologue => q{To start or re-initialize your one-time password process, you need to enter your current password or the last OTP key you used},
+		    prologue => <<'EOF',
+Join([
+    If([sub {
+        my($undef, $otp) = @_;
+        return $otp && $otp->should_reinit;
+    }, ['->unsafe_get', 'Model.OTP']],
+        String('You MUST re-initialize your one-time password now. '),
+    ),
+    'To start or re-initialize your one-time password process, you need to enter your current password or the last OTP key you used',
+]);
+EOF
 		    challenge => <<'EOF',
 If([['form_model'], '->unsafe_get', 'otp_challenge'],
     Join([
