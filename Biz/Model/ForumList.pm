@@ -27,7 +27,6 @@ sub internal_initialize {
 		type => 'Boolean',
 		constraint => 'NONE',
 	    }, $_EM->OPTIONAL_MODES),
-	    'Forum.require_otp',
 	],
 	auth_id => ['Forum.parent_realm_id'],
     });
