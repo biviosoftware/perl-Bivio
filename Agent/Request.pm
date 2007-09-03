@@ -1096,8 +1096,9 @@ sub _with {
     $self->$set($prev);
     $die->throw
 	if $die;
-    return @res;
-
+    return wantarray ? @res
+	: @res > 1 ? Bivio::Die->die(\@res, ': too many return values')
+	: $res[0];
 }
 
 1;

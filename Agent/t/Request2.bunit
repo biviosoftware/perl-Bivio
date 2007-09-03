@@ -19,6 +19,15 @@ Request();
 	    [undef, sub {req('auth_realm')->is_general}] => 1,
 	    [fourem => sub {req(qw(auth_realm owner_name))}] => 'fourem',
 	    [fourem => sub {die('here we go')}] => qr{DIE:.*here we go},
+	    [undef, sub {(1, 2)}] => [1, 2],
+	],
+	{
+	    method => 'with_realm',
+	    want_scalar => 1,
+	} => [
+	    [undef, sub {()}] => [undef],
+	    [undef, sub {1}] => 1,
+	    [undef, sub {(1, 2)}] => DIE(),
 	],
 	with_user => [
 	    [undef, sub {req('auth_user')}] => [undef],
