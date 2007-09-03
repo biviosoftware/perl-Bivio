@@ -194,8 +194,7 @@ sub validate {
     }
     my($owner) = $self->validate_login;
     return
-	if !$owner
-	    || ($self->in_error && !$owner->require_otp);
+	if !$owner || ($self->in_error && !$owner->require_otp);
     unless ($owner->get_field_type('password')->is_equal(
 	$owner->get('password'),
 	$self->get('RealmOwner.password'),
