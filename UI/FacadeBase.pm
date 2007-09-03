@@ -128,6 +128,7 @@ sub _cfg_base {
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
 	    [EXISTS => 'vs_fe("label"); already exists in our database.'],
 	    [NOT_FOUND => 'vs_fe("label"); was not found in our database.'],
+	    ['UserPasswordQueryForm.Email.email.PERMISSION_DENIED' => 'You are not allowed to reset your password.  Please contact a system administrator for assistance.'],
 	    ['image_file.TOO_MANY' => 'vs_fe("label"); contains multiple images, please upload a file which contains only one image.'],
 	    ['image_file.EXISTS' => 'vs_fe("label"); image already exists.  Please choose another name.'],
 	    ['image_file.SYNTAX_ERROR' => 'vs_fe("label"); unknown or invalid image format.  Please verify file, and change to an acceptable format (e.g. png, gif, jpg), and retry upload.'],
