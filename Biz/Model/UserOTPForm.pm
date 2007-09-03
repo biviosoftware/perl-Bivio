@@ -29,24 +29,27 @@ sub internal_initialize {
 	)],
 	other => [
 	    'OTP.otp_md5',
-        {
-	    name => 'new_otp_challenge',
+        map({{
+	    name => $_,
 	    type => 'Line',
 	    constraint => 'NONE',
-	}],
+	}} qw(otp_challenge new_otp_challenge)),
+	],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
     shift->SUPER::internal_pre_execute(@_);
-    my($otp) = $self->new_other('OTP');
-    $otp->unsafe_load();
     $self->internal_put_field(
 	'OTP.seed' => $self->get_field_type('OTP.seed')->generate
-    ) unless $self->unsafe_get('OTP.seed');
+    )
+	unless $self->get('OTP.seed');
+    my($otp) = $self->new_other('OTP');
     $self->internal_put_field(new_otp_challenge =>
         $otp->get_challenge(undef, $self->get('OTP.seed')));
+    $self->internal_put_field(otp_challenge => $otp->get_challenge())
+	if $otp->unsafe_load();
     return;
 }
 
@@ -62,6 +65,16 @@ sub validate {
 	$self->internal_put_field(new_password => undef);
 	$self->internal_put_error(new_password => 'OTP_PASSWORD');
 	$self->internal_put_field(confirm_new_password => undef);
+    }
+    if ($self->get_request->get('auth_user')->require_otp) {
+	$self->internal_clear_error('old_password');
+	$self->internal_put_error(old_password => 'OTP_PASSWORD_MISMATCH')
+	    unless $self->new_other('OTP')->load()
+		->verify($self->get('old_password'));
+	$self->internal_put_error(qw(confirm_new_password CONFIRM_PASSWORD))
+            unless $self->in_error
+                || ($self->get('new_password')
+		    eq $self->get('confirm_new_password'));
     }
     return;
 }

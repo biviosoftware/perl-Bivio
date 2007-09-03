@@ -409,7 +409,15 @@ EOF
 		confirm_new_password => 'Confirm Key',
 		prose => [
 		    prologue => q{To start or re-initialize your one-time password process, you need to enter your current password or the last OTP key you used},
-		    challenge => q{Please respond to this OTP challenge: String(['Model.UserOTPForm', 'new_otp_challenge']);},
+		    challenge => <<'EOF',
+If([['form_model'], '->unsafe_get', 'otp_challenge'],
+    Join([
+        'Please respond to this OTP challenge: ',
+        String(['Model.UserOTPForm', 'otp_challenge']),
+    ]),
+);
+EOF
+		    new_challenge => q{Please respond to this OTP challenge: String(['Model.UserOTPForm', 'new_otp_challenge']);},
 		],
 	    ]],
 	    [title => [

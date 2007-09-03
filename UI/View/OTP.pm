@@ -9,8 +9,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub form {
     return shift->internal_body(vs_simple_form(UserOTPForm => [qw(
+        'challenge
 	UserOTPForm.old_password
-	'challenge
+	'new_challenge
 	UserOTPForm.new_password
 	UserOTPForm.confirm_new_password
     )]));

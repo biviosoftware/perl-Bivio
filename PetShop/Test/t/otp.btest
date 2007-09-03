@@ -1,9 +1,12 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+
 test_setup('PetShop');
 home_page();
-test_deviance(my $challenge = qr{otp_md5\s+(\d+)\s+(\w+)});
-login_as('otp');
+my($challenge) = qr{otp_md5\s+(\d+)\s+(\w+)};
+test_deviance($challenge);
+login_as('otp', '');
+login_as('otp', 'password');
 test_conformance();
 login_as(
     'otp',
@@ -11,3 +14,100 @@ login_as(
 	get_content() =~ $challenge,
 	'password'),
 );
+do_logout();
+
+#
+# Test convert to OTP
+#
+
+home_page();
+follow_link('Sign-in');
+follow_link('New User');
+my($name) = 'otp_' . random_string();
+submit_form(submit => {
+    'Email:' => Bivio::IO::Alert->debug((generate_local_email($name))[0]),
+    'Password:' => 'password',
+    'First Name:' => ucfirst($name),
+    'Last Name:' => 'User',
+});
+follow_link('MyAccount');
+follow_link('Convert your account to OTP');
+my($new_key) = test_use('Bivio::Util::OTP')
+    ->six_word_key(get_content() =~ $challenge, 'password');
+test_deviance();
+verify_text(qr/Please respond.*Please respond/s);
+test_deviance('The password you entered does not match the value stored');
+submit_form(OK => {
+    'Current Password/Key:' => 'badpassword',
+});
+test_deviance('invalid OTP');
+submit_form(OK => {
+    'Current Password/Key:' => 'password',
+});
+test_deviance('You must supply a value for Confirm Key');
+submit_form(OK => {
+    'Current Password/Key:' => 'password',
+    'New Key:' => $new_key,
+});
+test_deviance('password and confirm password fields do not match');
+submit_form(OK => {
+    'Current Password/Key:' => 'password',
+    'New Key:' => $new_key,
+    'Confirm Key:' => 'foofoo',
+});
+test_conformance();
+submit_form(OK => {
+    'Current Password/Key:' => 'password',
+    'New Key:' => $new_key,
+    'Confirm Key:' => $new_key,
+});
+
+#
+# Test reset OTP
+#
+
+do_logout();
+test_deviance($challenge);
+login_as(otp => '');
+test_conformance();
+login_as(
+    'otp',
+    test_use('Bivio::Util::OTP')->six_word_key(
+	get_content() =~ $challenge,
+	'password'),
+);
+follow_link('MyAccount');
+follow_link('Convert your account to OTP');
+verify_text(qr/Please respond.*Please respond/s);
+my($old_seq, $old_seed, $new_seq, $new_seed) =
+    get_content() =~ /$challenge.*$challenge/s;
+
+my($next_key) = test_use('Bivio::Util::OTP')
+    ->six_word_key($old_seq, $old_seed, 'password');
+$new_key = test_use('Bivio::Util::OTP')
+    ->six_word_key($new_seq, $new_seed, 'password');
+test_deviance('Your OTP did not match');
+submit_form(OK => {
+    'Current Password/Key:' => 'badpassword',
+});
+test_deviance('invalid OTP');
+submit_form(OK => {
+    'Current Password/Key:' => $next_key,
+});
+test_deviance('You must supply a value for Confirm Key');
+submit_form(OK => {
+    'Current Password/Key:' => $next_key,
+    'New Key:' => $new_key,
+});
+test_deviance('password and confirm password fields do not match');
+submit_form(OK => {
+    'Current Password/Key:' => $next_key,
+    'New Key:' => $new_key,
+    'Confirm Key:' => 'foofoo',
+});
+test_conformance();
+submit_form(OK => {
+    'Current Password/Key:' => $next_key,
+    'New Key:' => $new_key,
+    'Confirm Key:' => $new_key,
+});
