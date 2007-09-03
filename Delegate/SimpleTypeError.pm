@@ -295,7 +295,7 @@ sub get_delegate_info {
 	undef,
 	'File paths may not contain \\, :, *, ?, ", <, >, |, tabs, control characters, leading or trailing dots.',
     ],
-    FORBIDDEN => [
+    PERMISSION_DENIED => [
 	54,
 	undef,
 	'Permission denied',

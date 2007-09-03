@@ -78,7 +78,7 @@ sub validate_email_and_put_uri {
 		    ->format_uri($req)
 		    unless $req->is_super_user($ro->get('realm_id'))
 		    || $ro->require_otp;
-		$form->internal_put_error(qw(Email.email FORBIDDEN));
+		$form->internal_put_error(qw(Email.email PERMISSION_DENIED));
 		return;
 	    },
 	) || return 0,
