@@ -423,6 +423,9 @@ EOF
 	    [title => [
 		USER_OTP => 'Set up One-Time Password',
 	    ]],
+	    [acknowledgement => [
+		USER_OTP => 'Your One-Time Password has been updated.',
+	    ]],
 	],
     };
 }
