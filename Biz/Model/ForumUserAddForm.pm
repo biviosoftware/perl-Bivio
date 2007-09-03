@@ -12,8 +12,7 @@ sub execute_ok {
     return @res
 	if $self->in_error;
 
-    if (_forum($self)->get('require_otp')
-	&& ! $self->req->is_super_user($self->get('User.user_id'))) {
+    if (_forum($self)->get('require_otp')) {
 
 	unless ($self->new_other('RealmOwner')->unauth_load_or_die({
 	    realm_id => $self->get('User.user_id'),
