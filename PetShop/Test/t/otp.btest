@@ -24,8 +24,9 @@ home_page();
 follow_link('Sign-in');
 follow_link('New User');
 my($name) = 'otp_' . random_string();
+my($email) = generate_local_email($name);
 submit_form(submit => {
-    'Email:' => Bivio::IO::Alert->debug((generate_local_email($name))[0]),
+    'Email:' => $email,
     'Password:' => 'password',
     'First Name:' => ucfirst($name),
     'Last Name:' => 'User',
@@ -68,10 +69,10 @@ submit_form(OK => {
 
 do_logout();
 test_deviance($challenge);
-login_as(otp => '');
+login_as($email => '');
 test_conformance();
 login_as(
-    'otp',
+    $email,
     test_use('Bivio::Util::OTP')->six_word_key(
 	get_content() =~ $challenge,
 	'password'),
