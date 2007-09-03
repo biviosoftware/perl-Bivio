@@ -396,7 +396,7 @@ sub _cfg_otp {
         FormError => [
 	    ['UserLoginForm.RealmOwner.password.OTP_PASSWORD_MISMATCH'
 	        => <<'EOF'],
-Please respond to this OTP challenge: String(['Model.OTP', '->get_challenge']);
+OTP challenge: String(['Model.OTP', '->get_challenge']);
 EOF
 	],
 	Task => [
@@ -412,12 +412,12 @@ EOF
 		    challenge => <<'EOF',
 If([['form_model'], '->unsafe_get', 'otp_challenge'],
     Join([
-        'Please respond to this OTP challenge: ',
+        'Last OTP challenge: ',
         String(['Model.UserOTPForm', 'otp_challenge']),
     ]),
 );
 EOF
-		    new_challenge => q{Please respond to this OTP challenge: String(['Model.UserOTPForm', 'new_otp_challenge']);},
+		    new_challenge => q{New OTP challenge: String(['Model.UserOTPForm', 'new_otp_challenge']);},
 		],
 	    ]],
 	    [title => [
