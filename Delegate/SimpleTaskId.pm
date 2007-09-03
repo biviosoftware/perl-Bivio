@@ -557,7 +557,7 @@ sub merge_task_info {
 }
 
 sub standard_components {
-    return [grep({$_ ne 'info_otp'} @{shift->grep_methods($_INFO_RE)})];
+    return [grep($_ ne 'otp', @{shift->grep_methods($_INFO_RE)})];
 }
 
 sub _component_info {
