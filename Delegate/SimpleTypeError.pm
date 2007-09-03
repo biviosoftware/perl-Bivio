@@ -295,10 +295,10 @@ sub get_delegate_info {
 	undef,
 	'File paths may not contain \\, :, *, ?, ", <, >, |, tabs, control characters, leading or trailing dots.',
     ],
-    PASSWORD_QUERY_SUPER_USER => [
+    FORBIDDEN => [
 	54,
 	undef,
-	'You are not allowed to reset your password.  Please contact your system administrator for password assistance.',
+	'Permission denied',
     ],
     FORUM_NAME => [
 	55,
@@ -378,7 +378,7 @@ sub get_delegate_info {
     TOO_MANY => [
 	70,
 	undef,
-	'field has too many values',
+	'Field has too many values',
     ],
     UNSUPPORTED_TYPE => [
 	71,
@@ -388,22 +388,17 @@ sub get_delegate_info {
     OTP_PASSWORD_MISMATCH => [
 	72,
 	undef,
-	'Your OTP did not match',
+	'Your OTP key did not match',
     ],
     OTP_PASSWORD => [
 	73,
 	undef,
-	'invalid OTP',
+	'Invalid OTP',
     ],
     FORUM_FOR_OTP_USERS => [
 	74,
 	undef,
-	'this forum is for OTP users only',
-    ],
-    PASSWORD_QUERY_OTP => [
-	75,
-	undef,
-	'You are not allowed to reset your password.  Please contact your system administrator for password assistance.',
+	'This forum is for OTP users only',
     ],
 ];
 }
