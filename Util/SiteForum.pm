@@ -22,9 +22,26 @@ sub USAGE {
     return <<'EOF';
 usage: b-site-forum [options] command [args..]
 commands
+  add_admin -- add auth user as admin to site forums
   init -- create site forums, files, and aliases
   realm_names -- which realm names created by init
 EOF
+}
+
+sub add_admin {
+    my($self) = @_;
+    $self->get_request->with_realm(
+	$self->SITE_REALM,
+	sub {
+	    $self->model('ForumUserAddForm', {
+		'RealmUser.realm_id' => $self->req('auth_id'),
+		'User.user_id' => $self->req('auth_user_id'),
+		administrator => 1,
+	    });
+	    return;
+	},
+    );
+    return;
 }
 
 sub init {
