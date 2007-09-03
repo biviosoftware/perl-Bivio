@@ -57,7 +57,7 @@ sub validate {
     my($self) = @_;
     shift->SUPER::validate(@_);
     my($otp) = Bivio::Biz::RFC2289
-       ->from_six_word_format($self->get('new_password'));
+       ->canonical_hex($self->get('new_password'));
     if ($otp) {
 	$self->internal_put_field('OTP.otp_md5' => $otp);
     }
