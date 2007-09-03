@@ -197,10 +197,10 @@ returns (does nothing).
 =cut
 
 sub client_redirect_if_not_secure {
-    my($self) = @_;
+    my($self) = shift;
     return if $self->get('is_secure') || !$self->get('can_secure');
     $self->client_redirect({
-	uri => $self->format_http_toggling_secure,
+	uri => $self->format_http_toggling_secure(@_),
     });
     # DOES NOT RETURN
 }
@@ -215,10 +215,10 @@ is a very special and only used in one location.
 =cut
 
 sub format_http_toggling_secure {
-    my($self) = @_;
+    my($self, $host) = @_;
     my($is_secure, $r, $redirect_count, $uri, $query) = $self->get(
 	    qw(is_secure r redirect_count uri query));
-    my($host) = Bivio::UI::Facade->get_value('http_host', $self);
+    $host ||= Bivio::UI::Facade->get_value('http_host', $self);
 
     # This is particularly strange.  FormModel deletes the incoming
     # query context.   If we haven't internally redirected, we use
