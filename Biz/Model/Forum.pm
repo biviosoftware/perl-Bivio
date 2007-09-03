@@ -34,7 +34,9 @@ sub create_realm {
 	return;
     });
     $self->new_other('ForumUserAddForm')->copy_admins(
-	$self->get('forum_id'), $admin_user_id);
+	$self->get('forum_id'),
+	$self->get('require_otp') ? $self->get_request->get('auth_user_id') :
+	    $admin_user_id);
 #TODO: remove this hack
     # Reset state after ForumUserAddForm messed it up
     $self->put_on_request;
