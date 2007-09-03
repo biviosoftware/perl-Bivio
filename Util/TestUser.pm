@@ -16,24 +16,13 @@ EOF
 
 sub init {
     my($self) = @_;
-    my($req) = $self->initialize_ui;
-    $req->with_realm(undef, sub {
+    $self->initialize_ui->with_realm(undef, sub {
 	foreach my $u (qw(adm)) {
 	    $self->new_other('SQL')->create_test_user($u);
 	}
-	$req->with_user(adm => sub {
+	$self->req->with_user(adm => sub {
             $self->new_other('RealmRole')->make_super_user;
-	    my($u) = 'adm';
-	    foreach my $r (@{$self->new_other('SiteForum')->realm_names}) {
-		$req->with_realm($r => sub {
-		    $self->model('ForumUserAddForm', {
-			'RealmUser.realm_id' => $req->get('auth_id'),
-			'User.user_id' => $req->get('auth_user_id'),
-			administrator => 1,
-		    });
-		    return;
-		});
-	    }
+	    $self->new_other('SiteForum')->make_admin;
 	});
 	return;
     });

@@ -305,7 +305,8 @@ sub _init_demo_users {
 	    $demo_id = $uid;
 	}
 	elsif ($u eq $self->ROOT) {
-	    Bivio::Biz::Util::RealmRole->make_super_user;
+            $self->new_other('RealmRole')->make_super_user;
+	    $self->new_other('SiteForum')->make_admin;
 	}
 	elsif ($u eq $self->GUEST) {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
