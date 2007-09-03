@@ -98,8 +98,9 @@ sub execute_ok {
 	    $parser->head->get('from')
 	    || $parser->head->get('apparently-from')));
     _trace($self->get('from_email'), ' ', $self->get('task_id')) if $_TRACE;
-    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
+    $self->new_other('UserLoginForm')->process({
 	login => $self->internal_get_login,
+	via_mta => 1,
     });
     return {
 	method => 'server_redirect',
