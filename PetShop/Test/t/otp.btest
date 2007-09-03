@@ -29,7 +29,7 @@ submit_form(submit => {
     'Email:' => $email,
     'Password:' => 'password',
     'First Name:' => ucfirst($name),
-    'Last Name:' => 'User',
+    'Last Name:' => 'OTPTest',
 });
 follow_link('MyAccount');
 follow_link('Convert your account to OTP');
@@ -87,7 +87,7 @@ my($next_key) = test_use('Bivio::Util::OTP')
     ->six_word_key($old_seq, $old_seed, 'password');
 $new_key = test_use('Bivio::Util::OTP')
     ->six_word_key($new_seq, $new_seed, 'password');
-test_deviance('Your OTP did not match');
+test_deviance('did not match');
 submit_form(OK => {
     'Current Password/Key:' => 'badpassword',
 });
