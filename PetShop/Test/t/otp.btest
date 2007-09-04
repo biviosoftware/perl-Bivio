@@ -17,6 +17,19 @@ login_as(
 do_logout();
 
 #
+# Test substitute user
+#
+home_page();
+login_as('root');
+visit_uri('/su');
+submit_form({
+    email => 'otp',
+});
+verify_text('otp@bivio.biz');
+do_logout();
+follow_link('logout');
+
+#
 # Test convert to OTP
 #
 
@@ -139,3 +152,4 @@ verify_form({
     confirm => '',
 });
 verify_text('You MUST re-initialize your one-time password now.');
+
