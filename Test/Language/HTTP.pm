@@ -145,17 +145,19 @@ sub follow_frame {
 }
 
 sub follow_link {
-    my($self, $link_text) = @_;
-    # Loads the page for the L<link_name|"link_name">, which may be a regular
-    # expression.
-    $link_text = _fixup_pattern($link_text)
-        unless $_CFG->{deprecated_text_patterns};
-    my($m) = ref($link_text) ? 'get_by_regexp' : 'get';
-    return $self->visit_uri(
-	_assert_html($self)->get('Links')
-	->$m($link_text)
-	->{href},
-    );
+    my($self, @links) = @_;
+    my($res);
+    foreach my $link (@links) {
+	$link = _fixup_pattern($link)
+	    unless $_CFG->{deprecated_text_patterns};
+	my($m) = ref($link) ? 'get_by_regexp' : 'get';
+	$res = $self->visit_uri(
+	    _assert_html($self)->get('Links')
+	    ->$m($link)
+	    ->{href},
+	);
+    }
+    return $res;
 }
 
 sub follow_link_in_table {
