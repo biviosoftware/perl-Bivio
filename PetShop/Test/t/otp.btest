@@ -34,8 +34,8 @@ follow_link('logout');
 #
 
 home_page();
-follow_link('Sign-in');
-follow_link('New User');
+follow_link('sign.*in');
+follow_link('new');
 my($name) = 'otp_' . random_string();
 my($email) = generate_local_email($name);
 submit_form({
@@ -44,8 +44,8 @@ submit_form({
     first => ucfirst($name),
     last => 'OTPTest',
 });
-follow_link('MyAccount');
-follow_link('Convert your account to OTP');
+follow_link('myaccount');
+follow_link('convert');
 my($new_key) = test_use('Bivio::Util::OTP')
     ->six_word_key(get_content() =~ $challenge, 'password');
 test_deviance();
@@ -90,8 +90,8 @@ login_as(
 	get_content() =~ $challenge,
 	'password'),
 );
-follow_link(qr{account}i);
-follow_link(qr{convert}i);
+follow_link('myaccount');
+follow_link('convert');
 verify_text($dual_challenge);
 my($old_seq, $old_seed, $new_seq, $new_seed) =
     get_content() =~ /$challenge.*$challenge/s;
@@ -135,7 +135,7 @@ my($uid) = $1;
 do_test_backdoor(OTP => "-user $uid reset_user 11 yourseed password");
 do_logout();
 home_page();
-follow_link(qr{sign.*in}i);
+follow_link('sign.*in');
 test_deviance('otp_md5 11 yourseed');
 submit_form({
     email => $email,
