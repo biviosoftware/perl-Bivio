@@ -351,6 +351,8 @@ sub home_page_uri {
 
 sub http_facade {
     my($self, $facade) = @_;
+    return undef
+	unless ref($self);
     $self->put(http_facade => $facade)
 	if @_ > 1;
     return $self->unsafe_get('http_facade');
