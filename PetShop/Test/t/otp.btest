@@ -25,7 +25,7 @@ follow_link('Sign-in');
 follow_link('New User');
 my($name) = 'otp_' . random_string();
 my($email) = generate_local_email($name);
-submit_form(submit => {
+submit_form({
     email => $email,
     password => 'password',
     first => ucfirst($name),
@@ -124,11 +124,11 @@ do_logout();
 home_page();
 follow_link(qr{sign.*in}i);
 test_deviance('otp_md5 11 yourseed');
-submit_form(submit => {
+submit_form({
     email => $email,
 });
 test_conformance();
-submit_form(submit => {
+submit_form({
     email => $email,
     password => test_use('Bivio::Util::OTP')->six_word_key(
         get_content() =~ $challenge, 'password'),
