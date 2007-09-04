@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Language::HTTP;
 use strict;
@@ -341,23 +341,26 @@ sub home_page {
     my($self) = shift;
     return $self->visit_uri($self->home_page_uri(@_));
 }
-
 sub home_page_uri {
-    # Returns configured home page uri.  Used by other tests.  If I<facade_uri> is
-    # supplied, will modify configured URI to download from facade.  Doesn't validate
-    # I<facade_uri> is a valid facade.
-    return _facade($_CFG->{home_page_uri}, @_)
+    my($self, $facade) = @_;
+    return _facade(
+	$_CFG->{home_page_uri},
+	$self,
+	@_ > 1 ? $facade : $self->http_facade);
+}
+
+sub http_facade {
+    my($self, $facade) = @_;
+    $self->put(http_facade => $facade)
+	if @_ > 1;
+    return $self->unsafe_get('http_facade');
 }
 
 sub login_as {
     my($self, $email, $password) = @_;
     $self->home_page;
-    if (text_exists(qr{login}i)) {
-	$self->follow_link(qr{login}i);
-    }
-    else {
-	$self->visit_uri('/pub/login');
-    }
+    $self->visit_uri('/pub/login')
+	unless $self->unsafe_op(follow_link => qr{login}i);
     $self->submit_form(Login => {
 	qr{Email}i => $email,
 	qr{password}i =>
