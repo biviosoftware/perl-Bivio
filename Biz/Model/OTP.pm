@@ -46,14 +46,6 @@ sub validate_password {
 	? 1 : 0;
 }
 
-sub init_user {
-    my($self, $realm, $values) = @_;
-    $values->{user_id} = $realm->get('realm_id');
-    $realm->update({password => $realm->get_field_type('password')
-       ->OTP_VALUE});
-    return $self->create_or_update($values);
-}
-
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -68,6 +60,14 @@ sub internal_initialize {
 	},
 	auth_id => 'user_id',
     });
+}
+
+sub reset_auth_user {
+    my($self, $values) = @_;
+    my($u) = $self->req('auth_user');
+    $values->{user_id} = $u->get('realm_id');
+    $u->update({password => $u->get_field_type('password')->OTP_VALUE});
+    return $self->unauth_create_or_update($values);
 }
 
 sub update {
