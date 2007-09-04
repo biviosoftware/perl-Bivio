@@ -328,18 +328,7 @@ sub _init_demo_users {
             });
 	}
 	elsif ($u eq $self->OTP) {
-	    my($otp) = $self->model('OTP');
-	    my($v) = {seed => 'yourseed'};
-            $otp->init_user(
-		$req->get('auth_user'), {
-		    otp_md5 => $self->new_other('OTP')->hex_key(
-			$otp->get_field_type('sequence')->get_max,
-			$v->{seed},
-			$self->PASSWORD,
-		    ),
-		    %$v,
-		},
-	    );
+	    $self->new_other('OTP')->reset_user;
 	}
     }
     return;
