@@ -84,12 +84,8 @@ sub default_password {
 
 sub do_logout {
     my($self) = @_;
-    if (text_exists(qr{logout}i)) {
-	$self->follow_link(qr{logout}i);
-    }
-    else {
-	$self->visit_uri('/pub/logout');
-    }
+    $self->visit_uri('/pub/logout')
+	unless $self->unsafe_op(follow_link => qr{logout}i);
     return;
 }
 
