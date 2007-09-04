@@ -9,13 +9,12 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     my($self) = @_;
-    my($user) = $self->get_request->get('auth_user');
-    $self->new_other('OTP')->init_user($user, {
+    $self->new_other('OTP')->reset_auth_user({
         otp_md5 => $self->get('OTP.otp_md5'),
         seed => $self->get('OTP.seed'),
     });
-    $self->get_instance('UserLoginForm')->execute($self->get_request, {
-	realm_owner => $user,
+    $self->get_instance('UserLoginForm')->execute($self->req, {
+	realm_owner => $self->req('auth_user'),
     });
     return;
 }
