@@ -60,7 +60,7 @@ our($_IN_CATCH);
 our($_IN_HANDLE_DIE);
 my($_STACK_TRACE) = 0;
 my($_STACK_TRACE_ERROR) = 0;
-my($_STACK_TRACE_SEPARATOR) = "  ==== END OF STACK ====\n";
+my($_STACK_TRACE_SEPARATOR) = join('', '      -'x10, "\n");
 Bivio::IO::Config->register({
     'stack_trace' => $_STACK_TRACE,
     'stack_trace_error' => $_STACK_TRACE_ERROR,
