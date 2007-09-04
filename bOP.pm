@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.33  2007/09/03 07:56:45  aviggio
+  * Bivio::Biz::Model::OTP->should_reinit added
+  * Bivio::Biz::Model::UserLoginForm supports OTP sequence reinitialization
+  * Bivio::Biz::Model::UserOTPForm allow hex password as input
+  * Bivio::Biz::Model::UserPasswordQueryForm OTP users cannot reset their
+    password
+  * Bivio::Delegate::SimpleTypeError PASSWORD_QUERY_OTP added
+  * Bivio::UI::FacadeBase support OTP sequence reinitialization
+  * Bivio::Util::OTP add facade elements for OTP sequence reinitialization
+
   Revision 5.32  2007/09/03 05:35:36  nagler
   * Various OTP fixes
 
