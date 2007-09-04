@@ -219,7 +219,7 @@ Submits the search form with I<words>.
 sub search_for {
     my($self, $words) = @_;
     $self->submit_form(search => {
-	'_anon' => $words,
+	anon => $words,
     });
     return;
 }

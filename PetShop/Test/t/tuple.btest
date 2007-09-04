@@ -3,60 +3,60 @@
 test_setup('PetShop');
 my($forum) = create_forum();
 visit_uri("/$forum/db-types");
-follow_link(qr{add.*type}i);
+follow_link('add.*type');
 submit_form(Save => {
-    qr{name}i => 'i1',
-    qr{class}i => 'Integer',
-    qr{default}i => 1,
-    qr{pick.*_0}i => 1,
-    qr{pick.*_1}i => 2,
+    name => 'i1',
+    class => 'Integer',
+    default => 1,
+    'pick.*_0' => 1,
+    'pick.*_1' => 2,
 });
 follow_link_in_table('Type Name', 'Type Name', 'i1', 'Actions', 'Modify');
 submit_form(Save => {
-    qr{name}i => 'i1a',
+    name => 'i1a',
 });
 follow_link_in_table('Type Name', 'Type Name', 'i1a', 'Actions', 'Modify');
 test_deviance(qr{default value.*pick list}is);
-submit_form(Save => {
-    qr{default}i => 3,
+submit_form({
+    default => 3,
 });
 test_deviance(qr{duplicate.*pick list}is);
-submit_form(Save => {
-    qr{default}i => 1,
-    qr{pick.*_1$}i => 1,
+submit_form({
+    default => 1,
+    'pick.*_1$' => 1,
 });
 test_conformance();
-follow_link(qr{types}i);
-follow_link(qr{add.*type}i);
-submit_form(Save => {
-    qr{name}i => 'i1',
+follow_link('types');
+follow_link('add.*type');
+submit_form({
+    name => 'i1',
 });
-follow_link(qr{schemas}i);
-follow_link(qr{add.*schema}i);
-submit_form(Save => {
-    qr{name}i => 'Database1',
-    qr{prefix}i => 'd1',
-    qr{field.*_0$}i => 'f1',
-    qr{type.*_0$}i => 'i1',
-    qr{required.*_0$}i => 0,
-    qr{field.*_1$}i => 'f2',
-    qr{type.*_1$}i => 'Date',
-    qr{required.*_1$}i => 1,
+follow_link('schemas');
+follow_link('add.*schema');
+submit_form({
+    name => 'Database1',
+    prefix => 'd1',
+    'field.*_0$' => 'f1',
+    'type.*_0$' => 'i1',
+    'required.*_0$' => 0,
+    'field.*_1$' => 'f2',
+    'type.*_1$' => 'Date',
+    'required.*_1$' => 1,
 });
-follow_link(qr{tables}i);
-follow_link(qr{add.*table}i);
-submit_form(Save => {
-    qr{schema}i => 'Database1',
+follow_link('tables');
+follow_link('add.*table');
+submit_form({
+    schema => 'Database1',
 });
 follow_link_in_table('Table Name', 'Database1');
-follow_link(qr{add.*record}i);
+follow_link('add.*record');
 my($range) = [1 .. 5];
 foreach my $i (@$range) {
     go_back() if $i > 1;
-    submit_form(Save => {
-	'f1:' => $i,
-	'f2:' => "12/$i/2001",
-	'Comment:' => "update #$i",
+    submit_form({
+	f1 => $i,
+	f2 => "12/$i/2001",
+	comment => "update #$i",
     });
     sleep(1);
 }
