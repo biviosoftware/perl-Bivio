@@ -26,10 +26,10 @@ follow_link('New User');
 my($name) = 'otp_' . random_string();
 my($email) = generate_local_email($name);
 submit_form(submit => {
-    'Email:' => $email,
-    'Password:' => 'password',
-    'First Name:' => ucfirst($name),
-    'Last Name:' => 'OTPTest',
+    email => $email,
+    password => 'password',
+    first => ucfirst($name),
+    last => 'OTPTest',
 });
 follow_link('MyAccount');
 follow_link('Convert your account to OTP');
@@ -38,29 +38,29 @@ my($new_key) = test_use('Bivio::Util::OTP')
 test_deviance();
 verify_text(my $dual_challenge = qr/Last OTP challenge.*New OTP challenge/is);
 test_deviance('The password you entered does not match the value stored');
-submit_form(OK => {
-    'Current Password/Key:' => 'badpassword',
+submit_form({
+    current => 'badpassword',
 });
 test_deviance('invalid OTP');
-submit_form(OK => {
-    'Current Password/Key:' => 'password',
+submit_form({
+    current => 'password',
 });
-test_deviance('You must supply a value for Confirm Key');
-submit_form(OK => {
-    'Current Password/Key:' => 'password',
-    'New Key:' => $new_key,
+test_deviance('You must supply a value for Confirm');
+submit_form({
+    current => 'password',
+    new => $new_key,
 });
-test_deviance('password and confirm password fields do not match');
-submit_form(OK => {
-    'Current Password/Key:' => 'password',
-    'New Key:' => $new_key,
-    'Confirm Key:' => 'foofoo',
+test_deviance('do not match');
+submit_form({
+    current => 'password',
+    new => $new_key,
+    confirm => 'foofoo',
 });
 test_conformance();
-submit_form(OK => {
-    'Current Password/Key:' => 'password',
-    'New Key:' => $new_key,
-    'Confirm Key:' => $new_key,
+submit_form({
+    current => 'password',
+    new => $new_key,
+    confirm => $new_key,
 });
 
 #
@@ -77,63 +77,65 @@ login_as(
 	get_content() =~ $challenge,
 	'password'),
 );
-follow_link('MyAccount');
-follow_link('Convert your account to OTP');
+follow_link(qr{account}i);
+follow_link(qr{convert}i);
 verify_text($dual_challenge);
 my($old_seq, $old_seed, $new_seq, $new_seed) =
     get_content() =~ /$challenge.*$challenge/s;
 
-my($next_key) = test_use('Bivio::Util::OTP')
+my($next_key) = test_use('ShellUtil.OTP')
     ->six_word_key($old_seq, $old_seed, 'password');
-$new_key = test_use('Bivio::Util::OTP')
+$new_key = test_use('ShellUtil.OTP')
     ->six_word_key($new_seq, $new_seed, 'password');
 test_deviance('did not match');
-submit_form(OK => {
-    'Current Password/Key:' => 'badpassword',
+submit_form({
+    current => 'badpassword',
 });
 test_deviance('invalid OTP');
-submit_form(OK => {
-    'Current Password/Key:' => $next_key,
+submit_form({
+    current => $next_key,
 });
 test_deviance('You must supply a value for Confirm Key');
-submit_form(OK => {
-    'Current Password/Key:' => $next_key,
-    'New Key:' => $new_key,
+submit_form({
+    current => $next_key,
+    new => $new_key,
 });
 test_deviance('password and confirm password fields do not match');
-submit_form(OK => {
-    'Current Password/Key:' => $next_key,
-    'New Key:' => $new_key,
-    'Confirm Key:' => 'foofoo',
+submit_form({
+    current => $next_key,
+    new => $new_key,
+    confirm => 'foofoo',
 });
 test_conformance();
-submit_form(OK => {
-    'Current Password/Key:' => $next_key,
-    'New Key:' => $new_key,
-    'Confirm Key:' => $new_key,
+submit_form({
+    current => $next_key,
+    new => $new_key,
+    confirm => $new_key,
 });
 
 #
 # Test re-initialize sequence
 #
 
-Bivio::IO::Alert->debug(get_uri());
 get_uri() =~ m{.*/(.*)/account};
 my($uid) = $1;
-do_test_backdoor(OTP => "-realm $uid reset_otp 11 yourseed password");
+do_test_backdoor(OTP => "-user $uid reset_user 11 yourseed password");
 do_logout();
 home_page();
-follow_link('Sign-in');
+follow_link(qr{sign.*in}i);
 test_deviance('otp_md5 11 yourseed');
 submit_form(submit => {
-    'Email:' => $email,
+    email => $email,
 });
 test_conformance();
 submit_form(submit => {
-    'Email:' => $email,
-    'Password:' => test_use('Bivio::Util::OTP')->six_word_key(
+    email => $email,
+    password => test_use('Bivio::Util::OTP')->six_word_key(
         get_content() =~ $challenge, 'password'),
 });
-verify_uri('/setup-otp');
+verify_form({
+    current => '',
+    new => '',
+    confirm => '',
+});
 verify_text('You MUST re-initialize your one-time password now.');
-
