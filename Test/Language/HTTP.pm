@@ -33,6 +33,7 @@ Bivio::IO::Config->register(my $_CFG = {
     mail_dir => $ENV{HOME} ? "$ENV{HOME}/btest-mail/" : '',
     mail_tries => 60,
     email_tag => '+btest_',
+    deprecated_text_patterns => 1,
 });
 my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
 
@@ -147,6 +148,8 @@ sub follow_link {
     my($self, $link_text) = @_;
     # Loads the page for the L<link_name|"link_name">, which may be a regular
     # expression.
+    $link_text = _fixup_pattern($link_text)
+        unless $_CFG->{deprecated_text_patterns};
     my($m) = ref($link_text) ? 'get_by_regexp' : 'get';
     return $self->visit_uri(
 	_assert_html($self)->get('Links')
@@ -853,11 +856,19 @@ sub _find_row {
 
 sub _fixup_form_fields {
     my($form_fields) = @_;
-    return {map((
-	(!ref($_) && $_ =~ /^[a-z]+$|\.[\*\+]|^\^|\$$/ ? qr{$_}i : $_)
-	    => $form_fields->{$_}),
-	    keys(%$form_fields),
+    return {map(
+	(_fixup_pattern($_) => $form_fields->{$_}),
+	keys(%$form_fields),
     )};
+}
+
+sub _fixup_pattern {
+    my($v) = @_;
+    return $v
+	if ref($v) || $v !~ /^[a-z0-9_]+$|\.[\*\+]|^\^|\$$/;
+    $v =~ s/_/ /g
+	unless $v =~ /\W/;
+    return qr{$v}i;
 }
 
 sub _format_form {
