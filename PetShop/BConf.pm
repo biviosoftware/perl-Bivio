@@ -1,54 +1,10 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::BConf;
 use strict;
-$Bivio::PetShop::BConf::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::BConf::VERSION;
+use base 'Bivio::BConf';
 
-=head1 NAME
-
-Bivio::PetShop::BConf - default petshop.bivio.biz configuration
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::BConf;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::BConf>
-
-=cut
-
-use Bivio::BConf;
-@Bivio::PetShop::BConf::ISA = ('Bivio::BConf');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::BConf> default petshop.bivio.biz configuration.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="dev_overrides"></a>
-
-=head2 dev_overrides(string pwd, string host, string user, int http_port) : hash_ref
-
-Development environment configuration.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub dev_overrides {
     my($proto, $pwd, $host) = @_;
@@ -58,14 +14,6 @@ sub dev_overrides {
 	},
     };
 }
-
-=for html <a name="merge_overrides"></a>
-
-=head2 merge_overrides(string host) : hash_ref
-
-Base configuration.
-
-=cut
 
 sub merge_overrides {
     my($proto) = @_;
@@ -112,6 +60,9 @@ sub merge_overrides {
 	'Bivio::Test::HTMLParser::Forms' => {
 	    error_color => '#993300',
 	},
+	'Bivio::Test::Language::HTTP' => {
+	    deprecated_text_patterns => 0,
+	},
 	'Bivio::SQL::PropertySupport' => {
 	    unused_classes => [],
 	},
@@ -122,17 +73,5 @@ sub merge_overrides {
 	},
     };
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
