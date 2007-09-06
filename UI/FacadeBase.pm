@@ -761,7 +761,7 @@ sub _cfg_wiki {
 		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
 	    ]],
 	    [prose => [
-		wiki_view_topic => q{String(['Action.WikiView', 'name']);},
+		wiki_view_topic => q{String(['Action.WikiView', 'title']);},
 		wiki_view_byline => q{edited DateTime(['Action.WikiView', 'modified_date_time']); by MailTo(['Action.WikiView', 'author']);},
 		wiki_view_tools => q{TaskMenu([
                     {
