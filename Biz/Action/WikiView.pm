@@ -26,8 +26,10 @@ sub execute {
 	    $req, undef, $realm_id);
 	return 1;
     }
+    (my $title = $name) =~ s/_/ /g;
     my($self) = $proto->new->put_on_request($req, 1)->put(
 	name => $name,
+	title => $title,
 	exists => 0,
     );
     my($html, $dt, $uid) = $proto->use('XHTMLWidget.WikiStyle')->render_html(
