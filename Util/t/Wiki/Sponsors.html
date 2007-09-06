@@ -1,0 +1,696 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head>
+<title>Freiker - The Frequent Biker Program</title>
+<style type="text/css">
+<!--
+/* Copyright (c) 2007 bivio Software,Inc.  All Rights Reserved. */
+blockquote,body,dd,div,dl,dt,fieldset,form,h1,h2,h3,h4,h5,h6,input,li,ol,p,pre,td,textarea,th,ul {margin:0;
+padding:0;
+text-align:left;
+}
+address,caption,cite,code,dfn,em,h1,h2,h3,h4,h5,h6,strong,th,var {text-decoration:none;font-weight:normal;font-style:normal;white-space:normal;text-transform:none;font-size:100%;
+}
+ol,ul {margin-left:2.5em;
+}
+ol {list-style-type:decimal;
+}
+ul {list-style-type:disc;
+}
+ul.none,ol.none {list-style-type:none;
+}
+abbr,acronym,fieldset,iframe,img,table {border-style:none;
+border:0;
+}
+a:link,a:visited,a:active {color: #33CC00; text-decoration:none;font-weight:normal;font-style:normal;white-space:normal;text-transform:none;font-size:100%;
+}
+a:hover {color: #99FF33; text-decoration: underline;
+}
+body {font-family: Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif; color: #000000; font-size: small;
+background-color: #FFFFFF;
+margin:.5em;
+min-width:50em;
+}
+caption,th {text-align:center;
+}
+code {font-family: "Courier New",Courier,monospace,fixed; font-size: 120%;
+}
+em {font-style: italic;
+}
+h1,h2,h3,h4,h5,h6 {margin:1ex 0 .5ex 0;
+}
+h1 {font-size: 140%; font-weight: bold;
+}
+h2 {font-size: 130%; font-weight: bold;
+}
+h3 {color: #33CC00; font-size: 120%; font-weight: bold;
+}
+h4 {font-size: 110%; font-weight: bold;
+}
+strong {font-weight: bold;
+}
+table {border-collapse:collapse;
+border-spacing:0;
+margin:left;
+}
+th {padding:.5em;
+}
+th,th>a:link,th>a:visited,th>a:active,th>a:hover {font-weight: bold;
+}
+.acknowledgement {margin:auto;
+text-align:center;
+margin-bottom:2ex;
+}
+.acknowledgement .text {border:2px solid;
+border-color: #99FF33;
+padding:.5em;
+text-align:center;
+}
+.trailer {margin:1ex 0;
+}
+input.checkbox {padding:0;
+margin:0;
+}
+form .check {padding-left:.5em;
+}
+.acknowledgement,.err_title,.field_err,form .desc {width:30em;
+}
+form .desc,.byline {margin:.1em 0 0 0;
+font-size:85%;
+color: #666666;
+}
+form table.simple {text-align:center;
+}
+form table.simple td.field  {text-align:left;
+}
+.field_err,.label_err,.err_title,.err {color: #CC0000;
+vertical-align:top;
+}
+form .err,form .err_title {font-weight: bold;
+}
+form .err_title {margin-bottom:1ex;
+}
+form .field_err {color: #990000; font-size: 80%; text-decoration:none;font-weight:normal;font-style:normal;white-space:normal;text-transform:none;font-size:100%;
+}
+form .label_ok,form .label_err,form .field {padding-bottom:1em;
+}
+form .footer {font-style: italic; font-size: smaller;
+margin-bottom:1.0em;
+}
+form .label_ok,form .label_err,form .label {text-align:right;
+padding-right:.2em;
+}
+form .label_ok {font-weight: bold; white-space: nowrap;
+}
+.label_err {vertical-align:middle;
+font-style: italic; white-space: nowrap;
+}
+.list td,.paged_list td {padding:.5em;
+}
+.prose,.form_prose,.list_prose,.paged_list .empty {text-align:left;
+width:40em;
+padding-bottom:.5ex;
+}
+table.header,table.footer,table.main {width:100%;
+margin:auto;
+}
+table.main {margin-top:1em;
+margin-bottom:1em;
+}
+td.main_left,td.main_middle,td.main_right {vertical-align:top;
+}
+table.header {padding-bottom:1ex;
+}
+table.footer {
+padding-bottom:7ex;
+text-align:center;
+}
+td.header_left a.su {background-color: #00FF00;
+color: #FFFFFF; font-size: bigger;
+overflow:hidden;
+display:block;
+text-align:center;
+white-space:normal;
+vertical-align:middle;
+}
+td.header_left {background:url(/i/logo.gif) left no-repeat;
+height:80px;
+width:80px;
+}
+td.header_left .logo_su .logo {text-align:left;
+display:block;
+}
+td.header_right {width:30%;
+text-align:right;
+}
+td.header_middle {width:40%;
+text-align:center;
+}
+td.header_right {vertical-align:top;
+text-align:right;
+}
+td.footer_left {width:30%;
+}
+td.footer_right {width:30%;
+text-align:right;
+}
+td.footer_middle {width:40%;
+vertical-align:top;
+text-align:center;
+}
+td.header_middle {vertical-align:top;
+}
+td.header_middle div.nav div.task_menu {color: #444444; font-size: 120%;
+text-align:center;
+}
+td.header_right {vertical-align:top;
+text-align:right;
+}
+div.main_bottom,div.main_top,div.main_body {float:left;
+clear:both;
+width:100%;
+}
+div.main_top {text-align:right;
+}
+div.main_top .task_menu,div.main_top .pager {text-align:right;
+}
+div.main_bottom .pager,div.main_bottom .task_menu {text-align:left;
+}
+.footer .task_menu,div.tools .task_menu a,div.tools .task_menu,div.pager {white-space: nowrap; display: inline; text-transform: lowercase;
+}
+div.main_body {margin-top:1ex;
+margin-bottom:1ex;
+}
+div.main_body {width:100%;
+text-align:left;
+margin-top:1ex;
+margin-bottom:1ex;
+}
+div.main_top {margin-top:.5ex;
+}
+div.main_top div.topic,div.main_top div.byline,div.main_top div.byline2,div.main_top div.selector,div.main_top div.title {margin-bottom:.5ex;
+text-align:left;
+}
+div.main_top .topic {color: #666666; font-size: 150%; font-weight: bold;
+}
+div.main_top div.byline,div.main_top div.byline2  {font-weight: bold;
+}
+div.main_top div.title {color: #666666; font-size: 140%; font-weight: bold;
+}
+div.main_top div.tools {text-align:right;
+float:right;
+}
+div.main_top div.selector {float:left;
+text-align:left;
+}
+div.alphabetical_chooser {display:inline;
+}
+.task_menu .selected,.alphabetical_chooser .selected {font-weight: bold;
+}
+.footer {border-top:1px solid;
+border-top-color: #000000;
+margin:.5ex 0 .5ex 0;
+padding-top:.5ex;
+}
+td.footer_right {text-align:right;
+vertical-align:top;
+}
+td.footer_left {text-align:left;
+vertical-align:top;
+}
+.task_menu a.want_sep,.pager .next,.pager .list,.alphabetical_chooser a.all,.tools span.want_sep,.tools div.sep {background:url(/i/tools_sep.gif) left center no-repeat;
+padding-left:13px;
+margin-left:4px;
+}
+.alphabetical_chooser a.all {text-transform:lowercase;
+}
+.alphabetical_chooser a.want_sep {margin-left:.2em;
+}
+.tools div.sep {display:inline;
+}
+.prose p,p.prose {text-indent:2em;
+margin:1ex 0 1ex 0;
+}
+form .sep {text-align:left;
+font-weight:normal;
+padding:.5ex 0 1.5ex 0;
+border-top:1px solid;
+border-color: #666666;
+}
+.warn {color: #CC0000; font-style: italic;
+}
+.standard_submit {text-align:center;
+}
+form .submit {margin:.5em;
+text-align:center;
+}
+.empty_list {border:2px solid;
+border-color: #CC0000;
+padding:.5em;
+width:30em;
+text-align:center;
+}
+pre .text {font-family: "Courier New",Courier,monospace,fixed; font-size: 120%;
+}
+.pager .next,.pager .prev,.pager .list {text-transform: lowercase;
+}
+.pager .off {text-transform: lowercase;
+}
+.tree_list {margin:0;
+}
+.tree_list .node {white-space:nowrap;
+}
+.tree_list .node .name {padding-left:4px;
+white-space:nowrap;
+}
+.tree_list .node .sp {padding-left:20px;
+}
+.tree_list td {padding:.3ex .8em;
+}
+.even {background-color: #EEEEEE;
+}
+.odd {
+}
+p {text-align:left;
+}
+.paged_detail table {padding-top:.5em;
+}
+.paged_detail td {padding-bottom:1em;
+}
+.byline,.byline2 {white-space:nowrap;
+}
+.top_left {background:url(/i/top_left.gif) top left no-repeat;
+float:left;
+}
+.top_right {background:url(/i/top_right.gif) top right no-repeat;
+float:right;
+}
+.bottom_left {background:url(/i/bottom_left.gif) bottom left no-repeat;
+float:left;
+}
+.bottom_right {background:url(/i/bottom_right.gif) bottom right no-repeat;
+float:right;
+}
+.top_left,.top_right,.bottom_right,.bottom_left {width:2px;
+height:2px;
+}
+p.prose {text-indent:2em;
+margin:1ex 0 1ex 0;
+}
+td.item {text-align:left;
+}
+div.blog div.list div.menu {text-align:right;
+text-transform:lowercase;
+}
+div.blog div.list div.text {text-align:left;
+}
+div.blog .list {margin:1ex;
+}
+div.blog div.list div.heading {font-size: 100%; font-weight: bold;
+text-align:left;
+margin:1ex 0 0 0;
+}
+div.blog div.list p.prose {margin:.5ex 0 .5ex 0;
+}
+table.simple td.blog_textarea {margin:0;
+padding:0;
+}
+div.blog .sidebar ul {margin:0;
+padding:0;
+list-style-type:none;
+}
+.mail_msg .header {width:100%;
+padding-bottom:1ex;
+}
+.mail_msg .line {clear:both;
+padding-bottom:.3ex;
+}
+.mail_msg .label {text-align:right;
+float:left;
+width:4em;
+padding-right:.5em;
+}
+.mail_msg .field {font-weight: bold;
+text-align:left;
+}
+.mail_msg {padding-bottom:1ex;
+}
+.mail_msg .part {padding-bottom:1ex;
+}
+td.header_right div.user_state {vertical-align:top;
+text-align:right;
+}
+td.header_right div.user_state a {font-size: 150%; font-weight: bold; text-transform: uppercase;
+}
+.help_link {background-color: #6B9FEA;
+padding-left:.5em;
+padding-right:.5em;
+text-align:center;
+}
+.wiki .prose {text-indent:2em;
+margin:1ex 0 1ex 0;
+}
+#help_wiki_iframe {position:absolute;
+visibility:hidden;
+right:1ex;
+width:40em;
+z-index:1;
+}
+div.help_wiki {background-color: #6B9FEA;
+}
+.help_wiki table {font-size:100%;
+}
+.help_wiki .help_wiki_body {text-align:left;
+font-size:95%;
+padding-right:.5em;
+padding-left:.5em;
+}
+.help_wiki .header {margin:0;
+padding-top:0;
+padding-bottom:.5ex;
+text-align:center;
+font-weight:bold;
+font-size:120%;
+}
+.help_wiki .footer {padding-top:.5ex;
+padding-bottom:.5ex;
+text-align:center;
+}
+div.wiki {padding-top:.5ex;
+padding-bottom:.5ex;
+}
+.help_close {text-align:right;
+padding-right:.5ex;
+font-size:90%;
+}
+td.header_left,td.header_right,td.main_left {width:11em;
+}
+td.header_left {background-position:center center;
+}
+td.header_middle {width:auto;
+}
+td.main_left div.login {text-align:center;
+background-color: #33CC00;
+padding-bottom:2px;
+margin:auto;
+margin-bottom:1ex;
+}
+td.main_left div.login .label,td.main_left div.login .standard_submit {padding-top:.5ex;
+color: #FFFFFF;
+text-align:center;
+}
+td.main_left div.login a.label {display:block;
+}
+td.main_left div.login input {margin:auto;
+display:block;
+}
+td.main_left div.task_menu a {background-image:none;
+display:list-item;
+padding:0;
+margin:0;
+list-style:none outside url(/i/left_menu_sep.gif);
+margin-left:20px;
+font-size: 150%;
+}
+td.main_middle {padding-left:1em;
+padding-right:1em;
+}
+div.main_body {float:none;
+}
+td.footer_middle div.task_menu {text-align:center;
+}
+a img,a:hover img {border:1px solid;
+border-color: #FFFFFF;
+}
+.header_middle .task_menu {text-transform:lowercase;
+border-bottom:1px solid;
+border-bottom-color: #666666;
+font-size: 150%;
+}
+.header_middle .nav a {white-space:nowrap;
+}
+a:hover img {border-color: #99FF33;
+}
+div.topic {color: #666666; font-size: 150%; font-weight: bold;
+margin-bottom:1ex;
+}
+.acknowledgement {margin-left:0;
+}
+.notice {padding:.2em;
+width:14em;
+text-align:right;
+text-transform:none;
+color: #33CC00;
+}
+a.movie {display:block;
+float:left;
+margin:0 1em 1em 0;
+}
+img.graph {display:block;
+float:right;
+margin:1em 0 1em 1em;
+}
+div.wiki {width:40em;
+}
+.prose,.form_prose,.list_prose,div.press,table.prizes {width:40em;
+text-align:left;
+padding:1ex 0 1ex 0;
+}
+.prose,div.press {padding:0;
+}
+.press dt {margin-top:1.5ex;
+}
+.press dd {margin:.3ex 0 0 0;
+}
+.press h3 {margin-top:2ex;
+margin-bottom:2ex;
+}
+.press h4 {margin-top:1ex;
+margin-bottom:0;
+}
+.press div {margin-top:1.5ex;
+}
+.press p {margin:1.5ex 0 1.5ex 0;
+text-align:left;
+}
+.index_freiker,.index_wheel {height:200px;
+}
+.index_freiker {float:left;
+clear:left;
+padding-right:20px;
+background:url(/i/index_freiker.jpg) no-repeat;
+width:95px;
+}
+.index_wheel {clear:right;
+margin-left:20px;
+float:right;
+background:url(/i/index_wheel.jpg) no-repeat;
+width:180px;
+}
+.index_winners {display:block;
+margin:auto;
+background:url(/i/index_winners.jpg)no-repeat;
+width:250px;
+height:212px;
+}
+div.crest_view {margin:1ex 0 1ex 0;
+}
+#gears div {text-align:center;
+}
+#gears .simple img {padding:10px;
+vertical-align:middle;
+}
+#parents .list td {padding-top:.05em;
+padding-bottom:.05em;
+}
+#parents .list {margin-top:-1ex;
+margin-bottom:1ex;
+}
+.learn_more {font-size:80%;
+white-space:nowrap;
+}
+.prize_rides {font-weight:bold;
+}
+.prize_left {padding-right:2em;
+clear:left;
+float:left;
+}
+.prize_right {padding-left:2em;
+clear:right;
+float:right;
+}
+.prize_winners {padding-top:20px;
+}
+.list .label {padding-top:.2em;
+padding-right:.5em;
+text-align:right;
+width:50%;
+}
+.list .value {padding-top:.2em;
+width:50%;
+padding-left:.5em;
+text-align:left;
+}
+form table.simple {text-align:left;
+margin:0;
+}
+form .list th,form .list td {padding:0 .5em 0 .5em;
+}
+.note {font-weight:bold;
+padding:.2em;
+margin-bottom:1ex;
+border:1px solid red;
+text-align:center;
+}
+.line {width:40em;
+border:0;
+border-top:1px solid;
+border-top-color: #666666;
+height:2px;
+text-align:right;
+}
+.release .label {padding-top:2ex;
+padding-bottom:2ex;
+text-align:left;
+}
+table.radio_grid {margin-left:0;
+}
+div.donate {margin:2ex 0 2ex 0;
+text-align:center;
+}
+div.donate div.msg {text-align:center;
+font-size:120%;
+font-weight:bold;
+font-style:italic;
+color: #33CC00;
+text-decoration:underline;
+}
+.money {font-size:120%;
+font-weight:bold;
+color: #33CC00;
+margin-right:.5em;
+}
+.donate form div.field_err {display:inline;
+margin-right:.5em;
+font-weight:bold;
+font-size:100%;
+}
+.thanks {text-align:center;
+padding:.5ex;
+font-size:120%;
+font-weight:bold;
+color: #33CC00;
+}
+.address {font-size:120%;
+font-weight:bold;
+}
+table.prizes tr.even {background-color: #FFFFFF;
+}
+table.prizes tr.even img {float:right;
+margin-left:1em;
+}
+table.prizes tr.odd img {float:left;
+margin-right:1em;
+}
+table.prizes a:hover {color: #33CC00;
+}
+table.prizes a:hover img {border-color: #33CC00;
+}
+table.prizes span.desc p.prose {display:inline;
+}
+table.prizes span.name,table.prizes span.rides {font-weight: bold;
+}
+
+-->
+</style>
+<script type="text/javascript">
+<!--
+function first_focus_onload() {
+if (document.forms.length == 0)
+return;
+var fields = document.forms[0].elements;
+for (i=0; i < fields.length; i++) {
+if (fields[i].type == 'text' || fields[i].type == 'textarea') {
+fields[i].focus();
+break;
+}
+}
+}
+
+window.onload=function(){
+first_focus_onload();
+}
+// --></script>
+<script type="text/javascript">
+<!--
+function tzf(){
+if(navigator.appName.indexOf('Netscape')>=0
+&&parseFloat(navigator.appVersion)<4.0)
+return;
+var d=new Date();
+var o=d.getTimezoneOffset();
+document.write('<input name="tz" type="hidden" value="' + o + '" />');
+}
+
+// -->
+</script></head><body>
+<a name="top"></a><table class="header"><tr>
+<td class="header_left"><div class="logo_su"><a target="_top" class="logo" href="/">&nbsp;</a></div></td>
+<td class="header_middle"><div class="donate"><a target="_top" href="/hm/donate?fc=aMg__!fL2htL3Nwb25zb3Jz"><img class="donate" src="/i/donate.gif" width="192" height="41" /><div class="msg">It's tax-deductible!</div></a></div></td>
+<td class="header_right"><div class="user_state"><a href="/pub/register">Register</a></div></td>
+</tr></table><table class="main"><tr>
+<td class="main_left"><div class="login"><div class="top_left"></div><div class="top_right"></div><div class="rounded_box_body"><form method="post" target="_top" name="fn4" action="/pub/login">
+<script type="text/javascript">
+<!--
+tzf();
+// -->
+</script><input type="hidden" name="v" value="1" />
+<div class="label">Your Email</div><input type="text" size="15" maxlength="100" name="x1" value="" /><div class="label">Password</div><input type="password" size="15" maxlength="30" name="x2" value="" /><div class="standard_submit"><input type="submit" name="ok_button" value="Login"  class="submit" /></div><a target="_top" class="label" href="/pub/register">Not Registered?</a></form></div><div class="bottom_left"></div><div class="bottom_right"></div></div><div class="task_menu"><a target="_top" href="/hm/index">Home</a><a target="_top" class="want_sep" href="/hm/parents">Parents</a><a target="_top" class="want_sep" href="/hm/press">Press</a><a target="_top" class="want_sep" href="/hm/prizes">Prizes</a><a target="_top" class="want_sep" href="/hm/sponsors">Sponsors</a><a target="_top" class="want_sep" href="/hm/wheels">Wheels</a></div></td>
+<td class="main_middle"><div class="main_top"><div class="title">Support from our community</div></div><div class="main_body"><div class="prose" id="gears"><p>
+Thanks for helping us out with Freiker.  Our goal is to help children
+develop healthy transportion choices and habits through an incentive
+program.  Kids earn credits towards prizes every time they ride their
+bike to school.  Top freikers in a variety of categories (class,
+grade, school, district, state, national) receive extra prizes.  The
+better the prizes, the more riders we have.
+</p>
+<p>
+You can sponsor us by giving us prizes or by donating money.  The prizes
+need to be something elementary school kids would like.  Money goes a
+long way, because we buy prizes in bulk, and merchants often give us
+a discount.
+</p>
+<p>
+If you would like donate prizes or money, please contact us at <span class="email">gears<img class="at" alt="at sign image to help avoid spam" src="/i/at.gif" width="15" height="15" />ski.local</span>.
+</p>
+<div class="simple">
+<a target="_top" href="http://www.bivio.biz"><img class="bivio" src="/i/bivio.gif" width="200" height="106" /></a>
+<a target="_top" href="http://www.boulderbumpshop.com"><img class="boulderbumpshop" src="/i/boulderbumpshop.gif" width="259" height="78" /></a>
+<a target="_top" href="http://www.bnjrt.com"><img class="bnjrt" src="/i/bnjrt.gif" width="175" height="122" /></a>
+<a target="_top" href="http://www.catacom.com"><img class="catacom" src="/i/catacom.png" width="161" height="127" /></a>
+<a target="_top" href="http://www.coloradoplastics.com"><img class="coloradoplastics" src="/i/coloradoplastics.gif" width="178" height="91" /></a>
+<a target="_top" href="http://www.colorlink.com"><img class="colorlink" src="/i/colorlink.gif" width="329" height="67" /></a>
+<a target="_top" href="http://www.deanbikes.com"><img class="deanbikes" src="/i/deanbikes.gif" width="315" height="52" /></a>
+<a target="_top" href="http://www.faegre.com"><img class="faegre" src="/i/faegre.gif" width="174" height="100" /></a>
+<a target="_top" href="http://www.grahamwatson.com"><img class="grahamwatson" src="/i/grahamwatson.gif" width="102" height="152" /></a>
+<a target="_top" href="http://www.hirschmann.com"><img class="hirschmanndesign" src="/i/hirschmanndesign.gif" width="400" height="22" /></a>
+<a target="_top" href="http://www.meltonconstruction.com"><img class="meltonconstruction" src="/i/meltonconstruction.gif" width="100" height="100" /></a>
+<a target="_top" href="http://www.mirrycle.com"><img class="mirrycle" src="/i/mirrycle.jpg" width="95" height="95" /></a>
+<a target="_top" href="http://namastesolar.com"><img class="namastesolar" src="/i/namastesolar.gif" width="300" height="82" /></a>
+<a target="_top" href="http://www.resourcerevival.com"><img class="resourcerevival" src="/i/resourcerevival.gif" width="91" height="112" /></a>
+<a target="_top" href="http://www.saferoutesinfo.org"><img class="saferoutesinfo" src="/i/saferoutesinfo.gif" width="170" height="95" /></a>
+<a target="_top" href="http://www.skyetek.com"><img class="skyetek" src="/i/skyetek.gif" width="258" height="52" /></a>
+<a target="_top" href="http://www.sun.com"><img class="sun" src="/i/sun.gif" width="155" height="68" /></a>
+<a target="_top" href="http://www.trail-kids.com"><img class="trail-kids" src="/i/trail-kids.gif" width="269" height="54" /></a>
+<a target="_top" href="http://www.ubikes.com"><img class="ubikes" src="/i/ubikes.gif" width="120" height="126" /></a>
+</div>
+</div></div></td>
+<td class="main_right"></td>
+</tr></table><table class="footer"><tr>
+<td class="footer_left"><a href="#top">back to top</a></td>
+<td class="footer_middle"><div class="task_menu"><a target="_top" href="/hm/donate?fc=aMg__!fL2htL3Nwb25zb3Jz">Donate</a><a target="_top" class="want_sep selected" href="/">Home</a><a class="want_sep" href="/pub/login">Login</a><a target="_top" class="want_sep" href="/pub/register">Register</a></div></td>
+<td class="footer_right">Copyright &copy; 2007 Freiker, Inc.<br />
+All rights reserved.<br />
+<a target="_top" href="http://www.bivio.biz">Developed by bivio</a>
+</td>
+</tr></table>
+</body></html>
