@@ -2,342 +2,164 @@
 # $Id$
 package Bivio::HTML::Scraper;
 use strict;
-$Bivio::HTML::Scraper::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::HTML::Scraper::VERSION;
-
-=head1 NAME
-
-Bivio::HTML::Scraper - abstracts HTML scraping
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::HTML::Scraper;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Collection::Attributes>
-
-=cut
-
-use Bivio::Collection::Attributes;
-@Bivio::HTML::Scraper::ISA = ('Bivio::Collection::Attributes');
-
-=head1 DESCRIPTION
-
-C<Bivio::HTML::Scraper> abstracts some of the API for HTML
-scraping.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item cookie_jar : HTTP::Cookies
-
-Cookie holder between requests.
-
-=item directory : string
-
-The directory where the intermediate files are stored.
-
-=item last_uri : string
-
-URI used in last request.  Used to create Referer.
-
-=item login_ok : boolean
-
-Was the login successful?
-
-=item user_agent : Bivio::Ext::LWPUserAgent
-
-The user agent being used for requests.
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Collection::Attributes';
 use Bivio::Die;
-use Bivio::Ext::HTMLParser;
-use Bivio::Ext::LWPUserAgent;
 use Bivio::HTML;
 use Bivio::IO::File;
 use Bivio::IO::Trace;
 use HTTP::Cookies ();
 use HTTP::Request ();
+
+# C<Bivio::HTML::Scraper> abstracts some of the API for HTML
+# scraping.
+#
+#
+#
+# cookie_jar : HTTP::Cookies
+#
+# Cookie holder between requests.
+#
+# directory : string
+#
+# The directory where the intermediate files are stored.
+#
+# last_uri : string
+#
+# URI used in last request.  Used to create Referer.
+#
+# login_ok : boolean
+#
+# Was the login successful?
+#
+# user_agent : Bivio::Ext::LWPUserAgent
+#
+# The user agent being used for requests.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # use URI ();
-
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attrs) : Bivio::HTML::Scraper
-
-Creates a new instance of self.
-
-=cut
-
-sub new {
-    my($proto) = shift;
-    my($self) = $proto->SUPER::new(@_);
-    $self->put(
-	user_agent => Bivio::Ext::LWPUserAgent->new,
-	cookie_jar => HTTP::Cookies->new,
-	login_ok => 0,
-    );
-    $self->get('user_agent')->agent(
-	'Mozilla/4.0 (compatible; MSIE 5.5; Windows 98)');
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="aa"></a>
-
-=head2 abs_uri(self, string uri) : string
-
-Adds https://blaa, if doesn't already exist and path.
-Only works after the first query.
-
-=cut
 
 sub abs_uri {
     my($self, $uri) = @_;
+    # Adds https://blaa, if doesn't already exist and path.
+    # Only works after the first query.
     return $uri if $uri =~ /^https?:/i;
     Bivio::Die->die($uri, ': no last_uri from previous request')
 	unless my $last_uri = $self->unsafe_get('last_uri');
     return URI->new_abs($uri, $last_uri)->as_string;
 }
 
-=for html <a name="attempt_login"></a>
-
-=head2 abstract attempt_login() : boolean
-
-Logs into the account.
-
-B<Subclasses must implement.>
-
-=cut
-
-$_ = <<'}'; # emacs
-sub attempt_login {
-}
-
-=for html <a name="client_error"></a>
-
-=head2 client_error(string message, hash_ref args)
-
-Throws a CLIENT_ERROR exception.  Account is added automatically as entity.
-
-=cut
-
 sub client_error {
     my($self, $message, $args) = @_;
+    # Throws a CLIENT_ERROR exception.  Account is added automatically as entity.
     $args ||= {};
     $args->{message} = $message;
     Bivio::Die->throw_die('CLIENT_ERROR', $args);
     # DOES NOT RETURN
 }
 
-=for html <a name="encode_form_as_query"></a>
-
-=head2 encode_form_as_query(string uri, array_ref form) : string
-
-Returns a query string from a list of (name, value) pairs, e.g.
-
-    [
-        field1 => 'value',
-        field2 => undef,
-        field3 => 'value3',
-    ],
-
-I<uri> should not contain a '?'.
-
-=cut
-
 sub encode_form_as_query {
     my($self, $uri, $form) = @_;
+    # Returns a query string from a list of (name, value) pairs, e.g.
+    #
+    #     [
+    #         field1 => 'value',
+    #         field2 => undef,
+    #         field3 => 'value3',
+    #     ],
+    #
+    # I<uri> should not contain a '?'.
     return $uri.'?'._format_form($form);
 }
 
-=for html <a name="extract_content"></a>
-
-=head2 static extract_content(string_ref http_response) : string_ref
-
-Returns content part of I<http_response>.
-
-=cut
-
 sub extract_content {
     my(undef, $http_response) = @_;
+    # Returns content part of I<http_response>.
     my(undef, $res) = split(/\r?\n\r?\n/, $$http_response, 2);
     return \$res;
 }
 
-=for html <a name="file_name"></a>
-
-=head2 file_name(string base_name) : string
-
-Returns the absolute file name for I<base_name>.  Used for storing raw files
-associated with download.
-
-Uses I<directory> attribute of self to form name.
-
-=cut
-
 sub file_name {
     my($self, $base_name) = @_;
+    # Returns the absolute file name for I<base_name>.  Used for storing raw files
+    # associated with download.
+    #
+    # Uses I<directory> attribute of self to form name.
     return $self->get('directory') . '/' . $base_name;
 }
 
-=for html <a name="html_parser_comment"></a>
-
-=head2 html_parser_comment(string comment)
-
-Does nothing.  Subclasses may override, but typically don't care about.
-
-=cut
-
 sub html_parser_comment {
+    # Does nothing.  Subclasses may override, but typically don't care about.
     return;
 }
-
-=for html <a name="html_parser_end"></a>
-
-=head2 abstract html_parser_end(string tag, string origtext)
-
-Does nothing.  Subclasses should override.
-
-=cut
 
 sub html_parser_end {
+    # Does nothing.  Subclasses should override.
     return;
 }
-
-=for html <a name="html_parser_eof"></a>
-
-=head2 html_parser_eof()
-
-Signals end of current parsing.
-
-=cut
 
 sub html_parser_eof {
     my($self) = @_;
+    # Signals end of current parsing.
     my($fields) = $self->[$_IDI];
     $fields->{html_parser}->eof;
     return;
 }
 
-=for html <a name="html_parser_start"></a>
-
-=head2 html_parser_start(string tag, hash_ref attr, array_ref attrseq, string origtext)
-
-Does nothing.  Subclasses should override.
-
-=cut
-
 sub html_parser_start {
+    # Does nothing.  Subclasses should override.
     return;
 }
 
-=for html <a name="html_parser_text"></a>
-
-=head2 html_parser_text(string text)
-
-Appends to stored text.  Used by to_text().
-
-=cut
-
 sub html_parser_text {
     my($self) = shift;
+    # Appends to stored text.  Used by to_text().
     $self->[$_IDI]->{to_text}
 	.= $self->strip_tags_and_whitespace(shift(@_)) . "\n";
     return;
 }
 
-=for html <a name="http_get"></a>
-
-=head2 http_get(string uri) : string_ref
-
-=head2 http_get(string uri, string file_name) : string_ref
-
-Executes an GET and returns the result.
-
-Calls L<http_request|"http_request">.
-
-=cut
-
 sub http_get {
     my($self, $uri, $file_name) = @_;
+    # Executes an GET and returns the result.
+    #
+    # Calls L<http_request|"http_request">.
     return $self->http_request(
 	HTTP::Request->new(GET => $self->abs_uri($uri)), $file_name);
 }
 
-=for html <a name="http_post"></a>
-
-=head2 http_post(string uri, array_ref form) : string_ref
-
-=head2 http_post(string uri, array_ref form, string file_name) : string_ref
-
-Executes a POST and returns the result.  Encodes I<form>.  I<uri> is
-already encoded.  The values will be escaped.
-
-I<form> is an array_ref because there are apps which depend on
-the order(!).  The format is:
-
-    [
-        field1 => 'value',
-        field2 => undef,
-        field3 => 'value3',
-    ],
-
-If a value is C<undef>, the output will not contain an equals sign.
-
-Calls L<http_request|"http_request">.
-
-=cut
-
 sub http_post {
     my($self, $uri, $form, $file_name) = @_;
+    # Executes a POST and returns the result.  Encodes I<form>.  I<uri> is
+    # already encoded.  The values will be escaped.
+    #
+    # I<form> is an array_ref because there are apps which depend on
+    # the order(!).  The format is:
+    #
+    #     [
+    #         field1 => 'value',
+    #         field2 => undef,
+    #         field3 => 'value3',
+    #     ],
+    #
+    # If a value is C<undef>, the output will not contain an equals sign.
+    #
+    # Calls L<http_request|"http_request">.
     my($hreq) = HTTP::Request->new(POST => $self->abs_uri($uri));
     $hreq->content_type('application/x-www-form-urlencoded');
     $hreq->content(_format_form($form));
     return $self->http_request($hreq, $file_name);
 }
 
-=for html <a name="http_request"></a>
-
-=head2 http_request(HTTP::Request hreq) : string_ref
-
-=head2 http_request(HTTP::Request hreq, string file_name) : string_ref
-
-Execute I<hreq> and return the response (including headers).  Writes the
-result to I<file_name>.
-
-If not successful, throws an exception.
-
-Handles up to four redirects, but then blows up.
-
-=cut
-
 sub http_request {
     my($self, $hreq, $file_name) = @_;
+    # Execute I<hreq> and return the response (including headers).  Writes the
+    # result to I<file_name>.
+    #
+    # If not successful, throws an exception.
+    #
+    # Handles up to four redirects, but then blows up.
     my($fields) = $self->[$_IDI];
     my($hres) = _http_request($self, $hreq);
     my($rs) = $hres->as_string;
@@ -351,34 +173,35 @@ sub http_request {
     return $hres_string;
 }
 
-=for html <a name="login"></a>
-
-=head2 login()
-
-Calls L<attempt_login|"attempt_login"> if not already logged in.
-If attempt_login fails, throws an exception.
-
-=cut
-
 sub login {
     my($self) = @_;
+    # Calls L<attempt_login|"attempt_login"> if not already logged in.
+    # If attempt_login fails, throws an exception.
     return $self if $self->get('login_ok');
     $self->client_error('login failure') unless $self->attempt_login;
     $self->put(login_ok => 1);
     return $self;
 }
 
-=for html <a name="parse_html"></a>
-
-=head2 parse_html(string_ref content)
-
-Instantiates an L<Bivio::Ext::HTMLParser|Bivio::Ext::HTMLParser>
-and initiates parsing.
-
-=cut
+sub new {
+    my($proto) = shift;
+    # Creates a new instance of self.
+    my($self) = $proto->SUPER::new(@_);
+    $self->put(
+	user_agent => $proto->use('Ext.LWPUserAgent')->new,
+	cookie_jar => HTTP::Cookies->new,
+	login_ok => 0,
+    );
+    $self->get('user_agent')->agent(
+	'Mozilla/4.0 (compatible; MSIE 5.5; Windows 98)');
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub parse_html {
     my($self, $content) = @_;
+    # Instantiates an L<Bivio::Ext::HTMLParser|Bivio::Ext::HTMLParser>
+    # and initiates parsing.
     my($fields) = $self->[$_IDI];
     $fields->{html_parser} = Bivio::Ext::HTMLParser->new($self)
 	    unless $fields->{html_parser};
@@ -386,30 +209,16 @@ sub parse_html {
     return;
 }
 
-=for html <a name="read_file"></a>
-
-=head2 read_file(string file_name) : string_ref
-
-Returns the contents of I<file_name> from the current directory.
-
-=cut
-
 sub read_file {
     my($self, $file_name) = @_;
+    # Returns the contents of I<file_name> from the current directory.
     return Bivio::IO::File->read($self->file_name($file_name));
 }
 
-=for html <a name="strip_tags_and_whitespace"></a>
-
-=head2 static strip_tags_and_whitespace(string value) : string
-
-Removes extra and leading whitespace and any html tags.  If value is
-C<undef>, returns the empty string.
-
-=cut
-
 sub strip_tags_and_whitespace {
     my($proto, $value) = @_;
+    # Removes extra and leading whitespace and any html tags.  If value is
+    # C<undef>, returns the empty string.
     return '' unless defined($value);
     #convert <br> to a space, globally.
     $value =~ s/<br>/ /ig;
@@ -423,16 +232,9 @@ sub strip_tags_and_whitespace {
     return $value;
 }
 
-=for html <a name="to_text"></a>
-
-=head2 static to_text(string_ref html) : string_ref
-
-Converts I<html> to plain text.
-
-=cut
-
 sub to_text {
     my($self) = shift->SUPER::new;
+    # Converts I<html> to plain text.
     my($fields) = $self->[$_IDI] = {
 	to_text => '',
     };
@@ -440,45 +242,26 @@ sub to_text {
     return \$fields->{to_text};
 }
 
-=for html <a name="unescape_html"></a>
-
-=head2 static unescape_html(string value) : string
-
-Calls L<Bivio::HTML::unescape|Bivio::HTML/"unescape"> and fixes up
-ISO-88559-1 chars, e.g. \240 (non-breaking-space).
-
-=cut
-
 sub unescape_html {
+    # Calls L<Bivio::HTML::unescape|Bivio::HTML/"unescape"> and fixes up
+    # ISO-88559-1 chars, e.g. \240 (non-breaking-space).
     shift;
     my($v) = Bivio::HTML->unescape(shift);
     $v =~ s/\240/ /g;
     return $v;
 }
 
-=for html <a name="write_file"></a>
-
-=head2 write_file(string file_name, string_ref contents)
-
-Writes I<contents> to I<file_name> in the current directory.
-
-=cut
-
 sub write_file {
     my($self, $file_name, $contents) = @_;
+    # Writes I<contents> to I<file_name> in the current directory.
     return unless $self->unsafe_get('directory');
     Bivio::IO::File->write($self->file_name($file_name), $contents);
     return;
 }
 
-#=PRIVATE METHODS
-
-# _format_form(array_ref form) : string
-#
-# Returns URL encoded form.
-#
 sub _format_form {
     my($form) = @_;
+    # Returns URL encoded form.
     my($res) = '';
     my($sep) = '';
     Bivio::Die->die('expecting even number of elements') if int(@$form) % 2;
@@ -490,12 +273,9 @@ sub _format_form {
     return $res;
 }
 
-# _http_request(self, HTTP::Request hreq) : HTTP::Response
-#
-# Tries to redirect up to four times, then dies with too many redirects.
-#
 sub _http_request {
     my($self, $hreq) = @_;
+    # Tries to redirect up to four times, then dies with too many redirects.
     my(@uris);
     my($uri) = $hreq->uri->as_string;
     # Only allow 5 redirects
@@ -537,15 +317,5 @@ sub _http_request {
     $self->client_error('too many redirects', {entity => \@uris,});
     # DOES NOT RETURN
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
