@@ -848,7 +848,8 @@ sub _die {
 sub _eval {
     my($self, $tests) = @_;
     my($c) = 0;
-    my($print) = $self->get_or_default('print', \&_default_print);
+    my($print) = $self->get_if_exists_else_put(
+	print => sub {\&_default_print});
     $print->('1..' . int(@$tests) . "\n");
     my($err);
     my($results) = {
