@@ -299,6 +299,7 @@ sub merge_class_loader {
 		    TestUnit => ['Bivio::Test'],
 		    Type => ['Bivio::Type', 'Bivio::Auth'],
 		    View => ['Bivio::UI::View'],
+		    Ext => ['Bivio::Ext'],
 		},
 	    },
 	    1,
