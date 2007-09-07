@@ -31,7 +31,7 @@ use HTTP::Request ();
 #
 # Was the login successful?
 #
-# user_agent : Bivio::Ext::LWPUserAgent
+# user_agent : Ext.LWPUserAgent
 #
 # The user agent being used for requests.
 
@@ -200,10 +200,8 @@ sub new {
 
 sub parse_html {
     my($self, $content) = @_;
-    # Instantiates an L<Bivio::Ext::HTMLParser|Bivio::Ext::HTMLParser>
-    # and initiates parsing.
     my($fields) = $self->[$_IDI];
-    $fields->{html_parser} = Bivio::Ext::HTMLParser->new($self)
+    $fields->{html_parser} = $self->use('Ext.HTMLParser')->new($self)
 	    unless $fields->{html_parser};
     $fields->{html_parser}->parse($$content);
     return;
