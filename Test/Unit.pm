@@ -162,12 +162,12 @@ sub builtin_create_user {
     return $req->get('auth_user');
 }
 
+sub builtin_date_time {
+    return shift->use('Type.DateTime')->from_literal_or_die(shift(@_));
+}
+
 sub builtin_email {
-    # Generate a btest email.
-    # See Bivio::Test::Language::HTTP::generate_local_email.
-    shift;
-    return Bivio::IO::ClassLoader->simple_require('Bivio::Test::Language::HTTP')
-	->generate_local_email(@_);
+    return shift->use('TestLanguage.HTTP')->generate_local_email(@_);
 }
 
 sub builtin_expect_contains {
