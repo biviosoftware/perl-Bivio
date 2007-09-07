@@ -20,6 +20,21 @@ req()->set_realm_and_user(qw(demo guest));
 	task_id => 'SITE_ROOT',
 	label => 'site_name',
     }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">PetShop</a></div>},
+    [[
+	{
+	    task_id => 'SITE_ROOT',
+	    path_info => '/x',
+	},
+	{
+	    task_id => 'SITE_ROOT',
+	    path_info => undef,
+	},
+    ], {
+	selected_item => sub {
+	    my($widget, $source) = @_;
+	    return $widget->render_simple_attr(href => $source) eq '/';
+	},
+    }] => qr{.*top" href="/x".*class="want_sep selected" href="/">}s,
     [[{
 	task_id => 'SITE_ROOT',
 	path_info => '/x',

@@ -80,7 +80,9 @@ sub initialize {
 		    my($source) = @_;
 		    return join(' ',
 			 $need_sep ? 'want_sep' : (),
-			 ($cfg->{task_id} && ref($selected)
+			 (ref($selected) eq 'CODE'
+			     ? $selected->($w, $source)
+			     : $cfg->{task_id} && ref($selected)
 			     ? $cfg->{task_id} == $selected
 			     : $selected
 				 eq $w->render_simple_attr(value => $source)
