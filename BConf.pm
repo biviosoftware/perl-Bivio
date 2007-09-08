@@ -300,6 +300,7 @@ sub merge_class_loader {
 		    Type => ['Bivio::Type', 'Bivio::Auth'],
 		    View => ['Bivio::UI::View'],
 		    Ext => ['Bivio::Ext'],
+		    IO => ['Bivio::IO'],
 		},
 	    },
 	    1,
