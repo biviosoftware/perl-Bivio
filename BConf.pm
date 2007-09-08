@@ -1,63 +1,26 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::BConf;
 use strict;
-$Bivio::BConf::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::BConf::VERSION;
-
-=head1 NAME
-
-Bivio::BConf - simple default configuration
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::BConf;
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::BConf::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::BConf> provides a basic configuration.  You bivio.bconf file
-would look like:
-
-   use Bivio::BConf;
-   Bivio::BConf->merge({});
-
-Set your $BCONF variable to point to this file, e.g. for bash:
-
-   export BCONF=$PWD/bivio.bconf
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Config;
 use Cwd ();
-use Sys::Hostname ();
 use File::Basename ();
+use Sys::Hostname ();
 
-#=VARIABLES
+# C<Bivio::BConf> provides a basic configuration.  You bivio.bconf file
+# would look like:
+#
+#    use Bivio::BConf;
+#    Bivio::BConf->merge({});
+#
+# Set your $BCONF variable to point to this file, e.g. for bash:
+#
+#    export BCONF=$PWD/bivio.bconf
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="default_merge_overrides"></a>
-
-=head2 static default_merge_overrides(string root_name) : hash_ref
-
-Configure L<Bivio::Test::Util|Bivio::Test::Util>.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub default_merge_overrides {
     my($proto, $root, $prefix, $owner) = @_;
+    # Configure L<Bivio::Test::Util|Bivio::Test::Util>.
     # Grab last part: Only needed by PetShop
     my($root_lc) = lc(($root =~ /(\w+)$/)[0]);
     (my $file_root = "/var/db/$root_lc") =~ s/_/-/g;
@@ -95,17 +58,10 @@ sub default_merge_overrides {
     );
 }
 
-=for html <a name="dev"></a>
-
-=head2 dev(int http_port, hash_ref overrides) : hash_ref
-
-Development environment configuration. Will read bconf.d config in bconf.d
-subdir of where your *.bconf resides.
-
-=cut
-
 sub dev {
     my($proto, $http_port, $overrides) = @_;
+    # Development environment configuration. Will read bconf.d config in bconf.d
+    # subdir of where your *.bconf resides.
 
     my($pwd) = Cwd::getcwd();
     my($host) = Sys::Hostname::hostname();
@@ -172,30 +128,16 @@ sub dev {
     ));
 }
 
-=for html <a name="dev_overrides"></a>
-
-=head2 static dev_overrides(string pwd, string host, string user, int http_port) : hash_ref
-
-Returns any overrides to the development configuration, called by
-L<dev|"dev">.  Returns an empty hash by default.
-
-=cut
-
 sub dev_overrides {
+    # Returns any overrides to the development configuration, called by
+    # L<dev|"dev">.  Returns an empty hash by default.
     return {};
 }
 
-=for html <a name="merge"></a>
-
-=head2 merge(hash_ref overrides) : hash_ref
-
-Uses I<overrides> config to override default config defined in this
-module.
-
-=cut
-
 sub merge {
     my($proto, $overrides) = @_;
+    # Uses I<overrides> config to override default config defined in this
+    # module.
     return Bivio::IO::Config->merge_list(
 	$overrides || {},
 	$proto->merge_overrides(Sys::Hostname::hostname()),
@@ -203,79 +145,27 @@ sub merge {
     );
 }
 
-=for html <a name="merge_realm_role_category_map"></a>
-
-=head2 static merge_realm_role_category_map(code_ref new) : array
-
-Calls $new and basic category map.
-
-=cut
-
-sub merge_realm_role_category_map {
-    my($proto, $new) = @_;
-    return 'Bivio::Biz::Util::RealmRole' => {
-	category_map => sub {
-	    return [
-	    [
-		public_forum_email =>
-		    [[qw(ANONYMOUS USER WITHDRAWN GUEST)] => 'MAIL_SEND'],
-	    ],
-	    [
-		system_user_forum_email =>
-		    [ANONYMOUS => '-MAIL_SEND'],
-		    [USER => 'MAIL_SEND'],
-	    ],
-	    [
-		admin_only_forum_email =>
-		    [MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)]],
-	    ],
-	    Bivio::Agent::TaskId->is_component_included('tuple') ? ([
-		tuple =>
-		    [ADMINISTRATOR => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
-		    [MEMBER => [qw(TUPLE_WRITE TUPLE_READ)]],
-	    ]) : (),
-	    Bivio::Agent::TaskId->is_component_included('motion') ? ([
-		closed_results_motion =>
-		    [MEMBER => [qw(MOTION_WRITE -MOTION_READ)]],
-		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
-	    ], [
-		open_results_motion =>
-		    [MEMBER => [qw(MOTION_WRITE MOTION_READ)]],
-		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
-	    ]) : (),
-	    $new ? @{$new->()} : (),
-        ];
-    }};
-}
-
-=for html <a name="merge_class_loader"></a>
-
-=head2 static merge_class_loader(hash_ref overrides) : array
-
-Merges L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> config by prefixing
-I<maps> array refs with values standard values.  Other values overwritten.
-Returns the array:
-
-    'Bivio::IO::ClassLoader' => {
-        merged configuration,
-    },
-
-Usage in your BConf.pm
-
-    ...
-    $proto->merge_class_loader({
-        maps => {
-             Facade => ['OurSite::Facade'],
-             Model => ['OurSite::Model'],
-             ...,
-        },
-    }),
-    ...
-
-=cut
-
 sub merge_class_loader {
     my($proto, $overrides) = @_;
+    # Merges L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> config by prefixing
+    # I<maps> array refs with values standard values.  Other values overwritten.
+    # Returns the array:
+    #
+    #     'Bivio::IO::ClassLoader' => {
+    #         merged configuration,
+    #     },
+    #
+    # Usage in your BConf.pm
+    #
+    #     ...
+    #     $proto->merge_class_loader({
+    #         maps => {
+    #              Facade => ['OurSite::Facade'],
+    #              Model => ['OurSite::Model'],
+    #              ...,
+    #         },
+    #     }),
+    #     ...
     return (
 	'Bivio::IO::ClassLoader' => Bivio::IO::Config->merge(
 	    $overrides || {}, {
@@ -308,18 +198,11 @@ sub merge_class_loader {
     );
 }
 
-=for html <a name="merge_dir"></a>
-
-=head2 static merge_dir(hash_ref overrides) : hash_ref
-
-Reads the /etc/bconf.d directory for *.bconf files.  Merges in reverse
-alphabetical order.  I<overrides> take precedence over dir, and dir
-takes precedence over the rest.
-
-=cut
-
 sub merge_dir {
     my($proto, $overrides) = @_;
+    # Reads the /etc/bconf.d directory for *.bconf files.  Merges in reverse
+    # alphabetical order.  I<overrides> take precedence over dir, and dir
+    # takes precedence over the rest.
     return Bivio::IO::Config->merge_list(
 	$overrides || {},
 	Bivio::IO::Config->bconf_dir_hashes,
@@ -327,31 +210,24 @@ sub merge_dir {
 	_base($proto));
 }
 
-=for html <a name="merge_http_log"></a>
-
-=head2 static merge_http_log(hash_ref overrides) : array
-
-Merges L<Bivio::Util::HTTPLog|Bivio::Util::HTTPLog> config by prefixing
-standard array refs (ignore, critical, error) with standard valus.  Other
-values overwritten.  Returns the array:
-
-    'Bivio::Util::HTTPLog' => {
-        merged configuration,
-    },
-
-Usage in your BConf.pm
-
-    ...
-    $proto->merge_http_log({
-        ignore_list => [
-        ],
-    }),
-    ...
-
-=cut
-
 sub merge_http_log {
     my($proto, $overrides) = @_;
+    # Merges L<Bivio::Util::HTTPLog|Bivio::Util::HTTPLog> config by prefixing
+    # standard array refs (ignore, critical, error) with standard valus.  Other
+    # values overwritten.  Returns the array:
+    #
+    #     'Bivio::Util::HTTPLog' => {
+    #         merged configuration,
+    #     },
+    #
+    # Usage in your BConf.pm
+    #
+    #     ...
+    #     $proto->merge_http_log({
+    #         ignore_list => [
+    #         ],
+    #     }),
+    #     ...
     return (
 	'Bivio::Util::HTTPLog' => Bivio::IO::Config->merge(
 	    $overrides || {}, {
@@ -413,27 +289,53 @@ sub merge_http_log {
     );
 }
 
-=for html <a name="merge_overrides"></a>
-
-=head2 static static merge_overrides(string host) : hash_ref
-
-Returns any overrides to the base configuration, called by
-L<merge|"merge">.  Returns an empty hash by default.
-
-=cut
-
 sub merge_overrides {
+    # Returns any overrides to the base configuration, called by
+    # L<merge|"merge">.  Returns an empty hash by default.
     return {};
 }
 
-#=PRIVATE METHODS
+sub merge_realm_role_category_map {
+    my($proto, $new) = @_;
+    # Calls $new and basic category map.
+    return 'Bivio::Biz::Util::RealmRole' => {
+	category_map => sub {
+	    return [
+	    [
+		public_forum_email =>
+		    [[qw(ANONYMOUS USER WITHDRAWN GUEST)] => 'MAIL_SEND'],
+	    ],
+	    [
+		system_user_forum_email =>
+		    [ANONYMOUS => '-MAIL_SEND'],
+		    [USER => 'MAIL_SEND'],
+	    ],
+	    [
+		admin_only_forum_email =>
+		    [MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)]],
+	    ],
+	    Bivio::Agent::TaskId->is_component_included('tuple') ? ([
+		tuple =>
+		    [ADMINISTRATOR => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
+		    [MEMBER => [qw(TUPLE_WRITE TUPLE_READ)]],
+	    ]) : (),
+	    Bivio::Agent::TaskId->is_component_included('motion') ? ([
+		closed_results_motion =>
+		    [MEMBER => [qw(MOTION_WRITE -MOTION_READ)]],
+		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
+	    ], [
+		open_results_motion =>
+		    [MEMBER => [qw(MOTION_WRITE MOTION_READ)]],
+		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
+	    ]) : (),
+	    $new ? @{$new->()} : (),
+        ];
+    }};
+}
 
-# _base(proto) : hash_ref
-#
-# Returns _base configuration.
-#
 sub _base {
     my($proto) = @_;
+    # Returns _base configuration.
     return {
 	$proto->merge_class_loader({
 	    delegates => {
@@ -520,14 +422,11 @@ sub _base {
     };
 }
 
-# _validate_config(hash_ref config) : hash_ref
-#
-# Ensures the configuration is consistent. For example, NoDbAuthSupport
-# should not be present if if Bivio::Ext::DBI is defined.
-# Issues warnings only for dev() configuration.
-#
 sub _validate_config {
     my($config) = @_;
+    # Ensures the configuration is consistent. For example, NoDbAuthSupport
+    # should not be present if if Bivio::Ext::DBI is defined.
+    # Issues warnings only for dev() configuration.
     warn('WARNING: NoDbAuthSupport used with Bivio::Ext::DBI')
 	if ($config->{'Bivio::IO::ClassLoader'}
 	    ->{delegates}->{'Bivio::Auth::Support'}
@@ -535,15 +434,5 @@ sub _validate_config {
 	    && ($config->{'Bivio::Ext::DBI'}->{database} ne 'none');
     return $config;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
