@@ -1,0 +1,52 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel();
+req()->set_realm_and_user(qw(otp otp));
+shell_util(OTP => [qw(reset_user)]);
+[
+    empty_case({
+	otp_challenge => 'otp_md5 499 yourseed',
+    }),
+    [{
+	'OTP.seed' => 'yourseed',
+	old_password => 'A25C5BBC42F2E6D3',
+	new_password => 'A25C5BBC42F2E6D3',
+	confirm_new_password => 'A25C5BBC42F2E6D3',
+    }] => [{
+	'Model.OTP' => {
+	    sequence => 498,
+	},
+    }],
+    error_case({
+	'OTP.seed' => 'yourseed',
+	old_password => '6DE738A2D535A6CA',
+	new_password => '0C96A50127272151',
+	confirm_new_password => '0C96A50127272151',
+    }, {
+	new_password => 'NOT_ZERO',
+    }),
+    error_case({
+	'OTP.seed' => 'yourseed',
+	old_password => '6DE738A2D535A6CA',
+	new_password => 'A25C5BBC42F2E6D3',
+	confirm_new_password => 'A25C5BBC42F2E6D3',
+    }, {
+	old_password => 'OTP_PASSWORD_MISMATCH',
+    }),
+    error_case({
+	'OTP.seed' => 'yourseed',
+	old_password => 'A25C5BBC42F2E6D3',
+	new_password => 'A25C5BBC42F2E6D3',
+	confirm_new_password => 'notmatch',
+    }, {
+	confirm_new_password => 'CONFIRM_PASSWORD',
+    }),
+    error_case({
+	'OTP.seed' => 'yourseed',
+	old_password => 'A25C5BBC42F2E6D3',
+	new_password => 'not otp pass',
+	confirm_new_password => 'not otp pass',
+    }, {
+	new_password => 'OTP_PASSWORD',
+    }),
+];
