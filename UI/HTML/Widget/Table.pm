@@ -240,6 +240,10 @@ Should column sorting be displayed?
 Set the width of the table explicitly.  I<expand> should be
 used in most cases.
 
+=item before_row : Bivio::UI::Widget
+
+An optional widget which will be rendered before every row.
+
 =back
 
 =head1 COLUMN ATTRIBUTES
@@ -635,6 +639,7 @@ sub initialize {
 	})->put_and_initialize(parent => $self);
     }
     $self->unsafe_initialize_attr('empty_list_widget');
+    $self->unsafe_initialize_attr('before_row');
     $_VS->vs_html_attrs_initialize(
 	$self,
 	[qw(
@@ -821,6 +826,7 @@ If in_list is true, then empty strings will be rendered as '&nbsp;'.
 sub render_row {
     my($self, $cells, $source, $buffer, $row_prefix, $class) = @_;
     my($req) = $self->get_request;
+    _render_before_row($self, scalar(@$cells), $source, $buffer);
     $$buffer .= $row_prefix
 	|| "\n<tr"
 	. $_VS->vs_html_attrs_render(
@@ -1030,6 +1036,15 @@ sub _initialize_row_prefixes {
 		@$state{qw(self source)}, [$w . '_row_class'])
 	    .'>';
     }
+    return;
+}
+
+sub _render_before_row {
+    my($self, $cols, $source, $buffer) = @_;
+    my($b) = '';
+    $self->unsafe_render_attr('before_row', $source, \$b);
+    $$buffer .= qq(\n<tr><td colspan="$cols">$b</td></tr>)
+	if length($b);
     return;
 }
 

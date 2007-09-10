@@ -9,13 +9,18 @@ Widget({
     },
     new_params => sub {
 	my($case, $params) = @_;
-	$case->put(_expect_args => $params->[0]);
-	return [ProductList => ['Product.product_id', 'Product.name'],
-		@$params];
+	if (@$params == 1) {
+	    $case->put(_expect_args => $params->[0]);
+	    return [ProductList => ['Product.product_id', 'Product.name'],
+		    @$params];
+	}
+	else {
+	    return [ProductList => @$params];
+	}
     },
     check_return => sub {
 	my($case, $actual, $expect) = @_;
-	my($expect_args) = $case->get('_expect_args');
+	my($expect_args) = $case->unsafe_get('_expect_args');
 	return defined($expect->[0])
 	    ? $expect
 	    : [_t($expect_args)];
@@ -51,6 +56,46 @@ Widget({
 <tr bgcolor="#F0F9FF">
 <td><font face="arial,sans-serif">RP-SN-01</font></td>
 <td><font face="arial,sans-serif">Rattlesnake</font></td>
+</tr>
+</table>
+EOF
+    [{class => 'reptiles', before_row =>
+	  class('HTMLWidget.String')->new('FOO', 0)}] => _chomp(<<'EOF'),
+
+<table class="reptiles">
+<tr><td colspan="2">FOO</td></tr>
+<tr>
+<th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
+<th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
+</tr>
+<tr><td colspan="2">FOO</td></tr>
+<tr bgcolor="#D5EEFF">
+<td><font face="arial,sans-serif">RP-LI-02</font></td>
+<td><font face="arial,sans-serif">Iguana</font></td>
+</tr>
+<tr><td colspan="2">FOO</td></tr>
+<tr bgcolor="#F0F9FF">
+<td><font face="arial,sans-serif">RP-SN-01</font></td>
+<td><font face="arial,sans-serif">Rattlesnake</font></td>
+</tr>
+</table>
+EOF
+    [[
+	{
+	    column_widget => class('HTMLWidget.Join')->new(['&nbsp;']),
+	    column_data_class => 'ping',
+	},
+	{field => 'Product.name', column_data_class => 'zing'}
+    ], {class => 'reptiles', show_headings => 0}] => _chomp(<<'EOF'),
+
+<table class="reptiles">
+<tr bgcolor="#D5EEFF">
+<td class="ping">&nbsp;</td>
+<td class="zing"><font face="arial,sans-serif">Iguana</font></td>
+</tr>
+<tr bgcolor="#F0F9FF">
+<td class="ping">&nbsp;</td>
+<td class="zing"><font face="arial,sans-serif">Rattlesnake</font></td>
 </tr>
 </table>
 EOF
