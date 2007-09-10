@@ -56,24 +56,31 @@ sub internal_pre_execute {
     return;
 }
 
+sub internal_validate_new {
+    return;
+}
+
+sub internal_validate_old {
+    my($self) = @_;
+    return $self->internal_put_error(qw(old_password PASSWORD_MISMATCH))
+	unless $self->use('Type.Password')->is_equal(
+	    $self->req(qw(auth_realm owner password)),
+	    $self->get('old_password'),
+    );
+    return 1;
+}
+
 sub validate {
     my($self) = @_;
-    # Validates the old password for normal users.
-    # Ensures the new password and confirm password matches.
-    my($req) = $self->get_request;
-    unless ($req->is_substitute_user) {
-	return unless $self->validate_not_null('old_password');
-	unless ($self->use('Type.Password')->is_equal(
-	    $req->get_nested(qw(auth_realm owner password)),
-	    $self->get('old_password'),
-        )) {
-	    $self->internal_put_error(qw(old_password PASSWORD_MISMATCH));
-	    return;
-	}
+    return if $self->in_error;
+    unless ($self->req->is_substitute_user) {
+	return
+	    unless $self->validate_not_null('old_password')
+	    && $self->internal_validate_old;
     }
-    $self->internal_put_error(qw(confirm_new_password CONFIRM_PASSWORD))
-        unless $self->in_error
-        || $self->get('new_password') eq $self->get('confirm_new_password');
+    return $self->internal_put_error(qw(confirm_new_password CONFIRM_PASSWORD))
+        unless $self->get('new_password') eq $self->get('confirm_new_password');
+    $self->internal_validate_new;
     return;
 }
 
