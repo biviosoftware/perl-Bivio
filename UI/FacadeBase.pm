@@ -395,10 +395,8 @@ sub _cfg_motion {
 sub _cfg_otp {
     return {
         FormError => [
-	    ['UserLoginForm.RealmOwner.password.OTP_PASSWORD_MISMATCH'
-	        => <<'EOF'],
-OTP challenge: String(['Model.OTP', '->get_challenge']);
-EOF
+	    ['UserLoginForm.RealmOwner.password.OTP_PASSWORD_MISMATCH' => q{OTP challenge: String(['Model.OTP', '->get_challenge']);}],
+	    ['UserOTPForm.new_password.NOT_ZERO' => q{You must set a passphrase (password) in your OTP client.  Please enter a value in the Password field of WinKey and re-compute a Response.}],
 	],
 	Task => [
 	    [USER_OTP => '?/setup-otp'],
