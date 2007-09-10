@@ -9,11 +9,11 @@ login_as('otp', '');
 login_as('otp', 'password');
 test_conformance();
 my(@ch) = get_content() =~ $challenge;
-my($otp) = test_use('Bivio::Util::OTP');
+my($ou) = test_use('ShellUtil.OTP');
 test_deviance();
-login_as('otp', $otp->six_word_key(@ch, $otp->NULL_PASSPHRASE));
+login_as('otp', $ou->six_word_key(@ch, $ou->NULL_PASSPHRASE));
 test_conformance();
-login_as('otp', $otp->six_word_key(@ch, 'password'));
+login_as('otp', $ou->six_word_key(@ch, 'password'));
 do_logout();
 
 #
@@ -46,8 +46,7 @@ submit_form({
 });
 follow_link('myaccount');
 follow_link('convert');
-my($new_key) = test_use('Bivio::Util::OTP')
-    ->six_word_key(get_content() =~ $challenge, 'password');
+my($new_key) = $ou->six_word_key(get_content() =~ $challenge, 'password');
 test_deviance();
 verify_text(my $dual_challenge = qr/Last OTP challenge.*New OTP challenge/is);
 test_deviance('The password you entered does not match the value stored');
@@ -79,47 +78,19 @@ submit_form({
 #
 # Test reset OTP
 #
-
 do_logout();
 test_deviance($challenge);
 login_as($email => '');
 test_conformance();
-login_as(
-    $email,
-    test_use('Bivio::Util::OTP')->six_word_key(
-	get_content() =~ $challenge,
-	'password'),
-);
+login_as($email, $ou->six_word_key(get_content() =~ $challenge, 'password'));
 follow_link('myaccount');
-follow_link('convert');
+follow_link('reset');
 verify_text($dual_challenge);
 my($old_seq, $old_seed, $new_seq, $new_seed) =
     get_content() =~ /$challenge.*$challenge/s;
 
-my($next_key) = test_use('ShellUtil.OTP')
-    ->six_word_key($old_seq, $old_seed, 'password');
-$new_key = test_use('ShellUtil.OTP')
-    ->six_word_key($new_seq, $new_seed, 'password');
-test_deviance('did not match');
-submit_form({
-    current => 'badpassword',
-});
-test_deviance('invalid OTP');
-submit_form({
-    current => $next_key,
-});
-test_deviance('You must supply a value for Confirm Key');
-submit_form({
-    current => $next_key,
-    new => $new_key,
-});
-test_deviance('password and confirm password fields do not match');
-submit_form({
-    current => $next_key,
-    new => $new_key,
-    confirm => 'foofoo',
-});
-test_conformance();
+my($next_key) = $ou->six_word_key($old_seq, $old_seed, 'password');
+$new_key = $ou->six_word_key($new_seq, $new_seed, 'password');
 submit_form({
     current => $next_key,
     new => $new_key,
@@ -143,8 +114,7 @@ submit_form({
 test_conformance();
 submit_form({
     email => $email,
-    password => test_use('Bivio::Util::OTP')->six_word_key(
-        get_content() =~ $challenge, 'password'),
+    password => $ou->six_word_key(get_content() =~ $challenge, 'password'),
 });
 verify_form({
     current => '',
