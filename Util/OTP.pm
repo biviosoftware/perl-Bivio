@@ -7,6 +7,10 @@ use Bivio::Biz::RFC2289;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub NULL_PASSPHRASE {
+    return 'NULL_PASSPHRASE';
+}
+
 sub USAGE {
     return <<'EOF';
 usage: b-otp [options] command [args...]
@@ -18,7 +22,9 @@ EOF
 }
 
 sub hex_key {
-    my(undef, @args) = _args(@_);
+    my($self, @args) = _args(@_);
+    $args[2] = ''
+        if $args[2] eq $self->NULL_PASSPHRASE;
     return Bivio::Biz::RFC2289->compute(@args);
 }
 

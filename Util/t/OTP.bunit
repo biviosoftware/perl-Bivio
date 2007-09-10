@@ -3,6 +3,7 @@
 ShellUtil();
 [
     [qw(six_word_key 498 yourseed password)] => 'CURE SAC MIN LANG BOCA CHAD',
+    [qw(hex_key 498 yourseed NULL_PASSPHRASE)] => 'C77AA9347E026218',
     [qw(-user otp reset_user 20 someseed some-pass)] => '19B866280DFF0523',
     [qw(-user otp reset_user)] => '21BE4D66C276261E',
 ];
