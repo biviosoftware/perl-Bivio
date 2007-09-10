@@ -8,12 +8,12 @@ test_deviance($challenge);
 login_as('otp', '');
 login_as('otp', 'password');
 test_conformance();
-login_as(
-    'otp',
-    test_use('Bivio::Util::OTP')->six_word_key(
-	get_content() =~ $challenge,
-	'password'),
-);
+my(@ch) = get_content() =~ $challenge;
+my($otp) = test_use('Bivio::Util::OTP');
+test_deviance();
+login_as('otp', $otp->six_word_key(@ch, $otp->NULL_PASSPHRASE));
+test_conformance();
+login_as('otp', $otp->six_word_key(@ch, 'password'));
 do_logout();
 
 #
