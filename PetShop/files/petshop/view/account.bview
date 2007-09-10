@@ -22,7 +22,13 @@ DO NOT ENTER REAL DATA.
 
 EOF
 	], [
-	    Link('Convert your account to OTP', 'USER_OTP'),
+	    If(['auth_user'],
+	       Link(
+		   If([['auth_user'], '->require_otp'],
+		      'Reset OTP',
+		      'Convert your account to OTP',
+		   ),
+		  'USER_OTP')),
 	], [
 	    vs_blank_cell(),
 	], [
