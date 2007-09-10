@@ -52,15 +52,20 @@ verify_text(my $dual_challenge = qr/Last OTP challenge.*New OTP challenge/is);
 test_deviance('The password you entered does not match the value stored');
 submit_form({
     current => 'badpassword',
+    new => $new_key,
+    confirm => $new_key,
 });
-test_deviance('invalid OTP');
+test_deviance('must supply a value for New');
 submit_form({
     current => 'password',
+    new => '',
+    confirm => $new_key,
 });
 test_deviance('You must supply a value for Confirm');
 submit_form({
     current => 'password',
     new => $new_key,
+    confirm => '',
 });
 test_deviance('do not match');
 submit_form({
@@ -123,3 +128,17 @@ verify_form({
 });
 verify_text('You MUST re-initialize your one-time password now.');
 
+#
+# Test blank passphrase
+#
+verify_text($dual_challenge);
+($old_seq, $old_seed, $new_seq, $new_seed) =
+    get_content() =~ /$challenge.*$challenge/s;
+$next_key = $ou->six_word_key($old_seq, $old_seed, 'password');
+$new_key = $ou->six_word_key($new_seq, $new_seed, $ou->NULL_PASSPHRASE);
+test_deviance('must set a passphrase');
+submit_form({
+    current => $next_key,
+    new => $new_key,
+    confirm => $new_key,
+});
