@@ -34,6 +34,7 @@ sub handle_config {
 
 sub should_reinit {
     return shift->get('sequence') <= $_CFG->{reinitialize_sequence}
+	? 1 : 0;
 }
 
 sub validate_password {
