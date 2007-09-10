@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.34  2007/09/04 03:47:05  nagler
+  * Bivio::Test::Language::HTTP->follow_link can chase multiple links.
+    Also, if you set deprecated_text_patterns to 0, follow_link will
+    convert links to patterns, like submit_form does.
+  * Bivio::Agent::Request->with_* supports wantarray returns correctly.
+    Method will die if wantarray is false and there are multiple return
+    values like get()
+  * Various OTP fixes.
+  * Bivio::Biz::Model::UserPasswordQueryForm refactored
+  * Bivio::Util::SiteForum->make_admin added (called by TestUser and
+    PetShop::Util)
+
   Revision 5.33  2007/09/03 07:56:45  aviggio
   * Bivio::Biz::Model::OTP->should_reinit added
   * Bivio::Biz::Model::UserLoginForm supports OTP sequence reinitialization
