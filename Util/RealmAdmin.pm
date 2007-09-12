@@ -145,11 +145,7 @@ sub reset_password {
     # Changes a user's password.
     $self->usage_error("missing new password")
         unless defined($password);
-    my($ro) = _validate_user($self, 'Reset Password');
-    my($otp) = $self->model('OTP');
-    $otp->delete
-	if $otp->unauth_load({user_id => $ro->get('realm_id')});
-    $ro->update({
+    _validate_user($self, 'Reset Password')->update({
         password => $self->use('Type.Password')->encrypt($password),
     });
     return;
