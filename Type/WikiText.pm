@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::WikiText;
 use strict;
-use base 'Bivio::Type::Text64K';
+use Bivio::Base 'Type.Text64K';
 use Bivio::Mail::RFC822;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -397,6 +397,7 @@ sub render_html {
 
 sub _abs_href {
     my($uri, $state) = @_;
+    $uri =~ s/^(?=javascript:)/no-wiki-/;
     return $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
 	uri => $uri,
     }) : $state->{req}->format_uri({
@@ -488,10 +489,11 @@ sub _fmt_line {
 	$state->{html} .= $line;
 	return defined($attrs) ? _start_tag('p', $attrs, $state) : '';
     }
+    my($nl) = $line =~ s/\@$// ? '' : "\n";
     _start_p($state);
     $line = Bivio::HTML->escape($line);
     $line =~ s{(\S+)}{_fmt_token($1, $state)}eg;
-    return "$line\n";
+    return $line . $nl;
 }
 
 sub _fmt_pre {
@@ -546,7 +548,8 @@ sub _fmt_tag {
 	    . '"';
     }
     $line =~ s/^\s+//;
-    return "<$tag$attrs />\n"
+    my($nl) = $line =~ s/\@$// ? '' : "\n";
+    return "<$tag$attrs />$nl"
 	if $_EMPTY->{$tag};
     _start_p($state)
 	if $_PHRASE->{$tag};
@@ -557,7 +560,7 @@ sub _fmt_tag {
  	$state->{html} .= _fmt_line($line, $state);
 	chomp($state->{html});
 	_close_top($tag, $state);
-	$state->{html} .= "\n";
+	$state->{html} .= $nl;
     }
     $state->{html} .= _start_tag('p', '', $state)
 	if $tag =~ /^(?:td|th|li|dd|dt|blockquote|center)$/;
