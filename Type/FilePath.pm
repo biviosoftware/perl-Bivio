@@ -10,12 +10,37 @@ sub ILLEGAL_CHAR_REGEXP {
     return qr{(?:^|/)\.\.?$|[\\\:*?"<>\|\0-\037\177]};
 }
 
+sub BLOG_FOLDER {
+    return '/Blog';
+}
+
 sub ERROR {
     return Bivio::TypeError->FILE_PATH;
 }
 
+sub IMAGE_FOLDER {
+    return '/Image';
+}
+
+sub MAIL_FOLDER {
+    return '/Mail';
+}
+
+sub PATH_REGEX {
+    return shift->REGEX;
+}
+
+sub PUBLIC_FOLDER {
+    my($proto) = @_;
+    return $proto->join($proto->PUBLIC_FOLDER_ROOT, $proto->PRIVATE_FOLDER);
+}
+
 sub PUBLIC_FOLDER_ROOT {
     return '/Public';
+}
+
+sub WIKI_FOLDER {
+    return '/Wiki';
 }
 
 sub add_trailing_slash {

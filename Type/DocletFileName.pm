@@ -14,31 +14,6 @@ sub ABSOLUTE_REGEX {
     )]}$}is;
 }
 
-sub BLOG_FOLDER {
-    return '/Blog';
-}
-
-sub IMAGE_FOLDER {
-    return '/Image';
-}
-
-sub MAIL_FOLDER {
-    return '/Mail';
-}
-
-sub PATH_REGEX {
-    return shift->REGEX;
-}
-
-sub PUBLIC_FOLDER {
-    my($proto) = @_;
-    return $proto->join($proto->PUBLIC_FOLDER_ROOT, $proto->PRIVATE_FOLDER);
-}
-
-sub WIKI_FOLDER {
-    return '/Wiki';
-}
-
 sub from_absolute {
     my($proto, $path) = @_;
     Bivio::Die->throw(DIE => {
