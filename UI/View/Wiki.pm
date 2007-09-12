@@ -43,6 +43,8 @@ sub view {
 	xhtml_topic => vs_text_as_prose('wiki_view_topic'),
 	xhtml_byline => vs_text_as_prose('wiki_view_byline'),
 	xhtml_tools => vs_text_as_prose('wiki_view_tools'),
+	xhtml_body_class =>
+	    ['Action.WikiView', 'name', 'HTMLFormat.WikiNameToClass'],
     );
     return $self->internal_body(DIV_wiki(['Action.WikiView', 'html']));
 }
