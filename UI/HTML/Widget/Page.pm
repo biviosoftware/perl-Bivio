@@ -207,7 +207,7 @@ sub render {
     ) if $self->unsafe_render_attr('background', $source, \$x) && $x;
 #TODO: Encapsulate better in ViewShortcuts.  The bivio and
 #      html attributes can have different names.
-    if (my($c) = $self->render_simple_attr('body_class', $source)) {
+    if (my $c = $self->render_simple_attr('body_class', $source)) {
 	$$buffer .= ' class="' . Bivio::HTML->escape_attr_value($c) . '"';
     }
     $self->get('body')->unsafe_render_attr('html_tag_attrs', $source, $buffer)
