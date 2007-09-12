@@ -166,7 +166,9 @@ sub get_nested {
 
 sub get_or_default {
     my($self, $name, $default) = @_;
-    # Returns the attribute if exists or I<default>.
+    Bivio::IO::Alert->warn_deprecated(
+	$name, ': code_ref will be executed in in a future version'
+    ) if ref($default) eq 'CODE';
     my($fields) = $self->[$_IDI];
     return exists($fields->{$name}) ? $fields->{$name} : $default;
 }
