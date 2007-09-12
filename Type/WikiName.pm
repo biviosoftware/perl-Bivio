@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Type.DocletFileName';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_WIDTH) = __PACKAGE__->get_instance('Line')->get_width;
 
 sub ERROR {
     return Bivio::TypeError->WIKI_NAME;
@@ -31,7 +32,7 @@ sub from_literal_stripper {
 }
 
 sub get_width {
-    return 50;
+    return $_WIDTH;
 }
 
 1;
