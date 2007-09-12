@@ -39,12 +39,14 @@ sub internal_xhtml_adorned {
 	    vs_grid3('main'),
 	    vs_grid3('footer'),
 	]),
+	body_class => view_widget_value('xhtml_body_class'),
 	xhtml => 1,
     });
 }
 
 sub internal_xhtml_adorned_attrs {
     view_put(
+	xhtml_outermost_class => '',
 	xhtml_title => Join([
 	    SPAN_realm(String([qw(auth_realm owner display_name)]), {
 		control => vs_realm_type('forum'),
@@ -52,6 +54,7 @@ sub internal_xhtml_adorned_attrs {
 	    vs_text_as_prose('xhtml_title'),
 	], {join_separator => ' '}),
 	vs_pager => '',
+	xhtml_body_class => '',
 	xhtml_head_tags => '',
 	xhtml_rss_task => '',
 	xhtml_tools => '',
