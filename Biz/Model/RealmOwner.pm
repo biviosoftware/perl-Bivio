@@ -149,7 +149,6 @@ sub internal_initialize {
 
 sub invalidate_password {
     my($self) = @_;
-    # Invalidates I<self>'s password.
     $self->update({password => $_P->INVALID});
     return;
 }
@@ -287,9 +286,21 @@ sub unsafe_get_model {
     return shift->SUPER::unsafe_get_model(@_);
 }
 
+sub update {
+    my($self, $values) = @_;
+    if ($self->require_otp
+        && defined($values->{password})
+        && $values->{password} ne $self->get('password'),
+    ) {
+	my($otp) = $self->new_other('OTP');
+	$otp->delete
+	    unless $otp->unauth_load({user_id => $self->get('realm_id')});
+    }
+    return shift->SUPER::update(@_);
+}
+
 sub update_password {
     my($self, $clear_text) = @_;
-    # Sets self's clear_text password to a new value.
     return $self->update({
 	password => $_P->encrypt($clear_text)
     });
