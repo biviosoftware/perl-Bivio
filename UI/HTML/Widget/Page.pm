@@ -125,6 +125,7 @@ sub initialize {
     $self->initialize_attr('head');
     $self->initialize_attr('body');
     $self->unsafe_initialize_attr('background');
+    $self->unsafe_initialize_attr('body_class');
     $self->internal_initialize_head_attrs(@_);
     return;
 }
@@ -204,8 +205,14 @@ sub render {
     $$buffer .= Bivio::UI::Icon->format_html_attribute(
 	$x, 'background', $req
     ) if $self->unsafe_render_attr('background', $source, \$x) && $x;
+#TODO: Encapsulate better in ViewShortcuts.  The bivio and
+#      html attributes can have different names.
+    if (my($c) = $self->render_simple_attr('body_class', $source)) {
+	$$buffer .= ' class="' . Bivio::HTML->escape_attr_value($c) . '"';
+    }
     $self->get('body')->unsafe_render_attr('html_tag_attrs', $source, $buffer)
-	if UNIVERSAL::can($self->get('body'), 'unsafe_render_attr');
+	if Bivio::UI::Widget->is_blessed($self->get('body'))
+	&& $self->get('body')->can('unsafe_render_attr');
     $$buffer .= ">\n$$body\n"
 	. $self->show_time_as_html($req)
 	. "</body></html>\n";
