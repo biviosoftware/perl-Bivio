@@ -26,7 +26,8 @@ sub execute {
 	    $req, undef, $realm_id);
 	return 1;
     }
-    (my $title = $name) =~ s/_/ /g;
+    my($title) = $_FN->get_base($name);
+    $title =~ s/_/ /g;
     my($self) = $proto->new->put_on_request($req, 1)->put(
 	name => $name,
 	title => $title,
