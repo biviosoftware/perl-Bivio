@@ -49,4 +49,12 @@ shell_util(OTP => [qw(reset_user)]);
     }, {
 	new_password => 'OTP_PASSWORD',
     }),
+    error_case({
+	'OTP.seed' => 'yourseed',
+	old_password => 'A25C5BBC42F2E6D3',
+	new_password => '',
+	confirm_new_password => 'A25C5BBC42F2E6D3',
+    } => {
+        new_password => 'NULL',
+    }),
 ];
