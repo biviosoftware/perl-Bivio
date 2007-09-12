@@ -403,6 +403,8 @@ EOF
 	path => Bivio::Type->get_instance('WikiName')->to_absolute('base.css'),
     }, \(<<'EOF'));
 .fourem_wiki {}
+^Not.*Found.*Wiki {font-size: 100%}
+^.*Help {background-color: purple}
 EOF
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',

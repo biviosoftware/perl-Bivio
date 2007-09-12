@@ -10,6 +10,8 @@ class()->render_html(ShellUtilHelp => req(), 'HELP', req()->get('auth_id'));
 <style type="text/css">
 <!--
 .fourem_wiki {}
+.NOT-THIS-WIKI {font-size: 100%}
+.body_wiki_ShellUtilHelp {background-color: purple}
 
 -->
 </style>

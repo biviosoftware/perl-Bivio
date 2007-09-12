@@ -48,10 +48,23 @@ sub render_html {
 	my($styles) = $req->get_if_exists_else_put(__PACKAGE__, []);
 	my($s) = $rf->get_content;
 	# Avoid duplicates (HelpWiki and WikiView on same page)
-	push(@$styles, $$s)
+	push(@$styles, _class($name, $$s))
 	    unless grep($$s eq $_, @$styles);
     }
     return @$res;
+}
+
+sub _class {
+    my($name, $style) = @_;
+    my($f) = __PACKAGE__->use('HTMLFormat.WikiNameToClass');
+    $style =~ s{\^(\S+)}{
+        my($re) = $1;
+	my($comma) = $re =~ s/,$//s ? ',' : '';
+	'.'
+	. ($name =~ qr{^$re$} ? $f->get_widget_value($name) : 'NOT-THIS-WIKI')
+	. $comma;
+    }exig;
+    return $style;
 }
 
 1;
