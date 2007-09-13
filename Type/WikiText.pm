@@ -365,6 +365,8 @@ my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*
 Bivio::IO::Config->register(my $_CFG = {
     deprecated_auto_link_mode => 0,
 });
+my($_MY_TAGS) = {};
+Bivio::IO::ClassLoader->map_require_all('WikiText');
 
 sub handle_config {
     my(undef, $cfg) = @_;
@@ -372,20 +374,52 @@ sub handle_config {
     return;
 }
 
+sub register_tag {
+    my($self, $tag, $class) = @_;
+    $tag = lc($tag);
+    Bivio::Die->die($tag, ': invalid tag format: ', $class)
+        unless $tag =~ /^[a-z][-\w]+$/ && $tag =~ /-/;
+    Bivio::Die->die($class, ': does not implement render_html')
+	unless $class->can('render_html');
+    Bivio::Die->die(
+	$tag, ': already registered by ', $_MY_TAGS->{$tag},
+	' cannot register to: ', $class,
+    ) if $_MY_TAGS->{$tag}
+        && $_MY_TAGS->{$tag}->simple_package_name
+	ne $class->simple_package_name;
+    # Super class will register first so we always override
+    $_MY_TAGS->{$tag} = $class;
+    return;
+}
+
 sub render_html {
-    my($self, $value, $name, $req, $task_id, $no_auto_links) = @_;
-    $no_auto_links ||= !$_CFG->{deprecated_auto_link_mode};
-    my($v) = ref($value) ? $value : \$value;
+    my($self, $args) = @_;
+    unless (ref($args) eq 'HASH') {
+	my(undef, $value, $name, $req, $task_id, $no_auto_links) = @_;
+	Bivio::IO::Alert->warn_deprecated('pass a hash, not positional');
+	$args = {
+	    value => ref($value) ? $$value : $value,
+	    name => $name,
+	    req => $req,
+	    task_id => $task_id,
+	    no_auto_links => $no_auto_links,
+	};
+    }
+    $args->{no_auto_links} ||= !$_CFG->{deprecated_auto_link_mode};
+    $args->{task_id} ||= $args->{req}->get('task_id');
+    $args->{realm_id} ||= $args->{req}->get('auth_id');
+    $args->{is_public} = 1
+	unless defined($args->{is_public});
+    $args->{prefix_word_mode} = $args->{no_auto_links}
+	|| $args->{value} =~ /\^/s ? 1 : 0;
     my($state) = {
-	lines => [split(/\r?\n/, $$v)],
+	%$args,
+	args => $args,
+	lines => [split(/\r?\n/, $args->{value})],
 	line_num => 0,
-	prefix_word_mode => $no_auto_links || $$v =~ /\^/s ? 1 : 0,
 	tags => [],
 	attrs => [],
 	html => '',
-	name => $name,
-	req => $req,
-	task_id => $task_id || $req->unsafe_get('task_id'),
     };
     while (defined(my $line = _next_line($state))) {
 	$state->{html} .= $line =~ s/^\@// ? _fmt_tag($line, $state)
@@ -521,39 +555,55 @@ sub _fmt_tag {
 	if $line =~ /^(\&\w+\;|\&\#\d+\;)/;
     return ''
 	if $line =~ /^\!/;
+    return _fmt_line($line, $state)
+	if $line =~ /^@/;
 #TODO: Special tags need some distinctive identifier.  ins-page does
 #      does not collide with the space of HTML tags.  This is hardwired
 #      because only one, generalize when needed.
-    return _ins_page($line, $state)
-	if $line =~ s{^ins-page\s+}{};
-#TODO: Does this incorrectly interpret @-----?
-    return _fmt_line($line, $state)
-	if $line =~ /^@/;
     return _fmt_err($line, 'invalid syntax', $state)
-        unless $line =~ s{^(/?)(\w+)(?=\s|$)}{};
+        unless $line =~ s{^(/?)([-\w]+)(?:\.([-\w]+))?(?=\s|$)}{};
     my($close) = $1;
     my($tag) = lc($2);
+    my($class) = $3;
     return _fmt_err($close . $tag . $line, 'unknown tag', $state)
-	unless $_TAGS->{$tag};
+	unless $_MY_TAGS->{$tag} || $_TAGS->{$tag};
     _close_tags($tag, $state);
     return _close_top($tag, $state)
 	if $close;
-    my($attrs) = '';
-    while ($line =~ s/^\s+(?:(\w+=)([^"\s]+)|(\w+=)"([^\"]+)")//) {
-	my($k) = $1 ? $1 : $3;
-	my($v) = defined($2) ? $2 : $4;
-	$attrs .= ' ' . lc($k) . '"'
-	    . Bivio::HTML->escape_attr_value(
-		$k =~ /^(?:src|href)=$/ ? _abs_href($v, $state) : $v)
-	    . '"';
+    my($attrs) = defined($class) && length($class) ? {class => $class} : {};
+    while ($line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]+)")//) {
+	$attrs->{lc($1 ? $1 : $3)} = defined($2) ? $2 : $4;
     }
     $line =~ s/^\s+//;
     my($nl) = $line =~ s/\@$// ? '' : "\n";
-    return "<$tag$attrs />$nl"
+    if ($_MY_TAGS->{$tag}) {
+	my($res);
+	my($die) = Bivio::Die->catch(sub {
+            $res = $_MY_TAGS->{$tag}->render_html({
+		%{$state->{args}},
+		value => $line,
+		tag => $tag,
+		attrs => $attrs,
+	    });
+	    return;
+        });
+	return _fmt_err($line, $die->as_string, $state)
+	    if $die;
+	return $res . $nl;
+    }
+    my($attrs_string) = '';
+    foreach my $k (sort(keys(%$attrs))) {
+	$attrs_string .= ' ' . lc($k) . '="'
+	    . Bivio::HTML->escape_attr_value(
+		$k =~ /^(?:src|href)$/ ? _abs_href($attrs->{$k}, $state)
+	        : $attrs->{$k}
+	    ) . '"';
+    }
+    return "<$tag$attrs_string />$nl"
 	if $_EMPTY->{$tag};
     _start_p($state)
 	if $_PHRASE->{$tag};
-    $state->{html} .= _start_tag($tag, $attrs, $state);
+    $state->{html} .= _start_tag($tag, $attrs_string, $state);
     return _fmt_pre($line, $state)
 	if $tag =~ /^(?:pre|code)$/;
     if (length($line)) {
