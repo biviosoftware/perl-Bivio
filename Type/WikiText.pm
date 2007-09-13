@@ -574,7 +574,7 @@ sub _fmt_tag {
     while ($line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]+)")//) {
 	$attrs->{lc($1 ? $1 : $3)} = defined($2) ? $2 : $4;
     }
-    $line =~ s/^\s+//;
+    $line =~ s/^\s+|\s+$//g;
     my($nl) = $line =~ s/\@$// ? '' : "\n";
     if ($_MY_TAGS->{$tag}) {
 	my($res);
