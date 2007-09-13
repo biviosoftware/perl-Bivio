@@ -87,6 +87,7 @@ config({
 	    "a\@\n\nb" => qq{<p class="prose">a</p><p class="prose">b\n</p>},
 	    "\@a href=/ a\@\nb" => qq{<p class="prose"><a href="/">a</a>b\n</p>},
 	    "\@span a\@\nb\@" => qq{<p class="prose"><span>a</span>b</p>},
+	    '@ins-page /pub/eg1@' => 'hello, world!',
 	    '@a href=javascript:/ x' => qq{<p class="prose"><a href="no-wiki-javascript:/">x</a>\n</p>},
 	    "\@a name=x" => qq{<p class="prose"><a name="x"></a></p>},
 	    '@a href=/ foo.org' => qq{<p class="prose"><a href="/">foo.org</a>\n</p>},
