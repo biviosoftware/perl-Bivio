@@ -103,19 +103,25 @@ sub internal_prepare_statement {
 }
 
 sub render_html {
-    my($self) = @_;
-    return $_WT->render_html(
-	$self->get(qw(body path_info)), $self->get_request, undef, 1);
+    my($self, $body) = @_;
+    return $_WT->render_html({
+	value => $body || $self->get('body'),
+	name => $self->get('path_info'),
+	req => $self->get_request,
+	task_id => undef,
+	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
+	no_auto_links => 1,
+    });
 }
 
 sub render_html_excerpt {
     my($self) = @_;
-    my($body, $path) = $self->get(qw(body path_info));
+    my($body) = $self->get('body');
 #TODO: Split on words
     $body = substr($body, 0, 300);
 #TODO: Is this good enough?
     $body =~ s/\n[^\n]*$//s;
-    return $_WT->render_html($body, $path, $self->get_request, undef, 1);
+    return $self->render_html($body);
 }
 
 1;

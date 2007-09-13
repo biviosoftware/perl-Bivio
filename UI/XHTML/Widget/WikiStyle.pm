@@ -23,33 +23,28 @@ sub render {
 
 sub render_html {
     my($proto, $name, $req, $task_id, $realm_id) = @_;
-    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
-    my($public) = $req->unsafe_get('Type.AccessMode');
-    $public = $public ? $public->eq_public : 0;
-    foreach my $mode ($public .. 1) {
-	$public = $mode;
-	last if $rf->unauth_load({
-	    path => $_WN->to_absolute($name, $mode),
-	    realm_id => $realm_id,
-	    is_public => $mode,
-	});
-    }
-    return
-	unless $rf->is_loaded;
+    return unless my $rf = $proto->use('Action.RealmFile')
+	->access_controlled_load($realm_id, $_WN->to_absolute($name), $req);
     my($res) = [
-	\($_WT->render_html($rf->get_content, $name, $req, $task_id)),
+	\($_WT->render_html({
+	    value => ${$rf->get_content},
+	    task_id => $task_id,
+	    req => $req,
+	    name => $name,
+	    map(($_ => $rf->get($_)), qw(is_public realm_id)),
+	})),
 	$rf->get(qw(modified_date_time user_id)),
     ];
     if ($rf->unauth_load({
-	path => $_WN->to_absolute('base.css', $public),
+	path => $_WN->to_absolute('base.css', $rf->get('is_public')),
 	realm_id => $realm_id,
-	is_public => $public,
+	is_public => $rf->get('is_public'),
     })) {
 	my($styles) = $req->get_if_exists_else_put(__PACKAGE__, []);
-	my($s) = $rf->get_content;
+	my($s) = _class($name, ${$rf->get_content});
 	# Avoid duplicates (HelpWiki and WikiView on same page)
-	push(@$styles, _class($name, $$s))
-	    unless grep($$s eq $_, @$styles);
+	push(@$styles, $s)
+	    unless grep($s eq $_, @$styles);
     }
     return @$res;
 }
