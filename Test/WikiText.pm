@@ -22,9 +22,12 @@ sub new_unit {
 		$new_params = $params;
 		return $class_name;
 	    },
+	    view_class_map => 'XHTMLWidget',
+	    view_shortcuts => 'Bivio::UI::XHTML::ViewShortcuts',
 	    compute_params => sub {
+		my($p) = $new_params->[0];
 		return [{
-		    value => $new_params->[0],
+		    ref($p) eq 'HASH' ? %$p : (value => $new_params->[0]),
 		    name => 'inline',
 		    req => Bivio::Test::Request->get_instance,
 		}];
