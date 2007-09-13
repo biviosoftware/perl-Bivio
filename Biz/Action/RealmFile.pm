@@ -7,6 +7,21 @@ use base 'Bivio::Biz::Action';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = Bivio::Type->get_instance('FilePath');
 
+sub access_controlled_load {
+    my($proto, $realm_id, $path, $req) = @_;
+    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
+    my($public) = $req->unsafe_get('Type.AccessMode');
+    $public = $public ? $public->eq_public : 0;
+    foreach my $mode ($public .. 1) {
+	last if $rf->unauth_load({
+	    path => $mode ? $_FP->to_public($path) : $path,
+	    realm_id => $realm_id,
+	    is_public => $mode,
+	});
+    }
+    return  $rf->is_loaded ? $rf : undef;
+}
+
 sub execute {
     my($self, $req, $is_public) = @_;
     return shift->unauth_execute($req, $is_public, $req->get('auth_id'));
