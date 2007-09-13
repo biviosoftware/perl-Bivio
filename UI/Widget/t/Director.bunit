@@ -1,26 +1,23 @@
-# Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
-# $Id$
-use strict;
-use Bivio::Test::Widget;
-Bivio::Test::Widget->unit(
-    'Bivio::UI::Widget::Director',
-    sub {
+# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
+Widget({
+    setup_render => sub {
 	my($req, $case, $params) = @_;
 	$req->put(control => $params->[0]);
 	return;
     },
+});
 [
     [
 	['control'],
 	{
 	    map({
 		my($v, $w) = @$_;
-		$v => Bivio::UI::Widget::Join->new([$w]);
+		$v => prose($w);
 	    }
 		['' => 'empty'],
 		[0 => 'zero'],
 		[1 => 'one'],
-		[ctl => ['control']],
+		['a string' => 'a str'],
 	    ),
 	},
     ] => [
@@ -29,24 +26,26 @@ Bivio::Test::Widget->unit(
 	    '' => 'empty',
 	    0 => 'zero',
 	    1 => 'one',
-	    ctl => 'ctl',
-	    force_default => Bivio::DieCode->DIE,
-	    [undef] => Bivio::DieCode->DIE,
-        ],
+	    'a string' => 'a str',
+	    force_default => DIE(),
+	    [undef] => DIE(),
+	],
     ],
     [
 	['control'],
 	{
-	    1 => Bivio::UI::Widget::Join->new(['one']),
+	    1 => prose('one'),
 	},
 	'default_value',
-	Bivio::UI::Widget::Join->new(['undef_value']),
+	prose('undef_value'),
     ] => [
 	initialize => undef,
 	render => [
 	    1 => 'one',
 	    force_default => 'default_value',
 	    [undef] => 'undef_value',
-        ],
+	],
     ],
-]);
+];
+
+

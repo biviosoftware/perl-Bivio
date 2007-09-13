@@ -3,18 +3,48 @@
 package Bivio::Test::Widget;
 use strict;
 use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::UI::Widget::Join;
 use Bivio::Test::Request;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD);
 
 sub new_unit {
-    my($proto, $class_name, $attrs) = @_;
-    ($attrs ||= {})->{class_name} ||= $class_name;
-    Bivio::Agent::Task->initialize;
-    Bivio::Test::Request->setup_facade;
-    return $proto->new($attrs);
+    my($proto, $class_name, $args) = @_;
+    ($args ||= {})->{class_name} ||= $class_name;
+    $args->{task_id} ||= 'SHELL_UTIL';
+    $args->{realm} ||= undef;
+    $args->{user} ||= undef;
+    $args->{method_to_test} ||= 'render';
+    $args->{view_class_map} ||= 'HTMLWidget';
+    $args->{view_shortcuts} ||= 'Bivio::UI::XHTML::ViewShortcuts';
+    my($req) = Bivio::Test::Request->initialize_fully;
+    $req->set_realm_and_user(@$args{qw(realm user)});
+    $req->initialize_fully($args->{task_id});
+    $args->{compute_params} ||= sub {
+	my($case, $params) = @_;
+	return $params
+	    unless _is_render($case);
+	$args->{setup_render}->($req, @_)
+	    if $args->{setup_render};
+	my($x) = '';
+	return [$req, \$x];
+    };
+    $args->{create_object} ||= sub {
+	my($case, $params) = @_;
+	my($object) = $case->get('class_name')->new(
+	    @{$args->{new_params} ? $args->{new_params}->(@_) : $params},
+	);
+	return !Bivio::UI::Widget->is_blessed($object) ? $object
+	    : $object->put_and_initialize(parent => undef);
+    };
+    $args->{compute_return} ||= sub {
+	my($case, $actual) = splice(@_, 0, 2);
+	return $actual
+	    unless _is_render($case);
+	$actual = [${$case->get('params')->[1]}];
+	return !$args->{parse_return} ? $actual
+	    : $args->{parse_return}->($case, $actual, @_);
+    };
+    return $proto->new($args);
 }
 
 sub prose {
@@ -23,60 +53,38 @@ sub prose {
 
 sub run_unit {
     my($self, $cases) = @_;
-    return $self->unit(
-	$self->unsafe_get(qw(class_name setup_render compute_return new_params check_return)),
-	$cases,
-    );
+    return $self->unit($cases);
 }
 
 sub unit {
-    my($self) = shift;
-    Bivio::Agent::Task->initialize;
-    my($req) = Bivio::Test::Request->setup_facade;
+    my($self, $cases) = @_;
+    # Must be same hash as above new_unit
+    my($args) = $self->internal_get;
+    my($req) = Bivio::Test::Request->get_instance;
     my($i) = 0;
-    my($class_name) = shift;
-    my($cases) = pop;
-    my($setup_render, $compute_return, $new_params, $check_return) = @_;
     my($res);
-    $req->put('Bivio::Test::Widget' => sub {
+    my($pkg) = __PACKAGE__;
+    $req->put($pkg => sub {
 	$res = Bivio::Test->new({
-	    create_object => sub {
-		my($case, $params) = @_;
-		return $case->get('class_name')->new(
-		    @{$new_params ? $new_params->(@_) : $params}
-		)->put_and_initialize(parent => undef);
-	    },
-	    class_name => $class_name,
-	    compute_params => sub {
-		my($case, $params) = @_;
-		return $params
-		    unless _is_render($case);
-		$setup_render->($req, @_)
-		    if $setup_render;
-		my($x) = '';
-		return [$req, \$x];
-	    },
-	    compute_return => sub {
-		my($case, $actual) = splice(@_, 0, 2);
-		return $actual
-		    unless _is_render($case);
-		$actual = [${$case->get('params')->[1]}];
-		return $compute_return ? $compute_return->($case, $actual, @_)
-		    : $actual;
-	    },
-	    $check_return ? (check_return => $check_return) : (),
+	    map($args->{$_} ? ($_ => $args->{$_}) : (), qw(
+		class_name
+	        create_object
+	        compute_params
+		compute_return
+	        check_return
+	    )),
 	})->unit([map(
-	    $i++ % 2 && ref($_) ne 'ARRAY' ? [render => [[] => $_]] : $_,
+	    $i++ % 2 && ref($_) ne 'ARRAY'
+		? [$args->{method_to_test} => [[] => $_]] : $_,
 	    @$cases,
 	)]);
     });
-#TODO: Shouldn't be hardwired, can setup above.
     Bivio::UI::View->execute(\(<<"EOF"), $req);
-view_class_map(q{@{[$self->view_class_map]}});
-view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
+view_class_map(q{@{[$self->get('view_class_map')]}});
+view_shortcuts(q{@{[$self->get('view_shortcuts')]}});
 view_main(SimplePage([
     sub {
-	shift->get_request->get('Bivio::Test::Widget')->();
+	shift->get_request->get('$pkg')->();
 	return '';
     },
 ]));
@@ -84,16 +92,11 @@ EOF
     return $res;
 }
 
-sub view_class_map {
-    my($self) = @_;
-    return ref($self) && $self->unsafe_get('view_class_map') || 'HTMLWidget';
-}
-
 sub vs_new {
-#TODO: Remove this after AUTOLOAD works
     my($self, $class, @args) = @_;
-    $class = Bivio::IO::ClassLoader->map_require($self->view_class_map, $class)
-        unless $class =~ /::/;
+    $class = Bivio::IO::ClassLoader->map_require(
+	$self->get('view_class_map'), $class
+    ) unless $class =~ /::/;
     return $class->new(@args);
 }
 

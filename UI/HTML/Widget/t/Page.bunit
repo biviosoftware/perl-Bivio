@@ -1,0 +1,30 @@
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    parse_return => sub {
+	my($case, $actual, $expect) = @_;
+	my($r) = $actual->[0];
+	$r =~ s{.*?<html><head>\n}{}s || die;
+	$r =~ s{\n</body></html>\n}{}s || die;
+	return [$r];
+    },
+});
+[
+    ['head', 'hello', {style => ''}] => qr{head</head><body bgcolor="#FFFFFF" text="#000000" link="#330099" alink="#330099" vlink="#330099">\nhello}is,
+    ['', '', {
+	style => '',
+	want_page_print => [sub {0}],
+    }] => sub {
+	my(undef, $actual) = @_;
+	return $actual->[0] =~ /page_print/ ? 0 : 1;
+    },
+    [
+	'',
+	vs_new(Script => 'first_focus'),
+	{
+	    want_page_print => 1,
+	    style => '',
+	},
+    ] => qr/first_focus_onload.*page_print_onload.*<body/is,
+];
+

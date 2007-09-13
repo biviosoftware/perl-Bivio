@@ -5,7 +5,7 @@ Widget({
 	shift->put(xhtml => shift->get('object')->unsafe_get('xhtml'));
 	return;
     },
-    compute_return => sub {
+    parse_return => sub {
 	my($case, $actual, $expect) = @_;
 	$expect->[0] .= qq{ src="/i/dot.gif" width="1" height="1" />}
 	    unless $expect->[0] =~ />/;
