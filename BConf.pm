@@ -171,8 +171,10 @@ sub merge_class_loader {
 	    $overrides || {}, {
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
+		    Ext => ['Bivio::Ext'],
 		    FacadeComponent => ['Bivio::UI'],
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
+		    IO => ['Bivio::IO'],
 		    Model => ['Bivio::Biz::Model'],
 		    map(
 			("${_}Widget" => [
@@ -189,8 +191,7 @@ sub merge_class_loader {
 		    TestUnit => ['Bivio::Test'],
 		    Type => ['Bivio::Type', 'Bivio::Auth'],
 		    View => ['Bivio::UI::View'],
-		    Ext => ['Bivio::Ext'],
-		    IO => ['Bivio::IO'],
+		    WikiText => ['Bivio::UI::WikiText'],
 		},
 	    },
 	    1,
