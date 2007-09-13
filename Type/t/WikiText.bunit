@@ -14,7 +14,11 @@ config({
 	    method => 'render_html',
 	    compute_params => sub {
 		my(undef, $params) = @_;
-		return [@$params, 'inline', req()];
+		return [{
+		    value => $params->[0],
+		    name => 'inline',
+		    req => req(),
+		}];
 	    },
 	} => [
 	    '' => '',
@@ -60,6 +64,8 @@ config({
 	    # DIV means you are in "advanced" mode, and auto-paragraphing
 	    # is off.
 	    "\@div\n\@/div" => qq{<div></div>},
+	    "\@div.c1\n\@/div" => qq{<div class="c1"></div>},
+	    "\@div class=c1\n\@/div" => qq{<div class="c1"></div>},
 	    "\@div\na\n\nb" => qq{<div>a\nb\n</div>},
 	    "\@div\n\na\n\nb" => qq{<div>a\nb\n</div>},
 	    '@code *x*' => qq{<p class="prose"><code>*x*</code>\n</p>},
@@ -151,7 +157,12 @@ OUT
 	    method => 'render_html',
 	    compute_params => sub {
 		my(undef, $params) = @_;
-		return [@$params, 'inline', req(), undef, 1];
+		return [{
+		    value => $params->[0],
+		    name => 'inline',
+		    req => req(),
+		    no_auto_links => 1,
+		}];
 	    },
 	} => [
 	    'MixedCaseOnly' => qq{<p class="prose">MixedCaseOnly\n</p>},
