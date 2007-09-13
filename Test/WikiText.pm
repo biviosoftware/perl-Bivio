@@ -9,13 +9,14 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub new_unit {
     my($proto, $class_name, $args) = @_;
     my($new_params);
-    $class_name => $proto->use('Type.WikiText');
+    $class_name = $proto->use('Type.WikiText');
     return $proto->SUPER::new_unit(
 	$class_name,
 	{
 	    task_id => 'FORUM_WIKI_VIEW',
 	    realm => 'fourem',
 	    user => 'root',
+	    class_name => $class_name,
 	    create_object => sub {
 		my($case, $params) = @_;
 		$new_params = $params;
@@ -29,7 +30,7 @@ sub new_unit {
 		}];
 	    },
 	    method_to_test => 'render_html',
-	    %$args,
+	    $args ? %$args : (),
 	},
     );
 }
