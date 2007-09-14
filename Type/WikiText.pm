@@ -368,6 +368,11 @@ Bivio::IO::Config->register(my $_CFG = {
 my($_MY_TAGS) = {};
 Bivio::IO::ClassLoader->map_require_all('WikiText');
 
+sub format_uri {
+    my(undef, $uri, $args) = @_;
+    return _abs_href($uri, $args);
+}
+
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
@@ -375,7 +380,7 @@ sub handle_config {
 }
 
 sub register_tag {
-    my($self, $tag, $class) = @_;
+    my(undef, $tag, $class) = @_;
     $tag = lc($tag);
     Bivio::Die->die($tag, ': invalid tag format: ', $class)
         unless $tag =~ /^[a-z][-\w]+$/ && $tag =~ /-/;
@@ -393,7 +398,7 @@ sub register_tag {
 }
 
 sub render_html {
-    my($self, $args) = @_;
+    my($proto, $args) = @_;
     unless (ref($args) eq 'HASH') {
 	my(undef, $value, $name, $req, $task_id, $no_auto_links) = @_;
 	Bivio::IO::Alert->warn_deprecated('pass a hash, not positional');
@@ -405,6 +410,7 @@ sub render_html {
 	    no_auto_links => $no_auto_links,
 	};
     }
+    $args->{proto} = $proto;
     $args->{no_auto_links} ||= !$_CFG->{deprecated_auto_link_mode};
     $args->{task_id} ||= $args->{req}->get('task_id');
     $args->{realm_id} ||= $args->{req}->get('auth_id');
@@ -430,15 +436,22 @@ sub render_html {
 }
 
 sub _abs_href {
-    my($uri, $state) = @_;
-    $uri =~ s/^(?=javascript:)/no-wiki-/;
-    return $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
-	uri => $uri,
-    }) : $state->{req}->format_uri({
-	task_id => $state->{task_id},
-	query => undef,
-	path_info => $uri,
-    });
+    my($uri, $args) = @_;
+    $uri =~ s/^(?=javascript:)/no-wiki-/i;
+    return $uri =~ s{^/+my(?=/)}{}s
+        && !Bivio::Auth::Realm->is_default_id($args->{realm_id})
+        ? '/'
+	. Bivio::Biz::Model->new($args->{req}, 'RealmOwner')
+	    ->unauth_load_or_die({realm_id => $args->{realm_id}})
+	    ->get('name')
+	. $uri
+        : $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
+	    uri => $uri,
+	}) : $args->{req}->format_uri({
+	    task_id => $args->{task_id},
+	    query => undef,
+	    path_info => ($uri =~ /^\^?(.*)/)[0],
+	});
 }
 
 sub _close_top {
