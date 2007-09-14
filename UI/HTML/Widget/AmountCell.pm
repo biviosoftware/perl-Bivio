@@ -1,105 +1,40 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::AmountCell;
 use strict;
-$Bivio::UI::HTML::Widget::AmountCell::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::AmountCell::VERSION;
+use Bivio::Base 'HTMLWidget.String';
 
-=head1 NAME
+# C<Bivio::UI::HTML::Widget::AmountCell> formats a cell with a number.
+# Sets the font to C<NUMBER_CELL>, alignment is C<RIGHT>.
+#
+#
+#
+# decimals : int [2]
+#
+# Number of decimals to display.
+#
+# field : string (required)
+#
+# Name of the field to render.
+#
+# pad_left : int [1]
+#
+# Number of spaces to pad to left (same as String's pad_left).
+#
+# want_parens : boolean [true]
+#
+# Should negative numbers be expressed with parens
+#
+# zero_as_blank : boolean [false]
+#
+# If true, renders the value 0 as ' '.
 
-Bivio::UI::HTML::Widget::AmountCell - formats a cell with a number
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::AmountCell;
-    Bivio::UI::HTML::Widget::AmountCell->new($attrs);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::HTML::Widget::String>
-
-=cut
-
-use Bivio::UI::HTML::Widget::String;
-@Bivio::UI::HTML::Widget::AmountCell::ISA = ('Bivio::UI::HTML::Widget::String');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::AmountCell> formats a cell with a number.
-Sets the font to C<NUMBER_CELL>, alignment is C<RIGHT>.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item decimals : int [2]
-
-Number of decimals to display.
-
-=item field : string (required)
-
-Name of the field to render.
-
-=item pad_left : int [1]
-
-Number of spaces to pad to left (same as String's pad_left).
-
-=item want_parens : boolean [true]
-
-Should negative numbers be expressed with parens
-
-=item zero_as_blank : boolean [false]
-
-If true, renders the value 0 as ' '.
-
-=back
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::AmountCell
-
-Creates a new AmountCell widget.
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes String attributes.
-
-=cut
 
 sub initialize {
     my($self) = shift;
+    # Initializes String attributes.
     my($fields) = $self->[$_IDI];
     return if $fields->{initialized};
     $self->put(
@@ -118,34 +53,20 @@ sub initialize {
     return $self->SUPER::initialize(@_);
 }
 
-=for html <a name="internal_new_args"></a>
-
-=head2 static internal_new_args(string field) : hash_ref
-
-=head2 static internal_new_args(string field, hash_ref attributes) : hash_ref
-
-Implements positional argument parsing for L<new|"new">.
-
-=cut
-
 sub internal_new_args {
     my(undef, $field, $attributes) = @_;
+    # Implements positional argument parsing for L<new|"new">.
     return {
         field => $field,
 	($attributes ? %$attributes : ()),
     };
 }
 
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub new {
+    my($self) = shift->SUPER::new(@_);
+    # Creates a new AmountCell widget.
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 1;
