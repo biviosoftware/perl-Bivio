@@ -1,0 +1,22 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+my($t1) = class('Type.WikiName')->to_absolute('T1.bmenu');
+model('RealmFile')->delete({path => $t1});
+model('RealmFile')->create_with_content({path => $t1}, \(<<'EOF'));
+Label,Link
+Home,/
+Login,/pub/login
+MyPage,^MyPage
+EOF
+[
+    [{
+	value => '@b-menu T1',
+	is_public => 0,
+    }] => qr{@{[join('.*', qw(
+       class="bmenu"
+       "/" Home
+       "/pub/login" Login
+       "/fourem/wiki/MyPage" MyPage
+    ))]}},
+];

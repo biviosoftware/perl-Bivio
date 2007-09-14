@@ -3,5 +3,5 @@
 WikiText();
 [
     '@ins-page /pub/eg1' => "hello, world!\n",
-#    '@ins-page ^ShellUtilHelp' => "Shell utility help.\n",
+    '@ins-page ^ShellUtilHelp' => qr{<div.*><p.*>Shell utility help.\n},
 ];
