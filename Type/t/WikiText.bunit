@@ -81,6 +81,8 @@ config({
 	    '@a' => qq{<p class="prose"><a></a></p>},
 	    '@a href=/x y' => qq{<p class="prose"><a href="/x">y</a>\n</p>},
 	    '@a href=x y' => qq{<p class="prose"><a href="/fourem/wiki/x">y</a>\n</p>},
+	    '@a href=^x y' => qq{<p class="prose"><a href="/fourem/wiki/x">y</a>\n</p>},
+	    '@a href=^x ^y' => qq{<p class="prose"><a href="/fourem/wiki/x">^y</a>\n</p>},
 	    '/foo.doc' => qq{<p class="prose"><a href="/foo.doc">/foo.doc</a>\n</p>},
 	    '@img src="x"' => qq{<img src="/fourem/wiki/x" />\n},
 	    "a\@\nb" => qq{<p class="prose">ab\n</p>},
