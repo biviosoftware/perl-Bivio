@@ -169,6 +169,8 @@ sub format_uri {
 	unless ref($named) eq 'HASH';
     return $named->{uri}
 	if defined($named->{uri});
+    $named->{task_id} = Bivio::Agent::TaskId->from_name($named->{task_id})
+	unless ref($named->{task_id});
     my($task_name) = $named->{task_id}->get_name;
     my($info) = $self->internal_get_value($task_name);
     return _get_error($self, $task_name)
