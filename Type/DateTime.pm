@@ -583,7 +583,7 @@ sub gettimeofday_diff_seconds {
 
 sub handle_pre_execute_task {
     my($proto, undef, $req) = @_;
-    # Parses out test_now from query if it exists.
+    return unless $_IS_TEST ||= $req->is_test;
     $_TEST_NOW = undef;
     my($q) = $req->unsafe_get('query');
     return
