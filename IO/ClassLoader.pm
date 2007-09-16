@@ -3,6 +3,7 @@
 package Bivio::IO::ClassLoader;
 use strict;
 use base 'Bivio::UNIVERSAL';
+use Bivio::Die;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
