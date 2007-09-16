@@ -67,7 +67,7 @@ sub default_merge_overrides {
 	},
 	$args->{version} < 1 ? () : (
 	    'Bivio::UI::HTML::Widget::AmountCell' => {
-		column_align => undef,
+		column_align => 0,
 		column_nowrap => 0,
 		pad_left => 0,
 		string_font => 0,
