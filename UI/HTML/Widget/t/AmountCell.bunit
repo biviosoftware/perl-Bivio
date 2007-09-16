@@ -1,0 +1,23 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+req()->put(neg => '-1.3', pos => '1.3');
+[
+    pos => qr{^<font.*>&nbsp; 1\.30 </font>$},
+    neg => qr{^<font.*>&nbsp;\(1\.30\)</font>$},
+    inline_case(sub {
+	config({
+	    class() => {
+		column_align => 0,
+		column_nowrap => 0,
+		pad_left => 0,
+		string_font => 0,
+		want_parens => 0,
+		zero_as_blank => 0,
+	    },
+        });
+        return;
+    }),
+    pos => '1.30',
+    neg => '-1.30',
+];
