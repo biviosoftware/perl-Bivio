@@ -4,69 +4,53 @@ package Bivio::UI::HTML::Widget::AmountCell;
 use strict;
 use Bivio::Base 'HTMLWidget.String';
 
-# C<Bivio::UI::HTML::Widget::AmountCell> formats a cell with a number.
-# Sets the font to C<NUMBER_CELL>, alignment is C<RIGHT>.
-#
-#
-#
-# decimals : int [2]
-#
-# Number of decimals to display.
-#
-# field : string (required)
-#
-# Name of the field to render.
-#
-# pad_left : int [1]
-#
-# Number of spaces to pad to left (same as String's pad_left).
-#
-# want_parens : boolean [true]
-#
-# Should negative numbers be expressed with parens
-#
-# zero_as_blank : boolean [false]
-#
-# If true, renders the value 0 as ' '.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IDI) = __PACKAGE__->instance_data_index;
+my($_FA) = __PACKAGE__->use('HTMLFormat.Amount');
+my($_FA_ARGS) = [];
+Bivio::IO::Config->register(my $_CFG = {
+    column_align => 'E',
+    column_nowrap => 1,
+    decimals => 2,
+    pad_left => 1,
+    string_font => 'number_cell',
+    want_parens => 1,
+    zero_as_blank => 0,
+});
+my($_CFG_KEYS) = [sort(keys(%$_CFG))];
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
 
 sub initialize {
-    my($self) = shift;
-    # Initializes String attributes.
-    my($fields) = $self->[$_IDI];
-    return if $fields->{initialized};
+    my($self) = @_;
     $self->put(
-	    value => [$self->get('field'), 'HTMLFormat.Amount',
-		$self->get_or_default('decimals', 2),
-		$self->get_or_default('want_parens', 1),
-		$self->get_or_default('zero_as_blank', 0),
-	    ],
-	    column_align => $self->get_or_default('column_align', 'E'),
-	    pad_left => $self->get_or_default('pad_left', 1),
-	    column_nowrap => 1,
-	   );
-    $self->put(string_font => 'number_cell')
-	    unless defined($self->unsafe_get('string_font'));
-    $fields->{initialized} = 1;
+	value => [sub {
+		my($source, $amount) = @_;
+	        return $_FA->get_widget_value(
+		    $amount,
+		    map($self->render_simple_attr($_, $source), qw(
+		        decimals
+			want_parens
+			zero_as_blank
+		    )),
+		);
+	    }, [$self->get('field')]],
+    );
+    $self->map_invoke(initialize_attr => [
+	map([$_ => $_CFG->{$_}], @$_CFG_KEYS),
+    ]);
     return $self->SUPER::initialize(@_);
 }
 
 sub internal_new_args {
     my(undef, $field, $attributes) = @_;
-    # Implements positional argument parsing for L<new|"new">.
     return {
         field => $field,
 	($attributes ? %$attributes : ()),
     };
-}
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    # Creates a new AmountCell widget.
-    $self->[$_IDI] = {};
-    return $self;
 }
 
 1;
