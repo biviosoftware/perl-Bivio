@@ -19,19 +19,29 @@ use Sys::Hostname ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub default_merge_overrides {
-    my($proto, $root, $prefix, $owner) = @_;
+    my($proto) = shift;
+    my($args) = @_;
+    unless (ref($args) eq 'HASH') {
+	my($root, $prefix, $owner) = @_;
+	$args = {
+	    version => 0,
+	    root => $root,
+	    prefix => $prefix,
+	    owner => $owner,
+	};
+    }
     # Configure L<Bivio::Test::Util|Bivio::Test::Util>.
     # Grab last part: Only needed by PetShop
-    my($root_lc) = lc(($root =~ /(\w+)$/)[0]);
+    my($root_lc) = lc(($args->{root} =~ /(\w+)$/)[0]);
     (my $file_root = "/var/db/$root_lc") =~ s/_/-/g;
     return (
 	'Bivio::Biz::File' => {
 	    root => $file_root,
 	},
 	'Bivio::Ext::DBI' => {
-	    database => $prefix,
-	    user => "${prefix}user",
-	    password => "${prefix}pass",
+	    database => $args->{prefix},
+	    user => "$args->{prefix}user",
+	    password => "$args->{prefix}pass",
 	    connection => 'Bivio::SQL::Connection::Postgres',
 	},
 	'Bivio::Test::HTMLParser::Forms' => {
@@ -42,19 +52,29 @@ sub default_merge_overrides {
 	},
 	'Bivio::Test::Util' => {
 	    nightly_output_dir => "/home/btest/$root_lc",
-	    nightly_cvs_dir => "perl/$root",
+	    nightly_cvs_dir => "perl/$args->{root}",
 	},
 	'Bivio::UI::Facade' => {
-	    default => $root,
+	    default => $args->{root},
 	},
 	'Bivio::Util::Release' => {
 	    projects => [
-		[$root, $prefix, $owner],
+		[$args->{root}, $args->{prefix}, $args->{owner}],
 	    ],
 	},
         'Bivio::Delegate::Cookie' => {
-            tag => uc($prefix),
+            tag => uc($args->{prefix}),
 	},
+	$args->{version} < 1 ? () : (
+	    'Bivio::UI::HTML::Widget::AmountCell' => {
+		column_align => undef,
+		column_nowrap => 0,
+		pad_left => 0,
+		string_font => 0,
+		want_parens => 0,
+		zero_as_blank => 0,
+	    },
+	),
     );
 }
 
