@@ -314,7 +314,7 @@ sub _cfg_file {
 	Task => [
 	    [FORUM_EASY_FORM => '?/Forms/*'],
 	    [FORUM_FILE => '?/file/*'],
-	    [FORUM_PUBLIC_FILE => ['?/public/*', '?/Public/*', '?/pub/*']],
+	    [FORUM_PUBLIC_FILE => ['?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
         ],
     };
 }
