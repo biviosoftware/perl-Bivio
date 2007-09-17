@@ -19,22 +19,18 @@ sub execute {
     }
     $name =~ s{^/+}{};
     unless ($_WN->is_valid($name)) {
-	# SECURITY: It's ok to get $name, because it will be in the wiki
-	# folder or below, which means it's anything in the wiki directory.
 	$req->put(path_info => $_WN->to_absolute($name));
-	$proto->get_instance('RealmFile')->unauth_execute(
-	    $req, undef, $realm_id);
-	return 1;
+	return $proto->get_instance('RealmFile')
+	    ->access_controlled_execute($req);
     }
-    my($title) = $_FN->get_base($name);
-    $title =~ s/_/ /g;
+#TODO: Why is this durable?
     my($self) = $proto->new->put_on_request($req, 1)->put(
 	name => $name,
-	title => $title,
+	title => $_WN->to_title($name),
 	exists => 0,
     );
     my($html, $dt, $uid) = $proto->use('XHTMLWidget.WikiStyle')->render_html(
-	$name, $req, $req->get('task_id'), $realm_id,
+	$realm_id, $name, $req->get('task_id'), $req,
     );
     return $self->internal_model_not_found($req, $realm_id)
 	unless $html;
