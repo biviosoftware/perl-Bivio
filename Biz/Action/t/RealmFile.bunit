@@ -2,38 +2,44 @@
 # $Id$
 Request();
 req()->set_realm_and_user('fourem', undef);
-model('RealmFile')->create_with_content({
-    path => '/0000/00/000000.html',
-}, \(<<EOF));
-<html><body>this space intentionally left blank</body></html>
-EOF
+foreach my $path (qw(
+    /ARF/0
+    /Public/ARF.txt
+    /ARF.txt
+)) {
+    model('RealmFile')->create_with_content({path => $path}, \$path);
+}
 options({
     compute_params => sub {
 	my($case, $params) = @_;
-	req()->put_durable(path_info => shift(@$params));
-	return [req(), @$params];
+	req()->put(path_info => shift(@$params));
+	return [req(), undef, req('auth_id'), @$params];
     },
     compute_return => sub {
-	my($case, $actual, $expect) = @_;
-	return [$expect]
-	    if Bivio::UNIVERSAL->is_blessed($expect, 'Bivio::DieCode');
-	$case->actual_return([req()->get('reply')->get_output]);
-	return [$expect];
+	return [req('reply')->get_output];
     },
 });
 [
     class() => [
 	execute => [
-	    '/0000/00/000000.html' => qr{this space intentionally left blank},
-	    '/0000/00/not_found.html' => Bivio::DieCode->MODEL_NOT_FOUND,
+	    '/ARF/0' => '/ARF/0',
+	    '/ARF' => MODEL_NOT_FOUND(),
 	],
 	unauth_execute => [
-	    ['/0000/00/000000.html', undef, req()->get('auth_id')]
-		=> qr{this space intentionally left blank},
-	    ['/Some/path', undef, req()->get('auth_id'), '/0000/00/000000.html']
-		=> qr{this space intentionally left blank},
-	    ['/0000/00/000000.html', undef, req()->get('auth_id'), '/not_found']
-		=> Bivio::DieCode->MODEL_NOT_FOUND,
+	    ['/ARF/0'] => '/ARF/0',
+	    ['/Some/path', '/ARF/0'] => '/ARF/0',
+	    ['/ARF/0', '/not_found'] => MODEL_NOT_FOUND(),
+	],
+	{
+	    method => 'access_controlled_execute',
+	    compute_params => sub {
+		my($case, $params) = @_;
+		req()->put(path_info => shift(@$params));
+		req()->set_user(shift(@$params));
+		return [req()];
+	    },
+	} => [
+	    '/ARF.txt' => '/Public/ARF.txt',
 	],
     ],
 ];
