@@ -151,7 +151,7 @@ sub _cfg_base {
 	    [ROBOTS_TXT => 'robots.txt'],
 	    [TEST_BACKDOOR => 'test_backdoor'],
 	    [PERMANENT_REDIRECT => undef],
-	    [CLIENT_REDIRECT => 'go/*'],
+	    [CLIENT_REDIRECT => ['go/*', 'goto/*']],
 	    [SITE_CSS => 'pub/site.css'],
 	    # Share this name across all realm types
 	    [FORUM_CSS => '?/realm.css'],
@@ -715,9 +715,8 @@ sub _cfg_wiki {
 	    [FORUM_WIKI_VIEW => ['?/wiki/*']],
 	    [FORUM_PUBLIC_WIKI_VIEW => ['?/public-wiki/*']],
 	    [FORUM_WIKI_NOT_FOUND => undef],
-	    [HELP => 'help/*'],
+	    [HELP => '?/help/*'],
 	    [HELP_NOT_FOUND => undef],
-	    [FORUM_HELP_IFRAME => '?/help-iframe'],
 	],
 	Constant => [
 	    [help_wiki_realm_id => sub {
@@ -732,11 +731,13 @@ sub _cfg_wiki {
 		 ) || 1;
 	    }],
 	],
+	Font => [
+	    [help_wiki_body => ['95%']],
+	    [help_wiki_tools => ['95%', 'lowercase']],
+	    [help_wiki_header => ['bold', '140%', 'uppercase']],
+	    [help_wiki_iframe_body => ['small']],
+	],
 	Text => [
-	    [HelpWiki => [
-		header => 'Help',
-		footer => '',
-	    ]],
 	    [WikiForm => [
 		'RealmFile.path_lc' => 'Title',
 		'content' => '',
@@ -748,7 +749,6 @@ sub _cfg_wiki {
 		HELP => 'Help',
 		FORUM_WIKI_EDIT => 'Edit Wiki Page',
 		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
-		FORUM_HELP_IFRAME => 'Help',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_WIKI_EDIT => 'Add New Page',
@@ -759,7 +759,12 @@ sub _cfg_wiki {
 		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
 	    ]],
 	    [prose => [
-		wiki_view_topic => q{String(['Action.WikiView', 'title']);},
+		help_wiki_add => 'Add Help',
+		help_wiki_close => '[Close]',
+		help_wiki_edit => '[Edit]',
+		help_wiki_footer => '',
+		help_wiki_header => 'Help',
+		help_wiki_open => 'Help',
 		wiki_view_byline => q{edited DateTime(['Action.WikiView', 'modified_date_time']); by MailTo(['Action.WikiView', 'author']);},
 		wiki_view_tools => q{TaskMenu([
                     {
@@ -769,6 +774,12 @@ sub _cfg_wiki {
 		    },
 		    'FORUM_WIKI_EDIT',
 		]);},
+		wiki_view_topic => q{String(['Action.WikiView', 'title']);},
+	    ]],
+#DEPRECATED:
+	    [HelpWiki => [
+		header => 'Help',
+		footer => '',
 	    ]],
 	],
     };
