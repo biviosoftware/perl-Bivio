@@ -22,9 +22,9 @@ Request('initialize_fully');
 	    [LOGIN => {no_context => 1}] => '/pub/login',
 	    [SITE_ROOT => {require_context => 1}] => qr{^/\?fc=.+},
 	    [FORUM_EASY_FORM => {realm => 'abc', query => '', path_info => ''}]
-		=> '/abc/EasyForm',
+		=> '/abc/Forms',
 	    [FORUM_EASY_FORM => {realm => 'abc', query => '', path_info => '0'}]
-		=> '/abc/EasyForm/0',
+		=> '/abc/Forms/0',
 	    [{uri => '0'}] => '0',
 	    [{uri => ''}] => '',
 	    [{uri => '#'}] => '#',

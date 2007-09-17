@@ -36,7 +36,7 @@ set_user('btest_read');
 	} => [
 	    [qw(USER account)] => 'USER_ACCOUNT_EDIT',
 	    [qw(CLUB account)] => NOT_FOUND(),
-	    [qw(FORUM EasyForm)] => 'FORUM_EASY_FORM',
+	    [qw(FORUM Forms)] => 'FORUM_EASY_FORM',
 	    [qw(GENERAL /pub/eg1)] => 'EXAMPLE_EG1',
 	],
 	{
