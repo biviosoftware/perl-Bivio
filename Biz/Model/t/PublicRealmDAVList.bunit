@@ -13,6 +13,8 @@ ListModel();
     dav_propfind_children => [
 	[] => [[{
 	    uri => 'fourem',
+	}, {
+	    uri => 'site-help',
 	}]],
     ],
 ];
