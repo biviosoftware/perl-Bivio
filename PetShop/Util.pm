@@ -366,7 +366,7 @@ sub _init_forum {
     }, \(<<'EOF'));
 <html>
 <body>
-<form method="POST" action="/fourem/EasyForm/btest?goto=/fourem/pub/EasyForm-btest-done.html">
+<form method="POST" action="/fourem/Forms/btest?goto=/fourem/pub/EasyForm-btest-done.html">
 <table>
 <tr>
 <td>Input:</td>
@@ -390,21 +390,14 @@ completed
 </html>
 EOF
     $self->model('RealmFile')->create_with_content({
-	path => 'EasyForm/btest.csv',
+	path => 'Forms/btest.csv',
     }, \(<<'EOF'));
 &date,&email,input,ok
 EOF
     $self->model('RealmFile')->create_with_content({
-	path => Bivio::Type->get_instance('WikiName')->to_absolute('ShellUtilHelp'),
+	path => Bivio::Type->get_instance('WikiName')->to_absolute('PrivatePage'),
     }, \(<<'EOF'));
-Shell utility help.
-EOF
-    $self->model('RealmFile')->create_with_content({
-	path => Bivio::Type->get_instance('WikiName')->to_absolute('base.css'),
-    }, \(<<'EOF'));
-.fourem_wiki {}
-^Not.*Found.*Wiki {font-size: 100%}
-^.*Help {background-color: purple}
+My Example Page.
 EOF
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
@@ -428,6 +421,18 @@ EOF
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
     });
+    $req->set_realm($self->new_other('SiteForum')->HELP_REALM);
+    $self->model('RealmFile')->create_with_content({
+	path => Bivio::Type->get_instance('WikiName')->to_absolute('base.css', 1),
+    }, \(<<'EOF'));
+^Not.*Found.*Wiki {font-size: 100%}
+^.*Help {background-color: purple}
+EOF
+    $self->model('RealmFile')->create_with_content({
+	path => Bivio::Type->get_instance('WikiName')->to_absolute('Shell_Util_Help', 1),
+    }, \(<<'EOF'));
+Shell utility help.
+EOF
     return;
 }
 
