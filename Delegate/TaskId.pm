@@ -787,12 +787,9 @@ sub info_wiki {
  	[qw(
  	    HELP
  	    9
- 	    GENERAL
- 	    DATA_READ
- 	    Action.WikiView->execute_help
-	    View.Wiki->view
-	    want_author=0
-	    MODEL_NOT_FOUND=HELP_NOT_FOUND
+ 	    FORUM
+ 	    ANYBODY
+            View.Help->iframe
  	)],
  	[qw(
  	    FORUM_WIKI_VIEW
@@ -835,19 +832,11 @@ sub info_wiki {
  	    120
  	    FORUM
  	    ANYBODY
-	    Type.AccessMode->execute_public
  	    Action.WikiView
 	    View.Wiki->view
 	    MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
 	    edit_task=FORUM_WIKI_EDIT
 	    want_author=1
- 	)],
- 	[qw(
- 	    FORUM_HELP_IFRAME
- 	    121
- 	    FORUM
- 	    ANYBODY
-            View.Help->iframe
  	)],
     ];
 #121-129 free
