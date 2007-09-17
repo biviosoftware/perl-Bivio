@@ -5,46 +5,73 @@ use strict;
 use base 'Bivio::Biz::Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FP) = Bivio::Type->get_instance('FilePath');
+my($_FP) = __PACKAGE__->use('Type.FilePath');
+my($_DATA_READ) = ${
+    __PACKAGE__->use('Bivio::Auth::PermissionSet')->from_array(['DATA_READ'])
+};
+
+sub access_controlled_execute {
+    my($proto, $req) = @_;
+    my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
+    return _execute(
+	$proto->access_controlled_load(
+	    $req->get('auth_id'),
+	    $f->parse_path($req->get('path_info')),
+	    $req,
+	) || $f->throw_die(MODEL_NOT_FOUND => {
+	    entity => $req->get('path_info'),
+	    realm_id => $req->get('auth_id'),
+	}),
+    );
+}
 
 sub access_controlled_load {
     my($proto, $realm_id, $path, $req) = @_;
     my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
-    my($public) = $req->unsafe_get('Type.AccessMode');
-    $public = $public ? $public->eq_public : 0;
-    foreach my $mode ($public .. 1) {
+    foreach my $is_public (
+	$req->with_realm($realm_id => sub {
+	    $req->get('auth_realm')->does_user_have_permissions(
+		$_DATA_READ, $req);
+	}) ? (0, 1) : 1,
+    ) {
 	last if $rf->unauth_load({
-	    path => $mode ? $_FP->to_public($path) : $path,
+	    path => $is_public ? $_FP->to_public($path) : $path,
 	    realm_id => $realm_id,
-	    is_public => $mode,
+	    is_public => $is_public,
+	    is_folder => 0,
 	});
     }
     return  $rf->is_loaded ? $rf : undef;
 }
 
 sub execute {
-    my($self, $req, $is_public) = @_;
-    return shift->unauth_execute($req, $is_public, $req->get('auth_id'));
+    my($proto, $req, $is_public) = @_;
+    return $proto->unauth_execute($req, $is_public, $req->get('auth_id'));
 }
 
 sub execute_public {
-    my($self, $req) = @_;
+    my($proto, $req) = @_;
     $req->put(path_info => $_FP->to_public($req->get('path_info')));
-    return $self->execute($req, 1);
+    return $proto->execute($req, 1);
 }
 
 sub unauth_execute {
     my($proto, $req, $is_public, $realm_id, $path_info) = @_;
     my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
-    $path_info ||= $req->get('path_info');
-    $req->get('reply')->set_output(
+    return _execute(
 	$f->unauth_load_or_die({
 	    realm_id => $realm_id,
 	    is_folder => 0,
-	    path_lc => lc($f->parse_path($path_info)),
+	    path => $f->parse_path($path_info || $req->get('path_info')),
 	    defined($is_public) ? (is_public => $is_public) : (),
-	})->get_handle,
-    )->set_output_type($f->get_content_type);
+	})
+    );
+}
+
+sub _execute {
+    my($realm_file) = @_;
+    $realm_file->req->get('reply')->set_output($realm_file->get_handle)
+	->set_output_type($realm_file->get_content_type);
     return 1;
 }
 
