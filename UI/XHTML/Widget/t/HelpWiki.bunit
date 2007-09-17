@@ -1,0 +1,29 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    view_class_map => 'XHTMLWidget',
+    setup_render => sub {
+	my($req, undef, undef, undef, $object) = @_;
+	$req->set_user($object->get_or_default(qw(test_user root)));
+	my($t) = Bivio::Agent::TaskId->from_any(
+	    $object->get_or_default(qw(test_task SHELL_UTIL)));
+	if ($object->get('control')) {
+	    $req->set_realm('site-help');
+	    $req->initialize_fully('HELP');
+	    $req->put(
+		path_info => class('Type.WikiName')->task_to_help($t, $req));
+	}
+	else {
+	    $req->set_realm('fourem');
+	    $req->initialize_fully($t);
+	}
+	return;
+    },
+});
+[
+    [] => qr{^<script type=".*</script><iframe.*/iframe><a.*Help</a>$}is,
+    [1] => qr{<div class="help_wiki".*Edit.*Close.*Shell utility.*</div>$}is,
+    [1, {test_user => 'demo'}] => qr{class="tools"><a[^>]+class="close}is,
+    [0, {test_task => 'LOGIN'}] => qr{^<a[^>]+>Add Help.*</a>$}is,
+    [0, {test_user => 'demo', test_task => 'LOGIN'}] => '',
+];
