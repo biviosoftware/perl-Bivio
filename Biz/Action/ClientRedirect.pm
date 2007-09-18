@@ -36,27 +36,6 @@ sub execute_next_stateless {
     };
 }
 
-sub execute_path_info {
-    my($proto, $req) = @_;
-    my($uri) = $req->unsafe_get('path_info');
-    my($task) = Bivio::UI::Task->unsafe_get_from_uri(
-	$uri,
-        $req->get('Bivio::Auth::RealmType'),
-	$req,
-    );
-    $req->throw_die(NOT_FOUND => {
-	entity => $uri,
-	message => 'no task for URI',
-    }) unless $task;
-    return {
-	task => $task,
-	realm => $proto->get_realm_for_task($task, $req),
-	query => $req->unsafe_get('query'),
-	path_info => undef,
-	no_context => 1,
-    };
-}
-
 sub execute_query {
     my($proto, $req) = @_;
     my($query) = $req->unsafe_get('query');
@@ -65,6 +44,19 @@ sub execute_query {
     $uri =~ s,^(?!\w+:|\/),\/,;
     return {
 	uri => $uri,
+	query => undef,
+    };
+}
+
+sub execute_query_or_path_info {
+    my($proto, $req) = @_;
+    return shift->execute_query(@_)
+	if ($req->unsafe_get('query') || {})->{$proto->QUERY_TAG};
+    return  $req->get('path_info') ? {
+	uri => $req->get('path_info'),
+	query => $req->get('query'),
+    } : {
+	task_id => 'next',
 	query => undef,
     };
 }

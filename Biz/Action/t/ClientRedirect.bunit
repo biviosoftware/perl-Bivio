@@ -22,24 +22,6 @@ set_user('btest_read');
 	    ORDER_COMMIT => NOT_FOUND(),
 	],
 	{
-	    method => 'execute_path_info',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		Bivio::Auth::RealmType->from_name($params->[0])->execute(req());
-		req()->put(path_info => $params->[1]);
-		return [req()];
-	    },
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [$actual->[0]->{task}];
-	    },
-	} => [
-	    [qw(USER account)] => 'USER_ACCOUNT_EDIT',
-	    [qw(CLUB account)] => NOT_FOUND(),
-	    [qw(FORUM Forms)] => 'FORUM_EASY_FORM',
-	    [qw(GENERAL /pub/eg1)] => 'EXAMPLE_EG1',
-	],
-	{
 	    method => 'execute_unauth_role_in_realm',
 	    compute_params => sub {
 		my(undef, $params) = @_;
