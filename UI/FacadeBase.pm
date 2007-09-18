@@ -595,9 +595,11 @@ sub _cfg_user_auth {
 		path_info => undef,
 		no_context => 1,
 	    }],
-		[xlink_my_site_login => 'MY_SITE'],
+		[[qw(xlink_my_site_login xlink_user_logged_out)] => 'MY_SITE'],
 		[xlink_login_no_context => 'LOGIN'],
-		[xlink_user_create_no_context => 'USER_CREATE'],
+		[[qw(xlink_user_create_no_context xlink_user_just_visitor)]
+		     => 'USER_CREATE'],
+		[xlink_user_logged_in => 'LOGOUT'],
 	    ),
 	],
 	Font => [
@@ -671,9 +673,9 @@ sub _cfg_user_auth {
 	    [[qw(title xlink)] => [
 		GENERAL_CONTACT => 'Contact Us',
 		USER_PASSWORD  => 'Password',
-		[qw(LOGIN my_site_login)] => 'Login',
-		LOGOUT => 'Logout',
-		USER_CREATE => 'Register',
+		[qw(LOGIN my_site_login user_logged_out)] => 'Login',
+		[qw(LOGOUT user_logged_in)] => 'Logout',
+		[qw(USER_CREATE user_just_visitor)] => 'Register',
 		GENERAL_USER_PASSWORD_QUERY_ACK => 'Password Assistance Sent',
 		ADM_SUBSTITUTE_USER => 'Act as User',
 		SITE_ROOT => 'Home',
@@ -694,11 +696,7 @@ sub _cfg_user_auth {
 	    ]],
 	    [prose => [
 		xhtml_user_state => q{DIV_user_state(
-		    Director([qw(user_state ->get_name)], {
-			LOGGED_IN => XLink('LOGOUT'),
-			LOGGED_OUT => XLink('my_site_login'),
-			JUST_VISITOR => XLink('USER_CREATE'),
-		    }),
+                    XLink([sub {'user_' . shift->req('user_state')->get_name}]),
 		);},
 		password_query_mail_subject => 'vs_site_name(); Password Assistance',
 		create_mail_subject => 'vs_site_name(); Registration Verification',
