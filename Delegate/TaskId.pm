@@ -81,7 +81,7 @@ sub info_base {
 	    8
 	    GENERAL
 	    ANYBODY
-	    Action.ClientRedirect->execute_query
+	    Action.ClientRedirect->execute_query_or_path_info
 	    next=SITE_ROOT
 	)],
 	# Handy for demos and such.  You need to provide a link in the
