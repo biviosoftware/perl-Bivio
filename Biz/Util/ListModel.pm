@@ -7,7 +7,6 @@ use Bivio::Biz::Action;
 use Bivio::IO::Trace;
 use Bivio::Util::CSV;
 
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 
@@ -25,13 +24,10 @@ sub csv {
     # one is written.  The others are just loaded.
     $self->initialize_ui;
     $self->usage('too few arguments') unless int(@_) >= 2;
-
 #TODO: Remove this ugly hack
-    Bivio::Die->eval(sub {
-	Bivio::Biz::Action->get_instance('PublicRealm')
-	    ->execute_simple($self->get_request);
-    });
-
+    my($pr) = Bivio::IO::ClassLoader->unsafe_map_require('Action.PublicRealm');
+    $pr->execute_simple($self->req)
+	if $pr;
     my($model) = $models;
     my($iterating) = {};
     my($method) = 'next_row';
@@ -48,20 +44,17 @@ sub csv {
 	    $model->$m(Bivio::Agent::HTTP::Query->parse($query || ''));
 	}
     }
-    my($cols) = $columns ?
-	    [
-		map {
-		    {
-			name => $_,
-			type => $model->get_field_info($_, 'type'),
-		    }
-		} (split(/[,\s]+/, $columns))
-	    ] : [
-		sort {
-		    $a->{name} cmp $b->{name};
-		} values(%{$model->get_info('columns')})
-	    ];
-    my($res) = join(',', map {$_->{name}} @$cols)."\n";
+    my($cols) = $columns ? [
+	map(+{
+	    name => $_,
+	    type => $model->get_field_info($_, 'type'),
+	}, split(/[,\s]+/, $columns)),
+    ] : [
+	sort({
+	    $a->{name} cmp $b->{name};
+	} grep($_->{in_select}, values(%{$model->get_info('columns')}))),
+    ];
+    my($res) = join(',', map($_->{name}, @$cols)) . "\n";
     $model->reset_cursor
 	if $method eq 'next_row';
     while ($model->$method()) {
