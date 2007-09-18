@@ -88,11 +88,6 @@ my($_SELF) = __PACKAGE__->new({
 	[page_left_margin => 20],
     ],
     Task => [
-	[CLIENT_REDIRECT => 'goto/*'],
-	[HELP => 'help/*'],
-	[FAVICON_ICO => 'favicon.ico'],
-	[ROBOTS_TXT => 'robots.txt'],
-	[TEST_BACKDOOR => 'test_backdoor'],
 	[PRODUCTS => 'pub/products'],
 	[ITEM_SEARCH => 'pub/item-search'],
 	[ITEMS => 'items'],
@@ -115,20 +110,9 @@ my($_SELF) = __PACKAGE__->new({
 	[ORDER_COMMIT => '?/commit-order'],
 	[DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
 	[SOURCE => 'src'],
-	[ADM_SUBSTITUTE_USER => 'su'],
-	[MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
 	[USER_MAIL_RECEIVE => '?/_mail_receive_'],
-	[FORUM_MAIL_RECEIVE => '?/_mail_receive_'],
-	[FORUM_MAIL_REFLECTOR => undef],
-	[USER_MAIL_BOUNCE => sub {
-	    '?/_mail_receive_'
-	        . Bivio::Biz::Model->get_instance('RealmMailBounce')->TASK_URI;
-	}],
 	# Only needs to be defined for testing
 	[MAIL_RECEIVE_IGNORE => '?/_mail_receive_ignore'],
-	[MAIL_RECEIVE_NOT_FOUND => undef],
-	[MAIL_RECEIVE_NO_RESOURCES => undef],
-	[MAIL_RECEIVE_FORWARD => undef],
 	[USER_ACCOUNT_CREATE_AND_PLACE_ORDER => 'my/create-account-and-order'],
 	[ORDER_HOME => '?'],
 	[WORKFLOW_CALLER => 'pub/workflow-caller'],
@@ -136,27 +120,15 @@ my($_SELF) = __PACKAGE__->new({
 	[WORKFLOW_STEP_2 => 'pub/workflow-step-2'],
 	[USER_REALMLESS_REDIRECT => 'ru/*'],
 	[ORDER_REALMLESS_REDIRECT => 'ro/*'],
-	[PUBLIC_USER_FILE_READ => '?/public/*'],
+	[PUBLIC_USER_FILE_READ => '?/public-file/*'],
 	[USER_FILE_READ => '?/file/*'],
 	[USER_DAV => '?/dav/*'],
-	[DAV => 'dav/*'],
-	[FORUM_EASY_FORM => '?/EasyForm/*'],
 	[EXAMPLE_EG1 => '/pub/eg1'],
 	[FORUM_PUBLIC_EXAMPLE_EG1 => '?/pub/eg1'],
 	[USER_ROLE_IN_REALM => '?/role-in-realm'],
 	[FORUM_ROLE_IN_REALM => '?/role-in-realm'],
     ],
     Constant => [
-	[help_wiki_realm_id => sub {
-	     my($req) = shift->get_request;
-	     return Bivio::Die->eval(
-		 sub {
-		     return Bivio::Biz::Model->new($req, 'RealmOwner')
-			 ->unauth_load_or_die({name => 'fourem'})
-			     ->get('realm_id');
-		 },
-	     ) || 1;
-	}],
 	[xlink_bunit1 => {
 	    task_id => 'LOGIN',
 	    query => undef,
