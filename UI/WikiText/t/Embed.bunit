@@ -1,7 +1,8 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 WikiText();
+req()->set_realm_and_user('fourem');
 [
     '@ins-page /pub/eg1' => "hello, world!\n",
-    '@ins-page ^ShellUtilHelp' => qr{<div.*><p.*>Shell utility help.\n},
+    '@ins-page /fourem/wiki/PrivatePage' => qr{My Example Page},
 ];
