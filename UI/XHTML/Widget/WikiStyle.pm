@@ -8,6 +8,16 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = Bivio::Type->get_instance('WikiName');
 my($_WT) = Bivio::Type->get_instance('WikiText');
 
+sub help_exists {
+    my($proto, $name, $req) = @_;
+    return $proto->use('Action.RealmFile')->access_controlled_load(
+	Bivio::UI::Constant->get_from_source($req)
+	    ->get_value('help_wiki_realm_id'),
+	$_WN->to_absolute($name),
+	$req,
+    ) ? 1 : 0;
+}
+
 sub render {
     my($self, $source, $buffer) = @_;
     my($styles) = $source->get_request->unsafe_get(__PACKAGE__);
@@ -21,8 +31,19 @@ sub render {
     return;
 }
 
+sub render_help_html {
+    my($self, $name, $req) = @_;
+    return ($self->render_html(
+	Bivio::UI::Constant->get_from_source($req)
+	    ->get_value('help_wiki_realm_id'),
+	$name,
+	Bivio::Agent::TaskId->HELP,
+	$req,
+    ))[0];
+}
+
 sub render_html {
-    my($proto, $name, $req, $task_id, $realm_id) = @_;
+    my($proto, $realm_id, $name, $task_id, $req) = @_;
     return unless my $rf = $proto->use('Action.RealmFile')
 	->access_controlled_load($realm_id, $_WN->to_absolute($name), $req);
     my($res) = [
