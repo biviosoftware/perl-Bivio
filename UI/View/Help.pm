@@ -8,34 +8,24 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub iframe {
-    my($self) = @_;
-    view_class_map('XHTMLWidget');
-    view_shortcuts('Bivio::UI::XHTML::ViewShortcuts');
     view_main(Page({
-	head => Join([<<'EOF']),
+# Shouldn't this be xhtml => 1,
+# Why can't this be inline?
+	xhtml => 1,
+	style => view_widget_value('xhtml_style'),
+	head => Simple(''),
+	body => Join([
+	Join([<<"EOF"]),
 <script>
 window.onload=function(){
-  parent.resize_help_popup();
+  parent.@{[HelpWiki()->RESIZE_FUNCTION]}();
 }
 </script>
 EOF
-	style => Join([
-	    view_widget_value('xhtml_style'),
-	    <<'EOF',
-<style type="text/css">
-<!--
-body {
-  margin: 0;
-  min-width: 0;
-  font-size: smaller;
-}
--->
-</style>
-EOF
+
+	    HelpWiki(1),
 	]),
-	body => HelpWiki({
-	    show_help_box => 1,
-	}),
+	body_class => 'help_wiki_iframe_body',
     }));
     return;
 }
