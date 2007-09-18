@@ -1,55 +1,15 @@
-# Copyright (c) 2000,2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Util::ListModel;
 use strict;
-$Bivio::Biz::Util::ListModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Util::ListModel::VERSION;
+use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Biz::Action;
+use Bivio::IO::Trace;
+use Bivio::Util::CSV;
 
-=head1 NAME
 
-Bivio::Biz::Util::ListModel - manipulate list models
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Util::ListModel;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Biz::Util::ListModel::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Util::ListModel> provides utilities to manipulate
-ListModels generically.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns:
-
-    usage: b-list-model [options] command [args...]
-    commands:
-	   csv model [query [columns]]
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
 sub USAGE {
     return <<'EOF';
@@ -59,32 +19,10 @@ commands:
 EOF
 }
 
-#=IMPORTS
-use Bivio::Biz::Action;
-use Bivio::IO::Trace;
-use Bivio::Util::CSV;
-
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="csv"></a>
-
-=head2 csv(string model, string query, string columns) : string_ref
-
-=head2 static csv(Bivio::Biz::ListModel models, string query, string columns) : string_ref
-
-Generate CSV from list model.  If I<models> is a list, only the last
-one is written.  The others are just loaded.
-
-=cut
-
 sub csv {
     my($self, $models, $query, $columns) = @_;
+    # Generate CSV from list model.  If I<models> is a list, only the last
+    # one is written.  The others are just loaded.
     $self->initialize_ui;
     $self->usage('too few arguments') unless int(@_) >= 2;
 
@@ -118,8 +56,7 @@ sub csv {
 			type => $model->get_field_info($_, 'type'),
 		    }
 		} (split(/[,\s]+/, $columns))
-	    ]
-	    : [
+	    ] : [
 		sort {
 		    $a->{name} cmp $b->{name};
 		} values(%{$model->get_info('columns')})
@@ -149,17 +86,5 @@ EOF
 	    result_type => 'application/x-unknown-content-type-Excel.CSV');
     return \$res;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000,2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
