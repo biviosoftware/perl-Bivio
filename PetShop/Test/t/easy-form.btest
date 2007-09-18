@@ -6,11 +6,11 @@ foreach my $u ('', 'root') {
     home_page();
     login_as($u)
 	if $u;
-    visit_uri('/fourem/pub/EasyForm-btest.html');
+    visit_uri('/fourem/public-file/EasyForm-btest.html');
     submit_form(OK => {
 	'Input:' => "$u$r",
     });
     verify_text('completed');
 }
-visit_uri('/fourem/file/EasyForm/btest.csv');
+visit_uri('/fourem/file/Forms/btest.csv');
 verify_text(qr{\n[^,]+,,$r,OK\n[^,]+,root\@bivio.biz,root$r,OK\n});
