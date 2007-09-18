@@ -1,55 +1,117 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::HelpWiki;
 use strict;
-use base 'Bivio::UI::Widget';
+use Bivio::Base 'Widget.If';
 use Bivio::UI::ViewLanguageAUTOLOAD;
-use Bivio::UI::XHTML::Widget::WikiStyle;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_QUERY_KEY) = 'id';
-my($_TASK_ID_FROM_REQ) = [sub {
-    my($req) = @_;
-    return Bivio::Agent::TaskId->from_int($req->get('query')->{$_QUERY_KEY});
+my($_WN) = __PACKAGE__->use('Type.WikiName');
+my($_REALM_NAME) = [['->req', 'Bivio::UI::Facade'], '->HELP_WIKI_REALM_NAME'];
+my($_PAGE_NAME) = [sub {
+    my($req) = shift->req;
+    return $_WN->task_to_help($req->get('task_id'), $req);
 }];
+my($_PAGE_EXISTS) = [sub {
+    my($source, $page) = @_;
+    return WikiStyle()->help_exists($page, $source->req);
+}, $_PAGE_NAME];
+
+sub RESIZE_FUNCTION {
+    return 'help_wiki_resize';
+}
 
 sub initialize {
     my($self) = @_;
-    # attributes:
-    #   position_over_link: boolean [0]
-    #   visibility: string [hidden]
+    $self->initialize_attr(control => 0);
+    $self->initialize_attr(position_over_link => 0);
+    $self->initialize_attr(visibility => 'hidden');
     $self->put_unless_exists(
-	help_box => If([\&_wiki_text, $self, $_TASK_ID_FROM_REQ],
-	    DIV_help_wiki(Join([
-		DIV_help_close(Join([
-		    If([\&_is_help_author],
-			Link('[edit]',
-			    ['->format_uri', 'FORUM_WIKI_EDIT', '',
-				[\&_help_realm_name],
-				[\&_help_page, $_TASK_ID_FROM_REQ]])),
-		    vs_blank_cell(),
-		    Link('[close]',
-			'javascript: parent.toggle_help_popup()'),
+        control_off_value => sub {
+	    return Join([
+		If($_PAGE_EXISTS,
+		    Join([
+			_js($self),
+			_iframe($self),
+			_link_open(),
+		    ]),
+		    _link_add(),
+	        ),
+	    ]);
+	},
+	control_on_value => sub {
+	    return DIV_help_wiki(Join([
+		DIV_tools(Join([
+		    _link_edit(),
+		    _link_close(),
 		])),
-		DIV_header(Prose(vs_text('helpwiki.header'))),
-		DIV_help_wiki_body([['->get_request'], "$self"]),
-		DIV_footer(Prose(vs_text('helpwiki.footer'))),
-	    ])),
-	),
-        value => Join([
-	    <<"EOF",
-<script>
-function resize_help_popup() {
+		DIV_header(vs_text_as_prose('help_wiki_header')),
+		DIV_help_wiki_body([_body_attr($self)]),
+		DIV_footer(vs_text_as_prose('help_wiki_footer')),
+	    ]), {
+		control => [\&_iframe_body, _body_attr($self)],
+	    });
+        },
+    );
+    return shift->SUPER::initialize(@_);
+}
+
+sub internal_new_args {
+    my(undef, $control, $attributes) = @_;
+    return {
+	control => $control || 0,
+	($attributes ? %$attributes : ()),
+    };
+}
+
+sub _body_attr {
+    my($self) = @_;
+    return "$self.body";
+}
+
+sub _iframe {
+    my($self) = @_;
+    return EmptyTag({
+	tag => 'iframe',
+	id => 'help_wiki_iframe',
+	class => 'help_wiki_iframe',
+	MARGINWIDTH => 0,
+	SCROLLING => 'no',
+	FRAMEBORDER => 0,
+	SRC => _uri('HELP'),
+    });
+}
+
+sub _iframe_body {
+    my($source, $body_attr) = @_;
+    my($req) = $source->get_request;
+    return 0
+	unless my $html = WikiStyle()->render_help_html(
+            $req->get('path_info'),
+	    $req,
+	);
+    $req->put($body_attr => $$html);
+    return 1;
+}
+
+sub _js {
+    my($self) = @_;
+    return [sub {
+	my($source) = @_;
+        my($x) = JavaScript()->strip(<<"EOF");
+<script type="text/javascript">
+function @{[$self->RESIZE_FUNCTION]}() {
   var o = document.getElementById('help_wiki_iframe');
-  var node = document.getElementById('help_link');
-  var top = @{[$self->unsafe_get('position_over_link')
-      ? '0' : 'node.offsetHeight']};;
+  var node = document.getElementById('help_wiki_open');
+  var top = @{[
+    $self->render_simple_attr('position_over_link', $source)
+      ? '0' : 'node.offsetHeight'
+  ]};
   while (node) {
     top += node.offsetTop;
     node = node.offsetParent;
   }
   o.style.top = top + 'px';
-
   if (document.all) {
     var b = help_wiki_iframe.document.body;
     o.style.height = b.scrollHeight;
@@ -59,90 +121,89 @@ function resize_help_popup() {
   else {
     o.style.height = o.contentDocument.body.scrollHeight + 'px';
   }
-  o.style.visibility = '@{[$self->get_or_default('visibility', 'hidden')]}';
+  o.style.visibility = '@{[_visibility($self, $source)]}';
 }
 
-function toggle_help_popup() {
+function help_wiki_toggle() {
   var o = document.getElementById('help_wiki_iframe');
   o.style.visibility = o.style.visibility == 'visible' ? 'hidden' : 'visible';
 }
 </script>
 EOF
-	    If([\&_wiki_text, $self],
-		Join([
-		    '<iframe id="help_wiki_iframe" marginewidth="0" scrolling="no" frameborder="0" src="',
-		    URI({
-  			task_id => 'FORUM_HELP_IFRAME',
-			realm => [\&_help_realm_name],
-			query => {
-			    $_QUERY_KEY => ['task_id', '->as_int'],
-			},
-  		    }),
-		    '"></iframe>',
-		]),
-	    ),
-            If(['->unsafe_get', "$self"],
-                DIV_help_link(Link('Help', 'javascript: toggle_help_popup()')
-		   ->put(attributes => ' id="help_link"')),
-                If([\&_is_help_author],
-                    DIV_help_link(Link('Add Help',
-		        ['->format_uri', 'FORUM_WIKI_EDIT', '',
-			    [\&_help_realm_name], [\&_help_page]]))),
-	       ),
-        ]));
-    return shift->SUPER::initialize(@_);
+	chomp($x);
+	return $x;
+    }];
 }
 
-sub render {
-    my($self, $source, $buffer) = @_;
-    $self->get($self->unsafe_get('show_help_box')
-	? 'help_box' : 'value')->render($source, $buffer);
-    return;
+sub _link_add {
+    return Link(
+	vs_text_as_prose('help_wiki_add'),
+	_uri('FORUM_WIKI_EDIT'),
+	{
+	    class => 'help_wiki_add',
+	    control => [
+		sub {
+		    my($source, $name) = @_;
+		    my($req) = $source->req;
+		    return $req->with_realm(
+			$name,
+			sub {$req->can_user_execute_task(
+			    'FORUM_WIKI_EDIT')},
+		    );
+		}, $_REALM_NAME,
+	    ],
+	},
+    );
 }
 
-sub _help_page {
-    my($req, $task_id) = @_;
-    my($name) = Bivio::UI::Text->get_from_source($req)->get_value(
-        'title', ($task_id || $req->get('task_id'))->get_name);
-    $name =~ s/\W//g;
-    return $name . 'Help';
+sub _link_close {
+    return Link(
+	vs_text_as_prose('help_wiki_close'),
+	'javascript: parent.help_wiki_toggle()',
+        'close',
+    );
 }
 
-sub _help_realm_name {
-    my($source, $admin_only) = @_;
-    my($req) = shift->get_request;
-    my($realm_id) = Bivio::UI::Constant->get_from_source($req)
-	->get_value('help_wiki_realm_id');
-    my($name) = @{$req->map_user_realms(
-	sub {
-	    my($user_realm) = @_;
-	    return grep($_->eq_administrator, @{$user_realm->{roles}})
-		? $user_realm->{'RealmOwner.name'}
-		    : ();
-	}, {
-	    'RealmUser.realm_id' => $realm_id,
-	})};
-    return $admin_only
-	? $name
-	: Bivio::Biz::Model->new($req, 'RealmOwner')->unauth_load_or_die({
-	    realm_id => $realm_id,
-	})->get('name');
+sub _link_edit {
+    return Link(
+	vs_text_as_prose('help_wiki_edit'),
+	_uri('FORUM_WIKI_EDIT', ['->req', 'path_info']),
+	{
+	    class => 'edit',
+	    control =>
+		[['->req'], '->can_user_execute_task', 'FORUM_WIKI_EDIT'],
+	},
+    );
 }
 
-sub _is_help_author {
-    return _help_realm_name(@_, 1);
+sub _link_open {
+    return Link(
+	vs_text_as_prose('help_wiki_open'),
+	'javascript: help_wiki_toggle()',
+	{
+	    id => 'help_wiki_open',
+	    class => 'help_wiki_open',
+	},
+    );
 }
 
-sub _wiki_text {
-    my($source, $self, $task_id) = @_;
-    my($req) = $source->get_request;
-    return 0
-	unless my($html) = Bivio::UI::XHTML::Widget::WikiStyle->render_html(
-            _help_page($req, $task_id), $req, Bivio::Agent::TaskId->HELP,
-	    Bivio::UI::Constant->get_from_source($req)
-	    ->get_value('help_wiki_realm_id'));
-    $req->put("$self" => $$html);
-    return 1;
+sub _uri {
+    my($task, $path_info) = @_;
+    return URI({
+	task_id => $task,
+	query => undef,
+	realm => $_REALM_NAME,
+	path_info => $path_info || [$_PAGE_NAME],
+    });
+}
+
+sub _visibility {
+    my($self, $source) = @_;
+    my($res) = lc($self->render_simple_attr('visibility', $source));
+    return $res
+	if $res =~ /^(?:hidden|visible)$/;
+    Bivio::IO::Alert->warn($res, ': not a valid visibility value: ', $self);
+    return 'visible';
 }
 
 1;
