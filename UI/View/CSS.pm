@@ -149,7 +149,6 @@ th {
 th, th>a:link, th>a:visited, th>a:active, th>a:hover {
   Font('th');
 }
-! CLASSES
 .acknowledgement {
   margin: auto;
   text-align: center;
@@ -558,6 +557,7 @@ sub _site_user_auth {
 td.header_right div.user_state {
   vertical-align: top;
   text-align: right;
+  display: inline;
 }
 td.header_right div.user_state a {
   Font('user_state');
@@ -567,56 +567,69 @@ EOF
 
 sub _site_wiki {
     return <<'EOF';
-.help_link {
-  Color('help_wiki-background');
-  padding-left: .5em;
-  padding-right: .5em;
-  text-align: center;
-}
-.wiki .prose {
-  text-indent: 2em;
-  margin: 1ex 0 1ex 0;
-}
-#help_wiki_iframe {
-  position: absolute;
-  visibility: hidden;
-  right: 1ex;
-  width: 40em;
-  z-index: 1;
-}
-div.help_wiki {
+.help_wiki {
   Color('help_wiki-background');
 }
 .help_wiki table {
   font-size: 100%;
 }
-.help_wiki .help_wiki_body {
-  text-align: left;
-  font-size: 95%;
+.help_wiki .tools {
+  text-align: right;
+  padding-top: .5ex;
   padding-right: .5em;
-  padding-left: .5em;
+  float: right;
+}
+.help_wiki .tools a {
+  Font('help_wiki_tools');
+}
+.help_wiki .tools .edit {
+  padding-right: .5em;
+}
+body.help_wiki_iframe_body {
+  margin: 0;
+  min-width: 0;
+  Font('help_wiki_iframe_body');
+}
+.help_wiki_iframe {
+  Color('help_wiki-background');
+  position: absolute;
+  visibility: hidden;
+  right: .5em;
+  width: 41em;
+  z-index: 1;
+}
+a.help_wiki_open,
+a.help_wiki_add {
+  Font('user_state');
+  background: Icon('tools_sep'); right center no-repeat;
+  padding-right: vs_add(Icon('tools_sep', 'width'), 4);px;
+  margin-right: 4px;
 }
 .help_wiki .header {
-  margin: 0;
-  padding-top: 0;
   padding-bottom: .5ex;
-  text-align: center;
-  font-weight: bold;
-  font-size: 120%;
+  Font('help_wiki_header');
+}
+.help_wiki .header,
+.help_wiki .help_wiki_body {
+  text-align: left;
+  padding-right: .5em;
+  padding-left: .5em;
 }
 .help_wiki .footer {
   padding-top: .5ex;
   padding-bottom: .5ex;
   text-align: center;
 }
+.help_wiki .help_wiki_body {
+  Font('help_wiki_body');
+}
 div.wiki {
   padding-top: .5ex;
   padding-bottom: .5ex;
 }
-.help_close {
-  text-align: right;
-  padding-right: .5ex;
-  font-size: 90%;
+.wiki .prose {
+  text-indent: 2em;
+  margin: 1ex 0 1ex 0;
 }
 EOF
 }
