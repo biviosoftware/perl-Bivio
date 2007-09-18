@@ -40,6 +40,7 @@ commands:
     init_dbms [clone_db] -- execute createuser and createdb optionally copying clone_db (only works for pg right now)
     reinitialize_constraints -- creates constraints
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
+    restore_dbms_dump file-dump -- restore a "raw" dump
     run -- executes sql contained in input and dies on error
     run_command sql -- executes sql in command line interpreter (shell)
     tables - list tables of current database
@@ -1364,6 +1365,14 @@ sub reinitialize_sequences {
 	Bivio::SQL::Connection->execute($cmd);
     }
     return $res;
+}
+
+sub restore_dbms_dump {
+    my($self, $dump) = @_;
+    $self->destroy_db;
+    $self->commit_or_rollback;
+    my($db, $u) = @{Bivio::SQL::Connection->get_dbi_config}{qw(database user)};
+    return ${$self->piped_exec("pg_restore --dbname='$db' -U '$u' '$dump'")};
 }
 
 sub restore_model {
