@@ -21,7 +21,7 @@ sub initialize {
 	    my($b);
 	    $self->initialize_value('uri', URI($uri))->render($source, \$b);
 	    return $b;
-	}, vs_constant('xlink_' . $l)],
+	}, vs_constant([sub {"xlink_$_[1]"}, $l])],
 #TODO: event_handler
 #TODO: link_target
 	html_attrs => vs_html_attrs_merge([qw(href name link_target)]),
