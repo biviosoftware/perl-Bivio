@@ -63,9 +63,13 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_byline => '',
 	xhtml_selector => '',
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
-	xhtml_header_right => vs_text_as_prose('xhtml_user_state'),
+	xhtml_header_right => Join([
+#TODO: Unless this is done this way, the boxes don't align..
+	    DIV_user_state(HelpWiki()),
+	    vs_text_as_prose('xhtml_user_state'),
+	]),
 	xhtml_main_left => '',
-	xhtml_main_right => HelpWiki(),
+	xhtml_main_right => '',
 	xhtml_footer_left => XLink('back_to_top'),
 	xhtml_footer_middle => '',
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
