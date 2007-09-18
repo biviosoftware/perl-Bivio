@@ -1,25 +1,27 @@
 @div class=prose id=gears
-
+@p
 Thanks for helping us out with Freiker.  Our goal is to help children
 develop healthy transportion choices and habits through an incentive
 program.  Kids earn credits towards prizes every time they ride their
 bike to school.  Top freikers in a variety of categories (class,
 grade, school, district, state, national) receive extra prizes.  The
 better the prizes, the more riders we have.
-
+@/p
+@p
 You can sponsor us by giving us prizes or by donating money.  The prizes
 need to be something elementary school kids would like.  Money goes a
 long way, because we buy prizes in bulk, and merchants often give us
 a discount.
-
+@/p
+@p
 If you would like donate prizes or money, please contact us at 
 @span class=email
 gears
-@img alt=at sign image to help avoid spam class=at height=15 src=/i/at.gif width=15 
+@img alt="at sign image to help avoid spam" class=at height=15 src=/i/at.gif width=15 
 ski.local
 @/span
 .
-
+@/p
 @div class=simple
 @a href=http://www.bivio.biz
 @img class=bivio height=106 src=/i/bivio.gif width=200 

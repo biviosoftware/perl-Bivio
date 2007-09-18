@@ -3,7 +3,7 @@
 @img class=freikometer height=200 src=/i/freikometer.gif width=267 
 @/a
 @h3 Fried-o-whatsit?
-
+@p
 That's "Freikometer", and it adds a lot of fun to bike encouragement
 programs.  Freiker's success is due to fantatical dedication to data.
 Like many other bike programs, we started with punch cards.  The next
@@ -11,7 +11,8 @@ year we used barcodes and scanners.  2006-2007 is the year of the Freikometer:
 an automatic device that counts riders and uploads the data securely to
 freiker.org.  It's solar powered so you can put it right near the
 bike racks at your school.
-
+@/p
+@p
 The Freikometer is currently under test at several
 @a href=http://www.bvsd.org Boulder Valley School District
 schools.  The freikometers survived a very harsh winter -- for the
@@ -20,16 +21,17 @@ our wet but warm spring.  We will be upgrading all Freikometers in the summer
 of 2007 to operate better in extreme cold. We will be expanding outside the
 Boulder area; it's a matter of time to prove out the technology, which so far
 is going well.
-
+@/p
+@p
 The best way to understand how the Freikometer works is to see it in
 action.  
 @a href=/m/freikometer.avi View the movie (5mb).
-
+@/p
 @h3
 Freiker Doubles Ridership!
 @img class=graph height=268 src=/i/freiker-weather.png width=342 
 @/h3
-
+@p
 Twice as many kids are riding to
 @a href=http://schools.bvsd.org/crestview Crest View Elementary
 than were riding two years ago.  Why?  iPods.  It's that simple. Kids who
@@ -43,7 +45,8 @@ $5,000 per school.  Isn't it worth
 @a href=/hm/donate 10% of the price of a new Lexus
 to improve our environment by encouraging more kids to get on their
 bikes more often?
-
+@/p
+@p
 Freikers do not compete against each other for prizes.  There is no
 best in class, school, or otherwise.  Every kid wins if they try.
 Ride to school once, and you're a Freiker.  Ride to school the whole
@@ -53,5 +56,5 @@ the
  and $10.
 That's an achievable goal for any kid, and it's the first step
 towards a healthier, more self-reliant, more alert student.
-
+@/p
 @/div

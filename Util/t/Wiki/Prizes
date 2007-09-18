@@ -1,14 +1,16 @@
 @div class=prose
-
+@p
 We have a great variety of prizes.  All prizes except the
 @span class=prize_rides Green Gear
  are deducted from your ride
 total.  We are working on prize management system, which will
 show how many rides you may apply to prizes.  Prizes
 will be ordered via your Family's account on this website.
-
+@/p
+@p
 @a href=/hm/donate Click here to donate prizes or money.
-
+@/p
+@p
 @a href=http://www.resourcerevival.com
 @img class=prize_right height=92 src=/i/green_gear.gif width=100 
 @/a
@@ -24,7 +26,8 @@ the
 @a href=http://www.boulderbumpshop.com Boulder Bump Shop
  for painting
 them.
-
+@/p
+@p
 @a href=http://www.apple.com/ipodnano
 @img class=prize_left height=148 src=/i/ipod_nano.jpg width=70 
 @/a
@@ -36,7 +39,8 @@ one everybody seems to want.  At Crest View, you have to ride
 , but schools which start Freiker part of the way
 through the year will use a lower number of rides (90% of possible rides
 during the partial year).
-
+@/p
+@p
 @a href=http://www.grahamwatson.com
 @img class=prize_right height=140 src=/i/lance_poster.jpg width=100 
 @/a
@@ -48,7 +52,8 @@ scenes are magnificent.  A great way to spice up any Freiker's bedroom
 after only 
 @span class=prize_rides 20 rides
 .
-
+@/p
+@p
 @a href=http://www.grahamwatson.com
 @img class=prize_left height=115 src=/i/lance_calendar.jpg width=144 
 @/a
@@ -60,7 +65,8 @@ bit, you only need
 @span class=prize_rides 40 rides
  for these
 great looking calendars.
-
+@/p
+@p
 @a href=http://www.deanbikes.com
 @img class=prize_right height=150 src=/i/cateye_velo_5.jpg width=130 
 @/a
@@ -74,7 +80,8 @@ elapsed time, total distance, trip distance, average speed and
 a clock (12/24hr).  It's yours after 
 @span class=prize_rides 50 rides
 .
-
+@/p
+@p
 @a href=http://ubikes.com
 @img class=prize_left height=183 src=/i/ubikes_water_bottle.jpg width=70 
 @/a
@@ -85,7 +92,8 @@ for hard-riding Freikers.  Stay hydrated when you ride.  Quench
 your thirst with 
 @span class=prize_rides 10 rides
 .
-
+@/p
+@p
 @a href=http://www.mirrycle.com
 @img class=prize_right height=124 src=/i/mirrycle_bells.gif width=333 
 @/a
@@ -96,6 +104,6 @@ maker of fine bells and mirrors.  You can make a racket after
 just 
 @span class=prize_rides 10 rides
 .
-
+@/p
 @/div
 @div class=index_winners 

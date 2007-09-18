@@ -1,21 +1,23 @@
 @div class=index_wheel 
 @div class=prose
-
+@p
 Wheels are our main contact with schools in our program.  We provide you
 with barcodes and scanners.  We have found kids want to help.  They'll do
 the scanning and sticking barcodes on the bikes.
-
+@/p
+@p
 What you need to do is
 upload the barcodes daily (although some kids may be able to do this, too).
 The software takes care of the rest.  You also have to hand out the
 prizes, but that's a lot of fun.  Nothing like being in a sea
 of smiling faces.
-
+@/p
+@p
 If you would like to learn more, please contact us at 
 @span class=email
 gears
-@img alt=at sign image to help avoid spam class=at height=15 src=/i/at.gif width=15 
+@img alt="at sign image to help avoid spam" class=at height=15 src=/i/at.gif width=15 
 ski.local
 @/span
-
+@/p
 @/div

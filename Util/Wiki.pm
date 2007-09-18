@@ -31,8 +31,8 @@ sub from_xhtml {
 	$wiki =~ s{^\@div class=main_body\n}{}s;
 	$wiki =~ s{\@/div\n$}{}s;
 	$wiki =~ s{\n{2,}}{\n}sg;
-	$wiki =~ s{^\@/p$}{}mg;
-	$wiki =~ s{^\@p$}{}mg;
+#	$wiki =~ s{^\@/p$}{}mg;
+#	$wiki =~ s{^\@p$}{}mg;
 	$wiki =~ s{\n{3,}}{\n\n}sg;
 	Bivio::IO::File->write($out, \$wiki);
     }
@@ -63,7 +63,9 @@ sub _from_xhtml_child {
 	unless defined($value) && length($value);
     return join('',
 	'@',
-	join(' ', $tag, map("$_=$attr->{$_}", sort(keys(%$attr)))),
+	join(' ', $tag, map(
+	    $attr->{$_} =~ /\s/ ? qq{$_="$attr->{$_}"} : qq{$_=$attr->{$_}},
+	    sort(keys(%$attr)))),
 	($value =~ /\@|\n.*\n/s ? ("\n", $value, '@/', $tag, "\n") : " $value"),
     );
 }
