@@ -30,6 +30,7 @@ commands:
     create path -- creates file_path with input
     create_folder path -- creates folder and parents
     delete_deep path ... -- deletes files or folders specified
+    export_tree folder -- exports an entire tree to current directory
     import_tree [folder] -- imports files in current directory into folder [/]
     list_folder folder -- lists a folder
     read path -- returns file contents
@@ -54,6 +55,27 @@ sub delete_deep {
     foreach my $p (@_) {
 	_do($self, 'delete_deep', $p);
     }
+    return;
+}
+
+sub export_tree {
+    my($self, $folder) = shift->arg_list(\@_, [[qw(folder FilePath)]]);
+    $self->initialize_ui;
+    $folder .= '/'
+	unless length($folder) == 1;
+    my($re) = qr{^\Q$folder\E}is;
+    $self->model('RealmFile')->do_iterate(sub {
+        my($it) = @_;
+	return 1
+	    unless !$it->get('is_folder')
+	    && (my $p = $it->get('path')) =~ $re;
+	$p =~ s{^/}{};
+	Bivio::IO::File->mkdir_parent_only($p);
+	Bivio::IO::File->write($p, $it->get_content);
+	Bivio::IO::File->chmod(0444, $p)
+	    if $it->get('is_read_only');
+        return 1;
+    });
     return;
 }
 
