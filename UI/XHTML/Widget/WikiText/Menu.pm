@@ -32,7 +32,7 @@ sub render_html {
     TaskMenu(
 	[map(Link(_parse_row($_, $args, $path, $line++)), @$csv)],
 	$class,
-    )->put_and_initialize(parent => undef)->render($args->{req}, \$b);
+    )->put_and_initialize(parent => undef)->render($args->{source}, \$b);
     return $b;
 }
 
