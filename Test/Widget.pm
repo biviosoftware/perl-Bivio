@@ -10,6 +10,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub new_unit {
     my($proto, $class_name, $args) = @_;
     ($args ||= {})->{class_name} ||= $class_name;
+    $args->{view_pre_compile} ||= sub {};
     $args->{task_id} ||= 'SHELL_UTIL';
     $args->{realm} ||= undef;
     $args->{user} ||= undef;
@@ -64,24 +65,35 @@ sub unit {
     my($i) = 0;
     my($res);
     my($pkg) = __PACKAGE__;
-    $req->put($pkg => sub {
-	$res = Bivio::Test->new({
-	    map($args->{$_} ? ($_ => $args->{$_}) : (), qw(
-		class_name
-	        create_object
-	        compute_params
-		compute_return
-	        check_return
-	    )),
-	})->unit([map(
-	    $i++ % 2 && ref($_) ne 'ARRAY'
-		? [$args->{method_to_test} => [[] => $_]] : $_,
-	    @$cases,
-	)]);
-    });
+    $req->put(
+	"$pkg.view_pre_compile" => $args->{view_pre_compile},
+	$pkg => sub {
+	    $res = Bivio::Test->new({
+		map($args->{$_} ? ($_ => $args->{$_}) : (), qw(
+		    class_name
+		    create_object
+		    compute_params
+		    compute_return
+		    check_return
+		)),
+	    })->unit([map(
+		$i++ % 2 && ref($_) ne 'ARRAY'
+		    ? [$args->{method_to_test} => [[] => $_]] : $_,
+		@$cases,
+	    )]);
+	},
+    );
     Bivio::UI::View->execute(\(<<"EOF"), $req);
 view_class_map(q{@{[$self->get('view_class_map')]}});
 view_shortcuts(q{@{[$self->get('view_shortcuts')]}});
+(sub {
+    my(\$req) = Bivio::Test::Request->get_instance;
+    \$req->get('$pkg.view_pre_compile')->(
+        Bivio::UI::ViewLanguage->unsafe_get_eval,
+        \$req,
+    );
+    return;
+})->();
 view_main(SimplePage([
     sub {
 	shift->get_request->get('$pkg')->();
