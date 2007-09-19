@@ -21,7 +21,7 @@ do_logout();
 #
 home_page();
 login_as('root');
-visit_uri('/su');
+visit_uri('/adm/su');
 submit_form({
     email => 'otp',
 });
