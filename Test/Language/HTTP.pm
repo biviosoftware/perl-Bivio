@@ -359,6 +359,12 @@ sub http_facade {
     return $self->unsafe_get('http_facade');
 }
 
+sub is_local_email {
+    my($self, $email) = @_;
+    my($suffix) = $_CFG->{local_mail_host};
+    return $email =~ /\@\Q$suffix\E$/ ? 1 : 0;
+}
+
 sub login_as {
     my($self, $email, $password) = @_;
     $self->home_page;
