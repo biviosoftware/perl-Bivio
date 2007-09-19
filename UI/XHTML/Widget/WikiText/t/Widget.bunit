@@ -1,0 +1,14 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText({
+    view_pre_compile => sub {
+	shift->put(wiki_widget_test => 't1');
+	return;
+    },
+});
+[
+    '@b-widget test' => "t1\n",
+    '@b-widget test@' => 't1',
+    '@b-widget bad-syntax' => '',
+    '@b-widget not_found' => '',
+];
