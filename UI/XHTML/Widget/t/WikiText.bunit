@@ -59,6 +59,32 @@ config({
 	    'a @hr < b > c >= d =>' => qq{<p class="prose">a \@hr &lt; b &gt; c &gt;= d =&gt;\n</p>},
 	    '&amp;' => qq{<p class="prose">&amp;amp;\n</p>},
 	    '--' => qq{<hr /><br />\n},
+	    '@br' => qq{<br />\n},
+	    '@br dropped text' => qq{<br />\n},
+	    <<'IN' => _chomp(<<'OUT'),
+@h1 h 1
+
+p1
+IN
+<h1>h 1</h1>
+<p class="prose">p1
+</p>
+OUT
+	    <<'IN' => _chomp(<<'OUT'),
+@h1
+h1a
+@br
+h1b
+@/h1
+
+p1
+IN
+<h1>h1a
+<br />
+h1b
+</h1><p class="prose">p1
+</p>
+OUT
 	    '@p *x*' => qq{<p><strong>x</strong></p>\n},
 	    # DIV means you are in "advanced" mode, and auto-paragraphing
 	    # is off.
