@@ -1,64 +1,20 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Test::PetShop;
 use strict;
-$Bivio::PetShop::Test::PetShop::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Test::PetShop::VERSION;
-
-=head1 NAME
-
-Bivio::PetShop::Test::PetShop - test language for the PetShop
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Test::PetShop;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Test::Language::HTTP>
-
-=cut
-
-use Bivio::Test::Language::HTTP;
-@Bivio::PetShop::Test::PetShop::ISA = ('Bivio::Test::Language::HTTP');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Test::PetShop> tracks the shopping cart in an internal
-field.  L<verify_cart|"verify_cart"> uses this to test the results.
-
-=cut
-
-#=IMPORTS
-use Bivio::Type::Amount;
+use Bivio::Base 'Bivio::Test::Language::HTTP';
 use Bivio::PetShop::Util;
+use Bivio::Type::Amount;
 
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = 'Bivio::Type::Amount';
 my($_IDI) = __PACKAGE__->instance_data_index;
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="add_to_cart"></a>
-
-=head2 add_to_cart(string item_name)
-
-Selects the 'Add to Cart' button for I<item_name>.  Saves items in the internal
-copy of the cart.  If I<item_name> is not supplied, assumes there is a single
-add_to_cart link.
-
-=cut
-
 sub add_to_cart {
     my($self, $item_name) = @_;
+    # Selects the 'Add to Cart' button for I<item_name>.  Saves items in the internal
+    # copy of the cart.  If I<item_name> is not supplied, assumes there is a single
+    # add_to_cart link.
     my($fields) = $self->[$_IDI] ||= {};
     my($button) = 'add_to_cart';
     my($price);
@@ -92,17 +48,10 @@ sub add_to_cart {
     return;
 }
 
-=for html <a name="checkout_as_demo"></a>
-
-=head2 checkout_as_demo()
-
-Checks out.  Must be on a page already.
-Logs in as demo user, if need be.
-
-=cut
-
 sub checkout_as_demo {
     my($self) = @_;
+    # Checks out.  Must be on a page already.
+    # Logs in as demo user, if need be.
     my($fields) = $self->[$_IDI];
     $self->login_as_demo;
     $self->follow_link('Cart');
@@ -120,16 +69,9 @@ sub checkout_as_demo {
     return;
 }
 
-=for html <a name="create_forum"></a>
-
-=head2 create_forum()
-
-Logs out if logged in.
-
-=cut
-
 sub create_forum {
     my($self) = @_;
+    # Logs out if logged in.
     $self->home_page();
     $self->login_as('root');
     $self->basic_authorization('root');
@@ -140,30 +82,16 @@ sub create_forum {
     return $f;
 }
 
-=for html <a name="do_logout"></a>
-
-=head2 do_logout()
-
-Logs out if logged in.
-
-=cut
-
 sub do_logout {
     my($self) = @_;
+    # Logs out if logged in.
     $self->follow_link('Sign-out')
 	if $self->text_exists('Sign-out');
 }
 
-=for html <a name="login_as"></a>
-
-=head2 login_as(string user, string password)
-
-Logs in as I<user> and I<password>.
-
-=cut
-
 sub login_as {
     my($self, $user, $password) = @_;
+    # Logs in as I<user> and I<password>.
     $self->do_logout();
     $self->follow_link('Sign-in');
     $self->submit_form(submit => {
@@ -175,28 +103,14 @@ sub login_as {
     return;
 }
 
-=for html <a name="login_as_demo"></a>
-
-=head2 login_as_demo()
-
-Logs in as demo user.  Returns to the current page.
-
-=cut
-
 sub login_as_demo {
+    # Logs in as demo user.  Returns to the current page.
     return shift->login_as(Bivio::PetShop::Util->DEMO);
 }
 
-=for html <a name="remove_from_cart"></a>
-
-=head2 remove_from_cart(string item_name)
-
-Removes I<item_name> from cart.
-
-=cut
-
 sub remove_from_cart {
     my($self, $item_name) = @_;
+    # Removes I<item_name> from cart.
     my($fields) = $self->[$_IDI];
     _find_in_cart($self, $item_name, sub {
 	my($index) = @_;
@@ -208,32 +122,18 @@ sub remove_from_cart {
     return;
 }
 
-=for html <a name="search_for"></a>
-
-=head2 search_for(string words)
-
-Submits the search form with I<words>.
-
-=cut
-
 sub search_for {
     my($self, $words) = @_;
+    # Submits the search form with I<words>.
     $self->submit_form(search => {
 	anon => $words,
     });
     return;
 }
 
-=for html <a name="update_cart"></a>
-
-=head2 update_cart(string item_name, int quantity)
-
-Sets I<quantity> for I<item_name> in the cart.
-
-=cut
-
 sub update_cart {
     my($self, $item_name, $quantity) = @_;
+    # Sets I<quantity> for I<item_name> in the cart.
     my($fields) = $self->[$_IDI];
     _find_in_cart($self, $item_name, sub {
 	my($index) = @_;
@@ -247,17 +147,10 @@ sub update_cart {
     return;
 }
 
-=for html <a name="verify_cart"></a>
-
-=head2 verify_cart()
-
-Verifies that the named item(s) are in the cart.  Verifies the total.
-If no arguments supplied, calls L<verify_cart_is_empty|"verify_cart_is_empty">.
-
-=cut
-
 sub verify_cart {
     my($self) = @_;
+    # Verifies that the named item(s) are in the cart.  Verifies the total.
+    # If no arguments supplied, calls L<verify_cart_is_empty|"verify_cart_is_empty">.
     my($fields) = $self->[$_IDI];
     return $self->verify_cart_is_empty
 	unless $fields->{cart} && %{$fields->{cart}};
@@ -296,28 +189,16 @@ sub verify_cart {
     return;
 }
 
-=for html <a name="verify_cart_is_empty"></a>
-
-=head2 verify_cart_is_empty()
-
-Asserts cart is empty.  Goes to cart page if not already there.
-
-=cut
-
 sub verify_cart_is_empty {
     my($self) = @_;
+    # Asserts cart is empty.  Goes to cart page if not already there.
     _cart($self)->verify_text('Your shopping cart is empty');
     return;
 }
 
-#=PRIVATE SUBROUTINES
-
-# _cart(self)
-#
-# Goes to shopping cart page.  Must already be on another page.
-#
 sub _cart {
     my($self) = @_;
+    # Goes to shopping cart page.  Must already be on another page.
     # Assumes cart isn't sorted
     $self->follow_link('Cart')
 	unless $self->get_html_parser->get_nested('Cleaner', 'html')
@@ -325,12 +206,9 @@ sub _cart {
     return $self;
 }
 
-# _find_in_cart(self, string item_name, code_ref op) : hash_ref
-#
-# Returns item in internal cart.
-#
 sub _find_in_cart {
     my($self, $item_name, $op) = @_;
+    # Returns item in internal cart.
     my($fields) = $self->[$_IDI];
     my($t) = _cart($self)->get_html_parser->get('Tables')
 	->unsafe_get('Remove');
@@ -347,15 +225,5 @@ sub _find_in_cart {
     die(qq{item "$item_name" not in cart});
     # DOES NOT RETURN
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
