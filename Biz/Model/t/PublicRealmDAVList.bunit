@@ -10,11 +10,4 @@ ListModel();
 	   'RealmOwner.name' => '/',
        }],
     ],
-    dav_propfind_children => [
-	[] => [[{
-	    uri => 'fourem',
-	}, {
-	    uri => 'site-help',
-	}]],
-    ],
 ];
