@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
+use Bivio::Base 'HTMLWidget.ControlBase';
 use Bivio::Mail::RFC822;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -368,6 +368,17 @@ Bivio::IO::Config->register(my $_CFG = {
 my($_MY_TAGS);
 _require_my_tags(__PACKAGE__);
 
+sub control_on_render {
+    my($self, $source, $buffer) = @_;
+    $$buffer .= $self->render_html({
+	source => $source,
+	req => $source->req,
+	value => $self->render_simple_attr('value'),
+    });
+    # Don't call SUPER; we don't want html_attrs
+    return;
+}
+
 sub format_uri {
     my(undef, $uri, $args) = @_;
     return _abs_href($uri, $args);
@@ -380,7 +391,13 @@ sub handle_config {
 }
 
 sub initialize {
-    die('not really a widget yet');
+    my($self) = @_;
+    $self->initialize_attr('value');
+    return shift->SUPER::initialize(@_);
+}
+
+sub internal_new_args {
+    return shift->internal_compute_new_args([qw(value)], \@_);
 }
 
 sub register_tag {
@@ -410,10 +427,13 @@ sub render_html {
 	    value => ref($value) ? $$value : $value,
 	    name => $name,
 	    req => $req,
+	    source => $req,
 	    task_id => $task_id,
 	    no_auto_links => $no_auto_links,
 	};
     }
+    $args->{name} ||= '<inline>';
+    $args->{source} ||= $args->{req};
     $args->{proto} = $proto;
     $args->{no_auto_links} ||= !$_CFG->{deprecated_auto_link_mode};
     $args->{task_id} ||= $args->{req}->get('task_id');
