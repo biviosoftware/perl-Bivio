@@ -5,6 +5,7 @@ my($t1) = class('Type.WikiName')->to_absolute('T1.bmenu');
 model('RealmFile')->delete({path => $t1});
 model('RealmFile')->create_with_content({path => $t1}, \(<<'EOF'));
 Label,Link
+Index
 Home,/
 Login,/pub/login
 MyPage,^MyPage
@@ -15,6 +16,7 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
+       "/fourem/wiki/Index" Index
        "/" Home
        "/pub/login" Login
        "/fourem/wiki/MyPage" MyPage

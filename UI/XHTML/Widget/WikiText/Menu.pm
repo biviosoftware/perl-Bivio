@@ -38,13 +38,14 @@ sub render_html {
 
 sub _parse_row {
     my($row, $args, $path, $line) = @_;
-    return map(
-	defined($row->{$_}) && length($row->{$_})
-	    ? $_ eq 'Link'
-	    ? $args->{proto}->format_uri($row->{$_}, $args)
-	    : $row->{$_}
-	    : Bivio::Die->die($path, ", line $line: missing $_ value"),
-	 qw(Label Link));
+    Bivio::Die->die($path, ", line $line: missing Label value")
+        unless defined($row->{Label}) && length($row->{Label});
+    $row->{Link} = $row->{Label}
+	unless defined($row->{Link}) && length($row->{Link});
+    return (
+	$row->{Label},
+	$args->{proto}->format_uri($row->{Link}, $args),
+    );
 }
 
 1;
