@@ -7,7 +7,7 @@ use base 'Bivio::Biz::ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_BC) = Bivio::Type->get_instance('BlogContent');
 my($_BFN) = Bivio::Type->get_instance('BlogFileName');
-my($_WT) = Bivio::Type->get_instance('WikiText');
+my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
 my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
 
