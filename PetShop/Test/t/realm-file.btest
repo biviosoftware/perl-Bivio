@@ -2,11 +2,11 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-visit_uri('/demo/public/file.txt');
+visit_uri('/demo/public-file/file.txt');
 verify_content_type('text/plain');
 verify_text('text/plain');
 test_deviance();
-visit_uri('/demo/public/private/file.html');
+visit_uri('/demo/public-file/private/file.html');
 test_conformance();
 home_page();
 login_as('demo');
