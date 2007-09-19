@@ -94,10 +94,10 @@ sub import_tree {
 	    my($path) = $self->convert_literal('FilePath', "$folder/$f");
 	    my($method) = -d $_ ? 'create_folder' : 'create_with_content';
 	    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
-	    $method = 'update'
-		if $rf->unsafe_load({
-		    path => $path,
-		}) && !($method =~ s/create_with/update_with/);
+	    if ($rf->unsafe_load({path => $path})) {
+		return if $rf->get('is_folder');
+		$method = 'update_with_content';
+	    }
 	    $rf->$method(
 		_fix_values($self, $path, {
 		    modified_date_time => Bivio::Type::DateTime->from_unix(
