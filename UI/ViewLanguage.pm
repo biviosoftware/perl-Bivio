@@ -102,6 +102,11 @@ sub new {
     Bivio::Die->die('this class may not be instantiated');
 }
 
+sub unsafe_get_eval {
+    # USE ONLY FOR TESTING
+    return $_VIEW_IN_EVAL;
+}
+
 sub view_class_map {
     my($proto, $map_name) = _args(@_);
     # Identifies the load path for Widgets specified in view programs.
