@@ -5,8 +5,8 @@ use strict;
 use base 'Bivio::UI::Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_WN) = Bivio::Type->get_instance('WikiName');
-my($_WT) = Bivio::Type->get_instance('WikiText');
+my($_WN) = __PACKAGE__->use('Type.WikiName');
+my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
 
 sub help_exists {
     my($proto, $name, $req) = @_;

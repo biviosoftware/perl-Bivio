@@ -1,12 +1,14 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::WikiText::Embed;
+package Bivio::UI::XHTML::Widget::WikiText::Embed;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-__PACKAGE__->use('Type.WikiText')->register_tag('ins-page', __PACKAGE__);
-__PACKAGE__->use('Type.WikiText')->register_tag('b-embed', __PACKAGE__);
+
+sub handle_register {
+    return [qw(b-embed ins-page)];
+}
 
 sub render_html {
     my($proto, $args) = @_;

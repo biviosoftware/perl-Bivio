@@ -1,8 +1,8 @@
 # Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Type::WikiText;
+package Bivio::UI::XHTML::Widget::WikiText;
 use strict;
-use Bivio::Base 'Type.Text64K';
+use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::Mail::RFC822;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -365,8 +365,8 @@ my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*
 Bivio::IO::Config->register(my $_CFG = {
     deprecated_auto_link_mode => 0,
 });
-my($_MY_TAGS) = {};
-Bivio::IO::ClassLoader->map_require_all('WikiText');
+my($_MY_TAGS);
+_require_my_tags(__PACKAGE__);
 
 sub format_uri {
     my(undef, $uri, $args) = @_;
@@ -377,6 +377,10 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     return;
+}
+
+sub initialize {
+    die('not really a widget yet');
 }
 
 sub register_tag {
@@ -680,6 +684,16 @@ sub _next_line {
     my($state) = @_;
     $state->{line_num}++;
     return shift(@{$state->{lines}});
+}
+
+sub _require_my_tags {
+    my($proto) = @_;
+    foreach my $c (@{Bivio::IO::ClassLoader->map_require_all('WikiText')}) {
+	foreach my $t (@{$c->handle_register}) {
+	    $proto->register_tag($t, $c);
+	}
+    }
+    return;
 }
 
 sub _start_p {

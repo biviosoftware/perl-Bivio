@@ -1,13 +1,16 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::WikiText::Menu;
+package Bivio::UI::XHTML::Widget::WikiText::Menu;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = Bivio::Type->get_instance('WikiName');
-__PACKAGE__->use('Type.WikiText')->register_tag('b-menu', __PACKAGE__);
+
+sub handle_register {
+    return ['b-menu'];
+}
 
 sub render_html {
     my($proto, $args) = @_;

@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub new_unit {
     my($proto, $class_name, $args) = @_;
     my($new_params);
-    $class_name = $proto->use('Type.WikiText');
+    $class_name = $proto->use('XHTMLWidget.WikiText');
     return $proto->SUPER::new_unit(
 	$class_name,
 	{
