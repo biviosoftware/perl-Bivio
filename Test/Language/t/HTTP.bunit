@@ -51,6 +51,7 @@ Bivio::Die->die(q{$mail_file: should not exist})
 # Deprecated usage:
 generate_local_email(random_string()) =~ /@/;
 my(\$e1) = generate_local_email(random_string());
+die() unless is_local_email(\$e1);
 test_deviance(qr/No mail for /);
 verify_local_mail(\$e1, '');
 test_conformance();
