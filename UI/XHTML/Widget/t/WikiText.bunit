@@ -16,7 +16,6 @@ config({
 		my(undef, $params) = @_;
 		return [{
 		    value => $params->[0],
-		    name => 'inline',
 		    req => req(),
 		}];
 	    },
@@ -163,7 +162,6 @@ OUT
 		my(undef, $params) = @_;
 		return [{
 		    value => $params->[0],
-		    name => 'inline',
 		    req => req(),
 		    no_auto_links => 1,
 		}];
