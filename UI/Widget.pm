@@ -175,13 +175,13 @@ sub as_string {
 }
 
 sub die {
-    my($self, $entity, $source, @msg) = @_;
+    my($proto, $entity, $source, @msg) = @_;
     # Dies with I<msg> and context including I<attr_name> and I<source>
     # which both may be C<undef>.
     Bivio::Die->throw('DIE', {
 	message => Bivio::IO::Alert->format_args(@msg),
 	entity => $entity,
-	widget => $self,
+	widget => $proto,
 	view => Bivio::IO::ClassLoader->was_required('Bivio::View')
 	    && Bivio::View->unsafe_get_current,
 	source => $source,
@@ -398,7 +398,7 @@ sub unsafe_render_attr {
 }
 
 sub unsafe_render_value {
-    my($self, $attr_name, $value, $source, $buffer) = @_;
+    my($proto, $attr_name, $value, $source, $buffer) = @_;
     # Evaluates I<value>.  If is a constant, simply appends to I<buffer>.  If it
     # is a widget value (array_ref), calls I<source>C<-E<gt>get_widget_value>, to get
     # the value.  If the resultant value or original value is a
@@ -414,9 +414,11 @@ sub unsafe_render_value {
     #
     # Dies if value is or widget value results in a reference which is not a
     # Widget.
-    return 0 unless defined($value);
-    $value = $self->unsafe_resolve_widget_value($value, $source);
-    return 0 unless defined($value);
+    return 0
+	unless defined($value);
+    $value = $proto->unsafe_resolve_widget_value($value, $source);
+    return 0
+	unless defined($value);
     if (__PACKAGE__->is_blessed($value)) {
 	$value->put_and_initialize(parent => undef)
 	    unless $value->has_keys('parent');
@@ -428,20 +430,20 @@ sub unsafe_render_value {
 #    }
     else {
         Bivio::IO::Alert->warn('rendering ref as string: ', $value)
-                if ref($value);
+            if ref($value);
 	$$buffer .= $value;
     }
     return 1;
 }
 
 sub unsafe_resolve_widget_value {
-    my($self, $value, $source) = @_;
+    my($proto, $value, $source) = @_;
     # Recursively eliminate array_ref widget values.
     my($i) = 10;
     while (ref($value) eq 'ARRAY') {
 	$value = $source->get_widget_value(@$value);
 	return undef unless defined($value);
-	$self->die(
+	$proto->die(
 	    $source, 'infinite loop trying to ',
 	    ' unwind widget value: ', $value,
 	) if --$i < 0;
