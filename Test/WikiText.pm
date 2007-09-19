@@ -28,7 +28,6 @@ sub new_unit {
 		my($p) = $new_params->[0];
 		return [{
 		    ref($p) eq 'HASH' ? %$p : (value => $new_params->[0]),
-		    name => 'inline',
 		    req => Bivio::Test::Request->get_instance,
 		}];
 	    },
