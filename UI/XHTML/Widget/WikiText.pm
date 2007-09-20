@@ -366,14 +366,16 @@ Bivio::IO::Config->register(my $_CFG = {
     deprecated_auto_link_mode => 0,
 });
 my($_MY_TAGS);
+my($_WIDGET_ATTRS) = [qw(value realm_id task_id)];
 _require_my_tags(__PACKAGE__);
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
+    my($req) = $source->req;
     $$buffer .= $self->render_html({
 	source => $source,
-	req => $source->req,
-	value => $self->render_simple_attr('value'),
+	req => $req,
+	map(($_ => $self->render_simple_attr($_, $source)), @$_WIDGET_ATTRS),
     });
     # Don't call SUPER; we don't want html_attrs
     return;
@@ -392,7 +394,7 @@ sub handle_config {
 
 sub initialize {
     my($self) = @_;
-    $self->initialize_attr('value');
+    $self->map_invoke(unsafe_initialize_attr => $_WIDGET_ATTRS);
     return shift->SUPER::initialize(@_);
 }
 
@@ -461,6 +463,13 @@ sub render_html {
 
 sub _abs_href {
     my($uri, $args) = @_;
+    if ($uri =~ s/^\^//) {
+	$uri = $uri =~ qr{^$_EMAIL$}o
+	    ? "mailto:$uri"
+	    : $uri =~ qr{^$_DOMAIN$}o
+	    ? 'http://' . ($uri =~ /^[^\.]+\.\w+$/s ? 'www.' : '') . $uri
+	    : $uri;
+    }
     $uri =~ s/^(?=javascript:)/no-wiki-/i;
     return $uri =~ s{^/+my(?=/)}{}s
         && !Bivio::Auth::Realm->is_default_id($args->{realm_id})
@@ -514,7 +523,7 @@ sub _fmt_err {
 sub _fmt_href {
     my($tok, $state) = @_;
     return $tok
-	if ($state->{tags}->[0] || '') eq 'a';
+	if ($state->{tags}->[0] || '') eq 'a' && $tok !~ /^\^/;
     my($notwiki) = '\=';
     if ($tok =~ s{(^\W*)$notwiki(\S+)$notwiki(\W*$)}{
 	"$1" . join(' ', split(/$notwiki/, $2)) . "$3"
@@ -535,17 +544,11 @@ sub _fmt_href {
     return Bivio::HTML->escape($s)
 	. ($m =~ $_IMG
 	? qq{<img src="}
-	  . Bivio::HTML->escape_attr_value(_abs_href($m, $state))
+	  . Bivio::HTML->escape_attr_value(_abs_href("^$m", $state))
 	  . qq{" />}
 	: ( '<a href="'
-	    . Bivio::HTML->escape_attr_value(
-		_abs_href(
-		    $m =~ qr{^$_EMAIL$}o ? "mailto:$m"
-		    : $m =~ qr{^$_DOMAIN$}o ? "http://$m"
-		    : $m,
-		    $state,
-	        )
-	    ) . '">'
+	    . Bivio::HTML->escape_attr_value(_abs_href("^$m", $state))
+	    . '">'
 	    . Bivio::HTML->escape($m)
 	    . '</a>'
         )) . Bivio::HTML->escape($e);
@@ -609,7 +612,9 @@ sub _fmt_tag {
 	if $close;
     my($attrs) = defined($class) && length($class) ? {class => $class} : {};
     while ($line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]+)")//) {
-	$attrs->{lc($1 ? $1 : $3)} = defined($2) ? $2 : $4;
+	my($k) = lc($1 ? $1 : $3);
+	my($v) = defined($2) ? $2 : $4;
+	$attrs->{$k} = $k =~ /^(?:src|href)$/ ? _abs_href($v, $state) : $v;
     }
     $line =~ s/^\s+|\s+$//g;
     my($nl) = $line =~ s/\@$// ? '' : "\n";
@@ -631,10 +636,7 @@ sub _fmt_tag {
     my($attrs_string) = '';
     foreach my $k (sort(keys(%$attrs))) {
 	$attrs_string .= ' ' . lc($k) . '="'
-	    . Bivio::HTML->escape_attr_value(
-		$k =~ /^(?:src|href)$/ ? _abs_href($attrs->{$k}, $state)
-	        : $attrs->{$k}
-	    ) . '"';
+	    . Bivio::HTML->escape_attr_value($attrs->{$k}) . '"';
     }
     return "<$tag$attrs_string />$nl"
 	if $_EMPTY->{$tag};
@@ -672,32 +674,6 @@ sub _fmt_token {
 sub _hash {
     my($a, $b) = @_;
     return {map(($_ => +{map(($_ => 1), @$b, $_)}), @$a)};
-}
-
-sub _ins_page {
-    my($line, $state) = @_;
-#TODO: Could generalize to any URI.  For now, just local.
-    return _fmt_err($line, 'invalid URI, must begin with a /', $state)
-	unless $line =~ s{^/+}{/};
-    my($res);
-    my($die) = Bivio::Die->catch(sub {
-        # Missing leading /', just put in my
-        (my $uri = $line) =~ s{(?<=^/)my(?=/)}{
-	    $state->{req}->get_nested(qw(auth_realm owner name))
-	}sex;
-	$res = Bivio::IO::ClassLoader->simple_require(
-	    'Bivio::Agent::Embed::Dispatcher'
-	)->call_task($state->{req}, $state->{req}->format_uri({
-	    uri => $uri,
-	    no_context => 1,
-	    query => undef,
-	    path_info => undef,
-	}));
-	return;
-    });
-    return _fmt_err($line, $die->as_string, $state)
-	if $die;
-    return $$res;
 }
 
 sub _next_line {
