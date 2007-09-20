@@ -26,7 +26,7 @@ sub csv {
     $self->usage('too few arguments') unless int(@_) >= 2;
 #TODO: Remove this ugly hack
     my($pr) = Bivio::IO::ClassLoader->unsafe_map_require('Action.PublicRealm');
-    $pr->execute_simple($self->req)
+    $pr->get_instance->execute_simple($self->req)
 	if $pr;
     my($model) = $models;
     my($iterating) = {};
