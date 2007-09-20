@@ -41,11 +41,6 @@ sub from_literal_stripper {
     return $_[1];
 }
 
-sub is_absolute {
-    my($proto, $value) = @_;
-    return defined($value) && $value =~ $proto->ABSOLUTE_REGEX ? 1 : 0;
-}
-
 sub is_valid {
     my($proto, $value) = @_;
     return defined($value) && $value =~ qr{^@{[$proto->REGEX]}$} ? 1 : 0;
@@ -57,14 +52,6 @@ sub public_path_info {
 	unless $value;
     $value =~ s{^\Q@{[$proto->PUBLIC_FOLDER_ROOT]}\E}{}i;
     return $value;
-}
-
-sub to_absolute {
-    my($proto, $value, $is_public) = @_;
-    return $proto->join(
-	$is_public ? $proto->PUBLIC_FOLDER : $proto->PRIVATE_FOLDER,
-	$value,
-    );
 }
 
 sub to_sql_like_path {
