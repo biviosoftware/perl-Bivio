@@ -19,7 +19,7 @@ sub help_exists {
 }
 
 sub prepare_html {
-    my($proto, $realm_id, $name, $task_id, $req) = @_;
+    my($proto, $realm_id, $name, $task_id, $req, $realm_name) = @_;
     return unless my $rf = $proto->use('Action.RealmFile')
 	->access_controlled_load($realm_id, $_WN->to_absolute($name), $req);
     my($res) = [
@@ -63,12 +63,13 @@ sub render {
 
 sub render_help_html {
     my($self, $name, $req) = @_;
+    my($c) = Bivio::UI::Constant->get_from_source($req);
     return ($self->render_html(
-	Bivio::UI::Constant->get_from_source($req)
-	    ->get_value('help_wiki_realm_id'),
+	$c->get_value('help_wiki_realm_id'),
 	$name,
 	Bivio::Agent::TaskId->HELP,
 	$req,
+	$c->get_value('help_wiki_realm_name'),
     ))[0];
 }
 

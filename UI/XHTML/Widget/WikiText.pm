@@ -366,7 +366,7 @@ Bivio::IO::Config->register(my $_CFG = {
     deprecated_auto_link_mode => 0,
 });
 my($_MY_TAGS);
-my($_WIDGET_ATTRS) = [qw(value realm_id task_id)];
+my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id)];
 _require_my_tags(__PACKAGE__);
 
 sub control_on_render {
@@ -440,6 +440,11 @@ sub render_html {
     $args->{no_auto_links} ||= !$_CFG->{deprecated_auto_link_mode};
     $args->{task_id} ||= $args->{req}->get('task_id');
     $args->{realm_id} ||= $args->{req}->get('auth_id');
+    unless ($args->{realm_name}) {
+	my($ro) = Bivio::Biz::Model->new($args->{req}, 'RealmOwner');
+	$args->{realm_name} = $ro->get('name')
+	    if $ro->unauth_load({realm_id => $args->{realm_id}});
+    }
     $args->{is_public} = 1
 	unless defined($args->{is_public});
     $args->{prefix_word_mode} = $args->{no_auto_links}
@@ -472,16 +477,13 @@ sub _abs_href {
     }
     $uri =~ s/^(?=javascript:)/no-wiki-/i;
     return $uri =~ s{^/+my(?=/)}{}s
-        && !Bivio::Auth::Realm->is_default_id($args->{realm_id})
-        ? '/'
-	. Bivio::Biz::Model->new($args->{req}, 'RealmOwner')
-	    ->unauth_load_or_die({realm_id => $args->{realm_id}})
-	    ->get('name')
-	. $uri
+        && $args->{realm_name}
+        ? "/$args->{realm_name}$uri"
         : $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
 	    uri => $uri,
 	}) : $args->{req}->format_uri({
 	    task_id => $args->{task_id},
+	    realm => $args->{realm_name},
 	    query => undef,
 	    path_info => ($uri =~ /^\^?(.*)/)[0],
 	});
