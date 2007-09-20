@@ -7,7 +7,7 @@ use Bivio::Base 'Bivio::ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub CONTACT_REALM {
-    return 'site-contact';
+    return Bivio::UI::Facade->get_default->SITE_CONTACT_REALM_NAME;
 }
 
 sub HELP_REALM {
@@ -15,7 +15,7 @@ sub HELP_REALM {
 }
 
 sub SITE_REALM {
-    return 'site';
+    return Bivio::UI::Facade->get_default->SITE_REALM_NAME;
 }
 
 sub USAGE {
@@ -82,7 +82,7 @@ sub realm_names {
     return [
 	$self->SITE_REALM,
 	$self->CONTACT_REALM,
-	Bivio::UI::Facade->get_default->HELP_WIKI_REALM_NAME,
+	$self->HELP_REALM,
     ];
 }
 
