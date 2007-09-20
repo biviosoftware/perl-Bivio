@@ -177,7 +177,14 @@ sub info_base {
 	    ANYBODY
 	    Action.PermanentRedirect
 	)],
-#57-59 free
+	[qw(
+	    PUBLIC_PING
+	    57
+	    GENERAL
+	    ANYBODY
+	    Action.EmptyReply
+        )],
+#58-59 free
     ];
 }
 
@@ -789,14 +796,14 @@ sub info_wiki {
  	    9
  	    FORUM
  	    ANYBODY
-            View.Help->iframe
+            View.Wiki->help
  	)],
  	[qw(
  	    FORUM_WIKI_VIEW
  	    48
  	    FORUM
  	    DATA_READ
- 	    Action.WikiView
+ 	    Action.WikiView->execute_prepare_html
 	    View.Wiki->view
 	    MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
 	    edit_task=FORUM_WIKI_EDIT
@@ -832,7 +839,7 @@ sub info_wiki {
  	    120
  	    FORUM
  	    ANYBODY
- 	    Action.WikiView
+ 	    Action.WikiView->execute_prepare_html
 	    View.Wiki->view
 	    MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
 	    edit_task=FORUM_WIKI_EDIT
