@@ -1,8 +1,8 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
-my($forum) = create_forum();
-visit_uri("/$forum/db-types");
+my($forum, $uri) = create_forum();
+visit_uri("$uri/db-types");
 follow_link('add.*type');
 submit_form(Save => {
     name => 'i1',

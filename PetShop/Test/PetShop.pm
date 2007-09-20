@@ -3,11 +3,8 @@
 package Bivio::PetShop::Test::PetShop;
 use strict;
 use Bivio::Base 'Bivio::Test::Language::HTTP';
-use Bivio::PetShop::Util;
-use Bivio::Type::Amount;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_A) = 'Bivio::Type::Amount';
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub add_to_cart {
@@ -71,15 +68,14 @@ sub checkout_as_demo {
 
 sub create_forum {
     my($self) = @_;
-    # Logs out if logged in.
-    $self->home_page();
+    $self->home_page;
     $self->login_as('root');
     $self->basic_authorization('root');
     (my $f = $self->test_name . $self->random_string) =~ s/\W+//g;
     my($u) = '/dav/Forums.csv';
     $self->send_request(GET => $u);
     $self->send_request(PUT => $u, undef, $self->get_content() . "$f,$f\n");
-    return $f;
+    return ($f, "/$f", "/dav/$f");
 }
 
 sub do_logout {
@@ -97,15 +93,15 @@ sub login_as {
     $self->submit_form(submit => {
         'Email:' => $user,
 	'Password:' => defined($password) ? $password
-	    : Bivio::PetShop::Util->PASSWORD,
+	    : $self->use('Bivio::PetShop::Util')->PASSWORD,
     });
     $self->verify_text('Sign-out');
     return;
 }
 
 sub login_as_demo {
-    # Logs in as demo user.  Returns to the current page.
-    return shift->login_as(Bivio::PetShop::Util->DEMO);
+    my($self) = @_;
+    return $self->login_as($self->use('Bivio::PetShop::Util')->DEMO);
 }
 
 sub remove_from_cart {
@@ -163,6 +159,7 @@ sub verify_cart {
     my($rows) = [@{$t->{rows}}];
     my($i) = 0;
     my($total) = 0;
+    my($ta) = $self->use('Type.Amount');
     foreach my $item (sort({$a->{name} cmp $b->{name}} values(%$cart))) {
 	my($r) = shift(@$rows);
 	Bivio::Die->die("too few rows ($i); missing items: ", $cart)
@@ -172,11 +169,11 @@ sub verify_cart {
 	Bivio::Die->die("incorrect quantity (",
             $r->[5]->get('text'), ") for: ", $item)
 	    unless $r->[5]->get('text') == $item->{quantity};
-	my($t) = $_A->mul($item->{quantity}, $item->{price});
+	my($t) = $ta->mul($item->{quantity}, $item->{price});
 	Bivio::Die->die("incorrect total cost (",
             $r->[6]->get('text'), ") for: ", $item)
-	    unless $_A->compare($r->[6]->get('text'), $t) == 0;
-	$total = $_A->add($total, $t);
+	    unless $ta->compare($r->[6]->get('text'), $t) == 0;
+	$total = $ta->add($total, $t);
     }
     continue {
 	delete($cart->{$item->{name}});
@@ -185,7 +182,7 @@ sub verify_cart {
     Bivio::Die->die("too many rows (expected $i); extra items: ", $rows)
 	if @$rows != 1 || $rows->[0]->[1]->get('text') ne 'Total:';
     Bivio::Die->die("incorrect total ($rows->[0]->[6]), expected ", $total)
-	unless $_A->compare($rows->[0]->[6]->get('text'), $total) == 0;
+	unless $ta->compare($rows->[0]->[6]->get('text'), $total) == 0;
     return;
 }
 
