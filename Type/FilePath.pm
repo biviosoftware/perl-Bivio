@@ -6,6 +6,10 @@ use Bivio::Base 'Type.Line';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub ABSOLUTE_REGEX {
+    return qr{^/};
+}
+
 sub ILLEGAL_CHAR_REGEXP {
     return qr{(?:^|/)\.\.?$|[\\\:*?"<>\|\0-\037\177]};
 }
@@ -28,6 +32,10 @@ sub MAIL_FOLDER {
 
 sub PATH_REGEX {
     return shift->REGEX;
+}
+
+sub PRIVATE_FOLDER {
+    return '';
 }
 
 sub PUBLIC_FOLDER {
@@ -117,6 +125,19 @@ sub join {
     (my $res = join('/', map(defined($_) && length($_) ? $_ : (), @parts)))
 	 =~ s{//+}{/}sg;
     return $res;
+}
+
+sub is_absolute {
+    my($proto, $value) = @_;
+    return defined($value) && $value =~ $proto->ABSOLUTE_REGEX ? 1 : 0;
+}
+
+sub to_absolute {
+    my($proto, $value, $is_public) = @_;
+    return $proto->join(
+	$is_public ? $proto->PUBLIC_FOLDER : $proto->PRIVATE_FOLDER,
+	$value,
+    );
 }
 
 sub to_public {
