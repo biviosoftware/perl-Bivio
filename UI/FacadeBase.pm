@@ -14,6 +14,14 @@ sub MAIL_RECEIVE_PREFIX {
     return '_mail_receive_';
 }
 
+sub SITE_CONTACT_REALM_NAME {
+    return 'site-contact';
+}
+
+sub SITE_REALM_NAME {
+    return 'site';
+}
+
 sub new {
     my($proto, $config) = @_;
     return $config->{clone} ? $proto->SUPER::new($config) : $proto->SUPER::new(
@@ -138,23 +146,24 @@ sub _cfg_base {
 	    [table_default_align => 'left'],
 	],
 	Task => [
+	    [CLIENT_REDIRECT => ['go/*', 'goto/*']],
 	    [CLUB_HOME => '?'],
 	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
 	    [FAVICON_ICO => 'favicon.ico'],
 	    [FORBIDDEN => undef],
-	    [LOCAL_FILE_PLAIN => ['i/*', 'f/*']],
-	    [MY_SITE => 'my-site/*'],
-	    [MY_CLUB_SITE => undef],
-	    [SHELL_UTIL => undef],
-	    [SITE_ROOT => '*'],
-	    [USER_HOME => '?'],
-	    [ROBOTS_TXT => 'robots.txt'],
-	    [TEST_BACKDOOR => 'test_backdoor'],
-	    [PERMANENT_REDIRECT => undef],
-	    [CLIENT_REDIRECT => ['go/*', 'goto/*']],
-	    [SITE_CSS => 'pub/site.css'],
 	    # Share this name across all realm types
 	    [FORUM_CSS => '?/realm.css'],
+	    [PUBLIC_PING => 'pub/ping'],
+	    [LOCAL_FILE_PLAIN => ['i/*', 'f/*']],
+	    [MY_CLUB_SITE => undef],
+	    [MY_SITE => 'my-site/*'],
+	    [PERMANENT_REDIRECT => undef],
+	    [ROBOTS_TXT => 'robots.txt'],
+	    [SHELL_UTIL => undef],
+	    [SITE_CSS => 'pub/site.css'],
+	    [SITE_ROOT => '*'],
+	    [TEST_BACKDOOR => 'test_backdoor'],
+	    [USER_HOME => '?'],
 	],
 	Text => [
 	    [support_email => 'support'],
@@ -259,19 +268,20 @@ sub _cfg_blog {
 		[qw(FORUM_BLOG_DETAIL FORUM_PUBLIC_BLOG_DETAIL)]
 		    => 'Blog Detail',
 	    ]],
-	    [FORUM_BLOG_EDIT => 'Edit This Entry'],
-	    [FORUM_BLOG_CREATE => 'New Blog Entry'],
+	    [FORUM_BLOG_EDIT => 'Edit this entry'],
+	    [FORUM_BLOG_CREATE => 'New blog entry'],
 	    [rsspage => [
 		[qw(BlogList BlogRecentList)] => [
 		    title => 'vs_site_name(); Blog',
 		    description => 'Recent Blog Entries at vs_site_name();',
 		],
 	    ]],
-	    [FORUM_ADM_FORUM_ADD => 'Add Forum'],
 	    [acknowledgement => [
 		FORUM_BLOG_CREATE => 'The blog entry has been added.',
 		FORUM_BLOG_EDIT => 'The blog entry update has been saved.',
 	    ]],
+#TODO: Move this
+	    [FORUM_ADM_FORUM_ADD => 'Add forum'],
 	],
     };
 }
@@ -294,7 +304,6 @@ sub _cfg_dav {
 		'Forum.require_otp' => 'Require OTP?',
 	    ]],
 	    [ForumUserList => [
-		'Email.email' => 'Email',
 		mail_recipient => 'Subscribed?',
 		file_writer => 'Write Files?',
 		administrator => 'Administrator?',
@@ -345,33 +354,28 @@ sub _cfg_motion {
     return {
 	Task => [
 	    [FORUM_MOTION_LIST => '?/votes'],
-	    [FORUM_MOTION_ADD => '?/vote-add'],
-	    [FORUM_MOTION_EDIT => '?/vote-edit'],
+	    [FORUM_MOTION_ADD => ['?/add-vote', '?/vote-add']],
+	    [FORUM_MOTION_EDIT => ['?/edit-vote', '?/vote-edit']],
 	    [FORUM_MOTION_VOTE => '?/vote'],
-	    [FORUM_MOTION_VOTE_LIST => '?/results'],
-	    [FORUM_MOTION_VOTE_LIST_CSV => '?/results.csv'],
+	    [FORUM_MOTION_VOTE_LIST => ['?/vote-results', '?/results']],
+	    [FORUM_MOTION_VOTE_LIST_CSV => ['?/vote-results.csv', '?/results.csv']],
 	],
 	Text => [
+	    [Motion => [
+		name => 'Name',
+		question => 'Question',
+		status => 'Status',
+		type => 'Type',
+	    ]],
+	    [MotionVote => [
+		vote => 'vote',
+		creation_date_time => 'Date',
+	    ]],
 	    [MotionList => [
-		empty_list_prose => 'No votes for this forum.',
-		'Motion.name' => 'Name',
-		'Motion.question' => 'Question',
-		'Motion.status' => 'Status',
-	    ]],
-	    [MotionForm => [
-		'Motion.name' => 'Name',
-		'Motion.question' => 'Question',
-		'Motion.status' => 'Status',
-		'Motion.type' => 'Type',
-	    ]],
-	    [MotionVoteForm => [
-		'MotionVote.vote' => 'Vote',
+		empty_list_prose => 'No votes to display.',
 	    ]],
 	    [MotionVoteList => [
 		empty_list_prose => 'No vote results.',
-		'MotionVote.creation_date_time' => 'Date',
-		'MotionVote.vote' => 'Vote',
-		'Email.email' => 'Email',
 	    ]],
 	    [acknowledgement => [
 		FORUM_MOTION_EDIT => 'Vote updates have been saved.',
@@ -380,13 +384,13 @@ sub _cfg_motion {
 	    ]],
 	    [title => [
 		FORUM_MOTION_LIST => 'Votes',
-		FORUM_MOTION_ADD => 'Add Vote',
-		FORUM_MOTION_EDIT => 'Edit Vote',
+		FORUM_MOTION_ADD => 'Add vote',
+		FORUM_MOTION_EDIT => 'Edit vote',
 		FORUM_MOTION_VOTE => 'Vote',
 		FORUM_MOTION_VOTE_LIST => 'Vote Results',
 	    ]],
 	    ['task_menu.title' => [
-		FORUM_MOTION_VOTE_LIST_CSV => 'Download .csv',
+		FORUM_MOTION_VOTE_LIST_CSV => 'Spreadsheet',
 	    ]],
 	],
     };
@@ -456,36 +460,36 @@ sub _cfg_tuple {
 	],
 	Text => [
 	    [title => [
-		FORUM_TUPLE_DEF_EDIT => 'Modify Database Schema',
-		FORUM_TUPLE_DEF_LIST => 'Database Schemas',
+		FORUM_TUPLE_DEF_EDIT => 'Modify database schema',
+		FORUM_TUPLE_DEF_LIST => 'Database schemas',
 		FORUM_TUPLE_EDIT =>
-		    q{Edit String([qw(Model.TupleUseList TupleUse.label)]); Record},
+		    q{Edit String([qw(Model.TupleUseList TupleUse.label)]); record},
 		FORUM_TUPLE_LIST =>
-		    q{String([qw(Model.TupleUseList TupleUse.label)]); Records},
+		    q{String([qw(Model.TupleUseList TupleUse.label)]); records},
 		FORUM_TUPLE_HISTORY =>
 
-		    q{String([qw(Model.TupleUseList TupleUse.label)]); Record #String([qw(Model.TupleList Tuple.tuple_num)]); History},
+		    q{String([qw(Model.TupleUseList TupleUse.label)]); record #String([qw(Model.TupleList Tuple.tuple_num)]); history},
 		FORUM_TUPLE_MAIL_THREAD =>
 		    q{String([qw(Model.TupleUseList TupleUse.label)]); Record #String([qw(Model.Tuple tuple_num)]);},
-		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Modify Database Type',
-		FORUM_TUPLE_SLOT_TYPE_LIST => 'Database Types',
-		FORUM_TUPLE_USE_EDIT => 'Modify Table',
-		FORUM_TUPLE_USE_LIST => 'Database Tables',
+		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Modify database type',
+		FORUM_TUPLE_SLOT_TYPE_LIST => 'Database types',
+		FORUM_TUPLE_USE_EDIT => 'Modify table',
+		FORUM_TUPLE_USE_LIST => 'Database tables',
 	    ]],
 	    ['task_menu.title' => [
-		FORUM_TUPLE_DEF_EDIT => 'Add Schema',
+		FORUM_TUPLE_DEF_EDIT => 'Add schema',
 		FORUM_TUPLE_DEF_LIST => 'Schemas',
 		FORUM_TUPLE_LIST => 'Records',
 		[qw(FORUM_TUPLE_LIST_CSV FORUM_TUPLE_HISTORY_CSV)]
-		    => 'Download .csv',
+		    => 'Spreadsheet',
 		FORUM_TUPLE_EDIT => 'Add Record',
-		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Add Type',
+		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Add type',
 		FORUM_TUPLE_SLOT_TYPE_LIST => 'Types',
-		FORUM_TUPLE_USE_EDIT => 'Add Table',
+		FORUM_TUPLE_USE_EDIT => 'Add table',
 		FORUM_TUPLE_USE_LIST => 'Tables',
 		TupleHistoryList => [
-		    FORUM_TUPLE_EDIT => 'Modify Record',
-		    FORUM_TUPLE_LIST => 'back to list',
+		    FORUM_TUPLE_EDIT => 'Modify record',
+		    FORUM_TUPLE_LIST => 'Back to list',
 		],
 	    ]],
 	    [TupleHistoryList => [
@@ -603,7 +607,7 @@ sub _cfg_user_auth {
 	    ),
 	],
 	Font => [
-	    [user_state => ['140%', 'uppercase']],
+	    [user_state => ['120%', 'nowrap']],
 	],
 	FormError => [
 	    [[qw(ContextlessUserLoginForm UserLoginForm)] => [
@@ -717,17 +721,26 @@ sub _cfg_wiki {
 	    [HELP_NOT_FOUND => undef],
 	],
 	Constant => [
-	    [help_wiki_realm_id => sub {
-		 my($req) = shift->get_request;
-		 return Bivio::Die->eval(
-		     sub {
-			 return Bivio::Biz::Model->new($req, 'RealmOwner')
-			     ->unauth_load_or_die({
-				 name => $proto->HELP_WIKI_REALM_NAME
-			     })->get('realm_id');
-		     },
-		 ) || 1;
-	    }],
+	    map({
+		my($id, $name) = @$_;
+		(
+		    [$name => $proto->$name()],
+		    [$id => sub {
+			 my($req) = shift->req;
+			 my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
+			 return $ro->get('realm_id')
+			     if $ro->unauth_load({name => $proto->$name()});
+			 Bivio::IO::Alert->warn(
+			     $proto->$name(), ': $id not found',
+			 );
+			 return;
+		    }],
+		);
+	    }
+	        [qw(help_wiki_realm_id HELP_WIKI_REALM_NAME)],
+	        [qw(site_realm_id SITE_REALM_NAME)],
+	        [qw(site_contact_realm_id SITE_CONTACT_REALM_NAME)],
+	    ),
 	],
 	Font => [
 	    [help_wiki_body => ['95%']],
@@ -736,6 +749,8 @@ sub _cfg_wiki {
 	    [help_wiki_iframe_body => ['small']],
 	],
 	Text => [
+	    ['WikiView.start_page' => 'StartPage'],
+	    ['WikiStyle.css_file_name' => 'base.css'],
 	    [WikiForm => [
 		'RealmFile.path_lc' => 'Title',
 		'content' => '',
@@ -749,15 +764,15 @@ sub _cfg_wiki {
 		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
 	    ]],
 	    ['task_menu.title' => [
-		FORUM_WIKI_EDIT => 'Add New Page',
-		FORUM_WIKI_EDIT_PAGE => 'edit this page',
+		FORUM_WIKI_EDIT => 'Add new page',
+		FORUM_WIKI_EDIT_PAGE => 'Edit this page',
 	    ]],
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
 		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
 	    ]],
 	    [prose => [
-		help_wiki_add => 'Add Help',
+		help_wiki_add => '[Add Help]',
 		help_wiki_close => '[Close]',
 		help_wiki_edit => '[Edit]',
 		help_wiki_footer => '',
