@@ -1,0 +1,13 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    view_pre_compile => sub {
+	req()->set_realm_and_user(qw(fourem root));
+	req()->put(path_info => 'PrivatePage');
+	class('Action.WikiView')->execute_prepare_html(req());
+	return;
+    },
+});
+[
+    [] => qr{example page}i,
+];
