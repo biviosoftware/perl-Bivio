@@ -1,22 +1,10 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
-home_page();
-# Create forum for test purposes
-my($root) = '/dav';
-my($root_forums) = "$root/Forums.csv";
-basic_authorization('root');
-send_request(GET => $root_forums);
-#TODO: NEED TO DELETE THE FORUM so we don't get a proliferation
-my($top) = "btest_" . random_string();
-my($dn) = "DAV $top BTEST";
-send_request(PUT => $root_forums, undef, get_content() . <<"EOF");
-$top,$dn
-EOF
-my($forum_uri) = "$root/$top";
-my($calendar_ics) = "$forum_uri/Calendar.ics";
+my(undef, undef, $dav_forum_uri) = create_forum();
+my($calendar_ics) = "$dav_forum_uri/Calendar.ics";
 # Verify that admin can view and get .ics with no calendar
-send_request(PROPFIND => $forum_uri);
+send_request(PROPFIND => $dav_forum_uri);
 verify_text($calendar_ics);
 send_request(GET => $calendar_ics);
 get_content() =~ /BEGIN:VCALENDAR.*END:VCALENDAR/s || die;
@@ -93,18 +81,18 @@ get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event(1|2|3).*BEGIN:VEVENT.*SUMMARY:Even
 # Verify that non-admin, non-member can't access .ics
 basic_authorization('demo');
 test_deviance(qr{not found}i);
-send_request(PROPFIND => $forum_uri);
+send_request(PROPFIND => $dav_forum_uri);
 send_request(GET => $calendar_ics);
 test_conformance();
 # Add non-admin member and verify read-only access of .ics
 basic_authorization('root');
-my($forum_members) = "$forum_uri/Members.csv";
+my($forum_members) = "$dav_forum_uri/Members.csv";
 send_request(GET => $forum_members);
 send_request(PUT => $forum_members, undef, get_content() . <<'EOF');
 demo@bivio.biz,1,0,0
 EOF
 basic_authorization('demo');
-send_request(PROPFIND => $forum_uri);
+send_request(PROPFIND => $dav_forum_uri);
 verify_text($calendar_ics);
 send_request(GET => $calendar_ics);
 $ics = get_content();
