@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.35  2007/09/10 23:17:37  nagler
+  * Bivio::Biz::Model::UserOTPForm verifies passphrase used in OTP client is
+    not null
+  * Bivio::Biz::Action::WikiView.title added which is name with underscores
+    replaced with space.  wiki_view_topic uses Action.WikiView.title.
+  * Bivio::Biz::Model::UserPasswordForm refactored to simplify UserOTPForm
+  * Bivio::UI::HTML::Widget::Table.before_row added
+  * Bivio::UI::Widget::Unique added
+  * Bivio::Test::Unit->builtin_date_time added
+  * Bivio::Test::Language::HTTP.submit_form fixed to support _anon & _radio
+  * Bivio::Util::RealmAdmin->reset_password deletes OTP record if it exists
+
   Revision 5.34  2007/09/04 03:47:05  nagler
   * Bivio::Test::Language::HTTP->follow_link can chase multiple links.
     Also, if you set deprecated_text_patterns to 0, follow_link will
