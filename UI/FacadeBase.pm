@@ -727,13 +727,18 @@ sub _cfg_wiki {
 		    [$name => $proto->$name()],
 		    [$id => sub {
 			 my($req) = shift->req;
-			 my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
-			 return $ro->get('realm_id')
-			     if $ro->unauth_load({name => $proto->$name()});
+			 my($res) = Bivio::Die->eval(sub {
+			     my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
+			     return $ro->get('realm_id')
+			         if $ro->unauth_load({name => $proto->$name()});
+			     return;
+			 });
+			 return $res
+			     if $res;
 			 Bivio::IO::Alert->warn(
 			     $proto->$name(), ': $id not found',
 			 );
-			 return;
+			 return 1;
 		    }],
 		);
 	    }
