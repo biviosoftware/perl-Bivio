@@ -18,6 +18,36 @@ sub help_exists {
     ) ? 1 : 0;
 }
 
+sub prepare_html {
+    my($proto, $realm_id, $name, $task_id, $req) = @_;
+    return unless my $rf = $proto->use('Action.RealmFile')
+	->access_controlled_load($realm_id, $_WN->to_absolute($name), $req);
+    my($res) = [
+	{
+	    value => ${$rf->get_content},
+	    task_id => $task_id,
+	    req => $req,
+	    name => $name,
+	    map(($_ => $rf->get($_)), qw(is_public realm_id)),
+	},
+	$rf->get(qw(modified_date_time user_id)),
+    ];
+    if ($rf->unauth_load({
+	path => $_WN->to_absolute(
+	    Bivio::UI::Text->get_value('WikiStyle.css_file_name', $req),
+	    $rf->get('is_public')),
+	realm_id => $realm_id,
+	is_public => $rf->get('is_public'),
+    })) {
+	my($styles) = $req->get_if_exists_else_put(__PACKAGE__, []);
+	my($s) = _class($name, ${$rf->get_content});
+	# Avoid duplicates (HelpWiki and WikiView on same page)
+	push(@$styles, $s)
+	    unless grep($s eq $_, @$styles);
+    }
+    return @$res;
+}
+
 sub render {
     my($self, $source, $buffer) = @_;
     my($styles) = $source->get_request->unsafe_get(__PACKAGE__);
@@ -43,31 +73,10 @@ sub render_help_html {
 }
 
 sub render_html {
-    my($proto, $realm_id, $name, $task_id, $req) = @_;
-    return unless my $rf = $proto->use('Action.RealmFile')
-	->access_controlled_load($realm_id, $_WN->to_absolute($name), $req);
-    my($res) = [
-	\($_WT->render_html({
-	    value => ${$rf->get_content},
-	    task_id => $task_id,
-	    req => $req,
-	    name => $name,
-	    map(($_ => $rf->get($_)), qw(is_public realm_id)),
-	})),
-	$rf->get(qw(modified_date_time user_id)),
-    ];
-    if ($rf->unauth_load({
-	path => $_WN->to_absolute('base.css', $rf->get('is_public')),
-	realm_id => $realm_id,
-	is_public => $rf->get('is_public'),
-    })) {
-	my($styles) = $req->get_if_exists_else_put(__PACKAGE__, []);
-	my($s) = _class($name, ${$rf->get_content});
-	# Avoid duplicates (HelpWiki and WikiView on same page)
-	push(@$styles, $s)
-	    unless grep($s eq $_, @$styles);
-    }
-    return @$res;
+    return map(
+	ref($_) eq 'HASH' ? \($_WT->render_html($_)) : $_,
+	shift->prepare_html(@_),
+    );
 }
 
 sub _class {
