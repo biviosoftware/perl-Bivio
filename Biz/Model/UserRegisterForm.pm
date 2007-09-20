@@ -19,7 +19,11 @@ sub execute_ok {
 	    ->format_uri($req),
     );
     $self->put_on_request(1);
-    return 'server_redirect.next';
+    return {
+	method => 'server_redirect',
+	task_id => 'next',
+	query => '',
+    };
 }
 
 sub internal_create_models {
