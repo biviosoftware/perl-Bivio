@@ -30,6 +30,29 @@ sub edit {
     ]));
 }
 
+sub help {
+    view_main(Page({
+# Shouldn't this be xhtml => 1,
+# Why can't this be inline?
+	xhtml => 1,
+	style => view_widget_value('xhtml_style'),
+	head => Simple(''),
+	body => Join([
+	Join([<<"EOF"]),
+<script>
+window.onload=function(){
+  parent.@{[HelpWiki()->RESIZE_FUNCTION]}();
+}
+</script>
+EOF
+
+	    HelpWiki(1),
+	]),
+	body_class => 'help_wiki_iframe_body',
+    }));
+    return;
+}
+
 sub not_found {
     return shift->internal_body_prose(<<'EOF');
 The page Tag(strong => String(['Action.WikiView', 'name'])); was not
@@ -46,7 +69,7 @@ sub view {
 	xhtml_body_class =>
 	    ['Action.WikiView', 'name', 'HTMLFormat.WikiNameToClass'],
     );
-    return $self->internal_body(DIV_wiki(['Action.WikiView', 'html']));
+    return $self->internal_body(Wiki());
 }
 
 1;
