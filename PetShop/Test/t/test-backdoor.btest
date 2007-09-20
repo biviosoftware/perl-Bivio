@@ -4,8 +4,8 @@ test_setup('PetShop');
 home_page();
 verify_no_text('MyAccount');
 do_test_backdoor(UserLoginForm => {
-    'login' => Bivio::PetShop::Util->DEMO,
-    'RealmOwner.password' => Bivio::PetShop::Util->PASSWORD,
+    'login' => test_use('Bivio::PetShop::Util')->DEMO,
+    'RealmOwner.password' => test_use('Bivio::PetShop::Util')->PASSWORD,
 });
 home_page();
 verify_text('MyAccount');
