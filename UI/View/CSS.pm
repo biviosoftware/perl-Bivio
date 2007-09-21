@@ -218,7 +218,7 @@ form .label_ok {
 .list td, .paged_list td {
   padding: .5em;
 }
-.prose, .form_prose, .list_prose, .paged_list .empty {
+.form_prose, .list_prose, .paged_list .empty {
   text-align: left;
   width: 40em;
   padding-bottom: .5ex;
