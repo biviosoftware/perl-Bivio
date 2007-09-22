@@ -2,50 +2,12 @@
 # $Id$
 package Bivio::Util::CSV;
 use strict;
-$Bivio::Util::CSV::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::CSV::VERSION;
+use Bivio::Base 'Bivio::ShellUtil';
 
-=head1 NAME
-
-Bivio::Util::CSV - manipulate csv files
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::CSV;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::CSV::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::CSV> manipulates csv files.
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-See below
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_QUOTE) = '"';
+my($_END_OF_VALUE) = qr/[\,\r\n]/o;
+my($_END_OF_LINE) = qr/[\r\n]/o;
 
 sub USAGE {
     return <<'EOF';
@@ -55,28 +17,10 @@ commands:
 EOF
 }
 
-#=IMPORTS
-
-#=VARIABLES
-my($_QUOTE) = '"';
-my($_END_OF_VALUE) = qr/[\,\r\n]/o;
-my($_END_OF_LINE) = qr/[\r\n]/o;
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="colrm"></a>
-
-=head2 colrm(int start, int end) : string_ref
-
-Reads I<input> and deletes columns starting at I<start> and ending at I<end>
-(or end of file).  Currently sucks entire file into memory, which can be slow.
-
-=cut
-
 sub colrm {
     my($self, $start, $end) = @_;
+    # Reads I<input> and deletes columns starting at I<start> and ending at I<end>
+    # (or end of file).  Currently sucks entire file into memory, which can be slow.
     $self->usage_error($start, ": bad start")
 	unless $start =~ /^\d+$/;
     $self->usage_error($end, ": bad end")
@@ -91,26 +35,15 @@ sub colrm {
     return \$res;
 }
 
-=for html <a name="parse"></a>
-
-=head2 parse() : array_ref
-
-=head2 parse(string_ref csv_text) : array_ref
-
-=head2 parse(string_ref csv_text, boolean want_line_numbers) : array_ref
-
-Parses I<csv_text> into an array of array rows. if I<csv_text> not supplied,
-read_input is called.  I<csv_text> may also be a string (need not be a ref).
-
-Dies on failure with an appropriate message.
-
-If I<want_line_numbers> is specified, then the first item of each row
-will contain the line number from the input text.
-
-=cut
-
 sub parse {
     my($self, $csv_text, $want_line_numbers) = @_;
+    # Parses I<csv_text> into an array of array rows. if I<csv_text> not supplied,
+    # read_input is called.  I<csv_text> may also be a string (need not be a ref).
+    #
+    # Dies on failure with an appropriate message.
+    #
+    # If I<want_line_numbers> is specified, then the first item of each row
+    # will contain the line number from the input text.
     my($buf) = !defined($csv_text) ? $self->read_input
 	: ref($csv_text) ? $csv_text : \$csv_text;
     my($state) = {
@@ -188,22 +121,15 @@ sub parse {
     return $state->{rows};
 }
 
-=for html <a name="parse_records"></a>
-
-=head2 parse_records() : array_ref
-
-=head2 parse_records(string_ref csv_text) : array_ref
-
-Parses the CSV data, treating the first row as headings and returns
-an array of hash_ref records.
-
-=cut
-
 sub parse_records {
-    my($self) = @_;
+    my($self, undef, $want_line_numbers) = @_;
+    # Parses the CSV data, treating the first row as headings and returns
+    # an array of hash_ref records.
     my($rows) = shift->parse(@_);
     return $rows unless @$rows;
     my($heading) = shift(@$rows);
+    $heading->[0] = '_line'
+	if $want_line_numbers;
     return [
         map({
             my($row) = $_;
@@ -214,16 +140,9 @@ sub parse_records {
     ];
 }
 
-=for html <a name="to_csv_text"></a>
-
-=head2 static to_csv_text(array_ref list) : string_ref
-
-Converts a single row or a table of rows into CSV output.
-
-=cut
-
 sub to_csv_text {
     my($proto, $list) = @_;
+    # Converts a single row or a table of rows into CSV output.
     my($buffer) = '';
 
     if (@$list && ref($list->[0])) {
@@ -235,57 +154,40 @@ sub to_csv_text {
     return \$buffer;
 }
 
-#=PRIVATE METHODS
-
-# _append_char(hash_ref state, string char)
-#
-# Appends a character to the current value.
-#
 sub _append_char {
     my($state, $char) = @_;
+    # Appends a character to the current value.
     $state->{current_value} .= $char;
     return;
 }
 
-# _die(hash_ref state, string message, ...)
-#
-# Dies with the specified message. Includes the line number.
-#
 sub _die {
     my($state, @mesesage) = @_;
+    # Dies with the specified message. Includes the line number.
     Bivio::Die->die('line: ', $state->{line_number}, ' ', @mesesage);
 }
 
-# _end_value(hash_ref state)
-#
-# Ends the current parsed value.
-#
-sub _end_value {
-    my($state) = @_;
-    push(@{$state->{current_row}}, $state->{current_value});
-    $state->{current_value} = '';
-    return;
-}
-
-# _end_row(hash_ref state)
-#
-# Ends the current parsed row.
-#
 sub _end_row {
     my($state) = @_;
+    # Ends the current parsed row.
     push(@{$state->{rows}}, $state->{current_row});
     $state->{current_row} = [
         $state->{want_line_numbers} ? $state->{line_number} : ()];
     return;
 }
 
-# _is_row_empty(hash_ref state, int index) : boolean
-#
-# Returns true if the row is empty, or contains a single entry composed
-# of space.
-#
+sub _end_value {
+    my($state) = @_;
+    # Ends the current parsed value.
+    push(@{$state->{current_row}}, $state->{current_value});
+    $state->{current_value} = '';
+    return;
+}
+
 sub _is_row_empty {
     my($state, $index) = @_;
+    # Returns true if the row is empty, or contains a single entry composed
+    # of space.
     return scalar(@{$state->{rows}->[$index]})
             > ($state->{want_line_numbers} ? 2 : 1)
         || $state->{rows}->[$index]->[$state->{want_line_numbers} ? 1 : 0]
@@ -293,48 +195,36 @@ sub _is_row_empty {
         ? 0 : 1;
 }
 
-# _peek_char(hash_ref state) : string
-#
-# Return the next character without advancing.
-#
-sub _peek_char {
-    my($state) = @_;
-    return substr(${$state->{buffer}}, $state->{char_count}, 1);
-}
-
-# _next_char(hash_ref state) : string
-#
-# Returns the next character, or undef if at the end of input.
-#
 sub _next_char {
     my($state) = @_;
+    # Returns the next character, or undef if at the end of input.
     return $state->{char_count} > length(${$state->{buffer}})
         ? undef
         : substr(${$state->{buffer}}, $state->{char_count}++, 1);
 }
 
-# _next_line(hash_ref state, string char)
-#
-# Advances to the next line. Removes CR LF pair if present.
-#
 sub _next_line {
     my($state, $char) = @_;
+    # Advances to the next line. Removes CR LF pair if present.
     _next_char($state)
         if $char eq "\r" && _peek_char($state) eq "\n";
     $state->{line_number}++;
     return;
 }
 
-# _to_csv(string value) : string
-#
-# Returns the appropriate CSV output for the specified value.
-# Escapes quotes.
-# Quotes values with leading or trailing spaces, multiple lines, or
-# embedded CSV characters.
-# Undef values are represented as an empty string.
-#
+sub _peek_char {
+    my($state) = @_;
+    # Return the next character without advancing.
+    return substr(${$state->{buffer}}, $state->{char_count}, 1);
+}
+
 sub _to_csv {
     my($value) = @_;
+    # Returns the appropriate CSV output for the specified value.
+    # Escapes quotes.
+    # Quotes values with leading or trailing spaces, multiple lines, or
+    # embedded CSV characters.
+    # Undef values are represented as an empty string.
     return '' unless defined($value);
 
     if ($value =~ /^\s/ || $value =~ /\s$/
@@ -344,15 +234,5 @@ sub _to_csv {
     }
     return $value;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
