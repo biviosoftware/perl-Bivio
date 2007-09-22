@@ -488,6 +488,9 @@ p.prose {
 td.item {
   text-align: left;
 }
+.amount_cell {
+  text-align: right;
+}
 EOF
 }
 
