@@ -778,9 +778,9 @@ sub _cfg_wiki {
 		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
 	    ]],
 	    [prose => [
-		help_wiki_add => '[Add Help]',
-		help_wiki_close => '[Close]',
-		help_wiki_edit => '[Edit]',
+		help_wiki_add => 'Add Help',
+		help_wiki_close => 'Close',
+		help_wiki_edit => 'Edit',
 		help_wiki_footer => '',
 		help_wiki_header => 'Help',
 		help_wiki_open => 'Help',
