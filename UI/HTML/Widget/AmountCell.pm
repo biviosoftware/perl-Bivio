@@ -15,6 +15,7 @@ Bivio::IO::Config->register(my $_CFG = {
     string_font => 'number_cell',
     want_parens => 1,
     zero_as_blank => 0,
+    column_data_class => 'amount_cell',
 });
 my($_CFG_KEYS) = [sort(keys(%$_CFG))];
 
