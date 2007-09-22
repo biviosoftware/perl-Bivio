@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Boolean;
 use strict;
@@ -28,6 +28,15 @@ sub can_be_zero {
 
 sub from_literal {
     my($res, $err) = shift->SUPER::from_literal(@_);
+    if ($err) {
+	my($v) = @_;
+	if ($v =~ /^(?:y|yes|t|true|on)$/i) {
+	    $res = 1;
+	}
+	elsif ($v =~ /^(?:n|no|f|false|off)$/i) {
+	    $res = 0;
+	}
+    }
     # Booleans are never non-null.  Always returns 0 or 1 or error.
     return defined($res) ? $res : $err ? ($res, $err) : 0;
 }

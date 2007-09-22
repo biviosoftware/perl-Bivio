@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
 [
@@ -8,5 +8,16 @@ Type();
 	[undef] => 0,
 	1 => 1,
 	2 => NUMBER_RANGE(),
+	y => 1,
+	n => 0,
+	true => 1,
+	False => 0,
+	t => 1,
+	f => 0,
+	yes => 1,
+	no => 0,
+	on => 1,
+	off => 0,
+	x => INTEGER(),
     ],
 ];
