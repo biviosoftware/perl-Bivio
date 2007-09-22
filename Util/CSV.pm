@@ -14,6 +14,12 @@ sub USAGE {
 usage: b-csv [options] command [args...]
 commands:
     colrm start [end] -- removes columns like colrm command
+    from_one_col value -- quotes a value if necessary
+    from_one_row array_ref -- converts an array to a quoted row
+    from_rows array_ref -- converts an array of arrays
+    parse [text.csv [want_line_numbers]] -- returns array of arrays
+    parse_records [text.csv [want_line_numbers]] -- returns array of hashes
+    to_csv_text array -- returns text from array
 EOF
 }
 
@@ -33,6 +39,25 @@ sub colrm {
 	$res .= join(',', @l)."\n";
     }
     return \$res;
+}
+
+sub from_one_col {
+    my(undef, $col) = @_;
+    return '' unless defined($col);
+    return $col
+	unless $col =~ /(?:^\s|\s$|$_QUOTE|$_END_OF_VALUE)/;
+    $col =~ s/"/""/g;
+    return qq{"$col"};
+}
+
+sub from_one_row {
+     my($proto, $row) = @_;
+     return \(join(',', map($proto->from_one_col($_), @$row)) . "\n");
+}
+
+sub from_rows {
+     my($proto, $rows) = @_;
+     return \(join('', map(${$proto->from_one_row($_)}, @$rows)));
 }
 
 sub parse {
@@ -142,16 +167,8 @@ sub parse_records {
 
 sub to_csv_text {
     my($proto, $list) = @_;
-    # Converts a single row or a table of rows into CSV output.
-    my($buffer) = '';
-
-    if (@$list && ref($list->[0])) {
-        $buffer = join('', map(${$proto->to_csv_text($_)}, @$list));
-    }
-    else {
-        $buffer .= join(',', map(_to_csv($_), @$list)) . "\n";
-    }
-    return \$buffer;
+    my($method) = @$list && ref($list->[0]) ? 'from_rows' : 'from_one_row';
+    return $proto->$method($list);
 }
 
 sub _append_char {
@@ -218,21 +235,5 @@ sub _peek_char {
     return substr(${$state->{buffer}}, $state->{char_count}, 1);
 }
 
-sub _to_csv {
-    my($value) = @_;
-    # Returns the appropriate CSV output for the specified value.
-    # Escapes quotes.
-    # Quotes values with leading or trailing spaces, multiple lines, or
-    # embedded CSV characters.
-    # Undef values are represented as an empty string.
-    return '' unless defined($value);
-
-    if ($value =~ /^\s/ || $value =~ /\s$/
-        || $value =~ /$_QUOTE/ || $value =~ $_END_OF_VALUE) {
-        $value =~ s/"/""/g;
-        return '"' . $value . '"';
-    }
-    return $value;
-}
 
 1;
