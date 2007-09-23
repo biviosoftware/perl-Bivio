@@ -504,5 +504,12 @@ my($auth_uid) = sub {
 	    Bivio::Agent::Task->rollback(req());
 	    return 1;
 	} => 1,
+	internal_unique_load_values => [
+	    [{path => '/', realm_id => 1}] => sub {shift->get('params')},
+	    [{path_lc => '/', realm_id => 1}] => sub {shift->get('params')},
+	    [{path => '/'}] => [],
+	    [{realm_id => 1}] => [],
+	    [{path_lc => '/'}] => [],
+	],
     ],
 ];

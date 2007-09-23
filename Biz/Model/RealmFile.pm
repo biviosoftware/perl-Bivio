@@ -266,6 +266,16 @@ sub internal_prepare_query {
     return shift->SUPER::internal_prepare_query(@_);
 }
 
+sub internal_unique_load_values {
+    my($self, $values) = @_;
+    return {
+	map(($_ => $values->{$_} || return),
+	    'realm_id',
+	    (grep($values->{$_}, qw(path_lc path)))[0] || return,
+	),
+    };
+}
+
 sub is_empty {
     _assert_loaded(@_);
     my($self) = @_;
