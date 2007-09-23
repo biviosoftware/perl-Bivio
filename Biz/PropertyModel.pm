@@ -254,6 +254,17 @@ sub internal_prepare_query {
     return shift;
 }
 
+sub internal_unique_load_values {
+    my($self, $values) = @_;
+    # Returns hash_ref which is extracted from $values to unauth_load a
+    # unique row in the table.  These are not the primary keys.  If those
+    # are available in $values, they will be extracted first.  However,
+    # typically, they are not available, and you want to load by another
+    # externally provided value, e.g. RealmOwner.name, which is not the primary key
+    # of the RealmOwner table.
+    return;
+}
+
 sub internal_unload {
     my($self) = @_;
     # Clears the model state, if loaded.  Deletes from request.
@@ -398,7 +409,8 @@ sub unauth_create_or_update {
     # Calls L<unauth_load|"unauth_load">.
     #
     # See also L<create_or_update|"create_or_update">.
-    my($pk_values) = _get_primary_keys($self, $new_values);
+    my($pk_values) = _get_primary_keys($self, $new_values)
+	|| $self->internal_unique_load_values($new_values);
     return $pk_values && $self->unauth_load($pk_values)
 	    ? $self->update($new_values) : $self->create($new_values);
 }
