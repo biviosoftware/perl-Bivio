@@ -512,4 +512,11 @@ my($auth_uid) = sub {
 	    [{path_lc => '/'}] => [],
 	],
     ],
+    [req()] => [
+	create_or_update_with_content => [
+	    [$a->('iulv'), \('iulv')] => not_die(),
+	    [$a->('iulv'), \('iulv2')] => not_die(),
+	],
+	get_content => 'iulv2',
+    ],
 ];
