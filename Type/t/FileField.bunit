@@ -9,4 +9,13 @@ Type();
 	    content_type => 'text/plain',
 	}],
     ],
+    unsafe_from_disk => [
+	'' => UNDEF(),
+	'not-found' => [undef, Bivio::TypeError->NOT_FOUND],
+	[{
+	    filename => 'a',
+	    content => \("b"),
+	    content_type => 'c',
+	}] => sub {shift->get('params')},
+    ],
 ];

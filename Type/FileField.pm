@@ -23,13 +23,14 @@ use Bivio::Type::Text;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_disk {
-    my($proto, $file_name) = @_;
-    return {
-	filename => $proto->use('Type.FilePath')->get_tail($file_name),
-	content_type => $proto->use('Bivio::MIME::Type')
-	    ->unsafe_from_extension($file_name),
-        content => $proto->use('Bivio::IO::File')->read($file_name),
-    };
+    my($v, $e) = shift->unsafe_from_disk(@_);
+    return $v
+	if $v;
+    my(undef, $file_name) = @_;
+    Bivio::Die->die(
+	$file_name, ': invalid disk file: ' ,
+	$e || Bivio::TypeError::FILE_FIELD->NULL);
+    # DOES NOT RETURN
 }
 
 sub from_literal {
@@ -86,6 +87,24 @@ sub to_query {
 sub to_uri {
     # B<NOT SUPPORTED>
     die("can't convert a FileField to a uri");
+}
+
+sub unsafe_from_disk {
+    my($proto, $value) = @_;
+    return (undef, undef)
+	unless defined($value) && length($value);
+    return $proto->use('IO.Ref')->nested_copy($value)
+	if ref($value) eq 'HASH'
+	&& grep(exists($value->{$_}), qw(filename content content_type)) == 3
+	&& ref($value->{content}) eq 'SCALAR';
+    return (undef, Bivio::TypeError->NOT_FOUND)
+	unless -r $value && !(-d _);
+    return {
+	filename => $proto->use('Type.FilePath')->get_tail($value),
+	content_type => $proto->use('Bivio::MIME::Type')
+	    ->unsafe_from_extension($value),
+        content => $proto->use('IO.File')->read($value),
+    };
 }
 
 1;
