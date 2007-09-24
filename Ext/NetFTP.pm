@@ -48,7 +48,7 @@ sub new {
     $self->debug(1) if $_TRACE;
     $self->timeout($_CFG->{timeout});
     ${*$self}{'net_ftp_listen'} = _bivio_socket($self)
-	if ${*$self}{'net_ftp_passive'};
+	unless ${*$self}{'net_ftp_passive'};
     return $self;
 }
 
