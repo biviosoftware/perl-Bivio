@@ -15,6 +15,7 @@ sub help_exists {
 	    ->get_value('help_wiki_realm_id'),
 	$_WN->to_absolute($name),
 	$req,
+	1,
     ) ? 1 : 0;
 }
 
