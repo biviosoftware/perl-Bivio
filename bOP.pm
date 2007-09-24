@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,67 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.36  2007/09/20 00:57:13  nagler
+  * Wiki syntax changes:
+      + End a line with @, and the newline is eliminated
+      + Use ^ form in href= or src= will render the link properly, e.g.
+        @a href=^bivio.biz bivio => <a href="http://www.bivio.biz>bivio</a>
+        If you don't want www insertion (only if second level domain), just
+        don't prefix with ^
+      + @a href=bla.com ^foo.jpg: does the right thing
+  * Bivio::BConf->default_merge_overrides accepts a hash with a version to
+    enable simpler backwards compatibility.  First version (no version) is 0.
+  * HTMLWidget.AmountCell is configurable and BConf.version=1 sets to "normal"
+    mode (no parens, not padding, etc.).
+  * XHTMLWidget.WikiText replaces Type.WikiText.  Custom tags are registered
+    dynamically in the WikiText class map. WikiText.Embed implements
+    @ins-page (use @b-embed for the future).  App tags should be begin with
+    app prefix, e.g. @b-embed begins Bivio:: app tags.
+  * WikiText.Menu (@b-menu) implements Wiki menus.  @b-menu Foo will load
+    Foo.bmenu which is a csv with at least on column (Label) but may contain
+    another column (Link) to direct the menu to.
+  * WikiText.Widget (@b-widget) allows wikis to render arbitrary view
+    attributes.  Attributes must begin with wiki_widget_ and be lower case.
+  * XHTMLWidget.Wiki added
+  * Action.WikiView/XHTMLWidget.WikiStyle&Wiki cooperate with rendering so
+    that wiki html is rendered within a view (allowing @b-widget)
+  * View.Wiki->help replaces View.Help
+  * Action.ClientRedirect->execute_query_or_path_info replaces execute_path_info.
+  * Action.RealmFile->access_controlled_execute/load wrap the concept of
+    loading a file from public or private areas of a realm
+  * Action.WikiView->execute_help & execute_prepare_html added
+  * Model.RealmOwner deletes OTP record if password not OTP compatible
+  * ShellUtil.ListModel->csv does not try to render fields not in_select
+  * Bivio::Collection::Attributes->get_or_default deprecates assigning
+    a sub {} as the default.  Eventually will behave like put_unless_exists
+  * Bivio::Delegate::TaskId:
+      + PUBLIC_PING added, which is an Action.EmptyReply
+      + CLIENT_REDIRECT calls execute_query_or_path_info
+      + HELP replaces FORUM_HELP_IFRAME
+  * Various PetShop tests added
+  * Test.Widget improved to support Text.WikiText
+  * Type.DateTime protects  $_TEST_NOW better
+  * Type.FilePath->BLOG_FOLDER, *absolute, etc. pulled up from subclasses
+  * Type.EnumSet->compare_defined defined (greatest number of bits is greater)
+  * Type.WikiName->task_to_help and to_title added
+  * ShellUtil.SiteForum->*NAME gets from Facade
+  * Bivio::UI::FacadeBase text and task clean ups
+  * HTMLWidget.Page.body_class added
+  * View.CSS cleaned up extensively
+  * View.ThreePartPage supports body_class.
+  * XHTMLWidget.WikiStyle calls facade to get name of css (base.css default, but
+    would like to move to wiki.css).  Parses css for elements which look like:
+    ^<regexp> where <regexp> is a perl regexp that matches or doesn't match
+    the wiki page.  This allows control of all elements on the page in which a
+    wiki is displayed.
+  * Bivio::UI::ViewLanguage->unsafe_get_eval added for Test.Widget.  Use
+    for testing only.
+  * XHTMLWidget.HelpWiki refactored and supports all labels from facade.
+  * XHTMLWidget.WikiStyle->help_exists and render_help_html added
+  * ShellUtil.RealmFile->export_tree added
+  * ShellUtil.RealmFile->import_tree fixed to update existing files
+  * ShellUtil.SQL->restore_dbms_dump added
+
   Revision 5.35  2007/09/10 23:17:37  nagler
   * Bivio::Biz::Model::UserOTPForm verifies passphrase used in OTP client is
     not null
