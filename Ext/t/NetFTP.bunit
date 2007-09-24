@@ -5,12 +5,15 @@ Request('initialize_fully');
     class() => [
 	bivio_get => [
 	    [{}] => DIE(),
-	    [{
-		host => 'ftp.mozilla.org',
-		req => req(),
-		cwd => '/pub/mozilla.org/mozilla/source',
-		file => 'LICENSE',
-	    }] => qr{netscape}i,
+	    map((
+		[{
+		    host => 'ftp.mozilla.org',
+		    req => req(),
+		    cwd => '/pub/mozilla.org/mozilla/source',
+		    file => 'LICENSE',
+		    Passive => 1,
+		}] => qr{netscape}i,
+	    ), 0 .. 1),
 	],
     ],
 ];
