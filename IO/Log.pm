@@ -1,4 +1,4 @@
-# Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::IO::Log;
 use strict;
@@ -7,8 +7,6 @@ use Bivio::IO::Config;
 use Bivio::IO::File;
 use File::Spec ();
 use IO::File ();
-
-# C<Bivio::IO::Log>
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
@@ -20,12 +18,16 @@ Bivio::IO::Config->register(my $_CFG = {
 #=VARIABLES
 
 sub file_name {
-    my(undef, $base_name) = @_;
+    my($proto, $base_name, $req) = @_;
     # Returns the absolute file name of I<base_name> if
     # I<base_name> is not already absolute.
-    return File::Spec->file_name_is_absolute($base_name)
-	? $base_name
-	: File::Spec->catfile($_CFG->{directory}, $base_name);
+    return $base_name
+	if File::Spec->file_name_is_absolute($base_name);
+    my($path) = [$base_name];
+    if ($req and my $f = Bivio::UI::Facade->get_from_source) {
+	unshift(@$path, $f->get('local_file_prefix'));
+    }
+    return File::Spec->catfile($_CFG->{directory}, @$path);
 }
 
 sub handle_config {
@@ -48,11 +50,11 @@ sub handle_config {
 }
 
 sub read {
-    my($proto, $base_name) = @_;
-    # Reads the log file.  If an error occurs, throws an exception.  If I<base_name>
-    # ends in C<.gz>, converts file with C<gunzip>.  If I<base_name> is not absolute,
-    # prefixes with L<directory|"directory">.
-    $base_name = $proto->file_name($base_name);
+    my($proto, $base_name, $req) = @_;
+    # Reads the log file.  If an error occurs, throws an exception.  If
+    # I<base_name> ends in C<.gz>, converts file with C<gunzip>.  If
+    # I<base_name> is not absolute, prefixes with L<directory|"directory">.
+    $base_name = $proto->file_name($base_name, $req);
     local($?);
     my($contents) = Bivio::IO::File->read(
 	$base_name =~ /\.gz$/
@@ -68,12 +70,12 @@ sub read {
 }
 
 sub write {
-    my($proto, $base_name, $contents) = @_;
-    # Writes the log file.  If an error occurs, throws an exception.  If I<base_name>
-    # ends in C<.gz>, creates file with C<gzip>.  If I<base_name> is not absolute,
-    # prefixes with L<directory|"directory">.
+    my($proto, $base_name, $contents, $req) = @_;
+    # Writes the log file.  If an error occurs, throws an exception.  If
+    # I<base_name> ends in C<.gz>, creates file with C<gzip>.  If I<base_name>
+    # is not absolute, prefixes with L<directory|"directory">.
     Bivio::IO::File->mkdir_parent_only(
-	$base_name = $proto->file_name($base_name),
+	$base_name = $proto->file_name($base_name, $req),
 	$_CFG->{directory_mode},
     );
     local($?);
@@ -90,6 +92,11 @@ sub write {
     }) if $?;
     Bivio::IO::File->chmod($_CFG->{file_mode}, $base_name);
     return;
+}
+
+sub write_compressed {
+    my($self, $base, @rest) = @_;
+    return $self->write("$base.gz", @rest);
 }
 
 1;
