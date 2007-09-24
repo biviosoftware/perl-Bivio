@@ -5,6 +5,8 @@ req()->set_realm_and_user('fourem', undef);
 foreach my $path (qw(
     /ARF/0
     /Public/ARF.txt
+    /Public/ARF_Public.txt
+    /ARF_Private.txt
     /ARF.txt
 )) {
     model('RealmFile')->create_with_content({path => $path}, \$path);
