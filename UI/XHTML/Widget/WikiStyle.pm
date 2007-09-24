@@ -22,7 +22,7 @@ sub help_exists {
 sub prepare_html {
     my($proto, $realm_id, $name, $task_id, $req, $realm_name) = @_;
     return unless my $rf = $proto->use('Action.RealmFile')
-	->access_controlled_load($realm_id, $_WN->to_absolute($name), $req);
+	->access_controlled_load($realm_id, $_WN->to_absolute($name), $req, 1);
     my($res) = [
 	{
 	    value => ${$rf->get_content},
