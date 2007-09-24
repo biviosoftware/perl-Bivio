@@ -158,7 +158,12 @@ sub get_from_request_or_self {
     else {
 	$req_or_facade = Bivio::Agent::Request->get_current;
     }
-    return $req_or_facade->get_request->get(__PACKAGE__);
+    return $proto->get_from_source($req_or_facade);
+}
+
+sub get_from_source {
+    my(undef, $source) = @_;
+    return $source->req(__PACKAGE__);
 }
 
 sub get_instance {
