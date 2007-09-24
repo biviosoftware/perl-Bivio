@@ -24,7 +24,7 @@ sub file_name {
     return $base_name
 	if File::Spec->file_name_is_absolute($base_name);
     my($path) = [$base_name];
-    if ($req and my $f = Bivio::UI::Facade->get_from_source) {
+    if ($req and my $f = Bivio::UI::Facade->get_from_source($req)) {
 	unshift(@$path, $f->get('local_file_prefix'));
     }
     return File::Spec->catfile($_CFG->{directory}, @$path);
