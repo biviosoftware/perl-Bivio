@@ -152,6 +152,7 @@ sub execute {
 	$req,
 	[map({
 	    my($i) = $_;
+#TODO: handle_post_execute_task should be reverse
 	    ref($i) ? $i : map($_->can($i) ? [$_, $i, [$self]] : (), @$_HANDLERS);
 	}
 	'handle_pre_auth_task',
