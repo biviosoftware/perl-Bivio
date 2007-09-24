@@ -24,6 +24,6 @@ Widget({
     [] => qr{^<script type=".*</script><iframe.*/iframe><a.*Help</a>$}is,
     [1] => qr{<div class="help_wiki".*Edit.*Close.*Shell utility.*</div>$}is,
     [1, {test_user => 'demo'}] => qr{class="tools"><a[^>]+class="close}is,
-    [0, {test_task => 'LOGIN'}] => qr{^<a[^>]+>\[Add Help\]</a>$}is,
+    [0, {test_task => 'LOGIN'}] => qr{^<a[^>]+>Add Help</a>$}is,
     [0, {test_user => 'demo', test_task => 'LOGIN'}] => '',
 ];
