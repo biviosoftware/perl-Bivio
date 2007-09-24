@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.37  2007/09/24 14:19:47  nagler
+  * ShellUtil.CSV->parse_records supports want_line_numbers correctly.
+    Also added from_one_col, from_one_row, and from_rows which deprecate
+    to_csv_text
+  * Bivio::Biz::PropertyModel->unauth_create_or_update calls
+    internal_unique_load_values if primary keys are not available.  See
+    Model.RealmFile as an example.
+  * Type.Boolean->from_literal understands t, true, y, yes, off, etc.
+  * Type.FileField->unsafe_from_disk added
+  * Type.FileArg added
+  * Action.RealmFile->access_controlled_load accepts $not_die.  Dies if
+    !$not_die with FORBIDDEN or MODEL_NOT_FOUND appropriately.
+  * HTMLWidget.YesNo supports XHTML
+  * Bivio::UI::Facade->get_from_source added
+  * Bivio::UI::FacadeBase constants *_realm_id and *_name fixed to call
+    facade instance, not static call.
+  * Bivio::IO::Log->write/read accepts $req, which allows it to prefix
+    directory with facade.  Old form will be deprecated.
+  * Bivio::IO::Log->write_compressed added (use instead of appending .gz)
+  * Bivio::Agent::Request->assert/is_http_method added
+  * b-perl.el better supports class variables.  Enter Type.FilePath and
+    it will generate: my($_FP) = __PACKAGE__->use('Type.FilePath');
+
   Revision 5.36  2007/09/20 00:57:13  nagler
   * Wiki syntax changes:
       + End a line with @, and the newline is eliminated
