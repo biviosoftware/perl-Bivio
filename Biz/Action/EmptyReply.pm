@@ -6,6 +6,7 @@ use base 'Bivio::Biz::Action';
 use Bivio::Ext::ApacheConstants;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+Bivio::Agent::Task->register(__PACKAGE__);
 
 sub execute {
     my($proto, $req, $status) = @_;
@@ -33,6 +34,13 @@ sub execute_task_item {
     my($self, $error, $req) = @_;
     return $error =~ /^execute/ ? $self->$error($req)
 	: $self->execute($req, uc($error));
+}
+
+sub handle_pre_auth_task {
+    my($proto, $task, $req) = @_;
+    return $proto->get_instance('BasicAuthorization')->execute($req)
+	if $task->get('id')->get_name =~ /^BOT_/;
+    return;
 }
 
 1;
