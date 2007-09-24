@@ -235,6 +235,14 @@ sub as_string {
 	   ).']';
 }
 
+sub assert_http_method {
+    my($self, $method) = @_;
+    $self->throw_die(INVALID_OP => {
+	message => "must be $method",
+    }) if $self->is_http_method($method);
+    return;
+}
+
 sub can_user_execute_task {
     my($self, $task_name, $realm_id) = @_;
     # Convenience routine which executes
@@ -768,6 +776,13 @@ sub internal_set_current {
     Bivio::IO::Alert->warn('replacing request:', $self->get_current)
         if $self->get_current;
     return $_CURRENT = $self;
+}
+
+sub is_http_method {
+    my($self, $method) = @_;
+    return $method =~ /^get$/i ? 1 : 0
+	unless my $r = $self->unsafe_get('r');
+    return $r->method =~ /^\Q$method\E$/i;
 }
 
 sub is_production {
