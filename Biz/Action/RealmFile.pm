@@ -12,28 +12,20 @@ my($_DATA_READ) = ${
 
 sub access_controlled_execute {
     my($proto, $req) = @_;
-    my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
     return _execute(
 	$proto->access_controlled_load(
 	    $req->get('auth_id'),
-	    $f->parse_path($req->get('path_info')),
+	    Bivio::Biz::Model->new($req, 'RealmFile')
+	        ->parse_path($req->get('path_info')),
 	    $req,
-	) || $f->throw_die(MODEL_NOT_FOUND => {
-	    entity => $req->get('path_info'),
-	    realm_id => $req->get('auth_id'),
-	}),
+	),
     );
 }
 
 sub access_controlled_load {
-    my($proto, $realm_id, $path, $req) = @_;
+    my($proto, $realm_id, $path, $req, $no_die) = @_;
     my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
-    foreach my $is_public (
-	$req->with_realm($realm_id => sub {
-	    $req->get('auth_realm')->does_user_have_permissions(
-		$_DATA_READ, $req);
-	}) ? (0, 1) : 1,
-    ) {
+    foreach my $is_public (1, 0) {
 	last if $rf->unauth_load({
 	    path => $is_public ? $_FP->to_public($path) : $path,
 	    realm_id => $realm_id,
@@ -41,7 +33,21 @@ sub access_controlled_load {
 	    is_folder => 0,
 	});
     }
-    return  $rf->is_loaded ? $rf : undef;
+    my($e) = 'MODEL_NOT_FOUND';
+    if ($rf->is_loaded) {
+	return $rf
+	    if $rf->get('is_public')
+	    || $req->with_realm($realm_id => sub {
+	       $req->get('auth_realm')->does_user_have_permissions(
+	           $_DATA_READ, $req);
+	    });
+	$e = 'FORBIDDEN';
+    }
+    $rf->throw_die($e => {
+	entity => $req->get('path_info'),
+	realm_id => $req->get('auth_id'),
+    }) unless $no_die;
+    return undef;
 }
 
 sub execute {
@@ -53,6 +59,17 @@ sub execute_public {
     my($proto, $req) = @_;
     $req->put(path_info => $_FP->to_public($req->get('path_info')));
     return $proto->execute($req, 1);
+}
+
+sub execute_put {
+    my($proto, $req) = @_;
+    $req->assert_http_method('put');
+    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
+    $rf->create_or_update_with_content(
+	{path => $rf->parse_path($req->get('path_info'))},
+	$req->get_content,
+    );
+    return;
 }
 
 sub unauth_execute {
