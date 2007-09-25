@@ -246,7 +246,7 @@ sub assert_http_method {
     my($self, $method) = @_;
     $self->throw_die(INVALID_OP => {
 	message => "must be $method",
-    }) if $self->is_http_method($method);
+    }) unless $self->is_http_method($method);
     return;
 }
 
