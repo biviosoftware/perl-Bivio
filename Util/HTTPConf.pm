@@ -51,7 +51,6 @@ sub generate {
 	_write(_httpd_conf($v));
 	_write(_app_bconf($v));
 	_write(_app_init_rc($v));
-	map(_mkdir($v->{$_}), qw(log_directory app_log_directory)),
 	_write(_logrotate($v));
     }
     _httpd_vars($vars);
@@ -123,7 +122,6 @@ sub _app_vars {
 	init_rc => "/etc/rc.d/init.d/$app",
 	lock_file => "/var/lock/subsys/$app",
 	log_directory => "/var/log/$app",
-	app_log_directory => "/var/log/bop/$app",
 	logrotate => "/etc/logrotate.d/$app",
 	pid_file => "/var/run/$app.pid",
 	process_name => "$app-httpd",
