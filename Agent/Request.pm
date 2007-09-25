@@ -235,18 +235,18 @@ sub as_string {
 	   ).']';
 }
 
-sub assert_is_test {
-    my($self) = @_;
-    $self->throw_die(DIE => {message => 'may not be run on production'})
-	if $self->is_production;
-    return;
-}
-
 sub assert_http_method {
     my($self, $method) = @_;
     $self->throw_die(INVALID_OP => {
 	message => "must be $method",
     }) unless $self->is_http_method($method);
+    return;
+}
+
+sub assert_test {
+    my($self) = @_;
+    $self->throw_die(DIE => {message => 'may not be run on production'})
+	if $self->is_production;
     return;
 }
 
