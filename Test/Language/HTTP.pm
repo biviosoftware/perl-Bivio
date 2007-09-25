@@ -79,8 +79,7 @@ sub debug_print {
 }
 
 sub default_password {
-    # Returns the default password.
-    return shift->use('Bivio::Util::SQL')->TEST_PASSWORD;
+    return shift->use('ShellUtil.SQL')->TEST_PASSWORD;
 }
 
 sub do_logout {
