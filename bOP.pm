@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.38  2007/09/24 18:39:26  nagler
+  * Ext.NetFTP added.  Wraps active/passive correctly.  Also wraps get
+    into a single call.
+
   Revision 5.37  2007/09/24 14:19:47  nagler
   * ShellUtil.CSV->parse_records supports want_line_numbers correctly.
     Also added from_one_col, from_one_row, and from_rows which deprecate
