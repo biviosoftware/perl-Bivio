@@ -34,7 +34,7 @@ sub default_merge_overrides {
     # Grab last part: Only needed by PetShop
     my($root_lc) = lc(($args->{root} =~ /(\w+)$/)[0]);
     (my $file_root = "/var/db/$root_lc") =~ s/_/-/g;
-    return (
+    my($res) = {
 	'Bivio::Biz::File' => {
 	    root => $file_root,
 	},
@@ -75,7 +75,13 @@ sub default_merge_overrides {
 		zero_as_blank => 0,
 	    },
 	),
-    );
+	$args->{version} < 2 ? () : (
+	    'Bivio::IO::Log' => {
+		directory => '/var/log/bop',
+	    },
+	),
+    };
+    return $args->{version} < 2 ? %$res : $res;
 }
 
 sub dev {
