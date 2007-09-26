@@ -201,6 +201,11 @@ sub _process_payment {
     my($proto, $payment) = @_;
     return unless
 	$payment->get('method') == Bivio::Type::ECPaymentMethod->CREDIT_CARD;
+
+    unless ($_GW_LOGIN && $_GW_PASSWORD) {
+	Bivio::IO::Alert->warn('Missing payment gateway login configuration');
+	return;
+    }
     my($hreq) = HTTP::Request->new(
 	    POST => 'https://secure.authorize.net/gateway/transact.dll'
 	   );
@@ -228,8 +233,6 @@ sub _process_payment {
 #
 sub _transact_form_data {
     my($proto, $payment) = @_;
-    Bivio::Die->die('Missing payment gateway login configuration')
-            unless $_GW_LOGIN && $_GW_PASSWORD;
     my($cc_payment) = $payment->get_model('ECCreditCardPayment');
     my(undef, undef, undef, undef, $m, $y) = Bivio::Type::Date->to_parts(
 	$cc_payment->get('card_expiration_date'));
