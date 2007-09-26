@@ -230,7 +230,7 @@ sub _cfg_base {
 		    xhtml_copyright => <<"EOF",
 Copyright &copy; @{[__PACKAGE__->use('Type.DateTime')->now_as_year]} vs_text('site_copyright');<br />
 All rights reserved.<br />
-Link('Developed by bivio', 'http://www.bivio.biz');
+Link('Software by bivio', 'http://www.bivio.biz');
 EOF
 		])},
 	    ]],
