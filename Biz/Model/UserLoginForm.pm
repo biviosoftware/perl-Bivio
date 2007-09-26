@@ -355,16 +355,15 @@ sub _set_log_user {
     my($proto, $cookie, $req) = @_;
     # Set the user for this connection.  Shows up in the server log.
     my($r) = $req->unsafe_get('r');
-    return unless $r && _get($cookie, $proto->USER_FIELD);
-    my($super_user_id) = _get(
-	$cookie,
-	_super_user_field($proto),
-    );
+    return unless $r;
+    my($uid) = $req->get('auth_user_id')
+	|| _get($cookie, $proto->USER_FIELD);
+    my($suid) = $req->get('super_user_id')
+	|| _get($cookie, _super_user_field($proto));
     $r->connection->user(
-	($super_user_id ? 'su-' . $super_user_id . '-' : '')
-	. ($req->get('user_state') == $proto->use('Type.UserState')->LOGGED_IN
-	    ? 'li-' : 'lo-')
-        . _get($cookie, $proto->USER_FIELD));
+	($suid ? 'su-' . $suid . '-' : '')
+	. ($uid ? ($req->get('user_state')->eq_logged_in ? 'li-' : 'lo-') . $uid
+	: ''));
     return;
 }
 
