@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.40  2007/09/25 17:47:30  nagler
+  * Bivio::Util::HTTPConf no longer creates log_directory
+  * Bivio::BConf.version=2: Bivio::IO::Log directory is /var/log/bop &
+    default_merge_overrides returns a hash_ref
+
   Revision 5.39  2007/09/25 02:48:59  nagler
   * Bivio::Agent::Request->assert_test added
   * Bivio::Agent::Request->assert_http_method fixed
