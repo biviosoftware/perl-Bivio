@@ -2,266 +2,276 @@
 # $Id$
 package Bivio::SQL::ListSupport;
 use strict;
-$Bivio::SQL::ListSupport::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::SQL::ListSupport::VERSION;
-
-=head1 NAME
-
-Bivio::SQL::ListSupport - sql support for ListModels
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::SQL::ListSupport;
-    Bivio::SQL::ListSupport->new($decl);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::SQL::Support>
-
-=cut
-
-use Bivio::SQL::Support;
-@Bivio::SQL::ListSupport::ISA = ('Bivio::SQL::Support');
-
-=head1 DESCRIPTION
-
-C<Bivio::SQL::ListSupport> provides SQL database access for
-L<Bivio::Biz::ListModel>s.  The loading specification is defined
-by L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>.
-
-ListSupport uses the L<Bivio::SQL::Connection> for statement execution.
-
-A field is a name of the form C<Model.field>.
-
-A field identity is an array_ref of fields.  The first field is the
-name that appears in the columns list.  The rest are aliases which
-are joined in the where clause with "=".
-
-Outer joins are supported for field identities.  An alias may end
-with '(+)'.
-
-=head1 ATTRIBUTES
-
-See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
-
-=over 4
-
-=item auth_id : array_ref
-
-=item auth_id : string
-
-A field or field identity which must be equal to
-request's I<auth_id> attribute.
-
-=item auth_user_id : array_ref
-
-=item auth_user_id : string
-
-A field or field identity which must be equal to
-request's I<auth_user_id> attribute.
-
-=item can_iterate : boolean [0]
-
-By default lists can't be iterated.  If you set this to true, you can
-iterate.
-
-=item date : array_ref
-
-=item date : string
-
-Date qualification field, used to qualify queries.
-
-=item from : string
-
-Optionally override the FROM clause.  Use this feature with caution.
-
-=item group_by : array_ref
-
-Optionally, a list of fields and field identities that can be used
-to group the result.
-
-=item other : array_ref
-
-A list of fields and field identities that have no ordering.
-
-=item other_query_keys : array_ref
-
-Extra keys expected on the query.  Used by L<clean_raw|"clean_raw">.
-
-=item order_by : array_ref
-
-A list of fields and field identities that can be used to sort
-the result.
-
-=item order_by_names : array_ref
-
-List of columns order_by columns (in order).
-
-=item orabug_fetch_all_select : boolean
-
-If set, then selects must be read to completion.  We were seeing ORA-03113
-because the oracle slave was crashing with a SEGV
-on the test system only.  It isn't happening any more.  We don't know
-why, but we've taken it out of RealmUserList.  I've left the code in,
-because it may need to be added quickly.  Just add it to internal_initialize
-of the list model, e.g.
-
-    # This select causes the oracle db slave to crash.  The next
-    # operation fails.  See ListSupport for more details.
-    orabug_fetch_all_select => 1,
-
-=item parent_id : array_ref
-
-=item parent_id : string
-
-A field or field identity which further qualifies a query.
-Used when a list "this" points to another list, e.g.
-InstrumentSummaryList leads the user to InstrumentTransactionList.
-
-=item parent_id_type : string
-
-The type class of the parent_id field.
-
-=item primary_key : array_ref (required)
-
-The list of fields and field that uniquely identifies a row.
-
-=item primary_key_types : array_ref
-
-List of primary key types in the order of I<primary_key_names>.
-
-=item select_value : string
-
-The raw SQL to be substituted into the SQL query for the column.
-
-=item version : int
-
-The version of this particular combination of fields.  It will be
-set in all query strings.  It should be changed whenever the
-declaration changes.  It is used to reject an out-dated query.
-
-=item want_date : boolean [0]
-
-#TODO: It may make sense to just use the "date" field.
-
-=item want_select : boolean [1]
-
-Is this going to be in the select?  If false, like setting
-in_select to false for all columns.
-
-=item want_select_distinct : boolean [0]
-
-Use SELECT DISTINCT instead of SELECT.
-
-=item want_level_in_select : boolean [0]
-
-Add C<LEVEL> to the select.  This is an Oracle specific field.
-It is used with C<CONNECT BY>.
-
-=item where : array_ref
-
-A list of fields which will be ANDed to rest of the where clause.
-If an element matches a column_name or alias, then the appropriate
-sql_name for the column_name or alias will be substituted.
-
-=back
-
-=head1 EXAMPLE
-
-The following declaration is taken from
-L<Bivio::Biz::Model::ClubUserList|Bivio::Biz::Model::ClubUserList>:
-
-    Bivio::SQL::ListSupport->new({
-	version => 1,
-	order_by => [qw(
-            RealmOwner.name
-            ClubUser.mail_mode
-            RealmUser.role
-	)],
-	other => [qw(
-	    User.last_name
-	    User.middle_name
-	    User.first_name
-	)],
-	primary_key => [
-	    [qw(User.user_id ClubUser.user_id RealmOwner.realm_id
-                RealmUser.user_id)],
-	],
-	auth_id => [qw(ClubUser.club_id RealmUser.realm_id)],
-    });
-
-This declaration will produce the following properties:
-
-    User.last_name
-    RealmOwner.name
-    ClubUser.mail_mode
-    RealmUser.role
-    User.user_id
-    ClubUser.club_id
-
-This is the first version.  Any time the field names change, you should change
-the version.  Field identities do not affect the version, because they do not
-affect the external representation, just the implementation of the query.
-
-You can order this model by I<RealmOwner.name>, I<ClubUser.mail_mode>, or
-I<RealmUser.role>.  While it may not make the most sense to order by
-I<ClubUser.mail_mode>, it is allowed and "why not?".
-
-The I<User.user_id> and its aliases
-I<ClubUser.user_id>, I<RealmOwner.realm_id>, and I<RealmUser.user_id>,
-is the C<primary_key> for this ListSupport.  It is guaranteed to be
-unique to each row of the ListSupport.
-
-The I<ClubUser.club_id> and its alias I<RealmUser.realm_id> must
-be equal to the C<auth_id> of the
-L<Bivio::Agent::Request|Bivio::Agent::Request>.  This ensures
-data security, i.e. a user can't hack the request to get by this.
-The user cannot set the C<auth_id>.
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::SQL::Support';
 use Bivio::Biz::PropertyModel;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::Date;
 use Bivio::Type::PrimaryId;
 
-#=VARIABLES
+# C<Bivio::SQL::ListSupport> provides SQL database access for
+# L<Bivio::Biz::ListModel>s.  The loading specification is defined
+# by L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>.
+#
+# ListSupport uses the L<Bivio::SQL::Connection> for statement execution.
+#
+# A field is a name of the form C<Model.field>.
+#
+# A field identity is an array_ref of fields.  The first field is the
+# name that appears in the columns list.  The rest are aliases which
+# are joined in the where clause with "=".
+#
+# Outer joins are supported for field identities.  An alias may end
+# with '(+)'.
+#
+#
+# See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
+#
+#
+# auth_id : array_ref
+#
+# auth_id : string
+#
+# A field or field identity which must be equal to
+# request's I<auth_id> attribute.
+#
+# auth_user_id : array_ref
+#
+# auth_user_id : string
+#
+# A field or field identity which must be equal to
+# request's I<auth_user_id> attribute.
+#
+# can_iterate : boolean [0]
+#
+# By default lists can't be iterated.  If you set this to true, you can
+# iterate.
+#
+# count_distinct : array_ref
+#
+# The column to be used in the COUNT(DISTINCT x) query.
+#
+# date : array_ref
+#
+# date : string
+#
+# Date qualification field, used to qualify queries.
+#
+# from : string
+#
+# Optionally override the FROM clause.  Use this feature with caution.
+#
+# group_by : array_ref
+#
+# Optionally, a list of fields and field identities that can be used
+# to group the result.
+#
+# other : array_ref
+#
+# A list of fields and field identities that have no ordering.
+#
+# other_query_keys : array_ref
+#
+# Extra keys expected on the query.  Used by L<clean_raw|"clean_raw">.
+#
+# order_by : array_ref
+#
+# A list of fields and field identities that can be used to sort
+# the result.
+#
+# order_by_names : array_ref
+#
+# List of columns order_by columns (in order).
+#
+# orabug_fetch_all_select : boolean
+#
+# If set, then selects must be read to completion.  We were seeing ORA-03113
+# because the oracle slave was crashing with a SEGV
+# on the test system only.  It isn't happening any more.  We don't know
+# why, but we've taken it out of RealmUserList.  I've left the code in,
+# because it may need to be added quickly.  Just add it to internal_initialize
+# of the list model, e.g.
+#
+#     # This select causes the oracle db slave to crash.  The next
+#     # operation fails.  See ListSupport for more details.
+#     orabug_fetch_all_select => 1,
+#
+# parent_id : array_ref
+#
+# parent_id : string
+#
+# A field or field identity which further qualifies a query.
+# Used when a list "this" points to another list, e.g.
+# InstrumentSummaryList leads the user to InstrumentTransactionList.
+#
+# parent_id_type : string
+#
+# The type class of the parent_id field.
+#
+# primary_key : array_ref (required)
+#
+# The list of fields and field that uniquely identifies a row.
+#
+# primary_key_types : array_ref
+#
+# List of primary key types in the order of I<primary_key_names>.
+#
+# select_value : string
+#
+# The raw SQL to be substituted into the SQL query for the column.
+#
+# version : int
+#
+# The version of this particular combination of fields.  It will be
+# set in all query strings.  It should be changed whenever the
+# declaration changes.  It is used to reject an out-dated query.
+#
+# want_date : boolean [0]
+#
+# #TODO: It may make sense to just use the "date" field.
+#
+# want_select : boolean [1]
+#
+# Is this going to be in the select?  If false, like setting
+# in_select to false for all columns.
+#
+# want_select_distinct : boolean [0]
+#
+# Use SELECT DISTINCT instead of SELECT.
+#
+# want_level_in_select : boolean [0]
+#
+# Add C<LEVEL> to the select.  This is an Oracle specific field.
+# It is used with C<CONNECT BY>.
+#
+# where : array_ref
+#
+# A list of fields which will be ANDed to rest of the where clause.
+# If an element matches a column_name or alias, then the appropriate
+# sql_name for the column_name or alias will be substituted.
+#
+#
+#
+# The following declaration is taken from
+# L<Bivio::Biz::Model::ClubUserList|Bivio::Biz::Model::ClubUserList>:
+#
+#     Bivio::SQL::ListSupport->new({
+# 	version => 1,
+# 	order_by => [qw(
+#             RealmOwner.name
+#             ClubUser.mail_mode
+#             RealmUser.role
+# 	)],
+# 	other => [qw(
+# 	    User.last_name
+# 	    User.middle_name
+# 	    User.first_name
+# 	)],
+# 	primary_key => [
+# 	    [qw(User.user_id ClubUser.user_id RealmOwner.realm_id
+#                 RealmUser.user_id)],
+# 	],
+# 	auth_id => [qw(ClubUser.club_id RealmUser.realm_id)],
+#     });
+#
+# This declaration will produce the following properties:
+#
+#     User.last_name
+#     RealmOwner.name
+#     ClubUser.mail_mode
+#     RealmUser.role
+#     User.user_id
+#     ClubUser.club_id
+#
+# This is the first version.  Any time the field names change, you should change
+# the version.  Field identities do not affect the version, because they do not
+# affect the external representation, just the implementation of the query.
+#
+# You can order this model by I<RealmOwner.name>, I<ClubUser.mail_mode>, or
+# I<RealmUser.role>.  While it may not make the most sense to order by
+# I<ClubUser.mail_mode>, it is allowed and "why not?".
+#
+# The I<User.user_id> and its aliases
+# I<ClubUser.user_id>, I<RealmOwner.realm_id>, and I<RealmUser.user_id>,
+# is the C<primary_key> for this ListSupport.  It is guaranteed to be
+# unique to each row of the ListSupport.
+#
+# The I<ClubUser.club_id> and its alias I<RealmUser.realm_id> must
+# be equal to the C<auth_id> of the
+# L<Bivio::Agent::Request|Bivio::Agent::Request>.  This ensures
+# data security, i.e. a user can't hack the request to get by this.
+# The user cannot set the C<auth_id>.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PRIMARY_ID_SQL_VALUE) = Bivio::Type::PrimaryId->to_sql_value('?');
 my($_DATE_SQL_VALUE) = Bivio::Type::Date->to_sql_value('?');
 
-=head1 FACTORIES
+sub get_statement {
+    my($self) = @_;
+    # Return the statement for this instance.
+    return $self->internal_get()->{statement};
+}
 
-=cut
+sub iterate_next {
+    my($self) = shift;
+    # Calls SUPER::iterate_next, and cleans adds auth_id and parent_id if
+    # appropriate.
+    return 0
+	unless $self->SUPER::iterate_next(@_);
+    my($model, $iterator, $row, $converter) = @_;
+    my($attrs) = $self->internal_get;
+    my($query) = $model->get_query;
+    foreach my $f ('auth_id', 'parent_id') {
+	next unless $attrs->{$f};
+	my($v) = $query->unsafe_get($f);
+	$row->{$attrs->{$f}->{name}} =
+	    $converter ? $attrs->{$f}->{type}->$converter($v) : $v;
+    }
+    return 1;
+}
 
-=for html <a name="new"></a>
+sub iterate_start {
+    # Returns a handle which can be used to iterate the rows with
+    # L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+    # should be called, too.
+    #
+    # Arguments are the same as L<load|"load">.
+    return _execute_select(@_);
+}
 
-=head2 static new(hash_ref config, Bivio::SQL::Statement stmt) : Bivio::SQL::ListSupport
+sub load {
+    my($self, $query, $stmt, $where, $params, $die) = @_;
+    # Loads the specified rows with data using the parameterized where_clause
+    # and substitution values. At most the specified max rows will be loaded.
+    # Data will be loaded starting at the specified index into the result set.
+    #
+    # I<where> is added to the internally generated select with I<params>.
+    #
+    # If I<want_this> or I<this> is set, only loads one element.
 
-Creates a SQL list support instance from a declaration.  A I<decl> is a list of
-keyed categories.  The keys are described below.  The values are either an
-array_ref or a string (except I<version>).  The array_ref may contain strings
-(fields) or array_refs of strings (field identities).  A field is composed of a
-table qualifier and the column name.  The first field in a field identity is
-a property.  The others are supplied for the I<WHERE> clause.
+    # If no select such just return an empty list.  Only local fields.
+    return [] unless _select($self);
 
-The table qualifier is the table name with the trailing I<t> replaced by
-a digit.  The digits start at I<1>.
-
-The types of the columns will be extracted from the property
-models corresponding to the table names.
-
-=cut
+    # Detail or list?
+    return $query->get('this') || $query->unsafe_get('want_first_only')
+	    ? _load_this($self, $query, _execute_select(@_), $die)
+	    : _load_list(@_);
+}
 
 sub new {
     my($proto, $decl, $stmt) = @_;
+    # Creates a SQL list support instance from a declaration.  A I<decl> is a list of
+    # keyed categories.  The keys are described below.  The values are either an
+    # array_ref or a string (except I<version>).  The array_ref may contain strings
+    # (fields) or array_refs of strings (field identities).  A field is composed of a
+    # table qualifier and the column name.  The first field in a field identity is
+    # a property.  The others are supplied for the I<WHERE> clause.
+    #
+    # The table qualifier is the table name with the trailing I<t> replaced by
+    # a digit.  The digits start at I<1>.
+    #
+    # The types of the columns will be extracted from the property
+    # models corresponding to the table names.
     my($attrs) = {
 	statement => $stmt,
 	# All columns by qualified name
@@ -312,100 +322,9 @@ sub new {
     return $self;
 }
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_statement"></a>
-
-=head2 get_statement() : Bivio::SQL::Statement
-
-Return the statement for this instance.
-
-=cut
-
-sub get_statement {
-    my($self) = @_;
-    return $self->internal_get()->{statement};
-}
-
-=for html <a name="iterate_next"></a>
-
-=head2 iterate_next(Bivio::Biz::Model model, ref iterator, hash_ref row) : boolean
-
-=head2 iterate_next(Bivio::Biz::Model model, ref iterator, hash_ref row, string converter) : boolean
-
-Calls SUPER::iterate_next, and cleans adds auth_id and parent_id if
-appropriate.
-
-=cut
-
-sub iterate_next {
-    my($self) = shift;
-    return 0
-	unless $self->SUPER::iterate_next(@_);
-    my($model, $iterator, $row, $converter) = @_;
-    my($attrs) = $self->internal_get;
-    my($query) = $model->get_query;
-    foreach my $f ('auth_id', 'parent_id') {
-	next unless $attrs->{$f};
-	my($v) = $query->unsafe_get($f);
-	$row->{$attrs->{$f}->{name}} =
-	    $converter ? $attrs->{$f}->{type}->$converter($v) : $v;
-    }
-    return 1;
-}
-
-=for html <a name="iterate_start></a>
-
-=head2 iterate_start(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : ref
-
-Returns a handle which can be used to iterate the rows with
-L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
-should be called, too.
-
-Arguments are the same as L<load|"load">.
-
-=cut
-
-sub iterate_start {
-    return _execute_select(@_);
-}
-
-=for html <a name="load"></a>
-
-=head2 load(Bivio::SQL::ListQuery query, Bivio::SQL::Statement stmt, string where, array_ref params, ref die) : array_ref
-
-Loads the specified rows with data using the parameterized where_clause
-and substitution values. At most the specified max rows will be loaded.
-Data will be loaded starting at the specified index into the result set.
-
-I<where> is added to the internally generated select with I<params>.
-
-If I<want_this> or I<this> is set, only loads one element.
-
-=cut
-
-sub load {
-    my($self, $query, $stmt, $where, $params, $die) = @_;
-
-    # If no select such just return an empty list.  Only local fields.
-    return [] unless _select($self);
-
-    # Detail or list?
-    return $query->get('this') || $query->unsafe_get('want_first_only')
-	    ? _load_this($self, $query, _execute_select(@_), $die)
-	    : _load_list(@_);
-}
-
-#=PRIVATE METHODS
-
-# _count_pages(self, Bivio::SQL::ListQuery query, string from_where, array_ref params) : int
-#
-# Sets page_count and adjusts page_number.  Returns page_count.
-#
 sub _count_pages {
     my($self, $query, $from_where, $params) = @_;
+    # Sets page_count and adjusts page_number.  Returns page_count.
     my($statement) = Bivio::SQL::Connection->execute(
 	$self->get('select_count') . ' ' . $from_where, $params);
     my($row_count) = $statement->fetchrow_array;
@@ -420,20 +339,14 @@ sub _count_pages {
     return $page_count;
 }
 
-# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, Bivio::SQL::Statement stmt, string where, array_ref params, any die) : DBI::Statement
-#
-# Prepare and execute the select statement.
-#
 sub _execute_select {
+    # Prepare and execute the select statement.
     return Bivio::SQL::Connection->execute((_prepare_statement(@_))[0,1]);
 }
 
-# _find_list_start(self, Bivio::SQL::ListQuery query, string sql, array_ref params, any die) : array
-#
-# Returns $rows and $statement after finding first row to return.
-#
 sub _find_list_start {
     my($self, $query, $sql, $params, $die) = @_;
+    # Returns $rows and $statement after finding first row to return.
     my($db) = Bivio::SQL::Connection->get_instance;
     my($statement, $row);
     my($page_number, $count) = $query->get(qw(page_number count));
@@ -491,13 +404,10 @@ sub _find_list_start {
     # DOES NOT RETURN
 }
 
-# _init_column_classes(hash_ref attrs, hash_ref decl) : string
-#
-# Initialize the column classes.
-# Returns the beginnings of the where clause
-#
 sub _init_column_classes {
     my($attrs, $decl) = @_;
+    # Initialize the column classes.
+    # Returns the beginnings of the where clause
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
 	[qw(auth_id auth_user_id date parent_id primary_key order_by group_by
             other count_distinct)]);
@@ -548,15 +458,12 @@ sub _init_column_classes {
     return $where;
 }
 
-# _init_column_lists(hash_ref attrs, hash_ref decl, string where)
-#
-# Creates many of the lists in $attrs which are derived from the class
-# lists (primary_key, order_by).  Creates select and select_this
-# using "where" of field identities and column information already in $attrs
-# only if "where" is defined (see _init_column_classes).
-#
 sub _init_column_lists {
     my($attrs, $decl, $where) = @_;
+    # Creates many of the lists in $attrs which are derived from the class
+    # lists (primary_key, order_by).  Creates select and select_this
+    # using "where" of field identities and column information already in $attrs
+    # only if "where" is defined (see _init_column_classes).
 
     # Lists are sorted to keep Oracle's cache happy across invocations
     $attrs->{primary_key_names} = [map {$_->{name}} @{$attrs->{primary_key}}];
@@ -636,13 +543,10 @@ sub _init_column_lists {
     return;
 }
 
-# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery query, Bivio::SQL::Statement statement, string where, array_ref params, any die) : array_ref
-#
-# Search the list until we find our page_number and then return count rows.
-# If the page_number exceeds the number of rows, read the last page.
-#
 sub _load_list {
     my($self, $query, undef, undef, undef, $die) = @_;
+    # Search the list until we find our page_number and then return count rows.
+    # If the page_number exceeds the number of rows, read the last page.
     my($sql, $params, $from_where) = _prepare_statement(@_);
     _count_pages($self, $query, $from_where, $params)
 	if $from_where && $query->unsafe_get('want_page_count');
@@ -699,14 +603,11 @@ sub _load_list {
     return \@rows;
 }
 
-# _load_this(Bivio::SQL::Support self, Bivio::SQL::ListQuery query, DBI::Statement statement, any die) : array_ref
-#
-# Load "this" from statement.  We search serially through all records.
-# There doesn't appear to be a better way to do this, because we need
-# to know "prev".  Eventually, this will have to be PL/SQL.
-#
 sub _load_this {
     my($self, $query, $statement, $die) = @_;
+    # Load "this" from statement.  We search serially through all records.
+    # There doesn't appear to be a better way to do this, because we need
+    # to know "prev".  Eventually, this will have to be PL/SQL.
     my($attrs) = $self->internal_get;
     $die->throw_die('DIE', 'cannot load this, primary key must be in_select')
 	unless $attrs->{can_load_this};
@@ -781,32 +682,25 @@ sub _load_this {
     return $rows;
 }
 
-# _merge_where() : string
-# Merge any internal, literal where predicates with where clause
-#   returned by internal_pre_load
 sub _merge_where {
     my($self, $_where) = @_;
+    # Merge any internal, literal where predicates with where clause
+    #   returned by internal_pre_load
     return $_where
 	unless $self->unsafe_get('sql_where');
     _trace('sql_where: ', $self->get('sql_where'));
     return join(' AND ', grep($_, $self->get('sql_where'), $_where));
 }
 
-# _page_number(Bivio::SQL::ListQuery query, int num_rows) : int
-#
-# Returns the page number that $num_rows is on.
-#
 sub _page_number {
     my($query, $num_rows) = @_;
+    # Returns the page number that $num_rows is on.
     return int(--$num_rows/$query->get('count')) + $query->FIRST_PAGE();
 }
 
-# _prepare_ordinal_clauses(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query) : string
-#
-# Generates the order_by and group_by clauses.
-#
 sub _prepare_ordinal_clauses {
     my($self, $query) = @_;
+    # Generates the order_by and group_by clauses.
     my($attrs) = $self->internal_get;
     my($res) = '';
     $res .= ' GROUP BY ' . join(',', map($_->{sql_name}, @{$attrs->{group_by}}))
@@ -825,10 +719,9 @@ sub _prepare_ordinal_clauses {
     return $res;
 }
 
-# _prepare_query_values()
-# Put auth_id and parent_id on statement, if they exist
 sub _prepare_query_values {
     my($self, $stmt, $query) = @_;
+    # Put auth_id and parent_id on statement, if they exist
 
     foreach my $col (qw(auth_id auth_user_id parent_id)) {
 	$stmt->where([$self->get($col)->{name}, [$query->get($col)]])
@@ -859,10 +752,9 @@ sub _prepare_query_values {
     return;
 }
 
-# _prepare_statement() : (string, array_ref, string)
-# Build sql.
 sub _prepare_statement {
     my($self, $query, $stmt, $_where, $_params, $die) = @_;
+    # Build sql.
     _trace('_where: ', $_where);
     $stmt ||= Bivio::SQL::Statement->new();
     _prepare_query_values($self, $stmt, $query);
@@ -893,24 +785,11 @@ sub _prepare_statement {
     );
 }
 
-# _select(self) : string
-#
-# Ask statement to build select string. 
-#
 sub _select {
     my($self) = @_;
+    # Ask statement to build select string. 
     return $self->get_statement()
 	->build_select_for_sql_support($self);
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
