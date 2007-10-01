@@ -736,9 +736,7 @@ sub _cfg_wiki {
 			 });
 			 return $res
 			     if $res;
-			 Bivio::IO::Alert->warn(
-			     $proto->$name(), ': realm not found',
-			 );
+			 Bivio::IO::Alert->warn($f->$name(), ': realm not found');
 			 return 1;
 		    }],
 		);
