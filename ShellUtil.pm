@@ -251,7 +251,9 @@ sub arg_list {
 	@{$proto->map_together(sub {
 	    my($arg, $decl) = @_;
 	    $decl ||= $last_decl;
-	    my($name, $type, $default) = ref($decl) ? @$decl : $decl;
+	    $decl = [$decl]
+		unless ref($decl);
+	    my($name, $type, $default) = @$decl;
 	    $type ||= $name;
 	    my($v, $e) = Bivio::Type->get_instance($type)
 		->from_literal($arg);
