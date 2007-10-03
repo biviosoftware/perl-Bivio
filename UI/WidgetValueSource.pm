@@ -300,9 +300,10 @@ sub get_widget_value {
 	    $value = ($value->{$param2});
 	}
 	elsif (ref($value) eq 'ARRAY') {
-	    Bivio::IO::Alert->warn_deprecated(
-		$value, ': argument will eventually be resolved fully',
-	    );
+#TODO: put this warning back, but fix societas notices first
+#	    Bivio::IO::Alert->warn_deprecated(
+#		$value, ': argument will eventually be resolved fully',
+#	    );
 	    # index must exist (and be a number)
 	    _die($self, $param1, '->[', $param2, ']: does not exist')
 			unless $param2 <= $#$value;
