@@ -1,6 +1,7 @@
 # Copyright (c) 2003 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
+use Bivio::UI::Widget::Join;
 use Bivio::Test::Request;
 my($_req) = Bivio::Test::Request->setup_facade;
 Bivio::Biz::Model->new($_req, 'ProductList')->load_all({
@@ -29,6 +30,19 @@ Bivio::Test->new({
 	initialize => undef,
 	render => [
 	    [$_req, \(my $y = '')] => qr/Name,Id\nCorgi,K9-BD-01\nDalmation.*Poodle/s,
+	],
+    ],
+    ['ProductList', [
+	['Product.name', {
+	    column_heading => Bivio::UI::Widget::Join->new(['Name']),
+	}],
+	['Product.product_id', {
+	    column_widget => Bivio::UI::Widget::Join->new(['ID: ', ['Product.product_id']]),
+	}],
+    ]] => [
+	initialize => undef,
+	render => [
+	    [$_req, \(my $y2 = '')] => qr/Name,Product ID\nCorgi,ID: K9-BD-01\nDalmation.*Poodle/s,
 	],
     ],
     ['ProductList', [
