@@ -329,23 +329,30 @@ sub _cfg_file {
 }
 
 sub _cfg_mail {
-    my($proto) = @_;
     return {
 	Font => [
 	    [mail_msg_field => 'bold'],
 	],
 	Task => [
-	    [FORUM_MAIL_RECEIVE => '?/' . $proto->MAIL_RECEIVE_PREFIX],
+	    [FORUM_MAIL_RECEIVE => sub {
+		 return '?/' . shift->get_facade->MAIL_RECEIVE_PREFIX;
+	    }],
 	    [FORUM_MAIL_REFLECTOR => undef],
 	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
 	    [MAIL_RECEIVE_FORWARD => undef],
 	    [MAIL_RECEIVE_IGNORE => undef],
 	    [MAIL_RECEIVE_NOT_FOUND => undef],
 	    [MAIL_RECEIVE_NO_RESOURCES => undef],
-	    [USER_MAIL_BOUNCE => '?/' . $proto->MAIL_RECEIVE_PREFIX . Bivio::Biz::Model->get_instance('RealmMailBounce')->TASK_URI],
+	    [USER_MAIL_BOUNCE => sub {
+		 return '?/' . shift->get_facade->MAIL_RECEIVE_PREFIX
+		     . Bivio::Biz::Model->get_instance('RealmMailBounce')
+			 ->TASK_URI;
+	    }],
 	],
 	Text => [
-	    ['MailReceiveDispatchForm.uri_prefix' => $proto->MAIL_RECEIVE_PREFIX],
+	    ['MailReceiveDispatchForm.uri_prefix' => sub {
+		 return shift->get_facade->MAIL_RECEIVE_PREFIX;
+	    }],
 	],
     };
 }
@@ -710,7 +717,6 @@ sub _cfg_user_auth {
 }
 
 sub _cfg_wiki {
-    my($proto) = @_;
     return {
 	Task => [
 	    [FORUM_WIKI_EDIT => '?/edit-wiki/*'],
