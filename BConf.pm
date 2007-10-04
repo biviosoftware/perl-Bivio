@@ -389,6 +389,7 @@ sub _base {
 		    'Bivio::Delegate::SimpleMotionStatus',
 		'Bivio::Type::MotionType' =>
 		    'Bivio::Delegate::NoMotionType',
+		'Bivio::Type::RealmDAG' => 'Bivio::Delegate::RealmDAG',
 	    },
 	}),
 	$proto->merge_realm_role_category_map(),
