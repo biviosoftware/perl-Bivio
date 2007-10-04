@@ -31,8 +31,8 @@ sub initialize {
     $fields->{selected} = $self->initialize_value('selected',
         B(String([__PACKAGE__ . 'selected'])));
     $fields->{blank} = $self->initialize_value('blank', vs_blank_cell());
-    _create_navigation_link($self, 'prev', 'Previous');
-    _create_navigation_link($self, 'next', 'Next');
+    _create_navigation_link($self, 'prev');
+    _create_navigation_link($self, 'next');
     return;
 }
 
@@ -80,9 +80,10 @@ sub render {
 # Returns a widget which renders a navigator for the specified direction
 # Returns a list of page numbers to render as links.
 sub _create_navigation_link {
-    my($self, $direction, $text) = @_;
+    my($self, $direction) = @_;
     my($fields) = $self->[$_IDI];
     my($key) = 'Model.' . $self->get('list_class');
+    my($text)= vs_text("$key.paged_list.$direction");
     $fields->{$direction} = $self->initialize_value($direction,
         If([[$key, '->get_query'], 'has_' . $direction],
             Link(_nav($self, $direction, $text, 1), [$key, '->format_uri',
@@ -117,10 +118,7 @@ sub _nav {
     my($self, $direction, $text, $on) = @_;
     return Join([
         _order_widgets($self, $direction,
-            $on ? B(String($text)) : SPAN_off(String($text)),
-            vs_blank_cell(),
-            Image($direction . ($on ? '' : 'd'), ''),
-        ),
+	    SPAN(String($text), $direction . ' ' . ($on ? 'on' : 'off'))),
     ]);
 }
 
