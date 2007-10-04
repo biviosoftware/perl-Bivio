@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.41  2007/09/26 23:27:07  moeller
+  * Bivio::Biz::Action::ECCreditCardProcessor changed missing gateway
+    message from die() to warn()
+  * Bivio::Biz::Model::ECCreditCardPaymentForm new module
+  * Bivio::Biz::Model::UserLoginForm fix _set_log_user to do best
+    efforts at showing user
+  * Bivio::UI::FacadeBase Change 'Developed by bivio' to 'Software by
+    bivio'
+  * Bivio::UI::XHTML::Widget::Page3 Reuse xhtml_copyright
+
   Revision 5.40  2007/09/25 17:47:30  nagler
   * Bivio::Util::HTTPConf no longer creates log_directory
   * Bivio::BConf.version=2: Bivio::IO::Log directory is /var/log/bop &
