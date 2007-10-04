@@ -112,7 +112,7 @@ sub dev {
 		want_time => 0,
 	    },
 	    'Bivio::IO::Log' => {
-		directory => $root,
+		directory => $file_root,
 	    },
 	    'Bivio::Mail::Common' => {
 		sendmail => 'b-test -input - mock_sendmail',
