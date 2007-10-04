@@ -6,6 +6,14 @@ use Bivio::Base 'Bivio::Biz::PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub create {
+    my($self, $values) = @_;
+    return $self->SUPER::create({
+	realm_dag_type => Bivio::Type->get_instance('RealmDAG')->UNKNOWN,
+	%$values,
+    });
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -14,6 +22,7 @@ sub internal_initialize {
         columns => {
             parent_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             child_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+	    realm_dag_type => ['RealmDAG', 'PRIMARY_KEY'],
         },
         other => [
             [qw(parent_id RealmOwner.realm_id)],
