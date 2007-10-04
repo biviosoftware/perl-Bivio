@@ -270,7 +270,8 @@ CREATE TABLE tuple_use_t  (
 CREATE TABLE realm_dag_t (
   parent_id NUMERIC(18) NOT NULL,
   child_id NUMERIC(18) NOT NULL,
-  constraint realm_dag_t1 primary key (parent_id, child_id)
+  realm_dag_type NUMERIC(2) NOT NULL,
+  constraint realm_dag_t1 primary key (parent_id, child_id, realm_dag_type)
 )
 /
 
