@@ -1,190 +1,120 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Text;
 use strict;
-$Bivio::UI::Text::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Text::VERSION;
+use Bivio::Base 'Bivio::UI::FacadeComponent';
+use Bivio::IO::Config;
+use Bivio::IO::Trace;
 
-=head1 NAME
+# C<Bivio::UI::Text> maps internal names to UI strings.  In the
+# simple case, names map to values, e.g.
+#
+#      group(my_name => 'my name for the UI');
+#
+# You can have multiple aliases for the same string, e.g.
+#
+#      group(['my_name', 'any_name']  => 'my name for the UI');
+#
+# Sometimes it is convenient to qualify a string's use, e.g. only use
+# it within the context of one particular form.  For example,
+#
+#      group(LoginForm => [
+#          name => 'User ID or Email',
+#      ]);
+#
+# You might add in other names in this group, e.g.
+#
+#      group(LoginForm => [
+#          name => 'User ID or Email',
+#          password => 'Password',
+#      ]);
+#
+# You may nest tag parts as deeply as you like:
+#
+#      group(LoginForm => [
+#          RealmOwner => [
+#             name => 'User ID or Email',
+#          ],
+#      ]);
+#
+# When looking up names, the tag parts are applied if they are found.  If there
+# is no tag part, it is dropped and the next tag part is used.  Please see
+# L<get_value|"get_value"> for more details.
+#
+# The empty tag is allowed at a nested level only.  It must point to a terminal
+# value (not another level of nesting).  It is used when a determinant name
+# is also an intermediate name, e.g.
+#
+#      group(phone => [
+# 	[phone, ''] => 'Phone',
+#      ]);
+#
+# The tags C<phone> and C<phone.phone> will point to C<Phone>.
+#
+# Tags are grouped to share values (as with other FacadeComponents).  A composite
+# tag is formed out of the tag parts by L<group|"group"> or L<regroup|"regroup">.
+# A single call to one of these methods may result in multiple groups being
+# formed, e.g.
+#
+#      group(LoginForm => [
+#          RealmOwner => [
+#             name => 'User ID or Email',
+#             password => 'Password',
+#          ],
+#      ]);
+#
+# Will form two groups, each with one member.  The above is equivalent to:
+#
+#      group('LoginForm.RealmOwner.name' => 'User ID or Email');
+#      group('LoginForm.RealmOwner.password' => 'Password');
+#
+# The interface intends to be intuitive, but intuition is not always obvious.
+# When in doubt, read the code or experiment.
+#
+# You can permute as much as you like, but this may result in combinatorial
+# explosion, i.e. don't do:
+#
+#      group(['a'..'z'] => [
+#           ['a'..'z'] => [
+#               ['a'..'z'] => [
+#                   'some value',
+#               ]]]);
+#
+# This will result in 26^3 names for 'some value'.  It's unlikely that you
+# want this.
+#
+#
+#
+# home_page_uri : string
+#
+# Where to redirect to when the user browses '/', i.e. the document
+# root without any path_info.  Used by
+# L<Bivio::Biz::Action::ClientRedirect::execute_if_home_page|Bivio::Biz::Action::ClientRedirect/"execute_if_home_page">
 
-Bivio::UI::Text - tagged text of a facade
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::Text;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::FacadeComponent>
-
-=cut
-
-use Bivio::UI::FacadeComponent;
-@Bivio::UI::Text::ISA = ('Bivio::UI::FacadeComponent');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::Text> maps internal names to UI strings.  In the
-simple case, names map to values, e.g.
-
-     group(my_name => 'my name for the UI');
-
-You can have multiple aliases for the same string, e.g.
-
-     group(['my_name', 'any_name']  => 'my name for the UI');
-
-Sometimes it is convenient to qualify a string's use, e.g. only use
-it within the context of one particular form.  For example,
-
-     group(LoginForm => [
-         name => 'User ID or Email',
-     ]);
-
-You might add in other names in this group, e.g.
-
-     group(LoginForm => [
-         name => 'User ID or Email',
-         password => 'Password',
-     ]);
-
-You may nest tag parts as deeply as you like:
-
-     group(LoginForm => [
-         RealmOwner => [
-            name => 'User ID or Email',
-         ],
-     ]);
-
-When looking up names, the tag parts are applied if they are found.  If there
-is no tag part, it is dropped and the next tag part is used.  Please see
-L<get_value|"get_value"> for more details.
-
-The empty tag is allowed at a nested level only.  It must point to a terminal
-value (not another level of nesting).  It is used when a determinant name
-is also an intermediate name, e.g.
-
-     group(phone => [
-	[phone, ''] => 'Phone',
-     ]);
-
-The tags C<phone> and C<phone.phone> will point to C<Phone>.
-
-Tags are grouped to share values (as with other FacadeComponents).  A composite
-tag is formed out of the tag parts by L<group|"group"> or L<regroup|"regroup">.
-A single call to one of these methods may result in multiple groups being
-formed, e.g.
-
-     group(LoginForm => [
-         RealmOwner => [
-            name => 'User ID or Email',
-            password => 'Password',
-         ],
-     ]);
-
-Will form two groups, each with one member.  The above is equivalent to:
-
-     group('LoginForm.RealmOwner.name' => 'User ID or Email');
-     group('LoginForm.RealmOwner.password' => 'Password');
-
-The interface intends to be intuitive, but intuition is not always obvious.
-When in doubt, read the code or experiment.
-
-You can permute as much as you like, but this may result in combinatorial
-explosion, i.e. don't do:
-
-     group(['a'..'z'] => [
-          ['a'..'z'] => [
-              ['a'..'z'] => [
-                  'some value',
-              ]]]);
-
-This will result in 26^3 names for 'some value'.  It's unlikely that you
-want this.
-
-=head1 REQUIRED VALUES
-
-=over 4
-
-=item home_page_uri : string
-
-Where to redirect to when the user browses '/', i.e. the document
-root without any path_info.  Used by
-L<Bivio::Biz::Action::ClientRedirect::execute_if_home_page|Bivio::Biz::Action::ClientRedirect/"execute_if_home_page">
-
-=back
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="SEPARATOR"></a>
-
-=head2 SEPARATOR : string
-
-Returns tag part separator ('.') which allows parts to be joined into
-a single string called a I<composite tag part>, e.g. C<RealmOwner.name> is
-a composite tag part comprising the two tag parts C<RealmOwner> and
-C<name>.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
 sub SEPARATOR {
+    # Returns tag part separator ('.') which allows parts to be joined into
+    # a single string called a I<composite tag part>, e.g. C<RealmOwner.name> is
+    # a composite tag part comprising the two tag parts C<RealmOwner> and
+    # C<name>.
     return '.';
 }
 
-=for html <a name="UNDEF_VALUE"></a>
-
-=head2 UNDEF_VALUE : string
-
-Returns the string "TEXT-ERR", the string returned if a value
-cannot be found.
-
-=cut
-
 sub UNDEF_VALUE {
+    # Returns the string "TEXT-ERR", the string returned if a value
+    # cannot be found.
     return 'TEXT-ERR';
 }
 
-#=IMPORTS
-use Bivio::IO::Trace;
-use Bivio::IO::Config;
-
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="assert_name"></a>
-
-=head2 assert_name(string name)
-
-We allow 'x.y' names.
-
-=cut
-
 sub assert_name {
     my($self, $name) = @_;
+    # We allow 'x.y' names.
     $self->die($name, 'invalid name syntax')
 	unless $name =~ /^\w+(\Q@{[$self->SEPARATOR]}\E\w+)*$/;
     return;
 }
-
-=for html <a name="format_css"></a>
-
-=head2 format_css(string tag_part, ..., Bivio::Collection::Attributes facade_or_req) : string
-
-=cut
 
 sub format_css {
     my($v) = shift->get_value(@_);
@@ -195,126 +125,87 @@ sub format_css {
     return qq{"$v"};
 }
 
-=for html <a name="get_value"></a>
-
-=head2 get_value(string tag_part, ..., Bivio::Collection::Attributes facade_or_req) : string
-
-The simple case is a single I<tag_part> with no L<SEPARATOR|"SEPARATOR">s
-passed to an
-instance of this FacadeComponent, i.e.  I<facade_or_req> is C<undef>.  The
-I<tag_part> identifies a piece of text to be returned.
-
-If there is more than one I<tag_part> or I<composite tag parts>, e.g.
-
-   get_value('LoginForm', 'RealmOwner.password');
-
-The first argument is a simple tag part.  The second argument is a
-the composite tag parts comprised of the two simple tag parts:
-C<RealmOwner> and C<password>.  This is identical to the call:
-
-   get_value('LoginForm', 'RealmOwner', 'password');
-
-If the C<LoginForm> tag part exists as a top-level tag part (FacadeComponent
-group), it must contain either C<RealmOwner>.  If C<RealmOwner> exists, it must
-contain C<password>.
-
-If C<LoginForm> top-level tag part doesn't exist, C<RealmOwner> defines the
-top-level tag part and C<password> must exist within C<RealmOwner>.
-
-If neither C<LoginForm> nor C<RealmOwner> exist, the C<password> group must
-exist.
-
-Note that C<password> must exist in all cases.  The searching algorithm
-is loose enough to allow for flexibility at all levels, but the final
-I<tag_part> is the determinant.  It must exist.
-
-If I<facade_or_req> is passed, the FacadeComponent from the facade or
-from the request's facade will be retrieved and used to get the value.
-
-I<tag_part>'s are case insensitive.
-
-If I<tag_part> does not identify a group (top-level tag part), indicates an
-error (which may cause a die, see FacadeComponent) and returns
-L<UNDEF_CONFIG|"UNDEF_CONFIG">
-
-=cut
-
 sub get_value {
     my($proto, @tag_part) = @_;
+    # The simple case is a single I<tag_part> with no L<SEPARATOR|"SEPARATOR">s
+    # passed to an
+    # instance of this FacadeComponent, i.e.  I<facade_or_req> is C<undef>.  The
+    # I<tag_part> identifies a piece of text to be returned.
+    #
+    # If there is more than one I<tag_part> or I<composite tag parts>, e.g.
+    #
+    #    get_value('LoginForm', 'RealmOwner.password');
+    #
+    # The first argument is a simple tag part.  The second argument is a
+    # the composite tag parts comprised of the two simple tag parts:
+    # C<RealmOwner> and C<password>.  This is identical to the call:
+    #
+    #    get_value('LoginForm', 'RealmOwner', 'password');
+    #
+    # If the C<LoginForm> tag part exists as a top-level tag part (FacadeComponent
+    # group), it must contain either C<RealmOwner>.  If C<RealmOwner> exists, it must
+    # contain C<password>.
+    #
+    # If C<LoginForm> top-level tag part doesn't exist, C<RealmOwner> defines the
+    # top-level tag part and C<password> must exist within C<RealmOwner>.
+    #
+    # If neither C<LoginForm> nor C<RealmOwner> exist, the C<password> group must
+    # exist.
+    #
+    # Note that C<password> must exist in all cases.  The searching algorithm
+    # is loose enough to allow for flexibility at all levels, but the final
+    # I<tag_part> is the determinant.  It must exist.
+    #
+    # If I<facade_or_req> is passed, the FacadeComponent from the facade or
+    # from the request's facade will be retrieved and used to get the value.
+    #
+    # I<tag_part>'s are case insensitive.
+    #
+    # If I<tag_part> does not identify a group (top-level tag part), indicates an
+    # error (which may cause a die, see FacadeComponent) and returns
+    # L<UNDEF_CONFIG|"UNDEF_CONFIG">
     my($self) = $proto->internal_get_self(
 	ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef);
     my($v) = $self->unsafe_get_value(@tag_part);
     return defined($v) ? $v : $self->get_error(\@tag_part)->{value};
 }
 
-=for html <a name="get_widget_value"></a>
-
-=head2 get_widget_value(string tag_part, ...) : string
-
-=head2 get_widget_value(string method_call, string tag_part, ...) : string
-
-I<tag_part>s are passed to L<get_value|"get_value">.
-
-If I<method_call> is passed (-E<gt>method), super will be called which
-will call the method appropriately.
-
-=cut
-
 sub get_widget_value {
     my($self, @tag) = @_;
+    # I<tag_part>s are passed to L<get_value|"get_value">.
+    #
+    # If I<method_call> is passed (-E<gt>method), super will be called which
+    # will call the method appropriately.
     # SUPER has code to handle ->, which we don't allow in names
     return $tag[0] =~ /^->/ ? $self->SUPER::get_widget_value(@tag)
 	: $self->get_value(@tag);
 }
 
-=for html <a name="group"></a>
-
-=head2 group(string name, any value)
-
-=head2 group(array_ref names, any value)
-
-Creates a new group.  The I<name>s must be unique.  The I<value>
-is defined by the subclass.  If it is a ref, ownership of I<value> is
-taken by this module.
-
-This method overrides normal FacadeComponent behavior.  See DESCRIPTION
-for more details.
-
-=cut
-
 sub group {
     my($self, $name, $value) = @_;
+    # Creates a new group.  The I<name>s must be unique.  The I<value>
+    # is defined by the subclass.  If it is a ref, ownership of I<value> is
+    # taken by this module.
+    #
+    # This method overrides normal FacadeComponent behavior.  See DESCRIPTION
+    # for more details.
     foreach my $group (@{_group($self, $name, $value)}) {
 	$self->SUPER::group(@$group);
     }
     return;
 }
 
-=for html <a name="handle_register"></a>
-
-=head2 static handle_register()
-
-Registers with Facade.
-
-=cut
-
 sub handle_register {
     my($proto) = @_;
+    # Registers with Facade.
     Bivio::UI::Facade->register($proto);
     return;
 }
 
-=for html <a name="internal_initialize_value"></a>
-
-=head2 internal_initialize_value(hash_ref value)
-
-Initializes a value.  The group management has already taken place
-(see L<group|"group">.
-
-=cut
-
 sub internal_initialize_value {
     my($self, $value) = @_;
+    # Initializes a value.  The group management has already taken place
+    # (see L<group|"group">.
     my($v) = $value->{config};
     if (ref($v)) {
 	# This shouldn't happen, but good to check
@@ -327,32 +218,18 @@ sub internal_initialize_value {
     return;
 }
 
-=for html <a name="join_tag"></a>
-
-=head2 static join_tag(string tag_part, ...) : string
-
-Returns I<tag_part>s combined as a whole.
-
-=cut
-
 sub join_tag {
     my($proto, @tag) = @_;
+    # Returns I<tag_part>s combined as a whole.
     return int(@tag) == 1 && $tag[0] =~ /^[a-z0-9_.]+$/ ? $tag[0]
 	: join($proto->SEPARATOR, map((length($_) ? lc($_) : ()), @tag));
 }
 
-=for html <a name="unsafe_get_value"></a>
-
-=head2 unsafe_get_value(string tag_part, ...) : string
-
-You probably want to call L<get_value|"get_value">.
-
-Returns C<undef> if it cannot get the value, and doesn't output an error.
-
-=cut
-
 sub unsafe_get_value {
     my($self) = shift;
+    # You probably want to call L<get_value|"get_value">.
+    #
+    # Returns C<undef> if it cannot get the value, and doesn't output an error.
     my($tag) = $self->join_tag(@_);
     # We search a diagonal matrix.  We iterate over the $tag until we
     # find a match.  Chops off front component each time, if not found.
@@ -369,28 +246,18 @@ sub unsafe_get_value {
     return undef;
 }
 
-=for html <a name="unsafe_get_widget_value_by_name"></a>
-
-=head2 unsafe_get_widget_value_by_name(string tag) : array
-
-Returns the text value identified by the fully-qualified I<tag> if defined.
-
-=cut
-
 sub unsafe_get_widget_value_by_name {
     my($self, $tag) = @_;
+    # Returns the text value identified by the fully-qualified I<tag> if defined.
     my($v) = $self->internal_unsafe_lc_get_value(lc($tag));
     return $v ? ($v->{value}, 1) : (undef, 0);
 }
 
-#=PRIVATE METHODS
-
-# _assert_group_arg(self, string which, any v)
-#
-# Checks to make sure $v is an array_ref or string.
-#
 sub _assert_group_arg {
     my($self, $which, $v) = @_;
+    # Checks to make sure $v is an array_ref or string.
+    $v = $v->($self)
+	if ref($v) eq 'CODE';
     $self->die($v, $which, ' must be an array_ref or string')
 	    unless defined($v) && (ref($v) eq 'ARRAY' || !ref($v));
     $self->die($v, $which, ' array_ref must not be empty')
@@ -405,20 +272,17 @@ sub _assert_group_arg {
 	$self->die($v, 'value must contain even number of elements')
 		if ref($v) && int(@$v) % 2 != 0;
     }
-    return;
+    return $v;
 }
 
-# _group(self, any name, any value, array_ref parent_names) : array_ref
-#
-# Returns the permutations found in name and value.  $parent_names is
-# used to pass info to recursive calls.  It contains the list of
-# prefixes to prepended to $name.
-#
 sub _group {
     my($self, $name, $value, $parent_names, $groups) = @_;
-    _assert_group_arg($self, 'value', $value);
+    # Returns the permutations found in name and value.  $parent_names is
+    # used to pass info to recursive calls.  It contains the list of
+    # prefixes to prepended to $name.
+    $value = _assert_group_arg($self, 'value', $value);
     $name = [$name] unless ref($name);
-    _assert_group_arg($self, 'name', $name);
+    $name = _assert_group_arg($self, 'name', $name);
     $groups ||= [];
 
     # Permute parent names over our names
@@ -446,15 +310,5 @@ sub _group {
     }
     return $groups;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
