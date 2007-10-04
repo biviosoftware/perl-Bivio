@@ -1,8 +1,14 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->set_realm('fourem');
-req()->put(path_info => '/');
+req()->set_realm_and_user('fourem', 'root');
+req()->put(path_info => '/prf');
+model('RealmFile')->create_with_content({
+    path => '/prf/not_found'
+}, \(''));
+model('RealmFile')->create_with_content({
+    path => '/public/prf/found'
+}, \(''));
 [
     load_dav => [
 	[] => 1,
@@ -10,6 +16,6 @@ req()->put(path_info => '/');
     dav_propfind_children => [
 	[] => [[map(+{
 	    uri => $_,
-	}, qw(EasyForm-btest-done.html EasyForm-btest.html logo.bad logo.gif logo.png))]],
+	}, qw(found))]],
     ],
 ];
