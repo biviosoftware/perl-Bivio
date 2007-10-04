@@ -340,24 +340,10 @@ sub vs_prose {
 
 sub vs_put_pager {
     my(undef, $model, $attrs) = @_;
-    my($x) = "Model.$model";
-    my($p) = "$model.paged_list.";
-    view_put(vs_pager => DIV_pager(Join([
-	map(
-	    Link(
-		vs_text("$p$_"),
-		[$x, '->format_uri', uc($_) . '_LIST'], {
-		    control => [[$x, '->get_query'], "has_$_"],
-		    control_off_value => Tag(
-			span => String(vs_text("$p$_")), "$_ off"),
-		    class => $_,
-#TODO: get inherited attribs instead of relying on param, e.g. link_target?
-		    %{$attrs || {}},
-		},
-	    ),
-	    qw(prev next)
-	),
-    ])));
+    view_put(vs_pager => DIV_pager(Pager({
+	list_class => $model,
+	$attrs ? %$attrs : (),
+    })));
     return;
 }
 
