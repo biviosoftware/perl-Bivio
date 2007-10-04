@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
 create_user('realm_file_bunit');
@@ -31,6 +31,7 @@ my($user) = sub {
 my($auth_uid) = sub {
     return [req()->get('auth_user_id')];
 };
+commit();
 [
 #Tests: delete: existing, not existing, not existing and not existing parent (doesn't create parent, delete loaded, delete with args, delete loaded with args, delete read only, public, read only with override, delete with auth_id and without auth_id, not empty folder, empty folder
 #Tests: copy from one realm to another, simple file, to dest without parent, to dest with parent, to is_public parent, to is_read_only parent w/o override, with override,  to parent writable but child not writable, w/override
@@ -325,7 +326,7 @@ my($auth_uid) = sub {
 	update => [
 	    [$a->('ro1-update')] => FORBIDDEN(),
 	    # Recursive update of is_read_only and is_public?
-	    [$a->('ro1-update', 0, 1)] => not_die(),
+	    [$a->('ro1-update', 0, 1)] => $commit,
 	],
  	load => [
  	    [$a->('ro1-update/f1')] => not_die(),

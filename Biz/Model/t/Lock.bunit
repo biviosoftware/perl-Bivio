@@ -15,6 +15,7 @@ set_realm('demo');
 	is_acquired => 1,
 	acquire_unless_exists => not_die(),
 	acquire => ALREADY_EXISTS(),
+	acquire => not_die(),
 	release => not_die(),
 	is_acquired => 0,
 	acquire_unless_exists => not_die(),

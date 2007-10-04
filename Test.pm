@@ -383,6 +383,15 @@ sub _assert_options {
     return $options;
 }
 
+sub _catch {
+    return
+	unless my $die = Bivio::Die->catch(@_);
+    Bivio::Agent::Task->rollback(Bivio::Agent::Request->get_current)
+        if UNIVERSAL::isa('Bivio::Agent::Request', 'Bivio::UNIVERSAL')
+	&& UNIVERSAL::isa('Bivio::Agent::Task', 'Bivio::UNIVERSAL');
+    return $die;
+}
+
 sub _compile {
     my($self, $objects) = @_;
     # Compiles @$objects into a linear list of tuples.
@@ -582,7 +591,7 @@ sub _eval {
 	$c++;
 	my($result);
 	next unless _prepare_case($self, $case, \$err);
-	my($die) = Bivio::Die->catch(sub {
+	my($die) = _catch(sub {
 	    _trace($case) if $_TRACE;
 	    $result = [$case->unsafe_get('want_scalar')
 	        ? scalar(_eval_method($case)) : _eval_method($case)];
@@ -646,7 +655,7 @@ sub _eval_custom {
     #
     # $params only needs extra params for check_return only.
     my($res);
-    my($die) = Bivio::Die->catch(sub {
+    my($die) = _catch(sub {
 	$res = $case->get($which)->($case, @$params);
 	return undef;
     });
@@ -794,7 +803,7 @@ sub _eval_result {
     }
     my($x);
     my($comparator) = $case->get('comparator');
-    my($diff_die) = Bivio::Die->catch(sub {
+    my($diff_die) = _catch(sub {
         $x = Bivio::IO::Ref->$comparator(
 	    $e,
 	    ref($result) eq 'ARRAY' && @$result == 1 && ref($e) eq 'Regexp'
