@@ -514,6 +514,13 @@ sub _close_tags {
     return '';
 }
 
+sub _fix_word {
+    my($word) = @_;
+    $word =~ s/_/ /g
+	if $word =~ /^\w+$/;
+    return $word;
+}
+
 sub _fmt_err {
     my($line, $err, $state) = @_;
     $state->{req}->warn(
@@ -551,7 +558,7 @@ sub _fmt_href {
 	: ( '<a href="'
 	    . Bivio::HTML->escape_attr_value(_abs_href("^$m", $state))
 	    . '">'
-	    . Bivio::HTML->escape($m)
+	    . Bivio::HTML->escape(_fix_word($m))
 	    . '</a>'
         )) . Bivio::HTML->escape($e);
 }

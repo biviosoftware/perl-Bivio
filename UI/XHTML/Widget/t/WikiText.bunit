@@ -32,6 +32,7 @@ config({
 	    '^^MixedCase' => qq{<p class="prose">^MixedCase\n</p>},
 	    '^M' => qq{<p class="prose"><a href="/fourem/wiki/M">M</a>\n</p>},
 	    '^M MiC' => qq{<p class="prose"><a href="/fourem/wiki/M">M</a> MiC\n</p>},
+	    '^Space_Here' => qq{<p class="prose"><a href="/fourem/wiki/Space_Here">Space Here</a>\n</p>},
 	    ' MiC ' => qq{<p class="prose"><a href="/fourem/wiki/MiC">MiC</a>\n</p>},
 	    '(MiC) ' => qq{<p class="prose">(<a href="/fourem/wiki/MiC">MiC</a>)\n</p>},
 	    '=MixedCaseOnly=' => qq{<p class="prose">MixedCaseOnly\n</p>},
