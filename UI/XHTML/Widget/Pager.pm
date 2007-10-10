@@ -96,6 +96,7 @@ sub _create_navigation_link {
 sub _get_page_numbers {
     my($self, $query) = @_;
     my($pages) = [];
+    return $pages unless $query->unsafe_get('page_count');
     my($page_count) = $self->get_or_default('pages', 15);
     my($last) = $query->get('page_number') + int(($page_count - 1) / 2);
 
