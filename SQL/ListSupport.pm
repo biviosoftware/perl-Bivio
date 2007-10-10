@@ -144,6 +144,10 @@ use Bivio::Type::PrimaryId;
 # Add C<LEVEL> to the select.  This is an Oracle specific field.
 # It is used with C<CONNECT BY>.
 #
+# want_page_count : boolean [Bivio::Biz::ListModel want_page_count]
+#
+# Should the number of pages be calculated for this list if paged?
+#
 # where : array_ref
 #
 # A list of fields which will be ANDed to rest of the where clause.
@@ -298,7 +302,7 @@ sub new {
 	    ? $decl->{other_query_keys}
 	    : Bivio::Die->die(
 		$decl->{other_query_keys}, ': invalid other_query_keys'),
-
+	want_page_count => $decl->{want_page_count},
     };
     $proto->init_common_attrs($attrs, $decl);
 

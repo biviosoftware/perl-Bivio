@@ -653,9 +653,11 @@ sub load_page {
     # I<auth_id> will be put in I<query> using the value in the request.
     #
     # Saves the model in the request.
-    $query = $self
-	->parse_query($query)
-        ->put(want_page_count => $_CFG->{want_page_count});
+    my($want_page_count) = $self->internal_get_sql_support
+	->unsafe_get('want_page_count');
+    $query = $self->parse_query($query)
+        ->put(want_page_count => defined($want_page_count)
+	    ? $want_page_count : $_CFG->{want_page_count});
 
     $self->throw_die('CORRUPT_QUERY', {message => 'unexpected this',
 	query => $query}) if $query->unsafe_get('this');
