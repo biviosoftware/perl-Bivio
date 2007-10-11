@@ -427,6 +427,9 @@ pre .text {
 .pager .off {
   Font('off');
 }
+.pager .selected {
+  Font('strong');
+}
 .tree_list {
   margin: 0;
 }
