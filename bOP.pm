@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.42  2007/10/04 15:05:33  moeller
+  * Bivio::Biz::Model::RealmDAG added realm_dag_type to primary key
+  * Bivio::IO::Log use file_root in dev (probably typo)
+  * Bivio::Util::ShellUtil arg_list: when decl is not a ref, need to
+    make an array_ref or repeating args didn't work
+  * Bivio::Test calls rollback if method, comparitor, etc. dies
+  * Bivio::UI:FacadeBase use shift->get_facade in sub {} to get facade
+    values
+  * Bivio::UI::HTML::Format::Printf render undef as ''
+  * Bivio::UI::Text::Widget::CSV refactored to allow column_heading and
+    column_widget to be widgets
+  * Bivio::UI::Text Evaluates sub {} values
+  * Bivio::UI::XHTML::ViewShortcuts vs_paged_list() now uses the Pager
+    widget
+
   Revision 5.41  2007/09/26 23:27:07  moeller
   * Bivio::Biz::Action::ECCreditCardProcessor changed missing gateway
     message from die() to warn()
