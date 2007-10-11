@@ -29,7 +29,7 @@ sub initialize {
         Link([__PACKAGE__ . 'link_text'],
             [__PACKAGE__ . 'link_href']));
     $fields->{selected} = $self->initialize_value('selected',
-        B(String([__PACKAGE__ . 'selected'])));
+	 SPAN_selected(String([__PACKAGE__ . 'selected'])));
     $fields->{blank} = $self->initialize_value('blank', vs_blank_cell());
     _create_navigation_link($self, 'prev');
     _create_navigation_link($self, 'next');
