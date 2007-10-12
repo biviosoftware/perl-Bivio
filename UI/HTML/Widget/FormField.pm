@@ -92,8 +92,9 @@ sub _get_field_name {
 sub _get_label_value {
     my($self) = @_;
     # Returns the widget value which access the label.
-    return $self->get('form_field_label_widget')
-	if $self->unsafe_get('form_field_label_widget');
+    return $self->get('edit_attributes')->{'form_field_label_widget'}
+	if $self->unsafe_get('edit_attributes')
+	    && $self->get('edit_attributes')->{form_field_label_widget};
     my($default_field) = $self->get('field');
     # strip out any suffix, not used for label lookup
     $default_field =~ s/_\d+(\.\w+)$/$1/;
