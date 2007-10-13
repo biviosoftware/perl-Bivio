@@ -2,11 +2,7 @@
 # $Id$
 package Bivio::Test::ListModel;
 use strict;
-use Bivio::Base 'Bivio::Test::Unit';
-use Bivio::Biz::Model;
-use Bivio::Test::Request;
-
-# C<Bivio::Test::ListModel>
+use Bivio::Base 'TestUnit.Unit';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -15,13 +11,13 @@ sub new {
     # Simple model name, which is loaded.  Sets up create_object and compute_return.
     # I<model> will get mapped to I<class_name>.
     my($model) = $attrs->{class_name};
-    my($class) = Bivio::Biz::Model->get_instance($model)->package_name;
+    my($class) = $proto->builtin_model($model)->package_name;
     return $proto->SUPER::new({
 	class_name => $class,
 	$class =~ /DAVList$/ ? (comparator => 'nested_contains') : (),
 	create_object => sub {
 	    my(undef, $object) = @_;
-	    return $object->[0]->new(Bivio::Test::Request->get_instance);
+	    return $object->[0]->new($proto->builtin_req);
 	},
 	compute_return => sub {
 	    my($case, $actual, $expect) = @_;
@@ -58,9 +54,9 @@ sub new {
 }
 
 sub new_unit {
-    # Calls L<new|"new">.
-    Bivio::Test::Request->get_instance;
-    return shift;
+    my($proto) = @_;
+    $proto->builtin_req->get_instance;
+    return $proto;
 }
 
 sub run_unit {

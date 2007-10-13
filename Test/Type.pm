@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Test::Type;
 use strict;
-use base 'Bivio::Test::Unit';
+use Bivio::Base 'TestUnit.Unit';
 use Bivio::TypeError;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);

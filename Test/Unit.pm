@@ -55,6 +55,7 @@ use File::Spec ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS);
+our($_PROTO) = __PACKAGE__;
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
@@ -62,8 +63,8 @@ sub AUTOLOAD {
     $func =~ s/.*:://;
     return if $func eq 'DESTROY';
     my($b) = "builtin_$func";
-    return __PACKAGE__->can($b)
-	? __PACKAGE__->$b(@_)
+    return $_PROTO->can($b)
+	? $_PROTO->$b(@_)
 	: Bivio::DieCode->is_valid_name($func) && Bivio::DieCode->can($func)
 	? Bivio::DieCode->$func()
 	: $_TYPE
@@ -204,6 +205,17 @@ sub builtin_inline_rollback {
 	$proto->rollback;
 	return 1;
     } => 1;
+}
+
+sub builtin_mock {
+    my($self, $class, $values) = @_;
+    $class = $self->use($class);
+    Bivio::Die->die($class, ': must be a property model')
+        unless $class->isa('Bivio::Biz::PropertyModel');
+    my($i) = $class->new($self->builtin_req);
+#TODO: Not elegant, but works.  Think about testing structure for mocking objects
+    $i->internal_put($values);
+    return $i;
 }
 
 sub builtin_model {
@@ -358,16 +370,15 @@ sub run {
     local($_PM) = _pm($bunit);
     local($_TYPE, $_CLASS);
     local($_OPTIONS) = {};
+    local($_PROTO) = $proto->package_name;
     my($t) = Bivio::Die->eval_or_die(
-	'package ' . __PACKAGE__ . ';use strict;'
-	. ${Bivio::IO::File->read($bunit)});
-    $_TYPE ||= __PACKAGE__;
+	"package $_PROTO;use strict;" . ${Bivio::IO::File->read($bunit)});
+    $_TYPE ||= $_PROTO;
     return $_TYPE->run_unit($t);
 }
 
 sub run_unit {
     my($self) = shift;
-    # Calls L<Bivio::Test::unit|Bivio::Test/"unit">.
     return (
 	ref($self) ? $self : $self->new({
 	    class_name => $self->builtin_class,
@@ -389,9 +400,9 @@ sub _assert_expect {
 sub _load_type_class {
     my($func, $args) = @_;
     $_TYPE = Bivio::IO::ClassLoader->map_require('TestUnit', $func);
-    $_TYPE = $_TYPE->new_unit(__PACKAGE__->builtin_class(), @$args)
+    $_TYPE = $_TYPE->new_unit($_PROTO->builtin_class(), @$args)
 	if $_TYPE->can('new_unit');
-    $_TYPE_CAN_AUTOLOAD = $_TYPE->package_name ne __PACKAGE__
+    $_TYPE_CAN_AUTOLOAD = $_TYPE->package_name ne $_PROTO
 	&& defined(&{\&{$_TYPE->package_name . '::AUTOLOAD'}})
         ? 1 : 0;
     return $_TYPE;
@@ -447,7 +458,7 @@ sub _var_get_or_put {
 
 sub _var_hash {
     return shift->current_self->get_if_exists_else_put(
-	__PACKAGE__ . '.var' => {},
+	$_PROTO . '.var' => {},
     );
 }
 

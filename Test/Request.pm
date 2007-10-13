@@ -142,8 +142,7 @@ sub put_form {
 }
 
 sub run_unit {
-    shift;
-    return Bivio::Test::Unit->run_unit(@_);
+    return shift->use('TestUnit.Unit')->run_unit(@_);
 }
 
 sub server_redirect {

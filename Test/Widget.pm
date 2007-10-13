@@ -2,10 +2,10 @@
 # $Id$
 package Bivio::Test::Widget;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Test::Request;
+use Bivio::Base 'TestUnit.Unit';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub new_unit {
     my($proto, $class_name, $args) = @_;
@@ -17,7 +17,7 @@ sub new_unit {
     $args->{method_to_test} ||= 'render';
     $args->{view_class_map} ||= 'HTMLWidget';
     $args->{view_shortcuts} ||= 'Bivio::UI::XHTML::ViewShortcuts';
-    my($req) = Bivio::Test::Request->initialize_fully;
+    my($req) = $proto->builtin_req->initialize_fully;
     $req->set_realm_and_user(@$args{qw(realm user)});
     $req->initialize_fully($args->{task_id});
     $args->{compute_params} ||= sub {
@@ -45,7 +45,9 @@ sub new_unit {
 	return !$args->{parse_return} ? $actual
 	    : $args->{parse_return}->($case, $actual, @_);
     };
-    return $proto->new($args);
+    my($self) = $proto->new($class_name);
+    $self->[$_IDI] = $args;
+    return $self;
 }
 
 sub prose {
@@ -53,23 +55,19 @@ sub prose {
 }
 
 sub run_unit {
+    return shift->SUPER::run_unit(@_)
+	if @_ == 3;
     my($self, $cases) = @_;
-    return $self->unit($cases);
-}
-
-sub unit {
-    my($self, $cases) = @_;
-    # Must be same hash as above new_unit
-    my($args) = $self->internal_get;
+    my($fields) = $self->[$_IDI];
     my($req) = Bivio::Test::Request->get_instance;
     my($i) = 0;
     my($res);
     my($pkg) = __PACKAGE__;
     $req->put(
-	"$pkg.view_pre_compile" => $args->{view_pre_compile},
+	"$pkg.view_pre_compile" => $fields->{view_pre_compile},
 	$pkg => sub {
 	    $res = Bivio::Test->new({
-		map($args->{$_} ? ($_ => $args->{$_}) : (), qw(
+		map($fields->{$_} ? ($_ => $fields->{$_}) : (), qw(
 		    class_name
 		    create_object
 		    compute_params
@@ -78,14 +76,14 @@ sub unit {
 		)),
 	    })->unit([map(
 		$i++ % 2 && ref($_) ne 'ARRAY'
-		    ? [$args->{method_to_test} => [[] => $_]] : $_,
+		    ? [$fields->{method_to_test} => [[] => $_]] : $_,
 		@$cases,
 	    )]);
 	},
     );
     Bivio::UI::View->execute(\(<<"EOF"), $req);
-view_class_map(q{@{[$self->get('view_class_map')]}});
-view_shortcuts(q{@{[$self->get('view_shortcuts')]}});
+view_class_map(q{$fields->{view_class_map}});
+view_shortcuts(q{$fields->{view_shortcuts}});
 (sub {
     my(\$req) = Bivio::Test::Request->get_instance;
     \$req->get('$pkg.view_pre_compile')->(
@@ -106,8 +104,9 @@ EOF
 
 sub vs_new {
     my($self, $class, @args) = @_;
+    my($fields) = $self->[$_IDI];
     $class = Bivio::IO::ClassLoader->map_require(
-	$self->get('view_class_map'), $class
+	$fields->{view_class_map}, $class
     ) unless $class =~ /::/;
     return $class->new(@args);
 }

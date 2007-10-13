@@ -2,52 +2,9 @@
 # $Id$
 package Bivio::Test::PropertyModel;
 use strict;
-$Bivio::Test::PropertyModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::PropertyModel::VERSION;
+use Bivio::Base 'TestUnit.Unit';
 
-=head1 NAME
-
-Bivio::Test::PropertyModel - x
-
-=head1 RELEASE SCOPE
-
-Bivio
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::PropertyModel;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Test>
-
-=cut
-
-@Bivio::Test::PropertyModel::ISA = ('Bivio::Test::Unit');
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::PropertyModel>
-
-=cut
-
-#=IMPORTS
-use Bivio::Test::Request;
-
-#=VARIABLES
-Bivio::Test::Request->initialize_fully;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::Test::PropertyModel
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new_unit {
     my($proto, $class, $attrs) = @_;
@@ -72,28 +29,15 @@ sub new_unit {
     });
 }
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="unit"></a>
-
-=head2 unit(array_ref case_group)
-
-Example RealmMail.bunit.
-
-=cut
-
 sub run_unit {
+    # Example RealmMail.bunit.
     return shift->new(shift)->unit(shift)
 	if @_ == 3;
     my($self, $method_groups) = @_;
     return $self->SUPER::run_unit([
-	[Bivio::Test::Request->get_instance] => $method_groups,
+	[$self->builtin_req->initialize_fully] => $method_groups,
     ]);
 }
-
-#=PRIVATE SUBROUTINES
 
 sub _walk_tree_actual {
     my($case, $e, $names) = @_;
@@ -114,15 +58,5 @@ sub _walk_tree_expect {
 	    ? $e->($case)
 	    : $e;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

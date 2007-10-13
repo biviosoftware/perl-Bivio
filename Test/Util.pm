@@ -458,10 +458,11 @@ sub _run {
 #
 sub _unit {
     my($test) = @_;
+    my($unit) = __PACKAGE__->use('TestUnit.Unit');
     return $test =~ /bunit$/ ? ('-', <<"EOF") : ($test, undef);
 use strict;
-use Bivio::Test::Unit;
-Bivio::Test::Unit->run(q{$test});
+use $unit;
+${unit}->run(q{$test});
 EOF
 }
 
