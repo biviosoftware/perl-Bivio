@@ -2,7 +2,7 @@
 # $Id$
 ListModel();
 my($entry) = require 'BlogList.PL';
-req()->delete_class('Type.AccessMode');
+req()->delete_class_from_self('Type.AccessMode');
 [
     load_all => [
 	[] => [map(
