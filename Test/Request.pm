@@ -58,7 +58,7 @@ sub commit {
     return Bivio::Agent::Task->commit(shift(@_));
 }
 
-sub delete_class {
+sub delete_class_from_self {
     my($self, $class) = @_;
     $self->delete(
 	$class,
