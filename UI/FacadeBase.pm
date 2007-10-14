@@ -5,6 +5,7 @@ use strict;
 use base 'Bivio::UI::Facade';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = __PACKAGE__->use('IO.Config');
 
 sub HELP_WIKI_REALM_NAME {
     return 'site-help';
@@ -244,14 +245,27 @@ sub _cfg_blog {
 	    [blog_list_heading => ['size=100%', 'bold']],
 	],
 	Task => [
-	    [FORUM_BLOG_LIST => '?/blog'],
-	    [FORUM_BLOG_DETAIL => '?/blog-entry/*'],
 	    [FORUM_BLOG_CREATE => '?/add-blog-entry'],
 	    [FORUM_BLOG_EDIT => '?/edit-blog-entry/*'],
-	    [FORUM_BLOG_RSS => '?/blog.rss'],
-	    [FORUM_PUBLIC_BLOG_LIST => '?/public-blog'],
-	    [FORUM_PUBLIC_BLOG_DETAIL => '?/public-blog-entry/*'],
-	    [FORUM_PUBLIC_BLOG_RSS => '?/public-blog.rss'],
+	    $_C->if_version(
+		3 => sub {
+		    return (
+			[FORUM_BLOG_LIST => ['?/blog', '?/public-blog']],
+			[FORUM_BLOG_DETAIL => ['?/blog-entry/*', '?/public-blog-entry/*']],
+			[FORUM_BLOG_RSS => ['?/blog.rss', '?/public-blog.rss']],
+		    );
+		},
+		sub {
+		    return (
+			[FORUM_BLOG_LIST => '?/blog'],
+			[FORUM_BLOG_DETAIL => '?/blog-entry/*'],
+			[FORUM_BLOG_RSS => '?/blog.rss'],
+			[FORUM_PUBLIC_BLOG_LIST => '?/public-blog'],
+			[FORUM_PUBLIC_BLOG_DETAIL => '?/public-blog-entry/*'],
+			[FORUM_PUBLIC_BLOG_RSS => '?/public-blog.rss'],
+		    );
+		},
+	    ),
 	],
 	Text => [
 	    [[qw(BlogCreateForm BlogEditForm)] => [
@@ -322,8 +336,19 @@ sub _cfg_file {
     return {
 	Task => [
 	    [FORUM_EASY_FORM => '?/Forms/*'],
-	    [FORUM_FILE => '?/file/*'],
-	    [FORUM_PUBLIC_FILE => ['?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
+	    $_C->if_version(
+		3 => sub {
+		    return (
+			[FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
+		    );
+		},
+		sub {
+		    return (
+			[FORUM_FILE => '?/file/*'],
+			[FORUM_PUBLIC_FILE => ['?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
+		    );
+		},
+	    ),
         ],
     };
 }
@@ -720,8 +745,19 @@ sub _cfg_wiki {
     return {
 	Task => [
 	    [FORUM_WIKI_EDIT => '?/edit-wiki/*'],
-	    [FORUM_WIKI_VIEW => ['?/wiki/*']],
-	    [FORUM_PUBLIC_WIKI_VIEW => ['?/public-wiki/*']],
+	    $_C->if_version(
+		3 => sub {
+		    return (
+			[FORUM_WIKI_VIEW => ['?/wiki/*', '?/public-wiki/*']],
+		    );
+		},
+		sub {
+		    return (
+			[FORUM_WIKI_VIEW => ['?/wiki/*']],
+			[FORUM_PUBLIC_WIKI_VIEW => ['?/public-wiki/*']],
+		    );
+		},
+	    ),
 	    [FORUM_WIKI_NOT_FOUND => undef],
 	    [HELP => '?/help/*'],
 	    [HELP_NOT_FOUND => undef],
