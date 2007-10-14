@@ -124,5 +124,8 @@ foreach my $x (
 my($actual) = main::conf_get('Bivio::IO::Config::t::T1');
 die($actual, ': unexpected config')
     unless $actual->{p1} eq 999;
+my($version) = Bivio::IO::Config->version;
+die($version, ': unexpected version')
+    unless Bivio::IO::Config->version == 0;
 
 1;
