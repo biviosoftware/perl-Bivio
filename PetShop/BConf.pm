@@ -47,6 +47,7 @@ sub merge_overrides {
 	    },
 	    maps => {
 		Action => ['Bivio::PetShop::Action'],
+		Delegate => ['Bivio::PetShop::Delegate'],
 		Facade => ['Bivio::PetShop::Facade'],
 		HTMLWidget => ['Bivio::PetShop::Widget'],
 		Model => ['Bivio::PetShop::Model'],
@@ -70,9 +71,13 @@ sub merge_overrides {
 	    http_suffix => 'bivio.biz',
 	    mail_host => 'bivio.biz',
 	},
-    }, {
-	$proto->default_merge_overrides('Bivio/PetShop' => 'pet' => 'bivio Software, Inc.'),
-    });
+    },
+    $proto->default_merge_overrides({
+	version => 2,
+	root => 'Bivio/PetShop',
+	prefix => 'pet',
+	owner => 'bivio Software, Inc.',
+    }));
 }
 
 1;
