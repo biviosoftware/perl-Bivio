@@ -6,6 +6,7 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = __PACKAGE__->use('IO.Config');
 
 sub edit {
     return shift->internal_body(vs_simple_form(BlogEditForm => [
@@ -149,14 +150,22 @@ sub recent_rss {
 
 sub _access_mode {
     my($task) = @_;
-    (my $p = $task) =~ s/(?<=^FORUM_)/PUBLIC_/;
-    return [sub {
-        my($source, $private, $public) = @_;
-	shift->get_request->get('Type.AccessMode')->eq_private
-	    ? $private : $public,
+    return $_C->if_version(
+	3 => sub {
+	    return $task;
 	},
-        $task, $p,
-    ];
+	sub {
+	    (my $p = $task) =~ s/(?<=^FORUM_)/PUBLIC_/;
+	    return [
+		sub {
+		    my($source, $private, $public) = @_;
+		    shift->req('Type.AccessMode')->eq_private
+			? $private : $public;
+		},
+		$task, $p,
+	    ];
+	},
+    );
 }
 
 sub _edit {
