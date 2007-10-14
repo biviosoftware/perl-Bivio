@@ -9,8 +9,16 @@ use File::Spec ();
 use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-Bivio::IO::Config->register(my $_CFG = {
-    directory => Bivio::IO::Config->REQUIRED,
+my($_C) = __PACKAGE__->use('IO.Config');
+$_C->register(my $_CFG = {
+    $_C->if_version(
+	2 => sub {
+	    return (directory => '/var/log/bop');
+	},
+	sub {
+	    return (directory => '/var/log');
+	},
+    ),
     directory_mode => 0750,
     file_mode => 0640,
 });

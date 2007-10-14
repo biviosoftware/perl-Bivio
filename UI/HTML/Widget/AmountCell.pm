@@ -5,16 +5,32 @@ use strict;
 use Bivio::Base 'HTMLWidget.String';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = __PACKAGE__->use('IO.Config');
 my($_FA) = __PACKAGE__->use('HTMLFormat.Amount');
 my($_FA_ARGS) = [];
-Bivio::IO::Config->register(my $_CFG = {
-    column_align => 'E',
-    column_nowrap => 1,
-    decimals => 2,
-    pad_left => 1,
-    string_font => 'number_cell',
-    want_parens => 1,
+$_C->register(my $_CFG = {
+    $_C->if_version(
+	1 => sub {
+	    return (
+		column_align => 0,
+		column_nowrap => 0,
+		pad_left => 0,
+		string_font => 0,
+		want_parens => 0,
+	    );
+	},
+	sub {
+	    return (
+		column_align => 'E',
+		column_nowrap => 1,
+		pad_left => 1,
+		string_font => 'number_cell',
+		want_parens => 1,
+	    );
+	},
+    ),
     zero_as_blank => 0,
+    decimals => 2,
     column_data_class => 'amount_cell',
 });
 my($_CFG_KEYS) = [sort(keys(%$_CFG))];
