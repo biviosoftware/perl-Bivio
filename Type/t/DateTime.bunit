@@ -189,5 +189,6 @@ req()->initialize_fully;
 	    ['08/31/2006 21:59:59'] => undef,
 	],
 	now => '2453979 79199',
+	to_sql_value => q{TO_DATE(?,'J SSSSS')},
     ],
 ];
