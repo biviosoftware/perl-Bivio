@@ -238,6 +238,18 @@ sub get {
     return $cfg;
 }
 
+sub if_version {
+    my($proto, @cond) = @_;
+    my($else) = @cond % 2 ? pop(@cond) : sub {};
+    my($version) = $_ACTUAL->{$_PKG}->{version} || 0;
+    while (@cond) {
+        my($cond_version, $op) = splice(@cond, 0, 2);
+	return $op->()
+	    if $version >= $cond_version;
+    }
+    return $else->();
+}
+
 sub introduce_values {
     my($proto, $new_values) = @_;
     # Adds I<new_values> to the running programs configuration.  This routine should
@@ -426,10 +438,6 @@ sub register {
     $_SPEC{$pkg} = $spec;
     &{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
     return;
-}
-
-sub version {
-    return $_ACTUAL->{$_PKG}->{version} || 0;
 }
 
 sub _actual_changed {

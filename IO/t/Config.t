@@ -7,7 +7,7 @@ use strict;
 
 BEGIN {
     $| = 1;
-    print "1..10\n";
+    print "1..11\n";
 }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
@@ -124,8 +124,8 @@ foreach my $x (
 my($actual) = main::conf_get('Bivio::IO::Config::t::T1');
 die($actual, ': unexpected config')
     unless $actual->{p1} eq 999;
-my($version) = Bivio::IO::Config->version;
-die($version, ': unexpected version')
-    unless Bivio::IO::Config->version == 0;
+$T++;
+print Bivio::IO::Config->if_version(1, sub {1}, sub {0}) == 0
+    ? "ok $T\n" : "$@not ok $T\n";
 
 1;
