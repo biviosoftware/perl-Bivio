@@ -1,55 +1,33 @@
-# Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::Test::Util;
 use strict;
-$Bivio::Test::Util::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::Util::VERSION;
+use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Die;
+use Bivio::IO::Config;
+use Bivio::IO::File;
+use Bivio::IO::Trace;
+use Bivio::IO::Trace;
+use Bivio::Test::Language;
+use Bivio::Test;
+use Bivio::Type::DateTime;
+use File::Find ();
+use File::Spec ();
 
-=head1 NAME
+# C<Bivio::Test::Util> runs acceptance and unit tests.  A unit test is defined
+# using L<Bivio::Test|Bivio::Test>.  An acceptance test has its own language,
+# which is a subclass of L<Bivio::Test::Language|Bivio::Test::Language>.
 
-Bivio::Test::Util - runs and manages acceptance (.btest) and unit (.t) tests
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::Util;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Test::Util::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::Util> runs acceptance and unit tests.  A unit test is defined
-using L<Bivio::Test|Bivio::Test>.  An acceptance test has its own language,
-which is a subclass of L<Bivio::Test::Language|Bivio::Test::Language>.
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns usage.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+Bivio::IO::Config->register({
+    nightly_output_dir => '/tmp/test-run',
+    nightly_cvs_dir => 'perl/Bivio',
+});
+my($_CFG);
+my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub USAGE {
+    # Returns usage.
     return <<'EOF';
 usage: b-test [options] command [args...]
 commands:
@@ -61,44 +39,13 @@ commands:
 EOF
 }
 
-#=IMPORTS
-use Bivio::IO::Trace;
-use Bivio::Die;
-use Bivio::IO::Config;
-use Bivio::IO::File;
-use Bivio::IO::Trace;
-use Bivio::Test::Language;
-use Bivio::Test;
-use Bivio::Type::DateTime;
-use File::Find ();
-use File::Spec ();
-
-#=VARIABLES
-Bivio::IO::Config->register({
-    nightly_output_dir => '/tmp/test-run',
-    nightly_cvs_dir => 'perl/Bivio',
-});
-my($_CFG);
-my($_DT) = Bivio::Type->get_instance('DateTime');
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="acceptance"></a>
-
-=head2 acceptance(string test, ...) : string_ref
-
-Executes I<test>(s) under L<Bivio::Test::Language|Bivio::Test::Language>.
-I<test> may be a directory or file name.  If it is a directory, all tests
-(C<*.btest>) files will be executed.  All tests must end in C<*.btest>.
-
-When only one test is run, shows the output of the test.
-
-=cut
-
 sub acceptance {
     my($self, $tests) = _find_files(\@_, qr{\.btest$});
+    # Executes I<test>(s) under L<Bivio::Test::Language|Bivio::Test::Language>.
+    # I<test> may be a directory or file name.  If it is a directory, all tests
+    # (C<*.btest>) files will be executed.  All tests must end in C<*.btest>.
+    #
+    # When only one test is run, shows the output of the test.
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
 	my($ok) = 0;
@@ -118,52 +65,34 @@ EOF
     });
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item nightly_output_dir : string ['/tmp/test-run'],
-
-Root directory of the run.  A subdirectory will be created with the timestamp
-of the run.  Assumes "perl" subdirectory is PERLLIB (see code, sorry for the
-hack).
-
-=item nightly_cvs_dir : string ['perl/Bivio'],
-
-The directory to checkout of cvs, which contains the source and the code.
-
-=back
-
-=cut
-
 sub handle_config {
     my(undef, $cfg) = @_;
+    # nightly_output_dir : string ['/tmp/test-run'],
+    #
+    # Root directory of the run.  A subdirectory will be created with the timestamp
+    # of the run.  Assumes "perl" subdirectory is PERLLIB (see code, sorry for the
+    # hack).
+    #
+    # nightly_cvs_dir : string ['perl/Bivio'],
+    #
+    # The directory to checkout of cvs, which contains the source and the code.
     $_CFG = $cfg;
     return;
 }
 
-=for html <a name="mock_sendmail"></a>
-
-=head2 mock_sendmail(string from, string recipients)
-
-You need to create the directory:
-
-    ~/btest-mail
-
-(default for Bivio::Test::Language::HTTP.mail_dir) and
-have a ~/.procmailrc:
-
-    EXTENSION="$1"
-    :0
-    * EXTENSION ?? btest
-    btest-mail/.
-
-=cut
-
 sub mock_sendmail {
     my($self, $from, $recipients, $recursing) = @_;
+    # You need to create the directory:
+    #
+    #     ~/btest-mail
+    #
+    # (default for Bivio::Test::Language::HTTP.mail_dir) and
+    # have a ~/.procmailrc:
+    #
+    #     EXTENSION="$1"
+    #     :0
+    #     * EXTENSION ?? btest
+    #     btest-mail/.
     my($in) = $self->read_input;
     unless ($recursing) {
 	my($pid) = fork;
@@ -224,17 +153,10 @@ sub mock_sendmail {
     return;
 }
 
-=for html <a name="nightly"></a>
-
-=head2 nightly()
-
-Creates test directory, calls cvs update to get latest test files.  Runs all
-acceptance tests.  Output is to STDERR.
-
-=cut
-
 sub nightly {
     my($self) = @_;
+    # Creates test directory, calls cvs update to get latest test files.  Runs all
+    # acceptance tests.  Output is to STDERR.
     my($old_pwd) = Bivio::IO::File->pwd;
     _expunge($self);
     _make_nightly_dir($self);
@@ -254,18 +176,11 @@ sub nightly {
     return;
 }
 
-=for html <a name="task"></a>
-
-=head2 task(any task, any query, any path_info) : array_ref
-
-Executes the task, and returns the result. See
-L<Bivio::Test::Request->execute_task|Bivio::Test::Request->execute_task>
-for output details.
-
-=cut
-
 sub task {
     my($self, $task, $query, $path_info) = @_;
+    # Executes the task, and returns the result. See
+    # L<Bivio::Test::Request->execute_task|Bivio::Test::Request->execute_task>
+    # for output details.
     Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
 	->get_instance;
     # Forces type check, and probably good thing anyway.
@@ -280,20 +195,13 @@ sub task {
     });
 }
 
-=for html <a name="unit"></a>
-
-=head2 unit(string test, ...) : string_ref
-
-Executes I<test>(s).  I<test> may be a directory or file name.  If it is a
-directory, all tests (C<*.t>) files will be executed.  All tests must end in
-C<*.t>.
-
-When only one test is run, shows the output of the test.
-
-=cut
-
 sub unit {
     my($self, $tests) = _find_files(\@_, qr{\.(?:t|bunit)$});
+    # Executes I<test>(s).  I<test> may be a directory or file name.  If it is a
+    # directory, all tests (C<*.t>) files will be executed.  All tests must end in
+    # C<*.t>.
+    #
+    # When only one test is run, shows the output of the test.
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
 	my($max, $ok) = (-1, 0);
@@ -310,14 +218,9 @@ sub unit {
     });
 }
 
-#=PRIVATE METHODS
-
-# _expunge(self)
-#
-# Deletes old test directories.
-#
 sub _expunge {
     my($self) = @_;
+    # Deletes old test directories.
     # this automatically loops through files in ascending order of timestamp
     # only works for this millenium
     my(@dirs) = glob("$_CFG->{nightly_output_dir}/2?????????????");
@@ -329,12 +232,9 @@ sub _expunge {
     return;
 }
 
-# _find_files(array_ref args, regex_ref pattern) : array
-#
-# Returns self, and hash of tests to run (dir, tests).
-#
 sub _find_files {
     my($args, $pattern) = @_;
+    # Returns self, and hash of tests to run (dir, tests).
     my($self) = shift(@$args);
     $self->usage_error('must supply test files or directories')
 	unless @$args;
@@ -362,13 +262,10 @@ sub _find_files {
     return ($self, $tests);
 }
 
-# _make_nightly_dir() : string
-#
-# Makes the directory in which nightly() executes and leaves testsuite
-# log files.
-#
 sub _make_nightly_dir {
     my($self) = @_;
+    # Makes the directory in which nightly() executes and leaves testsuite
+    # log files.
     my($dir) = $_CFG->{nightly_output_dir} . '/'
         . Bivio::Type::DateTime->local_now_as_file_name;
     Bivio::Die->die($dir, ': dir exists; move out of the way')
@@ -379,12 +276,9 @@ sub _make_nightly_dir {
     return $dir;
 }
 
-# _piped_exec(string command, string input, string_ref out, code_ref do)
-#
-# Call $do for each line.
-#
 sub _piped_exec {
     my($self, $command, $input, $out, $do) = @_;
+    # Call $do for each line.
     foreach my $line (split(/\n/,
 	$$out = ${$self->piped_exec(
 	    join(' ',
@@ -406,12 +300,9 @@ sub _piped_exec {
     return;
 }
 
-# _run(self, hash_ref tests, code_ref action)
-#
-# Runs the tests with action.
-#
 sub _run {
     my($self, $tests, $action) = @_;
+    # Runs the tests with action.
     my($ok, $max) = (0, 0);
     my($failed) = [];
     my($one_dir) = keys(%$tests) == 1;
@@ -452,12 +343,9 @@ sub _run {
     return;
 }
 
-# _unit(string test) : array
-#
-# If test ends in bunit, need to construct '.t'
-#
 sub _unit {
     my($test) = @_;
+    # If test ends in bunit, need to construct '.t'
     my($unit) = __PACKAGE__->use('TestUnit.Unit');
     return $test =~ /bunit$/ ? ('-', <<"EOF") : ($test, undef);
 use strict;
@@ -465,15 +353,5 @@ use $unit;
 ${unit}->run(q{$test});
 EOF
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
