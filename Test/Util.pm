@@ -247,11 +247,16 @@ sub _find_files {
 	File::Find::find({
 	    no_chdir => 1,
 	    wanted => sub {
+		my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
+		if (-d $File::Find::name) {
+		    $File::Find::prune = 1
+			if $f =~ /(?:^CVS|^old|-|\.old|^realm-data|.*\.tmp)$/;
+		    return;
+		}
 		return
 		    unless $is_file
 			|| $File::Find::name =~ $pattern
-			&& -r $File::Find::name;
-		my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
+			&& -r _;
 		$d = File::Spec->rel2abs($d, $pwd);
 		push(@{$tests->{$d} ||= []}, $f);
 		return;
