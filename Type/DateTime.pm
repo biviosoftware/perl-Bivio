@@ -583,12 +583,9 @@ sub gettimeofday_diff_seconds {
 
 sub handle_pre_execute_task {
     my($proto, undef, $req) = @_;
-    return unless $_IS_TEST ||= $req->is_test;
-    $_TEST_NOW = undef;
-    my($q) = $req->unsafe_get('query');
-    return
-	unless $q;
-    $_TEST_NOW = ($proto->from_literal(delete($q->{date_time_test_now})))[0];
+    $proto->set_test_now(
+	delete(($req->unsafe_get('query') || {})->{date_time_test_now}),
+    ) if !defined($_IS_TEST) || $_IS_TEST;
     return;
 }
 
@@ -716,14 +713,21 @@ sub set_local_time_part {
     return _adjust_from_local($proto, "$date $seconds", $tz);
 }
 
+sub set_test_now {
+    my($proto, $now, $req) = @_;
+    $_TEST_NOW = $proto->from_literal_or_die($now, 1)
+	if $_IS_TEST ||= $req->is_test;
+    return;
+}
+
 sub time_from_parts {
     my(undef, $sec, $min, $hour) = @_;
     # Returns the date/time value comprising the parts.  If there is an
     # error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
-    return (undef, Bivio::TypeError::HOUR) if $hour > 23 || $hour < 0;
-    return (undef, Bivio::TypeError::MINUTE) if $min > 59 || $min < 0;
-    return (undef, Bivio::TypeError::SECOND) if $sec > 59 || $sec < 0;
-    return $_DATE_PREFIX.(($hour * 60 + $min) * 60 + $sec);
+    return (undef, Bivio::TypeError->HOUR) if $hour > 23 || $hour < 0;
+    return (undef, Bivio::TypeError->MINUTE) if $min > 59 || $min < 0;
+    return (undef, Bivio::TypeError->SECOND) if $sec > 59 || $sec < 0;
+    return $_DATE_PREFIX . (($hour * 60 + $min) * 60 + $sec);
 }
 
 sub timezone {
@@ -826,9 +830,9 @@ sub to_parts {
 }
 
 sub to_sql_value {
-    my(undef, $place_holder) = @_;
-    # Returns C<TO_DATE(I<place_holder>, 'J SSSSS')>.
-    return 'TO_DATE('.$place_holder.",'".SQL_FORMAT()."')";
+    my($proto, $place_holder) = @_;
+    $place_holder ||= '?';
+    return qq{TO_DATE($place_holder,'@{[$proto->SQL_FORMAT]}')};
 }
 
 sub to_string {
