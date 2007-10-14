@@ -91,9 +91,6 @@ sub delete {
     #
     # If I<load_args> is supplied, deletes the model specified by
     # I<load_args> and not the current model.  May be called statically.
-    #
-    #
-    # B<DEPRECATED>
     return $self->internal_get_sql_support->delete($self->internal_get, $self)
 	if @_ <= 1;
     my($query);
