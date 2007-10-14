@@ -74,6 +74,9 @@ sub default_merge_overrides {
 		want_parens => 0,
 		zero_as_blank => 0,
 	    },
+	    'Bivio::IO::Config' => {
+		version => $args->{version},
+	    },
 	),
 	$args->{version} < 2 ? () : (
 	    'Bivio::IO::Log' => {
@@ -86,17 +89,14 @@ sub default_merge_overrides {
 
 sub dev {
     my($proto, $http_port, $overrides) = @_;
-    # Development environment configuration. Will read bconf.d config in bconf.d
-    # subdir of where your *.bconf resides.
-
     my($pwd) = Cwd::getcwd();
     my($host) = Sys::Hostname::hostname();
     my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
     my($home) = $ENV{HOME} || $pwd;
     (my $root = ref($proto) || $proto) =~ s,::,/,g;
     $root = ($INC{"$root.pm"} =~ m{(.+)/.+?.pm})[0];
-    my($file_root) = "$root/files/db";
-    mkdir($file_root);
+    my($files_root) = "$root/files";
+    mkdir($files_root);
     return _validate_config(Bivio::IO::Config->merge_list(
 	$overrides || {},
 	Bivio::IO::Config->bconf_dir_hashes,
@@ -106,13 +106,13 @@ sub dev {
 		can_secure => 0,
 	    },
 	    'Bivio::Biz::File' => {
-		root => $file_root,
+		root => "$files_root/db",
 	    },
 	    'Bivio::IO::Alert' => {
 		want_time => 0,
 	    },
 	    'Bivio::IO::Log' => {
-		directory => $file_root,
+		directory => "$files_root/log",
 	    },
 	    'Bivio::Mail::Common' => {
 		sendmail => 'b-test -input - mock_sendmail',
@@ -125,7 +125,7 @@ sub dev {
 		die_on_error => 1,
 	    },
 	    'Bivio::UI::Facade' => {
-		local_file_root => "$root/files",
+		local_file_root => $files_root,
 		want_local_file_cache => 0,
 		http_suffix => "$host:$http_port",
 		mail_host => $host,
@@ -197,6 +197,7 @@ sub merge_class_loader {
 	    $overrides || {}, {
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
+		    Delegate => ['Bivio::Delegate'],
 		    Ext => ['Bivio::Ext'],
 		    FacadeComponent => ['Bivio::UI'],
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
@@ -376,6 +377,7 @@ sub _base {
 		'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
 		'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
 		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
+		'Bivio::Type::RowTagKey' => 'Bivio::Delegate::RowTagKey',
 		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
 		'Bivio::UI::FacadeChildType' =>
 		    'Bivio::Delegate::SimpleFacadeChildType',
