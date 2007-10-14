@@ -58,6 +58,15 @@ sub commit {
     return Bivio::Agent::Task->commit(shift(@_));
 }
 
+sub delete_class {
+    my($self, $class) = @_;
+    $self->delete(
+	$class,
+	$self->use($class),
+    );
+    return;
+}
+
 sub execute_task {
     my($self) = shift->initialize_fully(@_);
     $self->capture_mail;
