@@ -428,6 +428,10 @@ sub register {
     return;
 }
 
+sub version {
+    return $_ACTUAL->{$_PKG}->{version} || 0;
+}
+
 sub _actual_changed {
     # Call handlers and dump config, if debug option set.
     eval(q{
