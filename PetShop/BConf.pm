@@ -71,13 +71,9 @@ sub merge_overrides {
 	    http_suffix => 'bivio.biz',
 	    mail_host => 'bivio.biz',
 	},
-    },
-    $proto->default_merge_overrides({
-	version => 2,
-	root => 'Bivio/PetShop',
-	prefix => 'pet',
-	owner => 'bivio Software, Inc.',
-    }));
+    }, {
+	$proto->default_merge_overrides('Bivio/PetShop' => 'pet' => 'bivio Software, Inc.'),
+    });
 }
 
 1;
