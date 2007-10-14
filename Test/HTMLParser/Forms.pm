@@ -245,6 +245,7 @@ sub _end_maybe_err {
 sub _end_select {
     my($fields) = @_;
     $fields->{select} = undef;
+    _leftover_input($fields) if $fields->{input};
     return;
 }
 
