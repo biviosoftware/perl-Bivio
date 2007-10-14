@@ -65,24 +65,9 @@ sub default_merge_overrides {
         'Bivio::Delegate::Cookie' => {
             tag => uc($args->{prefix}),
 	},
-	$args->{version} < 1 ? () : (
-	    'Bivio::UI::HTML::Widget::AmountCell' => {
-		column_align => 0,
-		column_nowrap => 0,
-		pad_left => 0,
-		string_font => 0,
-		want_parens => 0,
-		zero_as_blank => 0,
-	    },
-	    'Bivio::IO::Config' => {
-		version => $args->{version},
-	    },
-	),
-	$args->{version} < 2 ? () : (
-	    'Bivio::IO::Log' => {
-		directory => '/var/log/bop',
-	    },
-	),
+	'Bivio::IO::Config' => {
+	    version => $args->{version},
+	},
     };
     return $args->{version} < 2 ? %$res : $res;
 }
@@ -198,6 +183,7 @@ sub merge_class_loader {
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
 		    Delegate => ['Bivio::Delegate'],
+		    Biz => ['Bivio::Biz'],
 		    Ext => ['Bivio::Ext'],
 		    FacadeComponent => ['Bivio::UI'],
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
@@ -410,9 +396,6 @@ sub _base {
 	    want_pid => 0,
 	    want_stderr => 1,
 	    want_time => 1,
-	},
-	'Bivio::IO::Log' => {
-	    directory => '/var/log',
 	},
 	'Bivio::Type::Secret' => {
 	    key => 'alphabet',
