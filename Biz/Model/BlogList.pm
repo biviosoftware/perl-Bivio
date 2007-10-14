@@ -1,15 +1,16 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::BlogList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_BC) = Bivio::Type->get_instance('BlogContent');
-my($_BFN) = Bivio::Type->get_instance('BlogFileName');
+my($_ARF) = __PACKAGE__->use('Action.RealmFile');
+my($_BC) = __PACKAGE__->use('Type.BlogContent');
+my($_BFN) = __PACKAGE__->use('Type.BlogFileName');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_RF) = __PACKAGE__->use('Model.RealmFile');
 my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
 
 sub PAGE_SIZE {
     return 5;
@@ -84,7 +85,9 @@ sub internal_post_load_row {
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    my($am) = $self->get_request->get('Type.AccessMode');
+    my($am) = $self->req->unsafe_get('Type.AccessMode');
+    my($is_public) = $am ? $am->eq_public
+	: $_ARF->access_is_public_only($self->req);
     $stmt->where(
 	$stmt->AND(
 	    $stmt->OR(
@@ -93,9 +96,10 @@ sub internal_prepare_statement {
 			'RealmFile.path_lc', $_BFN->to_sql_like_path($_),
 		    ),
 		    1,
-		    ($am->eq_private ? 0 : ())),
+		    $is_public ? () : 0,
+		),
 	    ),
-	    $am->eq_public ? ['RealmFile.is_public', [1]] : (),
+	    $is_public ? ['RealmFile.is_public', [1]] : (),
 	),
 	['Email.location', [$self->get_instance('Email')->DEFAULT_LOCATION]],
     );
