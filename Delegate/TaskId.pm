@@ -5,6 +5,7 @@ use strict;
 use base 'Bivio::Delegate::SimpleTaskId';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = __PACKAGE__->use('IO.Config');
 
 sub ALL_INFO {
     #DEPREDCATED
@@ -209,64 +210,100 @@ sub info_blog {
 	    next=FORUM_BLOG_DETAIL
 	    want_query=0
  	)],
- 	[qw(
- 	    FORUM_BLOG_DETAIL
- 	    102
- 	    FORUM
- 	    DATA_READ
-	    Type.AccessMode->execute_private
-            Model.BlogRecentList->execute_load_all
-            Model.BlogList->execute_load_this
-	    View.Blog->detail
- 	)],
- 	[qw(
- 	    FORUM_BLOG_LIST
- 	    103
- 	    FORUM
- 	    DATA_READ
-	    Type.AccessMode->execute_private
-            Model.BlogRecentList->execute_load_all
-            Model.BlogList->execute_load_page
-	    View.Blog->list
- 	)],
- 	[qw(
- 	    FORUM_PUBLIC_BLOG_LIST
- 	    104
- 	    FORUM
- 	    ANYBODY
-	    Type.AccessMode->execute_public
-            Model.BlogRecentList->execute_load_all
-            Model.BlogList->execute_load_page
-	    View.Blog->list
- 	)],
- 	[qw(
- 	    FORUM_PUBLIC_BLOG_DETAIL
- 	    105
- 	    FORUM
- 	    ANYBODY
-	    Type.AccessMode->execute_public
-            Model.BlogRecentList->execute_load_all
-            Model.BlogList->execute_load_this
-	    View.Blog->detail
- 	)],
-	[qw(
-	    FORUM_PUBLIC_BLOG_RSS
-            106
-            FORUM
- 	    ANYBODY
-	    Type.AccessMode->execute_public
-            Model.BlogList->execute_load_page
-            View.Blog->recent_rss
-        )],
-	[qw(
-	    FORUM_BLOG_RSS
-            107
-            FORUM
- 	    DATA_READ
-	    Type.AccessMode->execute_private
-            Model.BlogList->execute_load_page
-            View.Blog->recent_rss
-        )],
+	$_C->if_version(
+	    3 => sub {
+		return (
+		    [qw(
+			FORUM_BLOG_DETAIL
+			102
+			FORUM
+			ANYBODY
+			Model.BlogRecentList->execute_load_all
+			Model.BlogList->execute_load_this
+			View.Blog->detail
+		    )],
+		    [qw(
+			FORUM_BLOG_LIST
+			103
+			FORUM
+			ANYBODY
+			Model.BlogRecentList->execute_load_all
+			Model.BlogList->execute_load_page
+			View.Blog->list
+		    )],
+		    [qw(
+			FORUM_BLOG_RSS
+			107
+			FORUM
+			ANYBODY
+			Model.BlogList->execute_load_page
+			View.Blog->recent_rss
+		    )],
+		);
+	    },
+	    sub {
+		return (
+		    [qw(
+			FORUM_BLOG_DETAIL
+			102
+			FORUM
+			DATA_READ
+			Type.AccessMode->execute_private
+			Model.BlogRecentList->execute_load_all
+			Model.BlogList->execute_load_this
+			View.Blog->detail
+		    )],
+		    [qw(
+			FORUM_BLOG_LIST
+			103
+			FORUM
+			DATA_READ
+			Type.AccessMode->execute_private
+			Model.BlogRecentList->execute_load_all
+			Model.BlogList->execute_load_page
+			View.Blog->list
+		    )],
+		    [qw(
+			FORUM_PUBLIC_BLOG_LIST
+			104
+			FORUM
+			ANYBODY
+			Type.AccessMode->execute_public
+			Model.BlogRecentList->execute_load_all
+			Model.BlogList->execute_load_page
+			View.Blog->list
+		    )],
+		    [qw(
+			FORUM_PUBLIC_BLOG_DETAIL
+			105
+			FORUM
+			ANYBODY
+			Type.AccessMode->execute_public
+			Model.BlogRecentList->execute_load_all
+			Model.BlogList->execute_load_this
+			View.Blog->detail
+		    )],
+		    [qw(
+			FORUM_PUBLIC_BLOG_RSS
+			106
+			FORUM
+			ANYBODY
+			Type.AccessMode->execute_public
+			Model.BlogList->execute_load_page
+			View.Blog->recent_rss
+		    )],
+		    [qw(
+			FORUM_BLOG_RSS
+			107
+			FORUM
+			DATA_READ
+			Type.AccessMode->execute_private
+			Model.BlogList->execute_load_page
+			View.Blog->recent_rss
+		    )],
+		);
+	    },
+	),
 #108-109 free
     ];
 }
@@ -391,20 +428,37 @@ sub info_file {
             ANYBODY
             Action.EasyForm
         )],
- 	[qw(
- 	    FORUM_PUBLIC_FILE
- 	    44
- 	    FORUM
- 	    ANYBODY
- 	    Action.RealmFile->execute_public
- 	)],
- 	[qw(
- 	    FORUM_FILE
- 	    52
- 	    FORUM
- 	    DATA_READ
- 	    Action.RealmFile
-        )],
+	$_C->if_version(
+	    3 => sub {
+		return (
+		    [qw(
+			FORUM_FILE
+			52
+			FORUM
+			ANYBODY
+			Action.RealmFile->access_controlled_execute
+		    )],
+		);
+	    },
+	    sub {
+		return (
+		    [qw(
+			FORUM_PUBLIC_FILE
+			44
+			FORUM
+			ANYBODY
+			Action.RealmFile->execute_public
+		    )],
+		    [qw(
+			FORUM_FILE
+			52
+			FORUM
+			DATA_READ
+			Action.RealmFile
+		    )],
+		);
+	    },
+	),
     ];
 }
 
@@ -798,17 +852,49 @@ sub info_wiki {
  	    ANYBODY
             View.Wiki->help
  	)],
- 	[qw(
- 	    FORUM_WIKI_VIEW
- 	    48
- 	    FORUM
- 	    DATA_READ
- 	    Action.WikiView->execute_prepare_html
-	    View.Wiki->view
-	    MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
-	    edit_task=FORUM_WIKI_EDIT
-	    want_author=1
- 	)],
+	$_C->if_version(
+	    3 => sub {
+		return (
+		    [qw(
+			FORUM_WIKI_VIEW
+			48
+			FORUM
+			ANYBODY
+			Action.WikiView->execute_prepare_html
+			View.Wiki->view
+			MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
+			edit_task=FORUM_WIKI_EDIT
+			want_author=1
+		    )],
+		);
+	    },
+	    sub {
+		return (
+		    [qw(
+			FORUM_PUBLIC_WIKI_VIEW
+			120
+			FORUM
+			ANYBODY
+			Action.WikiView->execute_prepare_html
+			View.Wiki->view
+			MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
+			edit_task=FORUM_WIKI_EDIT
+			want_author=1
+		    )],
+		    [qw(
+			FORUM_WIKI_VIEW
+			48
+			FORUM
+			DATA_READ
+			Action.WikiView->execute_prepare_html
+			View.Wiki->view
+			MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
+			edit_task=FORUM_WIKI_EDIT
+			want_author=1
+		    )],
+		);
+	    },
+	),
   	[qw(
  	    FORUM_WIKI_EDIT
  	    49
@@ -833,17 +919,6 @@ sub info_wiki {
  	    DATA_READ
 	    View.Wiki->not_found
 	    view_task=HELP
- 	)],
- 	[qw(
- 	    FORUM_PUBLIC_WIKI_VIEW
- 	    120
- 	    FORUM
- 	    ANYBODY
- 	    Action.WikiView->execute_prepare_html
-	    View.Wiki->view
-	    MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
-	    edit_task=FORUM_WIKI_EDIT
-	    want_author=1
  	)],
     ];
 #121-129 free
