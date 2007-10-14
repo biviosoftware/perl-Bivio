@@ -519,7 +519,7 @@ See also L<to_sql_param|"to_sql_param">.
 
 sub to_sql_value {
     shift;
-    return shift;
+    return shift || '?';
 }
 
 =for html <a name="to_sql_value_list"></a>
