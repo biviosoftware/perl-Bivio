@@ -37,10 +37,7 @@ sub access_controlled_load {
     if ($rf->is_loaded) {
 	return $rf
 	    if $rf->get('is_public')
-	    || $req->with_realm($realm_id => sub {
-	       $req->get('auth_realm')->does_user_have_permissions(
-	           $_DATA_READ, $req);
-	    });
+	    || !$proto->access_is_public_only($req, $realm_id);
 	$e = 'FORBIDDEN';
     }
     $rf->throw_die($e => {
@@ -48,6 +45,17 @@ sub access_controlled_load {
 	realm_id => $req->get('auth_id'),
     }) unless $no_die;
     return undef;
+}
+
+sub access_is_public_only {
+    my($proto, $req, $realm) = @_;
+    my($have_realm) = @_ > 2;
+    my($op) = sub {
+        return $req->get('auth_realm')
+	    ->does_user_have_permissions($_DATA_READ, $req)
+	    ? 0 : 1;
+    };
+    return $have_realm ? $req->with_realm($realm => $op) : $op->();
 }
 
 sub execute {
