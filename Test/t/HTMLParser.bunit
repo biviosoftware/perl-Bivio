@@ -39,6 +39,17 @@ options({
 	    ['Forms', 'Email Address:', 'visible', 'Email Address:', 'type']
 		=> 'text',
 	],
+    ], [
+	'workshop-payment' => [
+	    ['Forms', 'Credit Card Number*:', 'visible',
+		 'Credit Card Number*:', 'type'] => 'text',
+	    ['Forms', 'Credit Card Number*:', 'visible',
+		 'Card Expiration Date:', 'type'] => 'select',
+	    ['Forms', 'Credit Card Number*:', 'visible',
+		 '_anon', 'type'] => 'select',
+	    ['Forms', 'Credit Card Number*:', 'visible',
+		 'Full Name on Card*:', 'type'] => 'text',
+	],
     ],[
  	'applicants' => [
  	    ['Forms', '<prev', 'visible',
@@ -286,5 +297,5 @@ options({
 	    ['Subject', 'campaign.btest at 06/16/2003 17:21:39']
 	        => qr{href.*/dev/campaign-domains\?p=33600023}s,
 	],
-   ],
+    ],
 ];
