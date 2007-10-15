@@ -300,6 +300,10 @@ sub _cfg_blog {
     };
 }
 
+sub _cfg_calendar {
+    return {};
+}
+
 sub _cfg_dav {
     return {
 	Task => [
