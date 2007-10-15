@@ -45,7 +45,7 @@ From: Joe <$ENV{USER}+btest_bounce\@localhost.localdomain>
 To: Joe <no-such-user\@localhost.localdomain>
 Subject: my subject
 
-Secong message.
+Second message.
 EOF
 		'mock_sendmail',
 		"no-such-user\@localhost.localdomain",
