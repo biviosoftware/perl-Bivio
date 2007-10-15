@@ -122,6 +122,8 @@ function @{[$self->RESIZE_FUNCTION]}() {
     o.style.height = o.contentDocument.body.scrollHeight + 'px';
   }
   o.style.visibility = '@{[_visibility($self, $source)]}';
+  if (document.all)
+    document.getElementById('help_wiki_open').style.visibility = 'visible';
 }
 
 function help_wiki_toggle() {
@@ -177,14 +179,24 @@ sub _link_edit {
 }
 
 sub _link_open {
-    return Link(
-	vs_text_as_prose('help_wiki_open'),
-	'javascript: help_wiki_toggle()',
-	{
-	    id => 'help_wiki_open',
-	    class => 'help_wiki_open',
-	},
-    );
+    return Join([
+	Link(
+	    vs_text_as_prose('help_wiki_open'),
+	    'javascript: help_wiki_toggle()',
+	    {
+		id => 'help_wiki_open',
+		class => 'help_wiki_open',
+	    },
+	),
+	# If you click on the help link in IE while it is loading
+	# it doesn't render correctly
+	JavaScript()->strip(<<"EOF"),
+<script type="text/javascript">
+if (document.all)
+  document.getElementById('help_wiki_open').style.visibility = 'hidden';
+</script>
+EOF
+    ]);
 }
 
 sub _uri {
