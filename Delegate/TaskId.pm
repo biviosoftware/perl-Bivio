@@ -185,7 +185,6 @@ sub info_base {
 	    ANYBODY
 	    Action.EmptyReply
         )],
-#58-59 free
     ];
 }
 
@@ -308,6 +307,19 @@ sub info_blog {
     ];
 }
 
+sub info_calendar {
+    return [
+	[qw(
+	    FORUM_CALENDAR_EVENT_LIST_RSS
+            32
+            FORUM
+            DATA_READ
+            Model.CalendarEventList->execute_load_page
+            View.Calendar->event_list_rss
+        )],
+    ];
+}
+
 sub info_dav {
     return [
 	[qw(
@@ -329,38 +341,6 @@ sub info_dav {
 	    forums_csv_task=DAV_ROOT_FORUM_LIST_EDIT
 	    email_aliases_csv_task=DAV_EMAIL_ALIAS_LIST_EDIT
 	)],
-#	    mail_task=DAV_MAIL_FOLDER_LIST
-	[qw(
-	    FORUM_CALENDAR_EVENT_LIST_RSS
-            32
-            FORUM
-            DATA_READ
-            Model.CalendarEventList->execute_load_page
-            View.Calendar->event_list_rss
-        )],
-	[qw(
-	    DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
-	    33
-	    FORUM
-	    DATA_READ
-	    Model.Lock->execute_unless_acquired
-	    Model.CalendarEventDAVList
-	)],
-# 	[qw(
-# 	    DAV_MAIL_FOLDER_LIST
-# 	    34
-# 	    GENERAL
-# 	    DATA_READ
-# 	    Model.UserForumDAVList
-# 	    next=DAV_MAIL_MESSAGE_LIST
-# 	)],
-# 	[qw(
-# 	    DAV_MAIL_MESSAGE_LIST
-# 	    35
-# 	    FORUM
-# 	    DATA_READ
-# 	    Model.UserMailDAVList
-# 	)],
 	[qw(
 	    DAV_FORUM_LIST
 	    27
@@ -369,6 +349,7 @@ sub info_dav {
 	    Model.UserForumDAVList
 	    next=DAV_FORUM_LIST
 	    files_task=DAV_FORUM_FILE
+	    deleted_files_task=DAV_FORUM_DELETED_FILE
 	    forums_csv_task=DAV_FORUM_LIST_EDIT
 	    members_csv_task=DAV_FORUM_USER_LIST_EDIT
 	    calendar_ics_task=DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
@@ -408,6 +389,14 @@ sub info_dav {
 	    Model.ForumUserList->execute_load_all
 	    Model.ForumUserEditDAVList
 	)],
+	[qw(
+	    DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
+	    33
+	    FORUM
+	    DATA_READ
+	    Model.Lock->execute_unless_acquired
+	    Model.CalendarEventDAVList
+	)],
  	[qw(
 	    DAV_EMAIL_ALIAS_LIST_EDIT
 	    36
@@ -416,6 +405,15 @@ sub info_dav {
 	    Model.EmailAliasList->execute_load_all
 	    Model.EmailAliasEditDAVList
 	)],
+	[qw(
+	    DAV_FORUM_DELETED_FILE
+	    58
+	    FORUM
+	    DATA_READ&DATA_WRITE
+	    Model.RealmFileVersionsDAVList
+	    require_dav=1
+	)],
+#59 free
     ];
 }
 
