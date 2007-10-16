@@ -256,7 +256,7 @@ commit();
 	delete_deep => $commit,
 	load => [
 	    map(([$a->("/d1-copy/$_")] => MODEL_NOT_FOUND()),
-		'', qw(d2 d2/f3 d2/d3)),
+		'', qw(f1 d2 d2/d3 d2/f3)),
 	],
 	# Read-only tests
 	load => [
@@ -331,17 +331,25 @@ commit();
  	load => [
  	    [$a->('ro1-update/f1')] => not_die(),
  	],
-	# This tests non-recursive update of is_read_only
 	delete => FORBIDDEN(),
 	load => [
 	    [$a->('ro1-update')] => not_die(),
 	],
 	delete_deep => FORBIDDEN(),
 	load => [
+	    [$a->('ro1-update')] => not_die(),
+	],
+	load => [
 	    [$a->('ro1-update/f1')] => not_die(),
 	],
+	get => [
+	    is_read_only => 1,
+	],
 	update => [
-	    [$a->(undef, 0, 1)] => not_die(),
+ 	    [$a->(undef, 0, 1)] => not_die(),
+	],
+	get => [
+	    is_read_only => 0,
 	],
 	load => [
 	    [$a->('ro1-update')] => not_die(),
@@ -434,6 +442,9 @@ commit();
 	    is_public => 0,
 	],
 	load => [
+	    [{path => '/Public'}] => MODEL_NOT_FOUND(),
+	    [{path => '/Public/foo'}] => MODEL_NOT_FOUND(),
+	    [{path => '/Private'}] => not_die(),
 	    [{path => '/Private/foo'}] => not_die(),
 	],
 	get => [
