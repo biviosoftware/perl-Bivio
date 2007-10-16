@@ -31,6 +31,7 @@ sub PUBLIC_FOLDER {
 }
 
 sub append_content {
+    _assert_loaded(@_);
     my($self, $content) = @_;
 #TODO: Optimize to only append the file.
     return $self->update_with_content({
@@ -39,7 +40,9 @@ sub append_content {
 }
 
 sub copy_deep {
+    _assert_loaded(@_);
     my($self, $dest) = @_;
+    _assert_not_versioned_path($self, $dest);
     my($size) = 0;
     return _copy(
 	$self, {
@@ -56,6 +59,7 @@ sub create {
     my($self, $values) = @_;
     my($v) = {%$values};
     my($c) = delete($v->{_content});
+    $v->{_create} = 1;
     _create($self, $v);
     return $v->{is_folder} ? $self : _write($self, defined($c) ? $c : \(''));
 }
@@ -70,6 +74,7 @@ sub create_folder {
 
 sub create_or_update_with_content {
     my($self, $values) = _with_content(@_);
+    _assert_not_versioned_path($self, $values);
     return $self->create_or_update($values);
 }
 
@@ -345,12 +350,21 @@ sub _assert_not_root {
     return;
 }
 
+sub _assert_not_versioned_path {
+    my($self, $values) = @_;
+    $self->throw_die(FORBIDDEN => 'cannot write versioned files directly')
+	if $values->{path} =~ ';'
+	    && !($values->{_overwrite}
+		     || ($values->{_create} && $values->{is_read_only}));
+    return;
+}
+
 sub _assert_writable {
     my($self, $values) = @_;
     $self->throw_die(FORBIDDEN => 'file or folder is read-only')
 	if $self->unsafe_get('is_read_only')
-        && !$values->{override_is_read_only};
-    return;
+ 	    && !($values->{override_is_read_only}
+		     || $values->{_overwrite} || $values->{_update});
 }
 
 sub _child_attrs {
@@ -369,6 +383,15 @@ sub _copy {
 	path => $values->{path},
     }) ? 'SUPER::update' : 'SUPER::create';
     _assert_writable($dst, $values);
+    if ($method =~ /update/ && !$self->get('is_folder') && $self->get_content) {
+	$self->new->create_with_content({
+	    %{$dst->internal_get},
+	    realm_file_id => undef,
+	    path => $dst->get('path') . ';'
+		. _next_version($dst->get('realm_id'), $dst->get('path_lc')),
+	    is_read_only => 1,
+	}, _read(_filename($dst)));
+    }
     $dst->$method(_verify_and_fix($dst, $values));
     _trace($self, ' -> ', $dst, '=', $dst->get_shallow_copy) if $_TRACE;
     return _write($dst, $self->get_content)
@@ -419,6 +442,7 @@ sub _copy_attrs {
 
 sub _create {
     my($self, $values) = @_;
+    _assert_not_versioned_path($self, $values);
     my($req) = $self->get_request;
     $values->{realm_id} ||= $req->get('auth_id');
     $values->{user_id} ||= $req->get('auth_user_id');
@@ -434,9 +458,21 @@ sub _create {
 sub _delete_one {
     my($self, $values) = @_;
     _trace($self) if $_TRACE;
-    _txn($self, _search_delete($self, [delete => _filename($self)]))
+    _search_delete($self, [delete => _filename($self)])
 	unless $values->{is_folder};
-    return $self->SUPER::delete;
+    my($p) = $self->get('path') . ';'
+	. _next_version($self->get('realm_id'), $self->get('path_lc'));
+    if ($values->{is_folder} && $self->is_empty) {
+	$self->SUPER::delete;
+    }
+    else {
+	$self->SUPER::update({
+	    path => $p,
+	    path_lc => lc($p),
+	    is_read_only => 1,
+	});
+    }
+    return 1;
 }
 
 sub _delete_args {
@@ -447,15 +483,12 @@ sub _delete_args {
     return unless $self->is_loaded;
     _assert_not_root($self);
     _assert_writable($self, $values);
-    return ($self,
-        _verify_and_fix(
-	    $self,
-	    {
-		%{$self->get_shallow_copy},
-		%{_child_attrs($values)},
-	    },
-	),
-    );
+    return ($self, _verify_and_fix($self, {
+	%{$self->get_shallow_copy},
+	%{_child_attrs($values)},
+	$self->my_caller ne 'delete_deep' ? ()
+	    : (_overwrite => $self->get('path') =~ /;/ ? 1 : 0),
+    }));
 }
 
 sub _filename {
@@ -464,6 +497,60 @@ sub _filename {
     my($res) = _realm_dir($d) . '/' .  $f;
     _trace($res) if $_TRACE;
     return $res;
+}
+
+sub _load_parent {
+    my($rf, $rid, $p, $nonver) = @_;
+    my($r) = $rf->unauth_load({
+	realm_id => $rid,
+	path => $p,
+	is_folder => 1,
+    });
+    return $r
+	if ($rf->is_loaded && $rf->get('is_folder')) || $p eq '/' || $nonver;
+    my($sp) = $rf->new_other;
+    return 0
+	unless _load_parent($sp, $rid, ($p =~ m{(^/.+)/})[0] || '/', $nonver);
+    $p = $sp->get('path') . substr($p, rindex($p, '/'));
+    my($max) = 1;
+    Bivio::SQL::Connection->do_execute(
+	sub {
+	    my($v) = shift->[0] =~ /^\Q$p\E;(\d+)$/s;
+	    $max = $v
+		if defined($v) && $v > $max;
+	    return 1;
+	},
+	q{SELECT path_lc FROM realm_file_t
+        WHERE is_folder = 1
+        AND realm_id = ?
+        AND SUBSTRING(path_lc FROM 1 FOR LENGTH(?) + 1) = ?
+        AND POSITION('/' IN SUBSTRING(path_lc FROM LENGTH(?) + 2)) = 0},
+        [$rid, $p, lc($p) . ';', $p]);
+    $r = $rf->unauth_load({
+	realm_id => $rid,
+	path => $p . ';' . $max,
+    });
+    return $r
+	if $rf->is_loaded && $rf->get('is_folder');
+    return 0
+}
+
+sub _next_version {
+    my($rid, $p) = @_;
+    my($max) = 0;
+    Bivio::SQL::Connection->do_execute(
+	sub {
+	    my($v) = shift->[0] =~ /^\Q$p\E;(\d+)$/s;
+	    $max = $v
+		if defined($v) && $v > $max;
+	    return 1;
+	},
+	q{SELECT path_lc FROM realm_file_t
+        WHERE realm_id = ?
+        AND SUBSTRING(path_lc FROM 1 FOR LENGTH(?) + 1) = ?
+        AND POSITION('/' IN SUBSTRING(path_lc FROM LENGTH(?) + 2)) = 0},
+        [$rid, $p, lc($p) . ';', $p]);
+    return $max + 1;
 }
 
 sub _non_child_attrs {
@@ -517,17 +604,20 @@ sub _touch_parent {
     return $parent->create_folder({
 	map(($_ => $values->{$_}), qw(user_id realm_id override_is_read_only)),
 	path => $parent_path,
-    }) unless $parent->unauth_load({
-	realm_id => $values->{realm_id},
-	path => $parent_path,
-    });
+    }) unless _load_parent($parent, $values->{realm_id}, $parent_path,
+			   $values->{_create});
     $parent->throw_die(IO_ERROR => {
 	entity => $values->{path},
 	message => 'parent exists as a file, but must be a folder',
     }) unless $parent->get('is_folder');
-    # match case of folder that exists
-    substr($values->{path}, 0, length($parent->get('path')))
-	= $parent->get('path');
+    if (rindex($parent->get('path'), ';') > 0) {
+	$values->{path} = $parent->get('path')
+	    . substr($values->{path}, rindex($values->{path}, '/'));
+    }
+    else {
+	substr($values->{path}, 0, length($parent->get('path')))
+	    = $parent->get('path');
+    }
     if ($values->{_update}) {
 	return $parent
 	    unless $self->get('path') ne $values->{path}
@@ -601,11 +691,21 @@ sub _txn_filename {
 
 sub _update {
     my($self, $values) = @_;
+    _assert_not_versioned_path($self, $values);
     _assert_writable($self, $values);
     my($c) = delete($values->{_content});
     my($old_realm) = $self->get('realm_id');
     my($old_filename) = _filename($self);
     my($old_path) = $self->get('path');
+    if ($c) {
+	$self->new->create_with_content({
+	    %{$self->internal_get},
+	    realm_file_id => undef,
+  	    path => $old_path . ';'
+		. _next_version($self->get('realm_id'), $self->get('path_lc')),
+	    is_read_only => 1,
+	}, _read($old_filename));
+    }
     $values->{path} = $values->{_parent}->get('path')
 	. substr($self->get('path'), $values->{old_path_length})
 	if $values->{_parent};
@@ -631,7 +731,7 @@ sub _update {
     return $self
 	if $old_realm eq $self->get('realm_id') && $old_path eq $new_path;
     foreach my $child (@{
-	$self->new_other('RealmFileList')->map_iterate(
+	$self->new_other('RealmFileBaseList')->map_iterate(
 	    sub {shift->get_model('RealmFile')},
 	    unauth_iterate_start => {
 		auth_id => $old_realm,
@@ -644,6 +744,7 @@ sub _update {
 	    realm_id => $self->get('realm_id'),
 	    %{_child_attrs($values, $self)},
 	    old_path_length => length($old_path),
+	    _overwrite => $child->get('path') =~ /;/ ? 1 : 0,
 	});
     }
     return $self;
