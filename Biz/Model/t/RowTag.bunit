@@ -1,0 +1,42 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+PropertyModel({
+    compute_params => sub {
+	my($case, $params) = @_;
+	return $case->get('method') =~ /replace_value|get/ ? $params : [{
+	    primary_id => req('auth_id'),
+	    key => class('Type.RowTagKey')->ERROR_DETAIL,
+	    @$params ? (value => $params->[0]) : (),
+	}];
+    },
+});
+req()->set_realm('demo');
+[
+    delete => not_die(),
+    create => [
+	x1 => not_die(),
+    ],
+    update => [
+	x2 => not_die(),
+    ],
+    unsafe_load => 1,
+    update => [
+	[undef] => not_die(),
+    ],
+    unsafe_load => 0,
+    replace_value => [
+	[req('auth_id'), ERROR_DETAIL => 'x3'] => not_die(),
+    ],
+    unsafe_load => 1,
+    replace_value => [
+	[req('auth_id'), ERROR_DETAIL => undef] => not_die(),
+    ],
+    unsafe_load => 0,
+    replace_value => [
+	[req(qw(auth_realm owner)), ERROR_DETAIL => 'x4'] => not_die(),
+    ],
+    unsafe_load => 1,
+    get => [
+	value => 'x4',
+    ],
+];
