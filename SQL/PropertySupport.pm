@@ -119,12 +119,13 @@ sub delete_all {
     # Deletes all the rows specified by the possibly partial key values.
     # If an error occurs during the delete, calls die.
     # Returns the number of rows deleted.
-    my($sql) = 'delete from '.$self->get('table_name').' where ';
+    my($sql) = 'delete from ' . $self->get('table_name');
     my($params) = [];
     my($first_col) = 1;
     foreach my $col (sort(keys(%$values))) {
 	my($info) = $self->get_column_info($col);
-	$sql .= ($first_col ? '' : ' and ').$col.'='.$info->{sql_pos_param};
+	$sql .= ($first_col ? ' where ' : ' and ')
+	    . $col . '=' . $info->{sql_pos_param};
 	push(@$params, $info->{type}->to_sql_param($values->{$col}));
 	$first_col = 0;
     }
