@@ -301,16 +301,13 @@ sub init_model_primary_key_maps {
 }
 
 sub init_type {
-    my(undef, $col, $type_cfg) = @_;
-    # Sets I<type> and I<sort_order> attributes on I<col> based on I<type_cfg>.
-
-    # allow the type to be defined on another model, ex RealmOwner.realm_id
+    my($proto, $col, $type_cfg) = @_;
     if ($type_cfg =~ /^(.*)\.(.*)$/) {
 	my($model, $field) = ($1, $2);
-	$type_cfg = Bivio::Biz::Model->get_instance($model)
-		->get_field_type($field);
+	$type_cfg = $field !~ /^[a-z]/ ? $proto->use($type_cfg)
+	    : Bivio::Biz::Model->get_instance($model)->get_field_type($field);
     }
-    $col->{type} = UNIVERSAL::isa($type_cfg, 'Bivio::Biz::Model')
+    $col->{type} = UNIVERSAL::isa($type_cfg, 'Bivio::UNIVERSAL')
 	    ? $type_cfg
 	    : Bivio::Type->get_instance($type_cfg);
     $col->{sort_order} = Bivio::SQL::ListQuery->get_sort_order_for_type(
