@@ -421,6 +421,7 @@ sub internal_upgrade_db_bundle {
 	site_forum
 	file_writer
 	bulletin
+	row_tag
     )) {
 	my($sentinel) = \&{"_sentinel_$type"};
 	next if defined(&$sentinel) ? $sentinel->($self)
@@ -1019,6 +1020,20 @@ ALTER TABLE realm_dag_t
 /
 CREATE INDEX realm_dag_t5 ON realm_dag_t (
   child_id
+)
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_row_tag {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE row_tag_t (
+  primary_id NUMERIC(18) NOT NULL,
+  key NUMERIC(3) NOT NULL,
+  value VARCHAR(500) NOT NULL,
+  CONSTRAINT row_tag_t1 primary key(primary_id, key)
 )
 /
 EOF
