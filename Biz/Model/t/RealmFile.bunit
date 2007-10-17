@@ -1,7 +1,7 @@
 # Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-create_user('realm_file_bunit');
+req()->set_realm_and_user('realmfile2', 'root');
 my($a) = sub {
     my($p, $ro, $oro) = @_;
     return {
@@ -42,11 +42,12 @@ commit();
 	    '0' => '/0',
 	    '?' => CORRUPT_QUERY(),
 	],
-#TODO: Safe to delete this block, now that create_user handles realm clean up
-# 	# basic CRUD tests; First clean up from possibly bad test run
-# 	delete_deep => [
-# 	    [$a->('/', undef, 1)] => $commit,
-# 	],
+ 	delete_deep => [
+	    [{
+		path => '/',
+		override_versioned => 1,
+	    }] => $commit,
+ 	],
 	unsafe_load => [
 	    [$a->('/')] => 0,
 	],
@@ -86,6 +87,7 @@ commit();
 	    [$a->('f1')] => 1,
 	    [$a->('f2')] => 1,
 	    [{path => '/'}] => 1,
+	    [{path => '/;'}] => 1,
 	],
 	create_folder => [
 	    [$a->('d2/d3')] => not_die(),
@@ -280,6 +282,15 @@ commit();
 	],
 	create_with_content => [
 	    [$a->('ro1/f1', undef, 1), \('ro1/f1')] => $commit,
+	],
+	get => [
+	    is_public => 0,
+	    is_read_only => 1,
+	],
+	delete => [
+	    [] => FORBIDDEN(),
+	],
+	create_with_content => [
 	    [$a->('ro1/d2/f3', undef, 1), \('ro1/d2/f3')] => $commit,
 	],
 	get => [
@@ -363,7 +374,7 @@ commit();
 	get => [
 	    user_id => $auth_uid,
 	],
-	$user->('realm_file_bunit'),
+	$user->('root'),
         update_with_content => [
 	    [$a->('demo1'), \('root1')] => $commit,
 	],
@@ -378,7 +389,7 @@ commit();
 	    user_id => $auth_uid,
 	],
 	# Verify that append_content doesn't change file owner
-	$user->('realm_file_bunit'),
+	$user->('root'),
         create_with_content => [
 	    [$a->('append'), \('a1')] => $commit,
 	],
@@ -389,7 +400,7 @@ commit();
         append_content => [
 	    [\('a2')] => $commit,
 	],
-	$user->('realm_file_bunit'),
+	$user->('root'),
 	get => [
 	    user_id => $auth_uid,
 	],

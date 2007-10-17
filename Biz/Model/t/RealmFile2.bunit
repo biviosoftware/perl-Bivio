@@ -1,14 +1,15 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-req()->set_realm_and_user('demo', 'demo');
+req()->set_realm_and_user('realmfile2', 'root');
 my($root) = '/' . random_string();
 my($f) = model('RealmFile');
 $f->delete_deep
     if $f->unsafe_load({path => $root});
 my($path) = sub {
     my($version, $base) = @_;
-    return {path => ($base || "$root/file") . ($version ? ";$version" : '')};
+    return {path => ($version ? '/;' : '') . ($base || "$root/file")
+		. ($version ? ";$version" : '')};
 };
 my($commit) = sub {commit(); return 1};
 options({
@@ -22,6 +23,10 @@ options({
 });
 [
     sub {class()->new(req())} => [
+	unsafe_load => [
+	    [{path => '/'}] => 1,
+	    [{path => '/;'}] => 1,
+	],
 	create_with_content => [
 	    [$path->(), \('foo1')] => not_die(),
 	],
@@ -86,25 +91,23 @@ options({
 	    [$path->()] => 0,
 	],
 	load => [
-	    [$path->(4)] => [{is_folder => 1}],
 	    [$path->(1, "$root/file/bar")] => '123',
 	],
 	create_with_content => [
-	    [$path->(), \('foo5')] => not_die(),
+	    [$path->(), \('foo4')] => not_die(),
 	],
   	delete => $commit,
 	unsafe_load => [
 	    [$path->()] => 0,
 	],
 	load => [
-	    [$path->(4)] => [{is_folder => 1}],
-	    [$path->(5)] => 'foo5',
+	    [$path->(4)] => 'foo4',
 	],
 	create_with_content => [
-	    [$path->(), \('foo6')] => not_die(),
+	    [$path->(), \('foo5')] => not_die(),
 	],
 	load => [
-	    [$path->()] => 'foo6',
+	    [$path->()] => 'foo5',
 	    [$path->(undef, $root)] => [{is_folder => 1}],
 	],
   	delete_deep => $commit,
@@ -112,9 +115,8 @@ options({
 	    [$path->()] => 0,
 	],
 	load => [
-	    [$path->(1, $root)] => [{is_folder => 1}],
 	    [$path->(1)] => 'foo1',
-	    [$path->(6)] => 'foo6',
+	    [$path->(5)] => 'foo5',
 	],
 	create_with_content => [
 	    [$path->(undef, "$root/dir/file"), \('bar1')] => not_die(),
