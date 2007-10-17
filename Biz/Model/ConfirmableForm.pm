@@ -10,11 +10,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub check_redirect_to_confirmation_form {
     my($self, $task) = @_;
     return if $self->unsafe_get('is_confirmed');
-    return {
-	method => 'server_redirect',
-        task_id => Bivio::Agent::TaskId->from_name($task),
-	query => '',
-    };
+    $self->req->server_redirect(Bivio::Agent::TaskId->from_name($task));
+    # DOES NOT RETURN
 }
 
 sub execute_unwind {
