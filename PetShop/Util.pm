@@ -356,6 +356,11 @@ sub _init_forum {
     $req->set_realm(undef);
     $req->set_user($self->ROOT);
     $self->model('ForumForm', {
+        'RealmOwner.display_name' => 'RealmFile2',
+	'RealmOwner.name' => 'realmfile2',
+    });
+    $req->set_realm(undef);
+    $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum',
 	'RealmOwner.name' => $self->FOUREM,
     });
