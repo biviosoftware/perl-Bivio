@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio::Type::Name';
 use Bivio::TypeError;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_OFFLINE_PREFIX) = OFFLINE_PREFIX();
 
 sub OFFLINE_PREFIX {
     # Returns prefix character for offline names.
@@ -50,9 +49,9 @@ sub internal_is_realm_name {
 }
 
 sub is_offline {
-    my(undef, $value) = @_;
+    my($proto, $value) = @_;
     # Returns true if the RealmName is a offline name.
-    return defined($value) && $value =~ /^$_OFFLINE_PREFIX/o ? 1 : 0;
+    return defined($value) && $value =~ /^@{[$proto->OFFLINE_PREFIX]}/ ? 1 : 0;
 }
 
 sub make_offline {
@@ -61,7 +60,7 @@ sub make_offline {
     return $value if $proto->is_offline($value);
     $value = substr($value, 0, $proto->get_width - 1)
 	if length($value) >= $proto->get_width;
-    return $_OFFLINE_PREFIX . $value;
+    return $proto->OFFLINE_PREFIX . $value;
 }
 
 sub process_name {
