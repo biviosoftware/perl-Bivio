@@ -1,0 +1,13 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    to_camel_case => [
+	'' => '',
+	[undef] => [undef],
+	0 => '0',
+	'a-z' => 'A Z',
+	'ab cd' => 'Ab Cd',
+	'ab_c.d 9' => 'Ab C D 9',
+    ],
+];
