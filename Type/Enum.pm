@@ -351,6 +351,10 @@ sub get_name {
     return _get_info(shift(@_), undef)->[3];
 }
 
+sub get_non_zero_list {
+    return grep($_->as_int, shift->get_list);
+}
+
 sub get_self {
     # Returns C<$self>.  Convenience routine.
     return shift;

@@ -4,7 +4,7 @@
 # $Id$
 #
 use strict;
-BEGIN { $| = 1; print "1..40\n"; }
+BEGIN { $| = 1; print "1..41\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Type::Enum;
@@ -108,6 +108,7 @@ t($t1->E1->equals_by_name('E0') == 0);
 t($t1->E1->equals_by_name('E2', 'E1') == 1);
 t(!$not_done);
 t(int(@{[$t1->get_list]}) == 3);
+t(int(@{[$t1->get_non_zero_list]}) == 2);
 
 t($t1->from_name('E0'));
 t($t1->from_name('e0'));
