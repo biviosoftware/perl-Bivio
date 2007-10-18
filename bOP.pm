@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.43  2007/10/11 23:05:09  aviggio
+  * Bivio::Biz::ListModel want_page_count can now be set using the list
+    model's config
+  * Bivio::SQL::ListSupport support ListModel change
+  * Bivio::UI::XHTML::Widget::Pager guard against undefined page_count
+  * Bivio::UI::XHTML::Widget::WikiText put spaces in place of underscore
+    in wiki words
+
   Revision 5.42  2007/10/04 15:05:33  moeller
   * Bivio::Biz::Model::RealmDAG added realm_dag_type to primary key
   * Bivio::IO::Log use file_root in dev (probably typo)
