@@ -29,15 +29,13 @@ do {
     ) {
 	my($user, $data) = @$op;
 	req()->set_realm_and_user($user, $user);
-	model('RealmFile')->delete_deep({path => $root});
-	model('RealmFile')->delete_deep({path => "/public$root"});
+ 	model('RealmFile')->delete_all;
 	foreach my $x (@$data) {
 	    push(@$files, model('RealmFile')->create_with_content(
 		{path => ($x =~ /public/ ? '/public' : '')
 		     . "$root/" . @$files . '.txt'}, \$x
 	    )->get('realm_file_id'));
 	}
-
     }
     commit();
     $files;
