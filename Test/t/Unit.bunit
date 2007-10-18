@@ -108,6 +108,9 @@ req()->set_realm('btest_read');
                 return shift->get('compute_params')->(undef, [3]);
             } => var('g5'),
 	],
+	inline_trace_on(),
+	inline_trace_on('Model.RealmOwner'),
+	inline_trace_off(),
     ],
 #TODO: create_object needs to be deferred
 #     var('g2') => [

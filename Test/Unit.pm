@@ -207,6 +207,25 @@ sub builtin_inline_rollback {
     } => 1;
 }
 
+sub builtin_inline_trace_off {
+    my($proto) = @_;
+    return sub {
+	$proto->use('IO.Trace')->set_filters(undef, undef);
+	return 1;
+    } => 1;
+}
+
+sub builtin_inline_trace_on {
+    my($proto, $class_or_re) = @_;
+    return sub {
+	$class_or_re ||= $proto->builtin_class;
+	$class_or_re = qr{@{[$proto->use($class_or_re)]}}
+	    unless ref($class_or_re);
+	$proto->use('IO.Trace')->set_filters(undef, "/$class_or_re/");
+	return 1;
+    } => 1;
+}
+
 sub builtin_mock {
     my($self, $class, $values) = @_;
     $class = $self->use($class);
