@@ -185,6 +185,7 @@ sub info_base {
 	    ANYBODY
 	    Action.EmptyReply
         )],
+#58-59 free
     ];
 }
 
@@ -349,7 +350,6 @@ sub info_dav {
 	    Model.UserForumDAVList
 	    next=DAV_FORUM_LIST
 	    files_task=DAV_FORUM_FILE
-	    deleted_files_task=DAV_FORUM_DELETED_FILE
 	    forums_csv_task=DAV_FORUM_LIST_EDIT
 	    members_csv_task=DAV_FORUM_USER_LIST_EDIT
 	    calendar_ics_task=DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
@@ -405,15 +405,6 @@ sub info_dav {
 	    Model.EmailAliasList->execute_load_all
 	    Model.EmailAliasEditDAVList
 	)],
-	[qw(
-	    DAV_FORUM_DELETED_FILE
-	    58
-	    FORUM
-	    DATA_READ&DATA_WRITE
-	    Model.RealmFileVersionsDAVList
-	    require_dav=1
-	)],
-#59 free
     ];
 }
 
