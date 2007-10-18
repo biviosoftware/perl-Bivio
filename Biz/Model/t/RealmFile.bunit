@@ -31,6 +31,9 @@ my($user) = sub {
 my($auth_uid) = sub {
     return [req()->get('auth_user_id')];
 };
+model('RealmFile')->delete_all;
+commit();
+model('RealmFile')->init_realm;
 commit();
 [
 #Tests: delete: existing, not existing, not existing and not existing parent (doesn't create parent, delete loaded, delete with args, delete loaded with args, delete read only, public, read only with override, delete with auth_id and without auth_id, not empty folder, empty folder
@@ -42,12 +45,6 @@ commit();
 	    '0' => '/0',
 	    '?' => CORRUPT_QUERY(),
 	],
- 	delete_deep => [
-	    [{
-		path => '/',
-		override_versioned => 1,
-	    }] => $commit,
- 	],
 	unsafe_load => [
 	    [$a->('/')] => 0,
 	],
@@ -87,7 +84,6 @@ commit();
 	    [$a->('f1')] => 1,
 	    [$a->('f2')] => 1,
 	    [{path => '/'}] => 1,
-	    [{path => '/;'}] => 1,
 	],
 	create_folder => [
 	    [$a->('d2/d3')] => not_die(),
@@ -246,6 +242,11 @@ commit();
 	    [] => [\('f3')],
 	],
 	copy_deep => [
+	    [$a->('f3-copy')] => $commit,
+	],
+#TODO: Without explicit load of new copy, delete_deep actually deletes the
+# versioned copy
+	load => [
 	    [$a->('f3-copy')] => not_die(),
 	],
 	delete_deep => $commit,
