@@ -39,7 +39,7 @@ sub internal_initialize {
         version => 1,
         visible => [
 	    map('ECCreditCardPayment.' . $_,
-		qw(card_number card_name card_zip card_expiration_date)),
+		qw(card_number card_name card_zip)),
 	    {
 		name => 'card_exp_month',
 		type => 'ECCreditCardExpMonth',
@@ -50,13 +50,13 @@ sub internal_initialize {
 		type => 'ECCreditCardExpYear',
 		constraint => 'NOT_NULL',
 	    },
+        ],
+        other => [
             {
                 name => 'processor_error',
                 type => 'String',
                 constraint => 'NONE',
             },
-        ],
-        other => [
 	    {
 		name => 'ECCreditCardPayment.card_expiration_date',
 		constraint => 'NONE',
@@ -66,18 +66,17 @@ sub internal_initialize {
 }
 
 sub process_payment {
-    my($proto, $form, $service, $amount, $remark) = @_;
-    return if _possible_double_click($proto, $form, $amount);
-    $service = Bivio::Type::ECService->from_any($service);
+    my($proto, $form, $payment) = @_;
+    # returns 1 on success, 0 if double clicked
+    # <payment> should contain ECPayment values (service, amount, ...)
+    return 0 if _possible_double_click($proto, $form, $payment->{amount});
     $form->new_other('ECCreditCardPayment')->create({
         %{$form->get_model_properties('ECCreditCardPayment')},
         ec_payment_id => $form->new_other('ECPayment')->create({
-            service => $service,
-            amount => $amount,
+            point_of_sale => Bivio::Type::ECPointOfSale->INTERNET,
+	    %$payment,
             method => Bivio::Type::ECPaymentMethod->CREDIT_CARD,
             status => Bivio::Type::ECPaymentStatus->TRY_CAPTURE,
-            point_of_sale => Bivio::Type::ECPointOfSale->INTERNET,
-            remark => $remark,
         })->get('ec_payment_id'),
     });
 
@@ -97,7 +96,7 @@ sub process_payment {
             }
         });
     });
-    return;
+    return 1;
 }
 
 sub validate {
