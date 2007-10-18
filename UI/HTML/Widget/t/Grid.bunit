@@ -2,6 +2,8 @@
 # $Id$
 Widget();
 [
+    [[[prose('x', {row_control => 0})]]] => qq{<table border="0" cellpadding="0" cellspacing="0"></table>},
+    [[[prose('x', {row_control => 1})]]] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},
     [[['x']]] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},
     [[['x']], {pad => 2}] => qq{<table border="0" cellpadding="2" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},
     [[['x']], {space => 3}] => qq{<table border="0" cellpadding="0" cellspacing="3"><tr>\n<td>x</td>\n</tr></table>},

@@ -377,9 +377,9 @@ sub render {
 	    my($cell) = '';
 
 	    if (ref($w)) {
-		# Render widget
-		my($rc) = $w->unsafe_get('row_control');
-		next ROW if $rc && !$source->get_widget_value(@$rc);
+		next ROW
+		    if $w->has_keys('row_control')
+			&& !$w->render_simple_attr('row_control', $source);
 		unless ($is_widget_value) {
 		    my($b);
 		    # Only first row_class counts
