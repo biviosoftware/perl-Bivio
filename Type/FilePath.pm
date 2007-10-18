@@ -47,6 +47,10 @@ sub PUBLIC_FOLDER_ROOT {
     return '/Public';
 }
 
+sub VERSIONS_FOLDER {
+    return '/Deleted';
+}
+
 sub WIKI_FOLDER {
     return '/Wiki';
 }
