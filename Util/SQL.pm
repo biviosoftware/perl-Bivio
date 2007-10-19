@@ -1553,7 +1553,7 @@ sub _sentinel_file_writer {
     return 1
 	unless Bivio::Auth::Role->unsafe_from_name('FILE_WRITER');
     my($ok) = 0;
-    $self->model('RealmUser')->do_iterate(
+    $self->model('RealmRole')->do_iterate(
 	sub {
 	    $ok = 1;
 	    return 0;
