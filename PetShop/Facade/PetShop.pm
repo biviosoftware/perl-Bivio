@@ -240,6 +240,12 @@ my($_SELF) = __PACKAGE__->new({
 	[SiteRoot => [
 	    hm_bunit1 => 'bunit1',
 	]],
+	['Email.want_bulletin' => 'want_bulletin'],
+	[realm_id => 'realm_id'],
+	['FormField2Form' => [
+	    'Email_99.want_bulletin' => 'Email_99',
+	    'Email.realm_id' => 'Email.realm_id',
+	]],
     ],
 });
 
