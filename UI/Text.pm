@@ -237,13 +237,13 @@ sub unsafe_get_value {
     my($sep) = $self->SEPARATOR;
     while ($tag) {
 	$v = $self->internal_unsafe_lc_get_value($tag);
-	return $v->{value}
+	return ($v->{value}, $tag)
 	    if $v;
 	# Chop off top level.  If unable to do replacement, the tag
 	# is bad so can't be found.
 	last unless $tag =~ s/^\w+(\Q$sep\E)?//g;
     }
-    return undef;
+    return (undef, undef);
 }
 
 sub unsafe_get_widget_value_by_name {
