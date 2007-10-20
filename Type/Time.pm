@@ -34,7 +34,7 @@ sub from_literal {
     $value =~ s/\s+//g;
     return (undef, Bivio::TypeError->TIME) unless
 	$value =~ m{^(\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?(?:([ap])(?:|m|\.m\.))?$}i
-	|| $value =~ m{^(\d{2})(\d{2})(\d{2})$};
+	|| $value =~ m{^(\d{2})(\d{2})(?:(\d{2})?)$};
     my($h, $m, $s, $am_pm) = ($1, $2, $3, $4);
     $s = 0 unless defined($s);
     $m = 0 unless defined($m);
