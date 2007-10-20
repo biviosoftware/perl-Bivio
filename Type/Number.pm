@@ -3,7 +3,6 @@
 package Bivio::Type::Number;
 use strict;
 use base 'Bivio::Type';
-use Bivio::IO::ClassLoader;
 use GMP::Mpf ();
 
 # C<Bivio::Type::Number> is the abstract base class for all number types.
@@ -17,8 +16,8 @@ my($_POWER) = {};
 
 sub abs {
     my($proto, $v) = @_;
-    # Converts a negative into a positive number.
-    return _format($proto, abs(_mpf($v)));
+    ($v = _format($proto, _mpf($v))) =~ s/^-//;
+    return $v;
 }
 
 sub add {
@@ -118,7 +117,6 @@ sub from_literal {
 	$parsed_value = $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
     }
 
-    Bivio::IO::ClassLoader->simple_require('Bivio::TypeError');
     # not a number
     return (undef, Bivio::TypeError->NUMBER)
 	    unless defined($parsed_value);
@@ -168,8 +166,7 @@ sub neg {
 
 sub round {
     my($proto, $number, $decimals) = @_;
-    # Rounds the number to the specified number of decimal places.
-    Bivio::Die->die('invalid decimals: ', $decimals) if $decimals < 0;
+    $decimals = _decimals($proto, $decimals);
     return _format($proto, _mpf($number), $decimals);
 }
 
@@ -212,11 +209,19 @@ sub to_literal {
 
 sub trunc {
     my($proto, $number, $decimals) = @_;
-    # Truncates the number to the specified number of decimal places.
-    Bivio::Die->die('invalid decimals: ', $decimals) if $decimals < 0;
+    $decimals = _decimals($proto, $decimals);
     my($pow) = 10 ** $decimals;
     return return _format($proto, GMP::Mpf::trunc($number * $pow) / $pow,
         $decimals);
+}
+
+sub _decimals {
+    my($proto, $decimals) = @_;
+    $decimals = $proto->get_decimals
+        unless defined($decimals);
+    Bivio::Die->die('invalid decimals: ', $decimals)
+        if $decimals < 0;
+    return $decimals;
 }
 
 sub _format {
