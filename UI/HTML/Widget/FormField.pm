@@ -41,13 +41,40 @@ sub get_label_and_field {
     return ($_VS->vs_new('FormFieldLabel', {
 	field => _get_field_name($self),
 	label => $_VS->vs_new(After =>
-	    $_VS->vs_new(String => _get_label_value($self), 0),
+	    $_VS->vs_new(String => $self->internal_get_label_value, 0),
 	    ':',
 	),
 	($self->unsafe_get('row_control')
 	    ? (row_control => $self->get('row_control'))
 	    : ()),
     }), $self);
+}
+
+sub internal_get_label_value {
+    my($self) = @_;
+    # Returns the widget value which access the label.
+    return $self->get('edit_attributes')->{'form_field_label_widget'}
+	if $self->unsafe_get('edit_attributes')
+	    && $self->get('edit_attributes')->{form_field_label_widget};
+    my($default_field) = $self->get('field');
+    return [['->get_request'], 'Bivio::UI::Facade', 'Text',
+	'->get_value', $self->get('form_field_label'),
+    ] if $self->has_keys('form_field_label');
+    # strip out any suffix, not used for label lookup
+    return [sub {
+        my(undef, $text, $df) = @_;
+	my($label, $tag) = $text->unsafe_get_value($df);
+	my($df2) = $df;
+	return $label
+	    unless $df2 =~ s/_\d+(\.\w+)$/$1/;
+	my($label2, $tag2) = $text->unsafe_get_value($df2);
+	return $label
+	    if _count_dots($tag) >= _count_dots($tag2);
+	Bivio::IO::Alert->warn_deprecated(
+	    $df2, ': found with ', $tag2, ' but you should set ', $df, ' in the Facade Text',
+	);
+	return $label2;
+    }, [qw(->req Bivio::UI::Facade Text)], $default_field];
 }
 
 sub internal_new_args {
@@ -70,12 +97,17 @@ sub new {
     $self->put(values => [
 	$_VS->vs_new('FormFieldError', {
 	    field => _get_field_name($self),
-	    label => _get_label_value($self),
+	    label => $self->internal_get_label_value,
 	}),
 	Bivio::UI::HTML::WidgetFactory->create($self->get('field'),
 		$self->get_or_default('edit_attributes', {}))
     ]);
     return $self;
+}
+
+sub _count_dots {
+    my($tag) = @_;
+    return scalar(my @x = split(/\./, $tag));
 }
 
 sub _get_field_name {
@@ -87,19 +119,6 @@ sub _get_field_name {
     # remove the form model prefix
     $field_name =~ s/^.*?\.(.+)$/$1/;
     return $field_name;
-}
-
-sub _get_label_value {
-    my($self) = @_;
-    # Returns the widget value which access the label.
-    return $self->get('edit_attributes')->{'form_field_label_widget'}
-	if $self->unsafe_get('edit_attributes')
-	    && $self->get('edit_attributes')->{form_field_label_widget};
-    my($default_field) = $self->get('field');
-    # strip out any suffix, not used for label lookup
-    $default_field =~ s/_\d+(\.\w+)$/$1/;
-    return [['->get_request'], 'Bivio::UI::Facade', 'Text',
-	'->get_value', $self->get_or_default('form_field_label', $default_field)];
 }
 
 1;
