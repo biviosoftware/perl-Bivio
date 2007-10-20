@@ -16,8 +16,8 @@ Request('setup_facade');
 	    'Test_Text_Parent.test_text' => 'Child',
         ],
 	unsafe_get_value => [
-	    'test_text' => 'Global',
-	    'no_such_test_text' => [undef],
+	    'test_text' => ['Global', 'test_text'],
+	    'no_such_test_text' => [undef, undef],
         ],
 	format_css => [
 	    bunit_simple => '"simple text"',
