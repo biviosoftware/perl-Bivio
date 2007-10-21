@@ -301,13 +301,12 @@ sub internal_pre_parse_columns {
     return;
 }
 
-sub internal_put_error {
-    my($self, $property, $error) = @_;
-    # See
-    # L<Bivio::Biz::FormModel::internal_put_error|Bivio::Biz::FormModel/"internal_put_error">.
-    my($n, $nr) = _names($self, $property);
-    $self->SUPER::internal_put_error($n, $error) if $n;
-    $self->SUPER::internal_put_error($nr, $error) if $nr;
+sub internal_put_error_and_detail {
+    my($self, $property) = (shift, shift);
+    foreach my $n (_names($self, $property)) {
+	$self->SUPER::internal_put_error_and_detail($n, @_)
+	    if $n;
+    }
     return;
 }
 
