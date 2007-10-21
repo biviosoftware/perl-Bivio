@@ -104,6 +104,7 @@ sub VERSION_FIELD {
 
 sub clear_errors {
     my($fields) = shift->[$_IDI];
+    _trace($fields->{errors}, ' ', $fields->{error_details}) if $_TRACE;
     delete($fields->{errors});
     delete($fields->{error_details});
     return;
@@ -266,6 +267,10 @@ sub get_context_from_request {
 
 sub get_errors {
     return shift->[$_IDI]->{errors};
+}
+
+sub get_error_details {
+    return shift->[$_IDI]->{error_details};
 }
 
 sub get_field_as_html {
@@ -709,8 +714,15 @@ sub process {
 	    }
 	    _trace($msg);
 	}
-	Bivio::Die->die($self, ': called with invalid values, ',
-	    $self->get_errors, ' ', $self->internal_get);
+	Bivio::Die->die(
+	    $self,
+	    ': called with invalid values, ',
+	    $self->get_errors,
+	    ' ',
+	    $self->get_error_details || '',
+	    ' ',
+	    $self->internal_get,
+	);
 	# DOES NOT RETURN
     }
 
@@ -925,7 +937,7 @@ sub validate_and_execute_ok {
 	}
     }
     $self->internal_post_execute('validate_and_execute_ok');
-    $req->warn('form_errors=', $self->get_errors)
+    $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
 	if $self->in_error;
     Bivio::Agent::Task->rollback($req)
 	unless $fields->{stay_on_page};
