@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::Widget::With;
 use strict;
-use Bivio::Base 'UI.Widget';
+use Bivio::Base 'Widget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -23,16 +23,28 @@ sub initialize {
     my($self) = @_;
     $self->initialize_attr('source');
     $self->initialize_attr('value');
-    return;
+    return shift->SUPER::initialize(@_);
 }
 
-sub render {
+sub control_on_render {
     my($self, $source, $buffer) = @_;
-    $self->render_attr(
-	'value',
-	$self->resolve_attr('source', $source),
-	$buffer,
-    );
+    my($object) = $self->resolve_attr('source', $source);
+    unless ($object->can('do_rows')) {
+	$self->render_attr('value', $object, $buffer);
+	return;
+    }
+    if ($object->can('get_result_set_size')
+        && $object->get_result_set_size <= 0
+    ) {
+	$self->control_off_render($source, $buffer);
+	return;
+    }
+    my($i) = 0;
+    my($v) = $self->get('value');
+    $object->do_rows(sub {
+        $self->render_value('value' . $i++, $v, $object, $buffer);
+	return 1;
+    });
     return;
 }
 
