@@ -9,8 +9,13 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($field) = $self->render_simple_attr('field_name', $source);
+    my($v) = $source->get($field);
+    unless (defined($v)) {
+	$self->control_off_render($source, $buffer);
+	return;
+    }
     my($to) = $self->render_simple_attr('to_method', $source);
-    $$buffer .= $source->get_field_type($field)->$to($source->get($field));
+    $$buffer .= $source->get_field_type($field)->$to($v);
     return;
 }
 
