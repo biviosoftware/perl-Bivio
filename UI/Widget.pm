@@ -372,11 +372,6 @@ sub resolve_ancestral_attr {
 }
 
 sub resolve_attr {
-    # Calls unsafe_resolve_widget_value.
-    #
-    # Dies if there was no attribute or is C<undef>.
-    #
-    # Returns I<buffer>.  If I<buffer> is I<undef>, will create one.
     return _resolve_attr(get => @_);
 }
 
@@ -436,6 +431,10 @@ sub unsafe_render_value {
     return 1;
 }
 
+sub unsafe_resolve_attr {
+    return _resolve_attr(unsafe_get => @_);
+}
+
 sub unsafe_resolve_widget_value {
     my($proto, $value, $source) = @_;
     # Recursively eliminate array_ref widget values.
@@ -457,7 +456,7 @@ sub _resolve_attr {
 	$self->$method($attr_name), $source,
     );
     $self->die($attr_name, $source, 'attribute resolves as undef')
-	unless defined($res);
+	unless defined($res) || $method =~ /^unsafe_/;
     return $res;
 }
 
