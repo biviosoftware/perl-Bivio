@@ -28,7 +28,11 @@ sub initialize {
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($object) = $self->resolve_attr('source', $source);
+    my($object) = $self->unsafe_resolve_attr('source', $source);
+    unless (defined($object)) {
+	$self->control_off_render($source, $buffer);
+	return;
+    }
     unless ($object->can('do_rows')) {
 	$self->render_attr('value', $object, $buffer);
 	return;
