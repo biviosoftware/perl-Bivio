@@ -1,0 +1,11 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({view_class_map => 'Widget'});
+req()->set_user('demo');
+my($mro) = mock('Model.RealmOwner' => {
+    name => undef,
+});
+[
+    [['auth_user'], vs_new(Field => 'name')] => 'demo',
+    [[sub {$mro}], vs_new(Field => 'name', {control_off_value => 'x'})] => 'x',
+];
