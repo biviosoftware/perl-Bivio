@@ -332,6 +332,7 @@ sub new {
     # the object or method levels of I<tests> as passed to L<unit|"unit">.
     # See L<OPTIONS|"OPTIONS"> for more details.
     my($self) = $proto->SUPER::new(_assert_options($options));
+    _load_class($self);
     $self->[$_IDI] = {};
     return $self;
 }
@@ -505,8 +506,8 @@ sub _compile_object {
 	$state->{create_object} = undef;
     }
     elsif (!UNIVERSAL::isa($state->{object}, 'UNIVERSAL')) {
-	Bivio::IO::ClassLoader->unsafe_simple_require($state->{object})
-	    if $state->{object} && $state->{object} =~ /::/;
+	_load_class($state)
+	    if $state->{object} && $state->{object} =~ /(?:\:\:|\.)/;
 	_compile_die($state, 'object is not a subclass of UNIVERSAL'
 	    . ' (forgot to "use"?) or CODE: ', $state->{object})
 	    unless UNIVERSAL::isa($state->{object}, 'UNIVERSAL');
@@ -714,9 +715,7 @@ sub _eval_object {
     if (ref($object) eq 'ARRAY') {
 	my($code, $param) = @$object;
 	# Try to load: If it fails, then
-	if ($case->unsafe_get('class_name')
-	    && !Bivio::IO::ClassLoader->unsafe_simple_require(
-		$case->get('class_name'))) {
+	unless (_load_class($case)) {
 	    $$err = 'unable to load package ' . $case->get('class_name');
 	}
 	else {
@@ -812,6 +811,18 @@ sub _eval_result {
     });
     return $diff_die ? "$comparator died: " . $diff_die->as_string
 	: $x ? $$x : undef;
+}
+
+sub _load_class {
+    my($thing) = @_;
+    my($is_hash) = !Bivio::UNIVERSAL->is_blessed($thing);
+    my($c) = $is_hash ? $thing->{object} : $thing->unsafe_get('class_name');
+    return 1
+	unless $c;
+    return 0
+	unless $c = Bivio::IO::ClassLoader->unsafe_map_require($c);
+    $is_hash ? $thing->{object} = $c : $thing->put(class_name => $c);
+    return 1;
 }
 
 sub _prepare_case {
