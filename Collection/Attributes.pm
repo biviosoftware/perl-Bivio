@@ -174,9 +174,10 @@ sub get_or_default {
 }
 
 sub get_shallow_copy {
-    my($self) = @_;
+    my($self, $key_re) = @_;
     # Return a shallow copy of the attributes.
-    my($k) = $self->get_keys;
+    my($k) = $key_re ? [grep($_ =~ $key_re, @{$self->get_keys})]
+	: $self->get_keys;
     return {map((shift(@$k) => $_), $self->get(@$k))};
 }
 

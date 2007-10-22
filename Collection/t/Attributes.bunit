@@ -1,14 +1,20 @@
 # Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
 # $Id$
-[
-    [{
+my($copy) = {
 	a => '3',
 	b => ['A', 'B'],
 	c => {A => 1, B => 2, C => undef},
 	d => class()->new({a => 99}),
 	e => 'e',
 	parent => class()->new({pa => 13}),
-    }] => [
+};
+[
+    [{%$copy}] => [
+	get_shallow_copy => [
+	    [] => [$copy],
+	    [qr{a}] => [{map(($_ => $copy->{$_}), qw(a parent))}],
+	    [qr{not found}] => [{}],
+	],
 	put => [
 	    [e => 5, f => 6] => not_die(),
 	],
