@@ -5,9 +5,7 @@ Widget({
     view_class_map => 'Widget',
 });
 req()->set_user('demo');
-my($mro) = mock('Model.RealmOwner' => {
-    name => undef,
-});
+my($mro) = mock('Model.RealmOwner' => {name => undef});
 [
     [['auth_user'], vs_new(Field => 'name')] => 'demo',
     [[sub {$mro}], vs_new(Field => 'name', {control_off_value => 'x'})] => 'x',
