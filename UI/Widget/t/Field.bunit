@@ -1,6 +1,9 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Widget({view_class_map => 'Widget'});
+Widget({
+    class_name => 'Widget.With',
+    view_class_map => 'Widget',
+});
 req()->set_user('demo');
 my($mro) = mock('Model.RealmOwner' => {
     name => undef,
