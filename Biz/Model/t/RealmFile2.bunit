@@ -10,10 +10,12 @@ my($path) = sub {
     $base ||= 'file';
     my($fp) = class('Type.FilePath');
     $base = $fp->join($root, $base);
-    return {
-	path => !defined($version) ? $base
-	    : $fp->join($fp->VERSIONS_FOLDER, $base . ";$version"),
-    };
+    return {path => $base}
+	unless defined($version);
+    my($suffix) = $fp->get_suffix($base);
+    substr($base, length($suffix) ? -length($suffix) - 1 : length($base),  0)
+	= ";$version";
+    return {path => $fp->join($fp->VERSIONS_FOLDER, $base)};
 };
 my($commit) = sub {commit(); return 1};
 options({
@@ -157,11 +159,9 @@ options({
 	    [$path->('dir3/file')] => 'bar2',
 	    [$path->('dir2')] => not_die(),
 	],
-	inline_trace_on(),
 	copy_deep => [
 	    [$path->('dir3')] => $commit,
 	],
-	inline_trace_off(),
 	load => [
 	    [$path->('dir3')] => not_die(),
 	    [$path->(1, 'dir3/file')] => 'bar2',
@@ -221,6 +221,30 @@ options({
 	],
 	load => [
  	    [$path->('dir2')] => not_die(),
+	],
+	create_with_content => [
+	    [$path->('file.doc'), \('doc')] => $commit,
+	],
+	update_with_content => [
+	    [$path->('file.doc'), \('doc2')] => $commit,
+	],
+	load => [
+	    [$path->(1, 'file.doc')] => 'doc',
+	    [$path->('file.doc')] => 'doc2',
+	],
+	create_with_content => [
+	    [$path->('expenses.2007.xls'), \('123')] => $commit,
+	],
+	update_with_content => [
+	    [$path->('expenses.2007.xls'), \('456')] => $commit,
+	],
+ 	delete => $commit,
+	load => [
+	    [$path->(1, 'expenses.2007.xls')] => '123',
+	    [$path->(2, 'expenses.2007.xls')] => '456',
+	],
+	unsafe_load => [
+	    [$path->('expenses.2007.xls')] => 0,
 	],
     ],
 ];

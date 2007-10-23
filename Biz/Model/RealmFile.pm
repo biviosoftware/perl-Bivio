@@ -445,7 +445,7 @@ sub _delete_one {
     else {
 	my($p) = $_FP->join($_FP->VERSIONS_FOLDER, $p);
 	$self->clone->update({
-	    path => "$p;" . _next_version($self->get('realm_id'), lc($p)),
+	    path => _next_version($self->get('realm_id'), $p),
 	    override_is_read_only => 1,
 	});
     }
@@ -496,10 +496,16 @@ sub _in_versions {
 
 sub _next_version {
     my($rid, $p) = @_;
+    my($base) = lc($p);
+    my($suffix) = $_FP->get_suffix($base);
+    if (length($suffix)) {
+	$suffix = ".$suffix";
+        substr($base, -length($suffix)) = '';
+    }
     my($max) = 0;
     Bivio::SQL::Connection->do_execute(
 	sub {
-	    my($v) = shift->[0] =~ /^\Q$p\E;(\d+)$/s;
+	    my($v) = shift->[0] =~ /^\Q$base\E;(\d+)\Q$suffix\E$/s;
 	    $max = $v
 		if defined($v) && $v > $max;
 	    return 1;
@@ -508,8 +514,9 @@ sub _next_version {
         WHERE realm_id = ?
         AND SUBSTRING(path_lc FROM 1 FOR LENGTH(?) + 1) = ?
         AND POSITION('/' IN SUBSTRING(path_lc FROM LENGTH(?) + 2)) = 0},
-        [$rid, $p, $p . ';', $p]);
-    return $max + 1;
+        [$rid, $base, $base . ';', $base]);
+    substr($p, length($base), 0) = ';' . ++$max;
+    return $p;
 }
 sub _non_child_attrs {
     my($v) = @_;
