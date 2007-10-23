@@ -108,7 +108,7 @@ sub get_component_width {
 
 sub get_suffix {
     my($proto, $value) = @_;
-    return $value && $value =~ m{[^\./\\:]\.([^\.]+)$} ? $1 : '';
+    return $value && $value =~ m{[^\./\\:]\.([^\./\\:]+)$} ? $1 : '';
 }
 
 sub get_tail {

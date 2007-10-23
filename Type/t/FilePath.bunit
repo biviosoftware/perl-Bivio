@@ -62,6 +62,7 @@ Type();
 	    '/.x' => '',
 	    '.x' => '',
 	    'aaa.very-long-suffix' => 'very-long-suffix',
+	    '/b.c/a' => '',
 	],
 	to_public => [
 	    'a' => '/Public/a',
