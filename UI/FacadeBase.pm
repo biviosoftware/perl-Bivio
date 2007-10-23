@@ -284,10 +284,12 @@ sub _cfg_blog {
 	    ]],
 	    [FORUM_BLOG_EDIT => 'Edit this entry'],
 	    [FORUM_BLOG_CREATE => 'New blog entry'],
-	    [rsspage => [
-		[qw(BlogList BlogRecentList)] => [
-		    title => 'vs_site_name(); Blog',
-		    description => 'Recent Blog Entries at vs_site_name();',
+	    [prose => [
+		rsspage => [
+		    [qw(BlogList BlogRecentList)] => [
+			title => 'vs_site_name(); Blog',
+			description => 'Recent Blog Entries at vs_site_name();',
+		    ],
 		],
 	    ]],
 	    [acknowledgement => [
