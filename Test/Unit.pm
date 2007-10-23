@@ -311,6 +311,11 @@ sub builtin_rollback {
     return;
 }
 
+sub builtin_self {
+    return ref($_TYPE) ? $_TYPE
+	: Bivio::Die->die($_TYPE, ': is not an instance');
+}
+
 sub builtin_shell_util {
     my($self, $module, $args) = @_;
     return Bivio::ShellUtil->new_other($module)->main(@$args);
