@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::Widget::SimplePage;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget::Simple';
+use Bivio::Base 'Widget.Simple';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
