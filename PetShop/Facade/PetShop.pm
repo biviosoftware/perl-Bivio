@@ -226,10 +226,12 @@ my($_SELF) = __PACKAGE__->new({
 	    EXAMPLE_EG1 => 'Example 1',
 	    FORUM_PUBLIC_EXAMPLE_EG1 => 'Example 1',
 	]],
-	[rsspage => [
-	    NumberedList => [
-		title => 'ht',
-		description => 'hd',
+	[prose => [
+	    rsspage => [
+		NumberedList => [
+		    title => 'ht',
+		    description => 'hd',
+		],
 	    ],
 	]],
 	[xlink => [
