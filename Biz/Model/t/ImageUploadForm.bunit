@@ -9,10 +9,7 @@ FormModel({
 	return;
     },
 });
-req()->set_realm_and_user(qw(demo demo));
-my($rf) = model('RealmFile');
-$rf->delete_deep
-    if $rf->unsafe_load({path => class('Type.ImageFileName')->PRIVATE_FOLDER});
+require 'RealmFile.PL';
 [
     [{
 	image_file => file_field('ImageUploadForm/t1.gif'),
@@ -45,7 +42,7 @@ $rf->delete_deep
     }, 'edit'] => [{
 	'Model.RealmFile' => {
 	    # Update touches /Image last
-	    path => '/Image',
+	    path => '/Image/t2.png',
         },
     }],
     map(

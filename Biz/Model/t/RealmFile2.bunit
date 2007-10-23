@@ -1,11 +1,8 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-req()->set_realm_and_user('realmfile2', 'root');
+require 'RealmFile.PL';
 my($root) = '/' . random_string();
-my($f) = model('RealmFile');
-$f->delete_deep
-    if $f->unsafe_load({path => $root});
 my($path) = sub {
     my($version, $base) = @_;
     ($base, $version) = ($version, undef)
@@ -28,10 +25,6 @@ options({
     },
     comparator => 'nested_contains',
 });
-model('RealmFile')->delete_all;
-commit();
-model('RealmFile')->init_realm;
-commit();
 [
     [req()] => [
 	create_with_content => [
