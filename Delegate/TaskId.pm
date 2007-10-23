@@ -237,7 +237,7 @@ sub info_blog {
 			FORUM
 			ANYBODY
 			Model.BlogList->execute_load_page
-			View.Blog->recent_rss
+			View.Blog->recent_xml
 		    )],
 		);
 	    },
@@ -290,7 +290,7 @@ sub info_blog {
 			ANYBODY
 			Type.AccessMode->execute_public
 			Model.BlogList->execute_load_page
-			View.Blog->recent_rss
+			View.Blog->recent_xml
 		    )],
 		    [qw(
 			FORUM_BLOG_RSS
@@ -299,7 +299,7 @@ sub info_blog {
 			DATA_READ
 			Type.AccessMode->execute_private
 			Model.BlogList->execute_load_page
-			View.Blog->recent_rss
+			View.Blog->recent_xml
 		    )],
 		);
 	    },
