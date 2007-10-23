@@ -1,0 +1,8 @@
+Widget({
+    class_name => 'Widget.With',
+    view_class_map => 'XMLWidget',
+});
+req()->set_user('demo');
+[
+    [['auth_user'], TagField('name')] => "<name>demo</name>\n",
+];

@@ -1,0 +1,9 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({view_class_map => 'XMLWidget'});
+[
+    [Tag(x => '')] => <<'EOF',
+<?xml version="1.0" encoding="UTF-8"?>
+<x/>
+EOF
+];

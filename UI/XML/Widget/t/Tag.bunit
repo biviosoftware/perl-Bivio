@@ -1,0 +1,47 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({view_class_map => 'XMLWidget'});
+model('NumberedList')->load_page({count => 2});
+req()->set_user('demo');
+[
+    [rss =>
+        Tag(channel => Join([
+	     Tag(title => 'ht'),
+	     Tag(description => 'hd'),
+	     Tag(language => 'en-us'),
+	     WithModel(NumberedList => Tag(item => Join([
+		     Tag(description => 'd'),
+		     TagField('pubdate', 'index'),
+		     Tag(title => 't'),
+		 ])),
+	     ),
+	])),
+	{
+	    xml_version => '2.0',
+	},
+    ] => <<'EOF',
+<rss version="2.0"><channel><title>ht</title>
+<description>hd</description>
+<language>en-us</language>
+<item><description>d</description>
+<pubdate>0</pubdate>
+<title>t</title>
+</item>
+<item><description>d</description>
+<pubdate>1</pubdate>
+<title>t</title>
+</item>
+</channel>
+</rss>
+EOF
+    [person => With(
+	['auth_user'], Join([
+	    TagField('name'),
+	    TagField('display_name'),
+	]),
+    )] => <<'EOF',
+<person><name>demo</name>
+<display_name>Demo User</display_name>
+</person>
+EOF
+];
