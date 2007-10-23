@@ -117,35 +117,32 @@ sub list {
     ])));
 }
 
-sub recent_rss {
-    my($self) = @_;
-    view_main(RSSPage(BlogList => {
-	pubDate => String(
-	    ['RealmFile.modified_date_time', 'HTMLFormat.DateTime', 'RFC822'],
+sub recent_xml {
+    return shift->internal_body(
+	Tag(rss =>
+	    Tag(channel => Join([
+		map(
+		    Tag($_ => XML(vs_text_as_prose("rsspage.BlogList.$_"))),
+		    qw(title description),
+		),
+		Tag(link => XML(URI({
+		    task_id => 'FORUM_BLOG_LIST',
+		    query => undef,
+		}))),
+		Tag(language => 'en-us'),
+		WithModel(BlogList => Join([
+		    TagField('title'),
+		    Tag(link => XML(URI({
+			task_id => _access_mode('FORUM_BLOG_DETAIL'),
+			query => undef,
+			path_info => ['path_info'],
+		    }))),
+		    Tag(description => CDATA(['->render_html'])),
+		])),
+	    ])),
+	    {xml_version => '2.0'},
 	),
-#TODO: Task should be title.
-	title => String(['title']),
-	link => String([
-	    sub {
-		my($list) = @_;
-#TODO: Refactor or add XML(?) link widget that formats full http URI
-# as required by some RSS readers
-		return $list->get_request->format_http({
-		    task_id => _access_mode('FORUM_BLOG_DETAIL'),
-		    path_info => $list->get('path_info'),
-		});
-	    },
-	]),
-	description => Join([
-	    '<![CDATA[',
-	    ['->render_html'],
-	    ']]>',
-	]),
-    }, {
-#TODO: BROKEN
-	source_task => 'FORUM_BLOG_LIST',
-    }));
-    return;
+    );
 }
 
 sub _access_mode {
