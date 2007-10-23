@@ -169,13 +169,10 @@ sub rss {
 sub xml {
     my($self) = @_;
 #TODO: Real XML support
-    view_class_map('XHTMLWidget');
+    view_class_map('XMLWidget');
     view_declare('xml_body');
     view_shortcuts($self->VIEW_SHORTCUTS);
-    view_main(SimplePage({
-	content_type => 'text/xml',
-	value => view_widget_value('xml_body'),
-    }));
+    view_main(Page(view_widget_value('xml_body')));
     return;
 }
 
