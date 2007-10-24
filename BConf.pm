@@ -188,6 +188,7 @@ sub merge_class_loader {
 		    FacadeComponent => ['Bivio::UI'],
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
 		    IO => ['Bivio::IO'],
+		    Mail => ['Bivio::Mail'],
 		    Model => ['Bivio::Biz::Model'],
 		    map(
 			("${_}Widget" => [
