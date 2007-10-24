@@ -41,6 +41,59 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.44  2007/10/18 23:17:52  aviggio
+  * Bivio::BConf sets Bivio::IO::Config.version
+  * Bivio::Biz::Action::RealmFile added access_is_public_only
+  * Bivio::Biz::Model::BlogList use access_is_public_only
+  * Bivio::Biz::Model::ConfirmableForm support for comfirmable forms
+  * Bivio::Biz::Model::ECCreditCardPaymentForm->process_payment now takes
+    the payment info as a hash
+  * Bivio::Biz::Model::RealmFile adds file-level versioning so that file
+    operations are not destructive, with the exception of delete_all
+  * Bivio::Biz::Model::RowTag supports metadata tagging
+  * Bivio::Delegate::SimpleTaskId drop WebDAV and calendar tasks
+  * Bivio::Delegate::TaskId breaks out info_calendar tasks and add new
+    DAV_FORUM_DELETED_FILE task, and uses if_version to control
+    blog/wiki/file access
+  * Bivio::IO::Config->if_version added
+  * Bivio::IO::Log use if_version()
+  * Bivio::Delegate::RowTagKey defines standard keys
+  * Bivio::SQL::Support support Model.Foo syntax for type init
+  * Bivio::SQL::PropertySupport fixed delete_all so no value query works
+  * Bivio::Test::FormModel subclass TestUnit.Unit to allow for overrides
+    by apps
+  * Bivio::Test::Inline subclass TestUnit.Unit
+  * Bivio::Test::ListModel subclass TestUnit.Unit
+  * Bivio::Test::PropertyModel subclass TestUnit.Unit
+  * Bivio::Test::Request subclass TestUnit.Unit, added delete_class and
+    delete_class_from_self
+  * Bivio::Test::ShellUtil subclass TestUnit.Unit
+  * Bivio::Test::Type subclass TestUnit.Unit
+  * Bivio::Test::Unit subclass TestUnit.Unit, add inline_trace_on/off
+  * Bivio::Test::Util subclass TestUnit.Unit, ignore junk and CVS dirs
+  * Bivio::Test::Widget subclass TestUnit.Unit
+  * Bivio::Test::HTMLParser::Forms process left-over input after a select
+    widget
+  * Bivio::Type default to_sql_value to '?'
+  * Bivio::Type::DateTime->set_test_now added
+  * Bivio::Type::DisplayName->to_camel_case added
+  * Bivio::Type::Enum->get_non_zero_list added
+  * Bivio::Type::FilePath->VERSIONS_FOLDER added
+  * Bivio::Type::Hash useful for storing hashes in the database
+  * Bivio::Type::RowTagKey base enum delegator
+  * Bivio::Type::RowTagValue base text type to delegate
+  * Bivio::UI::FacadeBase use if_version(), break out info_calendar tasks
+  * Bivio::UI::HTML::Widget::AmountCell use if_version(), moved config from
+    BConf, sets cell_class => amount_cell
+  * Bivio::UI::HTML::Widget::FormField use the form_field_label_widget from
+    edit_attributes if present
+  * Bivio::UI::HTML::Widget::Grid allow row_control to be widget
+  * Bivio::UI::View::Blog if_version(3): no longer have PUBLIC_ task
+    management
+  * Bivio::UI::XHTML::Widget::HelpWiki javascript work-around for IE
+    rendering problem if help iframe isn't fully loaded
+  * Bivio::Util::SQL row_tag database upgrade added
+
   Revision 5.43  2007/10/11 23:05:09  aviggio
   * Bivio::Biz::ListModel want_page_count can now be set using the list
     model's config
