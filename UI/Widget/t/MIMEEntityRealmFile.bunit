@@ -14,7 +14,7 @@ Widget({
 	return 1;
     },
 });
-req()->set_realm_and_user('demo');
+req()->set_realm_and_user('btest_read');
 req()->put(
     map(
 	($_ => model('RealmFile', {
