@@ -48,7 +48,7 @@ sub PUBLIC_FOLDER_ROOT {
 }
 
 sub VERSIONS_FOLDER {
-    return '/Deleted';
+    return '/Archived';
 }
 
 sub WIKI_FOLDER {
