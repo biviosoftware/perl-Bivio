@@ -2,17 +2,17 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-visit_uri('/demo/public-file/file.txt');
+visit_uri('/btest_read/public-file/file.txt');
 verify_content_type('text/plain');
 verify_text('text/plain');
 test_deviance();
-visit_uri('/demo/public-file/private/file.html');
+visit_uri('/btest_read/public-file/private/file.html');
+visit_uri('/btest_read/private/file.html');
 test_conformance();
 home_page();
-login_as('demo');
-visit_uri('/demo/file/private/file.html');
+login_as('btest_read');
+visit_uri('/btest_read/file/private/file.html');
 verify_content_type('text/html');
 verify_text('text/html');
-visit_uri('/demo/file/private/image.gif');
+visit_uri('/btest_read/file/private/image.gif');
 verify_content_type('image/gif');
-
