@@ -43,12 +43,15 @@ sub control_on_render {
 	$self->control_off_render($source, $buffer);
 	return;
     }
+    my($cursor) = $object->has_cursor ? $object->get_cursor : undef;
     my($i) = 0;
     my($v) = $self->get('value');
     $object->do_rows(sub {
         $self->render_value('value' . $i++, $v, $object, $buffer);
 	return 1;
     });
+    $object->set_cursor($cursor)
+	if defined($cursor);
     return;
 }
 
