@@ -97,64 +97,52 @@ sub compile {
     #
     #     __PACKAGE__->NAME1;
     Bivio::IO::Alert->bootstrap_die($pkg, ': already compiled')
-		if defined($_MAP{$pkg});
-    Bivio::IO::Alert->bootstrap_die($pkg,
-	    ': first argument must be an array_ref')
-		if ref($args) ne 'ARRAY';
-    # Will warn if odd number of elements
-    my($info) = {@$args};
-
-    # Check for dup keys, because the hash has lost them.
-    if (int(@$args)/2 != int(keys(%$info))) {
-	# The value of %$info is being checked here as well, but this makes the
-	# code simpler.  We know that all array_refs are uniquely named.
-	my(%found);
-	foreach my $k (@$args) {
+        if defined($_MAP{$pkg});
+    Bivio::IO::Alert->bootstrap_die(
+	$pkg, ': first argument must be an array_ref'
+    ) if ref($args) ne 'ARRAY';
+    my($found) = {};
+    my($info) = {@{$pkg->map_by_two(
+	sub {
+	    my($k, $v) = @_;
 	    Bivio::IO::Alert->bootstrap_die($k, ': duplicate entry')
-			if $found{$k}++;
-	}
-    }
-
-    my($name);
+	        if $found->{$k}++;
+	    return ($k, ref($v) ? $v : [$v]);
+	},
+	$args,
+    )}};
     my($eval) = "package $pkg;\nmy(\$_INFO) = \$info;\n";
-    # Make a copy, because we're going to grow the list.
     my($min, $max);
-    my(@list);
-    my(%info_copy) = %$info;
+    my($list) = [];
+    my($info_copy) = {%$info};
     my($name_width) = 0;
     my($short_width) = 0;
     my($long_width) = 0;
     my($can_be_zero) = 0;
-    while (my($name, $d) = each(%info_copy)) {
-	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name, ': is a reserved word')
-		    if $pkg->can($name);
-	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name,
-		': does not point to an array')
-		    unless ref($d) eq 'ARRAY';
+    while (my($name, $d) = each(%$info_copy)) {
+	Bivio::IO::Alert->bootstrap_die(
+	    $pkg, '::', $name, ': is a reserved word'
+	) if $pkg->can($name);
+	Bivio::IO::Alert->bootstrap_die(
+	    $pkg, '::', $name, ': does not point to an array',
+	) unless ref($d) eq 'ARRAY';
 	$d->[1] = $pkg->format_short_desc($name)
 	    unless defined($d->[1]);
 	$short_width = length($d->[1]) if length($d->[1]) > $short_width;
 	$d->[2] = $d->[1] unless defined($d->[2]);
 	$long_width = length($d->[2]) if length($d->[2]) > $long_width;
-	# Remove aliases
 	my(@aliases) = splice(@$d, 3);
-	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name,
-		': invalid number "', $d->[0], '"')
-		    unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
-
-	# Enforce to our syntax (not any syntax)
-	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name,
-		': invalid enum name')
-		    unless __PACKAGE__->is_valid_name($name);
-
-	# Fill out declaration to reverse map number to name (index 3)
+	Bivio::IO::Alert->bootstrap_die(
+	    $pkg, '::', $name, ': invalid number "', $d->[0], '"',
+	) unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
+	Bivio::IO::Alert->bootstrap_die(
+	    $pkg, '::', $name, ': invalid enum name',
+	) unless $pkg->is_valid_name($name);
 	push(@$d, $name);
 	$name_width = length($name) if length($name) > $name_width;
 	my($as_string) = $pkg.'::'.$name;
-	# Index 4: as_string
 	push(@$d, $as_string);
-	push(@list, $as_string);
-	# ALSO Ensures we convert $d->[0] into an integer!
+	push(@$list, $as_string);
 	if (defined($min)) {
 	    $d->[0] < $min->[0] && ($min = $d);
 	    $d->[0] > $max->[0] && ($max = $d);
@@ -163,22 +151,22 @@ sub compile {
 	    $min = $max = $d;
 	}
 	$can_be_zero = 1 if $d->[0] == 0;
-	Bivio::IO::Alert->bootstrap_die($pkg, '::', $d->[0],
-		': duplicate int value (',
-		$d->[3], ' and ', $info->{$d->[0]}->[3], ')')
-		    if defined($info->{$d->[0]});
+	Bivio::IO::Alert->bootstrap_die(
+	    $pkg, '::', $d->[0],
+	    ': duplicate int value (',
+	    $d->[3], ' and ', $info->{$d->[0]}->[3], ')',
+	) if defined($info->{$d->[0]});
 	$info->{$d->[0]} = $d;
-	# Map descriptions only if not already mapped.
-	$info->{uc($d->[1])} = $d unless defined($info->{uc($d->[1])});
-	$info->{uc($d->[2])} = $d unless defined($info->{uc($d->[2])});
-	# Map extra aliases
+	$info->{uc($d->[1])} = $d
+	    unless defined($info->{uc($d->[1])});
+	$info->{uc($d->[2])} = $d
+	    unless defined($info->{uc($d->[2])});
 	foreach my $alias (@aliases) {
 	    Bivio::IO::Alert->bootstrap_die($pkg, '::', $alias,
 		    ': duplicate alias')
 			if defined($info->{uc($alias)});
 	    $info->{uc($alias)} = $d;
 	}
-	# Index 5: enum instance
 	my($ln) = lc($name);
 	$eval .= <<"EOF";
 	    sub $name {return \\&$name;}
@@ -209,19 +197,19 @@ EOF
     $precision = length($precision);
     $min = $min->[3];
     $max = $max->[3];
-    my($list) = join(
+    my($get_list) = join(
 	',',
 	map($pkg . '::' . $_->get_name . '()',
-	    sort {$a->as_int <=> $b->as_int} map($pkg->$_(), @list)),
+	    sort {$a->as_int <=> $b->as_int} map($pkg->$_(), @$list)),
     );
-    my($count) = scalar(@list);
+    my($count) = scalar(@$list);
     die("$pkg: compilation failed: $@")
 	unless eval(<<"EOF");
         package $pkg;
         sub can_be_negative {return $can_be_negative;}
         sub can_be_positive {return $can_be_positive;}
         sub can_be_zero {return $can_be_zero;}
-	sub get_list {return ($list);}
+	sub get_list {return ($get_list);}
         sub get_max {return ${pkg}::$max();}
         sub get_min {return ${pkg}::$min();}
         sub get_precision {return $precision;}

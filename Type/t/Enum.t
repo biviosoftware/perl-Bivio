@@ -19,17 +19,17 @@ use Bivio::Type::Enum;
 @Bivio::Type::Enum::T1::ISA = qw(Bivio::Type::Enum);
 
 __PACKAGE__->compile([
-    'E0' => [
+    E0 => [
     	0,
 	'e0',
 	'e 0',
     ],
-    'E1' => [
+    E1 => [
     	1,
 	'e1',
 	'e 1',
     ],
-    'E2' => [
+    E2 => [
     	2,
 	'e2',
 	'e 2',
@@ -44,14 +44,12 @@ use Bivio::Type::Enum;
 @Bivio::Type::Enum::T2::ISA = qw(Bivio::Type::Enum);
 
 __PACKAGE__->compile([
-    'E_0' => [
-    	0,
-    ],
-    'E_2' => [
+    E_0 => 0,
+    E_2 => [
     	2,
 	'e two',
     ],
-    'SOME_ENUM' => [
+    SOME_ENUM => [
     	3,
     ],
 ]);
