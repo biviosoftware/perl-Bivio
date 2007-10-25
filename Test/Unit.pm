@@ -164,7 +164,7 @@ sub builtin_create_user {
 }
 
 sub builtin_date_time {
-    return shift->use('Type.DateTime')->from_literal_or_die(shift(@_));
+    return shift->builtin_from_type(DateTime => shift(@_));
 }
 
 sub builtin_email {
@@ -178,6 +178,10 @@ sub builtin_expect_contains {
 	my(undef, $actual) = @_;
 	return $proto->builtin_assert_contains(\@expect, $actual);
     };
+}
+
+sub builtin_from_type {
+    return shift->use('Type', shift(@_))->from_literal_or_die(shift(@_));
 }
 
 sub builtin_inline_case {
@@ -279,7 +283,7 @@ sub builtin_options {
     # options.
     $_CLASS = $proto->use($options->{class_name})
 	if $options->{class_name};
-    return {%$_OPTIONS = (%$_OPTIONS, $options ? %$options : ())};
+    return {%{$_OPTIONS = {%$_OPTIONS, $options ? %$options : ()}}};
 }
 
 sub builtin_random_string {
