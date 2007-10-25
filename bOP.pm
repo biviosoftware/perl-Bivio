@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,41 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.45  2007/10/24 23:43:10  aviggio
+  * Bivio::BConf added Mail map; XML and UI maps
+  * Bivio::Biz::FormModel get_error_details added; form error alerts
+    includes details
+  * Bivio::Biz::ListFormModel->internal_put_error_and_detail replaces
+    internal_put_error
+  * Bivio::Biz::Model::RealmFile semicolon moved from end of versioned
+    file names to preceding file suffix
+  * Bivio::Collection::Attributes->get_shallow_copy accepts key_re
+  * Bivio::Delegate::SimpleLocation identify 3 standard locations
+  * Bivio::Delegate::TaskId recent_rss => recent_xml
+  * Bivio::Test::Unit->builtin_self added
+  * Bivio::Test::Widget AUTOLOAD supported
+  * Bivio::Type::FilePath rename versions folder
+  * Bivio::Type::Number round and trunc default decimals
+  * Bivio::Type::Time from_literal support 1210 as 12:10:00
+  * Bivio::UI::FacadeBase defines prose.rsspage
+  * Bivio::UI::HTML::Widget::Field added
+  * Bivio::UI::HTML::Widget::FormField deprecate _\d+ stripping in label
+    lookup
+  * Bivio::UI::Text unsafe_get_value returns tag that matched
+  * Bivio::UI::Widget->unsafe_resolve_attr added
+  * Bivio::UI::View::Base xml() uses XMLwidget
+  * Bivio::UI::View::Blog use recent_xml
+  * Bivio::UI::Widget::Field added
+  * Bivio::UI::Widget::With added
+  * Bivio::UI::Widget::WithModel subclass With
+  * Bivio::UI::XHTML::Widget::RSSPage replaced by XMLWidget
+  * Bivio::UI::XML::Widget::CDATA added
+  * Bivio::UI::XML::Widget::Field added
+  * Bivio::UI::XML::Widget::Page added
+  * Bivio::UI::XML::Widget::Tag added
+  * Bivio::UI::XML::Widget::TagField added
+  * Bivio::UI::XML::Widget::XML added
+
   Revision 5.44  2007/10/18 23:17:52  aviggio
   * Bivio::BConf sets Bivio::IO::Config.version
   * Bivio::Biz::Action::RealmFile added access_is_public_only
