@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.47  2007/10/25 19:21:50  nagler
+  * Bivio::Test::Unit->from_type added
+  * Bivio::Test::Enum supports NAME => 3 syntax; also refactored compile()
+
   Revision 5.46  2007/10/25 05:36:32  aviggio
   * Bivio/Biz/Model/RealmFile _delete_args calls unauth_load
 
