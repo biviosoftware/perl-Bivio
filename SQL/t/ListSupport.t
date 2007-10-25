@@ -34,8 +34,7 @@ use Bivio::SQL::Support;
 
 
 package Bivio::Biz::Model::TListT1;
-
-@Bivio::Biz::Model::TListT1::ISA = ('Bivio::Biz::PropertyModel');
+use Bivio::Base 'Bivio::Biz::PropertyModel';
 
 sub internal_initialize {
     return {
@@ -57,8 +56,7 @@ sub internal_initialize {
 }
 
 package Bivio::Biz::Model::TListT2;
-
-@Bivio::Biz::Model::TListT2::ISA = ('Bivio::Biz::PropertyModel');
+use Bivio::Base 'Bivio::Biz::PropertyModel';
 
 sub internal_initialize {
     return {
