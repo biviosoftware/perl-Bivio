@@ -214,7 +214,7 @@ sub unsafe_map_require {
     foreach my $path (_map_path_list($map_name)) {
 	my($try) = $path . '::' . $class_name;
 	$_MAP_CLASS->{$map_class} = $try;
-	my($die) = Bivio::Die->catch(sub {$try = _require($proto, $try)});
+	my($die) = _catch(sub {$try = _require($proto, $try)});
 	return $try
 	    if $try && !$die;
 	delete($_MAP_CLASS->{$map_class});
