@@ -425,7 +425,7 @@ sub save_excursion {
 }
 
 sub send_mail {
-    my($self, $from_email, $to_email) = @_;
+    my($self, $from_email, $to_email, $headers, $body) = @_;
     # Send a message.  Returns the object.  Sets subject and body to unique values.
     my($r) = $self->random_string();
     my($req) = Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
@@ -434,8 +434,11 @@ sub send_mail {
 	->new;
     $o->set_recipients($to_email, $req);
     $o->set_header(To => $to_email);
-    $o->set_header(Subject => "subj-$r");
-    $o->set_body("Any unique $r body\n");
+    $headers = {
+	Subject => "subj-$r",
+	$headers ? %$headers : (),
+    };
+    $o->set_body($body || "Any unique $r body\n");
     $o->add_missing_headers($req, $from_email);
     $o->send($req);
     return $o;
