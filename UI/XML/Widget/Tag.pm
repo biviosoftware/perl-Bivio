@@ -12,7 +12,7 @@ sub control_on_render {
     my($tag) = $self->render_simple_attr('tag');
     $$buffer .= "<$tag";
     $self->render_attr('attributes', $source, $buffer);
-    my($b);
+    my($b) = '';
     $$buffer .= $self->unsafe_render_attr('value', $source, \$b) && length($b)
 	? ">$b</$tag>\n" : "/>\n";
     return;

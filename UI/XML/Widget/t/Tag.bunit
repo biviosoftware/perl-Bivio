@@ -6,7 +6,7 @@ req()->set_user('demo');
 [
     [rss =>
         Tag(channel => Join([
-	     Tag(title => 'ht'),
+	     Tag(title => [sub {undef}]),
 	     Tag(description => 'hd'),
 	     Tag(language => 'en-us'),
 	     WithModel(NumberedList => Tag(item => Join([
@@ -20,7 +20,7 @@ req()->set_user('demo');
 	    xml_version => '2.0',
 	},
     ] => <<'EOF',
-<rss version="2.0"><channel><title>ht</title>
+<rss version="2.0"><channel><title/>
 <description>hd</description>
 <language>en-us</language>
 <item><description>d</description>
