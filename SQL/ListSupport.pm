@@ -714,6 +714,8 @@ sub _prepare_ordinal_clauses {
 	my $max_i = $query->unsafe_get('want_only_one_order_by') ? 2 : @$qob;
         $res .= ' ORDER BY';
         for (my($i) = 0; $i < $max_i; $i += 2) {
+	    next
+		unless $attrs->{columns}->{$qob->[$i]}->{sql_name};
 	    $res .= ' ' . $attrs->{columns}->{$qob->[$i]}->{sql_name}
 		. ($qob->[$i+1] ? ',' : ' desc,');
 	}
