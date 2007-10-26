@@ -12,25 +12,14 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 #   list_class : string (required)
 #   pages : int (15) -- The number of pages to select from.
 
-my($_IDI) = __PACKAGE__->instance_data_index;
-
-sub new {
-    my($proto) = shift;
-    my($self) = $proto->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{link};
-    $fields->{link} = $self->initialize_value('link',
-        Link([__PACKAGE__ . 'link_text'],
-            [__PACKAGE__ . 'link_href']));
-    $fields->{selected} = $self->initialize_value('selected',
-	 SPAN_selected(String([__PACKAGE__ . 'selected'])));
-    $fields->{blank} = $self->initialize_value('blank', vs_blank_cell());
+    return if $self->unsafe_get('_link');
+    $self->initialize_attr(_link =>
+	Link([$self . 'link_text'], [$self . 'link_href'])
+	    ->put(class => 'page_link'));
+    $self->initialize_attr(_selected =>
+	SPAN_selected(String([$self . 'selected'])));
     _create_navigation_link($self, 'prev');
     _create_navigation_link($self, 'next');
     return;
@@ -49,31 +38,28 @@ sub internal_new_args {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($key) = 'Model.' . $self->get('list_class');
     my($query) = $req->get($key)->get_query;
     return unless $query->get('has_next') || $query->get('has_prev');
 
-    $fields->{prev}->render($req, $buffer);
+    $self->get('_prev')->render($req, $buffer);
 
     foreach my $page (@{_get_page_numbers($self, $query)}) {
-        $fields->{blank}->render($req, $buffer);
 
         if ($page == $query->get('page_number')) {
-            $req->put(__PACKAGE__ . 'selected' => $page);
-            $fields->{selected}->render($req, $buffer);
+            $req->put($self . 'selected' => $page);
+            $self->get('_selected')->render($req, $buffer);
             next;
         }
-        $req->put(__PACKAGE__ . 'link_text' => $page);
-        $req->put(__PACKAGE__ . 'link_href' => $req->get($key)->format_uri(
+        $req->put($self . 'link_text' => $page);
+        $req->put($self . 'link_href' => $req->get($key)->format_uri(
             Bivio::Biz::QueryType->THIS_LIST, undef, {
                 page_number => $page,
             }));
-        $fields->{link}->render($req, $buffer);
+        $self->get('_link')->render($req, $buffer);
     }
-    $fields->{blank}->render($req, $buffer);
-    $fields->{next}->render($req, $buffer);
+    $self->get('_next')->render($req, $buffer);
     return;
 }
 
@@ -81,11 +67,10 @@ sub render {
 # Returns a list of page numbers to render as links.
 sub _create_navigation_link {
     my($self, $direction) = @_;
-    my($fields) = $self->[$_IDI];
     my($key) = 'Model.' . $self->get('list_class');
-    my($text)= vs_text("$key.paged_list.$direction");
-    $fields->{$direction} = $self->initialize_value($direction,
-        If([[$key, '->get_query'], 'has_' . $direction],
+    my($text) = vs_text("$key.paged_list.$direction");
+    $self->initialize_attr('_' . $direction =>
+	If([[$key, '->get_query'], 'has_' . $direction],
             Link(_nav($self, $direction, $text, 1), [$key, '->format_uri',
                 Bivio::Biz::QueryType->from_name(uc($direction) . '_LIST')]),
             _nav($self, $direction, $text, 0),
