@@ -429,6 +429,10 @@ pre .text {
 }
 .pager .selected {
   Font('strong');
+  padding-left: 0.3em;
+}
+.pager .page_link {
+  padding-left: 0.3em;
 }
 .tree_list {
   margin: 0;
