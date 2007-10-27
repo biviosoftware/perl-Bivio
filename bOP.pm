@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.48  2007/10/25 21:54:36  nagler
+  * Widget.With resets cursor on list
+
   Revision 5.47  2007/10/25 19:21:50  nagler
   * Bivio::Test::Unit->from_type added
   * Bivio::Test::Enum supports NAME => 3 syntax; also refactored compile()
