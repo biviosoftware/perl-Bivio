@@ -480,12 +480,9 @@ sub internal_load {
     my($req) = $self->unsafe_get_request;
     $req->put(list_model => $self) if $req;
 
-    $self->[$_IDI]->{rows} = $self->internal_sort_rows(
-        $self->can('internal_post_load_row')
-	    ? [grep({$self->internal_post_load_row($_)} @$rows)]
-	    : $rows,
-	$query);
-    
+    $self->[$_IDI]->{rows} = [grep({$self->internal_post_load_row($_)} @$rows)]
+	if $self->can('internal_post_load_row');
+
     return;
 }
 
@@ -517,11 +514,6 @@ sub internal_set_cursor {
 	$self->set_cursor($cursor);
     }
     return;
-}
-
-sub internal_sort_rows {
-    my($self, $rows, $query) = @_;
-    return $rows;
 }
 
 sub is_empty_row {
