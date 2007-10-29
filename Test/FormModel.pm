@@ -29,7 +29,8 @@ sub simple_case {
 }
 
 sub new_unit {
-    my($proto, $class, $attrs) = @_;
+    my($proto, $class_name, $attrs) = @_;
+    my($class) = $proto->use(($attrs ||= {})->{class_name} ||= $class_name);
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
     my($setup_request) = delete($attrs->{setup_request});
     my($model) = $class;
@@ -85,6 +86,7 @@ sub new_unit {
 	    my($case, $actual, $expect) = @_;
 	    return $expect
 		unless $case->get('method') eq 'process';
+	    $req->put(actual_return => $actual->[0]);
 	    my($e) = $expect->[0];
 	    if ($case->get('comparator') eq 'nested_contains') {
 		$case->actual_return([_walk_tree_actual($case, $e, $req)]);
@@ -97,8 +99,7 @@ sub new_unit {
 			    && ref($expect->[0]) eq 'HASH');
 	    $e = _walk_tree_expect($case, $e);
 	    $case->actual_return([_walk_tree_actual($case, $e, $req)]);
-	    $e = [$e];
-	    return $e;
+	    return [$e];
 	},
 	%$attrs,
     });
