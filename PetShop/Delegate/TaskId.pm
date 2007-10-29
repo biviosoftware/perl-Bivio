@@ -374,6 +374,17 @@ sub get_delegate_info {
 	    administrator_task=USER_ACCOUNT_EDIT
 	    next=SITE_ROOT
         )],
+	[qw(
+	    FORM_MODEL_BUNIT_LOGIN
+	    545
+	    GENERAL
+	    ANYBODY
+	    Action.UserLogout
+	    Model.UserLoginForm
+	    View.login
+	    next=CART
+	    form_error_task=SITE_ROOT
+	)],
     ]);
 }
 

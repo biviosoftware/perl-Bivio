@@ -799,13 +799,10 @@ sub process {
 		    if $type->isa('Bivio::Type::FormButton');
 	}
     }
-
     return $self->validate_and_execute_ok($button)
-	    if $button_type->isa('Bivio::Type::OKButton');
-
+	if $button_type->isa('Bivio::Type::OKButton');
     return _call_execute($self, 'execute_cancel', $button)
-	    if $button_type->isa('Bivio::Type::CancelButton');
-
+	if $button_type->isa('Bivio::Type::CancelButton');
     return _call_execute($self, 'execute_other', $button);
 }
 
@@ -931,7 +928,7 @@ sub validate_and_execute_ok {
 	    _put_file_field_reset_errors($self);
 	}
 	elsif ( ! $fields->{stay_on_page}) {
-	    _redirect($self, 'next');
+	    $self->internal_redirect_next;
 	    # During unit tests, will fall through
 	    return 0;
 	}
@@ -939,8 +936,17 @@ sub validate_and_execute_ok {
     $self->internal_post_execute('validate_and_execute_ok');
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
 	if $self->in_error;
-    Bivio::Agent::Task->rollback($req)
-	unless $fields->{stay_on_page};
+    unless ($fields->{stay_on_page}) {
+	Bivio::Agent::Task->rollback($req);
+	my($t) = $req->get('task')->unsafe_get('form_error_task');
+	return !$t ? 0 : {
+	    task_id => $t,
+	    map(($_ => $req->unsafe_get($_)), qw(
+	        query
+		path_info
+	    )),
+	};
+    }
     return 0;
 }
 
