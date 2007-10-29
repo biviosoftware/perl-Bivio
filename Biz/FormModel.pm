@@ -938,7 +938,9 @@ sub validate_and_execute_ok {
 	if $self->in_error;
     unless ($fields->{stay_on_page}) {
 	if (my $t  = $req->get('task')->unsafe_get('form_error_task')) {
+	    $self->put_on_request(1);
 	    return {
+		method => 'server_redirect',
 		task_id => $t,
 		map(($_ => $req->unsafe_get($_)), qw(
 		    query
