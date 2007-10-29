@@ -20,6 +20,7 @@ FormModel({
 	'RealmOwner.password' => 'no match',
     }] => [{
 	actual_return => {
+	    method => 'server_redirect',
 	    task_id => 'SITE_ROOT',
 	},
     }],
