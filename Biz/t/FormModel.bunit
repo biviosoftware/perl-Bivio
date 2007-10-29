@@ -24,4 +24,7 @@ FormModel({
 	    task_id => 'SITE_ROOT',
 	},
     }],
+    get_visible_non_button_names => [
+	[] => [[qw(RealmOwner.password login)]],
+    ],
 ];

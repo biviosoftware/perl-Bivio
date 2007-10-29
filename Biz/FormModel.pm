@@ -357,6 +357,14 @@ sub get_stay_on_page {
     return shift->[$_IDI]->{stay_on_page} ? 1 : 0;
 }
 
+sub get_visible_non_button_names {
+    my($self) = @_;
+    return [sort(
+	grep(!$self->get_field_type($_)->isa('Bivio::Type::FormButton'),
+	     @{$self->internal_get_visible_field_names}),
+    )];
+}
+
 sub handle_cookie_in {
     my($self, $cookie, $req) = @_;
     # Looks for timezone in I<cookie> and sets I<timezone> on I<req>.
