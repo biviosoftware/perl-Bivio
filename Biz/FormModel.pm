@@ -937,15 +937,16 @@ sub validate_and_execute_ok {
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
 	if $self->in_error;
     unless ($fields->{stay_on_page}) {
+	if (my $t  = $req->get('task')->unsafe_get('form_error_task')) {
+	    return {
+		task_id => $t,
+		map(($_ => $req->unsafe_get($_)), qw(
+		    query
+		    path_info
+		)),
+	    };
+	}
 	Bivio::Agent::Task->rollback($req);
-	my($t) = $req->get('task')->unsafe_get('form_error_task');
-	return !$t ? 0 : {
-	    task_id => $t,
-	    map(($_ => $req->unsafe_get($_)), qw(
-	        query
-		path_info
-	    )),
-	};
     }
     return 0;
 }
