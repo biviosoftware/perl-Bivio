@@ -937,6 +937,7 @@ sub validate_and_execute_ok {
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
 	if $self->in_error;
     unless ($fields->{stay_on_page}) {
+	Bivio::Agent::Task->rollback($req);
 	if (my $t  = $req->get('task')->unsafe_get('form_error_task')) {
 	    $self->put_on_request(1);
 	    return {
@@ -948,7 +949,6 @@ sub validate_and_execute_ok {
 		)),
 	    };
 	}
-	Bivio::Agent::Task->rollback($req);
     }
     return 0;
 }
