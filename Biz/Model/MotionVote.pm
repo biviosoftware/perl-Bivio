@@ -30,6 +30,7 @@ sub internal_initialize {
 	    realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    vote => ['MotionVote', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
+	    comment => ['Text', 'NONE'],
 	},
 	auth_id => 'realm_id',
     });

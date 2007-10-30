@@ -175,6 +175,7 @@ CREATE TABLE motion_vote_t (
   realm_id NUMERIC(18) NOT NULL,
   vote NUMERIC(2) NOT NULL,
   creation_date_time DATE NOT NULL,
+  comment VARCHAR(500),
   CONSTRAINT motion_vote_t1 PRIMARY KEY(motion_id, user_id)
 )
 /
