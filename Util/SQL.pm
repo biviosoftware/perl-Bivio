@@ -422,6 +422,7 @@ sub internal_upgrade_db_bundle {
 	file_writer
 	bulletin
 	row_tag
+	motion_vote_comment
     )) {
 	my($sentinel) = \&{"_sentinel_$type"};
 	next if defined(&$sentinel) ? $sentinel->($self)
@@ -955,6 +956,16 @@ CREATE SEQUENCE motion_s
   CACHE 1 INCREMENT BY 100000
 /
 
+EOF
+    return;
+}
+
+sub internal_upgrade_db_motion_vote_comment {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE motion_vote_t
+    ADD COLUMN comment VARCHAR(500)
+/
 EOF
     return;
 }
