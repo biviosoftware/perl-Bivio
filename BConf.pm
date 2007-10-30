@@ -182,6 +182,7 @@ sub merge_class_loader {
 	    $overrides || {}, {
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
+		    Auth => ['Bivio::Auth'],
 		    Delegate => ['Bivio::Delegate'],
 		    Biz => ['Bivio::Biz'],
 		    Ext => ['Bivio::Ext'],
