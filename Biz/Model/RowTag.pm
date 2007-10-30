@@ -8,6 +8,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PI) = __PACKAGE__->use('Type.PrimaryId');
 my($_RTK) = __PACKAGE__->use('Type.RowTagKey');
 
+sub create {
+    my($self, $values) = @_;
+    return defined($values->{value}) ? shift->SUPER::create(@_) : $self;
+}
+
 sub create_value {
     return _do(create => @_);
 }

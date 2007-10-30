@@ -19,6 +19,10 @@ req()->set_realm('demo');
 [
     delete => not_die(),
     create => [
+	[undef] => not_die(),
+    ],
+    unsafe_load => 0,
+    create => [
 	x1 => not_die(),
     ],
     update => [
