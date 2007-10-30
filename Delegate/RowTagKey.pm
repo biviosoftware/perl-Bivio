@@ -8,10 +8,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     return [
-        UNKNOWN => [0],
-	ERROR_DETAIL => [1],
-	RELATED_ID => [2],
-	LAST_RESERVED_VALUE => [99],
+        UNKNOWN => 0,
+	ERROR_DETAIL => 1,
+	RELATED_ID => 2,
+	LAST_RESERVED_VALUE => 99,
     ];
 }
 
