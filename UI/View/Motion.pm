@@ -88,15 +88,6 @@ sub list {
     );
 }
 
-sub pre_compile {
-    my($self) = @_;
-    if ($self->get('view_method') =~ /_csv$/) {
-	view_class_map('TextWidget');
-	return;
-    }
-    return shift->SUPER::pre_compile(@_);
-}
-
 sub vote_form {
     return shift->internal_put_base_attr(
 	topic => Join([
@@ -115,6 +106,7 @@ sub vote_form {
 			column_count => 1,
 		    }
 		],
+		'MotionVoteForm.MotionVote.comment',
 	    ],
 	),
     );
@@ -140,6 +132,7 @@ sub vote_result {
 	    MotionVoteList => [
 		'MotionVote.creation_date_time',
 		'MotionVote.vote',
+		'MotionVote.comment',
 		'Email.email',
 	    ],
 	),
@@ -147,12 +140,12 @@ sub vote_result {
 }
 
 sub vote_result_csv {
-    view_main(CSV(MotionVoteList => [
-	qw(MotionVote.creation_date_time
-	   MotionVote.vote
-	   Email.email)
-    ]));
-    return;
+    return shift->internal_body(CSV(MotionVoteList => [qw(
+        MotionVote.creation_date_time
+	MotionVote.vote
+	MotionVote.comment
+	Email.email
+    )]));
 }
 
 1;
