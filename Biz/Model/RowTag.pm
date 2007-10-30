@@ -12,6 +12,10 @@ sub create_value {
     return _do(create => @_);
 }
 
+sub get_value {
+    return _do(unsafe_load => @_) ? shift->get('value') : undef;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -42,7 +46,7 @@ sub _do {
     return $self->$method({
 	primary_id => _primary_id($model_or_id),
 	key => $_RTK->from_any($key),
-	value => $value,
+	$method =~ /load/ ? () : (value => $value),
     });
 }
 

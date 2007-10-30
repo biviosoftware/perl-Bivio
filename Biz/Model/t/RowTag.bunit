@@ -3,11 +3,16 @@
 PropertyModel({
     compute_params => sub {
 	my($case, $params) = @_;
-	return $case->get('method') =~ /replace_value|get/ ? $params : [{
-	    primary_id => req('auth_id'),
-	    key => class('Type.RowTagKey')->ERROR_DETAIL,
-	    @$params ? (value => $params->[0]) : (),
-	}];
+	my($m) = $case->get('method');
+	return $m eq 'replace_value' ? $params
+	    : $m eq 'get_value' ? [
+		req('auth_id'),
+		from_type(qw(RowTagKey ERROR_DETAIL)),
+	    ] : [{
+		primary_id => req('auth_id'), 
+		key => from_type(qw(RowTagKey ERROR_DETAIL)),
+		@$params ? (value => $params->[0]) : (),
+	    }];
     },
 });
 req()->set_realm('demo');
@@ -19,24 +24,25 @@ req()->set_realm('demo');
     update => [
 	x2 => not_die(),
     ],
-    unsafe_load => 1,
+    get_value => 'x2',
     update => [
 	[undef] => not_die(),
     ],
-    unsafe_load => 0,
+    get_value => [
+	[] => [undef],
+    ],
     replace_value => [
 	[req('auth_id'), ERROR_DETAIL => 'x3'] => not_die(),
     ],
-    unsafe_load => 1,
+    get_value => 'x3',
     replace_value => [
 	[req('auth_id'), ERROR_DETAIL => undef] => not_die(),
     ],
-    unsafe_load => 0,
+    get_value => [
+	[] => [undef],
+    ],
     replace_value => [
 	[req(qw(auth_realm owner)), ERROR_DETAIL => 'x4'] => not_die(),
     ],
-    unsafe_load => 1,
-    get => [
-	value => 'x4',
-    ],
+    get_value => 'x4',
 ];
