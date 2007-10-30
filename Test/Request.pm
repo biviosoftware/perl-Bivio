@@ -185,8 +185,11 @@ sub setup_all_facades {
 }
 
 sub setup_facade {
-    my($self) = shift->setup_http;
+    my($proto, $facade) = @_;
+    my($self) = $proto->setup_http;
     Bivio::ShellUtil->initialize_ui;
+    Bivio::UI::Facade->setup_request($facade, $self)
+        if $facade;
     return $self;
 }
 
