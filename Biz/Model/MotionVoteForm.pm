@@ -29,6 +29,7 @@ sub internal_initialize {
 	require_context => 1,
 	visible => [
 	    'MotionVote.vote',
+	    'MotionVote.comment',
 	],
 	other => [
 	    [qw(Motion.motion_id MotionVote.motion_id)],

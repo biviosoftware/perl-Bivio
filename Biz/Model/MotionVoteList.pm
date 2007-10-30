@@ -16,6 +16,7 @@ sub internal_initialize {
 	order_by => [
  	    'MotionVote.creation_date_time',
 	    'MotionVote.vote',
+	    'MotionVote.comment',
 	    'Email.email',
 	],
 	other => [
