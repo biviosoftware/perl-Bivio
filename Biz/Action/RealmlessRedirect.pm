@@ -19,7 +19,7 @@ sub execute {
 	: Bivio::Agent::TaskId->LOGIN;
 }
 
-sub internal_choose_realm {
+sub _choose_realm {
     my($proto, $user_realms, $task) = @_;
     my($res);
     my($rt) = $task->get('realm_type');
@@ -42,7 +42,8 @@ sub _set_realm {
     my($proto, $req, $task) = @_;
     $task = Bivio::Agent::Task->get_by_id($task);
     $req->set_realm(
-	$proto->internal_choose_realm(
+	_choose_realm(
+	    $proto,
 	    Bivio::Biz::Model->new($req, 'UserRealmList')
 	        ->unauth_load_all({auth_id => $req->get('auth_user_id')}),
 	    $task,
