@@ -406,7 +406,8 @@ sub _cfg_motion {
 		type => 'Type',
 	    ]],
 	    [MotionVote => [
-		vote => 'vote',
+		vote => 'Vote',
+		comment => 'Comment',
 		creation_date_time => 'Date',
 	    ]],
 	    [MotionList => [
