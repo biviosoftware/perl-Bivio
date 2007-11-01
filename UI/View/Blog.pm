@@ -140,7 +140,7 @@ sub recent_xml {
 		    Tag(description => CDATA(['->render_html'])),
 		])),
 	    ])),
-	    {xml_version => '2.0'},
+	    {VERSION => '2.0'},
 	),
     );
 }

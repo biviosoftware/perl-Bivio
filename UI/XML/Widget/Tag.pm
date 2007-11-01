@@ -23,10 +23,10 @@ sub initialize {
     $self->initialize_attr('tag');
     $self->initialize_attr('value', '');
     $self->initialize_attr(attributes => sub {
-        my($attr) = $self->get_shallow_copy(qr{^xml_});
+        my($attr) = $self->get_shallow_copy(qr{^[A-Z0-9]+$});
 	return Join([map({
 	    my($k, $v) = ($_, $attr->{$_});
-	    $k =~ s/xml_//;
+	    $k = lc($k);
 	    (
 		qq{ $k="},
 		[\&_to_xml, $v],
