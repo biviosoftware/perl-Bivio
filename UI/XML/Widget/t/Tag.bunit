@@ -17,7 +17,7 @@ req()->set_user('demo');
 	     ),
 	])),
 	{
-	    xml_version => '2.0',
+	    VERSION => '2.0',
 	},
     ] => <<'EOF',
 <rss version="2.0"><channel><title/>
