@@ -68,6 +68,10 @@ sub _cfg_base {
 	    [header_su_background => 0x00ff00],
 	    [[qw(form_desc form_sep_border)]  =>  0x666666],
             [help_wiki_background => 0x6b9fea],
+	    [dd_menu => 0x444444],
+	    [[qw(dd_menu_selected dd_menu_background)] => 0xffffff],
+	    [dd_menu_border => 0x888888],
+	    [dd_menu_selected_background => 0x888888],
 	],
 	Font => [
 	    map([$_->[0] => [qq{class=$_->[1]}]],
@@ -126,6 +130,7 @@ sub _cfg_base {
 	    [nav => '120%'],
 	    [[qw(off pager)] => ['lowercase']],
 	    [th => 'bold'],
+	    [dd_menu => ['normal']],
 	],
 	Constant => [
 	    [xlink_back_to_top => {

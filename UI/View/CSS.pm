@@ -498,6 +498,33 @@ td.item {
 td.amount_cell {
   text-align: right;
 }
+td.header_right div.user_state .dd_link {
+  Font('user_state');
+}
+td.header_right div.user_state .dd_menu {
+  display:inline;
+  position:absolute;
+  width: 8em;
+  visibility:hidden;
+  Color('dd_menu-background');
+  border:1px solid;
+  Color('dd_menu-border');
+}
+td.header_right div.user_state .dd_menu a {
+  display: block;
+  margin: .2em;
+  Font('dd_menu');
+  Color('dd_menu-background');
+  text-decoration: none;
+  z-index:1000;
+  text-align: left;
+  font-weight: normal;
+}
+td.header_right div.user_state .dd_menu a:hover {
+  Color('dd_menu_selected-background');
+  Color('dd_menu_selected');
+  text-decoration: none;
+}
 EOF
 }
 
@@ -568,6 +595,7 @@ td.header_right div.user_state {
   vertical-align: top;
   text-align: right;
   display: inline;
+  white-space: nowrap;
 }
 td.header_right div.user_state a {
   Font('user_state');
