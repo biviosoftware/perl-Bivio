@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::XLink;
 use strict;
-use base 'Bivio::UI::HTML::Widget::Tag';
+use Bivio::Base 'HTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
