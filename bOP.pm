@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.49  2007/10/27 01:20:00  david
+  * Bivio::Biz::ListModel->internal_load refactored calls to
+    internal_post_load_row to support manual sorting
+  * Bivio::IO::ClassLoader->unsafe_map_require replaced use of
+    Bivio::Die->catch with _catch
+  * Bivio::SQL::Connection::Postgres tweak SQL fix-up to handle inserting LEFT
+    JOIN on a table that is already in a LEFT JOIN
+  * Bivio::Test::Language::HTTP->send_mail added headers & body
+  * Bivio::UI::View::CSS added .pager .page_link padding
+  * Bivio::UI::XHTML::Widget::Pager
+      refactored, replaced __PACKAGE__ names with $self
+      replaced $fields with '_' attributes
+      removed vs_blank_cell() with css class name 'page_link'
+  * added Bivio::UI::XML::Widget::JoinTagField
+  * Bivio::UI::XML::Widget::Tag handle undef value for unsafe_render_attr
+
   Revision 5.48  2007/10/25 21:54:36  nagler
   * Widget.With resets cursor on list
 
