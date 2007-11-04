@@ -79,4 +79,20 @@ my($support);
 	    })->{gender},
 	);
     }),
+    inline_case(sub {
+        my($die) = Bivio::Die->catch(sub {
+            Bivio::SQL::PropertySupport->new({
+                version => 1,
+                table => $_TABLE,
+                columns => {
+                    name => ['Bivio::Type::Name',
+			     Bivio::SQL::Constraint::NONE()],
+                },
+	    });
+	});
+	assert_equals(
+	    qr{^you must declare table_name},
+	    $die->get('attrs')->{message},
+	);
+    }),
 ];

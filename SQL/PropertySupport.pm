@@ -199,6 +199,8 @@ sub new {
 	cascade_delete_children => $decl->{cascade_delete_children} || 0,
     };
     $proto->init_common_attrs($attrs, $decl);
+    die("you must declare table_name")
+	unless defined($attrs->{table_name});
     die("$attrs->{table_name}: invalid table name, must end in _t")
 	    unless $attrs->{table_name} =~ m!^\w{1,28}_t$!;
 
