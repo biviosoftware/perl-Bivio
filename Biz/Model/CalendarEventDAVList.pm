@@ -35,8 +35,8 @@ sub dav_reply_get {
 		map({
 		    my($k, $f) = ref($_) ? @$_ : (uc($_), "CalendarEvent.$_");
 		    my($t) = $it->get_field_type($f);
-		    $t->isa('Bivio::Type::DateTime') ? _dt($it, $k, $f)
-			: "$k:" . $it->get_as($f, 'to_literal');
+		    $t->isa('Bivio::Type::DateTime') ? _dt($it, $k, $f) : "$k:"
+			. Bivio::HTML->escape($it->get_as($f, 'to_literal'));
 		}
 	            [qw(CREATED RealmOwner.creation_date_time)],
 		    [qw(LAST-MODIFIED CalendarEvent.modified_date_time)],
