@@ -31,6 +31,7 @@ sub simple_case {
 sub new_unit {
     my($proto, $class_name, $attrs) = @_;
     my($class) = $proto->use(($attrs ||= {})->{class_name} ||= $class_name);
+    $proto->builtin_options({class_name => $class});
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
     my($setup_request) = delete($attrs->{setup_request});
     my($model) = $class;
@@ -121,6 +122,13 @@ sub run_unit {
     );
 }
 
+sub _field_err {
+    my($o, $field) = @_;
+    my($ed) = $o->get_field_error_detail($field);
+    return $o->get_field_error($field)->get_name
+	. ($ed ? ": $ed" : '');
+}
+
 sub _walk_tree_actual {
     my($case, $e, $o) = @_;
     return ref($e) eq 'HASH'
@@ -129,7 +137,7 @@ sub _walk_tree_actual {
 	    !defined($o) ? undef
 		: UNIVERSAL::can($o, 'unsafe_get')
 		? $o->can('get_field_error') && $o->get_field_error($_)
-		? $o->get_field_error($_)->get_name
+		? _field_err($o, $_)
 		: $o->unsafe_get($_)
 		: ref($o) eq 'HASH' ? $o->{$_}
 		: ref($o) eq 'ARRAY' && $_ =~ /^\d+$/ ? $o->[$_]
