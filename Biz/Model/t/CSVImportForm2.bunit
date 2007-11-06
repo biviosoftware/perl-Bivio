@@ -1,0 +1,32 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+options({
+    create_object => sub {
+	my(undef, $object) = @_;
+	return class('Bivio::Biz::Model::t::CSVImportForm::' . $object->[0])
+	    ->new(req());
+    },
+    check_return => sub {
+	expect_contains(2, scalar(@{shift->get('object')->get('result')}));
+	return 1;
+    },
+    compute_params => sub {
+	my(undef, $params) = @_;
+	return [{
+	    source => from_type(qw(FileArg CSVImportForm/t1a.csv)),
+	}];
+    },
+});
+[
+    map((
+	shift(@$_) => [
+	    process => shift(@$_),
+	],
+    ),
+	['T1Form' =>  not_die()],
+	['T2Form' =>  not_die()],
+	['T3Form' =>  qr{duplicate name}i],
+	['T4Form' =>  qr{NoSuchType.*class not found}i],
+    ),
+];

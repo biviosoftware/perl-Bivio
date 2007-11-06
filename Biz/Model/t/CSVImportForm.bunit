@@ -1,0 +1,40 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel({
+    class_name => 'Bivio::Biz::Model::t::CSVImportForm::T1Form',
+    setup_request => sub {
+	my(undef, $params) = @_;
+	@$params = {
+	    source => file_field("CSVImportForm/$params->[0].csv"),
+	};
+	return;
+    },
+});
+[
+    simple_case(t1a => {
+	result => [
+	    {
+		name => 'joe',
+		id => 1,
+		other => 'ok',
+		count => 1,
+	    },
+	    {
+		name => 'mary',
+		id => undef,
+		other => undef,
+		count => 2,
+	    },
+	],
+    }),
+    map(error_case(shift(@$_) => {
+	result => undef,
+	source => shift(@$_),
+    }),
+	[t1b => 'EMPTY'],
+	[t1c => qr{missing.*name}i],
+	[t1d => qr{no.*rows}i],
+	[t1e => qr{invalid csv file}i],
+	[t1f => qr{Record 1: name: field may not be empty}i],
+    ),
+];
