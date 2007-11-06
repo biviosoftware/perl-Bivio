@@ -200,6 +200,7 @@ sub merge_class_loader {
 			]),
 			'', qw(CSS HTML XHTML Mail Text XML)),
 		    ShellUtil => ['Bivio::Util', 'Bivio::Biz::Util'],
+		    SQL => ['Bivio::SQL'],
 		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
 		    TestLanguage => ['Bivio::Test::Language'],
 		    TestUnit => ['Bivio::Test'],
