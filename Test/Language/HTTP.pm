@@ -438,6 +438,9 @@ sub send_mail {
 	Subject => "subj-$r",
 	$headers ? %$headers : (),
     };
+    foreach my $k (sort(keys(%$headers))) {
+	$o->set_header($k, $headers->{$k});
+    }
     $o->set_body($body || "Any unique $r body\n");
     $o->add_missing_headers($req, $from_email);
     $o->send($req);
