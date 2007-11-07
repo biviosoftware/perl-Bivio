@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,74 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.50  2007/11/03 05:40:55  aviggio
+  * Bivio::BConf
+    added Auth map
+  * Bivio::Biz::Action::CalendarEventListRSS removed, not in use
+  * Bivio::Biz::Action::RealmlessRedirect
+    internal_choose_realm => _choose_realm, b/c not in use right now
+  * Bivio::Biz::FormModel
+    form_error_task
+    don't rollback if form_error_task
+    form_error_task: put self durably and method server_redirect
+    form_error_task does rollback
+    test get_visible_non_button_names
+  * Bivio::Biz::ListModel
+    rows can now be sorted manually
+    revert changes to support manual sorting
+  * Bivio::Biz::Model::MotionVote
+    Add comment column
+  * Bivio::Biz::Model::MotionVoteForm
+    Add comment field
+  * Bivio::Biz::Model::MotionVoteList
+    Add comment field
+  * Bivio::Biz::Model::RowTag
+    get_value added
+    create does not create if value is undef
+  * Bivio::Delegate::RowTagKey
+    remove []
+  * Bivio::IO::ClassLoader
+    use _catch because Bivio::Die might not be loaded
+  * Bivio::SQL::Connection::Postgres
+    tweak SQL fix-up to handle inserting LEFT JOIN on a table that is already in a LEFT JOIN
+  * Bivio::SQL::ListSupport
+    allow non-db fields in order by
+    revert changes to support manual sorting
+  * Bivio::Test::FormModel
+    get class from args, if there
+    actual_return put on request
+  * Bivio::Test::Language::HTTP
+    added headers & body to send_mail
+  * Bivio::Test::Request
+    setup_facade accepts argument
+  * Bivio::UI::FacadeBase
+    Add comment label
+    support ForumDropDown
+  * Bivio::UI::View::Blog
+    attributes are uppercase like HTML.Tag
+  * Bivio::UI::View::CSS
+    added .pager .page_link padding
+    support ForumDropDown
+  * Bivio::UI::View::Motion
+    Add vote comment
+  * Bivio::UI::XHTML::Widget::DropDown
+    Support a drop down widget
+  * Bivio::UI::XHTML::Widget::ForumDropDown
+    Support forum selection
+  * Bivio::UI::XHTML::Widget::Pager
+    refactored, replaced __PACKAGE__ names with $self
+    replaced $fields with '_' attributes
+    removed vs_blank_cell() with css class name 'page_link'
+  * Bivio::UI::XHTML::Widget::XLink
+    fix Bivio::Base
+  * Bivio::UI::XML::Widget::JoinTagField
+    renders fields as TagFields
+  * Bivio::UI::XML::Widget::Tag
+    handle undef value for unsafe_render_attr
+    attributes are uppercase like HTML.Tag
+  * Bivio::Util::SQL
+    Added internal_upgrade_db_motion_vote_comment
+
   Revision 5.49  2007/10/27 01:20:00  david
   * Bivio::Biz::ListModel->internal_load refactored calls to
     internal_post_load_row to support manual sorting
