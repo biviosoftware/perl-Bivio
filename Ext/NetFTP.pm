@@ -21,18 +21,19 @@ sub bivio_get {
 	$args->{host},
 	map(($_ => $args->{$_}), sort(grep($_ =~ /^[A-Z]/, keys(%$args)))),
     );
+    my($user) = defined($args->{user}) ? $args->{user} : 'anonymous';
     $self->login(
-	defined($args->{user}) ? $args->{user} : 'anonymous',
+	$user,
 	defined($args->{password}) ? $args->{password}
 	    : $args->{req}->format_email(
 		Bivio::UI::Text->get_value('support_email', $args->{req})),
-    ) || _bivio_die($self, 'login');
-    $self->cwd($args->{cwd}) || _bivio_die('cwd');
+    ) || _bivio_die($self, "login: $user");
+    $self->cwd($args->{cwd}) || _bivio_die($self, "cwd: $args->{cwd}");
     my($type) = $args->{type} || 'binary';
-    $self->$type() || _bivio_die($self, 'cwd');
+    $self->$type() || _bivio_die($self, $type);
     my($buf) = '';
     $self->get($args->{file}, Bivio::UNIVERSAL->use('IO::String')->new(\$buf))
-	|| _bivio_die($self, 'cwd');
+	|| _bivio_die($self, "get: $args->{file}");
     $self->quit;
     return \$buf;
 }
