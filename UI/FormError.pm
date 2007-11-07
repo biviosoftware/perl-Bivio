@@ -21,7 +21,7 @@ sub to_html {
     my($self) = $proto->internal_get_self($source->get_request);
     my($form_class) = ref($form) || $form;
     $error ||= $form->get_field_error($field);
-    my($detail) = form->get_field_error_detail($field);
+    my($detail) = $form->get_field_error_detail($field);
     my($v) = $self->unsafe_get_value(
 	$form_class->simple_package_name, $field, $error->get_name);
     if (defined($v)) {
