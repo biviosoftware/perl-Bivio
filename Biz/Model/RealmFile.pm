@@ -455,7 +455,7 @@ sub _delete_one {
 sub _delete_args {
     my($self, $values) = @_;
     my($load_args) = _non_child_attrs($values || {});
-    ($self = $self->new)->unauth_load($values)
+    ($self = $self->new)->unsafe_load($values)
 	if %$load_args;
     return unless $self->is_loaded;
     _assert_not_root($self);
