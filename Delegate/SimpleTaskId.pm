@@ -396,7 +396,7 @@ sub info_base {
  	    52
  	    FORUM
  	    DATA_READ
- 	    Action.RealmFile
+ 	    Action.RealmFile->execute_private
         )],
 	[qw(
             FORUM_MAIL_REFLECTOR

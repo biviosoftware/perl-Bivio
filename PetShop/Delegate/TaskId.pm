@@ -294,7 +294,7 @@ sub get_delegate_info {
             535
             USER
             DATA_READ
-	    Action.RealmFile
+	    Action.RealmFile->execute_private
         )],
 	[qw(
 	    USER_DAV
