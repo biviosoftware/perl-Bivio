@@ -121,10 +121,13 @@ sub create_model_properties {
 }
 
 sub create_or_update_model_properties {
-    my($self, $model) = @_;
+    my($self, $model, $values) = @_;
     $model = $self->new_other($model)
 	unless ref($model);
-    return $model->create_or_update($self->get_model_properties($model));
+    return $model->create_or_update({
+	%{$self->get_model_properties($model)},
+	ref($values) eq 'HASH' ? %$values : ()
+    });
 }
 
 sub execute {
