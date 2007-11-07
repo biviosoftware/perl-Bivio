@@ -88,7 +88,7 @@ config({
 		return 1;
 	    },
 	],
-	model => [
+	unauth_model => [
 	    RealmOwner => sub {
 		shift;
 		return shift->[0]->isa('Bivio::Biz::Model');
@@ -97,6 +97,9 @@ config({
 		shift;
 		return shift->[0]->get('realm_type')->eq_user;
 	    },
+	],
+	model => [
+	    ['RealmOwner', {name => 'demo'}] => MODEL_NOT_FOUND(),
 	],
 	new => [
 	    [] => DIE(),

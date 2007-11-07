@@ -173,7 +173,7 @@ sub users {
 	} sort {
 	    $a->[0]->get('name') cmp $b->[0]->get('name')
 	} map(
-	    [$self->model(RealmOwner => {realm_id => $_}), $roles->{$_}],
+	    [$self->unauth_model(RealmOwner => {realm_id => $_}), $roles->{$_}],
 	    !$role ? keys(%$roles)
 		: grep(grep($_->[0] eq $role, @{$roles->{$_}}), keys(%$roles)),
 	)),

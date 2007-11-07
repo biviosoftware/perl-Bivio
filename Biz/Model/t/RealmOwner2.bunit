@@ -4,7 +4,7 @@ Request();
 options({
     create_object => sub {
 	my(undef, $args) = @_;
-	return model('RealmOwner', {name => $args->[0]});
+	return unauth_model('RealmOwner', {name => $args->[0]});
     },
 });
 [

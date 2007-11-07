@@ -663,25 +663,7 @@ sub main {
 }
 
 sub model {
-    my($self, $name, $query) = @_;
-    # Instantiates I<model> and loads/processes I<query> if supplied.
-    my($m) = Bivio::Biz::Model->new($self->get_request, $name);
-    return $m
-	unless $query;
-    if ($m->isa('Bivio::Biz::FormModel')) {
-	$m->process($query);
-    }
-    elsif ($m->isa('Bivio::Biz::ListModel')) {
-	$m->unauth_load_all($query);
-	$m->set_cursor(0);
-    }
-    elsif ($m->isa('Bivio::Biz::PropertyModel')) {
-	$m->unauth_load_or_die($query);
-    }
-    else {
-	Bivio::Die->die($m, ': does not support query argument: ', $query);
-    }
-    return $m;
+    return _model(@_);
 }
 
 sub new {
@@ -977,6 +959,10 @@ sub setup {
     return $self;
 }
 
+sub unauth_model {
+    return _model(@_);
+}
+
 sub unsafe_get {
     my($self) = shift;
     # Return the attribute(s).  Returns default option values
@@ -1146,6 +1132,31 @@ sub _method_ok {
 	return 1 if $c->can($method);
     }
     return 0;
+}
+
+sub _model {
+    my($self, $name, $query) = @_;
+    # Instantiates I<model> and loads/processes I<query> if supplied.
+    my($m) = Bivio::Biz::Model->new($self->get_request, $name);
+    return $m
+	unless $query;
+    my($is_unauth) = $self->my_caller =~ /unauth/;
+    if ($m->isa('Bivio::Biz::FormModel')) {
+	$m->process($query);
+    }
+    elsif ($m->isa('Bivio::Biz::ListModel')) {
+	my($method) = $is_unauth ? 'unauth_load_all' : 'load_all';
+	$m->$method($query);
+	$m->set_cursor(0);
+    }
+    elsif ($m->isa('Bivio::Biz::PropertyModel')) {
+	my($method) = $is_unauth ? 'unauth_load_or_die' : 'load';
+	$m->$method($query);
+    }
+    else {
+	Bivio::Die->die($m, ': does not support query argument: ', $query);
+    }
+    return $m;
 }
 
 sub _monitor_daemon_children {

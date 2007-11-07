@@ -27,7 +27,7 @@ options({
 });
 [
     class() => [
-	execute => [
+	execute_private => [
 	    '/ARF/0' => '/ARF/0',
 	    '/ARF' => MODEL_NOT_FOUND(),
 	],

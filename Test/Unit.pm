@@ -242,33 +242,7 @@ sub builtin_mock {
 }
 
 sub builtin_model {
-    my($proto, $name, $query, $expect) = @_;
-    # Returns a new model instance if just I<name>.  If I<query>, calls
-    # unauth_load_or_die (PropertyModel), unauth_load_all (ListModel), or process
-    # (FormModel).
-    #
-    # If I<expect>, calls map_iterate (PropertyModel in order of primary key) or
-    # unauth_load_all (ListModel), and calls builtin_assert_contains(I<expect>,
-    # I<result>).  Returns the complete data set in this last case.
-    my($m) = Bivio::ShellUtil->model($name);
-    return $m
-	unless $query;
-    my($actual);
-    if ($m->isa('Bivio::Biz::PropertyModel')) {
-	return Bivio::ShellUtil->model($name, $query)
-	    unless $expect;
-	$actual = $m->map_iterate(undef, unauth_iterate_start => undef, $query);
-    }
-    else {
-	$m = Bivio::ShellUtil->model($name, $query);
-	return $m
-	    unless $expect;
-	$m->die($expect, ': expected not supported for FormModels')
-	    if $m->isa('Bivio::Biz::FormModel');
-	$actual = $m->map_rows;
-    }
-    $proto->builtin_assert_contains($expect, $actual);
-    return $actual;
+    return _model(@_);
 }
 
 sub builtin_not_die {
@@ -344,6 +318,10 @@ sub builtin_tmp_dir {
 	Bivio::IO::File->rm_rf(
 	    Bivio::IO::File->absolute_path(
 		shift->builtin_class->simple_package_name . '.tmp')));
+}
+
+sub builtin_unauth_model {
+    return _model(@_);
 }
 
 sub builtin_var {
@@ -434,6 +412,43 @@ sub _load_type_class {
 	&& defined(&{\&{$_TYPE->package_name . '::AUTOLOAD'}})
         ? 1 : 0;
     return $_TYPE;
+}
+
+sub _model {
+    my($proto, $name, $query, $expect) = @_;
+    # Returns a new model instance if just I<name>.  If I<query>, calls
+    # unauth_load_or_die (PropertyModel), unauth_load_all (ListModel), or process
+    # (FormModel).
+    #
+    # If I<expect>, calls map_iterate (PropertyModel in order of primary key) or
+    # unauth_load_all (ListModel), and calls builtin_assert_contains(I<expect>,
+    # I<result>).  Returns the complete data set in this last case.
+    my($m) = Bivio::ShellUtil->model($name);
+    return $m
+	unless $query;
+    my($actual);
+    my($is_unauth) = $proto->my_caller =~ /unauth/;
+    my($method) = $is_unauth ? 'unauth_model' : 'model';
+    if ($m->isa('Bivio::Biz::PropertyModel')) {
+	return Bivio::ShellUtil->$method($name, $query)
+	    unless $expect;
+	$actual = $m->map_iterate(
+	    undef,
+	    $is_unauth ? 'unauth_iterate_start' : 'iterate_start',
+	    undef,
+	    $query,
+	);
+    }
+    else {
+	$m = Bivio::ShellUtil->$method($name, $query);
+	return $m
+	    unless $expect;
+	$m->die($expect, ': expected not supported for FormModels')
+	    if $m->isa('Bivio::Biz::FormModel');
+	$actual = $m->map_rows;
+    }
+    $proto->builtin_assert_contains($expect, $actual);
+    return $actual;
 }
 
 sub _pm {

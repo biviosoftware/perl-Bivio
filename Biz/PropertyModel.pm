@@ -618,7 +618,7 @@ sub _add_auth_id {
     if ($auth_field) {
 	my($id) = $self->get_request->get('auth_id');
 	my($n) = $auth_field->{name};
-	Bivio::IO::Alert->warn(
+	Bivio::IO::Alert->warn_deprecated(
 	    $self, ": overriding $n=$query->{$n} in query with auth_id=$id",
 	    " from request.  You might need to call an unauth_* method instead"
 	) if exists($query->{$n}) && $query->{$n} ne $id;

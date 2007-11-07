@@ -2,8 +2,8 @@
 # $Id$
 Request();
 my($files) = require('xapian.PL');
-my($demo) = model('RealmOwner', {name => 'demo'})->get('realm_id');
-my($guest) = model('RealmOwner', {name => 'guest'})->get('realm_id');
+my($demo) = unauth_model('RealmOwner', {name => 'demo'})->get('realm_id');
+my($guest) = unauth_model('RealmOwner', {name => 'guest'})->get('realm_id');
 [
 #TODO: cut off and stop words (the)
     class() => [
@@ -26,7 +26,7 @@ my($guest) = model('RealmOwner', {name => 'guest'})->get('realm_id');
 	    ['abcz', 0, 0, [$demo]] => 1,
 	    sub {
 		model('Lock')->execute_general(req());
-		model('RealmFile', {realm_file_id => $files->[1]})
+		unauth_model('RealmFile', {realm_file_id => $files->[1]})
 		    ->delete;
 		commit();
 		return ['abcz'];

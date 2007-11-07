@@ -3,7 +3,7 @@
 Request();
 my($email) = simple_require('Bivio::PetShop::Util')->DEMO_EMAIL;
 my($name) = Bivio::PetShop::Util->DEMO;
-my($id) = model(RealmOwner => {name => $name})->get('realm_id');
+my($id) = unauth_model(RealmOwner => {name => $name})->get('realm_id');
 [
     {
 	object => [req()],

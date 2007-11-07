@@ -443,7 +443,7 @@ sub info_file {
 			52
 			FORUM
 			DATA_READ
-			Action.RealmFile
+			Action.RealmFile->execute_private
 		    )],
 		);
 	    },

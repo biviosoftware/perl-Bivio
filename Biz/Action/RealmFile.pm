@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Action::RealmFile;
 use strict;
-use base 'Bivio::Biz::Action';
+use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = __PACKAGE__->use('Type.FilePath');
@@ -58,15 +58,15 @@ sub access_is_public_only {
     return $have_realm ? $req->with_realm($realm => $op) : $op->();
 }
 
-sub execute {
-    my($proto, $req, $is_public) = @_;
-    return $proto->unauth_execute($req, $is_public, $req->get('auth_id'));
+sub execute_private {
+    my($proto, $req) = @_;
+    return $proto->unauth_execute($req, 0, $req->get('auth_id'));
 }
 
 sub execute_public {
     my($proto, $req) = @_;
     $req->put(path_info => $_FP->to_public($req->get('path_info')));
-    return $proto->execute($req, 1);
+    return $proto->unauth_execute($req, 1, $req->get('auth_id'));
 }
 
 sub execute_put {

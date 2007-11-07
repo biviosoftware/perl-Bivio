@@ -3,7 +3,6 @@
 ListModel();
 req()->initialize_fully->set_realm_and_user('guest', 'guest');
 my($rfid) = model(RealmFile => {
-    realm_id => req('auth_id'),
     path => '/private',
 })->get('realm_file_id');
 my($x) = model('RealmFile')->create_or_update_with_content({

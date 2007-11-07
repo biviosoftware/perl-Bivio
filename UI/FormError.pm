@@ -21,6 +21,7 @@ sub to_html {
     my($self) = $proto->internal_get_self($source->get_request);
     my($form_class) = ref($form) || $form;
     $error ||= $form->get_field_error($field);
+    my($detail) = form->get_field_error_detail($field);
     my($v) = $self->unsafe_get_value(
 	$form_class->simple_package_name, $field, $error->get_name);
     if (defined($v)) {
@@ -28,7 +29,7 @@ sub to_html {
 	local($_IN_EVAL) = {
 	    label => $label,
 	    error => $error,
-	    detail => $form->get_field_error_detail($field),
+	    detail => $detail,
 	};
 	my($die) = Bivio::Die->catch(
 	    sub {
@@ -45,6 +46,7 @@ sub to_html {
 	    'Error interpolating: ', $v, ': ', $die);
     }
     return Bivio::HTML->escape($error->get_long_desc)
+	. ($detail ? "; additional info: $detail" : '');
 }
 
 1;
