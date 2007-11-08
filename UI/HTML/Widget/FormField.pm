@@ -65,15 +65,27 @@ sub internal_get_label_value {
         my(undef, $text, $df) = @_;
 	my($label, $tag) = $text->unsafe_get_value($df);
 	my($df2) = $df;
-	return $label
-	    unless $df2 =~ s/_\d+(\.\w+)$/$1/;
-	my($label2, $tag2) = $text->unsafe_get_value($df2);
-	return $label
-	    if _count_dots($tag) >= _count_dots($tag2);
-	Bivio::IO::Alert->warn_deprecated(
-	    $df2, ': found with ', $tag2, ' but you should set ', $df, ' in the Facade Text',
-	);
-	return $label2;
+	my($res);
+
+	if ($df2 =~ s/_\d+(\.\w+)$/$1/) {
+	    my($label2, $tag2) = $text->unsafe_get_value($df2);
+
+	    if (_count_dots($tag) >= _count_dots($tag2)) {
+		$res = $label;
+	    }
+	    else {
+		Bivio::IO::Alert->warn_deprecated(
+		    $df2, ': found with ', $tag2, ' but you should set ', $df,
+		    ' in the Facade Text');
+		$res = $label2;
+	    }
+	}
+	else {
+	    $res = $label;
+	}
+	Bivio::Die->die('no facade text found for ', $default_field)
+	    unless defined($res);
+	return $res;
     }, [qw(->req Bivio::UI::Facade Text)], $default_field];
 }
 
