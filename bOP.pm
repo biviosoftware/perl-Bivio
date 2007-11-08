@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.51  2007/11/07 01:01:06  aviggio
+  * Bivio::BConf
+    added SQL map
+  * Bivio::Biz::Model::CSVImportForm
+    new API to match models better
+  * Bivio::Biz::Model::CalendarEventDAVList
+    UTF-8 encode non-datetime values in generated VEVENT
+    dav_reply_get replaces EOL characters to address blank lines in .ics
+  * Bivio::SQL::PropertySupport
+    add error message for when the "table_name" key is misspelled
+  * Bivio::Test::FormModel
+    add detail to the field_err
+  * Bivio::Test::Language::HTTP
+    send_mail: wasn't setting headers
+
   Revision 5.50  2007/11/03 05:40:55  aviggio
   * Bivio::BConf
     added Auth map
