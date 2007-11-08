@@ -33,9 +33,13 @@ my($_CONFIG) = {};
 #
 # subclasses should defined process_record(row, count) to do work
 
+sub column_info {
+    return _config(shift)->{shift(@_)};
+}
+
 sub execute_ok {
     my($self) = @_;
-    my($columns) = $_CONFIG->{ref($self)} ||= _config($self);
+    my($columns) = _config($self);
     my($rows) = _parse_rows($self);
     return
 	unless $rows;
@@ -118,16 +122,22 @@ sub internal_pre_execute {
 
 sub _config {
     my($self) = @_;
+    return $_CONFIG->{ref($self)} ||= _config_init($self);
+}
+
+sub _config_init {
+    my($self) = @_;
     my($method) = $self->can('CSV_COLUMNS') ? 'CSV_COLUMNS' : 'COLUMNS';
     my($seen) = {};
     return {map({
-	my($name, $type, $constraint) = @$_;
-	die($name, ': duplicate name')
-	if $seen->{$name}++;
-	if (my($model, $field) = $type =~ /(\w+)\.(\w+)/) {
+	my($name, $type, $constraint, $field) = @$_;
+	Bivio::Die->die($name, ': duplicate name')
+	    if $seen->{$name}++;
+	if (my($model, $property) = $type =~ /(\w+)\.(\w+)/) {
+	    $field ||= $type;
 	    $model = $self->get_instance($model);
-	    $type = $model->get_field_type($field);
-	    $constraint ||= $model->get_field_constraint($field);
+	    $type = $model->get_field_type($property);
+	    $constraint ||= $model->get_field_constraint($property);
 	}
 	else {
 	    $constraint ||= 'NONE';
@@ -136,6 +146,7 @@ sub _config {
 	($name => {
 	    type => $type,
 	    constraint => $_C->from_any($constraint),
+	    field => $field || $name,
 	});
     }
 	@{$self->$method()},

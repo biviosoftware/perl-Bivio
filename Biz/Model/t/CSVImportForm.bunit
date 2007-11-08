@@ -9,6 +9,7 @@ FormModel({
 	};
 	return;
     },
+    comparator => 'nested_contains',
 });
 [
     simple_case(t1a => {
@@ -37,4 +38,8 @@ FormModel({
 	[t1e => qr{invalid csv file}i],
 	[t1f => qr{Record 1: name: field may not be empty}i],
     ),
+    column_info => [
+	name => [{field => 'RealmOwner.name'}],
+	id => [{field => 'other_id'}],
+    ],
 ];

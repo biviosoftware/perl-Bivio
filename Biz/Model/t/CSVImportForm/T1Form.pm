@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub COLUMNS {
     return [
 	[qw(name RealmOwner.name)],
-	[qw(id RealmOwner.realm_id NONE)],
+	[qw(id RealmOwner.realm_id NONE other_id)],
 	[qw(other Line)],
     ];
 }
