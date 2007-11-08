@@ -9,7 +9,7 @@ my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
 
 sub dav_copy {
     my($self, $dest) = @_;
-    _instance($self, copy_deep => {
+    _instance($self, unauth_copy_deep => {
 	%{_load_args($dest)},
 	user_id => $self->get_request->get('auth_user_id'),
     });
@@ -18,7 +18,7 @@ sub dav_copy {
 
 sub dav_delete {
     my($self) = @_;
-    _instance($self, 'delete_deep');
+    _instance($self, 'unauth_delete_deep');
     return;
 }
 
