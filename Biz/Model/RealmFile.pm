@@ -38,6 +38,11 @@ sub append_content {
     }, \(${$self->get_content} . $$content));
 }
 
+sub copy_deep {
+    Bivio::IO::Alert->warn_deprecated('use unauth_copy_deep()');
+    return unauth_copy_deep(@_);
+}
+
 sub create {
     my($self, $values) = @_;
     my($v) = {%$values};
@@ -93,6 +98,11 @@ sub delete_all {
 	return $self->SUPER::delete_all;
     };
     return $realm ? $req->with_realm($realm, $op) : $op->();
+}
+
+sub delete_deep {
+    Bivio::IO::Alert->warn_deprecated('use unauth_delete_deep()');
+    return unauth_delete_deep(@_);
 }
 
 sub get_content {
