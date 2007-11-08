@@ -37,16 +37,6 @@ sub column_info {
     return _config(shift)->{shift(@_)};
 }
 
-sub convert_columns_to_fields {
-    my($self, $row) = @_;
-    return {map({
-	my($i) = $self->column_info($_);
-	$i ? ($i->{field} => $row->{$_}) : ();
-    }
-	keys(%$row),
-    )};
-}
-
 sub execute_ok {
     my($self) = @_;
     my($columns) = _config($self);
@@ -130,6 +120,16 @@ sub internal_pre_execute {
     return;
 }
 
+sub record_to_model_properties {
+    my($self, $row, $model) = @_;
+    return {map({
+	my($i) = $self->column_info($_);
+	$i && $i->{field} =~ /^$model\.(\w+)$/ ? ($1 => $row->{$_}) : ();
+    }
+	keys(%$row),
+    )};
+}
+
 sub _config {
     my($self) = @_;
     return $_CONFIG->{ref($self)} ||= _config_init($self);
@@ -145,7 +145,7 @@ sub _config_init {
 	    if $seen->{$name}++;
 	$name = lc($name);
 	if (my($model, $property) = $type =~ /(\w+)\.(\w+)/) {
-	    $field ||= $property;
+	    $field ||= $type;
 	    $model = $self->get_instance($model);
 	    $type = $model->get_field_type($property);
 	    $constraint ||= $model->get_field_constraint($property);
