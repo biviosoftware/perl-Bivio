@@ -37,6 +37,14 @@ sub column_info {
     return _config(shift)->{shift(@_)};
 }
 
+sub convert_columns_to_fields {
+    my($self, $row) = @_;
+    return {map(
+	($self->column_info($_)->{field} => $row->{$_}),
+	keys(%$row),
+    )};
+}
+
 sub execute_ok {
     my($self) = @_;
     my($columns) = _config($self);
@@ -134,7 +142,7 @@ sub _config_init {
 	Bivio::Die->die($name, ': duplicate name')
 	    if $seen->{$name}++;
 	if (my($model, $property) = $type =~ /(\w+)\.(\w+)/) {
-	    $field ||= $type;
+	    $field ||= $property;
 	    $model = $self->get_instance($model);
 	    $type = $model->get_field_type($property);
 	    $constraint ||= $model->get_field_constraint($property);

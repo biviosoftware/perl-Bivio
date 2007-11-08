@@ -39,7 +39,10 @@ FormModel({
 	[t1f => qr{Record 1: name: field may not be empty}i],
     ),
     column_info => [
-	name => [{field => 'RealmOwner.name'}],
+	name => [{field => 'name'}],
 	id => [{field => 'other_id'}],
+    ],
+    convert_columns_to_fields => [
+	[{id => 1}] => [{other_id => 1}]
     ],
 ];
