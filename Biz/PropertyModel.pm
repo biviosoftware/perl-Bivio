@@ -8,7 +8,6 @@ use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Bivio::SQL::ListQuery;
 use Bivio::SQL::PropertySupport;
-use Carp ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);

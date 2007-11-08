@@ -210,11 +210,13 @@ sub format_query {
     # Determine if need to pass in current row
     if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST|THIS_AS_PARENT|PATH/) {
 	my($c) = $fields->{cursor};
-	Carp::croak('no cursor') unless defined($c) && $c >= 0;
+	Bivio::Die->die('no cursor')
+	    unless defined($c) && $c >= 0;
 	$args = {%{$self->internal_get}, %$args};
     }
     else {
-	Carp::croak('not loaded') unless $fields->{rows};
+	Bivio::Die->die('not loaded')
+	    unless $fields->{rows};
     }
 
     return $fields->{query}->$method($self->internal_get_sql_support(), $args);
@@ -372,7 +374,7 @@ sub get_query_as_hash {
 sub get_result_set_size {
     my($rows) = shift->[$_IDI]->{rows};
     # Returns the number of rows loaded.
-    Carp::croak('not loaded') unless $rows;
+    Bivio::Die->die('not loaded') unless $rows;
     return int(@$rows);
 }
 
@@ -752,7 +754,7 @@ sub next_row {
     #
     # B<Only returns false ONCE.  After that calls die.>
     my($fields) = $self->[$_IDI];
-    Carp::croak('no cursor') unless defined($fields->{cursor});
+    Bivio::Die->die('no cursor') unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     if (++$fields->{cursor} >= int(@{$fields->{rows}})) {
 	$fields->{cursor} = undef;
@@ -821,7 +823,7 @@ sub prev_row {
     #
     # B<Only returns false ONCE.  After that calls die.>
     my($fields) = $self->[$_IDI];
-    Carp::croak('no cursor') unless defined($fields->{cursor});
+    Bivio::Die->die('no cursor') unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     if (--$fields->{cursor} < 0) {
 	$fields->{cursor} = undef;

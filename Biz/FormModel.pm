@@ -341,7 +341,8 @@ sub get_model_properties {
     my($sql_support) = $self->internal_get_sql_support();
     my($properties) = $self->internal_get();
     my($models) = $sql_support->get('models');
-    Carp::croak($model, ': no such model') unless defined($models->{$model});
+    Bivio::Die->die($model, ': no such model')
+	unless defined($models->{$model});
     my(%res);
     my($column_aliases) = $sql_support->get('column_aliases');
     foreach my $cn (@{$models->{$model}->{column_names_referenced}}) {
