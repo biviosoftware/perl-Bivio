@@ -2,7 +2,7 @@
 # $Id$
 Request('initialize_fully');
 my($files) = require('../../../Search/t/xapian.PL');
-req()->set_realm('demo');
+req()->set_realm('xapian_demo');
 Bivio::Type->get_instance('AccessMode')->execute_private(req());
 [
     [req()] => [

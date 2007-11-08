@@ -2,8 +2,10 @@
 # $Id$
 Request();
 my($files) = require('xapian.PL');
-my($demo) = unauth_model('RealmOwner', {name => 'demo'})->get('realm_id');
-my($guest) = unauth_model('RealmOwner', {name => 'guest'})->get('realm_id');
+my($demo) = unauth_model('RealmOwner', {name => 'xapian_demo'})
+    ->get('realm_id');
+my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})
+    ->get('realm_id');
 [
 #TODO: cut off and stop words (the)
     class() => [

@@ -67,6 +67,14 @@ sub USAGE {
 EOF
 }
 
+sub XAPIAN_DEMO {
+    return 'xapian_demo';
+}
+
+sub XAPIAN_GUEST {
+    return 'xapian_guest';
+}
+
 sub ddl_files {
     return [map {
 	my($base) = $_;
@@ -80,7 +88,8 @@ sub demo_users {
     my($self) = @_;
     return [
         map($self->$_(),
-	    qw(DEMO GUEST MULTI_ROLE_USER BTEST_READ OTP),
+	    qw(DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST MULTI_ROLE_USER BTEST_READ
+	       OTP),
 	    $self->get_request->is_production ? () : 'ROOT',
 	),
     ];
@@ -189,7 +198,7 @@ sub _init_demo_files {
 	Bivio::IO::File->mkdir_parent_only($f);
 	Bivio::IO::File->write($f, $c);
     }
-    foreach my $u (qw(DEMO GUEST BTEST_READ)) {
+    foreach my $u (qw(DEMO XAPIAN_DEMO GUEST XAPIAN_GUEST BTEST_READ)) {
 	$self->set_realm_and_user($self->$u(), $self->$u());
 	$self->new_other('Bivio::Util::RealmFile')->import_tree('');
 	Bivio::Biz::Model->new('RealmFile')->do_iterate(
@@ -301,14 +310,14 @@ sub _init_demo_users {
 	    display_name => join(' ', ucfirst($u), $self->DEMO_LAST_NAME),
 	});
 	my($uid) = $req->get('auth_user_id');
-	if ($u eq $self->DEMO) {
+	if ($u eq $self->DEMO || $u eq $self->XAPIAN_DEMO) {
 	    $demo_id = $uid;
 	}
 	elsif ($u eq $self->ROOT) {
             $self->new_other('RealmRole')->make_super_user;
 	    $self->new_other('SiteForum')->make_admin;
 	}
-	elsif ($u eq $self->GUEST) {
+	elsif ($u eq $self->GUEST || $u eq $self->XAPIAN_GUEST) {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
                 realm_id => $demo_id || die('DEMO must come before GUEST'),
                 user_id => $uid,

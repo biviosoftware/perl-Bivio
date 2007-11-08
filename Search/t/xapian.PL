@@ -14,7 +14,7 @@ do {
     model('Lock')->execute_general(req());
     Bivio::Search::Xapian->destroy_db;
     foreach my $op (
-	[demo => [
+	[xapian_demo => [
 	    'common word word albeit',
 	    'common word abcz defz ghiz jklz albeit',
 	    'common mnoz pqrz  words stuz vwxz albeit',
@@ -22,7 +22,7 @@ do {
 	    'commonly worded m.n.o. worded place for p.q.r. s.t.u. v.w.x. albeit',
 	    'a public green is a place for the common word albeit',
 	]],
-	[guest => [
+	[xapian_guest => [
 	    'a private place for the common man',
 	    'a public place for the common man',
 	]]
