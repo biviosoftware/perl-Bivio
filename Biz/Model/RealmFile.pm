@@ -38,21 +38,6 @@ sub append_content {
     }, \(${$self->get_content} . $$content));
 }
 
-sub copy_deep {
-    my($self, $dest) = @_;
-#TODO: Die if $dest _in_version
-    my($size) = 0;
-    return _copy(
-	$self, {
-	    %{_copy_attrs($self)},
-	    map(exists($dest->{$_}) ? ($_ => $dest->{$_}) : (),
-		qw(path realm_id user_id is_read_only is_public)),
-	},
-	undef,
-	\$size,
-    );
-}
-
 sub create {
     my($self, $values) = @_;
     my($v) = {%$values};
@@ -108,28 +93,6 @@ sub delete_all {
 	return $self->SUPER::delete_all;
     };
     return $realm ? $req->with_realm($realm, $op) : $op->();
-}
-
-sub delete_deep {
-    my($self, $values) = _delete_args(@_);
-    return 0
-	unless $self;
-    return _delete_one($self, $values)
-	unless $self->get('is_folder');
-    my($count) = 0;
-    my($v) = $self->get_shallow_copy;
-    foreach my $child (@{
-	$self->new_other('RealmFileList')->map_iterate(
-	    sub {shift->get_model('RealmFile')},
-	    unauth_iterate_start => {
-		auth_id => $v->{realm_id},
-		path_info => $v->{path},
-	    },
-	),
-    }) {
-	$count += $child->delete_deep(_child_attrs($values, $self));
-    }
-    return $count +_delete_one($self, $values)
 }
 
 sub get_content {
@@ -300,10 +263,47 @@ sub parse_path {
     return $p ? $p : '/';
 }
 
+sub unauth_copy_deep {
+    my($self, $dest) = @_;
+#TODO: Die if $dest _in_version
+    my($size) = 0;
+    return _copy(
+	$self, {
+	    %{_copy_attrs($self)},
+	    map(exists($dest->{$_}) ? ($_ => $dest->{$_}) : (),
+		qw(path realm_id user_id is_read_only is_public)),
+	},
+	undef,
+	\$size,
+    );
+}
+
 sub unauth_delete {
     # We don't support this to avoid the 'rm -rf /' problem that Unix has.
     # It's technically feasible, but not something you ever want to do.
     die('unsupported');
+}
+
+sub unauth_delete_deep {
+    my($self, $values) = _delete_args(@_);
+    return 0
+	unless $self;
+    return _delete_one($self, $values)
+	unless $self->get('is_folder');
+    my($count) = 0;
+    my($v) = $self->get_shallow_copy;
+    foreach my $child (@{
+	$self->new_other('RealmFileList')->map_iterate(
+	    sub {shift->get_model('RealmFile')},
+	    unauth_iterate_start => {
+		auth_id => $v->{realm_id},
+		path_info => $v->{path},
+	    },
+	),
+    }) {
+	$count += $child->unauth_delete_deep(_child_attrs($values, $self));
+    }
+    return $count +_delete_one($self, $values)
 }
 
 sub update {
