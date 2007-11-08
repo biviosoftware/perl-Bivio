@@ -287,7 +287,7 @@ sub init_dbms {
     }
     $self->piped_exec("createdb "
 			  . (defined($clone_db) ? "--template $clone_db " : '')
-			  . "--username $dbuser $db");
+			  . "--owner $dbuser $db");
     return "created PostgreSQL database '$db'"
 	. (defined($clone_db) ? " copied from '$clone_db'\n" : "\n");
 }
