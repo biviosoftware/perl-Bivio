@@ -40,10 +40,9 @@ sub column_info {
 sub execute_ok {
     my($self) = @_;
     my($columns) = _config($self);
-    my($rows) = _parse_rows($self);
     return
-	unless $rows;
-    $self->internal_source_error(undef, 'No data rows found')
+	unless my $rows = _parse_rows($self);
+    return $self->internal_source_error(undef, 'No data rows found')
         unless @$rows;
     return unless _validate_columns($self, $rows->[0], $columns);
     my($count) = 1;
@@ -173,7 +172,7 @@ sub _parse_rows {
 	);
 	return;
     });
-    $self->internal_source_error(undef, 'Invalid CSV file'
+    return $self->internal_source_error(undef, 'Invalid CSV file'
 	. ($die->get('attrs')->{message}
 	    ? (': ' . $die->get('attrs')->{message}) : ''),
     ) if $die;
@@ -194,14 +193,12 @@ sub _parse_rows {
 sub _validate_columns {
     my($self, $row, $columns) = @_;
     my($headings) = [keys(%$columns)];
-    return 1
-	if grep(exists($row->{$_}), @$headings) == @$headings;
-    $self->internal_source_error(
-	undef,
-	'Missing column(s): '
-	    . join(',', grep(!exists($row->{$_}), @$headings)),
-    );
-    return 0;
+    return grep(exists($row->{$_}), @$headings) == @$headings ? 1
+	: $self->internal_source_error(
+	    undef,
+	    'Missing column(s): '
+		. join(',', grep(!exists($row->{$_}), @$headings)),
+	);
 }
 
 sub _validate_record {
