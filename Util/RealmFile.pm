@@ -53,7 +53,7 @@ sub create_folder {
 sub delete_deep {
     my($self) = shift;
     foreach my $p (@_) {
-	_do($self, 'delete_deep', $p);
+	_do($self, 'unauth_delete_deep', $p);
     }
     return;
 }
