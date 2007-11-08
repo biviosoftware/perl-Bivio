@@ -22,7 +22,7 @@ sub new {
 	compute_return => sub {
 	    my($case, $actual, $expect) = @_;
 	    return $actual
-		unless $case->get('method') =~ /^(?:(?:unauth_)?load|find_row_by)/
+		unless $case->get('method') =~ /^(?:(?:unauth_)?load(?:_this)?|find_row_by)/
 		&& ref($expect) eq 'ARRAY';
 	    if (ref($expect->[0]) eq 'ARRAY' && @$expect == 1
 		&& (!@{$expect->[0]} || ref($expect->[0]->[0]) eq 'HASH')) {
