@@ -61,11 +61,17 @@ sub dav_propfind {
 
 sub dav_put {
     my($self, $content) = @_;
-    return _instance(
-	$self,
-	($self->get_result_set_size > 0 ? 'update' : 'create') . '_with_content',
-	_load_args($self),
-	$content,
+    return $self->req->with_realm(
+	$self->get_auth_id,
+	sub {
+	    return _instance(
+		$self,
+		($self->get_result_set_size > 0 ? 'update' : 'create')
+		    . '_with_content',
+		_load_args($self),
+		$content,
+	    );
+	},
     );
     return;
 }
