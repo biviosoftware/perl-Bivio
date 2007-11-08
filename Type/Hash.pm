@@ -11,6 +11,14 @@ sub compare_defined {
     die('not supported');
 }
 
+sub extract_by_keys {
+    my(undef, $value, $to_include) = @_;
+    return {map({
+	my($k) = $_;
+	grep($k eq $_, @$to_include) ? ($k => $value->{$k}) : ();
+    } keys(%$value))};
+}
+
 sub is_equal {
     my(undef, $left, $right) = @_;
     return $_R->nested_equals($left, $right);
