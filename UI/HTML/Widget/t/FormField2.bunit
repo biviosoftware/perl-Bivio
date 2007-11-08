@@ -18,4 +18,9 @@ options({
 	# Deprecated form
 	['FormField2Form.Email_99.realm_id' => 'Email.realm_id'],
     ),
+    class() => [
+	new => [
+	    'FormField2Form.bogus' => DIE(),
+	],
+    ],
 ];
