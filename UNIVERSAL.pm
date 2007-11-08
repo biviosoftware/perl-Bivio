@@ -181,11 +181,11 @@ sub map_invoke {
 }
 
 sub map_together {
-    my($self, $op, @arrays) = @_;
+    my($proto, $op, @arrays) = @_;
     return [map({
 	my($i) = $_;
 	$op->(map($_->[$i], @arrays));
-    } 0 .. $self->max_number(map($#$_, @arrays)))];
+    } 0 .. $proto->max_number(map($#$_, @arrays)))];
 }
 
 sub max_number {
