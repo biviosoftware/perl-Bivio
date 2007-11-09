@@ -20,7 +20,7 @@ commands:
     delete_with_users -- deletes realm and all of its users
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
-    join_user role -- adds specified user role to realm
+    join_user roles... -- adds specified user role to realm
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
     info -- dump info on a realm
@@ -111,14 +111,15 @@ sub invalidate_password {
 }
 
 sub join_user {
-    my($self, $role) = @_;
-    # Adds user to realm with I<role>.
-    my($req) = $self->get_request;
-    Bivio::Biz::Model->new($req, 'RealmUser')->create({
-	realm_id => $req->get('auth_id'),
-	user_id => $req->get('auth_user_id'),
-	role => Bivio::Auth::Role->from_name($role),
-    });
+    my($self, @roles) = shift->arg_list(\@_, [['Auth.Role']]);
+    my($req) = $self->req;
+    foreach my $role (@roles) {
+	$self->model('RealmUser')->create({
+	    realm_id => $req->get('auth_id'),
+	    user_id => $req->get('auth_user_id'),
+	    role => $role,
+	});
+    }
     return;
 }
 
