@@ -255,8 +255,10 @@ sub arg_list {
 		unless ref($decl);
 	    my($name, $type, $default) = @$decl;
 	    $type ||= $name;
-	    my($v, $e) = Bivio::Type->get_instance($type)
-		->from_literal($arg);
+	    $type = "Type.$type"
+		unless $type =~ /\W/;
+	    $type = $proto->use($type);
+	    my($v, $e) = $type->from_literal($arg);
 	    return $v
 		if defined($v);
 	    unless ($e) {
