@@ -10,8 +10,9 @@ Request();
 		'RealmOwner.name' => 'club',
 		'RealmOwner.realm_id' => '3',
 	    }]],
-	]), qw(map_rows	map_iterate)),
-    ]), qw(Bivio::Biz::t::ListModel::T1List Bivio::Biz::t::ListModel::T2List)),
+	]), 'map_rows', $_ =~ /T4/ ? () : 'map_iterate'),
+    ]), qw(Bivio::Biz::t::ListModel::T1List Bivio::Biz::t::ListModel::T2List
+        Bivio::Biz::t::ListModel::T4List)),
     'Bivio::Biz::t::ListModel::T3List' => [
 	load_empty => undef,
     ],
