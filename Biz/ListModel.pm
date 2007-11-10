@@ -482,9 +482,12 @@ sub internal_load {
     my($req) = $self->unsafe_get_request;
     $req->put(list_model => $self) if $req;
 
-    $self->[$_IDI]->{rows} = [grep({$self->internal_post_load_row($_)} @$rows)]
-	if $self->can('internal_post_load_row');
-
+    if ($self->can('internal_post_load_row')) {
+	for (my($i) = 0; $i <= $#$rows; $i++) {
+	    splice(@$rows, $i--, 1)
+		unless $self->internal_post_load_row($rows->[$i]);
+	}
+    }
     return;
 }
 
