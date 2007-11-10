@@ -817,6 +817,7 @@ sub info_user_auth {
 	    Model.UserRegisterForm
 	    View.UserAuth->create
 	    next=USER_CREATE_DONE
+            cancel=SITE_ROOT
 	    reset_task=USER_PASSWORD_RESET
 	    reset_next_task=GENERAL_USER_PASSWORD_QUERY_MAIL
 	)],
