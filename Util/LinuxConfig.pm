@@ -110,7 +110,7 @@ sub add_sendmail_http_agent {
     die($program, ': not executable or not an absolute path')
 	unless -x $program && ! -d $program && $program =~ m{^/};
     my($progbase) = $program =~ m{([^/]+)$};
-    return _edit($self, '/etc/sendmail.cf',
+    return _edit($self, _sendmail_cf(),
 	# Force all local hosts to be seen as canonical hosts
 	[qr{(?<=Fw/etc/mail/local-host-names\n)},
 	    "FP/etc/mail/local-host-names\n"],
@@ -192,7 +192,7 @@ sub allow_any_sendmail_smtp {
     # stricter.  Closes off /var/spool/mqueue.  Sets max message size,
     # defaults to 10000000.
     $max_message_size ||= 10000000;
-    return _edit($self, '/etc/sendmail.cf',
+    return _edit($self, _sendmail_cf(),
 	[qr/^\#?(O\s+DaemonPortOptions\s*=.*),Addr=127.0.0.1/m,
 	    sub {$1},
 	    qr/DaemonPortOptions=Port=smtp,(?!Addr=127.0.0.1)/m],
@@ -880,6 +880,12 @@ sub _prepend_auto_generated_header {
 # By: Bivio::Util::LinuxConfig
 ################################################################
 EOF
+}
+
+sub _sendmail_cf {
+    return (grep(
+        -f _prefix_file($_),
+	qw(/etc/sendmail.cf /etc/mail/sendmail.cf)))[0];
 }
 
 sub _static_routes_for {
