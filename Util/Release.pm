@@ -81,6 +81,7 @@ Bivio::IO::Config->register(my $_CFG = {
     facades_group => undef,
     facades_umask => 027,
     tmp_dir => "/var/tmp/build-$$",
+    https_ca_file => undef,
     projects => [
 	[Bivio => b => 'bivio Software, Inc.'],
     ],
@@ -837,6 +838,8 @@ sub _http_get {
     ($uri = _create_uri($uri)) =~ /^\w+:/
 	or $uri = URI::Heuristic::uf_uri($uri)->as_string;
     _output($output, "GET $uri\n");
+    local($ENV{HTTPS_CA_FILE}) = $_CFG->{https_ca_file}
+	if $_CFG->{https_ca_file};
     my($ua) = Bivio::Ext::LWPUserAgent->new(1);
     $ua->credentials(
 	URI->new($uri)->host_port,
