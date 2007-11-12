@@ -37,7 +37,7 @@ use URI::Heuristic ();
 # The commands executed would be (summarized):
 #
 #     cvs checkout -f -r HEAD <cvs_rpm_spec_dir>/myproject.spec
-#     rpm -bb <cvs_rpm_spec_dir>/myproject.spec-build
+#     rpmbuild -bb <cvs_rpm_spec_dir>/myproject.spec-build
 #     cp -p i386/myproject-HEAD-<date_time>.i386.rpm <rpm_home_dir>
 #     ln -s myproject-HEAD-<date_time>.i386.rpm myproject-HEAD.rpm
 #
@@ -174,7 +174,7 @@ sub build {
 	for my $specin (@packages) {
 	    my($specout, $base, $fullname) = _create_rpm_spec(
 		$self, $specin, $output, $pwd);
-	    my($rpm_command) = "rpm -b$rpm_stage $specout";
+	    my($rpm_command) = "rpmbuild -b$rpm_stage $specout";
 	    if ($self->get('noexecute')) {
 		_would_run("cd $tmp; $rpm_command", $output);
 		next;
