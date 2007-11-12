@@ -134,7 +134,7 @@ usage: b-release [options] command [args...]
 commands:
     build package ... -- compile & build rpms
     build_tar project ... -- build perl tar distribution
-    create_stream [rpm ...] -- generate a stream for this host or rpms
+    create_stream pkg... -- generate a stream from a list of pkg names
     install package ... -- install rpms from network repository
     install_facades facades_dir -- install facade files into local_file_root
     install_stream stream_name -- installs all rpms in a stream
@@ -212,11 +212,8 @@ sub build_tar {
 }
 
 sub create_stream {
-    my($self, @file) = @_;
-    # Returns all the packages on this host or from I<file>s in the format of an update stream used
-    # by
-    unshift(@file, @file ? 'p' : 'a');
-    return `rpm -q@file --queryformat '%{NAME} %{VERSION}-%{RELEASE} %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n' | sort`;
+    my($self, @pkg) = shift->arg_list(\@_, [['Line']]);
+    return `rpm -q @pkg --queryformat '%{NAME} %{VERSION}-%{RELEASE} %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n' | sort`;
 }
 
 sub get_projects {
