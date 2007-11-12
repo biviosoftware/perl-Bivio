@@ -496,7 +496,7 @@ sub _b_release_files {
     my($instructions) = @_;
     # Evaluates line oriented instructions.
     my($prefix) = '';
-    my($res) = "(cd \$RPM_BUILD_ROOT\n";
+    my($res) = "cd \$RPM_BUILD_ROOT\n";
     foreach my $line (split(/\n/, $instructions)) {
 	$line =~ s/^\s+|\s+$//g;
 	next unless length($line);
@@ -524,7 +524,7 @@ EOF
 	    next;
 	}
 	elsif ($line eq '+') {
-	    $res .= '%{allfiles}';
+	    $res .= '%{allfiles}' . "\n";
             if ($prefix) {
 		my($p) = $prefix;
 		$p =~ s/(\W)/\\$1/g;
