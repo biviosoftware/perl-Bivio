@@ -338,6 +338,11 @@ sub detach_process {
     return;
 }
 
+sub do_sh {
+    my($self, @cmd) = shift->arg_list(\@_, [['LongText']]);
+    return join('', map(${$self->piped_exec($_)}, @cmd));
+}
+
 sub email_file {
     my($self, $email, $subject, $file_name) = @_;
     # Sends I<file_name> to I<email> with I<subject>.  Content type is determined
