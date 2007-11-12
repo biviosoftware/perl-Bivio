@@ -524,7 +524,7 @@ EOF
 	    next;
 	}
 	elsif ($line eq '+') {
-	    $res .= '%{allfiles}' . "\n";
+	    $res .= '%{allfiles}';
             if ($prefix) {
 		my($p) = $prefix;
 		$p =~ s/(\W)/\\$1/g;
