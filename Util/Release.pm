@@ -63,8 +63,7 @@ our($_TRACE);
 my($_CVS_CHECKOUT) = 'cvs -Q checkout -f -r';
 my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_FACADES_DIR) = 'facades';
-my($_FILES_LIST) = '%{build_root}/b_release_files.list';
-my($_EXCLUDE_LIST) = '%{build_root}/b_release_files.exclude';
+my($_FILES_LIST) = '%{build_root}/../b_release_files.list';
 Bivio::IO::Config->register(my $_CFG = {
     cvs_rpm_spec_dir => 'pkgs',
     cvs_perl_dir => 'perl',
@@ -525,17 +524,7 @@ EOF
 	    next;
 	}
 	elsif ($line eq '+') {
-	    $res .= <<"EOF";
-{
-    test -f $_FILES_LIST && perl -p -e 's#^[^/]+##' $_FILES_LIST
-    echo /b_release_files.list
-    echo /b_release_files.exclude
-} > $_EXCLUDE_LIST
-(
-    # Protect against error exit
-    %{allfiles} | fgrep -x -v -f $_EXCLUDE_LIST
-EOF
-            $res .= ') ';
+	    $res .= "%{allfiles})";
             if ($prefix) {
 		my($p) = $prefix;
 		$p =~ s/(\W)/\\$1/g;
