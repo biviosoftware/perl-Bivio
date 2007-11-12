@@ -63,7 +63,12 @@ Bivio::Test->unit([
 		['hello' => _not_exists()],
 	    ],
 	], [
-#	    'postgresql_conf', ['large'] => [
+	    'postgres_base', [] => [
+		['etc/rc.d/init.d/postgresql', qr{^# chkconfig: 345 84 16}m],
+		['var/lib/pgsql/data/postgresql.conf', qr{^timezone = UTC}m],
+		['var/lib/pgsql/data/pg_hba.conf', qr{^local\s+all\s+all\s+trust}m],
+	    ],
+        ], [
 #		['etc/sysctl.conf', 'kernel/shmmax = 128000000'],
 #		['var/lib/pgsql/data/postgresql.conf', 'timezone = UTC'],
 #		['var/lib/pgsql/data/postgresql.conf', 'shared_buffers = '],

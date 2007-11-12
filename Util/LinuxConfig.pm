@@ -3,7 +3,6 @@
 package Bivio::Util::LinuxConfig;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -455,6 +454,18 @@ sub mock_dns {
     return;
 }
 
+sub postgres_base {
+    my($self) = @_;
+    return _replace_param(
+	$self, '/var/lib/pgsql/data/postgresql.conf',
+	['#*\s*(timezone\s*=\s*)', 'UTC'],
+    ) . _replace_param($self, '/var/lib/pgsql/data/pg_hba.conf',
+	['(local.*)ident sameuser', 'trust'],
+    ) . _replace_param($self, '/etc/rc.d/init.d/postgresql',
+	['(#\s*chkconfig:\s*)', '345 84 16'],
+    );
+}
+
 sub rename_rpmnew {
     my($self, @rpmnew_file) = @_;
     # Renames rpmnew files to actual file.
@@ -703,7 +714,7 @@ sub _edit {
     foreach my $op (@op) {
 	my($where, $value, $search) = @$op;
 	if (ref($where) eq 'CODE') {
-	    $got++ if &$where($data);
+	    $got++ if $where->($data);
 	    next;
 	}
 	$search = qr/\Q$value/s unless defined($search);
@@ -717,7 +728,7 @@ sub _edit {
 	}
 	else {
 	    $where = qr/$where/s unless ref($where);
-	    $$data =~ s/$where/ref($value) ? &$value() : $value/eg
+	    $$data =~ s/$where/ref($value) ? $value->() : $value/eg
 	        or Bivio::Die->die($file, ": didn't find /$where/\n");
 	}
 	$got++;
@@ -880,6 +891,23 @@ sub _prepend_auto_generated_header {
 # By: Bivio::Util::LinuxConfig
 ################################################################
 EOF
+}
+
+sub _replace_param {
+    my($self, $file, @op) = @_;
+    return _edit(
+	$self,
+	$file,
+	[Bivio::Die->eval_or_die(q(sub {
+            my($data) = @_;
+            my($got) = 0;
+        ) . join("\n", map(
+	    "\$got += \$\$data =~ s/^$_->[0].*/\${1}$_->[1]/m;",
+	    @op,
+        )) . q(
+            return $got;
+        }))],
+    );
 }
 
 sub _sendmail_cf {
