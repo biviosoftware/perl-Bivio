@@ -1,105 +1,67 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::Release;
 use strict;
-$Bivio::Util::Release::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::Release::VERSION;
-
-=head1 NAME
-
-Bivio::Util::Release - build and release management
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    b-release [options] command [args...]
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::Release::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::Release> Build and Release Management with b-release
-
-=head2 CONFIGURATION
-
-Host configuration is controlled via the C</etc/bivio.bconf>:
-
-  cvs_rpm_spec_dir - cvs directory with rpm package specifications
-  rpm_http_root    - rpm repository host name/port or absolute file
-  rpm_home_dir     - location of rpms on build host
-
-=head2 BUILD
-
-In the common form, 'build' will create a new rpm file for the
-package. The package's rpm spec file will be retrieved from cvs and
-the package will be checked out of cvs, and assembled into an rpm
-according to the spec file. By default the 'HEAD' or current version
-will be used checked out from cvs unless the '-version' flag is
-specified. The output from the command details the steps involved
-and the output from the cvs and rpm utilities.
-
-Example:
-
-    b-release build myproject
-
-The commands executed would be (summarized):
-
-    cvs checkout -f -r HEAD <cvs_rpm_spec_dir>/myproject.spec
-    rpm -bb <cvs_rpm_spec_dir>/myproject.spec-build
-    cp -p i386/myproject-HEAD-<date_time>.i386.rpm <rpm_home_dir>
-    ln -s myproject-HEAD-<date_time>.i386.rpm myproject-HEAD.rpm
-
-The myproject.spec-build file is created dynamically by
-b-release.
-
-=head2 INSTALLATION
-
-Installs the latest version of the package. The '-force' and
-'-nodeps' can be used to control the rpm installation. The
-'-version' flag determines the package version installed, the
-default is 'HEAD'.
-
-Example:
-
-    b-release install myproject
-
-The commands executed would be:
-
-    rpm -Uvh <rpm_http_root>/<rpm_home_dir>/myproject-HEAD.rpm
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Trace;
-use Bivio::IO::Alert;
-use Bivio::IO::Config;
-use Bivio::IO::File;
-use Bivio::Type::FileName;
-use Bivio::Type::DateTime;
+use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::Ext::LWPUserAgent;
+use Bivio::IO::File;
+use Bivio::IO::Trace;
+use Bivio::Type::FileName;
 use Bivio::Type::FileName;
 use Config ();
 use File::Find ();
 use Sys::Hostname ();
 use URI::Heuristic ();
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::Util::Release> Build and Release Management with b-release
+#
+# Host configuration is controlled via the C</etc/bivio.bconf>:
+#
+#   cvs_rpm_spec_dir - cvs directory with rpm package specifications
+#   rpm_http_root    - rpm repository host name/port or absolute file
+#   rpm_home_dir     - location of rpms on build host
+#
+#
+# In the common form, 'build' will create a new rpm file for the
+# package. The package's rpm spec file will be retrieved from cvs and
+# the package will be checked out of cvs, and assembled into an rpm
+# according to the spec file. By default the 'HEAD' or current version
+# will be used checked out from cvs unless the '-version' flag is
+# specified. The output from the command details the steps involved
+# and the output from the cvs and rpm utilities.
+#
+# Example:
+#
+#     b-release build myproject
+#
+# The commands executed would be (summarized):
+#
+#     cvs checkout -f -r HEAD <cvs_rpm_spec_dir>/myproject.spec
+#     rpm -bb <cvs_rpm_spec_dir>/myproject.spec-build
+#     cp -p i386/myproject-HEAD-<date_time>.i386.rpm <rpm_home_dir>
+#     ln -s myproject-HEAD-<date_time>.i386.rpm myproject-HEAD.rpm
+#
+# The myproject.spec-build file is created dynamically by
+# b-release.
+#
+#
+# Installs the latest version of the package. The '-force' and
+# '-nodeps' can be used to control the rpm installation. The
+# '-version' flag determines the package version installed, the
+# default is 'HEAD'.
+#
+# Example:
+#
+#     b-release install myproject
+#
+# The commands executed would be:
+#
+#     rpm -Uvh <rpm_http_root>/<rpm_home_dir>/myproject-HEAD.rpm
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_CVS_CHECKOUT) = 'cvs -Q checkout -f -r';
-my($_DT) = 'Bivio::Type::DateTime';
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_FACADES_DIR) = 'facades';
 my($_FILES_LIST) = '%{build_root}/b_release_files.list';
 my($_EXCLUDE_LIST) = '%{build_root}/b_release_files.exclude';
@@ -124,35 +86,20 @@ Bivio::IO::Config->register(my $_CFG = {
     ],
 });
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="OPTIONS"></a>
-
-=head2 OPTIONS : hash_ref
-
-=over 4
-
-=item build_stage : string [b]
-
-Value of C<-b> argument to C<rpm>.
-
-=item nodeps : boolean [0]
-
-Pass C<--nodeps> to C<rpm>
-
-=item version : string [HEAD]
-
-The suffix to the C<rpm> to install.  If you want a particular version,
-you would use this parameter.  Otherwise, you probably would use
-the default (C<HEAD>).
-
-=back
-
-=cut
-
 sub OPTIONS {
+    # build_stage : string [b]
+    #
+    # Value of C<-b> argument to C<rpm>.
+    #
+    # nodeps : boolean [0]
+    #
+    # Pass C<--nodeps> to C<rpm>
+    #
+    # version : string [HEAD]
+    #
+    # The suffix to the C<rpm> to install.  If you want a particular version,
+    # you would use this parameter.  Otherwise, you probably would use
+    # the default (C<HEAD>).
     return {
 	%{__PACKAGE__->SUPER::OPTIONS()},
 	build_stage => ['String', 'b'],
@@ -161,20 +108,13 @@ sub OPTIONS {
     };
 }
 
-=for html <a name="OPTIONS_USAGE"></a>
-
-=head2 OPTIONS_USAGE : string
-
-Adds the following to standard options:
-
-    -build_stage - rpm build stage, valid values [p,c,i,b],
-                   identical to the rpm(1) -b option
-    -nodeps - install without checking dependencies
-    -version - the version to be built (default: HEAD)
-
-=cut
-
 sub OPTIONS_USAGE {
+    # Adds the following to standard options:
+    #
+    #     -build_stage - rpm build stage, valid values [p,c,i,b],
+    #                    identical to the rpm(1) -b option
+    #     -nodeps - install without checking dependencies
+    #     -version - the version to be built (default: HEAD)
     return __PACKAGE__->SUPER::OPTIONS_USAGE()
 	    .<<'EOF';
     -build_stage - rpm build stage, valid values [p,c,i,b],
@@ -184,18 +124,11 @@ sub OPTIONS_USAGE {
 EOF
 }
 
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns:
-
-usage: b-release [options] command [args...]
-commands:
-
-=cut
-
 sub USAGE {
+    # Returns:
+    #
+    # usage: b-release [options] command [args...]
+    # commands:
     return <<'EOF';
 usage: b-release [options] command [args...]
 commands:
@@ -214,28 +147,21 @@ commands:
 EOF
 }
 
-=for html <a name="build"></a>
-
-=head2 build(string package, ...) : string
-
-Builds software in stages (prepare, compile, install, package),
-using an RPM spec file. build is wrapper around the original
-rpm application to help the user access the right source code.
-
-package may be a fully qualified package spec such as
-
-  spec-dir/myproject.spec
-
-or simple name which will default spec in the default cvs directory
-
-  myproject
-
-Returns information about the commands executed.
-
-=cut
-
 sub build {
     my($self, @packages) = @_;
+    # Builds software in stages (prepare, compile, install, package),
+    # using an RPM spec file. build is wrapper around the original
+    # rpm application to help the user access the right source code.
+    #
+    # package may be a fully qualified package spec such as
+    #
+    #   spec-dir/myproject.spec
+    #
+    # or simple name which will default spec in the default cvs directory
+    #
+    #   myproject
+    #
+    # Returns information about the commands executed.
     $self->usage_error("Missing spec file\n") unless @packages;
     my($rpm_stage) = $self->get('build_stage');
     $self->usage_error("Invalid build_stage ", $rpm_stage, "\n")
@@ -261,16 +187,9 @@ sub build {
     });
 }
 
-=for html <a name="build_tar"></a>
-
-=head2 build_tar(string project, ...) : string
-
-Builds a perl tar file suitable for use by L<install_tar|"install_tar">.
-
-=cut
-
 sub build_tar {
     my($self, @projects) = _project_args(1, @_);
+    # Builds a perl tar file suitable for use by L<install_tar|"install_tar">.
     return _do_in_tmp($self, 1, sub {
         my($tmp, $output) = @_;
 	_umask('install_umask', $output);
@@ -292,130 +211,105 @@ sub build_tar {
     });
 }
 
-=for html <a name="create_stream"></a>
-
-=head2 create_stream(string file, ...) : string
-
-Returns all the packages on this host or from I<file>s in the format of an update stream used
-by
-
-=cut
-
 sub create_stream {
     my($self, @file) = @_;
+    # Returns all the packages on this host or from I<file>s in the format of an update stream used
+    # by
     unshift(@file, @file ? 'p' : 'a');
     return `rpm -q@file --queryformat '%{NAME} %{VERSION}-%{RELEASE} %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n' | sort`;
 }
 
-=for html <a name="get_projects"></a>
-
-=head2 get_projects() : hash_ref
-
-Returns a map of root packages names and long names.
-    {
-	ieeesa => 'IEEESA, Inc.',
-    }
-
-=cut
-
 sub get_projects {
+    # Returns a map of root packages names and long names.
+    #     {
+    # 	ieeesa => 'IEEESA, Inc.',
+    #     }
     return {map({lc @$_[0], @$_[2]} @{$_CFG->{projects}})};
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item cvs_rpm_spec_dir : string [pkgs]
-
-The cvs directory which holds your package specifications
-
-=item cvs_perl_dir : string [perl]
-
-Path from cvs repository root to perl project directories.
-
-=item facades_dir : string [/var/www/facades]
-
-Directory where I<Project/files> directory will be installed.
-
-=item facades_group : string [rpm_group]
-
-Group to install facades files as.
-
-=item facades_umask : int [027]
-
-Umask for creation of files and directories in I<facades_dir>.  There may be
-cached user data in this directory so it's best for it not to be publicy
-writable.
-
-=item facades_user : string [rpm_user]
-
-User to install facades files as.
-
-=item http_password : string [undef]
-
-Password used if I<http_realm> set.
-
-=item http_realm : string [undef]
-
-Use basic authentication to retrieve files.  It is recommended that
-files are accessed via https to avoid passwords being sent in the clear.
-
-=item http_user : string [undef]
-
-User to use if I<http_realm> set.
-
-=item install_umask : int [022]
-
-Umask for builds and installs of binaries and libraries.  See also
-I<facades_umask>.
-
-=item projects : array_ref [[[Bivio => b => 'bivio Software, Inc.']]]
-
-Array_ref of array_refs of the form:
-
-    [
-       [ProjectRootPkg => shell-util-prefix => 'Copyright Owner, Inc.'],
-    ]
-
-This list is used by L<list_projects_el|"list_projects_el"> and
-L<build_tar|"build_tar">.
-
-=item rpm_home_dir : string (required)
-
-The directory on the build server, where the rpms and tars reside, e.g.
-
-    /home/b-release
-
-=item rpm_http_root : string [rpm_http_root]
-
-Where the packages reside in the http hierarchy, e.g.
-
-    http://build-server/b-release
-
-It may also be a simple file.
-
-=item rpm_group : string [rpm_user]
-
-The group which owns the releases.  This is probably the same group which
-your http server is running as.
-
-=item rpm_user : string (required)
-
-The user which owns the releases.  Typically, you want this to be root.
-
-=item tmp_dir : string ["/var/tmp/build-$$"]
-
-Where the builds and installs take place.
-
-=back
-
-=cut
-
 sub handle_config {
     my(undef, $cfg) = @_;
+    # cvs_rpm_spec_dir : string [pkgs]
+    #
+    # The cvs directory which holds your package specifications
+    #
+    # cvs_perl_dir : string [perl]
+    #
+    # Path from cvs repository root to perl project directories.
+    #
+    # facades_dir : string [/var/www/facades]
+    #
+    # Directory where I<Project/files> directory will be installed.
+    #
+    # facades_group : string [rpm_group]
+    #
+    # Group to install facades files as.
+    #
+    # facades_umask : int [027]
+    #
+    # Umask for creation of files and directories in I<facades_dir>.  There may be
+    # cached user data in this directory so it's best for it not to be publicy
+    # writable.
+    #
+    # facades_user : string [rpm_user]
+    #
+    # User to install facades files as.
+    #
+    # http_password : string [undef]
+    #
+    # Password used if I<http_realm> set.
+    #
+    # http_realm : string [undef]
+    #
+    # Use basic authentication to retrieve files.  It is recommended that
+    # files are accessed via https to avoid passwords being sent in the clear.
+    #
+    # http_user : string [undef]
+    #
+    # User to use if I<http_realm> set.
+    #
+    # install_umask : int [022]
+    #
+    # Umask for builds and installs of binaries and libraries.  See also
+    # I<facades_umask>.
+    #
+    # projects : array_ref [[[Bivio => b => 'bivio Software, Inc.']]]
+    #
+    # Array_ref of array_refs of the form:
+    #
+    #     [
+    #        [ProjectRootPkg => shell-util-prefix => 'Copyright Owner, Inc.'],
+    #     ]
+    #
+    # This list is used by L<list_projects_el|"list_projects_el"> and
+    # L<build_tar|"build_tar">.
+    #
+    # rpm_home_dir : string (required)
+    #
+    # The directory on the build server, where the rpms and tars reside, e.g.
+    #
+    #     /home/b-release
+    #
+    # rpm_http_root : string [rpm_http_root]
+    #
+    # Where the packages reside in the http hierarchy, e.g.
+    #
+    #     http://build-server/b-release
+    #
+    # It may also be a simple file.
+    #
+    # rpm_group : string [rpm_user]
+    #
+    # The group which owns the releases.  This is probably the same group which
+    # your http server is running as.
+    #
+    # rpm_user : string (required)
+    #
+    # The user which owns the releases.  Typically, you want this to be root.
+    #
+    # tmp_dir : string ["/var/tmp/build-$$"]
+    #
+    # Where the builds and installs take place.
     Bivio::Die->die($cfg->{projects}, ': projects must be an array_ref')
         unless ref($cfg->{projects}) eq 'ARRAY';
     $_CFG = {%$cfg};
@@ -427,27 +321,20 @@ sub handle_config {
     return;
 }
 
-=for html <a name="install"></a>
-
-=head2 install(string package, ...) : string
-
-Manages packages for a host. It will install/upgrade/remove packages.
-Uses the environment settings for http_proxy if present.
-
-package may be a fully qualified name such as
-
-  myproject-1.5.2-2.i386.rpm
-
-or simple name which will default the current version
-
-  myproject
-
-Returns a list of commands executed.
-
-=cut
-
 sub install {
     my($self, @packages) = @_;
+    # Manages packages for a host. It will install/upgrade/remove packages.
+    # Uses the environment settings for http_proxy if present.
+    #
+    # package may be a fully qualified name such as
+    #
+    #   myproject-1.5.2-2.i386.rpm
+    #
+    # or simple name which will default the current version
+    #
+    #   myproject
+    #
+    # Returns a list of commands executed.
     $self->usage_error("No packages to install?") unless @packages;
 
     my($command) = ['rpm', '-Uvh'];
@@ -496,19 +383,12 @@ sub install {
     # DOES NOT RETURN
 }
 
-=for html <a name="install_facades"></a>
-
-=head2 install_facades(string facades_dir) : string
-
-Usually called from Makefile/.PL created by L<build_tar|"build_tar">.
-Looks for a subdirectory "facades" in current directory and copies
-all files in that directory to I<facades_dir> using
-I<facades_user>, I<facades_group>, and I<facades_umask>.
-
-=cut
-
 sub install_facades {
     my($self, $facades_dir) = @_;
+    # Usually called from Makefile/.PL created by L<build_tar|"build_tar">.
+    # Looks for a subdirectory "facades" in current directory and copies
+    # all files in that directory to I<facades_dir> using
+    # I<facades_user>, I<facades_group>, and I<facades_umask>.
     _do_output(sub {
 	my($output) = @_;
 	my($r) = Bivio::IO::ClassLoader->simple_require('Bivio::UI::Facade')
@@ -522,44 +402,23 @@ sub install_facades {
     });
 }
 
-=for html <a name="install_host_stream"></a>
-
-=head2 install_host_stream()
-
-Forces install of all host packages in stream.
-
-=cut
-
 sub install_host_stream {
+    # Forces install of all host packages in stream.
     return shift->put(force => 1)->install_stream(Sys::Hostname::hostname());
 }
 
-=for html <a name="install_stream"></a>
-
-=head2 install_stream(string stream_name)
-
-Installs the entire stream.
-
-=cut
-
 sub install_stream {
     my($self) = @_;
+    # Installs the entire stream.
     return $self->install(@{_get_update_list(1, @_)});
 }
 
-=for html <a name="install_tar"></a>
-
-=head2 install_tar(string project, ...) : string
-
-Installs I<version> (HEAD) of I<project>.  I<project> may be an explicit
-tar.gz file, a shell_util_prefix abbreviation (e.g, b), or a simple
-name (no tar.gz) suffix.  If not found in I<projects> config, will be
-looked up explictly.
-
-=cut
-
 sub install_tar {
     my($self, @projects) = _project_args(0, @_);
+    # Installs I<version> (HEAD) of I<project>.  I<project> may be an explicit
+    # tar.gz file, a shell_util_prefix abbreviation (e.g, b), or a simple
+    # name (no tar.gz) suffix.  If not found in I<projects> config, will be
+    # looked up explictly.
     return _do_in_tmp($self, 0, sub {
         my($tmp, $output) = @_;
 	_umask('install_umask');
@@ -584,58 +443,36 @@ sub install_tar {
     });
 }
 
-=for html <a name="list"></a>
-
-=head2 list() : string
-
-Displays packages in default network repository.
-
-=head2 list(string uri) : string
-
-Displays the packages at the specified repository. The uri may be of the
-complete form:
-
- http://host:port/dir
-
-or directory.
-
-=cut
-
 sub list {
     my($self, $uri) = @_;
+    # Displays packages in default network repository.
+    #
+    #
+    # Displays the packages at the specified repository. The uri may be of the
+    # complete form:
+    #
+    #  http://host:port/dir
+    #
+    # or directory.
     return join('',
 	map("$_\n", ${_http_get($uri || '')} =~ /.+\">\s*(\S+\.rpm)<\/A>/g));
 }
 
-=for html <a name="list_installed"></a>
-
-=head2 list_installed(string match) : string
-
-Lists installed packages with Group and BuildHost for easy parsing.
-I<match> is a regexp which can be used to limit packages listed.
-Case is ignored on the match.
-
-=cut
-
 sub list_installed {
     my($self, $match) = @_;
+    # Lists installed packages with Group and BuildHost for easy parsing.
+    # I<match> is a regexp which can be used to limit packages listed.
+    # Case is ignored on the match.
     $match = '.' unless defined($match);
     return join('', grep(/$match/i, split(/(?<=\n)/,
 	`rpm -qa --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE} \%{GROUP} %{BUILDHOST}\\n'`
        )));
 }
 
-=for html <a name="list_projects_el"></a>
-
-=head2 list_projects_el() : string
-
-Returns the list of configured projects in the following order:
-
-    RootPackage short-name Copyright Owner, Inc.
-
-=cut
-
 sub list_projects_el {
+    # Returns the list of configured projects in the following order:
+    #
+    #     RootPackage short-name Copyright Owner, Inc.
     return "(setq b-perl-projects\n     '("
 	. join("\n       ",
 	    map(sprintf('("%s" "%s" "%s")', @$_),
@@ -643,41 +480,22 @@ sub list_projects_el {
 	. "))\n";
 }
 
-=for html <a name="list_updates"></a>
-
-=head2 list_updates(string stream) : string
-
-Lists packages in I<stream> that have updates.
-
-=cut
-
 sub list_updates {
+    # Lists packages in I<stream> that have updates.
     return join('', map("$_\n", @{_get_update_list(0, @_)}));
 }
 
-=for html <a name="update"></a>
-
-=head2 update(string stream)
-
-Download and apply package updates for the current stream.  Does not install
-packages if they aren't already on the current host.
-
-=cut
-
 sub update {
     my($self) = @_;
+    # Download and apply package updates for the current stream.  Does not install
+    # packages if they aren't already on the current host.
     my($x) = _get_update_list(0, @_);
     return @$x ? $self->install(@$x) : "All packages up to date\n";
 }
 
-#=PRIVATE METHODS
-
-# _b_release_files(string instructions) : string
-#
-# Evaluates line oriented instructions.
-#
 sub _b_release_files {
     my($instructions) = @_;
+    # Evaluates line oriented instructions.
     my($prefix) = '';
     my($res) = "cd \$RPM_BUILD_ROOT\n";
     foreach my $line (split(/\n/, $instructions)) {
@@ -743,21 +561,15 @@ EOF
     return $res;
 }
 
-# _b_release_include(string to_include, string spec_dir, string version, string_ref output) : string
-#
-# Returns contents of $to_include
-#
 sub _b_release_include {
     my($to_include, $spec_dir, $version, $output) = @_;
+    # Returns contents of $to_include
     _system("cd $_CFG->{tmp_dir} && cvs checkout -f -r $version"
 	. " $_CFG->{cvs_rpm_spec_dir}/$to_include", $output)
 	if $version;
     return ${Bivio::IO::File->read("$spec_dir$to_include")};
 }
 
-# _build_root(array_ref specin)
-#
-#
 sub _build_root {
     my($build_root) = @_;
     $build_root ||= 'install';
@@ -774,12 +586,9 @@ EOF
 EOF
 }
 
-# _build_tar_copy(string cvs_dir, array_ref project, string tgt)
-#
-# Copy files from cvs_dir to tgt for $project.
-#
 sub _build_tar_copy {
     my($cvs_dir, $project, $tgt) = @_;
+    # Copy files from cvs_dir to tgt for $project.
 #     my($uri) = grep
 # 	Bivio::IO::File->read("$cvs_dir/$project->[0]/Facades/$project->[0].pm");
     File::Find::find(sub {
@@ -834,12 +643,9 @@ sub _build_tar_copy {
     return;
 }
 
-# _build_tar_makefile(self, string tgt, array_ref project)
-#
-# Creates Makefile.PL
-#
 sub _build_tar_makefile {
     my($self, $project, $file_version, $tgt) = @_;
+    # Creates Makefile.PL
     Bivio::IO::File->write("$tgt/Makefile.PL", <<"EOF");
 # Copyright (c) @{[$_DT->now_as_year]} $project->[2].  All Rights Reserved.
 use strict;
@@ -864,25 +670,19 @@ EOF
     return;
 }
 
-# _chdir(string dir, string_ref output)
-#
-# Change to dir, and write to output.
-#
 sub _chdir {
     my($dir, $output) = @_;
+    # Change to dir, and write to output.
     Bivio::IO::File->chdir($dir);
     _output($output, "cd $dir\n");
     return $dir;
 }
 
-# _create_rpm_spec(string specin, string_ref output, string pwd) : array
-#
-# Creates an rpm spec using the generic spec file specified.
-# Appends build info to the output buffer.
-# Returns (output spec file name, base name, full name).
-#
 sub _create_rpm_spec {
     my($self, $specin, $output, $pwd) = @_;
+    # Creates an rpm spec using the generic spec file specified.
+    # Appends build info to the output buffer.
+    # Returns (output spec file name, base name, full name).
     my($version) = $self->get('version');
 
     my($cvs) = 0;
@@ -934,22 +734,16 @@ EOF
     return ($specout, "$name-$version", "$name-$version-$release");
 }
 
-# _create_uri(string name) : string
-#
-# Returns a full URI for the specified file name. Prepends host and/or
-# directory if not already specified.
-#
 sub _create_uri {
     my($name) = @_;
+    # Returns a full URI for the specified file name. Prepends host and/or
+    # directory if not already specified.
     return $name =~ /^http/ ? $name : "$_CFG->{rpm_http_root}/$name";
 }
 
-# _do_in_tmp(self, boolean assert_root, code_ref op) : string
-#
-# Returns output of operations.
-#
 sub _do_in_tmp {
     my($self, $assert_root, $op) = @_;
+    # Returns output of operations.
     $self->usage_error($_CFG->{rpm_home_dir}, ': rpm_home_dir not found')
         unless !$assert_root || -d $_CFG->{rpm_home_dir};
     Bivio::IO::File->rm_rf($_CFG->{tmp_dir});
@@ -965,12 +759,9 @@ sub _do_in_tmp {
     });
 }
 
-# _do_output(code_ref op) : string
-#
-# Catch die and print output along with die.
-#
 sub _do_output {
     my($op) = @_;
+    # Catch die and print output along with die.
     my($output) = '';
     my($die) = Bivio::Die->catch(sub {
         return $op->(\$output);
@@ -982,35 +773,26 @@ sub _do_output {
     # DOES NOT RETURN
 }
 
-# _err_parser() : string
-#
-# Gets rid of 'warning: x saved as y' if the files are the same
-#
 sub _err_parser {
     my($orig, $final) = @_;
+    # Gets rid of 'warning: x saved as y' if the files are the same
     return ("warning: $orig saved as $final\n")
 	    unless ${Bivio::IO::File->read($orig)}
 		    eq ${Bivio::IO::File->read($final)};
     return '';
 }
 
-# _get_date_format() : string
-#
-# Returns a date format for the current local time.
-#
 sub _get_date_format {
     my(@n) = localtime;
+    # Returns a date format for the current local time.
     return sprintf("%4d%02d%02d_%02d%02d%02d", 1900+$n[5], 1+$n[4],
 	    $n[3], $n[2], $n[1], $n[0]);
 }
 
-# _get_proxy(self) : array
-#
-# Returns the http proxy arguments if present, parsed from the
-# environment variable http_proxy.
-#
 sub _get_proxy {
     my($self) = @_;
+    # Returns the http proxy arguments if present, parsed from the
+    # environment variable http_proxy.
     my($proxy) = $ENV{http_proxy};
     return () unless $proxy;
     $proxy =~ m,/([\w\.]+):(\d+),
@@ -1021,23 +803,17 @@ sub _get_proxy {
        );
 }
 
-# _get_rpm_arch() : string
-#
-# Returns the _arch value from the rpm resource definition.
-# Defaults to 'i386' if not found.
-#
 sub _get_rpm_arch {
     my($rc) = _read_all("rpm --showrc|");
+    # Returns the _arch value from the rpm resource definition.
+    # Defaults to 'i386' if not found.
     grep(/^\-\d+: _arch\s+(\S+)/ && (return $1), @$rc);
     return 'i386';
 }
 
-# _get_update_list(boolean intall, self, string stream) : array_ref
-#
-# Returns a list of packages that exist on this machine and need updating.
-#
 sub _get_update_list {
     my($install, $self, $stream) = @_;
+    # Returns a list of packages that exist on this machine and need updating.
     $self->usage_error("no stream specified.")
 	unless $stream;
     my($local_rpms) = {
@@ -1058,13 +834,10 @@ sub _get_update_list {
     ];
 }
 
-# _http_get(string uri, string_ref output) : string_ref
-#
-# Returns content pointed to by $uri.  Handles local files as well
-# as remote files.
-#
 sub _http_get {
     my($uri, $output) = @_;
+    # Returns content pointed to by $uri.  Handles local files as well
+    # as remote files.
     ($uri = _create_uri($uri)) =~ /^\w+:/
 	or $uri = URI::Heuristic::uf_uri($uri)->as_string;
     _output($output, "GET $uri\n");
@@ -1080,12 +853,9 @@ sub _http_get {
     return \($reply->content);
 }
 
-# _link_base_version(string version, string base, string_ref output)
-#
-# Create link from $base to $version in rpm_home_dir.
-#
 sub _link_base_version {
     my($version, $base, $output) = @_;
+    # Create link from $base to $version in rpm_home_dir.
     $base = "$_CFG->{rpm_home_dir}/$base";
     unlink($base);
     _output($output, "LINKING $version AS $base\n");
@@ -1093,24 +863,18 @@ sub _link_base_version {
     return;
 }
 
-# _output(string_ref output, any arg)
-#
-# Appends output with arg(s).
-#
 sub _output {
     my($output) = shift;
+    # Appends output with arg(s).
     _trace(@_) if $_TRACE;
     $$output .= join('', @_)
 	if $output;
     return;
 }
 
-# _perl_make() : string
-#
-# Define the %define values for perl_make, perl_make_install and now
-# perl_build_install for Module::Build compatibility.
-#
 sub _perl_make {
+    # Define the %define values for perl_make, perl_make_install and now
+    # perl_build_install for Module::Build compatibility.
     return
 	'%define perl_make umask '
 	. _umask_string()
@@ -1128,12 +892,9 @@ sub _perl_make {
 	. " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
 }
 
-# _project_args(boolean want_die, self, string project, ...) : array
-#
-# Returns project config: ($self, $project)
-#
 sub _project_args {
     my($want_die, $self, @projects) = @_;
+    # Returns project config: ($self, $project)
     $self->usage_error('project not supplied')
 	unless @projects;
     return (
@@ -1149,34 +910,25 @@ sub _project_args {
     );
 }
 
-# _read_all(string file) : array_ref
-#
-# Returns the entire contents of the named file.
-#
 sub _read_all {
     my($file) = @_;
+    # Returns the entire contents of the named file.
     open(IN, $file) || Bivio::Die->die("$file: $!");
     my(@data) = <IN>;
     close(IN);
     return \@data;
 }
 
-# _rpm_uri_to_filename(string uri) : string
-#
-# Creates file name from $uri.  Ensures directory exists.
-#
 sub _rpm_uri_to_filename {
     my($uri) = @_;
+    # Creates file name from $uri.  Ensures directory exists.
     return Bivio::IO::File->mkdir_p('/var/spool/up2date')
 	. '/'. Bivio::Type::FileName->get_tail($uri);
 }
 
-# _save_rpm_file(string filename, string_ref output)
-#
-# Saves the named rpm file into _RPM_HOME_DIR.
-#
 sub _save_rpm_file {
     my($rpm_file, $output) = @_;
+    # Saves the named rpm file into _RPM_HOME_DIR.
     Bivio::Die->die("Missing rpm file $rpm_file") unless -f $rpm_file;
 
     $$output .= "SAVING RPM $rpm_file in $_CFG->{rpm_home_dir}\n";
@@ -1185,25 +937,19 @@ sub _save_rpm_file {
     return;
 }
 
-# _search(string tag, array_ref source) : string
-#
-# Searches for the specified tag in the source array. Returns the
-# value or undef if not found.
-#
 sub _search {
     my($tag, $source) = @_;
+    # Searches for the specified tag in the source array. Returns the
+    # value or undef if not found.
 
     grep(/^$tag: (.+)/i && (return $1), @$source);
     return undef;
 }
 
-# _system(string command, string_ref output)
-#
-# Executes the specified command, appending any results to the output.
-# Dies if the system call fails.
-#
 sub _system {
     my($command, $output) = @_;
+    # Executes the specified command, appending any results to the output.
+    # Dies if the system call fails.
     my($die) = Bivio::Die->catch(sub {
 	$command =~ s/'/"/g;
 	_output($output, "$command\n");
@@ -1216,43 +962,24 @@ sub _system {
     # DOES NOT RETURN
 }
 
-# _umask(string umask_name, string_ref output)
-#
-# Sets umask and indicates in output
-#
 sub _umask {
     my($umask_name, $output) = @_;
+    # Sets umask and indicates in output
     umask($_CFG->{$umask_name});
     _output($output, 'umask ' . _umask_string($umask_name) . "\n");
     return;
 }
 
-# _umask_string() : string
-#
-# Returns string version of install_umask
-#
 sub _umask_string {
+    # Returns string version of install_umask
     return sprintf('0%o', $_CFG->{shift || 'install_umask'});
 }
 
-# _would_run(string cmd, string_ref output)
-#
-# Returns command as "Would run: $cmd"
-#
 sub _would_run {
     my($cmd, $output) = @_;
+    # Returns command as "Would run: $cmd"
     _output($output, "Would run: $cmd\n");
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
