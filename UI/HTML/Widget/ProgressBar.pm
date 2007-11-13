@@ -49,11 +49,10 @@ The current percent value.
 =cut
 
 #=IMPORTS
-use Societas::UI::ViewShortcuts;
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_VS) = 'Societas::UI::ViewShortcuts';
+my($_VS) = __PACKAGE__->use('UI.ViewShortcuts');
 my($_RENDER_KEY) = __PACKAGE__ . 'rendered';
 
 =head1 FACTORIES
