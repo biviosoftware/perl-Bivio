@@ -43,8 +43,7 @@ sub import_mbox {
             });
         Bivio::IO::Alert->info("skipped $t\n", $die, \$m)
             if $die;
-        $self->commit_or_rollback
-            if $t % 100 == 0;
+        $self->commit_or_rollback;
     }
     return "Imported $n of $t Messages\n";
 }
