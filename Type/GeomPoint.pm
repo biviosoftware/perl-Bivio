@@ -5,6 +5,8 @@ use strict;
 use Bivio::Base 'Type.Geom';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_TE) = __PACKAGE__->use('Bivio::TypeError');
+my($_GN) = __PACKAGE__->use('Type.GeomNumber');
 my($_DD) = __PACKAGE__->use('Type.DecimalDegree');
 
 sub TYPE {
@@ -19,10 +21,14 @@ sub from_long_lat {
 
 sub validate_wkt {
     my($proto, $value) = @_;
-    return map({
-	my(undef, $e) = $_DD->from_literal($_);
-	$e ? $e : ();
-    } split(' ', $value));
+    my($i) = 0;
+    foreach my $d (split(' ', $value)) {
+	my(undef, $e) = $_GN->from_literal($d);
+	return $e
+	    if $e;
+	$i++;
+    }
+    return $i < 2 ? $_TE->TOO_FEW : $i > 2 ? $_TE->TOO_MANY : ();
 }
 
 1;

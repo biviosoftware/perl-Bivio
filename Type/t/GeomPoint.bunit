@@ -6,9 +6,10 @@ Type();
         '' => UNDEF(),
 	'SRID=4326;POINT(0 0)' => 'SRID=4326;POINT(0 0)',
 	'SRID=4327POINT(0 0)' => SYNTAX_ERROR(),
-	'SRID=4327;POINT(0 0)' => [undef, Bivio::TypeError->NOT_FOUND()],
+	'SRID=4327;POINT(0 0)' => from_literal_error('NOT_FOUND'),
 	'SRID=4326;POINTM(0 0)' => UNSUPPORTED_TYPE(),
-	'SRID=4326;POINT(999 0)' => NUMBER_RANGE(),
+	'SRID=4326;POINT(0)' => TOO_FEW(),
+	'SRID=4326;POINT(1 2 3)' => from_literal_error('TOO_MANY'),
     ],
 ];
 

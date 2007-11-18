@@ -1,0 +1,17 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    from_literal => [
+        '' => UNDEF(),
+	1 => 1,
+	'.1' => 0.1,
+	'.1e1' => 1,
+	'-.1e1' => -1,
+	'1e308' => '1e+308',
+	'1e-307' => '1e-307',
+	'1e309' => 'inf',
+	'-1e309' => '-inf',
+	'..3' => SYNTAX_ERROR(),
+    ],
+];

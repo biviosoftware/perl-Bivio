@@ -1,0 +1,11 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    from_literal => [
+        '' => UNDEF(),
+	'SRID=4326;POLYGON((0 0, 1 1, 0 0))' => 'SRID=4326;POLYGON((0 0, 1 1, 0 0))',
+	'SRID=4326;POLYGON((0 0, 1 1, 0 0)' => SYNTAX_ERROR(),
+    ],
+];
+
