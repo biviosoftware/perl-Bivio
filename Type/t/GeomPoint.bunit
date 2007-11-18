@@ -1,0 +1,14 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    from_literal => [
+        '' => UNDEF(),
+	'SRID=4326;POINT(0 0)' => 'SRID=4326;POINT(0 0)',
+	'SRID=4327POINT(0 0)' => SYNTAX_ERROR(),
+	'SRID=4327;POINT(0 0)' => [undef, Bivio::TypeError->NOT_FOUND()],
+	'SRID=4326;POINTM(0 0)' => UNSUPPORTED_TYPE(),
+	'SRID=4326;POINT(999 0)' => NUMBER_RANGE(),
+    ],
+];
+
