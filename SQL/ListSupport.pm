@@ -479,11 +479,9 @@ sub _init_column_lists {
     if ($attrs->{parent_id}) {
 	$attrs->{parent_id_type} = $attrs->{parent_id}->{type};
     }
-
-    # No BLOBs
     foreach my $c (values(%{$attrs->{columns}})) {
 	Bivio::Die->die($c->{name}, ': cannot have a blob in a ListModel')
-		    if $c->{type} eq 'Bivio::Type::BLOB';
+	    if $c->{type} eq 'Bivio::Type::BLOB';
     }
 
     # Nothing to select
