@@ -15,8 +15,10 @@ sub TYPE {
 
 sub from_long_lat {
     my($proto, $long, $lat) = @_;
-    return $proto->new(
+    my($self) = $proto->new(
 	join(' ', map($_DD->from_literal_or_die($_), $long, $lat)));
+    $self->internal_set_srid(4326);
+    return $self;
 }
 
 sub validate_wkt {
