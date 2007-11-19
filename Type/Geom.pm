@@ -75,6 +75,12 @@ sub to_sql_value {
     return qq{GeomFromEWKT($place_holder)};
 }
 
+sub internal_set_srid {
+    my($self, $srid) = @_;
+    $self->[$_IDI]->{srid} = $srid;
+    return $self;
+}
+
 sub _assert {
     my($self, $which, $value) = @_;
     my($exp) = $self->$which();
