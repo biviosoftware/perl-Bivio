@@ -180,6 +180,10 @@ sub builtin_expect_contains {
     };
 }
 
+sub builtin_file_field {
+    return shift->use('Type.FileField')->from_disk(@_);
+}
+
 sub builtin_from_type {
     return shift->use('Type', shift(@_))->from_literal_or_die(shift(@_));
 }
