@@ -401,13 +401,10 @@ sub _init_column_from_hash {
 	$col = {name => $col_name};
 	push(@{$attrs->{local_columns}}, $col);
 	$attrs->{columns}->{$col_name} = $col;
-
-	# Local columns are not in the select by default
-	$col->{in_select} = $decl->{in_select} ? 1 : 0;
-	# If it is in the select (only case is LEVEL so far.
+	$col->{in_select} = $decl->{in_select} || $decl->{select_value}
+	    ? 1 : 0;
 	$col->{sql_name} = $col->{name} if $col->{in_select};
     }
-    # Override or define new, but only set if set
     __PACKAGE__->init_type($col, $decl->{type}) if $decl->{type};
     $col->{sort_order} = $decl->{sort_order} ? 1 : 0
 	    if exists($decl->{sort_order});
