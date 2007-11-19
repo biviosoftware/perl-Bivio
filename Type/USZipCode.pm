@@ -10,7 +10,7 @@ sub REGEX {
     return qr{\d{5}(?:\d{4})?};
 }
 
-sub TYPE_ERROR {
+sub SYNTAX_ERROR {
     return Bivio::TypeError->US_ZIP_CODE;
 }
 
