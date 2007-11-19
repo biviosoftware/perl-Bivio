@@ -17,10 +17,6 @@ sub error_case {
     return shift->simple_case(@_);
 }
 
-sub file_field {
-    return shift->use('Type.FileField')->from_disk(@_);
-}
-
 sub simple_case {
     my($proto, $input, $return) = @_;
     return ([$input] => [{
