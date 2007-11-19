@@ -47,6 +47,7 @@ my($_MIN_PRIMARY_ID) = Bivio::Type::PrimaryId->get_min;
 Bivio::IO::Config->register(my $_CFG = {
     unused_classes => [qw(RealmFile RealmMail RealmMailBounce Website Forum CalendarEvent JobLock Tuple TupleDef TupleSlotType TupleSlotDef TupleUse Motion MotionVote RealmDAG OTP)],
 });
+my($_C) = __PACKAGE__->use('SQL.Constraint');
 
 sub create {
     my($self, $new_values, $die) = @_;
@@ -81,8 +82,8 @@ sub create {
     my(@params) = map {
 	$columns->{$_}->{type}->to_sql_param($new_values->{$_});
     } @{$attrs->{column_names}};
-    Bivio::SQL::Connection->execute($sql, \@params, $die,
-	    $attrs->{has_blob})->finish();
+    Bivio::SQL::Connection->execute($sql, \@params, $die, $attrs->{has_blob})
+        ->finish;
     return;
 }
 
@@ -364,23 +365,21 @@ sub _init_columns {
 	    type => $cfg->[0],
 	    constraint => $cfg->[1],
 	};
+	my($type_decl) = $col->{type};
 	$attrs->{columns}->{$n} = $attrs->{column_aliases}->{$n} = $col;
 	Bivio::SQL::Support->init_type($col, $col->{type});
-	$col->{constraint}
-		= Bivio::SQL::Constraint->from_any($col->{constraint});
+	$col->{constraint} = $_C->from_any($col->{constraint});
 	$col->{sql_name} = $col->{name} = $n;
 	$col->{is_searchable} = $col->{is_searchable} ? 1 : 0;
 	$col->{sql_pos_param} = $col->{type}->to_sql_value('?');
+	$col->{sql_pos_param_for_insert} ||= $col->{type}->to_sql_value('?');
 	$attrs->{has_blob} = 1
-		if UNIVERSAL::isa($col->{type}, 'Bivio::Type::BLOB');
-	$col->{is_primary_key}
-		= $col->{constraint} eq Bivio::SQL::Constraint::PRIMARY_KEY()
-			? 1 : 0;
+	    if UNIVERSAL::isa($col->{type}, 'Bivio::Type::BLOB');
+	$col->{is_primary_key} = $col->{constraint}->eq_primary_key;
 	push(@{$attrs->{primary_key}}, $col)
-		if $col->{is_primary_key};
-
+	    if $col->{is_primary_key};
 	_add_parent_model($attrs, $n, $1, $2)
-	    if $cfg->[0] =~ /^(.*)\.(.*)$/;
+	    if $type_decl =~ /^(.*)\.(.*)$/;
 
 # 	# related model field type
 # 	if ($cfg->[0] =~ /^(.*)\.(.*)$/) {
@@ -414,7 +413,7 @@ sub _init_statements {
     $attrs->{insert} = "insert into $attrs->{table_name} ("
 	    .join(',', @{$attrs->{column_names}}).') values ('
 	    .join(',', map {
-		$attrs->{columns}->{$_}->{sql_pos_param}
+		$attrs->{columns}->{$_}->{sql_pos_param_for_insert}
 	    } @{$attrs->{column_names}})
 	    .')';
     $attrs->{primary_where} = ' where ' . join(' and ',
