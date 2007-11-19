@@ -400,6 +400,11 @@ sub get_delegate_info {
 	undef,
 	'This forum is for OTP users only',
     ],
+    TOO_FEW => [
+	75,
+	undef,
+	'Field has too few values',
+    ],
 ];
 }
 
