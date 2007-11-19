@@ -6,8 +6,16 @@ use Bivio::Base 'Type.String';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub TYPE_ERROR {
+sub SYNTAX_ERROR {
     return Bivio::TypeError->SYNTAX_ERROR;
+}
+
+sub TOO_LONG_ERROR {
+    return Bivio::TypeError->TOO_LONG;
+}
+
+sub TOO_SHORT_ERROR {
+    return Bivio::TypeError->TOO_SHORT;
 }
 
 sub from_literal {
@@ -16,8 +24,13 @@ sub from_literal {
 	if defined($value);
     my($v, $e) = $proto->SUPER::from_literal($value);
     return !defined($v) ? ($v, $e)
-	: $v =~ /^@{[$proto->REGEX]}$/ ? $proto->internal_post_from_literal($v)
-	: (undef, $proto->TYPE_ERROR);
+	: $v =~ /^@{[$proto->REGEX]}$/
+	? _length($proto, $proto->internal_post_from_literal($v))
+	: (undef, $proto->SYNTAX_ERROR);
+}
+
+sub get_min_width {
+    return 0;
 }
 
 sub get_width {
@@ -32,6 +45,17 @@ sub internal_pre_from_literal {
     my(undef, $value) = @_;
     $value =~ s/^\s+|\s+$//g;
     $value =~ s/\s+/ /g;
+    return $value;
+}
+
+sub _length {
+    my($proto, $value) = @_;
+    return $value
+	if ref($value);
+    return (undef, $proto->TOO_SHORT_ERROR)
+	if length($value) < $proto->get_min_width;
+    return (undef, $proto->TOO_LONG_ERROR)
+	if length($value) > $proto->get_width;
     return $value;
 }
 
