@@ -405,6 +405,11 @@ sub get_delegate_info {
 	undef,
 	'Field has too few values',
     ],
+    TOO_SHORT => [
+	76,
+	undef,
+	'field is too short',
+    ],
 ];
 }
 
