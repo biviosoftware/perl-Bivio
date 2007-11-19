@@ -18,6 +18,11 @@ sub UNDEF {
     return [undef, undef];
 }
 
+sub from_literal_error {
+    my(undef, $type_error) = @_;
+    return [undef, Bivio::TypeError->from_any($type_error)];
+}
+
 sub unit {
     return shift->SUPER::unit(@_)
 	if @_ > 2;
