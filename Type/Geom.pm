@@ -72,7 +72,7 @@ sub to_sql_param {
 sub to_sql_value {
     my($proto, $place_holder) = @_;
     $place_holder ||= '?';
-    return qq{GeoFromEWKT($place_holder)};
+    return qq{GeomFromEWKT($place_holder)};
 }
 
 sub _assert {
