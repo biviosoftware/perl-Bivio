@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,78 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.52  2007/11/08 21:41:04  aviggio
+  * Bivio::Biz::Action::RealmFile
+    remove potential security holes in model() calls and
+    Action.RealmFile
+  * Bivio::Biz::FormModel
+    create_or_update_model_properties now accepts an optional hash of
+    values which will override what's found in the model properties
+    replaced Carp with Bivio::Die
+  * Bivio::Biz::ListModel
+    replaced Carp with Bivio::Die
+  * Bivio::Biz::Model::CSVImportForm
+    fix 5.6 bug
+    added "field" decl and column_info()
+    convert_columns_to_fields
+    fixed convert_columns_to_fields to ignore extra fields
+    record_to_model_properties
+    return with internal_source_error is ok
+  * Bivio::Biz::Model::RealmFile
+    undo 1.55.  unauth_load is incorrect
+    Rename copy_deep to unauth_copy_deep and delete_deep to
+    unauth_delete_deep
+    Deprecated warnings for copy_deep and delete_deep
+  * Bivio::Biz::Model::RealmFileDAVList
+    dav_put uses with_realm to resolve auth issue in RealmFile
+    versioning
+    Change copy_deep and delete_deep to unauth calls
+  * Bivio::Biz::Model::t::CSVImportForm::T1Form
+    added "field" decl and column_info()
+    convert_columns_to_fields
+    record_to_model_properties
+  * Bivio::Biz::PropertyModel
+    remove potential security holes in model() calls and
+    Action.RealmFile
+    replaced Carp with Bivio::Die
+  * Bivio::Delegate::SimpleTaskId
+    execute_private
+  * Bivio::Delegate::TaskId
+    remove potential security holes in model() calls and
+    Action.RealmFile
+  * Bivio::Ext::NetFTP
+    improve error messages
+  * Bivio::PetShop::Delegate::TaskId
+    execute_private
+  * Bivio::PetShop::Util
+    Dedicated users for Xapian tests
+  * Bivio::ShellUtil
+    remove potential security holes in model() calls and
+    Action.RealmFile
+  * Bivio::Test::ListModel
+    ListModel() unit tests now apply result declarations to load_this
+    and unauth_load_this (this is in addition to previous support for
+    load and unauth_load and find_row_by)
+  * Bivio::Test::Unit
+    remove potential security holes in model() calls and
+    Action.RealmFile
+  * Bivio::Type::Hash
+    extract_by_keys
+  * Bivio::UI::FormError
+    remove potential security holes in model() calls and
+    Action.RealmFile
+  * Bivio::UI::HTML::Widget::FormField
+    fixed label lookup to die if not found
+  * Bivio::UNIVERSAL
+    map_together is a proto
+  * Bivio::Util::RealmAdmin
+    remove potential security holes in model() calls and
+    Action.RealmFile
+  * Bivio::Util::RealmFile
+    Change delete_deep to unauth call
+  * Bivio::Util::SQL
+    --owner, not --username
+
   Revision 5.51  2007/11/07 01:01:06  aviggio
   * Bivio::BConf
     added SQL map
