@@ -28,37 +28,8 @@ sub USAGE {
 usage: b-backup [options] command [args...]
 commands:
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
+    trim_directories dirs-with-dates -- returns directories to trim
 EOF
-}
-
-sub dates_to_trim {
-    my($self, @files) = shift->arg_list(\@_, [['String']]);
-    my($files) = {map(
-	(($_ =~ /(\d{8})/)[0] || $self->usage_error($_, ': no date value'),
-	 $_),
-	@files,
-    )};
-    $self->usage_error('duplicate date in date list')
-	unless @files == keys(%$files);
-    my($prev_month) = $_D->get_previous_month(
-	$_D->date_from_parts(1, $_D->get_parts(
-	    $_D->local_today, 'month', 'year')));
-    my($trim) = {};
-    foreach my $date (
-	sort(
-	    grep($_D->compare($_D->from_literal_or_die($_), $prev_month) < 0,
-		 keys(%$files))),
-    ) {
-	push(
-	    @{$trim->{($date =~ /^(\d{6})/)[0] || die} ||= []},
-	    $date,
-	);
-    }
-Bivio::IO::Alert->info($trim);
-    return [map(
-	$files->{$_},
-	map(splice(@{$trim->{$_}}, 1), sort(keys(%$trim))),
-    )];
 }
 
 sub handle_config {
@@ -110,6 +81,35 @@ sub mirror {
 	)};
     }
     return \$res;
+}
+
+sub trim_directories {
+    my($self, @files) = shift->arg_list(\@_, [['String']]);
+    my($files) = {map(
+	(($_ =~ /(\d{8})/)[0] || $self->usage_error($_, ': no date value'),
+	 $_),
+	@files,
+    )};
+    $self->usage_error('duplicate date in date list')
+	unless @files == keys(%$files);
+    my($prev_month) = $_D->get_previous_month(
+	$_D->date_from_parts(1, $_D->get_parts(
+	    $_D->local_today, 'month', 'year')));
+    my($trim) = {};
+    foreach my $date (
+	sort(
+	    grep($_D->compare($_D->from_literal_or_die($_), $prev_month) < 0,
+		 keys(%$files))),
+    ) {
+	push(
+	    @{$trim->{($date =~ /^(\d{6})/)[0] || die} ||= []},
+	    $date,
+	);
+    }
+    return join(' ', map(
+	$files->{$_},
+	map(splice(@{$trim->{$_}}, 1), sort(keys(%$trim))),
+    ));
 }
 
 1;
