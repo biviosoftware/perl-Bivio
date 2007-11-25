@@ -2,70 +2,13 @@
 # $Id$
 package Bivio::Util::Backup;
 use strict;
-$Bivio::Util::Backup::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::Backup::VERSION;
-
-=head1 NAME
-
-Bivio::Util::Backup - mirroring utilities
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::Backup;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::Backup::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::Backup> is a mirroring utility.
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns:
-
- usage: b-backup [options] command [args...]
- commands:
-    mirror [cfg_name ...] -- mirror configured dirs to mirror_host
-
-=cut
-
-sub USAGE {
-    return <<'EOF';
-usage: b-backup [options] command [args...]
-commands:
-    mirror [cfg_name ...] -- mirror configured dirs to mirror_host
-EOF
-}
-
-#=IMPORTS
+use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::IO::Trace;
-use Bivio::IO::File;
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::Util::Backup> is a mirroring utility.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 Bivio::IO::Config->register({
     Bivio::IO::Config->NAMED => {
 	mirror_dest_host => Bivio::IO::Config->REQUIRED,
@@ -73,53 +16,75 @@ Bivio::IO::Config->register({
 	mirror_dest_dir => Bivio::IO::Config->REQUIRED,
     },
 });
+my($_D) = __PACKAGE__->use('Type.Date');
 
-=head1 METHODS
+sub USAGE {
+    # Returns:
+    #
+    #  usage: b-backup [options] command [args...]
+    #  commands:
+    #     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
+    return <<'EOF';
+usage: b-backup [options] command [args...]
+commands:
+    mirror [cfg_name ...] -- mirror configured dirs to mirror_host
+EOF
+}
 
-=cut
-
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-All configuration may be named.
-
-=over 4
-
-=item mirror_dest_dir : string (required)
-
-Directory on I<mirror_dest_dir> to copy files.
-
-=item mirror_dest_host : string (required)
-
-Host to mirror to.
-
-=item mirror_include_dirs : array_ref (required)
-
-List of directories to mirror.  Must be absolute.
-
-=back
-
-=cut
+sub dates_to_trim {
+    my($self, @files) = shift->arg_list(\@_, [['String']]);
+    my($files) = {map(
+	(($_ =~ /(\d{8})/)[0] || $self->usage_error($_, ': no date value'),
+	 $_),
+	@files,
+    )};
+    $self->usage_error('duplicate date in date list')
+	unless @files == keys(%$files);
+    my($prev_month) = $_D->get_previous_month(
+	$_D->date_from_parts(1, $_D->get_parts(
+	    $_D->local_today, 'month', 'year')));
+    my($trim) = {};
+    foreach my $date (
+	sort(
+	    grep($_D->compare($_D->from_literal_or_die($_), $prev_month) < 0,
+		 keys(%$files))),
+    ) {
+	push(
+	    @{$trim->{($date =~ /^(\d{6})/)[0] || die} ||= []},
+	    $date,
+	);
+    }
+Bivio::IO::Alert->info($trim);
+    return [map(
+	$files->{$_},
+	map(splice(@{$trim->{$_}}, 1), sort(keys(%$trim))),
+    )];
+}
 
 sub handle_config {
+    # All configuration may be named.
+    #
+    #
+    # mirror_dest_dir : string (required)
+    #
+    # Directory on I<mirror_dest_dir> to copy files.
+    #
+    # mirror_dest_host : string (required)
+    #
+    # Host to mirror to.
+    #
+    # mirror_include_dirs : array_ref (required)
+    #
+    # List of directories to mirror.  Must be absolute.
     return;
 }
 
-
-=for html <a name="mirror"></a>
-
-=head2 mirror(string cfg_name, ...) : string_ref
-
-Mirror files to I<cfg_name>'d host and directory.  I<cfg_name> may be
-C<undef> iwc defaults are used.
-
-Uses the command: rsync -e ssh -azlSR --delete --timeout 43200
-
-=cut
-
 sub mirror {
     my($self, @cfg_name) = @_;
+    # Mirror files to I<cfg_name>'d host and directory.  I<cfg_name> may be
+    # C<undef> iwc defaults are used.
+    #
+    # Uses the command: rsync -e ssh -azlSR --delete --timeout 43200
     my($res) = '';
     foreach my $cfg_name (@cfg_name ? @cfg_name : ('')) {
 	my($cfg) = Bivio::IO::Config->get($cfg_name);
@@ -129,7 +94,7 @@ sub mirror {
 	    $dir = "$host:$dir";
 	}
 	else {
-	    Bivio::IO::File->mkdir_p($dir, 0700);
+	    $self->use('IO.File')->mkdir_p($dir, 0700);
 	}
 	$res .= ${$self->piped_exec(
 	    "rsync -e ssh -azlSR --delete --timeout 43200"
@@ -146,17 +111,5 @@ sub mirror {
     }
     return \$res;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
