@@ -3,7 +3,7 @@
 ShellUtil();
 class('Type.Date')->set_test_now('5/31/2007', req());
 [
-    [qw(trim_directories 20070403 foo/20070507 bar/20070303 20070301 20070202 20070201)]
+    [qw(trim_directories 20070403 foo/20070507 bar/20070303 20070301 20070201 20070202)]
 	=> '20070202 bar/20070303',
     [qw(trim_directories 20070403 foo/20070507 bar/20070303)] => [],
 ];
