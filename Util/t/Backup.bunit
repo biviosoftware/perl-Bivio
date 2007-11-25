@@ -1,0 +1,13 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+class('Type.Date')->set_test_now('5/31/2007', req());
+[
+    class() => [
+	dates_to_trim => [
+	    [qw(20070403 foo/20070507 bar/20070303 20070301 20070202 20070201)]
+		=> [['20070202', 'bar/20070303']],
+	    [qw(20070403 foo/20070507 bar/20070303)] => [[]],
+	],
+    ],
+];
