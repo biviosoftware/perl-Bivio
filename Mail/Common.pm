@@ -58,7 +58,9 @@ Bivio::IO::Trace->register;
 Bivio::IO::Config->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
-    sendmail => '/usr/lib/sendmail -U -oem -odb -i',
+    sendmail => `/usr/sbin/sendmail -U devnull < /dev/null 2>&1` =~ /illegal/
+	? '/usr/sbin/sendmail -oem -odb -i'
+	: '/usr/sbin/sendmail -U -oem -odb -i',
 });
 #TODO: get rid of global state - put it on the request instead
 my($_IDI) = __PACKAGE__->instance_data_index;
