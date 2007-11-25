@@ -79,8 +79,8 @@ sub get_width {
 }
 
 sub now {
-    # Returns time with DEFAULT_DATE for now.
-    return shift->from_unix(time);
+    my($proto) = @_;
+    return $proto->from_unix($proto->to_unix($proto->SUPER::now));
 }
 
 sub to_literal {
