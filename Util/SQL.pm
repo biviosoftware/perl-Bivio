@@ -273,23 +273,26 @@ sub init_dbms {
     my($self, $clone_db) = @_;
     my($db, $dbuser, $dbpass) =
  	@{Bivio::SQL::Connection->get_dbi_config}{qw(database user password)};
+    my($v) = ${$self->piped_exec("psql --version")} =~ /(\d+)/s;
     unless (${$self->piped_exec(
 	"psql --username postgres -c '\\du $dbuser' template1")}
 		=~ /$dbuser/) {
 	my($no_adduser) = (
-	    ${$self->piped_exec("psql --version")} =~ /PostgreSQL\W+7/
-		? '--no-adduser'
-		: '--no-superuser --no-createrole'
+	    $v < 8 ? '--no-adduser'
+		: '--no-superuser --no-createdb --no-createrole'
 	    );
 	$self->piped_exec(
 	    "createuser --username postgres --createdb $no_adduser $dbuser");
 	print "created PostgreSQL user '$dbuser'\n";
     }
-    $self->piped_exec("createdb "
-			  . (defined($clone_db) ? "--template $clone_db " : '')
-			  . "--owner $dbuser $db");
+    $self->piped_exec(
+	'createdb '
+	. (defined($clone_db) ? "--template $clone_db " : '')
+	. ($v < 8 ? '' : ' --encoding SQL_ASCII')
+	. "--owner $dbuser $db"
+    );
     return "created PostgreSQL database '$db'"
-	. (defined($clone_db) ? " copied from '$clone_db'\n" : "\n");
+	. (defined($clone_db) ? " copied from '$clone_db'" : '');
 }
 
 sub init_realm_role {
