@@ -632,11 +632,11 @@ sub _assert_netmask_and_gateway_for {
     my($ip) = _dig($domain);
     my($cfg) = _network_config_for($ip);
     Bivio::DieCode->CONFIG_ERROR->throw_die(
-	"subnet containing '$ip ($domain)' missing netmask or gateway")
-	    unless $cfg->{mask} && $cfg->{gateway};
+	"subnet containing '$ip ($domain)' missing netmask")
+	    unless $cfg->{mask};
     _trace($ip, ' ', $cfg) if $_TRACE;
     return (_bits2netmask($self, $cfg->{mask}),
-	    _dig($cfg->{gateway}));
+	    $cfg->{gateway} && _dig($cfg->{gateway}));
 }
 
 sub _assert_network_configured_for {
@@ -775,11 +775,12 @@ sub _file_ifcfg {
     my($self, $device, $domain, $gateways_seen) = @_;
     my($ip) = _dig($domain);
     my($netmask) = _bits2netmask($self, _mask_for($ip));
-    my($gateway) = _dig(_network_config_for($ip)->{gateway});
+    my($gateway) = _network_config_for($ip)->{gateway};
     my($gw_line) = '';
     unless (exists($gateways_seen->{$gateway})) {
-	$gw_line = 'GATEWAY=' . $gateway
-	    unless $gateway eq $ip;
+	next unless $gateway && $gateway ne $ip;
+	$gateway = _dig($gateway);
+	$gw_line = 'GATEWAY=' . $gateway;
 	$gateways_seen->{$gateway} = 1;
     }
     return 'etc/sysconfig/network-scripts/ifcfg-' . $device,
