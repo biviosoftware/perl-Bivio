@@ -43,6 +43,11 @@ sub default_merge_overrides {
 	    user => "$args->{prefix}user",
 	    password => "$args->{prefix}pass",
 	    connection => 'Bivio::SQL::Connection::Postgres',
+	    dbms => {
+		database => 'template1',
+		user => 'postgres',
+		password => 'pgpass',
+	    },
 	},
 	'Bivio::Test::HTMLParser::Forms' => {
 	    error_color => '#993300',
@@ -182,6 +187,7 @@ sub merge_class_loader {
 	    $overrides || {}, {
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
+		    Agent => ['Bivio::Agent'],
 		    Auth => ['Bivio::Auth'],
 		    Delegate => ['Bivio::Delegate'],
 		    Biz => ['Bivio::Biz'],
