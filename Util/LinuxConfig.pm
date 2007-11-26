@@ -777,8 +777,7 @@ sub _file_ifcfg {
     my($netmask) = _bits2netmask($self, _mask_for($ip));
     my($gateway) = _network_config_for($ip)->{gateway} || '';
     my($gw_line) = '';
-    unless (exists($gateways_seen->{$gateway})) {
-	next unless $gateway && $gateway ne $ip;
+    if ($gateway && $gateway ne $ip && !exists($gateways_seen->{$gateway})) {
 	$gateway = _dig($gateway);
 	$gw_line = 'GATEWAY=' . $gateway;
 	$gateways_seen->{$gateway} = 1;
