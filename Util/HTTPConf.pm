@@ -19,6 +19,7 @@ my($_VARS) = {
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     timeout => 120,
+    trans_handler => 'Apache::OK',
     servers => 4,
     httpd_init_rc => '/etc/rc.d/init.d/httpd',
     httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
@@ -132,7 +133,7 @@ sub _app_vars {
 PerlWarn on
 PerlFreshRestart off
 PerlSetEnv BCONF $bconf
-PerlTransHandler Apache::OK
+@{[$vars->{trans_handler} ? 'PerlTransHandler ' . $vars->{trans_handler} : '']}
 # Override the translation handler to avoid local file permission checks
 PerlModule Bivio::Agent::HTTP::Dispatcher
 
