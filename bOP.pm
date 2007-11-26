@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,55 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.53  2007/11/25 18:33:21  nagler
+  * Bivio::Biz::ListModel
+    reverted internal_post_load_rows() logic, needs to edit 'rows' in place
+  * Bivio::Delegate::SimpleTypeError
+    TOO_FEW
+    added TOO_SHORT
+  * Bivio::Delegate::TaskId
+    added cancel_task for USER_CREATE
+  * Bivio::SQL::ListSupport
+    fmt
+  * Bivio::SQL::PropertySupport
+    sql_pos_param_for_insert
+  * Bivio::SQL::Support
+    set in_select and sql_name if select_value is set
+  * Bivio::ShellUtil
+    arg_list handles types in other maps, e.g Auth.Role
+    do_sh
+  * Bivio::Test::FormModel
+    moved file_field to TestUnit.Unit
+  * Bivio::Test::Type
+    from_literal_error
+  * Bivio::Test::Unit
+    Added builtin_file_field
+  * Bivio::Type::Date
+    now uses SUPER::now (not time())
+    rmpod
+  * Bivio::Type::SyntacticString
+    defaults TYPE_ERROR
+    TYPE_ERROR => SYNTAX_ERROR
+    Added length() check
+  * Bivio::Type::Time
+    now uses SUPER::now (not time())
+  * Bivio::UI::HTML::Widget::ProgressBar
+    UI.ViewShortcuts
+  * Bivio::Util::Backup
+    dates_to_trim
+    rmpod
+    directories to trim
+  * Bivio::Util::LinuxConfig
+    move _sendmail_cf
+    postgres_base added
+    _replace_param allows for easier param replacements
+    ignore result of chkconfig, because doesn't work on CentOS if the
+    service is not already configured (very odd)
+  * Bivio::Util::RealmAdmin
+    join_user handles multiple roles
+  * Bivio::Util::RealmMail
+    commit successful mbox imports in case of die
+
   Revision 5.52  2007/11/08 21:41:04  aviggio
   * Bivio::Biz::Action::RealmFile
     remove potential security holes in model() calls and
