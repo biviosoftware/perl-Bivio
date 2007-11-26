@@ -775,7 +775,7 @@ sub _file_ifcfg {
     my($self, $device, $domain, $gateways_seen) = @_;
     my($ip) = _dig($domain);
     my($netmask) = _bits2netmask($self, _mask_for($ip));
-    my($gateway) = _network_config_for($ip)->{gateway};
+    my($gateway) = _network_config_for($ip)->{gateway} || '';
     my($gw_line) = '';
     unless (exists($gateways_seen->{$gateway})) {
 	next unless $gateway && $gateway ne $ip;
