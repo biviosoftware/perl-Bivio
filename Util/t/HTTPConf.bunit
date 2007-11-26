@@ -40,6 +40,7 @@ Bivio::IO::File->chdir(tmp_dir());
         servers => 333,
         limit_request_body => 1_000_000_000,
         timeout => 1_000,
+        trans_handler => '',
     },
     server_admin => 'default@default.com',
     limit_request_body => 9999,
