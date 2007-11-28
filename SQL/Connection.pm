@@ -218,27 +218,27 @@ sub get_db_time {
 
 sub get_dbi_config {
     my($self) = shift;
-    # Returns a copy of the dbi configuration for this connection.  See
-    # L<Bivio::Ext::DBI::get_config|Bivio::Ext::DBI/"get_config">.
-    return _get_instance($self)->get_dbi_config(@_)
-	unless ref($self);
-    my($fields) = $self->[$_IDI];
-    return Bivio::Ext::DBI->get_config($fields->{dbi_name});
+    return Bivio::Ext::DBI->get_config(
+	@_ ? @_
+	    : ref($self) ? $self->[$_IDI]->{dbi_name}
+	    : Bivio::IO::Config->DEFAULT_NAME,
+    );
 }
 
 sub get_instance {
     my($proto, $dbi_name) = @_;
-    # Returns the singleton instance for configured I<dbi_name> database.
-
-    my($key) = defined($dbi_name) ? $dbi_name : '<default>';
-    # cache connections by dbi_name
-    unless ($_CONNECTIONS->{$key}) {
-	my($module) = Bivio::Ext::DBI->get_config($dbi_name)->{connection};
+    $dbi_name = Bivio::IO::Config->DEFAULT_NAME
+	unless defined($dbi_name);
+    unless ($_CONNECTIONS->{$dbi_name}) {
+	my($module) = $proto->get_dbi_config($dbi_name)->{connection};
 	Bivio::IO::ClassLoader->simple_require($module);
 	_trace($module) if $_TRACE;
-	$_CONNECTIONS->{$key} = $module->internal_new($dbi_name);
+	$_CONNECTIONS->{$dbi_name} = $module->internal_new($dbi_name);
     }
-    return $_CONNECTIONS->{$key};
+    if (my $req = $proto->use('Agent.Request')->get_current) {
+	$req->push_txn_resource($_CONNECTIONS->{$dbi_name});
+    }
+    return $_CONNECTIONS->{$dbi_name};
 }
 
 sub handle_commit {
