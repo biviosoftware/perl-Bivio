@@ -776,11 +776,12 @@ sub _file_ifcfg {
     my($ip) = _dig($domain);
     my($netmask) = _bits2netmask($self, _mask_for($ip));
     my($gateway) = _network_config_for($ip)->{gateway} || '';
+    $gateway = _dig($gateway)
+	if $gateway;
     my($gw_line) = '';
     if ($gateway && $gateway ne $ip && !exists($gateways_seen->{$gateway})) {
-	$gateway = _dig($gateway);
-	$gw_line = 'GATEWAY=' . $gateway;
 	$gateways_seen->{$gateway} = 1;
+	$gw_line = 'GATEWAY=' . $gateway;
     }
     return 'etc/sysconfig/network-scripts/ifcfg-' . $device,
 	\(_prepend_auto_generated_header(<<"EOF"));
