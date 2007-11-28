@@ -125,6 +125,10 @@ my(%_SPEC) = ();
 my(%_CONFIGURED) = ();
 _initialize(defined(@main::ARGV) ? \@main::ARGV : []);
 
+sub DEFAULT_NAME {
+    return '';
+}
+
 sub NAMED {
     # Identifies the named configuration specification, see L<register|"register">.
     return \&NAMED;
@@ -213,6 +217,8 @@ sub get {
     else {
 	my($i) = 0;
 	0 while ($pkg = caller($i++)) eq __PACKAGE__;
+	$name = undef
+	    unless defined($name) && length($name);
     }
     my($pkg_cfg) = _get_pkg($pkg);
     return $pkg_cfg
