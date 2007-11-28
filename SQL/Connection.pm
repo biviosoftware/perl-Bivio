@@ -86,6 +86,8 @@ sub do_execute {
 	unless ref($self);
     my($op) = shift;
     my($st) = $self->execute(@_);
+    return
+	unless $st->{Active};
     while (my $row = $st->fetchrow_arrayref) {
 	last unless $op->($row);
     }
@@ -403,6 +405,8 @@ sub map_execute {
     };
     my($st) = $self->execute(@_);
     my($res) = [];
+    return $res
+	unless $st->{Active};
     while (my $row = $st->fetchrow_arrayref) {
 	push(@$res, $op->($row));
     }
