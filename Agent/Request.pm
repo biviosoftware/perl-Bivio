@@ -876,7 +876,9 @@ sub push_txn_resource {
     # Adds a new transaction resource to this request.  I<resource> must
     # support C<handle_commit> and C<handle_rollback>.
     _trace($resource) if $_TRACE;
-    push(@{$self->get('txn_resources')}, $resource);
+    my($tr) = $self->get('txn_resources');
+    push(@$tr, $resource)
+	unless grep($_ eq $resource, @$tr);
     return;
 }
 

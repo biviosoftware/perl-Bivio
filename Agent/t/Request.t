@@ -52,7 +52,6 @@ Bivio::Test->new()->unit([
 	} => [
 	    [] => [undef],
 	    [$resource] => [$resource],
-	    [$resource] => Bivio::DieCode->DIE,
 	],
     ],
 ]);
