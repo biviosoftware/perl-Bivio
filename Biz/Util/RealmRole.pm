@@ -380,10 +380,9 @@ Makes current user an super_user (administrator of general realm).
 
 sub make_super_user {
     my($self) = @_;
-    my($req) = $self->get_request;
-    Bivio::Biz::Model->new($req, 'RealmUser')->create({
+    $self->model('RealmUser')->unauth_create_or_update({
 	realm_id => Bivio::Auth::RealmType->GENERAL->as_int,
-	user_id => $req->get('auth_user_id'),
+	user_id => $self->req('auth_user_id'),
 	role => Bivio::Auth::Role->ADMINISTRATOR,
     });
     return;
