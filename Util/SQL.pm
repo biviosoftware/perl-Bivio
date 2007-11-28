@@ -283,7 +283,7 @@ sub init_dbms {
 	    . ($v < 8 ? ' --no-adduser'
 		 : ' --no-superuser --no-createdb --no-createrole')
 	    . " $user");
-	_dbms_run($self, "ALTER USER $user WITH PASSWORD '$pass'");
+	_run_other($self, template1 => "ALTER USER $user WITH PASSWORD '$pass'");
 	$res .= " user '$user' and";
     }
     $self->piped_exec(
@@ -1517,14 +1517,6 @@ sub _assert_postgres {
     return $c;
 }
 
-sub _dbms_run {
-    my($self) = shift;
-    my($res) = Bivio::SQL::Connection->get_instance('dbms')->map_execute(@_);
-    $self->commit_or_rollback;
-    Bivio::SQL::Connection->get_instance('dbms')->disconnect;
-    return $res;
-}
-
 sub _ddl_files {
     my($self) = @_;
     # Initializes self and calls ddl_files(), checking result.
@@ -1537,23 +1529,22 @@ sub _ddl_files {
 
 sub _init_postgis {
     my($self, $c) = @_;
-    $self->piped_exec(
-	"psql --user=postgres --dbname=$c->{database}",
-	join(";\n",
-	     map(
-		 "ALTER TABLE $_ OWNER TO $c->{user}",
-	         qw(geometry_columns spatial_ref_sys)),
-	     'COMMIT',
-	 )
-    );
+    foreach my $sql (
+	map((
+	    "ALTER TABLE $_ OWNER TO $c->{user}",
+	    "GRANT ALL ON $_ to $c->{user}",
+	), qw(geometry_columns spatial_ref_sys)),
+    ) {
+	_run_other($self, dbms => $sql);
+    }
     return;
 }
 
 sub _init_template1 {
     my($self) = @_;
-    return if @{_dbms_run(
+    return if @{_run_other(
 	$self,
-	'select lanname from pg_language where lanname = ?',
+	template1 => 'select lanname from pg_language where lanname = ?',
 	['plpgsql'],
     )};
     $self->piped_exec('createlang --user=postgres plpgsql template1');
@@ -1597,6 +1588,15 @@ sub _parse {
     return @res;
 }
 
+sub _run_other {
+    my($self) = shift;
+    my($c) = Bivio::SQL::Connection->get_instance(shift);
+    my($res) = $c->map_execute(@_);
+    $self->commit_or_rollback;
+    $c->disconnect;
+    return $res;
+}
+
 sub _sentinel_file_writer {
     my($self) = @_;
     # Don't add it unless FILE_WRITER is a role in this app
@@ -1627,8 +1627,9 @@ sub _sentinel_site_forum {
 
 sub _user_exists {
     my($self) = @_;
-    return scalar(@{_dbms_run(
+    return scalar(@{_run_other(
 	$self,
+	template1 =>
 	'SELECT usename
         FROM pg_user
         WHERE usename = ?',
@@ -1637,9 +1638,14 @@ sub _user_exists {
 }
 
 sub _table_exists {
-    my($self, $table) = @_;
-    $table = lc($table);
-    return grep($table eq lc($_), @{shift->tables}) ? 1 : 0;
+    my(undef, $table) = @_;
+    # Different from tables(), which is checking owner
+    return @{Bivio::SQL::Connection->map_execute(
+	'SELECT tablename
+        FROM pg_tables
+        WHERE tablename = ?',
+	[lc($table)],
+    )} ? 1 : 0;
 }
 
 1;
