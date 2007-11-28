@@ -42,7 +42,6 @@ commands:
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     restore_dbms_dump file-dump -- restore a "raw" dump
     run -- executes sql contained in input and dies on error
-    run_command sql -- executes sql in command line interpreter (shell)
     tables - list tables of current database
     upgrade_db -- upgrade the database
     vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
@@ -213,7 +212,7 @@ sub export_db {
     my($f) = ($dir || '.') . '/' . $db->{database} . '-'
 	. Bivio::Type::DateTime->local_now_as_file_name . '.pg_dump';
     $self->piped_exec(
-	"pg_dump --username '$db->{user}' --clean --format=c --blobs "
+	"pg_dump --user='$db->{user}' --clean --format=c --blobs "
 	. " --file='$f' '$db->{database}'");
     return "Exported $db->{database} to $f";
 }
@@ -262,7 +261,7 @@ sub import_tables_only {
     # need to commit so pg_restore can access the tables
     Bivio::SQL::Connection->commit;
 
-    $self->piped_exec("pg_restore --username='$db->{user}'"
+    $self->piped_exec("pg_restore --user='$db->{user}'"
 	. " --dbname='$db->{database}' --data-only '$backup_file'");
 
     Bivio::SQL::Connection->ping_connection;
@@ -271,27 +270,34 @@ sub import_tables_only {
 
 sub init_dbms {
     my($self, $clone_db) = @_;
-    my($db, $dbuser, $dbpass) =
- 	@{Bivio::SQL::Connection->get_dbi_config}{qw(database user password)};
+    $self->req;
+    my($c) = _assert_postgres($self);
+    my($db, $user, $pass) = @$c{qw(database user password)};
     my($v) = ${$self->piped_exec("psql --version")} =~ /(\d+)/s;
-    unless (${$self->piped_exec(
-	"psql --username postgres -c '\\du $dbuser' template1")}
-		=~ /$dbuser/) {
-	my($no_adduser) = (
-	    $v < 8 ? '--no-adduser'
-		: '--no-superuser --no-createdb --no-createrole'
-	    );
+    my($res) = '';
+    _init_template1($self)
+	if $v >= 8;
+    unless (_user_exists($self)) {
 	$self->piped_exec(
-	    "createuser --username postgres --createdb $no_adduser $dbuser");
-	print "created PostgreSQL user '$dbuser'\n";
+	    'createuser --user=postgres'
+	    . ($v < 8 ? ' --no-adduser'
+		 : ' --no-superuser --no-createdb --no-createrole')
+	    . " $user");
+	_dbms_run($self, "ALTER USER $user WITH PASSWORD '$pass'");
+	$res .= " user '$user' and";
     }
     $self->piped_exec(
-	'createdb '
-	. (defined($clone_db) ? "--template $clone_db " : '')
-	. ($v < 8 ? '' : ' --encoding SQL_ASCII')
-	. "--owner $dbuser $db"
+	'createdb --user=postgres'
+	. (defined($clone_db) ? " --template=$clone_db " : '')
+	. ($v < 8 ? '' : ' --encoding=SQL_ASCII')
+	. " --owner=$user $db",
     );
-    return "created PostgreSQL database '$db'"
+    $res .= " database '$db'";
+    if (_table_exists($self, 'spatial_ref_sys')) {
+	_init_postgis($self, $c);
+	$res .= ' with PostGIS';
+    }
+    return "created$res"
 	. (defined($clone_db) ? " copied from '$clone_db'" : '');
 }
 
@@ -1425,21 +1431,6 @@ sub run {
     return;
 }
 
-sub run_command {
-    my($self, $commands) = @_;
-    # Runs command line interpreter (e.g. psql or sqlplus) on the current database.
-    # I<commands> may be a string_ref.  Aborts on errors.
-    #
-    # Currently only supports postgres.
-    my($c) = _assert_postgres($self);
-    return $self->piped_exec(
-	"psql --username '$c->{user}' --dbname '$c->{database}' 2>&1",
-	# Ensures commit happens
-	(ref($commands) ? $$commands : $commands)
-	. ($self->unsafe_get('noexecute') ? "\n;rollback;\n" : "\n;commit;\n"),
-    );
-}
-
 sub tables {
     return Bivio::SQL::Connection->map_execute(
 	'SELECT tablename
@@ -1508,7 +1499,7 @@ sub vacuum_db_continuously {
 	    '--verbose',
 	    $ENV{USER} eq 'postgres'
 	        ? '--all'
-	        : ('--username', $c->{user}, '--dbname', $c->{database}),
+	        : ("--user=$c->{user}", "--dbname=$c->{database}"),
 	],
     },
        'vacuum_db_continuously',
@@ -1526,6 +1517,14 @@ sub _assert_postgres {
     return $c;
 }
 
+sub _dbms_run {
+    my($self) = shift;
+    my($res) = Bivio::SQL::Connection->get_instance('dbms')->map_execute(@_);
+    $self->commit_or_rollback;
+    Bivio::SQL::Connection->get_instance('dbms')->disconnect;
+    return $res;
+}
+
 sub _ddl_files {
     my($self) = @_;
     # Initializes self and calls ddl_files(), checking result.
@@ -1534,6 +1533,43 @@ sub _ddl_files {
     $self->usage('must be run in files/ddl directory')
 	unless -r $f->[0];
     return $f;
+}
+
+sub _init_postgis {
+    my($self, $c) = @_;
+    $self->piped_exec(
+	"psql --user=postgres --dbname=$c->{database}",
+	join(";\n",
+	     map(
+		 "ALTER TABLE $_ OWNER TO $c->{user}",
+	         qw(geometry_columns spatial_ref_sys)),
+	     'COMMIT',
+	 )
+    );
+    return;
+}
+
+sub _init_template1 {
+    my($self) = @_;
+    return if @{_dbms_run(
+	$self,
+	'select lanname from pg_language where lanname = ?',
+	['plpgsql'],
+    )};
+    $self->piped_exec('createlang --user=postgres plpgsql template1');
+    foreach my $dir (qw(/usr/share/pgsql/contrib /usr/local/share)) {
+	next unless -d $dir;
+	$self->use('IO.File')->do_in_dir($dir, sub {
+	    foreach my $file (qw(lwpostgis.sql spatial_ref_sys.sql)) {
+		last unless -f $file;
+		$self->piped_exec(
+		    "psql --user=postgres --dbname=template1 --file=$file");
+	    }
+	    return;
+	});
+	last;
+    }
+    return;
 }
 
 sub _parse {
@@ -1587,6 +1623,23 @@ sub _sentinel_site_forum {
 	unless $f->can('HELP_WIKI_REALM_NAME')
 	&& $f->HELP_WIKI_REALM_NAME eq 'site-help';
     return $self->model('RealmOwner')->unauth_load({name => 'site'});
+}
+
+sub _user_exists {
+    my($self) = @_;
+    return scalar(@{_dbms_run(
+	$self,
+	'SELECT usename
+        FROM pg_user
+        WHERE usename = ?',
+	[_assert_postgres($self)->{user}],
+    )});
+}
+
+sub _table_exists {
+    my($self, $table) = @_;
+    $table = lc($table);
+    return grep($table eq lc($_), @{shift->tables}) ? 1 : 0;
 }
 
 1;
