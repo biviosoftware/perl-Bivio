@@ -43,8 +43,12 @@ sub default_merge_overrides {
 	    user => "$args->{prefix}user",
 	    password => "$args->{prefix}pass",
 	    connection => 'Bivio::SQL::Connection::Postgres',
-	    dbms => {
+	    template1 => {
 		database => 'template1',
+		user => 'postgres',
+		password => 'pgpass',
+	    },
+	    dbms => {
 		user => 'postgres',
 		password => 'pgpass',
 	    },
