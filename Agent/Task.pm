@@ -10,8 +10,6 @@ use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
-use Bivio::SQL::Connection;
-use Bivio::Type::Boolean;
 
 # C<Bivio::Agent::Task> defines a tuple which is configured by
 # L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
@@ -131,6 +129,7 @@ my(%_REDIRECT_DIE_CODES) = (
 );
 my($_REQUEST_LOADED);
 my($_HANDLERS) = [__PACKAGE__];
+my($_B) = __PACKAGE__->use('Type.Boolean');
 
 sub commit {
     my(undef, $req) = @_;
@@ -140,7 +139,6 @@ sub commit {
     # were no modifications.
     #
     _call_txn_resources($req, 'handle_commit');
-    Bivio::SQL::Connection->commit;
 #TODO: Garbage collect state that doesn't agree with SQL DB
     # Note: rollback is in handle_die
     return;
@@ -440,7 +438,6 @@ sub rollback {
     # NOTE: Bivio::Biz::Model::Lock::release behaves a particular way
     # and this code must stay in synch with it.
     _call_txn_resources($req, 'handle_rollback');
-    Bivio::SQL::Connection->rollback;
     return;
 }
 
@@ -549,7 +546,7 @@ sub _parse_map_item {
     # Parses a new map item for this task.
     return _put_attr(
 	$attrs, $cause,
-	Bivio::Type::Boolean->from_literal_or_die($action),
+	$_B->from_literal_or_die($action),
     ) if $cause =~ /^(?:require_|want_)[a-z0-9_]+$/;
     $action = $_T->from_any($action);
     return _put_attr($attrs, $cause, $action)
