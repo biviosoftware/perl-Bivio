@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.55  2007/11/28 21:15:23  nagler
+  * Bivio::Agent::Request
+    push_txn_resources does not insert duplicates
+  * Bivio::Agent::Task
+    SQL::Connection is now a transaction resource
+  * Bivio::BConf
+    added dbms DBI config and Agent to maps
+  * Bivio::IO::Config
+    added DEFAULT_NAME ('')
+    get: treats undef and '' as the same
+  * Bivio::SQL::Connection
+    you can get_dbi_config before you can make a connection
+  * Bivio::UI::HTML::Widget::PercentCell
+    default column and cell class to 'amount'
+  * Bivio::Util::HTTPConf
+    allow overriding PerlTransHandler
+  * Bivio::Util::LinuxConfig
+    ifcfg: gateway needs to be digged before seen comparison
+  * Bivio::Util::SQL
+    added --encoding SQL_ASCII if >= 8
+    init_dbms supports PostGIS
+    run_command removed
+
   Revision 5.54  2007/11/26 00:39:04  nagler
   * Bivio::Mail::Common
     make -U conditional on what sendmail accepts
