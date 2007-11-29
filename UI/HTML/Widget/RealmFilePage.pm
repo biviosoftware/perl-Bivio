@@ -93,7 +93,13 @@ sub _render_view_attr {
     }
     $a =~ s/\W/_/g;
     $a = "$vap$a";
-    return ${$self->render_value($a, view_get($a), $source)};
+    my($die);
+    my($res) = Bivio::Die->catch(
+	sub {$self->render_value($a, view_get($a), $source)},
+	\$die,
+    );
+    return $res ? $$res
+	: ('TAG-ERR' . ($source->req->is_test ? ': ' . $die->as_string : ''));
 }
 
 1;
