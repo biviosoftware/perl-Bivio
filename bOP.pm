@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.56  2007/11/28 23:04:19  nagler
+  * Bivio::BConf
+    named DBI database "dbms" connects as postgres
+    template1 DBI database is template1/postgres
+  * Bivio::SQL::Connection
+    do_execute & map_execute needs to check st->Active
+  * Bivio::Util::SQL
+    _dbms_run -> _run_other
+
   Revision 5.55  2007/11/28 21:15:23  nagler
   * Bivio::Agent::Request
     push_txn_resources does not insert duplicates
