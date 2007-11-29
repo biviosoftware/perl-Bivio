@@ -9,6 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DATA);
 my($_VARS) = {
     is_production => 0,
+    can_secure => 1,
     legacy_rewrite_rules => '',
     cookie_tag => undef,
     listen => undef,
@@ -89,6 +90,7 @@ use $root_prefix::BConf;
 $root_prefix::BConf->merge_dir({
     'Bivio::Agent::Request' => {
         is_production => $is_production,
+        can_secure => $can_secure,
     },
     'Bivio::Delegate::Cookie' => {
         tag => '$cookie_tag',
