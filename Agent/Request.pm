@@ -793,8 +793,9 @@ sub is_http_method {
 }
 
 sub is_production {
-    # Returns I<is_production> from the configuration.
-    return $_IS_PRODUCTION;
+    my($self) = @_;
+    return ref($self) ? $self->get_or_default(is_production => $_IS_PRODUCTION)
+	: $_IS_PRODUCTION;
 }
 
 sub is_substitute_user {
