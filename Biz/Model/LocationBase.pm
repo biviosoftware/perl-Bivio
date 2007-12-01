@@ -19,6 +19,16 @@ sub create {
     return $self->SUPER::create($values);
 }
 
+sub internal_unique_load_values {
+    my($self, $values) = @_;
+    return {
+	map(($_ => $values->{$_} || return),
+	    'realm_id',
+	),
+	location => $values->{location} || $_DEFAULT_LOCATION,
+    };
+}
+
 sub unauth_load {
     my($self) = shift;
     # If I<realm_id> is set and I<location> isn't, sets I<location> to I<HOME>
