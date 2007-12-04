@@ -19,8 +19,6 @@ use HTTP::Request::Common ();
 use Sys::Hostname ();
 use URI ();
 
-# C<Bivio::Test::Language::HTTP> contains support for HTTP tests.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
@@ -206,7 +204,7 @@ sub generate_remote_email {
     my($self, $base, $facade_uri) = @_;
     # Generates an email for the remote server.  Appends  @I<remote_mail_host> with
     # I<facade_uri>. prefix if it is supplied.
-    return _facade("$base\@$_CFG->{remote_mail_host}", $self, $facade_uri);
+    return _facade($self, "$base\@$_CFG->{remote_mail_host}", $self, $facade_uri);
 }
 
 sub generate_test_name {
@@ -344,6 +342,7 @@ sub home_page {
 sub home_page_uri {
     my($self, $facade) = @_;
     return _facade(
+	$self,
 	$_CFG->{home_page_uri},
 	$self,
 	@_ > 1 ? $facade : $self->http_facade);
@@ -845,14 +844,14 @@ sub _create_form_request {
 }
 
 sub _facade {
-    my($to_fix, undef, $facade_uri) = @_;
+    my($self, $to_fix, undef, $facade_uri) = @_;
     return $to_fix
 	unless $facade_uri;
-    my($default) = Bivio::IO::ClassLoader->simple_require(
-	'Bivio::Test::Request')
-	->initialize_fully
-	->get('Bivio::UI::Facade')
-	->get('uri');
+    my($req) = $self->use('TestUnit.Request')->get_instance;
+    my($default) = (
+	$req->unsafe_get('Bivio::UI::Facade')
+	    || $req->initialize_fully->get('Bivio::UI::Facade')
+    )->get_default->get('uri');
     $to_fix =~ s{^(.*?)\b$default\b}{$1$facade_uri}ix
 	|| $to_fix =~ s{(?<=\://)|(?<=\@)}{$facade_uri.}ix
 	|| Bivio::Die->die($to_fix, ': unable to fixup uri with ', $facade_uri);
