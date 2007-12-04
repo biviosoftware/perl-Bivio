@@ -556,7 +556,7 @@ case "$1" in
 	;;
     restart)
 	stop
-        sleep 3
+	sleep 3
 	start
 	;;
     reload)
