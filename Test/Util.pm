@@ -100,7 +100,7 @@ sub mock_sendmail {
 	    unless defined($pid);
 	return if $pid;
     }
-    my($req) = $self->initialize_ui;
+    my($req) = $self->initialize_fully;
     unless ($from =~ s/^-f//) {
 	$recipients = $from;
 	$from = undef;
@@ -115,26 +115,21 @@ sub mock_sendmail {
 	(my $email = $r) =~ s/\+([^\@]+)//;
 	my($extension) = $1 || '';
 	$msg->set_recipients($r, $req);
-	my($res) = $self->piped_exec(
-	    "b-sendmail-http 127.0.0.1 '$r' '"
-	    . (Bivio::IO::ClassLoader
-	        ->simple_require('Bivio::Test::Language::HTTP')
-		->home_page_uri =~ m{http://([^/]+)})[0]
-	    . ($req->unsafe_get('Bivio::UI::Facade')
-	       && Bivio::Agent::TaskId->unsafe_from_name('MAIL_RECEIVE_DISPATCH')
-	       && Bivio::UI::Task->has_uri('MAIL_RECEIVE_DISPATCH')
-	       ? $req->format_uri({
+	next unless my $http = _mock_sendmail_facade($self, $r);
+	my($res) = $self->piped_exec(Bivio::IO::Alert->debug(
+	    "b-sendmail-http 127.0.0.1 '$r' '$http"
+	    . $req->format_uri({
 		    task_id => 'MAIL_RECEIVE_DISPATCH',
 		    path_info => undef,
-	       }) : '/no-mail-receive-dispatch')
-	    . "' /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
+	       })
+	    . "' /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1"),
 	    $msg->as_string,
 	    1,
 	);
 	chomp($$res);
-	_trace($r, ' => ', $res) if $_TRACE;
 	next unless $$res;
-	_trace('delivery failed: ', $msg) if $_TRACE;
+	Bivio::IO::Alert->warn($r, ': DELIVERY FAILED: ', $res);
+	_trace($msg) if $_TRACE;
 	next if $recursing;
 	$r = (Bivio::Mail::Address->parse(
 	    $msg->unsafe_get_header('errors-to')
@@ -279,6 +274,26 @@ sub _make_nightly_dir {
     Bivio::IO::File->chdir($dir);
     $self->print("Created $dir\n");
     return $dir;
+}
+
+sub _mock_sendmail_facade {
+    my($self, $email) = @_;
+    my($facade) = $self->use('UI.Facade')->setup_request(
+	($email =~ /@(.+)/)[0]
+	    || Bivio::Die->die($email, ': no domain name on email address'),
+	$self->req,
+    );
+    return Bivio::IO::Alert->warn(
+	$email, ': no MAIL_RECEIVE_DISPATCH TaskId',
+    ) unless Bivio::Agent::TaskId->unsafe_from_name('MAIL_RECEIVE_DISPATCH');
+    return Bivio::IO::Alert->warn(
+	$facade, ': no MAIL_RECEIVE_DISPATCH uri for ', $email,
+    ) unless Bivio::UI::Task->has_uri('MAIL_RECEIVE_DISPATCH');
+    my($http) = $self->use('TestLanguage.HTTP')->home_page_uri(
+	$facade->get('uri'));
+    Bivio::Die->die($http, ': TestLanguage.HTTP->home_page_uri missing http:')
+        unless $http =~ m{http://([^/]+)};
+    return $1;
 }
 
 sub _piped_exec {
