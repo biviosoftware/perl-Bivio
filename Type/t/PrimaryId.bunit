@@ -1,0 +1,50 @@
+# Copyright (c) 2005-2007 bivio Software, Inc.  All rights reserved.
+# $Id$
+Type();
+class('Biz.ListModel');
+[
+    to_parts => [
+	'100001' => [{
+	    version => 0,
+	    type => 1,
+	    site => 0,
+	    number => 1,
+	 }],
+	'111111111111100001' => [{
+	    version => 0,
+	    type => 1,
+	    site => 0,
+	    number => '1111111111111',
+	 }],
+	'1' => DIE(),
+    ],
+    from_parts => [
+	[{
+	    version => 0,
+	    type => 1,
+	    site => 0,
+	    number => 1,
+	}] => '100001',
+	[{
+	    version => 0,
+	    type => 1,
+	    site => 1,
+	    number => '1111111111111',
+	}] => '111111111111100101',
+    ],
+    is_specified => [
+	[undef] => 0,
+	'' => 0,
+	1 => 0,
+	2 => 1,
+	100001 => 1,
+    ],
+    is_valid => [
+	[undef] => 0,
+	'' => 0,
+	1 => 0,
+	2 => 0,
+	100001 => 1,
+    ],
+];
+
