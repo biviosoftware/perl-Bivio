@@ -850,25 +850,6 @@ sub new {
     die('only can initialize from subclasses');
 }
 
-sub preserve {
-    # (self, string, block) : any
-    # (self, arrayref, block) : any
-    # Preserve items on the request after executing a block
-    my($self, $keys, $do_block) = @_;
-    $keys = [$keys]
-	unless ref($keys);
-    my($restore, $return) = ({}, undef);
-    foreach my $key (@$keys) {
-	$restore->{$key} = $self->get($key)
-	    if $self->has_keys($key);
-    }
-    $return = $do_block->();
-    foreach my $key (keys %$restore) {
-	$self->put($key => $restore->{$key});
-    }
-    return $return;
-}
-
 sub process_cleanup {
     my($self, $die) = @_;
     # Calls any cleanup outside of the database commit/rollback.
