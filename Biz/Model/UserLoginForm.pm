@@ -162,6 +162,13 @@ sub internal_initialize {
     return $info;
 }
 
+sub internal_validate_login_value {
+    my($self, $value) = @_;
+    my($owner) = $self->new_other('RealmOwner');
+    my($err) = $owner->validate_login($value);
+    return $err ? (undef, $err) : ($owner, undef);
+}
+
 sub substitute_user {
     my($proto, $new_user, $req) = @_;
     my($self) = ref($proto) ? $proto : $proto->new($req);
@@ -223,30 +230,18 @@ sub validate {
 
 sub validate_login {
     my($self, $model_or_login) = @_;
-    # Looks at I<login> field of I<model> and loads.
-    # If valid, puts RealmOwner in I<realm_owner> and returns it.
-    # If I<model> is not passed, uses I<self>.
-    if ($model_or_login) {
-	if (ref($model_or_login)) {
-	    $self = $model_or_login;
-	}
-	else {
-	    $self->internal_put_field(login => $model_or_login);
-	}
-    }
-    $self->internal_put_field(validate_called => 1);
-    my($login) = $self->get('login');
+    my($model) = ref($model_or_login) ? $model_or_login : $self;
+    $model->internal_put_field(login => $model_or_login)
+	if defined($model_or_login) && !ref($model_or_login);
+    $model->internal_put_field(validate_called => 1);
+    my($login) = $model->get('login');
     return undef
 	unless defined($login);
-    my($owner) = $self->new_other('RealmOwner');
-    my($error) = $owner->validate_login($self->get('login'));
-    if ($error) {
-	$self->internal_put_error(login => $error);
-	return undef;
-    }
-
-    $self->internal_put_field(realm_owner => $owner);
-    return $owner;
+    my($realm, $err) = $self->internal_validate_login_value($login);
+    $model->internal_put_error(login => $err)
+	if $err;
+    $model->internal_put_field(realm_owner => $realm);
+    return $realm;
 }
 
 sub _assert_login {
