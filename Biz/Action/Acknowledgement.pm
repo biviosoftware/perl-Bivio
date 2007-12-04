@@ -1,75 +1,21 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::Acknowledgement;
 use strict;
-$Bivio::Biz::Action::Acknowledgement::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Action::Acknowledgement::VERSION;
+use Bivio::Base 'Biz.Action';
 use Bivio::IO::Trace;
 
-=head1 NAME
-
-Bivio::Biz::Action::Acknowledgement - confirmation message management
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Action::Acknowledgement;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::Action>
-
-=cut
-
-use Bivio::Biz::Action;
-@Bivio::Biz::Action::Acknowledgement::ISA = ('Bivio::Biz::Action');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Action::Acknowledgement>
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
 sub QUERY_KEY {
     return 'ack';
 }
 
-#=IMPORTS
-use Bivio::IO::Trace;
-
-#=VARIABLES
-our($_TRACE);
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute"></a>
-
-=head2 static execute(Bivio::Agent::Request req) : boolean
-
-L<extract_label|"extract_label">
-
-=cut
-
 sub execute {
     shift->extract_label(@_);
     return 0;
 }
-
-=for html <a name="extract_label"></a>
-
-=head2 static extract_label(Bivio::Agent::Request req) : string
-
-Pulls label off query if it exists.  If length is non-zero, puts
-I<label> attribute on self.
-
-=cut
 
 sub extract_label {
     my($proto, $req) = @_;
@@ -84,20 +30,8 @@ sub extract_label {
     return undef;
 }
 
-=for html <a name="save_label"></a>
-
-=head2 static save_label(string label, Bivio::Agent::Request req)
-
-=head2 static save_label(Bivio::Agent::Request req)
-
-Saves I<label> in query (FormContext and req).  If I<label> is false, will set
-the $req.task_id.as_int to the query if acknowledgement.task_id is a
-Bivio::UI::Text is a label.
-
-=cut
-
 sub save_label {
-    my($proto, $label, $req) = @_ >= 3 ? @_ : (shift(@_), undef, pop(@_));
+    my($proto, $label, $req, $query) = @_ >= 3 ? @_ : (shift(@_), undef, @_);
     unless ($label) {
 	return unless Bivio::UI::Text->get_from_source($req)
 	    ->unsafe_get_widget_value_by_name(
@@ -106,7 +40,10 @@ sub save_label {
 	$label = $req->get('task_id')->as_int;
     }
     _trace($proto->QUERY_KEY, '=', $label) if $_TRACE;
-    # Add to FormContext (if exists) and request
+    if ($query) {
+	$query->{$proto->QUERY_KEY} = $label;
+	return;
+    }
     my($x) = $req->unsafe_get('form_model');
     $x &&= $x->unsafe_get_context;
     foreach my $y ($x, $req) {
@@ -117,31 +54,11 @@ sub save_label {
     return;
 }
 
-=for html <a name="save_label_and_execute"></a>
-
-=head2 static save_label_and_execute(string label, Bivio::Agent::Request req)
-
-Saves I<label> on an action instance.
-
-=cut
-
 sub save_label_and_execute {
     my($proto, $label, $req) = @_;
     $proto->save_label($label, $req);
     $proto->execute($req);
     return;
 }
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
