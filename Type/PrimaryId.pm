@@ -79,18 +79,15 @@ sub get_width {
 }
 
 sub is_specified {
-    my($proto, $value) = @_;
-    # Returns true if value is specified, that is, something that is likely
-    # to be a primary key.
+    my(undef, $value) = @_;
     return defined($value) && $value =~ /\d/
 	&& $value ne Bivio::Biz::ListModel->EMPTY_KEY_VALUE
 	? 1 : 0;
 }
 
 sub is_valid {
-    # Stricter test than is_specified().  If unsafe_to_parts() fails, returns false.
-    shift->unsafe_to_parts(@_)
-    return  ? 1 : 0;
+    my($p) = shift->unsafe_to_parts(@_);
+    return $p && $p->{number} && $p->{type} ? 1 : 0;
 }
 
 sub to_html {
@@ -130,7 +127,7 @@ sub unsafe_to_parts {
     my(undef, $value) = @_;
     # Returns the primary_id decomposed into parts: number, site, version, type
     # Returns undef if invalid.
-    return $value =~ /^(\d+)(\d)(\d{2})(\d{2})$/ ? {
+    return ($value || '') =~ /^(\d+)(\d)(\d{2})(\d{2})$/ ? {
 	# Convert all but number, because number may be larger than range
 	number => $1,
 	version => $3 + 0,
