@@ -929,8 +929,12 @@ sub validate_and_execute_ok {
     else {
 	# Catch errors and rethrow unless we can process
 	my($res) = _call_execute_ok($self, $form_button);
-	Bivio::Biz::Action->get_instance('Acknowledgement')->save_label($req)
-	     unless $self->in_error || $fields->{stay_on_page};
+	Bivio::Biz::Action->get_instance('Acknowledgement')->save_label(
+	    undef,
+	    $req,
+	    ref($res) eq 'HASH' && exists($res->{query})
+		? ($res->{query} ||= {}) : (),
+	) unless $self->in_error || $fields->{stay_on_page};
 
 	# If execute_ok returns true, just get out.  The task will
 	# stop executing so no need to test errors.
