@@ -177,7 +177,7 @@ sub _do {
     $self->initialize_permissions($realm);
     my($realm_id) = $realm->get('realm_id');
     foreach my $role (map(Bivio::Auth::Role->from_any($_), @$roles)) {
-	$self->unauth_load_or_die(realm_id => $realm_id, role => $role);
+	next unless $self->unauth_load(realm_id => $realm_id, role => $role);
 	$self->update({
 	    permission_set => $which eq 'add'
 	            ? ($self->get('permission_set')
@@ -185,9 +185,10 @@ sub _do {
 	            : ($self->get('permission_set')
 		        & ~_permissions($realm, $role, $permissions)),
 	});
-    _trace('permissions: ',
-        Bivio::Auth::PermissionSet->to_array($self->get('permission_set')))
-	if $_TRACE;
+	_trace(
+	    'permissions: ',
+	    Bivio::Auth::PermissionSet->to_array($self->get('permission_set'))
+	) if $_TRACE;
     }
     return;
 }
