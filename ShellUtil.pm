@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::ShellUtil;
 use strict;
@@ -387,14 +387,9 @@ sub finish {
 
 sub get_request {
     my($self) = @_;
-    # If called with an instance, same as $self-E<gt>get('req').  If called
-    # statically, returns Bivio::Agent::Request-E<gt>get_current or dies
-    # if no request.
-    if (ref($self)) {
-	$self->setup() unless $self->unsafe_get('req');
-        return $self->get('req');
-    }
-    my($req) = Bivio::Agent::Request->get_current;
+    return $self->unsafe_get('req') || $self->setup->get('req')
+	if ref($self);
+    my($req) = $self->use('Agent.Request')->get_current;
     Bivio::Die->die('no request') unless $req;
     return $req;
 }
