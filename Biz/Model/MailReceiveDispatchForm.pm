@@ -2,78 +2,33 @@
 # $Id$
 package Bivio::Biz::Model::MailReceiveDispatchForm;
 use strict;
-$Bivio::Biz::Model::MailReceiveDispatchForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::MailReceiveDispatchForm::VERSION;
-
-=head1 NAME
-
-Bivio::Biz::Model::MailReceiveDispatchForm - redirect to realm/task based on recipient
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Model::MailReceiveDispatchForm;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::Model::MailReceiveBaseForm>
-
-=cut
-
-use Bivio::Biz::Model::MailReceiveBaseForm;
-@Bivio::Biz::Model::MailReceiveDispatchForm::ISA = ('Bivio::Biz::Model::MailReceiveBaseForm');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::MailReceiveDispatchForm> dispatches incoming
-mail to realm/task based on incoming recipient.  See L<execute|"execute">.
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Base 'Model.MailReceiveBaseForm';
 use Bivio::Ext::MIMEParser;
+use Bivio::IO::Trace;
 use Bivio::Mail::Address;
 use Bivio::UI::Task;
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_E) = Bivio::Type->get_instance('Email');
 Bivio::IO::Config->register(my $_CFG = {
     ignore_dashes_in_recipient => 0,
 });
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute_ok"></a>
-
-=head2 execute_ok() : boolean
-
-Unpacks and stores an incoming mail message.
-Requires form fields: client_addr, recipient, message.
-
-Sets facade, realm, user, and server_redirects to task.
-
-User is set from From: or Apparently-From:, in that order.
-
-op then maps to a URI:
-
-   Bivio::UI::Text->get_value('MailReceiveDispatchForm.uri_prefix') . $op
-
-I<op> must contain only \w and dashes (-).
-
-=cut
-
 sub execute_ok {
     my($self) = @_;
+    # Unpacks and stores an incoming mail message.
+    # Requires form fields: client_addr, recipient, message.
+    #
+    # Sets facade, realm, user, and server_redirects to task.
+    #
+    # User is set from From: or Apparently-From:, in that order.
+    #
+    # op then maps to a URI:
+    #
+    #    Bivio::UI::Text->get_value('MailReceiveDispatchForm.uri_prefix') . $op
+    #
+    # I<op> must contain only \w and dashes (-).
     my($req) = $self->get_request;
     Bivio::Type::UserAgent->MAIL->execute($req, 1);
     $req->put_durable(client_addr => $self->get('client_addr'));
@@ -115,18 +70,11 @@ sub handle_config {
     return;
 }
 
-=for html <a name="internal_get_login"></a>
-
-=head2 internal_get_login() : string
-
-Returns the value to be passed to I<UserLoginForm.login> before the server
-redirect in L<execute_ok|"execute_ok">.  All other fields are initialized at
-time of call.  May return C<undef> (no login).
-
-=cut
-
 sub internal_get_login {
     my($self) = @_;
+    # Returns the value to be passed to I<UserLoginForm.login> before the server
+    # redirect in L<execute_ok|"execute_ok">.  All other fields are initialized at
+    # time of call.  May return C<undef> (no login).
     # We must load the email explicitly, because we won't want the
     # general check in UserLoginForm which strips the domain and
     # checks the login.  Also, we need to handle the case where
@@ -135,12 +83,6 @@ sub internal_get_login {
     return $email->unauth_load({email => $self->get('from_email')})
 	? $email->get('realm_id') : undef;
 }
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref;
-
-=cut
 
 sub internal_initialize {
     my($self) = @_;
@@ -171,16 +113,9 @@ sub internal_initialize {
     });
 }
 
-=for html <a name="internal_set_realm"></a>
-
-=head2 internal_set_realm(string realm)
-
-Sets I<realm> or throws not_found.
-
-=cut
-
 sub internal_set_realm {
     my($self, $realm) = @_;
+    # Sets I<realm> or throws not_found.
     $realm = ref($realm) ? $realm
 	: $self->new_other('RealmOwner')
 	->unauth_load_by_id_or_name_or_die($realm);
@@ -192,26 +127,19 @@ sub internal_set_realm {
     return;
 }
 
-=for html <a name="parse_recipient"></a>
-
-=head2 parse_recipient(boolean ignore_dashes) : array
-
-Returns (realm, op, plus_tag, domain) from recipient.  I<op> may be undef.
-I<realm> may be a Model.RealmOwner, name, or realm_id.  Dies with NOT_FOUND
-if recipient not syntactically valid.
-
-Two addresses are parsed:
-
-   op.realm+plus_tag@domain
-   realm-op+plus_tag@domain  (only if !$ignore_dashes)
-
-Where +plus_tag is like sendmail style +anything after the address.  You don't
-need +plus_tag.
-
-=cut
-
 sub parse_recipient {
     my($self, $ignore_dashes) = @_;
+    # Returns (realm, op, plus_tag, domain) from recipient.  I<op> may be undef.
+    # I<realm> may be a Model.RealmOwner, name, or realm_id.  Dies with NOT_FOUND
+    # if recipient not syntactically valid.
+    #
+    # Two addresses are parsed:
+    #
+    #    op.realm+plus_tag@domain
+    #    realm-op+plus_tag@domain  (only if !$ignore_dashes)
+    #
+    # Where +plus_tag is like sendmail style +anything after the address.  You don't
+    # need +plus_tag.
     $ignore_dashes = $_CFG->{ignore_dashes_in_recipient}
 	unless defined($ignore_dashes);
     my($to) = $self->get('recipient');
@@ -233,9 +161,6 @@ sub parse_recipient {
     return ($name, $op, $plus_tag, $domain);
 }
 
-#=PRIVATE SUBROUTINES
-
-# _email_alias()
 sub _email_alias {
     my($self) = @_;
     my($req) = $self->get_request;
@@ -255,7 +180,13 @@ sub _email_alias {
     return (undef, $self->parse_recipient);
 }
 
-# _ignore_email()
+sub _from_email {
+    my($from) = @_;
+    # Parses from_email
+    ($from) = $from && Bivio::Mail::Address->parse($from);
+    return $from && lc($from);
+}
+
 sub _ignore_email {
     my($self) = @_;
     my($req) = $self->get_request;
@@ -263,22 +194,9 @@ sub _ignore_email {
 	&& $_E->is_ignore($self->get('recipient')) ? 'ignore_task' : undef;
 }
 
-# _from_email(string from)
-#
-# Parses from_email
-#
-sub _from_email {
-    my($from) = @_;
-    ($from) = $from && Bivio::Mail::Address->parse($from);
-    return $from && lc($from);
-}
-
-# _task(self, string op) : Bivio::Agent::TaskId
-#
-# Returns the task for the op.
-#
 sub _task {
     my($self, $op) = @_;
+    # Returns the task for the op.
     my($req) = $self->get_request;
     $op ||= '';
     $self->throw_die('NOT_FOUND', {
@@ -295,15 +213,5 @@ sub _task {
 	message => 'task not found',
     });
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
