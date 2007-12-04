@@ -79,7 +79,7 @@ sub internal_get_login {
     # general check in UserLoginForm which strips the domain and
     # checks the login.  Also, we need to handle the case where
     # the user doesn't exist.
-    my($email) = Bivio::Biz::Model->new($self->get_request, 'Email');
+    my($email) = $self->new_other('Email');
     return $email->unauth_load({email => $self->get('from_email')})
 	? $email->get('realm_id') : undef;
 }
