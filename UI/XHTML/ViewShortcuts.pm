@@ -478,6 +478,27 @@ sub vs_tree_list_control {
     };
 }
 
+sub vs_tuple_use_list_as_task_menu_list {
+    my(undef, $req) = @_;
+    return @{
+	# TupleUseList could be loaded with this so iterate, and
+	# this doesn't modify $req's value of Model.TupleUseList
+	Bivio::Biz::Model->new($req, 'TupleUseList')->map_iterate(
+	    sub {
+		my($it) = @_;
+		return {
+		    task_id => 'FORUM_TUPLE_LIST',
+		    label => String($it->get('TupleUse.label')),
+		    query => {
+			'ListQuery.parent_id' => $it->get(
+			    'TupleUse.tuple_def_id'),
+		    },
+		};
+	    }
+	),
+    };
+}
+
 sub _has_submit {
     my($proto, $rows) = @_;
     return grep(
