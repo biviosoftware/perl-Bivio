@@ -427,7 +427,7 @@ sub _model {
     # If I<expect>, calls map_iterate (PropertyModel in order of primary key) or
     # unauth_load_all (ListModel), and calls builtin_assert_contains(I<expect>,
     # I<result>).  Returns the complete data set in this last case.
-    my($m) = Bivio::ShellUtil->model($name);
+    my($m) = $proto->use('Bivio::ShellUtil')->model($name);
     return $m
 	unless $query;
     my($actual);
