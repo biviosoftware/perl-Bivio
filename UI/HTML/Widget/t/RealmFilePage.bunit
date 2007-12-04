@@ -15,12 +15,16 @@ href="#"
 <!--bivio-wv1--><!--start-bivio-wv2-->
 ignore this
 <!--end-bivio-wv2-->
+<!--bivio-missing-tag-->
 </body></html>
 EOF
 [
     class() => [
-	sub {
-	    class('Bivio::UI::View')->render(\(<<"EOF"), req());
+	{
+	    method => sub {
+		my($case, $object, $is_production) = @_;
+		req()->put(is_production => $is_production);
+		class('Bivio::UI::View')->render(\(<<"EOF"), req());
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
 view_put(vap_wv1 => 'aaa');
@@ -33,17 +37,22 @@ view_main(RealmFilePage({
     xhtml => 1,
 }));
 EOF
-	} => qr{
-	    <html>\n
-	    <head>\n
-	    .*text/css.*\n
-	    href="/tmp/css/my.css\?0"\n
-	    src="/my.jpg"\n
-	    href="\#"\n
-	    </head>\n
-	    <body>\n
-	    aaabbb\n
-	    </body>
-	}sx,
+	    },
+	} => [
+	    1 => qr{
+		<html>\n
+		<head>\n
+		.*text/css.*\n
+		href="/tmp/css/my.css\?0"\n
+		src="/my.jpg"\n
+		href="\#"\n
+		</head>\n
+		<body>\n
+		aaabbb\n
+		TAG-ERR\n
+		</body>
+	    }sx,
+	    0 => qr{aaabbb\nTAG-ERR:.*Bivio::Die:.*vap_missing_tag.*not found.*\n</body>}s,
+	],
     ],
 ];
