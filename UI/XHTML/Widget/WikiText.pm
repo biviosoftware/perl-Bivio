@@ -312,32 +312,35 @@ my($_PHRASE) = _hash([qw(
 my($_EMPTY) = _hash([qw(br hr img)], []);
 my($_BLOCK) = _hash([qw(
     blockquote
+    caption
     center
+    col
+    colgroup
+    dd
     div
+    dl
+    dt
+    embed
     h1
     h2
     h3
     h4
     h5
     h6
-    p
     li
-    dt
-    dd
-    dl
+    object
     ol
-    ul
-    table
-    tr
-    td
-    th
-    tbody
-    tfoot
-    thead
-    colgroup
-    col
-    caption
+    p
+    param
     pre
+    table
+    tbody
+    td
+    tfoot
+    th
+    thead
+    tr
+    ul
 )], [keys(%$_PHRASE), qw(p h1 h2 h3 h4 h5 h6)]);
 foreach my $x (
     map([$_ => qw(tbody thead tfoot td tr th col colgroup)],
