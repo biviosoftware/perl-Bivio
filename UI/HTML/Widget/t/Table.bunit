@@ -63,7 +63,6 @@ EOF
 	  class('HTMLWidget.String')->new('FOO', 0)}] => _chomp(<<'EOF'),
 
 <table class="reptiles">
-<tr><td colspan="2">FOO</td></tr>
 <tr>
 <th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
 <th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>

@@ -826,7 +826,8 @@ If in_list is true, then empty strings will be rendered as '&nbsp;'.
 sub render_row {
     my($self, $cells, $source, $buffer, $row_prefix, $class) = @_;
     my($req) = $self->get_request;
-    _render_before_row($self, scalar(@$cells), $source, $buffer);
+    _render_before_row($self, scalar(@$cells), $source, $buffer)
+	unless $class == Bivio::UI::TableRowClass->HEADING;
     $$buffer .= $row_prefix
 	|| "\n<tr"
 	. $_VS->vs_html_attrs_render(
