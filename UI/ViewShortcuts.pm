@@ -93,7 +93,9 @@ sub vs_task_has_uri {
 sub vs_text {
     my($proto, @tag) = @_;
     # Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
-    return _fc([$proto], 'Text', [sub {shift; @_}, @tag]);
+    return $proto->is_blessed($tag[0], 'Bivio::UI::WidgetValueSource')
+	? _fc(\@_, 'Text', '->get_widget_value')
+	: _fc([$proto], 'Text', [sub {shift; @_}, @tag]);
 }
 
 sub vs_text_as_prose {
@@ -110,7 +112,13 @@ sub vs_use {
 
 sub _fc {
     my($args) = shift;
-    return shift(@$args)->vs_req('Bivio::UI::Facade', @_, @$args);
+    my($proto) = shift(@$args);
+    return $proto->vs_req('Bivio::UI::Facade', @_, @$args)
+        unless $proto->is_blessed($args->[0], 'Bivio::UI::WidgetValueSource');
+    my($component, $method) = @_;
+    my($fc) = shift(@$args)->req('Bivio::UI::Facade', $component);
+    $method =~ s/^\-\>// || Bivio::Die->die($method, ': bad method');
+    return $fc->$method(@$args);
 }
 
 1;
