@@ -71,7 +71,10 @@ sub is_ok_to_render {
 	    $w,
 	    $h,
 	    $req->format_uri({
-		task_id => 'FORUM_PUBLIC_FILE',
+		task_id => Bivio::IO::Config->if_version(
+		    3 => sub {'FORUM_FILE'},
+		    sub {'FORUM_PUBLIC_FILE'},
+		),
 		realm => $self->get('RealmOwner.name'),
 #TODO: Need to wrap this.  It's to loosely coupled
 		path_info => substr($self->get('RealmFile.path'), length($_PUBLIC)),
