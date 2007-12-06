@@ -338,6 +338,11 @@ sub internal_put_iterator {
     return $self->[$_IDI]->{iterator} = $it;
 }
 
+sub is_ephemeral {
+    my($self) = @_;    
+    return exists($self->[$_IDI]->{ephmeral});
+}
+
 sub is_instance {
     my($self) = @_;
     # Returns true if is a normal instance and not singleton or class.
@@ -490,6 +495,13 @@ sub put_on_request {
 	}
     }
     return;
+}
+
+sub set_ephemeral {
+    # (self) : self
+    my($self) = @_;
+    $self->[$_IDI]->{ephmeral} = 1;
+    return $self;
 }
 
 sub throw_die {

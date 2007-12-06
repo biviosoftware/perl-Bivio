@@ -240,7 +240,8 @@ sub internal_load_properties {
 	}
     }
     $self->internal_put($values);
-    $self->put_on_request;
+    $self->put_on_request
+	unless $self->is_ephemeral;
     return $self;
 }
 
