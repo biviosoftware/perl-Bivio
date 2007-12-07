@@ -95,8 +95,7 @@ sub internal_post_load_row_with_model {
     }
     if ($_BFN->is_absolute($row->{'RealmFile.path'})) {
 	$row->{result_uri} = $self->get_request->format_uri({
-	    task_id => $row->{'RealmFile.is_public'}
-		? 'FORUM_PUBLIC_BLOG_DETAIL' : 'FORUM_BLOG_DETAIL',
+	    task_id => 'FORUM_BLOG_DETAIL',
 	    realm => $row->{'RealmOwner.name'},
 	    query => undef,
 	    path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
@@ -105,8 +104,7 @@ sub internal_post_load_row_with_model {
     }
     else {
 	$row->{result_uri} = $self->get_request->format_uri({
-	    task_id => $row->{'RealmFile.is_public'}
-		? 'FORUM_PUBLIC_FILE' : 'FORUM_FILE',
+	    task_id => 'FORUM_FILE',
 	    realm => $row->{'RealmOwner.name'},
 	    query => undef,
 	    path_info => $row->{'RealmFile.path'},
