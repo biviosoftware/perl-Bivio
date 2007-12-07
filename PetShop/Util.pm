@@ -435,13 +435,50 @@ EOF
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
     });
+    foreach my $realm (
+	$self->new_other('SiteForum')->SITE_REALM,
+	$self->FOUREM,
+    ) {
+	$req->set_realm($realm);
+	foreach my $mode (qw(public private)) {
+	    my($p) = $mode eq 'public' ? 1 : 0;
+	    foreach my $fv (
+		[qw(WikiName base.css), $p, ".${realm}_wiki_${mode} {}"],
+		[qw(FilePath my.css), $p, ".${realm}_my_${mode} {}"],
+	    ) {
+		$self->model('RealmFile')->create_with_content({
+		    path => $self->use('Type.' . shift(@$fv))
+			->to_absolute(splice(@$fv, 0, 2)),
+		}, \(shift(@$fv)));
+	    }
+	}
+    }
     $req->set_realm($self->new_other('SiteForum')->HELP_REALM);
-    $self->model('RealmFile')->create_with_content({
-	path => Bivio::Type->get_instance('WikiName')->to_absolute('base.css', 1),
-    }, \(<<'EOF'));
+    foreach my $fv (
+	['base.css', <<'EOF'],
 ^Not.*Found.*Wiki {font-size: 100%}
 ^.*Help {background-color: purple}
 EOF
+	['WikiView1', <<'EOF'],
+@h1 Wiki View One
+First page
+EOF
+	['WikiView2', <<'EOF'],
+@h1
+Wiki View
+@strong Two
+@/h1
+Second page
+EOF
+	['WikiView3', <<'EOF'],
+@h1 class=hello abc
+Third page
+EOF
+    ) {
+	$self->model('RealmFile')->create_with_content({
+	    path => $self->use('Type.WikiName')->to_absolute($fv->[0], 1),
+	}, \($fv->[1]));
+    }
     $self->model('RealmFile')->create_with_content({
 	path => Bivio::Type->get_instance('WikiName')->to_absolute('Shell_Util_Help', 1),
     }, \(<<'EOF'));
