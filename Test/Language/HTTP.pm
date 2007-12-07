@@ -854,7 +854,8 @@ sub _facade {
     )->get_default->get('uri');
     $to_fix =~ s{^(.*?)\b$default\b}{$1$facade_uri}ix
 	|| $to_fix =~ s{(?<=\://)|(?<=\@)}{$facade_uri.}ix
-	|| Bivio::Die->die($to_fix, ': unable to fixup uri with ', $facade_uri);
+	|| Bivio::Die->die($to_fix, ': unable to fixup uri with ', $facade_uri)
+	unless $default eq $facade_uri;
     return $to_fix
 }
 
