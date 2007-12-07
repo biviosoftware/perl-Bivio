@@ -1,0 +1,60 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully;
+my($fourem) = unauth_model('RealmOwner', {name => 'fourem'})->get('realm_id');
+my($site) = unauth_model('RealmOwner', {name => 'site'})->get('realm_id');
+[
+    {
+	method => 'load_all',
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    req()->set_realm(shift(@$params));
+	    req()->set_user(shift(@$params));
+	    req()->initialize_fully(shift(@$params) || 'SHELL_UTIL');
+	    return [];
+	},
+	comparator => 'nested_contains',
+	compute_return => sub {
+	    return shift->get('object')->map_rows;
+	},
+	check_return => sub {
+	    my(undef, undef, $expect) = @_;
+	    return [map(+{
+		'RealmFile.realm_id' => shift(@$_),
+		'RealmFile.path_lc' => shift(@$_),
+	    }, @$expect)];
+	},
+    } => [
+	[undef, undef] => [[$site, '/public/my.css']],
+	[undef, 'root'] => [[$site, '/public/my.css']],
+	[site => undef] => [[$site, '/public/my.css']],
+	[qw(site demo)] => [[$site, '/public/my.css']],
+	[qw(site root)] => [
+	    [$site, '/public/my.css'],
+	    [$site, '/my.css'],
+	],
+	[qw(site root HELP)] => [
+	    [$site, '/public/my.css'],
+	    [$site, '/public/wiki/base.css'],
+	    [$site, '/my.css'],
+	    [$site, '/wiki/base.css'],
+	],
+	[qw(site demo HELP)] => [
+	    [$site, '/public/my.css'],
+	    [$site, '/public/wiki/base.css'],
+	],
+	[fourem => undef, 'HELP'] => [
+	    [$site, '/public/my.css'],
+	    [$fourem, '/public/my.css'],
+	    [$fourem, '/public/wiki/base.css'],
+	],
+	[qw(fourem root HELP)] => [
+	    [$site, '/public/my.css'],
+	    [$fourem, '/public/my.css'],
+	    [$fourem, '/public/wiki/base.css'],
+	    [$fourem, '/my.css'],
+	    [$fourem, '/wiki/base.css'],
+	],
+    ],
+];
