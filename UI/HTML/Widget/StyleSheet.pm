@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Widget::StyleSheet;
 use strict;
-use Bivio::Base 'Bivio::UI::HTML::Widget::ControlBase';
+use Bivio::Base 'HTMLWidget.ControlBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
