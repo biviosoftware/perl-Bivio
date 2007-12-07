@@ -93,7 +93,7 @@ sub vs_task_has_uri {
 sub vs_text {
     my($proto, @tag) = @_;
     # Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
-    return $proto->is_blessed($tag[0], 'Bivio::Agent::Requeest')
+    return $proto->is_blessed($tag[0], 'Bivio::Agent::Request')
 	? _fc(\@_, 'Text', '->get_widget_value')
 	: _fc([$proto], 'Text', [sub {shift; @_}, @tag]);
 }
