@@ -2,12 +2,12 @@
 # $Id$
 package Bivio::Biz::Action::WikiView;
 use strict;
-use base 'Bivio::Biz::Action';
+use Bivio::Base 'Biz.Action';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_WN) = Bivio::Type->get_instance('WikiName');
-my($_FN) = Bivio::Type->get_instance('FileName');
+my($_WN) = __PACKAGE__->use('Type.WikiName');
+my($_FN) = __PACKAGE__->use('Type.FileName');
 my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
 
 sub execute {
@@ -47,7 +47,6 @@ sub execute_prepare_html {
     }
     my($self) = $proto->new->put_on_request($req)->put(
 	name => $name,
-	title => $_WN->to_title($name),
 	exists => 0,
     );
     my($wa, $dt, $uid) = $proto->use('XHTMLWidget.WikiStyle')
@@ -56,6 +55,7 @@ sub execute_prepare_html {
 	unless $wa;
     $self->put(
 	wiki_args => $wa,
+	title => $wa->{title},
 	modified_date_time => $dt,
 	author => $req->unsafe_get_nested(qw(task want_author))
 	    ? Bivio::Biz::Model->new($req, 'Email')
