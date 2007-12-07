@@ -138,6 +138,7 @@ my($_SELF) = __PACKAGE__->new({
 	    uri => '',
 	    anchor => 'a1',
 	}],
+	[view_shortcuts1 => 'one'],
     ],
     Text => [
 	[bunit_simple => 'simple text'],
