@@ -192,7 +192,8 @@ sub control_on_render {
     $b .= qq{ class="$src_name"}
 	if $b !~ /class=|id=/ && $_VS->vs_xhtml($source);
     $$buffer .= $b;
-    my($alt) = $self->has_keys('alt') ? $self->render_simple_attr('alt')
+    my($alt) = $self->has_keys('alt')
+	? $self->render_simple_attr('alt', $source)
 	: Bivio::UI::Text->get_from_source($source)
 	->unsafe_get_widget_value_by_name(
 	    'Image_alt.'
