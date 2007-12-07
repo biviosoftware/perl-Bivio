@@ -2,17 +2,18 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiStyle;
 use strict;
-use base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = __PACKAGE__->use('Type.WikiName');
 my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
+my($_RF) = __PACKAGE__->use('Action.RealmFile');
 
 sub help_exists {
     my($proto, $name, $req) = @_;
-    return $proto->use('Action.RealmFile')->access_controlled_load(
-	Bivio::UI::Constant->get_from_source($req)
-	    ->get_value('help_wiki_realm_id'),
+    return $_RF->access_controlled_load(
+	vs_constant($req, 'help_wiki_realm_id'),
 	$_WN->to_absolute($name),
 	$req,
 	1,
@@ -21,56 +22,55 @@ sub help_exists {
 
 sub prepare_html {
     my($proto, $realm_id, $name, $task_id, $req, $realm_name) = @_;
-    return unless my $rf = $proto->use('Action.RealmFile')
-	->access_controlled_load($realm_id, $_WN->to_absolute($name), $req, 1);
-    my($res) = [
+    return unless my $rf = $_RF->access_controlled_load(
+	$realm_id, $_WN->to_absolute($name), $req, 1);
+    my($v) = ${$rf->get_content};
+    my($t);
+    my($wiki_args) = {
+	task_id => $task_id,
+	req => $req,
+	name => $name,
+	map(($_ => $rf->get($_)), qw(is_public realm_id)),
+    };
+    if ($v =~ s{^(\@h1[ \t]*\S[^\r\n]+\r?\n|\@h1.*?\r?\n\@/h1\s*?\r?\n)}{}s) {
+	my($x) = $1;
+	$t = ($_WT->render_html({
+	    %$wiki_args,
+	    value => $x,
+	}) =~ m{^<h1>(.*)</h1>$}s)[0];
+	if (defined($t)) {
+	    $t =~ s/^\s+|\s+$//g;
+	}
+	else {
+	    Bivio::IO::Alert->warn(
+		$x, ': not a header pattern; page=', $name);
+	    substr($v, 0, 0) = $x;
+	}
+    }
+    return (
 	{
-	    value => ${$rf->get_content},
-	    task_id => $task_id,
-	    req => $req,
-	    name => $name,
-	    map(($_ => $rf->get($_)), qw(is_public realm_id)),
+	    %$wiki_args,
+	    value => $v,
+	    title => defined($t) ? $t
+		: Bivio::HTML->escape($_WN->to_title($name)),
 	},
 	$rf->get(qw(modified_date_time user_id)),
-    ];
-    if ($rf->unauth_load({
-	path => $_WN->to_absolute(
-	    Bivio::UI::Text->get_value('WikiStyle.css_file_name', $req),
-	    $rf->get('is_public')),
-	realm_id => $realm_id,
-	is_public => $rf->get('is_public'),
-    })) {
-	my($styles) = $req->get_if_exists_else_put(__PACKAGE__, []);
-	my($s) = _class($name, ${$rf->get_content});
-	# Avoid duplicates (HelpWiki and WikiView on same page)
-	push(@$styles, $s)
-	    unless grep($s eq $_, @$styles);
-    }
-    return @$res;
+    );
 }
 
 sub render {
-    my($self, $source, $buffer) = @_;
-    my($styles) = $source->get_request->unsafe_get(__PACKAGE__);
-    return unless $styles && @$styles;
-    $$buffer .= join(
-	"\n",
-	qq{<style type="text/css">\n<!--},
-	@$styles,
-	"-->\n</style>\n"
-    );
+    # History: Used to render a style, now handled by RealmCSSList
     return;
 }
 
 sub render_help_html {
     my($self, $name, $req) = @_;
-    my($c) = Bivio::UI::Constant->get_from_source($req);
     return ($self->render_html(
-	$c->get_value('help_wiki_realm_id'),
+	vs_constant($req, 'help_wiki_realm_id'),
 	$name,
 	Bivio::Agent::TaskId->HELP,
 	$req,
-	$c->get_value('help_wiki_realm_name'),
+	vs_constant($req, 'help_wiki_realm_name'),
     ))[0];
 }
 
@@ -79,19 +79,6 @@ sub render_html {
 	ref($_) eq 'HASH' ? \($_WT->render_html($_)) : $_,
 	shift->prepare_html(@_),
     );
-}
-
-sub _class {
-    my($name, $style) = @_;
-    my($f) = __PACKAGE__->use('HTMLFormat.WikiNameToClass');
-    $style =~ s{\^(\S+)}{
-        my($re) = $1;
-	my($comma) = $re =~ s/,$//s ? ',' : '';
-	'.'
-	. ($name =~ qr{^$re$} ? $f->get_widget_value($name) : 'NOT-THIS-WIKI')
-	. $comma;
-    }exig;
-    return $style;
 }
 
 1;

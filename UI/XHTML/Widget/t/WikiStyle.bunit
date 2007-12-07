@@ -6,13 +6,5 @@ Widget({
 req()->set_realm_and_user('site-help');
 class()->render_html(req('auth_id'), qw(Shell_Util_Help HELP), req());
 [
-    [] => <<'EOF',
-<style type="text/css">
-<!--
-.NOT-THIS-WIKI {font-size: 100%}
-.body_wiki_Shell_Util_Help {background-color: purple}
-
--->
-</style>
-EOF
+    [] => '',
 ];
