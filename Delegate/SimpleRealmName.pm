@@ -17,6 +17,10 @@ sub REGEXP {
     return qr/^[a-z][a-z0-9_]{2,}$/i;
 }
 
+sub SPECIAL_PLACEHOLDER {
+    return 'my';
+}
+
 sub SPECIAL_SEPARATOR {
     # The special separator is used in URIs and to group realm names (see ForumName).
     # Don't assume '-'.  Rather explicitly couple with this call.
@@ -74,6 +78,8 @@ sub unsafe_from_uri {
     # Returns the name (possibly cleaned up) or undef, if not valid.
     return undef
 	unless $value = ($proto->SUPER::from_literal($value))[0];
+    return $value
+	if $value eq $proto->SPECIAL_PLACEHOLDER;
     # We allow dashes in URI names (my-site and other constructed names)
     my($s) = $proto->SPECIAL_SEPARATOR;
     (my $v = $value) =~ s/$s//og;
