@@ -5,4 +5,3 @@ home_page();
 visit_uri('/pub/eg1');
 visit_uri('/pub/site.css');
 visit_uri('/fourem/pub/eg1');
-visit_uri('/fourem/realm.css');

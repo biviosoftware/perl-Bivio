@@ -6,69 +6,18 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_PROSE) = {
-    map({
-	my($which) = $_;
-	($which => join('', map({
-	    my($x) = \&{"_${which}_$_"};
-	    defined(&$x) ? __PACKAGE__->internal_compress($x->()) : '',
-	} @{Bivio::Agent::TaskId->included_components})));
-    } qw(site realm)),
-};
-
-sub internal_compress {
-    my(undef, $v) = @_;
-    $v =~ s/^\!.*\n//mg;
-    $v =~ s/^\s+//mg;
-    # IE BUG: Don't include ';', because "Icon('bla'); left" will get convereted to
-    # "Icon('bla');left" which then becomes "url(/i/bla.gif)left" which IE doesn't
-    # interpret properly and doesn't render the image
-    $v =~ s/(?<!\))(?<=[\,\:\{])\s+//mg;
-    return $v;
-}
-
-sub realm_css {
-    my($self) = @_;
-    return $self->internal_body(Prose($self->internal_realm_css));
-}
-
-sub internal_realm_css {
-    view_pre_execute(sub {
-	my($req) = shift->get_request;
-	# Just need a few, and load_all could technically be too many
-	Bivio::Biz::Model->new($req, 'RealmLogoList')->load_page
-	    unless $req->unsafe_get('Model.RealmLogoList');
-    });
-    return $_PROSE->{realm};
-}
+my($_SITE) = join('', map({
+    my($x) = \&{"_site_$_"};
+    defined(&$x) ? $x->() : '';
+} @{__PACKAGE__->use('Agent.TaskId')->included_components}));
 
 sub internal_site_css {
-    return $_PROSE->{site};
+    return $_SITE;
 }
 
 sub site_css {
     my($self) = @_;
     return $self->internal_body(Prose($self->internal_site_css));
-}
-
-# If(public RealmFile exists /Public/logo.gif/jpg/png)
-# Need to size it.  ViewShortcut.
-# td.header_left {
-#   background: url (String([qw(Model.RealmLogoList ->get_uri)]);) left no-repeat;
-#   height: String([qw(Model.RealmLogoList ->get_height)]);px;
-#   width: String([qw(Model.RealmLogoList ->get_width)]);px;
-# }
-sub _realm_base {
-    return <<'EOF';
-/* Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved. */
-If([qw(Model.RealmLogoList ->is_ok_to_render)],
-   Prose(q{
-td.header_left {
-  background: url<<(>>String<(>['Model.RealmLogoList', 'uri'])<;>) left no-repeat;
-  height: String<(>['Model.RealmLogoList', 'height'])<;>px;
-  width: String<(>['Model.RealmLogoList', 'width'])<;>px;
-}}));
-EOF
 }
 
 sub _site_base {
@@ -498,10 +447,10 @@ td.item {
 td.amount_cell {
   text-align: right;
 }
-td.header_right div.user_state .dd_link {
+div.user_state .dd_link {
   Font('user_state');
 }
-td.header_right div.user_state .dd_menu {
+div.user_state .dd_menu {
   display:inline;
   position:absolute;
   width: 8em;
@@ -510,7 +459,7 @@ td.header_right div.user_state .dd_menu {
   border:1px solid;
   Color('dd_menu-border');
 }
-td.header_right div.user_state .dd_menu a {
+div.user_state .dd_menu a {
   display: block;
   margin: .2em;
   Font('dd_menu');
@@ -520,7 +469,7 @@ td.header_right div.user_state .dd_menu a {
   text-align: left;
   font-weight: normal;
 }
-td.header_right div.user_state .dd_menu a:hover {
+div.user_state .dd_menu a:hover {
   Color('dd_menu_selected-background');
   Color('dd_menu_selected');
   text-decoration: none;
@@ -591,13 +540,13 @@ EOF
 
 sub _site_user_auth {
     return <<'EOF';
-td.header_right div.user_state {
+div.user_state {
   vertical-align: top;
   text-align: right;
   display: inline;
   white-space: nowrap;
 }
-td.header_right div.user_state a {
+div.user_state a {
   Font('user_state');
 }
 EOF

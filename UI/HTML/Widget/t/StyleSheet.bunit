@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget();
 [
@@ -6,11 +6,4 @@ Widget();
     [SITE_CSS => {
 	control => 1,
     }] => qq{<link href="/pub/site.css" rel="stylesheet" type="text/css" />\n},
-    FORUM_CSS => '',
-    [FORUM_CSS => {control => 1}] => '',
-    inline_case(sub {
-	req()->set_realm('fourem');
-        return;
-    }),
-    [FORUM_CSS => {control => 1}] => qq{<link href="/fourem/realm.css" rel="stylesheet" type="text/css" />\n},
 ];
