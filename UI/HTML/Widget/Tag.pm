@@ -27,10 +27,13 @@ sub control_on_render {
     my($b) = '';
     $self->can('render_tag_value') ? $self->render_tag_value($source, \$b)
 	: $self->render_attr('value', $source, \$b);
-    return unless length($b) || $self->render_simple_attr('tag_if_empty');
+    return unless length($b)
+	|| $self->render_simple_attr('tag_if_empty', $source);
     my($t) = lc(${$self->render_attr('tag')});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
 	unless $t =~ /^[a-z]+\d*$/;
+    $b = "\n<!--\n$b\n-->\n"
+	if length($b) && $self->render_simple_attr('bracket_value_in_comment');
     my($end) = length($b) || !_empty($t) ? ">$b</$t>" : ' />';
     $self->SUPER::control_on_render($source, \$t);
     $$buffer .= "<$t$end";
@@ -50,6 +53,7 @@ sub initialize {
     $self->put_unless_exists(tag_if_empty => 1)
 	if _empty($self->get('tag'));
     $self->initialize_attr('tag');
+    $self->initialize_attr(bracket_value_in_comment => 0);
     $self->unsafe_initialize_attr('value');
     $self->unsafe_initialize_attr('tag_if_empty');
     return shift->SUPER::initialize(@_);
