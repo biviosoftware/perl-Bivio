@@ -23,7 +23,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
     # NOTE: There is no ENV when loaded under apache
-    email_user => $ENV{LOGNAME} || $ENV{USER} || 'btest',
+    email_user => $ENV{USER} || 'btest',
     server_startup_timeout => 0,
     home_page_uri => Bivio::IO::Config->REQUIRED,
     local_mail_host => Sys::Hostname::hostname(),
