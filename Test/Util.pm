@@ -116,13 +116,13 @@ sub mock_sendmail {
 	my($extension) = $1 || '';
 	$msg->set_recipients($r, $req);
 	next unless my $http = _mock_sendmail_facade($self, $r);
-	my($res) = $self->piped_exec(Bivio::IO::Alert->debug(
+	my($res) = $self->piped_exec(
 	    "b-sendmail-http 127.0.0.1 '$r' '$http"
 	    . $req->format_uri({
 		    task_id => 'MAIL_RECEIVE_DISPATCH',
 		    path_info => undef,
-	       })
-	    . "' /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1"),
+	    })
+	    . "' /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
 	    $msg->as_string,
 	    1,
 	);
