@@ -12,7 +12,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_xhtml_adorned {
-    shift->internal_xhtml_adorned_attrs;
+    my($self) = @_;
+    $self->internal_xhtml_adorned_attrs;
     return Page({
 	style => view_widget_value('xhtml_style'),
 	head => Join([
@@ -33,13 +34,7 @@ sub internal_xhtml_adorned {
 		}),
 	    }),
 	]),
-	body => Join([
-	    view_widget_value('xhtml_body_first'),
-	    vs_grid3('header'),
-	    vs_grid3('main'),
-	    vs_grid3('footer'),
-	]),
-	body_class => view_widget_value('xhtml_body_class'),
+	body => $self->internal_xhtml_adorned_body,
 	xhtml => 1,
     });
 }
@@ -80,11 +75,7 @@ sub internal_xhtml_adorned_attrs {
     );
     view_put(
 	xhtml_header_middle => DIV_nav(view_widget_value('xhtml_nav')),
-	xhtml_style => Join([
-	    StyleSheet('SITE_CSS'),
-	    StyleSheet('FORUM_CSS'),
-	    WikiStyle(),
-	]),
+	xhtml_style => RealmCSS(),
 	xhtml_main_middle => Join([
 	    Acknowledgement(),
 	    DIV_main_top(Join([
@@ -112,6 +103,15 @@ sub internal_xhtml_adorned_attrs {
 	]),
     );
     return;
+}
+
+sub internal_xhtml_adorned_body {
+    return Join([
+	view_widget_value('xhtml_body_first'),
+	vs_grid3('header'),
+	vs_grid3('main'),
+	vs_grid3('footer'),
+    ]);
 }
 
 1;
