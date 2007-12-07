@@ -60,7 +60,7 @@ sub access_is_public_only {
 
 sub execute_private {
     my($proto, $req) = @_;
-    return $proto->unauth_execute($req, 0, $req->get('auth_id'));
+    return $proto->unauth_execute($req, undef, $req->get('auth_id'));
 }
 
 sub execute_public {
