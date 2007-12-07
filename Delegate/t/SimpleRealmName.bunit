@@ -13,6 +13,7 @@ Type();
 	],
         unsafe_from_uri => [
 	    ab => [undef],
+	    my => 'my',
 	    abc => 'abc',
 	    'abc-' => 'abc-',
 	    'ab-' => [undef],
