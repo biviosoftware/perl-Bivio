@@ -157,8 +157,6 @@ sub _cfg_base {
 	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
 	    [FAVICON_ICO => 'favicon.ico'],
 	    [FORBIDDEN => undef],
-	    # Share this name across all realm types
-	    [FORUM_CSS => '?/realm.css'],
 	    [PUBLIC_PING => 'pub/ping'],
 	    [LOCAL_FILE_PLAIN => ['i/*', 'f/*']],
 	    [MY_CLUB_SITE => undef],
@@ -845,7 +843,7 @@ sub _cfg_wiki {
 		    },
 		    'FORUM_WIKI_EDIT',
 		]);},
-		wiki_view_topic => q{String(['Action.WikiView', 'title']);},
+		wiki_view_topic => q{Simple(['Action.WikiView', 'title']);},
 	    ]],
 #DEPRECATED:
 	    [HelpWiki => [
