@@ -6,6 +6,8 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 use Bivio::Mail::RFC822;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_REALM_PLACEHOLDER)
+    = __PACKAGE__->use('Type.RealmName')->SPECIAL_PLACEHOLDER;
 my($_CAMEL_CASE) = qr{((?-i:[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*))};
 my($_EMAIL) = qr{@{[Bivio::Mail::RFC822->ATOM_ONLY_ADDR]}}o;
 my($_DOMAIN) = qr{(@{[
@@ -479,7 +481,7 @@ sub _abs_href {
 	    : $uri;
     }
     $uri =~ s/^(?=javascript:)/no-wiki-/i;
-    return $uri =~ s{^/+my(?=/)}{}s
+    return $uri =~ s{^/+$_REALM_PLACEHOLDER(?=/)}{}os
         && $args->{realm_name}
         ? "/$args->{realm_name}$uri"
         : $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
