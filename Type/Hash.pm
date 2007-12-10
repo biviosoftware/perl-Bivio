@@ -53,8 +53,11 @@ sub to_string {
     my(undef, $value) = @_;
     return !$value ? ''
 	: join('; ',
-	       map("$_: " . ${Bivio::IO::Ref->to_string($value->{$_}, 0, 0)},
-		   sort(keys(%$value))));
+	       map({
+		   my($v) = $value->{$_};
+		   "$_: " . (!defined($v) ? '' : !ref($v) ? $v
+		     : ${Bivio::IO::Ref->to_string($v, 0, 0)});
+	       } sort(keys(%$value))));
 }
 
 1;
