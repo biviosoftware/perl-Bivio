@@ -434,6 +434,11 @@ sub _cfg_motion {
 	    ['task_menu.title' => [
 		FORUM_MOTION_VOTE_LIST_CSV => 'Spreadsheet',
 	    ]],
+	    [ListActions => [
+		FORUM_MOTION_VOTE => 'Vote',
+		FORUM_MOTION_EDIT => 'Edit',
+		FORUM_MOTION_VOTE_LIST => 'Results',
+	    ]],
 	],
     };
 }
