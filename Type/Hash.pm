@@ -49,4 +49,12 @@ sub to_sql_param {
     return $value && ${Bivio::IO::Ref->to_string($value, 0, 0)};
 }
 
+sub to_string {
+    my(undef, $value) = @_;
+    return !$value ? ''
+	: join('; ',
+	       map("$_: " . ${Bivio::IO::Ref->to_string($value->{$_}, 0, 0)},
+		   sort(keys(%$value))));
+}
+
 1;
