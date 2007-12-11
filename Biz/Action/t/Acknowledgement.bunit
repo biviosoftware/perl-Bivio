@@ -5,6 +5,7 @@ Request('initialize_fully');
     class() => [
         save_label => [
 	    ['abc', req()] => [],
+	    ['abc', req(), 't=10001'] => [],
 	],
 	extract_label => [
 	    [req()] => ['abc'],

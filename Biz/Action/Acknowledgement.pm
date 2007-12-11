@@ -40,7 +40,7 @@ sub save_label {
 	$label = $req->get('task_id')->as_int;
     }
     _trace($proto->QUERY_KEY, '=', $label) if $_TRACE;
-    if ($query) {
+    if (ref($query) eq 'HASH') {
 	$query->{$proto->QUERY_KEY} = $label;
 	return;
     }
