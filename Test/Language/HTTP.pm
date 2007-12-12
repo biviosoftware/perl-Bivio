@@ -88,9 +88,9 @@ sub do_logout {
 }
 
 sub do_table_rows {
-    # Conveniently calls
-    # L<Bivio::Test::HTMLParser::Tables::do_rows|Bivio::Test::HTMLParser::Tables/"do_rows">.
-    return shift->get_html_parser()->get('Tables')->do_rows(@_);
+    my($self, $table_name, $do_rows_callback) = @_;
+    return _assert_html($self)->get('Tables')
+	->do_rows(_fixup_pattern_protected($table_name), $do_rows_callback);
 }
 
 sub do_test_backdoor {
@@ -127,9 +127,7 @@ sub file_field {
 }
 
 sub find_table_row {
-    # Conveniently calls
-    # L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.
-    return shift->get_html_parser()->get('Tables')->find_row(@_);
+    return _find_row(@_);
 }
 
 sub follow_frame {
@@ -145,8 +143,7 @@ sub follow_link {
     my($self, @links) = @_;
     my($res);
     foreach my $link (@links) {
-	$link = _fixup_pattern($link)
-	    unless $_CFG->{deprecated_text_patterns};
+	$link = _fixup_pattern_protected($link);
 	my($m) = ref($link) ? 'get_by_regexp' : 'get';
 	$res = $self->visit_uri(
 	    _assert_html($self)->get('Links')
@@ -171,21 +168,22 @@ sub follow_link_in_table {
     $table_name = $find_heading
 	unless defined($table_name);
     my($row) = _find_row($self, $table_name, $find_heading, $find_value);
-    $link_heading = $find_heading
-	unless defined($link_heading);
-    Bivio::Die->die(
-	$link_heading, ': link column not found, or column empty',
-    ) unless defined($row->{$link_heading});
+    $link_heading = _key_from_hash(
+	$row,
+	_fixup_pattern_protected(
+	    defined($link_heading) ? $link_heading : $find_heading),
+    );
+    Bivio::Die->die($link_heading, ': column empty')
+        unless defined($row->{$link_heading});
     my($links) = $row->{$link_heading}->get('Links');
-    # link_name may be '0', so use defined() for comparison
-    return $self->visit_uri($links->get(
-        defined($link_name) ? $link_name : $find_value)->{href})
-	if defined($link_name) || $links->has_keys($find_value);
     my($k) = $links->get_keys;
-    Bivio::Die->die(
-	$k, ': too many or too few links found in column ', $link_heading,
-    ) unless @$k == 1;
-    return $self->visit_uri($links->get($k->[0])->{href});
+    return $self->visit_uri((
+	!defined($link_name) && @$k == 1 ? $links->get($k->[0])
+	    : _get_attr(
+		$links,
+		_fixup_pattern_protected(
+		    defined($link_name) ? $link_name : $find_value)),
+    )->{href});
 }
 
 sub generate_local_email {
@@ -231,22 +229,20 @@ sub get_response {
 
 sub get_table_row {
     my($self, $table_name, $row_index) = @_;
-    # Return table row specified by column_index.
     $row_index ||= 0;
     my($found_row);
-    $self->get_html_parser()->get('Tables')->do_rows($table_name, sub {
-        my($row, $index) = @_;
-	if ($index == $row_index) {
+    $self->get_html_parser()->get('Tables')->do_rows(
+	_fixup_pattern_protected($table_name),
+	sub {
+	    my($row, $index) = @_;
+	    return 1
+		unless $index == $row_index;
 	    $found_row = $row;
 	    return 0;
-	}
-	else {
-	    return 1;
-	}
-    });
-    Bivio::Die->($row_index, ': no such row number')
-        unless $found_row;
-    return $found_row;
+	},
+    );
+    return $found_row
+	|| Bivio::Die->($row_index, ': no such row number in ', $table_name);
 }
 
 sub get_uri {
@@ -552,10 +548,11 @@ sub unsafe_op {
 
 sub user_agent {
     my($self) = @_;
-    return 'Mozilla/4.0 (compatible; '
+    return 'Mozilla/5.0 (compatible; '
 	. $self->get('test_script')
         . ':'
-	. _get_script_line($self);
+	. _get_script_line($self)
+	. ')';
 }
 
 sub verify_content_type {
@@ -864,7 +861,10 @@ sub _find_row {
     # Returns the hashref for row identified by I<table_name>, <I>find_heading
     # and <I>find_value, using L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.
     return _assert_html($self)->get('Tables')->find_row(
-	$table_name, $find_heading, $find_value);
+	_fixup_pattern_protected($table_name),
+	_fixup_pattern_protected($find_heading),
+	_fixup_pattern_protected($find_value),
+    );
 }
 
 sub _fixup_form_fields {
@@ -882,6 +882,11 @@ sub _fixup_pattern {
     $v =~ s/(.)_/$1 /g
         unless $v =~ /\W/;
     return qr{$v}i;
+}
+
+sub _fixup_pattern_protected {
+    my($v) = @_;
+    return $_CFG->{deprecated_text_patterns} ? $v : _fixup_pattern($v);
 }
 
 sub _format_form {
@@ -927,6 +932,11 @@ sub _format_form {
     return $result;
 }
 
+sub _get_attr {
+    my($attrs, $key) = @_;
+    return ref($key) ? $attrs->get_by_regexp($key) : $attrs->get($key);
+}
+
 sub _get_script_line {
     my($self) = @_;
     # Returns the current line of the running script.
@@ -968,6 +978,23 @@ sub _grep_msgs {
 	}
 	return;
     })];
+}
+
+sub _key_from_hash {
+    my($hash, $key) = @_;
+    if (ref($key)) {
+	my(@match) = sort(grep($_ =~ $key, keys(%$hash)));
+	return $match[0]
+	    if @match == 1;
+	Bivio::Die->die($key, ': name matches too many ', \@match)
+	    if @match > 1;
+    }
+    else {
+	return $key
+	    if exists($hash->{$key});
+    }
+    Bivio::Die->die($key, ': name not found in ', [sort(keys(%$hash))]);
+    # DOES NOT RETURN
 }
 
 sub _log {
