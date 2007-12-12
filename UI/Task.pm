@@ -305,12 +305,11 @@ sub parse_uri {
     }
 
     # Question mark is a special character
-    my(@uri) = map {
-	$req->throw_die(Bivio::DieCode::NOT_FOUND,
-		{entity => $orig_uri, message => 'contains special char'})
-		if $_ eq $_REALM_PLACEHOLDER;
-	$_;
-    } split(/\/+/, $uri);
+    my(@uri) = split(m{/+}, $uri);
+    return _parse_err($self, $orig_uri, $req, {
+	entity => $orig_uri,
+	message => 'contains special char',
+    }) if grep($_ eq $_REALM_PLACEHOLDER, @uri);
 
     # There is always something in $uri and @uri at this point
     $uri = join('/', @uri);
@@ -338,13 +337,12 @@ sub parse_uri {
 		$orig_uri,
 	    );
 	}
-
-	# The URI doesn't accept path_info, so not found.
-	$req->throw_die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
+	return _parse_err($self, $orig_uri, $req, {
+	    entity => $orig_uri,
 	    orig_uri => $orig_uri,
 	    uri => $uri,
-	    message => 'no such general URI (not a path_info uri)'});
-	# DOES NOT RETURN
+	    message => 'no such general URI (not a path_info uri)',
+	});
     }
 
     # If first uri doesn't match a RealmName, can't be one.
@@ -366,55 +364,44 @@ sub parse_uri {
 
     # Is this a valid, authorized realm with a task for this uri?
     my($o) = Bivio::Biz::Model::RealmOwner->new($req);
-    $req->throw_die(Bivio::DieCode->NOT_FOUND, {
+    return _parse_err($self, $orig_uri, $req, {
 	entity => $name, uri => $orig_uri,
 	class => 'Bivio::Auth::Realm',
 	message => 'no such realm',
-     }) unless $o->unauth_load({name => $name});
+    }) unless $o->unauth_load({name => $name});
     $realm = Bivio::Auth::Realm->new($o);
 
     # Found the realm, now try to find the URI (without checking path_info)
     $uri = join('/', @uri);
     my($rti) = $realm->get('type')->as_int;
-    # No path info?
-    if (defined($fields->{from_uri}->{$uri})
-        && defined($fields->{from_uri}->{$uri}->[$rti]),
-    ) {
-	return (
-	    _task($self, $fields->{from_uri}->{$uri}->[$rti], $orig_uri),
-	    $realm,
-	    '',
-	    $orig_uri,
-	);
-    }
-
+    return (
+	_task($self, $fields->{from_uri}->{$uri}->[$rti], $orig_uri),
+	$realm,
+	'',
+	$orig_uri,
+    ) if defined($fields->{from_uri}->{$uri})
+        && defined($fields->{from_uri}->{$uri}->[$rti]);
     # Is this a path_info URI?  Note this may seem a bit "slow", but it
     # is a rare case and NOT_FOUND processing is much faster than normal
     # requests anyway.  Component after realm name must identify path_info URI
     $path_info_index = 1;
     $uri = join('/', @uri[0..$path_info_index])
 	if @uri > $path_info_index;
-    if (defined($fields->{from_uri}->{$uri})
+    return (
+	_task($self, $info, $orig_uri),
+	$realm,
+	join('/', '', @uri[$path_info_index+1..$#uri]),
+	$orig_uri,
+    ) if defined($fields->{from_uri}->{$uri})
 	&& defined($info = $fields->{from_uri}->{$uri}->[$rti])
-	&& $info->{has_path_info},
-    ) {
-	return (
-	    _task($self, $info, $orig_uri),
-	    $realm,
-	    join('/', '', @uri[$path_info_index+1..$#uri]),
-	    $orig_uri,
-	);
-    }
-
-    # Well, really not found
-    $req->throw_die(Bivio::DieCode->NOT_FOUND, {
+	&& $info->{has_path_info};
+    return _parse_err($self, $orig_uri, $req, {
 	entity => $orig_uri,
 	realm_type => $realm->get('type')->get_name,
 	orig_uri => $orig_uri,
 	uri => $uri,
 	message => 'no such URI for this realm',
     });
-    # DOES NOT RETURN
 }
 
 sub unsafe_get_from_uri {
@@ -535,9 +522,7 @@ sub _init_from_uri {
 		}
 	    }
 	    else {
-		if ($uri eq '/'
-		    && $group->{realm_type}->equals_by_name('GENERAL'),
-		) {
+		if ($uri eq '/' && $group->{realm_type}->eq_general) {
 		    die('site_root must have path_info')
 			unless $group->{has_path_info};
 		    $fields->{site_root} = $group->{task};
@@ -545,47 +530,27 @@ sub _init_from_uri {
 		$from_uri{$uri} = [];
 	    }
 	    $from_uri{$uri}->[$rti] = $group;
-#TODO: remove possibly
-#	    $path_info_uri{$uri}++ if $group->{has_path_info};
 	}
     }
     die('must define a uri as /*')
 	unless $fields->{site_root};
-
-#TODO: This test isn't really useful.  You may want a general foo/* URI
-#      and a specific "foo/bar" URI (task).  parse_uri will always route
-#      to the more specific URI. 
-#    # Make sure all URIs don't collide with path_info uris.
-#    # document_task is special, because it is the only URI which begins
-#    # with '/', so it doesn't match any other uris which can't begin
-#    # with '/'.
-#    foreach my $piu (keys(%path_info_uri)) {
-#	foreach my $uri (keys(%from_uri)) {
-#	    _init_err($uri, 'path_info uri collision with', $piu)
-#		    if $uri =~ m!\Q$piu/!;
-#	}
-#    }
-
     $fields->{from_uri} = \%from_uri;
     return;
 }
 
 sub _init_name {
     my($fields, $value) = @_;
-    # Ensures $value->{names} is correct.  Sets realm_type.
-    #
-    # Returns error message or success (undef).
-
-    return 'must be exactly one name' unless int(@{$value->{names}}) == 1;
-
-    my($task_id_name) = uc($value->{names}->[0]);
+    return 'must be exactly one name'
+	unless int(@{$value->{names}}) == 1;
     return 'name not a task_id'
-	unless $value->{task} = Bivio::Agent::TaskId->$task_id_name();
-
-    my($realm_type_name) = $fields->{to_realm_type}->{$task_id_name};
+	unless $value->{task}
+	= Bivio::Agent::TaskId->unsafe_from_name($value->{names}->[0]);
     return 'no realm_type for task'
-	unless $realm_type_name;
-    $value->{realm_type} = Bivio::Auth::RealmType->$realm_type_name();
+	unless my $rtn = $fields->{to_realm_type}->{$value->{task}->get_name};
+    $value->{realm_type} = Bivio::Auth::RealmType->$rtn;
+    $fields->{not_found} = $value
+	if $value->{realm_type}->eq_general
+	&& $value->{task}->get_name eq 'DEFAULT_ERROR_REDIRECT_NOT_FOUND';
     return;
 }
 
@@ -658,6 +623,14 @@ sub _initialize_fields {
 	    (uc($_->[0]) => uc($_->[2]));
 	} @{Bivio::Agent::TaskId->get_cfg_list}},
     };
+}
+
+sub _parse_err {
+    my($self, $orig_uri, $req, $attrs) = @_;
+    my($fields) = $self->[$_IDI];
+    $req->throw_die(Bivio::DieCode->NOT_FOUND, $attrs)
+	unless my $t = $fields->{not_found};
+    return ($t->{task}, $_GENERAL, '', $orig_uri);
 }
 
 sub _task {
