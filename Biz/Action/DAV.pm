@@ -29,7 +29,7 @@ my($_DIE) = {
 my($_WRITABLE) = qr/^(delete|edit|lock|mkcol|move|put|proppatch|save|unlock)$/i;
 
 sub execute {
-    my(undef, $req) = @_;
+    my($proto, $req) = @_;
     my($s) = {
 	req => $req,
 	r => $req->get('r'),
@@ -50,9 +50,19 @@ sub execute {
         return if _precondition($s);
 	return $op->($s);
     });
-    _output($s, ($_DIE->{$die->get('code')->get_name} || 'SERVER_ERROR'))
-	if $die;
-    return 1;
+    if ($die) {
+	my($n) = $die->get('code')->get_name;
+	if ($n eq 'SERVER_REDIRECT_TASK') {
+	    my($x) = $die->unsafe_get('attrs');
+	    $x &&= $x->{task_id};
+	    $x &&= $proto->is_blessed($x, 'Bivio::Agent::TaskId')
+		&& $x->get_name;
+	    $n = $x
+		if ($x ||= '') =~ s/^DEFAULT_ERROR_REDIRECT_//;
+	}
+	_output($s, ($_DIE->{$n} || 'SERVER_ERROR'));
+    }
+    return 1
 }
 
 sub _call {
