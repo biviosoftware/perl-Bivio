@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,89 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.59  2007/12/07 06:44:57  nagler
+  * Bivio::Agent::Request
+    preserve() preserves items on the request after a block of code is executed
+    removed preserve.  see Model::set_ephemeral
+  * Bivio::Biz::Action::WikiView
+    use title from WikiStyle
+  * Bivio::Biz::FormModel
+    Acknowledgements now put on query if execute_ok returns query in a hash
+  * Bivio::Biz::ListModel
+    ->set_ephemeral will block PropertyModels and ListModels instances from automatically being loaded onto the request
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    rpmpod
+    fmt
+  * Bivio::Biz::Model::RealmLogoList
+    FORUM_PUBLIC_FILE not available in version 3
+  * Bivio::Biz::Model::RealmRole
+    don't throw exception if Role is missing from default set;  Not all
+    realms get all roles
+  * Bivio::Biz::Model::SearchList
+    FORUM_PUBLIC_* has gone away
+  * Bivio::Biz::Model::UserLoginForm
+    Added internal_validate_login_value so could share code in validate_login
+  * Bivio::Biz::Model
+    ->set_ephemeral will block PropertyModels and ListModels instances from automatically being loaded onto the request
+  * Bivio::Biz::PropertyModel
+    ->set_ephemeral will block PropertyModels and ListModels instances from automatically being loaded onto the request
+  * Bivio::Delegate::SimpleRealmName
+    added SPECIAL_PLACEHOLDER (my) which is used by WikiText and RealmCSS
+  * Bivio::Delegate::TaskId
+    FORUM_CSS has gone away
+  * Bivio::PetShop::Facade::PetShop
+    test data
+  * Bivio::PetShop::Util
+    test data for Wiki and CSS
+  * Bivio::Test::Language::HTTP
+    _facade() does not initialize_fully if there's already a facade
+    home_page_uri: don't change uri if facade_uri and default are the same
+    set $ENV{USER} for email_user;  used to be $ENV{LOGNAME} first, which
+    seems unnecessary
+  * Bivio::Test::Unit
+    model needs to use(Bivio::ShellUtil)
+  * Bivio::Test::Util
+    mock_sendmail sets up facade correctly
+    remove debug statement
+  * Bivio::Type::PrimaryId
+    rmpod
+    is_valid is stricter
+  * Bivio::UI::FacadeBase
+    FORUM_CSS has gone away
+    WikiView converts title to HTML
+  * Bivio::UI::FacadeComponent
+    rmpod
+    internal_get_self uses get_from_source
+  * Bivio::UI::HTML::Widget::StyleSheet
+    use Bivio::Base HTMLWidget.ControlBase
+  * Bivio::UI::HTML::Widget::Table
+    before_row widget is no longer renders before a table heading
+  * Bivio::UI::HTML::Widget::Tag
+    added bracket_value_in_comment attribute
+  * Bivio::UI::View::CSS
+    FORUM_CSS has gone away
+  * Bivio::UI::View::ThreePartPage
+    refactored internal_xhtml_adorned_body
+    xhtml_style is now RealmCSS
+  * Bivio::UI::View::Wiki
+    body_class is gone
+    topic is now title
+  * Bivio::UI::ViewShortcuts
+    *** empty log message ***
+    fpc: Can't relax check on vs_constant to Bivio::UI::WidgetValueSource,
+    must use Bivio::Agent::Request
+    fpc
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_tuple_use_list_as_task_menu_list
+  * Bivio::UI::XHTML::Widget::WikiStyle
+    RealmCSSList obviates need for embedded CSS here
+  * Bivio::UI::XHTML::Widget::WikiText
+    allow embedded objects
+    use SPECIAL_PLACEHOLDER
+  * Bivio::Util::HTTPConf
+    sleep 3 seconds on restart
+    fmt
+
   Revision 5.58  2007/11/29 23:16:43  nagler
   * Bivio::Agent::Request
     is_production now pulls from $self, if it can
