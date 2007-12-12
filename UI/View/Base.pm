@@ -87,7 +87,7 @@ sub internal_put_base_attr {
         view_put($self->internal_base_type . '_' . shift(@_) => shift(@_));
 	return;
     }, \@_);
-    return;
+    return $self;
 }
 
 sub internal_text_as_prose {
