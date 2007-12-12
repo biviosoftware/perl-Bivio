@@ -52,6 +52,8 @@ sub initialize {
     my($i) = 0;
     foreach my $value (@{$self->get('values')}) {
 	my($v) = ref($value) ? $value : [$value];
+	$v->[0] = $v->[1]
+	    unless defined($v->[0]);
 	unshift(@$v, $_VS->vs_text('ListActions', $v->[0]))
 	    if !ref($v->[0]) && $_T->is_valid_name($v->[0])
 		&& $_T->unsafe_from_name($v->[0]);
