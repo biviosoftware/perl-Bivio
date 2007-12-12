@@ -164,7 +164,13 @@ sub info_base {
 	    ANYBODY
 	    View.CSS->site_css
 	)],
-#55
+	[qw(
+            DEFAULT_ERROR_REDIRECT_NOT_FOUND
+            55
+	    GENERAL
+	    ANYBODY
+	    View.Error->not_found
+	)],
 	[qw(
             PERMANENT_REDIRECT
             56
@@ -179,7 +185,14 @@ sub info_base {
 	    ANYBODY
 	    Action.EmptyReply
         )],
-#58-59 free
+	[qw(
+            DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND
+            58
+	    GENERAL
+	    ANYBODY
+	    View.Error->not_found
+	)],
+#59
     ];
 }
 
