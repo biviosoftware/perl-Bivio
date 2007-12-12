@@ -2,37 +2,7 @@
 # $Id$
 package Bivio::Mail::Incoming;
 use strict;
-$Bivio::Mail::Incoming::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-=head1 NAME
-
-Bivio::Mail::Incoming - parses an incoming mail message
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Mail::Incoming;
-
-=cut
-
-use Bivio::Mail::Common;
-@Bivio::Mail::Incoming::ISA = qw(Bivio::Mail::Common);
-
-=head1 DESCRIPTION
-
-C<Bivio::Mail::Incoming> parses and maintains the state of an incoming mail
-message.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Mail::Common';
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
@@ -41,6 +11,11 @@ use Bivio::Mail::Common;
 use Bivio::Mail::RFC822;
 use Bivio::Type::DateTime;
 use IO::Scalar ();
+
+# C<Bivio::Mail::Incoming> parses and maintains the state of an incoming mail
+# message.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 require 'ctime.pl';
 
 #=VARIABLES
@@ -49,61 +24,18 @@ my($_DT) = 'Bivio::Type::DateTime';
 Bivio::IO::Trace->register;
 # Bivio::IO::Config->register;
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(string_ref rfc822) : Bivio::Mail::Incoming
-
-=head2 static new(string_ref rfc822, int offset) : Bivio::Mail::Incoming
-
-Create an instance and L<initialize|"initialize"> with I<rfc822>.
-Default I<offset> is 0.
-
-Note: the reference to I<rfc822> will be retained, so do not modify this value
-until L<uninitialize|"uninitialize"> has been called or the object is
-destroyed.
-
-=cut
-
-sub new {
-    return shift->SUPER::new->initialize(@_);
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_body"></a>
-
-=head2 get_body() : string
-
-=head2 get_body(string_ref body)
-
-Returns the body of the message or puts a copy in I<body>.
-
-=cut
-
 sub get_body {
     my($self, $body) = @_;
+    # Returns the body of the message or puts a copy in I<body>.
     return substr(${$self->get('rfc822')}, $self->get('body_offset'))
 	unless defined($body);
     $$body = substr(${$self->get('rfc822')}, $self->get('body_offset'));
     return;
 }
 
-=for html <a name="get_date_time"></a>
-
-=head2 get_date_time() : time
-
-Returns the date specified by the message
-
-=cut
-
 sub get_date_time {
     my($self) = @_;
+    # Returns the date specified by the message
     return $self->get_if_exists_else_put(date_time => sub {
         return $_DT->to_unix(
 	    ($_DT->from_literal(
@@ -113,18 +45,9 @@ sub get_date_time {
     });
 }
 
-=for html <a name="get_from"></a>
-
-=head2 get_from() : (string addr, string name)
-
-=head2 get_from() : string addr
-
-Return <I>From:</I> email address and name or just email if not array context.
-
-=cut
-
 sub get_from {
     my($self) = @_;
+    # Return <I>From:</I> email address and name or just email if not array context.
     # 822: The  "Sender"  field  mailbox  should  NEVER  be  used
     #      automatically, in a recipient's reply message.
     return _two_parter(
@@ -134,26 +57,17 @@ sub get_from {
     );
 }
 
-=for html <a name="get_headers"></a>
-
-=head2 get_headers() : hash
-
-=head2 get_headers(hash headers) : hash
-
-Returns a hash of headers.  The key is a the field name in lower case sans the
-colon.  The value is the field name in original case followed by the field
-value, i.e. the original text.  If a header appears multiple times, its
-value will be a scalar contain all instances of the field.
-
-Note: the field values include the terminating newline.
-
-If I<headers> is undefined, a new hash will be created.  If I<headers> is
-defined, fills in and returns I<headers>.
-
-=cut
-
 sub get_headers {
     my($self, $headers) = @_;
+    # Returns a hash of headers.  The key is a the field name in lower case sans the
+    # colon.  The value is the field name in original case followed by the field
+    # value, i.e. the original text.  If a header appears multiple times, its
+    # value will be a scalar contain all instances of the field.
+    #
+    # Note: the field values include the terminating newline.
+    #
+    # If I<headers> is undefined, a new hash will be created.  If I<headers> is
+    # defined, fills in and returns I<headers>.
     $headers ||= {};
     my($fn) = Bivio::Mail::RFC822->FIELD_NAME;
     # Important to include the newline in $f
@@ -169,35 +83,21 @@ sub get_headers {
     return $headers;
 }
 
-=for html <a name="get_message_id"></a>
-
-=head2 get_message_id() : string
-
-Returns the Message-Id for this message.
-
-=cut
-
 sub get_message_id {
     my($self) = @_;
+    # Returns the Message-Id for this message.
     return $self->get_if_exists_else_put(message_id => sub {
 	(_get_field($self, 'message-id:') =~ /<([^<>]+)>/)[0];
     });
 }
 
-=for html <a name="get_references"></a>
-
-=head2 get_references() : array
-
-Return sorted array of message ids this message refers to.
-
-The first id in the array returned is either the "In-Reply-To" value
-or (if In-Reply-To does not exist) the last (most recent) id in the
-"References" list.
-
-=cut
-
 sub get_references {
     my($self) = @_;
+    # Return sorted array of message ids this message refers to.
+    #
+    # The first id in the array returned is either the "In-Reply-To" value
+    # or (if In-Reply-To does not exist) the last (most recent) id in the
+    # "References" list.
     return $self->get_if_exists_else_put(references => sub {
 	my($seen) = {};
         return [map(
@@ -208,19 +108,10 @@ sub get_references {
     });
 }
 
-=for html <a name="get_reply_to"></a>
-
-=head2 get_reply_to() : (string addr, string name)
-
-=head2 get_reply_to() : string addr
-
-Return I<Reply-To:> email address and name or just email
-if not array context.
-
-=cut
-
 sub get_reply_to {
     my($self) = @_;
+    # Return I<Reply-To:> email address and name or just email
+    # if not array context.
     return _two_parter(
 	$self,
 	qw(reply_to_email reply_to_name),
@@ -228,30 +119,16 @@ sub get_reply_to {
     );
 }
 
-=for html <a name="get_rfc822"></a>
-
-=head2 get_rfc822() : string
-
-I was not sure what to call this method. Basically, you want it to return
-the entire RFC822, offset by the header_offset.
-
-=cut
-
 sub get_rfc822 {
     my($self) = @_;
+    # I was not sure what to call this method. Basically, you want it to return
+    # the entire RFC822, offset by the header_offset.
     return substr(${$self->get('rfc822')}, $self->get('header_offset'));
 }
 
-=for html <a name="get_rfc822_io"></a>
-
-=head2 get_rfc822_io() : IO::File
-
-Return IO::File opend
-
-=cut
-
 sub get_rfc822_io {
     my($self) = @_;
+    # Return IO::File opend
 #TODO: Read only?
     my($file) = IO::Scalar->new($self->get('rfc822'));
 #TODO: setpos uses opaque ;  SEEK whence?
@@ -260,28 +137,14 @@ sub get_rfc822_io {
 
 }
 
-=for html <a name="get_rfc822_length"></a>
-
-=head2 get_rfc822_length() : int
-
-Returns length of C<rfc822>.
-
-=cut
-
 sub get_rfc822_length {
+    # Returns length of C<rfc822>.
     return shift->get('rfc822_length');
 }
 
-=for html <a name="get_subject"></a>
-
-=head2 get_subject() : string
-
-Returns I<Subject> of message or C<undef>.
-
-=cut
-
 sub get_subject {
     my($self) = @_;
+    # Returns I<Subject> of message or C<undef>.
     return $self->get_if_exists_else_put(
 	subject => sub {
 	    my($subject) = _get_field($self, 'subject:');
@@ -292,38 +155,22 @@ sub get_subject {
     });
 }
 
-=for html <a name="get_unix_mailbox"></a>
-
-=head2 get_unix_mailbox() : string
-
-Returns the message in unix mailbox format.  Always ends in a newline.
-
-=cut
-
 sub get_unix_mailbox {
     my($self, $buffer, $offset) = @_;
+    # Returns the message in unix mailbox format.  Always ends in a newline.
     # ctime already has newline
     return 'From unknown ' . ctime($self->get('time'))
 	    . substr(${$self->get('rfc822')}, $self->get('header_offset'))
 	    . (substr(${$self->get('rfc822')}, -1) eq "\n" ? '' : "\n");
 }
 
-=for html <a name="initialize"></a>
-
-=head2 initialize(string_ref $rfc822)
-
-=head2 initialize(string_ref $rfc822, int offset)
-
-Initializes the object with the reference supplied.
-
-Note: the reference to I<rfc822> will be retained, so do not modify this value
-until L<uninitialize|"uninitialize"> has been called or the object is
-destroyed.
-
-=cut
-
 sub initialize {
     my($self, $rfc822, $offset) = @_;
+    # Initializes the object with the reference supplied.
+    #
+    # Note: the reference to I<rfc822> will be retained, so do not modify this value
+    # until L<uninitialize|"uninitialize"> has been called or the object is
+    # destroyed.
     $offset ||= 0;
     my($i) = index($$rfc822, "\n\n", $offset);
     my($h);
@@ -365,19 +212,22 @@ sub initialize {
     );
 }
 
-=for html <a name="send"></a>
-
-=head2 send() : self
-
-Send the mail message to the specified recipients (see
-L<set_recipients|"set_recipients">).  The headers
-and body remain unchanged, even C<Sender:>.   This should be used
-for "alias-like" forwarding only.
-
-=cut
+sub new {
+    # Create an instance and L<initialize|"initialize"> with I<rfc822>.
+    # Default I<offset> is 0.
+    #
+    # Note: the reference to I<rfc822> will be retained, so do not modify this value
+    # until L<uninitialize|"uninitialize"> has been called or the object is
+    # destroyed.
+    return shift->SUPER::new->initialize(@_);
+}
 
 sub send {
     my($self, $req) = shift->internal_req(@_);
+    # Send the mail message to the specified recipients (see
+    # L<set_recipients|"set_recipients">).  The headers
+    # and body remain unchanged, even C<Sender:>.   This should be used
+    # for "alias-like" forwarding only.
     return $self->SUPER::send(
 	undef,
 	$self->get(qw(rfc822 header_offset)),
@@ -386,20 +236,11 @@ sub send {
     );
 }
 
-=for html <a name="uninitialize"></a>
-
-=head2 uninitialize()
-
-Clear any state associated with this object.
-
-=cut
-
 sub uninitialize {
+    # Clear any state associated with this object.
     shift->delete_all;
     return;
 }
-
-#=PRIVATE METHODS
 
 sub _get_field {
     my($self, $name) = @_;
@@ -425,15 +266,5 @@ sub _two_parter {
     });
     return wantarray ? ($f1, $self->get($field2)) : $f1;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
