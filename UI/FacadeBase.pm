@@ -155,6 +155,8 @@ sub _cfg_base {
 	    [CLIENT_REDIRECT => ['go/*', 'goto/*']],
 	    [CLUB_HOME => '?'],
 	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
+ 	    [DEFAULT_ERROR_REDIRECT_NOT_FOUND => undef],
+ 	    [DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND => undef],
 	    [FAVICON_ICO => 'favicon.ico'],
 	    [FORBIDDEN => undef],
 	    [PUBLIC_PING => 'pub/ping'],
@@ -204,6 +206,9 @@ sub _cfg_base {
 	    [xlink => [
 		back_to_top => 'back to top',
 		SITE_ROOT => 'Home',
+	    ]],
+	    [title => [
+		[qw(DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND DEFAULT_ERROR_REDIRECT_NOT_FOUND)] => 'Page Not Found',
 	    ]],
 	    [[qw(paged_detail paged_list)] => [
 		prev => 'Back',
