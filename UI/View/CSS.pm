@@ -360,7 +360,7 @@ form .submit {
   margin: .5em;
   text-align: center;
 }
-.empty_list {
+.empty_list, .not_found {
   border: 2px solid;
   Color('empty_list-border');
   padding: .5em;
