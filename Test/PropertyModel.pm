@@ -11,6 +11,7 @@ sub new_unit {
     $attrs = {}
 	unless ref($attrs);
     my($m) = $class;
+    $proto->use('TestUnit.Request')->get_instance;
     return $proto->SUPER::new({
 	class_name => $m->package_name,
 	check_return => sub {
