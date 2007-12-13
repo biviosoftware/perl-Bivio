@@ -11,6 +11,7 @@ sub get_delegate_info {
         UNKNOWN => 0,
 	ERROR_DETAIL => 1,
 	RELATED_ID => 2,
+	DEFAULT_TUPLE_MONIKER => 3,
 	LAST_RESERVED_VALUE => 99,
     ];
 }
