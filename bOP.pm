@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,41 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.60  2007/12/12 04:12:25  nagler
+  * Bivio::Biz::Action::Acknowledgement
+    save_label() guards against non-hash query
+  * Bivio::Biz::Action::DAV
+    if a server_redirect is thrown, check task_id for
+    DEFAULT_ERROR_REDIRECT and transform the error to the original die
+    code.
+  * Bivio::Biz::Action::RealmFile
+    execute_private should not pass in defined value for 'is public'
+  * Bivio::Delegate::TaskId
+    added DEFAULT_ERROR_REDIRECT_NOT_FOUND and
+    DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND
+  * Bivio::Test::Language::HTTP
+    table operations now convert to regexes if not deprecated_text_patterns.
+  * Bivio::Test::PropertyModel
+    create a request in new_unit
+  * Bivio::Type::Hash
+    added to_string
+    to_string handles undef and non-refs itself to get simplified view
+  * Bivio::UI::FacadeBase
+    listactions for motions
+    added DEFAULT_ERROR_REDIRECT_NOT_FOUND and DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND
+  * Bivio::UI::HTML::Widget::Image
+    alt was broken
+  * Bivio::UI::HTML::Widget::ListActions
+    allow use of undefined value as label which implies to use task
+  * Bivio::UI::Task
+    look for DEFAULT_ERROR_REDIRECT_NOT_FOUND in tasks during init; if
+    there, don't throw NOT_FOUND exception, rather return not_found task
+    with URI of object not found.
+  * Bivio::UI::View::Base
+    return self from internal_put_base_attr
+  * Bivio::UI::View::CSS
+    added .not_found
+
   Revision 5.59  2007/12/07 06:44:57  nagler
   * Bivio::Agent::Request
     preserve() preserves items on the request after a block of code is executed
