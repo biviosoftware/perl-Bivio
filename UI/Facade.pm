@@ -267,12 +267,10 @@ sub initialize {
     # in a server environment.>
     return if $_INITIALIZED;
     $_INITIALIZED = 1;
-    if ($partially) {
-	Bivio::IO::ClassLoader->map_require('Facade', $_CFG->{default});
-    }
-    else {
-	Bivio::IO::ClassLoader->map_require_all('Facade');
-    }
+    # Default must be initialized first
+    Bivio::IO::ClassLoader->map_require('Facade', $_CFG->{default});
+    Bivio::IO::ClassLoader->map_require_all('Facade')
+        unless $partially;
     Bivio::Die->die(
 	$_CFG->{default}, ': unable to find or load default Facade',
     ) unless ref($_CLASS_MAP{$_CFG->{default}});
@@ -348,12 +346,12 @@ sub new {
     my($class) = ref($self);
     my($simple_class) = $self->simple_package_name;
     Bivio::Die->die($class, ': duplicate initialization')
-		if $_CLASS_MAP{$simple_class};
+        if $_CLASS_MAP{$simple_class};
     # Not yet initialized, but avoid infinite recursion in the
     # event of self-referential configuration.
     $_CLASS_MAP{$simple_class} = 1;
 
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
+    $self->use('Agent.Request');
     # Only load production configuration.
     if (Bivio::Agent::Request->is_production && !$config->{is_production}) {
 	# Anybody referencing this facade will get an error; see _load().
@@ -541,6 +539,17 @@ sub setup_request {
     return _setup_request($self, $req);
 }
 
+sub _fixup_test_uri {
+    my($self, $uri) = @_;
+    return $uri
+	if $self->get('is_default');
+    my($d) = $self->get_default->get('uri');
+    my($f) = $self->get('uri');
+    $uri = "$f.$uri"
+	unless $uri =~ s{^(.*?)\b\Q$d\E\b}{$1$f}i;
+   return $uri;
+}
+
 sub _get_class_pattern {
     # Returns a pattern to find the classes to be loaded.
     # Compute the location where this module was loaded from by
@@ -556,18 +565,13 @@ sub _get_class_pattern {
 
 sub _init_hosts {
     my($self, $config) = @_;
-    # Computes *_host based on $_CFG and $self values.
-    my($http_host, $mail_host) = Bivio::Agent::Request->is_production
-	? map({
-	    $config->{$_} || Bivio::Die->die(
-		$_, ': facade parameter missing in production');
-	} qw(http_host mail_host))
-	: map({
-	    ($self->get('is_default') ? '' : $self->get('uri') . '.') . $_;
-	} @{$_CFG}{qw(http_suffix mail_host)});
     $self->put(
-	http_host => $http_host,
-	mail_host => $mail_host,
+	map(($_ => (
+	    Bivio::Agent::Request->is_production
+	        ? $config->{$_} || Bivio::Die->die(
+		    $_, ': facade parameter missing in production')
+		: _fixup_test_uri($self, $_CFG->{$_} || $_CFG->{http_suffix}),
+	)), qw(http_host mail_host)),
     );
     return;
 }
