@@ -68,14 +68,30 @@ sub realm_mail_hook {
     my($tul) = $realm_mail->new_other('TupleUseList')->load_all;
     my($m) = join('|', @{$tul->monikers});
     _trace($realm_mail->get('subject'), ' matching with ', $m) if $_TRACE;
-    return unless $m && $realm_mail->get('subject') =~ m{^\s*($m)\#(\d*)}x;
+    return unless $m;
+    my($qr) = qr{^\s*($m)\#(\d*)};
+    my($mm, $mn) = $realm_mail->get('subject') =~ $qr;
+    unless (defined($mm)) {
+	my($rt) = $realm_mail->new_other('RowTag');
+	return unless defined($mm = $rt->get_value(
+	    $realm_mail->get('realm_id'),
+	    'DEFAULT_TUPLE_MONIKER',
+	));
+	unless ("$mm#" =~ $qr) {
+	    Bivio::IO::Alert->warn(
+		$mn, ': DEFAULT_TUPLE_MONIKER not in TupleUseList, deleting RowTag');
+	    $rt->replace_value(
+		$realm_mail->get('realm_id'), 'DEFAULT_TUPLE_MONIKER');
+	    return;
+	}
+    }
     my($state) = {
 	realm_mail => $realm_mail,
 	incoming => $incoming,
-	moniker => $1,
-	tuple_num => $2,
-	is_update => $2 ? 1 : 0,
-	tuple_def_id => $tul->moniker_to_id($1),
+	moniker => $mm,
+	tuple_num => $mn,
+	is_update => $mn ? 1 : 0,
+	tuple_def_id => $tul->moniker_to_id($mm),
 	self => $proto->new($realm_mail->get_request),
     };
     my($body) = _text_plain(\($incoming->get_rfc822));
@@ -117,7 +133,7 @@ sub split_body {
     my($slots, $c2) = split(/\n\n/, $body, 2);
     $c1 .= $c2 || '';
     $c1 =~ s/^\s+|\s+$//sg;
-    return ($slots || '') =~ $_LABEL_RE ? ($slots, $c1) : (undef, $c1);
+    return ($slots ||= '') =~ $_LABEL_RE ? ($slots, $c1) : (undef, $c1 || $slots);
 }
 
 #TODO: Should probably deprecate since only client is now calling split_body
