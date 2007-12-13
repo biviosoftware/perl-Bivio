@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.61  2007/12/13 04:13:47  nagler
+  * Bivio::Biz::Action::MailForward
+    Refactored to use Outgoing
+  * Bivio::Biz::Model::Tuple
+    added DEFAULT_TUPLE_MONIKER
+    Fixed bug when msg bodies had no slots to update (just comment)
+  * Bivio::Delegate::RowTagKey
+    added DEFAULT_TUPLE_MONIKER
+  * Bivio::Mail::Incoming
+    rmpod
+  * Bivio::Mail::Outgoing
+    rmpod
+  * Bivio::PetShop::Facade::PetShop
+    no need for $_SELF
+  * Bivio::PetShop::Util
+    added CRM
+  * Bivio::UI::Facade
+    uri's are fixed up properly for test system
+
   Revision 5.60  2007/12/12 04:12:25  nagler
   * Bivio::Biz::Action::Acknowledgement
     save_label() guards against non-hash query
