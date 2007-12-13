@@ -7,5 +7,29 @@ Type();
 	'SRID=4326;POLYGON((0 0, 1 1, 0 0))' => 'SRID=4326;POLYGON((0 0, 1 1, 0 0))',
 	'SRID=4326;POLYGON((0 0, 1 1, 0 0)' => SYNTAX_ERROR(),
     ],
+    {
+	method => 'from_shape',
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    my($b) = class('TestUnit.Bean');
+	    my($copy) = [@$params];
+	    return [$b->new({
+		'points()' => sub {
+		    return map(
+			$b->new({
+			    'X()' => [$_->[0]],
+			    'Y()' => [$_->[1]],
+			}),
+			@$copy,
+		    );
+		},
+	    })];
+	},
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [$actual->[0]->as_string];
+	},
+    } => [
+	[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]] => 'SRID=4326;POLYGON((0.00000 0.00000,1.00000 0.00000,1.00000 1.00000,0.00000 1.00000,0.00000 0.00000))',
+    ],
 ];
-
