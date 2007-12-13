@@ -19,6 +19,14 @@ sub BTEST_READ {
     return 'btest_read';
 }
 
+sub CRM {
+    return 'crm';
+}
+
+sub CRM_USER {
+    return 'crm_user';
+}
+
 sub DEMO {
     return 'demo';
 }
@@ -64,6 +72,7 @@ sub ROOT_EMAIL {
 sub USAGE {
     return shift->SUPER::USAGE . <<'EOF';
     demo_users -- lists demo user names
+    demo_all_tuples -- clears tuple table in realm
 EOF
 }
 
@@ -82,6 +91,13 @@ sub ddl_files {
 	    $base.'-'.$_.'.sql';
 	} qw(tables constraints sequences);
     } qw(bOP petshop)];
+}
+
+sub delete_all_tuples {
+    my($self) = @_;
+    my($req) = $self->initialize_ui;
+    $self->model('Tuple')->delete_all;
+    return;
 }
 
 sub demo_users {
@@ -119,6 +135,7 @@ sub initialize_test_data {
     _init_email_alias($self);
     _init_tuple($self);
     _init_logo($self);
+    _init_crm($self);
     return;
 }
 
@@ -145,6 +162,51 @@ sub realm_role_config {
 
 # _init_demo_calendar(self)
 #
+sub _init_crm {
+    my($self) = @_;
+    my($req) = $self->req;
+    $self->create_test_user($self->CRM_USER);
+    $req->set_realm(undef);
+    $req->set_user($self->CRM_USER);
+    $self->model('ForumForm', {
+        'RealmOwner.display_name' => 'Customer Request Management',
+	'RealmOwner.name' => $self->CRM,
+    });
+    $self->model('ForumUserDeleteForm', {
+	'RealmUser.realm_id' => $req->get('auth_id'),
+	'User.user_id' => $self->unauth_model('RealmOwner', {name => $self->ROOT})->get('realm_id'),
+    });
+    $self->model('ForumUserAddForm', {
+	'RealmUser.realm_id' => $req->get('auth_id'),
+	'User.user_id' => $req->get('auth_user_id'),
+	administrator => 1,
+    });
+    $req->set_realm($self->CRM);
+    $self->model('TupleSlotType')->create_from_hash({
+	Status => {
+	    type_class => 'TupleSlot',
+	    choices => [qw(Open Closed New)],
+	    default_value => 'New',
+	},
+    });
+    $self->model('TupleDef')->create_from_hash({
+	'req#Requests' => [
+	    {
+		label => 'Title',
+		type => 'String',
+	    },
+	    {
+		label => 'Status',
+		type => 'Status',
+	    },
+	],
+    });
+    $self->model('TupleUse')->create_from_label('Requests');
+    $self->model('RowTag')->create_value(
+	$req->get('auth_id'), 'DEFAULT_TUPLE_MONIKER', 'req');
+    return;
+}
+
 sub _init_demo_calendar {
     my($self) = @_;
     my($req) = $self->get_request;
