@@ -11,5 +11,14 @@ Type();
 	'SRID=4326;POINT(0)' => TOO_FEW(),
 	'SRID=4326;POINT(1 2 3)' => from_literal_error('TOO_MANY'),
     ],
+    {
+	method => 'from_long_lat',
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [$actual->[0]->as_string];
+	},
+    } => [
+	[-100, +40] => 'SRID=4326;POINT(-100.00000 40.00000)',
+    ],
 ];
 
