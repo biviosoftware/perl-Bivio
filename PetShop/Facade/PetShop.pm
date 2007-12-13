@@ -2,11 +2,11 @@
 # $Id$
 package Bivio::PetShop::Facade::PetShop;
 use strict;
-use base 'Bivio::UI::FacadeBase';
+use Bivio::Base 'UI.FacadeBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-my($_SELF) = __PACKAGE__->new({
+__PACKAGE__->new({
     uri => 'petshop',
     http_host => 'petshop.bivio.biz',
     mail_host => 'bivio.biz',
