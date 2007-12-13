@@ -10,6 +10,10 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub SRID {
     # WGS84; WGS_1984; WGS 84
+    return shift->SRID_WGS84;
+}
+
+sub SRID_WGS84 {
     return 4326;
 }
 
@@ -51,7 +55,7 @@ sub new {
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
 	@{$self->map_together(
-	    sub {(lc($_[0]),_assert($self, @_))},
+	    sub {return (lc($_[0]), _convert($self, @_))},
 	    [qw(TYPE SRID)],
 	    [$type, $srid],
 	)},
@@ -81,15 +85,9 @@ sub internal_set_srid {
     return $self;
 }
 
-sub _assert {
+sub _convert {
     my($self, $which, $value) = @_;
-    my($exp) = $self->$which();
-    return $exp
-	unless defined($value);
-    $value = uc($value);
-    Bivio::Die->die($value, ": expecting $which=", $exp)
-        unless $exp eq $value;
-    return $value;
+    return defined($value) ? uc($value) : $self->$which();
 }
 
 1;
