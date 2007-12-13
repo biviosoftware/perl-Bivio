@@ -7,9 +7,26 @@ use Bivio::Base 'Type.Geom';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = __PACKAGE__->use('Bivio::TypeError');
 my($_GN) = __PACKAGE__->use('Type.GeomNumber');
+my($_DD) = __PACKAGE__->use('Type.DecimalDegree');
 
 sub TYPE {
     return 'POLYGON';
+}
+
+sub from_shape {
+    my($proto, $shape) = @_;
+    my($seen) = {};
+    my($done);
+    return $proto->new(
+	'('
+	    . join(',', map(
+		join(' ', map($_DD->from_literal_or_die($_), $_->X, $_->Y)),
+		$shape->points,
+	    ))
+	    . ')',
+	undef,
+	$proto->SRID_WGS84,
+    );
 }
 
 sub validate_wkt {
