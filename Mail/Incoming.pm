@@ -228,6 +228,7 @@ sub send {
     # L<set_recipients|"set_recipients">).  The headers
     # and body remain unchanged, even C<Sender:>.   This should be used
     # for "alias-like" forwarding only.
+    Bivio::IO::Alert->warn_deprecated('convert to Outgoing to send');
     return $self->SUPER::send(
 	undef,
 	$self->get(qw(rfc822 header_offset)),
