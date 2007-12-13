@@ -15,10 +15,11 @@ sub TYPE {
 
 sub from_long_lat {
     my($proto, $long, $lat) = @_;
-    my($self) = $proto->new(
-	join(' ', map($_DD->from_literal_or_die($_), $long, $lat)));
-    $self->internal_set_srid(4326);
-    return $self;
+    return $proto->new(
+	join(' ', map($_DD->from_literal_or_die($_), $long, $lat)),
+	undef,
+	$proto->SRID_WGS84,
+    );
 }
 
 sub validate_wkt {
