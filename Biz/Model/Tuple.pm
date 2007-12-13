@@ -128,12 +128,11 @@ sub realm_mail_hook {
 
 sub split_body {
     my(undef, $body) = @_;
-    $body =~ s/^(.*?)(?=$_LABEL_RE)//s;
+    return (undef, _strip($body))
+	unless $body =~ s/^(.*?)($_LABEL_RE)//s;
     my($c1) = $1 || '';
-    my($slots, $c2) = split(/\n\n/, $body, 2);
-    $c1 .= $c2 || '';
-    $c1 =~ s/^\s+|\s+$//sg;
-    return ($slots ||= '') =~ $_LABEL_RE ? ($slots, $c1) : (undef, $c1 || $slots);
+    my($slots, $c2) = split(/\n\n/, $2 . $body, 2);
+    return (_strip($slots), _strip($c1 . (defined($c2) ? $c2 : '')));
 }
 
 #TODO: Should probably deprecate since only client is now calling split_body
@@ -203,6 +202,12 @@ sub _parse_slots {
 	unless @$slots > 1;
     shift(@$slots);
     return $slots;
+}
+
+sub _strip {
+    my($v) = @_;
+    $v =~ s/^\s+|\s+$//sg;
+    return $v;
 }
 
 sub _text_plain {
