@@ -106,12 +106,13 @@ __PACKAGE__->compile([
 ]);
 
 sub as_html {
-    my($proto, $thing) = @_;
+    # (self, any) : string
     # Returns the alignment in html as C<VALIGN> and C<ALIGN> attributes
     # of C<TD> tag.  Prefixed with leading space.
     #
     # If I<thing> returns false (zero or C<undef>), returns two empty
     # strings.
+    my($proto, $thing) = @_;
     return $thing ? $proto->from_any($thing)->get_long_desc : '';
 }
 

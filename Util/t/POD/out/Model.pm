@@ -20,8 +20,9 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_LOADED_ALL_PROPERTY_MODELS);
 
 sub OPTIONS {
-    my($proto) = @_;
+    # : hash_ref
     # Adds the I<-checkout> and I<-package_dir> options.
+    my($proto) = @_;
     my($res) = $proto->SUPER::OPTIONS;
     $res->{package_dir} = ['Line', undef];
     $res->{checkout} = ['Boolean', 0];
@@ -29,8 +30,9 @@ sub OPTIONS {
 }
 
 sub as_string {
-    my($self) = @_;
+    # (self) : string
     # Pretty prints an identifier for this model.
+    my($self) = @_;
     my($ci) = $self->[$_IDI]->{class_info};
     # All primary keys must be defined or just return ref($self).
     return ref($self) . '(' . join(',', map {
@@ -40,26 +42,30 @@ sub as_string {
 }
 
 sub assert_not_singleton {
-    my($fields) = shift->[$_IDI];
+    # (self) : undef
     # Throws an exception if this is the singleton instance.
+    my($fields) = shift->[$_IDI];
     die("can't create, update, read, or delete singleton instance")
 	if $fields->{is_singleton};
     return;
 }
 
 sub clone {
+    # (self) : undef
     # Not supported.
     die('not supported');
 }
 
 sub delete {
+    # (self) : undef
     # Not supported.
     die('not supported');
 }
 
 sub delete_from_request {
-    my($self) = @_;
+    # (self) : undef
     # Deletes I<self> from request.  Reverses L<put_on_request|"put_on_request">.
+    my($self) = @_;
     my($req) = $self->unsafe_get_request;
     return unless $req;
 
@@ -71,9 +77,10 @@ sub delete_from_request {
 }
 
 sub die {
-    my($self, @args) = @_;
+    # (self, string, ...) : undef
     # Calls L<throw_die|"throw_die"> with code DIE and message as (safe) concat
     # of args.
+    my($self, @args) = @_;
     $self->throw_die('DIE', {
 #TODO: format, not die
 	message => Bivio::Die->die(@args),
@@ -84,12 +91,14 @@ sub die {
 }
 
 sub do_iterate {
-    my($self, $do_iterate_handler) = (shift, shift);
+    # (self, code_ref, any, ...) : self
+    # (self, code_ref, string, any, ...) : self
     # Like L<map_iterate|"map_iterate"> but does not return anything.  For each row,
     # calls L<iterate_next_and_load|"iterate_next_and_load"> followed by
     # L<do_iterate_handler|"do_iterate_handler">.  Terminates the iteration with
     # L<iterate_end|"iterate_end"> when there are no more rows or if
     # I<do_iterate_handler> returns false.
+    my($self, $do_iterate_handler) = (shift, shift);
     my($iterate_start) = $_[0] && !ref($_[0]) && $_[0] =~ /iterate_start/
 	&& $self->can($_[0]) ? shift : 'iterate_start';
     $self->$iterate_start(@_);
@@ -99,10 +108,11 @@ sub do_iterate {
 }
 
 sub format_uri_for_this_property_model {
-    my($self, $task, $name) = @_;
+    # (self, any, string) : string
     # Formats a uri for I<task> and model I<name> of I<self>.  Blows up if not all
     # the primary keys are available for I<model_name>.  Doesn't load the I<model>.
     # I<task> can be a name or L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+    my($self, $task, $name) = @_;
     $task = Bivio::Agent::TaskId->from_name($task) unless ref($task);
     my($query, $mi) = _get_model_query($self, $name);
     $self->throw_die('MODEL_NOT_FOUND', {
@@ -113,12 +123,14 @@ sub format_uri_for_this_property_model {
 }
 
 sub get_as {
-    my($self, $field, $format) = @_;
+    # (self, string, string) : undef
     # Returns I<field> using the I<converter> (to_xml, to_string).
+    my($self, $field, $format) = @_;
     return $self->get_field_info($field, 'type')->$format($self->get($field));
 }
 
 sub get_field_constraint {
+    # (self, string) : SQL.Constraint
     # Returns the constraint for this field.
     #
     # Calls L<get_field_info|"get_field_info">, so subclasses only need
@@ -127,12 +139,14 @@ sub get_field_constraint {
 }
 
 sub get_field_info {
+    # (self, string, string) : any
     # Returns I<attr> for I<field>.
     return shift->[$_IDI]->{class_info}->{sql_support}
 	    ->get_column_info(@_);
 }
 
 sub get_field_type {
+    # (self, string) : Bivio.Type
     # Returns the type of this field.
     #
     # Calls L<get_field_info|"get_field_info">, so subclasses only need
@@ -141,6 +155,7 @@ sub get_field_type {
 }
 
 sub get_info {
+    # (self, string) : any
     # Returns meta information about the model.
     #
     # B<Do not modify references returned by this method.>
@@ -148,13 +163,15 @@ sub get_info {
 }
 
 sub get_instance {
-    my($proto, $class) = @_;
+    # (proto) : Biz.Model
+    # (proto, any) : Biz.Model
     # Returns the singleton for I<class>.  If I<class> is supplied, it may be just
     # the simple name or a fully qualified class name.  It will be loaded with
     # L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Model> map.
     # I<class> may also be an instance of a model.
     #
     # May not be called on anonymous Models without I<class> argument.
+    my($proto, $class) = @_;
     if (defined($class)) {
 	$class = Bivio::IO::ClassLoader->map_require('Model', $class)
 		unless ref($class);
@@ -169,9 +186,10 @@ sub get_instance {
 }
 
 sub get_model {
-    my($self) = @_;
+    # (self, string) : Biz.PropertyModel
     # Same as L<unsafe_get_model|"unsafe_get_model">, but dies if
     # the model could not be loaded.
+    my($self) = @_;
     my($model) = shift->unsafe_get_model(@_);
     $self->throw_die('MODEL_NOT_FOUND', {
 	message => 'unable to load model', entity => $model})
@@ -180,70 +198,79 @@ sub get_model {
 }
 
 sub get_qualified {
-    my($self, $field) = @_;
+    # (self, string) : any
     # Returns the qualified field value if it exists or strips the model from
     # I<field> and tries to get unqualified.
+    my($self, $field) = @_;
     return $self->has_keys($field) ? $self->get($field)
 	: $self->get(($field =~ /(?<=\.)(\w+)$/)[0]
 	    || $self->die($field, ': not a qualified name'));
 }
 
 sub get_request {
-    my($self) = @_;
+    # (proto) : Agent.Request
     # Returns the request associated with this model.
     # If not set, returns the current request.
     # If neither set, throws an exception.
+    my($self) = @_;
     my($req) = $self->unsafe_get_request;
     Bivio::Die->die($self, ": request not set") unless $req;
     return $req;
 }
 
 sub has_fields {
+    # (self, string, ...) : boolean
     # Does the model have these fields?
     return shift->[$_IDI]->{class_info}->{sql_support}
 	    ->has_columns(@_);
 }
 
 sub has_iterator {
-    my($self) = @_;
+    # (self) : boolean
     # Returns true if there is an iterator started on this model.
+    my($self) = @_;
     my($fields) = $self->[$_IDI];
     return $fields->{iterator} ? 1 : 0;
 }
 
 sub internal_clear_model_cache {
-    my($self) = @_;
+    # (self) : undef
     # Called to clear the cache of models.  Necessary
     # when a reload occurs.
+    my($self) = @_;
     my($fields) = $self->[$_IDI];
     delete($fields->{models});
     return;
 }
 
 sub internal_get_iterator {
-    my($self) = @_;
+    # (self) : DBI.st
     # Returns the iterator.
+    my($self) = @_;
     return $self->[$_IDI]->{iterator} || $self->die('iteration not started');
 }
 
 sub internal_get_sql_support {
-    my($self) = @_;
+    # (self) : SQL.Support
     # Returns L<Bivio::SQL::Support|Bivio::SQL::Support> for this instance
     # only if this is not the singleton.  If it is the singleton, dies.
+    my($self) = @_;
     my($fields) = $self->[$_IDI];
     $self->assert_not_singleton if $fields->{is_singleton};
     return $fields->{class_info}->{sql_support};
 }
 
 sub internal_get_statement {
-    my($self) = @_;
+    # (self) : SQL.Statement
     # Returns L<Bivio::SQL::Statement|Bivio::SQL::Statement> for this instance.
+    my($self) = @_;
     my($fields) = $self->[$_IDI];
     $self->assert_not_singleton if $fields->{is_singleton};
     return $fields->{class_info}->{statement};
 }
 
 sub internal_initialize {
+    # (proto) : hash_ref
     # B<FOR INTERNAL USE ONLY.>
     #
     # Returns an hash_ref describing the model suitable for passing
@@ -255,7 +282,8 @@ sub internal_initialize {
 }
 
 sub internal_initialize_local_fields {
-    my($proto, $decls, $default_type, $default_constraint) = @_;
+    # (proto, array_ref, any, any) : array_ref
+    # (proto, string, array_ref, string, array_ref, ..., any, any) : array_ref
     # Provides positional shortcut for generating field declarations to pass return
     # from L<internal_initialize|"internal_initialize">.  I<decls> is a array of
     # arrays.  Each element is a field declaration that is a tuple of (name, type,
@@ -292,6 +320,7 @@ sub internal_initialize_local_fields {
     #             ['count', 'Integer', 'NOT_NULL'],
     #         ],
     #         'Line', 'NOT_NULL');
+    my($proto, $decls, $default_type, $default_constraint) = @_;
     return [
 	map({
 	    $_ = [$_]
@@ -322,6 +351,8 @@ sub internal_initialize_local_fields {
 }
 
 sub internal_initialize_sql_support {
+    # (proto, SQL.Statement) : SQL.Support
+    # (proto, SQL.Statement, hash_ref) : SQL.Support
     # B<FOR INTERNAL USE ONLY>.
     #
     # Returns the L<Bivio::SQL::Support|Bivio::SQL::Support> object
@@ -330,8 +361,9 @@ sub internal_initialize_sql_support {
 }
 
 sub internal_iterate_next {
-    my($self, $it, $row, $converter) = @_;
+    # (self, hash_ref, string) : array
     # Returns (I<self>, I<row>) on success or () if no more.
+    my($self, $it, $row, $converter) = @_;
     if (ref($it) eq 'HASH') {
 	$converter = $row;
 	$row = $it;
@@ -345,23 +377,26 @@ sub internal_iterate_next {
 }
 
 sub internal_put_iterator {
-    my($self, $it) = @_;
+    # (self, DBI.st) : DBI.st
     # Sets the iterator and returns its argument.
+    my($self, $it) = @_;
     return $self->[$_IDI]->{iterator} = $it;
 }
 
 sub is_instance {
-    my($self) = @_;
+    # (proto) : undef
     # Returns true if is a normal instance and not singleton or class.
+    my($self) = @_;
     return !ref($self) || $self->[$_IDI]->{is_singleton} ? 0 : 1;
 }
 
 sub iterate_end {
-    my($self, $it) = @_;
+    # (self) : undef
     # Terminates the iterator.  See L<iterate_start|"iterate_start">.
     # Does not modify model state, i.e. if loaded, stays loaded.
     #
     # B<Deprecated form accepts an iterator as the first argument.>
+    my($self, $it) = @_;
     my($fields) = $self->[$_IDI];
     $self->internal_get_sql_support->iterate_end(
        $it || $self->internal_get_iterator);
@@ -373,6 +408,8 @@ sub iterate_end {
 }
 
 sub iterate_next {
+    # (self, hash_ref) : boolean
+    # (self, hash_ref, string) : boolean
     # I<row> is the resultant values by field name.
     # I<converter> is optional and is the name of a
     # L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
@@ -384,7 +421,8 @@ sub iterate_next {
 }
 
 sub map_iterate {
-    my($self, $map_iterate_handler) = (shift, shift);
+    # (self, code_ref, any, ...) : array_ref
+    # (self, code_ref, string, any, ...) : array_ref
     # Calls L<iterate_start|"iterate_start"> or I<iterate_start> (if supplied)
     # to start the iteration with I<iterate_args>.  For each row, calls
     # L<iterate_next_and_load|"iterate_next_and_load"> followed by
@@ -397,6 +435,7 @@ sub map_iterate {
     #
     # If I<map_iterate_handler> is C<undef>, the default handler simply returns all
     # the rows.
+    my($self, $map_iterate_handler) = (shift, shift);
     my($iterate_start) = $_[0] && !ref($_[0]) && $_[0] =~ /iterate_start/
 	&& $self->can($_[0]) ? shift : 'iterate_start';
     my($res) = [];
@@ -412,9 +451,10 @@ sub map_iterate {
 }
 
 sub merge_initialize_info {
-    my($proto, $parent, $child) = @_;
+    # (proto, hash_ref, hash_ref) : hash_ref
     # Merges two model field definitions (I<child> into I<parent>) into a new
     # hash_ref.
+    my($proto, $parent, $child) = @_;
     my($res) = {%$child};
     foreach my $k (keys(%$parent)) {
 	if (
@@ -433,10 +473,14 @@ sub merge_initialize_info {
 }
 
 sub new {
-    my($proto, $req, $class) = _new_args(@_);
+    # (proto) : Biz.Model
+    # (proto, string) : Biz.Model
+    # (proto, Agent.Request) : Biz.Model
+    # (proto, Agent.Request, string) : Biz.Model
     # Creates a Model with I<req>, if supplied.  The class of the model is defined by
     # C<$proto>.  If I<class> is supplied, L<get_instance|"get_instance"> is called
     # with I<class> as its argument and the resultant class is instantiated.
+    my($proto, $req, $class) = _new_args(@_);
     return $proto->get_instance($class)->new($req)
 	if defined($class);
     $class = ref($proto) || $proto;
@@ -457,7 +501,8 @@ sub new {
 }
 
 sub new_anonymous {
-    my($proto, $config, $req) = @_;
+    # (proto, hash_ref) : Biz.Model
+    # (proto, hash_ref, Agent.Request) : Biz.Model
     # Creates an "anonymous" Model.  There are two modes: initialization
     # and creation from existing.  To initialize, you must supply
     # I<config>.  This will create the first anonymous instance.
@@ -465,6 +510,7 @@ sub new_anonymous {
     #
     # To create an instance from an existing instance, I<proto> must
     # be an instance, not a class name.  I<config> is ignored.
+    my($proto, $config, $req) = @_;
     my($ci) = ref($proto) ? $proto->[$_IDI]->{class_info}
 	    : _initialize_class_info($proto, $config);
     # Make a copy of the properties for this instance.  properties
@@ -481,24 +527,28 @@ sub new_anonymous {
 }
 
 sub new_other {
-    my($self, $class) = @_;
+    # (self, string) : Biz.Model
     # Creates a model instance of the specified class.
+    my($self, $class) = @_;
     return $self->get_instance($class)->new($self->get_request);
 }
 
 sub put {
+    # (self) : undef
     # Not supported.
     CORE::die('put: not supported');
 }
 
 sub put_on_request {
-    my($self, $durable) = @_;
+    # (self) : undef
+    # (self, boolean) : undef
     # Adds this instance to the request, stored with the key
     # 'Model.<simple package name>'.
     #
     #
     # Adds the model to the request as a durable attribute. The model will
     # survive server redirects.
+    my($self, $durable) = @_;
     my($req) = $self->unsafe_get_request;
     return unless $req;
 
@@ -515,10 +565,12 @@ sub put_on_request {
 }
 
 sub throw_die {
-    my($self, $code, $attrs, $package, $file, $line) = @_;
+    # (proto, Type.Enum, hash_ref, string, string, int) : undef
+    # (proto, Type.Enum, string, string, string, int) : undef
     # Terminate the I<model> as entity and request in I<attrs> with a specific code.
     #
     # I<package>, I<file>, and I<line> need not be defined
+    my($self, $code, $attrs, $package, $file, $line) = @_;
     $package ||= (caller)[0];
     $file ||= (caller)[1];
     $line ||= (caller)[2];
@@ -530,19 +582,21 @@ sub throw_die {
 }
 
 sub unsafe_get_model {
-    my($self, $name) = @_;
+    # (self, string) : Biz.PropertyModel
     # Returns the named PropertyModel associated with this instance.
     # If it can be loaded, it will be.  See
     # L<Bivio::Biz::PropertyModel::is_loaded|Bivio::Biz::PropertyModel/"is_loaded">.
+    my($self, $name) = @_;
     my($fields) = $self->[$_IDI];
     return ($fields->{models} ||= {})->{$name}
 	||= _load_other_model($self, $name);
 }
 
 sub unsafe_get_request {
-    my($self) = @_;
+    # (proto) : Agent.Request
     # Returns the request associated with this model (if defined).
     # Otherwise, returns the current request, if any.
+    my($self) = @_;
     my($req);
     $req = $self->[$_IDI]->{request} if ref($self);
     # DON'T SET the request for future calls, because this may
@@ -552,8 +606,9 @@ sub unsafe_get_request {
 }
 
 sub _as_string_fields {
-    my($sql_support) = @_;
+    # (SQL.Support) : array_ref
     # Returns as_string_fields.
+    my($sql_support) = @_;
     return $sql_support->get('as_string_fields')
 	if $sql_support->has_keys('as_string_fields');
     my($res) = [@{$sql_support->get('primary_key_names')}];
@@ -563,8 +618,9 @@ sub _as_string_fields {
 }
 
 sub _assert_class_name {
-    my($class) = @_;
+    # (string) : undef
     # Ensures that the class conforms to the naming conventions.
+    my($class) = @_;
     Bivio::Die->die($class, ': is a base class; it cannot be initialized'
 	    .' as a model')
 		if $class =~ /Base$/;
@@ -577,6 +633,7 @@ sub _assert_class_name {
 }
 
 sub _get_class_info {
+    # () : undef
     my($class) = @_;
     no strict qw(refs);
     _initialize_class_info($class)
@@ -585,8 +642,9 @@ sub _get_class_info {
 }
 
 sub _get_model_query {
-    my($self, $name) = @_;
+    # (self, string) : array
     # Returns the model (query, instance) by looking for the model.
+    my($self, $name) = @_;
     # Asserts operation is valid
     my($sql_support) = $self->internal_get_sql_support;
     my($models) = $sql_support->get('models');
@@ -620,9 +678,11 @@ sub _get_model_query {
 }
 
 sub _initialize_class_info {
-    my($class, $config) = @_;
+    # (string) : undef
+    # (string, hash_ref) : hash_ref
     # Initializes from class or from config.  config is supplied for
     # anonymous models (currently, only ListModels).
+    my($class, $config) = @_;
     # This may load the models and we'll try to get the class_info
     # again after the models are loaded.
     _load_all_property_models();
@@ -662,6 +722,7 @@ sub _initialize_class_info {
 }
 
 sub _load_all_property_models {
+    # () : undef
     # Loads the property models, if not already loaded.
     return if $_LOADED_ALL_PROPERTY_MODELS;
     # Avoid recursion and don't want redo in any event
@@ -681,6 +742,7 @@ sub _load_all_property_models {
 }
 
 sub _load_other_model {
+    # (self, string) : Bivio:Biz.PropertyModel
     my($self, $name) = @_;
     # Does a bunch of asssertion checking
     my($query, $mi) = _get_model_query($self, $name);
@@ -701,9 +763,11 @@ sub _load_other_model {
 }
 
 sub _new_args {
-    my($proto, $req, $class) = @_;
+    # (proto, Agent.Request, any) : array
+    # (proto, any) : array
     # Returns (proto, req, class).  Figures out calling form and returns
     # the correct parameter values.
+    my($proto, $req, $class) = @_;
     if (defined($req) && !ref($req)) {
 	Bivio::Die->die($req,
 	    ': bad parameter, expecting a Bivio::Agent::Request',

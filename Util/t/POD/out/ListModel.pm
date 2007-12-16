@@ -11,9 +11,11 @@ use Bivio::Test::Request;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new {
-    my($proto, $attrs) = @_;
+    # (proto, string) : Test.ListModel
+    # (proto, hash_ref) : Test.ListModel
     # Simple model name, which is loaded.  Sets up create_object and compute_return.
     # I<model> will get mapped to I<class_name>.
+    my($proto, $attrs) = @_;
     my($model) = $attrs->{class_name};
     return $proto->SUPER::new({
 	class_name => Bivio::Biz::Model->get_instance($model)->package_name,
@@ -56,12 +58,16 @@ sub new {
 }
 
 sub new_unit {
+    # (self, string, hash_ref) : self
     # Calls L<new|"new">.
     Bivio::Test::Request->get_instance;
     return shift;
 }
 
 sub run_unit {
+    # (proto, string, array_ref) : undef
+    # (proto, hash_ref, array_ref) : undef
+    # (self, array_ref) : undef
     # Instantiates this class with I<model> or I<new_attrs> (which must include
     # I<model>), and calls the instance method form with I<method_groups>.
     #

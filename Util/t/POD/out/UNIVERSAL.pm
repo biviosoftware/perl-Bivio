@@ -11,11 +11,14 @@ use strict;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub as_string {
+    # (self) : string
     # Returns the string form of I<self>.  By default, this is just I<self>.
     return shift(@_) . '';
 }
 
 sub die {
+    # (proto, any, hash_ref) : undef
+    # (proto, string, ...) : undef
     # A convenient alias for L<Bivio::Die::throw_or_die|Bivio::Die/"throw_or_die">
     shift;
     Bivio::Die->throw_or_die(@_);
@@ -23,15 +26,17 @@ sub die {
 }
 
 sub equals {
-    my($self, $that) = @_;
+    # (self, UNIVERSAL) : boolean
     # Returns true if I<self> is identical I<that>.
+    my($self, $that) = @_;
     return $self eq $that ? 1 : 0;
 }
 
 sub grep_methods {
-    my($proto, $to_match) = @_;
+    # (proto, regexp) : array_ref
     # Returns list of methods that match I<to_match>.  If a match is found, returns
     # $+ (last matching paren) if defined, otherwise returns complete method name.
+    my($proto, $to_match) = @_;
     no strict 'refs';
     return $proto->use('Type.StringArray')->sort_unique([
 	map($_ =~ $to_match ? defined($+) ? $+ : $_ : (),
@@ -41,9 +46,10 @@ sub grep_methods {
 }
 
 sub inheritance_ancestors {
-    my($proto) = @_;
+    # (self) : array_ref
     # Returns list of anscestors of I<class>, closest ancestor is at index 0.
     # Asserts single inheritance.  Must be descended from this class.
+    my($proto) = @_;
     my($class) = ref($proto) || $proto;
     CORE::die('not a subclass of Bivio::UNIVERSAL')
 	unless $class->isa(__PACKAGE__);
@@ -64,7 +70,7 @@ sub inheritance_ancestors {
 }
 
 sub instance_data_index {
-    my($pkg) = @_;
+    # (proto) : int
     # Returns the index into the instance data.  Usage:
     #
     #     my($_IDI) = __PACKAGE__->instance_data_index;
@@ -74,6 +80,7 @@ sub instance_data_index {
     # 	my($fields) = $self->[$_IDI];
     # 	...
     #     }
+    my($pkg) = @_;
     # Some sanity checks, since we don't access this often
     CORE::die('must call statically from package body')
 	unless $pkg eq (caller)[0];
@@ -82,26 +89,29 @@ sub instance_data_index {
 }
 
 sub internal_data_section {
-    my($proto) = @_;
+    # (proto) : string_ref
     # Reads the __DATA__ section of $proto.
+    my($proto) = @_;
     no strict 'refs';
     return ${$proto->use('Bivio::IO::File')->read(
 	\${$proto->package_name . '::'}{DATA})};
 }
 
 sub is_blessed {
-    my(undef, $value, $object) = @_;
+    # (proto, any, any) : boolean
     # Returns true if I<value> is a blessed reference.  If I<object> supplied,
     # then test if I<value> isa I<object>.
+    my(undef, $value, $object) = @_;
     my($v) = $value;
     return ref($value) && $v =~ /=/
 	&& (!$object || $value->isa(ref($object) || $object)) ? 1 : 0;
 }
 
 sub map_by_two {
-    my(undef, $op, $values) = @_;
+    # (proto, code_ref, array_ref) : array_ref
     # Passes I<values> two by two to I<op>.  Returns cummulative results
     # of I<op>.  If array is odd, last element will be C<undef>.
+    my(undef, $op, $values) = @_;
     $values ||= [];
     return [map(
 	$op->($values->[2 * $_], $values->[2 * $_ + 1]),
@@ -110,7 +120,8 @@ sub map_by_two {
 }
 
 sub map_invoke {
-    my($proto, $method, $repeat_args, $first_args, $last_args) = @_;
+    # (proto, string, array_ref, array_ref, array_ref) : array_ref
+    # (proto, code_ref, array_ref, array_ref, array_ref) : array_ref
     # Calls I<method> on I<self> with each element of I<args>.  If I<method> is a
     # ref, will call the sub.
     #
@@ -149,6 +160,7 @@ sub map_invoke {
     #     ['ab', 'cd']
     #
     # Result is always called in an array context.
+    my($proto, $method, $repeat_args, $first_args, $last_args) = @_;
     return [map(
 	ref($method) ? $method->(@$_) : $proto->$method(@$_),
 	map([
@@ -160,6 +172,7 @@ sub map_invoke {
 }
 
 sub my_caller {
+    # (proto) : string
     # Returns method (or simple subroutine) name of caller immediately before the
     # caller of this routine.
     #
@@ -168,12 +181,13 @@ sub my_caller {
 }
 
 sub name_parameters {
-    my($self, $names, $argv) = @_;
+    # (proto, array_ref, array_ref) : (self, hash_ref)
     # Expects I<names> to be the keys in the first and only element of I<argv>, or
     # uses I<names> to convert positional I<argv> into hash_ref.  Does not work if
     # first positional parameter is allowed to be a hash_ref.
     #
     # Returns (self, named).
+    my($self, $names, $argv) = @_;
     my($map) = {map(($_ => 1), @$names)};
     my($named) = @$argv;
     if (ref($named) eq 'HASH') {
@@ -196,7 +210,7 @@ sub name_parameters {
 }
 
 sub new {
-    my($proto) = @_;
+    # (proto, string) : Bivio.UNIVERSAL
     # Creates and blesses the object.
     #
     # This is how you should always create objects:
@@ -221,16 +235,19 @@ sub new {
     #
     # You can assign anything to your class's part of the instance data array.
     # If you are concerned about performance, consider arrays or pseudo-hashes.
+    my($proto) = @_;
     return bless([], ref($proto) || $proto);
 }
 
 sub package_name {
-    my($proto) = @_;
+    # (proto) : string
     # Returns the package name for the class being called.
+    my($proto) = @_;
     return ref($proto) || $proto;
 }
 
 sub package_version {
+    # (proto) : float
     # Returns the value of the C<$VERSION> variable for I<proto>.  Will die
     # if no such version.
     {
@@ -240,12 +257,14 @@ sub package_version {
 }
 
 sub simple_package_name {
+    # (proto) : string
     # Returns the package name sans directory prefixes, e.g. the simple package
     # name for this class is C<UNIVERSAL>.
     return (shift->package_name =~ /([^:]+$)/)[0];
 }
 
 sub use {
+    # (proto, string, ...) : string
     # An convenient alias for map_require (Bivio::IO::ClassLoader).
     shift;
     return Bivio::IO::ClassLoader->map_require(@_);
