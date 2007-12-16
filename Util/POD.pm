@@ -73,13 +73,34 @@ sub to_comments {
 	    my($part) = @_;
 	    return delete($parts->{$part});
 	};
+	my($clear_typesig) = sub {
+	    my($t) = $clear->('typesig') || [];
+	    return [map({
+		my($is_static) = $_ =~ /^=head2\s+static/;
+		my($is_instance) = $_ !~ /\b_\w+\(/
+		    && !$is_static;
+		$_ =~ s/^.*?([:\(])/$1/;
+		$_ =~ s/^\(/\(proto, /
+		    if $is_static;
+		$_ =~ s/^\(/\(self, /
+		    if $is_instance;
+                $_ =~ s/, \)/\)/;
+		$_ =~ s/(\w+) \w+([,)])/$1$2/g;
+		$_ =~ s/(\w+::)*(\w+)::(\w+)/$2__$3/g;
+		$_ =~ s/\).*$/\) : undef/
+			unless $_ =~ /:\s*\S/;
+                $_ =~ s/__/./g;
+		$_;
+	    } @$t)];
+	};
 	my($clear_comment) = sub {
 	    my($c) = $clear->('comment') || [];
 	    pop(@$c)
-		while @$c && $c->[$#$c] =~ /^#\s*$/;
+		while @$c && $c->[$#$c] =~ /^#?\s*$/;
 	    shift(@$c)
-		while @$c && $c->[0] =~ /^#\s*(?:$|_\w+\()/;
-	    return $c;
+		while @$c && $c->[0] =~ /^#?\s*$/;
+	    unshift(@$c, @{$clear_typesig->()});
+	    return [grep(s{^(?:#\s*)?}{#@{[$_ =~ /\S/ ? ' ' : '']}}s, @$c)];
 	};
 	foreach my $line (split(/\n/, ${shift(@_)})) {
 	    $lineno++;
@@ -96,16 +117,16 @@ sub to_comments {
 		    if $line =~ /^=head1\s+DESCRIPTION/i;
 		$header_done = 1;
 		$clear->('comment');
+		$clear->('typesig');
 	    }
 	    if (my $pod = $parts->{pod}) {
 		$line =~ s/^=item //;
+		$push->(typesig => $line) && next
+		    if $line =~ m/^=head2 /;
 		$push->(pod => $line)
 		    unless $line =~ /^=/;
 		if ($line =~ /^=cut/) {
-		    $parts->{comment} = [
-			grep(s{^}{#@{[$_ =~ /\S/ ? ' ' : '']}}s,
-			    @{$clear->('pod') || []}),
-		    ];
+		    $parts->{comment} = $clear->('pod') || [];
 		    if ($in_description) {
 			$parts->{description} = $clear_comment->();
 			$in_description = 0;
@@ -125,6 +146,8 @@ sub to_comments {
 	    next
 		if $line =~ /^#=/;
 	    if ($line =~ /^#/ && !$parts->{sub}) {
+		$push->(typesig => $line) && next
+		    if $line =~ m/^#\s*_\w+\(/;
 		$push->($which_hash => $line);
 		next;
 	    }
@@ -155,11 +178,11 @@ sub to_comments {
 		if $line =~ /^sub \w+ \{/;
 	    if (my $sub = $parts->{sub}) {
 		if (@$sub == 1) {
+		    push(@$sub, grep(s/^/    /, @{$clear_comment->()}));
 		    if ($line =~ /^\s+my/) {
 			$push->(sub => $line);
 			$line = undef;
 		    }
-		    push(@$sub, grep(s/^/    /, @{$clear_comment->()}));
 		    next unless defined($line);
 		}
 		$push->(sub => $line);
