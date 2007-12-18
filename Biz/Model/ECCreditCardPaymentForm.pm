@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::ECCreditCardPaymentForm;
 use strict;
 use base ('Bivio::Biz::Model::ConfirmableForm');
+use Bivio::Biz::Action;
 use Bivio::Type::Date;
 use Bivio::Type::ECCreditCardType;
 use Bivio::Type::ECPaymentMethod;
