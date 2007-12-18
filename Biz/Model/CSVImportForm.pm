@@ -8,6 +8,7 @@ use Bivio::Util::CSV;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('SQL.Constraint');
 my($_T) = __PACKAGE__->use('Bivio::Type');
+my($_FF) = __PACKAGE__->use('Type.FileField');
 my($_CONFIG) = {};
 
 # subclasses must define COLUMNS with the expected format:
@@ -117,6 +118,13 @@ sub internal_pre_execute {
     my($self, $method) = @_;
     $self->internal_put_field(import_errors => '');
     return;
+}
+
+sub process_content {
+    my($self, $content) = @_;
+    return $self->process({
+	source => $_FF->from_string_ref($content || $self->req->get_content),
+    });
 }
 
 sub record_to_model_properties {
