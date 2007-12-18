@@ -369,9 +369,24 @@ sub builtin_var {
 }
 
 sub builtin_write_file {
-    # Write a file.
     shift;
     return Bivio::IO::File->write(@_);
+}
+
+sub builtin_realm_id {
+    my($proto, $name_or_email) = @_;
+    my($r) = $proto->builtin_model('RealmOwner');
+    Bivio::Die->die($name_or_email, ': not found')
+        unless $r->unauth_load_by_email_id_or_name($name_or_email);
+    return $r->get('realm_id');
+}
+
+sub new_unit {
+    my($proto, $class, $attrs) = @_;
+    return $proto->SUPER::new({
+	class_name => $class,
+	$attrs ? %$attrs : (),
+    });
 }
 
 sub run {
@@ -390,8 +405,9 @@ sub run {
 sub run_unit {
     my($self) = shift;
     return (
-	ref($self) ? $self : $self->new({
+	$self->new({
 	    class_name => $self->builtin_class,
+	    ref($self) ? %{$self->get_shallow_copy} : (),
 	    %$_OPTIONS,
 	})
     )->unit(@_);
