@@ -15,6 +15,10 @@ use Bivio::Util::CSV;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = 'Bivio::Type::DateTime';
 
+sub BTEST_ADMIN {
+    return 'btest_admin';
+}
+
 sub BTEST_READ {
     return 'btest_read';
 }
@@ -104,8 +108,8 @@ sub demo_users {
     my($self) = @_;
     return [
         map($self->$_(),
-	    qw(DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST MULTI_ROLE_USER BTEST_READ
-	       OTP),
+	    qw(DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST MULTI_ROLE_USER
+	       BTEST_ADMIN BTEST_READ OTP),
 	    $self->get_request->is_production ? () : 'ROOT',
 	),
     ];
@@ -493,6 +497,13 @@ EOF
         'RealmOwner.display_name' => 'Unit Test Forum Sub2',
 	'RealmOwner.name' => $self->FOUREM . '-sub2',
     });
+    $req->set_user($self->BTEST_ADMIN);
+    $self->model('ForumUserAddForm', {
+	'RealmUser.realm_id' => $req->get('auth_id'),
+	'User.user_id' => $req->get('auth_user_id'),
+	administrator => 1,
+    });
+    $req->set_user($self->BTEST_READ);
     $self->model('ForumUserAddForm', {
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
