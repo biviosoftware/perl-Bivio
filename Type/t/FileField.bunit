@@ -18,4 +18,11 @@ Type();
 	    content_type => 'c',
 	}] => sub {shift->get('params')},
     ],
+    from_string_ref => [
+	[\('x')] => [{
+	    content => \('x'),
+	    filename => '',
+	    content_type => 'application/octet-stream',
+	}],
+    ],
 ];
