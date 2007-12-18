@@ -12,10 +12,10 @@ sub not_found {
     view_pre_execute(sub {
         my($req) = shift->get_request;
 	$req->put(go_back => undef);
+	$req->get('reply')->set_http_status($_AC->NOT_FOUND);
 	return unless my $r = $req->unsafe_get('r');
 	return unless $r = $r->header_in('Referer');
 	$req->put(go_back => $r);
-	$req->get('reply')->set_http_status($_AC->NOT_FOUND);
 	return;
     });
     return shift->internal_body(DIV_not_found(Prose(<<'EOF')));
