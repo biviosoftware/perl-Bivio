@@ -14,7 +14,7 @@ Bivio::IO::Config->introduce_values({
     'Bivio::Test::Language::HTTP' => {
 	# This port won't exist so mock_sendmail will fail quickly
 	home_page_uri => 'http://localhost:1',
-	mail_tries => 5,
+	mail_tries => 30,
      },
 });
 -r ($ENV{ORIGINAL_BCONF} = $ENV{BCONF}) || die('$BCONF must be set');
