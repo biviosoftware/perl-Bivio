@@ -2,17 +2,25 @@
 # $Id$
 package Bivio::Biz::Model::RealmBase;
 use strict;
-use base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Bivio::Biz::PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = Bivio::Type->get_instance('DateTime');
 
+sub REALM_ID_FIELD {
+    return 'realm_id';
+}
+
+sub USER_ID_FIELD {
+    return 'user_id';
+}
+
 sub create {
     my($self, $values) = @_;
     my($req) = $self->get_request;
-    $values->{realm_id} ||= $req->get('auth_id');
-    $values->{user_id} ||= $req->get('auth_user_id')
-	if $self->has_fields('user_id');
+    $values->{$self->REALM_ID_FIELD} ||= $req->get('auth_id');
+    $values->{$self->USER_ID_FIELD} ||= $req->get('auth_user_id')
+	if $self->USER_ID_FIELD && $self->has_fields($self->USER_ID_FIELD);
     my($t);
     foreach my $f (qw(modified_date_time creation_date_time)) {
 	$values->{$f} ||= ($t ||= $_DT->now)
@@ -25,9 +33,9 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	columns => {
-	    realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+	    $self->REALM_ID_FIELD => ['RealmOwner.realm_id', 'NOT_NULL'],
         },
-	auth_id => 'realm_id',
+	auth_id => $self->REALM_ID_FIELD,
     });
 }
 
