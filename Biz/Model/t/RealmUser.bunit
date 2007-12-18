@@ -1,0 +1,23 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+PropertyModel();
+[
+    {
+	method => 'is_sole_admin',
+	compute_params => sub {
+	    my($case, $params) = @_;
+	    my($realm, $user, $role) = @$params;
+	    $role ||= 'ADMINISTRATOR';
+	    req()->set_realm_and_user($realm, $user);
+	    $case->get('object')->load({
+		user_id => req('auth_user_id'),
+		role => class('Auth.Role')->$role,
+	    });
+	    return [];
+	},
+    } => [
+	[qw(demo guest GUEST)] => 0,
+	[qw(demo demo)] => 1,
+	[qw(fourem-sub2 btest_admin)] => 0,
+    ],
+];
