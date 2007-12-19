@@ -33,6 +33,7 @@ commands:
     create_test_user user-id [password] -- creates a test user with local email
     destroy_db -- drops all the tables, indexes, and sequences created
     drop -- drops objects which would be created by running input
+    destroy_dbms -- drops the database
     drop_and_run -- calls drop then run
     export_db dir -- exports database (only works for pg right now)
     import_db file -- imports database (ditto)
@@ -159,6 +160,17 @@ sub destroy_db {
 	$self->put(input => $file);
 	$self->drop;
     }
+    $self->use('Bivio::Biz::File')->destroy_db;
+    return;
+}
+
+sub destroy_dbms {
+    my($self) = @_;
+    $self->usage_error('You cannot destroy a production database.')
+	if $self->get_request->is_production;
+    my($db) = Bivio::SQL::Connection->get_dbi_config->{database};
+    $self->are_you_sure("DROP THE ENTIRE $db DATABASE?");
+    $self->piped_exec("dropdb --user=postgres $db", '', 1);
     $self->use('Bivio::Biz::File')->destroy_db;
     return;
 }
@@ -1405,7 +1417,9 @@ sub reinitialize_sequences {
 
 sub restore_dbms_dump {
     my($self, $dump) = @_;
-    $self->destroy_db;
+    $self->destroy_dbms;
+    $self->commit_or_rollback;
+    $self->init_dbms;
     $self->commit_or_rollback;
     my($db, $u) = @{Bivio::SQL::Connection->get_dbi_config}{qw(database user)};
     return ${$self->piped_exec("pg_restore --dbname='$db' -U '$u' '$dump'")};
