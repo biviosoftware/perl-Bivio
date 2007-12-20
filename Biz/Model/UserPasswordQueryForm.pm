@@ -35,10 +35,7 @@ sub execute_ok {
     return {
  	method => 'server_redirect',
  	task_id => 'next',
-#TODO: This doesn't work, because the ack is not set at this point.
-#   Action.Acknowledgement is called after the return, and that
-#   puts the ack on the query.
-# 	query => $self->get_request->unsafe_get('query'),
+	query => undef,
      };
 }
 
