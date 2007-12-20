@@ -339,7 +339,7 @@ sub builtin_var {
     return _var_put($proto, $name, $value)
 	if @_ == 2;
     return _var_get($proto, $name)
-	if (caller(2))[3] eq 'Bivio::Test::Unit::__ANON__';
+	if _called_in_closure($proto);
     return sub {
 	my($c) = (caller(1))[3];
 	return _var_get_or_put($proto, $name, $_[0])
@@ -421,6 +421,18 @@ sub _assert_expect {
     Bivio::Die->throw_quietly(DIE => "expected != actual:\n$$res")
         if $res;
     return 1;
+}
+
+sub _called_in_closure {
+    my($proto) = @_;
+    my($match) = qr{^(?:@{[join('|', @{$proto->inheritance_ancestors})]})::__ANON__$};
+    foreach my $i (3..5) {
+	my($sub) = (caller($i))[3];
+	return 1
+	    if $sub =~ $match;
+	last unless $sub =~ /AUTOLOAD|__ANON__/;
+    }
+    return 0;
 }
 
 sub _load_type_class {
