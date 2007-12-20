@@ -99,7 +99,7 @@ sub update {
 	    unless $self->get('subject_lc') eq $values->{subject_lc};
     }
     $values->{thread_parent_id} = undef
-	if $self->get('realm_file_id') eq $values->{thread_root_id};
+	if $self->get('realm_file_id') eq ($values->{thread_root_id} || '');
     return shift->SUPER::update(@_);
 }
 
