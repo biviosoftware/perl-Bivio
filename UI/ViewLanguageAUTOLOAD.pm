@@ -16,9 +16,6 @@ sub AUTOLOAD {
 sub import {
     my($pkg) = caller();
     no strict qw(refs);
-    *{$pkg.'::AUTOLOAD'} = \$AUTOLOAD;
-    # Suppress 'Subroutine %s redefined' warning
-    local($^W) = 0;
     *{$pkg.'::AUTOLOAD'} = \&AUTOLOAD;
     return;
 }
