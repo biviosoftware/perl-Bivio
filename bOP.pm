@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.63  2007/12/13 23:48:10  nagler
+  * Bivio::Mail::Incoming
+    send deprecated
+  * Bivio::Type::Geom
+    don't assert srid or type
+  * Bivio::Type::GeomPoint
+    from_long_lat creates with a constant now
+  * Bivio::Type::GeomPolygon
+    added from_shape
+
   Revision 5.62  2007/12/13 04:54:11  nagler
   * Bivio::Biz::Action::MailForward
     Was not working, because Mail.Outgoing->new does not take content as a param
