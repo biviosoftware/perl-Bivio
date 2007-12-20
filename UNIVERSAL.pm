@@ -17,16 +17,10 @@ sub as_string {
 
 sub call_super_before {
     my($proto, $args, $op) = @_;
-    my($method) = ((caller(1))[3] =~ /([^:]+)$/)[0];
-    my($sub);
-    foreach my $a (@{$proto->inheritance_ancestors}) {
-	$sub = \&{$a . '::' . $method};
-	next unless defined(&$sub);
-	my($super) = [$sub->($proto, @$args)];
-	my($my) = $op->($proto, $args, $super) || $super;
-	return wantarray ? @$my : $my->[0];
-    }
-    Bivio::Die->die($method, ': not implemented by SUPER');
+    my($sub) = $proto->super_for_method($proto->my_caller);
+    my($super) = [$sub->($proto, @$args)];
+    my($my) = $op->($proto, $args, $super) || $super;
+    return wantarray ? @$my : $my->[0];
 }
 
 sub clone {
@@ -290,6 +284,18 @@ sub simple_package_name {
     # Returns the package name sans directory prefixes, e.g. the simple package
     # name for this class is C<UNIVERSAL>.
     return (shift->package_name =~ /([^:]+$)/)[0];
+}
+
+sub super_for_method {
+    my($proto, $method) = @_;
+    $method ||= $proto->my_caller;
+    foreach my $a (@{$proto->inheritance_ancestors}) {
+	my($sub) = \&{$a . '::' . $method};
+	next unless defined(&$sub);
+	return ($sub, $a);
+    }
+    Bivio::Die->die($method, ': not implemented by SUPER');
+    # DOES NOT RETURN
 }
 
 sub use {
