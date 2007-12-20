@@ -425,11 +425,10 @@ sub _assert_expect {
 
 sub _called_in_closure {
     my($proto) = @_;
-    my($match) = qr{^(?:@{[join('|', @{$proto->inheritance_ancestors})]})::__ANON__$};
     foreach my $i (3..5) {
 	my($sub) = (caller($i))[3];
 	return 1
-	    if $sub =~ $match;
+	    if $sub =~ qr{^\w+::Test::Unit::__ANON__$};
 	last unless $sub =~ /AUTOLOAD|__ANON__/;
     }
     return 0;
