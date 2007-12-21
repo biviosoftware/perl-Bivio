@@ -18,7 +18,7 @@ sub execute_ok {
     my($im) = $self->get('image_magick');
     return _e($self, FILE_NAME => 'internal_image_path failed')
 	unless my $path = $self->internal_image_path;
-    $im->Set(magick => ($path =~ /\.(w+)$/)[0]);
+#TODO: CentOS    $im->Set(magick => ($path =~ /\.(w+)$/)[0]);
     $self->internal_image_scale($im);
     my($blob) = $im->ImageToBlob;
     my($rf) = $self->new_other('RealmFile');
@@ -72,7 +72,7 @@ sub internal_image_scale {
 	height => int($h / $ratio),
 	filter => 'Cubic',
 #TODO: do we change the depth?
-	depth => 8,
+#TODOD: CentOS:	depth => 8,
     );
     return;
 }
