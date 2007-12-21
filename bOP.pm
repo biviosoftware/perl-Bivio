@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,45 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.64  2007/12/20 00:24:35  nagler
+  * Bivio::Biz::Model::CSVImportForm
+    added process_content
+  * Bivio::Biz::Model::ECCreditCardPaymentForm
+    added missing import
+  * Bivio::Biz::Model::RealmBase
+    allow override of REALM_ID_FIELD and USER_ID_FIELD
+  * Bivio::Biz::Model::RealmUser
+    subclasses Model.RealmBase
+    is_sole_admin cleaned up a bit
+    rmpod
+  * Bivio::Biz::t::ListModel::T1List
+    rmpod
+  * Bivio::Biz::t::ListModel::T2List
+    rmpod
+  * Bivio::Biz::t::ListModel::T3List
+    rmpod
+    rollback
+  * Bivio::Biz::t::ListModel::T4List
+    rmpod
+    rollback
+  * Bivio::PetShop::Util
+    added BTEST_ADMIN
+  * Bivio::Test::ShellUtil
+    create Test.Request
+  * Bivio::Test::Unit
+    new_unit added so subclasses can override easily
+    run_unit overrides options() on the instance
+    builtin_realm_id added
+  * Bivio::Type::FileField
+    added from_string_ref()
+    rmpod
+  * Bivio::UI::View::Error
+    set status in all cases
+  * Bivio::Util::POD
+    perserve type info when removing POD
+  * Bivio::Util::SQL
+    added destroy_dbms, and restore_dbms_dump uses this (not destroy db)
+
   Revision 5.63  2007/12/13 23:48:10  nagler
   * Bivio::Mail::Incoming
     send deprecated
