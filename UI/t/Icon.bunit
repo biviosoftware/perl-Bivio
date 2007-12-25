@@ -4,7 +4,9 @@ Request('setup_facade');
 [
     sub {req('Bivio::UI::Facade', 'Icon')} => [
 	format_css => [
+	    [logo => req()] => 'url(/i/logo.gif)',
 	    logo => 'url(/i/logo.gif)',
+	    'not found' => 'url(/missing-image)',
 	],
     ],
 ];
