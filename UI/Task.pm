@@ -275,6 +275,15 @@ sub internal_initialize_value {
     return;
 }
 
+sub internal_setup_facade {
+    my($proto, $req) = @_;
+    return ref($proto) ? $proto
+        : ($req->unsafe_get('Bivio::UI::Facade')
+	|| Bivio::UI::Facade->setup_request(
+	$req->unsafe_get('r') && $req->get('r')->hostname || undef, $req)
+        )->get($proto->simple_package_name);
+}
+
 sub is_defined_for_facade {
     my($self, undef, $req) = @_;
     return shift->internal_get_self($req)->is_defined_for_facade(@_)
@@ -289,10 +298,7 @@ sub new {
 
 sub parse_uri {
     my($self, $uri, $req) = @_;
-    return ($req->unsafe_get('Bivio::UI::Facade')
-	 || Bivio::UI::Facade->setup_request(
-	 $req->unsafe_get('r') && $req->get('r')->hostname || undef, $req)
-    )->get('Task')->parse_uri($uri, $req)
+    return shift->internal_setup_facade($req)->parse_uri(@_)
         unless ref($self);
     my($fields) = $self->[$_IDI];
     my($orig_uri) = $uri;
