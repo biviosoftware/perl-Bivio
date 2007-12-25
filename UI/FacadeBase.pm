@@ -237,7 +237,7 @@ sub _cfg_base {
 		    xhtml_head_title => q{Title([vs_site_name(), vs_text_as_prose('xhtml_title')]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
 		    xhtml_copyright => <<"EOF",
-Copyright &copy; @{[__PACKAGE__->use('Type.DateTime')->now_as_year]} vs_text('site_copyright');<br />
+Copyright &copy; @{[__PACKAGE__->use('Type.DateTime')->now_as_year]} vs_text_as_prose('site_copyright');<br />
 All rights reserved.<br />
 Link('Software by bivio', 'http://www.bivio.biz');
 EOF
