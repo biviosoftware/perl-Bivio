@@ -386,11 +386,6 @@ sub control_on_render {
     return;
 }
 
-sub format_uri {
-    my(undef, $uri, $args) = @_;
-    return _abs_href($uri, $args);
-}
-
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
@@ -401,6 +396,30 @@ sub initialize {
     my($self) = @_;
     $self->map_invoke(unsafe_initialize_attr => $_WIDGET_ATTRS);
     return shift->SUPER::initialize(@_);
+}
+
+sub internal_format_uri {
+    my($proto, $uri, $args) = @_;
+    if ($uri =~ s/^\^//) {
+	$uri = $uri =~ qr{^$_EMAIL$}o
+	    ? "mailto:$uri"
+	    : $uri =~ qr{^$_DOMAIN$}o
+	    ? 'http://' . ($uri =~ /^[^\.]+\.\w+$/s ? 'www.' : '') . $uri
+	    : $uri;
+    }
+    $uri =~ s/^(?=javascript:)/no-wiki-/i;
+    return
+	$uri =~ m{^/+$_REALM_PLACEHOLDER(/.+)}os
+	    && $args->{realm_name}
+        ? Bivio::UI::Task->format_uri({uri => "/$args->{realm_name}$1"
+	}, $args->{req}) : $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
+	    uri => $uri,
+	}, $args->{req}) : $args->{req}->format_uri({
+	    task_id => $args->{task_id},
+	    realm => $args->{realm_name},
+	    query => undef,
+	    path_info => ($uri =~ /^\^?(.*)/)[0],
+	});
 }
 
 sub internal_new_args {
@@ -471,29 +490,6 @@ sub render_html {
     return $state->{html};
 }
 
-sub _abs_href {
-    my($uri, $args) = @_;
-    if ($uri =~ s/^\^//) {
-	$uri = $uri =~ qr{^$_EMAIL$}o
-	    ? "mailto:$uri"
-	    : $uri =~ qr{^$_DOMAIN$}o
-	    ? 'http://' . ($uri =~ /^[^\.]+\.\w+$/s ? 'www.' : '') . $uri
-	    : $uri;
-    }
-    $uri =~ s/^(?=javascript:)/no-wiki-/i;
-    return $uri =~ s{^/+$_REALM_PLACEHOLDER(?=/)}{}os
-        && $args->{realm_name}
-        ? "/$args->{realm_name}$uri"
-        : $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
-	    uri => $uri,
-	}) : $args->{req}->format_uri({
-	    task_id => $args->{task_id},
-	    realm => $args->{realm_name},
-	    query => undef,
-	    path_info => ($uri =~ /^\^?(.*)/)[0],
-	});
-}
-
 sub _close_top {
     my($tag, $state) = @_;
     if (($state->{tags}->[0] || '') eq $tag) {
@@ -558,10 +554,12 @@ sub _fmt_href {
     return Bivio::HTML->escape($s)
 	. ($m =~ $_IMG
 	? qq{<img src="}
-	  . Bivio::HTML->escape_attr_value(_abs_href("^$m", $state))
+	  . Bivio::HTML->escape_attr_value(
+	      $state->{proto}->internal_format_uri("^$m", $state))
 	  . qq{" />}
 	: ( '<a href="'
-	    . Bivio::HTML->escape_attr_value(_abs_href("^$m", $state))
+	    . Bivio::HTML->escape_attr_value(
+		$state->{proto}->internal_format_uri("^$m", $state))
 	    . '">'
 	    . Bivio::HTML->escape(_fix_word($m))
 	    . '</a>'
@@ -628,7 +626,9 @@ sub _fmt_tag {
     while ($line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]+)")//) {
 	my($k) = lc($1 ? $1 : $3);
 	my($v) = defined($2) ? $2 : $4;
-	$attrs->{$k} = $k =~ /^(?:src|href)$/ ? _abs_href($v, $state) : $v;
+	$attrs->{$k} = $k =~ /^(?:src|href)$/
+	    ? $state->{proto}->internal_format_uri($v, $state)
+	    : $v;
     }
     $line =~ s/^\s+|\s+$//g;
     my($nl) = $line =~ s/\@$// ? '' : "\n";
