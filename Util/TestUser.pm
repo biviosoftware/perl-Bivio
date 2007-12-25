@@ -6,6 +6,10 @@ use Bivio::Base 'Bivio::ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub ADM {
+    return 'adm';
+}
+
 sub USAGE {
     return <<'EOF';
 usage: b-test-user [options] command [args..]
@@ -17,10 +21,10 @@ EOF
 sub init {
     my($self) = @_;
     $self->initialize_ui->with_realm(undef, sub {
-	foreach my $u (qw(adm)) {
+	foreach my $u ($self->ADM) {
 	    $self->new_other('SQL')->create_test_user($u);
 	}
-	$self->req->with_user(adm => sub {
+	$self->req->with_user($self->ADM => sub {
             $self->new_other('RealmRole')->make_super_user;
 	    $self->new_other('SiteForum')->make_admin;
 	});
