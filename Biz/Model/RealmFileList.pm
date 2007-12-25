@@ -28,6 +28,10 @@ sub get_content_type {
     return $_RF->get_content_type(shift, 'RealmFile.');
 }
 
+sub get_os_path {
+    return $_RF->get_os_path(shift, 'RealmFile.');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
