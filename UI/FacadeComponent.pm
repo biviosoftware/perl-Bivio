@@ -220,18 +220,13 @@ sub new {
     # Instantiate the component and set its facade.  I<clone> is used as the
     # base initialization, if supplied,
     # and then I<initialize> is called, if supplied.
-    my($self) = $proto->SUPER::new;
-    $proto->die($facade, 'missing or invalid facade')
-	    unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
-
-    # Set up our state
-    my($fields) = $self->[$_IDI] = {
-	map => {},
-	facade => $facade,
-	clone => $clone,
-	initialize => $initialize,
-    };
-    return $self if _init_from_parent($self);
+    my($self) = $proto->new_static($facade);
+    my($fields) = $self->[$_IDI];
+    $fields->{map} = {};
+    $fields->{clone} = $clone;
+    $fields->{initialize} = $initialize;
+    return $self
+	if _init_from_parent($self);
 
     # Initialize undef value
     my($uv) = {config => $self->UNDEF_CONFIG, names => []};
@@ -242,6 +237,17 @@ sub new {
     _init_from_clone($self, $clone);
     &$initialize($self) if $initialize;
     $self->initialization_complete;
+    return $self;
+}
+
+sub new_static {
+    my($proto, $facade) = @_;
+    $proto->die($facade, 'missing or invalid facade')
+	unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
+    my($self) = shift->SUPER::new;
+    $self->[$_IDI] = {
+	facade => $facade,
+    };
     return $self;
 }
 
