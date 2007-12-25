@@ -22,7 +22,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-site-forum [options] command [args..]
 commands
-  make_admin -- add auth user as admin to site forums
+  make_admin [realm] -- add auth user as admin to site forums
   init -- create site forums, files, and aliases
   realm_names -- which realm names created by init
 EOF
