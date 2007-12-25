@@ -2,16 +2,10 @@
 # $Id$
 package Bivio::UI::Icon;
 use strict;
-use Bivio::Base 'UI.WidgetValueSource';
-use Bivio::IO::Alert;
-use Bivio::IO::Config;
-use Bivio::IO::Trace;
-use Bivio::UI::Facade;
-use Bivio::UI::LocalFileType;
+use Bivio::Base 'UI.FacadeComponent';
 use Image::Size ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($_TRACE);
 my($_URI) = '/i';
 my($_CLEAR_DOT) = {
     uri => '/i/dot.gif',
@@ -33,7 +27,7 @@ Bivio::IO::Config->register({
 # We keep a cache of all values if Facade.want_local_file_cache is true. In
 # this case, we cache to avoid repeating not-found errors for each icon and for
 # performance (avoids (N-1)xM file reads).
-my(%_CACHE);
+my($_CACHE) = {};
 
 sub FILE_SUFFIX_REGEXP {
     # : regexp_ref
@@ -42,15 +36,12 @@ sub FILE_SUFFIX_REGEXP {
 }
 
 sub format_css {
-    # (proto, string, string, Collection.Attributes) : string
-    # If $attr is undef, Returns the image url as follows:
-    #
-    #      url (uri)
-    #
-    # With explicit I<attr> returns the value, raw.
-    my($proto, $name, $attr, $req_or_facade) = @_;
-    my($v) = _find($proto, $name, $req_or_facade)->{value};
-    return !$attr ? 'url(' . $v->{uri} . ')'
+    my($proto, $name, $attr, $req) = @_;
+    ($req, $attr) = ($attr, undef)
+	if !$req && ref($attr);
+    my($v) = _find($proto, $name, $req)->{value};
+    $attr ||= 'uri';
+    return $attr eq 'uri' ? 'url(' . $v->{uri} . ')'
 	: defined($v->{$attr}) ? $v->{$attr}
         : $proto->die($v, $attr, ': no such attribute');
 }
@@ -171,8 +162,6 @@ sub handle_config {
 }
 
 sub initialize_by_facade {
-    # (proto, UI.Facade) : undef
-    # Initializes all icons in a facade, if caching turned on.
     my($proto, $facade) = @_;
     foreach my $file (map(
 	m{/(\w+)\.(?:@{[join('|', @$_FILE_SUFFIX_SEARCH_LIST)]})$} ? $1 : (),
@@ -180,62 +169,75 @@ sub initialize_by_facade {
     )) {
 	_find($proto, $file, $facade);
     }
-    return $proto;
+    return $proto->new_static($facade);
+}
+
+sub internal_cache_key {
+    return _facade_name(@_);
+}
+
+sub internal_file_name {
+    my($name) =  _facade_name(@_);
+    foreach my $suffix (@$_FILE_SUFFIX_SEARCH_LIST) {
+	my($f) = $name . $suffix;
+	return $f
+	    if -r $f;
+    }
+    return undef;
+}
+
+sub internal_uri {
+    my($file_name) = shift->internal_file_name(@_);
+    return $file_name =~ m{([^/]+)$} ? "$_URI$1" : $_MISSING;
+}
+
+sub _facade_name {
+    my($self, $name) = @_;
+    return $self->get_facade->get_local_file_name(
+	Bivio::UI::LocalFileType->PLAIN,
+	"$_URI$name",
+    );
 }
 
 sub _find {
     # (proto, string, Collection.Attributes) : hash_ref
     # Returns the value hash_ref
     my($proto, $name, $req_or_facade) = @_;
-    my($facade) = Bivio::UI::Facade->get_from_request_or_self($req_or_facade);
-
-    # NOTE: We cache without the suffix.
-    my($file_name) = $facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->PLAIN, $_URI.$name);
-
-    # Is it in the cache?
+    my($self) = $proto->internal_get_self($req_or_facade);
+    my($facade) = $self->get_facade;
+    my($key) = $self->internal_cache_key($name);
     my($cache) = $facade->get('want_local_file_cache');
-    return $_CACHE{$file_name} if $cache && $_CACHE{$file_name};
-
-    my($w, $h, $err);
-    foreach my $suffix (@$_FILE_SUFFIX_SEARCH_LIST) {
-	# Try to read the file
-	my($f) = $file_name.$suffix;
-	next unless -r $f;
-
-	($w, $h, $err) = Image::Size::imgsize($f);
-	next unless defined($w);
-
-	# Valid image.  Save values.
-	my($u) = $_URI.$name.$suffix;
-	my($value) = {
-	    value => {
-		uri => $u,
-		width => $w,
-		height => $h,
-	    },
-	    html => qq! src="$u" width="$w" height="$h"!,
-	};
-	$_CACHE{$file_name} = $value if $cache;
-	return $value;
+    if ($cache &&= $_CACHE->{$key}) {
+	return $cache
+	    if (-M $cache->{file_name} || 0) == $cache->{mtime};
+	delete($_CACHE->{$key});
+	$cache = 1;
     }
-
-    # Some type of error
-    Bivio::IO::Alert->warn(
+    my($file) = $self->internal_file_name($name);
+    my($w, $h, $err) = $file ? Image::Size::imgsize($file) : ();
+    my($u);
+    unless (defined($w)) {
+	Bivio::IO::Alert->warn(
 	    $facade, '.Icon.', $name,
-	    ($err ? (': Image::Size error: ', $err) : ': not found'));
-
-    my($value) = {
-	value => {
-	    uri => $_MISSING,
-	    width => 1,
-	    height => 1,
-	},
-	html => qq! src="$_MISSING" width="1" height="1"!,
+	    ($err ? (': Image::Size error: ', $err) : ': not found'),
+	);
+	$w = $h = 1;
+	$file = $_MISSING;
+	$u = $_MISSING;
+    }
+    my($v) = {
+	file_name => $file,
+	uri => $u || $self->internal_uri($name),
+	width => $w,
+	height => $h,
+	mtime => -M $file || 0,
     };
-
-    # We cache misses to avoid lots of noise
-    $_CACHE{$file_name} = $value if $cache;
+    my($value) = {
+	value => $v,
+	html => qq{ src="$v->{uri}" width="$w" height="$h"},
+    };
+    $_CACHE->{$key} = $value
+	if $cache;
     return $value;
 }
 
