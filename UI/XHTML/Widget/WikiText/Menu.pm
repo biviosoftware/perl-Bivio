@@ -8,6 +8,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = Bivio::Type->get_instance('WikiName');
 
+sub SUFFIX {
+    return '.bmenu';
+}
+
 sub handle_register {
     return ['b-menu'];
 }
@@ -18,7 +22,7 @@ sub render_html {
     Bivio::Die->die($args->{attrs}, ': only accepts class attribute')
         if %{$args->{attrs}};
     my($path) = $_WN->to_absolute($args->{value}, $args->{is_public})
-	. '.bmenu';
+	. $proto->SUFFIX;
     my($csv) = $proto->use('ShellUtil.CSV')->parse_records(
 	Bivio::Biz::Model->new($args->{req}, 'RealmFile')->unauth_load_or_die({
 	    path => $path,
@@ -44,7 +48,7 @@ sub _parse_row {
 	unless defined($row->{Link}) && length($row->{Link});
     return (
 	$row->{Label},
-	$args->{proto}->format_uri($row->{Link}, $args),
+	$args->{proto}->internal_format_uri($row->{Link}, $args),
     );
 }
 

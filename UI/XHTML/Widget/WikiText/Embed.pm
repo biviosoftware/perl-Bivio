@@ -14,7 +14,7 @@ sub render_html {
     my($proto, $args) = @_;
     Bivio::Die->die($args->{attrs}, ': does not accept attributes')
         if %{$args->{attrs}};
-    my($uri) = $args->{proto}->format_uri($args->{value}, $args);
+    my($uri) = $args->{proto}->internal_format_uri($args->{value}, $args);
     return Bivio::Die->die('invalid URI, must begin with a /')
 	unless $uri =~ s{^/+}{/};
     return ${$proto->use('Bivio::Agent::Embed::Dispatcher')
