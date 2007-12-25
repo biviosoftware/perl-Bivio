@@ -512,6 +512,10 @@ sub get_current {
     return $_CURRENT;
 }
 
+sub get_current_or_die {
+    return shift->get_current || die('no request');
+}
+
 sub get_current_or_new {
     my($proto) = @_;
     # Returns the current request or creates as new one.  To be used
