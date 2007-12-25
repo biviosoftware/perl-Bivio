@@ -61,9 +61,9 @@ sub init {
 }
 
 sub make_admin {
-    my($self) = @_;
+    my($self, $realm) = @_;
     $self->get_request->with_realm(
-	$self->SITE_REALM,
+	$realm || $self->SITE_REALM,
 	sub {
 	    $self->model('ForumUserAddForm', {
 		'RealmUser.realm_id' => $self->req('auth_id'),
