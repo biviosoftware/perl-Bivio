@@ -47,7 +47,7 @@ sub initialize {
             my(undef, $k) = @_;
 	    return $k =~ /^[A-Z]+[0-9]?$/ ? $k : ();
 	});
-	$self->put(html_attrs => vs_html_attrs_merge($a))
+	$self->put(html_attrs => vs_html_attrs_merge([sort(@$a)]))
 	    if @$a;
     }
     $self->put_unless_exists(tag_if_empty => 1)
