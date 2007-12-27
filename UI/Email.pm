@@ -2,12 +2,13 @@
 # $Id$
 package Bivio::UI::Email;
 use strict;
-use base 'Bivio::UI::FacadeComponent';
+use Bivio::Base 'UI.FacadeComponent';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize_by_facade {
-    return shift->new(@_);
+    my($proto, $facade) = @_;
+    return $proto->new_static($facade);
 }
 
 sub format {
