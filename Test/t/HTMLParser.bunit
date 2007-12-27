@@ -29,6 +29,10 @@ options({
  	    ['Forms', 'YOUR NAME:', 'visible',
  		 'YOUR NAME:', 'type'] => 'text',
 	],
+    ], [
+	'unlabeled-field' => [
+	    ['Forms', 's', 'visible', 's', 'type'] => 'text',
+	],
     ],[
 	'text-before-error' => [
 	    ['Forms', 'I have fullfilled all of the Classroom Mini-Grant Requirements as enumerated above.', 'visible', 'I have fullfilled all of the Classroom Mini-Grant Requirements as enumerated above.', 'error']
