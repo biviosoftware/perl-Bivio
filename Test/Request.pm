@@ -150,6 +150,16 @@ sub put_form {
     });
 }
 
+sub put_on_query {
+    my($self) = shift;
+    my($query) = $self->get_if_defined_else_put(query => {});
+    $self->map_by_two(sub {
+	my($k, $v) = @_;
+	$query->{_maybe_to_char($k)} = $v;
+    }, \@_);
+    return $self;
+}
+
 sub run_unit {
     return shift->use('TestUnit.Unit')->run_unit(@_);
 }
@@ -264,6 +274,14 @@ sub unsafe_get_captured_mail {
 	unless $res;
     $self->put($_MSG_QUEUE_ATTR => []);
     return $res;
+}
+
+sub _maybe_to_char {
+    my($key) = @_;
+    my($die);
+    return Bivio::Die->catch(sub {
+	return __PACKAGE__->use('Bivio::SQL::ListQuery')->to_char($key);
+    }, \$die) || $key;
 }
 
 sub _redirect_check {
