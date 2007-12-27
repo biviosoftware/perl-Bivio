@@ -196,9 +196,12 @@ sub _end_form {
     my($self) = @_;
     # Ends the form and puts in $fields->{current}.
     my($fields) = $self->[$_IDI];
-    Bivio::Die->die('unlabeled form field: ', $fields->{input},
-	' form: ', $fields->{current})
-	if $fields->{input};
+    if ($fields->{input}) {
+	my($attr) = $fields->{input};
+	delete($fields->{input});
+	$attr->{label} = $attr->{name};
+	_label_field($fields, 'visible', $attr);
+    }
     _unwind_duplicates($fields);
     my($label) = $fields->{current}->{label};
     my($curr) = $fields->{current};
