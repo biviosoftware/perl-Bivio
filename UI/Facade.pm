@@ -275,14 +275,14 @@ sub initialize {
 	$_CFG->{default}, ': unable to find or load default Facade',
     ) unless ref($_CLASS_MAP{$_CFG->{default}});
     foreach my $f (values(%_CLASS_MAP)) {
-	foreach my $c (@_COMPONENTS) {
-	    Bivio::Die->die($f, ': ', $c, ': failed to load component')
-	        unless $f->unsafe_get($c);
-	}
 	foreach my $c (@$_STATIC_COMPONENTS) {
 	    $f->put($c => Bivio::IO::ClassLoader->map_require(
 		'FacadeComponent', $c
 	    )->initialize_by_facade($f));
+	}
+	foreach my $c (@_COMPONENTS) {
+	    Bivio::Die->die($f, ': ', $c, ': failed to load component')
+	        unless $f->unsafe_get($c);
 	}
 	$f->set_read_only;
     }
@@ -607,7 +607,7 @@ sub _initialize {
 
 	# Create the instance, initialize, seal, and store.
 	$self->put($c => $_COMPONENTS{$c}->new(
-		$self, $cc, $cfg->{initialize}));
+	    $self, $cc, $cfg->{initialize}));
 	delete($config->{$c});
     }
 
