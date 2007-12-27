@@ -42,6 +42,34 @@
 	    USER_ACCOUNT_EDIT => FORBIDDEN(),
 	    SITE_ROOT => 'SITE_ROOT',
 	],
+	put_on_query => [
+	    [
+		begin_date => 'a begin date',
+		date => 'a date',
+		count => 'a count',
+		interval => 'an interval',
+		page_number => 'a page number',
+		order_by => 'an order by',
+		parent_id => 'a parent id',
+		search => 'a search',
+		this => 'a this id',
+		foo => 'a foo',
+	    ] => sub {
+		assert_equals({
+		    b => 'a begin date',
+		    d => 'a date',
+		    c => 'a count',
+		    i => 'an interval',
+		    n => 'a page number',
+		    o => 'an order by',
+		    p => 'a parent id',
+		    s => 'a search',
+		    t => 'a this id',
+		    foo => 'a foo',
+		}, req()->get('query'));
+		return 1;
+	    },
+	],
     ],
     sub {
 	my($req) = class()->get_instance;
