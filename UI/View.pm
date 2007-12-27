@@ -280,8 +280,6 @@ sub execute_task_item {
 
 sub initialize_by_facade {
     my($proto, $facade) = @_;
-    # Initializes all views in a facade.  Only called if caching turned on.
-#TODO: Need to implement
     return $proto;
 }
 
