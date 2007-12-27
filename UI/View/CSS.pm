@@ -260,7 +260,7 @@ div.main_top .task_menu, div.main_top .pager {
 div.main_bottom .pager, div.main_bottom .task_menu {
   text-align: left;
 }
-.footer .task_menu, div.tools .task_menu a, div.tools .task_menu, div.pager {
+td.footer .task_menu, div.tools .task_menu a, div.tools .task_menu, div.pager {
   Font('tools');
 }
 div.main_body {
@@ -307,7 +307,7 @@ div.alphabetical_chooser {
 .task_menu .selected, .alphabetical_chooser .selected {
   Font('selected');
 }
-.footer {
+td.footer {
   border-top: 1px solid;
   Color('footer-border-top');
   margin: .5ex 0 .5ex 0;
