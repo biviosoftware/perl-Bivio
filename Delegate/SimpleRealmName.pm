@@ -82,8 +82,8 @@ sub unsafe_from_uri {
 	if $value eq $proto->SPECIAL_PLACEHOLDER;
     # We allow dashes in URI names (my-site and other constructed names)
     my($s) = $proto->SPECIAL_SEPARATOR;
-    (my $v = $value) =~ s/$s//og;
-    return $proto->internal_is_realm_name($v) && $value !~ /^$s/o
+    (my $v = $value) =~ s/$s//g;
+    return $proto->internal_is_realm_name($v) && $value !~ /^$s/
 	? $proto->process_name($value) : undef;
 }
 
