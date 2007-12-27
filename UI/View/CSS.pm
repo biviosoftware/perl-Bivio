@@ -210,6 +210,8 @@ td.header_left {
 td.header_left .logo_su .logo {
   text-align: left;
   display: block;
+  height: Icon(qw(logo height));px;
+  width: Icon(qw(logo width));px;
 }
 td.header_right {
   width: 30%;
