@@ -80,6 +80,13 @@ sub default_password {
     return shift->use('ShellUtil.SQL')->TEST_PASSWORD;
 }
 
+sub deprecated_text_patterns {
+    my($self, $value) = @_;
+    $self->put(deprecated_text_patterns => $value)
+	if defined($value);
+    return $self->get('deprecated_text_patterns');
+}
+
 sub do_logout {
     my($self) = @_;
     $self->visit_uri('/pub/logout')
@@ -90,7 +97,7 @@ sub do_logout {
 sub do_table_rows {
     my($self, $table_name, $do_rows_callback) = @_;
     return _assert_html($self)->get('Tables')
-	->do_rows(_fixup_pattern_protected($table_name), $do_rows_callback);
+	->do_rows(_fixup_pattern_protected($self, $table_name), $do_rows_callback);
 }
 
 sub do_test_backdoor {
@@ -143,7 +150,7 @@ sub follow_link {
     my($self, @links) = @_;
     my($res);
     foreach my $link (@links) {
-	$link = _fixup_pattern_protected($link);
+	$link = _fixup_pattern_protected($self, $link);
 	my($m) = ref($link) ? 'get_by_regexp' : 'get';
 	$res = $self->visit_uri(
 	    _assert_html($self)->get('Links')
@@ -171,6 +178,7 @@ sub follow_link_in_table {
     $link_heading = _key_from_hash(
 	$row,
 	_fixup_pattern_protected(
+	    $self,
 	    defined($link_heading) ? $link_heading : $find_heading),
     );
     Bivio::Die->die($link_heading, ': column empty')
@@ -182,6 +190,7 @@ sub follow_link_in_table {
 	    : _get_attr(
 		$links,
 		_fixup_pattern_protected(
+		    $self,
 		    defined($link_name) ? $link_name : $find_value)),
     )->{href});
 }
@@ -232,7 +241,7 @@ sub get_table_row {
     $row_index ||= 0;
     my($found_row);
     $self->get_html_parser()->get('Tables')->do_rows(
-	_fixup_pattern_protected($table_name),
+	_fixup_pattern_protected($self, $table_name),
 	sub {
 	    my($row, $index) = @_;
 	    return 1
@@ -382,6 +391,7 @@ sub new {
 	history => [],
 	history_length => 3,
     };
+    $self->put(deprecated_text_patterns => $_CFG->{deprecated_text_patterns});
     return $self;
 }
 
@@ -473,17 +483,18 @@ sub submit_form {
     my($forms) = _assert_html($self)->get('Forms');
     my($form);
     if (!defined($submit_button)) {
-	$form_fields = _fixup_form_fields($form_fields);
+	$form_fields = _fixup_form_fields($self, $form_fields);
         $form = $forms->get_by_field_names(keys(%$form_fields));
     }
     elsif (ref($submit_button) eq 'HASH') {
 	$expected_content_type = $form_fields;
-	$form_fields = _fixup_form_fields($submit_button);
+	$form_fields = _fixup_form_fields($self, $submit_button);
         $form = $forms->get_by_field_names(keys(%$form_fields));
 	$submit_button = $forms->get_ok_button($form);
     }
     else {
-	$form_fields = _fixup_form_fields($form_fields || {});
+	$form_fields = _fixup_form_fields($self, $form_fields || {});
+	$submit_button = _fixup_pattern_protected($self, $submit_button);
 	$form = $forms->get_by_field_names(
 	    keys(%$form_fields),
 	    $submit_button,
@@ -569,7 +580,7 @@ sub verify_form {
     # Verifies the state of I<form_fields>. Only fields specified will be
     # verified.
     my($fields) = $self->[$_IDI];
-    $form_fields = _fixup_form_fields($form_fields || {});
+    $form_fields = _fixup_form_fields($self, $form_fields || {});
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names(keys(%$form_fields));
     _trace($form->{visible}) if $_TRACE;
@@ -861,14 +872,14 @@ sub _find_row {
     # Returns the hashref for row identified by I<table_name>, <I>find_heading
     # and <I>find_value, using L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.
     return _assert_html($self)->get('Tables')->find_row(
-	_fixup_pattern_protected($table_name),
-	_fixup_pattern_protected($find_heading),
-	_fixup_pattern_protected($find_value),
+	_fixup_pattern_protected($self, $table_name),
+	_fixup_pattern_protected($self, $find_heading),
+	_fixup_pattern_protected($self, $find_value),
     );
 }
 
 sub _fixup_form_fields {
-    my($form_fields) = @_;
+    my($self, $form_fields) = @_;
     return {map(
 	(_fixup_pattern($_) => $form_fields->{$_}),
 	keys(%$form_fields),
@@ -885,8 +896,9 @@ sub _fixup_pattern {
 }
 
 sub _fixup_pattern_protected {
-    my($v) = @_;
-    return $_CFG->{deprecated_text_patterns} ? $v : _fixup_pattern($v);
+    my($self, $v) = @_;
+    return $self->deprecated_text_patterns || !defined($v) ? $v
+	: _fixup_pattern($v);
 }
 
 sub _format_form {
