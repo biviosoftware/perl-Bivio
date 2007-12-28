@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.67  2007/12/25 22:42:09  nagler
+  * Bivio::Agent::Request
+    added get_current_or_die
+  * Bivio::Biz::Action::ClientRedirect
+    call format_uri on the uris that come in via path_info and query
+  * Bivio::Biz::Model::RealmFileList
+    added get_os_path
+  * Bivio::UI::FacadeBase
+    site_copyright is now text_as_prose
+  * Bivio::UI::FacadeComponent
+    added new_static
+  * Bivio::UI::Task
+    factored out internal_setup_facade
+  * Bivio::UI::XHTML::Widget::WikiText::Embed
+    renamed format_uri to internal_format_uri
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    renamed format_uri to internal_format_uri
+  * Bivio::UI::XHTML::Widget::WikiText
+    renamed format_uri to internal_format_uri
+    call internal_format_uri instead of _abs_href
+  * Bivio::Util::SiteForum
+    make_admin accepts $realm
+    update doc
+  * Bivio::Util::TestUser
+    export ADM
+
   Revision 5.66  2007/12/21 04:47:39  nagler
   * Bivio::Biz::Model::ImageUploadForm
     remove unnecessary ImageMagick calls
