@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,33 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.68  2007/12/28 03:20:48  nagler
+  * Bivio::Delegate::SimpleRealmName
+    don't cache regex variables (/o)
+  * Bivio::Test::FormModel
+    don't mock the task if the request already has a task configured
+  * Bivio::Test::HTMLParser::Forms
+    allow single field form which is unlableld
+  * Bivio::Test::Request
+    added put_on_query().  Now say req()->put_on_query(this => foo) instead of
+    req()->get_if_defined_else_put(query => {})
+       ->{Bivio::SQL::ListQuery->to_char('this')} = foo
+  * Bivio::UI::Email
+    call new_static()
+  * Bivio::UI::Facade
+    initialize static_components before dynamic
+  * Bivio::UI::HTML::ViewShortcuts
+    vs_html_attrs must define the string before calling unsafe_render_attr
+  * Bivio::UI::HTML::Widget::Tag
+    upper case tag attributes are now sorted alphabetically
+  * Bivio::UI::View::CSS
+    css can't be static.  Icons might not be
+    label td.footer always
+    table.footer, not td.footer
+    a.logo height has to be height of ico
+  * Bivio::UI::View
+    remove comments
+
   Revision 5.67  2007/12/25 22:42:09  nagler
   * Bivio::Agent::Request
     added get_current_or_die
