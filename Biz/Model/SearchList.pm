@@ -22,6 +22,10 @@ my($_REALM_OWNER_FIELDS) = [qw(
     display_name
 )];
 
+sub RESULT_EXCERPT_LENGTH {
+    return 500;
+}
+
 sub internal_realm_ids {
     my($self, $query) = @_;
     return (
@@ -109,7 +113,10 @@ sub internal_post_load_row_with_model {
 	    query => undef,
 	    path_info => $row->{'RealmFile.path'},
 	});
-	$row->{result_excerpt} = substr(${$model->get_content}, 0, 500);
+	$row->{result_excerpt} = substr(
+	    ${$model->get_content},
+	    0, $self->RESULT_EXCERPT_LENGTH,
+	);
     }
     return 1;
 }
