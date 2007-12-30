@@ -160,9 +160,12 @@ sub pre_compile {
 
 sub rss {
     my($self) = @_;
-    view_class_map('XHTMLWidget');
+    view_class_map('XMLWidget');
     view_shortcuts($self->VIEW_SHORTCUTS);
-#TODO: rss_body.  Need to generalize interface
+    view_declare('rss_body');
+    view_main(SimplePage(view_widget_value('rss_body'), {
+	content_type => 'application/xhtml+xml',
+    }));
     return;
 }
 

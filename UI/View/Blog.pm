@@ -117,32 +117,8 @@ sub list {
     ])));
 }
 
-sub recent_xml {
-    return shift->internal_body(
-	Tag(rss =>
-	    Tag(channel => Join([
-		map(
-		    Tag($_ => XML(vs_text_as_prose("rsspage.BlogList.$_"))),
-		    qw(title description),
-		),
-		Tag(link => XML(URI({
-		    task_id => 'FORUM_BLOG_LIST',
-		    query => undef,
-		}))),
-		Tag(language => 'en-us'),
-		WithModel(BlogList => Join([
-		    TagField('title'),
-		    Tag(link => XML(URI({
-			task_id => _access_mode('FORUM_BLOG_DETAIL'),
-			query => undef,
-			path_info => ['path_info'],
-		    }))),
-		    Tag(description => CDATA(['->render_html'])),
-		])),
-	    ])),
-	    {VERSION => '2.0'},
-	),
-    );
+sub list_rss {
+    return shift->internal_body(AtomFeed('BlogList'));
 }
 
 sub _access_mode {
