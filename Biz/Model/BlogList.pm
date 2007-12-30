@@ -34,6 +34,10 @@ sub get_creation_date_time {
     return $_DT->from_literal_or_die(shift->get('path_info'));
 }
 
+sub get_modified_date_time {
+    return shift->get('RealmFile.modified_date_time');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -106,6 +110,23 @@ sub internal_prepare_statement {
     return;
 }
 
+sub get_rss_summary {
+    my($self) = @_;
+    my($v) = $self->get('body');
+#TODO: Split on words
+    $v = substr($v, 0, 1000);
+#TODO: Is this good enough?
+    $v =~ s/\n[^\n]*$//s;
+    return $_WT->render_ascii({
+	value => $v,
+	name => $self->get('path_info'),
+	req => $self->req,
+	task_id => $self->req('task', 'html_task'),
+	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
+	no_auto_links => 1,
+    });
+}
+
 sub render_html {
     my($self, $body) = @_;
     return $_WT->render_html({
@@ -122,7 +143,7 @@ sub render_html_excerpt {
     my($self) = @_;
     my($body) = $self->get('body');
 #TODO: Split on words
-    $body = substr($body, 0, 300);
+    $body = substr($body, 0, 500);
 #TODO: Is this good enough?
     $body =~ s/\n[^\n]*$//s;
     return $self->render_html($body);
