@@ -444,6 +444,12 @@ sub register_tag {
     return;
 }
 
+sub render_ascii {
+    my($body) = shift->render_html(@_);
+    $body =~ s{<[^>]+>}{}g;
+    return Bivio::HTML->unescape($body);
+}
+
 sub render_html {
     my($proto, $args) = @_;
     unless (ref($args) eq 'HASH') {
