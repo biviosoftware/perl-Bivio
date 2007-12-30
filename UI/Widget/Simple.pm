@@ -21,7 +21,8 @@ sub internal_new_args {
 }
 
 sub render {
-    return shift->render_attr('value', @_);
+    shift->render_attr('value', @_);
+    return;
 }
 
 1;
