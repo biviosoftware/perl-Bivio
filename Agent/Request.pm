@@ -206,7 +206,7 @@ my($_CURRENT);
 
 sub FORMAT_URI_PARAMETERS {
     # Order and names of params passed to format_uri().
-    return [qw(task_id query realm path_info no_context anchor require_context uri form_in_query)];
+    return [qw(task_id query realm path_info no_context anchor require_context uri form_in_query require_absolute)];
 }
 
 sub FORM_IN_QUERY_FLAG {
@@ -442,6 +442,8 @@ sub format_uri {
     ($self, $named) = $self->internal_get_named_args(
 	$self->FORMAT_URI_PARAMETERS,
 	\@_);
+    return $self->format_http($named)
+	if delete($named->{require_absolute});
     my($uri);
     Bivio::Die->die($named, ': must supply query with form_in_query')
         if $named->{form_in_query} && !$named->{query};
