@@ -50,7 +50,8 @@ sub new_unit {
 		form_model => ref($m),
 		next => $req->get('task_id'),
 		require_context => 0,
-	    })) unless $req->unsafe_get_nested(qw(task next));
+	    })) unless $req->unsafe_get_nested(qw(task next))
+		&& !$req->get('task_id')->eq_shell_util;
 	    $setup_request->($case, $params)
 		if $setup_request;
 	    unless (@$params) {
