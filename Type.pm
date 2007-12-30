@@ -2,149 +2,55 @@
 # $Id$
 package Bivio::Type;
 use strict;
-$Bivio::Type::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::VERSION;
-
-=head1 NAME
-
-Bivio::Type - base class for all types
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Type;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::WidgetValueSource>
-
-=cut
-
-use Bivio::UI::WidgetValueSource;
-@Bivio::Type::ISA = ('Bivio::UI::WidgetValueSource');
-
-=head1 DESCRIPTION
-
-C<Bivio::Type> base class of all types.
-
-=cut
-
-#=IMPORTS
-# also uses Bivio::Die and Bivio::TypeError dynamically
+use base 'Bivio::UI::WidgetValueSource';
+use Bivio::HTML;
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
-use Bivio::HTML;
 
-#=VARIABLES
-
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="get_instance"></a>
-
-=head2 static get_instance(any type) : Bivio::Type
-
-=head2 get_instance() : Bivio::Type
-
-Returns an instance of I<type>.  I<type> may be just the simple name or a fully
-qualified class name.  It will be loaded with
-L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Type> map.
-
-The "instance" returned may a fully-qualified class, since instances and
-classes are equivalent in perl.
-
-=cut
-
-sub get_instance {
-    my($self, $type) = @_;
-    $type ||= $self;
-    $type = Bivio::IO::ClassLoader->map_require('Type', $type)
-	unless ref($type);
-    Bivio::IO::Alert->bootstrap_die($type, ': not a Bivio::Type')
-	unless UNIVERSAL::isa($type, 'Bivio::Type')
-	    || UNIVERSAL::isa($type, 'Bivio::Delegator');
-    return $type;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="can_be_negative"></a>
-
-=head2 static can_be_negative : boolean
-
-Can the number be negative?
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub can_be_negative {
+    # : boolean
+    # Can the number be negative?
     return undef;
 }
-
-=for html <a name="can_be_positive"></a>
-
-=head2 static can_be_positive : boolean
-
-Can the number be positive?
-
-=cut
 
 sub can_be_positive {
+    # : boolean
+    # Can the number be positive?
     return undef;
 }
-
-=for html <a name="can_be_zero"></a>
-
-=head2 static can_be_zero : boolean
-
-Can the number be equal to 0?
-
-=cut
 
 sub can_be_zero {
+    # : boolean
+    # Can the number be equal to 0?
     return undef;
 }
 
-=for html <a name="compare"></a>
-
-=head2 abstract static compare(any left, any right) : int
-
-Compares two values and returns the same as perl's
-C<cmp> operator, namely:
-
-=over 4
-
-=item negative
-
-I<left> is the lesser value.
-
-=item zero
-
-I<left> and I<right> are equal.
-
-=item positive
-
-I<right> is the lesser value.
-
-=back
-
-Treats C<undef> as "least" or equal if both I<left> or I<right>.  Subclasses
-call this way:
-
-    return shift->SUPER::compare(@_)
-	unless defined($left) && defined($right);
-
-=cut
-
 sub compare {
+    # (self, any, any) : int
+    # Compares two values and returns the same as perl's
+    # C<cmp> operator, namely:
+    #
+    #
+    # negative
+    #
+    # I<left> is the lesser value.
+    #
+    # zero
+    #
+    # I<left> and I<right> are equal.
+    #
+    # positive
+    #
+    # I<right> is the lesser value.
+    #
+    #
+    # Treats C<undef> as "least" or equal if both I<left> or I<right>.  Subclasses
+    # call this way:
+    #
+    #     return shift->SUPER::compare(@_)
+    # 	unless defined($left) && defined($right);
     my($proto, $left, $right) = @_;
     return 0
 	unless defined($left) || defined($right);
@@ -155,62 +61,43 @@ sub compare {
     return shift->compare_defined(@_);
 }
 
-=for html <a name="compare_defined"></a>
-
-=head2 static compare_defined(any left, any right) : int
-
-Called by L<compare|"compare"> when both values are defined.  Compares the
-values using C<cmp>.  Results are undefined if either argument is undefined.
-
-=cut
-
 sub compare_defined {
+    # (proto, any, any) : int
+    # Called by L<compare|"compare"> when both values are defined.  Compares the
+    # values using C<cmp>.  Results are undefined if either argument is undefined.
     my($proto, $left, $right) = @_;
     return $left cmp $right;
 }
 
-=for html <a name="from_literal"></a>
-
-=head2 static from_literal(string value) : array
-
-=head2 static from_literal(string value) : any
-
-Validates and converts the value from a literal to an internal form.
-The literal is usually a compact representation of the value, e.g.
-for Enums it is the integer form.
-
-If the value is valid, the value returned.
-
-If the value is NULL, the value C<undef> is returned.  Note that
-strings return '' as C<undef> in keeping with SQL.
-
-If the value is invalid, the array (<C<undef>, I<error>)
-is returned, where I<error> is one of
-L<Bivio::TypeError|Bivio::TypeError>.
-
-See L<to_literal|"to_literal">.
-
-=cut
-
 sub from_literal {
+    # (proto, string) : array
+    # (proto, string) : any
+    # Validates and converts the value from a literal to an internal form.
+    # The literal is usually a compact representation of the value, e.g.
+    # for Enums it is the integer form.
+    #
+    # If the value is valid, the value returned.
+    #
+    # If the value is NULL, the value C<undef> is returned.  Note that
+    # strings return '' as C<undef> in keeping with SQL.
+    #
+    # If the value is invalid, the array (<C<undef>, I<error>)
+    # is returned, where I<error> is one of
+    # L<Bivio::TypeError|Bivio::TypeError>.
+    #
+    # See L<to_literal|"to_literal">.
     shift;
     return shift;
 }
 
-=for html <a name="from_literal_or_die"></a>
-
-=head2 static from_literal_or_die(string value, boolean null_ok) : any
-
-Checks the return value of L<from_literal|"from_literal">
-and calls die with an appropriate message if from_literal
-conversion failed.  Dies with TypeError::NULL if not defined and
-!I<null_ok>.
-
-Returns a scalar, not an array.
-
-=cut
-
 sub from_literal_or_die {
+    # (proto, string, boolean) : any
+    # Checks the return value of L<from_literal|"from_literal">
+    # and calls die with an appropriate message if from_literal
+    # conversion failed.  Dies with TypeError::NULL if not defined and
+    # !I<null_ok>.
+    #
+    # Returns a scalar, not an array.
     my($proto, $value, $null_ok) = @_;
     my($v, $e) = $proto->from_literal($value);
     return $v
@@ -225,196 +112,123 @@ sub from_literal_or_die {
     });
 }
 
-=for html <a name="from_sql_column"></a>
-
-=head2 from_sql_column(string result) : string
-
-Converts I<result>, which is a single column value returned by SELECT, to the
-perl representation of that type.  I<result> must be generated by
-L<from_sql_value|"from_sql_value"> for the type.  For enums, will convert to
-the appropriate enum value.
-
-=cut
-
 sub from_sql_column {
+    # (self, string) : string
+    # Converts I<result>, which is a single column value returned by SELECT, to the
+    # perl representation of that type.  I<result> must be generated by
+    # L<from_sql_value|"from_sql_value"> for the type.  For enums, will convert to
+    # the appropriate enum value.
     shift;
     return shift;
 }
-
-=for html <a name="from_sql_value"></a>
-
-=head2 static from_sql_value(string place_holder) : string
-
-Converts I<place_holder>, which is typically a column name on a SELECT, to
-a TO_CHAR string.  For most types, returns I<place_holder>.  For dates,
-returns the appropiate TO_CHAR for that date type.
-
-I<place_holder> will not be quoted.
-
-See L<from_sql_column|"from_sql_column">.
-
-=cut
 
 sub from_sql_value {
+    # (proto, string) : string
+    # Converts I<place_holder>, which is typically a column name on a SELECT, to
+    # a TO_CHAR string.  For most types, returns I<place_holder>.  For dates,
+    # returns the appropiate TO_CHAR for that date type.
+    #
+    # I<place_holder> will not be quoted.
+    #
+    # See L<from_sql_column|"from_sql_column">.
     shift;
     return shift;
 }
 
-=for html <a name="get_decimals"></a>
-
-=head2 static get_decimals : int
-
-Number of digits to the right of the decimal point.
-
-=cut
-
 sub get_decimals {
+    # : int
+    # Number of digits to the right of the decimal point.
     return undef;
 }
 
-=for html <a name="get_default"></a>
-
-=head2 static abstract get_default() : any
-
-returns a value used to generate default values for preferences and query
-strings. See L<Bivio::Type::PageSize|Bivio::Type::PageSize>
-
-=cut
-
-$_ = <<'}'; # emacs
-sub get_default {
+sub get_instance {
+    # (proto, any) : Bivio.Type
+    # (self) : Bivio.Type
+    # Returns an instance of I<type>.  I<type> may be just the simple name or a fully
+    # qualified class name.  It will be loaded with
+    # L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Type> map.
+    #
+    # The "instance" returned may a fully-qualified class, since instances and
+    # classes are equivalent in perl.
+    my($self, $type) = @_;
+    $type ||= $self;
+    $type = Bivio::IO::ClassLoader->map_require('Type', $type)
+	unless ref($type);
+    Bivio::IO::Alert->bootstrap_die($type, ': not a Bivio::Type')
+	unless UNIVERSAL::isa($type, 'Bivio::Type')
+	    || UNIVERSAL::isa($type, 'Bivio::Delegator');
+    return $type;
 }
-
-=for html <a name="get_max"></a>
-
-=head2 static get_max : any
-
-Maximum value for this type in perl form.  Note that numbers
-are returned as strings if they are larger than can be handled
-by perl's integer type.
-
-=cut
 
 sub get_max {
+    # : any
+    # Maximum value for this type in perl form.  Note that numbers
+    # are returned as strings if they are larger than can be handled
+    # by perl's integer type.
     return undef;
 }
-
-=for html <a name="get_min"></a>
-
-=head2 static get_min : any
-
-Minimal value for this type in perl form.  Note that numbers
-are returned as strings if they are larger than can be handled
-by perl's integer type.
-
-
-=cut
 
 sub get_min {
+    # : any
+    # Minimal value for this type in perl form.  Note that numbers
+    # are returned as strings if they are larger than can be handled
+    # by perl's integer type.
     return undef;
 }
-
-=for html <a name="get_precision"></a>
-
-=head2 static get_precision : int
-
-Maximum number of digits in a value of this type.
-
-=cut
 
 sub get_precision {
+    # : int
+    # Maximum number of digits in a value of this type.
     return undef;
 }
 
-=for html <a name="get_width"></a>
-
-=head2 static get_width : int
-
-Maximum number of characters for string representations of
-this value.  If a number cannot be negative, then will
-not include a character for a sign.
-
-=cut
-
 sub get_width {
+    # : int
+    # Maximum number of characters for string representations of
+    # this value.  If a number cannot be negative, then will
+    # not include a character for a sign.
     die('abstract method');
 }
 
-=for html <a name="internal_from_literal_warning"></a>
-
-=head2 static internal_from_literal_warning()
-
-Issues a warning about calling from_literal() in a scalar context.
-
-=cut
-
 sub internal_from_literal_warning {
+    # (proto) : undef
+    # Issues a warning about calling from_literal() in a scalar context.
     warn("don't call from_literal in scalar context");
     return;
 }
 
-=for html <a name="is_equal"></a>
-
-=head2 static is_equal(any left, any right) : boolean
-
-Are the two values equal?  Uses "eq" comparison if compare is not available.
-
-=cut
-
 sub is_equal {
+    # (proto, any, any) : boolean
+    # Are the two values equal?  Uses "eq" comparison if compare is not available.
     return shift->compare(@_) == 0 ? 1 : 0;
 }
 
-=for html <a name="is_password"></a>
-
-=head2 static is_password() : boolean
-
-Is this value a password, i.e. should it not be displayed?
-
-Default is false.
-
-=cut
-
 sub is_password {
+    # (proto) : boolean
+    # Is this value a password, i.e. should it not be displayed?
+    #
+    # Default is false.
     return 0;
 }
-
-=for html <a name="is_secure_data"></a>
-
-=head2 static is_secure_data() : boolean
-
-Requires that the field be displayed only in secure environments.
-
-Returns false by default.
-
-=cut
 
 sub is_secure_data {
+    # (proto) : boolean
+    # Requires that the field be displayed only in secure environments.
+    #
+    # Returns false by default.
     return 0;
 }
 
-=for html <a name="is_specified"></a>
-
-=head2 is_specified(any value) : boolean
-
-Returns true if value is not C<undef>.
-
-=cut
-
 sub is_specified {
+    # (self, any) : boolean
+    # Returns true if value is not C<undef>.
     return defined($_[1]) ? 1 : 0;
 }
 
-=for html <a name="put_on_request"></a>
-
-=head2 put_on_request(Bivio::Agent::Request req, boolean put_durable) : self
-
-Puts an instance of I<self> on request.  Only works with types which are
-instantiated.
-
-=cut
-
 sub put_on_request {
+    # (self, Agent.Request, boolean) : self
+    # Puts an instance of I<self> on request.  Only works with types which are
+    # instantiated.
     my($self, $req, $put_durable) = @_;
     Bivio::IO::Alert->bootstrap_die($self, ': must be instance')
 	unless ref($self);
@@ -426,173 +240,101 @@ sub put_on_request {
     return $self;
 }
 
-=for html <a name="to_html"></a>
-
-=head2 static to_html(any value) : string
-
-Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
-empty string.  Otherwise, escapes html and returns.
-
-=cut
-
 sub to_html {
+    # (proto, any) : string
+    # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
+    # empty string.  Otherwise, escapes html and returns.
     my($self, $value) = @_;
     return '' unless defined($value);
     return Bivio::HTML->escape($self->to_literal($value));
 }
 
-=for html <a name="to_literal"></a>
-
-=head2 static to_literal(any value) : string
-
-Converts from internal form to a literal string value.
-
-See L<from_literal|"from_literal">.
-
-=cut
-
 sub to_literal {
+    # (proto, any) : string
+    # Converts from internal form to a literal string value.
+    #
+    # See L<from_literal|"from_literal">.
     my(undef, $value) = @_;
     return defined($value) ? $value : '';
 }
 
-=for html <a name="to_query"></a>
-
-=head2 static to_query(any value) : string
-
-Returns a value that can be used as a query string.
-Similar to L<to_uri|"to_uri">, but
-calls L<Bivio::HTML::escape_query|Bivio::HTML/"escape_query">
-
-=cut
-
 sub to_query {
+    # (proto, any) : string
+    # Returns a value that can be used as a query string.
+    # Similar to L<to_uri|"to_uri">, but
+    # calls L<Bivio::HTML::escape_query|Bivio::HTML/"escape_query">
     my($proto, $value) = @_;
     return '' unless defined($value);
     return Bivio::HTML->escape_query($proto->to_literal($value));
 }
 
-=for html <a name="to_sql_param"></a>
-
-=head2 static to_sql_param(string param_value) : string
-
-Converts I<param_value>, which is in the perl representation the data type, to
-a value to a value execute can use.  For most types, simply returns
-I<param_value>.  For dates, converts the unix time (integer) to the string form
-acceptable to the type's L<to_sql_value|"to_sql_value">.  For enums, converts
-the enum to an integer.  For booleans, forces to be 0 or 1.
-
-=cut
-
 sub to_sql_param {
+    # (proto, string) : string
+    # Converts I<param_value>, which is in the perl representation the data type, to
+    # a value to a value execute can use.  For most types, simply returns
+    # I<param_value>.  For dates, converts the unix time (integer) to the string form
+    # acceptable to the type's L<to_sql_value|"to_sql_value">.  For enums, converts
+    # the enum to an integer.  For booleans, forces to be 0 or 1.
     shift;
     return shift;
 }
 
-=for html <a name="to_sql_param_list"></a>
-
-=head2 static to_sql_param_list(array_ref param_values) : array_ref
-
-Converts I<param_values> using L<to_sql_param|"to_sql_param">.
-
-=cut
-
 sub to_sql_param_list {
+    # (proto, array_ref) : array_ref
+    # Converts I<param_values> using L<to_sql_param|"to_sql_param">.
     my($proto, $param_values) = @_;
     return [map {$proto->to_sql_param($_)} @$param_values];
 }
 
-=for html <a name="to_sql_value"></a>
-
-=head2 static to_sql_value(string place_holder) : string
-
-Converts I<place_holder> to an appropriately formed SQL value for the type.
-Typically, I<place_holder> is a question-mark (?) and the text generated
-is also a question-mark.  However, for dates, the appropriate
-C<TO_DATE> call is generated for I<value>.
-
-I<place_holder> will not be quoted.
-
-See also L<to_sql_param|"to_sql_param">.
-
-=cut
-
 sub to_sql_value {
+    # (proto, string) : string
+    # Converts I<place_holder> to an appropriately formed SQL value for the type.
+    # Typically, I<place_holder> is a question-mark (?) and the text generated
+    # is also a question-mark.  However, for dates, the appropriate
+    # C<TO_DATE> call is generated for I<value>.
+    #
+    # I<place_holder> will not be quoted.
+    #
+    # See also L<to_sql_param|"to_sql_param">.
     shift;
     return shift || '?';
 }
 
-=for html <a name="to_sql_value_list"></a>
-
-=head2 static to_sql_value_list(array_ref param_values) : string
-
-Creates a parameter string (C<(?,?,?)>) using L<to_sql_value|"to_sql_value">
-to match the args handled by L<to_sql_param_list|"to_sql_param_list">.
-
-Dies if I<param_values> is empty.
-
-=cut
-
 sub to_sql_value_list {
+    # (proto, array_ref) : string
+    # Creates a parameter string (C<(?,?,?)>) using L<to_sql_value|"to_sql_value">
+    # to match the args handled by L<to_sql_param_list|"to_sql_param_list">.
+    #
+    # Dies if I<param_values> is empty.
     my($proto, $param_values) = @_;
     die('empty param values') unless @$param_values;
     return '('.join(',', map {$proto->to_sql_value('?')} @$param_values).')';
 }
 
-=for html <a name="to_string"></a>
-
-=head2 static to_string(any value) : string
-
-Returns the L<to_literal|"to_literal"> representation of the value.
-Always returns a defined value.  I<undef> is returned as the empty string.
-
-B<Use for debugging only.>
-
-=cut
-
 sub to_string {
+    # (proto, any) : string
+    # Returns the L<to_literal|"to_literal"> representation of the value.
+    # Always returns a defined value.  I<undef> is returned as the empty string.
+    #
+    # B<Use for debugging only.>
     my($self, $value) = @_;
     $value = $self->to_literal($value);
     return defined($value) ? $value : '';
 }
 
-=for html <a name="to_uri"></a>
-
-=head2 static to_uri(any value) : string
-
-Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
-empty string.  Otherwise, escapes uri and returns.
-
-=cut
-
 sub to_uri {
+    # (proto, any) : string
+    # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
+    # empty string.  Otherwise, escapes uri and returns.
     my($proto, $value) = @_;
     return '' unless defined($value);
     return Bivio::HTML->escape_uri($proto->to_literal($value));
 }
 
-=for html <a name="to_xml"></a>
-
-=head2 static to_xml(any value) : string
-
-Same as L<to_html|"to_html">.
-
-=cut
-
 sub to_xml {
+    # (proto, any) : string
+    # Same as L<to_html|"to_html">.
     return shift->to_html(@_);
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
