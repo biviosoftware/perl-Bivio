@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Widget::EmptyTag;
 use strict;
-use base 'Bivio::UI::HTML::Widget::Tag';
+use Bivio::Base 'HTMLWidget.Tag';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
