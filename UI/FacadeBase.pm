@@ -216,6 +216,9 @@ sub _cfg_base {
 		list => 'Back to list',
 	    ]],
 	    [prose => [
+		ascend => ' &#9650;',
+		[qw(descend drop_down_arrow)] => ' &#9660;',
+		error_indicator => '&#9654;',
 		@{__PACKAGE__->map_by_two(sub {
 		    my($k, $v) = @_;
 		    # Base. is deprecated usage
@@ -293,11 +296,9 @@ sub _cfg_blog {
 	    [FORUM_BLOG_EDIT => 'Edit this entry'],
 	    [FORUM_BLOG_CREATE => 'New blog entry'],
 	    [prose => [
-		rsspage => [
-		    [qw(BlogList BlogRecentList)] => [
-			title => 'vs_site_name(); Blog',
-			description => 'Recent Blog Entries at vs_site_name();',
-		    ],
+		[qw(BlogList BlogRecentList)] => [
+		    title => 'vs_site_name(); Blog',
+		    tagline => 'Recent Blog Entries at vs_site_name();',
 		],
 	    ]],
 	    [acknowledgement => [
