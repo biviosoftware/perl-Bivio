@@ -332,9 +332,9 @@ sub to_uri {
 }
 
 sub to_xml {
-    # (proto, any) : string
-    # Same as L<to_html|"to_html">.
-    return shift->to_html(@_);
+    my($self, $value) = @_;
+    return !defined($value) ? ''
+	: Bivio::HTML->escape_xml($self->to_literal($value));
 }
 
 1;
