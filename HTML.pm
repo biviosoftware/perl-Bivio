@@ -36,6 +36,10 @@ sub escape_uri {
     return $value;
 }
 
+sub escape_xml {
+    return shift->escape(@_);
+}
+
 sub parse_www_form_urlencoded {
     my($proto, $value) = @_;
     return {map({
