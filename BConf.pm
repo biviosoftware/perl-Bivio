@@ -204,7 +204,9 @@ sub merge_class_loader {
 		    map(
 			("${_}Widget" => [
 			    $_ && $_ ne 'CSS' ? "Bivio::UI::${_}::Widget" : (),
-			    $_ eq 'XHTML' ? 'Bivio::UI::HTML::Widget' : (),
+			    $_ eq 'XML' ? 'Bivio::UI::XHTML::Widget' : (),
+			    $_ =~ /^(XHTML|XML)$/ ? 'Bivio::UI::HTML::Widget' : (),
+			    $_ eq 'XML' ? 'Bivio::UI::HTML::Widget' : (),
 			    $_ =~ /^(Mail|CSS|XML)$/ ? 'Bivio::UI::Text::Widget' : (),
 			    'Bivio::UI::Widget',
 			]),
@@ -214,6 +216,7 @@ sub merge_class_loader {
 		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
 		    TestLanguage => ['Bivio::Test::Language'],
 		    TestUnit => ['Bivio::Test'],
+		    Test => ['Bivio::Test'],
 		    Type => ['Bivio::Type', 'Bivio::Auth'],
 		    UI => ['Bivio::UI'],
 		    View => ['Bivio::UI::View'],
