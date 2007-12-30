@@ -2,9 +2,10 @@
 # $Id$
 req()->set_realm_and_user('demo', 'demo');
 foreach my $x (0, 1) {
-    Bivio::Biz::Model->new(req(), 'RealmFile')->delete_deep({
+    Bivio::Biz::Model->new(req(), 'RealmFile')->unauth_delete_deep({
 	path => Bivio::Type->get_instance('BlogFileName')
 	    ->to_absolute(undef, $x),
+	realm_id => req('auth_id'),
     });
 }
 commit();
