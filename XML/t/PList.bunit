@@ -1,0 +1,40 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    class() => [
+	to_tree => [
+	    [\(<<'IN')]
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+	<key>i</key>
+	<integer></integer>
+	<key>s</key>
+	<string>x</string>
+	<key>a</key>
+	<array>
+		<dict>
+			<key>x</key>
+			<integer>1</integer>
+                        <key>y</key>
+			<array>
+				<string>a</string>
+				<string>b</string>
+                        </array>
+                </dict>
+        </array>
+</dict>
+</plist>
+IN
+	    => [{
+		i => '',
+		s => 'x',
+		a => [{
+		    x => 1,
+		    y => ['a', 'b'],
+		}],
+	    }],
+	],
+    ],
+];
