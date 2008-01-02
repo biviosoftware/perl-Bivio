@@ -578,8 +578,11 @@ sub _init_hosts {
 
 sub _initialize {
     my($self, $config, $clone) = @_;
-    # Initializes the facade from config and clone.
-    # Initialize all components
+    foreach my $c (@$_STATIC_COMPONENTS) {
+	$self->put($c => Bivio::IO::ClassLoader->map_require(
+	    'FacadeComponent', $c
+	)->initialize_by_facade($self));
+    }
     foreach my $c (@_COMPONENTS) {
 	# Get the config for this component (or force to exist)
 	my($cfg) = $config->{$c} || {};
