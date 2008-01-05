@@ -3,13 +3,7 @@
 package Bivio::UI::HTML::Widget::Table;
 use strict;
 use Bivio::Base 'HTMLWidget.TableBase';
-use Bivio::Biz::Model;
-use Bivio::Die;
-use Bivio::UI::Align;
-use Bivio::UI::Color;
-use Bivio::UI::HTML::ViewShortcuts;
-use Bivio::UI::HTML::WidgetFactory;
-use Bivio::UI::TableRowClass;
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::Table> renders a
 # L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
@@ -312,11 +306,13 @@ use Bivio::UI::TableRowClass;
 # The widget which will be used to render the column. By default the column
 # widget is based on the column's field type.
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
+my($_WF) = __PACKAGE__->use('Bivio::UI::HTML::WidgetFactory');
+my($_A) = __PACKAGE__->use('UI.Align');
+my($_C) = __PACKAGE__->use('UI.Color');
+my($_TRC) = __PACKAGE__->use('UI.TableRowClass');
 my($_INFINITY_ROWS) = 0x7fffffff;
 my($_IDI) = __PACKAGE__->instance_data_index;
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
 
 sub create_cell {
     # (self, Biz.Model, string, hash_ref) : UI.Widget
@@ -356,8 +352,7 @@ sub create_cell {
 	$model = $model->get_instance($model->get_list_class)
 		if $use_list;
 	my($type) = $model->get_field_type($col);
-	$cell = Bivio::UI::HTML::WidgetFactory->create(
-		ref($model).'.'.$col, $attrs);
+	$cell = $_WF->create(ref($model).'.'.$col, $attrs);
 	unless ($cell->has_keys('column_summarize')) {
 	    $cell->put(column_summarize =>
 		UNIVERSAL::isa($type,'Bivio::Type::Number')
@@ -483,13 +478,12 @@ sub initialize {
     if ($list->isa('Bivio::Biz::ListFormModel')) {
         $lm = $list->get_info('list_class')->get_instance;
     }
-    my($sort_columns) = $lm->get_info('order_by_names');
+    my($sort_cols) = $lm->get_info('order_by_names');
     my($want_sorting) = $self->get_or_default('want_sorting', 1);
 
     # Create widgets for each heading, column, and summary
     my($cells) = [];
     my($headings) = [];
-#TODO: optimize, don't create summary widgets unless they are needed
     my($summary_cells) = [];
     my($summary_lines) = [];
     foreach my $col (@$columns) {
@@ -507,18 +501,16 @@ sub initialize {
 	    $attrs = {field => $col};
 	}
 	my($cell) = $self->create_cell($list, $col, $attrs);
-
 	push(@$cells, $cell);
-
 	my($want_column_sorted) = defined($cell->unsafe_get('want_sorting')) ?
 	    $cell->unsafe_get('want_sorting') : $want_sorting;
-
-        # Can we sort on this column?
-        my($sort_fields) = $cell->unsafe_get('column_order_by')
-		|| [grep($col eq $_, @$sort_columns)]
-                        if $want_column_sorted && defined($sort_columns);
-
-        push(@$headings, _get_heading($self, $lm, $col, $cell, $sort_fields));
+        my($sort);
+	($sort = $cell->unsafe_get('column_order_by'))
+	    || @{$sort = [grep($col eq $_, @$sort_cols)]}
+	    || @{$sort = [grep($_ =~ /^$col(?:_lc|_sort)$/, @$sort_cols)]}
+	    || ($sort = undef)
+	    if $want_column_sorted && $sort_cols;
+        push(@$headings, _get_heading($self, $lm, $col, $cell, $sort));
 	push(@$summary_cells, _get_summary_cell($self, $cell));
 	push(@$summary_lines, _get_summary_line($self, $cell));
     }
@@ -574,7 +566,7 @@ sub initialize_child_widget {
     _xhtml(
 	$self,
 	sub {
-	    $column_prefix .= Bivio::UI::Align->as_html(
+	    $column_prefix .= $_A->as_html(
 		$widget->get_or_default('column_align', 'LEFT'));
 	    $column_prefix .= ' nowrap="1"'
 		if $widget->unsafe_get('column_nowrap');
@@ -673,7 +665,7 @@ sub render {
 	$self->render_row($state->{cells}, $list, $buffer,
 	    _row_prefix($state,
 		$is_even_row ? $state->{even_row} : $state->{odd_row}),
-	    Bivio::UI::TableRowClass->DATA);
+	    $_TRC->DATA);
 
 	if (defined($grouping_field)) {
 	    $prev_value = $grouping_value;
@@ -707,14 +699,14 @@ sub render_row {
     my($self, $cells, $source, $buffer, $row_prefix, $class) = @_;
     my($req) = $self->get_request;
     _render_before_row($self, scalar(@$cells), $source, $buffer)
-	unless $class == Bivio::UI::TableRowClass->HEADING;
+	unless $class == $_TRC->HEADING;
     $$buffer .= $row_prefix
 	|| "\n<tr"
 	. $_VS->vs_html_attrs_render(
 	    $self, $source, [lc($class->get_name) . '_row_class'])
 	. '>';
     foreach my $cell (@$cells) {
-	$$buffer .= ($class == Bivio::UI::TableRowClass->HEADING
+	$$buffer .= ($class == $_TRC->HEADING
 	    ? "\n<th" : "\n<td")
 	    . $cell->get_or_default('column_prefix', '')
 	    . $_VS->vs_html_attrs_render(
@@ -727,13 +719,13 @@ sub render_row {
 	    $$buffer .= ' width="'.$cell->get('heading_width').'"';
 	}
 	my($bg);
-	$$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req)
-	    if $class == Bivio::UI::TableRowClass->DATA
+	$$buffer .= $_C->format_html($bg, 'bgcolor', $req)
+	    if $class == $_TRC->DATA
 		&& $cell->unsafe_render_attr(
 		    'column_bgcolor', $source, \$bg) && $bg;
 	my($h) = $cell->render_simple_attr('column_height', $source);
 	$$buffer .= qq{ height="$h"}
-           if $class == Bivio::UI::TableRowClass->DATA && $h;
+           if $class == $_TRC->DATA && $h;
         $$buffer .= '>';
 
 	# Insert a "&nbsp;" if the widget doesn't render.  This
@@ -745,10 +737,10 @@ sub render_row {
 	    sub {
 		$$buffer .= '&nbsp;'
 		    if length($$buffer) == $start
-		    && $class == Bivio::UI::TableRowClass->DATA;
+		    && $class == $_TRC->DATA;
 	    },
 	);
-	$$buffer .= $class == Bivio::UI::TableRowClass->HEADING
+	$$buffer .= $class == $_TRC->HEADING
 	    ? '</th>' : '</td>';
     }
     $$buffer .= "\n</tr>";
@@ -774,34 +766,8 @@ sub _get_heading {
     ) unless UNIVERSAL::isa($heading, 'Bivio::UI::Widget');
     $heading = $_VS->vs_new(
 	'Link',
-	$_VS->vs_new(
-	    'Join', [
-		$heading,
-		$_VS->vs_new(
-		    'If',
-		    [sub {
-			 shift->get_query->get('order_by')->[0] eq shift(@_);
-		     }, $sort_fields->[0]],
-		    $_VS->vs_new(
-			'Join', [
-			    ' ',
-			    $_VS->vs_new(
-				'Image',
-				[sub {
-				     shift->get_query->get('order_by')->[1]
-					 ? 'sort_down' : 'sort_up',
-				}],
-				undef,
-				_xhtml(
-				    $self,
-				    sub {{align => 'bottom'}},
-				),
-			    ),
-			],
-		    ),
-		),
-	    ],
-	), [
+	Join([$heading, _sort_widget($self, $list, $sort_fields)]),
+	[
 	    '->format_uri_for_sort',
 	    undef,
 	    [sub {
@@ -897,7 +863,7 @@ sub _initialize_row_prefixes {
     my($state) = @_;
     foreach my $w (qw(odd even)) {
 	$state->{$w . '_row'} = "\n<tr"
-	    . Bivio::UI::Color->format_html(
+	    . $_C->format_html(
 		$state->{self}->get_or_default(
 		    $w . '_row_bgcolor', "table_${w}_row_bg"),
 		'bgcolor', $state->{req})
@@ -923,7 +889,7 @@ sub _render_headings {
     my($state) = @_;
     $state->{self}->render_row($state->{headings},
 	$state->{list}, $state->{buffer}, undef,
-	Bivio::UI::TableRowClass->HEADING)
+	$_TRC->HEADING)
 	if $state->{show_headings};
     _render_row_with_colspan($state, 'heading_separator')
 	if $state->{heading_separator};
@@ -953,7 +919,7 @@ sub _render_trailer {
     my($self) = $state->{self};
     $self->render_row($self->get('footer_row_widgets'),
 	$state->{list}, $state->{buffer}, undef,
-	Bivio::UI::TableRowClass->FOOTER)
+	$_TRC->FOOTER)
 	if $self->unsafe_get('footer_row_widgets');
 
     _render_row_with_colspan($state, 'trailing_separator')
@@ -961,12 +927,12 @@ sub _render_trailer {
 
     $self->render_row($state->{summary_cells},
 	$state->{list}->get_summary, $state->{buffer}, undef,
-	Bivio::UI::TableRowClass->FOOTER)
+	$_TRC->FOOTER)
 	if $state->{summary_cells};
 
     $self->render_row($state->{summary_lines}, $state->{list},
 	$state->{buffer}, undef,
-	Bivio::UI::TableRowClass->FOOTER)
+	$_TRC->FOOTER)
 	if $self->unsafe_get('summary_line_type');
 
     ${$state->{buffer}} .= $state->{self}->render_end_tag($state->{source});
@@ -984,8 +950,51 @@ sub _row_prefix {
 	    && length($b);
     $row_prefix =~ s/ bgcolor[^>\s]+//;
     $row_prefix =~ s{(?<=\<tr)}{
-         Bivio::UI::Color->format_html($b, 'bgcolor', $state->{req})}xe;
+         $_C->format_html($b, 'bgcolor', $state->{req})}xe;
     return $row_prefix;
+}
+
+sub _sort_widget {
+    my($self, $list, $sort_fields) = @_;
+    return $_VS->vs_new(
+	'If',
+	[sub {
+	     shift->get_query->get('order_by')->[0] eq shift(@_);
+	}, $sort_fields->[0]],
+	_xhtml(
+	    $self,
+	    sub {
+		return $_VS->vs_new(
+		    'Join', [
+			' ',
+			$_VS->vs_new(
+			    'Image',
+			    [sub {
+				 shift->get_query->get('order_by')->[1]
+				     ? 'sort_down' : 'sort_up',
+			    }],
+			    undef,
+			    {align => 'bottom'},
+			),
+		    ],
+		);
+	    },
+	    sub {
+		If(
+		    [sub {shift->get_query->get('order_by')->[1]}],
+		    map(
+			vs_call("SPAN_$_" =>
+			    Prose(
+				vs_text($list->simple_package_name, 'prose', $_),
+			    ),
+			    {tag_if_empty => 1},
+		        ),
+			qw(ascend descend),
+		    ),
+		),
+	    },
+	),
+    );
 }
 
 sub _xhtml {
