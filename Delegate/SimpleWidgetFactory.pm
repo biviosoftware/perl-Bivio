@@ -99,6 +99,8 @@ sub create {
 	delete($attrs_copy{value});
 	# Wrap the resultant widget in a link?
 	my($wll) = $widget->unsafe_get('wf_list_link');
+	$wll = {task => $wll, query => 'THIS_DETAIL'}
+	    if defined($wll) && !ref($wll);
 	$widget = $_VS->vs_new('Link', {
 	    href => ['->format_uri',
 		Bivio::Biz::QueryType->from_any($wll->{query}),
