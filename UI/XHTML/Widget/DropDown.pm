@@ -60,7 +60,7 @@ EOF
 sub _link {
     my($self, $var) = @_;
     return A(
-	Join([$self->get('label'), ' &#9660;']),
+	Join([$self->get('label'), vs_text_as_prose('drop_down_arrow')]),
 	{
 	    HREF => '/',
 	    ONCLICK => "this.blur(); $var.toggle(event); return false",
