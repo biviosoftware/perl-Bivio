@@ -22,8 +22,8 @@ sub general_contact_mail {
 		vs_text_as_prose('support_name'),
 	    ),
 	    ['Model.ContactForm', 'from'],
-	], ','),
-	subject => 'Web Contact',
+	], ', '),
+	subject => Join([vs_site_name(), ' Web Contact'],
 	body => ['Model.ContactForm', 'text'],
     );
 }
