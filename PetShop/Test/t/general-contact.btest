@@ -1,0 +1,12 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+my($user) = generate_local_email(random_string());
+my($body) = random_string();
+visit_uri('/pub/contact');
+submit_form({
+    email => $user,
+    message => $body,
+});
+verify_local_mail($user, 'Web Contact');
