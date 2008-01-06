@@ -13,6 +13,21 @@ sub adm_substitute_user {
     }]));
 }
 
+sub general_contact_mail {
+    return shift->internal_put_base_attr(
+	from => ['Model.ContactForm', 'from'],
+	to => Join([
+	    Mailbox(
+		vs_text('support_email'),
+		vs_text_as_prose('support_name'),
+	    ),
+	    ['Model.ContactForm', 'from'],
+	], ','),
+	subject => 'Web Contact',
+	body => ['Model.ContactForm', 'text'],
+    );
+}
+
 sub general_contact {
     return shift->internal_body(vs_simple_form(ContactForm => [qw(
         ContactForm.from
