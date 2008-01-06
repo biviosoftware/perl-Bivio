@@ -213,6 +213,9 @@ td.header_left .logo_su .logo {
   height: Icon(qw(logo height));px;
   width: Icon(qw(logo width));px;
 }
+td.header_left .logo_su a.logo:hover {
+  text-decoration: none;
+}
 td.header_right {
   width: 30%;
   text-align: right;
