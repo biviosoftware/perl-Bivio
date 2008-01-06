@@ -20,7 +20,13 @@ sub execute_ok {
     my($self) = @_;
     $self->internal_put_field(subject => 'Web Contact')
 	unless $self->unsafe_get('subject');
-    Bivio::UI::View->execute('contact-mail', $self->get_request);
+    Bivio::UI::View->execute(
+	Bivio::IO::Config->if_version(
+	    3 => sub {'UserAuth->general_contact_mail'},
+	    sub {'contact-mail'},
+	),
+	$self->req,
+    );
     return;
 }
 
