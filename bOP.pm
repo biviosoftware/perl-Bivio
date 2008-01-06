@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,59 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.69  2007/12/30 23:10:03  nagler
+  * Bivio::UI::XML::Widget::AtomFeed
+    added
+  * Bivio::UI::XML::Widget::DateTime
+    added
+  * Bivio::UI::XML::Widget::String
+    added
+  * Bivio::Agent::Request
+    added require_absolute to FORMAT_URI_PARAMETERS
+  * Bivio::BConf
+    added XHTML and HTML to XMLWidget map
+    Test map added
+  * Bivio::Biz::Model::BlogList
+    added get_rss_summary and get_modified_date_time for AtomFeed
+  * Bivio::Biz::Model::SearchList
+    added RESULT_EXCERPT_LENGTH
+  * Bivio::Biz::QueryType
+    rmpod
+  * Bivio::Delegate::TaskId
+    AtomFeed support
+  * Bivio::HTML
+    added escape_xml
+  * Bivio::PetShop::Util
+    added a blog entry
+  * Bivio::Test::FormModel
+    mock the task if the incoming task is SHELL_UTIL
+  * Bivio::Test::HTMLParser::Cleaner
+    rmpod
+    replace &#\d+; chars with ' ', not '*'
+  * Bivio::Test::Language::HTTP
+    added deprecated_text_patterns() to allow tests to be migrated
+    _fixup_pattern replaces '_' with '.' not ' '.
+  * Bivio::Type
+    rmpod
+    to_xml calls Bivio::HTML->to_xml
+  * Bivio::UI::FacadeBase
+    added support for AtomFeed and new style of table rendering
+  * Bivio::UI::HTML::Widget::EmptyTag
+    base is HTMLWidget.Tag
+  * Bivio::UI::HTML::Widget::Table
+    rmpod
+  * Bivio::UI::HTML::Widget::Tag
+    HTMLWidget.Tag is the subclass
+  * Bivio::UI::View::Base
+    better rss support
+  * Bivio::UI::View::Blog
+    better rss support
+  * Bivio::UI::Widget::Simple
+    rmpod
+    fmt
+  * Bivio::UI::XHTML::Widget::WikiText
+    added simple render_ascii
+
   Revision 5.68  2007/12/28 03:20:48  nagler
   * Bivio::Delegate::SimpleRealmName
     don't cache regex variables (/o)
