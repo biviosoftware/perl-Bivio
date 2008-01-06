@@ -751,6 +751,9 @@ sub _cfg_user_auth {
 		SITE_ROOT => '',
 		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser Missing Cookies',
 	    ]],
+	    ['task_menu.title' => [
+		GENERAL_CONTACT => 'Contact',
+	    ]],
 	    [prose => [
 		xhtml_user_state => q{DIV_user_state(
                     XLink([sub {'user_' . shift->req('user_state')->get_name}]),
