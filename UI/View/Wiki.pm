@@ -24,7 +24,7 @@ sub edit {
 	    TextArea({
 		field => 'content',
 		rows => 30,
-		cols => 60,
+		cols => 80,
 	    }),
 	]),
     ]));
