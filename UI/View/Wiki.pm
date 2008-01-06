@@ -11,6 +11,7 @@ sub HIDE_IS_PUBLIC {
     return 0;
 }
 
+#TODO: REMOVE 1/15/08
 sub edit {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(WikiForm => [
