@@ -686,10 +686,7 @@ sub merge_initialize_info {
 }
 
 sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->reset_instance_state
-	if $self->can('reset_instance_state');
-    return $self;
+    return shift->SUPER::new(@_)->reset_instance_state;
 }
 
 sub process {
