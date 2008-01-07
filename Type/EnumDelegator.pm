@@ -29,4 +29,8 @@ sub compile {
     );
 }
 
+sub is_continuous {
+    return 0;
+}
+
 1;
