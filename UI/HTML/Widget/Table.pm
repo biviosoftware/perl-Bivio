@@ -766,7 +766,8 @@ sub _get_heading {
     ) unless UNIVERSAL::isa($heading, 'Bivio::UI::Widget');
     $heading = $_VS->vs_new(
 	'Link',
-	Join([$heading, _sort_widget($self, $list, $sort_fields)]),
+	$_VS->vs_new(
+	    Join => [$heading, _sort_widget($self, $list, $sort_fields)]),
 	[
 	    '->format_uri_for_sort',
 	    undef,
