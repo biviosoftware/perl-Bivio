@@ -466,7 +466,8 @@ sub new_anonymous {
 
 sub new_other {
     # Creates a model instance of the specified class.
-    return $_[0]->new(shift->get_request, @_);
+    my($self) = shift;
+    return $self->get_instance(shift)->new($self->get_request, @_);
 }
 
 sub put {
