@@ -380,7 +380,7 @@ sub _init_column_from_hash {
     my($col_name) = $decl->{name};
     if (ref($decl->{name}) eq 'ARRAY') {
 	# case: "{name => [a, b]}"
-	Bivio::Die('Invalid attepmt to alias. Use [{}, ...] instead');
+	Bivio::Die->die('Invalid attepmt to alias. Use [{}, ...] instead');
     }
     if ($col_name =~ /\./) {
 	# case: "{name => Model.column}"
