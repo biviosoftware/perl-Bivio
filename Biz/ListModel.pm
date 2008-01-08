@@ -113,12 +113,10 @@ sub can_next_row {
 }
 
 sub do_rows {
-    my($self, $do_rows_handler) = @_;
-    # Calls L<reset_cursor|"reset_cursor">, then I<do_rows_handler> for each row in
-    # the list.  If I<do_rows_handler> returns false, stops iteration.
-    $self->reset_cursor;
-    0 while $self->next_row && $do_rows_handler->($self);
-    return $self;
+    my($delegator, $do_rows_handler) = shift->delegated_args(@_);
+    $delegator->reset_cursor;
+    0 while $delegator->next_row && $do_rows_handler->($delegator);
+    return $delegator;
 }
 
 sub empty_query {
@@ -710,25 +708,14 @@ sub map_primary_key_to_rows {
 }
 
 sub map_rows {
-    my($self, $map_iterate_handler) = @_;
-    # Like L<Bivio::Biz::Model::map_iterate|Bivio::Biz::Model/"map_iterate">, but
-    # operates on rows of the table.  Calls L<next_row|"next_row"> until it returns
-    # false.  It calls L<reset_cursor|"reset_cursor"> first.  Typical usage:
-    #
-    #     my($rows) = Bivio::Biz::Model->new($req, 'MyList')->load_all->map_rows;
-    #
-    # Returns the aggregated result of L<map_iterate_handler|"map_iterate_handler">
-    # as an array_ref.
-    #
-    # If I<map_iterate_handler> is C<undef>, the default handler simply returns all
-    # the rows.
+    my($delegator, $map_iterate_handler) = shift->delegated_args(@_);
     my($res) = [];
     $map_iterate_handler ||= sub {
 	return shift->get_shallow_copy;
     };
-    $self->reset_cursor;
-    while ($self->next_row) {
-	push(@$res, $map_iterate_handler->($self));
+    $delegator->reset_cursor;
+    while ($delegator->next_row) {
+	push(@$res, $map_iterate_handler->($delegator));
     }
     return $res;
 }
