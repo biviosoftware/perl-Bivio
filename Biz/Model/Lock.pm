@@ -1,72 +1,27 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::Lock;
 use strict;
-$Bivio::Biz::Model::Lock::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::Lock::VERSION;
-
-=head1 NAME
-
-Bivio::Biz::Model::Lock - mutual exclusion for an area of a realm
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    Bivio::Biz::Model::Lock->execute_accounting_import;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::Lock::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::Lock> process lock. Locks are intended to control
-access to a realm resource across processes. This implementation is simple -
-only one lock can exists for a realm. The same
-process can't acquire the same lock twice.
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Biz.PropertyModel';
 use Bivio::IO::Trace;
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::SQL::Connection;
-use Bivio::TypeError;
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::Biz::Model::Lock> process lock. Locks are intended to control
+# access to a realm resource across processes. This implementation is simple -
+# only one lock can exists for a realm. The same
+# process can't acquire the same lock twice.
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="acquire"></a>
-
-=head2 acquire()
-
-Attempts to acquire a lock for the specified task for the current realm.
-Throws an UPDATE_COLLISION exception if it cannot acquire the lock.
-
-You probably shouldn't be calling this method.  Locks should be acquired as a
-task item.  Put this instance on the Task:
-
-    Bivio::Biz::Model::Lock
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
 sub acquire {
+    # (self) : undef
+    # Attempts to acquire a lock for the specified task for the current realm.
+    # Throws an UPDATE_COLLISION exception if it cannot acquire the lock.
+    #
+    # You probably shouldn't be calling this method.  Locks should be acquired as a
+    # task item.  Put this instance on the Task:
+    #
+    #     Bivio::Biz::Model::Lock
     my($self) = @_;
     my($req) = $self->get_request;
     if (my $other = $req->unsafe_get(ref($self))) {
@@ -95,31 +50,10 @@ sub acquire {
     return;
 }
 
-=for html <a name="acquire_unless_exists"></a>
-
-=head2 acquire_unless_exists()
-
-Acquires the lock on I<req.auth_realm> if not already acquired on I<req>.
-
-=cut
-
-sub acquire_unless_exists {
-    my($self) = @_;
-    $self->acquire
-	unless $self->is_acquired;
-    return;
-}
-
-=for html <a name="acquire_general"></a>
-
-=head2 acquire_general()
-
-Acquires lock on the GENERAL realm, used for locking access on entire
-database so use sparingly.
-
-=cut
-
 sub acquire_general {
+    # (self) : undef
+    # Acquires lock on the GENERAL realm, used for locking access on entire
+    # database so use sparingly.
     my($self) = @_;
     my($req) = $self->get_request;
     my($old_realm) = $req->get('auth_realm');
@@ -129,86 +63,59 @@ sub acquire_general {
     return;
 }
 
-=for html <a name="execute"></a>
-
-=head2 static execute(Bivio::Agent::Request req)
-
-Acquires a lock on this realm.
-
-=cut
+sub acquire_unless_exists {
+    # (self) : undef
+    # Acquires the lock on I<req.auth_realm> if not already acquired on I<req>.
+    my($self) = @_;
+    $self->acquire
+	unless $self->is_acquired;
+    return;
+}
 
 sub execute {
+    # (proto, Agent.Request) : undef
+    # Acquires a lock on this realm.
     my($proto, $req) = @_;
     $proto->new($req)->acquire;
     return;
 }
 
-=for html <a name="execute_general"></a>
-
-=head2 static execute_general(Bivio::Agent::Request req)
-
-Calls I<acquire_general>.
-
-=cut
-
 sub execute_general {
+    # (proto, Agent.Request) : undef
+    # Calls I<acquire_general>.
     my($proto, $req) = @_;
     $proto->new($req)->acquire_general;
     return;
 }
 
-=for html <a name="execute_unless_acquired"></a>
-
-=head2 static execute_unless_acquired(Bivio::Agent::Request req)
-
-Calls I<acquire_unless_exists>.
-
-=cut
-
 sub execute_unless_acquired {
+    # (proto, Agent.Request) : undef
+    # Calls I<acquire_unless_exists>.
     my($proto, $req) = @_;
     $proto->new($req)->acquire_unless_exists;
     return;
 }
 
-=for html <a name="handle_commit"></a>
-
-=head2 handle_commit()
-
-Commit called, delete lock from request before DB commit
-
-=cut
-
 sub handle_commit {
+    # (self) : undef
+    # Commit called, delete lock from request before DB commit
     my($self) = @_;
     $self->release();
     return;
 }
 
-=for html <a name="handle_rollback"></a>
-
-=head2 handle_rollback()
-
-Rollback called, delete lock from request.  Won't be committed
-so don't need to delete the row.
-
-=cut
-
 sub handle_rollback {
+    # (self) : undef
+    # Rollback called, delete lock from request.  Won't be committed
+    # so don't need to delete the row.
     my($self) = @_;
     $self->delete_from_request;
     return;
 }
 
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
-
 sub internal_initialize {
+    # (self) : hash_ref
+    # B<FOR INTERNAL USE ONLY>
     return {
 	version => 1,
 	table_name => 'lock_t',
@@ -221,17 +128,10 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="is_acquired"></a>
-
-=head2 is_acquired() : boolean
-
-=head2 is_acquired(any realm_or_id) : boolean
-
-Returns true if I<realm_or_id> (default: req.auth_realm) is already acquired.
-
-=cut
-
 sub is_acquired {
+    # (self) : boolean
+    # (self, any) : boolean
+    # Returns true if I<realm_or_id> (default: req.auth_realm) is already acquired.
     my($self) = shift;
     my($req) = $self->get_request;
     return 0 unless my $other = $req->unsafe_get(ref($self));
@@ -239,32 +139,20 @@ sub is_acquired {
 	? 1 : 0;
 }
 
-=for html <a name="is_general_acquired"></a>
-
-=head2 is_general_acquired() : boolean
-
-Returns true if general lock is acquired.
-
-=cut
-
 sub is_general_acquired {
+    # (self) : boolean
+    # Returns true if general lock is acquired.
     my($self) = @_;
     return $self->is_acquired(Bivio::Auth::Realm->get_general);
 }
 
-=for html <a name="release"></a>
-
-=head2 release()
-
-Releases this lock.  If lock isn't deleted, throw UPDATE_COLLISION.
-I<self> must be on the request.  It will be deleted from the request.
-
-You probably shouldn't be calling this method.  Locks are released by
-L<Bivio::Agent::Task|Bivio::Agent::Task>.
-
-=cut
-
 sub release {
+    # (self) : undef
+    # Releases this lock.  If lock isn't deleted, throw UPDATE_COLLISION.
+    # I<self> must be on the request.  It will be deleted from the request.
+    #
+    # You probably shouldn't be calling this method.  Locks are released by
+    # L<Bivio::Agent::Task|Bivio::Agent::Task>.
     my($self) = @_;
 
 
@@ -286,8 +174,6 @@ sub release {
     return;
 }
 
-#=PRIVATE METHODS
-
 sub _read_request_input {
     my($req) = @_;
     my($r) = $req->unsafe_get('r');
@@ -296,15 +182,5 @@ sub _read_request_input {
     $req->$m();
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
