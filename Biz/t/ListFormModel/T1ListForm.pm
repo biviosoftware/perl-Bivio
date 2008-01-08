@@ -2,13 +2,13 @@
 # $Id$
 package Bivio::Biz::t::ListFormModel::T1ListForm;
 use strict;
-use base 'Bivio::Biz::ListFormModel';
+use Bivio::Base 'Biz.ListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty_row {
     my($self) = @_;
-    $self->internal_load_field('form_index', 'index');
+    $self->internal_put_field('form_index', $self->get_list_model->get('index'));
     return;
 }
 
