@@ -31,6 +31,17 @@ sub clone {
     );
 }
 
+sub delegate_method {
+    my($proto) = shift;
+    my($method) = $proto->my_caller;
+    return shift->$method($proto, @_);
+}
+
+sub delegated_args {
+    my($proto) = shift;
+    return ((UNIVERSAL::isa($_[0], __PACKAGE__) ? shift : $proto), @_);
+}
+
 sub die {
     # A convenient alias for L<Bivio::Die::throw_or_die|Bivio::Die/"throw_or_die">
     shift;
