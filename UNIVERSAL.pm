@@ -39,7 +39,8 @@ sub delegate_method {
 
 sub delegated_args {
     my($proto) = shift;
-    return ((UNIVERSAL::isa($_[0], __PACKAGE__) ? shift : $proto), @_);
+    return ((!ref($_[0]) && $_[0] && UNIVERSAL::isa($_[0], __PACKAGE__)
+        ? shift : $proto), @_);
 }
 
 sub die {
