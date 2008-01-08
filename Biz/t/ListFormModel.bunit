@@ -1,9 +1,12 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Request();
-Bivio::Biz::Model->new(req(), 'NumberedList')->load_page({count=> 3});
+options({
+    class_name => 'Bivio::Biz::t::ListFormModel::T1ListForm',
+});
+req()->initialize_fully();
+model('NumberedList')->load_page({count=> 3});
 [
-    'Bivio::Biz::t::ListFormModel::T1ListForm' => [
+    [req()] => [
         get_fields_for_primary_keys => [
 	    [] => [{
 		index_0 => 0,
@@ -16,11 +19,19 @@ Bivio::Biz::Model->new(req(), 'NumberedList')->load_page({count=> 3});
 	    'RealmOwner.name' => 'RealmOwner.name',
 	],
 	set_cursor => [
-	    0 => undef,
+	    0 => not_die(),
 	],
 	get_field_name_in_list => [
 	    index => 'index_0',
 	],
+	process => not_die(),
+	map_rows => sub {
+	    my($case, $actual) = @_;
+	    expect_contains(
+		[map(+{"form_index_$_" => $_}, 0..2)],
+		$actual->[0],
+	    );
+	    return 1;
+	},
     ],
 ];
-

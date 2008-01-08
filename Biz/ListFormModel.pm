@@ -40,6 +40,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 # special and must be valid for a javascript field id.  Guess what?
 # You can't change this value. ;-)
 my($_SEP) = '_';
+my($_LM) = __PACKAGE__->use('Biz.ListModel');
 
 sub LAST_ROW {
     # Returns a constant which means the "last_row".
@@ -47,13 +48,7 @@ sub LAST_ROW {
 }
 
 sub do_rows {
-    # Delegated to ListModel
-    &_delegate;
-}
-
-sub do_rows_handler {
-    # Delegated to ListModel
-    &_delegate;
+    return shift->delegate_method($_LM, @_);
 }
 
 sub execute_empty {
@@ -337,8 +332,7 @@ sub load_from_list_model_properties {
 }
 
 sub map_rows {
-    # Delegated to ListModel
-    &_delegate;
+    return shift->delegate_method($_LM, @_);
 }
 
 sub next_row {
@@ -353,7 +347,7 @@ sub next_row {
     $self->die('no cursor')
 	unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
-    my($lm) = $fields->{list_model};
+    my($lm) = $self->get_list_model;
     # Advance only if list_model can advance
     unless ($lm->next_row) {
 	$fields->{cursor} = undef;
@@ -368,7 +362,7 @@ sub reset_cursor {
     # Places the cursor at the start of the list.  Also resets cursor
     # of I<list_model>.
     my($fields) = $self->[$_IDI];
-    $fields->{list_model}->reset_cursor;
+    $self->get_list_model->reset_cursor;
     $fields->{cursor} = -1;
     $self->internal_clear_model_cache;
     _clear_row($self);
@@ -489,14 +483,6 @@ sub _collision {
 	list_attrs => $self->get_list_model->internal_get,
     });
     return;
-}
-
-sub _delegate {
-    # Delegate the caller function to ListModel
-    return &{\&{join('::',
-        'Bivio::Biz::ListModel',
-	(caller(1))[3] =~ /.*::(.*)$/,
-    )}};
 }
 
 sub _execute_init {
