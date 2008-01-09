@@ -10,10 +10,4 @@ sub get_width {
     return 500;
 }
 
-sub to_camel_case {
-    my(undef, $value) = @_;
-    return !$value ? $value
-	: join(' ', map(ucfirst($_), split(/[\W_]+/, $value)));
-}
-
 1;
