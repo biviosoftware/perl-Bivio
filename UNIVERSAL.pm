@@ -1,14 +1,10 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UNIVERSAL;
 use strict;
 
-# C<Bivio::UNIVERSAL> is the base class for all bivio classes.  All of the
-# methods defined here may be overriden.
-#
-# Please note the example use of L<new|"new">.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R, $_SA);
 
 sub as_string {
     # Returns the string form of I<self>.  By default, this is just I<self>.
@@ -26,7 +22,7 @@ sub call_super_before {
 sub clone {
     my($self) = @_;
     return bless(
-	[map($self->use('Bivio::IO::Ref')->nested_copy($_), @$self)],
+	[map(($_R ||= $self->use('IO.Ref'))->nested_copy($_), @$self)],
 	ref($self),
     );
 }
@@ -44,7 +40,6 @@ sub delegated_args {
 }
 
 sub die {
-    # A convenient alias for L<Bivio::Die::throw_or_die|Bivio::Die/"throw_or_die">
     shift;
     Bivio::Die->throw_or_die(@_);
     # DOES NOT RETURN
@@ -58,10 +53,8 @@ sub equals {
 
 sub grep_methods {
     my($proto, $to_match) = @_;
-    # Returns list of methods that match I<to_match>.  If a match is found, returns
-    # $+ (last matching paren) if defined, otherwise returns complete method name.
     no strict 'refs';
-    return $proto->use('Type.StringArray')->sort_unique([
+    return ($_SA ||= $proto->use('Type.StringArray'))->sort_unique([
 	map($_ =~ $to_match ? defined($+) ? $+ : $_ : (),
 	    map(keys(%{*{$_ . '::'}}),
 	        $proto->package_name,
@@ -70,8 +63,6 @@ sub grep_methods {
 
 sub inheritance_ancestors {
     my($proto) = @_;
-    # Returns list of anscestors of I<class>, closest ancestor is at index 0.
-    # Asserts single inheritance.  Must be descended from this class.
     my($class) = ref($proto) || $proto;
     CORE::die('not a subclass of Bivio::UNIVERSAL')
 	unless $class->isa(__PACKAGE__);
@@ -111,7 +102,6 @@ sub instance_data_index {
 
 sub internal_data_section {
     my($proto) = @_;
-    # Reads the __DATA__ section of $proto.
     no strict 'refs';
     return ${$proto->use('Bivio::IO::File')->read(
 	\${$proto->package_name . '::'}{DATA})};
@@ -127,8 +117,6 @@ sub is_blessed {
 
 sub map_by_two {
     my(undef, $op, $values) = @_;
-    # Passes I<values> two by two to I<op>.  Returns cummulative results
-    # of I<op>.  If array is odd, last element will be C<undef>.
     $values ||= [];
     return [map(
 	$op->($values->[2 * $_], $values->[2 * $_ + 1]),
@@ -205,20 +193,12 @@ sub max_number {
 }
 
 sub my_caller {
-    # Returns method (or simple subroutine) name of caller immediately before the
-    # caller of this routine.
-    #
     # IMPLEMENTATION RESTRICTION: Does not work for evals.
     return ((caller(2))[3] =~ /([^:]+)$/)[0];
 }
 
 sub name_parameters {
     my($self, $names, $argv) = @_;
-    # Expects I<names> to be the keys in the first and only element of I<argv>, or
-    # uses I<names> to convert positional I<argv> into hash_ref.  Does not work if
-    # first positional parameter is allowed to be a hash_ref.
-    #
-    # Returns (self, named).
     my($map) = {map(($_ => 1), @$names)};
     my($named) = @$argv;
     if (ref($named) eq 'HASH') {
@@ -271,13 +251,10 @@ sub new {
 
 sub package_name {
     my($proto) = @_;
-    # Returns the package name for the class being called.
     return ref($proto) || $proto;
 }
 
 sub package_version {
-    # Returns the value of the C<$VERSION> variable for I<proto>.  Will die
-    # if no such version.
     {
 	no strict 'refs';
 	return ${\${shift->package_name . '::VERSION'}};
@@ -293,8 +270,6 @@ sub req {
 }
 
 sub simple_package_name {
-    # Returns the package name sans directory prefixes, e.g. the simple package
-    # name for this class is C<UNIVERSAL>.
     return (shift->package_name =~ /([^:]+$)/)[0];
 }
 
@@ -311,7 +286,6 @@ sub super_for_method {
 }
 
 sub use {
-    # An convenient alias for map_require (Bivio::IO::ClassLoader).
     shift;
     return Bivio::IO::ClassLoader->map_require(@_);
 }
