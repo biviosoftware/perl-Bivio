@@ -274,3 +274,6 @@ video/quicktime:mov,qt:QuickTime movie
 video/vivo:viv:vivo video
 video/wavelet:wv:Wavelet video
 video/x-sgi-movie:movie:SGI movie
+application/x-ms-application:application:MS Application
+application/x-ms-manifest:manifest:MS Manifest
+application/octet-stream:deploy:MS Deployment
