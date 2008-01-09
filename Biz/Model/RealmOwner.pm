@@ -205,6 +205,16 @@ sub require_otp {
     return $self->get_field_type('password')->is_otp($self->get('password'));
 }
 
+sub unauth_delete_realm {
+    my($self, $query) = @_;
+    $self->unauth_load_or_die($query)
+	if $query;
+    $self->new_other(
+	$self->get('realm_type')->as_property_model_class_name,
+    )->unauth_delete_realm($self);
+    return;
+}
+
 sub unauth_load_by_email {
     my($self, $email, @query) = @_;
     # Tries to load this realm using I<email> and any other I<query> parameters,
