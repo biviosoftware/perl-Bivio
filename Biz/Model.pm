@@ -63,14 +63,13 @@ sub delete_from_request {
 
 sub die {
     my($self, @args) = @_;
-    # Calls L<throw_die|"throw_die"> with code DIE and message as (safe) concat
-    # of args.
-    $self->throw_die('DIE', {
-#TODO: format, not die
-	message => Bivio::Die->die(@args),
-	program_error => 1,
-    },
-	    caller);
+    $self->throw_die(
+	'DIE', {
+	    message => Bivio::IO::Alert->format_args(@args),
+	    program_error => 1,
+	},
+	caller,
+    );
     # DOES NOT RETURN
 }
 
