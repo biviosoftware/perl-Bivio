@@ -6,7 +6,17 @@
 	    yea => 'Delegator yea',
 	],
     ],
+    sub {class('Bivio::t::UNIVERSAL::Delegator')->new} => [
+	echo => [
+	    yea => 'Delegator yea',
+	],
+    ],
     sub {class('Bivio::t::UNIVERSAL::Delegate')} => [
+	echo => [
+	    yea => 'Delegate yea',
+	],
+    ],
+    sub {class('Bivio::t::UNIVERSAL::Delegate')->new} => [
 	echo => [
 	    yea => 'Delegate yea',
 	],
