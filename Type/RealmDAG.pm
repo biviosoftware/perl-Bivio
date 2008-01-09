@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::RealmDAG;
 use strict;
-use Bivio::Base 'Bivio::Type::EnumDelegator';
+use Bivio::Base 'Type.EnumDelegator';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
