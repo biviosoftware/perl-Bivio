@@ -8,6 +8,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REALM_PLACEHOLDER)
     = __PACKAGE__->use('Type.RealmName')->SPECIAL_PLACEHOLDER;
+my($_R) = __PACKAGE__->use('Type.Regexp');
+my($_NULL) = __PACKAGE__->use('Bivio::TypeError')->NULL;
 
 sub render_tag_value {
     my($self, $source, $buffer) = @_;
@@ -56,12 +58,13 @@ sub _match_uri {
     my($style, $req) = @_;
     my($uri) = _uri($req);
     $style =~ s{\^(\S+)}{
-        my($re) = $1;
-	if ($re =~ m{\(\?}) {
-	    Bivio::IO::Alert->warn($re, ': class regex too complex: ', $req);
+	my($text) = $1;
+	my($comma) = $text =~ s/,$//s ? ',' : '';
+        my($re, $err) = $_R->from_literal($text);
+	unless($re) {
+	    Bivio::IO::Alert->warn($re, ': ', $err || $_NULL, '; ', $req);
 	    $re = 'IGNORE-INVALID-REGEXP';
         }
-	my($comma) = $re =~ s/,$//s ? ',' : '';
 	($uri =~ m{^$re$}is ? 'body' : '.NO-MATCH') . $comma;
     }exig;
     return $style;
