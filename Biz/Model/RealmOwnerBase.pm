@@ -8,9 +8,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = __PACKAGE__->use('Auth.RealmType');
 my($_R) = __PACKAGE__->use('Auth.Role');
 
-sub REALM_TYPE_NAME {
+sub REALM_TYPE {
     my($self) = @_;
-    return uc(
+    return $_RT->from_name(
 	($self->get_primary_id_name =~ /^(\w+)_id$/)[0]
 	    || $self->die('invalid primary id name'),
     );
@@ -29,7 +29,7 @@ sub create_realm {
     my($self, $realm_owner) = @_;
     my($ro) = $self->new_other('RealmOwner')->create({
 	%$realm_owner,
-	realm_type => $_RT->from_name($self->REALM_TYPE_NAME),
+	realm_type => $self->REALM_TYPE,
 	realm_id => $self->get_primary_id,
     });
     $self->new_other('RealmUser')->create({
