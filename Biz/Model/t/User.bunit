@@ -1,0 +1,18 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+my($prefix) = 'user_bunit_';
+shell_util('TestRealm', [delete_by_regexp => '^$prefix']);
+sub _name {$prefix . shift}
+[
+    [req()] => [
+	create_realm => [
+	    [{first_name => 'User 1'}, {name => _name(1)}] => not_die(),
+	],
+    ],
+    sub {model('RealmOwner')} => [
+	unauth_delete_realm => [
+	    [{name => _name(1)}] => not_die(),
+	],
+    ],
+];

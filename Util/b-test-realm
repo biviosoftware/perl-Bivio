@@ -1,0 +1,42 @@
+#!perl -w
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+t-test-realm - calls Bivio::Util::TestRealm
+
+=head1 SYNOPSIS
+
+t-test-realm [options] command [args...]
+
+=head1 DESCRIPTION
+
+See L<Bivio::Util::TestRealm|Bivio::Util::TestRealm>
+
+=cut
+
+#=IMPORTS
+use Bivio::Util::TestRealm;
+
+#=VARIABLES
+Bivio::Util::TestRealm->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Util::TestRealm
+
+=head1 COPYRIGHT
+
+Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
