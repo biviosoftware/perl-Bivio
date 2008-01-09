@@ -2,7 +2,7 @@
 # $Id$
 Request();
 my($prefix) = 'user_bunit_';
-shell_util('TestRealm', [delete_by_regexp => '^$prefix']);
+shell_util('TestRealm', [delete_by_regexp => "^$prefix"]);
 sub _name {$prefix . shift}
 [
     [req()] => [
