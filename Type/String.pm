@@ -1,59 +1,11 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::String;
 use strict;
-$Bivio::Type::String::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::String::VERSION;
-
-=head1 NAME
-
-Bivio::Type::String - base class for all string types
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Type::String;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Type>
-
-=cut
-
-use Bivio::Type;
-@Bivio::Type::String::ISA = ('Bivio::Type');
-
-=head1 DESCRIPTION
-
-C<Bivio::Type::String> is the base class for all string types.
-It is currently a placeholder.
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Type';
 use Text::Tabs;
 
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="compare"></a>
-
-=for html <a name="compare"></a>
-
-=head2 static compare(string left, string right) : int
-
-Returns the string comparison (cmp) of I<left> to I<right>.  C<undef> is the
-same as the empty string.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub compare {
     my($proto, $left, $right) = @_;
@@ -62,15 +14,6 @@ sub compare {
 	defined($right) ? $right : '',
     );
 }
-
-=for html <a name="from_literal"></a>
-
-=head2 static from_literal(string value) : any
-
-Returns C<undef> if the string is empty.  Returns
-TOO_LONG if I<value>'s length exceeds L<get_width|"get_width">.
-
-=cut
 
 sub from_literal {
     my($proto, $value) = @_;
@@ -83,36 +26,15 @@ sub from_literal {
     return $value;
 }
 
-=for html <a name="get_width"></a>
-
-=head2 static get_width() : int
-
-Returns max 32-bit int.  When Perl goes 64 bit, this number may increase.
-
-=cut
-
 sub get_width {
     return 0x7fffffff;
 }
 
-=for html <a name="wrap_lines"></a>
-
-=head2 wrap_lines(string value, int width) : string
-
-=head2 wrap_lines(string_ref value, int width) : string
-
-Returns I<value> with lines wider than I<width> wrapped.
-The default value for I<width> is 72.
-
-=cut
-
 sub wrap_lines {
     my($proto, $value, $width) = @_;
-
     $width = 72 unless $width;
     my(@lines) = (split /\n/, ref($value) ? $$value : $value);
     @lines = Text::Tabs::expand(@lines);
-
     my($formatted) = [];
     my($indent) = 0;
     foreach my $line (@lines) {
@@ -125,19 +47,8 @@ sub wrap_lines {
     return join("\n", @$formatted, '');
 }
 
-#=PRIVATE METHODS
-
-# _wrap_line(array_ref formatted, string_ref line, int indent, int width)
-#
-# - find I<line> indentation
-# - search for white space around I<width>
-#   If found, break line and push left side to I<@formatted>,
-#      re-indent the remainding (right) part of the line
-# - Dont break line if no white space found or if line is quoted
-#
 sub _wrap_line {
     my($formatted, $line, $indent, $width) = @_;
-
     $$line =~ /(^\s*(|[\-\*])\s+)/;
     $indent = defined($1) ? substr($1, 0, $width) : '';
     my($white_pos) = rindex($$line, ' ', $width);
@@ -155,15 +66,5 @@ sub _wrap_line {
     }
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
