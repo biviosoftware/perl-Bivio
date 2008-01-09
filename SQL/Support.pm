@@ -207,10 +207,8 @@ sub init_column_classes {
 	# single entity.
 	$list = [$list] if $class =~ /^date$|_id$/;
 	Bivio::Die->die(
-	    'Model attribute ',
-	    $class,
-	    ' is not an ARRAY. Did you forget to use square brackets?')
-	unless ref($list) eq 'ARRAY';
+	    $class, ': is not an ARRAY; forgot square brackets?',
+	) unless ref($list) eq 'ARRAY';
 	foreach my $decl (@$list) {
 	    my(@aliases) = ref($decl) eq 'ARRAY' ? @$decl : ($decl);
 	    my($col) = _init_column_from_decl($proto, $attrs, shift(@aliases),
