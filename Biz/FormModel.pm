@@ -126,7 +126,7 @@ sub create_or_update_model_properties {
 	unless ref($model);
     return $model->create_or_update({
 	%{$self->get_model_properties($model)},
-	ref($values) eq 'HASH' ? %$values : ()
+	ref($values) eq 'HASH' ? %$values : (),
     });
 }
 
