@@ -1,0 +1,23 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    {
+	method => 'from_literal',
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return ref($actual->[0]) eq 'Regexp' ? ["$actual->[0]"] : $actual;
+	},
+    } => [
+        '' => UNDEF(),
+        '(?-xism:)' => UNDEF(),
+	'a' => '(?-xism:a)',
+	'(?-xism:a)' => '(?-xism:a)',
+	'(?s-xim:a)' => '(?-xism:(?s-xim:a))',
+	'(?{die})' => PERMISSION_DENIED(),
+	'(??{die})' => PERMISSION_DENIED(),
+	'(?>a)' => PERMISSION_DENIED(),
+	'(?&a)' => PERMISSION_DENIED(),
+	'(' => SYNTAX_ERROR(),
+    ],
+];
