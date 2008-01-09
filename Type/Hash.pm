@@ -46,7 +46,7 @@ sub to_literal {
 
 sub to_sql_param {
     my(undef, $value) = @_;
-    return $value && ${Bivio::IO::Ref->to_string($value, 0, 0)};
+    return $value && ${$_R->to_string($value, 0, 0)};
 }
 
 sub to_string {
