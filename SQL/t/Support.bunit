@@ -1,0 +1,17 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+options({comparator => 'nested_contains'});
+[
+    sub {class('Bivio::SQL::t::Support::T1Form')->get_instance} => [
+	get_info => [
+	    column_aliases => [{
+		'Address_1.realm_id' => {
+		    name => 'RealmOwner.realm_id',
+		},
+		'RealmUser.realm_id' => {
+		    name => 'RealmOwner.realm_id',
+		},
+	    }],
+	],
+    ],
+];
