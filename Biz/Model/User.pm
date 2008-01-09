@@ -2,37 +2,9 @@
 # $Id$
 package Bivio::Biz::Model::User;
 use strict;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
-use Bivio::Die;
+use Bivio::Base 'Model.RealmOwnerBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-sub cascade_delete {
-    my($self) = @_;
-    # Deletes this user and all its related realm information. This will not
-    # delete club RealmUser data, and if it exists then this method will die
-    # with a database constraint violation.
-    #
-    # (RealmUser is not deleted because the auth_id on that model is realm_id,
-    # which is not the same as the User's auth_id.)
-    my($req) = $self->get_request;
-    my($realm) = _get_realm($self);
-
-    # switches to the user auth realm, restored at end of method
-    my($old_auth_realm) = $req->get('auth_realm');
-    $req->set_realm($realm);
-
-    my($die) = Bivio::Die->catch(
-        sub {
-            $self->SUPER::cascade_delete;
-            $realm->cascade_delete;
-        });
-
-    # restore previous auth realm
-    $req->set_realm($old_auth_realm);
-    $die->throw if $die;
-    return;
-}
 
 sub concat_last_first_middle {
     my(undef, $last, $first, $middle) = @_;
@@ -64,12 +36,6 @@ sub create {
 
 sub create_realm {
     my($self, $user, $realm_owner) = @_;
-    # Creates the User, RealmOwner, and RealmUser models.  I<realm_owner> may be an
-    # empty hash_ref.  I<realm_owner>.password will be encrypted.
-    #
-    # B<Does not set the realm to the new user.>
-    #
-    # Returns (user, realm_owner) models.
     $self->create($user);
     $realm_owner ||= {};
     $realm_owner->{password}
@@ -77,17 +43,7 @@ sub create_realm {
         if defined($realm_owner->{password});
     $realm_owner->{display_name} = $self->format_full_name
 	unless defined($realm_owner->{display_name});
-    my($ro) = $self->new_other('RealmOwner')->create({
-	%$realm_owner,
-	realm_type => Bivio::Auth::RealmType->USER,
-	realm_id => $self->get('user_id'),
-    });
-    $self->new_other('RealmUser')->create({
-	realm_id => $self->get('user_id'),
-	user_id => $self->get('user_id'),
-        role => Bivio::Auth::Role->ADMINISTRATOR,
-    });
-    return ($self, $ro);
+    return shift->SUPER::create_realm($realm_owner);
 }
 
 sub format_full_name {
@@ -133,6 +89,10 @@ sub get_outgoing_emails {
     return undef
 	unless $email->get_field_type('email')->is_valid($email->get('email'));
     return [$email->get('email')];
+}
+
+sub internal_create_realm_administrator_id {
+    return shift->get('user_id');
 }
 
 sub internal_initialize {
