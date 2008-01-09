@@ -17,4 +17,17 @@ Type();
 	'' => DIE(),
 	['', 1] => [undef],
     ],
+    to_camel_case => [
+	'' => '',
+	[undef] => [undef],
+	0 => '0',
+	'a-z' => 'A Z',
+	'ab cd' => 'Ab Cd',
+	'ab_c.d 9' => 'Ab C D 9',
+    ],
+    to_camel_case_identifier => [
+	0 => '0',
+	'a-z' => 'AZ',
+	'ab cd' => 'AbCd',
+    ],
 ];

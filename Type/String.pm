@@ -30,6 +30,14 @@ sub get_width {
     return 0x7fffffff;
 }
 
+sub to_camel_case {
+    return _camel_case($_[1], ' ');
+}
+
+sub to_camel_case_identifier {
+    return _camel_case($_[1], '');
+}
+
 sub wrap_lines {
     my($proto, $value, $width) = @_;
     $width = 72 unless $width;
@@ -45,6 +53,12 @@ sub wrap_lines {
         push(@$formatted, $line) if defined($line);
     }
     return join("\n", @$formatted, '');
+}
+
+sub _camel_case {
+    my($value, $sep) = @_;
+    return !$value ? $value
+	: join($sep, map(ucfirst(lc($_)), split(/[\W_]+/, $value)));
 }
 
 sub _wrap_line {
