@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::UserRealmList;
 use strict;
-use base 'Bivio::Biz::Model::RoleBaseList';
+use Bivio::Base 'Model.RoleBaseList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
