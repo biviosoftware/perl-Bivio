@@ -139,6 +139,10 @@ __PACKAGE__->new({
 	    anchor => 'a1',
 	}],
 	[view_shortcuts1 => 'one'],
+	[my_site_redirect_map => [
+	    [qw(GENERAL ADMINISTRATOR ADM_SUBSTITUTE_USER)],
+	    [qw(USER ADMINISTRATOR USER_ACCOUNT_EDIT)],
+	]],
     ],
     Text => [
 	[bunit_simple => 'simple text'],

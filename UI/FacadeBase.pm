@@ -137,6 +137,7 @@ sub _cfg_base {
 		uri => '',
 		anchor => 'top',
 	    }],
+	    [my_site_redirect_map => []],
 	],
 	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
