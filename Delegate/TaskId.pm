@@ -40,16 +40,13 @@ sub info_base {
 	    Action.LocalFilePlain
 	    want_query=0
 	)],
-	# used by UI::Task
 	[qw(
 	    MY_SITE
 	    4
 	    GENERAL
 	    ANY_USER
-	    Action.ClientRedirect->execute_next
-	    next=SITE_ROOT
+	    Action.MySite
 	)],
-	# used by Model::RealmOwner
 	[qw(
 	    USER_HOME
 	    5
@@ -58,7 +55,6 @@ sub info_base {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
-	# used by UI::Task
 	[qw(
 	    MY_CLUB_SITE
 	    6
@@ -67,7 +63,6 @@ sub info_base {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
-	# used by Model.RealmOwner
 	[qw(
 	    CLUB_HOME
 	    7
@@ -76,7 +71,6 @@ sub info_base {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
-	# Redirects to a uri supplied in the query
 	[qw(
 	    CLIENT_REDIRECT
 	    8
@@ -85,9 +79,7 @@ sub info_base {
 	    Action.ClientRedirect->execute_query_or_path_info
 	    next=SITE_ROOT
 	)],
-	# Handy for demos and such.  You need to provide a link in the
-	# "plain" space to the view source, e.g.
-	#    cd plain; ln -s ../view vs
+	# 9: HELP
 	[qw(
 	    VIEW_AS_PLAIN_TEXT
 	    10
@@ -95,10 +87,7 @@ sub info_base {
 	    ANYBODY
 	    Action.ViewAsPlainText
 	)],
-	# To make this visible, add this to Task section of your facade:
-	#   $t->group(FAVICON_ICO => '/favicon.ico');
-        # and in the Text section:
-	#   $t->group(favicon_uri => '/i/favicon.ico');
+	# 11: ADM_SUBSTITUTE_USER
 	[qw(
             FAVICON_ICO
             12
@@ -122,8 +111,6 @@ sub info_base {
             ANYBODY
             Action.Forbidden
         )],
-        # Add this to the Task section of your facade:
-        #   $t->group(ROBOTS_TXT => 'robots.txt');
 	[qw(
             ROBOTS_TXT
             15
@@ -139,7 +126,6 @@ sub info_base {
 	    Action.TestBackdoor
 	    Action.MailReceiveStatus
 	)],
-	# used by Model.RealmOwner
 	[qw(
 	    FORUM_HOME
 	    17
@@ -148,7 +134,12 @@ sub info_base {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
-	# used by Model.RealmOwner
+	# 18: GENERAL_USER_PASSWORD_QUERY
+	# 19: GENERAL_USER_PASSWORD_QUERY_MAIL
+	# 20: USER_PASSWORD_RESET
+	# 21: USER_PASSWORD
+	# 22: GENERAL_USER_PASSWORD_QUERY_ACK
+	# 23: DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
 	[qw(
 	    CALENDAR_EVENT_HOME
 	    24
@@ -157,6 +148,35 @@ sub info_base {
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
 	)],
+	# 25: DAV
+	# 26: DAV_ROOT_FORUM_LIST
+	# 27: DAV_FORUM_LIST
+	# 28: DAV_FORUM_FILE
+	# 29: DAV_ROOT_FORUM_LIST_EDIT
+	# 30: DAV_FORUM_LIST_EDIT
+	# 31: DAV_FORUM_USER_LIST_EDIT
+	# 32: FORUM_CALENDAR_EVENT_LIST_RSS
+	# 33: DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
+	# 34: free in info_dav
+	# 35: free in info_dav
+	# 36: DAV_EMAIL_ALIAS_LIST_EDIT
+	# 37: MAIL_RECEIVE_DISPATCH
+	# 38: MAIL_RECEIVE_NO_RESOURCES
+	# 39: MAIL_RECEIVE_NOT_FOUND
+	# 40: MAIL_RECEIVE_IGNORE
+	# 41: MAIL_RECEIVE_FORWARD
+	# 42: FORUM_MAIL_RECEIVE
+	# 43: FORUM_EASY_FORM
+	# 44: FORUM_PUBLIC_FILE
+	# 45: GENERAL_CONTACT
+	# 46: USER_MAIL_BOUNCE
+	# 47: MAIL_RECEIVE_FORBIDDEN
+	# 48: FORUM_WIKI_VIEW
+	# 49: FORUM_WIKI_EDIT
+	# 50: FORUM_WIKI_NOT_FOUND
+	# 51: HELP_NOT_FOUND
+	# 52: FORUM_FILE
+	# 53: FORUM_MAIL_REFLECTOR
 	[qw(
             SITE_CSS
             54
@@ -407,6 +427,8 @@ sub info_dav {
 	    Model.Lock->execute_unless_acquired
 	    Model.CalendarEventDAVList
 	)],
+#34: free
+#35: free
  	[qw(
 	    DAV_EMAIL_ALIAS_LIST_EDIT
 	    36
@@ -763,13 +785,6 @@ sub info_user_auth {
 	    password_task=USER_PASSWORD
 	    NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
 	)],
-	[qw(
-            DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
-	    23
-	    GENERAL
-	    ANYBODY
-	    View.UserAuth->missing_cookies
-	)],
         # forbidden errors are probably due to missing cookies.
         # for example, if user is resetting password from email link
         # with cookies disabled
@@ -789,6 +804,13 @@ sub info_user_auth {
 	    GENERAL
 	    ANYBODY
 	    View.UserAuth->password_query_ack
+	)],
+	[qw(
+            DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
+	    23
+	    GENERAL
+	    ANYBODY
+	    View.UserAuth->missing_cookies
 	)],
 	[qw(
 	    GENERAL_CONTACT
