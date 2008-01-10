@@ -1,0 +1,28 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+options({comparator => 'nested_contains'});
+[
+    class() => [
+	{
+	    method => 'execute',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->set_user($params->[0]);
+		return [req()];
+	    },
+	} => [
+	    [undef] => [{
+		task_id => 'SITE_ROOT',
+		query => undef,
+	    }],
+	    demo => [{
+		task_id => 'USER_ACCOUNT_EDIT',
+		query => undef,
+	    }],
+	    root => [{
+		task_id => 'ADM_SUBSTITUTE_USER',
+	    }],
+	],
+    ],
+];
