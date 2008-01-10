@@ -1,9 +1,10 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
-$Bivio::bOP::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::bOP::VERSION;
+use base 'Bivio::UNIVERSAL';
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
@@ -17,11 +18,6 @@ bOP
 
     use Bivio::bOP;
 
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::bOP::ISA = ('Bivio::UNIVERSAL');
-
 =head1 DESCRIPTION
 
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
@@ -32,15 +28,49 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
 =head1 CHANGES
 
   $Log$
+  Revision 5.71  2008/01/10 20:47:03  nagler
+  * Bivio::Biz::FormModel
+    there always has to be a reset_instance_state so new can call it.  The
+    old code was working around a bug in Model->new_other
+    fmt
+  * Bivio::Biz::ListFormModel
+    delegation fixed
+  * Bivio::Biz::ListModel
+    delegation of do_rows and map_rows
+  * Bivio::Biz::Model::RealmOwner
+    added unauth_delete_realm
+  * Bivio::Biz::Model::User
+    subclass RealmOwnerBase
+  * Bivio::Biz::Model
+    new_other() doesn't call new on current instance
+    fix throw_die to throw_die not die formatting message
+  * Bivio::Biz::PropertyModel
+    added get_primary_id and get_primary_id_name
+  * Bivio::Biz::t::ListFormModel::T1ListForm
+    fix execute_empty_row
+  * Bivio::Delegate::RealmDAG
+    added GRAPH, RECIPROCAL_RIGHTS, and LAST_RESERVED_VALUE
+  * Bivio::MIME::Type
+    added more MS types
+  * Bivio::SQL::Support
+    incorrect use (Bivio::Die)
+    fmt
+  * Bivio::Type::DisplayName
+    moved to_camel_case String
+  * Bivio::Type::EnumDelegator
+    all delegates are probably not continuous
+  * Bivio::Type::Hash
+    use $_R
+  * Bivio::Type::RealmDAG
+    Type.EnumDelegator
+  * Bivio::UI::HTML::Widget::Table
+    Join() must not be called directly
+  * Bivio::UI::XHTML::Widget::RealmCSS
+    use Type.Regexp to validate the regexp
+
   Revision 5.70  2008/01/06 23:50:27  nagler
   * Bivio::Biz::Model::ContactForm
     version 3 configuration uses UserAuth->general_contact_mail
@@ -5523,10 +5553,6 @@ http://www.bivio.biz for more info.
   Added Bivio::bOP as source of version number
   Bug fixes and enhancements which we'll try to keep better track of.
 
-
-=cut
-
-#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
