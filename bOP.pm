@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.70  2008/01/06 23:50:27  nagler
+  * Bivio::Biz::Model::ContactForm
+    version 3 configuration uses UserAuth->general_contact_mail
+  * Bivio::Delegate::SimpleWidgetFactory
+    if wf_list_link is string, convert it to a hash with THIS_DETAIL as query
+  * Bivio::UI::Facade
+    static components need to be initialized again for each child
+  * Bivio::UI::FacadeBase
+    GENERAL_CONTACT task_menu.title
+  * Bivio::UI::HTML::Widget::Table
+    in xhtml mode, use up/down arrow chars instead of images
+  * Bivio::UI::View::CSS
+    don't decorate logo ' ' header_left
+  * Bivio::UI::View::UserAuth
+    added general_contact_mail
+    fix subject of general_contact
+  * Bivio::UI::View::Wiki
+    make wiki page wider
+  * Bivio::UI::XHTML::Widget::DropDown
+    look up indicator in facade
+  * Bivio::UI::XHTML::Widget::FormFieldLabel
+    error indicator is a string from facade now
+
   Revision 5.69  2007/12/30 23:10:03  nagler
   * Bivio::UI::XML::Widget::AtomFeed
     added
