@@ -207,6 +207,9 @@ __PACKAGE__->new({
 	[UserLoginForm => [
 	    ok_button => '  OK  ',
 	]],
+	[ProductSelectList => [
+	    'Product.name.select_label' => 'Choose a Product',
+	]],
 	# Table headings
 	['ItemListForm.add_to_cart' => ' '],
 	['CartItemListForm.remove' => ' '],
