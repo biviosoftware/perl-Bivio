@@ -2,132 +2,80 @@
 # $Id$
 package Bivio::UI::Font;
 use strict;
-$Bivio::UI::Font::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Font::VERSION;
+use Bivio::Base 'UI.FacadeComponent';
 
-=head1 NAME
+# C<Bivio::UI::Font> is a map of font names to html values.
+#
+# The configuration of a font is an array_ref.  The elements are
+# either C<key=value>, e.g. C<face=verdana,arial> and C<size=2>,
+# or simple tags, e.g. C<bold> or C<smaller>.
+#
+# Here is a complete list of known tags.  All other tags will
+# be rejected.  The list is kept small to avoid specification
+# errors.  Feel free to add to the list in internal_initialize:
+#
+#     family=list
+#     color=color-name
+#     size=string
+#     size%
+#     class=string
+#     id=string
+#     bold
+#     code
+#     italic
+#     larger
+#     smaller
+#     strike
+#     underline
+#     style=descriptor
+#
+# Do not surround values to the right of the equals (=) with quotes.
+# The string following size can be a number as long as a style sheet
+# is not used.  For style sheets, should be "x-small", "large", etc.
+# These will be mapped into numeric sizes.
+#
+# C<default> is a special font name which must exist.  It is used
+# to set the default font of the entire page.  B<Do not set the
+# color with this attribute.  Netscape doesn't handle color styles
+# correctly.>
+#
+# The C<color> attribute is looked up implicitly if there is only one name in
+# a group and there is a color by that name.
+#
+# Fonts behave differently depending on if the
+# L<Bivio::Type::UserAgent|Bivio::Type::UserAgent> is a
+# C<BROWSER_HTML3> or other BROWSER type, see
+# L<Bivio::UI::HTML::Widget::Style|Bivio::UI::HTML::Widget::Style>.
+#
+#
+# The implementations of style sheets is pretty horrible for the most part.
+# Netscape is the worst.  The implementation is qualified by Netscape.
+# We "try" to do things as best we can.  If we fail, it will look ok.
+# This is the key.
+#
+# The first problem is that Netscape reads the C<font-color> property
+# strangely, e.g.
+#
+#     font-color: #FF0000;
+#
+# is green, not red as in IE.  This is why we don't allow the default
+# font to have a color.  It will be plain wrong in Netscape.  Instead
+# we assume C<page_text> will be set by
+# L<Bivio::UI::HTML::Widget::Page|Bivio::UI::HTML::Widget::Page>
+# correctly.
+#
+# The next problem is that C<larger> and C<smaller> don't work in IE
+# for some reason.  Worse, of course, is Netscape which only allows
+# you to use C<larger> and C<smaller> and NOT C<small> and C<big>
+# tags if you have a style sheet in the header which sets C<font-size>--
+# got that?
+#
+# The solution is tightly coupled with
+# L<Bivio::UI::HTML::Widget::Style|Bivio::UI::HTML::Widget::Style>.
+# We set the C<font-family> in the Style, if there is a style.
 
-Bivio::UI::Font - named fonts
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::Font;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::FacadeComponent>
-
-=cut
-
-use Bivio::UI::FacadeComponent;
-@Bivio::UI::Font::ISA = ('Bivio::UI::FacadeComponent');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::Font> is a map of font names to html values.
-
-The configuration of a font is an array_ref.  The elements are
-either C<key=value>, e.g. C<face=verdana,arial> and C<size=2>,
-or simple tags, e.g. C<bold> or C<smaller>.
-
-Here is a complete list of known tags.  All other tags will
-be rejected.  The list is kept small to avoid specification
-errors.  Feel free to add to the list in internal_initialize:
-
-    family=list
-    color=color-name
-    size=string
-    size%
-    class=string
-    id=string
-    bold
-    code
-    italic
-    larger
-    smaller
-    strike
-    underline
-    style=descriptor
-
-Do not surround values to the right of the equals (=) with quotes.
-The string following size can be a number as long as a style sheet
-is not used.  For style sheets, should be "x-small", "large", etc.
-These will be mapped into numeric sizes.
-
-C<default> is a special font name which must exist.  It is used
-to set the default font of the entire page.  B<Do not set the
-color with this attribute.  Netscape doesn't handle color styles
-correctly.>
-
-The C<color> attribute is looked up implicitly if there is only one name in
-a group and there is a color by that name.
-
-Fonts behave differently depending on if the
-L<Bivio::Type::UserAgent|Bivio::Type::UserAgent> is a
-C<BROWSER_HTML3> or other BROWSER type, see
-L<Bivio::UI::HTML::Widget::Style|Bivio::UI::HTML::Widget::Style>.
-
-=head1 IMPLEMENTATION NOTES
-
-The implementations of style sheets is pretty horrible for the most part.
-Netscape is the worst.  The implementation is qualified by Netscape.
-We "try" to do things as best we can.  If we fail, it will look ok.
-This is the key.
-
-The first problem is that Netscape reads the C<font-color> property
-strangely, e.g.
-
-    font-color: #FF0000;
-
-is green, not red as in IE.  This is why we don't allow the default
-font to have a color.  It will be plain wrong in Netscape.  Instead
-we assume C<page_text> will be set by
-L<Bivio::UI::HTML::Widget::Page|Bivio::UI::HTML::Widget::Page>
-correctly.
-
-The next problem is that C<larger> and C<smaller> don't work in IE
-for some reason.  Worse, of course, is Netscape which only allows
-you to use C<larger> and C<smaller> and NOT C<small> and C<big>
-tags if you have a style sheet in the header which sets C<font-size>--
-got that?
-
-The solution is tightly coupled with
-L<Bivio::UI::HTML::Widget::Style|Bivio::UI::HTML::Widget::Style>.
-We set the C<font-family> in the Style, if there is a style.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="UNDEF_CONFIG"></a>
-
-=head2 UNDEF_CONFIG : array_ref
-
-Returns config for no font.
-
-=cut
-
-sub UNDEF_CONFIG {
-    return [];
-}
-
-#=IMPORTS
-use Bivio::IO::Trace;
-use Bivio::Type::UserAgent;
-use Bivio::UI::Color;
-use Bivio::UI::Facade;
-
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 # Map style names to numeric sizes
 my(%_SIZE_MAP) = (
     'xx-small' => 1,
@@ -153,51 +101,57 @@ my(%_TAG_MAP) = (
 );
 # CSS-only
 my($_CSS_MAP) = {
-    lowercase => 'text-transform: lowercase',
-    uppercase => 'text-transform: uppercase',
-    nowrap => 'white-space: nowrap',
+    capitalize => 'text-transform: capitalize',
+    center => 'test-align: center',
     inline => 'display: inline',
-    normal => 'text-decoration:none;font-weight:normal;font-style:normal;white-space:normal;text-transform:none;font-size:100%',
+    justify => 'test-align: justify',
+    left => 'test-align: left',
+    lowercase => 'text-transform: lowercase',
+    normal => 'text-decoration:none;font-weight:normal;font-style:normal;white-space:normal;text-transform:none;font-size:100%;text-align:left',
+    # There is no "text-align: none"
+    # http://www.w3.org/TR/CSS21/text.html:
+    #   Initial: a nameless value that acts as 'left' if 'direction' is 'ltr',
+    #   'right' if 'direction' is 'rtl'
+    normal_align => 'text-align: left',
+    normal_decoration => 'text-decoration: none',
+    normal_size => 'font-size: 100%',
+    normal_style => 'font-style: normal',
+    normal_transform => 'text-transform: none',
+    normal_weight => 'font-weight: normal',
+    normal_wrap => 'white-space: normal',
+    nowrap => 'white-space: nowrap',
+    pre => 'white-space: pre',
+    pre_line => 'white-space: pre-line',
+    pre_wrap => 'white-space: pre-wrap',
+    right => 'test-align: right',
+    uppercase => 'text-transform: uppercase',
 };
 
 # Attribute should only be used by this module
 my($_CONFIG_ATTR) = '_config';
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="format_css"></a>
-
-=head2 static format_css(string name, Bivio::Collection::Attributes req_or_facade) : string
-
-=head2 format_css(string name) : array
-
-=cut
+sub UNDEF_CONFIG {
+    # : array_ref
+    # Returns config for no font.
+    return [];
+}
 
 sub format_css {
+    # (proto, string, Collection.Attributes) : string
+    # (self, string) : array
     my($proto, $name, $req) = @_;
     return ''
 	unless $name and my $v = $proto->internal_get_value($name, $req);
     return $v->{css};
 }
 
-=head2 static format_html(string name, Bivio::Collection::Attributes req_or_facade) : string
-
-=head2 format_html(string name) : array
-
-=over 4
-
-=item font_with_style : boolean [0]
-
-If set to true, the fonts will be rendered assuming the default font
-was set in an inline style.
-
-=back
-
-=cut
-
 sub format_html {
+    # (proto, string, Collection.Attributes) : string
+    # (self, string) : array
+    # font_with_style : boolean [0]
+    #
+    # If set to true, the fonts will be rendered assuming the default font
+    # was set in an inline style.
     my($proto, $name, $req) = @_;
     return ''
 	unless $name and my $v = $proto->internal_get_value($name, $req);
@@ -206,49 +160,30 @@ sub format_html {
 	    : @{$v->{html_no_style}};
 }
 
-=for html <a name="get_attrs"></a>
-
-=head2 static get_attrs(string name, Bivio::Collection::Attributes req_or_facade) : hash_ref
-
-=head2 get_attrs(string name) : hash_ref
-
-Returns the font attributes.  B<Do not modify.>
-
-May return C<undef> if no such font.
-
-=cut
-
 sub get_attrs {
+    # (proto, string, Collection.Attributes) : hash_ref
+    # (self, string) : hash_ref
+    # Returns the font attributes.  B<Do not modify.>
+    #
+    # May return C<undef> if no such font.
     my($proto, $name, $req) = @_;
     return undef unless $name;
     my($v) = $proto->internal_get_value($name, $req);
     return $v ? $v->{attrs} : undef;
 }
 
-=for html <a name="handle_register"></a>
-
-=head2 static handle_register()
-
-Registers with Facade.
-
-=cut
-
 sub handle_register {
+    # (proto) : undef
+    # Registers with Facade.
     my($proto) = @_;
     Bivio::UI::Facade->register($proto, ['Color']);
     return;
 }
 
-=for html <a name="initialization_complete"></a>
-
-=head2 initialization_complete()
-
-Verifies all standard fonts have been defined and converts
-the values to html and such.
-
-=cut
-
 sub initialization_complete {
+    # (self) : undef
+    # Verifies all standard fonts have been defined and converts
+    # the values to html and such.
     my($self) = @_;
     my($default) = $self->internal_get_value('default');
     $self->initialization_error(
@@ -265,15 +200,9 @@ sub initialization_complete {
     return;
 }
 
-=for html <a name="internal_initialize_value"></a>
-
-=head2 internal_initialize_value(hash_ref value)
-
-Initializes the internal value from the configuration.
-
-=cut
-
 sub internal_initialize_value {
+    # (self, hash_ref) : undef
+    # Initializes the internal value from the configuration.
     my($self, $value) = @_;
     my($v) = $value->{config};
     unless (ref($v)) {
@@ -291,13 +220,9 @@ sub internal_initialize_value {
     return;
 }
 
-#=PRIVATE METHODS
-
-# _initialize(Bivio::UI::Font self, hash_ref value, hash_ref default)
-#
-# Intializes the value.
-#
 sub _initialize {
+    # (UI.Font, hash_ref, hash_ref) : undef
+    # Intializes the value.
     my($self, $value, $default) = @_;
     return if $value->{html};
     my(@c) = @{$value->{config}};
@@ -341,11 +266,9 @@ sub _initialize {
     return;
 }
 
-# _initialize_css(hash attrs) : array_ref
-#
-# Returns 
-#
 sub _initialize_css {
+    # (hash) : array_ref
+    # Returns 
     my($self, $value) = @_;
     my($a) = $value->{attrs};
     $value->{css} = join(' ', map(
@@ -367,11 +290,9 @@ sub _initialize_css {
     return;
 }
 
-# _initialize_html(hash attrs) : array_ref
-#
-# Returns the html (prefix, suffix) tuple for these attributes.
-#
 sub _initialize_html {
+    # (hash) : array_ref
+    # Returns the html (prefix, suffix) tuple for these attributes.
     my(%attrs) = @_;
     my($p, $s) = ('', '');
     foreach my $k (qw(family size color class id style)) {
@@ -396,35 +317,21 @@ sub _initialize_html {
     return [$p, $s];
 }
 
-# _initialize_html_no_style(hash_ref value, hash_ref default)
-#
-# Sets the html_no_style attributes based on attrs of value and default.
-#
 sub _initialize_html_no_style {
+    # (hash_ref, hash_ref) : undef
+    # Sets the html_no_style attributes based on attrs of value and default.
     my($value, $default) = @_;
     $value->{html_no_style}
 	= _initialize_html(%{$default->{attrs}}, %{$value->{attrs}});
     return;
 }
 
-# _initialize_html_with_style(hash_ref value, hash_ref default)
-#
-# Sets the html_with_style attributes based on attrs of value and default.
-#
 sub _initialize_html_with_style {
+    # (hash_ref, hash_ref) : undef
+    # Sets the html_with_style attributes based on attrs of value and default.
     my($value, $default) = @_;
     $value->{html_with_style} = _initialize_html(%{$value->{attrs}});
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
