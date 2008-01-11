@@ -1,0 +1,14 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully;
+[
+    load_all => [
+	[{
+	    parent_id => 'FISH',
+	}] => [
+	    {'Product.name' => 'Choose a Product'},
+	    map(+{}, 1..4),
+	],
+    ],
+];
