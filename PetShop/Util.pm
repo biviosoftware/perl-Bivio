@@ -10,8 +10,8 @@ use Bivio::Util::CSV;
 
 # export BCONF=~/bconf/petshop.bconf
 # cd files/ddl
-# perl -w ../../Util/b-petshop init_dbms
-# perl -w ../../Util/b-petshop create_test_db
+# perl -w ../../b-petshop init_dbms
+# perl -w ../../b-petshop create_test_db
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = 'Bivio::Type::DateTime';
 
