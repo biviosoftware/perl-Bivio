@@ -198,18 +198,6 @@ sub get_keys {
     return [@{shift->get_info('column_names')}];
 }
 
-sub get_primary_id {
-    my($self) = @_;
-    return $self->get($self->get_primary_id_name);
-}
-
-sub get_primary_id_name {
-    my($self) = @_;
-    my($pk) = $self->get_info('primary_key_names');
-    return @$pk == 1 ? $pk->[0]
-	: $self->die($pk, ': too many primary key values');
-}
-
 sub get_qualified_field_name {
     # Returns qualified field name (Model.field) for field.
     return shift->simple_package_name . '.' . shift(@_);
