@@ -87,6 +87,9 @@ h4 {
 strong {
   Font('strong');
 }
+pre {
+  line-height: 60%;
+}
 table {
   border-collapse: collapse;
   border-spacing: 0;
