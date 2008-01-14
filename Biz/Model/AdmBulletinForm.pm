@@ -143,7 +143,7 @@ Creates the Bulletin model and copies the attachments.
 
 sub internal_create_bulletin {
     my($self) = @_;
-    my($bulletin) = $self->new($self->get_request, 'Bulletin')->create({
+    my($bulletin) = $self->new_other('Bulletin')->create({
         body => ${$self->read_body},
         body_content_type => $self->get('body_content_type'),
         %{$self->get_model_properties('Bulletin')},
