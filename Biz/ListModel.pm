@@ -1,13 +1,9 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListModel;
 use strict;
-use Bivio::Base 'Bivio::Biz::Model';
-use Bivio::Biz::QueryType;
-use Bivio::Die;
+use Bivio::Base 'Biz.Model';
 use Bivio::IO::Trace;
-use Bivio::SQL::ListQuery;
-use Bivio::SQL::ListSupport;
 
 # C<Bivio::Biz::ListModel> is used to describe queries which return multiple
 # rows.  This class is typically subclassed.  However, you can create
@@ -38,6 +34,9 @@ my($_LOAD_ALL_DIE_FACTOR) = 2;
 Bivio::IO::Config->register(my $_CFG = {
     want_page_count => 1,
 });
+my($_LS) = __PACKAGE__->use('SQL.ListSupport');
+my($_LQ) = __PACKAGE__->use('SQL.ListQuery');
+my($_QT) = __PACKAGE__->use('Biz.QueryType');
 
 sub EMPTY_KEY_VALUE {
     # The value used to populate keys for rows added by append_empty_rows().
@@ -54,7 +53,7 @@ sub LOAD_ALL_SIZE {
     # The number of rows loaded by L<load_all|"load_all">.
     #
     # May be overridden.
-    return Bivio::SQL::ListQuery->DEFAULT_MAX_COUNT;
+    return $_LQ->DEFAULT_MAX_COUNT;
 }
 
 sub NOT_FOUND_IF_EMPTY {
@@ -122,7 +121,7 @@ sub do_rows {
 sub empty_query {
     my($self) = @_;
     # Returns an empty query.  Does not contain an I<auth_id>.
-    return Bivio::SQL::ListQuery->new(
+    return $_LQ->new(
 	{}, $self->internal_get_sql_support, $self);
 }
 
@@ -199,7 +198,7 @@ sub format_query {
     $args = {} unless defined($args);
 
     # Convert to enum unless already converted
-    $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
+    $type = $_QT->from_name($type) unless ref($type);
 
     # Get the query using the method defined in QueryType
     my($method) = $type->get_method;
@@ -240,7 +239,7 @@ sub format_uri {
     #
     # B<DEPRECATED USAGE:> If I<uri_or_task> is not supplied, gets
     # I<detail_uri> or I<list_uri> from the request.  See
-    # L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>.
+    # L<$_QT|$_QT>.
     my($fields) = $self->[$_IDI];
 
     if ($type->get_name =~ /PATH/) {
@@ -267,22 +266,22 @@ sub format_uri {
 
 sub format_uri_for_next {
     # B<DEPRECATED>.  Use L<format_uri|"format_uri">.
-    return shift->format_uri(Bivio::Biz::QueryType::NEXT_DETAIL(), @_);
+    return shift->format_uri($_QT->NEXT_DETAIL, @_);
 }
 
 sub format_uri_for_next_page {
     # B<DEPRECATED>.  Use L<format_uri|"format_uri">.
-    return shift->format_uri(Bivio::Biz::QueryType::NEXT_LIST(), @_);
+    return shift->format_uri($_QT->NEXT_LIST, @_);
 }
 
 sub format_uri_for_prev {
     # B<DEPRECATED>.  Use L<format_uri|"format_uri">.
-    return shift->format_uri(Bivio::Biz::QueryType::PREV_DETAIL(), @_);
+    return shift->format_uri($_QT->PREV_DETAIL, @_);
 }
 
 sub format_uri_for_prev_page {
     # B<DEPRECATED>.  Use L<format_uri|"format_uri">.
-    return shift->format_uri(Bivio::Biz::QueryType::PREV_LIST(), @_);
+    return shift->format_uri($_QT->PREV_LIST, @_);
 }
 
 sub format_uri_for_sort {
@@ -306,17 +305,17 @@ sub format_uri_for_sort {
 
 sub format_uri_for_this {
     # B<DEPRECATED>.  Use L<format_uri|"format_uri">.
-    return shift->format_uri(Bivio::Biz::QueryType::THIS_DETAIL(), @_);
+    return shift->format_uri($_QT->THIS_DETAIL, @_);
 }
 
 sub format_uri_for_this_child {
     # B<DEPRECATED>.  Use L<format_uri|"format_uri">.
-    return shift->format_uri(Bivio::Biz::QueryType::THIS_CHILD_LIST(), @_);
+    return shift->format_uri($_QT->THIS_CHILD_LIST, @_);
 }
 
 sub format_uri_for_this_page {
     # B<DEPRECATED>.  Use L<format_uri|"format_uri">.
-    return shift->format_uri(Bivio::Biz::QueryType::THIS_LIST(), @_);
+    return shift->format_uri($_QT->THIS_LIST, @_);
 }
 
 sub get_cursor {
@@ -351,7 +350,7 @@ sub get_load_notes {
 
 sub get_query {
     # Returns the
-    # L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+    # L<$_LQ|$_LQ>
     # associated with this list model.
     return shift->[$_IDI]->{query};
 }
@@ -440,7 +439,7 @@ sub internal_initialize_sql_support {
     }
     $decl->{class} = ref($proto) || $proto;
 
-    return Bivio::SQL::ListSupport->new(
+    return $_LS->new(
         $proto->merge_initialize_info($decl,
 	    $stmt->build_decl_for_sql_support()),
 	$stmt);
@@ -633,10 +632,10 @@ sub load_all {
 }
 
 sub load_empty {
-    my($self, $query) = @_;
-    # Loads instance with empty list.
+    my($self) = @_;
     $self->internal_load([], $self->parse_query({
-	parent_id => 1,
+	# Cannot be overriden value: See Type.PrimaryId
+	parent_id => Bivio::Biz::ListModel->EMPTY_KEY_VALUE,
     }));
     return $self;
 }
@@ -644,7 +643,7 @@ sub load_empty {
 sub load_page {
     my($self, $query) = @_;
     # Loads the specified page in I<query> which must be a form
-    # acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+    # acceptable to L<$_LQ|$_LQ>
     # unless I<query> is already a ListQuery.
     #
     # I<this> must not be specified.
@@ -670,7 +669,7 @@ sub load_page {
 sub load_this {
     my($self, $query) = @_;
     # Loads the specified I<this> in I<query> which must be a form
-    # acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+    # acceptable to L<$_LQ|$_LQ>
     # unless I<query> is already a ListQuery.
     #
     # I<this> must be specified.
@@ -766,7 +765,7 @@ sub next_row_or_die {
 sub parse_query {
     my($self, $query) = @_;
     # Does the processing of I<query>.  Converts to
-    # L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery> which
+    # L<$_LQ|$_LQ> which
     # may modify I<query> if it isn't already a ListQuery.
     #
     # See also L<parse_query_from_request|"parse_query_from_request">.
@@ -784,7 +783,7 @@ sub parse_query {
 	$query->{auth_id} = $auth_id;
 	$query->{auth_user_id} = $auth_user_id;
 	# Let user override page count
-	return Bivio::SQL::ListQuery->new($query, $sql_support, $self);
+	return $_LQ->new($query, $sql_support, $self);
     }
 
     # Already a list query, put auth_id on query
@@ -802,7 +801,7 @@ sub parse_query_from_request {
     $query = $query ? {%$query} : {};
 
     # Clean up the query and then parse.
-    Bivio::SQL::ListQuery->clean_raw($query, $self->internal_get_sql_support);
+    $_LQ->clean_raw($query, $self->internal_get_sql_support);
     return $self->parse_query($query);
 }
 
@@ -920,17 +919,17 @@ sub unauth_load_all {
 sub unauth_parse_query {
     my($self, $query) = @_;
     # Does the processing of I<query>.  Converts to
-    # L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery> which
+    # L<$_LQ|$_LQ> which
     # may modify I<query> if it isn't already a ListQuery.
-    return UNIVERSAL::isa($query, 'Bivio::SQL::ListQuery') ? $query
-	: Bivio::SQL::ListQuery->unauth_new(
+    return UNIVERSAL::isa($query, '$_LQ') ? $query
+	: $_LQ->unauth_new(
 	    $query || {}, $self->internal_get_sql_support, $self);
 }
 
 sub unsafe_load_this {
     my($self, $query) = @_;
     # Loads the specified I<this> in I<query> which must be a form
-    # acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+    # acceptable to L<$_LQ|$_LQ>
     # unless I<query> is already a ListQuery.
     #
     # I<this> must be specified.
@@ -958,10 +957,10 @@ sub _format_uri_args {
     my($req) = $self->get_request;
 
     # Convert to enum unless already converted
-    $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
+    $type = $_QT->from_name($type) unless ref($type);
 
     Bivio::Die->die('query_args ', $query_args, ' not allowed for ', $type)
-	    if $query_args && $type != Bivio::Biz::QueryType->THIS_LIST;
+	    if $query_args && $type != $_QT->THIS_LIST;
 
     if (defined($uri)) {
 	if (!ref($uri)) {
@@ -1063,8 +1062,8 @@ sub _unauth_load {
     #
     # I<attrs> is not the same as I<query> of L<load|"load">.  I<attrs> is
     # passed to
-    # L<Bivio::SQL::ListQuery::unauth_new|Bivio::SQL::ListQuery/"unauth_new">,
-    # while I<query> is L<Bivio::SQL::ListQuery::new|Bivio::SQL::ListQuery/"new">.
+    # L<$_LQ::unauth_new|$_LQ/"unauth_new">,
+    # while I<query> is L<$_LQ::new|$_LQ/"new">.
     # B<Use the full names of ListQuery attributes.>
     #
     # I<count> will be set to L<PAGE_SIZE|"PAGE_SIZE"> if defined,
@@ -1076,7 +1075,7 @@ sub _unauth_load {
     my($sql_support) = $self->internal_get_sql_support;
 
     # Convert to listQuery
-    $query = Bivio::SQL::ListQuery->unauth_new($query, $sql_support, $self)
+    $query = $_LQ->unauth_new($query, $sql_support, $self)
 	if ref($query) eq 'HASH';
 
     # Add in count if not there
