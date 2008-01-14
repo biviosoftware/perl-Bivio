@@ -6,6 +6,25 @@ use Bivio::Base 'Widget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub control_on_render {
+    my($self, $source, $buffer) = @_;
+    my($req) = $source->get_request;
+    $$buffer .= ${Bivio::UI::View->render(
+	$self->render_simple_attr(view_name => $source),
+	$req,
+    )};
+    $req->put("$self" => $req->get('reply')->get_output_type);
+    return;
+}
+
+sub control_off_render {
+    my($self, $source, $buffer) = @_;
+    my($req) = $source->get_request;
+    # So mime_type render doesn't blow up when control is false
+    $req->put("$self" => '');
+    return;
+}
+
 sub initialize {
     my($self) = @_;
     $self->map_invoke(initialize_attr => [
@@ -27,17 +46,6 @@ sub internal_new_args {
 	view_name => $view_name,
 	($attributes ? %$attributes : ()),
     };
-}
-
-sub control_on_render {
-    my($self, $source, $buffer) = @_;
-    my($req) = $source->get_request;
-    $$buffer .= ${Bivio::UI::View->render(
-	$self->render_simple_attr(view_name => $source),
-	$req,
-    )};
-    $req->put("$self" => $req->get('reply')->get_output_type);
-    return;
 }
 
 1;
