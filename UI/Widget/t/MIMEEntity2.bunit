@@ -3,4 +3,9 @@
 Widget();
 [
     [[vs_new(MIMEEntityView => 'Example->eg1')]] => qr{hello.*world.*"#top">back to top</a>}is,
+    [[vs_new(MIMEEntityView => {
+	view_name => 'Example->eg1',
+	control => [sub {0}],
+    })]]
+	=> qr{^This is a multi-part message in MIME format...\n\n------------\=_\S+--\n$}s,
 ];
