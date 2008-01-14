@@ -388,7 +388,8 @@ sub _get_nested {
 	}
 	return $method =~ /unsafe/
 	    ? undef
-	    : _die($self, $name, ": attribute doesn't exist ", \@names);
+	    : _die($self, $name, ": attribute doesn't exist ",
+		   @names ? \@names: ());
     }
     return $v;
 }
