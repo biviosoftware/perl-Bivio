@@ -635,7 +635,7 @@ sub load_empty {
     my($self) = @_;
     $self->internal_load([], $self->parse_query({
 	# Cannot be overriden value: See Type.PrimaryId
-	parent_id => Bivio::Biz::ListModel->EMPTY_KEY_VALUE,
+	parent_id => __PACKAGE__->EMPTY_KEY_VALUE,
     }));
     return $self;
 }
