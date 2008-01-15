@@ -73,9 +73,13 @@ sub new_unit {
 		    $m->VERSION_FIELD => $m->get_info('version'),
 		    map({
 			my($t) = $m->get_field_type($_);
+			my($v) = $hash->{$_};
+			$v = $v->($case)
+			    if ref($v) eq 'CODE';
 			($m->get_field_name_for_html($_) =>
-			     ($t->isa('Bivio::Type::FileField') ? $hash->{$_}
-				  : $t->to_literal($hash->{$_})));
+			     ($t->isa('Bivio::Type::FileField')
+				  ? $v
+				  : $t->to_literal($v)));
 		    } keys(%$hash),
 		    )},
 	    )];
