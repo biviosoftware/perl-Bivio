@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.74  2008/01/14 21:11:41  nagler
+  * Bivio::Collection::Attributes
+    fix error msg
+  * Bivio::PetShop::Util
+    Corrected paths in db setup comments
+  * Bivio::UI::View::CSS
+    pre line-height needs to be 60^
+  * Bivio::UI::Widget::MIMEEntityView
+    handle case when control is false
+
   Revision 5.73  2008/01/11 03:45:43  nagler
   * Bivio::Biz::Model
     get_primary_id/name pushed up from ListModel
