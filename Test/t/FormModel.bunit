@@ -1,0 +1,30 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel({
+    class_name => 'Model.UserLoginForm',
+});
+[
+    empty_case({
+	login => undef,
+    }),
+    error_case({
+	login => 'demo'
+    }, {
+	'RealmOwner.password' => 'NULL',
+    }),
+    inline_case(sub {
+	var(pw => 'password');
+        return;
+    }),
+    simple_case({
+	login => 'demo',
+	'RealmOwner.password' => var('pw'),
+    }, {
+	login => 'demo',
+	'RealmOwner.password' => var('pw'),
+    }),
+    inline_case(sub {
+	assert_equals(realm_id('demo'), req('auth_user_id'));
+	return;
+    }),
+];
