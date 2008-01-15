@@ -347,13 +347,15 @@ sub builtin_var {
 	if ($proto->is_blessed($_[0], 'Bivio::Test::Case')) {
 	    foreach my $i (0 .. 10) {
 		$c = (caller($i))[3];
+		return _var_get($proto, $name)
+		    if $c =~ /^Bivio::Test::FormModel::__ANON__/;
 		next unless $c =~ /^Bivio::Test::_eval_(\w+)$/;
 		$c = $1;
 		return _var_get($proto, $name)
 		    if $c eq 'method';
 		if ($c eq 'params') {
 		    my($p) = _var_array(_var_get($proto, $name));
-#TODO: Seems a bit dicey, but may be the obvious thingx
+#TODO: Seems a bit dicey, but may be the obvious thing
 		    my($case) = $_[0];
 		    return $p
 			unless my $cp = $case->unsafe_get('compute_params');
