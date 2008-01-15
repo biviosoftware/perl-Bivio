@@ -320,14 +320,17 @@ $support = Bivio::SQL::ListSupport->new({
     ],
     auth_id => [qw(TListT1.auth_id TListT2.auth_id)],
     other => [
-	[qw(TListT1.name TListT2.name)],
+	[{
+            name => 'TListT1.name',
+            in_select => 0,
+        }, 'TListT2.name'],
 	map({
 	    my($f) = $_;
 	    map(+{
 		name => "TListT$_.$f",
 		in_select => 0,
 	    }, 1, 2);
-	} qw(toggle date_time name)),
+	} qw(toggle date_time)),
     ],
 });
 $rows = $support->load(Bivio::SQL::ListQuery->new({
