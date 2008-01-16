@@ -524,11 +524,7 @@ sub _init_column_lists {
     $attrs->{sql_from} = ' ' . (
 	$decl->{from}
 	|| 'FROM '. join(',',
-	    sort(map {
-		my($tn) = $_->{instance}->get_info('table_name');
-		$tn eq $_->{sql_name}
-		    ? $tn : $tn.' '.$_->{sql_name};
-	    } values(%{$attrs->{models}})))
+	    sort(map($_->{model_from_sql}, values(%{$attrs->{models}}))))
     );
     $where =~ s/^\s*AND\s+//i;
     $attrs->{sql_where} = $where;

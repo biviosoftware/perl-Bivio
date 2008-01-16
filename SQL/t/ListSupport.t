@@ -304,32 +304,35 @@ $support = Bivio::SQL::ListSupport->new({
     version => 1,
     can_iterate => 1,
     order_by => [
-	map(+{
-	    name => "count$_",
-	    constraint => 'NOT_NULL',
-	    type => 'Integer',
-	    in_select => 1,
-	    select_value => "COUNT(t_list${_}_t.date_time) AS count$_",
-	}, 1, 2),
+	map({
+            my($n) = ($_ =~ /(\d)/)[0];
+            {
+		name => "count$n",
+		constraint => 'NOT_NULL',
+		type => 'Integer',
+		in_select => 1,
+		select_value => "COUNT($_.date_time) AS count$n",
+	    };
+        } qw(t_list1_t_1 t_list2_t_qual)),
     ],
     group_by => [
-	[qw(TListT1.gender TListT2.gender)],
+	[qw(TListT1_1.gender Qual.TListT2.gender)],
     ],
     primary_key => [
-	'TListT1.gender',
+	'TListT1_1.gender',
     ],
-    auth_id => [qw(TListT1.auth_id TListT2.auth_id)],
+    auth_id => [qw(TListT1_1.auth_id Qual.TListT2.auth_id)],
     other => [
 	[{
-            name => 'TListT1.name',
+            name => 'TListT1_1.name',
             in_select => 0,
-        }, 'TListT2.name'],
+        }, 'Qual.TListT2.name'],
 	map({
 	    my($f) = $_;
 	    map(+{
-		name => "TListT$_.$f",
+		name => "$_.$f",
 		in_select => 0,
-	    }, 1, 2);
+	    }, qw(TListT1_1 Qual.TListT2));
 	} qw(toggle date_time)),
     ],
 });
@@ -340,10 +343,10 @@ $rows = $support->load(Bivio::SQL::ListQuery->new({
 }, $support), undef, '', []);
 t(Bivio::IO::Ref->nested_equals($rows, [
     map({
-	'TListT1.auth_id' => 1,
+	'TListT1_1.auth_id' => 1,
 	count1 => scalar(@$names),
 	count2 => scalar(@$names),
-	'TListT1.gender' => Bivio::Type::Gender->from_int($_)
+	'TListT1_1.gender' => Bivio::Type::Gender->from_int($_)
     }, 1, 2),
 ]), 1);
 Bivio::SQL::ListSupport->new({
