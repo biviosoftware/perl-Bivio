@@ -18,6 +18,7 @@ our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 #my(%_CLASS_INFO);
 my($_LOADED_ALL_PROPERTY_MODELS);
+my($_S) = __PACKAGE__->use('SQL.Support');
 
 sub as_string {
     my($self) = @_;
@@ -476,9 +477,11 @@ sub new_anonymous {
 }
 
 sub new_other {
-    # Creates a model instance of the specified class.
-    my($self) = shift;
-    return $self->get_instance(shift)->new($self->get_request, @_);
+    my($self, $model_name) = (shift, shift);
+    return ($_S->is_qualified_model_name($model_name)
+	? $_S->parse_model_name($model_name)->{model}
+	: $self->get_instance($model_name)
+    )->new($self->get_request, @_);
 }
 
 sub put {

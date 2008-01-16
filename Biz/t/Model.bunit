@@ -58,9 +58,16 @@ my($category_count) = 0;
 		]],
 	],
 	new => [
-	    ['RealmOwner'] => qr/RealmOwner/,
+	    RealmOwner => qr/RealmOwner/,
 	    [req(), 'RealmOwner'] => qr/RealmOwner/,
 	    ['junk', 'RealmOwner'] => DIE(),
+	    [] => DIE(),
+	],
+	new_other => [
+	    RealmOwner => qr/RealmOwner/,
+	    'my.RealmOwner' => qr/RealmOwner/,
+	    'RealmOwner_1' => qr/RealmOwner/,
+	    ['BadQual.RealmOwner'] => DIE(),
 	    [] => DIE(),
 	],
     ],
