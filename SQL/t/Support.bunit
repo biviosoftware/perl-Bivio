@@ -1,5 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+Request();
 options({comparator => 'nested_contains'});
 [
     sub {class('Bivio::SQL::t::Support::T1Form')->get_instance} => [
@@ -11,6 +12,29 @@ options({comparator => 'nested_contains'});
 		'RealmUser.realm_id' => {
 		    name => 'RealmOwner.realm_id',
 		},
+	    }],
+	],
+    ],
+    class() => [
+	parse_model_name => [
+	    'RealmOwner' => [{
+		model_name => 'RealmOwner',
+		model_sql => 'realm_owner_t',
+	    }],
+	    'RealmOwner_1' => [{
+		model_name => 'RealmOwner_1',
+		model_sql => 'realm_owner_t_1',
+	    }],
+	    'My.RealmOwner' => [{
+		model_name => 'My.RealmOwner',
+		model_sql => 'realm_owner_t_my',
+	    }],
+	],
+	parse_column_name => [
+	    'RealmOwner.realm_type' => [{
+		type => 'Bivio::Auth::RealmType',
+		model_name => 'RealmOwner',
+		sql_name => 'realm_owner_t.realm_type',
 	    }],
 	],
     ],
