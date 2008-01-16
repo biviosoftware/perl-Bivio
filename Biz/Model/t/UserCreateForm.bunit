@@ -3,70 +3,11 @@
 Request('initialize_fully');
 [
     class() => [
-	{
-	    method => 'parse_display_name',
-	    compute_return => sub {
-		my($case, $actual) = @_;
-		my($a) = $actual->[0];
-		return ref($a) eq 'HASH'
-		    ? [@$a{qw(first_name middle_name last_name)}]
-		    : [$a->get_name];
-	    },
-	} => [
-	    'Dr. John' => ['Dr.', undef, 'John'],
-	    'Hot, Dog' => ['Dog', undef, 'Hot'],
-	    'Mary J. Keene, M.D.' => ['Mary', 'J.', 'Keene, M.D.'],
-	    'Mary Krueger, R.N.' => ['Mary', undef, 'Krueger, R.N.'],
-	    'Rob de la Roche' => ['Rob', undef, 'de la Roche'],
-	    'Ludwig von Beethoven' => ['Ludwig', undef, 'von Beethoven'],
-	    'Rev. H. Gross' => ['Rev. H.', undef, 'Gross'],
-	    'Drew A. Barrymore' => ['Drew', 'A.', 'Barrymore'],
-	    'King James III' => ['King', undef, 'James, III'],
-	    'Joe Gross, JD' => ['Joe', undef, 'Gross, JD'],
-	    'Mrs. Fiona A. Brydy' => ['Mrs. Fiona', 'A.', 'Brydy'],
-	    'Dr. A. Carter MD' => ['Dr. A.', undef, 'Carter, MD'],
-	    'Dr. Richards' => ['Dr.', undef, 'Richards'],
-	    'Miss Missy M. Mistletoe, M.S.' => ['Miss Missy', 'M.', 'Mistletoe, M.S.'],
-	    'Joe' => [undef, undef, 'Joe'],
-	    'Jones Sr' => [undef, undef, 'Jones, Sr'],
-	    'A.B. Gross' => ['A.', 'B.', 'Gross'],
-	    'IM ALL CAPS' => ['IM', 'ALL', 'CAPS'],
-	    'Mr.Eric R. Du Puis' => ['Mr. Eric', 'R.', 'Du Puis'],
-	    'Juan Chuy de Marcos' => ['Juan', 'Chuy', 'de Marcos'],
-	    'Maggie de la Rosa' => ['Maggie', undef, 'de la Rosa'],
-	    ',' => 'NULL',
-	    'MyVeryLongNameShouldBlowTheLengthLimit a b'
-		=> 'FIRST_NAME_LENGTH',
-	    'a MyVeryLongNameShouldBlowTheLengthLimit b'
-		=> 'MIDDLE_NAME_LENGTH',
-	    'a b MyVeryLongNameShouldBlowTheLengthLimit'
-		=> 'LAST_NAME_LENGTH',
-            'Dr. ANGELICA M DE ANTONIO PHD' =>
-                ['Dr. ANGELICA', 'M', 'DE ANTONIO, PHD'],
-            'B JOSEPH GRONER, III' =>
-                ['B', 'JOSEPH', 'GRONER, III'],
-            'H R STEWART JR' =>
-                ['H', 'R', 'STEWART, JR'],
-            'DONALD E EASTLAKE 3RD' =>
-                ['DONALD', 'E', 'EASTLAKE, 3RD'],
-            'MICHAEL J BIO PE' =>
-                ['MICHAEL', 'J', 'BIO, PE'],
-            'MICHAEL J BIO, PE' =>
-                ['MICHAEL', 'J', 'BIO, PE'],
-            'Lana Fisher, MA, LICSW' =>
-                ['Lana', undef, 'Fisher, MA, LICSW'],
-            'Judy and Larry' =>
-                ['Judy and Larry', undef, undef],
-            'Bob And' =>
-                ['Bob', undef, 'And'],
-            'Ole Moeller III, MD' =>
-                ['Ole', undef, 'Moeller, III, MD'],
-	],
 	execute => [
 	    [req(), {
 		'RealmOwner.display_name' => 'Fred',
 		'RealmOwner.password' => 'password',
-	     }] => sub {Bivio::IO::Alert->info(req()->get('auth_user_id')); return 1;}
+	     }] => not_die(),
 	],
     ],
     sub {Bivio::Biz::Model->new(req(), 'User')} => [
