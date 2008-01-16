@@ -10,16 +10,21 @@ sub USAGE {
     return <<'EOF';
 usage: b-testrealm [options] command [args..]
 commands
-  delete_by_regexp regexp -- delete realms matching regexp
+  delete_by_regexp regexp [realm_type] -- delete realms matching regexp
 EOF
 }
 
 sub delete_by_regexp {
-    my($self, $regexp) = shift->arg_list(\@_, [['Regexp']]);
+    my($self, $regexp, $realm_type) = shift->arg_list(\@_, [
+	'Regexp',
+	['Auth.RealmType', undef, undef],
+    ]);
     $self->model('RealmOwner')->do_iterate(sub {
         my($it) = @_;
 	$it->unauth_delete
-	    if !$it->is_default && $it->get('name') =~ $regexp;
+	    if !$it->is_default
+	    && (!$realm_type || $it->get('realm_type') == $realm_type)
+	    && $it->get('name') =~ $regexp;
 	return 1;
     }, 'name');
     return;
