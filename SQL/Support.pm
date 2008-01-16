@@ -309,7 +309,7 @@ sub init_type {
 
 sub is_qualified_model_name {
     my(undef, $name) = @_;
-    return $name =~ /$_QUAL_PREFIX\w+$|^\w+$_QUAL_SUFFIX/os ? 1 : 0;
+    return $name && $name =~ /$_QUAL_PREFIX\w+$|^\w+$_QUAL_SUFFIX/os ? 1 : 0;
 }
 
 sub iterate_end {
