@@ -180,6 +180,14 @@ CREATE TABLE motion_vote_t (
 )
 /
 
+CREATE TABLE nonunique_email_t (
+  realm_id NUMERIC(18) NOT NULL,
+  location NUMERIC(2) NOT NULL,
+  email VARCHAR(100),
+  CONSTRAINT nonunique_email_t1 PRIMARY KEY(realm_id, location)
+)
+/
+
 CREATE TABLE otp_t (
   user_id NUMERIC(18) NOT NULL,
   otp_md5 VARCHAR(16) NOT NULL,

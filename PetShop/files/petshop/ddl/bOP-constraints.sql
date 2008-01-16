@@ -290,6 +290,24 @@ CREATE INDEX motion_vote_t9 on motion_vote_t (
 /
 
 --
+--
+-- nonunique_email_t
+--
+ALTER TABLE nonunique_email_t
+  ADD CONSTRAINT nonunique_email_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX nonunique_email_t3 ON nonunique_email_t (
+  realm_id
+)
+/
+CREATE INDEX nonunique_email_t5 ON nonunique_email_t (
+  email
+)
+/
+
+--
 -- otp_t
 --
 ALTER TABLE otp_t
