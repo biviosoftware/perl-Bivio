@@ -7,6 +7,8 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_S) = __PACKAGE__->use('SQL.Support');
+my($_N) = __PACKAGE__->use('Type.Number');
 
 sub AND {
     my($proto) = shift;
@@ -394,84 +396,38 @@ sub _add_model {
 }
 
 sub _build_column {
-    my($column) = @_;
-    # Build column name.
-    # Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
-    my($func, $model_ref, $field, $paren)
-	= $column =~ /^(\w+\()?(\w+(?:_\d+)?)\.(\w+)(\)?)$/;
-    my($model, $index)
-	= $model_ref =~ /^(\w+?)(_\d+)?$/;
-    $func ||= '';
-    $index ||= '';
-    $paren ||= '';
+    my($cn) = _parse_column_name(@_);
     return {
-        model_name => $model_ref,
-        sql_string => $func
-            . Bivio::Biz::Model->get_instance($model)->get_info('table_name')
-	    . "$index.$field$paren",
+	map(($_ => $cn->{$_}), qw(model_name sql_string)),
     };
 }
 
 sub _build_column_info {
-    my($column) = @_;
+    my($cn) = _parse_column_name(@_);
     # TODO: Merge _build_column and _build_column_info
-    # _build_column_info(string column) : hash_ref
-    #
-    # Build column information.
-    # Understands 'Model.field', 'Model_#.field', and 'FUNC(Model.field)'
-    # Returns a hash_ref with the following information:
-    #   column_name  (:string 'field')
-    #   model        (:Bivio::Biz::Model)
-    #   name         (:string 'Model_#.field')
-    #   sql_string   (:string)
-    #   type         (:Bivio::Type)
-    my($func, $model_ref, $field, $paren)
-	= $column =~ /^(\w+\()?(\w+(?:_\d+)?)\.(\w+)(\)?)$/;
-    my($model_name, $index)
-	= $model_ref =~ /^(\w+?)(_\d+)?$/;
-    $func ||= '';
-    $index ||= '';
-    $paren ||= '';
-    my($model) = Bivio::Biz::Model->get_instance($model_name); 
     return {
-        column_name => $field,
-	model_name => $model_ref,
-	model => $model,
-	name => $column,
-	sql_string => $func
-            . $model->get_info('table_name') . "$index.$field$paren",
-        type => $model->get_field_type($field),
+	map(($_ => $cn->{$_}),
+	    qw(column_name model_name model type name sql_string)),
     }
 }
 
 sub _build_model {
-    my($model_name) = @_;
-    # Return the sql table name for the model.
-    # Understands 'Model' and 'Model_#'
-    my($model, $index) = $model_name =~ /^(\w+?)(_\d+)?$/;
-    my($table) = Bivio::Biz::Model->get_instance($model)
-	->get_info('table_name');
-    $index ||= '';
-    return $table
-        . ($index ? " $table$index" : '');
+    return $_S->parse_model_name(@_)->{model_from_sql};
 }
 
 sub _build_select_column {
     my($i) = _build_column_info(@_);
-    # Build select column name with appropriate type conversion.
     return $i->{type}->from_sql_value($i->{sql_string});
 }
 
 sub _build_value {
     my($column, $value, $support, $params) = @_;
-    # Build placeholder and add value to I<params>.
-    my($func, $model, $index, $field) = $column =~ /^(\w+\()?(\w+?)(_\d+)?\.(\w+)\)?$/;
-    my($t) = ($func || '') =~ /^(length|count)\(/i ? 'Bivio::Type::Number'
-	: Bivio::Biz::Model->get_instance($model)->get_field_type($field);
-    my($v, $e) = $t->from_literal($value);
-    Bivio::Die->die($column, $value, $e) if $e;
-    push(@$params, $t->to_sql_param($v));
-    return $t->to_sql_value('?');
+    my($cn) = _parse_column_name($column);
+    my($v, $e) = $cn->{type}->from_literal($value);
+    Bivio::Die->die($value, ': invalid value for ', $column, ': ', $e)
+        if $e;
+    push(@$params, $cn->{type}->to_sql_param($v));
+    return $cn->{type}->to_sql_value('?');
 }
 
 sub _combine_predicates {
@@ -570,6 +526,17 @@ sub _merge_statements {
 #     }
 
     return;
+}
+
+sub _parse_column_name {
+    my($name) = @_;
+    my($func, $qual_col) = $name =~ /^(\w+)\((.+)\)$/s;
+    my($cn) = $_S->parse_column_name($qual_col || $name);
+    $cn->{name} = $name;
+    $cn->{sql_string} = $func ? "$func($cn->{sql_name})" : $cn->{sql_name};
+    $cn->{type} = $_N
+	if $func && $func =~ /^(?:length|count|sum)$/;
+    return $cn;
 }
 
 sub _parse_predicate {
