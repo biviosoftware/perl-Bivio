@@ -66,7 +66,7 @@ sub internal_initialize {
     });
 }
 
-sub parse_display_name {
+sub parse_to_names {
     return shift->get_model_properties('User');
 }
 
