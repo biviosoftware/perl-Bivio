@@ -77,6 +77,12 @@ sub default_merge_overrides {
 	'Bivio::IO::Config' => {
 	    version => $args->{version},
 	},
+	'Bivio::IO::Trace' => {
+	    sql => {
+		call_filter => '$sub =~ /_trace_sql/',
+		package_filter => '/^Bivio::SQL::Connection$/',
+	    },
+	},
     };
     return $args->{version} < 2 ? %$res : $res;
 }
