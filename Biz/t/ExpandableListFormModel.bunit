@@ -1,0 +1,44 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel({
+    class_name => 'Bivio::Biz::t::ExpandableListFormModel::T2ListForm',
+    setup_request => sub {
+	model('NumberedList')->load_page({count => 2})->get_result_set_size;
+	return;
+    },
+});
+[
+    empty_case({}),
+    simple_case({
+	empty_row_count => 0,
+	main_1 => 'joe',
+	aux1_1 => '555',
+    }, {
+	main_1 => 'joe',
+	aux1_1 => '555',
+    }),
+    error_case({
+	empty_row_count => 0,
+	main_1 => '',
+	aux1_1 => '555',
+    }, {
+	main_1 => 'NULL',
+	aux1_1 => '555',
+    }),
+    error_case({
+	empty_row_count => 0,
+	main_1 => '',
+	aux2_1 => '555',
+    }, {
+	main_1 => 'NULL',
+	aux1_1 => 'NULL',
+	aux2_1 => '555',
+    }),
+    error_case({
+	empty_row_count => 0,
+	main_1 => 'joe',
+    }, {
+	main_1 => 'joe',
+	aux1_1 => 'NULL',
+    }),
+];
