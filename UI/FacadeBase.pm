@@ -189,7 +189,7 @@ sub _cfg_base {
 	    ]],
 	    [ok_button => '   OK   '],
 	    [cancel_button => ' Cancel '],
-	    [['Email.email', 'login'] => 'Email'],
+	    [[qw(email login)] => 'Email'],
 	    [password => 'Password'],
 	    [confirm_password => 'Re-enter Password'],
 	    [display_name => 'Your Full Name'],
