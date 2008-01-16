@@ -7,9 +7,6 @@ use Bivio::Die;
 use Bivio::HTML;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
-use Bivio::SQL::Constraint;
-use Bivio::SQL::ListQuery;
-use Bivio::SQL::Statement;
 use Bivio::Type::DateTime;
 use Bivio::Type;
 
@@ -79,6 +76,8 @@ use Bivio::Type;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_LQ) = __PACKAGE__->use('SQL.ListQuery');
+my($_C) = __PACKAGE__->use('SQL.Constraint');
 
 sub clone {
     # Always a singleton
@@ -133,7 +132,7 @@ sub has_columns {
 }
 
 sub init_column {
-    my(undef, $attrs, $qual_col, $class, $is_alias) = @_;
+    my($proto, $attrs, $qual_col, $class, $is_alias) = @_;
     # B<INTERNAL USE ONLY>
     #
     # Initializes I<qual_col> which is of the form C<Model_N.column> or
@@ -146,47 +145,34 @@ sub init_column {
     my($columns) = $attrs->{columns};
     my($col) = $columns->{$qual_col};
     unless ($col) {
-	my($qual_model, $column) = $qual_col =~ m!^(\w+(?:_\d+)?)\.(\w+)$!;
-	Bivio::Die->die($qual_col, ': invalid qualified column name; attrs=', $attrs)
-	    unless $qual_model && $column;
+	my($cn) = $proto->parse_column_name($qual_col);
 	my($model);
-	unless ($model = $attrs->{models}->{$qual_model}) {
-	    my($package) = $qual_model;
-	    $package =~ s!((?:_\d+)?)$!!;
-	    my($qual_index) = $1;
-	    my($instance) = Bivio::Biz::Model->get_instance($package);
-	    $model = $attrs->{models}->{$qual_model} = {
-		name => $qual_model,
-		instance => $instance,
+	$model = $attrs->{models}->{$cn->{model_name}} ||= {
+	    name => $cn->{model_name},
+	    instance => $cn->{model},
+	    model_from_sql => $cn->{model_from_sql},
 #TODO: don't know what is wrong here:
 # ListFormModel which uses a ListModel with all local fields dies
 # unless we exclude models ending in List
-		sql_name => $qual_model =~ /List$/
-		    ? '' : $instance->get_info('table_name') . $qual_index,
-		column_names_referenced => [],
-	    };
-	}
-	push(@{$model->{column_names_referenced}}, $column);
-	my($type) = $model->{instance}->get_field_type($column);
+	    sql_name => $cn->{model_name} =~ /List$/ ? '' : $cn->{model_sql},
+	    column_names_referenced => [],
+	};
+	push(@{$model->{column_names_referenced}}, $cn->{column_name});
 	$col = {
 	    # Keep these attributes in synch with FormSupport::_init_list_class
 	    # Bivio::SQL::Support attributes
-	    name => $qual_col,
-	    type => $type,
-	    sort_order => Bivio::SQL::ListQuery->get_sort_order_for_type(
-		    $type),
-	    constraint => $model->{instance}->get_field_constraint($column),
-
-	    # Other attributes
-	    column_name => $column,
+	    map(($_ => $cn->{$_}),
+		qw(name type constraint sql_name column_name)),
+	    sort_order => $_LQ->get_sort_order_for_type($cn->{type}),
 	    model => $model,
-	    sql_name => $model->{sql_name}.'.'.$column,
 	    in_list => 0,
 	    in_select => 1,
 	};
-	$columns->{$qual_col} = $col unless $is_alias;
+	$columns->{$qual_col} = $col
+	    unless $is_alias;
     }
-    _add_to_class($attrs, $class, $col) unless $is_alias;
+    _add_to_class($attrs, $class, $col)
+	unless $is_alias;
     return $col;
 }
 
@@ -213,6 +199,13 @@ sub init_column_classes {
 	    my(@aliases) = ref($decl) eq 'ARRAY' ? @$decl : ($decl);
 	    my($col) = _init_column_from_decl($proto, $attrs, shift(@aliases),
 	        $class, 0);
+	    Bivio::Die->die(
+		$col->{name},
+		': column initialized, but already an alias of ',
+		$column_aliases->{$col->{name}}->{name},
+		'; check ListModel fields, if this is a ListFormModel',
+	    ) if $column_aliases->{$col->{name}}
+		&& $column_aliases->{$col->{name}}->{name} ne $col->{name};
 	    $column_aliases->{$col->{name}} = $col;
 
 	    # manually handle left joins, record aliases
@@ -306,10 +299,9 @@ sub init_type {
 	    : Bivio::Biz::Model->get_instance($model)->get_field_type($field);
     }
     $col->{type} = UNIVERSAL::isa($type_cfg, 'Bivio::UNIVERSAL')
-	    ? $type_cfg
-	    : Bivio::Type->get_instance($type_cfg);
-    $col->{sort_order} = Bivio::SQL::ListQuery->get_sort_order_for_type(
-	    $col->{type});
+	? $type_cfg
+	: Bivio::Type->get_instance($type_cfg);
+    $col->{sort_order} = $_LQ->get_sort_order_for_type($col->{type});
     return;
 }
 
@@ -353,6 +345,37 @@ sub iterate_next {
 sub new {
     # Pass through "new".
     return shift->SUPER::new(@_);
+}
+
+sub parse_column_name {
+    my($proto, $qual_col) = @_;
+    my($qual_model, $field) = $qual_col =~ m{^(.+)\.(\w+)$};
+    my($m) = $proto->parse_model_name($qual_model);
+    return {
+	%$m,
+	column_name => $field,
+	constraint => $m->{model}->get_field_constraint($field),
+	name => $qual_col,
+	sql_name => "$m->{model_sql}.$field",
+	type => $m->{model}->get_field_type($field),
+    };
+}
+
+sub parse_model_name {
+    my($proto, $qual_model) = @_;
+    my($model) = $qual_model;
+    my($prefix) = lc($model =~ s/^(\w+)\.// ? "_$1" : '');
+    my($suffix) = $model =~ s/(_\d+)// ? $1 : '';
+    $model = Bivio::Biz::Model->get_instance($model);
+    my($table) = lc($model->get_info('table_name'));
+    my($sql) = "$table$suffix$prefix";
+    return {
+	model => $model,
+	model_name => $qual_model,
+	table_name => $table,
+	model_from_sql => $sql eq $table ? $sql : "$table $sql",
+	model_sql => $sql,
+    };
 }
 
 sub _add_to_class {
@@ -408,8 +431,8 @@ sub _init_column_from_hash {
 	    if exists($decl->{sort_order});
     $col->{sql_name} = $decl->{sql_name}
 	if exists($decl->{sql_name});
-    $col->{constraint} = Bivio::SQL::Constraint->from_any(
-	    $decl->{constraint}) if $decl->{constraint};
+    $col->{constraint} = $_C->from_any($decl->{constraint})
+	if $decl->{constraint};
     $col->{in_list} = $decl->{in_list} ? 1 : 0;
     $col->{null_set_primary_field} = $decl->{null_set_primary_field}
 	if exists $decl->{null_set_primary_field};
