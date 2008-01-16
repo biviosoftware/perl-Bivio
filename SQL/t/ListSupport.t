@@ -316,23 +316,23 @@ $support = Bivio::SQL::ListSupport->new({
         } qw(t_list1_t_1 t_list2_t_qual)),
     ],
     group_by => [
-	[qw(TListT1_1.gender Qual.TListT2.gender)],
+	[qw(TListT1_1.gender qual.TListT2.gender)],
     ],
     primary_key => [
 	'TListT1_1.gender',
     ],
-    auth_id => [qw(TListT1_1.auth_id Qual.TListT2.auth_id)],
+    auth_id => [qw(TListT1_1.auth_id qual.TListT2.auth_id)],
     other => [
 	[{
             name => 'TListT1_1.name',
             in_select => 0,
-        }, 'Qual.TListT2.name'],
+        }, 'qual.TListT2.name'],
 	map({
 	    my($f) = $_;
 	    map(+{
 		name => "$_.$f",
 		in_select => 0,
-	    }, qw(TListT1_1 Qual.TListT2));
+	    }, qw(TListT1_1 qual.TListT2));
 	} qw(toggle date_time)),
     ],
 });
