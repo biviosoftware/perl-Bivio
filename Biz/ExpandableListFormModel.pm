@@ -9,6 +9,10 @@ use Bivio::Base 'Bivio::Biz::ListFormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
+sub EMPTY_AND_CANNOT_BE_SPECIFIED_FIELDS {
+    return [];
+}
+
 sub MUST_BE_SPECIFIED_FIELDS {
     # The list of fields that are expected to have NULL or UNSPECIFIED
     # L<Bivio::TypeError|Bivio::TypeError> on them if the row is to be considered ok
@@ -112,6 +116,10 @@ sub is_empty_row {
 	return 0
 	    if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
     }
+    foreach my $f (@{$self->EMPTY_AND_CANNOT_BE_SPECIFIED_FIELDS}) {
+	return 0
+	    if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
+    }
     return 1;
 }
 
@@ -145,7 +153,7 @@ sub validate_row {
     # if L<is_empty_row|"is_empty_row">.
     return unless my $cols = $self->MUST_BE_SPECIFIED_FIELDS;
     return unless $self->is_empty_row;
-    foreach my $f (@$cols) {
+    foreach my $f (@$cols, @{$self->EMPTY_AND_CANNOT_BE_SPECIFIED_FIELDS}) {
 	next unless my $e = $self->get_field_error($f);
 	$self->internal_clear_error($f)
 	    if $e->eq_null || $e->eq_unspecified;
