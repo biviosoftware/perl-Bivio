@@ -48,7 +48,7 @@ sub from_literal {
     # Make sure is a digit.  Can't do more, because we allow
     # "special" primary ids
     return $value if $value =~ /^\d+$/;
-    return (undef, Bivio::TypeError::PRIMARY_ID());
+    return (undef, Bivio::TypeError->PRIMARY_ID);
 }
 
 sub from_parts {
