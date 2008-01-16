@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Model.RealmOwnerBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_ADMINISTRATOR) = __PACKAGE__->use('Auth.Role')->ADMINISTRATOR;
 
 sub concat_last_first_middle {
     my(undef, $last, $first, $middle) = @_;
@@ -132,6 +133,17 @@ sub set_encrypted_password {
     my($self, $encrypted) = @_;
     # Sets a user's encrypted password to a new value.
     return _get_realm->update({password => $encrypted});
+}
+
+sub unauth_delete_realm {
+    my($self, $realm_owner) = @_;
+    my($rid) = $realm_owner->get('realm_id');
+    $self->new_other('RealmUser')->unauth_delete({
+	realm_id => $rid,
+	user_id => $rid,
+	role => $_ADMINISTRATOR,
+    });
+    return shift->SUPER::unauth_delete_realm(@_);
 }
 
 sub update {
