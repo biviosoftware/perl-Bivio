@@ -201,11 +201,11 @@ sub init_column_classes {
 	    my(@aliases) = ref($decl) eq 'ARRAY' ? @$decl : ($decl);
 	    my($col) = _init_column_from_decl($proto, $attrs, shift(@aliases),
 	        $class, 0);
-	    Bivio::Die->die(
+	    Bivio::IO::Alert->warn(
 		$col->{name},
 		': column initialized, but already an alias of ',
 		$column_aliases->{$col->{name}}->{name},
-		'; check ListModel fields, if this is a ListFormModel',
+		'; check ListModel fields, if this is a ListFormModel; If this is a subclass, use the main name in the equivalence',
 	    ) if $column_aliases->{$col->{name}}
 		&& $column_aliases->{$col->{name}}->{name} ne $col->{name};
 	    $column_aliases->{$col->{name}} = $col;
@@ -408,7 +408,7 @@ sub _init_column_from_hash {
     my($col_name) = $decl->{name};
     if (ref($decl->{name}) eq 'ARRAY') {
 	# case: "{name => [a, b]}"
-	Bivio::Die->die('Invalid attepmt to alias. Use [{}, ...] instead');
+	Bivio::Die->die('Invalid attempt to alias. Use [{}, ...] instead');
     }
     if ($col_name =~ /\./) {
 	# case: "{name => Model.column}"
