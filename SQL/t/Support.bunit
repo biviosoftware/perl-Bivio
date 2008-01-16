@@ -25,10 +25,11 @@ options({comparator => 'nested_contains'});
 		model_name => 'RealmOwner_1',
 		model_sql => 'realm_owner_t_1',
 	    }],
-	    'My.RealmOwner' => [{
-		model_name => 'My.RealmOwner',
+	    'my.RealmOwner' => [{
+		model_name => 'my.RealmOwner',
 		model_sql => 'realm_owner_t_my',
 	    }],
+	    'My.RealmOwner' => DIE(),
 	],
 	parse_column_name => [
 	    'RealmOwner.realm_type' => [{
@@ -36,6 +37,18 @@ options({comparator => 'nested_contains'});
 		model_name => 'RealmOwner',
 		sql_name => 'realm_owner_t.realm_type',
 	    }],
+	    'qual.RealmOwner.realm_type' => [{
+		type => 'Bivio::Auth::RealmType',
+		model_name => 'qual.RealmOwner',
+		sql_name => 'realm_owner_t_qual.realm_type',
+	    }],
+	],
+	is_qualified_model_name => [
+	    'RealmOwner_1' => 1,
+	    'qualifier.RealmOwner' => 1,
+	    'BadQual.RealmOwner' => 0,
+	    'RealmOwner' => 0,
+	    'Bivio::Biz::Model::RealmOwner' => 0,
 	],
     ],
 ];
