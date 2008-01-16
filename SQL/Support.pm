@@ -78,6 +78,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_LQ) = __PACKAGE__->use('SQL.ListQuery');
 my($_C) = __PACKAGE__->use('SQL.Constraint');
+my($_QUAL_PREFIX) = qr{^(?s-i:([a-z][a-z0-9_]+)\.)};
+my($_QUAL_SUFFIX) = qr{(_\d+)$}s;
 
 sub clone {
     # Always a singleton
@@ -305,6 +307,11 @@ sub init_type {
     return;
 }
 
+sub is_qualified_model_name {
+    my(undef, $name) = @_;
+    return $name =~ /$_QUAL_PREFIX\w+$|^\w+$_QUAL_SUFFIX/os ? 1 : 0;
+}
+
 sub iterate_end {
     my($self, $iterator) = @_;
     # Terminates the iterator.
@@ -364,8 +371,8 @@ sub parse_column_name {
 sub parse_model_name {
     my($proto, $qual_model) = @_;
     my($model) = $qual_model;
-    my($prefix) = lc($model =~ s/^(\w+)\.// ? "_$1" : '');
-    my($suffix) = $model =~ s/(_\d+)// ? $1 : '';
+    my($prefix) = lc($model =~ s/$_QUAL_PREFIX//o ? "_$1" : '');
+    my($suffix) = $model =~ s/$_QUAL_SUFFIX//o ? $1 : '';
     $model = Bivio::Biz::Model->get_instance($model);
     my($table) = lc($model->get_info('table_name'));
     my($sql) = "$table$suffix$prefix";
