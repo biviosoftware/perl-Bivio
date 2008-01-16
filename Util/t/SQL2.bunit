@@ -1,0 +1,13 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    column_exists => [
+	[qw(realm_owner_t realm_id)] => 1,
+	[qw(realm_owner_t non_existent)] => 0,
+    ],
+    table_exists => [
+	realm_owner_t => 1,
+	this_does_not_exist => 0,
+    ],
+];
