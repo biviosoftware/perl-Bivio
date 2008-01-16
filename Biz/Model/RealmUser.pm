@@ -94,6 +94,22 @@ sub is_sole_admin {
             $model_prefix . 'user_id')])->[0] ? 0 : 1;
 }
 
+sub unauth_delete_user {
+    my($self) = @_;
+    my($uid) = $self->get('user_id');
+    $self->do_iterate(
+	sub {
+	    shift->unauth_delete;
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'role',
+	{user_id => $uid, realm_id => $self->get('realm_id')},
+    );
+    $self->new_other('RealmOwner')->unauth_delete_realm({realm_id => $uid});
+    return;
+}
+
 sub update_role {
     my($self, $role) = @_;
     # Changes the role by deleting and recreating the RealmUser record.

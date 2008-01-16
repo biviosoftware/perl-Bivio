@@ -20,4 +20,23 @@ PropertyModel();
 	[qw(demo demo)] => 1,
 	[qw(fourem-sub2 btest_admin)] => 0,
     ],
+    unauth_delete_user => [
+	sub {
+	    my($case) = @_;
+	    my($uid) = create_user('realm_user_bunit')->get('realm_id');
+	    foreach my $r (map(class('Auth.Role')->$_(), qw(MEMBER GUEST))) {
+		model('RealmUser')->new({
+		    realm_id => realm_id('demo'),
+		});
+	    }
+	    $case->put(object => req('Model.RealmUser'));
+	    return [];
+	} => not_die(),
+    ],
+    sub {
+	assert_equals(
+	    0,
+	    model('RealmOwner')->unauth_load({name => 'realm_user_bunit'}));
+	return 1;
+    } => 1,
 ];
