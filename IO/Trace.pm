@@ -47,12 +47,14 @@ BEGIN {
 #=IMPORTS
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
-use Carp ();
 
 Bivio::IO::Config->register({
-    call_filter => undef,
-    package_filter => undef,
+    Bivio::IO::Config->NAMED => {
+	call_filter => undef,
+	package_filter => undef,
+    },
     printer => \&default_printer,
+    command_line_arg => undef,
 });
 
 sub default_printer {
@@ -98,7 +100,11 @@ sub handle_config {
     #
     # Initial L<get_printer|"get_printer">
     my($proto, $cfg) = @_;
-    $proto->set_filters($cfg->{call_filter}, $cfg->{package_filter});
+    my($c) = !$cfg->{command_line_arg} ? $cfg
+	: $cfg->{command_line_arg} =~ /^[a-z]+$/
+	? Bivio::IO::Config->get($cfg->{command_line_arg})
+	: {package_filter => $cfg->{command_line_arg}};
+    $proto->set_filters($c->{call_filter}, $c->{package_filter});
     $proto->set_printer($cfg->{printer});
     return;
 }
@@ -226,7 +232,7 @@ sub set_filters {
                             \$line, \$sub, \$msg);
 		}
 EOF
-            defined($call_sub) || Carp::croak("call filter invalid: $@");
+            defined($call_sub) || die("call filter invalid: $@");
 	}
     }
     if (defined($pkg_filter)) {
@@ -236,7 +242,7 @@ EOF
             return $pkg_filter;
         }
 EOF
-	defined($pkg_sub) || Carp::croak("package filter invalid: $@");
+	defined($pkg_sub) || die("package filter invalid: $@");
     }
     else {
 	$pkg_sub = defined($call_filter) ? \&_true : \&_false;
@@ -259,7 +265,7 @@ sub set_printer {
     #
     # Returns the previous printer.
     my($proto, $printer) = @_;
-    defined(&{$printer}) || Carp::croak('printer is not a valid subroutine');
+    defined(&{$printer}) || die('printer is not a valid subroutine');
     my($old_printer) = $_PRINTER;
     $_PRINTER = $printer;
     return $old_printer;
