@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::SQL;
 use strict;
@@ -9,8 +9,6 @@ use Bivio::IO::Ref;
 use Bivio::SQL::Connection;
 use Bivio::Type::PrimaryId;
 use Bivio::UI::LocalFileType;
-
-# C<Bivio::Util::SQL> executes SQL using the configured db.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REALM_ROLE_CONFIG);
@@ -28,6 +26,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-sql [options] command [args...]
 commands:
+    column_exists table column - returns 1 if column exists in table
     create_db -- initializes database (must be run from ddl directory)
     create_test_db -- destroys, creates, and initializes test database
     create_test_user user-id [password] -- creates a test user with local email
@@ -44,6 +43,7 @@ commands:
     restore_dbms_dump file-dump -- restore a "raw" dump
     run -- executes sql contained in input and dies on error
     tables - list tables of current database
+    table_exists table - returns 1 if table exists
     upgrade_db -- upgrade the database
     vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
     vacuum_db_continuously -- run vacuum_db as a daemon
@@ -64,6 +64,21 @@ sub backup_model {
 	"\n",
     );
     return $rows;
+}
+
+sub column_exists {
+    my($self, $table, $column) = @_;
+    return _exists(
+        'FROM pg_attribute
+        WHERE attname = ?
+        AND attisdropped IS FALSE
+        AND attrelid = (
+            SELECT relfilenode
+            FROM pg_class
+            WHERE relname = ?
+        )',
+	[lc($column), lc($table)],
+    );
 }
 
 sub create_db {
@@ -137,10 +152,10 @@ sub ddl_files {
 }
 
 sub delete_realm_files {
-    # Delete realm data files.
-    Bivio::IO::File->rm_rf(
-	Bivio::UI::Facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->REALM_DATA, ''));
+    my($self) = @_;
+    $self->use('IO.File')->rm_rf(
+	$self->use('UI.Facade')->get_local_file_name(
+	    $self->use('UI.LocalFileType')->REALM_DATA, ''));
     return;
 }
 
@@ -305,7 +320,7 @@ sub init_dbms {
 	. " --owner=$user $db",
     );
     $res .= " database '$db'";
-    if (_table_exists($self, 'spatial_ref_sys')) {
+    if ($self->table_exists('spatial_ref_sys')) {
 	_init_postgis($self, $c);
 	$res .= ' with PostGIS';
     }
@@ -444,6 +459,7 @@ sub internal_upgrade_db_bundle {
 	bulletin
 	row_tag
 	motion_vote_comment
+	nonunique_email
     )) {
 	my($sentinel) = \&{"_sentinel_$type"};
 	next if defined(&$sentinel) ? $sentinel->($self)
@@ -735,6 +751,33 @@ ALTER TABLE job_lock_t
 /
 CREATE INDEX job_lock_t3 on job_lock_t (
   realm_id
+)
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_nonunique_email {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE nonunique_email_t (
+  realm_id NUMERIC(18) NOT NULL,
+  location NUMERIC(2) NOT NULL,
+  email VARCHAR(100),
+  CONSTRAINT nonunique_email_t1 PRIMARY KEY(realm_id, location)
+)
+/
+ALTER TABLE nonunique_email_t
+  ADD CONSTRAINT nonunique_email_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX nonunique_email_t3 ON nonunique_email_t (
+  realm_id
+)
+/
+CREATE INDEX nonunique_email_t5 ON nonunique_email_t (
+  email
 )
 /
 EOF
@@ -1445,6 +1488,16 @@ sub run {
     return;
 }
 
+sub table_exists {
+    my(undef, $table) = @_;
+    # Different from tables(), which is checking owner
+    _exists(
+        'FROM pg_tables
+        WHERE tablename = ?',
+	[lc($table)],
+    );
+}
+
 sub tables {
     return Bivio::SQL::Connection->map_execute(
 	'SELECT tablename
@@ -1541,6 +1594,13 @@ sub _ddl_files {
     return $f;
 }
 
+sub _exists {
+    return Bivio::SQL::Connection->execute_one_row(
+	'SELECT COUNT(*) ' . shift(@_),
+	@_,
+    )->[0] ? 1 : 0;
+}
+
 sub _init_postgis {
     my($self, $c) = @_;
     foreach my $sql (
@@ -1629,6 +1689,10 @@ sub _sentinel_file_writer {
     return $ok;
 }
 
+sub _sentinel_motion_vote_comment {
+    return shift->column_exists(qw(motion_vote_t comment));
+}
+
 sub _sentinel_site_forum {
     my($self) = @_;
     # Don't add it unless HELP_WIKI_REALM_NAME exists
@@ -1649,17 +1713,6 @@ sub _user_exists {
         WHERE usename = ?',
 	[_assert_postgres($self)->{user}],
     )});
-}
-
-sub _table_exists {
-    my(undef, $table) = @_;
-    # Different from tables(), which is checking owner
-    return @{Bivio::SQL::Connection->map_execute(
-	'SELECT tablename
-        FROM pg_tables
-        WHERE tablename = ?',
-	[lc($table)],
-    )} ? 1 : 0;
 }
 
 1;
