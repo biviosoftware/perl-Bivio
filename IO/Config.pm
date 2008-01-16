@@ -591,7 +591,7 @@ sub _process_argv {
 	# Lone '--' means we're done
 	$a =~ /^--$/s && last;
 	# HACK: Probably want to generalize(?)
-	$a =~ s/^--TRACE=/--Bivio::IO::Trace.package_filter=/s;
+	$a =~ s/^--TRACE=/--Bivio::IO::Trace.command_line_arg=/s;
 	# Matches our form?
 	(my($m, $p, $v) = $a =~ /^--([\w:]+)([\.\w]+)*=(.*)$/s) || next;
 	# Need to default to package main?
