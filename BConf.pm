@@ -199,6 +199,7 @@ sub merge_class_loader {
 		    Action => ['Bivio::Biz::Action'],
 		    Agent => ['Bivio::Agent'],
 		    Auth => ['Bivio::Auth'],
+		    Collection => ['Bivio::Collection'],
 		    Delegate => ['Bivio::Delegate'],
 		    Biz => ['Bivio::Biz'],
 		    Ext => ['Bivio::Ext'],
