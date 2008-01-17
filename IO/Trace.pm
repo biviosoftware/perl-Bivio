@@ -256,6 +256,13 @@ EOF
     return ($prev_point, $prev_pkg);
 }
 
+sub set_named_filters {
+    my($proto, $name) = @_;
+    my($c) = Bivio::IO::Config->get($name);
+    $proto->set_filters($c->{call_filter}, $c->{package_filter});
+    return;
+}
+
 sub set_printer {
     # (self, sub) : sub
     # Sets the routine which does the actual output.  By default, this is
