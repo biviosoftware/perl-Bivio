@@ -111,23 +111,11 @@ sub clear_errors {
 }
 
 sub create_model_properties {
-    my($self, $model, $other_properties) = @_;
-    $model = $self->new_other($model)
-	unless ref($model);
-    return $model->create({
-	%{$self->get_model_properties($model)},
-	$other_properties ? %{$other_properties} : (),
-    });
+    return _do_model_properties(create => @_);
 }
 
 sub create_or_update_model_properties {
-    my($self, $model, $values) = @_;
-    $model = $self->new_other($model)
-	unless ref($model);
-    return $model->create_or_update({
-	%{$self->get_model_properties($model)},
-	ref($values) eq 'HASH' ? %$values : (),
-    });
+    return _do_model_properties(create_or_update => @_);
 }
 
 sub execute {
@@ -886,11 +874,7 @@ sub unsafe_get_context_field {
 }
 
 sub update_model_properties {
-    my($self, $model) = @_;
-    # Update model from values on self.
-    $model = $self->get_model($model)
-	unless ref($model);
-    return $model->update($self->get_model_properties($model));
+    return _do_model_properties(update => @_);
 }
 
 sub validate {
@@ -1053,6 +1037,17 @@ sub _call_execute_ok {
 	}
     }
     return $res;
+}
+
+sub _do_model_properties {
+    my($method, $self, $model, $override_values) = @_;
+    my($get_model) = $method eq 'update' ? 'get_model' : 'new_other';
+    return (ref($model) ? $model : $self->$get_model($model))->$method({
+	%{$self->get_model_properties(
+	    ref($model) ? $model->simple_package_name : $model
+	)},
+	$override_values ? %$override_values : (),
+    });
 }
 
 sub _get_literal {
