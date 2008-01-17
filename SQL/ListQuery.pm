@@ -1,20 +1,8 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::ListQuery;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Agent::HTTP::Query;
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::HTML;
-use Bivio::IO::Trace;
-use Bivio::Type::Date;
-use Bivio::Type::DateInterval;
-use Bivio::Type::DateTime;
-use Bivio::Type::Integer;
-use Bivio::Type::PrimaryId;
-use Bivio::Type;
-use Bivio::Type::String;
+use Bivio::Base 'Collection.Attributes';
 
 # C<Bivio::SQL::ListQuery> describes a query for a
 # L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>.  The query
@@ -176,10 +164,15 @@ use Bivio::Type::String;
 #
 # Set this to true if you want to count the number of pages.
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_COUNT_TYPE) = Bivio::Type->get_instance('Integer')->new(
-    1, Bivio::Type->get_instance('PageSize')->get_max);
-our($_TRACE);
-Bivio::IO::Trace->register;
+my($_A) = __PACKAGE__->use('IO.Alert');
+my($_D) = __PACKAGE__->use('Type.Date');
+my($_DI) = __PACKAGE__->use('Type.DateInterval');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_I) = __PACKAGE__->use('Type.Integer');
+my($_PI) = __PACKAGE__->use('Type.PrimaryId');
+my($_PS) = __PACKAGE__->use('Type.PageSize');
+my($_S) = __PACKAGE__->use('Type.String');
+my($_COUNT_TYPE) = $_I->new(1, $_PS->get_max);
 my(%_QUERY_TO_FIELDS) = (
     'b' => 'begin_date',
     'd' => 'date',
@@ -198,7 +191,7 @@ my(%_ATTR_TO_CHAR) = map {
 # Separates elements in a multivalued primary key.
 # Tightly coupled with $Bivio::Biz::FormContext::_HASH_CHAR
 my($_SEPARATOR) = "\177";
-my($_SEPARATOR_AS_QUERY) = Bivio::Type::String->to_query($_SEPARATOR);
+my($_SEPARATOR_AS_QUERY) = $_S->to_query($_SEPARATOR);
 
 sub DEFAULT_MAX_COUNT {
     return $_COUNT_TYPE->get_max;
@@ -213,7 +206,7 @@ sub as_string {
     my($self) = @_;
     my($sep) = 0;
     return !ref($self) ? $self
-	: Bivio::IO::Alert->format_args(
+	: $_A->format_args(
 	    'ListQuery[',
 	    map({
 		my($c, $n) = ($_, $_QUERY_TO_FIELDS{$_});
@@ -232,7 +225,7 @@ sub clean_raw {
     # L<Bivio::Biz::ListModel::parse_query_from_request|Bivio::Biz::ListModel/"parse_query_from_request">.
     #
     # Returns I<query>.
-    Bivio::IO::Alert->warn_deprecated('must pass ListSupport')
+    $_A->warn_deprecated('must pass ListSupport')
 	unless $support;
     my($oqk) = $support && $support->unsafe_get('other_query_keys');
     foreach my $k (keys(%$query)) {
@@ -376,9 +369,6 @@ sub format_uri_for_this_path {
 
 sub get_hidden_field_values {
     my($self, $support) = @_;
-    # Emulate L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
-    #
-    # Used in search and chooser forms.  The conversion to html is done by caller.
     my($attrs) = $self->internal_get();
     my($columns) = $support->get('columns');
     my($ob) = $attrs->{order_by};
@@ -447,7 +437,7 @@ sub set_request_this {
     die('this_id must be a PrimaryId')
 	    if defined($this_id) && $this_id !~ /^\d+$/;
     my($query) = $req->get('query') || {};
-    $query->{t} = Bivio::Type::PrimaryId->to_literal($this_id);
+    $query->{t} = $_PI->to_literal($this_id);
     $req->put(query => $query);
     return;
 }
@@ -464,7 +454,7 @@ sub to_char {
 sub unauth_new {
     my($proto, $attrs, $support, $model) = @_;
     if ($proto->is_blessed($support, 'Bivio::Biz::Model')) {
-	Bivio::IO::Alert->warn_deprecated('switch $model and $support');
+	$_A->warn_deprecated('switch $model and $support');
 	($support, $model) = ($model, $support);
     }
     foreach my $k (@_QUERY_FIELDS) {
@@ -478,7 +468,7 @@ sub _die {
     my($die, $code, $attrs, $value) = @_;
     # Calls Bivio::Die::die with appropriate params
     $attrs = {message => $attrs} unless ref($attrs);
-    $attrs->{class} =  'Bivio::SQL::ListQuery';
+    $attrs->{class} =  __PACKAGE__;
     $attrs->{entity} = $value;
     $die ||= 'Bivio::Die';
     $die->throw_die($code, $attrs, caller);
@@ -494,7 +484,7 @@ sub _format_uri {
     $res .= 'p=' . _get_parent_id_type($attrs, $support)->to_query(
 	$attrs->{parent_id}) . '&'
 	if $attrs->{parent_id};
-    $res .= 'n=' . Bivio::Type::Integer->to_query($attrs->{page_number}) . '&'
+    $res .= 'n=' . $_I->to_query($attrs->{page_number}) . '&'
 	if defined($attrs->{page_number});
     if ($attrs->{order_by} && @{$attrs->{order_by}}) {
 	my($ob) = $attrs->{order_by};
@@ -506,16 +496,16 @@ sub _format_uri {
 	$res .= $s . '&'
 	    if $s ne $support->get('default_order_by_query');
     }
-    $res .= 's=' . Bivio::Type::String->to_query($attrs->{search}) . '&'
+    $res .= 's=' . $_S->to_query($attrs->{search}) . '&'
 	if defined($attrs->{search});
-    $res .= 'b=' . Bivio::Type::DateTime->to_query($attrs->{begin_date}) . '&'
+    $res .= 'b=' . $_DT->to_query($attrs->{begin_date}) . '&'
 	if defined($attrs->{begin_date});
-    $res .= 'd=' . Bivio::Type::DateTime->to_query($attrs->{date}) . '&'
+    $res .= 'd=' . $_DT->to_query($attrs->{date}) . '&'
 	if defined($attrs->{date});
-    $res .= 'i=' . Bivio::Type::DateInterval->to_query($attrs->{interval}) . '&'
+    $res .= 'i=' . $_DI->to_query($attrs->{interval}) . '&'
 	if defined($attrs->{interval});
     foreach my $k (@{$support->unsafe_get('other_query_keys') || []}) {
-	$res .= $k . "=" . Bivio::Type::String->to_query($attrs->{$k}) . '&'
+	$res .= $k . "=" . $_S->to_query($attrs->{$k}) . '&'
 	    if defined($attrs->{$k});
     }
     chop($res);
@@ -539,33 +529,27 @@ sub _format_uri_primary_key {
 
 sub _get_parent_id_type {
     my($attrs, $support) = @_;
-    # Returns the type of the parent_id field.
-    # use the list support first
     my($type) = $support->unsafe_get('parent_id_type');
-
-    # try the first primary key type
     unless ($type) {
 	my($primary_key) = $support->unsafe_get('primary_key');
 	if ($primary_key && int(@$primary_key)) {
 	    $type = $primary_key->[0]->{type};
 	}
     }
-
-    # default to PrimaryId
-    return $type || 'Bivio::Type::PrimaryId';
+    return $type || $_PI;
 }
 
 sub _new {
     my($proto, $attrs, $support, $die) = @_;
-    # Initializes default attrs and instantiates.
-    # Reset attrs that are set by Support
     @{$attrs}{qw(has_prev has_next prev next prev_page next_page list_support)}
 	   = (0, 0, undef, undef, undef, undef, $support);
-    _die($die, Bivio::DieCode->CORRUPT_QUERY, {
-	message => 'cannot have both interval and begin_date',
-	begin_date => $attrs->{begin_date},
-    },
-	    $attrs->{interval}) if $attrs->{interval} && $attrs->{begin_date};
+    _die($die, 'CORRUPT_QUERY',
+	 {
+	     message => 'cannot have both interval and begin_date',
+	     begin_date => $attrs->{begin_date},
+	 },
+	 $attrs->{interval},
+     ) if $attrs->{interval} && $attrs->{begin_date};
     return $proto->SUPER::new($attrs);
 }
 
@@ -606,17 +590,17 @@ sub _parse_date_value {
     #
     # Backwards compatibility issues: Default to Bivio::Type::DateTime for type.
     my($type) = $support->unsafe_get('date');
-    $type = $type ? $type->{type} : 'Bivio::Type::DateTime';
+    $type = $type ? $type->{type} : $_DT;
     return $want_date ? $type->get_default : undef
 	unless $literal;
     my($value, $e) = $type->from_literal($literal);
     return $value if $value;
 #TODO: can we get rid of this?
     # Try a date first, because that's the common case
-    ($value, $e) = Bivio::Type::Date->from_literal($literal);
+    ($value, $e) = $_D->from_literal($literal);
     return $value if $value;
-    ($value, $e) = Bivio::Type::DateTime->from_literal($literal);
-    _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
+    ($value, $e) = $_DT->from_literal($literal);
+    _die($die, 'CORRUPT_QUERY', {
 	message => 'invalid date',
 	type_error => $e,
     },
@@ -633,11 +617,12 @@ sub _parse_interval {
     # Passed internally?
     if (ref($literal)) {
 	# Already parsed, is a reference
-	_die($die, Bivio::DieCode::CORRUPT_QUERY(), {
-	    message => 'not a Bivio::Type::DateInterval',
-	},
-		$literal)
-		unless UNIVERSAL::isa($literal, 'Bivio::Type::DateInterval');
+	_die(
+	    $die, 'CORRUPT_QUERY', {
+		message => 'not a Bivio::Type::DateInterval',
+	    },
+	    $literal,
+	) unless UNIVERSAL::isa($literal, 'Bivio::Type::DateInterval');
 	$attrs->{interval} = $literal;
 	return;
     }
@@ -649,8 +634,8 @@ sub _parse_interval {
     }
 
     # Parse
-    my($value, $e) = Bivio::Type::DateInterval->unsafe_from_any($literal);
-    _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
+    my($value, $e) = $_DI->unsafe_from_any($literal);
+    _die($die, 'CORRUPT_QUERY', {
 	message => 'invalid interval',
 	type_error => $e,
     },
@@ -675,10 +660,10 @@ sub _parse_order_by {
     return unless $order_by;
     my($value) = $orig_value;
     while (length($value)) {
-	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'invalid order_by',
+	_die($die, 'CORRUPT_QUERY', 'invalid order_by',
 		$orig_value) unless $value =~ s/^(\d+)([ad])//;
 	my($index, $dir) = ($1, $2);
-	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'unknown order_by column',
+	_die($die, 'CORRUPT_QUERY', 'unknown order_by column',
 		$index) unless $order_by->[$index];
 	push(@$res, $order_by->[$index], $dir eq 'a' ? 1 : 0);
     }
@@ -696,7 +681,7 @@ sub _parse_page_number {
     # If not set or invalid, will be set to zero.
 
     # Returns undef if no page number.
-    ($attrs->{page_number}) = Bivio::Type::Integer->from_literal(
+    ($attrs->{page_number}) = $_I->from_literal(
 	    $attrs->{'n'} || $attrs->{page_number});
 
     # Set page_number to 1 by default (if invalid)
@@ -720,10 +705,9 @@ sub _parse_parent_id {
     return if $attrs->{parent_id};
 
     # Otherwise, are we expecting a parent id?
-    _die($die, Bivio::DieCode::CORRUPT_QUERY(),
-	    {message => 'bad or missing parent_id',
-		type_error => $err},
-	    'parent_id') if $support->unsafe_get('parent_id');
+    _die($die, 'CORRUPT_QUERY',
+	 {message => 'bad or missing parent_id', type_error => $err},
+	 'parent_id') if $support->unsafe_get('parent_id');
     return;
 }
 
@@ -745,7 +729,7 @@ sub _parse_pk {
 #TODO: Need to check for correct number of $_SEPARATOR values
 	my($literal) = shift(@$pk);
 	my($v, $err) = $t->from_literal($literal);
-	_die($die, Bivio::DieCode->CORRUPT_QUERY, {
+	_die($die, 'CORRUPT_QUERY', {
 	    message => "invalid $name",
 	    error => $err,
 	}, $literal) unless defined($v);

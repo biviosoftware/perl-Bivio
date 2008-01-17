@@ -374,8 +374,8 @@ sub initialize_tuple_permissions {
     my($self) = @_;
     # Sets up default permissions of tuples.
     my($req) = $self->get_request;
-    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
-    Bivio::Auth::Realm->do_default(sub {
+    my($rr) = $self->new_other('RealmRole');
+    $self->use('Auth.Realm')->do_default(sub {
         $rr->edit_categories('+tuple');
 	return 1;
     }, $req);
