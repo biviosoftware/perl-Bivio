@@ -459,7 +459,15 @@ sub _call_txn_resources {
     if (ref($resources) eq 'ARRAY') {
 	while (my $r = pop(@$resources)) {
 	    _trace($r, '->', $method) if $_TRACE;
-	    $r->$method($req);
+	    next unless my $die = Bivio::Die->catch(
+		sub {
+		    $r->$method($req);
+		    return;
+		},
+	    );
+	    Bivio::IO::Alert->warn(
+		$r, '->', $method, ': ', $die, '; switching to rollback');
+	    $method = 'rollback';
 	}
     }
     return;
