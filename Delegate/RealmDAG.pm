@@ -11,6 +11,7 @@ sub get_delegate_info {
 	UNKNOWN => 0,
         RECIPROCAL_RIGHTS => 1,
 	GRAPH => 2,
+	PARENT_IS_AUTHORIZED_ACCESS => 3,
 	LAST_RESERVED_VALUE => 19,
     ];
 }
