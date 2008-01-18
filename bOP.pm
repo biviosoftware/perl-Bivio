@@ -26,11 +26,63 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 5.76  2008/01/17 03:25:28  nagler
+  * Bivio::Agent::Task
+    protect resources when committing/rollingback
+  * Bivio::BConf
+    added Bivio::IO::Trace.sql configu
+  * Bivio::Biz::ExpandableListFormModel
+    added EMPTY_AND_CANNOT_BE_SPECIFIED_FIELDS
+  * Bivio::Biz::FormModel
+    fix create_model_properties et al to support qualified models
+  * Bivio::Biz::Model::NumberedList
+    rmpod
+  * Bivio::Biz::Model::RealmUser
+    added unauth_delete_user
+  * Bivio::Biz::Model::User
+    added unauth_delete_realm that deletes "self" realm
+  * Bivio::Biz::Model::UserCreateForm
+    moved parse_display_name to Type.DisplayName
+    added parse_to_names
+  * Bivio::Biz::Model
+    new_other supports qualified model names
+  * Bivio::Biz::t::ExpandableListFormModel::T1ListForm
+    rmpod
+  * Bivio::IO::Config
+    changed --TRACE= to set Bivio::IO::Trace.command_line_arg
+    allow --trace=
+  * Bivio::IO::Trace
+    rmpod
+    added command_line_arg config
+  * Bivio::PetShop::Model::UserAccountForm
+    parse_display_name => parse_to_names
+  * Bivio::SQL::ListSupport
+    added qualified names that begin with "<Qualifier>."
+  * Bivio::SQL::PropertySupport
+    added NonuniqueEmail
+  * Bivio::SQL::Statement
+    refactored to use parse_column_name and parse_model_name
+  * Bivio::SQL::Support
+    added qualified names that begin with "<Qualifier>."
+    added parse_model_name and parse_column_name
+    restrict qualifiers to lowercase
+    is_qualified_model_name must accept null names
+    don't die if column is equivalenced
+  * Bivio::Type::DisplayName
+    added parse_to_names (originally UserCreateForm.parse_display_name)
+  * Bivio::Type::PrimaryId
+    fmt
+  * Bivio::UI::FacadeBase
+    make email just plain old email
+    fpc: not sure why can't say [qw(login email)]
+  * Bivio::Util::TestRealm
+    delete_by_regexp now accepts optional Auth.RealmType
+
   Revision 5.75  2008/01/15 16:25:20  moeller
   * Bvio::Biz::Model::AdmBulletinForm
     use $self->new_other instead $self->new
