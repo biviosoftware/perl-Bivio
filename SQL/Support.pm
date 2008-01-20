@@ -202,7 +202,7 @@ sub init_column_classes {
 	    my($col) = _init_column_from_decl($proto, $attrs, shift(@aliases),
 	        $class, 0);
 	    Bivio::IO::Alert->warn(
-		$col->{name},
+		$attrs->{class}, ' ', $col->{name},
 		': column initialized, but already an alias of ',
 		$column_aliases->{$col->{name}}->{name},
 		'; check ListModel fields, if this is a ListFormModel; If this is a subclass, use the main name in the equivalence',
@@ -264,6 +264,7 @@ sub init_common_attrs {
     $attrs->{as_string_fields} = $decl->{as_string_fields}
 	if $decl->{as_string_fields};
     $attrs->{statement} ||= Bivio::SQL::Statement->new();
+    $attrs->{class} = $decl->{class} || Bivio::Die->die('missing class');
     return;
 }
 
