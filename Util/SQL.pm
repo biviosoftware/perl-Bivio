@@ -236,8 +236,12 @@ sub export_db {
     #
     #    <db>-<datetime>.pg_dump
     my($db) = _assert_postgres($self);
-    my($f) = ($dir || '.') . '/' . $db->{database} . '-'
-	. Bivio::Type::DateTime->local_now_as_file_name . '.pg_dump';
+    my($f) = ($dir || '.')
+	. '/'
+	. Bivio::Type::DateTime->local_now_as_file_name
+	. '-'
+	. $db->{database}
+	. '.pg_dump';
     $self->piped_exec(
 	"pg_dump --user='$db->{user}' --clean --format=c --blobs "
 	. " --file='$f' '$db->{database}'");
