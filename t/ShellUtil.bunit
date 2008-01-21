@@ -19,6 +19,8 @@ config({
 	    [['a'], ['String']] => [class(), 'a'],
 	    [[1, 2, 3], [[qw(arg Integer)]]] => [class(), 1, 2, 3],
 	    [['a'], [[qw(arg Integer)]]] => DIE(),
+	    [['a'], [[qw(?arg Integer)]]] => DIE(),
+	    [[], [[qw(?arg Integer)]]] => [class(), undef],
 	    [[undef], [[qw(arg Integer)]]] => DIE(),
 	    [[undef], [[qw(arg Integer 1)]]] => [class(), 1],
 	    [[undef], [[qw(arg Integer), sub {2}]]] => [class(), 2],
