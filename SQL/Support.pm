@@ -264,7 +264,7 @@ sub init_common_attrs {
     $attrs->{as_string_fields} = $decl->{as_string_fields}
 	if $decl->{as_string_fields};
     $attrs->{statement} ||= Bivio::SQL::Statement->new();
-    $attrs->{class} = $decl->{class} || Bivio::Die->die('missing class');
+    $attrs->{class} = $decl->{class};
     return;
 }
 
