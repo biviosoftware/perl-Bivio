@@ -16,13 +16,10 @@ sub adm_substitute_user {
 sub general_contact_mail {
     return shift->internal_put_base_attr(
 	from => ['Model.ContactForm', 'from'],
-	to => Join([
-	    Mailbox(
-		vs_text('support_email'),
-		vs_text_as_prose('support_name'),
-	    ),
-	    ['Model.ContactForm', 'from'],
-	], ', '),
+	to => Mailbox(
+	    vs_text('support_email'),
+	    vs_text_as_prose('support_name'),
+	),
 	subject => Join([vs_site_name(), ' Web Contact']),
 	body => ['Model.ContactForm', 'text'],
     );
