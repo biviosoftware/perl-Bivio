@@ -2,13 +2,13 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-my($user) = generate_local_email('crm_user');
+my($user) = generate_local_email('tuple_user');
 login_as($user);
-do_test_backdoor(Util => '-realm crm delete_all_tuples');
-visit_uri('crm/db-tables');
+do_test_backdoor(Util => '-realm tuple delete_all_tuples');
+visit_uri('tuple_forum/db-tables');
 follow_link_in_table(qw(table requests));
 verify_text(qr{no database records}i);
-my($forum) = generate_remote_email('crm');
+my($forum) = generate_remote_email('tuple_forum');
 my($msg) = send_mail($user, $forum);
 verify_local_mail($user);
 go_back();

@@ -23,12 +23,12 @@ sub BTEST_READ {
     return 'btest_read';
 }
 
-sub CRM {
-    return 'crm';
+sub TUPLE_FORUM {
+    return 'tuple_forum';
 }
 
-sub CRM_USER {
-    return 'crm_user';
+sub TUPLE_USER {
+    return 'tuple_user';
 }
 
 sub DEMO {
@@ -139,7 +139,7 @@ sub initialize_test_data {
     _init_email_alias($self);
     _init_tuple($self);
     _init_logo($self);
-    _init_crm($self);
+    _init_default_tuple($self);
     return;
 }
 
@@ -160,21 +160,18 @@ sub realm_role_config {
     return [
         @{$self->SUPER::realm_role_config()},
         <DATA>,
-    ];}
+    ];
+}
 
-
-
-# _init_demo_calendar(self)
-#
-sub _init_crm {
+sub _init_default_tuple {
     my($self) = @_;
     my($req) = $self->req;
-    $self->create_test_user($self->CRM_USER);
+    $self->create_test_user($self->TUPLE_USER);
     $req->set_realm(undef);
-    $req->set_user($self->CRM_USER);
+    $req->set_user($self->TUPLE_USER);
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Customer Request Management',
-	'RealmOwner.name' => $self->CRM,
+	'RealmOwner.name' => $self->TUPLE_FORUM,
     });
     $self->model('ForumUserDeleteForm', {
 	'RealmUser.realm_id' => $req->get('auth_id'),
@@ -185,7 +182,7 @@ sub _init_crm {
 	'User.user_id' => $req->get('auth_user_id'),
 	administrator => 1,
     });
-    $req->set_realm($self->CRM);
+    $req->set_realm($self->TUPLE_FORUM);
     $self->model('TupleSlotType')->create_from_hash({
 	Status => {
 	    type_class => 'TupleSlot',
