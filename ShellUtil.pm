@@ -254,6 +254,7 @@ sub arg_list {
 	    $decl = [$decl]
 		unless ref($decl);
 	    my($name, $type, $default) = @$decl;
+	    my($has_default) = $name =~ s/^\?// || @$decl > 2;
 	    $type ||= $name;
 	    $type = "Type.$type"
 		unless $type =~ /\W/;
@@ -263,7 +264,7 @@ sub arg_list {
 		if defined($v);
 	    unless ($e) {
 		return ref($default) eq 'CODE' ? $default->($proto) : $default
-		    if @$decl > 2;
+		    if $has_default;
 		$e = Bivio::TypeError->NULL;
 	    }
 	    $proto->usage_error(
