@@ -264,9 +264,7 @@ sub builtin_random_string {
 }
 
 sub builtin_read_file {
-    # Read a file.
-    shift;
-    return Bivio::IO::File->read(@_);
+    return shift->use('IO.File')->read(@_);
 }
 
 sub builtin_req {
