@@ -29,24 +29,16 @@ EOF
 }
 
 sub create_user {
-    my($self, $email, $display_name, $password, $user_name) = @_;
-    # Creates a new user.  Does not validate the arguments.  AuthUser is
-    # new users (L<Bivio::Biz::Model::UserCreateForm|Bivio::Biz::Model::UserCreateForm>).  Last option is optional.  It allows you to force the I<user_name>
-    # to be something specific.
-    $self->usage_error("missing argument")
-	unless $email && $display_name && $password;
-    my($req) = $self->get_request;
-#TODO: Need to move this to form model.  execute should have validate option.
-    Bivio::Biz::Model->get_instance('UserCreateForm')->execute($req, {
-	'Email.email' => $self->convert_literal('Email', $email),
-	'RealmOwner.display_name' =>
-	    $self->convert_literal('Line', $display_name),
-	'RealmOwner.password' => $self->convert_literal('Password', $password),
-	confirm_password => $self->convert_literal('Password', $password),
-	$user_name ? ('RealmOwner.name' =>
-	    $self->convert_literal('RealmName', $user_name)) : (),
-    });
-    return;
+    my($self, $email, $display_name, $password, $user_name) = shift->arg_list(
+	\@_,
+	[qw(Email DisplayName Password ?RealmName)]);
+    return $self->model(UserCreateForm => {
+	'Email.email' => $email,
+	'RealmOwner.display_name' => $display_name,
+	'RealmOwner.password' => $password,
+	confirm_password => $password,
+	$user_name ? ('RealmOwner.name' => $user_name) : (),
+    })->get('User.user_id');
 }
 
 sub delete_user {
