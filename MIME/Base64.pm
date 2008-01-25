@@ -1,56 +1,22 @@
-# Copyright (c) 2000,2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::MIME::Base64;
 use strict;
-$Bivio::MIME::Base64::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::MIME::Base64::VERSION;
-
-=head1 NAME
-
-Bivio::MIME::Base64 - implements modified base64 operations
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::MIME::Base64;
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::MIME::Base64::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::MIME::Base64> implements a web-safe encoding of base64,
-which we call http-base64.  The specials in Base64 are not
-web friendly, so they are all replaced.
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UNIVERSAL';
 use MIME::Base64 ();
 
-#=VARIABLES
+# C<Bivio::MIME::Base64> implements a web-safe encoding of base64,
+# which we call http-base64.  The specials in Base64 are not
+# web friendly, so they are all replaced.
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="http_decode"></a>
-
-=head2 http_decode(string encoded) : string
-
-Converts I<encoded> to an unencoded form using the rules for
-http-base64 decoding.
-
-Returns C<undef> if the data couldn't be parsed.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub http_decode {
+    # (self, string) : string
+    # Converts I<encoded> to an unencoded form using the rules for
+    # http-base64 decoding.
+    #
+    # Returns C<undef> if the data couldn't be parsed.
     my(undef, $encoded) = @_;
     return undef unless $encoded && length($encoded) >= 4;
     $encoded =~ tr/_*-/=+\//;
@@ -64,32 +30,14 @@ sub http_decode {
     return $err ? undef : $res;
 }
 
-=for html <a name="http_encode"></a>
-
-=head2 http_encode(string decoded) : string
-
-Converts I<decoded> to an encoded form using the rules for
-http-base64 encoding.
-
-=cut
-
 sub http_encode {
+    # (self, string) : string
+    # Converts I<decoded> to an encoded form using the rules for
+    # http-base64 encoding.
     my(undef, $decoded) = @_;
     my($encoded) = MIME::Base64::encode($decoded, '');
     $encoded =~ tr/=+\//_*-/;
     return $encoded;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000,2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
