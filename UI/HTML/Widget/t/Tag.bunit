@@ -2,7 +2,7 @@
 # $Id$
 Widget();
 [
-    ['p', ''] => '',
+    ['p', [sub {''}]] => '',
     [[sub {'br'}], ''] => '',
     br => '<br />',
     ['p', '', {tag_if_empty => 1}] => '<p></p>',
@@ -10,6 +10,7 @@ Widget();
     ['p', [sub {'&amp;'}]] => '<p>&amp;</p>',
     ['p', 'x', 'foo'] => '<p class="foo">x</p>',
     ['p', 'x', {html_attrs => ['z'], z => 1}] => '<p z="1">x</p>',
-    [div => ''] => '',
+    [div => [sub {''}]] => '',
+    [div => ''] => '<div></div>',
     [input => {ABC => 'x', DEF => 'y'}] => '<input abc="x" def="y" />',
 ];

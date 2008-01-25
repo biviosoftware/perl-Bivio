@@ -50,11 +50,11 @@ sub initialize {
 	$self->put(html_attrs => vs_html_attrs_merge([sort(@$a)]))
 	    if @$a;
     }
+    $self->unsafe_initialize_attr('value');
     $self->put_unless_exists(tag_if_empty => 1)
-	if _empty($self->get('tag'));
+	if _empty($self->get('tag'), $self->unsafe_get('value'));
     $self->initialize_attr('tag');
     $self->initialize_attr(bracket_value_in_comment => 0);
-    $self->unsafe_initialize_attr('value');
     $self->unsafe_initialize_attr('tag_if_empty');
     return shift->SUPER::initialize(@_);
 }
@@ -76,11 +76,12 @@ sub internal_new_args {
 }
 
 sub _empty {
-    my($tag) = @_;
+    my($tag, $value) = @_;
     return 0
 	if ref($tag);
     $tag = lc($tag);
-    return grep($tag eq $_, @$_EMPTY) ? 1 : 0;
+    return defined($value) && !ref($value) && length($value) == 0
+	|| grep($tag eq $_, @$_EMPTY) ? 1 : 0;
 }
 
 1;
