@@ -1,0 +1,14 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+Bivio::IO::ClassLoader->delete_require('MIME::Words');
+require "$ENV{HOME}/d/Words.pm";
+[
+    decode => [
+	'=?US-ASCII?Q?Keith_Moore?=' => 'Keith Moore',
+	'=?ISO-8859-1?Q?Keld_J=F8rn_Simonsen?=' => 'Keld Jørn Simonsen',
+	'=?ISO-8859-1?Q?Andr=E9_?= Pirard' => q{André  Pirard},
+	'=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?= =?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?= =?US-ASCII?Q?.._cool!?=' => 'If you can read this you understand the example... cool!',
+    ],
+];
+
