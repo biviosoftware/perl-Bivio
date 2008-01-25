@@ -126,13 +126,12 @@ sub create_test_user {
     (my $user_name = substr(
 	$display_name, 0, Bivio::Type->get_instance('RealmName')->get_width
     )) =~ s/\W+//g;
-    $self->new_other('RealmAdmin')->create_user(
+    return $self->new_other('RealmAdmin')->create_user(
 	$email,
 	$display_name,
 	$password || $self->TEST_PASSWORD,
 	$user_name,
     );
-    return;
 }
 
 sub ddl_files {
