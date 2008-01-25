@@ -207,6 +207,7 @@ sub merge_class_loader {
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
 		    IO => ['Bivio::IO'],
 		    Mail => ['Bivio::Mail'],
+		    MIME => ['Bivio::MIME'],
 		    Model => ['Bivio::Biz::Model'],
 		    map(
 			("${_}Widget" => [
