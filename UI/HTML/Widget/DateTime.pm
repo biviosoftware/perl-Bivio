@@ -1,117 +1,49 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::DateTime;
 use strict;
-$Bivio::UI::HTML::Widget::DateTime::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::DateTime::VERSION;
-
-=head1 NAME
-
-Bivio::UI::HTML::Widget::DateTime - prints dates/times in html
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::DateTime;
-    Bivio::UI::HTML::Widget::DateTime->new($attrs);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::DateTime::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::DateTime> produces dates which are interpreted
-locally by browsers which support javascript.  If the browser doesn't
-support javascript, the strings are printed in gmt.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item mode : Bivio::UI::DateTimeMode [DATE]
-
-What to display.
-Passed to
-L<Bivio::UI::DateTimeMode::from_any|Bivio::UI::DateTimeMode/"from_any">
-so can be just the string name.
-
-=item show_timezone : boolean [1]
-
-If GMT is displayed (no JavaScript), show the time zone.
-
-=item value : array_ref (required)
-
-Dereferenced and passed to C<$source-E<gt>get_widget_value>
-to get date to use (see below).
-
-=item undef_value : string ['&nbsp;']
-
-What to display if I<value> is C<undef>.
-Not used if I<value> is a constant.
-
-=back
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="JAVASCRIPT_FUNCTIONS"></a>
-
-=head2 JAVASCRIPT_FUNCTIONS : string
-
-Returns the functions loaded when javascript is loaded.
-
-=cut
-
-my($_FUNCS);
-sub JAVASCRIPT_FUNCTIONS {
-    return $_FUNCS;
-}
-
-=for html <a name="JAVASCRIPT_FUNCTION_NAME"></a>
-
-=head2 JAVASCRIPT_FUNCTION_NAME : string
-
-Return the tag used by this class to prefix javascript functions.
-
-=cut
-
-sub JAVASCRIPT_FUNCTION_NAME {
-    return 'dt';
-}
-
-#=IMPORTS
 use Bivio::Agent::Request;
-use Bivio::Type::DateTime;
-use Bivio::UI::DateTimeMode;
-use Bivio::UI::Font;
-use Bivio::UI::HTML::Widget::JavaScript;
+use Bivio::Base 'UI.Widget';
 
-#=VARIABLES
+# C<Bivio::UI::HTML::Widget::DateTime> produces dates which are interpreted
+# locally by browsers which support javascript.  If the browser doesn't
+# support javascript, the strings are printed in gmt.
+#
+# mode : Bivio::UI::DateTimeMode [DATE]
+#
+# What to display.
+# Passed to
+# L<Bivio::UI::DateTimeMode::from_any|Bivio::UI::DateTimeMode/"from_any">
+# so can be just the string name.
+#
+# show_timezone : boolean [1]
+#
+# If GMT is displayed (no JavaScript), show the time zone.
+#
+# value : array_ref (required)
+#
+# Dereferenced and passed to C<$source-E<gt>get_widget_value>
+# to get date to use (see below).
+#
+# undef_value : string ['&nbsp;']
+#
+# What to display if I<value> is C<undef>.
+# Not used if I<value> is a constant.
 
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_DTM) = __PACKAGE__->use('UI.DateTimeMode');
+my($_F) = __PACKAGE__->use('UI.Font');
+my($_JS) = __PACKAGE__->use('HTMLWidget.JavaScript');
+my($_HDT) = __PACKAGE__->use('HTMLFormat.DateTime');
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_UNIX_EPOCH) = Bivio::Type::DateTime->UNIX_EPOCH_IN_JULIAN_DAYS;
-my($_SECONDS) = Bivio::Type::DateTime->SECONDS_IN_DAY;
-my($_FN) = JAVASCRIPT_FUNCTION_NAME();
+my($_UNIX_EPOCH) = $_DT->UNIX_EPOCH_IN_JULIAN_DAYS;
+my($_SECONDS) = $_DT->SECONDS_IN_DAY;
 
 # Write once, run nowhere...  Date.getFullYear was not introduced
 # until JavaScript 1.2.  Date.getYear is totally broken.  Read
 # O'Reilly JavaScript book under Date.getYear.
-$_FUNCS = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
+my($_FUNCS) = $_JS->strip(<<"EOF");
 function dt(m,j,t,gmt){
     // Subtract off the Julian year
     var y=j-$_UNIX_EPOCH;
@@ -185,50 +117,20 @@ function dt_mn3(d){
 }
 EOF
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(array_ref value, any mode, boolean show_timezone, string undef_value, hash_ref attributes) : Bivio::UI::HTML::Widget::DateTime
-
-Creates a new DateTime widget from required I<value> and optional
-I<mode>, I<show_timezone>, I<undef_value>, and I<attributes>.
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::DateTime
-
-Creates a new DateTime widget with I<attributes>.
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
+sub JAVASCRIPT_FUNCTIONS {
+    return $_FUNCS;
 }
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes static information.  In this case, prefix and suffix
-field values.
-
-=cut
+sub JAVASCRIPT_FUNCTION_NAME {
+    return 'dt';
+}
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
+    my($fields) = $self->[$_IDI] ||= {};
     return if exists($fields->{value});
     $fields->{value} = $self->get('value');
     $fields->{mode} = ($self->unsafe_get('mode')
-	? Bivio::UI::DateTimeMode->from_any($self->get('mode'))
-	: Bivio::UI::DateTimeMode->get_widget_default
+	? $_DTM->from_any($self->get('mode')) : $_DTM->get_widget_default
     )->as_int;
     $fields->{undef_value} = $self->get_or_default('undef_value', '&nbsp;');
     $fields->{font} = $self->ancestral_get('string_font', undef);
@@ -236,20 +138,12 @@ sub initialize {
     return;
 }
 
-=for html <a name="internal_new_args"></a>
-
-=head2 internal_new_args(any arg, ...) : hash_ref
-
-Implements positional argument parsing for L<new|"new">.
-
-=cut
-
 sub internal_new_args {
     my(undef, $value, $mode, $show_timezone, $undef_value, $attributes) = @_;
     return '"value" attribute must be an array_ref'
 	unless ref($value) eq 'ARRAY';
     if (defined($mode)) {
-	my($m) = Bivio::UI::DateTimeMode->unsafe_from_any($mode);
+	my($m) = $_DTM->unsafe_from_any($mode);
 	return '"mode" must be a DateTimeMode' unless $m;
 	$mode = $m;
     }
@@ -269,65 +163,40 @@ sub internal_new_args {
     };
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-Render the object.
-
-=cut
-
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     die('not initialized') unless exists($fields->{value});
     my($value) = $source->get_widget_value(@{$fields->{value}});
-
-    # Render the font dynamically.  Don't call method unless there is a font
-    # for performance reasons.
     my($f) = $fields->{font};
     if (ref($f)) {
 	$f = '';
 	$self->unsafe_render_value(
 	    'string_font', $fields->{font}, $source, \$f);
     }
-    my($p, $s) = $f ? Bivio::UI::Font->format_html(
-	    $f, $source->get_request) : ('', '');
+    my($p, $s) = $f ? $_F->format_html($f, $source->get_request) : ('', '');
     $$buffer .= $p;
-    # Don't display anything if null
     unless (defined($value)) {
 	$$buffer .= $fields->{undef_value};
 	$$buffer .= $s;
 	return;
     }
-    my($gmt) = Bivio::UI::HTML::Format->get_instance('DateTime')
-	->get_widget_value(
-	    $value, $fields->{mode}, $fields->{no_timezone});
+    my($gmt) = $_HDT->get_widget_value(
+	$value, $fields->{mode}, $fields->{no_timezone});
     my($mi) = $fields->{mode};
-
-    # Let Javascript do the work
-    Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer,
-	    $_FN,
-	    $_FUNCS,
-	    # Must not begin dates with 0 (netscape barfs, so have to
-	    # print as decimals
-	    "$_FN(".sprintf('%d,%d,%d,%s', $mi, split(' ', $value),
-		    "'$gmt'").');',
-	    $gmt);
+    my($fn) = $self->JAVASCRIPT_FUNCTION_NAME;
+    $_JS->render(
+	$source,
+	$buffer,
+	$fn,
+	$_FUNCS,
+	# Must not begin dates with 0 (netscape barfs, so have to
+	# print as decimals
+	"$fn(".sprintf('%d,%d,%d,%s', $mi, split(' ', $value), "'$gmt'").');',
+	$gmt,
+    );
     $$buffer .= $s;
     return;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
