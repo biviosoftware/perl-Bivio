@@ -1,14 +1,9 @@
-# Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::Test::Language;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::IO::ClassLoader;
-use Bivio::IO::Config;
-use Bivio::IO::File;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
-use File::Basename ();
-use File::Spec ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
@@ -18,6 +13,9 @@ Bivio::IO::Config->register(my $_CFG = {
     log_dir => 'log',
 });
 my($_INLINE) = 'inline00000';
+my($_R) = __PACKAGE__->use('IO.Ref');
+my($_F) = __PACKAGE__->use('IO.File');
+our($_TRACE);
 
 sub AUTOLOAD {
     my(undef, @args) = _args(@_);
@@ -143,7 +141,7 @@ sub test_deviance {
 sub test_equals {
     my($self, $expect, $actual) = _args(@_);
     # Asserts I<expect> and I<actual> are identical.
-    return unless my $d = Bivio::IO::Ref->nested_differences($expect, $actual);
+    return unless my $d = $_R->nested_differences($expect, $actual);
     _die($self, $$d);
     # DOES NOT RETURN
 }
@@ -156,7 +154,7 @@ sub test_log_output {
     return unless $_SELF_IN_EVAL;
     my($self) = _assert_in_eval('test_log_output');
     return unless ref($self) && $self->unsafe_get('test_log_prefix');
-    return Bivio::IO::File->write(
+    return $_F->write(
 	$self->get('test_log_prefix') . "/$file_name",
 	ref($content) ? $content : \$content,
     );
@@ -184,7 +182,7 @@ sub test_run {
 	    ' from within test script')
 	    if $_SELF_IN_EVAL;
 	$_SELF_IN_EVAL = $proto->new({test_script => $script_name});
-        $script = Bivio::IO::File->read($script_name)
+        $script = $_F->read($script_name)
 	    unless ref($script);
 	substr($$script, 0, 0) = 'use strict;';
 	my($die) = Bivio::Die->catch($script);
@@ -215,8 +213,7 @@ sub test_setup {
     # test instance.
     my($self) = _assert_in_eval('test_setup');
     _die($proto, 'called test_setup() twice') if $self->[$_IDI]->{setup_called}++;
-    my($subclass) = Bivio::IO::ClassLoader->map_require(
-	'TestLanguage', $map_class);
+    my($subclass) = $proto->use('TestLanguage', $map_class);
     _die($proto, "$subclass is not a ", __PACKAGE__, ' class')
 	unless $subclass->isa(__PACKAGE__);
     _trace($subclass, ' setup with ', \@setup_args) if $_TRACE;
@@ -305,8 +302,8 @@ sub _log_prefix {
     # Parses test_script and writes log prefix.
     my($v, $d, $f) = File::Spec->splitpath(File::Spec->rel2abs($script_name));
     $f =~ s/(?<=.)\.[^\.]+$//g;
-    return Bivio::IO::File->mkdir_p(
-	Bivio::IO::File->rm_rf(
+    return $_F->mkdir_p(
+	$_F->rm_rf(
 	    File::Spec->catpath(
 		'',
 		File::Spec->catpath(
