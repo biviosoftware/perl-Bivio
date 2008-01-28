@@ -224,8 +224,6 @@ sub get {
     return $pkg_cfg
 	if @_ < 2;
     my($spec) = $_SPEC{$pkg};
-    Bivio::IO::Alert->info($spec->{$proto->NAMED})
-        if $pkg eq 'Bivio::IO::ClassLoader';
     die("$pkg: NAMED config not specified by this package.  You can't retrieve values from a config hash with get().  Only for named configuration or whole package")
 	unless defined($spec) && defined($spec->{$proto->NAMED});
     if (defined($name)) {
