@@ -68,7 +68,7 @@ sub control_on_render {
     $self->SUPER::control_on_render($source, $buffer);
     $self->unsafe_render_attr('attributes', $source, $buffer);
     my($n) = '';
-    $$buffer .= ' name="' . Bivio::HTML->escape($n) . '"'
+    $$buffer .= ' name="' . Bivio::HTML->escape_attr_value($n) . '"'
 	if $self->unsafe_render_attr('name', $source, \$n);
     my($href) = _render_href($self, $source);
     $$buffer .= qq{ href="$href"}
