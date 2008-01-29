@@ -577,11 +577,12 @@ sub info_mail {
         )],
 	[qw(
             FORUM_MAIL_PART
-            518
+            142
             FORUM
             DATA_READ
 	    Model.MailPartList->execute_part
         )],
+#143-149 free
     ];
 }
 
