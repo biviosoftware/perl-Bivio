@@ -1,16 +1,16 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailPartList;
 use strict;
 use base 'Bivio::Biz::ListModel';
-#TODO: Why not use Bivio::Ext::MIMEParser?
-use MIME::Parser ();
-use MIME::WordDecoder;
-use Bivio::Mail::Address;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_FN) = Bivio::Type->get_instance('FileName');;
+my($_A) = __PACKAGE__->use('Mail.Address');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_FN) = __PACKAGE__->use('Type.FileName');
+my($_MP) = __PACKAGE__->use('Ext.MIMEParser');
+my($_T) = __PACKAGE__->use('MIME.Type');
+my($_W) = __PACKAGE__->use('MIME.Word');
 
 sub execute_from_realm_mail_list {
     my($proto, $req) = @_;
@@ -67,23 +67,26 @@ sub get_body {
 sub get_file_name {
     my($self) = @_;
     my($fn) = $self->get('mime_entity')->head->recommended_filename;
-    $fn = unmime($fn)
-	if $fn;
-    return $_FN->get_tail($fn || _default_file_name($self));
+    return $_FN->get_tail(
+	$fn && $_W->decode($fn) || _default_file_name($self));
+}
+
+sub get_from_name {
+    my($self) = @_;
+    return $self->get_header('from_name') || $self->get_header('from_email');
 }
 
 sub get_header {
     my($self, $name) = @_;
+    my($from) = $name =~ s/^(from)_(name|email)$/$1/ && $2;
     return ''
-	unless defined(my $v = $self->get('mime_entity')->head->get(
-	    $name =~ /^from_(name|email)$/ ? 'from' : $name));
+	unless defined(my $v = $self->get('mime_entity')->head->get($name));
     chomp($v);
-    if ($name =~ /^from_(name|email)$/) {
-	my($e, $n) = Bivio::Mail::Address->parse($v);
-	return ($name eq 'from_name' ? $n : $e) || '';
-    }
-    return $name eq 'date' ? (Bivio::Type::DateTime->from_literal($v))[0] || ''
-	: $v;
+    $v = $_W->decode($v);
+    return ($from ? ($_A->parse($v))[$from eq 'name' ? 1 : 0]
+	: $name eq 'date' ? ($_DT->from_literal($v))[0]
+	: $v
+    ) || '';
 }
 
 sub internal_initialize {
@@ -137,16 +140,16 @@ sub load_from_content {
 
 sub _default_file_name {
     my($self) = @_;
-    return 'attachment' . $self->get('index') . '.'
-	. (Bivio::MIME::Type->to_extension($self->get('mime_type') || '')
-		|| Bivio::MIME::Type->to_extension('application/octet'));
+    return 'attachment'
+	. $self->get('index')
+	. '.'
+	. ($_T->to_extension($self->get('mime_type') || '')
+	    || $_T->to_extension('application/octet')
+	);
 }
 
 sub _parser {
-    my($m) = MIME::Parser->new;
-    $m->output_to_core(1);
-    $m->tmp_to_core(1);
-    return $m->parse_data(\$_[0]);
+    return $_MP->parse_data(\$_[0]);
 }
 
 sub _walk {
@@ -164,7 +167,7 @@ sub _walk {
     }
     return @$parts ? [map(
 	$ct eq 'x-message/rfc822-headers' ? $_
-	    : $ct eq 'multipart/alternative' && $_->mime_type =~ m|^text/|
+	    : $ct eq 'multipart/alternative' && $_->mime_type =~ m{^text/}
 		&& $_->mime_type ne 'text/html'
 	    ? ()
 	    : @{_walk($_)},
