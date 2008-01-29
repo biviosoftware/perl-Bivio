@@ -558,6 +558,30 @@ sub info_mail {
             MAIL_SEND
             Action.RealmMail->execute_reflector
         )],
+	[qw(
+            FORUM_MAIL_THREAD_ROOT_LIST
+            140
+            FORUM
+            DATA_READ
+            Model.MailThreadRootList->execute_load_page
+            View.Mail->thread_root_list
+	    thread_task=FORUM_MAIL_THREAD_LIST
+        )],
+	[qw(
+            FORUM_MAIL_THREAD_LIST
+            141
+            FORUM
+            DATA_READ
+            Model.MailThreadList->execute_load_page
+            View.Mail->thread_list
+        )],
+	[qw(
+            FORUM_MAIL_PART
+            518
+            FORUM
+            DATA_READ
+	    Model.MailPartList->execute_part
+        )],
     ];
 }
 

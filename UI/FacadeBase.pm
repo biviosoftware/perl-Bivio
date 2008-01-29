@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::FacadeBase;
 use strict;
@@ -378,6 +378,9 @@ sub _cfg_mail {
 	    [FORUM_MAIL_RECEIVE => sub {
 		 return '?/' . shift->get_facade->MAIL_RECEIVE_PREFIX;
 	    }],
+	    [FORUM_MAIL_THREAD_ROOT_LIST => '?/discussions'],
+	    [FORUM_MAIL_THREAD_LIST => '?/topic'],
+	    [FORUM_MAIL_PART => '?/topic-attachment/*'],
 	    [FORUM_MAIL_REFLECTOR => undef],
 	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
 	    [MAIL_RECEIVE_FORWARD => undef],
@@ -394,6 +397,30 @@ sub _cfg_mail {
 	    ['MailReceiveDispatchForm.uri_prefix' => sub {
 		 return shift->get_facade->MAIL_RECEIVE_PREFIX;
 	    }],
+	    [MailThreadRootList => [
+		'RealmMail.subject' => 'Topic',
+		'RealmFile.modified_date_time' => 'First Post',
+		'RealmMail.from_email' => 'Author',
+	    ]],
+	    [prose => [
+		MailHeader => [
+		    to => 'To:',
+		    from => 'From:',
+		    cc => 'Cc:',
+		    subject => 'Subject:',
+		    date => 'Date:',
+		],
+	        MailPartList => [
+		     byline => q{SPAN_author(String(['->get_from_name']));SPAN_label(' on ');SPAN_date(DateTime(['->get_header', 'date']));},
+		     forward => q{DIV_header('---------- Forwarded message ----------');MailHeader();},
+		     attachment => q{SPAN_label('Attachment:');SPAN_value(String(['->get_file_name']));},
+		 ],
+	    ]],
+
+	    [title => [
+		FORUM_MAIL_THREAD_ROOT_LIST => 'Discussions',
+		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
+	    ]],
 	],
     };
 }
