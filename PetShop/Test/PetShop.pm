@@ -104,6 +104,17 @@ sub login_as_demo {
     return $self->login_as($self->use('Bivio::PetShop::Util')->DEMO);
 }
 
+sub next_message_id {
+    my($self) = @_;
+    my($i) = $self->get_or_default(next_message_id_index => 1);
+    $self->get_if_exists_else_put(
+	next_message_id_prefix => sub {$self->random_string() . '.'});
+    my($res) = '<' . $self->get('next_message_id_prefix') . $i
+	. '@' . $self->get('local_mail_host') . '>';
+    $self->put(next_message_id_index => ++$i);
+    return $res;
+}
+
 sub remove_from_cart {
     my($self, $item_name) = @_;
     # Removes I<item_name> from cart.
