@@ -2,9 +2,8 @@
 # $Id$
 package Bivio::UI::Text::Widget::CSV;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::Util::CSV;
-use Bivio::UI::ViewShortcuts;
+use Bivio::Base 'UI.Widget';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::Text::Widget::CSV> creates a csv table from HTMLWidget.Table
 # specifications.
@@ -47,6 +46,7 @@ use Bivio::UI::ViewShortcuts;
 # used to look up the type from the list model.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_CSV) = __PACKAGE__->use('ShellUtil.CSV');
 
 sub execute {
     my($self, $req) = @_;
@@ -63,7 +63,7 @@ sub initialize {
 	$col->[1]->{column_widget} ||= $col->[1]->{type}
 	    ? [$col->[1]->{type}, '->to_string', [$col->[0]]]
 	    : ['->get_as', $col->[0], 'to_string'];
-	$col->[1]->{column_heading} ||= Bivio::UI::ViewShortcuts->vs_text(
+	$col->[1]->{column_heading} ||= vs_text(
 	    $list->simple_package_name, $col->[0]);
 
 	foreach my $attr (qw(column_widget column_heading)) {
@@ -115,7 +115,7 @@ sub _get_column_control {
 
 sub _render_cells {
     my($self, $name, $cells, $source, $buffer) = @_;
-    $$buffer .= ${Bivio::Util::CSV->to_csv_text([
+    $$buffer .= ${$_CSV->to_csv_text([
 	map($self->render_simple_value($_->[1]->{$name}, $source), @$cells),
     ])};
     return;
