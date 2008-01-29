@@ -9,4 +9,3 @@ submit_form({
     email => $user,
     message => $body,
 });
-verify_local_mail($user, 'Web Contact');
