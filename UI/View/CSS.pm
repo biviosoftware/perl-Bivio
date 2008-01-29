@@ -125,7 +125,7 @@ form .check {
 .acknowledgement, .err_title, .field_err, form .desc {
   width: 30em;
 }
-form .desc, .byline {
+form .desc, .byline, .msg .forward {
   margin: .1em 0 0 0;
   font-size: 85%;
   Color('form_desc');
@@ -518,6 +518,7 @@ EOF
 }
 
 sub _site_mail {
+#TODO: mail_msg needs to be removed
     return <<'EOF';
 .mail_msg .header {
   width: 100%;
@@ -542,6 +543,37 @@ sub _site_mail {
 }
 .mail_msg .part {
   padding-bottom: 1ex;
+}
+
+.msg {
+  margin-top: 1ex
+  margin-bottom: 1ex
+}
+.msg_sep {
+  border-bottom: 2px solid;
+  margin-bottom: 1ex;
+  height: 2ex;
+  width: 40em;
+  Color('form_sep-border');
+}
+.msg .text_plain {
+  white-space: pre;
+  Font('pre_text');
+}
+.msg .attachment {
+  margin-top: 1ex;
+  border-top: 1px dashed;
+  Color('form_sep-border');
+}
+.msg .forward {
+  margin-top: 1ex;
+  margin-bottom: 1ex;
+}
+.msg .byline {
+  margin-bottom: 1ex;
+}
+.msg .forward .label {
+  padding-right: .5em;
 }
 EOF
 }
