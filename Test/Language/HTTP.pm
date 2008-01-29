@@ -391,7 +391,10 @@ sub new {
 	history => [],
 	history_length => 3,
     };
-    $self->put(deprecated_text_patterns => $_CFG->{deprecated_text_patterns});
+    $self->put(
+	deprecated_text_patterns => $_CFG->{deprecated_text_patterns},
+	local_mail_host => $_CFG->{local_mail_host},
+    );
     return $self;
 }
 
@@ -433,10 +436,8 @@ sub send_mail {
     my($self, $from_email, $to_email, $headers, $body) = @_;
     # Send a message.  Returns the object.  Sets subject and body to unique values.
     my($r) = $self->random_string();
-    my($req) = Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
-	->get_current_or_new;
-    my($o) = Bivio::IO::ClassLoader ->simple_require('Bivio::Mail::Outgoing')
-	->new;
+    my($req) = $self->use('Test.Request')->get_current_or_new;
+    my($o) = $self->use('Mail.Outgoing')->new;
     $o->set_recipients($to_email, $req);
     $o->set_header(To => $to_email);
     $headers = {
@@ -632,7 +633,8 @@ sub verify_local_mail {
     my($match) = {};
     $email = [$email]
 	unless ref($email) eq 'ARRAY';
-    $email = [map($_ =~ /\@/ ? $_ : $self->generate_local_email($_), @$email)];
+    $email = [map(ref($_) || $_ =~ /\@/ ? $_
+        : $self->generate_local_email($_), @$email)];
     my($found) = [];
     my($die) = sub {Bivio::Die->die(@_, "\n", $found)};
     for (my $i = $_CFG->{mail_tries}; $i-- > 0;) {
