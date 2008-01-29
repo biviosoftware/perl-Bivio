@@ -1,0 +1,62 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="7aQW4wW2e4"
+Content-Transfer-Encoding: 7bit
+
+--7aQW4wW2e4
+Content-Type: text/plain; charset=us-ascii
+Content-Description: message body text
+Content-Transfer-Encoding: 7bit
+
+Here's a forwarded msg.
+
+--7aQW4wW2e4
+Content-Type: message/rfc822
+Content-Description: forwarded message
+Content-Transfer-Encoding: 7bit
+
+Message-Id: <200801020235.m022ZJag019419@bivio.biz>
+From: $inner_from
+To: $inner_to
+Subject: $inner_subject
+Date: Tue, 1 Jan 2008 19:35:19 -0700
+MIME-Version: 1.0
+Content-type: multipart/related;    type="multipart/alternative";    boundary="----=_NextPart_000_0066_11440000.33CC0001"
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0066_11440000.33CC0001
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_001_0067_11440000.33CC0001"
+
+
+------=_NextPart_001_0067_11440000.33CC0001
+Content-Type: text/html; charset=ascii
+Content-Transfer-Encoding: 7bit
+
+<html>
+<body>
+$inner_html
+</body>
+</html>
+
+------=_NextPart_001_0067_11440000.33CC0001
+Content-Type: text/plain; charset=ascii
+Content-Transfer-Encoding: 7bit
+
+<html>
+<body>
+$inner_plain
+</body>
+</html>
+
+------=_NextPart_001_0067_11440000.33CC0001--
+
+
+
+------=_NextPart_000_0066_11440000.33CC0001--
+
+
+
+
+--7aQW4wW2e4--
+

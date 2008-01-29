@@ -1,0 +1,72 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+my($vars) = test_template_vars({
+    user1_email => generate_local_email('mail_user1'),
+    user1_name => 'One Guy',
+    user2_email => generate_local_email('mail_user2'),
+    user2_name => 'Two Guy',
+    forum_email => generate_remote_email('mail_forum'),
+});
+my($d) = test_use('Type.DateTime');
+my($next_date) = $d->now;
+my($date) = sub {
+    return $d->rfc822($next_date = $d->add_seconds($next_date, 1));
+};
+my($header) = sub {
+    my($label, $who) = @_;
+    return
+	unless $who;
+    return (
+	$label,
+	($label =~ /return/i || !$vars->{$who . '_name'}
+	     ? $vars->{$who . '_email'}
+	     : $vars->{$who . '_name'}
+	     . ' <' . $vars->{$who . '_email'} . '>'),
+    );
+};
+my($headers) = sub {
+    my($from, $to, $ref) = @_;
+    return {
+	$header->('Return-Path', $from),
+	$header->('From', $from),
+	$header->('To', $to),
+	'Message-Id' => next_message_id(),
+	Date => $date->(),
+	Subject => $ref ? 'Re: ' . $ref->unsafe_get_header('Subject')
+	    : random_string(),
+	$ref ? (References => $ref->unsafe_get_header('Message-Id')) : (),
+    };
+};
+my($send_mail) = sub {
+    my($template) = shift;
+    my($h) = $headers->(@_);
+    %$vars = (%$vars, %$h);
+    my($head, $body) = test_template($template) =~ /^(.*?\n)\n(.*)/s;
+    %$h = (%$h, split(/[:\n]/, $head));
+    my($msg) = send_mail(
+	map($h->{$_} =~ /([^<]+\@[^>]+)/, qw(From To)), $h, $body);
+    verify_local_mail(qr{.}, qr{.}, 2);
+    my($s) = $msg->unsafe_get_header('Subject');
+    $s =~ s/Re: //;
+    return ($msg, $s);
+};
+my($msg, $subject) = $send_mail->(qw(1.eml user1 forum));
+login_as('mail_user1');
+visit_uri('/mail_forum/discussions');
+follow_link($subject);
+verify_text($subject);
+%$vars = (
+    %$vars,
+    inner_from => 'Joe Blow <joe@blow.com>',
+    inner_to => 'Two Shoes <two@shoes.com>',
+    inner_subject => 'My Inner Subject',
+    inner_html => random_string(),
+    inner_plain => random_string(),
+);
+$send_mail->(qw(2.eml user2 forum), $msg);
+visit_uri(get_uri());
+verify_text(qr{Subject:.*$vars->{inner_subject}});
+verify_text($vars->{inner_html});
+verify_no_text($vars->{inner_plain});

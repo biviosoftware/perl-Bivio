@@ -1,0 +1,13 @@
+MIME-version: 1.0
+Content-type: text/html
+
+<html>
+<head>
+<title>Mail 1</title>
+</head>
+<body>
+An HTML mail message with an image:
+<img src="http://www.bivio.biz/i/logo.png">
+</body>
+</html>
+
