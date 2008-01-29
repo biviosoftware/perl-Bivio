@@ -7,6 +7,9 @@ Type();
 	'=?ISO-8859-1?Q?Keld_J=F8rn_Simonsen?=' => 'Keld Jørn Simonsen',
 	'=?ISO-8859-1?Q?Andr=E9_?= Pirard' => q{André  Pirard},
 	'=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?= =?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?= =?US-ASCII?Q?.._cool!?=' => 'If you can read this you understand the example... cool!',
+        '=?EUC-KR?B?U2VyaWFsaXplIGJ5IFJvdXRlciBvbiBMR0lNTTAvTEdJTk5PVEVLKA==?=' => q{Serialize by Router on LGIMM0/LGINNOTEK(},
+        '=?EUC-KR?B?UmVsZWFzZSA2LjUuNiBIRjUxfE1heSAxNCwgMjAwNykgYXQgMjAwOC0wMS0=?=' => q{Release 6.5.6 HF51|May 14, 2007) at 2008-01-},
+        '=?EUC-KR?B?MjIgv8DA/CAwNTo1NDoyNQ==?=' => q{22 ???? 05:54:25},
     ],
 ];
 
