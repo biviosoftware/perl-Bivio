@@ -2,18 +2,17 @@
 # $Id$
 package Bivio::PetShop::Util;
 use strict;
-use Bivio::Auth::Role;
-use Bivio::Base 'Bivio::Util::SQL';
-use Bivio::Biz::Util::RealmRole;
-use Bivio::Type::DateTime;
-use Bivio::Util::CSV;
+use Bivio::Base 'ShellUtil.SQL';
 
 # export BCONF=~/bconf/petshop.bconf
 # cd files/ddl
 # perl -w ../../b-petshop init_dbms
 # perl -w ../../b-petshop create_test_db
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = 'Bivio::Type::DateTime';
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_R) = __PACKAGE__->use('Auth.Role');
+my($_AR) = __PACKAGE__->use('Auth.Realm');
+my($_S) = __PACKAGE__->use('Type.String');
 
 sub BTEST_ADMIN {
     return 'btest_admin';
@@ -50,6 +49,14 @@ sub FOUREM {
 
 sub GUEST {
     return 'guest';
+}
+
+sub MAIL_FORUM {
+    return 'mail_forum';
+}
+
+sub MAIL_USER {
+    return 'mail_user' . $_[1];
 }
 
 sub MULTI_ROLE_USER {
@@ -140,6 +147,7 @@ sub initialize_test_data {
     _init_tuple($self);
     _init_logo($self);
     _init_default_tuple($self);
+    _init_mail($self);
     return;
 }
 
@@ -166,23 +174,7 @@ sub realm_role_config {
 sub _init_default_tuple {
     my($self) = @_;
     my($req) = $self->req;
-    $self->create_test_user($self->TUPLE_USER);
-    $req->set_realm(undef);
-    $req->set_user($self->TUPLE_USER);
-    $self->model('ForumForm', {
-        'RealmOwner.display_name' => 'Customer Request Management',
-	'RealmOwner.name' => $self->TUPLE_FORUM,
-    });
-    $self->model('ForumUserDeleteForm', {
-	'RealmUser.realm_id' => $req->get('auth_id'),
-	'User.user_id' => $self->unauth_model('RealmOwner', {name => $self->ROOT})->get('realm_id'),
-    });
-    $self->model('ForumUserAddForm', {
-	'RealmUser.realm_id' => $req->get('auth_id'),
-	'User.user_id' => $req->get('auth_user_id'),
-	administrator => 1,
-    });
-    $req->set_realm($self->TUPLE_FORUM);
+    _top_level_forum($self, $self->TUPLE_FORUM, [$self->TUPLE_USER], []);
     $self->model('TupleSlotType')->create_from_hash({
 	Status => {
 	    type_class => 'TupleSlot',
@@ -282,7 +274,7 @@ sub _init_demo_items {
     my($self) = @_;
     # Init Model.Item and Model.inventory.
 
-    foreach my $record (@{Bivio::Util::CSV->parse_records(<<'EOF')}) {
+    foreach my $record (@{$self->new_other('CSV')->parse_records(<<'EOF')}) {
 item_id,product_id,list_price,unit_cost,attr1
 EST-1,FI-SW-01,16.5,10,Large
 EST-2,FI-SW-01,16.5,10,Small
@@ -322,7 +314,7 @@ sub _init_demo_products {
     my($self) = @_;
     # Initializes Model.Product.
 
-    foreach my $record (@{Bivio::Util::CSV->parse_records(<<'EOF')}) {
+    foreach my $record (@{$self->new_other('CSV')->parse_records(<<'EOF')}) {
 product_id,category_id,name,image_name,description
 FI-SW-01,FISH,Angelfish,angelfish,Salt Water fish from Australia
 FI-SW-02,FISH,Tiger Shark,tigershark,Salt Water fish from Australia
@@ -384,19 +376,19 @@ sub _init_demo_users {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
                 realm_id => $demo_id || die('DEMO must come before GUEST'),
                 user_id => $uid,
-                role => Bivio::Auth::Role->GUEST,
+                role => $_R->GUEST,
             });
 	}
 	elsif ($u eq $self->MULTI_ROLE_USER) {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
-                realm_id => Bivio::Auth::Realm->get_general->get('id'),
+                realm_id => $_AR->get_general->get('id'),
                 user_id => $uid,
-                role => Bivio::Auth::Role->TEST_ROLE1,
+                role => $_R->TEST_ROLE1,
             });
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
-                realm_id => Bivio::Auth::Realm->get_general->get('id'),
+                realm_id => $_AR->get_general->get('id'),
                 user_id => $uid,
-                role => Bivio::Auth::Role->TEST_ROLE2,
+                role => $_R->TEST_ROLE2,
             });
 	}
 	elsif ($u eq $self->OTP) {
@@ -583,6 +575,13 @@ sub _init_logo {
     return;
 }
 
+sub _init_mail {
+    my($self) = @_;
+    _top_level_forum(
+	$self, $self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    return;
+}
+
 sub _init_tuple {
     my($self) = @_;
     my($req) = $self->get_request;
@@ -609,6 +608,35 @@ sub _init_tuple {
 	],
     });
     $self->model('TupleUse')->create_from_label('PetShopReport');
+    return;
+}
+
+sub _realm_id {
+    my($self, $name) = @_;
+    my($ro) = $self->model('RealmOwner');
+    return $ro->unauth_load({name => $name}) ? $ro->get('realm_id')
+	:  $self->create_test_user($name);
+}
+
+sub _top_level_forum {
+    my($self, $name, $admins, $users) = @_;
+    $self->req->set_realm(undef);
+    $self->model('ForumForm', {
+        'RealmOwner.display_name' => $_S->to_camel_case($name),
+	'RealmOwner.name' => $name,
+    });
+    my($rid) = $self->req('auth_id');
+    $self->model('ForumUserDeleteForm', {
+	'RealmUser.realm_id' => $rid,
+	'User.user_id' => _realm_id($self, $self->ROOT),
+    });
+    foreach my $user (@$admins, @$users) {
+	$self->model('ForumUserAddForm', {
+	    'RealmUser.realm_id' => $rid,
+	    'User.user_id' => _realm_id($self, $user),
+	    administrator => grep($_ eq $_, @$admins) ? 1 : 0,
+	});
+    }
     return;
 }
 
