@@ -230,6 +230,23 @@ sub test_setup {
     return $_SELF_IN_EVAL;
 }
 
+sub test_template {
+    my(undef, $template) = _args(@_);
+    my($self) = _assert_in_eval('test_template');
+    return ${$self->use('IO.Template')->replace_in_file(
+	$self->test_name . "/$template",
+	$self->test_template_vars,
+    )};
+}
+
+sub test_template_vars {
+    my(undef, $vars) = _args(@_);
+    my($self) = _assert_in_eval('test_template_vars');
+    $self->put(test_template_vars => $vars)
+	if $vars;
+    return $self->get('test_template_vars');
+}
+
 sub test_use {
     my($self, $class) = _args(@_);
     return $self->use($class);
