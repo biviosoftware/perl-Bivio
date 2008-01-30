@@ -411,8 +411,8 @@ sub _cfg_mail {
 		    date => 'Date:',
 		],
 	        MailPartList => [
-		     byline => q{SPAN_author(String(['->get_from_name']));SPAN_label(' on ');SPAN_date(DateTime(['->get_header', 'date']));},
-		     forward => q{DIV_header('---------- Forwarded message ----------');MailHeader();},
+		     byline => q{DIV_byline(Join([SPAN_author(String(['->get_from_name'])), SPAN_label(' on '), SPAN_date(DateTime(['->get_header', 'date']))]));},
+		     forward => q{DIV_forward(Join([DIV_header('---------- Forwarded message ----------'), MailHeader()]));},
 		     attachment => q{SPAN_label('Attachment:');SPAN_value(String(['->get_file_name']));},
 		 ],
 	    ]],
