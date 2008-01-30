@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::OTP;
 use strict;
@@ -46,7 +46,7 @@ sub six_word_key {
 sub _args {
     my($self) = shift;
     my($seq) = 1;
-    return $self->arg_list(\@_, [
+    return $self->name_args([
 	[sequence => OTPSequence => sub {
 	     $seq = 0;
 	     return $self->model('OTP')->get_field_type('sequence')->get_max;
@@ -57,7 +57,7 @@ sub _args {
 		 ? shift->use('Bivio::IO::TTY')->read_password('Passphrase: ')
 		 : shift->use('ShellUtil.SQL')->TEST_PASSWORD;
 	}],
-    ]);
+    ], \@_);
 }
 
 1;

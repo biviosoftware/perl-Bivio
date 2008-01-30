@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RealmFile;
 use strict;
@@ -59,7 +59,7 @@ sub delete_deep {
 }
 
 sub export_tree {
-    my($self, $folder) = shift->arg_list(\@_, [[qw(folder FilePath)]]);
+    my($self, $folder) = shift->name_args([[qw(folder FilePath)]], \@_);
     $self->initialize_ui;
     $folder .= '/'
 	unless length($folder) == 1;

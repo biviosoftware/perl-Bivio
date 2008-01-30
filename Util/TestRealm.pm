@@ -15,10 +15,10 @@ EOF
 }
 
 sub delete_by_regexp {
-    my($self, $regexp, $realm_type) = shift->arg_list(\@_, [
+    my($self, $regexp, $realm_type) = shift->name_args([
 	'Regexp',
 	['Auth.RealmType', undef, undef],
-    ]);
+    ], \@_);
     $self->model('RealmOwner')->do_iterate(sub {
         my($it) = @_;
 	$it->unauth_delete

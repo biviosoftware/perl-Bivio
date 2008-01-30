@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RowTag;
 use strict;
@@ -17,9 +17,9 @@ EOF
 }
 
 sub list {
-    my($self, @key) = shift->arg_list(\@_, [
+    my($self, @key) = shift->name_args([
 	[RowTagKey => undef, sub {grep(!$_->eq_unknown, $_RTK->get_list)}],
-    ]);
+    ], \@_);
     my($rt) = $self->model('RowTag');
     my($id) = $self->req('auth_id');
     return join('', map(
@@ -30,10 +30,10 @@ sub list {
 }
 
 sub replace_value {
-    my($self, $key, $value) = shift->arg_list(\@_, [
+    my($self, $key, $value) = shift->name_args([
 	['RowTagKey'],
 	[RowTagValue => undef, undef],
-    ]);
+    ], \@_);
     $self->model('RowTag')->replace_value($self->req('auth_id'), $key, $value);
     return;
 }

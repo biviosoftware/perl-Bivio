@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RealmAdmin;
 use strict;
@@ -29,9 +29,8 @@ EOF
 }
 
 sub create_user {
-    my($self, $email, $display_name, $password, $user_name) = shift->arg_list(
-	\@_,
-	[qw(Email DisplayName Password ?RealmName)]);
+    my($self, $email, $display_name, $password, $user_name) = shift->name_args(
+	[qw(Email DisplayName Password ?RealmName)], \@_);
     return $self->model(UserCreateForm => {
 	'Email.email' => $email,
 	'RealmOwner.display_name' => $display_name,
@@ -103,7 +102,7 @@ sub invalidate_password {
 }
 
 sub join_user {
-    my($self, @roles) = shift->arg_list(\@_, [['Auth.Role']]);
+    my($self, @roles) = shift->name_args([['Auth.Role']], \@_);
     my($req) = $self->req;
     foreach my $role (@roles) {
 	$self->model('RealmUser')->create({
