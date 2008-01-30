@@ -1,0 +1,8 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    map(([${read_file($_)}, 'FORUM_MAIL_PART']
+        => ${read_file(($_ =~ /(.+)in$/)[0] . 'out')}
+    ), glob('MailBodyHTML/*.in')),
+];

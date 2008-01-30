@@ -1,0 +1,37 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----------=_1201646665-416-4"
+Content-Transfer-Encoding: binary
+
+This is a multi-part message in MIME format...
+
+------------=_1201646665-416-4
+Content-Type: multipart/related; boundary="----------=_1201646665-416-5"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+This is a multi-part message in MIME format...
+
+------------=_1201646665-416-5
+Content-Type: text/html; charset="us-ascii"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.=
+w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">=0D
+<html xmlns=3D"http://www.w3.org/1999/xhtml">=0D
+<body>=0D
+<a href=3D"cid:pqwflo4g7tvg3mo9.9w2xcpn7sss75wi4@bivio.biz">embedded-image</a>=0D
+</body>=0D
+</html>=0D
+
+------------=_1201646665-416-5
+Content-Type: image/gif; name="4000021.gif"
+Content-Disposition: inline; filename="4000021.gif"
+Content-Transfer-Encoding: base64
+Content-ID: <pqwflo4g7tvg3mo9.9w2xcpn7sss75wi4@bivio.biz>
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAEBMgA7
+------------=_1201646665-416-4--
