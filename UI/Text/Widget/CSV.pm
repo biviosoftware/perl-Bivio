@@ -47,6 +47,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CSV) = __PACKAGE__->use('ShellUtil.CSV');
+my($_VS) = __PACKAGE__->use('UI.ViewShortcuts');
 
 sub execute {
     my($self, $req) = @_;
@@ -63,7 +64,7 @@ sub initialize {
 	$col->[1]->{column_widget} ||= $col->[1]->{type}
 	    ? [$col->[1]->{type}, '->to_string', [$col->[0]]]
 	    : ['->get_as', $col->[0], 'to_string'];
-	$col->[1]->{column_heading} ||= vs_text(
+	$col->[1]->{column_heading} ||= $_VS->vs_text(
 	    $list->simple_package_name, $col->[0]);
 
 	foreach my $attr (qw(column_widget column_heading)) {
