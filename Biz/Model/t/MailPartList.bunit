@@ -29,4 +29,11 @@ req()->initialize_fully;
 	    [read_file($_)] => do(($_ =~ /(.*)in$/)[0] . 'out') || die($@),
 	), glob('MailPartList/*.in')),
     ],
+    load_from_content => [
+	[read_file('MailPartList/mime_cid')] => not_die(),
+    ],
+    unsafe_get_cursor_for_mime_cid => [
+	'pqwflo4g7tvg3mo9.9w2xcpn7sss75wi4@bivio.biz' => 2,
+	'notfound' => [undef],
+    ],
 ];
