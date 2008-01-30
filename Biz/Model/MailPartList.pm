@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::MailPartList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = __PACKAGE__->use('Mail.Address');
@@ -31,9 +31,26 @@ sub execute_from_realm_file_id {
 
 sub execute_part {
     my($proto, $req) = @_;
-    # It's bad to pull the result from the request, but it should be reliable
-    $proto->execute_load_this($req);
-    my($self) = $req->get(ref($proto) || $proto);
+    my($self) = $proto->new($req);
+    my($q) = $self->parse_query_from_request;
+    if ($q->get('this')) {
+	$self->load_this($q);
+    }
+    elsif (my $cid = $q->unsafe_get('mime_cid')) {
+	$self->load_all($q);
+	my($cursor) = $self->unsafe_get_cursor_for_mime_cid($cid);
+	$self->throw_die(MODEL_NOT_FOUND => {
+	    message => 'mime_cid not found',
+	    entity => $cid,
+	}) unless defined($cursor);
+	$self->set_cursor($cursor);
+    }
+    else {
+	$self->throw_die(CORRUPT_QUERY => {
+	    message => 'missing this or mime_cid',
+	    entity => $q,
+	});
+    }
     $req->get('reply')
 	->set_output_type($self->get('mime_type'))
 	->set_output(\((
@@ -43,20 +60,15 @@ sub execute_part {
     return 1;
 }
 
+sub format_uri_for_mime_cid {
+    my($self, $mime_cid, $task_id) = @_;
+    # Don't bother verifying is in list(?)
+    return _uri($self, $task_id, {mime_cid => $mime_cid});
+}
+
 sub format_uri_for_part {
     my($self, $task_id) = @_;
-    my($req) = $self->get_request;
-    $self->die(
-	$self->get('RealmFile.realm_id'), ': not same as auth_realm',
-    ) unless $req->get('auth_id') eq $self->get('RealmFile.realm_id');
-    return $self->get_request->format_uri({
-	task_id => $task_id,
-	path_info => $self->get_file_name,
-	query => {
-	    'ListQuery.parent_id' => $self->get_query->get('parent_id'),
-	    'ListQuery.this' => $self->get('index'),
-	},
-    });
+    return _uri($self, $task_id, {'ListQuery.this' => $self->get('index')});
 }
 
 sub get_body {
@@ -89,6 +101,10 @@ sub get_header {
     ) || '';
 }
 
+sub has_mime_cid {
+    return defined(shift->get('mime_cid')) ? 1 : 0;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -98,12 +114,13 @@ sub internal_initialize {
 	    other => [
 		[qw(mime_type Line)],
 		[qw(mime_entity Object)],
+		[qw(mime_cid Line NONE)],
 	    ],
 	    undef, 'NOT_NULL',
 	)},
 	parent_id => 'RealmFile.realm_file_id',
 	auth_id => 'RealmFile.realm_id',
-	other_query_keys => [qw(content_ref)],
+	other_query_keys => [qw(content_ref mime_cid)],
     });
 }
 
@@ -138,6 +155,25 @@ sub load_from_content {
     });
 }
 
+sub unsafe_get_cursor_for_mime_cid {
+    my($self, $mime_cid) = @_;
+    return $self->save_excursion(sub {
+	my($cursor);
+	$mime_cid = "<$mime_cid>";
+	$self->do_rows(sub {
+	    my($it) = @_;
+	    return 1
+		unless my $cid = $it->unsafe_get('mime_cid');
+	    chomp($cid);
+	    return 1
+		unless $mime_cid eq $cid;
+	    $cursor = $it->get_cursor;
+	    return 0;
+	});
+	return $cursor;
+    });
+}
+
 sub _default_file_name {
     my($self) = @_;
     return 'attachment'
@@ -152,21 +188,39 @@ sub _parser {
     return $_MP->parse_data(\$_[0]);
 }
 
+sub _uri {
+    my($self, $task_id, $other) = @_;
+    my($req) = $self->get_request;
+    $self->die(
+	$self->get('RealmFile.realm_id'), ': not same as auth_realm',
+    ) unless $req->get('auth_id') eq $self->get('RealmFile.realm_id');
+    return $self->get_request->format_uri({
+	task_id => $task_id,
+	path_info => $self->get_file_name,
+	query => {
+	    'ListQuery.parent_id' => $self->get_query->get('parent_id'),
+	    %$other,
+	},
+    });
+}
+
 sub _walk {
     my($me) = @_;
     $me->head->unfold;
     my($parts) = [$me->parts];
     my($ct) = $me->mime_type;
-    my($res) = [];
     if ($ct eq 'message/rfc822') {
+#TODO: Do not die; ignore other parts(?)
 	Bivio::Die->die($parts, ': expected one part')
 	    unless 1 == @$parts;
 	my($h) = $parts->[0]->head->dup;
 	$h->replace('Content-Type', 'x-message/rfc822-headers');
 	unshift(@$parts, _parser($h->as_string . "\n"));
     }
+    my($related_index) = 0;
     return @$parts ? [map(
-	$ct eq 'x-message/rfc822-headers' ? $_
+	$ct eq 'x-message/rfc822-headers'
+	    ? $_
 	    : $ct eq 'multipart/alternative' && $_->mime_type =~ m{^text/}
 		&& $_->mime_type ne 'text/html'
 	    ? ()
@@ -175,6 +229,7 @@ sub _walk {
     )] : [{
 	mime_type => $ct,
 	mime_entity => $me,
+	mime_cid => $me->head->get('content-id') || undef,
     }];
 }
 
