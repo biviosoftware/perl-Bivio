@@ -32,8 +32,8 @@ use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_DTM) = __PACKAGE__->use('UI.DateTimeMode');
-my($_F) = __PACKAGE__->use('UI.Font');
+my($_DTM) = __PACKAGE__->use('FacadeComponent.DateTimeMode');
+my($_F) = __PACKAGE__->use('FacadeComponent.Font');
 my($_JS) = __PACKAGE__->use('HTMLWidget.JavaScript');
 my($_HDT) = __PACKAGE__->use('HTMLFormat.DateTime');
 my($_IDI) = __PACKAGE__->instance_data_index;
