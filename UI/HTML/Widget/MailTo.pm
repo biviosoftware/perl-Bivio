@@ -3,7 +3,6 @@
 package Bivio::UI::HTML::Widget::MailTo;
 use strict;
 use Bivio::Base 'UI.Widget';
-use Bivio::Type::Email;
 
 # C<Bivio::UI::HTML::Widget::MailTo> displays an email as a
 # C<mailto> link.
@@ -43,6 +42,8 @@ use Bivio::Type::Email;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_E) = __PACKAGE__->use('Type.Email');
+my($_S) = __PACKAGE__->use('HTMLWidget.String');
 
 sub initialize {
     # (self) : undef
@@ -75,7 +76,7 @@ sub initialize {
 
     # Make the value into a widget
     my($string_font) = $self->get_or_default('string_font', 'mailto');
-    $fields->{value_widget} = Bivio::UI::HTML::Widget::String->new({
+    $fields->{value_widget} = $_S->new({
 	value => $fields->{value},
 	parent => $self,
 	string_font => $string_font,
@@ -124,7 +125,7 @@ sub render {
     $email ||= '';
 
     # Don't render anything which is ignored.
-    if (Bivio::Type::Email->is_ignore($email)) {
+    if ($_E->is_ignore($email)) {
 	# Don't make visible ignored addresses
 	if ($fields->{email} eq $fields->{value}
 	    || ref($fields->{value}) eq 'ARRAY'
