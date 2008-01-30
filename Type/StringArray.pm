@@ -85,7 +85,13 @@ sub from_literal {
     my($sep) = $proto->SQL_SEPARATOR_REGEX;
     $sep = $proto->LITERAL_SEPARATOR_REGEX
 	unless $value =~ $sep;
-    return ($proto->new([split($sep, $value)]), undef);
+    my($error);
+    my($values) = [map({
+	my($v, $e) = $proto->from_literal_validator($_);
+	$error ||= $e;
+	$v;
+    } split($sep, $value))];
+    return $error ? (undef, $error) : ($proto->new($values), undef);
 }
 
 sub from_literal_stripper {
@@ -95,8 +101,7 @@ sub from_literal_stripper {
 }
 
 sub from_literal_validator {
-    shift;
-    return shift;
+    return $_[1];
 }
 
 sub from_sql_column {
