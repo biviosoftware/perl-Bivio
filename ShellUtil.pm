@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::ShellUtil;
 use strict;
@@ -245,34 +245,8 @@ sub are_you_sure {
 
 sub arg_list {
     my($proto, $args, $decls) = @_;
-    my($last_decl) = $decls->[$#$decls];
-    return (
-	$proto,
-	@{$proto->map_together(sub {
-	    my($arg, $decl) = @_;
-	    $decl ||= $last_decl;
-	    $decl = [$decl]
-		unless ref($decl);
-	    my($name, $type, $default) = @$decl;
-	    my($has_default) = $name =~ s/^\?// || @$decl > 2;
-	    $type ||= $name;
-	    $type = "Type.$type"
-		unless $type =~ /\W/;
-	    $type = $proto->use($type);
-	    my($v, $e) = $type->from_literal($arg);
-	    return $v
-		if defined($v);
-	    unless ($e) {
-		return ref($default) eq 'CODE' ? $default->($proto) : $default
-		    if $has_default;
-		$e = Bivio::TypeError->NULL;
-	    }
-	    $proto->usage_error(
-		$arg, ': invalid ', $name, ': ',
-		$e->get_long_desc, '; see Type.', $type, "\n");
-	    # DOES NOT RETURN
-	}, $args, $decls)},
-    );
+    Bivio::IO::Alert->warn_deprecated('use name_args');
+    return $proto->name_args($decls, $args);
 }
 
 sub assert_not_general {
@@ -667,6 +641,39 @@ sub main {
 
 sub model {
     return _model(@_);
+}
+
+sub name_args {
+    my($proto, $decls, $args) = @_;
+    my($last_decl) = $decls->[$#$decls];
+    return (
+	$proto,
+	@{$proto->map_together(sub {
+	    my($arg, $decl) = @_;
+	    $decl ||= $last_decl;
+	    $decl = [$decl]
+		unless ref($decl);
+	    my($name, $type, $default) = @$decl;
+	    my($has_default) = $name =~ s/^\?// || @$decl > 2;
+	    $type ||= $name;
+	    $type = "Type.$type"
+		unless $type =~ /\W/;
+	    $type = $proto->use($type);
+	    my($v, $e) = $type->from_literal($arg);
+	    return $v
+		if defined($v);
+	    unless ($e) {
+		return ref($default) eq 'CODE' ? $default->($proto) : $default
+		    if $has_default;
+		$e = Bivio::TypeError->NULL;
+	    }
+	    $proto->usage_error(
+		$arg, ': invalid ', $name, ': ',
+		$e->get_long_desc, '; see Type.', $type, "\n");
+	    # DOES NOT RETURN
+	}, $args, $decls)},
+    );
+    return;
 }
 
 sub new {

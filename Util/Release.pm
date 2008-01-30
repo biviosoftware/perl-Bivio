@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::Release;
 use strict;
@@ -213,7 +213,7 @@ sub build_tar {
 }
 
 sub create_stream {
-    my($self, @pkg) = shift->arg_list(\@_, [['Line']]);
+    my($self, @pkg) = shift->name_args([['Line']], \@_);
     return `rpm -q @pkg --queryformat '%{NAME} %{VERSION}-%{RELEASE} %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n' | sort`;
 }
 
