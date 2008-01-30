@@ -62,6 +62,10 @@ sub NOT_FOUND_IF_EMPTY {
     return 0;
 }
 
+sub RESET_CURSOR {
+    return -1;
+}
+
 sub append_empty_rows {
     my($self, $count) = @_;
     # Adds the specified number of empty rows to the end of the list.
@@ -319,8 +323,6 @@ sub format_uri_for_this_page {
 }
 
 sub get_cursor {
-    # Returns the position.  Returns -1 before the list is read and
-    # undef after the list is read.
     return shift->[$_IDI]->{cursor};
 }
 
@@ -466,7 +468,7 @@ sub internal_load {
 	qw(empty_properties load_notes)};
     $self->[$_IDI] = {
 	rows => $rows,
-	cursor => -1,
+	cursor => $self->RESET_CURSOR,
 	query => $query,
 	empty_properties => $empty_properties,
  	load_notes => $load_notes,
@@ -508,14 +510,8 @@ sub internal_prepare_statement {
 
 sub internal_set_cursor {
     my($self, $cursor) = @_;
-    # Sets cursor as returned by L<get_cursor|"get_cursor">.
-    $cursor = $self->LAST_ROW unless defined($cursor);
-    if ($cursor < 0) {
-	$self->reset_cursor;
-    }
-    else {
-	$self->set_cursor($cursor);
-    }
+#TODO: This should be deprecated
+    $self->set_cursor(defined($cursor) ? $cursor : $self->LAST_ROW);
     return;
 }
 
@@ -826,10 +822,16 @@ sub prev_row {
 
 sub reset_cursor {
     my($self) = @_;
-    # Places the cursor before the start of the list.
-    $self->internal_clear_model_cache;
-    $self->[$_IDI]->{cursor} = -1;
-    return $self;
+    return $self->set_cursor($self->RESET_CURSOR);
+}
+
+sub save_excursion {
+    my($self, $op) = @_;
+    my($old_cursor) = $self->get_cursor;
+    my(@res) = $op->();
+    $self->set_cursor($old_cursor)
+	if defined($old_cursor);
+    return wantarray ? @res : $res[0];
 }
 
 sub set_cursor {
@@ -850,14 +852,14 @@ sub set_cursor {
 	$index = $n - 1;
 	# Fall through to handle empty list case.
     }
-    if ($index >= $n) {
+    if ($index >= $n || $index == $self->RESET_CURSOR) {
 	$self->die("$index: invalid index")
 	    if $index > $n;
-	$fields->{cursor} = undef;
+	$fields->{cursor} = $index == $n ? undef : $self->RESET_CURSOR;
 	$self->internal_put({%{$fields->{empty_properties}}});
 	return 0;
     }
-    $self->die("$index: invalid index")
+    $self->die($index, ': invalid index')
 	if $index < 0;
     $self->internal_put($fields->{rows}->[$fields->{cursor} = $index]);
     return 1;
