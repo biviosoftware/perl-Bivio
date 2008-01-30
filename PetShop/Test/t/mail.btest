@@ -66,7 +66,11 @@ verify_text($subject);
     inner_plain => random_string(),
 );
 $send_mail->(qw(2.eml user2 forum), $msg);
-visit_uri(get_uri());
+reload_page();
 verify_text(qr{Subject:.*$vars->{inner_subject}});
 verify_text($vars->{inner_html});
 verify_no_text($vars->{inner_plain});
+$send_mail->(qw(3.eml user1 forum), $msg);
+reload_page();
+follow_link('embedded-image');
+verify_content_type('image/gif');
