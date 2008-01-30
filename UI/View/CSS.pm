@@ -557,7 +557,6 @@ sub _site_mail {
   Color('form_sep-border');
 }
 .msg .text_plain {
-  white-space: pre;
   Font('pre_text');
 }
 .msg .attachment {
