@@ -2,17 +2,17 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText;
 use strict;
-use Bivio::Base 'HTMLWidget.ControlBase';
-use Bivio::Mail::RFC822;
+use Bivio::Base 'XHTMLWidget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 my($_REALM_PLACEHOLDER)
     = __PACKAGE__->use('Type.RealmName')->SPECIAL_PLACEHOLDER;
 my($_CAMEL_CASE) = qr{((?-i:[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*))};
-my($_EMAIL) = qr{@{[Bivio::Mail::RFC822->ATOM_ONLY_ADDR]}}o;
+my($_EMAIL) = qr{@{[$_RFC->ATOM_ONLY_ADDR]}}o;
 my($_DOMAIN) = qr{(@{[
     'www\.'
-    . Bivio::Mail::RFC822->DOMAIN
+    . $_RFC->DOMAIN
     . '\.(?:'
     . join('|', qw(
 	ar
@@ -24,7 +24,7 @@ my($_DOMAIN) = qr{(@{[
 	sh
     ))
     . ')|'
-    . Bivio::Mail::RFC822->DOMAIN
+    . $_RFC->DOMAIN
     . '\.(?:'
     . join('|', qw(
 	aero
