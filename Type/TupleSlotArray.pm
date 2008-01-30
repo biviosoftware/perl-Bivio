@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::TupleSlotArray;
 use strict;
-use base 'Bivio::Type::StringArray';
+use base 'Type.StringArray';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
