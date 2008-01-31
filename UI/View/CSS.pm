@@ -48,7 +48,7 @@ abbr, acronym, fieldset, iframe, img, table {
   border-style: none;
   border: 0;
 }
-a:link, a:visited, a:active {
+a {
   Font('a_link');
 }
 a:hover {
