@@ -1,0 +1,21 @@
+<html>
+<head>
+<title>
+
+bla bla
+<style>style1</style>
+<script>script1</script>
+</title>
+<body>
+<style>style2</style>
+<script>script2</script>
+<div onblur="javascript:">div1</div>
+<div style="color: blue;background:   blue;background-image:missing;">div2</div>
+<div style="unknown: blue;">div3</div>
+<div style="color: url(tricky)">div4</div><!--
+
+  comment
+
+
+--><span>span1</span>
+
