@@ -42,8 +42,7 @@ sub create_realm {
     $realm_owner->{password}
 	= $self->use('Type.Password')->encrypt($realm_owner->{password})
         if defined($realm_owner->{password});
-    $realm_owner->{display_name} = $self->format_full_name
-	unless defined($realm_owner->{display_name});
+    $realm_owner->{display_name} = $self->format_full_name;
     return shift->SUPER::create_realm($realm_owner);
 }
 
@@ -153,6 +152,9 @@ sub update {
     _compute_sorting_names($new_values);
     my($res) = $self->SUPER::update($new_values);
     _validate_names($self);
+    $self->get_model('RealmOwner')->update({
+	display_name => $self->format_full_name,
+    });
     return $res;
 }
 
