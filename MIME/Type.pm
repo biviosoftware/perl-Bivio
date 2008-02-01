@@ -6,7 +6,6 @@ use base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-#=VARIABLES
 my($_EXT_TO_TYPE, $_TYPE_TO_EXT);
 _initialize();
 
