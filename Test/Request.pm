@@ -14,7 +14,6 @@ use Bivio::ShellUtil;
 use Socket ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_MSG_QUEUE_ATTR) = __PACKAGE__ . '.msg_queue';
 
 sub get_instance {
     return shift->get_current_or_new(@_);
@@ -30,23 +29,7 @@ sub new_unit {
 
 sub capture_mail {
     my($self) = @_;
-    $self->put($_MSG_QUEUE_ATTR => []);
-    Bivio::IO::ClassLoader->simple_require('Test::MockObject');
-    foreach my $m (qw(
-        Bivio::Mail::Outgoing
-        Bivio::Mail::Common
-    )) {
-	Bivio::IO::ClassLoader->simple_require($m);
-	Test::MockObject->fake_module($m,
-	    map({
-		$_ => sub {
-		    push(@{$self->get($_MSG_QUEUE_ATTR)},
-			shift->as_string);
-		    return;
-		};
-	    } qw(send enqueue_send)),
-	);
-    }
+    $self->unsafe_get_captured_mail;
     return $self;
 }
 
@@ -72,7 +55,7 @@ sub execute_task {
     $self->capture_mail;
     $self->get('task')->execute($self);
     my($o) = $self->get('reply')->get_output;
-    return [$o ? $$o : undef, @{$self->unsafe_get_captured_mail || []}];
+    return [$o ? $$o : undef, @{$self->unsafe_get_captured_mail}];
 }
 
 sub format_http_toggling_secure {
@@ -269,10 +252,13 @@ sub set_user_state_and_cookie {
 
 sub unsafe_get_captured_mail {
     my($self) = @_;
-    my($res) = $self->unsafe_get($_MSG_QUEUE_ATTR);
-    return undef
-	unless $res;
-    $self->put($_MSG_QUEUE_ATTR => []);
+    my($res) = [];
+    $self->put(txn_resources => [
+	map({
+	    !$_->isa('Bivio::Mail::Outgoing') ? $_
+		: (sub {push(@$res, shift->as_string); return})->($_);
+	} @{$self->get('txn_resources')}),
+    ]);
     return $res;
 }
 
