@@ -10,13 +10,29 @@ Request('initialize_fully');
 	     }] => not_die(),
 	],
     ],
-    sub {Bivio::Biz::Model->new(req(), 'User')} => [
+    sub {model('User')} => [
 	unauth_load => [
 	    sub {[{user_id => req()->get('auth_user_id')}]} => 1,
 	],
 	cascade_delete => undef,
 	unauth_load => [
 	    sub {[{user_id => req()->get('auth_user_id')}]} => 0,
+	],
+    ],
+    class() => [
+	execute => [
+	    [req(), {
+		'RealmOwner.display_name' => 'Last, First',
+		'RealmOwner.password' => 'password',
+	     }] => not_die(),
+	],
+    ],
+     sub {model('RealmOwner')} => [
+	unauth_load => [
+	    sub {[{realm_id => req()->get('auth_user_id')}]} => 1,
+	],
+	get => [
+	    ['display_name'] => ['First Last'],
 	],
     ],
 ];
