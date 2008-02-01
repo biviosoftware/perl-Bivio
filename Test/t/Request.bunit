@@ -81,9 +81,10 @@ To: mary@example.com
 
 What a body!
 EOF
-        $msg->send;
+        $msg->set_recipients('mary@example.com');
+        $msg->enqueue_send;
         return $req;
     } => [
-	unsafe_get_captured_mail => qr/From.*What/s,
+	unsafe_get_captured_mail => qr{From.*What}s,
     ],
 ];
