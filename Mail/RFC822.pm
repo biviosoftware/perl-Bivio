@@ -208,7 +208,13 @@ sub escape_header_phrase {
     return $value
 	if $value =~ /^$_ATOM_ONLY_PHRASE$/o;
     $value =~ s/(["\\])/\\$1/g;
-    return '"'.$value.'"';
+    return qq{"$value"};
+}
+
+sub format_mailbox {
+    my($proto, $email, $phrase) = @_;
+    return length($phrase = $proto->escape_header_phrase($phrase))
+	? "$phrase <$email>" : $email;
 }
 
 1;
