@@ -334,7 +334,6 @@ sub _run {
 	$self->print("*** Entering: $d\n") unless $one_dir;
 	Bivio::IO::File->do_in_dir($d => sub {
 	    foreach my $t (sort(@{$tests->{$d}})) {
-		$self->print(sprintf('%20s: ', $t));
 		my($res) = 'FAILED';
 		my($out);
 		if ($action->($self, $t, \$out)) {
@@ -344,7 +343,7 @@ sub _run {
 		else {
 		    push(@$failed, File::Spec->catfile($d, $t));
 		}
-		$self->print($res, "\n");
+		$self->print(sprintf('%20s: ', $t), $res, "\n");
 		$out ||= '';
 		$out =~ s/^/  /mg;
 		if ($max == 1) {
