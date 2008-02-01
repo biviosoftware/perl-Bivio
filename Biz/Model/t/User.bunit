@@ -15,5 +15,24 @@ sub _name {$prefix . shift}
 	unauth_delete_realm => [
 	    [{name => _name(1)}] => not_die(),
 	],
+	unauth_load_or_die => [
+	    [{name => _name(2)}] => not_die(),
+	],
+    ],
+    sub {req()->set_realm(_name(2)); model('User')} => [
+ 	load => [
+ 	    [] => not_die(),
+ 	],
+	update => [
+	    [{first_name => 'User X'}] => not_die(),
+	],
+    ],
+    sub {model('RealmOwner')} => [
+	load => [
+	    [] => not_die(),
+	],
+	get => [
+	    ['display_name'] => 'User X',
+	],
     ],
 ];
