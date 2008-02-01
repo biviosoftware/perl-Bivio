@@ -1,0 +1,17 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    escape_header_phrase => [
+	[undef] => '',
+	'' => '',
+	' ' => '',
+	' <a ' => '"<a"',
+	'a b c' => 'a b c',
+    ],
+    format_mailbox => [
+	'a@a.a' => 'a@a.a',
+	['a@a.a', ' '] => 'a@a.a',
+	['a@a.a', 'a'] => 'a <a@a.a>',
+    ],
+];
