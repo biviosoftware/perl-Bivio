@@ -339,7 +339,7 @@ sub load {
 sub load_for_auth_user {
     my($self) = @_;
     # Loads the model for auth_user.
-    return $self->unauth_load({
+    return $self->unauth_load_or_die({
 	realm_id => (
 	    $self->get_request->get('auth_user') || $self->die('no auth_user')
 	)->get('realm_id'),
