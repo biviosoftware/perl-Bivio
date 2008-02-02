@@ -6,7 +6,8 @@ use Bivio::Base 'Bivio::Mail::Common';
 use Bivio::MIME::Type;
 use Bivio::Mail::Address;
 use Bivio::Mail::Incoming;
-use MIME::Base64;
+use MIME::Base64 ();
+use MIME::QuotedPrint ();
 
 # C<Bivio::Mail::Outgoing> is used to create and send mail messages.
 # One can resend an existing mail message or simply create one from
@@ -38,6 +39,9 @@ my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
 ),
     Bivio::Mail::Common->TEST_RECIPIENT_HDR,
 )];
+my($_T) = __PACKAGE__->use('MIME.Type');
+my($_R) = __PACKAGE__->use('Biz.Random');
+my($_FP) = __PACKAGE__->use('Type.FilePath');
 
 # 822:
 # Due to an artifact of the notational conventions, the syn-
@@ -122,18 +126,13 @@ sub as_string {
 }
 
 sub attach {
-    my($self, $content, $type, $name, $binary) = @_;
-    # Add an attachment part to the mail message.
-    # Arguments 'content' and 'content-type' are mandatory.
-    # 'name' is the file name that should be used to store it.
-    # 'binary' can be set to true to base64-encode the contents.
-    # Anything which is not of type text/* is encoded automatically.
-    defined($binary) || ($binary = 0);
-    my($part) = { content => $content, type => $type, binary => $binary };
-    if (defined($name)) {
-        $part->{name} = $name;
-    }
-    push(@{$self->get_if_exists_else_put('parts', [])}, $part);
+    my($self, $named) = shift->name_parameters(
+	[qw(content content_type filename binary)],
+	\@_,
+    );
+    Bivio::IO::Alert->warn('binary is supplanted by suggest_encoding')
+        if defined($named->{binary});
+    push(@{$self->get_if_exists_else_put('parts', [])}, $named);
     return;
 }
 
@@ -310,32 +309,40 @@ sub unsafe_get_header {
 
 sub _encapsulate_parts {
     my($buf, $type, $parts) = @_;
-    # Encapsulate all attachments according to type.
-# TODO: Randomize boundary    
-    my($boundary) = '------------8169AB88A610572B963B8638';
+    my($boundary) = $_R->string(32);
     $$buf .= <<"EOF";
 MIME-Version: 1.0
-Content-Type: $type;
- boundary="$boundary"
+Content-Type: $type; boundary="$boundary"
 
 This is a multi-part message in MIME format.
 EOF
-    $$buf .= "--$boundary";
     my($p);
     foreach $p (@$parts) {
-        $$buf .= "\nContent-Type: $p->{type}";
-        defined($p->{name}) && ($$buf .= ";\n name=\"$p->{name}\"");
-        if ($p->{type} =~ m!^text/! && !$p->{binary}) {
-            $$buf .= "\nContent-Transfer-Encoding: 7bit\n\n";
-            $$buf .= ${$p->{content}} . "\n\n";
+	$$buf .= "--$boundary\nContent-Type: $p->{content_type}";
+	my($n) = $_FP->get_clean_tail($p->{filename});
+	if ($n) {
+	    $n =~ s/^\s+|\s+$|"//g;
+	    $$buf .= qq{; name="$n"}
+	}
+	$$buf .= "\nContent-Disposition: inline";
+	$$buf .= qq{; filename="$n"}
+            if $n;
+	my($encoding)
+	    = $_T->suggest_encoding($p->{content_type}, $p->{content});
+	$$buf .= "\nContent-Transfer-Encoding: $encoding\n\n";
+        if ($encoding eq 'quoted-printable' ) {
+            $$buf .= MIME::QuotedPrint::encode(${$p->{content}});
         }
-	else {
-            $$buf .= "\nContent-Transfer-Encoding: base64\n\n";
+	elsif ($encoding eq 'base64' ) {
             $$buf .= MIME::Base64::encode(${$p->{content}});
         }
-        $$buf .= "--$boundary";
+	else {
+            $$buf .= ${$p->{content}};
+	    $$buf .= "\n"
+		unless $$buf =~ /\n$/s;
+	}
     }
-    $$buf .= "--\n";
+    $$buf .= "--$boundary--\n";
     return;
 }
 
