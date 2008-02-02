@@ -1,10 +1,9 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::Base;
 use strict;
 use Bivio::Base 'View.Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
-use Bivio::UI::Widget::SimplePage;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -55,7 +54,7 @@ sub mail {
     my($self) = @_;
     view_class_map('MailWidget');
     view_shortcuts($self->VIEW_SHORTCUTS);
-    view_declare(qw(mail_body mail_to mail_subject));
+    view_declare(qw(mail_body mail_to mail_headers_object mail_subject));
     view_put(
 	mail_from => Mailbox(
 	    vs_text('support_email'),
@@ -69,6 +68,7 @@ sub mail {
 	subject => view_widget_value('mail_subject'),
 	body => view_widget_value('mail_body'),
 	recipients => view_widget_value('mail_recipients'),
+	headers_object => view_widget_value('mail_headers_object'),
     }));
     return;
 }
