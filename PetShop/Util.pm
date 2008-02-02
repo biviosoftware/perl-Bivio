@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Util;
 use strict;
