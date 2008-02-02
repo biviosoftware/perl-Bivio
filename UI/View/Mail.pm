@@ -6,6 +6,38 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_T) = __PACKAGE__->use('MIME.Type');
+
+sub form_mail {
+    return shift->internal_put_base_attr(
+	from => ['Model.MailForm', '->mail_header_from'],
+	recipients => ['Model.MailForm', '->mail_envelope_recipients'],
+	headers_object => ['Model.MailForm'],
+	body => [sub {
+	    my($req, $f) = @_;
+	    my($body) = $f->get('body');
+	    return MIMEEntity({
+		mime_type => 'text/plain',
+		mime_data => $body,
+		mime_encoding => $_T->suggest_encoding('text/plain', \$body),
+		values => [
+		    $f->map_attachments(sub {
+			return unless my $a = $f->get(shift);
+			return {
+			    mime_data => $a->{content},
+			    mime_filename => $a->{filename},
+			    mime_type => $a->{content_type},
+			    mime_disposition => 'inline',
+			    mime_encoding => $_T->suggest_encoding(
+				$a->{content_type}, $a->{content},
+			    ),
+			};
+		    }),
+		],
+	    }),
+	}, ['Model.MailForm']],
+    );
+}
 
 sub thread_list {
     vs_put_pager('MailThreadList');
