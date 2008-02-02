@@ -33,26 +33,25 @@ $m->attach(\$t, 'text/plain');
 $m->attach(\$h, 'text/html', 'text.html');
 $m->send($req);
 my($out) = $m->as_string;
-my($exp_out) = <<'EOF';
+my($boundary) = $out =~ /boundary="(\w+)"/;
+my($exp_out) = <<"EOF";
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="------------8169AB88A610572B963B8638"
+Content-Type: multipart/alternative; boundary="$boundary"
 
 This is a multi-part message in MIME format.
---------------8169AB88A610572B963B8638
+--$boundary
 Content-Type: text/plain
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 
 abc
-
---------------8169AB88A610572B963B8638
-Content-Type: text/html;
- name="text.html"
+--$boundary
+Content-Type: text/html; name="text.html"
+Content-Disposition: inline; filename="text.html"
 Content-Transfer-Encoding: 7bit
 
 <!doctype html public "-//w3c//dtd html 4.0 transitional//en"><html>bbc</html>
-
---------------8169AB88A610572B963B8638--
+--$boundary--
 EOF
 my($d) = Bivio::IO::Ref->nested_differences($out, $exp_out);
 print $d ? "not ok $test $$d\n" : "ok $test\n";
