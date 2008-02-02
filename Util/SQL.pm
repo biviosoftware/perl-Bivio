@@ -3,18 +3,18 @@
 package Bivio::Util::SQL;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::IO::Config;
-use Bivio::IO::File;
-use Bivio::IO::Ref;
-use Bivio::SQL::Connection;
-use Bivio::Type::PrimaryId;
-use Bivio::UI::LocalFileType;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REALM_ROLE_CONFIG);
 Bivio::IO::Config->register(my $_CFG = {
     export_db_on_upgrade => 1,
 });
+my($_C) = __PACKAGE__->use('SQL.Connection');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_RT) = __PACKAGE__->use('Auth.RealmType');
+my($_R) = __PACKAGE__->use('Auth.Role');
+my($_PS) = __PACKAGE__->use('Auth.PermissionSet');
+my($_PI) = __PACKAGE__->use('Type.PrimaryId');
 
 sub TEST_PASSWORD {
     # Returns password for test data.
@@ -54,10 +54,10 @@ sub backup_model {
     my($self, $model, $order_by) = @_;
     $self->print(
 	"$model written to ",
-	Bivio::IO::File->write(
-	    "$model-" . Bivio::Type::DateTime->local_now_as_file_name . '.pl',
-	    Bivio::IO::Ref->to_string(
-		my $rows = Bivio::Biz::Model->new($self->get_request, $model)
+	$self->use('IO.File')->write(
+	    "$model-" . $_DT->local_now_as_file_name . '.pl',
+	    $self->use('IO.Ref')->to_string(
+		my $rows = $self->model($model)
 		    ->map_iterate(undef, 'unauth_iterate_start', $order_by),
 	    ),
 	),
@@ -124,7 +124,7 @@ sub create_test_user {
 	: $self->format_test_email($display_name = $user_or_email);
     $display_name ||= ($email =~ /(.*)@/)[0];
     (my $user_name = substr(
-	$display_name, 0, Bivio::Type->get_instance('RealmName')->get_width
+	$display_name, 0, $self->use('Type.RealmName')->get_width
     )) =~ s/\W+//g;
     return $self->new_other('RealmAdmin')->create_user(
 	$email,
@@ -164,7 +164,7 @@ sub destroy_db {
     $self->usage_error('You cannot destroy a production database.')
 	if $self->get_request->is_production;
     $self->are_you_sure('DROP THE ENTIRE '
-	. Bivio::SQL::Connection->get_dbi_config->{database}
+	. $_C->get_dbi_config->{database}
 	. ' DATABASE?');
     # We drop in opposite order.  Some constraint drops will
     # fail, but that's ok.  We need to drop the FOREIGN KEY
@@ -174,7 +174,7 @@ sub destroy_db {
 	$self->put(input => $file);
 	$self->drop;
     }
-    $self->use('Bivio::Biz::File')->destroy_db;
+    $self->use('Biz.File')->destroy_db;
     return;
 }
 
@@ -182,10 +182,10 @@ sub destroy_dbms {
     my($self) = @_;
     $self->usage_error('You cannot destroy a production database.')
 	if $self->get_request->is_production;
-    my($db) = Bivio::SQL::Connection->get_dbi_config->{database};
+    my($db) = $_C->get_dbi_config->{database};
     $self->are_you_sure("DROP THE ENTIRE $db DATABASE?");
     $self->piped_exec("dropdb --user=postgres $db", '', 1);
-    $self->use('Bivio::Biz::File')->destroy_db;
+    $self->use('Biz.File')->destroy_db;
     return;
 }
 
@@ -213,31 +213,27 @@ sub drop {
 	my($p, $s) = ($1, $2);
 	Bivio::Die->eval(sub {
 #TODO: don't want to ignore all errors - ex. db doesn't exist
-	    Bivio::SQL::Connection->execute(
+	    $_C->execute(
 		$p . 'drop ' . $s . ($s =~ /^table/i ? ' CASCADE' : ''));
 	    return;
 	});
-	Bivio::SQL::Connection->commit;
+	$_C->commit;
     }
     return;
 }
 
 sub drop_and_run {
     my($self, $sql) = @_;
-    # Executes L<drop|"drop"> and then L<run|"run"> with same input.
     $self->drop($sql);
     return $self->run($sql);
 }
 
 sub export_db {
     my($self, $dir) = @_;
-    # Dumps the current database to I<dir> (or '.') to a file of the form:
-    #
-    #    <db>-<datetime>.pg_dump
     my($db) = _assert_postgres($self);
     my($f) = ($dir || '.')
 	. '/'
-	. Bivio::Type::DateTime->local_now_as_file_name
+	. $_DT->local_now_as_file_name
 	. '-'
 	. $db->{database}
 	. '.pg_dump';
@@ -248,12 +244,8 @@ sub export_db {
 }
 
 sub format_test_email {
-    my(undef, $base) = @_;
-    # Returns 
-    #
-    #     Bivio::Test::Language::HTTP->generate_local_email($base)
-    return (Bivio::IO::ClassLoader->simple_require(
-	'Bivio::Test::Language::HTTP')->generate_local_email($base))[0],
+    my($self, $base) = @_;
+    return ($self->use('TestLanguage.HTTP')->generate_local_email($base))[0],
 }
 
 sub handle_config {
@@ -289,12 +281,12 @@ sub import_tables_only {
 	$self->put(input => $file)->run;
     }
     # need to commit so pg_restore can access the tables
-    Bivio::SQL::Connection->commit;
+    $_C->commit;
 
     $self->piped_exec("pg_restore --user='$db->{user}'"
 	. " --dbname='$db->{database}' --data-only '$backup_file'");
 
-    Bivio::SQL::Connection->ping_connection;
+    $_C->ping_connection;
     return;
 }
 
@@ -336,7 +328,7 @@ sub init_realm_role {
     # Initializes the database with the values from
     # L<realm_role_config|"realm_role_config">.
     my($cmd);
-    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
+    my($rr) = $self->new_other('RealmRole');
     foreach my $line (@{$self->realm_role_config}) {
 	next if $line =~ /^\s*(#|$)/;
 	$cmd .= $line;
@@ -346,19 +338,19 @@ sub init_realm_role {
 	$rr->main(@args);
         $cmd = '';
     }
-    if (Bivio::Auth::RealmType->unsafe_from_name('FORUM')) {
+    if ($_RT->unsafe_from_name('FORUM')) {
 	$rr->copy_all(club => 'forum');
 	$rr->main(qw(-realm FORUM -user user edit MEMBER -ADMIN_READ -DATA_WRITE));
     }
     $rr->copy_all(forum => 'calendar_event')
-	if Bivio::Auth::RealmType->unsafe_from_name('CALENDAR_EVENT');
+	if $_RT->unsafe_from_name('CALENDAR_EVENT');
     return;
 }
 
 sub initialize_db {
     my($self) = @_;
     # Initializes default data.
-    Bivio::Biz::Model->new($self->get_request, 'RealmOwner')->init_db;
+    $self->model('RealmOwner')->init_db;
     $self->init_realm_role;
 #TODO: Needs to be after subclasses init_realm_role for new realmtypes
     if (Bivio::Agent::TaskId->unsafe_from_name('FORUM_TUPLE_SLOT_TYPE_LIST')) {
@@ -391,7 +383,7 @@ sub initialize_tuple_slot_types {
     my($req) = $self->get_request;
     my($prev) = $req->get('auth_realm');
     $req->set_realm(undef);
-    Bivio::Biz::Model->new($req, 'TupleSlotType')->create_from_hash({
+    $self->model('TupleSlotType')->create_from_hash({
 	Integer => {
 	    type_class => 'Integer',
 	    default_value => undef,
@@ -517,10 +509,9 @@ CREATE SEQUENCE calendar_event_s
   CACHE 1 INCREMENT BY 100000
 /
 EOF
-    Bivio::Biz::Model->new($self->get_request, 'RealmOwner')
-        ->init_realm_type(Bivio::Auth::RealmType->CALENDAR_EVENT);
-    $self->new_other('Bivio::Biz::Util::RealmRole')
-	->copy_all(forum => 'calendar_event');
+    $self->model('RealmOwner')
+        ->init_realm_type($_RT->CALENDAR_EVENT);
+    $self->new_other('RealmRole')->copy_all(forum => 'calendar_event');
     return;
 }
 
@@ -545,22 +536,22 @@ EOF
 sub internal_upgrade_db_file_writer {
     my($self) = @_;
     my($req) = $self->initialize_ui;
-    Bivio::Biz::Model->new($req, 'RealmUser')->do_iterate(
+    $self->model('RealmUser')->do_iterate(
 	sub {
 	    my($it) = @_;
             return 1 if $it->get('realm_id')
-                eq Bivio::Auth::RealmType->GENERAL->as_int;
+                eq $_RT->GENERAL->as_int;
 	    $it->new->create({
 		%{$it->get_shallow_copy},
-		role => Bivio::Auth::Role->FILE_WRITER,
+		role => $_R->FILE_WRITER,
 	    });
 	    return 1;
 	},
 	unauth_iterate_start => 'user_id',
-	{role => Bivio::Auth::Role->ADMINISTRATOR},
+	{role => $_R->ADMINISTRATOR},
     );
-    my($p) = ${Bivio::Auth::PermissionSet->from_array(['DATA_WRITE'])};
-    Bivio::Biz::Model->new($req, 'RealmRole')->do_iterate(
+    my($p) = ${$_PS->from_array(['DATA_WRITE'])};
+    $self->model('RealmRole')->do_iterate(
 	sub {
 	    my($it) = @_;
 	    my($rid) = $it->get('realm_id');
@@ -571,13 +562,13 @@ sub internal_upgrade_db_file_writer {
 		->get('realm_type')->eq_forum;
 	    $it->new->unauth_create_or_update({
 		realm_id => $rid,
-		role => Bivio::Auth::Role->FILE_WRITER,
+		role => $_R->FILE_WRITER,
 		permission_set => $p,
 	    });
 	    return 1;
 	},
 	unauth_iterate_start => 'realm_id',
-	{role => Bivio::Auth::Role->MEMBER},
+	{role => $_R->MEMBER},
     );
     return;
 }
@@ -692,9 +683,8 @@ CREATE INDEX realm_file_t12 ON realm_file_t (
 )
 /
 EOF
-    $self->model('RealmOwner')
-        ->init_realm_type(Bivio::Auth::RealmType->FORUM);
-    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
+    $self->model('RealmOwner')->init_realm_type($_RT->FORUM);
+    my($rr) = $self->new_other('RealmRole');
     $rr->copy_all(club => 'forum');
     $rr->main(qw(-realm FORUM -user user edit MEMBER -ADMIN_READ -DATA_WRITE));
     return;
@@ -850,7 +840,7 @@ CREATE INDEX realm_mail_t11 ON realm_mail_t (
 )
 /
 EOF
-    my($mf) = Bivio::Biz::Model->get_instance('RealmFile')->MAIL_FOLDER;
+    my($mf) = $self->model('RealmFile')->MAIL_FOLDER;
     $self->model('RealmFile')->do_iterate(
 	sub {
 	    my($it) = @_;
@@ -1435,28 +1425,27 @@ sub reinitialize_sequences {
 	map({
 	    grep(/^\s*create\s+sequence/im,
 		split(/^(?=\s*create\s+sequence)/im,
-                    ${Bivio::IO::File->read($_)}));
+                    ${$self->use('IO.File')->read($_)}));
 	} @{$self->ddl_files})
     ) {
 	$cmd =~ s,/.*,,s;
 	my($base) = $cmd =~ /sequence\s+(\w+)_s/si
 	    or die('bad sequence name: ', $cmd);
-	my($max) = Bivio::SQL::Connection->execute_one_row(
+	my($max) = $_C->execute_one_row(
 	    "select max(${base}_id) from ${base}_t");
 	next unless $max && $max->[0];
 	my($inc) = $cmd =~ /increment\s+by\s+(\d+)/si
 	    or die('bad sequence increment by: ', $cmd);
 	# Increment by two to be sure
-	$inc = Bivio::Type::PrimaryId->add($max->[0],
-	    Bivio::Type::PrimaryId->mul($inc, 2, 0), 0);
+	$inc = $_PI->add($max->[0], $_PI->mul($inc, 2, 0), 0);
 	# Number puts in '+'
 	$inc =~ s/\D//g;
 	$cmd =~ s/minvalue\s+(\d+)/minvalue $inc/i
 	    or die('bad minvalue: ', $cmd);
 	$res .= "${base}_s => $inc\n";
 	next if $self->unsafe_get('noexecute');
-	Bivio::SQL::Connection->execute("drop sequence ${base}_s");
-	Bivio::SQL::Connection->execute($cmd);
+	$_C->execute("drop sequence ${base}_s");
+	$_C->execute($cmd);
     }
     return $res;
 }
@@ -1467,13 +1456,13 @@ sub restore_dbms_dump {
     $self->commit_or_rollback;
     $self->init_dbms;
     $self->commit_or_rollback;
-    my($db, $u) = @{Bivio::SQL::Connection->get_dbi_config}{qw(database user)};
+    my($db, $u) = @{$_C->get_dbi_config}{qw(database user)};
     return ${$self->piped_exec("pg_restore --dbname='$db' -U '$u' '$dump'")};
 }
 
 sub restore_model {
     my($self, $model, $file_or_rows) = @_;
-    my($m) = Bivio::Biz::Model->new($self->get_request, $model);
+    my($m) = $self->model($model);
     foreach my $r (ref($file_or_rows) ? @$file_or_rows : @{do($file_or_rows)}) {
 	$m->create($r);
     }
@@ -1486,7 +1475,7 @@ sub run {
     # Parses I<sql> (default: reads I<input>), terminating on errors.  Any query
     # results are thrown away.
     foreach my $s (_parse($self, $sql)) {
-	Bivio::SQL::Connection->execute($s);
+	$_C->execute($s);
     }
     return;
 }
@@ -1502,12 +1491,12 @@ sub table_exists {
 }
 
 sub tables {
-    return Bivio::SQL::Connection->map_execute(
+    return $_C->map_execute(
 	'SELECT tablename
         FROM pg_tables
         WHERE tableowner = ?
         ORDER by tablename',
-	[Bivio::Ext::DBI->get_config->{user}],
+	[shift->use('Ext.DBI')->get_config->{user}],
     );
 }
 
@@ -1525,9 +1514,9 @@ sub upgrade_db {
     $self->print($self->export_db . "\n")
 	if $_CFG->{export_db_on_upgrade};
     # After an export, you need to rollback or there will be errors.
-    Bivio::Die->eval(sub {Bivio::SQL::Connection->rollback});
+    Bivio::Die->eval(sub {$_C->rollback});
     # re-establish connection
-    Bivio::SQL::Connection->ping_connection;
+    $_C->ping_connection;
     $self->$method();
     $upgrade->create({
 	version => $v,
@@ -1544,7 +1533,7 @@ sub vacuum_db {
     # L<vacuum_db_continuously|"vacuum_db_continuously">.
     _assert_postgres($self);
     $self->lock_action(sub {
-        Bivio::IO::Alert->print_literally(${
+        $self->use('IO.Alert')->print_literally(${
 	    $self->piped_exec(
 		join(' ', 'vacuumdb ', map("'$_'", @arg), '2>&1'),
 		'',
@@ -1581,7 +1570,7 @@ sub _assert_postgres {
     my($self) = @_;
     # Returns DBI config.  Asserts postgres is connection type.
     $self->setup;
-    my($c) = Bivio::SQL::Connection->get_dbi_config;
+    my($c) = $_C->get_dbi_config;
     $self->usage_error($c->{connection}, ': connection type not supported')
 	unless $c->{connection} =~ /postgres/i;
     return $c;
@@ -1598,7 +1587,7 @@ sub _ddl_files {
 }
 
 sub _exists {
-    return Bivio::SQL::Connection->execute_one_row(
+    return $_C->execute_one_row(
 	'SELECT COUNT(*) ' . shift(@_),
 	@_,
     )->[0] ? 1 : 0;
@@ -1667,7 +1656,7 @@ sub _parse {
 
 sub _run_other {
     my($self) = shift;
-    my($c) = Bivio::SQL::Connection->get_instance(shift);
+    my($c) = $_C->get_instance(shift);
     my($res) = $c->map_execute(@_);
     $self->commit_or_rollback;
     $c->disconnect;
@@ -1678,7 +1667,7 @@ sub _sentinel_file_writer {
     my($self) = @_;
     # Don't add it unless FILE_WRITER is a role in this app
     return 1
-	unless Bivio::Auth::Role->unsafe_from_name('FILE_WRITER');
+	unless $self->use('Auth.Role')->unsafe_from_name('FILE_WRITER');
     my($ok) = 0;
     $self->model('RealmRole')->do_iterate(
 	sub {
@@ -1687,7 +1676,7 @@ sub _sentinel_file_writer {
 	},
 	'unauth_iterate_start',
 	'realm_id',
-	{role => Bivio::Auth::Role->FILE_WRITER},
+	{role => $_R->FILE_WRITER},
     );
     return $ok;
 }
