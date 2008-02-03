@@ -5,7 +5,7 @@ use strict;
 use Bivio::Base 'Type.SyntacticString';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_CODE_TO_STATE);
+my($_MAP) = _init_map();
 
 sub REGEX {
     return qr{[a-z]{2}}i;
@@ -20,23 +20,23 @@ sub internal_post_from_literal {
 }
 
 sub unsafe_from_zip_code {
-    my($proto, $zip_code) = @_;
+    my($proto, $zip) = @_;
+    return defined($zip) && $zip =~ /^(\d{3})/s ? $_MAP->[$1] : undef;
+}
 
-    unless ($_CODE_TO_STATE) {
-	$_CODE_TO_STATE = [];
-
-	foreach my $line (split("\n", $proto->internal_data_section)) {
-	    my($state, @codes) = split(' ', $line);
-
-	    foreach my $code (@codes) {
-		$_CODE_TO_STATE->[$code] = $state;
-	    }
+sub _init_map {
+    my($map) = [];
+    foreach my $line (split(/\n/, __PACKAGE__->internal_data_section)) {
+	my($state, @codes) = split(' ', $line);
+	foreach my $code (@codes) {
+	    $map->[$code] = $state;
 	}
     }
-    return $zip_code =~ /^(\d{3})/ ? $_CODE_TO_STATE->[$1] : undef;
+    return $map;
 }
 
 1;
+
 __DATA__
 AA 340
 AE 090 091 092 093 094 095 096 097 098
