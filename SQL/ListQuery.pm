@@ -485,7 +485,8 @@ sub _format_uri {
 	$attrs->{parent_id}) . '&'
 	if $attrs->{parent_id};
     $res .= 'n=' . $_I->to_query($attrs->{page_number}) . '&'
-	if defined($attrs->{page_number});
+	if defined($attrs->{page_number})
+        && $attrs->{page_number} > FIRST_PAGE();
     if ($attrs->{order_by} && @{$attrs->{order_by}}) {
 	my($ob) = $attrs->{order_by};
 	my($s) = 'o=';
