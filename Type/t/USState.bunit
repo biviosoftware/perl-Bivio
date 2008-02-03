@@ -8,7 +8,6 @@ Type();
 	x => SYNTAX_ERROR(),
     ],
     unsafe_from_zip_code => [
-	'00100' => [undef],
 	'06230' => 'CT',
 	'07001' => 'NJ',
 	'08904' => 'NJ',
@@ -23,6 +22,7 @@ Type();
 	96701 => 'HI',
 	99999 => 'AK',
 	abc => [undef],
-	undef => [undef],
+	[undef] => [undef],
+	'00100' => [undef],
     ],
 ];
