@@ -21,7 +21,7 @@ sub internal_post_from_literal {
 
 sub unsafe_from_zip_code {
     my(undef, $zip) = @_;
-    return defined($zip) && $zip =~ /^(\d{3})/s ? $_MAP->[$1] : undef;
+    return $zip && $zip =~ /^(\d{3})/s ? $_MAP->[$1] : undef;
 }
 
 sub _init_map {
