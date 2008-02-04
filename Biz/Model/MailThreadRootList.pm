@@ -6,6 +6,10 @@ use Bivio::Base 'Model.MailThreadList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub NOT_FOUND_IF_EMPTY {
+    return 0;
+}
+
 sub drilldown_uri {
     my($self) = @_;
     my($req) = $self->req;
