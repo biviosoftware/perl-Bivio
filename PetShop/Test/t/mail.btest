@@ -74,3 +74,5 @@ $send_mail->(qw(3.eml user1 forum), $msg);
 reload_page();
 follow_link('embedded-image');
 verify_content_type('image/gif');
+go_back();
+follow_link('new_discussion');
