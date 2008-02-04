@@ -211,10 +211,15 @@ sub escape_header_phrase {
     return qq{"$value"};
 }
 
+sub format_angle_brackets {
+    my(undef, $email_or_id) = @_;
+    return "<$email_or_id>";
+}
+
 sub format_mailbox {
     my($proto, $email, $phrase) = @_;
     return length($phrase = $proto->escape_header_phrase($phrase))
-	? "$phrase <$email>" : $email;
+	? "$phrase " . $proto->format_angle_brackets($email) : $email;
 }
 
 1;
