@@ -222,10 +222,11 @@ sub list_csv {
 }
 
 sub pre_compile {
-    my($self) = @_;
-    my(@res) = shift->SUPER::pre_compile(@_);
+    my($self) = shift;
+    my(@res) = $self->SUPER::pre_compile(@_);
 #TODO: Remove "base" is deprecated
-    return unless $self->internal_base_type =~ /^(xhtml|base)$/;
+    return @res
+	unless $self->internal_base_type =~ /^(xhtml|base)$/;
     $self->internal_put_base_attr(tools => TaskMenu([
         {
 	    task_id => 'FORUM_TUPLE_EDIT',
