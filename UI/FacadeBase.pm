@@ -380,6 +380,7 @@ sub _cfg_mail {
 	    }],
 	    [FORUM_MAIL_THREAD_ROOT_LIST => '?/discussions'],
 	    [FORUM_MAIL_THREAD_LIST => '?/topic'],
+	    [FORUM_MAIL_FORM => '?/discuss'],
 	    [FORUM_MAIL_PART => '?/topic-attachment/*'],
 	    [FORUM_MAIL_REFLECTOR => undef],
 	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
@@ -402,6 +403,11 @@ sub _cfg_mail {
 		'RealmFile.modified_date_time' => 'First Post',
 		'RealmMail.from_email' => 'Author',
 	    ]],
+	    [MailForm => [
+		subject => 'Topic',
+		body => '',
+		ok_button => 'Send',
+	    ]],
 	    [prose => [
 		MailHeader => [
 		    to => 'To:',
@@ -416,8 +422,8 @@ sub _cfg_mail {
 		     attachment => q{SPAN_label('Attachment:');SPAN_value(String(['->get_file_name']));},
 		 ],
 	    ]],
-
 	    [title => [
+		FORUM_MAIL_FORM => 'New Discussion',
 		FORUM_MAIL_THREAD_ROOT_LIST => 'Discussions',
 		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
 	    ]],

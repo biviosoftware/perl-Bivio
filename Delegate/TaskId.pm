@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::TaskId;
 use strict;
@@ -582,7 +582,16 @@ sub info_mail {
             DATA_READ
 	    Model.MailPartList->execute_part
         )],
-#143-149 free
+	[qw(
+            FORUM_MAIL_FORM
+            143
+            FORUM
+            DATA_READ&MAIL_POST
+	    Model.MailForm
+	    View.Mail->send_form
+	    next=FORUM_MAIL_THREAD_ROOT_LIST
+        )],
+#144-149 free
     ];
 }
 

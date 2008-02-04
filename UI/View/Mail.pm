@@ -39,6 +39,29 @@ sub form_mail {
     );
 }
 
+sub pre_compile {
+    my($self) = shift;
+    my(@res) = $self->SUPER::pre_compile(@_);
+#TODO: Remove "base" is deprecated
+    return @res
+	unless $self->internal_base_type =~ /^(xhtml|base)$/;
+    $self->internal_put_base_attr(tools => TaskMenu([
+        {
+	    task_id => 'FORUM_MAIL_FORM',
+	    control => ['!', 'task_id', '->eq_forum_mail_form'],
+	    query => undef,
+	},
+    ]));
+    return @res;
+}
+
+sub send_form {
+    return shift->internal_body(vs_simple_form(MailForm => [qw(
+        MailForm.subject
+	MailForm.body
+    )]));
+}
+
 sub thread_list {
     vs_put_pager('MailThreadList');
     return shift->internal_body(WithModel('MailThreadList',
