@@ -30,11 +30,11 @@ sub internal_initialize {
         version => 1,
 	can_iterate => 1,
         primary_key => [[qw(RealmMail.realm_file_id RealmFile.realm_file_id)]],
-	order_by => [qw(
-            RealmFile.modified_date_time
-	    RealmMail.from_email
-            RealmMail.subject_lc
-	)],
+	order_by => [
+	    'RealmFile.modified_date_time',
+	    'RealmMail.from_email',
+            'RealmMail.subject_lc',
+	],
 	other => [
             'RealmMail.subject',
 	],
