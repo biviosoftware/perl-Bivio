@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::RoundedBox;
 use strict;
@@ -9,18 +9,24 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
+    my($x);
+    foreach my $c (qw(
+	 rounded_box_body
+	 bottom_right
+	 bottom_left
+	 top_right
+	 top_left
+    )) {
+	$x = Tag(
+	    'div',
+	    $x || $self->get('value'),
+	    $c,
+	);
+    }
     $self->put_unless_exists(
 	class => 'rounded_box',
     )->put(
-        value => Join([
-	    map(
-		Tag(div =>
-		    $_ eq 'rounded_box_body' ? $self->get('value') : '',
-		    $_,
-		    {tag_if_empty => 1}),
-		qw(top_left top_right rounded_box_body bottom_left bottom_right),
-	    ),
-	]),
+        value => $x,
     );
     return shift->SUPER::initialize(@_);
 }
