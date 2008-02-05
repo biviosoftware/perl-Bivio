@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::CSS;
 use strict;
@@ -425,25 +425,29 @@ p {
 .byline, .byline2 {
   white-space: nowrap;
 }
-.top_left {
-  background: Icon('top_left'); top left no-repeat;
-  float: left;
+div.top_left {
+  background-image: Icon('top_left');;
+  background-repeat: no-repeat;
+  background-position: top left;
 }
-.top_right {
-  background: Icon('top_right'); top right no-repeat;
-  float: right;
+div.top_right {
+  background-image: Icon('top_right');;
+  background-repeat: no-repeat;
+  background-position: top right;
 }
-.bottom_left {
-  background: Icon('bottom_left'); bottom left no-repeat;
-  float: left;
+div.bottom_left {
+  background-image: Icon('bottom_left');;
+  background-repeat: no-repeat;
+  background-position: bottom left;
 }
-.bottom_right {
-  background: Icon('bottom_right'); bottom right no-repeat;
-  float: right;
+div.bottom_right {
+  background-image: Icon('bottom_right');;
+  background-repeat: no-repeat;
+  background-position: bottom right;
+  padding: 2px;
 }
-.top_left, .top_right, .bottom_right, .bottom_left {
-  width: 2px;
-  height: 2px;
+div.rounded_box_body {
+  width: 100%;
 }
 p.prose {
   text-indent: 2em;
@@ -518,33 +522,7 @@ EOF
 }
 
 sub _site_mail {
-#TODO: mail_msg needs to be removed
     return <<'EOF';
-.mail_msg .header {
-  width: 100%;
-  padding-bottom: 1ex;
-}
-.mail_msg .line {
-  clear: both;
-  padding-bottom: .3ex;
-}
-.mail_msg .label {
-  text-align: right;
-  float: left;
-  width: 4em;
-  padding-right: .5em;
-}
-.mail_msg .field {
-  Font('mail_msg_field');
-  text-align: left;
-}
-.mail_msg {
-  padding-bottom: 1ex;
-}
-.mail_msg .part {
-  padding-bottom: 1ex;
-}
-
 .msg {
   margin-top: 1ex
   margin-bottom: 1ex
@@ -573,6 +551,15 @@ sub _site_mail {
 }
 .msg .forward .label {
   padding-right: .5em;
+}
+.msg .task_menu a.want_sep {
+  background: none;
+  padding-left: 0;
+  margin-left: 2em;
+}
+.msg div.rounded_box {
+  background-color: gray;
+  width: 20em;
 }
 EOF
 }
