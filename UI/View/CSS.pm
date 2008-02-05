@@ -425,28 +425,28 @@ p {
 .byline, .byline2 {
   white-space: nowrap;
 }
-div.top_left {
+.top_left {
   background-image: Icon('top_left');;
   background-repeat: no-repeat;
   background-position: top left;
 }
-div.top_right {
+.top_right {
   background-image: Icon('top_right');;
   background-repeat: no-repeat;
   background-position: top right;
 }
-div.bottom_left {
+.bottom_left {
   background-image: Icon('bottom_left');;
   background-repeat: no-repeat;
   background-position: bottom left;
 }
-div.bottom_right {
+.bottom_right {
   background-image: Icon('bottom_right');;
   background-repeat: no-repeat;
   background-position: bottom right;
   padding: 2px;
 }
-div.rounded_box_body {
+.rounded_box_body {
   width: 100%;
 }
 p.prose {
@@ -552,14 +552,20 @@ sub _site_mail {
 .msg .forward .label {
   padding-right: .5em;
 }
+.msg .parts {
+  margin-bottom: 1em;
+}
 .msg .task_menu a.want_sep {
   background: none;
   padding-left: 0;
   margin-left: 2em;
 }
-.msg div.rounded_box {
-  background-color: gray;
+.msg .rounded_box {
+  Color('even-background');
   width: 20em;
+}
+.msg .rounded_box_body  {
+  margin: 1ex 1em;
 }
 EOF
 }

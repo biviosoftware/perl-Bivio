@@ -69,9 +69,11 @@ sub thread_list {
 	    DIV_msg_sep('', {control =>['->get_cursor']}),
 	    DIV_msg(
 		Join([
-		    With(['->get_mail_part_list'],
-		        If(['!', '->has_mime_cid'],
-			    _thread_list_director(),
+		    DIV_parts(
+			With(['->get_mail_part_list'],
+			     If(['!', '->has_mime_cid'],
+				_thread_list_director(),
+			    ),
 			),
 		    ),
 		    RoundedBox(
