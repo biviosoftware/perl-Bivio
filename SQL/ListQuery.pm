@@ -326,7 +326,7 @@ sub format_uri_for_this_child {
     $attrs{page_number} = undef;
     # At this point, we lose context.  The query is "owned" relative to
     # the child, so the order by goes away
-    $attrs{order_by} = undef;
+    $attrs{order_by} = undef || $this_row->{'ListQuery.order_by'};
     $attrs{search} = undef;
     return _format_uri(\%attrs, $support);
 }
