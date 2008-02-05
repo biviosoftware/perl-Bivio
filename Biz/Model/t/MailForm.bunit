@@ -1,11 +1,38 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-FormModel();
+my($rmid);
+FormModel({
+    setup_request => sub {
+	my(undef, $params) = @_;
+	req()->capture_mail;
+	req()->put(query => {this => $rmid})
+	    unless ref($params->[0]) eq 'HASH';
+	return;
+    },
+});
 req()->set_realm_and_user(qw(mail_forum mail_user1));
+my($message_id) = random_string() . '@bivio.biz';
+my($now) = class('Type.DateTime')->now;
+my($date) = class('Type.DateTime')->rfc822($now);
+my($rm) = model('RealmMail');
+$rm->create_from_rfc822(\(<<"EOF"));
+Message-Id: <$message_id>
+Subject: Re: MailForm1
+From: joe <a\@a.a>
+Date: $date
+
+text1
+EOF
+$rmid = $rm->get('realm_file_id');
 [
     [{
         subject => 's1',
 	body => 'body1',
+	attachment1 => {
+	    content => \('att1'),
+	    content_type => 'text/plain',
+	    filename => 'a1.txt',
+	},
     }] => sub {
 	my($msg) = req()->unsafe_get_captured_mail->[0];
 	foreach my $p (
@@ -14,9 +41,13 @@ req()->set_realm_and_user(qw(mail_forum mail_user1));
 	    qr{Subject: s1}i,
 	    qr{Sender:.*mail_forum\@}i,
 	    qr{\n\nbody1},
+	    qr{filename="a1\.txt"},
 	) {
 	    assert_equals($p, $msg);
 	}
 	return 1;
     },
+    empty_case({
+	subject => 'Re: MailForm1',
+    }),
 ];
