@@ -54,7 +54,7 @@ my($send_mail) = sub {
 };
 my($msg, $subject) = $send_mail->(qw(1.eml user1 forum));
 login_as('mail_user1');
-visit_uri('/mail_forum/discussions');
+visit_uri('/mail_forum/mail');
 follow_link($subject);
 verify_text($subject);
 %$vars = (
@@ -75,4 +75,9 @@ reload_page();
 follow_link('embedded-image');
 verify_content_type('image/gif');
 go_back();
-follow_link('new_discussion');
+follow_link('new_topic');
+submit_form({
+    topic => 'Hello',
+    anon => 'there',
+    'Attach:#1' => file_field('mail/sort_up.gif'),
+});
