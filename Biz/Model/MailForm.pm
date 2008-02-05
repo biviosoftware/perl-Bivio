@@ -9,10 +9,20 @@ my($_O) = __PACKAGE__->use('Mail.Outgoing');
 my($_V) = __PACKAGE__->use('UI.View');
 my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 
+sub execute_empty {
+    my($self) = @_;
+    if (my $s = $self->req->unsafe_get_nested(qw(Model.RealmMail subject))) {
+	$self->internal_put_field(
+	    subject => ($s =~ /\bRe:/ ? '' : 'Re: ') . $s);
+    }
+    return;
+}
+
 sub execute_ok {
     my($self) = @_;
     my($r) = $self->req(qw(auth_realm owner));
     my($r_email) = $r->format_email;
+    my($id) = $self->req->unsafe_get_nested(qw(Model.RealmMail message_id));
     $self->internal_put_field(headers => {
 	_from => $_RFC->format_mailbox(
 	    $self->new_other('Email')->load_for_auth_user->get('email'),
@@ -22,7 +32,7 @@ sub execute_ok {
 	Sender => $r_email,
 	To => $_RFC->format_mailbox($r_email, $r->get('display_name')),
 	Subject => $self->get('subject'),
-#	In-Reply-To
+	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
     $_V->execute('Mail->form_mail', $self->req);
     return;
@@ -48,13 +58,13 @@ sub internal_initialize {
 		type => 'TextArea',
 		constraint => 'NOT_NULL',
 	    },
-	    $self->map_attachments(sub {
+	    @{$self->map_attachments(sub {
 		return +{
 		    name => shift,
 		    type => 'FileField',
 		    constraint => 'NONE',
 		};
-	    }),
+	    })},
 	],
 	other => [
 	    {
@@ -64,6 +74,13 @@ sub internal_initialize {
 	    },
 	],
     });
+}
+
+sub internal_pre_execute {
+    my($self) = @_;
+    $self->use('Type.FormMode')->setup_by_list_this(
+	$self->new_other('RealmMailList'), 'RealmMail');
+    return shift->SUPER::internal_pre_execute(@_);
 }
 
 sub mail_header_from {
@@ -81,7 +98,7 @@ sub mail_envelope_recipients {
 
 sub map_attachments {
     my(undef, $op) = @_;
-    return map($op->("attachment$_"), 1..3);
+    return [map($op->("attachment$_"), 1..3)];
 }
 
 1;
