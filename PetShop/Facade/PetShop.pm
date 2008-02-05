@@ -29,7 +29,7 @@ __PACKAGE__->new({
 	[acknowledgement => 0x009900],
 	[bunit_complex => 0xFF0000],
 	[bunit_border => 0x00ff00],
-	[example_background => 0xFFCCFF],
+	[example_background => 0xFFFFFF],
     ],
     Font => [
 	map(["bunit_$_" => [$_]], qw(
