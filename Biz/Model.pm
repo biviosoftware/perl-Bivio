@@ -75,6 +75,8 @@ sub die {
 }
 
 sub do_iterate {
+    #(self, code_ref, string, hash_ref) : self
+    #(self, code_ref, string, string, hash_ref) : self
     my($self, $do_iterate_handler) = (shift, shift);
     # Like L<map_iterate|"map_iterate"> but does not return anything.  For each row,
     # calls L<iterate_next_and_load|"iterate_next_and_load"> followed by
