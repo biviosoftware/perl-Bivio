@@ -378,10 +378,16 @@ sub _cfg_mail {
 	    [FORUM_MAIL_RECEIVE => sub {
 		 return '?/' . shift->get_facade->MAIL_RECEIVE_PREFIX;
 	    }],
-	    [FORUM_MAIL_THREAD_ROOT_LIST => '?/discussions'],
-	    [FORUM_MAIL_THREAD_LIST => '?/topic'],
-	    [FORUM_MAIL_FORM => '?/discuss'],
-	    [FORUM_MAIL_PART => '?/topic-attachment/*'],
+	    $_C->if_version(
+		4 => sub {
+		    return (
+			[FORUM_MAIL_THREAD_ROOT_LIST => '?/mail'],
+			[FORUM_MAIL_THREAD_LIST => '?/mail-thread'],
+			[FORUM_MAIL_FORM => '?/new-mail-msg'],
+			[FORUM_MAIL_PART => '?/mail-msg-part/*'],
+		    );
+		},
+	    ),
 	    [FORUM_MAIL_REFLECTOR => undef],
 	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
 	    [MAIL_RECEIVE_FORWARD => undef],
@@ -406,6 +412,8 @@ sub _cfg_mail {
 	    [MailForm => [
 		subject => 'Topic',
 		body => '',
+		Bivio::Biz::Model->get_instance('MailForm')
+		    ->map_attachments(sub {shift}) => 'Attach',
 		ok_button => 'Send',
 	    ]],
 	    [prose => [
@@ -422,9 +430,12 @@ sub _cfg_mail {
 		     attachment => q{SPAN_label('Attachment:');SPAN_value(String(['->get_file_name']));},
 		 ],
 	    ]],
+	    ['task_menu.title' => [
+		'FORUM_MAIL_FORM.reply' => 'Reply',
+	    ]],
 	    [title => [
-		FORUM_MAIL_FORM => 'New Discussion',
-		FORUM_MAIL_THREAD_ROOT_LIST => 'Discussions',
+		FORUM_MAIL_FORM => 'New Topic',
+		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
 		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
 	    ]],
 	],
