@@ -25,7 +25,6 @@ sub from_xhtml {
 	$html =~ s{.*(?=\Q<div class="main_body">\E)}{}s;
 	$html =~ s{\Q</td>\E.*}{}s;
 	$html =~ s{\&reg\;}{(r)}g;
-	Bivio::IO::File->write(File::Basename::basename($in) . '.in', $html);
 	my($wiki) = _from_xhtml_children(
 	    XML::Parser->new(Style => 'Tree')->parse($html));
 	$wiki =~ s{^\@div class=main_body\n}{}s;
