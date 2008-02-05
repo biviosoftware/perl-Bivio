@@ -20,20 +20,18 @@ sub form_mail {
 		mime_type => 'text/plain',
 		mime_data => $body,
 		mime_encoding => $_T->suggest_encoding('text/plain', \$body),
-		values => [
-		    $f->map_attachments(sub {
-			return unless my $a = $f->get(shift);
-			return {
-			    mime_data => $a->{content},
-			    mime_filename => $a->{filename},
-			    mime_type => $a->{content_type},
-			    mime_disposition => 'inline',
-			    mime_encoding => $_T->suggest_encoding(
-				$a->{content_type}, $a->{content},
-			    ),
-			};
-		    }),
-		],
+		values => $f->map_attachments(sub {
+		    return unless my $a = $f->get(shift);
+		    return MIMEEntity({
+			mime_data => ${$a->{content}},
+			mime_filename => $a->{filename},
+			mime_type => $a->{content_type},
+			mime_disposition => 'inline',
+			mime_encoding => $_T->suggest_encoding(
+			    $a->{content_type}, $a->{content},
+			),
+		    });
+		}),
 	    }),
 	}, ['Model.MailForm']],
     );
@@ -56,10 +54,12 @@ sub pre_compile {
 }
 
 sub send_form {
-    return shift->internal_body(vs_simple_form(MailForm => [qw(
-        MailForm.subject
-	MailForm.body
-    )]));
+    return shift->internal_body(vs_simple_form(MailForm => [
+        'MailForm.subject',
+	'MailForm.body',
+	@{Bivio::Biz::Model->get_instance('MailForm')
+            ->map_attachments(sub {"MailForm." . shift(@_)})},
+    ]));
 }
 
 sub thread_list {
@@ -68,11 +68,29 @@ sub thread_list {
 	Join([
 	    DIV_msg_sep('', {control =>['->get_cursor']}),
 	    DIV_msg(
-		With(['->get_mail_part_list'],
-		     If(['!', '->has_mime_cid'],
-			_thread_list_director(),
-		     ),
-		),
+		Join([
+		    With(['->get_mail_part_list'],
+		        If(['!', '->has_mime_cid'],
+			    _thread_list_director(),
+			),
+		    ),
+		    RoundedBox(
+			TaskMenu([
+			    {
+				task_id => 'FORUM_MAIL_FORM',
+				label => 'FORUM_MAIL_FORM.reply',
+				query => {
+				    'ListQuery.this'
+					=> ['RealmMail.realm_file_id'],
+				},
+			    },
+			    {
+				task_id => 'FORUM_MAIL_FORM',
+				query => undef,
+			    },
+			]),
+		    ),
+		]),
 	    ),
 	]),
     ));
