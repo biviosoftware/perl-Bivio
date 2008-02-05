@@ -15,7 +15,12 @@ sub drilldown_uri {
     my($req) = $self->req;
     return $req->format_uri({
 	task_id => $req->get_nested(qw(task thread_task)),
-	query => $self->format_query('THIS_CHILD_LIST'),
+	query => $self->format_query('THIS_CHILD_LIST', {
+#TODO: Only works b/c subclass of MailThreadList
+	    'ListQuery.order_by' => [
+		'RealmFile.modified_date_time' => 1,
+	    ],
+	}),
     });
 }
 
