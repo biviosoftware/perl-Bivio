@@ -33,7 +33,9 @@ sub parse_to_names {
     }
 
     # Parse by priority.  There is always a last name (unless format is a & b)
-    my($name) = {};
+    my($name) = {
+	map(($_ . '_name' => ''), qw(last first middle)),
+    };
     _parse_last($name, \@parts);
     _parse_first($name, \@parts);
     _parse_middle($name, \@parts);
