@@ -518,7 +518,7 @@ sub info_mail {
             40
             USER
             ANYBODY
-            Action.MailReceiveStatus->execute
+            Action.MailReceiveStatus
         )],
 	[qw(
             MAIL_RECEIVE_FORWARD
@@ -526,7 +526,7 @@ sub info_mail {
 	    GENERAL
 	    ANYBODY
 	    Action.MailForward
-            Action.MailReceiveStatus->execute
+            Action.MailReceiveStatus
 	)],
 	[qw(
             FORUM_MAIL_RECEIVE
@@ -534,7 +534,7 @@ sub info_mail {
             FORUM
             MAIL_SEND
             Action.RealmMail->execute_receive
-            Action.MailReceiveStatus->execute
+            Action.MailReceiveStatus
         )],
 	[qw(
             USER_MAIL_BOUNCE
@@ -542,7 +542,7 @@ sub info_mail {
             USER
             ANYBODY
             Model.RealmMailBounce
-            Action.MailReceiveStatus->execute
+            Action.MailReceiveStatus
         )],
 	[qw(
             MAIL_RECEIVE_FORBIDDEN
