@@ -5,7 +5,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..16\n"; }
+BEGIN { $| = 1; print "1..19\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Type::Email;
@@ -38,6 +38,11 @@ my(@tests) = (
 	    'x@y.z', 0,
 	    'x@y:.z', 1,
 	    'ignore-x@y.z', 1,
+	],
+	to_xml => [
+	    'ignore-foo@a.a' => '',
+	    [undef] => '',
+	    'a@a.a' => 'a@a.a',
 	],
     },
 );
