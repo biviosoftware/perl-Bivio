@@ -60,9 +60,6 @@ sub merge_overrides {
 	'Bivio::Test::HTMLParser::Forms' => {
 	    error_color => '#993300',
 	},
-	'Bivio::Test::Language::HTTP' => {
-	    deprecated_text_patterns => 0,
-	},
 	'Bivio::SQL::PropertySupport' => {
 	    unused_classes => [],
 	},

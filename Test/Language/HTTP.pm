@@ -31,7 +31,10 @@ Bivio::IO::Config->register(my $_CFG = {
     mail_dir => $ENV{HOME} ? "$ENV{HOME}/btest-mail/" : '',
     mail_tries => 60,
     email_tag => '+btest_',
-    deprecated_text_patterns => 1,
+    deprecated_text_patterns => Bivio::IO::Config->if_version(
+	4 => sub {0},
+	sub {1},
+    ),
 });
 my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
 
