@@ -12,6 +12,7 @@ my($_MAX_LINE) = Bivio::Type->get_instance('Line')->get_width;
 my($_MAX_EMAIL) = Bivio::Type->get_instance('Email')->get_width;
 my($_MS) = Bivio::Type->get_instance('MailSubject');
 my($_MFN) = Bivio::Type->get_instance('MailFileName');
+my($_RF) = __PACKAGE__->use('Model.RealmFile');
 Bivio::IO::Config->register(my $_CFG = {
     create_hook => sub {},
 });
@@ -54,6 +55,17 @@ sub create_from_file {
 sub create_from_rfc822 {
     my($self, $rfc822) = @_;
     return _create($self, _create_file($self, $rfc822));
+}
+
+sub get_mail_part_list {
+    my($delegator, $prefix) = shift->delegated_args(@_);
+    return $delegator->new_other('MailPartList')->load_all({
+	parent_id => $delegator->get(($prefix || '') . 'realm_file_id'),
+    });
+}
+
+sub get_rfc822 {
+    return $_RF->get_content(shift(@_));
 }
 
 sub handle_config {
