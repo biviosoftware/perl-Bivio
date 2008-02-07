@@ -1,104 +1,68 @@
-# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Address;
 use strict;
-$Bivio::Mail::Address::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+use Bivio::Base 'Bivio.UNIVERSAL';
 
-=head1 NAME
-
-Bivio::Mail::Address - parses e-mail addresses according to RFC 822
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Mail::Address;
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::Mail::Address::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::Mail::Address> parses e-mail addresses as specified in the
-BNF syntax in RFC 822.
-
-=cut
-
-#=IMPORTS
-use Bivio::Die;
-use Bivio::Mail::RFC822;
-
-#=VARIABLES
-# Copy constant strings into locals, can't use subroutine calls in regexps
-my($ATOM_ONLY_PHRASE) = Bivio::Mail::RFC822->ATOM_ONLY_PHRASE;
-my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
-my($QUOTED_STRING) = Bivio::Mail::RFC822->QUOTED_STRING;
-my($NOT_NESTED_COMMENT) = Bivio::Mail::RFC822->NOT_NESTED_COMMENT;
-my($MAILBOX) = Bivio::Mail::RFC822->MAILBOX;
-my($ADDR_SPEC) = Bivio::Mail::RFC822->ADDR_SPEC;
-my($ROUTE_ADDR) = Bivio::Mail::RFC822->ROUTE_ADDR;
-my($PHRASE) = Bivio::Mail::RFC822->PHRASE;
-my($LOCAL_PART) = Bivio::Mail::RFC822->LOCAL_PART;
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="parse"></a>
-
-=head2 static parse(string addr) : array
-
-822:
-    For purposes of display, and when passing  such  struc-
-    tured information to other systems, such as mail proto-
-    col  services,  there  must  be  NO  linear-white-space
-    between  <word>s  that are separated by period (".") or
-    at-sign ("@") and exactly one SPACE between  all  other
-    <word>s.  Also, headers should be in a folded form.
-
-    There is one type of bracket which must occur in matched pairs
-    and may have pairs nested within each other:
-
-	 o   Parentheses ("(" and ")") are used  to  indicate  com-
-	     ments.
-
-    There are three types of brackets which must occur in  matched
-    pairs, and which may NOT be nested:
-
-	 o   Colon/semi-colon (":" and ";") are   used  in  address
-	     specifications  to  indicate that the included list of
-	     addresses are to be treated as a group.
-
-	 o   Angle brackets ("<" and ">")  are  generally  used  to
-	     indicate  the  presence of a one machine-usable refer-
-	     ence (e.g., delimiting mailboxes), possibly  including
-	     source-routing to the machine.
-
-	 o   Square brackets ("[" and "]") are used to indicate the
-	     presence  of  a  domain-literal, which the appropriate
-	     name-domain  is  to  use  directly,  bypassing  normal
-	     name-resolution mechanisms.
-
-These appear after -----Original Message-----
-    From: Jeffrey Richer [SMTP:jricher@inet.net]
-    From: . <winsv@ix.netcom.com>
-    From: <MNatto@aol.com>
-Probably part of Outlook.  Not a problem for us as the "Original Message"
-is not an 822 thing.
-
-Parses the first address in the field. If there are multiple
-addresses, only grabs the first one.
-
-Returns an array (address, name) or (undef, undef) if the input
-could not be parse successfully.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RFC) = __PACKAGE__->use('Mail.RFC822');
+#TODO: Remove this
+my($ATOM_ONLY_PHRASE) = $_RFC->ATOM_ONLY_PHRASE;
+my($ATOM_ONLY_ADDR) = $_RFC->ATOM_ONLY_ADDR;
+my($QUOTED_STRING) = $_RFC->QUOTED_STRING;
+my($NOT_NESTED_COMMENT) = $_RFC->NOT_NESTED_COMMENT;
+my($MAILBOX) = $_RFC->MAILBOX;
+my($ADDR_SPEC) = $_RFC->ADDR_SPEC;
+my($ROUTE_ADDR) = $_RFC->ROUTE_ADDR;
+my($PHRASE) = $_RFC->PHRASE;
+my($LOCAL_PART) = $_RFC->LOCAL_PART;
+my($_E) = __PACKAGE__->use('Type.Email');
 
 sub parse {
+    # (proto, string) : array
+    # 822:
+    #     For purposes of display, and when passing  such  struc-
+    #     tured information to other systems, such as mail proto-
+    #     col  services,  there  must  be  NO  linear-white-space
+    #     between  <word>s  that are separated by period (".") or
+    #     at-sign ("@") and exactly one SPACE between  all  other
+    #     <word>s.  Also, headers should be in a folded form.
+    #
+    #     There is one type of bracket which must occur in matched pairs
+    #     and may have pairs nested within each other:
+    #
+    # 	 o   Parentheses ("(" and ")") are used  to  indicate  com-
+    # 	     ments.
+    #
+    #     There are three types of brackets which must occur in  matched
+    #     pairs, and which may NOT be nested:
+    #
+    # 	 o   Colon/semi-colon (":" and ";") are   used  in  address
+    # 	     specifications  to  indicate that the included list of
+    # 	     addresses are to be treated as a group.
+    #
+    # 	 o   Angle brackets ("<" and ">")  are  generally  used  to
+    # 	     indicate  the  presence of a one machine-usable refer-
+    # 	     ence (e.g., delimiting mailboxes), possibly  including
+    # 	     source-routing to the machine.
+    #
+    # 	 o   Square brackets ("[" and "]") are used to indicate the
+    # 	     presence  of  a  domain-literal, which the appropriate
+    # 	     name-domain  is  to  use  directly,  bypassing  normal
+    # 	     name-resolution mechanisms.
+    #
+    # These appear after -----Original Message-----
+    #     From: Jeffrey Richer [SMTP:jricher@inet.net]
+    #     From: . <winsv@ix.netcom.com>
+    #     From: <MNatto@aol.com>
+    # Probably part of Outlook.  Not a problem for us as the "Original Message"
+    # is not an 822 thing.
+    #
+    # Parses the first address in the field. If there are multiple
+    # addresses, only grabs the first one.
+    #
+    # Returns an array (address, name) or (undef, undef) if the input
+    # could not be parse successfully.
     my(undef, $addr) = @_;
     my($REST) = '\s*(?:,\s*(.*)?)?$';
     local($_) = $addr;
@@ -159,14 +123,6 @@ sub parse {
     return (undef, undef, undef);
 }
 
-=for html <a name="parse_list"></a>
-
-=head2 static parse_list(string addr_list) : array_ref
-
-Parse a list of email addresses.  Dies on invalid address.
-
-=cut
-
 sub parse_list {
     my($proto, $addr_list) = @_;
     return []
@@ -186,24 +142,16 @@ sub parse_list {
     return $addrs;
 }
 
-=for html <a name="parse_list_strict"></a>
-
-=head2 static parse_list_strict(string list_string, array_ref error_list) : arrary_ref
-
-Parse a string into a list of email addresses. Only literal email
-addresses are allowed--RFC822 comments and extensions are not
-supported.
-
-Errors will be pushed onto error_list, if present.
-
-=cut
-
 sub parse_list_strict {
+    # Parse a string into a list of email addresses. Only literal email
+    # addresses are allowed--RFC822 comments and extensions are not
+    # supported.
+    #
+    # Errors will be pushed onto error_list, if present.
     my($proto, $list_string, $error_list) = @_;
     my($email_list) = [];
-
     foreach my $email ($list_string =~ /([^\s,]+)/gs) {
-        my($parsed) = Bivio::Type::Email->from_literal($email);
+        my($parsed) = $_E->from_literal($email);
         if ($parsed) {
             push(@$email_list, $parsed);
         }
@@ -214,18 +162,10 @@ sub parse_list_strict {
     return $email_list;
 }
 
-#=PRIVATE METHODS
-
 sub _clean_comment {
     local($_) = @_;
     s/^\(//s && s/\)$//s || Carp::cluck("not a comment: $_");
     s/\\(.)/$1/gs;
-    return $_;
-}
-
-sub _clean_route_addr {
-    local($_) = @_;
-    s/^\<//s && s/\>$//s || die("not a route address: $_");
     return $_;
 }
 
@@ -236,14 +176,10 @@ sub _clean_quoted_string {
     return $_;
 }
 
-=head1 COPYRIGHT
-
-Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub _clean_route_addr {
+    local($_) = @_;
+    s/^\<//s && s/\>$//s || die("not a route address: $_");
+    return $_;
+}
 
 1;
