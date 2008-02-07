@@ -1066,6 +1066,7 @@ EOF
 sub internal_upgrade_db_permissions51 {
     my($self) = @_;
     my($ap) = $self->use('Auth.Permission');
+    my($aps) = $self->use('Auth.PermissionSet');
     $self->model('RealmRole')->do_iterate(
 	sub {
 	    my($it) = @_;
@@ -1074,6 +1075,11 @@ sub internal_upgrade_db_permissions51 {
 	    foreach my $bit (21 .. 69) {
 		next unless vec($ps, $bit, 1);
 		vec($ps, $bit + 30, 1) = 1;
+		$write++;
+	    }
+	    foreach my $name (qw(MOTION TUPLE)) {
+		next unless $aps->is_set(\$ps, $ap->from_name($name . '_READ'));
+		$aps->set(\$ps, $ap->from_name('FEATURE_' . $name));
 		$write++;
 	    }
 	    $it->update({permission_set => $ps})
