@@ -455,6 +455,7 @@ sub internal_upgrade_db_bundle {
 	row_tag
 	motion_vote_comment
 	nonunique_email
+	permissions51
     )) {
 	my($sentinel) = \&{"_sentinel_$type"};
 	next if defined(&$sentinel) ? $sentinel->($self)
@@ -1059,6 +1060,29 @@ CREATE INDEX otp_t3 ON otp_t (
 )
 /
 EOF
+    return;
+}
+
+sub internal_upgrade_db_permissions51 {
+    my($self) = @_;
+    my($ap) = $self->use('Auth.Permission');
+    $self->model('RealmRole')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    my($ps) = $it->get('permission_set');
+	    my($write);
+	    foreach my $bit (21 .. 69) {
+		next unless vec($ps, $bit, 1);
+		vec($ps, $bit + 30, 1) = 1;
+		$write++;
+	    }
+	    $it->update({permission_set => $ps})
+		if $write;
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+    );
     return;
 }
 
@@ -1683,6 +1707,23 @@ sub _sentinel_file_writer {
 
 sub _sentinel_motion_vote_comment {
     return shift->column_exists(qw(motion_vote_t comment));
+}
+
+sub _sentinel_permissions51 {
+    my($self) = @_;
+    # Don't upgrade unless FEATURE_PERMISSIONS51 is a role in this app
+    return 1
+	unless $self->use('Auth.Permission')
+	->unsafe_from_name('FEATURE_PERMISSIONS51');
+    my($u) = $self->model('DbUpgrade');
+    my($v) = 'permissions51';
+    return 1
+	if $u->unauth_load({version => $v});
+    $u->create({
+	version => $v,
+	run_date_time => $u->get_field_type('run_date_time')->now,
+    });
+    return 0;
 }
 
 sub _sentinel_site_forum {
