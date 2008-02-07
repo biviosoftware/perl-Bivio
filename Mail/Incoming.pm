@@ -2,27 +2,21 @@
 # $Id$
 package Bivio::Mail::Incoming;
 use strict;
-use Bivio::Base 'Bivio::Mail::Common';
-use Bivio::IO::Alert;
-use Bivio::IO::Config;
+use Bivio::Base 'Mail.Common';
 use Bivio::IO::Trace;
-use Bivio::Mail::Address;
-use Bivio::Mail::Common;
-use Bivio::Mail::RFC822;
-use Bivio::Type::DateTime;
 use IO::Scalar ();
-
-# C<Bivio::Mail::Incoming> parses and maintains the state of an incoming mail
-# message.
-
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 require 'ctime.pl';
 
-#=VARIABLES
-use vars qw($_TRACE);
-my($_DT) = 'Bivio::Type::DateTime';
-Bivio::IO::Trace->register;
-# Bivio::IO::Config->register;
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_A) = __PACKAGE__->use('Mail.Address');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_RFC) = __PACKAGE__->use('Mail.RFC822');
+my($_MS) = __PACKAGE__->use('Type.MailSubject');
+my($_MRW) = __PACKAGE__->use('Type.MailReplyWho');
+my($_E) = __PACKAGE__->use('Type.Email');
+our($_TRACE);
+my($_EA) = __PACKAGE__->use('Type.EmailArray');
+my($_M) = __PACKAGE__->use('Biz.Model');
 
 sub get_body {
     my($self, $body) = @_;
@@ -69,7 +63,7 @@ sub get_headers {
     # If I<headers> is undefined, a new hash will be created.  If I<headers> is
     # defined, fills in and returns I<headers>.
     $headers ||= {};
-    my($fn) = Bivio::Mail::RFC822->FIELD_NAME;
+    my($fn) = $_RFC->FIELD_NAME;
     # Important to include the newline in $f
     foreach my $f (split(/^(?=$fn)/om, $self->get('header'))) {
 	my($n) = $f =~ /^($fn)/o;
@@ -106,6 +100,48 @@ sub get_references {
 	    reverse(_get_field($self, 'references:') =~ /<([^<>]+)>/g),
 	)];
     });
+}
+
+sub get_reply_email_arrays {
+    my($self, $who, $req) = @_;
+    my($realm) = $req->get_nested(qw(auth_realm owner))->format_email;
+    return $_EA->new([$realm])
+	unless ref($self)
+        and $who = $_MRW->unsafe_from_any($who)
+	and !$who->eq_realm;
+    my($reply_to) = $self->get_reply_to;
+    $reply_to = undef
+	if $_E->is_equal($reply_to, $realm);
+    my($from) = lc($reply_to || $self->get_from);
+    return $_EA->new([$from])
+	if $who->eq_author;
+    my($users) = {@{
+	$_M->new($req, 'RealmEmailList')->get_recipients(
+	    sub {shift->get('Email.email') => 1},
+	),
+    }};
+    return map(
+	$_EA->new([
+	    $_ ne 'to' ? () : (
+		$users->{$from} ? () : $from,
+		$realm,
+	    ),
+	    grep({
+		my($x) = $_;
+		$users->{$x}
+		    || grep($_E->is_equal($x, $_), $from, $reply_to, $realm)
+		    ? 0 : 1;
+	    } @{$_A->parse_list(_get_field($self, "$_:"))}),
+	]),
+	qw(to cc),
+    );
+}
+
+sub get_reply_subject {
+    my($self) = @_;
+    my($s) = ($_MS->from_literal(_get_field($self, 'subject:')))[0]
+	|| $_MS->EMPTY_VALUE;
+    return ($s =~ /\bRe:/ ? '' : 'Re: ') . $s;
 }
 
 sub get_reply_to {
@@ -166,27 +202,30 @@ sub get_unix_mailbox {
 
 sub initialize {
     my($self, $rfc822, $offset) = @_;
+    $rfc822 = $rfc822->get_rfc822
+	if Bivio::UNIVERSAL->is_blessed($rfc822);
+    my($r) = ref($rfc822) ? $rfc822 : \$rfc822;
     # Initializes the object with the reference supplied.
     #
     # Note: the reference to I<rfc822> will be retained, so do not modify this value
     # until L<uninitialize|"uninitialize"> has been called or the object is
     # destroyed.
     $offset ||= 0;
-    my($i) = index($$rfc822, "\n\n", $offset);
+    my($i) = index($$r, "\n\n", $offset);
     my($h);
-    if (substr($$rfc822, $offset, 5) eq 'From ') {
+    if (substr($$r, $offset, 5) eq 'From ') {
 	# Skip Unix From line
-	$offset = index($$rfc822, "\n", $offset) + 1;
+	$offset = index($$r, "\n", $offset) + 1;
     }
     if ($i >= 0) {
 	$i -= $offset;
-	$h = substr($$rfc822, $offset, $i + 1);
+	$h = substr($$r, $offset, $i + 1);
 	# Account for \n\n
 	$i += 2 + $offset;
     }
     else {
-	$i = length($$rfc822) - $offset;
-	$h = substr($$rfc822, $offset, $i + 1);
+	$i = length($$r) - $offset;
+	$h = substr($$r, $offset, $i + 1);
     }
 #TODO: Handle "From " start lines.
 #TODO: Don't unfold headers in advance.  Unfold headers as they
@@ -201,10 +240,10 @@ sub initialize {
     #      quoted space.
     $h =~ s/\r?\n[ \t]/ /gs;
     return $self->put(
-	rfc822 => $rfc822,
+	rfc822 => $r,
 	header => $h,
 	header_offset => $offset,
-	rfc822_length => length($$rfc822) - $offset,
+	rfc822_length => length($$r) - $offset,
 	# If there is no body, get_body will return empty string.
 	body_offset => $i,
 	time => time,
@@ -261,7 +300,7 @@ sub _two_parter {
         foreach my $f (@$headers) {
 	    last if $v = _get_field($self, $f);
         }
-	my($f1, $f2) = $v ? Bivio::Mail::Address->parse($v) : ();
+	my($f1, $f2) = $v ? $_A->parse($v) : ();
 	$self->put($field2 => $f2);
 	return $f1;
     });
