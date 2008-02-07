@@ -1,10 +1,10 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::FormModel;
 use strict;
+use Bivio::Base 'Biz.Model';
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::Task;
-use Bivio::Base 'Bivio::Biz::Model';
 use Bivio::Biz::FormContext;
 use Bivio::Die;
 use Bivio::HTML;
@@ -604,6 +604,16 @@ sub internal_stay_on_page {
     return;
 }
 
+sub is_auxiliary_on_task {
+    my($self) = @_;
+    my($c) = $self->req(qw(task form_model));
+    return 0
+	if defined($c) && $c eq ref($self);
+    _trace(ref($self), ': auxiliary form; primary_class=', $c)
+	if $_TRACE;
+    return 1;
+}
+
 sub is_field_editable {
     # Returns true if the field is editable. By default all fields are editable,
     # subclasses may override this to provide this value dynamically.
@@ -722,29 +732,21 @@ sub process {
 	);
 	# DOES NOT RETURN
     }
-
-    # Is this a primary or auxiliary form on the request?
-    my($task) = $req->get('task');
-    my($primary_class) = $task->get('form_model');
-    if (defined($primary_class) && $primary_class eq ref($self)) {
-	$fields->{want_context} = $self->get_info('require_context')
-	    && $task->get('require_context');
-	_trace(
-	    ref($self), ': primary form, want_context=', $fields->{want_context}
-	) if $_TRACE;
-    }
-    else {
+    if ($self->is_auxiliary_on_task) {
 	$fields->{want_context} = $self->get_info('require_context');
 	# Auxiliary forms are not the "main" form models on the page
 	# and therefore, do not have any input.  They always return
 	# back to this page, if they require_context.
-	_trace(ref($self), ': auxiliary form; primary_class=', $primary_class)
-	    if $_TRACE;
 	$fields->{literals} = {};
 	$fields->{context} = $self->get_context_from_request({}, $req)
 	    if $fields->{want_context};
 	return _call_execute($self, 'execute_empty');
     }
+    $fields->{want_context} = $self->get_info('require_context')
+	&& $self->req(qw(task require_context));
+    _trace(
+	ref($self), ': primary form, want_context=', $fields->{want_context}
+    ) if $_TRACE;
 
     # Only save "generically" if not executed explicitly.
     # sub-forms shouldn't be put on as THE form_model.  Should appear
