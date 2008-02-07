@@ -31,7 +31,7 @@ sub initialize {
 	    $self->get('label'),
 	]),
 	cell_class => [
-	    sub {$_[1] ? 'label_err' : 'label_ok'},
+	    sub {$_[1] ? 'label label_err' : 'label label_ok'},
 	    [['->req', $class], '->get_field_error', $field],
 	],
     );
