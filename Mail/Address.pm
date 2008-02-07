@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Mail::Address;
 use strict;
-use Bivio::Base 'Bivio.UNIVERSAL';
+use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = __PACKAGE__->use('Mail.RFC822');
