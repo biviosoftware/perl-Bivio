@@ -66,7 +66,7 @@ sub _cfg_base {
 	    [acknowledgement_border => 0x0],
 	    [[qw(err warn empty_list_border form_field_err)] => 0x990000],
 	    [header_su_background => 0x00ff00],
-	    [[qw(form_desc form_sep_border)]  =>  0x666666],
+	    [[qw(form_desc form_sep_border msg_parts_border)] => 0x666666],
             [help_wiki_background => 0x6b9fea],
 	    [dd_menu => 0x444444],
 	    [[qw(dd_menu_selected dd_menu_background)] => 0xffffff],
@@ -111,7 +111,7 @@ sub _cfg_base {
 	    [warn => 'italic'],
 	    [err => 'bold'],
 	    [body => ['family=Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small']],
-	    [tools => ['nowrap', 'inline', 'lowercase']],
+	    [tools => ['nowrap', 'inline']],
 	    [[qw(code pre_text)] => [
 		'family="Courier New",Courier,monospace,fixed',
 		'120%',
@@ -128,7 +128,7 @@ sub _cfg_base {
 	    [byline => 'bold'],
 	    [title => ['140%', 'bold']],
 	    [nav => '120%'],
-	    [[qw(off pager)] => ['lowercase']],
+	    [[qw(off pager)] => []],
 	    [th => 'bold'],
 	    [dd_menu => ['normal']],
 	],
@@ -372,7 +372,14 @@ sub _cfg_file {
 sub _cfg_mail {
     return {
 	Font => [
+#TODO: Old?
 	    [mail_msg_field => 'bold'],
+	    [msg_byline => [qw(120% bold)]],
+	],
+	Color => [
+	    [msg_byline => 0x0],
+#TODO: Alias this to form_sep_border
+	    [mail_msg_border => 0x666666],
 	],
 	Task => [
 	    [FORUM_MAIL_RECEIVE => sub {
@@ -410,8 +417,10 @@ sub _cfg_mail {
 		'RealmMail.from_email' => 'Author',
 	    ]],
 	    [MailForm => [
+		to => 'To',
+		cc => 'Cc',
 		subject => 'Topic',
-		body => '',
+		body => 'Text',
 		Bivio::Biz::Model->get_instance('MailForm')
 		    ->map_attachments(sub {shift}) => 'Attach',
 		ok_button => 'Send',
@@ -431,12 +440,19 @@ sub _cfg_mail {
 		 ],
 	    ]],
 	    ['task_menu.title' => [
-		'FORUM_MAIL_FORM.reply' => 'Reply',
+		'FORUM_MAIL_FORM.reply_all' => 'Reply to All',
+		'FORUM_MAIL_FORM.reply_author' => 'Reply to Author',
+		'FORUM_MAIL_FORM.reply_realm' => 'Reply',
+		FORUM_MAIL_FORM => 'New Topic',
+		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail List',
 	    ]],
 	    [title => [
-		FORUM_MAIL_FORM => 'New Topic',
+		FORUM_MAIL_FORM => q{If(['->has_keys', 'Model.RealmMailList'], 'Reply', 'New Topic');},
 		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
 		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
+	    ]],
+	    [acknowledgement => [
+		FORUM_MAIL_FORM => 'Your message was sent.',
 	    ]],
 	],
     };
@@ -859,7 +875,7 @@ sub _cfg_wiki {
 	],
 	Font => [
 	    [help_wiki_body => ['95%']],
-	    [help_wiki_tools => ['95%', 'lowercase']],
+	    [help_wiki_tools => ['95%']],
 	    [help_wiki_header => ['bold', '140%', 'uppercase']],
 	    [help_wiki_iframe_body => ['small']],
 	],
