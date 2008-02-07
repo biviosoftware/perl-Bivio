@@ -16,10 +16,9 @@ sub initialize {
     my($self) = @_;
     return if $self->unsafe_get('_link');
     $self->initialize_attr(_link =>
-	Link([$self . 'link_text'], [$self . 'link_href'])
-	    ->put(class => 'page_link'));
+	Link([$self . 'link_text'], [$self . 'link_href'], _num_class($self)));
     $self->initialize_attr(_selected =>
-	SPAN_selected(String([$self . 'selected'])));
+	SPAN(String([$self . 'selected']), _num_class($self, 1)));
     _create_navigation_link($self, 'prev');
     _create_navigation_link($self, 'next');
     return;
@@ -44,9 +43,9 @@ sub render {
     return unless $query->get('has_next') || $query->get('has_prev');
 
     $self->get('_prev')->render($req, $buffer);
-
+    my($no_sep) = 0;
     foreach my $page (@{_get_page_numbers($self, $query)}) {
-
+        $req->put($self . 'no_sep' => $no_sep++);
         if ($page == $query->get('page_number')) {
             $req->put($self . 'selected' => $page);
             $self->get('_selected')->render($req, $buffer);
@@ -109,6 +108,16 @@ sub _nav {
 }
 
 # Returns the widgets in the correct order depending on the direction.
+sub _num_class {
+    my($self, $selected) = @_;
+    return {
+	class => [sub {
+	   my(undef, $no_sep, $class) = @_;
+	   return $class . ($no_sep ? '' : ' want_sep');
+	}, [$self . 'no_sep'], $selected ? 'selected num' : 'num'],
+    };
+}
+
 sub _order_widgets {
     my($self, $direction, @widgets) = @_;
     return $direction eq 'next' ? reverse(@widgets) : @widgets;
