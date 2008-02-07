@@ -44,9 +44,10 @@ sub get_label_and_field {
 	    $_VS->vs_new(String => $self->internal_get_label_value, 0),
 	    ':',
 	),
-	($self->unsafe_get('row_control')
-	    ? (row_control => $self->get('row_control'))
-	    : ()),
+	map({
+	    my($v) = $self->unsafe_get($_);
+	    $v ? ($_ => $v) : ();
+	} qw(row_control row_class)),
     }), $self);
 }
 
