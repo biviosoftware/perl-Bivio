@@ -10,6 +10,10 @@ sub CLEAN_REGEX {
     return qr{\s$|/|@{[shift->get_instance('FilePath')->ILLEGAL_CHAR_REGEXP]}}o;
 }
 
+sub EMPTY_VALUE {
+    return '(No Subject)';
+}
+
 sub clean_and_trim {
     return lc(shift->trim_literal($_[0], 1));
 }
@@ -23,7 +27,7 @@ sub trim_literal {
     $value =~ s{@{[$proto->CLEAN_REGEX]}}{}g
 	if $clean;
     return length($value) ? substr($value, 0, $proto->get_width)
-	: '(No Subject)';
+	: $proto->EMPTY_VALUE;
 }
 
 1;
