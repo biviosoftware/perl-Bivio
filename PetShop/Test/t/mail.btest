@@ -34,9 +34,9 @@ my($headers) = sub {
 	$header->('To', $to),
 	'Message-Id' => next_message_id(),
 	Date => $date->(),
-	Subject => $ref ? 'Re: ' . $ref->unsafe_get_header('Subject')
-	    : random_string(),
-	$ref ? (References => $ref->unsafe_get_header('Message-Id')) : (),
+	Subject => ref($ref) ? 'Re: ' . $ref->unsafe_get_header('Subject')
+	    : ("$ref " . random_string()),
+	ref($ref) ? (References => $ref->unsafe_get_header('Message-Id')) : (),
     };
 };
 my($send_mail) = sub {
@@ -52,8 +52,9 @@ my($send_mail) = sub {
     $s =~ s/Re: //;
     return ($msg, $s);
 };
-my($msg, $subject) = $send_mail->(qw(1.eml user1 forum));
+my($msg, $subject) = $send_mail->(qw(1.eml user1 forum), 'Long Thread');
 login_as('mail_user1');
+my($user1_email) = generate_local_email('mail_user1');
 visit_uri('/mail_forum/mail');
 follow_link($subject);
 verify_text($subject);
@@ -76,8 +77,28 @@ follow_link('embedded-image');
 verify_content_type('image/gif');
 go_back();
 follow_link('new_topic');
+my($reply_subject) = 'HUI Reply ' . random_string();
 submit_form({
-    topic => 'Hello',
-    anon => 'there',
+    topic => $reply_subject,
+    text => 'initial message',
     'Attach:#1' => file_field('mail/sort_up.gif'),
 });
+verify_local_mail(qr{.}, qr{.}, 2);
+reload_page();
+follow_link($reply_subject);
+follow_link('author');
+verify_text('initial message');
+verify_form({
+    'To:' => $user1_email,
+    topic => "Re: $reply_subject",
+    cc => '',
+});
+go_back();
+follow_link('reply$');
+submit_form({
+    text => 'reply text',
+});
+verify_text('was sent');
+verify_local_mail(qr{.}, qr{.}, 2);
+follow_link($reply_subject);
+verify_text('reply text');
