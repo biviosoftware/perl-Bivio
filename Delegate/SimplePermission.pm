@@ -27,6 +27,13 @@ sub get_delegate_info {
 	MOTION_READ => [17],
 	MOTION_WRITE => [18],
 	MOTION_ADMIN => [19],
+#20-29 free (if implemented)
+	FEATURE_ERP => [30],
+	FEATURE_MOTION => [31],
+	FEATURE_TUPLE => [32],
+	# Temporary value for upgrades
+	FEATURE_PERMISSIONS51 => [49],
+	LAST_RESERVED_VALUE => [50],
     ];
 }
 
