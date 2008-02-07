@@ -7,6 +7,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = __PACKAGE__->use('MIME.Type');
+my($_MF) = __PACKAGE__->use('Model.MailForm');
 
 sub form_mail {
     return shift->internal_put_base_attr(
@@ -49,53 +50,42 @@ sub pre_compile {
 	    control => ['!', 'task_id', '->eq_forum_mail_form'],
 	    query => undef,
 	},
+        {
+	    task_id => 'FORUM_MAIL_THREAD_ROOT_LIST',
+	    control => ['!', 'task_id', '->eq_forum_mail_thread_root_list'],
+	    query => undef,
+	},
     ]));
     return @res;
 }
 
 sub send_form {
-    return shift->internal_body(vs_simple_form(MailForm => [
-        'MailForm.subject',
-	'MailForm.body',
-	@{Bivio::Biz::Model->get_instance('MailForm')
-            ->map_attachments(sub {"MailForm." . shift(@_)})},
-    ]));
+    my($cols) = 80;
+    return shift->internal_body(
+	DIV_msg_compose(Join([
+	    vs_simple_form(MailForm => [
+		map(["MailForm.$_", {
+		    cols => $cols,
+		}], qw(to cc)),
+		['MailForm.subject', {
+		    size => $cols + 2,
+		}],
+		['MailForm.body', {
+		    row_class => 'body',
+		    rows => 24,
+		    cols => $cols,
+		}],
+		@{Bivio::Biz::Model->get_instance('MailForm')
+		    ->map_attachments(sub {"MailForm." . shift(@_)})},
+	    ]),
+	    If(['Model.MailForm', '->is_reply'], _msg(1)),
+	])),
+    );
 }
 
 sub thread_list {
     vs_put_pager('MailThreadList');
-    return shift->internal_body(WithModel('MailThreadList',
-	Join([
-	    DIV_msg_sep('', {control =>['->get_cursor']}),
-	    DIV_msg(
-		Join([
-		    DIV_parts(
-			With(['->get_mail_part_list'],
-			     If(['!', '->has_mime_cid'],
-				_thread_list_director(),
-			    ),
-			),
-		    ),
-		    RoundedBox(
-			TaskMenu([
-			    {
-				task_id => 'FORUM_MAIL_FORM',
-				label => 'FORUM_MAIL_FORM.reply',
-				query => {
-				    'ListQuery.this'
-					=> ['RealmMail.realm_file_id'],
-				},
-			    },
-			    {
-				task_id => 'FORUM_MAIL_FORM',
-				query => undef,
-			    },
-			]),
-		    ),
-		]),
-	    ),
-	]),
-    ));
+    return shift->internal_body(_msg(0));
 }
 
 sub thread_root_list {
@@ -113,6 +103,38 @@ sub thread_root_list {
 	    ),
 	],
     ));
+}
+
+sub _msg {
+    my($msg_only) = @_;
+    my($parts) = DIV_parts(
+	With(['->get_mail_part_list'],
+	     If(['!', '->has_mime_cid'],
+		_thread_list_director(),
+	    ),
+	 ),
+    );
+    return WithModel(
+	$msg_only ? 'RealmMailList' : 'MailThreadList',
+	Join([
+	    DIV_msg_sep('', $msg_only ? () : {control =>['->get_cursor']}),
+	    DIV_msg(
+		$msg_only ? $parts : Join([
+		    $parts,
+		    RoundedBox(
+			TaskMenu([
+			    map(+{
+				task_id => 'FORUM_MAIL_FORM',
+				label => 'FORUM_MAIL_FORM.reply_' . $_,
+				query => $_MF->reply_query($_),
+			    }, qw(realm all author)),
+			]),
+			{class => 'actions'},
+		    ),
+		]),
+	    ),
+	]),
+    );
 }
 
 sub _thread_list_director {
