@@ -21,12 +21,14 @@ EOF
 	],
 	get_message_id => 'm@m',
 	get_date_time => 1130314787,
+	get_reply_subject => 'Re: should bounce',
     ],
     [\(<<'EOF')] => [
 Message-ID: <m@m>
 
 any body
 EOF
+	get_reply_subject => 'Re: (No Subject)',
         get_from => not_die(),
     ],
 ];
