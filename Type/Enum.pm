@@ -38,6 +38,10 @@ sub as_string {
     return _get_info($self, undef)->[4];
 }
 
+sub as_uri {
+    return lc(shift->get_name);
+}
+
 sub as_xml {
     my($self) = @_;
     # Calls to_xml() on self
