@@ -2,84 +2,23 @@
 # $Id$
 package Bivio::UI::Color;
 use strict;
-$Bivio::UI::Color::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Color::VERSION;
+use Bivio::Base 'UI.FacadeComponent';
 
-=head1 NAME
-
-Bivio::UI::Color - named colors
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::Color;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::FacadeComponent>
-
-=cut
-
-use Bivio::UI::FacadeComponent;
-@Bivio::UI::Color::ISA = ('Bivio::UI::FacadeComponent');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::Color> is a map of names to RGB color values.  The
-color values are represented integers.  If a color is negative,
-it means "no color".
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="UNDEF_CONFIG"></a>
-
-=head2 UNDEF_CONFIG() : int
-
-Returns "no color" config.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub UNDEF_CONFIG {
     return -1;
 }
 
-#=IMPORTS
-use Bivio::UI::Facade;
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="format_css"></a>
-
-=head2 static format_css(string name, Bivio::Collection::Attributes req_or_facade) : string
-
-=head2 format_css(string name) : string
-
-Returns color: #<color>;
-
-If name is hyphenated, the name is hyphens are converted to underscores, and
-the attribute is the rest of the hyphenation, e.g.
-
-    format_css('acknowledgement-border') -> border-color: #0;
-
-The value of acknowledgement_border is #0.
-
-=cut
-
 sub format_css {
+    # Returns color: #<color>;
+    #
+    # If name is hyphenated, the name is hyphens are converted to underscores, and
+    # the attribute is the rest of the hyphenation, e.g.
+    #
+    #     format_css('acknowledgement-border') -> border-color: #0;
+    #
+    # The value of acknowledgement_border is #0.
     my($proto, $name, $req_or_facade) = @_;
     my($attr) = 'color:';
     if ($name =~ /-(.*)/) {
@@ -89,33 +28,25 @@ sub format_css {
     return $proto->format_html($name, $attr, $req_or_facade);
 }
 
-=for html <a name="format_html"></a>
-
-=head2 static format_html(string name, string attr, Bivio::Collection::Attributes req_or_facade) : string
-
-=head2 format_html(string name, string attr) : string
-
-Returns the color as an attribute=value string suitable for HTML,
-with a I<leading space>.
-
-If I<attr> contains a ':', returns a style attribute instead, e.g.
-
-    color: #abcdef;
-
-If I<attr> is the empty string, returns just the number sans quotes:
-
-    #abcdef
-
-If I<name> is false (0, C<undef>, ''), returns an empty string.
-
-See
-L<Bivio::UI::FacadeComponent::internal_get_value|Bivio::UI::FacadeComponent/"internal_get_value">
-for description of last argument.
-
-
-=cut
-
 sub format_html {
+    # (proto, string, string, Collection.Attributes) : string
+    # (self, string, string) : string
+    # Returns the color as an attribute=value string suitable for HTML,
+    # with a I<leading space>.
+    #
+    # If I<attr> contains a ':', returns a style attribute instead, e.g.
+    #
+    #     color: #abcdef;
+    #
+    # If I<attr> is the empty string, returns just the number sans quotes:
+    #
+    #     #abcdef
+    #
+    # If I<name> is false (0, C<undef>, ''), returns an empty string.
+    #
+    # See
+    # L<Bivio::UI::FacadeComponent::internal_get_value|Bivio::UI::FacadeComponent/"internal_get_value">
+    # for description of last argument.
     my($proto, $name, $attr, $req) = @_;
     return ''
 	unless $name and my $v = $proto->internal_get_value($name, $req);
@@ -123,49 +54,24 @@ sub format_html {
 	    : _format_html($v->{config}, $attr);
 }
 
-=for html <a name="handle_register"></a>
-
-=head2 static handle_register()
-
-Registers with Facade.
-
-=cut
-
 sub handle_register {
     my($proto) = @_;
     Bivio::UI::Facade->register($proto);
     return;
 }
 
-=for html <a name="internal_initialize_value"></a>
-
-=head2 internal_initialize_value(hash_ref value)
-
-Outputs a warning if not a valid value.  Always successful.
-
-=cut
-
 sub internal_initialize_value {
     my($self, $value) = @_;
     my($v) = $value->{config};
     unless ($v =~ /^-?\d+$/) {
 	$self->initialization_error($value, 'not an integer');
-	# Mark as "no color"
-	$v = -1;
+	$v = $self->UNDEF_CONFIG;
     }
-
-    # Cache the most commonly used values
     $value->{bgcolor} = _format_html($v, 'bgcolor');
     $value->{color} = _format_html($v, 'color');
     return;
 }
 
-#=PRIVATE METHODS
-
-# _format_html(int num, string attr) : string
-#
-# Formats the color attribute or style.
-#
 sub _format_html {
     my($num, $attr) = @_;
     return $num < 0 ? ''
@@ -173,15 +79,5 @@ sub _format_html {
 	? sprintf($attr =~ /:/ ? '%s #%06X;' : ' %s="#%06X"', $attr, $num)
 	: sprintf('#%06X', $num);
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
