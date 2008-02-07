@@ -44,7 +44,7 @@ sub get_delegate_info {
 }
 
 sub included_components {
-    return [sort(keys(%$_INCLUDED))];
+    return [sort _sort keys(%$_INCLUDED)];
 }
 
 sub info_base {
@@ -451,7 +451,7 @@ sub merge_task_info {
 }
 
 sub standard_components {
-    return [grep($_ ne 'otp', @{shift->grep_methods($_INFO_RE)})];
+    return [sort _sort grep($_ ne 'otp', @{shift->grep_methods($_INFO_RE)})];
 }
 
 sub _component_info {
@@ -460,6 +460,13 @@ sub _component_info {
     Bivio::Die->die($component, ': no such info_* component')
         unless $proto->can($m);
     return $proto->$m();
+}
+
+sub _sort {
+    return $a eq $b ? 0
+	: $a eq 'base' ? -1
+	: $b eq 'base' ? -1
+	: $a cmp $b;
 }
 
 1;
