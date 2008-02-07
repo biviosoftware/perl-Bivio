@@ -5,7 +5,7 @@ Request('setup_facade');
     sub {req('Bivio::UI::Facade', 'Color')} => [
 	format_css => [
 	    'bunit-border' => 'border-color: #00FF00;',
-	    'bunit_border' => 'color: #00FF00;',
+	    bunit_border => 'color: #00FF00;',
 	],
     ],
 ];

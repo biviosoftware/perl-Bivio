@@ -235,7 +235,8 @@ sub new {
 
     # Initialize from clone, self, and complete
     _init_from_clone($self, $clone);
-    &$initialize($self) if $initialize;
+    $initialize->($self)
+	if $initialize;
     $self->initialization_complete;
     return $self;
 }
