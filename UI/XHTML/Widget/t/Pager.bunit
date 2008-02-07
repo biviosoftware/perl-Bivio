@@ -9,5 +9,5 @@ Bivio::Biz::ListModel->new(req(), 'RealmUserList')->load_page({
     count => 1,
 });
 [
-    ['RealmUserList'] => '<span class="prev off">Back</span><span class="selected">1</span><a target="_top" class="page_link" href="/demo/pub/eg1?n=2">2</a><a target="_top" href="/demo/pub/eg1?n=2"><span class="next on">Next</span></a>',
+    ['RealmUserList'] => '<span class="prev off">Back</span><span class="selected num want_sep">1</span><a target="_top" class="num" href="/demo/pub/eg1?n=2">2</a><a target="_top" href="/demo/pub/eg1?n=2"><span class="next on">Next</span></a>',
 ];
