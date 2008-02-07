@@ -68,6 +68,11 @@ sub new_unit {
 	    Bivio::Die->die('You must set empty_row_count on case: ', $case)
 	        if $m->isa('Bivio::Biz::ExpandableListFormModel')
 	        && !exists($hash->{empty_row_count});
+	    Bivio::Die->die(
+		ref($m),
+		': auxiliary form; set task with initialize_fully; primary=',
+		$req->get('task')->get('form_model'),
+	    ) if $m->is_auxiliary_on_task;
 	    return [$req->put(
 		form => {
 		    $m->VERSION_FIELD => $m->get_info('version'),
