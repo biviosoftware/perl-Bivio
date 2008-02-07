@@ -21,16 +21,23 @@ sub site_css {
 }
 
 sub _site_base {
-    return <<'EOF';
+    return <<"EOF";
 /* Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved. */
 blockquote, body, dd, div, dl, dt, fieldset, form, h1, h2, h3, h4,
 h5, h6, input, li, ol, p, pre, td, textarea, th, ul {
   margin: 0;
   padding: 0;
   text-align: left;
+@{[_v4(q{
+  Font('normal');
+  Font('body');
+})]}
 }
 address, caption, cite, code, dfn, em, h1, h2, h3, h4, h5, h6, strong, th, var {
   Font('normal');
+@{[_v4(q{
+  Font('body');
+})]}
 }
 ol, ul {
   margin-left: 2.5em;
@@ -47,6 +54,10 @@ ul.none, ol.none {
 abbr, acronym, fieldset, iframe, img, table {
   border-style: none;
   border: 0;
+@{[_v4(q{
+  Font('normal');
+  Font('body');
+})]}
 }
 a {
   Font('a_link');
@@ -339,7 +350,7 @@ td.footer_left {
   margin-left: 4px;
 }
 .alphabetical_chooser a.all {
-  text-transform: lowercase;
+  text-transform: uppercase;
 }
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
@@ -386,9 +397,8 @@ pre .text {
 }
 .pager .selected {
   Font('strong');
-  padding-left: 0.3em;
 }
-.pager .page_link {
+.pager .num {
   padding-left: 0.3em;
 }
 .tree_list {
@@ -528,11 +538,7 @@ sub _site_mail {
   margin-bottom: 1ex
 }
 .msg_sep {
-  border-bottom: 2px solid;
-  margin-bottom: 1ex;
-  height: 2ex;
-  width: 40em;
-  Color('form_sep-border');
+  height: 3ex;
 }
 .msg .text_plain {
   Font('pre_text');
@@ -542,30 +548,40 @@ sub _site_mail {
   border-top: 1px dashed;
   Color('form_sep-border');
 }
-.msg .forward {
+.msg .parts .forward, .msg .parts .byline {
   margin-top: 1ex;
   margin-bottom: 1ex;
 }
-.msg .byline {
-  margin-bottom: 1ex;
+.msg .parts {
+  border-top: 2px solid;
+  border-left: 2px solid;
+  padding-left: 1em;
+  padding-bottom: 1em;
+  Color('msg_parts-border');
 }
-.msg .forward .label {
+.msg .parts .byline {
+  Font('msg_byline');
+}
+.msg .parts .forward .label {
   padding-right: .5em;
 }
 .msg .parts {
   margin-bottom: 1em;
 }
-.msg .task_menu a.want_sep {
+.msg .actions .task_menu a.want_sep {
   background: none;
   padding-left: 0;
   margin-left: 2em;
 }
-.msg .rounded_box {
+.msg .actions {
   Color('even-background');
   width: 20em;
 }
-.msg .rounded_box_body  {
+.msg .actions .rounded_box_body  {
   margin: 1ex 1em;
+}
+.msg_compose .body .label {
+  vertical-align: top;
 }
 EOF
 }
@@ -651,6 +667,14 @@ div.wiki {
   margin: 1ex 0 1ex 0;
 }
 EOF
+}
+
+sub _v4 {
+    my($text) = @_;
+    return Bivio::IO::Config->if_version(
+	4 => sub {$text},
+	sub {''},
+    );
 }
 
 1;
