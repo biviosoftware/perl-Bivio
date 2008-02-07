@@ -46,8 +46,8 @@ Widget({
 
 <table class="reptiles">
 <tr>
-<th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="ascend"> &#9650;</span></a></th>
+<th><a target="_top" href="/pub/products?p=REPTILES&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
+<th><a target="_top" href="/pub/products?p=REPTILES&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="ascend"> &#9650;</span></a></th>
 </tr>
 <tr bgcolor="#D5EEFF">
 <td><font face="arial,sans-serif">RP-LI-02</font></td>
@@ -64,8 +64,8 @@ EOF
 
 <table class="reptiles">
 <tr>
-<th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="ascend"> &#9650;</span></a></th>
+<th><a target="_top" href="/pub/products?p=REPTILES&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
+<th><a target="_top" href="/pub/products?p=REPTILES&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="ascend"> &#9650;</span></a></th>
 </tr>
 <tr><td colspan="2">FOO</td></tr>
 <tr bgcolor="#D5EEFF">
@@ -112,8 +112,8 @@ sub _t {
 
 <table border="0" cellpadding="5" cellspacing="0" valign="NOP" width="NOP" align="left" class="NOP"> title=NOP
 <tr>
-<th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&n=1&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&n=1&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" valign="bottom" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
+<th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
+<th valign="bottom" align="center" nowrap="1"><a target="_top" href="/pub/products?p=REPTILES&o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" valign="bottom" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
 </tr>
 <tr><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr bgcolor="#000000"><td><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr></table></td>
