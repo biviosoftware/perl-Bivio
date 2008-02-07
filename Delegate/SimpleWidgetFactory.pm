@@ -318,6 +318,15 @@ sub internal_create_edit {
 	});
     }
 
+    if (UNIVERSAL::isa($type, 'Bivio::Type::StringArray')) {
+	return $_VS->vs_new('TextArea', {
+	    field => $field,
+	    rows => 2,
+	    cols => Bivio::Type::TextArea->LINE_WIDTH,
+	    %$attrs,
+	});
+    }
+
     # If the Text is in_list, don't make multiline.  Fall through
     # to String below.
     if (UNIVERSAL::isa($type, 'Bivio::Type::Text')
