@@ -5,16 +5,14 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RM) = __PACKAGE__->use('Model.RealmMail');
 
 sub NOT_FOUND_IF_EMPTY {
     return 1;
 }
 
 sub get_mail_part_list {
-    my($self) = @_;
-    return $self->new_other('MailPartList')->load_all({
-	parent_id => $self->get('RealmMail.realm_file_id'),
-    });
+    return shift->delegate_method($_RM, 'RealmMail.', @_);
 }
 
 sub get_subject {
