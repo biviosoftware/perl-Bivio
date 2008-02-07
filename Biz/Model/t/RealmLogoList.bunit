@@ -12,7 +12,7 @@ req()->setup_facade->set_realm('fourem');
     ],
     is_ok_to_render => 1,
     get => [
-	uri => '/fourem/public-file/logo.png',
+	uri => '/fourem/file/logo.png',
 	height => 50,
 	width => 160,
     ],
