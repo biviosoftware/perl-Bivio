@@ -1,13 +1,18 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmMailList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RM) = __PACKAGE__->use('Model.RealmMail');
 
 sub get_rfc822 {
     return shift->get_model('RealmFile')->get_content;
+}
+
+sub get_mail_part_list {
+    return shift->delegate_method($_RM, 'RealmMail.', @_);
 }
 
 sub internal_initialize {
