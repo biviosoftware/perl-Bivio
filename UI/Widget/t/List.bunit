@@ -5,7 +5,7 @@ my($l2) = model('NumberedList')->load_page({count => 3});
 model('UnitTestListForm')->process;
 [
     [NumberedList => []] => '',
-    [NumberedList => ['index']] => qr{\b0.*\b1.*\b2\b},
+    [NumberedList => ['index']] => '012',
     [NumberedList => [prose(['index'])]] => '012',
     [NumberedList =>
 	 [prose(q{If(['index'], ['index']);})],
