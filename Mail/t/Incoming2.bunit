@@ -1,0 +1,63 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+options({
+    create_object => sub {
+	my(undef, $args) = @_;
+	my($h) = $args->[0];
+	return class()->new(join(
+	    "\n",
+	    map("$_: $h->{$_}", sort(keys(%$h))),
+	    "\nbody\n",
+	));
+    },
+});
+my($forum) = remote_email('mail_forum');
+my($user1) = email('mail_user1');
+my($user2) = email('mail_user2');
+[
+    map((
+	[shift(@$_)] => [
+	    {
+		method => 'get_reply_email_arrays',
+		compute_return => sub {
+		    my(undef, $actual) = @_;
+		    return [map(
+			$_ && @{$_ = $_->as_array} ? $_ : (),
+			@$actual,
+		    )];
+		},
+		compute_params => sub {
+		    my(undef, $params) = @_;
+		    req()->set_realm($params->[1] || 'mail_forum');
+		    return [$params->[0], req()];
+		},
+	    } => [@$_],
+	],
+    ), [
+	{From => 'a@a.a', To => $forum, Cc => $user2},
+	author => [['a@a.a']],
+	realm => [[$forum]],
+	all => [['a@a.a', $forum]],
+    ], [
+	{From => 'a@a.a', 'Reply-To' => 'b@b.b'},
+	author => [['b@b.b']],
+	realm => [[$forum]],
+	all => [['b@b.b', $forum]],
+    ], [
+	{From => 'a@a.a', 'Reply-To' => $user1},
+	author => [[$user1]],
+	realm => [[$forum]],
+	all => [[$forum]],
+    ], [
+	{From => 'a@a.a', 'Reply-To' => $forum, To => $forum},
+	author => [['a@a.a']],
+	realm => [[$forum]],
+	all => [['a@a.a', $forum]],
+    ], [
+	{From => 'a@a.a', 'Reply-To' => $forum, To => $forum},
+	author => [['a@a.a']],
+	realm => [[$forum]],
+	all => [['a@a.a', $forum]],
+    ]),
+];
