@@ -19,6 +19,11 @@ sub INVALID_PREFIX {
     return 'invalid:';
 }
 
+sub compare_defined {
+    my(undef, $left, $right) = @_;
+    return lc($left) cmp lc($right);
+}
+
 sub format_ignore {
     my($proto, $base, $req) = @_;
     return $req->format_email($proto->IGNORE_PREFIX . $base);
