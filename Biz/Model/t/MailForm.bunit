@@ -11,6 +11,7 @@ FormModel({
     },
 });
 req()->set_realm_and_user(qw(mail_forum mail_user1));
+my($to) = from_type(EmailArray => [remote_email('mail_forum')]);
 my($message_id) = random_string() . '@bivio.biz';
 my($now) = class('Type.DateTime')->now;
 my($date) = class('Type.DateTime')->rfc822($now);
@@ -26,6 +27,7 @@ EOF
 $rmid = $rm->get('realm_file_id');
 [
     [{
+	to => $to,
         subject => 's1',
 	body => 'body1',
 	attachment1 => {
@@ -48,6 +50,7 @@ $rmid = $rm->get('realm_file_id');
 	return 1;
     },
     empty_case({
+	to => $to,
 	subject => 'Re: MailForm1',
     }),
 ];
