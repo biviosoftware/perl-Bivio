@@ -4,6 +4,10 @@ ListModel();
 req()->set_realm('mail_forum');
 [
     load_all => [
+	[] => sub {
+	    assert_equals(2 * 4, shift->get('object')->get_result_set_size);
+	    return 1;
+	},
 	[{roles => ['MEMBER']}] => [
 	    {
 		'RealmOwner.display_name' => qr{user1}i,
