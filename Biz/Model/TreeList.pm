@@ -35,7 +35,7 @@ sub internal_initialize {
 }
 
 sub internal_load_rows {
-    my($self, $query) = @_;
+    my($self) = @_;
     my($rows) = shift->SUPER::internal_load_rows(@_);
     my($e) = $self->[$_IDI];
     my($pkf) = $self->get_info('primary_key_names')->[0];
