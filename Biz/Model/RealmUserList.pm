@@ -22,15 +22,17 @@ sub internal_initialize {
 	primary_key => [
 	    [qw(RealmUser.user_id RealmOwner.realm_id)],
 	],
+	other_query_keys => ['roles'],
 	auth_id => ['RealmUser.realm_id'],
     });
 }
 
 sub internal_prepare_statement {
-    my($self, $stmt) = @_;
-    my($r);
+    my($self, $stmt, $query) = @_;
+    my($r) = $query->unsafe_get('roles') || [];
+    push(@$r, @{$self->internal_get_roles || []});
     $stmt->where($stmt->IN('RealmUser.role', $r))
-	if $r = $self->internal_get_roles and @$r;
+	if @$r;
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
