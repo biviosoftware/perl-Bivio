@@ -1,0 +1,16 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->set_realm('mail_forum');
+[
+    load_all => [
+	[{roles => ['MEMBER']}] => [
+	    {
+		'RealmOwner.display_name' => qr{user1}i,
+	    },
+	    {
+		'RealmOwner.display_name' => qr{user2}i,
+	    },
+	],
+    ],
+];
