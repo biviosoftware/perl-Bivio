@@ -56,6 +56,12 @@ use File::Spec ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS);
 our($_PROTO) = __PACKAGE__;
+my($_CL) = __PACKAGE__->use('IO.ClassLoader');
+my($_CLASS_SEARCH) = [qw(Type Model)];
+my($_CLASS_DISPATCH) = {
+    Type => 'builtin_from_type',
+    Model => 'builtin_model',
+};
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
@@ -70,8 +76,7 @@ sub AUTOLOAD {
 	: $_TYPE
 	? $_TYPE->can($func) || $_TYPE_CAN_AUTOLOAD
         ? $_TYPE->$func(@_)
-	: Bivio::Die->die(
-	    $func, ': not a valid method of ', ref($_TYPE) || $_TYPE)
+	: _call_class($func, \@_)
 	: _load_type_class($func, \@_);
 }
 
@@ -117,7 +122,7 @@ sub builtin_class {
 	if @_ > 1;
     return $_CLASS
 	if $_CLASS;
-    $_CLASS = Bivio::IO::ClassLoader->unsafe_simple_require(
+    $_CLASS = $_CL->unsafe_simple_require(
 	(${Bivio::IO::File->read($_PM)}
 	     =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
 	    || Bivio::Die->die(
@@ -298,7 +303,7 @@ sub builtin_shell_util {
 sub builtin_simple_require {
     my(undef, $class) = @_;
     # Returns class which was loaded.
-    return Bivio::IO::ClassLoader->simple_require($class);
+    return $_CL->simple_require($class);
 }
 
 sub builtin_string_ref {
@@ -421,6 +426,19 @@ sub _assert_expect {
     return 1;
 }
 
+sub _call_class {
+    my($func, $args) = @_;
+    foreach my $m (@$_CLASS_SEARCH) {
+	next unless $_CL->unsafe_map_require($m, $func);
+	my($method) = $_CLASS_DISPATCH->{$m} || die;
+	return $_PROTO->$method($func, @$args);
+    }
+    Bivio::Die->die(
+	$func, ': not a valid method of ', ref($_TYPE) || $_TYPE,
+	' and not not found in these maps: ', $_CLASS_SEARCH);
+    # DOES NOT RETURN
+}
+
 sub _called_in_closure {
     my($proto) = @_;
     foreach my $i (3..5) {
@@ -434,7 +452,7 @@ sub _called_in_closure {
 
 sub _load_type_class {
     my($func, $args) = @_;
-    $_TYPE = Bivio::IO::ClassLoader->map_require('TestUnit', $func);
+    $_TYPE = $_CL->map_require('TestUnit', $func);
     $_TYPE = $_TYPE->new_unit($_PROTO->builtin_class(), @$args)
 	if $_TYPE->can('new_unit');
     $_TYPE_CAN_AUTOLOAD = $_TYPE->package_name ne $_PROTO

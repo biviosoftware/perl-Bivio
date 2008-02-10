@@ -113,6 +113,15 @@ req()->set_realm('btest_read');
 	],
 	inline_trace('sql'),
 	inline_trace(''),
+	inline_case(sub {
+	    assert_equals('555', Phone(' 555 '));
+	    req()->set_realm('demo');
+	    assert_equals(
+		req('auth_realm')->get('owner_name'),
+		RealmOwner({})->get('name'),
+	    );
+	    return;
+	}),
     ],
 #TODO: create_object needs to be deferred
 #     var('g2') => [
