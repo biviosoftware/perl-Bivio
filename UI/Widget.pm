@@ -169,7 +169,7 @@ sub as_string {
     pop(@cfg);
 
     my($res) = Bivio::IO::Alert->format_args(
-	    $self->simple_package_name, @cfg ? ('[', @cfg, ']') : ());
+	    $self->simple_package_name, @cfg ? ('(', @cfg, ')') : ());
     chomp($res);
     return $res;
 }
