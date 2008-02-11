@@ -10,10 +10,14 @@ my($_T) = __PACKAGE__->use('MIME.Type');
 my($_MF) = __PACKAGE__->use('Model.MailForm');
 
 sub form_mail {
-    return shift->internal_put_base_attr(
-	from => ['Model.MailForm', '->mail_header_from'],
-	recipients => ['Model.MailForm', '->mail_envelope_recipients'],
-	headers_object => ['Model.MailForm'],
+    my($self) = @_;
+    return $self->internal_put_base_attr(
+	from => [_name($self, 'Model.XxForm'), '->mail_header_from'],
+	recipients => [
+	    _name($self, 'Model.XxForm'),
+	    '->mail_envelope_recipients',
+	],
+	headers_object => [_name($self, 'Model.XxForm')],
 	body => [sub {
 	    my($req, $f) = @_;
 	    my($body) = $f->get('body');
@@ -34,8 +38,12 @@ sub form_mail {
 		    });
 		}),
 	    }),
-	}, ['Model.MailForm']],
+	}, [_name($self, 'Model.XxForm')]],
     );
+}
+
+sub internal_reply_list {
+    return qw(realm all author);
 }
 
 sub pre_compile {
@@ -46,13 +54,17 @@ sub pre_compile {
 	unless $self->internal_base_type =~ /^(xhtml|base)$/;
     $self->internal_put_base_attr(tools => TaskMenu([
         {
-	    task_id => 'FORUM_MAIL_FORM',
-	    control => ['!', 'task_id', '->eq_forum_mail_form'],
+	    task_id => _name($self, 'FORUM_XX_FORM'),
+	    control => ['!', 'task_id', _name($self, '->eq_forum_xx_form')],
 	    query => undef,
 	},
         {
-	    task_id => 'FORUM_MAIL_THREAD_ROOT_LIST',
-	    control => ['!', 'task_id', '->eq_forum_mail_thread_root_list'],
+	    task_id => _name($self, 'FORUM_XX_THREAD_ROOT_LIST'),
+	    control => [
+		'!',
+		'task_id',
+		_name($self, '->eq_forum_xx_thread_root_list'),
+	    ],
 	    query => undef,
 	},
     ]));
@@ -60,62 +72,80 @@ sub pre_compile {
 }
 
 sub send_form {
+    my($self, @extra_fields) = @_;
     my($cols) = 80;
-    return shift->internal_body(
+    return $self->internal_body(
 	DIV_msg_compose(Join([
-	    vs_simple_form(MailForm => [
-		map(["MailForm.$_", {
+	    vs_simple_form(_name($self, 'XxForm') => [
+		@extra_fields,
+		map([_name($self, "XxForm.$_"), {
 		    cols => $cols,
+		    rows => 1,
+		    row_class => 'textarea',
 		}], qw(to cc)),
-		['MailForm.subject', {
+		[_name($self, 'XxForm.subject'), {
 		    size => $cols + 2,
 		}],
-		['MailForm.body', {
-		    row_class => 'body',
+		[_name($self, 'XxForm.body'), {
 		    rows => 24,
 		    cols => $cols,
+		    row_class => 'textarea',
 		}],
-		@{Bivio::Biz::Model->get_instance('MailForm')
-		    ->map_attachments(sub {"MailForm." . shift(@_)})},
+		@{Bivio::Biz::Model->get_instance(_name($self, 'XxForm'))
+		    ->map_attachments(sub {
+		        return _name($self, 'XxForm.') . shift(@_);
+		    })},
 	    ]),
-	    If(['Model.MailForm', '->is_reply'], _msg(1)),
+	    If([_name($self, 'Model.XxForm'), '->is_reply'], _msg($self, 1)),
 	])),
     );
 }
 
 sub thread_list {
-    vs_put_pager('MailThreadList');
-    return shift->internal_body(_msg(0));
+    my($self) = @_;
+    vs_put_pager(_name($self, 'XxThreadList'));
+    return $self->internal_body(_msg($self, 0));
 }
 
 sub thread_root_list {
-    return shift->internal_body(vs_paged_list(
-	MailThreadRootList => [
-	    map([$_ => {
-		column_widget => Link(
-		    /date_time/ ? DateTime([$_]) : String([$_]),
-		    ['->drilldown_uri'],
-		),
-		/subject/ ? (order_by_names => [qw(RealmMail.subject_lc)]) : (),
-	    }],
-		'RealmFile.modified_date_time',
-		'RealmMail.subject',
+    my($self, @fields) = @_;
+    return $self->internal_body(vs_paged_list(
+	_name($self, 'XxThreadRootList') => [
+	    map({
+		my($field, $attrs) = ref($_) ? @$_ : $_;
+		$attrs ||= {};
+		[$field => {
+		    column_widget => Link(
+			$field =~ /email/ ? String([$field])
+			    : vs_display(
+				_name($self, 'XxThreadRootList') . ".$field"),
+			['->drilldown_uri'],
+		    ),
+		    %$attrs,
+		}];
+	    }
+		@fields ? @fields : (
+		    'RealmFile.modified_date_time',
+		    ['RealmMail.subject', {
+			order_by_names => 'RealmMail.subject_lc',
+		    }],
+	        ),
 	    ),
 	],
     ));
 }
 
 sub _msg {
-    my($msg_only) = @_;
+    my($self, $msg_only) = @_;
     my($parts) = DIV_parts(
 	With(['->get_mail_part_list'],
 	     If(['!', '->has_mime_cid'],
-		_thread_list_director(),
+		_thread_list_director($self),
 	    ),
 	 ),
     );
     return WithModel(
-	$msg_only ? 'RealmMailList' : 'MailThreadList',
+	$msg_only ? 'RealmMailList' : _name($self, 'XxThreadList'),
 	Join([
 	    DIV_msg_sep('', $msg_only ? () : {control =>['->get_cursor']}),
 	    DIV_msg(
@@ -124,10 +154,11 @@ sub _msg {
 		    RoundedBox(
 			TaskMenu([
 			    map(+{
-				task_id => 'FORUM_MAIL_FORM',
-				label => 'FORUM_MAIL_FORM.reply_' . $_,
+				task_id => _name($self, 'FORUM_XX_FORM'),
+				label =>
+				    _name($self, 'FORUM_XX_FORM.reply_') . $_,
 				query => $_MF->reply_query($_),
-			    }, qw(realm all author)),
+			    }, $self->internal_reply_list),
 			]),
 			{class => 'actions'},
 		    ),
@@ -137,7 +168,16 @@ sub _msg {
     );
 }
 
+sub _name {
+    my($self, $name) = @_;
+    my($c) = $self->simple_package_name;
+    $name =~ s{xx}{$name =~ /XX/ ? uc($c) : $name =~ /xx/ ? lc($c) : $c}ie
+	|| die($name, ': bad name');
+    return $name;
+}
+
 sub _thread_list_director {
+    my($self) = @_;
     return Director(
 	 ['mime_type'],
 	 {
@@ -158,7 +198,8 @@ sub _thread_list_director {
 	     ),
 	 },
 	 Link(
-	     DIV_attachment(vs_text_as_prose('MailPartList.attachment')),
+	     DIV_attachment(
+		 vs_text_as_prose('MailPartList.attachment')),
 	     ['->format_uri_for_part', 'FORUM_MAIL_PART'],
 	 ),
      );
