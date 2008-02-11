@@ -12,6 +12,7 @@ my($_LABEL_RE)
 my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_TSN) = Bivio::Type->get_instance('TupleSlotNum');
 our($_TRACE);
+__PACKAGE__->use('Model.RealmMail')->register(__PACKAGE__);
 
 sub LIST_FIELDS {
     return $_TSN->map_list(sub {'Tuple.' . shift(@_)});
@@ -62,8 +63,9 @@ sub mail_subject {
 	. (ref($proto) && $proto->is_loaded ? $proto->get('tuple_num') : '');
 }
 
-sub realm_mail_hook {
+sub handle_mail_post_create {
     my($proto, $realm_mail, $incoming) = @_;
+#TODO: Use FEATURE_TUPLE to control loading
     # AUTH: TupleUseList authenticates access to schema
     my($tul) = $realm_mail->new_other('TupleUseList')->load_all;
     my($m) = join('|', @{$tul->monikers});
