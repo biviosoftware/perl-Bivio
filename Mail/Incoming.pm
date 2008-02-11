@@ -103,15 +103,12 @@ sub get_references {
 }
 
 sub get_reply_email_arrays {
-    my($self, $who, $req) = @_;
-    my($realm) = $req->get_nested(qw(auth_realm owner))->format_email;
-    return $_EA->new([$realm])
-	unless ref($self)
-        and $who = $_MRW->unsafe_from_any($who)
-	and !$who->eq_realm;
+    my($self, $who, $realm_emails, $req) = @_;
+    return $_EA->new([$realm_emails->[0]])
+	unless ref($self) and !$who->eq_realm;
     my($reply_to) = $self->get_reply_to;
     $reply_to = undef
-	if $_E->is_equal($reply_to, $realm);
+	if grep($_E->is_equal($reply_to, $_), @$realm_emails);
     my($from) = lc($reply_to || $self->get_from);
     return $_EA->new([$from])
 	if $who->eq_author;
@@ -124,12 +121,13 @@ sub get_reply_email_arrays {
 	$_EA->new([
 	    $_ ne 'to' ? () : (
 		$users->{$from} ? () : $from,
-		$realm,
+		$realm_emails->[0],
 	    ),
 	    grep({
 		my($x) = $_;
 		$users->{$x}
-		    || grep($_E->is_equal($x, $_), $from, $reply_to, $realm)
+		    || grep($_E->is_equal($x, $_),
+		        $from, $reply_to, @$realm_emails)
 		    ? 0 : 1;
 	    } @{$_A->parse_list(_get_field($self, "$_:"))}),
 	]),
@@ -247,7 +245,6 @@ sub initialize {
 	# If there is no body, get_body will return empty string.
 	body_offset => $i,
 	time => time,
-
     );
 }
 
