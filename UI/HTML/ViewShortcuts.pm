@@ -368,6 +368,8 @@ create a display widget.
 
 sub vs_display {
     my($proto, $field, $attrs) = @_;
+    $attrs ||= {};
+    $attrs->{wf_want_display} = 1;
     return Bivio::IO::ClassLoader->simple_require(
 	'Bivio::UI::HTML::WidgetFactory')->create($field, $attrs);
 }
