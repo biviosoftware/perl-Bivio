@@ -22,12 +22,16 @@ sub BTEST_READ {
     return 'btest_read';
 }
 
-sub TUPLE_FORUM {
-    return 'tuple_forum';
+sub CRM_CLIENT {
+    return 'crm_client' . $_[1];
 }
 
-sub TUPLE_USER {
-    return 'tuple_user';
+sub CRM_FORUM {
+    return 'crm_forum';
+}
+
+sub CRM_TECH {
+    return 'crm_tech' . $_[1];
 }
 
 sub DEMO {
@@ -78,6 +82,14 @@ sub ROOT {
 sub ROOT_EMAIL {
     my($proto) = @_;
     return $proto->format_email($proto->ROOT);
+}
+
+sub TUPLE_FORUM {
+    return 'tuple_forum';
+}
+
+sub TUPLE_USER {
+    return 'tuple_user';
 }
 
 sub USAGE {
@@ -148,6 +160,7 @@ sub initialize_test_data {
     _init_logo($self);
     _init_default_tuple($self);
     _init_mail($self);
+    _init_crm($self);
     return;
 }
 
@@ -169,6 +182,26 @@ sub realm_role_config {
         @{$self->SUPER::realm_role_config()},
         <DATA>,
     ];
+}
+
+sub _init_crm {
+    my($self) = @_;
+    _top_level_forum(
+	$self, $self->CRM_FORUM, [$self->CRM_TECH(1)], [$self->CRM_TECH(2)]);
+    $self->new_other('RealmRole')->edit_categories('+feature_crm');
+    $self->req(qw(auth_realm owner))->update({
+	display_name => 'PetShop Support',
+    });
+    $self->model('EmailAlias')->create({
+	incoming =>
+	    $self->use('TestLanguage.HTTP')->generate_remote_email('crm'),
+	outgoing => $self->req(qw(auth_realm owner name)),
+    });
+    $self->model('RowTag')->replace_value(
+	$self->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
+	$self->use('Action.RealmMail')->EMPTY_SUBJECT_PREFIX,
+    );
+    return;
 }
 
 sub _init_default_tuple {
