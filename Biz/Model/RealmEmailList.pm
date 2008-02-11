@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::RealmEmailList;
 use strict;
-use base 'Bivio::Biz::Model::RealmUserList';
+use Bivio::Base 'Model.RealmUserList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = Bivio::Biz::Model->get_instance('Email')->get_field_type('email');
@@ -30,6 +30,7 @@ sub internal_initialize {
 	    Email.email
         )],
 	other => [
+	    'Email.location',
 	    [qw(RealmUser.user_id Email.realm_id(+))],
 	],
     });
