@@ -1,0 +1,10 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    get_local_part => [
+	[undef] => [undef],
+	'' => [undef],
+	'a@a.a' => 'a',
+    ],
+];

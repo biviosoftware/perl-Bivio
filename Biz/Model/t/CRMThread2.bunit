@@ -1,0 +1,47 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+options({
+    class_name => 'Model.RealmMail',
+    comparator => 'nested_contains',
+});
+req()->set_realm('crm_forum');
+my($next_num) = model('CRMThread')->internal_next_ord;
+my($not_num) = $next_num + 33;
+my($id) = 1;
+my($msg) = <<'EOF';
+To: a@a.a
+From: b@b.b
+Subject: XXX
+Message-Id: <a.NNN@a.a>
+
+body
+EOF
+[
+    [req()] => [
+	{
+	    method => 'create_from_rfc822',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		my($t) = $msg;
+		$t =~ s/XXX/$params->[0]/;
+		$t =~ s/NNN/$id/;
+		$id++;
+		return [\$t];
+	    },
+	    compute_return => sub {
+		return [req()->get('Model.CRMThread')];
+	    },
+	} => [
+	    new => [{
+		crm_thread_num => $next_num,
+	    }],
+	    "#$next_num] other message" => [{
+		crm_thread_num => $next_num,
+	    }],
+	    "#$not_num] bad number" => [{
+		crm_thread_num => $next_num + 1,
+	    }],
+	],
+    ],
+];

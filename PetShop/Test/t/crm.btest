@@ -1,0 +1,37 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+my($forum) = generate_remote_email('crm_forum');
+my($cust1) = generate_local_email('crm_cust1');
+my($tech1) = generate_local_email('crm_tech1');
+my($msg) = send_mail($cust1, $forum);
+my($ticket) = verify_local_mail($tech1, qr{.}, 1) =~ m{#(\d+)\]}i;
+die('no ticket')
+    unless $ticket;
+login_as('crm_tech1');
+visit_uri('/crm_forum/tickets');
+follow_link($msg->unsafe_get_header('Subject'));
+follow_link('answer');
+verify_text("Locked Ticket #$ticket");
+submit_form({
+    action => 'Close',
+    text => 'Solution here',
+});
+my($subject) = verify_local_mail($cust1, qr{.}, 1) =~ /Subject:\s+([^\n]+)/m;
+die('no subject')
+    unless $subject;
+follow_link_in_table('Last Update', 'Ticket', $ticket);
+verify_text("Closed Ticket #$ticket");
+my($body) = 'but wait ' . random_string();
+$msg = send_mail($cust1, $forum, {Subject => $subject}, $body);
+verify_local_mail($tech1, qr{.}, 1);
+reload_page();
+verify_text($body);
+verify_text("Open Ticket #$ticket");
+# Audit log is the email stream, like tuple, but action
+# is simple notification
+# verify_text(qr{last update by.*tech1});
+# submit_form({
+#     assign => 'cust_tech2',
+# });

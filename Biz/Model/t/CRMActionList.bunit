@@ -1,0 +1,31 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully;
+req()->set_realm_and_user(qw(crm_forum crm_tech1));
+[
+    load_all => [
+	[] => [
+	    +{name => qr{close}i},
+	    +{name => qr{lock}i},
+	    +{name => qr{unlock}i},
+	    +{name => qr{assign.*tech1}i},
+	    +{name => qr{assign.*tech2}i},
+	],
+    ],
+    id_to_owner => [
+        realm_id('crm_tech1') => realm_id('crm_tech1'),
+	map((-CRMThreadStatus($_->[0])->as_int => [$_->[1]]),
+	    [CLOSED => undef],
+	    [OPEN => undef],
+	    [LOCKED => realm_id('crm_tech1')],
+	),
+    ],
+    id_to_status => [
+        realm_id('crm_tech1') => [CRMThreadStatus('OPEN')],
+    ],
+    owner_email_to_name => [
+	'' => [undef],
+	'a@a.a' => 'a',
+    ],
+];
