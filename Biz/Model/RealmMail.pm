@@ -13,9 +13,7 @@ my($_MAX_EMAIL) = Bivio::Type->get_instance('Email')->get_width;
 my($_MS) = Bivio::Type->get_instance('MailSubject');
 my($_MFN) = Bivio::Type->get_instance('MailFileName');
 my($_RF) = __PACKAGE__->use('Model.RealmFile');
-Bivio::IO::Config->register(my $_CFG = {
-    create_hook => sub {},
-});
+my($_HANDLERS) = [];
 
 sub cascade_delete {
     my($self, $query) = @_;
@@ -68,12 +66,6 @@ sub get_rfc822 {
     return $_RF->get_content(shift(@_));
 }
 
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_CFG = $cfg;
-    return;
-}
-
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -99,6 +91,13 @@ sub internal_initialize {
     });
 }
 
+sub register {
+    my($proto, $handler) = @_;
+    push(@$_HANDLERS, $handler)
+	unless grep($_ eq $handler, @$_HANDLERS);
+    return;
+}
+
 sub update {
     my($self, $values) = @_;
     if (defined($values->{subject})) {
@@ -115,6 +114,15 @@ sub update {
     return shift->SUPER::update(@_);
 }
 
+sub _call_handlers {
+    my($method) = shift;
+    foreach my $h (@$_HANDLERS) {
+	$h->$method(@{[@_]})
+	    if $h->can($method);
+    }
+    return;
+}
+
 sub _create {
     my($self, $in, $file) = @_;
     $self->create(
@@ -126,12 +134,13 @@ sub _create {
 	    subject_lc => $_MS->clean_and_trim($in->get_subject),
 	}, $in),
     );
-    $_CFG->{create_hook}->($self, $in);
+    _call_handlers(handle_mail_post_create => $self, $in, $file);
     return $in;
 }
 
 sub _create_file {
     my($self, $rfc822) = @_;
+    _call_handlers(handle_mail_pre_create_file => $self, $rfc822);
     my($in) = Bivio::Mail::Incoming->new($rfc822);
     my($date) = Bivio::Type::DateTime->from_unix($in->get_date_time || time);
     my($rf) = $self->new_other('RealmFile');
