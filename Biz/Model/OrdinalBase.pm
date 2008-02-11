@@ -8,19 +8,25 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub create {
     my($self, $values) = @_;
-    my($req) = $self->get_request;
-    my($f) = $self->ORD_FIELD;
-    unless (defined($values->{$f})) {
-	$self->die($values, ': realm_id must be auth_id')
-	    if $values->{realm_id}
-	    && $req->get('auth_id') ne $values->{realm_id};
-	$self->get_instance('Lock')->execute_unless_acquired($req);
-	$values->{realm_id} = $req->get('auth_id');
-	my($v) = $self->unsafe_max_ord($values);
-	my($t) = $self->get_field_type($f);
-	$values->{$f} = defined($v) ? $t->add($v, 1) : $t->get_min;
-    }
+    $values->{$self->ORD_FIELD} = $self->internal_next_ord($values)
+	unless defined($values->{$self->ORD_FIELD});
     return shift->SUPER::create(@_);
+}
+
+sub internal_next_ord {
+    my($self, $values) = @_;
+    $values ||= {};
+    if ($values->{realm_id}) {
+	$self->die($values, ': realm_id must be auth_id')
+	    unless $self->req('auth_id') eq $values->{realm_id};
+    }
+    else {
+	$values->{realm_id} = $self->req('auth_id');
+    }
+    $self->get_instance('Lock')->execute_unless_acquired($self->req);
+    my($v) = $self->unsafe_max_ord($values);
+    my($t) = $self->get_field_type($self->ORD_FIELD);
+    return defined($v) ? $t->add($v, 1) : $t->get_min;
 }
 
 sub internal_prepare_max_ord {
