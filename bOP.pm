@@ -26,11 +26,108 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 5.78  2008/02/07 21:43:53  nagler
+  * Bivio::BConf
+    MIME map
+    added Bivio map
+  * Bivio::Biz::ListModel
+    set_cursor allows -1 as cursor; reset_cursor calls set_cursor(RESET_CURSOR)
+    added save_excursion
+  * Bivio::Biz::Model::RealmMail
+    added get_rfc822 & get_mail_part_list
+  * Bivio::Biz::Model::User
+    keep RealmOwner.display_name in sync with User->format_full_name
+  * Bivio::Biz::Model
+    add comment to do_iterate
+  * Bivio::Biz::PropertyModel
+    load_auth_user dies if doesn't load
+  * Bivio::Delegate::SimpleTaskId
+    sort components so base is first
+  * Bivio::Delegate::SimpleWidgetFactory
+    added StringArray
+  * Bivio::IO::Config
+    remove warning
+  * Bivio::MIME::Type
+    cruft
+  * Bivio::Mail::Incoming
+    added get_reply_email_arrays
+    initialize allows object which can(get_rfc822)
+  * Bivio::Mail::Outgoing
+    added quoted-printable encoding
+    upgraded imports
+  * Bivio::PetShop::BConf
+    version 4
+    deprecated_text_patterns is off in version 4
+  * Bivio::PetShop::Facade::PetShop
+    example_background is white (violet too hard to deal with)
+  * Bivio::PetShop::Test::PetShop
+    added next_message_id
+  * Bivio::SQL::ListQuery
+    don't add n= if at or before first page
+    fix format_uri_for_this_child to accept ListQuery.order_by in $this_row
+  * Bivio::SQL::Support
+    show the model class name in the column alias warning
+    don't die() if 'class' is missing from decl - used for debugging only
+  * Bivio::Test::Language::HTTP
+    fixed send_email to not make regexps into emails
+    deprecated_text_patterns is off in version 4
+  * Bivio::Test::Request
+    unsafe_get_captured_mail greps txn_resources and no longer uses
+    Test::MockObject
+  * Bivio::Test::Unit
+    use IO.File
+    added builtin_remote_email
+  * Bivio::Test::Util
+    don't split output between test name on "ok"
+  * Bivio::Type::DisplayName
+    return empty values for first/last/middle if not parsed
+  * Bivio::Type::Enum
+    added as_uri()
+  * Bivio::Type::MailSubject
+    added EMPTY_VALUE as constant (NO Subject)
+  * Bivio::Type::StringArray
+    from_literal_validator was not being called
+  * Bivio::UI::Color
+    rmpod
+  * Bivio::UI::DateTimeMode
+    default is DATE_TIME in v4
+  * Bivio::UI::FacadeComponent
+    fmt
+  * Bivio::UI::HTML::Widget::FormField
+    added row_class
+  * Bivio::UI::HTML::Widget::Link
+    misc fix
+  * Bivio::UI::HTML::Widget::Tag
+    tag_if_empty defaults to true if the value is constant empty string ('')
+  * Bivio::UI::Text::Widget::CSV
+    AUTOLOAD vs_text
+    undo prev change, because may be used in non-view environments
+  * Bivio::UI::View::Tuple
+    fixed pre_compile
+  * Bivio::UI::View::UserAuth
+    general_contact_mail: don't cc user, because could be used as spam engine
+  * Bivio::UI::XHTML::Widget::FormFieldLabel
+    added "label" as extra class to label_ok and label_err
+  * Bivio::UI::XHTML::Widget::Pager
+    added want_sep
+  * Bivio::UI::XHTML::Widget::WikiText
+    use Mail.RFC822
+  * Bivio::UI::XHTML::Widget::XLink
+    base fix
+  * Bivio::Util::SQL
+    change order of petshop backups
+    create_test_user returns user_id
+    cleaned up imports
+  * Bivio::Util::TestRealm
+    name_args replaces arg_list
+  * Bivio::Util::Wiki
+    removed extraneous file write
+
   Revision 5.77  2008/01/18 00:17:35  nagler
   * Bivio::BConf
     Collection map
