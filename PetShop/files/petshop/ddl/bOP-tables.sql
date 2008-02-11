@@ -55,6 +55,20 @@ CREATE TABLE club_t (
 )
 /
 
+CREATE TABLE crm_thread_t (
+  realm_id NUMERIC(18) NOT NULL,
+  crm_thread_num NUMERIC(9) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  modified_by_user_id NUMERIC(18),
+  thread_root_id NUMERIC(18) NOT NULL,
+  crm_thread_status NUMERIC(2) NOT NULL,
+  subject VARCHAR(100) NOT NULL,
+  subject_lc VARCHAR(100) NOT NULL,
+  owner_user_id NUMERIC(18),
+  CONSTRAINT crm_thread_t1 PRIMARY KEY(realm_id, crm_thread_num)
+)
+/
+
 CREATE TABLE db_upgrade_t (
   version VARCHAR(30),
   run_date_time DATE NOT NULL,

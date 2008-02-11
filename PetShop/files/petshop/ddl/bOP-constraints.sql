@@ -58,6 +58,58 @@ CREATE INDEX calendar_event_t6 ON calendar_event_t (
 /
 
 --
+-- crm_thread_t
+--
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX crm_thread_t3 ON crm_thread_t (
+  realm_id
+)
+/
+CREATE INDEX crm_thread_t4 ON crm_thread_t (
+  modified_date_time
+)
+/
+CREATE INDEX crm_thread_t5 ON crm_thread_t (
+  thread_root_id
+)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t6
+  FOREIGN KEY (thread_root_id)
+  REFERENCES realm_file_t(realm_file_id)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t7
+  CHECK (crm_thread_status > 0)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t8
+  FOREIGN KEY (owner_user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX crm_thread_t9 ON crm_thread_t (
+  owner_user_id
+)
+/
+CREATE INDEX crm_thread_t10 ON crm_thread_t (
+  subject_lc
+)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t11
+  FOREIGN KEY (modified_by_user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX crm_thread_t12 ON crm_thread_t (
+  modified_by_user_id
+)
+/
+
+--
 -- ec_check_payment_t
 --
 ALTER TABLE ec_check_payment_t
