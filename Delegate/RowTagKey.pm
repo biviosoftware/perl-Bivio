@@ -12,6 +12,7 @@ sub get_delegate_info {
 	ERROR_DETAIL => 1,
 	RELATED_ID => 2,
 	DEFAULT_TUPLE_MONIKER => 3,
+	MAIL_SUBJECT_PREFIX => 4,
 	LAST_RESERVED_VALUE => 99,
     ];
 }

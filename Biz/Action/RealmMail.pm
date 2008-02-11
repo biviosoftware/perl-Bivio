@@ -2,26 +2,30 @@
 # $Id$
 package Bivio::Biz::Action::RealmMail;
 use strict;
-use base ('Bivio::Biz::Action');
-use Bivio::Mail::Outgoing;
+use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_O) = __PACKAGE__->use('Mail.Outgoing');
+
+sub EMPTY_SUBJECT_PREFIX {
+    return '!';
+}
 
 sub execute_receive {
     my($proto, $req) = @_;
-    my($mr) = $req->get('Model.MailReceiveDispatchForm');
+    my($f) = $req->get('Model.MailReceiveDispatchForm');
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
     my($n) = $req->get_nested(qw(auth_realm owner name));
-    my($out) = Bivio::Mail::Outgoing->new(
-	$rm->create_from_rfc822($mr->get('message')->{content})
+    my($out) = $_O->new(
+	$rm->create_from_rfc822($f->get('message')->{content})
     )->set_headers_for_list_send({
 	list_name => $n,
 	list_email => $req->format_email($n),
 	list_title => $req->get_nested(qw(auth_realm owner display_name)),
-	reply_to_list => $mr->new_other('Forum')->load->get('want_reply_to'),
+	reply_to_list => $f->new_other('Forum')->load->get('want_reply_to'),
 #TODO: This should be configurable
 	keep_to_cc => 1,
-	subject_prefix => $proto->internal_subject_prefix($req),
+	subject_prefix => $proto->internal_subject_prefix($rm),
 	req => $req,
     });
     $proto->use('Bivio::Agent::Job::Dispatcher')->enqueue(
@@ -59,8 +63,16 @@ sub execute_reflector {
 }
 
 sub internal_subject_prefix {
-    my(undef, $req) = @_;
-    return '[' . $req->get_nested(qw(auth_realm owner name)) . ']';
+    my($proto, $rm) = @_;
+    return '[' . $rm->req(qw(auth_realm owner name)) . ']'
+	unless defined(my $res = $rm->new_other('RowTag')->get_value(
+	    $rm->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
+	));
+    return ''
+	if $res eq $proto->EMPTY_SUBJECT_PREFIX;
+    $res .= ' '
+	unless $res =~ /\s$/s;
+    return $res;
 }
 
 1;
