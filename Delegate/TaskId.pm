@@ -351,6 +351,38 @@ sub info_calendar {
     ];
 }
 
+sub info_crm {
+    return [
+	[qw(
+	    FORUM_CRM_THREAD_ROOT_LIST
+            150
+            FORUM
+            DATA_READ&FEATURE_CRM
+            Model.CRMThreadRootList->execute_load_page
+            View.CRM->thread_root_list
+	    thread_task=FORUM_CRM_THREAD_LIST
+        )],
+	[qw(
+            FORUM_CRM_THREAD_LIST
+            151
+            FORUM
+            DATA_READ&FEATURE_CRM
+            Model.CRMThreadList->execute_load_page
+            View.CRM->thread_list
+        )],
+	[qw(
+            FORUM_CRM_FORM
+            152
+            FORUM
+            DATA_READ&DATA_WRITE&MAIL_POST&FEATURE_CRM
+	    Model.CRMForm
+	    View.CRM->send_form
+	    next=FORUM_CRM_THREAD_ROOT_LIST
+        )],
+#153-159
+    ];
+}
+
 sub info_dav {
     return [
 	[qw(
