@@ -580,7 +580,7 @@ sub _site_mail {
 .msg .actions .rounded_box_body  {
   margin: 1ex 1em;
 }
-.msg_compose .body .label {
+.msg_compose .textarea .label {
   vertical-align: top;
 }
 EOF
