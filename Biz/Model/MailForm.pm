@@ -13,6 +13,10 @@ my($_V) = __PACKAGE__->use('UI.View');
 my($_QUERY_WHO) = 'to';
 my($_MRW) = __PACKAGE__->use('Type.MailReplyWho');
 
+sub VIEW_CLASS {
+    return (shift->simple_package_name =~ /(.+)Form/)[0];
+}
+
 sub execute_cancel {
     return {
 	task_id => 'next',
@@ -24,10 +28,10 @@ sub execute_empty {
     my($self) = @_;
     my($m) = $self->req->unsafe_get_nested('Model.RealmMail');
     my($in) = $m && $_I->new($m);
-    $self->internal_put_field(subject => $in->get_reply_subject)
-	if $in;
+    $self->internal_put_field(subject => $in ? $in->get_reply_subject : '');
     my($to, $cc) =  ($in || $_I)->get_reply_email_arrays(
-	($self->req('query') || {})->{$_QUERY_WHO},
+	$self->internal_query_who,
+	$self->get('realm_emails'),
 	$self->req,
     );
     $self->internal_put_field(to => $to);
@@ -41,25 +45,30 @@ sub execute_ok {
     my($cc) = $self->get('cc')->as_literal;
     my($to) = $self->get('to');
     $self->internal_put_field(headers => {
-	_from => $_RFC->format_mailbox(
-	    $self->new_other('Email')->load_for_auth_user->get('email'),
-	    $self->req(qw(auth_user display_name)),
-	),
+	_from => $self->internal_format_from,
 	_recipients => $to->new([
 	    @{$to->as_array},
 	    @{$self->get('cc')->as_array},
 	])->as_literal,
-	Sender => $self->req(qw(auth_realm owner))->format_email,
+	Sender => $self->get('realm_emails')->[0],
 	To => $to->as_literal,
 	$cc ? (Cc => $cc) : (),
 	Subject => $self->get('subject'),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
-    $_V->execute('Mail->form_mail', $self->req);
+    $_V->execute($self->VIEW_CLASS . '->form_mail', $self->req);
     return {
 	task_id => 'next',
 	query => undef,
     };
+}
+
+sub internal_format_from {
+    my($self) = @_;
+    return $_RFC->format_mailbox(
+	$self->new_other('Email')->load_for_auth_user->get('email'),
+	$self->req(qw(auth_user display_name)),
+    );
 }
 
 sub internal_initialize {
@@ -105,6 +114,11 @@ sub internal_initialize {
 		name => 'RealmMail.realm_file_id',
 		constraint => 'NONE',
 	    },
+	    {
+		name => 'realm_emails',
+		type => 'Array',
+		constraint => 'NONE',
+	    },
 	],
     });
 }
@@ -119,7 +133,22 @@ sub internal_pre_execute {
 	    )->eq_create ? undef
 	    : $self->req(qw(Model.RealmMail realm_file_id)),
     );
+    $self->internal_put_field(
+	realm_emails => [
+	    @{$self->new_other('EmailAlias')->map_iterate(
+		sub {shift->get('incoming')},
+		'incoming asc',
+		{outgoing => $self->req(qw(auth_realm owner name))},
+	    )},
+	    $self->req(qw(auth_realm owner))->format_email,
+	],
+    );
     return shift->SUPER::internal_pre_execute(@_);
+}
+
+sub internal_query_who {
+    return $_MRW->unsafe_from_any((shift->req('query') || {})->{$_QUERY_WHO})
+	|| $_MRW->REALM;
 }
 
 sub is_reply {
