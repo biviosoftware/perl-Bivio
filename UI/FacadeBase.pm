@@ -316,6 +316,62 @@ sub _cfg_calendar {
     return {};
 }
 
+sub _cfg_crm {
+    return {
+        FormError => [
+	    ['CRMForm.action_id.SYTNAX_ERROR' => q{Action is not valid (browser bug?)}],
+	],
+	Task => [
+	    [FORUM_CRM_THREAD_ROOT_LIST => '?/tickets'],
+	    [FORUM_CRM_THREAD_LIST => '?/ticket'],
+	    [FORUM_CRM_FORM => '?/compose-ticket-msg'],
+	],
+	Text => [
+	    [CRMThreadRootList => [
+		'CRMThread.subject' => 'Subject',
+		'RealmFile.modified_date_time' => 'Initiated',
+		'RealmMail.from_email' => 'Initiated by',
+		'CRMThread.crm_thread_num' => 'Ticket',
+		'CRMThread.modified_date_time' => 'Last Update',
+		'modified_by_name' => 'Updated by',
+		'CRMThread.crm_thread_status' => 'Status',
+		'owner_name' => 'Assigned to',
+	    ]],
+	    ['CRMActionList.label' => [
+		assign_to => 'Assign to ',
+		closed => 'Close',
+		locked => 'Keep Locked',
+		open => 'Unlock',
+	    ]],
+	    [CRMForm => [
+		action_id => 'Action',
+		to => 'To',
+		cc => 'Cc',
+		subject => 'Subject',
+		body => 'Text',
+		Bivio::Biz::Model->get_instance('MailForm')
+		    ->map_attachments(sub {shift}) => 'Attach',
+		ok_button => 'Send',
+	    ]],
+	    ['task_menu.title' => [
+		'FORUM_CRM_FORM.reply_all' => 'Answer',
+		'FORUM_CRM_FORM.reply_realm' => 'Discuss Internally',
+		FORUM_CRM_FORM => 'New Ticket',
+		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
+	    ]],
+	    [title => [
+#TODO: Make into shortcut of widget
+		FORUM_CRM_FORM => q{If(['->has_keys', 'Model.RealmMailList'], Join([Enum(['Model.CRMThread', 'crm_thread_status']), ' Ticket #', String(['Model.CRMThread', 'crm_thread_num'])]), 'New Ticket');},
+		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
+		FORUM_CRM_THREAD_LIST => q{Enum(['Model.CRMThreadList', '->get_crm_thread_status']); Ticket #String(['Model.CRMThreadList', '->get_crm_thread_num']); String(['Model.CRMThreadList', '->get_subject']);},
+	    ]],
+	    [acknowledgement => [
+		FORUM_CRM_FORM => 'Your message was sent.',
+	    ]],
+	],
+    };
+}
+
 sub _cfg_dav {
     return {
 	Task => [
@@ -390,7 +446,7 @@ sub _cfg_mail {
 		    return (
 			[FORUM_MAIL_THREAD_ROOT_LIST => '?/mail'],
 			[FORUM_MAIL_THREAD_LIST => '?/mail-thread'],
-			[FORUM_MAIL_FORM => '?/new-mail-msg'],
+			[FORUM_MAIL_FORM => '?/compose-mail-msg'],
 			[FORUM_MAIL_PART => '?/mail-msg-part/*'],
 		    );
 		},
@@ -444,7 +500,7 @@ sub _cfg_mail {
 		'FORUM_MAIL_FORM.reply_author' => 'Reply to Author',
 		'FORUM_MAIL_FORM.reply_realm' => 'Reply',
 		FORUM_MAIL_FORM => 'New Topic',
-		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail List',
+		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
 	    ]],
 	    [title => [
 		FORUM_MAIL_FORM => q{If(['->has_keys', 'Model.RealmMailList'], 'Reply', 'New Topic');},
