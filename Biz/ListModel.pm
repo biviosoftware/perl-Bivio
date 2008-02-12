@@ -940,6 +940,11 @@ sub unsafe_load_this {
     return _load_this($self, $query, 0, 1) ? 1 : 0;
 }
 
+sub unsafe_load_this_or_first {
+    my($self, $query) = @_;
+    return _load_this($self, $query, 1, 1);
+}
+
 sub _assert_all {
     my($self) = @_;
     # Throws an exception if there are too many rows returned.
