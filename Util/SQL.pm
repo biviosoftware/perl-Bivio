@@ -357,7 +357,21 @@ sub initialize_db {
 	$self->initialize_tuple_permissions;
 	$self->initialize_tuple_slot_types;
     }
+    if (Bivio::Agent::TaskId->unsafe_from_name('FORUM_MOTION_LIST')) {
+	$self->initialize_motion_permissions;
+    }
     _sentinel_permissions51($self);
+    return;
+}
+
+sub initialize_motion_permissions {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
+    Bivio::Auth::Realm->do_default(sub {
+        $rr->edit_categories('+open_results_motion');
+	return 1;
+    }, $req);
     return;
 }
 
