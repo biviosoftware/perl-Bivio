@@ -456,6 +456,7 @@ sub _delete_one {
 	my($p) = $_FP->join($_FP->VERSIONS_FOLDER, $p);
 	$self->clone->update({
 	    path => _next_version($self->get('realm_id'), $p),
+	    modified_date_time => $self->get('modified_date_time'),
 	    override_is_read_only => 1,
 	});
     }
@@ -484,7 +485,7 @@ sub _delete_args {
 sub _filename {
     my(undef, $model, $prefix, $values) = shift->internal_get_target(@_);
     my($d, $f) = map($values->{"$prefix$_"}, qw(realm_id realm_file_id));
-    my($res) = _realm_dir($d) . '/' .  $f;
+    my($res) = _realm_dir($d) . '/' . $f;
     _trace($res) if $_TRACE;
     return $res;
 }
@@ -528,6 +529,7 @@ sub _next_version {
     substr($p, length($base), 0) = ';' . ++$max;
     return $p;
 }
+
 sub _non_child_attrs {
     my($v) = @_;
     return {map(($_ => $v->{$_}), grep(!/^_|override/, keys(%$v)))};
