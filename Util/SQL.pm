@@ -357,6 +357,7 @@ sub initialize_db {
 	$self->initialize_tuple_permissions;
 	$self->initialize_tuple_slot_types;
     }
+    _sentinel_permissions51($self);
     return;
 }
 
@@ -456,6 +457,7 @@ sub internal_upgrade_db_bundle {
 	motion_vote_comment
 	nonunique_email
 	permissions51
+	crm_thread
     )) {
 	my($sentinel) = \&{"_sentinel_$type"};
 	next if defined(&$sentinel) ? $sentinel->($self)
@@ -513,6 +515,75 @@ EOF
     $self->model('RealmOwner')
         ->init_realm_type($_RT->CALENDAR_EVENT);
     $self->new_other('RealmRole')->copy_all(forum => 'calendar_event');
+    return;
+}
+
+sub internal_upgrade_db_crm_thread {
+    my($self) = @_;
+    # Adds EmailAlias table.
+    $self->run(<<'EOF');
+CREATE TABLE crm_thread_t (
+  realm_id NUMERIC(18) NOT NULL,
+  crm_thread_num NUMERIC(9) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  modified_by_user_id NUMERIC(18),
+  thread_root_id NUMERIC(18) NOT NULL,
+  crm_thread_status NUMERIC(2) NOT NULL,
+  subject VARCHAR(100) NOT NULL,
+  subject_lc VARCHAR(100) NOT NULL,
+  owner_user_id NUMERIC(18),
+  CONSTRAINT crm_thread_t1 PRIMARY KEY(realm_id, crm_thread_num)
+)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX crm_thread_t3 ON crm_thread_t (
+  realm_id
+)
+/
+CREATE INDEX crm_thread_t4 ON crm_thread_t (
+  modified_date_time
+)
+/
+CREATE INDEX crm_thread_t5 ON crm_thread_t (
+  thread_root_id
+)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t6
+  FOREIGN KEY (thread_root_id)
+  REFERENCES realm_file_t(realm_file_id)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t7
+  CHECK (crm_thread_status > 0)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t8
+  FOREIGN KEY (owner_user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX crm_thread_t9 ON crm_thread_t (
+  owner_user_id
+)
+/
+CREATE INDEX crm_thread_t10 ON crm_thread_t (
+  subject_lc
+)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t11
+  FOREIGN KEY (modified_by_user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX crm_thread_t12 ON crm_thread_t (
+  modified_by_user_id
+)
+/
+EOF
     return;
 }
 
