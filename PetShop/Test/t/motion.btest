@@ -26,4 +26,3 @@ submit_form(ok => {
 });
 follow_link_in_table('Name', 'Name', 'Test Motion One', 'Actions', 'Results');
 verify_text(qr{yes.*black rules}si);
-do_logout;
