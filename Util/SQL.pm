@@ -1145,6 +1145,7 @@ sub internal_upgrade_db_permissions51 {
 	    my($write);
 	    foreach my $bit (21 .. 69) {
 		next unless vec($ps, $bit, 1);
+		vec($ps, $bit, 1) = 0;
 		vec($ps, $bit + 30, 1) = 1;
 		$write++;
 	    }
