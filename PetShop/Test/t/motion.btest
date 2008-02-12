@@ -1,0 +1,29 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+my($forum, $uri) = create_forum();
+Bivio::IO::Alert->info($uri);
+visit_uri("$uri/votes");
+verify_text(qr{no votes}i);
+follow_link(qr{add vote}i);
+verify_text(qr{one vote per user}i);
+submit_form(ok => {
+    'Name:' => 'Test Motion 1',
+    'Question:' => 'Is black your favorite color?',
+});
+follow_link_in_table('Name', 'Name', 'Test Motion 1', 'Actions', 'Vote');
+submit_form(ok => {
+    '_radio' => 'Yes',
+    'Comment:' => 'Black rules!',
+});
+test_deviance(qr{attribute doesn't exist});
+follow_link_in_table('Name', 'Name', 'Test Motion 1', 'Actions', 'Vote');
+test_conformance();
+follow_link_in_table('Name', 'Name', 'Test Motion 1', 'Actions', 'Edit');
+submit_form(ok => {
+    'Name:' => 'Test Motion One',
+    'Question:' => 'Is black your favorite color?',
+});
+follow_link_in_table('Name', 'Name', 'Test Motion One', 'Actions', 'Results');
+verify_text(qr{yes.*black rules}si);
+do_logout;
