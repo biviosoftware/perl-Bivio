@@ -406,7 +406,7 @@ sub _base {
 		'Bivio::Type::MotionStatus' =>
 		    'Bivio::Delegate::SimpleMotionStatus',
 		'Bivio::Type::MotionType' =>
-		    'Bivio::Delegate::NoMotionType',
+		    'Bivio::Delegate::SimpleMotionType',
 		'Bivio::Type::RealmDAG' => 'Bivio::Delegate::RealmDAG',
 	    },
 	}),
