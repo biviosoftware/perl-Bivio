@@ -1683,8 +1683,11 @@ sub _ddl_files {
     # Initializes self and calls ddl_files(), checking result.
     $self->get_request;
     my($f) = $self->ddl_files;
+    # Some files should exist; Need more than just bOP
     $self->usage('must be run in files/ddl directory')
-	unless -r $f->[0];
+	unless grep(-f $_, @$f);
+    # Just write the files every time
+    $self->use('SQL.DDL')->write_files;
     return $f;
 }
 
