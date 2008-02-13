@@ -5,8 +5,8 @@ use strict;
 use Bivio::Base 'Model.MailForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
-my($_RFC) = __PACKAGE__->use('Mail.RFC822');
+our($_RFC) = __PACKAGE__->use('Mail.RFC822');
+our($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
 
 #NOW:
 #    write test
@@ -14,6 +14,8 @@ my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 #    CRM Header for thread list which includes status, etc.
 #      e.g. New Ticket #2.
 #     Filter thread root list on status [Filter: ]
+#    Remove duplicates in To: list
+#    Close not working
 
 #TODO: Fix location problem in CMRThreadRootList
 
@@ -32,7 +34,6 @@ sub execute_cancel {
 sub execute_empty {
     return shift->call_super_before(\@_, sub {
         my($self) = @_;
-Bivio::IO::Alert->info('MUST BE HERE OR $_CLOSED is undef: ', $_CLOSED);
 	_with($self, sub {
 	    my($ct, $cal) = @_;
 	    my($discuss) = $self->internal_query_who->eq_realm;

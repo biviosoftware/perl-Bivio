@@ -5,13 +5,13 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_EA) = __PACKAGE__->use('Type.EmailArray');
-my($_I) = __PACKAGE__->use('Mail.Incoming');
-my($_O) = __PACKAGE__->use('Mail.Outgoing');
-my($_RFC) = __PACKAGE__->use('Mail.RFC822');
-my($_V) = __PACKAGE__->use('UI.View');
-my($_QUERY_WHO) = 'to';
-my($_MRW) = __PACKAGE__->use('Type.MailReplyWho');
+our($_EA) = __PACKAGE__->use('Type.EmailArray');
+our($_I) = __PACKAGE__->use('Mail.Incoming');
+our($_O) = __PACKAGE__->use('Mail.Outgoing');
+our($_RFC) = __PACKAGE__->use('Mail.RFC822');
+our($_V) = __PACKAGE__->use('UI.View');
+our($_QUERY_WHO) = 'to';
+our($_MRW) = __PACKAGE__->use('Type.MailReplyWho');
 
 sub VIEW_CLASS {
     return (shift->simple_package_name =~ /(.+)Form/)[0];
