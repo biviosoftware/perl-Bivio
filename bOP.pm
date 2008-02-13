@@ -23,7 +23,7 @@ bOP
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application.
+cohesive infrastructure for any Perl application. 
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -31,6 +31,62 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.79  2008/02/11 04:54:37  nagler
+  * Bivio::BConf
+    added feature_crm
+  * Bivio::Biz::Action::RealmMail
+    added RowTag MAIL_SUBJECT_PREFIX
+  * Bivio::Biz::Model::MailForm
+    added hooks for CRM support
+  * Bivio::Biz::Model::OrdinalBase
+    factored out internal_next_ord
+  * Bivio::Biz::Model::RealmEmailList
+    added Email.location
+  * Bivio::Biz::Model::RealmMail
+    added registered handles
+  * Bivio::Biz::Model::RealmMailList
+    added RealmMail.thread_root_id
+  * Bivio::Biz::Model::RealmUserList
+    added roles query key
+    use Biz.ListModel
+  * Bivio::Biz::Model::TreeList
+    cruft
+  * Bivio::Biz::Model::Tuple
+    change realm_mail_hook => handle_mail_*
+  * Bivio::Delegate::RowTagKey
+    added RowTag MAIL_SUBJECT_PREFIX
+  * Bivio::Delegate::SimplePermission
+    added FEATURE_ERP and other FEATURE_*
+    fix FEATURE_CRM
+    moved FEATURE_* permissions to fit better with existing apps
+  * Bivio::Delegate::TaskId
+    added info_crm
+  * Bivio::Mail::Incoming
+    get_reply_email_arrays takes realm_emails
+  * Bivio::PetShop::Util
+    init_crm
+  * Bivio::PetShop::View::CSS
+    align task_menu in header
+  * Bivio::SQL::PropertySupport
+    added CRMThread
+  * Bivio::Test::Unit
+    added autoloading of Types and Models
+  * Bivio::Type::Email
+    get_local_part
+  * Bivio::UI::FacadeBase
+    added crm support
+  * Bivio::UI::HTML::ViewShortcuts
+    added wf_want_display to vs_display
+  * Bivio::UI::View::CSS
+    aligning text areas
+  * Bivio::UI::View::Mail
+    hooks to allow CRM code to work
+  * Bivio::UI::Widget
+    format errors with () instead of [], b/c confuses with widget values
+  * Bivio::Util::SQL
+    added permissions51 upgrade
+    internal_upgrade_db_permissions51 adds FEATURE_MOTION/TUPLE if *_READ
+
   Revision 5.78  2008/02/07 21:43:53  nagler
   * Bivio::BConf
     MIME map
