@@ -73,7 +73,7 @@ sub edit {
 			    ],
 			    list_id_field => 'choice',
 			    list_display_field => 'choice',
-			}) : vs_display("TupleSlotListForm.$field", {
+			}) : vs_edit("TupleSlotListForm.$field", {
 			    wf_type => $it->get_list_model->type_class_instance,
 			    allow_undef => 1,
 			}),
@@ -94,7 +94,7 @@ sub edit {
 			field => 'comment',
 			label => 'Comment',
 		    }),
-		    vs_display('TupleSlotListForm.comment'),
+		    vs_edit('TupleSlotListForm.comment'),
 		    SPAN_required(String('*')),
 		], {cell_class => 'field'}),
 	    ],
