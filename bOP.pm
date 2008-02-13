@@ -23,7 +23,7 @@ bOP
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application.
+cohesive infrastructure for any Perl application. 
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.81  2008/02/13 21:51:41  nagler
+  * Bivio::UI::HTML::ViewShortcuts
+    can't inherit UI.ViewShortcuts, because may map ViewShortcuts in package
+
   Revision 5.80  2008/02/13 21:31:14  nagler
   * Bivio::BConf
     Replace NoMotionType with SimpleMotionType
