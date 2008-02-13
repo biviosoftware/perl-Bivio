@@ -23,7 +23,7 @@ bOP
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application. 
+cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -31,6 +31,38 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.80  2008/02/13 21:31:14  nagler
+  * Bivio::BConf
+    Replace NoMotionType with SimpleMotionType
+  * Bivio::Biz::ListModel
+    Added unsafe_load_this_or_first
+  * Bivio::Biz::Model::CRMForm
+    Package my's changed to ours's.   Seems that mod_perl has a bug with
+    package lexicals, which causes them to disappear, and to corrupt the
+    symbol table
+  * Bivio::Biz::Model::MailForm
+    Package my's changed to ours's.   Seems that mod_perl has a bug with
+    package lexicals, which causes them to disappear, and to corrupt the
+    symbol table
+  * Bivio::Biz::Model::RealmFile
+    Specify current time stamp when versioning file
+  * Bivio::Biz::Util::RealmRole
+    list_enabled_categories wasn't handling missing role values properly
+  * Bivio::UI::HTML::ViewShortcuts
+    rmpod
+    added vs_edit
+  * Bivio::UI::View::Tuple
+    used vs_edit, not vs_display for form fields
+  * Bivio::Util::SQL
+    run _sentinel_permissions51 in initialize_db so doesn't get run on
+    clean dbs
+    added crm_thread upgrade
+    fix bug in permissions51
+    generate ddl
+    Support new motion test
+    must reverse the bits in permissions51 upgrade so don't stomp on
+    changes
+
   Revision 5.79  2008/02/11 04:54:37  nagler
   * Bivio::BConf
     added feature_crm
