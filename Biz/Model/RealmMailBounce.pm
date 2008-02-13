@@ -25,7 +25,8 @@ sub create_from_rfc822 {
 		realm_id => $rm->get('realm_id'),
 		user_id => $uid,
 		modified_date_time => $_DT->now,
-		reason => _trunc($self, _reason($c), 'reason'),
+		reason => _trunc($self, _reason($self, $rfid, $uid, $c),
+				 'reason'),
 	    });
 	}
     }
@@ -80,6 +81,15 @@ sub return_path {
     );
 }
 
+sub _check_loop {
+    my($self, $rfid, $uid) = @_;
+    my($rf) = $self->new_other('RealmFile');
+    $rf->unauth_load({realm_file_id => $rfid});
+    return '<invalid auto-response>'
+	if $uid eq $rf->get('user_id');
+    return '<unable to parse error>';
+}
+
 sub _log {
     my($uid, $c) = @_;
     my($f) = Bivio::Biz::File->absolute_path(
@@ -91,13 +101,13 @@ sub _log {
 }
 
 sub _reason {
-    my($c) = @_;
+    my($self, $rfid, $uid, $c) = @_;
 #TODO: Should parse properly, but this is good enough
     $$c =~ /\(reason:\s*([^\r\n]+)\)/i
 	|| $$c =~ /Diagnostic-Code:\s*([^\r\n]+)/i
         || $$c =~ /(Deferred:[^\r\n])/i
 	|| $$c =~ /(Status:[^\r\n])/i;
-    my($res) = $1 || '<unable to parse error>';
+    my($res) = $1 || _check_loop($self, $rfid, $uid);
     return ($$c =~ /Action:\s*delayed|Will-Retry-Until|transient non-fatal/i
 	? 'Transient: ' : '') . $res;
 }
