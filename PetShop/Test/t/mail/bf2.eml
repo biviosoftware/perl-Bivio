@@ -1,0 +1,4 @@
+Subject: $bf_subject
+X-Bivio-Forwarded: 4
+
+Test message with for bivio forwarding mail loop detection that should not be forwarded given the header count.

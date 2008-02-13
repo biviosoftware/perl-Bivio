@@ -1,0 +1,4 @@
+Subject: $bf_subject
+X-Bivio-Forwarded: 3
+
+Test message with for bivio forwarding mail loop detection that should be forwarded.
