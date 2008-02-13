@@ -47,12 +47,25 @@ my($send_mail) = sub {
     %$h = (%$h, split(/[:\n]/, $head));
     my($msg) = send_mail(
 	map($h->{$_} =~ /([^<]+\@[^>]+)/, qw(From To)), $h, $body);
-    verify_local_mail(qr{.}, qr{.}, 2);
+    return $msg;
+};
+my($send_and_verify_mail) = sub {
+    my($msg) = $send_mail->(@_);
+    verify_local_mail(qr{.}, qr{X-Bivio-Forwarded}, 2);
     my($s) = $msg->unsafe_get_header('Subject');
     $s =~ s/Re: //;
     return ($msg, $s);
 };
-my($msg, $subject) = $send_mail->(qw(1.eml user1 forum), 'Long Thread');
+my($check_for_loop) = sub {
+    sleep(10);
+    visit_uri('/mail_forum/mail');
+    Bivio::Die->die('Found duplicate message')
+	    if get_table_row('First Post', 0)->{Topic}->get('text')
+		eq get_table_row('First Post', 1)->{Topic}->get('text');
+    return;
+};
+my($msg, $subject) = $send_and_verify_mail->(qw(1.eml user1 forum),
+					     'Long Thread');
 login_as('mail_user1');
 my($user1_email) = generate_local_email('mail_user1');
 visit_uri('/mail_forum/mail');
@@ -66,12 +79,12 @@ verify_text($subject);
     inner_html => random_string(),
     inner_plain => random_string(),
 );
-$send_mail->(qw(2.eml user2 forum), $msg);
+$send_and_verify_mail->(qw(2.eml user2 forum), $msg);
 reload_page();
 verify_text(qr{Subject:.*$vars->{inner_subject}});
 verify_text($vars->{inner_html});
 verify_no_text($vars->{inner_plain});
-$send_mail->(qw(3.eml user1 forum), $msg);
+$send_and_verify_mail->(qw(3.eml user1 forum), $msg);
 reload_page();
 follow_link('embedded-image');
 verify_content_type('image/gif');
@@ -102,3 +115,34 @@ verify_text('was sent');
 verify_local_mail(qr{.}, qr{.}, 2);
 follow_link($reply_subject);
 verify_text('reply text');
+# Test handling of autoreply messages, verifying that repeat messages from a
+# misbehaving autoresponder are ignored
+%$vars = (
+    %$vars,
+    ar_subject => random_string(),
+);
+$next_date = $d->add_seconds($next_date, 120);
+($msg, $subject) = $send_and_verify_mail->(qw(ar.eml user1 forum));
+visit_uri('/mail_forum/mail');
+follow_link($subject);
+verify_text($subject);
+$send_mail->(qw(ar.eml user1 forum));
+$check_for_loop->();
+$send_mail->(qw(ar.eml user1 forum));
+$check_for_loop->();
+# Test handling of other type of loop messages with different bodies
+%$vars = (
+    %$vars,
+    bf_subject => random_string(),
+    bf_count => 3,
+);
+($msg, $subject) = $send_and_verify_mail->(qw(bf1.eml user1 forum));
+visit_uri('/mail_forum/mail');
+follow_link($subject);
+verify_text($subject);
+%$vars = (
+    %$vars,
+    bf_count => 4,
+);
+$send_mail->(qw(bf2.eml user1 forum));
+$check_for_loop->();
