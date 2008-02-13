@@ -216,7 +216,8 @@ sub list_enabled_categories {
 	@$ops == grep({
 	    my($op, $roles, $permissions) = @$_;
 	    @$roles == grep(
-		((($rp->{$_} & $permissions) eq $permissions)
+		((defined($rp->{$_})
+		    && (($rp->{$_} & $permissions) eq $permissions))
 		    xor ($op eq 'remove_permissions')),
 		@$roles);
 	} @$ops) ? $k : ();
