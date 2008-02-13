@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::ViewShortcuts;
 use strict;
-use Bivio::Base 'UI.ViewShortcuts';
+use base 'Bivio::UI::ViewShortcuts';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WF) = __PACKAGE__->use('Bivio::UI::HTML::WidgetFactory');
