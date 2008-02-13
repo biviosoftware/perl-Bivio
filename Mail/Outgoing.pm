@@ -164,6 +164,9 @@ sub new {
 		: $v;
 	}
     }
+    elsif (defined($msg)) {
+	Bivio::Die->die('invalid message type');
+    }
     $attrs->{headers} ||= {};
     return $proto->SUPER::new($attrs);
 }
@@ -239,16 +242,26 @@ sub set_header {
     return $self;
 }
 
+sub set_headers_for_forward {
+    my($self) = @_;
+    $self->set_header('X-Bivio-Forwarded',
+		      ($self->unsafe_get_header('X-Bivio-Forwarded') || 0) + 1);
+    return $self;
+}
+
 sub set_headers_for_list_send {
     my($self, $np) = shift->name_parameters(
-    # Removes the headers that are either to be replaced or are uninteresting on a
-    # resend.  This is used for mailing list resends, not simple alias forwarding.
+	[qw(list_name list_title reply_to_list subject_prefix req list_email return_path sender reply_to keep_to_cc)], \@_);
+    # Removes the headers that are either to be replaced or are uninteresting on
+    # a resend.  This is used for mailing list resends, not simple alias
+    # forwarding.
+    #
     # For example, Received:, To:, Cc:, and Message-Id: are removed.
     #
-    # Sets the I<list_name> in the C<To>. Sets From to owner-I<list_name> if C<From:>
-    # not already set.  Inserts the I<list_name> in the C<Subject:> if
-    # I<list_in_subject>.  Sets I<Reply-To:> to I<list_name> if I<reply_to_list>.
-	[qw(list_name list_title reply_to_list subject_prefix req list_email return_path sender reply_to keep_to_cc)], \@_);
+    # Sets the I<list_name> in the C<To>. Sets From to owner-I<list_name> if
+    # C<From:> not already set.  Inserts the I<list_name> in the C<Subject:> if
+    # I<list_in_subject>.  Sets I<Reply-To:> to I<list_name> if
+    # I<reply_to_list>.
     if (($np->{subject_prefix} || '') eq 1) {
 	Bivio::IO::Alert->warn_deprecated(
 	    'list_in_subject is now subject_prefix');
@@ -268,6 +281,7 @@ sub set_headers_for_list_send {
 	$np->{sender} ||= $np->{req}->format_email("$np->{list_name}-owner");
     }
     my($headers) = $self->get('headers');
+    $self->set_headers_for_forward;
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
     delete(@$headers{qw(to cc)})
 	unless $np->{keep_to_cc};
