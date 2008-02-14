@@ -28,7 +28,7 @@ sub execute_cancel {
 	$ct->release_lock;
 	return;
     });
-    return;
+    return shift->SUPER::execute_cancel(@_);
 }
 
 sub execute_empty {
