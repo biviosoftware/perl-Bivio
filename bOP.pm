@@ -23,7 +23,7 @@ bOP
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application. 
+cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.82  2008/02/13 22:46:40  aviggio
+  * Bivio::Biz::Action::MailForward
+    Call Bivio::Mail::Outgoing->set_headers_for_forward
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    Detect mail loops related to invalid forwarding or auto-responders
+  * Bivio::Biz::Model::RealmMailBounce
+    Handle bounce for duplicate message
+  * Bivio::Mail::Outgoing
+    Add set_headers_for_forward
+  * Bivio::SQL::DDL
+    Include copyright at top of generated file
+
   Revision 5.81  2008/02/13 21:51:41  nagler
   * Bivio::UI::HTML::ViewShortcuts
     can't inherit UI.ViewShortcuts, because may map ViewShortcuts in package
