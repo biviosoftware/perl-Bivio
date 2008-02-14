@@ -46,12 +46,12 @@ my($alias) = remote_email('forum_alias');
 	{From => 'a@a.a', To => $forum, Cc => $user2},
 	author => [['a@a.a']],
 	[realm => $alias] => [[$alias]],
-	all => [['a@a.a', $forum]],
+	all => [['a@a.a'], [$forum]],
     ], [
 	{From => 'a@a.a', 'Reply-To' => 'b@b.b'},
 	author => [['b@b.b']],
 	realm => [[$forum]],
-	all => [['b@b.b', $forum]],
+	all => [['b@b.b'], [$forum]],
     ], [
 	{From => 'a@a.a', 'Reply-To' => $user1},
 	author => [[$user1]],
@@ -61,11 +61,21 @@ my($alias) = remote_email('forum_alias');
 	{From => 'a@a.a', 'Reply-To' => $forum, To => $forum},
 	author => [['a@a.a']],
 	realm => [[$forum]],
-	all => [['a@a.a', $forum]],
+	all => [['a@a.a'], [$forum]],
     ], [
 	{From => 'a@a.a', 'Reply-To' => $forum, To => $forum},
 	author => [['a@a.a']],
 	realm => [[$forum]],
-	[all => $alias] => [['a@a.a', $alias]],
+	[all => $alias] => [['a@a.a'], [$alias]],
+    ], [
+	{From => $user1, 'Reply-To' => $forum, To => $forum},
+	author => [[$user1]],
+	realm => [[$forum]],
+	all => [[$forum]],
+    ], [
+	{From => $forum, To => $forum},
+	author => [[$forum]],
+	realm => [[$forum]],
+	all => [[$forum]],
     ]),
 ];

@@ -106,30 +106,25 @@ sub get_reply_email_arrays {
     my($self, $who, $realm_emails, $req) = @_;
     return $_EA->new([$realm_emails->[0]])
 	unless ref($self) and !$who->eq_realm;
-    my($reply_to) = $self->get_reply_to;
+    my($reply_to) = lc($self->get_reply_to);
     $reply_to = undef
 	if grep($_E->is_equal($reply_to, $_), @$realm_emails);
     my($from) = lc($reply_to || $self->get_from);
     return $_EA->new([$from])
 	if $who->eq_author;
-    my($users) = {@{
-	$_M->new($req, 'RealmEmailList')->get_recipients(
+    my($dups) = {
+	@{$_M->new($req, 'RealmEmailList')->get_recipients(
 	    sub {shift->get('Email.email') => 1},
-	),
-    }};
+	)},
+    };
+    my($to) = $dups->{$from} ? $realm_emails->[0] : $from;
+    my($cc) = $to eq $realm_emails->[0] ? undef : $realm_emails->[0];
+    map($_ ? $dups->{$_}++ : (), $from, $reply_to, @$realm_emails);
     return map(
 	$_EA->new([
-	    $_ ne 'to' ? () : (
-		$users->{$from} ? () : $from,
-		$realm_emails->[0],
-	    ),
-	    grep({
-		my($x) = $_;
-		$users->{$x}
-		    || grep($_E->is_equal($x, $_),
-		        $from, $reply_to, @$realm_emails)
-		    ? 0 : 1;
-	    } @{$_A->parse_list(_get_field($self, "$_:"))}),
+	    $_ eq 'to' ? $to : $cc,
+	    grep(!$dups->{$_},
+		 map(lc($_), @{$_A->parse_list(_get_field($self, "$_:"))})),
 	]),
 	qw(to cc),
     );
