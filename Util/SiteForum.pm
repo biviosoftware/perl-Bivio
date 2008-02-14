@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_T) = __PACKAGE__->use('UI.Text');
 
 sub CONTACT_REALM {
     return Bivio::UI::Facade->get_default->SITE_CONTACT_REALM_NAME;
@@ -36,14 +37,17 @@ sub init {
 	    'RealmOwner.name' => $self->SITE_REALM,
 	    'RealmOwner.display_name' => 'Web Site',
 	});
+	return;
     });
     $req->with_realm($self->SITE_REALM, sub {
         $self->model('ForumForm', {
-	   'RealmOwner.display_name' => 'Web Contacts',
+	   'RealmOwner.display_name' => $_T->get_value('support_name', $req),
 	   'RealmOwner.name' => $self->CONTACT_REALM,
 	   'Forum.want_reply_to' => 1,
 	   'public_forum_email' => 1,
 	});
+	$self->new_other('RealmRole')->edit_categories('+feature_crm');
+	return;
     });
     $req->with_realm($self->SITE_REALM, sub {
         $self->model('ForumForm', {
@@ -51,6 +55,7 @@ sub init {
 	   'RealmOwner.name' => $self->HELP_REALM,
 	   'Forum.want_reply_to' => 1,
 	});
+	return;
     });
     $self->model('EmailAlias')->create({
 	incoming => $req->format_email(
