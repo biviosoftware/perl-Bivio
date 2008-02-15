@@ -9,12 +9,12 @@ my($_REALM_ROLE_CONFIG);
 Bivio::IO::Config->register(my $_CFG = {
     export_db_on_upgrade => 1,
 });
-my($_C) = __PACKAGE__->use('SQL.Connection');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_RT) = __PACKAGE__->use('Auth.RealmType');
-my($_R) = __PACKAGE__->use('Auth.Role');
-my($_PS) = __PACKAGE__->use('Auth.PermissionSet');
-my($_PI) = __PACKAGE__->use('Type.PrimaryId');
+our($_C) = __PACKAGE__->use('SQL.Connection');
+our($_DT) = __PACKAGE__->use('Type.DateTime');
+our($_RT) = __PACKAGE__->use('Auth.RealmType');
+our($_R) = __PACKAGE__->use('Auth.Role');
+our($_PS) = __PACKAGE__->use('Auth.PermissionSet');
+our($_PI) = __PACKAGE__->use('Type.PrimaryId');
 
 sub TEST_PASSWORD {
     # Returns password for test data.
