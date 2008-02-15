@@ -5,16 +5,16 @@ use strict;
 use Bivio::Base 'Model.OrdinalBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_PS) = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(
+our($_PS) = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(
     ['FEATURE_CRM'],
 )} if __PACKAGE__->use('Auth.Permission')->unsafe_from_name('FEATURE_CRM');
 __PACKAGE__->use('Model.RealmMail')->register(__PACKAGE__);
-my($_EMS) = __PACKAGE__->use('Type.MailSubject')->EMPTY_VALUE;
-my($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
-my($_SUBJECT_RE) = qr{\#\s*(\d+)\s*\]};
-my($_REQ_ATTR) = __PACKAGE__ . '.pre_create';
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_RECENT) = 60;
+our($_EMS) = __PACKAGE__->use('Type.MailSubject')->EMPTY_VALUE;
+our($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
+our($_SUBJECT_RE) = qr{\#\s*(\d+)\s*\]};
+our($_REQ_ATTR) = __PACKAGE__ . '.pre_create';
+our($_DT) = __PACKAGE__->use('Type.DateTime');
+our($_RECENT) = 60;
 
 sub ORD_FIELD {
     return 'crm_thread_num';
@@ -64,7 +64,7 @@ sub handle_mail_post_create {
 	}) unless $tid eq $realm_mail->get('thread_root_id');
 	$self->update({
 	    %$v,
-	    _status_for_incoming_mail($self),
+	    _status_for_update_mail($self),
 	});
 	return;
     }
@@ -135,9 +135,10 @@ sub _subject {
 	    $req->put($_REQ_ATTR => $self);
 	}
 	else {
-	    $num = undef;
 #TODO: Fix for imports
-	    $self->req->warn($num, ': crm_thread_num not found; ignoring');
+	    $self->req->warn(
+		$num, ': crm_thread_num not found, ignoring; subject=', $value);
+	    $num = undef;
 	}
     }
     $value =~ s/^\s+|\s+$//g;
@@ -155,20 +156,15 @@ sub _prefix {
 	. '] ';
 }
 
-sub _status_for_incoming_mail {
+sub _status_for_update_mail {
     my($self) = @_;
-#TODO: Need to fix this.  Email should be assigned in a queue, and greylisted
+#TODO: THis is a hack.  Need to understand closed from header
     return $self->get('crm_thread_status')->eq_closed
-	&& ($self->req->unsafe_get('auth_user_id') || 'no match1')
-	ne ($self->get('modified_by_user_id') || 'no match2')
-	&& $_DT->diff_seconds($_DT->now, $self->get('modified_date_time'))
-	> $_RECENT
-	? (crm_thread_status => $_CTS->OPEN)
-	: $self->req('auth_realm')->does_user_have_permissions(
+	&& !$self->req('auth_realm')->does_user_have_permissions(
 	    ['DATA_WRITE'],
 	    $self->req,
-	) ? ()
-	: (crm_thread_status => $_CTS->OPEN);
+	) ? (crm_thread_status => $_CTS->OPEN)
+	: ();
 }
 
 1;
