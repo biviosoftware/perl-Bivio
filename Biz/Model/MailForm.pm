@@ -63,6 +63,18 @@ sub execute_ok {
     };
 }
 
+sub get_realm_emails {
+    my($self) = @_;
+    return [
+	@{$self->new_other('EmailAlias')->map_iterate(
+	    sub {shift->get('incoming')},
+	    'incoming asc',
+	    {outgoing => $self->req(qw(auth_realm owner name))},
+	)},
+	$self->req(qw(auth_realm owner))->format_email,
+    ];
+}
+
 sub internal_format_from {
     my($self) = @_;
     return $_RFC->format_mailbox(
@@ -134,14 +146,7 @@ sub internal_pre_execute {
 	    : $self->req(qw(Model.RealmMail realm_file_id)),
     );
     $self->internal_put_field(
-	realm_emails => [
-	    @{$self->new_other('EmailAlias')->map_iterate(
-		sub {shift->get('incoming')},
-		'incoming asc',
-		{outgoing => $self->req(qw(auth_realm owner name))},
-	    )},
-	    $self->req(qw(auth_realm owner))->format_email,
-	],
+	realm_emails => $self->get_realm_emails,
     );
     return shift->SUPER::internal_pre_execute(@_);
 }
