@@ -21,6 +21,7 @@ submit_form({
 my($subject) = verify_local_mail($cust1, qr{.}, 1) =~ /Subject:\s+([^\n]+)/m;
 die('no subject')
     unless $subject;
+verify_local_mail($tech1, qr{.}, 1);
 follow_link_in_table('Last Update', 'Ticket', $ticket);
 verify_text("Closed Ticket #$ticket");
 my($body) = 'but wait ' . random_string();
