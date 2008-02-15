@@ -64,7 +64,7 @@ sub handle_mail_post_create {
 	}) unless $tid eq $realm_mail->get('thread_root_id');
 	$self->update({
 	    %$v,
-	    _status_for_update_mail($self),
+	    _status_for_update_mail($self, $realm_mail),
 	});
 	return;
     }
@@ -124,6 +124,18 @@ sub release_lock {
     });
 }
 
+sub _is_realm_member {
+    my($self, $realm_mail) = @_;
+    return 1
+	if $self->req('auth_realm')->does_user_have_permissions(
+	    ['DATA_WRITE'],
+	    $self->req,
+	);
+    my($f) = $realm_mail->get('from_email');
+    return grep($f eq $_, @{$self->new_other('CRMForm')->get_realm_emails})
+	? 1 : 0;
+}
+
 sub _subject {
     my($self, $value) = @_;
     my($req) = $self->req;
@@ -157,13 +169,11 @@ sub _prefix {
 }
 
 sub _status_for_update_mail {
-    my($self) = @_;
+    my($self, $realm_mail) = @_;
 #TODO: THis is a hack.  Need to understand closed from header
     return $self->get('crm_thread_status')->eq_closed
-	&& !$self->req('auth_realm')->does_user_have_permissions(
-	    ['DATA_WRITE'],
-	    $self->req,
-	) ? (crm_thread_status => $_CTS->OPEN)
+	&& !_is_realm_member($self, $realm_mail)
+        ? (crm_thread_status => $_CTS->OPEN)
 	: ();
 }
 
