@@ -11,9 +11,9 @@ my($not_num) = $next_num + 33;
 my($id) = 1;
 my($msg) = <<'EOF';
 To: a@a.a
-From: b@b.b
-Subject: XXX
-Message-Id: <a.NNN@a.a>
+From: $from
+Subject: $subject
+Message-Id: <a.$id@a.a>
 
 body
 EOF
@@ -23,24 +23,46 @@ EOF
 	    method => 'create_from_rfc822',
 	    compute_params => sub {
 		my(undef, $params) = @_;
-		my($t) = $msg;
-		$t =~ s/XXX/$params->[0]/;
-		$t =~ s/NNN/$id/;
-		$id++;
-		return [\$t];
+		req('Model.CRMThread')->update({
+		    crm_thread_status => CRMThreadStatus(shift(@$params)),
+		}) if $params->[0] =~ /[A-Z]/;
+		my($is_email) = $params->[0] =~ /\@/;
+		req()->set_user($is_email ? undef : $params->[0]);
+		return [template($msg, {
+		    from => $is_email ? $params->[0] : email($params->[0]),
+		    subject => $params->[1],
+		    id => $id++,
+		})];
 	    },
 	    compute_return => sub {
 		return [req()->get('Model.CRMThread')];
 	    },
 	} => [
-	    new => [{
+	    [demo => 'new'] => [{
 		crm_thread_num => $next_num,
+		crm_thread_status => CRMThreadStatus('NEW'),
 	    }],
-	    "#$next_num] other message" => [{
+	    [LOCKED => crm_tech1 => "#$next_num] here's help"] => [{
 		crm_thread_num => $next_num,
+		crm_thread_status => CRMThreadStatus('LOCKED'),
 	    }],
-	    "#$not_num] bad number" => [{
+	    [demo => "#$next_num] more info"] => [{
+		crm_thread_status => CRMThreadStatus('LOCKED'),
+	    }],
+	    [CLOSED => demo => "#$next_num] that didn't work!"] => [{
+		crm_thread_status => CRMThreadStatus('OPEN'),
+	    }],
+	    [crm_tech1 => "#$next_num] how about this?"] => [{
+		crm_thread_num => $next_num,
+		crm_thread_status => CRMThreadStatus('OPEN'),
+	    }],
+	    [CLOSED => remote_email('crm_forum'), "#$next_num] internal message"] => [{
+		crm_thread_num => $next_num,
+		crm_thread_status => CRMThreadStatus('CLOSED'),
+	    }],
+	    [demo => "#$not_num] bad number"] => [{
 		crm_thread_num => $next_num + 1,
+		crm_thread_status => CRMThreadStatus('NEW'),
 	    }],
 	],
     ],
