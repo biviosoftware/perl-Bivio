@@ -8,14 +8,13 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_RFC) = __PACKAGE__->use('Mail.RFC822');
 our($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
 
-#NOW:
+#TODO:
+#    internal_format_from needs to set From: if internal
 #    write test
 #    Locked needs to limit users from acting (are you sure?)
 #    CRM Header for thread list which includes status, etc.
 #      e.g. New Ticket #2.
 #     Filter thread root list on status [Filter: ]
-#    Remove duplicates in To: list
-#    Close not working
 
 #TODO: Fix location problem in CMRThreadRootList
 
