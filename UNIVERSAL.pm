@@ -275,6 +275,7 @@ sub simple_package_name {
 
 sub super_for_method {
     my($proto, $method) = @_;
+    Bivio::IO::Alert->warn_deprecated('call the super explicitly');
     $method ||= $proto->my_caller;
     foreach my $a (@{$proto->inheritance_ancestors}) {
 	my($sub) = \&{$a . '::' . $method};
