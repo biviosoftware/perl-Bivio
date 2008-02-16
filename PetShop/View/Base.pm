@@ -8,16 +8,15 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_xhtml_adorned {
-    my($self) = @_;
-    return $self->call_super_before(\@_, sub {
-        view_unsafe_put(
-	    xhtml_header_middle => TaskMenu([
-		'FORUM_MAIL_THREAD_ROOT_LIST',
-		'FORUM_CRM_THREAD_ROOT_LIST',
-	    ]),
-	);
-        return;
-    });
+    my($self) = shift;
+    my(@res) = $self->SUPER::internal_xhtml_adorned(@_);
+    view_unsafe_put(
+	xhtml_header_middle => TaskMenu([
+	    'FORUM_MAIL_THREAD_ROOT_LIST',
+	    'FORUM_CRM_THREAD_ROOT_LIST',
+	]),
+    );
+    return @res;
 }
 
 1;
