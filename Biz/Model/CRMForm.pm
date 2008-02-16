@@ -5,8 +5,8 @@ use strict;
 use Bivio::Base 'Model.MailForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($_RFC) = __PACKAGE__->use('Mail.RFC822');
-our($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
+my($_RFC) = __PACKAGE__->use('Mail.RFC822');
+my($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
 
 #TODO:
 #    internal_format_from needs to set From: if internal
@@ -31,23 +31,22 @@ sub execute_cancel {
 }
 
 sub execute_empty {
-    return shift->call_super_before(\@_, sub {
-        my($self) = @_;
-	_with($self, sub {
-	    my($ct, $cal) = @_;
-	    my($discuss) = $self->internal_query_who->eq_realm;
-	    $ct->acquire_lock
-		unless $discuss;
-	    $self->internal_put_field(
-		subject => $ct->clean_subject($self->get('subject')));
-	    $self->internal_put_field(
-		action_id => $cal->status_to_id(
-		    $discuss ? $ct->get('crm_thread_status') : $_CLOSED,
-		));
-	    return;
-	});
-        return;
+    my($self) = @_;
+    shift->SUPER::execute_empty(@_);
+    _with($self, sub {
+        my($ct, $cal) = @_;
+	my($discuss) = $self->internal_query_who->eq_realm;
+	$ct->acquire_lock
+	    unless $discuss;
+	$self->internal_put_field(
+	    subject => $ct->clean_subject($self->get('subject')));
+	$self->internal_put_field(
+	    action_id => $cal->status_to_id(
+		$discuss ? $ct->get('crm_thread_status') : $_CLOSED,
+	    ));
+	return;
     });
+    return;
 }
 
 sub execute_ok {
@@ -90,15 +89,14 @@ sub internal_initialize {
 }
 
 sub internal_pre_execute {
-    return shift->call_super_before(\@_, sub {
-        my($self) = @_;
-	if (my $m = $self->req->unsafe_get('Model.RealmMail')) {
-	    $self->new_other('CRMThread')
-		->load({thread_root_id => $m->get('thread_root_id')});
-	    $self->new_other('CRMActionList')->load_all;
-	}
-	return;
-    });
+    my($self) = @_;
+    shift->SUPER::internal_pre_execute(@_);
+    if (my $m = $self->req->unsafe_get('Model.RealmMail')) {
+	$self->new_other('CRMThread')
+	    ->load({thread_root_id => $m->get('thread_root_id')});
+	$self->new_other('CRMActionList')->load_all;
+    }
+    return;
 }
 
 sub show_action {
@@ -107,17 +105,16 @@ sub show_action {
 }
 
 sub validate {
-    return shift->call_super_before(\@_, sub {
-        my($self) = @_;
-	_with($self, sub {
-	    my(undef, $cal) = @_;
-	    $self->internal_put_error(action_id => 'SYNTAX_ERROR')
-		unless $self->get_field_error('action_id')
-		|| $cal->validate_id($self->get('action_id'));
-	    return;
-	});
+    my($self) = @_;
+    shift->SUPER::validate(@_);
+    _with($self, sub {
+        my(undef, $cal) = @_;
+	$self->internal_put_error(action_id => 'SYNTAX_ERROR')
+	    unless $self->get_field_error('action_id')
+	    || $cal->validate_id($self->get('action_id'));
 	return;
     });
+    return;
 }
 
 sub _with {
