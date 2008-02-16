@@ -7,10 +7,10 @@ use Bivio::Base 'TestUnit.Unit';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new_unit {
-    return shift->call_super_before(\@_, sub {
-        shift->use('TestUnit.Request')->get_instance;
-	return;
-    });
+    my($proto) = shift;
+    my(@res) = $proto->SUPER::new_unit(@_);
+    $proto->use('TestUnit.Request')->get_instance;
+    return @res;
 }
 
 sub unit {
