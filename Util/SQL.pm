@@ -89,10 +89,10 @@ sub create_db {
     # See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
     $self->setup;
     foreach my $file (@{_ddl_files($self)}){
-	# Set up new file so read_input returns new value each time
-	$self->print('Executing ', $file, "\n");
-	$self->put(input => $file);
-	$self->run;
+        # Set up new file so read_input returns new value each time
+        $self->print('Executing ', $file, "\n");
+        $self->put(input => $file);
+        $self->run;
     }
     $self->initialize_db();
     return;
@@ -103,14 +103,19 @@ sub create_test_db {
     # Destroys old database, creates new database, populates with test data.
     # Subclasses should override L<initialize_test_data|"initialize_test_data"> to
     # create the test data.
+    $self->print('Initializing database...', "\n");
     $self->initialize_ui;
     my($req) = $self->get_request;
     die('cannot be run on production system')
 	if $req->is_production;
-    $self->destroy_db;
-    $self->create_db;
-    $self->delete_realm_files;
-    return $self->initialize_test_data;
+    my($ddl_dir) = $self->get_project_root() . '/files/ddl';
+    Bivio::IO::File->do_in_dir(-d $ddl_dir ? $ddl_dir : '.', sub {
+        $self->destroy_db;
+        $self->create_db;
+        $self->delete_realm_files;
+        $self->initialize_test_data;
+    });
+    return;
 }
 
 sub create_test_user {
@@ -292,6 +297,7 @@ sub import_tables_only {
 
 sub init_dbms {
     my($self, $clone_db) = @_;
+    $self->print('Creating postgresql database...', "\n");
     $self->req;
     my($c) = _assert_postgres($self);
     my($db, $user, $pass) = @$c{qw(database user password)};
@@ -321,6 +327,12 @@ sub init_dbms {
     }
     return "created$res"
 	. (defined($clone_db) ? " copied from '$clone_db'" : '');
+}
+
+sub init_project {
+    my($self) = @_;
+    $self->init_dbms();
+    $self->create_test_db();
 }
 
 sub init_realm_role {
