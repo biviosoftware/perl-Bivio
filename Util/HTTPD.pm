@@ -2,80 +2,15 @@
 # $Id$
 package Bivio::Util::HTTPD;
 use strict;
-$Bivio::Util::HTTPD::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::HTTPD::VERSION;
-
-=head1 NAME
-
-Bivio::Util::HTTPD - starts Apache running Bivio::Agent::HTTP::Dispatcher
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::HTTPD;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::HTTPD::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::HTTPD>
-
-=cut
-
-=head1 ENVIRONMENT
-
-=over 4
-
-=item $PERLLIB
-
-Must point to the appropriate development directory if you are
-starting the server for testing your own copy.  See L<"FILES">.
-
-=back
-
-=head1 FILES
-
-=over 4
-
-=item httpd.lock.*
-
-is removed and rewritten with new pid
-
-=item httpd.pid
-
-is removed and rewritten with new pid
-
-=item httpd[0-9]*.conf
-
-is removed and rewritten with new pid
-
-=item $PERLLIB/../external/apache/src/httpd
-
-binary to be used if it exists and is executable
-
-=back
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Config;
+use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::IO::ClassLoader;
+use Bivio::IO::Config;
 use Bivio::IO::File;
 use Sys::Hostname ();
 
-#=VARIABLES
+# C<Bivio::Util::HTTPD>
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTTPD) = _find_file(qw(
     /usr/local/apache/bin/httpd
     /usr/sbin/httpd
@@ -93,19 +28,9 @@ Bivio::IO::Config->introduce_values({
 })
     if 0;
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="PROJ_ROOT"></a>
-
-=head2 PROJ_ROOT() : string
-
-return project root
-
-=cut
-
 sub PROJ_ROOT {
+    # (self) : string
+    # return project root
     return _project_root();
 }
 
@@ -212,13 +137,9 @@ sub main {
     }
 }
 
-#=PRIVATE SUBROUTINES
-
-# _dynamic_modules(string httpd) : string
-#
-# Returns AddModule and LoadModule statements.
-#
 sub _dynamic_modules {
+    # (string) : string
+    # Returns AddModule and LoadModule statements.
     my($httpd) = @_;
     return '' if $] < 5.006;
     my($loaded) = {map {
@@ -248,12 +169,6 @@ sub _dynamic_modules {
     return $load . "ClearModuleList\nAddModule mod_so.c\n" . $add;
 }
 
-sub _symlink {
-    my($file, $link) = @_;
-    -l $link || CORE::symlink($file, $link)
-	|| die("symlink($file, $link): $!");
-}
-
 sub _find_file {
     my(@path) = @_;
     foreach my $f (@path) {
@@ -270,6 +185,12 @@ sub _project_root {
 	    || die('You need to set $BCONF to your project *.bconf'));
 }
 
+sub _symlink {
+    my($file, $link) = @_;
+    -l $link || CORE::symlink($file, $link)
+	|| die("symlink($file, $link): $!");
+}
+
 sub _usage {
     my($msg) = join('', @_);
     print STDERR <<"EOF";
@@ -279,17 +200,8 @@ EOF
     exit(1);
 }
 
-=head1 COPYRIGHT
-
-Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
 1;
+
 
 __DATA__
 #
