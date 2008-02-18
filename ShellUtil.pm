@@ -369,6 +369,12 @@ sub get_request {
     return $req;
 }
 
+sub get_project_root {
+    return File::Basename::dirname(
+	(grep(m{\bBConf.pm$} && !m{Bivio.BConf.pm$}, sort(values(%INC))))[0]
+	    || die('Could not find project BConf.pm'));
+}
+
 sub group_args {
     my($proto, $group_size, $args) = @_;
     # Returns an array of I<group_size> tuples (array_refs).  Calls
