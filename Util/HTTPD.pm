@@ -8,8 +8,6 @@ use Bivio::IO::Config;
 use Bivio::IO::File;
 use Sys::Hostname ();
 
-# C<Bivio::Util::HTTPD>
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTTPD) = _find_file(qw(
     /usr/local/apache/bin/httpd
@@ -21,18 +19,12 @@ Bivio::IO::Config->register(my $_CFG = {
     additional_locations => '',
     additional_directives => '',
 });
-Bivio::IO::Config->introduce_values({
+my($_WLFC_ERROR) = <<'EOF';
+Could not set want_local_file_cache.  Your .bconf needs:
     'Bivio::UI::Facade' => {
-	want_local_file_cache => 1,
+         want_local_file_cache => 0,
     },
-})
-    if 0;
-
-sub PROJ_ROOT {
-    # (self) : string
-    # return project root
-    return _project_root();
-}
+EOF
 
 sub handle_config {
     my(undef, $cfg) = @_;
@@ -41,7 +33,7 @@ sub handle_config {
 }
 
 sub internal_pre_execute {
-    ## Perform operations before httpd is started.
+    # Perform operations before httpd is started.
     return;
 }
 
@@ -51,7 +43,7 @@ sub main {
     my($background) = 0;
     my($server_name) = undef;
     my($at_mode) = 0;
-    my($pwd) = _project_root() . '/httpd';
+    my($pwd) = $self->get_project_root() . '/httpd';
 #TODO: Let ShellUtil handle options; Create a default handler for commands
     local($_);
     while (@argv) {
@@ -91,8 +83,9 @@ sub main {
 
     # write custom bconf
     my($bconf_data) = Bivio::IO::File->read($ENV{'BCONF'});
-    $$bconf_data =~
-	s/want_local_file_cache\s+=>\s+\d,/want_local_file_cache => $at_mode/;
+    die($_WLFC_ERROR, "\n")
+        if $at_mode && !($$bconf_data =~
+            s/(\bwant_local_file_cache)\s+=>\s+\d,/$1 => 1/);
     Bivio::IO::File->write("$pwd/httpd$$.bconf", $bconf_data);
     _symlink(
 	Bivio::IO::File->absolute_path(File::Basename::dirname($ENV{'BCONF'}))
@@ -100,8 +93,6 @@ sub main {
 	"$pwd/bconf.d",
     ) unless -l "$pwd/bconf.d";
     my($bconf) = "PerlSetEnv BCONF $pwd/httpd$$.bconf";
-#     my($bconf) = $ENV{'BCONF'}
-# 	? "PerlSetEnv BCONF $ENV{'BCONF'}" : '';
 
      my($reload) = $at_mode
          ? ''
@@ -179,12 +170,6 @@ sub _find_file {
     # DOES NOT RETURN
 }
 
-sub _project_root {
-    return File::Basename::dirname(
-	(grep(m{\bBConf.pm$} && !m{Bivio.BConf.pm$}, sort(values(%INC))))[0]
-	    || die('You need to set $BCONF to your project *.bconf'));
-}
-
 sub _symlink {
     my($file, $link) = @_;
     -l $link || CORE::symlink($file, $link)
@@ -201,7 +186,6 @@ EOF
 }
 
 1;
-
 
 __DATA__
 #
