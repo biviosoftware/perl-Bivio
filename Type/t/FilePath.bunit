@@ -39,7 +39,7 @@ Type();
 	get_base => [
 	    '/a.gif' => 'a',
 	    '.gif' => '.gif',
-	    'x.very-long-suffix' => 'x',
+	    'a.very-long-suffix' => 'a',
 	],
 	get_clean_base => [
 	    a => 'a',
