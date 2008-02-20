@@ -11,10 +11,13 @@ sub internal_xhtml_adorned {
     my($self) = shift;
     my(@res) = $self->SUPER::internal_xhtml_adorned(@_);
     view_unsafe_put(
-	xhtml_header_middle => TaskMenu([
-	    'FORUM_MAIL_THREAD_ROOT_LIST',
-	    'FORUM_CRM_THREAD_ROOT_LIST',
-	]),
+	xhtml_header_middle => If(
+	    ['auth_realm', 'type', '->eq_forum'],
+	    TaskMenu([
+		'FORUM_MAIL_THREAD_ROOT_LIST',
+		'FORUM_CRM_THREAD_ROOT_LIST',
+	    ]),
+	),
     );
     return @res;
 }
