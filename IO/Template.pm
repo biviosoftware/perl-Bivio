@@ -9,9 +9,14 @@ my($_F) = __PACKAGE__->use('IO.File');
 
 sub replace_in_file {
     my($proto, $file_name, $vars) = @_;
-    my($d) = $_F->read($file_name);
+    return $proto->replace_in_string($_F->read($file_name), $vars);
+}
+
+sub replace_in_string {
+    my(undef, $template, $vars) = @_;
+    my($d) = ref($template) ? $template : \$template;
     $$d =~ s{(\$\$)|\$\{([a-z]\w*)\}|\$([a-z]\w*)}{_do($vars, $1, $2, $3)}egs;
-    return $d;
+    return ref($template) ? $d : $$d;
 }
 
 sub _do {
