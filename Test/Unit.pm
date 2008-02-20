@@ -384,6 +384,10 @@ sub builtin_remote_email {
     return shift->use('TestLanguage.HTTP')->generate_remote_email(@_);
 }
 
+sub builtin_template {
+    return shift->use('IO.Template')->replace_in_string(@_);
+}
+
 sub new_unit {
     my($proto, $class, $attrs) = @_;
     return $proto->SUPER::new({
