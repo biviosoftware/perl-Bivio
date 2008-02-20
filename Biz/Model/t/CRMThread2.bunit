@@ -28,7 +28,7 @@ EOF
 		}) if $params->[0] =~ /[A-Z]/;
 		my($is_email) = $params->[0] =~ /\@/;
 		req()->set_user($is_email ? undef : $params->[0]);
-		return [template($msg, {
+		return [template(\(my $x = $msg), {
 		    from => $is_email ? $params->[0] : email($params->[0]),
 		    subject => $params->[1],
 		    id => $id++,
