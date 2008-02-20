@@ -8,9 +8,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new_unit {
     my($proto) = shift;
-    my(@res) = $proto->SUPER::new_unit(@_);
+    my($res) = $proto->SUPER::new_unit(@_);
     $proto->use('TestUnit.Request')->get_instance;
-    return @res;
+    return $res;
 }
 
 sub unit {
