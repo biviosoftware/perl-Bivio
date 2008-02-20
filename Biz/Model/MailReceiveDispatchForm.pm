@@ -11,9 +11,11 @@ use Bivio::UI::Task;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_E) = Bivio::Type->get_instance('Email');
+my($_DT) = Bivio::Type->get_instance('DateTime');
 Bivio::IO::Config->register(my $_CFG = {
     ignore_dashes_in_recipient => 0,
 });
+my($_ONE_HOUR_SECONDS) = 3600;
 
 sub execute_ok {
     my($self) = @_;
@@ -183,16 +185,28 @@ sub _detect_mail_loop {
     my($rml) = $self->new_other('RealmMailList');
     $rml->unsafe_load_this_or_first;
     if ($rml->get_result_set_size) {
-	my($rfid) = $rml->get_model('RealmFile')->get('realm_file_id');
-	${$rml->get_model('RealmFile')->get_content} =~ /\n\n(.*)$/s;
-	my($last_body) = $1;
-	${$self->get('message')->{content}} =~ /\n\n(.*)$/s;
-	my($body) = $1;
-	Bivio::IO::Alert->warn('Mail loop detected for realm_file_id ' . $rfid
-				   . ":\n", ${$self->get('message')->{content}})
-		if $body eq $last_body;
-	return $rfid
-	    if $body eq $last_body;
+	my($rf) = $rml->get_model('RealmFile');
+	return 0
+	    if $_DT->compare($_DT->add_seconds($rf->get('modified_date_time'),
+					       $_ONE_HOUR_SECONDS),
+			     $_DT->now) == -1;
+	my($rfid) = $rf->get('realm_file_id');
+	my($last_body) = $1
+	    if ${$rf->get_content} =~ /\n\n(.*)$/s;
+	my($body) = $1
+	    if ${$self->get('message')->{content}} =~ /\n\n(.*)$/s;
+	if ($body && $last_body && $body eq $last_body) {
+	    Bivio::IO::Alert->warn('Mail loop detected for realm_file_id '
+				       . $rfid . ":\n",
+				   ${$self->get('message')->{content}});
+	    return $rfid
+	}
+	Bivio::IO::Alert->info("No last message body parsed:\n",
+			       ${$rf->get_content})
+		unless $last_body;
+	Bivio::IO::Alert->info("No message body parsed:\n",
+			       ${$self->get('message')->{content}})
+		unless $body;
     }
     return 0;
 }
