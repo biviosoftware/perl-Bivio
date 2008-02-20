@@ -26,11 +26,34 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 5.84  2008/02/16 03:54:23  nagler
+  * Bivio::Biz::Model::CRMForm
+    comment
+    call_super_before was corrupting symbol table
+  * Bivio::Biz::Model::CRMThread
+    fix status change in incoming update mail
+    fixed status update code to include forum in list of valid addresses
+  * Bivio::Biz::Model::MailForm
+    added get_realm_emails
+    call_super_before broken
+  * Bivio::PetShop::Util
+    call_super_before removed
+  * Bivio::PetShop::View::Base
+    call_super_before is deprecated
+  * Bivio::Test::ShellUtil
+    call_super_before removed
+  * Bivio::UNIVERSAL
+    super_for_method/call_super_before are deprecated, because referencing
+    the package hash for methods corrupts entire symbol table
+  * Bivio::Util::SQL
+    my to our
+    our to my
+
   Revision 5.83  2008/02/14 02:20:15  nagler
   * Bivio::Biz::Model::CRMForm
     execute_cancel needs to call SUPER
