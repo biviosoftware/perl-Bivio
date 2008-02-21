@@ -35,11 +35,10 @@ sub get_width {
     return $_WIDTH;
 }
 
-sub task_to_help {
-    my($proto, $task_id, $req) = @_;
-    my($name) = Bivio::UI::Text->get_value('title', $task_id->get_name, $req);
-    $name =~ s/\W+/_/g;
-    return $proto->from_literal_stripper($name) . '_Help';
+sub title_to_help {
+    my($proto, $title) = @_;
+    $title =~ s/\W+/_/g;
+    return $proto->from_literal_stripper($title) . '_Help';
 }
 
 sub to_title {

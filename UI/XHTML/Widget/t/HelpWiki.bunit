@@ -11,7 +11,8 @@ Widget({
 	    $req->set_realm('site-help');
 	    $req->initialize_fully('HELP');
 	    $req->put(
-		path_info => class('Type.WikiName')->task_to_help($t, $req));
+		path_info => class('Type.WikiName')->title_to_help(
+		    Bivio::UI::Text->get_value('title', $t->get_name, $req))),
 	}
 	else {
 	    $req->set_realm('fourem');
