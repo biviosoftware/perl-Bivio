@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.85  2008/02/20 04:35:28  aviggio
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    restrict mail loop detection to a one hour window
+  * Bivio::IO::Template
+    added replace_in_file
+  * Bivio::ShellUtil
+    get_project_root gives you the root directory of your project
+  * Bivio::Test::ShellUtil
+    new_unit returns a single value
+  * Bivio::Test::Unit
+    added builtin_template
+  * Bivio::Util::HTTPD
+    cleanup and error if cant set want_local_file_cache
+  * Bivio::Util::SQL
+    automatically cd to ddl directory when creating a test database
+
   Revision 5.84  2008/02/16 03:54:23  nagler
   * Bivio::Biz::Model::CRMForm
     comment
