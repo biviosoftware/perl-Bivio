@@ -7,15 +7,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = __PACKAGE__->use('Type.WikiName');
-my($_REALM_NAME) = [['->req', 'Bivio::UI::Facade'], '->HELP_WIKI_REALM_NAME'];
-my($_PAGE_NAME) = [sub {
-    my($req) = shift->req;
-    return $_WN->task_to_help($req->get('task_id'), $req);
-}];
-my($_PAGE_EXISTS) = [sub {
-    my($source, $page) = @_;
-    return WikiStyle()->help_exists($page, $source->req);
-}, $_PAGE_NAME];
+my($_T) = __PACKAGE__->use('FacadeComponent.Text');
+my($_C) = __PACKAGE__->use('FacadeComponent.Constant');
 
 sub RESIZE_FUNCTION {
     return 'help_wiki_resize';
@@ -29,7 +22,7 @@ sub initialize {
     $self->put_unless_exists(
         control_off_value => sub {
 	    return Join([
-		If($_PAGE_EXISTS,
+		If(_page_exists->(),
 		    Join([
 			_js($self),
 			_iframe($self),
@@ -152,7 +145,7 @@ sub _link_add {
 			sub {$req->can_user_execute_task(
 			    'FORUM_WIKI_EDIT')},
 		    );
-		}, $_REALM_NAME,
+		}, _realm_name(),
 	    ],
 	},
     );
@@ -199,13 +192,43 @@ EOF
     ]);
 }
 
+sub _page_exists {
+    return [sub {
+        my($source, $page) = @_;
+	return WikiStyle()->help_exists($page, $source->req);
+    }, _page_name()];
+}
+
+sub _page_name {
+    return [sub {
+        my($req) = shift->req;
+	return $_WN->title_to_help(
+	    vs_render_widget(
+		Prose(
+		    $_T->get_value(
+			'HelpWiki',
+			'title',
+			$req->get('task_id')->get_name,
+			$req,
+		    ),
+		),
+		$req,
+	    ),
+	);
+    }];
+}
+
+sub _realm_name {
+    return vs_constant('help_wiki_realm_name');
+}
+
 sub _uri {
     my($task, $path_info) = @_;
     return URI({
 	task_id => $task,
 	query => undef,
-	realm => $_REALM_NAME,
-	path_info => $path_info || [$_PAGE_NAME],
+	realm => _realm_name(),
+	path_info => $path_info || _page_name(),
     });
 }
 
