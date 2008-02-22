@@ -65,6 +65,13 @@ sub vs_realm_type {
     return shift->vs_req(qw(auth_realm type ->equals_by_name), @_);
 }
 
+sub vs_render_widget {
+    my(undef, $widget, $source) = @_;
+    my($b) = '';
+    $widget->put_and_initialize(parent => undef)->render($source, \$b);
+    return $b;
+}
+
 sub vs_req {
     # Returns a widget value pulled from the request..
     shift;
