@@ -32,5 +32,8 @@ Type();
 	    '/Wiki/AAA' => 1,
 	    '/Wiki/^' => 0,
 	],
+	title_to_help => [
+	    'Foo Bar' => 'Foo_Bar_Help',
+	],
     ],
 ];
