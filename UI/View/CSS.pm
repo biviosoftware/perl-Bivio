@@ -377,6 +377,7 @@ form .sep {
 }
 form .submit {
   margin: .5em;
+  padding: 0 .5em;
   text-align: center;
 }
 .empty_list, .not_found {
