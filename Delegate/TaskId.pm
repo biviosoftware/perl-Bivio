@@ -927,7 +927,16 @@ sub info_user_auth {
 	    View.UserAuth->create_mail
 	    View.UserAuth->create_done
 	)],
-#94-99
+	[qw(
+	    USER_SETTINGS_FORM
+	    94
+	    USER
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.UserSettingsForm
+	    View.UserAuth->settings_form
+	    next=MY_SITE
+	)],
+#95-99
     ];
 }
 
