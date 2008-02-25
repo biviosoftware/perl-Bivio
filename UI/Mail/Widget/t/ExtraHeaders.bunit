@@ -1,0 +1,6 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    [Aa => 1, b => '', a => 2] => "a: 2\nAa: 1\n",
+];
