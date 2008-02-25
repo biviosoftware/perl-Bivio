@@ -278,9 +278,12 @@ sub super_for_method {
     Bivio::IO::Alert->warn_deprecated('call the super explicitly');
     $method ||= $proto->my_caller;
     foreach my $a (@{$proto->inheritance_ancestors}) {
-	my($sub) = \&{$a . '::' . $method};
-	next unless defined(&$sub);
-	return ($sub, $a);
+	my($sub) = $a . '::' . $method;
+	do {
+	    no strict 'refs';
+	    next unless defined(&$sub);
+	};
+	return (\&$sub, $a);
     }
     Bivio::Die->die($method, ': not implemented by SUPER');
     # DOES NOT RETURN
