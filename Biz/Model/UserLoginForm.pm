@@ -230,15 +230,16 @@ sub validate {
 
 sub validate_login {
     my($self, $model_or_login, $field) = @_;
+    $field ||= 'login';
     my($model) = ref($model_or_login) ? $model_or_login : $self;
-    $model->internal_put_field(login => $model_or_login)
+    $model->internal_put_field($field => $model_or_login)
 	if defined($model_or_login) && !ref($model_or_login);
     $model->internal_put_field(validate_called => 1);
-    my($login) = $model->get($field || 'login');
+    my($login) = $model->get($field);
     return undef
 	unless defined($login);
     my($realm, $err) = $self->internal_validate_login_value($login);
-    $model->internal_put_error(login => $err)
+    $model->internal_put_error($field => $err)
 	if $err;
     $model->internal_put_field(realm_owner => $realm);
     return $realm;
