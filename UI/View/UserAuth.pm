@@ -92,13 +92,7 @@ sub missing_cookies {
 
 sub password {
     return shift->internal_body(vs_simple_form(UserPasswordForm => [
-	['UserPasswordForm.old_password', {
-	    row_control => [
-		'Model.UserPasswordForm', 'display_old_password',
-	    ],
-	}],
-	'UserPasswordForm.new_password',
-	'UserPasswordForm.confirm_new_password',
+        _password_fields('UserPasswordForm'),
     ]));
 }
 
@@ -161,6 +155,19 @@ vs_site_name(); Support
 EOF
 }
 
+sub settings_form {
+    return shift->internal_body(vs_simple_form(UserSettingsForm => [
+	'UserSettingsForm.User.first_name',
+	'UserSettingsForm.User.middle_name',
+	'UserSettingsForm.User.last_name',
+	['UserSettingsForm.RealmOwner.name', {
+	    row_control => [qw(Model.UserSettingsForm show_name)],
+	}],
+	'-password',
+        _password_fields('UserSettingsForm'),
+    ]));
+}
+
 sub _mail {
     my($self, $form, $body) = @_;
     my($n) = $self->my_caller;
@@ -169,6 +176,17 @@ sub _mail {
 	mail_subject => vs_text_as_prose($n . '_subject'),
     );
     return $self->internal_body_prose($body);
+}
+
+sub _password_fields {
+    my($m) = @_;
+    return (
+	["$m.old_password", {
+	    row_control => ["Model.$m", 'display_old_password'],
+	}],
+	"$m.new_password",
+	"$m.confirm_new_password",
+    );
 }
 
 1;
