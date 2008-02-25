@@ -381,14 +381,10 @@ sub vs_simple_form {
 			$x = [$_->put_unless_exists(cell_colspan => 2)];
 		    }
 		    elsif ($_ =~ s/^-//) {
-			$x = [String(
-			    vs_text($form, 'separator', $_),
-			    0,
-			    {
-				cell_colspan => 2,
-				cell_class => 'sep',
-			    },
-			)];
+			$x = [Prose(vs_text($form, 'separator', $_), {
+			    cell_colspan => 2,
+			    cell_class => 'sep',
+			})];
 		    }
 		    elsif ($_ =~ s/^\*//) {
 			$x = [StandardSubmit(
