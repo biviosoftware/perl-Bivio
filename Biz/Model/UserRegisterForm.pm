@@ -50,12 +50,16 @@ sub internal_initialize {
         version => 1,
 	visible => [
 	    'Email.email',
-	    map(+{
-		name => "RealmOwner.$_",
+	    {
+		name => 'RealmOwner.display_name',
 		constraint => 'NONE',
-	    }, qw(display_name password)),
+	    },
 	],
 	other => [
+	    {
+		name => 'RealmOwner.password',
+		constraint => 'NONE',
+	    },
 	    {
 		name => 'uri',
 		type => 'String',
