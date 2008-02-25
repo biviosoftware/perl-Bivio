@@ -776,7 +776,7 @@ sub _cfg_user_auth {
 		     => 'USER_CREATE'],
 		[xlink_user_logged_in => 'LOGOUT'],
 	    ),
-	    [want_user_state_settings => 0],
+	    [want_user_settings => 0],
 	],
 	Font => [
 	    [user_state => ['120%', 'nowrap']],

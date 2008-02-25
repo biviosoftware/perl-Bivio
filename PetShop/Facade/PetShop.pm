@@ -143,7 +143,7 @@ __PACKAGE__->new({
 	    [qw(GENERAL ADMINISTRATOR ADM_SUBSTITUTE_USER)],
 	    [qw(USER ADMINISTRATOR USER_ACCOUNT_EDIT)],
 	]],
-	[want_user_state_settings => 1],
+	[want_user_settings => 1],
     ],
     Text => [
 	[bunit_simple => 'simple text'],
