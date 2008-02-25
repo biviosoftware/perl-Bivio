@@ -30,6 +30,7 @@ req()->set_realm('btest_read');
 		    [qw(unit_bunit auth_user name)],
 		) {
 		    assert_equals(shift(@$c), req()->get_nested(@$c));
+		    assert_not_equals(1, 2);
 		}
 		return 1;
 	    },
