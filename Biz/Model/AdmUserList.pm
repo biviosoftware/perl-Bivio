@@ -98,10 +98,6 @@ sub internal_initialize {
 		type => 'Line',
 		constraint => 'NOT_NULL',
 	    },
-	    {
-	        name => 'User.last_name_sort',
-	        in_select => '0',
-	    },
 	],
     };
 }
