@@ -60,7 +60,17 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
 	xhtml_header_right => Join([
 #TODO: Unless this is done this way, the boxes don't align..
-	    DIV_user_state(HelpWiki()),
+	    DIV_user_state(Join([
+		HelpWiki(),
+		Link(
+		    vs_text_as_prose('task_menu.title.USER_SETTINGS_FORM'),
+		    'USER_SETTINGS_FORM',
+		    {
+			class => 'settings',
+			control => vs_constant('want_user_state_settings'),
+		    },
+		),
+	    ])),
 	    vs_text_as_prose('xhtml_user_state'),
 	]),
 	xhtml_main_left => '',
