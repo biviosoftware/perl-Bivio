@@ -633,6 +633,7 @@ body.help_wiki_iframe_body {
   width: 41em;
   z-index: 1;
 }
+div.user_state a.settings,
 a.help_wiki_open,
 a.help_wiki_add {
   Font('user_state');
