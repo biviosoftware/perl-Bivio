@@ -82,7 +82,7 @@ sub AUTOLOAD {
 
 sub builtin_assert_contains {
     # Calls Bivio::IO::Ref::nested_contains.  Returns 1.
-    return _assert_expect(@_);
+    return _assert_expect(0, @_);
 }
 
 sub builtin_assert_eq {
@@ -92,10 +92,11 @@ sub builtin_assert_eq {
 }
 
 sub builtin_assert_equals {
-    # Asserts expected equals actual using Bivio::IO::Ref->nested_equals.
-    # If I<expect> is a regexp_ref and I<actual> is a string or string_ref, will
-    # use I<expect> as a regexp.   Returns 1.
-    return _assert_expect(@_);
+    return _assert_expect(0, @_);
+}
+
+sub builtin_assert_not_equals {
+    return _assert_expect(1, @_);
 }
 
 sub builtin_auth_realm {
@@ -421,12 +422,13 @@ sub run_unit {
 }
 
 sub _assert_expect {
-    my($self, $expect, $actual) = @_;
-    my($m) = $self->my_caller eq 'builtin_assert_eq'
+    my($invert, $self, $expect, $actual) = @_;
+    my($m) = $self->my_caller eq 'builtin_assert_equals'
 	? 'nested_differences' : 'nested_contains';
     my($res) = Bivio::IO::Ref->$m($expect, $actual);
-    Bivio::Die->throw_quietly(DIE => "expected != actual:\n$$res")
-        if $res;
+    Bivio::Die->throw_quietly(
+	DIE => "expected @{[$invert ? '=' : '!=']} actual:\n$$res",
+    ) if $invert xor $res;
     return 1;
 }
 
