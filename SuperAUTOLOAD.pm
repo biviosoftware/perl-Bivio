@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
+Bivio::IO::Alert->warn_deprecated('delegate AUTOLOAD explictly');
 
 sub import {
     my($pkg) = caller();
