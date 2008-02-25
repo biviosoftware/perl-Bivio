@@ -67,7 +67,10 @@ sub internal_xhtml_adorned_attrs {
 		    'USER_SETTINGS_FORM',
 		    {
 			class => 'settings',
-			control => vs_constant('want_user_state_settings'),
+			control => And(
+			    vs_constant('want_user_settings'),
+			    ['user_state', '->eq_logged_in'],
+			),
 		    },
 		),
 	    ])),
