@@ -139,7 +139,7 @@ sub _cfg_base {
 	    }],
 	    [my_site_redirect_map => []],
 	],
-	FormError => [
+ 	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
 	    [EXISTS => 'vs_fe("label"); already exists in our database.'],
 	    [NOT_FOUND => 'vs_fe("label"); was not found in our database.'],
@@ -195,6 +195,7 @@ sub _cfg_base {
 	    [display_name => 'Your Full Name'],
 	    [first_name => 'First Name'],
 	    [middle_name => 'Middle Name'],
+	    [last_name => 'Last Name'],
 	    [street1 => 'Street Line 1'],
 	    [street2 => 'Street Line 2'],
 	    [city => 'City'],
@@ -775,11 +776,13 @@ sub _cfg_user_auth {
 		     => 'USER_CREATE'],
 		[xlink_user_logged_in => 'LOGOUT'],
 	    ),
+	    [want_user_state_settings => 0],
 	],
 	Font => [
 	    [user_state => ['120%', 'nowrap']],
 	],
 	FormError => [
+	    ['UserSettingsForm.User.first_name.NULL' => 'You must supply at least one of First, Middle, or Last Names.'],
 	    [[qw(ContextlessUserLoginForm UserLoginForm)] => [
 		'RealmOwner.password.PASSWORD_MISMATCH' => 
 		 q{The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".},
@@ -796,6 +799,7 @@ sub _cfg_user_auth {
 	    [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
 	    [USER_PASSWORD_RESET => '?/new-password'],
 	    [USER_PASSWORD => '?/password'],
+	    [USER_SETTINGS_FORM => '?/settings'],
 	    [ADM_SUBSTITUTE_USER => 'adm/su'],
 	    [DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
 	],
@@ -817,11 +821,15 @@ sub _cfg_user_auth {
 		    epilogue => q{P(XLink('login_no_context'));},
 		],
 	    ]],
-	    [UserPasswordForm => [
+	    [[qw(UserPasswordForm UserSettingsForm)] => [
 		old_password => 'Current Password',
 		new_password => 'New Password',
 		confirm_new_password => 'Re-enter New Password',
 		ok_button => 'Update',
+	    ]],
+	    [UserSettingsForm => [
+		'RealmOwner.name' => 'Nick Name',
+		'separator.password' => 'Fill in to change your password; otherwise, leave blank',
 	    ]],
 	    [UserPasswordQueryForm => [
 		ok_button => 'Reset Password',
@@ -853,6 +861,7 @@ sub _cfg_user_auth {
 		GENERAL_USER_PASSWORD_QUERY_ACK => 'Password Assistance Sent',
 		ADM_SUBSTITUTE_USER => 'Act as User',
 		SITE_ROOT => 'Home',
+		USER_SETTINGS_FORM => 'Personal Information and Settings',
 	    ]],
 	    [xlink => [
 		GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
@@ -870,6 +879,7 @@ sub _cfg_user_auth {
 	    ]],
 	    ['task_menu.title' => [
 		GENERAL_CONTACT => 'Contact',
+		USER_SETTINGS_FORM => 'Settings',
 	    ]],
 	    [prose => [
 		xhtml_user_state => q{DIV_user_state(
