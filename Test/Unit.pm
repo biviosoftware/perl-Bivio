@@ -266,7 +266,7 @@ sub builtin_options {
 
 sub builtin_random_string {
     # Return a random string
-    return shift->use('Bivio::Biz::Random')->hex_digits(shift || 8);
+    return shift->use('Biz.Random')->string(shift || 8);
 }
 
 sub builtin_read_file {
@@ -276,7 +276,7 @@ sub builtin_read_file {
 sub builtin_req {
     my($self, @args) = @_;
     # Calls Bivio::Test::Request::get_instance.
-    my($req) = $self->use('Bivio::Test::Request')->get_instance;
+    my($req) = $self->use('Test.Request')->get_instance;
     return @args ? $req->get_widget_value(@args) : $req;
 }
 
