@@ -350,6 +350,10 @@ sub merge_realm_role_category_map {
 		    [[qw(ANONYMOUS USER WITHDRAWN GUEST)] => 'MAIL_SEND'],
 	    ],
 	    [
+		feature_site_adm =>
+		    ['*' => 'FEATURE_SITE_ADM'],
+	    ],
+	    [
 		system_user_forum_email =>
 		    [ANONYMOUS => '-MAIL_SEND'],
 		    [USER => 'MAIL_SEND'],
