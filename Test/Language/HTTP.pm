@@ -895,8 +895,7 @@ sub _fixup_pattern {
     my($v) = @_;
     return $v
 	if ref($v) || $v !~ /^[a-z0-9_]+$|\.[\*\+]|^\^|\$$/;
-    $v =~ s/(.)_/$1./g
-        unless $v =~ /\W/;
+    $v =~ s/(.)_/$1./g;
     return qr{$v}i;
 }
 
