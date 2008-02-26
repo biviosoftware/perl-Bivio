@@ -80,10 +80,12 @@ options({
 	    # Logs out previous test
 	    [{login => undef}] => [undef],
 	    [{login => 'demo'}] => 'demo',
-	    [{login => 'user'}] => Bivio::DieCode->NOT_FOUND,
-	    [{login => 'club'}] => Bivio::DieCode->NOT_FOUND,
-	    [{}] => Bivio::DieCode->DIE,
-	    [{login => 'bad%realm!name'}] => Bivio::DieCode->NOT_FOUND,
+	    [{login => 'user'}] => NOT_FOUND(),
+	    [{login => 'club'}] => NOT_FOUND(),
+	    [{}] => DIE(),
+	    [{login => 'bad%realm!name'}] => NOT_FOUND(),
+	    [{login => 'invalidated_user'}] => DIE(),
+	    [{login => 'invalidated_user', via_mta => 1}] => [undef],
 	],
     ],
 ];
