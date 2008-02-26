@@ -37,6 +37,7 @@ sub init {
 	    'RealmOwner.name' => $self->SITE_REALM,
 	    'RealmOwner.display_name' => 'Web Site',
 	});
+	$self->new_other('RealmRole')->edit_categories('+feature_site_adm');
 	return;
     });
     $req->with_realm($self->SITE_REALM, sub {
