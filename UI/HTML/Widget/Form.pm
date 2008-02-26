@@ -92,6 +92,7 @@ sub initialize {
     my($fields) = $self->[$_IDI];
     return if $fields->{prefix};
     $self->initialize_attr(want_timezone => 1);
+    $self->initialize_attr(want_hidden_fields => 1);
 
     # Compute form_class from form_model or vice-versa
     my($class) = $self->unsafe_get('form_class');
@@ -191,13 +192,10 @@ sub render {
 	. ($model->get_info('file_fields')
 	       ? ' enctype="multipart/form-data"' : '')
         . ">\n";
-    $_VS->vs_new('TimezoneField')->render($source, $buffer)
-	if $self->render_simple_attr('want_timezone', $source);
-    my($hidden) = $model->get_hidden_field_values();
-    while (@$hidden) {
-	# hidden fields have been converted to literal, but not  escaped.
-	$$buffer .= '<input type="hidden" name="'.shift(@$hidden).'" value="'
-		.Bivio::HTML->escape(shift(@$hidden))."\" />\n";
+    if ($self->render_simple_attr('want_hidden_fields', $source)) {
+	$_VS->vs_new('TimezoneField')->render($source, $buffer)
+	    if $self->render_simple_attr('want_timezone', $source);
+	$$buffer .= _render_hidden($self, $model->get_hidden_field_values);
     }
     $fields->{value}->render($source, $buffer);
     $$buffer .= '</td>'
@@ -205,6 +203,22 @@ sub render {
     $$buffer .= '</form>'
 	if $fields->{end_tag};
     return;
+}
+
+sub _render_hidden {
+    my($self, $values) = @_;
+    return join(
+	'',
+	@{$self->map_by_two(
+	    sub {
+		my($k, $v) = @_;
+		return qq{<input type="hidden" name="$k" value="}
+		    . Bivio::HTML->escape_attr_value($v)
+		    . qq{" />\n};
+	    },
+	    $values,
+	)},
+    );
 }
 
 1;
