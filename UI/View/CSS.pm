@@ -146,6 +146,7 @@ form table.simple {
 }
 form table.simple td.field  {
   text-align: left;
+  vertical-align: top;
 }
 td.label {
   vertical-align: top;
