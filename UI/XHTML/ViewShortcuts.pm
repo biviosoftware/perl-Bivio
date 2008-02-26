@@ -149,27 +149,33 @@ sub vs_actions_column {
 }
 
 sub vs_alphabetical_chooser {
-    my(undef, $list_model) = @_;
+    my($self, $list_model) = @_;
+    $list_model = "Model.$list_model";
+    my($all) = $self->use($list_model)->LOAD_ALL_SEARCH_STRING;
     return Tag(div => Join([
 	map(
 	    Link(
 	        String($_),
 		URI({
-		    query => ["Model.$list_model", '->format_query', 'ANY_LIST',
-			      {search => $_ eq 'All' ? undef : $_}],
+		    query => [
+			$list_model, '->format_query',
+			'ANY_LIST', {search => $_ eq 'All' ? $all : $_},
+		    ],
 		}),
 		[sub {
 		     my(undef, $a, $search) = @_;
+		     $a = lc($a);
 		     return join(' ',
-			  $a eq 'All' ? 'all' : $a eq 'a' ? '' : 'want_sep',
-			  (lc($search || '') || 'All') eq $a ? 'selected' : (),
+			  $a eq lc($all) ? 'all' : (),
+			  $a eq 'a' ? () : 'want_sep',
+			  lc($search || $all) eq $a ? 'selected' : (),
 		     );
 		},
 		    $_,
-		    [["Model.$list_model", '->get_query'], 'search'],
+		    [[$list_model, '->get_query'], 'search'],
 	        ],
 	    ),
-	    'a'..'z', 'All',
+	    'A'..'Z', 'All',
 	),
     ]), 'alphabetical_chooser');
 }
