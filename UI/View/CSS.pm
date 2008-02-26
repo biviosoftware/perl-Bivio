@@ -147,9 +147,11 @@ form table.simple {
 form table.simple td.field  {
   text-align: left;
 }
-.field_err, .label_err, .err_title, .err {
-  Color('err');
+td.label {
   vertical-align: top;
+}
+.field_err, label_err, .err_title, .err {
+  Color('err');
 }
 form .err, form .err_title {
   Font('form_err');
@@ -348,9 +350,6 @@ td.footer_left {
   background: Icon('tools_sep'); left center no-repeat;
   padding-left: vs_add(Icon('tools_sep', 'width'), 4);px;
   margin-left: 4px;
-}
-.alphabetical_chooser a.all {
-  text-transform: uppercase;
 }
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
@@ -598,6 +597,12 @@ div.user_state {
 div.user_state a {
   Font('user_state');
 }
+div.user_state a.settings {
+  Font('user_state');
+  background: Icon('tools_sep'); right center no-repeat;
+  padding-right: vs_add(Icon('tools_sep', 'width'), 4);px;
+  margin-right: 4px;
+}
 EOF
 }
 
@@ -634,7 +639,6 @@ body.help_wiki_iframe_body {
   width: 41em;
   z-index: 1;
 }
-div.user_state a.settings,
 a.help_wiki_open,
 a.help_wiki_add {
   Font('user_state');
