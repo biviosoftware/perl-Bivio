@@ -8,8 +8,8 @@ submit_form(Save => {
     name => 'i1',
     class => 'Integer',
     default => 1,
-    'pick.*_0' => 1,
-    'pick.*_1' => 2,
+    qr{pick.*_0}i => 1,
+    qr{pick.*_1}i => 2,
 });
 follow_link_in_table('Type Name', 'Type Name', 'i1', 'Actions', 'Modify');
 submit_form(Save => {
@@ -23,7 +23,7 @@ submit_form({
 test_deviance(qr{duplicate.*pick list}is);
 submit_form({
     default => 1,
-    'pick.*_1$' => 1,
+    qr{pick.*_1$}is => 1,
 });
 test_conformance();
 follow_link('types');
@@ -36,12 +36,12 @@ follow_link('add.*schema');
 submit_form({
     name => 'Database1',
     prefix => 'd1',
-    'field.*_0$' => 'f1',
-    'type.*_0$' => 'i1',
-    'required.*_0$' => 0,
-    'field.*_1$' => 'f2',
-    'type.*_1$' => 'Date',
-    'required.*_1$' => 1,
+    qr{field.*_0$}is => 'f1',
+    qr{type.*_0$}is => 'i1',
+    qr{required.*_0$}is => 0,
+    qr{field.*_1$}is => 'f2',
+    qr{type.*_1$}is => 'Date',
+    qr{required.*_1$}is => 1,
 });
 follow_link('tables');
 follow_link('add.*table');
