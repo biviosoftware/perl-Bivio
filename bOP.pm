@@ -26,11 +26,17 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 5.86  2008/02/21 21:13:22  moeller
+  * Bivio::Biz::Model::UserLoginForm
+    added third argument to validate_login() for login field name
+  * Bivio::PetShop::View::Base
+    only render menu if FORUM
+
   Revision 5.85  2008/02/20 04:35:28  aviggio
   * Bivio::Biz::Model::MailReceiveDispatchForm
     restrict mail loop detection to a one hour window
