@@ -15,6 +15,7 @@ sub USAGE {
 usage: b-test-user [options] command [args..]
 commands
   init -- test users (adm, etc.)
+  leave_and_delete -- remove user from all realms and delete
 EOF
 }
 
@@ -31,6 +32,24 @@ sub init {
 	return;
     });
     return;
+}
+
+sub leave_and_delete {
+    my($self) = @_;
+    $self->req->assert_test;
+    my($uid) = $self->req('auth_user_id');
+    $self->model('RealmUser')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    $it->unauth_delete
+		unless $it->get('realm_id') eq $uid;
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+	{user_id => $uid},
+    );
+    return $self->new_other('RealmAdmin')->put(force => 1)->delete_user
 }
 
 1;
