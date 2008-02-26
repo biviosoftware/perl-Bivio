@@ -49,11 +49,11 @@ sub internal_initialize {
 }
 
 sub internal_pre_execute {
-    my($self, $method) = @_;
+    my($self) = @_;
     my($req) = $self->req;
     $self->internal_put_field(
 	show_name => $req->is_substitute_user || $req->is_super_user ? 1 : 0);
-    return;
+    return shift->SUPER::internal_pre_execute(@_);
 }
 
 sub validate {
