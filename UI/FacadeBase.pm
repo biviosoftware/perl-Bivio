@@ -204,7 +204,7 @@ sub _cfg_base {
 	    [country => 'Country'],
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
-	    [actions => 'Actions'],
+	    [[qw(actions list_actions)] => 'Actions'],
 	    [xlink => [
 		back_to_top => 'back to top',
 		SITE_ROOT => 'Home',
@@ -352,12 +352,6 @@ sub _cfg_crm {
 	    ]],
 	    [CRMForm => [
 		action_id => 'Action',
-		to => 'To',
-		cc => 'Cc',
-		subject => 'Subject',
-		body => 'Text',
-		Bivio::Biz::Model->get_instance('MailForm')
-		    ->map_attachments(sub {shift}) => 'Attach',
 		ok_button => 'Send',
 	    ]],
 	    ['task_menu.title' => [
@@ -478,14 +472,15 @@ sub _cfg_mail {
 		'RealmMail.subject' => 'Topic',
 		'RealmFile.modified_date_time' => 'First Post',
 		'RealmMail.from_email' => 'Author',
-	    ]],
+	    ]],	
+	    [to => 'To'],
+	    [cc => 'Cc'],
+	    [subject => 'Subject'],
+	    [body => 'Text'],
+	    [Bivio::Biz::Model->get_instance('MailForm')
+	        ->map_attachments(sub {shift}) => 'Attach'],
 	    [MailForm => [
-		to => 'To',
-		cc => 'Cc',
 		subject => 'Topic',
-		body => 'Text',
-		Bivio::Biz::Model->get_instance('MailForm')
-		    ->map_attachments(sub {shift}) => 'Attach',
 		ok_button => 'Send',
 	    ]],
 	    [prose => [
