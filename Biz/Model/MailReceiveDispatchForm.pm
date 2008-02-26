@@ -73,9 +73,10 @@ sub execute_ok {
 	    $self->internal_put_field(task_id => 'USER_MAIL_BOUNCE');
 	}
 	else {
-	    Bivio::IO::Alert->warn('Ignoring message from unknown user ('
-				       . $self->get('from_email')
-					   . ') with duplicate content.');
+	    Bivio::IO::Alert->warn(
+		$self->get('from_email'),
+		': ignoring duplicate message from unknown user',
+	    );
 	    $self->internal_put_field(task_id => _ignore_task($self, 1));
 	}
     }
