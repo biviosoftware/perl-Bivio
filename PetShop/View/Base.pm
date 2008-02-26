@@ -16,6 +16,7 @@ sub internal_xhtml_adorned {
 	    TaskMenu([
 		'FORUM_MAIL_THREAD_ROOT_LIST',
 		'FORUM_CRM_THREAD_ROOT_LIST',
+		'SITE_ADM_USER_LIST',
 	    ]),
 	),
     );
