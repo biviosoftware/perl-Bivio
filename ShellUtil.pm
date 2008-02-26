@@ -1339,13 +1339,16 @@ sub _setup_for_call {
     my($req) = Bivio::Agent::Request->get_current;
     Bivio::Die->die(ref($self), ": called without first creating a request")
 	unless $req;
-    $req->set_realm($self->get('realm')) if $self->unsafe_get('realm');
-    $req->set_user($self->get('user')) if $self->unsafe_get('user');
+    $self->put_request($req);
+    foreach my $x (qw(realm user)) {
+	next unless my $v =_parse_realm($self, $x);
+	my($m) = "set_$x";
+	$req->$m($v);
+    }
     foreach my $attr (qw(db)) {
 	Bivio::Die->die($attr, ': cannot pass to ', ref($self), ' call')
 	    if $self->unsafe_get($attr);
     }
-    $self->put_request($req);
     return;
 }
 
