@@ -18,10 +18,7 @@ sub VIEW_CLASS {
 }
 
 sub execute_cancel {
-    return {
-	task_id => 'next',
-	query => undef,
-    };
+    return shift->internal_return_value;
 }
 
 sub execute_empty {
@@ -57,10 +54,7 @@ sub execute_ok {
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
     $_V->execute($self->VIEW_CLASS . '->form_mail', $self->req);
-    return {
-	task_id => 'next',
-	query => undef,
-    };
+    return $self->internal_return_value;
 }
 
 sub get_realm_emails {
@@ -154,6 +148,13 @@ sub internal_pre_execute {
 sub internal_query_who {
     return $_MRW->unsafe_from_any((shift->req('query') || {})->{$_QUERY_WHO})
 	|| $_MRW->REALM;
+}
+
+sub internal_return_value {
+    return {
+	task_id => 'next',
+	query => undef,
+    };
 }
 
 sub is_reply {
