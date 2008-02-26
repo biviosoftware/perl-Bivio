@@ -614,6 +614,29 @@ EOF
     };
 }
 
+sub _cfg_site_adm {
+    return {
+	Task => [
+	    [SITE_ADM_USER_LIST => '?/admin-users'],
+	    [SITE_ADM_SUBSTITUTE_USER => '?/admin-su'],
+	    [SITE_ADM_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
+	],
+	Text => [
+	    [AdmUserList => [
+		display_name => 'Name',
+		empty_list_prose => qq{No user last names begin with "String([['Model.AdmUserList', '->get_query'], 'search']);".},
+	    ]],
+	    ['task_menu.title' => [
+		SITE_ADM_USER_LIST => 'Users',
+	    ]],
+	    [title => [
+		SITE_ADM_USER_LIST => 'All Users',
+		SITE_ADM_SUBSTITUTE_USER => 'Act as User',
+	    ]],
+	],
+    };
+}
+
 sub _cfg_tuple {
     return {
 	Task => [
@@ -828,7 +851,8 @@ sub _cfg_user_auth {
 		ok_button => 'Update',
 	    ]],
 	    [UserSettingsForm => [
-		'RealmOwner.name' => 'Nick Name',
+		'RealmOwner.name' => 'User Id',
+		'RealmOwner.name.desc' => 'Field only visible to system administrators.',
 		'separator.password' => 'Fill in to change your password; otherwise, leave blank',
 	    ]],
 	    [UserPasswordQueryForm => [

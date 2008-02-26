@@ -704,6 +704,37 @@ sub info_otp {
     ];
 }
 
+sub info_site_adm {
+    return [
+	[qw(
+	    SITE_ADM_USER_LIST
+            160
+            FORUM
+            ADMIN_READ&FEATURE_SITE_ADM
+            Model.AdmUserList->execute_load_page
+            View.SiteAdm->user_list
+        )],
+	[qw(
+	    SITE_ADM_SUBSTITUTE_USER
+	    161
+	    FORUM
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADM&SUPER_USER_TRANSIENT
+	    Model.SiteAdmSubstituteUserForm
+            View.SiteAdm->substitute_user_form
+	    next=MY_SITE
+        )],
+	[qw(
+	    SITE_ADM_SUBSTITUTE_USER_DONE
+	    162
+	    FORUM
+	    ANYBODY&FEATURE_SITE_ADM
+	    Action.UserLogout
+	    su_task=SITE_ADM_USER_LIST
+	)],
+#163-169
+    ];
+}
+
 sub info_tuple {
     Bivio::IO::Config->introduce_values({
 	'Bivio::Biz::Model::RealmMail' => {
