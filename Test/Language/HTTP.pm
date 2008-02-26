@@ -894,7 +894,7 @@ sub _fixup_form_fields {
 sub _fixup_pattern {
     my($v) = @_;
     return $v
-	if ref($v) || $v !~ /^[a-z0-9_]+$|\.[\*\+]|^\^|\$$/;
+	if ref($v) || $v =~ /^\(\?/s || $v !~ /^[a-z0-9_]+$|\.[\*\+]|^\^|\$$/;
     $v =~ s/(.)_/$1./g;
     return qr{$v}i;
 }
