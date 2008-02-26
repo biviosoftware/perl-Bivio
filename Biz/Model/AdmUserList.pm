@@ -1,28 +1,28 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::AdmUserList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_NAME_COLS) = [map("User.${_}_name", qw(last first middle))];
+my($_U) = __PACKAGE__->use('Model.User');
+my($_L) = __PACKAGE__->use('Type.Line');
 
 sub LOAD_ALL_SEARCH_STRING {
-    # : string
-    # Returns string used for load all.
     return 'All';
 }
 
+sub NAME_SORT_COLUMNS {
+    return [@$_NAME_COLS];
+}
+
 sub internal_initialize {
-    # (self) : hash_ref
-    # Returns config
+    my($self) = @_;
     return {
 	version => 1,
 	can_iterate => 1,
-	order_by => [
-	    'User.last_name',
-	    'User.first_name',
-	    'User.middle_name',
-	],
+	order_by => $self->NAME_SORT_COLUMNS,
         primary_key => ['User.user_id'],
 	other => [
 	    {
@@ -35,25 +35,16 @@ sub internal_initialize {
 }
 
 sub internal_post_load_row {
-    # (self, hash_ref) : boolean
-    # Format display_name.
     my($self, $row) = @_;
-    $row->{display_name} = Bivio::Biz::Model->get_instance('User')
-        ->concat_last_first_middle(
-	    @{$row}{map({"User.$_"} qw(last_name first_name middle_name))});
+    $row->{display_name} = $_U->concat_last_first_middle(@{$row}{@$_NAME_COLS});
     return 1;
 }
 
 sub internal_prepare_statement {
-    # (self, SQL.Statement, SQL.ListQuery) : undef
-    # Narrow the search of users by last name.
     my($self, $stmt, $query) = @_;
-    my($search) = $query->get('search');
-
-    return unless $search;
-
+    my($search) = $_L->from_literal($query->get('search'));
+    return unless defined($search);
     if ($search eq $self->LOAD_ALL_SEARCH_STRING) {
-#TODO: Why is this here?
 	$query->put(count => $self->LOAD_ALL_SIZE);
     }
     elsif ($search =~ /^\d+$/) {
@@ -62,7 +53,6 @@ sub internal_prepare_statement {
     else {
 	$stmt->where($stmt->LIKE('User.last_name_sort', lc($search) . '%'));
     }
-
     return;
 }
 
