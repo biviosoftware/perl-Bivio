@@ -13,7 +13,10 @@ our($_TRACE);
 my($_E) = Bivio::Type->get_instance('Email');
 my($_DT) = Bivio::Type->get_instance('DateTime');
 Bivio::IO::Config->register(my $_CFG = {
-    ignore_dashes_in_recipient => 0,
+    ignore_dashes_in_recipient => Bivio::IO::Config->if_version(
+	5 => sub {1},
+	sub {0},
+    ),
 });
 my($_ONE_HOUR_SECONDS) = 3600;
 

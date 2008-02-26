@@ -18,9 +18,6 @@ sub dev_overrides {
 sub merge_overrides {
     my($proto) = @_;
     return Bivio::IO::Config->merge_list({
-	'Bivio::Biz::Model::MailReceiveDispatchForm' => {
-	    ignore_dashes_in_recipient => 1,
-	},
 	'Bivio::Ext::DBI' => {
 	    database => 'pet',
 	    user => 'petuser',
@@ -70,7 +67,7 @@ sub merge_overrides {
 	},
     },
     $proto->default_merge_overrides({
-	version => 4,
+	version => 5,
 	root => 'Bivio/PetShop',
 	prefix => 'pet',
 	owner => 'bivio Software, Inc.',
