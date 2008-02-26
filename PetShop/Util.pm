@@ -428,6 +428,8 @@ sub _init_demo_users {
 	    $self->new_other('OTP')->reset_user;
 	}
     }
+    $self->create_test_user('invalidated_user');
+    $req->get('auth_user')->invalidate_password;
     return;
 }
 
