@@ -42,16 +42,26 @@ sub form_mail {
     );
 }
 
+sub internal_name {
+    return shift->simple_package_name;
+}
+
+sub internal_part_list {
+    return DIV_parts(
+	With(['->get_mail_part_list'],
+	     If(['!', '->has_mime_cid'],
+		_thread_list_director(),
+	    ),
+	 ),
+    );
+}
+
 sub internal_reply_list {
     return qw(realm all author);
 }
 
-sub pre_compile {
-    my($self) = shift;
-    my(@res) = $self->SUPER::pre_compile(@_);
-#TODO: Remove "base" is deprecated
-    return @res
-	unless $self->internal_base_type =~ /^(xhtml|base)$/;
+sub internal_standard_tools {
+    my($self) = @_;
     $self->internal_put_base_attr(tools => TaskMenu([
         {
 	    task_id => _name($self, 'FORUM_XX_FORM'),
@@ -68,6 +78,16 @@ sub pre_compile {
 	    query => undef,
 	},
     ]));
+    return;
+}
+
+sub pre_compile {
+    my($self) = shift;
+    my(@res) = $self->SUPER::pre_compile(@_);
+#TODO: Remove "base" is deprecated
+    return @res
+	unless $self->internal_base_type =~ /^(xhtml|base)$/;
+    $self->internal_standard_tools;
     return @res;
 }
 
@@ -137,20 +157,13 @@ sub thread_root_list {
 
 sub _msg {
     my($self, $msg_only) = @_;
-    my($parts) = DIV_parts(
-	With(['->get_mail_part_list'],
-	     If(['!', '->has_mime_cid'],
-		_thread_list_director($self),
-	    ),
-	 ),
-    );
     return WithModel(
 	$msg_only ? 'RealmMailList' : _name($self, 'XxThreadList'),
 	Join([
 	    DIV_msg_sep('', $msg_only ? () : {control =>['->get_cursor']}),
 	    DIV_msg(
-		$msg_only ? $parts : Join([
-		    $parts,
+		$msg_only ? $self->internal_part_list : Join([
+		    $self->internal_part_list,
 		    RoundedBox(
 			TaskMenu([
 			    map(+{
@@ -170,14 +183,13 @@ sub _msg {
 
 sub _name {
     my($self, $name) = @_;
-    my($c) = $self->simple_package_name;
+    my($c) = $self->internal_name;
     $name =~ s{xx}{$name =~ /XX/ ? uc($c) : $name =~ /xx/ ? lc($c) : $c}ie
 	|| die($name, ': bad name');
     return $name;
 }
 
 sub _thread_list_director {
-    my($self) = @_;
     return Director(
 	 ['mime_type'],
 	 {
