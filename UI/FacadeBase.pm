@@ -234,7 +234,13 @@ sub _cfg_base {
 				String(['auth_user', 'display_name']),
 				"<br />\nClick here to exit.\n",
 			    ])),
-			    'LOGOUT',
+			    Bivio::IO::Config->if_version(
+                                5 => sub {URI({
+                                    task_id => 'SITE_ADM_SUBSTITUTE_USER_DONE',
+                                    realm => vs_constant('site_realm_name'),
+                                })},
+                                sub {'LOGOUT'},
+                            ),
 			    'su',
 			),
 			Link(' ', '/', 'logo'),
@@ -799,7 +805,10 @@ sub _cfg_user_auth {
 		     => 'USER_CREATE'],
 		[xlink_user_logged_in => 'LOGOUT'],
 	    ),
-	    [want_user_settings => 0],
+	    [want_user_settings => $_C->if_version(
+		5 => sub {1},
+		sub {0},
+	    )],
 	],
 	Font => [
 	    [user_state => ['120%', 'nowrap']],
