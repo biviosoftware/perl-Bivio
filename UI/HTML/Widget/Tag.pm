@@ -42,14 +42,6 @@ sub control_on_render {
 
 sub initialize {
     my($self) = @_;
-    unless ($self->unsafe_get('html_attrs')) {
-	my($a) = $self->map_each(sub {
-            my(undef, $k) = @_;
-	    return $k =~ /^[A-Z]+[0-9]?$/ ? $k : ();
-	});
-	$self->put(html_attrs => vs_html_attrs_merge([sort(@$a)]))
-	    if @$a;
-    }
     $self->unsafe_initialize_attr('value');
     $self->put_unless_exists(tag_if_empty => 1)
 	if _empty($self->get('tag'), $self->unsafe_get('value'));
