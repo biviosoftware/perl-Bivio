@@ -210,6 +210,7 @@ sub merge_class_loader {
 		    Mail => ['Bivio::Mail'],
 		    MIME => ['Bivio::MIME'],
 		    Model => ['Bivio::Biz::Model'],
+		    Search => ['Bivio::Search'],
 		    map(
 			("${_}Widget" => [
 			    $_ && $_ ne 'CSS' ? "Bivio::UI::${_}::Widget" : (),
