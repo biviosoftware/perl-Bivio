@@ -1,31 +1,13 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::ControlBase;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget::ControlBase';
-
-# C<Bivio::UI::HTML::Widget::ControlBase> renders common html attributes.
-#
-#
-#
-# class : string []
-#
-# HTML class attribute.
-#
-# id : string []
-#
-# HTML id attribute.
-#
-# html_attrs : array_ref [[class id]]
-#
-# List of attributes to render.
+use Bivio::Base 'HTMLWidget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub control_on_render {
-    # (self, any, string_ref) : undef
-    # Render class and id.
     my($self, $source, $buffer) = @_;
     $$buffer .= $_VS->vs_html_attrs_render(
 	$self, $source, $self->unsafe_get('html_attrs'));
@@ -33,15 +15,20 @@ sub control_on_render {
 }
 
 sub initialize {
-    # (self) : undef
-    # Initializes class attribute.
     my($self) = @_;
+    unless ($self->unsafe_get('html_attrs')) {
+	my($a) = $self->map_each(sub {
+            my(undef, $k) = @_;
+	    return $k =~ /^[A-Z]+[0-9]?$/ ? $k : ();
+	});
+	$self->put(html_attrs => $_VS->vs_html_attrs_merge([sort(@$a)]))
+	    if @$a;
+    }
     $_VS->vs_html_attrs_initialize($self, $self->unsafe_get('html_attrs'));
     return shift->SUPER::initialize(@_);
 }
 
 sub internal_compute_new_args {
-    # (proto, array_ref, array_ref) : hash_ref
     my($proto, $required, $args) = @_;
     return {
 	map({
@@ -60,7 +47,6 @@ sub internal_compute_new_args {
 }
 
 sub internal_new_args {
-    # (proto, array_ref, array_ref) : hash_ref
     Bivio::IO::Alert->warn_deprecated('call internal_compute_new_args');
     return shift->internal_compute_new_args(@_);
 }
