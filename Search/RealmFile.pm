@@ -71,12 +71,8 @@ sub _from_application_pdf {
     my($path) = $rf->get_os_path;
     my $x = `pdfinfo $path 2>&1`;
     my($title) = !$? && $x =~ /^Title:\s*(.*)/im ? $1 : undef;
-    unless (defined($title)) {
-	my($ct) = $rf->get_content_type;
-	return if defined($_TYPE_OK->{$ct}) && !$_TYPE_OK->{$ct};
-	Bivio::IO::Alert->warn($rf, ': pdfinfo error: ', $x);
-	$title = '';
-    }
+    $title = ''
+	unless defined($title);
     $x = `pdftotext $path - 2>&1`;
     if ($? || $x =~ /^Error:/s) {
 	Bivio::IO::Alert->warn($rf, ': pdftotext error: ', $x);
