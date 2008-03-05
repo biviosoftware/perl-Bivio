@@ -26,11 +26,88 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 5.87  2008/02/26 14:58:58  nagler
+  * Bivio::BConf
+    added feature_site_adm
+  * Bivio::Biz::Model::MailForm
+    added internal_return_value
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    v5: ignore_dashes_in_recipient is true
+    canonicalize warning
+  * Bivio::Biz::Model::UserCreateForm
+    use Bivio::Base
+  * Bivio::Biz::Model::UserLoginForm
+    fpc
+    via_mta with user with invalid password, don't login, but don't die
+  * Bivio::Biz::Model::UserRegisterForm
+    RealmOwner.password is an other, not visible field
+  * Bivio::Delegate::SimplePermission
+    added feature_site_adm
+  * Bivio::Delegate::TaskId
+    added USER_SETTINGS_FORM
+    added site_adm component
+  * Bivio::PetShop::BConf
+    v5: ignore_dashes_in_recipient is true
+  * Bivio::PetShop::Facade::PetShop
+    support for UserSettingsForm
+    want_user_state_settings => want_user_settings
+    want_user_settings defaults to one in v5
+  * Bivio::PetShop::Util
+    added invalidated_user
+  * Bivio::PetShop::View::Base
+    added SITE_ADM_USER_LIST
+  * Bivio::ShellUtil
+    _setup_for_call was not calling _parse_realm for user/realm
+  * Bivio::SuperAUTOLOAD
+    deprecated
+  * Bivio::Test::Language::HTTP
+    always replace underscores
+    _fixup_pattern does not escape underscores if a stringified regexp
+  * Bivio::Test::Unit
+    addded builtin_assert_not_equals
+    builtin_random_string calls string, not hex_digits
+  * Bivio::Type::WikiName
+    task_to_help => title_to_help
+  * Bivio::UI::FacadeBase
+    support for UserSettingsForm
+    want_user_state_settings => want_user_settings
+    added site_adm component
+    v5: exit substitute user is SITE_ADM_SUBSTITUTE_USER_DONE
+    move to/cc/subject to outer level
+  * Bivio::UI::HTML::Widget::Form
+    added want_hidden_fields
+  * Bivio::UI::View::CSS
+    *** empty log message ***
+    added padding .5em to form .submit
+    alphabetical_chooser: leave case alone
+    labels vertical-align: top
+    align form fields
+  * Bivio::UI::View::Mail
+    added internal_standard_tools & internal_part_list
+  * Bivio::UI::View::ThreePartPage
+    added USER_SETTINGS_FORM link
+    want_user_state_settings => want_user_settings & added user_state qualifier
+  * Bivio::UI::View::UserAuth
+    added settings_form
+  * Bivio::UI::ViewShortcuts
+    added vs_render_widget
+  * Bivio::UI::XHTML::ViewShortcuts
+    Form separators are now Prose
+    vs_alphabetical_chooser: fixed to manage names (All)  properly
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    Fix to support Prose titles
+  * Bivio::UNIVERSAL
+    fixed call_super_before explicitly
+  * Bivio::Util::SiteForum
+    added feature_site_adm to SITE_REALM
+  * Bivio::Util::TestUser
+    added leave_and_delete
+
   Revision 5.86  2008/02/21 21:13:22  moeller
   * Bivio::Biz::Model::UserLoginForm
     added third argument to validate_login() for login field name
