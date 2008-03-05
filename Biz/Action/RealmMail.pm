@@ -44,19 +44,23 @@ sub execute_reflector {
     my($self) = $req->get($proto->package_name);
     my($out, $rfid) = $self->get(qw(outgoing realm_file_id));
     my($rmb) = Bivio::Biz::Model->new($req, 'RealmMailBounce');
+    my($want_explicit_to) = $rmb->new_other('RowTag')->get_value(
+        $req->get('auth_id'), 'MAIL_LIST_WANT_TO_USER') ? 1 : 0;
     $rmb->new_other('RealmEmailList')->get_recipients(sub {
 	my($it) = @_;
 	# ASSUMES: Bivio::Mail::Outgoing does not copy body on new().
 	# Otherwise, we could blow out the memory if the list got too
 	# large.
-	$out->new($out)
+	my($msg) = $out->new($out)
 	    ->set_recipients($it->get('Email.email'), $req)
 	    ->set_header(
 		'Return-Path' => $rmb->return_path(
 		    $it->get(qw(RealmUser.user_id Email.email)),
 		    $rfid,
-		),
-	    )->enqueue_send($req);
+		));
+	$msg->set_header(To => $it->get('Email.email'))
+	    if $want_explicit_to;
+	$msg->enqueue_send($req);
 	return;
     });
     return;

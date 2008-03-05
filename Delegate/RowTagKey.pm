@@ -13,6 +13,7 @@ sub get_delegate_info {
 	RELATED_ID => 2,
 	DEFAULT_TUPLE_MONIKER => 3,
 	MAIL_SUBJECT_PREFIX => 4,
+	MAIL_LIST_WANT_TO_USER => 5,
 	LAST_RESERVED_VALUE => 99,
     ];
 }
