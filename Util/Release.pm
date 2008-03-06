@@ -86,6 +86,7 @@ Bivio::IO::Config->register(my $_CFG = {
 	[Bivio => b => 'bivio Software, Inc.'],
     ],
 });
+my($_R) = __PACKAGE__->use('IO.Ref');
 
 sub OPTIONS {
     # build_stage : string [b]
@@ -136,13 +137,16 @@ commands:
     build package ... -- compile & build rpms
     build_tar project ... -- build perl tar distribution
     create_stream pkg... -- generate a stream from a list of pkg names
+    get_projects -- returns a hash_ref of projects
     install package ... -- install rpms from network repository
     install_facades facades_dir -- install facade files into local_file_root
-    install_stream stream_name -- installs all rpms in a stream
     install_host_stream -- executes "-force install_stream $(hostname)"
+    install_stream stream_name -- installs all rpms in a stream
     install_tar project ... -- install perl tars from network repository
     list [uri] -- displays packages in network repository
     list_installed match -- lists packages which match pattern
+    list_projects -- get project list as an array_ref
+    list_projects_el -- get project list for Lisp setq
     list_updates stream_name -- list packages that need to updated
     update stream_name -- retrieve and apply updates
 EOF
@@ -465,6 +469,10 @@ sub list_installed {
     return join('', grep(/$match/i, split(/(?<=\n)/,
 	`rpm -qa --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE} \%{GROUP} %{BUILDHOST}\\n'`
        )));
+}
+
+sub list_projects {
+    return $_R->nested_copy($_CFG->{projects});
 }
 
 sub list_projects_el {
