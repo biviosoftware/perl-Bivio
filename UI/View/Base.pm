@@ -54,7 +54,8 @@ sub mail {
     my($self) = @_;
     view_class_map('MailWidget');
     view_shortcuts($self->VIEW_SHORTCUTS);
-    view_declare(qw(mail_body mail_to mail_headers_object mail_subject));
+    view_declare(
+	qw(mail_body mail_to mail_cc mail_headers_object mail_subject));
     view_put(
 	mail_from => Mailbox(
 	    vs_text('support_email'),
@@ -65,6 +66,7 @@ sub mail {
     view_main(Message({
 	from => view_widget_value('mail_from'),
 	to => view_widget_value('mail_to'),
+	cc => view_widget_value('mail_cc'),
 	subject => view_widget_value('mail_subject'),
 	body => view_widget_value('mail_body'),
 	recipients => view_widget_value('mail_recipients'),
