@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 5.88  2008/03/05 22:38:57  david
+  * Bivio::BConf
+    added Search map
+  * Bivio::Biz::Action::RealmMail
+    added MAIL_LIST_WANT_TO_USER
+  * Bivio::Delegate::RowTagKey
+    added MAIL_LIST_WANT_TO_USER
+  * Bivio::Search::RealmFile
+    don't print errors when title not found by pdfinfo
+  * Bivio::UI::HTML::Widget::Tag
+    uppercase attributes pushed up to ControlBase
+
   Revision 5.87  2008/02/26 14:58:58  nagler
   * Bivio::BConf
     added feature_site_adm
