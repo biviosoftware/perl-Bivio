@@ -4,11 +4,12 @@ test_setup('PetShop');
 home_page();
 login_as('root');
 visit_uri('/site/admin-users');
-follow_link('User, Demo');
+follow_link('All', 'User, Demo');
 visit_uri('/pub/eg1');
 follow_link('settings');
 verify_text(qr{Last Name.*value="User"}s);
 follow_link('exit');
+follow_link('All');
 verify_text('User, Btest_read');
 
 
