@@ -95,6 +95,12 @@ sub process_payment {
                     $payment->get_model('ECCreditCardPayment')
                         ->get('processor_response') || 'Card declined');
             }
+	    else {
+		Bivio::IO::Alert->info('credit card processed: ',
+		    join(' ', $payment->get(qw(realm_id user_id)),
+			'$' . $req->use('Type.Amount')
+			    ->to_literal($payment->get('amount'))));
+	    }
         });
     });
     return 1;
@@ -112,7 +118,7 @@ sub _possible_double_click {
     # Returns true if the form was most likely double clicked.
     #
     # A double click occurs if the creation_date_time of the most recent
-    # payment is very new.  The description must be the same.
+    # payment is very new.
     my($result) = 0;
     $form->new_other('ECPayment')->do_iterate(sub {
 	my($payment) = @_;
@@ -125,7 +131,7 @@ sub _possible_double_click {
 	    $result = 1;
 	}
 	return 0;
-    }, 'iterate_start', 'creation_date_time');
+    }, 'iterate_start', 'creation_date_time DESC');
     return $result;
 }
 
