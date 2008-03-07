@@ -16,20 +16,8 @@ sub substitute_user_form {
 
 sub user_list {
     my($self, $extra_columns) = @_;
-    return shift->internal_put_base_attr(
-	tools => vs_alphabetical_chooser('AdmUserList'),
-	body => vs_paged_list(AdmUserList => [
-	    [display_name => {
-		column_order_by => $_AUL->NAME_SORT_COLUMNS,
-		want_sorting => 1,
-                wf_list_link => {
-                    query => 'THIS_DETAIL',
-                    task => 'SITE_ADM_SUBSTITUTE_USER',
-                },
-	    }],
-	    @{$extra_columns || []},
-	]),
-    );
+    vs_user_email_list('AdmUserList', $extra_columns);
+    return;
 }
 
 1;
