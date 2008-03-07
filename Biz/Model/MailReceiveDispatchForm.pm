@@ -12,6 +12,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_E) = Bivio::Type->get_instance('Email');
 my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_MAX_COMPARE_SIZE) = 1000;
 Bivio::IO::Config->register(my $_CFG = {
     ignore_dashes_in_recipient => Bivio::IO::Config->if_version(
 	5 => sub {1},
@@ -184,33 +185,41 @@ sub parse_recipient {
     return ($name, $op, $plus_tag, $domain);
 }
 
+sub _body {
+    my($content) = @_;
+    if ((my $start = index($$content, "\n\n")) > 0) {
+	$start += 2;
+	if ((my $len = length($$content) - $start) > 0) {
+	    $len = $_MAX_COMPARE_SIZE
+		if $len > $_MAX_COMPARE_SIZE;
+	    return substr($$content, $start, $len);
+	}
+    }
+    Bivio::IO::Alert->warn(
+	(/Message-Id:\s*(\S+)/)[0],
+	': message contains empty body or is not valid RFC822',
+    );
+    return $content . '';
+}
+
 sub _detect_mail_loop {
     my($self) = @_;
     my($rml) = $self->new_other('RealmMailList');
-    $rml->unsafe_load_this_or_first;
-    if ($rml->get_result_set_size) {
+    if ($rml->unsafe_load_this_or_first) {
 	my($rf) = $rml->get_model('RealmFile');
 	return 0
 	    if $_DT->compare($_DT->add_seconds($rf->get('modified_date_time'),
 					       $_ONE_HOUR_SECONDS),
 			     $_DT->now) == -1;
 	my($rfid) = $rf->get('realm_file_id');
-	my($last_body) = $1
-	    if ${$rf->get_content} =~ /\n\n(.*)$/s;
-	my($body) = $1
-	    if ${$self->get('message')->{content}} =~ /\n\n(.*)$/s;
+	my($last_body) = _body($rf->get_content);
+	my($body) = _body($self->get('message')->{content});
 	if ($body && $last_body && $body eq $last_body) {
 	    Bivio::IO::Alert->warn('Mail loop detected for realm_file_id '
 				       . $rfid . ":\n",
 				   ${$self->get('message')->{content}});
 	    return $rfid
 	}
-	Bivio::IO::Alert->info("No last message body parsed:\n",
-			       ${$rf->get_content})
-		unless $last_body;
-	Bivio::IO::Alert->info("No message body parsed:\n",
-			       ${$self->get('message')->{content}})
-		unless $body;
     }
     return 0;
 }
