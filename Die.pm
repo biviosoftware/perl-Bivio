@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Die;
 use strict;
@@ -30,6 +30,7 @@ our($_TRACE);
 our($_CURRENT_SELF);
 our($_IN_CATCH);
 our($_IN_HANDLE_DIE);
+our($_CATCH_QUIETLY);
 my($_STACK_TRACE) = 0;
 my($_STACK_TRACE_ERROR) = 0;
 my($_STACK_TRACE_SEPARATOR) = join('', '      -'x10, "\n");
@@ -124,6 +125,11 @@ sub catch {
     my $res = _eval($code);
     $$die = _catch_done($proto);
     return $$die ? undef : $res;
+}
+
+sub catch_quietly {
+    local($_CATCH_QUIETLY) = 1;
+    return shift->catch(@_);
 }
 
 sub destroy {
@@ -583,7 +589,7 @@ sub _print_stack {
     # Prints the stack trace.
     my($self) = @_;
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
-    return if $sp || $tq;
+    return if $sp || $tq || $_CATCH_QUIETLY;
     Bivio::IO::Alert->print_literally(
         $self->as_string, "\n",
         $self->unsafe_get('stack'),
