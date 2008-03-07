@@ -1,8 +1,8 @@
-# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Language::HTTP;
 use strict;
-use Bivio::Base 'Bivio::Test::Language';
+use Bivio::Base 'Test.Language';
 use Bivio::Die;
 use Bivio::Ext::LWPUserAgent;
 use Bivio::IO::Config;
@@ -401,6 +401,17 @@ sub new {
     return $self;
 }
 
+sub poll_page {
+    my($self, $method, @args) = @_;
+    foreach my $x (1..5) {
+	$self->reload_page;
+	return if $self->unsafe_op(@_);
+	sleep(1);
+    }
+    $self->$method(@args);
+    return;
+}
+
 sub random_integer {
     return shift->use('Bivio::Biz::Random')->integer(@_);
 }
@@ -557,8 +568,7 @@ sub unsafe_get_uri {
 
 sub unsafe_op {
     my($self, $method, @args) = @_;
-    # Calls method, and if it dies, returns false.  Otherwise, true.
-    return Bivio::Die->catch(sub {$self->$method(@args)}) ? 0 : 1;
+    return Bivio::Die->catch_quietly(sub {$self->$method(@args)}) ? 0 : 1;
 }
 
 sub user_agent {
