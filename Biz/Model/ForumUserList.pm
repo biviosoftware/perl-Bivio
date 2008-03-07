@@ -28,10 +28,16 @@ sub internal_initialize {
 	    'Email.email',
 	    'RealmUser.role',
 	],
-	other => $self->internal_initialize_local_fields(
-	    [qw(administrator mail_recipient file_writer)],
-	    Boolean => 'NOT_NULL',
-	),
+	other => [
+	    @{$self->internal_initialize_local_fields(
+		[qw(administrator mail_recipient file_writer)],
+		Boolean => 'NOT_NULL',
+	    )},
+	    [
+		'Email.location',
+		[$self->get_instance('Email')->DEFAULT_LOCATION],
+	    ],
+	],
 	auth_id => ['RealmUser.realm_id'],
     });
 }
@@ -42,15 +48,6 @@ sub internal_post_load_row {
 	$row->{$x} = grep($_->equals_by_name($x), @{$row->{roles}}) ? 1 : 0;
     }
     return 1;
-}
-
-sub internal_prepare_statement {
-    my($self, $stmt) = @_;
-    $stmt->where($stmt->EQ(
-	'Email.location',
-	[$self->get_instance('Email')->DEFAULT_LOCATION],
-    ));
-    return shift->SUPER::internal_prepare_statement(@_);
 }
 
 1;
