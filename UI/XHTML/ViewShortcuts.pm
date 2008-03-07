@@ -501,6 +501,34 @@ sub vs_tuple_use_list_as_task_menu_list {
     };
 }
 
+sub vs_user_email_list {
+    my($proto, $model, $other_cols, $other_tools) = @_;
+    view_put(
+	xhtml_tools => Join([
+	    $proto->vs_alphabetical_chooser($model),
+	    @{$other_tools || []},
+	]),
+	xhtml_body => $proto->vs_paged_list(
+	    $model => [
+		[display_name => {
+		    column_order_by => Bivio::Biz::Model->get_instance($model)
+			->NAME_SORT_COLUMNS,
+		    want_sorting => 1,
+		    wf_list_link => {
+			query => 'THIS_DETAIL',
+			task => Bivio::IO::Config->if_version(
+			    5 => sub {'SITE_ADM_SUBSTITUTE_USER'},
+			    sub {'ADM_SUBSTITUTE_USER'},
+			),
+		    },
+		}],
+		'Email.email',
+		@{$other_cols || []},
+	    ]),
+    );
+    return;
+}
+
 sub _has_submit {
     my($proto, $rows) = @_;
     return grep(
