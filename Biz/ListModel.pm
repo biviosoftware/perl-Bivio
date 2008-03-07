@@ -942,7 +942,7 @@ sub unsafe_load_this {
 
 sub unsafe_load_this_or_first {
     my($self, $query) = @_;
-    return _load_this($self, $query, 1, 1);
+    return _load_this($self, $query, 1, 1) ? 1 : 0;
 }
 
 sub _assert_all {
