@@ -221,6 +221,7 @@ sub _thread_list_director {
 	 Link(
 	     vs_text_as_prose('MailPartList.attachment'),
 	     ['->format_uri_for_part', $self->PART_TASK],
+	     {class => 'download'},
 	 ),
      );
 }
