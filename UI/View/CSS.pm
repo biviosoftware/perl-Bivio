@@ -550,6 +550,9 @@ sub _site_mail {
   Color('form_sep-border');
   padding-top: 1ex;
 }
+.msg .attachment .download .label {
+  margin-right: .5em;
+}
 .msg .parts .forward, .msg .parts .byline {
   margin-top: 1ex;
   margin-bottom: 1ex;
