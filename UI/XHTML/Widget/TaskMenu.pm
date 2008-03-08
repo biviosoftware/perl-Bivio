@@ -105,7 +105,7 @@ sub render_tag_value {
     my($req) = $self->get_request;
     my($need_sep) = $self->get('_init')->($source);
     foreach my $w (@{$self->get('task_map')}) {
-	return
+	next
 	    if $w->can('control_is_on') && !$w->control_is_on($source);
 	my($cfg) = $w->get('_task_menu_cfg');
 	my($r) = $self->render_simple_value($cfg->{realm}, $source);
