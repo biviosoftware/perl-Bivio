@@ -63,12 +63,14 @@ sub execute_part {
 sub format_uri_for_mime_cid {
     my($self, $mime_cid, $task_id) = @_;
     # Don't bother verifying is in list(?)
-    return _uri($self, $task_id, {mime_cid => $mime_cid});
+    return $self->internal_format_uri(
+	$self, $task_id, {mime_cid => $mime_cid});
 }
 
 sub format_uri_for_part {
     my($self, $task_id) = @_;
-    return _uri($self, $task_id, {'ListQuery.this' => $self->get('index')});
+    return $self->internal_format_uri(
+	$task_id, {'ListQuery.this' => $self->get('index')});
 }
 
 sub get_body {
@@ -103,6 +105,24 @@ sub get_header {
 
 sub has_mime_cid {
     return defined(shift->get('mime_cid')) ? 1 : 0;
+}
+
+sub internal_format_uri {
+    my($self, $task_id, $other, $realm_name) = @_;
+    my($req) = $self->get_request;
+    $self->die(
+	$self->get('RealmFile.realm_id'), ': not same as auth_realm',
+    ) unless $realm_name
+	|| $req->get('auth_id') eq $self->get('RealmFile.realm_id');
+    return $self->get_request->format_uri({
+	$realm_name ? (realm => $realm_name) : (),
+	task_id => $task_id,
+	path_info => $self->get_file_name,
+	query => {
+	    'ListQuery.parent_id' => $self->get_query->get('parent_id'),
+	    %$other,
+	},
+    });
 }
 
 sub internal_initialize {
@@ -186,22 +206,6 @@ sub _default_file_name {
 
 sub _parser {
     return $_MP->parse_data(\$_[0]);
-}
-
-sub _uri {
-    my($self, $task_id, $other) = @_;
-    my($req) = $self->get_request;
-    $self->die(
-	$self->get('RealmFile.realm_id'), ': not same as auth_realm',
-    ) unless $req->get('auth_id') eq $self->get('RealmFile.realm_id');
-    return $self->get_request->format_uri({
-	task_id => $task_id,
-	path_info => $self->get_file_name,
-	query => {
-	    'ListQuery.parent_id' => $self->get_query->get('parent_id'),
-	    %$other,
-	},
-    });
 }
 
 sub _walk {
