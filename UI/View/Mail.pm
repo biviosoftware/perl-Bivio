@@ -9,6 +9,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = __PACKAGE__->use('MIME.Type');
 my($_MF) = __PACKAGE__->use('Model.MailForm');
 
+sub PART_TASK {
+    return 'FORUM_MAIL_PART';
+}
+
 sub form_mail {
     my($self) = @_;
     return $self->internal_put_base_attr(
@@ -47,10 +51,14 @@ sub internal_name {
 }
 
 sub internal_part_list {
+    my($self) = @_;
     return DIV_parts(
 	With(['->get_mail_part_list'],
 	     If(['!', '->has_mime_cid'],
-		_thread_list_director(),
+		If([sub {$_[1] > 1}, ['index']],
+		   DIV_attachment(_thread_list_director($self)),
+		   _thread_list_director($self),
+	       ),
 	    ),
 	 ),
     );
@@ -190,17 +198,18 @@ sub _name {
 }
 
 sub _thread_list_director {
+    my($self) = @_;
     return Director(
 	 ['mime_type'],
 	 {
 	     map(
 		("image/$_" => Image(
-		    ['->format_uri_for_part', 'FORUM_MAIL_PART'],
+		    ['->format_uri_for_part', $self->PART_TASK],
 		    {class => 'inline'},
 		)),
 		qw(png jpeg gif),
 	     ),
-	     'text/html' => MailBodyHTML(['->get_body'], 'FORUM_MAIL_PART'),
+	     'text/html' => MailBodyHTML(['->get_body'], $self->PART_TASK),
 	     'text/plain' => MailBodyPlain(['->get_body']),
 	     'x-message/rfc822-headers' => If(
 		 ['index'],
@@ -210,9 +219,8 @@ sub _thread_list_director {
 	     ),
 	 },
 	 Link(
-	     DIV_attachment(
-		 vs_text_as_prose('MailPartList.attachment')),
-	     ['->format_uri_for_part', 'FORUM_MAIL_PART'],
+	     vs_text_as_prose('MailPartList.attachment'),
+	     ['->format_uri_for_part', $self->PART_TASK],
 	 ),
      );
 }
