@@ -30,13 +30,15 @@ sub clone {
 sub delegate_method {
     my($proto) = shift;
     my($method) = $proto->my_caller;
-    return shift->$method($proto, @_);
+    return shift->$method(\&delegate_method, $proto, @_);
 }
 
 sub delegated_args {
     my($proto) = shift;
-    return ((!ref($proto) && $_[0] && UNIVERSAL::isa($_[0], __PACKAGE__)
-        ? shift : $proto), @_);
+    return ($proto, @_)
+	unless ref($_[0]) && $_[0] == \&delegate_method;
+    shift;
+    return (@_);
 }
 
 sub die {
