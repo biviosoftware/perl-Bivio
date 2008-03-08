@@ -6,9 +6,17 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub as_string {
+    return shift->simple_package_name;
+}
+
 sub echo {
     my($delegator, $arg) = shift->delegated_args(@_);
-    return $delegator->simple_package_name . " $arg";
+    return Bivio::IO::Alert->format_args(
+	$delegator->simple_package_name,
+	' ',
+	$arg,
+    );
 }
 
 1;

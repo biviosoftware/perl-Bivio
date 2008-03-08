@@ -7,6 +7,10 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = __PACKAGE__->use('Bivio::t::UNIVERSAL::Delegate');
 
+sub as_string {
+    return shift->simple_package_name;
+}
+
 sub echo {
     return shift->delegate_method($_D, @_);
 }
