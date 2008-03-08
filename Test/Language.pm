@@ -16,6 +16,7 @@ my($_INLINE) = 'inline00000';
 my($_R) = __PACKAGE__->use('IO.Ref');
 my($_F) = __PACKAGE__->use('IO.File');
 our($_TRACE);
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub AUTOLOAD {
     my(undef, @args) = _args(@_);
@@ -164,6 +165,10 @@ sub test_name {
     # Returns the basename of the test_script.
     return File::Basename::basename(
 	_assert_in_eval('test_name')->get('test_script'), '.btest');
+}
+
+sub test_now {
+    return $_DT->now_as_file_name;
 }
 
 sub test_ok {
