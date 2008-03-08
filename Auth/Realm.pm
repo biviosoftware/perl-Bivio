@@ -4,7 +4,6 @@ package Bivio::Auth::Realm;
 use strict;
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
-use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Auth::Support;
 use Bivio::Base 'Bivio::Collection::Attributes';
@@ -47,8 +46,8 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_INITIALIZED) = 0;
 my($_GENERAL);
 my($_PI) = Bivio::Type->get_instance('PrimaryId');
-my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role->UNKNOWN(),
-	    Bivio::Auth::Role->get_list);
+my(@_USED_ROLES) = Bivio::Auth::Role->get_non_zero_list;
+my($_RT) = __PACKAGE__->use('Auth.RealmType');
 
 sub as_string {
     my($self) = @_;
@@ -82,9 +81,7 @@ sub do_default {
     my($realm, $user) = $req->get(qw(auth_realm auth_user));
     $req->set_user('user');
     my($die) = Bivio::Die->catch(sub {
-	foreach my $r (
-	    grep(!$_->eq_unknown, Bivio::Auth::RealmType->get_list)
-        ) {
+	foreach my $r ($_RT->get_non_zero_list) {
 	    $req->set_realm($r->get_name);
 	    last unless $op->($req->get('auth_realm'));
 	}
@@ -217,17 +214,13 @@ sub id_from_any {
 sub is_default {
     my($self) = @_;
     # Returns true if the realm is one of the default realms (general, user, club).
-    return 1 if $self->get('type') == Bivio::Auth::RealmType->GENERAL;
+    return 1 if $self->get('type') == $_RT->GENERAL;
     return $self->get('owner')->is_default;
 }
 
 sub is_default_id {
     my(undef, $id) = @_;
-    # Returns true if I<id> is a default realm_id.
-    Bivio::Die->die($id, ': not an id')
-        unless defined($id) && $id !~ /\D/;
-    # At least info is in one place...
-    return $id < $_PI->get_min ? 1 : 0;
+    return $_RT->is_default_id($id);
 }
 
 sub is_general {
@@ -273,7 +266,7 @@ sub _new {
     unless ($owner) {
 	# If there is no owner, then permissions already retrieved from
 	# database.  Set "id" to realm_type.
-	my($type) = Bivio::Auth::RealmType->GENERAL();
+	my($type) = $_RT->GENERAL;
 	$self->put(id => $type->as_int, type => $type);
 	return $self;
     }
