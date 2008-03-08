@@ -545,9 +545,10 @@ sub _site_mail {
   Font('pre_text');
 }
 .msg .attachment {
-  margin-top: 1ex;
+  margin-top: 2ex;
   border-top: 1px dashed;
   Color('form_sep-border');
+  padding-top: 1ex;
 }
 .msg .parts .forward, .msg .parts .byline {
   margin-top: 1ex;
