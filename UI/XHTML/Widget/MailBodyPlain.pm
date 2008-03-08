@@ -35,6 +35,7 @@ sub render_tag_value {
 		    : $3 ? _a("http://$3", $3)
 		    : Bivio::HTML->escape($4)
             }exsg;
+	    $_ =~ s/^(\s+)/'&nbsp;' x length($1)/es;
 	    $_;
 	} split(/\n/, $self->render_simple_attr('value', $source))),
     );
