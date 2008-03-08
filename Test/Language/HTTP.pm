@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Test.Language';
 use Bivio::Die;
 use Bivio::Ext::LWPUserAgent;
-use Bivio::IO::Config;
 use Bivio::IO::Ref;
 use Bivio::IO::Trace;
 use Bivio::Mail::Address;
@@ -37,6 +36,7 @@ Bivio::IO::Config->register(my $_CFG = {
     ),
 });
 my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
+my($_F) = __PACKAGE__->use('IO.File');
 
 sub absolute_uri {
     my($self, $uri) = @_;
@@ -132,7 +132,7 @@ sub file_field {
     return [$name, $name]
 	unless defined($content);
     my($handle, $file) = $self->tmp_file($name);
-    Bivio::IO::File->write($handle, $content);
+    $_F->write($handle, $content);
     return [$file, $name];
 }
 
@@ -420,6 +420,11 @@ sub random_string {
     # Returns a random lower case alphanumeric string I<chars> length (default: 8).
     return shift->use('Bivio::Biz::Random')
 	->string(shift || 8, [0..9, 'a'..'z']);
+}
+
+sub read_file {
+    my(undef, $file) = @_;
+    return $_F->read($file);
 }
 
 sub reload_page {
@@ -725,7 +730,7 @@ sub verify_pdf {
 	or Bivio::Die->die($f, ': unable to convert pdf to text');
     $f =~ s/pdf$/txt/;
     Bivio::Die->die($text, ': text not found in response ', $f)
-	unless ${Bivio::IO::File->read($f)} =~ /$text/s;
+	unless ${$_F->read($f)} =~ /$text/s;
     return;
 }
 
@@ -986,7 +991,7 @@ sub _grep_msgs {
     return [_map_mail_dir(sub {
         my($file) = @_;
 	return unless -M $file <= 0;
-	my($msg) = Bivio::IO::File->read($file);
+	my($msg) = $_F->read($file);
 	my($hdr) = split(/^$/m, $$msg, 2);
 	my($res);
 	foreach my $k (@$_VERIFY_MAIL_HEADERS) {
