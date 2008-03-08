@@ -441,15 +441,18 @@ sub unsafe_from_any {
     return $info ? $info->[5] : undef;
 }
 
+sub unsafe_from_int {
+    my($proto, $int) = @_;
+    Bivio::IO::Alert->bootstrap_die($int, ': is not a int')
+        if ref($int) || $int =~ /^-?\d+$/s;
+    return _unsafe_from($proto, $int);
+}
+
 sub unsafe_from_name {
     my($proto, $name) = @_;
-    # Returns enum value for specified I<name> in a case-insensitive manner.
-    # If not found, returns C<undef>.
-    #
-    # ASSERTS: I<name> is not a ref.
-    Bivio::IO::Alert->bootstrap_die($name, ': is not a string') if ref($name);
-    my($info) = _get_info($proto, uc($name), 1);
-    return $info ? $info->[5] : undef;
+    Bivio::IO::Alert->bootstrap_die($name, ': is not a string')
+        if ref($name);
+    return _unsafe_from($proto, uc($name));
 }
 
 sub _get_info {
@@ -462,6 +465,10 @@ sub _get_info {
     Bivio::IO::Alert->bootstrap_die($ident, ': no such ', ref($self) || $self)
 		unless $dont_die;
     return undef;
+}
+
+sub _unsafe_from {
+    return (_get_info(@_, 1) || [])->[5];
 }
 
 1;
