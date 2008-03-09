@@ -502,9 +502,7 @@ sub initialize {
 	}
 	my($cell) = $self->create_cell($list, $col, $attrs);
 	push(@$cells, $cell);
-	my($want_column_sorted)
-	    = $cell->unsafe_get('column_order_by') ? 1
-	    : defined($cell->unsafe_get('want_sorting'))
+	my($want_column_sorted) = defined($cell->unsafe_get('want_sorting'))
 	    ? $cell->unsafe_get('want_sorting') : $want_sorting;
         my($sort);
 	($sort = $cell->unsafe_get('column_order_by'))
