@@ -2,107 +2,72 @@
 # $Id$
 package Bivio::Biz::FormContext;
 use strict;
-$Bivio::Biz::FormContext::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-=head1 NAME
-
-Bivio::Biz::FormContext - initializes, parses, and stringifies FormModel context
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::FormContext;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Collection::Attributes>
-
-=cut
-
-use Bivio::Collection::Attributes;
-@Bivio::Biz::FormContext::ISA = ('Bivio::Collection::Attributes');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::FormContext> is a utility module for
-L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.  It initializes,
-parses, and stringifies a form's context.  FormModel sets the
-context from the form state in
-L<Bivio::Biz::FormModel::get_context_from_request|Bivio::Biz::FormModel/"get_context_from_request">.
-The two classes are therefore very tightly coupled.
-
-A form context is a Bivio::Collection::Attributes which tell the
-FormModel how to "unwind", i.e. how to go back to what the user
-was doing before the current form.  Contexts may be nested, which
-adds to the complexity.
-
-Since contexts can be nested, they can be long.  The stringified version is
-"compact".  The structure is:
-
-   <char><http-base64> "!" <char><http-base64> ...
-
-The http-base64 encoding may contain a serialized hash, realm name, or
-nested context.  See L<Bivio::MIME::Base64|Bivio::MIME::Base64> for
-a description of http-base64.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item cancel_task : Bivio::Agent::TaskId
-
-When the form's cancel button is hit, this task will be executed.
-Defaults to I<unwind_task>.
-
-=item form : hash_ref
-
-The contents of the form to be unwound to.  These are the literal
-string values, yet to be converted to perl types.
-
-If defined, a server_redirect will be executed.
-May be C<undef>.
-
-=item form_context : hash_ref
-
-The form to unwind to has as well.  See FormModel for handling.
-
-=item path_info : string
-
-Passed to client or server_redirect during unwind.
-May be C<undef>.
-
-=item query : hash_ref
-
-Passed to client or server_redirect during unwind.
-May be C<undef>.
-
-=item realm : Bivio::Auth::Realm
-
-Specifies the realm in which the I<unwind_task> or I<cancel_task> are
-executed.  Is C<undef> for the GENERAL realm.
-
-=item unwind_task : Bivio::Agent::TaskId
-
-When the form's OK button is hit, this task will be executed.
-Is always defined.
-
-=back
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Ref;
+use base 'Bivio::Collection::Attributes';
 use Bivio::IO::Trace;
 use Bivio::MIME::Base64;
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::Biz::FormContext> is a utility module for
+# L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.  It initializes,
+# parses, and stringifies a form's context.  FormModel sets the
+# context from the form state in
+# L<Bivio::Biz::FormModel::get_context_from_request|Bivio::Biz::FormModel/"get_context_from_request">.
+# The two classes are therefore very tightly coupled.
+#
+# A form context is a Bivio::Collection::Attributes which tell the
+# FormModel how to "unwind", i.e. how to go back to what the user
+# was doing before the current form.  Contexts may be nested, which
+# adds to the complexity.
+#
+# Since contexts can be nested, they can be long.  The stringified version is
+# "compact".  The structure is:
+#
+#    <char><http-base64> "!" <char><http-base64> ...
+#
+# The http-base64 encoding may contain a serialized hash, realm name, or
+# nested context.  See L<Bivio::MIME::Base64|Bivio::MIME::Base64> for
+# a description of http-base64.
+#
+#
+#
+# cancel_task : Bivio::Agent::TaskId
+#
+# When the form's cancel button is hit, this task will be executed.
+# Defaults to I<unwind_task>.
+#
+# form : hash_ref
+#
+# The contents of the form to be unwound to.  These are the literal
+# string values, yet to be converted to perl types.
+#
+# If defined, a server_redirect will be executed.
+# May be C<undef>.
+#
+# form_context : hash_ref
+#
+# The form to unwind to has as well.  See FormModel for handling.
+#
+# path_info : string
+#
+# Passed to client or server_redirect during unwind.
+# May be C<undef>.
+#
+# query : hash_ref
+#
+# Passed to client or server_redirect during unwind.
+# May be C<undef>.
+#
+# realm : Bivio::Auth::Realm
+#
+# Specifies the realm in which the I<unwind_task> or I<cancel_task> are
+# executed.  Is C<undef> for the GENERAL realm.
+#
+# unwind_task : Bivio::Agent::TaskId
+#
+# When the form's OK button is hit, this task will be executed.
+# Is always defined.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my(%_CHAR_TO_KEY) = (
     "a" => 'unwind_task',
     "b" => 'cancel_task',
@@ -123,39 +88,13 @@ my($_SEPARATOR) = '!';
 # Forms don't have binary data.
 # Tightly coupled with $Bivio::SQL::ListQuery::_SEPARATOR.
 my($_HASH_CHAR) = "\01";
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attrs) : Bivio::Biz::FormContext
-
-Trace the output
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    _trace($self) if $_TRACE;
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="as_literal"></a>
-
-=head2 as_literal(Bivio::Agent::Request req) : string
-
-Returns the stringified version of I<self>.  I<req> is used to
-gather state, e.g. default realm.
-
-=cut
+my($_AR) = __PACKAGE__->use('Auth.Realm');
+my($_R) = __PACKAGE__->use('IO.Ref');
 
 sub as_literal {
+    # (self, Agent.Request) : string
+    # Returns the stringified version of I<self>.  I<req> is used to
+    # gather state, e.g. default realm.
     my($self, $req) = @_;
     my($res) = '';
     my($attrs) = $self->internal_get;
@@ -182,31 +121,27 @@ sub as_literal {
     return $res;
 }
 
-=for html <a name="as_string"></a>
-
-=head2 as_string() : string
-
-Converted for debugging purposes.  Use L<as_literal|"as_literal"> for most
-purposes.
-
-=cut
-
 sub as_string {
+    # (self) : string
+    # Converted for debugging purposes.  Use L<as_literal|"as_literal"> for most
+    # purposes.
     my($self) = @_;
     return ref($self)
-	? Bivio::IO::Ref->to_short_string($self->get_shallow_copy)
+	? $_R->to_short_string($self->get_shallow_copy)
 	: $self;
 }
 
-=for html <a name="new_empty"></a>
-
-=head2 static new_empty(Bivio::Biz::FormModel model) : Bivio::Biz::FormContext
-
-Returns the new_empty context for the current task and realm.
-
-=cut
+sub new {
+    # (proto, hash_ref) : Biz.FormContext
+    # Trace the output
+    my($self) = shift->SUPER::new(@_);
+    _trace($self) if $_TRACE;
+    return $self;
+}
 
 sub new_empty {
+    # (proto, Biz.FormModel) : Biz.FormContext
+    # Returns the new_empty context for the current task and realm.
     my($proto, $model) = @_;
     my($req) = $model->get_request;
     my($realm) = $req->get('auth_realm');
@@ -228,15 +163,9 @@ sub new_empty {
     });
 }
 
-=for html <a name="new_from_form"></a>
-
-=head2 static new_from_form(Bivio::Biz::FormModel model, hash_ref form_fields, Bivio::Biz::FormContext calling_context, Bivio::Agent::Request req) : Bivio::Biz::FormContext
-
-Returns a new object for the current I<form> and I<calling_context>.
-
-=cut
-
 sub new_from_form {
+    # (proto, Biz.FormModel, hash_ref, Biz.FormContext, Agent.Request) : Biz.FormContext
+    # Returns a new object for the current I<form> and I<calling_context>.
     my($proto, $model, $form_fields, $calling_context, $req) = @_;
     return $proto->new({
 	form_model => ref($model) || undef,
@@ -250,16 +179,10 @@ sub new_from_form {
     });
 }
 
-=for html <a name="new_from_literal"></a>
-
-=head2 static new_from_literal(Bivio::Biz::FormModel model, string value) : Bivio::Biz::FormContext
-
-Parses the form context from the query or the form.  Errors result in
-a warning and L<new_empty|"new_empty"> returned.
-
-=cut
-
 sub new_from_literal {
+    # (proto, Biz.FormModel, string) : Biz.FormContext
+    # Parses the form context from the query or the form.  Errors result in
+    # a warning and L<new_empty|"new_empty"> returned.
     # $err is boolean_ref used during recursion, hence it isn't in the
     # documentation.
     my($proto, $model, $value, $err) = @_;
@@ -312,18 +235,12 @@ sub new_from_literal {
     return $proto->new($c);
 }
 
-=for html <a name="return_redirect"></a>
-
-=head2 return_redirect(string which, Bivio::Agent::Request req)
-
-Redirects back to the task contained in the context.  I<which> may be
-'cancel' or 'next'.
-
-Does not return.
-
-=cut
-
 sub return_redirect {
+    # (self, string, Agent.Request) : undef
+    # Redirects back to the task contained in the context.  I<which> may be
+    # 'cancel' or 'next'.
+    #
+    # Does not return.
     my($self, $model, $which) = @_;
     my($req) = $model->get_request;
     my($c) = $self->internal_get;
@@ -371,13 +288,9 @@ sub return_redirect {
     # DOES NOT RETURN
 }
 
-#=PRIVATE METHODS
-
-# _format_hash(string_ref res, hash_ref c, string which)
-#
-# Joins the hash if defined and calls format_string.
-#
 sub _format_hash {
+    # (string_ref, hash_ref, string) : undef
+    # Joins the hash if defined and calls format_string.
     my($res, $c, $which) = @_;
     my($h) = $c->{$which};
     _format_string($res, $which, join($_HASH_CHAR, map {
@@ -386,11 +299,9 @@ sub _format_hash {
     return;
 }
 
-# _format_realm(string_ref res, hash_ref c)
-#
-# Gets owner_name.  If defined, formats as string.
-#
 sub _format_realm {
+    # (string_ref, hash_ref) : undef
+    # Gets owner_name.  If defined, formats as string.
     my($res, $c) = @_;
     return unless $c->{realm};
     my($name) = $c->{realm}->unsafe_get('owner_name');
@@ -399,11 +310,9 @@ sub _format_realm {
     return;
 }
 
-# _format_string(string_ref res, string which, string value)
-#
-# Formats the string Base64 and appends to $res if defined.
-#
 sub _format_string {
+    # (string_ref, string, string) : undef
+    # Formats the string Base64 and appends to $res if defined.
     my($res, $which, $value) = @_;
     $$res .= $_KEY_TO_CHAR{$which}
 	. Bivio::MIME::Base64->http_encode($value)
@@ -412,23 +321,19 @@ sub _format_string {
     return;
 }
 
-# _format_task(string_ref res, hash_ref c, string which)
-#
-# Converts to an int if defined and calls format_string.
-#
 sub _format_task {
+    # (string_ref, hash_ref, string) : undef
+    # Converts to an int if defined and calls format_string.
     my($res, $c, $which) = @_;
     _format_string($res, $which, $c->{$which}->as_int)
 	if $c->{$which};
     return;
 }
 
-# _parse_error(proto, Bivio::Biz::FormModel model, string value, string which, string msg) : hash_ref
-#
-# Output a warning and return the empty context if requested.  $proto
-# only needed if you want an new_empty() call.
-#
 sub _parse_error {
+    # (proto, Biz.FormModel, string, string, string) : hash_ref
+    # Output a warning and return the empty context if requested.  $proto
+    # only needed if you want an new_empty() call.
     my($proto, $model, $value, $which, $msg) = @_;
     Bivio::IO::Alert->warn(ref($model), ': attr=', $which,
 	', value=', $value, ', msg=', $msg);
@@ -436,11 +341,9 @@ sub _parse_error {
     return $proto && $proto->new_empty($model);
 }
 
-# _parse_hash(Bivio::Biz::FormModel model, hash_ref c, string which)
-#
-# Parses a hash from the context literal.
-#
 sub _parse_hash {
+    # (Biz.FormModel, hash_ref, string) : undef
+    # Parses a hash from the context literal.
     my($model, $c, $which) = @_;
     # Not an error if undefined
     unless (defined($c->{$which})) {
@@ -455,11 +358,9 @@ sub _parse_hash {
     return;
 }
 
-# _parse_path_info(Bivio::Biz::FormModel model, hash_ref c)
-#
-# Checks path_info is correct.
-#
 sub _parse_path_info {
+    # (Biz.FormModel, hash_ref) : undef
+    # Checks path_info is correct.
     my($proto, $model, $c) = @_;
     # Not an error if undefined
     unless (defined($c->{path_info})) {
@@ -475,12 +376,10 @@ sub _parse_path_info {
     return;
 }
 
-# _parse_realm(Bivio::Biz::FormModel model, hash_ref c) : Bivio::Auth::Realm
-#
-# Returns the realm contained in $realm.  Checks for general,
-# etc.  Returns undef if it can't set.
-#
 sub _parse_realm {
+    # (Biz.FormModel, hash_ref) : Auth.Realm
+    # Returns the realm contained in $realm.  Checks for general,
+    # etc.  Returns undef if it can't set.
     my($model, $c) = @_;
     my($v) = $c->{realm};
     # Not an error if undefined
@@ -496,10 +395,10 @@ sub _parse_realm {
 	$c->{realm} = $realm;
 	return;
     }
-    my($o) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($o) = Bivio::Biz::Model->new($req, 'RealmOwner');
     if ($o->unauth_load(name => $v)) {
 	# This will blow if $o is "general".  Someone had to have hacked it.
-	$c->{realm} = Bivio::Auth::Realm->new($o);
+	$c->{realm} = $_AR->new($o);
     }
     else {
 	# Defaults to undef, use default realm.
@@ -510,11 +409,9 @@ sub _parse_realm {
     return;
 }
 
-# _parse_task(Bivio::Biz::FormModel model, hash_ref c, string which) : boolean
-#
-# Maps the number to a task id.  Clears and returns false if it couldn't map.
-#
 sub _parse_task {
+    # (Biz.FormModel, hash_ref, string) : boolean
+    # Maps the number to a task id.  Clears and returns false if it couldn't map.
     my($model, $c, $which) = @_;
     my($num) = $c->{$which};
     # Don't output an error, but return false.  The error is output
@@ -535,16 +432,5 @@ sub _parse_task {
     }
     return 1;
 }
-
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
