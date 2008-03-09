@@ -2,70 +2,18 @@
 # $Id$
 package Bivio::Biz::Model::ECPaymentList;
 use strict;
-$Bivio::Biz::Model::ECPaymentList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::ECPaymentList::VERSION;
+use Bivio::Base 'Biz.ListModel';
 
-=head1 NAME
-
-Bivio::Biz::Model::ECPaymentList - list of payments information
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Model::ECPaymentList;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::ListModel>
-
-=cut
-
-use Bivio::Biz::ListModel;
-@Bivio::Biz::Model::ECPaymentList::ISA = ('Bivio::Biz::ListModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::ECPaymentList>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="format_name"></a>
-
-=head2 format_name() : string
-
-Formats the realm owner's name for this row
-L<Bivio::Biz::Model::RealmOwner::format_name|Bivio::Biz::Model::RealmOwner/"format_name">.
-
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RO) = __PACKAGE__->use('Model.RealmOwner');
 
 sub format_name {
     my($self) = shift;
-    return Bivio::Biz::Model::RealmOwner->format_name(
-            $self, 'RealmOwner.', @_);
+    return $_RO->format_name($self, 'RealmOwner.', @_);
 }
 
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-
-=cut
-
 sub internal_initialize {
+    # (self) : hash_ref
     return {
         version => 2,
 	can_iterate => 1,
@@ -105,17 +53,5 @@ sub internal_initialize {
        )],
     };
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

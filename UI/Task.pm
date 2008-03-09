@@ -369,7 +369,7 @@ sub parse_uri {
     $uri[0] = $_REALM_PLACEHOLDER;
 
     # Is this a valid, authorized realm with a task for this uri?
-    my($o) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($o) = Bivio::Biz::Model->new($req, 'RealmOwner');
     return _parse_err($self, $orig_uri, $req, {
 	entity => $name, uri => $orig_uri,
 	class => 'Bivio::Auth::Realm',
