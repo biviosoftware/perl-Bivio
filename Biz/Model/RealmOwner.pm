@@ -120,8 +120,8 @@ sub init_realm_type {
     my($self, $rt) = @_;
     # Adds I<rt> to the database.
     return $self->create({
-	name => lc($rt->get_name),
-	realm_id => $rt->as_int,
+	name => $rt->as_default_owner_name,
+	realm_id => $rt->as_default_owner_id,
 	realm_type => $rt,
     });
 }
