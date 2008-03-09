@@ -63,8 +63,7 @@ sub execute_part {
 sub format_uri_for_mime_cid {
     my($self, $mime_cid, $task_id) = @_;
     # Don't bother verifying is in list(?)
-    return $self->internal_format_uri(
-	$self, $task_id, {mime_cid => $mime_cid});
+    return $self->internal_format_uri($task_id, {mime_cid => $mime_cid});
 }
 
 sub format_uri_for_part {
