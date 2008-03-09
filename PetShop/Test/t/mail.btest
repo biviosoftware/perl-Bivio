@@ -35,7 +35,8 @@ my($headers) = sub {
 	'Message-Id' => next_message_id(),
 	Date => $date->(),
 	Subject => ref($ref) ? 'Re: ' . $ref->unsafe_get_header('Subject')
-	    : ("$ref " . random_string()),
+	    : $ref ? "$ref " . random_string()
+	    : random_string(),
 	ref($ref) ? (References => $ref->unsafe_get_header('Message-Id')) : (),
     };
 };
