@@ -13,8 +13,10 @@ my($_C) = __PACKAGE__->use('SQL.Connection');
 my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_RT) = __PACKAGE__->use('Auth.RealmType');
 my($_R) = __PACKAGE__->use('Auth.Role');
+my($_AR) = __PACKAGE__->use('Auth.Realm');
 my($_PS) = __PACKAGE__->use('Auth.PermissionSet');
 my($_PI) = __PACKAGE__->use('Type.PrimaryId');
+my($_F) = __PACKAGE__->use('IO.File');
 
 sub TEST_PASSWORD {
     # Returns password for test data.
@@ -109,7 +111,7 @@ sub create_test_db {
     die('cannot be run on production system')
 	if $req->is_production;
     my($ddl_dir) = $self->get_project_root() . '/files/ddl';
-    Bivio::IO::File->do_in_dir(-d $ddl_dir ? $ddl_dir : '.', sub {
+    $_F->do_in_dir(-d $ddl_dir ? $ddl_dir : '.', sub {
         $self->destroy_db;
         $self->create_db;
         $self->delete_realm_files;
@@ -379,8 +381,8 @@ sub initialize_db {
 sub initialize_motion_permissions {
     my($self) = @_;
     my($req) = $self->get_request;
-    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
-    Bivio::Auth::Realm->do_default(sub {
+    my($rr) = $self->new_other('RealmRole');
+    $_AR->do_default(sub {
         $rr->edit_categories('+open_results_motion');
 	return 1;
     }, $req);
@@ -397,7 +399,7 @@ sub initialize_tuple_permissions {
     # Sets up default permissions of tuples.
     my($req) = $self->get_request;
     my($rr) = $self->new_other('RealmRole');
-    $self->use('Auth.Realm')->do_default(sub {
+    $_AR->do_default(sub {
         $rr->edit_categories('+tuple');
 	return 1;
     }, $req);
