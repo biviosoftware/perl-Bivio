@@ -3,6 +3,15 @@
 [
     sub {class()->USER} => [
 	as_property_model_class_name => 'User',
+	is_default_id => [
+	    0 => 0,
+	    1 => 1,
+	    2 => 1,
+	    bla => DIE(),
+	    [] => DIE(),
+	],
+	as_default_owner_id => 2,
+	as_default_owner_name => 'user',
     ],
     sub {class()->CALENDAR_EVENT} => [
 	as_property_model_class_name => 'CalendarEvent',
