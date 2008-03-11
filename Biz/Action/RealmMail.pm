@@ -20,7 +20,7 @@ sub execute_receive {
 	$rm->create_from_rfc822($f->get('message')->{content})
     )->set_headers_for_list_send({
 	list_name => $n,
-	list_email => $req->format_email($n),
+	list_email => $rm->new_other('EmailAlias')->format_realm_as_incoming,
 	list_title => $req->get_nested(qw(auth_realm owner display_name)),
 	reply_to_list => $f->new_other('Forum')->load->get('want_reply_to'),
 #TODO: This should be configurable
