@@ -41,13 +41,15 @@ sub execute_ok {
     my($id) = $self->req->unsafe_get_nested(qw(Model.RealmMail message_id));
     my($cc) = $self->get('cc')->as_literal;
     my($to) = $self->get('to');
+    my($sender) = $self->get('realm_emails')->[0];
     $self->internal_put_field(headers => {
 	_from => $self->internal_format_from,
 	_recipients => $to->new([
 	    @{$to->as_array},
 	    @{$self->get('cc')->as_array},
 	])->as_literal,
-	Sender => $self->get('realm_emails')->[0],
+	Sender => $sender,
+	'Reply-To' => $sender,
 	To => $to->as_literal,
 	$cc ? (Cc => $cc) : (),
 	Subject => $self->get('subject'),
@@ -60,11 +62,7 @@ sub execute_ok {
 sub get_realm_emails {
     my($self) = @_;
     return [
-	@{$self->new_other('EmailAlias')->map_iterate(
-	    sub {shift->get('incoming')},
-	    'incoming asc',
-	    {outgoing => $self->req(qw(auth_realm owner name))},
-	)},
+	$self->new_other('EmailAlias')->format_realm_as_incoming,
 	$self->req(qw(auth_realm owner))->format_email,
     ];
 }
@@ -73,6 +71,14 @@ sub internal_format_from {
     my($self) = @_;
     return $_RFC->format_mailbox(
 	$self->new_other('Email')->load_for_auth_user->get('email'),
+	$self->req(qw(auth_user display_name)),
+    );
+}
+
+sub internal_format_reply_to {
+    my($self) = @_;
+    return $_RFC->format_mailbox(
+	$self->get('realm_emails')->[0],
 	$self->req(qw(auth_user display_name)),
     );
 }
