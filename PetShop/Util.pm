@@ -188,19 +188,19 @@ sub _init_crm {
     my($self) = @_;
     _top_level_forum(
 	$self, $self->CRM_FORUM, [$self->CRM_TECH(1)], [$self->CRM_TECH(2)]);
-    $self->new_other('RealmRole')->edit_categories('+feature_crm');
-    $self->req(qw(auth_realm owner))->update({
-	display_name => 'PetShop Support',
-    });
+    $self->new_other('CRM')->setup_realm;
+    $self->model('RowTag')->replace_value(
+	$self->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
+	$self->use('Action.RealmMail')->EMPTY_SUBJECT_PREFIX,
+    );
     $self->model('EmailAlias')->create({
 	incoming =>
 	    $self->use('TestLanguage.HTTP')->generate_remote_email('crm'),
 	outgoing => $self->req(qw(auth_realm owner name)),
     });
-    $self->model('RowTag')->replace_value(
-	$self->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
-	$self->use('Action.RealmMail')->EMPTY_SUBJECT_PREFIX,
-    );
+    $self->req(qw(auth_realm owner))->update({
+	display_name => 'PetShop Support',
+    });
     return;
 }
 
@@ -668,6 +668,7 @@ sub _top_level_forum {
     foreach my $user (@$admins, @$users) {
 	$self->model('ForumUserAddForm', {
 	    'RealmUser.realm_id' => $rid,
+	    'Forum.want_reply_to' => 1,
 	    'User.user_id' => _realm_id($self, $user),
 	    administrator => grep($_ eq $_, @$admins) ? 1 : 0,
 	});
