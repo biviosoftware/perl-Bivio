@@ -26,11 +26,56 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 5.91  2008/03/09 00:23:48  nagler
+  * Bivio::Auth::Realm
+    call RealmType.is_default_id
+  * Bivio::Auth::RealmType
+    added as_default_owner_id, as_default_owner_name, and is_default_id
+  * Bivio::Biz::FormContext
+    rmpod
+  * Bivio::Biz::Model::ECPaymentList
+    Let Bivio::Biz::Model get_instance on RealmOwner
+  * Bivio::Biz::Model::MailPartList
+    internal_format_uri as hook to change realm_name
+  * Bivio::Biz::Model::RealmOwner
+    use as_default_owner_name and as_default_owner_id
+  * Bivio::Test::Language::HTTP
+    added poll_page()
+  * Bivio::Test::Language
+    added test_now()
+  * Bivio::Type::BlogTitle
+    Bivio::Base
+  * Bivio::Type::Enum
+    added unsafe_from_int
+  * Bivio::UI::HTML::Widget::Table
+    want_sorting true if column_order_by is set
+    undo previous change
+  * Bivio::UI::Task
+    Let Bivio::Biz::Model get_instance on RealmOwner
+  * Bivio::UI::View::CSS
+    message attachment formatting
+    fix spacing on download attachment link
+  * Bivio::UI::View::Mail
+    changed thread formatting to be inside an attachment
+    added "download" class to attachment link
+  * Bivio::UI::Widget::ControlBase
+    rmpod
+    export control_is_on
+  * Bivio::UI::XHTML::Widget::MailBodyPlain
+    initial indents handled by nbsp
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    call control_is_on if available on widget before calling can_user_execute_task
+    fpc
+  * Bivio::UNIVERSAL
+    remove deprecation on call_super_before
+  * Bivio::Util::SQL
+    use "use" to reference modules
+
   Revision 5.90  2008/03/08 00:09:50  aviggio
   * Bivio::Biz::ListModel
     unsafe_load_this_or_first should return a result
