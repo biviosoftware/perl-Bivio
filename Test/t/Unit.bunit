@@ -23,6 +23,10 @@ req()->set_realm('btest_read');
 		unless $self->isa('Bivio::Test');
 	    return;
 	}),
+        builtin_assert_contains => [
+	    # Would expect this to be true, but it isn't
+	    [[1, 2, 3], [2]] => DIE(),
+	],
 	builtin_create_user => [
 	    'unit_bunit' => sub {
 		foreach my $c (
