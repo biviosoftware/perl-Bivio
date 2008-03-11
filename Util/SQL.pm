@@ -56,7 +56,7 @@ sub backup_model {
     my($self, $model, $order_by) = @_;
     $self->print(
 	"$model written to ",
-	$self->use('IO.File')->write(
+	$_F->write(
 	    "$model-" . $_DT->local_now_as_file_name . '.pl',
 	    $self->use('IO.Ref')->to_string(
 		my $rows = $self->model($model)
@@ -159,7 +159,7 @@ sub ddl_files {
 
 sub delete_realm_files {
     my($self) = @_;
-    $self->use('IO.File')->rm_rf(
+    $_F->rm_children(
 	$self->use('UI.Facade')->get_local_file_name(
 	    $self->use('UI.LocalFileType')->REALM_DATA, ''));
     return;
@@ -1555,7 +1555,7 @@ sub reinitialize_sequences {
 	map({
 	    grep(/^\s*create\s+sequence/im,
 		split(/^(?=\s*create\s+sequence)/im,
-                    ${$self->use('IO.File')->read($_)}));
+                    ${$_F->read($_)}));
 	} @{$self->ddl_files})
     ) {
 	$cmd =~ s,/.*,,s;
@@ -1749,7 +1749,7 @@ sub _init_template1 {
     $self->piped_exec('createlang --user=postgres plpgsql template1');
     foreach my $dir (qw(/usr/share/pgsql/contrib /usr/local/share)) {
 	next unless -d $dir;
-	$self->use('IO.File')->do_in_dir($dir, sub {
+	$_F->do_in_dir($dir, sub {
 	    foreach my $file (qw(lwpostgis.sql spatial_ref_sys.sql)) {
 		last unless -f $file;
 		$self->piped_exec(
