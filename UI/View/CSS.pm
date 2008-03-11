@@ -474,12 +474,12 @@ div.user_state .dd_link {
   Font('user_state');
 }
 div.user_state .dd_menu {
-  display:inline;
-  position:absolute;
+  display: inline;
+  position: absolute;
   width: 8em;
-  visibility:hidden;
+  visibility: hidden;
   Color('dd_menu-background');
-  border:1px solid;
+  border: 1px solid;
   Color('dd_menu-border');
 }
 div.user_state .dd_menu a {
@@ -488,7 +488,7 @@ div.user_state .dd_menu a {
   Font('dd_menu');
   Color('dd_menu-background');
   text-decoration: none;
-  z-index:1000;
+  z-index: 1000;
   text-align: left;
   font-weight: normal;
 }
