@@ -3,13 +3,12 @@
 package Bivio::Biz::File;
 use strict;
 use base 'Bivio::UNIVERSAL';
-use Bivio::IO::Config;
-use Bivio::IO::File;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
     root => Bivio::IO::Config->REQUIRED,
 });
+my($_F) = __PACKAGE__->use('IO.File');
 
 sub handle_config {
     my(undef, $cfg) = @_;
@@ -19,12 +18,12 @@ sub handle_config {
 
 sub absolute_path {
     my(undef, $base) = @_;
-    return "$_CFG->{root}/$base";
+    return File::Spec->catfile($_CFG->{root}, $base);
 }
 
 sub destroy_db {
     my($proto) = @_;
-    Bivio::IO::File->rm_rf($_CFG->{root});
+    $_F->rm_children($_CFG->{root});
     return;
 }
 
