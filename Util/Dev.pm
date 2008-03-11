@@ -20,10 +20,10 @@ sub project_aliases {
 	my($root, $prefix) = @$_;
 	sort(map({
 	    my($n) = $_ =~ m{([^/]+)$};
-	    $n =~ /^[-\w]+$/s && ! -x (`which $n` =~ /^([^\n]+)/)[0]
+	    $n =~ /^\w+-[-\w]*\w$/s && ! -x (`which $n` =~ /^([^\n]+)/)[0]
 		? "alias '$n=env BCONF=$ENV{HOME}/bconf/$prefix.bconf perl -w $_'\n"
 		: ();
-	} glob("$ENV{HOME}/src/perl/$root/Util/$prefix-*"))),
+	} glob(Bivio::IO::Alert->debug("$ENV{HOME}/src/perl/$root/Util/$prefix-*")))),
     } @{$self->new_other('Release')->list_projects}))
 }
 
