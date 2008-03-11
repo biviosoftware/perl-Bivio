@@ -62,6 +62,7 @@ my($_CLASS_DISPATCH) = {
     Type => 'builtin_from_type',
     Model => 'builtin_model',
 };
+my($_A) = __PACKAGE__->use('IO.Alert');
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
@@ -87,12 +88,24 @@ sub builtin_assert_contains {
 
 sub builtin_assert_eq {
     # B<DEPRECATED>.
-    Bivio::IO::Alert->warn_deprecated('use assert_equals');
+    $_A->warn_deprecated('use assert_equals');
     return shift->builtin_assert_equals(@_);
 }
 
 sub builtin_assert_equals {
     return _assert_expect(0, @_);
+}
+
+sub builtin_assert_eval {
+    my(undef, $code) = @_;
+    my($die);
+    Bivio::Die->throw_quietly(
+	DIE => $_A->format_args(
+	    ref($code) ? ('line ', (caller)[2]) : $code,
+	    $die ? (': died with: ', $die) : ': returned false',
+	),
+    ) unless Bivio::Die->catch($code, \$die);
+    return;
 }
 
 sub builtin_assert_not_equals {
