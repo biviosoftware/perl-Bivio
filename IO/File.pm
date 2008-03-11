@@ -10,6 +10,7 @@ use File::Basename ();
 use File::Path ();
 use File::Spec ();
 use IO::File ();
+use IO::Dir ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -199,17 +200,26 @@ sub rename {
     return $new;
 }
 
+sub rm_children {
+    my($proto, $path) = @_;
+    return
+	unless my $dh = IO::Dir->new(_assert_not_root($path));
+    while (defined(my $d = $dh->read)) {
+	my($p) = File::Spec->catfile($path, $d);
+	next if $d =~ /^\.\.?$/;
+	if (-l $p) {
+	    unlink($p) || die($p, ": unlink failed: $!");
+	}
+	else {
+	    $proto->rm_rf($p);
+	}
+    }
+    return $path;
+}
+
 sub rm_rf {
     my(undef, $path) = @_;
-    # Recursively delete all files under I<path>.  Does not accept relative paths or
-    # '/'.  Returns I<path>
-    #
-    # Only works on Unix.
-    $path = File::Spec->canonpath($path);
-    Bivio::Die->die($path, ': file name unacceptable, must be absolute')
-	unless File::Spec->file_name_is_absolute($path)
-	    && $path ne File::Spec->rootdir;
-    system('rm', '-rf', $path);
+    system('rm', '-rf', $path = _assert_not_root($path));
     return $path;
 }
 
@@ -266,6 +276,15 @@ sub write {
     _trace('Wrote ', length($$c), ' bytes to ', $file_name)
 	if $_TRACE;
     return $file_name;
+}
+
+sub _assert_not_root {
+    my($path) = @_;
+    $path = File::Spec->canonpath($path);
+    Bivio::Die->die($path, ': file name unacceptable, must be absolute')
+	unless File::Spec->file_name_is_absolute($path)
+	    && $path ne File::Spec->rootdir;
+    return $path;
 }
 
 sub _err {

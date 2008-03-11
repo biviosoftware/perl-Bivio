@@ -15,8 +15,8 @@ my($pwd);
 	    sub {[$pwd]} => sub {[$pwd]},
 	],
 	rm_rf => [
-	   File => DIE(),
-	   sub {[$abs_dir = class()->pwd . "/File"]} => sub {[$abs_dir]},
+	    File => DIE(),
+	    sub {[$abs_dir = class()->pwd . "/File"]} => sub {[$abs_dir]},
 	],
 	{
 	    method => 'mkdir_p',
@@ -120,6 +120,18 @@ my($pwd);
         map_lines => [
 	    ['File/5.txt'] => [['a1 a2', 'b1 b2']],
 	    ['File/5.txt', qr{\s+}] => [[[qw(a1 a2)], [qw(b1 b2)]]],
+	],
+	rm_children => [
+	    File => DIE(),
+	    sub {
+		class()->mkdir_p('File/rm_children/1/2');
+		symlink('../1', 'File/rm_children/1/3') || die;
+		return [class()->absolute_path('File/rm_children/1')];
+	    } => sub {
+		assert_eval("! -l 'File/rm_children/1/3'");
+		assert_eval("-d 'File/rm_children/1'");
+		return 1;
+	    },
 	],
     ],
 ];
