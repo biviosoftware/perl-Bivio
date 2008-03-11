@@ -106,7 +106,7 @@ sub render_tag_value {
     my($need_sep) = $self->get('_init')->($source);
     foreach my $w (@{$self->get('task_map')}) {
 	next
-	    if $w->can('control_is_on') && !$w->control_is_on($source);
+	    if $w->can('is_control_on') && !$w->is_control_on($source);
 	my($cfg) = $w->get('_task_menu_cfg');
 	my($r) = $self->render_simple_value($cfg->{realm}, $source);
 	next unless !$cfg->{task_id} || $req->can_user_execute_task(

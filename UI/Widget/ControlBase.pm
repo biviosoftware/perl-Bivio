@@ -6,16 +6,6 @@ use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub control_is_on {
-    my($self, $source) = @_;
-    my($c) = $self->unsafe_get('control');
-    return !defined($c)
-	|| ($c = $self->unsafe_resolve_widget_value($c, $source))
-	&& (!$self->is_blessed($c, 'Bivio::UI::Widget')
-        || $self->render_simple_value($c, $source))
-	? 1 : 0;
-}
-
 sub control_off_render {
     my($self, $source, $buffer) = @_;
     $self->unsafe_render_attr(control_off_value => $source, $buffer);
@@ -46,9 +36,19 @@ sub initialize {
     return;
 }
 
+sub is_control_on {
+    my($self, $source) = @_;
+    my($c) = $self->unsafe_get('control');
+    return !defined($c)
+	|| ($c = $self->unsafe_resolve_widget_value($c, $source))
+	&& (!$self->is_blessed($c, 'Bivio::UI::Widget')
+        || $self->render_simple_value($c, $source))
+	? 1 : 0;
+}
+
 sub render {
     my($self, $source, $buffer) = @_;
-    my($method) = $self->control_is_on($source)
+    my($method) = $self->is_control_on($source)
 	? 'control_on_render' : 'control_off_render';
     return $self->$method($source, $buffer);
 }
