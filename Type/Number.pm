@@ -138,15 +138,19 @@ sub get_decimals {
 }
 
 sub max {
-    my($self, $left, $right) = @_;
-    # Returns maximum of I<left> and I<right>.
-    return $self->compare($left, $right) <= 0 ? $right : $left;
+    my($proto, @values) = @_;
+    return $proto->reduce(sub {
+        my($v1, $v2) = @_;
+	return $proto->compare($v1, $v2) > 0 ? $v1 : $v2;
+    }, @values);
 }
 
 sub min {
-    my($self, $left, $right) = @_;
-    # Returns minimum of I<left> and I<right>.
-    return $self->compare($left, $right) <= 0 ? $left : $right;
+    my($proto, @values) = @_;
+    return $proto->reduce(sub {
+        my($v1, $v2) = @_;
+	return $proto->compare($v1, $v2) < 0 ? $v1 : $v2;
+    }, @values);
 }
 
 sub mul {
@@ -185,6 +189,13 @@ sub sub {
     # If decimals is undef, then the default precision is used.
     return _format($proto,
         GMP::Mpf::overload_subeq(_mpf($v), _mpf($v2), 0), $decimals);
+}
+
+sub sum {
+    my($proto, @values) = @_;
+    return $proto->reduce(sub {
+        return $proto->add(@_);
+    }, @values);
 }
 
 sub to_literal {
