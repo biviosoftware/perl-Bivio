@@ -263,6 +263,17 @@ sub package_version {
     };
 }
 
+sub reduce {
+    my($proto, $op, @values) = @_;
+    return () unless @values;
+    my($v) = shift(@values);
+
+    foreach my $value (@values) {
+	$v = $op->($v, $value);
+    }
+    return $v;
+}
+
 sub req {
     my($proto) = shift;
     my($req) = ref($proto) && $proto->can('get_request') && $proto->get_request
