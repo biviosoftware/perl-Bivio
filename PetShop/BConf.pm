@@ -48,7 +48,7 @@ sub merge_overrides {
 		Facade => ['Bivio::PetShop::Facade'],
 		HTMLWidget => ['Bivio::PetShop::Widget'],
 		Model => ['Bivio::PetShop::Model'],
-		ShellUtil => ['Bivio::PetShop'],
+		ShellUtil => ['Bivio::PetShop::Util'],
 		TestLanguage => ['Bivio::PetShop::Test'],
 		Type => ['Bivio::PetShop::Type'],
 		View => ['Bivio::PetShop::View'],
