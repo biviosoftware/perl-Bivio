@@ -1,0 +1,57 @@
+Return-Path: <tester@example.com>
+From: tester@example.com (Cron Daemon)
+To: tester@example.com
+Subject: Anything
+Date: Fri, 14 Mar 2008 02:30:02 -0600
+
+Deleting old test directory: /testdir/petshop/20080307023002
+Created /testdir/petshop/20080314023002
+Completed CVS checkout of test files
+       account.btest: PASSED
+          base.btest: PASSED
+basic-checkout.btest: FAILED
+          cart.btest: PASSED
+           crm.btest: FAILED
+           css.btest: PASSED
+     dav-forum.btest: PASSED
+dav-permission.btest: PASSED
+           dav.btest: FAILED
+ default-tuple.btest: FAILED
+     easy-form.btest: FAILED
+   email-alias.btest: PASSED
+general-contact.btest: PASSED
+  ics-calendar.btest: FAILED
+         login.btest: PASSED
+          mail.btest: FAILED
+        motion.btest: FAILED
+       my_test.btest: PASSED
+         order.btest: PASSED
+       otp-dav.btest: PASSED
+           otp.btest: FAILED
+      password.btest: FAILED
+    realm-file.btest: FAILED
+        remove.btest: PASSED
+        search.btest: PASSED
+      site-adm.btest: FAILED
+        source.btest: PASSED
+ test-backdoor.btest: FAILED
+         tuple.btest: FAILED
+          wiki.btest: FAILED
+      workflow.btest: PASSED
+Failed tests: 
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/basic-checkout.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/crm.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/dav.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/default-tuple.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/easy-form.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/ics-calendar.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/mail.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/motion.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/otp.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/password.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/realm-file.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/site-adm.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/test-backdoor.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/tuple.btest
+    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/wiki.btest
+FAILED 15 (48.4%) and passed 16 (51.6%)

@@ -1,0 +1,10 @@
+Return-Path: <tester@example.com>
+From: tester@example.com (Cron Daemon)
+To: tester@example.com
+Subject: Anything
+
+Created /testdir/project2/20080314123002
+Completed CVS checkout of test files
+       account.btest: PASSED
+          base.btest: PASSED
+
