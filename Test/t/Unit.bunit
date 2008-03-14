@@ -35,6 +35,10 @@ req()->set_realm('btest_read');
 		) {
 		    assert_equals(shift(@$c), req()->get_nested(@$c));
 		    assert_not_equals(1, 2);
+		    assert_equals(qr{unexpected match}, Bivio::Die->catch(sub {
+			assert_not_equals(qr{long}, 'some long thing'),
+		        return;
+		    }));
 		}
 		return 1;
 	    },
