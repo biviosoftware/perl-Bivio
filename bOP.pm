@@ -26,11 +26,32 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 5.93  2008/03/14 02:59:57  nagler
+  * Bivio::Biz::File
+    call rm_children
+  * Bivio::IO::File
+    added rm_children
+  * Bivio::PetShop::BConf
+    ShellUtil is now Bivio::PetShop::Util
+  * Bivio::Test::Unit
+    added assert_eval
+  * Bivio::Type::Number
+    added sum(),
+    max() and min() now take a variable number of values to compare
+  * Bivio::UI::View::CSS
+    fmt
+  * Bivio::UNIVERSAL
+    added reduce()
+  * Bivio::Util::Dev
+    support pet-sql
+  * Bivio::Util::SQL
+    use IO.File->rm_children
+
   Revision 5.92  2008/03/11 02:31:57  nagler
   * Bivio::Util::CRM (b-crm) added
   * Bivio::Biz::Action::RealmMail
