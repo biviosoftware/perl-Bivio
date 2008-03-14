@@ -202,7 +202,7 @@ sub nightly_output_to_wiki {
 	    $file->{$2} = $1;
 	}
     }
-    $date = $_DT->to_local_string($date);
+    $date = $_DT->to_string($date);
     $curr =~ s{\@h3.+? $which .+?(?=\@h3|$)}{}igs;
     my($class) = %$file ? 'FAILED' : 'passed';
     $curr =~ s{(?<=\n)}{
