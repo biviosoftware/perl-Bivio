@@ -63,6 +63,7 @@ my($_CLASS_DISPATCH) = {
     Model => 'builtin_model',
 };
 my($_A) = __PACKAGE__->use('IO.Alert');
+my($_R) = __PACKAGE__->use('IO.Ref');
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
@@ -438,9 +439,10 @@ sub _assert_expect {
     my($invert, $self, $expect, $actual) = @_;
     my($m) = $self->my_caller eq 'builtin_assert_equals'
 	? 'nested_differences' : 'nested_contains';
-    my($res) = Bivio::IO::Ref->$m($expect, $actual);
+    my($res) = $_R->$m($expect, $actual);
     Bivio::Die->throw_quietly(
-	DIE => "expected @{[$invert ? '=' : '!=']} actual:\n$$res",
+	DIE => $invert ? "unexpected match: " . ${$_R->to_string($expect)}
+	    : "expected != actual:\n$$res",
     ) if $invert xor $res;
     return 1;
 }
