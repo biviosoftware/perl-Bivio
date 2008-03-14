@@ -1,0 +1,46 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ShellUtil();
+req()->set_realm_and_user(qw(fourem root));
+my($q) = {path => '/Wiki/NightlyTestOutput'};
+model('RealmFile')->delete($q);
+options({
+    compute_params => sub {
+	my(undef, $params) = @_;
+	return [
+	    '-input', "Util/$params->[0].eml",
+	    qw(-realm fourem nightly_output_to_wiki),
+	];
+    },
+    check_return => sub {
+	my(undef, undef, $expected) = @_;
+	my($res) = model(RealmFile => $q)->get_content;
+	my($invert) = 0;
+	foreach my $e (@$expected) {
+	    if ($e eq '!') {
+		$invert = 1;
+		next;
+	    }
+	    $invert ? assert_not_equals($e, $$res) : assert_equals($e, $$res);
+	    $invert = 0;
+	}
+	return 1;
+    },
+});
+[
+    'project2-1' => [qr{h3\.passed passed project2 03/14}],
+    'project2-2' => [
+	qr{h3\.passed passed project2 03/15},
+	'!', qr{h3\.passed passed project2 03/14},
+    ],
+    'project2-3' => [
+ 	qr{h3\.FAILED FAILED project2 03/16},
+	'!', qr{h3\.passed passed project2 03/15},
+	'!', qr{h3\.passed passed project2 03/14},
+    ],
+    'petshop-1' => [
+	qr{h3\.FAILED FAILED petshop 03/13},
+        qr{dt basic-checkout.btest\n.dd \S+/basic-checkout}s,
+	qr{h3\.FAILED FAILED project2 03/16},
+    ],
+];
