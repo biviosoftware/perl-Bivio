@@ -25,6 +25,8 @@ Bivio::IO::Config->register({
 });
 my($_CFG);
 my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_PERL_DIR) = '/perl';
+my($_WN) = __PACKAGE__->use('Type.WikiName');
 
 sub USAGE {
     # Returns usage.
@@ -155,7 +157,7 @@ sub nightly {
     my($old_pwd) = Bivio::IO::File->pwd;
     _expunge($self);
     _make_nightly_dir($self);
-    $ENV{PERLLIB} = Bivio::IO::File->pwd . '/perl'
+    $ENV{PERLLIB} = Bivio::IO::File->pwd . $_PERL_DIR
 	. ($ENV{PERLLIB} ? ":$ENV{PERLLIB}" : '');
     my($die) = Bivio::Die->catch(sub {
         # CVS checkout
@@ -168,6 +170,54 @@ sub nightly {
     # restore state before die is rethrown
     Bivio::IO::File->chdir($old_pwd);
     $die->throw if $die;
+    return;
+}
+
+sub nightly_output_to_wiki {
+    my($self) = @_;
+    my($q) = {path => $_WN->to_absolute('NightlyTestOutput')};
+    my($rf) = $self->model('RealmFile');
+    my($curr) = "\@h1 NightlyTestOutput\n";
+    my($method) = 'create_with_content';
+    if ($rf->unsafe_load($q)) {
+	$curr = ${$rf->get_content};
+	$method = 'update_with_content';
+    }
+    my($which, $date);
+    my($result) = {};
+    my($file) = {};
+    foreach my $line (split(/\n/, ${$self->read_input})) {
+	if ($line =~ m{^Created .*/([^/]+)/(\d+)$}is) {
+	    ($which, $date) = ($1, $self->convert_literal(DateTime => $2));
+	}
+	elsif (!$which) {
+	    next;
+	}
+        elsif ($line =~ m{^\s*(\S+): (PASSED|FAILED)$}is) {
+	    my($t, $r) = ($1, $2);
+	    $file->{$t} = 'MISSING'
+		if ($result->{$t} = $r) =~ /FAILED/i;
+	}
+	elsif ($line =~ m{^\s*(.*/t/(.+))}is) {
+	    $file->{$2} = $1;
+	}
+    }
+    $date = $_DT->to_local_string($date);
+    $curr =~ s{\@h3.+? $which .+?(?=\@h3|$)}{}igs;
+    my($class) = %$file ? 'FAILED' : 'passed';
+    $curr =~ s{(?<=\n)}{
+	join("\n",
+	    "\@h3.$class $class $which $date",
+	     !%$file ? () : (
+		 '@dl.failed',
+		 map(("\@dt $_", "\@dd $file->{$_}"),
+		     sort(keys(%$file))),
+		 '@/dl',
+	     ),
+	     '',
+	 );
+    }esx;
+    $rf->$method($q, \$curr);
     return;
 }
 
