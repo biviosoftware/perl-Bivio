@@ -139,18 +139,18 @@ sub get_decimals {
 
 sub max {
     my($proto, @values) = @_;
-    return $proto->reduce(sub {
+    return $proto->iterate_reduce(sub {
         my($v1, $v2) = @_;
 	return $proto->compare($v1, $v2) > 0 ? $v1 : $v2;
-    }, @values);
+    }, \@values);
 }
 
 sub min {
     my($proto, @values) = @_;
-    return $proto->reduce(sub {
+    return $proto->iterate_reduce(sub {
         my($v1, $v2) = @_;
 	return $proto->compare($v1, $v2) < 0 ? $v1 : $v2;
-    }, @values);
+    }, \@values);
 }
 
 sub mul {

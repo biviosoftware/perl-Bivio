@@ -117,6 +117,19 @@ sub is_blessed {
 	? 1 : 0;
 }
 
+sub iterate_reduce {
+    my($proto, $op, $values, $initial) = @_;
+    my($start) = 0;
+    unless (defined($initial)) {
+	$initial = $values->[0];
+	$start++;
+    }
+    foreach my $i ($start .. $#$values) {
+	$initial = $op->($initial, $values->[$i]);
+    }
+    return $initial;
+}
+
 sub map_by_two {
     my(undef, $op, $values) = @_;
     $values ||= [];
@@ -261,17 +274,6 @@ sub package_version {
 	no strict 'refs';
 	return ${\${shift->package_name . '::VERSION'}};
     };
-}
-
-sub reduce {
-    my($proto, $op, @values) = @_;
-    return () unless @values;
-    my($v) = shift(@values);
-
-    foreach my $value (@values) {
-	$v = $op->($v, $value);
-    }
-    return $v;
 }
 
 sub req {
