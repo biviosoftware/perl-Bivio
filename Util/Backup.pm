@@ -1,11 +1,9 @@
-# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Backup;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::IO::Trace;
-
-# C<Bivio::Util::Backup> is a mirroring utility.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -17,19 +15,63 @@ Bivio::IO::Config->register({
     },
 });
 my($_D) = __PACKAGE__->use('Type.Date');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_F) = __PACKAGE__->use('IO.File');
 
 sub USAGE {
-    # Returns:
-    #
-    #  usage: b-backup [options] command [args...]
-    #  commands:
-    #     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
     return <<'EOF';
 usage: b-backup [options] command [args...]
 commands:
+    archive_mirror_link root date [min_kb] -- tar "link" to "daily" or "archive"
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
     trim_directories dirs-with-dates -- returns directories to trim
 EOF
+}
+
+sub archive_mirror_link {
+    my($self, $root, $date, $min_kb) = shift->name_args(
+	['String', 'Date', '?Integer'],
+	\@_,
+    );
+    $date = $_D->to_file_name($date);
+    $root = $_F->absolute_path($root);
+    my($link) = "$root/mirror/link/$date";
+    $self->usage_error($link, ': does not exist')
+	unless -d $link;
+    $min_kb ||= 0x100000;
+    my($archive) = "$root/archive/$date";
+    (my $glob = $archive) =~ s/\d\d$/??/;
+    $archive = "$root/daily/$date"
+	if glob($glob);
+    $self->usage_error($archive, ': already exists')
+	if -e $archive;
+    $_F->mkdir_p($archive, 0700);
+    $_F->do_in_dir($link, sub {
+	my($dirs) = [];
+	open(IN, 'du -k | sort -nr |') || die("du failed: $!");
+	while (defined(my $line = readline(IN))) {
+	    my($n, $d) = split(/\s+/, $line, 2);
+	    last
+		if $n < $min_kb;
+	    $d =~ s{^\./}{};
+	    chomp($d);
+	    push(@$dirs, $d);
+	}
+	# Directories with same size may come out in any order
+	$dirs = [sort(@$dirs)];
+	close(IN);
+	while (my $src = shift(@$dirs)) {
+	    my($dst) = "$archive/$src.tbz";
+	    $_F->mkdir_parent_only($dst, 0700);
+	    $dst =~ s/'/'"'"'/g;
+	    $src =~ s/'/'"'"'/g;
+	    $self->piped_exec("tar cjfX '$dst' - $src", \(join("\n", @$dirs)));
+	}
+	return;
+    });
+    $self->piped_exec("chmod -R -w $archive");
+#TODO:    $self->piped_exec("chmod -R u+w $link && rm -rf $link");
+    return;
 }
 
 sub handle_config {
@@ -65,7 +107,7 @@ sub mirror {
 	    $dir = "$host:$dir";
 	}
 	else {
-	    $self->use('IO.File')->mkdir_p($dir, 0700);
+	    $_F->mkdir_p($dir, 0700);
 	}
 	$res .= ${$self->piped_exec(
 	    "rsync -e ssh -azlSR --delete --timeout 43200"
@@ -84,7 +126,7 @@ sub mirror {
 }
 
 sub trim_directories {
-    my($self, @files) = shift->arg_list(\@_, [['String']]);
+    my($self, @files) = shift->name_args(['String'], \@_);
     my($files) = {map(
 	(($_ =~ /(\d{8})/)[0] || $self->usage_error($_, ': no date value'),
 	 $_),
