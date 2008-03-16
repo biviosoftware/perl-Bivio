@@ -449,15 +449,25 @@ sub _assert_expect {
 
 sub _call_class {
     my($func, $args) = @_;
+    my($map, $class);
     foreach my $m (@$_CLASS_SEARCH) {
-	next unless $_CL->unsafe_map_require($m, $func);
-	my($method) = $_CLASS_DISPATCH->{$m} || die;
-	return $_PROTO->$method($func, @$args);
+	next unless $class = $_CL->unsafe_map_require($m, $func);
+	$map = $m;
+	last;
     }
-    Bivio::Die->die(
-	$func, ': not a valid method of ', ref($_TYPE) || $_TYPE,
-	' and not not found in these maps: ', $_CLASS_SEARCH);
-    # DOES NOT RETURN
+    unless ($class) {
+	($map, $class) = $func =~ /^([A-Z][a-zA-Z]+)_([A-Z][A-Za-z0-9]+)$/;
+	Bivio::Die->die(
+	    $func, ': not a valid method of ', ref($_TYPE) || $_TYPE,
+	    ' and not not found in these maps: ', $_CLASS_SEARCH,
+	) unless $map && $_CL->is_map_configured($map)
+	    and $class = $_CL->unsafe_map_require($map, $class);
+    }
+    return $class
+	unless @$args;
+    return $class->new(@$args)
+	unless my $method = $_CLASS_DISPATCH->{$map};
+    return $_PROTO->$method($class->simple_package_name, @$args);
 }
 
 sub _called_in_closure {

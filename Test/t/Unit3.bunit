@@ -1,0 +1,14 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Unit();
+class('Bivio::Test::t::Unit::T1');
+[
+    class() => [
+	echo => [
+	    1 => 1,
+	    Integer('9') => 9,
+	    Type_Integer('9') => 9,
+	    Type_Integer()->get_min => class('Type.Integer')->get_min,
+	],
+    ],
+];
