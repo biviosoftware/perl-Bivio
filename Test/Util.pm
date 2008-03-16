@@ -203,7 +203,13 @@ sub nightly_output_to_wiki {
 	}
     }
     $date = $_DT->to_string($date);
-    $curr =~ s{\@h3.+? $which .+?(?=\@h3|$)}{}igs;
+    $curr = join(
+	'@h3.',
+	grep(
+	    $_ !~ /^\w+ \w+ \Q$which\E /s,
+	    split(/\@h3\./, $curr),
+	),
+    );
     my($class) = %$file ? 'FAILED' : 'passed';
     $curr =~ s{(?<=\n)}{
 	join("\n",

@@ -39,8 +39,13 @@ options({
 	'!', qr{h3\.passed passed project2 03/14},
     ],
     'petshop-1' => [
-	qr{h3\.FAILED FAILED petshop 03/13},
+	qr{h3\.FAILED FAILED petshop 03/14/2008 02:30:02},
         qr{dt basic-checkout.btest\n.dd \S+/basic-checkout}s,
 	qr{h3\.FAILED FAILED project2 03/16},
+    ],
+    'project2-4' => [
+	qr{h3\.FAILED FAILED petshop 03/14},
+        qr{dt basic-checkout.btest\n.dd \S+/basic-checkout}s,
+	qr{h3\.passed passed project2 03/17},
     ],
 ];
