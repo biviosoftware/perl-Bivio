@@ -38,7 +38,7 @@ sub archive_mirror_link {
     my($link) = "$root/mirror/link/$date";
     $self->usage_error($link, ': does not exist')
 	unless -d $link;
-    $min_kb ||= 0x100000;
+    $min_kb ||= 0x40000;
     my($archive) = "$root/archive/$date";
     (my $glob = $archive) =~ s/\d\d$/??/;
     $archive = "$root/daily/$date"
