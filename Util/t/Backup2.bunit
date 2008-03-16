@@ -1,0 +1,66 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+my($today) = '20070707';
+my($yesterday) = $today - 1;
+my($tmp) = 'Backup2';
+system("chmod -R a+rxw $tmp 2>/dev/null; rm -rf $tmp");
+Bivio::IO::File->mkdir_p($tmp);
+foreach my $day ($yesterday, $today) {
+    my($kb) = 1;
+    foreach my $d (qw{
+        x1/d1/s1
+        x2/d1/s1
+        x2/d1/d3/s1
+	x2/s1
+        1024
+	x1/b1
+        x1/d1/d2/b1
+        x2/d1/b1
+        x2/d2/d3/b1
+    }) {
+	if ($d =~ /^\d+$/) {
+	    $kb = $d;
+	    next;
+	}
+	my($src) = "$tmp/mirror/link/$day/$d";
+	IO_File()->mkdir_parent_only($src);
+	system("dd if=/dev/zero of=$src bs=1024 count=$kb > /dev/null 2>&1");
+    }
+}
+[
+    class() => [
+	{
+	    method => 'archive_mirror_link',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [$tmp, $params->[0], 100];
+	    },
+	    check_return => sub {
+		my($date) = shift->get('params')->[1];
+		my($d) = $date eq $yesterday ? "$tmp/archive/$yesterday"
+		    : "$tmp/daily/$today";
+		assert_eval("-d '$d'");
+		assert_eval("! -f '$d/x2/d1/d3.tbz'");
+		foreach my $x (
+		    [qw(x1 x1/b1)],
+		    [qw(x1/d1 x1/d1/s1)],
+		    [qw(x1/d1/d2 x1/d1/d2/b1)],
+		    [qw(x2 x2/s1)],
+		    [qw(x2/d1 x2/d1/d3 x2/d1/d3/s1 x2/d1/b1 x2/d1/s1)],
+		    [qw(x2/d2)],
+		    [qw(x2/d2/d3 x2/d2/d3/b1)],
+		) {
+		    assert_equals(
+			join('', sort(map(/[dx]\d+$/ ? "$_/\n" : "$_\n", @$x))),
+			scalar(`tar tjf $d/$x->[0].tbz 2>&1`),
+		    );
+		}
+		return 1;
+	    },
+	} => [
+	    $yesterday => [],
+	    $today => [],
+	],
+    ],
+];
