@@ -23,6 +23,10 @@ sub SITE_REALM_NAME {
     return 'site';
 }
 
+sub SITE_ADM_REALM_NAME {
+    return shift->SITE_REALM_NAME;
+}
+
 sub new {
     my($proto, $config) = @_;
     return $config->{clone} ? $proto->SUPER::new($config) : $proto->SUPER::new(
@@ -237,7 +241,7 @@ sub _cfg_base {
 			    Bivio::IO::Config->if_version(
                                 5 => sub {URI({
                                     task_id => 'SITE_ADM_SUBSTITUTE_USER_DONE',
-                                    realm => vs_constant('site_realm_name'),
+                                    realm => vs_constant('site_adm_realm_name'),
                                 })},
                                 sub {'LOGOUT'},
                             ),
@@ -965,6 +969,7 @@ sub _cfg_wiki {
 	        [qw(help_wiki_realm_id HELP_WIKI_REALM_NAME)],
 	        [qw(site_realm_id SITE_REALM_NAME)],
 	        [qw(site_contact_realm_id SITE_CONTACT_REALM_NAME)],
+	        [qw(site_adm_realm_id SITE_ADM_REALM_NAME)],
 	    ),
 	],
 	Font => [
