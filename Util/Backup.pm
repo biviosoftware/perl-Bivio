@@ -47,25 +47,28 @@ sub archive_mirror_link {
 	if -e $archive;
     $_F->mkdir_p($archive, 0700);
     $_F->do_in_dir($link, sub {
-	my($dirs) = [];
-	open(IN, 'du -k | sort -nr |') || die("du failed: $!");
-	while (defined(my $line = readline(IN))) {
-	    my($n, $d) = split(/\s+/, $line, 2);
-	    last
-		if $n < $min_kb;
-	    $d =~ s{^\./}{};
-	    chomp($d);
-	    push(@$dirs, $d);
-	}
-	# Directories with same size may come out in any order
-	$dirs = [sort(@$dirs)];
-	close(IN);
-	while (my $src = shift(@$dirs)) {
-	    my($dst) = "$archive/$src.tbz";
-	    $_F->mkdir_parent_only($dst, 0700);
-	    $dst =~ s/'/'"'"'/g;
-	    $src =~ s/'/'"'"'/g;
-	    $self->piped_exec("tar cjfX '$dst' - $src", \(join("\n", @$dirs)));
+        foreach my $top (glob('*')) {
+	    my($dirs) = [];
+	    open(IN, "du -k '$top' | sort -nr |")
+		|| Bivio::die->die($top, ": du failed: $!");
+	    while (defined(my $line = readline(IN))) {
+		my($n, $d) = split(/\s+/, $line, 2);
+		chomp($d);
+		last
+		    if @$dirs && $n < $min_kb;
+		push(@$dirs, $d);
+	    }
+	    # Directories with same size may come out in any order
+	    $dirs = [sort(@$dirs)];
+	    close(IN);
+	    while (my $src = shift(@$dirs)) {
+		my($dst) = "$archive/$src.tbz";
+		$_F->mkdir_parent_only($dst, 0700);
+		$dst =~ s/'/'"'"'/g;
+		$src =~ s/'/'"'"'/g;
+		$self->piped_exec(
+		    "tar cjfX '$dst' - $src", \(join("\n", @$dirs)));
+	    }
 	}
 	return;
     });
