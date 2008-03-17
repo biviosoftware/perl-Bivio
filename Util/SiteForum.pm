@@ -5,7 +5,8 @@ use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($_T) = __PACKAGE__->use('UI.Text');
+my($_T) = __PACKAGE__->use('UI.Text');
+my($_F) = __PACKAGE__->use('UI.Facade');
 
 sub CONTACT_REALM {
     return Bivio::UI::Facade->get_default->SITE_CONTACT_REALM_NAME;
@@ -63,6 +64,13 @@ sub init {
 	    Bivio::UI::Text->get_value('support_email'), $req),
 	outgoing => $self->CONTACT_REALM,
     });
+    $req->with_realm(
+	$_F->get_from_request_or_self($req)->SITE_ADM_REALM_NAME,
+	sub {
+	    $self->new_other('RealmRole')->edit_categories('+feature_site_adm');
+	    return;
+	},
+    );
     return;
 }
 
