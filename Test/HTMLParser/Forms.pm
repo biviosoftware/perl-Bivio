@@ -343,14 +343,12 @@ sub _label_option {
     Bivio::Die->die('duplicate ', $which, ': ', $o, ' select: ', $group)
 	if $group->{options}->{$o->{label}};
     $group->{options}->{$o->{label}} = $o;
-    # We take the "last" value selected as the default value
     $group->{value} = $o->{value}
 	if $o->{selected} || !defined($group->{value});
-
-    # Label the select?
-    if ($fields->{option} && $o->{selected}
-	    && !defined($fields->{select}->{label})) {
-	$fields->{text} = $o->{label};
+    if ($fields->{option} && !defined($fields->{select}->{label})) {
+	my($x) = $o->{value};
+	$fields->{text} = !$x || $o->{label} =~ /^(?:select|choose)\s/
+	    ? $o->{label} : '_anon';
 	_label_visible($fields);
     }
     $fields->{$which} = undef;
