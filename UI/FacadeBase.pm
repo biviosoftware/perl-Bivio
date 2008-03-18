@@ -885,7 +885,7 @@ sub _cfg_user_auth {
 		 USER_CREATE_DONE => 'Registration Email Sent',
 	    ]],
 	    [[qw(title xlink)] => [
-		GENERAL_CONTACT => 'Contact Us',
+		GENERAL_CONTACT => 'Contact',
 		USER_PASSWORD  => 'Password',
 		[qw(LOGIN my_site_login user_logged_out)] => 'Login',
 		[qw(LOGOUT user_logged_in)] => 'Logout',
@@ -894,6 +894,7 @@ sub _cfg_user_auth {
 		ADM_SUBSTITUTE_USER => 'Act as User',
 		SITE_ROOT => 'Home',
 		USER_SETTINGS_FORM => 'Personal Information and Settings',
+		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser is Missing Cookies',
 	    ]],
 	    [xlink => [
 		GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
@@ -907,11 +908,9 @@ sub _cfg_user_auth {
 		GENERAL_CONTACT => 'Please Contact Us',
 		USER_PASSWORD  => 'Your Password',
 		SITE_ROOT => '',
-		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser Missing Cookies',
 	    ]],
-	    ['task_menu.title' => [
-		GENERAL_CONTACT => 'Contact',
-		USER_SETTINGS_FORM => 'Settings',
+	    ['HelpWiki.title' => [
+		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Browser Missing Cookies',
 	    ]],
 	    [prose => [
 		xhtml_user_state => q{DIV_user_state(
