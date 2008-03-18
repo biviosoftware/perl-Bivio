@@ -25,6 +25,10 @@ options({
 #  	    ['Forms', 'dfcriteria'] => [],
 # 	],
 #     ],[
+ 	'first-option-label' => [
+ 	    ['Forms', 'Refresh', 'visible', '_anon', 'options', 'A1', 'value'] => 'a1',
+	],
+    ], [
  	'referenceusa' => [
  	    ['Forms', 'YOUR NAME:', 'visible',
  		 'YOUR NAME:', 'type'] => 'text',
