@@ -26,11 +26,34 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.1  2008/03/18 14:51:11  nagler
+  * Bivio::Test::HTMLParser::Forms
+    _start_option has to clear text so that first option label doesn't
+    have junk in it
+  * Bivio::Test::Unit
+    fix output for inverted _assert_expect
+    added Map_SimpleClass() dispatch to tests and allowed SimpleClass() if
+    in the list of known maps already
+  * Bivio::Test::Util
+    added nightly_output_to_wiki
+    nightly_output_to_wiki: date already in local time
+    nightly_output_to_wiki properly strips output
+  * Bivio::Type::Number
+    iterate_reduce replaces reduce
+  * Bivio::UI::FacadeBase
+    added SITE_ADM_REALM_NAME
+    added DEFAULT_ERROR_REDIRECT_FORBIDDEN title
+    Cleaned up links for titles
+  * Bivio::UNIVERSAL
+    iterate_reduce replaces reduce
+  * Bivio::Util::SiteForum
+    give SITE_ADM_REALM_NAME feature_site_adm
+
   Revision 6.0  2008/03/14 03:00:54  nagler
   Rollover to 6.0
 
