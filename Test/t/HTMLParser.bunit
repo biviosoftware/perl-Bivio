@@ -20,11 +20,10 @@ options({
 	    get_nested => $_->[1],
         ];
     } [
-#TODO: NOt working yet
-#  	'referenceusa2' => [
-#  	    ['Forms', 'dfcriteria'] => [],
-# 	],
-#     ],[
+ 	'chooser-label' => [
+ 	    ['Forms', 'Refresh', 'visible', '_anon', 'type'] => 'select',
+	],
+    ],[
  	'first-option-label' => [
  	    ['Forms', 'Refresh', 'visible', '_anon', 'options', 'A1', 'value'] => 'a1',
 	],
