@@ -8,6 +8,4 @@ Completed CVS checkout of test files
        account.btest: PASSED
           base.btest: PASSED
            crm.btest: FAILED
-    /testdir/petshop/20080314023002/perl/Bivio/PetShop/Test/t/crm.btest
-
-
+    /testdir/project2/20080316123002/perl/Bivio/PetShop/Test/t/crm.btest
