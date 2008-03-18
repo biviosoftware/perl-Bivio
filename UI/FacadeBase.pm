@@ -909,8 +909,9 @@ sub _cfg_user_auth {
 		USER_PASSWORD  => 'Your Password',
 		SITE_ROOT => '',
 	    ]],
-	    ['HelpWiki.title' => [
+	    [[qw(task_menu.title HelpWiki.title)] => [
 		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Browser Missing Cookies',
+		USER_SETTINGS_FORM => 'Settings',
 	    ]],
 	    [prose => [
 		xhtml_user_state => q{DIV_user_state(
