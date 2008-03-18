@@ -153,13 +153,7 @@ sub follow_link {
     my($self, @links) = @_;
     my($res);
     foreach my $link (@links) {
-	$link = _fixup_pattern_protected($self, $link);
-	my($m) = ref($link) ? 'get_by_regexp' : 'get';
-	$res = $self->visit_uri(
-	    _assert_html($self)->get('Links')
-	    ->$m($link)
-	    ->{href},
-	);
+	$res = $self->visit_uri(_html_get($self, Links => $link)->{href});
     }
     return $res;
 }
@@ -622,11 +616,9 @@ sub verify_form {
 
 sub verify_link {
     my($self, $link_text, $pattern) = @_;
-    # Verifies that named link exists and matches the specified pattern.
-    my($href) = _assert_html($self)->get_nested('Links', $link_text, 'href');
-    return unless $pattern;
-    Bivio::Die->die('Link "', $link_text, '" does not match "', $pattern, '"')
-	unless $href =~ $pattern;
+    my($href) = _html_get($self, Links => $link_text)->{href};
+    Bivio::Die->die($href, ': does not match pattern: ', $pattern)
+	if $pattern && $href !~ $pattern;
     return;
 }
 
@@ -1009,6 +1001,13 @@ sub _grep_msgs {
 	}
 	return;
     })];
+}
+
+sub _html_get {
+    my($self, $what, $key) = @_;
+    $key = _fixup_pattern_protected($self, $key);
+    my($m) = ref($key) ? 'get_by_regexp' : 'get';
+    return _assert_html($self)->get($what)->$m($key);
 }
 
 sub _key_from_hash {

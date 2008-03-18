@@ -99,6 +99,7 @@ EOF
 	    [<<'EOF'] => [undef],
 test_setup('HTTP');
 home_page();
+verify_link('sign');
 follow_link('Sign-in');
 save_excursion(sub {
     go_back();
