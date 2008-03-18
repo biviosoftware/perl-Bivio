@@ -499,6 +499,7 @@ sub _start_option {
     # Handles an OPTION tag.
     Bivio::Die->die('not in a select: ', $fields)
 	unless $fields->{select};
+    $fields->{text} = undef;
     $fields->{select}->{options} ||= {};
     $fields->{option} = $attr;
     return;
