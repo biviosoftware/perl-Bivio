@@ -763,8 +763,11 @@ sub piped_exec {
     defined($pid) || die("fork: $!");
 #TODO: Use IO::File and Bivio::IO::File
     unless ($pid) {
-	open(OUT, "| exec $command") || die("open $command: $!");
-	print OUT $$in;
+	(ref($command) eq 'ARRAY'
+	    ? open(OUT, '|-', @$command)
+	    : open(OUT, "| exec $command")
+	) || Bivio::Die->die($command, ": open failed: $!");
+	print(OUT $$in);
 	close(OUT);
 	# If there is a signal, return 99.  Otherwise, return exit code.
 	CORE::exit($? ? ($? >> 8) ? ($? >> 8) : 99 :  0);
