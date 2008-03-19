@@ -2,44 +2,7 @@
 # $Id$
 package Bivio::Biz::Action::ECCreditCardProcessor;
 use strict;
-$Bivio::Biz::Action::ECCreditCardProcessor::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Action::ECCreditCardProcessor::VERSION;
-
-=head1 NAME
-
-Bivio::Biz::Action::ECCreditCardProcessor - authorize.net interface
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Action::ECCreditCardProcessor;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::Action>
-
-=cut
-
-use Bivio::Biz::Action;
-@Bivio::Biz::Action::ECCreditCardProcessor::ISA = ('Bivio::Biz::Action');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Action::ECCreditCardProcessor> manages e-commerce payments.
-For credit card payments, it accesses the Authorize.Net payment
-gateway to submit the transactions via ADC direct response method.
-
-Technical details can be found in
-  http://www.authorize.net/support/AIM_guide.pdf
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Biz::Action';
 use Bivio::Die;
 use Bivio::Ext::LWPUserAgent;
 use Bivio::HTML;
@@ -55,9 +18,15 @@ use Bivio::Type::PrimaryId;
 use Bivio::UI::Text;
 use HTTP::Request ();
 
-#=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
+# C<Bivio::Biz::Action::ECCreditCardProcessor> manages e-commerce payments.
+# For credit card payments, it accesses the Authorize.Net payment
+# gateway to submit the transactions via ADC direct response method.
+#
+# Technical details can be found in
+#   http://www.authorize.net/support/AIM_guide.pdf
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_GW_LOGIN);
 my($_GW_PASSWORD);
 my($_GW_TEST_MODE);
@@ -67,21 +36,11 @@ Bivio::IO::Config->register({
     test_mode => 1,
 });
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="check_transaction_batch"></a>
-
-=head2 check_transaction_batch(Bivio::Agent::Request req)
-
-Download current batch from Authorize.Net and double-check
-settled transactions. Ignores errors as those may be retried.
-Format is one transaction per line (CR-LF), fields are TAB-separated.
-
-=cut
-
 sub check_transaction_batch {
+    # (self, Agent.Request) : undef
+    # Download current batch from Authorize.Net and double-check
+    # settled transactions. Ignores errors as those may be retried.
+    # Format is one transaction per line (CR-LF), fields are TAB-separated.
     my($proto, $req) = @_;
 #TODO: Recode this to new interface
     return;
@@ -136,23 +95,22 @@ sub check_transaction_batch {
     return;
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item login : string [undef]
-
-=item password : string [undef]
-
-=item test_mode : boolean [1]
-
-=back
-
-=cut
+sub execute_process {
+    # (self, Agent.Request) : boolean
+    # Process credit card payment online by contacting the payment gateway
+    # for the current ECPayment.
+    my($proto, $req) = @_;
+    _process_payment($proto, $req->get('Model.ECPayment'));
+    return;
+}
 
 sub handle_config {
+    # (proto, hash) : undef
+    # login : string [undef]
+    #
+    # password : string [undef]
+    #
+    # test_mode : boolean [1]
     my(undef, $cfg) = @_;
     $_GW_LOGIN = $cfg->{login};
     $_GW_PASSWORD = $cfg->{password};
@@ -160,44 +118,19 @@ sub handle_config {
     return;
 }
 
-=for html <a name="execute_process"></a>
-
-=head2 execute_process(Bivio::Agent::Request req) : boolean
-
-Process credit card payment online by contacting the payment gateway
-for the current ECPayment.
-
-=cut
-
-sub execute_process {
-    my($proto, $req) = @_;
-    _process_payment($proto, $req->get('Model.ECPayment'));
-    return;
-}
-
-=for html <a name="internal_get_additional_form_data"></a>
-
-=head2 internal_get_additional_form_data(proto, Model.ECPayment payment) : string
-
-Allow subclasses to provide additional form data for the payment processor.
-Used by ECSecureSourceProcessor.
-
-=cut
-
 sub internal_get_additional_form_data {
+    # (self, proto, Model.ECPayment) : string
+    # Allow subclasses to provide additional form data for the payment processor.
+    # Used by ECSecureSourceProcessor.
     my($proto, $payment) = @_;
     return '';
 }
 
-#=PRIVATE SUBROUTINES
-
-# _process_payment(proto, Model.ECPayment payment)
-#
-# Send transaction data to the payment gateway and process results.
-# See http://secure.authorize.net/docs/developersguide.pml for
-# details of required field names and values.
-#
 sub _process_payment {
+    # (proto, Model.ECPayment) : undef
+    # Send transaction data to the payment gateway and process results.
+    # See http://secure.authorize.net/docs/developersguide.pml for
+    # details of required field names and values.
     my($proto, $payment) = @_;
     return unless
 	$payment->get('method') == Bivio::Type::ECPaymentMethod->CREDIT_CARD;
@@ -226,12 +159,10 @@ sub _process_payment {
     return;
 }
 
-# _transact_form_data(proto, Model.ECPayment payment) : string
-#
-# Prepare payment transaction form data for capturing the amount.
-# Will add x_Test_Request=TRUE if in test mode.
-#
 sub _transact_form_data {
+    # (proto, Model.ECPayment) : string
+    # Prepare payment transaction form data for capturing the amount.
+    # Will add x_Test_Request=TRUE if in test mode.
     my($proto, $payment) = @_;
     my($cc_payment) = $payment->get_model('ECCreditCardPayment');
     my(undef, undef, undef, undef, $m, $y) = Bivio::Type::Date->to_parts(
@@ -274,12 +205,10 @@ sub _transact_form_data {
             $test_request;
 }
 
-# _update_status(proto, Model.ECPayment payment, string result_code, array_ref details)
-#
-# Update payment status given the gateway's result code.
-# Look at Authorize.Net developer's guide, app. C, for a list of error codes.
-#
 sub _update_status {
+    # (proto, Model.ECPayment, string, array_ref) : undef
+    # Update payment status given the gateway's result code.
+    # Look at Authorize.Net developer's guide, app. C, for a list of error codes.
     my($proto, $payment, $result_code, $details) = @_;
     my($error_code, $msg, $processor_transaction_number) =
 	$details ? (@$details)[1,2,5] : (undef, undef, undef);
@@ -318,11 +247,9 @@ sub _update_status {
     return;
 }
 
-# _warn_declined(proto, Model.ECPayment payment)
-#
-# Writes a warning about a declined or failed payment.
-#
 sub _warn_declined {
+    # (proto, Model.ECPayment) : undef
+    # Writes a warning about a declined or failed payment.
     my($proto, $payment) = @_;
     my($req) = $payment->get_request;
     $req->warn(
@@ -332,15 +259,5 @@ sub _warn_declined {
     );
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
