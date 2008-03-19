@@ -64,10 +64,10 @@ sub archive_mirror_link {
 	    while (my $src = shift(@$dirs)) {
 		my($dst) = "$archive/$src.tbz";
 		$_F->mkdir_parent_only($dst, 0700);
-		$dst =~ s/'/'"'"'/g;
-		$src =~ s/'/'"'"'/g;
 		$self->piped_exec(
-		    "tar cjfX '$dst' - $src", \(join("\n", @$dirs)));
+		    ['tar', 'cjfX', $dst, '-', $src],
+		    \(join("\n", @$dirs)),
+		);
 	    }
 	}
 	return;
