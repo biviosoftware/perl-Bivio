@@ -4,7 +4,7 @@ test_setup('PetShop');
 home_page();
 my($user) = generate_local_email('tuple_user');
 login_as($user);
-do_test_backdoor(Util => '-realm tuple_forum delete_all_tuples');
+do_test_backdoor(SQL => '-realm tuple_forum delete_all_tuples');
 visit_uri('tuple_forum/db-tables');
 follow_link_in_table(qw(table requests));
 verify_text(qr{no database records}i);
