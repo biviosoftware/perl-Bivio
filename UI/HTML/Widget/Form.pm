@@ -132,6 +132,7 @@ sub initialize {
 	$self->put(form_name => $name);
     }
 
+    $_VS->vs_html_attrs_initialize($self, $self->unsafe_get('html_attrs'));
     $self->initialize_attr(action => [['->get_request'], '->format_uri']);
     my($a) = $self->get('action');
     $self->put(action => [['->get_request'], '->format_stateless_uri', $a])
@@ -189,6 +190,9 @@ sub render {
     $$buffer .= $fields->{prefix}
 	. $action
 	. '"'
+	. $_VS->vs_html_attrs_render(
+	    $self, $source, $self->unsafe_get('html_attrs'),
+	)
 	. ($model->get_info('file_fields')
 	       ? ' enctype="multipart/form-data"' : '')
         . ">\n";
