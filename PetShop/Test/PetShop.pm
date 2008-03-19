@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio::Test::Language::HTTP';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_SQL) = __PACKAGE__->use('ShellUtil.SQL');
 
 sub add_to_cart {
     my($self, $item_name) = @_;
@@ -92,8 +93,7 @@ sub login_as {
     $self->follow_link('Sign-in');
     $self->submit_form(submit => {
         'Email:' => $user,
-	'Password:' => defined($password) ? $password
-	    : $self->use('Bivio::PetShop::Util')->PASSWORD,
+	'Password:' => defined($password) ? $password : $_SQL->PASSWORD,
     });
     $self->verify_text('Sign-out');
     return;
@@ -101,7 +101,7 @@ sub login_as {
 
 sub login_as_demo {
     my($self) = @_;
-    return $self->login_as($self->use('Bivio::PetShop::Util')->DEMO);
+    return $self->login_as($_SQL->DEMO);
 }
 
 sub next_message_id {
