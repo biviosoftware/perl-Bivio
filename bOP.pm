@@ -26,11 +26,18 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.2  2008/03/18 20:01:54  nagler
+  * Bivio::Test::HTMLParser::Forms
+    do not label selects with the selected value, rather call them _anon
+    if no obvious label
+  * Bivio::UI::FacadeBase
+    fpc
+
   Revision 6.1  2008/03/18 14:51:11  nagler
   * Bivio::Test::HTMLParser::Forms
     _start_option has to clear text so that first option label doesn't
