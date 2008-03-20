@@ -192,7 +192,6 @@ sub destroy_dbms {
     my($db) = $_C->get_dbi_config->{database};
     $self->are_you_sure("DROP THE ENTIRE $db DATABASE?");
     $self->piped_exec("dropdb --user=postgres $db", '', 1);
-    $self->use('Biz.File')->destroy_db;
     return;
 }
 
