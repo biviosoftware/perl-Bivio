@@ -193,9 +193,9 @@ sub sub {
 
 sub sum {
     my($proto, @values) = @_;
-    return $proto->reduce(sub {
+    return $proto->iterate_reduce(sub {
         return $proto->add(@_);
-    }, @values);
+    }, \@values);
 }
 
 sub to_literal {
