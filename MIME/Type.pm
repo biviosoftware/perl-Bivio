@@ -124,7 +124,6 @@ application/winhlp:hlp:WinHelp document
 application/wordperfect5.1:wp:WordPerfect 5.1 document
 application/x-asap:asp:asap file
 application/x-bcpio:bcpio:BCPIO file
-application/x-bwiki:bwiki:bOP Wiki
 application/x-compress:Z:Unix compressed data
 application/x-cpio:cpio:CPIO file
 application/x-csh:csh:C-Shell script
@@ -263,6 +262,7 @@ text/richtext:rtx:Richtext document
 text/setext:stx:Setext document
 text/sgml:sgml:SGML document
 text/tab-separated-values:tsv:Tab separated values
+text/x-bivio-wiki:bwiki:bOP Wiki
 text/x-speech:talk:Speech document
 text/x-vcard:vcf:V Card
 text/xml:xml,xsl,dtd:XML document
