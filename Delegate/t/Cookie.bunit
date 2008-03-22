@@ -20,7 +20,7 @@ options({
 	    [req(), req()->get('r')] => 1,
         ],
     ],
-    req('r') => [
+    sub {req('r')} => [
 	header_out => sub {
 	    my($case, $return) = @_;
 	    return 0 unless
@@ -30,7 +30,7 @@ options({
 	    return 1;
         },
     ],
-    'Bivio::Agent::HTTP::Cookie' => [
+    sub {'Bivio::Agent::HTTP::Cookie'} => [
 	new => [
 	    [req(), req('r')] => sub {
 		my($case, $return) = @_;
