@@ -4,12 +4,10 @@ use Bivio::PetShop::Util;
 ListModel();
 [
     load_all => [
-	[{search => Bivio::PetShop::Util->DEMO_LAST_NAME}] => [
-	    map(({
-		'User.first_name' => ucfirst($_),
-		'User.middle_name' => undef,
-	    }), sort(@{Bivio::PetShop::Util->demo_users})),
-	],
+	[{search => Bivio::PetShop::Util->DEMO_LAST_NAME}] => sub {
+	    shift->actual_return(req(class())->map_rows);
+	    return qr{btest_admin.*demo.*xapian_guest}xis;
+	},
     ],
 ];
 
