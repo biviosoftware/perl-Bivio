@@ -14,6 +14,7 @@ use Bivio::ShellUtil;
 use Socket ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_B) = __PACKAGE__->use('Test.Bean');
 
 sub get_instance {
     return shift->get_current_or_new(@_);
@@ -192,16 +193,16 @@ sub setup_http {
     return $self if $self->unsafe_get('r');
     # What's required by bOP infrastructure.
     Bivio::Type::UserAgent->BROWSER_HTML4->execute($self, 1);
-    my($r) = Bivio::Test::Bean->new;
+    my($r) = $_B->new;
     $self->put_durable(r => $r);
-    my($c) = Bivio::Test::Bean->new;
+    my($c) = $_B->new;
     $r->connection($c);
     $c->remote_ip('127.0.0.1');
     $c->local_addr(
 	Socket::pack_sockaddr_in(80, Socket::inet_aton($c->remote_ip)));
     $c->remote_addr($c->local_addr);
     $r->method('GET');
-    $r->server(Bivio::Test::Bean->new);
+    $r->server($_B->new);
     $r->uri('/');
     Bivio::IO::Config->introduce_values({
 	'Bivio::IO::ClassLoader' => {
