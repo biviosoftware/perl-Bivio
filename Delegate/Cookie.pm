@@ -1,4 +1,4 @@
-# Copyright (c) 2004 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2004-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::Cookie;
 use strict;
@@ -11,7 +11,6 @@ use Bivio::Base 'Collection.Attributes';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-# This field is used only locally.  See header_out()
 my($_MODIFIED_FIELD) = '_modified';
 my($_SEP) = "\036";
 my($_DT) = __PACKAGE__->use('Type.DateTime');
