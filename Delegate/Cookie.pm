@@ -23,6 +23,7 @@ Bivio::IO::Config->register(my $_CFG = {
     tag => 'A',
     is_temporary => 0,
     session_timeout_seconds => undef,
+    session_update_seconds => undef,
 });
 
 
@@ -55,6 +56,9 @@ sub handle_config {
     my(undef, $cfg) = @_;
     Bivio::Die->die($cfg->{domain}, ': domain must begin with dot (.)')
         if defined($cfg->{domain}) && $cfg->{domain} !~ /^\./;
+    $cfg->{session_update_seconds} = int($cfg->{session_timeout_seconds}/20)
+	if $cfg->{session_timeout_seconds}
+	&& !defined($cfg->{session_update_seconds});
     $_CFG = {%{$cfg}, tag => uc($cfg->{tag})};
     return;
 }
@@ -63,10 +67,7 @@ sub header_out {
     my($self, $req, $r) = @_;
     my($fields) = $self->internal_get;
     return 0
-	unless $req->get('Type.UserAgent')->is_browser;
-    return 0
-	unless $fields->{$_MODIFIED_FIELD}
-        || $_CFG->{session_timeout_seconds};
+	unless _need_header_out($self, $fields, $req);
     my($domain) = $_CFG->{domain}
         ? $_F->get_from_request_or_self($req)
             ->unsafe_get('cookie_domain') || $_CFG->{domain}
@@ -114,6 +115,26 @@ sub put {
     return $self->SUPER::put(@_, $_MODIFIED_FIELD => 1);
 }
 
+sub _need_header_out {
+    my($self, $fields, $req) = @_;
+    return 0
+	unless $req->get('Type.UserAgent')->is_browser;
+    return 1
+	if $fields->{$_MODIFIED_FIELD};
+    return 0
+	unless $_CFG->{session_timeout_seconds};
+    return 1
+	unless $_CFG->{session_update_seconds}
+	&& $fields->{$self->DATE_TIME_FIELD};
+    return $_DT->compare(
+	$_DT->add_seconds(
+	    $fields->{$self->DATE_TIME_FIELD},
+	    $_CFG->{session_update_seconds},
+	),
+	$_DT->now,
+    ) > 0 ? 0 : 1;
+}
+
 sub _parse {
     my($proto, $cookie) = @_;
     _trace($cookie) if $_TRACE;
@@ -122,12 +143,13 @@ sub _parse {
         unless $values;
     if ($_CFG->{session_timeout_seconds}) {
         my($date) = $_DT->from_literal($values->{$proto->DATE_TIME_FIELD});
-
-        if ($date && $_DT->compare($_DT->now,
-            $_DT->add_seconds($date, $_CFG->{session_timeout_seconds}))
-            > 0) {
-            _trace('session timed out') if $_TRACE;
-            # return valid values with no info except date
+        if ($date
+	    && $_DT->compare(
+	        $_DT->now,
+                $_DT->add_seconds($date, $_CFG->{session_timeout_seconds}),
+	    ) > 0
+	) {
+            _trace('session timed out: ', $_DT->to_string($date)) if $_TRACE;
             return {$proto->DATE_TIME_FIELD => $date};
         }
     }
