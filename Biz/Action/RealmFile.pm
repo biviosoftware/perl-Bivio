@@ -95,8 +95,11 @@ sub unauth_execute {
 
 sub _execute {
     my($realm_file) = @_;
-    $realm_file->req->get('reply')->set_output($realm_file->get_handle)
+    my($reply) = $realm_file->req->get('reply')
+	->set_output($realm_file->get_handle)
 	->set_output_type($realm_file->get_content_type);
+    $reply->set_cache_private
+	unless $realm_file->get('is_public');
     return 1;
 }
 
