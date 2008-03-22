@@ -17,7 +17,7 @@ options({
 	    [x1 => 'v1', x2 => 'v2'] => undef,
         ],
 	header_out => [
-	    [req(), req()->get('r')] => 1,
+	    [req(), req('r')] => 1,
         ],
     ],
     sub {req('r')} => [
