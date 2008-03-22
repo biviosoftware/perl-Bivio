@@ -1043,6 +1043,9 @@ sub _cfg_xapian {
 		search => '',
 		ok_button => 'Search',
 	    ]],
+	    [title => [
+		SEARCH_LIST => 'Search Results',
+	    ]],
 	],
     };
 }
