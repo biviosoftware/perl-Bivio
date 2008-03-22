@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Unit;
 use strict;
@@ -205,7 +205,8 @@ sub builtin_file_field {
 }
 
 sub builtin_from_type {
-    return shift->use('Type', shift(@_))->from_literal_or_die(shift(@_));
+    my($t) = shift->use('Type', shift(@_));
+    return @_ ? $t->from_literal_or_die(shift(@_)) : $t;
 }
 
 sub builtin_inline_case {
@@ -463,11 +464,10 @@ sub _call_class {
 	) unless $map && $_CL->is_map_configured($map)
 	    and $class = $_CL->unsafe_map_require($map, $class);
     }
-    return $class
-	unless @$args;
-    return $class->new(@$args)
-	unless my $method = $_CLASS_DISPATCH->{$map};
-    return $_PROTO->$method($class->simple_package_name, @$args);
+    if (my $method = $_CLASS_DISPATCH->{$map}) {
+	return $_PROTO->$method($class->simple_package_name, @$args);
+    }
+    return @$args ? $class->new(@$args) : $class;
 }
 
 sub _called_in_closure {
