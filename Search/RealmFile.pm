@@ -2,37 +2,16 @@
 # $Id$
 package Bivio::Search::RealmFile;
 use strict;
-use base 'Bivio::UNIVERSAL';
-use Bivio::Type;
-use Bivio::IO::Trace;
+use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($_TRACE);
-my($_BFN) = Bivio::Type->get_instance('BlogFileName');
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_FP) = Bivio::Type->get_instance('FilePath');
-my($_WN) = Bivio::Type->get_instance('WikiName');
-my($_TYPE_OK) = {};
+my($_P) = __PACKAGE__->use('Search.Parseable');
+my($_RF) = __PACKAGE__->use('SearchParser.RealmFile');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub parse_content {
     my($proto, $realm_file) = @_;
-    my($ct) = $realm_file->get_content_type;
-    (my $op = $ct) =~ s/\W+/_/g;
-    $op = \&{'_from_' . $op};
-    if (defined(&$op)
-        and my $attr = Bivio::Die->eval(
-	    # realm_file_id is useful in warning generated stack traces
-	    sub {$op->($proto, $realm_file, $realm_file->get('realm_file_id'))})
-    ) {
-	$_TYPE_OK->{$ct} = 1;
-	_trace($realm_file, ' => ', $attr) if $_TRACE;
-	return $attr ? {map(($_ => shift(@$attr)), qw(type title text))} : ();
-    }
-    Bivio::IO::Alert->warn(
-	$realm_file, ': unhandled content type or error parsing; ignoring'
-    ) if $_TYPE_OK->{$ct} || !defined($_TYPE_OK->{$ct});
-    $_TYPE_OK->{$ct} ||= 0;
-    return;
+    return $_RF->parse($_P->new($realm_file));
 }
 
 sub parse_for_xapian {
@@ -50,114 +29,6 @@ sub _field_term {
     ($t = $f) =~ s/[^a-z]//ig
 	unless $t;
     return 'X' . uc($t) . ':' . lc($m->get_or_default($f, ''));
-}
-
-sub _from_application_octet_stream {
-    my($proto, $rf) = @_;
-    if (-B $rf->get_os_path) {
-	Bivio::IO::Alert->info($rf, ': unhandled binary file');
-	return;
-    }
-    my($p) = $rf->get('path');
-    return _from_application_x_bwiki($proto, $rf)
-	if $_WN->is_absolute($p)
-	|| $_BFN->is_absolute($p);
-    return _from_text_plain($proto, $rf);
-}
-
-
-sub _from_application_pdf {
-    my($proto, $rf) = @_;
-    my($path) = $rf->get_os_path;
-    my $x = `pdfinfo $path 2>&1`;
-    my($title) = !$? && $x =~ /^Title:\s*(.*)/im ? $1 : undef;
-    $title = ''
-	unless defined($title);
-    $x = `pdftotext $path - 2>&1`;
-    if ($? || $x =~ /^Error:/s) {
-	Bivio::IO::Alert->warn($rf, ': pdftotext error: ', $x);
-	return;
-    }
-    $x =~ s/^\s*\n$//mg;
-    return ['application/pdf', $title, \$x];
-}
-
-sub _from_application_x_bwiki {
-    my($proto, $rf) = @_;
-    my($text) = $rf->get_content;
-    $$text =~ s/(?:^|\n)\@h\d+\s+([^\n]+)\n//s;
-    my($title) = $1;
-    $$text =~ s/(?=\@p)/\n/mg;
-    $$text =~ s/^\@(?:\!.*\n|\S+(?:\s*\w+=\S+)*\s*)//mg;
-    return [
-	'text/plain',
-	$title || $_FP->get_base($rf->get('path')),
-	$text,
-    ];
-}
-
-sub _from_message_rfc822 {
-    my($proto, $rf) = @_;
-    my($subject) = '';
-    my($msg) = join(
-	"\n\n",
-	@{$rf->new_other('MailPartList')->load_from_content($rf->get_content)
-	->map_rows(sub {
-	    my($it) = @_;
-	    my($mt) = $it->get('mime_type');
-	    return $it->get_body
-		if $mt eq 'text/plain';
-	    return ${_from_text_html($proto, $it->get_body)->[2]}
-		if $mt eq 'text/html';
-	    # Subject must be first
-	    if ($mt eq 'x-message/rfc822-headers') {
-		$subject ||= $it->get_header('subject');
-		return join("\n", map(
-		    $_ . ': ' . $it->get_header($_),
-		    qw(subject to from),
-		));
-	    }
-#TODO: handle other parts like pdf, doc, zip, etc.
-	    return '';
-        })},
-    );
-    return ['message/rfc822', $subject, \$msg];
-}
-
-sub _from_text_csv {
-    return _from_text_plain(@_);
-}
-
-sub _from_text_html {
-    my($proto, $rf_or_text) = @_;
-    my($t) = ref($rf_or_text) ? $rf_or_text->get_content : \$rf_or_text;
-    $$t =~ s{<title\s*>([^<]+)</title\s*>}{}is;
-    $$t =~ s/<p[^>]*>|<br[^>]*>\s*(&nbsp;?)*<br[^>]*>/ PARAGRAPH_SPLIT_HERE /isg;
-    my($title) = $1;
-    $title =~ s/^\s+|\s+$//gs
-	if defined($title);
-    $t = $proto->use('Bivio::HTML::Scraper')->to_text($t);
-    $$t =~ s/\s+/ /sg;
-    $$t =~ s/ *\bPARAGRAPH_SPLIT_HERE\b */\n\n/sg;
-    return [
-	'text/html',
-	$title || '',
-	$t,
-    ];
-}
-
-sub _from_text_plain {
-    my(undef, $rf) = @_;
-    my($ct) = $rf->get_content_type;
-    return [
-	$ct eq 'application/octet-stream' ? 'text/plain' : $ct,
-	'',
-	$rf->get_content,
-    ];
-}
-
-sub _from_text_tab_separated_values {
-    return _from_text_plain(@_);
 }
 
 sub _omega_terms {

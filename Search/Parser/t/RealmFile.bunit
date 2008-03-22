@@ -1,0 +1,55 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.  $Id:
+# RealmFile.bunit,v 1.5 2006/07/14 23:08:15 nagler Exp $
+Request();
+req()->set_realm_and_user(qw(fourem demo));
+my($dir) = '/search-parser-realm-file/';
+[
+    {
+	object => class(),
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    rollback();
+	    return [class('Search.Parseable')->new(
+		model('RealmFile')->create_with_content({
+		    path => ($params->[1] || $dir) . $params->[0],
+		}, read_file('RealmFile/' . $params->[0])),
+	    )];
+	},
+    } => [
+	{
+	    method => 'parse',
+	    check_return => sub {
+		my(undef, undef, $expect) = @_;
+		$expect = [@$expect, 'TITLE']
+		    if @$expect == 1;
+		return @$expect == 2 ? [@$expect, qr{^some text\s*$}s] : $expect;
+	    },
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		return [$actual->[0] ? map(
+		    ref($_) ? $$_ : $_,
+		    @{$actual->[0]}{qw(type title text)},
+		) : ()];
+	    },
+	} => [
+	    `pdftotext -v 2>&1 < /dev/null` =~ /version/i
+		? ('t.pdf' => 'application/pdf') : (),
+	    't.txt' => ['text/plain', ''],
+	    't.csv' => ['text/csv', '', "some,text\n"],
+	    't.html' => 'text/html',
+	    't.bwiki' => 'text/plain',
+	    't.eml' => ['message/rfc822', 'TITLE', (sub {chomp(my $x = shift); $x})->(<<'EOF')],
+subject: TITLE
+to: hello
+from: John Doe <john@example.com>
+
+ some text 
+EOF
+	    't.gif' => [],
+	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
+	    TextFile => ['text/plain', ''],
+	    BinaryFile => [],
+	    ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
+	],
+    ],
+];

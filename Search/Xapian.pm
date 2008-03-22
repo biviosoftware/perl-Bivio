@@ -105,7 +105,8 @@ sub update_realm_file {
 	$proto,
 	$req,
 	$rf->simple_package_name,
-	$rf->get(qw(realm_id realm_file_id)),
+	$rf->get('realm_id'),
+	$rf->get_primary_id,
 	$proto->use('Bivio::Search::RealmFile')->parse_for_xapian($rf),
     );
     return;
