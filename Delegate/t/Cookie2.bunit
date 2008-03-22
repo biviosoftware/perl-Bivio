@@ -12,10 +12,11 @@ req()->setup_http(class())->initialize_fully;
 	{
 	    method => 'header_out',
 	    compute_params => sub {
-		my(undef, $params) = @_;
+		my($case, $params) = @_;
 		req('r')->server;
 	        req('r')->server(my $s = Test_Bean()->new);
 		$s->server_hostname($params->[0]);
+		$case->get('object')->put(x => 1);
 		return [req(), req('r')];
 	    },
 	} => [
