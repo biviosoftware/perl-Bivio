@@ -1,41 +1,8 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Reply;
 use strict;
-$Bivio::Agent::HTTP::Reply::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::HTTP::Reply::VERSION;
-use Bivio::IO::Trace;
-
-=head1 NAME
-
-Bivio::Agent::HTTP::Reply - a HTTP reply
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-   use Bivio::Agent::HTTP::Reply;
-
-=head1 EXTENDS
-
-L<Bivio::Agent::Reply>
-
-=cut
-
-use Bivio::Agent::Reply;
-@Bivio::Agent::HTTP::Reply::ISA = qw(Bivio::Agent::Reply);
-
-=head1 DESCRIPTION
-
-C<Bivio::Agent::HTTP::Reply> is the complement to
-L<Bivio::Agent::HTTP::Request>. By default the
-output type will be 'text/html'.
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Agent::Reply';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Ext::ApacheConstants;
@@ -44,7 +11,7 @@ use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
 use UNIVERSAL;
 
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 # Can't initialize here, because get "deep recursion".  Don't ask me
 # why...
@@ -54,39 +21,9 @@ Bivio::IO::Config->register({
     additional_http_headers => undef,
 });
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(Apache::Request r) : Bivio::Agent::HTTP::Reply
-
-Creates a new Reply type which uses the specified Apache::Request for
-output operations.
-
-=cut
-
-sub new {
-    return shift->SUPER::new->put(
-	output_type => 'text/html',
-	r => shift,
-    );
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="client_redirect"></a>
-
-=head2 client_redirect(Bivio::Agent::Request req, string uri)
-
-Redirects the client to the specified uri.
-
-=cut
-
 sub client_redirect {
+    # (self, Agent.Request, string) : undef
+    # Redirects the client to the specified uri.
     my($self, $req, $uri) = @_;
     my($r) = $self->get('r');
     $self->internal_put({});
@@ -110,51 +47,79 @@ EOF
     return;
 }
 
-=for html <a name="delete_output"></a>
-
-=head2 delete_output() : scalar_ref
-
-Delete and return output.
-
-=cut
-
 sub delete_output {
+    # (self) : scalar_ref
+    # Delete and return output.
     my($self) = @_;
     my($output) = $self->unsafe_get('output');
     $self->delete('output');
     return $output;
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item additional_http_headers : array_ref []
-
-An array of [key => value] pairs to add to the http header for all
-replies.
-
-=back
-
-=cut
+sub die_to_http_code {
+    # (proto, Bivio.Die) : int
+    # (proto, Bivio.DieCode, Apache.Request) : int
+    # Translates a L<Bivio::DieCode> to an L<Apache::Constant>.
+    #
+    # If I<die> is C<undef>, returns C<Bivio::Ext::ApacheConstants::OK>.
+    my(undef, $die, $r) = @_;
+    return Bivio::Ext::ApacheConstants->OK
+	unless defined($die);
+    $die = $die->get('code')
+	if UNIVERSAL::isa($die, 'Bivio::Die');
+    return Bivio::Ext::ApacheConstants->OK
+	unless defined($die);
+    %_DIE_TO_HTTP_CODE = (
+	# Keep in synch with HTTP::Dispatcher
+	Bivio::DieCode->FORBIDDEN
+	    => Bivio::Ext::ApacheConstants->FORBIDDEN,
+	Bivio::DieCode->NOT_FOUND
+	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
+	Bivio::DieCode->MODEL_NOT_FOUND
+	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
+	Bivio::DieCode->CLIENT_REDIRECT_TASK
+	    => Bivio::Ext::ApacheConstants->OK,
+	Bivio::DieCode->CORRUPT_QUERY
+	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
+	Bivio::DieCode->CORRUPT_FORM
+	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
+	Bivio::DieCode->INVALID_OP
+	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
+	Bivio::DieCode->INPUT_TOO_LARGE
+	    => Bivio::Ext::ApacheConstants->HTTP_REQUEST_ENTITY_TOO_LARGE,
+    ) unless %_DIE_TO_HTTP_CODE;
+    return _error($_DIE_TO_HTTP_CODE{$die}, $r)
+	if defined($_DIE_TO_HTTP_CODE{$die});
+    # The rest get mapped to SERVER_ERROR
+    Bivio::IO::Alert->warn($die, ": unknown Bivio::DieCode")
+	    unless UNIVERSAL::isa($die, 'Bivio::DieCode');
+    return _error(Bivio::Ext::ApacheConstants::SERVER_ERROR(), $r);
+}
 
 sub handle_config {
+    # (proto, hash) : undef
+    # additional_http_headers : array_ref []
+    #
+    # An array of [key => value] pairs to add to the http header for all
+    # replies.
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     return;
 }
 
-=for html <a name="send"></a>
-
-=head2 send(Bivio::Agent::Request req)
-
-Sends the buffered reply data.
-
-=cut
+sub new {
+    # (proto, Apache.Request) : HTTP.Reply
+    # Creates a new Reply type which uses the specified Apache::Request for
+    # output operations.
+    return shift->SUPER::new->put(
+	output_type => 'text/html',
+	r => shift,
+    );
+}
 
 sub send {
+    # (self, Agent.Request) : undef
+    # Sends the buffered reply data.
     my($self, $req) = @_;
     my($r, $o) = $self->unsafe_get(qw(r output));
 
@@ -203,106 +168,26 @@ sub send {
     return;
 }
 
-=for html <a name="die_to_http_code"></a>
-
-=head2 static die_to_mail_reply_code(Bivio::Die die) : int
-
-=head2 static die_to_http_code(Bivio::DieCode die, Apache::Request r) : int
-
-Translates a L<Bivio::DieCode> to an L<Apache::Constant>.
-
-If I<die> is C<undef>, returns C<Bivio::Ext::ApacheConstants::OK>.
-
-=cut
-
-sub die_to_http_code {
-    my(undef, $die, $r) = @_;
-    return Bivio::Ext::ApacheConstants->OK
-	unless defined($die);
-    $die = $die->get('code')
-	if UNIVERSAL::isa($die, 'Bivio::Die');
-    return Bivio::Ext::ApacheConstants->OK
-	unless defined($die);
-    %_DIE_TO_HTTP_CODE = (
-	# Keep in synch with HTTP::Dispatcher
-	Bivio::DieCode->FORBIDDEN
-	    => Bivio::Ext::ApacheConstants->FORBIDDEN,
-	Bivio::DieCode->NOT_FOUND
-	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
-	Bivio::DieCode->MODEL_NOT_FOUND
-	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
-	Bivio::DieCode->CLIENT_REDIRECT_TASK
-	    => Bivio::Ext::ApacheConstants->OK,
-	Bivio::DieCode->CORRUPT_QUERY
-	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
-	Bivio::DieCode->CORRUPT_FORM
-	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
-	Bivio::DieCode->INVALID_OP
-	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
-	Bivio::DieCode->INPUT_TOO_LARGE
-	    => Bivio::Ext::ApacheConstants->HTTP_REQUEST_ENTITY_TOO_LARGE,
-    ) unless %_DIE_TO_HTTP_CODE;
-    return _error($_DIE_TO_HTTP_CODE{$die}, $r)
-	if defined($_DIE_TO_HTTP_CODE{$die});
-    # The rest get mapped to SERVER_ERROR
-    Bivio::IO::Alert->warn($die, ": unknown Bivio::DieCode")
-	    unless UNIVERSAL::isa($die, 'Bivio::DieCode');
-    return _error(Bivio::Ext::ApacheConstants::SERVER_ERROR(), $r);
-}
-
-=for html <a name="set_cache_private"></a>
-
-=head2 set_cache_private()
-
-Do not allow shared caching of this response.
-
-=cut
-
 sub set_cache_private {
+    # (self) : undef
+    # Do not allow shared caching of this response.
     my($self) = @_;
     $self->set_header('Cache-Control', 'private');
     return;
 }
 
-=for html <a name="set_expire_immediately"></a>
-
-=head2 set_expire_immediately()
-
-Set the page so it will expire immediately.
-
-=cut
-
 sub set_expire_immediately {
+    # (self) : undef
+    # Set the page so it will expire immediately.
     my($self) = @_;
     $self->set_header(Expires => 'Tue, 01 Apr 1980 05:00:00 GMT');
     return;
 }
 
-=for html <a name="set_last_modified"></a>
-
-=head2 set_last_modified(string date_time)
-
-=head2 set_last_modified(int unix_time)
-
-Sets the last modified header.
-
-=cut
-
-sub set_last_modified {
-    shift->set_header('Last-Modified', Bivio::Type::DateTime->rfc822(shift));
-    return;
-}
-
-=for html <a name="set_http_status"></a>
-
-=head2 set_http_status(int status) : self
-
-Sets the HTTP return code.  Use C<Bivio::Ext::ApacheConstants> values, e.g.
-C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
-
-=cut
-
 sub set_http_status {
+    # (self, int) : self
+    # Sets the HTTP return code.  Use C<Bivio::Ext::ApacheConstants> values, e.g.
+    # C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
     my($self, $status) = @_;
     # It is error prone keeping a list up to date, so we just check
     # a reasonable range.
@@ -313,18 +198,19 @@ sub set_http_status {
     return $self;
 }
 
-=for html <a name="set_output"></a>
-
-=head2 set_output(scalar_ref value) : self
-
-=head2 set_output(IO::File file) : self
-
-Sets the output to the file.  Output type must be set.
-I<file> or I<value> will be owned by this method.
-
-=cut
+sub set_last_modified {
+    # (self, string) : undef
+    # (self, int) : undef
+    # Sets the last modified header.
+    shift->set_header('Last-Modified', Bivio::Type::DateTime->rfc822(shift));
+    return;
+}
 
 sub set_output {
+    # (self, scalar_ref) : self
+    # (self, IO.File) : self
+    # Sets the output to the file.  Output type must be set.
+    # I<file> or I<value> will be owned by this method.
     my($self, $value) = @_;
     die('too many calls to set_output')
 	if $self->has_keys('output');
@@ -334,25 +220,15 @@ sub set_output {
     return shift->SUPER::set_output(@_);
 }
 
-=for html <a name="unsafe_get_output"></a>
-
-=head2 unsafe_get_output() : ref
-
-Returns the current output value.
-
-=cut
-
 sub unsafe_get_output {
+    # (self) : ref
+    # Returns the current output value.
     return shift->unsafe_get('output');
 }
 
-#=PRIVATE METHODS
-
-# _add_additional_http_headers(self, Apache::Request r)
-#
-# Adds any additional http headers from the configuration.
-#
 sub _add_additional_http_headers {
+    # (self, Apache.Request) : undef
+    # Adds any additional http headers from the configuration.
     my($self, $r) = @_;
     return unless $_CFG->{additional_http_headers};
 
@@ -365,12 +241,10 @@ sub _add_additional_http_headers {
     return;
 }
 
-# _error(int code, Apache::Request r) : Bivio::Ext::ApacheConstants::OK
-#
-# Workaround for apache in error mode.  Sends the reply in line.
-# This is due to a bug in apache which uses a form.  See Req#21
-#
 sub _error {
+    # (int, Apache.Request) : ApacheConstants.OK
+    # Workaround for apache in error mode.  Sends the reply in line.
+    # This is due to a bug in apache which uses a form.  See Req#21
     my($code, $r) = @_;
 #TODO: Older mod_perl versions had Apache::Constants bugs when not
 #      running in apache.  If you're using 5.6.* or higher, you're
@@ -432,12 +306,10 @@ EOF
     return Bivio::Ext::ApacheConstants->OK;
 }
 
-# _send_http_header(Bivio::Agent::HTTP::Reply self, Bivio::Agent::Request req, Apache r)
-#
-# Sends the header, turning off keep alive (if necessary) and set cookie
-# (if req)
-#
 sub _send_http_header {
+    # (HTTP.Reply, Agent.Request, Apache) : undef
+    # Sends the header, turning off keep alive (if necessary) and set cookie
+    # (if req)
     my($self, $req, $r) = @_;
     if ($req) {
 	$r->status($self->get('status'))
@@ -462,16 +334,5 @@ sub _send_http_header {
     $r->send_http_header;
     return;
 }
-
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
