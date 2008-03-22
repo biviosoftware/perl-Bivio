@@ -1,0 +1,32 @@
+# $Id$
+# Copyright (c) 2002-2008 bivio Software, Inc.  All rights reserved.
+Request();
+req()->setup_http(class())->initialize_fully;
+[
+    [req(), req('r')] => [
+	{
+	    method => 'header_out',
+	    compute_params => sub {
+		my($case, $params) = @_;
+		# Bypass MODIFIED_FIELD
+		my($g) = $case->get('object')->internal_get;
+		$g->{d} = !defined($params->[0]) ? undef
+		    : DateTime()->add_seconds(now(), $params->[0]);
+		config({
+		    class() => {
+			session_timeout_seconds => 10,
+			session_update_seconds => $params->[1],
+		    },
+		});
+		return [req(), req('r')];
+	    },
+	} => [
+	    [-6, 5] => 1,
+	    [0, 5] => 0,
+	    [-20, 0] => 1,
+	    [0, 0] => 1,
+	    [undef, 5] => 1,
+	],
+    ],
+];
+
