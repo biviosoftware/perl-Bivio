@@ -12,7 +12,7 @@ options({
     method_is_autoloaded => 1,
 });
 [
-    [req(), req('r')] => [
+    sub {Bivio::Agent::HTTP::Cookie->new(req(), req('r'))} => [
 	put => [
 	    [x1 => 'v1', x2 => 'v2'] => undef,
         ],
