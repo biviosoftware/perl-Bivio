@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmFile;
 use strict;
@@ -9,11 +9,13 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_BFN) = __PACKAGE__->use('Type.BlogFileName');
+my($_DELETED_SENTINEL) = 'DELETED IN TRANSACTION';
+my($_DFN) = Bivio::Type->get_instance('DocletFileName');
 my($_F) = __PACKAGE__->use('Biz.File');
 my($_FP) = Bivio::Type->get_instance('FilePath');
-my($_DFN) = Bivio::Type->get_instance('DocletFileName');
 my($_TXN_PREFIX);
-my($_DELETED_SENTINEL) = 'DELETED IN TRANSACTION';
+my($_WN) = __PACKAGE__->use('Type.WikiName');
 Bivio::IO::Config->register(my $_CFG = {
     search_class => undef,
 });
@@ -115,7 +117,12 @@ sub get_content_length {
 
 sub get_content_type {
     my(undef, undef, $prefix, $values) = shift->internal_get_target(@_);
-    return Bivio::MIME::Type->from_extension($values->{$prefix . 'path'});
+    my($p) = $values->{$prefix . 'path'};
+    my($res) = Bivio::MIME::Type->from_extension($p);
+    return $res eq 'application/octet-stream'
+	&& ($_WN->is_absolute($p) || $_BFN->is_absolute($p))
+	? 'text/x-bivio-wiki'
+	: $res;
 }
 
 sub get_handle {
