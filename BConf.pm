@@ -205,12 +205,15 @@ sub merge_class_loader {
 		    Biz => ['Bivio::Biz'],
 		    Ext => ['Bivio::Ext'],
 		    FacadeComponent => ['Bivio::UI'],
+		    HTML => ['Bivio::HTML'],
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
 		    IO => ['Bivio::IO'],
 		    Mail => ['Bivio::Mail'],
 		    MIME => ['Bivio::MIME'],
 		    Model => ['Bivio::Biz::Model'],
 		    Search => ['Bivio::Search'],
+		    SearchParser => ['Bivio::Search::Parser'],
+		    SearchParserRealmFile => ['Bivio::Search::Parser::RealmFile'],
 		    map(
 			("${_}Widget" => [
 			    $_ && $_ ne 'CSS' ? "Bivio::UI::${_}::Widget" : (),
