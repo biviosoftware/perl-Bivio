@@ -178,7 +178,8 @@ sub view_parent {
 sub view_pre_execute {
     my($proto, $code) = _args(@_);
     # Code to be executed prior to rendering the view.
-    _die('view_pre_execute must be a code_ref') unless ref($code) eq 'CODE';
+    _die('view_pre_execute must be a code_ref')
+	unless ref($code) eq 'CODE';
     _put(view_pre_execute => $code);
     return;
 }
