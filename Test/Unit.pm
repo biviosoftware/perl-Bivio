@@ -64,6 +64,7 @@ my($_CLASS_DISPATCH) = {
 };
 my($_A) = __PACKAGE__->use('IO.Alert');
 my($_R) = __PACKAGE__->use('IO.Ref');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
@@ -268,6 +269,10 @@ sub builtin_not_die {
     # Returns C<undef> which is the value L<Bivio::Test::unit|Bivio::Test/"unit">
     # uses for ignoring result, but not allowing a die.
     return undef;
+}
+
+sub builtin_now {
+    return $_DT->now;
 }
 
 sub builtin_options {
