@@ -1,75 +1,12 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Reply;
 use strict;
-$Bivio::Test::Reply::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::Reply::VERSION;
+use Bivio::Base 'Bivio::Agent::Reply';
 
-=head1 NAME
 
-Bivio::Test::Reply - holds the output
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Test::Reply;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Agent::Reply>
-
-=cut
-
-use Bivio::Agent::Reply;
-@Bivio::Test::Reply::ISA = ('Bivio::Agent::Reply');
-
-=head1 DESCRIPTION
-
-C<Bivio::Test::Reply>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::Test::Reply
-
-New instance.
-
-=cut
-
-sub new {
-    my($proto) = shift;
-    my($self) = $proto->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="delete_output"></a>
-
-=head2 delete_output() : string_ref
-
-Returns the reply as a string ref.  Always reads the contents.
-
-=cut
 
 sub delete_output {
     my($self) = @_;
@@ -78,26 +15,23 @@ sub delete_output {
     return $res;
 }
 
-=for html <a name="get_output"></a>
-
-=head2 get_output() : string_ref
-
-Returns the reply as a string ref.  Always reads the contents.
-
-=cut
-
 sub get_output {
     return shift->[$_IDI]->{output}
 	or Bivio::Die->die('no output');
 }
 
-=for html <a name="set_header"></a>
+sub new {
+    my($proto) = shift;
+    my($self) = $proto->SUPER::new(@_);
+    $self->[$_IDI] = {};
+    return $self;
+}
 
-=head2 set_header(string name, string value)
-
-Sets an arbitrary header value.
-
-=cut
+sub set_cache_private {
+    my($self) = @_;
+    $self->put(cache_private => 1);
+    return;
+}
 
 sub set_header {
     my($self, $name, $value) = @_;
@@ -105,14 +39,6 @@ sub set_header {
     ($fields->{headers} ||= {})->{$name} = $value;
     return;
 }
-
-=for html <a name="set_output"></a>
-
-=head2 set_output(any value)
-
-Accepts outputs same as Bivio::Agent::HTTP::Reply.
-
-=cut
 
 sub set_output {
     my($self, $value) = @_;
@@ -125,28 +51,8 @@ sub set_output {
     return $self;
 }
 
-=for html <a name="unsafe_get_output"></a>
-
-=head2 unsafe_get_output() : string_ref
-
-Returns the reply as a string ref.  Always reads the contents.
-
-=cut
-
 sub unsafe_get_output {
     return shift->[$_IDI]->{output};
 }
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
