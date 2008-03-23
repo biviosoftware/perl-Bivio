@@ -680,6 +680,18 @@ div.wiki {
 EOF
 }
 
+sub _site_xapian {
+    return <<'EOF';
+td.header_right form.search {
+  text-align: right;
+  margin-top: 1ex;
+}
+td.header_right form.search input.go {
+  margin-left: .3em;
+}
+EOF
+}
+
 sub _v4 {
     my($text) = @_;
     return Bivio::IO::Config->if_version(

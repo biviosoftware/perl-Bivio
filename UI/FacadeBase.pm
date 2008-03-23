@@ -1036,8 +1036,10 @@ sub _cfg_xapian {
 	],
 	Text => [
 	    [SearchList => [
-		'RealmFile.modified_date_time' => 'Last Update',
-		'RealmFile.path' => 'Description',
+		'RealmFile.modified_date_time' => 'Date',
+		'result_title' => 'Title',
+		'result_excerpt' => 'Excerpt',
+		'result_who' => 'Who',
 	    ]],
 	    [SearchForm => [
 		search => '',
