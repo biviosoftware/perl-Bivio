@@ -286,7 +286,7 @@ sub builtin_options {
 
 sub builtin_random_string {
     # Return a random string
-    return shift->use('Biz.Random')->string(shift || 8);
+    return shift->use('Biz.Random')->string(shift || 8, @_);
 }
 
 sub builtin_read_file {
