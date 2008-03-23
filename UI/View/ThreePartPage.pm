@@ -4,12 +4,9 @@ package Bivio::UI::View::ThreePartPage;
 use strict;
 use Bivio::Base 'Bivio::UI::View::Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
-#
-# You must create your own View.Base if you want to use this class.  See
-# PetShop's View.Base.
-#
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_TI) = __PACKAGE__->use('Agent.TaskId');
 
 sub internal_xhtml_adorned {
     my($self) = @_;
@@ -40,6 +37,12 @@ sub internal_xhtml_adorned {
 }
 
 sub internal_xhtml_adorned_attrs {
+    view_pre_execute(sub {
+	my($req) = shift->get_request;
+	Bivio::Biz::Model->new($req, 'SearchForm')->process
+	    unless $req->unsafe_get('Model.SearchForm');
+	return;
+    }) if $_TI->unsafe_from_name('SEARCH_LIST');
     view_put(
 	xhtml_outermost_class => '',
 	xhtml_title => Join([
@@ -75,6 +78,18 @@ sub internal_xhtml_adorned_attrs {
 		),
 	    ])),
 	    vs_text_as_prose('xhtml_user_state'),
+	    !$_TI->unsafe_from_name('SEARCH_LIST') ? () : Form({
+		action => $_TI->SEARCH_LIST,
+		form_class => 'SearchForm',
+		value => Join([
+		    Text({
+			field => 'search',
+			size => 30,
+		    }),
+		    ImageFormButton(qw(ok_button magnifier go)),
+		]),
+		class => 'search',
+	    }),
 	]),
 	xhtml_main_left => '',
 	xhtml_main_right => '',
