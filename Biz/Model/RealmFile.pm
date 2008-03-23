@@ -163,7 +163,7 @@ sub handle_commit {
 
 sub handle_config {
     my($proto, $cfg) = @_;
-    $proto->use($cfg->{search_class})
+    $cfg->{search_class} = $proto->use($cfg->{search_class})
 	if $cfg->{search_class};
     $_CFG = $cfg;
     return;
