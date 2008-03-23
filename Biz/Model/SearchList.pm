@@ -6,8 +6,12 @@ use base 'Bivio::Biz::ListModel';
 use Bivio::Search::Xapian;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_BFN) = Bivio::Type->get_instance('BlogFileName');
-my($_BT) = Bivio::Type->get_instance('BlogTitle');
+my($_BFN) = __PACKAGE__->use('Type.BlogFileName');
+my($_MFN) = __PACKAGE__->use('Type.MailFileName');
+my($_P) = __PACKAGE__->use('Search.Parseable');
+my($_RF) = __PACKAGE__->use('SearchParser.RealmFile');
+my($_WN) = __PACKAGE__->use('Type.WikiName');
+my($_FP) = __PACKAGE__->use('Type.FilePath');
 my($_REALM_FILE_FIELDS) = [qw(
     realm_file_id
     path
@@ -21,6 +25,7 @@ my($_REALM_OWNER_FIELDS) = [qw(
     name
     display_name
 )];
+my($_A) = __PACKAGE__->use('Mail.Address');
 
 sub RESULT_EXCERPT_LENGTH {
     return 500;
@@ -42,7 +47,7 @@ sub internal_initialize {
 	$self->merge_initialize_info($self->SUPER::internal_initialize, {
 	    other => [
 		@{$self->internal_initialize_local_fields(
-		    [qw(result_uri result_category result_class result_excerpt)],
+		    [qw(result_uri result_title result_excerpt result_who)],
 		    'Text', 'NOT_NULL',
 		)},
 		map(+{name => $_, in_select => 0},
@@ -87,7 +92,7 @@ sub internal_post_load_row {
 }
 
 sub internal_post_load_row_with_model {
-    my($self, $row, $model) = @_;
+    my($proto, $row, $model) = @_;
     foreach my $f (@$_REALM_FILE_FIELDS) {
 	$row->{"RealmFile.$f"} = $model->get($f);
     }
@@ -97,27 +102,49 @@ sub internal_post_load_row_with_model {
     foreach my $f (@$_REALM_OWNER_FIELDS) {
 	$row->{"RealmOwner.$f"} = $ro->get($f);
     }
-    if ($_BFN->is_absolute($row->{'RealmFile.path'})) {
-	$row->{result_uri} = $self->get_request->format_uri({
+    $row->{result_who}
+	= $ro->unauth_load_or_die({realm_id => $row->{'RealmFile.user_id'}})
+	->get('display_name');
+    my($req) = $model->req;
+    my($other);
+    $row->{result_uri} = $req->format_uri(
+	$_BFN->is_absolute($row->{'RealmFile.path'}) ? {
 	    task_id => 'FORUM_BLOG_DETAIL',
 	    realm => $row->{'RealmOwner.name'},
 	    query => undef,
 	    path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
-	});
-	$row->{result_excerpt} = $_BT->from_content($model->get_content);
-    }
-    else {
-	$row->{result_uri} = $self->get_request->format_uri({
+	} : $_WN->is_absolute($row->{'RealmFile.path'}) ? {
+	    task_id => 'FORUM_WIKI_VIEW',
+	    realm => $row->{'RealmOwner.name'},
+	    query => undef,
+	    path_info => $_WN->from_absolute($row->{'RealmFile.path'}),
+	} : $_MFN->is_absolute($row->{'RealmFile.path'}) ? $req->with_realm(
+	    $row->{'RealmOwner.name'},
+	    sub {
+		return {
+		    task_id => $req->get('auth_realm')
+			->does_user_have_permissions(['FEATURE_CRM'], $req)
+		        ? 'FORUM_CRM_THREAD_LIST' : 'FORUM_MAIL_THREAD_LIST',
+		    realm => $row->{'RealmOwner.name'},
+		    query => {
+			'ListQuery.parent_id' => ($other = $model
+			    ->new_other('RealmMail')
+			    ->load({
+				realm_file_id =>
+				$row->{'RealmFile.realm_file_id'},
+			    }))->get('thread_root_id'),
+		    },
+		    anchor => $row->{'RealmFile.realm_file_id'},
+		};
+	    },
+	) : {
 	    task_id => 'FORUM_FILE',
 	    realm => $row->{'RealmOwner.name'},
 	    query => undef,
 	    path_info => $row->{'RealmFile.path'},
-	});
-	$row->{result_excerpt} = substr(
-	    ${$model->get_content},
-	    0, $self->RESULT_EXCERPT_LENGTH,
-	);
-    }
+	},
+    );
+    _excerpt($proto, $row, $model, $other);
     return 1;
 }
 
@@ -132,6 +159,47 @@ sub parse_query_from_request {
 	$q->put(search => $f->unsafe_get('search'));
     }
     return $q;
+}
+
+sub _excerpt {
+    my($proto, $row, $model, $other_model) = @_;
+    my($x) = $_RF->parse($_P->new($model));
+    $row->{result_title} = $_FP->get_tail($model->get('path'));
+    return $row->{result_excerpt} = ''
+	unless $x;
+    $row->{result_title} = $x->{title}
+	if length($x->{title});
+    my($max) = $proto->RESULT_EXCERPT_LENGTH;
+    my($num_words) = $max/6;
+    my($words) = [grep(
+	length($_),
+	split(
+	    ' ',
+	    ref($other_model) =~ /RealmMail/
+		? _trim_mail_header($x->{text}, $row)
+		: ${$x->{text}},
+	    $num_words,
+	),
+    )];
+    pop(@$words)
+	if @$words >= $num_words;
+    $max *= 1.5;
+    while (1) {
+	last if length($row->{result_excerpt} = join(' ', @$words)) < $max;
+	pop(@$words);
+    }
+    return;
+}
+
+sub _trim_mail_header {
+    my($v, $row) = @_;
+    my($h, $b) = split(/\n\n/, $$v, 2);
+    if ($h =~ /^from:\s+(.+)/mi) {
+	my($a, $n) = $_A->parse($1);
+	$row->{'result_who'} = $n
+	    if $n ||= ($a =~ /(.+?)\@/)[0];
+    }
+    return $b;
 }
 
 1;
