@@ -1055,7 +1055,7 @@ sub info_wiki {
 sub info_xapian {
     Bivio::IO::Config->introduce_values({
 	'Bivio::Biz::Model::RealmFile' => {
-	    search_class => 'Bivio::Search::Xapian',
+	    search_class => 'Search.Xapian',
 	},
     });
     return [
@@ -1064,8 +1064,7 @@ sub info_xapian {
 	    60
 	    GENERAL
 	    ANYBODY
-	    Model.Lock
-	    Bivio::Search::Xapian
+	    Search.Xapian
 	)],
   	[qw(
  	    SEARCH_LIST
