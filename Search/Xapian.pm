@@ -1,27 +1,31 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Search::Xapian;
 use strict;
-use base 'Bivio::Collection::Attributes';
-use Bivio::Biz::File;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
-use Bivio::Type;
 use File::Spec ();
 use Search::Xapian ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 #TODO: What is the actual max term length; I've seen errors in the 400 range
 my($_MAX_WORD) = 240;
-my($_LENGTH) = Bivio::Type->get_instance('PageSize')->get_default;
+my($_LENGTH) = __PACKAGE__->use('Type.PageSize')->get_default;
 my($_STEMMER) = Search::Xapian::Stem->new('english');
 my($_FLAGS) = 0;
 foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD)) {
     $_FLAGS |= Search::Xapian->$f();
 }
-our($_TRACE);
-Bivio::IO::Config->register(my $_CFG = {
-    db_path => Bivio::Biz::File->absolute_path('Xapian'),
+__PACKAGE__->use('IO.Config')->register(my $_CFG = {
+    db_path => __PACKAGE__->use('Biz.File')->absolute_path('Xapian'),
 });
+my($_F) = __PACKAGE__->use('IO.File');
+my($_L) = __PACKAGE__->use('Model.Lock');
+my($_GENERAL_ID) = __PACKAGE__->use('Auth.Realm')->get_general->get('id');
+my($_MRF) = __PACKAGE__->use('Model.RealmFile');
+my($_SRF) = __PACKAGE__->use('Search.RealmFile');
+my($_A) = __PACKAGE__->use('IO.Alert');
 
 sub delete_realm_file {
     my($proto, $realm_file_or_id, $req) = @_;
@@ -39,15 +43,16 @@ sub delete_realm_file {
 sub destroy_db {
     my(undef, $req) = @_;
     Bivio::Die->die('general lock must be acquired')
-	unless Bivio::Biz::Model->new($req, 'Lock')->is_general_acquired;
-    Bivio::IO::Alert->info($_CFG->{db_path}, ': deleting');
-    Bivio::IO::File->rm_rf($_CFG->{db_path});
+	unless $_L->new($req)->is_general_acquired;
+    $_A->info($_CFG->{db_path}, ': deleting');
+    $_F->rm_rf($_CFG->{db_path});
     return;
 }
 
 sub execute {
     my($proto, $req) = @_;
     my($self) = $req->get(ref($proto) || $proto);
+    $_L->new($req)->acquire_general_unless_exists;
     unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
     my($db) = Search::Xapian::WritableDatabase->new(
 	$_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
@@ -64,20 +69,21 @@ sub execute {
 
 sub handle_commit {
     my($self, $req) = @_;
-    if (Bivio::Biz::Model->new($req, 'Lock')->is_general_acquired) {
+    if ($req->isa('Bivio::Agent::HTTP::Request')) {
+	$self->use('AgentJob.Dispatcher')->enqueue(
+	    $req,
+	    'JOB_XAPIAN_COMMIT',
+	    {
+		ref($self) => $self,
+		auth_id => $_GENERAL_ID,
+		auth_user_id => undef,
+	    },
+	);
+    }
+    else {
 	$req->put(ref($self) => $self);
 	$self->execute($req);
-	return;
     }
-    $self->use('Bivio::Agent::Job::Dispatcher')->enqueue(
-	$req,
-	'JOB_XAPIAN_COMMIT',
-	{
-	    ref($self) => $self,
-	    auth_id => Bivio::Auth::Realm->get_general->get('id'),
-	    auth_user_id => undef,
-	},
-    );
     return;
 }
 
@@ -98,7 +104,7 @@ sub update_realm_file {
 	[update_realm_file => $realm_file->get('realm_file_id')],
 	$realm_file->get_request,
     ) unless ref($proto);
-    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
+    my($rf) = $_MRF->new($req);
     return unless $rf->unauth_load({realm_file_id => $realm_file})
 	&& !$rf->get('is_folder');
     _replace(
@@ -107,7 +113,7 @@ sub update_realm_file {
 	$rf->simple_package_name,
 	$rf->get('realm_id'),
 	$rf->get_primary_id,
-	$proto->use('Bivio::Search::RealmFile')->parse_for_xapian($rf),
+	$_SRF->parse_for_xapian($rf),
     );
     return;
 }
