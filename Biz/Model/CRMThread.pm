@@ -52,6 +52,8 @@ sub create {
 sub handle_mail_post_create {
     my($proto, $realm_mail, $in) = @_;
     my($req) = $realm_mail->req;
+    return
+	unless $proto->is_enabled_for_auth_realm($req);
     my($v) = {
 	map(($_ => $proto->clean_subject($realm_mail->get($_))),
 	    qw(subject subject_lc)),
