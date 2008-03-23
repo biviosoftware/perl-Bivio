@@ -60,7 +60,8 @@ sub internal_part_list {
 		   _thread_list_director($self),
 	       ),
 	    ),
-	 ),
+	),
+	{id => ['RealmMail.realm_file_id']},
     );
 }
 
