@@ -1,0 +1,62 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully;
+my($tag) = random_string(5, ['a' .. 'z']);
+req()->set_realm_and_user('xapian_demo', 'xapian_demo');
+foreach my $x (
+    ['/Wiki/MyPage', "\@h1 wiki_t\n$tag\n"],
+    ['/Blog/200801/01010101', "\@h1 blog_t\n$tag\n"],
+    ['/file.txt', "$tag " x 505],
+    ['/file.html', "<html><head><title>html_t</title></head><body><a href='#'>$tag</a></body></html>"],
+    ['/not-found.gif', $tag],
+) {
+    model('RealmFile')->create_or_update_with_content({
+	path => $x->[0],
+    }, \($x->[1]));
+}
+my($mail_body) = 'some text that is not short, but not long.';
+model('RealmMail')->create_from_rfc822(\(<<"EOF"));
+From: Jane Doe <jane\@doe.com>
+Message-Id: <$tag.$tag\@localhost.localdomain>
+To: xapian_demo\@localhost.localdomain
+Subject: $tag in the subject
+
+$mail_body
+EOF
+commit();
+[
+    load_all => [
+	[{search => $tag}] => sub {
+	    my($o) = shift->get('object');
+	    assert_equals(5, $o->get_result_set_size);
+	    $o->do_rows(sub {
+		my($p, $e, $t, $w) = $o->get(qw(
+	            RealmFile.path
+	            result_excerpt
+		    result_title
+		    result_who
+		));
+		assert_not_equals(qr{not-found}i, $p);
+		if ($p eq '/file.txt') {
+		    assert_equals(int(500/6) - 1, scalar(@{[split(' ', $e)]}));
+		    assert_equals('file.txt', $t);
+		}
+		elsif ($p =~ /mail/i) {
+		    assert_equals($mail_body, $e);
+		    assert_equals('Jane Doe', $w);
+		}
+		else {
+		    assert_equals(qr{xapian_demo}i, $w);
+		    foreach my $x (qw(html wiki blog)) {
+			next unless $p =~ /$x/i;
+			assert_equals("${x}_t", $t);
+			assert_equals($tag, $e);
+		    }
+		}
+		return 1;
+	    });
+	    return 1;
+	},
+    ],
+];
