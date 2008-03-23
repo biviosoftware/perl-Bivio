@@ -6,13 +6,14 @@ do {
 	    db_path => Bivio::IO::File->absolute_path('Xapian.tmp'),
 	},
 	'Bivio::Biz::Model::RealmFile' => {
-	    search_class => 'Bivio::Search::Xapian',
+	    search_class => 'Search.Xapian',
 	},
     });
     my($files) = [];
     my($root) = '/xapian';
     model('Lock')->execute_general(req());
     Bivio::Search::Xapian->destroy_db;
+    commit();
     foreach my $op (
 	[xapian_demo => [
 	    'common word word albeit',
@@ -29,6 +30,7 @@ do {
     ) {
 	my($user, $data) = @$op;
 	req()->set_realm_and_user($user, $user);
+ 	model('RealmMail')->delete_all;
  	model('RealmFile')->delete_all;
 	foreach my $x (@$data) {
 	    push(@$files, model('RealmFile')->create_with_content(
