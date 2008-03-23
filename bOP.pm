@@ -26,11 +26,25 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.3  2008/03/20 03:16:17  nagler
+  * Bivio::Biz::Action::ECCreditCardProcessor
+    rm pod
+  * Bivio::PetShop::Test::PetShop
+    moved Util.SQL
+  * Bivio::ShellUtil
+    piped_exec supports array for $command
+  * Bivio::Test::Language::HTTP
+    verify_link supports patterns properly
+  * Bivio::UI::HTML::Widget::Form
+    added html_attrs
+  * Bivio::Util::Backup
+    use array_ref for piped_exec command of tar to avoid escape issues
+
   Revision 6.2  2008/03/18 20:01:54  nagler
   * Bivio::Test::HTMLParser::Forms
     do not label selects with the selected value, rather call them _anon
