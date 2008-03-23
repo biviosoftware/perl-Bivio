@@ -79,6 +79,12 @@ req()->set_realm('btest_read');
 	builtin_shell_util => [
 	    [Class => [qw(qualified_name Model.RealmOwner)]] => qr{RealmOwner},
 	],
+	builtin_random_string => [
+	    [] => qr{^.{8}$}s,
+	    [2] => qr{^.{2}$}s,
+	    [5, ['a' .. 'a']] => qr{^a{5}$}s,
+	    [undef, ['a' .. 'a']] => qr{^a{8}$}s,
+	],
     ],
     sub {'Bivio::UNIVERSAL'} => [
 	simple_package_name => 'UNIVERSAL',
