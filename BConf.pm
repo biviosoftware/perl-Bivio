@@ -82,6 +82,9 @@ sub default_merge_overrides {
 		call_filter => '$sub =~ /_trace_sql/',
 		package_filter => '/^Bivio::SQL::Connection$/',
 	    },
+	    search => {
+		package_filter => '/::Search/',
+	    },
 	},
     };
     return $args->{version} < 2 ? %$res : $res;
@@ -198,6 +201,8 @@ sub merge_class_loader {
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
 		    Agent => ['Bivio::Agent'],
+		    AgentHTTP => ['Bivio::Agent::HTTP'],
+		    AgentJob => ['Bivio::Agent::Job'],
 		    Auth => ['Bivio::Auth'],
 		    Bivio => ['Bivio'],
 		    Collection => ['Bivio::Collection'],
