@@ -452,11 +452,11 @@ sub unsafe_get_redirect {
 
 sub _call_txn_resources {
     my($req, $method) = @_;
-    # Call the transaction resource handlers.
     return unless $req;
-    my($resources) = $req->unsafe_get('txn_resources');
-    $req->put(txn_resources => []);
-    if (ref($resources) eq 'ARRAY') {
+    foreach my $n (1..10) {
+	my($resources) = $req->unsafe_get('txn_resources');
+	$req->put(txn_resources => []);
+	return unless ref($resources) eq 'ARRAY' && @$resources;
 	while (my $r = pop(@$resources)) {
 	    _trace($r, '->', $method) if $_TRACE;
 	    next unless my $die = Bivio::Die->catch(
@@ -470,7 +470,12 @@ sub _call_txn_resources {
 	    $method = 'rollback';
 	}
     }
-    return;
+    Bivio::Die->die(
+	$req->unsafe_get('txn_resources'),
+	': transaction resource loop: ',
+	$req,
+    );
+    # DOES NOT RETURN
 }
 
 sub _init_executables {
