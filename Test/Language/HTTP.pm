@@ -411,9 +411,7 @@ sub random_integer {
 }
 
 sub random_string {
-    # Returns a random lower case alphanumeric string I<chars> length (default: 8).
-    return shift->use('Bivio::Biz::Random')
-	->string(shift || 8, [0..9, 'a'..'z']);
+    return shift->use('Bivio::Biz::Random')->string(@_);
 }
 
 sub read_file {
