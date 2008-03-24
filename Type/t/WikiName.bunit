@@ -32,6 +32,9 @@ Type();
 	    '/Wiki/AAA' => 1,
 	    '/Wiki/^' => 0,
 	],
+	from_absolute => [
+	    '/Wiki/StartPage' => 'StartPage',
+	],
 	title_to_help => [
 	    'Foo Bar' => 'Foo_Bar_Help',
 	],
