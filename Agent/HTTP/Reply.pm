@@ -136,7 +136,6 @@ sub send {
 	$self->set_cache_private;
     }
     else {
-	# Files read from disk are never private
 	$self->set_last_modified((stat(_))[9])
 	    unless $self->get_if_exists_else_put('headers', {})->{'Last-Modified'};
     }
