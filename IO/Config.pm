@@ -248,10 +248,10 @@ sub if_version {
     my($version) = $_ACTUAL->{$_PKG}->{version} || 0;
     while (@cond) {
         my($cond_version, $op) = splice(@cond, 0, 2);
-	return $op->()
+	return ref($op) eq 'CODE' ? $op->() : $op
 	    if $version >= $cond_version;
     }
-    return $else->();
+    return ref($else) ? $else->() : $else;
 }
 
 sub introduce_values {
