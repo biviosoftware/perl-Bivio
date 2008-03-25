@@ -118,6 +118,7 @@ sub get_content_length {
 sub get_content_type {
     my(undef, undef, $prefix, $values) = shift->internal_get_target(@_);
     my($p) = $values->{$prefix . 'path'};
+    $p =~ s/;\d+//;
     my($res) = Bivio::MIME::Type->from_extension($p);
     return $res eq 'application/octet-stream'
 	&& ($_WN->is_absolute($p) || $_BFN->is_absolute($p))
