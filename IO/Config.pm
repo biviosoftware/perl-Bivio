@@ -244,6 +244,8 @@ sub get {
 
 sub if_version {
     my($proto, @cond) = @_;
+    push(@cond, 1)
+	if @cond == 1 && !ref($cond[0]);
     my($else) = @cond % 2 ? pop(@cond) : sub {};
     my($version) = $_ACTUAL->{$_PKG}->{version} || 0;
     while (@cond) {
