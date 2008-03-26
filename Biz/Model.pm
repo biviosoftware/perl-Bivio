@@ -493,16 +493,9 @@ sub put {
 
 sub put_on_request {
     my($self, $durable) = @_;
-    # Adds this instance to the request, stored with the key
-    # 'Model.<simple package name>'.
-    #
-    #
-    # Adds the model to the request as a durable attribute. The model will
-    # survive server redirects.
     my($req) = $self->unsafe_get_request;
-    return unless $req;
-
-    # ref($self) for backward compatibility
+    return $self
+	unless $req;
     foreach my $key ('Model.'.$self->simple_package_name, ref($self)) {
 	if ($durable) {
 	    $req->put_durable($key => $self);
@@ -511,7 +504,7 @@ sub put_on_request {
 	    $req->put($key => $self);
 	}
     }
-    return;
+    return $self;
 }
 
 sub set_ephemeral {
