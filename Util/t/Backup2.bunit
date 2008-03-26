@@ -3,10 +3,11 @@
 Request();
 my($today) = '20070707';
 my($yesterday) = $today - 1;
+my($yesterday2) = $today - 2;
 my($tmp) = 'Backup2';
 system("chmod -R a+rxw $tmp 2>/dev/null; rm -rf $tmp");
 Bivio::IO::File->mkdir_p($tmp);
-foreach my $day ($yesterday, $today) {
+foreach my $day ($yesterday2, $yesterday, $today) {
     my($kb) = 1;
     foreach my $d (qw{
         x1/d1/s1
@@ -39,8 +40,8 @@ foreach my $day ($yesterday, $today) {
 	    },
 	    check_return => sub {
 		my($date) = shift->get('params')->[1];
-		my($d) = $date eq $yesterday ? "$tmp/archive/$yesterday"
-		    : "$tmp/daily/$today";
+		my($d) = $date eq $yesterday ? "$tmp/archive/$date"
+		    : "$tmp/daily/$date";
 		assert_eval("-d '$d'");
 		assert_eval("! -f '$d/x2/d1/d3.tbz'");
 		assert_eval("! -f '$d/..tbz'");
@@ -63,6 +64,7 @@ foreach my $day ($yesterday, $today) {
 	    },
 	} => [
 	    $yesterday => [],
+	    $yesterday2 => [],
 	    $today => [],
 	],
     ],
