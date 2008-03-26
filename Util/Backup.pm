@@ -42,7 +42,7 @@ sub archive_mirror_link {
     my($archive) = "$root/archive/$date";
     (my $glob = $archive) =~ s/\d\d$/??/;
     $archive = "$root/daily/$date"
-	if glob($glob);
+	if @{[glob($glob)]};
     $self->usage_error($archive, ': already exists')
 	if -e $archive;
     $_F->mkdir_p($archive, 0700);
