@@ -7,8 +7,9 @@ use Bivio::Base 'HTMLWidget.InputTextBase';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = __PACKAGE__->use('Type.Date');
 
-sub internal_render_tag_attr_value {
+sub internal_input_base_render_attrs {
     my($self, $form, $field, $source, $buffer) = @_;
+    shift->SUPER::internal_input_base_render_attrs(@_);
     my($v) = $_D->to_html(
        $form->get($field)
 	   || ($self->render_simple_attr('allow_undef', $source) ? undef
