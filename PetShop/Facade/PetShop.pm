@@ -159,7 +159,7 @@ __PACKAGE__->new({
 	# the "site_root" directory.
 	[view_execute_uri_prefix => 'site_root/'],
 	[sep => 'foot2_menu_sep'],
-	[Address => [
+	[[qw(Address Address_2)] => [
 	    street1 => 'Street Address',
 	    state => 'State/Province',
 	    zip => 'Postal Code',
@@ -178,7 +178,7 @@ __PACKAGE__->new({
 	[Order => [
 	    [qw(bill_to_name ship_to_name)] => 'Name',
 	]],
-	['Phone.phone' => 'Telephone Number'],
+	[[qw(Phone.phone Phone_2.phone)] => 'Telephone Number'],
 	[Product => [
 	    description => 'Description',
 	    name => 'Product Name',
