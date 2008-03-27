@@ -16,7 +16,7 @@ sub PRIVATE_FOLDER {
 }
 
 sub REGEX {
-    return qr{\w+};
+    return qr{(\w+)$};
 }
 
 sub START_PAGE {
