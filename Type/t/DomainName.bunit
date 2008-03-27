@@ -1,0 +1,14 @@
+# Copyright (c) 2002-2008 bivio Software, Inc.  All rights reserved.
+# $Id$
+Type();
+[
+    from_literal => [
+	a => DOMAIN_NAME(),
+	[undef] => UNDEF(),
+	'' => UNDEF(),
+	"1.1.1." . ('a' x 255) => TOO_LONG(),
+	'SomeMixed.Case' => 'somemixed.case',
+	'1.1.1.1' => '1.1.1.1',
+	'  111.11.1.0 ' => '111.11.1.0',
+    ],
+];
