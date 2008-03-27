@@ -125,7 +125,7 @@ sub mock_sendmail {
 		sub {_uri_for_task($self, 'MAIL_RECEIVE_DISPATCH', $r)},
 		\$die,
 	    );
-	$http =~ s/^http://;
+	$http =~ s{^http://}{};
 	my($res) = $self->piped_exec(
 	    "b-sendmail-http 127.0.0.1 '$r' '$http'"
 		. "/usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
@@ -233,6 +233,7 @@ sub nightly_output_to_wiki {
 
 sub remote_trace {
     my($self, $named) = shift->name_args(['?PerlName'], \@_);
+    $self->initialize_fully;
     my($ua) = $self->use('Ext.LWPUserAgent')->new;
     $ua->agent('b-test remote_trace');
     $ua->timeout(5);
