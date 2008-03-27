@@ -40,7 +40,6 @@ sub initialize {
     $self->unsafe_initialize_attr('event_handler');
     $self->unsafe_initialize_attr('is_read_only');
     $self->initialize_attr(tag => 'input');
-    $self->initialize_attr(TYPE => 'text');
     $self->initialize_attr(value => '');
     $self->initialize_attr(tag_if_empty => 1);
     return shift->SUPER::initialize(@_);
