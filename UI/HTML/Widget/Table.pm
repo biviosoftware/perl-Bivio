@@ -702,16 +702,16 @@ sub render_row {
 	unless $class == $_TRC->HEADING;
     $$buffer .= $row_prefix
 	|| "\n<tr"
-	. $_VS->vs_html_attrs_render(
-	    $self, $source, [lc($class->get_name) . '_row_class'])
+	. $_VS->vs_html_attrs_render_one(
+	    $self, $source, lc($class->get_name) . '_row_class')
 	. '>';
     foreach my $cell (@$cells) {
 	$$buffer .= ($class == $_TRC->HEADING
 	    ? "\n<th" : "\n<td")
 	    . $cell->get_or_default('column_prefix', '')
-	    . $_VS->vs_html_attrs_render(
+	    . $_VS->vs_html_attrs_render_one(
 		$cell, $source,
-		['column_' . lc($class->get_name) . '_class']);
+		'column_' . lc($class->get_name) . '_class');
 	if ($cell->get_or_default('heading_expand', 0)) {
 	    $$buffer .= ' width="100%"'
 	}
@@ -831,8 +831,14 @@ sub _get_summary_line {
 		column_align => 'N',
 		count => $type eq '=' ? 2
 		    : $type eq '-' ? 1
-		    : Bivio::Die->die($type, 'invalid summary_line_type')})
-	    : $_VS->vs_new('Join', [qq{td class="$class"></td>}]);
+		    : Bivio::Die->die($type, 'invalid summary_line_type'),
+	    })
+	    : $_VS->vs_new('Tag', {
+		tag => 'td',
+		value => '',
+		class => $class,
+		tag_if_empty => 1,
+	    });
     }
     else {
 #TODO: optimize, could share instances with common span
@@ -868,8 +874,8 @@ sub _initialize_row_prefixes {
 		$state->{self}->get_or_default(
 		    $w . '_row_bgcolor', "table_${w}_row_bg"),
 		'bgcolor', $state->{req})
-	    . $_VS->vs_html_attrs_render(
-		@$state{qw(self source)}, [$w . '_row_class'])
+	    . $_VS->vs_html_attrs_render_one(
+		@$state{qw(self source)}, $w . '_row_class')
 	    .'>';
     }
     return;
@@ -904,8 +910,8 @@ sub _render_row_with_colspan {
     my($state, $widget_name) = @_;
     my($buffer) = $state->{buffer};
     $$buffer .= "\n<tr"
-	. $_VS->vs_html_attrs_render(
-	    @$state{qw(self source)}, [$widget_name . '_row_class'])
+	. $_VS->vs_html_attrs_render_one(
+	    @$state{qw(self source)}, $widget_name . '_row_class')
 	. '><td colspan="' . $state->{colspan}
 	.'">';
     $state->{fields}->{$widget_name}->render($state->{list}, $buffer);

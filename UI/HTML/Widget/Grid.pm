@@ -141,6 +141,7 @@ use Bivio::UI::Align;
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SPACER) = '&nbsp;' x 3;
+my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
 
 =head1 FACTORIES
 
@@ -375,7 +376,6 @@ sub render {
 	    my($is_widget_value) = ref($c) eq 'ARRAY';
 	    my($w) = $is_widget_value ? $source->get_widget_value(@$c) : $c;
 	    my($cell) = '';
-
 	    if (ref($w)) {
 		next ROW
 		    if $w->has_keys('row_control')
@@ -383,15 +383,14 @@ sub render {
 		unless ($is_widget_value) {
 		    my($b);
 		    # Only first row_class counts
-		    $row =~ s/^<tr>/<tr class="$b">/
-			if $c->unsafe_render_attr(
-			    'row_class', $source, \$b) && $b;
+		    $row =~ s/^<tr>/<tr$b>/
+			if $b = $_VS->vs_html_attrs_render_one(
+			    $w, $source, 'row_class');
 		    $cell .= Bivio::UI::Color->format_html($b, 'bgcolor', $req)
 			if $b = $c->render_simple_attr('cell_bgcolor', $source);
-		    $cell .= qq{ class="$b"}
-			if $b = $c->render_simple_attr('cell_class', $source);
-		    # Close cell start always.  See initialization.
-		    $cell .= '>';
+		    $cell .= $_VS->vs_html_attrs_render_one(
+			$c, $source, 'cell_class')
+		        . '>';
 		}
 		$w->render($source, \$cell);
 	    }
