@@ -34,9 +34,10 @@ sub control_on_render {
 	unless $t =~ /^[a-z]+\d*$/;
     $b = "\n<!--\n$b\n-->\n"
 	if length($b) && $self->render_simple_attr('bracket_value_in_comment');
-    my($end) = length($b) || !_empty($t) ? ">$b</$t>" : ' />';
-    $self->SUPER::control_on_render($source, \$t);
-    $$buffer .= "<$t$end";
+    my($a) = '';
+    $self->internal_tag_render_attrs($source, \$a);
+    $$buffer .= "<$t$a"
+	. (length($b) || !_empty($t) ? ">$b</$t>" : ' />');
     return;
 }
 
@@ -65,6 +66,12 @@ sub internal_new_args {
 	    @_,
 	],
     );
+}
+
+sub internal_tag_render_attrs {
+    my($self, $source, $buffer) = @_;
+    $self->SUPER::control_on_render($source, $buffer);
+    return;
 }
 
 sub _empty {
