@@ -33,44 +33,44 @@ config({
 # </code></blockquote>
 # OUT
 	    '' => '',
-	    'a' => qq{<p class="prose">a\n</p>},
-	    "a\n\nb" => qq{<p class="prose">a\n</p><p class="prose">b\n</p>},
-	    '*a*bold*phrase*' => qq{<p class="prose"><strong>a bold phrase</strong>\n</p>},
-	    '(*a*)' => qq{<p class="prose">(<strong>a</strong>)\n</p>},
-	    '_emphasis_' => qq{<p class="prose"><em>emphasis</em>\n</p>},
-	    'a *bold* _emphasis_ mix' => qq{<p class="prose">a <strong>bold</strong> <em>emphasis</em> mix\n</p>},
-	    'MixedCase' => qq{<p class="prose"><a href="/fourem/wiki/MixedCase">MixedCase</a>\n</p>},
-	    '^^ MixedCase' => qq{<p class="prose">^ MixedCase\n</p>},
-	    '^^MixedCase' => qq{<p class="prose">^MixedCase\n</p>},
-	    '^M' => qq{<p class="prose"><a href="/fourem/wiki/M">M</a>\n</p>},
-	    '^M MiC' => qq{<p class="prose"><a href="/fourem/wiki/M">M</a> MiC\n</p>},
-	    '^Space_Here' => qq{<p class="prose"><a href="/fourem/wiki/Space_Here">Space Here</a>\n</p>},
-	    ' MiC ' => qq{<p class="prose"><a href="/fourem/wiki/MiC">MiC</a>\n</p>},
-	    '(MiC) ' => qq{<p class="prose">(<a href="/fourem/wiki/MiC">MiC</a>)\n</p>},
-	    '=MixedCaseOnly=' => qq{<p class="prose">MixedCaseOnly\n</p>},
-	    'This is not =WikiText= ok' => qq{<p class="prose">This is not WikiText ok\n</p>},
-	    'e.g.' => qq{<p class="prose">e.g.\n</p>},
-	    '/a/b' => qq{<p class="prose"><a href="/a/b">/a/b</a>\n</p>},
-	    '/a/b.' => qq{<p class="prose"><a href="/a/b">/a/b</a>.\n</p>},
-	    'http://a.com' => qq{<p class="prose"><a href="http://a.com">http://a.com</a>\n</p>},
-	    'http://a.com.' => qq{<p class="prose"><a href="http://a.com">http://a.com</a>.\n</p>},
-	    'http://a.com?' => qq{<p class="prose"><a href="http://a.com?">http://a.com?</a>\n</p>},
-	    '_http://a.com_' => qq{<p class="prose"><em><a href="http://a.com">http://a.com</a></em>\n</p>},
-	    'http://a.com/a_x_y' => qq{<p class="prose"><a href="http://a.com/a_x_y">http://a.com/a_x_y</a>\n</p>},
-	    'a@a.a,' => qq{<p class="prose"><a href="mailto:a\@a.a">a\@a.a</a>,\n</p>},
-	    '<a@a.a>' => qq{<p class="prose">&lt;<a href="mailto:a\@a.a">a\@a.a</a>&gt;\n</p>},
-	    'icon.jpg' => qq{<p class="prose"><img src="/fourem/wiki/icon.jpg" />\n</p>},
-	    '/icon.jpg' => qq{<p class="prose"><img src="/icon.jpg" />\n</p>},
-	    'Module.pm' => qq{<p class="prose">Module.pm\n</p>},
-	    'Module.ch' => qq{<p class="prose"><a href="http://www.Module.ch">Module.ch</a>\n</p>},
-	    'a.com' => qq{<p class="prose"><a href="http://www.a.com">a.com</a>\n</p>},
-	    '^a.com' => qq{<p class="prose"><a href="http://www.a.com">a.com</a>\n</p>},
-	    '^a.com a.com' => qq{<p class="prose"><a href="http://www.a.com">a.com</a> a.com\n</p>},
-	    'a.com.' => qq{<p class="prose"><a href="http://www.a.com">a.com</a>.\n</p>},
-	    'a & b' => qq{<p class="prose">a &amp; b\n</p>},
-	    'a ^^& b' => qq{<p class="prose">a ^&amp; b\n</p>},
-	    'a @hr < b > c >= d =>' => qq{<p class="prose">a \@hr &lt; b &gt; c &gt;= d =&gt;\n</p>},
-	    '&amp;' => qq{<p class="prose">&amp;amp;\n</p>},
+	    'a' => qq{<p class="b_prose">a\n</p>},
+	    "a\n\nb" => qq{<p class="b_prose">a\n</p><p class="b_prose">b\n</p>},
+	    '*a*bold*phrase*' => qq{<p class="b_prose"><strong>a bold phrase</strong>\n</p>},
+	    '(*a*)' => qq{<p class="b_prose">(<strong>a</strong>)\n</p>},
+	    '_emphasis_' => qq{<p class="b_prose"><em>emphasis</em>\n</p>},
+	    'a *bold* _emphasis_ mix' => qq{<p class="b_prose">a <strong>bold</strong> <em>emphasis</em> mix\n</p>},
+	    'MixedCase' => qq{<p class="b_prose"><a href="/fourem/wiki/MixedCase">MixedCase</a>\n</p>},
+	    '^^ MixedCase' => qq{<p class="b_prose">^ MixedCase\n</p>},
+	    '^^MixedCase' => qq{<p class="b_prose">^MixedCase\n</p>},
+	    '^M' => qq{<p class="b_prose"><a href="/fourem/wiki/M">M</a>\n</p>},
+	    '^M MiC' => qq{<p class="b_prose"><a href="/fourem/wiki/M">M</a> MiC\n</p>},
+	    '^Space_Here' => qq{<p class="b_prose"><a href="/fourem/wiki/Space_Here">Space Here</a>\n</p>},
+	    ' MiC ' => qq{<p class="b_prose"><a href="/fourem/wiki/MiC">MiC</a>\n</p>},
+	    '(MiC) ' => qq{<p class="b_prose">(<a href="/fourem/wiki/MiC">MiC</a>)\n</p>},
+	    '=MixedCaseOnly=' => qq{<p class="b_prose">MixedCaseOnly\n</p>},
+	    'This is not =WikiText= ok' => qq{<p class="b_prose">This is not WikiText ok\n</p>},
+	    'e.g.' => qq{<p class="b_prose">e.g.\n</p>},
+	    '/a/b' => qq{<p class="b_prose"><a href="/a/b">/a/b</a>\n</p>},
+	    '/a/b.' => qq{<p class="b_prose"><a href="/a/b">/a/b</a>.\n</p>},
+	    'http://a.com' => qq{<p class="b_prose"><a href="http://a.com">http://a.com</a>\n</p>},
+	    'http://a.com.' => qq{<p class="b_prose"><a href="http://a.com">http://a.com</a>.\n</p>},
+	    'http://a.com?' => qq{<p class="b_prose"><a href="http://a.com?">http://a.com?</a>\n</p>},
+	    '_http://a.com_' => qq{<p class="b_prose"><em><a href="http://a.com">http://a.com</a></em>\n</p>},
+	    'http://a.com/a_x_y' => qq{<p class="b_prose"><a href="http://a.com/a_x_y">http://a.com/a_x_y</a>\n</p>},
+	    'a@a.a,' => qq{<p class="b_prose"><a href="mailto:a\@a.a">a\@a.a</a>,\n</p>},
+	    '<a@a.a>' => qq{<p class="b_prose">&lt;<a href="mailto:a\@a.a">a\@a.a</a>&gt;\n</p>},
+	    'icon.jpg' => qq{<p class="b_prose"><img src="/fourem/file/WikiData/icon.jpg" />\n</p>},
+	    '/icon.jpg' => qq{<p class="b_prose"><img src="/icon.jpg" />\n</p>},
+	    'Module.pm' => qq{<p class="b_prose">Module.pm\n</p>},
+	    'Module.ch' => qq{<p class="b_prose"><a href="http://www.Module.ch">Module.ch</a>\n</p>},
+	    'a.com' => qq{<p class="b_prose"><a href="http://www.a.com">a.com</a>\n</p>},
+	    '^a.com' => qq{<p class="b_prose"><a href="http://www.a.com">a.com</a>\n</p>},
+	    '^a.com a.com' => qq{<p class="b_prose"><a href="http://www.a.com">a.com</a> a.com\n</p>},
+	    'a.com.' => qq{<p class="b_prose"><a href="http://www.a.com">a.com</a>.\n</p>},
+	    'a & b' => qq{<p class="b_prose">a &amp; b\n</p>},
+	    'a ^^& b' => qq{<p class="b_prose">a ^&amp; b\n</p>},
+	    'a @hr < b > c >= d =>' => qq{<p class="b_prose">a \@hr &lt; b &gt; c &gt;= d =&gt;\n</p>},
+	    '&amp;' => qq{<p class="b_prose">&amp;amp;\n</p>},
 	    '--' => qq{<hr /><br />\n},
 	    '@br' => qq{<br />\n},
 	    '@br dropped text' => qq{<br />\n},
@@ -80,7 +80,7 @@ config({
 p1
 IN
 <h1>h 1</h1>
-<p class="prose">p1
+<p class="b_prose">p1
 </p>
 OUT
 	    <<'IN' => _chomp(<<'OUT'),
@@ -95,7 +95,7 @@ IN
 <h1>h1a
 <br />
 h1b
-</h1><p class="prose">p1
+</h1><p class="b_prose">p1
 </p>
 OUT
 	    '@p *x*' => qq{<p><strong>x</strong></p>\n},
@@ -106,35 +106,35 @@ OUT
 	    "\@div class=c1\n\@/div" => qq{<div class="c1"></div>},
 	    "\@div\na\n\nb" => qq{<div>a\nb\n</div>},
 	    "\@div\n\na\n\nb" => qq{<div>a\nb\n</div>},
-	    '@code *x*' => qq{<p class="prose"><code>*x*</code>\n</p>},
+	    '@code *x*' => qq{<p class="b_prose"><code>*x*</code>\n</p>},
 	    "\@li\n\@code *x*" => qq{<li><p><code>*x*</code>\n</p></li>},
 	    '@&nbsp;' => qq{&nbsp;},
 	    '@&#174;' => qq{&#174;},
 	    '@hr' => qq{<hr />\n},
-	    '@@other' => qq{<p class="prose">\@other\n</p>},
+	    '@@other' => qq{<p class="b_prose">\@other\n</p>},
 	    '@badtag' => qq{},
 	    '@my/wiki/Shell_Util_Help' => qq{},
 	    '@ins-page /my/wiki/PrivatePage' => qr{My Example Page},
 	    '@ins-page /site-help/wiki/Shell_Util_Help' => qr{shell utility help}i,
 	    "\n\@hr" => qq{<hr />\n},
-	    '@a' => qq{<p class="prose"><a></a></p>},
-	    '@a href=/x y' => qq{<p class="prose"><a href="/x">y</a>\n</p>},
-	    '@a href=x y' => qq{<p class="prose"><a href="/fourem/wiki/x">y</a>\n</p>},
-	    '@a href=^x y' => qq{<p class="prose"><a href="/fourem/wiki/x">y</a>\n</p>},
-	    '@a href=^x ^y' => qq{<p class="prose"><a href="/fourem/wiki/x"><a href="/fourem/wiki/y">y</a></a>\n</p>},
-	    '@a href=^x ^y.jpg' => qq{<p class="prose"><a href="/fourem/wiki/x"><img src="/fourem/wiki/y.jpg" /></a>\n</p>},
-	    '@a href=a.com y' => qq{<p class="prose"><a href="/fourem/wiki/a.com">y</a>\n</p>},
-	    '@a href=^cateye.com y' => qq{<p class="prose"><a href="http://www.cateye.com">y</a>\n</p>},
-	    '/foo.doc' => qq{<p class="prose"><a href="/foo.doc">/foo.doc</a>\n</p>},
+	    '@a' => qq{<p class="b_prose"><a></a></p>},
+	    '@a href=/x y' => qq{<p class="b_prose"><a href="/x">y</a>\n</p>},
+	    '@a href=x y' => qq{<p class="b_prose"><a href="/fourem/wiki/x">y</a>\n</p>},
+	    '@a href=^x y' => qq{<p class="b_prose"><a href="/fourem/wiki/x">y</a>\n</p>},
+	    '@a href=^x ^y' => qq{<p class="b_prose"><a href="/fourem/wiki/x"><a href="/fourem/wiki/y">y</a></a>\n</p>},
+	    '@a href=^x ^y.jpg' => qq{<p class="b_prose"><a href="/fourem/wiki/x"><img src="/fourem/file/WikiData/y.jpg" /></a>\n</p>},
+	    '@a href=a.com y' => qq{<p class="b_prose"><a href="/fourem/file/WikiData/a.com">y</a>\n</p>},
+	    '@a href=^cateye.com y' => qq{<p class="b_prose"><a href="http://www.cateye.com">y</a>\n</p>},
+	    '/foo.doc' => qq{<p class="b_prose"><a href="/foo.doc">/foo.doc</a>\n</p>},
 	    '@img src="x"' => qq{<img src="/fourem/wiki/x" />\n},
-	    "a\@\nb" => qq{<p class="prose">ab\n</p>},
-	    "a\@\n\nb" => qq{<p class="prose">a</p><p class="prose">b\n</p>},
-	    "\@a href=/ a\@\nb" => qq{<p class="prose"><a href="/">a</a>b\n</p>},
-	    "\@span a\@\nb\@" => qq{<p class="prose"><span>a</span>b</p>},
+	    "a\@\nb" => qq{<p class="b_prose">ab\n</p>},
+	    "a\@\n\nb" => qq{<p class="b_prose">a</p><p class="b_prose">b\n</p>},
+	    "\@a href=/ a\@\nb" => qq{<p class="b_prose"><a href="/">a</a>b\n</p>},
+	    "\@span a\@\nb\@" => qq{<p class="b_prose"><span>a</span>b</p>},
 	    '@ins-page /pub/eg1@' => 'hello, world!',
-	    '@a href=javascript:/ x' => qq{<p class="prose"><a href="no-wiki-javascript:/">x</a>\n</p>},
-	    "\@a name=x" => qq{<p class="prose"><a name="x"></a></p>},
-	    '@a href=/ foo.org' => qq{<p class="prose"><a href="/">foo.org</a>\n</p>},
+	    '@a href=javascript:/ x' => qq{<p class="b_prose"><a href="no-wiki-javascript:/">x</a>\n</p>},
+	    "\@a name=x" => qq{<p class="b_prose"><a name="x"></a></p>},
+	    '@a href=/ foo.org' => qq{<p class="b_prose"><a href="/">foo.org</a>\n</p>},
 	    <<'IN' => _chomp(<<'OUT'),
 @h3 h 3
 p1
@@ -176,10 +176,10 @@ i2
 @hr < & @ c *b* _i_
 IN
 <h3>h 3</h3>
-<p class="prose">p1
-</p><p class="prose">p2
+<p class="b_prose">p1
+</p><p class="b_prose">p2
 </p><h2>h 2</h2>
-<p class="prose">p3
+<p class="b_prose">p3
 </p><table class="c1"><tr><td><p>1.1
 </p></td><td><p>1.2
 </p></td><td></td></tr><tr><td>2.1</td>
@@ -209,18 +209,18 @@ OUT
 		}];
 	    },
 	} => [
-	    'MixedCaseOnly' => qq{<p class="prose">MixedCaseOnly\n</p>},
-	    ' MiC ' => qq{<p class="prose">MiC\n</p>},
-	    '/a/b' => qq{<p class="prose">/a/b\n</p>},
-	    'http://a.com' => qq{<p class="prose">http://a.com\n</p>},
-	    'a@a.a' => qq{<p class="prose">a\@a.a\n</p>},
-	    'Module.ch' => qq{<p class="prose">Module.ch\n</p>},
-	    'a.com' => qq{<p class="prose">a.com\n</p>},
-	    '@a href=/x y' => qq{<p class="prose"><a href="/x">y</a>\n</p>},
-	    '@a href=x y' => qq{<p class="prose"><a href="/fourem/wiki/x">y</a>\n</p>},
-	    '/foo.doc' => qq{<p class="prose">/foo.doc\n</p>},
+	    'MixedCaseOnly' => qq{<p class="b_prose">MixedCaseOnly\n</p>},
+	    ' MiC ' => qq{<p class="b_prose">MiC\n</p>},
+	    '/a/b' => qq{<p class="b_prose">/a/b\n</p>},
+	    'http://a.com' => qq{<p class="b_prose">http://a.com\n</p>},
+	    'a@a.a' => qq{<p class="b_prose">a\@a.a\n</p>},
+	    'Module.ch' => qq{<p class="b_prose">Module.ch\n</p>},
+	    'a.com' => qq{<p class="b_prose">a.com\n</p>},
+	    '@a href=/x y' => qq{<p class="b_prose"><a href="/x">y</a>\n</p>},
+	    '@a href=x y' => qq{<p class="b_prose"><a href="/fourem/wiki/x">y</a>\n</p>},
+	    '/foo.doc' => qq{<p class="b_prose">/foo.doc\n</p>},
 	    '@img src="x"' => qq{<img src="/fourem/wiki/x" />\n},
-	    '@a href=/ foo.org' => qq{<p class="prose"><a href="/">foo.org</a>\n</p>},
+	    '@a href=/ foo.org' => qq{<p class="b_prose"><a href="/">foo.org</a>\n</p>},
 	],
     ],
 ];
