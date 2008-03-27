@@ -314,7 +314,7 @@ sub detach_process {
 }
 
 sub do_sh {
-    my($self, @cmd) = shift->arg_list(\@_, [['LongText']]);
+    my($self, @cmd) = shift->name_args(['LongText'], \@_);
     return join('', map(${$self->piped_exec($_)}, @cmd));
 }
 
