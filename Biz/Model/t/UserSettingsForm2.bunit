@@ -9,7 +9,7 @@ FormModel({
     },
 });
 options({comparator => 'nested_contains'});
-my($x) = random_string();
+my($x) = random_alpha_string();
 [
     [{
 	_user => 'demo',
