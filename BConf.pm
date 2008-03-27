@@ -85,6 +85,10 @@ sub default_merge_overrides {
 	    search => {
 		package_filter => '/::Search/',
 	    },
+	    html_attrs => {
+		call_filter => '$sub =~ /vs_html_attrs_render_one/',
+		package_filter => '/^Bivio::UI::HTML::ViewShortcuts$/',
+	    },
 	},
     };
     return $args->{version} < 2 ? %$res : $res;
