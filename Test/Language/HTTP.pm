@@ -37,6 +37,7 @@ Bivio::IO::Config->register(my $_CFG = {
 });
 my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
 my($_F) = __PACKAGE__->use('IO.File');
+my($_T) = __PACKAGE__->use('IO.Trace');
 
 sub absolute_uri {
     my($self, $uri) = @_;
@@ -107,13 +108,24 @@ sub do_test_backdoor {
     my($self, $op, $args) = @_;
     # Executes ShellUtil or FormModel based on $args.
     $self->visit_uri(
-	'/test_backdoor?'
+	'/test-backdoor?'
 	. $self->use('Bivio::Agent::HTTP::Query')->format(
 	    ref($args) eq 'HASH' ? {%$args, form_model => $op}
 	        : ref($args) eq '' ? {shell_util => $op, command => $args}
 		: Bivio::Die->die($args, ': unable to parse args'),
 	)
     );
+    return;
+}
+
+sub do_test_trace {
+    my($self, $named_filter) = @_;
+    $named_filter ||= '';
+    my($prev) = [$_T->get_call_filter, $_T->get_package_filter];
+    $_T->set_named_filters($named_filter)
+        if $named_filter;
+    $_T->set_filters(@$prev);
+    $self->visit_uri("/test-trace/$named_filter");
     return;
 }
 
