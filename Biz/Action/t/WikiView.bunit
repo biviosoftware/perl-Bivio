@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
 req()->set_realm('site-help');
@@ -15,8 +15,8 @@ req()->set_realm('site-help');
 		return [join('', req('Action.WikiView')->get(qw(title html)))];
 	    },
 	} => [
-	    WikiView1 => qq{Wiki View One<p class="prose">First page\n</p>},
-	    WikiView2 => qq{Wiki View\n<strong>Two</strong><p class="prose">Second page\n</p>},
+	    WikiView1 => qq{Wiki View One<p class="b_prose">First page\n</p>},
+	    WikiView2 => qq{Wiki View\n<strong>Two</strong><p class="b_prose">Second page\n</p>},
 	    WikiView3 => qr{WikiView3<h1 class="hello">abc</h1>.*Third}s,
 	],
     ],
