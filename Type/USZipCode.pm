@@ -7,7 +7,7 @@ use Bivio::Base 'Type.SyntacticString';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGEX {
-    return qr{\d{5}(?:\d{4})?};
+    return qr{(\d{5}(?:\d{4})?)};
 }
 
 sub SYNTAX_ERROR {
