@@ -6,6 +6,8 @@ use base 'Bivio::UI::ViewShortcuts';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WF) = __PACKAGE__->use('Bivio::UI::HTML::WidgetFactory');
+my($_V6) = __PACKAGE__->use('IO.Config')->if_version(6);
+my($_LINK_TARGET) = $_V6 ? undef : '_top';
 
 sub vs_acknowledgement {
     # (proto) : UI.Widget
@@ -195,8 +197,6 @@ sub vs_form_field {
 }
 
 sub vs_html_attrs_initialize {
-    # (proto, UI.Widget, array_ref) : undef
-    # Initializes I<attrs> (default: [class, id]) using unsafe_initialize_attr.
     my($proto, $widget, $attrs) = @_;
     $widget->map_invoke(
 	'unsafe_initialize_attr',
@@ -206,33 +206,30 @@ sub vs_html_attrs_initialize {
 }
 
 sub vs_html_attrs_merge {
-    # (proto, array_ref) : array_ref
-    # Returns [class, id].
-    shift;
-    return [qw(class id), @{shift || []}];
+    my(undef, $extra) = @_;
+    return [qw(class id), @{$extra || []}];
 }
 
 sub vs_html_attrs_render {
-    # (proto, UI.Widget, any, array_ref) : string
-    # Renders I<attrs> (default: [class, id]) in the form of html attributes:
-    #
-    #     k1="v1" k2="v2"
-    #
-    # Always returns a string.   If I<attrs> contains a key with underscores, e.g.
-    # k1_class, then the full name will be rendered, but the string will be:
-    #
-    #     class="v1"
     my($proto, $widget, $source, $attrs) = @_;
     return join(
 	'',
-	map({
-	    my($h) = lc(($_ =~ /([^_]+)$/)[0]);
-	    my($b) = '';
-	    $widget->unsafe_render_attr($_, $source, \$b) && length($b)
-		? qq{ $h="@{[Bivio::HTML->escape_attr_value($b)]}"} : '';
-	} @{$attrs || $proto->vs_html_attrs_merge}),
+	map($proto->vs_html_attrs_render_one($widget, $source, $_),
+	    @{$attrs || $proto->vs_html_attrs_merge}),
     );
     return;
+}
+
+sub vs_html_attrs_render_one {
+    my($proto, $widget, $source, $attr) = @_;
+    return ''
+	unless length(my $v = $widget->render_simple_attr($attr, $source));
+    return ' '
+	# The '_' handles row_class => class
+	. lc(($attr =~ /([^_]+)$/)[0])
+	. '="'
+	. Bivio::HTML->escape_attr_value($v)
+	. '"';
 }
 
 sub vs_image {
@@ -305,16 +302,10 @@ sub vs_link {
 }
 
 sub vs_link_target_as_html {
-    # (proto, UI.Widget, any) : string
-    # Looks up the attribute I<link_target> ancestrally and renders
-    # it as ' target="XXX"' (with leading space) whatever its value is.
-    #
-    # Default is '_top', because we don't use frames.
-    #
-    # If I<source> is supplied, renders dynamically.  Otherwise, renders
-    # a static string only.
     my($proto, $widget, $source) = @_;
-    my($t) = $widget->ancestral_get('link_target', '_top');
+    return ''
+	unless defined(my $t = $widget->ancestral_get(
+	    'link_target', $_LINK_TARGET));
     if ($source) {
 	my($b);
 	$widget->unsafe_render_value('link_target', $t, $source, \$b);
