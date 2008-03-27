@@ -21,4 +21,3 @@ $uri =~ s,/wiki/,/public-wiki/,;
 visit_uri($uri);
 follow_link('PrivatePage');
 verify_text(qr{not.*found.*not.*permission}is);
-
