@@ -2,32 +2,24 @@
 # $Id$
 package Bivio::Type::DomainName;
 use strict;
-use Bivio::Base 'Bivio::Type::Name';
+use Bivio::Base 'Type.SyntacticString';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_REGEXP) = __PACKAGE__->REGEXP;
 
-sub REGEXP {
-    # : regexp_ref
-    # Returns regular expression used for validating.
-    return qr/^(?:[-a-z0-9]{1,63})(?:\.[-a-z0-9]{1,63})+$/is;
+sub REGEX {
+    return qr/((?:[-a-z0-9]{1,63})(?:\.[-a-z0-9]{1,63})+)/is;
 }
 
-sub from_literal {
-    # (proto, string) : any
-    # Downcases result of super and validates against dotted decimal.
-    my($value, $err) = shift->SUPER::from_literal(@_);
-    return ($value, $err)
-	unless defined($value);
-    return (undef, Bivio::TypeError->DOMAIN_NAME)
-	unless $value =~ $_REGEXP;
-    return lc($value);
+sub SYNTAX_ERROR {
+    return Bivio::TypeError->DOMAIN_NAME;
 }
 
 sub get_width {
-    # (proto) : int
-    # Max host name is 255.
     return 255.
+}
+
+sub internal_post_from_literal {
+    return lc($_[1]);
 }
 
 1;
