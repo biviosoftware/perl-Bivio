@@ -1,0 +1,21 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+req()->initialize_fully;
+my($name) = model('CalendarEventForm')->put_on_request
+    ->get_field_name_for_html('start_date');
+my($today) = req()->use('Type.Date')->to_literal(
+    req()->use('Type.Date')->local_today);
+Widget();
+[
+    [{
+	form_model => ['Model.CalendarEventForm'],
+	model => 'CalendarEventForm',
+	field => 'start_date',
+        allow_undef => 1,
+    }] => qq(<input name="$name" type="text" size="12" maxlength="10" value="" />),
+    [{
+	form_model => ['Model.CalendarEventForm'],
+	model => 'CalendarEventForm',
+	field => 'start_date',
+    }] => qq(<input name="$name" type="text" size="12" maxlength="10" value="$today" />),
+];
