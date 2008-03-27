@@ -376,6 +376,15 @@ sub get_delegate_info {
 	    next=CART
 	    form_error_task=SITE_ROOT
 	)],
+	[qw(
+	    FIELD_TEST_FORM
+	    546
+	    GENERAL
+	    ANYBODY
+	    Model.FieldTestForm
+	    Action.EmptyReply
+	    next=FIELD_TEST_FORM
+	)],
     ]);
 }
 

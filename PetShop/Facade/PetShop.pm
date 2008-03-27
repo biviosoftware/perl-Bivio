@@ -127,6 +127,7 @@ __PACKAGE__->new({
 	[FORUM_PUBLIC_EXAMPLE_EG1 => '?/pub/eg1'],
 	[USER_ROLE_IN_REALM => '?/role-in-realm'],
 	[FORUM_ROLE_IN_REALM => '?/role-in-realm'],
+	[FIELD_TEST_FORM => 'pub/field-test-form'],
     ],
     Constant => [
 	[xlink_bunit1 => {
@@ -253,7 +254,15 @@ __PACKAGE__->new({
 	    'Email_99.want_bulletin' => 'Email_99',
 	    'Email.realm_id' => 'Email.realm_id',
 	]],
-    ],
+	[FieldTestForm => [
+	    boolean => 'Boolean',
+	    date => 'Date',
+	    date_time => 'DateTime',
+	    realm_name => 'RealmName',
+	    line => 'Line',
+	    text => 'Text',
+	]],
+     ],
 });
 
 1;
