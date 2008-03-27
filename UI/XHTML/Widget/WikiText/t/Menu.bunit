@@ -1,7 +1,7 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 WikiText();
-my($t1) = class('Type.WikiName')->to_absolute('T1.bmenu');
+my($t1) = class('Type.WikiDataName')->to_absolute('T1.bmenu');
 model('RealmFile')->delete({path => $t1});
 model('RealmFile')->create_with_content({path => $t1}, \(<<'EOF'));
 Label,Link
