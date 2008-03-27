@@ -386,7 +386,7 @@ sub _assert_options {
 
 sub _catch {
     return
-	unless my $die = Bivio::Die->catch(@_);
+	unless my $die = Bivio::Die->catch_quietly(@_);
     Bivio::Agent::Task->rollback(Bivio::Agent::Request->get_current)
         if UNIVERSAL::isa('Bivio::Agent::Request', 'Bivio::UNIVERSAL')
 	&& UNIVERSAL::isa('Bivio::Agent::Task', 'Bivio::UNIVERSAL');
@@ -571,6 +571,12 @@ sub _die {
     # Calls die for now.  Eventually, will tell more.
     Bivio::Die->die(@msg);
     # DOES NOT RETURN
+}
+
+sub _die_stack {
+    my($actual) = @_;
+    my($s) = Bivio::Die->is_blessed($actual) && $actual->unsafe_get('stack');
+    return $s ? "\n-- begin stack --\n" . $s . "\n-- end stack --\n" : '';
 }
 
 sub _eval {
@@ -798,7 +804,8 @@ sub _eval_result {
     }
     my($e) = $case->get('expect');
     if (ref($e) eq 'CODE') {
-	return "unexpected die: " . Bivio::IO::Ref->to_short_string($result);
+	return "unexpected die: " . Bivio::IO::Ref->to_short_string($result)
+	    . _die_stack($actual);
     }
     my($x);
     my($comparator) = $case->get('comparator');
@@ -810,7 +817,8 @@ sub _eval_result {
 	);
     });
     return $diff_die ? "$comparator died: " . $diff_die->as_string
-	: $x ? $$x : undef;
+	: $x ? $$x . _die_stack($actual)
+	: undef;
 }
 
 sub _load_class {
