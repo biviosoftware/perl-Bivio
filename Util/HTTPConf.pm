@@ -42,7 +42,8 @@ sub USAGE {
     return <<'EOF';
 usage: b-http-conf [options] command [args...]
 commands:
-    gen_app app-name [root-prefix] -- writes config for app-name
+    generate app-name [root-prefix] -- writes config for app-name
+    validate_vars vars -- validates configuration
 EOF
 }
 
