@@ -71,7 +71,7 @@ sub internal_model_not_found {
     my($self, $req, $realm_id) = @_;
     my($name) = $self->get('name');
     my($t) = $req->unsafe_get_nested(qw(task edit_task));
-    Bivio::Die->throw(MODEL_NOT_FOUND => {entity => $name})
+    Bivio::Die->throw_quietly(MODEL_NOT_FOUND => {entity => $name})
 	unless $t && $req->can_user_execute_task($t);
     Bivio::Biz::Action->get_instance('Acknowledgement')
         ->save_label('FORUM_WIKI_NOT_FOUND', $req);
