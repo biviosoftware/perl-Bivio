@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new_unit {
     my($proto, $class_name, $args) = @_;
-    my($new_params);
+    my($create_params);
     $class_name = $proto->use('XHTMLWidget.WikiText');
     return $proto->SUPER::new_unit(
 	$class_name,
@@ -19,15 +19,15 @@ sub new_unit {
 	    class_name => $class_name,
 	    create_object => sub {
 		my($case, $params) = @_;
-		$new_params = $params;
+		$create_params = $params;
 		return $class_name;
 	    },
 	    view_class_map => 'XHTMLWidget',
 	    view_shortcuts => 'Bivio::UI::XHTML::ViewShortcuts',
 	    compute_params => sub {
-		my($p) = $new_params->[0];
+		my($p) = $create_params->[0];
 		return [{
-		    ref($p) eq 'HASH' ? %$p : (value => $new_params->[0]),
+		    ref($p) eq 'HASH' ? %$p : (value => $create_params->[0]),
 		    req => Bivio::Test::Request->get_instance,
 		}];
 	    },
