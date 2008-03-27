@@ -1,7 +1,7 @@
 # Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-my($demo, $guest) = map(class('ShellUtil.SQL')->$_(), qw(DEMO GUEST));
+my($demo, $guest) = map(ShellUtil_SQL()->$_(), qw(DEMO GUEST));
 [
     class() =>[
 	{
@@ -10,11 +10,11 @@ my($demo, $guest) = map(class('ShellUtil.SQL')->$_(), qw(DEMO GUEST));
 		my($task, $user, $state) = @{splice(@_, 1, 1)};
 		req()->set_realm(undef);
 		req()->put(
-		    task_id => $task = Bivio::Agent::TaskId->$task(),
-		    task => Bivio::Agent::Task->get_by_id($task),
+		    task_id => $task = Agent_TaskId()->$task(),
+		    task => Agent_Task()->get_by_id($task),
 		);
 		req()->set_user($user);
-		req()->put(user_state => Bivio::Type::UserState->from_name(
+		req()->put(user_state => UserState(
 		    $state || ($user ? 'LOGGED_IN' : 'JUST_VISITOR')));
 		return [req()];
 	    },
