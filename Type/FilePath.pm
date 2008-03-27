@@ -47,8 +47,16 @@ sub PUBLIC_FOLDER_ROOT {
     return '/Public';
 }
 
+sub REGEX {
+    return qr{(.+)};
+}
+
 sub VERSIONS_FOLDER {
     return '/Archived';
+}
+
+sub WIKI_DATA_FOLDER {
+    return '/WikiData';
 }
 
 sub WIKI_FOLDER {
