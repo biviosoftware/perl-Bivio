@@ -289,6 +289,11 @@ sub builtin_random_string {
     return shift->use('Biz.Random')->string(@_);
 }
 
+sub builtin_random_alpha_string {
+    # Return a random string
+    return shift->use('Biz.Random')->string(shift(@_), ['a' .. 'z']);
+}
+
 sub builtin_read_file {
     return shift->use('IO.File')->read(@_);
 }
