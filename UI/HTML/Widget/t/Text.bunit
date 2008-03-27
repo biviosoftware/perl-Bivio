@@ -10,12 +10,12 @@ Widget();
 	model => 'BlogCreateForm',
 	size => 40,
 	field => 'title',
-    }] => qq(<input type="text" name="$name" size="40" maxlength="100" value="" />),
+    }] => qq(<input name="$name" type="text" size="40" maxlength="100" value="" />),
     [{
 	form_model => ['Model.BlogCreateForm'],
 	model => 'BlogCreateForm',
 	size => 40,
 	field => 'title',
 	class => 'foo',
-    }] => qq(<input class="foo" type="text" name="$name" size="40" maxlength="100" value="" />),
+    }] => qq(<input class="foo" name="$name" type="text" size="40" maxlength="100" value="" />),
 ];
