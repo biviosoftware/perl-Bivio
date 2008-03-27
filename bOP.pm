@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -26,11 +26,47 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.6  2008/03/27 19:50:43  nagler
+  * Bivio::BConf
+    html_attrs named trace filter
+  * Bivio::Delegate::SimpleAuthSupport
+    rmpod
+  * Bivio::Delegate::TaskId
+    test_trace task
+  * Bivio::ShellUtil
+    fmt
+  * Bivio::Test::Language::HTTP
+    do_test_trace
+  * Bivio::Test::Language
+    catch_quietly in deviance case
+  * Bivio::Test::Unit
+    added builtin_random_alpha_string
+  * Bivio::Test::Util
+    added remote_trace
+    refactored _mock_sendmail_facade into _uri_for_task
+    fpc
+    fpc
+  * Bivio::Test
+    catch_quietly and only output stack when conformance failure or
+    deviance mismatch
+  * Bivio::Type::USZipCode
+    REGEX must return $1
+  * Bivio::UI::FacadeBase
+    test_trace task
+  * Bivio::UI::HTML::Widget::InputBase
+    type not defaulted
+  * Bivio::UI::HTML::Widget::InputTextBase
+    generate type= dynamically for password or text
+  * Bivio::UI::View::ThreePartPage
+    xhtml_outermost_class unused
+  * Bivio::Util::Backup
+    bzip2 is too slow
+
   Revision 6.5  2008/03/27 00:20:43  nagler
   * Bivio::Agent::HTTP::Reply
     incorrect comment
