@@ -43,8 +43,8 @@ foreach my $day ($yesterday2, $yesterday, $today) {
 		my($d) = $date eq $yesterday ? "$tmp/archive/$date"
 		    : "$tmp/daily/$date";
 		assert_eval("-d '$d'");
-		assert_eval("! -f '$d/x2/d1/d3.tbz'");
-		assert_eval("! -f '$d/..tbz'");
+		assert_eval("! -f '$d/x2/d1/d3.tgz'");
+		assert_eval("! -f '$d/..tgz'");
 		foreach my $x (
 		    [qw(x1 x1/b1)],
 		    [qw(x1/d1 x1/d1/s1)],
@@ -57,7 +57,7 @@ foreach my $day ($yesterday2, $yesterday, $today) {
 		) {
 		    assert_equals(
 			join('', sort(map(/[dx]\d+$/ ? "$_/\n" : "$_\n", @$x))),
-			scalar(`tar tjf $d/$x->[0].tbz 2>&1`),
+			scalar(`tar tzf $d/$x->[0].tgz 2>&1`),
 		    );
 		}
 		return 1;
