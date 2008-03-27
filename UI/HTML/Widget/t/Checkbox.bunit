@@ -1,0 +1,14 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+req()->initialize_fully;
+my($name) = model('WikiForm')->put_on_request
+    ->get_field_name_for_html('RealmFile.is_public');
+Widget();
+[
+    [{
+	form_class => 'Bivio::Biz::Model::WikiForm',
+	form_model => ['Model.WikiForm'],
+	model => 'WikiForm',
+	field => 'RealmFile.is_public',
+    }] => qq(<input class="checkbox" type="checkbox" name="$name" /><span class="checkbox_label">Make this article publicly available?</span>),
+];
