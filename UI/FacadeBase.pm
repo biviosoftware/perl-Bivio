@@ -173,8 +173,9 @@ sub _cfg_base {
 	    [SHELL_UTIL => undef],
 	    [SITE_CSS => 'pub/site.css'],
 	    [SITE_ROOT => '*'],
-	    [TEST_BACKDOOR => 'test_backdoor'],
+	    [TEST_BACKDOOR => ['test-backdoor', 'test_backdoor']],
 	    [USER_HOME => '?'],
+	    [TEST_TRACE => 'test-trace/*'],
 	],
 	Text => [
 	    [support_email => 'support'],

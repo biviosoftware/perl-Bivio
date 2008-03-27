@@ -212,7 +212,14 @@ sub info_base {
 	    ANYBODY
 	    View.Error->not_found
 	)],
-#59
+	[qw(
+	    TEST_TRACE
+            59
+	    GENERAL
+	    TEST_TRANSIENT
+	    Action.TestTrace
+	    Action.EmptyReply
+	)],
     ];
 }
 
