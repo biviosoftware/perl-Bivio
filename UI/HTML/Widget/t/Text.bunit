@@ -1,21 +1,11 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-req()->initialize_fully;
-my($name) = model('BlogCreateForm')->put_on_request
-    ->get_field_name_for_html('title');
-Widget();
+FieldWidget({
+    field => 'line',
+    parse_return_regex =>
+	qr{^<input(?: class="(\w+)")? name="HTML_NAME" type="text" size="(\d+)" maxlength="100" value="(.*?)" />$}s,
+});
 [
-    [{
-	form_model => ['Model.BlogCreateForm'],
-	model => 'BlogCreateForm',
-	size => 40,
-	field => 'title',
-    }] => qq(<input name="$name" type="text" size="40" maxlength="100" value="" />),
-    [{
-	form_model => ['Model.BlogCreateForm'],
-	model => 'BlogCreateForm',
-	size => 40,
-	field => 'title',
-	class => 'foo',
-    }] => qq(<input class="foo" name="$name" type="text" size="40" maxlength="100" value="" />),
+    [{test_value => undef, size => 40}] => ';40;',
+    [{test_value => 'xx', size => 3, class => 'foo'}] => 'foo;3;xx',
 ];
