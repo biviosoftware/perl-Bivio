@@ -10,12 +10,12 @@ req()->server_redirect({
     [{
 	form_class => 'UserLoginForm',
 	value => vs_new(Join => ['abc']),
-    }] => qr{^<form method="post" target="_top" name="\w+" action="/pub/login">.*<input type="hidden" name="v" value="\d+" />\n<input type="hidden" name="c" value="[^"]+" />\nabc</form>$}is,
+    }] => qr{^<form method="post" name="\w+" action="/pub/login">.*<input type="hidden" name="v" value="\d+" />\n<input type="hidden" name="c" value="[^"]+" />\nabc</form>$}is,
     [{
 	form_class => 'UserLoginForm',
 	action => Bivio::Agent::TaskId->LOGOUT,
 	value => vs_new(Join => ['abc']),
-    }] => qr{^<form method="post" target="_top" name="\w+" action="/pub/logout">.*<input type="hidden" name="v" value="\d+" />\n<input type="hidden" name="c" value="[^"]+" />\nabc</form>$}is,
+    }] => qr{^<form method="post" name="\w+" action="/pub/logout">.*<input type="hidden" name="v" value="\d+" />\n<input type="hidden" name="c" value="[^"]+" />\nabc</form>$}is,
     [{
 	form_class => 'UserLoginForm',
 	action => vs_new(URI => {uri => '#'}),
