@@ -60,7 +60,6 @@ sub internal_xhtml_adorned_attrs {
 	return;
     }) if $_TI->unsafe_from_name('SEARCH_LIST');
     view_put(
-	xhtml_outermost_class => '',
 	xhtml_title => Join([
 	    SPAN_realm(String([qw(auth_realm owner display_name)]), {
 		control => vs_realm_type('forum'),
@@ -117,7 +116,7 @@ sub internal_xhtml_adorned_attrs {
 		    view_widget_value('xhtml_tools'),
 		    view_widget_value('vs_pager'),
 		], {
-		    join_separator => EmptyTag(DIV => 'sep'),
+		    join_separator => DIV_sep(''),
 		})),
 		DIV_title(view_widget_value('xhtml_title')),
 		DIV_selector(
