@@ -2,59 +2,16 @@
 # $Id$
 package Bivio::Delegate::SimpleAuthSupport;
 use strict;
-$Bivio::Delegate::SimpleAuthSupport::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Delegate::SimpleAuthSupport::VERSION;
-
-=head1 NAME
-
-Bivio::Delegate::SimpleAuthSupport - basic authentication support
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Delegate::SimpleAuthSupport;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Delegate>
-
-=cut
-
-use Bivio::Delegate;
-@Bivio::Delegate::SimpleAuthSupport::ISA = ('Bivio::Delegate');
-
-=head1 DESCRIPTION
-
-C<Bivio::Delegate::SimpleAuthSupport> provides basic authentication
-support.  Uses database to retrieve permissions.
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Delegate';
 use Bivio::IO::Trace;
 
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(%_DEFAULT_PERMISSIONS);
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_auth_user"></a>
-
-=head2 static get_auth_user(Bivio::Agent::Request req) : Bivio::Biz::Model
-
-Expects I<Request.auth_user_id> to be set.  If it isn't set, returns
-C<undef>.  LoginForm or some other cookie handler should set this.
-
-=cut
-
 sub get_auth_user {
+    # (proto, Agent.Request) : Biz.Model
+    # Expects I<Request.auth_user_id> to be set.  If it isn't set, returns
+    # C<undef>.  LoginForm or some other cookie handler should set this.
     my(undef, $req) = @_;
 
     # This special field is set by one of the handlers (LoginForm).
@@ -71,16 +28,10 @@ sub get_auth_user {
     return undef;
 }
 
-=for html <a name="load_permissions"></a>
-
-=head2 static load_permissions(Bivio::Auth::Realm realm, Bivio::Auth::Role role, Bivio::Agent::Request req) : Bivio::Auth::PermissionSet
-
-Returns the permission set from RealmRole table.  If there are no permissions,
-loads default permissions from RealmRole table.
-
-=cut
-
 sub load_permissions {
+    # (proto, Auth.Realm, Auth.Role, Agent.Request) : Auth.PermissionSet
+    # Returns the permission set from RealmRole table.  If there are no permissions,
+    # loads default permissions from RealmRole table.
     my(undef, $realm, $role, $req) = @_;
     my($owner) = $realm->unsafe_get('owner');
     if ($owner) {
@@ -103,16 +54,10 @@ sub load_permissions {
     return $res;
 }
 
-=for html <a name="task_permission_ok"></a>
-
-=head2 static task_permission_ok(Bivio::Auth::PermissionSet user, Bivio::Auth::PermissionSet task, Bivio::Agent::Request req) : boolean
-
-Returns true if I<user> has all permissions in I<task>.
-Computes SUPER_USER_TRANSIENT and SUBSTITUTE_USER_TRANSIENT.
-
-=cut
-
 sub task_permission_ok {
+    # (proto, Auth.PermissionSet, Auth.PermissionSet, Agent.Request) : boolean
+    # Returns true if I<user> has all permissions in I<task>.
+    # Computes SUPER_USER_TRANSIENT and SUBSTITUTE_USER_TRANSIENT.
     my($proto, $user, $task, $req) = @_;
     foreach my $op ('', qw(super_user substitute_user test)) {
 	if ($op) {
@@ -130,27 +75,15 @@ sub task_permission_ok {
     return 0;
 }
 
-=for html <a name="unsafe_get_user_pref"></a>
-
-=head2 static unsafe_get_user_pref() : boolean
-
-Preferences not suppported.  Always returns false.
-
-=cut
-
 sub unsafe_get_user_pref {
     return 0;
 }
 
-#=PRIVATE METHODS
-
-# _load_default_permissions(int rti, Bivio::Agent::Request rti)
-#
-# Loads default permissions for this rti (RealmType->as_int)
-# The RealmRole table maps the RealmType->as_int to the realm_id
-# for defaults.
-#
 sub _load_default_permissions {
+    # (int, Agent.Request) : undef
+    # Loads default permissions for this rti (RealmType->as_int)
+    # The RealmRole table maps the RealmType->as_int to the realm_id
+    # for defaults.
     my($rti, $req) = @_;
     # Copy the default (if loaded) and return
     my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
@@ -163,15 +96,5 @@ sub _load_default_permissions {
     }
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
