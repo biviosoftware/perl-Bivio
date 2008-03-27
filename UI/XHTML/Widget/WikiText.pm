@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText;
 use strict;
@@ -367,12 +367,17 @@ my($_TAGS) = {%$_EMPTY, %$_BLOCK, %$_PHRASE};
 my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*$)};
-Bivio::IO::Config->register(my $_CFG = {
+my($_C) = __PACKAGE__->use('IO.Config');
+$_C->register(my $_CFG = {
     deprecated_auto_link_mode => 0,
 });
 my($_MY_TAGS);
 my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id)];
 _require_my_tags(__PACKAGE__);
+my($_T) = __PACKAGE__->use('FacadeComponent.Task');
+my($_FCC) = __PACKAGE__->use('FacadeComponent.Constant');
+my($_TI) = __PACKAGE__->use('Agent.TaskId');
+my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
@@ -409,16 +414,17 @@ sub internal_format_uri {
     }
     $uri =~ s/^(?=javascript:)/no-wiki-/i;
     return
-	$uri =~ m{^/+$_REALM_PLACEHOLDER(/.+)}os
-	    && $args->{realm_name}
-        ? Bivio::UI::Task->format_uri({uri => "/$args->{realm_name}$1"
-	}, $args->{req}) : $uri =~ m{[/:]} ? Bivio::UI::Task->format_uri({
-	    uri => $uri,
-	}, $args->{req}) : $args->{req}->format_uri({
+	$uri =~ m{^/+$_REALM_PLACEHOLDER(/.+)}os && $args->{realm_name}
+        ? $_T->format_uri(
+	    {uri => "/$args->{realm_name}$1"}, $args->{req})
+	: $uri =~ m{[/:]}
+	? $_T->format_uri({uri => $uri}, $args->{req})
+        : $uri =~ /\./ ? $_WDN->format_uri($uri, $args)
+	: $args->{req}->format_uri({
 	    task_id => $args->{task_id},
 	    realm => $args->{realm_name},
 	    query => undef,
-	    path_info => ($uri =~ /^\^?(.*)/)[0],
+	    path_info => $uri,
 	});
 }
 
@@ -468,7 +474,9 @@ sub render_html {
     $args->{source} ||= $args->{req};
     $args->{proto} = $proto;
     $args->{no_auto_links} ||= !$_CFG->{deprecated_auto_link_mode};
-    $args->{task_id} ||= $args->{req}->get('task_id');
+    $args->{task_id} = $args->{task_id} ? $_TI->from_any($args->{task_id})
+	: $args->{req}->get('task_id')
+	unless ref($args->{task_id});
     $args->{realm_id} ||= $args->{req}->get('auth_id');
     unless ($args->{realm_name}) {
 	my($ro) = Bivio::Biz::Model->new($args->{req}, 'RealmOwner');
@@ -501,8 +509,8 @@ sub _close_top {
     if (($state->{tags}->[0] || '') eq $tag) {
 	$state->{html} .= '</' . shift(@{$state->{tags}}) . '>';
 	shift(@{$state->{attrs}});
-#TODO: This "class="prose"" is a pain
-	$state->{html} =~ s{<p(?: class="prose")?></p>$}{}s
+#TODO: This "class="b_prose"" is a pain
+	$state->{html} =~ s{<p(?: class="(?:b_)?prose")?></p>$}{}s
 	    if $tag eq 'p';
     }
     return '';
@@ -714,8 +722,11 @@ sub _require_my_tags {
 
 sub _start_p {
     my($state) = @_;
-    $state->{html} .= _start_tag('p', ' class="prose"', $state)
-	unless $state->{tags}->[0];
+    $state->{html} .= _start_tag(
+	'p',
+	$_C->if_version(6, ' class="b_prose"', ' class="prose"'),
+	$state,
+    ) unless $state->{tags}->[0];
     return '';
 }
 
