@@ -27,6 +27,7 @@ my($_CFG);
 my($_DT) = Bivio::Type->get_instance('DateTime');
 my($_PERL_DIR) = '/perl';
 my($_WN) = __PACKAGE__->use('Type.WikiName');
+my($_F) = __PACKAGE__->use('UI.Facade');
 
 sub USAGE {
     # Returns usage.
@@ -36,6 +37,7 @@ commands:
     acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
     mock_sendmail -ffrom@email.com recipient1,recipient2,... -- bypasses MTA for acceptance tests
     nightly -- runs all acceptance tests with current tests from CVS
+    remote_trace [named_filters] -- turn on tracing on a server
     task name query path_info -- executes task in context supplied returns output
     unit tests/dirs... -- runs the tests (*.t) and print cummulative results
 EOF
@@ -117,14 +119,16 @@ sub mock_sendmail {
 	(my $email = $r) =~ s/\+([^\@]+)//;
 	my($extension) = $1 || '';
 	$msg->set_recipients($r, $req);
-	next unless my $http = _mock_sendmail_facade($self, $r);
+	my($die);
+	return Bivio::IO::Alert->warn($r, ': ', $die)
+	    unless my $http = Bivio::Die->catch(
+		sub {_uri_for_task($self, 'MAIL_RECEIVE_DISPATCH', $r)},
+		\$die,
+	    );
+	$http =~ s/^http://;
 	my($res) = $self->piped_exec(
-	    "b-sendmail-http 127.0.0.1 '$r' '$http"
-	    . $req->format_uri({
-		    task_id => 'MAIL_RECEIVE_DISPATCH',
-		    path_info => undef,
-	    })
-	    . "' /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
+	    "b-sendmail-http 127.0.0.1 '$r' '$http'"
+		. "/usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
 	    $msg->as_string,
 	    1,
 	);
@@ -224,6 +228,22 @@ sub nightly_output_to_wiki {
 	 );
     }esx;
     $rf->$method($q, \$curr);
+    return;
+}
+
+sub remote_trace {
+    my($self, $named) = shift->name_args(['?PerlName'], \@_);
+    my($ua) = $self->use('Ext.LWPUserAgent')->new;
+    $ua->agent('b-test remote_trace');
+    $ua->timeout(5);
+    my($resp) = $ua->request(
+	HTTP::Request->new(
+	    'GET',
+	    _uri_for_task($self, 'TEST_TRACE', undef, {path_info => $named}),
+	),
+    );
+    Bivio::Die->die($resp)
+        unless $resp->is_success;
     return;
 }
 
@@ -332,26 +352,6 @@ sub _make_nightly_dir {
     return $dir;
 }
 
-sub _mock_sendmail_facade {
-    my($self, $email) = @_;
-    my($facade) = $self->use('UI.Facade')->setup_request(
-	($email =~ /@(.+)/)[0]
-	    || Bivio::Die->die($email, ': no domain name on email address'),
-	$self->req,
-    );
-    return Bivio::IO::Alert->warn(
-	$email, ': no MAIL_RECEIVE_DISPATCH TaskId',
-    ) unless Bivio::Agent::TaskId->unsafe_from_name('MAIL_RECEIVE_DISPATCH');
-    return Bivio::IO::Alert->warn(
-	$facade, ': no MAIL_RECEIVE_DISPATCH uri for ', $email,
-    ) unless Bivio::UI::Task->has_uri('MAIL_RECEIVE_DISPATCH');
-    my($http) = $self->use('TestLanguage.HTTP')->home_page_uri(
-	$facade->get('uri'));
-    Bivio::Die->die($http, ': TestLanguage.HTTP->home_page_uri missing http:')
-        unless $http =~ m{http://([^/]+)};
-    return $1;
-}
-
 sub _piped_exec {
     my($self, $command, $input, $out, $do) = @_;
     # Call $do for each line.
@@ -427,6 +427,26 @@ use strict;
 use $unit;
 ${unit}->run(q{$test});
 EOF
+}
+
+sub _uri_for_task {
+    my($self, $task, $email_or_facade, $uri_args) = @_;
+    my($facade) = $_F->setup_request(
+	$email_or_facade ? ($email_or_facade =~ /@(.+)/)[0] || $email_or_facade
+	    : $_F->get_default->get('uri'),
+	$self->req,
+    );
+    my($http) = $self->use('TestLanguage.HTTP')->home_page_uri(
+	$facade->get('uri'));
+    Bivio::Die->die($http, ': TestLanguage.HTTP->home_page_uri missing http:')
+        unless $http =~ m{http://[^/]+};
+    return $http . $self->req->format_uri({
+	realm => undef,
+	task_id => $task,
+	query => undef,
+	path_info => undef,
+	%{$uri_args || {}},
+    });
 }
 
 1;
