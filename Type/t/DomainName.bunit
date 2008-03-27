@@ -11,4 +11,9 @@ Type();
 	'1.1.1.1' => '1.1.1.1',
 	'  111.11.1.0 ' => '111.11.1.0',
     ],
+    unsafe_to_dotted_decimal => [
+	'bivio.biz' => qr{^\d+(?:\.\d+){3}$},
+	'not-going-to-match.bivio.biz' => [undef],
+	a => qr{invalid internet domain}i,
+    ],
 ];
