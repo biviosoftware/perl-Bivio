@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget({
     view_class_map => 'XHTMLWidget',
@@ -14,12 +14,12 @@ Widget({
 req()->set_realm_and_user(qw(demo guest));
 [
     [[vs_new(qw(XLink back_to_top))]] => '<div class="task_menu"><a href="#top">back to top</a></div>',
-    [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>}i,
-    [[[qw(SITE_ROOT site_name)]]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">PetShop</a></div>},
+    [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a class="selected" href="/">home</a></div>}i,
+    [[[qw(SITE_ROOT site_name)]]] => qr{<div class="task_menu"><a class="selected" href="/">PetShop</a></div>},
     [[{
 	task_id => 'SITE_ROOT',
 	label => 'site_name',
-    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">PetShop</a></div>},
+    }]] => qr{<div class="task_menu"><a class="selected" href="/">PetShop</a></div>},
     [[
 	{
 	    task_id => 'SITE_ROOT',
@@ -34,11 +34,11 @@ req()->set_realm_and_user(qw(demo guest));
 	    my($widget, $source) = @_;
 	    return $widget->render_simple_attr(href => $source) eq '/';
 	},
-    }] => qr{.*top" href="/x".*class="want_sep selected" href="/">}s,
+    }] => qr{task_menu.*href="/x".*class="want_sep selected" href="/">}s,
     [[{
 	task_id => 'SITE_ROOT',
 	path_info => '/x',
-    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/x">home</a></div>}i,
+    }]] => qr{<div class="task_menu"><a class="selected" href="/x">home</a></div>}i,
     [[{
 	task_id => 'SITE_ROOT',
 	control => [sub {0}],
@@ -46,12 +46,12 @@ req()->set_realm_and_user(qw(demo guest));
     [[{
 	task_id => 'SITE_ROOT',
 	control => [sub {1}],
-    }]] => qr{<div class="task_menu"><a target="_top" class="selected" href="/">home</a></div>}i,
-    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a target="_top" href="/">home</a></div>}i,
+    }]] => qr{<div class="task_menu"><a class="selected" href="/">home</a></div>}i,
+    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a href="/">home</a></div>}i,
     [[qw(ADM_SUBSTITUTE_USER SITE_ROOT), {
 	task_id => Bivio::Agent::TaskId->USER_HOME,
 	realm => 'demo',
-    }]] => qr{<div class="task_menu"><a target="_top" href="/">home</a><a target="_top" class="want_sep" href="/demo">user home</a></div>}i,
+    }]] => qr{<div class="task_menu"><a href="/">home</a><a class="want_sep" href="/demo">user home</a></div>}i,
     [[{
 	task_id => 'USER_HOME',
 	label => [sub {'x'}],
@@ -60,7 +60,7 @@ req()->set_realm_and_user(qw(demo guest));
 	label => [sub {'y'}],
      }], {
 	 selected_item => [sub {'y'}],
-     }] => qr{<div class="task_menu"><a target="_top" href="/guest">x</a><a target="_top" class="want_sep selected" href="/">y</a></div>},
+     }] => qr{<div class="task_menu"><a href="/guest">x</a><a class="want_sep selected" href="/">y</a></div>},
     [[{
 	task_id => 'SITE_ROOT',
 	xlink => 'back_to_top',
@@ -75,5 +75,5 @@ req()->set_realm_and_user(qw(demo guest));
     }]] => '<div class="task_menu"><a href="#top">back to top</a></div>',
     [[{
 	xlink => vs_new(qw(SiteRoot hm_bunit1)),
-    }]] => '<div class="task_menu"><a target="_top" href="/hm/bunit1">bunit1</a></div>',
+    }]] => '<div class="task_menu"><a href="/hm/bunit1">bunit1</a></div>',
 ];
