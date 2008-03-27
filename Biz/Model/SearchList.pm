@@ -28,7 +28,7 @@ my($_REALM_OWNER_FIELDS) = [qw(
 my($_A) = __PACKAGE__->use('Mail.Address');
 
 sub RESULT_EXCERPT_LENGTH {
-    return 500;
+    return 250;
 }
 
 sub internal_realm_ids {

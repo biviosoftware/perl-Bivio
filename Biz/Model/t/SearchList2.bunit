@@ -39,7 +39,7 @@ commit();
 		));
 		assert_not_equals(qr{not-found}i, $p);
 		if ($p eq '/file.txt') {
-		    assert_equals(int(500/6) - 1, scalar(@{[split(' ', $e)]}));
+		    assert_equals(int(250/6) - 1, scalar(@{[split(' ', $e)]}));
 		    assert_equals('file.txt', $t);
 		}
 		elsif ($p =~ /mail/i) {
