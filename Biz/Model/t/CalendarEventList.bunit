@@ -1,10 +1,8 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-use Bivio::PetShop::Util;
-my($_DT) = 'Bivio::Type::DateTime';
-req()->set_realm_and_user(Bivio::PetShop::Util->DEMO);
-my($now) = $_DT->from_literal('1/1/2006 16:0:0');
+req()->set_realm_and_user(ShellUtil_SQL()->DEMO);
+my($now) = DateTime()->from_literal('1/1/2006 16:0:0');
 [
     load_all => [
 	[] => [
@@ -12,14 +10,14 @@ my($now) = $_DT->from_literal('1/1/2006 16:0:0');
 		+{
 		    'RealmOwner.display_name' => 'Summary' . $_,
 		    'CalendarEvent.location' => 'Location' . $_,
-		    'CalendarEvent.dtstart' => $_DT->add_seconds($now, $_ * 3600),
+		    'CalendarEvent.dtstart' => DateTime()->add_seconds($now, $_ * 3600),
 		},
 		2, 1,
 	    ),
 	],
     ],
     sub {
-	Bivio::Biz::Model->new(req(), 'CalendarEvent')->delete_all;
+	model('CalendarEvent')->delete_all;
 	return 1;
     } => 1,
     {
@@ -32,7 +30,7 @@ my($now) = $_DT->from_literal('1/1/2006 16:0:0');
 	    },
 	method => 'update_from_ics',
     } => [
-	[Bivio::IO::File->read('CalendarEventList/1.in')] =>
-	    [do('CalendarEventList/1.out')],
+	[read_file('CalendarEventList/1.in')]
+	    => [do('CalendarEventList/1.out')],
     ],
 ];

@@ -1,8 +1,8 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-my($email) = simple_require('Bivio::PetShop::Util')->DEMO_EMAIL;
-my($name) = Bivio::PetShop::Util->DEMO;
+my($email) = ShellUtil_SQL()->DEMO_EMAIL;
+my($name) = ShellUtil_SQL()->DEMO;
 my($id) = unauth_model(RealmOwner => {name => $name})->get('realm_id');
 [
     {
@@ -13,10 +13,10 @@ my($id) = unauth_model(RealmOwner => {name => $name})->get('realm_id');
     } => [
 	unauth_load_by_email => [
 	    $email => $name,
-	    [$email, realm_type => Bivio::Auth::RealmType->USER] => $name,
-	    [$email, realm_type => Bivio::Auth::RealmType->CLUB] => [undef],
-	    [$email, {realm_type => Bivio::Auth::RealmType->USER}] => $name,
-	    [$email, {realm_type => Bivio::Auth::RealmType->CLUB}] => [undef],
+	    [$email, realm_type => Auth_RealmType()->USER] => $name,
+	    [$email, realm_type => Auth_RealmType()->CLUB] => [undef],
+	    [$email, {realm_type => Auth_RealmType()->USER}] => $name,
+	    [$email, {realm_type => Auth_RealmType()->CLUB}] => [undef],
 	],
 	unauth_load_by_id_or_name_or_die => [
 	    not_a_user => MODEL_NOT_FOUND(),

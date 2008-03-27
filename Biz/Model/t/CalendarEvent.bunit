@@ -1,12 +1,9 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-use Bivio::PetShop::Util;
-req()->set_realm_and_user(Bivio::PetShop::Util->DEMO);
-my($_DT) = 'Bivio::Type::DateTime';
-my($_D) = 'Bivio::Type::Date';
-my($now) = $_DT->now;
-my($now_100) = $_DT->add_seconds($now, 100);
+req()->set_realm_and_user(ShellUtil_SQL()->DEMO);
+my($now) = DateTime()->now;
+my($now_100) = DateTime()->add_seconds($now, 100);
 my($v) = {
     dtstart => $now,
     dtend => $now_100,
