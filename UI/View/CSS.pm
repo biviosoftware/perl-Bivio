@@ -48,9 +48,6 @@ ol {
 ul {
   list-style-type: disc;
 }
-ul.none, ol.none {
-  list-style-type: none;
-}
 abbr, acronym, fieldset, iframe, img, table {
   border-style: none;
   border: 0;
@@ -98,6 +95,10 @@ h4 {
 strong {
   Font('strong');
 }
+ol.none,
+ul.none {
+  list-style-type: none;
+}
 pre {
   line-height: 60%;
 }
@@ -130,13 +131,21 @@ input.checkbox {
   padding: 0;
   margin: 0;
 }
+span.checkbox_label {
+  margin: .5em;
+}
 form .check {
   padding-left: .5em;
 }
-.acknowledgement, .err_title, .field_err, form .desc {
+.acknowledgement,
+.err_title,
+.field_err,
+form .desc {
   width: 30em;
 }
-form .desc, .byline, .msg .forward {
+form .desc,
+.byline,
+.msg .forward {
   margin: .1em 0 0 0;
   font-size: 85%;
   Color('form_desc');
@@ -151,10 +160,14 @@ form table.simple td.field  {
 td.label {
   vertical-align: top;
 }
-.field_err, label_err, .err_title, .err {
+.field_err,
+label_err,
+.err_title,
+.err {
   Color('err');
 }
-form .err, form .err_title {
+form .err,
+form .err_title {
   Font('form_err');
 }
 form .err_title {
@@ -163,14 +176,18 @@ form .err_title {
 form .field_err {
   Font('form_field_err');
 }
-form .label_ok, form .label_err, form .field {
+form .label_ok,
+form .label_err,
+form .field {
   padding-bottom: 1em;
 }
 form .footer {
   Font('form_footer');
   margin-bottom: 1.0em;
 }
-form .label_ok, form .label_err, form .label {
+form .label_ok,
+form .label_err,
+form .label {
   text-align: right;
   padding-right: .2em;
 }
@@ -181,10 +198,13 @@ form .label_ok {
   vertical-align: middle;
   Font('form_label_err');
 }
-.list td, .paged_list td {
+.list td,
+.paged_list td {
   padding: .5em;
 }
-.form_prose, .list_prose, .paged_list .empty {
+.form_prose,
+.list_prose,
+.paged_list .empty {
   text-align: left;
   width: 40em;
   padding-bottom: .5ex;
@@ -199,7 +219,9 @@ table.main {
   margin-top: 1em;
   margin-bottom: 1em;
 }
-td.main_left, td.main_middle, td.main_right {
+td.main_left,
+td.main_middle,
+td.main_right {
   vertical-align: top;
 }
 table.header {
@@ -268,7 +290,9 @@ td.header_right {
   vertical-align: top;
   text-align: right;
 }
-div.main_bottom, div.main_top, div.main_body {
+div.main_bottom,
+div.main_top,
+div.main_body {
   float: left;
   clear: both;
   width: 100%;
@@ -276,13 +300,18 @@ div.main_bottom, div.main_top, div.main_body {
 div.main_top {
   text-align: right;
 }
-div.main_top .task_menu, div.main_top .pager {
+div.main_top .task_menu,
+div.main_top .pager {
   text-align: right;
 }
-div.main_bottom .pager, div.main_bottom .task_menu {
+div.main_bottom .pager,
+div.main_bottom .task_menu {
   text-align: left;
 }
-table.footer .task_menu, div.tools .task_menu a, div.tools .task_menu, div.pager {
+table.footer .task_menu,
+div.tools .task_menu a,
+div.tools .task_menu,
+div.pager {
   Font('tools');
 }
 div.main_body {
@@ -309,7 +338,8 @@ div.main_top div.title {
 div.main_top .topic {
   Font('topic');
 }
-div.main_top div.byline, div.main_top div.byline2  {
+div.main_top div.byline,
+div.main_top div.byline2  {
   Font('byline');
 }
 div.main_top div.title {
@@ -326,7 +356,8 @@ div.main_top div.selector {
 div.alphabetical_chooser {
   display: inline;
 }
-.task_menu .selected, .alphabetical_chooser .selected {
+.task_menu .selected,
+.alphabetical_chooser .selected {
   Font('selected');
 }
 table.footer {
@@ -344,7 +375,8 @@ td.footer_left {
   vertical-align: top;
 }
 .task_menu a.want_sep,
-.pager .next, .pager .list,
+.pager .next,
+.pager .list,
 .alphabetical_chooser a.all,
 .tools span.want_sep,
 .tools div.sep {
@@ -358,7 +390,10 @@ td.footer_left {
 .tools div.sep {
   display: inline;
 }
-.prose p, p.prose {
+.b_prose p,
+p.b_prose,
+.prose p,
+p.prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
 }
@@ -380,7 +415,8 @@ form .submit {
   padding: 0 .5em;
   text-align: center;
 }
-.empty_list, .not_found {
+.empty_list,
+.not_found {
   border: 2px solid;
   Color('empty_list-border');
   padding: .5em;
@@ -390,7 +426,9 @@ form .submit {
 pre .text {
   Font('pre_text');
 }
-.pager .next, .pager .prev, .pager .list {
+.pager .next,
+.pager .prev,
+.pager .list {
   Font('pager');
 }
 .pager .off {
@@ -433,7 +471,8 @@ p {
 .paged_detail td {
   padding-bottom: 1em;
 }
-.byline, .byline2 {
+.byline,
+.byline2 {
   white-space: nowrap;
 }
 .top_left {
@@ -460,7 +499,8 @@ p {
 .rounded_box_body {
   width: 100%;
 }
-p.prose {
+p.prose,
+p.b_prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
 }
@@ -517,6 +557,7 @@ div.blog div.list div.heading {
   text-align: left;
   margin: 1ex 0 0 0;
 }
+div.blog div.list p.b_prose,
 div.blog div.list p.prose {
   margin: .5ex 0 .5ex 0;
 }
@@ -553,7 +594,8 @@ sub _site_mail {
 .msg .attachment .download .label {
   margin-right: .5em;
 }
-.msg .parts .forward, .msg .parts .byline {
+.msg .parts .forward,
+.msg .parts .byline {
   margin-top: 1ex;
   margin-bottom: 1ex;
 }
@@ -673,6 +715,7 @@ div.wiki {
   padding-top: .5ex;
   padding-bottom: .5ex;
 }
+.wiki .b_prose,
 .wiki .prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
