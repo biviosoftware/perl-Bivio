@@ -62,10 +62,10 @@ sub archive_mirror_link {
 	    $dirs = [sort(@$dirs)];
 	    close(IN);
 	    while (my $src = shift(@$dirs)) {
-		my($dst) = "$archive/$src.tbz";
+		my($dst) = "$archive/$src.tgz";
 		$_F->mkdir_parent_only($dst, 0700);
 		$self->piped_exec(
-		    ['tar', 'cjfX', $dst, '-', $src],
+		    ['tar', 'czfX', $dst, '-', $src],
 		    \(join("\n", @$dirs)),
 		);
 	    }
