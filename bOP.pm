@@ -26,11 +26,53 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.5  2008/03/27 00:20:43  nagler
+  * Bivio::Agent::HTTP::Reply
+    incorrect comment
+  * Bivio::Biz::Action::WikiView
+    internal_model_not_found is thrown quietly
+  * Bivio::Biz::Model::RealmFile
+    get_content_type must strip version before checking type
+  * Bivio::Biz::Model::SearchList
+    excerpt length is 250 chars
+  * Bivio::Biz::Model
+    put_on_request returns $self
+  * Bivio::IO::Config
+    if_version allows values to be returned, not just code_ref calls
+    allow if_version(3)
+  * Bivio::PetShop::BConf
+    v6
+  * Bivio::PetShop::Facade::PetShop
+    use Phone_2 and Address_2 for shipping address
+  * Bivio::Type::FilePath
+    WIKI_DATA_FOLDER
+    default REGEX
+  * Bivio::Type::WikiName
+    REGEX must return $1
+  * Bivio::UI::HTML::ViewShortcuts
+    factored out vs_html_attrs_render_one
+  * Bivio::UI::HTML::Widget::Grid
+    call vs_html_attrs_render_one for most attrs
+  * Bivio::UI::HTML::Widget::Page
+    call vs_html_attrs_render_one for body_class
+  * Bivio::UI::HTML::Widget::Table
+    call vs_html_attrs_render_one for most attrs
+  * Bivio::UI::HTML::Widget::Tag
+    factored out internal_tag_render_attrs
+  * Bivio::UI::View::CSS
+    .b_prose support for wiki (leaving existing .prose)
+  * Bivio::UI::View::ThreePartPage
+    extract out internal_search_form
+  * Bivio::Util::Backup
+    glob is very strange and shouldn't be used in a scalar context with functions
+  * Bivio::Util::HTTPConf
+    document validate_vars
+
   Revision 6.4  2008/03/23 22:23:02  nagler
   * Bivio::Agent::Task
     _call_txn_resources() must loop until there are no more transaction
