@@ -26,11 +26,60 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.4  2008/03/23 22:23:02  nagler
+  * Bivio::Agent::Task
+    _call_txn_resources() must loop until there are no more transaction
+    resources.  Certain commits will introduce new transaction resources
+    (e.g. Search.Xapian adds a lock).  Probably should add
+    handle_prepare_commit.
+  * Bivio::BConf
+    added HTML, SearchParser, SearchParserRealmFile
+    more maps
+  * Bivio::Biz::Action::RealmFile
+    set_cache_private if the file is not public
+  * Bivio::Biz::Model::CRMThread
+    handle_mail_post_create was not checking is_enabled_for_auth_realm
+  * Bivio::Biz::Model::SearchList
+    result_excerpt, result_title, and result_who work properly
+  * Bivio::Biz::Random
+    string() defaults $length to 8
+  * Bivio::Delegate::TaskId
+    improved search support
+  * Bivio::MIME::Type
+    changed application/x-bwiki to text/x-bivio-wiki
+  * Bivio::Search::RealmFile
+    Refactored to support excerpting in SearchList and better modularization for new searchable objects
+  * Bivio::Test::HTMLParser::Forms
+    fpc
+  * Bivio::Test::Language::HTTP
+    random_string() passes all args through
+  * Bivio::Test::Request
+    use Test.Bean
+  * Bivio::Type::BlogTitle
+    added empty_value
+  * Bivio::Type::Number
+    sum calls iterate_reduce
+  * Bivio::UI::FacadeBase
+    label for SEARCH_LIST
+    support for search
+  * Bivio::UI::View::CSS
+    support for search
+  * Bivio::UI::View::Mail
+    added id for part
+  * Bivio::UI::View::Search
+    added result_who, title, and excerpt
+  * Bivio::UI::View::ThreePartPage
+    added SearchForm support
+  * Bivio::UI::ViewLanguage
+    fmt
+  * Bivio::Util::SQL
+    destroy_dbms does not destroy realm files
+
   Revision 6.3  2008/03/20 03:16:17  nagler
   * Bivio::Biz::Action::ECCreditCardProcessor
     rm pod
