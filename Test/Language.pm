@@ -30,7 +30,7 @@ sub AUTOLOAD {
     my($td) = $self->unsafe_get('test_deviance');
     return $self->$func(@args)
 	unless $td;
-    my($die) = Bivio::Die->catch(sub {
+    my($die) = Bivio::Die->catch_quietly(sub {
 	return $self->$func(@args);
     });
     _die($self, ' deviance call "', $td, '" failed to die: ', $func, \@args)
