@@ -8,6 +8,21 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = __PACKAGE__->use('Agent.TaskId');
 
+sub internal_search_form {
+    return Form({
+	action => $_TI->SEARCH_LIST,
+	form_class => 'SearchForm',
+	value => Join([
+	    Text({
+		field => 'search',
+		size => 30,
+	    }),
+	    ImageFormButton(qw(ok_button magnifier go)),
+	]),
+	class => 'search',
+    });
+}
+
 sub internal_xhtml_adorned {
     my($self) = @_;
     $self->internal_xhtml_adorned_attrs;
@@ -37,6 +52,7 @@ sub internal_xhtml_adorned {
 }
 
 sub internal_xhtml_adorned_attrs {
+    my($self) = @_;
     view_pre_execute(sub {
 	my($req) = shift->get_request;
 	Bivio::Biz::Model->new($req, 'SearchForm')->process
@@ -78,18 +94,8 @@ sub internal_xhtml_adorned_attrs {
 		),
 	    ])),
 	    vs_text_as_prose('xhtml_user_state'),
-	    !$_TI->unsafe_from_name('SEARCH_LIST') ? () : Form({
-		action => $_TI->SEARCH_LIST,
-		form_class => 'SearchForm',
-		value => Join([
-		    Text({
-			field => 'search',
-			size => 30,
-		    }),
-		    ImageFormButton(qw(ok_button magnifier go)),
-		]),
-		class => 'search',
-	    }),
+	    !$_TI->unsafe_from_name('SEARCH_LIST') ? ()
+		: $self->internal_search_form,
 	]),
 	xhtml_main_left => '',
 	xhtml_main_right => '',
