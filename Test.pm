@@ -667,7 +667,7 @@ sub _eval_custom {
 	return undef;
     });
     if ($die) {
-	$$err = "Error in custom $which: " . $die->as_string;
+	$$err = "Error in custom $which: " . $die->as_string . _die_stack($die);
 	return undef;
     }
     if ($which =~ /params/ && ref($res) ne 'ARRAY') {
