@@ -378,6 +378,7 @@ td.footer_left {
 .pager .next,
 .pager .list,
 .alphabetical_chooser a.all,
+.header_right .want_sep,
 .tools span.want_sep,
 .tools div.sep {
   background: Icon('tools_sep'); left center no-repeat;
@@ -644,12 +645,6 @@ div.user_state {
 div.user_state a {
   Font('user_state');
 }
-div.user_state a.settings {
-  Font('user_state');
-  background: Icon('tools_sep'); right center no-repeat;
-  padding-right: vs_add(Icon('tools_sep', 'width'), 4);px;
-  margin-right: 4px;
-}
 EOF
 }
 
@@ -689,9 +684,6 @@ body.help_wiki_iframe_body {
 a.help_wiki_open,
 a.help_wiki_add {
   Font('user_state');
-  background: Icon('tools_sep'); right center no-repeat;
-  padding-right: vs_add(Icon('tools_sep', 'width'), 4);px;
-  margin-right: 4px;
 }
 .help_wiki .header {
   padding-bottom: .5ex;
