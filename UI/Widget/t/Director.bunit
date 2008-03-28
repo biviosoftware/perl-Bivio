@@ -18,6 +18,8 @@ Widget({
 		[0 => 'zero'],
 		[1 => 'one'],
 		['a string' => 'a str'],
+		[qr{foo}s => 'regexp1'],
+		[qr{bar}s => 'regexp2'],
 	    ),
 	},
     ] => [
@@ -27,8 +29,11 @@ Widget({
 	    0 => 'zero',
 	    1 => 'one',
 	    'a string' => 'a str',
-	    force_default => DIE(),
-	    [undef] => DIE(),
+	    'foo' => 'regexp1',
+	    'bar' => 'regexp2',
+	    'foo bar' => qr{too many},
+	    force_default => qr{matches default_value},
+	    [undef] => qr{matches undef_value},
 	],
     ],
     [

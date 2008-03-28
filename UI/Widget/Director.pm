@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::Die;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R) = __PACKAGE__->use('Type.Regexp');
 
 sub execute {
     my($self, $req) = @_;
@@ -20,9 +21,12 @@ sub initialize {
     $self->initialize_attr('control');
     $self->unsafe_initialize_attr('default_value');
     $self->unsafe_initialize_attr('undef_value');
-    while (my($k, $v) = each(%{$self->get('values')})) {
-	$self->initialize_value($k, $v);
-    }
+    my($values) = $self->get('values');
+    $self->put(_value_array => [map({
+	my($k) = $_;
+	my($r) = $k =~ /^\(\?.+\)$/s ? $_R->from_literal($k) : ();
+	($r || $k => $self->initialize_value($k, $values->{$_}));
+    } sort(keys(%$values)))]);
     return;
 }
 
@@ -56,15 +60,28 @@ sub _select {
     my($ctl) = '';
     my($n) = 'undef_value';
     if ($self->unsafe_render_attr('control', $source, \$ctl)) {
-	my($values) = $self->get('values');
-	return ($values->{$ctl} || undef, $ctl)
-	    if defined($values->{$ctl});
+	my($x) = $self->map_by_two(
+	    sub {
+		my($k, $v) = @_;
+		return
+		    unless (ref($k) ? $ctl =~ $k : $k eq $ctl) && defined($v);
+		return ($v || undef, $k);
+	    },
+	    $self->get('_value_array'),
+	);
+	if (@$x) {
+	    Bivio::Die->die($x, ': control matches too many keys')
+	        if @$x > 2;
+	    return @$x;
+	}
 	$n = 'default_value';
     }
     my($v) = $self->unsafe_get($n);
     return ($v || undef, $n)
 	if defined($v);
-    Bivio::Die->die($self->get('control'), ': invalid control value: ', $ctl);
+    Bivio::Die->die(
+	$self->get('control'), '=', $ctl,
+	": control matches $n value, but not specified");
     # DOES NOT RETURN
 }
 
