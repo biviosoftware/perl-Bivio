@@ -548,6 +548,7 @@ EOF
 	    foreach my $fv (
 		[qw(WikiName base.css), $p, ".${realm}_wiki_${mode} {}"],
 		[qw(FilePath my.css), $p, ".${realm}_my_${mode} {}"],
+		[qw(WikiName index), $p, "\@h1 Sweet Home\nGo buffaloes\n"],
 	    ) {
 		$self->model('RealmFile')->create_with_content({
 		    path => $self->use('Type.' . shift(@$fv))
