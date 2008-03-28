@@ -8,21 +8,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = __PACKAGE__->use('Agent.TaskId');
 
-sub internal_search_form {
-    return Form({
-	action => $_TI->SEARCH_LIST,
-	form_class => 'SearchForm',
-	value => Join([
-	    Text({
-		field => 'search',
-		size => 30,
-	    }),
-	    ImageFormButton(qw(ok_button magnifier go)),
-	]),
-	class => 'search',
-    });
-}
-
 sub internal_xhtml_adorned {
     my($self) = @_;
     $self->internal_xhtml_adorned_attrs;
@@ -77,24 +62,14 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_selector => '',
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
 	xhtml_header_right => Join([
-#TODO: Unless this is done this way, the boxes don't align..
-	    DIV_user_state(Join([
-		HelpWiki(),
-		Link(
-		    vs_text_as_prose('task_menu.title.USER_SETTINGS_FORM'),
-		    'USER_SETTINGS_FORM',
-		    {
-			class => 'settings',
-			control => And(
-			    vs_constant('want_user_settings'),
-			    ['user_state', '->eq_logged_in'],
-			),
-		    },
-		),
-	    ])),
-	    vs_text_as_prose('xhtml_user_state'),
-	    !$_TI->unsafe_from_name('SEARCH_LIST') ? ()
-		: $self->internal_search_form,
+	    DIV_user_state(
+		JoinMenu([
+		    _header_right(qw(HELP HelpWiki)),
+		    _header_right(qw(USER_SETTINGS_FORM UserSettingsForm)),
+		    _header_right(qw(LOGIN UserState)),
+		]),
+	    ),
+	    _header_right(qw(SEARCH_LIST SearchForm)),
 	]),
 	xhtml_main_left => '',
 	xhtml_main_right => '',
@@ -145,6 +120,13 @@ sub internal_xhtml_adorned_body {
 	vs_grid3('main'),
 	vs_grid3('footer'),
     ]);
+}
+
+sub _header_right {
+    my($task, $widget) = @_;
+    return
+	unless $_TI->unsafe_from_name($task);
+    return If(vs_constant("ThreePartPage_want_$widget"), vs_call($widget));
 }
 
 1;
