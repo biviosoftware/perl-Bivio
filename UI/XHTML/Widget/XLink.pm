@@ -12,7 +12,7 @@ sub initialize {
     my($l) = $self->get('facade_label');
     $self->put_unless_exists(
 	tag => 'a',
-	value => Prose(vs_text(xlink => $l)),
+	value => XLinkLabel($l),
 	href => Bivio::Agent::TaskId->is_valid_name($l) ? URI({
 	    task_id => Bivio::Agent::TaskId->from_name($l),
 	    query => undef,
