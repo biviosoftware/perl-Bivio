@@ -142,6 +142,7 @@ sub _cfg_base {
 		anchor => 'top',
 	    }],
 	    [my_site_redirect_map => []],
+	    [ThreePartPage_want_UserState => 1],
 	],
  	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
@@ -365,7 +366,7 @@ sub _cfg_crm {
 		FORUM_CRM_FORM => 'New Ticket',
 		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
 	    ]],
-	    [title => [
+	    [[qw(title xlink)] => [
 #TODO: Make into shortcut of widget
 		FORUM_CRM_FORM => q{If(['->has_keys', 'Model.RealmMailList'], Join([Enum(['Model.CRMThread', 'crm_thread_status']), ' Ticket #', String(['Model.CRMThread', 'crm_thread_num'])]), 'New Ticket');},
 		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
@@ -805,7 +806,7 @@ sub _cfg_user_auth {
 		     => 'USER_CREATE'],
 		[xlink_user_logged_in => 'LOGOUT'],
 	    ),
-	    [want_user_settings => $_C->if_version(
+	    [ThreePartPage_want_UserSettingsForm => $_C->if_version(
 		5 => sub {1},
 		sub {0},
 	    )],
@@ -915,9 +916,6 @@ sub _cfg_user_auth {
 		USER_SETTINGS_FORM => 'Settings',
 	    ]],
 	    [prose => [
-		xhtml_user_state => q{DIV_user_state(
-                    XLink([sub {'user_' . shift->req('user_state')->get_name}]),
-		);},
 		password_query_mail_subject => 'vs_site_name(); Password Assistance',
 		create_mail_subject => 'vs_site_name(); Registration Verification',
 	    ]],
@@ -945,6 +943,7 @@ sub _cfg_wiki {
 	    [FORUM_WIKI_NOT_FOUND => undef],
 	    [HELP => '?/help/*'],
 	    [HELP_NOT_FOUND => undef],
+	    [SITE_WIKI_VIEW => '/bp/*'],
 	],
 	Constant => [
 	    map({
@@ -972,6 +971,7 @@ sub _cfg_wiki {
 	        [qw(site_contact_realm_id SITE_CONTACT_REALM_NAME)],
 	        [qw(site_adm_realm_id SITE_ADM_REALM_NAME)],
 	    ),
+	    [ThreePartPage_want_HelpWiki => 1],
 	],
 	Font => [
 	    [help_wiki_body => ['95%']],
@@ -993,6 +993,7 @@ sub _cfg_wiki {
 		HELP => 'Help',
 		FORUM_WIKI_EDIT => 'Edit Wiki Page',
 		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
+		SITE_WIKI_VIEW => '',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_WIKI_EDIT => 'Add new page',
@@ -1031,6 +1032,9 @@ sub _cfg_wiki {
 
 sub _cfg_xapian {
     return {
+	Constant => [
+	    [ThreePartPage_want_SearchForm => 1],
+	],
 	Task => [
 	    [SEARCH_LIST => 'pub/search'],
 	    [JOB_XAPIAN_COMMIT => undef],
