@@ -11,5 +11,3 @@ verify_text(qr{Last Name.*value="User"}s);
 follow_link('exit');
 follow_link('All');
 verify_text('User, Btest_read');
-
-
