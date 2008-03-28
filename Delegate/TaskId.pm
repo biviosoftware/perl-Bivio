@@ -1055,6 +1055,16 @@ sub info_wiki {
 	    View.Wiki->not_found
 	    view_task=HELP
  	)],
+	[qw(
+	    SITE_WIKI_VIEW
+	    121
+	    GENERAL
+	    ANYBODY
+	    Action.SiteForum
+	    Action.WikiView->execute_prepare_html
+	    View.Wiki->site_view
+	    want_author=0
+        )],
     ];
 #121-129 free
 }
