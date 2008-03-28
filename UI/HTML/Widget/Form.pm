@@ -2,7 +2,8 @@
 # $Id$
 package Bivio::UI::HTML::Widget::Form;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
+#TODO: Probably should subclass Tag, but cell_end_form is messy
+use Bivio::Base 'Bivio::UI::Widget::ControlBase';
 use Bivio::HTML;
 use Bivio::UI::HTML::ViewShortcuts;
 
@@ -150,7 +151,7 @@ sub initialize {
     $fields->{value} = $self->get('value');
     $fields->{value}->put(parent => $self);
     $fields->{value}->initialize;
-    return;
+    return shift->SUPER::initialize(@_);
 }
 
 sub internal_new_args {
@@ -176,7 +177,7 @@ sub new {
     return $self;
 }
 
-sub render {
+sub control_on_render {
     my($self, $source, $buffer) = @_;
     # Render the form.
     my($fields) = $self->[$_IDI];
