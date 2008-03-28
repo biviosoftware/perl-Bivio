@@ -61,6 +61,17 @@ found, and you do not have permission to create it.
 EOF
 }
 
+sub site_view {
+    my($self) = @_;
+    view_put(
+	xhtml_title => vs_text_as_prose('wiki_view_topic'),
+	xhtml_topic => '',
+	xhtml_byline => '',
+	xhtml_tools => '',
+    );
+    return $self->internal_body(Wiki());
+}
+
 sub view {
     my($self) = shift;
     view_put(
