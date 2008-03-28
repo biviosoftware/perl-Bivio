@@ -5,7 +5,7 @@ FieldWidget({
     parse_return_regex =>
 	qr{^<input name="HTML_NAME" type="text" size="12" maxlength="10" value="(.*?)" />$}s,
 });
-my($now) = Date()->now;
+my($now) = Date()->local_today;
 my($yesterday) = Date()->add_days($now, -1);
 [
     [{test_value => undef}] => Date()->to_html($now),
