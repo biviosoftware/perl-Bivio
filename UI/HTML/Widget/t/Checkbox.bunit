@@ -2,9 +2,13 @@
 # $Id$
 FieldWidget({
     field => 'boolean',
-    parse_return_regex => qr{^<input class="checkbox" type="checkbox" name="HTML_NAME"(?: checked="(1)")? /><span class="checkbox_label">Boolean</span>$}s,
+    parse_return_regex => qr{^<input class="checkbox" type="checkbox" name="HTML_NAME"(.*)$}s,
 });
 [
-    [{test_value => 1}] => '1',
-    [{test_value => 0}] => '',
+    [{test_value => 1}] => ' checked="1" /><span class="checkbox_label">Boolean</span>',
+    [{test_value => 0}] => ' /><span class="checkbox_label">Boolean</span>',
+    [{
+ 	test_value => 1,
+ 	label => '',
+     }] => ' checked="1" />',
 ];
