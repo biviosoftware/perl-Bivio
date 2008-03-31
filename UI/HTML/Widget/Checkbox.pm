@@ -10,9 +10,9 @@ my($_C) = __PACKAGE__->use('IO.Config');
 
 sub initialize {
     my($self) = @_;
-    my($l) = $self->unsafe_get('label') || $_VS->vs_text(
+    my($l) = $self->get_or_default('label', $_VS->vs_text(
 	$self->ancestral_get('form_class')->simple_package_name,
-	$self->get('field'));
+	$self->get('field')));
     $self->put(label => $_C->if_version(
 	6 => sub {
 	    return $_VS->vs_new(
