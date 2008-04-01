@@ -734,7 +734,7 @@ sub info_site_adm {
 	    SITE_ADM_SUBSTITUTE_USER_DONE
 	    162
 	    FORUM
-	    ANYBODY&FEATURE_SITE_ADM
+	    ANYBODY
 	    Action.UserLogout
 	    su_task=SITE_ADM_USER_LIST
 	)],
