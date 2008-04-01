@@ -15,7 +15,7 @@ sub get_min_width {
 }
 
 sub get_width {
-    return 9;
+    return 10;
 }
 
 sub to_html {
