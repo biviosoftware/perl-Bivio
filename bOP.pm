@@ -26,11 +26,47 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.8  2008/03/28 03:54:45  nagler
+  * New classes: Action.SiteForum.pm, XHTMLWidget.JoinMenu,
+    XHTMLWidget.SearchForm, XHTMLWidget.UserSettingsForm,
+    XHTMLWidget.UserState, XHTMLWidget.XLinkLabel
+  * Bivio::Delegate::TaskId
+    added SITE_WIKI_VIEW
+  * Bivio::PetShop::Delegate::TaskId
+    FIELD_TEST_FORM
+  * Bivio::PetShop::Facade::PetShop
+    FIELD_TEST_FORM
+  * Bivio::PetShop::Util::SQL
+    added index page
+  * Bivio::Test::WikiText
+    renamed $new_params to $create_params
+  * Bivio::Test
+    display stack when "Error in custom"
+  * Bivio::UI::FacadeBase
+    Added ThreePartPage_want_* control
+    SITE_WIKI_VIEW
+  * Bivio::UI::HTML::Widget::Form
+    subclass ControlBase
+  * Bivio::UI::View::CSS
+    .settings => .user_settings
+    organized .user_state into widgets
+  * Bivio::UI::View::ThreePartPage
+    internal_search_form gone
+    organized DIV_user_state into into widgets: HelpWiki,
+    UserSettingsForm, UserState, and SearchForm
+  * Bivio::UI::View::Wiki
+    added site_view()
+  * Bivio::UI::Widget::Director
+    rmpod and IDI
+    keys in values may a regular expression
+  * Bivio::UI::XHTML::Widget::XLink
+    use XLinkLabel
+
   Revision 6.7  2008/03/27 20:57:23  moeller
   * Bivio::UI::HTML::Widget::DateField
     fixed method name, calls super
