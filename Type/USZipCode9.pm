@@ -6,16 +6,20 @@ use Bivio::Base 'Type.USZipCode';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub TOO_SHORT_ERROR {
+sub REGEX {
+    return qr{(\d{9})};
+}
+
+sub SYNTAX_ERROR {
     return Bivio::TypeError->US_ZIP_CODE_9;
+}
+
+sub TOO_SHORT_ERROR {
+    return shift->SYNTAX_ERROR;
 }
 
 sub get_min_width {
     return 9;
-}
-
-sub get_width {
-    return 10;
 }
 
 sub to_html {
