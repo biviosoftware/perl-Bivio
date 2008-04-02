@@ -200,7 +200,10 @@ sub _transact_form_data {
             '&x_Exp_Date='.$exp_date.
             '&x_Cust_ID='.$payment->get('realm_id').
             '&x_Invoice_Num='.$payment->get('ec_payment_id').
-	    '&x_Zip='.Bivio::HTML->escape_uri($cc_payment->get('card_zip')).
+	    ($cc_payment->get('card_zip') =~ /\S/
+		? ('&x_Zip='.Bivio::HTML->escape_uri(
+		    $cc_payment->get('card_zip')))
+		: '') .
             $proto->internal_get_additional_form_data($payment).
             $test_request;
 }
