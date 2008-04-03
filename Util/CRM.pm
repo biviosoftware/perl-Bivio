@@ -16,6 +16,7 @@ EOF
 
 sub setup_realm {
     my($self) = @_;
+    $self->initialize_fully;
     $self->new_other('RealmRole')->edit_categories('+feature_crm');
     $self->model('RowTag')->replace_value(
 	$self->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
