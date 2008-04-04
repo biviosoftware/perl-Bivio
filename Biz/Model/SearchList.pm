@@ -96,6 +96,9 @@ sub internal_post_load_row_with_model {
     foreach my $f (@$_REALM_FILE_FIELDS) {
 	$row->{"RealmFile.$f"} = $model->get($f);
     }
+#TODO: realm_ids are a security issue.  Need to cache the realms, and then
+#      verify they are here.  Can save the info above in
+#      internal_get_realm_ids
 #TODO: Optimize by caching realms
     my($ro) = $model->new_other('RealmOwner')
 	->unauth_load_or_die({realm_id => $model->get('realm_id')});
