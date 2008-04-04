@@ -196,11 +196,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # initialized by Bivio::Agent::Dispatcher
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_IS_PRODUCTION) = 0;
-my($_CAN_SECURE);
-Bivio::IO::Config->register({
-    is_production => $_IS_PRODUCTION,
+Bivio::IO::Config->register(my $_CFG = {
+    is_production => 0,
     can_secure => 1,
+#TODO: This will not work until we fix up a lot of dependencies
+#    retain_query_and_path_info => Bivio::IO::Config->if_version(6) ? 0 : 1,
 });
 my($_CURRENT);
 
@@ -248,6 +248,10 @@ sub assert_test {
     $self->throw_die(DIE => {message => 'may not be run on production'})
 	if $self->is_production;
     return;
+}
+
+sub can_secure {
+    return $_CFG->{can_secure};
 }
 
 sub can_user_execute_task {
@@ -457,7 +461,9 @@ sub format_uri {
 	$uri = Bivio::UI::Task->format_uri($named, $self);
     }
     else {
-	foreach my $x (qw(task_id path_info query)) {
+	foreach my $x ('task_id',
+	    $self->retain_query_and_path_info ? qw(path_info query) : (),
+	) {
 	    $named->{$x} = $self->unsafe_get($x)
 		unless exists($named->{$x});
 	}
@@ -590,19 +596,9 @@ sub get_request {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    # Host name configuration. Override this to proxy to another host.
-    #
-    #
-    # can_secure : boolean [1]
-    #
-    # Only used for development systems (single server mode), which can't
-    # run in secure mode.
-    #
-    # is_production : boolean [false]
-    #
-    # Are we running in production mode?
-    $_IS_PRODUCTION = $cfg->{is_production};
-    $_CAN_SECURE = $cfg->{can_secure};
+    $_CFG = $cfg;
+#TODO: Force for now until we get the code right
+    $_CFG->{retain_query_and_path_info} = 1;
     return;
 }
 
@@ -704,9 +700,9 @@ sub internal_new {
 	# Initial keys 
 	%$attributes,
 	request => $self,
-	is_production => $_IS_PRODUCTION,
+	is_production => $proto->is_production,
 	txn_resources => [],
-	can_secure => $_CAN_SECURE,
+	can_secure => $proto->can_secure,
     );
     # Make sure a value gets set
     Bivio::Type::UserAgent->execute_unknown($self);
@@ -800,8 +796,9 @@ sub is_http_method {
 
 sub is_production {
     my($self) = @_;
-    return ref($self) ? $self->get_or_default(is_production => $_IS_PRODUCTION)
-	: $_IS_PRODUCTION;
+    return ref($self)
+	? $self->get_if_exists_else_put(is_production => $_CFG->{is_production})
+	: $_CFG->{is_production};
 }
 
 sub is_substitute_user {
@@ -826,7 +823,6 @@ sub is_super_user {
 }
 
 sub is_test {
-    # Opposite of L<is_production|"is_production">.
     return shift->is_production(@_) ? 0 : 1;
 }
 
@@ -921,6 +917,10 @@ sub redirect {
 	entity => {%$args, method => $method},
     }) unless $method =~ /^(?:server_redirect|client_redirect)$/;
     return $self->$method($args);
+}
+
+sub retain_query_and_path_info {
+    return $_CFG->{retain_query_and_path_info};
 }
 
 sub server_redirect {

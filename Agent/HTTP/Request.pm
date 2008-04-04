@@ -170,10 +170,12 @@ sub client_redirect {
     }
     else {
 	# use previous query if not specified, maintains state across pages
-	$named->{query} = $self->get('query')
-	    unless exists($named->{query});
-	$named->{path_info} = $self->unsafe_get('path_info')
-	    unless exists($named->{path_info});
+	if ($self->retain_query_and_path_info) {
+	    $named->{query} = $self->get('query')
+		unless exists($named->{query});
+	    $named->{path_info} = $self->unsafe_get('path_info')
+		unless exists($named->{path_info});
+	}
 	$self->SUPER::server_redirect($named)
 	    unless Bivio::UI::Task->has_uri($named->{task_id}, $self);
         _trace(
