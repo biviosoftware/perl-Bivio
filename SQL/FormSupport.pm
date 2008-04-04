@@ -2,212 +2,170 @@
 # $Id$
 package Bivio::SQL::FormSupport;
 use strict;
-$Bivio::SQL::FormSupport::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::SQL::FormSupport::VERSION;
-
-=head1 NAME
-
-Bivio::SQL::FormSupport - sql support for ListModels
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::SQL::FormSupport;
-    Bivio::SQL::FormSupport->new($decl);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::SQL::Support>
-
-=cut
-
-use Bivio::SQL::Support;
-@Bivio::SQL::FormSupport::ISA = ('Bivio::SQL::Support');
-
-=head1 DESCRIPTION
-
-C<Bivio::SQL::FormSupport> is the meta-data model for
-L<Bivio::Biz::FormModel>s.  This module does not execute SQL.
-
-=head1 ATTRIBUTES
-
-See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
-
-=over 4
-
-=item auth_id : array_ref
-
-A field or field identity which must be equal to
-request's I<auth_id> attribute.
-
-=item file_fields : array_ref
-
-The columns which are L<Bivio::Type::FileField|Bivio::Type::FileField>
-type.  C<undef> if no file fields.
-
-=item file_field_names : array_ref
-
-Names of I<file_fields> columns.
-
-=item has_secure_data : boolean
-
-One of the fields contains secure_data
-(L<Bivio::Type::is_secure_data|Bivio::Type/"is_secure_data">).
-
-=item hidden : array_ref
-
-List of columns which are to be sent to and returned from the user, unmodified.
-
-=item hidden_field_names : array_ref
-
-Names of I<hidden> columns.
-
-=item in_list : array_ref
-
-List of columns for which I<in_list> is true.
-
-=item in_list_field_names : array_ref
-
-Names of I<in_list> columns.
-
-=item list_class : string
-
-If set, fields are repeatable.  Primary key fields of the list model are
-added, automatically as hidden fields.
-
-It may be the simple model name or full ListModel on declaration.
-Will be prefixed with C<Bivio::Biz::ListModel::> and loaded
-dynamically.
-
-These fields are also added to I<hidden>.
-
-=item other : array_ref
-
-A list of fields and field identities.  These are not output
-with the form.  They are used for internal communication between
-the form and the UI.
-
-=item primary_key : array_ref
-
-The list of fields and field identities that uniquely identifies a
-form.
-
-=item require_context : boolean
-
-True if the form expects to have context when operating.
-
-=item version : int
-
-The version of this particular combination of fields.  It will be
-set in all outgoing forms.  It should be changed whenever the
-declaration changes.  It is used to reject an out-of-date form.
-
-=item visible : array_ref
-
-List of columns to be made visible to the user.
-
-=item visible_field_names : array_ref
-
-Names of I<visible> columns.
-
-=back
-
-=head1 COLUMN ATTRIBUTES
-
-=over 4
-
-=item default_value : any [undef]
-
-Specifies the default value.  Currently doesn't handle reference types
-properly.
-
-=item in_list : boolean
-
-True if the field is repeatable.
-See L<Bivio::Biz::ListFormModel|Bivio::Biz::ListFormModel>.
-All these columns are in I<in_list> global attribute.
-
-=item is_file_field : boolean
-
-True if the field is a file field.
-
-=item is_visible : boolean
-
-True if the field is visible.
-
-=item form_name : string
-
-Let's you specify form names explicitly for special cases, e.g.
-incoming mail via b-sendmail-agent.
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'SQL.Support';
 use Bivio::Biz::Model;
 use Bivio::IO::Trace;
 use Bivio::Type::PrimaryId;
-use Carp();
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::SQL::FormSupport> is the meta-data model for
+# L<Bivio::Biz::FormModel>s.  This module does not execute SQL.
+#
+#
+# See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
+#
+#
+# auth_id : array_ref
+#
+# A field or field identity which must be equal to
+# request's I<auth_id> attribute.
+#
+# file_fields : array_ref
+#
+# The columns which are L<Bivio::Type::FileField|Bivio::Type::FileField>
+# type.  C<undef> if no file fields.
+#
+# file_field_names : array_ref
+#
+# Names of I<file_fields> columns.
+#
+# has_secure_data : boolean
+#
+# One of the fields contains secure_data
+# (L<Bivio::Type::is_secure_data|Bivio::Type/"is_secure_data">).
+#
+# hidden : array_ref
+#
+# List of columns which are to be sent to and returned from the user, unmodified.
+#
+# hidden_field_names : array_ref
+#
+# Names of I<hidden> columns.
+#
+# in_list : array_ref
+#
+# List of columns for which I<in_list> is true.
+#
+# in_list_field_names : array_ref
+#
+# Names of I<in_list> columns.
+#
+# list_class : string
+#
+# If set, fields are repeatable.  Primary key fields of the list model are
+# added, automatically as hidden fields.
+#
+# It may be the simple model name or full ListModel on declaration.
+# Will be prefixed with C<Bivio::Biz::ListModel::> and loaded
+# dynamically.
+#
+# These fields are also added to I<hidden>.
+#
+# other : array_ref
+#
+# A list of fields and field identities.  These are not output
+# with the form.  They are used for internal communication between
+# the form and the UI.
+#
+# primary_key : array_ref
+#
+# The list of fields and field identities that uniquely identifies a
+# form.
+#
+# require_context : boolean
+#
+# True if the form expects to have context when operating.
+#
+# version : int
+#
+# The version of this particular combination of fields.  It will be
+# set in all outgoing forms.  It should be changed whenever the
+# declaration changes.  It is used to reject an out-of-date form.
+#
+# visible : array_ref
+#
+# List of columns to be made visible to the user.
+#
+# visible_field_names : array_ref
+#
+# Names of I<visible> columns.
+#
+#
+#
+#
+# default_value : any [undef]
+#
+# Specifies the default value.  Currently doesn't handle reference types
+# properly.
+#
+# in_list : boolean
+#
+# True if the field is repeatable.
+# See L<Bivio::Biz::ListFormModel|Bivio::Biz::ListFormModel>.
+# All these columns are in I<in_list> global attribute.
+#
+# is_file_field : boolean
+#
+# True if the field is a file field.
+#
+# is_visible : boolean
+#
+# True if the field is visible.
+#
+# form_name : string
+#
+# Let's you specify form names explicitly for special cases, e.g.
+# incoming mail via b-sendmail-agent.
 
-=head1 FACTORIES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref decl) : Bivio::SQL::FormSupport
-
-Creates a SQL support instance from a declaration.  A I<decl> is a list of
-keyed categories.  The keys are described below.  The values are either an
-array_ref, a string (except I<version>), or a hash.
-The array_ref may contain strings
-(property fields), hash_refs (local fields),
-or array_refs of strings (field identities).
-
-A I<property model field> is composed of a
-table qualifier and the column name.  The first field in a field identity is
-a property of the form model.
-
-A I<local field> is defined as a hash_ref containing one or more
-of the following attributes:
-
-=over 4
-
-=item name : string (required)
-
-=item name : array_ref (required)
-
-is a perl identifier (\w+) or a property model field identifier (\w+.\w+).
-If the I<name> is an array_ref, the first element is the property name.
-
-=item type : Bivio::Type
-
-The type of the local field.  You may override the type of a
-property model field with this field.
-
-=item constraint : Bivio::SQL::Constraint
-
-The constraint of the local field.  You may override the constraint of a
-property model field with this field.
-
-=back
-
-The types of the property fields will be extracted from the property
-models corresponding to the table names unless overridden
-
-=cut
+sub get_column_name_for_html {
+    # (self, string) : string
+    # Returns the name of the column for an HTML form.
+    my($columns) = shift->get('columns');
+    my($name) = shift;
+    my($col) = $columns->{$name};
+    die("$name: no such column") unless $col;
+    return $col->{form_name};
+}
 
 sub new {
+    # (proto, hash_ref) : SQL.FormSupport
+    # Creates a SQL support instance from a declaration.  A I<decl> is a list of
+    # keyed categories.  The keys are described below.  The values are either an
+    # array_ref, a string (except I<version>), or a hash.
+    # The array_ref may contain strings
+    # (property fields), hash_refs (local fields),
+    # or array_refs of strings (field identities).
+    #
+    # A I<property model field> is composed of a
+    # table qualifier and the column name.  The first field in a field identity is
+    # a property of the form model.
+    #
+    # A I<local field> is defined as a hash_ref containing one or more
+    # of the following attributes:
+    #
+    #
+    # name : string (required)
+    #
+    # name : array_ref (required)
+    #
+    # is a perl identifier (\w+) or a property model field identifier (\w+.\w+).
+    # If the I<name> is an array_ref, the first element is the property name.
+    #
+    # type : Bivio::Type
+    #
+    # The type of the local field.  You may override the type of a
+    # property model field with this field.
+    #
+    # constraint : Bivio::SQL::Constraint
+    #
+    # The constraint of the local field.  You may override the constraint of a
+    # property model field with this field.
+    #
+    #
+    # The types of the property fields will be extracted from the property
+    # models corresponding to the table names unless overridden
     my($proto, $decl) = @_;
     my($attrs) = {
 	# All columns by qualified name
@@ -234,40 +192,15 @@ sub new {
     return $proto->SUPER::new($attrs);
 }
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_column_name_for_html"></a>
-
-=head2 get_column_name_for_html(string name) : string
-
-Returns the name of the column for an HTML form.
-
-=cut
-
-sub get_column_name_for_html {
-    my($columns) = shift->get('columns');
-    my($name) = shift;
-    my($col) = $columns->{$name};
-    Carp::croak("$name: no such column") unless $col;
-    return $col->{form_name};
-}
-
-#=PRIVATE METHODS
-
-# _init_column_classes(hash_ref attrs, hash_ref decl)
-#
-# Initialize the column classes (auth_id, visible, hidden, etc.)
-#
 sub _init_column_classes {
+    # (hash_ref, hash_ref) : undef
+    # Initialize the column classes (auth_id, visible, hidden, etc.)
     my($attrs, $decl) = @_;
     my($column_aliases) = $attrs->{column_aliases};
-    __PACKAGE__->init_column_classes($attrs, $decl,
-	    [qw(auth_id visible hidden primary_key other)]);
+    __PACKAGE__->init_column_classes($attrs, $decl, $_CLASSES);
 
     # auth_id must be at most one column.
-    Carp::croak('too many auth_id fields') if int(@{$attrs->{auth_id}}) > 1;
+    die('too many auth_id fields') if int(@{$attrs->{auth_id}}) > 1;
     # Will set to undef if no auth_id.
     $attrs->{auth_id} = $attrs->{auth_id}->[0];
 
@@ -334,12 +267,10 @@ sub _init_column_classes {
     return;
 }
 
-# _init_list_class(hash_ref attrs, hash_ref decl)
-#
-# Initialize the list_class and primary_key attributes by copying
-# list_class's primary_key to this model.
-#
 sub _init_list_class {
+    # (hash_ref, hash_ref) : undef
+    # Initialize the list_class and primary_key attributes by copying
+    # list_class's primary_key to this model.
     my($attrs, $decl) = @_;
     # No list
     return unless $decl->{list_class};
@@ -363,11 +294,9 @@ sub _init_list_class {
     return;
 }
 
-# _init_list_columns(hash_ref attrs, hash_ref decl)
-#
-# Initialize in_list and in_list_field_names
-#
 sub _init_list_columns {
+    # (hash_ref, hash_ref) : undef
+    # Initialize in_list and in_list_field_names
     my($attrs, $decl) = @_;
 
     $attrs->{in_list} = [];
@@ -380,15 +309,5 @@ sub _init_list_columns {
     }
     return;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
