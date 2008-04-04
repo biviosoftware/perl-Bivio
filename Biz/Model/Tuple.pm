@@ -139,12 +139,6 @@ sub split_rfc822 {
     return $self->split_body($body);
 }
 
-sub update {
-    my($self, $values) = @_;
-    $values->{modified_date_time} = $_DT->now;
-    return shift->SUPER::update(@_);
-}
-
 sub _create_or_update_slots {
     my($state, $slots) = @_;
     my($self) = $state->{self};
