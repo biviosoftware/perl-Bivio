@@ -1,0 +1,12 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+config({
+    'Bivio::Test::Language::HTTP' => {
+	home_page_uri => 'http://petshop.bivio.biz',
+    },
+});
+ShellUtil();
+[
+    remote_trace => [],
+    [qw(remote_trace sql)] => [],
+];
