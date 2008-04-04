@@ -86,6 +86,14 @@ sub clone {
     return shift;
 }
 
+sub extract_qualified_prefix {
+    my($proto, $field) = @_;
+    my($prefix) = $field =~ $_QUAL_PREFIX;
+    Bivio::Die->die($field, ': must be a qualified column with prefix')
+        unless $prefix;
+    return $prefix;
+}
+
 sub get_column_constraint {
     # Returns the constraint of the column.
     return shift->get_column_info(@_, 'constraint');
