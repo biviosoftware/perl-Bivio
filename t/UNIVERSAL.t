@@ -1,5 +1,5 @@
 #!perl -w
-# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 use strict;
 use Bivio::Test;
