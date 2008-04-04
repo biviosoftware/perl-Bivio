@@ -138,28 +138,15 @@ sub execute_load_all {
 
 sub execute_load_all_with_query {
     my($proto, $req) = @_;
-    # Loads "all" records of this model, using the query (for order_by, etc).
     my($self) = $proto->new($req);
-    my($query) = $self->parse_query_from_request;
-
-#TODO: Need to check for "this".  It is a corrupt query if it is
-#    passed in.
-#TODO: I found it useful to have a "this", so maybe it's not a bad idea.
-#    For now, we delete the this.
-    $query->put(this => undef);
-
-    $self->load_all($query);
+    $self->load_all($self->parse_query_from_request->put(this => undef));
     return 0;
 }
 
 sub execute_load_page {
     my($proto, $req) = @_;
-    # Loads current page from I<req> query.
-    #
-    # Requests a I<page_count> by setting I<want_page_count> on the
-    # queury.
     my($self) = $proto->new($req);
-    $self->load_page($self->parse_query_from_request());
+    $self->load_page($self->parse_query_from_request->put(this => undef));
     return 0;
 }
 
