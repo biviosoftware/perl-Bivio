@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::OrdinalBase;
 use strict;
-use base 'Bivio::Biz::Model::RealmBase';
+use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

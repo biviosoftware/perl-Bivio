@@ -2,17 +2,17 @@
 # $Id$
 package Bivio::Biz::Model::Tuple;
 use strict;
-use base 'Bivio::Biz::Model::OrdinalBase';
-use Bivio::Ext::MIMEParser;
+use Bivio::Base 'Model.OrdinalBase';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_LABEL_RE)
     = qr{^\s*(@{[Bivio::Type->get_instance('TupleLabel')->REGEX]}):\s*}om;
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_TSN) = Bivio::Type->get_instance('TupleSlotNum');
 our($_TRACE);
 __PACKAGE__->use('Model.RealmMail')->register(__PACKAGE__);
+my($_TSN) = __PACKAGE__->use('Type.TupleSlotNum');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_MP) = __PACKAGE__->use('Ext.MIMEParser');
 
 sub LIST_FIELDS {
     return $_TSN->map_list(sub {'Tuple.' . shift(@_)});
@@ -20,12 +20,6 @@ sub LIST_FIELDS {
 
 sub ORD_FIELD {
     return 'tuple_num';
-}
-
-sub create {
-    my($self, $values) = @_;
-    $values->{modified_date_time} ||= $_DT->now;
-    return shift->SUPER::create(@_);
 }
 
 sub internal_initialize {
@@ -216,7 +210,7 @@ sub _text_plain {
     my($rfc822) = @_;
     my($res);
     my($die) = Bivio::Die->catch(sub {
-        my($me) = Bivio::Ext::MIMEParser->parse_data($rfc822);
+        my($me) = $_MP->parse_data($rfc822);
 	foreach my $p ($me->mime_type =~ m{^multipart/}i ? $me->parts : $me) {
 	    return $res = \($p->body_as_string)
 		if $p->mime_type eq 'text/plain';
