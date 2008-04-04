@@ -118,6 +118,23 @@ use Bivio::Type::PrimaryId;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_CLASSES) = [qw(auth_id visible hidden primary_key other)];
+
+sub extract_column_from_classes {
+    my($proto, $decls, $column_name) = @_;
+    foreach my $c (map(@{$decls->{$_} || []}, @$_CLASSES)) {
+	if (ref($c)) {
+	    return $c
+		if $c->{name} eq $column_name;
+	}
+	else {
+	    return {name => $c}
+		if $c eq $column_name;
+	}
+    }
+    Bivio::Die->die($column_name, ': not found in ', $decls);
+    # DOES NOT RETURN
+}
 
 sub get_column_name_for_html {
     # (self, string) : string
