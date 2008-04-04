@@ -11,6 +11,12 @@ sub as_string {
     return shift(@_) . '';
 }
 
+sub call_super {
+    my($proto, $method, $args) = @_;
+    my($sub) = $proto->super_for_method($method);
+    return $sub->($proto, @$args);
+}
+
 sub call_super_before {
     my($proto, $args, $op) = @_;
     my($sub) = $proto->super_for_method($proto->my_caller);
