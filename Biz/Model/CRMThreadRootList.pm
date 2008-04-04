@@ -28,8 +28,6 @@ sub internal_initialize {
 	    _do(sub {
 	        my($name, $model) = @_;
 	        return (
-#TODO: FIX THIS
-#		    ["$model.location", [$_LOCATION(+)]],
 		    {
 			name => $name,
 			type => 'Name',
@@ -50,6 +48,16 @@ sub internal_post_load_row {
 	return;
     });
     return 1;
+}
+
+sub internal_prepare_statment {
+    my(undef, $stmt) = @_;
+    $stmt->where(
+	map($stmt->OR(
+	    ["$_.Email.location", [$_LOCATION]],
+	    ["$_.Email.location", [undef]],
+	), qw(owner modified_by)));
+    return;
 }
 
 sub _do {
