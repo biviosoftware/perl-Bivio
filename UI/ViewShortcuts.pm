@@ -31,6 +31,15 @@ sub vs_fe {
     return Bivio::UI::FormError->field_value(@_);
 }
 
+sub vs_form_method_call {
+    my(undef, $widget, $method) = @_;
+    return [sub {
+        my($source) = @_;
+	return $widget->resolve_form_model($source)
+	    ->$method($widget->render_simple_attr('field', $source));
+    }];
+}
+
 sub vs_html {
     # Returns a widget value to retrieve I<attr> using
     # L<Bivio::UI::HTML::get_value|Bivio::UI::HTML/"get_value">.
