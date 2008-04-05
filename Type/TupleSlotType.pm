@@ -27,6 +27,10 @@ sub as_string {
 	. ']';
 }
 
+sub get {
+    return shift->[$_IDI]->{shift(@_)} || die;
+}
+
 sub from_literal {
     my($self) = shift;
     return $self->SUPER::from_literal(@_)
