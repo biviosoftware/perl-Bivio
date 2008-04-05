@@ -1,0 +1,61 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel({
+    setup_request => sub {
+	my(undef, $params) = @_;
+	return
+	    unless @$params;
+	req()->put(query => undef);
+	my($ctid) = delete($params->[0]->{ctid});
+	my($who) = delete($params->[0]->{who});
+	if ($ctid || $who) {
+	    req()->put(query => {
+		$ctid ? (this => $ctid) : (),
+		$who ? (to => $who) : (),
+	    });
+	    pop(@$params)
+		unless %{$params->[0]};
+	}
+	return;
+    },
+});
+req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1));
+RealmMail()->create_from_rfc822(\(my $x = <<'EOF'));
+From: a@a.a
+Message-Id: <a@a.a>
+Subject: subject1
+
+body1
+EOF
+my($ctid) = req('Model.CRMThread')->get('thread_root_id');
+[
+    empty_case({
+	'crmthread.TupleTag.slot1' => undef,
+	'crmthread.TupleTag.slot2' => 'Low',
+    }),
+    [{
+	ctid => $ctid,
+	action_id => -CRMThreadStatus('OPEN')->as_int,
+	to => StringArray('a@a.a'),
+	cc => [''],
+	subject => 'x',
+	body => 'x',
+	'crmthread.TupleTag.slot1' => 'Male Puppy',
+	'crmthread.TupleTag.slot2' => 'Medium',
+    }] => [{
+	'Model.CRMThread' => {
+	    thread_root_id => $ctid,
+	    crm_thread_status => CRMThreadStatus('OPEN'),
+	},
+	'Model.TupleTag' => {
+	    slot1 => 'Male Puppy',
+	    slot2 => 'Medium',
+	},
+    }],
+    simple_case({
+	ctid => $ctid,
+    }, {
+	'crmthread.TupleTag.slot1' => 'Male Puppy',
+	'crmthread.TupleTag.slot2' => 'Medium',
+    }),
+];

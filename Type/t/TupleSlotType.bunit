@@ -1,0 +1,28 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    [String => from_type(TupleSlotArray => [qw(a b c)])] => [
+	from_literal => [
+	    a => 'a',
+	    '' => UNDEF(),
+	    d => from_literal_error('NOT_FOUND'),
+	],
+	as_string => 'TupleSlotType[String;a, b, c]',
+    ],
+    [Integer => from_type(TupleSlotArray => [qw(1 2 3)])] => [
+	from_literal => [
+	    1 => 1,
+	    a => INTEGER(),
+	    '' => UNDEF(),
+	    4 => from_literal_error('NOT_FOUND'),
+	],
+    ],
+    [Email => from_type(TupleSlotArray => [])] => [
+	from_literal => [
+	    'a@a.a' => 'a@a.a',
+	    '' => UNDEF(),
+	    a => EMAIL(),
+	],
+    ],
+];
