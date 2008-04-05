@@ -20,20 +20,29 @@ sub internal_new_args {
 
 sub initialize {
     my($self) = @_;
-    return if $self->unsafe_get('value');
-    my($class) = $self->ancestral_get('form_class');
-    my($field) = $self->ancestral_get('field');
-    $self->put(
+    $self->initialize_attr('field');
+    $self->put_unless_exists(
 	value => Join([
-	    If([['->req', $class], '->get_field_error', $field],
-	       vs_text(
-		   $class->simple_package_name, 'prose', 'error_indicator')),
+	    IfFieldError(
+		$self->get('field'),
+		[sub {
+		     my($source) = @_;
+		     return vs_text(
+			 $source->req,
+			 $self->resolve_form_model($source)
+			     ->simple_package_name,
+			 'prose',
+			 'error_indicator',
+		     );
+		}],
+	    ),
 	    $self->get('label'),
 	]),
-	cell_class => [
-	    sub {$_[1] ? 'label label_err' : 'label label_ok'},
-	    [['->req', $class], '->get_field_error', $field],
-	],
+	cell_class => IfFieldError(
+	    $self->get('field'),
+	    'label label_err',
+	    'label label_ok',
+	),
     );
     return shift->SUPER::initialize(@_);
 }
