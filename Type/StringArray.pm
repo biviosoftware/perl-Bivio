@@ -68,6 +68,15 @@ sub compare_defined {
     return @$left <=> @$right;
 }
 
+sub do_iterate {
+    my($self, $op) = @_;
+    my($a) = $self->as_array;
+    foreach my $v (@$a) {
+	return unless $op->($v);
+    }
+    return;
+}
+
 sub equals {
     my($self, $that) = @_;
     return $self->is_equal($self, $that);
