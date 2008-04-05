@@ -333,6 +333,7 @@ sub _cfg_crm {
     return {
         FormError => [
 	    ['CRMForm.action_id.SYTNAX_ERROR' => q{Action is not valid (browser bug?)}],
+	    ['CRMForm.to.MUTUALLY_EXCLUSIVE' => q{vs_text('CRMForm.update_only'); not allowed for new tickets.}],
 	],
 	Task => [
 	    [FORUM_CRM_THREAD_ROOT_LIST => '?/tickets'],
@@ -359,6 +360,7 @@ sub _cfg_crm {
 	    [CRMForm => [
 		action_id => 'Action',
 		ok_button => 'Send',
+		update_only => 'Update Fields Only',
 	    ]],
 	    ['task_menu.title' => [
 		'FORUM_CRM_FORM.reply_all' => 'Answer',
