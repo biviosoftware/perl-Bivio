@@ -128,6 +128,22 @@ sub tuple_tag_form_state {
     return shift->[$_IDI] ||= {};
 }
 
+sub tuple_tag_map_slots {
+    return shift->delegate_method($_TTF, @_);
+}
+
+sub tuple_tag_slot_choice_select_list {
+    return shift->delegate_method($_TTF, @_);
+}
+
+sub tuple_tag_slot_has_choices {
+    return shift->delegate_method($_TTF, @_);
+}
+
+sub tuple_tag_slot_label {
+    return shift->delegate_method($_TTF, @_);
+}
+
 sub validate {
     my($self, $button) = @_;
     if ($button eq 'update_only') {
