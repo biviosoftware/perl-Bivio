@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::TupleUse;
 use strict;
-use base 'Bivio::Biz::Model::RealmBase';
+use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -15,7 +15,7 @@ sub create_from_label {
 	    $_;
 	} %{$tdl->find_row_by_label($label)->get_shallow_copy},
 	),
-	realm_id => $self->get_request->get('auth_id'),
+	realm_id => $self->req('auth_id'),
     });
 }
 
@@ -30,6 +30,14 @@ sub internal_initialize {
 	    label => ['TupleLabel', 'NOT_NULL'],
 	    moniker => ['TupleLabel', 'NOT_NULL'],
         },
+    });
+}
+
+sub load_tuple_slot_def_list {
+    my($self) = @_;
+    # SECURITY: TupleUse can only exist if auth_realm can access TupleDef.
+    return $self->new_other('TupleSlotDefList')->load_all({
+	parent_id => $self->get('tuple_def_id'),
     });
 }
 
