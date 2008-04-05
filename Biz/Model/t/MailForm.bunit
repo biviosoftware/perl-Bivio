@@ -36,7 +36,7 @@ $rmid = $rm->get('realm_file_id');
 	    filename => 'a1.txt',
 	},
     }] => sub {
-	my($msg) = req()->unsafe_get_captured_mail->[0];
+	my($msg) = req('Model.RealmMail')->get_rfc822;
 	foreach my $p (
 	    qr{From:.*mail.*mail_user1\@}i,
 	    qr{To:.*mail_forum\@}i,
