@@ -5,7 +5,7 @@ my($f, $uri) = create_forum();
 visit_uri($uri = "$uri/mail");
 follow_link('new');
 my($code) = random_string(16, ['a' .. 'z']);
-submit_form({
+submit_form(Send => {
     topic => $code,
     text => 'hello goodbye telephone',
 });
