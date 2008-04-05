@@ -12,23 +12,23 @@ sub EMPTY_SUBJECT_PREFIX {
 }
 
 sub execute_receive {
-    my($proto, $req) = @_;
-    my($f) = $req->get('Model.MailReceiveDispatchForm');
+    my($proto, $req, $rfc822) = @_;
+    $rfc822 ||= $req->get('Model.MailReceiveDispatchForm')
+	->get('message')->{content};
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
+    my($in) = $rm->create_from_rfc822($rfc822);
     my($n) = $req->get_nested(qw(auth_realm owner name));
-    my($out) = $_O->new(
-	$rm->create_from_rfc822($f->get('message')->{content})
-    )->set_headers_for_list_send({
+    my($out) = $_O->new($in)->set_headers_for_list_send({
 	list_name => $n,
 	list_email => $rm->new_other('EmailAlias')->format_realm_as_incoming,
 	list_title => $req->get_nested(qw(auth_realm owner display_name)),
-	reply_to_list => $f->new_other('Forum')->load->get('want_reply_to'),
+	reply_to_list => $rm->new_other('Forum')->load->get('want_reply_to'),
 #TODO: This should be configurable
 	keep_to_cc => 1,
 	subject_prefix => $proto->internal_subject_prefix($rm),
 	req => $req,
     });
-    $proto->use('Bivio::Agent::Job::Dispatcher')->enqueue(
+    $proto->use('AgentJob.Dispatcher')->enqueue(
 	$req, 'FORUM_MAIL_REFLECTOR', {
 	    $proto->package_name => $proto->new({
 		outgoing => $out,
