@@ -1,13 +1,119 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::ViewShortcuts;
 use strict;
 use base 'Bivio::UI::ViewShortcuts';
+use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WF) = __PACKAGE__->use('Bivio::UI::HTML::WidgetFactory');
 my($_V6) = __PACKAGE__->use('IO.Config')->if_version(6);
 my($_LINK_TARGET) = $_V6 ? undef : '_top';
+my($_ATTRS) = {};
+our($_TRACE);
+
+sub BOP_HTML_CLASSES {
+    return [qw(
+acknowledgement
+actions
+all want_sep
+alphabetical_chooser
+amount_cell
+ascend
+attachment
+author
+blog
+body
+bottom
+bottom_left
+bottom_right
+byline
+checkbox
+checkbox_label
+date
+desc
+descend
+empty_list
+err_title
+even
+excerpt
+field
+field_err
+footer
+footer_left
+footer_middle
+footer_right
+form_prose
+forward
+go
+header
+header_left
+header_middle
+header_right
+heading
+help_wiki_add
+inline
+label
+label_err
+label_ok
+list
+list_actions
+logo
+logo_su
+main
+main_body
+main_bottom
+main_left
+main_middle
+main_right
+main_top
+menu
+msg
+msg_compose
+msg_sep
+nav
+next
+not_found
+num
+odd
+off
+on
+paged_list
+pager
+part
+parts
+prev
+prose
+realm
+required
+rounded_box
+rounded_box_body
+search
+selected
+selector
+sep
+user_settings
+simple
+standard_submit
+su
+submit
+task_menu
+text
+text_html
+text_plain
+textarea
+title
+tools
+top
+top_left
+top_right
+topic
+tuple
+user_state
+value
+want_sep
+    )];
+}
 
 sub vs_acknowledgement {
     # (proto) : UI.Widget
@@ -224,6 +330,12 @@ sub vs_html_attrs_render_one {
     my($proto, $widget, $source, $attr) = @_;
     return ''
 	unless length(my $v = $widget->render_simple_attr($attr, $source));
+    my($k) = lc(($attr =~ /([^_]+)$/)[0]);
+    if ($k =~ /^(?:class|id)$/) {
+	_trace($k, '=', $v) if $_TRACE && !$_ATTRS->{$k}->{$v}++;
+	$v =~ s/^b_//
+	    unless $_V6;
+    }
     return ' '
 	# The '_' handles row_class => class
 	. lc(($attr =~ /([^_]+)$/)[0])
