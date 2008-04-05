@@ -26,11 +26,20 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.9  2008/04/01 20:57:13  moeller
+  * Bivio::Delegate::TaskId
+    SITE_ADM_SUBSTITUTE_USER_DONE must be ANYBODY
+  * Bivio::Type::USZipCode9
+    allow dashes
+    relax length constraints on zip
+  * Bivio::UI::HTML::Widget::Checkbox
+    use get_or_default() - label may be ''
+
   Revision 6.8  2008/03/28 03:54:45  nagler
   * New classes: Action.SiteForum.pm, XHTMLWidget.JoinMenu,
     XHTMLWidget.SearchForm, XHTMLWidget.UserSettingsForm,
