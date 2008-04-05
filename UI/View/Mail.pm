@@ -102,12 +102,14 @@ sub pre_compile {
 }
 
 sub send_form {
-    my($self, @extra_fields) = @_;
+    my($self, $extra_fields, $buttons) = @_;
     my($cols) = 80;
+    $buttons ||= '*';
     return $self->internal_body(
 	DIV_msg_compose(Join([
 	    vs_simple_form(_name($self, 'XxForm') => [
-		@extra_fields,
+		@{$extra_fields || []},
+		$buttons,
 		map([_name($self, "XxForm.$_"), {
 		    cols => $cols,
 		    rows => 1,
@@ -125,6 +127,7 @@ sub send_form {
 		    ->map_attachments(sub {
 		        return _name($self, 'XxForm.') . shift(@_);
 		    })},
+		$buttons,
 	    ]),
 	    If([_name($self, 'Model.XxForm'), '->is_reply'], _msg($self, 1)),
 	])),
