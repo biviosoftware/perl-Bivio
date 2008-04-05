@@ -1527,7 +1527,6 @@ CREATE TABLE tuple_tag_t  (
   realm_id NUMERIC(18) NOT NULL,
   tuple_def_id NUMERIC(18) NOT NULL,
   primary_id NUMERIC(18) NOT NULL,
-  modified_date_time DATE NOT NULL,
   slot1 VARCHAR(500),
   slot2 VARCHAR(500),
   slot3 VARCHAR(500),
@@ -1573,19 +1572,15 @@ CREATE INDEX tuple_tag_t5 on tuple_tag_t (
 )
 /
 CREATE INDEX tuple_tag_t6 on tuple_tag_t (
-  modified_date_time
-)
-/
-CREATE INDEX tuple_tag_t7 on tuple_tag_t (
   primary_id
 )
 /
 ALTER TABLE tuple_tag_t
-  ADD CONSTRAINT tuple_tag_t8
+  ADD CONSTRAINT tuple_tag_t7
   FOREIGN KEY (realm_id, tuple_def_id)
   REFERENCES tuple_use_t(realm_id, tuple_def_id)
 /
-CREATE INDEX tuple_tag_t9 on tuple_tag_t (
+CREATE INDEX tuple_tag_t8 on tuple_tag_t (
   realm_id,
   tuple_def_id
 )

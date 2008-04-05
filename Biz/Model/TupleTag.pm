@@ -19,7 +19,6 @@ sub internal_initialize {
 	columns => {
 	    tuple_def_id => ['PrimaryId', 'PRIMARY_KEY'],
 	    primary_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    modified_date_time => ['DateTime', 'NOT_NULL'],
 	    @{$_TSN->map_list(sub {shift(@_) => ['TupleSlot', 'NONE']})},
         },
     });
