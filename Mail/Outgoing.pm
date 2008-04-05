@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::Mail::Common';
 use Bivio::MIME::Type;
 use Bivio::Mail::Address;
-use Bivio::Mail::Incoming;
 use MIME::Base64 ();
 use MIME::QuotedPrint ();
 
@@ -42,6 +41,7 @@ my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
 my($_T) = __PACKAGE__->use('MIME.Type');
 my($_R) = __PACKAGE__->use('Biz.Random');
 my($_FP) = __PACKAGE__->use('Type.FilePath');
+my($_I) = __PACKAGE__->use('Mail.Incoming');
 
 # 822:
 # Due to an artifact of the notational conventions, the syn-
@@ -146,7 +146,9 @@ sub new {
     # Creates a new outgoing mail message.  If I<incoming> is supplied,
     # uses as the basis for the message.
     my($attrs) = {};
-    if (UNIVERSAL::isa($msg, 'Bivio::Mail::Incoming')) {
+    $msg = $_I->new($msg)
+	if ref($msg) eq 'SCALAR';
+    if (UNIVERSAL::isa($msg, $_I)) {
 	my($body);
 	$msg->get_body(\$body);
 	$attrs->{body} = \$body;
@@ -207,12 +209,7 @@ sub set_content_type {
 }
 
 sub set_envelope_from {
-    my($self, $from) = @_;
-    # Sets the envelope FROM of this mail message.  It's the address
-    # which appears as Return-Path: in the outgoing message header and
-    # is used by MTAs to return bounces.
-    $self->put(envelope_from => $from);
-    return;
+    return shift->put(envelope_from => shift);
 }
 
 sub set_from_with_user {
