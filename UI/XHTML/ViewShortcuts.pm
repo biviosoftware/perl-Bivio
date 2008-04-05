@@ -7,6 +7,8 @@ use Bivio::UI::HTML::WidgetFactory;
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_FF) = __PACKAGE__->use('HTMLWidget.FormField');
+my($_W) = __PACKAGE__->use('UI.Widget');
 my($_HTML_TAGS) = join('|', qw(
     A
     ABBR
@@ -193,7 +195,7 @@ sub vs_descriptive_field {
 	FormField($name),
     ) : $proto->vs_form_field($name, $attrs);
     return [
-	$label ? ($label->put(cell_class => 'label')) : (),
+	$label ? ($label->put(cell_class => 'label label_ok')) : (),
 	Join([
 	    $input,
 	    [sub {
@@ -374,16 +376,14 @@ sub vs_simple_form {
 	    Grid([
 		map({
 		    my($x);
-		    if (UNIVERSAL::isa($_, 'Bivio::UI::Widget')
-			&& $_->simple_package_name eq 'FormField'
-		    ) {
+		    if ($_FF->is_blessed($_)) {
 			$_->put_unless_exists(cell_class => 'field'),
 			$x = [
-			    $proto->vs_call('Join', [''], {cell_class => 'label'}),
+			    Simple('', {cell_class => 'label label_ok'}),
 			    $_,
 			];
 		    }
-		    elsif (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
+		    elsif ($_W->is_blessed($_)) {
 			$x = [$_->put_unless_exists(cell_colspan => 2)];
 		    }
 		    elsif ($_ =~ s/^-//) {
