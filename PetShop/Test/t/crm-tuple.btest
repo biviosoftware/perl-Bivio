@@ -1,0 +1,36 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+my($forum) = generate_remote_email('crm_tuple_forum');
+my($cust1) = generate_local_email('crm_cust1');
+my($tech1) = generate_local_email('crm_tech1');
+my($msg) = send_mail($cust1, $forum);
+my($ticket) = verify_local_mail($tech1, qr{.}, 1) =~ m{#(\d+)\]}i;
+die('no ticket')
+    unless $ticket;
+login_as('crm_tech1');
+visit_uri('/crm_tuple_forum/tickets');
+follow_link($msg->unsafe_get_header('Subject'));
+follow_link('answer');
+verify_text("Locked Ticket #$ticket");
+verify_form({
+    priority => 'Low',
+    product => '',
+});
+submit_form(Send => {
+    action => 'Unlock',
+    priority => 'High',
+    text => 'Solution here',
+});
+follow_link_in_table('Last Update', 'Ticket', $ticket);
+verify_text("Open Ticket #$ticket");
+follow_link('answer_1');
+my($not_seen) = random_string();
+submit_form('Update Fields Only' => {
+    priority => 'Medium',
+    product => 'Catty Wompus',
+    text => $not_seen,
+});
+follow_link_in_table('Last Update', 'Ticket', $ticket);
+verify_no_text($not_seen);
