@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::TupleSlotNum;
 use strict;
-use base 'Bivio::Type::Integer';
+use Bivio::Base 'Type.Integer';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -24,6 +24,14 @@ sub map_list {
 
 sub field_name {
     return "slot$_[1]";
+}
+
+sub field_name_to_num {
+    my(undef, $field) = @_;
+    my($i) = $field =~ /\.slot(\d+)$/;
+    die($field, ': not a slot')
+	unless defined($i);
+    return $i;
 }
 
 1;
