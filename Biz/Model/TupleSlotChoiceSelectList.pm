@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::TupleSlotChoiceSelectList;
 use strict;
-use base 'Bivio::Biz::Model::TupleSlotChoiceList';
+use Bivio::Base 'Model.TupleSlotChoiceList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
