@@ -24,6 +24,12 @@ sub write_files {
     return;
 }
 
+sub z0001_crm_thread {
+    my($self) = @_;
+    
+    return;
+}
+
 sub _file_constraints {
     return <<'EOF';
 -- Constraints & Indexes for common bOP Models
@@ -761,6 +767,46 @@ CREATE UNIQUE INDEX tuple_slot_type_t4 on tuple_slot_type_t (
 /
 
 --
+-- tuple_tag_t
+--
+ALTER TABLE tuple_tag_t
+  ADD CONSTRAINT tuple_tag_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX tuple_tag_t3 on tuple_tag_t (
+  realm_id
+)
+/
+ALTER TABLE tuple_tag_t
+  ADD CONSTRAINT tuple_tag_t4
+  FOREIGN KEY (tuple_def_id)
+  REFERENCES tuple_def_t(tuple_def_id)
+/
+CREATE INDEX tuple_tag_t5 on tuple_tag_t (
+  tuple_def_id
+)
+/
+CREATE INDEX tuple_tag_t6 on tuple_tag_t (
+  modified_date_time
+)
+/
+CREATE INDEX tuple_tag_t7 on tuple_tag_t (
+  primary_id
+)
+/
+ALTER TABLE tuple_tag_t
+  ADD CONSTRAINT tuple_tag_t8
+  FOREIGN KEY (realm_id, tuple_def_id)
+  REFERENCES tuple_use_t(realm_id, tuple_def_id)
+/
+CREATE INDEX tuple_tag_t9 on tuple_tag_t (
+  realm_id,
+  tuple_def_id
+)
+/
+
+--
 -- tuple_use_t
 --
 ALTER TABLE tuple_use_t
@@ -1183,6 +1229,35 @@ CREATE TABLE tuple_use_t  (
   label VARCHAR(100) NOT NULL,
   moniker VARCHAR(100) NOT NULL,
   CONSTRAINT tuple_use_t1 PRIMARY KEY(realm_id, tuple_def_id)
+)
+/
+
+CREATE TABLE tuple_tag_t  (
+  realm_id NUMERIC(18) NOT NULL,
+  tuple_def_id NUMERIC(18) NOT NULL,
+  primary_id NUMERIC(18) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  slot1 VARCHAR(500),
+  slot2 VARCHAR(500),
+  slot3 VARCHAR(500),
+  slot4 VARCHAR(500),
+  slot5 VARCHAR(500),
+  slot6 VARCHAR(500),
+  slot7 VARCHAR(500),
+  slot8 VARCHAR(500),
+  slot9 VARCHAR(500),
+  slot10 VARCHAR(500),
+  slot11 VARCHAR(500),
+  slot12 VARCHAR(500),
+  slot13 VARCHAR(500),
+  slot14 VARCHAR(500),
+  slot15 VARCHAR(500),
+  slot16 VARCHAR(500),
+  slot17 VARCHAR(500),
+  slot18 VARCHAR(500),
+  slot19 VARCHAR(500),
+  slot20 VARCHAR(500),
+  CONSTRAINT tuple_tag_t1 PRIMARY KEY(realm_id, tuple_def_id, primary_id)
 )
 /
 
