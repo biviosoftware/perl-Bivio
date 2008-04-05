@@ -92,7 +92,7 @@ verify_content_type('image/gif');
 go_back();
 follow_link('new_topic');
 my($reply_subject) = 'HUI Reply ' . random_string();
-submit_form({
+submit_form(Send => {
     topic => $reply_subject,
     text => 'initial message',
     'Attach:#1' => file_field('mail/sort_up.gif'),
@@ -109,7 +109,7 @@ verify_form({
 });
 go_back();
 follow_link('reply$');
-submit_form({
+submit_form(Send => {
     text => 'reply text',
 });
 verify_text('was sent');

@@ -14,7 +14,7 @@ visit_uri('/crm_forum/tickets');
 follow_link($msg->unsafe_get_header('Subject'));
 follow_link('answer');
 verify_text("Locked Ticket #$ticket");
-submit_form({
+submit_form(Send => {
     action => 'Close',
     text => 'Solution here',
 });

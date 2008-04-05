@@ -15,6 +15,7 @@ our($_SUBJECT_RE) = qr{\#\s*(\d+)\s*\]};
 our($_REQ_ATTR) = __PACKAGE__ . '.pre_create';
 our($_DT) = __PACKAGE__->use('Type.DateTime');
 our($_RECENT) = 60;
+my($_MS) = __PACKAGE__->use('Type.MailSubject');
 
 sub ORD_FIELD {
     return 'crm_thread_num';
@@ -46,6 +47,7 @@ sub clean_subject {
 sub create {
     my($self, $values) = @_;
     $values->{crm_thread_status} ||= $_CTS->NEW;
+    _fixup_values($self, $values);
     return shift->SUPER::create(@_);
 }
 
@@ -55,8 +57,7 @@ sub handle_mail_post_create {
     return
 	unless $proto->is_enabled_for_auth_realm($req);
     my($v) = {
-	map(($_ => $proto->clean_subject($realm_mail->get($_))),
-	    qw(subject subject_lc)),
+	subject => $proto->clean_subject($realm_mail->get('subject')),
     };
     if (my $self = $req->unsafe_get($_REQ_ATTR)) {
 	my($tid) = $self->get('thread_root_id');
@@ -124,6 +125,20 @@ sub release_lock {
 	owner_user_id => undef,
 	crm_thread_status => $_CTS->OPEN,
     });
+}
+
+sub update {
+    my($self, $values) = @_;
+    _fixup_values($self, $values);
+    return shift->SUPER::update(@_);
+}
+
+sub _fixup_values {
+    my($self, $values) = @_;
+    $values->{subject_lc} = $self->clean_subject(
+	$_MS->clean_and_trim($values->{subject}),
+    ) if defined($values->{subject});
+    return;
 }
 
 sub _is_realm_member {

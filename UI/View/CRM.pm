@@ -13,13 +13,16 @@ sub internal_reply_list {
 
 sub send_form {
     return shift->SUPER::send_form(
-	['CRMForm.action_id', {
-	    wf_class => 'Select',
-	    list_display_field => 'name',
-	    choices => ['->req', 'Model.CRMActionList'],
-	    list_id_field => 'id',
-	    row_control => ['Model.CRMForm', '->show_action'],
-	}],
+	[
+	    ['CRMForm.action_id', {
+		wf_class => 'Select',
+		list_display_field => 'name',
+		choices => ['->req', 'Model.CRMActionList'],
+		list_id_field => 'id',
+		row_control => ['Model.CRMForm', '->show_action'],
+	    }],
+	],
+	'*ok_button update_only cancel_button',
     );
 }
 

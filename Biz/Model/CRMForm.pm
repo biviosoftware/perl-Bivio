@@ -49,20 +49,22 @@ sub execute_empty {
 }
 
 sub execute_ok {
-    my($self) = @_;
+    my($self, $button) = @_;
     _with($self, sub {
 	my($ct, $cal) = @_;
 	$ct->update({
 	    crm_thread_status => $cal->id_to_status($self->get('action_id')),
 	    owner_user_id => $cal->id_to_owner($self->get('action_id')),
 	    modified_by_user_id => $self->req('auth_user_id'),
+	    subject => $self->get('subject'),
 	});
 	$self->internal_put_field(
 	    subject => $ct->make_subject($self->get('subject')),
 	);
 	return;
     });
-    my($res) = shift->SUPER::execute_ok(@_);
+    my($res) = $button eq 'update_only' ? $self->internal_return_value
+	: shift->SUPER::execute_ok(@_);
     $self->internal_put_field(
 	$_TAG_ID => $self->req('Model.CRMThread')->get('thread_root_id'));
     $self->delegate_method($_TTF, @_);
@@ -91,6 +93,11 @@ sub internal_initialize {
 		{
 		    name => 'action_id',
 		    type => 'CRMActionId',
+		    constraint => 'NONE',
+		},
+		{
+		    name => 'update_only',
+		    type => 'OKButton',
 		    constraint => 'NONE',
 		},
 	    ],
@@ -122,8 +129,17 @@ sub tuple_tag_form_state {
 }
 
 sub validate {
-    my($self) = @_;
-    shift->SUPER::validate(@_);
+    my($self, $button) = @_;
+    if ($button eq 'update_only') {
+	return $self->internal_put_error(to => 'MUTUALLY_EXCLUSIVE')
+	    unless $self->unsafe_get($_TAG_ID);
+	foreach my $f (qw(to body)) {
+	    $self->internal_clear_error($f);
+	}
+    }
+    else {
+	shift->SUPER::validate(@_);
+    }
     _with($self, sub {
         my(undef, $cal) = @_;
 	$self->internal_put_error(action_id => 'SYNTAX_ERROR')
