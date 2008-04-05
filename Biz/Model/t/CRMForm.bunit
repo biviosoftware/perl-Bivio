@@ -3,6 +3,9 @@
 FormModel({
     setup_request => sub {
 	my(undef, $params) = @_;
+	return
+	    unless @$params;
+	req()->put(query => undef);
 	if (my $x = delete($params->[0]->{ctid})) {
 	    req()->put(query => {this => $x});
 	    pop(@$params)
