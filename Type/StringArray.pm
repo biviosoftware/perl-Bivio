@@ -46,10 +46,6 @@ sub as_html {
     return $self->to_html($self);
 }
 
-sub as_length {
-    return scalar(@{shift->[$_IDI]});
-}
-
 sub as_literal {
     my($self) = @_;
     return $self->to_literal($self);
