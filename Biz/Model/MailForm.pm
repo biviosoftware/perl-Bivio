@@ -12,6 +12,8 @@ my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 my($_V) = __PACKAGE__->use('UI.View');
 my($_QUERY_WHO) = 'to';
 my($_MRW) = __PACKAGE__->use('Type.MailReplyWho');
+my($_ARM) = __PACKAGE__->use('Action.RealmMail');
+my($_MA) = __PACKAGE__->use('Mail.Address');
 
 sub VIEW_CLASS {
     return (shift->simple_package_name =~ /(.+)Form/)[0];
@@ -38,15 +40,19 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    my($id) = $self->req->unsafe_get_nested(qw(Model.RealmMail message_id));
+    my($req) = $self->req;
+    my($id) = $req->unsafe_get_nested(qw(Model.RealmMail message_id));
     my($cc) = $self->get('cc')->as_literal;
     my($to) = $self->get('to');
     my($sender) = $self->get('realm_emails')->[0];
+    my($removed_sender) = 0;
     $self->internal_put_field(headers => {
-	_from => $self->internal_format_from,
-	_recipients => $to->new([
-	    @{$to->as_array},
-	    @{$self->get('cc')->as_array},
+	_from => my $from = $self->internal_format_from,
+	_recipients => my $other_recipients = $to->new([
+	    grep(!($sender eq $_ && ++$removed_sender),
+	        @{$to->as_array},
+		@{$self->get('cc')->as_array},
+	    ),
 	])->as_literal,
 	Sender => $sender,
 	'Reply-To' => $sender,
@@ -55,17 +61,16 @@ sub execute_ok {
 	Subject => $self->get('subject'),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
-# create the message
-# take message and recipients and incoming?  Need to
-# generate message id
-# then queue sending of email;
-    my($im) = $_V->render($self->VIEW_CLASS . '->form_imail', $self->req);
-    my($o) = Bivio::Mail::Outgoing->new(Bivio::Mail::Incoming->new($im));
-    $o->set_recipients($to->new([
-	    @{$to->as_array},
-	    @{$self->get('cc')->as_array},
-	])->as_literal,);
-    $o->enqueue_send($self->req);
+    my($im) = $_V->render($self->VIEW_CLASS . '->form_imail', $req);
+    if ($removed_sender) {
+	$_ARM->execute_receive($req, $im);
+	$im = $req->get('Model.RealmMail')->get_rfc822;
+    }
+    $_O->new($im)
+	->set_recipients($other_recipients)
+	->set_envelope_from(($_MA->parse($from))[0])
+	->enqueue_send($req)
+	if $other_recipients;
     return $self->internal_return_value;
 }
 
