@@ -217,7 +217,7 @@ sub _init_crm {
 		},
 	    });
 	    $self->model('TupleDef')->create_from_hash({
-		'crmthread#CRMThread' => [
+		'ticket#Ticket' => [
 		    {
 			label => 'Product',
 			type => 'String',
@@ -228,7 +228,7 @@ sub _init_crm {
 		    },
 		],
 	    });
-	    $self->model('TupleUse')->create_from_label('CRMThread');
+	    $self->model('TupleUse')->create_from_label('Ticket');
 	}
     }
     return;
