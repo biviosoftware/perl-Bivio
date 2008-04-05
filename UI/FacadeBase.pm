@@ -646,6 +646,9 @@ sub _cfg_site_adm {
 
 sub _cfg_tuple {
     return {
+ 	FormError => [
+	    [NOT_FOUND => 'vs_fe("label"); is not a valid choice.'],
+	],
 	Task => [
 	    [FORUM_TUPLE_DEF_EDIT => '?/edit-db-schemas'],
 	    [FORUM_TUPLE_DEF_LIST => '?/db-schemas'],
