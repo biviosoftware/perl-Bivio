@@ -28,7 +28,7 @@ sub unit {
 	if @_ > 2;
     my($self, $group) = @_;
     my($c) = $self->builtin_class;
-    return $self->SUPER::unit([
+    return $self->SUPER::unit(ref($group->[0]) eq 'ARRAY' ? $group : [
 	map({
 	    my($next) = [splice(@$group, 0, 2)];
 	    $c eq $next->[0] ? @$next : ($c => $next);
