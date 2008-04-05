@@ -45,7 +45,7 @@ our($_TRACE);
 my($_EMPTY_ARRAY) = [];
 my($_MIN_PRIMARY_ID) = Bivio::Type::PrimaryId->get_min;
 Bivio::IO::Config->register(my $_CFG = {
-    unused_classes => [qw(RealmFile RealmMail RealmMailBounce Website Forum CalendarEvent JobLock Tuple TupleDef TupleSlotType TupleSlotDef TupleUse Motion MotionVote RealmDAG OTP NonuniqueEmail CRMThread)],
+    unused_classes => [qw(RealmFile RealmMail RealmMailBounce Website Forum CalendarEvent JobLock Tuple TupleDef TupleSlotType TupleSlotDef TupleUse Motion MotionVote RealmDAG OTP NonuniqueEmail CRMThread TupleTag)],
 });
 my($_C) = __PACKAGE__->use('SQL.Constraint');
 
