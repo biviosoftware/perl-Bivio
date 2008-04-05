@@ -62,10 +62,8 @@ sub execute_ok {
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
     my($im) = $_V->render($self->VIEW_CLASS . '->form_imail', $req);
-    if ($removed_sender) {
-	$_ARM->execute_receive($req, $im);
-	$im = $req->get('Model.RealmMail')->get_rfc822;
-    }
+    $im = $self->internal_send_to_realm($im)
+	if $removed_sender;
     $_O->new($im)
 	->set_recipients($other_recipients)
 	->set_envelope_from(($_MA->parse($from))[0])
@@ -176,6 +174,13 @@ sub internal_return_value {
 	task_id => 'next',
 	query => undef,
     };
+}
+
+sub internal_send_to_realm {
+    my($self, $rfc822) = @_;
+    my($req) = $self->req;
+    $_ARM->execute_receive($req, $rfc822);
+    return $req->get('Model.RealmMail')->get_rfc822;
 }
 
 sub is_reply {
