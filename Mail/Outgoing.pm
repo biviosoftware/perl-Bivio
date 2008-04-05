@@ -88,7 +88,7 @@ sub add_missing_headers {
 	[Date => $_DT->rfc822($now)],
 	['Message-ID' => '<' .
 	     $req->format_email(
-		 $_DT->to_file_name($now) . "." . int(rand(1_000_000_000)))
+		 $_DT->to_file_name($now) . "." . $_R->string(16))
 	     . '>'],
 	[From => "<$from_email>"],
 	['Return-Path' => "<$from_email>"],
