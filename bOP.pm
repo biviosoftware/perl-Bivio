@@ -26,11 +26,114 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.10  2008/04/05 15:11:17  nagler
+  * Bivio::Agent::HTTP::Request
+    added retain_query_and_path_info support, but can't be configured to
+    false until query retention dependencies are removed
+  * Bivio::Agent::Request
+    added retain_query_and_path_info support, but can't be configured to
+    false until query retention dependencies are removed
+  * Bivio::Biz::Action::ECCreditCardProcessor
+    don't send card zip if it has no value, allows non AVS transactions
+  * Bivio::Biz::Action::RealmMail
+    execute_receive can be called inline with $rfc822
+  * Bivio::Biz::ListModel
+    execute_load_page clears "this" on the query
+  * Bivio::Biz::Model::CRMForm
+    delegate to TupleTagForm
+    set thread id after create
+    added update_only support
+    tag_id is now "ticket."
+    added support for rendering slots
+  * Bivio::Biz::Model::CRMThread
+    added update_only support
+  * Bivio::Biz::Model::CRMThreadRootList
+    fixed Email.location problem
+  * Bivio::Biz::Model::MailForm
+    render the mail message (form_imail) inline and then enqueue
+    first step towards storing mails directly
+    mail stored first (if sent to realm) and then forwarded to other
+    recipients and the list
+  * Bivio::Biz::Model::SearchList
+    todo
+  * Bivio::Biz::Model::TupleSlotChoiceList
+    load_all_from_slot_type accepts a Type.TupleSlotType
+  * Bivio::Biz::Model::TupleSlotChoiceSelectList
+    fmt
+  * Bivio::Biz::Model::TupleSlotDefList
+    added tuple_slot_info field & MISSING_SLOT_INFO()
+  * Bivio::Biz::Model::TupleUse
+    fmt
+  * Bivio::Mail::Outgoing
+    improved Message-ID generation
+    new() accepts a scalar_ref which it passes on to Incoming
+  * Bivio::PetShop::Util::SQL
+    added tuple_tag data
+    tag_id is now "ticket."
+  * Bivio::SQL::DDL
+    added tuple_tag
+    tuple_tag_t no longer includes modified_date_time
+  * Bivio::SQL::FormSupport
+    rmpod
+    added extract_column_from_classes
+  * Bivio::SQL::PropertySupport
+    exclude TupleTag
+  * Bivio::SQL::Support
+    added extract_qualified_prefix
+  * Bivio::Test::Type
+    allow unit to be structured like a normal test (first element is [])
+  * Bivio::Type::StringArray
+    added do_iterate
+    added as_length
+    don't need as_length
+  * Bivio::Type::TupleSlot
+    fmt
+  * Bivio::Type::TupleSlotNum
+    added field_name_to_num
+  * Bivio::UI::FacadeBase
+    TupleTag support
+    added CRMForm.update_only support
+  * Bivio::UI::HTML::Widget::FormField
+    don't need IDI
+  * Bivio::UI::HTML::Widget::FormFieldError
+    simplified and rmpod
+  * Bivio::UI::Mail::Widget::Message
+    factored out _render() so can share with render()
+  * Bivio::UI::View::Base
+    added imail() base type (inline mail)
+    added internal_base_attr
+  * Bivio::UI::View::CRM
+    added update_only support
+    render slots
+  * Bivio::UI::View::Mail
+    render the mail message (form_imail) inline and then enqueue
+    first step towards storing mails directly
+    send_form() internface changed
+  * Bivio::UI::ViewShortcuts
+    added vs_form_method_call
+  * Bivio::UI::Widget::If
+    rmpod
+  * Bivio::UI::Widget
+    added resolve_form_model
+  * Bivio::UI::XHTML::ViewShortcuts
+    cleaned up vs_simple_form config
+  * Bivio::UI::XHTML::Widget::FormFieldError
+    simplified
+  * Bivio::UI::XHTML::Widget::FormFieldLabel
+    use IfFieldError, resolve_form_model
+  * Bivio::UNIVERSAL
+    added call_super
+  * Bivio::Util::CRM
+    needs initialize_fully
+  * Bivio::Util::SQL
+    added internal_upgrade_db_tuple_tag
+    tuple_tag_t no longer includes modified_date_time
+
   Revision 6.9  2008/04/01 20:57:13  moeller
   * Bivio::Delegate::TaskId
     SITE_ADM_SUBSTITUTE_USER_DONE must be ANYBODY
