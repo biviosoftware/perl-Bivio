@@ -11,6 +11,36 @@ my($_L) = __PACKAGE__->use('IO.Log');
 
 sub execute {
     my($self, $req) = @_;
+    my($msg) = _render($self, $req);
+    $msg->enqueue_send($req);
+    my($lf);
+    $_L->write($lf, $msg->as_string)
+        if $self->unsafe_render_attr('log_file', $req, \$lf) && $lf;
+    return;
+}
+
+sub initialize {
+    my($self) = @_;
+    $self->initialize_attr('from');
+    $self->map_invoke(unsafe_initialize_attr => [qw(
+	body
+	cc
+	headers_object
+	recipients
+	subject
+	to
+    )]);
+    return;
+}
+
+sub render {
+    my($self, $source, $buffer) = @_;
+    $$buffer .= _render($self, $source->req)->as_string;
+    return;
+}
+
+sub _render {
+    my($self, $req) = @_;
     $self->map_invoke(obsolete_attr => [qw(headers want_aol_munge)]);
     my($msg) = $_O->new;
     my($from) = $self->render_simple_attr('from', $req);
@@ -45,31 +75,8 @@ sub execute {
     $msg->map_invoke(set_header => $o->mail_headers($req))
 	if $o and $o = $self->unsafe_resolve_widget_value($o, $req);
     $msg->set_body($$body);
-    $msg->enqueue_send($req);
-    my($lf);
-    $_L->write($lf, $msg->as_string)
-        if $self->unsafe_render_attr('log_file', $req, \$lf) && $lf;
-    return;
-}
-
-sub initialize {
-    my($self) = @_;
-    $self->initialize_attr('from');
-    $self->map_invoke(unsafe_initialize_attr => [qw(
-	body
-	cc
-	headers_object
-	recipients
-	subject
-	to
-    )]);
-    return;
-}
-
-sub render {
-    # This widget is not renderable.
-    # This method must be here to satisfy ->can('render').
-    Bivio::Die->die('This widget is only executable, it cannot be rendered');
+    $msg->add_missing_headers($req, $email);
+    return $msg;
 }
 
 1;
