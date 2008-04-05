@@ -375,6 +375,11 @@ sub resolve_attr {
     return _resolve_attr(get => @_);
 }
 
+sub resolve_form_model {
+    my($self, $source) = @_;
+    return $self->resolve_ancestral_attr('form_model', $source->req);
+}
+
 sub unsafe_initialize_attr {
     my($self, $attr_name) = @_;
     # Calls L<initialize_value|"initialize_value"> on I<attr_name>'s value.
