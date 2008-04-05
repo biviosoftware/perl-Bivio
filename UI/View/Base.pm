@@ -40,39 +40,27 @@ sub csv {
     return;
 }
 
+sub imail {
+    my($self) = @_;
+    view_main(SimplePage({
+	content_type => 'message/rfc822',
+	value => _mail($self),
+    }));
+    return;
+}
+
+sub internal_base_attr {
+    return shift->internal_base_type . '_' . shift;
+}
+
 sub internal_base_type {
     my($self) = @_;
-    return ''
+    return $self->get('view_name')
 	unless my $p = $self->unsafe_get('parent');
     while (my $pp = $p->unsafe_get('parent')) {
 	$p = $pp;
     }
     return $p->get('view_name');
-}
-
-sub mail {
-    my($self) = @_;
-    view_class_map('MailWidget');
-    view_shortcuts($self->VIEW_SHORTCUTS);
-    view_declare(
-	qw(mail_body mail_to mail_cc mail_headers_object mail_subject));
-    view_put(
-	mail_from => Mailbox(
-	    vs_text('support_email'),
-	    vs_text_as_prose('support_name'),
-	),
-	mail_recipients => '',
-    );
-    view_main(Message({
-	from => view_widget_value('mail_from'),
-	to => view_widget_value('mail_to'),
-	cc => view_widget_value('mail_cc'),
-	subject => view_widget_value('mail_subject'),
-	body => view_widget_value('mail_body'),
-	recipients => view_widget_value('mail_recipients'),
-	headers_object => view_widget_value('mail_headers_object'),
-    }));
-    return;
 }
 
 sub internal_body {
@@ -85,10 +73,12 @@ sub internal_body_prose {
 
 sub internal_put_base_attr {
     my($self) = shift;
-    $self->map_by_two(sub {
-        view_put($self->internal_base_type . '_' . shift(@_) => shift(@_));
-	return;
-    }, \@_);
+    view_put(
+	@{$self->map_by_two(
+	    sub {($self->internal_base_attr(shift) => shift)},
+	    \@_,
+	)},
+    );
     return $self;
 }
 
@@ -149,13 +139,19 @@ sub internal_xhtml_adorned {
     });
 }
 
+sub mail {
+    my($self) = @_;
+    view_main(_mail($self));
+    return;
+}
+
 sub pre_compile {
     my($self) = @_;
     my($n) = $self->get('view_name');
     view_parent(
 	$self->PARENT_CLASS
 	. '->'
-	. ($n =~ /_(mail|csv|rss|css|xml)$/ ? $1 : 'xhtml')
+	. ($n =~ /_(imail|mail|csv|rss|css|xml)$/ ? $1 : 'xhtml')
     ) unless $self->use('View.' . $self->PARENT_CLASS)->can($n);
     return;
 }
@@ -197,5 +193,24 @@ sub xhtml {
     return;
 }
 
+
+sub _mail {
+    my($self) = @_;
+    view_class_map('MailWidget');
+    view_shortcuts($self->VIEW_SHORTCUTS);
+    my($a) = [qw(body to cc headers_object subject)];
+    $self->internal_put_base_attr(
+	map(($_ => ''), @$a),
+	from => Mailbox(
+	    vs_text('support_email'),
+	    vs_text_as_prose('support_name'),
+	),
+	recipients => '',
+    );
+    return Message({
+	map(($_ => view_widget_value($self->internal_base_attr($_))),
+	    @$a, qw(from recipients)),
+    });
+}
 
 1;
