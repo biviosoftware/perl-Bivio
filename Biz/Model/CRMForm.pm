@@ -9,12 +9,13 @@ my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 my($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
 my($_TTF) = __PACKAGE__->use('Model.TupleTagForm');
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_TAG_ID) = 'crmthread.CRMThread.thread_root_id';
 
 #TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
 sub TUPLE_TAG_IDS {
-    return [qw(crmthread.CRMThread.thread_root_id)];
+    return [$_TAG_ID];
 }
 
 sub execute_cancel {
@@ -62,6 +63,8 @@ sub execute_ok {
 	return;
     });
     my($res) = shift->SUPER::execute_ok(@_);
+    $self->internal_put_field(
+	$_TAG_ID => $self->req('Model.CRMThread')->get('thread_root_id'));
     $self->delegate_method($_TTF, @_);
     return $res;
 }
@@ -102,7 +105,7 @@ sub internal_pre_execute {
     if (my $m = $self->req->unsafe_get('Model.RealmMail')) {
 	my($trid) = $m->get('thread_root_id');
 	$self->new_other('CRMThread')->load({thread_root_id => $trid});
-	$self->internal_put_field('crmthread.CRMThread.thread_root_id' => $trid);
+	$self->internal_put_field($_TAG_ID => $trid);
 	$self->new_other('CRMActionList')->load_all;
     }
     $self->delegate_method($_TTF, @_);
