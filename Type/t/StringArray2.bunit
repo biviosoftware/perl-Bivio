@@ -1,9 +1,16 @@
 # Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+my($x) = 0;
 [
     [[qw(3 1 2)]] => [
 	map_iterate => [
 	    [sub {"!$_[0]!"}] => [[qw(!3! !1! !2!)]],
+	],
+	do_iterate => [
+	    [sub {$x++; return shift == 3 ? 1 : 0}] => sub {
+		assert_equals(2, $x);
+		return 1;
+	    },
 	],
 	as_string => 'StringArray[3, 1, 2]',
 	equals => [
