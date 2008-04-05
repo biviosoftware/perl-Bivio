@@ -55,7 +55,17 @@ sub execute_ok {
 	Subject => $self->get('subject'),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
-    $_V->execute($self->VIEW_CLASS . '->form_mail', $self->req);
+# create the message
+# take message and recipients and incoming?  Need to
+# generate message id
+# then queue sending of email;
+    my($im) = $_V->render($self->VIEW_CLASS . '->form_imail', $self->req);
+    my($o) = Bivio::Mail::Outgoing->new(Bivio::Mail::Incoming->new($im));
+    $o->set_recipients($to->new([
+	    @{$to->as_array},
+	    @{$self->get('cc')->as_array},
+	])->as_literal,);
+    $o->enqueue_send($self->req);
     return $self->internal_return_value;
 }
 

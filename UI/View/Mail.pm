@@ -13,7 +13,7 @@ sub PART_TASK {
     return 'FORUM_MAIL_PART';
 }
 
-sub form_mail {
+sub form_imail {
     my($self) = @_;
     return $self->internal_put_base_attr(
 	from => [_name($self, 'Model.XxForm'), '->mail_header_from'],
@@ -23,7 +23,8 @@ sub form_mail {
 	],
 	headers_object => [_name($self, 'Model.XxForm')],
 	body => [sub {
-	    my($req, $f) = @_;
+	    my($source, $f) = @_;
+	    my($req) = $source->req;
 	    my($body) = $f->get('body');
 	    return MIMEEntity({
 		mime_type => 'text/plain',
