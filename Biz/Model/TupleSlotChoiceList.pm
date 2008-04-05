@@ -2,10 +2,11 @@
 # $Id$
 package Bivio::Biz::Model::TupleSlotChoiceList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_TST) = __PACKAGE__->use('Type.TupleSlotType');
 
 sub EMPTY_KEY_VALUE {
     return -1;
@@ -38,16 +39,22 @@ sub internal_load_rows {
 }
 
 sub load_all_from_slot_type {
-    my($self, $list) = @_;
-    $self->[$_IDI] = $list ? _list($list) : [];
+    my($self, $source) = @_;
+    $self->[$_IDI] = $source ? _list($source) : [];
     return $self->load_all;
 }
 
 sub _list {
-    my($list) = @_;
-    my($tc) = Bivio::Type
-	->get_instance($list->get('TupleSlotType.type_class'));
-    my($c) = $list->get('TupleSlotType.choices');
+    my($source) = @_;
+    my($c, $tc);
+    if ($_TST->is_blessed($source)) {
+	($c, $tc) = map($source->get($_), qw(choices class));
+    }
+    else {
+	$tc = Bivio::Type->get_instance(
+	    $source->get('TupleSlotType.type_class'));
+	$c = $source->get('TupleSlotType.choices');
+    }
     return [map(
 	$tc->to_literal($_),
 	sort {
