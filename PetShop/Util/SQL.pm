@@ -30,6 +30,10 @@ sub CRM_FORUM {
     return 'crm_forum';
 }
 
+sub CRM_TUPLE_FORUM {
+    return 'crm_tuple_forum';
+}
+
 sub CRM_TECH {
     return 'crm_tech' . $_[1];
 }
@@ -186,21 +190,47 @@ sub realm_role_config {
 
 sub _init_crm {
     my($self) = @_;
-    _top_level_forum(
-	$self, $self->CRM_FORUM, [$self->CRM_TECH(1)], [$self->CRM_TECH(2)]);
-    $self->new_other('CRM')->setup_realm;
-    $self->model('RowTag')->replace_value(
-	$self->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
-	$self->use('Action.RealmMail')->EMPTY_SUBJECT_PREFIX,
-    );
-    $self->model('EmailAlias')->create({
-	incoming =>
-	    $self->use('TestLanguage.HTTP')->generate_remote_email('crm'),
-	outgoing => $self->req(qw(auth_realm owner name)),
-    });
-    $self->req(qw(auth_realm owner))->update({
-	display_name => 'PetShop Support',
-    });
+    foreach my $forum (qw(CRM_TUPLE_FORUM CRM_FORUM)) {
+	_top_level_forum(
+	    $self,
+	    $self->$forum(),
+	    [$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
+	);
+	$self->new_other('CRM')->setup_realm;
+	if ($forum eq 'CRM_FORUM') {
+	    $self->model('EmailAlias')->create({
+		incoming =>
+		    $self->use('TestLanguage.HTTP')
+			->generate_remote_email('crm'),
+		outgoing => $self->req(qw(auth_realm owner name)),
+	    });
+	    $self->req(qw(auth_realm owner))->update({
+		display_name => 'PetShop Support',
+	    });
+	}
+	elsif ($forum eq 'CRM_TUPLE_FORUM') {
+	    $self->model('TupleSlotType')->create_from_hash({
+		Priority => {
+		    type_class => 'TupleSlot',
+		    choices => [qw(Low Medium High)],
+		    default_value => 'Low',
+		},
+	    });
+	    $self->model('TupleDef')->create_from_hash({
+		'crmthread#CRMThread' => [
+		    {
+			label => 'Product',
+			type => 'String',
+		    },
+		    {
+			label => 'Priority',
+			type => 'Priority',
+		    },
+		],
+	    });
+	    $self->model('TupleUse')->create_from_label('CRMThread');
+	}
+    }
     return;
 }
 
