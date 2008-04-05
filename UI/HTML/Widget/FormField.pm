@@ -32,7 +32,6 @@ use Bivio::UI::HTML::WidgetFactory;
 # Widget value boolean which dynamically determines if the row should render.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IDI) = __PACKAGE__->instance_data_index;
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub get_label_and_field {
@@ -105,7 +104,6 @@ sub new {
     # Creates a new FormField widget. Call
     # L<get_label_and_field|"get_label_and_field"> to create a label for the
     # field automatically.
-    $self->[$_IDI] = {};
     # adds the error widget and the edit widget
     $self->put(values => [
 	$_VS->vs_new('FormFieldError', {
