@@ -7,19 +7,16 @@ use Bivio::Base 'Model.MailForm';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 my($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
+my($_TTF) = __PACKAGE__->use('Model.TupleTagForm');
+my($_IDI) = __PACKAGE__->instance_data_index;
 
-#TODO:
-#    internal_format_from needs to set From: if internal
-#    write test
-#    Locked needs to limit users from acting (are you sure?)
-#    CRM Header for thread list which includes status, etc.
-#      e.g. New Ticket #2.
-#     Filter thread root list on status [Filter: ]
-
-#TODO: Fix location problem in CMRThreadRootList
-
+#TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
+sub TUPLE_TAG_IDS {
+    return [qw(crmthread.CRMThread.thread_root_id)];
+}
+
 sub execute_cancel {
     my($self) = @_;
     _with($self, sub {
@@ -46,6 +43,7 @@ sub execute_empty {
 	    ));
 	return;
     });
+    $self->delegate_method($_TTF, @_);
     return;
 }
 
@@ -63,7 +61,13 @@ sub execute_ok {
 	);
 	return;
     });
-    return shift->SUPER::execute_ok(@_);
+    my($res) = shift->SUPER::execute_ok(@_);
+    $self->delegate_method($_TTF, @_);
+    return $res;
+}
+
+sub get_field_info {
+    return shift->delegate_method($_TTF, @_);
 }
 
 sub internal_format_from {
@@ -76,32 +80,42 @@ sub internal_format_from {
 
 sub internal_initialize {
     my($self) = @_;
-    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-        version => 1,
-        visible => [
-	    {
-		name => 'action_id',
-		type => 'CRMActionId',
-		constraint => 'NONE',
-	    },
-	],
-    });
+    return $self->delegate_method(
+	$_TTF,
+	$self->merge_initialize_info($self->SUPER::internal_initialize, {
+	    version => 1,
+	    visible => [
+		{
+		    name => 'action_id',
+		    type => 'CRMActionId',
+		    constraint => 'NONE',
+		},
+	    ],
+	    other => $self->TUPLE_TAG_IDS,
+	}),
+    );
 }
 
 sub internal_pre_execute {
-    my($self) = @_;
-    shift->SUPER::internal_pre_execute(@_);
+    my($self) = shift;
+    $self->SUPER::internal_pre_execute(@_);
     if (my $m = $self->req->unsafe_get('Model.RealmMail')) {
-	$self->new_other('CRMThread')
-	    ->load({thread_root_id => $m->get('thread_root_id')});
+	my($trid) = $m->get('thread_root_id');
+	$self->new_other('CRMThread')->load({thread_root_id => $trid});
+	$self->internal_put_field('crmthread.CRMThread.thread_root_id' => $trid);
 	$self->new_other('CRMActionList')->load_all;
     }
+    $self->delegate_method($_TTF, @_);
     return;
 }
 
 sub show_action {
     my($self) = @_;
     return _with($self, sub {1}) || 0;
+}
+
+sub tuple_tag_form_state {
+    return shift->[$_IDI] ||= {};
 }
 
 sub validate {
