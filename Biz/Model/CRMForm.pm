@@ -9,7 +9,7 @@ my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 my($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
 my($_TTF) = __PACKAGE__->use('Model.TupleTagForm');
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_TAG_ID) = 'ticket.CRMThread.thread_root_id';
+my($_TAG_ID) = 'b_ticket.CRMThread.thread_root_id';
 
 #TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????

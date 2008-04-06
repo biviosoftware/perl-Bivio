@@ -217,7 +217,7 @@ sub _init_crm {
 		},
 	    });
 	    $self->model('TupleDef')->create_from_hash({
-		'ticket#Ticket' => [
+		'b_ticket#Ticket' => [
 		    {
 			label => 'Product',
 			type => 'String',
