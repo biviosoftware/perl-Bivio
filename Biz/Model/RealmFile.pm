@@ -3,7 +3,6 @@
 package Bivio::Biz::Model::RealmFile;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
-use Bivio::MIME::Type;
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -14,6 +13,7 @@ my($_DELETED_SENTINEL) = 'DELETED IN TRANSACTION';
 my($_DFN) = Bivio::Type->get_instance('DocletFileName');
 my($_F) = __PACKAGE__->use('Biz.File');
 my($_FP) = Bivio::Type->get_instance('FilePath');
+my($_T) = __PACKAGE__->use('MIME.Type');
 my($_TXN_PREFIX);
 my($_WN) = __PACKAGE__->use('Type.WikiName');
 Bivio::IO::Config->register(my $_CFG = {
@@ -116,12 +116,16 @@ sub get_content_length {
 }
 
 sub get_content_type {
-    my(undef, undef, $prefix, $values) = shift->internal_get_target(@_);
-    my($p) = $values->{$prefix . 'path'};
-    $p =~ s/;\d+//;
-    my($res) = Bivio::MIME::Type->from_extension($p);
+    my($proto, undef, $prefix, $values) = shift->internal_get_target(@_);
+    return $proto->get_content_type_for_path($values->{$prefix . 'path'});
+}
+
+sub get_content_type_for_path {
+    my(undef, $path) = @_;
+    $path =~ s/;\d+//;
+    my($res) = Bivio::MIME::Type->from_extension($path);
     return $res eq 'application/octet-stream'
-	&& ($_WN->is_absolute($p) || $_BFN->is_absolute($p))
+	&& ($_WN->is_absolute($path) || $_BFN->is_absolute($path))
 	? 'text/x-bivio-wiki'
 	: $res;
 }
@@ -768,7 +772,7 @@ sub _with_content {
     return ($self, {
 	$values ? %$values : (),
 	is_folder => 0,
-	_content => $content,
+	_content => ref($content) ? $content : \$content,
     });
 }
 
