@@ -22,7 +22,7 @@ sub send_form {
 		list_id_field => 'id',
 		row_control => ['Model.CRMForm', '->show_action'],
 	    }],
-	    @{$_CF->tuple_tag_map_slots('ticket.CRMThread.thread_root_id', sub {
+	    @{$_CF->tuple_tag_map_slots('b_ticket.CRMThread.thread_root_id', sub {
 		my($field) = @_;
 	        return [TupleTagSlotLabel($field), TupleTagSlotField($field)];
 	    })},
