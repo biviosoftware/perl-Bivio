@@ -22,7 +22,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-backup [options] command [args...]
 commands:
-    archive_mirror_link root date [min_kb] -- tar "link" to "daily" or "archive"
+    archive_mirror_link root date [min_kb] -- tar "link" to "weekly" or "archive"
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
     trim_directories dir max -- returns directories to trim
 EOF
@@ -39,12 +39,8 @@ sub archive_mirror_link {
     $self->usage_error($link, ': does not exist')
 	unless -d $link;
     $min_kb ||= 0x40000;
-    my($archive) = "$root/archive/$date";
-    (my $glob = $archive) =~ s/\d\d$/??/;
-    $archive = "$root/daily/$date"
-	if @{[glob($glob)]};
-    $self->usage_error($archive, ': already exists')
-	if -e $archive;
+    return
+	unless my $archive = _which_archive($self, $root, $date);
     $_F->mkdir_p($archive, 0700);
     $_F->do_in_dir($link, sub {
         foreach my $top (glob('*')) {
@@ -73,7 +69,6 @@ sub archive_mirror_link {
 	return;
     });
     $self->piped_exec("chmod -R -w $archive");
-#TODO:    $self->piped_exec("chmod -R u+w $link && rm -rf $link");
     return;
 }
 
@@ -131,8 +126,34 @@ sub mirror {
 sub trim_directories {
     my($self, $root, $num) = shift->name_args(['String', 'Integer'], \@_);
     my($dirs) = [reverse(sort(glob("$root/20" . ('[0-9]' x 6))))];
-    return @$dirs <= $num ? ''
-	: ("rm -rf " . join(' ' , reverse(map("'$_'", splice(@$dirs, $num)))));
+    return
+	if @$dirs <= $num;
+    $dirs = [reverse(splice(@$dirs, $num))];
+    foreach my $d (@$dirs) {
+	Bivio::IO::Alert->warn($d, ': unable to delete')
+            unless system('rm', '-rf', $d) == 0;
+    }
+    return 'Removed: ' . join(' ', @$dirs);
+}
+
+sub _which_archive {
+    my($self, $root, $date) = @_;
+    my($archive) = "$root/archive/$date";
+    (my $glob = $archive) =~ s/\d\d$/??/;
+    return $archive
+	unless @{[glob($glob)]};
+    $archive = "$root/weekly/$date";
+    $self->usage_error($archive, ': already exists')
+	if -e $archive;
+    $date = $_D->from_literal_or_die($date);
+    my($dow) = $_D->english_day_of_week($date);
+    foreach my $d ($_D->english_day_of_week_list) {
+	last if $d eq $dow;
+	$date = $_D->add_days($date, -1);
+	my($x) = "$root/weekly/" . $_D->to_file_name($date);
+	return if -e $x;
+    }
+    return $archive;
 }
 
 1;
