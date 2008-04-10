@@ -143,15 +143,13 @@ sub _which_archive {
     return $archive
 	unless @{[glob($glob)]};
     $archive = "$root/weekly/$date";
-    $self->usage_error($archive, ': already exists')
-	if -e $archive;
     $date = $_D->from_literal_or_die($date);
     my($dow) = $_D->english_day_of_week($date);
     foreach my $d ($_D->english_day_of_week_list) {
-	last if $d eq $dow;
-	$date = $_D->add_days($date, -1);
 	my($x) = "$root/weekly/" . $_D->to_file_name($date);
 	return if -e $x;
+	last if $d eq $dow;
+	$date = $_D->add_days($date, -1);
     }
     return $archive;
 }
