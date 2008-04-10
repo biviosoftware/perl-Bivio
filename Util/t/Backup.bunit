@@ -7,6 +7,6 @@ foreach my $x (qw(0228 0229 0301 0302 0303)) {
 }
 [
     [trim_directories => $root, 30] => [],
-    [trim_directories => $root, 4] => "rm -rf '$root/20080228'",
-    [trim_directories => $root, 3] => "rm -rf '$root/20080228' '$root/20080229'",
+    [trim_directories => $root, 4] => "Removed: $root/20080228",
+    [trim_directories => $root, 2] => "Removed: $root/20080229 $root/20080301",
 ];
