@@ -1,9 +1,12 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
-class('Type.Date')->set_test_now('5/31/2007', req());
+my($root) = tmp_dir();
+foreach my $x (qw(0228 0229 0301 0302 0303)) {
+    write_file("$root/2008$x", '');
+}
 [
-    [qw(trim_directories 20070403 foo/20070507 bar/20070303 20070301 20070201 20070202)]
-	=> '20070202 bar/20070303',
-    [qw(trim_directories 20070403 foo/20070507 bar/20070303)] => [],
+    [trim_directories => $root, 30] => [],
+    [trim_directories => $root, 4] => "rm -rf '$root/20080228'",
+    [trim_directories => $root, 3] => "rm -rf '$root/20080228' '$root/20080229'",
 ];

@@ -24,7 +24,7 @@ usage: b-backup [options] command [args...]
 commands:
     archive_mirror_link root date [min_kb] -- tar "link" to "daily" or "archive"
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
-    trim_directories dirs-with-dates -- returns directories to trim
+    trim_directories dir max -- returns directories to trim
 EOF
 }
 
