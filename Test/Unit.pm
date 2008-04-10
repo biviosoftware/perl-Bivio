@@ -341,10 +341,10 @@ sub builtin_string_ref {
 sub builtin_tmp_dir {
     # Creates TestName.tmp in the current directory, removing it if it exists
     # already.
-    return Bivio::IO::File->mkdir_p(
-	Bivio::IO::File->rm_rf(
-	    Bivio::IO::File->absolute_path(
-		shift->builtin_class->simple_package_name . '.tmp')));
+    my($d) = Bivio::IO::File->absolute_path(
+	shift->builtin_class->simple_package_name . '.tmp');
+    system("chmod -R u+rwx $d 2>/dev/null");
+    return Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf($d));
 }
 
 sub builtin_unauth_model {
