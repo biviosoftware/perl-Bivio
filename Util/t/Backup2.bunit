@@ -1,13 +1,12 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-my($today) = '20070707';
-my($yesterday) = $today - 1;
-my($yesterday2) = $today - 2;
+my($now) = Date('20080301');
+my($days) = [map(Date()->to_file_name(Date()->add_days($now, $_)), 0 .. 40)];
 my($tmp) = 'Backup2';
 system("chmod -R a+rxw $tmp 2>/dev/null; rm -rf $tmp");
 Bivio::IO::File->mkdir_p($tmp);
-foreach my $day ($yesterday2, $yesterday, $today) {
+foreach my $day (@$days) {
     my($kb) = 1;
     foreach my $d (qw{
         x1/d1/s1
@@ -40,8 +39,17 @@ foreach my $day ($yesterday2, $yesterday, $today) {
 	    },
 	    check_return => sub {
 		my($date) = shift->get('params')->[1];
-		my($d) = $date eq $yesterday ? "$tmp/archive/$date"
-		    : "$tmp/daily/$date";
+		my($d) = $date =~ /01$/
+		    ? "$tmp/archive/$date"
+		    : grep($date eq $_,
+		        map("2008$_", qw(0302 0309 0316 0323 0330 0406)))
+		    ? "$tmp/weekly/$date"
+		    : 0;
+		unless ($d) {
+		    assert_eval("! -d '$tmp/archive/$date'");
+		    assert_eval("! -d '$tmp/weekly/$date'");
+		    return 1;
+		}
 		assert_eval("-d '$d'");
 		assert_eval("! -f '$d/x2/d1/d3.tgz'");
 		assert_eval("! -f '$d/..tgz'");
@@ -63,9 +71,7 @@ foreach my $day ($yesterday2, $yesterday, $today) {
 		return 1;
 	    },
 	} => [
-	    $yesterday => [],
-	    $yesterday2 => [],
-	    $today => [],
+	    map(($_ => []), @$days),
 	],
     ],
 ];
