@@ -129,32 +129,10 @@ sub mirror {
 }
 
 sub trim_directories {
-    my($self, @files) = shift->name_args(['String'], \@_);
-    my($files) = {map(
-	(($_ =~ /(\d{8})/)[0] || $self->usage_error($_, ': no date value'),
-	 $_),
-	@files,
-    )};
-    $self->usage_error('duplicate date in date list')
-	unless @files == keys(%$files);
-    my($prev_month) = $_D->get_previous_month(
-	$_D->date_from_parts(1, $_D->get_parts(
-	    $_D->local_today, 'month', 'year')));
-    my($trim) = {};
-    foreach my $date (
-	sort(
-	    grep($_D->compare($_D->from_literal_or_die($_), $prev_month) < 0,
-		 keys(%$files))),
-    ) {
-	push(
-	    @{$trim->{($date =~ /^(\d{6})/)[0] || die} ||= []},
-	    $date,
-	);
-    }
-    return join(' ', map(
-	$files->{$_},
-	map(splice(@{$trim->{$_}}, 1), sort(keys(%$trim))),
-    ));
+    my($self, $root, $num) = shift->name_args(['String', 'Integer'], \@_);
+    my($dirs) = [reverse(sort(glob("$root/20" . ('[0-9]' x 6))))];
+    return @$dirs <= $num ? ''
+	: ("rm -rf " . join(' ' , reverse(map("'$_'", splice(@$dirs, $num)))));
 }
 
 1;
