@@ -69,7 +69,7 @@ sub archive_mirror_link {
 	return;
     });
     $self->piped_exec("chmod -R -w $archive");
-    return;
+    return $archive;
 }
 
 sub handle_config {
