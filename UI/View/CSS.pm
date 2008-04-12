@@ -510,6 +510,7 @@ td.item {
 }
 td.amount_cell {
   text-align: right;
+  white-space: nowrap;
 }
 div.user_state .dd_link {
   Font('user_state');
