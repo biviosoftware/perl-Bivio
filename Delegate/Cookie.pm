@@ -3,6 +3,7 @@
 package Bivio::Delegate::Cookie;
 use strict;
 use Bivio::Base 'Collection.Attributes';
+use Bivio::IO::Trace;
 
 # C<Bivio::Delegate::Cookie> manages cookies arriving via HTTP and
 # returns cookies to the user. By default cookies are persistent. Temporary
@@ -25,7 +26,6 @@ Bivio::IO::Config->register(my $_CFG = {
     session_timeout_seconds => undef,
     session_update_seconds => undef,
 });
-
 
 sub DATE_TIME_FIELD {
     return 'd';
