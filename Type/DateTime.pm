@@ -328,6 +328,10 @@ sub english_day_of_week {
     return $_DAY_OF_WEEK->[(gmtime($proto->to_unix($date)))[6]];
 }
 
+sub english_day_of_week_list {
+    return @{$_DAY_OF_WEEK};
+}
+
 sub english_month3 {
     my(undef, $month) = @_;
     # Returns I<month> as a three character string with first letter caps.
