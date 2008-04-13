@@ -4,6 +4,7 @@ package Bivio::Util::Backup;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::IO::Trace;
+use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -45,9 +46,10 @@ sub archive_mirror_link {
     $_F->do_in_dir($link, sub {
         foreach my $top (glob('*')) {
 	    my($dirs) = [];
-	    open(IN, "du -k '$top' | sort -nr |")
-		|| Bivio::die->die($top, ": du failed: $!");
-	    while (defined(my $line = readline(IN))) {
+	    my($du) = IO::File->new;
+	    Bivio::die->die($top, ": du failed: $!")
+	        unless $du->open("du -k '$top' | sort -nr |");
+	    while (defined(my $line = readline($du))) {
 		my($n, $d) = split(/\s+/, $line, 2);
 		chomp($d);
 		last
@@ -56,7 +58,7 @@ sub archive_mirror_link {
 	    }
 	    # Directories with same size may come out in any order
 	    $dirs = [sort(@$dirs)];
-	    close(IN);
+	    $du->close;
 	    while (my $src = shift(@$dirs)) {
 		my($dst) = "$archive/$src.tgz";
 		$_F->mkdir_parent_only($dst, 0700);
