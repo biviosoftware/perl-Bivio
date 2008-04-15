@@ -31,4 +31,18 @@ EOF
 	get_reply_subject => 'Re: (No Subject)',
         get_from => not_die(),
     ],
+    [\(<<'EOF')] => [
+From: John Doe <john+btest_forum-admin@localhost.localdomain>
+To: private_forum@localhost.localdomain
+Subject: should bounce
+References: <a@a> <b@b>
+Date: Wed, 26 Oct 2005 04:19:47 EDT
+In-Reply-To: <c@c> <d@d>
+
+any body
+EOF
+	get_message_id => [
+	    [] => [undef],
+	],
+    ],
 ];
