@@ -648,7 +648,7 @@ sub _fmt_tag {
     my($nl) = $line =~ s/\@$// ? '' : "\n";
     if ($_MY_TAGS->{$tag}) {
 	my($res);
-	my($die) = Bivio::Die->catch(sub {
+	my($die) = Bivio::Die->catch_quietly(sub {
             $res = $_MY_TAGS->{$tag}->render_html({
 		%{$state->{args}},
 		value => $line,
