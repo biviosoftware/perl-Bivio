@@ -81,7 +81,7 @@ sub get_message_id {
     my($self) = @_;
     # Returns the Message-Id for this message.
     return $self->get_if_exists_else_put(message_id => sub {
-	(_get_field($self, 'message-id:') =~ /<([^<>]+)>/)[0];
+	scalar((_get_field($self, 'message-id:') =~ /<([^<>]+)>/)[0]);
     });
 }
 
