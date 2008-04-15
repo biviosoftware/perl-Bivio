@@ -13,6 +13,7 @@ sub get_dbi_prefix {
 
 sub internal_get_retry_sleep {
     my($self, $error, $message) = @_;
+    return 15 if $message =~ /MySQL server through socket/;
     return 5 if $message =~ /MySQL server has gone away/;
     return undef;
 }
