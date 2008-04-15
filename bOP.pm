@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.16  2008/04/15 02:31:56  moeller
+  * Bivio::Agent::HTTP::Reply
+    CLIENT_ERROR maps to HTTP error code HTTP_SERVICE_UNAVAILABLE
+
   Revision 6.15  2008/04/13 04:11:41  nagler
   * Bivio::Delegate::Cookie
     need to import Bivio::IO::Trace
