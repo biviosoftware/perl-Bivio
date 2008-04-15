@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.15  2008/04/13 04:11:41  nagler
+  * Bivio::Delegate::Cookie
+    need to import Bivio::IO::Trace
+  * Bivio::Type::DateTime
+    english_day_of_week_list
+  * Bivio::UI::View::CSS
+    amount_cell nowrap
+  * Bivio::Util::Backup
+    fix _which_archive() so does not die if archive|weekly exists
+    document what is archived
+    archive_mirror_link works on 5.6 now
+
   Revision 6.14  2008/04/10 23:02:40  nagler
   * Bivio::Test::Unit
     trim_directories: does the "rm" itself instead of outputing it
