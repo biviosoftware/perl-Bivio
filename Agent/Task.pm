@@ -467,7 +467,7 @@ sub _call_txn_resources {
 	    );
 	    Bivio::IO::Alert->warn(
 		$r, '->', $method, ': ', $die, '; switching to rollback');
-	    $method = 'rollback';
+	    $method = 'handle_rollback';
 	}
     }
     Bivio::Die->die(
