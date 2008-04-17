@@ -399,11 +399,7 @@ sub builtin_write_file {
 }
 
 sub builtin_realm_id {
-    my($proto, $name_or_email) = @_;
-    my($r) = $proto->builtin_model('RealmOwner');
-    Bivio::Die->die($name_or_email, ': not found')
-        unless $r->unauth_load_by_email_id_or_name($name_or_email);
-    return $r->get('realm_id');
+    return shift->use('ShellUtil.RealmAdmin')->to_id(@_);
 }
 
 sub builtin_remote_email {
