@@ -24,6 +24,7 @@ commands:
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
     info -- dump info on a realm
+    to_id realm -- returns the id for the realm passed as an argument
     users -- dump users in realm
 EOF
 }
@@ -141,6 +142,14 @@ sub reset_password {
         password => $self->use('Type.Password')->encrypt($password),
     });
     return;
+}
+
+sub to_id {
+    my($self, $name_or_email) = shift->name_args(['String'], \@_);
+    my($r) = $self->model('RealmOwner');
+    Bivio::Die->die($name_or_email, ': not found')
+        unless $r->unauth_load_by_email_id_or_name($name_or_email);
+    return $r->get('realm_id');
 }
 
 sub users {

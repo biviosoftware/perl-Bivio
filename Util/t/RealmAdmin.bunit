@@ -4,4 +4,5 @@ ShellUtil();
 [
     [qw(-realm general users)] => qr{^multi_role_user.*\nroot\b}s,
     [qw(-realm general users administrator)] => qr{^root\b}s,
+    [qw(to_id demo)] => unauth_model(RealmOwner => {name => 'demo'})->get('realm_id'),
 ];
