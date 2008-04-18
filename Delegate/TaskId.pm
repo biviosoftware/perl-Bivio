@@ -123,6 +123,7 @@ sub info_base {
 	    16
 	    GENERAL
 	    TEST_TRANSIENT
+	    Action.AssertClient
 	    Action.TestBackdoor
 	    Action.MailReceiveStatus
 	)],
@@ -497,6 +498,10 @@ sub info_file {
 			FORUM
 			ANYBODY
 			Action.RealmFile->access_controlled_execute
+			Model.RealmFileTreeList->execute_load_all_with_query
+                        View.File->tree_list
+			want_folder_fall_thru=1
+			next=FORUM_FILE
 		    )],
 		);
 	    },
@@ -519,7 +524,26 @@ sub info_file {
 		);
 	    },
 	),
+	[qw(
+            FORUM_TEXT_FILE_FORM
+            170
+            FORUM
+            DATA_READ&DATA_WRITE
+            Model.TextFileForm
+	    View.File->text_form
+	    next=FORUM_TEXT_FILE_FORM
+        )],
+ 	[qw(
+ 	    FORUM_FILE_TREE_LIST
+ 	    171
+ 	    FORUM
+ 	    DATA_READ
+	    Model.RealmFileTreeList->execute_load_all_with_query
+ 	    View.File->tree_list
+	    next=FORUM_FILE
+        )],
     ];
+#172-179 free
 }
 
 sub info_mail {
@@ -1066,7 +1090,7 @@ sub info_wiki {
 	    want_author=0
         )],
     ];
-#121-129 free
+#122-129 free
 }
 
 sub info_xapian {
