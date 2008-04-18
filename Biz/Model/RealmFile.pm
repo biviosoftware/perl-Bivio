@@ -461,7 +461,8 @@ sub _delete_one {
     return $self->SUPER::delete
 	if $self->get('is_folder');
     my($p) = $self->get('path');
-    if (_in_versions($p)) {
+    if ($values->{override_versioning} || _in_versions($p)) {
+	$self->SUPER::delete;
 	_txn($self, _search_delete($self, [delete => _filename($self)]));
     }
     else {

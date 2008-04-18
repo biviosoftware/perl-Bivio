@@ -1,0 +1,29 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+require 'RealmFile.PL';
+[
+    [req()] => [
+	create_with_content => [
+	    [{path => '/x1'}, \('x1')] => not_die(),
+	],
+	delete => [
+	    [{path => '/x1'}] => not_die(),
+	],
+	delete => [
+	    [{path => '/Archived/x1;1', override_is_read_only => 1}] => not_die(),
+	],
+	unsafe_load => [
+	    [{path => '/Archived/x1;1'}] => 0,
+	],
+	create_with_content => [
+	    [{path => '/x1'}, \('x1')] => not_die(),
+	],
+	delete => [
+	    [{path => '/x1', override_versioning => 1}] => not_die(),
+	],
+	unsafe_load => [
+	    [{path => '/Archived/x1;1'}] => 0,
+	],
+    ],
+];
