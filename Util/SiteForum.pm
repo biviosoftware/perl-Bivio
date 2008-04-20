@@ -16,6 +16,10 @@ sub HELP_REALM {
     return Bivio::UI::Facade->get_default->HELP_WIKI_REALM_NAME;
 }
 
+sub DEFAULT_MAKE_ADMIN_REALMS {
+    return [shift->SITE_REALM];
+}
+
 sub SITE_REALM {
     return Bivio::UI::Facade->get_default->SITE_REALM_NAME;
 }
@@ -43,12 +47,13 @@ sub init {
     });
     $req->with_realm($self->SITE_REALM, sub {
         $self->model('ForumForm', {
-	   'RealmOwner.display_name' => $_T->get_value('support_name', $req),
+	   'RealmOwner.display_name'
+	       => $_T->get_value('site_name', $req) . ' Support',
 	   'RealmOwner.name' => $self->CONTACT_REALM,
 	   'Forum.want_reply_to' => 1,
 	   'public_forum_email' => 1,
 	});
-	$self->new_other('RealmRole')->edit_categories('+feature_crm');
+	$self->new_other('CRM')->setup_realm;
 	return;
     });
     $req->with_realm($self->SITE_REALM, sub {
@@ -75,18 +80,20 @@ sub init {
 }
 
 sub make_admin {
-    my($self, $realm) = @_;
-    $self->get_request->with_realm(
-	$realm || $self->SITE_REALM,
-	sub {
-	    $self->model('ForumUserAddForm', {
-		'RealmUser.realm_id' => $self->req('auth_id'),
-		'User.user_id' => $self->req('auth_user_id'),
-		administrator => 1,
-	    });
-	    return;
-	},
-    );
+    my($self, $realm) = shift->name_args(['?RealmName'], \@_);
+    foreach my $r ($realm ? $realm : @{$self->DEFAULT_MAKE_ADMIN_REALMS}) {
+	$self->get_request->with_realm(
+	    $r,
+	    sub {
+		$self->model('ForumUserAddForm', {
+		    'RealmUser.realm_id' => $self->req('auth_id'),
+		    'User.user_id' => $self->req('auth_user_id'),
+		    administrator => 1,
+		});
+		return;
+	    },
+	);
+    }
     return;
 }
 
