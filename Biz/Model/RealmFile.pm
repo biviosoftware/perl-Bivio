@@ -272,6 +272,10 @@ sub is_empty {
     return $got_one ? 0 : 1;
 }
 
+sub is_text_content_type {
+    return shift->get_content_type(@_) =~ m{^text/} ? 1 : 0;
+}
+
 sub parse_path {
     my($proto, $path, $model) = @_;
     my($p, $e) = $_FP->from_literal(defined($path) ? $path : '/');
