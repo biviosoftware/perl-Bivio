@@ -104,7 +104,7 @@ sub delete_all {
 
 sub delete_deep {
     Bivio::IO::Alert->warn_deprecated('use unauth_delete_deep()');
-    return unauth_delete_deep(@_);
+    return shift->unauth_delete_deep(@_);
 }
 
 sub get_content {
