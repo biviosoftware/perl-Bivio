@@ -16,3 +16,14 @@ verify_content_type('text/html');
 verify_text('text/html');
 visit_uri('/btest_read/file/private/image.gif');
 verify_content_type('image/gif');
+home_page();
+login_as('root');
+visit_uri('/fourem/file');
+follow_link('Archived');
+visit_uri(my $uri = '/fourem/edit-file/realm-file-btest.txt');
+submit_form(Save => {
+    _anon => my $c = random_string(),
+});
+follow_link('realm-file-btest.txt');
+verify_text($c);
+
