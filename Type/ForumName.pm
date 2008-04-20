@@ -1,11 +1,11 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::ForumName;
 use strict;
 use Bivio::Base 'Type.Name';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_SEP) = Bivio::Type->get_instance('RealmName')->SPECIAL_SEPARATOR;
+my($_SEP) = __PACKAGE__->use('Type.RealmName')->SPECIAL_SEPARATOR;
 
 sub FIRST_CHAR_REGEXP {
     return qr{[a-z]};
