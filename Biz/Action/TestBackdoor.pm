@@ -2,17 +2,17 @@
 # $Id$
 package Bivio::Biz::Action::TestBackdoor;
 use strict;
+use Bivio::Base 'Biz.Action';
+
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-use base ('Bivio::Biz::Action');
-@Bivio::Biz::Action::TestBackdoor::ISA = ('Bivio::Biz::Action');
 
 sub execute {
     my($proto, $req) = @_;
     # Little bit o' extra sanity
     Bivio::Die->die('cannot be executed in production mode')
         unless $req->is_test;
-#TODO: Limit to a specific set of IPs or test client or basic auth?
     my($q) = $req->get('query');
+
     if (my $m = delete($q->{form_model})) {
 	$m = Bivio::Biz::Model->get_instance($m);
 	$m->execute($req, {
