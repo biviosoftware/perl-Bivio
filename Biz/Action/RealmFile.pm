@@ -30,15 +30,23 @@ sub access_controlled_load {
 	    path => $is_public ? $_FP->to_public($path) : $path,
 	    realm_id => $realm_id,
 	    is_public => $is_public,
-	    is_folder => 0,
 	});
     }
     my($e) = 'MODEL_NOT_FOUND';
     if ($rf->is_loaded) {
-	return $rf
-	    if $rf->get('is_public')
-	    || !$proto->access_is_public_only($req, $realm_id);
-	$e = 'FORBIDDEN';
+	my($aipo) = $proto->access_is_public_only($req, $realm_id);
+	if ($rf->get('is_public') || !$aipo) {
+	    return $rf
+		unless $rf->get('is_folder');
+	    if ($req->unsafe_get_nested(qw(task want_folder_fall_thru))) {
+		return undef
+		    unless $aipo;
+		$e = 'FORBIDDEN';
+	    }
+	}
+	else {
+	    $e = 'FORBIDDEN';
+	}
     }
     $rf->throw_die($e => {
 	entity => $req->get('path_info'),
@@ -95,6 +103,8 @@ sub unauth_execute {
 
 sub _execute {
     my($realm_file) = @_;
+    return
+	unless $realm_file;
     my($reply) = $realm_file->req->get('reply')
 	->set_output($realm_file->get_handle)
 	->set_output_type($realm_file->get_content_type);
