@@ -240,14 +240,14 @@ sub assert_http_method {
     $self->throw_die(INVALID_OP => {
 	message => "must be $method",
     }) unless $self->is_http_method($method);
-    return;
+    return $self;
 }
 
 sub assert_test {
     my($self) = @_;
     $self->throw_die(DIE => {message => 'may not be run on production'})
 	if $self->is_production;
-    return;
+    return $self;
 }
 
 sub can_secure {
