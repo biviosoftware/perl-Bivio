@@ -24,5 +24,9 @@ Type();
 	    'abc-def' => 0,
 	    'abc' => 1,
 	],
+	join => [
+	    abc => 'abc',
+	    [qw(abc def)] => 'abc-def',
+	],
     ],
 ];

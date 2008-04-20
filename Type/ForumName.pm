@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::ForumName;
 use strict;
-use base 'Bivio::Type::Name';
+use Bivio::Base 'Type.Name';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SEP) = Bivio::Type->get_instance('RealmName')->SPECIAL_SEPARATOR;
@@ -47,6 +47,11 @@ sub from_literal {
 sub is_top {
     my($proto, $value) = @_;
     return $proto->extract_top($value) eq $value ? 1 : 0;
+}
+
+sub join {
+    my($proto, @parts) = @_;
+    return join($_SEP, @parts);
 }
 
 1;
