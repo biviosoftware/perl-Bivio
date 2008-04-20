@@ -14,9 +14,11 @@ sub internal_xhtml_adorned {
 	xhtml_header_middle => If(
 	    ['auth_realm', 'type', '->eq_forum'],
 	    TaskMenu([
+		'FORUM_FILE',
 		'FORUM_MAIL_THREAD_ROOT_LIST',
 		'FORUM_CRM_THREAD_ROOT_LIST',
 		'SITE_ADM_USER_LIST',
+		'FORUM_WIKI_VIEW',
 	    ]),
 	),
     );
