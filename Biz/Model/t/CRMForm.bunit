@@ -25,6 +25,9 @@ my($to) = EmailArray([remote_email('crm')]);
 	    },
 	    crm_thread_status => CRMThreadStatus('NEW'),
 	},
+	'Model.RealmMail' => {
+	    from_email => email('crm_tech1'),
+	},
     }],
     empty_case({
 	action_id => -CRMThreadStatus('OPEN')->as_int,
@@ -39,6 +42,9 @@ my($to) = EmailArray([remote_email('crm')]);
 	'Model.CRMThread' => {
 	    crm_thread_status => CRMThreadStatus('CLOSED'),
 	    modified_by_user_id => realm_id('crm_tech1'),
+	},
+	'Model.RealmMail' => {
+	    from_email => remote_email('crm'),
 	},
     }],
     [{

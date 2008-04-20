@@ -76,10 +76,18 @@ sub get_field_info {
 }
 
 sub internal_format_from {
-    my($self) = @_;
-    return $_RFC->format_mailbox(
-	$self->get('realm_emails')->[0],
-	$self->req(qw(auth_user display_name)),
+    my($self, @args) = @_;
+    return _with(
+	$self,
+	sub {
+	    return $_RFC->format_mailbox(
+		$self->get('realm_emails')->[0],
+		$self->req(qw(auth_user display_name)),
+	    );
+	},
+	sub {
+	    return $self->SUPER::internal_format_from(@args);
+	},
     );
 }
 
@@ -167,9 +175,10 @@ sub validate {
 }
 
 sub _with {
-    my($self, $op) = @_;
-    return unless my $ct = $self->req->unsafe_get('Model.CRMThread');
-    return $op->($ct, $self->req('Model.CRMActionList'));
+    my($self, $true, $false) = @_;
+    return $false && $false->()
+	unless my $ct = $self->req->unsafe_get('Model.CRMThread');
+    return $true->($ct, $self->req('Model.CRMActionList'));
 }
 
 1;
