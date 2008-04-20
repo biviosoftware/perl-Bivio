@@ -121,7 +121,7 @@ sub mock_sendmail {
 	$msg->set_recipients($r, $req);
 	my($die);
 	return Bivio::IO::Alert->warn($r, ': ', $die)
-	    unless my $http = Bivio::Die->catch(
+	    unless my $http = Bivio::Die->catch_quietly(
 		sub {_uri_for_task($self, 'MAIL_RECEIVE_DISPATCH', $r)},
 		\$die,
 	    );
