@@ -2,9 +2,10 @@
 # $Id$
 package Bivio::Biz::Model::RealmFileTreeList;
 use strict;
-use base 'Bivio::Biz::Model::TreeList';
+use Bivio::Base 'Model.TreeList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RF) = __PACKAGE__->use('Model.RealmFile');
 
 sub LOAD_ALL_SIZE {
     return 5000;
@@ -91,6 +92,12 @@ sub internal_root_parent_node_id {
     return undef;
 }
 
+sub is_child_folder {
+    my($self) = @_;
+    return is_folder($self)
+	&& $self->get_list_model->get('RealmFile.path_lc') ne '/';
+}
+
 sub is_file {
     my($self) = @_;
     return $self->get_list_model->get('RealmFile.is_folder') ? 0 : 1;
@@ -101,10 +108,8 @@ sub is_folder {
     return $self->get_list_model->get('RealmFile.is_folder');
 }
 
-sub is_child_folder {
-    my($self) = @_;
-    return is_folder($self)
-	&& $self->get_list_model->get('RealmFile.path_lc') ne '/';
+sub is_text_content_type {
+    return $_RF->is_text_content_type(shift->get_list_model, 'RealmFile.');
 }
 
 1;
