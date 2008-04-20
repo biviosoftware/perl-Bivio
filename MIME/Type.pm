@@ -263,6 +263,7 @@ text/setext:stx:Setext document
 text/sgml:sgml:SGML document
 text/tab-separated-values:tsv:Tab separated values
 text/x-bivio-wiki:bwiki:bOP Wiki
+text/x-bivio-wiki-menu:bmenu:bOP Wiki
 text/x-speech:talk:Speech document
 text/x-vcard:vcf:V Card
 text/xml:xml,xsl,dtd:XML document
