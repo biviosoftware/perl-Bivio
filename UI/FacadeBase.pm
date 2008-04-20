@@ -6,6 +6,7 @@ use base 'Bivio::UI::Facade';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
+my($_WIKI_DATA_FOLDER) = __PACKAGE__->use('Type.WikiDataName')->PRIVATE_FOLDER;
 
 sub HELP_WIKI_REALM_NAME {
     return 'site-help';
@@ -366,7 +367,6 @@ sub _cfg_crm {
 		'FORUM_CRM_FORM.reply_all' => 'Answer',
 		'FORUM_CRM_FORM.reply_realm' => 'Discuss Internally',
 		FORUM_CRM_FORM => 'New Ticket',
-		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
 	    ]],
 	    [[qw(title xlink)] => [
 #TODO: Make into shortcut of widget
@@ -430,6 +430,29 @@ sub _cfg_file {
 		    );
 		},
 	    ),
+	    [FORUM_TEXT_FILE_FORM => '?/edit-file/*'],
+	],
+	Text => [
+	    [TextFileForm => [
+		content => '',
+		ok_button => 'Save',
+	    ]],
+	    [[qw(RealmFileList RealmFileTreeList)] => [
+		'RealmFile.path' => 'Name',
+		'RealmFile.modified_date_time' => 'Last Modified',
+		'Email.email', 'Owner',
+		node_collapsed => 'folder_collapsed',
+		node_expanded => 'folder_expanded',
+		leaf_node => 'leaf_file',
+		empty_list_prose => 'No files in this forum.',
+	    ]],
+	    [title => [
+		FORUM_TEXT_FILE_FORM => 'Text Edit',
+		FORUM_FILE => 'Files',
+	    ]],
+	    [acknowledgement => [
+		FORUM_TEXT_FILE_FORM => 'The file was saved.',
+	    ]],
         ],
     };
 }
@@ -999,6 +1022,7 @@ sub _cfg_wiki {
 		FORUM_WIKI_EDIT => 'Edit Wiki Page',
 		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
 		SITE_WIKI_VIEW => '',
+		forum_wiki_data => 'Files',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_WIKI_EDIT => 'Add new page',
@@ -1016,13 +1040,18 @@ sub _cfg_wiki {
 		help_wiki_header => 'Help',
 		help_wiki_open => 'Help',
 		wiki_view_byline => q{edited DateTime(['Action.WikiView', 'modified_date_time']); by MailTo(['Action.WikiView', 'author']);},
-		wiki_view_tools => q{TaskMenu([
+		wiki_view_tools => qq{TaskMenu([
                     {
 	                task_id => 'FORUM_WIKI_EDIT',
 		        path_info => [qw(Action.WikiView name)],
 		        label => 'forum_wiki_edit_page',
 		    },
 		    'FORUM_WIKI_EDIT',
+                    {
+                        task_id => 'FORUM_FILE',
+                        path_info => '$_WIKI_DATA_FOLDER',
+                        label => 'forum_wiki_data',
+                    },
 		]);},
 		wiki_view_topic => q{Simple(['Action.WikiView', 'title']);},
 	    ]],
