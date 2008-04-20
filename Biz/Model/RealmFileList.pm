@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::RealmFileList;
 use strict;
-use Bivio:Base 'Biz.ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
