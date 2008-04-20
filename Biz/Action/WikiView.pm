@@ -9,6 +9,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = __PACKAGE__->use('Type.WikiName');
 my($_FN) = __PACKAGE__->use('Type.FileName');
 my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
+my($_E) = __PACKAGE__->use('Model.Email');
+my($_RO) = __PACKAGE__->use('Model.RealmOwner');
+my($_A) = __PACKAGE__->use('IO.Alert');
 
 sub execute {
     my($proto) = shift;
@@ -53,18 +56,33 @@ sub execute_prepare_html {
 	->prepare_html($realm_id, $name, $task_id, $req);
     return $self->internal_model_not_found($req, $realm_id)
 	unless $wa;
+    my($author) = '';
+    my($author_name) = '';
+    if ($req->unsafe_get_nested(qw(task want_author))) {
+	my($e) = $_E->new($req)->unauth_load_or_die({realm_id => $uid});
+	$author = $e->get('email');
+	$author_name = $_RO->new($req)
+	    ->unauth_load_or_die({realm_id => $e->get('realm_id')})
+	    ->get('display_name');
+    }
     $self->put(
 	wiki_args => $wa,
 	title => $wa->{title},
 	modified_date_time => $dt,
-	author => $req->unsafe_get_nested(qw(task want_author))
-	    ? Bivio::Biz::Model->new($req, 'Email')
-		->unauth_load_or_die({realm_id => $uid})->get('email')
-	    : '',
+	author => $author,
+	author_email => $author,
+	author_name => $author_name,
 	exists => 1,
 	is_start_page => lc($name) eq lc($sp) ? 1 : 0,
     );
     return 0;
+}
+
+sub get {
+    my($self, @keys) = @_;
+    $_A->warn_deprecated('use author_email in place of author')
+        if grep($_ eq 'author', @keys);
+    return shift->SUPER::get(@_);
 }
 
 sub internal_model_not_found {
