@@ -531,7 +531,7 @@ sub info_file {
             DATA_READ&DATA_WRITE
             Model.TextFileForm
 	    View.File->text_form
-	    next=FORUM_TEXT_FILE_FORM
+	    next=FORUM_FILE
         )],
  	[qw(
  	    FORUM_FILE_TREE_LIST
