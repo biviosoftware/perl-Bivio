@@ -26,11 +26,19 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.17  2008/04/15 22:53:58  moeller
+  * Bivio::Mail::Incoming
+    wrap get_message_id value in scalar() so it returns undef, not ()
+  * Bivio::SQL::Connection::MySQL
+    retry after 15 seconds if mysql is not running
+  * Bivio::UI::XHTML::Widget::WikiText
+    change catch on widget to catch_quietly
+
   Revision 6.16  2008/04/15 02:31:56  moeller
   * Bivio::Agent::HTTP::Reply
     CLIENT_ERROR maps to HTTP error code HTTP_SERVICE_UNAVAILABLE
