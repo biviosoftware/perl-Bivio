@@ -1594,7 +1594,7 @@ sub parse_trace_output {
     return join(
 	"\n",
         map({
-	    my($s, $p) = $_ =~ /trace_sql:\d+ (.+); params.*\[(.*)\]/;
+	    my($s, $p) = $_ =~ /trace_sql:\d+ (.+;) params.*\[(.*)\]/;
 	    if ($p) {
 		$p = [split(/,/, $p)];
 		$s =~ s{\?}{
