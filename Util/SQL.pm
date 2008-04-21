@@ -1589,6 +1589,26 @@ EOF
     return;
 }
 
+sub parse_trace_output {
+    my($self) = @_;
+    return join(
+	"\n",
+        map({
+	    my($s, $p) = $_ =~ /trace_sql:\d+ (.+); params.*\[(.*)\]/;
+	    if ($p) {
+		$p = [split(/,/, $p)];
+		$s =~ s{\?}{
+                    my($x) = shift(@$p);
+		    $x = "'$x'"
+			if $x =~ /\D/;
+		    $x;
+                }exg;
+	    }
+	    $s ? $s : ();
+	} split(/\n/, ${$self->read_input})),
+    );
+}
+
 sub realm_role_config {
     my($self) = @_;
     # Returns the realm role configuration.
