@@ -580,16 +580,15 @@ sub _unwind_duplicates {
 		$c->{$k} = $found->[0];
 		next;
 	    }
-	    # If all values are identical, we leave #NNN values and
-	    # copy a simple one.
+	    # If all values are identical, only save one
 	    if (grep(Bivio::IO::Ref->nested_equals($found->[0], $_), @$found)
 		== @$found) {
 		_trace('all duplicates ', $k) if $_TRACE;
 		$c->{$k} = {%{$found->[0]}, label => $k};
+		next;
 	    }
-	    else {
-		delete($c->{$k});
-	    }
+	    # Different values, so put in # nams
+	    delete($c->{$k});
 	    my($i) = 0;
 	    foreach my $v (@$found) {
 		$c->{$v->{label} = $k . '#' . $i++} = $v;

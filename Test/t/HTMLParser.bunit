@@ -85,8 +85,6 @@ options({
 	'service-price' => [
 	    ['Forms', 'Recalculate Price'] => undef,
 	    ['Forms', 'Recalculate Price', 'submit', 'Recalculate Price'] => undef,
-	    ['Forms', 'Recalculate Price', 'submit', 'Recalculate Price#0'] => undef,
-	    ['Forms', 'Recalculate Price', 'submit', 'Recalculate Price#1'] => undef,
 	],
     ], [
  	'ballot-pool-membership' => [
