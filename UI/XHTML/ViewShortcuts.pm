@@ -264,33 +264,34 @@ sub vs_list_form {
     my($f) = Bivio::Biz::Model->get_instance($form);
     my($l) = Bivio::Biz::Model->get_instance($f->get_list_class);
     my($list) = [];
-    my($simple) = [map({
-#TODO: Need to enapsulate this!
-	my($d) = $_;
-	if (ref($d) eq 'HASH' || !ref($d)
-	    && $f->has_fields($d) && $f->get_field_info($d, 'in_list')
-	) {
-	    push(@$list, $d);
-	    $d = undef;
-	}
-	$d ? $d : ();
-    } @$fields)];
-    my($button) = pop(@$simple)
-	if ($simple->[$#$simple] || '') =~ /^\*/;
     return $proto->vs_simple_form($form => [
-	@$simple,
-	Table($form => [
-	    map({
+	map({
 #TODO: Need to enapsulate this!
-		my($x) = !ref($_) ? {field => $_} : $_;
-		$x->{column_class} ||= 'field';
-		# So checkboxes don't have labels in the fields, just hdr
-		$x->{label} = ''
-		    unless exists($x->{label});
-		$x;
-	    } @$list),
-	], $proto->vs_table_attrs($form, list => $table_attrs),),
-	$button ? $button : (),
+	    my($d) = $_;
+	    my($t);
+	    if (defined($d) && (
+		ref($d) eq 'HASH' || !ref($d)
+	        && $f->has_fields($d) && $f->get_field_info($d, 'in_list'))
+	    ) {
+		push(@$list, $d);
+		$d = undef;
+	    }
+	    elsif (@$list) {
+		$t = Table($form => [
+		    map({
+#TODO: Need to enapsulate this!
+			my($x) = !ref($_) ? {field => $_} : $_;
+			$x->{column_class} ||= 'field';
+			# So checkboxes don't have labels in the fields, just hdr
+			$x->{label} = ''
+			    unless exists($x->{label});
+			$x;
+		    } @$list),
+		], $proto->vs_table_attrs($form, list => $table_attrs));
+		$list = [];
+	    }
+	    ($t ? $t : (), $d ? $d : ());
+	} @$fields, undef),
     ]);
 }
 
