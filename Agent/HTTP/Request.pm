@@ -2,13 +2,13 @@
 # $Id$
 package Bivio::Agent::HTTP::Request;
 use strict;
+use base 'Bivio::Agent::Request';
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::HTTP::Form;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Support;
-use Bivio::Base 'Bivio::Agent::Request';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::HTML;
