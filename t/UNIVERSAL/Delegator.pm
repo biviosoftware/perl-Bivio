@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::t::UNIVERSAL::Delegator;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio::t::UNIVERSAL::DelegatorSuper';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = __PACKAGE__->use('Bivio::t::UNIVERSAL::Delegate');
@@ -16,9 +16,3 @@ sub echo {
 }
 
 1;
-
-
-
-
-
-

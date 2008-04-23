@@ -19,4 +19,10 @@ sub echo {
     );
 }
 
+sub simple_package_name {
+    my($delegator) = shift->delegated_args(@_);
+    return $delegator->call_super(
+	$delegator->delegated_package, 'simple_package_name');
+}
+
 1;

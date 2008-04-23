@@ -8,6 +8,12 @@ options({
     },
 });
 [
+    [0 => 'Delegate'] => [
+	simple_package_name => 'Delegate',
+    ],
+    [0 => 'Delegator'] => [
+	simple_package_name => 'Delegator',
+    ],
     map((
 	$_ => [
 	    echo => [

@@ -12,14 +12,17 @@ sub as_string {
 }
 
 sub call_super {
-    my($proto, $method, $args) = @_;
-    my($sub) = $proto->super_for_method($method);
-    return $sub->($proto, @$args);
+    my($proto) = shift;
+    my($package, $method, $args) = $_[0] =~ /^[a-z]\w*$/
+	? ($proto->package_name, @_)
+	: @_;
+    my($sub) = $package->super_for_method($method);
+    return $sub->($proto, $args ? @$args : ());
 }
 
 sub call_super_before {
     my($proto, $args, $op) = @_;
-    my($sub) = $proto->super_for_method($proto->my_caller);
+    my($sub) = (caller(0))[0]->super_for_method($proto->my_caller);
     my($super) = [$sub->($proto, @$args)];
     my($my) = $op->($proto, $args, $super) || $super;
     return wantarray ? @$my : $my->[0];
@@ -31,6 +34,17 @@ sub clone {
 	[map(($_R ||= $self->use('IO.Ref'))->nested_copy($_), @$self)],
 	ref($self),
     );
+}
+
+sub code_ref_for_subroutine {
+    my($proto, $name) = @_;
+    $name = $proto->package_name . '::' . $name;
+    do {
+	no strict 'refs';
+	return
+	    unless defined(&$name);
+    };
+    return \&$name;
 }
 
 sub delegate_method {
@@ -45,6 +59,11 @@ sub delegated_args {
 	unless ref($_[0]) && $_[0] == \&delegate_method;
     shift;
     return (@_);
+}
+
+sub delegated_package {
+    # Call stack is: <delegated method>, delegate_method(), <delegating method>
+    return (caller(2))[0];
 }
 
 sub die {
@@ -298,14 +317,11 @@ sub super_for_method {
     my($proto, $method) = @_;
     $method ||= $proto->my_caller;
     foreach my $a (@{$proto->inheritance_ancestors}) {
-	my($sub) = $a . '::' . $method;
-	do {
-	    no strict 'refs';
-	    next unless defined(&$sub);
-	};
-	return (\&$sub, $a);
+	if (my $sub = $a->code_ref_for_subroutine($method)) {
+	    return ($sub, $a);
+	}
     }
-    Bivio::Die->die($method, ': not implemented by SUPER');
+    Bivio::Die->die($method, ': not implemented by SUPER of ', $proto->package_name);
     # DOES NOT RETURN
 }
 
