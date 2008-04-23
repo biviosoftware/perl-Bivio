@@ -26,11 +26,56 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.18  2008/04/21 19:08:30  dobbs
+  * Bivio::Agent::Request
+    assert_* returns $self
+  * Bivio::Agent::Task
+    fix handle_rollback call in _call_txn_resources
+  * Bivio::Biz::Action::RealmFile
+    fall through on folder if want_folder_fall_thru
+  * Bivio::Biz::Action::TestBackdoor
+    use Bivio::Base
+  * Bivio::Biz::Action::WikiView
+    added author_name support
+  * Bivio::Biz::Model::CRMForm
+    use email of user when creating a new CRMThread
+  * Bivio::Biz::Model::RealmFile
+    added override_versioning
+    don't call methods without $sefl->
+    added is_text_content_type()
+  * Bivio::Biz::Model::RealmFileList
+    use BIvio::Base
+    fpc
+  * Bivio::Biz::Model::RealmFileTreeList
+    is_text_content_type
+  * Bivio::Delegate::TaskId
+    TEST_BACKDOOR: Action.AssertClient
+    FORUM_TEXT_FILE_FORM
+  * Bivio::MIME::Type
+    bmenu
+  * Bivio::PetShop::Facade::PetShop
+    define support_name
+  * Bivio::PetShop::View::Base
+    added FORUM_FILE and FORUM_WIKI_VIEW
+  * Bivio::Test::Unit
+    builtin_realm_id calls RealmAdmin->to_id
+  * Bivio::Test::Util
+    catch quietly on error
+  * Bivio::UI::FacadeBase
+    support for text file forms
+  * Bivio::Util::RealmAdmin
+    added to_id()
+  * Bivio::Util::SQL
+    added parse_trace_output
+    parse_trace_output includes trailing ;
+  * Bivio::Util::SiteForum
+    create service-tac forum
+
   Revision 6.17  2008/04/15 22:53:58  moeller
   * Bivio::Mail::Incoming
     wrap get_message_id value in scalar() so it returns undef, not ()
