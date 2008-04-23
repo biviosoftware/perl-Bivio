@@ -115,16 +115,15 @@ sub internal_initialize {
 }
 
 sub internal_pre_execute {
-    my($self) = shift;
-    $self->SUPER::internal_pre_execute(@_);
-    if (my $m = $self->req->unsafe_get('Model.RealmMail')) {
-	my($trid) = $m->get('thread_root_id');
-	$self->new_other('CRMThread')->load({thread_root_id => $trid});
-	$self->internal_put_field($_TAG_ID => $trid);
-	$self->new_other('CRMActionList')->load_all;
-    }
-    $self->delegate_method($_TTF, @_);
-    return;
+    return shift->call_super_before(\@_, sub {
+	my($self) = @_;
+	if (my $trid = $self->get('RealmMail.thread_root_id')) {
+	    $self->new_other('CRMThread')->load({thread_root_id => $trid});
+	    $self->internal_put_field($_TAG_ID => $trid);
+	    $self->new_other('CRMActionList')->load_all;
+	}
+	return;
+    });
 }
 
 sub show_action {

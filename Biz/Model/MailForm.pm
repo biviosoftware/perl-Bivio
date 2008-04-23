@@ -140,9 +140,18 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
+		name => 'RealmMail.thread_root_id',
+		constraint => 'NONE',
+	    },
+	    {
 		name => 'realm_emails',
 		type => 'Array',
 		constraint => 'NONE',
+	    },
+	    {
+		name => 'is_new',
+		type => 'Boolean',
+		constraint => 'NOT_NULL',
 	    },
 	],
     });
@@ -150,17 +159,15 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    $self->internal_put_field(
-	'RealmMail.realm_file_id' =>
-	    $self->use('Type.FormMode')->setup_by_list_this(
-		$self->new_other('RealmMailList'),
-		'RealmMail',
-	    )->eq_create ? undef
-	    : $self->req(qw(Model.RealmMail realm_file_id)),
-    );
-    $self->internal_put_field(
-	realm_emails => $self->get_realm_emails,
-    );
+    my($rml) = $self->new_other('RealmMailList');
+    my($edit) = $self->use('Type.FormMode')
+	->setup_by_list_this($rml, 'RealmMail')
+	->eq_edit;
+    $self->internal_put_field(is_new => $edit ? 0 : 1);
+    foreach my $f (qw(RealmMail.realm_file_id RealmMail.thread_root_id)) {
+	$self->internal_put_field($f => $edit && $rml->get($f));
+    }
+    $self->internal_put_field(realm_emails => $self->get_realm_emails);
     return shift->SUPER::internal_pre_execute(@_);
 }
 
