@@ -47,7 +47,10 @@ sub execute_ok {
 
 sub get_field_info {
     my($delegator, $field, $which) = shift->delegated_args(@_);
-    my($info) = $delegator->call_super(get_field_info => [$field]);
+    my($info) = $delegator->call_super(
+	$delegator->delegated_package,
+	get_field_info => [$field],
+    );
     if ($info->{type}->isa($_TST)) {
 	my($d) = _defs($delegator, $info->{name});
 	$info = {
@@ -81,7 +84,12 @@ sub internal_initialize {
 	    }),
 	},
 	$info || $delegator->merge_initialize_info(
-	    $delegator->call_super(internal_initialize => []), {version => 1}),
+	    $delegator->call_super(
+		$delegator->delegated_package,
+		internal_initialize => [],
+	    ),
+	    {version => 1},
+	),
     );
 }
 
@@ -112,7 +120,9 @@ sub tuple_tag_slot_has_choices {
 
 sub tuple_tag_slot_label {
     my($delegator, $field) = shift->delegated_args(@_);
-    return _field_def_value($delegator, $field, 'TupleSlotDef.label') || '';
+    (my $x = _field_def_value($delegator, $field, 'TupleSlotDef.label') || '')
+	=~ s/_/ /g;
+    return $x;
 }
 
 sub _defs {
