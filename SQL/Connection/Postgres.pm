@@ -306,6 +306,7 @@ sub _fixup_outer_join {
     $from_where =~ s/\bFROMPOSTGRES-FIXME\b/FROM/sg;
     $from_where =~ s/,\s*(?=\sWHERE\s)//is;
     $from_where =~ s/\s+AND\s+OFFSET/ OFFSET/is;
+    $from_where =~ s/\s+WHERE\s+OFFSET/ OFFSET/is;
     # Really should have an SQL lexicon...
     $from_where =~ s/\s(?:WHERE|AND)(?=\s*$|\s*\)|\s*(?:HAVING|GROUP|ORDER|UNION|INTERSECT)\b)//is;
     return $prefix . $from_where;
