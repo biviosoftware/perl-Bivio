@@ -8,26 +8,42 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CF) = __PACKAGE__->use('Model.CRMForm')->get_instance;
 
+sub internal_crm_send_form_buttons {
+    return '*ok_button update_only cancel_button';
+}
+
+sub internal_crm_send_form_extra_fields {
+    my($self) = @_;
+    my($form) = $self->internal_name . 'Form';
+    return [
+	["$form.action_id", {
+	    wf_class => 'Select',
+	    list_display_field => 'name',
+	    choices => ['->req', 'Model.CRMActionList'],
+	    list_id_field => 'id',
+	    row_control => ["Model.$form", '->show_action'],
+	}],
+	@{$_CF->tuple_tag_map_slots('b_ticket.CRMThread.thread_root_id', sub {
+	    my($field) = @_;
+	    return [TupleTagSlotLabel($field), TupleTagSlotField($field)];
+	})},
+    ];
+}
+
 sub internal_reply_list {
     return qw(all realm);
 }
 
 sub send_form {
-    return shift->SUPER::send_form(
+    my($self, $extra_fields, $buttons) = @_;
+    $extra_fields ||= $self->internal_crm_send_form_extra_fields;
+    $buttons ||= $self->internal_crm_send_form_buttons;
+    return $self->SUPER::send_form(
 	[
-	    ['CRMForm.action_id', {
-		wf_class => 'Select',
-		list_display_field => 'name',
-		choices => ['->req', 'Model.CRMActionList'],
-		list_id_field => 'id',
-		row_control => ['Model.CRMForm', '->show_action'],
-	    }],
-	    @{$_CF->tuple_tag_map_slots('b_ticket.CRMThread.thread_root_id', sub {
-		my($field) = @_;
-	        return [TupleTagSlotLabel($field), TupleTagSlotField($field)];
-	    })},
+	    $buttons,
+	    @$extra_fields
 	],
-	'*ok_button update_only cancel_button',
+	$buttons,
     );
 }
 
