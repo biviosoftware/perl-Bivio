@@ -108,8 +108,7 @@ sub send_form {
     return $self->internal_body(
 	DIV_msg_compose(Join([
 	    vs_simple_form(_name($self, 'XxForm') => [
-		@{$extra_fields || []},
-		$buttons,
+		@{$extra_fields || [$buttons]},
 		map([_name($self, "XxForm.$_"), {
 		    cols => $cols,
 		    rows => 1,
