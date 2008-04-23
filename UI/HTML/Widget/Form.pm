@@ -112,7 +112,7 @@ sub initialize {
 	$self->put(form_class => $class);
     }
     elsif ($class) {
-	$model = [$class];
+	$model = ['->req', $class];
 	$self->put(form_model => $model);
     }
     else {

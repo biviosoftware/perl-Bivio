@@ -88,7 +88,7 @@ sub initialize {
     my($label, $field) = $self->get('label', 'field');
     my($model) = $self->ancestral_get('form_model');
     $self->put(
-	control => [['->get_request'], $model, '->get_field_error', $field],
+	control => [$model, '->get_field_error', $field],
         control_on_value => $_VS->vs_join([
 	    $_VS->vs_image('error_triangle', 'error here', {
 	       align => 'SW',
