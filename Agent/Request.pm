@@ -1066,6 +1066,11 @@ sub with_realm {
     return _with(realm => @_);
 }
 
+sub with_realm_and_user {
+    my($self, $realm, $user, $op) = @_;
+    return $self->with_realm($realm, sub {$self->with_user($user, $op)});
+}
+
 sub with_user {
     # Calls set_user(user) and then op.   Restores prior user, even on exception.
     # Returns what I<op> returns (in array context always).
