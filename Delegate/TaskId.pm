@@ -979,6 +979,7 @@ sub info_user_auth {
 	    next=USER_CREATE_DONE
             cancel=SITE_ROOT
 	    reset_task=USER_PASSWORD_RESET
+	    user_exists_task=GENERAL_USER_PASSWORD_QUERY
 	    reset_next_task=GENERAL_USER_PASSWORD_QUERY_MAIL
 	)],
 	[qw(
