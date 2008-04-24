@@ -272,6 +272,12 @@ sub is_empty {
     return $got_one ? 0 : 1;
 }
 
+sub is_searchable {
+    my($self) = @_;
+    return $self->get('is_folder') || _in_versions($self->get('path'))
+	? 0 : 1;
+}
+
 sub is_text_content_type {
     return shift->get_content_type(@_) =~ m{^text/} ? 1 : 0;
 }
