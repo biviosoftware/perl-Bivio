@@ -302,11 +302,7 @@ sub package_version {
 }
 
 sub req {
-    my($proto) = shift;
-    my($req) = ref($proto) && $proto->can('get_request') && $proto->get_request
-	|| Bivio::Agent::Request->get_current
-	|| Bivio::Die->die('no request');
-    return @_ ? $req->get_nested(@_) : $req
+    return _ureq(get_nested => @_);
 }
 
 sub simple_package_name {
@@ -325,9 +321,21 @@ sub super_for_method {
     # DOES NOT RETURN
 }
 
+sub ureq {
+    return _ureq(unsafe_get_nested => @_);
+}
+
 sub use {
     shift;
     return Bivio::IO::ClassLoader->map_require(@_);
+}
+
+sub _ureq {
+    my($method, $proto, @args) = @_;
+    my($req) = ref($proto) && $proto->can('get_request') && $proto->get_request
+	|| Bivio::Agent::Request->get_current
+	|| Bivio::Die->die('no request');
+    return @args ? $req->$method(@args) : $req
 }
 
 1;
