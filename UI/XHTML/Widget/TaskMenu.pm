@@ -73,22 +73,24 @@ sub initialize {
 		    $cfg->{uri}
 	        ) : $self->die(
 		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
+	    my($class) = $w->unsafe_get('class');
 	    $w->put(
 		_task_menu_cfg => $cfg,
 		_cfg($cfg, 'control'),
-		class => [sub {
-		    my($source) = @_;
-		    return join(' ',
-			 $need_sep ? 'want_sep' : (),
-			 (ref($selected) eq 'CODE'
+		class => Join([
+		    defined($class) ? $class : (),
+		    [sub {$need_sep ? 'want_sep' : ()}],
+		    [sub {
+			 my($source) = @_;
+			 return (ref($selected) eq 'CODE'
 			     ? $selected->($w, $source)
 			     : $cfg->{task_id} && ref($selected)
 			     ? $cfg->{task_id} == $selected
 			     : $selected
-				 eq $w->render_simple_attr(value => $source)
+			     eq $w->render_simple_attr(value => $source)
 			 ) ? 'selected' : (),
-		    );
-		}],
+		    }],
+		], {join_separator => ' '}),
 	    );
 	    $self->initialize_value($cfg->{label}, $w);
 	} @{$self->get('task_map')})],
