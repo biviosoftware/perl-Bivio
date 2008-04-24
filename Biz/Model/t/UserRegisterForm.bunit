@@ -1,0 +1,25 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel();
+req()->initialize_fully('USER_CREATE');
+my($new) = email(random_string());
+my($exists) = ShellUtil_SQL()->DEMO_EMAIL();
+[
+    [{
+        'Email.email' => $new
+    }] => [{
+	'Model.Email' => {
+	    email => $new,
+	},
+    }],
+    [{
+        'Email.email' => $exists,
+    }] => [{
+	actual_return => {
+	    query => {
+		ack => 'user_exists',
+		email => $exists,
+	    },
+	},
+    }],
+];
