@@ -709,9 +709,9 @@ sub process {
 	# should blow up.
 
 	$self->internal_pre_execute('execute_ok');
-	my($res) = _call_execute_ok($self, $self->OK_BUTTON_NAME);
-	$self->internal_post_execute('execute_ok');
-	return $res if $res;
+	my($res) = _call_execute_ok($self, 'execute_ok', $self->OK_BUTTON_NAME);
+	return $res
+	    if $res;
 	return 0 unless $self->in_error;
 	if ($_TRACE) {
 	    my($msg) = '';
@@ -910,23 +910,21 @@ sub validate_and_execute_ok {
     # to the user as possible.
     $self->internal_pre_execute('validate_and_execute_ok');
     $self->validate($form_button);
+    my($res);
     if ($self->in_error) {
 	_put_file_field_reset_errors($self);
     }
     else {
 	# Catch errors and rethrow unless we can process
-	my($res) = _call_execute_ok($self, $form_button);
+	my($res) = _call_execute_ok(
+	    $self, 'validate_and_execute_ok', $form_button);
 	Bivio::Biz::Action->get_instance('Acknowledgement')->save_label(
 	    undef,
 	    $req,
 	    ref($res) eq 'HASH' && exists($res->{query})
 		? ($res->{query} ||= {}) : (),
 	) unless $self->in_error || $fields->{stay_on_page};
-
-	# If execute_ok returns true, just get out.  The task will
-	# stop executing so no need to test errors.
 	return $res if $res;
-
 	if ($self->in_error) {
 	    _put_file_field_reset_errors($self);
 	}
@@ -936,12 +934,11 @@ sub validate_and_execute_ok {
 	    return 0;
 	}
     }
-    $self->internal_post_execute('validate_and_execute_ok');
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
 	if $self->in_error;
     unless ($fields->{stay_on_page}) {
 	Bivio::Agent::Task->rollback($req);
-	if (my $t  = $req->get('task')->unsafe_get('form_error_task')) {
+	if (my $t = $req->get('task')->unsafe_get('form_error_task')) {
 	    $self->put_on_request(1);
 	    return {
 		method => 'server_redirect',
@@ -1016,15 +1013,12 @@ sub _apply_type_error {
 
 sub _call_execute {
     my($self, $method) = (shift, shift);
-    # Calls internal_pre_execute, $method($args, ...), then internal_post_execute.
     $self->internal_pre_execute($method);
-    my($res) = $self->$method(@_);
-    $self->internal_post_execute($method);
-    return $res;
+    return _post_execute($self, $method, $self->$method(@_));
 }
 
 sub _call_execute_ok {
-    my($self, $form_button) = @_;
+    my($self, $method, $form_button) = @_;
     # Calls "execute_ok" without wrappers, and catches any DB_CONSTRAINT
     # violations.
     my($res);
@@ -1038,11 +1032,11 @@ sub _call_execute_ok {
 	    _apply_type_error($self, $die);
 	}
 	else {
-	    $die->throw_die();
+	    $die->throw_die;
 	    # DOES NOT RETURN
 	}
     }
-    return $res;
+    return _post_execute($self, $method, $res);
 }
 
 sub _do_model_properties {
@@ -1291,6 +1285,12 @@ sub _parse_version {
         content => $self->get_request->get_content
     });
     return;
+}
+
+sub _post_execute {
+    my($self, $method, $res) = @_;
+    my($r) = $self->internal_post_execute($method, $res);
+    return $r || $res;
 }
 
 sub _put_file_field_reset_errors {
