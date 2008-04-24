@@ -902,6 +902,7 @@ sub _cfg_user_auth {
 		ok_button => 'Send',
 	    ]],
 	    [acknowledgement => [
+		user_exists => 'Your email is already in the database.  Please use the form below to reset your password.',
 		GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to reset your password.},
 		USER_PASSWORD_RESET => q{Your password has been reset.  Please choose a new one.},
 		USER_PASSWORD => q{Your password has been changed.},
