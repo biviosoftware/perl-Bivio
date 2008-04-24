@@ -20,10 +20,11 @@ sub handle_register {
 sub render_html {
     my($proto, $args) = @_;
     my($class) =  delete($args->{attrs}->{class}) || 'bmenu';
-    Bivio::Die->die($args->{attrs}, ': only accepts class attribute')
-        if %{$args->{attrs}};
-    my($path) = $_WDN->to_absolute($args->{value}, $args->{is_public})
-	. $proto->SUFFIX;
+    my($value) =  delete($args->{attrs}->{value}) || $args->{value};
+    Bivio::Die->die(
+	$args->{attrs}, ': only accepts "class" and "value" attributes',
+    ) if %{$args->{attrs}};
+    my($path) = $_WDN->to_absolute($value, $args->{is_public}) . $proto->SUFFIX;
     my($csv) = $proto->use('ShellUtil.CSV')->parse_records(
 	Bivio::Biz::Model->new($args->{req}, 'RealmFile')->unauth_load_or_die({
 	    path => $path,
