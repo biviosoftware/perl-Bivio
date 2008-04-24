@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::RealmUserAddForm;
 use strict;
-use base 'Bivio::Biz::Model::UserRegisterForm';
+use Bivio::Base 'Model.UserRegisterForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
