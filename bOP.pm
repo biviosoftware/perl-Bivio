@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,36 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.19  2008/04/23 02:09:40  nagler
+  * Bivio::Biz::FormModel
+    added unauth_create_or_update_model_properties
+  * Bivio::Biz::Model::CRMForm
+    cleaned up the way edit mode was being detected
+  * Bivio::Biz::Model::MailForm
+    cleaned up the way edit mode was being detected
+  * Bivio::Biz::Model::RealmMailList
+    added RealmFile.user_id
+  * Bivio::Biz::Model::TupleTagForm
+    call_super in delegation is tricky.  Need to specify package relative
+    to super
+  * Bivio::Test::HTMLParser::Forms
+    identical fields are no longer replicated as <field>#1, ...
+  * Bivio::UI::View::CRM
+    hooks for subcalsses to override extra fields
+  * Bivio::UI::View::Mail
+    buttons are extra fields by default
+  * Bivio::UI::XHTML::ViewShortcuts
+    vs_list_form now inlines table of list fields whereever need be
+  * Bivio::UNIVERSAL
+    call_super and call_super_before didn't work if called in subclasses.
+    See the tests as to why
+  * Bivio::t::UNIVERSAL::Delegate
+    call_super and call_super_before didn't work if called in subclasses.
+    See the tests as to why
+  * Bivio::t::UNIVERSAL::Delegator
+    call_super and call_super_before didn't work if called in subclasses.
+    See the tests as to why
+
   Revision 6.18  2008/04/21 19:08:30  dobbs
   * Bivio::Agent::Request
     assert_* returns $self
