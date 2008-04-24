@@ -937,10 +937,6 @@ sub run_daemon {
 
 sub set_realm_and_user {
     my($self, $realm, $user) = @_;
-    # Sets the I<realm> and I<user> on L<get_request|"get_request">.
-    # If I<realm> is C<undef>, sets to General realm.
-    # If I<user> is C<undef> and not general realm, calls
-    # L<set_user_to_any_online_admin|"set_user_to_any_online_admin">.
     $realm = Bivio::Auth::Realm->get_general()
 	unless defined($realm);
     my($req) = $self->get_request;
