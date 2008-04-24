@@ -4,11 +4,12 @@ WikiText();
 my($t1) = class('Type.WikiDataName')->to_absolute('T1.bmenu');
 model('RealmFile')->delete({path => $t1});
 model('RealmFile')->create_with_content({path => $t1}, \(<<'EOF'));
-Label,Link
+Label,Link,Class
 Index
 Home,/
 Login,/pub/login
 MyPage,^MyPage
+Document,^Document,pdf
 EOF
 [
     [{
@@ -20,5 +21,5 @@ EOF
        "/" Home
        "/pub/login" Login
        "/fourem/wiki/MyPage" MyPage
-    ))]}},
+    )).qq(.*class="pdf[^"]*".*"/fourem/wiki/Document".*Document)]}},
 ];

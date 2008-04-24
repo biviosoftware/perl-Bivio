@@ -52,6 +52,8 @@ sub _parse_row {
     return (
 	$row->{Label},
 	$args->{proto}->internal_format_uri($row->{Link}, $args),
+	(defined($row->{Class}) && length($row->{Class}))
+	    ? $row->{Class} : ()
     );
 }
 
