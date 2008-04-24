@@ -24,25 +24,12 @@ sub execute_auth_user {
 }
 
 sub get_any_online_admin {
-    my($self) = @_;
-    # Returns I<Model.RealmOwner> for any online Administrator for
-    # I<Request.auth_realm>.  Dies if none (shouldn't be the case).
-    $self->iterate_start('user_id', {});
-    my($owner) = $self->new_other('RealmOwner');
-
-    while ($self->iterate_next_and_load) {
-        next unless $self->get('role')->is_admin;
-        next if $owner->unauth_load_or_die({
-            realm_id => $self->get('user_id'),
-        })->is_offline_user;
-        $self->iterate_end;
-	return $owner;
-    }
-    $self->throw_die('DIE', {
-	message => 'no admins found',
-	entity => $self->get_request->unsafe_get('auth_realm'),
-    });
-    # DOES NOT RETURN
+    my($self) = shift;
+    return $self->unsafe_get_any_online_admin(@_)
+	|| $self->throw_die('DIE', {
+	    message => 'no admins found',
+	    entity => $self->ureq('auth_realm'),
+	});
 }
 
 sub internal_initialize {
@@ -108,6 +95,27 @@ sub unauth_delete_user {
     );
     $self->new_other('RealmOwner')->unauth_delete_realm({realm_id => $uid});
     return;
+}
+
+sub unsafe_get_any_online_admin {
+    my($self) = @_;
+    my($owner);
+    $self->do_iterate(
+	sub {
+	    my($it) = @_;
+	    return 1
+		unless $it->get('role')->is_admin;
+	    $owner = $it->new_other('RealmOwner');
+	    return 0
+		unless $owner->unauth_load_or_die({
+		    realm_id => $self->get('user_id'),
+		})->is_offline_user;
+	    $owner = undef;
+	    return 1;
+	},
+	'user_id',
+    );
+    return $owner;
 }
 
 sub update_role {

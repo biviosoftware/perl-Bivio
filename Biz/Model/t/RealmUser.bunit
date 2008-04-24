@@ -33,10 +33,29 @@ PropertyModel();
 	    return [];
 	} => not_die(),
     ],
-    sub {
-	assert_equals(
+    inline_case(sub {
+        assert_equals(
 	    0,
-	    model('RealmOwner')->unauth_load({name => 'realm_user_bunit'}));
-	return 1;
-    } => 1,
+	    unauth_model('RealmOwner')->unauth_load({name => 'realm_user_bunit'}),
+	);
+	return;
+    }),
+    {
+	method => 'get_any_online_admin',
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    req()->set_realm($params->[0]);
+	    return [];
+	},
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [$actual->[0]->get('name')];
+	},
+    } => [
+	general => 'root',
+	fourem => 'root',
+	demo => 'demo',
+	user => DIE(),
+	club => DIE(),
+    ],
 ];
