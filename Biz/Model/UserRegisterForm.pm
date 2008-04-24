@@ -1,11 +1,16 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserRegisterForm;
 use strict;
-use base 'Bivio::Biz::Model::UserCreateForm';
+use Bivio::Base 'Model.UserCreateForm';
 use Bivio::Biz::Random;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R) = __PACKAGE__->use('Biz.Random');
+my($_UPQ) = __PACKAGE__->use('Action.UserPasswordQuery');
+my($_A) = __PACKAGE__->use('Action.Acknowledgement');
+my($_UPQF) = __PACKAGE__->use('Model.UserPasswordQueryForm');
+my($_UNKNOWN) = __PACKAGE__->use('Bivio.TypeError')->UNKNOWN;
 
 sub execute_ok {
     my($self, ) = @_;
@@ -15,14 +20,13 @@ sub execute_ok {
     return
 	if $self->unsafe_get('password_ok');
     $self->internal_put_field(
-	uri => Bivio::Biz::Action->get_instance('UserPasswordQuery')
-	    ->format_uri($req),
+	uri => $_UPQ->format_uri($req),
     );
     $self->put_on_request(1);
     return {
 	method => 'server_redirect',
 	task_id => 'next',
-	query => '',
+	query => undef,
     };
 }
 
@@ -35,9 +39,8 @@ sub internal_create_models {
 	    $self->get_instance('User')->get_field_type('last_name')->get_width,
 	 ),
     ) unless $self->unsafe_get('RealmOwner.display_name');
-    $self->internal_put_field(
-	'RealmOwner.password' => Bivio::Biz::Random->password,
-    ) unless $self->unsafe_get('RealmOwner.password')
+    $self->internal_put_field('RealmOwner.password' => $_R->password)
+	unless $self->unsafe_get('RealmOwner.password')
 	&& $self->unsafe_get('password_ok');
     return $self->SUPER::internal_create_models(@_);
 }
@@ -45,7 +48,9 @@ sub internal_create_models {
 sub internal_initialize {
     my($self) = @_;
     my($info) = $self->SUPER::internal_initialize;
-    @{$info->{visible}} = grep(ref($_) && $_->{type} =~ /Button/, @{$info->{visible}});
+    @{$info->{visible}} = grep(
+	ref($_) && $_->{type} =~ /Button/,
+	@{$info->{visible}});
     return $self->merge_initialize_info($info, {
         version => 1,
 	visible => [
@@ -72,6 +77,19 @@ sub internal_initialize {
 	    },
 	],
     });
+}
+
+sub internal_post_execute {
+    my($self, undef, $res) = @_;
+    my(@res) = shift->SUPER::internal_post_execute(@_);
+    return @res
+	unless ($self->get_field_error('Email.email') || $_UNKNOWN)->eq_exists;
+    my($q) = $_UPQF->add_email_to_query($self->get('Email.email'));
+    $_A->save_label('user_exists', $self->req, $q);
+    return {
+	task_id => 'user_exists_task',
+	query => $q,
+    };
 }
 
 sub validate {
