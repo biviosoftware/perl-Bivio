@@ -2,9 +2,21 @@
 # $Id$
 package Bivio::Biz::Model::UserPasswordQueryForm;
 use strict;
-use Bivio::Base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_E) = __PACKAGE__->use('Type.Email');
+my($_USER_FIELD) = __PACKAGE__->use('Model.UserLoginForm')->USER_FIELD;
+
+sub QUERY_KEY {
+    return 'email';
+}
+
+sub add_email_to_query {
+    my($proto, $email, $query) = @_;
+    ($query ||= {})->{$proto->QUERY_KEY} = $email;
+    return $query;
+}
 
 sub execute_empty {
     my($self) = @_;
@@ -13,17 +25,24 @@ sub execute_empty {
     return if $self->unsafe_get('Email.email');
     my($req) = $self->get_request;
     $self->SUPER::execute_empty;
-    my($cookie) = $req->unsafe_get('cookie');
-    return unless $cookie;
-    my($user_id) = $cookie->unsafe_get(
-        $self->get_instance('UserLoginForm')->USER_FIELD);
-    return unless $user_id;
     my($email) = $self->new_other('Email');
-    return unless $email->unauth_load({
-        realm_id => $user_id,
-    });
+    if (my $q = $self->ureq('query')) {
+	$q = $q->{$self->QUERY_KEY};
+	return
+	    unless $q && $email->unauth_load({email => $q});
+    }
+    else {
+	return
+	    unless my $cookie = $req->ureq('cookie');
+	my($user_id) = $cookie->unsafe_get($_USER_FIELD);
+	return
+	    unless $user_id && $email->unauth_load({
+	    realm_id => $user_id,
+	});
+    }
     $email = $email->unsafe_get('email');
-    return unless Bivio::Type->get_instance('Email')->is_valid($email);
+    return
+	unless $_E->is_valid($email);
     $self->internal_put_field('Email.email' => $email);
     return;
 }
