@@ -555,10 +555,6 @@ sub _fmt_href {
 	return $tok;
     }
     $tok = Bivio::HTML->unescape($tok);
-Bivio::IO::Alert->info($tok)
-	if $tok =~ /\&/;
-    return $tok
-	if $tok =~ s{\^(\&#?\w+;)}{$1}g;
     unless ($state->{prefix_word_mode} ? $tok =~ s{^\^}{} && $tok !~ /^\^/
 	    : $tok =~ $_HREF) {
 	$tok = shift(@_);
@@ -596,6 +592,7 @@ sub _fmt_line {
     my($nl) = $line =~ s/\@$// ? '' : "\n";
     _start_p($state);
     $line = Bivio::HTML->escape($line);
+    $line =~ s{\^\&amp;(\#?\w+;)}{\&$1}g;
     $line =~ s{(\S+)}{_fmt_token($1, $state)}eg;
     return $line . $nl;
 }
