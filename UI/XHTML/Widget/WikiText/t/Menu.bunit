@@ -22,4 +22,11 @@ EOF
        "/pub/login" Login
        "/fourem/wiki/MyPage" MyPage
     )).qq(.*class="pdf[^"]*".*"/fourem/wiki/Document".*Document)]}},
+    [{
+	value => '@b-menu value=T1',
+	is_public => 0,
+    }] => qr{@{[join('.*', qw(
+       class="bmenu"
+       "/fourem/wiki/Index" Index
+    ))]}},
 ];
