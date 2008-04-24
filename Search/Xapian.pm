@@ -106,7 +106,7 @@ sub update_realm_file {
     ) unless ref($proto);
     my($rf) = $_MRF->new($req);
     return unless $rf->unauth_load({realm_file_id => $realm_file})
-	&& !$rf->get('is_folder');
+	&& $rf->is_searchable;
     _replace(
 	$proto,
 	$req,
