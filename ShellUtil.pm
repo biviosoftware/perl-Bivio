@@ -950,24 +950,17 @@ sub set_realm_and_user {
 	$req->set_user($user);
 	return $self;
     }
-
-    # $realm may be a string (name or id), so must get to check type
-    $self->set_user_to_any_online_admin
-	    unless $req->get('auth_realm')->get_type
-		    == Bivio::Auth::RealmType->GENERAL();
+    $self->set_user_to_any
+	unless $req->get('auth_realm')->is_general;
     return $self;
 }
 
+sub set_user_to_any {
+    return _any_user(unsafe_get_any_online_admin => @_);
+}
+
 sub set_user_to_any_online_admin {
-    my($self) = @_;
-    # Sets the user to first_admin on I<self> and I<req>.  Returns the
-    # first admin.
-    my($req) = $self->get_request;
-    $req->set_user(
-	    Bivio::Biz::Model->new($req, 'RealmUser')->get_any_online_admin);
-    my($user) = $req->get('auth_user');
-    $self->put(user => $user->get('name'));
-    return $user;
+    return _any_user(get_any_online_admin => @_);
 }
 
 sub setup {
@@ -1014,6 +1007,20 @@ sub write_file {
     # DEPRECATED: See L<Bivio::IO::File::write|Bivio::IO::File/"write">
     Bivio::IO::Alert->warn_deprecated('use Bivio::IO::File->write');
     return Bivio::IO::File->write($file_name, $contents);
+}
+
+sub _any_user {
+    my($method, $self) = @_;
+    $self->req->set_user(
+	$self->model('RealmUser')->$method()
+            || $self->model('User')
+		->do_iterate(sub {0}, unauth_iterate_start => 'user_id asc')
+		->unsafe_get('user_id')
+	    || $self->unauth_model(RealmOwner => {name => 'user'})
+		->unsafe_get('realm_id'),
+    );
+    $self->put(user => my $u = $self->ureq(qw(auth_user name)));
+    return $u;
 }
 
 sub _check_cfg {
