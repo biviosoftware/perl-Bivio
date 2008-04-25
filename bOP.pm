@@ -26,11 +26,51 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.21  2008/04/25 01:31:14  nagler
+  * Bivio::Agent::Request
+    added with_realm_and_user
+  * Bivio::Biz::FormModel
+    validate_and_execute_ok now calls internal_post_execute
+    internal_post_execute can override $res from validate_and_execute_ok
+  * Bivio::Biz::Model::RealmFile
+    added is_searchable
+  * Bivio::Biz::Model::RealmUser
+    added unsafe_get_any_online_admin
+  * Bivio::Biz::Model::RealmUserAddForm
+    use dynamic superclass
+  * Bivio::Biz::Model::UserPasswordQueryForm
+    added QUERY_KEY which is checked in execute_empty for email to use
+  * Bivio::Delegate::TaskId
+    Added user_exists_task to USER_CREATE
+  * Bivio::SQL::Connection::Postgres
+    catch (rare) case where _fixup_outer_join removes all predicates, leaving a (malformed) empty WHERE clause
+  * Bivio::Search::Xapian
+    update_realm_file checks is_searchable
+  * Bivio::ShellUtil
+    set_user_to_any added, and now the default for set_user in startup
+    rm comment
+  * Bivio::UI::FacadeBase
+    user_exists ack
+  * Bivio::UI::HTML::Widget::Form
+    fix Form widget to set model from request
+  * Bivio::UI::HTML::Widget::FormFieldLabel
+    fix Form widget to set model from request
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    let pages define a class for links in the TaskMenu
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    add Class column for bmenu CSV definition
+    added value= option
+  * Bivio::UI::XHTML::Widget::WikiText
+    let html entities appear inline
+    fpc
+  * Bivio::UNIVERSAL
+    added ureq()
+
   Revision 6.20  2008/04/24 19:23:42  moeller
   * Bivio::Biz::Model::RealmFile
     added is_searchable
