@@ -10,6 +10,7 @@ Home,/
 Login,/pub/login
 MyPage,^MyPage
 Document,^Document,pdf
+Flyer ^icon.png,^Flyer
 EOF
 [
     [{
@@ -22,6 +23,7 @@ EOF
        "/pub/login" Login
        "/fourem/wiki/MyPage" MyPage
        class="pdf[^"]*" "/fourem/wiki/Document" Document
+       "/fourem/wiki/Flyer" Flyer "[^"]+icon.png"
     ))]}},
     [{
 	value => '@b-menu value=T1',

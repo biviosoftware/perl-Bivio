@@ -51,7 +51,7 @@ sub _parse_row {
 	$row->{Label} = $_WN->to_title($row->{Label});
     }
     return (
-	$row->{Label},
+	WikiStrippedText($row->{Label}),
 	$args->{proto}->internal_format_uri($row->{Link}, $args),
 	(defined($row->{Class}) && length($row->{Class}))
 	    ? $row->{Class} : ()
