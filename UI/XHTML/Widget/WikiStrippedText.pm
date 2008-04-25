@@ -9,7 +9,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub control_on_render {
     my(undef, undef, $buffer) = @_;
     shift->SUPER::control_on_render(@_);
-    $$buffer =~ s{^<p(?: class="(?:b_)?prose")?>(.*)</p>$}{$1}s;
+    $$buffer =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
+    chomp($$buffer);
     return;
 }
 

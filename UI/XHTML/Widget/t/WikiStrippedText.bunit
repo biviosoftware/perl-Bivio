@@ -1,4 +1,5 @@
 Widget();
 [
-    'x' => qq{x\n},
+    'x' => qq{x},
+    'x ^y.png' => qr{x <img src="[^"]+y.png"},
 ];
