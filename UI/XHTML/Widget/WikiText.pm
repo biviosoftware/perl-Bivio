@@ -669,6 +669,8 @@ sub _fmt_tag {
     }
     return "<$tag$attrs_string />$nl"
 	if $_EMPTY->{$tag};
+    #TODO: This is wrong.  <p> is allowed inside <del> and <ins> but not in any
+    #of the other tags in $_PHRASE
     _start_p($state)
 	if $_PHRASE->{$tag};
     $state->{html} .= _start_tag($tag, $attrs_string, $state);
