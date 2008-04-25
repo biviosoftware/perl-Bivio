@@ -26,11 +26,32 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.20  2008/04/24 19:23:42  moeller
+  * Bivio::Biz::Model::RealmFile
+    added is_searchable
+  * Bivio::Biz::Model::RealmUserAddForm
+    use dynamic superclass
+  * Bivio::Biz::Model::RealmUser
+    added unsafe_get_any_online_admin
+  * Bivio::Search::Xapian
+    update_realm_file checks is_searchable
+  * Bivio::ShellUtil
+    set_user_to_any added, and now the default for set_user in startup
+    rm comment
+  * Bivio::SQL::Connection::Postgres
+    catch (rare) case where _fixup_outer_join removes all predicates, leaving a (malformed) empty WHERE clause
+  * Bivio::UI::HTML::Widget::FormFieldLabel
+    fix Form widget to set model from request
+  * Bivio::UI::HTML::Widget::Form
+    fix Form widget to set model from request
+  * Bivio::UNIVERSAL
+    added ureq()
+
   Revision 6.19  2008/04/23 02:09:40  nagler
   * Bivio::Biz::FormModel
     added unauth_create_or_update_model_properties
