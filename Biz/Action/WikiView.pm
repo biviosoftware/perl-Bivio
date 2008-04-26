@@ -6,12 +6,14 @@ use Bivio::Base 'Biz.Action';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_WN) = __PACKAGE__->use('Type.WikiName');
-my($_FN) = __PACKAGE__->use('Type.FileName');
-my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
-my($_E) = __PACKAGE__->use('Model.Email');
-my($_RO) = __PACKAGE__->use('Model.RealmOwner');
 my($_A) = __PACKAGE__->use('IO.Alert');
+my($_ARF) = __PACKAGE__->use('Action.RealmFile');
+my($_E) = __PACKAGE__->use('Model.Email');
+my($_FN) = __PACKAGE__->use('Type.FileName');
+my($_RO) = __PACKAGE__->use('Model.RealmOwner');
+my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
+my($_WN) = __PACKAGE__->use('Type.WikiName');
+my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
 
 sub execute {
     my($proto) = shift;
@@ -44,9 +46,8 @@ sub execute_prepare_html {
     }
     $name =~ s{^/+}{};
     unless ($_WN->is_valid($name)) {
-	$req->put(path_info => $_WN->to_absolute($name));
-	return $proto->get_instance('RealmFile')
-	    ->access_controlled_execute($req);
+	$req->put(path_info => $_WDN->to_absolute($name));
+	return $_ARF->access_controlled_execute($req);
     }
     my($self) = $proto->new->put_on_request($req)->put(
 	name => $name,
