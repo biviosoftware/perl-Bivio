@@ -26,11 +26,34 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.23  2008/04/26 06:16:48  nagler
+  Release notes:
+  * Bivio::Biz::Action::RealmFile
+    added set_output_for_get
+  * Bivio::Biz::Model::Email
+    added internal_prepare_query and downcase in create/update
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    todo
+  * Bivio::Biz::Model::MailThreadList
+    added RealmFile.path for view_rfc822
+  * Bivio::Biz::Model::RealmFileList
+    added base_name field
+  * Bivio::Biz::Model::RealmMail
+    from email is used to get user_id;  should not rely on current user
+  * Bivio::Biz::Model
+    added field_equals
+  * Bivio::UI::FacadeBase
+    added view_rfc822
+  * Bivio::UI::View::CSS
+    extend actions
+  * Bivio::UI::View::Mail
+    added view_rfc822
+
   Revision 6.22  2008/04/25 17:49:51  dobbs
   * Bivio::UI::XHTML::Widget::WikiText::Menu
     allow WikiText in b-menu Label
