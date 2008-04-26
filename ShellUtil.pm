@@ -2,15 +2,8 @@
 # $Id$
 package Bivio::ShellUtil;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Die;
-use Bivio::IO::Config;
-use Bivio::IO::File;
-use Bivio::IO::Ref;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
-use Bivio::Type::DateTime;
-use Bivio::Type;
-use Bivio::TypeError;
 use File::Spec ();
 use POSIX ();
 use Sys::Hostname ();
@@ -109,20 +102,26 @@ use Sys::Hostname ();
 # I<realm> is set, will be implicitly set to the first_admin
 # as defined by
 # L<Bivio::Biz::Model::RealmAdminList|Bivio::Biz::Model::RealmAdminList>.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Map of class to Attributes which contains result of _parse_options()
 my(%_DEFAULT_OPTIONS);
-Bivio::IO::Config->register(my $_CFG = {
+my($_A) = __PACKAGE__->use('IO.Alert');
+my($_C) = __PACKAGE__->use('IO.Config');
+my($_CA) = __PACKAGE__->use('Collection.Attributes');
+my($_DIE) = __PACKAGE__->use('Bivio.Die');
+my($_F) = __PACKAGE__->use('IO.File');
+my($_L) = __PACKAGE__->use('IO.Log');
+my($_TE) = __PACKAGE__->use('Bivio.TypeError');
+$_C->register(my $_CFG = {
     lock_directory => '/tmp',
-    Bivio::IO::Config->NAMED => {
+    $_C->NAMED => {
 	daemon_max_children => 1,
 	daemon_sleep_after_start => 60,
 	daemon_sleep_after_reap => 0,
 	daemon_max_child_run_seconds => 0,
 	daemon_max_child_term_seconds => 0,
-	daemon_log_file => Bivio::IO::Config->REQUIRED,
+	daemon_log_file => $_C->REQUIRED,
     },
 });
 
@@ -158,6 +157,7 @@ sub OPTIONS {
     return {
 	db => ['Name', undef],
 	detach => ['Boolean', 0],
+	detach_log => ['Text', undef],
 	email => ['Text', undef],
 	force => ['Boolean', 0],
 	input => ['Line', '-'],
@@ -170,23 +170,11 @@ sub OPTIONS {
 }
 
 sub OPTIONS_USAGE {
-    # Called by L<usage|"usage"> and returns the string:
-    #
-    #   options:
-    #       -db - name of database connection
-    #       -detach - calls detach process before executing command
-    #       -email - who to mail the results to (may be a comma separated list)
-    #       -force - don't ask "are you sure?"
-    #       -input - a file to read from ("-" is STDIN)
-    #       -live - don't die on errors (used in weird circumstances)
-    #       -noexecute - don't commit
-    #       -output - a file to write the output to ("-" is STDOUT)
-    #       -realm - realm_id or realm name
-    #       -user - user_id or user name
     return <<'EOF';
 options:
     -db - name of database connection
     -detach - calls detach process before executing command
+    -detach_log - log file to use when detached
     -email - who to mail the results to (may be a comma separated list)
     -force - don't ask "are you sure?"
     -input - a file to read from ("-" is STDIN)
@@ -245,7 +233,7 @@ sub are_you_sure {
 
 sub arg_list {
     my($proto, $args, $decls) = @_;
-    Bivio::IO::Alert->warn_deprecated('use name_args');
+    $_A->warn_deprecated('use name_args');
     return $proto->name_args($decls, $args);
 }
 
@@ -278,11 +266,9 @@ sub command_line {
 
 sub commit_or_rollback {
     my($self, $abort) = @_;
-    # Commits if !I<abort> and !I<noexecute>.
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Task');
-    $self->unsafe_get('noexecute') || $abort
-	    ? Bivio::Agent::Task->rollback($self->get_request)
-		    : Bivio::Agent::Task->commit($self->get_request);
+    my($method) = $self->unsafe_get('noexecute') || $abort
+	? 'rollback' : 'commit';
+    $self->use('Agent.Task')->$method($self->req);
     return;
 }
 
@@ -290,22 +276,26 @@ sub convert_literal {
     my($proto, $type) = (shift, shift);
     # Calls L<Bivio::Type::from_literal_or_die|Bivio::Type/"from_literal_or_die">
     # on I<value> by loading I<type> first.
-    return Bivio::Type->get_instance($type)->from_literal_or_die(@_);
+    return $proto->use('Type', $type)->from_literal_or_die(@_);
 }
 
 sub detach_process {
-    my(undef) = @_;
-    # Forks, closes tty, stdin, out, etc.  Returns child pid to parent, and child
-    # gets undef.
+    my($self) = @_;
     my($pid) = fork;
     die("fork: $!")
 	unless defined($pid);
     return $pid
 	if $pid;
     # Child
+    my($log) = $_F->absolute_path(_detach_log($self));
     open(STDIN, '< /dev/null');
-    open(STDOUT, '+> /dev/null');
+    open(STDOUT, "+> $log");
     open(STDERR, '>&STDOUT');
+    select(STDERR);
+    $| = 1;
+    select(STDOUT);
+    $| = 1;
+    Bivio::IO::Alert->set_printer('FILE', $log);
     eval {
 	require POSIX;
 	POSIX::setsid();
@@ -328,8 +318,8 @@ sub email_file {
 	    my($msg) = @_;
 	    $msg->set_content_type('multipart/mixed');
 	    return $msg->attach(
-		Bivio::IO::File->read($file_name),
-		Bivio::MIME::Type->from_extension($file_name),
+		$_F->read($file_name),
+		$self->use('MIME.Type')->from_extension($file_name),
 		$file_name, -T $file_name ? 0 : 1,
 	    );
 	},
@@ -355,7 +345,7 @@ sub finish {
     my($fields) = $self->[$_IDI];
     $self->commit_or_rollback($abort);
     $self->get_request->process_cleanup;
-    Bivio::SQL::Connection->set_dbi_name($fields->{prior_db})
+    $self->use('SQL.Connection')->set_dbi_name($fields->{prior_db})
 	if $fields->{prior_db};
     return;
 }
@@ -365,7 +355,7 @@ sub get_request {
     return $self->unsafe_get('req') || $self->setup->get('req')
 	if ref($self);
     my($req) = $self->use('Agent.Request')->get_current;
-    Bivio::Die->die('no request') unless $req;
+    $_DIE->die('no request') unless $req;
     return $req;
 }
 
@@ -428,10 +418,10 @@ sub handle_config {
     #
     # Where L<lock_action|"lock_action"> directories are created.  Must be absolute,
     # writable directory.
-    Bivio::Die->die($cfg->{lock_directory}, ': not a writable directory')
+    $_DIE->die($cfg->{lock_directory}, ': not a writable directory')
 	unless length($cfg->{lock_directory})
 	    && -w $cfg->{lock_directory} && -d _;
-    Bivio::Die->die($cfg->{lock_directory}, ': not absolute')
+    $_DIE->die($cfg->{lock_directory}, ': not absolute')
 	unless File::Spec->file_name_is_absolute($cfg->{lock_directory});
     $_CFG = $cfg;
     return;
@@ -449,19 +439,18 @@ sub initialize_ui {
     # facades.  Otherwise, only initializes the default facade, and does not setup
     # tasks for execution.
     my($req) = $self->get_request;
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Dispatcher');
-    Bivio::Agent::Dispatcher->initialize(!$fully);
+    $self->use('Agent.Dispatcher')->initialize(!$fully);
     $req->setup_all_facades
 	if $fully;
-    Bivio::UI::Facade->setup_request(undef, $req);
+    $self->use('UI.Facade')->setup_request(undef, $req);
     $req->put_durable(
-	task => Bivio::Agent::Task->get_by_id($req->get('task_id')))
+	task => $self->use('Agent.Task')->get_by_id($req->get('task_id')))
 	if $req->unsafe_get('task_id');
     return $req;
 }
 
 sub is_loadavg_ok {
-    my($line) = Bivio::IO::File->read('/proc/loadavg');
+    my($line) = $_F->read('/proc/loadavg');
     # Returns TRUE if the machine load is below a configurable
     # threshold.
     #
@@ -516,22 +505,22 @@ sub lock_action {
     for my $retry (1, 0) {
 	last if mkdir($lock_dir, 0700);
 	unless ($retry) {
-	    Bivio::IO::Alert->warn(
+	    $_A->warn(
 		$lock_dir, ': unable to delete lock for dead process');
 	    return _lock_warning($lock_dir);
 	}
-	my($pid, $host) = split(/\s+/, ${Bivio::IO::File->read($lock_pid)});
+	my($pid, $host) = split(/\s+/, ${$_F->read($lock_pid)});
 	return _lock_warning($lock_dir)
 	    if ($host && $host ne Sys::Hostname::hostname())
 		|| _process_exists($pid);
-	Bivio::IO::Alert->warn(
+	$_A->warn(
 	    $pid, ": process doesn't exist, removing ", $lock_dir);
 	# Don't test results, because there may be contention
 	unlink($lock_pid);
 	rmdir($lock_dir);
     }
     # Write host after pid to be backwards compatible with just pid format.
-    Bivio::IO::File->write($lock_pid, $$ . ' ' . Sys::Hostname::hostname());
+    $_F->write($lock_pid, $$ . ' ' . Sys::Hostname::hostname());
     my($prev) = $SIG{TERM};
     local($SIG{TERM}) = sub {
 	unlink($lock_pid);
@@ -541,7 +530,7 @@ sub lock_action {
 	return;
     };
     my($die);
-    my(@res) = Bivio::Die->catch($op, \$die);
+    my(@res) = $_DIE->catch($op, \$die);
     unlink($lock_pid);
     rmdir($lock_dir);
     $die->throw
@@ -554,10 +543,10 @@ sub lock_realm {
     # Locks the current realm.  Dies if general realm is auth_realm.
     # Handles re-locking existing realm.
     my($req) = $self->get_request;
-    Bivio::Die->die("can't lock general realm")
+    $_DIE->die("can't lock general realm")
 	    if $req->get('auth_realm')->get('type')
 		    == Bivio::Auth::RealmType->GENERAL();
-    Bivio::Biz::Model->get_instance('Lock')->execute_unless_acquired($req);
+    $self->use('Model.Lock')->execute_unless_acquired($req);
     return;
 }
 
@@ -597,7 +586,7 @@ sub main {
     $self->put(program => $p);
 
     my($cmd, $res);
-    my($die) = Bivio::Die->catch(sub {
+    my($die) = $_DIE->catch(sub {
 	if (@argv && _method_ok($self, $argv[0])) {
 	    $cmd = shift(@argv);
 	}
@@ -610,16 +599,13 @@ sub main {
     unless ($die) {
 	my($pid);
 	if ($self->unsafe_get('detach')) {
-	    my($log) = $self->use('Bivio::IO::Log')->file_name(
-		$_CFG->{daemon_log_file} || "$p.log");
-	    Bivio::IO::Alert->info('logging to: ', $log);
-	    Bivio::IO::Alert->set_printer('FILE', $log);
+	    $_A->info('log=', _detach_log($self));
 	    if ($pid = $self->detach_process) {
 		$res = "$pid\n";
 		$self->SUPER::delete(qw(output email req));
 	    }
 	}
-	$die = Bivio::Die->catch(sub {
+	$die = $_DIE->catch(sub {
 	    $res = $self->$cmd(@argv);
 	}) unless $pid;
     }
@@ -634,7 +620,7 @@ sub main {
 		result_subject => 'ERROR from: '.$self->command_line);
 	_result_email($self, $cmd, $die->as_string);
 	if ($self->unsafe_get('live')) {
-	    Bivio::IO::Alert->warn($die);
+	    $_A->warn($die);
 	    return;
 	}
 	$die->throw();
@@ -671,7 +657,7 @@ sub name_args {
 	    unless ($e) {
 		return ref($default) eq 'CODE' ? $default->($proto) : $default
 		    if $has_default;
-		$e = Bivio::TypeError->NULL;
+		$e = $_TE->NULL;
 	    }
 	    $proto->usage_error(
 		$arg, ': invalid ', $name, ': ',
@@ -687,21 +673,13 @@ sub new {
     # Initializes a new instance with these command line arguments.
 
     if ($class && !ref($class)) {
-        # explicit die if not found
-        # ClassLoader calls throw_quietly() which has no output
-        my($c) = Bivio::Die->eval(sub {
-            Bivio::IO::ClassLoader->map_require('ShellUtil', $class);
-        });
-        Bivio::Die->die('other ShellUtil not found or syntax error: ', $class)
-            unless $c;
-	$proto = $c;
+	$proto = _other($proto, $class);
     }
     else {
 	$argv = $class;
-	Bivio::Die->die('new() must be called on a ShellUtil subclass')
+	$_DIE->die($proto, ': must not be called as ShellUtil->new')
 	    if $proto eq __PACKAGE__;
     }
-
     return _initialize($proto->SUPER::new, $argv);
 }
 
@@ -720,11 +698,7 @@ sub new_other {
     # call returns.
     # explicit die if not found
     # ClassLoader calls throw_quietly() which has no output
-    my($c) = Bivio::Die->eval(sub {
-        Bivio::IO::ClassLoader->map_require('ShellUtil', $class);
-    });
-    Bivio::Die->die('other ShellUtil not found or syntax error: ', $class)
-        unless $c;
+    my($c) = _other($self, $class);
     my($options) = [];
     if (ref($self)) {
 	my($standard) = __PACKAGE__->OPTIONS();
@@ -756,17 +730,17 @@ sub piped_exec {
     #
     # Throws exception if it can't write the input. Throws exception if the
     # command returns a non-zero exit result unless ignore_exit_code is
-    # specified.  The L<Bivio::Die|Bivio::Die> has an I<exit_code> attribute.
+    # specified.  The L<$_DIE|$_DIE> has an I<exit_code> attribute.
     my($in) = ref($input) ? $input : \$input;
     $$in = '' unless defined($$in);
     my($pid) = open(IN, "-|");
     defined($pid) || die("fork: $!");
-#TODO: Use IO::File and Bivio::IO::File
+#TODO: Use IO::File and $_F
     unless ($pid) {
 	(ref($command) eq 'ARRAY'
 	    ? open(OUT, '|-', @$command)
 	    : open(OUT, "| exec $command")
-	) || Bivio::Die->die($command, ": open failed: $!");
+	) || $_DIE->die($command, ": open failed: $!");
 	print(OUT $$in);
 	close(OUT);
 	# If there is a signal, return 99.  Otherwise, return exit code.
@@ -788,7 +762,7 @@ sub piped_exec {
     # May be undef
     $res .= '';
     unless (close(IN)) {
-	Bivio::Die->throw_die('DIE', {
+	$_DIE->throw_die('DIE', {
 	    message => 'command died with non-zero status',
 	    entity => $command,
 	    input => $in,
@@ -808,7 +782,7 @@ sub piped_exec_remote {
 	$command = "ssh $host '($command) && echo OK$$'";
     }
     my($res) = $self->piped_exec($command, $input, $ignore_exit_code);
-    Bivio::Die->throw_die('DIE', {
+    $_DIE->throw_die('DIE', {
 	message => 'remote command failed',
 	host => $host,
 	entity => $command,
@@ -839,19 +813,12 @@ sub put_request {
     return $self->put(req => $req);
 }
 
-sub read_file {
-    my(undef, $file_name) = @_;
-    # DEPRECATED: See L<Bivio::IO::File::read|Bivio::IO::File/"read">
-    Bivio::IO::Alert->warn_deprecated('use Bivio::IO::File->read');
-    return Bivio::IO::File->read($file_name);
-}
-
 sub read_input {
     my($self) = @_;
     # Returns the contents if I<input> argument.  If no argument, reads
     # from STDIN.  If I<input> is a ref, just return that.
     my($input) = $self->get('input');
-    return ref($input) ? $input : Bivio::IO::File->read($input);
+    return ref($input) ? $input : $_F->read($input);
 }
 
 sub readline_stdin {
@@ -863,12 +830,6 @@ sub readline_stdin {
     chomp($answer);
     $answer =~ s/^\s+|\s+$//g;
     return $answer;
-}
-
-sub ref_to_string {
-    my(undef, $ref) = @_;
-    # B<DEPRECATED: Use Bivio::IO::Ref directly.>
-    return Bivio::IO::Ref->to_string($ref);
 }
 
 sub result {
@@ -889,14 +850,13 @@ sub run_daemon {
     # Starts a collection of processes using config defined by
     # I<cfg_name> (see L<handle_config|"handle_config">.
     $self->get_request;
-    my($cfg) = Bivio::IO::Config->get($cfg_name);
+    my($cfg) = $_C->get($cfg_name);
     # Makes log rotating simple: All processes share a log
-    Bivio::IO::Alert->set_printer(
-	'FILE',
-	$self->use('Bivio::IO::Log')->file_name($cfg->{daemon_log_file}),
-    ) if $cfg->{daemon_log_file};
+    $_A->set_printer('FILE', $_L->file_name($cfg->{daemon_log_file}))
+        if $cfg->{daemon_log_file};
     _check_cfg($cfg, $cfg_name);
     my($children) = {};
+    my($ref) = $self->use('IO.Ref');
     while (1) {
 	my($max_duplicates) = $cfg->{daemon_max_children};
 	while (keys(%$children) < $cfg->{daemon_max_children}) {
@@ -904,7 +864,7 @@ sub run_daemon {
 	    last unless $args;
 	    _reap_daemon_children($children, 0, 0, $cfg);
 	    if (grep(
-		Bivio::IO::Ref->nested_equals($args, $_->{args}),
+		$ref->nested_equals($args, $_->{args}),
 		values(%$children),
 	    )) {
 		_trace('already running: ', $args) if $_TRACE;
@@ -937,7 +897,7 @@ sub run_daemon {
 
 sub set_realm_and_user {
     my($self, $realm, $user) = @_;
-    $realm = Bivio::Auth::Realm->get_general()
+    $realm = $self->use('Auth.Realm')->get_general()
 	unless defined($realm);
     my($req) = $self->get_request;
     $req->set_realm($realm);
@@ -973,36 +933,30 @@ sub unauth_model {
 
 sub unsafe_get {
     my($self) = shift;
-    # Return the attribute(s).  Returns default option values
-    # or C<undef> if called statically.
-    #
-    # Otherwise, just calls
-    # L<Bivio::Collection::Attributes::unsafe_get|Bivio::Collection::Attributes/"unsafe_get">.
     return $self->SUPER::unsafe_get(@_) if ref($self);
-    $_DEFAULT_OPTIONS{$self} = Bivio::Collection::Attributes->new(
-	    _parse_options($self, []))
-	    unless $_DEFAULT_OPTIONS{$self};
+    $_DEFAULT_OPTIONS{$self} = $_CA->new(_parse_options($self, []))
+	unless $_DEFAULT_OPTIONS{$self};
     return $_DEFAULT_OPTIONS{$self}->unsafe_get(@_);
 }
 
 sub usage {
     my($proto) = shift;
-    $proto->usage_error(@_, "\n", $proto->USAGE(), $proto->OPTIONS_USAGE());
+    $proto->usage_error(@_, "\n", $proto->USAGE, $proto->OPTIONS_USAGE);
     # DOES NOT RETURN
 }
 
 sub usage_error {
     shift;
-    Bivio::IO::Alert->print_literally('ERROR: ', @_);
-    Bivio::Die->throw_quietly('DIE');
+    $_A->print_literally('ERROR: ', @_);
+    $_DIE->throw_quietly('DIE');
     # DOES NOT RETURN
 }
 
 sub write_file {
     my(undef, $file_name, $contents) = @_;
-    # DEPRECATED: See L<Bivio::IO::File::write|Bivio::IO::File/"write">
-    Bivio::IO::Alert->warn_deprecated('use Bivio::IO::File->write');
-    return Bivio::IO::File->write($file_name, $contents);
+    # DEPRECATED: See L<$_F::write|$_F/"write">
+    $_A->warn_deprecated('use $_F->write');
+    return $_F->write($file_name, $contents);
 }
 
 sub _any_user {
@@ -1025,15 +979,15 @@ sub _check_cfg {
     while (my($k, $v) = each(%$cfg)) {
 	next unless $k =~ /_(?:sleep|max|child)_/;
 	next if $v =~ /^\d+$/ && $v >= 0;
-	my($dv) = $_CFG->{Bivio::IO::Config->NAMED}->{$k};
-	Bivio::IO::Alert->warn($v, ': bad value for ',
+	my($dv) = $_CFG->{$_C->NAMED}->{$k};
+	$_A->warn($v, ': bad value for ',
 	    ($cfg_name ? "$cfg_name." : ''), $k,
 	    '; using ', $dv);
 	$cfg->{$k} = $dv;
     }
     if ($cfg->{daemon_max_child_run_seconds} > 0
 	&& $cfg->{daemon_sleep_after_reap} <= 0) {
-	Bivio::IO::Alert->warn('daemon_sleep_after_reap must be non-zero',
+	$_A->warn('daemon_sleep_after_reap must be non-zero',
 	    ' when daemon_max_child_run_seconds is non-zero; using 1 second');
 	$cfg->{daemon_sleep_after_reap} = 1;
     }
@@ -1055,7 +1009,7 @@ sub _compile_options {
 	    unless $k =~ /^[a-z]\w+$/i;
 	my($first) = substr($k, 0, 1);
 	my($type, $default) = @{$options->{$k}};
-	my($opt) = [$k, Bivio::Type->get_instance($type)];
+	my($opt) = [$k, $self->use(Type => $type)];
 	$opt->[2] = _parse_option_value($self, $opt, $default);
 	$map->{$first} = exists($map->{$first}) ? 0 : $opt;
 	$map->{$k} = $opt;
@@ -1091,13 +1045,21 @@ sub _deprecated_lock_action {
     return 0;
 }
 
+sub _detach_log {
+    my($self) = @_;
+    return $self->get_if_exists_else_put(detach_log => sub {
+        return $_F->absolute_path(
+	    $self->use('Type.DateTime')->local_now_as_file_name
+		. '-'
+		. $self->get('program')
+		. '.log',
+	);
+    });
+}
+
 sub _email {
     my($self, $to_email, $subject, $body) = @_;
-    Bivio::IO::ClassLoader->simple_require(
-	'Bivio::Mail::Outgoing',
-	'Bivio::MIME::Type',
-    );
-    my($msg) = Bivio::Mail::Outgoing->new;
+    my($msg) = $self->use('Mail.Outgoing')->new;
     my($req) = $self->get_request;
     $msg->set_recipients($to_email, $req);
     $msg->set_header('Subject', $subject);
@@ -1126,7 +1088,7 @@ sub _lock_files {
     my($name) = @_;
     # Returns the $name converted to (lock_dir, lock_pid)
     # Strip illegal chars
-    $name =~ s{@{[Bivio::Type->get_instance('FileName')->ILLEGAL_CHAR_REGEXP]}+}{}og;
+    $name =~ s{@{[__PACKAGE__->use('Type.FileName')->ILLEGAL_CHAR_REGEXP]}+}{}g;
     my($d) = File::Spec->catdir($_CFG->{lock_directory}, "$name.lockdir");
     return ($d, File::Spec->catfile($d, 'pid'));
 }
@@ -1134,7 +1096,7 @@ sub _lock_files {
 sub _lock_warning {
     my($lock_dir) = @_;
     # Prints warning with lock_dir's age.  Returns 0
-    Bivio::IO::Alert->warn($lock_dir, ': not acquired; lock age=',
+    $_A->warn($lock_dir, ': not acquired; lock age=',
 	time - (stat($lock_dir))[9],
 	's',
     );
@@ -1159,7 +1121,7 @@ sub _method_ok {
 sub _model {
     my($self, $name, $query) = @_;
     # Instantiates I<model> and loads/processes I<query> if supplied.
-    my($m) = Bivio::Biz::Model->new($self->get_request, $name);
+    my($m) = $self->use('Model', $name)->new($self->get_request);
     return $m
 	unless $query;
     my($is_unauth) = $self->my_caller =~ /unauth/;
@@ -1176,7 +1138,7 @@ sub _model {
 	$m->$method($query);
     }
     else {
-	Bivio::Die->die($m, ': does not support query argument: ', $query);
+	$_DIE->die($m, ': does not support query argument: ', $query);
     }
     return $m;
 }
@@ -1191,11 +1153,18 @@ sub _monitor_daemon_children {
 	next if $t < $child->{max_time};
 	my($sig) = $child->{kill_term}++ ? 'KILL' : 'TERM';
 	kill($sig, $pid);
-	Bivio::IO::Alert->info("Sent SIG$sig: pid=", $pid, ' args=',
+	$_A->info("Sent SIG$sig: pid=", $pid, ' args=',
 	    join(' ', splice(@{$child->{args}}, 2)));
 	$child->{max_time} = $t + $cfg->{daemon_max_child_term_seconds}
     }
     return;
+}
+
+sub _other {
+    my($self, $class) = @_;
+    my($die);
+    return $_DIE->catch_quietly(sub {$self->use(ShellUtil => $class)}, \$die)
+	|| $_DIE->die($class, ': ShellUtil not found or syntax error: ', $die);
 }
 
 sub _parse_option_value {
@@ -1237,7 +1206,7 @@ sub _parse_options {
 	next unless defined($opt->[2]);
 	$res->{$opt->[0]} = $opt->[2];
     }
-    $res->{output} = Bivio::IO::File->absolute_path($res->{output})
+    $res->{output} = $_F->absolute_path($res->{output})
 	if defined($res->{output}) && $res->{output} ne '-';
     _trace($res) if $_TRACE;
     return $res;
@@ -1267,11 +1236,11 @@ sub _reap_daemon_children {
     while (1) {
 	if ($stopped > 0) {
 	    if (my $child = delete($children->{$stopped})) {
-		Bivio::IO::Alert->info('Stopped: pid=', $stopped, ' args=',
+		$_A->info('Stopped: pid=', $stopped, ' args=',
 		    join(' ', splice(@{$child->{args}}, 2)));
 	    }
 	    else {
-		Bivio::IO::Alert->warn($stopped, ': unknown pid');
+		$_A->warn($stopped, ': unknown pid');
 	    }
 	}
 	$stopped = waitpid(-1, POSIX::WNOHANG());
@@ -1318,7 +1287,7 @@ sub _result_output {
     my($output) = $self->unsafe_get('output');
     return 0 unless $output;
 
-    Bivio::IO::File->write($output, $res);
+    $_F->write($output, $res);
     return 1;
 }
 
@@ -1342,8 +1311,8 @@ sub _setup_for_call {
     # Called from within a program.  Request must be setup already or dies.
     # Doesn't allow certain attributes.  Sets user and realm only if passed
     # explicitly.
-    my($req) = Bivio::Agent::Request->get_current;
-    Bivio::Die->die(ref($self), ": called without first creating a request")
+    my($req) = $self->use('Agent.Request')->get_current;
+    $_DIE->die(ref($self), ": called without first creating a request")
 	unless $req;
     $self->put_request($req);
     foreach my $x (qw(realm user)) {
@@ -1352,7 +1321,7 @@ sub _setup_for_call {
 	$req->$m($v);
     }
     foreach my $attr (qw(db)) {
-	Bivio::Die->die($attr, ': cannot pass to ', ref($self), ' call')
+	$_DIE->die($attr, ': cannot pass to ', ref($self), ' call')
 	    if $self->unsafe_get($attr);
     }
     return;
@@ -1364,10 +1333,9 @@ sub _setup_for_main {
     # Sets realm/user.
     my($fields) = $self->[$_IDI];
     my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
-    $self->use('Bivio::Test::Request');
-    my($p) = $self->use('Bivio::SQL::Connection')->set_dbi_name($db);
+    my($p) = $self->use('SQL.Connection')->set_dbi_name($db);
     $fields->{prior_db} = $p unless $fields->{prior_db};
-    $self->put_request(Bivio::Test::Request->get_instance)
+    $self->put_request($self->use('Test.Request')->get_instance)
         unless $self->unsafe_get('req');
     $self->set_realm_and_user(map(_parse_realm($self, $_), qw(realm user)));
     return;
@@ -1378,12 +1346,12 @@ sub _start_daemon_child {
     # Starts child process, appending to log.  Returns pid.
     # Force a reconnect for both child and parent; avoids errors in
     # logs for parent.
-    Bivio::SQL::Connection->disconnect;
-    Bivio::IO::Alert->reset_warn_counter;
+    $self->use('SQL.Connection')->disconnect;
+    $_A->reset_warn_counter;
  RETRY: {
 	my($child) = fork;
 	unless (defined($child)) {
-	    Bivio::IO::Alert->warn($args,
+	    $_A->warn($args,
 		" fork: $!; sleeping before retry");
 	    sleep($cfg->{daemon_sleep_after_start});
 	    redo RETRY;
@@ -1394,7 +1362,7 @@ sub _start_daemon_child {
 	}
 	$self->get_request->clear_current;
 	$0 = join(' ', @$args);
-	Bivio::IO::Alert->info('Starting: pid=', $$, ' args=',
+	$_A->info('Starting: pid=', $$, ' args=',
 	    join(' ', @$args[2 .. $#$args]));
 	# Reset so we can send signals in _monitor_daemon_children()
 	local($SIG{TERM}) = 'DEFAULT';
