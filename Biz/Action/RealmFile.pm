@@ -6,20 +6,18 @@ use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = __PACKAGE__->use('Type.FilePath');
-my($_DATA_READ) = ${
-    __PACKAGE__->use('Bivio::Auth::PermissionSet')->from_array(['DATA_READ'])
-};
+my($_DATA_READ)
+    = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(['DATA_READ'])};
+my($_RF) = __PACKAGE__->use('Model.RealmFile');
 
 sub access_controlled_execute {
     my($proto, $req) = @_;
-    return _execute(
-	$proto->access_controlled_load(
-	    $req->get('auth_id'),
-	    Bivio::Biz::Model->new($req, 'RealmFile')
-	        ->parse_path($req->get('path_info')),
-	    $req,
-	),
+    my($rf) = $proto->access_controlled_load(
+	$req->get('auth_id'),
+	$_RF->parse_path($req->get('path_info')),
+	$req,
     );
+    return $rf ? $proto->set_output_for_get($rf) : 0;
 }
 
 sub access_controlled_load {
@@ -88,10 +86,23 @@ sub execute_put {
     return;
 }
 
+sub set_output_for_get {
+    my(undef, $realm_file) = @_;
+    return
+	unless $realm_file;
+    my($reply) = $realm_file->req->get('reply')
+	->set_output($realm_file->get_handle)
+	->set_output_type($realm_file->get_content_type);
+#TODO: Is this right?
+    $reply->set_cache_private
+	unless $realm_file->get('is_public');
+    return 1;
+}
+
 sub unauth_execute {
     my($proto, $req, $is_public, $realm_id, $path_info) = @_;
     my($f) = Bivio::Biz::Model->new($req, 'RealmFile');
-    return _execute(
+    return $proto->set_output_for_get(
 	$f->unauth_load_or_die({
 	    realm_id => $realm_id,
 	    is_folder => 0,
@@ -99,18 +110,6 @@ sub unauth_execute {
 	    defined($is_public) ? (is_public => $is_public) : (),
 	})
     );
-}
-
-sub _execute {
-    my($realm_file) = @_;
-    return
-	unless $realm_file;
-    my($reply) = $realm_file->req->get('reply')
-	->set_output($realm_file->get_handle)
-	->set_output_type($realm_file->get_content_type);
-    $reply->set_cache_private
-	unless $realm_file->get('is_public');
-    return 1;
 }
 
 1;
