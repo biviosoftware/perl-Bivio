@@ -14,6 +14,7 @@ my($_MS) = Bivio::Type->get_instance('MailSubject');
 my($_MFN) = Bivio::Type->get_instance('MailFileName');
 my($_RF) = __PACKAGE__->use('Model.RealmFile');
 my($_HANDLERS) = [];
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub cascade_delete {
     my($self, $query) = @_;
@@ -142,16 +143,15 @@ sub _create_file {
     my($self, $rfc822) = @_;
     _call_handlers(handle_mail_pre_create_file => $self, $rfc822);
     my($in) = Bivio::Mail::Incoming->new($rfc822);
-    my($date) = Bivio::Type::DateTime->from_unix($in->get_date_time || time);
+    my($date) = $in->get_date_time;
+    $date = $date ? $_DT->from_unix($date) : $_DT->now;
     my($rf) = $self->new_other('RealmFile');
     return (
 	$in,
 	$rf->create_with_content({
 	    override_is_read_only => 1,
 	    path => $_MFN->to_unique_absolute($date, $in->get_subject),
-	    user_id => $self->get_request->get('auth_user_id')
-		|| $self->new_other('RealmUser')
-		    ->get_any_online_admin->get('realm_id'),
+	    user_id => _user_id($self, $in),
 	    modified_date_time => $date,
 	}, $rfc822),
     );
@@ -175,6 +175,22 @@ sub _thread_values {
     $values->{thread_parent_id} = $row->[0];
     $values->{thread_root_id} = $row->[1] || $values->{realm_file_id};
     return $values;
+}
+
+sub _user_id {
+    my($self, $in) = @_;
+    my($f) = $in->get_from;
+    my($e);
+    if ($e = $self->ureq('Model.Email')) {
+	return $e->get('realm_id')
+	    if $e->field_equals(email => $f);
+    }
+    $e = $self->new_other('Email');
+    return $e->get('realm_id')
+	if $e->unauth_load({email => $f});
+    return $self->req('auth_user_id')
+	|| $self->new_other('RealmUser')
+	->get_any_online_admin->get('realm_id'),
 }
 
 1;
