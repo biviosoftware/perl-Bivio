@@ -54,6 +54,7 @@ sub execute_ok {
     $self->internal_put_field(mime_parser => $parser);
     $self->internal_put_field(task_id => _task($self, $op));
     $self->internal_put_field(plus_tag => $plus_tag);
+#TODO: Use Mail.Incoming
     $self->internal_put_field(from_email => _from_email(
 	$parser->head->get('from') || $parser->head->get('apparently-from')));
     _trace($self->get('from_email'), ' ', $self->get('task_id')) if $_TRACE;
