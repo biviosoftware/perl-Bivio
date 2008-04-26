@@ -51,6 +51,13 @@ sub internal_initialize {
     });
 }
 
+sub internal_post_load_row {
+    my($self, $row) = @_;
+    $row->{base_name} = $row->{'RealmFile.path'} eq '/' ? '/'
+	: $_FP->get_tail($row->{'RealmFile.path'});
+    return 1;
+}
+
 sub internal_pre_load {
     my($self, $query, undef, $params) = @_;
     my($p) = $_RF->parse_path($query->unsafe_get('path_info'), $self);
