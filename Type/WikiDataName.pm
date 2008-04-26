@@ -17,15 +17,33 @@ sub PRIVATE_FOLDER {
 sub format_uri {
     my($proto, $uri, $args) = @_;
 #TODO: Need to handle multiple realm-types.
-    return $args->{req}->format_uri({
-	task_id => $_C->if_version(
-	    3, 'FORUM_FILE',
-	    sub {$args->{is_public} ? 'FORUM_PUBLIC_FILE' : 'FORUM_FILE'},
-	),
-	realm => $args->{realm_name},
-	query => undef,
-	path_info => $proto->to_absolute($uri),
-    });
+    return $args->{req}->format_uri($_C->if_version(
+	6 => sub {
+	    return {
+		task_id => $args->{task_id},
+		query => undef,
+		$args->{realm_name} ? (realm => $args->{realm_name}) : (),
+		path_info => $uri,
+	    };
+	},
+	sub {
+	    return {
+		task_id => $_C->if_version(
+		    3 => 'FORUM_FILE',
+		    sub {
+			return $args->{is_public}
+			    ? 'FORUM_PUBLIC_FILE' : 'FORUM_FILE';
+		    },
+		),
+		realm => $args->{realm_name},
+		query => undef,
+		path_info => $_C->if_version(
+		    6 => $uri,
+		    sub {$proto->to_absolute($uri)},
+		),
+	    },
+	},
+    ));
 }
 
 1;
