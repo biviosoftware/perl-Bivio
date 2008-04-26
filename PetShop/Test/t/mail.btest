@@ -108,6 +108,9 @@ verify_form({
     cc => '',
 });
 go_back();
+follow_link('original');
+verify_text(qr{message-id:}i);
+go_back();
 follow_link('reply$');
 submit_form(Send => {
     text => 'reply text',
