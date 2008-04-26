@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.22  2008/04/25 17:49:51  dobbs
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    allow WikiText in b-menu Label
+  * Bivio::UI::XHTML::Widget::WikiText
+    added WikiStrippedText to support use of WikiText in b-menu Label
+
   Revision 6.21  2008/04/25 01:31:14  nagler
   * Bivio::Agent::Request
     added with_realm_and_user
