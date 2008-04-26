@@ -973,7 +973,7 @@ sub _cfg_wiki {
 	    [FORUM_WIKI_NOT_FOUND => undef],
 	    [HELP => '?/help/*'],
 	    [HELP_NOT_FOUND => undef],
-	    [SITE_WIKI_VIEW => '/bp/*'],
+	    [SITE_WIKI_VIEW => 'bp/*'],
 	],
 	Constant => [
 	    map({
