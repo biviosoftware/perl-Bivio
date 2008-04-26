@@ -510,6 +510,7 @@ sub _cfg_mail {
 	    [body => 'Text'],
 	    [Bivio::Biz::Model->get_instance('MailForm')
 	        ->map_attachments(sub {shift}) => 'Attach'],
+	    [view_rfc822 => 'Show Original'],
 	    [MailForm => [
 		subject => 'Topic',
 		ok_button => 'Send',
