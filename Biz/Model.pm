@@ -91,6 +91,11 @@ sub do_iterate {
     return $self;
 }
 
+sub field_equals {
+    my($self, $field, $value) = @_;
+    return $self->get_field_type($field)->is_equal($value, $self->get($field));
+}
+
 sub format_uri_for_this_property_model {
     my($self, $task, $name) = @_;
     # Formats a uri for I<task> and model I<name> of I<self>.  Blows up if not all
