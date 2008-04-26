@@ -1,7 +1,11 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget();
+req()->set_realm_and_user(undef);
+req()->initialize_fully('SITE_WIKI_VIEW');
 [
     hello => qq{<p class="b_prose">hello\n</p>},
     '@div' => qq{<div></div>},
+    '^x.jpg' => qq{<p class="b_prose"><img src="/bp/x.jpg" />\n</p>},
+    '@img src=^x.jpg' => qq{<img src="/bp/x.jpg" />\n},
 ];
