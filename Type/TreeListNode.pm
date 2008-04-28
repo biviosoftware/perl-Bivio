@@ -10,6 +10,7 @@ __PACKAGE__->compile_with_numbers([qw(
     LEAF_NODE
     NODE_COLLAPSED
     NODE_EXPANDED
+    LOCKED_LEAF_NODE
 )]);
 
 1;
