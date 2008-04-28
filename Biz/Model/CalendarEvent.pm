@@ -2,68 +2,37 @@
 # $Id$
 package Bivio::Biz::Model::CalendarEvent;
 use strict;
-use base 'Bivio::Biz::PropertyModel';
-use Bivio::MIME::Calendar;
+use Bivio::Base 'Model.RealmOwnerBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_UID) = 'bce';
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_RO) = Bivio::Biz::Model->get_instance('RealmOwner');
+my($_UID) = 'bce';
 
-#TODO: Refactor to merge dupe code in class
-sub create_realm {
-    my($self, $calendar_event, $realm_owner) = @_;
-    $self->create({
+sub create {
+    my($self, $values) = @_;
+    return shift->SUPER::create({
         modified_date_time => $_DT->now,
-        %$calendar_event,
-        realm_id => $self->get_request->get('auth_id'),
+        %$values,
+        realm_id => $self->req('auth_id'),
     });
-    my($ro) = $self->new_other('RealmOwner')->create({
-	name => $self->id_to_uid,
-	%$realm_owner,
-	realm_type => Bivio::Auth::RealmType->CALENDAR_EVENT,
-	realm_id => $self->get('calendar_event_id'),
-#	%$rv,
-    });
-    $self->new_other('RealmUserAddForm')
-	->copy_admins($self->get('calendar_event_id'));
-    return ($self, $ro);
 }
 
 sub create_from_vevent {
     my($self, $vevent) = @_;
     my($sv, $rv) = _from_vevent($self, $vevent);
-    my($req) = $self->get_request;
-    $self->new_other('RealmOwner')->create({
-	realm_type => Bivio::Auth::RealmType->CALENDAR_EVENT,
-	realm_id => $self->create({
-	    modified_date_time => $_DT->now,
-	    %$sv,
-	    realm_id => $req->get('auth_id'),
-	})->get('calendar_event_id'),
-	%$rv,
+    return ($self->create_realm($sv, $rv))[0];
+}
+
+sub create_realm {
+    my($self, $calendar_event, $realm_owner) = @_;
+    my(@res) = $self->create($calendar_event)->SUPER::create_realm({
 	name => $self->id_to_uid,
+	%$realm_owner,
     });
     $self->new_other('RealmUserAddForm')
 	->copy_admins($self->get('calendar_event_id'));
-#TODO: update perms based on class
-    return $self;
-}
-
-# Move to RealmBase
-sub delete_all {
-    my($self, $query) = @_;
-    return shift->SUPER::delete_all(@_)
-	if $query;
-    my($i) = 0;
-    foreach my $id (@{$self->map_iterate(
-	sub {shift->get('calendar_event_id')},
-	'calendar_event_id'
-    )}) {
-	$self->new->load({calendar_event_id => $id})->cascade_delete;
-	$i++;
-    }
-    return $i;
+    return @res;
 }
 
 sub id_to_uid {
