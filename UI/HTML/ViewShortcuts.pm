@@ -427,6 +427,19 @@ sub vs_link_target_as_html {
 	? ' target="' . Bivio::HTML->escape($t) . '"' : '';
 }
 
+sub vs_mailto_for_user_id {
+    my($proto, $user_id) = @_;
+    return $proto->vs_call('MailTo',
+	map([sub {
+	    my($source, $user_id, $model, $field) = @_;
+	    return $source->use('Model.' . $model)->new($source->req)
+		->unauth_load_or_die({
+		    realm_id => $user_id,
+		})->get($field);
+	}, $user_id, split('\.', $_)],
+	    qw(Email.email RealmOwner.display_name)));
+}
+
 sub vs_new {
     # (proto, string, any, ...) : UI.Widget
     # Returns an instance of I<class> created with I<new_args>.  Loads I<class>, if
