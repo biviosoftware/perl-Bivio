@@ -222,6 +222,10 @@ sub internal_initialize {
             path => ['FilePath', 'NOT_NULL'],
             path_lc => ['FilePath', 'NOT_NULL'],
         },
+	other => [
+	    [qw(realm_id RealmOwner.realm_id)],
+            [qw(user_id User.user_id)],
+	],
         auth_id => 'realm_id',
     });
 }
