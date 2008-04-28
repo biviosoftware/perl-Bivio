@@ -1,0 +1,50 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+require 'RealmFile.PL';
+
+my($lock) = sub {
+    model('RowTag')->replace_value(
+	req(qw(Model.RealmFile realm_file_id)),
+	REALM_FILE_LOCK => req('auth_user_id'));
+};
+
+[
+    sub {
+	model('RealmFile')->create_with_content({
+	    path => '/foo.txt',
+	    is_read_only => 1,
+	}, \('some text'));
+        $lock->(),
+        req()->put(path_info => '/foo.txt'),
+        return 1;
+    } => 1,
+    [{}] => [{
+	'Model.RealmFile' => {
+	    is_read_only => 0,
+	},
+    }],
+    sub {
+	my($t) = model('RowTag');
+	return $t->unsafe_load({
+	    primary_id => req(qw(Model.RealmFile realm_file_id)),
+	    key => req()->use('Type.RowTagKey')->REALM_FILE_LOCK,
+	}) ? 0 : 1;
+    } => 1,
+    [{}] => [{}],
+    sub {
+	$lock->();
+	req()->set_user('demo');
+        return 1;
+    } => 1,
+    [{}] => Bivio::DieCode->FORBIDDEN,
+    sub {
+	req()->put(task_id => req()->use('Bivio::Agent::TaskId')
+	    ->FORUM_FILE_UNLOCK_OVERRIDE);
+        return 1;
+    } => 1,
+    [{}] => [{
+	'Model.RealmFile' => {
+	    is_read_only => 0,
+	},
+    }],
+];

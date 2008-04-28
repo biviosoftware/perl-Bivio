@@ -1,0 +1,27 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+require 'RealmFile.PL';
+
+[
+    sub {
+	model('RealmFile')->create_with_content({
+	    path => '/foo.txt',
+	}, \('some text'));
+        req()->put(path_info => '/foo.txt'),
+        return 1;
+    } => 1,
+    [{}] => [{}],
+    sub {
+	my($realm_file) =  model('RealmFile', {
+	    path => '/foo.txt',
+	});
+	return 0 unless $realm_file->get('is_read_only');
+	model('RowTag', {
+	    primary_id => $realm_file->get('realm_file_id'),
+	    key => req()->use('Type.RowTagKey')->REALM_FILE_LOCK,
+	    value => req('auth_user_id'),
+	});
+	return 1;
+    } => 1,
+    [{}] => Bivio::DieCode->FORBIDDEN,
+];

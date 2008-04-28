@@ -1,0 +1,38 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+require 'RealmFile.PL';
+
+my($upload) = sub {
+    my($path, $content) = @_;
+    return {
+	filename => $path,
+	content => defined($content) ? \$content : \('some text'),
+	content_type => 'plain/text',
+    };
+};
+
+[
+    sub {
+	model('RealmFile')->create_with_content({
+	    path => '/foo.txt',
+	}, \('some text'));
+        req()->put(path_info => '/foo.txt'),
+        return 1;
+    } => 1,
+    [{
+	file => $upload->('/mypath/to/the/foo.txt', 'new text'),
+	comment => 'updated',
+    }] => [{
+	'Model.RealmFile' => {
+	    path => '/foo.txt',
+	    is_folder => 0,
+	},
+	'Model.RowTag' => {
+	    primary_id => sub {req(qw(Model.RealmFile realm_file_id))},
+	    value => 'updated',
+	},
+    }],
+    sub {
+	${req('Model.RealmFile')->get_content} eq 'new text' ? 1 : 0;
+    } => 1,
+];

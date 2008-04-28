@@ -1,0 +1,51 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+require 'RealmFile.PL';
+
+my($file_exists) = sub {
+    my($path) = @_;
+    model('RealmFile', {
+	path => $path,
+    });
+    return 1;
+};
+
+[
+    sub {
+	model('RealmFile')->create_with_content({
+	    path => '/foo.txt',
+	}, \('some text'));
+        req()->put(path_info => '/foo.txt'),
+        return 1;
+    } => 1,
+    [{
+	name => 'foo2.txt',
+    }] => [{}],
+    sub {
+	$file_exists->('foo2.txt');
+        req()->put(path_info => '/foo2.txt');
+	return 1;
+    } => 1,
+    [{
+	name => 'foo3',
+    }] => [{}],
+    sub {
+	$file_exists->('foo3.txt');
+    } => 1,
+    sub {
+	model('RealmFile')->create_folder({
+	    path => '/foo',
+	});
+        req()->put(path_info => '/foo'),
+        return 1;
+    } => 1,
+    [{
+	name => 'foo2',
+    }] => [{}],
+    sub {
+	$file_exists->('foo2');
+    } => 1,
+    error_case({}, {
+	name => 'NULL',
+    }),
+];
