@@ -539,6 +539,12 @@ sub unauth_load_parent_from_request {
     return $q ? $self->unauth_load($q) : 0;
 }
 
+sub unauth_load_self {
+    my($self) = @_;
+    shift->unauth_load(@_);
+    return $self;
+}
+
 sub unauth_load_this_from_request {
     my($self) = @_;
     # Parses the query from the request (or list_model) and then
