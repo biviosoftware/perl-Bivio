@@ -40,6 +40,13 @@ sub create_realm {
     return ($self, $ro);
 }
 
+sub delete {
+    # this guards against deleting a realm type without also removing the owner
+    Bivio::Die->die("call ->cascade_delete instead")
+	unless (caller(1))[3] =~ /\:cascade_delete$/;
+    return shift->SUPER::delete(@_);
+}
+
 sub unauth_delete_realm {
     my($self, $realm_owner) = @_;
     $self->unauth_load_or_die({
