@@ -430,9 +430,30 @@ sub _cfg_file {
 		    );
 		},
 	    ),
+	    [FORUM_FILE_TREE_LIST => '?/files/*'],
 	    [FORUM_TEXT_FILE_FORM => '?/edit-file/*'],
+	    [FORUM_FILE_FOLDER_ADD => '?/folder-add/*'],
+	    [FORUM_FILE_DELETE => '?/file-remove/*'],
+	    [FORUM_FILE_ADD => '?/file-add/*'],
+	    [FORUM_FILE_LOCK => '?/file-lock/*'],
+	    [FORUM_FILE_UNLOCK => '?/file-unlock/*'],
+	    [FORUM_FILE_UPDATE => '?/file-update/*'],
+	    [FORUM_FILE_RENAME => '?/file-rename/*'],
+	    [FORUM_FILE_UNLOCK_OVERRIDE => '?/file-unlock-override/*'],
+	    [FORUM_FILE_VERSIONS_LIST => '?/file-details/*'],
 	],
 	Text => [
+	    [[qw(FileAddForm FileUpdateForm)] => [
+		file => 'File to upload',
+		comment => 'Comments',
+	    ]],
+	    [FileRenameForm => [
+		name => 'New name',
+		comment => 'Comments',
+	    ]],
+	    [FolderAddForm => [
+		name => 'Folder name',
+	    ]],
 	    [TextFileForm => [
 		content => '',
 		ok_button => 'Save',
@@ -440,18 +461,44 @@ sub _cfg_file {
 	    [[qw(RealmFileList RealmFileTreeList)] => [
 		'RealmFile.path' => 'Name',
 		'RealmFile.modified_date_time' => 'Last Modified',
-		'Email.email', 'Owner',
+		[qw(Email.email RealmOwner_2.display_name)] => 'Owner',
 		node_collapsed => 'folder_collapsed',
 		node_expanded => 'folder_expanded',
 		leaf_node => 'leaf_file',
 		empty_list_prose => 'No files in this forum.',
+		locked_leaf_node => 'leaf_file_locked',
+	    ]],
+	    [RealmFileVersionsList => [
+		'RealmFile.path' => 'Revision',
+		'RealmFile.modified_date_time' => 'Checked In',
+		[qw(Email.email RealmOwner_2.display_name)] => 'Owner',
+		'comment', 'Comments',
+		empty_list_prose => 'No files revisions.',
 	    ]],
 	    [title => [
+		FORUM_FILE_TREE_LIST => 'Files',
 		FORUM_TEXT_FILE_FORM => 'Text Edit',
 		FORUM_FILE => 'Files',
+		FORUM_FILE_FOLDER_ADD => 'New Folder',
+		FORUM_FILE_DELETE => 'Remove File',
+		FORUM_FILE_ADD => 'Add File',
+		FORUM_FILE_LOCK => 'Lock File',
+		[qw(FORUM_FILE_UNLOCK FORUM_FILE_UNLOCK_OVERRIDE)] =>
+		    'Unlock File',
+		FORUM_FILE_UPDATE => 'Check In File',
+		FORUM_FILE_RENAME => 'Rename File',
+		FORUM_FILE_VERSIONS_LIST => 'File Details',
 	    ]],
 	    [acknowledgement => [
 		FORUM_TEXT_FILE_FORM => 'The file was saved.',
+		FORUM_FILE_FOLDER_ADD => 'The folder has been added.',
+		FORUM_FILE_ADD => 'The file has been added.',
+		FORUM_FILE_UPDATE => 'The file has been updated.',
+		FORUM_FILE_RENAME => 'The file has been renamed.',
+		FORUM_FILE_DELETE => 'The file has been removed.',
+		FORUM_FILE_LOCK => q{The file has been locked - Link('download the file here', [qw(Model.FileLockForm file_uri)]);.},
+		[qw(FORUM_FILE_UNLOCK FORUM_FILE_UNLOCK_OVERRIDE)] =>
+		    'The file has been unlocked.',
 	    ]],
         ],
     };
@@ -501,8 +548,11 @@ sub _cfg_mail {
 	    }],
 	    [MailThreadRootList => [
 		'RealmMail.subject' => 'Topic',
+		'RealmMail.subject_lc' => 'Topic',
 		'RealmFile.modified_date_time' => 'First Post',
 		'RealmMail.from_email' => 'Author',
+		reply_count => 'Replies',
+		'RealmFile_2.modified_date_time' => 'Last Post',
 	    ]],	
 	    [to => 'To'],
 	    [cc => 'Cc'],
