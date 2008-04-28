@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::CalendarEventList;
 use strict;
 use base 'Bivio::Biz::ListModel';
+use Bivio::MIME::Calendar;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CE) = Bivio::Biz::Model->get_instance('CalendarEvent');
