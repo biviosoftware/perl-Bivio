@@ -35,4 +35,9 @@ sub _name {$prefix . shift}
 	    ['display_name'] => 'User X',
 	],
     ],
+    sub {model('User')} => [
+ 	delete => [
+ 	    [] => DIE(),
+ 	],
+    ],
 ];
