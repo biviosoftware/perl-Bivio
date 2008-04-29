@@ -1,54 +1,12 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Secret;
 use strict;
-$Bivio::Util::Secret::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::Secret::VERSION;
+use Bivio::Base 'Bivio::ShellUtil';
 
-=head1 NAME
-
-Bivio::Util::Secret - manipulate secrets
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::Secret;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::Secret::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::Secret> manipulate L<Bivio::Type::Secret|Bivio::Type::Secret>.
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
- usage: b-secret [options] command [args...]
- commands:
-    decrypt_hex value  -- decrypt hex string using current key
-    encrypt_hex value  -- encrypt clear text using current key
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_S) = __PACKAGE__->use('Type.Secret');
+my($_R) = __PACKAGE__->use('Biz.Random');
 
 sub USAGE {
     return <<'EOF';
@@ -56,60 +14,44 @@ usage: b-secret [options] command [args...]
 commands:
     decrypt_hex value  -- decrypt hex string using current key
     encrypt_hex value  -- encrypt clear text using current key
+    generate_bconf algorithm -- generate random bconf for algorithm
 EOF
 }
 
-#=IMPORTS
-use Bivio::Type::Secret;
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="decrypt_hex"></a>
-
-=head2 decrypt_hex(string encoded_hex) : string
-
-Returns clear text.  See
-L<Bivio::Type::Secret::decrypt_hex|Bivio::Type::Secret/"decrypt_hex">.
-
-Does not return a trailing newline.
-
-=cut
-
 sub decrypt_hex {
     my(undef, $encoded_hex) = @_;
-    return Bivio::Type::Secret->decrypt_hex($encoded_hex);
+    return $_S->decrypt_hex($encoded_hex);
 }
-
-=for html <a name="encrypt_hex"></a>
-
-=head2 encrypt_hex(string clear_text) : string
-
-Returns encoded text as hex.  See
-L<Bivio::Type::Secret::encrypt_hex|Bivio::Type::Secret/"encrypt_hex">.
-
-Does not return a trailing newline.
-
-=cut
 
 sub encrypt_hex {
     my(undef, $clear_text) = @_;
-    return Bivio::Type::Secret->encrypt_hex($clear_text);
+    return $_S->encrypt_hex($clear_text);
 }
 
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub generate_bconf {
+    my($self, $algorithm) = shift->name_args([
+	['algorithm', 'PerlName'],
+    ], \@_);
+    my($keysize) = {
+	Blowfish => 56,
+	CAST5 => 16,
+	DES => 16,
+	DES_EDE3 => 24,
+	IDEA => 16,
+	Rijndael => 256,
+    }->{$algorithm} || $self->usage_error($algorithm, ": unknown algorithm\n");
+    my($key) = $_R->hex_digits($keysize * 2);
+    my($magic) = $_R->string(3, [0-9, 'a' .. 'z', 'A' .. 'Z']);
+    return <<"EOF";
+use strict;
+{
+    'Bivio::Type::Secret' => {
+        key => pack('H*', '$key'),
+        magic => '$magic',
+        algorithm => 'algorithm',
+    },
+};
+EOF
+}
 
 1;
