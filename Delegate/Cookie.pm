@@ -72,9 +72,6 @@ sub header_out {
         ? $_F->get_from_request_or_self($req)
             ->unsafe_get('cookie_domain') || $_CFG->{domain}
         : undef;
-    return 0
-	if $domain
-	&& $r->server->server_hostname !~ /\Q$domain\E$/i;
     $fields->{$self->DATE_TIME_FIELD} = $_DT->now;
     my($p) = '; path=/';
     $p .= "; domain=$domain" if $domain;
