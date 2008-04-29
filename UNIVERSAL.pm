@@ -72,6 +72,15 @@ sub die {
     # DOES NOT RETURN
 }
 
+sub do_by_two {
+    my(undef, $op, $values) = @_;
+    foreach my $i (0 .. int((@$values + 1) / 2) - 1) {
+	last
+	    unless $op->($values->[2 * $i], $values->[2 * $i + 1]);
+    }
+    return;
+}
+
 sub equals {
     my($self, $that) = @_;
     # Returns true if I<self> is identical I<that>.

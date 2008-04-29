@@ -6,13 +6,31 @@ sub _reverse_join {
     my($v1, $v2) = @_;
     return $v2 . $v1;
 };
-
+my($do_by_two) = 0;
 [
     class() => [
 	max_number => [
 	    [] => [undef],
 	    [1] => 1,
 	    [1, 2] => 2,
+	],
+	{
+	    method => 'do_by_two',
+	    compute_return => sub {[$do_by_two]},
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [sub {
+		    my($x, $y) = @_;
+		    return 0
+			unless $x;
+	            $do_by_two = $y;
+		    return 1;
+		}, [@$params]];
+	    }
+	} => [
+	    [1, 'a'] => 'a',
+	    [1, 'a', 0, 'b'] => 'a',
+	    [1, 'a', 1, 'b'] => 'b',
 	],
 	map_together => [
 	    [sub {(shift(@_) || '') . shift(@_)}, [qw(a b)], [qw(1 2 3)]]
