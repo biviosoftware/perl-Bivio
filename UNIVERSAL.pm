@@ -76,7 +76,7 @@ sub do_by_two {
     my(undef, $op, $values) = @_;
     foreach my $i (0 .. int((@$values + 1) / 2) - 1) {
 	last
-	    unless $op->($values->[2 * $i], $values->[2 * $i + 1]);
+	    unless $op->($values->[2 * $i], $values->[2 * $i + 1], $i);
     }
     return;
 }
@@ -168,7 +168,7 @@ sub map_by_two {
     my(undef, $op, $values) = @_;
     $values ||= [];
     return [map(
-	$op->($values->[2 * $_], $values->[2 * $_ + 1]),
+	$op->($values->[2 * $_], $values->[2 * $_ + 1], $_),
 	0 .. int((@$values + 1) / 2) - 1,
     )];
 }
