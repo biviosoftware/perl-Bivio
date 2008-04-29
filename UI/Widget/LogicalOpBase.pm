@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::Widget::LogicalOpBase;
 use strict;
-use base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
