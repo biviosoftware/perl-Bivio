@@ -48,7 +48,7 @@ use strict;
     'Bivio::Type::Secret' => {
         key => pack('H*', '$key'),
         magic => '$magic',
-        algorithm => 'algorithm',
+        algorithm => '$algorithm',
     },
 };
 EOF
