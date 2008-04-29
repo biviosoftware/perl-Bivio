@@ -102,6 +102,7 @@ my($_HTML_TAGS) = join('|', qw(
     UL
     VAR
 ));
+my($_AA) = __PACKAGE__->use('Action.Acknowledgement');
 
 sub view_autoload {
     my(undef, $method, $args) = @_;
@@ -115,10 +116,7 @@ sub vs_acknowledgement {
     my($proto, $die_if_not_found) = @_;
     return $proto->vs_call(
 	'If',
-	[sub {
-	     return Bivio::Biz::Action->get_instance('Acknowledgement')
-		 ->extract_label(shift->get_request);
-	}],
+	[sub {$_AA->extract_label(shift->get_request)}],
 	$proto->vs_call(
 	    'Tag',
 	    'p',
