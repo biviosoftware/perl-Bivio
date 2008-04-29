@@ -20,6 +20,13 @@ sub internal_xhtml_adorned {
 		'SITE_ADM_USER_LIST',
 		'FORUM_WIKI_VIEW',
 	    ]),
+	    Link(
+		vs_text('title.FORUM_WIKI_VIEW'),
+		[['->req'], '->format_uri', {
+		    task_id => 'FORUM_WIKI_VIEW',
+		    realm => 'fourem',
+		}],
+	    ),
 	),
     );
     return @res;
