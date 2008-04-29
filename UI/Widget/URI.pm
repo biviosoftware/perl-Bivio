@@ -12,6 +12,8 @@ sub intitialize {
     while (my($k, $v) = each(%$h)) {
 	$self->initialize_value("format_uri_hash.$k", $v);
     }
+    $h->{query} ||= undef;
+    $h->{path_info} ||= undef;
     return;
 }
 
