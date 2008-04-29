@@ -2,18 +2,19 @@
 # $Id$
 package Bivio::Biz::Action::EmptyReply;
 use strict;
-use base 'Bivio::Biz::Action';
-use Bivio::Ext::ApacheConstants;
+use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-Bivio::Agent::Task->register(__PACKAGE__);
+__PACKAGE__->use('Agent.Task')->register(__PACKAGE__);
+my($_AC) = __PACKAGE__->use('Ext.ApacheConstants');
+my($_BA) = __PACKAGE__->use('Action.BasicAuthorization');
 
 sub execute {
     my($proto, $req, $status) = @_;
     $status ||= 'HTTP_OK';
     my($buffer) = '';
     $req->get('reply')
-	->set_http_status(Bivio::Ext::ApacheConstants->$status())
+	->set_http_status($_AC->$status())
 	->set_output(\$buffer);
     return 0;
 }
@@ -38,7 +39,7 @@ sub execute_task_item {
 
 sub handle_pre_auth_task {
     my($proto, $task, $req) = @_;
-    return $proto->get_instance('BasicAuthorization')->execute($req)
+    return $_BA->execute($req)
 	if $task->get('id')->get_name =~ /^BOT_/;
     return;
 }
