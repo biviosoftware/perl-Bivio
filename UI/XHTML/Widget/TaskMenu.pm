@@ -58,9 +58,6 @@ sub initialize {
 		    = Bivio::Agent::TaskId->from_any($cfg->{task_id});
 		$cfg->{label} ||= $cfg->{task_id}->get_name;
 		$cfg->{uri} ||= URI({
-#TODO: Remove query when format_uri no longer carries query by default
-		    query => undef,
-		    path_info => undef,
 		    _cfg($cfg, @$_URI),
 		});
 	    }
