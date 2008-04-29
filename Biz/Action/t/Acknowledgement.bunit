@@ -11,23 +11,16 @@ Request('initialize_fully');
 	    [req()] => ['abc'],
         ],
     ],
-    sub {req()} => [
-	unsafe_get_nested => [
-	    ['Action.Acknowledgement', 'label'] => ['abc'],
-	],
-    ],
     class() => [
 	extract_label => [
-	    [req()] => [undef],
-	],
-    ],
-    sub {req()} => [
-	unsafe_get => [
-	    ['Action.Acknowledgement'] => [undef],
+	    [req()] => ['abc'],
 	],
     ],
     {
-	compute_params => sub {[req()]},
+	compute_params => sub {
+	    class()->delete_from_request(req());
+	    return [req()];
+	},
 	object => class(),
     } => [
 	save_label => undef,

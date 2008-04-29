@@ -11,6 +11,7 @@ my($_V6) = __PACKAGE__->use('IO.Config')->if_version(6);
 my($_LINK_TARGET) = $_V6 ? undef : '_top';
 my($_ATTRS) = {};
 our($_TRACE);
+my($_AA) = __PACKAGE__->use('Action.Acknowledgement');
 
 sub BOP_HTML_CLASSES {
     return [qw(
@@ -135,14 +136,7 @@ sub vs_acknowledgement {
 	'acknowledgement',
         $die_if_not_found ? ()
         : {
-            row_control => [
-                sub {
-		    my($req) = shift->get_request;
-		    return $req->unsafe_get('Action.Acknowledgement')
-			|| Bivio::Biz::Action->get_instance('Acknowledgement')
-			    ->extract_label($req);
-		},
-	    ],
+            row_control => [sub {$_AA->extract_label(shift->req)}],
         });
 }
 
