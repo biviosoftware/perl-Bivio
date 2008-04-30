@@ -142,6 +142,15 @@ sub _cfg_base {
 		uri => '',
 		anchor => 'top',
 	    }],
+	    [xlink_page_error_user => {
+		task_id => 'MY_SITE',
+	    }],
+	    [xlink_page_error_visitor => {
+		task_id => 'SITE_ROOT',
+	    }],
+	    [xlink_page_error_referer => {
+		uri => ['Action.Error', 'uri'],
+	    }],
 	    [my_site_redirect_map => []],
 	    [ThreePartPage_want_UserState => 1],
 	],
@@ -161,6 +170,7 @@ sub _cfg_base {
 	Task => [
 	    [CLIENT_REDIRECT => ['go/*', 'goto/*']],
 	    [CLUB_HOME => '?'],
+	    [DEFAULT_ERROR_REDIRECT => undef],
 	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
  	    [DEFAULT_ERROR_REDIRECT_NOT_FOUND => undef],
  	    [DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND => undef],
@@ -217,7 +227,9 @@ sub _cfg_base {
 		SITE_ROOT => 'Home',
 	    ]],
 	    [title => [
-		[qw(DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND DEFAULT_ERROR_REDIRECT_NOT_FOUND)] => 'Page Not Found',
+		[qw(DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND DEFAULT_ERROR_REDIRECT_NOT_FOUND)] => 'Not Found',
+		[qw(DEFAULT_ERROR_REDIRECT_FORBIDDEN FORBIDDEN)] => 'Access Denied',
+		[qw(DEFAULT_ERROR_REDIRECT)] => 'Server Error',
 	    ]],
 	    [[qw(paged_detail paged_list)] => [
 		prev => 'Back',
@@ -228,6 +240,11 @@ sub _cfg_base {
 		ascend => ' &#9650;',
 		[qw(descend drop_down_arrow)] => ' &#9660;',
 		error_indicator => '&#9654;',
+		page_error => [
+		    [qw(not_found model_not_found)] => q{The page requested was not found or is not a functioning properly.},
+		    server_error => q{The server encountered an error.  The webmaster has been notified.},
+		    forbidden => q{You do not have permission to access this page.},
+		],
 		@{__PACKAGE__->map_by_two(sub {
 		    my($k, $v) = @_;
 		    # Base. is deprecated usage
@@ -373,6 +390,11 @@ sub _cfg_crm {
 		FORUM_CRM_FORM => q{If(['->has_keys', 'Model.RealmMailList'], Join([Enum(['Model.CRMThread', 'crm_thread_status']), ' Ticket #', String(['Model.CRMThread', 'crm_thread_num'])]), 'New Ticket');},
 		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
 		FORUM_CRM_THREAD_LIST => q{Enum(['Model.CRMThreadList', '->get_crm_thread_status']); Ticket #String(['Model.CRMThreadList', '->get_crm_thread_num']); String(['Model.CRMThreadList', '->get_subject']);},
+	    ]],
+	    [xlink => [
+		page_error_referer => 'Go back to the previous page, and try something differently.',
+		page_error_user => 'Go back to your personal page.',
+		page_error_visitor => 'Go to the home page.',
 	    ]],
 	    [acknowledgement => [
 		FORUM_CRM_FORM => 'Your message was sent.',
