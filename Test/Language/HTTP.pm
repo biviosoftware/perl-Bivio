@@ -38,6 +38,7 @@ Bivio::IO::Config->register(my $_CFG = {
 my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
 my($_F) = __PACKAGE__->use('IO.File');
 my($_T) = __PACKAGE__->use('IO.Trace');
+my($_HTML) = __PACKAGE__->use('Bivio.HTML');
 
 sub absolute_uri {
     my($self, $uri) = @_;
@@ -127,6 +128,11 @@ sub do_test_trace {
     $_T->set_filters(@$prev);
     $self->visit_uri("/test-trace/$named_filter");
     return;
+}
+
+sub escape_html {
+    my(undef, $value) = @_;
+    return $_HTML->escape($value);
 }
 
 sub extra_query_params {
