@@ -1,0 +1,34 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+test_deviance();
+visit_uri('/fourem/file/NoFileHere');
+test_conformance();
+test_equals(404, get_response()->code());
+follow_link('go_back.*previous');
+follow_link('fish');
+test_deviance();
+visit_uri('/not-found-uri');
+test_conformance();
+test_equals(404, get_response()->code());
+follow_link('go_back.*previous');
+follow_link('angelfish');
+my($uri) = get_uri() =~ /^(.+)\?/;
+test_deviance();
+do_test_backdoor('NoSuchUtil');
+test_conformance();
+test_equals(500, get_response()->code());
+follow_link('go_back.*previous');
+follow_link('large_angelfish');
+test_self()->put(referer => '');
+test_deviance();
+visit_uri('/not-found-uri');
+test_conformance();
+follow_link('home_page');
+login_as('demo');
+test_self()->put(referer => '');
+test_deviance();
+visit_uri('/not-found-uri');
+test_conformance();
+follow_link('personal_page');
