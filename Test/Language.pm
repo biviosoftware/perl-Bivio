@@ -211,6 +211,10 @@ sub test_script {
    return _assert_in_eval('test_script')->get('test_script');
 }
 
+sub test_self {
+    return _assert_in_eval('test_self');
+}
+
 sub test_setup {
     my($proto, $map_class, @setup_args) = _args(@_);
     # Loads TestLanguage I<map_class>.  Calls L<new|"new"> on the loaded class and
