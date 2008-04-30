@@ -1102,13 +1102,13 @@ sub _send_request {
     my($fields) = $self->[$_IDI];
     $fields->{user_agent}->agent($self->user_agent);
     my($redirect_count) = 0;
-    my($prev_uri) = $self->absolute_uri($fields->{uri})
-	if $fields->{uri};
+    my($prev_uri) = $self->get_or_default('referer', $fields->{uri});
+    $self->delete('referer');
     _save_history($fields);
     while () {
 	$request->header(Authorization => $self->get('Authorization'))
 	    if $self->has_keys('Authorization');
-	$request->header(Referer => $prev_uri)
+	$request->header(Referer => $self->absolute_uri($prev_uri))
 	    if $prev_uri;
 	$fields->{uri} = $request->uri->canonical->as_string;
 	$fields->{cookies}->add_cookie_header($request);
@@ -1123,6 +1123,11 @@ sub _send_request {
 	    =~ /(?:^|\n)Location: (\S*)/si;
 	$request = HTTP::Request->new(GET => $prev_uri = $self->absolute_uri($uri));
     }
+    $fields->{cookies}->extract_cookies($fields->{response});
+    $fields->{html_parser} =
+	Bivio::Test::HTMLParser->new($fields->{response}->content_ref)
+        if $fields->{response}->content_type eq 'text/html';
+    $fields->{redirect_count} = $redirect_count;
     Bivio::Die->die(
 	$request->uri,
 	': uri request failed: ',
@@ -1130,12 +1135,6 @@ sub _send_request {
 	' ',
 	$fields->{response}->message,
     ) unless $fields->{response}->is_success;
-
-    $fields->{cookies}->extract_cookies($fields->{response});
-    $fields->{html_parser} =
-	Bivio::Test::HTMLParser->new($fields->{response}->content_ref)
-        if $fields->{response}->content_type eq 'text/html';
-    $fields->{redirect_count} = $redirect_count;
     return;
 }
 
