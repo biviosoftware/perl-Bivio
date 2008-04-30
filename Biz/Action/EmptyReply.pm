@@ -12,11 +12,14 @@ my($_BA) = __PACKAGE__->use('Action.BasicAuthorization');
 sub execute {
     my($proto, $req, $status) = @_;
     $status ||= 'HTTP_OK';
+    $status = 'NOT_FOUND'
+	if $status =~ /NOT_FOUND/;
+    my($reply) = $req->get('reply') ->set_http_status($_AC->$status());
+    return
+	if $reply->unsafe_get_output;
     my($buffer) = '';
-    $req->get('reply')
-	->set_http_status($_AC->$status())
-	->set_output(\$buffer);
-    return 0;
+    $reply->set_output(\$buffer);
+    return 1;
 }
 
 sub execute_forbidden {
