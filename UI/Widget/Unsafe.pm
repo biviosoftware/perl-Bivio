@@ -9,7 +9,7 @@ my($_DIE) = __PACKAGE__->use('Bivio.Die');
 
 sub render {
     my($self, $source, $buffer) = @_;
-    $_DIE->eval(sub {
+    $_DIE->catch_quietly(sub {
         $$buffer .= ${$self->render_attr(value => $source)};
 	return;
     });
