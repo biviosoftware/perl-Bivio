@@ -9,18 +9,19 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
-    $self->initialize_attr(
-	_prose => Prose(vs_text(xlink => ['->req', "$self"])));
+    $self->initialize_attr(_prose => Prose([sub {
+	my($source) = @_;
+        return vs_text(
+	    $source->req,
+	    'xlink',
+	    $self->render_simple_attr('value', $source),
+	);
+    }]));
     return shift->SUPER::initialize(@_);
 }
 
 sub render {
-    my($self, $source, $buffer) = @_;
-    my($b) = '';
-    $self->SUPER::render($source, \$b);
-    my($req) = $self->req;
-    $req->put("$self" => $b);
-    $self->get('_prose')->render($source, $buffer);
+    shift->render_attr(_prose => @_);
     return;
 }
 
