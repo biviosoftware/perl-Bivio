@@ -242,7 +242,8 @@ sub get_widget_value {
 
     unless (ref($param1)) {
 	# "Not" operation?
-	return $self->get_widget_value(@_) ? 0 : 1 if $param1 eq '!';
+	return $self->get_widget_value(@_) ? 0 : 1
+	    if $param1 eq '!';
 
 	# If first arg begins with '->', then is a method to call.
 	# Evaluate the rest of the arguments in this context.
