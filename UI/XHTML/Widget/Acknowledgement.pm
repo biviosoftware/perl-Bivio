@@ -19,7 +19,7 @@ sub new {
              return Tag(div => Prose(
 		 $_T->get_value(
 		     'acknowledgement',
-		     $req->get_nested('Action.Acknowledgement', 'label'),
+		     $_A->extract_label($req),
 		     $req,
 		 )), 'text');
          }],
