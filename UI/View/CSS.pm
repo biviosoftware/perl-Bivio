@@ -417,7 +417,7 @@ form .submit {
   text-align: center;
 }
 .empty_list,
-.not_found {
+.page_error {
   border: 2px solid;
   Color('empty_list-border');
   padding: .5em;
