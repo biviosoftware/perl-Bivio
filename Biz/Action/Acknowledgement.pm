@@ -73,7 +73,6 @@ sub _extract {
     $proto->new($req)->put_on_request($req)->put(label => $l);
     _trace($proto->QUERY_KEY, '=', $l) if $_TRACE;
     return $l;
-    return;
 }
 
 1;
