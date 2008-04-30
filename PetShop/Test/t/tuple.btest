@@ -36,10 +36,10 @@ follow_link('add.*schema');
 submit_form({
     name => 'Database1',
     prefix => 'd1',
-    qr{field.*_0$}is => 'f1',
+    qr{field.*_0$}is => 'field1',
     qr{type.*_0$}is => 'i1',
     qr{required.*_0$}is => 0,
-    qr{field.*_1$}is => 'f2',
+    qr{field.*_1$}is => 'field2',
     qr{type.*_1$}is => 'Date',
     qr{required.*_1$}is => 1,
 });
@@ -54,8 +54,8 @@ my($range) = [1 .. 5];
 foreach my $i (@$range) {
     go_back() if $i > 1;
     submit_form({
-	f1 => $i,
-	f2 => "12/$i/2001",
+	field1 => 1,
+	field2 => "12/$i/2001",
 	comment => "update #$i",
     });
     sleep(1);
