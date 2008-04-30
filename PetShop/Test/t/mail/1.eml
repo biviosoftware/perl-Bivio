@@ -8,6 +8,7 @@ Content-type: text/html
 <body>
 An HTML mail message with an image:
 <img src="http://www.bivio.biz/i/logo.png">
+$randomizer
 </body>
 </html>
 

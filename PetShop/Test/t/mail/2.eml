@@ -24,6 +24,8 @@ Content-type: multipart/related;    type="multipart/alternative";    boundary="-
 
 This is a multi-part message in MIME format.
 
+$randomizer
+
 ------=_NextPart_000_0066_11440000.33CC0001
 Content-Type: multipart/alternative;
 	boundary="----=_NextPart_001_0067_11440000.33CC0001"
