@@ -8,6 +8,7 @@ my($vars) = test_template_vars({
     user2_email => generate_local_email('mail_user2'),
     user2_name => 'Two Guy',
     forum_email => generate_remote_email('mail_forum'),
+    randomizer => random_string(),
 });
 my($d) = test_use('Type.DateTime');
 my($next_date) = $d->now;
@@ -35,7 +36,7 @@ my($headers) = sub {
 	'Message-Id' => next_message_id(),
 	Date => $date->(),
 	Subject => ref($ref) ? 'Re: ' . $ref->unsafe_get_header('Subject')
-	    : $ref ? "$ref " . random_string()
+	    : $ref ? "$ref " . random_string() . ' & co'
 	    : random_string(),
 	ref($ref) ? (References => $ref->unsafe_get_header('Message-Id')) : (),
     };
@@ -71,7 +72,7 @@ login_as('mail_user1');
 my($user1_email) = generate_local_email('mail_user1');
 visit_uri('/mail_forum/mail');
 follow_link($subject);
-verify_text($subject);
+verify_text(escape_html($subject));
 %$vars = (
     %$vars,
     inner_from => 'Joe Blow <joe@blow.com>',
