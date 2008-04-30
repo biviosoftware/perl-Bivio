@@ -191,7 +191,7 @@ sub _cfg_base {
 	],
 	Text => [
 	    [support_email => 'support'],
-	    [support_name => 'String(vs_site_name()); Support'],
+	    [support_name => 'vs_site_name(); Support'],
 #TODO:	    [support_phone => '(800) 555-1212'],
 	    [[qw(prologue epilogue)] => ''],
 	    [home_page_uri => '/hm/index'],
