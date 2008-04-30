@@ -285,7 +285,8 @@ sub handle_die {
     unless (defined($new_task_id)) {
 	# Default mapped?
 	$new_task_id = $_T->unsafe_from_any(
-	    'DEFAULT_ERROR_REDIRECT_' . $die_code->get_name);
+	    'DEFAULT_ERROR_REDIRECT_' . $die_code->get_name)
+	    || $_T->unsafe_from_any('DEFAULT_ERROR_REDIRECT');
 	unless (defined($new_task_id)) {
 	    _trace('not a mapped task: ', $die_code) if $_TRACE;
 	    return;
