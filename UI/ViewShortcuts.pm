@@ -122,6 +122,11 @@ sub vs_text_as_prose {
     return $proto->vs_call(Prose => $proto->vs_text("prose.$tag"));
 }
 
+sub vs_unsafe {
+    my($proto, @args) = @_;
+    return [sub {shift->get_widget_value, @args}];
+}
+
 sub vs_use {
     return shift->use(@_);
 }
