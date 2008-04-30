@@ -109,7 +109,7 @@ sub info_base {
             14
             GENERAL
             ANYBODY
-            Action.Forbidden
+	    Action.Error
         )],
 	[qw(
             ROBOTS_TXT
@@ -190,7 +190,7 @@ sub info_base {
             55
 	    GENERAL
 	    ANYBODY
-	    View.Error->not_found
+	    Action.Error
 	)],
 	[qw(
             PERMANENT_REDIRECT
@@ -211,7 +211,7 @@ sub info_base {
             58
 	    GENERAL
 	    ANYBODY
-	    View.Error->not_found
+	    Action.Error
 	)],
 	[qw(
 	    TEST_TRACE
@@ -221,6 +221,14 @@ sub info_base {
 	    Action.TestTrace
 	    Action.EmptyReply
 	)],
+	[qw(
+            DEFAULT_ERROR_REDIRECT
+            190
+	    GENERAL
+	    ANYBODY
+	    Action.Error
+	)],
+#191-199 free
     ];
 }
 
