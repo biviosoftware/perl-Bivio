@@ -9,6 +9,7 @@ sub _name {$prefix . shift}
 	create_realm => [
 	    [{first_name => 'User 1'}, {name => _name(1)}] => not_die(),
 	    [{first_name => 'User 2'}, {name => _name(2)}] => not_die(),
+	    [{ignore_empty_name_fields => 1}] => not_die(),
 	],
     ],
     sub {model('RealmOwner')} => [

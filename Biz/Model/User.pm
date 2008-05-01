@@ -31,7 +31,8 @@ sub create {
     $values->{gender} ||= $self->get_field_type('gender')->UNKNOWN;
     _compute_sorting_names($values);
     my($res) = $self->SUPER::create($values);
-    _validate_names($self);
+    _validate_names($self)
+	unless delete($values->{ignore_empty_name_fields});
     return $res;
 }
 
@@ -151,7 +152,8 @@ sub update {
     # first, last and middle are set.
     _compute_sorting_names($new_values);
     my($res) = $self->SUPER::update($new_values);
-    _validate_names($self);
+    _validate_names($self)
+	unless delete($new_values->{ignore_empty_name_fields});
     $self->get_model('RealmOwner')->update({
 	display_name => $self->format_full_name,
     });
