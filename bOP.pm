@@ -18,7 +18,7 @@ bOP
 
     use Bivio::bOP;
 
-=head1 DESCRIPTION
+=head1 DESCRIPTION 
 
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
@@ -31,6 +31,83 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.25  2008/04/30 05:11:45  nagler
+  * Bivio::Agent::Task
+    DEFAULT_ERROR_REDIRECT is the default task when DEFAULT_ERROR_REDIRECT_*
+    doesn't match anything
+  * Bivio::Biz::Action::Acknowledgement
+    Acknowledgement->extract_label returns the label in all cases it is available
+    fmt
+  * Bivio::Biz::Action::EmptyReply
+    use map classes
+    handle MODEL_NOT_FOUND (NOT_FOUND)
+    If output already set, don't set it.  Allows for custom error replies
+  * Bivio::Biz::Model::CalendarEvent
+    now derived from RealmOwnerBase
+  * Bivio::Biz::Model::CalendarEventList
+    added missing import
+  * Bivio::Biz::Model::ForbiddenForm
+    rmpod & cruft
+  * Bivio::Biz::Model::RealmFile
+    added related "other" models
+  * Bivio::Biz::Model::RealmFileTreeList
+    added can_check_in() can_checkout_out(), can_unlock()
+  * Bivio::Biz::Model::RealmOwnerBase
+    don't allow delete() to be called except from cascade_delete()
+  * Bivio::Biz::PropertyModel
+    added unauth_load_user which always returns self
+  * Bivio::Delegate::Cookie
+    removed server_domain change
+  * Bivio::Delegate::RowTagKey
+    added REALM_FILE_LOCK and REALM_FILE_COMMENT
+  * Bivio::Delegate::TaskId
+    added new file tasks
+    call Action.Error
+    added DEFAULT_ERROR_REDIRECT (default server_error task)
+  * Bivio::PetShop::View::Base
+    so password.btest would get error on reset password with ack
+  * Bivio::Test::Language::HTTP
+    allow test to override referer
+  * Bivio::Test::Language
+    added test_self()
+  * Bivio::Type::TreeListNode
+    added LOCKED_LEAF_NODE
+  * Bivio::UI::FacadeBase
+    added file tasks and labels
+    support for View.Error (XLink)
+  * Bivio::UI::HTML::ViewShortcuts
+    added vs_mailto_for_user_id()
+    Acknowledgement->extract_label returns the label in all cases it is available
+  * Bivio::UI::View::CSS
+    not_found => page_error
+  * Bivio::UI::View::Error
+    support for any errors (driven by Action.Error)
+  * Bivio::UI::View::File
+    added view methods for file add/delete/update/lock/unlock
+  * Bivio::UI::ViewShortcuts
+    added vs_unsafe
+    remove vs_unsafe
+  * Bivio::UI::Widget::LogicalOpBase
+    use Bivio::Base
+  * Bivio::UI::Widget::URI
+    query and path_info are empty
+  * Bivio::UI::WidgetValueSource
+    fmpt
+  * Bivio::UI::XHTML::ViewShortcuts
+    Acknowledgement->extract_label returns the label in all cases
+  * Bivio::UI::XHTML::Widget::Acknowledgement
+    Acknowledgement->extract_label returns the label in all cases it is available
+    call extra_label instead of implicit coupling of Acknowledgement.label
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    query and path_info cleared by URI
+  * Bivio::UI::XHTML::Widget::XLink
+    restructured to be fully dynamic
+  * Bivio::UI::XHTML::Widget::XLinkLabel
+    restructured to be fully dynamic
+  * Bivio::UNIVERSAL
+    added do_by_two
+    pass index as third param to map_by_two and do_by_two
+
   Revision 6.24  2008/04/26 15:47:43  nagler
   * Bivio::Biz::Action::WikiView
     route non-WikiNames through WikiDataName
