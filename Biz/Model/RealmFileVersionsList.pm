@@ -6,7 +6,6 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = __PACKAGE__->use('Type.FilePath');
-my($_RTK) = __PACKAGE__->use('Type.RowTagKey');
 
 sub internal_initialize {
     my($self) = @_;
@@ -19,27 +18,21 @@ sub internal_initialize {
 		name => 'RealmFile.path_lc',
 		sort_order => 0,
 	    },
+	    'RealmFileLock.modified_date_time',
 	    'RealmFile.modified_date_time',
 	    'RealmOwner_2.display_name',
-            'Email.email',
-	    {
-		name => 'comment',
-		type => 'RowTag.value',
-		in_select => 1,
-		select_value => "(
-                    SELECT value
-                    FROM row_tag_t
-                    WHERE primary_id = realm_file_t.realm_file_id
-                    AND key = @{[$_RTK->REALM_FILE_COMMENT->as_sql_param]}
-                 ) AS comment",
-	    },
+            'Email_2.email',
+	    'RealmFileLock.comment',
 	],
 	other => [
-            [qw(RealmFile.user_id Email.realm_id RealmOwner_2.realm_id)],
-	    ['Email.location', [$self->use('Model.Email')->DEFAULT_LOCATION]],
-	    'Email.email',
+            [qw(RealmFile.user_id Email_2.realm_id RealmOwner_2.realm_id)],
+	    ['Email_2.location',
+		[$self->use('Model.Email')->DEFAULT_LOCATION]],
+	    'Email_2.email',
 	    'RealmOwner.name',
 	    'RealmOwner_2.display_name',
+	    'RealmOwner_3.display_name',
+	    'Email_3.email',
 	    'RealmFile.path',
 	    'RealmFile.folder_id',
 	    'RealmFile.is_folder',
@@ -63,6 +56,16 @@ sub internal_post_load_row {
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
+    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFile RealmFileLock), [
+	[qw(RealmFile.realm_file_id RealmFileLock.realm_file_id)],
+    ]));
+    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFileLock RealmOwner_3), [
+	[qw(RealmFileLock.user_id RealmOwner_3.realm_id)],
+    ]));
+    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFileLock Email_3), [
+	[qw(RealmFileLock.user_id Email_3.realm_id)],
+	['Email_3.location', [$self->use('Model.Email')->DEFAULT_LOCATION]],
+    ]));
     my(@parts) = split('/', $self->req('path_info'));
     my($name) = $_FP->get_base(pop(@parts));
     $stmt->where(
