@@ -355,7 +355,7 @@ sub vs_put_pager {
 }
 
 sub vs_simple_form {
-    my($proto, $form, $rows) = @_;
+    my($proto, $form, $rows, $no_submit) = @_;
     my($have_submit) = 0;
     my($m) = Bivio::Biz::Model->get_instance($form);
     unshift(@$rows, q{'prologue})
@@ -367,7 +367,7 @@ sub vs_simple_form {
 	q{'epilogue},
     ) unless grep(!ref($_) && $_ eq q{'epilogue}, @$rows);
     push(@$rows, '*')
-        unless _has_submit($proto, $rows);
+        unless $no_submit || _has_submit($proto, $rows);
     return Form(
 	$form,
 	Join([
