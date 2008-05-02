@@ -10,26 +10,28 @@ my($upload) = sub {
 	content_type => 'plain/text',
     };
 };
+my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 [
     sub {
 	model('RealmFile')->create_with_content({
 	    path => '/foo.txt',
 	}, \('some text'));
-        req()->put(path_info => '/foo.txt'),
-        return 1;
+        req()->put(path_info => '/foo.txt');
+	return 1;
     } => 1,
     [{
 	file => $upload->('/mypath/to/the/foo.txt', 'new text'),
 	comment => 'updated',
+	mode => $_FCM->UPLOAD,
     }] => [{
 	'Model.RealmFile' => {
 	    path => '/foo.txt',
 	    is_folder => 0,
 	},
-	'Model.RowTag' => {
-	    primary_id => sub {req(qw(Model.RealmFile realm_file_id))},
-	    value => 'updated',
+	'Model.RealmFileLock' => {
+	    realm_file_id => sub {req(qw(Model.RealmFile realm_file_id))},
+	    comment => 'updated',
 	},
     }],
     sub {

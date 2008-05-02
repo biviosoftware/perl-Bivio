@@ -3,26 +3,30 @@ FormModel();
 require 'RealmFile.PL';
 
 my($upload) = sub {
-    my($path, $content) = @_;
-    return {
-	filename => $path,
-	content => defined($content) ? \$content : \('some text'),
-	content_type => 'plain/text',
-    };
+    my($path, $content, $comment) = @_;
+    return (
+	file => {
+	    filename => $path,
+	    content => defined($content) ? \$content : \('some text'),
+	    content_type => 'plain/text',
+	},
+	comment => $comment || 'a comment',
+    );
 };
+my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 [
     [{
-	file => $upload->('/mypath/to/the/foo.txt'),
-	comment => 'initial revision',
+	$upload->('/mypath/to/the/foo.txt', undef, 'initial revision'),
+	mode => $_FCM->UPLOAD,
     }] => [{
 	'Model.RealmFile' => {
 	    path => '/foo.txt',
 	    is_folder => 0,
 	},
-	'Model.RowTag' => {
-	    primary_id => sub {req(qw(Model.RealmFile realm_file_id))},
-	    value => 'initial revision',
+	'Model.RealmFileLock' => {
+	    realm_file_id => sub {req(qw(Model.RealmFile realm_file_id))},
+	    comment => 'initial revision',
 	},
     }],
     sub {
@@ -36,7 +40,8 @@ my($upload) = sub {
 	return 1;
     } => 1,
     [{
-	file => $upload->('/mypath/to/the/foo2.txt', 'some more text'),
+	$upload->('/mypath/to/the/foo2.txt', 'some more text'),
+	mode => $_FCM->UPLOAD,
     }] => [{
 	'Model.RealmFile' => {
 	    path => '/folder1/foo2.txt',
@@ -47,21 +52,26 @@ my($upload) = sub {
 	${req('Model.RealmFile')->get_content} eq 'some more text' ? 1 : 0;
     } => 1,
     error_case({
+	comment => 'x',
+	mode => $_FCM->UPLOAD,
     }, {
 	file => 'NULL',
     }),
     error_case({
-	file => $upload->('*'),
+	$upload->('*'),
+	mode => $_FCM->UPLOAD,
     }, {
 	file => 'FILE_NAME',
     }),
     error_case({
-	file => $upload->('foo3.txt', ''),
+	$upload->('foo3.txt', ''),
+	mode => $_FCM->UPLOAD,
     }, {
 	file => 'EMPTY',
     }),
     error_case({
-	file => $upload->(''),
+	$upload->(''),
+	mode => $_FCM->UPLOAD,
     }, {
 	file => 'FILE_NAME',
     }),

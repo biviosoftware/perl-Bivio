@@ -1,9 +1,13 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 FormModel();
 require 'RealmFile.PL';
+
+my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
+
 [
     [{
 	name => 'folder1',
+	mode => $_FCM->ADD_SUBFOLDER,
     }] => [{
 	'Model.RealmFile' => {
 	    path => '/folder1',
@@ -16,6 +20,7 @@ require 'RealmFile.PL';
     } => 1,
     [{
 	name => 'folder2',
+	mode => $_FCM->ADD_SUBFOLDER,
     }] => [{
 	'Model.RealmFile' => {
 	    path => '/folder1/folder2',
@@ -24,12 +29,15 @@ require 'RealmFile.PL';
     }],
     error_case({
 	name => 'blah/foo',
+	mode => $_FCM->ADD_SUBFOLDER,
     }, {
 	name => 'FILE_NAME',
     }),
     error_case({
+	mode => $_FCM->ADD_SUBFOLDER,
     }, {
 	name => 'NULL',
+	mode => $_FCM->ADD_SUBFOLDER,
     }),
     sub {
 	req()->put(path_info => '/folderx');
@@ -37,5 +45,6 @@ require 'RealmFile.PL';
     } => 1,
     [{
 	name => 'folder3',
+	mode => $_FCM->ADD_SUBFOLDER,
     }] => Bivio::DieCode->MODEL_NOT_FOUND,
 ];

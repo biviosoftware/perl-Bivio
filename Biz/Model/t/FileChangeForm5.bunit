@@ -1,0 +1,61 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+require 'RealmFile.PL';
+
+my($lock_id);
+my($lock) = sub {
+    $lock_id = model('RealmFileLock')->create({
+	realm_file_id => req(qw(Model.RealmFile realm_file_id)),
+    })->get('realm_file_lock_id');
+    return;
+};
+my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
+
+[
+    sub {
+	model('RealmFile')->create_with_content({
+	    path => '/foo.txt',
+	}, \('some text'));
+        $lock->();
+        req()->put(path_info => '/foo.txt');
+        return 1;
+    } => 1,
+    sub {
+	my($f) = class()->new(req());
+	$f->internal_pre_execute();
+	$f->execute_other('abort_button');
+	return model('RealmFileLock')->unsafe_load({
+	    realm_file_id => req(qw(Model.RealmFile realm_file_id)),
+	    comment => undef,
+	}) ? 0 : 1;
+    } => 1,
+    sub {
+	$lock->();
+	die() unless req('Model.RealmFileLock');
+	return 1;
+    } => 1,
+    [{
+	file => {
+	    filename => '/mypath/foo.txt',
+	    content => \('new text'),
+	    content_type => 'plain/text',
+	},
+	comment => 'a comment',
+	mode => $_FCM->UPLOAD,
+	'RealmFileLock.realm_file_lock_id' => sub {$lock_id},
+    }] => [{
+        'Model.RealmFileLock' => {
+	    comment => 'a comment',
+	},
+    }],
+    [{
+	file => {
+	    filename => '/mypath/foo.txt',
+	    content => \('new text'),
+	    content_type => 'plain/text',
+	},
+	comment => 'a comment',
+	mode => $_FCM->UPLOAD,
+	'RealmFileLock.realm_file_lock_id' => '123',
+    }] => Bivio::DieCode->FORBIDDEN,
+];

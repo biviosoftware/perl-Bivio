@@ -1,6 +1,7 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 FormModel();
 require 'RealmFile.PL';
+my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 [
     sub {
@@ -8,9 +9,12 @@ require 'RealmFile.PL';
 	    path => '/foo.txt',
 	}, \('some text'));
         req()->put(path_info => '/foo.txt'),
-        return 1;
+	return 1;
     } => 1,
-    [{}] => [{}],
+    [{
+	mode => $_FCM->DELETE,
+	comment => 'x',
+    }] => [{}],
     sub {
 	model('RealmFile')->create_folder({
 	    path => '/folder1',
@@ -21,12 +25,18 @@ require 'RealmFile.PL';
         req()->put(path_info => '/folder1'),
         return 1;
     } => 1,
-    [{}] => [{}],
+    [{
+	mode => $_FCM->DELETE,
+	comment => 'x',
+    }] => [{}],
     sub {
 	req()->put(path_info => '/folder1/foo.txt'),
-	return 1;
+	    return 1;
     } => 1,
-    [{}] => Bivio::DieCode->MODEL_NOT_FOUND,
+    [{
+	mode => $_FCM->DELETE,
+	comment => 'x',
+    }] => Bivio::DieCode->MODEL_NOT_FOUND,
     sub {
 	model('RealmFile')->create_with_content({
 	    path => '/foo.txt',
@@ -35,5 +45,8 @@ require 'RealmFile.PL';
         req()->put(path_info => '/foo.txt'),
         return 1;
     } => 1,
-    [{}] => Bivio::DieCode->FORBIDDEN,
+    [{
+	mode => $_FCM->DELETE,
+	comment => 'x',
+    }] => Bivio::DieCode->FORBIDDEN,
 ];

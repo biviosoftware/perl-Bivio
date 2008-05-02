@@ -9,6 +9,7 @@ my($file_exists) = sub {
     });
     return 1;
 };
+my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 [
     sub {
@@ -16,18 +17,20 @@ my($file_exists) = sub {
 	    path => '/foo.txt',
 	}, \('some text'));
         req()->put(path_info => '/foo.txt'),
-        return 1;
-    } => 1,
-    [{
-	name => 'foo2.txt',
-    }] => [{}],
-    sub {
-	$file_exists->('foo2.txt');
-        req()->put(path_info => '/foo2.txt');
 	return 1;
     } => 1,
     [{
-	name => 'foo3',
+	rename_name => 'foo2.txt',
+	mode => $_FCM->RENAME,
+    }] => [{}],
+    sub {
+	$file_exists->('foo2.txt');
+	req()->put(path_info => '/foo2.txt');
+	return 1;
+    } => 1,
+    [{
+	rename_name => 'foo3',
+	mode => $_FCM->RENAME,
     }] => [{}],
     sub {
 	$file_exists->('foo3.txt');
@@ -36,16 +39,19 @@ my($file_exists) = sub {
 	model('RealmFile')->create_folder({
 	    path => '/foo',
 	});
-        req()->put(path_info => '/foo'),
-        return 1;
+	req()->put(path_info => '/foo'),
+	return 1;
     } => 1,
     [{
-	name => 'foo2',
+	rename_name => 'foo2',
+	mode => $_FCM->RENAME,
     }] => [{}],
     sub {
 	$file_exists->('foo2');
     } => 1,
-    error_case({}, {
-	name => 'NULL',
+    error_case({
+	mode => $_FCM->RENAME,
+    }, {
+	rename_name => 'NULL',
     }),
 ];
