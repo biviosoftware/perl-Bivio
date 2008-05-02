@@ -17,25 +17,6 @@ sub PARENT_NODE_ID_FIELD {
     return 'RealmFile.folder_id';
 }
 
-sub can_check_in {
-    my($self) = @_;
-    return 0 unless $self->is_file;
-    return $self->get('lock_user_id')
-	&& ($self->get('lock_user_id') eq $self->req('auth_user_id'))
-	? 1 : 0;
-}
-
-sub can_check_out {
-    my($self) = @_;
-    return 0 unless $self->is_file;
-    return $self->get('RealmFile.is_read_only') ? 0 : 1;
-}
-
-sub can_unlock {
-    my($self) = @_;
-    return $self->get('lock_user_id') && $self->can_check_in ? 1 : 0;
-}
-
 sub internal_default_expand {
     my($self) = @_;
     return [$self->new_other('RealmFile')->load({folder_id => undef})
@@ -50,34 +31,28 @@ sub internal_initialize {
         auth_id => ['RealmFile.realm_id', 'RealmOwner.realm_id'],
 	order_by => [qw(
 	    RealmFile.path_lc
+            RealmFileLock.modified_date_time
 	    RealmFile.modified_date_time
-            Email.email
+            Email_2.email
             RealmOwner_2.display_name
+	    Email_3.email
+	    RealmOwner_3.display_name
 	)],
 	other => [
 	    'RealmOwner.name',
 	    'RealmFile.path',
 	    'RealmFile.folder_id',
 	    'RealmFile.is_read_only',
-            [qw(RealmFile.user_id Email.realm_id RealmOwner_2.realm_id)],
+            [qw(RealmFile.user_id Email_2.realm_id RealmOwner_2.realm_id)],
 	    'RealmFile.is_folder',
+	    'RealmFileLock.comment',
 	    {
 		name => 'base_name',
 		type => 'FilePath',
 		constraint => 'NONE',
 	    },
-	    ['Email.location', [$self->use('Model.Email')->DEFAULT_LOCATION]],
-	    {
-		name => 'lock_user_id',
-		type => 'User.user_id',
-		in_select => 1,
-		select_value => "(
-                    SELECT value
-                    FROM row_tag_t
-                    WHERE primary_id = realm_file_t.realm_file_id
-                    AND key = @{[$_RTK->REALM_FILE_LOCK->as_sql_param]}
-                 ) AS lock_user_id",
-	    },
+	    ['Email_2.location',
+		[$self->use('Model.Email')->DEFAULT_LOCATION]],
 	],
     });
 }
@@ -105,7 +80,7 @@ sub internal_parent_id {
 sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{node_state} = $_TLN->LOCKED_LEAF_NODE
-	if $row->{lock_user_id};
+	if $row->{'RealmFileLock.modified_date_time'};
     $row->{base_name} = $row->{'RealmFile.path'} eq '/' ? '/'
 	: Bivio::Type::FileName->get_tail($row->{'RealmFile.path'});
     return 1;
@@ -113,6 +88,17 @@ sub internal_post_load_row {
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
+    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFile RealmFileLock), [
+	[qw(RealmFile.realm_file_id RealmFileLock.realm_file_id)],
+	['RealmFileLock.comment', [undef]],
+    ]));
+    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFileLock RealmOwner_3), [
+	[qw(RealmFileLock.user_id RealmOwner_3.realm_id)],
+    ]));
+    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFileLock Email_3), [
+	[qw(RealmFileLock.user_id Email_3.realm_id)],
+	['Email_3.location', [$self->use('Model.Email')->DEFAULT_LOCATION]],
+    ]));
     # /Mail is probably large so we'll ignore it
     # dot-files are uninteresting, so we'll ignore them.
     # All are available via DAV
@@ -128,28 +114,9 @@ sub internal_root_parent_node_id {
     return undef;
 }
 
-sub is_child_folder {
-    my($self) = @_;
-    return is_folder($self) && $self->get('RealmFile.path_lc') ne '/';
-}
-
 sub is_file {
     my($self) = @_;
     return $self->get('RealmFile.is_folder') ? 0 : 1;
-}
-
-sub is_folder {
-    my($self) = @_;
-    return $self->get('RealmFile.is_folder');
-}
-
-sub is_root {
-    my($self) = @_;
-    return $self->get_cursor == 0;
-}
-
-sub is_text_content_type {
-    return $_RF->is_text_content_type(shift, 'RealmFile.');
 }
 
 1;
