@@ -87,7 +87,9 @@ function first_focus_onload() {
     var fields = document.forms[0].elements;
     for (i=0; i < fields.length; i++) {
         if (fields[i].type == 'text' || fields[i].type == 'textarea') {
-            fields[i].focus();
+            try {
+                fields[i].focus();
+            } catch (err) {}
             break;
         }
     }
