@@ -29,20 +29,6 @@ sub file_change {
 		], String(' - ')),
 		Join([
 		    _last_updated('FileChangeForm'),
-		    If(['Model.FileChangeForm', 'realm_file_lock'], Join([
-			DIV_prose(Join([
-			    'Locked by ',
-			    String([['Model.FileChangeForm', 'realm_file_lock',
-			        '->get_model', 'User'], '->format_full_name']),
-			    ' on ',
-			    DateTime(['Model.FileChangeForm',
-				'realm_file_lock', 'modified_date_time']),
-			    ' - ',
-			    _abort_link(),
-			])),
-			If(['!', 'Model.FileChangeForm', '->is_lock_owner'],
-			    _lock_warning()),
-		    ])),
 		    String("\n"),
 		    Join([
 			If(['Model.FileChangeForm', '->is_text_content_type'],
@@ -55,6 +41,7 @@ sub file_change {
 		]),
 	    ),
 	    vs_blank_cell(),
+	    FormFieldError('RealmFile.path_lc'),
 	    ['FileChangeForm.name', {
 		row_class => 'hidden_file_field',
 	    }],
@@ -78,11 +65,7 @@ sub file_change {
 		row_class => 'hidden_file_field',
 		rows => 2,
 	    }],
-	    If(['Model.FileChangeForm', '->is_folder'],
-		StandardSubmit([qw(ok_button cancel_button)]),
-		StandardSubmit([qw(ok_button cancel_button abort_button)]),
-	    ),
-	], 1)->put(form_name => 'file_form'),
+	])->put(form_name => 'file_form'),
 	"\n" . '<script type="text/javascript">' . "\n",
 	[sub {
 	     my($source, $mode) = @_;
@@ -92,19 +75,22 @@ sub file_change {
     ]));
 }
 
+sub file_unlock {
+    return shift->internal_body(vs_simple_form('FileUnlockForm', [
+	DIV_warn(Join([
+	    'Override the lock on this file owned by ',
+	    String([['Model.RealmFileLock', '->get_model', 'User'],
+		'->format_full_name']),
+	    '?',
+	])),
+    ]));
+}
+
 sub tree_list {
-    my($d) = If(['RealmFileLock.modified_date_time'],
-	DateTime(['RealmFileLock.modified_date_time']),
-	DateTime(['RealmFile.modified_date_time']),
-    );
     return shift->internal_body(vs_tree_list(RealmFileTreeList => [
 	['RealmFile.path', {
 	    column_order_by => ['RealmFile.path_lc'],
-	    column_widget => Join([
-		String(['base_name']),
-		If(['RealmFileLock.modified_date_time'],
-		    String(' (locked)')),
-	    ]),
+	    column_widget => _file_name(['base_name']),
 	}],
 	['RealmFile.modified_date_time', {
 	    column_widget => If(
@@ -112,20 +98,14 @@ sub tree_list {
 		    ['->is_file'],
 		    ['!', \&_is_archive],
 		),
-		Link($d, URI({
+		Link(_file_date(), URI({
 		    task_id => 'FORUM_FILE_VERSIONS_LIST',
 		    path_info => ['RealmFile.path'],
 		})),
-		$d,
+		_file_date(),
 	    ),
 	}],
-	{
-	    column_heading => 'RealmOwner_2.display_name',
- 	    column_widget => If (['RealmOwner_3.display_name'],
-		MailTo(['Email_3.email'], ['RealmOwner_3.display_name']),
-		MailTo(['Email_2.email'], ['RealmOwner_2.display_name']),
-	    ),
-	},
+	_file_owner_column(),
 	{
 	    column_data_class => 'list_actions',
 	    column_widget => ListActions([
@@ -169,10 +149,11 @@ sub version_list {
 	    column_order_by => ['RealmFile.path_lc'],
 	    column_widget => Link(
 		Join([
-		    Image(vs_text('leaf_node')),
-		    Tag(span => String(
-			[['->get_list_model'], 'revision_number']),
-			'name'),
+ 		    If(['->is_locked'],
+ 			Image(vs_text('RealmFileList.locked_leaf_node')),
+ 			Image(vs_text('RealmFileList.leaf_node')),
+ 		    ),
+		    _file_name(['revision_number']),
 		]),
 		URI({
 		    task_id => 'FORUM_FILE',
@@ -181,31 +162,38 @@ sub version_list {
 	    ),
 	}],
 	['RealmFile.modified_date_time', {
-	    column_widget => If(['RealmFileLock.modified_date_time'],
-		DateTime(['RealmFileLock.modified_date_time']),
-		DateTime(['RealmFile.modified_date_time']),
-	    ),
+	    column_widget => _file_date(),
 	}],
-	['RealmOwner_2.display_name', {
-	    column_widget => If(['RealmFileLock.modified_date_time'],
-		MailTo(['Email_3.email'], ['RealmOwner_3.display_name']),
-		MailTo(['Email_2.email'], ['RealmOwner_2.display_name']),
-	    ),
-	}],
+	_file_owner_column(),
 	'RealmFileLock.comment',
 #TODO: sorting isn't preserving path_info
     ])->put(want_sorting => 0));
 }
 
-sub _abort_link {
-    return Link('Release lock and abort changes', '#')->put(attributes => [
-	sub {
-	    my($source) = @_;
-	    return ' onclick="document.file_form.'
-		. $source->req('Model.FileChangeForm')
-		    ->get_field_name_for_html('abort_button')
-		. '.click(); return 0;"';
-	}]);
+sub _file_date {
+    return If(['RealmFileLock.modified_date_time'],
+	DateTime(['RealmFileLock.modified_date_time']),
+	DateTime(['RealmFile.modified_date_time']),
+    );
+}
+
+sub _file_name {
+    my($name) = @_;
+    return Join([
+	String($name),
+	If(['->is_locked'],
+	    SPAN_warn(' (locked)')),
+    ]);
+}
+
+sub _file_owner_column {
+    return ['RealmOwner_2.display_name', {
+	column_widget => If (['->is_locked'],
+	    MailTo(['Email_3.email'],
+		SPAN_warn(['RealmOwner_3.display_name'])),
+	    MailTo(['Email_2.email'], ['RealmOwner_2.display_name']),
+	),
+    }];
 }
 
 sub _is_archive {
@@ -287,18 +275,6 @@ sub _link {
 	' id="' . _javascript_link_name($_FCM->from_name($mode)) . '"'
 	. ' onclick="' . _javascript_function_name($_FCM->from_name($mode))
 	. '; return false"');
-}
-
-sub _lock_warning {
-    return Join([
-	String("\n"),
-	DIV_warn(Join([
-	    'WARNING: '
-	    . ' Any changes made will override the existing lock owned by ',
-	    String([['Model.FileChangeForm', 'realm_file_lock',
-	        '->get_model', 'User'], '->format_full_name']),
-	])),
-    ]);
 }
 
 sub _mailto {
