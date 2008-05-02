@@ -410,6 +410,11 @@ sub get_delegate_info {
 	undef,
 	'field is too short',
     ],
+    INVALID_FOLDER => [
+	77,
+	undef,
+	'A folder may not be put in one of its subfolders',
+    ],
 ];
 }
 
