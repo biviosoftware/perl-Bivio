@@ -38,8 +38,8 @@ sub internal_initialize {
 }
 
 sub is_locked {
-    my($self) = @_;
-    return defined($self->get('comment')) ? 0 : 1;
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    return defined($model->get($model_prefix . 'comment')) ? 0 : 1;
 }
 
 1;
