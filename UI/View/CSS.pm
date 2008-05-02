@@ -575,6 +575,17 @@ div.blog .sidebar ul {
 EOF
 }
 
+sub _site_file {
+    return <<'EOF';
+.hidden_file_field {
+   display: none;
+}
+.visible_file_field {
+   display: table-row;
+}
+EOF
+}
+
 sub _site_mail {
     return <<'EOF';
 .msg {
