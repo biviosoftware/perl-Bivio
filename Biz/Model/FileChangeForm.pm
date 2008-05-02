@@ -9,11 +9,19 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 my($_FN) = __PACKAGE__->use('Type.FileName');
 my($_FP) = Bivio::Type->get_instance('FilePath');
 
+sub QUERY_KEY {
+    return 'mode';
+}
+
+sub execute_cancel {
+    my($self) = @_;
+    _release_lock($self);
+    return shift->SUPER::execute_cancel(@_);
+}
+
 sub execute_empty {
     my($self) = @_;
-    $self->internal_put_field(mode => $self->is_text_content_type
-	? $_FCM->TEXT_FILE
-	: $_FCM->UPLOAD);
+    $self->internal_put_field(mode => _default_mode($self));
     $self->internal_put_field(content =>
 	${$self->get('realm_file')->get_content})
 	if $self->is_text_content_type;
@@ -112,13 +120,6 @@ sub execute_ok {
     return;
 }
 
-sub execute_other {
-    my($self, $button) = @_;
-    _release_lock($self)
-	if $button eq 'abort_button';
-    return 'next';
-}
-
 sub get_fields_for_mode {
     my($self, $mode) = @_;
 #TODO: comment only required for file-locking
@@ -153,7 +154,6 @@ sub internal_initialize {
 		[qw(file FileField)],
 		[qw(comment RowTagValue)],
 		[qw(content Text64K)],
-		[qw(abort_button FormButton)],
 	    )),
 	],
 	hidden => [
@@ -168,6 +168,8 @@ sub internal_initialize {
 	    },
 	],
 	other => [
+	    # this field gets the EXISTS error, also used for forbidden error
+	    'RealmFile.path_lc',
 	    {
 		name => 'realm_file',
 		type => 'Model.RealmFile',
@@ -196,16 +198,17 @@ sub internal_pre_execute {
 	}) ? $lock : undef);
 
     if ($self->get('RealmFileLock.realm_file_lock_id')) {
-	$self->throw_die('FORBIDDEN', {
-	    message => 'mismatched lock',
-	}) unless $self->get('RealmFileLock.realm_file_lock_id')
-	    eq ($self->get('realm_file_lock')
-		? $self->get('realm_file_lock')->get('realm_file_lock_id')
-		: '');
+	$self->internal_put_error('RealmFile.path_lc' => 'STALE_FILE_LOCK')
+	    unless $self->get('RealmFileLock.realm_file_lock_id')
+		eq ($self->get('realm_file_lock')
+		    ? $self->get('realm_file_lock')->get('realm_file_lock_id')
+		    : '');
     }
     $self->internal_put_field('RealmFileLock.realm_file_lock_id' =>
 	$self->get('realm_file_lock')->get('realm_file_lock_id'))
 	if $self->get('realm_file_lock');
+    $self->req->server_redirect(Bivio::Agent::TaskId->FORUM_FILE_OVERRIDE_LOCK)
+	if $self->get('realm_file_lock') && ! $self->is_lock_owner;
     return;
 }
 
@@ -252,6 +255,16 @@ sub _add_file_name {
     $self->internal_put_error(file => 'FILE_NAME')
 	unless defined($name);
     return $name;
+}
+
+sub _default_mode {
+    my($self) = @_;
+    my($mode) = $_FCM->unsafe_from_any(
+	($self->req('query') || {})->{$self->QUERY_KEY});
+    return $mode if $mode;
+    return $self->is_text_content_type
+	? $_FCM->TEXT_FILE
+	: $_FCM->UPLOAD;
 }
 
 sub _release_lock {
