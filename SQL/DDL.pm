@@ -485,6 +485,37 @@ CREATE INDEX realm_file_t12 ON realm_file_t (
 /
 
 --
+-- realm_file_lock_t
+--
+ALTER TABLE realm_file_lock_t
+  ADD CONSTRAINT realm_file_lock_t2
+  FOREIGN KEY (realm_file_id)
+  REFERENCES realm_file_t(realm_file_id)
+/
+CREATE INDEX realm_file_lock_t3 ON realm_file_lock_t (
+  realm_file_id
+)
+/
+ALTER TABLE realm_file_lock_t
+  ADD CONSTRAINT realm_file_lock_t4
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX realm_file_lock_t5 ON realm_file_lock_t (
+  realm_id
+)
+/
+ALTER TABLE realm_file_lock_t
+  ADD CONSTRAINT realm_file_lock_t6
+  FOREIGN KEY (user_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX realm_file_lock_t7 ON realm_file_lock_t (
+  user_id
+)
+/
+
+--
 -- realm_mail_t
 --
 ALTER TABLE realm_mail_t
@@ -906,8 +937,13 @@ CREATE SEQUENCE motion_s
   CACHE 1 INCREMENT BY 100000
 /
 
+CREATE SEQUENCE realm_file_lock_s
+  MINVALUE 100009
+  CACHE 1 INCREMENT BY 100000
+/
+
 --
--- 100009-14 available
+-- 100010-14 available
 --
 
 CREATE SEQUENCE ec_payment_s
@@ -1270,6 +1306,17 @@ CREATE TABLE realm_file_t (
   is_public NUMERIC(1) NOT NULL,
   is_read_only NUMERIC(1) NOT NULL,
   CONSTRAINT realm_file_t1 PRIMARY KEY(realm_file_id)
+)
+/
+
+CREATE TABLE realm_file_lock_t (
+  realm_file_lock_id NUMERIC(18),
+  realm_file_id NUMERIC(18) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18) NOT NULL,
+  comment VARCHAR(500),
+  CONSTRAINT realm_file_lock_t1 PRIMARY KEY(realm_file_lock_id)
 )
 /
 
