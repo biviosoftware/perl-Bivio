@@ -415,6 +415,11 @@ sub get_delegate_info {
 	undef,
 	'A folder may not be put in one of its subfolders',
     ],
+    STALE_FILE_LOCK => [
+	78,
+	undef,
+	'Your lock on this file is no longer valid, please revisit the file from the file tree',
+    ],
 ];
 }
 
