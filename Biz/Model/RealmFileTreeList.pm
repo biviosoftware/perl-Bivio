@@ -119,4 +119,9 @@ sub is_file {
     return $self->get('RealmFile.is_folder') ? 0 : 1;
 }
 
+sub is_locked {
+    my($self) = @_;
+    return $self->get('RealmFileLock.modified_date_time') ? 1 : 0;
+}
+
 1;
