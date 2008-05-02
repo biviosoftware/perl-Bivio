@@ -560,7 +560,17 @@ sub info_file {
 	    View.File->file_change
             next=FORUM_FILE_TREE_LIST
         )],
-#174-179 free
+	[qw(
+ 	    FORUM_FILE_OVERRIDE_LOCK
+ 	    174
+ 	    FORUM
+            DATA_READ&DATA_WRITE
+            Model.Lock
+            Model.FileUnlockForm
+	    View.File->file_unlock
+            next=FORUM_FILE_TREE_LIST
+        )],
+#175-179 free
     ];
 }
 
