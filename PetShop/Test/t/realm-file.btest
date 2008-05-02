@@ -18,12 +18,30 @@ visit_uri('/btest_read/file/private/image.gif');
 verify_content_type('image/gif');
 home_page();
 login_as('root');
-visit_uri('/fourem/file');
+visit_uri('/fourem/files');
 follow_link('Archived');
-visit_uri(my $uri = '/fourem/edit-file/realm-file-btest.txt');
-submit_form(Save => {
+
+my($fixup_uri) = sub {
+    my($mode) = @_;
+    visit_uri(get_uri() . '&mode=' . $mode);
+};
+
+
+if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
+    follow_link_in_table('Name', 'Name', 'realm-file-btest.txt',
+	'', 'Change');
+    $fixup_uri->('DELETE'),
+    submit_form(OK => {
+	'Comments:' => 'deleted by acceptance test',
+    });
+}
+
+follow_link_in_table('Name', 'Name', '/', '', 'Change');
+$fixup_uri->('TEXT_FILE'),
+submit_form(OK => {
+    'Name:' => 'realm-file-btest.txt',
     _anon => my $c = random_string(),
+    'Comments:' => 'x',
 });
 follow_link('realm-file-btest.txt');
 verify_text($c);
-
