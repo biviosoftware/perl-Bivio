@@ -72,7 +72,6 @@ sub _assert_tunnel_enabled {
 
 sub _create_and_login {
     my($self) = @_;
-    _login($self, $_CFG->{admin_user}, $_CFG->{admin_password});
     $self->internal_send_http_request(HTTP::Request::Common::POST(
 	$self->get('site_base') . '/sf/sfmain/do/createUser', [
 	    sfsubmit => 'submit',
@@ -84,6 +83,32 @@ sub _create_and_login {
 	]), 1);
     $self->internal_send_http_request(HTTP::Request::Common::GET(
 	$self->get('site_base') . '/sf/sfmain/do/logout'), 1);
+    return _login($self);
+}
+
+sub _edit_or_create_and_login {
+    my($self) = @_;
+    _login($self, $_CFG->{admin_user}, $_CFG->{admin_password});
+    my($response) = $self->internal_send_http_request(
+	HTTP::Request::Common::GET($self->get('site_base')
+	    . '/sf/global/do/editUser/' . $self->internal_username), 1);
+    my($version) = $response->content =~ m,name="version" value="(\d+)",;
+    # sf returns an empty form instead of not found
+    return _create_and_login($self) unless $version;
+    $self->internal_send_http_request(HTTP::Request::Common::POST(
+ 	$self->get('site_base') . '/sf/global/do/editUser/'
+	. $self->internal_username, [
+	    sfsubmit => 'submit',
+	    username => $self->internal_username,
+	    password => $_CFG->{user_password},
+	    confirmPassword => $_CFG->{user_password},
+	    version => $version,
+	    fullName => $self->req(qw(auth_user display_name)),
+	    email => $self->internal_email,
+	    userDatePattern => 'yyyy-MM-dd',
+	    userTimePattern => 'HH:mm',
+	    status => 'Active',
+	]), 1);
     return _login($self);
 }
 
@@ -115,7 +140,7 @@ sub _execute {
     $self->req('reply')->delete('output');
     return $self->get('login') == 1
 	? _login($self)
-	: _create_and_login($self);
+	: _edit_or_create_and_login($self);
 }
 
 sub _fixup_svn_checkout_uri {
