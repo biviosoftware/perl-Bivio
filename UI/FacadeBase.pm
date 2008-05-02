@@ -437,6 +437,10 @@ sub _cfg_dav {
 
 sub _cfg_file {
     return {
+	FormError => [
+	    ['FileChangeForm.RealmFile.path_lc.EXISTS' =>
+		'A file with this name already exists.'],
+	],
 	Task => [
 	    [FORUM_EASY_FORM => '?/Forms/*'],
 	    $_C->if_version(
@@ -455,6 +459,7 @@ sub _cfg_file {
 	    [FORUM_FILE_TREE_LIST => '?/files/*'],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
+	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -464,7 +469,6 @@ sub _cfg_file {
 		comment => 'Comments',
 		content => '',
 		folder_id => 'New Parent Folder',
-		abort_button => 'Abort',
 	    ]],
 	    [[qw(RealmFileList RealmFileTreeList)] => [
 		'RealmFile.path' => 'Name',
@@ -491,6 +495,7 @@ sub _cfg_file {
 		FORUM_FILE => 'Files',
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Add/Update File/Folder',
+		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
 	    ]],
         ],
     };
