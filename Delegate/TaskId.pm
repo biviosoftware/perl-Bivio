@@ -532,15 +532,6 @@ sub info_file {
 		);
 	    },
 	),
-	[qw(
-            FORUM_TEXT_FILE_FORM
-            170
-            FORUM
-            DATA_READ&DATA_WRITE
-            Model.TextFileForm
-	    View.File->text_form
-	    next=FORUM_FILE
-        )],
  	[qw(
  	    FORUM_FILE_TREE_LIST
  	    171
@@ -551,85 +542,25 @@ sub info_file {
 	    next=FORUM_FILE
         )],
 	[qw(
- 	    FORUM_FILE_FOLDER_ADD
+ 	    FORUM_FILE_VERSIONS_LIST
  	    172
  	    FORUM
-            DATA_READ&DATA_WRITE
-            Model.FolderAddForm
-	    View.File->folder_add
-            next=FORUM_FILE_TREE_LIST
+ 	    DATA_READ
+	    Model.RealmFileVersionsList->execute_load_all
+ 	    View.File->version_list
         )],
 	[qw(
- 	    FORUM_FILE_DELETE
+ 	    FORUM_FILE_CHANGE
  	    173
  	    FORUM
             DATA_READ&DATA_WRITE
-            Model.FileDeleteForm
-	    View.File->file_delete
+            Model.Lock
+            Model.FileChangeForm
+            Model.RealmFolderList->execute_load_all
+	    View.File->file_change
             next=FORUM_FILE_TREE_LIST
         )],
-	[qw(
- 	    FORUM_FILE_ADD
- 	    174
- 	    FORUM
-            DATA_READ&DATA_WRITE
-            Model.FileAddForm
-	    View.File->file_add
-            next=FORUM_FILE_TREE_LIST
-        )],
-	[qw(
- 	    FORUM_FILE_LOCK
- 	    175
- 	    FORUM
- 	    DATA_READ&DATA_WRITE
-            Model.FileLockForm
-	    View.File->file_lock
-            next=FORUM_FILE_TREE_LIST
-        )],
-	[qw(
- 	    FORUM_FILE_UNLOCK
- 	    176
- 	    FORUM
- 	    DATA_READ&DATA_WRITE
-            Model.FileUnlockForm
-	    View.File->file_unlock
-            next=FORUM_FILE_TREE_LIST
-        )],
-	[qw(
- 	    FORUM_FILE_UPDATE
- 	    177
- 	    FORUM
- 	    DATA_READ&DATA_WRITE
-            Model.FileUpdateForm
-	    View.File->file_update
-            next=FORUM_FILE_TREE_LIST
-        )],
-	[qw(
- 	    FORUM_FILE_RENAME
- 	    178
- 	    FORUM
- 	    DATA_READ&DATA_WRITE
-            Model.FileRenameForm
-	    View.File->file_rename
-            next=FORUM_FILE_TREE_LIST
-        )],
-	[qw(
- 	    FORUM_FILE_UNLOCK_OVERRIDE
- 	    179
- 	    FORUM
- 	    ADMIN_READ&ADMIN_WRITE
-            Model.FileUnlockForm
-	    View.File->file_unlock
-            next=FORUM_FILE_TREE_LIST
-        )],
-	[qw(
- 	    FORUM_FILE_VERSIONS_LIST
- 	    180
- 	    FORUM
- 	    DATA_READ
-	    Model.RealmFileVersionsList->execute_load_all_with_query
- 	    View.File->version_list
-        )],
+#174-179 free
     ];
 }
 
