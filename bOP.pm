@@ -18,7 +18,7 @@ bOP
 
     use Bivio::bOP;
 
-=head1 DESCRIPTION 
+=head1 DESCRIPTION
 
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.26  2008/05/01 22:09:49  david
+  * Bivio::Biz::Model::User
+    ignore_empty_name_fields allows creation of User records with empty name
+    fields
+  * Bivio::Test::Language::HTTP
+    added escape_html
+  * Bivio::UI::FacadeBase
+    site_name must be html
+
   Revision 6.25  2008/04/30 05:11:45  nagler
   * Bivio::Agent::Task
     DEFAULT_ERROR_REDIRECT is the default task when DEFAULT_ERROR_REDIRECT_*
