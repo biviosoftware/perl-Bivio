@@ -586,6 +586,8 @@ sub _init_uri {
 	my($path_info_count) = undef;
 	if ($value->{realm_type} == Bivio::Auth::RealmType->GENERAL()) {
 	    $path_info_count = $alias eq '/' ? 0 : 1;
+	    return "$alias: URIs for general realm must NOT begin with '$_REALM_PLACEHOLDER' "
+		if $alias =~ m{^/*$_REALM_PLACEHOLDER_PAT};
 	}
 	else {
 	    # URI with realm_owner
