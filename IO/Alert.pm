@@ -2,6 +2,7 @@
 # $Id$
 package Bivio::IO::Alert;
 use strict;
+use base 'Bivio::UNIVERSAL';
 
 # C<Bivio::IO::Alert> formats warnings and error messages safely.  It limits
 # argument lengths, outputs stack traces based on configuration parameters, and
