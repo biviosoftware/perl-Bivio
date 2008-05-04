@@ -33,6 +33,9 @@ h5, h6, input, li, ol, p, pre, td, textarea, th, ul {
   Font('body');
 })]}
 }
+textarea {
+  white-space: pre;
+}
 address, caption, cite, code, dfn, em, h1, h2, h3, h4, h5, h6, strong, th, var {
   Font('normal');
 @{[_v4(q{
