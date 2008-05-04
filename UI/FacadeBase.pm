@@ -1096,11 +1096,6 @@ sub _cfg_wiki {
 		        label => 'forum_wiki_edit_page',
 		    },
 		    'FORUM_WIKI_EDIT',
-                    {
-                        task_id => 'FORUM_FILE',
-                        path_info => '$_WIKI_DATA_FOLDER',
-                        label => 'forum_wiki_data',
-                    },
 		]);},
 		wiki_view_topic => q{Simple(['Action.WikiView', 'title']);},
 	    ]],
