@@ -2,11 +2,11 @@
 # $Id$
 package Bivio::UI::Widget::URI;
 use strict;
-use base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub intitialize {
+sub initialize {
     my($self) = @_;
     my($h) = $self->get('format_uri_hash');
     while (my($k, $v) = each(%$h)) {
