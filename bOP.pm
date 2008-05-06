@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,49 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.27  2008/05/04 15:45:50  moeller
+  * Bivio::Biz::Action::SFEETunnel
+    Before creating new user, check for existing user and update password to shared value
+  * Bivio::Biz::Model::FileUnlockForm
+    moved file forms into FileChangeForm.pm
+    initial revision
+  * Bivio::Biz::Model::RealmFileTreeList
+    removed unused helper methods,
+    left join with RealmFileLock
+    added ->is_locked()
+  * Bivio::Biz::Model::RealmFileVersionsList
+    left join with RealmFileLock
+    added is_locked()
+  * Bivio::Delegate::RowTagKey
+    removed file lock and comment,
+    added REALM_FILE_LOCKING
+  * Bivio::Delegate::SimpleTypeError
+    added INVALID_FOLDER
+    added STALE_LOCK_FILE error
+  * Bivio::Delegate::TaskId
+    replaced file tasks with FORUM_FILE_CHANGE
+    added FORUM_FILE_OVERRIDE_LOCK
+  * Bivio::IO::Alert
+    rmpod
+  * Bivio::SQL::DDL
+    added realm_file_lock_t and realm_file_lock_s
+  * Bivio::UI::FacadeBase
+    combine all file tasks into FORUM_FILE_CHANGE
+    added FORUM_FILE_OVERRIDE_LOCK task
+  * Bivio::UI::HTML::Widget::Script
+    do first focus in a try/catch block to avoid errors when focussing a
+    non visible field
+  * Bivio::UI::View::CSS
+    added .hidden_file_field and .visible_file_field for Files area
+  * Bivio::UI::View::File
+    replaced multiple file method views with file_change()
+    removed abort button,
+    moved common name and who columns into widget methods
+  * Bivio::UI::XHTML::ViewShortcuts
+    added no_submit parameter to vs_simple_form()
+  * Bivio::Util::SQL
+    added bundle ugrade for realm_file_lock_t
+
   Revision 6.26  2008/05/01 22:09:49  david
   * Bivio::Biz::Model::User
     ignore_empty_name_fields allows creation of User records with empty name
