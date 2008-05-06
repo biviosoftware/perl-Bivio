@@ -122,6 +122,7 @@ sub _possible_double_click {
     my($result) = 0;
     $form->new_other('ECPayment')->do_iterate(sub {
 	my($payment) = @_;
+	return 1 unless $payment->get('method')->eq_credit_card;
 
 	if ($_DT->compare($payment->get('creation_date_time'),
 	    # one minute ago
