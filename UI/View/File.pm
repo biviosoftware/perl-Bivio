@@ -87,50 +87,12 @@ sub file_unlock {
 }
 
 sub tree_list {
-    return shift->internal_body(vs_tree_list(RealmFileTreeList => [
-	['RealmFile.path', {
-	    column_order_by => ['RealmFile.path_lc'],
-	    column_widget => _file_name(['base_name']),
-	}],
-	['RealmFile.modified_date_time', {
-	    column_widget => If(
-		And(
-		    ['->is_file'],
-		    ['!', \&_is_archive],
-		),
-		Link(_file_date(), URI({
-		    task_id => 'FORUM_FILE_VERSIONS_LIST',
-		    path_info => ['RealmFile.path'],
-		})),
-		_file_date(),
-	    ),
-	}],
-	_file_owner_column(),
-	{
-	    column_data_class => 'list_actions',
-	    column_widget => ListActions([
-		map({
-		    my($n, $t, $c, $q) = @$_;
-		    [
-			$n,
-			$t,
-			URI({
-			    task_id => $t,
-			    query => $q,
-			    path_info => ['RealmFile.path'],
-			}),
-			$c,
-			[['->get_list_model'], 'RealmOwner.name'],
-		    ];
-		}
-		    [Change => FORUM_FILE_CHANGE =>
-			 And(
-			     ['!', \&_is_archive],
-			 )],
-		),
-	    ]),
-	},
-    ]));
+    return shift->internal_body(
+	If(['Model.RealmFileTreeList', '->can_write'],
+	    _tree_list(),
+	    _simple_tree(),
+	),
+    );
 }
 
 sub version_list {
@@ -194,13 +156,6 @@ sub _file_owner_column {
 	    MailTo(['Email_2.email'], ['RealmOwner_2.display_name']),
 	),
     }];
-}
-
-sub _is_archive {
-    my($source) = @_;
-    my($archive_path) = $_FP->VERSIONS_FOLDER;
-    return $source->get_list_model->get('RealmFile.path')
-	=~ /^$archive_path/ ? 1 : 0;
 }
 
 sub _javascript_field_selector {
@@ -287,6 +242,16 @@ sub _mailto_text {
     return;
 }
 
+sub _simple_tree {
+    return vs_tree_list(RealmFileTreeList => [
+	['RealmFile.path', {
+	    column_order_by => ['RealmFile.path_lc'],
+	    column_widget => String(['base_name']),
+	}],
+	'RealmFile.modified_date_time',
+    ]);
+}
+
 sub _title {
     my($form, $title) = @_;
     view_put(xhtml_title => Join([
@@ -297,6 +262,53 @@ sub _title {
 	String(['Model.' . $form, 'realm_file', 'path']),
     ]));
     return;
+}
+
+sub _tree_list {
+    return vs_tree_list(RealmFileTreeList => [
+	['RealmFile.path', {
+	    column_order_by => ['RealmFile.path_lc'],
+	    column_widget => _file_name(['base_name']),
+	}],
+	['RealmFile.modified_date_time', {
+	    column_widget => If(
+		And(
+		    ['->is_file'],
+		    ['!', '->is_archive'],
+		),
+		Link(_file_date(), URI({
+		    task_id => 'FORUM_FILE_VERSIONS_LIST',
+		    path_info => ['RealmFile.path'],
+		})),
+		_file_date(),
+	    ),
+	}],
+	_file_owner_column(),
+	{
+	    column_data_class => 'list_actions',
+	    column_widget => ListActions([
+		map({
+		    my($n, $t, $c, $q) = @$_;
+		    [
+			$n,
+			$t,
+			URI({
+			    task_id => $t,
+			    query => $q,
+			    path_info => ['RealmFile.path'],
+			}),
+			$c,
+			[['->get_list_model'], 'RealmOwner.name'],
+		    ];
+		}
+		    [Change => FORUM_FILE_CHANGE =>
+			 And(
+			     ['!', '->is_archive'],
+			 )],
+		),
+	    ]),
+	},
+    ]);
 }
 
 1;
