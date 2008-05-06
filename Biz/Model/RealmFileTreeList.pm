@@ -5,6 +5,8 @@ use strict;
 use Bivio::Base 'Model.TreeList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_FP) = __PACKAGE__->use('Type.FilePath');
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_RF) = __PACKAGE__->use('Model.RealmFile');
 my($_RTK) = __PACKAGE__->use('Type.RowTagKey');
 my($_TLN) = __PACKAGE__->use('Type.TreeListNode');
@@ -15,6 +17,11 @@ sub LOAD_ALL_SIZE {
 
 sub PARENT_NODE_ID_FIELD {
     return 'RealmFile.folder_id';
+}
+
+sub can_write {
+    my($self) = @_;
+    return $self->[$_IDI]->{can_write};
 }
 
 sub internal_default_expand {
@@ -88,6 +95,10 @@ sub internal_post_load_row {
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
+    $self->[$_IDI] = {
+	can_write => grep($_ eq $self->use('Auth.Role')->FILE_WRITER,
+	    @{$self->req->get_auth_roles}) ? 1 : 0,
+    };
     $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFile RealmFileLock), [
 	[qw(RealmFile.realm_file_id RealmFileLock.realm_file_id)],
 	['RealmFileLock.comment', [undef]],
@@ -112,6 +123,12 @@ sub internal_prepare_statement {
 
 sub internal_root_parent_node_id {
     return undef;
+}
+
+sub is_archive {
+    my($self) = @_;
+    my($archive_path) = $_FP->VERSIONS_FOLDER;
+    return $self->get('RealmFile.path') =~ /^$archive_path/ ? 1 : 0;
 }
 
 sub is_file {
