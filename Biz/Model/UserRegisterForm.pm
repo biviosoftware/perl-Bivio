@@ -49,7 +49,7 @@ sub internal_initialize {
     my($self) = @_;
     my($info) = $self->SUPER::internal_initialize;
     @{$info->{visible}} = grep(
-	ref($_) && $_->{type} =~ /Button/,
+	ref($_) && $_->{type} && $_->{type} =~ /Button/,
 	@{$info->{visible}});
     return $self->merge_initialize_info($info, {
         version => 1,
