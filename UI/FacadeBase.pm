@@ -392,7 +392,7 @@ sub _cfg_crm {
 		FORUM_CRM_THREAD_LIST => q{Enum(['Model.CRMThreadList', '->get_crm_thread_status']); Ticket #String(['Model.CRMThreadList', '->get_crm_thread_num']); String(['Model.CRMThreadList', '->get_subject']);},
 	    ]],
 	    [xlink => [
-		page_error_referer => 'Go back to the previous page, and try something differently.',
+		page_error_referer => 'Go back to the previous page, and try something different.',
 		page_error_user => 'Go back to your personal page.',
 		page_error_visitor => 'Go to the home page.',
 	    ]],
