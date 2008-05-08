@@ -836,6 +836,12 @@ sub ref_to_string {
     return shift->use('IO.Ref')->to_string(@_);
 }
 
+sub required_main {
+    my($proto, $class, @args) = @_;
+    ref($proto->new($class))->main(@args);
+    return;
+}
+
 sub result {
     my($self, $cmd, $res) = @_;
     # Processes I<res> by sending via I<email> and writing to I<output>
