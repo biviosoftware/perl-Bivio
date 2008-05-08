@@ -4,6 +4,7 @@ Request();
 my($email) = ShellUtil_SQL()->DEMO_EMAIL;
 my($name) = ShellUtil_SQL()->DEMO;
 my($id) = unauth_model(RealmOwner => {name => $name})->get('realm_id');
+my($_RT) = __PACKAGE__->use('Auth.RealmType');
 [
     {
 	object => [req()],
@@ -13,10 +14,10 @@ my($id) = unauth_model(RealmOwner => {name => $name})->get('realm_id');
     } => [
 	unauth_load_by_email => [
 	    $email => $name,
-	    [$email, realm_type => Auth_RealmType()->USER] => $name,
-	    [$email, realm_type => Auth_RealmType()->CLUB] => [undef],
-	    [$email, {realm_type => Auth_RealmType()->USER}] => $name,
-	    [$email, {realm_type => Auth_RealmType()->CLUB}] => [undef],
+	    [$email, realm_type => $_RT->USER] => $name,
+	    [$email, realm_type => $_RT->CLUB] => [undef],
+	    [$email, {realm_type => $_RT->USER}] => $name,
+	    [$email, {realm_type => $_RT->CLUB}] => [undef],
 	],
 	unauth_load_by_id_or_name_or_die => [
 	    not_a_user => MODEL_NOT_FOUND(),
@@ -28,6 +29,14 @@ my($id) = unauth_model(RealmOwner => {name => $name})->get('realm_id');
 	    $name => $name,
 	    $id => $name,
 	    $email => $name,
+	],
+	create => [
+	    [{
+		realm_id => '12345',
+		name => '',
+		display_name => '',
+		realm_type => $_RT->CLUB,
+	    }] => DB_ERROR(),
 	],
     ],
 ];
