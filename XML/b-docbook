@@ -2,45 +2,5 @@
 # Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-docbook - calls Bivio::XML::DocBook
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-b-docbook [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::XML::DocBook|Bivio::XML::DocBook>
-
-=cut
-
-#=IMPORTS
-use Bivio::XML::DocBook;
-
-#=VARIABLES
-Bivio::XML::DocBook->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::XML::DocBook
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('Bivio::XML::DocBook', @ARGV);

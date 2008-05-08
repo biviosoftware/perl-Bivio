@@ -2,45 +2,5 @@
 # Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-test - calls Bivio::Test::Util
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-b-test [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Test::Util|Bivio::Test::Util>
-
-=cut
-
-#=IMPORTS
-use Bivio::Test::Util;
-
-#=VARIABLES
-Bivio::Test::Util->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Test::Util
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('Bivio::Test::Util', @ARGV);

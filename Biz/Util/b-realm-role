@@ -2,45 +2,5 @@
 # Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-realm-role - calls Bivio::Biz::Util::RealmRole
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-b-realm-role [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Biz::Util::RealmRole|Bivio::Biz::Util::RealmRole>
-
-=cut
-
-#=IMPORTS
-use Bivio::Biz::Util::RealmRole;
-
-#=VARIABLES
-Bivio::Biz::Util::RealmRole->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Biz::Util::RealmRole
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('RealmRole', @ARGV);
