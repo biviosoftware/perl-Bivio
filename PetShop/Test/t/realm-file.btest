@@ -19,7 +19,6 @@ verify_content_type('image/gif');
 home_page();
 login_as('root');
 visit_uri('/fourem/files');
-follow_link('Archived');
 
 my($fixup_uri) = sub {
     my($mode) = @_;
@@ -30,7 +29,7 @@ my($fixup_uri) = sub {
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
     follow_link_in_table('Name', 'Name', 'realm-file-btest.txt',
 	'', 'Change');
-    $fixup_uri->('DELETE'),
+    $fixup_uri->('DELETE');
     submit_form(OK => {
 	'Comments:' => 'deleted by acceptance test',
     });
