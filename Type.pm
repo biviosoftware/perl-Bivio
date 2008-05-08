@@ -275,8 +275,8 @@ sub to_sql_param {
     # I<param_value>.  For dates, converts the unix time (integer) to the string form
     # acceptable to the type's L<to_sql_value|"to_sql_value">.  For enums, converts
     # the enum to an integer.  For booleans, forces to be 0 or 1.
-    shift;
-    return shift;
+    my(undef, $value) = @_;
+    return defined($value) && length($value) ? $value : undef;
 }
 
 sub to_sql_param_list {
