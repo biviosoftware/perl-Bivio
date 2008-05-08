@@ -2,45 +2,5 @@
 # Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-csv - calls Bivio::Util::CSV
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-b-csv [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::CSV|Bivio::Util::CSV>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::CSV;
-
-#=VARIABLES
-Bivio::Util::CSV->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::CSV
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('CSV', @ARGV);

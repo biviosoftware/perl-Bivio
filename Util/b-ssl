@@ -2,41 +2,5 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-ssl - calls Bivio::Util::SSL
-
-=head1 SYNOPSIS
-
-b-ssl [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::SSL|Bivio::Util::SSL>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::SSL;
-
-#=VARIABLES
-Bivio::Util::SSL->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::SSL
-
-=head1 COPYRIGHT
-
-Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('SSL', @ARGV);

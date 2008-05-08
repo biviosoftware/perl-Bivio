@@ -2,45 +2,6 @@
 # Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 use strict;
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('SQL', @ARGV);
 
-=head1 NAME
-
-b-sql - calls Bivio::Util::SQL
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-b-sql [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::SQL|Bivio::Util::SQL>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::SQL;
-
-#=VARIABLES
-Bivio::Util::SQL->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::SQL
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:

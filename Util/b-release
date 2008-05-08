@@ -2,45 +2,5 @@
 # Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-release - calls Bivio::Util::Release
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-b-release [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::Release|Bivio::Util::Release>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::Release;
-
-#=VARIABLES
-Bivio::Util::Release->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::Release
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('Release', @ARGV);

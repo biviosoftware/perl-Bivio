@@ -2,41 +2,5 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-realm-mail - calls Bivio::Util::RealmMail
-
-=head1 SYNOPSIS
-
-b-realm-mail [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::RealmMail|Bivio::Util::RealmMail>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::RealmMail;
-
-#=VARIABLES
-Bivio::Util::RealmMail->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::RealmMail
-
-=head1 COPYRIGHT
-
-Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('RealmMail', @ARGV);

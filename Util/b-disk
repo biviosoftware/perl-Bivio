@@ -2,41 +2,5 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-disk - calls Bivio::Util::Disk
-
-=head1 SYNOPSIS
-
-b-disk [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::Disk|Bivio::Util::Disk>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::Disk;
-
-#=VARIABLES
-Bivio::Util::Disk->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::Disk
-
-=head1 COPYRIGHT
-
-Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('Disk', @ARGV);

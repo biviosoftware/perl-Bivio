@@ -2,45 +2,5 @@
 # Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-http-log - calls Bivio::Util::HTTPLog
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-b-http-log [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::HTTPLog|Bivio::Util::HTTPLog>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::HTTPLog;
-
-#=VARIABLES
-Bivio::Util::HTTPLog->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::HTTPLog
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('HTTPLog', @ARGV);

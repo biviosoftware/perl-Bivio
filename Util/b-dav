@@ -2,41 +2,5 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-dav - calls Bivio::Util::DAV
-
-=head1 SYNOPSIS
-
-b-dav [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::DAV|Bivio::Util::DAV>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::DAV;
-
-#=VARIABLES
-Bivio::Util::DAV->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::DAV
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('DAV', @ARGV);

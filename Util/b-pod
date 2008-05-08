@@ -2,45 +2,5 @@
 # Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
 # $Id$
 use strict;
-
-=head1 NAME
-
-b-pod - calls Bivio::Util::POD
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-b-pod [options] command [args...]
-
-=head1 DESCRIPTION
-
-See L<Bivio::Util::POD|Bivio::Util::POD>
-
-=cut
-
-#=IMPORTS
-use Bivio::Util::POD;
-
-#=VARIABLES
-Bivio::Util::POD->main(@ARGV);
-
-=head1 SEE ALSO
-
-Bivio::Util::POD
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-#Local Variables:
-#mode:cperl
-#End:
+use Bivio::ShellUtil;
+Bivio::ShellUtil->required_main('POD', @ARGV);
