@@ -14,9 +14,10 @@ sub default {
 		 return vs_text_as_prose(
 		    'page_error.' . shift->req(qw(Action.Error status)));
 	    }],
+	    ' ',
 	    XLink(Cond(
 		['->req', 'Action.Error', 'uri'] => 'page_error_referer',
-		['auth_user'] => 'page_error_user',
+		['auth_user_id'] => 'page_error_user',
 		1 => 'page_error_visitor',
 	    )),
 	]),
