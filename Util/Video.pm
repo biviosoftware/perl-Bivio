@@ -10,7 +10,7 @@ my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub USAGE {
     return <<'EOF';
-usage: b-video [options] command [args..]
+usage: b Video [options] command [args..]
 commands
   avchd_to_blu_ray [src_dir [dst_dir]] -- convert AVCHD file structure to Blu-Ray
   init_avchd_disk [src_tgz [dst_disk]] -- clear and init AVCHD disk on camera
