@@ -161,6 +161,11 @@ sub mkdir_parent_only {
 	File::Basename::dirname($child), $permissions);
 }
 
+sub get_modified_date_time {
+    my($proto, $file) = @_;
+    return $proto->use('Type.DateTime')->from_unix((stat($file))[9]);
+}
+
 sub pwd {
     my($dir) = Cwd::getcwd();
     # Returns the current working directory.  dies if can't get pwd.
