@@ -113,6 +113,8 @@ my($_DIE) = __PACKAGE__->use('Bivio.Die');
 my($_F) = __PACKAGE__->use('IO.File');
 my($_L) = __PACKAGE__->use('IO.Log');
 my($_TE) = __PACKAGE__->use('Bivio.TypeError');
+my($_CL) = __PACKAGE__->use('IO.ClassLoader');
+my($_MAP_NAME) = 'ShellUtil';
 $_C->register(my $_CFG = {
     lock_directory => '/tmp',
     $_C->NAMED => {
@@ -838,8 +840,15 @@ sub ref_to_string {
 
 sub required_main {
     my($proto, $class, @args) = @_;
-    ref($proto->new($class))->main(@args);
-    return;
+    $proto->usage_error(
+	join("\n",
+	     'first argument must be a class name.  Available classes:',
+	     @{$_CL->list_simple_packages_in_map($_MAP_NAME)},
+	),
+    ) unless $class;
+    $proto->usage_error($class, ": class not found in $_MAP_NAME map")
+	unless $_CL->unsafe_map_require($_MAP_NAME => $class);
+    return ref($proto->new($class))->main(@args);
 }
 
 sub result {
@@ -1173,8 +1182,8 @@ sub _monitor_daemon_children {
 sub _other {
     my($self, $class) = @_;
     my($die);
-    return $_DIE->catch_quietly(sub {$self->use(ShellUtil => $class)}, \$die)
-	|| $_DIE->die($class, ': ShellUtil not found or syntax error: ', $die);
+    return $_DIE->catch_quietly(sub {$self->use($_MAP_NAME => $class)}, \$die)
+	|| $_DIE->die($class, ": $_MAP_NAME not found or syntax error: ", $die);
 }
 
 sub _parse_option_value {
