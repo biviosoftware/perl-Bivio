@@ -105,7 +105,7 @@ sub initialize_fully {
     return $self;
 }
 
-sub internal_redirect_realm_guess {
+sub internal_redirect_user_realm {
     shift->throw_die(FORBIDDEN => {
 	entity => shift,
 	message => 'no realm to guess',
