@@ -26,11 +26,32 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.28  2008/05/06 02:04:53  moeller
+  * Bivio::Biz::Model::RealmFileTreeList
+    added can_write() and is_archive()
+  * Bivio::Biz::Model::User
+    remove ignore_empty_name_fields
+  * Bivio::Biz::Model::UserRegisterForm
+    fixed uninitialized warning in internal_initialize()
+  * Bivio::SQL::PropertySupport
+    added RealmFileLock to unused_classes
+  * Bivio::UI::FacadeBase
+    remove files area
+  * Bivio::UI::Task
+    die if general uri begins with ?
+  * Bivio::UI::View::CSS
+    set textare white-space: pre, to fix MSIE textare newline bug
+  * Bivio::UI::View::File
+    tree list display is based on RealmFileTreeList->can_write(),
+    non-writers see a simplified view
+  * Bivio::UI::Widget::URI
+    intitialize => initialize
+
   Revision 6.27  2008/05/04 15:45:50  moeller
   * Bivio::Biz::Action::SFEETunnel
     Before creating new user, check for existing user and update password to shared value
