@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::BConf;
 use strict;
@@ -81,6 +81,10 @@ sub default_merge_overrides {
 	    sql => {
 		call_filter => '$sub =~ /_trace_sql/',
 		package_filter => '/^Bivio::SQL::Connection$/',
+	    },
+	    stack => {
+		call_filter => '$sub =~ /_print_stack/',
+		package_filter => '/^Bivio::Die$/',
 	    },
 	    search => {
 		package_filter => '/::Search/',
