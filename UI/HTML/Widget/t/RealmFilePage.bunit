@@ -52,7 +52,7 @@ EOF
 		TAG-ERR\n
 		</body>
 	    }sx,
-	    0 => qr{aaabbb\nTAG-ERR:.*Bivio::Die:.*vap_missing_tag.*not found.*\n</body>}s,
+	    0 => qr{aaabbb\nTAG-ERR:.*Bivio::Collection::Attributes:.*vap_missing_tag.*not found.*\n</body>}s,
 	],
     ],
 ];
