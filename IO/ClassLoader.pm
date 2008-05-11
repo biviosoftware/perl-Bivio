@@ -125,6 +125,20 @@ sub is_map_configured {
     return $_CFG->{maps}->{$map_name} ? 1 : 0;
 }
 
+sub list_simple_packages_in_map {
+    my($proto, $map_name, $filter) = @_;
+    my($seen) = {};
+    return [sort(
+	map(
+	    map({
+		my($c) = $_->[0] =~ /(\w+)$/;
+		$seen->{$c}++ ? () : $c;
+	    } grep(!$filter || $filter->(@$_), _map_glob($map_name, $_))),
+	    _map_path_list($map_name),
+	),
+    )];
+}
+
 sub map_require {
     my($proto) = shift;
     # Returns the fully qualified class loaded.
@@ -150,7 +164,7 @@ sub map_require {
 }
 
 sub map_require_all {
-    my($proto, $map_name, $filter) = @_;
+    my($proto, $map_name) = (shift, shift);
     # Discovers and loads all classes in I<map_name> by searching in
     # C<@INC>.
     #
@@ -166,16 +180,12 @@ sub map_require_all {
     # See L<Bivio::Biz::Model|Bivio::Biz::Model> for an example.
     #
     # Returns the names of the classes loaded.
-    my($seen) = {};
-    return [map(
-	map({
-	    my($c) = $proto->map_require($map_name, ($_->[0] =~ /(\w+)$/)[0]);
-	    $seen->{$c}++ ? () : $c;
-	}
-            grep(!$filter || $filter->(@$_), _map_glob($map_name, $_)),
+    return [
+	map(
+	    $proto->map_require($map_name, $_),
+	   @{$proto->list_simple_packages_in_map($map_name, @_)},
 	),
-	_map_path_list($map_name),
-    )];
+    ];
 }
 
 sub simple_require {
