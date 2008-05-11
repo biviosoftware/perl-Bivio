@@ -26,6 +26,7 @@ sub cascade_delete {
 }
 
 sub create_realm {
+#TODO: internal_create_realm_administrator_id is wrong.  Pass in admin_id
     my($self, $realm_owner) = @_;
     my($ro) = $self->new_other('RealmOwner')->create({
 	%$realm_owner,
