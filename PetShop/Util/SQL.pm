@@ -687,7 +687,7 @@ sub _realm_id {
 sub _top_level_forum {
     my($self, $name, $admins, $users) = @_;
     $self->req->set_realm(undef);
-    $self->model('ForumForm', {
+    $self->model(ForumForm => {
         'RealmOwner.display_name' => $_S->to_camel_case($name),
 	'RealmOwner.name' => $name,
     });
