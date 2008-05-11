@@ -22,15 +22,22 @@ EOF
 sub init {
     my($self) = @_;
     $self->initialize_ui->with_realm(undef, sub {
-	foreach my $u ($self->ADM) {
-	    $self->new_other('SQL')->create_test_user($u);
-	}
 	$self->req->with_user($self->ADM => sub {
-            $self->new_other('RealmRole')->make_super_user;
 	    $self->new_other('SiteForum')->make_admin;
 	});
 	return;
     });
+    return;
+}
+
+sub init_adm {
+    my($self) = @_;
+    $self->initialize_ui->with_realm(undef, sub {
+	$self->new_other('SQL')->create_test_user($self->ADM);
+	$self->new_other('RealmRole')->make_super_user;
+	return;
+    });
+    $self->req->set_user($self->ADM);
     return;
 }
 
