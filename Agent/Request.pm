@@ -203,6 +203,7 @@ Bivio::IO::Config->register(my $_CFG = {
 #    retain_query_and_path_info => Bivio::IO::Config->if_version(6) ? 0 : 1,
 });
 my($_CURRENT);
+my($_RT) = __PACKAGE__->use('Auth.RealmType');
 
 sub FORMAT_URI_PARAMETERS {
     # Order and names of params passed to format_uri().
@@ -268,9 +269,7 @@ sub can_user_execute_task {
 
     if ($realm_id) {
         $realm = Bivio::Auth::Realm->new($realm_id, $self);
-        Bivio::Die->die('supplied realm\'s realm_type does not match task: ',
-            $task->get('id')->get_name)
-            unless $task->get('realm_type') == $realm->get('type');
+	$task->assert_realm_type($realm->get('type'));
     }
     else {
         $realm = $self->internal_get_realm_for_task($task->get('id'));
@@ -633,47 +632,22 @@ sub internal_get_realm_for_task {
     my($realm) = $self->get('auth_realm');
     _trace('current auth_realm is: ', $realm->get('id'))
 	if $_TRACE;
-    return $realm if $task_id == $self->get('task_id');
-    my($trt) = Bivio::Agent::Task->get_by_id($task_id)->get('realm_type');
-    return $realm if $trt == $realm->get('type');
+    return $realm
+	if $task_id->equals($self->get('task_id'));
+    my($task) = Bivio::Agent::Task->get_by_id($task_id);
+    return $realm
+	if $task->has_realm_type($realm->get('type'));
     return Bivio::Auth::Realm->get_general
-	if $trt->equals_by_name('GENERAL');
-
-    # Use auth_user if the target realm is USER
-    if ($trt->equals_by_name('USER')) {
-	my($auth_user) = $self->get('auth_user');
-	if ($auth_user) {
-	    my($realm) = $self->unsafe_get('auth_user_realm');
-	    unless ($realm) {
-		$realm = Bivio::Auth::Realm->new($auth_user);
-		$self->put_durable(auth_user_realm => $realm);
-	    }
-	    return $realm;
-	}
-	return undef;
-    }
-
-#TODO: remove this section and die at some point
-#      it makes incorrect assumptions about role order
-#      rjn 11/26/06 might be able to make work by asking if have permissions
-#      for the target realm type required by task.
-    Bivio::IO::Alert->warn_deprecated(
-	$task_id, ': use explicit realm');
-
-    my($role) = Bivio::Auth::Role->UNKNOWN->as_int;
-    my($realm_id);
-    $self->map_user_realms(sub {
-        my($realm) = @_;
-        my($rr) = $realm->{'RealmUser.role'}->as_int;
-        return unless  $rr > $role;
-        $realm_id = $realm->{'RealmUser.realm_id'};
-        $role = $rr;
-    }, {
-	'RealmOwner.realm_type' => $trt,
-    });
-    return $realm_id
-        ? Bivio::Auth::Realm->new($realm_id, $self)
-        : undef;
+	if $task->has_realm_type($_RT->GENERAL);
+    $task->assert_realm_type($_RT->USER);
+    return undef
+	unless my $auth_user = $self->get('auth_user');
+    $realm = $self->unsafe_get('auth_user_realm');
+    return $realm
+	if $realm;
+    $realm = Bivio::Auth::Realm->new($auth_user);
+    $self->put_durable(auth_user_realm => $realm);
+    return $realm;
 }
 
 sub internal_initialize {
@@ -715,19 +689,15 @@ sub internal_redirect_realm {
     # Changes the current realm if required by the new task.
     my($fields) = $self->[$_IDI];
     my($task) = Bivio::Agent::Task->get_by_id($new_task);
-
-    my($trt) = $task->get('realm_type');
     if ($new_realm) {
-	# Assert param
-	my($nrt) = $new_realm->get('type');
-	Bivio::Die->die($new_task->as_string, ' realm_type mismatch (',
-		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
+	$task->assert_realm_type($new_realm->get('type'));
     }
-    elsif (!defined($new_realm = $self->internal_get_realm_for_task($new_task))) {
-	$new_realm = $self->internal_redirect_realm_guess($trt);
+    else {
+	$self->internal_redirect_user_realm($task)
+	    unless $new_realm = $self->internal_get_realm_for_task($new_task);
     }
-    # Change realms before formatting uri
-    $self->set_realm($new_realm) if $new_realm;
+    $self->set_realm($new_realm)
+	if $new_realm;
     $self->put(
         task_id => $new_task,
         task => Bivio::Agent::Task->get_by_id($new_task),
@@ -735,15 +705,11 @@ sub internal_redirect_realm {
     return;
 }
 
-sub internal_redirect_realm_guess {
-    my($self, $target) = @_;
-    # Redirects based on I<target>
-#TODO: We should not guess here, but blow up
-    # Need to login as a user.
-    $self->server_redirect(Bivio::Agent::TaskId->LOGIN)
-	if $target eq Bivio::Auth::RealmType->USER;
-    # GO TO HOME instead of a club.  He can choose realm chooser
-    $self->client_redirect(Bivio::Agent::TaskId->USER_HOME);
+sub internal_redirect_user_realm {
+    my($self, $task) = @_;
+    $self->client_redirect(Bivio::Agent::TaskId->USER_HOME)
+	unless $task->has_realm_type(Bivio::Auth::RealmType->USER);
+    $self->server_redirect(Bivio::Agent::TaskId->LOGIN);
     # DOES NOT RETURN
 }
 
