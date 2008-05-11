@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
@@ -130,6 +130,13 @@ my(%_REDIRECT_DIE_CODES) = (
 my($_REQUEST_LOADED);
 my($_HANDLERS) = [__PACKAGE__];
 my($_B) = __PACKAGE__->use('Type.Boolean');
+
+sub assert_realm_type {
+    my($self, $realm_type) = @_;
+    Bivio::Die->die($realm_type, ': invalid realm_type for ', $self)
+        unless $self->has_realm_type($realm_type);
+    return;
+}
 
 sub commit {
     my(undef, $req) = @_;
@@ -332,6 +339,11 @@ sub handle_pre_execute_task {
 	operation => $task->get('id'),
     }) unless $req->get('auth_realm')->can_user_execute_task($task, $req);
     return;
+}
+
+sub has_realm_type {
+    my($self, $realm_type) = @_;
+    return $self->get('realm_type') == $realm_type ? 1 : 0;
 }
 
 sub initialize {
