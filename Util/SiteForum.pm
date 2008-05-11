@@ -37,6 +37,7 @@ EOF
 sub init {
     my($self) = @_;
     my($req) = $self->initialize_fully;
+    $self->new_other('TestUser')->init_adm;
     $req->with_realm(undef, sub {
         $self->model('ForumForm', {
 	    'RealmOwner.name' => $self->SITE_REALM,
