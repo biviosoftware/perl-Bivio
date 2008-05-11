@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Test::Unit;
 use strict;
-use Bivio::Base 'Bivio::Test';
+use Bivio::Base 'Bivio.Test';
 use Bivio::DieCode;
 use Bivio::IO::File;
 use File::Basename ();
