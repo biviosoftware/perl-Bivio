@@ -1,6 +1,11 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Widget();
+Widget({
+    setup_render => sub {
+	req()->put(query => {wow => 1});
+	return;
+    },
+});
 [
     [{task_id => 'SITE_ROOT'}] => '/',
     [{task_id => 'SITE_ROOT'}, {format_method => 'format_http'}] =>
