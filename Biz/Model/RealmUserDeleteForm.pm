@@ -25,12 +25,14 @@ sub execute_ok {
 	}
 	$self->internal_put_field('User.user_id' => $m->get('realm_id'));
     }
-    my($req) = $self->get_request;
-    my($old_realm) = $req->get('auth_id');
-    $req->set_realm($self->get('RealmUser.realm_id'));
-    $self->new_other('RealmUser')->delete_all(
-	{user_id => $self->get('User.user_id')});
-    $req->set_realm($old_realm);
+    $self->req->with_realm(
+	$self->get('RealmUser.realm_id'),
+	sub {
+	    $self->new_other('RealmUser')->delete_all(
+		{user_id => $self->get('User.user_id')});
+	    return;
+	},
+    );
     return;
 }
 
