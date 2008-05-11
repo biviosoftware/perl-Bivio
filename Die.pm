@@ -34,6 +34,7 @@ our($_CATCH_QUIETLY);
 my($_STACK_TRACE) = 0;
 my($_STACK_TRACE_ERROR) = 0;
 my($_STACK_TRACE_SEPARATOR) = join('', '      -'x10, "\n");
+my($_A) = 'Bivio::IO::Alert';
 Bivio::IO::Config->register({
     'stack_trace' => $_STACK_TRACE,
     'stack_trace_error' => $_STACK_TRACE_ERROR,
@@ -54,7 +55,7 @@ sub as_string {
 	    unless eval {
 		my($c, $a, $p, $f, $l) = $curr->unsafe_get(
 		    'code', 'attrs', 'package', 'file', 'line');
-		$res .= Bivio::IO::Alert->format($p, $f, $l, undef,
+		$res .= $_A->format($p, $f, $l, undef,
 			_as_string_args($c, $a));
 		chomp($res);
 		1;
@@ -96,8 +97,8 @@ sub catch {
     local($_IN_CATCH) = 1;
     local($SIG{__DIE__}) = sub {
 	my($msg) = @_;
-	_handle_die(_new_from_core_die($proto, Bivio::DieCode::DIE(),
-		{(message => $msg eq "\n" ? Bivio::IO::Alert->get_last_warning
+	_handle_die(_new_from_core_die($proto, Bivio::DieCode->DIE,
+		{(message => $msg eq "\n" ? $_A->get_last_warning
 		    : $msg),
 		    program_error => 1,
 		},
@@ -170,15 +171,15 @@ sub destroy {
 }
 
 sub die {
-    # (proto, string, ...) : undef
-    # Wrapper for L<throw|"throw">.  Takes similar arguments to CORE::die.
     my($proto) = shift;
+    my($cc) = $_A->is_calling_context($_[0])
+	? shift : $_A->calling_context;
     $proto->throw(
-	Bivio::DieCode::DIE(), {
-	    message => Bivio::IO::Alert->format_args(@_),
+        $cc,
+	Bivio::DieCode->DIE, {
+	    message => $_A->format_args(@_),
 	    program_error => 1,
 	},
-        (caller)[0,1,2],
 	Carp::longmess('Bivio::Die::die'),
     );
     # DOES NOT RETURN
@@ -262,8 +263,6 @@ sub set_code {
 }
 
 sub throw {
-    # (proto, Bivio.DieCode, hash_ref, string, string, int) : undef
-    # (self) : undef
     # Any of the parameters may be undef. Package and line will be filled in by this
     # module.  If you'd like to implement a module specific die, you might:
     #
@@ -287,7 +286,7 @@ sub throw {
     # If I<attrs> is not a hash, it will be set to C<{attrs => $attrs}>.
     #
     # In the second form, I<self> is "rethrown".
-    my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
+    my($proto) = shift;
     local($_CURRENT_SELF)
 	unless $_IN_CATCH;
     if (ref($proto)) {
@@ -300,11 +299,23 @@ sub throw {
 	_handle_die($proto);
 	# _handle_die returns, but user called die.  So need to
 	# throw a bogus exception.
-	CORE::die($proto->unsafe_get('throw_quietly')
-		? "\n" : $proto->as_string."\n");
+	CORE::die(
+	    $proto->unsafe_get('throw_quietly')
+	    ? "\n" : $proto->as_string."\n",
+	);
     }
-    my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
-	    $stack || Carp::longmess('Bivio::Die::throw'));
+    my($cc) = shift
+	if $_A->is_calling_context($_[0]);
+    my($code, $attrs) = (shift, shift);
+    my($package, $file, $line) = $cc ? $cc->get_top_package_file_line
+	: (shift, shift, shift);
+    my($self) = _new_from_throw(
+	$proto,
+	$code,
+	$attrs,
+	$package, $file, $line,
+	shift || Carp::longmess('Bivio::Die::throw'),
+    );
     CORE::die($_IN_CATCH ? "$self\n" : $self->as_string."\n");
     # DOES NOT RETURN
 }
@@ -325,12 +336,14 @@ sub throw_or_die {
     # (proto, string, ...) : undef
     # Calls L<throw|"throw"> if I<code> is a Bivio::DieCode name or reference.
     # Otherwise, calls L<die|"die">.
-    my($proto, $code) = @_;
+    my($proto) = shift;
+    my($cc) = $_A->is_calling_context($_[0]) ? shift : $_A->calling_context;
+    my($code) = @_;
     my($m) = UNIVERSAL::isa($code, 'Bivio::DieCode')
 	|| Bivio::DieCode->is_valid_name($code)
 	&& Bivio::DieCode->unsafe_from_name($code)
 	? 'throw' : 'die';
-    shift->$m(@_);
+    $proto->$m($cc, @_);
     # DOES NOT RETURN
 }
 
@@ -355,7 +368,7 @@ sub throw_quietly {
 sub _as_string_args {
     # (Bivio.DieCode, hash_ref) : any
     # Tries to create an economical message.  Leaves formatting up
-    # to Bivio::IO::Alert (see as_string).
+    # to $_A (see as_string).
     my($code, $attrs) = @_;
     return [$code, ': ', $attrs->{message}]
 	if $attrs->{message}
@@ -589,8 +602,9 @@ sub _print_stack {
     # Prints the stack trace.
     my($self) = @_;
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
+    _trace($self, "\n", $self->unsafe_get('stack')) if $_TRACE;
     return if $sp || $tq || $_CATCH_QUIETLY;
-    Bivio::IO::Alert->print_literally(
+    $_A->print_literally(
         $self->as_string, "\n",
         $self->unsafe_get('stack'),
         $_STACK_TRACE_SEPARATOR,
