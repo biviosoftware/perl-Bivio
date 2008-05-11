@@ -7,6 +7,9 @@ use Bivio::IO::ClassLoader;
 use Bivio::Die;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_A) = __PACKAGE__->use('IO.Alert');
+my($_D) = __PACKAGE__->use('Bivio.Die');
+my($_T) = __PACKAGE__->use('IO.Trace');
 
 sub import {
     my($first, $map_or_class) = @_;
@@ -20,7 +23,30 @@ sub import {
 	        :  Bivio::IO::ClassLoader->after_in_map($map_or_class, $pkg)
 	) . "';1",
     );
+    {
+	no strict 'refs';
+	*{$pkg . '::b_info'} = \&b_info;
+	*{$pkg . '::b_warn'} = \&b_info;
+	*{$pkg . '::b_die'} = \&b_die;
+	*{$pkg . '::b_trace'} = \&b_trace;
+    };
     return;
+}
+
+sub b_die {
+    return $_D->die($_A->calling_context, @_);
+}
+
+sub b_info {
+    return $_A->info($_A->calling_context, @_);
+}
+
+sub b_trace {
+    return $_T->set_named_filters(@_);
+}
+
+sub b_warn {
+    return $_A->warn($_A->calling_context, @_);
 }
 
 1;
