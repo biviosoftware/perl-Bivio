@@ -1,0 +1,25 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    {
+	method => 'calling_context',
+	comparator => 'nested_contains',
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    # TESTING ONLY: Calling context should be completely opaque
+	    return [@{$actual->[0]->[0]}];
+	},
+    } => [
+	[] => [
+	    {
+		package => 'Bivio::Test',
+		sub => qr{__ANON__},
+	    },
+	    {
+		package => 'Bivio::Die',
+		sub => qr{\(eval\)},
+	    },
+	],
+    ],
+];
