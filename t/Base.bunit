@@ -13,5 +13,7 @@ options({
 		Bivio::UNIVERSAL
 	    )]],
 	],
+	test_b_die => qr{Bivio::t::Base::T1:\d+ Bivio::DieCode::DIE: here},
+	test_b_info => qr{Bivio::t::Base::T1::test_b_info:\d+ xyz},
     ],
 ];
