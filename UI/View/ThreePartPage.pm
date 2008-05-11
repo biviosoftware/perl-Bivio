@@ -33,6 +33,7 @@ sub internal_xhtml_adorned {
 	]),
 	body => $self->internal_xhtml_adorned_body,
 	xhtml => 1,
+	want_page_print => view_widget_value('xhtml_want_page_print'),
     });
 }
 
@@ -61,6 +62,7 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_byline => '',
 	xhtml_selector => '',
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
+	xhtml_want_page_print => 0,
 	xhtml_header_right => Join([
 	    DIV_user_state(
 		JoinMenu([
