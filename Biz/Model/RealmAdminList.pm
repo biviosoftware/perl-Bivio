@@ -2,12 +2,13 @@
 # $Id$
 package Bivio::Biz::Model::RealmAdminList;
 use strict;
-use base 'Bivio::Biz::Model::RealmUserList';
+use Bivio::Base 'Model.RealmUserList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_ADMIN) = __PACKAGE__->use('Auth.Role')->ADMINISTRATOR;
 
 sub internal_get_roles {
-    return [Bivio::Auth::Role->ADMINISTRATOR];
+    return [$_ADMIN];
 }
 
 1;
