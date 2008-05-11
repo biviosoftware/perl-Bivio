@@ -56,6 +56,7 @@ BEGIN {
     $_WARN_COUNTER = $_MAX_WARNINGS;
     $_STRIP_BIT8 = 0;
 }
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 #=IMPORTS
 # Should not important anything else.
@@ -90,11 +91,32 @@ sub bootstrap_die {
     # This method tries to call L<Bivio::Die::die|Bivio::Die/"die"> if
     # it is defined and loaded.  Bivio::Die does not call this method.
     my($proto) = shift;
-    Bivio::Die->throw_or_die(@_)
-	if UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
+    Bivio::Die->throw_or_die(
+	$proto->calling_context,
+	@_,
+    ) if UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
 	&& UNIVERSAL::can('Bivio::Die', 'throw_or_die');
     CORE::die(_call_format($proto, \@_, 0));
     # DOES NOT RETURN
+}
+
+sub calling_context {
+    my($proto, $calling_package) = @_;
+    my($frame) = 1;
+    if ($calling_package) {
+	$frame++
+	    while caller($frame) eq $calling_package;
+    }
+    my($self) = $proto->SUPER::new;
+    $self->[$_IDI] = [
+	map(+{
+	    package => (caller($_))[0] || undef,
+	    file => (caller($_))[1] || undef,
+	    line => (caller($_))[2] || undef,
+	    sub => (caller($_ + 1))[3] || undef,
+	}, $frame, $frame + 1),
+    ];
+    return $self;
 }
 
 sub debug {
@@ -142,6 +164,10 @@ sub get_max_arg_length {
     # (self) : int
     # Maximum length of an argument to any of the printing methods.
     return $_MAX_ARG_LENGTH;
+}
+
+sub get_top_package_file_line {
+    return @{shift->[$_IDI]->[0]}{qw(package file line)};
 }
 
 sub handle_config {
@@ -241,19 +267,15 @@ sub handle_config {
 }
 
 sub info {
-    # (proto, string, ...) : undef
-    # B<Use this to output information about data processing.  This
-    # should only be in rare cases.  Use L<warn|"warn"> in any case
-    # where an unexpected, event might have occured.>
-    #
-    # Sends an informational message to the alert log.  Doesn't count
-    # on the warn_counter.
-    #
-    # Note: If the message consists of a single newline, nothing is output.
-    my($proto) = shift(@_);
-    int(@_) == 1 && defined($_[0]) && $_[0] eq "\n" && return;
-    $_LOGGER->(_call_format($proto, \@_));
+    my($proto, @args) = @_;
+    $_LOGGER->(_call_format($proto, \@args))
+	unless @args == 1 && ($args[0] || '') eq "\n";
     return;
+}
+
+sub is_calling_context {
+    my(undef, $value) = @_;
+    return __PACKAGE__->is_blessed($value);
 }
 
 sub print_literally {
@@ -322,7 +344,8 @@ sub warn_deprecated {
     my($proto, @message) = @_;
     my($pkg) = caller(0);
     my($i) = 0;
-    $i++ while caller($i) eq $pkg;
+    $i++
+	while caller($i) eq $pkg;
     $proto->warn(
 	'DEPRECATED: ',
 	(caller($i-1))[3],
@@ -350,16 +373,15 @@ sub warn_simply {
 }
 
 sub _call_format {
-    # (proto, array_ref, boolean) : string
-    # Calls _format with the right "caller" args.  If $simply, calls
-    # format_args directly.
     my($proto, $msg, $simply) = @_;
-    return $proto->format_args(@$msg) if $simply;
-    my($i) = 0;
-    $i++ while caller($i) eq __PACKAGE__;
-    return _format($proto,
-	    ((caller($i))[0,1,2], (caller($i+1))[3] || undef),
-	    $msg);
+    return $simply ? $proto->format_args(@$msg)
+	: _format(
+	    $proto,
+	    @{(__PACKAGE__->is_blessed($msg->[0]) ? shift(@$msg)
+		  : $proto->calling_context(__PACKAGE__)
+	    )->[$_IDI]->[0]}{qw(package file line sub)},
+	    $msg,
+	);
 }
 
 sub _do_warn {
