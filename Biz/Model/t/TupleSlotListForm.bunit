@@ -41,7 +41,7 @@ model('Tuple')->delete_all;
     }),
     simple_case('' => {
 	slot_0 => 'a@a.a',
-	slot_1 => '',
+	slot_1 => 'Select Value',
 	comment => undef,
     }),
     [s1 => {
