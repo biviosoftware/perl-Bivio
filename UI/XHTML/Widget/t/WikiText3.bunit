@@ -1,0 +1,47 @@
+# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+set_realm_and_user(qw(fourem root));
+initialize_fully('FORUM_WIKI_VIEW');
+config({
+    class() => {
+	deprecated_auto_link_mode => 1,
+    },
+});
+[
+    class() => [
+	{
+	    method => 'render_html',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [{
+		    value => $params->[0],
+		    req => req(),
+		}];
+	    },
+	} => [
+	    <<'FORM_IN' => _chomp(<<'FORM_OUT'),
+@form method=POST action=/fourem/Forms/wikiform
+@textarea name=w5 rows=4 cols=40
+@textarea name=w6 rows=4 cols=40
+values are inlined
+@/textarea
+@textarea name=w7 rows=4 cols=40 values are inlined
+@input type="submit" name="submit" value="OK"
+@/form
+FORM_IN
+<form action="/fourem/Forms/wikiform" method="POST"><textarea cols="40" name="w5" rows="4"></textarea>
+<textarea cols="40" name="w6" rows="4"></textarea>
+values are inlined
+<textarea cols="40" name="w7" rows="4"></textarea><!--IGNORED-TAG-VALUE=values are inlined-->
+<input name="submit" type="submit" value="OK" />
+</form>
+FORM_OUT
+	],
+    ],
+];
+sub _chomp {
+    my($x) = @_;
+    chomp($x);
+    return $x;
+}

@@ -524,6 +524,33 @@ completed
 </html>
 EOF
     $self->model('RealmFile')->create_with_content({
+	path => 'Public/Wiki/EasyForm_btest',
+	is_public => 1,
+    }, \(<<'EOF'));
+@form method=POST action=/fourem/Forms/btest?goto=/fourem/Public/Wiki/EasyForm_btest_done
+@table
+@tr
+@td Input:
+@td
+@input type=text name=input
+@/td
+@/tr
+
+@tr
+@td
+@input type=submit name=ok value=OK
+@/td
+@/tr
+@/table
+@/form
+EOF
+    $self->model('RealmFile')->create_with_content({
+	path => 'Public/Wiki/EasyForm_btest_done',
+	is_public => 1,
+    }, \(<<'EOF'));
+wiki completed
+EOF
+    $self->model('RealmFile')->create_with_content({
 	path => 'Forms/btest.csv',
     }, \(<<'EOF'));
 &date,&email,input,ok

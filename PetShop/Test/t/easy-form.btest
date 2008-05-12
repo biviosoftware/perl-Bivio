@@ -12,5 +12,11 @@ foreach my $u ('', 'root') {
     });
     verify_text('completed');
 }
+visit_uri('/fourem/wiki/EasyForm_btest');
+submit_form(OK => {
+    'Input:' => "easyform$r",
+});
+verify_text('wiki completed');
 visit_uri('/fourem/file/Forms/btest.csv');
-verify_text(qr{\n[^,]+,,$r,OK\n[^,]+,root\@bivio.biz,root$r,OK\n});
+verify_text(qr{\n[^,]+,,$r,OK\n[^,]+,root\@bivio.biz,root$r,OK\n.*easyform$r,OK\n});
+

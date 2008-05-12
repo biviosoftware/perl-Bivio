@@ -73,7 +73,7 @@ config({
 	    '&amp;' => qq{<p class="b_prose">&amp;amp;\n</p>},
 	    '--' => qq{<hr /><br />\n},
 	    '@br' => qq{<br />\n},
-	    '@br dropped text' => qq{<br />\n},
+	    '@br dropped text' => qq{<br /><!--IGNORED-TAG-VALUE=dropped text-->\n},
 	    <<'IN' => _chomp(<<'OUT'),
 @h1 h 1
 

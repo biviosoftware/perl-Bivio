@@ -311,7 +311,8 @@ my($_PHRASE) = _hash([qw(
     sup
     var
 )], []);
-my($_EMPTY) = _hash([qw(br hr img)], []);
+my($_EMPTY) = _hash([qw(br hr img input option)], []);
+my($_EMPTY_BLOCK) = _hash([qw(textarea)], []);
 my($_BLOCK) = _hash([qw(
     blockquote
     caption
@@ -323,6 +324,7 @@ my($_BLOCK) = _hash([qw(
     dl
     dt
     embed
+    form
     h1
     h2
     h3
@@ -363,7 +365,7 @@ foreach my $x (
 foreach my $t (qw(table dl ul ol div)) {
     delete($_BLOCK->{$t}->{$t});
 }
-my($_TAGS) = {%$_EMPTY, %$_BLOCK, %$_PHRASE};
+my($_TAGS) = {%$_EMPTY, %$_EMPTY_BLOCK, %$_BLOCK, %$_PHRASE};
 my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*$)};
@@ -529,6 +531,16 @@ sub _close_tags {
     return '';
 }
 
+sub _empty_tag {
+    my($tag, $attrs_string, $line, $nl, $state) = @_;
+    return "<$tag$attrs_string"
+	. ($_EMPTY_BLOCK->{$tag} ? "></$tag>" : ' />')
+	. (length($line)
+	       ? "<!--IGNORED-TAG-VALUE=" . Bivio::HTML->escape($line) . '-->'
+	       : "")
+	. "$nl";
+}
+
 sub _fix_word {
     my($word) = @_;
     $word =~ s/_/ /g
@@ -667,8 +679,8 @@ sub _fmt_tag {
 	$attrs_string .= ' ' . lc($k) . '="'
 	    . Bivio::HTML->escape_attr_value($attrs->{$k}) . '"';
     }
-    return "<$tag$attrs_string />$nl"
-	if $_EMPTY->{$tag};
+    return _empty_tag($tag, $attrs_string, $line, $nl, $state)
+	if $_EMPTY->{$tag} || $_EMPTY_BLOCK->{$tag};
     #TODO: This is wrong.  <p> is allowed inside <del> and <ins> but not in any
     #of the other tags in $_PHRASE
     _start_p($state)
