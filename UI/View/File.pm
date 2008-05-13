@@ -11,7 +11,11 @@ my($_FCF) = __PACKAGE__->use('Model.FileChangeForm');
 my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 sub file_change {
-    _title('FileChangeForm', '');
+    view_put(xhtml_title => Join([
+	vs_text('title.FORUM_FILE_CHANGE'),
+	' ',
+	String([qw(Model.FileChangeForm realm_file path)]),
+    ])),
     return shift->internal_body(Join([
 	[\&_javascript_field_selector],
 	vs_simple_form(FileChangeForm => [
@@ -37,6 +41,11 @@ sub file_change {
 			_link('Rename file', 'RENAME'),
 			_link('Move file', 'MOVE'),
 			_link('Delete', 'DELETE'),
+			Link('Leave file locked', URI({
+			    task_id => 'FORUM_FILE',
+			    query => [['Model.FileChangeForm',
+			        '->unsafe_get_context'], 'query'],
+			})),
 		    ], String(' - ')),
 		]),
 	    ),
@@ -102,7 +111,7 @@ sub version_list {
     ]));
     $self->internal_put_base_attr(tools => TaskMenu([
 	{
-	    task_id => 'FORUM_FILE_TREE_LIST',
+	    task_id => 'FORUM_FILE',
 	    label => String('back to list'),
 	},
     ]));
@@ -250,18 +259,6 @@ sub _simple_tree {
 	}],
 	'RealmFile.modified_date_time',
     ]);
-}
-
-sub _title {
-    my($form, $title) = @_;
-    view_put(xhtml_title => Join([
-	$title,
-	If(['Model.' . $form, 'realm_file', 'is_folder'],
-	    ' folder: ',
-	    ' file: '),
-	String(['Model.' . $form, 'realm_file', 'path']),
-    ]));
-    return;
 }
 
 sub _tree_list {
