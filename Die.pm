@@ -440,7 +440,8 @@ sub _handle_die {
 	local($SIG{__DIE__});
 	my($self) = @_;
 	_print_stack($self)
-	    if $_STACK_TRACE_ERROR
+	    if $_TRACE
+	    || $_STACK_TRACE_ERROR
 	    && ($self->unsafe_get('attrs') || {program_error => 1})
 		->{program_error};
 	my($i) = 0;
@@ -540,7 +541,7 @@ sub _new {
     _trace($self) if $_TRACE;
     # After trace, so not too verbose
     $self->put(stack => $stack || '');
-    _print_stack($self) if $_STACK_TRACE;
+    _print_stack($self) if $_TRACE || $_STACK_TRACE;
     return $self;
 }
 
@@ -572,7 +573,7 @@ sub _new_from_eval_syntax_error {
 	    {message => $@, program_error => 1},
 	    undef, undef, undef, Carp::longmess($@));
     _print_stack($self)
-	if $_STACK_TRACE_ERROR
+	if $_TRACE || $_STACK_TRACE_ERROR
 	&& ($self->unsafe_get('attrs') || {program_error => 1})
 	->{program_error};
     return $self;
@@ -602,13 +603,17 @@ sub _print_stack {
     # Prints the stack trace.
     my($self) = @_;
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
-    _trace($self, "\n", $self->unsafe_get('stack')) if $_TRACE;
-    return if $sp || $tq || $_CATCH_QUIETLY;
-    $_A->print_literally(
-        $self->as_string, "\n",
-        $self->unsafe_get('stack'),
-        $_STACK_TRACE_SEPARATOR,
-    );
+    if ($sp || $tq || $_CATCH_QUIETLY) {
+	return unless $_TRACE;
+	_trace($self, "\n", $self->unsafe_get('stack'), $_STACK_TRACE_SEPARATOR)
+    }
+    else {
+	$_A->print_literally(
+	    $self->as_string, "\n",
+	    $self->unsafe_get('stack'),
+	    $_STACK_TRACE_SEPARATOR,
+	);
+    }
     $self->put(stack_printed => 1);
     return;
 }
