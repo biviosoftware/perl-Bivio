@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -26,11 +26,59 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.29  2008/05/11 13:29:09  nagler
+  * Bivio::Agent::Request
+    move towards multi-realm tasks by using assert_realm_type and has_realm_type
+  * Bivio::Base
+    b_die/b_info/b_trace/b_warn utility imports
+  * Bivio::Biz::Model::ECCreditCardPaymentForm
+    when determining double-click, only compare recent cc payments
+  * Bivio::Biz::Model::RealmAdminList
+    map import
+  * Bivio::Biz::Model::RealmOwnerBase
+    todo
+  * Bivio::Biz::Model::RealmUserDeleteForm
+    use with_realm
+  * Bivio::Die
+    added support for calling_context
+  * Bivio::IO::Alert
+    added calling_context and support for carrying calling_context
+  * Bivio::IO::ClassLoader
+    added list_simple_packages_in_map
+  * Bivio::IO::File
+    added get_modified_date_time
+  * Bivio::PetShop::Util::SQL
+    fmt
+  * Bivio::ShellUtil
+    added required_main() for command line utilities
+    required_main produces better error message
+  * Bivio::Test::Request
+    internal_redirect_realm_guess => internal_redirect_user_realm
+  * Bivio::Test::Unit
+    class map
+  * Bivio::Type
+    to_sql_param() converts '' to undef
+  * Bivio::UI::FacadeBase
+    englush
+  * Bivio::UI::View::CSS
+    changed label padding so label_ok better aligns with text boxes
+  * Bivio::UI::View::Error
+    added space between messages, changed [auth_user] to [auth_user_id] to
+    avoid rendering ref as string warning
+  * Bivio::UI::View::ThreePartPage
+    added want_page_print
+  * Bivio::Util::SiteForum
+    call TestUser->init_adm in init() b/c needed for proper realm setup
+  * Bivio::Util::TestUser
+    factored out init_adm
+  * Bivio::t::Base::T1
+    added test_b_die/info
+
   Revision 6.28  2008/05/06 02:04:53  moeller
   * Bivio::Biz::Model::RealmFileTreeList
     added can_write() and is_archive()
