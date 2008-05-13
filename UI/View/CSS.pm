@@ -449,7 +449,8 @@ pre .text {
 .tree_list {
   margin: 0;
 }
-.tree_list .node {
+.tree_list .node,
+.tree_list .node a {
   white-space: nowrap;
 }
 .tree_list .node .name {
