@@ -18,7 +18,7 @@ visit_uri('/btest_read/file/private/image.gif');
 verify_content_type('image/gif');
 home_page();
 login_as('root');
-visit_uri('/fourem/files');
+visit_uri('/fourem/file');
 
 my($fixup_uri) = sub {
     my($mode) = @_;
