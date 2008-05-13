@@ -532,18 +532,9 @@ sub info_file {
 		);
 	    },
 	),
- 	[qw(
- 	    FORUM_FILE_TREE_LIST
- 	    171
- 	    FORUM
- 	    DATA_READ
-	    Model.RealmFileTreeList->execute_load_all_with_query
- 	    View.File->tree_list
-	    next=FORUM_FILE
-        )],
 	[qw(
  	    FORUM_FILE_VERSIONS_LIST
- 	    172
+ 	    171
  	    FORUM
  	    DATA_READ
 	    Model.RealmFileVersionsList->execute_load_all
@@ -551,26 +542,26 @@ sub info_file {
         )],
 	[qw(
  	    FORUM_FILE_CHANGE
- 	    173
+ 	    172
  	    FORUM
             DATA_READ&DATA_WRITE
             Model.Lock
             Model.FileChangeForm
             Model.RealmFolderList->execute_load_all
 	    View.File->file_change
-            next=FORUM_FILE_TREE_LIST
+            next=FORUM_FILE
         )],
 	[qw(
  	    FORUM_FILE_OVERRIDE_LOCK
- 	    174
+ 	    173
  	    FORUM
             DATA_READ&DATA_WRITE
             Model.Lock
             Model.FileUnlockForm
 	    View.File->file_unlock
-            next=FORUM_FILE_TREE_LIST
+            next=FORUM_FILE
         )],
-#175-179 free
+#174-179 free
     ];
 }
 
