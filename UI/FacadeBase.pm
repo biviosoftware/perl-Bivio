@@ -456,7 +456,6 @@ sub _cfg_file {
 		    );
 		},
 	    ),
-	    [FORUM_FILE_TREE_LIST => '?/files/*'],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
 	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
@@ -491,10 +490,9 @@ sub _cfg_file {
 		empty_list_prose => 'No files revisions.',
 	    ]],
 	    [title => [
-		FORUM_FILE_TREE_LIST => 'Files',
 		FORUM_FILE => 'Files',
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
-		FORUM_FILE_CHANGE => 'Add/Update File/Folder',
+		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
 	    ]],
         ],
