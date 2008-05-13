@@ -34,10 +34,10 @@ sub init_adm {
     my($self) = @_;
     $self->initialize_ui->with_realm(undef, sub {
 	$self->new_other('SQL')->create_test_user($self->ADM);
+	$self->req->set_user($self->ADM);
 	$self->new_other('RealmRole')->make_super_user;
 	return;
     });
-    $self->req->set_user($self->ADM);
     return;
 }
 
