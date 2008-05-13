@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.30  2008/05/13 21:28:34  moeller
+  * Bivio::Delegate::TaskId
+    removed FORUM_FILE_TREE_LIST
+  * Bivio::Die
+    put $_TRACE in more places
+  * Bivio::PetShop::Util::SQL
+    allow form and input tags in WikiText to enable EasyForms from Wiki
+  * Bivio::UI::FacadeBase
+    removed FORUM_FILE_TREE_LIST, updated task heading
+  * Bivio::UI::View::File
+    added 'leave file locked' link on change file page,
+    improved file change page heading
+  * Bivio::UI::XHTML::Widget::WikiText
+    allow form and input tags in WikiText to enable EasyForms from Wiki
+    added support for select and option tags
+  * Bivio::Util::TestUser
+    set_user() right after the ADM user is created
+
   Revision 6.29  2008/05/11 13:29:09  nagler
   * Bivio::Agent::Request
     move towards multi-realm tasks by using assert_realm_type and has_realm_type
