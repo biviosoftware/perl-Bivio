@@ -302,6 +302,7 @@ my($_PHRASE) = _hash([qw(
     em
     ins
     kbd
+    legend
     option
     q
     samp
@@ -325,6 +326,7 @@ my($_BLOCK) = _hash([qw(
     dl
     dt
     embed
+    fieldset
     form
     h1
     h2
