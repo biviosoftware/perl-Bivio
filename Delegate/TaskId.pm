@@ -168,7 +168,6 @@ sub info_base {
 	# 41: MAIL_RECEIVE_FORWARD
 	# 42: FORUM_MAIL_RECEIVE
 	# 43: FORUM_EASY_FORM
-	# 44: FORUM_PUBLIC_FILE
 	# 45: GENERAL_CONTACT
 	# 46: USER_MAIL_BOUNCE
 	# 47: MAIL_RECEIVE_FORBIDDEN
@@ -497,41 +496,17 @@ sub info_file {
             ANYBODY
             Action.EasyForm
         )],
-	$_C->if_version(
-	    3 => sub {
-		return (
-		    [qw(
-			FORUM_FILE
-			52
-			FORUM
-			ANYBODY
-			Action.RealmFile->access_controlled_execute
-			Model.RealmFileTreeList->execute_load_all_with_query
-                        View.File->tree_list
-			want_folder_fall_thru=1
-			next=FORUM_FILE
-		    )],
-		);
-	    },
-	    sub {
-		return (
-		    [qw(
-			FORUM_PUBLIC_FILE
-			44
-			FORUM
-			ANYBODY
-			Action.RealmFile->execute_public
-		    )],
-		    [qw(
-			FORUM_FILE
-			52
-			FORUM
-			DATA_READ
-			Action.RealmFile->execute_private
-		    )],
-		);
-	    },
-	),
+	[qw(
+            FORUM_FILE
+	    52
+	    FORUM
+	    ANYBODY
+	    Action.RealmFile->access_controlled_execute
+	    Model.RealmFileTreeList->execute_load_all_with_query
+            View.File->tree_list
+	    want_folder_fall_thru=1
+	    next=FORUM_FILE
+	)],
 	[qw(
  	    FORUM_FILE_VERSIONS_LIST
  	    171

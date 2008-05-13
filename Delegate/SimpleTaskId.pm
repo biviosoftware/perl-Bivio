@@ -324,13 +324,7 @@ sub info_base {
             ANYBODY
             Action.EasyForm
         )],
- 	[qw(
- 	    FORUM_PUBLIC_FILE
- 	    44
- 	    FORUM
- 	    ANYBODY
- 	    Action.RealmFile->execute_public
- 	)],
+# 44
 	[qw(
 	    GENERAL_CONTACT
 	    45

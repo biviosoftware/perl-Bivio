@@ -443,19 +443,7 @@ sub _cfg_file {
 	],
 	Task => [
 	    [FORUM_EASY_FORM => '?/Forms/*'],
-	    $_C->if_version(
-		3 => sub {
-		    return (
-			[FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
-		    );
-		},
-		sub {
-		    return (
-			[FORUM_FILE => '?/file/*'],
-			[FORUM_PUBLIC_FILE => ['?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
-		    );
-		},
-	    ),
+	    [FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
 	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],

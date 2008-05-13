@@ -28,13 +28,7 @@ sub format_uri {
 	},
 	sub {
 	    return {
-		task_id => $_C->if_version(
-		    3 => 'FORUM_FILE',
-		    sub {
-			return $args->{is_public}
-			    ? 'FORUM_PUBLIC_FILE' : 'FORUM_FILE';
-		    },
-		),
+		task_id => 'FORUM_FILE',
 		realm => $args->{realm_name},
 		query => undef,
 		path_info => $_C->if_version(
