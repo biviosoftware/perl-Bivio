@@ -302,6 +302,7 @@ my($_PHRASE) = _hash([qw(
     em
     ins
     kbd
+    option
     q
     samp
     small
@@ -311,7 +312,7 @@ my($_PHRASE) = _hash([qw(
     sup
     var
 )], []);
-my($_EMPTY) = _hash([qw(br hr img input option)], []);
+my($_EMPTY) = _hash([qw(br hr img input)], []);
 my($_EMPTY_BLOCK) = _hash([qw(textarea)], []);
 my($_BLOCK) = _hash([qw(
     blockquote
@@ -337,6 +338,7 @@ my($_BLOCK) = _hash([qw(
     p
     param
     pre
+    select
     table
     tbody
     td
