@@ -95,7 +95,7 @@ Logs in the I<realm_owner> and updates the cookie.
 sub execute_ok {
     my($self) = @_;
     # user is validated in internal_pre_execute
-    return $self->get_instance('UserLoginForm')->substitute_user(
+    return $self->new_other('UserLoginForm')->substitute_user(
 	$self->get('realm_owner'),
 	$self->get_request,
     );
