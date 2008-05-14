@@ -443,7 +443,7 @@ sub _cfg_file {
 	],
 	Task => [
 	    [FORUM_EASY_FORM => '?/Forms/*'],
-	    [FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
+	    [FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*', '?/files/*']],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
 	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
