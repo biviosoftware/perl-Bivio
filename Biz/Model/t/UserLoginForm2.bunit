@@ -1,0 +1,28 @@
+# $Id$
+# Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
+
+my($user) = __PACKAGE__->use('Model.RealmOwner')->new(req())
+    ->unauth_load_or_die({
+	name => 'demo',
+    });
+
+[
+    sub {
+	__PACKAGE__->use(class())->new(req());
+    } => [
+	process => [
+	    [{
+		realm_owner => $user,
+	    }] => [0],
+	],
+    ],
+    sub {
+	Bivio::Biz::Model->get_instance(class());
+    } => [
+	process => [
+	    [{
+		realm_owner => $user,
+	    }] => DIE(),
+	],
+    ],
+];
