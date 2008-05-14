@@ -689,6 +689,7 @@ sub new {
 
 sub process {
     my($self, $req, $values) = @_;
+    $self->assert_not_singleton;
     # Does the work for L<execute|"execute"> after execute creates a I<self>.
     if (ref($req) eq 'HASH') {
 	$values = $req;
