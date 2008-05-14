@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.31  2008/05/13 22:51:09  moeller
+  * Bivio::Biz::Model::RealmLogoList Bivio::Delegate::SimpleTaskId
+    Bivio::Delegate::TaskId Bivio::Type::WikiDataName Bivio::UI::FacadeBase
+    removed FORUM_PUBLIC_FILE
+
   Revision 6.30  2008/05/13 21:28:34  moeller
   * Bivio::Delegate::TaskId
     removed FORUM_FILE_TREE_LIST
