@@ -654,7 +654,7 @@ sub _fmt_tag {
     return _close_top($tag, $state)
 	if $close;
     my($attrs) = defined($class) && length($class) ? {class => $class} : {};
-    while ($line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]+)")//) {
+    while ($line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]*)")//) {
 	my($k) = lc($1 ? $1 : $3);
 	my($v) = defined($2) ? $2 : $4;
 	$attrs->{$k} = $k =~ /^(?:src|href)$/
