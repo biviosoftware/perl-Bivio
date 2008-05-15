@@ -147,6 +147,7 @@ p2
 @h2 h 2
 p3
 @table class=c1
+@tbody
 @tr
 @td
 1.1
@@ -159,6 +160,7 @@ p3
 @td 2.1
 @td class=number
 2.2
+@/tbody
 @tr
 @td
 
@@ -184,11 +186,11 @@ IN
 </p><p class="b_prose">p2
 </p><h2>h 2</h2>
 <p class="b_prose">p3
-</p><table class="c1"><tr><td><p>1.1
+</p><table class="c1"><tbody><tr><td><p>1.1
 </p></td><td><p>1.2
 </p></td><td></td></tr><tr><td>2.1</td>
 <td class="number"><p>2.2
-</p></td></tr><tr><td><p>3.1p1
+</p></td></tr></tbody><tr><td><p>3.1p1
 </p><p>3.1p2
 </p></td></tr></table><ol><li><p>i1.1
 </p><p>i1.2
