@@ -197,7 +197,6 @@ form .label {
 }
 form .label_ok {
   Font('form_label_ok');
-  padding-top: 0.7em;
 }
 .label_err {
   vertical-align: middle;
