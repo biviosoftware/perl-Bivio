@@ -12,9 +12,10 @@ sub EMPTY_SUBJECT_PREFIX {
 }
 
 sub execute_receive {
-    my($proto, $req, $rfc822) = @_;
+    my($proto, $req, $rfc822, $job_task) = @_;
     $rfc822 ||= $req->get('Model.MailReceiveDispatchForm')
 	->get('message')->{content};
+    $job_task ||= 'FORUM_MAIL_REFLECTOR';
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
     my($in) = $rm->create_from_rfc822($rfc822);
     my($n) = $req->get_nested(qw(auth_realm owner name));
@@ -29,7 +30,7 @@ sub execute_receive {
 	req => $req,
     });
     $proto->use('AgentJob.Dispatcher')->enqueue(
-	$req, 'FORUM_MAIL_REFLECTOR', {
+	$req, $job_task, {
 	    $proto->package_name => $proto->new({
 		outgoing => $out,
 		realm_file_id => $rm->get('realm_file_id'),
