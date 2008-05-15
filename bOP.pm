@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.32  2008/05/14 20:48:07  moeller
+  * Bivio::Biz::FormModel
+    process() calls assert_not_singleton() to avoid global model corruption
+  * Bivio::Biz::Model::AdmSubstituteUserForm
+    fixed call to UserLoginForm->substitute_user() to be on an instance,
+    not the singleton
+  * Bivio::UI::FacadeBase
+    added old uri ?/files to FORUM_FILE task
+  * Bivio::UI::View::CSS
+    nowrap the anchors in .tree_list .nodes to fix display in safari
+  * Bivio::UI::XHTML::Widget::WikiText
+    add fieldset and legend tags
+
   Revision 6.31  2008/05/13 22:51:09  moeller
   * Bivio::Biz::Model::RealmLogoList Bivio::Delegate::SimpleTaskId
     Bivio::Delegate::TaskId Bivio::Type::WikiDataName Bivio::UI::FacadeBase
