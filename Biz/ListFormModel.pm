@@ -183,7 +183,8 @@ sub get_field_name_for_html {
     }
 
     # Finally, return the row-qualified form field name
-    return $col->{form_name}.$_SEP.$row;
+    Bivio::Die->die($col) unless $col->{form_name};
+    return $col->{form_name} . $_SEP . $row;
 }
 
 sub get_field_name_in_list {
