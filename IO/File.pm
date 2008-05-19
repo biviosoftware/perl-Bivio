@@ -229,11 +229,11 @@ sub rm_rf {
 }
 
 sub temp_file {
-    my($proto, $req) = @_;
+    my($proto, $req, $suffix) = @_;
     # Returns the name of a temp file. If a request is passed, the file
     # is automatically removed when the request is completed.
     my($name) = '/tmp/' . Bivio::Type::DateTime->local_now_as_file_name
-        . '-' . $$ . '-' . rand();
+        . '-' . $$ . '-' . rand() . (defined($suffix) ? $suffix : '');
 
     if ($req) {
         $req->put(process_cleanup => [])
