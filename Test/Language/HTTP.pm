@@ -284,6 +284,14 @@ sub go_back {
     return;
 }
 
+sub handle_cleanup {
+    my($self) = @_;
+    my($req) = $self->use('Test.Request')->get_current;
+    $req->process_cleanup
+	if $req;
+    return shift->SUPER::handle_cleanup(@_);
+}
+
 sub handle_config {
     my(undef, $cfg) = @_;
     # email_tag : string [+btest_]
