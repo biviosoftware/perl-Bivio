@@ -11,7 +11,6 @@ use Bivio::Mail::Address;
 use Bivio::Mail::Common;
 use Bivio::Test::HTMLParser;
 use Bivio::Type::FileName;
-use File::Temp ();
 use HTTP::Cookies ();
 use HTTP::Request ();
 use HTTP::Request::Common ();
@@ -149,9 +148,7 @@ sub file_field {
     # is supplied.
     return [$name, $name]
 	unless defined($content);
-    my($handle, $file) = $self->tmp_file($name);
-    $_F->write($handle, $content);
-    return [$file, $name];
+    return [$_F->write($self->tmp_file($name), $content), $name];
 }
 
 sub find_table_row {
@@ -571,9 +568,8 @@ sub text_exists {
 
 sub tmp_file {
     my($self, $name) = @_;
-    $name ||= 'test.txt';
-    # returns $handle, $file_name
-    return File::Temp::tempfile(UNLINK => 1, SUFFIX => "-$name");
+    return $_F->temp_file($self->use('Test.Request')->get_current_or_new,
+	$name || 'test.txt');
 }
 
 sub unsafe_get_uri {
