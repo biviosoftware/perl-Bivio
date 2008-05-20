@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.33  2008/05/15 23:37:12  moeller
+  * Bivio::Biz::Action::RealmMail
+    allow passing the job task to execute_receive()
+  * Bivio::Biz::Model::MailForm
+    added MAIL_REFLECTOR_TASK constant
+  * Bivio::UI::View::CSS
+    rm label_ok top padding
+
   Revision 6.32  2008/05/14 20:48:07  moeller
   * Bivio::Biz::FormModel
     process() calls assert_not_singleton() to avoid global model corruption
