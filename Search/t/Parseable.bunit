@@ -31,5 +31,10 @@ my($txt) = model(RealmFile => {path => '/Public/file.txt'});
 	    [{content_type => 'text/plain', content => 'not ok', req => req()}]
 		=> qr{is invalid type for content$},
 	],
+	sub {
+	    # cleanup tmp files
+	    req()->process_cleanup;
+	    return 1;
+	} => 1,
     ],
 ];
