@@ -138,7 +138,7 @@ req()->set_realm('btest_read');
 	    return;
 	}),
 	inline_case(sub {
-	    assert_eval('1');
+	    assert_equals(3, assert_eval('3'));
 	    return;
 	}),
 	sub {

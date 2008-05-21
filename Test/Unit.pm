@@ -101,13 +101,13 @@ sub builtin_assert_equals {
 sub builtin_assert_eval {
     my(undef, $code) = @_;
     my($die);
-    Bivio::Die->throw_quietly(
-	DIE => $_A->format_args(
-	    ref($code) ? ('line ', (caller)[2]) : $code,
-	    $die ? (': died with: ', $die) : ': returned false',
-	),
-    ) unless Bivio::Die->catch($code, \$die);
-    return;
+    return Bivio::Die->catch($code, \$die)
+	|| Bivio::Die->throw_quietly(
+	    DIE => $_A->format_args(
+		ref($code) ? ('line ', (caller)[2]) : $code,
+		$die ? (': died with: ', $die) : ': returned false',
+	    ),
+	);
 }
 
 sub builtin_assert_not_equals {
