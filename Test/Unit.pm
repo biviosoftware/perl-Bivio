@@ -410,6 +410,10 @@ sub builtin_template {
     return shift->use('IO.Template')->replace_in_string(@_);
 }
 
+sub builtin_to_string {
+    return ${shift->use('IO.Ref')->to_string(@_)};
+}
+
 sub new_unit {
     my($proto, $class, $attrs) = @_;
     return $proto->SUPER::new({
