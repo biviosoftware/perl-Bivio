@@ -50,6 +50,10 @@ EOF
 	    TextFile => ['text/plain', ''],
 	    BinaryFile => [],
 	    ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
+	    't2.bwiki' => ['text/plain', 'TITLE',
+		qr/first text\s+second text\s+third text\s+the end/],
+	    't3.bwiki' => ['text/plain', 'TITLE',
+		qr/email me at foo\@bar.com or\s+home\s+Name\:\s+the end/],
 	],
     ],
 ];
