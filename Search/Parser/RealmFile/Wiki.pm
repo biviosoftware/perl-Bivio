@@ -17,7 +17,12 @@ sub handle_parse {
     $$text =~ s/(?:^|\n)\@h\d+\s+([^\n]+)\n//s;
     my($title) = $1;
     $$text =~ s/(?=\@p)/\n/mg;
+    $$text =~ s/^\@(?:\!.*\n|\S+(?:\s*\w+="[^"]+")*\s*)//mg;
     $$text =~ s/^\@(?:\!.*\n|\S+(?:\s*\w+=\S+)*\s*)//mg;
+    $$text =~ s/\S+=\S+//mg;
+    $$text =~ s/\^(\S+\@)/$1/g;
+    $$text =~ s/\^\S+//g;
+    $$text =~ s/\b[A-Z]\w*[A-Z]\w+\s*//g;
     return [
 	'text/plain',
 	$title || $_FP->get_base($parseable->get('path')),
