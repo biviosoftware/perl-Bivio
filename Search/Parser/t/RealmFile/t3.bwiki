@@ -1,0 +1,8 @@
+@h3 TITLE
+email me at ^foo@bar.com or ^APage home
+@b-menu CamelCase
+@form.ez method=POST action=/site/Forms/Partner?blah=blah
+@th Name:
+@input type=text size=40 name=name
+@/form
+the end

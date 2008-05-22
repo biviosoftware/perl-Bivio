@@ -1,0 +1,10 @@
+@h3 TITLE
+ first text
+@div class="sidebar right" second text
+@table
+@tr
+@td.body colspan=2 third text
+@/td
+@/tr
+@/table
+the end
