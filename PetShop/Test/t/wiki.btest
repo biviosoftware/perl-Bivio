@@ -5,15 +5,23 @@ my($f, $uri) = create_forum();
 visit_uri($uri = "$uri/wiki");
 submit_form({
     public => 1,
-    anon => 'Here is our ^PrivatePage!',
+    anon => 'Here is our ^PrivatePage! ',
 });
 $uri = get_uri();
 follow_link('PrivatePage');
+my($search_key) = random_string();
 submit_form({
     public => 0,
-    anon => 'go back to the ^StartPage.',
+    anon => 'go back to the ^StartPage. ' . $search_key,
+});
+follow_link('edit');
+submit_form(OK => {
 });
 follow_link('StartPage');
+submit_form({
+    _anon => $search_key,
+});
+verify_no_text('PrivatePage;');
 do_logout();
 home_page();
 login_as('demo');
