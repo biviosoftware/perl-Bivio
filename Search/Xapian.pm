@@ -105,8 +105,13 @@ sub update_realm_file {
 	$realm_file->get_request,
     ) unless ref($proto);
     my($rf) = $_MRF->new($req);
-    return unless $rf->unauth_load({realm_file_id => $realm_file})
-	&& $rf->is_searchable;
+    return unless $rf->unauth_load({realm_file_id => $realm_file});
+
+    unless ($rf->is_searchable) {
+	# need to remove it, ex. archived searchable file
+	$proto->delete_realm_file($realm_file, $req);
+	return;
+    }
     _replace(
 	$proto,
 	$req,
