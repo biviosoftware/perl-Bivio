@@ -10,16 +10,16 @@ sub CONTENT_TYPE_LIST {
     return 'application/pdf';
 }
 
-sub _from_application_pdf {
-    my($proto, $rf) = @_;
-    my($path) = $rf->get_os_path;
+sub handle_parse {
+    my($proto, $parseable) = @_;
+    my($path) = $parseable->get_os_path;
     my $x = `pdfinfo $path 2>&1`;
     my($title) = !$? && $x =~ /^Title:\s*(.*)/im ? $1 : undef;
     $title = ''
 	unless defined($title);
     $x = `pdftotext $path - 2>&1`;
     if ($? || $x =~ /^Error:/s) {
-	Bivio::IO::Alert->warn($rf, ': pdftotext error: ', $x);
+	Bivio::IO::Alert->warn($parseable, ': pdftotext error: ', $x);
 	return;
     }
     $x =~ s/^\s*\n$//mg;
