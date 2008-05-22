@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.34  2008/05/20 17:13:21  moeller
+  * Bivio::Biz::ListFormModel
+    die() if get_field_name_for_html() can't determine the form_name for the col
+  * Bivio::IO::File
+    added optional $suffix parameter to temp_file()
+  * Bivio::Test::Language::HTTP
+    tmp_file() now uses Bivio::IO::File->temp_file() for proper cleanup
+  * Bivio::UI::XHTML::Widget::WikiText
+    render empty tag attributes if specified explicitly
+
   Revision 6.33  2008/05/15 23:37:12  moeller
   * Bivio::Biz::Action::RealmMail
     allow passing the job task to execute_receive()
