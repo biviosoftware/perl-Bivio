@@ -187,10 +187,15 @@ sub _excerpt {
     pop(@$words)
 	if @$words >= $num_words;
     $max *= 1.5;
+    my($trimmed_text) = 0;
+
     while (1) {
 	last if length($row->{result_excerpt} = join(' ', @$words)) < $max;
 	pop(@$words);
+	$trimmed_text = 1;
     }
+    $row->{result_excerpt} .= '...'
+	if $trimmed_text;
     return;
 }
 
