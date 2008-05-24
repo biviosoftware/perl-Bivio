@@ -258,11 +258,13 @@ EOF
 
 sub set_named_filters {
     my($proto, $name) = @_;
-    my($c) = Bivio::IO::Config->unsafe_get($name) || {
-	call_filter => undef,
-	package_filter => $name =~ /^[\w:]+$/s ? "m{$name}i"
-	    : die($name, ': invalid named filter'),
-    };
+    my($c) = defined($name) ?
+	$name =~ /^\w+$/ && Bivio::IO::Config->unsafe_get($name) || {
+	    call_filter => undef,
+	    package_filter => $name =~ /^[\:\w]+$/s ? "m{$name}i"
+		: die($name, ': invalid named filter'),
+	}
+        : {};
     $proto->set_filters($c->{call_filter}, $c->{package_filter});
     return;
 }
