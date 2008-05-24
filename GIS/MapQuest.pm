@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AUTH_KEYS) = [qw(ClientId Password)];
 my($_C) = __PACKAGE__->use('IO.Config');
 $_C->register(my $_CFG = {
-    map(($_ => $_C->REQUIRED), @$_AUTH_KEYS, 'referer'),
+    map(($_ => $_C->REQUIRED), @$_AUTH_KEYS, 'Referer'),
     access => 'dev',
 });
 my($_S) = __PACKAGE__->use('HTML.Scraper');
