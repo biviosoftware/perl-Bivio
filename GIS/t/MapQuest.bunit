@@ -11,6 +11,8 @@ Request();
 	    [{AdminArea1 => 'US', AdminArea3 => 'CO', AdminArea5 => 'Boulder', Street => '2369 Spotswood Pl'}] => qr{Lat>40.051986<},
 	    803040994 => qr{Lat>40.052300<},
 	    '2369 Spotswood Place, boulder, co' => qr{Lat>40.051986<},
+	    London => TOO_MANY(),
+	    '1313 Mockingbird lane' => NOT_FOUND(),
 	],
     ],
 ];
