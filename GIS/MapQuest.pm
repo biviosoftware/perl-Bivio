@@ -72,7 +72,7 @@ sub handle_config {
 sub http_get {
     my($self, $type, $attrs) = @_;
     my($server) = $_SERVER->{$type} || b_die($type, ': unhandled type');
-    my($s) = $_S->new({referer => $_CFG->{referer}});
+    my($s) = $_S->new({Referer => $_CFG->{Referer}});
     return ${$s->extract_content(
 	$s->http_get(
 	    qq{http://$server.$_CFG->{access}.mapquest.com/mq/mqserver.dll?e=5&}
