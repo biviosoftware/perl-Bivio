@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Config;
 use strict;
@@ -171,75 +171,9 @@ sub command_line_args {
 
 sub get {
     my($proto, $name) = @_;
-    # Looks up configuration for the caller's package (default).  If name is
-    # provided, returns the configuration hash bound to I<name> within the package's
-    # configuration space, e.g. given the config:
-    #
-    #     'Bivio::IPC::Server' => {
-    #         'listen' => 35,
-    #         'my_server' => {
-    #             'port' => 1234,
-    #             'timeout' => 60_000,
-    #         },
-    #         'my_other_server' => {
-    #             'port' => 9999,
-    #         },
-    #     }
-    #
-    # C<get('my_server')> will return the following hash:
-    #
-    #     {
-    #         'listen' => 35,
-    #         'port' => 1234,
-    #         'timeout' => 60_000,
-    #     }
-    #
-    # Required configuration is checked during this call.
-    #
-    # If I<name> is passed but is undefined, then only the named configuration
-    # parameters will be returned.
-    #
-    # If I<name> is not passed, then the entire configuration will be returned,
-    # including specific named sections.
-    #
-    # If I<name> is prefixed by a package separated by a '.', then the
-    # config for that element of that package is returned.
-    my($pkg);
-    if (($name || '') =~ /^([\w:]+)\.(\w+)$/) {
-	$pkg = $1;
-	$name = $2;
-    }
-    elsif (($name || '') =~ /::/) {
-	$pkg = $name;
-	$name = undef;
-	pop(@_);
-    }
-    else {
-	my($i) = 0;
-	0 while ($pkg = caller($i++)) eq __PACKAGE__;
-	$name = undef
-	    unless defined($name) && length($name);
-    }
-    my($pkg_cfg) = _get_pkg($pkg);
-    return $pkg_cfg
-	if @_ < 2;
-    my($spec) = $_SPEC{$pkg};
-    die("$pkg: NAMED config not specified by this package.  You can't retrieve values from a config hash with get().  Only for named configuration or whole package")
-	unless defined($spec) && defined($spec->{$proto->NAMED});
-    if (defined($name)) {
-	defined($pkg_cfg->{$name})
-	    || die("$pkg.$name: named config not found");
-	return $pkg_cfg->{$name};
-    }
-    # Retrieve the "undef" config, see _get_pkg
-    my($cfg) = $pkg_cfg->{$proto->NAMED};
-    my(@bad) = grep(
-	defined($cfg->{$_}) && $cfg->{$_} eq $proto->REQUIRED,
-	keys(%$cfg),
-    );
-    die("$pkg.(" . join(' ', sort(@bad)), ': named config required')
-	if @bad;
-    return $cfg;
+    die($name, ': named config not found')
+	unless defined(my $res = shift->unsafe_get(@_));
+    return $res;
 }
 
 sub if_version {
@@ -444,6 +378,76 @@ sub register {
     $_SPEC{$pkg} = $spec;
     &{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
     return;
+}
+
+sub unsafe_get {
+    my($proto, $name) = @_;
+    # Looks up configuration for the caller's package (default).  If name is
+    # provided, returns the configuration hash bound to I<name> within the package's
+    # configuration space, e.g. given the config:
+    #
+    #     'Bivio::IPC::Server' => {
+    #         'listen' => 35,
+    #         'my_server' => {
+    #             'port' => 1234,
+    #             'timeout' => 60_000,
+    #         },
+    #         'my_other_server' => {
+    #             'port' => 9999,
+    #         },
+    #     }
+    #
+    # C<get('my_server')> will return the following hash:
+    #
+    #     {
+    #         'listen' => 35,
+    #         'port' => 1234,
+    #         'timeout' => 60_000,
+    #     }
+    #
+    # Required configuration is checked during this call.
+    #
+    # If I<name> is passed but is undefined, then only the named configuration
+    # parameters will be returned.
+    #
+    # If I<name> is not passed, then the entire configuration will be returned,
+    # including specific named sections.
+    #
+    # If I<name> is prefixed by a package separated by a '.', then the
+    # config for that element of that package is returned.
+    my($pkg);
+    if (($name || '') =~ /^([\w:]+)\.(\w+)$/) {
+	$pkg = $1;
+	$name = $2;
+    }
+    elsif (($name || '') =~ /::/) {
+	$pkg = $name;
+	$name = undef;
+	pop(@_);
+    }
+    else {
+	my($i) = 0;
+	0 while ($pkg = caller($i++)) eq __PACKAGE__;
+	$name = undef
+	    unless defined($name) && length($name);
+    }
+    my($pkg_cfg) = _get_pkg($pkg);
+    return $pkg_cfg
+	if @_ < 2;
+    my($spec) = $_SPEC{$pkg};
+    die("$pkg: NAMED config not specified by this package.  You can't retrieve values from a config hash with get().  Only for named configuration or whole package")
+	unless defined($spec) && defined($spec->{$proto->NAMED});
+    return defined($pkg_cfg->{$name}) ? $pkg_cfg->{$name} : undef
+	if defined($name);
+    # Retrieve the "undef" config, see _get_pkg
+    my($cfg) = $pkg_cfg->{$proto->NAMED};
+    my(@bad) = grep(
+	defined($cfg->{$_}) && $cfg->{$_} eq $proto->REQUIRED,
+	keys(%$cfg),
+    );
+    die("$pkg.(" . join(' ', sort(@bad)), ': named config required')
+	if @bad;
+    return $cfg;
 }
 
 sub _actual_changed {
