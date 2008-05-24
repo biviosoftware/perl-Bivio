@@ -1,0 +1,16 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    [] => [
+	to_xml => [
+	    [{b => 2, a => 1}] => '<a>1</a><b>2</b>',
+	    [[{'b#3' => 2}, {a => 1}]] => '<b Version="3">2</b><a>1</a>',
+	],
+	geocode_to_xml => [
+	    [{AdminArea1 => 'US', AdminArea3 => 'CO', AdminArea5 => 'Boulder', Street => '2369 Spotswood Pl'}] => qr{Lat>40.051986<},
+	    803040994 => qr{Lat>40.052300<},
+	    '2369 Spotswood Place, boulder, co' => qr{Lat>40.051986<},
+	],
+    ],
+];
