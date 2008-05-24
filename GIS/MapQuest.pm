@@ -25,12 +25,9 @@ my($_ROUTE_OPTIONS) = {
     SHORTEST => [RouteType => 1],
     PEDESTRIAN => [RouteType => 2],
     OPTIMIZED => [RouteType => 3],
-    MILES => [DistanceUnits => 0],
-    KILOMETERS => [DistanceUnits => 1],
     DEFAULT => [NarrativeType => 0],
     HTML => [NarrativeType => 1],
     NONE => [NarrativeType => -1],
-    ENGLISH => [Language => 'English'],
 };
 
 sub maneuvers_to_distance {

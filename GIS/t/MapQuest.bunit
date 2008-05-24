@@ -33,6 +33,11 @@ options({
 	],
 	route_to_xml => [
 	    [[qw(803040994 803040815)]] => qr{Maneuvers Count="8"},
+	    [[qw(803040994 803040815)], 'NONE'] => sub {
+		my(undef, $actual) = @_;
+		assert_not_equals(qr{turn left}i, $actual->[0]);
+		return qr{Maneuvers Count="8"};
+	    },
 	],
 	route_to_maneuvers => [
 	    [[qw(803040994 803040815)], 'SHORTEST'] => [[
@@ -68,7 +73,7 @@ options({
 	    },
 	} => [
 	    [[qw(803040994 803040815)]] => '1.51',
-	    [[qw(803040994 803040815)], ['PEDESTRIAN', 'NONE']] => '1.04',
+	    [[qw(803040994 803040815)], ['PEDESTRIAN']] => '1.04',
 	],
     ],
 ];
