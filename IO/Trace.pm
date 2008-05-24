@@ -43,6 +43,7 @@ BEGIN {
     # Sub used for printing.  See &print.
     $_PRINTER = \&default_printer;
 }
+my($_IS_NAMED) = qr{^[\w:]+$}i;
 
 #=IMPORTS
 use Bivio::IO::Alert;
@@ -100,11 +101,13 @@ sub handle_config {
     #
     # Initial L<get_printer|"get_printer">
     my($proto, $cfg) = @_;
+    my($named);
     my($c) = !$cfg->{command_line_arg} ? $cfg
-	: $cfg->{command_line_arg} =~ /^[a-z]+$/
-	? Bivio::IO::Config->get($cfg->{command_line_arg})
+	: $cfg->{command_line_arg} =~ $_IS_NAMED
+	? ($named = $cfg->{command_line_arg})
 	: {package_filter => $cfg->{command_line_arg}};
-    $proto->set_filters($c->{call_filter}, $c->{package_filter});
+    $named ? $proto->set_named_filters($named)
+	: $proto->set_filters($c->{call_filter}, $c->{package_filter});
     $proto->set_printer($cfg->{printer});
     return;
 }
@@ -261,7 +264,7 @@ sub set_named_filters {
     my($c) = defined($name) ?
 	$name =~ /^\w+$/ && Bivio::IO::Config->unsafe_get($name) || {
 	    call_filter => undef,
-	    package_filter => $name =~ /^[\:\w]+$/s ? "m{$name}i"
+	    package_filter => $name =~ $_IS_NAMED ? "m{$name}i"
 		: die($name, ': invalid named filter'),
 	}
         : {};
