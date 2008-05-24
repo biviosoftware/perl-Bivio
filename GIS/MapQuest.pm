@@ -24,10 +24,15 @@ sub geocode_to_xml {
     my($z) = $_Z9->from_literal($address_or_zip);
     $address_or_zip = {PostalCode => $z}
 	if $z;
-    return $self->http_get(
+    my($res) = $self->http_get(
 	'Geocode#1' => ref($address_or_zip) ? {Address => $address_or_zip}
 	    : {SingleLineAddress => {Address => $address_or_zip}},
     );
+    b_die(NOT_FOUND => {entity => $address_or_zip, result => $res})
+	if $res =~ m{\Q<Lat>39.527596</Lat><Lng>-99.141968</Lng>\E};
+    b_die(TOO_MANY => {entity => $address_or_zip, result => $res})
+	unless $res =~ m{\QCount="1"\E};
+    return $res;
 }
 
 sub handle_config {
@@ -39,10 +44,11 @@ sub handle_config {
 
 sub http_get {
     my($self, $type, $attrs) = @_;
+    my($server) = $_SERVER->{$type} || b_die($type, ': unhandled type');
     my($s) = $_S->new({referer => $_CFG->{referer}});
     return ${$s->extract_content(
 	$s->http_get(
-	    qq{http://$_SERVER->{$type}.$_CFG->{access}.mapquest.com/mq/mqserver.dll?e=5&}
+	    qq{http://$server.$_CFG->{access}.mapquest.com/mq/mqserver.dll?e=5&}
 	    . $_HTML->escape_query(
 		'<?xml version="1.0" encoding="ISO-8859-1"?>'
 		. $self->to_xml({$type => [$attrs, $_AUTH]}),
