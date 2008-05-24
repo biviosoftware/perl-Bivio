@@ -13,6 +13,7 @@ Request();
 	    '2369 Spotswood Place, boulder, co' => qr{Lat>40.051986<},
 	    London => TOO_MANY(),
 	    '1313 Mockingbird lane' => NOT_FOUND(),
+	    [{AdminArea1 => 'US', AdminArea3 => 'N/A'}] => NOT_FOUND(),
 	],
     ],
 ];
