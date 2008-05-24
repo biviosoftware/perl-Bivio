@@ -85,10 +85,11 @@ my($copy) = {
 		 shift;
 		 return (shift(@_) => 1);
 	    }] => sub {
-		my($case, $actual) = @_;
-		$case->actual_return([{@{$actual->[0]}}]);
-		return [{map(($_ => 1),
-		    sort(@{$case->get('object')->get_keys}))}];
+		my($case) = @_;
+		return [[map(
+		    ($_ => 1),
+		    sort(@{$case->get('object')->get_keys}),
+	        )]];
 	    },
 	],
 	get_by_regexp => [

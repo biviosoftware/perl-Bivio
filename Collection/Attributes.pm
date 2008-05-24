@@ -240,10 +240,12 @@ sub map_each {
     # cannot modify them in place, but if a value is a reference, you can modify what
     # it points to.
     #
+    # Keys are sorted.
+    #
     # Returns the aggregated result of L<map_each_handler|"map_each_handler">
     # as an array_ref.
     my($c) = $self->get_shallow_copy;
-    return [map($map_each_handler->($self, $_, $c->{$_}), keys(%$c))];
+    return [map($map_each_handler->($self, $_, $c->{$_}), sort(keys(%$c)))];
 }
 
 sub new {
