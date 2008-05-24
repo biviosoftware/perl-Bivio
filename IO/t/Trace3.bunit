@@ -19,6 +19,7 @@ my($msg);
 	    sql => qr{trace_sql.*select},
 	    [] => [undef],
 	    postgres => qr{internal_fixup_sql},
+	    'ion::postgres' => qr{internal_fixup_sql},
 	],
     ],
 ];
