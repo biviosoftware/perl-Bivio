@@ -34,7 +34,7 @@ sub import {
 }
 
 sub b_die {
-    return $_D->die($_A->calling_context, @_);
+    return $_D->throw_or_die($_A->calling_context, @_);
 }
 
 sub b_info {
