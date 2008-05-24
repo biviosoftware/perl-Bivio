@@ -218,6 +218,7 @@ sub merge_class_loader {
 		    Biz => ['Bivio::Biz'],
 		    Ext => ['Bivio::Ext'],
 		    FacadeComponent => ['Bivio::UI'],
+		    GIS => ['Bivio::GIS'],
 		    HTML => ['Bivio::HTML'],
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
 		    IO => ['Bivio::IO'],
