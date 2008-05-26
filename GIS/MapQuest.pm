@@ -4,8 +4,10 @@ package Bivio::GIS::MapQuest;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 use XML::Simple ();
+use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_AUTH_KEYS) = [qw(ClientId Password)];
 my($_C) = __PACKAGE__->use('IO.Config');
 $_C->register(my $_CFG = {
@@ -15,6 +17,7 @@ $_C->register(my $_CFG = {
 my($_S) = __PACKAGE__->use('HTML.Scraper');
 my($_HTML) = __PACKAGE__->use('Bivio.HTML');
 my($_Z9) = __PACKAGE__->use('Type.USZipCode9');
+my($_TE) = __PACKAGE__->use('Bivio.TypeError');
 my($_AUTH);
 my($_SERVER) = {
     'Geocode Version="1"' => 'geocode',
@@ -40,9 +43,8 @@ sub maneuvers_to_distance {
 }
 
 sub geocode_to_address {
-    my($res) = _from_xml(shift->geocode_to_xml(@_));
-    return $res->{LocationCollection}->{GeoAddress}
-	|| b_die($res, ': unexpected result');
+    my($res, $err) = _from_xml(shift->geocode_to_xml(@_));
+    return $err ? (undef, $err) : $res->{LocationCollection}->{GeoAddress};
 }
 
 sub geocode_to_xml {
@@ -55,9 +57,10 @@ sub geocode_to_xml {
 	    => ref($address_or_zip) ? {Address => $address_or_zip}
 	    : {SingleLineAddress => {Address => $address_or_zip}},
     );
-    b_die(NOT_FOUND => {entity => $address_or_zip, result => $res})
+    _trace($address_or_zip, ' => ', $res) if $_TRACE;
+    return (undef, $_TE->NOT_FOUND)
 	if $res =~ m{\Q<Lat>39.527596</Lat><Lng>-99.141968</Lng>\E};
-    b_die(TOO_MANY => {entity => $address_or_zip, result => $res})
+    return (undef, $_TE->TOO_MANY)
 	unless $res =~ m{\QCount="1"\E};
     return $res;
 }
