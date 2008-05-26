@@ -42,6 +42,18 @@ sub maneuvers_to_distance {
     return sprintf('%.2f', $distance);
 }
 
+sub address_to_model_properties {
+    my($proto, $address) = @_;
+    return {
+	street1 => $address->{Street},
+	street2 => '',
+	city => $address->{AdminArea5},
+	state => $address->{AdminArea3},
+	zip => $address->{PostalCode},
+	country => $address->{AdminArea1},
+    };
+}
+
 sub geocode_to_address {
     my($res, $err) = _from_xml(shift->geocode_to_xml(@_));
     return $err ? (undef, $err) : $res->{LocationCollection}->{GeoAddress};

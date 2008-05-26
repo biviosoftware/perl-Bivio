@@ -19,6 +19,9 @@ options({
 	    => from_literal_error('NOT_FOUND'),
     ],
     geocode_to_address => [
+	'2369 spotswood, boulder, co' => [{
+	    Street => '2369 Spotswood Pl',
+	}],
 	803040994 => [{
 	    AdminArea1 => 'US',
 	    AdminArea3 => 'CO',
@@ -29,6 +32,26 @@ options({
 		Lat => '40.052300',
 		Lng => '-105.266000',
 	    },
+	}]
+    ],
+    address_to_model_properties => [
+	[{
+	    AdminArea1 => 'US',
+	    AdminArea3 => 'CO',
+	    AdminArea4 => 'Boulder County',
+	    AdminArea5 => 'Boulder',
+	    Street => '2369 Spotswood Pl',
+	    PostalCode => '80304-0994',
+	    LatLng => {
+		Lat => '40.052300',
+		Lng => '-105.266000',
+	    },
+	}] => [{
+	    street1 => '2369 Spotswood Pl',
+	    city => 'Boulder',
+	    state => 'CO',
+	    country => 'US',
+	    zip => '80304-0994',
 	}]
     ],
     route_to_xml => [
