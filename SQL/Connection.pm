@@ -451,7 +451,7 @@ sub _do_execute {
     # (self, string, code_ref, @_) : undef
     my($self) = _verify_instance(shift);
     my($method, $op) = (shift, shift);
-    my($st) = Bivio::IO::Alert->debug($self->execute(@_));
+    my($st) = $self->execute(@_);
     return
 	unless $st->{Active};
     while (my $row = $st->$method) {
