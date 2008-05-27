@@ -8,7 +8,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_PS) = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(
     ['FEATURE_CRM'],
 )} if __PACKAGE__->use('Auth.Permission')->unsafe_from_name('FEATURE_CRM');
-__PACKAGE__->use('Model.RealmMail')->register(__PACKAGE__);
 our($_EMS) = __PACKAGE__->use('Type.MailSubject')->EMPTY_VALUE;
 our($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
 our($_SUBJECT_RE) = qr{\#\s*(\d+)\s*\]};
@@ -90,6 +89,7 @@ sub handle_mail_pre_create_file {
 
 sub internal_initialize {
     my($self) = @_;
+    $self->use('Model.RealmMail')->register($self->package_name);
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         table_name => 'crm_thread_t',

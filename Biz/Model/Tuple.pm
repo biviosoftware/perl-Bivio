@@ -9,7 +9,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_LABEL_RE)
     = qr{^\s*(@{[Bivio::Type->get_instance('TupleLabel')->REGEX]}):\s*}om;
 our($_TRACE);
-__PACKAGE__->use('Model.RealmMail')->register(__PACKAGE__);
 my($_TSN) = __PACKAGE__->use('Type.TupleSlotNum');
 my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_MP) = __PACKAGE__->use('Ext.MIMEParser');
@@ -24,6 +23,7 @@ sub ORD_FIELD {
 
 sub internal_initialize {
     my($self) = @_;
+    $self->use('Model.RealmMail')->register($self->package_name);
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         table_name => 'tuple_t',
