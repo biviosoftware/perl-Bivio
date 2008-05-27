@@ -58,6 +58,10 @@ sub execute_ok {
     $self->internal_put_field(from_email => _from_email(
 	$parser->head->get('from') || $parser->head->get('apparently-from')));
     _trace($self->get('from_email'), ' ', $self->get('task_id')) if $_TRACE;
+    $self->throw_die('FORBIDDEN', {
+	entity => $realm,
+        message => 'message missing from email',
+    }) unless $self->get('from_email');
     $self->new_other('UserLoginForm')->process({
 	login => $self->internal_get_login,
 	via_mta => 1,
