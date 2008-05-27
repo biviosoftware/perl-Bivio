@@ -80,25 +80,15 @@ sub disconnect {
 }
 
 sub do_execute {
-    my($self) = shift;
-    # Calls op with fetched row.
-    return _get_instance($self)->do_execute(@_)
-	unless ref($self);
-    my($op) = shift;
-    my($st) = $self->execute(@_);
-    return
-	unless $st->{Active};
-    while (my $row = $st->fetchrow_arrayref) {
-	last unless $op->($row);
-    }
-    $st->finish;
-#TODO: Clears cached handle
-#    $self->finish_statement($st);
-    return;
+    return _do_execute(shift, 'fetchrow_arrayref', @_);
+}
+
+sub do_execute_rows {
+    return _do_execute(shift, 'fetchrow_hashref', @_);
 }
 
 sub execute {
-    my($self) = shift;
+    my($self) = _verify_instance(shift);
     # Executes the specified statement and dies with an appropriate error
     # if it fails.
     #
@@ -113,15 +103,13 @@ sub execute {
     #
     # We retry on certain errors (see
     # L<internal_get_retry_sleep|"internal_get_retry_sleep">).
-    return _get_instance($self)->execute(@_)
-	unless ref($self);
     my($sql, $params, $die, $has_blob) = @_;
     my($fields) = $self->[$_IDI];
 
     $sql = $self->internal_fixup_sql($sql);
     my($err, $errstr, $statement);
     my($retries) = 0;
- TRY: {
+    TRY: {
 	# Execute the statement
 	my($start_time) = Bivio::Type::DateTime->gettimeofday();
 #TODO: should be a Die->catch() but this prints a stack trace, and
@@ -396,24 +384,11 @@ sub is_read_only {
 }
 
 sub map_execute {
-    my($self) = shift;
-    return _get_instance($self)->map_execute(@_)
-	unless ref($self);
-    my($op) = ref($_[0]) eq 'CODE' ? shift : sub {
-	my($row) = @_;
-	return @$row == 1 ? $row->[0] : [@$row];
-    };
-    my($st) = $self->execute(@_);
-    my($res) = [];
-    return $res
-	unless $st->{Active};
-    while (my $row = $st->fetchrow_arrayref) {
-	push(@$res, $op->($row));
-    }
-    $st->finish;
-#TODO: Clears cached handle
-#    $self->finish_statement($st);
-    return $res;
+    return _map_execute(shift, 'fetchrow_arrayref', @_);
+}
+
+sub map_execute_rows {
+    return _map_execute(shift, 'fetchrow_hashref', @_);
 }
 
 sub next_primary_id {
@@ -472,6 +447,22 @@ sub _commit_or_rollback {
     return;
 }
 
+sub _do_execute {
+    # (self, string, code_ref, @_) : undef
+    my($self) = _verify_instance(shift);
+    my($method, $op) = (shift, shift);
+    my($st) = Bivio::IO::Alert->debug($self->execute(@_));
+    return
+	unless $st->{Active};
+    while (my $row = $st->$method) {
+	last unless $op->($row);
+    }
+    $st->finish;
+#TODO: Clears cached handle
+#    $self->finish_statement($st);
+    return;
+}
+
 sub _get_connection {
     my($self) = @_;
     # static _get_connection(self) : connection
@@ -524,6 +515,28 @@ sub _get_instance {
     return $proto->get_instance($_DEFAULT_DBI_NAME);
 }
 
+sub _map_execute {
+    # (self, string, @_) : undef
+    # (self, string, code_ref, @_) : undef
+    my($self) = _verify_instance(shift);
+    my($method) = shift;
+    my($op) = ref($_[0]) eq 'CODE' ? shift : sub {
+	my($row) = @_;
+	return @$row == 1 ? $row->[0] : [@$row];
+    };
+    my($st) = $self->execute(@_);
+    my($res) = [];
+    return $res
+	unless $st->{Active};
+    while (my $row = $st->$method) {
+	push(@$res, $op->($row));
+    }
+    $st->finish;
+#TODO: Clears cached handle
+#    $self->finish_statement($st);
+    return $res;
+}
+
 sub _prep_params_for_io {
     my($params) = @_;
     # Returns an array which can be passed to Bivio::IO.
@@ -545,6 +558,13 @@ sub _trace_sql {
     # Let trace deal with string truncation and undef
     _trace($sql, '; params=', @{_prep_params_for_io($params)});
     return;
+}
+
+sub _verify_instance {
+    # (any) : self
+    return shift
+	if ref($_[0]);
+    return _get_instance(shift);
 }
 
 1;
