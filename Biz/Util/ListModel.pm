@@ -52,7 +52,7 @@ sub csv {
     ] : [
 	sort({
 	    $a->{name} cmp $b->{name};
-	} grep($_->{in_select}, values(%{$model->get_info('columns')}))),
+	} values(%{$model->get_info('columns')})),
     ];
     my($res) = join(',', map($_->{name}, @$cols)) . "\n";
     $model->reset_cursor
