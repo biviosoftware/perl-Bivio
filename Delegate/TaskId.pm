@@ -592,6 +592,7 @@ sub info_mail {
             MAIL_SEND
             Action.RealmMail->execute_receive
             Action.MailReceiveStatus
+	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
         )],
 	[qw(
             USER_MAIL_BOUNCE
