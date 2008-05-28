@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.35  2008/05/22 21:54:30  moeller
+  * Bivio::Biz::Model::SearchList
+    added '...' to trimmed text in excerpt
+  * Bivio::Search::Parser::RealmFile::Wiki
+    remove wiki markup:
+     xxx="a b" and xxx=yyy
+     ^ prefix from email addresses
+     CamelCase words
+     ^words
+  * Bivio::Search::Xapian
+    delete file from xapian if it becomes non searchable
+  * Bivio::Test::Language::HTTP
+    call $req->process_cleanup() during handle_cleanup() to remove tmp files
+  * Bivio::Test::Unit
+    added builtin_to_string
+    assert_eval returns the result of the eval
+
   Revision 6.34  2008/05/20 17:13:21  moeller
   * Bivio::Biz::ListFormModel
     die() if get_field_name_for_html() can't determine the form_name for the col
