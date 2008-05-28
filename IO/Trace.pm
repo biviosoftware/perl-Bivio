@@ -261,7 +261,7 @@ EOF
 
 sub set_named_filters {
     my($proto, $name) = @_;
-    my($c) = defined($name) ?
+    my($c) = $name ?
 	$name =~ /^\w+$/ && Bivio::IO::Config->unsafe_get($name) || {
 	    call_filter => undef,
 	    package_filter => $name =~ $_IS_NAMED ? "m{$name}i"
