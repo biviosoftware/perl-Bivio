@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Model.OrdinalBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+__PACKAGE__->use('Model.RealmMail')->register('Model.CRMThread');
 our($_PS) = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(
     ['FEATURE_CRM'],
 )} if __PACKAGE__->use('Auth.Permission')->unsafe_from_name('FEATURE_CRM');
@@ -89,7 +90,6 @@ sub handle_mail_pre_create_file {
 
 sub internal_initialize {
     my($self) = @_;
-    $self->use('Model.RealmMail')->register($self->package_name);
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         table_name => 'crm_thread_t',
