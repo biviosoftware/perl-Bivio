@@ -519,6 +519,7 @@ sub _cfg_mail {
 	    [MAIL_RECEIVE_IGNORE => undef],
 	    [MAIL_RECEIVE_NOT_FOUND => undef],
 	    [MAIL_RECEIVE_NO_RESOURCES => undef],
+	    [MAIL_RECEIVE_FORBIDDEN => undef],
 	    [USER_MAIL_BOUNCE => sub {
 		 return '?/' . shift->get_facade->MAIL_RECEIVE_PREFIX
 		     . Bivio::Biz::Model->get_instance('RealmMailBounce')
