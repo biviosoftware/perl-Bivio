@@ -94,6 +94,7 @@ sub internal_initialize {
 
 sub register {
     my($proto, $handler) = @_;
+    $handler = $proto->use($handler);
     push(@$_HANDLERS, $handler)
 	unless grep($_ eq $handler, @$_HANDLERS);
     return;
