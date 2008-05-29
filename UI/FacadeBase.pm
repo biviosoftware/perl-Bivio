@@ -28,6 +28,11 @@ sub SITE_ADM_REALM_NAME {
     return shift->SITE_REALM_NAME;
 }
 
+sub is_site_realm_name {
+    my($self, $realm_name) = @_;
+    return $realm_name eq $self->SITE_REALM_NAME;
+}
+
 sub new {
     my($proto, $config) = @_;
     return $config->{clone} ? $proto->SUPER::new($config) : $proto->SUPER::new(
