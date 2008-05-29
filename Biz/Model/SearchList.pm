@@ -116,12 +116,11 @@ sub internal_post_load_row_with_model {
 	    realm => $row->{'RealmOwner.name'},
 	    query => undef,
 	    path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
-	} : $_WN->is_absolute($row->{'RealmFile.path'}) ? {
-	    task_id => 'FORUM_WIKI_VIEW',
-	    realm => $row->{'RealmOwner.name'},
-	    query => undef,
-	    path_info => $_WN->from_absolute($row->{'RealmFile.path'}),
-	} : $_MFN->is_absolute($row->{'RealmFile.path'}) ? $req->with_realm(
+	} : $_WN->is_absolute($row->{'RealmFile.path'}) ?
+	    $_WN->uri_hash_for_realm_and_path(
+		$row->{'RealmOwner.name'},
+		$row->{'RealmFile.path'})
+	  : $_MFN->is_absolute($row->{'RealmFile.path'}) ? $req->with_realm(
 	    $row->{'RealmOwner.name'},
 	    sub {
 		return {

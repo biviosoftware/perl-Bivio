@@ -2,7 +2,7 @@
 # $Id$
 test_setup('PetShop');
 my($f, $uri) = create_forum();
-visit_uri($uri = "$uri/mail");
+visit_uri("$uri/mail");
 follow_link('new');
 my($code) = random_string(16, ['a' .. 'z']);
 submit_form(Send => {
@@ -10,6 +10,18 @@ submit_form(Send => {
     text => 'hello goodbye telephone',
 });
 poll_page(verify_text => $code);
+visit_uri("$uri/file");
+follow_link_in_table("Name", "Name", "/", "", "Change");
+fixup_files_uri('ADD_SUBFOLDER');
+submit_form(OK => {'Name:' => "Wiki"});
+follow_link_in_table("Name", "Name", "Wiki", "", "Change");
+fixup_files_uri('TEXT_FILE');
+submit_form(OK => {
+    'Name:' => "cool $code",
+    _anon => "this is some really cool $code",
+    comments => "nc",
+});
+
 submit_form({
     _anon => $code,
 });
@@ -19,10 +31,9 @@ verify_form({
 verify_table(Date => [
     [qw(Title Excerpt)],
     [$code, 'hello goodbye telephone'],
+    ["cool $code", qr{this is some really cool $code}],
 ]);
+verify_no_text("$f/wiki");
 follow_link_in_table('Date', 'Title', $code);
 verify_text($code);
 verify_link('new_topic');
-
-
-
