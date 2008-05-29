@@ -26,11 +26,43 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.36  2008/05/28 23:13:33  moeller
+  * Bivio::Base
+    b_die calls throw_or_die
+  * Bivio::BConf
+    GIS map
+  * Bivio::Biz::Model::CRMThread
+    changed RealmMail register to use package map name
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    throw a FORBIDDEN if there is no from_email, avoid DB_ERROR later on
+  * Bivio::Biz::Model::RealmMail
+    when registerring a handler, ->use() the name
+  * Bivio::Biz::Model::Tuple
+    changed RealmMail register to use package map name
+  * Bivio::Biz::Util::ListModel
+    include all columns in csv()
+  * Bivio::Collection::Attributes
+    map_each returns sorted keys
+  * Bivio::Delegate::TaskId
+    added FORBIDDEN handler for FORUM_MAIL_RECEIVE
+  * Bivio::IO::Trace
+    set_named_filters defaults to /$name/ if $name is not found
+    set_named_filters needs to check that name is simple name
+    before calling Config->unsafe_get
+    handle_config calls set_named_filters directly
+    set_named_filters: $name can be '' or 0 to indicate "off"
+  * Bivio::Search::Parser::RealmFile::PDF
+    fixed method name and args
+  * Bivio::SQL::Connection
+    added do_execute_rows and map_execute_rows
+  * Bivio::UI::FacadeBase
+    added missing task entry for MAIL_RECEIVE_FORBIDDEN
+
   Revision 6.35  2008/05/22 21:54:30  moeller
   * Bivio::Biz::Model::SearchList
     added '...' to trimmed text in excerpt
