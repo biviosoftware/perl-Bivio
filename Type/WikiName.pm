@@ -51,8 +51,10 @@ sub to_title {
 sub uri_hash_for_realm_and_path {
     my($self, $realm_name, $realm_file_path) = @_;
     return {
-	task_id => $self->req('Bivio::UI::Facade')->is_site_realm_name($realm_name)
-	    ? 'FORUM_WIKI_VIEW' : 'SITE_WIKI_VIEW',
+	task_id =>
+	    $self->req('Bivio::UI::Facade')->is_site_realm_name($realm_name)
+		? 'SITE_WIKI_VIEW'
+		: 'FORUM_WIKI_VIEW',
 	realm => $realm_name,
 	query => undef,
 	path_info => $self->from_absolute($realm_file_path),
