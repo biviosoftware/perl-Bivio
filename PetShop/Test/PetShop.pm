@@ -86,6 +86,16 @@ sub do_logout {
 	if $self->text_exists('Sign-out');
 }
 
+sub fixup_files_uri {
+    my($self, $mode) = @_;
+    $self->visit_uri(
+	join('',
+	     $self->get_uri(), '&',
+	     $self->use('Model.FileChangeForm')->QUERY_KEY,
+	     '=', $mode));
+    return;
+}
+
 sub login_as {
     my($self, $user, $password) = @_;
     # Logs in as I<user> and I<password>.
