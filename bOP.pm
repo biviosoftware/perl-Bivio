@@ -26,11 +26,21 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.37  2008/05/29 22:11:57  dobbs
+  * Bivio::Biz::Model::SearchList
+    conceal <realm>/wiki in xapian search result URIs
+  * Bivio::PetShop::Test::PetShop
+    moved fixup_files_uri to Bivio::PetShop::Test::PetShop
+  * Bivio::Type::WikiName
+    conceal <realm>/wiki in xapian search result URIs
+  * Bivio::UI::FacadeBase
+    added is_site_realm_name() so we have a way to explicity ask that question
+
   Revision 6.36  2008/05/28 23:13:33  moeller
   * Bivio::Base
     b_die calls throw_or_die
