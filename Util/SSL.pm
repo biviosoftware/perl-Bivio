@@ -11,6 +11,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-ssl [options] command [args..]
 commands
+   read_crt file.crt -- dump a (PEM) X509 certificate
    self_signed_crt domain -- create a self-signed crt for domain
    self_signed_mdc file domain... -- create a self-signed multi-domain certificate
 EOF
