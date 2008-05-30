@@ -40,9 +40,6 @@ ST = Colorado
 L = Boulder
 CN = $base
 [v3_req]
-basicConstraints = CA:false
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer:always
 subjectAltName = @{[join(', ', map("DNS:$_", @domain))]}
 EOF
     return _do($self, $base, "-config $base.cfg");
