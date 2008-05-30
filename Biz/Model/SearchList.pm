@@ -11,6 +11,7 @@ my($_MFN) = __PACKAGE__->use('Type.MailFileName');
 my($_P) = __PACKAGE__->use('Search.Parseable');
 my($_RF) = __PACKAGE__->use('SearchParser.RealmFile');
 my($_WN) = __PACKAGE__->use('Type.WikiName');
+my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
 my($_FP) = __PACKAGE__->use('Type.FilePath');
 my($_REALM_FILE_FIELDS) = [qw(
     realm_file_id
@@ -118,6 +119,10 @@ sub internal_post_load_row_with_model {
 	    path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
 	} : $_WN->is_absolute($row->{'RealmFile.path'}) ?
 	    $_WN->uri_hash_for_realm_and_path(
+		$row->{'RealmOwner.name'},
+		$row->{'RealmFile.path'})
+	  : $_WDN->is_absolute($row->{'RealmFile.path'}) ?
+	    $_WDN->uri_hash_for_realm_and_path(
 		$row->{'RealmOwner.name'},
 		$row->{'RealmFile.path'})
 	  : $_MFN->is_absolute($row->{'RealmFile.path'}) ? $req->with_realm(
