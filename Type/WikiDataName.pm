@@ -14,6 +14,10 @@ sub PRIVATE_FOLDER {
     return $_FOLDER;
 }
 
+sub REGEX {
+    return qr{([^/]+\.\w+)$};
+}
+
 sub format_uri {
     my($proto, $uri, $args) = @_;
 #TODO: Need to handle multiple realm-types.
