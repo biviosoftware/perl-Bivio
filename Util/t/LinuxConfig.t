@@ -171,8 +171,16 @@ other.host
 		['etc/sendmail.cf', "O DaemonPortOptions=Port=smtp, Name=MTA"],
 		['etc/sendmail.cf', "O DoubleBounceAddress=devnull"],
 	    ],
-	],
-	[
+	], [
+	    'allow_any_postfix_smtp', [99999] => [
+		['etc/postfix/main.cf', "\nmessage_size_limit = 99999\n"],
+	    ],
+	], [
+	    'add_postfix_http_agent', ['localhost:8000/my_uri'] => [
+		['etc/postfix/master.cf', 'b-postfix-http\s*unix'],
+		['etc/postfix/main.cf', 'mailbox_transport = b-postfix-http'],
+	    ],
+	], [
 	    'add_sendmail_http_agent', ['localhost:80/my_uri', $_true] => [
 		['etc/sendmail.cf', 'localhost:80/my_uri'],
  		['etc/sendmail.cf', '\$#bsendmailhttp.*\$#bsendmailhttp'],
@@ -186,17 +194,10 @@ other.host
 		['etc/sendmail.cf', 'localhost:8000/my_uri'],
  		['etc/sendmail.cf', 'A=true'],
 	    ],
-	],
-	[
+	], [
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [
 		['etc/ssh/sshd_config', "\nPermitRootLogin no(?!yes)"],
 		['etc/ssh/sshd_config', "\nVerifyReverseMapping yes(?!no)"],
-	    ],
-	], [
-	    'create_ssl_crt', [qw(US Colorado Boulder LinuxCrazyMan www.linuxcrazy.man)] => [
-		['ssl.key/www.linuxcrazy.man.key', '--END RSA PRIVATE KEY'],
-		['ssl.crt/www.linuxcrazy.man.crt', '--END CERTIFICATE--'],
-		['ssl.csr/www.linuxcrazy.man.csr', '--END CERTIFICATE REQ'],
 	    ],
 	], [
 	    'add_users_to_group', [qw(root root larry)] => [
