@@ -19,10 +19,12 @@ commands:
     add_crontab_line user entry... -- add entries to crontab
     add_group group[:gid] -- add a group
     add_sendmail_class_line filename line ... -- add values trusted-users, relay-domains, etc
+    add_postfix_http_agent uri -- configures postfix to pass mail b-postfix-http
     add_sendmail_http_agent uri -- configures sendmail to pass mail b-sendmail-http
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
     add_virtusers user@domain:value ... -- add entries to virtusertable
+    allow_any_postfix_smtp [max_message_size] -- open up postfix while making more secure
     allow_any_sendmail_smtp [max_message_size] -- open up sendmail while making more secure
     append_lines file owner group perms line ... -- appends lines to a file if they don't already exist
     create_ssl_crt iso_country state city organization hostname -- create ssl certificate
@@ -100,6 +102,21 @@ sub add_sendmail_class_line {
     # creating if it doesn't exist.
     return $self->append_lines("/etc/mail/$file", 'root', 'mail', 0640,
 	@value);
+}
+
+sub add_postfix_http_agent {
+    my($self, $uri) = @_;
+    return _edit(
+	$self,
+	'/etc/postfix/master.cf',
+	_gen_append_cmds(
+	    'b-postfix-http  unix  -       n       n       -       -       pipe flags=DRhu user=nobody:postdrop argv=/usr/libexec/b-postdrop/b-postfix-http ${client_address} ${recipient} localhost.localdomain:8000/_mail_receive/%s  /usr/bin/procmail -t -Y -a ${extension} -d ${user}',
+	),
+    ) . _edit(
+	$self,
+	'/etc/postfix/main.cf',
+       _gen_append_cmds('mailbox_transport = b-postfix-http:unix'),
+    );
 }
 
 sub add_sendmail_http_agent {
@@ -185,6 +202,30 @@ sub add_virtusers {
     return _add_aliases('/etc/mail/virtusertable', '', @_);
 }
 
+sub allow_any_postfix_smtp {
+    my($self, $max_message_size) = @_;
+    $max_message_size ||= 10000000;
+    return _edit(
+	$self,
+	'/etc/postfix/main.cf',
+        _gen_append_cmds(
+	    'inet_interfaces = all',
+	    'mailbox_command = /usr/bin/procmail -t -Y -a "$EXTENSION" -d "$USER"',
+	    'recipient_delimiter = +',
+	    'mydestination = $myhostname, localhost, /etc/mail/local-host-names',
+	    'biff = no',
+	    'smtpd_banner = $myhostname ESMTP',
+	    'smtpd_client_restrictions = sleep 8',
+	    'smtpd_delay_reject = no',
+	    'smtpd_helo_restrictions = reject_invalid_helo_hostname',
+	    'smtpd_sender_restrictions = reject_unauth_pipelining, reject_non_fqdn_sender, reject_unknown_sender_domain',
+	    'smtpd_recipient_restrictions = reject_unauth_pipelining, permit_mynetworks, reject_unauth_destination, reject_non_fqdn_recipient, reject_unknown_recipient_domain',
+	    "message_size_limit = $max_message_size",
+	    'mailbox_size_limit = 0',
+	),
+    );
+}
+
 sub allow_any_sendmail_smtp {
     my($self, $max_message_size) = @_;
     # Enable sendmail's smtp to listen from anywhere.  Makes privacy options
@@ -212,35 +253,7 @@ sub append_lines {
     # Adds lines to file, creating if necessary.
     $perms = oct($perms) if $perms =~ /^0/;
     return _add_file($self, $file, $owner, $group, $perms)
-	. _edit($self, $file, map {
-	    ['$', "$_\n", qr/^\Q$_\E$/m],
-	 } @lines);
-}
-
-sub create_ssl_crt {
-    my($self, $iso_country, $state, $city, $organization, $hostname) = @_;
-    # Creates SSL key, csr, and crt in ssl.* dirs.
-    my($res) = '';
-    my($f) = {};
-    foreach my $w (qw(key crt csr)) {
-	$f->{$w} = _prefix_file("ssl.$w") . "/$hostname.$w";
-	$res .= _mkdir($self, "ssl.$w", 0750);
-    }
-    return _exec($self, "openssl genrsa -out $f->{key} 1024")
-	. _exec($self,
-	    "openssl req -new -key $f->{key} -out $f->{csr}", <<"EOF")
-$iso_country
-$state
-$city
-$organization
-
-$hostname
-
-
-
-EOF
-	. _exec($self, "openssl x509 -req -days 10000 -in $f->{csr} "
-	    . "-signkey $f->{key} -out $f->{crt}");
+	. _edit($self, $file, _gen_append_cmds(@lines));
 }
 
 sub delete_aliases {
@@ -845,6 +858,10 @@ sub _file_static_routes {
 
 sub _gateway_for {
     return _dig(_network_config_for(shift)->{gateway});
+}
+
+sub _gen_append_cmds {
+    return map(['$', "$_\n", qr/^\Q$_\E$/m], @_);
 }
 
 sub _get_networks_config {
