@@ -26,11 +26,33 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.39  2008/05/30 23:24:55  dobbs
+  * Bivio::Biz::Model::SearchList
+    conceal <realm>/wikidata in xapian search result URIs
+  * Bivio::Search::Parser::RealmFile::PDF
+    emit warning when pdfinfo isn't found
+  * Bivio::Type::DocletFileName
+    pushed uri_hash_for_realm_and_path() from Bivio::Type::WikiName to
+    Bivio::Type::DocletFileName so that Bivio::Type::WikiDataName could
+    conceal <realm>/wikidata in xapian search result URIs
+  * Bivio::Type::WikiDataName
+    add REGEX to make from_absolute work properly so WikiDataName could
+    conceal <realm>/wikidata in xapian search result URIs
+  * Bivio::Type::WikiName
+    pushed uri_hash_for_realm_and_path() from Bivio::Type::WikiName to
+    Bivio::Type::DocletFileName so that Bivio::Type::WikiDataName could
+    also hide share it to conceal <realm>/wikidata in xapian search result
+    URIs
+  * Bivio::Util::SSL
+    added read_crt & self_signed_mdc
+    doc
+    simplify v3_req section
+
   Revision 6.38  2008/05/29 23:20:14  dobbs
   * Bivio::Type::WikiName
     logic was backwards for conceal <realm>/wiki in xapian search result URIs
