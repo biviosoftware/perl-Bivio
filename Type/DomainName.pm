@@ -16,7 +16,7 @@ sub SYNTAX_ERROR {
 }
 
 sub get_width {
-    return 255.
+    return 255;
 }
 
 sub internal_post_from_literal {
