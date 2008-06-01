@@ -112,7 +112,9 @@ sub add_postfix_http_agent {
 	'/etc/postfix/master.cf',
 	_gen_append_cmds(
 	    "b-postfix-http  unix  -       n       n       -       -       pipe flags=DRhu user=nobody:postdrop argv=$program"
-	    . ' ${client_address} ${recipient} localhost.localdomain:8000/_mail_receive/%s  /usr/bin/procmail -t -Y -a ${extension} -d ${user}',
+	    . ' ${client_address} ${recipient} '
+	    . $uri
+	    . ' /usr/bin/procmail -t -Y -a ${extension} -d ${user}',
 	),
     ) . _edit(
 	$self,
