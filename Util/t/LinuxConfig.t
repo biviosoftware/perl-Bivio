@@ -172,10 +172,6 @@ other.host
 		['etc/sendmail.cf', "O DoubleBounceAddress=devnull"],
 	    ],
 	], [
-	    'allow_any_postfix_smtp', [99999] => [
-		['etc/postfix/main.cf', "\nmessage_size_limit = 99999\n"],
-	    ],
-	], [
 	    'add_postfix_http_agent', ['localhost:8000/my_uri', $_true] => [
 		['etc/postfix/master.cf', 'b-postfix-http.*argv=' . $_true],
 		['etc/postfix/main.cf', 'mailbox_transport = b-postfix-http'],

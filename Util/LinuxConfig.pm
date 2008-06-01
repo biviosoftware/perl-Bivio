@@ -24,7 +24,6 @@ commands:
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
     add_virtusers user@domain:value ... -- add entries to virtusertable
-    allow_any_postfix_smtp [max_message_size] -- open up postfix while making more secure
     allow_any_sendmail_smtp [max_message_size] -- open up sendmail while making more secure
     append_lines file owner group perms line ... -- appends lines to a file if they don't already exist
     create_ssl_crt iso_country state city organization hostname -- create ssl certificate
@@ -203,30 +202,6 @@ sub add_users_to_group {
 sub add_virtusers {
     # Adds virtusers: 'foo bar'.  Ensures a \t is between target and destination
     return _add_aliases('/etc/mail/virtusertable', '', @_);
-}
-
-sub allow_any_postfix_smtp {
-    my($self, $max_message_size) = @_;
-    $max_message_size ||= 10000000;
-    return _edit(
-	$self,
-	'/etc/postfix/main.cf',
-        _gen_append_cmds(
-	    'inet_interfaces = all',
-	    'mailbox_command = /usr/bin/procmail -t -Y -a "$EXTENSION" -d "$USER"',
-	    'recipient_delimiter = +',
-	    'mydestination = $myhostname, localhost, /etc/mail/local-host-names',
-	    'biff = no',
-	    'smtpd_banner = $myhostname ESMTP',
-	    'smtpd_client_restrictions = sleep 8',
-	    'smtpd_delay_reject = no',
-	    'smtpd_helo_restrictions = reject_invalid_helo_hostname',
-	    'smtpd_sender_restrictions = reject_unauth_pipelining, reject_non_fqdn_sender, reject_unknown_sender_domain',
-	    'smtpd_recipient_restrictions = reject_unauth_pipelining, permit_mynetworks, reject_unauth_destination, reject_non_fqdn_recipient, reject_unknown_recipient_domain',
-	    "message_size_limit = $max_message_size",
-	    'mailbox_size_limit = 0',
-	),
-    );
 }
 
 sub allow_any_sendmail_smtp {
