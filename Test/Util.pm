@@ -168,6 +168,10 @@ sub nightly {
         system('cvs -Q checkout ' . $_CFG->{nightly_cvs_dir});
         $self->print("Completed CVS checkout of test files\n");
         Bivio::IO::File->chdir($_CFG->{nightly_cvs_dir});
+	$self->print("cd ".Bivio::IO::File->pwd . "\n");
+	$self->print("export PERLIB=$ENV{PERLLIB}\n");
+	$self->print("export BCONF=$ENV{BCONF}\n");
+	$self->print("b-test acceptance .\n");
         $self->print($self->acceptance('.'));
         return;
     });
