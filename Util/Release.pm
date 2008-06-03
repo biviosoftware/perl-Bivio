@@ -550,7 +550,7 @@ EOF
 	elsif ($line =~ m#^/#) {
 	    if ($line =~ /[\?\*\[\]]/) {
 		$line =~ s{^/}{};
-		$res .= qq{for file in $line; do echo '$prefix' "/\$file"; done};
+		$res .= qq{for file in $line; do test "$file" = "$line" || echo '$prefix' "/\$file"; done};
 	    }
 	    else {
 		$res .= "echo '$prefix$line'";
