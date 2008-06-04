@@ -59,4 +59,16 @@ my($to) = EmailArray([remote_email('crm')]);
 	    modified_by_user_id => realm_id('crm_tech1'),
 	},
     }],
+    inline_case(sub{undef($ctid);}),
+    [{
+	to => $to,
+	subject => 's2',
+	body => 'b2',
+	action_id => req('auth_user_id'),
+    }] => [{
+	'Model.CRMThread' => {
+	    owner_user_id => req('auth_user_id'),
+	    crm_thread_status => CRMThreadStatus('OPEN'),
+	},
+    }],
 ];

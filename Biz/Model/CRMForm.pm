@@ -50,8 +50,9 @@ sub execute_empty {
 
 sub execute_ok {
     my($self, $button) = @_;
-    _with($self, sub {
-	my($ct, $cal) = @_;
+    my($ct, $cal);
+    $cal = $self->req('Model.CRMActionList');
+    if ($ct = $self->req->unsafe_get('Model.CRMThread')) {
 	$ct->update({
 	    crm_thread_status => $cal->id_to_status($self->get('action_id')),
 	    owner_user_id => $cal->id_to_owner($self->get('action_id')),
@@ -61,12 +62,18 @@ sub execute_ok {
 	$self->internal_put_field(
 	    subject => $ct->make_subject($self->get('subject')),
 	);
-	return;
-    });
+    }
     my($res) = $button eq 'update_only' ? $self->internal_return_value
 	: shift->SUPER::execute_ok(@_);
+
+    $ct = $self->req->get('Model.CRMThread');
+    $ct->update({
+	crm_thread_status => $cal->id_to_status($self->get('action_id')),
+	owner_user_id => $cal->id_to_owner($self->get('action_id')),
+    })
+	if $self->unsafe_get('action_id');
     $self->internal_put_field(
-	$_TAG_ID => $self->req('Model.CRMThread')->get('thread_root_id'));
+	$_TAG_ID => $ct->get('thread_root_id'));
     $self->delegate_method($_TTF, @_);
     return $res;
 }
@@ -120,15 +127,14 @@ sub internal_pre_execute {
 	if (my $trid = $self->get('RealmMail.thread_root_id')) {
 	    $self->new_other('CRMThread')->load({thread_root_id => $trid});
 	    $self->internal_put_field($_TAG_ID => $trid);
-	    $self->new_other('CRMActionList')->load_all;
 	}
+	$self->new_other('CRMActionList')->load_all;
 	return;
     });
 }
 
 sub show_action {
-    my($self) = @_;
-    return _with($self, sub {1}) || 0;
+    return 1;
 }
 
 sub tuple_tag_form_state {
