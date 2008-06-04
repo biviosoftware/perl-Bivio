@@ -269,8 +269,9 @@ sub _default_mode {
 
 sub _release_lock {
     my($self) = @_;
-    return $self->get('realm_file_lock')->delete
+    $self->get('realm_file_lock')->delete
 	if $self->get('realm_file_lock');
+    return;
 }
 
 sub _rename_file_name {
