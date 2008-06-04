@@ -520,8 +520,8 @@ sub _init_from_uri {
 	    if ($from_uri{$uri}) {
 		if ($from_uri{$uri}->[$rti]) {
 		    _init_err(
-			$self, $group,
-			"$uri $group->{realm_type}: uri already mapped to ",
+			$self, $group, $uri, ' ',
+			$group->{realm_type}, ': uri already mapped to ',
 			$from_uri{$uri}->[$rti]->{task}->get_name,
 		    );
 		    next;
