@@ -155,6 +155,7 @@ sub mock_sendmail {
 }
 
 sub nightly {
+    # accepts first argument (name of test), but ignores
     my($self) = @_;
     # Creates test directory, calls cvs update to get latest test files.  Runs all
     # acceptance tests.  Output is to STDERR.
