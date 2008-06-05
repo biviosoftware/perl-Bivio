@@ -172,11 +172,6 @@ other.host
 		['etc/sendmail.cf', "O DoubleBounceAddress=devnull"],
 	    ],
 	], [
-	    'add_postfix_http_agent', ['myhost:8000/my_uri', $_true] => [
-		['etc/postfix/master.cf', 'b-postfix-http.*argv=' . $_true . '.*myhost'],
-		['etc/postfix/main.cf', 'mailbox_transport = b-postfix-http'],
-	    ],
-	], [
 	    'add_sendmail_http_agent', ['localhost:80/my_uri', $_true] => [
 		['etc/sendmail.cf', 'localhost:80/my_uri'],
  		['etc/sendmail.cf', '\$#bsendmailhttp.*\$#bsendmailhttp'],

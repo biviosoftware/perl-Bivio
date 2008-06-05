@@ -19,7 +19,6 @@ commands:
     add_crontab_line user entry... -- add entries to crontab
     add_group group[:gid] -- add a group
     add_sendmail_class_line filename line ... -- add values trusted-users, relay-domains, etc
-    add_postfix_http_agent uri program -- configures postfix to pass mail program
     add_sendmail_http_agent uri -- configures sendmail to pass mail b-sendmail-http
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
@@ -101,26 +100,6 @@ sub add_sendmail_class_line {
     # creating if it doesn't exist.
     return $self->append_lines("/etc/mail/$file", 'root', 'mail', 0640,
 	@value);
-}
-
-sub add_postfix_http_agent {
-    my($self, $uri, $program) = @_;
-    die($program, ': not executable or not an absolute path')
-	unless -x $program && ! -d $program && $program =~ m{^/};
-    return _edit(
-	$self,
-	'/etc/postfix/master.cf',
-	_gen_append_cmds(
-	    "b-postfix-http  unix  -       n       n       -       -       pipe flags=DRhu user=nobody:postdrop argv=$program"
-	    . ' ${client_address} ${recipient} '
-	    . $uri
-	    . ' /usr/bin/procmail -t -Y -a ${extension} -d ${user}',
-	),
-    ) . _edit(
-	$self,
-	'/etc/postfix/main.cf',
-       _gen_append_cmds('mailbox_transport = b-postfix-http:unix'),
-    );
 }
 
 sub add_sendmail_http_agent {
