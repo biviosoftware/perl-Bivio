@@ -133,7 +133,7 @@ sub _execute {
 	s,([='"])/(css|sf|sf-help|sf-images)/,$1/$realm_name/$uri_name/$2/,g;
     _fixup_svn_checkout_uri($self, $res);
     return 1 unless $response->header('Content-Type') =~ m,^text/html,i
-	&& $$res =~ m,action="[^"]*/sf/sfmain/do/login",;
+	&& $$res =~ m,action="[^"]*/sf/sfmain/do/login\W,;
     Bivio::Die->die('login still present: ', $response)
 	if $self->get_if_defined_else_put('login', 0) > 2;
     $self->put(login => $self->get('login') + 1);
