@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.44  2008/06/05 15:42:57  dobbs
+  * Bivio::Biz::Model::CRMForm
+    allow action_id be set with a new request
+  * Bivio::Biz::Model::FileChangeForm
+    corrected _release_lock() return value
+  * Bivio::UI::Task
+    improved "uri already mapped" error message
+
   Revision 6.43  2008/06/03 19:57:27  nagler
   * Bivio::Test::Util
     add output to b-test nightly to make it easier to recreate the test
