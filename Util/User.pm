@@ -12,8 +12,8 @@ sub USAGE {
     return <<'EOF';
 usage: b-user [options] command [args..]
 commands
-   create_from_email email -- creates a new user, prompts for password
-   realms -- returns realms of the current user
+    create_from_email email -- creates a new user, prompts for password
+    realms -- returns realms of the current user
 EOF
 }
 
