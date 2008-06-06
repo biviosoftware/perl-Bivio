@@ -26,8 +26,8 @@ sub can_write {
 
 sub internal_default_expand {
     my($self) = @_;
-    return [$self->new_other('RealmFile')->load({folder_id => undef})
-	->get('realm_file_id')];
+    return $self->new_other('RealmFolderList')->map_iterate(
+	'RealmFile.realm_file_id');
 }
 
 sub internal_initialize {
@@ -122,7 +122,11 @@ sub internal_prepare_statement {
 }
 
 sub internal_root_parent_node_id {
-    return undef;
+    my($self) = @_;
+    my($path) = $_RF->parse_path($self->req('path_info'));
+    return $path eq '/' ? undef : $self->new_other('RealmFile')->load({
+	path => $path,
+    })->get('realm_file_id');
 }
 
 sub is_archive {
