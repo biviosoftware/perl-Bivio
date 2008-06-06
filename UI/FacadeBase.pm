@@ -483,7 +483,7 @@ sub _cfg_file {
 		empty_list_prose => 'No files revisions.',
 	    ]],
 	    [title => [
-		FORUM_FILE => 'Files',
+		FORUM_FILE => "Or(['path_info'], 'Files');",
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
