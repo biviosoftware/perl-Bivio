@@ -14,11 +14,11 @@ sub internal_initialize {
         primary_key => ['RealmFile.realm_file_id'],
         auth_id => [qw(RealmFile.realm_id RealmOwner.realm_id)],
 	order_by => [
+	    'RealmFileLock.modified_date_time',
 	    {
 		name => 'RealmFile.path_lc',
 		sort_order => 0,
 	    },
-	    'RealmFileLock.modified_date_time',
 	    'RealmFile.modified_date_time',
 	    'RealmOwner_2.display_name',
             'Email_2.email',
