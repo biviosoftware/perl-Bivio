@@ -2,13 +2,16 @@
 # $Id$
 ListModel();
 req()->set_realm_and_user('btest_read', 'btest_read')->initialize_fully('USER_HOME');
-
+options({
+    compute_return => sub {
+	my(undef, $actual) = @_;
+	return $actual->[0]->map_rows(sub{shift->get('RealmFile.path_lc');});
+    },
+});
 [
     load_all => [
-	[] => [
-	    map(+{'RealmFile.path_lc' => $_},
-		qw(/ /private /public)),
-	],
+	[] => [qw(/ /private /private/file.html /private/image.gif
+		  /public /public/file.txt)],
 	sub {
 	    return [{
 		order_by => '0d',
@@ -20,9 +23,14 @@ req()->set_realm_and_user('btest_read', 'btest_read')->initialize_fully('USER_HO
 		    },
 		)}),
 	     }];
-	} => [
-	    map(+{'RealmFile.path_lc' => $_},
-		qw(/ /public /private /private/image.gif /private/file.html)),
-	],
+	} => [qw(/ /public /private /private/image.gif /private/file.html)],
+	sub {
+	    req()->put(path_info => '/private');
+	    return [];
+	} => [qw(/private/file.html /private/image.gif)],
+	sub {
+	    req()->put(path_info => '/does-not-exist');
+	    return [];
+	} => Bivio::DieCode->MODEL_NOT_FOUND,
     ],
 ];
