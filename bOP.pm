@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.45  2008/06/05 23:05:39  moeller
+  * Bivio::Biz::Action::SFEETunnel
+    loosened /do/login check in case there are query arguments,
+    fixes problems with bookmarked sfee pages
+  * Bivio::Mail::Common
+    removed -U flag, not used in modern sendmails or postfixes
+  * Bivio::Test::Util
+    misspelled PERLLIB in previous commit
+    doc
+  * Bivio::Util::LinuxConfig
+    remove dadd_postfix_http_agent
+
   Revision 6.44  2008/06/05 15:42:57  dobbs
   * Bivio::Biz::Model::CRMForm
     allow action_id be set with a new request
