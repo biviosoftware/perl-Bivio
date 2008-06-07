@@ -439,7 +439,10 @@ sub vs_tree_list {
     return Table(
 	$model,
 	$columns,
-	$proto->vs_table_attrs($model, tree_list => $attrs),
+	$proto->vs_table_attrs($model, tree_list => {
+	    %{$attrs || {}},
+	    want_sorting => 0,
+	}),
     );
 }
 
@@ -473,7 +476,10 @@ sub vs_tree_list_control {
 		   ]);
 		   $_ ? Link($x, [['->get_list_model'], 'node_uri']) : $x;
 	       } 1, 0),
-	   ),
+	    ),
+	    $c->{tree_list_control_suffix_widget}
+	        ? (vs_blank_cell(2), $c->{tree_list_control_suffix_widget})
+	        : (),
 	]),
 	column_data_class => 'node',
     };
