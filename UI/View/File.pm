@@ -46,6 +46,13 @@ sub file_change {
 			    query => [['Model.FileChangeForm',
 			        '->unsafe_get_context'], 'query'],
 			})),
+			Link('Unlock', '#')->put(attributes => [sub {
+			    my($source) = @_;
+			    return ' onclick="document.file_form.'
+				. $source->req('Model.FileChangeForm')
+				    ->get_field_name_for_html('cancel_button')
+				. '.click()"';
+			}]),
 		    ], String(' - ')),
 		]),
 	    ),
@@ -246,11 +253,6 @@ sub _mailto {
     return vs_mailto_for_user_id(['Model.' . $form, 'realm_file', 'user_id']);
 }
 
-sub _mailto_text {
-    my($form, $text) = @_;
-    return;
-}
-
 sub _simple_tree {
     return vs_tree_list(RealmFileTreeList => [
 	['RealmFile.path', {
@@ -266,6 +268,13 @@ sub _tree_list {
 	['RealmFile.path', {
 	    column_order_by => ['RealmFile.path_lc'],
 	    column_widget => _file_name(['base_name']),
+	    tree_list_control_suffix_widget => If(['!', '->is_archive'],
+		Link(Image('change'),
+		    URI({
+			task_id => 'FORUM_FILE_CHANGE',
+			path_info => ['RealmFile.path'],
+		    })),
+	    ),
 	}],
 	['RealmFile.modified_date_time', {
 	    column_widget => If(
@@ -281,30 +290,6 @@ sub _tree_list {
 	    ),
 	}],
 	_file_owner_column(),
-	{
-	    column_data_class => 'list_actions',
-	    column_widget => ListActions([
-		map({
-		    my($n, $t, $c, $q) = @$_;
-		    [
-			$n,
-			$t,
-			URI({
-			    task_id => $t,
-			    query => $q,
-			    path_info => ['RealmFile.path'],
-			}),
-			$c,
-			[['->get_list_model'], 'RealmOwner.name'],
-		    ];
-		}
-		    [Change => FORUM_FILE_CHANGE =>
-			 And(
-			     ['!', '->is_archive'],
-			 )],
-		),
-	    ]),
-	},
     ]);
 }
 
