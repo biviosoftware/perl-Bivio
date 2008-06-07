@@ -91,6 +91,11 @@ sub get_height_as_html {
     return ' height="' . _find(@_)->{value}->{height} . '"';
 }
 
+sub get_icon_dir {
+    my($self) = @_;
+    return _facade_name($self, '');
+}
+
 sub get_value {
     # (proto, string, Collection.Attributes) : hash_ref
     # (self, string) : hash_ref
