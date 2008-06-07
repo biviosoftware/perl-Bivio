@@ -22,14 +22,14 @@ visit_uri('/fourem/file');
 
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
     follow_link_in_table('Name', 'Name', 'realm-file-btest.txt',
-	'', 'Change');
+	'Name', 'change');
     fixup_files_uri('DELETE');
     submit_form(OK => {
 	'Comments:' => 'deleted by acceptance test',
     });
 }
 
-follow_link_in_table('Name', 'Name', '/', '', 'Change');
+follow_link_in_table('Name', 'Name', '/', 'Name', 'change');
 fixup_files_uri('TEXT_FILE'),
 submit_form(OK => {
     'Name:' => 'realm-file-btest.txt',

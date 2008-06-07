@@ -11,10 +11,10 @@ submit_form(Send => {
 });
 poll_page(verify_text => $code);
 visit_uri("$uri/file");
-follow_link_in_table("Name", "Name", "/", "", "Change");
+follow_link_in_table("Name", "Name", "/", "Name", "change");
 fixup_files_uri('ADD_SUBFOLDER');
 submit_form(OK => {'Name:' => "Wiki"});
-follow_link_in_table("Name", "Name", "Wiki", "", "Change");
+follow_link_in_table("Name", "Name", "Wiki", "Name", "change");
 fixup_files_uri('TEXT_FILE');
 submit_form(OK => {
     'Name:' => "cool $code",
