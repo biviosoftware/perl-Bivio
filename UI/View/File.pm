@@ -166,11 +166,10 @@ sub _file_name {
 
 sub _file_owner_column {
     return ['RealmOwner_2.display_name', {
-	column_widget => If (['->is_locked'],
-	    MailTo(['Email_3.email'],
-		SPAN_warn(['RealmOwner_3.display_name'])),
-	    MailTo(['Email_2.email'], ['RealmOwner_2.display_name']),
-	),
+	column_widget => If(['->is_locked'],
+	    SPAN_warn(String(['RealmOwner_3.display_name'])),
+	    String(['RealmOwner_2.display_name']),
+	)
     }];
 }
 
