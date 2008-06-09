@@ -97,7 +97,6 @@ sub create_db {
         $self->run;
     }
     $self->initialize_db();
-    _write_icons($self);
     return;
 }
 
@@ -1993,16 +1992,6 @@ sub _user_exists {
         WHERE usename = ?',
 	[_assert_postgres($self)->{user}],
     )});
-}
-
-sub _write_icons {
-    my($self) = @_;
-    Bivio::IO::File->do_in_dir($self->req('Bivio::UI::Facade')
-	->get_default->get('Icon')->get_icon_dir,
-	sub {
-	    $self->use('Bivio::UI::Icons')->write_files;
-	});
-    return;
 }
 
 1;
