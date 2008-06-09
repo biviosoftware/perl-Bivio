@@ -10,6 +10,9 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_RF) = __PACKAGE__->use('Model.RealmFile');
 my($_RTK) = __PACKAGE__->use('Type.RowTagKey');
 my($_TLN) = __PACKAGE__->use('Type.TreeListNode');
+Bivio::IO::Config->register(my $_CFG = {
+    default_expand => 'all_rows',
+});
 
 sub LOAD_ALL_SIZE {
     return 5000;
@@ -24,10 +27,19 @@ sub can_write {
     return $self->[$_IDI]->{can_write};
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub internal_default_expand {
     my($self) = @_;
     return $self->new_other('RealmFolderList')->map_iterate(
-	'RealmFile.realm_file_id');
+	'RealmFile.realm_file_id')
+	if $_CFG->{default_expand} eq 'all_rows';
+    return [$self->new_other('RealmFile')->load({folder_id => undef})
+	->get('realm_file_id')];
 }
 
 sub internal_initialize {
