@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.46  2008/06/07 22:44:36  moeller
+  * Bivio::Biz::Model::RealmFileTreeList
+    constrain list results by path_info
+    expand all folders by default
+  * Bivio::Biz::Model::RealmFileVersionsList
+    sort by modified_date_time first
+  * Bivio::UI::FacadeBase
+    constrain FORUM_FILE list results by path_info
+    set title to path_info if it exists
+    remove Prose stuff from title.FORUM_FILE 'cos that title only
+    sometimes gets treated as Prose()
+  * Bivio::UI::Icon
+    added get_icon_dir()
+  * Bivio::UI::View::File
+    added Unlock link for file change page,
+    removed Change link, replaced with change icon next to the file name
+  * Bivio::UI::XHTML::ViewShortcuts
+    turned off sorting for trees,
+    added tree_list_control_suffix_widget value for tree icon
+  * Bivio::Util::SQL
+    now uses Bivio::UI::Icons to unzip default icons
+  * Bivio::Util::User
+    fixed indentation for USAGE
+
   Revision 6.45  2008/06/05 23:05:39  moeller
   * Bivio::Biz::Action::SFEETunnel
     loosened /do/login check in case there are query arguments,
