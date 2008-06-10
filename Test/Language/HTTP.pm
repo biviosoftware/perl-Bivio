@@ -420,7 +420,7 @@ sub new {
 
 sub poll_page {
     my($self, $method, @args) = @_;
-    foreach my $x (1..5) {
+    foreach my $x (1..$_CFG->{mail_tries}) {
 	$self->reload_page;
 	return if $self->unsafe_op(@_);
 	sleep(1);
