@@ -1,13 +1,9 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-
 Request();
-use Bivio::IO::File;
-
 my($data) = 'a document';
-Bivio::IO::File->write('file.txt', $data);
+write_file('file.txt', $data);
 my($zip) = Bivio::IO::Zip->new;
-
 [
     sub {$zip} => [
         add_file => [
