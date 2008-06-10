@@ -1,38 +1,35 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-my($data) = 'a document';
-write_file('file.txt', $data);
-my($zip) = Bivio::IO::Zip->new;
+my($file_txt) = 'a document';
+write_file('file.txt', $file_txt);
 [
-    sub {$zip} => [
+    {
+	object => [],
+	compute_params => sub {
+	    my(undef, $params, $method) = @_;
+	    return [sub {
+                 my($name, $contents) = @_;
+		 assert_equals(qr{(foo|bar)\.txt}, $name);
+                 assert_equals($file_txt, $contents);
+                 return 1;
+            }] if $method eq 'iterate_members';
+	    return $params;
+	},
+    } => [
         add_file => [
-            ['file.txt', 'foo.txt'] => [$zip],
+            ['file.txt', 'foo.txt'] => not_die(),
         ],
         add_string => [
-            [\$data, 'bar.txt'] => [$zip],
+            [\$file_txt, 'bar.txt'] => not_die(),
         ],
-        iterate_members => [
-            [sub {
-                 my($name, $contents) = @_;
-                 die() unless $name =~ /(foo|bar)\.txt/;
-                 die() unless $contents eq $data;
-                 return 1;
-            }] => [$zip],
-        ],
+        iterate_members => not_die(),
         write_to_file => [
-            ['foo2.zip'] => [$zip],
+            ['foo.zip'] => not_die(),
         ],
         read_zip_from_string => [
-            [Bivio::IO::File->read('foo.zip')] => [$zip],
+            sub {[read_file('foo.zip')]} => not_die(),
         ],
-        iterate_members => [
-            [sub {
-                 my($name, $contents) = @_;
-                 die() unless $name =~ /(foo|bar)\.txt/;
-                 die() unless $contents eq $data;
-                 return 1;
-            }] => [$zip],
-        ],
+        iterate_members => not_die(),
     ],
 ];
