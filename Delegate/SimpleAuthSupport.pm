@@ -76,6 +76,15 @@ sub task_permission_ok {
 }
 
 sub unsafe_get_user_pref {
+    my($proto, $pref, $req, $value) = @_;
+
+    if ($pref eq 'PAGE_SIZE') {
+	my($v) = $proto->use('Model.RowTag')->new($req)->get_value(
+	    $req->get('auth_user_id'), 'PAGE_SIZE');
+	return 0 unless $v;
+	$$value = $v;
+	return 1;
+    }
     return 0;
 }
 
