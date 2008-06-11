@@ -43,8 +43,9 @@ sub new {
     my($proto, $realm_file_or_attr) = @_;
     return $proto->SUPER::new(
 	Bivio::UNIVERSAL->is_blessed($realm_file_or_attr) ? {
+	    map(($_ => $realm_file_or_attr->get($_)),
+		@{$realm_file_or_attr->get_keys}),
 	    realm_file => $realm_file_or_attr,
-	    path => $realm_file_or_attr->get('path'),
 	    req => $realm_file_or_attr->req,
 	    content_type => $realm_file_or_attr->get_content_type,
 	} : _assert_keys($realm_file_or_attr),
