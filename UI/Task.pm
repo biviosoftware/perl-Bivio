@@ -2,14 +2,7 @@
 # $Id$
 package Bivio::UI::Task;
 use strict;
-use Bivio::Agent::Request;
-use Bivio::Agent::TaskId;
-use Bivio::Auth::RealmType;
-use Bivio::Base 'Bivio::UI::FacadeComponent';
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::HTML;
-use Bivio::IO::Config;
+use Bivio::Base 'UI.FacadeComponent';
 use Bivio::IO::Trace;
 
 # C<Bivio::UI::Task> provides URIs for tasks.  There are two uris currently
@@ -76,15 +69,22 @@ use Bivio::IO::Trace;
 # to.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
-use vars ('$_TRACE');
-my($_RN) = Bivio::Type->get_instance('RealmName');
-my($_GENERAL) = Bivio::Auth::Realm->get_general();
-my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
+my($_RN) = __PACKAGE__->use('Type.RealmName');
+my($_R) = __PACKAGE__->use('Auth.Realm');
+my($_RT) = __PACKAGE__->use('Auth.RealmType');
+my($_GENERAL) = $_R->get_general;
+my($_GENERAL_TYPE) = $_RT->GENERAL;
+my($_UNKNOWN_INT) = $_RT->UNKNOWN->as_int;
 my($_REALM_PLACEHOLDER) = '?';
 my($_REALM_PLACEHOLDER_PAT) = $_REALM_PLACEHOLDER;
 $_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
 # Map of realm types to default realm placeholders
+my($_TI) = __PACKAGE__->use('Agent.TaskId');
+my($_FCT) = __PACKAGE__->use('FacadeComponent.Text');
+my($_AT) = __PACKAGE__->use('Agent.Task');
+my($_F) = __PACKAGE__->use('UI.Facade');
 
 sub HELP_INDEX {
     # Index for help tree.
@@ -106,7 +106,7 @@ sub UNDEF_URI {
 sub assert_defined_for_facade {
     my($proto, $task, $req_or_facade) = @_;
     my($v) = $proto->internal_get_value(lc($task->get_name), $req_or_facade);
-    Bivio::Die->throw_die('NOT_FOUND', {
+    b_die('NOT_FOUND', {
 	entity => $task,
 	message => 'no such task in facade',
     }) unless $v->{is_valid};
@@ -133,10 +133,10 @@ sub format_help_uri {
 	: undef;
     return $self->format_uri(
 	{
-	    task_id => Bivio::Agent::TaskId->HELP,
+	    task_id => $_TI->HELP,
 	    realm => undef,
 	    path_info => $info && $info->{help} ? $info->{help}
-		: Bivio::UI::Text->get_value('help_index_path_info'),
+		: $_FCT->get_value('help_index_path_info', $req),
 	    no_context => 0,
 	},
 	$req,
@@ -150,9 +150,9 @@ sub format_realmless_uri {
     my($fields) = $self->[$_IDI];
     return $self->format_uri(
 	{
-	    task_id => Bivio::Agent::TaskId->from_any($task_id),
+	    task_id => $_TI->from_any($task_id),
 	    realm => $fields->{realmless_uri}->{
-		Bivio::Agent::Task->get_by_id($task_id)->get('realm_type')
+		$_AT->get_by_id($task_id)->get('realm_type')
 	    },
 	    path_info => $path_info,
 	    no_context => 1,
@@ -169,7 +169,7 @@ sub format_uri {
 	unless ref($named) eq 'HASH';
     return $named->{uri}
 	if defined($named->{uri});
-    $named->{task_id} = Bivio::Agent::TaskId->from_name($named->{task_id})
+    $named->{task_id} = $_TI->from_name($named->{task_id})
 	unless ref($named->{task_id});
     my($task_name) = $named->{task_id}->get_name;
     my($info) = $self->internal_get_value($task_name);
@@ -216,7 +216,7 @@ sub format_uri {
 
 sub handle_register {
     my($proto) = @_;
-    Bivio::UI::Facade->register($proto, ['Text']);
+    $_F->register($proto, ['Text']);
     return;
 }
 
@@ -244,14 +244,14 @@ sub initialization_complete {
     $fields->{realmless_uri} = {
 	map(($_ => ($self->internal_unsafe_lc_get_value(
 	    $_->get_name . '_REALMLESS_REDIRECT') || {})->{uri}),
-	    Bivio::Auth::RealmType->get_list),
+	    $_RT->get_list),
 #TODO: Remove my_club_site and my_site requirements
 	# You can't format realmless unless these tasks exist.
-	Bivio::Auth::RealmType->CLUB
+	$_RT->CLUB
 	    => $self->internal_get_value('my_club_site')->{uri},
-	Bivio::Auth::RealmType->USER
+	$_RT->USER
 	    => $self->internal_get_value('my_site')->{uri},
-	Bivio::Auth::RealmType->GENERAL => undef,
+	$_RT->GENERAL => undef,
     };
     return shift->SUPER::initialization_complete(@_);
 }
@@ -278,9 +278,8 @@ sub internal_initialize_value {
 sub internal_setup_facade {
     my($proto, $req) = @_;
     return ref($proto) ? $proto
-        : ($req->unsafe_get('Bivio::UI::Facade')
-	|| Bivio::UI::Facade->setup_request(
-	$req->unsafe_get('r') && $req->get('r')->hostname || undef, $req)
+        : ($req->unsafe_get($_F) || $_F->setup_request(
+	    $req->unsafe_get('r') && $req->get('r')->hostname || undef, $req)
         )->get($proto->simple_package_name);
 }
 
@@ -323,13 +322,13 @@ sub parse_uri {
     $req->put_durable(initial_uri => '/'.$uri);
 
     # General realm simple map; no placeholders or path_info.
-    if (defined($info = $fields->{from_uri}->{$uri}->[$_GENERAL_INT])) {
+    if ($info = _from_uri($fields, $uri, $_GENERAL_TYPE)) {
 	return (_task($self, $info, $orig_uri), $_GENERAL, '', $orig_uri);
     }
 
     # Is this a general realm with path_info?  URI has at least
     # one component at this stage, so $uri[0] is defined.
-    if (defined($info = $fields->{from_uri}->{$uri[0]}->[$_GENERAL_INT])) {
+    if ($info = _from_uri($fields, $uri[0], $_GENERAL_TYPE)) {
 	# At this stage, we have to map to a general realm, because
 	# all first components of the general realm are not valid
 	# RealmName values.  Therefore, we fail with
@@ -353,7 +352,7 @@ sub parse_uri {
 
     # If first uri doesn't match a RealmName, can't be one.
     my($name) = $_RN->unsafe_from_uri($uri[0]);
-    unless (defined($name) && $self->has_uri(Bivio::Agent::TaskId->USER_HOME)) {
+    unless (defined($name) && $self->has_uri($_TI->USER_HOME)) {
 	# Not a realm, so try site_root
 	_trace($orig_uri, ' => site_root (no name or no USER_HOME uri')
 	    if $_TRACE;
@@ -372,21 +371,20 @@ sub parse_uri {
     my($o) = Bivio::Biz::Model->new($req, 'RealmOwner');
     return _parse_err($self, $orig_uri, $req, {
 	entity => $name, uri => $orig_uri,
-	class => 'Bivio::Auth::Realm',
+	class => $_R,
 	message => 'no such realm',
     }) unless $o->unauth_load({name => $name});
-    $realm = Bivio::Auth::Realm->new($o);
+    $realm = $_R->new($o);
 
     # Found the realm, now try to find the URI (without checking path_info)
     $uri = join('/', @uri);
-    my($rti) = $realm->get('type')->as_int;
+    my($rt) = $realm->get('type');
     return (
-	_task($self, $fields->{from_uri}->{$uri}->[$rti], $orig_uri),
+	_task($self, $info, $orig_uri),
 	$realm,
 	'',
 	$orig_uri,
-    ) if defined($fields->{from_uri}->{$uri})
-        && defined($fields->{from_uri}->{$uri}->[$rti]);
+    ) if $info = _from_uri($fields, $uri, $rt);
     # Is this a path_info URI?  Note this may seem a bit "slow", but it
     # is a rare case and NOT_FOUND processing is much faster than normal
     # requests anyway.  Component after realm name must identify path_info URI
@@ -398,9 +396,7 @@ sub parse_uri {
 	$realm,
 	join('/', '', @uri[$path_info_index+1..$#uri]),
 	$orig_uri,
-    ) if defined($fields->{from_uri}->{$uri})
-	&& defined($info = $fields->{from_uri}->{$uri}->[$rti])
-	&& $info->{has_path_info};
+    ) if $info = _from_uri($fields, $uri, $rt) and $info->{has_path_info};
     return _parse_err($self, $orig_uri, $req, {
 	entity => $orig_uri,
 	realm_type => $realm->get('type')->get_name,
@@ -421,15 +417,13 @@ sub unsafe_get_from_uri {
     # I<uri> will be implicitly prefixed by '?/' (realm placeholder) depending on
     # realm_type.
     my($self) = $proto->internal_get_self($req_or_facade);
-    my($from_uri) = $self->[$_IDI]->{from_uri};
     $uri = "$_REALM_PLACEHOLDER/$uri"
 	unless $realm_type->eq_general;
     _clean_uri(\$uri);
     return undef
-	unless my $info = $from_uri->{$uri};
-    $info = $info->[$realm_type->as_int];
+	unless my $info = _from_uri($self->[$_IDI], $uri, $realm_type);
 #TODO: Is this really the same as what parse_uri() does?
-    return $info ? _task($self, $info) : undef;
+    return _task($self, $info);
 }
 
 sub _clean_uri {
@@ -440,6 +434,13 @@ sub _clean_uri {
     $$uri =~ s/^\/(.)/$1/g;
     $$uri =~ s!^$!/!s;
     return;
+}
+
+sub _from_uri {
+    my($fields, $uri, $realm_type) = @_;
+    return undef
+	unless my $res = $fields->{from_uri}->{$uri};
+    return $res->[$realm_type->as_int] || $res->[$_UNKNOWN_INT] || undef;
 }
 
 sub _get_error {
@@ -550,10 +551,10 @@ sub _init_name {
 	unless int(@{$value->{names}}) == 1;
     return 'name not a task_id'
 	unless $value->{task}
-	= Bivio::Agent::TaskId->unsafe_from_name($value->{names}->[0]);
+	= $_TI->unsafe_from_name($value->{names}->[0]);
     return 'no realm_type for task'
 	unless my $rtn = $fields->{to_realm_type}->{$value->{task}->get_name};
-    $value->{realm_type} = Bivio::Auth::RealmType->$rtn;
+    $value->{realm_type} = $_RT->from_any($rtn);
     $fields->{not_found} = $value
 	if $value->{realm_type}->eq_general
 	&& $value->{task}->get_name eq 'DEFAULT_ERROR_REDIRECT_NOT_FOUND';
@@ -584,7 +585,7 @@ sub _init_uri {
 
 	# Is the URI valid?
 	my($path_info_count) = undef;
-	if ($value->{realm_type} == Bivio::Auth::RealmType->GENERAL()) {
+	if ($value->{realm_type}->eq_general) {
 	    $path_info_count = $alias eq '/' ? 0 : 1;
 	    return "$alias: URIs for general realm must NOT begin with '$_REALM_PLACEHOLDER' "
 		if $alias =~ m{^/*$_REALM_PLACEHOLDER_PAT};
@@ -629,14 +630,14 @@ sub _initialize_fields {
 	# Used only at initialization
 	to_realm_type => {map {
 	    (uc($_->[0]) => uc($_->[2]));
-	} @{Bivio::Agent::TaskId->get_cfg_list}},
+	} @{$_TI->get_cfg_list}},
     };
 }
 
 sub _parse_err {
     my($self, $orig_uri, $req, $attrs) = @_;
     my($fields) = $self->[$_IDI];
-    $req->throw_die(Bivio::DieCode->NOT_FOUND, $attrs)
+    $req->throw_die('NOT_FOUND', $attrs)
 	unless my $t = $fields->{not_found};
     return ($t->{task}, $_GENERAL, '', $orig_uri);
 }
