@@ -10,6 +10,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = __PACKAGE__->use('IO.Alert');
 my($_D) = __PACKAGE__->use('Bivio.Die');
 my($_T) = __PACKAGE__->use('IO.Trace');
+my($_CL) = __PACKAGE__->use('IO.ClassLoader');
 
 sub import {
     my($first, $map_or_class) = @_;
@@ -25,10 +26,11 @@ sub import {
     );
     {
 	no strict 'refs';
-	*{$pkg . '::b_info'} = \&b_info;
-	*{$pkg . '::b_warn'} = \&b_info;
 	*{$pkg . '::b_die'} = \&b_die;
+	*{$pkg . '::b_info'} = \&b_info;
 	*{$pkg . '::b_trace'} = \&b_trace;
+	*{$pkg . '::b_use'} = \&b_use;
+	*{$pkg . '::b_warn'} = \&b_info;
     };
     return;
 }
@@ -43,6 +45,10 @@ sub b_info {
 
 sub b_trace {
     return $_T->set_named_filters(@_);
+}
+
+sub b_use {
+    return $_CL->map_require(@_);
 }
 
 sub b_warn {
