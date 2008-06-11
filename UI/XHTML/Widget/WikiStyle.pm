@@ -11,6 +11,7 @@ my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
 my($_RF) = __PACKAGE__->use('Action.RealmFile');
 
 sub help_exists {
+    Bivio::IO::Alert->warn_deprecated('use HelpWiki');
     my($proto, $name, $req) = @_;
     return $_RF->access_controlled_load(
 	vs_constant($req, 'help_wiki_realm_id'),
@@ -22,16 +23,16 @@ sub help_exists {
 
 sub prepare_html {
     shift;
-#TODO: Deprecate
+    Bivio::IO::Alert->warn_deprecated('use WikIText');
     return $_WT->prepare_html(@_);
 }
 
 sub render {
-    # History: Used to render a style, now handled by RealmCSSList
     return;
 }
 
 sub render_help_html {
+    Bivio::IO::Alert->warn_deprecated('use HelpWiki');
     my($self, $name, $req) = @_;
     return ($self->render_html(
 	vs_constant($req, 'help_wiki_realm_id'),
@@ -43,6 +44,7 @@ sub render_help_html {
 }
 
 sub render_html {
+    Bivio::IO::Alert->warn_deprecated('use HelpWiki');
     return map(
 	ref($_) eq 'HASH' ? \($_WT->render_html($_)) : $_,
 	shift->prepare_html(@_),
