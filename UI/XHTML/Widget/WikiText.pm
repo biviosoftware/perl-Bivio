@@ -373,19 +373,22 @@ my($_TAGS) = {%$_EMPTY, %$_EMPTY_BLOCK, %$_BLOCK, %$_PHRASE};
 my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*$)};
-my($_C) = __PACKAGE__->use('IO.Config');
+my($_C) = b_use('IO.Config');
+my($_DT) = b_use('Type.DateTime');
+my($_FCC) = b_use('FacadeComponent.Constant');
+my($_I) = b_use('View.Inline');
+my($_MY_TAGS);
+my($_RF) = b_use('Action.RealmFile');
+my($_T) = b_use('FacadeComponent.Task');
+my($_TI) = b_use('Agent.TaskId');
+my($_V) = b_use('UI.View');
+my($_WDN) = b_use('Type.WikiDataName');
+my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id)];
+my($_WN) = b_use('Type.WikiName');
+_require_my_tags(__PACKAGE__);
 $_C->register(my $_CFG = {
     deprecated_auto_link_mode => 0,
 });
-my($_MY_TAGS);
-my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id)];
-_require_my_tags(__PACKAGE__);
-my($_T) = __PACKAGE__->use('FacadeComponent.Task');
-my($_FCC) = __PACKAGE__->use('FacadeComponent.Constant');
-my($_TI) = __PACKAGE__->use('Agent.TaskId');
-my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
-my($_WN) = __PACKAGE__->use('Type.WikiName');
-my($_RF) = __PACKAGE__->use('Action.RealmFile');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
@@ -558,6 +561,27 @@ sub render_html {
     }
     _close_tags($_CLOSE_ALL, $state);
     return $state->{html};
+}
+
+sub render_html_without_view {
+    my($proto, $args, $req) = @_;
+    $args = {
+	is_public => 0,
+	modified_date_time => $_DT->now,
+	name => '',
+	realm_id => $req->get('auth_id'),
+	req => $req,
+	title => '',
+	user_id => $req->get('auth_user_id'),
+	value => $args,
+    } unless ref($args);
+    $args->{proto} ||= $proto;
+    # Generate unique symbol related to this module
+    return $_I->render_code_as_string(
+	sub {$args->{proto}->render_html($args)},
+	$args->{req},
+	'XHTMLWidget',
+    );
 }
 
 sub _close_top {
