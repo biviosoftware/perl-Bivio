@@ -51,11 +51,22 @@ sub _parse_row {
 	$row->{Label} = $_WN->to_title($row->{Label});
     }
     return (
-	WikiStrippedText($row->{Label}),
+	Simple(_render_label($row->{Label}, $args)),
 	$args->{proto}->internal_format_uri($row->{Link}, $args),
 	(defined($row->{Class}) && length($row->{Class}))
 	    ? $row->{Class} : ()
     );
+}
+
+sub _render_label {
+    my($label, $args) = @_;
+    my($res) = $args->{proto}->render_html({
+	%$args,
+	value => $label,
+    });
+    $res =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
+    chomp($res);
+    return $res;
 }
 
 1;
