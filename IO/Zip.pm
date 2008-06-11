@@ -6,10 +6,9 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 use Archive::Zip ();
 use Bivio::IO::File;
 use Bivio::IO::Trace;
-use Bivio::MIME::Type;
+use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$Bivio::IO::Zip::IN = undef;
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub add_file {
@@ -19,7 +18,7 @@ sub add_file {
     my($fields) = $self->[$_IDI];
     _trace($path, ' ', $name) if $_TRACE;
     Bivio::Die->die('file not found for zip: ', $path)
-        unless -e $path;
+        unless -r $path;
     $fields->{zip}->addFile($path, $name);
     return $self;
 }
@@ -81,12 +80,9 @@ sub send_zip_to_client {
     my($self, $req) = @_;
     my($file_name) = Bivio::IO::File->temp_file($req);
     $self->write_to_file($file_name);
-    my($reply) = $req->get('reply');
-    $reply->set_output_type(Bivio::MIME::Type->from_extension($file_name));
-    my($fh) = \*Bivio::IO::Zip::IN;
-    open($fh, '< ' . $file_name)
-        || Bivio::Die->die('file open failed: ', $file_name);
-    $reply->set_output($fh);
+    $req->get('reply')->set_output(IO::File->new($file_name, 'r')
+	|| Bivio::Die->die('file open failed: ', $file_name))
+	->set_output_type('application/zip');
     return $self;
 }
 
