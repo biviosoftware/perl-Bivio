@@ -3,8 +3,6 @@
 package Bivio::Mail::Outgoing;
 use strict;
 use Bivio::Base 'Bivio::Mail::Common';
-use Bivio::MIME::Type;
-use Bivio::Mail::Address;
 use MIME::Base64 ();
 use MIME::QuotedPrint ();
 
@@ -42,6 +40,7 @@ my($_T) = __PACKAGE__->use('MIME.Type');
 my($_R) = __PACKAGE__->use('Biz.Random');
 my($_FP) = __PACKAGE__->use('Type.FilePath');
 my($_I) = __PACKAGE__->use('Mail.Incoming');
+my($_A) = __PACKAGE__->use('Mail.Address');
 
 # 822:
 # Due to an artifact of the notational conventions, the syn-
@@ -78,7 +77,7 @@ my(@_FIRST_HEADERS) = qw(
 sub add_missing_headers {
     my($self, $req, $from_email) = @_;
     # Sets Date, Message-ID, From and Return-Path if not set.
-    $from_email ||= (Bivio::Mail::Address->parse(
+    $from_email ||= ($_A->parse(
 	$self->unsafe_get_header('From')
 	|| $self->unsafe_get_header('Apparently-From')
 	|| ($self->user_email($req))[0],
@@ -234,7 +233,7 @@ sub set_header {
     my($n) = lc($name);
 #TODO: Should assert header name is valid and quote value if need be
     $self->get('headers')->{$n} = $name . ': ' . $value . "\n";
-    $self->set_envelope_from((Bivio::Mail::Address->parse($value))[0])
+    $self->set_envelope_from(($_A->parse($value))[0])
 	if $n eq 'return-path';
     return $self;
 }
@@ -291,7 +290,7 @@ sub set_headers_for_list_send {
     $self->set_header(
 	'Return-Path',
 	'<' . (
-	    $np->{return_path} || (Bivio::Mail::Address->parse(
+	    $np->{return_path} || ($_A->parse(
 		    $self->unsafe_get_header('from')))[0]
 	 ) . '>',
     );
