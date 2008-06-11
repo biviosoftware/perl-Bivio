@@ -2,19 +2,15 @@
 # $Id$
 package Bivio::Agent::Embed::Reply;
 use strict;
-use base 'Bivio::Agent::Reply';
-use Bivio::IO::File;
+use Bivio::Base 'Agent.Reply';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_F) = b_use('IO.File');
 
 sub set_output {
     my($self, $value) = @_;
-    if (ref($value) eq 'GLOB') {
-	$value = Bivio::IO::File->read($value);
-    }
-    elsif (ref($value) ne 'SCALAR') {
-	Bivio::Die->die($value, ': not an SCALAR reference');
-    }
+    $value = $_F->read($value)
+	unless ref($value) eq 'SCALAR';
     $self->get('parent_request')->put(ref($self) => $value);
     return shift->SUPER::set_output(@_);
 }
