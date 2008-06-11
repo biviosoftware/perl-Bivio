@@ -385,7 +385,7 @@ my($_FCC) = __PACKAGE__->use('FacadeComponent.Constant');
 my($_TI) = __PACKAGE__->use('Agent.TaskId');
 my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
 my($_WN) = __PACKAGE__->use('Type.WikiName');
-my($_RF) = __PACKAGE__->use('Model.RealmFile');
+my($_RF) = __PACKAGE__->use('Action.RealmFile');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;

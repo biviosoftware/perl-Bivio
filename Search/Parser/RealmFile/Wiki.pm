@@ -23,7 +23,7 @@ sub handle_parse {
     return [
 	'text/plain',
 	Bivio::HTML->unescape($wa->{title}),
-	Bivio::HTML->unescape($body),
+	\(Bivio::HTML->unescape($body)),
     ];
 }
 
