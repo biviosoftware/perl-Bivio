@@ -6,6 +6,14 @@ use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub execute {
+    my($self, $req) = @_;
+    # DOES NOT CONFORM TO Task executable
+    my($buffer) = '';
+    $self->render($req, \$buffer);
+    return \$buffer;
+}
+
 sub initialize {
     return shift->initialize_attr('value');
 }
