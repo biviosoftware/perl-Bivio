@@ -1050,7 +1050,6 @@ sub _cfg_wiki {
 	],
 	Text => [
 	    ['WikiView.start_page' => 'StartPage'],
-	    ['WikiStyle.css_file_name' => 'base.css'],
 	    [WikiForm => [
 		'RealmFile.path_lc' => 'Title',
 		'content' => '',
