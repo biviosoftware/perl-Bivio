@@ -1,6 +1,6 @@
-@h3 TITLE
-email me at ^foo@bar.com or ^APage home
-@b-menu CamelCase
+@h1 TITLE
+email me at ^foo@bar.com or ^A_Page home
+@b-menu value=MenuNotFoundIsOK
 @form.ez method=POST action=/site/Forms/Partner?blah=blah
 @th Name:
 @input type=text size=40 name=name
