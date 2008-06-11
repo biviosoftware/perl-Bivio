@@ -1,4 +1,4 @@
-@h3 TITLE
+@h1 TITLE
  first text
 @div class="sidebar right" second text
 @table
