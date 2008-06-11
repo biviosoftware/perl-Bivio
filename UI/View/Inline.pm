@@ -2,8 +2,8 @@
 # $Id$
 package Bivio::UI::View::Inline;
 use strict;
-use base 'Bivio::UI::View';
-use Bivio::UI::LocalFileType;
+use Bivio::Base 'UI.View';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -15,6 +15,21 @@ sub compile {
     my($self) = @_;
     my($c) = $self->get('view_code');
     return ref($c) eq 'CODE' ? $c->() : $c;
+}
+
+sub render_code_as_string {
+    my($proto, $code_ref, $req, $class_map, $shortcuts) = @_;
+    $class_map ||= 'Widget';
+    $shortcuts ||= b_use('UI.ViewShortcuts');
+    # View calls us back, because we're passing in a code_ref
+    return ${$proto->call_main(
+	sub {
+	    view_class_map($class_map);
+	    view_shortcuts($shortcuts);
+	    return view_main(Simple([sub {$code_ref->(@_)}]));
+	},
+	$req,
+    )};
 }
 
 sub unsafe_new {
