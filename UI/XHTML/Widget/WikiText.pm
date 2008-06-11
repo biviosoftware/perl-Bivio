@@ -384,6 +384,8 @@ my($_T) = __PACKAGE__->use('FacadeComponent.Task');
 my($_FCC) = __PACKAGE__->use('FacadeComponent.Constant');
 my($_TI) = __PACKAGE__->use('Agent.TaskId');
 my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
+my($_WN) = __PACKAGE__->use('Type.WikiName');
+my($_RF) = __PACKAGE__->use('Model.RealmFile');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
@@ -436,6 +438,54 @@ sub internal_format_uri {
 
 sub internal_new_args {
     return shift->internal_compute_new_args([qw(value)], \@_);
+}
+
+sub prepare_html {
+    my($proto, $realm_id, $name, $task_id, $req) = @_;
+    my($rf);
+    if (ref($realm_id)) {
+	$rf = $realm_id;
+	$task_id = $name;
+	$name = $_WN->from_absolute($rf->get('path'));
+	$realm_id = $rf->get('realm_id');
+	$req = $rf->req;
+    }
+    else {
+	return unless $rf = $_RF->access_controlled_load(
+	    $realm_id, $_WN->to_absolute($name), $req, 1);
+    }
+    my($v) = ${$rf->get_content};
+    my($t);
+    my($wiki_args) = {
+	task_id => $task_id,
+	req => $req,
+	name => $name,
+	map(($_ => $rf->get($_)), qw(is_public realm_id)),
+    };
+    if ($v =~ s{^(\@h1[ \t]*\S[^\r\n]+\r?\n|\@h1.*?\r?\n\@/h1\s*?\r?\n)}{}s) {
+	my($x) = $1;
+	$t = ($proto->render_html({
+	    %$wiki_args,
+	    value => $x,
+	}) =~ m{^<h1>(.*)</h1>$}s)[0];
+	if (defined($t)) {
+	    $t =~ s/^\s+|\s+$//g;
+	}
+	else {
+	    Bivio::IO::Alert->warn(
+		$x, ': not a header pattern; page=', $name);
+	    substr($v, 0, 0) = $x;
+	}
+    }
+    return (
+	{
+	    %$wiki_args,
+	    value => $v,
+	    title => defined($t) ? $t
+		: Bivio::HTML->escape($_WN->to_title($name)),
+	},
+	$rf->get(qw(modified_date_time user_id)),
+    );
 }
 
 sub register_tag {
