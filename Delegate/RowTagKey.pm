@@ -15,6 +15,7 @@ sub get_delegate_info {
 	MAIL_SUBJECT_PREFIX => 4,
 	MAIL_LIST_WANT_TO_USER => 5,
 	REALM_FILE_LOCKING => 6,
+	PAGE_SIZE => 7,
 	LAST_RESERVED_VALUE => 99,
     ];
 }
