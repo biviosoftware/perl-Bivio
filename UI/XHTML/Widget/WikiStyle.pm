@@ -21,41 +21,9 @@ sub help_exists {
 }
 
 sub prepare_html {
-    my($proto, $realm_id, $name, $task_id, $req, $realm_name) = @_;
-    return unless my $rf = $_RF->access_controlled_load(
-	$realm_id, $_WN->to_absolute($name), $req, 1);
-    my($v) = ${$rf->get_content};
-    my($t);
-    my($wiki_args) = {
-	task_id => $task_id,
-	req => $req,
-	name => $name,
-	map(($_ => $rf->get($_)), qw(is_public realm_id)),
-    };
-    if ($v =~ s{^(\@h1[ \t]*\S[^\r\n]+\r?\n|\@h1.*?\r?\n\@/h1\s*?\r?\n)}{}s) {
-	my($x) = $1;
-	$t = ($_WT->render_html({
-	    %$wiki_args,
-	    value => $x,
-	}) =~ m{^<h1>(.*)</h1>$}s)[0];
-	if (defined($t)) {
-	    $t =~ s/^\s+|\s+$//g;
-	}
-	else {
-	    Bivio::IO::Alert->warn(
-		$x, ': not a header pattern; page=', $name);
-	    substr($v, 0, 0) = $x;
-	}
-    }
-    return (
-	{
-	    %$wiki_args,
-	    value => $v,
-	    title => defined($t) ? $t
-		: Bivio::HTML->escape($_WN->to_title($name)),
-	},
-	$rf->get(qw(modified_date_time user_id)),
-    );
+    shift;
+#TODO: Deprecate
+    return $_WT->prepare_html(@_);
 }
 
 sub render {
