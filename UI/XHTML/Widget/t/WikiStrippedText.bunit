@@ -1,9 +1,0 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
-Widget();
-req()->set_realm('fourem');
-req()->initialize_fully('FORUM_WIKI_VIEW');
-[
-    'x' => qq{x},
-    'x ^y.png' => qr{x <img src="[^"]+y.png"},
-];
