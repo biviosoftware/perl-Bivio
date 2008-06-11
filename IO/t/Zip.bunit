@@ -3,33 +3,36 @@
 Request();
 my($file_txt) = 'a document';
 write_file('file.txt', $file_txt);
+
 [
-    {
-	object => [],
-	compute_params => sub {
-	    my(undef, $params, $method) = @_;
-	    return [sub {
-                 my($name, $contents) = @_;
-		 assert_equals(qr{(foo|bar)\.txt}, $name);
-                 assert_equals($file_txt, $contents);
-                 return 1;
-            }] if $method eq 'iterate_members';
-	    return $params;
-	},
-    } => [
-        add_file => [
-            ['file.txt', 'foo.txt'] => not_die(),
-        ],
-        add_string => [
-            [\$file_txt, 'bar.txt'] => not_die(),
-        ],
-        iterate_members => not_die(),
-        write_to_file => [
-            ['foo.zip'] => not_die(),
-        ],
-        read_zip_from_string => [
-            sub {[read_file('foo.zip')]} => not_die(),
-        ],
-        iterate_members => not_die(),
+    [] => [
+	map((@$_,
+	    iterate_members => [
+		[sub {
+		     my($name, $contents) = @_;
+		     assert_equals(qr{(foo|bar)\.txt}, $name);
+		     assert_equals($file_txt, $contents);
+		     return 1;
+		 }] => not_die(),
+	    ]), [
+		add_file => [
+		    ['file.txt', 'foo.txt'] => not_die(),
+		],
+		add_string => [
+		    [\$file_txt, 'bar.txt'] => not_die(),
+		],
+	    ], [
+		write_to_file => [
+		    ['foo.zip'] => not_die(),
+		],
+		read_zip_from_string => [
+		    sub {[read_file('foo.zip')]} => not_die(),
+		],
+	    ]),
+	sub {
+	    # cleanup tmp files
+	    req()->process_cleanup;
+	    return 1;
+	} => 1,
     ],
 ];
