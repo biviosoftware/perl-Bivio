@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = __PACKAGE__->use('Type.FilePath');
+my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
 
 sub CONTENT_TYPE_LIST {
     return 'text/x-bivio-wiki';
@@ -13,20 +14,16 @@ sub CONTENT_TYPE_LIST {
 
 sub handle_parse {
     my(undef, $parseable) = @_;
-    my($text) = $parseable->get_content;
-    $$text =~ s/(?:^|\n)\@h\d+\s+([^\n]+)\n//s;
-    my($title) = $1;
-    $$text =~ s/(?=\@p)/\n/mg;
-    $$text =~ s/^\@(?:\!.*\n|\S+(?:\s*\w+="[^"]+")*\s*)//mg;
-    $$text =~ s/^\@(?:\!.*\n|\S+(?:\s*\w+=\S+)*\s*)//mg;
-    $$text =~ s/\S+=\S+//mg;
-    $$text =~ s/\^(\S+\@)/$1/g;
-    $$text =~ s/\^\S+//g;
-    $$text =~ s/\b[A-Z]\w*[A-Z]\w+\s*//g;
+    my($wa) = $_WT->prepare_html($parseable, 'FORUM_WIKI_VIEW');
+    Bivio::Die->die($parseable, ': unable to parse')
+        unless $wa;
+    my($body) = $_WT->render_html($wa);
+    $body =~ s{<p[^>]*>}{}g;
+    $body =~ s{<[^>]+>}{}g;
     return [
 	'text/plain',
-	$title || $_FP->get_base($parseable->get('path')),
-	$text,
+	Bivio::HTML->unescape($wa->{title}),
+	Bivio::HTML->unescape($body),
     ];
 }
 
