@@ -42,7 +42,12 @@ sub execute_prepare_html {
     unless ($name) {
 	# To avoid name space issues, there always needs to be a path_info
 	$req->put(path_info => $_FN->to_absolute($sp));
-	return $task_id;
+	return {
+# should be able to handle realm_id and convert automatically
+	    realm => $req->with_realm($realm_id, sub {$req->get_nested(qw(auth_realm owner_name))}),
+	    task_id => $task_id,
+	    query => undef,
+	};
     }
     $name =~ s{^/+}{};
     unless ($_WN->is_valid($name)) {
@@ -53,7 +58,7 @@ sub execute_prepare_html {
 	name => $name,
 	exists => 0,
     );
-    my($wa, $dt, $uid) = $proto->use('XHTMLWidget.WikiStyle')
+    my($wa, $dt, $uid) = $proto->use('XHTMLWidget.WikiText')
 	->prepare_html($realm_id, $name, $task_id, $req);
     return $self->internal_model_not_found($req, $realm_id)
 	unless $wa;
