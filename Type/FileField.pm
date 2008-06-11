@@ -5,7 +5,11 @@ use strict;
 use Bivio::Base 'Bivio::Type';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_T) = __PACKAGE__->use('Type.Text');
+my($_T) = b_use('Type.Text');
+my($_RF) = b_use('Model.RealmFile');
+my($_TE) = b_use('Bivio.TypeError');
+my($_FP) = b_use('Type.FilePath');
+my($_F) = b_use('IO.File');
 
 sub from_string_ref {
     return shift->from_literal({
@@ -20,9 +24,7 @@ sub from_disk {
     return $v
 	if $v;
     my(undef, $file_name) = @_;
-    Bivio::Die->die(
-	$file_name, ': invalid disk file: ' ,
-	$e || Bivio::TypeError::FILE_FIELD->NULL);
+    b_use($file_name, ': invalid disk file: ' , $e || $_TE->NULL);
     # DOES NOT RETURN
 }
 
@@ -33,7 +35,7 @@ sub from_literal {
     return (undef, undef)
 	unless defined($value);
     unless (ref($value) eq 'HASH') {
-	return (undef, Bivio::TypeError->FILE_FIELD)
+	return (undef, $_TE->FILE_FIELD)
 	    if length($value);
 	return (undef, undef);
     }
@@ -41,9 +43,9 @@ sub from_literal {
 	if length(${$value->{content}});
     return (undef, undef)
 	unless $value->{filename};
-    return (undef, Bivio::TypeError->NOT_FOUND)
+    return (undef, $_TE->NOT_FOUND)
 	unless $value->{content_type};
-    return (undef, Bivio::TypeError->EMPTY);
+    return (undef, $_TE->EMPTY);
 }
 
 sub from_sql_column {
@@ -76,13 +78,12 @@ sub unsafe_from_disk {
 	if ref($value) eq 'HASH'
 	&& grep(exists($value->{$_}), qw(filename content content_type)) == 3
 	&& ref($value->{content}) eq 'SCALAR';
-    return (undef, Bivio::TypeError->NOT_FOUND)
+    return (undef, $_TE->NOT_FOUND)
 	unless -r $value && !(-d _);
     return {
-	filename => $proto->use('Type.FilePath')->get_tail($value),
-	content_type => $proto->use('Bivio::MIME::Type')
-	    ->unsafe_from_extension($value),
-        content => $proto->use('IO.File')->read($value),
+	filename => $_FP->get_tail($value),
+	content_type => $_RF->get_content_type_for_path($value),
+        content => $_F->read($value),
     };
 }
 

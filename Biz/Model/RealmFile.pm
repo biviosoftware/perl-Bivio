@@ -8,14 +8,16 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_BFN) = __PACKAGE__->use('Type.BlogFileName');
+my($_BF) = b_use('Biz.File');
+my($_BFN) = b_use('Type.BlogFileName');
 my($_DELETED_SENTINEL) = 'DELETED IN TRANSACTION';
-my($_DFN) = Bivio::Type->get_instance('DocletFileName');
-my($_F) = __PACKAGE__->use('Biz.File');
-my($_FP) = Bivio::Type->get_instance('FilePath');
-my($_T) = __PACKAGE__->use('MIME.Type');
+my($_DFN) = b_use('Type.DocletFileName');
+my($_DT) = b_use('Type.DateTime');
+my($_FP) = b_use('Type.FilePath');
+my($_IOF) = b_use('IO.File');
+my($_T) = b_use('MIME.Type');
+my($_WN) = b_use('Type.WikiName');
 my($_TXN_PREFIX);
-my($_WN) = __PACKAGE__->use('Type.WikiName');
 Bivio::IO::Config->register(my $_CFG = {
     search_class => undef,
 });
@@ -123,7 +125,7 @@ sub get_content_type {
 sub get_content_type_for_path {
     my(undef, $path) = @_;
     $path =~ s/;\d+//;
-    my($res) = Bivio::MIME::Type->from_extension($path);
+    my($res) = $_T->from_extension($path);
     return $res eq 'application/octet-stream'
 	&& ($_WN->is_absolute($path) || $_BFN->is_absolute($path))
 	? 'text/x-bivio-wiki'
@@ -153,7 +155,7 @@ sub handle_commit {
 	    return unless -r $txn_file;
 	    _trace('rename(', $txn_file, ', ', $file, ')') if $_TRACE;
 	    unlink($file);
-	    Bivio::IO::File->rename($txn_file, $file);
+	    $_IOF->rename($txn_file, $file);
 	    return;
 	},
 	sub {
@@ -573,12 +575,12 @@ sub _os_path {
 }
 
 sub _read {
-    return Bivio::IO::File->read(_os_path(shift(@_)));
+    return $_IOF->read(_os_path(shift(@_)));
 }
 
 sub _realm_dir {
     my($realm_id) = @_;
-    return $_F->absolute_path("RealmFile/$realm_id");
+    return $_BF->absolute_path("RealmFile/$realm_id");
 }
 
 sub _search_delete {
@@ -644,14 +646,14 @@ sub _txn {
 	$new,
         sub {
 	    my($file, $txn_file, $content) = @_;
-	    Bivio::IO::File->mkdir_parent_only($txn_file);
+	    $_IOF->mkdir_parent_only($txn_file);
 	    unlink($txn_file);
-	    Bivio::IO::File->write($txn_file, $content);
+	    $_IOF->write($txn_file, $content);
 	    return;
 	},
 	sub {
 	    my($file, $txn_file) = @_;
-	    Bivio::IO::File->mkdir_parent_only($txn_file);
+	    $_IOF->mkdir_parent_only($txn_file);
 	    unlink($txn_file);
 	    symlink($_DELETED_SENTINEL, $txn_file);
 	    return;
@@ -685,7 +687,7 @@ sub _txn_do {
 
 sub _txn_filename {
     my($filename) = @_;
-    $_TXN_PREFIX ||= '.' . Bivio::IO::File->unique_name_for_process . '#';
+    $_TXN_PREFIX ||= '.' . $_IOF->unique_name_for_process . '#';
     $filename =~ s{(?=[^/]+$)}{$_TXN_PREFIX}o;
     return $filename;
 }
@@ -753,7 +755,7 @@ sub _verify {
     $values->{is_read_only} = 1
 	if _in_versions($p) || _in_mail($p);
     $values->{is_public} = _in_public($p) ? 1 : 0;
-    $values->{modified_date_time} ||= Bivio::Type::DateTime->now;
+    $values->{modified_date_time} ||= $_DT->now;
     return $values;
 }
 

@@ -1,16 +1,18 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::AnyTaskDAVList;
 use strict;
-use base 'Bivio::Biz::Model::UserTaskDAVList';
+use Bivio::Base 'Model.UserTaskDAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_AT) = b_use('Agent.Task');
+my($_RF) = b_use('Model.RealmFile');
 
 sub dav_propfind {
     my($self) = @_;
     return {
 	%{shift->SUPER::dav_propfind(@_)},
-	getcontenttype => Bivio::MIME::Type->from_extension(
+	getcontenttype => $_RF->get_content_type_for_path(
 	    $self->get_query->get('path_info')),
     };
 }
@@ -21,7 +23,7 @@ sub dav_reply_get {
     my($q) = $self->get_query;
     $req->put(
 	task_id => $q->get('task_id'),
-	task => my $t = Bivio::Agent::Task->get_by_id($q->get('task_id')),
+	task => my $t = $_AT->get_by_id($q->get('task_id')),
     );
     $req->set_realm($q->get('auth_id'));
     $t->execute_items($req);

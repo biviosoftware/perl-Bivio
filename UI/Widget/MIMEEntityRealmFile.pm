@@ -5,7 +5,8 @@ use strict;
 use Bivio::Base 'Widget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FP) = Bivio::Type->get_instance('FilePath');
+my($_FP) = b_use('Type.FilePath');
+my($_T) = b_use('MIME.Type');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
@@ -18,7 +19,7 @@ sub control_on_render {
 	    Type => $t,
 	    Filename => $_FP->get_tail($rf->get('path')),
 	    Data => $c,
-	    Encoding => Bivio::MIME::Type->suggest_encoding($t, $c),
+	    Encoding => $_T->suggest_encoding($t, $c),
 	    Disposition => $self->render_simple_attr(mime_disposition => $source),
 	    $id ? (Id => "<$id>") : (),
 	),

@@ -2,10 +2,13 @@
 # $Id$
 package Bivio::Biz::Model::UserTaskDAVList;
 use strict;
-use base 'Bivio::Biz::Model::DAVList';
-use Bivio::MIME::Type;
+use Bivio::Base 'Model.DAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_AT) = b_use('Agent.Task');
+my($_MT) = b_use('MIME.Type');
+my($_DT) = b_use('Type.DateTime');
+my($_ATDL) = b_use('Model.AnyTaskDAVList');
 
 sub REGEXP {
     return qr/^[A-Z][\w\s\.]+$/;
@@ -17,7 +20,7 @@ sub dav_propfind_children {
     my($q) = $self->get_query;
     my($prev) = $req->get('auth_realm');
     $req->set_realm($q->get('auth_id'));
-    my($t) = Bivio::Agent::Task->get_by_id($q->get('task_id'));
+    my($t) = $_AT->get_by_id($q->get('task_id'));
     my($res) = $t->map_each(
 	sub {
 	    my(undef, $k, $tid) = @_;
@@ -65,16 +68,16 @@ sub load_dav {
 sub _fmt {
     my($self, $name, $task_id) = @_;
     my($req) = $self->get_request;
-    my($t) = Bivio::Agent::Task->get_by_id($task_id);
+    my($t) = $_AT->get_by_id($task_id);
     # Not writable, just readable
     return unless $req->can_user_execute_task($task_id);
     my($ct) = $t->unsafe_get('require_dav') || grep(/_task$/, $t->get_keys) ? ()
       : ($name =~ s/_([a-z]{3,4})$/.$1/
-	 && Bivio::MIME::Type->unsafe_from_extension($name));
+	 && $_MT->unsafe_from_extension($name));
     $name = ucfirst($name);
     $name =~ s/_(\w?)/ \u$1/g;
     return {
-	getlastmodified => Bivio::Type::DateTime->now,
+	getlastmodified => $_DT->now,
 	uri => $name,
 	displayname => $name,
 	$ct ? (getcontenttype => $ct, getcontentlength => _size($t, $req)) : (),
@@ -91,7 +94,7 @@ sub _size {
 	$req->get('task')->execute_items($req);
     }
     else {
-	Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
+	$_ATDL->execute($req);
     }
     my($m) = $req->get('dav_model');
     my($o) = $m->can('dav_reply_get')
@@ -106,7 +109,7 @@ sub _size {
 	unless $prev_realm->equals($req->get('auth_realm'));
     $req->reset_reply;
     return ref($o) eq 'SCALAR' ? length($$o)
-	: Bivio::Die->die($t->get('id'), ': failed to return scalar: ', $o);
+	: b_die($t->get('id'), ': failed to return scalar: ', $o);
 }
 
 1;
