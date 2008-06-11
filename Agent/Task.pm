@@ -2,13 +2,7 @@
 # $Id$
 package Bivio::Agent::Task;
 use strict;
-use Bivio::Agent::TaskId;
-use Bivio::Auth::PermissionSet;
-use Bivio::Auth::RealmType;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::IO::ClassLoader;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
 # C<Bivio::Agent::Task> defines a tuple which is configured by
@@ -120,7 +114,7 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_T) = 'Bivio::Agent::TaskId';
+my($_T) = b_use('Agent.TaskId');
 my(%_ID_TO_TASK) = ();
 my($_INITIALIZED);
 my(%_REDIRECT_DIE_CODES) = (
@@ -129,11 +123,13 @@ my(%_REDIRECT_DIE_CODES) = (
 );
 my($_REQUEST_LOADED);
 my($_HANDLERS) = [__PACKAGE__];
-my($_B) = __PACKAGE__->use('Type.Boolean');
+my($_B) = b_use('Type.Boolean');
+my($_PS) = b_use('Auth.PermissionSet');
+my($_RT) = b_use('Auth.RealmType');
 
 sub assert_realm_type {
     my($self, $realm_type) = @_;
-    Bivio::Die->die($realm_type, ': invalid realm_type for ', $self)
+    b_die($realm_type, ': invalid realm_type for ', $self)
         unless $self->has_realm_type($realm_type);
     return;
 }
@@ -201,7 +197,7 @@ sub execute_items {
 	    $res->{query} = $req->unsafe_get('query');
 	}
 	unless ($res->{uri} || $_T->is_blessed($res->{task_id})) {
-	    Bivio::Die->die(
+	    b_die(
 		$res,
 		': invalid task_id returned by ',
 		_item_as_string($self, $i),
@@ -235,7 +231,7 @@ sub get_by_id {
     # Returns the task associated with the id.
     $id = $_T->from_name($id)
         unless ref($id);
-    Bivio::Die->die($id, ": no task associated with id")
+    b_die($id, ": no task associated with id")
 	unless $_ID_TO_TASK{$id};
     return $_ID_TO_TASK{$id};
 }
@@ -255,18 +251,15 @@ sub handle_die {
     # If no specific I<die_action> is found, the C<DEFAULT_ERROR_REDIRECT_>
     # task id is sought.
     my($die_code) = $die->get('code');
-    unless ($_REQUEST_LOADED) {
-	Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
-	$_REQUEST_LOADED = 1;
-    }
+    my($req_class) = b_use('Agent.Request');
     if ($_REDIRECT_DIE_CODES{$die_code}) {
 	# commit redirects: current task is completed
 	_trace('commit: ', $die_code) if $_TRACE;
-	$proto->commit(Bivio::Agent::Request->get_current);
+	$proto->commit($req_class->get_current);
 	return;
     }
 
-    my($req) = Bivio::Agent::Request->get_current;
+    my($req) = $req_class->get_current;
     $proto->rollback($req);
 
     # Don't clutter logs with forbidden -> login redirects
@@ -300,7 +293,7 @@ sub handle_die {
 	}
     }
     # Allowed?
-    unless (Bivio::UI::Task->is_defined_for_facade($new_task_id, $req)) {
+    unless (b_use('UI.Task')->is_defined_for_facade($new_task_id, $req)) {
 	_trace('error redirect not defined in facade: ', $new_task_id)
 	    if $_TRACE;
 	return;
@@ -343,7 +336,8 @@ sub handle_pre_execute_task {
 
 sub has_realm_type {
     my($self, $realm_type) = @_;
-    return $self->get('realm_type') == $realm_type ? 1 : 0;
+    my($rt) = $self->get('realm_type');
+    return $rt->eq_unknown || $rt == $realm_type ? 1 : 0;
 }
 
 sub initialize {
@@ -356,17 +350,14 @@ sub initialize {
     # to speed up command line initialization.  B<Never use in a server.>
     return if $_INITIALIZED;
     $_INITIALIZED = 1;
-
     foreach my $cfg (@{$_T->get_cfg_list}) {
 	my($id_name, undef, $realm_type, $perm_spec, @items) = @$cfg;
-	my($perm_set) = Bivio::Auth::PermissionSet->get_min;
-	foreach my $p (split(/\&/, $perm_spec)) {
-	    Bivio::Auth::PermissionSet->set(\$perm_set,
-		    Bivio::Auth::Permission->$p());
-	}
-	$proto->new($_T->$id_name(),
-		Bivio::Auth::RealmType->$realm_type(),
-		$perm_set, $partially ? () : @items);
+	$proto->new(
+	    $_T->$id_name(),
+	    $_RT->from_any($realm_type),
+	    ${$_PS->from_array([split(/\&/, $perm_spec)])},
+	    $partially ? () : @items,
+	);
     };
     return;
 }
@@ -483,7 +474,7 @@ sub _call_txn_resources {
 	    $method = 'handle_rollback';
 	}
     }
-    Bivio::Die->die(
+    b_die(
 	$req->unsafe_get('txn_resources'),
 	': transaction resource loop: ',
 	$req,
@@ -515,12 +506,12 @@ sub _init_executables {
 	}
 	else {
 	    $method ||= 'execute';
-	    Bivio::Die->die($i, ": can't be executed (missing $method method)")
+	    b_die($i, ": can't be executed (missing $method method)")
 	        unless $c->can($method) || $c->can('AUTOLOAD');
 	    push(@new_items, [$c, $method, []]);
 	}
 	if ($c->isa('Bivio::Biz::FormModel')) {
-	    Bivio::Die->die($attrs->{id}, ': too many form models')
+	    b_die($attrs->{id}, ': too many form models')
 	        if $attrs->{form_model};
 	    $attrs->{form_model} = ref($c) || $c;
 	}
@@ -536,7 +527,7 @@ sub _init_form_attrs {
 	return;
     }
 
-    Bivio::Die->die($attrs->{id}, ": FormModels require \"next=\" item")
+    b_die($attrs->{id}, ": FormModels require \"next=\" item")
 	unless $attrs->{next};
     # default cancel to next unless present
     $attrs->{cancel} = $attrs->{next} unless $attrs->{cancel};
@@ -544,7 +535,7 @@ sub _init_form_attrs {
     my($form_require) = $attrs->{form_model}->get_instance
 	->get_info('require_context');
     if (defined($attrs->{require_context})) {
-	Bivio::Die->die(
+	b_die(
 	    $attrs->{id},
 	    ": can't require_context, because",
 	    " FormModel doesn't require it",
@@ -579,17 +570,17 @@ sub _parse_map_item {
 	if $cause =~ /^(?:next|cancel|login|[a-z0-9_]+_task)$/;
     if ($cause =~ /(.+)::(.+)/) {
 	my($class, $method) = ($1, $2);
-	Bivio::Die->die(
+	b_die(
 	    $cause, ': not an enum (', $attrs->{id}, ')',
 	) unless UNIVERSAL::isa($class, 'Bivio::Type::Enum');
 	$cause = $class->from_name($method);
     }
     else {
-	Bivio::Die->die($cause, ': not a valid attribute name')
+	b_die($cause, ': not a valid attribute name')
 	    unless Bivio::DieCode->is_valid_name($cause);
 	$cause = Bivio::DieCode->from_name($cause);
     }
-    Bivio::Die->die(
+    b_die(
 	$cause->get_name, ': cannot be a mapped item (',
 	$attrs->{id}, ')',
     ) if $_REDIRECT_DIE_CODES{$cause};
@@ -604,10 +595,8 @@ sub _put_attr {
     foreach my $k (@keys) {
 	$a = $a->{$k};
     }
-    Bivio::Die->die(
-	[@keys, $final], ': attribute already exists for ',
-	$attrs->{id},
-    ) if defined($a->{$final});
+    b_die([@keys, $final], ': attribute already exists for ', $attrs->{id})
+	if defined($a->{$final});
     $a->{$final} = $value;
     return;
 }
