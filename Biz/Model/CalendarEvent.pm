@@ -25,11 +25,11 @@ sub create_from_vevent {
 }
 
 sub create_realm {
-    my($self, $calendar_event, $realm_owner) = @_;
+    my($self, $calendar_event, $realm_owner) = (shift, shift, shift);
     my(@res) = $self->create($calendar_event)->SUPER::create_realm({
 	name => $self->id_to_uid,
 	%$realm_owner,
-    });
+    }, @_);
     $self->new_other('RealmUserAddForm')
 	->copy_admins($self->get('calendar_event_id'));
     return @res;
