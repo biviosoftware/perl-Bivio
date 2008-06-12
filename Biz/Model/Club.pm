@@ -2,31 +2,13 @@
 # $Id$
 package Bivio::Biz::Model::Club;
 use strict;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Model.RealmOwnerBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub create_realm {
-    # (self, hash_ref, hash_ref) : array
-    # Creates the Club, RealmOwner, and RealmUser models.  I<realm_owner> may be an
-    # empty hash_ref.  I<realm_owner>.password will be invalid.
-    #
-    # B<Does not set the realm to the new club.>
-    #
-    # Returns (club, realm_owner) models.
-    my($self, $club, $realm_owner, $first_admin_id) = @_;
-    $self->create($club);
-    my($ro) = $self->new_other('RealmOwner')->create({
-	%$realm_owner,
-	realm_type => Bivio::Auth::RealmType->CLUB,
-	realm_id => $self->get('club_id'),
-    });
-    $self->new_other('RealmUser')->create({
-	realm_id => $self->get('club_id'),
-	user_id => $first_admin_id || $self->get_request->get('auth_user_id'),
-        role => Bivio::Auth::Role->ADMINISTRATOR,
-    });
-    return ($self, $ro);
+    my($self, $club) = (shift, shift);
+    return $self->create($club)->SUPER::create_realm(@_);
 }
 
 sub internal_initialize {

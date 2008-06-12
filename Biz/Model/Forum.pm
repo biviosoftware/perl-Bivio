@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::Forum;
 use strict;
-use base ('Bivio::Biz::PropertyModel');
+use Bivio::Base 'Model.RealmOwnerBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -18,30 +18,26 @@ sub create {
 }
 
 sub create_realm {
-    my($self, $forum, $realm_owner, $admin_user_id) = @_;
-    my($ro) = $self->new_other('RealmOwner')->create({
-	%$realm_owner,
-	realm_type => Bivio::Auth::RealmType->FORUM,
-	realm_id => $self->create({
-	    want_reply_to => 0,
-	    is_public_email => 0,
-	    %$forum,
-	    parent_realm_id => $self->req('auth_id'),
-	})->get('forum_id'),
-    });
+    my($self, $forum, $realm_owner, $admin_id) = @_;
+    # don't super admin_id, added using ForumUserAddForm below
+    my(@res) = $self->create({
+	want_reply_to => 0,
+	is_public_email => 0,
+	%$forum,
+	parent_realm_id => $self->req('auth_id'),
+    })->SUPER::create_realm($realm_owner);
     $self->req->with_realm($self->get('forum_id'), sub {
         $self->new_other('RealmFile')->init_realm;
 	return;
     });
     $self->new_other('ForumUserAddForm')->copy_admins(
 	$self->get('forum_id'),
-	$self->get('require_otp') ? $self->get_request->get('auth_user_id') :
-	    $admin_user_id);
+	$self->get('require_otp')
+	    ? $self->get_request->get('auth_user_id')
+	    : $admin_id);
 #TODO: remove this hack
     # Reset state after ForumUserAddForm messed it up
-    $self->put_on_request;
-    $ro->put_on_request;
-    return ($self, $ro);
+    return map($_->put_on_request, @res);
 }
 
 sub internal_initialize {
