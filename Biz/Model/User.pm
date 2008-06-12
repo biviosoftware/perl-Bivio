@@ -36,14 +36,15 @@ sub create {
 }
 
 sub create_realm {
-    my($self, $user, $realm_owner) = @_;
-    $self->create($user);
-    $realm_owner ||= {};
-    $realm_owner->{password}
-	= $self->use('Type.Password')->encrypt($realm_owner->{password})
-        if defined($realm_owner->{password});
-    $realm_owner->{display_name} = $self->format_full_name;
-    return shift->SUPER::create_realm($realm_owner);
+    my($self, $user, $realm_owner) = (shift, shift, shift);
+    return $self->create($user)->SUPER::create_realm({
+	%$realm_owner,
+	defined($realm_owner->{password})
+	    ? (password => $self->use('Type.Password')->encrypt(
+		$realm_owner->{password}))
+	    : (),
+	display_name => $self->format_full_name,
+    }, @_);
 }
 
 sub format_full_name {
@@ -96,7 +97,6 @@ sub internal_create_realm_administrator_id {
 }
 
 sub internal_initialize {
-    # B<FOR INTERNAL USE ONLY>
     return {
 	version => 1,
 	table_name => 'user_t',
