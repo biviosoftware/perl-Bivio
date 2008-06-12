@@ -65,11 +65,13 @@ sub main {
 	Bivio::IO::File->mkdir_p($pwd);
 	CORE::system("(cd $pwd; rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem modules)");
 	_symlink($pwd, "$pwd/logs");
-	_symlink(_find_file('/usr/lib/apache', '/usr/libexec/httpd'),
+	_symlink(_find_file('/usr/lib/apache', '/usr/libexec/httpd',
+			    '/usr/local/apache/libexec'),
 	    "$pwd/modules") unless $] < 5.006;
     }
     my($log) = $background ? 'stderr.log' : '|cat';
-    my($mime_types) = _find_file('/etc/mime.types', '/etc/httpd/mime.types');
+    my($mime_types) = _find_file('/etc/mime.types', '/etc/httpd/mime.types',
+			     '/usr/local/apache/conf/mime.types');
     my($keepalive) = $background ? 'on' : 'off';
     my($port) = $_CFG->{port};
     my($additional_directives) = $_CFG->{additional_directives};
@@ -166,7 +168,7 @@ sub _find_file {
 	return $f
 	    if -e $f;
     }
-    die('Could not find any of: ', \@path);
+    die('Could not find any of: ', @path);
     # DOES NOT RETURN
 }
 
