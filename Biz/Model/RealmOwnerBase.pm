@@ -26,18 +26,18 @@ sub cascade_delete {
 }
 
 sub create_realm {
-#TODO: internal_create_realm_administrator_id is wrong.  Pass in admin_id
-    my($self, $realm_owner) = @_;
+    my($self, $realm_owner, $admin_id) = @_;
     my($ro) = $self->new_other('RealmOwner')->create({
 	%$realm_owner,
 	realm_type => $self->REALM_TYPE,
 	realm_id => $self->get_primary_id,
     });
+    $admin_id ||= $self->internal_create_realm_administrator_id;
     $self->new_other('RealmUser')->create({
 	realm_id => $self->get_primary_id,
-	user_id => $self->internal_create_realm_administrator_id,
+	user_id => $admin_id,
         role => $_R->ADMINISTRATOR,
-    }) if $self->can('internal_create_realm_administrator_id');
+    }) if $admin_id;
     return ($self, $ro);
 }
 
@@ -46,6 +46,10 @@ sub delete {
     Bivio::Die->die("call ->cascade_delete instead")
 	unless (caller(1))[3] =~ /\:cascade_delete$/;
     return shift->SUPER::delete(@_);
+}
+
+sub internal_create_realm_administrator_id {
+    return;
 }
 
 sub unauth_delete_realm {
