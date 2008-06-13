@@ -26,11 +26,19 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.47  2008/06/09 20:24:12  moeller
+  * Bivio::Biz::Model::RealmFileTreeList
+    added default_expand config value, (all_rows, none)
+  * Bivio::UI::View::File
+    don't link name to email in file tree
+  * Bivio::Util::SQL
+    removed _write_icons()
+
   Revision 6.46  2008/06/07 22:44:36  moeller
   * Bivio::Biz::Model::RealmFileTreeList
     constrain list results by path_info
