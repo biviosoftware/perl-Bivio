@@ -97,6 +97,14 @@ sub internal_parent_id {
 	->get('folder_id');
 }
 
+sub internal_parent_node_uri_query_params {
+    return {path_info => undef};
+}
+
+sub internal_parent_node_uri_uri_params {
+    return {path_info => shift->get_query->unsafe_get('path_info')};
+}
+
 sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{node_state} = $_TLN->LOCKED_LEAF_NODE

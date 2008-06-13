@@ -74,8 +74,18 @@ sub internal_parent_node_uri {
 			? $row->{$pkf} : (),
 		),
 		page_number => undef,
+		%{$self->internal_parent_node_uri_query_params},
 	    }),
+	%{$self->internal_parent_node_uri_uri_params},
     });
+}
+
+sub internal_parent_node_uri_query_params {
+    return {};
+}
+
+sub internal_parent_node_uri_uri_params {
+    return {};
 }
 
 sub internal_prepare_statement {
