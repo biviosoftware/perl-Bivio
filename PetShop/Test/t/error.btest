@@ -2,6 +2,18 @@
 # $Id$
 test_setup('PetShop');
 home_page();
+login_as('root');
+visit_uri('/site/files');
+if (get_content() =~ /[^x]ErrorNotFound/) {
+    follow_link_in_table('Name', 'Name', 'ErrorNotFound', 'Name', 'change');
+    fixup_files_uri('RENAME');
+    submit_form({
+        'New Name:' => 'xErrorNotFound',
+        'Comments:' => 'x',
+    });
+}
+visit_uri('/pub/logout');
+home_page();
 test_deviance();
 visit_uri('/fourem/file/NoFileHere');
 test_conformance();
@@ -32,3 +44,38 @@ test_deviance();
 visit_uri('/not-found-uri');
 test_conformance();
 follow_link('personal_page');
+
+login_as('root');
+visit_uri('/site/files');
+if (get_content() !~ /xErrorNotFound/) {
+    follow_link_in_table('Name', 'Name', 'Wiki', 'Name', 'change');
+    verify_text('/Public/Wiki');
+    fixup_files_uri('TEXT_FILE');
+    submit_form(OK => {
+        'Name:' => 'ErrorNotFound',
+        'Comments:' => 'add wiki error page',
+        _anon => <<'EOF',
+@p bad bad bad
+@h1 Not Found
+EOF
+    });
+}
+else {
+    follow_link_in_table('Name', 'Name', 'xErrorNotFound', 'Name', 'change');
+    fixup_files_uri('RENAME');
+    submit_form({
+        'New Name:' => 'ErrorNotFound',
+        'Comments:' => 'x',
+    });
+}
+visit_uri('/pub/logout');
+test_deviance();
+visit_uri('/fourem/file/NoFileHere');
+test_conformance();
+test_equals(404, get_response()->code());
+verify_text(qr{bad bad bad.*Not Found}s);
+test_deviance();
+visit_uri('/not-found-uri');
+test_conformance();
+test_equals(404, get_response()->code());
+verify_text(qr{bad bad bad.*Not Found}s);
