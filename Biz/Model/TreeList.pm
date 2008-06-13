@@ -1,12 +1,12 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TreeList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_N) = Bivio::Type->get_instance('TreeListNode');
-my($_P) = Bivio::Type->get_instance('PrimaryId');
+my($_N) = b_use('Type.TreeListNode');
+my($_P) = b_use('Type.PrimaryId');
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub internal_initialize {
