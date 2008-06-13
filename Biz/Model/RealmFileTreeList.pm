@@ -73,6 +73,7 @@ sub internal_initialize {
 	    ['Email_2.location',
 		[$self->use('Model.Email')->DEFAULT_LOCATION]],
 	],
+	other_query_keys => [qw(path_info)],
     });
 }
 
@@ -133,11 +134,13 @@ sub internal_prepare_statement {
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
+
 sub internal_root_parent_node_id {
     my($self) = @_;
-    my($path) = $_RF->parse_path($self->req('path_info'));
-    return $path eq '/' ? undef : $self->new_other('RealmFile')->load({
-	path => $path,
+    return undef
+	unless my $p = $self->get_query->unsafe_get('path_info');
+    return $self->new_other('RealmFile')->load({
+	path => $_RF->parse_path($p),
     })->get('realm_file_id');
 }
 
@@ -155,6 +158,15 @@ sub is_file {
 sub is_locked {
     my($self) = @_;
     return $self->get('RealmFileLock.modified_date_time') ? 1 : 0;
+}
+
+sub parse_query_from_request {
+   my($self) = @_;
+   my($query) = shift->SUPER::parse_query_from_request(@_);
+   if (my $p = $self->req->unsafe_get('path_info')) {
+       $query->put(path_info => $_RF->parse_path($p));
+   }
+   return $query;
 }
 
 1;

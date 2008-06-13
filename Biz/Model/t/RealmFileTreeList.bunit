@@ -1,7 +1,8 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->set_realm_and_user('btest_read', 'btest_read')->initialize_fully('USER_HOME');
+req()->set_realm_and_user('btest_read', 'btest_read')
+    ->initialize_fully('USER_HOME');
 options({
     compute_return => sub {
 	my(undef, $actual) = @_;
@@ -24,13 +25,8 @@ options({
 		)}),
 	     }];
 	} => [qw(/ /public /private /private/image.gif /private/file.html)],
-	sub {
-	    req()->put(path_info => '/private');
-	    return [];
-	} => [qw(/private/file.html /private/image.gif)],
-	sub {
-	    req()->put(path_info => '/does-not-exist');
-	    return [];
-	} => Bivio::DieCode->MODEL_NOT_FOUND,
+	[{path_info => '/private'}]
+	    => [qw(/private/file.html /private/image.gif)],
+	[{path_info => '/does-not-exist'}] => MODEL_NOT_FOUND(),
     ],
 ];
