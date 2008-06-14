@@ -126,6 +126,7 @@ sub do_test_trace {
         if $named_filter;
     $_T->set_filters(@$prev);
     $self->visit_uri("/test-trace/$named_filter");
+    $self->go_back;
     return;
 }
 
@@ -421,9 +422,9 @@ sub new {
 sub poll_page {
     my($self, $method, @args) = @_;
     foreach my $x (1..$_CFG->{mail_tries}) {
+	sleep(1);
 	$self->reload_page;
 	return if $self->unsafe_op(@_);
-	sleep(1);
     }
     $self->$method(@args);
     return;
