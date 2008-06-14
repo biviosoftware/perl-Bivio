@@ -47,15 +47,6 @@ EOF
     return;
 }
 
-sub delete_output {
-    # (self) : scalar_ref
-    # Delete and return output.
-    my($self) = @_;
-    my($output) = $self->unsafe_get('output');
-    $self->delete('output');
-    return $output;
-}
-
 sub die_to_http_code {
     # (proto, Bivio.Die) : int
     # (proto, Bivio.DieCode, Apache.Request) : int
