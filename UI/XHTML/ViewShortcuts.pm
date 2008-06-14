@@ -2,8 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::ViewShortcuts;
 use strict;
-use base 'Bivio::UI::HTML::ViewShortcuts';
-use Bivio::UI::HTML::WidgetFactory;
+use Bivio::Base 'UI_HTML.ViewShortcuts';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -103,6 +102,8 @@ my($_HTML_TAGS) = join('|', qw(
     VAR
 ));
 my($_AA) = __PACKAGE__->use('Action.Acknowledgement');
+my($_M) = b_use('Biz.Model');
+my($_WF) = b_use('UI_HTML.WidgetFactory');
 
 sub view_autoload {
     my(undef, $method, $args) = @_;
@@ -453,21 +454,17 @@ sub vs_tree_list_control {
     return {
 	%$c,
 	column_widget => Join([
-	    Replicator(SPAN_sp(), ['node_level']),
+	    Replicator(['node_level'], SPAN_sp()),
 	    If([['->get_list_model'], 'node_uri'],
 	       map({
 		   my($x) = Join([
-		       Image(vs_text([
-			   sub {
-			       my($lm) = shift->get_list_model;
-			       return $lm->simple_package_name
-				   . '.' . $lm->get('node_state')->get_name;
-			   },
-		       ])),
+		       Image(vs_text(
+			   $_M->get_instance($model)->get_list_class,
+			   ['node_state', '->get_name'],
+		       )),
 		       Tag(span =>
 		           ($c->{column_widget}
-			       || Bivio::UI::HTML::WidgetFactory->create(
-			       $model . '.' . $c->{field}, $c)),
+			       || $_WF->create($model . '.' . $c->{field}, $c)),
 			   'name',
 		       ),
 		   ]);
