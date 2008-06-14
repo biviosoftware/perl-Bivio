@@ -236,7 +236,7 @@ sub info_blog {
  	[qw(
  	    FORUM_BLOG_EDIT
  	    100
- 	    ANY
+ 	    FORUM
  	    DATA_READ&DATA_WRITE
             Model.BlogEditForm
 	    View.Blog->edit
@@ -245,7 +245,7 @@ sub info_blog {
  	[qw(
  	    FORUM_BLOG_CREATE
  	    101
- 	    ANY
+ 	    FORUM
  	    DATA_READ&DATA_WRITE
             Model.BlogCreateForm
 	    View.Blog->create
@@ -258,7 +258,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_DETAIL
 			102
-			ANY
+			FORUM
 			ANYBODY
 			Model.BlogRecentList->execute_load_all
 			Model.BlogList->execute_load_this
@@ -267,7 +267,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_LIST
 			103
-			ANY
+			FORUM
 			ANYBODY
 			Model.BlogRecentList->execute_load_all
 			Model.BlogList->execute_load_page
@@ -276,7 +276,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_RSS
 			107
-			ANY
+			FORUM
 			ANYBODY
 			Model.BlogList->execute_load_page
 			View.Blog->list_rss
@@ -358,7 +358,7 @@ sub info_calendar {
 	[qw(
 	    FORUM_CALENDAR_EVENT_LIST_RSS
             32
-            ANY
+            FORUM
             DATA_READ
             Model.CalendarEventList->execute_load_page
             View.Calendar->event_list_rss
@@ -371,7 +371,7 @@ sub info_crm {
 	[qw(
 	    FORUM_CRM_THREAD_ROOT_LIST
             150
-            ANY
+            FORUM
             DATA_READ&FEATURE_CRM
             Model.CRMThreadRootList->execute_load_page
             View.CRM->thread_root_list
@@ -380,7 +380,7 @@ sub info_crm {
 	[qw(
             FORUM_CRM_THREAD_LIST
             151
-            ANY
+            FORUM
             DATA_READ&FEATURE_CRM
             Model.CRMThreadList->execute_load_page
             View.CRM->thread_list
@@ -388,7 +388,7 @@ sub info_crm {
 	[qw(
             FORUM_CRM_FORM
             152
-            ANY
+            FORUM
             DATA_READ&DATA_WRITE&MAIL_POST&FEATURE_CRM
 	    Model.CRMForm
 	    View.CRM->send_form
@@ -1013,7 +1013,7 @@ sub info_wiki {
 		    [qw(
 			FORUM_WIKI_VIEW
 			48
-			ANY
+			FORUM
 			ANYBODY
 			Action.WikiView->execute_prepare_html
 			View.Wiki->view
@@ -1053,7 +1053,7 @@ sub info_wiki {
   	[qw(
  	    FORUM_WIKI_EDIT
  	    49
- 	    ANY
+ 	    FORUM
  	    DATA_READ&DATA_WRITE
  	    Model.WikiForm
 	    View.Wiki->edit
@@ -1062,7 +1062,7 @@ sub info_wiki {
  	[qw(
  	    FORUM_WIKI_NOT_FOUND
  	    50
- 	    ANY
+ 	    FORUM
  	    ANYBODY
 	    View.Wiki->not_found
 	    view_task=FORUM_WIKI_VIEW
