@@ -102,10 +102,10 @@ my(%_TAG_MAP) = (
 # CSS-only
 my($_CSS_MAP) = {
     capitalize => 'text-transform: capitalize',
-    center => 'test-align: center',
+    center => 'text-align: center',
     inline => 'display: inline',
-    justify => 'test-align: justify',
-    left => 'test-align: left',
+    justify => 'text-align: justify',
+    left => 'text-align: left',
     lowercase => 'text-transform: lowercase',
     normal => 'text-decoration:none;font-weight:normal;font-style:normal;white-space:normal;text-transform:none;font-size:100%;text-align:left',
     # There is no "text-align: none"
@@ -123,7 +123,7 @@ my($_CSS_MAP) = {
     pre => 'white-space: pre',
     pre_line => 'white-space: pre-line',
     pre_wrap => 'white-space: pre-wrap',
-    right => 'test-align: right',
+    right => 'text-align: right',
     uppercase => 'text-transform: uppercase',
 };
 
