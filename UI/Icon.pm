@@ -96,15 +96,6 @@ sub get_icon_dir {
     return _facade_name($self, '');
 }
 
-sub get_statically_configured_files {
-    # Available for db upgrades
-    my($proto, $facade) = @_;
-    return [map(
-	m{/(\w+)\.(?:@{[join('|', @$_FILE_SUFFIX_SEARCH_LIST)]})$} ? $1 : (),
-	glob($facade->get_local_file_name(PLAIN => "$_URI/*.*")),
-    )];
-}
-
 sub get_value {
     # (proto, string, Collection.Attributes) : hash_ref
     # (self, string) : hash_ref
@@ -177,7 +168,10 @@ sub handle_config {
 
 sub initialize_by_facade {
     my($proto, $facade) = @_;
-    foreach my $file (@{$proto->get_statically_configured_files($facade)}) {
+    foreach my $file (map(
+	m{/(\w+)\.(?:@{[join('|', @$_FILE_SUFFIX_SEARCH_LIST)]})$} ? $1 : (),
+	glob($facade->get_local_file_name(PLAIN => "$_URI/*.*")),
+    )) {
 	_find($proto, $file, $facade);
     }
     return $proto->new_static($facade);
