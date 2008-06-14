@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::BlogContent;
 use strict;
@@ -6,6 +6,7 @@ use Bivio::Base 'Type.Text64K';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
+my($_TE) = b_use('Bivio.TypeError');
 
 sub TITLE_PREFIX {
     return $_C->if_version(7 => '@h1', '@h3');
@@ -24,12 +25,12 @@ sub split {
 	my($prefix, $title) = split(/\s+/, $title_line, 2);
 	return (
 	    defined($prefix) && $prefix eq $proto->TITLE_PREFIX
-		? $title : Bivio::TypeError->BLOG_TITLE_PREFIX,
+		? $title : $_TE->BLOG_TITLE_PREFIX,
 	    defined($body) && $body =~ /\S/
-		? $body : Bivio::TypeError->BLOG_BODY_NULL,
+		? $body : $_TE->BLOG_BODY_NULL,
 	) if $title =~ /\S/;
     }
-    return (Bivio::TypeError->BLOG_TITLE_NULL, Bivio::TypeError->BLOG_BODY_NULL);
+    return ($_TE->BLOG_TITLE_NULL, $_TE->BLOG_BODY_NULL);
 }
 
 1;
