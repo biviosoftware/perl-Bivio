@@ -2,13 +2,13 @@
 # $Id$
 package Bivio::Type::BlogContent;
 use strict;
-use base 'Bivio::Type::Text64K';
+use Bivio::Base 'Type.Text64K';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
+my($_C) = b_use('IO.Config');
 
 sub TITLE_PREFIX {
-    return '@h3';
+    return $_C->if_version(7 => '@h1', '@h3');
 }
 
 sub join {
