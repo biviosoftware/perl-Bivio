@@ -453,10 +453,7 @@ sub vs_tree_list_control {
     return {
 	%$c,
 	column_widget => Join([
-	    [sub {
-		 return '<span class="sp" />'
-		     x shift->get_list_model->get('node_level');
-	    }],
+	    Replicator(SPAN_sp(), ['node_level']),
 	    If([['->get_list_model'], 'node_uri'],
 	       map({
 		   my($x) = Join([
