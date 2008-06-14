@@ -26,11 +26,97 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.48  2008/06/13 20:56:14  nagler
+  * Bivio::Agent::Embed::Reply
+    b_use
+  * Bivio::Agent::Task
+    has_realm_type accepts UNKNOWN as a valid realm type
+  * Bivio::Auth::Realm
+    use has_realm_type
+  * Bivio::Base
+    added b_use
+  * Bivio::Biz::Action::AdmGetBulletinAttachment
+    b_use & rmpod
+  * Bivio::Biz::Action::AdmMailBulletin
+    b_use & rmpod
+  * Bivio::Biz::Action::LocalFilePlain
+    b_use & rmpod & use IO::File for handles
+  * Bivio::Biz::Action::WikiView
+    call WikiText->prepare_html
+  * Bivio::Biz::Model::CalendarEvent
+    pass any remaining arguments to SUPER during create_realm()
+  * Bivio::Biz::Model::Club
+    rm pod
+    now derived from RealmOwnerBase, refactored create_realm()
+  * Bivio::Biz::Model::Forum
+    now derived from RealmOwnerBase, refactored create_realm()
+  * Bivio::Biz::Model::RealmFile
+    b_use & rmpod
+  * Bivio::Biz::Model::RealmOwnerBase
+    create_realm() takes an admin_id as an optional third argument
+  * Bivio::Biz::Model::User
+    refactored create_realm()
+  * Bivio::Biz::Model::UserTaskDAVList
+    b_use & rmpod
+  * Bivio::Delegate::RealmType
+    rmpod & added "any" alias for UNKNOWN
+  * Bivio::Delegate::RowTagKey
+    added PAGE_SIZE preference
+  * Bivio::Delegate::SimpleAuthSupport
+    added PAGE_SIZE user_pref
+  * Bivio::Delegate::TaskId
+    Most FORUM_* tasks map to UNKNOWN (ANY) RealmType so can be used by
+    any realm except general
+  * Bivio::IO::Zip
+    die if file to add is unreadable,
+    fixed mime type,
+    use IO::File for file handle
+  * Bivio::Mail::Outgoing
+    b_use
+  * Bivio::Search::Parseable
+    pass all realm_file values to object
+  * Bivio::Search::Parser::RealmFile::Wiki
+    use WikiText for stripping
+    fpc
+    use render_html_without_view
+  * Bivio::Test::Language::HTTP
+    poll_page() now reuses the mail_tries config for number of times to
+    try a page.
+  * Bivio::Test::Widget
+    assert no refs in output
+  * Bivio::Type::DecimalDegree
+    compute to 6 decimal places
+  * Bivio::Type::FileField
+    b_use & rmpod
+  * Bivio::UI::FacadeBase
+    unused
+  * Bivio::UI::Task
+    _from_uri accepts UNKNOWN as a valid realm type
+  * Bivio::UI::View::Inline
+    added render_code_as_string
+  * Bivio::UI::Widget::MIMEEntityRealmFile
+    b_use & rmpod
+  * Bivio::UI::Widget::Simple
+    maded executable but without a content-type so can't be used as a
+    regular view.
+  * Bivio::UI::XHTML::Widget::WikiStyle
+    moved prepare_html to WikiText -- WikiStyle should probably be
+    completely deprecated
+    DEPRECATED
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    inlined WikiStrippedText
+  * Bivio::UI::XHTML::Widget::WikiText
+    added prepare_html from WikiStyle
+    fpc
+    added render_html_without_view
+  * Bivio::Util::HTTPD
+    Add paths for OS X 10.5 Apache 1.3 built from source
+
   Revision 6.47  2008/06/09 20:24:12  moeller
   * Bivio::Biz::Model::RealmFileTreeList
     added default_expand config value, (all_rows, none)
