@@ -246,6 +246,7 @@ sub merge_class_loader {
 		    Test => ['Bivio::Test'],
 		    Type => ['Bivio::Type', 'Bivio::Auth'],
 		    UI => ['Bivio::UI'],
+		    UI_HTML => ['Bivio::UI::HTML'],
 		    View => ['Bivio::UI::View'],
 		    WikiText => ['Bivio::UI::XHTML::Widget::WikiText'],
 		},
