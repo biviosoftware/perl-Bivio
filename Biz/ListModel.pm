@@ -324,8 +324,11 @@ sub get_hidden_field_values {
 	    $self->internal_get_sql_support());
 }
 
+sub get_list_class {
+    return shift->simple_package_name;
+}
+
 sub get_list_model {
-    # Returns itself, the list model.
     return shift;
 }
 
