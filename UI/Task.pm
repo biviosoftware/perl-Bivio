@@ -71,9 +71,9 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_RN) = __PACKAGE__->use('Type.RealmName');
-my($_R) = __PACKAGE__->use('Auth.Realm');
-my($_RT) = __PACKAGE__->use('Auth.RealmType');
+my($_RN) = b_use('Type.RealmName');
+my($_R) = b_use('Auth.Realm');
+my($_RT) = b_use('Auth.RealmType');
 my($_GENERAL) = $_R->get_general;
 my($_GENERAL_TYPE) = $_RT->GENERAL;
 my($_UNKNOWN_INT) = $_RT->UNKNOWN->as_int;
@@ -81,10 +81,9 @@ my($_REALM_PLACEHOLDER) = '?';
 my($_REALM_PLACEHOLDER_PAT) = $_REALM_PLACEHOLDER;
 $_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
 # Map of realm types to default realm placeholders
-my($_TI) = __PACKAGE__->use('Agent.TaskId');
-my($_FCT) = __PACKAGE__->use('FacadeComponent.Text');
-my($_AT) = __PACKAGE__->use('Agent.Task');
-my($_F) = __PACKAGE__->use('UI.Facade');
+my($_TI) = b_use('Agent.TaskId');
+my($_FCT) = b_use('FacadeComponent.Text');
+my($_AT) = b_use('Agent.Task');
 
 sub HELP_INDEX {
     # Index for help tree.
@@ -216,7 +215,7 @@ sub format_uri {
 
 sub handle_register {
     my($proto) = @_;
-    $_F->register($proto, ['Text']);
+    b_use('UI.Facade')->register($proto, ['Text']);
     return;
 }
 
@@ -277,8 +276,9 @@ sub internal_initialize_value {
 
 sub internal_setup_facade {
     my($proto, $req) = @_;
+    my($f) = b_use('UI.Facade');
     return ref($proto) ? $proto
-        : ($req->unsafe_get($_F) || $_F->setup_request(
+        : ($req->unsafe_get($f) || $f->setup_request(
 	    $req->unsafe_get('r') && $req->get('r')->hostname || undef, $req)
         )->get($proto->simple_package_name);
 }
