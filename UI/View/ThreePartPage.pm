@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::ThreePartPage;
 use strict;
@@ -7,6 +7,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = __PACKAGE__->use('Agent.TaskId');
+my($_C) = b_use('IO.Config');
 
 sub internal_xhtml_adorned {
     my($self) = @_;
@@ -61,18 +62,24 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_topic => '',
 	xhtml_byline => '',
 	xhtml_selector => '',
+	xhtml_dock_left => '',
+	xhtml_dock_middle => '',
+	xhtml_dock_right => JoinMenu([
+	    _header_right(qw(HELP HelpWiki)),
+	    _header_right(qw(USER_SETTINGS_FORM UserSettingsForm)),
+	    _header_right(qw(LOGIN UserState)),
+	]),
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
 	xhtml_want_page_print => 0,
-	xhtml_header_right => Join([
-	    DIV_user_state(
-		JoinMenu([
-		    _header_right(qw(HELP HelpWiki)),
-		    _header_right(qw(USER_SETTINGS_FORM UserSettingsForm)),
-		    _header_right(qw(LOGIN UserState)),
-		]),
-	    ),
-	    _header_right(qw(SEARCH_LIST SearchForm)),
-	]),
+	xhtml_header_right => $_C->if_version(
+	    7 => sub {_header_right(qw(SEARCH_LIST SearchForm))},
+	    sub {
+		return Join([
+		    DIV_user_state(view_widget_value('xhtml_dock_right')),
+		    _header_right(qw(SEARCH_LIST SearchForm)),
+		]);
+	    },
+	),
 	xhtml_main_left => '',
 	xhtml_main_right => '',
 	xhtml_footer_left => XLink('back_to_top'),
@@ -118,6 +125,7 @@ sub internal_xhtml_adorned_attrs {
 sub internal_xhtml_adorned_body {
     return Join([
 	view_widget_value('xhtml_body_first'),
+	vs_grid3('dock'),
 	vs_grid3('header'),
 	vs_grid3('main'),
 	vs_grid3('footer'),
