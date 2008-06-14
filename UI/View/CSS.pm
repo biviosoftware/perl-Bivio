@@ -6,10 +6,11 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = b_use('IO.Config');
 my($_SITE) = join('', map({
     my($x) = \&{"_site_$_"};
     defined(&$x) ? $x->() : '';
-} @{__PACKAGE__->use('Agent.TaskId')->included_components}));
+} @{b_use('Agent.TaskId')->included_components}));
 
 sub internal_site_css {
     return $_SITE;
@@ -28,7 +29,7 @@ h5, h6, input, li, ol, p, pre, td, textarea, th, ul {
   margin: 0;
   padding: 0;
   text-align: left;
-@{[_v4(q{
+@{[_v(4, q{
   Font('normal');
   Font('body');
 })]}
@@ -38,7 +39,7 @@ textarea {
 }
 address, caption, cite, code, dfn, em, h1, h2, h3, h4, h5, h6, strong, th, var {
   Font('normal');
-@{[_v4(q{
+@{[_v(4, q{
   Font('body');
 })]}
 }
@@ -54,7 +55,7 @@ ul {
 abbr, acronym, fieldset, iframe, img, table {
   border-style: none;
   border: 0;
-@{[_v4(q{
+@{[_v(4, q{
   Font('normal');
   Font('body');
 })]}
@@ -104,6 +105,7 @@ ul.none {
 }
 pre {
   line-height: 60%;
+  white-space: pre;
 }
 table {
   border-collapse: collapse;
@@ -164,7 +166,7 @@ td.label {
   vertical-align: top;
 }
 .field_err,
-label_err,
+.label_err,
 .err_title,
 .err {
   Color('err');
@@ -213,11 +215,16 @@ form .label_ok {
   width: 40em;
   padding-bottom: .5ex;
 }
+table.dock,
 table.header,
 table.footer,
 table.main {
   width: 100%;
   margin: auto;
+}
+table.dock {
+  margin-top: .5ex;
+  margin-bottom: .5ex;
 }
 table.main {
   margin-top: 1em;
@@ -259,12 +266,27 @@ td.header_left .logo_su .logo {
 td.header_left .logo_su a.logo:hover {
   text-decoration: none;
 }
+td.dock_middle {
+  text-align: center;
+}
+td.dock_right {
+  text-align: right;
+}
+td.dock_left,
+td.dock_middle,
+td.dock_right {
+  vertical-align: td;
+}
+table.dock a {
+  Font('dock');
+}
 td.header_right {
   width: 30%;
   text-align: right;
 }
 td.header_middle {
   width: 40%;
+  vertical-align: top;
   text-align: center;
 }
 td.header_right {
@@ -282,9 +304,6 @@ td.footer_middle {
   width: 40%;
   vertical-align: top;
   text-align: center;
-}
-td.header_middle {
-  vertical-align: top;
 }
 td.header_middle div.nav div.task_menu {
   Font('nav');
@@ -382,12 +401,13 @@ td.footer_left {
 .pager .next,
 .pager .list,
 .alphabetical_chooser a.all,
+.dock .want_sep,
 .header_right .want_sep,
 .tools span.want_sep,
 .tools div.sep {
   background: Icon('tools_sep'); left center no-repeat;
-  padding-left: vs_add(Icon('tools_sep', 'width'), 4);px;
-  margin-left: 4px;
+  padding-left: vs_add(Icon('tools_sep', 'width'), 6);px;
+  margin-left: 6px;
 }
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
@@ -744,12 +764,9 @@ td.header_right form.search input.go {
 EOF
 }
 
-sub _v4 {
-    my($text) = @_;
-    return Bivio::IO::Config->if_version(
-	4 => sub {$text},
-	sub {''},
-    );
+sub _v {
+    my($num, $text) = @_;
+    return $_C->if_version($num => sub {$text});
 }
 
 1;
