@@ -510,8 +510,10 @@ sub register_tag {
 }
 
 sub render_ascii {
-    my($body) = shift->render_html(@_);
+    my($body) = shift->render_html_without_view(@_);
+    $body =~ s{</p>}{\n}g;
     $body =~ s{<[^>]+>}{}g;
+    chomp($body);
     return Bivio::HTML->unescape($body);
 }
 
@@ -564,17 +566,25 @@ sub render_html {
 }
 
 sub render_html_without_view {
-    my($proto, $args, $req) = @_;
-    $args = {
-	is_public => 0,
-	modified_date_time => $_DT->now,
-	name => '',
-	realm_id => $req->get('auth_id'),
-	req => $req,
-	title => '',
-	user_id => $req->get('auth_user_id'),
-	value => $args,
-    } unless ref($args);
+    my($proto) = shift;
+    my($args, $req) = @_;
+    if (ref($args)) {
+	$args = ($proto->prepare_html(@_))[0]
+	    unless ref($args) eq 'HASH';
+    }
+    else {
+	$args = {
+	    is_public => 0,
+	    modified_date_time => $_DT->now,
+	    name => '',
+	    task_id => 'FORUM_WIKI_VIEW',
+	    realm_id => $req->get('auth_id'),
+	    req => $req,
+	    title => '',
+	    user_id => $req->get('auth_user_id'),
+	    value => $args,
+	};
+    }
     $args->{proto} ||= $proto;
     # Generate unique symbol related to this module
     return $_I->render_code_as_string(
