@@ -1,0 +1,20 @@
+# Copyright (c) 2008 bivio Software, Inc.  All rights reserved.
+# $Id$
+Request('initialize_fully');
+my($resource) = b_use('Bivio::Agent::t::Mock::Resource')->new;
+[
+    sub {req()} => [
+	{
+	    method => 'can_user_execute_task',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->set_user(shift(@$params));
+		return $params;
+	    },
+	} => [
+            [qw(guest TEST_MULTI_ROLES1)] => 0,
+            [qw(multi_role_user TEST_MULTI_ROLES1)] => 1,
+            [qw(multi_role_user TEST_MULTI_ROLES2)] => 1,
+	],
+    ],
+];

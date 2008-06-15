@@ -1,0 +1,21 @@
+# Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
+# $Id$
+Request();
+my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
+[
+    sub {req()} => [
+	{
+	    method => 'unsafe_get_txn_resource',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->push_txn_resource($params->[0])
+		    if @$params;
+		return [ref($resource)];
+	    },
+	} => [
+	    [] => [undef],
+	    [$resource] => [$resource],
+	],
+    ],
+];
+
