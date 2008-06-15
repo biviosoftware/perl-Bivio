@@ -15,7 +15,7 @@ require 'Blog.PL';
 		path => sub {
 		    my($rf) = req()->get('Model.RealmFile');
 		    my($c) = $rf->get_content;
-		    assert_equals("\@h3 t$x\nb$x", $$c);
+		    assert_equals("\@h1 t$x\nb$x", $$c);
 		    return $p ? qr{^/Public/Blog/} : qr{^/Blog/};
 		},
 	    },

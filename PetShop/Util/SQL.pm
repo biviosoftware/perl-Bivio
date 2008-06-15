@@ -563,7 +563,7 @@ EOF
     $self->model('RealmFile')->create_with_content({
 	path => Bivio::Type->get_instance('BlogFileName')->to_absolute('20071225000000', 1),
     }, \(<<'EOF'));
-@h3 Merry Xmas
+@h1 Merry Xmas
 Ho, ho, ho!
 EOF
     $self->model('ForumForm', {
