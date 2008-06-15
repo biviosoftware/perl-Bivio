@@ -257,22 +257,17 @@ sub can_secure {
 
 sub can_user_execute_task {
     my($self, $task_name, $realm_id) = @_;
-    # Convenience routine which executes
-    # L<Bivio::Auth::Realm::can_user_execute_task|Bivio::Auth::Realm/"can_user_execute_task">
-    # for the I<auth_realm> or one that matches the realm_type of the task
-    # and current I<auth_user>.
-    # I<task> may be a task name or Bivio::Agent::TaskId.
-    # I<realm_id> may be a realm_id or realm name.
-    my($task) = Bivio::Agent::Task->get_by_id(
-        Bivio::Agent::TaskId->from_any($task_name));
+    my($tid) = Bivio::Agent::TaskId->from_any($task_name);
     my($realm);
-
+    return 0
+	unless Bivio::UI::Task->is_defined_for_facade($tid->get_name, $self);
+    my($task) = Bivio::Agent::Task->get_by_id($tid);
     if ($realm_id) {
         $realm = Bivio::Auth::Realm->new($realm_id, $self);
 	$task->assert_realm_type($realm->get('type'));
     }
     else {
-        $realm = $self->internal_get_realm_for_task($task->get('id'));
+        $realm = $self->internal_get_realm_for_task($tid);
     }
     return $realm
         ? $realm->can_user_execute_task($task, $self)
