@@ -17,14 +17,11 @@ sub handle_parse {
     my($wa) = $_WT->prepare_html($parseable, 'FORUM_WIKI_VIEW');
     Bivio::Die->die($parseable, ': unable to parse')
         unless $wa;
-    my($body) = $_WT->render_html_without_view($wa);
-    $body =~ s{</p>}{\n}g;
-    $body =~ s{<[^>]+>}{}g;
-    chomp($body);
+    my($body) = $_WT->render_ascii($wa);
     return [
 	'text/plain',
 	Bivio::HTML->unescape($wa->{title}),
-	\(Bivio::HTML->unescape($body)),
+	\($body),
     ];
 }
 
