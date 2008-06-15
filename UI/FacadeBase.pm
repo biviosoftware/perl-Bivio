@@ -28,6 +28,20 @@ sub SITE_ADM_REALM_NAME {
     return shift->SITE_REALM_NAME;
 }
 
+sub internal_dav_tasks {
+    return [
+	[DAV => ['dav/*', 'dv/*']],
+	[DAV_ROOT_FORUM_LIST => undef],
+	[DAV_FORUM_LIST => undef],
+	[DAV_FORUM_FILE => undef],
+	[DAV_ROOT_FORUM_LIST_EDIT => undef],
+	[DAV_FORUM_LIST_EDIT => undef],
+	[DAV_FORUM_USER_LIST_EDIT => undef],
+	[DAV_FORUM_CALENDAR_EVENT_LIST_EDIT => undef],
+	[DAV_EMAIL_ALIAS_LIST_EDIT => undef],
+    ];
+}
+
 sub is_site_realm_name {
     my($self, $realm_name) = @_;
     return $realm_name eq $self->SITE_REALM_NAME;
@@ -411,10 +425,9 @@ sub _cfg_crm {
 }
 
 sub _cfg_dav {
+    my($proto) = @_;
     return {
-	Task => [
-	    [DAV => ['dav/*', 'dv/*']],
-	],
+	Task => $proto->internal_dav_tasks,
 	Text => [
 	    [ForumList => [
 		'RealmOwner.name' => 'Forum',
