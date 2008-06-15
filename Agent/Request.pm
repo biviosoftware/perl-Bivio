@@ -2,18 +2,18 @@
 # $Id$
 package Bivio::Agent::Request;
 use strict;
+use Bivio::Base 'Collection.Attributes';
+use Bivio::IO::Trace;
+
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::Task;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
-use Bivio::Base 'Bivio::Collection::Attributes';
 use Bivio::Biz::FormModel;
 use Bivio::Die;
 use Bivio::HTML;
-use Bivio::IO::Config;
-use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::UserAgent;
@@ -204,6 +204,8 @@ Bivio::IO::Config->register(my $_CFG = {
 });
 my($_CURRENT);
 my($_RT) = __PACKAGE__->use('Auth.RealmType');
+my($_C) = b_use('IO.Config');
+my($_V7) = $_C->if_version(7);
 
 sub FORMAT_URI_PARAMETERS {
     # Order and names of params passed to format_uri().
@@ -260,7 +262,8 @@ sub can_user_execute_task {
     my($tid) = Bivio::Agent::TaskId->from_any($task_name);
     my($realm);
     return 0
-	unless Bivio::UI::Task->is_defined_for_facade($tid->get_name, $self);
+	if $_V7
+	&& !Bivio::UI::Task->is_defined_for_facade($tid->get_name, $self);
     my($task) = Bivio::Agent::Task->get_by_id($tid);
     if ($realm_id) {
         $realm = Bivio::Auth::Realm->new($realm_id, $self);
