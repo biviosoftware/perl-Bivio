@@ -385,6 +385,20 @@ sub get_delegate_info {
 	    Action.EmptyReply
 	    next=FIELD_TEST_FORM
 	)],
+	[qw(
+	    TEST_MULTI_ROLES1
+	    547
+	    GENERAL
+	    TEST_PERMISSION1
+	    Action.EmptyReply
+	)],
+	[qw(
+	    TEST_MULTI_ROLES2
+	    548
+	    GENERAL
+	    TEST_PERMISSION2
+	    Action.EmptyReply
+	)],
     ]);
 }
 

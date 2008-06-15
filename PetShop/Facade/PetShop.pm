@@ -128,6 +128,8 @@ __PACKAGE__->new({
 	[USER_ROLE_IN_REALM => '?/role-in-realm'],
 	[FORUM_ROLE_IN_REALM => '?/role-in-realm'],
 	[FIELD_TEST_FORM => 'pub/field-test-form'],
+	[TEST_MULTI_ROLES1 => undef],
+	[TEST_MULTI_ROLES2 => undef],
     ],
     Constant => [
 	[xlink_bunit1 => {
