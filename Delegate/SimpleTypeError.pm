@@ -343,17 +343,17 @@ sub get_delegate_info {
     BLOG_TITLE_NULL => [
 	63,
 	undef,
-	'Blog must start with a title of the form: @h3 some title',
+	'Blog must start with a title of the form: @h1 some title',
     ],
     BLOG_BODY_NULL => [
 	64,
 	undef,
-	'Blog body must contain some text after the title (@h3 line)',
+	'Blog body must contain some text after the title (@h1 line)',
     ],
     BLOG_TITLE_PREFIX => [
 	65,
 	undef,
-	'Blog must start with "@h3 " to indicate title',
+	'Blog must start with "@h1 " to indicate title',
     ],
     MUTUALLY_EXCLUSIVE => [
 	66,
