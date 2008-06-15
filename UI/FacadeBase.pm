@@ -1097,9 +1097,9 @@ sub _cfg_wiki {
 		header => 'Help',
 		footer => '',
 	    ]],
-            ['ErrorWiki.file_path' => [
-                FORBIDDEN => '/ErrorForbidden',
-                [qw(MODEL_NOT_FOUND NOT_FOUND)] => '/ErrorNotFound',
+            ['ActionError.wiki_name' => [
+                FORBIDDEN => 'ForbiddenError',
+                [qw(MODEL_NOT_FOUND NOT_FOUND)] => 'NotFoundError',
             ]],
 	],
     };
