@@ -67,24 +67,8 @@ sub get_delegate_info {
             next=SITE_ROOT
 	)],
 	[qw(
-	    TEST_MULTI_ROLES1
-	    506
-	    GENERAL
-	    TEST_PERMISSION1
-            Action.ClientRedirect->execute_next
-            next=SITE_ROOT
-	)],
-	[qw(
-	    TEST_MULTI_ROLES2
-	    507
-	    GENERAL
-	    TEST_PERMISSION2
-            Action.ClientRedirect->execute_next
-            next=SITE_ROOT
-	)],
-	[qw(
 	    UNSAFE_GET_REDIRECT
-	    508
+	    506
 	    GENERAL
 	    ANYBODY
             Action.ClientRedirect->execute_next
@@ -94,14 +78,14 @@ sub get_delegate_info {
 	)],
 	[qw(
 	    REDIRECT_TEST_4
-	    509
+	    507
 	    GENERAL
 	    ANYBODY
 	    Bivio::Agent::t::Mock::ReturnRedirect
 	)],
 	[qw(
 	    REDIRECT_TEST_5
-	    510
+	    508
 	    GENERAL
 	    ANYBODY
 	), sub {
@@ -114,7 +98,7 @@ sub get_delegate_info {
 	}],
 	[qw(
 	    REDIRECT_TEST_6
-	    511
+	    509
 	    GENERAL
 	    ANYBODY
 	), sub {
@@ -128,7 +112,7 @@ sub get_delegate_info {
         ],
 	[qw(
 	    TEST_ITEMS_1
-	    512
+	    510
 	    GENERAL
 	    ANYBODY
 	), sub {
@@ -138,7 +122,7 @@ sub get_delegate_info {
 	}],
 	[qw(
 	    TEST_ITEMS_2
-	    513
+	    511
 	    GENERAL
 	    ANYBODY
 	), sub {
