@@ -62,8 +62,8 @@ my($check_for_loop) = sub {
     sleep(10);
     visit_uri('/mail_forum/mail');
     Bivio::Die->die('Found duplicate message')
-	    if get_table_row('First Post', 0)->{Topic}->get('text')
-		eq get_table_row('First Post', 1)->{Topic}->get('text');
+	    if get_table_row('_anon#0', 0)->{''}->get('text')
+		eq get_table_row('_anon#0', 1)->{''}->get('text');
     return;
 };
 my($msg, $subject) = $send_and_verify_mail->(qw(1.eml user1 forum),
@@ -104,9 +104,9 @@ follow_link($reply_subject);
 follow_link('author');
 verify_text('initial message');
 verify_form({
-    'To:' => $user1_email,
+#    'To:' => $user1_email,
     topic => "Re: $reply_subject",
-    cc => '',
+#    cc => '',
 });
 go_back();
 follow_link('original');
