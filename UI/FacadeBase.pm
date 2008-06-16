@@ -365,7 +365,37 @@ sub _cfg_blog {
 }
 
 sub _cfg_calendar {
-    return {};
+    return {
+	Task => [
+	    [FORUM_CALENDAR => '?/calendar'],
+	    [FORUM_CALENDAR_EVENT => '?/event'],
+	    [FORUM_CALENDAR_EVENT_DETAIL => '?/event-detail'],
+	    [FORUM_CALENDAR_EVENT_DELETE => '?/event-delete'],
+	    [FORUM_CALENDAR_EVENT_ICS => '?/event.ics'],
+	],
+	Text => [
+	    [CalendarEvent => [
+		time_zone => 'Time Zone',
+		location => 'Location',
+		description => 'Description',
+		url => 'URL',
+	    ]],
+	    [CalendarEventForm => [
+		'RealmOwner.display_name' => 'Event',
+		'start_date' => 'Start Date',
+		'start_time' => 'Start Time',
+		'end_date' => 'End Date',
+		'end_time' => 'End Time',
+	    ]],
+	    [[qw(title xlink)] => [
+		FORUM_CALENDAR => 'Calendar',
+		FORUM_CALENDAR_EVENT => 'Edit Event',
+		FORUM_CALENDAR_EVENT_DETAIL => 'Event Detail',
+		FORUM_CALENDAR_EVENT_DELETE => 'Delete Event',
+		FORUM_CALENDAR_EVENT_ICS => 'Download iCal',
+	    ]],
+	],
+    };
 }
 
 sub _cfg_crm {
