@@ -6,5 +6,246 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_D) = __PACKAGE__->use('Type.Date');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+#TODO: make global? or refactor into a widget field value?
+my($date, $current);
+
+sub event_delete {
+    my($self) = @_;
+    view_put(xhtml_title => Join([
+	'Remove event: ',
+	String([['Model.CalendarEvent', '->get_model', 'RealmOwner'],
+	    'display_name']),
+    ]));
+    return $self->internal_body(vs_simple_form(CalendarEventDeleteForm => [
+	Join([
+	    'This will permanently remove this event from the ',
+	    String([qw(auth_realm owner display_name)]),
+	    ' calendar.',
+	]),
+    ]));
+
+}
+
+sub event_detail {
+    my($self) = @_;
+    view_put(
+	xhtml_title => String(['Model.CalendarEventList',
+	    'RealmOwner.display_name']),
+	xhtml_tools => TaskMenu([
+	    {
+		task_id => 'FORUM_CALENDAR_EVENT',
+		uri => ['->format_uri', 'FORUM_CALENDAR_EVENT'],
+	    },
+ 	    {
+ 		task_id => 'FORUM_CALENDAR_EVENT_DELETE',
+ 		uri => ['->format_uri', 'FORUM_CALENDAR_EVENT_DELETE'],
+ 	    },
+	    {
+		task_id => 'FORUM_CALENDAR_EVENT_ICS',
+		uri => ['->format_uri', 'FORUM_CALENDAR_EVENT_ICS'],
+	    },
+	    {
+		task_id => 'FORUM_CALENDAR_EVENT',
+		label => String('Create Event'),
+		query => undef,
+	    },
+	]),
+    );
+    return $self->internal_body(vs_paged_detail('CalendarEventList',
+	[qw(THIS_LIST FORUM_CALENDAR)],
+	DIV_list(Grid([
+	    map([
+		SPAN_label_ok(String($_->[0] . ':')),
+		$_->[1] ? $_->[1] : (),
+	    ], (
+		[Description => String(['Model.CalendarEventList',
+		    'CalendarEvent.description'])],
+		[Location => String(['Model.CalendarEventList',
+		    'CalendarEvent.location'])],
+		[URL => Link(['Model.CalendarEventList', 'CalendarEvent.url'],
+		    ['Model.CalendarEventList', 'CalendarEvent.url'])],
+		['Time Zone' => Enum(['Model.CalendarEventList',
+		    'CalendarEvent.time_zone'])],
+		['Start', _date_time('dtstart_in_tz')],
+		['End', _date_time('dtend_in_tz')],
+		['Local Time'],
+		map([ucfirst($_) => DateTime({
+		    field => 'CalendarEvent.dt' . $_,
+		    value => ['Model.CalendarEventList',
+			'CalendarEvent.dt' . $_],
+		    mode => 'DAY_MONTH3_YEAR_TIME',
+		})], qw(start end)),
+	    )),
+	])),
+    ));
+}
+
+sub event_form {
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(
+	CalendarEventForm => [qw(
+	    CalendarEventForm.RealmOwner.display_name
+	    CalendarEventForm.start_date
+ 	    CalendarEventForm.start_time
+	    CalendarEventForm.end_date
+ 	    CalendarEventForm.end_time
+	    CalendarEventForm.CalendarEvent.time_zone
+	    CalendarEventForm.CalendarEvent.location
+	    CalendarEventForm.CalendarEvent.url
+	    CalendarEventForm.CalendarEvent.description
+	)],
+    ));
+}
+
+sub month_list {
+    my($self) = @_;
+    view_pre_execute(sub {
+	my($req) = @_;
+	$date = $_D->add_days(
+	    $_DT->from_literal_or_die(
+		$req->get('Model.CalendarEventMonthList')->get_query
+		    ->get('date')), -1);
+	$current = $_D->date_from_parts(
+	    1, $_D->get_parts($date, qw(month year)));
+	while ($_D->english_day_of_week($current) ne 'Sunday') {
+	    $current = $_D->add_days($current, -1);
+	}
+	$current = $_D->add_days($current, -7);
+	return;
+    });
+    $self->internal_put_base_attr(tools => TaskMenu([
+        {
+	    task_id => 'FORUM_CALENDAR_EVENT',
+	    label => String('Create Event'),
+	    query => undef,
+	},
+    ]));
+    return $self->internal_body(Join([
+	DIV_month_selection(Form('SelectMonthForm', Grid([[
+	    String('Month:'),
+	    Select({
+		field => 'begin_date',
+		choices => ['Model.MonthList'],
+		list_display_field => 'month',
+		list_id_field => 'date',
+		auto_submit => 1,
+	    }),
+	    ScriptOnly({
+		widget => Join([]),
+		alt_widget => FormButton('ok_button', {
+		    label => 'Refresh',
+		}),
+	    }),
+	]]))),
+        DIV_month_calendar(Grid([
+            [
+		map(_heading_cell(), (1 .. 7))
+	    ],
+            map([
+		map(_date_cell(), (1 .. 7))
+	    ], (1 .. 6)),
+        ])),
+    ]));
+}
+
+sub _date_cell {
+    return Join([
+        DIV_day_of_month(String([
+	    sub {
+		my($req) = @_;
+		return sprintf('%2d ', $_D->get_parts($current, 'day'));
+	    }
+	])),
+        _event_links(),
+    ])->put(
+	cell_class => [
+	    sub {
+		return _is_same_month($date, $current) ?
+		    'date_this_month' : 'date_other_month';
+	    }
+	],
+        row_control => [
+	    sub {
+		my($req) = @_;
+		# don't show the last row if it is all in the next month
+		if ($_D->english_day_of_week($current) eq 'Sunday'
+			&& $_D->compare($current, $date) > 0
+			    && ! _is_same_month($current, $date)) {
+		    return 0;
+		}
+		return 1;
+	    }
+	],
+    );
+}
+
+sub _date_time {
+    my($field) = @_;
+    return Join([
+	String({
+	    field => $field,
+	    value => [
+		['Model.CalendarEventList', $field],
+		'HTMLFormat.DateTime',
+		'DAY_MONTH3_YEAR',
+		1,
+	    ],
+	}),
+	String({
+	    field => $field,
+	    value => [
+		'Bivio::Type::Time', '->to_string',
+		['Model.CalendarEventList', 'dtstart_in_tz'],
+	    ],
+	}),
+    ], ' ');
+}
+
+sub _event_links {
+    return Prose([
+	sub {
+	    my($req) = @_;
+	    my($l) = $req->get('Model.CalendarEventMonthList');
+	    $l->reset_cursor;
+	    my($str) = '';
+	    while ($l->next_row) {
+		my($start) = $_D->from_datetime($l->get('dtstart_in_tz'));
+		my($end) = $_D->from_datetime($l->get('dtend_in_tz'));
+		next unless $_D->compare($start, $current) == 0
+		    || $_D->compare($end, $current) == 0
+			|| ($_D->compare($start, $current) == -1
+				&& $_D->compare($end, $current) == 1);
+		$str .= 'DIV_event(Link(String("'
+		    . $l->get('RealmOwner.display_name')
+		    . '"), URI({
+                        task_id => "FORUM_CALENDAR_EVENT_DETAIL",
+                        query=> {"ListQuery.this" => '
+			    . $l->get('CalendarEvent.calendar_event_id') . '
+                    }})));';
+	    }
+	    $current = $_D->add_days($current, 1);
+	    return $str;
+	}
+    ]),
+}
+
+sub _heading_cell {
+    return String([
+	sub {
+	    my($str) = $_D->english_day_of_week($current);
+	    $current = $_D->add_days($current, 1);
+	    return $str;
+	}
+    ])->put(cell_class => 'day_of_week');
+}
+
+
+sub _is_same_month {
+    my($date, $date2) = @_;
+    return $_D->get_parts($date, 'month') == $_D->get_parts($date2, 'month')
+        ? 1 : 0;
+}
 
 1;
