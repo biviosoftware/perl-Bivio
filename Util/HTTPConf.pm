@@ -347,6 +347,7 @@ $log_directory/access_log $log_directory/agent_log $log_directory/error_log $log
     postrotate
         /bin/kill -HUP `cat $pid_file 2>/dev/null` 2> /dev/null || true
     endscript
+    compress
 }
 EOF
 }
