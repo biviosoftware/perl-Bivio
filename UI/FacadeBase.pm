@@ -393,8 +393,8 @@ sub _cfg_crm {
 	    ['CRMActionList.label' => [
 		assign_to => 'Assign to ',
 		closed => 'Close',
-		locked => 'Keep Locked',
-		open => 'Unlock',
+		locked => 'Open (Locked)',
+		open => 'Open',
 	    ]],
 	    [CRMForm => [
 		action_id => 'Action',
