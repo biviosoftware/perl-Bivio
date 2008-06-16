@@ -19,7 +19,7 @@ verify_form({
     product => '',
 });
 submit_form(Send => {
-    action => 'Unlock',
+    action => 'Open',
     priority => 'High',
     text => 'Solution here',
 });
