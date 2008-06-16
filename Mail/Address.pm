@@ -162,6 +162,11 @@ sub parse_list_strict {
     return $email_list;
 }
 
+sub parse_local_part {
+    my(undef, $email) = @_;
+    return ($email =~ /(.+?)\@/)[0];
+}
+
 sub _clean_comment {
     local($_) = @_;
     s/^\(//s && s/\)$//s || Carp::cluck("not a comment: $_");
