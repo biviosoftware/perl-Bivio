@@ -29,16 +29,31 @@ sub internal_initialize {
 	    CalendarEvent.modified_date_time
 	    CalendarEvent.description
 	    CalendarEvent.url
-	), {
-	    name => 'uid',
-	    type => 'RealmOwner.name',
-	}],
+	    CalendarEvent.time_zone
+	),
+	    {
+		name => 'uid',
+		type => 'RealmOwner.name',
+	    },
+	    {
+		name => 'dtstart_in_tz',
+		type => 'DateTime',
+	    }, {
+		name => 'dtend_in_tz',
+		type => 'DateTime',
+	    },
+	],
     });
 }
 
 sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{uid} = $_CE->id_to_uid($row->{'CalendarEvent.calendar_event_id'});
+    my($tz) = $row->{'CalendarEvent.time_zone'};
+    $row->{'dtstart_in_tz'} = $tz ? $tz->date_time_from_utc(
+	$row->{'CalendarEvent.dtstart'}) : undef;
+    $row->{'dtend_in_tz'} = $tz ? $tz->date_time_from_utc(
+	$row->{'CalendarEvent.dtend'}) : undef;
     return 1;
 }
 
