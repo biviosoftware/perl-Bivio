@@ -11,8 +11,8 @@ my($_T) = Bivio::Type->get_instance('Time');
 
 sub execute_empty {
     my($self) = @_;
-    my($e_id) = $self->unsafe_get('CalendarEvent.calendar_event_id');
-    if ($e_id) {
+
+    unless ($self->is_create) {
 	$self->load_from_model_properties('CalendarEvent');
 	$self->load_from_model_properties('RealmOwner');
 	my($start) = $self->get('CalendarEvent.time_zone')
@@ -101,11 +101,14 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    my($l) = $self->get_request->unsafe_get('Model.CalendarEventList');
-    $self->internal_put_field(
-	'CalendarEvent.calendar_event_id' =>
-	    $l->get('CalendarEvent.calendar_event_id')
-	) if $l;
+    my($id) = $self->use('Type.PrimaryId')->from_literal(
+	($self->req('query') || {})->{$self->use('SQL.ListQuery')
+	    ->to_char('this')});
+    return unless $id;
+    $self->internal_put_field('CalendarEvent.calendar_event_id' =>
+	$self->new_other('CalendarEvent')->load({
+	    calendar_event_id => $id,
+	})->get('calendar_event_id'));
     return;
 }
 
