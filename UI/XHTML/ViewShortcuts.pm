@@ -454,13 +454,13 @@ sub vs_tree_list_control {
     return {
 	%$c,
 	column_widget => Join([
-	    Replicator(['node_level'], SPAN_sp()),
+	    Replicator([['->get_list_model'], 'node_level'], SPAN_sp()),
 	    If([['->get_list_model'], 'node_uri'],
 	       map({
 		   my($x) = Join([
 		       Image(vs_text(
 			   $_M->get_instance($model)->get_list_class,
-			   ['node_state', '->get_name'],
+			   [['->get_list_model'], 'node_state', '->get_name'],
 		       )),
 		       Tag(span =>
 		           ($c->{column_widget}
