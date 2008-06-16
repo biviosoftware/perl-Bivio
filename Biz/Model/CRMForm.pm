@@ -5,9 +5,9 @@ use strict;
 use Bivio::Base 'Model.MailForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RFC) = __PACKAGE__->use('Mail.RFC822');
-my($_CLOSED) = __PACKAGE__->use('Type.CRMThreadStatus')->CLOSED;
-my($_TTF) = __PACKAGE__->use('Model.TupleTagForm');
+my($_RFC) = b_use('Mail.RFC822');
+my($_CLOSED) = b_use('Type.CRMThreadStatus')->CLOSED;
+my($_TTF) = b_use('Model.TupleTagForm');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TAG_ID) = 'b_ticket.CRMThread.thread_root_id';
 
