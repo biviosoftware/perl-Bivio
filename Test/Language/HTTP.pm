@@ -630,7 +630,7 @@ sub verify_form {
 		unless
 		    (ref($case->{expected}) eq 'Regexp'
 			 && $case->{result} =~ $case->{expected})
-		    || $case->{expected} eq $case->{result};
+		    || ($case->{expected} || '') eq ($case->{result} || '');
     }
     return;
 }
