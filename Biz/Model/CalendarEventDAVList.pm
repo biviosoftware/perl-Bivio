@@ -22,49 +22,59 @@ sub dav_put {
 sub dav_reply_get {
     my($self) = @_;
     $self->get_request->get('reply')
-	->set_output_type('text/calendar')->set_output(\(join(
+	->set_output_type('text/calendar')->set_output($self->vcalendar_list);
+    return 1;
+}
+
+sub vcalendar_list {
+    my($self, $list) = @_;
+    my($handler) = sub {
+	my($it) = @_;
+	return (
+	    'BEGIN:VEVENT',
+	    map({
+		my($k, $f) = ref($_) ? @$_ : (uc($_), "CalendarEvent.$_");
+		if ($it->get_field_type($f)->isa('Bivio::Type::DateTime')) {
+		    _dt($it, $k, $f);
+		}
+		else {
+		    my($lit) = $it->get_as($f, 'to_literal');
+		    $lit =~ s/[\r]\n/\\n/g;
+		    "$k:" . Bivio::HTML->escape($lit);
+		}
+	    }
+		[qw(CREATED RealmOwner.creation_date_time)],
+		[qw(LAST-MODIFIED CalendarEvent.modified_date_time)],
+		[qw(DTSTAMP CalendarEvent.modified_date_time)],
+		[qw(UID uid)],
+		[qw(SUMMARY RealmOwner.display_name)],
+		qw(dtstart dtend location url description),
+	    ),
+#TODO: CLASS private or public
+	    'CLASS:PRIVATE',
+	    'PRIORITY:0',
+	    'STATUS:',
+	    'X-LIC-ERROR:No value for STATUS property. Removing entire property:',
+	    'END:VEVENT',
+	);
+    };
+    return \(join(
 	"\r\n",
 	'BEGIN:VCALENDAR',
 	'VERSION:2.0',
 	'PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN',
 	'METHOD:PUBLISH',
-	@{$self->new_other('CalendarEventList')->map_iterate(sub {
-            my($it) = @_;
-	    return (
-		'BEGIN:VEVENT',
-		map({
-		    my($k, $f) = ref($_) ? @$_ : (uc($_), "CalendarEvent.$_");
-		    if ($it->get_field_type($f)->isa('Bivio::Type::DateTime')) {
-			_dt($it, $k, $f);
-		    }
-		    else {
-			my($lit) = $it->get_as($f, 'to_literal');
-			$lit =~ s/[\r]\n/\\n/g;
-			"$k:" . Bivio::HTML->escape($lit);
-		    }
-		}
-	            [qw(CREATED RealmOwner.creation_date_time)],
-		    [qw(LAST-MODIFIED CalendarEvent.modified_date_time)],
-		    [qw(DTSTAMP CalendarEvent.modified_date_time)],
-		    [qw(UID uid)],
-		    [qw(SUMMARY RealmOwner.display_name)],
-		    qw(dtstart dtend location url description),
-		),
-#TODO: CLASS private or public
-	        'CLASS:PRIVATE',
-	        'PRIORITY:0',
-	        'STATUS:',
-	        'X-LIC-ERROR:No value for STATUS property. Removing entire property:',
-		'END:VEVENT',
-	    );
+	@{
+	    $list
+		? $list->map_rows($handler)
+		: $self->new_other('CalendarEventList')->map_iterate(
+		    $handler, 'unauth_iterate_start', {
+			auth_id => $self->get_auth_id,
+		    }),
 	},
-	    'unauth_iterate_start',
-	     {auth_id => $self->get_auth_id},
-        )},
 	'END:VCALENDAR',
 	'',
-    )));
-    return 1;
+    ));
 }
 
 sub _dt {
