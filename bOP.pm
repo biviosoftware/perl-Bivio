@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,60 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.51  2008/06/15 01:14:25  nagler
+  * Bivio::Agent::HTTP::Reply
+    move delete_output up to Agent.Reply
+  * Bivio::Agent::Request
+    simplified
+    v7: can_user_execute_task checks FacadeComponent.Task to see if task
+    is defined for facade
+  * Bivio::Agent::t::Mock::TaskId
+    don't need TEST_MULTI_ROLES1 here
+  * Bivio::BConf
+    UI_HTML
+  * Bivio::Biz::Action::Error
+    simplified and made more robust to errors related to not having
+    SiteForum or wikiview
+    Changed name of text attributes to ActionError.wiki_name
+  * Bivio::Biz::ListModel
+    added get_list_class
+  * Bivio::Biz::Model::RealmFileVersionsList
+    sort by RealmFile.modified_date_time first
+  * Bivio::Delegate::SimpleTypeError
+    doc @h3 > @h1
+  * Bivio::Delegate::TaskId
+    change back to FORUM from ANY until sure about security
+  * Bivio::PetShop::BConf
+    config v7
+  * Bivio::PetShop::Delegate::TaskId
+    added TEST_MULTI_ROLES1/2
+  * Bivio::PetShop::Facade::PetShop
+    added TEST_MULTI_ROLES1/2
+  * Bivio::PetShop::Util::SQL
+    @h1 change
+  * Bivio::Search::Parser::RealmFile::Wiki
+    call render_ascii
+  * Bivio::Test::Language::HTTP
+    test_trace goes back
+  * Bivio::UI::FacadeBase
+    support ThreePartPage dock
+    Action.Error: Changed name of text attributes to ActionError.wiki_name
+    need to add all DAV tasks to _cfg_dav
+  * Bivio::UI::Font
+    test-align => text-align
+  * Bivio::UI::Icon
+    added get_statically_configured_files
+    undo
+  * Bivio::UI::View::CSS
+    support ThreePartPage dock
+  * Bivio::UI::XHTML::ViewShortcuts
+    vs_tree_list_control use Replicator()
+    fpc & vs_tree_list_control simplified more
+  * Bivio::UI::XHTML::Widget::SearchForm
+    allow dynamic image_form_button and text_size
+  * Bivio::UI::XHTML::Widget::WikiText
+    WikiText calls render_html_without_view
+
   Revision 6.50  2008/06/14 15:52:04  nagler
   * Bivio::UI::Task
     delay import of UI.Facade
