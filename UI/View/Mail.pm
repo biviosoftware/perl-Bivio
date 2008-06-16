@@ -109,11 +109,12 @@ sub send_form {
 	DIV_msg_compose(Join([
 	    vs_simple_form(_name($self, 'XxForm') => [
 		@{$extra_fields || [$buttons]},
-		map([_name($self, "XxForm.$_"), {
-		    cols => $cols,
-		    rows => 1,
-		    row_class => 'textarea',
-		}], qw(to cc)),
+		map(Hidden($_), qw(to cc)),
+# 		map([_name($self, "XxForm.$_"), {
+# 		    cols => $cols,
+# 		    rows => 1,
+# 		    row_class => 'textarea',
+# 		}], qw(to cc)),
 		[_name($self, 'XxForm.subject'), {
 		    size => $cols + 2,
 		}],
@@ -157,9 +158,29 @@ sub thread_root_list {
 		}];
 	    }
 		@fields ? @fields : (
-		    'RealmFile.modified_date_time',
-		    ['RealmMail.subject', {
-			order_by_names => 'RealmMail.subject_lc',
+		    ['excerpt', {
+			column_heading => '',
+			column_widget => Join([
+ 			    Link(String(['RealmMail.subject']),
+ 				['->drilldown_uri']),
+			    DIV_msg_exerpt(String(['excerpt'])),
+			    SPAN_msg_name_and_date(Join([
+				'By ', String(['RealmOwner.display_name']),
+				' - ',
+				DateTime(['RealmFile.modified_date_time']),
+				' - ',
+			    ])),
+			    Link(Join([
+				AmountCell(['message_count'])
+				    ->put(decimals => 0),
+				' message',
+				If([sub {
+				    my($source, $count) = @_;
+				    return $count > 1 ? 1 : 0;
+				}, ['message_count']],
+				    Join(['s'])),
+			    ]), ['->drilldown_uri']),
+			]),
 		    }],
 	        ),
 	    ),
