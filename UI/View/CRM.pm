@@ -15,6 +15,7 @@ sub internal_crm_send_form_buttons {
 sub internal_crm_send_form_extra_fields {
     my($self) = @_;
     my($form) = $self->internal_name . 'Form';
+    my($cols) = 80;
     return [
 	["$form.action_id", {
 	    wf_class => 'Select',
@@ -27,6 +28,11 @@ sub internal_crm_send_form_extra_fields {
 	    my($field) = @_;
 	    return [TupleTagSlotLabel($field), TupleTagSlotField($field)];
 	})},
+	map(["$form.$_", {
+	    cols => $cols,
+	    rows => 1,
+	    row_class => 'textarea',
+	}], qw(to cc)),
     ];
 }
 
