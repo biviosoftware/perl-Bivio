@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.52  2008/06/16 00:09:15  moeller
+  * Bivio::UI::View::ThreePartPage
+    moved xhtml_header_right to second view_put() because xhtml_dock_right
+    needs to be defined
+
   Revision 6.51  2008/06/15 01:14:25  nagler
   * Bivio::Agent::HTTP::Reply
     move delete_output up to Agent.Reply
