@@ -7,6 +7,7 @@ use Bivio::Base 'Model.MailForm';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = b_use('Mail.RFC822');
 my($_CLOSED) = b_use('Type.CRMThreadStatus')->CLOSED;
+my($_OPEN) = $_CLOSED->OPEN;
 my($_TTF) = b_use('Model.TupleTagForm');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TAG_ID) = 'b_ticket.CRMThread.thread_root_id';
@@ -43,6 +44,8 @@ sub execute_empty {
 		$discuss ? $ct->get('crm_thread_status') : $_CLOSED,
 	    ));
 	return;
+    }, sub {
+	$self->internal_put_field(action_id => shift->status_to_id($_OPEN));
     });
     $self->delegate_method($_TTF, @_);
     return;
@@ -181,7 +184,7 @@ sub validate {
 
 sub _with {
     my($self, $true, $false) = @_;
-    return $false && $false->()
+    return $false && $false->($self->req('Model.CRMActionList'))
 	unless my $ct = $self->req->unsafe_get('Model.CRMThread');
     return $true->($ct, $self->req('Model.CRMActionList'));
 }
