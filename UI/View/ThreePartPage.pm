@@ -71,15 +71,6 @@ sub internal_xhtml_adorned_attrs {
 	]),
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
 	xhtml_want_page_print => 0,
-	xhtml_header_right => $_C->if_version(
-	    7 => sub {_header_right(qw(SEARCH_LIST SearchForm))},
-	    sub {
-		return Join([
-		    DIV_user_state(view_widget_value('xhtml_dock_right')),
-		    _header_right(qw(SEARCH_LIST SearchForm)),
-		]);
-	    },
-	),
 	xhtml_main_left => '',
 	xhtml_main_right => '',
 	xhtml_footer_left => XLink('back_to_top'),
@@ -91,6 +82,15 @@ sub internal_xhtml_adorned_attrs {
 	]),
     );
     view_put(
+	xhtml_header_right => $_C->if_version(
+	    7 => sub {_header_right(qw(SEARCH_LIST SearchForm))},
+	    sub {
+		return Join([
+		    DIV_user_state(view_widget_value('xhtml_dock_right')),
+		    _header_right(qw(SEARCH_LIST SearchForm)),
+		]);
+	    },
+	),
 	xhtml_header_middle => DIV_nav(view_widget_value('xhtml_nav')),
 	xhtml_style => RealmCSS(),
 	xhtml_main_middle => Join([
