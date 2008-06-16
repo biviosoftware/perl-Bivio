@@ -363,6 +363,56 @@ sub info_calendar {
             Model.CalendarEventList->execute_load_page
             View.Calendar->event_list_rss
         )],
+ 	[qw(
+	    FORUM_CALENDAR
+	    180
+	    FORUM
+	    DATA_READ
+            Model.SelectMonthForm
+	    Model.CalendarEventMonthList->execute_load_all_with_query
+            Model.MonthList->execute_load_all
+	    View.Calendar->month_list
+	    next=FORUM_CALENDAR
+	)],
+ 	[qw(
+	    FORUM_CALENDAR_EVENT
+	    181
+	    FORUM
+	    DATA_READ&DATA_WRITE
+	    Model.CalendarEventForm
+	    View.Calendar->event_form
+	    next=FORUM_CALENDAR
+	)],
+ 	[qw(
+	    FORUM_CALENDAR_EVENT_DETAIL
+	    182
+	    FORUM
+	    DATA_READ&DATA_WRITE
+            Model.CalendarEventList->execute_load_this
+            View.Calendar->event_detail
+	    next=FORUM_CALENDAR
+	)],
+ 	[qw(
+	    FORUM_CALENDAR_EVENT_DELETE
+	    183
+	    FORUM
+	    DATA_READ&DATA_WRITE
+            Model.CalendarEvent->execute_load_this
+	    Model.CalendarEventDeleteForm
+	    View.Calendar->event_delete
+	    next=FORUM_CALENDAR
+	    cancel=FORUM_CALENDAR_EVENT_DETAIL
+	    require_context=0
+	)],
+ 	[qw(
+	    FORUM_CALENDAR_EVENT_ICS
+	    184
+	    FORUM
+	    DATA_READ
+	    Model.CalendarEventList->execute_load_this
+	    Action.CalendarEventICS
+	)],
+	# 185-189 free
     ];
 }
 
