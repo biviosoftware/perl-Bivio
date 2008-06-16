@@ -600,6 +600,45 @@ div.blog .sidebar ul {
 EOF
 }
 
+sub _site_calendar {
+    return <<'EOF';
+.month_selection td {
+  padding-left: .5em;
+}
+.month_calendar td {
+  width: 14%;
+  vertical-align: top;
+  border: 2px solid #FFFFFF;
+  padding: .3em;
+}
+.month_calendar .day_of_week {
+  padding-bottom: .5em;
+  background-color: #C8C8C8;
+  text-align: center;
+}
+.month_calendar .date_this_month, .month_calendar .date_other_month {
+  height: 6em;
+  background-color: #EEEEEE;
+}
+.month_calendar .date_other_month {
+  background-color: #E6E6E6;
+}
+.month_calendar .date_other_month .day_of_month {
+  color: gray;
+}
+.month_calendar .day_of_month {
+  font-weight: bold;
+  margin-bottom: .5em;
+}
+.month_calendar .event {
+  font-size: 85%;
+  padding-left: 20px;
+  text-align: left;
+  line-height: 16px;
+}
+EOF
+}
+
 sub _site_file {
     return <<'EOF';
 .hidden_file_field {
