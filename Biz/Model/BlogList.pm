@@ -5,12 +5,13 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_ARF) = __PACKAGE__->use('Action.RealmFile');
-my($_BC) = __PACKAGE__->use('Type.BlogContent');
-my($_BFN) = __PACKAGE__->use('Type.BlogFileName');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_RF) = __PACKAGE__->use('Model.RealmFile');
-my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
+my($_ARF) = b_use('Action.RealmFile');
+my($_BC) = b_use('Type.BlogContent');
+my($_BFN) = b_use('Type.BlogFileName');
+my($_DT) = b_use('Type.DateTime');
+my($_RF) = b_use('Model.RealmFile');
+my($_WT) = b_use('XHTMLWidget.WikiText');
+my($_P) = b_use('Search.Parser');
 
 sub PAGE_SIZE {
     return 5;
@@ -74,6 +75,11 @@ sub internal_initialize {
 		type => 'BlogBody',
 		constraint => 'NOT_NULL',
 	    },
+	    {
+		name => 'text',
+		type => 'Text64K',
+		constraint => 'NOT_NULL',
+	    },
 	],
     });
 }
@@ -81,9 +87,8 @@ sub internal_initialize {
 sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{path_info} = $_BFN->from_literal_or_die($row->{path_info});
-    ($row->{title}, $row->{body}) = $_BC->split(
-	$_RF->get_content($self, 'RealmFile.', $row),
-    );
+    $row->{text} = ${$_RF->get_content($self, 'RealmFile.', $row)};
+    ($row->{title}, $row->{body}) = $_BC->split(\$row->{text});
     return 1;
 }
 
@@ -112,19 +117,17 @@ sub internal_prepare_statement {
 
 sub get_rss_summary {
     my($self) = @_;
-    my($v) = $self->get('body');
-#TODO: Split on words
-    $v = substr($v, 0, 1000);
-#TODO: Is this good enough?
-    $v =~ s/\n[^\n]*$//s;
-    return $_WT->render_ascii({
-	value => $v,
+    return $_P->new_excerpt({
+	content => \($self->get('text')),
+	content_type => 'text/x-bivio-wiki',
 	name => $self->get('path_info'),
+	path => $self->get('path_info'),
+	class => 'RealmFile',
 	req => $self->req,
 	task_id => $self->req('task', 'html_task'),
 	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
 	no_auto_links => 1,
-    });
+    })->get('excerpt');
 }
 
 sub render_html {
@@ -137,16 +140,6 @@ sub render_html {
 	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
 	no_auto_links => 1,
     });
-}
-
-sub render_html_excerpt {
-    my($self) = @_;
-    my($body) = $self->get('body');
-#TODO: Split on words
-    $body = substr($body, 0, 500);
-#TODO: Is this good enough?
-    $body =~ s/\n[^\n]*$//s;
-    return $self->render_html($body);
 }
 
 1;
