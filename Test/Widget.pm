@@ -52,7 +52,7 @@ sub new_unit {
 	return $actual
 	    unless _is_render($case);
 	$actual = [${$case->get('params')->[1]}];
-	$proto->builtin_assert_not_equals(qr{\w+\(0x\w+\)}, $actual);
+	$proto->builtin_assert_not_equals(qr{\w+\(0x\w+\)}, $actual->[0]);
 	return !$args->{parse_return} ? $actual
 	    : $args->{parse_return}->($case, $actual, @_);
     };
