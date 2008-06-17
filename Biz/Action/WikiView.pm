@@ -58,14 +58,15 @@ sub execute_prepare_html {
 	name => $name,
 	exists => 0,
     );
-    my($wa, $dt, $uid) = $proto->use('XHTMLWidget.WikiText')
+    my($wa) = $proto->use('XHTMLWidget.WikiText')
 	->prepare_html($realm_id, $name, $task_id, $req);
     return $self->internal_model_not_found($req, $realm_id)
 	unless $wa;
     my($author) = '';
     my($author_name) = '';
     if ($req->unsafe_get_nested(qw(task want_author))) {
-	my($e) = $_E->new($req)->unauth_load_or_die({realm_id => $uid});
+	my($e) = $_E->new($req)
+	    ->unauth_load_or_die({realm_id => $wa->{user_id}});
 	$author = $e->get('email');
 	$author_name = $_RO->new($req)
 	    ->unauth_load_or_die({realm_id => $e->get('realm_id')})
@@ -74,7 +75,7 @@ sub execute_prepare_html {
     $self->put(
 	wiki_args => $wa,
 	title => $wa->{title},
-	modified_date_time => $dt,
+	modified_date_time => $wa->{modified_date_time},
 	author => $author,
 	author_email => $author,
 	author_name => $author_name,
