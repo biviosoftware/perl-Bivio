@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::HTML;
 use strict;
@@ -70,7 +70,10 @@ sub unescape_uri {
 
 sub unescape {
     my(undef, $text) = @_;
-    return defined($text) ? HTML::Entities::decode($text) : '';
+    return ''
+	unless defined($text);
+    $text = HTML::Entities::decode($text);
+    return $text;
 }
 
 sub unescape_query {
