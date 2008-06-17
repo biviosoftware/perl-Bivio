@@ -16,6 +16,12 @@ Type();
 	'hello%26bye' => 'hello&bye',
 	'hello%3Fbye' => 'hello?bye',
     ],
+    unescape => [
+	[undef] => '',
+	hello => 'hello',
+	'&#39;' => q{'},
+	'&amp;&gt;&lt;&quot;' => q{&><"},
+    ],
     parse_www_form_urlencoded => [
 	[undef] => [{}],
 	'' => [{}],
