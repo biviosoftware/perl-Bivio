@@ -23,6 +23,10 @@ sub START_PAGE {
     return 'StartPage';
 }
 
+sub TITLE_TAG {
+    return '@h1';
+}
+
 sub from_literal_stripper {
     my(undef, $v) = @_;
     $v =~ s/\s+/_/g;
