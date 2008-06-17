@@ -80,6 +80,11 @@ sub internal_initialize {
 		type => 'Text64K',
 		constraint => 'NOT_NULL',
 	    },
+	    {
+		name => 'query',
+		type => 'Line',
+		constraint => 'NONE',
+	    },
 	],
     });
 }
@@ -89,6 +94,7 @@ sub internal_post_load_row {
     $row->{path_info} = $_BFN->from_literal_or_die($row->{path_info});
     $row->{text} = ${$_RF->get_content($self, 'RealmFile.', $row)};
     ($row->{title}, $row->{body}) = $_BC->split(\$row->{text});
+    $row->{query} = undef;
     return 1;
 }
 
