@@ -184,6 +184,7 @@ sub nightly {
 
 sub nightly_output_to_wiki {
     my($self) = @_;
+    $self->initialize_fully;
     my($q) = {path => $_WN->to_absolute('NightlyTestOutput')};
     my($rf) = $self->model('RealmFile');
     my($curr) = "\@h1 NightlyTestOutput\n";
