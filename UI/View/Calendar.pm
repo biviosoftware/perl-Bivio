@@ -207,7 +207,7 @@ sub _date_time {
 	    field => $field,
 	    value => [
 		'Bivio::Type::Time', '->to_string',
-		['Model.CalendarEventList', 'dtstart_in_tz'],
+		['Model.CalendarEventList', $field],
 	    ],
 	}),
     ], ' ');
