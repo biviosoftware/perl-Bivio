@@ -586,9 +586,8 @@ sub _realm_dir {
 sub _search_delete {
     my($self, $cmds) = @_;
     $_CFG->{search_class}->map_invoke(
-	'delete_realm_file',
+	'delete_model',
 	[map(/(\w+)$/, @$cmds[1..$#$cmds])],
-	undef,
 	[$self->get_request],
     ) if $_CFG->{search_class};
     return $cmds;
@@ -596,7 +595,7 @@ sub _search_delete {
 
 sub _search_update {
     my($self) = @_;
-    $_CFG->{search_class}->update_realm_file($self, $self->get_request)
+    $_CFG->{search_class}->update_model($self->get_request, $self)
 	if $_CFG->{search_class};
     return $self;
 }
