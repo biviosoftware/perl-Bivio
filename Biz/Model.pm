@@ -1,13 +1,9 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Die;
-use Bivio::HTML;
-use Bivio::IO::ClassLoader;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
-use Bivio::SQL::Statement;
 
 # C<Bivio::Biz::Model> is more interface than implementation, it provides
 # a common set of methods for L<Bivio::Biz::PropertyModel>,
@@ -19,6 +15,8 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 #my(%_CLASS_INFO);
 my($_LOADED_ALL_PROPERTY_MODELS);
 my($_S) = __PACKAGE__->use('SQL.Support');
+my($_SS) = b_use('SQL.Statement');
+my($_CL) = b_use('IO.ClassLoader');
 
 sub as_string {
     my($self) = @_;
@@ -115,6 +113,16 @@ sub get_as {
     return $self->get_field_info($field, 'type')->$format($self->get($field));
 }
 
+sub get_auth_id {
+    my($self) = @_;
+    return $self->get($self->get_auth_id_name);
+}
+
+sub get_auth_id_name {
+    my($self) = @_;
+    return ($self->get_info('auth_id') || $self->die('no auth_id'))->{name};
+}
+
 sub get_field_constraint {
     # Returns the constraint for this field.
     #
@@ -153,8 +161,8 @@ sub get_instance {
     #
     # May not be called on anonymous Models without I<class> argument.
     if (defined($class)) {
-	$class = Bivio::IO::ClassLoader->map_require('Model', $class)
-		unless ref($class);
+	$class = b_use('Model', $class)
+	    unless ref($class);
 	$class = ref($class) if ref($class);
     }
     else {
@@ -557,8 +565,7 @@ sub unsafe_get_request {
     $req = $self->[$_IDI]->{request} if ref($self);
     # DON'T SET the request for future calls, because this may
     # be an anonymous model or a singleton.
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
-    return $req ? $req : Bivio::Agent::Request->get_current;
+    return $req ? $req : b_use('Agent.Request')->get_current;
 }
 
 sub _as_string_fields {
@@ -646,7 +653,7 @@ sub _initialize_class_info {
 
     _assert_class_name($class) unless $config;
 
-    my($stmt) = Bivio::SQL::Statement->new();
+    my($stmt) = $_SS->new();
     my($sql_support) = $class->internal_initialize_sql_support($stmt, $config);
     my($ci) = {
 	sql_support => $sql_support,
@@ -672,18 +679,15 @@ sub _initialize_class_info {
 }
 
 sub _load_all_property_models {
-    # Loads the property models, if not already loaded.
     return if $_LOADED_ALL_PROPERTY_MODELS;
-    # Avoid recursion and don't want redo in any event
     $_LOADED_ALL_PROPERTY_MODELS = 1;
-    my($models) = Bivio::IO::ClassLoader->map_require_all('Model',
-	    sub {
-		my($class, $file) = @_;
-		# We don't load classes which end in List, Form, or Base.
-		return $class =~ /(Form|List|Base)$/ ? 0 : 1;
-	    });
-
-    # Force class initialization
+    my($models) = $_CL->map_require_all(
+	'Model',
+	sub {
+	    my($class, $file) = @_;
+	    # We don't load classes which end in List, Form, or Base.
+	    return $class =~ /(Form|List|Base)$/ ? 0 : 1;
+	});
     foreach my $class (@$models) {
 	$class->get_instance;
     }
