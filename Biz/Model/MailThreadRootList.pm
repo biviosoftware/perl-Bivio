@@ -4,8 +4,7 @@ package Bivio::Biz::Model::MailThreadRootList;
 use strict;
 use Bivio::Base 'Model.MailThreadList';
 my($_A) = __PACKAGE__->use('Mail.Address');
-my($_P) = __PACKAGE__->use('Search.Parseable');
-my($_RF) = __PACKAGE__->use('SearchParser.RealmFile');
+my($_P) = __PACKAGE__->use('Search.Parser');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -77,15 +76,10 @@ EOF
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    my($x) = $_RF->parse($_P->new(
-	$self->new_other('RealmFile')->load({
-	    realm_file_id => $row->{'RealmMail.realm_file_id'},
-	})));
-    ${$x->{text}} =~ s/^.*?\bfrom:.*?\n+//s;
-
-    $row->{excerpt} = length(${$x->{text}} || '') > 200
-	? (substr(${$x->{text}}, 0, 200) . '...')
-	: ${$x->{text}};
+    $row->{excerpt} = $_P->new_excerpt(
+	$self->new_other('RealmFile')
+	    ->load({realm_file_id => $row->{'RealmMail.realm_file_id'}}),
+    )->get('excerpt');
     $row->{message_count} = $row->{reply_count} + 1;
     return 1;
 }
