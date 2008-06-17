@@ -44,6 +44,7 @@ sub rebuild_db {
 
 sub rebuild_realm {
     my($self) = @_;
+    my($req) = $self->initialize_fully;
     my($i) = 0;
     Bivio::IO::Alert->info($self->req(qw(auth_realm owner name)));
     $self->model('RealmFile')->do_iterate(
@@ -57,7 +58,7 @@ sub rebuild_realm {
 		    'file#', $i, ': ', $it->get('realm_file_id'),
 		) if $i > 1;
 	    }
-	    $_X->update_model($it);
+	    $_X->update_model($req, $it);
 	    return 1;
         },
 	'realm_file_id asc',
