@@ -1,6 +1,7 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
+options({comparator => 'nested_contains'});
 set_realm_and_user(qw(fourem root));
 initialize_fully('FORUM_WIKI_VIEW');
 my($menu) = class('Type.WikiDataName')->to_absolute('WikiText1.bmenu');
@@ -12,7 +13,13 @@ EOF
 [
     class() => [
 	render_html_without_view => [
-	    ['@b-menu value=WikiText1', req()] => qr{Home</a></div>},
+	    [\('@b-menu value=WikiText1'), req()] => qr{Home</a></div>},
+	],
+	render_plain_text => [
+	    [\("\@h1 t1\np1\np2\n"), req()] => [
+		"p1\np2",
+		{title => 't1'},
+	    ],
 	],
     ],
 ];
