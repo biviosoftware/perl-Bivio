@@ -46,7 +46,7 @@ sub initialize {
 			task_id => [[qw(->req task html_task)], '->get_name'],
 			path_info => ['path_info'],
 			require_absolute => 1,
-			query => undef,
+			query => ['query'],
 		    }),
 		    REL => 'alternate',
 		    TYPE => 'text/html',
