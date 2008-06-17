@@ -1,19 +1,19 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-s008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::TimeZone;
 use strict;
-use base 'Bivio::Type::Enum';
-use DateTime ();  #Olson DateTime::TimeZone CPAN module
+use Bivio::Base 'Type.Enum';
+use DateTime ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = b_use('Type.DateTime');
 __PACKAGE__->compile;
-my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub compile {
     my($i) = 2;
     return shift->SUPER::compile([
-	UNKNOWN => [0, "Select Time Zone"],
-	UTC => [1, "UTC"],
+	UNKNOWN => [0, 'Select Time Zone'],
+	UTC => [1, 'UTC'],
 	map({
 	    my($x) = $_;
 	    $x =~ s/\W/_/g;
@@ -30,6 +30,10 @@ sub date_time_from_utc {
 sub date_time_to_utc {
     my($self, $date_time) = @_;
     return _convert($self, $date_time, $self, $self->UTC);
+}
+
+sub get_default {
+    return shift->UTC;
 }
 
 sub _convert {
