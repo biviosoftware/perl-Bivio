@@ -389,6 +389,8 @@ _require_my_tags(__PACKAGE__);
 $_C->register(my $_CFG = {
     deprecated_auto_link_mode => 0,
 });
+my($_A) = b_use('Collection.Attributes');
+my($_TT) = $_WN->TITLE_TAG =~ /(\w+)/;
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
@@ -444,51 +446,69 @@ sub internal_new_args {
 }
 
 sub prepare_html {
-    my($proto, $realm_id, $name, $task_id, $req) = @_;
+    my($proto, $arg1, $arg2, $task_id, $req) = @_;
+    my($a) = $_A->new({});
     my($rf);
-    if (ref($realm_id)) {
-	$rf = $realm_id;
-	$task_id = $name;
-	$name = $_WN->from_absolute($rf->get('path'));
-	$realm_id = $rf->get('realm_id');
-	$req = $rf->req;
+    if (ref($arg1) eq 'HASH') {
+	b_die($arg1, ': missing req')
+	    unless $arg1->{req};
+	$a->internal_put($arg1);
+    }
+    elsif (Bivio::UNIVERSAL->is_blessed($arg1)) {
+	$rf = $arg1;
+    }
+    elsif (ref($arg1) eq 'SCALAR') {
+	$a->put(
+	    value => $$arg1,
+	    req => $arg2,
+	);
+    }
+    elsif (ref($arg1)) {
+	b_die($arg1, ': invalid first argument');
     }
     else {
 	return unless $rf = $_RF->access_controlled_load(
-	    $realm_id, $_WN->to_absolute($name), $req, 1);
+	    $arg1, $_WN->to_absolute($arg2), $req, 1);
     }
-    my($v) = ${$rf->get_content};
-    my($t);
-    my($wiki_args) = {
-	task_id => $task_id,
-	req => $req,
-	name => $name,
-	map(($_ => $rf->get($_)), qw(is_public realm_id)),
-    };
-    if ($v =~ s{^(\@h1[ \t]*\S[^\r\n]+\r?\n|\@h1.*?\r?\n\@/h1\s*?\r?\n)}{}s) {
+    $a->put(
+	map(($_ => $rf->get($_)), @{$rf->get_keys}),
+	value => ${$rf->get_content},
+	req => $req = $rf->req,
+	name => $_WN->from_absolute($rf->get('path')),
+    ) if $rf;
+    $req ||= $a->get('req');
+    $a->put_unless_exists(
+	is_public => 0,
+	modified_date_time => $_DT->now,
+	name => '',
+	realm_id => $req->get('auth_id'),
+	user_id => $req->get('auth_user_id'),
+	proto => $proto,
+    );
+    $a = $a->internal_get;
+    return $a
+	if defined($a->{title});
+    my($v) = \$a->{value};
+    if ($$v =~ s{^(
+        \@${_TT}[ \t]*\S[^\r\n]+\r?\n
+        | \@$_TT.*?\r?\n\@/$_TT\s*?\r?\n
+    )}{}isox) {
 	my($x) = $1;
-	$t = ($proto->render_html({
-	    %$wiki_args,
-	    value => $x,
-	}) =~ m{^<h1>(.*)</h1>$}s)[0];
+	my($t) = $proto->render_html({%$a, value => $x})
+	    =~ m{^<$_TT>(.*)</$_TT>$}so;
 	if (defined($t)) {
 	    $t =~ s/^\s+|\s+$//g;
+	    $a->{title} = $t;
 	}
 	else {
 	    Bivio::IO::Alert->warn(
-		$x, ': not a header pattern; page=', $name);
-	    substr($v, 0, 0) = $x;
+		$x, ': not a header pattern; page=', $a->{name});
+	    substr($$v, 0, 0) = $x;
 	}
     }
-    return (
-	{
-	    %$wiki_args,
-	    value => $v,
-	    title => defined($t) ? $t
-		: Bivio::HTML->escape($_WN->to_title($name)),
-	},
-	$rf->get(qw(modified_date_time user_id)),
-    );
+    $a->{title} = Bivio::HTML->escape($_WN->to_title($a->{name}))
+	unless defined($a->{title});
+    return $a;
 }
 
 sub register_tag {
@@ -509,14 +529,6 @@ sub register_tag {
     return;
 }
 
-sub render_ascii {
-    my($body) = shift->render_html_without_view(@_);
-    $body =~ s{</p>}{\n}g;
-    $body =~ s{<[^>]+>}{}g;
-    chomp($body);
-    return Bivio::HTML->unescape($body);
-}
-
 sub render_html {
     my($proto, $args) = @_;
     unless (ref($args) eq 'HASH') {
@@ -535,8 +547,7 @@ sub render_html {
     $args->{source} ||= $args->{req};
     $args->{proto} = $proto;
     $args->{no_auto_links} ||= !$_CFG->{deprecated_auto_link_mode};
-    $args->{task_id} = $args->{task_id} ? $_TI->from_any($args->{task_id})
-	: $args->{req}->get('task_id')
+    $args->{task_id} = _task_id($args)
 	unless ref($args->{task_id});
     $args->{realm_id} ||= $args->{req}->get('auth_id');
     unless ($args->{realm_name}) {
@@ -566,32 +577,24 @@ sub render_html {
 }
 
 sub render_html_without_view {
-    my($proto) = shift;
-    my($args, $req) = @_;
-    if (ref($args)) {
-	$args = ($proto->prepare_html(@_))[0]
-	    unless ref($args) eq 'HASH';
-    }
-    else {
-	$args = {
-	    is_public => 0,
-	    modified_date_time => $_DT->now,
-	    name => '',
-	    task_id => 'FORUM_WIKI_VIEW',
-	    realm_id => $req->get('auth_id'),
-	    req => $req,
-	    title => '',
-	    user_id => $req->get('auth_user_id'),
-	    value => $args,
-	};
-    }
-    $args->{proto} ||= $proto;
+    my($args) = shift->prepare_html(@_);
     # Generate unique symbol related to this module
-    return $_I->render_code_as_string(
-	sub {$args->{proto}->render_html($args)},
-	$args->{req},
-	'XHTMLWidget',
+    return (
+	$_I->render_code_as_string(
+	    sub {$args->{proto}->render_html($args)},
+	    $args->{req},
+	    'XHTMLWidget',
+	),
+	$args,
     );
+}
+
+sub render_plain_text {
+    my($body, $wa) = shift->render_html_without_view(@_);
+    $body =~ s{</p>}{\n}g;
+    $body =~ s{<[^>]+>}{}g;
+    $body =~ s{\n+$}{}s;
+    return (Bivio::HTML->unescape($body), $wa);
 }
 
 sub _close_top {
@@ -838,6 +841,15 @@ sub _start_tag {
     unshift(@{$state->{tags}}, $tag);
     unshift(@{$state->{attrs}}, $attrs);
     return "<$tag$attrs>";
+}
+
+sub _task_id {
+    my($args) = @_;
+    return $_TI->from_any($args->{task_id})
+	if $args->{task_id};
+    my($t) = $args->{req}->get('task_id');
+#TODO: This is really dicey
+    return $t->get_name =~ /BLOG|WIKI|HELP/ ? $t : 'FORUM_WIKI_VIEW';
 }
 
 1;
