@@ -26,11 +26,22 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.53  2008/06/16 04:31:35  moeller
+  * Bivio::Biz::Model::MailThreadList
+    added RealmOwner.display_name (User's name)
+  * Bivio::Biz::Model::MailThreadRootList
+    added reply and message count and excerpt
+  * Bivio::Test::Language::HTTP
+    undef fields compare as '' in verify_form()
+  * Bivio::UI::View::Mail
+    show mail threads as excerpts, not date-subject
+    don't show to/cc on send form
+
   Revision 6.52  2008/06/16 00:09:15  moeller
   * Bivio::UI::View::ThreePartPage
     moved xhtml_header_right to second view_put() because xhtml_dock_right
