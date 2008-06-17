@@ -35,11 +35,11 @@ commit();
 	            RealmFile.path
 	            result_excerpt
 		    result_title
-		    result_who
+		    result_author
 		));
 		assert_not_equals(qr{not-found}i, $p);
 		if ($p eq '/file.txt') {
-		    assert_equals(int(250/6) - 1, scalar(@{[split(' ', $e)]}));
+		    assert_equals(45, scalar(@{[split(' ', $e)]}));
 		    assert_equals('file.txt', $t);
 		}
 		elsif ($p =~ /mail/i) {
