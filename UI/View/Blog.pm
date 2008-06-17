@@ -97,7 +97,7 @@ sub list {
 			})),
 		    ])),
 		    DIV_text(Join([
-			DIV_excerpt(String(['->render_plain_text_excerpt'])),
+			DIV_excerpt(String(['->get_rss_summary'])),
 			' ... ',
 			Link('[more]', URI({
 			    task_id => _access_mode('FORUM_BLOG_DETAIL'),

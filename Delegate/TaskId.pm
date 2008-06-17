@@ -272,6 +272,7 @@ sub info_blog {
 			Model.BlogRecentList->execute_load_all
 			Model.BlogList->execute_load_page
 			View.Blog->list
+			html_task=FORUM_BLOG_LIST
 		    )],
 		    [qw(
 			FORUM_BLOG_RSS
