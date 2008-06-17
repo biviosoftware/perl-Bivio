@@ -424,7 +424,8 @@ sub poll_page {
     foreach my $x (1..$_CFG->{mail_tries}) {
 	sleep(1);
 	$self->reload_page;
-	return if $self->unsafe_op(@_);
+	return
+	    if $self->unsafe_op($method, @args);
     }
     $self->$method(@args);
     return;
