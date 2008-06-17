@@ -2,19 +2,24 @@
 # $Id$
 package Bivio::Biz::Model::CalendarEventForm;
 use strict;
-use base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_D) = Bivio::Type->get_instance('Date');
-my($_T) = Bivio::Type->get_instance('Time');
+my($_DT) = b_use('Type.DateTime');
+my($_D) = b_use('Type.Date');
+my($_T) = b_use('Type.Time');
+my($_TZ) = b_use('Type.TimeZone');
 
 sub execute_empty {
     my($self) = @_;
-
-    unless ($self->is_create) {
+    if ($self->is_create) {
+	$self->internal_put_field(
+	    'CalendarEvent.time_zone' => $_TZ->get_default);
+    }
+    else {
 	$self->load_from_model_properties('CalendarEvent');
 	$self->load_from_model_properties('RealmOwner');
+
 	my($start) = $self->get('CalendarEvent.time_zone')
 	    ->date_time_from_utc($self->get('CalendarEvent.dtstart'));
 	my($end) = $self->get('CalendarEvent.time_zone')
