@@ -24,19 +24,19 @@ my($_F) = __PACKAGE__->use('IO.File');
 my($_L) = __PACKAGE__->use('Model.Lock');
 my($_GENERAL_ID) = __PACKAGE__->use('Auth.Realm')->get_general->get('id');
 my($_MRF) = __PACKAGE__->use('Model.RealmFile');
-my($_SRF) = __PACKAGE__->use('Search.RealmFile');
+my($_P) = __PACKAGE__->use('Search.Parser');
 my($_A) = __PACKAGE__->use('IO.Alert');
+my($_M) = b_use('Biz.Model');
 
-sub delete_realm_file {
-    my($proto, $realm_file_or_id, $req) = @_;
+sub delete_model {
+    my($proto, $req, $model_or_id) = @_;
+    my($id) = ref($model_or_id) ? $model_or_id->get_primary_id : $model_or_id;
     return _queue(
-	$proto, [
-	    delete_realm_file =>
-	    ref($realm_file_or_id) ? $realm_file_or_id->get('realm_file_id')
-		: $realm_file_or_id,
-	], $req
+	$proto,
+	$req,
+	[delete_model => $id],
     ) unless ref($proto);
-    _delete($proto, 'Q' . $realm_file_or_id, $req);
+    _delete($proto, 'Q' . $id);
     return;
 }
 
@@ -47,6 +47,11 @@ sub destroy_db {
     $_A->info($_CFG->{db_path}, ': deleting');
     $_F->rm_rf($_CFG->{db_path});
     return;
+}
+
+sub excerpt_model {
+    my(undef, $model) = @_;
+    return $_P->new_excerpt($model);
 }
 
 sub execute {
@@ -60,7 +65,7 @@ sub execute {
     foreach my $op (@{$self->get('ops')}) {
 	_trace($op) if $_TRACE;
 	my($method) = shift(@$op);
-	$self->$method(@$op);
+	$self->$method($req, @$op);
     }
     $self->delete('db');
     $db->flush;
@@ -97,37 +102,42 @@ sub handle_rollback {
     return;
 }
 
-sub update_realm_file {
-    my($proto, $realm_file, $req) = @_;
+sub update_model {
+    my($proto, $req) = (shift, shift);
+    my($model) = @_;
     return _queue(
 	$proto,
-	[update_realm_file => $realm_file->get('realm_file_id')],
-	$realm_file->get_request,
+	$model->get_request,
+	[update_model => $model->simple_package_name, $model->get_primary_id],
     ) unless ref($proto);
-    my($rf) = $_MRF->new($req);
-    return unless $rf->unauth_load({realm_file_id => $realm_file});
-
-    unless ($rf->is_searchable) {
+    my($class, $id) = @_;
+    $model = $_M->new($req, $class);
+    return unless $model->unauth_load({$model->get_primary_id_name => $id});
+    if ($model->can('is_searchable') && !$model->is_searchable) {
 	# need to remove it, ex. archived searchable file
-	$proto->delete_realm_file($realm_file, $req);
+	$proto->delete_model($req, $model);
 	return;
     }
     _replace(
 	$proto,
 	$req,
-	$rf->simple_package_name,
-	$rf->get('realm_id'),
-	$rf->get_primary_id,
-	$_SRF->parse_for_xapian($rf),
+	$model->simple_package_name,
+	$model->get('realm_id'),
+	$model->get_primary_id,
+	$_P->xapian_terms_and_postings($model),
     );
     return;
 }
 
 sub query {
-    my($proto, $phrase, $offset, $length, $private_realm_ids, $public_realm_ids_or_all) = @_;
-    $offset ||= 0;
-    $length ||= $_LENGTH;
-    $private_realm_ids ||= [];
+    my($proto, $a) = @_;
+    $a->{offset} ||= 0;
+    $a->{length} ||= $_LENGTH;
+    $a->{private_realm_ids} ||= [];
+    $a->{public_realm_ids} ||= [];
+    b_die($a, ': invalid public_realm_ids, private_realm_ids, and want_public')
+	unless @{$a->{private_realm_ids}} || @{$a->{public_realm_ids}}
+	|| $a->{want_all_public};
     my($db) = Search::Xapian::Database->new($_CFG->{db_path});
     my($qp) = Search::Xapian::QueryParser->new;
     $qp->set_stemmer($_STEMMER);
@@ -135,20 +145,22 @@ sub query {
     $qp->set_default_op(Search::Xapian->OP_AND);
     my($q) = Search::Xapian::Query->new(
  	Search::Xapian->OP_AND,
- 	$qp->parse_query($phrase, $_FLAGS),
+ 	$qp->parse_query($a->{phrase}, $_FLAGS),
 	Search::Xapian::Query->new(
 	    Search::Xapian->OP_OR,
-	    map(Search::Xapian::Query->new("XREALMID:$_"), @$private_realm_ids),
-	    ref($public_realm_ids_or_all) ? map(
+	    map(Search::Xapian::Query->new("XREALMID:$_"),
+		@{$a->{private_realm_ids}}),
+	    map(
 		Search::Xapian::Query->new(
 		    Search::Xapian->OP_AND,
 		    Search::Xapian::Query->new("XREALMID:$_"),
 		    Search::Xapian::Query->new('XISPUBLIC:1'),
 		),
-		@$public_realm_ids_or_all
-	    ) : $public_realm_ids_or_all
-	    ? Search::Xapian::Query->new('XISPUBLIC:1')
-	    : (),
+		@{$a->{public_realm_ids}},
+	    ),
+	    $a->{want_all_public}
+		? Search::Xapian::Query->new('XISPUBLIC:1')
+		: (),
 	),
     );
     my($res) = [map({
@@ -163,9 +175,10 @@ sub query {
 	    'RealmOwner.realm_id' => $d->get_value(1),
 	    primary_id => $d->get_value(2),
 	};
-    } $db->enquire($q)->matches($offset, $length))];
-    _trace([$q->get_terms], '->[', $offset, '..', $offset + $length,
-	   ']: ', $res) if $_TRACE;
+    } $db->enquire($q)->matches($a->{offset}, $a->{length}))];
+    _trace([$q->get_terms], '->[', $a->{offset}, '..',
+        $a->{offset} + $a->{length}, ']: ', $res,
+    ) if $_TRACE;
     return $res;
 }
 
@@ -193,7 +206,7 @@ sub _delete {
 }
 
 sub _queue {
-    my($proto, $op, $req) = @_;
+    my($proto, $req, $op) = @_;
     my($self) = $req->unsafe_get_txn_resource($proto);
     $req->push_txn_resource($self = $proto->new({ops => []}))
 	unless $self;

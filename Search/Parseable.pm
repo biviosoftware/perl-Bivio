@@ -22,14 +22,14 @@ sub as_string {
 sub get_content {
     my($self) = @_;
     return $self->get_if_defined_else_put(content => sub {
-        return $self->get('realm_file')->get_content;
+        return $self->get('model')->get_content;
     });
 }
 
 sub get_os_path {
     my($self) = @_;
     return $self->get_if_defined_else_put(os_path => sub {
-        my $rf = $self->unsafe_get('realm_file');
+        my $rf = $self->unsafe_get('model');
 	return $rf ? $rf->get_os_path
 	    : $_F->write($_F->temp_file($self->req), $self->get('content'));
     });
@@ -40,15 +40,17 @@ sub get_request {
 }
 
 sub new {
-    my($proto, $realm_file_or_attr) = @_;
+    my($proto, $model_or_attr) = @_;
     return $proto->SUPER::new(
-	Bivio::UNIVERSAL->is_blessed($realm_file_or_attr) ? {
-	    map(($_ => $realm_file_or_attr->get($_)),
-		@{$realm_file_or_attr->get_keys}),
-	    realm_file => $realm_file_or_attr,
-	    req => $realm_file_or_attr->req,
-	    content_type => $realm_file_or_attr->get_content_type,
-	} : _assert_keys($realm_file_or_attr),
+	Bivio::UNIVERSAL->is_blessed($model_or_attr) ? {
+	    map(($_ => $model_or_attr->get($_)),
+		@{$model_or_attr->get_keys}),
+	    model => $model_or_attr,
+	    req => $model_or_attr->req,
+	    content_type => $model_or_attr->can('get_content_type')
+		? $model_or_attr->get_content_type : 'text/plain',
+	    class => $model_or_attr->simple_package_name,
+	} : _assert_keys($model_or_attr),
     );
 }
 
@@ -57,13 +59,14 @@ sub _assert_keys {
     foreach my $x (
 	[req => qr{::Request$}],
 	[content_type => ''],
+	[class => qr{^\w+$}s],
 	[content => qr{^SCALAR$}],
     ) {
 	my($k, $t) = @$x;
 	Bivio::Die->die($k, ': not defined')
             unless my $v = $attr->{$k};
 	Bivio::Die->die(ref($v), ': is invalid type for ', $k)
-	    if $t && ref($v) !~ $t;
+	    if $t && (ref($v) || $v) !~ $t;
     }
     $attr->{path} = ''
 	unless defined($attr->{path});

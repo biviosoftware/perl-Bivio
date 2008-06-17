@@ -14,6 +14,7 @@ my($txt) = model(RealmFile => {path => '/Public/file.txt'});
 	as_string => 'Parseable[/Public/file.txt,text/plain]',
     ],
     [{
+	class => 'RealmFile',
 	content => \('a,b'),
 	content_type => 'text/csv',
 	req => req(),
@@ -28,8 +29,12 @@ my($txt) = model(RealmFile => {path => '/Public/file.txt'});
     class() => [
 	new => [
 	    [{}] => DIE(),
-	    [{content_type => 'text/plain', content => 'not ok', req => req()}]
-		=> qr{is invalid type for content$},
+	    [{
+		class => 'RealmFile',
+		content_type => 'text/plain',
+		content => 'not ok',
+		req => req(),
+	    }] => qr{is invalid type for content$},
 	],
 	sub {
 	    # cleanup tmp files

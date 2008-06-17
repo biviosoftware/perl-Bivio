@@ -17,7 +17,7 @@ my($dir) = '/search-parser-realm-file/';
 	},
     } => [
 	{
-	    method => 'parse',
+	    method => 'new_text',
 	    check_return => sub {
 		my(undef, undef, $expect) = @_;
 		$expect = [@$expect, 'TITLE']
@@ -28,32 +28,42 @@ my($dir) = '/search-parser-realm-file/';
 		my(undef, $actual) = @_;
 		return [$actual->[0] ? map(
 		    ref($_) ? $$_ : $_,
-		    @{$actual->[0]}{qw(type title text)},
+		    $actual->[0]->get(qw(type title text)),
 		) : ()];
 	    },
 	} => [
 	    `pdftotext -v 2>&1 < /dev/null` =~ /version/i
 		? ('t.pdf' => 'application/pdf') : (),
-	    't.txt' => ['text/plain', ''],
-	    't.csv' => ['text/csv', '', "some,text\n"],
-	    't.html' => 'text/html',
-	    't.bwiki' => 'text/plain',
+ 	    't.txt' => ['text/plain', ''],
+ 	    't.csv' => ['text/csv', '', "some,text\n"],
+ 	    't.html' => 'text/html',
+ 	    't.bwiki' => 'text/plain',
 	    't.eml' => ['message/rfc822', 'TITLE', (sub {chomp(my $x = shift); $x})->(<<'EOF')],
-subject: TITLE
-to: hello
-from: John Doe <john@example.com>
+Subject: TITLE
+To: hello
+From: John Doe <john@example.com>
 
  some text 
 EOF
-	    't.gif' => [],
-	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
-	    TextFile => ['text/plain', ''],
-	    BinaryFile => [],
-	    ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
-	    't2.bwiki' => ['text/plain', 'TITLE',
-		qr/first text\s+second text\s+third text\s+the end/],
-	    't3.bwiki' => ['text/plain', 'TITLE',
-		qr/email me at foo\@bar.com or A Page\s+home\s+Name\:\s+the end/],
+ 	    't.gif' => [],
+ 	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
+ 	    TextFile => ['text/plain', ''],
+ 	    BinaryFile => [],
+ 	    ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
+ 	    't2.bwiki' => ['text/plain', 'TITLE',
+ 		qr/first text\s+second text\s+third text\s+the end/],
+ 	    't3.bwiki' => ['text/plain', 'TITLE',
+ 		qr/email me at foo\@bar.com or A Page\s+home\s+Name\:\s+the end/],
+	],
+	{
+	    method => 'new_excerpt',
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		return [$actual->[0]->get(qw(excerpt author))];
+	    },
+	} => [
+	    'excerpt.bwiki' => [qr{^w1( w\d+){42} w44 \.\.\.$}s, 'Demo User'],
+	    'excerpt.eml' => ['html body', 'Freddy'],
 	],
     ],
 ];

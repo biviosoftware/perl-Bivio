@@ -2,23 +2,34 @@
 # $Id$
 package Bivio::Search::Parser::RealmFile;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Search.Parser';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_FP) = b_use('Type.FilePath');
 my($_HANDLER) = _handler_map();
 
-sub parse {
-    my($proto, $parseable) = @_;
+sub handle_new_text {
+    return _do(@_);
+}
+
+sub handle_new_excerpt {
+    return _do(@_);
+}
+
+sub handle_realm_file_new_excerpt {
+    return shift->SUPER::handle_new_excerpt(@_);
+}
+
+sub _do {
+    my($proto) = shift;
+    my($parseable) = @_;
     return
 	unless my $handler = $_HANDLER->{$parseable->get('content_type')};
+    my($method) = $proto->my_caller;
+    $method =~ s/^handle/handle_realm_file/;
     return
-	unless my $attr = Bivio::Die->eval(
-	    sub {$handler->handle_parse($parseable)},
-	);
-    return ref($attr) eq 'ARRAY'
-	? {map(($_ => shift(@$attr)), qw(type title text))}
-	: ref($attr) eq 'HASH' ? $attr
-	: Bivio::Die->die($attr, ': invalid return value')
+	unless my $self = $handler->$method(@_);
+    return $self;
 }
 
 sub _handler_map {

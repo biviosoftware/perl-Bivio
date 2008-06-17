@@ -4,7 +4,7 @@ Request();
 req()->set_realm_and_user(qw(fourem demo));
 [
     class() => [
-	parse_for_xapian => [
+	xapian_terms_and_postings => [
 	    [model('RealmFile')->create_with_content({
 		path => '/search-realm-file/xapian.html',
 	    }, \(<<'EOF'))],
@@ -33,17 +33,7 @@ EOF
 		    {map(ref($_) ? lc(req()->get_widget_value(@$_)) : $_,
 			 XREALMID => ['auth_id'],
 			 XUSERID => ['auth_user_id'],
-			 XUSERFULLNAME => [qw(auth_user display_name)],
 			 XISPUBLIC => 0,
-			 XISREADONLY => 0,
-			 G => [qw(auth_realm owner name)],
-			 XREALMFULLNAME => [qw(auth_realm owner display_name)],
-			 XREALM => [qw(auth_realm owner name)],
-			 XUSER => [qw(auth_user name)],
-			 XEMAIL => 'demo@bivio.biz',
-			 A => lc(req()->get_nested(qw(auth_user display_name)))
-			     . ' demo@bivio.biz',
-			 XREALM => 'fourem',
 			 S => 'a short title',
 			 T => 'text/html',
 			 D => substr($now, 0, 8),

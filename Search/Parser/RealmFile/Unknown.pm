@@ -2,20 +2,19 @@
 # $Id$
 package Bivio::Search::Parser::RealmFile::Unknown;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'SearchParser.RealmFile';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RF) = __PACKAGE__->use('SearchParser.RealmFile');
 
 sub CONTENT_TYPE_LIST {
     return 'application/octet-stream';
 }
 
-sub handle_parse {
+sub handle_realm_file_new_text {
     my($proto, $parseable) = @_;
     return
 	if -B $parseable->get_os_path;
-    return $_RF->parse($parseable->put(content_type => 'text/plain'));
+    return $proto->new_text($parseable->put(content_type => 'text/plain'));
 }
 
 1;

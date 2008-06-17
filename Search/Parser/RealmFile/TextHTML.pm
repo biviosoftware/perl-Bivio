@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Search::Parser::RealmFile::TextHTML;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'SearchParser.RealmFile';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -10,7 +10,7 @@ sub CONTENT_TYPE_LIST {
     return 'text/html';
 }
 
-sub handle_parse {
+sub handle_realm_file_new_text {
     my($proto, $parseable) = @_;
     my($t) = $parseable->get_content;
     $$t =~ s{<title\s*>([^<]+)</title\s*>}{}is;
@@ -22,11 +22,11 @@ sub handle_parse {
     $t = $proto->use('HTML.Scraper')->to_text($t);
     $$t =~ s/\s+/ /sg;
     $$t =~ s/ *\bPARAGRAPH_SPLIT_HERE\b */\n\n/sg;
-    return [
-	'text/html',
-	$title || '',
-	$t,
-    ];
+    return $proto->new({
+	type => 'text/html',
+	defined($title) && length($title) ? (title => $title) : (),
+	text => $t,
+    });
 }
 
 1;

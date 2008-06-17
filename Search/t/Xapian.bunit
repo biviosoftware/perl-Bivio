@@ -11,18 +11,35 @@ my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})
     class() => [
 	{
 	    method => 'query',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [{
+		    @{__PACKAGE__->map_together(
+			sub {@_},
+			[qw(
+			    phrase
+			    offset
+			    length
+			    private_realm_ids
+			    public_realm_ids
+			    want_all_public
+		        )],
+			$params,
+		    )},
+		}];
+	    },
 	    check_return => sub {
 		my($case, $actual, $expect) = @_;
 		$case->actual_return([sort(map($_->{primary_id}, @{$actual->[0]}))]);
 		return [sort(map($files->[$_], @$expect))];
 	    },
 	} => [
-	    '"commonly worded"' => [],
-	    ['"commonly worded"', 0, 0, [$demo], 1] => [0, 1, 4, 5],
- 	    ['"place for"', 0, 0, [$demo], 0] => [5, 4],
- 	    ['"place for"', 0, 0, [$demo], 1] => [5, 7, 4],
- 	    ['"place for"', 0, 0, [$guest], 0] => [7, 6],
- 	    ['"place for"', 0, 0, [], 1] => [7, 5],
+	    '"commonly worded"' => DIE(),
+ 	    ['"commonly worded"', 0, 0, [$demo], undef, 1] => [0, 1, 4, 5],
+  	    ['"place for"', 0, 0, [$demo], undef, 0] => [5, 4],
+ 	    ['"place for"', 0, 0, [$demo], undef, 1] => [5, 7, 4],
+ 	    ['"place for"', 0, 0, [$guest], undef, 0] => [7, 6],
+ 	    ['"place for"', 0, 0, [], undef, 1] => [7, 5],
  	    ['"place for"', 0, 0, [], [$demo]] => 5,
  	    ['"place for"', 0, 0, [$demo], [$guest]] => [7, 5, 4],
 	    ['abcz', 0, 0, [$demo]] => 1,
@@ -31,9 +48,9 @@ my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})
 		unauth_model('RealmFile', {realm_file_id => $files->[1]})
 		    ->delete;
 		commit();
-		return ['abcz'];
+		return [{phrase => 'abcz', private_realm_ids => [$demo]}];
 	    } => [],
-#TODO: Test update of simple fields and content
+# TODO: Test update of simple fields and content
 	],
     ],
 ];
