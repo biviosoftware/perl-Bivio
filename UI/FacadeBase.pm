@@ -372,8 +372,15 @@ sub _cfg_calendar {
 	    [FORUM_CALENDAR_EVENT_DETAIL => '?/event-detail'],
 	    [FORUM_CALENDAR_EVENT_DELETE => '?/event-delete'],
 	    [FORUM_CALENDAR_EVENT_ICS => '?/event.ics'],
+	    [FORUM_CALENDAR_EVENT_LIST_RSS => '?/calendar.rss'],
 	],
 	Text => [
+	    [prose => [
+		CalendarEventList => [
+		    title => 'vs_site_name(); Calendar',
+		    tagline => 'Recent Calendar Entries at vs_site_name();',
+		],
+	    ]],
 	    [CalendarEvent => [
 		time_zone => 'Time Zone',
 		location => 'Location',
@@ -388,7 +395,8 @@ sub _cfg_calendar {
 		'end_time' => 'End Time',
 	    ]],
 	    [[qw(title xlink)] => [
-		FORUM_CALENDAR => 'Calendar',
+		[qw(FORUM_CALENDAR FORUM_CALENDAR_EVENT_LIST_RSS)]
+		    => 'Calendar',
 		FORUM_CALENDAR_EVENT => 'Edit Event',
 		FORUM_CALENDAR_EVENT_DETAIL => 'Event Detail',
 		FORUM_CALENDAR_EVENT_DELETE => 'Delete Event',

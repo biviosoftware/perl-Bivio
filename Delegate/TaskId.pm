@@ -362,6 +362,7 @@ sub info_calendar {
             DATA_READ
             Model.CalendarEventList->execute_load_page
             View.Calendar->event_list_rss
+	    html_task=FORUM_CALENDAR_EVENT_DETAIL
         )],
  	[qw(
 	    FORUM_CALENDAR
@@ -391,6 +392,7 @@ sub info_calendar {
             Model.CalendarEventList->execute_load_this
             View.Calendar->event_detail
 	    next=FORUM_CALENDAR
+	    CORRUPT_QUERY=FORUM_CALENDAR
 	)],
  	[qw(
 	    FORUM_CALENDAR_EVENT_DELETE
