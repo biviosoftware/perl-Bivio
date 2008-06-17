@@ -97,7 +97,7 @@ sub list {
 			})),
 		    ])),
 		    DIV_text(Join([
-			DIV_excerpt(['->render_html_excerpt']),
+			DIV_excerpt(String(['->render_plain_text_excerpt'])),
 			' ... ',
 			Link('[more]', URI({
 			    task_id => _access_mode('FORUM_BLOG_DETAIL'),
