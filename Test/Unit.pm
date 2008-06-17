@@ -452,7 +452,8 @@ sub _assert_expect {
 	? 'nested_differences' : 'nested_contains';
     my($res) = $_R->$m($expect, $actual);
     Bivio::Die->throw_quietly(
-	DIE => $invert ? "unexpected match: " . ${$_R->to_string($expect)}
+	DIE => $invert
+	    ? "unexpected match: ${$_R->to_string($expect)} == ${$_R->to_string($actual)}"
 	    : "expected != actual:\n$$res",
     ) if $invert xor $res;
     return 1;
