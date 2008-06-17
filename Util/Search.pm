@@ -57,7 +57,7 @@ sub rebuild_realm {
 		    'file#', $i, ': ', $it->get('realm_file_id'),
 		) if $i > 1;
 	    }
-	    $_X->update_realm_file($it);
+	    $_X->update_model($it);
 	    return 1;
         },
 	'realm_file_id asc',
