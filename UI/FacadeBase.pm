@@ -1154,16 +1154,23 @@ sub _cfg_xapian {
 	Constant => [
 	    [ThreePartPage_want_SearchForm => 1],
 	],
+	Color => [
+	    [[qw(search_result_title search_result_excerpt)] => 0],
+	    [search_results_background => 0xffffff],
+	    [search_result_byline => 0x666666],
+	],
+	Font => [
+	    [search_result_title => [qw(bold)]],
+	    [search_result_excerpt => [qw(normal_weight normal_decoration)]],
+	    [search_result_byline => [qw(normal_weight normal_decoration)]],
+	],
 	Task => [
 	    [SEARCH_LIST => 'pub/search'],
 	    [JOB_XAPIAN_COMMIT => undef],
 	],
 	Text => [
 	    [SearchList => [
-		'RealmFile.modified_date_time' => 'Date',
-		'result_title' => 'Title',
-		'result_excerpt' => 'Excerpt',
-		'result_who' => 'Who',
+		empty_list_prose => 'Your search did not match any documents.',
 	    ]],
 	    [SearchForm => [
 		search => '',
