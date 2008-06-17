@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::Calendar;
 use strict;
@@ -8,16 +8,16 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = __PACKAGE__->use('Type.Date');
 my($_DT) = __PACKAGE__->use('Type.DateTime');
-#TODO: make global? or refactor into a widget field value?
-my($date, $current);
 
 sub event_delete {
     my($self) = @_;
-    view_put(xhtml_title => Join([
-	'Remove event: ',
-	String([['Model.CalendarEvent', '->get_model', 'RealmOwner'],
-	    'display_name']),
-    ]));
+    view_put(
+	xhtml_title => Join([
+	    'Remove event: ',
+	    String([['Model.CalendarEvent', '->get_model', 'RealmOwner'],
+		    'display_name']),
+	]),
+    );
     return $self->internal_body(vs_simple_form(CalendarEventDeleteForm => [
 	Join([
 	    'This will permanently remove this event from the ',
@@ -30,6 +30,7 @@ sub event_delete {
 
 sub event_detail {
     my($self) = @_;
+    view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     view_put(
 	xhtml_title => String(['Model.CalendarEventList',
 	    'RealmOwner.display_name']),
@@ -99,22 +100,29 @@ sub event_form {
     ));
 }
 
+sub event_list_rss {
+    return shift->internal_body(AtomFeed('CalendarEventList'));
+}
+
 sub month_list {
     my($self) = @_;
     view_pre_execute(sub {
 	my($req) = @_;
-	$date = $_D->add_days(
+	my($v) = {};
+	$v->{date} = $_D->add_days(
 	    $_DT->from_literal_or_die(
 		$req->get('Model.CalendarEventMonthList')->get_query
 		    ->get('date')), -1);
-	$current = $_D->date_from_parts(
-	    1, $_D->get_parts($date, qw(month year)));
-	while ($_D->english_day_of_week($current) ne 'Sunday') {
-	    $current = $_D->add_days($current, -1);
+	$v->{current} = $_D->date_from_parts(
+	    1, $_D->get_parts($v->{date}, qw(month year)));
+	while ($_D->english_day_of_week($v->{current}) ne 'Sunday') {
+	    $v->{current} = $_D->add_days($v->{current}, -1);
 	}
-	$current = $_D->add_days($current, -7);
+	$v->{current} = $_D->add_days($v->{current}, -7);
+	_globals($req, $v);
 	return;
     });
+    view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     $self->internal_put_base_attr(tools => TaskMenu([
         {
 	    task_id => 'FORUM_CALENDAR_EVENT',
@@ -154,25 +162,27 @@ sub _date_cell {
     return Join([
         DIV_day_of_month(String([
 	    sub {
-		my($req) = @_;
-		return sprintf('%2d ', $_D->get_parts($current, 'day'));
+		my($source) = @_;
+		my($v) = _globals($source);
+		return sprintf('%2d ', $_D->get_parts($v->{current}, 'day'));
 	    }
 	])),
         _event_links(),
     ])->put(
 	cell_class => [
 	    sub {
-		return _is_same_month($date, $current) ?
+		my($v) = _globals(shift);
+		return _is_same_month($v->{date}, $v->{current}) ?
 		    'date_this_month' : 'date_other_month';
 	    }
 	],
         row_control => [
 	    sub {
-		my($req) = @_;
+		my($v) = _globals(shift);
 		# don't show the last row if it is all in the next month
-		if ($_D->english_day_of_week($current) eq 'Sunday'
-			&& $_D->compare($current, $date) > 0
-			    && ! _is_same_month($current, $date)) {
+		if ($_D->english_day_of_week($v->{current}) eq 'Sunday'
+			&& $_D->compare($v->{current}, $v->{date}) > 0
+			    && ! _is_same_month($v->{current}, $v->{date})) {
 		    return 0;
 		}
 		return 1;
@@ -206,17 +216,18 @@ sub _date_time {
 sub _event_links {
     return Prose([
 	sub {
-	    my($req) = @_;
+	    my($req) = shift->req;
+	    my($v) = _globals($req);
 	    my($l) = $req->get('Model.CalendarEventMonthList');
 	    $l->reset_cursor;
 	    my($str) = '';
 	    while ($l->next_row) {
 		my($start) = $_D->from_datetime($l->get('dtstart_in_tz'));
 		my($end) = $_D->from_datetime($l->get('dtend_in_tz'));
-		next unless $_D->compare($start, $current) == 0
-		    || $_D->compare($end, $current) == 0
-			|| ($_D->compare($start, $current) == -1
-				&& $_D->compare($end, $current) == 1);
+		next unless $_D->compare($start, $v->{current}) == 0
+		    || $_D->compare($end, $v->{current}) == 0
+			|| ($_D->compare($start, $v->{current}) == -1
+				&& $_D->compare($end, $v->{current}) == 1);
 		$str .= 'DIV_event(Link(String("'
 		    . $l->get('RealmOwner.display_name')
 		    . '"), URI({
@@ -225,17 +236,27 @@ sub _event_links {
 			    . $l->get('CalendarEvent.calendar_event_id') . '
                     }})));';
 	    }
-	    $current = $_D->add_days($current, 1);
+	    $v->{current} = $_D->add_days($v->{current}, 1);
 	    return $str;
 	}
     ]),
 }
 
+sub _globals {
+    my($req) = shift->req;
+    if (my $values = shift) {
+	$req->put(__PACKAGE__, $values);
+    }
+    return $req->get(__PACKAGE__);
+}
+
 sub _heading_cell {
     return String([
 	sub {
-	    my($str) = $_D->english_day_of_week($current);
-	    $current = $_D->add_days($current, 1);
+	    my($source) = @_;
+	    my($v) = _globals($source);
+	    my($str) = $_D->english_day_of_week($v->{current});
+	    $v->{current} = $_D->add_days($v->{current}, 1);
 	    return $str;
 	}
     ])->put(cell_class => 'day_of_week');
