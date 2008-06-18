@@ -2,19 +2,18 @@
 # $Id$
 package Bivio::Biz::Model::ECPayment;
 use strict;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
-use Bivio::Type::DateTime;
+use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_ECPOS) = __PACKAGE__->use('Type.ECPointOfSale');
+my($_ECPS) = __PACKAGE__->use('Type.ECPaymentStatus');
 
 sub create {
-    my($self, $new_values) = @_;
-    my($req) = $self->get_request;
-    $new_values->{realm_id} ||= $req->get('auth_id');
-    $new_values->{user_id} ||= $req->get('auth_user_id');
-    $new_values->{creation_date_time} ||= Bivio::Type::DateTime->now;
-    $new_values->{description} = $new_values->{service}->get_short_desc
-	unless defined($new_values->{description});
+    my($self, $values) = @_;
+    $values->{description} = $values->{service}->get_short_desc
+	unless defined($values->{description});
+    $values->{status} ||= $_ECPS->CAPTURED;
+    $values->{point_of_sale} ||= $_ECPOS->INTERNET;
     return shift->SUPER::create(@_);
 }
 
