@@ -2,53 +2,13 @@
 # $Id$
 package Bivio::Biz::Model::ECSubscription;
 use strict;
-$Bivio::Biz::Model::ECSubscription::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::ECSubscription::VERSION;
+use Bivio::Base 'Bivio::Biz::PropertyModel';
 
-=head1 NAME
+# C<Bivio::Biz::Model::ECSubscription> holds data about a particular
+# service subscription. The subscription can be running or expired, depending
+# on its end date.
 
-Bivio::Biz::Model::ECSubscription - a subscription to a service
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Model::ECSubscription;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::ECSubscription::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::ECSubscription> holds data about a particular
-service subscription. The subscription can be running or expired, depending
-on its end date.
-
-=cut
-
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="INFINITE_END_DATE"></a>
-
-=head2 INFINITE_END_DATE : string
-
-End of infinite free trial.
-
-=cut
-
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_INFINITE_END_DATE);
 sub INFINITE_END_DATE {
     # Needs to be a bit less than max for the software to work
@@ -63,32 +23,12 @@ use Bivio::Type::ECRenewalState;
 #=VARIABLES
 my($_D) = 'Bivio::Type::Date';
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="create"></a>
-
-=head2 create(hash_ref values) : self
-
-Creates a subscription model, sets default values.
-
-=cut
-
 sub create {
     my($self, $values) = @_;
     $values->{realm_id} ||= $self->get_request->get('auth_id');
     $values->{renewal_state} ||= Bivio::Type::ECRenewalState->OK;
     return $self->SUPER::create($values);
 }
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
 
 sub internal_initialize {
     return {
@@ -106,42 +46,16 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="is_infinite"></a>
-
-=head2 is_infinite() : boolean
-
-Returns true if the subscription is infinite.
-
-=cut
-
 sub is_infinite {
+    # Returns true if the subscription is infinite.
     my($self) = @_;
     return $self->get('end_date') eq $self->INFINITE_END_DATE ? 1 : 0;
 }
 
-=for html <a name="make_infinite"></a>
-
-=head2 make_infinite() : self
-
-Updates to an infinite subscription.
-
-=cut
-
 sub make_infinite {
+    # Updates to an infinite subscription.
     my($self) = @_;
     return $self->update({end_date => $self->INFINITE_END_DATE});
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
