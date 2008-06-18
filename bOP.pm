@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,92 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.54  2008/06/17 04:18:21  nagler
+  * Bivio::Biz::Action::CalendarEventICS
+    removed copied code, now calls CalendarEventDAVList directly
+  * Bivio::Biz::Action::WikiView
+    new WikiText interface
+  * Bivio::Biz::Model::BlogList
+    use new_excerpt
+    added query for rss fead
+  * Bivio::Biz::Model::CRMForm
+    switched to b_use
+    set action to Open for new requests
+  * Bivio::Biz::Model::CalendarEventDAVList
+    added vcalendar_list() to allow sharing with Action.CalendarEventICS
+  * Bivio::Biz::Model::CalendarEventForm
+    load the edit CalendarEvent from 'this' if present
+    default tz
+  * Bivio::Biz::Model::CalendarEventList
+    added computed fields dtstart_in_tz, dtend_in_tz
+    added rss support
+  * Bivio::Biz::Model::MailThreadRootList
+    new Search.Parser interface
+  * Bivio::Biz::Model::RealmFile
+    new Xapian interface
+  * Bivio::Biz::Model::SearchList
+    Use new_excerpt to generate excerpts
+  * Bivio::Delegate::TaskId
+    added calendar tasks
+    added rss support for calendar
+  * Bivio::Mail::Address
+    added parse_local_part
+  * Bivio::PetShop::View::Base
+    added link to Calendar
+  * Bivio::Search::Parseable
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Search::Parser::RealmFile::MessageRFC822
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Search::Parser::RealmFile::PDF
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Search::Parser::RealmFile::TextHTML
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Search::Parser::RealmFile::TextPlain
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Search::Parser::RealmFile::Unknown
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Search::Parser::RealmFile::Wiki
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Search::Parser::RealmFile
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Search::Xapian
+    new_text/excerpt restructuring so can support different models
+  * Bivio::Test::Language::HTTP
+    poll_page was calling unsafe_op incorrectly
+  * Bivio::Test::Unit
+    give more info when unexpected match
+  * Bivio::Test::Util
+    wiki requires full initialization
+  * Bivio::Test::Widget
+    assert actual->[0]
+  * Bivio::Type::BlogContent
+    v7 uses WikiName->TITLE_TAG
+  * Bivio::Type::WikiName
+    export TITLE_TAG
+  * Bivio::UI::FacadeBase
+    add ActionError.wiki_name for SERVER_ERROR
+    Make request status more obvious in CRMActionList labels
+    added calendar text and tasks
+    new searchlist interface
+    added rss support for calendar
+  * Bivio::UI::View::Blog
+    use render_plain_text_excerpt
+  * Bivio::UI::View::CRM
+    added to/cc to extra send fields
+  * Bivio::UI::View::CSS
+    added calendar related css
+    support new search_results
+  * Bivio::UI::View::Mail
+    if to/cc are not present on send_form(), then add as hidden fields
+  * Bivio::UI::XHTML::ViewShortcuts
+    fpc - use ['->get_list_model'] for tree fields
+  * Bivio::UI::XHTML::Widget::WikiText
+    new interface to prepare_html unifies render_html_without_view and render_html
+  * Bivio::UI::XML::Widget::AtomFeed
+    allow queries in rss
+  * Bivio::Util::HTTPConf
+    compress logs
+
   Revision 6.53  2008/06/16 04:31:35  moeller
   * Bivio::Biz::Model::MailThreadList
     added RealmOwner.display_name (User's name)
