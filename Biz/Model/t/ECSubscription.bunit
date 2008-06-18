@@ -1,0 +1,55 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+req()->set_realm_and_user(ShellUtil_SQL()->DEMO);
+my($_D) = __PACKAGE__->use('Type.Date');
+my($_ECPM) = __PACKAGE__->use('Type.ECPaymentMethod');
+my($_ECS) = __PACKAGE__->use('Type.ECService');
+my($payment) = model('ECPayment')->create({
+    amount => 0,
+    service => $_ECS->ANIMAL,
+    method => $_ECPM->NO_PAYMENT,
+});
+my($today) = $_D->local_today;
+[
+    [req()] => [
+	create => [
+	    [{
+		ec_payment_id => $payment->get('ec_payment_id'),
+		start_date => $_D->add_days($today, -10),
+		end_date => $_D->add_days($today, 10),
+	    }] => not_die(),
+	],
+	is_infinite => 0,
+	is_active => 1,
+	update => [
+	    [{
+		start_date => $_D->add_days($today, -10),
+		end_date => $_D->add_days($today, -1),
+	    }] => not_die(),
+	],
+	is_active => 0,
+	make_infinite => not_die(),
+	is_infinite => 1,
+	is_active => 1,
+	update => [
+	    [{
+		start_date => $_D->add_days($today, 1),
+		end_date => $_D->add_days($today, 2),
+	    }] => not_die(),
+	],
+	is_active => 0,
+	update => [
+	    [{
+		start_date => $_D->add_days($today, 0),
+	    }] => not_die(),
+	],
+	is_active => 1,
+	update => [
+	    [{
+		end_date => $_D->add_days($today, 0),
+	    }] => not_die(),
+	],
+	is_active => 1,
+    ],
+];
