@@ -238,7 +238,7 @@ ErrorLog <$log>
 # Possible values include: debug, info, notice, warn, error, crit,
 # alert, emerg.
 LogLevel debug
-LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat "%V %h %P %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 CustomLog <$log> combined
 TypesConfig <$mime_types>
 DefaultType text/plain
