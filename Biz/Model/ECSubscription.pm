@@ -2,32 +2,23 @@
 # $Id$
 package Bivio::Biz::Model::ECSubscription;
 use strict;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Model.RealmBase';
 
 # C<Bivio::Biz::Model::ECSubscription> holds data about a particular
 # service subscription. The subscription can be running or expired, depending
 # on its end date.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_INFINITE_END_DATE);
+my($_D) = __PACKAGE__->use('Type.Date');
+
 sub INFINITE_END_DATE {
-    # Needs to be a bit less than max for the software to work
-    return $_INFINITE_END_DATE
-	||= Bivio::Type::Date ->add_days(Bivio::Type::Date->get_max, -366);
+    return $_D->add_days($_D->get_max, -366);
 }
-
-#=IMPORTS
-use Bivio::Type::Date;
-use Bivio::Type::ECRenewalState;
-
-#=VARIABLES
-my($_D) = 'Bivio::Type::Date';
 
 sub create {
     my($self, $values) = @_;
-    $values->{realm_id} ||= $self->get_request->get('auth_id');
-    $values->{renewal_state} ||= Bivio::Type::ECRenewalState->OK;
-    return $self->SUPER::create($values);
+    $values->{renewal_state} ||= $self->use('Type.ECRenewalState')->OK;
+    return shift->SUPER::create(@_);
 }
 
 sub internal_initialize {
@@ -44,6 +35,13 @@ sub internal_initialize {
         auth_id => 'realm_id',
 	other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
     };
+}
+
+sub is_active {
+    my($self) = @_;
+    my($today) = $_D->local_today;
+    return $_D->compare($today, $self->get('start_date')) >= 0
+	&& $_D->compare($today, $self->get('end_date')) <= 0 ? 1 : 0;
 }
 
 sub is_infinite {
