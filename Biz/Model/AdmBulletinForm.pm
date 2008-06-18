@@ -59,7 +59,8 @@ sub execute_unwind {
     my($self) = @_;
 
     if ($self->get('confirmed_bulletin') || $self->get('test_mode')) {
-	$self->execute_ok;
+	my($res) = $self->execute_ok;
+	return $res if $res;
 	$self->internal_redirect_next;
 	# DOES NOT RETURN
     }
