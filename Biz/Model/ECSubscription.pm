@@ -38,10 +38,10 @@ sub internal_initialize {
 }
 
 sub is_active {
-    my($self) = @_;
-    my($today) = $_D->local_today;
-    return $_D->compare($today, $self->get('start_date')) >= 0
-	&& $_D->compare($today, $self->get('end_date')) <= 0 ? 1 : 0;
+    my($self, $date) = @_;
+    $date ||= $_D->local_today;
+    return $_D->compare($date, $self->get('start_date')) >= 0
+	&& $_D->compare($date, $self->get('end_date')) <= 0 ? 1 : 0;
 }
 
 sub is_infinite {
