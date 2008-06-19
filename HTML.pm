@@ -9,9 +9,8 @@ use URI::Escape ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub escape {
-    my(undef, $value) = @_;
-    $value = HTML::Entities::encode($value);
-    return $value;
+    my(undef, $text) = @_;
+    return scalar(HTML::Entities::encode($text));
 }
 
 sub escape_attr_value {
@@ -32,8 +31,7 @@ sub escape_query {
 
 sub escape_uri {
     my(undef, $value) = @_;
-    $value = _extra_escape_uri(URI::Escape::uri_escape($value));
-    return $value;
+    return _extra_escape_uri(URI::Escape::uri_escape($value));
 }
 
 sub escape_xml {
@@ -64,16 +62,12 @@ sub parse_www_form_urlencoded {
 
 sub unescape_uri {
     my(undef, $value) = @_;
-    $value = URI::Escape::uri_unescape($value);
-    return $value;
+    return URI::Escape::uri_unescape($value);
 }
 
 sub unescape {
     my(undef, $text) = @_;
-    return ''
-	unless defined($text);
-    $text = HTML::Entities::decode($text);
-    return $text;
+    return defined($text) ? scalar(HTML::Entities::decode($text)) : '';
 }
 
 sub unescape_query {
