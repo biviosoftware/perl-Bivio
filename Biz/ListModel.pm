@@ -1047,7 +1047,7 @@ sub _new {
 
 sub _statement {
     my($self) = @_;
-    # Gather changes from internal_prepare_statment and internal_pre_load
+    # Gather changes from internal_prepare_statement and internal_pre_load
     my($stmt) = Bivio::SQL::Statement->new();
     $self->internal_prepare_statement($stmt, $self->get_query());
     return $stmt;
@@ -1104,7 +1104,7 @@ sub _unauth_load {
 
 sub _where_and_params {
     my($self) = @_;
-    # Gather changes from internal_prepare_statment and internal_pre_load
+    # Gather changes from internal_prepare_statement and internal_pre_load
     my($params) = [];
     my($where) = $self->internal_pre_load(
 	$self->get_query(),
