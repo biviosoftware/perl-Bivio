@@ -125,7 +125,7 @@ sub internal_xhtml_adorned_attrs {
 sub internal_xhtml_adorned_body {
     return Join([
 	view_widget_value('xhtml_body_first'),
-	vs_grid3('dock'),
+	$_C->if_version(7 => sub {vs_grid3('dock')}),
 	vs_grid3('header'),
 	vs_grid3('main'),
 	vs_grid3('footer'),
