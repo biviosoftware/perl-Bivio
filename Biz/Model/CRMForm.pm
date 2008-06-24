@@ -66,7 +66,7 @@ sub execute_ok {
 	    subject => $ct->make_subject($self->get('subject')),
 	);
     }
-    my($res) = $button eq 'update_only' ? $self->internal_return_value
+    my($res) = $self->unsafe_get('update_only') ? $self->internal_return_value
 	: shift->SUPER::execute_ok(@_);
 
     $ct = $self->req->get('Model.CRMThread');
