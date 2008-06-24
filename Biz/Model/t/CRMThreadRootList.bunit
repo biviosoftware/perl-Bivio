@@ -1,0 +1,39 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully->set_realm_and_user(qw(crm_forum crm_tech1));
+model(CRMForm => {
+    to => EmailArray(remote_email('crm_forum')),
+    cc => EmailArray(''),
+    subject => my $subject = random_string(),
+    body => 'x',
+    'b_ticket.TupleTag.slot1' => 'Male Puppy',
+    'b_ticket.TupleTag.slot2' => 'Medium',
+    attachment1 => undef,
+    attachment2 => undef,
+    attachment3 => undef,
+});
+req()->put(query => {this => req(qw(Model.CRMThread thread_root_id))});
+model(CRMForm => {
+    update_only => 1,
+    body => '',
+    to => EmailArray(''),
+    cc => EmailArray(''),
+    action_id => realm_id('crm_tech1'),
+    subject => $subject,
+});
+[
+    load_all => [
+	[] => sub {
+	    my($count) = 0;
+	    shift->get('object')->do_rows(sub {
+	        my($it) = shift;
+		$count++
+		    if $it->get('RealmMail.subject') =~ /$subject/;
+		return 1;
+	    });
+	    assert_equals(1, $count);
+	    return 1;
+	},
+    ],
+];
