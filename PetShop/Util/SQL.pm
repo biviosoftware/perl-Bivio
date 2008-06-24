@@ -196,6 +196,13 @@ sub _init_crm {
 	    $self->$forum(),
 	    [$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
 	);
+	$self->req->with_realm($self->CRM_TECH(1), sub {
+	    $self->model('Email')->create({
+		location => $self->use('Type.Location')->BILL_TO,
+		email => $self->format_test_email($self->CRM_TECH(1) . 'a'),
+	    });
+	    return;
+	}) if $forum eq 'CRM_TUPLE_FORUM';
 	$self->new_other('CRM')->setup_realm;
 	if ($forum eq 'CRM_FORUM') {
 	    $self->model('EmailAlias')->create({
