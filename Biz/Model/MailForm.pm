@@ -53,7 +53,14 @@ sub execute_ok {
     $self->internal_put_field(headers => {
 	_from => my $from = $self->internal_format_from,
 	_recipients => my $other_recipients = $to->new([
-	    grep(!($sender eq $_ && ++$removed_sender),
+	    map({
+		my($r) = $_;
+		if (grep($r eq $_, @{$self->get('realm_emails')})) {
+		    $r = undef;
+		    $removed_sender++;
+		}
+		$r ? $r : ();
+	    }
 	        @{$to->as_array},
 		@{$self->get('cc')->as_array},
 	    ),
