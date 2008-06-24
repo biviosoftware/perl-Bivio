@@ -17,14 +17,13 @@ sub internal_initialize {
 	    CRMThread.crm_thread_num
 	    CRMThread.crm_thread_status
 	    owner.Email.email
+
 	    modified_by.Email.email
 	    CRMThread.subject_lc
 	)],
 	other => [
 	    'CRMThread.subject',
 	    ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
-	    ['CRMThread.owner_user_id', 'owner.Email.realm_id(+)'],
-	    ['CRMThread.modified_by_user_id', 'modified_by.Email.realm_id(+)'],
 	    _do(sub {
 	        my($name, $model) = @_;
 	        return (
@@ -50,14 +49,19 @@ sub internal_post_load_row {
     return 1;
 }
 
-sub internal_prepare_statment {
+sub internal_prepare_statement {
     my(undef, $stmt) = @_;
-    $stmt->where(
-	map($stmt->OR(
-	    ["$_.Email.location", [$_LOCATION]],
-	    ["$_.Email.location", [undef]],
-	), qw(owner modified_by)));
-    return;
+    $stmt->from(
+	$stmt->LEFT_JOIN_ON(qw(CRMThread owner.Email), [
+	    ['CRMThread.owner_user_id', 'owner.Email.realm_id'],
+	    ['owner.Email.location', [$_LOCATION]],
+	]),
+	$stmt->LEFT_JOIN_ON(qw(CRMThread modified_by.Email), [
+	    ['CRMThread.owner_user_id', 'modified_by.Email.realm_id'],
+	    ['modified_by.Email.location', [$_LOCATION]],
+	]),
+    );
+    return shift->SUPER::internal_prepare_statement(@_);
 }
 
 sub _do {
