@@ -26,11 +26,34 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.55  2008/06/18 21:22:27  moeller
+  * Bivio::Biz::Model::AdmBulletinForm
+    fpc
+  * Bivio::Biz::Model::ECPayment
+    rm pod
+    now derives from RealmBase
+    default values for status and point_of_sale
+  * Bivio::Biz::Model::ECSubscription
+    rm pod
+    now derived from RealmBase,
+    added is_active()
+    added optional date argument to is_active()
+  * Bivio::Delegate::TaskId
+    fpc
+  * Bivio::UI::View::Blog
+    fpc
+  * Bivio::UI::View::Calendar
+    fixed detail end time
+  * Bivio::Util::HTTPConf
+    Add child process ID to custom LogFormat
+  * Bivio::Util::HTTPD
+    Add vhost and child process ID to custom LogFormat
+
   Revision 6.54  2008/06/17 04:18:21  nagler
   * Bivio::Biz::Action::CalendarEventICS
     removed copied code, now calls CalendarEventDAVList directly
