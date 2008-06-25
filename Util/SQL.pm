@@ -40,6 +40,7 @@ commands:
     import_db file -- imports database (ditto)
     import_tables_only file -- imports tables and sequences only
     init_dbms [clone_db] -- execute createuser and createdb optionally copying clone_db (only works for pg right now)
+    parse_trace_output [string] -- converts arg or input to executable sql
     reinitialize_constraints -- creates constraints
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     restore_dbms_dump file-dump -- restore a "raw" dump
@@ -1639,7 +1640,7 @@ EOF
 }
 
 sub parse_trace_output {
-    my($self) = @_;
+    my($self, $name) =  shift->name_args(['?String'], \@_);
     return join(
 	"\n",
         map({
@@ -1654,7 +1655,7 @@ sub parse_trace_output {
                 }exg;
 	    }
 	    $s ? $s : ();
-	} split(/\n/, ${$self->read_input})),
+	} split(/\n/, $name || ${$self->read_input})),
     );
 }
 
