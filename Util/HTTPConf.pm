@@ -341,7 +341,7 @@ EOF
 sub _logrotate {
     my($vars) = @_;
     return _replace_vars_for_file($vars, logrotate => <<'EOF');
-$log_directory/access_log $log_directory/agent_log $log_directory/error_log $log_directory/referer_log {
+$log_directory/access_log $log_directory/error_log $log_directory/ssl_log {
     missingok
     sharedscripts
     postrotate
