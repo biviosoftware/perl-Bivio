@@ -341,7 +341,7 @@ EOF
 sub _logrotate {
     my($vars) = @_;
     return _replace_vars_for_file($vars, logrotate => <<'EOF');
-$log_directory/access_log $log_directory/error_log $log_directory/ssl_log {
+$log_directory/access_log $log_directory/error_log {
     missingok
     sharedscripts
     postrotate
@@ -396,7 +396,7 @@ Listen 443
 SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
 SSLMutex file:logs/ssl_mutex
-SSLLog logs/ssl_log
+SSLLog logs/error_log
 SSLLogLevel warn
 EOF
 	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
