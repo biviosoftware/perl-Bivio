@@ -92,7 +92,6 @@ sub internal_format_from {
 	sub {
 	    return $_RFC->format_mailbox(
 		$self->get('realm_emails')->[0],
-		$self->req(qw(auth_user display_name)),
 	    );
 	},
 	sub {
