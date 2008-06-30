@@ -205,12 +205,17 @@ sub _init_crm {
 	}) if $forum eq 'CRM_TUPLE_FORUM';
 	$self->new_other('CRM')->setup_realm;
 	if ($forum eq 'CRM_FORUM') {
-	    $self->model('EmailAlias')->create({
-		incoming =>
-		    $self->use('TestLanguage.HTTP')
-			->generate_remote_email('crm'),
-		outgoing => $self->req(qw(auth_realm owner name)),
-	    });
+	    my($alias);
+	    foreach my $a (qw(acrm crm)) {
+		$self->model('EmailAlias')->create({
+		    incoming => $alias = $self->use('TestLanguage.HTTP')
+			    ->generate_remote_email($a),
+		    outgoing => $self->req(qw(auth_realm owner name)),
+		});
+	    }
+	    $self->model('RowTag')->create_value(
+		$self->req('auth_id'), 'CANONICAL_EMAIL_ALIAS',
+		$alias);
 	    $self->req(qw(auth_realm owner))->update({
 		display_name => 'PetShop Support',
 	    });
@@ -223,6 +228,8 @@ sub _init_crm {
 		    default_value => 'Low',
 		},
 	    });
+	    $self->model('RowTag')->create_value(
+		$self->req('auth_id'), 'CRM_SUBJECT_PREFIX', 'tuple');
 	    $self->model('TupleDef')->create_from_hash({
 		'b_ticket#Ticket' => [
 		    {
