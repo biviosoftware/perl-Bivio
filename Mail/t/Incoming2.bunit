@@ -31,12 +31,14 @@ my($alias) = remote_email('forum_alias');
 		compute_params => sub {
 		    my(undef, $params) = @_;
 		    req()->set_realm('mail_forum');
+		    my($realm_emails) = [
+			$params->[1] ? $params->[1] : (),
+			req(qw(auth_realm owner))->format_email,
+		    ];
 		    return [
 			MailReplyWho($params->[0]),
-			[
-			    $params->[1] ? $params->[1] : (),
-			    req(qw(auth_realm owner))->format_email,
-			],
+			$realm_emails->[0],
+			$realm_emails,
 			req(),
 		    ];
 		},
