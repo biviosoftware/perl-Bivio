@@ -12,7 +12,7 @@ req()->initialize_fully;
 	},
     } => [
 	demo => 'demo-alias@bivio.biz',
-	root => remote_email('root'),
+	root => 'root@bivio.biz',
 	crm_forum => remote_email('crm'),
 	crm_tuple_forum => remote_email('crm_tuple_forum'),
     ],
