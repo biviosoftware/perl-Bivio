@@ -5,15 +5,15 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_EA) = __PACKAGE__->use('Type.EmailArray');
-my($_I) = __PACKAGE__->use('Mail.Incoming');
-my($_O) = __PACKAGE__->use('Mail.Outgoing');
-my($_RFC) = __PACKAGE__->use('Mail.RFC822');
-my($_V) = __PACKAGE__->use('UI.View');
+my($_EA) = b_use('Type.EmailArray');
+my($_I) = b_use('Mail.Incoming');
+my($_O) = b_use('Mail.Outgoing');
+my($_RFC) = b_use('Mail.RFC822');
+my($_V) = b_use('UI.View');
+my($_MRW) = b_use('Type.MailReplyWho');
+my($_ARM) = b_use('Action.RealmMail');
+my($_MA) = b_use('Mail.Address');
 my($_QUERY_WHO) = 'to';
-my($_MRW) = __PACKAGE__->use('Type.MailReplyWho');
-my($_ARM) = __PACKAGE__->use('Action.RealmMail');
-my($_MA) = __PACKAGE__->use('Mail.Address');
 
 sub MAIL_REFLECTOR_TASK {
     return undef;
@@ -34,7 +34,8 @@ sub execute_empty {
     $self->internal_put_field(subject => $in ? $in->get_reply_subject : '');
     my($to, $cc) =  ($in || $_I)->get_reply_email_arrays(
 	$self->internal_query_who,
-	$self->get('realm_emails'),
+	_reply_to($self),
+	$self->get_realm_emails,
 	$self->req,
     );
     $self->internal_put_field(to => $to);
@@ -48,14 +49,16 @@ sub execute_ok {
     my($id) = $req->unsafe_get_nested(qw(Model.RealmMail message_id));
     my($cc) = $self->get('cc')->as_literal;
     my($to) = $self->get('to');
-    my($sender) = $self->get('realm_emails')->[0];
+    my($from) = $self->internal_format_from;
+    my($from_email) = $_MA->parse($from);
+    my($sender) = $self->internal_format_sender(_reply_to($self));
     my($removed_sender) = 0;
     $self->internal_put_field(headers => {
-	_from => my $from = $self->internal_format_from,
+	_from => $from,
 	_recipients => my $other_recipients = $to->new([
 	    map({
 		my($r) = $_;
-		if (grep($r eq $_, @{$self->get('realm_emails')})) {
+		if (grep($r eq $_, @{$self->get_realm_emails})) {
 		    $r = undef;
 		    $removed_sender++;
 		}
@@ -77,7 +80,7 @@ sub execute_ok {
 	if $removed_sender;
     $_O->new($im)
 	->set_recipients($other_recipients)
-	->set_envelope_from(($_MA->parse($from))[0])
+	->set_envelope_from($from_email)
 	->enqueue_send($req)
 	if $other_recipients;
     return $self->internal_return_value;
@@ -85,16 +88,14 @@ sub execute_ok {
 
 sub get_realm_emails {
     my($self) = @_;
-    return [
-	$self->new_other('EmailAlias')->format_realm_as_incoming,
-	$self->req(qw(auth_realm owner))->format_email,
-    ];
+    return $self->new_other('EmailAlias')->get_all_emails;
 }
 
 sub internal_format_from {
     my($self) = @_;
     return $_RFC->format_mailbox(
-	$self->new_other('Email')->load_for_auth_user->get('email'),
+	$self->new_other('EmailAlias')
+	    ->format_realm_as_incoming($self->req('auth_user')),
 	$self->req(qw(auth_user display_name)),
     );
 }
@@ -102,9 +103,16 @@ sub internal_format_from {
 sub internal_format_reply_to {
     my($self) = @_;
     return $_RFC->format_mailbox(
-	$self->get('realm_emails')->[0],
+	_reply_to($self),
 	$self->req(qw(auth_user display_name)),
     );
+}
+
+sub internal_format_sender {
+    my($self, $reply_to_email) = @_;
+    return $self->new_other('RowTag')
+	->get_value($self->req('auth_id'), 'CANONICAL_SENDER_EMAIL')
+	|| $reply_to_email;
 }
 
 sub internal_initialize {
@@ -155,11 +163,6 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
-		name => 'realm_emails',
-		type => 'Array',
-		constraint => 'NONE',
-	    },
-	    {
 		name => 'is_new',
 		type => 'Boolean',
 		constraint => 'NOT_NULL',
@@ -178,7 +181,6 @@ sub internal_pre_execute {
     foreach my $f (qw(RealmMail.realm_file_id RealmMail.thread_root_id)) {
 	$self->internal_put_field($f => $edit && $rml->get($f));
     }
-    $self->internal_put_field(realm_emails => $self->get_realm_emails);
     return shift->SUPER::internal_pre_execute(@_);
 }
 
@@ -229,6 +231,11 @@ sub reply_query {
 	'ListQuery.this' => ['RealmMail.realm_file_id'],
 	$_QUERY_WHO => lc($_MRW->from_any($who)->as_uri),
     };
+}
+
+sub _reply_to {
+    my($self) = @_;
+    return $self->new_other('EmailAlias')->format_realm_as_incoming;
 }
 
 1;
