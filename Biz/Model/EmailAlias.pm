@@ -20,16 +20,28 @@ sub internal_initialize {
 }
 
 sub format_realm_as_incoming {
-    my($self, $realm) = @_;
-    $realm ||= $self->req('auth_realm');
-    return (
+    my($self, $realm_owner) = @_;
+    $realm_owner ||= $self->req(qw(auth_realm owner));
+    return $self->new_other('RowTag')
+	->get_value($realm_owner->get('realm_id'), 'CANONICAL_EMAIL_ALIAS')
+	|| $self->get_all_emails($realm_owner)->[0];
+}
+
+sub get_all_emails {
+    my($self, $realm_owner) = @_;
+    $realm_owner ||= $self->req(qw(auth_realm owner));
+    return [
 	@{$self->map_iterate(
 	    sub {shift->get('incoming')},
 	    'incoming asc',
-	    {outgoing => $realm->get_nested(qw(owner name))},
+	    {outgoing => $realm_owner->get('name')},
 	)},
-	$realm->get('owner')->format_email,
-    )[0];
+	$realm_owner->get('realm_type')->eq_user
+	    ? $self->new_other('Email')
+		->unauth_load_or_die({realm_id => $realm_owner->get('realm_id')})
+	        ->get('email')
+	    : $realm_owner->format_email,
+    ];
 }
 
 1;
