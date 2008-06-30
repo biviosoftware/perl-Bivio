@@ -178,8 +178,13 @@ sub _subject {
 
 sub _prefix {
     my($self, $crm_thread_num) = @_;
+    my($prefix) = 
+    return 
+
     return '['
-	. $self->req(qw(auth_realm owner display_name))
+	. ($self->new_other('RowTag')->get_value(
+	    $self->req('auth_id'), 'CRM_SUBJECT_PREFIX',
+	  ) || $self->req(qw(auth_realm owner display_name)))
 	. ' #'
 	. $self->get_or_default(crm_thread_num => $crm_thread_num)
 	. '] ';
