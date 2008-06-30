@@ -38,10 +38,11 @@ $rmid = $rm->get('realm_file_id');
     }] => sub {
 	my($msg) = req('Model.RealmMail')->get_rfc822;
 	foreach my $p (
-	    qr{From:.*mail.*mail_user1\@}i,
-	    qr{To:.*mail_forum\@}i,
-	    qr{Subject: s1}i,
-	    qr{Sender:.*mail_forum\@}i,
+	    qr{^From:.*mail_user1.*mail_user1\@}im,
+	    qr{^To:.*mail_forum\@}im,
+	    qr{^Subject: s1}im,
+	    qr{^Sender:.*mail_forum\@}im,
+	    qr{^Reply-To:.*mail_forum\@}im,
 	    qr{\n\nbody1},
 	    qr{filename="a1\.txt"},
 	) {
