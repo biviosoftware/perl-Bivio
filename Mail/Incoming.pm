@@ -103,8 +103,8 @@ sub get_references {
 }
 
 sub get_reply_email_arrays {
-    my($self, $who, $realm_emails, $req) = @_;
-    return $_EA->new([$realm_emails->[0]])
+    my($self, $who, $canonical_email, $realm_emails, $req) = @_;
+    return $_EA->new($canonical_email)
 	unless ref($self) and !$who->eq_realm;
     my($reply_to) = lc($self->get_reply_to);
     $reply_to = undef
@@ -117,8 +117,8 @@ sub get_reply_email_arrays {
 	    sub {shift->get('Email.email') => 1},
 	)},
     };
-    my($to) = $dups->{$from} ? $realm_emails->[0] : $from;
-    my($cc) = $to eq $realm_emails->[0] ? undef : $realm_emails->[0];
+    my($to) = $dups->{$from} ? $canonical_email : $from;
+    my($cc) = $to eq $canonical_email ? undef : $canonical_email;
     map($_ ? $dups->{$_}++ : (), $from, $reply_to, @$realm_emails);
     return map(
 	$_EA->new([
