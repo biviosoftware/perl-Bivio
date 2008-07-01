@@ -271,7 +271,8 @@ sub set_headers_for_list_send {
 	   unless $np->{list_name} =~ /^[-\.\w]+$/s;
 	Bivio::Die->die($np->{list_title}, ': invalid list title')
 	    unless $np->{list_title} =~ /^[^\n]+$/s;
-	$np->{list_title} =~ s/(["\\])/\\$1/g;
+	$np->{list_title} = $_A->escape_comment($np->{list_title});
+#TODO: Integrate with EmailAlias
 	$np->{list_email} = $np->{req}->format_email($np->{list_name});
 	# Old style is with -owner.
 	$np->{sender} ||= $np->{req}->format_email("$np->{list_name}-owner");
