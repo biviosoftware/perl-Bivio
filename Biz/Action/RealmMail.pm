@@ -6,6 +6,7 @@ use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_O) = __PACKAGE__->use('Mail.Outgoing');
+my($_A) = b_use('Mail.Address');
 
 sub EMPTY_SUBJECT_PREFIX {
     return '!';
@@ -15,14 +16,15 @@ sub execute_receive {
     my($proto, $req, $rfc822, $job_task) = @_;
     $rfc822 ||= $req->get('Model.MailReceiveDispatchForm')
 	->get('message')->{content};
+#TODO: Pull from the task, e.g. job_task=
     $job_task ||= 'FORUM_MAIL_REFLECTOR';
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
     my($in) = $rm->create_from_rfc822($rfc822);
-    my($n) = $req->get_nested(qw(auth_realm owner name));
     my($out) = $_O->new($in)->set_headers_for_list_send({
-	list_name => $n,
+	list_name => $req->get_nested(qw(auth_realm owner name)),
 	list_email => $rm->new_other('EmailAlias')->format_realm_as_incoming,
-	list_title => $req->get_nested(qw(auth_realm owner display_name)),
+	list_title => $_A->escape_comment(
+	    $req->get_nested(qw(auth_realm owner display_name))),
 	reply_to_list => $rm->new_other('Forum')->load->get('want_reply_to'),
 #TODO: This should be configurable
 	keep_to_cc => 1,
