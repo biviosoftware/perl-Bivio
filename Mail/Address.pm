@@ -18,6 +18,12 @@ my($PHRASE) = $_RFC->PHRASE;
 my($LOCAL_PART) = $_RFC->LOCAL_PART;
 my($_E) = __PACKAGE__->use('Type.Email');
 
+sub escape_comment {
+    my(undef, $comment) = @_;
+    $comment =~ s/(["\\])/\\$1/g;
+    return $comment;
+}
+
 sub parse {
     # (proto, string) : array
     # 822:
