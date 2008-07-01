@@ -26,11 +26,39 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.57  2008/07/01 00:00:47  nagler
+  * Bivio::Biz::Model::CRMForm
+    use unsafe_get on a field, not 'eq' on the $button
+    internal_format_from() no longer uses auth_user display_name to
+    describe the email address (less is more)
+    format_realm_as_incoming for internal_format_from
+  * Bivio::Biz::Model::CRMThread
+    use CRM_SUBJECT_PREFIX
+  * Bivio::Biz::Model::CRMThreadRootList
+    fix cross-join problem
+  * Bivio::Biz::Model::EmailAlias
+    handle user "get_all_emails" and format_realm_as_incoming
+  * Bivio::Biz::Model::MailForm
+    removed sender fix
+    restructure to use EMailAlias exclusively to generate email addresses
+  * Bivio::Delegate::RowTagKey
+    added CANONICAL_EMAIL_ALIAS, CANONICAL_SENDER_EMAIL, and CRM_SUBJECT_PREFIX
+  * Bivio::Mail::Incoming
+    pass canonical_email to get_reply_email_arrays
+  * Bivio::PetShop::Util::SQL
+    added two email addresses for CRM_TECH1
+    test data for aliases and CANONICAL_EMAIL_ALIAS
+  * Bivio::Util::HTTPConf
+    error, access, and ssl_log are the only logs (no referer)
+    don't create an ssl_log, just use error_log
+  * Bivio::Util::SQL
+    parse_trace_output accepts string as argument
+
   Revision 6.56  2008/06/24 17:45:04  nagler
   * Bivio::Biz::ListModel
     fixed typo
