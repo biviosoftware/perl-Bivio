@@ -34,7 +34,7 @@ sub execute_empty {
     $self->internal_put_field(subject => $in ? $in->get_reply_subject : '');
     my($to, $cc) =  ($in || $_I)->get_reply_email_arrays(
 	$self->internal_query_who,
-	_reply_to($self),
+	_realm_email($self),
 	$self->get_realm_emails,
 	$self->req,
     );
@@ -50,8 +50,10 @@ sub execute_ok {
     my($cc) = $self->get('cc')->as_literal;
     my($to) = $self->get('to');
     my($from) = $self->internal_format_from;
+    my($realm_email) = _realm_email($self);
     my($from_email) = $_MA->parse($from);
-    my($sender) = $self->internal_format_sender(_reply_to($self));
+    my($sender) = $self->internal_format_sender($realm_email);
+    my($reply_to) = $self->internal_format_reply_to($realm_email);
     my($removed_sender) = 0;
     $self->internal_put_field(headers => {
 	_from => $from,
@@ -69,8 +71,8 @@ sub execute_ok {
 	    ),
 	])->as_literal,
 	Sender => $sender,
-	'Reply-To' => $sender,
 	To => $to->as_literal,
+	$reply_to ? ('Reply-To' => $reply_to) : (),
 	$cc ? (Cc => $cc) : (),
 	Subject => $self->get('subject'),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
@@ -101,18 +103,20 @@ sub internal_format_from {
 }
 
 sub internal_format_reply_to {
-    my($self) = @_;
-    return $_RFC->format_mailbox(
-	_reply_to($self),
-	$self->req(qw(auth_user display_name)),
-    );
+    my($self, $realm_email) = @_;
+    return $self->req(qw(auth_realm type))->eq_forum
+	&& $self->new_other('Forum')->load->get('want_reply_to')
+	? $_RFC->format_mailbox(
+	    $realm_email,
+	    $self->req(qw(auth_realm owner display_name)),
+	) : ();
 }
 
 sub internal_format_sender {
-    my($self, $reply_to_email) = @_;
+    my($self, $realm_email) = @_;
     return $self->new_other('RowTag')
 	->get_value($self->req('auth_id'), 'CANONICAL_SENDER_EMAIL')
-	|| $reply_to_email;
+	|| $realm_email;
 }
 
 sub internal_initialize {
@@ -233,7 +237,7 @@ sub reply_query {
     };
 }
 
-sub _reply_to {
+sub _realm_email {
     my($self) = @_;
     return $self->new_other('EmailAlias')->format_realm_as_incoming;
 }
