@@ -731,6 +731,7 @@ sub _top_level_forum {
     $self->model(ForumForm => {
         'RealmOwner.display_name' => $_S->to_camel_case($name),
 	'RealmOwner.name' => $name,
+	'Forum.want_reply_to' => 1,
     });
     my($rid) = $self->req('auth_id');
     $self->model('ForumUserDeleteForm', {
