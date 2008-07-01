@@ -41,7 +41,9 @@ use strict;
 		     'jef@example.com', '"Mary Joe"@2.example.com',
 		    'hackers@foo.com']],
 	],
+	escape_comment => [
+	    a => 'a',
+	    q{"\\} => q{\"\\\\},
+	],
     ],
 ];
-
-
