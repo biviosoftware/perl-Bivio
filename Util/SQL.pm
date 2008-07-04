@@ -218,8 +218,7 @@ sub drop {
             || $s =~ /^\s*(alter\s+table\s*\w+\s*)add\s+(constraint\s+\w+)\s+/is
             || $s =~ /^(\s*)create(\s+function\s[\S]+)/is;
 	my($p, $s) = ($1, $2);
-	Bivio::Die->eval(sub {
-#TODO: don't want to ignore all errors - ex. db doesn't exist
+	Bivio::Die->catch_quietly(sub {
 	    $_C->execute(
 		$p . 'drop ' . $s . ($s =~ /^table/i ? ' CASCADE' : ''));
 	    return;
