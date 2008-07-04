@@ -1075,9 +1075,10 @@ sub _cfg_wiki {
 		    [$id => sub {
 			 my($f) = shift->get_facade;
 			 my($req) = $f->req;
-			 my($res) = Bivio::Die->eval(sub {
+			 my($res);
+			 Bivio::Die->catch_quietly(sub {
 			     my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
-			     return $ro->get('realm_id')
+			     return $res = $ro->get('realm_id')
 			         if $ro->unauth_load({name => $f->$name()});
 			     return;
 			 });
