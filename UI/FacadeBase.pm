@@ -1133,7 +1133,7 @@ sub _cfg_wiki {
 		help_wiki_footer => '',
 		help_wiki_header => 'Help',
 		help_wiki_open => 'Help',
-		wiki_view_byline => q{edited DateTime(['Action.WikiView', 'modified_date_time']); by MailTo(['Action.WikiView', 'author']);},
+		wiki_view_byline => q{If(['->can_user_execute_task', 'FORUM_WIKI_EDIT'], Join(['edited ', DateTime(['Action.WikiView', 'modified_date_time']), ' by ', MailTo(['Action.WikiView', 'author'])]));},
 		wiki_view_tools => qq{TaskMenu([
                     {
 	                task_id => 'FORUM_WIKI_EDIT',

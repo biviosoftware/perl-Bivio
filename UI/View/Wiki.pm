@@ -62,14 +62,7 @@ EOF
 }
 
 sub site_view {
-    my($self) = @_;
-    view_put(
-	xhtml_title => vs_text_as_prose('wiki_view_topic'),
-	xhtml_topic => '',
-	xhtml_byline => '',
-	xhtml_tools => '',
-    );
-    return $self->internal_body(Wiki());
+    return shift->view(@_);
 }
 
 sub view {

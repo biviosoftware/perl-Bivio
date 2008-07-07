@@ -1136,7 +1136,7 @@ sub info_wiki {
 	    Action.SiteForum
 	    Action.WikiView->execute_prepare_html
 	    View.Wiki->site_view
-	    want_author=0
+	    want_author=1
         )],
     ];
 #122-129 free
