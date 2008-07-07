@@ -26,11 +26,23 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.58  2008/07/01 21:01:22  nagler
+  * Bivio::Biz::Action::RealmMail
+    escape the list_title
+  * Bivio::Biz::Model::MailForm
+    added want_reply_to check in to internal_format_reply_to
+  * Bivio::Mail::Address
+    *** empty log message ***
+  * Bivio::Mail::Outgoing
+    call Type.Address->escape_comment
+  * Bivio::PetShop::Util::SQL
+    turn on want_reply_to everywhere
+
   Revision 6.57  2008/07/01 00:00:47  nagler
   * Bivio::Biz::Model::CRMForm
     use unsafe_get on a field, not 'eq' on the $button
