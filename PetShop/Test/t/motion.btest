@@ -2,10 +2,10 @@
 # $Id$
 test_setup('PetShop');
 my($forum, $uri) = create_forum();
-Bivio::IO::Alert->info($uri);
-visit_uri("$uri/votes");
-verify_text(qr{no votes}i);
-follow_link(qr{add vote}i);
+#Bivio::IO::Alert->info($uri);
+visit_uri("$uri/polls");
+verify_text(qr{no polls}i);
+follow_link(qr{new poll}i);
 verify_text(qr{one vote per user}i);
 submit_form(ok => {
     'Name:' => 'Test Motion 1',

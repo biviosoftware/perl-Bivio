@@ -643,12 +643,12 @@ sub _cfg_mail {
 sub _cfg_motion {
     return {
 	Task => [
-	    [FORUM_MOTION_LIST => '?/votes'],
-	    [FORUM_MOTION_ADD => ['?/add-vote', '?/vote-add']],
-	    [FORUM_MOTION_EDIT => ['?/edit-vote', '?/vote-edit']],
-	    [FORUM_MOTION_VOTE => '?/vote'],
-	    [FORUM_MOTION_VOTE_LIST => ['?/vote-results', '?/results']],
-	    [FORUM_MOTION_VOTE_LIST_CSV => ['?/vote-results.csv', '?/results.csv']],
+	    [FORUM_MOTION_LIST => ['?/polls', '?/votes']],
+	    [FORUM_MOTION_ADD => ['?/new-poll', '?/add-vote', '?/vote-add']],
+	    [FORUM_MOTION_EDIT => ['?/edit-poll', '?/edit-vote', '?/vote-edit']],
+	    [FORUM_MOTION_VOTE => ['?/poll-vote', '?/vote']],
+	    [FORUM_MOTION_VOTE_LIST => ['?/poll-results', '?/vote-results', '?/results']],
+	    [FORUM_MOTION_VOTE_LIST_CSV => ['?/poll-results.csv', '?/vote-results.csv', '?/results.csv']],
 	],
 	Text => [
 	    [Motion => [
@@ -663,22 +663,22 @@ sub _cfg_motion {
 		creation_date_time => 'Date',
 	    ]],
 	    [MotionList => [
-		empty_list_prose => 'No votes to display.',
+		empty_list_prose => 'No polls to display.',
 	    ]],
 	    [MotionVoteList => [
-		empty_list_prose => 'No vote results.',
+		empty_list_prose => 'No poll results.',
 	    ]],
 	    [acknowledgement => [
-		FORUM_MOTION_EDIT => 'Vote updates have been saved.',
+		FORUM_MOTION_EDIT => 'Poll updates have been saved.',
 		FORUM_MOTION_VOTE =>
-		    'Thank you for your participation in the vote.',
+		    'Thank you for your participation in the poll.',
 	    ]],
 	    [title => [
-		FORUM_MOTION_LIST => 'Votes',
-		FORUM_MOTION_ADD => 'Add vote',
-		FORUM_MOTION_EDIT => 'Edit vote',
+		FORUM_MOTION_LIST => 'Polls',
+		FORUM_MOTION_ADD => 'New Poll',
+		FORUM_MOTION_EDIT => 'Edit Poll',
 		FORUM_MOTION_VOTE => 'Vote',
-		FORUM_MOTION_VOTE_LIST => 'Vote Results',
+		FORUM_MOTION_VOTE_LIST => 'Poll Results',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_MOTION_VOTE_LIST_CSV => 'Spreadsheet',
