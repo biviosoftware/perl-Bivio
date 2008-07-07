@@ -25,10 +25,8 @@ my($copy) = $value;
 	hello => 'hello',
 	'&#39;' => q{'},
 	'&amp;&gt;&lt;&quot;' => q{&><"},
-	# unicode? U+00A9
-	'&copy;' => chr(0x00A9),
-	# should be unicode U+2122, but isn't
-	'&trade;' => chr(0xe2) . chr(0x84) . chr(0xa2),
+	'&copy;' => "\x{00A9}",
+	'&trade;' => "\x{2122}",
     ],
     parse_www_form_urlencoded => [
 	[undef] => [{}],
