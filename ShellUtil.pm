@@ -441,9 +441,11 @@ sub initialize_ui {
     # facades.  Otherwise, only initializes the default facade, and does not setup
     # tasks for execution.
     my($req) = $self->get_request;
-    $self->use('Agent.Dispatcher')->initialize(!$fully);
-    $req->setup_all_facades
-	if $fully;
+    if ($req->can('setup_all_facades')) {
+        $self->use('Agent.Dispatcher')->initialize(!$fully);
+        $req->setup_all_facades
+            if $fully;
+    }
     $self->use('UI.Facade')->setup_request(undef, $req);
     $req->put_durable(
 	task => $self->use('Agent.Task')->get_by_id($req->get('task_id')))
