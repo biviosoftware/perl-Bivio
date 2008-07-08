@@ -20,16 +20,21 @@ sub from_literal {
     $proto->internal_from_literal_warning
         unless wantarray;
     # careful to see if Preferences model is present before accessing
-    my($pref);
-    if (defined($value)
-	    && Bivio::Auth::Support->unsafe_get_user_pref(
-		    'TEXTAREA_WRAP_LINES',
-		    Bivio::Agent::Request->get_current,
-		    \$pref)
-	    && $pref) {
-	return $proto->wrap_lines($value, $line_width || $proto->LINE_WIDTH);
-    }
-    return $proto->SUPER::from_literal($value);
+    my($pref, $req);
+    return $proto->wrap_lines($value, $line_width || $proto->LINE_WIDTH)
+	if defined($value)
+        and $req = Bivio::Agent::Request->get_current
+	and Bivio::Auth::Support
+	    ->unsafe_get_user_pref('TEXTAREA_WRAP_LINES', $req, \$pref)
+        and $pref;
+    my($v, $e) = $proto->SUPER::from_literal($value);
+    return ($v, $e)
+	unless $v;
+    $v =~ s/\r\n|\n\r|\r/\n/sg;
+    $v =~ s/^\s+$//mg;
+    $v =~ s/^\n+|\n+$//sg;
+    $v =~ s/\n{3,}/\n/sg;
+    return $v =~ /\S/ ? $v . "\n" : (undef, undef);
 }
 
 sub get_width {
