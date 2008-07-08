@@ -114,9 +114,7 @@ sub internal_format_reply_to {
 
 sub internal_format_sender {
     my($self, $realm_email) = @_;
-    return $self->new_other('RowTag')
-	->get_value($self->req('auth_id'), 'CANONICAL_SENDER_EMAIL')
-	|| $realm_email;
+    return $self->new_other('EmailAlias')->format_realm_as_sender($realm_email);
 }
 
 sub internal_initialize {
