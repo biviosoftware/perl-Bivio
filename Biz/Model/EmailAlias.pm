@@ -27,6 +27,14 @@ sub format_realm_as_incoming {
 	|| $self->get_all_emails($realm_owner)->[0];
 }
 
+sub format_realm_as_sender {
+    my($self, $incoming_email) = @_;
+    return $self->new_other('RowTag')
+	->get_value($self->req('auth_id'), 'CANONICAL_SENDER_EMAIL')
+	|| $incoming_email
+	|| $self->format_realm_as_incoming;
+}
+
 sub get_all_emails {
     my($self, $realm_owner) = @_;
     $realm_owner ||= $self->req(qw(auth_realm owner));
