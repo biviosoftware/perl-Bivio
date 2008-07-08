@@ -20,9 +20,12 @@ sub execute_receive {
     $job_task ||= 'FORUM_MAIL_REFLECTOR';
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
     my($in) = $rm->create_from_rfc822($rfc822);
+    my($ea) = $rm->new_other('EmailAlias');
+    my($email) = $ea->format_realm_as_incoming;
     my($out) = $_O->new($in)->set_headers_for_list_send({
 	list_name => $req->get_nested(qw(auth_realm owner name)),
-	list_email => $rm->new_other('EmailAlias')->format_realm_as_incoming,
+	list_email => $email,
+	sender => $ea->format_realm_as_sender($email),
 	list_title => $_A->escape_comment(
 	    $req->get_nested(qw(auth_realm owner display_name))),
 	reply_to_list => $rm->new_other('Forum')->load->get('want_reply_to'),
