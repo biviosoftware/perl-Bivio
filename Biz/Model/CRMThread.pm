@@ -178,9 +178,6 @@ sub _subject {
 
 sub _prefix {
     my($self, $crm_thread_num) = @_;
-    my($prefix) = 
-    return 
-
     return '['
 	. ($self->new_other('RowTag')->get_value(
 	    $self->req('auth_id'), 'CRM_SUBJECT_PREFIX',
