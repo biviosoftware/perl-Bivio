@@ -29,7 +29,7 @@ submit_form({
 verify_form({
     _anon => $code,
 });
-verify_text(qr{>$code<.*>hello goodbye telephone<}s);
+verify_text(qr{>$code.*hello goodbye telephone}s);
 verify_text(qr{>cool $code<.*>This is some really cool $code}s);
 verify_text("$f/wiki");
 follow_link(qr{^$code});
