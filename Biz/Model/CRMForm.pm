@@ -15,6 +15,10 @@ my($_TAG_ID) = 'b_ticket.CRMThread.thread_root_id';
 #TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
+sub DEFAULT_CRM_THREAD_STATUS {
+    return $_CLOSED;
+}
+
 sub TUPLE_TAG_IDS {
     return [$_TAG_ID];
 }
@@ -41,7 +45,9 @@ sub execute_empty {
 	    subject => $ct->clean_subject($self->get('subject')));
 	$self->internal_put_field(
 	    action_id => $cal->status_to_id(
-		$discuss ? $ct->get('crm_thread_status') : $_CLOSED,
+		$discuss
+                    ? $ct->get('crm_thread_status')
+                    : $self->DEFAULT_CRM_THREAD_STATUS,
 	    ));
 	return;
     }, sub {
