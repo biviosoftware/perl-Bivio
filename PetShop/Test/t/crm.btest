@@ -31,6 +31,9 @@ verify_local_mail($tech1, qr{.}, 1);
 reload_page();
 verify_text($body);
 verify_text("Open Ticket #$ticket");
+follow_link('Show Original');
+test_equals('text/plain', get_response()->content_type);
+
 # Audit log is the email stream, like tuple, but action
 # is simple notification
 # verify_text(qr{last update by.*tech1});
