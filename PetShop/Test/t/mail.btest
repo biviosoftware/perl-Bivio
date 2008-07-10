@@ -104,10 +104,9 @@ follow_link($reply_subject);
 follow_link('author');
 verify_text('initial message');
 verify_form({
-#    'To:' => $user1_email,
     topic => "Re: $reply_subject",
-#    cc => '',
 });
+verify_text(qr{To:.*\Q$user1_email}s);
 go_back();
 follow_link('original');
 verify_text(qr{message-id:}i);
