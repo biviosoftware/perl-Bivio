@@ -190,9 +190,10 @@ sub validate {
 
 sub _with {
     my($self, $true, $false) = @_;
-    return $false && $false->($self->req('Model.CRMActionList'))
+    my($cal) = $self->req('Model.CRMActionList');
+    return $false && $false->($cal)
 	unless my $ct = $self->req->unsafe_get('Model.CRMThread');
-    return $true->($ct, $self->req('Model.CRMActionList'));
+    return $true->($ct, $cal);
 }
 
 1;
