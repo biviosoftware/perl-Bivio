@@ -109,13 +109,11 @@ sub send_form {
 	DIV_msg_compose(Join([
 	    vs_simple_form(_name($self, 'XxForm') => [
 		@{$extra_fields || [$buttons]},
-		map({
-		    my($field) = $_;
-		    grep(ref($_) eq 'ARRAY' && $_->[0] =~ /\.$field$/,
-			@{$extra_fields || []})
-		        ? ()
-		        : Hidden($field);
-		} qw(to cc)),
+		map([_name($self, "XxForm.$_"), {
+		    cols => $cols,
+		    rows => 1,
+		    row_class => 'textarea',
+		}], qw(to cc)),
 		[_name($self, 'XxForm.subject'), {
 		    size => $cols + 2,
 		}],
