@@ -8,6 +8,9 @@ follow_link('All', 'User, Demo');
 visit_uri('/pub/eg1');
 follow_link('settings');
 verify_text(qr{Last Name.*value="User"}s);
+verify_form({
+    size => 15,
+});
 follow_link('exit');
 follow_link('All','User, Btest_read');
 visit_uri('/bp/index');
