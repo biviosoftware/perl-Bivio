@@ -86,6 +86,14 @@ sub execute_put {
     return;
 }
 
+sub execute_show_original {
+    my($proto, $req) = @_;
+    my($res) = shift->access_controlled_execute(@_);
+    $req->get('reply')->set_output_type('text/plain')
+        if $res;
+    return $res;
+}
+
 sub set_output_for_get {
     my(undef, $realm_file) = @_;
     return

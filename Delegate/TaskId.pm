@@ -702,7 +702,14 @@ sub info_mail {
 	    View.Mail->send_form
 	    next=FORUM_MAIL_THREAD_ROOT_LIST
         )],
-#144-149 free
+	[qw(
+            FORUM_MAIL_SHOW_ORIGINAL_FILE
+	    144
+	    FORUM
+	    ANYBODY
+	    Action.RealmFile->execute_show_original
+	)],
+#145-149 free
     ];
 }
 

@@ -205,7 +205,7 @@ sub _msg {
 				query => $_MF->reply_query($_),
 			    }, $self->internal_reply_list),
 			    {
-				task_id => 'FORUM_FILE',
+				task_id => 'FORUM_MAIL_SHOW_ORIGINAL_FILE',
 				label => _name($self, 'FORUM_XX_FORM.view_rfc822'),
 				query => undef,
 				path_info => ['RealmFile.path'],

@@ -11,6 +11,7 @@ foreach my $path (qw(
     /Public/ARF_Public.txt
     /ARF_Private.txt
     /ARF.txt
+    /Public/A.eml
 )) {
     model('RealmFile')->create_or_update_with_content({path => $path}, \$path);
 }
@@ -19,6 +20,11 @@ options({
     compute_params => sub {
 	my($case, $params) = @_;
 	req()->put(path_info => shift(@$params));
+        if ($case->get('method') =~
+                /^(access_controlled_execute|execute_show_original)$/) {
+            req()->set_user(shift(@$params));
+            return [req()];
+        }
 	return [req(), undef, req('auth_id'), @$params];
     },
     compute_return => sub {
@@ -36,17 +42,20 @@ options({
 	    ['/Some/path', '/ARF/0'] => '/ARF/0',
 	    ['/ARF/0', '/not_found'] => MODEL_NOT_FOUND(),
 	],
-	{
-	    method => 'access_controlled_execute',
-	    compute_params => sub {
-		my($case, $params) = @_;
-		req()->put(path_info => shift(@$params));
-		req()->set_user(shift(@$params));
-		return [req()];
-	    },
-	} => [
+	access_controlled_execute => [
 	    '/ARF/0' => FORBIDDEN(),
 	    '/ARF.txt' => '/Public/ARF.txt',
+            'A.eml' => '/Public/A.eml',
 	],
+	{
+	    method => 'execute_show_original',
+            compute_return => sub {
+                return [req('reply')->get_output_type,
+                        req('reply')->get_output,
+                        req('Model.RealmFile')->get_content_type];
+            },
+	} => [
+            '/A.eml' => ['text/plain', '/Public/A.eml', 'message/rfc822'],
+        ],
     ],
 ];

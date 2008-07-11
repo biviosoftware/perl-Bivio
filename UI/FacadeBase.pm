@@ -568,6 +568,7 @@ sub _cfg_mail {
 			[FORUM_MAIL_THREAD_LIST => '?/mail-thread'],
 			[FORUM_MAIL_FORM => '?/compose-mail-msg'],
 			[FORUM_MAIL_PART => '?/mail-msg-part/*'],
+                        [FORUM_MAIL_SHOW_ORIGINAL_FILE => '?/original-msg/*'],
 		    );
 		},
 	    ),

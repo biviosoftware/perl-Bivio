@@ -248,7 +248,7 @@ image/x-xpixmap:xpm:X pixmap
 image/x-xpm:xpm:X pixmap
 image/x-xwd:xwd:X window dump
 image/x-xwindowdump:xwd:X window dump
-text/plain:eml:RFC822 Mail Message
+message/rfc822:eml:RFC822 Mail Message
 model/iges:iges:IGES model
 model/mesh:mesh:Mesh model
 model/vrml:wrl:VRML model
