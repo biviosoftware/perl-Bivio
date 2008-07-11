@@ -982,6 +982,7 @@ sub _cfg_user_auth {
 		ok_button => 'Update',
 	    ]],
 	    [UserSettingsForm => [
+                'page_size' => 'List Size',
 		'RealmOwner.name' => 'User Id',
 		'RealmOwner.name.desc' => 'Field only visible to system administrators.',
 		'separator.password' => 'Fill in to change your password; otherwise, leave blank',

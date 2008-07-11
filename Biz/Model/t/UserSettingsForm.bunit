@@ -9,6 +9,25 @@ FormModel({
     },
 });
 [
+    [{
+        _user => 'crm_tech1',
+        'User.last_name' => 'crm_tech1',
+    }] => [{
+        'Model.RowTag' => {
+            key => 'PAGE_SIZE',
+            value => 15,
+        },
+    }],
+    [{
+        _user => 'crm_tech1',
+        'User.last_name' => 'crm_tech1',
+        page_size => 20,
+    }] => [{
+        'Model.RowTag' => {
+            key => 'PAGE_SIZE',
+            value => 20,
+        },
+    }],
     error_case({
 	_user => 'root',
     } => {

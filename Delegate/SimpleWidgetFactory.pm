@@ -45,6 +45,7 @@ use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 use Bivio::Type::Name;
 use Bivio::Type::TextArea;
+use Bivio::TypeValue;
 use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::ViewShortcuts;
 use Bivio::UI::Widget;
@@ -381,6 +382,17 @@ sub internal_create_edit {
 	return $_VS->vs_new('Text', {
 	    field => $field,
 	    size => $type->get_width,
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::PageSize')) {
+	b_die($type, ': range changed')
+            if $type->get_min != 5 || $type->get_max != 500;
+	return $_VS->vs_new('Select', {
+	    field => $field,
+	    choices => Bivio::TypeValue->new($type,
+		    [qw(5 10 15 20 30 40 50 75 100 200 300 400 500)]),
 	    %$attrs,
 	});
     }

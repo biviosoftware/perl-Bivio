@@ -160,6 +160,7 @@ sub settings_form {
 	'UserSettingsForm.User.first_name',
 	'UserSettingsForm.User.middle_name',
 	'UserSettingsForm.User.last_name',
+        'UserSettingsForm.page_size',
 	['UserSettingsForm.RealmOwner.name', {
 	    row_control => [qw(Model.UserSettingsForm show_name)],
 	}],

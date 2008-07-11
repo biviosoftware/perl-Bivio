@@ -8,10 +8,23 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PASSWORD_FIELDS) = [qw(old_password new_password confirm_new_password)];
 my($_NAME_FIELDS) = [map("User.${_}_name", qw(first middle last))];
 
+sub DEFAULT_USER_PAGE_SIZE {
+    return 15;
+}
+
+sub PAGE_SIZE_KEY {
+    return 'PAGE_SIZE';
+}
+
 sub execute_empty {
     my($self) = @_;
     foreach my $m (qw(RealmOwner User)) {
-	$self->load_from_model_properties($self->new_other($m)->load);
+        my($model) = $self->new_other($m)->load;
+        $self->internal_put_field(page_size => ($self->new_other('RowTag')
+            ->get_value($model->get('realm_id'), $self->PAGE_SIZE_KEY) ||
+                $self->DEFAULT_USER_PAGE_SIZE))
+            if $m eq 'RealmOwner';
+	$self->load_from_model_properties($model);
     }
     return shift->SUPER::execute_empty(@_);
 }
@@ -19,8 +32,11 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     $self->new_other('User')->load->update($self->get_model_properties('User'));
-    $self->new_other('RealmOwner')->load
-	->update($self->get_model_properties('RealmOwner'))
+    my($ro) = $self->new_other('RealmOwner')->load;
+    $self->new_other('RowTag')->replace_value(
+        $ro->get('realm_id'), $self->PAGE_SIZE_KEY,
+        $self->unsafe_get('page_size') || $self->DEFAULT_USER_PAGE_SIZE);
+    $ro->update($self->get_model_properties('RealmOwner'))
 	if $self->get('show_name');
     $self->internal_clear_error('RealmOwner.name')
 	unless $self->get('show_name');
@@ -37,6 +53,11 @@ sub internal_initialize {
 	visible => [
 	    @$_NAME_FIELDS,
 	    'RealmOwner.name',
+            {
+                name => 'page_size',
+                type => 'PageSize',
+                constraint => 'NONE',
+            }
 	],
 	other => [
 	    {
