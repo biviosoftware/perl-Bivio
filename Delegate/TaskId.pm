@@ -815,6 +815,8 @@ sub info_site_adm {
 	    FORUM
 	    ANYBODY
 	    Action.UserLogout
+            Action.ClientRedirect->execute_next
+            next=SITE_ROOT
 	    su_task=SITE_ADM_USER_LIST
 	)],
 #163-169
