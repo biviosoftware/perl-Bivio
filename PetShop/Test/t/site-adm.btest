@@ -11,7 +11,16 @@ verify_text(qr{Last Name.*value="User"}s);
 verify_form({
     size => 15,
 });
+
 follow_link('exit');
+verify_link('All');
+# clicking  exit on a stale page should put the user at site root
+go_back();
+follow_link('exit');
+verify_link('Sign-in');
+
+login_as('root');
+visit_uri('/site/admin-users');
 follow_link('All','User, Btest_read');
 visit_uri('/bp/index');
 verify_text('title">Sweet Home');
