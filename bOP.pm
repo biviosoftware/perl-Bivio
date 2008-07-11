@@ -26,11 +26,25 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.60  2008/07/09 23:33:00  dobbs
+  * Bivio::Biz::Action::RealmMail
+    call format_realm_as_sender to format the sender address
+  * Bivio::Biz::Model::CRMForm
+    subclasses can now override DEFAULT_CRM_THREAD_STATUS
+  * Bivio::Biz::Model::EmailAlias
+    added format_realm_as_sender
+  * Bivio::Biz::Model::MailForm
+    call EmailAlias to format_realm_as_sender
+  * Bivio::MIME::Type
+    change mime type for CRM "Show Original"
+  * Bivio::Type::TextArea
+    clean up lines properly
+
   Revision 6.59  2008/07/07 23:36:49  dobbs
   * Bivio::Biz::Model::RoleBaseList
     can_iterate is false for all lists of this type
