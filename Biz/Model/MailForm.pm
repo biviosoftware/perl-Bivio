@@ -75,6 +75,7 @@ sub execute_ok {
 	$reply_to ? ('Reply-To' => $reply_to) : (),
 	$cc ? (Cc => $cc) : (),
 	Subject => $self->get('subject'),
+	'Message-Id' => $_O->generate_message_id($req),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
     my($im) = $_V->render($self->VIEW_CLASS . '->form_imail', $req);
