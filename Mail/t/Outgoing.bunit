@@ -41,6 +41,7 @@ EOF
 my($host) = req()->format_email('x') =~ /\@(.+)/;
 my($_OUT) = <<"EOF";
 Return-Path: <foo_bar\@example.net>
+Message-ID: <123\@example.com>
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 From: "Fan Tango" <foo_bar\@example.net>
 Subject: [abc] This is my subject
