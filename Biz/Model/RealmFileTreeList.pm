@@ -24,12 +24,6 @@ sub can_write {
     return $self->[$_IDI]->{can_write};
 }
 
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_CFG = $cfg;
-    return;
-}
-
 sub internal_default_expand {
     my($self) = @_;
     return [$self->new_other('RealmFile')->path_info_to_id('/')];
