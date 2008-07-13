@@ -11,8 +11,7 @@ options({
 });
 [
     load_all => [
-	[] => [qw(/ /private /private/file.html /private/image.gif
-		  /public /public/file.txt)],
+	[] => [qw(/ /private /public)],
 	sub {
 	    return [{
 		order_by => '0d',

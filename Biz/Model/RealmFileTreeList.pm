@@ -10,9 +10,6 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_RF) = __PACKAGE__->use('Model.RealmFile');
 my($_RTK) = __PACKAGE__->use('Type.RowTagKey');
 my($_TLN) = __PACKAGE__->use('Type.TreeListNode');
-Bivio::IO::Config->register(my $_CFG = {
-    default_expand => 'all_rows',
-});
 
 sub LOAD_ALL_SIZE {
     return 5000;
