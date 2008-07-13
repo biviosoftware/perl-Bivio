@@ -35,11 +35,7 @@ sub handle_config {
 
 sub internal_default_expand {
     my($self) = @_;
-    return $self->new_other('RealmFolderList')->map_iterate(
-	'RealmFile.realm_file_id')
-	if $_CFG->{default_expand} eq 'all_rows';
-    return [$self->new_other('RealmFile')->load({folder_id => undef})
-	->get('realm_file_id')];
+    return [$self->new_other('RealmFile')->path_info_to_id('/')];
 }
 
 sub internal_initialize {
@@ -147,9 +143,7 @@ sub internal_root_parent_node_id {
     my($self) = @_;
     return undef
 	unless my $p = $self->get_query->unsafe_get('path_info');
-    return $self->new_other('RealmFile')->load({
-	path => $_RF->parse_path($p),
-    })->get('realm_file_id');
+    return $self->new_other('RealmFile')->path_info_to_id($p);
 }
 
 sub is_archive {
@@ -169,12 +163,12 @@ sub is_locked {
 }
 
 sub parse_query_from_request {
-   my($self) = @_;
-   my($query) = shift->SUPER::parse_query_from_request(@_);
-   if (my $p = $self->req->unsafe_get('path_info')) {
-       $query->put(path_info => $_RF->parse_path($p));
-   }
-   return $query;
+    my($delegator, @args) = shift->delegated_args(@_);
+    my($query) = $delegator->call_super(parse_query_from_request => \@args);
+    if (my $p = $delegator->req->unsafe_get('path_info')) {
+	$query->put(path_info => $_RF->parse_path($p));
+    }
+    return $query;
 }
 
 1;
