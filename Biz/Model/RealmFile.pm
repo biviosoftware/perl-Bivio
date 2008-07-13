@@ -301,6 +301,12 @@ sub parse_path {
     return $p ? $p : '/';
 }
 
+sub path_info_to_id {
+    my($self, $path_info) = @_;
+    return $self->load({path => $self->parse_path($path_info)})
+	->get('realm_file_id');
+}
+
 sub unauth_copy_deep {
     my($self, $dest) = @_;
 #TODO: Die if $dest _in_version
