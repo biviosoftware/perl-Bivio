@@ -22,7 +22,6 @@ my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
     approved
     encoding
     errors-to flags
-    message-id
     priority
     received
     reply-to
@@ -85,10 +84,7 @@ sub add_missing_headers {
     my($now) = $_DT->now;
     foreach my $x (
 	[Date => $_DT->rfc822($now)],
-	['Message-ID' => '<' .
-	     $req->format_email(
-		 $_DT->to_file_name($now) . "." . $_R->string(16))
-	     . '>'],
+	['Message-ID' => $self->generate_message_id($req)],
 	[From => "<$from_email>"],
 	['Return-Path' => "<$from_email>"],
     ) {
@@ -133,6 +129,14 @@ sub attach {
         if defined($named->{binary});
     push(@{$self->get_if_exists_else_put('parts', [])}, $named);
     return;
+}
+
+sub generate_message_id {
+    my(undef, $req) = @_;
+    return '<' .
+	$req->format_email(
+	    $_DT->to_file_name($_DT->now) . '.' . $_R->string(16)
+	) . '>';
 }
 
 sub get_body {
