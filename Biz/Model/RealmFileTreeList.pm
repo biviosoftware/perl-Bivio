@@ -154,9 +154,9 @@ sub is_locked {
 }
 
 sub parse_query_from_request {
-    my($delegator, @args) = shift->delegated_args(@_);
-    my($query) = $delegator->call_super(parse_query_from_request => \@args);
-    if (my $p = $delegator->req->unsafe_get('path_info')) {
+    my($self) = @_;
+    my($query) = shift->SUPER::parse_query_from_request(@_);
+    if (my $p = $self->req->unsafe_get('path_info')) {
 	$query->put(path_info => $_RF->parse_path($p));
     }
     return $query;
