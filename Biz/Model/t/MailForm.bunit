@@ -42,6 +42,7 @@ $rmid = $rm->get('realm_file_id');
 	    qr{^To:.*mail_forum\@}im,
 	    qr{^Subject: s1}im,
 	    qr{^Sender:.*mail_forum\@}im,
+	    qr{^Message-Id: <\d+\.\w+@.*>}im,
 	    qr{^Reply-To:.*mail_forum\@}im,
 	    qr{\n\nbody1},
 	    qr{filename="a1\.txt"},
