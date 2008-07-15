@@ -8,6 +8,10 @@ my($_P) = __PACKAGE__->use('Search.Parser');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub DATE_SORT_ORDER {
+    return 0;
+}
+
 sub NOT_FOUND_IF_EMPTY {
     return 0;
 }
@@ -17,12 +21,7 @@ sub drilldown_uri {
     my($req) = $self->req;
     return $req->format_uri({
 	task_id => $req->get_nested(qw(task thread_task)),
-	query => $self->format_query('THIS_CHILD_LIST', {
-#TODO: Only works b/c subclass of MailThreadList
-	    'ListQuery.order_by' => [
-		'RealmFile.modified_date_time' => 1,
-	    ],
-	}),
+	query => $self->format_query('THIS_CHILD_LIST'),
     });
 }
 
