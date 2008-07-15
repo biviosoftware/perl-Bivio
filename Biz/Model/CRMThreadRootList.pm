@@ -10,8 +10,10 @@ my($_CAL) = __PACKAGE__->use('Model.CRMActionList');
 
 sub internal_initialize {
     my($self) = @_;
-    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+    my($info) = $self->SUPER::internal_initialize;
+    return $self->merge_initialize_info($info, {
         version => 1,
+        primary_key => ['CRMThread.crm_thread_num'],
         order_by => [qw(
 	    CRMThread.modified_date_time
 	    CRMThread.crm_thread_num
@@ -22,6 +24,7 @@ sub internal_initialize {
 	    CRMThread.subject_lc
 	)],
 	other => [
+            delete($info->{primary_key})->[0],
 	    'CRMThread.subject',
 	    ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
 	    _do(sub {
