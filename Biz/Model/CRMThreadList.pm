@@ -22,12 +22,23 @@ sub get_subject {
     return _model(shift)->get('subject');
 }
 
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+        parent_id => 'CRMThread.crm_thread_num',
+        other => [
+            ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
+            [qw(RealmMail.realm_id CRMThread.realm_id)],
+        ],
+   });
+}
+
 sub _model {
     my($self) = @_;
     return $self->req->unsafe_get('Model.CRMThread')
-	|| $self->new_other('CRMThread')->load({
-	    thread_root_id => $self->get_query->get('parent_id'),
-	});
+	|| ($self->has_cursor ? $self : $self->set_cursor_or_die(0))
+            ->get_model('CRMThread');
 }
 
 1;
