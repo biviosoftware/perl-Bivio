@@ -7,6 +7,10 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RM) = __PACKAGE__->use('Model.RealmMail');
 
+sub DATE_SORT_ORDER {
+    return 1;
+}
+
 sub NOT_FOUND_IF_EMPTY {
     return 1;
 }
@@ -29,7 +33,10 @@ sub internal_initialize {
 	can_iterate => 1,
         primary_key => [[qw(RealmMail.realm_file_id RealmFile.realm_file_id)]],
 	order_by => [
-	    'RealmFile.modified_date_time',
+            {
+                name => 'RealmFile.modified_date_time',
+                sort_order => $self->DATE_SORT_ORDER,
+            },
 	    'RealmMail.from_email',
             'RealmMail.subject_lc',
 	],
