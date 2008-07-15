@@ -26,11 +26,38 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.61  2008/07/11 20:05:28  dobbs
+  * Bivio::Biz::Action::RealmFile
+    added execute_show_original() to override content type for
+    Show Originial link
+  * Bivio::Biz::Model::CRMForm
+    minor refactor
+  * Bivio::Biz::Model::UserSettingsForm
+    added page_size to UserSettingsForm
+  * Bivio::Delegate::SimpleWidgetFactory
+    added page_size to UserSettingsForm
+  * Bivio::Delegate::TaskId
+    added FORUM_MAIL_SHOW_ORIGINAL_FILE for Mail and CRM
+    Show Originial link
+  * Bivio::MIME::Type
+    Changing the MIME for .eml files was too drastic.  Using
+    a new task for the Show Original link.
+  * Bivio::UI::FacadeBase
+    added page_size to UserSettingsForm
+    added FORUM_MAIL_SHOW_ORIGINAL_FILE
+  * Bivio::UI::View::CRM
+    make to/cc rendered in MailForm
+  * Bivio::UI::View::Mail
+    make to/cc always visible
+    use FORUM_MAIL_SHOW_ORIGINAL_FILE for Show Original link
+  * Bivio::UI::View::UserAuth
+    added page_size to UserSettingsForm
+
   Revision 6.60  2008/07/09 23:33:00  dobbs
   * Bivio::Biz::Action::RealmMail
     call format_realm_as_sender to format the sender address
