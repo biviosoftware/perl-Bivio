@@ -122,7 +122,7 @@ config({
         USAGE => qr{^usage: \S+ \[options\] command \[args..\]
 commands:
   f1
-  f2
+  f2 x -- something wonderful
   my_package
 }s,
     ],

@@ -957,9 +957,19 @@ sub setup {
 sub shell_commands {
     my($proto) = @_;
     no strict qw(refs);
-    return [sort(
-        grep(!/(^b_|^_|^[A-Z0-9_]+$)/ && *{$proto->package_name.'::'.$_}{CODE},
-        keys(%{*{$proto->package_name.'::'}})))];
+    my($cmd_usage) = sub {
+        my($cmd) = @_;
+        my($fn) = $proto->can("${cmd}_USAGE");
+        $cmd .= ' '.$fn->()
+            if ref($fn) eq 'CODE';
+        return $cmd;
+    };
+    return [
+        map($cmd_usage->($_),
+        sort(
+        grep(!/(^b_|^_|^[A-Z0-9_]+$|_USAGE$)/
+             && *{$proto->package_name.'::'.$_}{CODE},
+        keys(%{*{$proto->package_name.'::'}}))))];
 }
 
 sub unauth_model {
