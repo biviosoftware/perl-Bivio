@@ -116,6 +116,15 @@ config({
 		return shift->[0]->isa('Bivio::t::ShellUtil::T1');
 	    },
 	],
+        USAGE => DIE(),
+    ],
+    class('ShellUtil.T2') => [
+        USAGE => qr{^usage: \S+ \[options\] command \[args..\]
+commands:
+  f1
+  f2
+  my_package
+}s,
     ],
     sub {'Bivio::t::ShellUtil::T1'} => [
 	{

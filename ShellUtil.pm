@@ -189,9 +189,9 @@ EOF
 }
 
 sub USAGE {
-    # B<Subclasses must override this method.>
-    #
-    # Returns the usage string, e.g.
+    my($proto) = @_;
+    # B<Subclasses may override this method to provide command details
+    # in which case they should return the complete usage string, e.g.
     #
     #     usage: b-db-util [options] command [args...]
     #     commands:
@@ -200,7 +200,13 @@ sub USAGE {
     # 	   recover_standby
     # 	   sql2csv file.sql
     # 	   switch_logs_and_count_rows
-    die('abstract method');
+    die('abstract method')
+        if $proto->package_name eq __PACKAGE__;
+    return join("\n",
+        'usage: '._cleanup_command_name().' [options] command [args..]',
+        'commands:',
+        map("  $_", @{$proto->shell_commands}),
+        '');
 }
 
 sub are_you_sure {
@@ -948,6 +954,14 @@ sub setup {
     return $self;
 }
 
+sub shell_commands {
+    my($proto) = @_;
+    no strict qw(refs);
+    return [sort(
+        grep(!/(^b_|^_|^[A-Z0-9_]+$)/ && *{$proto->package_name.'::'.$_}{CODE},
+        keys(%{*{$proto->package_name.'::'}})))];
+}
+
 sub unauth_model {
     return _model(@_);
 }
@@ -1013,6 +1027,11 @@ sub _check_cfg {
 	$cfg->{daemon_sleep_after_reap} = 1;
     }
     return;
+}
+
+sub _cleanup_command_name {
+    $0 =~ qr{([-\w]+)$}; #exclude path to $0 in output
+    return _special_handling_to_append_argv0_for_bivio($1);
 }
 
 sub _compile_options {
@@ -1360,6 +1379,11 @@ sub _setup_for_main {
         unless $self->unsafe_get('req');
     $self->set_realm_and_user(map(_parse_realm($self, $_), qw(realm user)));
     return;
+}
+
+sub _special_handling_to_append_argv0_for_bivio {
+    my($cmd) = @_;
+    return $cmd eq 'bivio' ? "$1 $ARGV[0]" : $cmd;
 }
 
 sub _start_daemon_child {
