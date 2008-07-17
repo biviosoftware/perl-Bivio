@@ -11,7 +11,7 @@ die('no ticket')
     unless $ticket;
 login_as('crm_tech1');
 visit_uri('/crm_forum/tickets');
-follow_link($msg->unsafe_get_header('Subject'));
+follow_link_in_table('Last Update', 'Subject', $msg->unsafe_get_header('Subject'), 'Status', 'New');
 follow_link('answer');
 verify_text("Locked Ticket #$ticket");
 verify_text(qr{Cc:.*\Q$cust1}s);
