@@ -121,7 +121,7 @@ sub get {
     # Returns the named value(s).  If I<key> doesn't exist, C<die> is called.  Use
     # L<has_keys|"has_keys"> to test for existence.
     my($fields) = $self->[$_IDI];
-    return _array($self, map(
+    return $self->return_scalar_or_array(map(
 	exists($fields->{$_}) ? $fields->{$_}
 	    : _die($self, $_, ": attribute doesn't exist"),
 	@_));
@@ -307,7 +307,7 @@ sub unsafe_get {
     # Returns the named value(s).  If I<key> doesn't exist, C<undef> is returned
     # in its place.
     my($fields) = $self->[$_IDI];
-    return _array($self, map($fields->{$_}, @_))
+    return $self->return_scalar_or_array(map($fields->{$_}, @_))
 }
 
 sub unsafe_get_by_regexp {
@@ -332,13 +332,6 @@ sub unsafe_get_widget_value_by_name {
     #
     #     ($self->unsafe_get($name), $self->exists($name))
     return ($self->unsafe_get($name), $self->has_keys($name));
-}
-
-sub _array {
-    my($self) = shift;
-    # _array result
-    return wantarray ? @_ : @_ == 1 ? $_[0]
-	: _die($self, 'method must be called called in array context');
 }
 
 sub _die {
