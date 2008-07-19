@@ -94,6 +94,19 @@ Bivio::Test->unit([
 	    ['concat', [[qw(a b)], [qw(c d)]], undef, ['y']] => [['a-b-y', 'c-d-y']],
 	    [sub {$_[0] + $_[1]}, [1, 2, 3], [4]] => [[5, 6, 7]],
 	],
+	return_scalar_or_array => [
+	    [] => [],
+	    1 => 1,
+	    [1, 2] => [1, 2],
+	],
+	{
+	    method => 'return_scalar_or_array',
+	    want_scalar => 1,
+	} => [
+	    [] => qr{must.*array},
+	    1 => 1,
+	    [1, 2] => qr{must.*array},
+	],
     ],
     'Bivio::t::UNIVERSAL::t2' => [
 	inheritance_ancestors => [
