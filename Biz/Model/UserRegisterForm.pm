@@ -80,7 +80,7 @@ sub internal_initialize {
 }
 
 sub internal_post_execute {
-    my($self, undef, $res) = @_;
+    my($self) = @_;
     my(@res) = shift->SUPER::internal_post_execute(@_);
     return @res
 	unless ($self->get_field_error('Email.email') || $_UNKNOWN)->eq_exists;
