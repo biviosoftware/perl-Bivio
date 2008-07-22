@@ -17,10 +17,10 @@ my($_CL) = b_use('IO.ClassLoader');
 
 sub handler {
     if (my $modified = _modified()) {
-	$_HANDLERS->call_fifo(handle_unload_class => [$modified]);
+	map($_HANDLERS->call_fifo(handle_unload_class => [$_]), @$modified);
 	_do(delete_require => $modified);
 	_do(simple_require => $modified);
-	$_HANDLERS->call_fifo(handle_reload_class => [$modified]);
+	map($_HANDLERS->call_fifo(handle_reload_class => [$_]), @$modified);
 	$_LAST_TIME = time;
     }
     return 1;
