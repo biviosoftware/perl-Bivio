@@ -61,7 +61,6 @@ use Bivio::UI::Facade;
 #=VARIABLES
 my($_INITIALIZED);
 use vars qw($_TRACE);
-Bivio::IO::Trace->register;
 
 =head1 FACTORIES
 
