@@ -208,23 +208,12 @@ sub validate {
 	$self->internal_put_field(login => $login);
 	$self->internal_put_field('RealmOwner.password' => $password);
     }
-    my($owner) = $self->validate_login;
-    return
-	if !$owner || ($self->in_error && !$owner->require_otp);
-    unless ($owner->get_field_type('password')->is_equal(
-	$owner->get('password'),
-	$self->get('RealmOwner.password'),
-    )) {
-	return $self->internal_put_error(
-	    'RealmOwner.password', 'PASSWORD_MISMATCH',
-	) unless $owner->require_otp;
-	return $self->internal_put_error(
-	    'RealmOwner.password' => 'OTP_PASSWORD_MISMATCH'
-	) unless $self->new_other('OTP')->unauth_load_or_die({
-	    user_id => $owner->get('realm_id')
-	})->verify($self->get('RealmOwner.password'));
+    _validate($self);
+    # don't send password back to client in error case
+    if ($self->in_error) {
+	$self->internal_put_field('RealmOwner.password' => undef);
+	$self->internal_clear_literal('RealmOwner.password');
     }
-    $self->internal_put_field(validate_called => 1);
     return;
 }
 
@@ -394,6 +383,28 @@ sub _su_logout {
 sub _super_user_field {
     # Returns SUPER_USER_FIELD
     return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
+}
+
+sub _validate {
+    my($self) = @_;
+    my($owner) = $self->validate_login;
+    return
+	if !$owner || ($self->in_error && !$owner->require_otp);
+    unless ($owner->get_field_type('password')->is_equal(
+	$owner->get('password'),
+	$self->get('RealmOwner.password'),
+    )) {
+	return $self->internal_put_error(
+	    'RealmOwner.password', 'PASSWORD_MISMATCH',
+	) unless $owner->require_otp;
+	return $self->internal_put_error(
+	    'RealmOwner.password' => 'OTP_PASSWORD_MISMATCH'
+	) unless $self->new_other('OTP')->unauth_load_or_die({
+	    user_id => $owner->get('realm_id')
+	})->verify($self->get('RealmOwner.password'));
+    }
+    $self->internal_put_field(validate_called => 1);
+    return;
 }
 
 sub _validate_cookie_password {
