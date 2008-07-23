@@ -341,7 +341,6 @@ sub _unauth_load {
     return 1
 	if $self->unauth_load($query);
     if ($id_or_name =~ /^\d+$/) {
-	b_info($id_or_name);
 	delete($query->{name});
 	$query->{realm_id} = $id_or_name;
 	if ($self->unauth_load($query)) {
