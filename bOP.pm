@@ -26,11 +26,32 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.62  2008/07/15 22:24:58  dobbs
+  * Bivio::Biz::Model::CRMThreadList
+    parent_id changed from CRMThread.thread_root_id to CRMThread.crm_thread_num
+  * Bivio::Biz::Model::CRMThreadRootList
+    parent_id changed from CRMThread.thread_root_id to CRMThread.crm_thread_num
+  * Bivio::Biz::Model::MailForm
+    added Message-Id to headers so fixed for all recipients
+  * Bivio::Biz::Model::MailThreadList
+    make DATE_SORT_ORDER explicit and overridable by subclasses
+  * Bivio::Biz::Model::MailThreadRootList
+    moved date sort order from the query params to internal_initialize()
+  * Bivio::Biz::Model::RealmFile
+    added path_info_to_id
+  * Bivio::Biz::Model::RealmFileTreeList
+    default_expand is gone; expand top level
+  * Bivio::Delegate::TaskId
+    added next redirect for SITE_ADM_SUBSTITUTE_USER_DONE for stale links
+  * Bivio::Mail::Outgoing
+    Message-Id not removed on set_headers_for_list_send
+    added generate_message_id
+
   Revision 6.61  2008/07/11 20:05:28  dobbs
   * Bivio::Biz::Action::RealmFile
     added execute_show_original() to override content type for
