@@ -258,15 +258,14 @@ sub can_secure {
 }
 
 sub can_user_execute_task {
-    my($self, $task_name, $realm_id) = @_;
+    my($self, $task_name, $realm) = @_;
     my($tid) = Bivio::Agent::TaskId->from_any($task_name);
-    my($realm);
     return 0
 	if $_V7
 	&& !Bivio::UI::Task->is_defined_for_facade($tid->get_name, $self);
     my($task) = Bivio::Agent::Task->get_by_id($tid);
-    if ($realm_id) {
-        $realm = Bivio::Auth::Realm->new($realm_id, $self);
+    if ($realm) {
+        $realm = Bivio::Auth::Realm->new($realm, $self);
 	$task->assert_realm_type($realm->get('type'));
     }
     else {
