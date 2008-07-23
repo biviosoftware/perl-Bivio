@@ -280,7 +280,9 @@ sub is_empty {
 
 sub is_searchable {
     my($self) = @_;
-    return $self->get('is_folder') || _in_versions($self->get('path'))
+    return $self->get('is_folder')
+	|| _in_versions($self->get('path'))
+	|| _is_backup($self->get('path'))
 	? 0 : 1;
 }
 
@@ -538,6 +540,11 @@ sub _in_public {
 sub _in_versions {
     my($path) = @_;
     return $path =~ m{^\Q@{[$_FP->VERSIONS_FOLDER]}\E(?:/|$)}i ? 1 : 0;
+}
+
+sub _is_backup {
+    my($path) = @_;
+    return $path =~ m{[\~\%\#\$]|/\.|\.bak$|-$}i ? 1 : 0;
 }
 
 sub _next_version {
