@@ -44,6 +44,13 @@ req()->set_realm('btest_read');
 	    },
 	],
 	builtin_email => qr{hello\@},
+	builtin_model_exists => [
+	    [User => {}] => 1,
+	    [RealmOwner => {name => 'fourem'}] => 0,
+	],
+	builtin_model => [
+	    [RealmOwner => {name => 'fourem'}] => MODEL_NOT_FOUND(),
+	],
 	builtin_unauth_model => [
 	    RealmOwner => sub {$_[1]->[0]->is_loaded ? 0 : 1},
 	    [RealmOwner => {name => 'fourem'}, [{display_name => qr{forum}i}]]
@@ -69,9 +76,6 @@ req()->set_realm('btest_read');
 		    RealmOwner => {name => 'btest_read'},
 		)->get('realm_id'),
 	    }, [{}]] => not_die(),
-	],
-	builtin_model => [
-	    [RealmOwner => {name => 'fourem'}] => MODEL_NOT_FOUND(),
 	],
 	builtin_string_ref => [
 	    '' => [\''],

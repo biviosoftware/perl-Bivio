@@ -265,6 +265,12 @@ sub builtin_model {
     return _model(@_);
 }
 
+sub builtin_model_exists {
+    my($self, $name, $query) = @_;
+    my($actual) = _model($self, $name, $query, undef);
+    return @$actual > 0 ? 1 : 0;
+}
+
 sub builtin_not_die {
     # Returns C<undef> which is the value L<Bivio::Test::unit|Bivio::Test/"unit">
     # uses for ignoring result, but not allowing a die.
@@ -505,6 +511,7 @@ sub _load_type_class {
 
 sub _model {
     my($proto, $name, $query, $expect) = @_;
+    my($have_expect) = @_ >= 4;
     # Returns a new model instance if just I<name>.  If I<query>, calls
     # unauth_load_or_die (PropertyModel), unauth_load_all (ListModel), or process
     # (FormModel).
@@ -520,7 +527,7 @@ sub _model {
     my($method) = $is_unauth ? 'unauth_model' : 'model';
     if ($m->isa('Bivio::Biz::PropertyModel')) {
 	return Bivio::ShellUtil->$method($name, $query)
-	    unless $expect;
+	    unless $have_expect;
 	$actual = $m->map_iterate(
 	    undef,
 	    $is_unauth ? 'unauth_iterate_start' : 'iterate_start',
@@ -531,12 +538,13 @@ sub _model {
     else {
 	$m = Bivio::ShellUtil->$method($name, $query);
 	return $m
-	    unless $expect;
+	    unless $have_expect;
 	$m->die($expect, ': expected not supported for FormModels')
 	    if $m->isa('Bivio::Biz::FormModel');
 	$actual = $m->map_rows;
     }
-    $proto->builtin_assert_contains($expect, $actual);
+    $proto->builtin_assert_contains($expect, $actual)
+	if defined($expect);
     return $actual;
 }
 
