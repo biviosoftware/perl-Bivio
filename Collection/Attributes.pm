@@ -354,11 +354,17 @@ sub _even {
 sub _get_nested {
     my($self, @names) = @_;
     # Does work of get_nested and unsafe_get_nested
-    my($method) = (caller(1))[3] =~ /(\w+)$/;
-    my($v) = $self->[$_IDI];
+    my($method) = $self->my_caller;
+    my($v) = $self;
     while (@names) {
 	my($name) = shift(@names);
-	if (ref($v) eq 'HASH') {
+	if (defined($v) && $v eq $self) {
+	    if ($v->has_keys($name)) {
+		$v = $v->unsafe_get($name);
+		next;
+	    }
+	}
+	elsif (ref($v) eq 'HASH') {
 	    if (exists($v->{$name})) {
 		$v = $v->{$name};
 		next;
@@ -378,7 +384,7 @@ sub _get_nested {
 	else {
 	    return undef
 		if  $method =~ /unsafe/ && !defined($v);
-	    _die($self, "can't index \"", $v, '" at name"',
+	    _die($self, "can't index \"", $v, '" at name "',
 		    $name, '" ', \@names);
 	}
 	return $method =~ /unsafe/
