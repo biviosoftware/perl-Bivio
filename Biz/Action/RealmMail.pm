@@ -7,17 +7,17 @@ use Bivio::Base 'Biz.Action';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_O) = __PACKAGE__->use('Mail.Outgoing');
 my($_A) = b_use('Mail.Address');
+my($_T) = b_use('Agent.Task');
 
 sub EMPTY_SUBJECT_PREFIX {
     return '!';
 }
 
 sub execute_receive {
-    my($proto, $req, $rfc822, $job_task) = @_;
+    my($proto, $req, $rfc822) = @_;
     $rfc822 ||= $req->get('Model.MailReceiveDispatchForm')
 	->get('message')->{content};
 #TODO: Pull from the task, e.g. job_task=
-    $job_task ||= 'FORUM_MAIL_REFLECTOR';
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
     my($in) = $rm->create_from_rfc822($rfc822);
     my($ea) = $rm->new_other('EmailAlias');
@@ -35,7 +35,9 @@ sub execute_receive {
 	req => $req,
     });
     $proto->use('AgentJob.Dispatcher')->enqueue(
-	$req, $job_task, {
+	$req,
+	$req->get('task')->get_attr_as_id('mail_reflector_task'),
+	{
 	    $proto->package_name => $proto->new({
 		outgoing => $out,
 		realm_file_id => $rm->get('realm_file_id'),
