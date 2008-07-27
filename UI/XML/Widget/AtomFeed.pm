@@ -22,11 +22,7 @@ sub initialize {
 		qw(title tagline),
 	    ),
 	    EmptyTag(link => {
-		HREF => URI({
-		    require_absolute => 1,
-		    task_id => [[qw(->req task html_task)], '->get_name'],
-		    query => undef,
-		}),
+		HREF => _uri({}),
 		REL => 'alternate',
 		TYPE => 'text/html',
 	    }),
@@ -41,11 +37,8 @@ sub initialize {
 		Tag(summary => CDATA(['->get_rss_summary'])),
 		Tag(modified => DateTime(['->get_modified_date_time'])),
 		EmptyTag(link => {
-		    HREF => URI({
-			require_absolute => 1,
-			task_id => [[qw(->req task html_task)], '->get_name'],
+		    HREF => _uri({
 			path_info => ['path_info'],
-			require_absolute => 1,
 			query => ['query'],
 		    }),
 		    REL => 'alternate',
@@ -65,5 +58,16 @@ sub internal_new_args {
     };
 }
 
+
+sub _uri {
+    my($a) = @_;
+    return URI({
+	require_absolute => 1,
+	task_id => [[[qw(->req task)], qw(->get_attr_as_id html_task)], '->get_name'],
+	query => undef,
+	path_info => undef,
+	%$a,
+    });
+}
 
 1;
