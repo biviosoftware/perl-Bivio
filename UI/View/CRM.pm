@@ -15,7 +15,6 @@ sub internal_crm_send_form_buttons {
 sub internal_crm_send_form_extra_fields {
     my($self) = @_;
     my($form) = $self->internal_name . 'Form';
-    my($cols) = 80;
     return [
 	["$form.action_id", {
 	    wf_class => 'Select',
