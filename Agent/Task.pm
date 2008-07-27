@@ -117,15 +117,23 @@ our($_TRACE);
 my($_T) = b_use('Agent.TaskId');
 my(%_ID_TO_TASK) = ();
 my($_INITIALIZED);
-my(%_REDIRECT_DIE_CODES) = (
-    Bivio::DieCode->CLIENT_REDIRECT_TASK => 1,
-    Bivio::DieCode->SERVER_REDIRECT_TASK => 1,
-);
-my($_REQUEST_LOADED);
+my($_REDIRECT_DIE_CODES) = {
+    CLIENT_REDIRECT_TASK => 1,
+    SERVER_REDIRECT_TASK => 1,
+};
 my($_HANDLERS) = [__PACKAGE__];
 my($_B) = b_use('Type.Boolean');
 my($_PS) = b_use('Auth.PermissionSet');
 my($_RT) = b_use('Auth.RealmType');
+my($_TASK_ATTR_RE) = qr{^(?:next|cancel|login|[a-z0-9_]+_task)$};
+my($_DC) = b_use('Bivio.DieCode');
+my($_A) = b_use('IO.Alert');
+my($_TE);
+my($_C) = b_use('IO.Config');
+
+sub TASK_ATTR_RE {
+    return $_TASK_ATTR_RE;
+}
 
 sub assert_realm_type {
     my($self, $realm_type) = @_;
@@ -147,6 +155,27 @@ sub commit {
     return;
 }
 
+sub put_attr_for_test {
+    my($self, @attrs) = @_;
+    b_use('Agent.Request')->assert_test;
+    $self->internal_clear_read_only;
+    $self->do_by_two(
+	sub {
+	    my($k, $v) = @_;
+	    $self->delete($k);
+	    if ($k eq 'form_model') {
+		$self->put($k => $v->package_name);
+	    }
+	    else {
+		_parse_map_item($self->internal_get, $k, $v);
+	    }
+	    return 1;
+	},
+	\@attrs,
+    );
+    return $self->set_read_only;
+}
+
 sub execute {
     my($self, $req) = @_;
     my($next) = $self->execute_items(
@@ -161,7 +190,7 @@ sub execute {
 	@{$self->get('items')},
 	'handle_post_execute_task',
     )]);
-    $req->redirect($next)
+    $next->call_method($req)
 	if $next;
     $self->commit($req);
     $req->get('reply')->send($req);
@@ -173,44 +202,14 @@ sub execute_items {
     foreach my $i (@{$items || $self->get('items')}) {
 	my($instance, $method, $args) = @$i;
 	next
-	    unless my $res = $instance->$method(@$args, $req);
-	if (ref($res) eq 'HASH') {
-	    $res->{method} ||= '';
-	    next if $res->{method} eq 'next_item_execute';
-	    last if $res->{method} eq 'last_item_execute';
-	    Bivio::IO::Alert->warn_deprecated(
-		$res, ': query must be set explicitly by ',
-		_item_as_string($self, $i),
-	    ) unless exists($res->{query});
-	}
-	else {
-	    last if $res eq '1';
-	    my($next) = $res;
-	    $res = {task_id => $next};
-	    if ($next =~ s/^(server_redirect)\.(.+)//) {
-		$res->{method} = $1;
-		$res->{task_id} = $2;
-		Bivio::IO::Alert->warn_deprecated(
-		    'server_redirect.*: invalid, use ', $res, ' by ',
-		    _item_as_string($self, $i));
-	    }
-	    $res->{query} = $req->unsafe_get('query');
-	}
-	unless ($res->{uri} || $_T->is_blessed($res->{task_id})) {
-	    b_die(
-		$res,
-		': invalid task_id returned by ',
-		_item_as_string($self, $i),
-	    ) unless
-		my $t = ($res->{task_id} || '') =~ /(?:^next|^cancel|_task)$/
-		? $self->unsafe_get($res->{task_id})
-		: $_T->unsafe_from_name($res->{task_id});
-	    $res->{task_id} = $t;
-	}
-	$res->{method} ||= 'client_redirect';
-	_trace($res)
+	    unless my $params = $instance->$method(@$args, $req);
+	next
+	    unless my $te = $_TE->parse_item_result($params, $self, $req, $i);
+	_trace($te)
 	    if $_TRACE;
-	return $res;
+	last
+	    unless ref($te);
+	return $te;
     }
     return;
 }
@@ -226,6 +225,17 @@ sub execute_task_item {
     return $arg->($req);
 }
 
+sub get {
+    return shift->SUPER::get(@_)
+	unless grep($_ =~ $_TASK_ATTR_RE, @_);
+    my($self, @keys) = @_;
+    $_A->warn_deprecated('use get_attr_as_id or dep_get_attr');
+    return $self->return_scalar_or_array(map(
+	shift(@_) =~ $_TASK_ATTR_RE && $_ ? $_->{task_id} : $_,
+	shift->SUPER::get(@_),
+    ));
+}
+
 sub get_by_id {
     my(undef, $id) = @_;
     # Returns the task associated with the id.
@@ -234,6 +244,16 @@ sub get_by_id {
     b_die($id, ": no task associated with id")
 	unless $_ID_TO_TASK{$id};
     return $_ID_TO_TASK{$id};
+}
+
+sub dep_get_attr {
+    return shift->SUPER::get(@_);
+}
+
+sub get_attr_as_id {
+    my($self) = shift;
+    return $self->return_scalar_or_array(
+	map($_->{task_id}, $self->SUPER::get(@_)));
 }
 
 sub handle_die {
@@ -252,7 +272,7 @@ sub handle_die {
     # task id is sought.
     my($die_code) = $die->get('code');
     my($req_class) = b_use('Agent.Request');
-    if ($_REDIRECT_DIE_CODES{$die_code}) {
+    if ($_REDIRECT_DIE_CODES->{$die_code->get_name}) {
 	# commit redirects: current task is completed
 	_trace('commit: ', $die_code) if $_TRACE;
 	$proto->commit($req_class->get_current);
@@ -280,40 +300,7 @@ sub handle_die {
 	return;
     }
 
-    # Mapped?
-    my($new_task_id) = $proto->get('die_actions')->{$die_code};
-    unless (defined($new_task_id)) {
-	# Default mapped?
-	$new_task_id = $_T->unsafe_from_any(
-	    'DEFAULT_ERROR_REDIRECT_' . $die_code->get_name)
-	    || $_T->unsafe_from_any('DEFAULT_ERROR_REDIRECT');
-	unless (defined($new_task_id)) {
-	    _trace('not a mapped task: ', $die_code) if $_TRACE;
-	    return;
-	}
-    }
-    # Allowed?
-    unless (b_use('UI.Task')->is_defined_for_facade($new_task_id, $req)) {
-	_trace('error redirect not defined in facade: ', $new_task_id)
-	    if $_TRACE;
-	return;
-    }
-
-    # error_redirect listed on a task
-    $die->set_code(
-	Bivio::DieCode->SERVER_REDIRECT_TASK,
-	task_id => $new_task_id,
-    );
-#TODO: Figure out how to save the current form in context if there is one.
-#      Cannot simply call $req->get_form here, because it has to be
-#      parsed into internal_values by FormModel.
-    # Leave uri untouched.
-    $req->put_durable_server_redirect_state({
-	task_id => $new_task_id,
-	form => undef,
-	form_model => undef,
-    });
-    return;
+    return $_TE->parse_die($die, $proto, $req);
 }
 
 sub handle_pre_auth_task {
@@ -363,7 +350,8 @@ sub initialize {
 }
 
 sub new {
-    my($proto, $id, $realm_type, $perm, @items) = @_;
+    my($proto) = shift;
+    my($id, $realm_type, $perm, @items) = @_;
     # Creates a new task for I<id> with I<perm> and I<realm_type>.
     # A task must not already be
     # bound to the I<id>.   The rest of the arguments are
@@ -383,47 +371,14 @@ sub new {
     #
     # A mapping item is of the form I<name>=I<action>, where I<name>
     # and I<action> are attributes as defined above.
-
-    # Validate $id
-    die("id invalid") unless $id->isa($_T);
-    die("realm_type invalid")
-	    unless $realm_type->isa('Bivio::Auth::RealmType');
-    die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
-
-    my($self) = $proto->SUPER::new({
-	id => $id,
-	realm_type => $realm_type,
-	permission_set => $perm,
-	die_actions => {},
-	form_model => undef,
-    });
-    my($attrs) = $self->internal_get;
-    # Make the task visible to the items being initialized
-    $_ID_TO_TASK{$id} = $self;
-    my(@executables);
-    foreach my $i (@items) {
-	if ($i =~ /=/) {
-	    # Map item
-	    _parse_map_item($attrs, split(/=/, $i, 2));
-	    next;
-	}
-	push(@executables, $i);
-    }
-    my($new_items) = _init_executables($proto, $attrs, \@executables);
-    # Set form
-    _init_form_attrs($attrs);
-
-    foreach my $x (
-	[want_query => 1],
-	[require_secure => 0],
-	[want_workflow => 0],
-    ) {
-	$attrs->{$x->[0]} = $x->[1]
-	    unless defined($attrs->{$x->[0]});
-    }
-    $attrs->{items} = $new_items;
-    $self->set_read_only;
-    return $self;
+    $_TE ||= b_use('Agent.TaskEvent');
+    b_die("id invalid")
+	unless $id->isa($_T);
+    b_die("realm_type invalid")
+	unless $realm_type->isa('Bivio::Auth::RealmType');
+    b_die($id, ': id already defined')
+	if $_ID_TO_TASK{$id};
+    return _new($proto->SUPER::new, @_);
 }
 
 sub register {
@@ -445,13 +400,42 @@ sub rollback {
     return;
 }
 
+sub unsafe_get {
+    return shift->SUPER::unsafe_get(@_)
+	unless grep($_ =~ $_TASK_ATTR_RE, @_);
+    my($self, @keys) = @_;
+    $_A->warn_deprecated('use unsafe_get_attr_as_id or dep_unsafe_get_attr');
+    return $self->return_scalar_or_array(map(
+	shift(@_) =~ $_TASK_ATTR_RE && $_ ? $_->{task_id} : $_,
+	shift->SUPER::unsafe_get(@_),
+    ));
+}
+
+sub dep_unsafe_get_attr {
+    my($self) = shift;
+    return $self->return_scalar_or_array(map($_, $self->SUPER::unsafe_get(@_)));
+}
+
+sub unsafe_get_attr_as_id {
+    my($self) = shift;
+    return $self->return_scalar_or_array(
+	map($_ && $_->{task_id}, $self->SUPER::unsafe_get(@_)));
+}
+
 sub unsafe_get_redirect {
     my($self, $attr, $req) = @_;
     # Returns the task associated with I<attr> on I<self>, if it exists and is
     # defined in the facade.
+    b_die($attr, ': invalid task attribute; must match ', $_TASK_ATTR_RE)
+	unless $attr =~ $_TASK_ATTR_RE;
     return undef
-	unless my $v = $self->unsafe_get($attr);
-     return Bivio::UI::Task->is_defined_for_facade($v, $req) ? $v : undef;
+	unless my $v = $self->dep_unsafe_get_attr($attr);
+    return Bivio::UI::Task->is_defined_for_facade($v->{task_id}, $req)
+	? $v : undef;
+}
+
+sub unsafe_params_for_die_code {
+    return shift->get('die_actions')->{shift(@_)->get_name};
 }
 
 sub _call_txn_resources {
@@ -499,8 +483,11 @@ sub _init_executables {
 	}
 	my($class, $method) = split(/->/, $i, 2);
 	my($c) = $proto->use($class);
-	$c = $c->get_instance
-	    if $c->can('get_instance');
+	$_C->if_version(8 => 0, sub {
+	    $c = $c->get_instance
+		if $c->can('get_instance');
+	    return;
+	});
 	if ($c->can('execute_task_item') && $method) {
 	    push(@new_items, [$c, execute_task_item => [$method]]);
 	}
@@ -547,44 +534,56 @@ sub _init_form_attrs {
     return;
 }
 
-sub _item_as_string {
-    my($self, $item) = @_;
-    my($instance, $method, $args) = @$item;
-    return $self->get('id')->as_string
-	. '['
-	. (defined($instance)
-	  ? (ref($instance) || $instance) . '->' . $method
-	  : 'code'
-        ) . ']';
+sub _new {
+    my($self, $id, $realm_type, $perm, @items) = @_;
+    my($attrs) = {
+	id => $id,
+	realm_type => $realm_type,
+	permission_set => $perm,
+	die_actions => {},
+	form_model => undef,
+    };
+    # Make the task visible to the items being initialized
+    $_ID_TO_TASK{$id} = $self;
+    my(@executables);
+    foreach my $i (@items) {
+	if (ref($i) eq 'ARRAY' || $i =~ /=/ && ($i = [split(/=/, $i, 2)])) {
+	    _parse_map_item($attrs, @$i);
+	    next;
+	}
+	push(@executables, $i);
+    }
+    my($new_items) = _init_executables($self, $attrs, \@executables);
+    # Set form
+    _init_form_attrs($attrs);
+
+    foreach my $x (
+	[want_query => 1],
+	[require_secure => 0],
+	[want_workflow => 0],
+    ) {
+	$attrs->{$x->[0]} = $x->[1]
+	    unless defined($attrs->{$x->[0]});
+    }
+    $attrs->{items} = $new_items;
+    $self->internal_put($attrs);
+    return $self->set_read_only;
 }
 
 sub _parse_map_item {
-    my($attrs, $cause, $action) = @_;
+    my($attrs, $cause, $params) = @_;
     # Parses a new map item for this task.
     return _put_attr(
 	$attrs, $cause,
-	$_B->from_literal_or_die($action),
+	$_B->from_literal_or_die($params),
     ) if $cause =~ /^(?:require_|want_)[a-z0-9_]+$/;
-    $action = $_T->from_any($action);
-    return _put_attr($attrs, $cause, $action)
-	if $cause =~ /^(?:next|cancel|login|[a-z0-9_]+_task)$/;
-    if ($cause =~ /(.+)::(.+)/) {
-	my($class, $method) = ($1, $2);
-	b_die(
-	    $cause, ': not an enum (', $attrs->{id}, ')',
-	) unless UNIVERSAL::isa($class, 'Bivio::Type::Enum');
-	$cause = $class->from_name($method);
-    }
-    else {
-	b_die($cause, ': not a valid attribute name')
-	    unless Bivio::DieCode->is_valid_name($cause);
-	$cause = Bivio::DieCode->from_name($cause);
-    }
-    b_die(
-	$cause->get_name, ': cannot be a mapped item (',
-	$attrs->{id}, ')',
-    ) if $_REDIRECT_DIE_CODES{$cause};
-    return _put_attr($attrs, 'die_actions', $cause, $action);
+    $params = $_TE->parse_item($cause, $params);
+    return _put_attr($attrs, $cause, $params)
+	if $cause =~ $_TASK_ATTR_RE;
+    b_die($cause, ': params must be specified with a task_id: ', $params)
+	unless $params->{task_id};
+    return _put_attr(
+	$attrs, 'die_actions', $_DC->from_name($cause)->get_name, $params);
 }
 
 sub _put_attr {
