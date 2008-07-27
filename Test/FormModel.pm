@@ -46,11 +46,11 @@ sub new_unit {
 		$l->release;
 	    }
 	    $req->clear_nondurable_state;
-	    $req->put(task => Bivio::Collection::Attributes->new({
+	    $req->get('task')->put_attr_for_test(
 		form_model => ref($m),
 		next => $req->get('task_id'),
 		require_context => 0,
-	    })) unless $req->unsafe_get_nested(qw(task next))
+	    ) unless $req->get('task')->unsafe_get_attr_as_id('next')
 		&& !$req->get('task_id')->eq_shell_util;
 	    $setup_request->($case, $params)
 		if $setup_request;
