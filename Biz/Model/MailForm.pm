@@ -15,10 +15,6 @@ my($_ARM) = b_use('Action.RealmMail');
 my($_MA) = b_use('Mail.Address');
 my($_QUERY_WHO) = 'to';
 
-sub MAIL_REFLECTOR_TASK {
-    return undef;
-}
-
 sub VIEW_CLASS {
     return (shift->simple_package_name =~ /(.+)Form/)[0];
 }
@@ -202,7 +198,7 @@ sub internal_return_value {
 sub internal_send_to_realm {
     my($self, $rfc822) = @_;
     my($req) = $self->req;
-    $_ARM->execute_receive($req, $rfc822, $self->MAIL_REFLECTOR_TASK);
+    $_ARM->execute_receive($req, $rfc822);
     return $req->get('Model.RealmMail')->get_rfc822;
 }
 
