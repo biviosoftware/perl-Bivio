@@ -14,6 +14,7 @@ my($_RO) = __PACKAGE__->use('Model.RealmOwner');
 my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
 my($_WN) = __PACKAGE__->use('Type.WikiName');
 my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
+my($_C) = b_use('FacadeComponent.Constant');
 
 sub execute {
     my($proto) = shift;
@@ -27,10 +28,18 @@ sub execute {
 
 sub execute_help {
     my($proto, $req) = @_;
-    return $proto->execute(
-	$req,
-	Bivio::UI::Constant->get_from_source($req)->get_value('help_wiki_realm_id'),
-    );
+    return $proto->execute($req, $_C->get_value('help_wiki_realm_id', $req));
+}
+
+sub execute_not_found {
+    my($proto, $req) = @_;
+    my($t) = $req->get('task')->unsafe_get_attr_as_id('edit_task');
+    return
+	unless $t && $req->can_user_execute_task($t)
+	&& $req->unsafe_get('path_info');
+    $proto->get_instance('Acknowledgement')
+        ->save_label('FORUM_WIKI_NOT_FOUND', $req);
+    return 'edit_task';
 }
 
 sub execute_prepare_html {
@@ -47,6 +56,7 @@ sub execute_prepare_html {
 	    realm => $req->with_realm($realm_id, sub {$req->get_nested(qw(auth_realm owner_name))}),
 	    task_id => $task_id,
 	    query => undef,
+	    carry_path_info => 1,
 	};
     }
     $name =~ s{^/+}{};
@@ -58,10 +68,9 @@ sub execute_prepare_html {
 	name => $name,
 	exists => 0,
     );
-    my($wa) = $proto->use('XHTMLWidget.WikiText')
+    return 'not_found_task'
+	unless my $wa = $proto->use('XHTMLWidget.WikiText')
 	->prepare_html($realm_id, $name, $task_id, $req);
-    return $self->internal_model_not_found($req, $realm_id)
-	unless $wa;
     my($author) = '';
     my($author_name) = '';
     if ($req->unsafe_get_nested(qw(task want_author))) {
@@ -90,17 +99,6 @@ sub get {
     $_A->warn_deprecated('use author_email in place of author')
         if grep($_ eq 'author', @keys);
     return shift->SUPER::get(@_);
-}
-
-sub internal_model_not_found {
-    my($self, $req, $realm_id) = @_;
-    my($name) = $self->get('name');
-    my($t) = $req->unsafe_get_nested(qw(task edit_task));
-    Bivio::Die->throw_quietly(MODEL_NOT_FOUND => {entity => $name})
-	unless $t && $req->can_user_execute_task($t);
-    Bivio::Biz::Action->get_instance('Acknowledgement')
-        ->save_label('FORUM_WIKI_NOT_FOUND', $req);
-    return 'edit_task';
 }
 
 sub render_html {
