@@ -1,0 +1,12 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+req()->put(query => {a => 1}, path_info => '/pi');
+[
+    [{
+	task_id => 'SHELL_UTIL',
+	carry_path_info => 1,
+    }, req()] => [
+	as_string => 'Bivio::Agent::TaskEvent(task_id=SHELL_UTIL,path_info=/pi,carry_path_info=1)',
+    ],
+];
