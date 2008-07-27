@@ -45,12 +45,17 @@ sub client_redirect {
     # B<DOES NOT RETURN.>
     my($self, $named) =  shift->internal_get_named_args(
 	ref($_[0]) && !(ref($_[0]) eq 'HASH' && $_[0]->{uri})
-	    ? [qw(task_id realm query path_info no_context require_context)]
-	    : [qw(uri query no_context)],
+	    ? [qw(task_id realm query path_info no_context require_context no_form uri carry_query carry_path_info)]
+	    : [qw(uri query no_context task_id realm path_info require_context no_form carry_query carry_path_info)],
 	\@_,
     );
-    if (exists($named->{uri})) {
-	# Can't check want_query here, because literal URI
+    if (defined($named->{uri})) {
+	# NOTE: This form never had implicit query/path_info copying
+	foreach my $a (qw(query path_info)) {
+	    $named->{$a} = undef
+		unless exists($named->{$a}) || exists($named->{"carry_$a"});
+	}
+	$self->internal_copy_implicit($named);
 	$named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
 	    if ref($named->{query});
 	$named->{uri} =~ s/\?/\?$named->{query}&/
@@ -59,17 +64,17 @@ sub client_redirect {
     }
     else {
 	# use previous query if not specified, maintains state across pages
-	if ($self->retain_query_and_path_info) {
-	    $named->{query} = $self->get('query')
-		unless exists($named->{query});
-	    $named->{path_info} = $self->unsafe_get('path_info')
-		unless exists($named->{path_info});
-	}
+	$self->internal_copy_implicit($named);
 	$self->SUPER::server_redirect($named)
 	    unless Bivio::UI::Task->has_uri($named->{task_id}, $self);
         _trace(
 	    'current: ', $self->get('task_id'), ', new: ', $named->{task_id}
-	 ) if $_TRACE && !$named->{realm};
+	) if $_TRACE && !$named->{realm};
+#TODO: Probably needs to be elsewhere
+	foreach my $k (keys(%$named)) {
+	    delete($named->{$k})
+		unless grep($k eq $_, @{$self->FORMAT_URI_PARAMETERS});
+	}
 	$named->{uri} = $self->format_uri($named);
     }
     $self->get('reply')->client_redirect($self, $named->{uri});
@@ -224,32 +229,6 @@ sub reset_reply {
     my($self) = @_;
     $self->put(reply => Bivio::Agent::HTTP::Reply->new($self->get('r')));
     return;
-}
-
-sub server_redirect {
-    # (self, string, any, hash_ref, string) : undef
-    # (self, ...) : undef
-    # Server-side (aka internal) redirect to the new task within the new realm.
-    #
-    # If I<uri> supplied, parses out the task_id, realm, and path_info
-    # from the uri and then calls
-    # L<Bivio::Agent::Request::server_redirect|Bivio::Agent::Request/"server_redirect">
-    #
-    # B<DOES NOT RETURN.>
-    my($self) = shift;
-    $self->SUPER::server_redirect(@_)
-	if ref($_[0]);
-    my(undef, $named) = $self->internal_get_named_args(
-	[qw(uri query form path_info)],
-	\@_,
-    );
-    @$named{qw(task_id realm path_info_from_uri)}
-        = Bivio::UI::Task->parse_uri($named->{uri}, $self);
-    $named->{path_info} = $named->{path_info_from_uri}
-	unless exists($named->{path_info});
-    grep(delete($named->{$_}), path_info_from_uri uri);
-    $self->SUPER::server_redirect($named);
-    # DOES NOT RETURN
 }
 
 sub _is_https_port {
