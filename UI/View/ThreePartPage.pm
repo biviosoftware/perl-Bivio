@@ -65,9 +65,10 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_dock_left => '',
 	xhtml_dock_middle => '',
 	xhtml_dock_right => JoinMenu([
-	    _header_right(qw(HELP HelpWiki)),
-	    _header_right(qw(USER_SETTINGS_FORM UserSettingsForm)),
-	    _header_right(qw(LOGIN UserState)),
+	    $_C->if_version(8 => sub {_header_right('ForumDropDown')}),
+	    _header_right(qw(HelpWiki HELP)),
+	    _header_right(qw(UserSettingsForm USER_SETTINGS_FORM)),
+	    _header_right(qw(UserState LOGIN)),
 	]),
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
 	xhtml_want_page_print => 0,
@@ -83,11 +84,11 @@ sub internal_xhtml_adorned_attrs {
     );
     view_put(
 	xhtml_header_right => $_C->if_version(
-	    7 => sub {_header_right(qw(SEARCH_LIST SearchForm))},
+	    7 => sub {_header_right(qw(SearchForm SEARCH_LIST))},
 	    sub {
 		return Join([
 		    DIV_user_state(view_widget_value('xhtml_dock_right')),
-		    _header_right(qw(SEARCH_LIST SearchForm)),
+		    _header_right(qw(SearchForm SEARCH_LIST)),
 		]);
 	    },
 	),
@@ -133,9 +134,9 @@ sub internal_xhtml_adorned_body {
 }
 
 sub _header_right {
-    my($task, $widget) = @_;
+    my($widget, $task) = @_;
     return
-	unless $_TI->unsafe_from_name($task);
+	if $task && !$_TI->unsafe_from_name($task);
     return If(vs_constant("ThreePartPage_want_$widget"), vs_call($widget));
 }
 
