@@ -33,6 +33,8 @@ Bivio::Test->new({
     },
     compute_params => sub {
 	my($case, $params, $method) = @_;
+	return $params
+	    unless $method eq 'execute';
 	$case->put(expected_task => $params->[0]);
 	$req->clear_nondurable_state;
 	return [$req];
@@ -60,37 +62,59 @@ Bivio::Test->new({
     }
 	[qw(TEST_ITEMS_1 SHELL_UTIL)],
 	[qw(TEST_ITEMS_2 LOGIN)],
-	[qw(SHELL_UTIL SITE_ROOT)],
-	[qw(REDIRECT_TEST_1 REDIRECT_TEST_2)],
-	[qw(REDIRECT_TEST_3 REDIRECT_TEST_1)],
-	[qw(REDIRECT_TEST_3 REDIRECT_TEST_2)],
-	[qw(REDIRECT_TEST_4 REDIRECT_TEST_2)],
-	[qw(REDIRECT_TEST_2 FORBIDDEN)],
-	[qw(REDIRECT_TEST_5 SITE_ROOT)],
-	[qw(REDIRECT_TEST_6 REDIRECT_TEST_5)],
-	[qw(TEST_TRANSIENT SITE_ROOT)],
+ 	[qw(SHELL_UTIL SITE_ROOT)],
+ 	[qw(REDIRECT_TEST_1 REDIRECT_TEST_2)],
+ 	[qw(REDIRECT_TEST_3 REDIRECT_TEST_1)],
+ 	[qw(REDIRECT_TEST_3 REDIRECT_TEST_2)],
+ 	[qw(REDIRECT_TEST_4 REDIRECT_TEST_2)],
+ 	[qw(REDIRECT_TEST_2 FORBIDDEN)],
+ 	[qw(REDIRECT_TEST_5 SITE_ROOT)],
+ 	[qw(REDIRECT_TEST_6 REDIRECT_TEST_5)],
+ 	[qw(TEST_TRANSIENT SITE_ROOT)],
     ),
     TEST_TRANSIENT => [
-	execute => [
-	    sub {
-		$req->put(is_test => 0);
-		return [$req];
-	    } => Bivio::DieCode->FORBIDDEN,
+ 	execute => [
+ 	    sub {
+ 		$req->put(is_test => 0);
+ 		return [$req];
+ 	    } => Bivio::DieCode->FORBIDDEN,
+ 	],
+	put_attr_for_test => [
+	    [
+		form_model => 'Bivio::Biz::Model::UserLoginForm',
+		next => Bivio::Agent::TaskId->REDIRECT_TEST_5,
+	    ] => undef,
+	],
+	get => [
+	    form_model => 'Bivio::Biz::Model::UserLoginForm',
+	    next => [Bivio::Agent::TaskId->REDIRECT_TEST_5],
+	],
+	{
+	    method => 'dep_get_attr',
+	    comparator => 'nested_contains',
+	} => [
+	    next => [{
+		task_id => Bivio::Agent::TaskId->REDIRECT_TEST_5,
+	    }],
+	],
+	get_attr_as_id => [
+	    next => [Bivio::Agent::TaskId->REDIRECT_TEST_5],
 	],
     ],
     DEVIANCE_1 => [
-	execute => => Bivio::DieCode->DIE,
+ 	execute => => Bivio::DieCode->DIE,
     ],
     UNSAFE_GET_REDIRECT => [
-	{
-	    method => 'unsafe_get_redirect',
-	    compute_params => sub {[$_[1]->[0], $req]},
-	    compute_return => sub {[$_[1]->[0] && $_[1]->[0]->get_name]},
-        } => [
-	    next => 'SITE_ROOT',
-	    login_task => 'LOGIN',
-	    no_such_attr => [undef],
-	    self_task => [undef],
-	],
+ 	{
+ 	    method => 'unsafe_get_redirect',
+ 	    compute_params => sub {[$_[1]->[0], $req]},
+ 	    compute_return => sub {[
+		$_[1]->[0] && $_[1]->[0]->{task_id}->get_name,
+	    ]},
+         } => [
+ 	    next => 'SITE_ROOT',
+ 	    login_task => 'LOGIN',
+ 	    not_a_task => [undef],
+ 	],
     ],
 ]);

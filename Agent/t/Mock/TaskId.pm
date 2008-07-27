@@ -130,6 +130,25 @@ sub get_delegate_info {
 	}, sub {
 	    return 'LOGIN';
 	}],
+	[qw(
+	    TASK_EVENT_1
+	    512
+	    GENERAL
+	    ANYBODY
+	), sub {
+	    return {'next'};
+	}, [
+	    next => {
+		task_id => 'LOGIN',
+		carry_query => 0,
+		no_context => 1,
+	    },
+	], [
+	    first_task => {
+		task_id => 'TASK_EVENT_1',
+		carry_path_info => 1,
+	    },
+        ]],
     ]);
 }
 
