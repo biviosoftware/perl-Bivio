@@ -133,7 +133,7 @@ sub info_base {
 	    FORUM
 	    DATA_READ
 	    Action.ClientRedirect->execute_next
-	    next=SITE_ROOT
+	    next=FORUM_WIKI_VIEW
 	)],
 	# 18: GENERAL_USER_PASSWORD_QUERY
 	# 19: GENERAL_USER_PASSWORD_QUERY_MAIL
@@ -446,6 +446,7 @@ sub info_crm {
 	    Model.CRMForm
 	    View.CRM->send_form
 	    next=FORUM_CRM_THREAD_ROOT_LIST
+	    mail_reflector_task=FORUM_MAIL_REFLECTOR
         )],
 #153-159
     ];
@@ -564,7 +565,7 @@ sub info_file {
  	    FORUM_FILE_VERSIONS_LIST
  	    171
  	    FORUM
- 	    DATA_READ
+ 	    DATA_READ&DATA_WRITE
 	    Model.RealmFileVersionsList->execute_load_all
  	    View.File->version_list
         )],
@@ -646,6 +647,7 @@ sub info_mail {
             Action.RealmMail->execute_receive
             Action.MailReceiveStatus
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+	    mail_reflector_task=FORUM_MAIL_REFLECTOR
         )],
 	[qw(
             USER_MAIL_BOUNCE
@@ -673,7 +675,7 @@ sub info_mail {
             FORUM_MAIL_THREAD_ROOT_LIST
             140
             FORUM
-            DATA_READ
+            MAIL_READ
             Model.MailThreadRootList->execute_load_page
             View.Mail->thread_root_list
 	    thread_task=FORUM_MAIL_THREAD_LIST
@@ -682,7 +684,7 @@ sub info_mail {
             FORUM_MAIL_THREAD_LIST
             141
             FORUM
-            DATA_READ
+            MAIL_READ
             Model.MailThreadList->execute_load_page
             View.Mail->thread_list
         )],
@@ -690,17 +692,18 @@ sub info_mail {
             FORUM_MAIL_PART
             142
             FORUM
-            DATA_READ
+            MAIL_READ
 	    Model.MailPartList->execute_part
         )],
 	[qw(
             FORUM_MAIL_FORM
             143
             FORUM
-            DATA_READ&MAIL_POST
+            MAIL_READ&MAIL_POST
 	    Model.MailForm
 	    View.Mail->send_form
 	    next=FORUM_MAIL_THREAD_ROOT_LIST
+	    mail_reflector_task=FORUM_MAIL_REFLECTOR
         )],
 	[qw(
             FORUM_MAIL_SHOW_ORIGINAL_FILE
@@ -1080,6 +1083,7 @@ sub info_wiki {
 			Action.WikiView->execute_prepare_html
 			View.Wiki->view
 			MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
+			not_found_task=FORUM_WIKI_NOT_FOUND
 			edit_task=FORUM_WIKI_EDIT
 			want_author=1
 		    )],
@@ -1126,7 +1130,9 @@ sub info_wiki {
  	    50
  	    FORUM
  	    ANYBODY
+	    Action.WikiView->execute_not_found
 	    View.Wiki->not_found
+	    edit_task=FORUM_WIKI_EDIT
 	    view_task=FORUM_WIKI_VIEW
  	)],
  	[qw(
