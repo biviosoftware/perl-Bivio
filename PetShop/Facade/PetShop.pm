@@ -141,6 +141,9 @@ __PACKAGE__->new({
 	    uri => '',
 	    anchor => 'a1',
 	}],
+	[xlink_bunit3 => {
+	    uri => [sub {shift->req('bunit3')}],
+	}],
 	[view_shortcuts1 => 'one'],
 	[my_site_redirect_map => [
 	    [qw(GENERAL ADMINISTRATOR ADM_SUBSTITUTE_USER)],
