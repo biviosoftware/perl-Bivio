@@ -20,7 +20,7 @@ sub drilldown_uri {
     my($self) = @_;
     my($req) = $self->req;
     return $req->format_uri({
-	task_id => $req->get_nested(qw(task thread_task)),
+	task_id => $req->get('task')->get_attr_as_id('thread_task'),
 	query => $self->format_query('THIS_CHILD_LIST'),
     });
 }

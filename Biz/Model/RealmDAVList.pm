@@ -49,7 +49,8 @@ sub load_dav {
     my($req) = $self->get_request;
     my($this, $next) = $req->get('path_info') =~ m{^/([^/]+)(.*)};
     my($rt) = Bivio::Agent::Task->get_by_id(
-	$req->get_nested(qw(task next)))->get('realm_type');
+	$req->get('task')->get_attr_as_id('next')
+    )->get('realm_type');
     unless ($this) {
 	$self->load_all({path_info => '', realm_type => $rt});
 	return 1;

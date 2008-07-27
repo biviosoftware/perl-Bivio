@@ -925,7 +925,8 @@ sub validate_and_execute_ok {
 	    ref($res) eq 'HASH' && exists($res->{query})
 		? ($res->{query} ||= {}) : (),
 	) unless $self->in_error || $fields->{stay_on_page};
-	return $res if $res;
+	return $res
+	    if $res;
 	if ($self->in_error) {
 	    _put_file_field_reset_errors($self);
 	}
@@ -939,7 +940,7 @@ sub validate_and_execute_ok {
 	if $self->in_error;
     unless ($fields->{stay_on_page}) {
 	Bivio::Agent::Task->rollback($req);
-	if (my $t = $req->get('task')->unsafe_get('form_error_task')) {
+	if (my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task')) {
 	    $self->put_on_request(1);
 	    return {
 		method => 'server_redirect',
@@ -1290,8 +1291,7 @@ sub _parse_version {
 
 sub _post_execute {
     my($self, $method, $res) = @_;
-    my($r) = $self->internal_post_execute($method, $res);
-    return $r || $res;
+    return $self->internal_post_execute($method, $res) || $res;
 }
 
 sub _put_file_field_reset_errors {
@@ -1339,13 +1339,13 @@ sub _redirect {
 	if ($req->unsafe_get_nested(qw(task want_workflow))) {
 	    _trace('continue workflow') if $_TRACE;
 	    $req->server_redirect({
-		task_id => $req->get('task')->get($which),
+		task_id => $req->get('task')->get_attr_as_id($which),
 		require_context => 1,
 	    });
 	}
 	$fields->{context}->return_redirect($self, $which);
     }
-    $req->client_redirect($req->get('task')->get($which));
+    $req->client_redirect($req->get('task')->get_attr_as_id($which));
     # DOES NOT RETURN
 }
 

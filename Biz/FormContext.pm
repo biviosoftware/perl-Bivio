@@ -135,7 +135,7 @@ sub new {
     # (proto, hash_ref) : Biz.FormContext
     # Trace the output
     my($self) = shift->SUPER::new(@_);
-    _trace($self) if $_TRACE;
+    _trace($self->my_caller, ': ', $self) if $_TRACE;
     return $self;
 }
 
@@ -147,8 +147,8 @@ sub new_empty {
     my($realm) = $req->get('auth_realm');
     my($task) = $req->get('task');
     return $proto->new({
-	unwind_task => $task->get('next'),
-	cancel_task => $task->get('cancel'),
+	unwind_task => $task->get_attr_as_id('next'),
+	cancel_task => $task->get_attr_as_id('cancel'),
 	form_model => $task->get('form_model'),
 
 	# We can assume that the realm is the same.
@@ -174,7 +174,7 @@ sub new_from_form {
 	query => $req->unsafe_get('query'),
 	path_info => $req->unsafe_get('path_info'),
 	unwind_task => $req->unsafe_get('task_id'),
-	cancel_task => $req->get('task')->unsafe_get('cancel'),
+	cancel_task => $req->get('task')->unsafe_get_attr_as_id('cancel'),
 	realm => $req->get('auth_realm'),
     });
 }

@@ -60,7 +60,7 @@ sub load_dav {
     Bivio::Die->throw_quietly(MODEL_NOT_FOUND => {
 	class => ref($self),
 	entity => "${this}_task",
-    }) unless my $t = $req->get('task')->unsafe_get(lc("${this}_task"));
+    }) unless my $t = $req->get('task')->unsafe_get_attr_as_id(lc("${this}_task"));
     $req->put(path_info => $next);
     return $t;
 }

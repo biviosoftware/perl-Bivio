@@ -317,7 +317,7 @@ sub _load {
     my($req) = $s->{req};
     my($prev) = {map(($_ => $req->get($_)), qw(auth_realm task_id task))};
     $req->set_realm($realm);
-    my($tid) = $req->get('task')->get('next');
+    my($tid) = $req->get('task')->get_attr_as_id('next');
     $req->put(path_info => defined($path) ? $path : '');
     while ($tid) {
 	_trace($tid, ' ', $req) if $_TRACE;
@@ -328,7 +328,8 @@ sub _load {
 	$req->put(task_id => $tid, task => $t);
 	if ($t->unsafe_get('require_dav')
 	    || grep(($_->[0] || '') =~ /DAV/, @{$t->get('items')})) {
-	    $tid = ($req->get('task')->execute_items($req) || {})->{task_id};
+	    $tid = $req->get('task')->execute_items($req);
+	    $tid &&= $tid->get('task_id');
 	    next;
 	}
 	Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);

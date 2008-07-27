@@ -72,7 +72,7 @@ sub internal_is_parent {
 sub internal_leaf_node_uri {
     my($self, $row) = @_;
     return $self->get_request->format_uri({
-	task_id => $self->get_request->get('task')->get('next'),
+	task_id => $self->get_request->get('task')->get_attr_as_id('next'),
 	path_info => $row->{'RealmFile.path'},
 	query => undef,
     });
