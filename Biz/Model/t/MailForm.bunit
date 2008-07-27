@@ -10,7 +10,8 @@ FormModel({
 	return;
     },
 });
-req()->set_realm_and_user(qw(mail_forum mail_user1));
+req()->set_realm_and_user(qw(mail_forum mail_user1))
+    ->initialize_fully('FORUM_MAIL_RECEIVE');
 my($to) = from_type(EmailArray => [remote_email('mail_forum')]);
 my($message_id) = random_string() . '@bivio.biz';
 my($now) = class('Type.DateTime')->now;

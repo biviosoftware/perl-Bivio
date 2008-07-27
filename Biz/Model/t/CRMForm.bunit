@@ -10,7 +10,8 @@ FormModel({
 	return;
     },
 });
-req()->set_realm_and_user(qw(crm_forum crm_tech1));
+req()->set_realm_and_user(qw(crm_forum crm_tech1))
+    ->initialize_fully('FORUM_CRM_FORM');
 my($to) = EmailArray([remote_email('crm')]);
 [
     [{

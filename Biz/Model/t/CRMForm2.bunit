@@ -10,7 +10,8 @@ FormModel({
 	return;
     },
 });
-req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1));
+req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1))
+    ->initialize_fully('FORUM_CRM_FORM');
 [
     empty_case({
 	'b_ticket.TupleTag.slot1' => undef,
