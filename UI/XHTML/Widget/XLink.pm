@@ -7,6 +7,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = __PACKAGE__->use('Agent.TaskId');
+my($_C) = b_use('IO.Config');
 
 sub initialize {
     my($self) = @_;
@@ -14,8 +15,15 @@ sub initialize {
     $self->put_unless_exists(
 	tag => 'a',
 	value => XLinkLabel($l),
-	href => $_TI->is_valid_name($l) ? URI({task_id => $_TI->from_name($l)})
-	    : [sub {
+	href => $_TI->is_valid_name($l) ? URI({
+	    task_id => $_TI->from_name($l),
+	    $_C->if_version(8 => sub {
+	        return (
+		    query => undef,
+		    path_info => undef,
+		);
+	    }),
+	}) : [sub {
 		   my($source) = @_;
 		   my($req) = $self->req;
 		   return URI(

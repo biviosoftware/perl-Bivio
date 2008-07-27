@@ -2,12 +2,11 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::TaskMenu;
 use strict;
-use base 'Bivio::UI::HTML::Widget::Tag';
+use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
-use Bivio::Agent::Request;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_URI) = Bivio::Agent::Request->FORMAT_URI_PARAMETERS;
+my($_URI) = b_use('Agent.Request')->FORMAT_URI_PARAMETERS;
 my($_PARAMS) = [
     'task_id',
     'label',
@@ -16,6 +15,7 @@ my($_PARAMS) = [
     'uri',
     'xlink',
 ];
+my($_C) = b_use('IO.Config');
 
 sub internal_as_string {
     my($self) = @_;
@@ -58,6 +58,12 @@ sub initialize {
 		    = Bivio::Agent::TaskId->from_any($cfg->{task_id});
 		$cfg->{label} ||= $cfg->{task_id}->get_name;
 		$cfg->{uri} ||= URI({
+		    $_C->if_version(8 => sub {
+			return (
+			    query => undef,
+			    path_info => undef,
+			);
+		    }),
 		    _cfg($cfg, @$_URI),
 		});
 	    }
