@@ -15,5 +15,3 @@ do_logout();
 login_as('demo');
 test_deviance(qr{invalid named filter}i);
 do_test_trace('should not find');
-
-
