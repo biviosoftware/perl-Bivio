@@ -69,7 +69,10 @@ a:hover {
 body {
   Font('body');
   Color('body-background');
-  margin: .5em;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-right: .5em;
+  margin-left: .5em;
   min-width: 50em;
 }
 caption, th {
@@ -537,10 +540,10 @@ td.amount_cell {
   text-align: right;
   white-space: nowrap;
 }
-div.user_state .dd_link {
+.dd_link {
   Font('user_state');
 }
-div.user_state .dd_menu {
+.dd_menu {
   display: inline;
   position: absolute;
   width: 8em;
@@ -548,8 +551,9 @@ div.user_state .dd_menu {
   Color('dd_menu-background');
   border: 1px solid;
   Color('dd_menu-border');
+  width: 15em;
 }
-div.user_state .dd_menu a {
+.dd_menu a {
   display: block;
   margin: .2em;
   Font('dd_menu');
@@ -559,7 +563,7 @@ div.user_state .dd_menu a {
   text-align: left;
   font-weight: normal;
 }
-div.user_state .dd_menu a:hover {
+.dd_menu a:hover {
   Color('dd_menu_selected-background');
   Color('dd_menu_selected');
   text-decoration: none;
