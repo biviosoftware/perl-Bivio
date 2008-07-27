@@ -165,15 +165,20 @@ sub _cfg_base {
 	    }],
 	    [xlink_page_error_user => {
 		task_id => 'MY_SITE',
+		query => undef,
+		path_info => undef,
 	    }],
 	    [xlink_page_error_visitor => {
 		task_id => 'SITE_ROOT',
+		query => undef,
+		path_info => undef,
 	    }],
 	    [xlink_page_error_referer => {
 		uri => ['Action.Error', 'uri'],
 	    }],
 	    [my_site_redirect_map => []],
 	    [ThreePartPage_want_UserState => 1],
+	    [threepartpage_want_ForumDropDown => 1],
 	],
  	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
@@ -191,6 +196,7 @@ sub _cfg_base {
 	Task => [
 	    [CLIENT_REDIRECT => ['go/*', 'goto/*']],
 	    [CLUB_HOME => '?'],
+	    [FORUM_HOME => '?'],
 	    [DEFAULT_ERROR_REDIRECT => undef],
 	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
  	    [DEFAULT_ERROR_REDIRECT_NOT_FOUND => undef],
@@ -283,6 +289,7 @@ sub _cfg_base {
                                 5 => sub {URI({
                                     task_id => 'SITE_ADM_SUBSTITUTE_USER_DONE',
                                     realm => vs_constant('site_adm_realm_name'),
+                                    query => undef,
                                 })},
                                 sub {'LOGOUT'},
                             ),
