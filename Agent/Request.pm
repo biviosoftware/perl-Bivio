@@ -1,22 +1,9 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved
 # $Id$
 package Bivio::Agent::Request;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
-
-use Bivio::Agent::HTTP::Query;
-use Bivio::Agent::Task;
-use Bivio::Agent::TaskId;
-use Bivio::Auth::Realm;
-use Bivio::Auth::RealmType;
-use Bivio::Auth::Role;
-use Bivio::Biz::FormModel;
-use Bivio::Die;
-use Bivio::HTML;
-use Bivio::SQL::Connection;
-use Bivio::Type::DateTime;
-use Bivio::Type::UserAgent;
 
 # C<Bivio::Agent::Request> Request provides a common interface for http,...
 # requests to the application.  The transport specific
@@ -196,20 +183,30 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # initialized by Bivio::Agent::Dispatcher
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_C) = b_use('SQL.Connection');
+my($_D) = b_use('Bivio.Die');
+my($_DC) = b_use('Bivio.DieCode');
+my($_DT) = b_use('Type.DateTime');
+my($_FCT) = b_use('FacadeComponent.Task');
+my($_FM) = b_use('Biz.FormModel');
+my($_HTML) = b_use('Bivio.HTML');
+my($_Q) = b_use('AgentHTTP.Query');
+my($_REALM) = b_use('Auth.Realm');
+my($_ROLE) = b_use('Auth.Role');
+my($_RT) = b_use('Auth.RealmType');
+my($_T) = b_use('Agent.Task');
+my($_TI) = b_use('Agent.TaskId');
+my($_UA) = b_use('Type.UserAgent');
+my($_V7) = b_use('IO.Config')->if_version(7);
 Bivio::IO::Config->register(my $_CFG = {
     is_production => 0,
     can_secure => 1,
-#TODO: This will not work until we fix up a lot of dependencies
-#    retain_query_and_path_info => Bivio::IO::Config->if_version(6) ? 0 : 1,
 });
 my($_CURRENT);
-my($_RT) = __PACKAGE__->use('Auth.RealmType');
-my($_C) = b_use('IO.Config');
-my($_V7) = $_C->if_version(7);
 
 sub FORMAT_URI_PARAMETERS {
     # Order and names of params passed to format_uri().
-    return [qw(task_id query realm path_info no_context anchor require_context uri form_in_query require_absolute)];
+    return [qw(task_id query realm path_info no_context anchor require_context uri form_in_query require_absolute carry_query carry_path_info)];
 }
 
 sub FORM_IN_QUERY_FLAG {
@@ -259,11 +256,11 @@ sub can_secure {
 
 sub can_user_execute_task {
     my($self, $task_name, $realm) = @_;
-    my($tid) = Bivio::Agent::TaskId->from_any($task_name);
+    my($tid) = $_TI->from_any($task_name);
     return 0
 	if $_V7
-	&& !Bivio::UI::Task->is_defined_for_facade($tid->get_name, $self);
-    my($task) = Bivio::Agent::Task->get_by_id($tid);
+	&& !$_FCT->is_defined_for_facade($tid->get_name, $self);
+    my($task) = $_T->get_by_id($tid);
     if ($realm) {
         $realm = Bivio::Auth::Realm->new($realm, $self);
 	$task->assert_realm_type($realm->get('type'));
@@ -289,12 +286,13 @@ sub clear_nondurable_state {
     my($self) = @_;
     # Clears out models (Bivio::Biz::*) and any other nondurable state.  This
     # method will be expanded over time.
-    my($durable_keys) = $self->get('durable_keys');
-    my(@non_durable_keys) = map { $durable_keys->{$_} ? () : $_ }
-	    @{$self->get_keys};
-    _trace("durable keys: ".join(',', keys(%$durable_keys))) if $_TRACE;
-    _trace("NON durable keys: ".join(',', @non_durable_keys)) if $_TRACE;
-    $self->delete(@non_durable_keys);
+    my($dk) = $self->get('durable_keys');
+    my($ndk) = [grep(!$dk->{$_}, @{$self->get_keys})];
+    $self->delete(@$ndk);
+    if ($_TRACE) {
+	_trace('retained: ', [sort(keys(%$dk))]);
+	_trace('deleted: ', [sort(@$ndk)]);
+    }
     return;
 }
 
@@ -308,7 +306,7 @@ sub client_redirect {
     # to force a hard redirect.
     #
     # B<DOES NOT RETURN>.
-	[qw(task_id realm hash_ref query path_info no_context require_context no_form)],
+	[qw(task_id realm query path_info no_context require_context no_form uri carry_query carry_path_info)],
 	\@_);
     return $self->server_redirect($named);
 }
@@ -321,8 +319,7 @@ sub clone {
 sub elapsed_time {
     my($self) = @_;
     # Returns the number of seconds elapsed since the request was created.
-    return Bivio::Type::DateTime->gettimeofday_diff_seconds(
-	    $self->get('start_time'));
+    return $_DT->gettimeofday_diff_seconds($self->get('start_time'));
 }
 
 sub format_email {
@@ -347,11 +344,11 @@ sub format_help_uri {
     # doesn't have a help entry, defaults to default help page.
     #
     # I<task_id> may be a widget value, string (the name), or
-    # a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+    # a L<$_TI|$_TI>.
     $task_id = $task_id ? ref($task_id) ? $task_id
-	: Bivio::Agent::TaskId->from_any($task_id)
+	: $_TI->from_any($task_id)
 	: $self->get('task_id');
-    return Bivio::UI::Task->format_help_uri($task_id, $self);
+    return $_FCT->format_help_uri($task_id, $self);
 }
 
 sub format_http {
@@ -392,7 +389,7 @@ sub format_mailto {
     # I<auth_realm> owner's name.   If I<email> is missing a host, uses
     # I<Text.mail_host>.
     my($res) = 'mailto:'
-	    . Bivio::HTML->escape_uri($self->format_email($email));
+	    . $_HTML->escape_uri($self->format_email($email));
     if (defined($subject)) {
 	# This is a bug.  Currently Outlook doesn't understand
 	# escaped URIs in mailtos.  We should be escap_uri'ing the subject.
@@ -414,6 +411,8 @@ sub format_stateless_uri {
 	query => undef,
 	realm => undef,
 	path_info => undef,
+	carry_query => 0,
+	carry_path_info => 0,
     });
 }
 
@@ -436,7 +435,7 @@ sub format_uri {
     # I<anchor> will be appended last.
     #
     # I<no_context> and I<require_context> as described by
-    # L<Bivio::UI::Task::format_uri|Bivio::UI::Task/"format_uri">.
+    # L<$_FCT::format_uri|$_FCT/"format_uri">.
     my($self) = shift;
     my($named);
     ($self, $named) = $self->internal_get_named_args(
@@ -445,46 +444,39 @@ sub format_uri {
     return $self->format_http($named)
 	if delete($named->{require_absolute});
     my($uri);
-    Bivio::Die->die($named, ': must supply query with form_in_query')
-        if $named->{form_in_query} && !$named->{query};
+    b_die($named, ': must supply query with form_in_query')
+        if $named->{form_in_query} && ref($named->{query}) ne 'HASH';
     if (defined($uri = $named->{uri})) {
-	Bivio::Die->die($named, ': require secure not supported')
+	b_die($named, ': require secure not supported')
 	    if defined($named->{require_secure});
 	$named->{no_context} = 1
 	    unless defined($named->{no_context})
 	    || defined($named->{require_context});
 	$named->{uri} = $uri;
-	$uri = Bivio::UI::Task->format_uri($named, $self);
+	$self->internal_copy_implicit($named);
+	$uri = $_FCT->format_uri($named, $self);
     }
     else {
-	foreach my $x ('task_id',
-	    $self->retain_query_and_path_info ? qw(path_info query) : (),
-	) {
-	    $named->{$x} = $self->unsafe_get($x)
-		unless exists($named->{$x});
-	}
+	$named->{task_id} = $self->unsafe_get('task_id')
+	    unless exists($named->{task_id});
+	$self->internal_copy_implicit($named);
 	$named->{realm} = $self->internal_get_realm_for_task($named->{task_id})
 	    unless defined($named->{realm});
-	$uri = Bivio::UI::Task->format_uri($named, $self);
-	my($task) = Bivio::Agent::Task->get_by_id($named->{task_id});
+	$uri = $_FCT->format_uri($named, $self);
+	my($task) = $_T->get_by_id($named->{task_id});
 	$uri = $self->format_http_prefix(1) . $uri
 	    if $task->get('require_secure') && !$self->unsafe_get('is_secure')
 		&& $self->get('can_secure');
-	delete($named->{query})
-	    unless $task->get('want_query');
     }
     if (defined($named->{query})) {
-	if ($named->{form_in_query}) {
-	    Bivio::Die->die($named, ': query must be hash_ref with form_in_query')
-	        unless ref($named->{query}) eq 'HASH';
-	    $named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1;
-	}
-        $named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
+	$named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1
+	    if $named->{form_in_query};
+        $named->{query} = $_Q->format($named->{query})
             if ref($named->{query});
         $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
 	    if length($named->{query});
     }
-    $uri .= '#' . Bivio::HTML->escape_query($named->{anchor})
+    $uri .= '#' . $_HTML->escape_query($named->{anchor})
         if defined($named->{anchor}) && length($named->{anchor});
     return $uri;
 }
@@ -559,8 +551,8 @@ sub get_form {
 
 sub get_form_context_from_named {
     my($self, $named) = @_;
-    # Used to communicate between L<Bivio::UI::Task|Bivio::UI::Task>,
-    # L<Bivio::Agent::Task|Bivio::Agent::Task>, and this class.  You don't want to
+    # Used to communicate between L<$_FCT|$_FCT>,
+    # L<$_T|$_T>, and this class.  You don't want to
     # call this.
     my($fc);
     # If the task we are going to is the same as the unwind task,
@@ -569,10 +561,10 @@ sub get_form_context_from_named {
     return $named->{form_context} =
         ($named->{require_context}
 	    || !$named->{no_context}
-            && Bivio::Agent::Task->get_by_id($named->{task_id})
+            && $_T->get_by_id($named->{task_id})
 		->get('require_context')
 	) && ($fc = exists($named->{form_context}) ? $named->{form_context}
-		  : Bivio::Biz::FormModel->get_context_from_request(
+		  : $_FM->get_context_from_request(
 		      $named, $self)
 #THIS MAY BE DUBIOUS
 	) && ($fc->unsafe_get('unwind_task') || '') ne $named->{task_id}
@@ -593,8 +585,6 @@ sub get_request {
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
-#TODO: Force for now until we get the code right
-    $_CFG->{retain_query_and_path_info} = 1;
     return;
 }
 
@@ -604,15 +594,32 @@ sub internal_clear_current {
     return;
 }
 
+sub internal_copy_implicit {
+    my($self, $named) = @_;
+    foreach my $a (qw(query path_info)) {
+	if ($a eq 'query' && $named->{task_id}
+	    && !$_T->get_by_id($named->{task_id})->get('want_query')
+	) {
+	    $named->{query} = undef;
+	    next;
+	}
+	next
+	    if exists($named->{$a})
+	    || exists($named->{"carry_$a"}) && !$named->{"carry_$a"};
+	$named->{$a} = $self->get($a)
+    }
+    return;
+}
+
 sub internal_get_named_args {
     my(undef, $names, $argv) = @_;
     # Calls name_parameters in L<Bivio::UNIVERSAL|Bivio::UNIVERSAL> then
-    # converts I<task_id> to a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+    # converts I<task_id> to a L<$_TI|$_TI>.
     my($self, $named) = shift->name_parameters(@_);
     $named->{task_id} = !$named->{task_id} ? $self->get('task_id')
 	: UNIVERSAL::isa($named->{task_id}, 'Bivio::Agent::TaskId')
 	? $named->{task_id}
-	: Bivio::Agent::TaskId->from_name($named->{task_id})
+	: $_TI->from_name($named->{task_id})
 	if grep($_ eq 'task_id', @$names);
     _trace((caller(1))[3], $named) if $_TRACE;
     return ($self, $named);
@@ -631,10 +638,10 @@ sub internal_get_realm_for_task {
 	if $_TRACE;
     return $realm
 	if $task_id->equals($self->get('task_id'));
-    my($task) = Bivio::Agent::Task->get_by_id($task_id);
+    my($task) = $_T->get_by_id($task_id);
     return $realm
 	if $task->has_realm_type($realm->get('type'));
-    return Bivio::Auth::Realm->get_general
+    return $_REALM->get_general
 	if $task->has_realm_type($_RT->GENERAL);
     $task->assert_realm_type($_RT->USER);
     return undef
@@ -642,7 +649,7 @@ sub internal_get_realm_for_task {
     $realm = $self->unsafe_get('auth_user_realm');
     return $realm
 	if $realm;
-    $realm = Bivio::Auth::Realm->new($auth_user);
+    $realm = $_REALM->new($auth_user);
     $self->put_durable(auth_user_realm => $realm);
     return $realm;
 }
@@ -685,7 +692,7 @@ sub internal_redirect_realm {
     my($self, $new_task, $new_realm) = @_;
     # Changes the current realm if required by the new task.
     my($fields) = $self->[$_IDI];
-    my($task) = Bivio::Agent::Task->get_by_id($new_task);
+    my($task) = $_T->get_by_id($new_task);
     if ($new_realm) {
 	$task->assert_realm_type($new_realm->get('type'));
     }
@@ -697,16 +704,16 @@ sub internal_redirect_realm {
 	if $new_realm;
     $self->put(
         task_id => $new_task,
-        task => Bivio::Agent::Task->get_by_id($new_task),
+        task => $_T->get_by_id($new_task),
     );
     return;
 }
 
 sub internal_redirect_user_realm {
     my($self, $task) = @_;
-    $self->client_redirect(Bivio::Agent::TaskId->USER_HOME)
-	unless $task->has_realm_type(Bivio::Auth::RealmType->USER);
-    $self->server_redirect(Bivio::Agent::TaskId->LOGIN);
+    $self->client_redirect($_TI->USER_HOME)
+	unless $task->has_realm_type($_RT->USER);
+    $self->server_redirect($_TI->LOGIN);
     # DOES NOT RETURN
 }
 
@@ -714,28 +721,26 @@ sub internal_server_redirect {
     my($self, $named) = shift->internal_get_named_args(
     # Sets all values and saves form context.  See L<format_uri|"format_uri"> for the
     # arguments.
-	[qw(task_id realm query form path_info no_context require_context no_form)],
+	[qw(task_id realm query form path_info no_context require_context no_form uri carry_query carry_path_info)],
 	\@_);
-    Bivio::UI::Task->assert_defined_for_facade($named->{task_id}, $self);
-    my($fc) = Bivio::Biz::FormModel->get_context_from_request($named, $self);
+    $_FCT->assert_defined_for_facade($named->{task_id}, $self);
+    my($fc) = $_FM->get_context_from_request($named, $self);
     $self->internal_redirect_realm($named->{task_id}, $named->{realm});
-    $named->{query} = $self->get('query')
-	if !exists($named->{query})
-	&& Bivio::Agent::Task->get_by_id($named->{task_id})->get('want_query');
-    $named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
+    $named->{path_info} = undef
+	unless exists($named->{path_info}) || exists($named->{carry_path_info});
+    $self->internal_copy_implicit($named);
+    $named->{query} = $_Q->format($named->{query})
 	if ref($named->{query});
     $named->{query} = defined($named->{query})
-	? Bivio::Agent::HTTP::Query->parse($named->{query}) : undef;
-    $named->{uri} = Bivio::UI::Task->has_uri($named->{task_id})
+	? $_Q->parse($named->{query}) : undef;
+    $named->{uri} = $_FCT->has_uri($named->{task_id})
 	? $self->format_uri({
 	    map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
 		@{$self->FORMAT_URI_PARAMETERS}),
         }) : $self->get('uri');
     $named->{form_context} = $fc;
-    foreach my $x (qw(form path_info)) {
-	$named->{$x} = undef
-	    unless exists($named->{$x});
-    }
+    $named->{form} = undef
+	unless exists($named->{form});
     $self->put_durable_server_redirect_state($named);
     return $named->{task_id};
 }
@@ -743,7 +748,7 @@ sub internal_server_redirect {
 sub internal_set_current {
     my($self) = @_;
     # Called by subclasses when Request initialized.  Returns self.
-    Bivio::Die->die($self, ': must be reference')
+    b_die($self, ': must be reference')
 	unless ref($self);
     Bivio::IO::Alert->warn('replacing request:', $self->get_current)
         if $self->get_current;
@@ -776,12 +781,12 @@ sub is_super_user {
     return !$user_id
 	|| (defined($user_id) eq defined($self->get('auth_user_id'))
 	    && $user_id eq $self->get('auth_user_id'))
-	? _get_role($self, Bivio::Auth::RealmType->GENERAL->as_int)
+	? _get_role($self, $_RT->GENERAL->as_int)
 	    ->equals_by_name('ADMINISTRATOR')
 	: Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
-	    realm_id => Bivio::Auth::RealmType->GENERAL->as_int,
+	    realm_id => $_RT->GENERAL->as_int,
 	    user_id => $user_id,
-	    role => Bivio::Auth::Role->ADMINISTRATOR,
+	    role => $_ROLE->ADMINISTRATOR,
 	});
 }
 
@@ -823,7 +828,7 @@ sub process_cleanup {
     my($is_ok) = 1;
 
     foreach my $cleaner (@{$self->get('process_cleanup')}) {
-        if (Bivio::Die->catch(
+        if ($_D->catch(
             sub {
                 $cleaner->($self, $die);
             })
@@ -832,8 +837,8 @@ sub process_cleanup {
         }
     }
     $is_ok
-        ? Bivio::Agent::Task->commit($self)
-        : Bivio::Agent::Task->rollback($self);
+        ? $_T->commit($self)
+        : $_T->rollback($self);
     return;
 }
 
@@ -865,8 +870,12 @@ sub put_durable_server_redirect_state {
     #
     # Used to set state for server redirect.  Handles form_context specially.
     $self->put_durable(
+	# Allow caller to clear these values
 	map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
-	    qw(query form form_model path_info uri)),
+	    qw(query form form_model path_info)),
+	# You need a uri so "undefined" means "carry"
+	map((defined($named->{$_}) ? ($_ => $named->{$_}) : ()),
+	    qw(uri)),
 	form_context => $self->get_form_context_from_named($named),
     );
     return;
@@ -882,10 +891,6 @@ sub redirect {
     return $self->$method($args);
 }
 
-sub retain_query_and_path_info {
-    return $_CFG->{retain_query_and_path_info};
-}
-
 sub server_redirect {
     my($task) = shift->internal_server_redirect(@_);
     # Server_redirect the current task to the new task.
@@ -894,9 +899,9 @@ sub server_redirect {
     #
     # B<DOES NOT RETURN.>
     # clear db time
-    Bivio::SQL::Connection->get_db_time;
-    Bivio::Die->throw_quietly(
-	Bivio::DieCode->SERVER_REDIRECT_TASK,
+    $_C->get_db_time;
+    $_D->throw_quietly(
+	$_DC->SERVER_REDIRECT_TASK,
 	{task_id => $task},
     );
     # DOES NOT RETURN
@@ -912,9 +917,9 @@ sub set_realm {
     # Changes attributes to be authorized for I<new_realm>.  Also
     # sets C<auth_role>.  Returns the realm.
     $new_realm = defined($new_realm)
-	? Bivio::Auth::Realm->new($new_realm, $self)
-	: Bivio::Auth::Realm->get_general
-	unless $self->is_blessed($new_realm, 'Bivio::Auth::Realm');
+	? $_REALM->new($new_realm, $self)
+	: $_REALM->get_general
+	unless Bivio::Auth::Realm->is_blessed($new_realm);
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
     my($new_roles) = _get_roles($self, $realm_id);
@@ -963,7 +968,7 @@ sub set_user {
     else {
 	$user_realms = {};
     }
-    Bivio::Die->die($user, ': not a RealmOwner')
+    b_die($user, ': not a RealmOwner')
         if defined($user) && !$user->isa('Bivio::Biz::Model');
     $self->put_durable(
 	auth_user => $user,
@@ -997,7 +1002,7 @@ sub throw_die {
     $attrs->{task} = ref($task) ? $task->get_name : undef;
     $attrs->{user} = ref($user) ? $user->as_string : undef;
 
-    Bivio::Die->throw($code, $attrs, $package, $file, $line);
+    $_D->throw($code, $attrs, $package, $file, $line);
     # DOES NOT RETURN
 }
 
@@ -1019,7 +1024,7 @@ sub unsafe_get_txn_resource {
 sub warn {
     my($self) = shift;
     # Writes a warning and follows with the request context (task, user,
-    # uri, query, form).
+    # uri,q uery, form).
     return Bivio::IO::Alert->warn(@_, ' ', $self)
 }
 
@@ -1072,14 +1077,14 @@ sub _get_roles {
         qw(auth_user user_realms));
 
     # If no user, then is always anonymous
-    return [Bivio::Auth::Role->ANONYMOUS] unless $auth_user;
+    return [$_ROLE->ANONYMOUS] unless $auth_user;
 
     # Not the current realm, but an authenticated realm
     return $user_realms->{$realm_id}->{roles}
         if ref($user_realms->{$realm_id});
 
     # User has no special privileges in realm
-    return [Bivio::Auth::Role->USER];
+    return [$_ROLE->USER];
 }
 
 sub _with {
@@ -1087,7 +1092,7 @@ sub _with {
     my($prev) = $self->get("auth_$which");
     my($set) = "set_$which";
     my(@res);
-    my($die) = Bivio::Die->catch(sub {
+    my($die) = $_D->catch(sub {
         $self->$set($with_value);
 	@res = $op->();
 	return;
@@ -1096,7 +1101,7 @@ sub _with {
     $die->throw
 	if $die;
     return wantarray ? @res
-	: @res > 1 ? Bivio::Die->die(\@res, ': too many return values')
+	: @res > 1 ? b_die(\@res, ': too many return values')
 	: $res[0];
 }
 
