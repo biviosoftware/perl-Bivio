@@ -11,7 +11,7 @@ sub internal_xhtml_adorned {
     my($self) = shift;
     my(@res) = $self->SUPER::internal_xhtml_adorned(@_);
     view_unsafe_put(
-	xhtml_header_middle => If(
+	xhtml_dock_left => If(
 	    ['auth_realm', 'type', '->eq_forum'],
 	    TaskMenu([
 		'FORUM_FILE',
@@ -25,6 +25,8 @@ sub internal_xhtml_adorned {
 		vs_text('title.FORUM_WIKI_VIEW'),
 		[['->req'], '->format_uri', {
 		    task_id => 'FORUM_WIKI_VIEW',
+		    query => undef,
+		    path_info => undef,
 		    realm => 'fourem',
 		}],
 	    ),
