@@ -10,7 +10,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
-    $self->put(
+    $self->put_unless_exists(
 	control => [sub {@{$self->internal_choices(shift)} != 0}],
 	control_on_value => If(
 	    [sub {_one_choice($self, shift)}],
