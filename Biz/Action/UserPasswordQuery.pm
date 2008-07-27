@@ -38,7 +38,8 @@ sub execute {
     $proto->new({password => $pw})->put_on_request($req, 1);
     $proto->get_instance('Acknowledgement')->save_label($req);
     $req->server_redirect({
-        task_id => $req->get('task')->get('password_task'),
+#TODO: get_attr and set no_context on the password_task
+        task_id => $req->get('task')->get_attr_as_id('password_task'),
         no_context => 1,
     });
     # DOES NOT RETURN
@@ -49,7 +50,7 @@ sub format_uri {
     my($pw) = Bivio::Biz::Random->password;
     $req->get_nested(qw(auth_realm owner))->update_password($pw);
     return $req->format_http({
-	task_id => $req->get_nested(qw(task reset_task)),
+	task_id => $req->get('task')->get_attr_as_id('reset_task'),
 	query => {$_KEY => $pw},
 	no_context => 1,
     });
