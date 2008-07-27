@@ -26,11 +26,43 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.63  2008/07/23 18:25:19  dobbs
+  * Bivio::Agent::Dispatcher
+    don't need to register
+  * Bivio::Biz::Model::RealmFile
+    added _is_backup() to ignore files in is_searchable
+  * Bivio::Biz::Model::UserLoginForm
+    don't send password back to client in error case
+  * Bivio::Biz::Model::UserRegisterForm
+    $res unused
+  * Bivio::Collection::Attributes
+    use return_scalar_or_array
+  * Bivio::ShellUtil
+    USAGE now provides a default usage string.  Subclasses are no longer
+    required to override it.  Commands for that string come from the new
+    shell_commands() function which finds the methods in the $proto symbol
+    table.  Does not yet find methods on parent ShellUtils.
+    Subclasses can now specify command usage by creating foo_USAGE methods
+    that return the usage details for that command.  For example:
+    sub score_USAGE {'type year -- set the current scoring year'}
+  * Bivio::Test::Reload
+    added ability to register handlers
+  * Bivio::UNIVERSAL
+    added return_scalar_or_array
+  * Bivio::t::ShellUtil::T2
+    USAGE now provides a default usage string.  Subclasses are no longer
+    required to override it.  Commands for that string come from the new
+    shell_commands() function which finds the methods in the $proto symbol
+
+    Subclasses can now specify command usage by creating foo_USAGE methods
+    that return the usage details for that command.  For example:
+    sub score_USAGE {'type year -- set the current scoring year'}
+
   Revision 6.62  2008/07/15 22:24:58  dobbs
   * Bivio::Biz::Model::CRMThreadList
     parent_id changed from CRMThread.thread_root_id to CRMThread.crm_thread_num
