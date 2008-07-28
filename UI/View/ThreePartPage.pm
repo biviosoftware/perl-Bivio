@@ -135,7 +135,7 @@ sub internal_xhtml_adorned_body {
 
 sub _header_right {
     my($widget, $task) = @_;
-    return
+    return ''
 	if $task && !$_TI->unsafe_from_name($task);
     return If(vs_constant("ThreePartPage_want_$widget"), vs_call($widget));
 }
