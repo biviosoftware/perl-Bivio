@@ -10,16 +10,16 @@ my($_C) = b_use('IO.Config');
 sub initialize {
     my($self) = @_;
     my($h) = $self->get('format_uri_hash');
-    Bivio::IO::Alert->warn_deprecated('query must be set explicitly ', $h)
-        unless exists($h->{query}) || defined($h->{uri});
-    while (my($k, $v) = each(%$h)) {
-	$self->initialize_value("format_uri_hash.$k", $v);
-    }
     $_C->if_version(8 => sub {
         $h->{query} ||= undef;
         $h->{path_info} ||= undef;
 	return;
     });
+    Bivio::IO::Alert->warn_deprecated('query must be set explicitly ', $h)
+        unless exists($h->{query}) || defined($h->{uri});
+    while (my($k, $v) = each(%$h)) {
+	$self->initialize_value("format_uri_hash.$k", $v);
+    }
     return;
 }
 
