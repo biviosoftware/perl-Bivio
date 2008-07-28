@@ -13,7 +13,7 @@ sub execute_empty {
     my($reply) = $req->get('reply');
     return 'next'
 	unless $agent->is_browser;
-    $req->server_redirect($req->get_nested('task', 'login_task'))
+    $req->server_redirect($self->req('task')->get_attr_as_id('login_task'))
 	unless $auth_user;
     return 'next'
 	if $req->get('task')->unsafe_get('require_explicit_su');
