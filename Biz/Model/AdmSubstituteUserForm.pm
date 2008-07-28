@@ -171,7 +171,7 @@ sub su_logout {
     });
     _trace($realm) if $_TRACE;
     return $realm->is_loaded
-	? $req->get('task')->unsafe_get('su_task')
+	? $req->get('task')->unsafe_get_attr_as_id('su_task')
 	    || Bivio::Agent::TaskId->ADM_SUBSTITUTE_USER : 0;
 }
 
