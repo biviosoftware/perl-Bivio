@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,89 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.64  2008/07/27 03:17:49  nagler
+  * Bivio::Agent::HTTP::Request
+    server_redirect with uri was deprecated, and now is no longer used
+    removed retain_query_and_path_info reference
+    use internal_copy_implicit()
+    use carry_*
+  * Bivio::Agent::Task
+    v8: Task does not call get_instance on items This allows
+    reloading of task items dynamically, and was unnecessary except for
+    much older code
+    TaskEvent restructuring
+    get(<task attribute>) is deprecated; use unsafe_/get_attr_as_id
+    to get new behavior, use dep_{unsafe_}get_attr until deprecation removed
+    added put_attr_for_test()
+    map item attributes accept [cause, params] where params can be hash
+    as accepted by TaskEvent or TaskId (or name)
+  * Bivio::Agent::t::Mock::TaskId
+    test new interfaces
+  * Bivio::Biz::Action::DAV
+    TaskEvent
+  * Bivio::Biz::Action::RealmMail
+    use mail_reflector_task instaled of $job_task param
+  * Bivio::Biz::Action::UserPasswordQuery
+    task_event
+  * Bivio::Biz::Action::WikiView
+    refactored internal_model_not_found() to execute_not_found()
+    Use edit_task
+  * Bivio::Biz::FormContext
+    TaskEvent
+  * Bivio::Biz::FormModel
+    TaskEvent
+  * Bivio::Biz::Model::MailForm
+    use mail_reflector_task instead of $job_task param
+  * Bivio::Biz::Model::MailThreadRootList
+    TaskEvent
+  * Bivio::Biz::Model::RealmDAVList
+    TaskEvent
+  * Bivio::Biz::Model::RealmFileTreeList
+    TaskEvent
+  * Bivio::Biz::Model::RealmOwner
+    Debug info
+    Back out accidental debug check in
+  * Bivio::Biz::Model::UserTaskDAVList
+    TaskEvent
+  * Bivio::Collection::Attributes
+    unsafe/get_nested call unsafe/get so can be overridden by subclasses
+  * Bivio::Delegate::TaskId
+    FORUM_HOME.next is FORUM_WIKI_VIEW
+    mail_reflector_task on appropriate tasks
+  * Bivio::PetShop::BConf
+    v8
+  * Bivio::PetShop::Facade::PetShop
+    xlink_bunit3
+  * Bivio::PetShop::View::Base
+    use dock
+  * Bivio::Test::FormModel
+    use put_attr_for_test
+    TaskEvent
+  * Bivio::Test::Request
+    TaskEvent
+  * Bivio::Test::Unit
+    added builtin_model_exists
+    _model() allows $expect to be undef, which means do the iteration, but
+    don't assert_contains
+  * Bivio::UI::FacadeBase
+    XLink (v8) requires query => undef
+  * Bivio::UI::View::CRM
+    dead code
+  * Bivio::UI::View::CSS
+    relax support for DropDown so can be used in dock
+  * Bivio::UI::View::ThreePartPage
+    v8: ForumDropDown in dock
+  * Bivio::UI::Widget::URI
+    v8: require query and path_info to be set if task_id
+  * Bivio::UI::XHTML::Widget::ForumDropDown
+    put => put_unless_exists
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    v8: query and path_info forced to undef if not set
+  * Bivio::UI::XHTML::Widget::XLink
+    v8: query and path_info forced to undef if not set
+  * Bivio::UI::XML::Widget::AtomFeed
+    TaskEvent
+
   Revision 6.63  2008/07/23 18:25:19  dobbs
   * Bivio::Agent::Dispatcher
     don't need to register
