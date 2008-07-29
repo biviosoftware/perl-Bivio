@@ -97,7 +97,7 @@ sub _role_in_realm {
     my($req) = @_;
     my($t) = $req->get('task');
     my($r) = [grep(
-	$t->unsafe_get($_),
+	$t->unsafe_get_attr_as_id($_),
 	map(lc($_->get_name) . '_task', @{$req->get_auth_roles}),
     )];
     return @$r == 0 ? 'next'
