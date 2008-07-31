@@ -3,7 +3,6 @@
 package Bivio::Util::SQL;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REALM_ROLE_CONFIG);
 Bivio::IO::Config->register(my $_CFG = {
@@ -106,12 +105,11 @@ sub create_test_db {
     # Destroys old database, creates new database, populates with test data.
     # Subclasses should override L<initialize_test_data|"initialize_test_data"> to
     # create the test data.
-    $self->print('Initializing database...', "\n");
     $self->initialize_ui;
     my($req) = $self->get_request;
     die('cannot be run on production system')
 	if $req->is_production;
-    my($ddl_dir) = $self->get_project_root() . '/files/ddl';
+    my($ddl_dir) = $self->get_project_root . '/files/ddl';
     $_F->do_in_dir(-d $ddl_dir ? $ddl_dir : '.', sub {
         $self->destroy_db;
         $self->create_db;
@@ -298,7 +296,6 @@ sub import_tables_only {
 
 sub init_dbms {
     my($self, $clone_db) = @_;
-    $self->print('Creating postgresql database...', "\n");
     $self->req;
     my($c) = _assert_postgres($self);
     my($db, $user, $pass) = @$c{qw(database user password)};
