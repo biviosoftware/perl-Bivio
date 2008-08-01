@@ -621,6 +621,10 @@ sub _process_argv {
 	# Get rid of processed parameter
 	push(@$_COMMAND_LINE_ARGS, splice(@$argv, $i--, 1));
     }
+    ($actual->{'Bivio::IO::Config'} ||= {})->{trace} = 1
+	if (($actual->{'Bivio::IO::Trace'} || {})->{command_line_arg} || '')
+	eq 'config';
+    return;
 }
 
 1;
