@@ -30,14 +30,25 @@ EOF
 }
 
 sub create_user {
-    my($self, $email, $display_name, $password, $user_name) = shift->name_args(
-	[qw(Email DisplayName Password ?RealmName)], \@_);
+    my($self, $email, $display_name, $password, $user_name) = shift->name_args([
+	'Email',
+	[DisplayName => sub {
+	     my(undef, $args) = @_;
+	     return b_use('Type.Email')->get_local_part($args->{Email});
+	}],
+	[Password => sub {b_use('Biz.Random')->string}],
+	[RealmName => sub {
+	     my(undef, $args) = @_;
+	     return b_use('Type.RealmName')
+		 ->clean_and_trim($args->{DisplayName});
+	}],
+    ], \@_);
     return $self->model(UserCreateForm => {
 	'Email.email' => $email,
 	'RealmOwner.display_name' => $display_name,
 	'RealmOwner.password' => $password,
 	confirm_password => $password,
-	$user_name ? ('RealmOwner.name' => $user_name) : (),
+	'RealmOwner.name' => $user_name,
     })->get('User.user_id');
 }
 
