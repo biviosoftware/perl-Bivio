@@ -78,6 +78,12 @@ sub default_merge_overrides {
 	    version => $args->{version},
 	},
 	'Bivio::IO::Trace' => {
+	    config => {
+		# This doesn't actually exist, b/c Config is second module
+		# to load (after UNIVERSAL) so it can't register (ever).
+		# However, --trace=config is rather convenient
+		package_filter => '/^Bivio::IO::Config$/',
+	    },
 	    sql => {
 		call_filter => '$sub =~ /_trace_sql/',
 		package_filter => '/^Bivio::SQL::Connection$/',
