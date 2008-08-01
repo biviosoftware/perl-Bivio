@@ -648,6 +648,7 @@ sub model {
 sub name_args {
     my($proto, $decls, $args) = @_;
     my($last_decl) = $decls->[$#$decls];
+    my($res) = {};
     return (
 	$proto,
 	@{$proto->map_together(sub {
@@ -656,16 +657,20 @@ sub name_args {
 	    $decl = [$decl]
 		unless ref($decl);
 	    my($name, $type, $default) = @$decl;
-	    my($has_default) = $name =~ s/^\?// || @$decl > 2;
+	    ($default, $type) = ($type, undef)
+		if ref($type) eq 'CODE';
+	    my($has_default) = $name =~ s/^\?// || defined($default)
+		|| @$decl > 2;
 	    $type ||= $name;
 	    $type = "Type.$type"
 		unless $type =~ /\W/;
 	    $type = $proto->use($type);
 	    my($v, $e) = $type->from_literal($arg);
-	    return $v
+	    return $res->{$name} = $v
 		if defined($v);
 	    unless ($e) {
-		return ref($default) eq 'CODE' ? $default->($proto) : $default
+		return $res->{$name} = ref($default) eq 'CODE'
+		    ? $default->($proto, $res) : $default
 		    if $has_default;
 		$e = $_TE->NULL;
 	    }

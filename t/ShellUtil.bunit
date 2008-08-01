@@ -30,6 +30,7 @@ config({
 	    [[[qw(arg Integer)]], [undef]] => DIE(),
 	    [[[qw(arg Integer 1)]], [undef]] => [class(), 1],
 	    [[[qw(arg Integer), sub {2}]], [undef]] => [class(), 2],
+	    [[[Integer => sub {2}]], [undef]] => [class(), 2],
 	],
 	email_file => [
 	    [$email => 'any subject' => $INC{'Bivio/Test.pm'}] => undef,
