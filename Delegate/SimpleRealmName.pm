@@ -27,6 +27,12 @@ sub SPECIAL_SEPARATOR {
     return '-';
 }
 
+sub clean_and_trim {
+    my($self, $value) = @_;
+    $value =~ s/\W+//;
+    return shift->SUPER::clean_and_trim(lc($value));
+}
+
 sub from_literal {
     my($proto, $value) = @_;
     # Trims whitespace and checks syntax an returns (value).
@@ -43,6 +49,10 @@ sub from_literal {
     return (undef, Bivio::TypeError->REALM_NAME)
         unless $proto->internal_is_realm_name($v);
     return $proto->process_name($v);
+}
+
+sub get_min_width {
+    return 3;
 }
 
 sub internal_is_realm_name {
