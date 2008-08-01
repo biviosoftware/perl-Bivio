@@ -7,6 +7,15 @@ use Text::Tabs;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub clean_and_trim {
+    my($proto, $value) = @_;
+    b_die('value must be no-zero length')
+	unless defined($value) && length($value);
+    $value .= $value
+	while length($value) < $proto->get_min_width;
+    return substr($value, 0, $proto->get_width);
+}
+
 sub compare {
     my($proto, $left, $right) = @_;
     return $proto->compare_defined(
@@ -24,6 +33,10 @@ sub from_literal {
     return (undef, Bivio::TypeError->TOO_LONG)
 	if length($value) > $proto->get_width;
     return $value;
+}
+
+sub get_min_width {
+    return 0;
 }
 
 sub get_width {
