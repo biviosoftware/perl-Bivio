@@ -36,8 +36,7 @@ EOF
 
 sub init {
     my($self) = @_;
-    my($req) = $self->initialize_fully;
-    $self->new_other('TestUser')->init_adm;
+    my($req) = $self->init_admin_user;
     $req->with_realm(undef, sub {
         $self->model('ForumForm', {
 	    'RealmOwner.name' => $self->SITE_REALM,
@@ -78,6 +77,28 @@ sub init {
 	},
     );
     return;
+}
+
+sub init_admin_user {
+    my($self) = @_;
+    my($req) = $self->initialize_fully;
+    if ($req->is_test) {
+	$self->new_other('TestUser')->init_adm;
+    }
+    else {
+	$req->set_user(
+	    $req->get_if_exists_else_put(__PACKAGE__ . '.admin' => sub {
+	        return $req->unsafe_get_nested(qw(auth_user name))
+		    || $self->new_other('RealmAdmin')->create_user(
+			$self->convert_literal(
+			    Email => $self->readline_stdin('Administrator email: '),
+			),
+		    ),
+		},
+            ),
+	);
+    }
+    return $req;
 }
 
 sub make_admin {
