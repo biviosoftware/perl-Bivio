@@ -166,11 +166,12 @@ sub get_nested {
 
 sub get_or_default {
     my($self, $name, $default) = @_;
-    Bivio::IO::Alert->warn_deprecated(
-	$name, ': code_ref will be executed in in a future version'
-    ) if ref($default) eq 'CODE';
     my($fields) = $self->[$_IDI];
-    return exists($fields->{$name}) ? $fields->{$name} : $default;
+    return exists($fields->{$name})
+        ? $fields->{$name}
+	: ref($default) eq 'CODE'
+        ? $default->($name)
+	: $default;
 }
 
 sub get_shallow_copy {
@@ -278,7 +279,7 @@ sub put_unless_exists {
     _writable($self);
     while (@$args) {
 	my($k, $v) = (splice(@$args, 0, 2));
-	$self->put($k => ref($v) eq 'CODE' ? $v->() : $v)
+	$self->put($k => ref($v) eq 'CODE' ? $v->($k) : $v)
 	    unless $self->has_keys($k);
     }
     return $self;
@@ -289,7 +290,7 @@ sub put_unless_defined {
     _writable($self);
     while (@$args) {
 	my($k, $v) = (splice(@$args, 0, 2));
-	$self->put($k => ref($v) eq 'CODE' ? $v->() : $v)
+	$self->put($k => ref($v) eq 'CODE' ? $v->($k) : $v)
 	    unless defined($self->unsafe_get($k));
     }
     return $self;
