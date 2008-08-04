@@ -914,6 +914,7 @@ sub validate_and_execute_ok {
     my($res);
     if ($self->in_error) {
 	_put_file_field_reset_errors($self);
+	$self->internal_post_execute('validate_and_execute_ok');
     }
     else {
 	# Catch errors and rethrow unless we can process
