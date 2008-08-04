@@ -1091,18 +1091,16 @@ sub _with {
     my($which, $self, $with_value, $op) = @_;
     my($prev) = $self->get("auth_$which");
     my($set) = "set_$which";
-    my(@res);
+    my($res);
     my($die) = $_D->catch(sub {
         $self->$set($with_value);
-	@res = $op->();
+	$res = [$op->()];
 	return;
     });
     $self->$set($prev);
     $die->throw
 	if $die;
-    return wantarray ? @res
-	: @res > 1 ? b_die(\@res, ': too many return values')
-	: $res[0];
+    return $self->return_scalar_or_array(@$res);
 }
 
 1;
