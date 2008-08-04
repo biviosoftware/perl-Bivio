@@ -103,7 +103,7 @@ Bivio::Test->unit([
 	    method => 'return_scalar_or_array',
 	    want_scalar => 1,
 	} => [
-	    [] => qr{must.*array},
+	    [] => [undef],
 	    1 => 1,
 	    [1, 2] => qr{must.*array},
 	],

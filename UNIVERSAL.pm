@@ -317,7 +317,7 @@ sub req {
 sub return_scalar_or_array {
     my($proto) = shift;
     return wantarray ? @_
-	: @_ == 1 ? $_[0]
+	: @_ <= 1 ? $_[0]
 	: Bivio::Die->die(
 	    $proto->my_caller,
 	    ': method must be called in array context');
