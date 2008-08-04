@@ -18,17 +18,15 @@ sub dav_propfind_children {
     my($self) = @_;
     my($req) = $self->get_request;
     my($q) = $self->get_query;
-    my($prev) = $req->get('auth_realm');
-    $req->set_realm($q->get('auth_id'));
-    my($t) = $_AT->get_by_id($q->get('task_id'));
-    my($res) = $t->map_each(
-	sub {
-	    my(undef, $k, $tid) = @_;
-	    return $k =~ /^(\w+)_task$/ ? _fmt($self, lc($1), $tid) : ();
-	},
-    );
-    $req->set_realm($prev);
-    return $res;
+    return $req->with_realm($q->get('auth_id'), sub {
+	my($t) = $_AT->get_by_id($q->get('task_id'));
+#TODO: map_each once Agent.Task deprecated warning is gone
+	return [map(
+	    $_ =~ /^(\w+)_task$/
+		? _fmt($self, lc($1), $t->get_attr_as_id($_)) : (),
+	    @{$t->get_keys},
+	)];
+    });
 }
 
 sub internal_initialize {
