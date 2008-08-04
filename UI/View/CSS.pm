@@ -552,6 +552,7 @@ td.amount_cell {
   border: 1px solid;
   Color('dd_menu-border');
   width: 15em;
+  z-index: 1000;
 }
 .dd_menu a {
   display: block;
@@ -559,7 +560,6 @@ td.amount_cell {
   Font('dd_menu');
   Color('dd_menu-background');
   text-decoration: none;
-  z-index: 1000;
   text-align: left;
   font-weight: normal;
 }
