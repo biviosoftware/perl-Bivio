@@ -1,0 +1,27 @@
+# $Id$
+# Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
+Request('initialize_fully');
+req()->set_realm_and_user('general', 'root');
+[
+    class() => [
+	execute => [
+	    [req(), {
+		login => 'demo',
+	    }] => sub {
+		my($case, $return) = @_;
+		return 0 unless req()->is_substitute_user;
+		push(@$return, req(qw(auth_user name)));
+		return [0, 'demo'];
+	    },
+	],
+	sub {
+	    assert_equals(
+		req()->use('Action.UserLogout')->execute(req()),
+		req()->use('Agent.TaskId')->ADM_SUBSTITUTE_USER);
+	    assert_equals(
+		req()->use('Action.UserLogout')->execute(req()),
+		0);
+	    return 1;
+	} => 1,
+    ],
+];
