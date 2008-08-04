@@ -123,7 +123,7 @@ sub create_test_db {
 sub create_test_user {
     my($self, $user_or_email, $password) = shift->name_args([
 	[qw(user_or_email String)],
-	[Password => sub {$self->TEST_PASSWORD}],
+	[Password => sub {shift->TEST_PASSWORD}],
     ], \@_);
     $self->initialize_fully;
     my($display_name) = $_E->is_valid($user_or_email)
