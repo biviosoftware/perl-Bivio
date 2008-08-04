@@ -14,10 +14,9 @@ sub EMPTY_SUBJECT_PREFIX {
 }
 
 sub execute_receive {
-    my($proto, $req, $rfc822) = @_;
+    my($proto, $req, $rfc822, $reflector_task) = @_;
     $rfc822 ||= $req->get('Model.MailReceiveDispatchForm')
 	->get('message')->{content};
-#TODO: Pull from the task, e.g. job_task=
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
     my($in) = $rm->create_from_rfc822($rfc822);
     my($ea) = $rm->new_other('EmailAlias');
@@ -36,7 +35,8 @@ sub execute_receive {
     });
     $proto->use('AgentJob.Dispatcher')->enqueue(
 	$req,
-	$req->get('task')->get_attr_as_id('mail_reflector_task'),
+	$reflector_task
+	    || $req->get('task')->get_attr_as_id('mail_reflector_task'),
 	{
 	    $proto->package_name => $proto->new({
 		outgoing => $out,
