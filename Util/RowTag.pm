@@ -17,9 +17,9 @@ EOF
 }
 
 sub list {
-    my($self, @key) = shift->name_args([
-	[RowTagKey => undef, sub {grep(!$_->eq_unknown, $_RTK->get_list)}],
-    ], \@_);
+    my($self, @key) = (shift, @_
+	? map($_RTK->from_name($_), @_)
+	: grep(!$_->eq_unknown, $_RTK->get_list));
     my($rt) = $self->model('RowTag');
     my($id) = $self->req('auth_id');
     return join('', map(
