@@ -5,6 +5,7 @@ Request();
 #Bivio::IO::Alert->set_printer(sub {});
 my($myarg_re) = qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s;
 my($email) = email('shellutil');
+my($_G) = __PACKAGE__->use('Type.Gender');
 config({
     'Bivio::IO::ClassLoader' => {
 	maps => {
@@ -31,6 +32,8 @@ config({
 	    [[[qw(arg Integer 1)]], [undef]] => [class(), 1],
 	    [[[qw(arg Integer), sub {2}]], [undef]] => [class(), 2],
 	    [[[Integer => sub {2}]], [undef]] => [class(), 2],
+	    # MALE is the last value from get_list()
+	    [[['Gender', sub {$_G->get_list}]]] => [class(), $_G->MALE],
 	],
 	email_file => [
 	    [$email => 'any subject' => $INC{'Bivio/Test.pm'}] => undef,
