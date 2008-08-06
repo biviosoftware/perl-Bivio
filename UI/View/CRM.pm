@@ -6,24 +6,22 @@ use Bivio::Base 'View.Mail';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_CF) = __PACKAGE__->use('Model.CRMForm')->get_instance;
 
 sub internal_crm_send_form_buttons {
     return '*ok_button update_only cancel_button';
 }
 
 sub internal_crm_send_form_extra_fields {
-    my($self) = @_;
-    my($form) = $self->internal_name . 'Form';
+    my($self, $no_action) = @_;
+    my($form) = b_use('Model', $self->internal_name . 'Form')->get_instance;
     return [
-	["$form.action_id", {
+	$no_action ? () : [$form->simple_package_name . '.action_id', {
 	    wf_class => 'Select',
 	    list_display_field => 'name',
 	    choices => ['->req', 'Model.CRMActionList'],
 	    list_id_field => 'id',
-	    row_control => ["Model.$form", '->show_action'],
 	}],
-	@{$_CF->tuple_tag_map_slots('b_ticket.CRMThread.thread_root_id', sub {
+	@{$form->tuple_tag_map_slots('b_ticket.CRMThread.thread_root_id', sub {
 	    my($field) = @_;
 	    return [TupleTagSlotLabel($field), TupleTagSlotField($field)];
 	})},
