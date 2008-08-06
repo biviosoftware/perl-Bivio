@@ -34,6 +34,10 @@ sub execute_not_found {
     return shift->execute(shift, 'NOT_FOUND');
 }
 
+sub execute_server_error {
+    return shift->execute(shift, 'SERVER_ERROR');
+}
+
 sub execute_task_item {
     my($self, $error, $req) = @_;
     return $error =~ /^execute/ ? $self->$error($req)
