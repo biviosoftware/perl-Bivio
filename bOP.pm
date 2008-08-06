@@ -26,11 +26,23 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.65  2008/07/29 02:06:25  moeller
+  * Bivio::Biz::Action::ClientRedirect
+    fixed deprecated task->unsafe_get() call
+  * Bivio::Biz::Model::AdmSubstituteUserForm
+    call task->unsafe_get_attr_as_id to avoid deprecated warning
+  * Bivio::Biz::Model::ForbiddenForm
+    replaced req->get_nested() with task->get_attr_as_id
+  * Bivio::UI::View::ThreePartPage
+    return an empty value if no _header_right() value is set from the task
+  * Bivio::UI::Widget::URI
+    set version 8 defaults before warn_deprecated()
+
   Revision 6.64  2008/07/27 03:17:49  nagler
   * Bivio::Agent::HTTP::Request
     server_redirect with uri was deprecated, and now is no longer used
