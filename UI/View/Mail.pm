@@ -9,6 +9,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = __PACKAGE__->use('MIME.Type');
 my($_MF) = __PACKAGE__->use('Model.MailForm');
 
+sub DEFAULT_COLS {
+    return 80;
+}
+
 sub PART_TASK {
     return 'FORUM_MAIL_PART';
 }
@@ -91,6 +95,22 @@ sub internal_standard_tools {
     return;
 }
 
+sub internal_subject_body_attachments {
+    my($self) = @_;
+    return (
+	[_name($self, 'XxForm.subject'), {
+	    size => $self->DEFAULT_COLS + 2,
+	}],
+	[_name($self, 'XxForm.body'), {
+	    rows => 24,
+	    cols => $self->DEFAULT_COLS,
+	    row_class => 'textarea',
+	}],
+	@{Bivio::Biz::Model->get_instance(_name($self, 'XxForm'))
+	    ->map_attachments(sub {_name($self, 'XxForm.') . shift(@_)})},
+    );
+}
+
 sub pre_compile {
     my($self) = shift;
     my(@res) = $self->SUPER::pre_compile(@_);
@@ -103,29 +123,17 @@ sub pre_compile {
 
 sub send_form {
     my($self, $extra_fields, $buttons) = @_;
-    my($cols) = 80;
     $buttons ||= '*';
     return $self->internal_body(
 	DIV_msg_compose(Join([
 	    vs_simple_form(_name($self, 'XxForm') => [
 		@{$extra_fields || [$buttons]},
 		map([_name($self, "XxForm.$_"), {
-		    cols => $cols,
+		    cols => $self->DEFAULT_COLS,
 		    rows => 1,
 		    row_class => 'textarea',
 		}], qw(to cc)),
-		[_name($self, 'XxForm.subject'), {
-		    size => $cols + 2,
-		}],
-		[_name($self, 'XxForm.body'), {
-		    rows => 24,
-		    cols => $cols,
-		    row_class => 'textarea',
-		}],
-		@{Bivio::Biz::Model->get_instance(_name($self, 'XxForm'))
-		    ->map_attachments(sub {
-		        return _name($self, 'XxForm.') . shift(@_);
-		    })},
+		$self->internal_subject_body_attachments,
 		$buttons,
 	    ]),
 	    If([_name($self, 'Model.XxForm'), '->is_reply'], _msg($self, 1)),
