@@ -58,7 +58,7 @@ sub execute_empty {
 }
 
 sub execute_ok {
-    my($self, $button) = @_;
+    my($self) = @_;
     my($ct, $cal);
     $cal = $self->req('Model.CRMActionList');
     if ($ct = $self->req->unsafe_get('Model.CRMThread')) {
@@ -142,10 +142,6 @@ sub internal_pre_execute {
     });
 }
 
-sub show_action {
-    return 1;
-}
-
 sub tuple_tag_form_state {
     return shift->[$_IDI] ||= {};
 }
@@ -167,8 +163,8 @@ sub tuple_tag_slot_label {
 }
 
 sub validate {
-    my($self, $button) = @_;
-    if ($button eq 'update_only') {
+    my($self) = @_;
+    if ($self->unsafe_get('update_only')) {
 	return $self->internal_put_error(to => 'MUTUALLY_EXCLUSIVE')
 	    unless $self->unsafe_get($_TAG_ID);
 	foreach my $f (qw(to body)) {
