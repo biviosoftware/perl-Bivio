@@ -45,7 +45,8 @@ sub internal_xhtml_adorned_attrs {
 	Bivio::Biz::Model->new($req, 'SearchForm')->process
 	    unless $req->unsafe_get('Model.SearchForm');
 	return;
-    }) if $_TI->unsafe_from_name('SEARCH_LIST');
+    }) if $_TI->unsafe_from_name('SEARCH_LIST')
+        && !$self->unsafe_get('view_pre_execute');
     view_put(
 	xhtml_title => Join([
 	    SPAN_realm(String([qw(auth_realm owner display_name)]), {
