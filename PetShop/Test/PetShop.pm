@@ -81,9 +81,11 @@ sub create_forum {
 
 sub do_logout {
     my($self) = @_;
-    # Logs out if logged in.
     $self->follow_link('Sign-out')
 	if $self->text_exists('Sign-out');
+    $self->follow_link('Logout')
+	if $self->text_exists(qr{>Logout<}i);
+    return;
 }
 
 sub fixup_files_uri {
