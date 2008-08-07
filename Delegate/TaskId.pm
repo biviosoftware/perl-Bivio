@@ -1083,8 +1083,6 @@ sub info_wiki {
 			Action.WikiView->execute_prepare_html
 			View.Wiki->view
 			MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
-			not_found_task=FORUM_WIKI_NOT_FOUND
-			edit_task=FORUM_WIKI_EDIT
 			want_author=1
 		    )],
 		);
@@ -1151,7 +1149,6 @@ sub info_wiki {
 	    Action.SiteForum
 	    Action.WikiView->execute_prepare_html
 	    View.Wiki->site_view
-	    not_found_task=DEFAULT_ERROR_REDIRECT_NOT_FOUND
 	    want_author=1
         )],
     ];
