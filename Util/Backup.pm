@@ -132,6 +132,7 @@ sub trim_directories {
 	if @$dirs <= $num;
     $dirs = [reverse(splice(@$dirs, $num))];
     foreach my $d (@$dirs) {
+	system('chmod', '-R', 'ug+w', $d);
 	Bivio::IO::Alert->warn($d, ': unable to delete')
             unless system('rm', '-rf', $d) == 0;
     }
