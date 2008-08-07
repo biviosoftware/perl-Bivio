@@ -467,8 +467,8 @@ sub prepare_html {
 	b_die($arg1, ': invalid first argument');
     }
     else {
-	return unless $rf = $_RF->access_controlled_load(
-	    $arg1, $_WN->to_absolute($arg2), $req, 1);
+	$rf = $_RF->access_controlled_load(
+	    $arg1, $_WN->to_absolute($arg2), $req);
     }
     $a->put(
 	map(($_ => $rf->get($_)), @{$rf->get_keys}),
