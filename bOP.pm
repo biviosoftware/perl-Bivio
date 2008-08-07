@@ -26,11 +26,30 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.67  2008/08/07 18:34:18  nagler
+  * Bivio::Biz::Action::EmptyReply
+    added execute_server_error
+  * Bivio::Delegate::TaskId
+    need not_found_task on SITE_WIKI_VIEW
+  * Bivio::UI::FacadeBase
+    added xhtml_dock_left_standard
+  * Bivio::UI::View::ThreePartPage
+    allow subclasses to override internal_xhtml_adorned_attrs setting view_pre_execute
+  * Bivio::UI::View::Wiki
+    remove spurious comment
+  * Bivio::UI::Widget::URI
+    always set query to undef
+    unneeded import
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    URI clears query and path_info, don't need version 8
+  * Bivio::Util::Backup
+    added chmod -R ug+w to trim directories
+
   Revision 6.66  2008/08/06 04:20:08  nagler
   * Bivio::Agent::Request
     use return_scalar_or_array in _with()
