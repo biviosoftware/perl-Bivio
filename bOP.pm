@@ -26,11 +26,58 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.66  2008/08/06 04:20:08  nagler
+  * Bivio::Agent::Request
+    use return_scalar_or_array in _with()
+  * Bivio::BConf
+    config trace
+  * Bivio::Biz::Action::RealmMail
+    allow reflector_task to be passed in
+  * Bivio::Biz::FormModel
+    call internal_post_execute() if validate() fails
+  * Bivio::Biz::Model::CRMForm
+    remove show_action
+    reference button by unsafe_get, not explicitly
+  * Bivio::Biz::Model::UserTaskDAVList
+    Agent.Task get value deprecation
+  * Bivio::Collection::Attributes
+    pass name of key to code_ref calls
+  * Bivio::Delegate::SimpleRealmName
+    added clean_and_trim
+  * Bivio::IO::Config
+    pick off --trace=config
+  * Bivio::ShellUtil
+    name_args: accept Type => code_ref
+  * Bivio::Type::String
+    added clean_and_trim & get_min_width
+  * Bivio::UI::FacadeBase
+    dropdown doesn't work right
+  * Bivio::UI::View::CRM
+    added $no_action to internal_crm_send_form_extra_fields
+  * Bivio::UI::View::CSS
+    put z-index on .dd_menu (not dd_menu a)
+  * Bivio::UI::View::Mail
+    added DEFAULT_COLS and internal_subject_body_attachments
+  * Bivio::UNIVERSAL
+    return_scalar_or_array returns undef in scalar context if empty array
+  * Bivio::Util::RealmAdmin
+    create_user simplified to use name_args better
+  * Bivio::Util::RowTag
+    named_args() no longer works for array values
+  * Bivio::Util::SQL
+    remove unnecessary messages
+    create_test_user uses name_args
+    fpc
+  * Bivio::Util::SiteForum
+    added init_admin_user
+  * Bivio::Util::TestUser
+    added init_adm
+
   Revision 6.65  2008/07/29 02:06:25  moeller
   * Bivio::Biz::Action::ClientRedirect
     fixed deprecated task->unsafe_get() call
