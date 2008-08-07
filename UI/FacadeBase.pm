@@ -1152,6 +1152,20 @@ sub _cfg_wiki {
 		    'FORUM_WIKI_EDIT',
 		]);},
 		wiki_view_topic => q{Simple(['Action.WikiView', 'title']);},
+		xhtml_dock_left_standard => q{If(['auth_realm', 'type', '->eq_forum'],
+	    TaskMenu([
+		'FORUM_BLOG_LIST',
+		'FORUM_CALENDAR',
+		{
+		    task_id => 'FORUM_FILE',
+		    control => ['->can_user_execute_task', 'FORUM_FILE_CHANGE'],
+		},
+		'FORUM_MAIL_THREAD_ROOT_LIST',
+		'FORUM_MOTION_LIST',
+		'FORUM_TUPLE_USE_LIST',
+		'FORUM_WIKI_VIEW',
+	    ]),
+	);},
 	    ]],
 #DEPRECATED:
 	    [HelpWiki => [
