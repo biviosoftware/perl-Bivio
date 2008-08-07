@@ -15,7 +15,6 @@ my($_PARAMS) = [
     'uri',
     'xlink',
 ];
-my($_C) = b_use('IO.Config');
 
 sub internal_as_string {
     my($self) = @_;
@@ -58,12 +57,6 @@ sub initialize {
 		    = Bivio::Agent::TaskId->from_any($cfg->{task_id});
 		$cfg->{label} ||= $cfg->{task_id}->get_name;
 		$cfg->{uri} ||= URI({
-		    $_C->if_version(8 => sub {
-			return (
-			    query => undef,
-			    path_info => undef,
-			);
-		    }),
 		    _cfg($cfg, @$_URI),
 		});
 	    }
