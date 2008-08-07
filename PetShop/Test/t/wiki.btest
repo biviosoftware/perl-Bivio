@@ -1,31 +1,38 @@
 # Copyright (c) 2005 IEEE Industry Standards and Technology Organization.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
+my($search_key) = random_string();
 my($f, $uri) = create_forum();
 visit_uri($uri = "$uri/wiki");
 submit_form({
     public => 1,
-    anon => 'Here is our ^PrivatePage! ',
+    anon => 'Here is our ^PrivatePage! ' . $search_key,
 });
 $uri = get_uri();
 follow_link('PrivatePage');
-my($search_key) = random_string();
 submit_form({
     public => 0,
     anon => 'go back to the ^StartPage. ' . $search_key,
 });
 follow_link('edit');
-submit_form(OK => {
-});
+submit_form('OK');
 follow_link('StartPage');
-submit_form({
-    _anon => $search_key,
-});
-verify_no_text('PrivatePage;');
+submit_form({_anon => $search_key});
+my($search_page) = get_uri();
+verify_text('Here is our');
+verify_text('go back to the');
 do_logout();
-home_page();
-login_as('demo');
-$uri =~ s,/wiki/,/public-wiki/,;
+visit_uri($search_page);
+verify_text('Here is our');
+verify_no_text('go back to the');
 visit_uri($uri);
 follow_link('PrivatePage');
-verify_text(qr{not.*found.*not.*permission}is);
+verify_text('Please sign into');
+verify_no_text('go back to the');
+login_as('demo');
+visit_uri($search_page);
+verify_text('Here is our');
+verify_no_text('go back to the');
+visit_uri($uri);
+test_deviance('Forbidden');
+follow_link('PrivatePage');
