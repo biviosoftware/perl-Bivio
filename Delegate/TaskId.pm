@@ -1151,6 +1151,7 @@ sub info_wiki {
 	    Action.SiteForum
 	    Action.WikiView->execute_prepare_html
 	    View.Wiki->site_view
+	    not_found_task=DEFAULT_ERROR_REDIRECT_NOT_FOUND
 	    want_author=1
         )],
     ];
