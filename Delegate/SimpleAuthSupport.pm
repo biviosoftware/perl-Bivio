@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Delegate::SimpleAuthSupport;
 use strict;
-use Bivio::Base 'Bivio::Delegate';
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -32,14 +32,13 @@ sub load_permissions {
     # (proto, Auth.Realm, Auth.Role, Agent.Request) : Auth.PermissionSet
     # Returns the permission set from RealmRole table.  If there are no permissions,
     # loads default permissions from RealmRole table.
-    my(undef, $realm, $role, $req) = @_;
+    my($proto, $realm, $role, $req) = @_;
     my($owner) = $realm->unsafe_get('owner');
     if ($owner) {
 	my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
 	# Try to load for just this role explicitly and cache.
 	return $rr->get('permission_set')
-		if $rr->unauth_load(
-			realm_id => $realm->get('id'), role => $role);
+	    if _load_realm($proto, $rr, $realm->get('id'), $role);
     }
 
     my($rti) = $realm->get('type')->as_int;
@@ -104,6 +103,11 @@ sub _load_default_permissions {
 	$dp->{$row{role}} = $row{permission_set};
     }
     return;
+}
+
+sub _load_realm {
+    my($proto, $rr, $realm_id, $role) = @_;
+    return $rr->unauth_load(realm_id => $realm_id, role => $role);
 }
 
 1;
