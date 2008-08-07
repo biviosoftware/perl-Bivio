@@ -68,8 +68,7 @@ sub execute_prepare_html {
 	name => $name,
 	exists => 0,
     );
-    return 'not_found_task'
-	unless my $wa = $proto->use('XHTMLWidget.WikiText')
+    my($wa) = $proto->use('XHTMLWidget.WikiText')
 	->prepare_html($realm_id, $name, $task_id, $req);
     my($author) = '';
     my($author_name) = '';
