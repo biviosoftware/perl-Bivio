@@ -2,67 +2,29 @@
 # $Id$
 package Bivio::UI::HTML::Widget::Script;
 use strict;
-$Bivio::UI::HTML::Widget::Script::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::Script::VERSION;
+use Bivio::Base 'Bivio::UI::Widget';
 
-=head1 NAME
+# C<Bivio::UI::HTML::Widget::Script> is called with a script name, which
+# is rendered in the head.   Currently, only scripts that are constants,
+# called JAVASCRIPT_I<script_name> are allowed.  The script must have an
+# onload function called I<script_name>_onload.
+#
+# Only supports JavaScript.
+#
+#
+#
+# value : any []
+#
+# Renders the name of the script to render.
 
-Bivio::UI::HTML::Widget::Script - generates scripts in header
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::Script;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::Script::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::Script> is called with a script name, which
-is rendered in the head.   Currently, only scripts that are constants,
-called JAVASCRIPT_I<script_name> are allowed.  The script must have an
-onload function called I<script_name>_onload.
-
-Only supports JavaScript.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item value : any []
-
-Renders the name of the script to render.
-
-=back
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG"></a>
-
-=head2 JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG() : string
-
-Adds newline to html body to cause the browser to layout the table
-again. Works around mozilla/firefox layout bug.
-
-=cut
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG {
+    # (self) : string
+    # Adds newline to html body to cause the browser to layout the table
+    # again. Works around mozilla/firefox layout bug.
     return <<'EOF';
 function correct_table_layout_bug_onload() {
     if (navigator.appName == "Netscape")
@@ -71,15 +33,9 @@ function correct_table_layout_bug_onload() {
 EOF
 }
 
-=for html <a name="JAVASCRIPT_FIRST_FOCUS"></a>
-
-=head2 JAVASCRIPT_FIRST_FOCUS : string
-
-Forces focus to first text input field, if there is one.
-
-=cut
-
 sub JAVASCRIPT_FIRST_FOCUS {
+    # : string
+    # Forces focus to first text input field, if there is one.
     return <<'EOF';
 function first_focus_onload() {
     if (document.forms.length == 0)
@@ -97,48 +53,22 @@ function first_focus_onload() {
 EOF
 }
 
-=for html <a name="JAVASCRIPT_PAGE_PRINT"></a>
-
-=head2 JAVASCRIPT_PAGE_PRINT : string
-
-Prints on load.
-
-=cut
-
 sub JAVASCRIPT_PAGE_PRINT {
+    # : string
+    # Prints on load.
     return 'function page_print_onload(){window.print()}';
 }
 
-#=IMPORTS
-
-#=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-=cut
-
 sub initialize {
+    # (self) : undef
     my($self) = @_;
     $self->unsafe_initialize_attr('value');
     return;
 }
 
-=for html <a name="internal_new_args"></a>
-
-=head2 internal_new_args(...) : any
-
-Implements positional argument parsing for L<new|"new">.
-
-=cut
-
 sub internal_new_args {
+    # (self, ...) : any
+    # Implements positional argument parsing for L<new|"new">.
     my($proto, $value, $attrs) = @_;
     return {
 	($value ? (value => $value) : ()),
@@ -146,16 +76,10 @@ sub internal_new_args {
     };
 }
 
-=for html <a name="render"></a>
-
-=head2 render(Bivio::UI::WidgetValueSource source, string_ref buffer)
-
-Renders this instance into I<buffer> using I<source> to evaluate
-widget values.
-
-=cut
-
 sub render {
+    # (self, UI.WidgetValueSource, string_ref) : undef
+    # Renders this instance into I<buffer> using I<source> to evaluate
+    # widget values.
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
     if ($self->has_keys('value')) {
@@ -187,17 +111,5 @@ sub render {
     );
     return;
 }
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
