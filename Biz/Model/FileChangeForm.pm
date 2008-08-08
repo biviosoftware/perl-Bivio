@@ -22,15 +22,15 @@ sub execute_cancel {
 sub execute_empty {
     my($self) = @_;
     $self->internal_put_field(mode => _default_mode($self));
-    $self->internal_put_field(content =>
-	${$self->get('realm_file')->get_content})
-	if $self->is_text_content_type;
     $self->internal_put_field(folder_id =>
 	$self->get('realm_file')->get('folder_id'));
     $self->internal_put_field(rename_name => $_FP->get_tail(
 	$self->get('realm_file')->get('path')));
-
-    return if $self->is_folder || $self->get('realm_file_lock');
+    return if $self->is_folder;
+    $self->internal_put_field(content =>
+	${$self->get('realm_file')->get_content})
+	if $self->is_text_content_type;
+    return if $self->get('realm_file_lock');
     $self->internal_put_field(realm_file_lock =>
 	$self->new_other('RealmFileLock')->create({
 	    realm_file_id => $self->get('realm_file')->get('realm_file_id'),
