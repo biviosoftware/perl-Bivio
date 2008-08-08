@@ -49,11 +49,6 @@ sub internal_pre_execute {
     my($self) = @_;
     my($rf) = $self->new_other('RealmFile');
     my($p) = $rf->parse_path($self->req('path_info'), $self);
-    my($ct) = $rf->get_content_type_for_path($p);
-    Bivio::Die->die(FORBIDDEN => {
-	message => $ct . ': not a text mime type',
-	entity => $p,
-    }) unless $ct =~  m{^text/};
     if ($rf->unsafe_load({path => $p})) {
 	foreach my $x (qw(is_folder is_read_only)) {
 	    Bivio::Die->die(FORBIDDEN => {message => $x, entity => $p})
@@ -63,6 +58,11 @@ sub internal_pre_execute {
     else {
 	$self->internal_put_field('RealmFile.path' => $p);
     }
+    my($ct) = $rf->get_content_type_for_path($p);
+    Bivio::Die->die(FORBIDDEN => {
+	message => $ct . ': not a text mime type',
+	entity => $p,
+    }) unless $ct =~  m{^text/};
     return;
 }
 
