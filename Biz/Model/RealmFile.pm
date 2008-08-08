@@ -119,6 +119,10 @@ sub get_content_length {
 
 sub get_content_type {
     my($proto, undef, $prefix, $values) = shift->internal_get_target(@_);
+    if ($values->{$prefix . 'is_folder'}) {
+	Bivio::IO::Alert->warn_deprecated('check is_folder first');
+	return '';
+    }
     return $proto->get_content_type_for_path($values->{$prefix . 'path'});
 }
 
