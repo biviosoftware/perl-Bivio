@@ -8,21 +8,12 @@ use Bivio::Base 'Bivio::UI::Widget';
 # is rendered in the head.   Currently, only scripts that are constants,
 # called JAVASCRIPT_I<script_name> are allowed.  The script must have an
 # onload function called I<script_name>_onload.
-#
-# Only supports JavaScript.
-#
-#
-#
-# value : any []
-#
-# Renders the name of the script to render.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG {
-    # (self) : string
     # Adds newline to html body to cause the browser to layout the table
     # again. Works around mozilla/firefox layout bug.
     return <<'EOF';
@@ -34,7 +25,6 @@ EOF
 }
 
 sub JAVASCRIPT_FIRST_FOCUS {
-    # : string
     # Forces focus to first text input field, if there is one.
     return <<'EOF';
 function first_focus_onload() {
@@ -54,21 +44,16 @@ EOF
 }
 
 sub JAVASCRIPT_PAGE_PRINT {
-    # : string
-    # Prints on load.
     return 'function page_print_onload(){window.print()}';
 }
 
 sub initialize {
-    # (self) : undef
     my($self) = @_;
     $self->unsafe_initialize_attr('value');
     return;
 }
 
 sub internal_new_args {
-    # (self, ...) : any
-    # Implements positional argument parsing for L<new|"new">.
     my($proto, $value, $attrs) = @_;
     return {
 	($value ? (value => $value) : ()),
@@ -77,9 +62,6 @@ sub internal_new_args {
 }
 
 sub render {
-    # (self, UI.WidgetValueSource, string_ref) : undef
-    # Renders this instance into I<buffer> using I<source> to evaluate
-    # widget values.
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
     if ($self->has_keys('value')) {
