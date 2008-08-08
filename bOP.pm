@@ -26,11 +26,24 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.68  2008/08/07 21:19:12  nagler
+  * Bivio::Biz::Action::WikiView
+    throw exception from access_controlled_load
+  * Bivio::Delegate::SimpleAuthSupport
+    factored out "_load_realm"
+  * Bivio::Delegate::TaskId
+    WikiView throws exception from access_controlled_load
+  * Bivio::PetShop::Test::PetShop
+    do_logout looks for logout, too
+  * Bivio::UI::XHTML::Widget::WikiText
+    RealmFile throws exception from access_controlled_load, which is
+    better handling behavior (forces login on private pages)
+
   Revision 6.67  2008/08/07 18:34:18  nagler
   * Bivio::Biz::Action::EmptyReply
     added execute_server_error
