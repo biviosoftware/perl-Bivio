@@ -1,6 +1,7 @@
 # Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 Request();
+req()->initialize_fully;
 my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 [
     sub {req()} => [
@@ -15,6 +16,12 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 	} => [
 	    [] => [undef],
 	    [$resource] => [$resource],
+	],
+	format_uri => [
+	    ['LOGOUT'] => ['/pub/logout'],
+	    [{
+		task_id => 'LOGOUT',
+	    }] => ['/pub/logout'],
 	],
     ],
 ];
