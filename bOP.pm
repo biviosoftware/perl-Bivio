@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.69  2008/08/08 03:24:17  nagler
+  * Bivio::Biz::Model::FileChangeForm
+    don't check is_text_content_type if is_folder
+  * Bivio::Biz::Model::RealmFile
+    get_content_type on folders deprecated
+  * Bivio::Biz::Model::TextFileForm
+    call get_content_type after checking folder
+
   Revision 6.68  2008/08/07 21:19:12  nagler
   * Bivio::Biz::Action::WikiView
     throw exception from access_controlled_load
