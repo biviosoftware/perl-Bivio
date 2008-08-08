@@ -45,8 +45,10 @@ sub to_html {
 	Bivio::IO::Alert->warn(
 	    'Error interpolating: ', $v, ': ', $die);
     }
-    return Bivio::HTML->escape($error->get_long_desc)
-	. ($detail ? "; additional info: $detail" : '');
+    my($str) = Bivio::HTML->escape($error->get_long_desc
+	. ($detail ? "; additional info: $detail" : ''));
+    $str =~ s{\n}{<br />}mg;
+    return $str;
 }
 
 1;
