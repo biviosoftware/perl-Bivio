@@ -34,6 +34,10 @@ my($_CONFIG) = {};
 #
 # subclasses should defined process_record(row, count) to do work
 
+sub CONTINUE_VALIDATION_ON_ERROR {
+    return 0;
+}
+
 sub column_info {
     return _config(shift)->{shift(@_)};
 }
@@ -49,6 +53,7 @@ sub execute_ok {
     my($count) = 1;
     foreach my $row (@$rows) {
 	_validate_record($self, $row, $columns, $count++);
+	next if $self->CONTINUE_VALIDATION_ON_ERROR;
 	return if $self->in_error;
     }
     $count = 1;
@@ -184,8 +189,8 @@ sub _parse_rows {
 	. ($die->get('attrs')->{message}
 	    ? (': ' . $die->get('attrs')->{message}) : ''),
     ) if $die;
-    return
-	unless $rows;
+    return $rows
+	unless $rows && @$rows;
     my($headings) = [map({
 	$_ =~ s/^\s*(.*?)\s*$/\L$1/s;
 	$_;
@@ -214,7 +219,7 @@ sub _validate_record {
     foreach my $name (keys(%$columns)) {
 	my($type) = Bivio::Type->get_instance($columns->{$name}->{type});
 	my($v, $err);
-	if ($type->isa('Bivio::Type::Enum')) {
+	if ($type->isa('Bivio::Type::Enum') && $row->{$name}) {
 	    $v = $type->unsafe_from_any($row->{$name});
 	    $err = Bivio::TypeError->NOT_FOUND unless $v;
 	}
