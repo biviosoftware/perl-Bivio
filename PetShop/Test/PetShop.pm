@@ -81,9 +81,9 @@ sub create_forum {
 
 sub do_logout {
     my($self) = @_;
-    $self->follow_link('Sign-out')
+    return $self->follow_link('Sign-out')
 	if $self->text_exists('Sign-out');
-    $self->follow_link('Logout')
+    return $self->follow_link('Logout')
 	if $self->text_exists(qr{>Logout<}i);
     return;
 }
