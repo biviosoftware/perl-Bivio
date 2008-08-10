@@ -197,9 +197,10 @@ sub _parse_rows {
     } @{shift(@$rows)})];
     return [map({
 	my($row) = $_;
-	+{
-	    map(($_, shift(@$row)), @$headings),
-	};
+	grep($_ && $_ =~ /\S/, @$row)
+	    ? {
+		map(($_, shift(@$row)), @$headings),
+	    } : ();
     } @$rows)];
 }
 
