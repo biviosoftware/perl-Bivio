@@ -679,7 +679,13 @@ sub _fmt_href {
 	: ( '<a href="'
 	    . Bivio::HTML->escape_attr_value(
 		$state->{proto}->internal_format_uri("^$m", $state))
-	    . '">'
+	    . '"'
+	    . ($state->{link_target}
+		? ' target="'
+		    . Bivio::HTML->escape_attr_value($state->{link_target})
+		    . '"'
+		: '')
+	    . '>'
 	    . Bivio::HTML->escape(_fix_word($m))
 	    . '</a>'
         )) . Bivio::HTML->escape($e);
@@ -750,6 +756,10 @@ sub _fmt_tag {
 	    ? $state->{proto}->internal_format_uri($v, $state)
 	    : $v;
     }
+    $attrs->{target} = '_top'
+	if $tag eq 'a'
+	&& ! defined($attrs->{target})
+	&& defined($state->{link_target});
     $line =~ s/^\s+|\s+$//g;
     my($nl) = $line =~ s/\@$// ? '' : "\n";
     if ($_MY_TAGS->{$tag}) {
