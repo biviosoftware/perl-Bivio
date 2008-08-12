@@ -20,18 +20,17 @@ config({
 		}];
 	    },
 	} => [
-# 	    <<'IN' => _chomp(<<'OUT'),
-# @h1 foo
-# @blockquote
-# @code
-# my stuff
-# @/blockquote
-# IN
-# <h1>foo</h1>
-# <blockquote><code>
-# my stuff
-# </code></blockquote>
-# OUT
+	    <<'IN' => _chomp(<<'OUT'),
+@h1 foo
+@blockquote
+my stuff
+@/blockquote
+IN
+<h1>foo</h1>
+<blockquote><p>my stuff
+</p></blockquote>
+OUT
+	    '^' => qq{<p class="b_prose">\n</p>},
 	    '' => '',
 	    'a' => qq{<p class="b_prose">a\n</p>},
 	    "a\n\nb" => qq{<p class="b_prose">a\n</p><p class="b_prose">b\n</p>},
