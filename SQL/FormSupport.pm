@@ -75,6 +75,10 @@ use Bivio::Type::PrimaryId;
 #
 # True if the form expects to have context when operating.
 #
+# require_validate : boolean
+#
+# True if the form requires validate to be called even on direct execution.
+#
 # version : int
 #
 # The version of this particular combination of fields.  It will be
@@ -193,7 +197,7 @@ sub new {
 	column_aliases => {},
 	# Columns which have no corresponding property model field
 	local_columns => [],
-	require_context => $decl->{require_context} ? 1 : 0,
+	map(($_ => $decl->{$_} ? 1 : 0), qw(require_validate require_context)),
 	has_secure_data => 0,
     };
     $proto->init_common_attrs($attrs, $decl);
