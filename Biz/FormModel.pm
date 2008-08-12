@@ -708,12 +708,21 @@ sub process {
 	$fields->{literals} = {};
 	# Forms called internally don't have a context.  Form models
 	# should blow up.
-
-	$self->internal_pre_execute('execute_ok');
-	my($res) = _call_execute_ok($self, 'execute_ok', $self->OK_BUTTON_NAME);
-	return $res
-	    if $res;
-	return 0 unless $self->in_error;
+	if ($self->get_info('require_validate')) {
+	    $self->internal_pre_execute('validate_and_execute_ok');
+	    $self->validate;
+	}
+	else {
+	    $self->internal_pre_execute('execute_ok');
+	}
+	unless ($self->in_error) {
+	    my($res) = _call_execute_ok(
+		$self, 'execute_ok', $self->OK_BUTTON_NAME);
+	    return $res
+		if $res;
+	    return 0
+		unless $self->in_error;
+	}
 	if ($_TRACE) {
 	    my($msg) = '';
 	    my($e) = $self->get_errors;
