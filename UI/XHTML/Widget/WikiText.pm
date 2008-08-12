@@ -668,6 +668,8 @@ sub _fmt_href {
     # The trailing punctuation can't be everything, because http://a//? is a
     # legitimate URI.
     my($s, $m, $e) = $tok =~ m#(^[^\w/]*)(.+?)([\)\]\}\>\.,:;"'`~!\|]*$)#;
+    return ''
+	unless defined($e);
     return Bivio::HTML->escape($s)
 	. ($m =~ $_IMG
 	? qq{<img src="}
