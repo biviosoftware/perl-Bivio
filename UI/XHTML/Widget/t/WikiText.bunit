@@ -228,6 +228,22 @@ OUT
 	    '@a href=/ foo.org' => qq{<p class="b_prose"><a href="/">foo.org</a>\n</p>},
 	],
     ],
+    class() => [
+	{
+	    method => 'render_html',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [{
+		    value => $params->[0],
+		    req => req(),
+		    link_target => '_top',
+		}];
+	    },
+	} => [
+	    '^http://foo.org' => qq{<p class="b_prose"><a href="http://foo.org" target="_top">http://foo.org</a>\n</p>},
+	    '@a href=/ foo.org' => qq{<p class="b_prose"><a href="/" target="_top">foo.org</a>\n</p>},
+	],
+    ],
 ];
 
 sub _chomp {
