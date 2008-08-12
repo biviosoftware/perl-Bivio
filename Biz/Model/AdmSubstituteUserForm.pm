@@ -47,6 +47,7 @@ sub internal_initialize {
     return $self->merge_initialize_info(
 	$self->SUPER::internal_initialize, {
 	    version => 1,
+	    require_validate => 1,
 	    visible => [
 		{
 		    name => 'login',
@@ -65,27 +66,18 @@ sub internal_initialize {
     );
 }
 
-sub internal_pre_execute {
-    # (self, string) : undef
-    # Look up the user by email, user_id, or name.
-    my($self, $method) = @_;
-    $self->internal_put_field(realm_owner =>
-	$self->get_instance('UserLoginForm')->validate_login($self)
-    ) if $method =~ /execute_ok/;
-    return;
-}
-
 sub su_logout {
     # (self, Agent.Request) : Agent.TaskId
     # Logout as substitute user, return to super user.
     # Return next task (if any).
-    my($proto, $req) = @_;
+    my($self) = @_;
+    my($req) = $self->req;
     my($su) = $req->get('super_user_id');
     $req->delete('super_user_id');
-    $req->get('cookie')->delete($proto->SUPER_USER_FIELD)
+    $req->get('cookie')->delete($self->SUPER_USER_FIELD)
 	if $req->unsafe_get('cookie');
-    my($realm) = $proto->get_instance('RealmOwner')->new($req);
-    $proto->get_instance('UserLoginForm')->execute($req, {
+    my($realm) = $self->new_other('RealmOwner');
+    $self->new_other('UserLoginForm')->process({
 	realm_owner => $realm->unauth_load({realm_id => $su})
 	    ? $realm : undef,
     });
@@ -93,6 +85,14 @@ sub su_logout {
     return $realm->is_loaded
 	? $req->get('task')->unsafe_get_attr_as_id('su_task')
 	    || $_DEFAULT_TASK : 0;
+}
+
+sub validate {
+    my($self) = @_;
+    $self->internal_put_field(realm_owner =>
+	$self->get_instance('UserLoginForm')->validate_login($self)
+    ) unless $self->in_error;
+    return;
 }
 
 1;
