@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.70  2008/08/08 23:32:11  moeller
+  * Bivio::Biz::Model::CSVImportForm
+    allow enum with empty value,
+    added CONTINUE_VALIDATION_ON_ERROR() to allow subclasses
+      to do full file validation
+    fixed server error with input file of a single space
+  * Bivio::UI::FormError
+    html escape error detail, and convert newline to br
+
   Revision 6.69  2008/08/08 03:24:17  nagler
   * Bivio::Biz::Model::FileChangeForm
     don't check is_text_content_type if is_folder
