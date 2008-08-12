@@ -1,0 +1,20 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+[
+    sub {class('Bivio::Biz::t::FormModel::T1Form')->new(req())} => [
+	process => [
+	    [] => 0,
+	    [{}] => sub {
+		assert_equals(1, shift->get('object')->get('validate_called'));
+		return 1;
+	    },
+	],
+    ],
+    sub {class('Bivio::Biz::t::FormModel::T2Form')->new(req())} => [
+	process => [
+	    [] => 0,
+	    [{}] => 0,
+	],
+    ],
+];
