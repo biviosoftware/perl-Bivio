@@ -375,9 +375,7 @@ sub _set_user {
 }
 
 sub _su_logout {
-    # Logout as substitute user, return to super user.
-    return Bivio::Biz::Model->get_instance('AdmSubstituteUserForm')
-        ->su_logout(shift->get_request());
+    return shift->new_other('AdmSubstituteUserForm')->su_logout;
 }
 
 sub _super_user_field {
