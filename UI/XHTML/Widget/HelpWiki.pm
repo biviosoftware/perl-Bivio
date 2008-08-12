@@ -47,7 +47,7 @@ sub initialize {
 		    DIV_header(vs_text_as_prose('help_wiki_header')),
 		    DIV_help_wiki_body([$body_attr]),
 		    DIV_footer(vs_text_as_prose('help_wiki_footer')),
-		]));
+		]))->put(link_target => '_top');
 	    }],
         },
     );
@@ -213,6 +213,7 @@ sub _render_html {
 	$req,
     );
     $wa->{realm_name} = _realm_name($req);
+    $wa->{link_target} = '_top';
     return $_WT->render_html($wa);
 }
 
