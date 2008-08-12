@@ -6,7 +6,10 @@ Request('initialize_fully');
 	process => [
 	    [] => 0,
 	    [{}] => sub {
-		assert_equals(1, shift->get('object')->get('validate_called'));
+		assert_contains(
+		    {validate => 1, internal_pre_execute => 1},
+		    shift->get('object'),
+		);
 		return 1;
 	    },
 	],
@@ -14,7 +17,12 @@ Request('initialize_fully');
     sub {class('Bivio::Biz::t::FormModel::T2Form')->new(req())} => [
 	process => [
 	    [] => 0,
-	    [{}] => 0,
+	    [{}] => sub {
+		assert_contains(
+		    {internal_pre_execute => 1},
+		    shift->get('object'),
+		);
+	    },
 	],
     ],
 ];

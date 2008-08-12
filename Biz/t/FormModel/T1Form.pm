@@ -7,7 +7,7 @@ use Bivio::Base 'Biz.FormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
-    shift->get('validate_called');
+    shift->get('validate');
     return;
 }
 
@@ -19,8 +19,16 @@ sub internal_initialize {
     });
 }
 
+sub internal_pre_execute {
+    my($self, $method) = @_;
+    b_die($method, ': not validate_and_execute_ok')
+	unless $method =~ /^(validate_and_execute_ok|execute_empty)$/;
+    $self->internal_put_field(internal_pre_execute => 1);
+    return;
+}
+
 sub validate {
-    shift->internal_put_field(validate_called => 1);
+    shift->internal_put_field(validate => 1);
     return;
 }
 

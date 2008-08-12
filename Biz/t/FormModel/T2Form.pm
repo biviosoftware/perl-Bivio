@@ -13,6 +13,14 @@ sub internal_initialize {
     });
 }
 
+sub internal_pre_execute {
+    my($self, $method) = @_;
+    b_die($method, ': not execute_ok')
+	unless $method =~ /^(execute_ok|execute_empty)$/;
+    $self->internal_put_field(internal_pre_execute => 1);
+    return;
+}
+
 sub validate {
     b_die('validate should not be called');
     return;
