@@ -481,6 +481,7 @@ sub internal_upgrade_db_bundle {
 	crm_thread
 	tuple_tag
         realm_file_lock
+	crm_thread_lock_user_id
     )) {
 	my($sentinel) = \&{"_sentinel_$type"};
 	next if defined(&$sentinel) ? $sentinel->($self)
@@ -603,6 +604,37 @@ ALTER TABLE crm_thread_t
 /
 CREATE INDEX crm_thread_t12 ON crm_thread_t (
   modified_by_user_id
+)
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_crm_thread_lock_user_id {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE crm_thread_t
+  ADD COLUMN lock_user_id NUMERIC(18)
+/
+ALTER TABLE crm_thread_t
+  ADD COLUMN customer_realm_id NUMERIC(18)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t13
+  FOREIGN KEY (lock_user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX crm_thread_t14 ON crm_thread_t (
+  lock_user_id
+)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t15
+  FOREIGN KEY (customer_realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX crm_thread_t16 ON crm_thread_t (
+  customer_realm_id
 )
 /
 EOF
@@ -1925,6 +1957,10 @@ sub _run_other {
     $self->commit_or_rollback;
     $c->disconnect;
     return $res;
+}
+
+sub _sentinel_crm_thread_lock_user_id {
+    return shift->column_exists(qw(crm_thread_t lock_user_id));
 }
 
 sub _sentinel_file_writer {
