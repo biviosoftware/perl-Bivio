@@ -579,9 +579,11 @@ sub internal_put_error_and_detail {
 }
 
 sub internal_put_field {
-    my($self, $property, $value) = @_;
-    # Puts a value on a field.  No validation checking.
-    $self->internal_get->{$property} = $value;
+    my($self) = shift;
+    $self->map_by_two(sub {
+        $self->internal_get->{shift(@_)} = shift(@_);
+	return;
+    });
     return;
 }
 
@@ -1138,7 +1140,7 @@ sub _parse_cols {
 
 	# Handle complex form fields.  Avoid copies of huge data, so
 	# don't assign to temporary until kind (complex/simple) is known.
-	if (ref($form->{$fn})) {
+	if (ref($form->{$fn}) eq 'HASH') {
 	    my($fv) = $form->{$fn};
 	    # Was there an error in Bivio::Agent::HTTP::Form
 	    if ($fv->{error}) {
