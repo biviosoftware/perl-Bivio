@@ -581,9 +581,10 @@ sub internal_put_error_and_detail {
 sub internal_put_field {
     my($self) = shift;
     $self->map_by_two(sub {
-        $self->internal_get->{shift(@_)} = shift(@_);
+	my($k, $v) = @_;
+        $self->internal_get->{$k} = $v;
 	return;
-    });
+    }, \@_);
     return;
 }
 
