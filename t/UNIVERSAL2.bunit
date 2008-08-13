@@ -36,6 +36,9 @@ my($do_by_two) = 0;
 	    [sub {(shift(@_) || '') . shift(@_)}, [qw(a b)], [qw(1 2 3)]]
 		=> [[qw(a1 b2 3)]],
 	],
+	list_if_value => [
+	    [k1 => 1, k2 => undef] => [k1 => 1],
+	],
 	req => [
 	    [] => [req()],
 	    is_production => 0,

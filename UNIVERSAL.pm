@@ -164,6 +164,14 @@ sub iterate_reduce {
     return $initial;
 }
 
+sub list_if_value {
+    my($proto) = shift;
+    return @{$proto->map_by_two(sub {
+        my($k, $v) = @_;
+	return defined($v) ? ($k, $v) : ();
+    }, \@_)};
+}
+
 sub map_by_two {
     my(undef, $op, $values) = @_;
     $values ||= [];
