@@ -133,6 +133,24 @@ CREATE INDEX crm_thread_t12 ON crm_thread_t (
   modified_by_user_id
 )
 /
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t13
+  FOREIGN KEY (lock_user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX crm_thread_t14 ON crm_thread_t (
+  lock_user_id
+)
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t15
+  FOREIGN KEY (customer_realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX crm_thread_t16 ON crm_thread_t (
+  customer_realm_id
+)
+/
 
 --
 -- ec_check_payment_t
@@ -1025,6 +1043,8 @@ CREATE TABLE crm_thread_t (
   subject VARCHAR(100) NOT NULL,
   subject_lc VARCHAR(100) NOT NULL,
   owner_user_id NUMERIC(18),
+  lock_user_id NUMERIC(18),
+  customer_realm_id NUMERIC(18),
   CONSTRAINT crm_thread_t1 PRIMARY KEY(realm_id, crm_thread_num)
 )
 /
