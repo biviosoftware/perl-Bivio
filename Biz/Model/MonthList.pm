@@ -11,13 +11,13 @@ sub internal_initialize {
     my($self) = @_;
     return {
 	version => 1,
-	@{$self->internal_initialize_local_fields(
+	$self->local_field(
 	    other => [
                 [qw(date Date)],
 		[qw(month String)],
 	    ],
 	    undef, 'NONE',
-	)},
+	),
     };
 }
 

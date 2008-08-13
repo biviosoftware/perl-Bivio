@@ -128,7 +128,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	@{$self->internal_initialize_local_fields(
+	$self->local_field(
 	    primary_key => [[qw(index Integer)]],
 	    other => [
 		[qw(mime_type Line)],
@@ -136,7 +136,7 @@ sub internal_initialize {
 		[qw(mime_cid Line NONE)],
 	    ],
 	    undef, 'NOT_NULL',
-	)},
+	),
 	parent_id => 'RealmFile.realm_file_id',
 	auth_id => 'RealmFile.realm_id',
 	other_query_keys => [qw(content_ref mime_cid)],

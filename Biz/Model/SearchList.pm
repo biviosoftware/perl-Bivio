@@ -32,13 +32,13 @@ sub internal_initialize {
 	$self,
 	$self->merge_initialize_info($self->SUPER::internal_initialize, {
 	    other => [
-		@{$self->internal_initialize_local_fields(
+		$self->local_field(
 		    [qw(result_uri result_title result_excerpt result_author)],
 		    'Text', 'NOT_NULL',
-		)},
-		map(+{name => $_, in_select => 0},
-		    map("RealmOwner.$_", @$_REALM_OWNER_FIELDS),
-#	            map("RealmFile.$_", @$_REALM_FILE_FIELDS),
+		),
+		$self->local_field(
+		    [map("RealmOwner.$_", @$_REALM_OWNER_FIELDS)],
+		    {in_select => 0},
 		),
 		{
 		    name => 'model',

@@ -10,14 +10,14 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	@{$self->internal_initialize_local_fields(visible => [
+	$self->local_field(visible => [
 	    [qw(boolean Boolean)],
 	    [qw(date Date)],
 	    [qw(date_time DateTime)],
 	    [qw(realm_name RealmName)],
 	    [qw(line Line)],
 	    [qw(text Text)],
-	], undef, 'NONE')},
+	], undef, 'NONE'),
     });
 }
 

@@ -29,10 +29,10 @@ sub internal_initialize {
 	    'RealmUser.role',
 	],
 	other => [
-	    @{$self->internal_initialize_local_fields(
+	    $self->local_field(
 		[qw(administrator mail_recipient file_writer)],
 		Boolean => 'NOT_NULL',
-	    )},
+	    ),
 	    [
 		'Email.location',
 		[$self->get_instance('Email')->DEFAULT_LOCATION],

@@ -53,9 +53,9 @@ Returns config.
 sub internal_initialize {
     return {
 	version => 1,
-	@{shift->internal_initialize_local_fields(other => [
+	shift->local_field(other => [
 	    qw(f1 f2),
-	], 'Integer', 'NONE')},
+	], 'Integer', 'NONE'),
     };
 }
 

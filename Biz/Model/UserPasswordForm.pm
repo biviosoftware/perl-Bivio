@@ -27,7 +27,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	require_context => 1,
-	@{$self->internal_initialize_local_fields(
+	$self->local_field(
 	    visible => [
 		[old_password => undef, 'NONE'],
 		qw(new_password confirm_new_password),
@@ -37,7 +37,7 @@ sub internal_initialize {
 		[query_password => undef, 'NONE'],
 	    ],
 	    'Password', 'NOT_NULL',
-	)},
+	),
     });
 }
 
