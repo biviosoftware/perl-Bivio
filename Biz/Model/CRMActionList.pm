@@ -15,9 +15,7 @@ my($_E) = __PACKAGE__->use('Type.Email');
 
 sub id_to_owner {
     my($self, $id) = @_;
-    return $id > 0 ? $id
-	: $self->id_to_status($id)->eq_locked ? $self->req('auth_user_id')
-	: undef;
+    return $id > 0 ? $id : undef;
 }
 
 sub id_to_status {

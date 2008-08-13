@@ -18,7 +18,7 @@ req()->set_realm_and_user(qw(crm_forum crm_tech1));
 	map((-CRMThreadStatus($_->[0])->as_int => [$_->[1]]),
 	    [CLOSED => undef],
 	    [OPEN => undef],
-	    [LOCKED => realm_id('crm_tech1')],
+	    [LOCKED => undef],
 	),
     ],
     id_to_status => [

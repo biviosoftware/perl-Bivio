@@ -19,6 +19,7 @@ my($to) = EmailArray([remote_email('crm')]);
 	cc => [''],
 	subject => 's1',
 	body => 'b1',
+	action_id => -CRMThreadStatus('NEW')->as_int,
     }] => [{
 	'Model.CRMThread' => {
 	    thread_root_id => sub {

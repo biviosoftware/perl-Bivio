@@ -12,10 +12,12 @@ model(CRMForm => {
     'b_ticket.TupleTag.slot2' => 'Medium',
     attachment1 => undef,
     attachment2 => undef,
+    action_id => -CRMThreadStatus('NEW')->as_int,
     attachment3 => undef,
 });
 req()->put(query => {this => req(qw(Model.CRMThread thread_root_id))});
 model(CRMForm => {
+    action_id => -CRMThreadStatus('OPEN')->as_int,
     update_only => 1,
     body => '',
     to => EmailArray(''),

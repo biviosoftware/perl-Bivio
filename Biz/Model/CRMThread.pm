@@ -6,15 +6,15 @@ use Bivio::Base 'Model.OrdinalBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->use('Model.RealmMail')->register('Model.CRMThread');
-our($_PS) = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(
+my($_PS) = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(
     ['FEATURE_CRM'],
 )} if __PACKAGE__->use('Auth.Permission')->unsafe_from_name('FEATURE_CRM');
-our($_EMS) = __PACKAGE__->use('Type.MailSubject')->EMPTY_VALUE;
-our($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
-our($_SUBJECT_RE) = qr{\#\s*(\d+)\s*\]};
-our($_REQ_ATTR) = __PACKAGE__ . '.pre_create';
-our($_DT) = __PACKAGE__->use('Type.DateTime');
-our($_RECENT) = 60;
+my($_EMS) = __PACKAGE__->use('Type.MailSubject')->EMPTY_VALUE;
+my($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
+my($_SUBJECT_RE) = qr{\#\s*(\d+)\s*\]};
+my($_REQ_ATTR) = __PACKAGE__ . '.pre_create';
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_RECENT) = 60;
 my($_MS) = __PACKAGE__->use('Type.MailSubject');
 
 sub ORD_FIELD {
@@ -23,16 +23,6 @@ sub ORD_FIELD {
 
 sub USER_ID_FIELD {
     return '';
-}
-
-sub acquire_lock {
-    my($self) = @_;
-    my($uid) = $self->req('auth_user_id');
-    return $self->update({
-	modified_by_user_id => $uid,
-	owner_user_id => $uid,
-	crm_thread_status => $_CTS->LOCKED,
-    });
 }
 
 sub clean_subject {
@@ -102,6 +92,8 @@ sub internal_initialize {
 	    thread_root_id => ['RealmMail.realm_file_id', 'PRIMARY_KEY'],
 	    crm_thread_status => ['CRMThreadStatus', 'NOT_ZERO_ENUM'],
 	    owner_user_id => ['User.user_id', 'NONE'],
+#	    lock_user_id => ['User.user_id', 'NONE'],
+#	    customer_realm_id => ['RealmOwner.realm_id', 'NONE'],
         },
     });
 }
@@ -116,15 +108,6 @@ sub is_enabled_for_auth_realm {
 sub make_subject {
     my($self, $subject) = @_;
     return _prefix($self) . $self->clean_subject($subject);
-}
-
-sub release_lock {
-    my($self) = @_;
-    return $self->update({
-	modified_by_user_id => $self->req('auth_user_id'),
-	owner_user_id => undef,
-	crm_thread_status => $_CTS->OPEN,
-    });
 }
 
 sub update {

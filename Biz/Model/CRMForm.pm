@@ -6,8 +6,7 @@ use Bivio::Base 'Model.MailForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = b_use('Mail.RFC822');
-my($_CLOSED) = b_use('Type.CRMThreadStatus')->CLOSED;
-my($_OPEN) = $_CLOSED->OPEN;
+my($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
 my($_TTF) = b_use('Model.TupleTagForm');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TAG_ID) = 'b_ticket.CRMThread.thread_root_id';
@@ -16,7 +15,7 @@ my($_TAG_ID) = 'b_ticket.CRMThread.thread_root_id';
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
 sub DEFAULT_CRM_THREAD_STATUS {
-    return $_CLOSED;
+    return $_CTS->CLOSED;
 }
 
 sub TUPLE_TAG_IDS {
@@ -25,11 +24,7 @@ sub TUPLE_TAG_IDS {
 
 sub execute_cancel {
     my($self) = @_;
-    _with($self, sub {
-	my($ct) = @_;
-	$ct->release_lock;
-	return;
-    });
+    _with($self, sub {_release_lock(@_)});
     return shift->SUPER::execute_cancel(@_);
 }
 
@@ -39,7 +34,7 @@ sub execute_empty {
     _with($self, sub {
         my($ct, $cal) = @_;
 	my($discuss) = $self->internal_query_who->eq_realm;
-	$ct->acquire_lock
+	_acquire_lock($ct)
 	    unless $discuss;
 	$self->internal_put_field(
 	    subject => $ct->clean_subject($self->get('subject')));
@@ -51,7 +46,8 @@ sub execute_empty {
 	    ));
 	return;
     }, sub {
-	$self->internal_put_field(action_id => shift->status_to_id($_OPEN));
+	$self->internal_put_field(action_id => shift->status_to_id(
+	    $_CTS->OPEN));
     });
     $self->delegate_method($_TTF, @_);
     return;
@@ -59,28 +55,20 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    my($ct, $cal);
-    $cal = $self->req('Model.CRMActionList');
-    if ($ct = $self->req->unsafe_get('Model.CRMThread')) {
-	$ct->update({
-	    crm_thread_status => $cal->id_to_status($self->get('action_id')),
-	    owner_user_id => $cal->id_to_owner($self->get('action_id')),
-	    modified_by_user_id => $self->req('auth_user_id'),
-	    subject => $self->get('subject'),
-	});
-	$self->internal_put_field(
-	    subject => $ct->make_subject($self->get('subject')),
-	);
-    }
     my($res) = $self->unsafe_get('update_only') ? $self->internal_return_value
 	: shift->SUPER::execute_ok(@_);
-
-    $ct = $self->req->get('Model.CRMThread');
+    my($ct) = $self->req('Model.CRMThread');
+    my($cal) = $self->req('Model.CRMActionList');
+    my($id) = $self->get('action_id');
+    my($status) = $cal->id_to_status($id);
     $ct->update({
-	crm_thread_status => $cal->id_to_status($self->get('action_id')),
-	owner_user_id => $cal->id_to_owner($self->get('action_id')),
-    })
-	if $self->unsafe_get('action_id');
+	crm_thread_status => $status,
+	owner_user_id => $cal->id_to_owner($id),
+	modified_by_user_id => $self->req('auth_user_id'),
+	lock_user_id => $status->eq_locked ? $self->req('auth_user_id')
+	    : undef,
+	subject => $self->get('subject'),
+    });
     $self->internal_put_field(
 	$_TAG_ID => $ct->get('thread_root_id'));
     $self->delegate_method($_TTF, @_);
@@ -105,6 +93,13 @@ sub internal_format_from {
 	    return $self->SUPER::internal_format_from(@args);
 	},
     );
+}
+
+sub internal_format_subject {
+    my($self) = @_;
+    return shift->SUPER::internal_format_subject(@_)
+	unless my $ct = $self->req->unsafe_get('Model.CRMThread');
+    return $ct->make_subject($self->get('subject'));
 }
 
 sub internal_initialize {
@@ -182,6 +177,21 @@ sub validate {
 	return;
     });
     return;
+}
+
+sub _acquire_lock {
+    my($ct) = @_;
+    return $ct->update({
+	lock_user_id => $ct->req('auth_user_id'),
+	crm_thread_status => $_CTS->LOCKED,
+    });
+}
+
+sub _release_lock {
+    return shift->update({
+	lock_user_id => undef,
+	crm_thread_status => $_CTS->OPEN,
+    });
 }
 
 sub _with {

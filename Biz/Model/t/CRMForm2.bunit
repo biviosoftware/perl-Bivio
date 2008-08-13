@@ -24,6 +24,7 @@ req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1))
 	body => 'x',
 	'b_ticket.TupleTag.slot1' => 'Male Puppy',
 	'b_ticket.TupleTag.slot2' => 'Medium',
+	action_id => -CRMThreadStatus('NEW')->as_int,
     }] => [{
 	'Model.CRMThread' => {
 	    crm_thread_status => CRMThreadStatus('NEW'),
