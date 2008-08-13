@@ -7,7 +7,9 @@ use Bivio::Base 'Biz.FormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
-    shift->get('validate');
+    my($self) = @_;
+    $self->get('validate');
+    $self->internal_put_field(f1 => 1, f2 => 2);
     return;
 }
 
@@ -16,6 +18,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         require_validate => 1,
+	$self->local_field(other => [qw(f1 f2 validate)], 'String'),
     });
 }
 
