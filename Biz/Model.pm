@@ -270,70 +270,8 @@ sub internal_initialize {
 }
 
 sub internal_initialize_local_fields {
-    my($proto, $decls, $default_type, $default_constraint) = @_;
-    # Provides positional shortcut for generating field declarations to pass return
-    # from L<internal_initialize|"internal_initialize">.  I<decls> is a array of
-    # arrays.  Each element is a field declaration that is a tuple of (name, type,
-    # constraint).  If type or constraint is undef, will be initialized with default
-    # values.  If both type or constraint is missing, element may be a string.
-    # I<default_type> and <default_constraint> must be defined if I<decls>
-    # requires default values.
-    #
-    # In the second form, you may specify the class as an argument.  This also allows
-    # you to declare multiple (class, decl) tuples which can be convenient for
-    # forms with all local fields.
-    #
-    # Examples:
-    #
-    #     $self->internal_initialize_local_fields([
-    #         'first_name',
-    #         'middle_name',
-    #         'last_name',
-    #         [qw(gender Gender)],
-    #     ], 'Line', 'NOT_NULL');
-    #
-    #     $self->internal_initialize_local_fields([
-    #         ['count', 'Integer', 'NOT_NULL'],
-    #     ]);
-    #
-    #     $self->internal_initialize_local_fields(
-    #         visible => [
-    # 	    'first_name',
-    # 	    'middle_name',
-    # 	    'last_name',
-    # 	    [qw(gender Gender)],
-    # 	],
-    #         hidden => [
-    #             ['count', 'Integer', 'NOT_NULL'],
-    #         ],
-    #         'Line', 'NOT_NULL');
-    return [
-	map({
-	    $_ = [$_]
-	    unless ref($_);
-	    {
-		name => $_->[0],
-		type => $_->[1] || $default_type
-		    || $proto->die('default_type must be defined'),
-		constraint => $_->[2] || $default_constraint
-		    || $proto->die('default_constraint must be defined'),
-	    };
-	} @$decls)
-    ] if ref($decls) eq 'ARRAY';
-    my($aux) = [];
-    unshift(@$aux, pop(@_))
-	while !ref($_[$#_]);
-    Bivio::Die->die('expecting class and declarations')
-	unless @_ > 1;
-    shift(@_);
-    Bivio::Die->die('uneven (class, declarations) tuples')
-        if @_ % 2;
-    return [
-	map({
-	    (shift(@_) => $proto->internal_initialize_local_fields(
-		shift(@_), @$aux));
-	} 1 .. @_ / 2),
-    ];
+    Bivio::IO::Alert->warn_deprecated('use local_field');
+    return [shift->local_field(@_)];
 }
 
 sub internal_initialize_sql_support {
@@ -401,6 +339,43 @@ sub iterate_next {
     #
     # B<Deprecated form accepts an iterator as the first argument.>
     return shift->internal_iterate_next(@_) ? 1 : 0;
+}
+
+sub local_field {
+    my($proto) = shift;
+    if (ref($_[0]) eq 'ARRAY') {
+	my($decls, $defaults) = (shift, shift);
+	$defaults = {
+	    type => $defaults,
+	    constraint => shift,
+	} unless ref($defaults) eq 'HASH';
+	$defaults->{constraint} ||= 'NONE';
+	return map(
+	    {
+		$_ = [$_]
+		    unless ref($_);
+		+{
+		    %$defaults,
+		    name => $_->[0],
+		    $proto->list_if_value(
+			type => $_->[1],
+			constraint => $_->[2],
+		    ),
+		};
+	    } @$decls
+	);
+    }
+    my($defaults) = [];
+    unshift(@$defaults, pop(@_))
+	while ref($_[$#_]) ne 'ARRAY';
+    Bivio::Die->die('expecting class and declarations')
+	unless @_ > 1;
+    Bivio::Die->die('uneven (class, declarations) tuples')
+        if @_ % 2;
+    return map(
+	(shift(@_) => [$proto->local_field(shift(@_), @$defaults)]),
+	1 .. @_ / 2,
+    );
 }
 
 sub map_iterate {

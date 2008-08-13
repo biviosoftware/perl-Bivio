@@ -6,22 +6,24 @@ my($categories) = [];
 my($category_count) = 0;
 [
     class() => [
-	internal_initialize_local_fields => [
+	local_field => [
 	    map({
-		($_ => [[
+		($_ => [
 		    {
 			name => 'a',
 			type => 'String',
 			constraint => 'NONE',
 		    },
-		]]);
+		]);
 	    }
+		[['a'], {type => 'String'}],
 		[[[qw(a String NONE)]]],
 		[[['a', undef, 'NONE']], 'String'],
+		[['a'], 'String'],
 		[[['a', 'String', undef]], undef, 'NONE'],
 		[['a'], qw(String NONE)],
 	    ),
-	    [[qw(a b)], qw(String NONE)] => [[
+	    [[qw(a b)], qw(String NONE)] => [
 		map({
 		    {
 			name => $_,
@@ -29,11 +31,9 @@ my($category_count) = 0;
 			constraint => 'NONE',
 		    };
 	        } qw(a b)),
-	    ]],
-	    [['a']] => DIE(),
-	    [['a'], 'String'] => DIE(),
+	    ],
 	    [c1 => ['d1'], c2 => ['d2'], 'String', 'NOT_NULL'] => [
-		[map({
+		map({
 		    ("c$_" => [
 			{
 			    name => "d$_",
@@ -41,10 +41,10 @@ my($category_count) = 0;
 			    constraint => 'NOT_NULL',
 			},
 		    ]);
-		} 1 ..2)],
+		} 1 ..2),
             ],
 	    [c1 => [[qw(d1 Line NONE)]], c2 => [[qw(d2 String NOT_NULL)]]]
-		=> [[
+		=> [
 		    c1 => [{
 			name => 'd1',
 			type => 'Line',
@@ -55,7 +55,7 @@ my($category_count) = 0;
 			type => 'String',
 			constraint => 'NOT_NULL',
 		    }],
-		]],
+		],
 	],
 	new => [
 	    RealmOwner => qr/RealmOwner/,
