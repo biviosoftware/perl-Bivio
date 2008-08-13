@@ -70,7 +70,7 @@ sub execute_ok {
 	To => $to->as_literal,
 	$reply_to ? ('Reply-To' => $reply_to) : (),
 	$cc ? (Cc => $cc) : (),
-	Subject => $self->get('subject'),
+	Subject => $self->internal_format_subject,
 	'Message-Id' => $_O->generate_message_id($req),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
@@ -112,6 +112,10 @@ sub internal_format_reply_to {
 sub internal_format_sender {
     my($self, $realm_email) = @_;
     return $self->new_other('EmailAlias')->format_realm_as_sender($realm_email);
+}
+
+sub internal_format_subject {
+    return shift->get('subject');
 }
 
 sub internal_initialize {
