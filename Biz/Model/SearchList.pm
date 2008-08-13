@@ -196,3 +196,42 @@ sub _excerpt {
 }
 
 1;
+
+__DATA__
+CalendarEvent summary -- Move to CalendarEvent
+    my($proto, $row, $model) = @_;
+    return shift->SUPER::internal_post_load_row_with_model(@_)
+	unless $model->simple_package_name eq 'CalendarEvent';
+    my($ro) = $model->new_other('RealmOwner') ->unauth_load_or_die({
+	realm_id => $model->get_auth_id,
+    });
+    foreach my $f (@$_REALM_OWNER_FIELDS) {
+	$row->{"RealmOwner.$f"} = $ro->get($f);
+    }
+    $row->{result_author} = '';
+    my($req) = $model->req;
+    $row->{result_uri} = $req->format_uri({
+	task_id => 'FORUM_CALENDAR_EVENT_DETAIL',
+	query => {'ListQuery.this' => $model->get_primary_id},
+	path_info => undef,
+    });
+    my($tz) = $model->get('time_zone') || $_UTC;
+    $row->{result_title} = join(' - ',
+	$ro->get('display_name');
+	grep($_ =~ s/GMT|UTC// || 1,
+	     $_DT->to_string(
+		 $tz->date_time_from_utc($model->get('dtstart'}),
+		 $tz->date_time_from_utc($model->get('dtend'}),
+
+		 $row->{'dtstart_in_tz'}),
+	     $_DT->to_string($row->{'dtend_in_tz'}),
+	),
+    );
+
+	grep($_ =~ s/GMT|UTC// || 1,
+	     $_DT->to_string($row->{'dtstart_in_tz'}),
+	     $_DT->to_string($row->{'dtend_in_tz'}),
+	)
+
+    $row->{result_excerpt} = $model->get('location')
+	. ' - ' . $model->get('description');
