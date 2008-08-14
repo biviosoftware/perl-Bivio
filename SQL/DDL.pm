@@ -98,7 +98,7 @@ CREATE INDEX crm_thread_t4 ON crm_thread_t (
   modified_date_time
 )
 /
-CREATE INDEX crm_thread_t5 ON crm_thread_t (
+CREATE UNIQUE INDEX crm_thread_t5 ON crm_thread_t (
   thread_root_id
 )
 /

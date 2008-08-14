@@ -613,6 +613,12 @@ EOF
 sub internal_upgrade_db_crm_thread_lock_user_id {
     my($self) = @_;
     $self->run(<<'EOF');
+DROP INDEX crm_thread_t5
+/
+CREATE UNIQUE INDEX crm_thread_t5 ON crm_thread_t (
+  thread_root_id
+)
+/
 ALTER TABLE crm_thread_t
   ADD COLUMN lock_user_id NUMERIC(18)
 /
