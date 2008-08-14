@@ -84,16 +84,17 @@ sub internal_initialize {
         version => 1,
         table_name => 'crm_thread_t',
 	columns => {
+	    $self->REALM_ID_FIELD => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    crm_thread_num => ['CRMThreadNum', 'PRIMARY_KEY'],
             subject => ['MailSubject', 'NOT_NULL'],
             subject_lc => ['MailSubject', 'NOT_NULL'],
 	    modified_date_time => ['DateTime', 'NOT_NULL'],
 	    modified_by_user_id => ['User.user_id', 'NONE'],
-	    thread_root_id => ['RealmMail.realm_file_id', 'PRIMARY_KEY'],
+	    thread_root_id => ['RealmMail.realm_file_id', 'NOT_NULL'],
 	    crm_thread_status => ['CRMThreadStatus', 'NOT_ZERO_ENUM'],
 	    owner_user_id => ['User.user_id', 'NONE'],
-#	    lock_user_id => ['User.user_id', 'NONE'],
-#	    customer_realm_id => ['RealmOwner.realm_id', 'NONE'],
+	    lock_user_id => ['User.user_id', 'NONE'],
+	    customer_realm_id => ['RealmOwner.realm_id', 'NONE'],
         },
     });
 }
