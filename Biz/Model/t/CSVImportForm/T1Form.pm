@@ -11,6 +11,7 @@ sub COLUMNS {
 	[qw(name RealmOwner.name)],
 	[qw(ID RealmOwner.realm_id NONE User.user_id)],
 	[qw(other Line)],
+	[qw(gender Gender)],
     ];
 }
 

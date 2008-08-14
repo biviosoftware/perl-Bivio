@@ -1,5 +1,5 @@
-NAME  ,id,other
-joe,1,ok
+NAME  ,id,other,gender
+joe,1,ok, male
 ,
 
 mary
