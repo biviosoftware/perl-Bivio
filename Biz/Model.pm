@@ -350,20 +350,18 @@ sub local_field {
 	    constraint => shift,
 	} unless ref($defaults) eq 'HASH';
 	$defaults->{constraint} ||= 'NONE';
-	return map(
-	    {
-		$_ = [$_]
-		    unless ref($_);
-		+{
-		    %$defaults,
-		    name => $_->[0],
-		    $proto->list_if_value(
-			type => $_->[1],
-			constraint => $_->[2],
-		    ),
-		};
-	    } @$decls
-	);
+	return map({
+	    $_ = [$_]
+		unless ref($_);
+	    +{
+		%$defaults,
+		name => $_->[0],
+		$proto->list_if_value(
+		    type => $_->[1],
+		    constraint => $_->[2],
+		),
+	    };
+	} @$decls);
     }
     my($defaults) = [];
     unshift(@$defaults, pop(@_))
