@@ -22,16 +22,6 @@ my($_CONFIG) = {};
 #
 #   constraint defaults to value of Model.property.
 #
-# DEPRECATED:
-#
-#   my($_CSV);
-#   sub CSV_COLUMNS {
-#       return $_CSV ||= __PACKAGE__->internal_csv_columns([
-#           <column name> => [<Type or Model.property>, <is required>],
-#           ...
-#       ]);
-#   }
-#
 # subclasses should defined process_record(row, count) to do work
 
 sub CONTINUE_VALIDATION_ON_ERROR {
@@ -64,15 +54,6 @@ sub execute_ok {
     return;
 }
 
-sub internal_csv_columns {
-    Bivio::IO::Alert->warn_deprecated('define COLUMNS() with new syntax');
-    my($proto, $info) = @_;
-    return $proto->map_by_two(sub {
-	my($k, $v) = @_;
-	return [$k, $v->[0], $v->[1] ? 'NOT_NULL' : 'NONE'];
-    });
-}
-
 sub internal_import_error {
     Bivio::IO::Alert->warn_deprecated('use internal_source_error()');
     return shift->internal_source_error(@_);
@@ -82,19 +63,11 @@ sub internal_source_error {
     my($self, $row_count, $text) = @_;
     my($ed) = (defined($row_count) ? ('Record ' . $row_count . ': ') : '')
 	. $text;
-    if ($self->can('CSV_COLUMNS')) {
-	# DEPRECATED
-	$self->internal_put_error(import_errors => 'NULL');
-	$self->internal_put_field(
-	    import_errors => $self->get('import_errors') . "\n$ed");
-    }
-    else {
-	my($oed) = $self->get_field_error_detail('source');
-	$self->internal_put_error_and_detail(
-	    source => 'SYNTAX_ERROR',
-	    ($oed ? "$oed\n" : '') . $ed,
-	);
-    }
+    my($oed) = $self->get_field_error_detail('source');
+    $self->internal_put_error_and_detail(
+	source => 'SYNTAX_ERROR',
+	($oed ? "$oed\n" : '') . $ed,
+    );
     return;
 }
 
@@ -149,7 +122,6 @@ sub _config {
 
 sub _config_init {
     my($self) = @_;
-    my($method) = $self->can('CSV_COLUMNS') ? 'CSV_COLUMNS' : 'COLUMNS';
     my($seen) = {};
     return {map({
 	my($name, $type, $constraint, $field) = @$_;
@@ -172,7 +144,7 @@ sub _config_init {
 	    field => $field || $name,
 	});
     }
-	@{$self->$method()},
+	@{$self->COLUMNS},
     )};
 }
 
@@ -197,7 +169,7 @@ sub _parse_rows {
     } @{shift(@$rows)})];
     return [map({
 	my($row) = $_;
-	grep($_ && $_ =~ /\S/, @$row)
+	grep(defined($_) && $_ =~ /\S/, @$row)
 	    ? {
 		map(($_, shift(@$row)), @$headings),
 	    } : ();
@@ -221,6 +193,7 @@ sub _validate_record {
 	my($type) = Bivio::Type->get_instance($columns->{$name}->{type});
 	my($v, $err);
 	if ($type->isa('Bivio::Type::Enum') && $row->{$name}) {
+	    $row->{$name} =~ s/^\s+|\s+$//g;
 	    $v = $type->unsafe_from_any($row->{$name});
 	    $err = Bivio::TypeError->NOT_FOUND unless $v;
 	}
