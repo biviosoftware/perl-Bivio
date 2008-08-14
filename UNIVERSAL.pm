@@ -151,6 +151,11 @@ sub is_blessed {
 	? 1 : 0;
 }
 
+sub is_simple_package_name {
+    my(undef, $name) = @_;
+    return $name =~ /^\w+$/ ? 1 : 0;
+}
+
 sub iterate_reduce {
     my($proto, $op, $values, $initial) = @_;
     my($start) = 0;

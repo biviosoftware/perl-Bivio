@@ -54,6 +54,11 @@ my($do_by_two) = 0;
 	    [\&_reverse_join, ['y', 'x'], 'z'] => 'xyz',
 	    [\&_reverse_join, [], 'z'] => 'z',
 	],
+	is_simple_package_name => [
+	    'X' => 1,
+	    class() => 0,
+	    [class()->new] => 0,
+	],
     ],
     sub {req()} => [
 	req => [
