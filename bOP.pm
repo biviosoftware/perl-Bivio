@@ -26,11 +26,35 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.71  2008/08/12 22:07:58  moeller
+  * Bivio::Biz::FormModel
+    added require_validate which calls validate on directly executed
+    forms, if set
+  * Bivio::Biz::Model::AdmSubstituteUserForm
+    rmpod
+    internal_pre_execute moved to validate; use require_validate
+    su_logout called on $self so doesn't get passed $req
+  * Bivio::Biz::Model::CSVImportForm
+    strip out empty rows before processing
+  * Bivio::Biz::Model::ForbiddenForm
+    removed su-izing to the realm, only worked for user realms
+  * Bivio::Biz::Model::UserLoginForm
+    call su_logout with AdmSubstituteUserForm instance
+  * Bivio::PetShop::Test::PetShop
+    do_logout must return after Sign-out
+  * Bivio::SQL::FormSupport
+    added require_validate
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    set link_target on iframe links
+  * Bivio::UI::XHTML::Widget::WikiText
+    don't try to render an unparseable href
+    added link_target attribute for '^' and @a
+
   Revision 6.70  2008/08/08 23:32:11  moeller
   * Bivio::Biz::Model::CSVImportForm
     allow enum with empty value,
