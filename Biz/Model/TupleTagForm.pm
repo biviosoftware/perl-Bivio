@@ -98,8 +98,8 @@ sub tuple_tag_form_state {
 }
 
 sub tuple_tag_map_slots {
-    my($delegator, $id, $op) = shift->delegated_args(@_);
-    return _fields($delegator, sub {$op->(shift)}, $id);
+    my($delegator, $op) = shift->delegated_args(@_);
+    return _fields($delegator, sub {$op->(shift)});
 }
 
 sub tuple_tag_slot_choice_select_list {
