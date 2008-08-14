@@ -21,7 +21,7 @@ sub internal_crm_send_form_extra_fields {
 	    choices => ['->req', 'Model.CRMActionList'],
 	    list_id_field => 'id',
 	}],
-	@{$form->tuple_tag_map_slots('b_ticket.CRMThread.thread_root_id', sub {
+	@{$form->tuple_tag_map_slots(sub {
 	    my($field) = @_;
 	    return [TupleTagSlotLabel($field), TupleTagSlotField($field)];
 	})},
