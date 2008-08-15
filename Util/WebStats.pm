@@ -122,8 +122,12 @@ sub _user_email {
     $self->use('Bivio::SQL::Connection')->do_execute(sub {
         my($row) = @_;
 	$res .= join("\t", @$row) . "\n";
-    }, 'SELECT realm_id, email FROM email_t WHERE location = ?',
-	[$self->use('Type.Location')->HOME->as_sql_param]);
+    }, <<'EOF', [$self->use('Type.Location')->HOME->as_sql_param]);
+        SELECT realm_id, email
+	FROM email_t
+	WHERE location = ?
+	ORDER BY realm_id
+EOF
     return \$res;
 }
 
