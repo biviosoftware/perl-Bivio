@@ -382,6 +382,11 @@ sub iterate_next {
     return shift->internal_iterate_next(@_) ? 1 : 0;
 }
 
+sub local_field {
+    Bivio::IO::Alert->warn_deprecated('use field_decl');
+    return shift->field_decl(@_);
+}
+
 sub map_iterate {
     my($self, $map_iterate_handler) = (shift, shift);
     # Calls L<iterate_start|"iterate_start"> or I<iterate_start> (if supplied)
