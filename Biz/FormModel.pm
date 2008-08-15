@@ -323,24 +323,13 @@ sub get_literals_copy {
 
 sub get_model_properties {
     my($self, $model) = @_;
-    # Returns the properties for this model that were passed in with the form.
-    $model = $model->simple_package_name()
-	if ref($model);
-    my($sql_support) = $self->internal_get_sql_support();
-    my($properties) = $self->internal_get();
-    my($models) = $sql_support->get('models');
-    Bivio::Die->die($model, ': no such model')
-	unless defined($models->{$model});
-    my(%res);
-    my($column_aliases) = $sql_support->get('column_aliases');
-    foreach my $cn (@{$models->{$model}->{column_names_referenced}}) {
-#TODO: Document this is being used elsewhere!
-	my($pn) = $column_aliases->{$model.'.'.$cn}->{name};
-	# Copy the property to the $cn if defined.
-	$res{$cn} = $properties->{$pn}
-		if defined($pn) && exists($properties->{$pn});
-    }
-    return \%res;
+    my($res) = {};
+    _do_columns_referenced($self, $model, sub {
+	my($cn, $pn) = @_;
+	$res->{$cn} = $self->get($pn)
+	    if $self->has_keys($pn);
+    });
+    return $res;
 }
 
 sub get_stay_on_page {
@@ -625,27 +614,12 @@ sub is_field_editable {
 
 sub load_from_model_properties {
     my($self, $model) = @_;
-    # Gets I<model> and copies all properties from I<model> to I<properties>.
-    # If I<model> is not a reference, calls L<get_model|"get_model"> first.
-    my($sql_support) = $self->internal_get_sql_support();
-    my($models) = $sql_support->get('models');
-    my($m);
-    if (ref($model)) {
-	$m = $model;
-	$model = $m->simple_package_name;
-    }
-    else {
-	$m = $self->get_model($model);
-    }
-    $self->die($model, ': no such model')
-        unless defined($models->{$model});
-    my($column_aliases) = $sql_support->get('column_aliases');
-    foreach my $cn (@{$models->{$model}->{column_names_referenced}}) {
-#TODO: Document this is being used elsewhere!
-	my($pn) = $column_aliases->{$model.'.'.$cn}->{name};
-	# Copy the model's property to this model
+    my($m) = ref($model) ? $model : $self->get_model($model);
+    _do_columns_referenced($self, $model, sub {
+	my($cn, $pn) = @_;
         $self->internal_put_field($pn => $m->get($cn));
-    }
+	return;
+    });
     return;
 }
 
@@ -1052,6 +1026,17 @@ sub _call_execute_ok {
 	}
     }
     return _post_execute($self, $method, $res);
+}
+
+sub _do_columns_referenced {
+    my($self, $model, $op) = @_;
+    $self->assert_not_singleton;
+    my($mi) = $self->get_model_info($model);
+    my($ca) = $self->get_info('column_aliases');
+    foreach my $cn (@{$mi->{column_names_referenced}}) {
+	$op->($cn, $ca->{$mi->{name} . ".$cn"}->{name});
+    }
+    return;
 }
 
 sub _do_model_properties {
