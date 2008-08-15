@@ -32,11 +32,11 @@ sub internal_initialize {
 	$self,
 	$self->merge_initialize_info($self->SUPER::internal_initialize, {
 	    other => [
-		$self->local_field(
+		$self->field_decl(
 		    [qw(result_uri result_title result_excerpt result_author)],
 		    'Text', 'NOT_NULL',
 		),
-		$self->local_field(
+		$self->field_decl(
 		    [map("RealmOwner.$_", @$_REALM_OWNER_FIELDS)],
 		    {in_select => 0},
 		),

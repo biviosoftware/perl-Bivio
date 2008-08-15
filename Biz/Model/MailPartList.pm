@@ -128,7 +128,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	$self->local_field(
+	$self->field_decl(
 	    primary_key => [[qw(index Integer)]],
 	    other => [
 		[qw(mime_type Line)],

@@ -29,7 +29,7 @@ sub internal_initialize {
 	    'RealmUser.role',
 	],
 	other => [
-	    $self->local_field(
+	    $self->field_decl(
 		[qw(administrator mail_recipient file_writer)],
 		Boolean => 'NOT_NULL',
 	    ),

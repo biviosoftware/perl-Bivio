@@ -11,7 +11,7 @@ sub internal_initialize {
     my($self) = @_;
     return {
 	version => 1,
-	$self->local_field(
+	$self->field_decl(
 	    other => [
                 [qw(date Date)],
 		[qw(month String)],

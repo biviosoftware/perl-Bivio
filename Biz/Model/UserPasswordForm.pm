@@ -27,7 +27,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	require_context => 1,
-	$self->local_field(
+	$self->field_decl(
 	    visible => [
 		[old_password => undef, 'NONE'],
 		qw(new_password confirm_new_password),
