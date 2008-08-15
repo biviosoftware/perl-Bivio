@@ -7,6 +7,7 @@ use Bivio::Base 'Bivio::Biz::PropertyModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PI) = __PACKAGE__->use('Type.PrimaryId');
 my($_RTK) = __PACKAGE__->use('Type.RowTagKey');
+my($_M) = b_use('Biz.Model');
 
 sub create {
     my($self, $values) = @_;
@@ -48,8 +49,12 @@ sub update {
 
 sub _do {
     my($method, $self, $model_or_id, $key, $value) = @_;
+    unless ($model_or_id = _primary_id($model_or_id)) {
+	($key, $value) = ($model_or_id, $key);
+	$model_or_id = $self->req('auth_id');
+    }
     return $self->$method({
-	primary_id => _primary_id($model_or_id),
+	primary_id => $model_or_id,
 	key => $_RTK->from_any($key),
 	$method =~ /load/ ? () : (value => $value),
     });
@@ -57,8 +62,8 @@ sub _do {
 
 sub _primary_id {
     my($model_or_id) = @_;
-    return $model_or_id
-	unless ref($model_or_id);
+    return $model_or_id =~ /^\d+$/ ? $model_or_id : undef
+	unless $_M->is_blessed($model_or_id);
     my($pk) = $model_or_id->get_info('primary_key_names');
     Bivio::Die->die($model_or_id, ': must have one field which is primary key')
         unless @$pk == 1;
