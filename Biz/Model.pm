@@ -89,6 +89,41 @@ sub do_iterate {
     return $self;
 }
 
+sub field_decl {
+    my($proto) = shift;
+    if (ref($_[0]) eq 'ARRAY') {
+	my($decls, $defaults) = (shift, shift);
+	$defaults = {
+	    type => $defaults,
+	    constraint => shift,
+	} unless ref($defaults) eq 'HASH';
+	$defaults->{constraint} ||= 'NONE';
+	return map({
+	    $_ = [$_]
+		unless ref($_);
+	    +{
+		%$defaults,
+		name => $_->[0],
+		$proto->list_if_value(
+		    type => $_->[1],
+		    constraint => $_->[2],
+		),
+	    };
+	} @$decls);
+    }
+    my($defaults) = [];
+    unshift(@$defaults, pop(@_))
+	while ref($_[$#_]) ne 'ARRAY';
+    Bivio::Die->die('expecting class and declarations')
+	unless @_ > 1;
+    Bivio::Die->die('uneven (class, declarations) tuples')
+        if @_ % 2;
+    return map(
+	(shift(@_) => [$proto->field_decl(shift(@_), @$defaults)]),
+	1 .. @_ / 2,
+    );
+}
+
 sub field_equals {
     my($self, $field, $value) = @_;
     return $self->get_field_type($field)->is_equal($value, $self->get($field));
@@ -184,6 +219,12 @@ sub get_model {
     return $model;
 }
 
+sub get_model_info {
+    my($self, $model) = @_;
+    return $self->unsafe_get_model_info($model)
+	|| b_die($model, ': no such model');
+}
+
 sub get_primary_id {
     my($self) = @_;
     return $self->get($self->get_primary_id_name);
@@ -270,8 +311,8 @@ sub internal_initialize {
 }
 
 sub internal_initialize_local_fields {
-    Bivio::IO::Alert->warn_deprecated('use local_field');
-    return [shift->local_field(@_)];
+    Bivio::IO::Alert->warn_deprecated('use field_decl');
+    return [shift->field_decl(@_)];
 }
 
 sub internal_initialize_sql_support {
@@ -339,41 +380,6 @@ sub iterate_next {
     #
     # B<Deprecated form accepts an iterator as the first argument.>
     return shift->internal_iterate_next(@_) ? 1 : 0;
-}
-
-sub local_field {
-    my($proto) = shift;
-    if (ref($_[0]) eq 'ARRAY') {
-	my($decls, $defaults) = (shift, shift);
-	$defaults = {
-	    type => $defaults,
-	    constraint => shift,
-	} unless ref($defaults) eq 'HASH';
-	$defaults->{constraint} ||= 'NONE';
-	return map({
-	    $_ = [$_]
-		unless ref($_);
-	    +{
-		%$defaults,
-		name => $_->[0],
-		$proto->list_if_value(
-		    type => $_->[1],
-		    constraint => $_->[2],
-		),
-	    };
-	} @$decls);
-    }
-    my($defaults) = [];
-    unshift(@$defaults, pop(@_))
-	while ref($_[$#_]) ne 'ARRAY';
-    Bivio::Die->die('expecting class and declarations')
-	unless @_ > 1;
-    Bivio::Die->die('uneven (class, declarations) tuples')
-        if @_ % 2;
-    return map(
-	(shift(@_) => [$proto->local_field(shift(@_), @$defaults)]),
-	1 .. @_ / 2,
-    );
 }
 
 sub map_iterate {
@@ -528,6 +534,12 @@ sub unsafe_get_model {
     my($fields) = $self->[$_IDI];
     return ($fields->{models} ||= {})->{$name}
 	||= _load_other_model($self, $name);
+}
+
+sub unsafe_get_model_info {
+    my($self, $model) = @_;
+    return $self->get_info('models')
+	->{ref($model) ? $model->simple_package_name : $model};
 }
 
 sub unsafe_get_request {
