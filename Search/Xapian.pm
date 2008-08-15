@@ -186,7 +186,7 @@ sub query_list_model_initialize {
     my(undef, $list_model, $parent_info) = @_;
     return $list_model->merge_initialize_info($parent_info, {
 	version => 1,
-	$list_model->local_field(
+	$list_model->field_decl(
 	    primary_key => [[qw(primary_id PrimaryId)]],
 	    other => [
 		qw(rank percent collapse_count),
