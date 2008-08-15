@@ -104,6 +104,7 @@ my($_HTML_TAGS) = join('|', qw(
 my($_AA) = __PACKAGE__->use('Action.Acknowledgement');
 my($_M) = b_use('Biz.Model');
 my($_WF) = b_use('UI_HTML.WidgetFactory');
+my($_SUBMIT_CHAR) = '*';
 
 sub view_autoload {
     my(undef, $method, $args) = @_;
@@ -367,7 +368,7 @@ sub vs_simple_form {
 	0,
 	q{'epilogue},
     ) unless grep(!ref($_) && $_ eq q{'epilogue}, @$rows);
-    push(@$rows, '*')
+    push(@$rows, $proto->vs_simple_form_submit)
         unless $no_submit || _has_submit($proto, $rows);
     return Form(
 	$form,
@@ -392,7 +393,7 @@ sub vs_simple_form {
 			    cell_class => 'sep',
 			})];
 		    }
-		    elsif ($_ =~ s/^\*//) {
+		    elsif ($_ =~ s/^\Q$_SUBMIT_CHAR//) {
 			$x = [StandardSubmit(
 			    {
 				cell_colspan => 2,
@@ -421,6 +422,11 @@ sub vs_simple_form {
 	    }),
 	]),
     );
+}
+
+sub vs_simple_form_submit {
+    my(undef, $fields) = @_;
+    return $_SUBMIT_CHAR . join(' ', @{$fields || []});
 }
 
 sub vs_table_attrs {
