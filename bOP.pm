@@ -26,11 +26,63 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.72  2008/08/14 04:25:46  nagler
+  * Bivio::Biz::FormModel
+    internal_put_field accepts multiple key-values
+    check value for HASH (not just ref) in _parse_cols.
+    fpc
+  * Bivio::Biz::Model::CRMActionList
+    decouple lock_user_id from owner_user_id
+  * Bivio::Biz::Model::CRMForm
+    decouple lock_user_id from owner_user_id
+  * Bivio::Biz::Model::CRMThread
+    decouple lock_user_id from owner_user_id
+    fpc
+  * Bivio::Biz::Model::ForumUserList
+    use local_field
+  * Bivio::Biz::Model::MailForm
+    added internal_format_subject
+  * Bivio::Biz::Model::MailPartList
+    use local_field
+  * Bivio::Biz::Model::MonthList
+    use local_field
+  * Bivio::Biz::Model::RealmUserAddForm
+    use local_field
+  * Bivio::Biz::Model::SearchList
+    use local_field
+    use local_field
+  * Bivio::Biz::Model::TupleTagForm
+    tuple_tag_map_slots API change: gets id from TUPLE_TAG_IDS
+  * Bivio::Biz::Model::UserPasswordForm
+    use local_field
+  * Bivio::Biz::Model
+    local_field deprecates internal_initialize_local_fields
+  * Bivio::Biz::t::FormModel::T1Form
+    test internal_put_field with multiple args
+  * Bivio::PetShop::Model::FieldTestForm
+    use local_field
+  * Bivio::SQL::DDL
+    added lock_user_id and customer_realm_id to crm_thread_t
+    added unique index to crm_thread_t.thread_root_id
+  * Bivio::Search::Xapian
+    use local_field
+  * Bivio::Test::t::ListModel::T1List
+    use local_field
+  * Bivio::Type::ForumEmailMode
+    use Bivio::Base
+  * Bivio::UI::View::CRM
+    tuple_tag_map_slots API change
+  * Bivio::UNIVERSAL
+    added list_if_value
+  * Bivio::Util::SQL
+    added crm_thread_lock_user_t
+    added unique index to crm_thread_t.thread_root_id
+
   Revision 6.71  2008/08/12 22:07:58  moeller
   * Bivio::Biz::FormModel
     added require_validate which calls validate on directly executed
