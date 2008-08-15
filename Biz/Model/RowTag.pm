@@ -2,11 +2,11 @@
 # $Id$
 package Bivio::Biz::Model::RowTag;
 use strict;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_PI) = __PACKAGE__->use('Type.PrimaryId');
-my($_RTK) = __PACKAGE__->use('Type.RowTagKey');
+my($_PI) = b_use('Type.PrimaryId');
+my($_RTK) = b_use('Type.RowTagKey');
 my($_M) = b_use('Biz.Model');
 
 sub create {
