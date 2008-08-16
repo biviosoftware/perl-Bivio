@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegate::SimpleAuthSupport;
 use strict;
@@ -7,6 +7,7 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(%_DEFAULT_PERMISSIONS);
+my($_RT) = b_use('Model.RowTag');
 
 sub get_auth_user {
     # (proto, Agent.Request) : Biz.Model
@@ -75,16 +76,10 @@ sub task_permission_ok {
 }
 
 sub unsafe_get_user_pref {
-    my($proto, $pref, $req, $value) = @_;
-
-    if ($pref eq 'PAGE_SIZE') {
-	my($v) = $proto->use('Model.RowTag')->new($req)->get_value(
-	    $req->get('auth_user_id'), 'PAGE_SIZE');
-	return 0 unless $v;
-	$$value = $v;
-	return 1;
-    }
-    return 0;
+    my($proto, $pref, $req, $res) = @_;
+    return 0
+	unless my $u = $req->get('auth_user_id');
+    return defined($$res = $_RT->new($req)->get_value($u, $pref)) ? 1 : 0;
 }
 
 sub _load_default_permissions {
