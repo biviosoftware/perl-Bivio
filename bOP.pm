@@ -26,11 +26,42 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.73  2008/08/15 04:12:24  nagler
+  * Bivio::Biz::FormModel
+    refactored get_model_properties and load_from_model_properties
+  * Bivio::Biz::Model::CSVImportForm
+    strip spaces around enum values,
+    removed deprecated CSV_COLUMN config
+  * Bivio::Biz::Model::ForumUserList
+    local_field -> field_decl
+  * Bivio::Biz::Model::MailPartList
+    local_field -> field_decl
+  * Bivio::Biz::Model::MonthList
+    local_field -> field_decl
+  * Bivio::Biz::Model::RealmUserAddForm
+    local_field -> field_decl
+  * Bivio::Biz::Model::SearchList
+    local_field -> field_decl
+  * Bivio::Biz::Model::UserPasswordForm
+    local_field -> field_decl
+  * Bivio::Biz::Model::t::CSVImportForm::T1Form
+    added gender enum value
+  * Bivio::Biz::Model
+    added unsafe_get_model_info and get_model_info
+    renamed local_fields to field_decl
+    deprecate local_field (just to be safe)
+  * Bivio::PetShop::Model::FieldTestForm
+    local_field -> field_decl
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_simple_form_submit to abstract '*' usage
+  * Bivio::UNIVERSAL
+    added is_simple_package_name
+
   Revision 6.72  2008/08/14 04:25:46  nagler
   * Bivio::Biz::FormModel
     internal_put_field accepts multiple key-values
