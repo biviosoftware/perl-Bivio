@@ -5,9 +5,10 @@ Widget({
 	my($case, $params) = @_;
 	my($f) = shift(@$params);
 	$case->put('the_form', $f);
-	return [@$params, {
+	return [@$params ? shift(@$params) : (), {
 	    form_class => $f,
 	    form_model => [['->get_request'], 'Model.'.$f],
+	    %{shift(@$params) || {}},
 	}];
     },
     setup_render => sub {
@@ -21,4 +22,7 @@ Widget({
     ['ContactForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="f2" value="\s*\w+\s*"\s+class="submit" />.*</div>},
     ['UserLoginForm'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value="\s*\w+\s*"\s+class="submit" />.*<input type="submit" name="cancel_button" value="\s*Cancel\s*" onclick="reset\(\)" class="submit" />.*</div>},
     ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value="\s*\w+\s*"\s+class="submit" />.*</div>},
+    ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value="\s*\w+\s*"\s+class="submit" />.*</div>},
+    ['UserLoginForm', 'ok_button', {labels => {ok_button => 'StandardSubmit.bunit'}}]
+	=> qr{<div class="standard_submit">.*<input type="submit" name="ok_button" value="bunit" class="submit" />.*</div>},
 ];
