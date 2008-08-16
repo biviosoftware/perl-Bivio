@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::ViewShortcuts;
 use strict;
@@ -394,13 +394,10 @@ sub vs_simple_form {
 			})];
 		    }
 		    elsif ($_ =~ s/^\Q$_SUBMIT_CHAR//) {
-			$x = [StandardSubmit(
-			    {
-				cell_colspan => 2,
-				cell_class => 'submit',
-				$_ ? (buttons => [split(/\s+/, $_)]) : (),
-			    },
-			)];
+			$x = [StandardSubmit({
+			    cell_colspan => 2,
+			    $_ ? (buttons => $_) : (),
+			})];
 		    }
 		    elsif ($_ =~ s/^'//) {
 			$x = [Prose(vs_text($form, 'prose', $_), {
