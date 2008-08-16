@@ -442,6 +442,8 @@ sub unsafe_resolve_attr {
 
 sub unsafe_resolve_widget_value {
     my($proto, $value, $source) = @_;
+    b_die('source: missing or invalid parameter')
+	unless $source;
     # Recursively eliminate array_ref widget values.
     my($i) = 10;
     while (ref($value) eq 'ARRAY') {
