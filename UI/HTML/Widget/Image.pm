@@ -100,16 +100,17 @@ sub control_on_render {
     my($alt) = $self->has_keys('alt')
 	? $self->render_simple_attr('alt', $source)
 	: Bivio::UI::Text->get_from_source($source)
-	->unsafe_get_widget_value_by_name(
-	    'Image_alt.'
-	    . (defined($self->unsafe_get('alt_text'))
-	        ? $self->render_simple_attr('alt_text', $source)
-		: $src_name,
-	    ),
-	);
+	    ->unsafe_get_widget_value_by_name(
+		'Image_alt.'
+		. (defined($self->unsafe_get('alt_text'))
+		    ? $self->render_simple_attr('alt_text', $source)
+		    : $src_name,
+	        ),
+	        $source,
+	    );
     $$buffer .= ' alt="' . Bivio::HTML->escape_attr_value($alt) . '"'
 	if $alt;
-    my($a) = {map(($_ => $self->render_simple_attr($_)), @$_OLD_HTML)};
+    my($a) = {map(($_ => $self->render_simple_attr($_, $source)), @$_OLD_HTML)};
     $a->{border} ||= '0'
 	unless  $b =~ /class=|id=/;
     foreach my $k (qw(width height)) {

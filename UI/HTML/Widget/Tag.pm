@@ -29,11 +29,12 @@ sub control_on_render {
 	: $self->render_attr('value', $source, \$b);
     return unless length($b)
 	|| $self->render_simple_attr('tag_if_empty', $source);
-    my($t) = lc(${$self->render_attr('tag')});
+    my($t) = lc(${$self->render_attr('tag', $source)});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
 	unless $t =~ /^[a-z]+\d*$/;
     $b = "\n<!--\n$b\n-->\n"
-	if length($b) && $self->render_simple_attr('bracket_value_in_comment');
+	if length($b)
+	&& $self->render_simple_attr('bracket_value_in_comment', $source);
     my($a) = '';
     $self->internal_tag_render_attrs($source, \$a);
     $$buffer .= "<$t$a"

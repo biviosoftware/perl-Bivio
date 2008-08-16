@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub execute {
     my($self, $req) = @_;
     return $self->execute_with_content_type(
-	$req, ${$self->render_attr('content_type')});
+	$req, ${$self->render_attr('content_type', $req)});
 }
 
 sub initialize {

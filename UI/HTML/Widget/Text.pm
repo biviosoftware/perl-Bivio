@@ -21,7 +21,7 @@ sub internal_input_base_render_attrs {
     shift->SUPER::internal_input_base_render_attrs(@_);
     my($v);
     if (!$form->get_field_error($field)
-        and my $f = $self->unsafe_resolve_attr('format')
+        and my $f = $self->unsafe_resolve_attr('format', $source)
     ) {
 	$f = Bivio::UI::HTML::Format->get_instance($f)
 	    unless ref($f);

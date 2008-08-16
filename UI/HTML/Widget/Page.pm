@@ -173,6 +173,8 @@ sub internal_render_head_attrs {
 		'javascript',
 	    ),
 	],
+	undef,
+	[$source],
     );
     # IE caches too much.
     $b .= qq{<meta name="MSSmartTagsPreventParsing" content="TRUE">\n}
@@ -223,7 +225,7 @@ sub internal_setup_xhtml {
 	    && $self->unsafe_get('style')
 	    ? 1 : 0,
     );
-    $req->put(xhtml => my $xhtml = $self->render_simple_attr('xhtml', 0));
+    $req->put(xhtml => my $xhtml = $self->render_simple_attr('xhtml', $req));
     return $xhtml;
 }
 
