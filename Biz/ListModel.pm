@@ -1077,14 +1077,15 @@ sub _unauth_load {
 
     # Add in count if not there
     unless ($query->has_keys('count')) {
-	my($count) = Bivio::Type->get_instance('PageSize')->get_default;
+	my($count);
 	if ($self->can('PAGE_SIZE')) {
 	    $count = $self->PAGE_SIZE();
 	}
 	# only check preferences if that model is present
 	else {
 	    Bivio::Auth::Support->unsafe_get_user_pref(
-		     'PAGE_SIZE', $self->get_request, \$count);
+		'PAGE_SIZE', $self->get_request, \$count);
+	    $count ||= Bivio::Type->get_instance('PageSize')->get_default;
 	}
 	$query->put(count => $count);
     }
