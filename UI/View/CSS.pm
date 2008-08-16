@@ -435,9 +435,7 @@ form .sep {
 .warn {
   Font('warn');
 }
-.standard_submit {
-  text-align: center;
-}
+.standard_submit,
 form .submit {
   margin: .5em;
   padding: 0 .5em;
