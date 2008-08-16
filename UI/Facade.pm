@@ -410,18 +410,8 @@ sub new {
 
 sub new_child {
     my($parent, $config) = @_;
-    # Creates a child of I<self> (parent).  The I<child_type> attribute
-    # must be set, but no other attributes except components should
-    # be set.  The clone is always the parent.  Components without
-    # a child initialize are shared fully, i.e. the parent's values
-    # and groups are copied verbatim to the child's.
-
-    # Will blow up if not a parent (main facade).
-    my($children) = $parent->get('children');
-
     my($self) = $parent->SUPER::new;
-
-    # Initialize this instance's attributes
+    my($children) = $parent->get('children');
     my($type) = Bivio::UI::FacadeChildType->from_any($config->{child_type});
     delete($config->{child_type});
     $self->internal_put({
@@ -432,45 +422,30 @@ sub new_child {
 	child_type => $type,
 	parent => $parent,
     });
-
-    Bivio::Die->die($self, ': duplicate child type initialization')
-		if $children->{$type};
-
-    # This is actually very inefficient, because we copy the entire
-    # parent facade to the child.  Most of it can probably be shared.
+    b_die($self, ': duplicate child type initialization')
+        if $children->{$type};
     _initialize($self, $config, $parent);
-
-    # This is allowed even though the parent is already read-only
     $children->{$type} = $self;
     return $self;
 }
 
 sub prepare_to_render {
     my(undef, $req, $type) = @_;
-    # Called before rendering to lookup the user preference
-    # I<facade_child_type> if not passed and set on the request.
     my($self) = $req->get(__PACKAGE__);
     my($children) = $self->unsafe_get('children');
-
-    # No children?  If already a child, then got an error during
-    # rendering or server_redirect(?) and we should just stay in the
-    # same facade.
     unless ($children && %$children) {
 	_trace($self, ': no children') if $_TRACE;
 	return;
     }
-
-    # If there is no child of this type, default case
-    $type = Societas::Biz::Model::Preferences->get_user_pref($req,
-	    'facade_child_type');
     Bivio::Auth::Support->unsafe_get_user_pref(
-	    'FACADE_CHILD_TYPE', $req, \$type)
-	    unless $type;
+	'FACADE_CHILD_TYPE', $req, \$type,
+    ) unless $type;
+    $type ||= Bivio::UI::FacadeChildType->get_default;
     unless ($children->{$type}) {
-	_trace($self, ': ', $type, ': no such child') if $_TRACE;
+	_trace($self, ': ', $type, ': no such child')
+	    if $_TRACE;
 	return;
     }
-
     return _setup_request($children->{$type}, $req);
 }
 
