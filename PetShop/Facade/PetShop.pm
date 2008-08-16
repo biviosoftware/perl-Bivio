@@ -213,6 +213,7 @@ __PACKAGE__->new({
 	]],
 	[UserLoginForm => [
 	    ok_button => '  OK  ',
+	    'StandardSubmit.bunit' => 'bunit',
 	]],
 	# Table headings
 	['ItemListForm.add_to_cart' => ' '],
