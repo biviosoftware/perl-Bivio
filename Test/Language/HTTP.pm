@@ -743,9 +743,10 @@ sub verify_pdf {
     system("pdftotext '$f'") == 0
 	or Bivio::Die->die($f, ': unable to convert pdf to text');
     $f =~ s/pdf$/txt/;
+    my($pdf_text) = ${$_F->read($f)};
     Bivio::Die->die($text, ': text not found in response ', $f)
-	unless ${$_F->read($f)} =~ /$text/s;
-    return;
+	unless $pdf_text =~ /$text/s;
+    return $pdf_text;
 }
 
 sub verify_table {
