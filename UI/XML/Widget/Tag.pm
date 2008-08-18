@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($tag) = $self->render_simple_attr('tag');
+    my($tag) = $self->render_simple_attr('tag', $source);
     $$buffer .= "<$tag";
     $self->render_attr('attributes', $source, $buffer);
     my($b) = '';
