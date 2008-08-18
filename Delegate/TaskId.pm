@@ -426,9 +426,11 @@ sub info_crm {
             150
             FORUM
             DATA_READ&FEATURE_CRM
+            Model.CRMQueryForm
             Model.CRMThreadRootList->execute_load_page
             View.CRM->thread_root_list
 	    thread_task=FORUM_CRM_THREAD_LIST
+            next=FORUM_CRM_THREAD_ROOT_LIST
         )],
 	[qw(
             FORUM_CRM_THREAD_LIST
