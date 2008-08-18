@@ -40,7 +40,8 @@ sub internal_new_args {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($method) = $self->render_simple_attr('format_method') || 'format_uri';
+    my($method) = $self->render_simple_attr('format_method', $source)
+	|| 'format_uri';
     $$buffer .= $source->get_request->$method(
 	_render_hash(
 	    $self, 'format_uri_hash', $self->get('format_uri_hash'), $source));

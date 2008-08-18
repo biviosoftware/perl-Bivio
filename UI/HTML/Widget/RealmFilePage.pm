@@ -53,7 +53,7 @@ sub render {
 	if $rf->get('is_public');
     $p = URI->new($rf->get_request->format_http({uri => $p}));
     $$b =~ s{(\b(?:href|src)=")([^"]+)}{$1 . _render_uri($2, $p)}sige;
-    my($vap) = $self->render_simple_attr('view_attr_prefix');
+    my($vap) = $self->render_simple_attr('view_attr_prefix', $source);
     $$b =~ s{
         \<\!--\s*bivio-([\w-]+)\s*--\>
 	| \<\!--\s*start-bivio-([\w-]+)\s*--\>
