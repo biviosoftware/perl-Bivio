@@ -121,6 +121,13 @@ config({
 	    },
 	],
         USAGE => DIE(),
+	required_main => [
+	    [] => DIE(),
+	    Class => DIE(),
+	    [qw(Class qualified_name ShellUtil.Class)] => 'Bivio::Util::Class',
+	    [qw(class qualified_name ShellUtil.Class)] => 'Bivio::Util::Class',
+	    [qw(Bivio::Util::Class qualified_name ShellUtil.Class)] => 'Bivio::Util::Class',
+	],
     ],
     class('ShellUtil.T2') => [
         USAGE => qr{^usage: \S+ \[options\] command \[args..\]
