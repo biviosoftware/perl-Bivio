@@ -26,11 +26,29 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.75  2008/08/18 23:08:30  moeller
+  * Bivio::Biz::Model::CRMThreadRootList
+    left join with TupleTag to get extra CRM values,
+    use CRMQueryForm to get status and owner_name filters
+  * Bivio::Delegate::TaskId
+    added Model.CRMQueryForm to FORUM_CRM_THREAD_ROOT_LIST
+  * Bivio::ShellUtil
+    required_main accepts case-insensitive class names so "bivio
+    RealmAdmin" and "bivio realmadmin" both work.
+  * Bivio::Test::Language::HTTP
+    verify_pdf() now returns pdf_text
+  * Bivio::Type::CRMThreadStatus
+    added UNKNOWN
+  * Bivio::UI::FacadeBase
+    added labels for CRMQueryForm
+  * Bivio::UI::XML::Widget::Tag
+    Pass along $source
+
   Revision 6.74  2008/08/16 05:01:44  nagler
   * Bivio::Biz::ListModel
     default $count if PAGE_SIZE user preference not found
