@@ -425,6 +425,10 @@ sub _cfg_crm {
 	    [FORUM_CRM_FORM => '?/compose-ticket-msg'],
 	],
 	Text => [
+	    [CRMQueryForm => [
+		'x_status.unknown_label' => 'Any Status',
+		'x_owner_name.unknown_label' => 'Any Owner',
+	    ]],
 	    [CRMThreadRootList => [
 		'CRMThread.subject' => 'Subject',
 		'RealmFile.modified_date_time' => 'Initiated',
