@@ -5,8 +5,9 @@ use strict;
 use Bivio::Base 'Model.MailThreadRootList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_LOCATION) = __PACKAGE__->use('Model.Email')->DEFAULT_LOCATION;
 my($_CAL) = __PACKAGE__->use('Model.CRMActionList');
+my($_LOCATION) = __PACKAGE__->use('Model.Email')->DEFAULT_LOCATION;
+my($_TSN) = __PACKAGE__->use('Type.TupleSlotNum');
 
 sub internal_initialize {
     my($self) = @_;
@@ -19,10 +20,12 @@ sub internal_initialize {
 	    CRMThread.crm_thread_num
 	    CRMThread.crm_thread_status
 	    owner.Email.email
-
 	    modified_by.Email.email
 	    CRMThread.subject_lc
-	)],
+	),
+	    @{$_TSN->map_list(sub {'TupleTag.' . shift(@_)})},
+	],
+        other_query_keys => $self->get_instance('CRMQueryForm')->filter_keys,
 	other => [
             delete($info->{primary_key})->[0],
 	    'CRMThread.subject',
@@ -53,7 +56,7 @@ sub internal_post_load_row {
 }
 
 sub internal_prepare_statement {
-    my(undef, $stmt) = @_;
+    my($self, $stmt) = @_;
     $stmt->from(
 	$stmt->LEFT_JOIN_ON(qw(CRMThread owner.Email), [
 	    ['CRMThread.owner_user_id', 'owner.Email.realm_id'],
@@ -63,7 +66,17 @@ sub internal_prepare_statement {
 	    ['CRMThread.owner_user_id', 'modified_by.Email.realm_id'],
 	    ['modified_by.Email.location', [$_LOCATION]],
 	]),
+	$stmt->LEFT_JOIN_ON(qw(RealmMail TupleTag), [
+	    ['RealmMail.thread_root_id', 'TupleTag.primary_id'],
+	]),
     );
+    if (my $qf = $self->req->unsafe_get('Model.CRMQueryForm')) {
+	my($status, $owner) = $qf->unsafe_get(qw(x_status x_owner_name));
+	$stmt->where(['CRMThread.crm_thread_status', [$status]])
+	    if $status;
+	$stmt->where(['CRMThread.owner_user_id', [$owner]])
+	    if $owner;
+    }
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
