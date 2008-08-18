@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -26,11 +26,44 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.74  2008/08/16 05:01:44  nagler
+  * Bivio::Biz::ListModel
+    default $count if PAGE_SIZE user preference not found
+  * Bivio::Biz::Model::RowTag
+    enable easier access to for auth_id
+    b_use
+  * Bivio::Delegate::RowTagKey
+    added FACADE_CHILD_TYPE and TEXTAREA_WRAP_LINES
+  * Bivio::PetShop::Facade::PetShop
+    StandardSubmit.bunit support
+  * Bivio::UI::Facade
+    default $type if not set by default
+  * Bivio::UI::HTML::Widget::Image
+    missed passing $source to render/resolve
+  * Bivio::UI::HTML::Widget::Page
+    missed passing $source to render/resolve
+  * Bivio::UI::HTML::Widget::Tag
+    missed passing $source to render/resolve
+  * Bivio::UI::HTML::Widget::Text
+    missed passing $source to render/resolve
+  * Bivio::UI::View::CRM
+    don't render update_only for new tickets
+    deprecate $buttons passed to send_form
+  * Bivio::UI::View::CSS
+    merge form .submit and .standard_submit
+  * Bivio::UI::Widget::SimplePage
+    missed passing $source to render/resolve
+  * Bivio::UI::Widget
+    check $source parameter is there before resolving widget value
+  * Bivio::UI::XHTML::Widget::StandardSubmit
+    deprecate passing buttons as array_ref (string or Widget required)
+    buttons is dynamically rendered
+
   Revision 6.73  2008/08/15 04:12:24  nagler
   * Bivio::Biz::FormModel
     refactored get_model_properties and load_from_model_properties
