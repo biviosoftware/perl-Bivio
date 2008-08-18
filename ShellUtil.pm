@@ -853,15 +853,21 @@ sub ref_to_string {
 
 sub required_main {
     my($proto, $class, @args) = @_;
+    my($pkgs) = $_CL->list_simple_packages_in_map($_MAP_NAME);
     $proto->usage_error(
 	join("\n",
 	     'first argument must be a class name.  Available classes:',
-	     @{$_CL->list_simple_packages_in_map($_MAP_NAME)},
+	     @$pkgs,
 	),
     ) unless $class;
-    $proto->usage_error($class, ": class not found in $_MAP_NAME map")
-	unless $_CL->unsafe_map_require($_MAP_NAME => $class);
-    return ref($proto->new($class))->main(@args);
+    if ($proto->is_simple_package_name($class)) {
+	my($c) = grep(/^\Q$class\E$/i, @$pkgs);
+	$proto->usage_error($class, ": class not found in $_MAP_NAME map")
+	    unless $c;
+	$class = $c;
+    }
+    return ref($proto->new($_CL->map_require($_MAP_NAME => $class)))
+	->main(@args);
 }
 
 sub result {
