@@ -27,11 +27,15 @@ sub get_select_attrs {
 	enum_sort => 'as_int',
 	field => $field,
     } if $t->isa('Bivio::Type::Enum');
-    my($list) = $proto->get_list_for_field($field);
     return {
 	field => $field,
-	choices => [$list->package_name],
-	list_display_field => $list->get_info('order_by_names')->[0],
+	choices => [sub {
+	    my($source, $proto, $field) = @_;
+	    return $source->req($proto->get_list_for_field($field)
+		->package_name);
+	}, $proto, $field],
+	list_display_field => $proto->get_list_for_field($field)
+	    ->get_info('order_by_names')->[0],
     };
 }
 
