@@ -25,6 +25,12 @@ sub _owner_name_list {
     return Bivio::Biz::ListModel->new_anonymous({
         primary_key => [[qw(CRMThread.owner_user_id RealmOwner.realm_id)]],
 	want_select_distinct => 1,
+	other => [
+	    {
+		name => 'CRMThread.crm_thread_num',
+		in_select => 0,
+	    },
+	],
         order_by => ['RealmOwner.name'],
 	auth_id => ['CRMThread.realm_id'],
     })->load_all;
