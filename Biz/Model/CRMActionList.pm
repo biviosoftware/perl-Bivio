@@ -12,6 +12,7 @@ my($_NAMES) = [map($_->get_name, @$_LIST)];
 my($_T) = __PACKAGE__->use('UI.Text');
 my($_LOCATION) = __PACKAGE__->use('Model.Email')->DEFAULT_LOCATION;
 my($_E) = __PACKAGE__->use('Type.Email');
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub id_to_owner {
     my($self, $id) = @_;
@@ -43,6 +44,7 @@ sub internal_initialize {
 
 sub internal_load_rows {
     my($self) = @_;
+    my($fields) = $self->[$_IDI];
     my($req) = $self->req;
     my($n) = {map(
 	($_ => $_T->get_value('CRMActionList', 'label', $_, $req)),
@@ -52,10 +54,12 @@ sub internal_load_rows {
     return [
 	map(
 	    sort({lc($a->{name}) cmp lc($b->{name})} @$_),
-	    [map(+{
-	        id => $self->status_to_id($_),
-	        name => $n->{$_->get_name},
-	    }, @$_LIST)],
+	    $fields && $fields->{names_only}
+	        ? ()
+	        : [map(+{
+		    id => $self->status_to_id($_),
+		    name => $n->{$_->get_name},
+		}, @$_LIST)],
 	    $self->new_other('RealmEmailList')->map_iterate(
 		sub {
 		    my($it) = @_;
@@ -64,7 +68,8 @@ sub internal_load_rows {
 			    && $it->get('RealmUser.role') == $_MEMBER;
 		    return {
 			id => $it->get('RealmUser.user_id'),
-			name => $n->{assign_to}
+			name => ($fields && $fields->{names_only}
+			    ? '' : $n->{assign_to})
 			    . $self->owner_email_to_name(
 				$it->get('Email.email')),
 		    };
@@ -73,6 +78,14 @@ sub internal_load_rows {
 	    ),
 	),
     ];
+}
+
+sub load_owner_names {
+    my($self) = @_;
+    $self->[$_IDI] ||= {
+	names_only => 1,
+    };
+    return $self->load_all;
 }
 
 sub owner_email_to_name {
