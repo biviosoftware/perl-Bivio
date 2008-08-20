@@ -13,6 +13,12 @@ req()->set_realm_and_user(qw(crm_forum crm_tech1));
 	    +{name => qr{assign.*tech2}i},
 	],
     ],
+    load_owner_names => [
+	[] => [
+	    +{name => qr{tech1}i},
+	    +{name => qr{tech2}i},
+	],
+    ],
     id_to_owner => [
         realm_id('crm_tech1') => realm_id('crm_tech1'),
 	map((-CRMThreadStatus($_->[0])->as_int => [$_->[1]]),
