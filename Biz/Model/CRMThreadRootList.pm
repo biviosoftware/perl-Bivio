@@ -76,6 +76,13 @@ sub internal_prepare_statement {
 	    if $status;
 	$stmt->where(['CRMThread.owner_user_id', [$owner]])
 	    if $owner;
+	$_TSN->map_list(sub {
+	    my($name) = @_;
+	    my($v) = $qf->unsafe_get('x_' . $name);
+	    $stmt->where(['TupleTag.' . $name, [$v]])
+		if defined($v);
+	    return;
+	});
     }
     return shift->SUPER::internal_prepare_statement(@_);
 }
