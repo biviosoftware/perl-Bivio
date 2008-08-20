@@ -1,10 +1,11 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->set_realm_and_user(qw(crm_forum crm_tech1))
+my($realm) = 'crm_tuple_forum';
+req()->set_realm_and_user($realm, 'crm_tech1')
     ->initialize_fully('FORUM_CRM_FORM');
 model(CRMForm => {
-    to => EmailArray(remote_email('crm_forum')),
+    to => EmailArray(remote_email($realm)),
     cc => EmailArray(''),
     subject => my $subject = random_string(),
     body => 'x',
@@ -25,6 +26,10 @@ model(CRMForm => {
     action_id => realm_id('crm_tech1'),
     subject => $subject,
 });
+model(CRMQueryForm => {
+    x_slot2 => 'Medium',
+});
+req()->set_realm($realm);
 [
     load_all => [
 	[] => sub {
@@ -33,6 +38,7 @@ model(CRMForm => {
 	        my($it) = shift;
 		$count++
 		    if $it->get('RealmMail.subject') =~ /$subject/;
+		die() unless $it->get('TupleTag.slot2') eq 'Medium';
 		return 1;
 	    });
 	    assert_equals(1, $count);
