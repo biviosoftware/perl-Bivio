@@ -42,7 +42,7 @@ In-Reply-To: <c@c> <d@d>
 any body
 EOF
 	get_message_id => [
-	    [] => [undef],
+	    [] => ['no-message-id'],
 	],
     ],
 ];
