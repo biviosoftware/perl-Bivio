@@ -1,0 +1,36 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+
+Request('initialize_fully');
+req()->set_realm_and_user('fourem');
+my($domain) = '@model.realmmail.bunit';
+
+[
+    class() => [
+	execute_receive => [
+	    [req(), <<"EOF", 'FORUM_MAIL_REFLECTOR'] => [],
+From: a$domain
+Message-ID: <a$domain>
+Date: Sun, 1 May 2005 10:11:41 -0600
+Subject: test RealmMail action
+
+Message Body
+EOF
+	],
+	sub {
+	    return req(qw(Model.RealmMail message_id)) eq "a$domain";
+	} => 1,
+	execute_receive => [
+	    [req(), <<"EOF", 'FORUM_MAIL_REFLECTOR'] => [],
+From: a$domain
+Date: Sun, 1 May 2005 12:11:41 -0600
+Subject: test RealmMail action
+
+Message Body
+EOF
+	],
+	sub {
+	    return req(qw(Model.RealmMail message_id)) eq 'no-message-id';
+	} => 1,
+    ],
+];
