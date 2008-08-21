@@ -18,6 +18,10 @@ our($_TRACE);
 my($_EA) = __PACKAGE__->use('Type.EmailArray');
 my($_M) = __PACKAGE__->use('Biz.Model');
 
+sub NO_MESSAGE_ID {
+    return 'no-message-id';
+}
+
 sub get_body {
     my($self, $body) = @_;
     # Returns the body of the message or puts a copy in I<body>.
@@ -81,7 +85,8 @@ sub get_message_id {
     my($self) = @_;
     # Returns the Message-Id for this message.
     return $self->get_if_exists_else_put(message_id => sub {
-	scalar((_get_field($self, 'message-id:') =~ /<([^<>]+)>/)[0]);
+	my($id) = _get_field($self, 'message-id:') =~ /<([^<>]+)>/;
+	return defined($id) ? $id : $self->NO_MESSAGE_ID;
     });
 }
 
