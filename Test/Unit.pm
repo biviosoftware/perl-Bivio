@@ -484,7 +484,9 @@ sub _call_class {
     if (my $method = $_CLASS_DISPATCH->{$map}) {
 	return $_PROTO->$method($class->simple_package_name, @$args);
     }
-    return @$args ? $class->new(@$args) : $class;
+    my($method) = $class->can('from_literal_or_die') ? 'from_literal_or_die'
+	: 'new';
+    return @$args ? $class->$method(@$args) : $class;
 }
 
 sub _called_in_closure {
