@@ -7,4 +7,9 @@ Type();
 	'' => [undef],
 	'a@a.a' => 'a',
     ],
+    split_parts => [
+	[undef] => [undef, undef],
+	'' => [undef, undef],
+	'a@b.c' => ['a', 'b.c'],
+    ],
 ];

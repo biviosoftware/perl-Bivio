@@ -68,6 +68,11 @@ sub is_valid {
     return defined($email) && $email =~ /^$_ATOM_ONLY_ADDR$/os ? 1 : 0;
 }
 
+sub split_parts {
+    my(undef, $value) = @_;
+    return $value && $value =~ /^(.+?)\@(.+)$/ ? ($1, $2) : (undef, undef);
+}
+
 sub to_xml {
     my($proto, $value) = @_;
     return !defined($value) || $proto->is_ignore($value) ? ''
