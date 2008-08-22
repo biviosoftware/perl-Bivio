@@ -147,6 +147,7 @@ __PACKAGE__->new({
 	[view_shortcuts1 => 'one'],
 	[my_site_redirect_map => [
 	    [qw(GENERAL ADMINISTRATOR ADM_SUBSTITUTE_USER)],
+	    [qw(guest ADMINISTRATOR USER_PASSWORD)],
 	    [qw(USER ADMINISTRATOR USER_ACCOUNT_EDIT)],
 	]],
     ],
