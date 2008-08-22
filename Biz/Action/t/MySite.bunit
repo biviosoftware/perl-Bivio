@@ -23,6 +23,10 @@ options({comparator => 'nested_contains'});
 	    root => [{
 		task_id => 'ADM_SUBSTITUTE_USER',
 	    }],
+	    guest => [{
+		realm => 'guest',
+		task_id => 'USER_PASSWORD',
+	    }],
 	],
     ],
 ];

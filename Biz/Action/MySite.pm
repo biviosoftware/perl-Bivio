@@ -13,17 +13,19 @@ sub execute {
     my(undef, $req) = @_;
     my($realms) = $req->map_user_realms;
     foreach my $m (@{$_C->get_value('my_site_redirect_map', $req)}) {
-	my($realm_type, $role, $uri) = @$m;
-	$realm_type = $_RT->from_any($realm_type);
+	my($realm, $role, $uri) = @$m;
+	$realm = $_RT->from_any($realm)
+	    if $realm =~ /^[A-Z]/;
 	$role = $_R->from_any($role)
 	    if $role;
 	next unless my $match = (grep(
-	    $_->{'RealmOwner.realm_type'} == $realm_type
+	    (ref($realm) ? $_->{'RealmOwner.realm_type'} == $realm
+		: $realm eq $_->{'RealmOwner.name'})
 	    && (!$role || grep($_ == $role, @{$_->{roles}})),
 	    @$realms,
 	))[0];
 	return {
-	    $realm_type->eq_general ? ()
+	    $match->{'RealmOwner.realm_type'}->eq_general ? ()
 		: (realm => $match->{'RealmOwner.name'}),
 	    query => undef,
 	    ref($uri) eq 'HASH' ? %$uri : (task_id => $uri),
