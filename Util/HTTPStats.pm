@@ -7,6 +7,7 @@ use Bivio::Base 'Bivio::ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = __PACKAGE__->use('Type.Date');
 my($_F) = __PACKAGE__->use('IO.File');
+my($_FN) = __PACKAGE__->use('Type.ForumName');
 my($_AWSTATS) = '/usr/local/awstats/wwwroot/cgi-bin/awstats.pl';
 my($_BUILD_PAGES) = '/usr/local/awstats/tools/awstats_buildstaticpages.pl';
 my($_LOG_MERGER) = '/usr/local/awstats/tools/logresolvemerge.pl';
@@ -44,7 +45,6 @@ sub format_access_log_stream {
 	# add 0 process id if not present (older log files)
 	$line =~ s/(\d+\.\d+\.\d+\.\d+) \-/$1 0 -/;
 	print($line);
-#TODO: skip lines such as internal calls /_mail_receive
     }
     return;
 }
@@ -66,46 +66,126 @@ sub import_history {
 
 sub import_icons {
     my($self) = @_;
-    $self->req->set_realm_and_user('site');
+    $self->usage_error('invalid forum')
+	unless $self->req('auth_realm')->unsafe_get('owner')
+	    && _is_forum($self, $self->req(qw(auth_realm owner name)));
     $_F->do_in_dir($_ICON_DIR, sub {
-        $self->new_other('Bivio::Util::RealmFile')
-	    ->import_tree('HTTPStats/icon');
+        $self->new_other('Bivio::Util::RealmFile')->import_tree('icon');
     });
     return;
 }
 
 sub _create_report {
     my($self, $date, $file_command) = @_;
-#TODO: create report for each facade
-    #foreach my $facade (map($self->use('Bivio::UI::Facade')
-    #    ->get_instance($_), @{$_F->get_all_classes})) {
-    #}
-    my($facade) = $self->use('Bivio::UI::Facade')->get_default;
-    my($uri, $http_host) = $facade->get(qw(uri http_host));
-    $file_command =~ s/<uri>/$uri/ || die('invalid file command');
+    my($root) = $self->use('Bivio::UI::Facade')->get_default->get('uri');
+    $file_command =~ s/<uri>/$root/
+	|| Bivio::Die->die('invalid file command: ', $file_command);
+    my($static_config) = $self->internal_data_section;
     my($data_dir) = $_F->mkdir_p($self->use('IO.Log')
 	->file_name('HTTPStats/data', $self->req));
     $_F->do_in_dir($data_dir, sub {
-	$_F->write(join('.', 'userinfo', $uri, 'txt'), _user_email($self));
+	$_F->write('userinfo.txt', _user_email($self));
     });
-    $self->req->set_realm_and_user('site');
-    my($tmp_dir) = $_F->mkdir_p($_F->temp_file);
-    $_F->do_in_dir($tmp_dir, sub {
-	my($conf_file) = join('.', 'awstats', $uri, 'conf');
-	my($month, $year) = $_D->get_parts($date, qw(month year));
-	$_F->write($conf_file, $self->internal_data_section . <<"EOF");
-HostAliases="REGEX[.*$uri.*]"
-SiteDomain="$http_host"
+
+    foreach my $domain_info (@{_get_domains_from_most_recent_log($self, $root)}) {
+	my($domain, $forum_name) = @$domain_info;
+	$self->print("creating report for $domain in $forum_name\n");
+	$self->req->set_realm_and_user($forum_name);
+	my($tmp_dir) = $_F->mkdir_p($_F->temp_file);
+	$_F->do_in_dir($tmp_dir, sub {
+	    my($conf_file) = join('.', 'awstats', $domain, 'conf');
+	    my($month, $year) = $_D->get_parts($date, qw(month year));
+	    $_F->write($conf_file, $static_config . <<"EOF");
+HostAliases="$domain"
+SiteDomain="$domain"
 LogFile="$file_command | bivio HTTPStats format_access_log_stream |"
 DirData="$data_dir"
 EOF
-	`$_AWSTATS -config=$uri --configdir=.`;
-	`$_BUILD_PAGES -config=$uri --configdir=. -lang=en -dir . -diricons="../icon" -month=$month -year=$year`;
-	unlink($conf_file);
-        $self->new_other('Bivio::Util::RealmFile')->import_tree(
-	    'HTTPStats/' . $_D->to_file_name($date));
-    });
-    $_F->rm_rf($tmp_dir);
+	    `$_AWSTATS -config=$domain --configdir=.`;
+	    `$_BUILD_PAGES -config=$domain --configdir=. -lang=en -dir . -diricons="icon" -month=$month -year=$year`;
+	    unlink($conf_file);
+	    _organize_files($self, $domain, $date);
+	    $self->new_other('Bivio::Util::RealmFile')->import_tree('/');
+	});
+	$_F->rm_rf($tmp_dir);
+    }
+    return;
+}
+
+sub _get_domains_from_most_recent_log {
+    my($self, $root) = @_;
+    my($facade_info) = {
+	map({
+	    my($facade) = $_;
+	    ($facade->get('http_host') => {
+		map(($_ => $facade->get($_)), qw(uri is_default)),
+	    });
+	} (map(Bivio::UI::Facade->get_instance($_),
+	    @{$self->use('Bivio::UI::Facade')->get_all_classes}))),
+    };
+
+    # forum search order:
+    #  <domain>-reports
+    #  <facade uri>-site-reports
+    #  site-reports (for default facade only)
+    my($domains) = [];
+
+    foreach my $domain (`gunzip -c @{[$_CFG->{log_base}]}/@{[$root]}/access_log.1.gz | grep -o -P '^(\\S+)' | sort | uniq`) {
+	chomp($domain);
+	next unless $domain =~ /\./;
+	my($facade) = $facade_info->{$domain};
+
+	foreach my $name ($_FN->join($domain, 'reports'),
+	    $facade
+	        ? ($_FN->join($facade->{uri}, qw(site reports)),
+		    $facade->{is_default}
+		        ? $_FN->join(qw(site reports))
+			: ())
+	        : ()) {
+	    next unless _is_forum($self, $name);
+	    push(@$domains, [$domain, $name]);
+	    last;
+	}
+    }
+    Bivio::IO::Alert->warn('no forums found for domains')
+	unless @$domains;
+    return $domains;
+}
+
+sub _is_forum {
+    my($self, $name) = @_;
+    my($err);
+    ($name, $err) = $_FN->from_literal($name);
+    return $name && $self->model('RealmOwner')->unauth_load({
+	name => $name,
+	realm_type => $self->use('Auth.RealmType')->FORUM,
+    }) ? 1 : 0;
+}
+
+sub _organize_files {
+    my($self, $domain, $date) = @_;
+    # main report: <yyyymmdd.html>
+    # sub reports: detail/yyyymmdd/<name>.html
+    my($d) = $_D->to_file_name($date);
+    $_F->mkdir_p('detail/' . $d);
+
+    foreach my $file (<*.html>) {
+	$file =~ /^awstats\.\Q$domain\E(\.)?(.*)\.html$/
+	    || Bivio::Die->die('unexpected file name: ', $file);
+	my($name) = $2;
+	my($buf) = Bivio::IO::File->read($file);
+
+	if ($name) {
+	    $$buf =~ s,(icon/),../../$1,g;
+	    Bivio::IO::File->write('detail/' . $d . '/' . $name . '.html',
+		$buf);
+	}
+	else {
+	    $$buf =~ s,awstats\.\Q$domain\E\.(\w+)\.html,detail/$d/$1.html,g;
+	    Bivio::IO::File->write($d . '.html', $buf);
+	}
+	unlink($file);
+    }
     return;
 }
 
@@ -114,7 +194,7 @@ sub _parse_args {
     $self->initialize_fully;
     return ($self, $date
 	? $_D->from_literal_or_die($date)
-	: $_D->add_days($_D->local_today, -1));
+	: $_D->set_end_of_month($_D->add_days($_D->local_today, -1)));
 }
 
 sub _user_email {
