@@ -2,24 +2,17 @@
 # $Id$
 package Bivio::Biz::Model::ECCreditCardPaymentForm;
 use strict;
-use base ('Bivio::Biz::Model::ConfirmableForm');
-use Bivio::Biz::Action;
-use Bivio::Type::Date;
-use Bivio::Type::ECCreditCardType;
-use Bivio::Type::ECPaymentMethod;
-use Bivio::Type::ECPaymentStatus;
-use Bivio::Type::ECPointOfSale;
+use Bivio::Base 'Model.ConfirmableForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_D) = 'Bivio::Type::Date';
-my($_DT) = 'Bivio::Type::DateTime';
+my($_D) = __PACKAGE__->use('Type.Date');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub execute_empty {
     my($self) = @_;
     $self->internal_put_field('ECCreditCardPayment.card_number' =>
-	Bivio::Type->get_instance('ECCreditCardNumber')->TEST_NUMBER)
+	$self->use('Type.ECCreditCardNumber')->TEST_NUMBER)
         unless $self->req->is_production;
-
     return unless $self->req('auth_user_id');
     $self->internal_put_field('ECCreditCardPayment.card_name' =>
         $self->req(qw(auth_user display_name)));
@@ -74,19 +67,18 @@ sub process_payment {
     $form->new_other('ECCreditCardPayment')->create({
         %{$form->get_model_properties('ECCreditCardPayment')},
         ec_payment_id => $form->new_other('ECPayment')->create({
-            point_of_sale => Bivio::Type::ECPointOfSale->INTERNET,
+            point_of_sale => $proto->use('Type.ECPointOfSale')->INTERNET,
 	    %$payment,
-            method => Bivio::Type::ECPaymentMethod->CREDIT_CARD,
-            status => Bivio::Type::ECPaymentStatus->TRY_CAPTURE,
+            method => $proto->use('Type.ECPaymentMethod')->CREDIT_CARD,
+            status => $proto->use('Type.ECPaymentStatus')->TRY_CAPTURE,
         })->get('ec_payment_id'),
     });
 
     # pay in the user's realm
-    my($req) = $form->get_request;
+    my($req) = $form->req;
     $req->with_realm($req->get('auth_user'), sub {
         Bivio::Die->catch(sub {
-            Bivio::Biz::Action->get_instance('ECCreditCardProcessor')
-                ->execute_process($req);
+            $req->use('Action.ECCreditCardProcessor')->execute_process($req);
             my($payment) = $req->get('Model.ECPayment');
 
             if ($payment->get('status')->equals_by_name('DECLINED')) {
@@ -132,7 +124,9 @@ sub _possible_double_click {
 	    $result = 1;
 	}
 	return 0;
-    }, 'iterate_start', 'creation_date_time DESC');
+    }, 'iterate_start', 'creation_date_time DESC', {
+	user_id => $form->req('auth_user_id'),
+    });
     return $result;
 }
 
@@ -166,7 +160,7 @@ sub _validate_credit_card_type {
     return if $self->get_field_error('ECCreditCardPayment.card_number');
     $self->internal_put_error('ECCreditCardPayment.card_number' =>
         'CREDITCARD_UNSUPPORTED_TYPE')
-	unless Bivio::Type::ECCreditCardType->is_supported_by_number(
+	unless $self->use('Type.ECCreditCardType')->is_supported_by_number(
 	    $self->get('ECCreditCardPayment.card_number'));
     return;
 }
