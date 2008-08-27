@@ -26,11 +26,24 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.78  2008/08/21 17:57:26  moeller
+  * Bivio::Biz::Model::CRMActionList
+    added load_owner_names() to get list of assignable people
+  * Bivio::Biz::Model::CRMQueryForm
+    added crm_thread_num is_select=0 for owner name list
+    now supports filtering on a tuple value,
+    fixed x_owner_name filter to use CRMActionList for possible names
+    removed dup x_slot1 property
+  * Bivio::Biz::Model::CRMThreadRootList
+    added filter for TupleTag values
+  * Bivio::Mail::Incoming
+    added NO_MESSAGE_ID constant, used if mail has no Message-Id value
+
   Revision 6.77  2008/08/19 17:44:24  moeller
   * Bivio::Biz::Model::ListQueryForm
     get_select_attrs() loads the list dynamically
