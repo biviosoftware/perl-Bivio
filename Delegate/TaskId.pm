@@ -1153,8 +1153,17 @@ sub info_wiki {
 	    View.Wiki->site_view
 	    want_author=1
         )],
+	[qw(
+ 	    FORUM_WIKI_VERSIONS_LIST
+ 	    122
+ 	    FORUM
+ 	    DATA_READ&DATA_WRITE
+	    Action.WikiView->execute_load_history
+	    Model.RealmFileVersionsList->execute_load_all
+ 	    View.Wiki->version_list
+        )],
     ];
-#122-129 free
+#123-129 free
 }
 
 sub info_xapian {
