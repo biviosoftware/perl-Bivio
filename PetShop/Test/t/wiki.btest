@@ -12,15 +12,18 @@ $uri = get_uri();
 follow_link('PrivatePage');
 submit_form({
     public => 0,
-    anon => 'go back to the ^StartPage. ' . $search_key,
+    anon => 'v1: go back to the ^StartPage. ' . $search_key,
 });
 follow_link('edit');
-submit_form('OK');
+submit_form({
+    public => 0,
+    anon => 'v2: go back to the ^StartPage. ' . $search_key,
+});
 follow_link('StartPage');
 submit_form({_anon => $search_key});
 my($search_page) = get_uri();
 verify_text('Here is our');
-verify_text('go back to the');
+verify_text('v2: go back to the');
 do_logout();
 visit_uri($search_page);
 verify_text('Here is our');
@@ -36,3 +39,31 @@ verify_no_text('go back to the');
 visit_uri($uri);
 test_deviance('Forbidden');
 follow_link('PrivatePage');
+test_conformance();
+login_as('root');
+visit_uri($uri);
+follow_link('PrivatePage');
+follow_link(qr{edit this page}i);
+submit_form({
+    public => 0,
+    anon => 'v3: go back to the ^StartPage. ' . $search_key,
+});
+visit_uri($search_page);
+follow_link(qr{go back to the}i);
+verify_text(qr{go back to the}i);
+follow_link('Page history');
+follow_link('back to current');
+follow_link(qr{edit this page}i);
+submit_form({
+    public => 0,
+    anon => 'v4: go back to the ^StartPage. ' . $search_key,
+});
+follow_link('Page history');
+follow_link(qr{^2$});
+verify_text(qr{v2: go back to the}i);
+verify_no_text(qr{edit this page}i);
+follow_link('Page history');
+verify_text('back to current');
+follow_link(qr{^3$});
+verify_text(qr{v3: go back to the}i);
+verify_no_text(qr{edit this page}i);
