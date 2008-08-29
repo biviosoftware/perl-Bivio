@@ -37,6 +37,11 @@ sub internal_initialize {
 	    'RealmFile.folder_id',
 	    'RealmFile.is_folder',
 	    {
+		name => 'file_name',
+		type => 'FilePath',
+		constraint => 'NONE',
+	    },
+	    {
 		name => 'revision_number',
 		type => 'FilePath',
 		constraint => 'NONE',
@@ -47,8 +52,8 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    $row->{revision_number} = $self->use('Type.FileName')
-	->get_tail($row->{'RealmFile.path'}) =~ /.*\;(\d*).*/
+    $row->{file_name} = $_FP->get_tail($row->{'RealmFile.path'});
+    $row->{revision_number} = $row->{file_name} =~ /.*\;((\d+)(\.\d+)?).*/
 	? $1
 	: 'current';
     return 1;
