@@ -1076,6 +1076,7 @@ sub _cfg_wiki {
 		},
 	    ),
 	    [FORUM_WIKI_NOT_FOUND => undef],
+	    [FORUM_WIKI_VERSIONS_LIST => '?/wiki-history/*'],
 	    [HELP => '?/help/*'],
 	    [HELP_NOT_FOUND => undef],
 	    [SITE_WIKI_VIEW => 'bp/*'],
@@ -1127,6 +1128,7 @@ sub _cfg_wiki {
 		HELP_NOT_FOUND => 'Help Page Not Found',
 		HELP => 'Help',
 		FORUM_WIKI_EDIT => 'Edit Wiki Page',
+		FORUM_WIKI_VERSIONS_LIST => 'Wiki Page History',
 		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
 		SITE_WIKI_VIEW => '',
 		forum_wiki_data => 'Files',
@@ -1134,6 +1136,8 @@ sub _cfg_wiki {
 	    ['task_menu.title' => [
 		FORUM_WIKI_EDIT => 'Add new page',
 		FORUM_WIKI_EDIT_PAGE => 'Edit this page',
+		FORUM_WIKI_VERSIONS_LIST => 'Page history',
+		FORUM_WIKI_CURRENT => 'back to current',
 	    ]],
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
@@ -1152,8 +1156,13 @@ sub _cfg_wiki {
 	                task_id => 'FORUM_WIKI_EDIT',
 		        path_info => [qw(Action.WikiView name)],
 		        label => 'forum_wiki_edit_page',
+		        control => [qw(Action.WikiView can_edit)],
 		    },
 		    'FORUM_WIKI_EDIT',
+                    {
+	                task_id => 'FORUM_WIKI_VERSIONS_LIST',
+		        path_info => [qw(Action.WikiView wiki_args path)],
+		    },
 		]);},
 		wiki_view_topic => q{Simple(['Action.WikiView', 'title']);},
 		xhtml_dock_left_standard => q{If(['auth_realm', 'type', '->eq_forum'],
