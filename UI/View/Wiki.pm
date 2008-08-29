@@ -64,6 +64,36 @@ sub site_view {
     return shift->view(@_);
 }
 
+sub version_list {
+    my($self) = @_;
+    view_put(xhtml_title => vs_text_as_prose('wiki_view_topic'));
+    $self->internal_put_base_attr(tools => TaskMenu([
+	{
+	    task_id => 'FORUM_WIKI_VIEW',
+	    label => 'forum_wiki_current',
+	    path_info => [qw(Action.WikiView title)],
+	},
+    ]));
+    return shift->internal_body(vs_paged_list(RealmFileVersionsList => [
+	['RealmFile.path', {
+	    column_order_by => ['RealmFile.path_lc'],
+	    column_widget => Link(
+		Join([
+		    Image(vs_text('RealmFileList.leaf_node')),
+		    String(['revision_number']),
+		]),
+		URI({
+		    task_id => 'FORUM_WIKI_VIEW',
+		    path_info => ['file_name'],
+		}),
+	    ),
+	}],
+	'RealmFile.modified_date_time',
+	'RealmOwner_2.display_name',
+	'RealmFileLock.comment',
+    ])->put(want_sorting => 0));
+}
+
 sub view {
     my($self) = shift;
     view_put(
