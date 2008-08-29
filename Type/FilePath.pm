@@ -147,6 +147,7 @@ sub is_absolute {
 sub to_absolute {
     my($proto, $value, $is_public) = @_;
     return $proto->join(
+	$value && $value =~ /;\d+/ ? $proto->VERSIONS_FOLDER : '',
 	$is_public ? $proto->PUBLIC_FOLDER : $proto->PRIVATE_FOLDER,
 	$value,
     );

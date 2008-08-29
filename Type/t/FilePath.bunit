@@ -79,6 +79,12 @@ Type();
 	    '/a' => DIE(),
 	    [undef] => DIE(),
 	],
+	to_absolute => [
+	    ['foo.txt', 0] => 'foo.txt',
+	    ['bar.txt', 1] => '/Public/bar.txt',
+	    ['foo;1.txt', 0] => '/Archived/foo;1.txt',
+	    ['bar;1.txt', 1] => '/Archived/Public/bar;1.txt',
+	],
     ],
 ];
 
