@@ -13,6 +13,8 @@ Type();
 	    MIC9 => 'MIC9',
 	    MIC_9 => 'MIC_9',
 	    'MIC 9' => 'MIC_9',
+	    'MIC9;1' => 'MIC9;1',
+	    'MIC9;0.1' => 'MIC9;0.1',
 	    '.' => WIKI_NAME(),
 	    ' ' => WIKI_NAME(),
 	    '_' => WIKI_NAME(),
@@ -23,6 +25,7 @@ Type();
 	    'a' => '/Wiki/a',
 	    '' => '/Wiki',
 	    [qw(a 1)] => '/Public/Wiki/a',
+	    [qw(a;1 1)] => '/Archived/Public/Wiki/a;1',
 	],
 	is_absolute => [
 	    [undef] => 0,
