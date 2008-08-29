@@ -26,11 +26,34 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.79  2008/08/27 22:19:03  dobbs
+  * Bivio::Biz::Action::MySite
+    If my_site_redirect_map allows you to set realm explicitly by using a
+    lower case name so can get finer control
+  * Bivio::Biz::Model::ECCreditCardPaymentForm
+    use current user_id when looking for double-click,
+    cleaned up imports
+  * Bivio::PetShop::Facade::PetShop
+    test for MySite.bunit
+  * Bivio::Test::Unit
+    fix bug in class dispatch for Auth_Role('MEMBER') case
+  * Bivio::Type::Email
+    added split_parts
+  * Bivio::Util::HTTPD
+    use Host header value in LogFormat because we don't set ServerName explicitly
+  * Bivio::Util::HTTPStats
+    gets domain list from latest log file, creates reports in one of the
+    following forums:
+      <domain>-reports
+      <facade uri>-site-reports
+      site-reports (default only)
+    organizes results into yyyymmdd.html and defailt/yyyymmdd/<subreport>.html
+
   Revision 6.78  2008/08/21 17:57:26  moeller
   * Bivio::Biz::Model::CRMActionList
     added load_owner_names() to get list of assignable people
