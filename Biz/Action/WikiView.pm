@@ -10,6 +10,7 @@ my($_A) = __PACKAGE__->use('IO.Alert');
 my($_ARF) = __PACKAGE__->use('Action.RealmFile');
 my($_E) = __PACKAGE__->use('Model.Email');
 my($_FN) = __PACKAGE__->use('Type.FileName');
+my($_FP) = __PACKAGE__->use('Type.FilePath');
 my($_RO) = __PACKAGE__->use('Model.RealmOwner');
 my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
 my($_WN) = __PACKAGE__->use('Type.WikiName');
@@ -29,6 +30,22 @@ sub execute {
 sub execute_help {
     my($proto, $req) = @_;
     return $proto->execute($req, $_C->get_value('help_wiki_realm_id', $req));
+}
+
+sub execute_load_history {
+    my($proto, $req, $realm_id, $task_id) = @_;
+    $realm_id ||= $req->get('auth_id');
+    $task_id ||= $req->get('task_id');
+    my($name) = $_FP->get_tail($req->unsafe_get('path_info'));
+    $name =~ s{;\d+$}{};
+    $proto->new()->put_on_request($req)->put(
+	title => $name,
+    );
+    my($path) = $req->get('path_info');
+    $path =~ s{^/Archived}{};
+    $path =~ s{;\d+(\.\d+)?$}{};
+    $req->put(path_info => $path);
+    return;
 }
 
 sub execute_not_found {
@@ -61,11 +78,14 @@ sub execute_prepare_html {
     }
     $name =~ s{^/+}{};
     unless ($_WN->is_valid($name)) {
+    #XXX: URIs like '/wiki/bogus.txt' redirect to a error page with URI like
+    # '/edit-wiki/WikiData/bogus.txt?ack=FORUM_WIKI_NOT_FOUND' -- is this a bug?
 	$req->put(path_info => $_WDN->to_absolute($name));
 	return $_ARF->access_controlled_execute($req);
     }
     my($self) = $proto->new->put_on_request($req)->put(
 	name => $name,
+	can_edit => ($name !~ /;/),
 	exists => 0,
     );
     my($wa) = $proto->use('XHTMLWidget.WikiText')
