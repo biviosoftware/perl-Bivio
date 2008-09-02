@@ -203,7 +203,7 @@ sub _user_email {
     $self->use('Bivio::SQL::Connection')->do_execute(sub {
         my($row) = @_;
 	$res .= join("\t", @$row) . "\n";
-    }, <<'EOF', [$self->use('Type.Location')->HOME->as_sql_param]);
+    }, <<'EOF', [$self->use('Type.Location')->get_default->as_sql_param]);
         SELECT realm_id, email
 	FROM email_t
 	WHERE location = ?
