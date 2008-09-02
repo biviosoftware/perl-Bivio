@@ -27,22 +27,9 @@ sub WANT_SORTED {
     return 0;
 }
 
-sub append_uniquely {
+sub append {
     my($self, $value) = @_;
-    return $self->new([
-	@{$self->as_array},
-	grep(!$self->contains($_), @{$self->new($value)->as_array}),
-    ]);
-}
-
-sub new {
-    my($proto, $value) = @_;
-    return $proto->from_literal_or_die($value)
-	unless ref($value);
-    my($self) = shift->SUPER::new;
-    $self->[$_IDI] = ref($value) eq 'ARRAY'
-	? _clean_copy($proto, $value) : $value->as_array;
-    return $self;
+    return $self->new([@{$self->as_array}, @{$self->new($value)->as_array}]);
 }
 
 sub as_array {
@@ -148,6 +135,16 @@ sub is_specified {
 sub map_iterate {
     my($self, $op) = @_;
     return [map($op->($_), @{$self->as_array})];
+}
+
+sub new {
+    my($proto, $value) = @_;
+    return $proto->from_literal_or_die($value)
+	unless ref($value);
+    my($self) = shift->SUPER::new;
+    $self->[$_IDI] = ref($value) eq 'ARRAY'
+	? _clean_copy($proto, $value) : $value->as_array;
+    return $self;
 }
 
 sub sort_unique {

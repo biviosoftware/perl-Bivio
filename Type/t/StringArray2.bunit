@@ -19,9 +19,9 @@ my($x) = 0;
 	    [undef] => 0,
 	],
 	is_specified => 1,
-	append_uniquely => [
-	    '2,3' => [StringArray('3,1,2')],
-	    '2,3,4' => [StringArray('3,1,2,4')],
+	append => [
+	    2 => [StringArray('3,1,2,2')],
+	    '' => [StringArray('3,1,2')],
 	],
 	sort_unique => [
 	    [] => [[qw(1 2 3)]],
