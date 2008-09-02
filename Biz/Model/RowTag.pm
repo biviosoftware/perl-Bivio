@@ -49,12 +49,13 @@ sub update {
 
 sub _do {
     my($method, $self, $model_or_id, $key, $value) = @_;
-    unless ($model_or_id = _primary_id($model_or_id)) {
+    my($id) = _primary_id($model_or_id);
+    unless ($id) {
 	($key, $value) = ($model_or_id, $key);
-	$model_or_id = $self->req('auth_id');
+	$id = $self->req('auth_id');
     }
     return $self->$method({
-	primary_id => $model_or_id,
+	primary_id => $id,
 	key => $_RTK->from_any($key),
 	$method =~ /load/ ? () : (value => $value),
     });

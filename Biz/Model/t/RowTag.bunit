@@ -46,7 +46,8 @@ req()->set_realm('demo');
 	[] => [undef],
     ],
     replace_value => [
-	[req(qw(auth_realm owner)), ERROR_DETAIL => 'x4'] => not_die(),
+	[req(qw(auth_realm owner)), ERROR_DETAIL => 'x5'] => not_die(),
+	[ERROR_DETAIL => 'x4'] => not_die(),
     ],
     get_value => [
 	[] => 'x4',
