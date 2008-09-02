@@ -27,6 +27,14 @@ sub WANT_SORTED {
     return 0;
 }
 
+sub append_uniquely {
+    my($self, $value) = @_;
+    return $self->new([
+	@{$self->as_array},
+	grep(!$self->contains($_), @{$self->new($value)->as_array}),
+    ]);
+}
+
 sub new {
     my($proto, $value) = @_;
     return $proto->from_literal_or_die($value)
@@ -66,6 +74,15 @@ sub compare_defined {
 	    if $x;
     }
     return @$left <=> @$right;
+}
+
+sub contains {
+    my($self, $value) = @_;
+    b_die($value, ': must be a string')
+	if ref($value);
+    b_die('value must be defined')
+	unless defined($value);
+    return grep($value eq $_, @{$self->as_array}) ? 1 : 0;
 }
 
 sub do_iterate {
@@ -134,7 +151,8 @@ sub map_iterate {
 }
 
 sub sort_unique {
-    my(undef, $value) = @_;
+    my($self, $value) = @_;
+    $value ||= $self->as_array;
     return [sort(keys(%{+{map(($_ => undef), @$value)}}))];
 }
 
