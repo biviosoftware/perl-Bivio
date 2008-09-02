@@ -12,6 +12,7 @@ my($_AWSTATS) = '/usr/local/awstats/wwwroot/cgi-bin/awstats.pl';
 my($_BUILD_PAGES) = '/usr/local/awstats/tools/awstats_buildstaticpages.pl';
 my($_LOG_MERGER) = '/usr/local/awstats/tools/logresolvemerge.pl';
 my($_ICON_DIR) = '/usr/local/awstats/wwwroot/icon/';
+my($_V3) = __PACKAGE__->use('IO.Config')->if_version(3);
 Bivio::IO::Config->register(my $_CFG = {
     log_base => '/var/log',
 });
@@ -77,6 +78,7 @@ sub import_icons {
 
 sub _create_report {
     my($self, $date, $file_command) = @_;
+    return unless $_V3;
     my($root) = $self->use('Bivio::UI::Facade')->get_default->get('uri');
     $file_command =~ s/<uri>/$root/
 	|| Bivio::Die->die('invalid file command: ', $file_command);
