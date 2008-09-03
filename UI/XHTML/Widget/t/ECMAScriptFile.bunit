@@ -1,0 +1,6 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    ['/f/foo.js'] => '<script src="/f/foo.js" type="text/javascript"></script>',
+];
