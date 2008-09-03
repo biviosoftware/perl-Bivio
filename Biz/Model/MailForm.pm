@@ -25,7 +25,7 @@ sub execute_cancel {
 
 sub execute_empty {
     my($self) = @_;
-    my($m) = $self->req->unsafe_get_nested('Model.RealmMail');
+    my($m) = $self->ureq('Model.RealmMail');
     my($in) = $m && $_I->new($m);
     $self->internal_put_field(subject => $in ? $in->get_reply_subject : '');
     my($to, $cc) =  ($in || $_I)->get_reply_email_arrays(
@@ -34,8 +34,7 @@ sub execute_empty {
 	$self->get_realm_emails,
 	$self->req,
     );
-    $self->internal_put_field(to => $to);
-    $self->internal_put_field(cc => $cc);
+    $self->internal_put_field(to => $to, cc => $cc);
     return;
 }
 
