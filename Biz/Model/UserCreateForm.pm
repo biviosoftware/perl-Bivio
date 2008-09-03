@@ -11,11 +11,9 @@ my($_A) = __PACKAGE__->use('IO.Alert');
 
 sub execute_ok {
     my($self) = @_;
-    # Create the RealmOwner, User, Email, and RealmUser models.
-    # Logs in as the new user.
-    Bivio::Biz::Model->get_instance('UserLoginForm')->execute(
-	$self->get_request,
-	{realm_owner => ($self->internal_create_models)[0]});
+    my($r) = $self->internal_create_models;
+    $self->new_other('UserLoginForm')->process({realm_owner => $r})
+	unless $self->unsafe_get('without_login');
     return;
 }
 
@@ -72,16 +70,11 @@ sub internal_initialize {
 		constraint => 'NOT_NULL',
 	    },
 	],
-	other => [
-	    {
-		name => 'RealmOwner.name',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'User.user_id',
-		constraint => 'NONE',
-	    },
-	],
+	$self->field_decl(other => [
+	    'RealmOwner.name',
+	    'User.user_id',
+	    [qw(without_login Boolean)],
+	]),
     });
 }
 
