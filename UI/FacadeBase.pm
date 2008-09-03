@@ -1150,8 +1150,18 @@ sub _cfg_wiki {
 		help_wiki_footer => '',
 		help_wiki_header => 'Help',
 		help_wiki_open => 'Help',
-		wiki_view_byline => q{If(['->can_user_execute_task', 'FORUM_WIKI_EDIT'], Join(['edited ', DateTime(['Action.WikiView', 'modified_date_time']), ' by ', MailTo(['Action.WikiView', 'author'])]));},
-		wiki_view_tools => qq{TaskMenu([
+		wiki_view_topic => q{Simple(['Action.WikiView', 'title']);},
+		wiki_view_byline_base => q{If(
+		    ['->can_user_execute_task', 'FORUM_WIKI_EDIT'],
+		    Join([
+		        'edited ',
+		        DateTime(['Action.WikiView', 'modified_date_time']),
+		        ' by ',
+		        MailTo(['Action.WikiView', 'author']),
+		    ])
+		);},
+		wiki_view_byline => q{vs_text_as_prose('wiki_view_byline_base');},
+		wiki_view_tools_base => qq{TaskMenu([
                     {
 	                task_id => 'FORUM_WIKI_EDIT',
 		        path_info => [qw(Action.WikiView name)],
@@ -1164,7 +1174,7 @@ sub _cfg_wiki {
 		        path_info => [qw(Action.WikiView wiki_args path)],
 		    },
 		]);},
-		wiki_view_topic => q{Simple(['Action.WikiView', 'title']);},
+		wiki_view_tools => q{vs_text_as_prose('wiki_view_tools_base');},
 		xhtml_dock_left_standard => q{If(['auth_realm', 'type', '->eq_forum'],
 	    TaskMenu([
 		'FORUM_BLOG_LIST',
