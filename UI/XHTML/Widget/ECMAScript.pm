@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::HTML::Widget::ECMAScript;
+package Bivio::UI::XHTML::Widget::ECMAScript;
 use strict;
 use Bivio::Base 'HTMLWidget.Tag';
 

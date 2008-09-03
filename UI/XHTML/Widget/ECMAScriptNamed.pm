@@ -1,8 +1,8 @@
 # Copyright (c) 2008 bivio Software Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::HTML::Widget::ECMAScriptNamed;
+package Bivio::UI::XHTML::Widget::ECMAScriptNamed;
 use strict;
-use Bivio::Base 'HTMLWidget.ECMAScript';
+use Bivio::Base 'XHTMLWidget.ECMAScript';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
