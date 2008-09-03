@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::StringArray;
 use strict;
@@ -84,6 +84,14 @@ sub do_iterate {
 sub equals {
     my($self, $that) = @_;
     return $self->is_equal($self, $that);
+}
+
+sub exclude {
+    my($self, $value) = @_;
+    my($exclude) = $self->from_literal_or_die($value, 1);
+    return $self
+	unless $exclude;
+    return $self->new([grep(!$exclude->contains($_), @{$self->as_array})]);
 }
 
 sub from_literal {
