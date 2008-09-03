@@ -23,8 +23,8 @@ usage: b HTTPStats [options] command [args..]
 commands
     daily_report [date] -- create a report using access_log.1.gz
     format_access_log_stream -- read stream from STDIN reformat to STDOUT
-    import_icons -- imports awstats icons into RealmFile
     import_history [date] -- import multiple access_logs
+    init_report_forum name -- create report forum and import icons
 EOF
 }
 
@@ -65,20 +65,27 @@ sub import_history {
     return;
 }
 
-sub import_icons {
-    my($self) = @_;
-    $self->usage_error('invalid forum')
-	unless $self->req('auth_realm')->unsafe_get('owner')
-	    && _is_forum($self, $self->req(qw(auth_realm owner name)));
-    $_F->do_in_dir($_ICON_DIR, sub {
-        $self->new_other('Bivio::Util::RealmFile')->import_tree('icon');
+sub init_report_forum {
+    my($self, $name) = @_;
+    $self->usage_error('missing forum name') unless $name;
+    $self->usage_error('missing user') unless $self->req('auth_user_id');
+    my($parent) = $name =~ /(.*)@{[$_FN->SEP_CHAR_REGEXP]}/;
+    $self->usage_error('target forum missing parent') unless $parent;
+    $self->req->with_realm($parent, sub {
+        $self->model('ForumForm', {
+	   'RealmOwner.display_name' => 'Web Site Reports',
+	   'RealmOwner.name' => $name,
+	});
+        $_F->do_in_dir($_ICON_DIR, sub {
+            $self->new_other('Bivio::Util::RealmFile')->import_tree('icon');
+	});
+	return;
     });
     return;
 }
 
 sub _create_report {
     my($self, $date, $file_command) = @_;
-    return unless $_V3;
     my($root) = $self->use('Bivio::UI::Facade')->get_default->get('uri');
     $file_command =~ s/<uri>/$root/
 	|| Bivio::Die->die('invalid file command: ', $file_command);
@@ -193,6 +200,8 @@ sub _organize_files {
 
 sub _parse_args {
     my($self, $date) = @_;
+    $self->usage_error('requires Bivio::IO::Config version 3 or greater')
+	unless $_V3;
     $self->initialize_fully;
     return ($self, $date
 	? $_D->from_literal_or_die($date)
