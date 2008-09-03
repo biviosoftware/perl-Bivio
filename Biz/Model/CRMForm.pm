@@ -14,10 +14,6 @@ my($_TAG_ID) = 'b_ticket.CRMThread.thread_root_id';
 #TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
-sub DEFAULT_CRM_THREAD_STATUS {
-    return $_CTS->CLOSED;
-}
-
 sub TUPLE_TAG_IDS {
     return [$_TAG_ID];
 }
@@ -42,12 +38,12 @@ sub execute_empty {
 	    action_id => $cal->status_to_id(
 		$discuss
                     ? $ct->get('crm_thread_status')
-                    : $self->DEFAULT_CRM_THREAD_STATUS,
+                    : $self->internal_empty_status_when_exists,
 	    ));
 	return;
     }, sub {
 	$self->internal_put_field(action_id => shift->status_to_id(
-	    $_CTS->OPEN));
+	    $self->internal_empty_status_when_new));
     });
     $self->delegate_method($_TTF, @_);
     return;
@@ -61,6 +57,7 @@ sub execute_ok {
     my($cal) = $self->req('Model.CRMActionList');
     my($id) = $self->get('action_id');
     my($status) = $cal->id_to_status($id);
+    my($cid) = $self->unsafe_get('CRMThread.customer_realm_id');
     $ct->update({
 	crm_thread_status => $status,
 	owner_user_id => $cal->id_to_owner($id),
@@ -68,6 +65,7 @@ sub execute_ok {
 	lock_user_id => $status->eq_locked ? $self->req('auth_user_id')
 	    : undef,
 	subject => $self->get('subject'),
+	$cid ? (customer_realm_id => $cid) : (),
     });
     $self->internal_put_field(
 	$_TAG_ID => $ct->get('thread_root_id'));
@@ -77,6 +75,14 @@ sub execute_ok {
 
 sub get_field_info {
     return shift->delegate_method($_TTF, @_);
+}
+
+sub internal_empty_status_when_exists {
+    return $_CTS->CLOSED;
+}
+
+sub internal_empty_status_when_new {
+    return $_CTS->OPEN;
 }
 
 sub internal_format_from {
