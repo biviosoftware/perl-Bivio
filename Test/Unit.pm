@@ -164,6 +164,39 @@ sub builtin_config {
     return;
 }
 
+sub builtin_create_mail {
+    my($self, $from_email, $to_email, $headers, $body) = @_;
+    my($r) = $self->builtin_random_string;
+    my($req) = $self->builtin_req;
+    my($o) = b_use('Mail.Outgoing')->new;
+    $o->set_recipients($to_email, $req);
+    $o->set_header(To => $to_email);
+    $headers = {
+	Subject => "subj-$r",
+	$headers ? %$headers : (),
+    };
+    foreach my $k (sort(keys(%$headers))) {
+	$o->set_header($k, $headers->{$k});
+    }
+    $o->set_body($body || "Any unique $r body\n");
+    $o->add_missing_headers($req, $from_email);
+    my($ea) = $self->builtin_model('EmailAlias');
+    my($e) = $self->builtin_model('Email');
+    my($te) = b_use('Type.Email');
+    my($rid);
+    $rid = $self->builtin_realm_id($to_email)
+	if $ea->unsafe_load({incoming => $to_email})
+	&& !$te->is_valid($to_email = $ea->get('outgoing'));
+    $rid = $e->unauth_load({email => $to_email}) ? $e->get('realm_id')
+	: $self->builtin_realm_id($te->get_local_part($to_email))
+	unless $rid;
+    $self->builtin_req->with_realm($rid, sub {
+	$self->builtin_model('RealmMail')->create_from_rfc822(\($o->as_string));
+	return;
+    });
+    return $self->builtin_req('Model.RealmMail');
+}
+
 sub builtin_create_user {
     my($self, $user) = @_;
     # Generate a btest, and sets realm and user to this user.  Deletes any user first.
