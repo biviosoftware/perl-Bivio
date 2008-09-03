@@ -26,11 +26,27 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.80  2008/08/29 05:53:10  aviggio
+  * Bivio::Biz::Action::WikiView
+    add support for wiki history display
+  * Bivio::Biz::Model::RealmFileVersionsList
+    added file_name
+  * Bivio::Delegate::TaskId
+    added FORUM_WIKI_VERSIONS_LIST task
+  * Bivio::Type::FilePath
+    to_absolute() supports archived file paths
+  * Bivio::Type::WikiName
+    support archived wiki names
+  * Bivio::UI::FacadeBase
+    add wiki history elements
+  * Bivio::UI::View::Wiki
+    version_list() added
+
   Revision 6.79  2008/08/27 22:19:03  dobbs
   * Bivio::Biz::Action::MySite
     If my_site_redirect_map allows you to set realm explicitly by using a
