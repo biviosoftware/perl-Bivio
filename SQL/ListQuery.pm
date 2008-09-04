@@ -210,9 +210,9 @@ sub as_string {
 	    'ListQuery[',
 	    map({
 		my($c, $n) = ($_, $_QUERY_TO_FIELDS{$_});
-		my($v) = $self->unsafe_get($n);
+		my($v) = $self->unsafe_get($n || $c);
 		!defined($v) ? () : (($sep++ ? '&' : ''), $c, '=', $v);
-	    } sort(keys(%_QUERY_TO_FIELDS))),
+	    } sort(keys(%_QUERY_TO_FIELDS), 'auth_id')),
 	    ']',
 	);
 }
