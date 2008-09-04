@@ -123,7 +123,7 @@ sub pre_compile {
 
 sub send_form {
     my($self, $extra_fields, $buttons) = @_;
-    $buttons ||= '*';
+    $buttons ||= vs_simple_form_submit();
     return $self->internal_body(
 	DIV_msg_compose(Join([
 	    vs_simple_form(_name($self, 'XxForm') => [
