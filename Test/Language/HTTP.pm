@@ -72,6 +72,14 @@ sub clear_extra_query_params {
     return;
 }
 
+sub clear_local_mail {
+    _map_mail_dir(sub {
+        unlink(shift);
+	return;
+    });
+    return;
+}
+
 sub debug_print {
     my($self, $what) = @_;
     # Prints 'Forms' or 'Links' to STDOUT.
@@ -142,6 +150,14 @@ sub extra_query_params {
     return;
 }
 
+sub extract_uri_from_local_mail {
+    my($self, $email) = @_;
+    my($m) = $self->verify_local_mail($email);
+    b_die('missing uri in mail: ', $m)
+	unless $m =~ /(https?:\S+)/;
+    return $1;
+}
+
 sub file_field {
     my($self, $name, $content) = @_;
     # Returns a value to be used by submit_form() with I<file_name> or I<name> as the
@@ -150,6 +166,13 @@ sub file_field {
     return [$name, $name]
 	unless defined($content);
     return [$_F->write($self->tmp_file($name), $content), $name];
+}
+
+sub find_page_with_text {
+    my($self, $pattern) = @_;
+    $self->follow_link(qr{^next$}i)
+	until $self->text_exists($pattern);
+    return;
 }
 
 sub find_table_row {
@@ -352,10 +375,7 @@ sub handle_setup {
     my($self) = shift;
     # Clears files in I<mail_dir>.
     $self->SUPER::handle_setup(@_);
-    _map_mail_dir(sub {
-        unlink(shift);
-	return;
-    });
+    $self->clear_local_mail;
     _wait_for_server($self, $_CFG->{server_startup_timeout})
 	if $_CFG->{server_startup_timeout} && ref($self);
     return;
@@ -451,6 +471,21 @@ sub reload_page {
     # If defined, uses given uri, otherwise uses get_uri()
     defined($uri) ? $self->visit_uri($uri) :
 	$self->visit_uri($self->get_uri());
+    return;
+}
+
+sub reset_password {
+    my($self, $email, $password) = @_;
+    $password ||= $self->default_password;
+    $self->do_logout;
+    $self->follow_link('login', 'forgot');
+    $self->clear_local_mail;
+    $self->submit_form({email => $email});
+    $self->visit_uri($self->extract_uri_from_local_mail($email));
+    $self->submit_form({
+        qr{^new}i => $password,
+	qr{^re-enter}i => $password,
+    });
     return;
 }
 
@@ -570,9 +605,8 @@ sub text_exists {
     my($self, $pattern) = @_;
     # Returns true if I<pattern> exists in response (must be text/html),
     # else false.
-    unless (ref($pattern) && ref($pattern) eq 'Regexp') {
-	$pattern = qr/\Q$pattern/;
-    }
+    $pattern = qr/\Q$pattern/
+	unless ref($pattern) && ref($pattern) eq 'Regexp';
     return $self->get_content =~ $pattern ? 1 : 0;
 }
 
