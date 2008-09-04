@@ -43,12 +43,14 @@ sub save_label {
     }
     _trace($proto->QUERY_KEY, '=', $label) if $_TRACE;
     if (ref($query) eq 'HASH') {
-	$query->{$proto->QUERY_KEY} = $label;
+	# Don't override if already set on passed in query
+	$query->{$proto->QUERY_KEY} ||= $label;
 	return;
     }
     my($x) = $req->unsafe_get('form_model');
     $x &&= $x->unsafe_get_context;
     foreach my $y ($x, $req) {
+	# Always override in context and request
 	($y->unsafe_get('query') || $y->put(query => {})->get('query'))
 	    ->{$proto->QUERY_KEY} = $label
 	    if $y;
