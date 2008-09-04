@@ -5,8 +5,8 @@ use strict;
 use Bivio::Base 'Type.EnumSet';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-__PACKAGE__->initialize;
 my($_ECPS) = b_use('Type.ECPaymentStatus');
+__PACKAGE__->initialize;
 
 sub get_enum_type {
     return $_ECPS
