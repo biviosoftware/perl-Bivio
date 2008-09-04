@@ -95,9 +95,14 @@ sub owner_email_to_name {
 
 sub status_to_id {
     my(undef, $status) = @_;
+    return -$status->as_int;
+}
+
+sub status_to_id_in_list {
+    my($self, $status) = @_;
     $status = $status->OPEN
 	if $status->eq_new;
-    return -$status->as_int;
+    return $self->status_to_id($status);
 }
 
 sub validate_id {
