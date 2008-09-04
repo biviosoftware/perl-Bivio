@@ -40,7 +40,7 @@ sub initialize {
 		    }),
 		    Select => Select({
 			field => $field,
-			list_id_field => 'choice',
+			list_id_field => 'key',
 			list_display_field => 'choice',
 			choices => vs_form_method_call(
 			    $self, 'tuple_tag_slot_choice_select_list'),
