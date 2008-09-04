@@ -11,7 +11,7 @@ options({
     ],
     geocode_to_xml => [
 	[{AdminArea1 => 'US', AdminArea3 => 'CO', AdminArea5 => 'Boulder', Street => '2369 Spotswood Pl'}] => qr{Lat>40.051986<},
-	803040994 => qr{Lat>40.052300<},
+	803040994 => qr{Lat>40.052200<},
 	'2369 Spotswood Place, boulder, co' => qr{Lat>40.051986<},
 	London => from_literal_error('TOO_MANY'),
 	'1313 Mockingbird lane' => from_literal_error('NOT_FOUND'),
@@ -29,7 +29,7 @@ options({
 	    AdminArea5 => 'Boulder',
 	    PostalCode => '80304-0994',
 	    LatLng => {
-		Lat => '40.052300',
+		Lat => '40.052200',
 		Lng => '-105.266000',
 	    },
 	}]
@@ -43,7 +43,7 @@ options({
 	    Street => '2369 Spotswood Pl',
 	    PostalCode => '80304-0994',
 	    LatLng => {
-		Lat => '40.052300',
+		Lat => '40.052200',
 		Lng => '-105.266000',
 	    },
 	}] => [{
