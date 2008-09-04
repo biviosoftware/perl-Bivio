@@ -34,4 +34,8 @@ req()->set_realm_and_user(qw(crm_forum crm_tech1));
 	'' => [undef],
 	'a@a.a' => 'a',
     ],
+    status_to_id => [
+	[CRMThreadStatus('NEW')] => -3,
+	[CRMThreadStatus('OPEN')] => -4,
+    ],
 ];
