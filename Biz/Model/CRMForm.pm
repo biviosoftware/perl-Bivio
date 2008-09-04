@@ -33,17 +33,15 @@ sub execute_empty {
 	_acquire_lock($ct)
 	    unless $discuss;
 	$self->internal_put_field(
-	    subject => $ct->clean_subject($self->get('subject')));
-	$self->internal_put_field(
-	    action_id => $cal->status_to_id(
-		$discuss
-                    ? $ct->get('crm_thread_status')
+	    subject => $ct->clean_subject($self->get('subject')),
+	    action_id => $cal->status_to_id_in_list(
+		$discuss ? $ct->get('crm_thread_status')
                     : $self->internal_empty_status_when_exists,
 	    ));
 	return;
     }, sub {
-	$self->internal_put_field(action_id => shift->status_to_id(
-	    $self->internal_empty_status_when_new));
+	$self->internal_put_field(action_id =>
+            shift->status_to_id_in_list($self->internal_empty_status_when_new));
     });
     $self->delegate_method($_TTF, @_);
     return;
