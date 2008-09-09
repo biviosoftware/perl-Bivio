@@ -68,6 +68,11 @@ sub add_trailing_slash {
     return $path =~ m,/$, ? $path : $path.'/';
 }
 
+sub delete_suffix {
+    my(undef, $value) = @_;
+    return $value && $value =~ m{(.+)\.[^\.]+$} ? $1 : $value;
+}
+
 sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = $proto->SUPER::from_literal($value);
