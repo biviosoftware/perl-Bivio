@@ -115,7 +115,7 @@ sub mock_sendmail {
 	->add_missing_headers($req, $from);
     $msg->set_header('Return-Path', $from)
 	if $from;
-    foreach my $r (split(/,/, $recipients)) {
+    foreach my $r (split(/,/, lc($recipients))) {
 	(my $email = $r) =~ s/\+([^\@]+)//;
 	my($extension) = $1 || '';
 	$msg->set_recipients($r, $req);
