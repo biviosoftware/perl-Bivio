@@ -4,5 +4,5 @@ Widget();
 req()->set_realm_and_user(qw(demo demo));
 model(Email => {realm_id => req('auth_id')});
 [
-    [Email => ['email']] => 'demo@bivio.biz',
+    [Email => ['email']] => email('demo'),
 ];
