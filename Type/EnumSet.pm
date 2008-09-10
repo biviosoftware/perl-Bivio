@@ -34,7 +34,7 @@ sub from_array {
 
 sub from_literal {
     my($proto, $value) = @_;
-    # Returns set from a string.
+    # Returns set from a string.	
     $proto->internal_from_literal_warning
         unless wantarray;
     return $proto->from_sql_column($value);
@@ -186,9 +186,15 @@ sub _parse_args {
     # Returns ($vector, $bits) based on @$args.
     #
     # Could technically typecheck @$bits.
-    shift(@$args);
+    my($proto) = shift(@$args);
+    my($t);
     my($vector) = shift(@$args);
-    return ((ref($vector) ? $vector : \$vector), $args);
+    return (
+	(ref($vector) ? $vector : \$vector),
+	[map(ref($_) ? $_ : ($t ||= $proto->get_enum_type)->from_any($_),
+	    map(ref($_) eq 'ARRAY' ? @$_ : $_,
+		@$args))],
+    );
 }
 
 1;
