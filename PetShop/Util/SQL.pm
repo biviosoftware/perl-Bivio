@@ -139,8 +139,7 @@ sub demo_users {
 }
 
 sub format_email {
-    my(undef, $user) = @_;
-    return "$user\@bivio.biz";
+    return shift->format_test_email(@_);
 }
 
 sub initialize_db {
@@ -416,12 +415,10 @@ EOF
 
 sub _init_demo_users {
     my($self) = @_;
-    # Creates user demo@bivio.biz with password "password".  Creates user
-    # root@bivio.biz.
     my($req) = $self->get_request;
     my($demo_id);
     foreach my $u (@{$self->demo_users()}) {
-	$self->print("Created user $u\@bivio.biz\n");
+	$self->print("Created user $u\n");
 	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
 	    'User.first_name' => ucfirst($u),
 	    'User.last_name' => $self->DEMO_LAST_NAME,
@@ -481,12 +478,12 @@ sub _init_email_alias {
     my($self) = @_;
     my($req) = $self->get_request;
     foreach my $x (
-	[qw(demo-alias@bivio.biz demo)],
-	[qw(fourem-alias@bivio.biz fourem)],
-	[qw(random-alias@bivio.biz random@example.com)],
+	[qw(demo-alias demo)],
+	[qw(fourem-alias fourem)],
+	[qw(random-alias random@example.com)],
     ) {
 	Bivio::Biz::Model->new($req, 'EmailAlias')->create({
-	    incoming => $x->[0],
+	    incoming => $self->format_test_email($x->[0]),
 	    outgoing => $x->[1],
 	});
     }
@@ -567,7 +564,7 @@ EOF
     $self->model('RealmFile')->create_with_content({
 	path => 'Forms/btest.csv',
     }, \(<<'EOF'));
-&date,&email,input,ok
+&client_addr,&date,&email,input,ok
 EOF
     $self->model('RealmFile')->create_with_content({
 	path => Bivio::Type->get_instance('WikiName')->to_absolute('PrivatePage'),
