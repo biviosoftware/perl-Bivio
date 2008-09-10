@@ -11,8 +11,8 @@ req()->initialize_fully;
 	    return [];
 	},
     } => [
-	demo => qr{^demo-alias@},
-	root => qr{^root\@},
+	demo => qr{btest_demo-alias@},
+	root => qr{btest_root\@},
 	crm_forum => remote_email('crm'),
 	crm_tuple_forum => remote_email('crm_tuple_forum'),
     ],
