@@ -112,6 +112,16 @@ sub assert_defined_for_facade {
     return;
 }
 
+sub assert_uri {
+    my($self, $task, $req) = @_;
+    return shift->internal_get_self($req)->assert_uri(@_)
+	unless ref($self);
+    my($n) = $_TI->from_any($task)->get_name;
+    b_die($n, ': no uri associated with task')
+	unless $self->internal_get_value($n)->{uri};
+    return;
+}
+
 sub format_css {
     my($proto, $task_name, $req) = @_;
     return $proto->format_uri({
@@ -173,8 +183,7 @@ sub format_uri {
     my($task_name) = $named->{task_id}->get_name;
     my($info) = $self->internal_get_value($task_name);
     return _get_error($self, $task_name)
-	unless defined($info->{uri});
-    my($uri) = $info->{uri};
+  	unless defined(my $uri = $info->{uri});
     if ($uri =~ /$_REALM_PLACEHOLDER_PAT/o) {
 	$named->{realm} = $self->[$_IDI]->{realmless_uri}->{$info->{realm_type}}
 	    || return _get_error($self, $task_name,
