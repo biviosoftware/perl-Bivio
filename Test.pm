@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Test;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
+use Bivio::Base 'Collection.Attributes';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Ref;
@@ -285,6 +285,7 @@ my(@_CALLBACKS) = qw(check_return check_die_code compute_params compute_return c
 my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name want_scalar comparator);
 my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', @_PLAIN_OPTIONS);
 my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
+my($_HANDLERS) = b_use('Biz.Registrar')->new;
 
 sub IGNORE_RETURN {
     # B<EXPERIMENTAL>
@@ -335,6 +336,12 @@ sub new {
     _load_class($self);
     $self->[$_IDI] = {};
     return $self;
+}
+
+sub register_handler {
+    shift;
+    $_HANDLERS->push_object(@_);
+    return;
 }
 
 sub unit {
@@ -839,10 +846,13 @@ sub _prepare_case {
     # then checks method.
     return 0
 	unless _eval_object($self, $case, $err) && _eval_params($case, $err);
-    return 1
-	if $case->unsafe_get('method_is_autoloaded')
+    if ($case->unsafe_get('method_is_autoloaded')
 	|| UNIVERSAL::can($case->get('object'), $case->get('method'))
-	|| ref($case->get('method')) eq 'CODE';
+	|| ref($case->get('method')) eq 'CODE'
+    ) {
+        $_HANDLERS->call_fifo(handle_prepare_case => [$case]);
+	return 1;
+    }
     my($o) = $case->get('object');
     $$err = $case->get('method') . ': not implemented by ' . (ref($o) || $o)
 	unless $o eq __PACKAGE__->IGNORE_RETURN;
