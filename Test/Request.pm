@@ -6,15 +6,16 @@ use Bivio::Base 'Bivio::Agent::Job::Request';
 use Bivio::Agent::TaskId;
 use Bivio::Type::DateTime;
 use Bivio::UI::Task;
-# For convenience
-use Bivio::Test;
 use Bivio::Test::Bean;
 use Bivio::Test::Reply;
 use Bivio::ShellUtil;
 use Socket ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_B) = __PACKAGE__->use('Test.Bean');
+my($_B) = b_use('Test.Bean');
+my($_RI) = b_use('Agent.RequestId');
+
+b_use('Bivio.Test')->register_handler(__PACKAGE__);
 
 sub get_instance {
     return shift->get_current_or_new(@_);
@@ -85,6 +86,14 @@ sub get_current_or_new {
 
 sub get_form {
     return shift->unsafe_get('form');
+}
+
+sub handle_prepare_case {
+    my($proto) = @_;
+    return
+	unless my $self = $proto->get_current;
+    $_RI->clear_current($self);
+    return;
 }
 
 sub initialize_fully {
