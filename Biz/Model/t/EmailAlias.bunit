@@ -11,8 +11,8 @@ req()->initialize_fully;
 	    return [];
 	},
     } => [
-	demo => 'demo-alias@bivio.biz',
-	root => 'root@bivio.biz',
+	demo => qr{^demo-alias@},
+	root => qr{^root\@},
 	crm_forum => remote_email('crm'),
 	crm_tuple_forum => remote_email('crm_tuple_forum'),
     ],
