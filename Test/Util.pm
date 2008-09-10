@@ -110,8 +110,8 @@ sub mock_sendmail {
 	$from = undef;
     }
     _trace($in) if $_TRACE;
-    my($msg) = $self->use('Bivio::Mail::Outgoing')
-        ->new($self->use('Bivio::Mail::Incoming')->new($in))
+    my($msg) = b_use('Mail.Outgoing')
+	->new(b_use('Mail.Incoming')->new($in))
 	->add_missing_headers($req, $from);
     $msg->set_header('Return-Path', $from)
 	if $from;
@@ -133,10 +133,18 @@ sub mock_sendmail {
 	    1,
 	);
 	chomp($$res);
-	next unless $$res;
-	Bivio::IO::Alert->warn($r, ': DELIVERY FAILED: ', $res);
+	next
+	    unless $$res;
+	Bivio::IO::Alert->warn(
+	    $msg->unsafe_get_header('from'),
+	    ' -> ',
+	    $r,
+	    ': DELIVERY FAILED: ',
+	    $res,
+	);
 	_trace($msg) if $_TRACE;
-	next if $recursing;
+	next
+	    if $recursing;
 	$r = (Bivio::Mail::Address->parse(
 	    $msg->unsafe_get_header('errors-to')
 	    || $msg->unsafe_get_header('return-path')
