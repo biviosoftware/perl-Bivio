@@ -22,7 +22,7 @@ sub internal_query_fields {
     my($self) = @_;
     return [
 	[qw(x_status CRMThreadStatus)],
-	[qw(x_owner_name RealmName)],
+	[qw(x_owner_name PrimaryId)],
 	map([$_ => 'String'], @$_SLOT_FIELDS),
     ];
 }

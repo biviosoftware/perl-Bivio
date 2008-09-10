@@ -60,6 +60,25 @@ sub send_form {
 }
 
 sub thread_root_list {
+    my($self) = @_;
+    my($f) = $self->use('Model.CRMQueryForm');
+    $self->internal_put_base_attr(
+        selector => Form($f->simple_package_name, Join([
+	    map(Select({
+                %{$f->get_select_attrs($_)},
+		unknown_label => vs_text('CRMQueryForm', $_, 'unknown_label'),
+                auto_submit => 1,
+            }), qw(x_status x_owner_name)),
+            ScriptOnly({
+                widget => Join([]),
+                alt_widget => FormButton('ok_button')->put(label => 'Refresh'),
+            }),
+        ]), {
+            form_method => 'get',
+            want_timezone => 0,
+            want_hidden_fields => 0,
+        }),
+    );
     return shift->SUPER::thread_root_list(
 	'CRMThread.modified_date_time',
 	'modified_by_name',
