@@ -26,11 +26,41 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.82  2008/09/04 09:08:06  nagler
+  * Bivio::Biz::Action::Acknowledgement
+    save_label should not override a previously saved label if passed in
+    via the $query variable.  Labels on the request and context are not
+    overwritten.
+  * Bivio::Biz::Model::CRMActionList
+    added status_to_id_in_list, fixed status_to_id to convert the value
+    without mapping NEW to OPEN
+  * Bivio::Biz::Model::CRMForm
+    added internal_empty_status_when_exists/new
+    call status_to_id_in_list
+  * Bivio::Biz::Model::MailForm
+    minor stx
+  * Bivio::Biz::Model::TupleSlotChoiceSelectList
+    Split key and choice so key can be the empty string and Select Value
+    isn't saved when the value is required but NULL error is cleared in forms
+  * Bivio::Biz::Model::UserCreateForm
+    added without_login parameter
+  * Bivio::SQL::ListQuery
+    included auth_id
+  * Bivio::Test::Language::HTTP
+    added clear_local_mail, extract_uri_from_local_mail, and find_page_with_text
+  * Bivio::Test::Unit
+    added builtin_create_mail
+  * Bivio::UI::View::Mail
+    call vs_simple_form_submit instead of '*'
+  * Bivio::UI::XHTML::Widget::TupleTagSlotField
+    Split key and choice so key can be the empty string and Select Value
+    isn't saved when the value is required but NULL error is cleared in forms
+
   Revision 6.81  2008/09/03 16:43:03  moeller
   * Bivio::Biz::Model::RowTag
     fpc
