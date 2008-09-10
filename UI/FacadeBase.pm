@@ -7,6 +7,7 @@ use base 'Bivio::UI::Facade';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
 my($_WIKI_DATA_FOLDER) = __PACKAGE__->use('Type.WikiDataName')->PRIVATE_FOLDER;
+my($_EASY_FORM_DIR) = 'Forms';
 
 sub HELP_WIKI_REALM_NAME {
     return 'site-help';
@@ -510,8 +511,11 @@ sub _cfg_file {
 	    ['FileChangeForm.RealmFile.path_lc.EXISTS' =>
 		'A file with this name already exists.'],
 	],
+	Constant => [
+	    [EasyForm_dir => $_EASY_FORM_DIR],
+	],
 	Task => [
-	    [FORUM_EASY_FORM => '?/Forms/*'],
+	    [FORUM_EASY_FORM => "?/$_EASY_FORM_DIR/*"],
 	    [FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*', '?/files/*']],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
@@ -551,6 +555,18 @@ sub _cfg_file {
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
+	    ]],
+	    [prose => [
+		'EasyForm.update_mail' => [
+		    from => q{Mailbox(['->format_email']);},
+		    to => q{Mailbox(['Action.EasyForm', 'to']);},
+		    subject => q{String(['Action.EasyForm', 'file_path']); submission},
+		    body => q{With(['Action.EasyForm', 'hash_list'], Join([['key'], ': ', ['value'], "\n"]));},
+		],
+		[qw(BlogList BlogRecentList)] => [
+		    title => 'vs_site_name(); Blog',
+		    tagline => 'Recent Blog Entries at vs_site_name();',
+		],
 	    ]],
         ],
     };
