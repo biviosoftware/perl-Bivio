@@ -88,8 +88,8 @@ test_conformance();
 basic_authorization('root');
 my($forum_members) = "$dav_forum_uri/Members.csv";
 send_request(GET => $forum_members);
-send_request(PUT => $forum_members, undef, get_content() . <<'EOF');
-demo@bivio.biz,1,0,0
+send_request(PUT => $forum_members, undef, get_content() . <<"EOF");
+@{[generate_local_email('demo')]},1,0,0
 EOF
 basic_authorization('demo');
 send_request(PROPFIND => $dav_forum_uri);

@@ -4,8 +4,8 @@ test_setup('PetShop');
 home_page();
 login_as('demo', 'password');
 login_as('DEMO', 'password');
-login_as('demo@bivio.biz', 'password');
-login_as('Demo@Bivio.Biz', 'password');
+login_as(generate_local_email('demo'), 'password');
+login_as(generate_local_email('Demo'), 'password');
 
 test_deviance('does not match');
 login_as('demo', 'PASSWORD');
