@@ -34,7 +34,9 @@ sub get_instance {
 }
 
 sub get_request {
-    return shift->get('req');
+    my($self) = @_;
+    return ref($self) && $self->unsafe_get('req')
+	|| shift->SUPER::get_request(@_);
 }
 
 sub put_on_request {
