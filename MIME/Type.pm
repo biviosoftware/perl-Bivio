@@ -9,6 +9,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_EXT_TO_TYPE, $_TYPE_TO_EXT);
 _initialize();
 
+sub UNKNOWN_EXTENSION {
+    return 'dat';
+}
+
 sub from_extension {
     return shift->unsafe_from_extension(@_) || 'application/octet-stream';
 }
