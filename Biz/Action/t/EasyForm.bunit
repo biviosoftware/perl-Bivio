@@ -4,11 +4,12 @@ Request('initialize_fully');
 set_realm_and_user(qw(fourem root));
 my($dir) = '/Forms/bunit';
 my($csv) = "$dir.csv";
-my($log) = '/Forms/Error.log';
 my($rf) = Bivio::Biz::Model->new(req(), 'RealmFile');
 $rf->delete({path => $csv});
-$rf->delete({path => $log});
-$rf->delete_deep({path => $dir});
+$rf->unauth_delete_deep({
+    realm_id => req('auth_id'),
+    path => $dir,
+});
 $rf->create_folder({path => $dir});
 $rf->create_with_content({
     path => $csv,
@@ -29,69 +30,47 @@ ignore_redirects(1);
 		    task_id => Bivio::Agent::TaskId->from_name(
 			$params->[2] || 'FORUM_EASY_FORM'),
 		    query => {goto => 'http://www.bivio.biz'},
-		    is_deviance => @$params > 1,
 		);
 		req()->get('r')->method($params->[3] || 'POST');
 		return [req()];
 	    },
 	    compute_return => sub {
+		assert_equals(
+		    qr{Subject: /Forms/bunit.csv submission.*\&email: .*root}s,
+		    req()->unsafe_get_captured_mail,
+		);
 		commit();
-		return [$rf->load({
-		    path => req()->get('is_deviance') ? $log : $csv
-		})->get_content];
+		return [$rf->load({path => $csv})->get_content];
 	    },
 	} => [
 	    [
 		{a => '1'},
-	    ] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,1,,\n},
+	    ] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,[^,]+root\@[^,]+,1,,\n},
 	    [
 		{a => 1, B => 2, c => 3},
-	    ] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,1,2,3\n},
-	    [{a => 1, not_found => 3}, undef] =>
-		qr{Forms/bunit.csv: failed with error: \[not_found\]\: unexpected fields submitted\n\&client_addr,\&date,\&email,a,not_found\n127.0.0.1,.*,root\@bivio.biz,1,3\n}s,
-	    [{a => 1}, 'nosuchfile'] => qr{CSV file not found},
-	    [{a => 1}, undef, 'ROBOTS_TXT'] => qr{directory not found},
-	    [{}] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,,,\n},
- 	    [undef, undef] =>
- 		qr{Forms/bunit.csv: failed with error: undefined form submitted\n<no form data>\n}s,
-	    [{a => 'a', b => 'b', c => {filename => ''}}] =>
-		qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,root\@bivio.biz,a,b,\n},
+	    ] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,[^,]+root\@[^,]+,1,2,3\n},
+	    [{a => 1, not_found => 3}] =>
+		qr{,not_found\n.*,3$}s,
+ 	    [{}] => qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,[^,]+root\@[^,]+,,,,\n},
+ 	    [{a => 'a', b => 'b', c => {filename => '', content => 'bla'}}] =>
+ 		qr{\n[\d/]+ [\d:]+ GMT,127.0.0.1,[^,]+root\@[^,]+,a,b,http:.*c.dat,\n},
 	    [{a => 1, c => {
 		filename => 'x.txt',
-		'content/type' => 'content-type/ignored',
+		content_type => 'text/plain',
 		content => \("some text\n"),
 	    }}] => sub {
 	        my($case, $actual) = @_;
 		my($file) = reverse(
 		    split(/,/, (reverse(split(/\n/, ${$actual->[0]})))[0]));
 		Bivio::Die->die($file, ': file name wrong')
-		    unless $file =~ m{^/Forms/bunit/\d+-c-x.txt$};
+		    unless $file =~ m{(/Forms/bunit/\w+-c.txt)$};
 		Bivio::Die->die($rf->get_content, ': wrong content for ', $file)
 		    unless "some text\n"
-		    eq ${$rf->load({path => $file})->get_content};
+		    eq ${$rf->load({path => $1})->get_content};
 		return 1;
 	    },
-	    [{a => 1}, undef, undef, 'GET'] => CORRUPT_FORM(),
-	    [
-		{a => '1'},
-	    ] =>  sub {
-		Bivio::Die->die(req(), ': missing required attributes')
-		    unless req()->get('easy_form');
-		foreach my $a (qw(mail_to file_path labels values)) {
-		    Bivio::Die->die($a, ': missing required attribute')
-			    unless req()->get_nested('easy_form', $a);
-		}
-		return 1;
-	    },
-	    [{a => 1, not_found => 3}, undef] => =>  sub {
-		Bivio::Die->die(req(), ': missing required attributes')
-		    unless req()->get('easy_form');
-		foreach my $a (qw(mail_to file_path error error_msg labels values)) {
-		    Bivio::Die->die($a, ': missing required attribute')
-			    unless req()->get_nested('easy_form', $a);
-		}
-		return 1;
-	    },
+ 	    [{a => 1}, undef, undef, 'GET'] => INVALID_OP(),
+	    [{a => '1'}] => qr{,1,,,$}s,
 	],
     ],
 ];
