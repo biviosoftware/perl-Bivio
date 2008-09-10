@@ -25,7 +25,7 @@ visit_uri('/adm/su');
 submit_form({
     email => 'otp',
 });
-verify_text('otp@bivio.biz');
+verify_text('otp@');
 do_logout();
 follow_link('logout');
 
