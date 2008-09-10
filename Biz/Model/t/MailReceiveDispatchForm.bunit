@@ -15,14 +15,16 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 		req()->set_realm(undef);
 		req()->set_user(undef);
 		my($from, $recipient) = @$params;
-		$recipient .= '@bivio.biz'
+		$recipient = $recipient . '@bivio.biz'
 		    unless $recipient =~ /\@/;
+		$from = email($from)
+		    unless $from =~ /\@/;
 		return [req(),  {
 		    recipient => $recipient,
 		    client_addr => '1.2.3.4',
 		    message => {
 			name => '',
-			content => \(qq{From: @{[$from =~ /\@/ ? $from : "$from\@bivio.biz"]}\n\n}),
+			content => \(qq{From: $from\n\n}),
 		    },
 		}];
 	    },
@@ -45,7 +47,7 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 	    # [From:, To:] => [auth_user, auth_realm]
 	    [qw(demo demo-ignore)] => [qw(demo demo)],
 	    [qw(demo ignore.demo)] => [qw(demo demo)],
-	    ['Bob <demo@bivio.biz>', 'ignore.demo'] => [qw(demo demo)],
+	    ['Bob <' . email('demo') . '>', 'ignore.demo'] => [qw(demo demo)],
 	    [qw(not_a_user demo-ignore)] => [undef, 'demo'],
 	    [qw(demo not_a_user-ignore)] => MODEL_NOT_FOUND(),
 	    [qw(demo demo)] => [qw(demo demo USER_MAIL_RECEIVE)],
@@ -55,10 +57,10 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 		=> [qw(demo demo)],
 	    [qw(demo fourem)] => [qw(demo fourem FORUM_MAIL_RECEIVE)],
 	    [qw(demo ignore-fourem)] => [undef, undef, 'ignore_task'],
-	    [qw(demo demo-alias@bivio.biz)] => [qw(demo demo USER_MAIL_RECEIVE)],
-	    [qw(demo fourem-alias@bivio.biz)]
+	    ['demo', email('demo-alias')] => [qw(demo demo USER_MAIL_RECEIVE)],
+	    ['demo', email('fourem-alias')]
 		=> [qw(demo fourem FORUM_MAIL_RECEIVE)],
-	    [qw(demo random-alias@bivio.biz)]
+	    ['demo', email('random-alias')]
 		=> [undef, undef, qw(email_alias_task random@example.com)],
 	],
 	{

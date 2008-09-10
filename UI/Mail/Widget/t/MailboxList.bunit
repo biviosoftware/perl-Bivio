@@ -6,5 +6,5 @@ Widget({
 req()->set_realm_and_user(qw(fourem demo));
 model('RealmAdminEmailList')->load_all;
 [
-    RealmAdminEmailList => qr{^Root User <root@.*>$}s,
+    RealmAdminEmailList => qr{^Root User <\Q@{[email('root')]}\E>}s,
 ];

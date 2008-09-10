@@ -29,7 +29,7 @@ model('Tuple')->delete_all;
     }] => [{
 	'Model.TupleSlotListForm' => {
 	    slot_headers => "Author: a\@a.a\nStatus: s1\n",
-	    'RealmMail.from_email' => 'btest_read@bivio.biz',
+	    'RealmMail.from_email' => email('btest_read'),
 	    'RealmMail.subject' => 'PSR# - s1',
 	},
     }],
@@ -51,7 +51,7 @@ model('Tuple')->delete_all;
     }] => [{
 	'Model.TupleSlotListForm' => {
 	    slot_headers => "Status: s2\n",
-	    'RealmMail.from_email' => 'btest_read@bivio.biz',
+	    'RealmMail.from_email' => email('btest_read'),
 	    'RealmMail.subject' => 'PSR#3 - s2',
 	 },
     }],
@@ -62,7 +62,7 @@ model('Tuple')->delete_all;
     }] => [{
 	'Model.TupleSlotListForm' => {
 	    slot_headers => "Author: b\@a.a\nStatus: \n",
-	    'RealmMail.from_email' => 'btest_read@bivio.biz',
+	    'RealmMail.from_email' => email('btest_read'),
 	    'RealmMail.subject' => 'PSR#4 - ',
 	 },
     }],
@@ -73,7 +73,7 @@ model('Tuple')->delete_all;
     }] => [{
 	'Model.TupleSlotListForm' => {
 	    slot_headers => "Author: c\@a.a\nStatus: s0\n",
-	    'RealmMail.from_email' => 'btest_read@bivio.biz',
+	    'RealmMail.from_email' => email('btest_read'),
 	    'RealmMail.subject' => 'PSR#5 - s0',
 	 },
     }],
