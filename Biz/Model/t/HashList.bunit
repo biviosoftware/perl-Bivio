@@ -1,0 +1,14 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+[
+    load_from_hash => [
+	[{a => 1, b => 2}] => [
+	    {key => 'a', value => 1},
+	    {key => 'b', value => 2},
+	],
+	[{a => 1, b => 2}, ['a']] => [
+	    {key => 'a', value => 1},
+	],
+    ],
+];
