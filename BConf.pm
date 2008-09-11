@@ -326,7 +326,6 @@ sub merge_http_log {
 		    # never goes criticial
 		    'Bivio::DieCode::DIE',
 		    'Bivio::DieCode::CONFIG_ERROR',
-		    '\] \[notice\] ',
 		],
 		critical_list => [
 		    'Bivio::DieCode::DB_ERROR',
