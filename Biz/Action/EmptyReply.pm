@@ -10,15 +10,15 @@ my($_AC) = __PACKAGE__->use('Ext.ApacheConstants');
 my($_BA) = __PACKAGE__->use('Action.BasicAuthorization');
 
 sub execute {
-    my($proto, $req, $status) = @_;
+    my($proto, $req, $status, $output) = @_;
     $status ||= 'HTTP_OK';
     $status = 'NOT_FOUND'
 	if $status =~ /NOT_FOUND/;
-    my($reply) = $req->get('reply') ->set_http_status($_AC->$status());
+    my($reply) = $req->get('reply')->set_http_status($_AC->$status());
     return
 	if $reply->unsafe_get_output;
-    my($buffer) = '';
-    $reply->set_output(\$buffer);
+    $output ||= '';
+    $reply->set_output(\$output);
     return 1;
 }
 
