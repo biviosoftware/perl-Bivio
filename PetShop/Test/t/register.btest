@@ -5,10 +5,10 @@ home_page();
 visit_uri('/pub/eg1');
 follow_link('register');
 submit_form({
-    email => 'demo@bivio.biz',
+    email => generate_local_email('demo'),
 });
 verify_text('already in the database');
 verify_form({
-    email => 'demo@bivio.biz',
+    email => generate_local_email('demo'),
 });
 #TODO: regular workflow
