@@ -159,9 +159,7 @@ __PACKAGE__->new({
 	# i.e. http://petshop.bivio.biz
 	[home_page_uri => '/pub'],
 
-	[support_email => 'webmaster'],
 	[site_name => 'PetShop'],
-	[support_name => 'PetShop Support'],
 	[site_copyright => q{bivio Software, Inc.}],
 	# SITE_ROOT task calls View->execute_uri and we look for pages in
 	# the "site_root" directory.
