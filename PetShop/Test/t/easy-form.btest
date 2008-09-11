@@ -11,6 +11,7 @@ foreach my $u ('', 'root') {
 	'Input:' => "$u$r",
     });
     verify_text('completed');
+    verify_local_mail(qr{root}) =~ /$r/;
 }
 visit_uri('/fourem/wiki/EasyForm_btest');
 submit_form(OK => {
@@ -19,4 +20,3 @@ submit_form(OK => {
 verify_text('wiki completed');
 visit_uri('/fourem/file/Forms/btest.csv');
 verify_text(qr{\n.*,$r,OK\n.*,[^,]+root\@[^,]+,root$r,OK\n.*easyform$r,OK\n}s);
-verify_local_mail(qr{root}) =~ /$r/;
