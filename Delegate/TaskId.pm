@@ -203,7 +203,7 @@ sub info_base {
 	    57
 	    GENERAL
 	    ANYBODY
-	    Action.EmptyReply
+	    Action.PingReply
         )],
 	[qw(
             DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND
