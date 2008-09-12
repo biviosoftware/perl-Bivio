@@ -26,11 +26,51 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.83  2008/09/10 22:24:15  nagler
+  * Added Bivio::Agent::RequestId, Bivio::Biz::Model::HashList
+  * Bivio::Biz::Action::EasyForm
+    Relaxed existence contraints: columns and files added automatically
+    Sends email to EASY_FORM_UPDATE_MAIL_TO or site_contact
+  * Bivio::Biz::Action
+    rmpod
+    added get_request
+    fpc: get_request needs to call SUPER
+  * Bivio::Delegate::RowTagKey
+    added EASY_FORM_UPDATE_MAIL_TO
+  * Bivio::MIME::Type
+    added UNKNOWN_EXTENSION
+  * Bivio::PetShop::Util::SQL
+    use format_test_email for all emails
+  * Bivio::Test::Request
+    added handle_prepare_case to RequestId->clear_current
+  * Bivio::Test::Util
+    In mock_sendmail(), we now lc($recipients).  Acceptance tests that
+    send mail with mixed case recipients were not getting delivered.
+    better error msgs
+  * Bivio::Test
+    added register_handler and call on handle_prepare_case
+  * Bivio::Type::BLOB
+    rmpod
+  * Bivio::Type::ECPaymentStatusSet
+    rmpod
+    fpc
+  * Bivio::Type::EnumSet
+    allow passing in enum names
+  * Bivio::Type::FilePath
+    added delete_suffix
+  * Bivio::UI::FacadeBase
+    easyform support
+  * Bivio::UI::Task
+    added assert_uri()
+  * Bivio::Util::HTTPConf
+    reduce max to ensure we don't wrap RequestId
+    fpc
+
   Revision 6.82  2008/09/04 09:08:06  nagler
   * Bivio::Biz::Action::Acknowledgement
     save_label should not override a previously saved label if passed in
