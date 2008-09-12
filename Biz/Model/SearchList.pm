@@ -23,6 +23,7 @@ my($_REALM_FILE_FIELDS) = [qw(
 my($_REALM_OWNER_FIELDS) = [qw(
     name
     display_name
+    realm_type
 )];
 my($_FP) = b_use('Type.FilePath');
 
@@ -87,7 +88,7 @@ sub internal_post_load_row {
 }
 
 sub internal_post_load_row_with_model {
-    my($proto, $row, $model) = @_;
+    my(undef, $row, $model) = @_;
     foreach my $f (@$_REALM_FILE_FIELDS) {
 	$row->{"RealmFile.$f"} = $model->get($f);
     }
@@ -95,7 +96,7 @@ sub internal_post_load_row_with_model {
 #      verify they are here.  Can save the info above in
 #      internal_get_realm_ids
 #TODO: Optimize by caching realms
-    my($ro) = $model->new_other('RealmOwner') ->unauth_load_or_die({
+    my($ro) = $model->new_other('RealmOwner')->unauth_load_or_die({
 	realm_id => $model->get_auth_id,
     });
     foreach my $f (@$_REALM_OWNER_FIELDS) {
