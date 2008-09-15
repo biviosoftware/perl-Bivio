@@ -98,7 +98,8 @@ sub initialize {
 	    column_align => 'E',
 	    pad_left => 1,
 	    column_nowrap => 1,
-	    map(($_ => 'amount_cell'), qw(column_data_class cell_class)),
+	    map(($_ => 'amount_cell'),
+		qw(column_data_class cell_class column_footer_class)),
 	   );
     $self->put(string_font => 'number_cell')
 	    unless defined($self->unsafe_get('string_font'));
