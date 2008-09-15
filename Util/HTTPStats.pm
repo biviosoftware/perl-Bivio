@@ -21,7 +21,7 @@ sub USAGE {
     return <<'EOF';
 usage: b HTTPStats [options] command [args..]
 commands
-    daily_report [date] -- create a report using access_log.1.gz
+    daily_report [date] -- create a report using the most recent access_log
     format_access_log_stream -- read stream from STDIN reformat to STDOUT
     import_history [date] -- import multiple access_logs
     init_report_forum name -- create report forum and import icons
@@ -31,7 +31,8 @@ EOF
 sub daily_report {
     my($self, $date) = _parse_args(@_);
     _create_report($self, $date,
-	"gunzip -c @{[$_CFG->{log_base}]}/<uri>/access_log.1.gz");
+	"gunzip -c @{[$_CFG->{log_base}]}/<uri>/"
+	. _previous_days_log($self));
     return;
 }
 
@@ -138,8 +139,9 @@ sub _get_domains_from_most_recent_log {
     #  <facade uri>-site-reports
     #  site-reports (for default facade only)
     my($domains) = [];
+    my($prev_log) = _previous_days_log($self);
 
-    foreach my $domain (`gunzip -c @{[$_CFG->{log_base}]}/@{[$root]}/access_log.1.gz | grep -o -P '^(\\S+)' | sort | uniq`) {
+    foreach my $domain (`gunzip -c @{[$_CFG->{log_base}]}/@{[$root]}/$prev_log | grep -o -P '^(\\S+)' | sort | uniq`) {
 	chomp($domain);
 	next unless $domain =~ /\./;
 	my($facade) = $facade_info->{$domain};
@@ -206,6 +208,12 @@ sub _parse_args {
     return ($self, $date
 	? $_D->from_literal_or_die($date)
 	: $_D->set_end_of_month($_D->add_days($_D->local_today, -1)));
+}
+
+sub _previous_days_log {
+    my($self) = @_;
+    return $_D->to_file_name($_D->add_days($_D->local_today, -1))
+	. '*-access_log.gz';
 }
 
 sub _user_email {
