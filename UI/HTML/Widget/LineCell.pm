@@ -101,7 +101,7 @@ sub initialize {
     return if exists($fields->{value});
     my($h) = $self->get_or_default('height', 1);
     my($count) = $self->get_or_default('count', 1);
-    my($line) = "<td>".$_VS->vs_clear_dot_as_html(1, $h)."</td>";
+    my($line) = "<td class=\"line_cell\">".$_VS->vs_clear_dot_as_html(1, $h)."</td>";
     $fields->{value} = qq{<table width="100%" cellspacing="0"}
 	. qq{ cellpadding="0" border="0">\n}
 	. ((qq{<tr!COLOR!>$line</tr>\n<tr!PAGE_BG!>$line</tr>\n}) x --$count)
