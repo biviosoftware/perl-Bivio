@@ -78,12 +78,13 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_footer_left => XLink('back_to_top'),
 	xhtml_footer_middle => '',
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
-	xhtml_body_first => Join([
-	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
-            vs_first_focus(),
-	]),
+	xhtml_want_first_focus => 1,
     );
     view_put(
+	xhtml_body_first => Join([
+	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
+            vs_first_focus(view_widget_value('xhtml_want_first_focus')),
+	]),
 	xhtml_header_right => $_C->if_version(
 	    7 => sub {_header_right(qw(SearchForm SEARCH_LIST))},
 	    sub {
