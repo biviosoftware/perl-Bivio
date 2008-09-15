@@ -646,8 +646,8 @@ sub now {
     if (!defined($_IS_TEST)
         && UNIVERSAL::can('Bivio::Agent::Task', 'register')
     ) {
-	Bivio::Agent::Task->register($proto)
-	    if $_IS_TEST = Bivio::Agent::Request->is_test;
+	$proto->use('Bivio::Agent::Task')->register($proto)
+	    if $_IS_TEST = $proto->use('Bivio::Agent::Request')->is_test;
     }
     return $_IS_TEST && $_TEST_NOW || $proto->from_unix(time);
 }
