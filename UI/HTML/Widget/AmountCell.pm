@@ -31,7 +31,8 @@ $_C->register(my $_CFG = {
     ),
     zero_as_blank => 0,
     decimals => 2,
-    map(($_ => 'amount_cell'), qw(column_data_class cell_class)),
+    map(($_ => 'amount_cell'),
+	qw(column_data_class cell_class column_footer_class)),
 });
 my($_CFG_KEYS) = [sort(keys(%$_CFG))];
 
