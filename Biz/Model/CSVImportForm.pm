@@ -46,6 +46,7 @@ sub execute_ok {
 	next if $self->CONTINUE_VALIDATION_ON_ERROR;
 	return if $self->in_error;
     }
+    return if $self->in_error;
     $count = 1;
     foreach my $row (@$rows) {
 	$self->process_record($row, $count++);
