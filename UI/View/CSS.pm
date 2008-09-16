@@ -207,6 +207,9 @@ form .label_ok {
   vertical-align: middle;
   Font('form_label_err');
 }
+tr td .line_cell  {
+  padding: 0;
+}
 .list td,
 .paged_list td {
   padding: .5em;
