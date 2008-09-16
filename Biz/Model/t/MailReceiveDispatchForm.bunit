@@ -74,5 +74,17 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 	    'a@b.b' => ['a', undef, undef, 'b.b'],
 	    'a.b.c@d.d' => NOT_FOUND(),
 	],
+	{
+	    method => 'parse_recipient',
+	    compute_params => sub {
+		shift->get('object')->internal_put_field(recipient => shift->[0]),
+		return [0];
+	    },
+	} => [
+	    'a-b+c@d.d' => [qw(a b c d.d)],
+	    'a@b.b' => ['a', undef, undef, 'b.b'],
+            'a-b-c@d.d' => [qw(a b-c), undef, 'd.d'],
+	    'a.b.c@d.d' => NOT_FOUND(),
+	],
     ],
 ];
