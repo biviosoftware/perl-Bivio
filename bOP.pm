@@ -26,11 +26,29 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.85  2008/09/16 14:24:30  moeller
+  * Bivio::Biz::Model::CSVImportForm
+    don't process records if validation fails
+  * Bivio::Type::DateTime
+    now ->use() Bivio::Agent::Request
+  * Bivio::UI::HTML::Widget::AmountCell
+    added css for column_footer_class
+  * Bivio::UI::HTML::Widget::LineCell
+    now uses line_cell css class
+  * Bivio::UI::HTML::Widget::PercentCell
+    now sets css class for column_footer_class
+  * Bivio::UI::View::CSS
+    set padding 0 for line_cell
+  * Bivio::UI::View::ThreePartPage
+    added xhtml_want_first_focus control
+  * Bivio::Util::HTTPStats
+    log name format changed
+
   Revision 6.84  2008/09/12 22:17:14  nagler
   * Bivio::BConf
     remove [notice] from error_list
