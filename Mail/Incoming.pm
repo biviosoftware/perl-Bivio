@@ -17,9 +17,22 @@ my($_E) = __PACKAGE__->use('Type.Email');
 our($_TRACE);
 my($_EA) = __PACKAGE__->use('Type.EmailArray');
 my($_M) = __PACKAGE__->use('Biz.Model');
+my($_SA) = b_use('Type.StringArray');
 
 sub NO_MESSAGE_ID {
     return 'no-message-id';
+}
+
+sub get_all_addresses {
+    my($self) = @_;
+    my($r) = $self->get_reply_to;
+    return $_SA->sort_unique([
+	map(lc($_),
+	    ($self->get_from)[0],
+	    $r ? $r : (),
+	    map(@{$_A->parse_list(_get_field($self, "$_:"))}, qw(to cc)),
+	),
+    ]);
 }
 
 sub get_body {

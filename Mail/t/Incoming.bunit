@@ -32,17 +32,25 @@ EOF
         get_from => not_die(),
     ],
     [\(<<'EOF')] => [
-From: John Doe <john+btest_forum-admin@localhost.localdomain>
-To: private_forum@localhost.localdomain
+From: John Doe <john@localhost.localdomain>
+To: Private Forum <private_forum@localhost.localdomain>
 Subject: should bounce
 References: <a@a> <b@b>
 Date: Wed, 26 Oct 2005 04:19:47 EDT
 In-Reply-To: <c@c> <d@d>
+Cc: cc@cc.com, John Doe <John@Localhost.localdomain>
 
 any body
 EOF
 	get_message_id => [
 	    [] => ['no-message-id'],
+	],
+	get_all_addresses => [
+	    [] => [[qw(
+                cc@cc.com
+                john@localhost.localdomain
+                private_forum@localhost.localdomain
+	    )]],
 	],
     ],
 ];
