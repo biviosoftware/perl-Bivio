@@ -20,6 +20,17 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # therefore Bivio::Die, so don't import Bivio::Die.
 my(%_MAP);
 
+sub QUERY_KEY {
+    my($proto) = @_;
+    return lc($proto->simple_package_name);
+}
+
+sub add_to_query {
+    my($self, $query) = @_;
+    ($query ||= {})->{$self->QUERY_KEY} = $self->as_int;
+    return $query;
+}
+
 sub as_int {
     my($self) = @_;
     # Returns integer value for enum value.
@@ -252,6 +263,12 @@ sub execute {
     # Calls I<put_on_request>.  Always returns false.
     shift->put_on_request(@_);
     return 0;
+}
+
+sub execute_from_query {
+    my($proto, $req) = @_;
+    return $proto->from_int(
+	($req->get('query') || {})->{$proto->QUERY_KEY} || 0)->execute($req);
 }
 
 sub format_short_desc {
