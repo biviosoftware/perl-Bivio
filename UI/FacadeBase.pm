@@ -543,12 +543,16 @@ sub _cfg_file {
 	    [RealmFileLock => [
 		comment => 'Comments',
 	    ]],
-	    [RealmFileVersionsList => [
+	    [[qw(RealmFileVersionsList RealmFileVersionsListForm)] => [
 		'RealmFile.path' => 'Revision',
+		'revision_number' => 'Revision',
 		'RealmFile.modified_date_time' => 'Checked In',
 		[qw(Email_2.email RealmOwner_2.display_name
                     Email_3.email RealmOwner_3.display_name)] => 'Who',
 		empty_list_prose => 'No files revisions.',
+		left => 'Compare',
+		right => 'Selected',
+		ok_button => 'Compare',
 	    ]],
 	    [title => [
 		FORUM_FILE => 'Files',
@@ -1093,6 +1097,7 @@ sub _cfg_wiki {
 	    ),
 	    [FORUM_WIKI_NOT_FOUND => undef],
 	    [FORUM_WIKI_VERSIONS_LIST => '?/wiki-history/*'],
+	    [FORUM_WIKI_VERSIONS_DIFF => '?/wiki-diff'],
 	    [HELP => '?/help/*'],
 	    [HELP_NOT_FOUND => undef],
 	    [SITE_WIKI_VIEW => 'bp/*'],
@@ -1145,6 +1150,7 @@ sub _cfg_wiki {
 		HELP => 'Help',
 		FORUM_WIKI_EDIT => 'Edit Wiki Page',
 		FORUM_WIKI_VERSIONS_LIST => 'Wiki Page History',
+		FORUM_WIKI_VERSIONS_DIFF => 'Wiki Versions Comparison',
 		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
 		SITE_WIKI_VIEW => '',
 		forum_wiki_data => 'Files',
@@ -1191,6 +1197,16 @@ sub _cfg_wiki {
 		    },
 		]);},
 		wiki_view_tools => q{vs_text_as_prose('wiki_view_tools_base');},
+		wiki_diff_topic_base => q{Prose([qw(Action.WikiView byline)]);},
+		wiki_diff_topic => q{vs_text_as_prose('wiki_diff_topic_base');},
+		wiki_diff_tools_base => qq{TaskMenu([
+                    {
+		        task_id => 'FORUM_WIKI_VIEW',
+		        label => 'forum_wiki_current',
+    		        path_info => [qw(Action.WikiView title)],
+		    },
+		]);},
+		wiki_diff_tools => q{vs_text_as_prose('wiki_diff_tools_base');},
 		xhtml_dock_left_standard => q{If(['auth_realm', 'type', '->eq_forum'],
 	    TaskMenu([
 		'FORUM_BLOG_LIST',
