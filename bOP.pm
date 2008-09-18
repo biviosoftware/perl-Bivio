@@ -26,11 +26,19 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.86  2008/09/17 23:12:37  dobbs
+  * Bivio::Biz::Model::CRMThread
+    Added internal_get_existing_thread().  Pretty much only useful for
+    subclasses that override handle_mail_post_create() which use this
+    method to adjust behavior depending for existing threads.
+  * Bivio::Mail::Incoming
+    added get_all_addresses
+
   Revision 6.85  2008/09/16 14:24:30  moeller
   * Bivio::Biz::Model::CSVImportForm
     don't process records if validation fails
