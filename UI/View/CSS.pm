@@ -793,6 +793,15 @@ div.wiki {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
 }
+.same, .different {
+  margin: 1ex 0 1ex 0;
+}
+.same {
+  Color('odd-background');
+}
+.different {
+  Color('even-background');
+}
 EOF
 }
 
