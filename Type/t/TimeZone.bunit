@@ -1,11 +1,18 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+
+req()->put(query => {timezone => 1});
 [
     class() => [
 	from_literal => [
 	    UTC => [class()->UTC],
 	    EUROPE_LONDON => [class()->EUROPE_LONDON],
 	    ASIA_TOKYO => [class()->ASIA_TOKYO],
+	],
+	execute_from_query => [
+	    [req()] => sub {
+		return req('Type.TimeZone')->eq_utc;
+	    },
 	],
     ],
     sub {class()->UTC} => [
@@ -14,6 +21,10 @@
 	],
 	date_time_from_utc => [
 	    ['2452260 24455'] => '2452260 24455',
+	],
+	QUERY_KEY => 'timezone',
+	add_to_query => [
+	    [{abc => 'def'}] => [{abc => 'def', timezone => 1}],
 	],
     ],
     sub {class()->AMERICA_DENVER} => [
