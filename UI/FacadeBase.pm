@@ -1159,7 +1159,7 @@ sub _cfg_wiki {
 		FORUM_WIKI_EDIT => 'Add new page',
 		FORUM_WIKI_EDIT_PAGE => 'Edit this page',
 		FORUM_WIKI_VERSIONS_LIST => 'Page history',
-		FORUM_WIKI_CURRENT => 'back to current',
+		FORUM_WIKI_CURRENT => 'Back to current',
 	    ]],
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
