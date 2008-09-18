@@ -27,6 +27,64 @@ sub execute {
     };
 }
 
+sub execute_diff {
+    my($proto, $req) = @_;
+    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
+    $rf->load({realm_file_id => $req->get('query')->{ldiff}});
+    my($left) = ${$rf->get_content};
+    my($lname) = $_FP->get_tail($rf->get('path'));
+    $rf->load({realm_file_id => $req->get('query')->{rdiff}});
+    my($right) = ${$rf->get_content};
+    my($rname) = $_FP->get_tail($rf->get('path'));
+    my($html) = "<div class='wiki'>";
+    if ($proto->use('Algorithm::Diff')) {
+	my($diff) = Algorithm::Diff->new(
+	    map([split(/(?<=\n)/, $_)], $left , $right),
+	);
+	$diff->Base(1);
+	my($s) = "<div class='same'>";
+	my($e) = "</div>";
+	while ($diff->Next) {
+	    my($sep) = '';
+	    if ($diff->Same) {
+		my($top, $bot) = map({
+		    join('', map("$s $_ $e", $diff->Items($_ + 1)));
+		} 0, 1);
+		$html .= $top;
+	    }
+	    else {
+		$html .= sprintf(
+		    "<div class='different'><p>*** %s ***</p>",
+		    $diff->Items(2)
+			? sprintf('%d,%dd%d', $diff->Get(qw(Min1 Max1 Max2)))
+			    : $diff->Items(1) ? (
+				sprintf('%d,%dc%d,%d',
+					$diff->Get(qw(Min1 Max1 Min2 Max2))),
+				$sep = "--</p>",
+			    )[0] : sprintf('%da%d,%d',
+					   $diff->Get(qw(Max1 Min2 Max2))),
+		);
+		my($top, $bot) = map({
+		    my($s) = '<p>' . ($_ ? '+' : '-');
+		    join('', map("$s $_", $diff->Items($_ + 1)));
+		} 0, 1);
+		$html .= "<div class='top'>" . $top . "</div>"
+		    . ($top && $bot ? $sep : '')
+			. "<div class='bottom'>" . $bot . "</div></div>";
+	    }
+	}
+    }
+    $html .= "</div>";
+    my($name) = $lname;
+    $name =~ s{;\d+$}{};
+    $proto->new()->put_on_request($req)->put(
+	byline => "$lname (-) compared to $rname (+)",
+	title => $name,
+	diff => $html,
+    );
+    return;
+}
+
 sub execute_help {
     my($proto, $req) = @_;
     return $proto->execute($req, $_C->get_value('help_wiki_realm_id', $req));
@@ -42,7 +100,8 @@ sub execute_load_history {
 	title => $name,
     );
     my($path) = $req->get('path_info');
-    $path =~ s{^/Archived}{};
+    my($v) = $_FP->VERSIONS_FOLDER;
+    $path =~ s{^\Q$v\E}{};
     $path =~ s{;\d+(\.\d+)?$}{};
     $req->put(path_info => $path);
     return;

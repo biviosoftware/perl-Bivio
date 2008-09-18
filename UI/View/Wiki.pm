@@ -74,24 +74,57 @@ sub version_list {
 	    path_info => [qw(Action.WikiView title)],
 	},
     ]));
-    return shift->internal_body(vs_paged_list(RealmFileVersionsList => [
-	['RealmFile.path', {
-	    column_order_by => ['RealmFile.path_lc'],
+    return shift->internal_body(vs_list_form(RealmFileVersionsListForm => [
+	{
+	    column_data_class => 'check',
+	    column_heading => 'left',
+	    column_widget => Radio({
+		field => 'left',
+		value => [['->get_list_model'], 'RealmFile.realm_file_id'],
+	    }),
+	},
+	{
+	    column_data_class => 'check',
+	    column_heading => 'right',
+	    column_widget => Radio({
+		field => 'right',
+		value => [['->get_list_model'], 'RealmFile.realm_file_id'],
+	    }),
+	},
+	{
 	    column_widget => Link(
 		Join([
 		    Image(vs_text('RealmFileList.leaf_node')),
-		    String(['revision_number']),
+		    String([['->get_list_model'], 'revision_number']),
 		]),
 		URI({
 		    task_id => 'FORUM_WIKI_VIEW',
-		    path_info => ['file_name'],
+		    path_info => [['->get_list_model'], 'file_name'],
 		}),
 	    ),
-	}],
-	'RealmFile.modified_date_time',
-	'RealmOwner_2.display_name',
-	'RealmFileLock.comment',
-    ])->put(want_sorting => 0));
+	},
+	{
+	    field => 'RealmFile.modified_date_time',
+	    want_sorting => 0,
+	},
+	{
+	    field => 'RealmOwner_2.display_name',
+	},
+	{
+	    field => 'RealmFileLock.comment',
+	    want_sorting => 0,
+	},
+    ]));
+}
+
+sub versions_diff {
+    view_put(
+	xhtml_topic => vs_text_as_prose('wiki_diff_topic'),
+	xhtml_tools => vs_text_as_prose('wiki_diff_tools'),
+    );
+    return shift->internal_body(Join([
+	Prose([qw(Action.WikiView diff)]),
+    ]));
 }
 
 sub view {
