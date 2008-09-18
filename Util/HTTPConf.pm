@@ -2,10 +2,11 @@
 # $Id$
 package Bivio::Util::HTTPConf;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 use Bivio::IO::File;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_SA) = b_use('Type.StringArray');
 my($_DATA);
 my($_VARS) = {
     is_production => 0,
@@ -382,6 +383,7 @@ sub _httpd_vars {
 	%$v,
     );
     _app_vars($v);
+    my($ssl_crts) = [grep($_, map($vars->{$_}->{ssl_crt}, @{$vars->{apps}}))];
     $v->{content} = join(
 	"\n",
 	_replace_vars($vars->{httpd}, "httpd_content", <<'EOF'),
@@ -391,7 +393,7 @@ NameVirtualHost *
     DocumentRoot /var/www/html
 </VirtualHost>
 EOF
-	grep($vars->{$_}->{ssl_listen}, @{$vars->{apps}}) ? <<'EOF' : '',
+	(grep($vars->{$_}->{ssl_listen}, @{$vars->{apps}}) ? <<'EOF' : '')
 Listen 443
 SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
@@ -399,6 +401,10 @@ SSLMutex file:logs/ssl_mutex
 SSLLog logs/error_log
 SSLLogLevel warn
 EOF
+	    . (@{$_SA->sort_unique($ssl_crts)} == @$ssl_crts ? '' : <<'EOF'),
+NameVirtualHost *:443
+EOF
+
 	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
 	join('',
 	    <<'EOF',
