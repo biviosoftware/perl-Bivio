@@ -27,7 +27,7 @@ sub access_controlled_load {
 	last if $rf->unauth_load({
 	    path => $is_public ? $_FP->to_public($path) : $path,
 	    realm_id => $realm_id,
-	    is_public => $is_public,
+	    is_public => $path =~ $_FP->VERSION_REGEX ? 0 : $is_public,
 	});
     }
     my($e) = 'MODEL_NOT_FOUND';
