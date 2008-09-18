@@ -26,11 +26,27 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.87  2008/09/18 04:57:09  aviggio
+  * Bivio::Biz::Action::RealmFile
+    account for versioned public files
+  * Bivio::Biz::Action::WikiView
+    support wiki versions diff
+  * Bivio::Delegate::TaskId
+    add FORUM_WIKI_VERSIONS_DIFF task
+  * Bivio::Type::FilePath
+    add VERSION_REGEX and account for versioning in to_public and to_absolute
+  * Bivio::UI::FacadeBase
+    add wiki diff elements
+  * Bivio::UI::View::CSS
+    add wiki diff styles
+  * Bivio::UI::View::Wiki
+    support wiki versions diff
+
   Revision 6.86  2008/09/17 23:12:37  dobbs
   * Bivio::Biz::Model::CRMThread
     Added internal_get_existing_thread().  Pretty much only useful for
