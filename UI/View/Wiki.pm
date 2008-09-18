@@ -114,6 +114,7 @@ sub version_list {
 	    field => 'RealmFileLock.comment',
 	    want_sorting => 0,
 	},
+	'*ok_button',
     ]));
 }
 
