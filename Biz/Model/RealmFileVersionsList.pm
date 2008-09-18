@@ -20,7 +20,6 @@ sub internal_initialize {
 		name => 'RealmFile.path_lc',
 		sort_order => 0,
 	    },
-	    'RealmOwner_2.display_name',
             'Email_2.email',
 	    'RealmFileLock.comment',
 	],
