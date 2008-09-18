@@ -115,10 +115,11 @@ sub format_http_toggling_secure {
 #      because we don't even want to pretend to process it.
     $query = $redirect_count ? Bivio::Agent::HTTP::Query->format($query)
 	    : $r->args;
-    $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query) if $query;
-
+    $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query)
+	if $query;
+    $uri =~ s{https?://[^/]+/?}{/};
     # Go into secure if not secure and vice-versa
-    return ($is_secure ? 'http://' : 'https://').$host.$uri;
+    return ($is_secure ? 'http://' : 'https://'). $host . $uri;
 }
 
 sub get_content {
