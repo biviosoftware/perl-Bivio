@@ -51,6 +51,10 @@ sub REGEX {
     return qr{(.+)};
 }
 
+sub VERSION_REGEX {
+    return qr{;\d+};
+}
+
 sub VERSIONS_FOLDER {
     return '/Archived';
 }
@@ -152,7 +156,8 @@ sub is_absolute {
 sub to_absolute {
     my($proto, $value, $is_public) = @_;
     return $proto->join(
-	$value && $value =~ /;\d+/ ? $proto->VERSIONS_FOLDER : '',
+	$value && $value =~ $proto->VERSION_REGEX
+	    ? $proto->VERSIONS_FOLDER : '',
 	$is_public ? $proto->PUBLIC_FOLDER : $proto->PRIVATE_FOLDER,
 	$value,
     );
@@ -161,10 +166,16 @@ sub to_absolute {
 sub to_public {
     my($proto, $path) = @_;
     my($p) = $proto->PUBLIC_FOLDER_ROOT;
+    my($v) = $proto->VERSIONS_FOLDER;
     return $p
 	unless defined($path);
-    $path = $proto->join($p, $path);
-    $path =~ s{^\Q$p$p\E(/|$)}{$p$1}i;
+    if ($path =~ /^\Q$v\E/) {
+	$path =~ s{^$v\E}{$v$p}i;
+    }
+    else {
+	$path = $proto->join($p, $path);
+	$path =~ s{^\Q$p$p\E(/|$)}{$p$1}i;
+    }
     return $path;
 }
 
