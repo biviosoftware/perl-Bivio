@@ -1160,10 +1160,21 @@ sub info_wiki {
  	    DATA_READ&DATA_WRITE
 	    Action.WikiView->execute_load_history
 	    Model.RealmFileVersionsList->execute_load_all
+	    Model.RealmFileVersionsListForm
  	    View.Wiki->version_list
+	    next=FORUM_WIKI_VERSIONS_DIFF
+            cancel=FORUM_WIKI_VIEW
+        )],
+	[qw(
+ 	    FORUM_WIKI_VERSIONS_DIFF
+ 	    123
+ 	    FORUM
+ 	    DATA_READ&DATA_WRITE
+	    Action.WikiView->execute_diff
+ 	    View.Wiki->versions_diff
         )],
     ];
-#123-129 free
+#124-129 free
 }
 
 sub info_xapian {
