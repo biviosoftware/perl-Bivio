@@ -52,7 +52,7 @@ visit_uri($search_page);
 follow_link(qr{go back to the}i);
 verify_text(qr{go back to the}i);
 follow_link('Page history');
-follow_link('back to current');
+follow_link(qr{back to current}i);
 follow_link(qr{edit this page}i);
 submit_form({
     public => 0,
@@ -63,7 +63,7 @@ follow_link(qr{^2$});
 verify_text(qr{v2: go back to the}i);
 verify_no_text(qr{edit this page}i);
 follow_link('Page history');
-verify_text('back to current');
+verify_text(qr{back to current}i);
 follow_link(qr{^3$});
 verify_text(qr{v3: go back to the}i);
 verify_no_text(qr{edit this page}i);
