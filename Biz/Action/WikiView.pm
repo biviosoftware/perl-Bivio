@@ -76,9 +76,10 @@ sub execute_diff {
     }
     $html .= "</div>";
     my($name) = $lname;
-    $name =~ s{;\d+$}{};
+    $name =~ s{@{[$_FP->VERSION_REGEX]}}{};
     $proto->new()->put_on_request($req)->put(
-	byline => "$lname (-) compared to $rname (+)",
+	left => $lname,
+	right => $rname,
 	title => $name,
 	diff => $html,
     );
@@ -92,18 +93,15 @@ sub execute_help {
 
 sub execute_load_history {
     my($proto, $req, $realm_id, $task_id) = @_;
-    $realm_id ||= $req->get('auth_id');
-    $task_id ||= $req->get('task_id');
-    my($name) = $_FP->get_tail($req->unsafe_get('path_info'));
-    $name =~ s{;\d+$}{};
+    my($path) = $req->get('path_info');
+    $path =~ s{^@{[$_FP->VERSIONS_FOLDER]}}{};
+    $path =~ s{@{[$_FP->VERSION_REGEX]}}{};
+    $req->put(path_info => $path);
+    my($name) = $_FP->get_tail($path);
     $proto->new()->put_on_request($req)->put(
 	title => $name,
+	is_start_page => _is_start_page($req, $name),
     );
-    my($path) = $req->get('path_info');
-    my($v) = $_FP->VERSIONS_FOLDER;
-    $path =~ s{^\Q$v\E}{};
-    $path =~ s{;\d+(\.\d+)?$}{};
-    $req->put(path_info => $path);
     return;
 }
 
@@ -123,10 +121,10 @@ sub execute_prepare_html {
     $realm_id ||= $req->get('auth_id');
     $task_id ||= $req->get('task_id');
     my($name) = $req->unsafe_get('path_info');
-    my($sp) = Bivio::UI::Text->get_value('WikiView.start_page', $req);
     unless ($name) {
 	# To avoid name space issues, there always needs to be a path_info
-	$req->put(path_info => $_FN->to_absolute($sp));
+	$req->put(path_info => $_FN->to_absolute(
+	    Bivio::UI::Text->get_value('WikiView.start_page', $req)));
 	return {
 # should be able to handle realm_id and convert automatically
 	    realm => $req->with_realm($realm_id, sub {$req->get_nested(qw(auth_realm owner_name))}),
@@ -167,7 +165,7 @@ sub execute_prepare_html {
 	author_email => $author,
 	author_name => $author_name,
 	exists => 1,
-	is_start_page => lc($name) eq lc($sp) ? 1 : 0,
+	is_start_page => _is_start_page($req, $name),
     );
     return 0;
 }
@@ -181,6 +179,12 @@ sub get {
 
 sub render_html {
     return $_WT->render_html(shift->get('wiki_args'));
+}
+
+sub _is_start_page {
+    my($req, $name) = @_;
+    return lc(Bivio::UI::Text->get_value('WikiView.start_page', $req))
+	eq lc($name) ? 1 : 0,
 }
 
 1;
