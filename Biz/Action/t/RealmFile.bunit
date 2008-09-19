@@ -12,6 +12,7 @@ foreach my $path (qw(
     /ARF_Private.txt
     /ARF.txt
     /Public/A.eml
+    /Public/A.eml
 )) {
     model('RealmFile')->create_or_update_with_content({path => $path}, \$path);
 }
@@ -46,6 +47,7 @@ options({
 	    '/ARF/0' => FORBIDDEN(),
 	    '/ARF.txt' => '/Public/ARF.txt',
             'A.eml' => '/Public/A.eml',
+            '/Archived/A;1.eml' => FORBIDDEN(),
 	],
 	{
 	    method => 'execute_show_original',
