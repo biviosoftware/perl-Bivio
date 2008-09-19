@@ -12,11 +12,14 @@ Request();
 	} => [
 	    '/x.html' => 'text/html',
 	    '/Wiki/Name' => 'text/x-bivio-wiki',
+	    '/Wiki/Name;0.9' => 'text/x-bivio-wiki',
 	    '/Wiki/Name;99' => 'text/x-bivio-wiki',
 	    '/Wiki/Name.jpg' => 'image/jpeg',
 	    '/Wiki/Name;3.jpg' => 'image/jpeg',
+	    '/Wiki/Name;0.3.jpg' => 'image/jpeg',
 	    '/Blog/200801/02030405' => 'text/x-bivio-wiki',
 	    '/Blog/200801/02030405;3' => 'text/x-bivio-wiki',
+	    '/Blog/200801/02030405;3.1' => 'text/x-bivio-wiki',
 	],
     ],
 ];
