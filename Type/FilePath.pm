@@ -52,7 +52,7 @@ sub REGEX {
 }
 
 sub VERSION_REGEX {
-    return qr{;\d+};
+    return qr{;\d+(\.\d+)?};
 }
 
 sub VERSIONS_FOLDER {
