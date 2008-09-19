@@ -1172,7 +1172,8 @@ sub _cfg_wiki {
 		help_wiki_footer => '',
 		help_wiki_header => 'Help',
 		help_wiki_open => 'Help',
-		wiki_view_topic => q{Simple(['Action.WikiView', 'title']);},
+		wiki_view_topic_base => q{Simple(['Action.WikiView', 'title']);},
+		wiki_view_topic => q{vs_text_as_prose('wiki_view_topic_base');},
 		wiki_view_byline_base => q{If(
 		    ['->can_user_execute_task', 'FORUM_WIKI_EDIT'],
 		    Join([
@@ -1197,7 +1198,13 @@ sub _cfg_wiki {
 		    },
 		]);},
 		wiki_view_tools => q{vs_text_as_prose('wiki_view_tools_base');},
-		wiki_diff_topic_base => q{Prose([qw(Action.WikiView byline)]);},
+		wiki_diff_topic_base => q{Join([
+		        String([qw(Action.WikiView left)]),
+		        ' (-) compared to ',
+		        String([qw(Action.WikiView right)]),
+		        ' (+)',
+		    ]);
+                },
 		wiki_diff_topic => q{vs_text_as_prose('wiki_diff_topic_base');},
 		wiki_diff_tools_base => qq{TaskMenu([
                     {
