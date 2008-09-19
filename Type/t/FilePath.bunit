@@ -71,6 +71,9 @@ Type();
 	    '/Public' => '/Public',
 	    '/public' => '/Public',
 	    '/public/foo' => '/Public/foo',
+	    '/public/foo' => '/Public/foo',
+	    '/public/foo' => '/Public/foo',
+	    '/Archived/foo' => '/Archived/Public/foo',
 	],
 	from_public => [
 	    '/Public' => '/',
@@ -84,6 +87,8 @@ Type();
 	    ['bar.txt', 1] => '/Public/bar.txt',
 	    ['foo;1.txt', 0] => '/Archived/foo;1.txt',
 	    ['bar;1.txt', 1] => '/Archived/Public/bar;1.txt',
+	    ['foo;0.1.txt', 0] => '/Archived/foo;0.1.txt',
+	    ['bar;1.1.txt', 1] => '/Archived/Public/bar;1.1.txt',
 	],
 	delete_suffix => [
 	    [undef] => [undef],
