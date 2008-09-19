@@ -128,7 +128,7 @@ sub get_content_type {
 
 sub get_content_type_for_path {
     my(undef, $path) = @_;
-    $path =~ s/;\d+//;
+    $path =~ s{@{[$_FP->VERSION_REGEX]}}{};
     my($res) = $_T->from_extension($path);
     return $res eq 'application/octet-stream'
 	&& ($_WN->is_absolute($path) || $_BFN->is_absolute($path))
