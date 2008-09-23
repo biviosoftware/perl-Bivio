@@ -3,8 +3,10 @@
 package Bivio::Util::HTTPStats;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_D) = __PACKAGE__->use('Type.Date');
 my($_F) = __PACKAGE__->use('IO.File');
 my($_FN) = __PACKAGE__->use('Type.ForumName');
@@ -62,7 +64,7 @@ sub import_history {
     my($self, $date) = _parse_args(@_);
     # only works if the cached awstats after date have been deleted
     _create_report($self, $date,
-	"$_LOG_MERGER @{[$_CFG->{log_base}]}/<uri>/access_log.*.gz");
+	"$_LOG_MERGER @{[$_CFG->{log_base}]}/<uri>/*-access_log.gz");
     return;
 }
 
@@ -105,12 +107,14 @@ sub _create_report {
 	$_F->do_in_dir($tmp_dir, sub {
 	    my($conf_file) = join('.', 'awstats', $domain, 'conf');
 	    my($month, $year) = $_D->get_parts($date, qw(month year));
-	    $_F->write($conf_file, $static_config . <<"EOF");
+	    my($str) = $static_config . <<"EOF";
 HostAliases="$domain"
 SiteDomain="$domain"
 LogFile="$file_command | bivio HTTPStats format_access_log_stream |"
 DirData="$data_dir"
 EOF
+	    _trace($str) if $_TRACE;
+	    $_F->write($conf_file, $str);
 	    `$_AWSTATS -config=$domain --configdir=.`;
 	    `$_BUILD_PAGES -config=$domain --configdir=. -lang=en -dir . -diricons="icon" -month=$month -year=$year`;
 	    unlink($conf_file);
