@@ -1,6 +1,7 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 WikiText();
+req()->put(uri => '/fourem/wiki/MyPage');
 my($t1) = class('Type.WikiDataName')->to_absolute('T1.bmenu');
 model('RealmFile')->delete({path => $t1});
 model('RealmFile')->create_with_content({path => $t1}, \(<<'EOF'));
@@ -19,9 +20,9 @@ EOF
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/fourem/wiki/Index" Index
-       "/" Home
+       class="want_sep" "/" Home
        "/pub/login" Login
-       "/fourem/wiki/MyPage" MyPage
+       class="want_sep selected" "/fourem/wiki/MyPage" MyPage
        class="pdf[^"]*" "/fourem/wiki/Document" Document
        "/fourem/wiki/Flyer" Flyer "[^"]+icon.png"
     ))]}},
