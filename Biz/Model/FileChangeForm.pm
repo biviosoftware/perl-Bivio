@@ -231,6 +231,7 @@ sub is_root {
 
 sub is_text_content_type {
     my($self) = @_;
+    return 0 if $self->get('realm_file')->get('is_folder');
     return $self->get('realm_file')->is_text_content_type;
 }
 
