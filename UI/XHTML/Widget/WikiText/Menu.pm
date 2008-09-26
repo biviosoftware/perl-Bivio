@@ -36,29 +36,42 @@ sub render_html {
     my($line) = 2;
     my($b) = '';
     TaskMenu(
-	[map(Link(_parse_row($_, $args, $path, $line++)), @$csv)],
+	# in a SPAN because MSIE 6 can't identify multi classed items
+	[map(SPAN(Link(_parse_row($_, $args, $path, $line++))), @$csv)],
 	$class,
     )->put_and_initialize(
 	parent => undef,
-	selected_item => ['->req', 'uri'],
+	selected_item => sub {
+	    my($w, $source) = @_;
+	    return $source->req('uri') =~ $w->get_nested(
+		qw(value selected_regexp)) ? 1 : 0;
+	},
     )->render($args->{source}, \$b);
     return $b;
+}
+
+sub _has_value {
+    my($v) = @_;
+    return defined($v) && length($v);
 }
 
 sub _parse_row {
     my($row, $args, $path, $line) = @_;
     Bivio::Die->die($path, ", line $line: missing Label value")
-        unless defined($row->{Label}) && length($row->{Label});
-    unless (defined($row->{Link}) && length($row->{Link})) {
+        unless _has_value($row->{Label});
+    unless (_has_value($row->{Link})) {
 	$row->{Link} = $row->{Label};
 	$row->{Label} = $_WN->to_title($row->{Label});
     }
-    return (
-	Simple(_render_label($row->{Label}, $args)),
-	$args->{proto}->internal_format_uri($row->{Link}, $args),
-	(defined($row->{Class}) && length($row->{Class}))
-	    ? $row->{Class} : ()
-    );
+    my($href) = $args->{proto}->internal_format_uri($row->{Link}, $args);
+    return {
+	value => Simple(_render_label($row->{Label}, $args)),
+	href => $href,
+	selected_regexp => _has_value($row->{'Selected Regexp'})
+	    ? qr/$row->{'Selected Regexp'}/
+	    : qr/^\Q$href\E$/,
+	(_has_value($row->{Class}) ? (class => $row->{Class}) : ()),
+    };
 }
 
 sub _render_label {
