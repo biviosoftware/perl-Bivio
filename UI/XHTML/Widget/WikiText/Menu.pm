@@ -37,7 +37,7 @@ sub render_html {
     my($b) = '';
     TaskMenu(
 	# in a SPAN because MSIE 6 can't identify multi classed items
-	[map(SPAN(Link(_parse_row($_, $args, $path, $line++))), @$csv)],
+	[map(Tag('SPAN', Link(_parse_row($_, $args, $path, $line++))), @$csv)],
 	$class,
     )->put_and_initialize(
 	parent => undef,
