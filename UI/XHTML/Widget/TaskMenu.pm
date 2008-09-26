@@ -82,10 +82,8 @@ sub initialize {
 			     ? $selected->($w, $source)
 			     : $cfg->{task_id} && ref($selected)
 			     ? $cfg->{task_id} == $selected
-			     : ($selected
+			     : $selected
 				 eq $w->render_simple_attr(value => $source)
-			     || $selected
-				 eq $w->render_simple_attr(href => $source))
 			 ) ? 'selected' : ();
 		    }],
 		], {join_separator => ' '}),
