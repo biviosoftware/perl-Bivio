@@ -5,13 +5,13 @@ req()->put(uri => '/fourem/wiki/MyPage');
 my($t1) = class('Type.WikiDataName')->to_absolute('T1.bmenu');
 model('RealmFile')->delete({path => $t1});
 model('RealmFile')->create_with_content({path => $t1}, \(<<'EOF'));
-Label,Link,Class
+Label,Link,Class,Selected Regexp
 Index
 Home,/
 Login,/pub/login
 MyPage,^MyPage
 Document,^Document,pdf
-Flyer ^icon.png,^Flyer
+Flyer ^icon.png,^Flyer,,MyPage
 EOF
 [
     [{
@@ -21,10 +21,10 @@ EOF
        class="bmenu"
        "/fourem/wiki/Index" Index
        class="want_sep" "/" Home
-       "/pub/login" Login
+       class="want_sep" "/pub/login" Login
        class="want_sep selected" "/fourem/wiki/MyPage" MyPage
-       class="pdf[^"]*" "/fourem/wiki/Document" Document
-       "/fourem/wiki/Flyer" Flyer "[^"]+icon.png"
+       class="want_sep" class="pdf" "/fourem/wiki/Document" Document
+       class="want_sep selected" "/fourem/wiki/Flyer" Flyer "[^"]+icon.png"
     ))]}},
     [{
 	value => '@b-menu value=T1',
