@@ -192,7 +192,7 @@ sub vs_descriptive_field {
 	'Bivio::Type::Boolean',
     ) ? (
 	undef,
-	FormField($name),
+	FormField($name, $attrs),
     ) : $proto->vs_form_field($name, $attrs);
     return [
 	$label ? ($label->put(cell_class => 'label label_ok')) : (),
