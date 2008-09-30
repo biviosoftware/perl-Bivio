@@ -13,7 +13,7 @@ EOF
 [
     class() => [
 	render_html_without_view => [
-	    [\('@b-menu value=WikiText1'), req()] => qr{Home</a></div>},
+	    [\('@b-menu value=WikiText1'), req()] => qr{Home</a></span></div>},
 	],
 	render_plain_text => [
 	    [\("\@h1 t1\np1\np2\n"), req()] => [
