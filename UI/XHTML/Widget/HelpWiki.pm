@@ -62,6 +62,23 @@ sub internal_new_args {
     };
 }
 
+sub page_name {
+    my($proto, $req, $task_id) = @_;
+    return $_WN->title_to_help(
+	vs_render_widget(
+	    Prose(
+		$_T->get_value(
+		    'HelpWiki',
+		    'title',
+		    ($task_id || $req->get('task_id'))->get_name,
+		    $req,
+		),
+	    ),
+	    $req,
+	),
+    );
+}
+
 sub _iframe {
     my($self) = @_;
     return EmptyTag({
@@ -153,14 +170,18 @@ sub _link_edit {
 
 sub _link_open {
     return Join([
-	Link(
-	    vs_text_as_prose('help_wiki_open'),
-	    'javascript: help_wiki_toggle()',
-	    {
-		id => 'help_wiki_open',
-		class => 'help_wiki_open',
-	    },
-	),
+	ScriptOnly({
+	    alt_widget => Link(vs_text_as_prose('help_wiki_open'),
+		_uri('FORUM_WIKI_VIEW')),
+	    widget => Link(
+		vs_text_as_prose('help_wiki_open'),
+		'javascript: help_wiki_toggle()',
+		{
+		    id => 'help_wiki_open',
+		    class => 'help_wiki_open',
+		},
+	    ),
+	}),
 	# If you click on the help link in IE while it is loading
 	# it doesn't render correctly
 	JavaScript()->strip(<<"EOF"),
@@ -184,20 +205,7 @@ sub _page_exists {
 }
 
 sub _page_name {
-    my($req) = shift->req;
-    return $_WN->title_to_help(
-	vs_render_widget(
-	    Prose(
-		$_T->get_value(
-		    'HelpWiki',
-		    'title',
-		    $req->get('task_id')->get_name,
-		    $req,
-		),
-	    ),
-	    $req,
-	),
-    );
+    return __PACKAGE__->page_name(shift->req);
 }
 
 sub _realm_name {
