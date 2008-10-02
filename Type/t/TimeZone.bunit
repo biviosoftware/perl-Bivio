@@ -14,6 +14,9 @@ req()->put(query => {timezone => 1});
 		return req('Type.TimeZone')->eq_utc;
 	    },
 	],
+	unsafe_from_int => [
+	    [1] => [class()->UTC],
+	],
     ],
     sub {class()->UTC} => [
 	date_time_to_utc => [
