@@ -461,7 +461,7 @@ sub unsafe_from_any {
 sub unsafe_from_int {
     my($proto, $int) = @_;
     Bivio::IO::Alert->bootstrap_die($int, ': is not a int')
-        if ref($int) || $int =~ /^-?\d+$/s;
+        if ref($int) || $int !~ /^-?\d+$/s;
     return _unsafe_from($proto, $int);
 }
 
