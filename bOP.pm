@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.92  2008/09/26 01:19:10  moeller
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    changed SPAN() to Tag('SPAN', ) to avoid startup warnings
+
   Revision 6.91  2008/09/26 00:56:48  moeller
   * Bivio::UI::XHTML::Widget::TaskMenu
     removed previous selected href change
