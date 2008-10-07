@@ -43,7 +43,7 @@ sub render_html {
 	parent => undef,
 	selected_item => sub {
 	    my($w, $source) = @_;
-	    return $source->req('uri') =~ $w->get_nested(
+	    return ($source->req->unsafe_get('uri') || '') =~ $w->get_nested(
 		qw(value selected_regexp)) ? 1 : 0;
 	},
     )->render($args->{source}, \$b);
