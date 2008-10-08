@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -26,11 +26,17 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.93  2008/10/02 02:32:58  moeller
+  * Bivio::UI::XHTML::ViewShortcuts
+    vs_descriptive_field() - pass attrs along to boolean FormField()
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    made page_name() public, added NoScript Link directly to wiki view
+
   Revision 6.92  2008/09/26 01:19:10  moeller
   * Bivio::UI::XHTML::Widget::WikiText::Menu
     changed SPAN() to Tag('SPAN', ) to avoid startup warnings
