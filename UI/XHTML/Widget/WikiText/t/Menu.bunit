@@ -11,7 +11,7 @@ Home,/
 Login,/pub/login
 MyPage,^MyPage
 Document,^Document,pdf
-Flyer ^icon.png,^Flyer,,MyPage
+Flyer ^icon.png,^Flyer,,mypage
 EOF
 [
     [{

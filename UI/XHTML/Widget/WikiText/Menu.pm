@@ -43,8 +43,8 @@ sub render_html {
 	parent => undef,
 	selected_item => sub {
 	    my($w, $source) = @_;
-	    return ($source->req->unsafe_get('uri') || '') =~ $w->get_nested(
-		qw(value selected_regexp)) ? 1 : 0;
+            my($re) = $w->get_nested(qw(value selected_regexp));
+	    return ($source->req->unsafe_get('uri') || '') =~ qr{$re}i ? 1 : 0;
 	},
     )->render($args->{source}, \$b);
     return $b;
@@ -68,7 +68,7 @@ sub _parse_row {
 	value => Simple(_render_label($row->{Label}, $args)),
 	href => $href,
 	selected_regexp => _has_value($row->{'Selected Regexp'})
-	    ? qr/$row->{'Selected Regexp'}/
+	    ? qr/$row->{'Selected Regexp'}/i
 	    : qr/^\Q$href\E$/,
 	(_has_value($row->{Class}) ? (class => $row->{Class}) : ()),
     };
