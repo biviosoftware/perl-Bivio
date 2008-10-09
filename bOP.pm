@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 6.95  2008/10/09 17:34:17  dobbs
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    make selected regexp case insensitive
+    internal_render_label() allows subclasses to add markup or text to a
+    selected menu item
+
   Revision 6.94  2008/10/08 17:10:03  moeller
   * Bivio::Type::Enum
     fixed unsafe_from_int()
