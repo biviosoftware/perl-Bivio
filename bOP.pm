@@ -26,11 +26,14 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 6.96  2008/10/09 17:40:59  dobbs
+  Rollover to 7.0
+
   Revision 6.95  2008/10/09 17:34:17  dobbs
   * Bivio::UI::XHTML::Widget::WikiText::Menu
     make selected regexp case insensitive
