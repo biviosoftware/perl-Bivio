@@ -17,6 +17,21 @@ sub handle_register {
     return ['b-menu'];
 }
 
+sub internal_render_label {
+    # TODO: remove this code (see VERSION 1.14 in cvs) whenever the majority of
+    # browsers can understand CSS :before selector
+
+    #$selected_regexp is for use by subclasses
+    my($proto, $label, $args, $selected_regexp) = @_;
+    my($res) = $args->{proto}->render_html({
+	%$args,
+	value => $label,
+    });
+    $res =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
+    chomp($res);
+    return $res;
+}
+
 sub render_html {
     my($proto, $args) = @_;
     my($class) =  delete($args->{attrs}->{class}) || 'bmenu';
@@ -37,7 +52,8 @@ sub render_html {
     my($b) = '';
     TaskMenu(
 	# in a SPAN because MSIE 6 can't identify multi classed items
-	[map(Tag('SPAN', Link(_parse_row($_, $args, $path, $line++))), @$csv)],
+	[map(Tag('SPAN', Link(_parse_row($proto, $_, $args, $path, $line++))),
+             @$csv)],
 	$class,
     )->put_and_initialize(
 	parent => undef,
@@ -56,7 +72,7 @@ sub _has_value {
 }
 
 sub _parse_row {
-    my($row, $args, $path, $line) = @_;
+    my($proto, $row, $args, $path, $line) = @_;
     Bivio::Die->die($path, ", line $line: missing Label value")
         unless _has_value($row->{Label});
     unless (_has_value($row->{Link})) {
@@ -64,25 +80,16 @@ sub _parse_row {
 	$row->{Label} = $_WN->to_title($row->{Label});
     }
     my($href) = $args->{proto}->internal_format_uri($row->{Link}, $args);
+    my($selected_regexp) = _has_value($row->{'Selected Regexp'})
+        ? qr/$row->{'Selected Regexp'}/i
+	: qr/^\Q$href\E$/;
     return {
-	value => Simple(_render_label($row->{Label}, $args)),
+	value => Simple($proto->internal_render_label(
+            $row->{Label}, $args, $selected_regexp)),
 	href => $href,
-	selected_regexp => _has_value($row->{'Selected Regexp'})
-	    ? qr/$row->{'Selected Regexp'}/i
-	    : qr/^\Q$href\E$/,
+	selected_regexp => $selected_regexp,
 	(_has_value($row->{Class}) ? (class => $row->{Class}) : ()),
     };
-}
-
-sub _render_label {
-    my($label, $args) = @_;
-    my($res) = $args->{proto}->render_html({
-	%$args,
-	value => $label,
-    });
-    $res =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
-    chomp($res);
-    return $res;
 }
 
 1;
