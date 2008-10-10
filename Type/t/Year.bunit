@@ -1,0 +1,21 @@
+# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($now) = $_DT->now_as_year;
+my($now2) = $now % 100;
+[
+    class() => [
+	from_literal => [
+	    -1 => [undef, Bivio::TypeError->NUMBER_RANGE],
+	    0 => $_DT->now_as_year - $_DT->now_as_year % 100,
+	    $now => $now,
+	    1901 => 1901,
+	    $now2 => $now,
+	    $now2 + 1 => $now + 1,
+	    $now2 + class()->WINDOW_SIZE => $now + class()->WINDOW_SIZE,
+	    $now2 + class()->WINDOW_SIZE + 1 => $now + class()->WINDOW_SIZE + 1 - 100,
+	],
+    ],
+];
+
