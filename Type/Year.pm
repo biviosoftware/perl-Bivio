@@ -2,21 +2,20 @@
 # $Id$
 package Bivio::Type::Year;
 use strict;
-use base 'Bivio::Type::Integer';
+use Bivio::Base 'Type.Integer';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub WINDOW_SIZE {
     return 20;
 }
 
 sub from_literal {
-    my($proto) = shift;
-    my($res, $err) = $proto->SUPER::from_literal(@_);
+    my($proto) = @_;
+    my($res, $err) = shift->SUPER::from_literal(@_);
     return $err ? ($res, $err) : $res
         unless $err && $err == Bivio::TypeError->NUMBER_RANGE;
-#TODO: Probably should be a call in Integer?
     # Compute with no range check
     ($res, $err) = Bivio::Type::Integer->from_literal(@_);
     return ($res, $err)
