@@ -2,150 +2,111 @@
 # $Id$
 package Bivio::UI::HTML::Widget::Select;
 use strict;
-$Bivio::UI::HTML::Widget::Select::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::Select::VERSION;
-
-=head1 NAME
-
-Bivio::UI::HTML::Widget::Select - select from a list of several items
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::Select;
-    Bivio::UI::HTML::Widget::Select->new($attrs);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::Select::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::Select> allows user to select from
-a list of choices.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item auto_submit : boolean [0]
-
-Should a click submit the form?
-
-=item choices : Bivio::Type::Enum (required)
-
-List of choices will be constructed from the Enum's values.
-
-=item choices : Bivio::TypeValue (required)
-
-List of choices will be constructed from a
-L<Bivio::TypeValue|Bivio::TypeValue> whose type is a
-L<Bivio::Type::EnumSet|Bivio::Type::EnumSet> and value
-is a string (set)
-or type is L<Bivio::Type::Integer|Bivio::Type::Integer> and value
-is an array_ref.
-or type is L<Bivio::Type::String|Bivio::Type::String> and value
-is an array_ref of strings (value is 1..n)
-
-=item choices : array_ref (required, get_request)
-
-Widget value which returns
-L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>
-or a TypeValue which is an EnumSet.
-
-=item disabled : boolean [0]
-
-Make the selection read-only
-
-=item enum_sort : string ['get_name']
-
-The method on an enum which returns the value to compare in the sort.
-If I<as_int>, the sort will be numeric.  Otherwise, it will be
-string (cmp).
-
-=item enum_sort : code_ref
-
-Sort method to call.  Enums passed in I<left> and I<right> params,
-just like L<Bivio::Type::compare|Bivio::Type/"compare">.  This is
-a sub call, not a method call, so no method or self is passed.
-
-=item event_handler : Bivio::UI::Widget []
-
-If set, this widget will be initialized as a child and must
-support a method C<get_html_field_attributes> which returns a
-string to be inserted in this fields declaration.
-I<event_handler> will be rendered before this field.
-
-=item field : string (required)
-
-Name of the form field.
-
-=item first_string_index : int [1]
-
-Index of first string item.
-
-=item form_model : array_ref (required, inherited, get_request)
-
-Which form are we dealing with.
-
-=item list_display_field : string (required if 'choices' is a list)
-
-Name of the list field used for display.
-
-=item list_display_field : array_ref (required if 'choices' is a list)
-
-Widget value for the list display.
-
-=item list_display_field : Bivio::UI::Widget (required if 'choices' is a list)
-
-Widget for the list display.
-
-=item list_id_field : string
-
-Name of the list field used as the item id.
-Defaults to the list primary key.
-
-=item list_item_control : string []
-
-The list field name which controls whether the current row should
-be added to the list.
-
-=item show_unknown : boolean [1]
-
-Should the UNKNOWN type be displayed?
-
-=item size : int [1]
-
-How many rows should be visible
-
-=item unknown_label : any []
-
-The label for the first element, whose value will always be the empty string
-(undef, null).  Will default I<show_unknown> to false, if defined (see code).
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::HTML;
-use Bivio::IO::Trace;
 use Bivio::Type::Enum;
 
-#=VARIABLES
+# C<Bivio::UI::HTML::Widget::Select> allows user to select from
+# a list of choices.
+#
+#
+#
+# auto_submit : boolean [0]
+#
+# Should a click submit the form?
+#
+# choices : Bivio::Type::Enum (required)
+#
+# List of choices will be constructed from the Enum's values.
+#
+# choices : Bivio::TypeValue (required)
+#
+# List of choices will be constructed from a
+# L<Bivio::TypeValue|Bivio::TypeValue> whose type is a
+# L<Bivio::Type::EnumSet|Bivio::Type::EnumSet> and value
+# is a string (set)
+# or type is L<Bivio::Type::Integer|Bivio::Type::Integer> and value
+# is an array_ref.
+# or type is L<Bivio::Type::String|Bivio::Type::String> and value
+# is an array_ref of strings (value is 1..n)
+#
+# choices : array_ref (required, get_request)
+#
+# Widget value which returns
+# L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>
+# or a TypeValue which is an EnumSet.
+#
+# disabled : boolean [0]
+#
+# Make the selection read-only
+#
+# enum_sort : string ['get_name']
+#
+# The method on an enum which returns the value to compare in the sort.
+# If I<as_int>, the sort will be numeric.  Otherwise, it will be
+# string (cmp).
+#
+# enum_sort : code_ref
+#
+# Sort method to call.  Enums passed in I<left> and I<right> params,
+# just like L<Bivio::Type::compare|Bivio::Type/"compare">.  This is
+# a sub call, not a method call, so no method or self is passed.
+#
+# event_handler : Bivio::UI::Widget []
+#
+# If set, this widget will be initialized as a child and must
+# support a method C<get_html_field_attributes> which returns a
+# string to be inserted in this fields declaration.
+# I<event_handler> will be rendered before this field.
+#
+# field : string (required)
+#
+# Name of the form field.
+#
+# first_string_index : int [1]
+#
+# Index of first string item.
+#
+# form_model : array_ref (required, inherited, get_request)
+#
+# Which form are we dealing with.
+#
+# list_display_field : string (required if 'choices' is a list)
+#
+# Name of the list field used for display.
+#
+# list_display_field : array_ref (required if 'choices' is a list)
+#
+# Widget value for the list display.
+#
+# list_display_field : Bivio::UI::Widget (required if 'choices' is a list)
+#
+# Widget for the list display.
+#
+# list_id_field : string
+#
+# Name of the list field used as the item id.
+# Defaults to the list primary key.
+#
+# list_item_control : string []
+#
+# The list field name which controls whether the current row should
+# be added to the list.
+#
+# show_unknown : boolean [1]
+#
+# Should the UNKNOWN type be displayed?
+#
+# size : int [1]
+#
+# How many rows should be visible
+#
+# unknown_label : any []
+#
+# The label for the first element, whose value will always be the empty string
+# (undef, null).  Will default I<show_unknown> to false, if defined (see code).
 
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my(@_ATTRS) = qw(
     auto_submit
@@ -162,49 +123,12 @@ my(@_ATTRS) = qw(
     size
 );
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Text
-
-Creates a new Select widget.
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="accepts_attribute"></a>
-
-=head2 static accepts_attribute(string attr) : boolean
-
-Does the widget accept this attribute?
-
-=cut
-
 sub accepts_attribute {
+    # (proto, string) : boolean
+    # Does the widget accept this attribute?
     my(undef, $attr) = @_;
     return grep($_ eq $attr, @_ATTRS);
 }
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes static information.  In this case, prefix and suffix
-field values.
-
-=cut
 
 sub initialize {
     my($self) = @_;
@@ -243,16 +167,18 @@ sub initialize {
     return;
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, Text_ref buffer)
-
-Render the input field.  First render is special, because we need
-to extract the field's type and can only do that when we have a form.
-
-=cut
+sub new {
+    # (proto, hash_ref) : Widget.Text
+    # Creates a new Select widget.
+    my($self) = shift->SUPER::new(@_);
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub render {
+    # (self, any, Text_ref) : undef
+    # Render the input field.  First render is special, because we need
+    # to extract the field's type and can only do that when we have a form.
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
@@ -294,13 +220,9 @@ sub render {
     return;
 }
 
-#=PRIVATE METHODS
-
-# _enum_sort(self) : code_ref
-#
-# Returns the sort method.
-#
 sub _enum_sort {
+    # (self) : code_ref
+    # Returns the sort method.
     my($self) = @_;
     my($enum_sort) = $self->get_or_default('enum_sort', 'get_name');
     return $enum_sort
@@ -321,11 +243,9 @@ sub _enum_sort {
 EOF
 }
 
-# _enum_sort_by_int(string left, string right) : int
-#
-# Always puts "0" first.  Sorts numerically.
-#
 sub _enum_sort_by_int {
+    # (string, string) : int
+    # Always puts "0" first.  Sorts numerically.
     my($left, $right) = @_;
     # Always put "0" (unknown) first.
     return -1 if $left->as_int == 0;
@@ -333,11 +253,9 @@ sub _enum_sort_by_int {
     return $left->as_int <=> $right->as_int;
 }
 
-# _load_items(self, any choices) : array_ref
-#
-# Returns choices from the list of choices.
-#
 sub _load_items {
+    # (self, any) : array_ref
+    # Returns choices from the list of choices.
     my($self, $choices) = @_;
     $choices = $self->use($choices)
 	unless ref($choices);
@@ -366,23 +284,19 @@ sub _load_items {
     # DOES NOT RETURN
 }
 
-# _load_items_from_enum(Bivio::UI::HTML::Widget::Select self, Bivio::Type::Enum justenum)
-#
-# Loads items from the enum choices attribute. Enum values are static
-# so this is called during initialize.
-#
-#TODO: MERGE WITH RadioGrid
 sub _load_items_from_enum {
+    # (Widget.Select, Type.Enum) : undef
+    # Loads items from the enum choices attribute. Enum values are static
+    # so this is called during initialize.
+#TODO: MERGE WITH RadioGrid
     my($self, $enum) = @_;
     return _load_items_from_enum_list($self, [$enum->get_list]);
 }
 
-# _load_items_from_enum_list(Bivio::UI::HTML::Widget::Select self, array_ref list) : array_ref
-#
-# Creates "items" from "list" of enum values.  Helper to _load_items_from_enum
-# and _load_items_from_enum_set.
-#
 sub _load_items_from_enum_list {
+    # (Widget.Select, array_ref) : array_ref
+    # Creates "items" from "list" of enum values.  Helper to _load_items_from_enum
+    # and _load_items_from_enum_set.
     my($self, $list) = @_;
     my($fields) = $self->[$_IDI];
     my(@values) = sort {
@@ -402,12 +316,10 @@ sub _load_items_from_enum_list {
     ];
 }
 
-# _load_items_from_enum_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
-#
-# Loads items from the enum set choices attribute. EnumSet values are static
-# so this is called during initialize.
-#
 sub _load_items_from_enum_set {
+    # (Widget.Select, Bivio.TypeValue) : undef
+    # Loads items from the enum set choices attribute. EnumSet values are static
+    # so this is called during initialize.
     my($self, $choices) = @_;
     my($type, $value) = $choices->get('type', 'value');
     my(@choices) = map {
@@ -416,22 +328,18 @@ sub _load_items_from_enum_set {
     return _load_items_from_enum_list($self, \@choices);
 }
 
-# _load_items_from_integer_array(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
-#
-# Loads the items from an integer array_ref.
-#
 sub _load_items_from_integer_array {
+    # (Widget.Select, Bivio.TypeValue) : undef
+    # Loads the items from an integer array_ref.
     my($self, $choices) = @_;
     my($value) = $choices->get('value');
     return [map {($_, $_)} @$value];
 }
 
-# _load_items_from_list(Bivio::UI::HTML::Widget::Select self, Bivio::Biz::Listmodel list) : array_ref
-#
-# Loads items from the list choices attribute. List values are
-# dynamic so this is called during render.
-#
 sub _load_items_from_list {
+    # (Widget.Select, Biz.Listmodel) : array_ref
+    # Loads items from the list choices attribute. List values are
+    # dynamic so this is called during render.
     my($self, $list) = @_;
 
     unless ($self->unsafe_get('list_id_field')) {
@@ -453,24 +361,12 @@ sub _load_items_from_list {
     });
 }
 
-# _load_items_from_string_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
-#
-# Loads the items from an string array_ref.
-#
 sub _load_items_from_string_array {
+    # (Widget.Select, Bivio.TypeValue) : undef
+    # Loads the items from an string array_ref.
     my($self, $choices) = @_;
     my($i) = $self->get_or_default('first_string_index', 1);
     return [map {($i++, Bivio::HTML->escape($_))} @{$choices->get('value')}];
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
