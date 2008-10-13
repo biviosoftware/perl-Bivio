@@ -305,11 +305,8 @@ sub _load_items_from_enum_list {
     unless ($self->get_or_default(
 	'show_unknown', $self->unsafe_get('unknown_label') ? 0 : 1)
     ) {
-	my($x) = shift(@values);
-#TODO: Eventually make the test stricter.  Popping first value is too fragile
-	Bivio::IO::Alert->warn_deprecated(
-	    $x, ': unknown value as_int is not 0 (', $x->as_int, ')'
-	) unless $x->as_int == 0;
+	shift(@values)
+	    if @values && $values[0]->eq_unknown;
     }
     return [
 	map(($_->as_int, Bivio::HTML->escape($_->get_short_desc)), @values),
