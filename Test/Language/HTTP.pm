@@ -50,6 +50,73 @@ sub absolute_uri {
     )->canonical->as_string;
 }
 
+sub audit_links {
+    my($self, $callback) = @_;
+    my($base) = $self->get_uri;
+    my($notes) = {
+        _has_dead => {},
+    };
+    my($add_link) = sub {
+        my($href, $link) = @_;
+        $notes->{$href} ||= {
+            from => {},
+            to => {},
+        };
+        return $notes->{$href};
+    };
+    my($link_x_to_y) = sub {
+        my($x, $y) = @_;
+        $add_link->($x)->{to}->{$y}++;
+        $add_link->($y)->{from}->{$x}++;
+        return;
+    };
+    my($dead_link) = sub {
+        $notes->{shift()}->{dead}++;
+        return;
+    };
+    my($live_link) = sub {
+        $notes->{shift()}->{live}++;
+        return;
+    };
+    my($skip) = sub {
+        # only follow hrefs we haven't already checked.
+        # don't follow any that logout
+        # only follow local links
+        my($href) = @_;
+        return 1
+            if exists($notes->{$href}->{dead})
+                || exists($notes->{$href}->{live})
+                || $href =~ m{logout|register|adm/su\?|forgot-password};
+        return 1
+            unless $href =~ m{^/|^$base};
+        return 0;
+    };
+    my($links) = [$base];
+    while(my $href = shift(@$links)) {
+        $href =~ s/\?.*$//; #ignore query
+        next if $skip->($href);
+        if (Bivio::Die->catch_quietly(sub {$self->visit_uri($href)})) {
+            $dead_link->($href);
+            next;
+        }
+        $live_link->($href);
+        $callback->($href, $self->get_content)
+            if ref($callback) && ref($callback) eq 'CODE';
+        next unless $self->get_content =~ /<html>/i;
+        my($newlinks) = $self->get_html_parser->get('Links');
+        my($images) = $self->get_html_parser->get('Images');
+        push(@$links, map({
+            my($collection, $key) = @$_;
+            map({
+                my($l) = $collection->get($_);
+                $link_x_to_y->($href, $l->{$key});
+                $l->{$key};
+            } @{$collection->get_keys})
+        } [$newlinks, 'href'], [$images, 'src']));
+    }
+    return $notes;
+}
+
 sub basic_authorization {
     my($self, $user, $password) = @_;
     $self->clear_cookies;
