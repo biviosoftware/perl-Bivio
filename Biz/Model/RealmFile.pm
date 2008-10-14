@@ -282,16 +282,32 @@ sub is_empty {
     return $got_one ? 0 : 1;
 }
 
+sub is_public {
+    return _path(@_) =~ m{^\Q@{[$_FP->PUBLIC_FOLDER]}\E(?:/|$)}i ? 1 : 0;
+}
+
+sub is_backup {
+    return _path(@_) =~ m{[\~\%\#\$]|/\.|\.bak$|-$}i ? 1 : 0;
+}
+
+sub is_mail {
+    return _path(@_) =~ m{^\Q@{[$_FP->MAIL_FOLDER]}\E(?:/|$)}i ? 1 : 0;
+}
+
 sub is_searchable {
     my($self) = @_;
     return $self->get('is_folder')
-	|| _in_versions($self->get('path'))
-	|| _is_backup($self->get('path'))
+	|| $self->is_version
+	|| $self->is_backup
 	? 0 : 1;
 }
 
 sub is_text_content_type {
     return shift->get_content_type(@_) =~ m{^text/} ? 1 : 0;
+}
+
+sub is_version {
+    return _path(@_) =~ m{^\Q@{[$_FP->VERSIONS_FOLDER]}\E(?:/|$)}i ? 1 : 0;
 }
 
 sub parse_path {
@@ -315,7 +331,7 @@ sub path_info_to_id {
 
 sub unauth_copy_deep {
     my($self, $dest) = @_;
-#TODO: Die if $dest _in_version
+#TODO: Die if $dest->is_version
     my($size) = 0;
     return _copy(
 	$self, {
@@ -369,7 +385,7 @@ sub update {
  	if $new_values->{is_public}
 	&& ($new_values->{path}
 	    || $self->get('path')) !~ m{^@{[$self->PUBLIC_FOLDER]}($|/)}oi;
-#TODO: Die if new path _in_version
+#TODO: Die if new path->is_version
     return _update($self, {
 	map(($_ => $self->get($_)),
  	    qw(is_folder path realm_id is_public is_read_only)),
@@ -489,7 +505,7 @@ sub _delete_one {
     return $self->SUPER::delete
 	if $self->get('is_folder');
     my($p) = $self->get('path');
-    if ($values->{override_versioning} || _in_versions($p)) {
+    if ($values->{override_versioning} || $self->is_version) {
 	$self->SUPER::delete;
 	_txn($self, _search_delete($self, [delete => _filename($self)]));
     }
@@ -531,26 +547,6 @@ sub _filename {
     return $res;
 }
 
-sub _in_mail {
-    my($path) = @_;
-    return $path =~ m{^\Q@{[$_FP->MAIL_FOLDER]}\E(?:/|$)}i ? 1 : 0;
-}
-
-sub _in_public {
-    my($path) = @_;
-    return $path =~ m{^\Q@{[$_FP->PUBLIC_FOLDER]}\E(?:/|$)}i ? 1 : 0;
-}
-
-sub _in_versions {
-    my($path) = @_;
-    return $path =~ m{^\Q@{[$_FP->VERSIONS_FOLDER]}\E(?:/|$)}i ? 1 : 0;
-}
-
-sub _is_backup {
-    my($path) = @_;
-    return $path =~ m{[\~\%\#\$]|/\.|\.bak$|-$}i ? 1 : 0;
-}
-
 sub _next_version {
     my($rid, $p) = @_;
     my($base) = lc($p);
@@ -589,6 +585,10 @@ sub _os_path {
 	message => 'file has been deleted in this transaction',
     }) if -l $txn_file && -e $txn_file;
     return  -r $txn_file ? $txn_file : $file;
+}
+
+sub _path {
+    return pop(@_) || shift->get('path');
 }
 
 sub _read {
@@ -769,8 +769,8 @@ sub _verify {
     my($p) = $values->{path_lc}
 	= lc($values->{path} = $self->parse_path($values->{path}));
     $values->{is_read_only} = 1
-	if _in_versions($p) || _in_mail($p);
-    $values->{is_public} = _in_public($p) ? 1 : 0;
+	if $self->is_version($p) || $self->is_mail($p);
+    $values->{is_public} = $self->is_public($p) ? 1 : 0;
     $values->{modified_date_time} ||= $_DT->now;
     return $values;
 }
