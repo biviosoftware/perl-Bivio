@@ -56,7 +56,13 @@ options({
 		 '_anon', 'type'] => 'select',
 	    ['Forms', 'Credit Card Number*:', 'visible',
 		 'Full Name on Card*:', 'type'] => 'text',
-	],
+            ['Images', 'dot', 'label'] => 'dot',
+            ['Images', 'dot', 'src'] => '/i/dot.gif',
+            ['Images', 'dot', 'alt'] => [undef],
+            ['Images', 'logo', 'label'] => 'logo',
+            ['Images', 'logo', 'src'] => '/i/logo.gif',
+            ['Images', 'logo', 'alt'] => [undef],
+        ],
     ],[
  	'applicants' => [
  	    ['Forms', '<prev', 'visible',
