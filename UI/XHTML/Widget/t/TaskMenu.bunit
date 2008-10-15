@@ -76,4 +76,6 @@ req()->set_realm_and_user(qw(demo guest));
     [[{
 	xlink => vs_new(qw(SiteRoot hm_bunit1)),
     }]] => '<div class="task_menu"><a href="/hm/bunit1">bunit1</a></div>',
+    [['SITE_ROOT'], {selected_label_prefix => '!!'}]
+        => qr{task_menu.*class="selected" href="/">!!home}is,
 ];
