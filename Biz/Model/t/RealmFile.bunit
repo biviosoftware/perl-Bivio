@@ -271,6 +271,11 @@ my($auth_uid) = sub {
 	    is_public => 0,
 	    is_read_only => 1,
 	],
+	is_public => [
+	    [] => 0,
+	    ['/Public/foo'] => 1,
+	    ['/foo'] => 0,
+	],
 	load => [
 	    [{path => '/'}] => not_die(),
 	],
@@ -418,6 +423,7 @@ my($auth_uid) = sub {
 	get => [
 	    is_public => 1,
 	],
+	is_public => 1,
 	delete_deep => not_die(),
 	load => [
 	    [{path => '/Public'}] => MODEL_NOT_FOUND(),
