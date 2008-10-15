@@ -281,3 +281,10 @@ video/x-sgi-movie:movie:SGI movie
 application/x-ms-application:application:MS Application
 application/x-ms-manifest:manifest:MS Manifest
 application/octet-stream:deploy:MS Deployment
+application/vnd.openxmlformats-officedocument.wordprocessingml.document:docx:Office 2007 Document
+application/vnd.openxmlformats-officedocument.wordprocessingml.template:dotx:Office 2007 Document Template
+application/vnd.openxmlformats-officedocument.presentationml.presentation:pptx:Office 2007 Presentation
+application/vnd.openxmlformats-officedocument.presentationml.slideshow:ppsx:Office 2007 Slideshow
+application/vnd.openxmlformats-officedocument.presentationml.template:potx:Office 2007 Presentation Template
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:xlsx:Office 2007 Spreadsheet
+application/vnd.openxmlformats-officedocument.spreadsheetml.template:xltx:Office 2007 Spreadsheet Template
