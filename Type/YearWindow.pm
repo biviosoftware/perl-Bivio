@@ -10,7 +10,6 @@ my($_NOW) = $_D->get_part($_D->now, 'year');
 
 # 10 year window from current year forward, ex. (Y2004 => [2004, 2004])
 __PACKAGE__->compile([
-    UNKNOWN => [0],
     map({
 	("Y$_" => [$_, $_]),
     } ($_NOW .. $_NOW + 9)),

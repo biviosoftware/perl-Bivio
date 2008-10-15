@@ -6,7 +6,6 @@ use Bivio::Base 'Type.Enum';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
-    UNKNOWN => [0, 'Select Month'],
     JANUARY => [1, 'Jan', 'January', '01'],
     FEBRUARY => [2, 'Feb', 'February', '02'],
     MARCH => [3, 'Mar', 'March', '03'],
