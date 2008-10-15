@@ -858,7 +858,8 @@ sub required_main {
 	join("\n",
 	     'first argument must be a class name.  Available classes:',
 	     @$pkgs,
-	),
+	)
+	. "\n"
     ) unless $class;
     if ($proto->is_simple_package_name($class)) {
 	my($c) = grep(/^\Q$class\E$/i, @$pkgs);
