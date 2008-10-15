@@ -588,7 +588,8 @@ sub _os_path {
 }
 
 sub _path {
-    return pop(@_) || shift->get('path');
+    my($self, $v) = @_;
+    return defined($v) ? $v : $self->get('path');
 }
 
 sub _read {
