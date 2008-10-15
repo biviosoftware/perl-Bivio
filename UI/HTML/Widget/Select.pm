@@ -52,6 +52,10 @@ use Bivio::Type::Enum;
 # just like L<Bivio::Type::compare|Bivio::Type/"compare">.  This is
 # a sub call, not a method call, so no method or self is passed.
 #
+# enum_display : string ['get_short_desc']
+#
+# Display method for enums.
+#
 # event_handler : Bivio::UI::Widget []
 #
 # If set, this widget will be initialized as a child and must
@@ -306,10 +310,11 @@ sub _load_items_from_enum_list {
 	'show_unknown', $self->unsafe_get('unknown_label') ? 0 : 1)
     ) {
 	shift(@values)
-	    if @values && $values[0]->eq_unknown;
+	    if @values && $values[0]->as_int == 0;
     }
+    my($method) = $self->get_or_default('enum_display', 'get_short_desc');
     return [
-	map(($_->as_int, Bivio::HTML->escape($_->get_short_desc)), @values),
+	map(($_->as_int, Bivio::HTML->escape($_->$method)), @values),
     ];
 }
 
