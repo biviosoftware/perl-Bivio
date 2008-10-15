@@ -36,12 +36,12 @@ sub internal_initialize {
 		qw(card_number card_name card_zip)),
 	    {
 		name => 'card_exp_month',
-		type => 'ECCreditCardExpMonth',
+		type => 'Month',
 		constraint => 'NOT_NULL',
 	    },
 	    {
 		name => 'card_exp_year',
-		type => 'ECCreditCardExpYear',
+		type => 'YearWindow',
 		constraint => 'NOT_NULL',
 	    },
         ],
