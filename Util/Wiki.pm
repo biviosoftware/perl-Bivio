@@ -22,32 +22,32 @@ sub from_xhtml {
     foreach my $in (@files) {
 	(my $out = $in) =~ s/\.html$//;
 	my($html) = ${Bivio::IO::File->read($in)};
-	$html =~ s{.*(?=\Q<div class="main_body">\E)}{}s;
-	$html =~ s{\Q</td>\E.*}{}s;
 	$html =~ s{\&reg\;}{(r)}g;
-	my($wiki) = _from_xhtml_children(
+	_recurse(
+	    $self,
+	    \&_extract_content,
 	    XML::Parser->new(Style => 'Tree')->parse($html));
-	$wiki =~ s{^\@div class=main_body\n}{}s;
-	$wiki =~ s{\@/div\n$}{}s;
+	my($wiki) = _recurse($self, \&_from_xhtml, $self->get('content'));
 	$wiki =~ s{\n{2,}}{\n}sg;
-#	$wiki =~ s{^\@/p$}{}mg;
-#	$wiki =~ s{^\@p$}{}mg;
 	$wiki =~ s{\n{3,}}{\n\n}sg;
 	Bivio::IO::File->write($out, \$wiki);
     }
     return;
 }
 
-sub _from_xhtml_children {
-    my($children) = @_;
-    return join('', map(
-	_from_xhtml_child($children->[$_ *= 2], $children->[++$_]),
-	0 .. @$children/2 - 1,
-    ));
+sub _extract_content {
+    my($self, $tag, $children) = @_;
+    return
+	unless $tag;
+    my($copy) = [@$children];
+    $self->put(content => $copy)
+	if (shift(@$copy)->{class} || '') =~ /^(?:main_middle|main_body)$/;
+    _recurse($self, \&_extract_content, $copy);
+    return;
 }
 
-sub _from_xhtml_child {
-    my($tag, $children) = @_;
+sub _from_xhtml {
+    my($self, $tag, $children) = @_;
     unless ($tag) {
 	$children .= "\n"
 	    unless $children =~ /\n$/s;
@@ -57,7 +57,7 @@ sub _from_xhtml_child {
     delete($attr->{target});
     $attr->{href} =~ s/[\?\&]fc=[^&]+//
 	if $attr->{href};
-    my($value) = _from_xhtml_children($children);
+    my($value) = _recurse($self, \&_from_xhtml, $children);
     $value = "\n"
 	unless defined($value) && length($value);
     return join('',
@@ -67,6 +67,11 @@ sub _from_xhtml_child {
 	    sort(keys(%$attr)))),
 	($value =~ /\@|\n.*\n/s ? ("\n", $value, '@/', $tag, "\n") : " $value"),
     );
+}
+
+sub _recurse {
+    my($self, $op, $children) = @_;
+    return join('', @{$self->map_by_two(sub {$op->($self, @_)}, $children)});
 }
 
 1;
