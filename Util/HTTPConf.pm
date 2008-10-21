@@ -51,7 +51,9 @@ EOF
 sub generate {
     my($vars) = shift->validate_vars(@_);
     umask(027);
-    foreach my $v (map(_app_vars($vars->{$_}), @{$vars->{apps}})) {
+    foreach my $v (
+	map(_app_vars($vars->{$_}, $vars->{httpd}), @{$vars->{apps}})
+    ) {
 	_write(_httpd_conf($v));
 	_write(_app_bconf($v));
 	_write(_app_init_rc($v));
@@ -114,7 +116,7 @@ EOF
 }
 
 sub _app_vars {
-    my($vars) = @_;
+    my($vars, $httpd_vars) = @_;
     # Augments vars for a single app ($vars->{$app}) to include _app_vars.  Returns
     # a $vars with updated config.
     my($app) = $vars->{app};
@@ -233,15 +235,19 @@ EOF
 		my($chain) = !$cfg->{ssl_chain} ? ''
 		    : "\n    SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}";
 		(my $key = $cfg->{ssl_crt}) =~ s/crt$/key/;
-		$hc =~ s{\*\>}{$cfg->{http_suffix}:443>};
+		$hc =~ s{\*\>}{*:443>};
 		(my $https = $http) =~ s{(?<=\:)(\d+)}{$1 + 1}e;
 		$hc =~ s{\Q$http\E}{$https}g;
-		$hc =~ s{(?=^\s+Rewrite)}{    SSLEngine on
+		$hc =~ s{(?=^\s+Rewrite)}{
+		    my($x) = qq(    SSLEngine on
     SSLCertificateFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_crt}
     SSLCertificateKeyFile /etc/httpd/conf/ssl.key/$key$chain
     SetEnv nokeepalive 1
     SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
-}mx;
+);
+                    $httpd_vars->{ssl} ||= $x;
+                    $x;
+}mex;
 		$vars->{httpd_content} .= $hc;
 	    }
 	    return;
@@ -383,7 +389,6 @@ sub _httpd_vars {
 	%$v,
     );
     _app_vars($v);
-    my($ssl_crts) = [grep($_, map($vars->{$_}->{ssl_crt}, @{$vars->{apps}}))];
     $v->{content} = join(
 	"\n",
 	_replace_vars($vars->{httpd}, "httpd_content", <<'EOF'),
@@ -393,18 +398,20 @@ NameVirtualHost *
     DocumentRoot /var/www/html
 </VirtualHost>
 EOF
-	(grep($vars->{$_}->{ssl_listen}, @{$vars->{apps}}) ? <<'EOF' : '')
+	$vars->{httpd}->{ssl}
+	    ? _replace_vars($vars->{httpd}, "httpd_content", <<'EOF') : (),
 Listen 443
 SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
 SSLMutex file:logs/ssl_mutex
 SSLLog logs/error_log
 SSLLogLevel warn
-EOF
-	    . (@{$_SA->sort_unique($ssl_crts)} == @$ssl_crts ? '' : <<'EOF'),
 NameVirtualHost *:443
+<VirtualHost *:443>
+    ServerName $host_name
+    DocumentRoot /var/www/html
+$ssl</VirtualHost>
 EOF
-
 	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
 	join('',
 	    <<'EOF',

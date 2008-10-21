@@ -6,6 +6,9 @@ Bivio::IO::File->chdir(tmp_dir());
 	generate => [
 	    <<'EOF',
 {
+    server_admin => 'default@default.com',
+    limit_request_body => 9999,
+    timeout => 99,
     httpd => {
         host_name => 'proxy.com',
     },
@@ -43,9 +46,32 @@ Bivio::IO::File->chdir(tmp_dir());
         timeout => 1_000,
         trans_handler => '',
     },
-    server_admin => 'default@default.com',
-    limit_request_body => 9999,
-    timeout => 99,
+    a3 => {
+        is_production => 1,
+        can_secure => 1,
+        cookie_tag => 'A3T',
+        root_prefix => 'A3',
+        listen => 1012,
+        virtual_hosts => [
+            'www.a3.com' => {
+                facade_uri => 'a3',
+                ssl_crt => 'mdc.crt',
+            },
+        ],
+    },
+    a4 => {
+        is_production => 1,
+        can_secure => 1,
+        cookie_tag => 'A4T',
+        root_prefix => 'A4',
+        listen => 1014,
+        virtual_hosts => [
+            'www.a4.com' => {
+                facade_uri => 'a4',
+                ssl_crt => 'mdc.crt',
+            },
+        ],
+    },
 };
 EOF
             sub {
