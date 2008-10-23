@@ -322,8 +322,6 @@ td.header_right {
 div.main_bottom,
 div.main_top,
 div.main_body {
-  float: left;
-  clear: both;
   width: 100%;
 }
 div.main_top {
@@ -379,7 +377,6 @@ div.main_top div.tools {
   float: right;
 }
 div.main_top div.selector {
-  float: left;
   text-align: left;
 }
 div.alphabetical_chooser {
