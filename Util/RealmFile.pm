@@ -30,6 +30,7 @@ commands:
     create path -- creates file_path with input
     create_folder path -- creates folder and parents
     delete_deep path ... -- deletes files or folders specified
+    rename old new --- moves old to new
     export_tree folder -- exports an entire tree to current directory
     import_tree [folder] -- imports files in current directory into folder [/]
     list_folder folder -- lists a folder
@@ -124,6 +125,12 @@ sub list_folder {
 sub read {
     my($self, $path) = @_;
     return _do($self, load => $path)->get_content;
+}
+
+sub rename {
+    my($self, $old, $new) = @_;
+    _do($self, load => $old)->update({path => $new});
+    return;
 }
 
 sub update {
