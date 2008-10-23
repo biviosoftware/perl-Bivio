@@ -27,8 +27,8 @@ sub vs_constant {
 }
 
 sub vs_fe {
-    shift;
-    return Bivio::UI::FormError->field_value(@_);
+    my($proto) = shift;
+    return $proto->vs_call('Prose', Bivio::UI::FormError->field_value(@_));
 }
 
 sub vs_form_method_call {
