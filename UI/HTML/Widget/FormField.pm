@@ -40,7 +40,7 @@ sub get_label_and_field {
     return ($_VS->vs_new('FormFieldLabel', {
 	field => _get_field_name($self),
 	label => $_VS->vs_new(After =>
-	    $_VS->vs_new(String => $self->internal_get_label_value, 0),
+	    $_VS->vs_new(Join  => [$self->internal_get_label_value]),
 	    ':',
 	),
 	map({
