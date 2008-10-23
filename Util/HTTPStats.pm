@@ -89,7 +89,8 @@ sub init_report_forum {
 
 sub _create_report {
     my($self, $date, $file_command) = @_;
-    my($root) = $self->use('Bivio::UI::Facade')->get_default->get('uri');
+    my($root) = $self->use('Bivio::UI::Facade')->get_default
+        ->get('local_file_prefix');
     $file_command =~ s/<uri>/$root/
 	|| Bivio::Die->die('invalid file command: ', $file_command);
     my($static_config) = $self->internal_data_section;
