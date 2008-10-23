@@ -9,10 +9,15 @@ my($_D) = __PACKAGE__->use('Type.Date');
 my($_NOW) = $_D->get_part($_D->now, 'year');
 
 # 10 year window from current year forward, ex. (Y2004 => [2004, 2004])
-__PACKAGE__->compile([
-    map({
-	("Y$_" => [$_, $_]),
-    } ($_NOW .. $_NOW + 9)),
-]);
+__PACKAGE__->compile(__PACKAGE__->year_range_config(0, 9));
+
+sub year_range_config {
+    my($proto, $start, $end) = @_;
+    return [
+	map({
+	    ("Y$_" => [$_, $_]),
+	} ($_NOW + $start .. $_NOW + $end)),
+    ];
+}
 
 1;
