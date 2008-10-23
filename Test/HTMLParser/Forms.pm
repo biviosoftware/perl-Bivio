@@ -347,8 +347,9 @@ sub _label_option {
 	if $o->{selected} || !defined($group->{value});
     if ($fields->{option} && !defined($fields->{select}->{label})) {
 	my($x) = $o->{value};
-	$fields->{text} = !$x || $o->{label} =~ /^(?:select|choose)\s/i
-	    ? $o->{label} : '_anon';
+	$fields->{text} = (!$x && $o->{label})
+	    || $o->{label} =~ /^(?:select|choose)\s/i
+		? $o->{label} : '_anon';
 	_label_visible($fields);
     }
     $fields->{$which} = undef;
