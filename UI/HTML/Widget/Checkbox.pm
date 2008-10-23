@@ -16,7 +16,7 @@ sub initialize {
     $self->put(label => $_C->if_version(
 	6 => sub {
 	    return $_VS->vs_new(
-		'Tag', 'span', $_VS->vs_new(String => $l), 'checkbox_label');
+		'Tag', 'span', $_VS->vs_new(Prose => $l), 'checkbox_label');
 	},
 	sub {$_VS->vs_new(Join => ["\n", $_VS->vs_string($l, 'checkbox')])},
     )) unless Bivio::UI::Widget->is_blessed($l);
