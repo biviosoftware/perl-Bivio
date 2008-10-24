@@ -2,31 +2,21 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::RoundedBox;
 use strict;
-use base 'Bivio::UI::HTML::Widget::Tag';
+use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
-    my($x);
-    foreach my $c (qw(
-	 rounded_box_body
-	 bottom_right
-	 bottom_left
-	 top_right
-	 top_left
-    )) {
-	$x = Tag(
-	    'div',
-	    $x || $self->get('value'),
-	    $c,
-	);
-    }
     $self->put_unless_exists(
-	class => 'rounded_box',
+	class => 'b_rounded_box',
     )->put(
-        value => $x,
+        value => Join([
+	    map(EmptyTag(span => "b_rounded_box_body b_rounded_box_$_"), 1..4),
+	    Tag('div', $self->get('value'), 'b_rounded_box_body'),
+	    map(EmptyTag(span => "b_rounded_box_body b_rounded_box_$_"), reverse(1..4)),
+	]),
     );
     return shift->SUPER::initialize(@_);
 }

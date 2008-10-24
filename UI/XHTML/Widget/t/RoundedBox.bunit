@@ -2,5 +2,5 @@
 # $Id$
 Widget();
 [
-    x => '<div class="rounded_box"><div class="top_left"><div class="top_right"><div class="bottom_left"><div class="bottom_right"><div class="rounded_box_body">x</div></div></div></div></div></div>',
+    x => qr{<div class="b_rounded_box"><span class="b_rounded_box_body b_rounded_box_1"></span>.*2.*3.*4.*div.*rounded_box_body.*x.*4.*3.*2.*1},
 ];
