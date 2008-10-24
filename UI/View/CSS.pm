@@ -502,30 +502,6 @@ p {
 .byline2 {
   white-space: nowrap;
 }
-.top_left {
-  background-image: Icon('top_left');;
-  background-repeat: no-repeat;
-  background-position: top left;
-}
-.top_right {
-  background-image: Icon('top_right');;
-  background-repeat: no-repeat;
-  background-position: top right;
-}
-.bottom_left {
-  background-image: Icon('bottom_left');;
-  background-repeat: no-repeat;
-  background-position: bottom left;
-}
-.bottom_right {
-  background-image: Icon('bottom_right');;
-  background-repeat: no-repeat;
-  background-position: bottom right;
-  padding: 2px;
-}
-.rounded_box_body {
-  width: 100%;
-}
 p.prose,
 p.b_prose {
   text-indent: 2em;
@@ -565,6 +541,30 @@ td.amount_cell {
   Color('dd_menu_selected-background');
   Color('dd_menu_selected');
   text-decoration: none;
+}
+.b_rounded_box_1,
+.b_rounded_box_2,
+.b_rounded_box_3,
+.b_rounded_box_4 {
+  font-size: 1px;
+  overflow: hidden;
+  display: block;
+}
+span.b_rounded_box_1 {
+  height: 1px;
+  margin: 0 5px;
+}
+span.b_rounded_box_2 {
+  height: 1px;
+  margin: 0 3px;
+}
+span.b_rounded_box_3 {
+  height: 1px;
+  margin: 0 2px;
+}
+span.b_rounded_box_4 {
+  height: 2px;
+  margin: 0 1px;
 }
 EOF
 }
