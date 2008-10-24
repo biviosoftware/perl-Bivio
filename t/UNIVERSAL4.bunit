@@ -1,0 +1,21 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+options({
+    create_object => sub {
+	my(undef, $params) = @_;
+	return class($params->[0]);
+    },
+});
+[
+    'Bivio::t::UNIVERSAL::Super2' => [
+	code_ref_for_subroutine => [
+	    s1 => [],
+	],
+    ],
+    'Bivio::t::UNIVERSAL::Super3' => [
+	s1 => 'Super3',
+    ],
+    'Bivio::t::UNIVERSAL::Super2' => [
+	s1 => 'Super1',
+    ],
+];
