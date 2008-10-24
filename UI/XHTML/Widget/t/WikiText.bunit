@@ -74,6 +74,20 @@ OUT
 	    '@br' => qq{<br />\n},
 	    '@br dropped text' => qq{<br /><!--IGNORED-TAG-VALUE=dropped text-->\n},
 	    <<'IN' => _chomp(<<'OUT'),
+@table
+@tr
+@td
+one
+@table
+@tr
+@td
+two
+IN
+<table><tr><td><p>one
+</p><table><tr><td><p>two
+</p></td></tr></table></td></tr></table>
+OUT
+	    <<'IN' => _chomp(<<'OUT'),
 @h1 h 1
 
 p1
