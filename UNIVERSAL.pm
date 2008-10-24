@@ -4,11 +4,32 @@ package Bivio::UNIVERSAL;
 use strict;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_R, $_SA);
+my($_A, $_R, $_SA);
 
 sub as_string {
-    # Returns the string form of I<self>.  By default, this is just I<self>.
-    return shift(@_) . '';
+    my($self) = @_;
+    return "$self"
+	unless $self->can('internal_as_string');
+    my($p) = $self->simple_package_name;
+    return $p
+	unless ref($self);
+    # Don't recurse more than two levels in calls to this sub.  We
+    # look back an arbitrary number of levels (10), because there's
+    # nesting inside Alert->format_args.
+    my($this_sub) = (caller(0))[3];
+    my($recursion) = 0;
+    for (my($i) = 1; $i < 20; $i++) {
+	my($sub) = (caller($i))[3];
+	last unless $sub;
+	return "$p(...)"
+	    if $this_sub eq $sub && ++$recursion >= 1;
+    }
+    my(@cfg) = map(($_, ','), $self->internal_as_string);
+    pop(@cfg);
+    my($res) = ($_A ||= $self->use('IO.Alert'))
+	->format_args($p, @cfg ? ('(', @cfg, ')') : ());
+    chomp($res);
+    return $res;
 }
 
 sub call_super {
@@ -38,13 +59,16 @@ sub clone {
 
 sub code_ref_for_subroutine {
     my($proto, $name) = @_;
-    $name = $proto->package_name . '::' . $name;
     do {
-	no strict 'refs';
-	return
-	    unless defined(&$name);
+	no strict;
+	local(*p) = *{$proto->package_name . '::'};
+	if (exists($p{$name})) {
+	    local(*n) = $p{$name};
+	    return *n{CODE}
+		if defined(*n{CODE});
+	}
     };
-    return \&$name;
+    return;
 }
 
 sub delegate_method {
