@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 7.2  2008/10/15 22:58:05  moeller
+  * Bivio::Biz::Model::ECCreditCardPaymentForm
+    changed ECCreditCardExpMonth to Month and ECCreditCardExpYear to YearWindow
+  * Bivio::Biz::Model::RealmFile
+    fixed _path() in empty case
+  * Bivio::MIME::Type
+    added types for office 2007 documents
+  * Bivio::Type::ECCreditCardExpYear
+    deprecated, use YearWindow
+  * Bivio::Type::Month
+    added get_two_digit_value()
+  * Bivio::UI::HTML::Widget::Select
+    added enum_display attribute
+
   Revision 7.1  2008/10/14 00:15:18  dobbs
   * Bivio::Biz::Model::RealmFile
     made several methods public: is_public(), is_backup(), is_mail()
