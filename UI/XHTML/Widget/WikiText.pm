@@ -291,86 +291,8 @@ my($_DOMAIN) = qr{(@{[
 	zw
     )) . ')'
 ]})}x;
-my($_PHRASE) = _hash([qw(
-    a
-    abbr
-    acronym
-    cite
-    code
-    del
-    dfn
-    em
-    ins
-    kbd
-    legend
-    option
-    q
-    samp
-    small
-    span
-    strong
-    sub
-    sup
-    var
-)], []);
-my($_EMPTY) = _hash([qw(br hr img input)], []);
-my($_EMPTY_BLOCK) = _hash([qw(textarea)], []);
-my($_BLOCK) = _hash([qw(
-    blockquote
-    caption
-    center
-    col
-    colgroup
-    dd
-    div
-    dl
-    dt
-    embed
-    fieldset
-    form
-    h1
-    h2
-    h3
-    h4
-    h5
-    h6
-    li
-    object
-    ol
-    p
-    param
-    pre
-    select
-    table
-    tbody
-    td
-    tfoot
-    th
-    thead
-    tr
-    ul
-)], [keys(%$_PHRASE), qw(p h1 h2 h3 h4 h5 h6)]);
-foreach my $x (
-    map([$_ => qw(tbody thead tfoot td tr th col colgroup)],
-	qw(table tbody thead tfoot colgroup)),
-    [col => qw(col)],
-    [tr => qw(tr td th)],
-    [td => qw(td th)],
-    [th => qw(td th)],
-    map([$_ => qw(dt dd)], qw(dl dt dd)),
-    map([$_ => qw(li)], qw(ul ol li)),
-) {
-    my($t) = shift(@$x);
-    foreach my $y (@$x) {
-	$_BLOCK->{$t}->{$y} = 1;
-    }
-}
-# These elements nest
-foreach my $t (qw(table dl ul ol div)) {
-    delete($_BLOCK->{$t}->{$t});
-}
-my($_TAGS) = {%$_EMPTY, %$_EMPTY_BLOCK, %$_BLOCK, %$_PHRASE};
-my($_CLOSE_ALL) = {map(($_ => 1), keys(%$_TAGS))};
+my($_CHILDREN) = _init_children();
+my($_EMPTY) = {map((@{$_CHILDREN->{$_}} ? () : ($_ => 1)), keys(%$_CHILDREN))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*$)};
 my($_C) = b_use('IO.Config');
@@ -572,7 +494,9 @@ sub render_html {
 	$state->{html} .= $line =~ s/^\@// ? _fmt_tag($line, $state)
 	    : _fmt_line($line, $state);
     }
-    _close_tags($_CLOSE_ALL, $state);
+    while ($state->{tags}->[0]) {
+	_close_top($state->{tags}->[0], $state);
+    }
     return $state->{html};
 }
 
@@ -597,6 +521,45 @@ sub render_plain_text {
     return (Bivio::HTML->unescape($body), $wa);
 }
 
+sub _close_implicit_tags {
+    my($end_tag, $state) = @_;
+    my($tags) = $state->{tags};
+    return ''
+	unless grep($end_tag eq $_, @$tags);
+    while (@$tags && ($tags->[0] || '') ne $end_tag) {
+	_close_top($tags->[0], $state);
+    }
+    return @$tags ? _close_top($end_tag, $state) : '';
+}
+
+sub _close_not_nestable_tags {
+    my($start_tag, $state) = @_;
+    my($tags) = $state->{tags};
+    while (@$tags) {
+	my($t) = $tags->[0];
+	last
+	    if grep($start_tag eq $_, @{$_CHILDREN->{$t}});
+	_close_top($t, $state);
+    }
+    return '';
+}
+
+sub _close_p {
+    my($state, $attrs) = @_;
+    my($tags) = $state->{tags};
+    while (@$tags) {
+	my($t) = $tags->[0];
+	last
+	    unless grep($t eq $_, @{$_CHILDREN->{p}}, 'p');
+	$$attrs = $state->{attrs}->[0]
+	    if $attrs;
+	_close_top($t, $state);
+	last
+	    if $t eq 'p';
+    }
+    return '';
+}
+
 sub _close_top {
     my($tag, $state) = @_;
     if (($state->{tags}->[0] || '') eq $tag) {
@@ -609,23 +572,10 @@ sub _close_top {
     return '';
 }
 
-sub _close_tags {
-    my($to_close, $state, $attrs) = @_;
-    $to_close = $_TAGS->{$to_close}
-	unless ref($to_close);
-    my($tags) = $state->{tags};
-    while (@$tags && $to_close->{$tags->[0]}) {
-	$$attrs = $state->{attrs}->[0]
-	    if $attrs;
-	_close_top($tags->[0], $state);
-    }
-    return '';
-}
-
 sub _empty_tag {
     my($tag, $attrs_string, $line, $nl, $state) = @_;
     return "<$tag$attrs_string"
-	. ($_EMPTY_BLOCK->{$tag} ? "></$tag>" : ' />')
+	. ' />'
 	. (length($line)
 	       ? "<!--IGNORED-TAG-VALUE=" . Bivio::HTML->escape($line) . '-->'
 	       : "")
@@ -696,7 +646,7 @@ sub _fmt_line {
     $line =~ s{^\s+|\s+$}{}sg;
     if (!length($line) || $line =~ s{^--+$}{<hr /><br />\n}) {
 	my($attrs);
-	_close_tags('p', $state, \$attrs);
+	_close_p($state, \$attrs);
 	$state->{html} .= $line;
 	return defined($attrs) ? _start_tag('p', $attrs, $state) : '';
     }
@@ -744,10 +694,10 @@ sub _fmt_tag {
     my($tag) = lc($2);
     my($class) = $3;
     return _fmt_err($close . $tag . $line, 'unknown tag', $state)
-	unless $_MY_TAGS->{$tag} || $_TAGS->{$tag};
-    _close_tags($tag, $state);
-    return _close_top($tag, $state)
+	unless $_MY_TAGS->{$tag} || $_CHILDREN->{$tag};
+    return _close_implicit_tags($tag, $state)
 	if $close;
+    _close_not_nestable_tags($tag, $state);
     my($attrs) = defined($class) && length($class) ? {class => $class} : {};
     while ($line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]*)")//) {
 	my($k) = lc($1 ? $1 : $3);
@@ -783,11 +733,11 @@ sub _fmt_tag {
 	    . Bivio::HTML->escape_attr_value($attrs->{$k}) . '"';
     }
     return _empty_tag($tag, $attrs_string, $line, $nl, $state)
-	if $_EMPTY->{$tag} || $_EMPTY_BLOCK->{$tag};
+	if $_EMPTY->{$tag};
     #TODO: This is wrong.  <p> is allowed inside <del> and <ins> but not in any
     #of the other tags in $_PHRASE
     _start_p($state)
-	if $_PHRASE->{$tag};
+	if grep($tag eq $_, @{$_CHILDREN->{p}});
     $state->{html} .= _start_tag($tag, $attrs_string, $state);
     return _fmt_pre($line, $state)
 	if $tag =~ /^(?:pre|code)$/;
@@ -820,6 +770,93 @@ sub _fmt_token {
 sub _hash {
     my($a, $b) = @_;
     return {map(($_ => +{map(($_ => 1), @$b, $_)}), @$a)};
+}
+
+sub _init_children {
+    # From the XHTML DTD 1.0
+    my($special_pre) = ['br', 'span', 'bdo', 'map'];
+    my($special) = [@$special_pre, 'object', 'img'];
+    my($fontstyle) = ['tt', 'i', 'b', 'big', 'small'];
+    my($phrase) = ['em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup'];
+    my($inline_forms) = ['input', 'select', 'textarea', 'label', 'button'];
+    my($misc_inline) = ['ins', 'del', 'script'];
+    my($misc) = ['noscript', @$misc_inline];
+    my($inline) = ['a', @$special, @$fontstyle, @$phrase, @$inline_forms];
+    my($Inline) = [@$inline, @$misc_inline];
+    my($heading) = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+    my($lists) = ['ul', 'ol', 'dl'];
+    my($blocktext) = ['pre', 'hr', 'blockquote', 'address'];
+    my($block) = ['p', @$heading, 'div', @$lists, @$blocktext, 'fieldset', 'table'];
+    my($Block) = [@$block, 'form', @$misc];
+    my($Flow) = [@$block, 'form', @$inline, @$misc];
+    my($a_content) = [@$special, @$fontstyle, @$phrase, @$inline_forms, @$misc_inline];
+    my($pre_content) = ['a', @$fontstyle, @$phrase, @$special_pre, @$misc_inline, @$inline_forms];
+    my($form_content) = [@$block, @$misc];
+    my($button_content) = ['p', @$heading, 'div', @$lists, @$blocktext, 'table', @$special, @$fontstyle, @$phrase, @$misc];
+    return {
+	a => $a_content,
+	abbr => $Inline,
+	acronym => $Inline,
+	address => $Inline,
+	bdo => $Inline,
+	big => $Inline,
+	blockquote => $Block,
+	br => [],
+	button => $button_content,
+	caption => $Inline,
+	cite => $Inline,
+	code => $Inline,
+	col => [],
+	colgroup => [qw(col)],
+	dd => $Flow,
+	del => $Flow,
+	dfn => $Inline,
+	div => $Flow,
+	dl => [qw(dt dd)],
+	dt => $Inline,
+	em => $Inline,
+	fieldset => ['legend', @$block, 'form', @$inline, @$misc],
+	form => $form_content,
+	h1 => $Inline,
+	h2 => $Inline,
+	h3 => $Inline,
+	h4 => $Inline,
+	h5 => $Inline,
+	h6 => $Inline,
+	hr => [],
+	img => [],
+	input => [],
+	ins => $Flow,
+	kbd => $Inline,
+	label => $Inline,
+	legend => $Inline,
+	li => $Flow,
+	object => ['param', @$block, 'form', @$inline, @$misc],
+	ol => [qw(li)],
+	optgroup => [qw(option)],
+	option => ['#PCDATA'],
+	p => $Inline,
+	param => [],
+	pre => $pre_content,
+	q => $Inline,
+	samp => $Inline,
+	select => [qw(optgroup option)],
+	small => $Inline,
+	span => $Inline,
+	strong => $Inline,
+	sub => $Inline,
+	sup => $Inline,
+	table => [qw(caption col colgroup thead tfoot tbody tr)],
+	tbody => [qw(tr)],
+	td => $Flow,
+	textarea => ['#PCDATA'],
+	tfoot => [qw(tr)],
+	th => $Flow,
+	thead => [qw(tr)],
+	tr => [qw(th td)],
+	ul => [qw(li)],
+	var => $Inline,
+    };
 }
 
 sub _next_line {
