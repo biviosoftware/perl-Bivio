@@ -146,34 +146,6 @@ sub accepts_attribute {
     return 0;
 }
 
-sub as_string {
-    my($self) = @_;
-    # Renders a terse description of the widget.
-    return $self->simple_package_name unless ref($self);
-
-    # Don't recurse more than two levels in calls to this sub.  We
-    # look back an arbitrary number of levels (10), because there's
-    # nesting inside Alert->format_args.
-    my($this_sub) = (caller(0))[3];
-    my($recursion) = 0;
-    for (my($i) = 1; $i < 20; $i++) {
-	my($sub) = (caller($i))[3];
-	last unless $sub;
-	# Stop at two levels
-	return $self->simple_package_name
-		if $this_sub eq $sub && ++$recursion >= 1;
-    }
-
-    # Can't use join, because it formats the strings incorrectly.
-    my(@cfg) = map {($_, ',')} $self->internal_as_string;
-    pop(@cfg);
-
-    my($res) = Bivio::IO::Alert->format_args(
-	    $self->simple_package_name, @cfg ? ('(', @cfg, ')') : ());
-    chomp($res);
-    return $res;
-}
-
 sub die {
     my($proto, $entity, $source, @msg) = @_;
     # Dies with I<msg> and context including I<attr_name> and I<source>
