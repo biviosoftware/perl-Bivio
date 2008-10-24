@@ -126,13 +126,19 @@ sub internal_xhtml_adorned_attrs {
 }
 
 sub internal_xhtml_adorned_body {
+    my($self) = @_;
     return Join([
 	view_widget_value('xhtml_body_first'),
-	$_C->if_version(7 => sub {vs_grid3('dock')}),
-	vs_grid3('header'),
-	vs_grid3('main'),
-	vs_grid3('footer'),
+	$_C->if_version(7 => sub {$self->internal_xhtml_grid3('dock')}),
+	$self->internal_xhtml_grid3('header'),
+	$self->internal_xhtml_grid3('main'),
+	$self->internal_xhtml_grid3('footer'),
     ]);
+}
+
+sub internal_xhtml_grid3 {
+    my(undef, $name) = @_;
+    return vs_grid3($name);
 }
 
 sub _header_right {
