@@ -304,7 +304,7 @@ MinSpareServers 1
 MaxSpareServers $servers
 StartServers $servers
 MaxClients $servers
-MaxRequestsPerChild 100000
+MaxRequestsPerChild 500
 LimitRequestBody $limit_request_body
 
 ServerRoot /etc/httpd
