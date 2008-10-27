@@ -44,7 +44,6 @@ sub initialize {
     my($i);
     $self->put(
 	tag => 'div',
-	value => '',
 	_init => sub {
 	    my($source) = @_;
 	    $need_sep = 0;
