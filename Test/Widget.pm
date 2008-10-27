@@ -6,16 +6,6 @@ use Bivio::Base 'TestUnit.Unit';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-our($AUTOLOAD);
-
-sub AUTOLOAD {
-    my($func) = $AUTOLOAD;
-    # Tries to find Bivio::DieCode or class or type or type function.
-    $func =~ s/.*:://;
-    return if $func eq 'DESTROY';
-    shift(@_);
-    return __PACKAGE__->builtin_self->vs_new($func => @_);
-}
 
 sub new_unit {
     my($proto, $class_name, $args) = @_;
