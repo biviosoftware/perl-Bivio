@@ -1,0 +1,64 @@
+# Copyright (c) 2008 bivio Software Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+foreach my $item (
+    ['top.bmenu', <<'EOF'],
+Label,Link
+Index
+A,a.bmenu
+B,b.bmenu
+EOF
+    ['a.bmenu', <<'EOF'],
+Label,Link
+Aa
+Ab
+Ac,/wiki/C
+EOF
+    ['b.bmenu', <<'EOF'],
+Label,Link
+Ba,c.bmenu
+Bb
+EOF
+    ['c.bmenu', <<'EOF'],
+Label,Link
+Ca
+Cb
+EOF
+) {
+    my($p, $c) = @$item;
+    my($path) = class('Type.WikiDataName')->to_absolute($p);
+    model('RealmFile')->delete({path => $path});
+    model('RealmFile')->create_with_content({path => $path}, \$c);
+}
+[
+    inline_case(sub {req()->put(uri => '/fourem/wiki/Ab'); 1}),
+    [{
+	value => '@b-menu a',
+	is_public => 0,
+    }] => qr{@{[join('.*', qw(
+       class="bmenu"
+       "/fourem/wiki/Aa" Aa
+       selected "/fourem/wiki/Ab" Ab
+       "/wiki/C" Ac
+    ))]}},
+    inline_case(sub {req()->put(uri => '/fourem/wiki/Ca'); 1}),
+    [{
+	value => '@b-menu b',
+	is_public => 0,
+    }] => qr{@{[join('.*', qw(
+       class="bmenu"
+       selected "/fourem/wiki/Ca" Ba
+       "/fourem/wiki/Bb" Bb
+    ))]}},
+    inline_case(sub {req()->put(uri => '/fourem/wiki/Ab'); 1}),
+    [{
+	value => '@b-menu top',
+	is_public => 0,
+    }] => qr{@{[join('.*', qw(
+       class="bmenu"
+       "/fourem/wiki/Index" Index
+       selected "/fourem/wiki/Aa" A
+       "/fourem/wiki/Ca" B
+    ))]}},
+];
+#TODO test uris with questionmark?

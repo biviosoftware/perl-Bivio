@@ -6,30 +6,13 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
-my($_WN) = __PACKAGE__->use('Type.WikiName');
-
-sub SUFFIX {
-    return '.bmenu';
-}
+my($_WDN) = b_use('Type.WikiDataName');
+my($_WN) = b_use('Type.WikiName');
+my($_SUFFIX) = '.bmenu';
+my($_R) = b_use('Type.Regexp');
 
 sub handle_register {
     return ['b-menu'];
-}
-
-sub internal_render_label {
-    # TODO: remove this code (see VERSION 1.14 in cvs) whenever the majority of
-    # browsers can understand CSS :before selector
-
-    #$selected_regexp is for use by subclasses
-    my($proto, $label, $args, $selected_regexp) = @_;
-    my($res) = $args->{proto}->render_html({
-	%$args,
-	value => $label,
-    });
-    $res =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
-    chomp($res);
-    return $res;
 }
 
 sub render_html {
@@ -39,28 +22,15 @@ sub render_html {
     Bivio::Die->die(
 	$args->{attrs}, ': only accepts "class" and "value" attributes',
     ) if %{$args->{attrs}};
-    my($path) = $_WDN->to_absolute($value, $args->{is_public}) . $proto->SUFFIX;
-    my($csv) = $proto->use('ShellUtil.CSV')->parse_records(
-	Bivio::Biz::Model->new($args->{req}, 'RealmFile')->unauth_load_or_die({
-	    path => $path,
-	    realm_id => $args->{realm_id},
-	    is_public => $args->{is_public},
-        })->get_content,
-    );
-    return unless @$csv;
-    my($line) = 2;
-    my($b) = '';
-    TaskMenu(
-	# in a SPAN because MSIE 6 can't identify multi classed items
-	[map(Tag('SPAN', Link(_parse_row($proto, $_, $args, $path, $line++))),
-             @$csv)],
-	$class,
-    )->put_and_initialize(
+    my($links) = _visit($value, $args);
+    return unless @$links;
+    # in a SPAN because MSIE 6 can't identify multi classed items
+    TaskMenu([map(SPAN(Link($_)), @$links)], $class)->put_and_initialize(
 	parent => undef,
 	selected_item => sub {
 	    my($w, $source) = @_;
             my($re) = $w->get_nested(qw(value selected_regexp));
-	    return ($source->req->unsafe_get('uri') || '') =~ qr{$re}i ? 1 : 0;
+	    return ($source->req->unsafe_get('uri') || '') =~ $re ? 1 : 0;
 	},
     )->render($args->{source}, \$b);
     return $b;
@@ -71,25 +41,73 @@ sub _has_value {
     return defined($v) && length($v);
 }
 
-sub _parse_row {
-    my($proto, $row, $args, $path, $line) = @_;
-    Bivio::Die->die($path, ", line $line: missing Label value")
-        unless _has_value($row->{Label});
+sub _join_regexp {
+    return join('|', map($_->{selected_regexp}, @_));
+}
+
+sub _render_label {
+    my($row, $args) = @_;
+    my($res) = $args->{proto}->render_html({
+        %$args,
+        value => $row->{Label},
+    });
+    $res =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
+    chomp($res);
+    return $res;
+}
+
+sub _set_missing_link_from_label {
+    my($row) = @_;
     unless (_has_value($row->{Link})) {
-	$row->{Link} = $row->{Label};
-	$row->{Label} = $_WN->to_title($row->{Label});
+        $row->{Link} = $row->{Label};
+        $row->{Label} = $_WN->to_title($row->{Label});
     }
-    my($href) = $args->{proto}->internal_format_uri($row->{Link}, $args);
-    my($selected_regexp) = _has_value($row->{'Selected Regexp'})
-        ? qr/$row->{'Selected Regexp'}/i
-	: qr/^\Q$href\E$/;
-    return {
-	value => Simple($proto->internal_render_label(
-            $row->{Label}, $args, $selected_regexp)),
-	href => $href,
-	selected_regexp => $selected_regexp,
-	(_has_value($row->{Class}) ? (class => $row->{Class}) : ()),
-    };
+    return;
+}
+
+sub _selected_regexp {
+    my($re,$href) = @_;
+    return _has_value($re)
+        ? $_R->from_literal('(?is-xm:'.$re.')')
+        : $_R->from_literal('(?is-xm:^'.$_R->quote_string($href).'$)');
+}
+
+sub _visit {
+    my($value, $args) = @_;
+    my($path) = $_WDN->to_absolute($value, $args->{is_public}) . $_SUFFIX;
+    my($csv) = b_use('ShellUtil.CSV')->parse_records(
+	Bivio::Biz::Model->new($args->{req}, 'RealmFile')->unauth_load_or_die({
+	    path => $path,
+	    realm_id => $args->{realm_id},
+	    is_public => $args->{is_public},
+        })->get_content,
+    );
+    return unless @$csv;
+    my($line) = 2;
+    return [map({
+        if (_has_value($_->{Link}) && $_->{Link} =~ s/\.bmenu$//) {
+            my($links) = _visit($_->{Link}, $args);
+            {
+                value => Simple(_render_label($_, $args)),
+                href => $links->[0]->{href},
+                selected_regexp => _join_regexp(@$links),
+                (_has_value($_->{Class}) ? (class => $_->{Class}) : ()),
+            };
+        }
+        else {
+            Bivio::Die->die($path, ", line $line: missing Label value")
+                    unless _has_value($_->{Label});
+            $line++;
+            _set_missing_link_from_label($_);
+            my($href) = $args->{proto}->internal_format_uri($_->{Link}, $args);
+            {
+                value => Simple(_render_label($_, $args)),
+                href => $href,
+                selected_regexp => _selected_regexp($_->{'Selected Regexp'}, $href),
+                (_has_value($_->{Class}) ? (class => $_->{Class}) : ()),
+            };
+        }
+    } @$csv)];
 }
 
 1;
