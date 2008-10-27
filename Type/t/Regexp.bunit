@@ -20,4 +20,7 @@ Type();
 	'(?&a)' => PERMISSION_DENIED(),
 	'(' => SYNTAX_ERROR(),
     ],
+    quote_string => [
+        '[' => '\[',
+    ],
 ];

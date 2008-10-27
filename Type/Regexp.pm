@@ -26,6 +26,12 @@ sub get_width {
     return 500;
 }
 
+sub quote_string {
+    my(undef, $value) = @_;
+    $value =~ s/(\W)/\\$1/sg;
+    return $value;
+}
+
 sub to_sql_param {
     return shift->to_literal(@_);
 }
