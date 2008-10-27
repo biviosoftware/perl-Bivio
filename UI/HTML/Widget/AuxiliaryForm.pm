@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::HTML::Widget::EmptyForm;
+package Bivio::UI::HTML::Widget::AuxiliaryForm;
 use strict;
 use Bivio::Base 'HTMLWidget.Form';
 
