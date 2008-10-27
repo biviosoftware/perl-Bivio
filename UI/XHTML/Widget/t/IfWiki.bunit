@@ -8,5 +8,6 @@ req()->server_redirect({
     realm => Auth_Realm('site', req()),
 });
 [
-    ['/Home', 't'] => 't',
+    ['/Ho.*', 't'] => 't',
+    ['/Not.*', 't', 'f'] => 'f',
 ];
