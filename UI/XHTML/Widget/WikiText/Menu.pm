@@ -24,6 +24,7 @@ sub render_html {
     ) if %{$args->{attrs}};
     my($links) = _visit($value, $args);
     return unless @$links;
+    my($buf) = '';
     # in a SPAN because MSIE 6 can't identify multi classed items
     TaskMenu([map(SPAN(Link($_)), @$links)], $class)->put_and_initialize(
 	parent => undef,
@@ -32,8 +33,8 @@ sub render_html {
             my($re) = $w->get_nested(qw(value selected_regexp));
 	    return ($source->req->unsafe_get('uri') || '') =~ $re ? 1 : 0;
 	},
-    )->render($args->{source}, \$b);
-    return $b;
+    )->render($args->{source}, \$buf);
+    return $buf;
 }
 
 sub _has_value {
