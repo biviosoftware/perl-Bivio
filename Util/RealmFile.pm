@@ -90,7 +90,7 @@ sub import_tree {
 		$File::Find::prune = 1;
 		return;
 	    }
-	    return if $_ =~ m{(^|/)(\.*|.*~)$};
+	    return if $_ =~ m{(^|/)(\..*|.*~|#.*)$};
 	    my($f) = $File::Find::name =~ m{^\./(.+)};
 	    my($path) = $self->convert_literal('FilePath', "$folder/$f");
 	    my($method) = -d $_ ? 'create_folder' : 'create_with_content';
