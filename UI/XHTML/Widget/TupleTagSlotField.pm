@@ -62,7 +62,7 @@ sub internal_as_string {
 
 sub internal_new_args {
     shift;
-    return $_CB->internal_compute_new_args([qw(field)], \@_);
+    return $_CB->internal_compute_new_args([qw(field ?class)], \@_);
 }
 
 1;

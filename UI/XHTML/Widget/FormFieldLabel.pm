@@ -15,7 +15,7 @@ sub internal_as_string {
 
 sub internal_new_args {
     shift;
-    return $_CB->internal_compute_new_args([qw(field label)], \@_);
+    return $_CB->internal_compute_new_args([qw(field label ?class)], \@_);
 }
 
 sub initialize {

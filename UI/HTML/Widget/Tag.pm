@@ -22,6 +22,10 @@ my($_EMPTY) = [qw(
     param
 )];
 
+sub NEW_ARGS {
+    return [qw(tag ?value ?class)];
+}
+
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($b) = '';
@@ -44,9 +48,22 @@ sub control_on_render {
 
 sub initialize {
     my($self) = @_;
+    my($t, $v) = $self->unsafe_get(qw(tag value));
+    if (_empty($t)) {
+	if ($v and $v =~ /^[a-z0-9]+$/) {
+	    $self->put_unless_exists(class => $v);
+	}
+	$self->put(value => '');
+	$self->put_unless_exists(tag_if_empty => 1);
+    }
+    elsif (!defined($v)) {
+	$self->die('"value" is a required parameter')
+	    unless $self->can('render_tag_value');
+    }
+    elsif (!ref($t) && defined($v) && length($v) == 0) {
+	$self->put_unless_exists(tag_if_empty => 1);
+    }
     $self->unsafe_initialize_attr('value');
-    $self->put_unless_exists(tag_if_empty => 1)
-	if _empty($self->get('tag'), $self->unsafe_get('value'));
     $self->initialize_attr('tag');
     $self->initialize_attr(bracket_value_in_comment => 0);
     $self->unsafe_initialize_attr('tag_if_empty');
@@ -57,18 +74,6 @@ sub internal_as_string {
     return shift->unsafe_get('tag', 'value');
 }
 
-sub internal_new_args {
-    my($proto, $tag) = splice(@_, 0, 2);
-    return $proto->internal_compute_new_args(
-	[qw(tag value)],
-	[
-	    $tag,
-	    (!defined($_[0]) || $_[0] ne '') && _empty($tag) ? '' : (),
-	    @_,
-	],
-    );
-}
-
 sub internal_tag_render_attrs {
     my($self, $source, $buffer) = @_;
     $self->SUPER::control_on_render($source, $buffer);
@@ -76,12 +81,11 @@ sub internal_tag_render_attrs {
 }
 
 sub _empty {
-    my($tag, $value) = @_;
+    my($tag) = @_;
     return 0
 	if ref($tag);
     $tag = lc($tag);
-    return defined($value) && !ref($value) && length($value) == 0
-	|| grep($tag eq $_, @$_EMPTY) ? 1 : 0;
+    return grep($tag eq $_, @$_EMPTY) ? 1 : 0;
 }
 
 1;

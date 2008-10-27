@@ -108,7 +108,7 @@ sub internal_as_string {
 
 sub internal_new_args {
     # Implements positional argument parsing for L<new|"new">.
-    return shift->internal_compute_new_args([qw(value href)], \@_);
+    return shift->internal_compute_new_args([qw(value href ?class)], \@_);
 }
 
 sub _render_href {

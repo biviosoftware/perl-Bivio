@@ -43,7 +43,7 @@ sub initialize {
 }
 
 sub internal_new_args {
-    return shift->internal_compute_new_args([qw(field image)], \@_);
+    return shift->internal_compute_new_args([qw(field image ?class)], \@_);
 }
 
 1;

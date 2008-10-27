@@ -7,15 +7,17 @@ use Text::Tabs ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub initialize {
-    my($self) = @_;
-    $self->put_unless_exists(tag => 'div');
-    $self->put_unless_exists(class => 'text_plain');
-    return shift->SUPER::initialize(@_);
+sub NEW_ARGS {
+    return [qw(value ?class)];
 }
 
-sub internal_new_args {
-    return shift->SUPER::internal_new_args(div => @_);
+sub initialize {
+    my($self) = @_;
+    $self->put_unless_exists(
+	tag => 'div',
+	class => 'text_plain',
+    );
+    return shift->SUPER::initialize(@_);
 }
 
 sub render_tag_value {

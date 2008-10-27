@@ -364,7 +364,7 @@ sub internal_format_uri {
 }
 
 sub internal_new_args {
-    return shift->internal_compute_new_args([qw(value)], \@_);
+    return shift->internal_compute_new_args([qw(value ?class)], \@_);
 }
 
 sub prepare_html {

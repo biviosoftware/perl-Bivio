@@ -20,7 +20,7 @@ sub internal_as_string {
 }
 
 sub internal_new_args {
-    return shift->internal_compute_new_args(['tag'], \@_);
+    return shift->internal_compute_new_args(['tag', '?class'], \@_);
 }
 
 1;

@@ -8,12 +8,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = __PACKAGE__->use('UI.Facade');
 
-sub internal_new_args {
-    shift;
-    return Bivio::UI::HTML::Widget::ControlBase->internal_compute_new_args(
-	[qw(field)],
-	\@_,
-    );
+sub NEW_ARGS {
+    return [qw(field ?class)];
 }
 
 sub initialize {

@@ -236,6 +236,29 @@ sub internal_as_string {
     return ();
 }
 
+sub internal_compute_new_args {
+    my($proto, $required, $args) = @_;
+    return {
+	map({
+	    my($l, $arg) = $_;
+	    my($opt) = $l =~ s/^\?//;
+	    if ($opt && (!@$args || @$args == 1 && ref($args->[0]) eq 'HASH')) {
+		$l = '';
+	    }
+	    else {
+		$arg = shift(@$args);
+		return qq{"$_" must be defined}
+		    unless defined($arg) || $opt;
+	    }
+	    $l ? ($l => $arg) : ();
+	} @$required),
+	!@$args ? ()
+	    : @$args > 1 || ref($args->[0]) ne 'HASH'
+	    ? return "too many parameters"
+	    : %{shift(@$args)},
+    };
+}
+
 sub new {
     # Creates a new instance and binds the initial attributes.  Instantation is
     # passive as far as the widgets are concerned, i.e.  attribute binding is the
@@ -253,9 +276,11 @@ sub new {
     return shift->SUPER::new(@_)
 	if int(@_) == 2 && !defined($_[1]);
     my($proto) = shift;
-    Bivio::Die->die($proto, '->new: only accepts a hash_ref argument')
-	unless $proto->can('internal_new_args');
-    my($res) = $proto->internal_new_args(@_);
+    my($res) = $proto->can('internal_new_args')
+	? $proto->internal_new_args(@_)
+	: $proto->can('NEW_ARGS')
+	? $proto->internal_compute_new_args($proto->NEW_ARGS, \@_)
+	: b_die($proto, '->new: only accepts a hash_ref argument');
     Bivio::Die->die($proto, '->new: ', $res)
 	unless ref($res) eq 'HASH';
     return $proto->SUPER::new($res);

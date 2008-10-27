@@ -36,6 +36,7 @@ sub initialize {
     $self->put_unless_exists(
 	selected_item => [['->get_request'], 'task_id'],
 	class => 'task_menu',
+	tag_if_empty => 0,
     );
     $self->initialize_attr('selected_item');
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
@@ -43,6 +44,7 @@ sub initialize {
     my($i);
     $self->put(
 	tag => 'div',
+	value => '',
 	_init => sub {
 	    my($source) = @_;
 	    $need_sep = 0;
@@ -106,7 +108,7 @@ sub initialize {
 }
 
 sub internal_new_args {
-    return shift->internal_compute_new_args([qw(task_map)], \@_);
+    return shift->internal_compute_new_args([qw(task_map ?class)], \@_);
 }
 
 sub render_tag_value {

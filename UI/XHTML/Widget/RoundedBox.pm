@@ -7,8 +7,13 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub NEW_ARGS {
+    return [qw(value ?class)];
+}
+
 sub initialize {
     my($self) = @_;
+    $self->put_unless_exists(tag => 'div');
     $self->put_unless_exists(
 	class => 'b_rounded_box',
     )->put(
@@ -19,10 +24,6 @@ sub initialize {
 	]),
     );
     return shift->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    return shift->SUPER::internal_new_args(div => @_);
 }
 
 1;

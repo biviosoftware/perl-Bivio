@@ -28,27 +28,4 @@ sub initialize {
     return shift->SUPER::initialize(@_);
 }
 
-sub internal_compute_new_args {
-    my($proto, $required, $args) = @_;
-    return {
-	map({
-	    my($a) = shift(@$args);
-	    return qq{"$_" must be defined}
-		unless defined($a);
-	    ($_ => $a);
-	} @$required),
-	!@$args ? ()
-	    : @$args > 2 ? return "too many parameters"
-	    : (ref($args->[0]) ne 'HASH'
-		   ? (class => shift(@$args))
-		   : @$args == 2 ? return qq{"attributes" must be last} : (),
-	       %{shift(@$args) || {}}),
-    };
-}
-
-sub internal_new_args {
-    Bivio::IO::Alert->warn_deprecated('call internal_compute_new_args');
-    return shift->internal_compute_new_args(@_);
-}
-
 1;

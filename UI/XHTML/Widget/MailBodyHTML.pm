@@ -188,6 +188,10 @@ my($_SAFE_PROPERTY) = _hash(qw(
 ));
 my($_NESTING_TAG) = _hash(qw(div dl ol table ul));
 
+sub NEW_ARGS {
+    return [qw(value mime_cid_task ?class)];
+}
+
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(tag => 'div');
@@ -195,14 +199,6 @@ sub initialize {
     $self->put_unless_exists(class => 'text_html');
     $self->initialize_attr('mime_cid_task');
     return shift->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    my($self, $value, $mime_cid_task, @rest) = @_;
-    return {
-	%{$self->SUPER::internal_new_args(div => $value, @rest)},
-	mime_cid_task => $mime_cid_task,
-    };
 }
 
 sub render_tag_value {
