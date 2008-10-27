@@ -159,7 +159,6 @@ sub internal_new_args {
     # Implements positional argument parsing for L<new|"new">.
     return '"form_class" attribute must be defined' unless defined($class);
     return '"value" attribute must be defined' unless defined($value);
-Bivio::IO::Alert->info('here');
     return {
 	form_class => $class,
 	value => $value,
