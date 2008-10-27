@@ -534,6 +534,8 @@ sub _close_implicit_tags {
 
 sub _close_not_nestable_tags {
     my($start_tag, $state) = @_;
+    return ''
+	if $_MY_TAGS->{$start_tag};
     my($tags) = $state->{tags};
     while (@$tags) {
 	my($t) = $tags->[0];
