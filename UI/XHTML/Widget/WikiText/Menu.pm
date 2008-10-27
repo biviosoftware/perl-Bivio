@@ -26,7 +26,7 @@ sub render_html {
     return unless @$links;
     my($buf) = '';
     # in a SPAN because MSIE 6 can't identify multi classed items
-    TaskMenu([map(SPAN(Link($_)), @$links)], $class)->put_and_initialize(
+    TaskMenu([map(Tag(span => Link($_)), @$links)], $class)->put_and_initialize(
 	parent => undef,
 	selected_item => sub {
 	    my($w, $source) = @_;
