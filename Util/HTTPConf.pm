@@ -298,13 +298,13 @@ ServerTokens Min
 
 Timeout $timeout
 KeepAlive On
-MaxKeepAliveRequests 100
-KeepAliveTimeout 15
+MaxKeepAliveRequests 10
+KeepAliveTimeout 10
 MinSpareServers 1
 MaxSpareServers $servers
 StartServers $servers
 MaxClients $servers
-MaxRequestsPerChild 500
+MaxRequestsPerChild 120
 LimitRequestBody $limit_request_body
 
 ServerRoot /etc/httpd
