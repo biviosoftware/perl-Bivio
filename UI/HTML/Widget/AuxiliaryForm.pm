@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub control_off_render {
     my($self, $source) = @_;
     $self->get('form_class')->new($source->req)->process;
-    return;
+    return shift->SUPER::control_on_render(@_);
 }
 
 sub initialize {
