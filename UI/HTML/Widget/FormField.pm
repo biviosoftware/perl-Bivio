@@ -3,12 +3,9 @@
 package Bivio::UI::HTML::Widget::FormField;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget::Join';
-use Bivio::UI::HTML::ViewShortcuts;
 use Bivio::UI::HTML::WidgetFactory;
 
 # C<Bivio::UI::HTML::Widget::FormField>
-#
-#
 #
 # edit_attributes : hash_ref
 #
@@ -22,17 +19,12 @@ use Bivio::UI::HTML::WidgetFactory;
 #
 # Value of the field label to be looked up in Facade.
 #
-# form_field_label_widget : array_ref
-#
-# Widget value field label.  Overrides Facade lookup of form_field_label,
-# if present.
-#
 # row_control : array_ref
 #
 # Widget value boolean which dynamically determines if the row should render.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
 
 sub get_label_and_field {
     my($self) = @_;
@@ -40,7 +32,7 @@ sub get_label_and_field {
     return ($_VS->vs_new('FormFieldLabel', {
 	field => _get_field_name($self),
 	label => $_VS->vs_new(After =>
-	    $_VS->vs_new(Join  => [$self->internal_get_label_value]),
+	    $_VS->vs_new('Simple', $self->internal_get_label_value),
 	    ':',
 	),
 	map({
@@ -53,40 +45,8 @@ sub get_label_and_field {
 sub internal_get_label_value {
     my($self) = @_;
     # Returns the widget value which access the label.
-    return $self->get('edit_attributes')->{'form_field_label_widget'}
-	if $self->unsafe_get('edit_attributes')
-	    && $self->get('edit_attributes')->{form_field_label_widget};
-    my($default_field) = $self->get('field');
-    return [['->get_request'], 'Bivio::UI::Facade', 'Text',
-	'->get_value', $self->get('form_field_label'),
-    ] if $self->has_keys('form_field_label');
-    # strip out any suffix, not used for label lookup
-    return [sub {
-        my(undef, $text, $df) = @_;
-	my($label, $tag) = $text->unsafe_get_value($df);
-	my($df2) = $df;
-	my($res);
-
-	if ($df2 =~ s/_\d+(\.\w+)$/$1/) {
-	    my($label2, $tag2) = $text->unsafe_get_value($df2);
-
-	    if (_count_dots($tag) >= _count_dots($tag2)) {
-		$res = $label;
-	    }
-	    else {
-		Bivio::IO::Alert->warn_deprecated(
-		    $df2, ': found with ', $tag2, ' but you should set ', $df,
-		    ' in the Facade Text');
-		$res = $label2;
-	    }
-	}
-	else {
-	    $res = $label;
-	}
-	Bivio::Die->die('no facade text found for ', $default_field)
-	    unless defined($res);
-	return $res;
-    }, [qw(->req Bivio::UI::Facade Text)], $default_field];
+    return $_VS->vs_new('Prose', $_VS->vs_text(
+	$self->get_or_default('form_field_label', $self->get('field'))));
 }
 
 sub internal_new_args {
@@ -114,11 +74,6 @@ sub new {
 		$self->get_or_default('edit_attributes', {}))
     ]);
     return $self;
-}
-
-sub _count_dots {
-    my($tag) = @_;
-    return scalar(my @x = split(/\./, $tag));
 }
 
 sub _get_field_name {
