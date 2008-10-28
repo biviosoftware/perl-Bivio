@@ -16,6 +16,10 @@ my($_PARAMS) = [
     'xlink',
 ];
 
+sub NEW_ARGS {
+    return [qw(task_map ?class ?tag)];
+}
+
 sub internal_as_string {
     my($self) = @_;
     return map(
@@ -37,13 +41,13 @@ sub initialize {
 	selected_item => [['->get_request'], 'task_id'],
 	class => 'task_menu',
 	tag_if_empty => 0,
+	tag => 'div',
     );
     $self->initialize_attr('selected_item');
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
     my($need_sep, $selected);
     my($i);
     $self->put(
-	tag => 'div',
 	_init => sub {
 	    my($source) = @_;
 	    $need_sep = 0;
@@ -104,10 +108,6 @@ sub initialize {
 	} @{$self->get('task_map')})],
     );
     return shift->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    return shift->internal_compute_new_args([qw(task_map ?class)], \@_);
 }
 
 sub render_tag_value {
