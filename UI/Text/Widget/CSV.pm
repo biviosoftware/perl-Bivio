@@ -64,8 +64,8 @@ sub initialize {
 	$col->[1]->{column_widget} ||= $col->[1]->{type}
 	    ? [$col->[1]->{type}, '->to_string', [$col->[0]]]
 	    : ['->get_as', $col->[0], 'to_string'];
-	$col->[1]->{column_heading} ||= $_VS->vs_text(
-	    $list->simple_package_name, $col->[0]);
+	$col->[1]->{column_heading} ||= $_VS->vs_call('Prose', $_VS->vs_text(
+	    $list->simple_package_name, $col->[0]));
 
 	foreach my $attr (qw(column_widget column_heading)) {
 	    $self->initialize_value($attr, $col->[1]->{$attr});
