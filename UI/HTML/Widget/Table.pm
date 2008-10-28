@@ -754,7 +754,7 @@ sub _get_heading {
     my($heading) = $cell->get_or_default('column_heading', $col);
     $heading = $_VS->vs_new(
 	'String',
-	length($heading) ? $_VS->vs_text($list->simple_package_name, $heading)
+	length($heading) ? $_VS->vs_call('Prose', $_VS->vs_text($list->simple_package_name, $heading))
 	    : $heading,
 	$cell->get_or_default(
 	    'heading_font',
