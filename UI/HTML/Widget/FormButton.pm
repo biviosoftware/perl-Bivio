@@ -36,6 +36,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_F) = b_use('FacadeComponent.Font');
 
+sub NEW_ARGS {
+    return [qw(field ?class)];
+}
+
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($p, $s) = $_F->format_html('form_submit', $source);
@@ -67,10 +71,6 @@ sub initialize {
 	unsafe_initialize_attr => [qw(label attributes)],
     );
     return $self->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    return shift->internal_compute_new_args([qw(field)], \@_);
 }
 
 1;
