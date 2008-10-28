@@ -4,7 +4,9 @@ Request('initialize_fully');
 options({
     compute_return => sub {
 	my($case, $actual) = @_;
-	return [$case->get('object')->get_widget_value($actual->[0])];
+	my($b) = '';
+	$actual->[0]->render(req(), \$b);
+	return [$b];
     },
 });
 [
