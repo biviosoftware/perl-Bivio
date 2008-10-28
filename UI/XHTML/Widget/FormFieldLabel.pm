@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::FormFieldLabel;
 use strict;
-use Bivio::Base 'XHTMLWidget.Prose';
+use Bivio::Base 'XHTMLWidget.Simple';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
