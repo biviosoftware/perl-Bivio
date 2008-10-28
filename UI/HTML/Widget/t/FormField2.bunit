@@ -15,8 +15,6 @@ options({
     ),
 	['FormField2Form.Email_99.want_bulletin' => 'Email_99'],
 	['FormField2Form.Email.want_bulletin' => 'want_bulletin'],
-	# Deprecated form
-	['FormField2Form.Email_99.realm_id' => 'Email.realm_id'],
     ),
     class() => [
 	new => [
