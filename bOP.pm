@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,35 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 7.3  2008/10/24 18:11:10  moeller
+  * Bivio::ShellUtil
+    fix available class list so test works
+  * Bivio::Test::HTMLParser::Forms
+    set select name as anon if no parsed label and first value is empty
+  * Bivio::Type::YearWindow
+    added year_range_config() for other window sizes
+  * Bivio::UI::HTML::Widget::Checkbox
+    use a Prose label, not String
+  * Bivio::UI::HTML::Widget::FormField
+    don't escape facade label value
+  * Bivio::UI::View::CSS
+    removed float and clear for body, causes scrollbar problems in IE6
+  * Bivio::UI::ViewShortcuts
+    wrap the form error in a Prose in vs_fe()
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    added attribute selected_label_prefix which is prepended to the label
+    of the selected link.
+  * Bivio::Util::HTTPConf
+    added NameVirtualHost for SSL with default ssl for the hostname of the server
+  * Bivio::Util::HTTPStats
+    use local_file_prefix instead of uri for reports (local_file_prefix
+    defaults to uri anyway)
+  * Bivio::Util::RealmFile
+    added rename
+  * Bivio::Util::Wiki
+    refactored to not hack the html, but rather, to snip main_middle or
+    main_body from the tree
+
   Revision 7.2  2008/10/15 22:58:05  moeller
   * Bivio::Biz::Model::ECCreditCardPaymentForm
     changed ECCreditCardExpMonth to Month and ECCreditCardExpYear to YearWindow
