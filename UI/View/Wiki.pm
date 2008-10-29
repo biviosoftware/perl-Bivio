@@ -7,6 +7,14 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub TEXT_AREA_COLS {
+    return 80;
+}
+
+sub TEXT_AREA_ROWS {
+    return 30;
+}
+
 sub HIDE_IS_PUBLIC {
     return 0;
 }
@@ -23,8 +31,8 @@ sub edit {
 	    }),
 	    TextArea({
 		field => 'content',
-		rows => 30,
-		cols => 80,
+		rows => $self->TEXT_AREA_ROWS,
+		cols => $self->TEXT_AREA_COLS,
 	    }),
 	]),
     ]));
