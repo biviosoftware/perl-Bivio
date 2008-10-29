@@ -26,11 +26,70 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.4  2008/10/28 17:46:31  moeller
+  * Bivio::Test::Widget
+    removed AUTOLOAD which just obstructs stuff
+  * Bivio::Type::Regexp
+    added quote_string()
+  * Bivio::UI::HTML::Widget::ControlBase
+  * Bivio::UI::HTML::Widget::EmptyTag
+  * Bivio::UI::HTML::Widget::Form
+  * Bivio::UI::HTML::Widget::ImageFormButton
+  * Bivio::UI::HTML::Widget::InputBase
+  * Bivio::UI::HTML::Widget::Link
+  * Bivio::UI::HTML::Widget::Tag
+  * Bivio::UI::Widget::If
+  * Bivio::UI::XHTML::Widget::FormFieldError
+  * Bivio::UI::XHTML::Widget::MailBodyHTML
+  * Bivio::UI::XHTML::Widget::MailBodyPlain
+  * Bivio::UI::XHTML::Widget::TaskMenu
+  * Bivio::UI::XHTML::Widget::TupleTagSlotField
+  * Bivio::UI::XHTML::Widget::TupleTagSlotLabel
+  * Bivio::UI::XHTML::Widget::Wiki
+    added NEW_ARGS to specify positional Widget attributes; specify ?class explicitly; internal_new_args accepts '?' to mean optional value
+  * Bivio::UI::HTML::Widget::FormField
+    now wraps label value in a Prose,
+    removed unused form_field_label_widget case
+    removed deprecated _\d+ label lookup
+  * Bivio::UI::HTML::Widget::Table
+    wrap heading in a Prose
+  * Bivio::UI::Text::Widget::CSV
+    wrap heading in a Prose
+  * Bivio::UI::View::CSS
+    spans instead of images for RoundedBox Widget
+  * Bivio::UI::View::ThreePartPage
+    Added internal_xhtml_grid3 to allow wrapping by sub classes
+  * Bivio::UI::Widget
+    moved as_string into Bivio::UNIVERSAL
+  * Bivio::UI::XHTML::Widget::FormFieldLabel
+    now derives from Simple, Prose conversion is handled earlier
+  * Bivio::UI::XHTML::Widget::RoundedBox
+    spans instead of images
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    bmenus can now be nested.  selected_regexp does the right thing for
+    nested menus
+    replaced use of $b with $buf
+    SPAN doesn't work in unit tests
+  * Bivio::UI::XHTML::Widget::WikiText
+    restructured implicit tag closures.  Used the DTD to ask the current
+    tag if the new tag can be its child, if not, the tag is closed, and we
+    iterate.
+    textarea is no longer an empty tag.
+    don't _close_not_nestable_tags if in $_MY_TAGS
+  * Bivio::UNIVERSAL
+    code_ref_for_subroutine cleaner
+    as_string will recurse properly if there's an internal_as_string
+  * Bivio::Util::HTTPConf
+    MaxRequestsPerChild to 500
+    ratched down MaxRequestsPerChild and MaxKeepAliveRequests
+  * Bivio::Util::RealmFile
+    ignore ..* and # files
+
   Revision 7.3  2008/10/24 18:11:10  moeller
   * Bivio::ShellUtil
     fix available class list so test works
