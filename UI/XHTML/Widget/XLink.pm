@@ -9,6 +9,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = __PACKAGE__->use('Agent.TaskId');
 my($_C) = b_use('IO.Config');
 
+sub NEW_ARGS {
+    return [qw(facade_label ?class)];
+}
+
 sub initialize {
     my($self) = @_;
     my($l) = $self->initialize_attr('facade_label');
@@ -37,10 +41,6 @@ sub initialize {
 	html_attrs => vs_html_attrs_merge([qw(href name link_target)]),
     );
     return shift->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    return shift->internal_compute_new_args([qw(facade_label)], \@_);
 }
 
 1;
