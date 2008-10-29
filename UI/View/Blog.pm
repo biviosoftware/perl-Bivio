@@ -8,12 +8,17 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
 
+sub HIDE_IS_PUBLIC {
+    return 0;
+}
+
 sub edit {
-    return shift->internal_body(vs_simple_form(BlogEditForm => [
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(BlogEditForm => [
 	['BlogEditForm.title', {
 	    size => 57,
 	}],
-	'BlogEditForm.RealmFile.is_public',
+	$self->HIDE_IS_PUBLIC ? () : 'BlogEditForm.RealmFile.is_public',
 	_edit(),
     ]));
 }
