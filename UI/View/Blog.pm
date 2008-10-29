@@ -12,6 +12,14 @@ sub HIDE_IS_PUBLIC {
     return 0;
 }
 
+sub TEXT_AREA_COLS {
+    return 60;
+}
+
+sub TEXT_AREA_ROWS {
+    return 30;
+}
+
 sub edit {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(BlogEditForm => [
@@ -19,14 +27,15 @@ sub edit {
 	    size => 57,
 	}],
 	$self->HIDE_IS_PUBLIC ? () : 'BlogEditForm.RealmFile.is_public',
-	_edit(),
+	_edit($self),
     ]));
 }
 
 sub create {
-    return shift->internal_body(vs_simple_form(BlogCreateForm => [
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
-	_edit(),
+	_edit($self),
     ]));
 }
 
@@ -147,6 +156,7 @@ sub _access_mode {
 }
 
 sub _edit {
+    my($self) = @_;
     return Join([
 	FormFieldError({
 	    field => 'body',
@@ -154,8 +164,8 @@ sub _edit {
 	}),
 	TextArea({
 	    field => 'body',
-	    rows => 30,
-	    cols => 60,
+	    rows => $self->TEXT_AREA_ROWS,
+	    cols => $self->TEXT_AREA_COLS,
 	}),
     ], {
 	cell_class => 'blog_textarea',
