@@ -18,9 +18,7 @@ sub execute_cancel {
 sub execute_home_page_if_site_root {
     my($proto, $req) = @_;
     return {
-	uri => $req->format_uri({
-	    uri => Bivio::UI::Text->get_value('home_page_uri', $req),
-	}),
+	uri => _uri($req, Bivio::UI::Text->get_value('home_page_uri', $req)),
 	query => undef,
     } if $req->get('uri') =~ m!^/?$!;
     return;
@@ -42,10 +40,10 @@ sub execute_query {
     my($proto, $req) = @_;
     my($query) = $req->unsafe_get('query');
     return 'next'
-	unless $query && defined(my $uri = $query->{$proto->QUERY_TAG});
+	unless $query && defined(my $uri = delete($query->{$proto->QUERY_TAG}));
     $uri =~ s,^(?!\w+:|\/),\/,;
     return {
-	uri => $req->format_uri({uri => $uri}),
+	uri => _uri($req, $uri),
 	query => undef,
     };
 }
@@ -55,7 +53,7 @@ sub execute_query_or_path_info {
     return shift->execute_query(@_)
 	if ($req->unsafe_get('query') || {})->{$proto->QUERY_TAG};
     return  $req->get('path_info') ? {
-	uri => $req->format_uri({uri => $req->get('path_info')}),
+	uri => _uri($req, $req->get('path_info')),
 	query => $req->get('query'),
     } : {
 	task_id => 'next',
@@ -115,6 +113,11 @@ sub _role_in_realm_user_state {
 	        ->unsafe_get_cookie_user_id($req),
 	    sub {_role_in_realm($req)},
 	);
+}
+
+sub _uri {
+    my($req, $uri) = @_;
+    return $req->format_uri({uri => $uri, query => undef, path_info => undef});
 }
 
 1;
