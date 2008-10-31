@@ -33,9 +33,12 @@ sub internal_initialize {
 		@{$delegator->NAME_SORT_COLUMNS},
 		'Email.email',
 	    ],
-	    primary_key => [['User.user_id', 'Email.realm_id']],
+	    primary_key => [[qw(User.user_id Email.realm_id RealmOwner.realm_id)]],
 	    other => [
 		@{$delegator->NAME_COLUMNS},
+		'Email.want_bulletin',
+		'RealmOwner.display_name',
+		'RealmOwner.name',
 		[
 		    'Email.location',
 		    [$delegator->get_instance('Email')->DEFAULT_LOCATION],
