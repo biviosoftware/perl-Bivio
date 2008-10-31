@@ -28,6 +28,7 @@ sub USAGE {
 usage: b-realm-file [options] command [args...]
 commands:
     create path -- creates file_path with input
+    create_or_update path -- creates or updates file_path with input
     create_folder path -- creates folder and parents
     delete_deep path ... -- deletes files or folders specified
     rename old new --- moves old to new
@@ -42,6 +43,12 @@ EOF
 sub create {
     my($self, $path) = @_;
     _do($self, create_with_content => $path, $self->read_input);
+    return;
+}
+
+sub create_or_update {
+    my($self, $path) = @_;
+    _do($self, create_or_update_with_content => $path, $self->read_input);
     return;
 }
 
