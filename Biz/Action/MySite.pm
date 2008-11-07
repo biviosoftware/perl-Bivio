@@ -5,12 +5,24 @@ use strict;
 use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_C) = __PACKAGE__->use('UI.Constant');
-my($_RT) = __PACKAGE__->use('Auth.RealmType');
-my($_R) = __PACKAGE__->use('Auth.Role');
+my($_C) = b_use('FacadeComponent.Constant');
+my($_RT) = b_use('Auth.RealmType');
+my($_R) = b_use('Auth.Role');
+my($_T) = b_use('FacadeComponent.Task');
 
 sub execute {
     my(undef, $req) = @_;
+    if (my $p = $req->unsafe_get('path_info')) {
+	if (my $t = $_T->unsafe_get_from_uri($p, $_RT->USER, $req)) {
+	    return {
+		method => 'client_redirect',
+		realm => $req->unsafe_get_nested(qw(auth_user name)),
+		task_id => $t,
+		path_info => undef,
+		query => undef,
+	    }
+	}
+    }
     my($realms) = $req->map_user_realms;
     foreach my $m (@{$_C->get_value('my_site_redirect_map', $req)}) {
 	my($realm, $role, $uri) = @$m;
