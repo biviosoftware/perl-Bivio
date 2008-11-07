@@ -7,12 +7,11 @@ use Bivio::Base 'Widget.LogicalOpBase';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
-    return shift->call_super_before(\@_, sub {
-	my($self) = @_;
-        $self->die($self->get('values'), undef, 'number of elements must be even')
-	    unless @{$self->get('values')} % 2 == 0;
-	return;
-    });
+    my($self) = @_;
+    my(@res) = shift->SUPER::initialize(@_);
+    $self->die($self->get('values'), undef, 'number of elements must be even')
+	unless @{$self->get('values')} % 2 == 0;
+    return @res;
 }
 
 sub render {

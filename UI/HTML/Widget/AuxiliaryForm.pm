@@ -8,19 +8,18 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub control_off_render {
     my($self, $source) = @_;
+    my(@res) = shift->SUPER::control_off_render(@_);
     $self->get('form_class')->new($source->req)->process;
-    return shift->SUPER::control_on_render(@_);
+    return @res;
 }
 
 sub initialize {
     my($self) = @_;
-    return shift->call_super_before(\@_, sub {
-	my($self) = @_;
-	$self->put_unless_exists(control => sub {
-	    return ['->ureq', $self->get('form_class')];
-	});
-	return;
+    my(@res) = shift->SUPER::initialize(@_);
+    $self->put_unless_exists(control => sub {
+	return ['->ureq', $self->get('form_class')];
     });
+    return @res;
 }
 
 1;
