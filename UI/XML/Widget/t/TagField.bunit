@@ -6,5 +6,5 @@ Widget({
 });
 req()->set_user('demo');
 [
-    [['auth_user'], TagField('name')] => "<name>demo</name>\n",
+    [['auth_user'], vs_new(TagField => 'name')] => "<name>demo</name>\n",
 ];

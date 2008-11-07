@@ -2,7 +2,7 @@
 # $Id$
 Widget({view_class_map => 'XMLWidget'});
 [
-    [Tag(x => '')] => <<'EOF',
+    [vs_new(Tag => x => '')] => <<'EOF',
 <?xml version="1.0" encoding="UTF-8"?>
 <x/>
 EOF

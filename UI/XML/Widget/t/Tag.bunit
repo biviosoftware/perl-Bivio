@@ -5,15 +5,16 @@ model('NumberedList')->load_page({count => 2});
 req()->set_user('demo');
 [
     [rss =>
-        Tag(channel => Join([
-	     Tag(title => [sub {undef}]),
-	     Tag(description => 'hd'),
-	     Tag(language => 'en-us'),
-	     WithModel(NumberedList => Tag(item => Join([
-		     Tag(description => 'd'),
-		     TagField('pubdate', 'index'),
-		     Tag(title => 't'),
-		 ])),
+        vs_new(Tag => channel => vs_new(Join => [
+	     vs_new(Tag => title => [sub {undef}]),
+	     vs_new(Tag => description => 'hd'),
+	     vs_new(Tag => language => 'en-us'),
+	     vs_new(WithModel => NumberedList => vs_new(qw(Tag item),
+		     vs_new(Join => [
+			 vs_new(Tag => description => 'd'),
+			 vs_new(TagField => 'pubdate', 'index'),
+			 vs_new(Tag => title => 't'),
+		     ])),
 	     ),
 	])),
 	{
@@ -34,10 +35,10 @@ req()->set_user('demo');
 </channel>
 </rss>
 EOF
-    [person => With(
-	['auth_user'], Join([
-	    TagField('name'),
-	    TagField('display_name'),
+    [person => vs_new(With =>
+	['auth_user'], vs_new(Join => [
+	    vs_new(TagField => 'name'),
+	    vs_new(TagField => 'display_name'),
 	]),
     )] => <<'EOF',
 <person><name>demo</name>
