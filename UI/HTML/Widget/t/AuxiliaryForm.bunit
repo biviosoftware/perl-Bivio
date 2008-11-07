@@ -9,5 +9,5 @@ req()->server_redirect({
     [{
 	form_class => 'UserLoginForm',
 	value => vs_new(Simple => 'abc'),
-    }] => not_die(),
+    }] => qr{^<form.*abc</form>$}s,
 ];
