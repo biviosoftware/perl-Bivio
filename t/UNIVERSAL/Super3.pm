@@ -5,9 +5,13 @@ use strict;
 use Bivio::Base 'Bivio::t::UNIVERSAL::Super2';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_X) = b_use('Model.RealmOwner');
 
 sub s1 {
-    return 'Super3';
+    return shift->call_super_before(\@_, sub {
+        die unless $_X;
+        return ['Super3'];
+    });
 }
 
 1;
