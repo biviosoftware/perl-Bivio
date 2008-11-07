@@ -17,23 +17,25 @@ foreach my $c (qw(BConf T1 T2)) {
     $pm->($c, 'init');
     class("Reload::$c");
 }
-Type();
+Request()->initialize_fully;
 [
-    {
-	method => 'handler',
-	compute_params => sub {
-	    my($case, $params) = @_;
-	    sleep(1);
-	    return [map($pm->(@$_), @$params)]
-	},
-	compute_return => sub {
-	    return [map($_->value, @{shift->get('params')})];
-	},
-    } => [
-	[] => [],
-	[[T1 => 3]] => [3],
-	[[T1 => 3], [T2 => 4]] => [3, 4],
-	[] => [],
+    class() => [
+	{
+	    method => 'handler',
+	    compute_params => sub {
+		my($case, $params) = @_;
+		sleep(1);
+		return [map($pm->(@$_), @$params)]
+	    },
+	    compute_return => sub {
+		return [map($_->value, @{shift->get('params')})];
+	    },
+	} => [
+	    [] => [],
+	    [[T1 => 3]] => [3],
+	    [[T1 => 3], [T2 => 4]] => [3, 4],
+	    [] => [],
+	],
     ],
 ];
 
