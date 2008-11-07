@@ -13,13 +13,14 @@ sub handle_register {
 
 sub render_html {
     my($proto, $args) = @_;
+    my($value) =  delete($args->{attrs}->{value}) || $args->{value};
     Bivio::Die->die($args->{attrs}, ': does not accept attributes')
         if %{$args->{attrs}};
-    Bivio::Die->die($args->{value}, ': value must be lower case word')
-        unless $args->{value} =~ /^[a-z][a-z0-9_]+$/;
+    Bivio::Die->die($value, ': value must be lower case word')
+        unless $value =~ /^[a-z][a-z0-9_]+$/;
     return ${Bivio::UI::Widget->render_value(
-	$args->{value},
-	view_get("wiki_widget_$args->{value}"),
+	$value,
+	view_get("wiki_widget_$value"),
 	$args->{source},
     )};
 }

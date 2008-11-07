@@ -12,9 +12,10 @@ sub handle_register {
 
 sub render_html {
     my($proto, $args) = @_;
+    my($value) =  delete($args->{attrs}->{value}) || $args->{value};
     Bivio::Die->die($args->{attrs}, ': does not accept attributes')
         if %{$args->{attrs}};
-    my($uri) = $args->{proto}->internal_format_uri($args->{value}, $args);
+    my($uri) = $args->{proto}->internal_format_uri($value, $args);
     return Bivio::Die->die('invalid URI, must begin with a /')
 	unless $uri =~ s{^/+}{/};
     return ${$proto->use('Bivio::Agent::Embed::Dispatcher')
