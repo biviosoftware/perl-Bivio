@@ -7,8 +7,9 @@ WikiText({
     },
 });
 [
+    '@b-widget value=test' => "t1\n",
     '@b-widget test' => "t1\n",
-    '@b-widget test@' => 't1',
+    '@b-widget value=test @' => 't1',
     '@b-widget bad-syntax' => '',
     '@b-widget not_found' => '',
 ];
