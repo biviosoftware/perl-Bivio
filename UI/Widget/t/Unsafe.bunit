@@ -3,5 +3,5 @@
 Widget();
 [
     'x' => 'x',
-    [Join(['x', [sub {die}]])] => '',
+    [vs_new(Join => ['x', [sub {die}]])] => '',
 ];
