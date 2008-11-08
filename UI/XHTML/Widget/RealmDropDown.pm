@@ -6,11 +6,16 @@ use Bivio::Base 'Widget.If';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RT) = b_use('Auth.RealmType');
+
+sub NEW_ARGS {
+    return [qw(realm_type)];
+}
 
 sub initialize {
     my($self) = @_;
-    my($rt) = $self->get_if_exists_else_put(
-	realm_type => b_use('Auth.RealmType')->FORUM);
+    $self->put(
+	realm_type => my $rt = $_RT->from_any($self->get('realm_type')));
     $self->put_unless_exists(
 	control => [sub {@{$self->internal_choices(shift)} != 0}],
 	control_on_value => If(
@@ -60,13 +65,6 @@ sub internal_choices {
 	sub {shift->{'RealmOwner.name'}},
 	{'RealmOwner.realm_type' => $self->get('realm_type')},
     );
-}
-
-sub internal_new_args {
-    my(undef, $attributes) = @_;
-    return {
-	($attributes ? %$attributes : ()),
-    };
 }
 
 sub _curr_realm {
