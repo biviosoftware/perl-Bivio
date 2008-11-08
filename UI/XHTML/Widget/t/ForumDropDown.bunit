@@ -1,0 +1,22 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    view_class_map => 'XHTMLWidget',
+    setup_render => sub {
+	my(undef, $case) = @_;
+	my($o) = $case->get('object');
+	req()->set_user($o->get('user'));
+	req()->set_realm($o->get('realm'));
+	return;
+    },
+});
+req()->set_user('crm_tech1');
+[
+    [{user => 'crm_tech1', realm => undef}]
+	=> qr{<a.*crm_forum.*crm_tuple_forum.*>Forums &#}s,
+    [{user => 'crm_tech1', realm => 'crm_forum'}]
+	=> qr{<a.*crm_forum.*crm_tuple_forum.*>crm_forum &#}s,
+    [{user => 'crm_tech1', realm => 'crm_tuple_forum'}]
+	=> qr{<a.*crm_tuple_forum.*crm_forum.*>crm_tuple_forum &#}s,
+    [{user => 'otp', realm => 'crm_tuple_forum'}] => '',
+];
