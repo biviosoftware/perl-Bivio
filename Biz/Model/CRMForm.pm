@@ -131,7 +131,7 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    my(@res) = return shift->SUPER::internal_pre_execute(@_);
+    my(@res) = shift->SUPER::internal_pre_execute(@_);
     if (my $trid = $self->get('RealmMail.thread_root_id')) {
 	$self->new_other('CRMThread')->load({thread_root_id => $trid});
 	$self->internal_put_field($_TAG_ID => $trid);
