@@ -8,6 +8,10 @@ my($_FORUM) = __PACKAGE__->use('Auth.RealmType')->FORUM;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub NEW_ARGS {
+    return [];
+}
+
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(realm_type => $_FORUM);
