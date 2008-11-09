@@ -96,8 +96,7 @@ sub get_roles_for_permission {
     my($self, $realm, $permission) = @_;
     my($map) = $self->get_permission_map($realm);
     my($roles) = Bivio::Auth::RoleSet->get_min;
-    foreach my $role (Bivio::Auth::Role->get_list()) {
-        next if $role eq Bivio::Auth::Role->UNKNOWN();
+    foreach my $role (Bivio::Auth::Role->get_non_zero_list) {
 	Bivio::Auth::RoleSet->set(\$roles, $role)
             if Bivio::Auth::RoleSet->is_set($map->{$role}, $permission);
     }
@@ -117,8 +116,7 @@ sub initialize_permissions {
     my($self, $realm) = @_;
     my($type_id) = $realm->get('realm_type')->as_int;
     my($realm_id) = $realm->get('realm_id');
-    foreach my $role (Bivio::Auth::Role->get_list()) {
-        next if $role eq Bivio::Auth::Role->UNKNOWN();
+    foreach my $role (Bivio::Auth::Role->get_non_zero_list) {
         # Skip role if already cloned
         next if $self->unauth_load(realm_id => $realm_id, role => $role);
 
