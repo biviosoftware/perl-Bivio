@@ -1,50 +1,8 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::SourceCode;
 use strict;
-$Bivio::UI::HTML::Widget::SourceCode::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::SourceCode::VERSION;
-
-=head1 NAME
-
-Bivio::UI::HTML::Widget::SourceCode - source code HTML pretty printer
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::SourceCode;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::SourceCode::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::SourceCode> renders source code as HTML.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item uri : string []
-
-The uri to use when rendering related package links.
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Config;
@@ -52,7 +10,7 @@ use Bivio::UI::Facade;
 use Bivio::UI::LocalFileType;
 use File::Find ();
 
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IGNORE_POD) = {
     '=for' => 1,
     '=over' => 1,
@@ -66,24 +24,6 @@ Bivio::IO::Config->register({
     source_dir => Bivio::IO::Config->REQUIRED,
 });
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item source_dir : string (required)
-
-The directory to search for source code.
-
-=back
-
-=cut
-
 sub handle_config {
     my(undef, $cfg) = @_;
     $_SOURCE_DIR = $cfg->{source_dir};
@@ -92,39 +32,14 @@ sub handle_config {
     return;
 }
 
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes from configuration attributes.
-
-=cut
-
 sub initialize {
-    my($self) = @_;
     return;
 }
-
-=for html <a name="is_source_module"></a>
-
-=head2 static is_source_module(string name) : boolean
-
-Returns true if the name identifies a browsable source module.
-
-=cut
 
 sub is_source_module {
     my($proto, $name) = @_;
     return $_FILES->{$name} ? 1 : 0;
 }
-
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-Render the source code using perl2html, then adding links.
-
-=cut
 
 sub render {
     my($self, $source, $buffer) = @_;
@@ -157,14 +72,6 @@ sub render {
     return;
 }
 
-=for html <a name="render_source_link"></a>
-
-=head2 static render_source_link(Bivio::Agent::Request req, string source, string name, string_ref buffer)
-
-Draws the source link onto the buffer.
-
-=cut
-
 sub render_source_link {
     my($proto, $req, $source, $name, $buffer) = @_;
 #TODO: use $req to determine the URI?
@@ -172,12 +79,6 @@ sub render_source_link {
     return;
 }
 
-#=PRIVATE METHODS
-
-# _add_links(self, array_ref lines, string ignore_package)
-#
-# Adds href links to related package files.
-#
 sub _add_links {
     my($self, $lines, $ignore_package) = @_;
     my($uri) = $self->get('uri');
@@ -219,11 +120,9 @@ sub _add_links {
     return;
 }
 
-# _contains(array_ref values, string item) : boolean
-#
-# Returns true if the array contains the item.
-#
 sub _contains {
+    # (array_ref, string) : boolean
+    # Returns true if the array contains the item.
     my($values, $item) = @_;
 
     foreach my $value (@$values) {
@@ -232,11 +131,9 @@ sub _contains {
     return 0;
 }
 
-# _find_files() : hash_ref
-#
-# Loads a map of browsable source file names.
-#
 sub _find_files {
+    # () : hash_ref
+    # Loads a map of browsable source file names.
     $_FILES = {};
     File::Find::find({
         # follow symbolic links to source
@@ -257,13 +154,8 @@ sub _find_files {
     return;
 }
 
-# _reformat_pod(self, array_ref lines)
-#
-# Reformats POD documentation.
-#
 sub _reformat_pod {
     my($self, $lines) = @_;
-
     my($in_pod) = 0;
     foreach my $line (@$lines) {
 	my($pod, $doc);
@@ -307,11 +199,9 @@ sub _reformat_pod {
     return;
 }
 
-# _unescape_pod(string line) : string
-#
-# Converts POD markup into HTML.
-#
 sub _unescape_pod {
+    # (string) : string
+    # Converts POD markup into HTML.
     my($line) = @_;
 
 #TODO: the doc line isn't escaped
@@ -333,15 +223,5 @@ sub _unescape_pod {
 
     return $line;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
