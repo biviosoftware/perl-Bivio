@@ -2,33 +2,26 @@
 # $Id$
 package Bivio::UI::HTML::Widget::SourceCode;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::IO::Config;
-use Bivio::UI::Facade;
-use Bivio::UI::LocalFileType;
-use File::Find ();
+use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_D) = b_use('Bivio.Die');
+my($_F) = b_use('UI.Facade');
 my($_IGNORE_POD) = {
     '=for' => 1,
     '=over' => 1,
     '=back' => 1,
     '=cut' => 1,
 };
-
-my($_FILES) = {};
-my($_SOURCE_DIR);
-Bivio::IO::Config->register({
+my($_CACHE);
+Bivio::IO::Config->register(my $_CFG = {
     source_dir => Bivio::IO::Config->REQUIRED,
 });
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_SOURCE_DIR = $cfg->{source_dir};
-    $_SOURCE_DIR =~ s,/+$,,;
-    _find_files();
+    ($_CFG->{source_dir} = $cfg->{source_dir}) =~ s,/+$,,;
+    $_CACHE = undef;
     return;
 }
 
@@ -36,122 +29,76 @@ sub initialize {
     return;
 }
 
-sub is_source_module {
-    my($proto, $name) = @_;
-    return $_FILES->{$name} ? 1 : 0;
-}
-
 sub render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
-    Bivio::Die->throw(Bivio::DieCode::NOT_FOUND())
-		unless $req->get('query') && $req->get('query')->{'s'};
-    my($package) = $req->get('query')->{'s'};
-
-    my($file) = $package;
-    if ($file =~ /^View\./) {
-	$file =~ s/^View\.//;
-	$file .= '.bview';
-	$file = Bivio::UI::Facade->get_local_file_name(
-		Bivio::UI::LocalFileType->VIEW, $file, $req);
-    }
-    else {
-	$file =~ s,::,/,g;
-	$file = $_SOURCE_DIR.'/'.$file.'.pm';
-    }
-
-    Bivio::Die->throw(Bivio::DieCode::NOT_FOUND())
-		unless -e $file;
-
-#TODO: Don't hardwire path or allow override
-    my($lines) = [`cat $file | /usr/local/bin/perl2html -c -s`];
+    $_D->throw('NOT_FOUND')
+	unless my $package = ($req->get('query') || {})->{'s'};
+    $_D->throw('NOT_FOUND')
+	 unless my $file = _file($package, $req);
+    my($lines) = [`perl2html -c -s < '$file'`];
     _reformat_pod($self, $lines);
-    _add_links($self, $lines, $package);
-
+    _add_links($self, $lines, $package, $req);
     $$buffer .= join('', @$lines);
     return;
 }
 
 sub render_source_link {
     my($proto, $req, $source, $name, $buffer) = @_;
-#TODO: use $req to determine the URI?
-    $$buffer .= '<a href="/src?s='.$source.'">'.$name.'</a>';
+    $$buffer .= qq{<a href="/src?s=$source">$name</a>};
     return;
 }
 
 sub _add_links {
-    my($self, $lines, $ignore_package) = @_;
+    my($self, $lines, $ignore_package, $req) = @_;
     my($uri) = $self->get('uri');
-
     foreach my $line (@$lines) {
 	my($matches) = [];
-
-	# gather up the package names on the line
 	while ($line =~ /(\w+::[\w:]+)/g) {
 	    my($package) = $1;
-
-	    # try removing a constant reference
-	    unless ($_FILES->{$package}) {
-		$package =~ s/::[A-Z_]+$//;
-	    }
-
+	    $package =~ s/::[A-Z_]+$//
+		unless _file($package, $req);
 	    push(@$matches, $package)
-		    if $_FILES->{$package} && $package ne $ignore_package
-			    && ! _contains($matches, $package);
+		if _file($package, $req)
+		&& $package ne $ignore_package
+		&& !_contains($matches, $package);
 	}
-
-	# iterate the matches, substituting in hrefs into the line
 	foreach my $package (@$matches) {
-	    unless ($line
-		    =~ s,([^=>])($package),$1<a href="/$uri?s=$2">$2</a>,) {
-
-		$line =~ s,($package),<a href="/$uri?s=$1">$1</a>,
-			|| Bivio::Die->die('invalid package match: ',
-				$package);
-	    }
+	    b_die('invalid package match: ', $package)
+		unless $line =~
+		    s{([^=>])(\Q$package\E)}{$1<a href="/$uri?s=$2">$2</a>}
+		|| $line =~ s{(\Q$package\E)}{<a href="/$uri?s=$1">$1</a>};
 	}
-
-	# add links to the view's parent
 	if ($line =~ /view_parent\(.*?>.(\w+)/) {
 	    my($view) = $1;
-	    $line =~ s,($view),<a href="/$uri?s=View.$1">$1</a>,;
+	    $line =~ s,(\Q$view\E),<a href="/$uri?s=View.$1">$1</a>,;
 	}
     }
     return;
 }
 
 sub _contains {
-    # (array_ref, string) : boolean
-    # Returns true if the array contains the item.
     my($values, $item) = @_;
-
-    foreach my $value (@$values) {
-	return 1 if $value eq $item;
-    }
-    return 0;
+    return grep($item eq $_, @$values) ? 1 : 0;
 }
 
-sub _find_files {
-    # () : hash_ref
-    # Loads a map of browsable source file names.
-    $_FILES = {};
-    File::Find::find({
-        # follow symbolic links to source
-        follow => 1,
-        follow_skip => 2,
-	wanted => sub {
-	    my($name) = $File::Find::name;
-	    return
-		unless $name =~ /\.pm$/;
-	    $name =~ s,^\Q$_SOURCE_DIR\E/(.*)\.pm$,$1,;
-	    $name =~ s,/,::,g;
-	    $_FILES->{$name} = 1;
-	    return;
-	},
-    },
-	$_SOURCE_DIR,
-    );
-    return;
+sub _file {
+    my($package, $req) = @_;
+    return ($_CACHE ||= {})->{$package} ||= _file_find($package, $req);
+}
+
+sub _file_find {
+    my($file, $req) = @_;
+    if ($file =~ /^View\./) {
+	$file =~ s/^View\.//;
+	$file .= '.bview';
+	$file = $_F->get_local_file_name('VIEW', $file, $req);
+    }
+    else {
+	$file =~ s,::,/,g;
+	$file = "$_CFG->{source_dir}/$file.pm";
+    }
+    return -f $file ? $file : undef;
 }
 
 sub _reformat_pod {
@@ -164,21 +111,18 @@ sub _reformat_pod {
 	    $pod = $2;
 	    $doc = $3;
         }
-	next unless $in_pod;
-
+	next
+	    unless $in_pod;
 	if ($pod && $doc && $pod eq '=for' && $doc =~ s/^html\s//) {
 	    $line =~ s/=for\shtml\s//;
 	    next;
 	}
 	$line = _unescape_pod($line);
-
 	unless ($pod) {
 	    $line = '# '.$line;
 	    next;
 	}
-
 	$line =~ s/$pod\s?//;
-
 	if ($_IGNORE_POD->{$pod}) {
 	    $line =~ s/$doc// if $doc;
 	    $line =~ s/\n//;
@@ -191,7 +135,6 @@ sub _reformat_pod {
 	    }
 	    $line = '# '.$line;
 	}
-
 	if ($pod eq '=cut') {
 	    $in_pod = 0;
 	}
@@ -200,27 +143,17 @@ sub _reformat_pod {
 }
 
 sub _unescape_pod {
-    # (string) : string
-    # Converts POD markup into HTML.
     my($line) = @_;
-
-#TODO: the doc line isn't escaped
     $line =~ s,E<lt>,&lt;,g;
     $line =~ s,E<gt>,&gt;,g;
     $line =~ s,I<(.*?)>,<i>$1</i>,g;
-
     $line =~ s,E&lt;lt&gt;,&lt;,g;
     $line =~ s,E&lt;gt&gt;,&gt;,g;
     $line =~ s,C&lt;(.*?)&gt;,<code>$1</code>,g;
     $line =~ s,B&lt;(.*?)&gt;,<b>$1</b>,g;
     $line =~ s,I&lt;(.*?)&gt;,<i>$1</i>,g;
-
-    # L<Bivio::Collection::Attributes>
-    # L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
-    # L<Bivio::Util->gettimeofday|Bivio::Util/"gettimeofday">
     $line =~ s,L&lt;(.*?)\|.*?&gt;,$1,g;
     $line =~ s,L&lt;(.*?)&gt;,$1,g;
-
     return $line;
 }
 
