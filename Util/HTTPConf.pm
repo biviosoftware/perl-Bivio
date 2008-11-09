@@ -299,7 +299,7 @@ ServerTokens Min
 Timeout $timeout
 KeepAlive On
 MaxKeepAliveRequests 10
-KeepAliveTimeout 10
+KeepAliveTimeout 2
 MinSpareServers 1
 MaxSpareServers $servers
 StartServers $servers
