@@ -48,8 +48,8 @@ sub get_delegate_info {
     my($proto) = @_;
     return [
 	@{$proto->SUPER::get_delegate_info},
-	TEST_PERMISSION1 => [21],
-	TEST_PERMISSION2 => [22],
+	TEST_PERMISSION1 => [51],
+	TEST_PERMISSION2 => [52],
     ];
 }
 
