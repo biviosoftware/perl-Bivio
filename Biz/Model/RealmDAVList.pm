@@ -38,9 +38,8 @@ sub internal_load_rows {
 
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
-    $stmt->where(
-	$stmt->EQ('RealmOwner.realm_type', [$query->get('realm_type')]),
-    );
+    my($rt) = $query->get('realm_type');
+    $stmt->where($stmt->IN('RealmOwner.realm_type', $rt->self_or_any_group));
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
@@ -57,7 +56,7 @@ sub load_dav {
     }
     Bivio::Die->throw_quietly(MODEL_NOT_FOUND => {
 	class => ref($self),
-	entity => $this,
+	entity => [$rt, $this],
     }) unless $this
 	= ($self->get_field_type('RealmOwner.name')->from_literal($this))[0]
 	and $self->unsafe_load_this({
