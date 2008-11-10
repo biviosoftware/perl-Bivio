@@ -26,7 +26,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     return [
-	UNKNOWN => [0, 'any'],
+	ANY_GROUP => 0,
 	GENERAL => 1,
 	USER => 2,
 	CLUB => 3,
