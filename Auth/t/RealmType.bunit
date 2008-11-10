@@ -12,8 +12,18 @@
 	],
 	as_default_owner_id => 2,
 	as_default_owner_name => 'user',
+	equals_or_any_group_check => [
+	    [class()->USER] => 1,
+	    [class()->FORUM] => 0,
+	    [] => 0,
+	],
     ],
     sub {class()->CALENDAR_EVENT} => [
 	as_property_model_class_name => 'CalendarEvent',
+	equals_or_any_group_check => [
+	    [class()->CALENDAR_EVENT] => 1,
+	    [class()->FORUM] => 0,
+	    [] => 1,
+	],
     ],
 ];
