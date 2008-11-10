@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::Realm;
 use strict;
@@ -76,22 +76,11 @@ sub can_user_execute_task {
 }
 
 sub do_default {
-    my($proto, $op, $req) = @_;
-    # Iterates all default realms, setting realms to default user.
-    my($realm, $user) = $req->get(qw(auth_realm auth_user));
-    $req->set_user('user');
-    my($die) = Bivio::Die->catch(sub {
-	foreach my $r ($_RT->get_non_zero_list) {
-	    $req->set_realm($r->get_name);
-	    last unless $op->($req->get('auth_realm'));
-	}
-	return;
-    });
-    $req->set_realm($realm);
-    $req->set_user($user);
-    $die->throw
-	if $die;
-    return;
+    return _do_default(get_non_zero_list => @_);
+}
+
+sub do_any_group_default {
+    return _do_default(get_any_group_list => @_);
 }
 
 sub does_user_have_permissions {
@@ -253,6 +242,21 @@ sub new {
     return $owner->clone
 	if UNIVERSAL::isa($owner, __PACKAGE__);
     return _new($proto, $owner, $req);
+}
+
+sub _do_default {
+    my($list_method, $proto, $op, $req) = @_;
+    $req->with_user(user => sub {
+	foreach my $r ($_RT->$list_method()) {
+	    last
+		unless $req->with_realm(
+		    $r->get_name,
+		    sub {$op->($req->get('auth_realm'))},
+		);
+	}
+	return;
+    });
+    return;
 }
 
 sub _new {
