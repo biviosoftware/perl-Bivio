@@ -83,7 +83,7 @@ sub get_realm_for_task {
 	 my($realm) = Bivio::Auth::Realm->new($row->{'RealmOwner.name'}, $req);
 	 return $realm->can_user_execute_task($t, $req) ? $realm : ();
     }, {
-	'RealmOwner.realm_type' => $rt,
+	'RealmOwner.realm_type' => $rt->self_or_any_group,
     })->[0] || $rt->eq_general && Bivio::Auth::Realm->get_general
     || Bivio::Die->throw(NOT_FOUND => {
 	entity => $task,
