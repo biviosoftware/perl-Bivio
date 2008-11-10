@@ -28,7 +28,12 @@ sub get_delegate_info {
 	MOTION_WRITE => [18],
 	MOTION_ADMIN => [19],
 	FEATURE_SITE_ADM => [20],
-#21-29 free
+	FEATURE_FILE => [21],
+	FEATURE_BLOG => [22],
+	FEATURE_WIKI => [23],
+	FEATURE_DAV => [24],
+	FEATURE_MAIL => [25],
+	FEATURE_CALENDAR => [26],
 	FEATURE_CRM => [27],
 	FEATURE_MOTION => [28],
 	FEATURE_TUPLE => [29],
