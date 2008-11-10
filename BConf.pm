@@ -387,18 +387,28 @@ sub merge_realm_role_category_map {
 		    [MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)]],
 	    ],
 	    Bivio::Agent::TaskId->is_component_included('tuple') ? ([
+#DEPRECATED: Need to fix apps which use this and not feature_tuple
 		tuple =>
-		    [ADMINISTRATOR => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
+		    ['*', 'FEATURE_TUPLE'],
+		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
+		    [MEMBER => [qw(TUPLE_WRITE TUPLE_READ)]],
+	    ], [
+		feature_tuple =>
+		    ['*', 'FEATURE_TUPLE'],
+		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
 		    [MEMBER => [qw(TUPLE_WRITE TUPLE_READ)]],
 	    ]) : (),
-	    Bivio::Agent::TaskId->is_component_included('motion') ? ([
+#TODO: Not clear if we can eliminate motion
+ 	    Bivio::Agent::TaskId->is_component_included('motion') ? ([
 		closed_results_motion =>
+		    ['*' => 'FEATURE_MOTION'],
 		    [MEMBER => [qw(MOTION_WRITE -MOTION_READ)]],
-		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
+		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
 	    ], [
 		open_results_motion =>
+		    ['*' => 'FEATURE_MOTION'],
 		    [MEMBER => [qw(MOTION_WRITE MOTION_READ)]],
-		    [ADMINISTRATOR => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
+		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
 	    ]) : (),
 	    $new ? @{$new->()} : (),
         ];
