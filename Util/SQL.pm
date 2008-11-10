@@ -351,6 +351,26 @@ sub init_realm_role {
     }
     $rr->copy_all(forum => 'calendar_event')
 	if $_RT->unsafe_from_name('CALENDAR_EVENT');
+    $_AR->do_default(sub {
+	my($r) = @_;
+	my($rr) = $self->model('RealmRole');
+	return unless
+	    defined(my $anon = $rr->get_permission_map($r)->{$_R->ANONYMOUS});
+        foreach my $role (grep(!$_->eq_anonymous, $_R->get_non_zero_list)) {
+	    if ($rr->unsafe_load({role => $role})) {
+		$rr->update({
+		    permission_set => $anon | $rr->get('permission_set')});
+	    }
+	    else {
+		$rr->create({
+		    realm_id => $self->req('auth_id'),
+		    role => $role,
+		    permission_set => $anon,
+		});
+	    }
+	}
+        return 1;
+    }, $self->req);
     return;
 }
 
@@ -375,7 +395,9 @@ sub initialize_motion_permissions {
     my($self) = @_;
     my($req) = $self->get_request;
     my($rr) = $self->new_other('RealmRole');
-    $_AR->do_default(sub {
+    $_AR->do_any_group_default(sub {
+	return 1
+	    if 
         $rr->edit_categories('+open_results_motion');
 	return 1;
     }, $req);
@@ -392,8 +414,8 @@ sub initialize_tuple_permissions {
     # Sets up default permissions of tuples.
     my($req) = $self->get_request;
     my($rr) = $self->new_other('RealmRole');
-    $_AR->do_default(sub {
-        $rr->edit_categories('+tuple');
+    $_AR->do_any_group_default(sub {
+        $rr->edit_categories('+feature_tuple');
 	return 1;
     }, $req);
     return;
@@ -482,10 +504,12 @@ sub internal_upgrade_db_bundle {
 	tuple_tag
         realm_file_lock
 	crm_thread_lock_user_id
+	forum_features
     )) {
 	my($sentinel) = \&{"_sentinel_$type"};
-	next if defined(&$sentinel) ? $sentinel->($self)
-	    : $tables->{"${type}_t"};
+	next
+	    if defined(&$sentinel) ? $sentinel->($self)
+	    : ($tables->{"${type}_t"} || _default_sentinel($self, $type));
 	$self->print("Running: $type\n");
 	my($m) = "internal_upgrade_db_$type";
 	$self->$m;
@@ -662,6 +686,32 @@ CREATE INDEX email_alias_t2 ON email_alias_t (
 )
 /
 EOF
+    return;
+}
+
+sub internal_upgrade_db_forum_features {
+    my($self) = @_;
+    $self->model('RealmOwner')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    $it->new_other('RealmRole')->add_permissions(
+		$it,
+		[$_R->get_non_zero_list],
+		[qw(
+		    FEATURE_BLOG
+		    FEATURE_CALENDAR
+		    FEATURE_DAV
+		    FEATURE_FILE
+		    FEATURE_MAIL
+		    FEATURE_WIKI
+	        )],
+	    );
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+	{realm_type => $_RT->FORUM},
+    );
     return;
 }
 
@@ -1888,6 +1938,18 @@ sub _ddl_files {
     return $f;
 }
 
+sub _default_sentinel {
+    my($self, $feature) = @_;
+    my($u) = $self->model('DbUpgrade');
+    return 1
+	if $u->unauth_load({version => $feature});
+    $u->create({
+	version => $feature,
+	run_date_time => $u->get_field_type('run_date_time')->now,
+    });
+    return 0;
+}
+
 sub _exists {
     return $_C->execute_one_row(
 	'SELECT COUNT(*) ' . shift(@_),
@@ -1997,15 +2059,7 @@ sub _sentinel_permissions51 {
     return 1
 	unless $self->use('Auth.Permission')
 	->unsafe_from_name('FEATURE_PERMISSIONS51');
-    my($u) = $self->model('DbUpgrade');
-    my($v) = 'permissions51';
-    return 1
-	if $u->unauth_load({version => $v});
-    $u->create({
-	version => $v,
-	run_date_time => $u->get_field_type('run_date_time')->now,
-    });
-    return 0;
+    return _default_sentinel($self, 'permissions51');
 }
 
 sub _sentinel_site_forum {
@@ -2081,11 +2135,7 @@ b-realm-role -realm USER -user user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
     +DATA_READ \
-    +DATA_WRITE \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MAIL_SEND \
-    +MAIL_WRITE
+    +DATA_WRITE
 b-realm-role -realm USER -user user edit ACCOUNTANT - \
     +MEMBER \
     +ADMIN_WRITE
@@ -2099,7 +2149,13 @@ b-realm-role -realm USER -user user edit FILE_WRITER - \
 # CLUB Permissions
 #
 b-realm-role -realm CLUB -user user edit ANONYMOUS - \
-    +ANYBODY
+    +ANYBODY \
+    +FEATURE_BLOG \
+    +FEATURE_CALENDAR \
+    +FEATURE_DAV \
+    +FEATURE_FILE \
+    +FEATURE_MAIL \
+    +FEATURE_WIKI
 b-realm-role -realm CLUB -user user edit USER - \
     +ANONYMOUS \
     +ANY_USER
