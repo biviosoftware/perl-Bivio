@@ -266,7 +266,7 @@ sub can_user_execute_task {
 	$task->assert_realm_type($realm->get('type'));
     }
     else {
-        $realm = $self->internal_get_realm_for_task($tid);
+        $realm = $self->internal_get_realm_for_task($tid, 1);
     }
     return $realm
         ? $realm->can_user_execute_task($task, $self)
@@ -626,7 +626,7 @@ sub internal_get_named_args {
 }
 
 sub internal_get_realm_for_task {
-    my($self, $task_id) = @_;
+    my($self, $task_id, $no_die) = @_;
     # Returns the realm for the specified task.  If the realm type of the
     # task matches the current realm, current realm is returned.
     #
@@ -643,14 +643,20 @@ sub internal_get_realm_for_task {
 	if $task->has_realm_type($realm->get('type'));
     return $_REALM->get_general
 	if $task->has_realm_type($_RT->GENERAL);
-    $task->assert_realm_type($_RT->USER);
+    if ($no_die) {
+	return undef
+	    unless $task->has_realm_type($_RT->USER);
+    }
+    else {
+	$task->assert_realm_type($_RT->USER);
+    }
     return undef
 	unless my $auth_user = $self->get('auth_user');
-    $realm = $self->unsafe_get('auth_user_realm');
-    return $realm
-	if $realm;
-    $realm = $_REALM->new($auth_user);
-    $self->put_durable(auth_user_realm => $realm);
+    $realm = $self->unsafe_get('_internal_get_realm_for_task');
+    unless ($realm && $realm->get('id') eq $auth_user->get('realm_id')) {
+	$realm = $_REALM->new($auth_user);
+	$self->put(_internal_get_realm_for_task => $realm);
+    }
     return $realm;
 }
 
@@ -810,7 +816,12 @@ sub map_user_realms {
 		    my($x) = $_;
 		    !$filter ||
 			keys(%$filter)
-			== grep($filter->{$_} eq $x->{$_}, keys(%$filter));
+		        == grep({
+			    my($fv) = $filter->{$_};
+			    my($xv) = $x->{$_};
+			    ref($fv) eq 'ARRAY'
+				? grep($xv eq $_, @$fv) : $xv eq $fv;
+			} keys(%$filter));
 		} values(%{$self->get('user_realms')}))))];
     return [map($op->($_), @$atomic_copy)];
 }
@@ -846,10 +857,11 @@ sub push_txn_resource {
     my($self, $resource) = @_;
     # Adds a new transaction resource to this request.  I<resource> must
     # support C<handle_commit> and C<handle_rollback>.
-    _trace($resource) if $_TRACE;
     my($tr) = $self->get('txn_resources');
-    push(@$tr, $resource)
-	unless grep($_ eq $resource, @$tr);
+    return
+	if grep($_ eq $resource, @$tr);
+    push(@$tr, $resource);
+    _trace($resource) if $_TRACE;
     return;
 }
 
