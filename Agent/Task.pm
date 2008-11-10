@@ -323,8 +323,7 @@ sub handle_pre_execute_task {
 
 sub has_realm_type {
     my($self, $realm_type) = @_;
-    my($rt) = $self->get('realm_type');
-    return $rt->eq_unknown || $rt == $realm_type ? 1 : 0;
+    return $realm_type->equals_or_any_group_check($self->get('realm_type'));
 }
 
 sub initialize {
