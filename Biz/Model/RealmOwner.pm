@@ -17,8 +17,8 @@ my($_P) = Bivio::Type->get_instance('Password');
 my($_HOME_TASK_MAP) = {
     map({
         $_ => Bivio::Agent::TaskId->from_name($_->get_name . '_HOME'),
-    } (grep($_->equals_by_name(qw(UNKNOWN GENERAL)) ? 0 : 1,
-        Bivio::Auth::RealmType->get_list))),
+    } (grep($_->equals_by_name(qw(GENERAL)) ? 0 : 1,
+        Bivio::Auth::RealmType->get_non_zero_list))),
 };
 
 sub create {
@@ -109,9 +109,8 @@ sub init_db {
     # Initializes database with default realms.  The default realms
     # have special realm_ids.
 
-    foreach my $rt (Bivio::Auth::RealmType->get_list) {
-	$self->init_realm_type($rt)
-	    unless $rt->equals_by_name('UNKNOWN');
+    foreach my $rt (Bivio::Auth::RealmType->get_non_zero_list) {
+	$self->init_realm_type($rt);
     }
     return;
 }

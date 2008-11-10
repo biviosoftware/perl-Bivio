@@ -125,7 +125,7 @@ my($do_default);
 	    }, req()] => sub {
 		shift->actual_return([sort(@$do_default)]);
 		return [sort(
-		    grep(!$_->eq_unknown, Bivio::Auth::RealmType->get_list))];
+		    Bivio::Auth::RealmType->get_non_zero_list)];
 	    },
 	],
     ],
