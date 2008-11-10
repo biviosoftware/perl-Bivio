@@ -7,8 +7,6 @@ BEGIN {
 	    delegates => {
 		'Bivio::Agent::TaskId' => 'Bivio::Agent::t::Mock::TaskId',
 		'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
-		'Bivio::Auth::Permission'
-		    => 'Bivio::Agent::t::Mock::Permission',
 	    },
 	    maps => {
 		Facade => ['Bivio::Agent::t::Mock::Facade'],
