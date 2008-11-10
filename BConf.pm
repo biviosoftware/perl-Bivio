@@ -386,6 +386,10 @@ sub merge_realm_role_category_map {
 		admin_only_forum_email =>
 		    [MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)]],
 	    ],
+            map(Bivio::Agent::TaskId->is_component_included($_) ? ([
+                "feature_$_" => ['*' => uc("feature_$_")],
+            ]) : (),
+                qw(file blog wiki dav mail calendar)),
 	    Bivio::Agent::TaskId->is_component_included('tuple') ? ([
 #DEPRECATED: Need to fix apps which use this and not feature_tuple
 		tuple =>
