@@ -116,7 +116,7 @@ sub can_next_row {
 }
 
 sub do_rows {
-    my($delegator, $do_rows_handler) = shift->delegated_args(@_);
+    my(undef, $delegator, $do_rows_handler) = shift->delegated_args(@_);
     $delegator->reset_cursor;
     0 while $delegator->next_row && $do_rows_handler->($delegator);
     return $delegator;
@@ -472,11 +472,9 @@ sub internal_load {
     my($req) = $self->unsafe_get_request;
     $req->put(list_model => $self) if $req;
 
-    if ($self->can('internal_post_load_row')) {
-	for (my($i) = 0; $i <= $#$rows; $i++) {
-	    splice(@$rows, $i--, 1)
-		unless $self->internal_post_load_row($rows->[$i]);
-	}
+    for (my($i) = 0; $i <= $#$rows; $i++) {
+	splice(@$rows, $i--, 1)
+	    unless $self->internal_post_load_row($rows->[$i]);
     }
     return;
 }
@@ -485,6 +483,10 @@ sub internal_load_rows {
     my($self, $query, $stmt, $where, $params, $sql_support) = @_;
     # May be overriden.  Must return the rows loaded.
     return $sql_support->load($query, $stmt, $where, $params, $self);
+}
+
+sub internal_post_load_row {
+    return 1;
 }
 
 sub internal_pre_load {
@@ -538,8 +540,7 @@ sub iterate_next {
     while () {
 	my($self, $row) = shift->internal_iterate_next(@_);
 	last unless $row;
-	next if $self->can('internal_post_load_row')
-	   && !$self->internal_post_load_row($row);
+	next if !$self->internal_post_load_row($row);
 	$self->internal_put($row);
 	return 1;
     }
@@ -568,8 +569,7 @@ sub iterate_next_and_load {
     $fields->{cursor} = 0;
     while ($self->internal_get_sql_support->iterate_next(
 	$self, $it || $self->internal_get_iterator, $row)) {
-	next if $self->can('internal_post_load_row')
-	    && !$self->internal_post_load_row($row);
+	next if !$self->internal_post_load_row($row);
 	$self->internal_clear_model_cache;
 	$self->internal_put($row);
 	return 1;
@@ -693,7 +693,7 @@ sub map_primary_key_to_rows {
 }
 
 sub map_rows {
-    my($delegator, $map_iterate_handler) = shift->delegated_args(@_);
+    my(undef, $delegator, $map_iterate_handler) = shift->delegated_args(@_);
     my($res) = [];
     $map_iterate_handler ||= sub {
 	return shift->get_shallow_copy;
