@@ -72,22 +72,31 @@ sub code_ref_for_subroutine {
 }
 
 sub delegate_method {
-    my($proto) = shift;
-    my($method) = $proto->my_caller;
-    return shift->$method(\&delegate_method, $proto, @_);
+    my($delegator, $delegate) = (shift, shift);
+#     my($args) = [$proto->delegated_args(@_)];
+#     # remove $delegate (see delegated_args)
+#     shift(@$args);
+#     return shift->$method(\&delegate_method, @$args);
+    my($delegation) = $delegate->use('Bivio.Delegation')->new(
+	$delegate, $delegator);
+    my($method) = $delegation->get('method');
+    return $delegate->$method(
+	\&delegate_method,
+	$delegation,
+	$delegator,
+	@_,
+    );
 }
 
 sub delegated_args {
-    my($proto) = shift;
-    return ($proto, @_)
-	unless ref($_[0]) && $_[0] == \&delegate_method;
+    my($delegate) = shift;
+    return (
+	$delegate->use('Bivio.Delegation')->new($delegate, $delegate),
+	$delegate,
+	@_,
+    ) unless ref($_[0]) && $_[0] == \&delegate_method;
     shift;
-    return (@_);
-}
-
-sub delegated_package {
-    # Call stack is: <delegated method>, delegate_method(), <delegating method>
-    return (caller(2))[0];
+    return @_;
 }
 
 sub die {
@@ -279,8 +288,9 @@ sub max_number {
 }
 
 sub my_caller {
+    my(undef, $depth) = @_;
     # IMPLEMENTATION RESTRICTION: Does not work for evals.
-    return ((caller(2))[3] =~ /([^:]+)$/)[0];
+    return ((caller(($depth || 0) + 2))[3] =~ /([^:]+)$/)[0];
 }
 
 sub name_parameters {
