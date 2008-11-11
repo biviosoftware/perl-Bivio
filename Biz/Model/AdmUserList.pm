@@ -23,7 +23,7 @@ sub NAME_SORT_COLUMNS {
 }
 
 sub internal_initialize {
-    my($delegator, $stmt, $info) = shift->delegated_args(@_);
+    my(undef, $delegator, $stmt, $info) = shift->delegated_args(@_);
     return $delegator->merge_initialize_info(
 	$info || $delegator->SUPER::internal_initialize,
 	{
@@ -36,31 +36,32 @@ sub internal_initialize {
 	    primary_key => [[qw(User.user_id Email.realm_id RealmOwner.realm_id)]],
 	    other => [
 		@{$delegator->NAME_COLUMNS},
-		'Email.want_bulletin',
 		'RealmOwner.display_name',
 		'RealmOwner.name',
-		[
-		    'Email.location',
-		    [$delegator->get_instance('Email')->DEFAULT_LOCATION],
-		],
 		{
 		    name => 'display_name',
 		    type => 'Line',
 		    constraint => 'NOT_NULL',
 		},
+		[
+		    'Email.location',
+		    [$delegator->get_instance('Email')->DEFAULT_LOCATION],
+		],
+		'Email.want_bulletin',
 	    ],
 	},
     );
 }
 
 sub internal_post_load_row {
-    my($delegator, $row) = shift->delegated_args(@_);
-    $row->{display_name} = $_U->concat_last_first_middle(@{$row}{@$_NAME_COLS});
+    my(undef, $delegator, $row) = shift->delegated_args(@_);
+    $row->{display_name} = $_U->concat_last_first_middle(
+	@{$row}{@{$delegator->NAME_COLUMNS}});
     return 1;
 }
 
 sub internal_prepare_statement {
-    my($delegator, $stmt, $query) = shift->delegated_args(@_);
+    my(undef, $delegator, $stmt, $query) = shift->delegated_args(@_);
     my($search) = $_L->from_literal($query->get('search'));
     return unless defined($search);
     if ($search eq $delegator->LOAD_ALL_SEARCH_STRING) {
