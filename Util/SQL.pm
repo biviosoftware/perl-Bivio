@@ -8,15 +8,42 @@ my($_REALM_ROLE_CONFIG);
 Bivio::IO::Config->register(my $_CFG = {
     export_db_on_upgrade => 1,
 });
-my($_C) = __PACKAGE__->use('SQL.Connection');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_RT) = __PACKAGE__->use('Auth.RealmType');
-my($_R) = __PACKAGE__->use('Auth.Role');
-my($_AR) = __PACKAGE__->use('Auth.Realm');
-my($_PS) = __PACKAGE__->use('Auth.PermissionSet');
-my($_PI) = __PACKAGE__->use('Type.PrimaryId');
-my($_F) = __PACKAGE__->use('IO.File');
+my($_AR) = b_use('Auth.Realm');
+my($_C) = b_use('SQL.Connection');
+my($_DT) = b_use('Type.DateTime');
 my($_E) = b_use('Type.Email');
+my($_F) = b_use('IO.File');
+my($_PI) = b_use('Type.PrimaryId');
+my($_PS) = b_use('Auth.PermissionSet');
+my($_R) = b_use('Auth.Role');
+my($_RT) = b_use('Auth.RealmType');
+my($_BUNDLE) = [qw(
+    forum
+    realm_mail
+    realm_mail_bounce
+    calendar_event
+    email_alias
+    job_lock
+    tuple
+    motion
+    website
+    realm_dag
+    otp
+    site_forum
+    file_writer
+    bulletin
+    row_tag
+    motion_vote_comment
+    nonunique_email
+    !permissions51
+    crm_thread
+    tuple_tag
+    realm_file_lock
+    crm_thread_lock_user_id
+    !forum_features
+    !forum_features_tuple_motion
+)];
+my($_INITIALIZE_SENTINEL) = [grep(s/!//, @$_BUNDLE)];
 
 sub TEST_PASSWORD {
     # Returns password for test data.
@@ -356,6 +383,7 @@ sub init_realm_role {
 	my($rr) = $self->model('RealmRole');
 	return unless
 	    defined(my $anon = $rr->get_permission_map($r)->{$_R->ANONYMOUS});
+	$_PS->clear(\$anon, ['ANYBODY']);
         foreach my $role (grep(!$_->eq_anonymous, $_R->get_non_zero_list)) {
 	    if ($rr->unsafe_load({role => $role})) {
 		$rr->update({
@@ -387,7 +415,9 @@ sub initialize_db {
     if (Bivio::Agent::TaskId->unsafe_from_name('FORUM_MOTION_LIST')) {
 	$self->initialize_motion_permissions;
     }
-    _sentinel_permissions51($self);
+    foreach my $x (@$_INITIALIZE_SENTINEL) {
+	_default_sentinel($self, $x);
+    }
     return;
 }
 
@@ -481,31 +511,7 @@ sub internal_upgrade_db_bundle {
     my($self) = @_;
     $self->initialize_ui;
     my($tables) = {map(($_ => 1), @{$self->tables})};
-    foreach my $type (qw(
-	forum
-	realm_mail
-	realm_mail_bounce
-	calendar_event
-	email_alias
-	job_lock
-	tuple
-	motion
-	website
-        realm_dag
-        otp
-	site_forum
-	file_writer
-	bulletin
-	row_tag
-	motion_vote_comment
-	nonunique_email
-	permissions51
-	crm_thread
-	tuple_tag
-        realm_file_lock
-	crm_thread_lock_user_id
-	forum_features
-    )) {
+    foreach my $type (@$_BUNDLE) {
 	my($sentinel) = \&{"_sentinel_$type"};
 	next
 	    if defined(&$sentinel) ? $sentinel->($self)
@@ -706,6 +712,32 @@ sub internal_upgrade_db_forum_features {
 		    FEATURE_WIKI
 	        )],
 	    );
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+	{realm_type => $_RT->FORUM},
+    );
+    return;
+}
+
+sub internal_upgrade_db_forum_features_tuple_motion {
+    my($self) = @_;
+    $self->model('RealmOwner')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    my($rr) = $it->new_other('RealmRole');
+	    my($ps) = $rr->get_permission_map($it)->{$_R->ADMINISTRATOR};
+	    my($perms) = [];
+	    foreach my $x (qw(TUPLE MOTION)) {
+		push(@$perms, "FEATURE_$x")
+		    if $_PS->is_set($ps, $x . '_ADMIN');
+	    }
+	    $it->new_other('RealmRole')->add_permissions(
+		$it,
+		[$_R->get_non_zero_list],
+		$perms,
+	    ) if @$perms;
 	    return 1;
 	},
 	'unauth_iterate_start',
