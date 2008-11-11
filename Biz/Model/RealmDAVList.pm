@@ -1,10 +1,11 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmDAVList;
 use strict;
 use Bivio::Base 'Model.DAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RT) = b_use('Auth.RealmType');
 
 sub dav_propfind {
     my($self) = @_;
@@ -38,7 +39,7 @@ sub internal_load_rows {
 
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
-    my($rt) = $query->get('realm_type');
+    my($rt) = $_RT->from_any($query->get('realm_type'));
     $stmt->where($stmt->IN('RealmOwner.realm_type', $rt->self_or_any_group));
     return shift->SUPER::internal_prepare_statement(@_);
 }
