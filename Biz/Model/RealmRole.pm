@@ -36,7 +36,7 @@ sub get_roles_for_permission {
     my($roles) = $_RS->get_min;
     foreach my $role ($_R->get_non_zero_list) {
 	$_RS->set(\$roles, $role)
-            if $_RS->is_set($map->{$role}, $permission);
+            if $_PS->is_set($map->{$role}, $permission);
     }
     return $roles;
 }
