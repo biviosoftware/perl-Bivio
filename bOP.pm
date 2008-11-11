@@ -26,11 +26,90 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.6  2008/11/11 00:29:27  dobbs
+  * Bivio::Agent::Request
+    removed too much tracing on push_txn_resource
+    map_user_realms accepts filter which is an array of values
+    internal_get_realm_for_task accepts $no_die
+  * Bivio::Agent::Task
+    use RealmType->equals_or_any_group_check
+  * Bivio::Auth::RealmType
+    added equals_or_any_group_check, get_any_group_list, and self_or_any_group
+  * Bivio::BConf
+    Added FEATURE_BLOG/CALENDAR/etc. to respective tasks
+    added realm role category maps:
+      feature_file
+      feature_blog
+      feature_wiki
+      feature_dav
+      feature_mail
+      feature_calendar
+  * Bivio::Biz::Action::ClientRedirect
+    Format uris without carrying query/path_info
+    use self_or_any_group
+  * Bivio::Biz::Action::MySite
+    Fixed my-site to redirect properly if path_info matches user task
+  * Bivio::Biz::Action::RealmlessRedirect
+    use self_or_any_group and map_user_realms
+  * Bivio::Biz::Model::AdmUserList
+    added RealmOwner join and Email.want_bulletin
+  * Bivio::Biz::Model::CRMForm
+    removed call_super_before
+  * Bivio::Biz::Model::RealmDAVList
+    use RealmType->self_or_any_group
+  * Bivio::Biz::Model::RealmOwner
+    use get_non_zero_list
+  * Bivio::Delegate::RealmType
+    renamed UNKNOWN to ANY_GROUP
+  * Bivio::Delegate::SimplePermission
+    Added FEATURE_BLOG/CALENDAR/etc.
+  * Bivio::Die
+    stack_trace config always produces a stack trace
+  * Bivio::PetShop::Delegate::Permission
+    renumber permissions (why were they 21 and 22?)
+  * Bivio::Test::Reload
+    look for changed files in ddl
+  * Bivio::UI::FacadeBase
+    added labels for ForumDropDown
+  * Bivio::UI::HTML::Widget::AuxiliaryForm
+    removed call_super_before
+  * Bivio::UI::Task
+    renamed RealmType->UNKNOWN to ANY_GROUP
+    use RealmType->equals_or_any_group_check
+  * Bivio::UI::View::Blog
+    add HIDE_IS_PUBLIC to allow override
+    added TEXT_AREA_COLS and TEXT_AREA_ROWS to control dimensions of
+    edit text area
+  * Bivio::UI::View::Wiki
+    added TEXT_AREA_COLS and TEXT_AREA_ROWS to control dimensions of
+    edit text area
+  * Bivio::UI::Widget::Cond
+    removed call_super_before
+  * Bivio::UI::XHTML::Widget::ForumDropDown
+    pushed up to ForumDropDown
+    added NEW_ARGS to override RealmDropDown
+  * Bivio::UI::XHTML::Widget::WikiText::Embed
+    accept value= so doesn't show up in Xapian indexing
+  * Bivio::UI::XHTML::Widget::WikiText::Widget
+    accept value= so doesn't show up in Xapian indexing
+  * Bivio::Util::HTTPConf
+    reduce KeepAliveTimeout to 2 seconds
+  * Bivio::Util::RealmFile
+    added create_or_update
+  * Bivio::Util::SQL
+    Added FEATURE_BLOG/CALENDAR/etc. to respective tasks
+    ANY_GROUP support for initializing permissions
+    bundle sentinel defaults to name of table or type name
+    added forum_feature upgrade to bundle
+    write the sentinel name out when the upgrade runs
+  * Bivio::t::UNIVERSAL::Super3
+    try to test lexicals
+
   Revision 7.5  2008/10/29 05:01:13  dobbs
   * Bivio::UI::HTML::Widget::FormButton
     added NEW_ARGS to specify positional Widget attributes; specify ?class explicitly; internal_new_args accepts '?' to mean optional value
