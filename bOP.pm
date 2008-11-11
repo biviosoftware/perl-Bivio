@@ -26,11 +26,22 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.5  2008/10/29 05:01:13  dobbs
+  * Bivio::UI::HTML::Widget::FormButton
+    added NEW_ARGS to specify positional Widget attributes; specify ?class explicitly; internal_new_args accepts '?' to mean optional value
+  * Bivio::UI::HTML::Widget::Table
+    changed vs_call() to vs_new() for older apps
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    replaced internal_new_args with NEW_ARGS (see recent change to UI::Widget)
+    callers can specify the tag in the third parameter (defaults to div)
+  * Bivio::UI::XHTML::Widget::XLink
+    replace internal_new_args() with NEW_ARGS()
+
   Revision 7.4  2008/10/28 17:46:31  moeller
   * Bivio::Test::Widget
     removed AUTOLOAD which just obstructs stuff
