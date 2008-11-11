@@ -513,7 +513,6 @@ sub internal_upgrade_db_bundle {
 	$self->print("Running: $type\n");
 	my($m) = "internal_upgrade_db_$type";
 	$self->$m;
-	_default_sentinel($self, $type);
     }
     return;
 }
