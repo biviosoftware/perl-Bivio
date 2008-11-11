@@ -5,10 +5,15 @@ use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_) = __PACKAGE__->use('Bivio::t::UNIVERSAL::Delegate');
+
+sub as_string {
+    my(undef, $delegator) = shift->delegated_args(@_);
+    return $delegator->simple_package_name;
+}
 
 sub simple_package_name {
-    return shift->delegate_method($_D, @_);
+    my($delegation, $delegator) = shift->delegated_args(@_);
+    return $delegation->call_delegator_super('simple_package_name');
 }
 
 1;
