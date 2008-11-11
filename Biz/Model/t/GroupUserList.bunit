@@ -1,0 +1,15 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->set_realm('fourem');
+[
+    load_all => [
+        [] => [{
+	    display_name => 'User, Btest_admin',
+	}, {
+            display_name => 'User, Btest_read',
+        }, {
+            display_name => 'User, Root',
+	}],
+    ],
+];
