@@ -120,7 +120,16 @@ my($category_count) = 0;
 	unauth_load => [
 	    [{name => 'demo'}] => 1,
 	],
-       as_string => qr{^Bivio::\w+::Model::RealmOwner\(demo,\d+\)$}s,
+	as_string => qr{^Bivio::\w+::Model::RealmOwner\(demo,\d+\)$}s,
+    ],
+    RealmUserList => [
+	inline_case(sub {req()->set_realm('demo')}),
+	load_this => [
+	    [{this => realm_id('demo')}] => not_die(),
+	],
+	get_field_alias_value => [
+	    'RealmOwner.realm_id' => realm_id('demo'),
+	],
     ],
     [req(), 'Category'] => [
 	iterate_start => [
