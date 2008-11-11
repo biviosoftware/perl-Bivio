@@ -158,6 +158,14 @@ sub get_auth_id_name {
     return ($self->get_info('auth_id') || $self->die('no auth_id'))->{name};
 }
 
+sub get_field_alias_value {
+    my($self, $alias) = @_;
+    return $self->get(
+	($self->get_info('column_aliases')->{$alias}
+	     || $self->die($alias, ': not a field alias')
+	)->{name});
+}
+
 sub get_field_constraint {
     # Returns the constraint for this field.
     #
