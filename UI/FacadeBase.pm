@@ -490,11 +490,11 @@ sub _cfg_dav {
 #TODO: Make visible only if OTP is enabled.  Requires change to DAVList
 		'Forum.require_otp' => 'Require OTP?',
 	    ]],
-	    [ForumUserList => [
+	    [[qw(GroupUserList ForumUserList)] => [
 		mail_recipient => 'Subscribed?',
 		file_writer => 'Write Files?',
 		administrator => 'Administrator?',
-		'RealmUser.user_id' => 'Database Key',
+		[qw(User.user_id RealmUser.user_id)] => 'Database Key',
 	    ]],
 	    [EmailAliasList => [
 		'EmailAlias.incoming' => 'From Email',
