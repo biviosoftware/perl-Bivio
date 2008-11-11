@@ -57,7 +57,7 @@ sub create_from_rfc822 {
 }
 
 sub get_mail_part_list {
-    my($delegator, $prefix) = shift->delegated_args(@_);
+    my(undef, $delegator, $prefix) = shift->delegated_args(@_);
     return $delegator->new_other('MailPartList')->load_all({
 	parent_id => $delegator->get(($prefix || '') . 'realm_file_id'),
     });

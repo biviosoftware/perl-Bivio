@@ -86,7 +86,7 @@ sub parse_display_name {
 }
 
 sub parse_to_names {
-    my($delegator, $field) = shift->delegated_args(@_);
+    my(undef, $delegator, $field) = shift->delegated_args(@_);
     my($x) = $_DN->parse_to_names($delegator->get($field));
     unless (ref($x) eq 'HASH') {
 	$delegator->internal_put_error($field => $x);

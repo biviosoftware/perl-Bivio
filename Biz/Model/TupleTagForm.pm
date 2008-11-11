@@ -12,7 +12,7 @@ my($_MISSING) = __PACKAGE__->use('Model.TupleSlotDefList')->MISSING_SLOT_INFO;
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub execute_empty {
-    my($delegator) = shift->delegated_args(@_);
+    my(undef, $delegator) = shift->delegated_args(@_);
     _setup(
 	$delegator,
 	sub {
@@ -37,7 +37,7 @@ sub execute_empty {
 }
 
 sub execute_ok {
-    my($delegator) = shift->delegated_args(@_);
+    my(undef, $delegator) = shift->delegated_args(@_);
     _setup($delegator, sub {
 	$delegator->create_or_update_model_properties(shift);
 	return 1;
@@ -46,11 +46,8 @@ sub execute_ok {
 }
 
 sub get_field_info {
-    my($delegator, $field, $which) = shift->delegated_args(@_);
-    my($info) = $delegator->call_super(
-	$delegator->delegated_package,
-	get_field_info => [$field],
-    );
+    my($delegation, $delegator, $field, $which) = shift->delegated_args(@_);
+    my($info) = $delegation->call_delegator_super(get_field_info => [$field]);
     if ($info->{type}->isa($_TST)) {
 	my($d) = _defs($delegator, $info->{name});
 	$info = {
@@ -66,7 +63,7 @@ sub get_field_info {
 }
 
 sub internal_initialize {
-    my($delegator, $info) = shift->delegated_args(@_);
+    my($delegation, $delegator, $info) = shift->delegated_args(@_);
     return $delegator->merge_initialize_info(
 	{
 	    visible => _fields($delegator, sub {
@@ -84,13 +81,10 @@ sub internal_initialize {
 	    }),
 	},
 	$info || $delegator->merge_initialize_info(
-	    $delegator->call_super(
-		$delegator->delegated_package,
-		internal_initialize => [],
-	    ),
+	    $delegation->call_delegator_super(internal_initialize => []),
 	    {version => 1},
 	),
-    );
+   );
 }
 
 sub tuple_tag_form_state {
@@ -98,12 +92,12 @@ sub tuple_tag_form_state {
 }
 
 sub tuple_tag_map_slots {
-    my($delegator, $op) = shift->delegated_args(@_);
+    my(undef, $delegator, $op) = shift->delegated_args(@_);
     return _fields($delegator, sub {$op->(shift)});
 }
 
 sub tuple_tag_slot_choice_select_list {
-    my($delegator, $field) = shift->delegated_args(@_);
+    my(undef, $delegator, $field) = shift->delegated_args(@_);
     return $delegator->new_other('TupleSlotChoiceSelectList')
 	->load_all_from_slot_type(
 	    (_field_def_value($delegator, $field, 'tuple_slot_info') || {})
@@ -112,14 +106,14 @@ sub tuple_tag_slot_choice_select_list {
 }
 
 sub tuple_tag_slot_has_choices {
-    my($delegator, $field) = shift->delegated_args(@_);
+    my(undef, $delegator, $field) = shift->delegated_args(@_);
     return 0
 	unless my $i = _field_def_value($delegator, $field, 'tuple_slot_info');
     return $i->{type}->get('choices')->is_specified;
 }
 
 sub tuple_tag_slot_label {
-    my($delegator, $field) = shift->delegated_args(@_);
+    my(undef, $delegator, $field) = shift->delegated_args(@_);
     (my $x = _field_def_value($delegator, $field, 'TupleSlotDef.label') || '')
 	=~ s/_/ /g;
     return $x;
