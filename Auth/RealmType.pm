@@ -30,7 +30,10 @@ sub equals_or_any_group_check {
 }
 
 sub get_any_group_list {
-    return grep(!$_->eq_user, shift->get_non_zero_list);
+    return grep(
+	!$_->equals_by_name(qw(GENERAL USER)),
+	shift->get_non_zero_list,
+    );
 }
 
 sub is_default_id {
