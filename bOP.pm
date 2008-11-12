@@ -26,11 +26,29 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.8  2008/11/12 19:13:31  nagler
+  * Bivio::Agent::Task
+    want_scalar around return value of $method in execute_items
+  * Bivio::Biz::FormModel
+    want_scalar around return from execute_ok
+  * Bivio::Biz::Model::GroupUserList
+    fixed cross-join
+  * Bivio::Test::Unit
+    added builtin_go_dir
+  * Bivio::UI::HTML::Widget::SourceCode
+    perl2html needs absolute path
+  * Bivio::UNIVERSAL
+    Added want_scalar
+  * Bivio::Util::HTTPConf
+    added ssl_mdc attribute for configuring multi-domain ssl certificates
+  * Bivio::Util::SQL
+    don't run upgrade in Oracle
+
   Revision 7.7  2008/11/11 23:14:49  dobbs
   * Bivio::Biz::ListModel
     new delegate_method interface
