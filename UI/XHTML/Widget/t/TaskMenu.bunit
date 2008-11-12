@@ -78,4 +78,5 @@ req()->set_realm_and_user(qw(demo guest));
     }]] => '<div class="task_menu"><a href="/hm/bunit1">bunit1</a></div>',
     [['SITE_ROOT'], {selected_label_prefix => '!!'}]
         => qr{task_menu.*class="selected" href="/">!!home}is,
+    [[vs_new(Simple => 'xyz'), vs_new(RealmDropDown => 'user')]] => qr{xyz</span><span class="want_sep">.*demo}s,
 ];

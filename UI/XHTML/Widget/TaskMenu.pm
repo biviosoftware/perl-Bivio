@@ -15,6 +15,9 @@ my($_PARAMS) = [
     'uri',
     'xlink',
 ];
+my($_W) = b_use('UI.Widget');
+my($_T) = b_use('XHTMLWidget.Tag');
+my($_L) = b_use('XHTMLWidget.Link');
 
 sub NEW_ARGS {
     return [qw(task_map ?class ?tag)];
@@ -70,7 +73,7 @@ sub initialize {
 		});
 	    }
             my($selected_cond) = ['->req', _selected_attr($self, \$i)];
- 	    my($w) = $self->is_blessed($cfg->{xlink}, 'Bivio::UI::Widget')
+ 	    my($w) = $_W->is_blessed($cfg->{xlink})
 		? $cfg->{xlink}
 		: $cfg->{xlink} ? XLink($cfg->{xlink})
 		: $cfg->{task_id} ? Link(
@@ -83,6 +86,9 @@ sub initialize {
 		    $cfg->{uri}
 	        ) : $self->die(
 		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
+	    $w = SPAN($w)
+		if $cfg->{xlink}
+		&& !($_T->is_blessed($w) || $_L->is_blessed($w));
 	    my($class) = $w->unsafe_get('class');
 	    $w->put(
 		_task_menu_cfg => $cfg,
