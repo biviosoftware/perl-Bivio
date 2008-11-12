@@ -1156,7 +1156,7 @@ sub _cfg_wiki {
 		forum_wiki_data => 'Files',
 	    ]],
 	    [RealmDropDown => [
-		forum => 'Forums',
+		forum => 'Forum',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_WIKI_EDIT => 'Add new page',
