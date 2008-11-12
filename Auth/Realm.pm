@@ -2,14 +2,7 @@
 # $Id$
 package Bivio::Auth::Realm;
 use strict;
-use Bivio::Auth::Permission;
-use Bivio::Auth::PermissionSet;
-use Bivio::Auth::Role;
-use Bivio::Auth::Support;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Die;
-use Bivio::HTML;
-use Bivio::IO::ClassLoader;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
 # C<Bivio::Auth::Realm> defines the authorization policy for
@@ -45,9 +38,13 @@ our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_INITIALIZED) = 0;
 my($_GENERAL);
-my($_PI) = Bivio::Type->get_instance('PrimaryId');
-my(@_USED_ROLES) = Bivio::Auth::Role->get_non_zero_list;
-my($_RT) = __PACKAGE__->use('Auth.RealmType');
+my($_PI) = b_use('Type.PrimaryId');
+my(@_USED_ROLES) = b_use('Auth.Role')->get_non_zero_list;
+my($_RT) = b_use('Auth.RealmType');
+my($_PS) = b_use('Auth.PermissionSet');
+my($_RO) = b_use('Model.RealmOwner');
+my($_S) = b_use('Auth.Support');
+my($_M) = b_use('Biz.Model');
 
 sub as_string {
     my($self) = @_;
@@ -86,14 +83,14 @@ sub do_any_group_default {
 sub does_user_have_permissions {
     my($self, $perms, $req) =  @_;
     # Does req.auth_user have I<perms> in this realm.
-    $perms = ${Bivio::Auth::PermissionSet->from_array($perms)}
+    $perms = ${$_PS->from_array($perms)}
 	if ref($perms) eq 'ARRAY';
     my($fields) = $self->[$_IDI];
-    return Bivio::Auth::Support->task_permission_ok(
+    return $_S->task_permission_ok(
 	_perm_set_from_all([map({
 	    my($auth_role) = $_;
 	    unless (defined($fields->{$auth_role})) {
-		$fields->{$auth_role} = Bivio::Auth::Support->load_permissions(
+		$fields->{$auth_role} = $_S->load_permissions(
 		    $self, $auth_role, $req);
 	    }
 	    $fields->{$auth_role};
@@ -176,7 +173,7 @@ sub get_type {
     # Get the type from the instance itself otherwise
     # just from class.
     return $proto->get('type') if ref($proto);
-    Bivio::Die->die($proto, ': unknown realm class');
+    b_die($proto, ': unknown realm class');
 }
 
 sub has_owner {
@@ -190,14 +187,14 @@ sub id_from_any {
     # model with realm_id, instance, or self.
     my($realm_or_id) = @_ ? @_ : $proto;
     return ref($realm_or_id)
-	? UNIVERSAL::isa($realm_or_id, 'Bivio::Auth::Realm')
+	? __PACKAGE__->is_blessed($realm_or_id)
         ? $realm_or_id->get('id')
-	: UNIVERSAL::isa($realm_or_id, 'Bivio::Biz::Model')
+	: $_M->is_blessed($realm_or_id)
 	? $realm_or_id->get('realm_id')
-        : Bivio::Die->die($realm_or_id, ': unhandled reference type')
+        : b_die($realm_or_id, ': unhandled reference type')
 	: $_PI->is_specified($realm_or_id) || $proto->is_default_id($realm_or_id)
 	? $realm_or_id
-	: Bivio::Die->die($realm_or_id, ': not a PrimaryId');
+	: b_die($realm_or_id, ': not a PrimaryId');
 }
 
 sub is_default {
@@ -223,24 +220,23 @@ sub new {
     # If the realm has an I<owner>, it will be saved.  If it
     # has an I<owner_id> or I<owner_name>, the owner will be loaded first.
     # The owner must exist.
-    Bivio::Die->die("must have owner or call type explicitly")
+    b_die("must have owner or call type explicitly")
         unless $owner;
     if (ref($owner)) {
-	return $proto->new(lc($owner->get_name()), $req)
-	    if $proto->is_blessed($owner, 'Bivio::Auth::RealmType');
+	return $proto->new(lc($owner->get_name), $req)
+	    if $_RT->is_blessed($owner);
     }
     else {
 #TODO: Deprecate default names to be special, e.g. =user
-        Bivio::Die->die('cannot create model without request')
+        b_die('cannot create model without request')
 	    unless ref($req);
 	my($g) = $proto->get_general;
 	return $g
 	    if $g->get('id') eq $owner || $owner eq 'general';
-	$owner = Bivio::Biz::Model->new($req, 'RealmOwner')
-	     ->unauth_load_by_id_or_name_or_die($owner);
+	$owner = $_RO->new($req)->unauth_load_by_id_or_name_or_die($owner);
     }
     return $owner->clone
-	if UNIVERSAL::isa($owner, __PACKAGE__);
+	if __PACKAGE__->is_blessed($owner);
     return _new($proto, $owner, $req);
 }
 
@@ -276,23 +272,26 @@ sub _new {
     }
 
     my($type) = $owner->get('realm_type');
-    Bivio::Die->die($owner, ': owner not a Model::RealmOwner')
-	    unless UNIVERSAL::isa($owner, 'Bivio::Biz::Model::RealmOwner');
+    b_die($owner, ': owner not a Model::RealmOwner')
+        unless $_RO->is_blessed($owner);
 
 #TODO: Change this so everyone knows realm_id?
     my($id) = $owner->get('realm_id');
-    Bivio::Die->die($id, ': owner must have valid id (must be loaded)')
-		unless $id;
-    $self->put(owner => $owner, id => $id,
-	    owner_name => $owner->get('name'),
-	    type => $type);
+    b_die($id, ': owner must have valid id (must be loaded)')
+	unless $id;
+    $self->put(
+	owner => $owner,
+	id => $id,
+	owner_name => $owner->get('name'),
+	type => $type,
+    );
     return $self;
 }
 
 sub _perm_set_from_all {
     my($permissions) = @_;
     # Calculate the sum of all given permissions.
-    my($perm_set) = Bivio::Auth::PermissionSet->get_min;
+    my($perm_set) = $_PS->get_min;
     foreach my $perms (@$permissions) {
  	$perm_set |= $perms;
     }
