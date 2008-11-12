@@ -520,7 +520,6 @@ td.amount_cell {
 .dd_menu {
   display: inline;
   position: absolute;
-  width: 8em;
   visibility: hidden;
   Color('dd_menu-background');
   border: 1px solid;
@@ -528,9 +527,15 @@ td.amount_cell {
   width: 15em;
   z-index: 1000;
 }
+.dock .dd_menu a,
+.dock .dd_menu .want_sep a {
+  margin-left: 0;
+  padding: 0 .2em;
+  border-left: 0;
+}
 .dd_menu a {
   display: block;
-  margin: .2em;
+  padding: 0 .2em;
   Font('dd_menu');
   Color('dd_menu-background');
   text-decoration: none;
