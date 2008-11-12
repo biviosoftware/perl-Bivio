@@ -509,6 +509,7 @@ EOF
 
 sub internal_upgrade_db_bundle {
     my($self) = @_;
+    _assert_postgres($self);
     $self->initialize_ui;
     my($tables) = {map(($_ => 1), @{$self->tables})};
     foreach my $type (@$_BUNDLE) {
