@@ -36,7 +36,8 @@ sub render {
 	unless my $package = ($req->get('query') || {})->{'s'};
     $_D->throw('NOT_FOUND')
 	 unless my $file = _file($package, $req);
-    my($lines) = [`perl2html -c -s < '$file'`];
+#TODO: remove this and do it inline always
+    my($lines) = [`/usr/local/bin/perl2html -c -s < '$file'`];
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package, $req);
     $$buffer .= join('', @$lines);
