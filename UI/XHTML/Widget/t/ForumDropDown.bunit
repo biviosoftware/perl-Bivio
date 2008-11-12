@@ -13,7 +13,7 @@ Widget({
 req()->set_user('crm_tech1');
 [
     [{user => 'crm_tech1', realm => undef}]
-	=> qr{<a.*crm_forum.*crm_tuple_forum.*>Forums &#}s,
+	=> qr{<a.*crm_forum.*crm_tuple_forum.*>Forum &#}s,
     [{user => 'crm_tech1', realm => 'crm_forum'}]
 	=> qr{<a.*crm_forum.*crm_tuple_forum.*>crm_forum &#}s,
     [{user => 'crm_tech1', realm => 'crm_tuple_forum'}]
