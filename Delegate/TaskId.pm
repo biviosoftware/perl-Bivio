@@ -67,9 +67,9 @@ sub info_base {
 	    CLUB_HOME
 	    7
 	    CLUB
-	    DATA_READ
+	    ANYBODY
 	    Action.ClientRedirect->execute_next
-	    next=SITE_ROOT
+	    next=FORUM_WIKI_VIEW
 	)],
 	[qw(
 	    CLIENT_REDIRECT
@@ -131,7 +131,7 @@ sub info_base {
 	    FORUM_HOME
 	    17
 	    FORUM
-	    DATA_READ
+	    ANYBODY
 	    Action.ClientRedirect->execute_next
 	    next=FORUM_WIKI_VIEW
 	)],
