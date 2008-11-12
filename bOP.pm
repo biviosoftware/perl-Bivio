@@ -26,11 +26,47 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.7  2008/11/11 23:14:49  dobbs
+  * Bivio::Biz::ListModel
+    new delegate_method interface
+    internal_post_load_row is now defaulted
+  * Bivio::Biz::Model::AdmUserList
+    new delegator interface
+  * Bivio::Biz::Model::ForumUserEditDAVList
+    primary key changed on ForumUserList
+  * Bivio::Biz::Model::RealmMail
+    new delegation interface
+  * Bivio::Biz::Model::RealmRole
+    minor bug
+  * Bivio::Biz::Model::RoleBaseList
+    added LOAD_ALL_SIZE and PAGE_SIZE
+  * Bivio::Biz::Model::TupleTagForm
+    new delegation interface
+  * Bivio::Biz::Model::UserCreateForm
+    new delegation interface
+  * Bivio::Biz::Model
+    added get_field_alias_value
+  * Bivio::UI::FacadeBase
+    ForumUserList -> GroupUserList
+  * Bivio::UNIVERSAL
+    created better delegate_method interface that uses Bivio::Delegation
+    to hold context
+  * Bivio::Util::SQL
+    forum_features_tuple_motion upgrade
+  * Bivio::t::Delegator::I1
+    rmpod
+  * Bivio::t::UNIVERSAL::DelegateSuper
+    test new delegation interface
+  * Bivio::t::UNIVERSAL::Delegator
+    new delegation interface
+  * Bivio::t::UNIVERSAL::DelegatorSuper
+    new delegation interface
+
   Revision 7.6  2008/11/11 00:29:27  dobbs
   * Bivio::Agent::Request
     removed too much tracing on push_txn_resource
