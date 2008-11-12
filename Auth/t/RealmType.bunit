@@ -26,4 +26,9 @@
 	    [] => 1,
 	],
     ],
+    sub {class()->GENERAL} => [
+	equals_or_any_group_check => [
+	    [] => 0,
+	],
+    ],
 ];
