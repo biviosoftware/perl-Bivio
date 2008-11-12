@@ -395,6 +395,11 @@ sub use {
     return Bivio::IO::ClassLoader->map_require(@_);
 }
 
+sub want_scalar {
+    shift;
+    return shift;
+}
+
 sub _ureq {
     my($method, $proto, @args) = @_;
     my($req) = ref($proto) && $proto->can('get_request') && $proto->get_request
