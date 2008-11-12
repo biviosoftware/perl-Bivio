@@ -13,6 +13,6 @@ Widget({
 req()->set_user('crm_tech1');
 [
     [forum => {user => 'crm_tech1', realm => undef}] =>
-	qr{<a.*crm_forum.*crm_tuple_forum.*>Forums &#}s,
+	qr{<a.*crm_forum.*crm_tuple_forum.*>Forum &#}s,
     [club => {user => 'crm_tech1', realm => undef}] => '',
 ];
