@@ -2,6 +2,7 @@
 # $Id$
 Request('initialize_fully');
 my($do_default);
+my($realms) = [];
 [
     {
 	compute_return => sub {
@@ -127,6 +128,12 @@ my($do_default);
 		return [sort(
 		    Bivio::Auth::RealmType->get_non_zero_list)];
 	    },
+	],
+	do_any_group_default => [
+	    [sub {push(@$realms, req(qw(auth_realm type))); 1;}, req()] => sub {
+		assert_equals(Auth_RealmType()->get_any_group_list, $realms);
+		return 1;
+	    }
 	],
     ],
 ];
