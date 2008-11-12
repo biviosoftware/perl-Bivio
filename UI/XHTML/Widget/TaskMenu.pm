@@ -119,8 +119,8 @@ sub render_tag_value {
         my($selected_attr) = _selected_attr($self, \$i);
 	next
 	    if $w->can('is_control_on') && !$w->is_control_on($source);
-        $req->put($selected_attr =>
-                      $w->render_simple_attr('_is_selected', $source));
+        $req->put(
+	    $selected_attr => $w->render_simple_attr('_is_selected', $source));
 	my($cfg) = $w->get('_task_menu_cfg');
 	my($r) = $self->render_simple_value($cfg->{realm}, $source);
 	next unless !$cfg->{task_id} || $req->can_user_execute_task(

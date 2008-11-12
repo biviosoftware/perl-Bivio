@@ -426,8 +426,6 @@ sub initialize_motion_permissions {
     my($req) = $self->get_request;
     my($rr) = $self->new_other('RealmRole');
     $_AR->do_any_group_default(sub {
-	return 1
-	    if 
         $rr->edit_categories('+open_results_motion');
 	return 1;
     }, $req);
