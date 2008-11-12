@@ -1,0 +1,33 @@
+{
+    server_admin => 'default@default.com',
+    ssl_mdc => 1,
+    httpd => {
+        host_name => 'proxy.com',
+    },
+    a3 => {
+        is_production => 1,
+        can_secure => 1,
+        cookie_tag => 'A3T',
+        root_prefix => 'A3',
+        listen => 1012,
+        virtual_hosts => [
+            'www.a3.com' => {
+                facade_uri => 'a3',
+                ssl_crt => 'mdc.crt',
+            },
+        ],
+    },
+    a4 => {
+        is_production => 1,
+        can_secure => 1,
+        cookie_tag => 'A4T',
+        root_prefix => 'A4',
+        listen => 1014,
+        virtual_hosts => [
+            'www.a4.com' => {
+                facade_uri => 'a4',
+                ssl_crt => 'mdc.crt',
+            },
+        ],
+    },
+};

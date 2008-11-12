@@ -1,0 +1,42 @@
+{
+    server_admin => 'default@default.com',
+    limit_request_body => 9999,
+    timeout => 99,
+    httpd => {
+        host_name => 'proxy.com',
+    },
+    a1 => {
+        can_secure => 0,
+        cookie_tag => 'A1T',
+        listen => 2120,
+        root_prefix => 'A1',
+        server_admin => 'a1@a1.com',
+        aux_http_conf => 'ScriptAlias /cgi-bin/foo.pl /usr/local/bin/bar',
+        virtual_hosts => [
+            '@www.a1.com' => {
+                facade_uri => 'a1',
+                ssl_crt => 'www1.a1.com.crt',
+                ssl_chain => 'sf_issuing.crt',
+                aliases => [qw(www.a3.com a4.com)],
+            },
+            'old.a6.com' => {
+                no_proxy => 1,
+                legacy_rewrite_rules => q{RedirectPermanent / http://www.a7.com}
+            },
+        ],
+    },
+    a2 => {
+        is_production => 1,
+        cookie_tag => 'A2T',
+        root_prefix => 'A2',
+        listen => 1010,
+        legacy_rewrite_rules => 
+             'RewriteRule ^(/[^/]+\.html)$ /hm$1 [R=permanent,L]',
+        mail_host => 'a2.com',
+        http_suffix => 'a2.com',
+        servers => 333,
+        limit_request_body => 1_000_000_000,
+        timeout => 1_000,
+        trans_handler => '',
+    },
+};

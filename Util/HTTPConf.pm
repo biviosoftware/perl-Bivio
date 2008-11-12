@@ -18,6 +18,7 @@ my($_VARS) = {
     server_admin => undef,
     ssl_listen => '',
     ssl_only => 0,
+    ssl_mdc => 0,
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     timeout => 120,
@@ -235,7 +236,8 @@ EOF
 		my($chain) = !$cfg->{ssl_chain} ? ''
 		    : "\n    SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}";
 		(my $key = $cfg->{ssl_crt}) =~ s/crt$/key/;
-		$hc =~ s{\*\>}{*:443>};
+		$vars->{ssl_mdc} ? $hc =~ s{\*\>}{*:443>}
+		    : $hc =~ s{\*\>}{$cfg->{http_suffix}:443>};
 		(my $https = $http) =~ s{(?<=\:)(\d+)}{$1 + 1}e;
 		$hc =~ s{\Q$http\E}{$https}g;
 		$hc =~ s{(?=^\s+Rewrite)}{
@@ -406,6 +408,9 @@ SSLSessionCacheTimeout 300
 SSLMutex file:logs/ssl_mutex
 SSLLog logs/error_log
 SSLLogLevel warn
+EOF
+	$vars->{httpd}->{ssl_mdc}
+	    ? _replace_vars($vars->{httpd}, "httpd_content", <<'EOF') : (),
 NameVirtualHost *:443
 <VirtualHost *:443>
     ServerName $host_name

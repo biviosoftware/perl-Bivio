@@ -1,89 +1,32 @@
 # Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Bivio::IO::File->chdir(tmp_dir());
+my($root) = go_dir('HTTPConf');
 [
     class() => [
-	generate => [
-	    <<'EOF',
-{
-    server_admin => 'default@default.com',
-    limit_request_body => 9999,
-    timeout => 99,
-    httpd => {
-        host_name => 'proxy.com',
-    },
-    a1 => {
-        can_secure => 0,
-        cookie_tag => 'A1T',
-        listen => 2120,
-        root_prefix => 'A1',
-        server_admin => 'a1@a1.com',
-        aux_http_conf => 'ScriptAlias /cgi-bin/foo.pl /usr/local/bin/bar',
-        virtual_hosts => [
-            '@www.a1.com' => {
-                facade_uri => 'a1',
-                ssl_crt => 'www1.a1.com.crt',
-                ssl_chain => 'sf_issuing.crt',
-                aliases => [qw(www.a3.com a4.com)],
-            },
-            'old.a6.com' => {
-                no_proxy => 1,
-                legacy_rewrite_rules => q{RedirectPermanent / http://www.a7.com}
-            },
-        ],
-    },
-    a2 => {
-        is_production => 1,
-        cookie_tag => 'A2T',
-        root_prefix => 'A2',
-        listen => 1010,
-        legacy_rewrite_rules => 
-             'RewriteRule ^(/[^/]+\.html)$ /hm$1 [R=permanent,L]',
-        mail_host => 'a2.com',
-        http_suffix => 'a2.com',
-        servers => 333,
-        limit_request_body => 1_000_000_000,
-        timeout => 1_000,
-        trans_handler => '',
-    },
-    a3 => {
-        is_production => 1,
-        can_secure => 1,
-        cookie_tag => 'A3T',
-        root_prefix => 'A3',
-        listen => 1012,
-        virtual_hosts => [
-            'www.a3.com' => {
-                facade_uri => 'a3',
-                ssl_crt => 'mdc.crt',
-            },
-        ],
-    },
-    a4 => {
-        is_production => 1,
-        can_secure => 1,
-        cookie_tag => 'A4T',
-        root_prefix => 'A4',
-        listen => 1014,
-        virtual_hosts => [
-            'www.a4.com' => {
-                facade_uri => 'a4',
-                ssl_crt => 'mdc.crt',
-            },
-        ],
-    },
-};
-EOF
-            sub {
-		my($d) = 'HTTPConf-expect';
-		Bivio::IO::File->do_in_dir('..', sub {
-		    rm_rf(Bivio::IO::File->absolute_path($d));
+	{
+	    method => 'generate',
+	    compute_params => sub {
+		my($case, $params) = @_;
+		my($n) = $params->[0];
+		go_dir($root);
+		$params = [${read_file("$n.in")}];
+		go_dir($n);
+		return $params;
+	    },
+	    check_return => sub {
+		my($n) = IO_File()->pwd =~ /(\d+)$/;
+		my($d) = "$n-out";
+		IO_File()->do_in_dir($root, sub {
+		    rm_rf($d);
 		    system("tar xzf $d.tgz") == 0 || die;
 		    return;
 		});
 	        my($diff) = scalar(`diff '--ignore-matching-lines=# By:' -r ../$d .`);
 		return $diff ? [$diff] : [];
 	    },
+	} => [
+	    1 => 0,
+	    2 => 0,
 	],
     ],
 ];
