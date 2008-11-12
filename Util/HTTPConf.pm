@@ -409,7 +409,7 @@ SSLMutex file:logs/ssl_mutex
 SSLLog logs/error_log
 SSLLogLevel warn
 EOF
-	$vars->{httpd}->{ssl_mdc}
+	$vars->{ssl_mdc}
 	    ? _replace_vars($vars->{httpd}, "httpd_content", <<'EOF') : (),
 NameVirtualHost *:443
 <VirtualHost *:443>
