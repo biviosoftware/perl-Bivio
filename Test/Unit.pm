@@ -65,6 +65,7 @@ my($_CLASS_DISPATCH) = {
 my($_A) = __PACKAGE__->use('IO.Alert');
 my($_R) = __PACKAGE__->use('IO.Ref');
 my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_F) = b_use('IO.File');
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
@@ -139,7 +140,7 @@ sub builtin_class {
     return $_CLASS
 	if $_CLASS;
     $_CLASS = $_CL->unsafe_simple_require(
-	(${Bivio::IO::File->read($_PM)}
+	(${$_F->read($_PM)}
 	     =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
 	    || Bivio::Die->die(
 		$_PM, ': unable to extract class to test; must',
@@ -241,6 +242,11 @@ sub builtin_file_field {
 sub builtin_from_type {
     my($t) = shift->use('Type', shift(@_));
     return @_ ? $t->from_literal_or_die(shift(@_)) : $t;
+}
+
+sub builtin_go_dir {
+    my(undef, $dir) = @_;
+    return $_F->chdir($_F->mkdir_p($_F->absolute_path($dir)));
 }
 
 sub builtin_inline_case {
@@ -345,8 +351,12 @@ sub builtin_req {
 }
 
 sub builtin_rm_rf {
-    # Calls Bivio::IO::File-E<gt>rm_rf
-    return shift->use('Bivio::IO::File')->rm_rf(@_);
+    my(undef, $dir) = @_;
+    b_die($dir, ': must be non-zero length and not begin with .')
+	unless defined($dir) && length($dir) && $dir !~ /^\./;
+    $dir = $_F->absolute_path($dir);
+    system("chmod -R u+rwx '$dir' 2>/dev/null");
+    return $_F->rm_rf($dir);
 }
 
 sub builtin_rollback {
@@ -378,12 +388,9 @@ sub builtin_string_ref {
 }
 
 sub builtin_tmp_dir {
-    # Creates TestName.tmp in the current directory, removing it if it exists
-    # already.
-    my($d) = Bivio::IO::File->absolute_path(
-	shift->builtin_class->simple_package_name . '.tmp');
-    system("chmod -R u+rwx $d 2>/dev/null");
-    return Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf($d));
+    my($self) = @_;
+    return $_F->mkdir_p(
+	$self->rm_rf($self->builtin_class->simple_package_name . '.tmp'));
 }
 
 sub builtin_unauth_model {
@@ -434,7 +441,7 @@ sub builtin_var {
 
 sub builtin_write_file {
     shift;
-    return Bivio::IO::File->write(@_);
+    return $_F->write(@_);
 }
 
 sub builtin_realm_id {
@@ -469,7 +476,7 @@ sub run {
     local($_OPTIONS) = {};
     local($_PROTO) = $proto->package_name;
     my($t) = Bivio::Die->eval_or_die(
-	"package $_PROTO;use strict;" . ${Bivio::IO::File->read($bunit)});
+	"package $_PROTO;use strict;" . ${$_F->read($bunit)});
     $_TYPE ||= $_PROTO;
     return $_TYPE->run_unit($t);
 }
