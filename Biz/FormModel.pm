@@ -1012,7 +1012,7 @@ sub _call_execute_ok {
     # violations.
     my($res);
     my($die) = Bivio::Die->catch(sub {
-        $res = $self->execute_ok($form_button);
+        $res = $self->want_scalar($self->execute_ok($form_button));
 	return;
     });
     if ($die) {
