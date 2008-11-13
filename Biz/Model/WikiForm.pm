@@ -97,8 +97,12 @@ sub _authorized_name {
     # SECURITY: By validating the name, we are sure that we aren't opening
     # up writes in any other directory.
     my($self) = @_;
-    return $self->name_type->from_literal_or_die(
-	shift->get_request->get('path_info') =~ m{^/*(.+)});
+    my($value, $err) = $self->name_type->from_literal(
+	$self->req('path_info') =~ m{^/*(.+)});
+    $self->throw_die('NOT_FOUND', {
+	message => 'literal error: ' . $err->get_name,
+    }) if $err;
+    return $value;
 }
 
 sub _is_edit {
