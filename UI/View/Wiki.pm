@@ -63,7 +63,8 @@ EOF
 
 sub not_found {
     return shift->internal_body_prose(<<'EOF');
-The page Tag(strong => String(['Action.WikiView', 'name'])); was not
+The page If(['->unsafe_get', 'Action.WikiView'],
+Tag(strong => String(['Action.WikiView', 'name']))); was not
 found, and you do not have permission to create it.
 EOF
 }
