@@ -13,7 +13,7 @@ my($path) = sub {
     );
 };
 req()->set_realm_and_user('guest', 'guest');
-Bivio::Biz::Model->new('RealmFile')->delete_deep({
+Bivio::Biz::Model->new('RealmFile')->unauth_delete_deep({
     path => '/Wiki',
 });
 [
@@ -31,6 +31,10 @@ Bivio::Biz::Model->new('RealmFile')->delete_deep({
 	    path => '/Wiki/BunitOne',
 	},
     }],
+    $path->('/BunitX.txt'),
+    [{
+  	'RealmFile.path_lc' => 'BunitX.txt',
+    }] => Bivio::DieCode->NOT_FOUND,
     $path->('/BunitOne'),
     empty_case({
 	'RealmFile.path_lc' => 'BunitOne',
