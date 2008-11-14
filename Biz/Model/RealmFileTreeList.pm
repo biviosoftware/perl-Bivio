@@ -53,6 +53,11 @@ sub internal_initialize {
 	    'RealmFile.is_folder',
 	    'RealmFileLock.comment',
 	    {
+		name => 'is_empty',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+	    {
 		name => 'base_name',
 		type => 'FilePath',
 		constraint => 'NONE',
@@ -62,6 +67,17 @@ sub internal_initialize {
 	],
 	other_query_keys => [qw(path_info)],
     });
+}
+
+sub internal_is_empty {
+    my($self, $row) = @_;
+    unless ($row->{'is_empty'}) {
+	my($rf) = $self->new_other('RealmFile')->load({
+	    path => $row->{'RealmFile.path'},
+	});
+	$row->{'is_empty'} = $rf->is_empty;
+    }
+    return $row->{'is_empty'};
 }
 
 sub internal_is_parent {
@@ -96,6 +112,10 @@ sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{node_state} = $_TLN->LOCKED_LEAF_NODE
 	if $row->{'RealmFileLock.modified_date_time'};
+    if ($self->internal_is_parent($row) && $self->internal_is_empty($row)) {
+	$row->{node_state} = $_TLN->NODE_EMPTY;
+	$row->{node_uri} = undef;
+    }
     $row->{base_name} = $row->{'RealmFile.path'} eq '/' ? '/'
 	: Bivio::Type::FileName->get_tail($row->{'RealmFile.path'});
     return 1;
