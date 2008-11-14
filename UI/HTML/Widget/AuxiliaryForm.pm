@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub control_off_render {
     my($self, $source) = @_;
+    $self->use('Action.TouchCookie')->execute($source->req);
     $self->get('form_class')->new($source->req)->process;
     return shift->SUPER::control_on_render(@_);
 }
