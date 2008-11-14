@@ -2,8 +2,7 @@
 # $Id$
 package Bivio::UI::ViewLanguage;
 use strict;
-use base 'Bivio::UNIVERSAL';
-use Bivio::IO::File;
+use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::IO::Trace;
 
 # C<Bivio::UI::ViewLanguage> defines the language used by
@@ -40,6 +39,10 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 our($_VIEW_IN_EVAL);
+my($_CL) = b_use('IO.ClassLoader');
+my($_R) = b_use('Agent.Request');
+my($_V) = b_use('UI.View');
+my($_D) = b_use('Bivio.Die');
 
 sub AUTOLOAD {
     # The widget and shortcut methods are dynamically loaded.
@@ -63,7 +66,7 @@ sub call_method {
 	my($map) = $view->ancestral_get('view_class_map', undef);
 	_die("view_class_map() or view_parent() must be called before $method")
 	    unless $map;
-	my($class) = Bivio::IO::ClassLoader->unsafe_map_require($map, $method);
+	my($class) = $_CL->unsafe_map_require($map, $method);
 	return $class->new(@args)
 	    if $class;
     }
@@ -79,9 +82,8 @@ sub call_method {
 	    unless $vs->can($method);
 	return $vs->$method(@args);
     }
-    return ($vs || Bivio::IO::ClassLoader->simple_require(
-	'Bivio::UI::ViewShortcutsBase')
-	)->view_autoload($method, \@args);
+    return ($vs || b_use('UI.ViewShortcutsBase'))
+	->view_autoload($method, \@args);
 }
 
 sub eval {
@@ -99,7 +101,7 @@ sub eval {
 
 sub new {
     # You cannot instantiate this class.
-    Bivio::Die->die('this class may not be instantiated');
+    b_die('this class may not be instantiated');
 }
 
 sub unsafe_get_eval {
@@ -116,10 +118,10 @@ sub view_class_map {
     # defined in the root view.
     #
     # This attribute must be defined in the view or its parents.
-    _assert_value(view_class_map => $map_name);
+    $map_name = _assert_value(view_class_map => $map_name);
     _die("$map_name: not a valid view_class_map;"
         .' check Bivio::IO::ClassLoader configuration'
-    ) unless Bivio::IO::ClassLoader->is_map_configured($map_name);
+    ) unless $_CL->is_map_configured($map_name);
     _put(view_class_map => $map_name);
     return;
 }
@@ -140,8 +142,8 @@ sub view_get {
     #
     # This works during evaluation of a view as well as during execution.
     return ($_VIEW_IN_EVAL
-	|| Bivio::Agent::Request->get_current->get('Bivio::UI::View'))
-	->ancestral_get($attr);
+	|| $_R->get_current->get('Bivio::UI::View')
+    )->ancestral_get($attr);
 }
 
 sub view_main {
@@ -150,9 +152,8 @@ sub view_main {
     # the view or its children are executed.
     #
     # A view must either have a L<view_parent|"view_parent"> or a view_main.
-    _assert_value('view_main', $widget,
-	    qw(Bivio::UI::Widget execute render));
-    _put(view_main => $widget);
+    _put(view_main => _assert_value(
+	'view_main', $widget, qw(Bivio::UI::Widget execute render)));
     return;
 }
 
@@ -160,7 +161,7 @@ sub view_ok {
     # Returns true if in eval.
     return $_VIEW_IN_EVAL
 	|| UNIVERSAL::isa('Bivio::UI::View', 'Bivio::UNIVERSAL')
-	&& Bivio::UI::View->unsafe_get_current ? 1 : 0;
+	&& $_V->unsafe_get_current ? 1 : 0;
 }
 
 sub view_parent {
@@ -170,8 +171,8 @@ sub view_parent {
     # without a view_parent is called a I<root view>.
     #
     # A view must either have a L<view_main|"view_main"> or a view_parent.
-    _assert_value('view_parent', $view_name);
-    _assert_in_eval('view_parent')->internal_set_parent($view_name);
+    _assert_in_eval('view_parent')->internal_set_parent(
+	_assert_value('view_parent', $view_name));
     return;
 }
 
@@ -207,9 +208,8 @@ sub view_shortcuts {
     # not conflict with perl's internal names, the ViewLanguage functions (which always
     # begin with C<view_>), or names of widgets (which are always begin with an upper
     # case letter and are simple class names).
-    _assert_value('view_shortcuts', $class_name,
-	    'Bivio::UI::ViewShortcutsBase');
-    _put(view_shortcuts => $class_name);
+    _put(view_shortcuts => _assert_value(
+	'view_shortcuts', $class_name, 'Bivio::UI::ViewShortcutsBase'));
     return;
 }
 
@@ -253,7 +253,7 @@ sub _assert_in_eval {
 	if $res;
     $op ||= 'eval';
     $op =~ s/.*:://;
-    Bivio::Die->die($op, ': operation only allowed in views');
+    b_die($op, ': operation only allowed in views');
     # DOES NOT RETURN
 }
 
@@ -261,21 +261,22 @@ sub _assert_value {
     my($name, $value, $class, @methods) = @_;
     # Asserts value is defined, isa class, and implements methods.
     _die("$name() not supplied a value") unless defined($value);
-    return unless $class;
+    return $value
+	unless $class;
 
     # Load class and value class unless is ref (loaded)
     unless (ref($value)) {
-	Bivio::IO::ClassLoader->simple_require($class);
-	Bivio::IO::ClassLoader->simple_require($value);
+	$class = b_use($class);
+	$value = b_use($value);
     }
     _die(": $name()'s value not a $class")
-	    unless UNIVERSAL::isa($value, $class);
+	unless UNIVERSAL::isa($value, $class);
 
     foreach my $m (@methods) {
 	_die($value, qq{: $name() does not implement $m})
 	    unless $value->can($m);
     }
-    return;
+    return $value;
 }
 
 sub _die {
@@ -289,7 +290,7 @@ sub _eval_code {
     # Evaluates a sequence of code in this class's context.
     my($copy) = 'use strict;' . $$code;
     _trace($copy) if $_TRACE;
-    return Bivio::Die->eval_or_die(\$copy);
+    return $_D->eval_or_die(\$copy);
 }
 
 sub _eval_view {
