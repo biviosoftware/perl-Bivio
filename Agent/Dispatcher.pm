@@ -74,8 +74,6 @@ sub process_request {
 		if $_TRACE;
 #TODO: add this when thoroughly debugged
 #	    $req->clear_nondurable_state;
-	    last TRY
-		if $task_id == $attrs->{task_id};
             $task_id = $attrs->{task_id};
 #TODO: Can we remove the line below?
 	    $req->internal_redirect_realm($task_id);
