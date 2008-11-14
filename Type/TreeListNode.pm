@@ -11,6 +11,7 @@ __PACKAGE__->compile_with_numbers([qw(
     NODE_COLLAPSED
     NODE_EXPANDED
     LOCKED_LEAF_NODE
+    NODE_EMPTY
 )]);
 
 1;
