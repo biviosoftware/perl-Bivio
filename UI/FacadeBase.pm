@@ -536,6 +536,7 @@ sub _cfg_file {
 		[qw(Email_2.email RealmOwner_2.display_name)] => 'Who',
 		node_collapsed => 'folder_collapsed',
 		node_expanded => 'folder_expanded',
+		node_empty => 'folder_empty',
 		leaf_node => 'leaf_file',
 		empty_list_prose => 'No files in this forum.',
 		locked_leaf_node => 'leaf_file_locked',
