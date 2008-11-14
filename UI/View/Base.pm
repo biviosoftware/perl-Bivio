@@ -13,13 +13,13 @@ sub PARENT_CLASS {
 }
 
 sub VIEW_SHORTCUTS {
-    return 'Bivio::UI::XHTML::ViewShortcuts';
+    return 'UIXHTML.ViewShortcuts';
 }
 
 sub css {
     my($self) = @_;
     view_class_map('CSSWidget');
-    view_shortcuts('Bivio::UI::CSS::ViewShortcuts');
+    view_shortcuts('UICSS.ViewShortcuts');
     view_declare('css_body');
     view_main(SimplePage({
 	content_type => 'text/css',
