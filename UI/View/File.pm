@@ -267,7 +267,8 @@ sub _tree_list {
 	['RealmFile.path', {
 	    column_order_by => ['RealmFile.path_lc'],
 	    column_widget => _file_name(['base_name']),
-	    tree_list_control_suffix_widget => If(['!', '->is_archive'],
+	    tree_list_control_suffix_widget => If(['!', '->is_archive']
+	        && ['!', 'RealmFile.is_read_only'],
 		Link(Image('change'),
 		    URI({
 			task_id => 'FORUM_FILE_CHANGE',
