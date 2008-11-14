@@ -476,6 +476,7 @@ pre .text {
 .tree_list .node .name {
   padding-left: 4px;
   white-space: nowrap;
+  Font('a_link');
 }
 .tree_list .node .sp {
   padding-left: 20px;
