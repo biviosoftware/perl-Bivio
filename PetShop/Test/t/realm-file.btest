@@ -38,3 +38,29 @@ submit_form(OK => {
 });
 follow_link('realm-file-btest.txt');
 verify_text($c);
+
+visit_uri('/fourem/file');
+follow_link_in_table('Name', 'Name', '/', 'Name', 'change');
+fixup_files_uri('ADD_SUBFOLDER'),
+submit_form(OK => {
+    'Name:' => 'Empty Folder',
+});
+test_deviance();
+follow_link('Empty Folder');
+test_conformance();
+follow_link_in_table('Name', 'Name', 'Empty Folder', 'Name', 'change');
+fixup_files_uri('TEXT_FILE'),
+submit_form(OK => {
+    'Name:' => 'no-longer-empty.txt',
+    _anon => my $c2 = random_string(),
+    'Comments:' => 'x',
+});
+follow_link('Empty Folder');
+follow_link('no-longer-empty.txt');
+verify_text($c2);
+visit_uri('/fourem/file');
+follow_link_in_table('Name', 'Name', 'Empty Folder', 'Name', 'change');
+fixup_files_uri('DELETE'),
+submit_form(OK => {
+    'Comments:' => 'cleanup for next test run',
+});
