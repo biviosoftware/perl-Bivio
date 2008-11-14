@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::ViewShortcuts;
 use strict;
-use Bivio::Base 'UI_HTML.ViewShortcuts';
+use Bivio::Base 'UIHTML.ViewShortcuts';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -103,7 +103,7 @@ my($_HTML_TAGS) = join('|', qw(
 ));
 my($_AA) = __PACKAGE__->use('Action.Acknowledgement');
 my($_M) = b_use('Biz.Model');
-my($_WF) = b_use('UI_HTML.WidgetFactory');
+my($_WF) = b_use('UIHTML.WidgetFactory');
 my($_SUBMIT_CHAR) = '*';
 
 sub view_autoload {
