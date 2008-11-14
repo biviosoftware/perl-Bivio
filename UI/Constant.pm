@@ -12,6 +12,18 @@ sub get_value {
         || $proto->die($name, 'not found')
     )->{value};
 }
+
+sub get_widget_value {
+    my($self, @tag) = @_;
+    # I<tag_part>s are passed to L<get_value|"get_value">.
+    #
+    # If I<method_call> is passed (-E<gt>method), super will be called which
+    # will call the method appropriately.
+    # SUPER has code to handle ->, which we don't allow in names
+    return $tag[0] =~ /^->/ ? $self->SUPER::get_widget_value(@tag)
+	: $self->get_value(@tag);
+}
+
 sub handle_register {
     my($proto) = @_;
     Bivio::UI::Facade->register($proto, ['Text']);
