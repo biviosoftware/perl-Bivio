@@ -2,103 +2,40 @@
 # $Id$
 package Bivio::SQL::Connection::Postgres;
 use strict;
-$Bivio::SQL::Connection::Postgres::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::SQL::Connection::Postgres::VERSION;
-
-=head1 NAME
-
-Bivio::SQL::Connection::Postgres - connection to a PostgreSQL database
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::SQL::Connection::Postgres;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::SQL::Connection>
-
-=cut
-
-use Bivio::SQL::Connection;
-@Bivio::SQL::Connection::Postgres::ISA = ('Bivio::SQL::Connection');
-
-=head1 DESCRIPTION
-
-C<Bivio::SQL::Connection::Postgres>
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="CAN_LIMIT_AND_OFFSET"></a>
-
-=head2 CAN_LIMIT_AND_OFFSET : boolean
-
-Postgres supports C<LIMIT> and C<OFFSET>.
-
-=cut
-
-sub CAN_LIMIT_AND_OFFSET {
-    return 1;
-}
-
-=for html <a name="REQUIRE_COMMIT_OR_ROLLBACK"></a>
-
-=head2 REQUIRE_COMMIT_OR_ROLLBACK : boolean
-
-Returns true.
-
-=cut
-
-sub REQUIRE_COMMIT_OR_ROLLBACK {
-    return 1;
-}
-
-#=IMPORTS
+use Bivio::Base 'Bivio::SQL::Connection';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Bivio::TypeError;
 use DBI ();
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::SQL::Connection::Postgres>
 
-=head1 METHODS
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
-=cut
+sub CAN_LIMIT_AND_OFFSET {
+    # : boolean
+    # Postgres supports C<LIMIT> and C<OFFSET>.
+    return 1;
+}
 
-=for html <a name="get_dbi_prefix"></a>
-
-=head2 static get_dbi_prefix(hash_ref cfg) : string
-
-Returns the PostgreSQL DBI connection prefix.
-
-=cut
+sub REQUIRE_COMMIT_OR_ROLLBACK {
+    # : boolean
+    # Returns true.
+    return 1;
+}
 
 sub get_dbi_prefix {
+    # (proto, hash_ref) : string
+    # Returns the PostgreSQL DBI connection prefix.
 #TODO: add host & port to prefix using cfg
     return 'dbi:Pg:dbname=';
 }
 
-=for html <a name="internal_execute"></a>
-
-=head2 internal_execute()
-
-Ignores annoying warnings.
-
-=cut
-
 sub internal_execute {
+    # (self) : undef
+    # Ignores annoying warnings.
     my($prev) = $SIG{__WARN__};
     local($SIG{__WARN__}) = sub {
 	my($msg) = @_;
@@ -109,15 +46,9 @@ sub internal_execute {
     return shift->SUPER::internal_execute(@_);
 }
 
-=for html <a name="internal_fixup_sql"></a>
-
-=head2 internal_fixup_sql(string sql) : string
-
-Fixes the Oracle SQL to conform to Postgres's requirements.
-
-=cut
-
 sub internal_fixup_sql {
+    # (self, string) : string
+    # Fixes the Oracle SQL to conform to Postgres's requirements.
     my($self, $sql) = @_;
     $sql = $self->SUPER::internal_fixup_sql($sql);
 
@@ -142,28 +73,16 @@ sub internal_fixup_sql {
     return $sql;
 }
 
-=for html <a name="internal_get_blob_type"></a>
-
-=head2 internal_get_blob_type() : hash_ref
-
-Returns the bind_param() value for a BLOB.
-
-=cut
-
 sub internal_get_blob_type {
+    # (self) : hash_ref
+    # Returns the bind_param() value for a BLOB.
     return DBI::SQL_BINARY();
 }
 
-=for html <a name="internal_get_error_code"></a>
-
-=head2 internal_get_error_code(string die_attrs) : Bivio::Type::Enum
-
-Converts the database error message into an appropriate error code. Returns
-undef if the message is not translatable.
-
-=cut
-
 sub internal_get_error_code {
+    # (self, string) : Type.Enum
+    # Converts the database error message into an appropriate error code. Returns
+    # undef if the message is not translatable.
     my($self, $die_attrs) = @_;
     if ($die_attrs->{dbi_errstr} =~
 	    /Cannot insert a duplicate key into unique index (\w+)/i
@@ -177,17 +96,11 @@ sub internal_get_error_code {
     return shift->SUPER::internal_get_error_code(@_);
 }
 
-=for html <a name="internal_get_retry_sleep"></a>
-
-=head2 internal_get_retry_sleep(int error, string message) : int
-
-Returns the number of seconds to sleep for the specified transient
-error code. 0 indicates retry immediately, undef indicates don't
-retry.
-
-=cut
-
 sub internal_get_retry_sleep {
+    # (self, int, string) : int
+    # Returns the number of seconds to sleep for the specified transient
+    # error code. 0 indicates retry immediately, undef indicates don't
+    # retry.
     my($self, $error, $message) = @_;
     # retry in 15 seconds if database is gone. may have rebooted database
     return 15 if $error == -1 && $message =~ /backend closed the channel/;
@@ -196,28 +109,18 @@ sub internal_get_retry_sleep {
     return undef;
 }
 
-=for html <a name="next_primary_id"></a>
-
-=head2 next_primary_id(string table_name, ref die) : string
-
-Returns the next primary id sequence number for the specified table.
-
-=cut
-
 sub next_primary_id {
+    # (self, string, ref) : string
+    # Returns the next primary id sequence number for the specified table.
     my($self, $table_name, $die) = @_;
 
     my($sql) = "select nextval('".substr($table_name, 0, -2)."_s')";
     return $self->execute($sql, [], $die)->fetchrow_array;
 }
 
-#=PRIVATE METHODS
-
-# _fixup_outer_join(string sql) : string
-#
-# Replaces Oracle style outer joins (+) with Postgres syntax LEFT JOIN.
-#
 sub _fixup_outer_join {
+    # (string) : string
+    # Replaces Oracle style outer joins (+) with Postgres syntax LEFT JOIN.
     my($sql) = @_;
 
     # find the outer join expression, remove it from the WHERE clause
@@ -312,12 +215,10 @@ sub _fixup_outer_join {
     return $prefix . $from_where;
 }
 
-# _interpret_constraint_violation(self, hash_ref attrs, string constraint) : Bivio::Type::Enum
-#
-# Will set "columns" and "table" in attrs.  Returns die code that is
-# appropriate for the constraint violation.
-#
 sub _interpret_constraint_violation {
+    # (self, hash_ref, string) : Type.Enum
+    # Will set "columns" and "table" in attrs.  Returns die code that is
+    # appropriate for the constraint violation.
     my($self, $attrs, $constraint) = @_;
     my($die_code);
     # Ignore errors, die_code will be undef in this case and result in a
@@ -372,26 +273,14 @@ EOF
     return $die_code;
 }
 
-# _parse_table_name(string str) : string
-#
-# Parses the table name from a table_name.field string.
-#
 sub _parse_table_name {
+    # (string) : string
+    # Parses the table name from a table_name.field string.
     my($str) = @_;
 
     $str =~ /^(\w+)\./
 	|| Bivio::Die->die("didn't find table: ", $str);
     return $1;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
