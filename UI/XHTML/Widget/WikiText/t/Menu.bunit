@@ -23,7 +23,7 @@ EOF
        class="want_sep" "/" Home
        class="want_sep" "/pub/login" Login
        class="want_sep selected" "/fourem/wiki/MyPage" MyPage
-       class="want_sep" class="pdf" "/fourem/wiki/Document" Document
+       class="pdf want_sep" "/fourem/wiki/Document" Document
        class="want_sep selected" "/fourem/wiki/Flyer" Flyer "[^"]+icon.png"
     ))]}},
     [{

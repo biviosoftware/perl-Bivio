@@ -25,13 +25,12 @@ sub render_html {
     my($links) = _visit($value, $args);
     return unless @$links;
     my($buf) = '';
-    # in a SPAN because MSIE 6 can't identify multi classed items
-    TaskMenu([map(Tag(span => Link($_)), @$links)], $class)->put_and_initialize(
+    TaskMenu([map(_item_widget($_), @$links)], $class)->put_and_initialize(
 	parent => undef,
 	selected_item => sub {
 	    my($w, $source) = @_;
-            my($re) = $w->get_nested(qw(value selected_regexp));
-	    return ($source->req->unsafe_get('uri') || '') =~ $re ? 1 : 0;
+	    return ($source->ureq('uri') || '') =~
+                $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
 	},
     )->render($args->{source}, \$buf);
     return $buf;
@@ -42,8 +41,24 @@ sub _has_value {
     return defined($v) && length($v);
 }
 
+sub _item_widget {
+    my($row) = @_;
+    my($c) = delete($row->{class});
+    $row->{value} = Simple($row->{value});
+    return Tag(span => Link($row), $c ? $c : ())
+        unless my $links = delete($row->{links});
+    my($selected_regexp) = delete($row->{selected_regexp});
+    return Tag(span => Join([
+        Link($row),
+        TaskMenu([map(Tag(span => Link($_)), @$links)], 'bsubmenu', 'div'),
+    ], {selected_regexp => $selected_regexp}),  $c ? $c : ());
+}
+
 sub _join_regexp {
-    return join('|', map($_->{selected_regexp}, @_));
+    my($links, $re) = @_;
+    return join('|',
+                map($_->{selected_regexp}, @$links),
+                _has_value($re) ? $re : ());
 }
 
 sub _render_label {
@@ -54,7 +69,7 @@ sub _render_label {
     });
     $res =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
     chomp($res);
-    return $res;
+    return Simple($res);
 }
 
 sub _set_missing_link_from_label {
@@ -70,7 +85,9 @@ sub _selected_regexp {
     my($re,$href) = @_;
     return _has_value($re)
         ? $_R->from_literal('(?is-xm:'.$re.')')
-        : $_R->from_literal('(?is-xm:^'.$_R->quote_string($href).'$)');
+        : _has_value($href)
+        ? $_R->from_literal('(?is-xm:^'.$_R->quote_string($href).'$)')
+        : ();
 }
 
 sub _visit {
@@ -89,9 +106,11 @@ sub _visit {
         if (_has_value($_->{Link}) && $_->{Link} =~ s/\.bmenu$//) {
             my($links) = _visit($_->{Link}, $args);
             {
-                value => Simple(_render_label($_, $args)),
+                links => $links,
+                value => _render_label($_, $args),
                 href => $links->[0]->{href},
-                selected_regexp => _join_regexp(@$links),
+                selected_regexp => _join_regexp($links,
+                    _selected_regexp($_->{'Selected Regexp'})),
                 (_has_value($_->{Class}) ? (class => $_->{Class}) : ()),
             };
         }
@@ -102,7 +121,7 @@ sub _visit {
             _set_missing_link_from_label($_);
             my($href) = $args->{proto}->internal_format_uri($_->{Link}, $args);
             {
-                value => Simple(_render_label($_, $args)),
+                value => _render_label($_, $args),
                 href => $href,
                 selected_regexp => _selected_regexp($_->{'Selected Regexp'}, $href),
                 (_has_value($_->{Class}) ? (class => $_->{Class}) : ()),
