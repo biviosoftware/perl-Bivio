@@ -22,7 +22,7 @@ sub execute_empty {
     $req->set_realm($c->get('realm'));
     if ($req->is_substitute_user) {
 	Bivio::Biz::Action->get_instance('UserLogout')->execute($req);
-	$self->internal_redirect_next
+	return $self->internal_redirect_next
 	    if $req->can_user_execute_task($task);
     }
     return 'next';

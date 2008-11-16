@@ -60,9 +60,9 @@ sub execute_unwind {
 
     if ($self->get('confirmed_bulletin') || $self->get('test_mode')) {
 	my($res) = $self->execute_ok;
-	return $res if $res;
-	$self->internal_redirect_next;
-	# DOES NOT RETURN
+	return $res
+	    if $res;
+	return $self->internal_redirect_next;
     }
     return;
 }

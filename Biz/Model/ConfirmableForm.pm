@@ -18,9 +18,8 @@ sub execute_unwind {
     my($self) = @_;
 
     if ($self->get('is_confirmed')) {
-	$self->validate_and_execute_ok;
-	$self->internal_redirect_next;
-	# DOES NOT RETURN
+	return $self->validate_and_execute_ok
+	    || $self->internal_redirect_next;
     }
     return shift->SUPER::execute_unwind(@_);
 }

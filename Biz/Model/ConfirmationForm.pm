@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_cancel {
     my($self) = @_;
-    $self->internal_redirect_next;
+    return $self->internal_redirect_next;
 }
 
 sub execute_ok {
