@@ -1,144 +1,33 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::Role;
 use strict;
-$Bivio::Delegate::Role::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Delegate::Role::VERSION;
+use Bivio::Base 'Bivio.Delegate';
 
-=head1 NAME
-
-Bivio::Delegate::Role - Roles
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Delegate::Role;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Delegate>
-
-=cut
-
-use Bivio::Delegate;
-@Bivio::Delegate::Role::ISA = ('Bivio::Delegate');
-
-=head1 DESCRIPTION
-
-C<Bivio::Delegate::Role> implements the common Roles in bOP.
-
-You should extend this class if you have new Roles in your application.
-The numbers 0-19 are reserved by this module so your first Role would
-look like:
-
-    sub get_delegate_info {
-	return [
-            @{shift->SUPER::get_delegate_info(@_)},
-	    MY_NEW_ROLE => [
-	        20,
-		undef,
-		'some new role',
-	    ],
-        ];
-    }
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_delegate_info"></a>
-
-=head2 get_delegate_info() : array_ref
-
-Returns standard realm types.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     return [
-        UNKNOWN => [
-            0,
-            'Unknown',
-            'user has yet to be authenticated',
-        ],
-        ANONYMOUS => [
-            1,
-            'Anonymous',
-            'user not supplied with request or unable to authenticate',
-        ],
-        USER => [
-            2,
-            'Any User',
-            'privileges of any authenticated user, not particular to realm',
-        ],
-        WITHDRAWN => [
-            3,
-            'Withdrawn Member',
-            'very limited access to this realm',
-        ],
-        GUEST => [
-            4,
-            'Guest',
-            'limited access to realm',
-        ],
-        MEMBER => [
-            5,
-            'Member',
-            'normal participant in realm',
-        ],
-        ACCOUNTANT => [
-            6,
-            'Accountant',
-            'normal and financial transaction privileges',
-        ],
-        ADMINISTRATOR => [
-            7,
-            'Administrator',
-            'all privileges',
-        ],
-	MAIL_RECIPIENT => [
-	    8,
-	],
-	FILE_WRITER => [
-	    9,
-	],
+        UNKNOWN => 0,
+	# user not supplied with request or unable to authenticate
+        ANONYMOUS => 1,
+	# privileges of any authenticated user, not particular to real
+        USER => 2,
+        WITHDRAWN => 3,
+        GUEST => 4,
+        MEMBER => 5,
+        ACCOUNTANT => 6,
+        ADMINISTRATOR => 7,
+	MAIL_RECIPIENT => 8,
+	FILE_WRITER => 9,
+	UNCONFIRMED_EMAIL => 10,
+	UNAPPROVED_APPLICANT => 11,
+#        LAST_RESERVED => 19,
     ];
 }
 
-=for html <a name="is_admin"></a>
-
-=head2 is_admin() : boolean
-
-Returns true if the role is an administrator.
-
-=cut
-
 sub is_admin {
-    my($self) = @_;
-    return $self->equals_by_name('ADMINISTRATOR');
+    return shift->equals_by_name('ADMINISTRATOR');
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
