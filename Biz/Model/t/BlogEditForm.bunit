@@ -1,6 +1,12 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-FormModel();
+my($this);
+FormModel({
+    setup_request => sub {
+	req()->put(query => {this => $this});
+	return;
+    },
+});
 require 'Blog.PL';
 my($entry) = [map(
     +{
@@ -12,8 +18,7 @@ my($entry) = [map(
 my($_BFN) = Bivio::Type->get_instance('BlogFileName');
 Bivio::Biz::Model->new(req(), 'BlogCreateForm')->process($entry->[0]);
 commit();
-my($this) = $_BFN->from_absolute(req()->get('Model.RealmFile')->get('path'));
-req()->put(query => {this => $this});
+$this = $_BFN->from_absolute(req()->get('Model.RealmFile')->get('path'));
 [
     empty_case($entry->[0]),
     map({

@@ -41,8 +41,9 @@ sub execute_ok {
 	path => $new,
 	is_public => $p,
     }, \$c);
-    $self->get_request->put(path_info => $self->get('RealmFile.path_lc'));
-    return;
+    return {
+	path_info => $self->get('RealmFile.path_lc'),
+    };
 }
 
 sub internal_initialize {
