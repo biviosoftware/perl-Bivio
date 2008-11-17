@@ -10,11 +10,16 @@ submit_form({
 });
 $uri = get_uri();
 follow_link('PrivatePage');
+verify_text('not found');
 submit_form({
     public => 0,
     anon => 'v1: go back to the ^StartPage. ' . $search_key,
 });
+verify_uri(qr{/PrivatePage});
+verify_no_text('not found');
 follow_link('edit');
+verify_text('PrivatePage');
+verify_no_text('not found');
 submit_form({
     public => 0,
     anon => 'v2: go back to the ^StartPage. ' . $search_key,
@@ -67,3 +72,4 @@ verify_text(qr{back to current}i);
 follow_link(qr{^3$});
 verify_text(qr{v3: go back to the}i);
 verify_no_text(qr{edit this page}i);
+
