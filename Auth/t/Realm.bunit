@@ -131,7 +131,7 @@ my($realms) = [];
 	],
 	do_any_group_default => [
 	    [sub {push(@$realms, req(qw(auth_realm type))); 1;}, req()] => sub {
-		assert_equals(Auth_RealmType()->get_any_group_list, $realms);
+		assert_equals([Auth_RealmType()->get_any_group_list], $realms);
 		return 1;
 	    }
 	],
