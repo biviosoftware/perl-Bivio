@@ -2,8 +2,7 @@
 # $Id$
 package Bivio::Type::Array;
 use strict;
-use Bivio::Base 'Bivio::Type';
-use Bivio::Die;
+use Bivio::Base 'Bivio.Type';
 
 # C<Bivio::Type::Array> is a collection of array utilities and
 # a string representable type.  Not all conversions are supported.
@@ -69,7 +68,7 @@ sub to_literal {
 sub to_query {
     # (proto, any) : string
     # B<NOT SUPPORTED>
-    Bivio::Die->die('not supported');
+    b_die('not supported');
 }
 
 sub to_sql_param {
@@ -79,8 +78,8 @@ sub to_sql_param {
     my(undef, $param_value) = @_;
     # May be the empty string, which is same as C<undef>
     return $param_value ? join($;, map {
-	Bivio::Die->die($param_value, ': contains $; in an element')
-		    if index($_, $;) >= $[;
+	b_die($param_value, ': contains $; in an element')
+	    if index($_, $;) >= $[;
 	$_;
     } @$param_value) : undef;
 }
@@ -94,13 +93,13 @@ sub to_sql_param_list {
 sub to_uri {
     # (proto, any) : string
     # B<NOT SUPPORTED>
-    Bivio::Die->die('not supported');
+    b_die('not supported');
 }
 
 sub to_xml {
     # (proto, any) : string
     # B<NOT SUPPORTED>
-    Bivio::Die->die('not supported');
+    b_die('not supported');
 }
 
 1;
