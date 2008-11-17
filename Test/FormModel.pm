@@ -46,6 +46,11 @@ sub new_unit {
 		$l->release;
 	    }
 	    $req->clear_nondurable_state;
+	    $req->put(
+		path_info => undef,
+		query => undef,
+		form => undef,
+	    );
 	    $req->get('task')->put_attr_for_test(
 		form_model => ref($m),
 		next => $req->get('task_id'),
