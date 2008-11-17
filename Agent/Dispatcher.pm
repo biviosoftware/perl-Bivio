@@ -74,6 +74,12 @@ sub process_request {
 		if $_TRACE;
 #TODO: add this when thoroughly debugged
 #	    $req->clear_nondurable_state;
+	    if ($task_id == $attrs->{task_id}
+	        && $task_id->get_name =~ /ERROR/
+	    ) {
+		b_warn($task_id, ': not redirecting to identical ERROR task');
+		last TRY;
+	    }
             $task_id = $attrs->{task_id};
 #TODO: Can we remove the line below?
 	    $req->internal_redirect_realm($task_id);
