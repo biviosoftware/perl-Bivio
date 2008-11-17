@@ -1,15 +1,31 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->set_realm('fourem');
+req()->initialize_fully->set_realm('fourem');
 [
     load_all => [
         [] => [{
+	    privileges => StringArray([qw(Member Subscribed)]),
 	    display_name => 'User, Btest_admin',
 	}, {
+	    privileges => StringArray([qw(Member Subscribed)]),
             display_name => 'User, Btest_read',
         }, {
+	    privileges => StringArray([qw(Admin Editor Subscribed)]),
             display_name => 'User, Root',
 	}],
+    ],
+    set_cursor => [
+	2 => not_die(),
+    ],
+    roles_by_category => [
+	[] => [
+	    [Auth_Role('ADMINISTRATOR'), Auth_Role('MEMBER')],
+	    [Auth_Role('FILE_WRITER'), Auth_Role('MAIL_RECIPIENT')],
+	],
+	[[map(Auth_Role($_), qw(GUEST FILE_WRITER ADMINISTRATOR))]] => [
+	    [Auth_Role('ADMINISTRATOR'), Auth_Role('GUEST')],
+	    [Auth_Role('FILE_WRITER')],
+	],
     ],
 ];
