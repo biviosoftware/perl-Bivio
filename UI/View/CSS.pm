@@ -229,8 +229,8 @@ table.main {
   margin: auto;
 }
 table.dock {
-  margin-top: .5ex;
-  margin-bottom: .5ex;
+  margin-top: 0;
+  margin-bottom: 1ex;
 }
 table.main {
   margin-top: 1em;
@@ -275,7 +275,8 @@ td.header_left .logo_su a.logo:hover {
 td.dock_middle {
   text-align: center;
 }
-td.dock_right {
+td.dock_right,
+.dock_right .task_menu {
   text-align: right;
 }
 td.dock_left,
