@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Util::SQL;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REALM_ROLE_CONFIG);
 Bivio::IO::Config->register(my $_CFG = {
@@ -17,6 +17,7 @@ my($_PI) = b_use('Type.PrimaryId');
 my($_PS) = b_use('Auth.PermissionSet');
 my($_R) = b_use('Auth.Role');
 my($_RT) = b_use('Auth.RealmType');
+my($_D) = b_use('Bivio.Die');
 my($_BUNDLE) = [qw(
     forum
     realm_mail
@@ -42,6 +43,10 @@ my($_BUNDLE) = [qw(
     crm_thread_lock_user_id
     !forum_features
     !forum_features_tuple_motion
+    !group_concat
+)];
+my($_AGGREGATES) = [qw(
+    group_concat(text)
 )];
 my($_INITIALIZE_SENTINEL) = [grep(s/!//, @$_BUNDLE)];
 
@@ -203,6 +208,10 @@ sub destroy_db {
 	$self->put(input => $file);
 	$self->drop;
     }
+    foreach my $agg (@$_AGGREGATES) {
+	$_D->catch_quietly(sub {$self->run("DROP AGGREGATE $agg\n/\n");});
+	$_C->commit;
+    }
     $self->use('Biz.File')->destroy_db;
     return;
 }
@@ -239,7 +248,7 @@ sub drop {
             || $s =~ /^\s*(alter\s+table\s*\w+\s*)add\s+(constraint\s+\w+)\s+/is
             || $s =~ /^(\s*)create(\s+function\s[\S]+)/is;
 	my($p, $s) = ($1, $2);
-	Bivio::Die->catch_quietly(sub {
+	$_D->catch_quietly(sub {
 	    $_C->execute(
 		$p . 'drop ' . $s . ($s =~ /^table/i ? ' CASCADE' : ''));
 	    return;
@@ -404,7 +413,6 @@ sub init_realm_role {
 
 sub initialize_db {
     my($self) = @_;
-    # Initializes default data.
     $self->model('RealmOwner')->init_db;
     $self->init_realm_role;
 #TODO: Needs to be after subclasses init_realm_role for new realmtypes
@@ -415,6 +423,7 @@ sub initialize_db {
     if (Bivio::Agent::TaskId->unsafe_from_name('FORUM_MOTION_LIST')) {
 	$self->initialize_motion_permissions;
     }
+    $self->internal_upgrade_db_group_concat;
     foreach my $x (@$_INITIALIZE_SENTINEL) {
 	_default_sentinel($self, $x);
     }
@@ -932,6 +941,27 @@ ALTER TABLE forum_t
 /
 EOF
     return;
+}
+
+sub internal_upgrade_db_group_concat {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE OR REPLACE FUNCTION _group_concat(text, text)
+RETURNS text AS $$
+SELECT CASE
+WHEN $2 IS NULL THEN $1
+WHEN $1 IS NULL THEN $2
+ELSE $1 operator(pg_catalog.||) ',' operator(pg_catalog.||) $2
+END  
+$$ IMMUTABLE LANGUAGE SQL
+/
+CREATE AGGREGATE group_concat (
+BASETYPE = text,
+SFUNC = _group_concat,
+STYPE = text
+)
+/
+EOF
 }
 
 sub internal_upgrade_db_job_lock {
@@ -1894,7 +1924,7 @@ sub upgrade_db {
     $self->print($self->export_db . "\n")
 	if $_CFG->{export_db_on_upgrade};
     # After an export, you need to rollback or there will be errors.
-    Bivio::Die->eval(sub {$_C->rollback});
+    $_D->eval(sub {$_C->rollback});
     # re-establish connection
     $_C->ping_connection;
     $self->$method();
