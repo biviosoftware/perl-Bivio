@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
-FormModel();
-require 'RealmFile.PL';
+# $Id$
+require 'FileChangeForm.PL';
 
 my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
@@ -14,11 +14,8 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 	    is_folder => 1,
 	},
     }],
-    sub {
-	req()->put(path_info => '/folder1');
-	return 1;
-    } => 1,
     [{
+	path_info => '/folder1',
 	name => 'folder2',
 	mode => $_FCM->ADD_SUBFOLDER,
     }] => [{
@@ -39,12 +36,9 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 	name => 'NULL',
 	mode => $_FCM->ADD_SUBFOLDER,
     }),
-    sub {
-	req()->put(path_info => '/folderx');
-	return 1;
-    } => 1,
     [{
+	path_info => '/folderx',
 	name => 'folder3',
 	mode => $_FCM->ADD_SUBFOLDER,
-    }] => Bivio::DieCode->MODEL_NOT_FOUND,
+    }] => MODEL_NOT_FOUND(),
 ];

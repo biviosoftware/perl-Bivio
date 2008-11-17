@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
-FormModel();
-require 'RealmFile.PL';
+# $Id$
+require 'FileChangeForm.PL';
 
 my($file_exists) = sub {
     my($path) = @_;
@@ -16,19 +16,19 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 	model('RealmFile')->create_with_content({
 	    path => '/foo.txt',
 	}, \('some text'));
-        req()->put(path_info => '/foo.txt'),
 	return 1;
     } => 1,
     [{
+        path_info => '/foo.txt',
 	rename_name => 'foo2.txt',
 	mode => $_FCM->RENAME,
     }] => [{}],
     sub {
 	$file_exists->('foo2.txt');
-	req()->put(path_info => '/foo2.txt');
 	return 1;
     } => 1,
     [{
+	path_info => '/foo2.txt',
 	rename_name => 'foo3',
 	mode => $_FCM->RENAME,
     }] => [{}],
@@ -39,10 +39,10 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 	model('RealmFile')->create_folder({
 	    path => '/foo',
 	});
-	req()->put(path_info => '/foo'),
 	return 1;
     } => 1,
     [{
+	path_info => '/foo',
 	rename_name => 'foo2',
 	mode => $_FCM->RENAME,
     }] => [{}],

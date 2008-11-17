@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
-FormModel();
-require 'RealmFile.PL';
+# $Id$
+require 'FileChangeForm.PL';
 my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 [
@@ -8,10 +8,10 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 	model('RealmFile')->create_with_content({
 	    path => '/foo.txt',
 	}, \('some text'));
-        req()->put(path_info => '/foo.txt'),
 	return 1;
     } => 1,
     [{
+        path_info => '/foo.txt',
 	mode => $_FCM->DELETE,
 	comment => 'x',
     }] => [{}],
@@ -22,31 +22,28 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 	model('RealmFile')->create_with_content({
 	    path => '/folder1/foo.txt',
 	}, \('some text'));
-        req()->put(path_info => '/folder1'),
         return 1;
     } => 1,
     [{
+        path_info => '/folder1',
 	mode => $_FCM->DELETE,
 	comment => 'x',
     }] => [{}],
-    sub {
-	req()->put(path_info => '/folder1/foo.txt'),
-	    return 1;
-    } => 1,
     [{
+	path_info => '/folder1/foo.txt',
 	mode => $_FCM->DELETE,
 	comment => 'x',
-    }] => Bivio::DieCode->MODEL_NOT_FOUND,
+    }] => MODEL_NOT_FOUND(),
     sub {
 	model('RealmFile')->create_with_content({
 	    path => '/foo.txt',
 	    is_read_only => 1,
 	}, \('some text'));
-        req()->put(path_info => '/foo.txt'),
         return 1;
     } => 1,
     [{
+        path_info => '/foo.txt',
 	mode => $_FCM->DELETE,
 	comment => 'x',
-    }] => Bivio::DieCode->FORBIDDEN,
+    }] => FORBIDDEN(),
 ];
