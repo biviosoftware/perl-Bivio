@@ -2,15 +2,13 @@
 # $Id$
 package Bivio::UI::ViewShortcuts;
 use strict;
-use Bivio::Base 'Bivio::UI::ViewShortcutsBase';
-use Bivio::UI::HTML;
-use Bivio::UI::Text;
-use Bivio::UI::ViewLanguage;
+use Bivio::Base 'UI.ViewShortcutsBase';
 
 # C<Bivio::UI::ViewShortcuts> is a collection of common helper routines.  Typical
 # applications will subclass this class.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_W) = b_use('UI.Widget');
 
 sub vs_call {
     my(undef, $method, @args) = @_;
@@ -26,9 +24,18 @@ sub vs_constant {
     return _fc(\@_, qw(Constant ->get_value));
 }
 
+sub vs_debug {
+    shift;
+    return [sub {
+        shift;
+	b_info(@_);
+	return shift(@_);
+    }, @_];
+}
+
 sub vs_fe {
     my($proto) = shift;
-    return $proto->vs_call('Prose', Bivio::UI::FormError->field_value(@_));
+    return $proto->vs_call('Prose', b_use('UI.FormError')->field_value(@_));
 }
 
 sub vs_form_method_call {
@@ -91,7 +98,7 @@ sub vs_resolve_fully {
     my(undef, $value) = @_;
     return [sub {
 	return ref($value) eq 'ARRAY'
-	    ? Bivio::UI::Widget->unsafe_resolve_widget_value($value, shift(@_))
+	    ? $_W->unsafe_resolve_widget_value($value, shift(@_))
 	    : $value;
     }];
 }
