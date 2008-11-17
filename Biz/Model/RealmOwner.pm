@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::RealmOwner;
 use strict;
@@ -20,6 +20,7 @@ my($_HOME_TASK_MAP) = {
     } (grep($_->equals_by_name(qw(GENERAL)) ? 0 : 1,
         Bivio::Auth::RealmType->get_non_zero_list))),
 };
+my($_RT) = b_use('Auth.RealmType');
 
 sub create {
     my($self, $values) = @_;
@@ -109,7 +110,7 @@ sub init_db {
     # Initializes database with default realms.  The default realms
     # have special realm_ids.
 
-    foreach my $rt (Bivio::Auth::RealmType->get_non_zero_list) {
+    foreach my $rt ($_RT->get_non_zero_list) {
 	$self->init_realm_type($rt);
     }
     return;
@@ -317,16 +318,16 @@ sub update_password {
 
 sub validate_login {
     my($self, $login) = @_;
-    # Load the RealmOwner for I<login> (or email or id) if valid.
-    # Return error if invalid.
-
-    return 'NOT_FOUND'
-	if !$self->unauth_load_by_email_id_or_name($login)
-	    || $self->is_offline_user
-	    || $self->is_default
-	    || $self->get('realm_type') != Bivio::Auth::RealmType->USER;
-
-    return;
+    my($err) = !$self->unauth_load_by_email_id_or_name($login) ? ''
+        : $self->is_offline_user ? 'is_offline_user'
+	: $self->is_default ? 'is_default'
+	: $self->get('realm_type') != $_RT->USER
+	? ('realm_type is ' . $self->get('realm_type')->get_name)
+	: !$self->has_valid_password ? 'not has_valid_password'
+	: return;
+    b_warn($login, ': ', $err)
+	if $err;
+    return 'NOT_FOUND';
 }
 
 sub _unauth_load {
@@ -343,7 +344,8 @@ sub _unauth_load {
 	delete($query->{name});
 	$query->{realm_id} = $id_or_name;
 	if ($self->unauth_load($query)) {
-	    Bivio::IO::Alert->warn_deprecated('use the RealmType name to load default Realms');
+	    Bivio::IO::Alert->warn_deprecated(
+		'use the RealmType name to load default Realms');
 	    return 1;
 	}
     }

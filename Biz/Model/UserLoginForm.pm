@@ -236,22 +236,11 @@ sub validate_login {
 
 sub _assert_login {
     my($self) = @_;
-    # Asserts the login and returns the new realm_owner.
     my($realm) = $self->validate_login;
     $self->throw_die('NOT_FOUND', {
 	entity => $self->get('login'),
     }) if $self->in_error;
-    return undef
-	unless $realm;
-    return $realm
-	if $realm->has_valid_password;
-    $self->throw_die('NOT_FOUND', {
-	entity => $realm,
-	message => "user's password is invalidated",
-    }) unless $self->get('via_mta');
-    Bivio::IO::Alert->warn(
-	$realm, ': has invalidated password; not logging in');
-    return undef;
+    return $realm;
 }
 
 sub _assert_realm {
