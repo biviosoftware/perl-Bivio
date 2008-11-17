@@ -207,8 +207,10 @@ sub internal_pre_execute {
     $self->internal_put_field('RealmFileLock.realm_file_lock_id' =>
 	$self->get('realm_file_lock')->get('realm_file_lock_id'))
 	if $self->get('realm_file_lock');
-    $self->req->server_redirect(Bivio::Agent::TaskId->FORUM_FILE_OVERRIDE_LOCK)
-	if $self->get('realm_file_lock') && ! $self->is_lock_owner;
+    return {
+	method => 'server_redirect',
+	task_id => 'FORUM_FILE_OVERRIDE_LOCK',
+    } if $self->get('realm_file_lock') && ! $self->is_lock_owner;
     return;
 }
 
