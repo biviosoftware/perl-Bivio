@@ -596,6 +596,30 @@ sub info_file {
     ];
 }
 
+sub info_group_admin {
+    return [
+	[qw(
+	    GROUP_USER_LIST
+	    200
+	    ANY_GROUP
+	    ADMIN_READ
+	    Model.GroupUserList->execute_load_page
+	    View.GroupAdmin->user_list
+	)],
+	[qw(
+	    GROUP_USER_FORM
+	    201
+	    ANY_GROUP
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.GroupUserForm
+	    View.GroupAdmin->user_form
+	    next=GROUP_USER_LIST
+	)],
+    ];
+#202-209 free
+    return;
+}
+
 sub info_mail {
     return [
 	[qw(
