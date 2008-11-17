@@ -490,7 +490,7 @@ sub _cfg_dav {
 #TODO: Make visible only if OTP is enabled.  Requires change to DAVList
 		'Forum.require_otp' => 'Require OTP?',
 	    ]],
-	    [[qw(GroupUserList ForumUserList)] => [
+	    [ForumUserList => [
 		mail_recipient => 'Subscribed?',
 		file_writer => 'Write Files?',
 		administrator => 'Administrator?',
@@ -574,6 +574,41 @@ sub _cfg_file {
 		],
 	    ]],
         ],
+    };
+}
+
+sub _cfg_group_admin {
+    return {
+	Task => [
+	    [GROUP_USER_LIST => '?/users'],
+	],
+	Text => [
+	    [[qw(GroupUserList.privileges_name RoleSelectList.display_name)]
+	        => [
+		    UNKNOWN => 'No Access',
+		    WITHDRAWN => 'Former Member',
+		    GUEST => 'Guest',
+		    MEMBER => 'Member',
+		    FILE_WRITER => 'Editor',
+		    ACCOUNTANT => 'Deputy',
+		    ADMINISTRATOR => 'Admin',
+		    MAIL_RECIPIENT => 'Subscribed',
+		    UNCONFIRMED_EMAIL => 'Unconfirmed Email',
+		    UNAPPROVED_APPLICANT => 'Requested Access',
+		],
+	    ],
+	    [GroupUserList => [
+		privileges => 'Privileges',
+	    ]],
+	    [GroupUserForm => [
+		'RealmUser.role' => 'Access Level',
+		file_writer => 'Write access to files (Editor)',
+		mail_recipient => 'Receive mail sent to group (Subscribed)',
+	    ]],
+	    [title => [
+		GROUP_USER_LIST => 'Users',
+	    ]],
+	],
     };
 }
 
