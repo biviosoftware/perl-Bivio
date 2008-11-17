@@ -3,13 +3,7 @@
 package Bivio::Biz::FormModel;
 use strict;
 use Bivio::Base 'Biz.Model';
-use Bivio::Agent::HTTP::Cookie;
-use Bivio::Agent::Task;
-use Bivio::Biz::FormContext;
-use Bivio::Die;
-use Bivio::HTML;
 use Bivio::IO::Trace;
-use Bivio::SQL::FormSupport;
 
 # C<Bivio::Biz::FormModel> is the business logic behind HTML forms.  A FormModel
 # has fields like other models.  Fields are either I<visible> or
@@ -66,8 +60,17 @@ use Bivio::SQL::FormSupport;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_A) = b_use('Action.Acknowledgement');
+my($_D) = b_use('Bivio.Die');
+my($_FC) = b_use('Biz.FormContext');
+my($_FS) = b_use('SQL.FormSupport');
+my($_HTML) = b_use('Bivio.HTML');
+my($_I) = b_use('Type.Integer');
+my($_T) = b_use('Agent.Task');
+my($_TE) = b_use('Bivio.TypeError');
 my($_IDI) = __PACKAGE__->instance_data_index;
-Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
+b_use('AgentHTTP.Cookie')->register(__PACKAGE__);
+my($_V9) = b_use('IO.Config')->if_version(9);
 
 sub CONTEXT_FIELD {
     return 'c';
@@ -145,8 +148,7 @@ sub execute_cancel {
     my($self, $button_field) = @_;
     # Default cancel processing, redirects to the cancel task.
     # client redirect on cancel, no state is saved
-    _redirect($self, 'cancel');
-    # DOES NOT RETURN
+    return _redirect($self, 'cancel');
 }
 
 sub execute_empty {
@@ -193,7 +195,7 @@ sub format_context_as_query {
     # B<Only to be called by Bivio::UI::Task.>
     #
     # Takes context (which may be null), and formats as query string.
-    return $fc ? '?fc=' . Bivio::HTML->escape_query($fc->as_literal($req)) : '';
+    return $fc ? '?fc=' . $_HTML->escape_query($fc->as_literal($req)) : '';
 }
 
 sub get_context_from_request {
@@ -253,7 +255,7 @@ sub get_context_from_request {
 	}
 	$form = $f;
     }
-    return Bivio::Biz::FormContext->new_from_form($self, $form, $context, $req);
+    return $_FC->new_from_form($self, $form, $context, $req);
 }
 
 sub get_errors {
@@ -271,7 +273,7 @@ sub get_field_as_html {
     return $self->get_field_info($name, 'type')->to_html($value)
 	    if defined($value);
     my($fn) = $self->get_field_name_for_html($name);
-    return Bivio::HTML->escape(_get_literal($fields, $fn));
+    return $_HTML->escape(_get_literal($fields, $fn));
 }
 
 sub get_field_as_literal {
@@ -379,13 +381,12 @@ sub internal_catch_field_constraint_error {
     # appended to that field.
     #
     # Returns false if I<op> executes without dying.
-    my($die) = Bivio::Die->catch($op);
+    my($die) = $_D->catch($op);
     return 0
 	unless $die;
     $die->throw
 	unless $die->get('code')->equals_by_name('DB_CONSTRAINT')
-	    && UNIVERSAL::isa($die->get('attrs')->{type_error},
-		'Bivio::TypeError');
+	&& UNIVERSAL::isa($die->get('attrs')->{type_error}, 'Bivio::TypeError');
     my($attrs) = $die->get('attrs');
     $self->internal_put_error($field, $attrs->{type_error});
     $self->internal_put_field($info_field =>
@@ -491,13 +492,13 @@ sub internal_initialize {
 
 sub internal_initialize_sql_support {
     my($proto, $stmt, $config) = @_;
-    # Returns the L<Bivio::SQL::FormSupport|Bivio::SQL::FormSupport>
+    # Returns the L<$_FS|$_FS>
     # for this class.  Calls L<internal_initialize|"internal_initialize">
     # to get the hash_ref to initialize the sql support instance.
     die('cannot create anonymous PropertyModels') if $config;
     $config = $proto->internal_initialize;
     $config->{class} = ref($proto) || $proto;
-    return Bivio::SQL::FormSupport->new($config);
+    return $_FS->new($config);
 }
 
 sub internal_parse {
@@ -506,7 +507,11 @@ sub internal_parse {
     # automatically on execute_empty
 
     my($values) = $self->internal_get;
-    _parse($self, $fields || $self->internal_get_field_values());
+    my($res) = _parse($self, $fields || $self->internal_get_field_values());
+    if (ref($res) eq 'HASH') {
+	my($method) = delete($res->{method}) || 'client_redirect';
+	return $self->req->$method($res);
+    }
     # need to restore previous values because _parse() will remove invalid ones
     # for example, if the secondary email is invalid
     $self->internal_put($values);
@@ -557,7 +562,7 @@ sub internal_put_error {
 sub internal_put_error_and_detail {
     my($self, $property, $error, $detail) = @_;
     my($fields) = $self->[$_IDI];
-    $error = Bivio::TypeError->from_any($error);
+    $error = $_TE->from_any($error);
     $property ||= $self->GLOBAL_ERROR_FIELD;
     ($fields->{errors} ||= {})->{$property} = $error;
     ($fields->{error_details} ||= {})->{$property} = $detail;
@@ -582,8 +587,7 @@ sub internal_redirect_next {
     # Redirects to the next form task. This can be used to double unwind
     # a form context, popping another level when called from
     # L<execute_unwind|"execute_unwind">.
-    _redirect($self, 'next');
-    return;
+    return _redirect($self, 'next');
 }
 
 sub internal_stay_on_page {
@@ -653,7 +657,7 @@ sub merge_initialize_info {
 	    $v->{_aliases} ? [
 		delete($v->{name}),
 		@{delete($v->{_aliases})},
-		%$v ? Bivio::Die->die('cannot equivalence a hash') : (),
+		%$v ? b_die('cannot equivalence a hash') : (),
 	    ] : keys(%$v) == 1 ? $v->{name} : $v,
 	);
     }
@@ -686,11 +690,15 @@ sub process {
 	# Forms called internally don't have a context.  Form models
 	# should blow up.
 	if ($self->get_info('require_validate')) {
-	    $self->internal_pre_execute('validate_and_execute_ok');
+	    my($res) = $self->internal_pre_execute('validate_and_execute_ok');
+	    return $res
+		if $res;
 	    $self->validate;
 	}
 	else {
-	    $self->internal_pre_execute('execute_ok');
+	    my($res) = $self->internal_pre_execute('execute_ok');
+	    return $res
+		if $res;
 	}
 	unless ($self->in_error) {
 	    my($res) = _call_execute_ok(
@@ -708,7 +716,7 @@ sub process {
 	    }
 	    _trace($msg);
 	}
-	Bivio::Die->die(
+	b_die(
 	    $self,
 	    ': called with invalid values, ',
 	    $self->get_errors,
@@ -746,7 +754,7 @@ sub process {
     my($query) = $req->unsafe_get('query');
     if ($query && $query->{fc}) {
 	# If there is an incoming context, must be syntactically valid.
-	$fields->{context} = Bivio::Biz::FormContext->new_from_literal(
+	$fields->{context} = $_FC->new_from_literal(
 	    $self, $query->{fc});
 	# We don't want it to appear in any more URIs now that we can
 	# store it in a form.
@@ -769,20 +777,22 @@ sub process {
     # on SUBMIT_UNWIND
     $fields->{literals} = $input;
 
-    unless (_parse($self, $input)) {
+    my($res) = _parse($self, $input);
+    return $res
+	if ref($res) eq 'HASH';
+    unless ($res) {
 	# Allow the subclass to modify the state of the form after an unwind
 	$self->clear_errors;
 	return _call_execute($self, 'execute_unwind');
     }
 
     # determine the selected button, default is ok
-    my($button, $button_type) = ($self->OK_BUTTON_NAME,
-				 'Bivio::Type::OKButton');
+    my($button, $button_type) = ($self->OK_BUTTON_NAME, 'Bivio::Type::OKButton');
     foreach my $field (@{$self->get_keys}) {
 	if (defined($self->get($field))) {
 	    my($type) = $self->get_field_type($field);
 	    ($button, $button_type) = ($field, $type)
-		    if $type->isa('Bivio::Type::FormButton');
+		if $type->isa('Bivio::Type::FormButton');
 	}
     }
     return $self->validate_and_execute_ok($button)
@@ -895,18 +905,21 @@ sub validate_and_execute_ok {
     # If the form has errors, the transaction will be rolled back.
     # validate is always called so we try to return as many errors
     # to the user as possible.
-    $self->internal_pre_execute('validate_and_execute_ok');
+    my($res) = $self->internal_pre_execute('validate_and_execute_ok');
+    return $res
+	if $res;
     $self->validate($form_button);
-    my($res);
     if ($self->in_error) {
 	_put_file_field_reset_errors($self);
-	$self->internal_post_execute('validate_and_execute_ok');
+	$res = $self->internal_post_execute('validate_and_execute_ok');
+	return $res
+	    if $res;
     }
     else {
 	# Catch errors and rethrow unless we can process
 	my($res) = _call_execute_ok(
 	    $self, 'validate_and_execute_ok', $form_button);
-	Bivio::Biz::Action->get_instance('Acknowledgement')->save_label(
+	$_A->save_label(
 	    undef,
 	    $req,
 	    ref($res) eq 'HASH' && exists($res->{query})
@@ -918,15 +931,13 @@ sub validate_and_execute_ok {
 	    _put_file_field_reset_errors($self);
 	}
 	elsif ( ! $fields->{stay_on_page}) {
-	    $self->internal_redirect_next;
-	    # During unit tests, will fall through
-	    return 0;
+	    return $self->internal_redirect_next;
 	}
     }
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
 	if $self->in_error;
     unless ($fields->{stay_on_page}) {
-	Bivio::Agent::Task->rollback($req);
+	$_T->rollback($req);
 	if (my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task')) {
 	    $self->put_on_request(1);
 	    return {
@@ -977,7 +988,7 @@ sub _apply_type_error {
     my($attrs) = $die->get('attrs');
     _trace($attrs) if $_TRACE;
     my($err) = $attrs->{type_error};
-    Bivio::Die->die($err, ': die type_error not a Bivio::TypeError')
+    b_die($err, ': die type_error not a Bivio::TypeError')
 	unless ref($err) && UNIVERSAL::isa($err, 'Bivio::TypeError');
     my($table, $columns) = @{$attrs}{'table','columns'};
     $die->throw_die() unless defined($table);
@@ -1011,12 +1022,12 @@ sub _call_execute_ok {
     # Calls "execute_ok" without wrappers, and catches any DB_CONSTRAINT
     # violations.
     my($res);
-    my($die) = Bivio::Die->catch(sub {
+    my($die) = $_D->catch(sub {
         $res = $self->want_scalar($self->execute_ok($form_button));
 	return;
     });
     if ($die) {
-	if ($die->get('code') == Bivio::DieCode->DB_CONSTRAINT) {
+	if ($die->get('code')->eq_db_constraint) {
 	    # Type errors are "normal"
 	    _apply_type_error($self, $die);
 	}
@@ -1026,6 +1037,16 @@ sub _call_execute_ok {
 	}
     }
     return _post_execute($self, $method, $res);
+}
+
+sub _carry_path_info_and_query {
+    return $_V9 ? (
+	carry_path_info => 0,
+	carry_query => 0,
+    ) : (
+	carry_path_info => 1,
+	carry_query => 1,
+    );
 }
 
 sub _do_columns_referenced {
@@ -1073,7 +1094,7 @@ sub _initial_context {
     return $req->unsafe_get('form_context')
 	|| ($fields->{want_context}
 	   || $req->unsafe_get_nested(qw(task want_workflow))
-	       ? Bivio::Biz::FormContext->new_empty($self) : undef);
+	       ? $_FC->new_empty($self) : undef);
 }
 
 sub _parse {
@@ -1099,23 +1120,23 @@ sub _parse {
     $self->internal_pre_parse_columns();
 
     my($values) = {};
-    _parse_cols($self, $form, $sql_support, $values, 1);
-    _parse_cols($self, $form, $sql_support, $values, 0);
+    my($res) = _parse_cols($self, $form, $sql_support, $values, 1)
+	|| _parse_cols($self, $form, $sql_support, $values, 0);
+    return $res
+	if $res;
     $self->internal_put($values);
 
     # .next is set in _redirect()
     my($next) = $form->{$self->NEXT_FIELD} || '';
-    _redirect($self, 'cancel')
+    return _redirect($self, 'cancel')
 	if $next eq 'cancel';
-    return 0 if $next eq 'unwind';
-
+    return 0
+	if $next eq 'unwind';
     return 1;
 }
 
 sub _parse_cols {
     my($self, $form, $sql_support, $values, $is_hidden) = @_;
-    # Parses the form field and returns the value.  Stores errors in the
-    # fields->{errors}.
     my($fields) = $self->[$_IDI];
     my($method) = $is_hidden ? 'internal_get_hidden_field_names'
 	    : 'internal_get_visible_field_names';
@@ -1168,10 +1189,7 @@ sub _parse_cols {
 	# NOT_NULL_SET
 	# May need to include NOT_ZERO_ENUM and UNSPECIFIED checks
 	# from Success? case below
-	if (
-	    $self->get_field_info($n, 'constraint')
-		== Bivio::SQL::Constraint->NOT_NULL_SET
-	) {
+	if ($self->get_field_info($n, 'constraint')->eq_not_null_set) {
 	    my($primary_field) =
 		$self->get_field_info($n, 'null_set_primary_field');
 	    $primary_field .= $1
@@ -1184,8 +1202,7 @@ sub _parse_cols {
 		$self->internal_clear_error($primary_field);
 	    }
 	    else {
-		$self->internal_put_error($primary_field,
-		    Bivio::TypeError->NULL);
+		$self->internal_put_error($primary_field, $_TE->NULL);
 		next;
 	    }
 	}
@@ -1193,27 +1210,24 @@ sub _parse_cols {
 	# Success?
 	if (defined($v)) {
 	    # Zero field ok?
-	    next unless $self->get_field_info($n, 'constraint')
-		== Bivio::SQL::Constraint->NOT_ZERO_ENUM;
+	    next unless $self->get_field_info($n, 'constraint')->eq_not_zero_enum;
 	    next if $type->is_specified($v);
-	    $err = Bivio::TypeError->UNSPECIFIED;
+	    $err = $_TE->UNSPECIFIED;
 	}
 
 	# Null field ok?
 	unless ($err) {
-	    next if $self->get_field_info($n, 'constraint')
-		    == Bivio::SQL::Constraint->NONE;
-	    $err = Bivio::TypeError->NULL;
+	    next if $self->get_field_info($n, 'constraint')->eq_none;
+	    $err = $_TE->NULL;
 	}
 
 	# Error in field.  Save the original value.
 	if ($is_hidden) {
-	    Bivio::IO::Alert->warn(
+	    b_warn(
 		'Error in hidden value(s), refreshing: ',
 		{field => $n, actual => $form->{$fn}, error => $err},
 	    );
-	    _redirect_same($self);
-	    # DOES NOT RETURN
+	    return _redirect_same($self);
 	}
 	else {
 	    $self->internal_put_error($n, $err);
@@ -1232,7 +1246,7 @@ sub _parse_context {
 	# Overwrites the query context, if any.
 	# Note that we don't convert "from_html", because we write the
 	# context in Base64 which is HTML compatible.
-	? Bivio::Biz::FormContext->new_from_literal(
+	? $_FC->new_from_literal(
 	    $self, $form->{$self->CONTEXT_FIELD})
 	# OK, to not have incoming context unless have it from query
 	: $fields->{context} || _initial_context($self);
@@ -1245,13 +1259,13 @@ sub _parse_timezone {
     # If it is set, will set in cookie.  Otherwise, not set in cookie.
 
     # Parse the integer
-    my($v) = Bivio::Type::Integer->from_literal($value);
+    my($v) = $_I->from_literal($value);
     # Only go on if could parse.   Otherwise, other modules know how
     # to handle timezone as undef.
     return unless defined($v);
 
     unless ($v =~ /^[+-]?\d+$/) {
-	Bivio::IO::Alert->warn($v, ': timezone field in form invalid');
+	b_warn($v, ': timezone field in form invalid');
 	return;
     }
 
@@ -1272,7 +1286,7 @@ sub _parse_version {
     my($self, $value, $sql_support) = @_;
     # Parse the version number.  Throws VERSION_MISMATCH on error.
     if (defined($value)) {
-	my($v) = Bivio::Type::Integer->from_literal($value);
+	my($v) = $_I->from_literal($value);
 	return if (defined($v) && $v eq $sql_support->get('version'));
     }
     $self->throw_die('VERSION_MISMATCH', {
@@ -1307,8 +1321,7 @@ sub _put_file_field_reset_errors {
 	next unless defined($properties->{$n}) && !$self->get_field_error($n);
 
 	# Tells user that we didn't clear the field, the browser did.
-	$self->internal_put_error($n,
-		Bivio::TypeError->FILE_FIELD_RESET_FOR_SECURITY)
+	$self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
     }
     return;
 }
@@ -1336,14 +1349,19 @@ sub _redirect {
     if ($fields->{context}) {
 	if ($req->unsafe_get_nested(qw(task want_workflow))) {
 	    _trace('continue workflow') if $_TRACE;
-	    $req->server_redirect({
+	    return {
+		method => 'server_redirect',
 		task_id => $req->get('task')->get_attr_as_id($which),
 		require_context => 1,
-	    });
+		_carry_path_info_and_query(),
+	    };
 	}
-	$fields->{context}->return_redirect($self, $which);
+	return $fields->{context}->return_redirect($self, $which);
     }
-    $req->client_redirect($req->get('task')->get_attr_as_id($which));
+    return {
+	task_id => $req->get('task')->get_attr_as_id($which),
+	_carry_path_info_and_query(),
+    };
     # DOES NOT RETURN
 }
 
@@ -1354,9 +1372,14 @@ sub _redirect_same {
     my($req) = $self->get_request;
     # The form was corrupt.  Throw away the context and
     # the form and redirect back to this task.
-    $req->server_redirect($req->get('task_id'),
-	undef, $req->get('query'), undef, $req->get('path_info'));
-    # DOES NOT RETURN
+    return {
+	method => 'server_redirect',
+	task_id => $req->get('task_id'),
+	realm => undef,
+	query => $req->get('query'),
+	form => undef,
+	path_info => $req->get('path_info'),
+    };
 }
 
 sub _validate {
