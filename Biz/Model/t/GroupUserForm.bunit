@@ -1,0 +1,24 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel({
+    setup_request => sub {
+	req()->set_realm('fourem');
+	req()->put(query => {this => realm_id('root')});
+	return;
+    },
+    check_return => sub {
+	my(undef, undef, $expect) = @_;
+	model('GroupUserList')->execute_load_this;
+	assert_equals(
+	    $expect,
+	    [map($_->get_name, @{req(qw(Model.GroupUserList roles))})],
+	);
+	return 1;
+    },
+});
+req()->initialize_fully('GROUP_USER_FORM');
+[
+    [{
+	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+    }] => [qw(ADMINISTRATOR MEMBER)],
+];
