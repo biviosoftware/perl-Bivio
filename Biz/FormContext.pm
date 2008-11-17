@@ -250,9 +250,13 @@ sub return_redirect {
 	    # If there is no form, redirect to client so looks
 	    # better.  get_context_from_request will do the right thing
 	    # and return the stacked context.
-	    $req->client_redirect($c->{cancel_task}, $c->{realm},
-		   $c->{query}, $c->{path_info});
-	    # DOES NOT RETURN
+	    return {
+		method => 'client_redirect',
+		task_id => $c->{cancel_task},
+		realm => $c->{realm},
+		query => $c->{query},
+		path_info => $c->{path_info},
+	    }
 	}
 
 	# Next or cancel (not form)
@@ -260,9 +264,13 @@ sub return_redirect {
 	    '?', $c->{query}) if $_TRACE;
 	# If there is no form, redirect to client so looks
 	# better.
-	$req->client_redirect(
-	    $c->{unwind_task}, $c->{realm}, $c->{query}, $c->{path_info});
-	# DOES NOT RETURN
+	return {
+	    method => 'client_redirect',
+	    task_id => $c->{unwind_task},
+	    realm => $c->{realm},
+	    query => $c->{query},
+	    path_info => $c->{path_info},
+	};
     }
 
     # Do an server redirect to context, because can't do
@@ -278,14 +286,14 @@ sub return_redirect {
     # Redirect calls model back in get_context_from_request
     _trace('have form, server_redirect: ', $c->{unwind_task},
 	'?', $c->{query}, ' form=', $f) if $_TRACE;
-    $req->server_redirect({
+    return {
+	method => 'server_redirect',
 	task_id => $c->{unwind_task},
 	realm => $c->{realm},
 	query => $c->{query},
 	form => $f,
 	path_info => $c->{path_info},
-    });
-    # DOES NOT RETURN
+    };
 }
 
 sub _format_hash {
