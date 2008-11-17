@@ -7,7 +7,7 @@ use base 'Bivio::Biz::Model::EditDAVList';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub CSV_COLUMNS {
-    return [qw(Email.email mail_recipient file_writer administrator User.user_id)];
+    return [qw(Email.email mail_recipient file_writer administrator RealmUser.user_id)];
 }
 
 sub LIST_CLASS {
@@ -32,7 +32,7 @@ sub row_delete {
     my($req) = $self->get_request;
     $self->new_other('ForumUserDeleteForm')->process({
 	'RealmUser.realm_id' => $req->get('auth_id'),
-	'User.user_id' => $old->{'User.user_id'},
+	'User.user_id' => $old->{'RealmUser.user_id'},
     });
     return;
 }
@@ -47,7 +47,7 @@ sub row_update {
 	my($op) = $new->{$r} ? 'create' : 'unauth_delete';
 	$self->new_other('RealmUser')->$op({
 	    realm_id => $req->get('auth_id'),
-	    user_id => $old->{'User.user_id'},
+	    user_id => $old->{'RealmUser.user_id'},
 	    role => Bivio::Auth::Role->from_name($r),
 	});
     }
