@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,97 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 7.10  2008/11/17 21:45:49  dobbs
+  * Bivio::BConf
+    UI_HTML => UIHTML
+    added UIXHTML and UICSS
+  * Bivio::Biz::FormContext
+    return_redirect returns the TaskEvent params instead of throwing
+    exceptions (via client_redirect calls)
+  * Bivio::Biz::FormModel
+    v9: carry_path_info and carry_query required on default returns
+    internal_redirect_next returns rather than throws exceptions (client_redirect)
+    b_use values
+  * Bivio::Biz::Model::AdmBulletinForm
+    internal_redirect_next may return something
+  * Bivio::Biz::Model::ConfirmableForm
+    internal_redirect_next may return something
+  * Bivio::Biz::Model::ConfirmationForm
+    internal_redirect_next may return something
+  * Bivio::Biz::Model::FileChangeForm
+    return TaskEvent params instead of throwing exceptions
+  * Bivio::Biz::Model::ForbiddenForm
+    internal_redirect_next may return something
+  * Bivio::Biz::Model::ForumUserEditDAVList
+    database key changed back to RealmUser.user_id
+  * Bivio::Biz::Model::ForumUserList
+    push down routines from GroupUserList which are explicit to Forums and
+    old behavior
+  * Bivio::Biz::Model::GroupUserList
+    manage privs using new routines in RoleBaseList
+  * Bivio::Biz::Model::RealmFileTreeList
+    identify empty nodes/folders
+  * Bivio::Biz::Model::RoleBaseList
+    use group_concat (requires upgrade_db group_concat) to return a single
+    row for each realm/user.
+    removed all SIZE methods since computation is one per row
+    added roles_in_order and roles_by_category
+  * Bivio::Biz::Model::UserForumList
+    fmt
+  * Bivio::Biz::Model::UserLoginForm
+    invalid passwords are checked by validate_login
+    validate_login prints warnings based on reason for invalid login
+  * Bivio::Biz::Model::UserRealmList
+    RoleBaseList handles all RealmUser stuff
+  * Bivio::Biz::Model::WikiForm
+    throw NOT_FOUND if wiki name is invalid rather than DIE
+    carry query explicitly
+  * Bivio::Delegate::TaskId
+    added group_admin compononent with GROUP_USER_LIST and GROUP_USER_FORM
+    (not fully tested)
+  * Bivio::PetShop::BConf
+    v9: carry_query and carry_path_info explicit
+  * Bivio::PetShop::Model::OrderForm
+    v9: carry_query and carry_path_info explicit
+  * Bivio::SQL::Connection::Postgres
+    rmpod
+  * Bivio::Test::FormModel
+    clear path_info/query/form explciity
+  * Bivio::Type::Array
+    rmpod
+    use Bivio::Base
+  * Bivio::Type::TreeListNode
+    add NODE_EMPTY
+  * Bivio::UI::Constant
+    added get_widget_value
+  * Bivio::UI::FacadeBase
+    element for empty node
+    Added group_admin component
+  * Bivio::UI::HTML::Widget::AuxiliaryForm
+    touch the cookie, needed for form posts
+  * Bivio::UI::View::Base
+    use map name for loading shortcuts
+  * Bivio::UI::View::CSS
+    specify tree node name font
+    put space up between dock and header
+  * Bivio::UI::View::File
+    Hide change icon if node is read only
+  * Bivio::UI::View::Wiki
+    Action.WikiText may not be present for invalid wiki named pages
+  * Bivio::UI::ViewLanguage
+    b_use variables
+    use maps for loading classes
+  * Bivio::UI::ViewShortcuts
+    added vs_debug (not fully tested)
+    and b_use
+  * Bivio::UI::XHTML::ViewShortcuts
+    rename UI_HTML to UIHTML
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    the top level of nested bmenus now get rendered for use as drop down menus
+  * Bivio::Util::SQL
+    Added internal_upgrade_db_group_concat which simulates MySQL's
+    group_concat in Postgres
+
   Revision 7.9  2008/11/12 22:38:10  nagler
   * Bivio::Auth::Realm
     use b_use
