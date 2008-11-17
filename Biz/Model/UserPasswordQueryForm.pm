@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserPasswordQueryForm;
 use strict;
@@ -80,16 +80,15 @@ sub validate_email_and_put_uri {
     my($self, $form) = @_;
     $form ||= $self;
     my($req) = $form->get_request;
-    my($e) = $form->new_other('Email');
-    unless ($e->unauth_load({email => $form->get('Email.email')})) {
-	$form->internal_put_error(qw(Email.email NOT_FOUND));
+    my($ro) = $self->new_other('RealmOwner');
+    if (my $err = $ro->validate_login($form->get('Email.email'))) {
+	$form->internal_put_error('Email.email', $err);
 	return 0;
     }
     $form->internal_put_field(
 	uri => $req->with_realm(
-	    $e->get('realm_id'),
+	    $ro,
 	    sub {
-		my($ro) = $form->req(qw(auth_realm owner));
 		return Bivio::Biz::Action->get_instance('UserPasswordQuery')
 		    ->format_uri($req)
 		    unless $req->is_super_user($ro->get('realm_id'))
