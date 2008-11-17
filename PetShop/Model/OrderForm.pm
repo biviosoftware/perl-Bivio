@@ -132,13 +132,13 @@ sub execute_unwind {
     if ($self->get('confirmed_order')) {
 	_trace('order confirmed, redirecting to next') if $_TRACE;
 	$self->execute_ok;
-	$self->internal_redirect_next;
-	# DOES NOT RETURN
+	return $self->internal_redirect_next;
     }
     _trace('redirecting to order confirmation page') if $_TRACE;
-    $self->get_request->server_redirect(
-        Bivio::Agent::TaskId->ORDER_CONFIRMATION);
-    # DOES NOT RETURN
+    return {
+	method => 'server_redirect',
+        task_id => Bivio::Agent::TaskId->ORDER_CONFIRMATION,
+    };
 }
 
 =for html <a name="internal_initialize"></a>
