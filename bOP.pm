@@ -26,11 +26,31 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.9  2008/11/12 22:38:10  nagler
+  * Bivio::Auth::Realm
+    use b_use
+  * Bivio::Auth::RealmType
+    get_any_group_list no longer includes GENERAL
+  * Bivio::Delegate::TaskId
+    CLUB_HOME and FORUM_HOME are ANYBODY and both go to FORUM_WIKI_VIEW
+  * Bivio::UI::FacadeBase
+    Forum is labed in RealmDropDown
+    added RealmDropDown.User
+  * Bivio::UI::View::CSS
+    fix dd_menu
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    fmt
+    Wrap "xlink" in SPAN if not a Tag or Link
+  * Bivio::Util::HTTPConf
+    fixed mdc code to include virtual hosts
+  * Bivio::Util::SQL
+    fmt
+
   Revision 7.8  2008/11/12 19:13:31  nagler
   * Bivio::Agent::Task
     want_scalar around return value of $method in execute_items
