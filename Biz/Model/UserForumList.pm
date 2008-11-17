@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::UserForumList;
 use strict;
-use base 'Bivio::Biz::Model::UserRealmList';
+use Bivio::Base 'Model.UserRealmList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

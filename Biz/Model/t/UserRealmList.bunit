@@ -7,13 +7,13 @@ req()->set_realm(ShellUtil_SQL()->BTEST_READ);
 	[] => [
 	    {
 		'RealmOwner.name' => 'btest_read',
-		roles => [Auth_Role()->ADMINISTRATOR],
+		roles => [Auth_Role('ADMINISTRATOR')],
 	    },
 	    {
 		'RealmOwner.name' => 'fourem',
 		roles => [
-		    Auth_Role()->MEMBER,
-		    Auth_Role()->MAIL_RECIPIENT,
+		    Auth_Role('MEMBER'),
+		    Auth_Role('MAIL_RECIPIENT'),
 		],
 	    },
 	    {
@@ -28,7 +28,7 @@ req()->set_realm(ShellUtil_SQL()->BTEST_READ);
 	],
     ],
     find_row_by_type => [
-	[Auth_RealmType()->USER] => sub {[shift->get('object')]},
-	[Auth_RealmType()->CLUB] => [undef],
+	[Auth_RealmType('USER')] => sub {[shift->get('object')]},
+	[Auth_RealmType('CLUB')] => [undef],
     ],
 ];
