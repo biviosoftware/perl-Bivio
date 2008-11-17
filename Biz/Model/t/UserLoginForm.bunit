@@ -84,8 +84,8 @@ options({
 	    [{login => 'club'}] => NOT_FOUND(),
 	    [{}] => DIE(),
 	    [{login => 'bad%realm!name'}] => NOT_FOUND(),
-	    [{login => 'invalidated_user'}] => DIE(),
-	    [{login => 'invalidated_user', via_mta => 1}] => [undef],
+	    [{login => 'invalidated_user'}] => NOT_FOUND(),
+	    [{login => 'invalidated_user', via_mta => 1}] => NOT_FOUND(),
 	],
     ],
 ];
