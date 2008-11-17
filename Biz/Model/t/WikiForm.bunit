@@ -1,13 +1,19 @@
 # Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-FormModel();
+my($path_info);
+FormModel({
+    setup_request => sub {
+	req()->put(path_info => $path_info);
+	return;
+    },
+});
 my($path) = sub {
     my($p) = @_;
     return (
 	sub {
 	    req()->commit;
 	    req()->set_realm_and_user('guest', 'guest');
-	    req()->put(path_info => $p),
+	    $path_info = $p;
 	    return 1;
 	 } => 1,
     );
