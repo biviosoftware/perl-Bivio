@@ -5,6 +5,9 @@ use strict;
 use Bivio::Base 'TestUnit.Unit';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_M) = b_use('Biz.Model');
+my($_A) = b_use('IO.Alert');
+my($_R) = b_use('IO.Ref');
 
 sub empty_case {
     my($proto, $return) = @_;
@@ -30,35 +33,20 @@ sub new_unit {
     $proto->builtin_options({class_name => $class});
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
     my($setup_request) = delete($attrs->{setup_request});
-    my($model) = $class;
     $attrs = {}
 	unless ref($attrs);
     my($req) = $proto->use('Bivio::Test::Request')->get_instance;
-    my($m) = Bivio::Biz::Model->new($req, $model);
     return $proto->SUPER::new({
-	class_name => $m->package_name,
+	class_name => $_M->get_instance($class)->package_name,
 	compute_params => sub {
 	    my($case, $params, $method, $object) = @_;
-	    $m->reset_instance_state;
+	    $object->reset_instance_state;
 	    return $params
 		unless $method eq 'process';
 	    if (my $l = $req->unsafe_get('Model.Lock')) {
 		$l->release;
 	    }
-	    $req->clear_nondurable_state;
-	    $req->put(
-		path_info => undef,
-		query => undef,
-		form => undef,
-	    );
-	    $req->get('task')->put_attr_for_test(
-		form_model => ref($m),
-		next => $req->get('task_id'),
-		require_context => 0,
-	    ) unless $req->get('task')->unsafe_get_attr_as_id('next')
-		&& !$req->get('task_id')->eq_shell_util;
-	    $setup_request->($case, $params)
-		if $setup_request;
+	    _setup_request($proto, $setup_request, @_);
 	    unless (@$params) {
 		$req->delete('form');
 		return [$req];
@@ -67,26 +55,26 @@ sub new_unit {
 	    return $params
 		unless ref($hash) eq 'HASH';
 	    $hash = {
-		%{$m->get_fields_for_primary_keys()},
+		%{$object->get_fields_for_primary_keys()},
 		%$hash,
-	    } if $m->isa('Bivio::Biz::ListFormModel');
+	    } if $object->isa('Bivio::Biz::ListFormModel');
 	    Bivio::Die->die('You must set empty_row_count on case: ', $case)
-	        if $m->isa('Bivio::Biz::ExpandableListFormModel')
+	        if $object->isa('Bivio::Biz::ExpandableListFormModel')
 	        && !exists($hash->{empty_row_count});
 	    Bivio::Die->die(
-		ref($m),
+		ref($object),
 		': auxiliary form; set task with initialize_fully; primary=',
 		$req->get('task')->get('form_model'),
-	    ) if $m->is_auxiliary_on_task;
+	    ) if $object->is_auxiliary_on_task;
 	    return [$req->put(
 		form => {
-		    $m->VERSION_FIELD => $m->get_info('version'),
+		    $object->VERSION_FIELD => $object->get_info('version'),
 		    map({
-			my($t) = $m->get_field_type($_);
+			my($t) = $object->get_field_type($_);
 			my($v) = $hash->{$_};
 			$v = $v->($case)
 			    if ref($v) eq 'CODE';
-			($m->get_field_name_for_html($_) =>
+			($object->get_field_name_for_html($_) =>
 			     ($t->isa('Bivio::Type::FileField')
 				  ? $v
 				  : $t->to_literal($v)));
@@ -117,6 +105,28 @@ sub new_unit {
     });
 }
 
+sub req_state {
+    my($proto, $params) = @_;
+    $params = $_R->nested_copy($params);
+    return sub {
+	$proto->builtin_self->put(req_state => $params);
+	return 1;
+    } => 1;
+}
+
+sub req_state_merge {
+    my($proto, $params) = @_;
+    $params = $_R->nested_copy($params);
+    return sub {
+	my($self) = $proto->builtin_self;
+	$self->put(req_state => {
+	    %{$self->get_or_default('req_state', {})},
+	    %$params,
+	});
+	return 1;
+    } => 1;
+}
+
 sub run_unit {
     return shift->SUPER::run_unit(@_)
 	if @_ == 3;
@@ -133,11 +143,50 @@ sub run_unit {
     );
 }
 
+sub _eval {
+    return map(ref($_) eq 'CODE' ? $_->() : $_, @_);
+}
+
 sub _field_err {
     my($o, $field) = @_;
     my($ed) = $o->get_field_error_detail($field);
     return $o->get_field_error($field)->get_name
 	. ($ed ? ": $ed" : '');
+}
+
+sub _setup_request {
+    my($proto, $setup_request, $case, $params, undef, $object) = @_;
+    my($self) = $proto->builtin_self;
+    my($req) = $proto->builtin_req;
+    $req->clear_nondurable_state;
+    $req->put(
+	path_info => undef,
+	query => undef,
+	form => undef,
+    );
+    $req->get('task')->put_attr_for_test(
+	form_model => ref($object),
+	next => $req->get('task_id'),
+	require_context => 0,
+    ) unless $req->get('task')->unsafe_get_attr_as_id('next')
+	&& !$req->get('task_id')->eq_shell_util;
+    if (my $rs = $self->unsafe_get('req_state')) {
+	$rs = {%$rs};
+        foreach my $p (qw(user realm)) {
+	    next
+		unless exists($rs->{$p});
+	    my($m) = "set_$p";
+	    $req->$m(_eval(delete($rs->{$p})));
+	};
+	if (my $t = delete($rs->{task})) {
+	    $req->initialize_fully(_eval($t));
+	}
+	$req->put(_eval(%$rs))
+	    if %$rs;
+    }
+    $setup_request->($case, $params)
+	if $setup_request;
+    return;
 }
 
 sub _walk_tree_actual {
@@ -152,7 +201,7 @@ sub _walk_tree_actual {
 		: $o->unsafe_get($_)
 		: ref($o) eq 'HASH' ? $o->{$_}
 		: ref($o) eq 'ARRAY' && $_ =~ /^\d+$/ ? $o->[$_]
-		: Bivio::IO::Alert->format_args($_, ': not index of ', $o))),
+		: $_A->format_args($_, ': not index of ', $o))),
 	    keys(%$e),
 	)} : $o;
 }
