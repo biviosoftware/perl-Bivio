@@ -15,10 +15,9 @@ sub SELECT_ROLES {
 
 sub execute_empty {
     my($self) = @_;
-#TODO: Create version
-    my($main, $aux) = $self->req('Model.GroupUserList')
-	->roles_main_and_auxiliary;
-    $self->internal_put_field('RealmUser.role' => $main);
+#TODO: Create version for site-user forum
+    my($main, $aux) = $self->req('Model.GroupUserList')->roles_by_category;
+    $self->internal_put_field('RealmUser.role' => $main->[0]);
     foreach my $f (@$_AUX) {
 	$self->internal_put_field($f =>
 	    grep($_->equals_by_name($f), @$aux) ? 1 : 0);
@@ -51,6 +50,8 @@ sub execute_ok {
     }
 #TODO: Deal with the site level (invalidate password?)
 #TODO: ForumUserForm would delete children (need to generalize with realm_dag)
+#      Need to generalize concept of parents so that we know a realm has
+#      children and a parent.
 #TODO: when transitioning from unapproved to other state, send email
 #      except unknown.  Have code in place to transition, but the views
 #      can be empty.
