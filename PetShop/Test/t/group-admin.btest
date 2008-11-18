@@ -4,4 +4,5 @@ test_setup('PetShop');
 home_page();
 login_as('root');
 visit_uri('/fourem/users');
-verify_text('Admin, Editor');
+follow_link_in_table('first', 'first', 'root', 'privileges', 'admin');
+
