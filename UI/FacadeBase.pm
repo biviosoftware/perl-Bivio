@@ -581,6 +581,7 @@ sub _cfg_group_admin {
     return {
 	Task => [
 	    [GROUP_USER_LIST => '?/users'],
+	    [GROUP_USER_FORM => '?/edit-user'],
 	],
 	Text => [
 	    [[qw(GroupUserList.privileges_name RoleSelectList.display_name)]
@@ -598,6 +599,7 @@ sub _cfg_group_admin {
 		],
 	    ],
 	    [GroupUserList => [
+		display_name => 'Last, First Name',
 		privileges => 'Privileges',
 	    ]],
 	    [GroupUserForm => [
@@ -607,6 +609,7 @@ sub _cfg_group_admin {
 	    ]],
 	    [title => [
 		GROUP_USER_LIST => 'Users',
+		GROUP_USER_FORM => 'User Privileges',
 	    ]],
 	],
     };
