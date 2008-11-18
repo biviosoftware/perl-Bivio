@@ -1,0 +1,28 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel({
+    check_return => sub {
+	my(undef, undef, $expect, $method) = @_;
+	return 1
+	    unless shift->is_method('process');
+	model('GroupUserList')->execute_load_this;
+	assert_equals(
+	    $expect,
+	    [map($_->get_name, @{req(qw(Model.GroupUserList roles))})],
+	);
+	return 1;
+    },
+});
+[
+    req_state({
+	task => 'GROUP_USER_FORM',
+	user => 'root',
+	realm => 'fourem',
+	query => {this => realm_id('root')},
+    }),
+    [{
+	'RealmUser.role' => Auth_Role('MEMBER'),
+	file_writer => 1,
+	mail_recipient => 0,
+    }] => [qw(MEMBER FILE_WRITER)],
+];
