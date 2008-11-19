@@ -29,7 +29,10 @@ sub execute_ok {
 	'RealmFile.is_public' => $public,
     }, $_BC->join($self->get(qw(title body))))
 	->put_on_request;
-    return;
+    return {
+        carry_query => 1,
+        carry_path_info => 1,
+    };
 }
 
 sub internal_initialize {
