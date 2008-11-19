@@ -130,7 +130,7 @@ sub get_rss_summary {
 	path => $self->get('path_info'),
 	class => 'RealmFile',
 	req => $self->req,
-	task_id => $self->req('task', 'html_task'),
+	task_id => $self->req('task')->unsafe_get_attr_as_id('html_task'),
 	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
 	no_auto_links => 1,
     })->get('excerpt');
