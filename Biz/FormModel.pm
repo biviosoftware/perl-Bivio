@@ -1013,8 +1013,8 @@ sub _apply_type_error {
 
 sub _call_execute {
     my($self, $method) = (shift, shift);
-    $self->internal_pre_execute($method);
-    return _post_execute($self, $method, $self->$method(@_));
+    return $self->internal_pre_execute($method)
+	|| _post_execute($self, $method, $self->$method(@_));
 }
 
 sub _call_execute_ok {
