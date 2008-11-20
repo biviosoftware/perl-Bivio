@@ -7,7 +7,7 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('SQL.Connection');
 my($_R) = b_use('Auth.Role');
-my($_V1) = 0;#b_use('IO.Config')->if_version(1);
+my($_V1) = b_use('IO.Config')->if_version(1);
 my($_ROLES_ORDER) = [map($_R->$_(), qw(
     ADMINISTRATOR
     ACCOUNTANT
