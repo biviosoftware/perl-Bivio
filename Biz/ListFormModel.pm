@@ -208,6 +208,7 @@ sub get_fields_for_primary_keys {
 	$row++;
 	return 1;
     });
+    $list->reset_cursor;
     return {@list_keys};
 }
 
