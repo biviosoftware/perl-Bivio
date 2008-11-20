@@ -30,7 +30,6 @@ sub execute_ok {
     }, $_BC->join($self->get(qw(title body))))
 	->put_on_request;
     return {
-        carry_query => 1,
         carry_path_info => 1,
     };
 }
