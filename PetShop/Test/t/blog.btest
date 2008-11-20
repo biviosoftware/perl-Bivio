@@ -1,0 +1,14 @@
+# Copyright (c) 2008 bivio Software Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+my($search_key) = random_string();
+my($f, $uri) = create_forum();
+visit_uri($uri = "$uri/blog");
+verify_text(qr{no entries}i);
+login_as('root');
+visit_uri($uri);
+follow_link(qr{new blog entry}i);
+submit_form({
+    title => "post $search_key",
+    anon => "body $search_key",
+});
