@@ -413,6 +413,7 @@ sub init_realm_role {
 
 sub initialize_db {
     my($self) = @_;
+    $self->internal_upgrade_db_group_concat;
     $self->model('RealmOwner')->init_db;
     $self->init_realm_role;
 #TODO: Needs to be after subclasses init_realm_role for new realmtypes
@@ -423,7 +424,6 @@ sub initialize_db {
     if (Bivio::Agent::TaskId->unsafe_from_name('FORUM_MOTION_LIST')) {
 	$self->initialize_motion_permissions;
     }
-    $self->internal_upgrade_db_group_concat;
     foreach my $x (@$_INITIALIZE_SENTINEL) {
 	_default_sentinel($self, $x);
     }
