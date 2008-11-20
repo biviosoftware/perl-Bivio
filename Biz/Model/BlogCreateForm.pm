@@ -24,8 +24,10 @@ sub execute_ok {
 	unless ($rf->unsafe_load($v)) {
 	    $rf->create_with_content(
 		$v, $_BC->join($self->get(qw(title body))));
-	    $self->get_request->put(path_info => $bfn);
-	    return;
+	    $self->get_request->put();
+	    return {
+		path_info => $bfn,
+	    };
 	}
 	$bfn = undef;
 	$now = $_DT->add_seconds($now, 1);
