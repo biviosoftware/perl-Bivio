@@ -86,7 +86,6 @@ sub internal_input_base_render_attrs {
 }
 
 sub internal_new_args {
-Bivio::IO::Alert->info('xxxxxxxxxxxx');
     return shift->internal_compute_new_args(['field'], \@_);
 }
 
