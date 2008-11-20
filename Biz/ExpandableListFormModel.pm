@@ -73,11 +73,12 @@ sub internal_initialize {
 }
 
 sub internal_initialize_list {
-    my($self) = @_;
+    my($self) = shift;
     # Appends empty rows to the list.
     my($fields) = $self->[$_IDI];
-    my($list) = $self->SUPER::internal_initialize_list;
-    return if $fields->{list_initialized};
+    my($list) = $self->SUPER::internal_initialize_list(@_);
+    return $list
+	if $fields->{list_initialized};
     $fields->{list_initialized} = 1;
     my($req) = $self->get_request;
     my($form) = $req->get_form;
