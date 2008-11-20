@@ -12,3 +12,10 @@ submit_form({
     title => "post $search_key",
     anon => "body $search_key",
 });
+follow_link('edit');
+verify_text("post $search_key");
+submit_form({
+    title => "post2 $search_key",
+    anon => "body2 $search_key",
+});
+verify_text("body2 $search_key");
