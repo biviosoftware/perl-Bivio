@@ -19,20 +19,23 @@ sub render_html {
     my($proto, $args) = @_;
     my($class) =  delete($args->{attrs}->{class}) || 'bmenu';
     my($value) =  delete($args->{attrs}->{value}) || $args->{value};
+    my($prefix) = delete($args->{attrs}->{b_selected_label_prefix});
     Bivio::Die->die(
-	$args->{attrs}, ': only accepts "class" and "value" attributes',
+	$args->{attrs}, ': only accepts "class", "value", and',
+        ' "b_selected_label_prefix" attributes',
     ) if %{$args->{attrs}};
     my($links) = _visit($value, $args);
     return unless @$links;
     my($buf) = '';
-    TaskMenu([map(_item_widget($_), @$links)], $class)->put_and_initialize(
-	parent => undef,
-	selected_item => sub {
-	    my($w, $source) = @_;
-	    return ($source->ureq('uri') || '') =~
-                $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
-	},
-    )->render($args->{source}, \$buf);
+    TaskMenu([map(_item_widget($_, $prefix), @$links)], $class)
+        ->put_and_initialize(
+            parent => undef,
+            selected_item => sub {
+                my($w, $source) = @_;
+                return ($source->ureq('uri') || '') =~
+                    $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
+            },
+        )->render($args->{source}, \$buf);
     return $buf;
 }
 
@@ -42,7 +45,7 @@ sub _has_value {
 }
 
 sub _item_widget {
-    my($row) = @_;
+    my($row, $prefix) = @_;
     my($c) = delete($row->{class});
     $row->{value} = Simple($row->{value});
     return Tag(span => Link($row), $c ? $c : ())
@@ -50,7 +53,7 @@ sub _item_widget {
     my($selected_regexp) = delete($row->{selected_regexp});
     return Tag(span => Join([
         Link($row),
-        TaskMenu([map(Tag(span => Link($_)), @$links)], 'bsubmenu', 'div'),
+        TaskMenu([map(Tag(span => Link($_)), @$links)], 'b_submenu'),
     ], {selected_regexp => $selected_regexp}),  $c ? $c : ());
 }
 
