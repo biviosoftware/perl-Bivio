@@ -20,7 +20,7 @@ my($_T) = b_use('XHTMLWidget.Tag');
 my($_L) = b_use('XHTMLWidget.Link');
 
 sub NEW_ARGS {
-    return [qw(task_map ?class ?tag)];
+    return [qw(task_map ?class)];
 }
 
 sub internal_as_string {
