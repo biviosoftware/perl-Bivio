@@ -6,8 +6,8 @@ use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my(%_DEFAULT_PERMISSIONS);
 my($_RT) = b_use('Model.RowTag');
+my($_DEFAULT_PERMISSIONS) = {};
 
 sub get_auth_user {
     # (proto, Agent.Request) : Biz.Model
@@ -44,10 +44,10 @@ sub load_permissions {
 
     my($rti) = $realm->get('type')->as_int;
     _load_default_permissions($rti, $req)
-	unless $_DEFAULT_PERMISSIONS{$rti};
+	unless $_DEFAULT_PERMISSIONS->{$rti};
 
     # Copy just this role's permission if there is an owner
-    my($res) = $_DEFAULT_PERMISSIONS{$rti}->{$role};
+    my($res) = $_DEFAULT_PERMISSIONS->{$rti}->{$role};
     # Return the permission, but make sure it exists
     Bivio::Die->die($realm, ': unable to load default permissions for ', $role)
 	unless defined($res);
@@ -83,20 +83,21 @@ sub unsafe_get_user_pref {
 }
 
 sub _load_default_permissions {
-    # (int, Agent.Request) : undef
-    # Loads default permissions for this rti (RealmType->as_int)
-    # The RealmRole table maps the RealmType->as_int to the realm_id
-    # for defaults.
     my($rti, $req) = @_;
-    # Copy the default (if loaded) and return
     my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
-    # Load and save the defaults
-    my($dp) = $_DEFAULT_PERMISSIONS{$rti} = {};
-    my($it) = $rr->unauth_iterate_start('role', {realm_id => $rti});
-    my(%row);
-    while ($rr->iterate_next($it, \%row)) {
-	$dp->{$row{role}} = $row{permission_set};
-    }
+#TODO: Use RealmRole->get_permission_map
+    $_DEFAULT_PERMISSIONS->{$rti} = {
+	%{$rr->EMPTY_PERMISSION_MAP},
+	@{$rr->map_iterate(
+	    sub {
+		my($it) = @_;
+		return ($it->get('role') => $it->get('permission_set'));
+	    },
+	    'unauth_iterate_start',
+	    'role',
+	    {realm_id => $rti},
+	)},
+    };
     return;
 }
 
