@@ -658,19 +658,20 @@ sub _device {
 sub _dig {
     my($hostname) = @_;
     Bivio::Die->die('missing hostname')
-	    unless defined($hostname);
+	 unless defined($hostname);
     # TODO: this is a HACK. caching in the config is bad form, but this is run
     # from the command line and won't be hanging around in memory for very
-    # long.  As an added bonus, it also serves to spoof dns from the unit test
+    # long.  As an added bonus, it also serves to spoof dns from the unit test.
     my($cache) = $_CFG->{_dig_cache} ||= {};
     unless (exists($cache->{$hostname})) {
-	my($ip) = `dig +short $hostname`;
+	my($ip) = $hostname =~ /^\d+\.\d+\.\d+\.\d+$/ ? $hostname
+	    : `dig +short $hostname`;
 	_trace('dig ', $hostname, ': ', $ip)
 	    if $_TRACE;
 	Bivio::DieCode->NOT_FOUND->throw_die(
 	    "failed to resolve ip address for '$hostname': $!")
 		unless defined($ip);
-	chop($ip);
+	chomp($ip);
 	$cache->{$hostname} = $ip;
     }
     return $cache->{$hostname};
