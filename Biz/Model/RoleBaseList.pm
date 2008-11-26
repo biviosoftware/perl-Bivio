@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('SQL.Connection');
 my($_R) = b_use('Auth.Role');
 my($_V1) = b_use('IO.Config')->if_version(1);
-my($_ROLES_ORDER) = [map($_R->$_(), qw(
+my($_ROLES_ORDER) = [map($_R->unsafe_from_name($_) ? $_R->$_() : (), qw(
     ADMINISTRATOR
     ACCOUNTANT
     MEMBER
@@ -23,7 +23,7 @@ foreach my $r ($_R->get_non_zero_list) {
     push(@$_ROLES_ORDER, $r)
 	unless grep($r == $_, @$_ROLES_ORDER);
 }
-my($_ROLES_MAIN) = [map($_R->$_(), qw(
+my($_ROLES_MAIN) = [map($_R->unsafe_from_name($_) ? $_R->$_() : (), qw(
     ADMINISTRATOR
     ACCOUNTANT
     MEMBER
