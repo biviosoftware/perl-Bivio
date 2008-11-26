@@ -69,9 +69,13 @@ sub execute_empty {
 #TODO: Optimize.  Don't make calls if method doesn't exist
     # Do start/row/end
     $self->reset_cursor;
-    $self->execute_empty_start;
+    my($res) = $self->execute_empty_start;
+    Bivio::IO::Alert->warn_deprecated($res, ': unexpected return from ', $self)
+	    if $res;
     while ($self->next_row) {
-	$self->execute_empty_row;
+	$res = $self->execute_empty_row;
+	Bivio::IO::Alert->warn_deprecated($res, ': unexpected return from ', $self)
+		if $res;
     }
     $self->execute_empty_end;
     $self->reset_cursor;
@@ -109,9 +113,15 @@ sub execute_ok {
     # L<execute_ok_row|"execute_ok_row"> and then
     # L<execute_ok_end|"execute_ok_end">.
     $self->reset_cursor;
-    $self->execute_ok_start($button);
+    my($res) = $self->execute_ok_start($button);
+#TODO: Need to see if this is happening.  If not, execute_ok should return
+#      when any execute* returns
+    Bivio::IO::Alert->warn_deprecated($res, ': unexpected return from ', $self)
+	    if $res;
     while ($self->next_row) {
-	$self->execute_ok_row($button);
+	$res = $self->execute_ok_row($button);
+	Bivio::IO::Alert->warn_deprecated($res, ': unexpected return from ', $self)
+		if $res;
     }
     my($result) = $self->execute_ok_end($button);
     $self->reset_cursor;
@@ -197,7 +207,7 @@ sub get_field_name_in_list {
 sub get_fields_for_primary_keys {
     my($self) = @_;
     # Returns a hash_ref of the primary keys for the list class
-    my($list) = $self->get_list_model || _execute_init($self);
+    my($list) = _execute_init($self);
     my($primary_key_names) = $list->get_info('primary_key_names');
     my(@list_keys) = ();
     my($row) = 0;
@@ -281,8 +291,6 @@ sub internal_get_visible_field_names {
 
 sub internal_initialize_list {
     my($self) = @_;
-    # Finds and prepares the ListModel used for this form. Subclasses may
-    # override this to provide custom list loading.
     my($lm) = $self->get_request->get($self->get_info('list_class'));
     $lm->reset_cursor;
     return $lm;
@@ -489,12 +497,14 @@ sub _collision {
 
 sub _execute_init {
     my($self) = @_;
+    return $self->get_list_model
+	if $self->[$_IDI] && $self->[$_IDI]->{list_model};
     # Finds the list model by looking up list_class in the request.
     # Initializes rows and cursor.
     my($req) = $self->get_request;
 
     # Get the the list_class instance
-    my($lm) = $self->internal_initialize_list();
+    my($lm) = $self->internal_initialize_list;
     # Get the field names based on list instance
     my($sql_support) = $self->internal_get_sql_support();
 
