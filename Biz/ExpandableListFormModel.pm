@@ -75,11 +75,7 @@ sub internal_initialize {
 sub internal_initialize_list {
     my($self) = shift;
     # Appends empty rows to the list.
-    my($fields) = $self->[$_IDI];
     my($list) = $self->SUPER::internal_initialize_list(@_);
-    return $list
-	if $fields->{list_initialized};
-    $fields->{list_initialized} = 1;
     my($req) = $self->get_request;
     my($form) = $req->get_form;
     my($prev_self) = $req->unsafe_get(_key($self));
@@ -122,14 +118,6 @@ sub is_empty_row {
 	    if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
     }
     return 1;
-}
-
-sub reset_instance_state {
-    my($self) = shift;
-    $self->[$_IDI] = {
-	list_initialized => 0,
-    };
-    return $self->SUPER::reset_instance_state(@_);
 }
 
 sub validate {
