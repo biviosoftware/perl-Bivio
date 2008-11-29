@@ -44,6 +44,7 @@ my($_BUNDLE) = [qw(
     !forum_features
     !forum_features_tuple_motion
     !group_concat
+    role_unused_11
 )];
 my($_AGGREGATES) = [qw(
     group_concat(text)
@@ -1410,6 +1411,19 @@ ALTER TABLE realm_file_lock_t
 CREATE INDEX realm_file_lock_t7 ON realm_file_lock_t (
   user_id
 )
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_role_unused_11 {
+    my($self) = @_;
+    $self->run(<<'EOF');
+DELETE FROM realm_user_t
+   WHERE role = 11
+/
+DELETE FROM realm_role_t
+   WHERE role = 11
 /
 EOF
     return;
