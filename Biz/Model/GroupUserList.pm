@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::GroupUserList;
 use strict;
@@ -81,7 +81,12 @@ sub _privileges {
     my($main, $aux) = $self->roles_by_category($row->{roles});
     $row->{privileges} = $_SA->new([map(
 	$_T->get_value(
-	    'GroupUserList.privileges_name.' . $_->get_name, $self->req),
+	    'realm_'
+		. $self->req(qw(auth_realm owner_name))
+		. '.GroupUserList.privileges_name.'
+		. $_->get_name,
+	    $self->req,
+	),
 	@$main ? $main->[0] : (),
 	@$aux,
     )]);
