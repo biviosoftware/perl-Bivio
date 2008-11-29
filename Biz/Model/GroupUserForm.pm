@@ -34,21 +34,24 @@ sub execute_ok {
     my($main_old) = $gul->roles_by_category;
     my($main) = $self->get('RealmUser.role');
     unless ($main_old eq $main) {
+# This only deletes this realm
 	$ru->delete_all({user_id => $uid});
 	return
 	    if $main->eq_unknown;
+# depending on the realm we'd deefinitely need to delete ForumUserDeleteForm
 	$ru->create({
 	    realm_id => $rid,
 	    user_id => $uid,
 	    role => $main,
 	});
-	$ru->create({
-	    realm_id => $rid,
-	    user_id => $uid,
-	    role => $main->MEMBER,
-	}) if $main->eq_administrator || $main->eq_accountant;
+# 	$ru->create({
+# 	    realm_id => $rid,
+# 	    user_id => $uid,
+# 	    role => $main->MEMBER,
+# 	}) if $main->eq_administrator || $main->eq_accountant;
     }
 #TODO: Deal with the site level (invalidate password?)
+#      Maybe not delete password
 #TODO: ForumUserForm would delete children (need to generalize with realm_dag)
 #      Need to generalize concept of parents so that we know a realm has
 #      children and a parent.
