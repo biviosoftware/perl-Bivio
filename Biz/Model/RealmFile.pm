@@ -434,7 +434,7 @@ sub _copy {
     my($self, $values, $size) = @_;
     my($dst) = $self->new;
     _assert_writable($dst, $values);
-    $dst->create_or_update({
+    $dst->unauth_create_or_update({
 	%{_verify_and_fix($dst, $values)},
 	$self->get('is_folder') ? () : (_content => $self->get_content),
     });
