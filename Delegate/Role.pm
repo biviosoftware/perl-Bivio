@@ -20,8 +20,9 @@ sub get_delegate_info {
         ADMINISTRATOR => 7,
 	MAIL_RECIPIENT => 8,
 	FILE_WRITER => 9,
-	UNCONFIRMED_EMAIL => 10,
-	UNAPPROVED_APPLICANT => 11,
+	UNAPPROVED_APPLICANT => 10,
+#BEBOP: 7.14 remove
+	UNUSED_11 => 11,
 #        LAST_RESERVED => 19,
     ];
 }
