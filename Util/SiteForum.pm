@@ -42,7 +42,7 @@ sub init {
 	    'RealmOwner.name' => $self->SITE_REALM,
 	    'RealmOwner.display_name' => 'Web Site',
 	});
-	$self->new_other('RealmRole')->edit_categories('+feature_site_adm');
+	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
 	return;
     });
     $req->with_realm($self->SITE_REALM, sub {
@@ -70,9 +70,9 @@ sub init {
 	outgoing => $self->CONTACT_REALM,
     });
     $req->with_realm(
-	$_F->get_from_request_or_self($req)->SITE_ADM_REALM_NAME,
+	$_F->get_from_request_or_self($req)->SITE_ADMIN_REALM_NAME,
 	sub {
-	    $self->new_other('RealmRole')->edit_categories('+feature_site_adm');
+	    $self->new_other('RealmRole')->edit_categories('+feature_site_admin');
 	    return;
 	},
     );

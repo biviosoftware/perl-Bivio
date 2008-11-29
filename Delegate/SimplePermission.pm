@@ -27,7 +27,7 @@ sub get_delegate_info {
 	MOTION_READ => [17],
 	MOTION_WRITE => [18],
 	MOTION_ADMIN => [19],
-	FEATURE_SITE_ADM => [20],
+	FEATURE_SITE_ADMIN => [20],
 	FEATURE_FILE => [21],
 	FEATURE_BLOG => [22],
 	FEATURE_WIKI => [23],

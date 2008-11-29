@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::View::SiteAdm;
+package Bivio::UI::View::SiteAdmin;
 use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
@@ -9,8 +9,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AUL) = __PACKAGE__->use('Model.AdmUserList');
 
 sub substitute_user_form {
-    return shift->internal_body(vs_simple_form(SiteAdmSubstituteUserForm => [qw{
-	SiteAdmSubstituteUserForm.login
+    return shift->internal_body(vs_simple_form(SiteAdminSubstituteUserForm => [qw{
+	SiteAdminSubstituteUserForm.login
     }]));
 }
 

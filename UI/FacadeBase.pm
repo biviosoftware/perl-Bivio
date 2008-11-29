@@ -25,7 +25,7 @@ sub SITE_REALM_NAME {
     return 'site';
 }
 
-sub SITE_ADM_REALM_NAME {
+sub SITE_ADMIN_REALM_NAME {
     return shift->SITE_REALM_NAME;
 }
 
@@ -288,8 +288,8 @@ sub _cfg_base {
 			    ])),
 			    Bivio::IO::Config->if_version(
                                 5 => sub {URI({
-                                    task_id => 'SITE_ADM_SUBSTITUTE_USER_DONE',
-                                    realm => vs_constant('site_adm_realm_name'),
+                                    task_id => 'SITE_ADMIN_SUBSTITUTE_USER_DONE',
+                                    realm => vs_constant('site_admin_realm_name'),
                                     query => undef,
                                 })},
                                 sub {'LOGOUT'},
@@ -810,12 +810,12 @@ EOF
     };
 }
 
-sub _cfg_site_adm {
+sub _cfg_site_admin {
     return {
 	Task => [
-	    [SITE_ADM_USER_LIST => '?/admin-users'],
-	    [SITE_ADM_SUBSTITUTE_USER => '?/admin-su'],
-	    [SITE_ADM_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
+	    [SITE_ADMIN_USER_LIST => '?/admin-users'],
+	    [SITE_ADMIN_SUBSTITUTE_USER => '?/admin-su'],
+	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
 	],
 	Text => [
 	    [AdmUserList => [
@@ -823,11 +823,11 @@ sub _cfg_site_adm {
 		empty_list_prose => qq{No user last names begin with "String([['Model.AdmUserList', '->get_query'], 'search']);".},
 	    ]],
 	    ['task_menu.title' => [
-		SITE_ADM_USER_LIST => 'Users',
+		SITE_ADMIN_USER_LIST => 'Users',
 	    ]],
 	    [title => [
-		SITE_ADM_USER_LIST => 'All Users',
-		SITE_ADM_SUBSTITUTE_USER => 'Act as User',
+		SITE_ADMIN_USER_LIST => 'All Users',
+		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
 	    ]],
 	],
     };
@@ -1166,7 +1166,7 @@ sub _cfg_wiki {
 	        [qw(help_wiki_realm_id HELP_WIKI_REALM_NAME)],
 	        [qw(site_realm_id SITE_REALM_NAME)],
 	        [qw(site_contact_realm_id SITE_CONTACT_REALM_NAME)],
-	        [qw(site_adm_realm_id SITE_ADM_REALM_NAME)],
+	        [qw(site_admin_realm_id SITE_ADMIN_REALM_NAME)],
 	    ),
 	    [ThreePartPage_want_HelpWiki => 1],
 	],

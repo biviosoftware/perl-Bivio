@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Biz::Model::SiteAdmSubstituteUserForm;
+package Bivio::Biz::Model::SiteAdminSubstituteUserForm;
 use strict;
 use Bivio::Base 'Model.AdmSubstituteUserForm';
 

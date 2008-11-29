@@ -519,7 +519,7 @@ sub vs_user_email_list {
 		    wf_list_link => {
 			query => 'THIS_DETAIL',
 			task => Bivio::IO::Config->if_version(
-			    5 => sub {'SITE_ADM_SUBSTITUTE_USER'},
+			    5 => sub {'SITE_ADMIN_SUBSTITUTE_USER'},
 			    sub {'ADM_SUBSTITUTE_USER'},
 			),
 		    },
