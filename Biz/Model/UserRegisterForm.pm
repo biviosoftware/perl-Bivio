@@ -6,7 +6,7 @@ use Bivio::Base 'Model.UserCreateForm';
 use Bivio::Biz::Random;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_R) = __PACKAGE__->use('Biz.Random');
+my($_BR) = __PACKAGE__->use('Biz.Random');
 my($_UPQ) = __PACKAGE__->use('Action.UserPasswordQuery');
 my($_A) = __PACKAGE__->use('Action.Acknowledgement');
 my($_UPQF) = __PACKAGE__->use('Model.UserPasswordQueryForm');
@@ -39,7 +39,7 @@ sub internal_create_models {
 	    $self->get_instance('User')->get_field_type('last_name')->get_width,
 	 ),
     ) unless $self->unsafe_get('RealmOwner.display_name');
-    $self->internal_put_field('RealmOwner.password' => $_R->password)
+    $self->internal_put_field('RealmOwner.password' => $_BR->password)
 	unless $self->unsafe_get('RealmOwner.password')
 	&& $self->unsafe_get('password_ok');
     return $self->SUPER::internal_create_models(@_);
@@ -65,16 +65,10 @@ sub internal_initialize {
 		name => 'RealmOwner.password',
 		constraint => 'NONE',
 	    },
-	    {
-		name => 'uri',
-		type => 'String',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'password_ok',
-		type => 'Boolean',
-		constraint => 'NONE',
-	    },
+	    $self->field_decl([
+		[qw(uri String)],
+		[qw(password_ok Boolean)],
+	    ]),
 	],
     });
 }
