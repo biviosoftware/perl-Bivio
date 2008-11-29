@@ -604,7 +604,7 @@ sub info_group_admin {
 	    ANY_GROUP
 	    ADMIN_READ
 	    Model.GroupUserList->execute_load_page
-	    View.GroupAdmin->user_list
+	    View.GroupUser->list
 	)],
 	[qw(
 	    GROUP_USER_FORM
@@ -612,7 +612,7 @@ sub info_group_admin {
 	    ANY_GROUP
 	    ADMIN_READ&ADMIN_WRITE
 	    Model.GroupUserForm
-	    View.GroupAdmin->user_form
+	    View.GroupUser->form
 	    next=GROUP_USER_LIST
 	)],
     ];
@@ -819,34 +819,34 @@ sub info_otp {
     ];
 }
 
-sub info_site_adm {
+sub info_site_admin {
     return [
 	[qw(
-	    SITE_ADM_USER_LIST
+	    SITE_ADMIN_USER_LIST
 	    160
 	    ANY_GROUP
-	    ADMIN_READ&FEATURE_SITE_ADM
+	    ADMIN_READ&FEATURE_SITE_ADMIN
 	    Model.AdmUserList->execute_load_page
-	    View.SiteAdm->user_list
+	    View.SiteAdmin->user_list
 	)],
 	[qw(
-	    SITE_ADM_SUBSTITUTE_USER
+	    SITE_ADMIN_SUBSTITUTE_USER
 	    161
 	    ANY_GROUP
-	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADM&SUPER_USER_TRANSIENT
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&SUPER_USER_TRANSIENT
 	    Model.SiteAdmSubstituteUserForm
-	    View.SiteAdm->substitute_user_form
+	    View.SiteAdmin->substitute_user_form
 	    next=MY_SITE
 	)],
 	[qw(
-	    SITE_ADM_SUBSTITUTE_USER_DONE
+	    SITE_ADMIN_SUBSTITUTE_USER_DONE
 	    162
 	    ANY_GROUP
 	    ANYBODY
 	    Action.UserLogout
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
-	    su_task=SITE_ADM_USER_LIST
+	    su_task=SITE_ADMIN_USER_LIST
 	)],
 #163-169
     ];
@@ -1073,8 +1073,7 @@ sub info_user_auth {
 	    93
 	    GENERAL
 	    ANYBODY
-	    View.UserAuth->create_mail
-	    View.UserAuth->create_done
+	    Action.UserCreateDone
 	)],
 	[qw(
 	    USER_SETTINGS_FORM
