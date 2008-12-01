@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PS) = b_use('Auth.PermissionSet');
 my($_R) = b_use('Auth.Role');
 my($_RS) = b_use('Auth.RoleSet');
-my($_EMPTY) = {map(($_ => $_PS->get_empty), $_R->get_non_zero_list)};
+my($_EMPTY) = {map(($_ => ${$_PS->get_empty}), $_R->get_non_zero_list)};
 
 sub EMPTY_PERMISSION_MAP {
     return {%$_EMPTY};
