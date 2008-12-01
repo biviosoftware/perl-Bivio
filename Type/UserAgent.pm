@@ -47,7 +47,7 @@ sub from_header {
         return $proto->BROWSER_FIREFOX_1
             if $ua =~ /Firefox\/1\./;
         return $proto->BROWSER_MOZILLA_1
-            if $ua =~ /\brv:1\./;
+            if $ua =~ /Gecko\/(\d\d\d\d)/ && $1 <= 2006;
         return $proto->BROWSER_HTML4;
     }
 
