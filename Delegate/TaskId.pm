@@ -834,7 +834,7 @@ sub info_site_admin {
 	    161
 	    ANY_GROUP
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&SUPER_USER_TRANSIENT
-	    Model.SiteAdmSubstituteUserForm
+	    Model.SiteAdminSubstituteUserForm
 	    View.SiteAdmin->substitute_user_form
 	    next=MY_SITE
 	)],
