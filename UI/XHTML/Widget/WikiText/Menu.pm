@@ -53,7 +53,13 @@ sub _item_widget {
     my($selected_regexp) = delete($row->{selected_regexp});
     return Tag(span => Join([
         Link($row),
-        TaskMenu([map(Tag(span => Link($_)), @$links)], 'b_submenu'),
+        TaskMenu([map(Tag(span => Link($_)), @$links)], 'b_submenu', {
+            selected_item => sub {
+                my($w, $source) = @_;
+                return ($source->ureq('uri') || '') =~
+                    $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
+            },
+        }),
     ], {selected_regexp => $selected_regexp}),  $c ? $c : ());
 }
 
