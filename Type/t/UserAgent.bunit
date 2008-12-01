@@ -1,0 +1,98 @@
+# Copyright (c) 2008 bivio Software Inc.  All Rights Reserved.
+# $Id$
+Request();
+options({
+    create_object => sub {
+        my(undef, $params) = @_;
+        return class()->unsafe_from_any($params->[0]) || class();
+    },
+});
+[
+    class() => [
+        from_header => [
+            map(($_ => 'BROWSER_FIREFOX_1'),
+                'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.12) Gecko/20050915 Firefox/1.0.7',
+                'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050511 Firefox/1.0.4',
+            ),
+            map(($_ => 'BROWSER_MSIE_6'),
+                'Mozilla/4.0 (compatible; MSIE 6.0; AOL 6.0; Windows 98)',
+                'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; en) Opera 8.01',
+                'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)',
+            ),
+            map(($_ => 'BROWSER_MSIE_7'),
+                'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; SLCC1; .NET CLR 2.0.50727; .NET CLR 3.0.04506)',
+                'Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0; .NET CLR 2.0.50215; SL Commerce Client v1.0; Tablet PC 2.0; Media Center PC 3.1; Media Center PC $(runtime.Emerald_version))',
+            ),
+            map(($_ => 'BROWSER_HTML3'),
+                'Googlebot/2.1 (+http://www.google.com/bot.html)',
+                'Mozilla/3.01 [frC-SYMPA  (Win95; I)',
+                'Mozilla/4.0 (compatible; MSIE 25.0; Windows 2098)',
+                'Mozilla/4.0 (compatible; MSIE 4.01; AOL 5.0; Mac_PPC)',
+                'libwww-perl/5.65',
+                'msnbot/1.0 (+http://search.msn.com/msnbot.htm)',
+                '',
+                [undef],
+            ),
+            map(($_ => 'BROWSER_HTML4'),
+                'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.0.4) Gecko/2008102920 Firefox/3.0.4',
+                'Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14',
+                'Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en; rv:1.8.1.17) Gecko/20080915 Camino/1.6.4 (like Firefox/2.0.0.17)',
+                'Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/312.1 (KHTML, like Gecko) Safari/312',
+                'Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/0.3.154.9 Safari/525.19',
+                'Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.4) Gecko/2008102920 Firefox/3.0.4',
+            ),
+            'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050511'
+                => 'BROWSER_MOZILLA_1',
+            'Mozilla/4.0 (compatible; MSIE 5.0; Windows 98)' => 'BROWSER_MSIE_5',
+            'b-sendmail-http' => 'MAIL',
+        ],
+    ],
+    'MAIL' => [
+        has_over_caching_bug => 0,
+        has_table_layout_bug => 0,
+        is_browser => 0,
+        is_css_compatible => 0,
+    ],
+    'BROWSER_HTML3' => [
+        has_over_caching_bug => 0,
+        has_table_layout_bug => 0,
+        is_browser => 1,
+        is_css_compatible => 0,
+    ],
+    'BROWSER_HTML4' => [
+        has_over_caching_bug => 0,
+        has_table_layout_bug => 0,
+        is_browser => 1,
+        is_css_compatible => 1,
+    ],
+    'BROWSER_MSIE_5' => [
+        has_over_caching_bug => 1,
+        has_table_layout_bug => 0,
+        is_browser => 1,
+        is_css_compatible => 1,
+    ],
+    'BROWSER_MSIE_6' => [
+        has_over_caching_bug => 1,
+        has_table_layout_bug => 0,
+        is_browser => 1,
+        is_css_compatible => 1,
+    ],
+    'BROWSER_MSIE_7' => [
+        has_over_caching_bug => 1,
+        has_table_layout_bug => 0,
+        is_browser => 1,
+        is_css_compatible => 1,
+    ],
+    'BROWSER_FIREFOX_1' => [
+        has_over_caching_bug => 0,
+        has_table_layout_bug => 1,
+        is_browser => 1,
+        is_css_compatible => 1,
+    ],
+    'BROWSER_MOZILLA_1' => [
+        has_over_caching_bug => 0,
+        has_table_layout_bug => 1,
+        is_browser => 1,
+        is_css_compatible => 1,
+    ],
+];
