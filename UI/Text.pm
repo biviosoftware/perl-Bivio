@@ -241,7 +241,7 @@ sub unsafe_get_value {
 	    if $v;
 	# Chop off top level.  If unable to do replacement, the tag
 	# is bad so can't be found.
-	last unless $tag =~ s/^\w+(\Q$sep\E)?//g;
+	last unless $tag =~ s/^.+?\Q$sep//;
     }
     return (undef, undef);
 }
