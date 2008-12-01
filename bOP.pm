@@ -26,11 +26,45 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.12  2008/11/25 21:42:55  dobbs
+  * Bivio::Biz::ExpandableListFormModel
+    must return $list in internal_initialize_list
+  * Bivio::Biz::FormModel
+    internal_pre_execute return checked in _call_execute
+  * Bivio::Biz::ListFormModel
+    reset the cursor
+  * Bivio::Biz::Model::BlogCreateForm
+    set path_info on return from execute_ok
+  * Bivio::Biz::Model::BlogEditForm
+    added carry_query and carry_path_info
+    carry_path_info is all that's needed
+  * Bivio::Biz::Model::BlogList
+    fixed deprecation warning from getting html_task
+  * Bivio::Biz::Model::GroupUserForm
+    fix bugs
+  * Bivio::Biz::Model::RoleBaseList
+    remove V1 test code
+  * Bivio::Test::FormModel
+    added req_state and req_state_merge
+  * Bivio::UI::FacadeBase
+    added GROUP_USER_FORM
+  * Bivio::UI::HTML::Widget::InputBase
+    removed info()
+  * Bivio::UI::View::GroupAdmin
+    Added user_form
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    Removed optional tag parameter.  Use put_unless_exists() instead.
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    TaskMenu no longer accepts optional tag parameter.
+    Changed submenu classname from bsubmenu to b_submenu.
+  * Bivio::Util::SQL
+    move group_concat to first thing in initialize_db
+
   Revision 7.11  2008/11/17 22:46:43  moeller
   * Bivio::Util::SQL
     changed function begin/end from $$ to ' for older Postgres versions
