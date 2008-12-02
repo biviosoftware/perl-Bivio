@@ -76,13 +76,19 @@ sub internal_qualify_role {
     return;
 }
 
+sub _fix {
+    my($x) = @_;
+    $x =~ s/\W/_/g;
+    return $x;
+}
+
 sub _privileges {
     my($self, $row) = @_;
     my($main, $aux) = $self->roles_by_category($row->{roles});
     $row->{privileges} = $_SA->new([map(
 	$_T->get_value(
 	    'realm_'
-		. $self->req(qw(auth_realm owner_name))
+		. _fix($self->req(qw(auth_realm owner_name)))
 		. '.GroupUserList.privileges_name.'
 		. $_->get_name,
 	    $self->req,
