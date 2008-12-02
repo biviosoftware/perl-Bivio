@@ -250,6 +250,7 @@ sub info_blog {
 	    Model.BlogCreateForm
 	    View.Blog->create
 	    next=FORUM_BLOG_DETAIL
+            cancel=FORUM_BLOG_LIST
 	    want_query=0
 	)],
 	$_C->if_version(
