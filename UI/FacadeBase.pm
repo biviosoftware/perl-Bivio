@@ -324,7 +324,7 @@ sub _cfg_blog {
 		    return (
 			[FORUM_BLOG_LIST => ['?/blog', '?/public-blog']],
 			[FORUM_BLOG_DETAIL => ['?/blog-entry/*', '?/public-blog-entry/*']],
-			[FORUM_BLOG_RSS => ['?/blog.rss', '?/public-blog.rss']],
+			[FORUM_BLOG_RSS => ['?/blog.atom', '?/blog.rss', '?/public-blog.rss']],
 		    );
 		},
 		sub {
