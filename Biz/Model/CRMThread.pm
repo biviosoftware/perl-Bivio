@@ -49,7 +49,7 @@ sub handle_mail_post_create {
     my($v) = {
 	subject => $proto->clean_subject($realm_mail->get('subject')),
     };
-    if (my $self = $proto->internal_get_existing_thread($req)) {
+    if (my $self = $proto->internal_get_existing_thread($req, $realm_mail)) {
 	my($tid) = $self->get('thread_root_id');
 	$realm_mail->update({
 	    thread_root_id => $tid,
@@ -79,8 +79,14 @@ sub handle_mail_pre_create_file {
 }
 
 sub internal_get_existing_thread {
-    my(undef, $req) = @_;
-    return $req->unsafe_get($_REQ_ATTR);
+    my($proto, $req, $realm_mail) = @_;
+    my($self) = $req->unsafe_get($_REQ_ATTR);
+    $self ||= $proto->new($req)->load({
+        thread_root_id => $realm_mail->get('thread_root_id'),
+    })
+        if $realm_mail->get('thread_root_id')
+            ne $realm_mail->get('realm_file_id');
+    return $self; #might be undef
 }
 
 sub internal_initialize {
