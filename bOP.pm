@@ -26,11 +26,61 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.13  2008/12/01 20:31:04  dobbs
+  * Bivio::BConf
+    feature_site_adm => feature_site_admin
+  * Bivio::Biz::ExpandableListFormModel
+    internal_initialize_list() is only called once by a check in
+    ListFormModel so don't need to duplicate here
+  * Bivio::Biz::ListFormModel
+    internal_initialize_list() is only called once by a check in _execute_init()
+    deprecate returns from execute_empty/ok so we can know if apps are
+    actually using this feature, and fix them.
+  * Bivio::Biz::Model::GroupUserForm
+    don't add MEMBER if ADMINISTRATOR or ACCOUNTANT
+  * Bivio::Biz::Model::RealmFile
+    call unauth_create_or_update
+  * Bivio::Biz::Model::RealmRole
+    added EMPTY_PERMISSION_MAP
+    get_permission_map() ensures all roles are defaulted
+  * Bivio::Biz::Model::RoleBaseList
+    don't assume all roles exist
+  * Bivio::Biz::Model::UserRegisterForm
+    syntax
+  * Bivio::Delegate::Role
+    remove UNCONFIRMED_EMAIL (wrong approach)
+  * Bivio::Delegate::SimpleAuthSupport
+    call Model.RealmRole->EMPTY_PERMISSION_MAP to ensure all roles are defaulted
+  * Bivio::Delegate::SimplePermission
+    site_adm => site_admin
+  * Bivio::Delegate::TaskId
+    View.GroupAdmin => GroupUser
+    site_adm => site_admin
+    UserCreateDone action
+    SiteAdmSubstituteUserForm => SiteAdminSubstituteUserForm
+  * Bivio::PetShop::View::Base
+    site_adm => site_admin
+  * Bivio::Type::UserAgent
+    rmpod
+    FF2, FF3, Safari, and Chrome now all identify as BROWSER_HTML4
+  * Bivio::UI::FacadeBase
+    site_adm => site_admin
+  * Bivio::UI::XHTML::ViewShortcuts
+    site_adm => site_admin
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    b_submenus now render the selected class
+  * Bivio::Util::LinuxConfig
+    support dotted-decimal in network config (_dig())
+  * Bivio::Util::SQL
+    role_unused_11: remove UNCONFIRMED_EMAIL (wrong approach)
+  * Bivio::Util::SiteForum
+    site_adm => site_admin
+
   Revision 7.12  2008/11/25 21:42:55  dobbs
   * Bivio::Biz::ExpandableListFormModel
     must return $list in internal_initialize_list
