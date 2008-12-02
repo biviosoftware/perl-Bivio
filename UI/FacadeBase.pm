@@ -380,7 +380,8 @@ sub _cfg_calendar {
 	    [FORUM_CALENDAR_EVENT_DETAIL => '?/event-detail'],
 	    [FORUM_CALENDAR_EVENT_DELETE => '?/event-delete'],
 	    [FORUM_CALENDAR_EVENT_ICS => '?/event.ics'],
-	    [FORUM_CALENDAR_EVENT_LIST_RSS => '?/calendar.rss'],
+	    [FORUM_CALENDAR_EVENT_LIST_RSS =>
+                 ['?/calendar.atom', '?/calendar.rss']],
 	],
 	Text => [
 	    [prose => [
