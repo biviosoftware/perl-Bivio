@@ -48,7 +48,7 @@ sub iterate_members {
 
     foreach my $member ($fields->{zip}->members) {
         last unless $handler->($member->fileName,
-            $fields->{zip}->contents($member));
+            \($fields->{zip}->contents($member)));
     }
     return $self;
 }
