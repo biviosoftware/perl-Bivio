@@ -50,7 +50,7 @@ sub internal_create_models {
 		    . $self->use('Bivio::Biz::Random')->hex_digits(8),
 		$req,
 	    ),
-	want_bulletin => $params->{'Email.want_bulletin'} || 0,
+	want_bulletin => $params->{'Email.want_bulletin'} || 1,
     }) unless ($self->unsafe_get('Email.email') || '') eq $et->IGNORE_PREFIX;
     return ($realm, $user);
 }
