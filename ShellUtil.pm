@@ -1003,8 +1003,10 @@ sub usage {
 }
 
 sub usage_error {
-    shift;
-    $_A->print_literally('ERROR: ', @_);
+    my(undef, @args) = @_;
+    push(@args, "\n")
+	unless ($args[$#args] || '') =~ /\n$/s;
+    $_A->print_literally('ERROR: ', @args);
     $_DIE->throw_quietly('DIE');
     # DOES NOT RETURN
 }
