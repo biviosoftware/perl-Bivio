@@ -17,7 +17,6 @@ my($_ROLES_ORDER) = [map($_R->unsafe_from_name($_) ? $_R->$_() : (), qw(
     FILE_WRITER
     MAIL_RECIPIENT
     UNAPPROVED_APPLICANT
-    UNCONFIRMED_EMAIL
 ))];
 foreach my $r ($_R->get_non_zero_list) {
     push(@$_ROLES_ORDER, $r)
