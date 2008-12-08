@@ -16,5 +16,16 @@ my($resource) = b_use('Bivio::Agent::t::Mock::Resource')->new;
             [qw(multi_role_user TEST_MULTI_ROLES1)] => 1,
             [qw(multi_role_user TEST_MULTI_ROLES2)] => 1,
 	],
+	{
+	    method => 'is_site_admin',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->set_user(shift(@$params));
+		return [];
+	    },
+	} => [
+	    btest_read => 0,
+	    root => 1,
+	],
     ],
 ];
