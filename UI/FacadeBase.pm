@@ -2,12 +2,13 @@
 # $Id$
 package Bivio::UI::FacadeBase;
 use strict;
-use base 'Bivio::UI::Facade';
+use Bivio::Base 'UI.Facade';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
 my($_WIKI_DATA_FOLDER) = __PACKAGE__->use('Type.WikiDataName')->PRIVATE_FOLDER;
 my($_EASY_FORM_DIR) = 'Forms';
+my($_RN) = b_use('Type.RealmName');
 
 sub HELP_WIKI_REALM_NAME {
     return 'site-help';
@@ -29,6 +30,12 @@ sub SITE_ADMIN_REALM_NAME {
     return shift->SITE_REALM_NAME;
 }
 
+sub auth_realm_is_site {
+    my($self, $req) = @_;
+    my($r) = $req->get('auth_realm');
+    return $r->has_owner && $self->is_site_realm_name($r->get('owner_name'));
+}
+
 sub internal_dav_tasks {
     return [
 	[DAV => ['dav/*', 'dv/*']],
@@ -45,7 +52,8 @@ sub internal_dav_tasks {
 
 sub is_site_realm_name {
     my($self, $realm_name) = @_;
-    return $realm_name eq $self->SITE_REALM_NAME;
+    return $_RN->is_equal(
+	$realm_name, $self->get('Constant')->get_value('site_realm_name'));
 }
 
 sub new {
@@ -585,9 +593,20 @@ sub _cfg_group_admin {
 	    [GROUP_USER_FORM => '?/edit-user'],
 	],
 	Text => [
+	    [realm_site => [
+		 [qw(GroupUserList.privileges_name RoleSelectList.display_name)] => [
+		    UNKNOWN => 'No Access',
+		    GUEST => 'Contractor',
+		    MEMBER => 'Staff',
+		    FILE_WRITER => 'Site Editor',
+		    ACCOUNTANT => 'Manager',
+		    ADMINISTRATOR => 'Site Admin',
+		],
+	    ]],
 	    [[qw(GroupUserList.privileges_name RoleSelectList.display_name)]
 	        => [
 		    UNKNOWN => 'No Access',
+		    USER => 'Registered User',
 		    WITHDRAWN => 'Former Member',
 		    GUEST => 'Guest',
 		    MEMBER => 'Member',
@@ -595,7 +614,6 @@ sub _cfg_group_admin {
 		    ACCOUNTANT => 'Deputy',
 		    ADMINISTRATOR => 'Admin',
 		    MAIL_RECIPIENT => 'Subscribed',
-		    UNCONFIRMED_EMAIL => 'Unconfirmed Email',
 		    UNAPPROVED_APPLICANT => 'Requested Access',
 		],
 	    ],
@@ -603,14 +621,14 @@ sub _cfg_group_admin {
 		display_name => 'Last, First Name',
 		privileges => 'Privileges',
 	    ]],
-	    [GroupUserForm => [
+	    [[qw(UnapprovedApplicantForm GroupUserForm)] => [
 		'RealmUser.role' => 'Access Level',
 		file_writer => 'Write access to files (Editor)',
 		mail_recipient => 'Receive mail sent to group (Subscribed)',
 	    ]],
 	    [title => [
 		GROUP_USER_LIST => 'Users',
-		GROUP_USER_FORM => 'User Privileges',
+		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
 	    ]],
 	],
     };
@@ -817,18 +835,19 @@ sub _cfg_site_admin {
 	    [SITE_ADMIN_USER_LIST => '?/admin-users'],
 	    [SITE_ADMIN_SUBSTITUTE_USER => '?/admin-su'],
 	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
+	    [SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => => '?/admin-applicants'],
+	    [SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => => '?/admin-assign-applicant'],
 	],
 	Text => [
-	    [AdmUserList => [
+	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',
-		empty_list_prose => qq{No user last names begin with "String([['Model.AdmUserList', '->get_query'], 'search']);".},
-	    ]],
-	    ['task_menu.title' => [
-		SITE_ADMIN_USER_LIST => 'Users',
+		privileges => 'Privileges',
 	    ]],
 	    [title => [
 		SITE_ADMIN_USER_LIST => 'All Users',
 		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
+		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
+		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
 	    ]],
 	],
     };
@@ -1204,6 +1223,7 @@ sub _cfg_wiki {
 		FORUM_WIKI_EDIT_PAGE => 'Edit this page',
 		FORUM_WIKI_VERSIONS_LIST => 'Page history',
 		FORUM_WIKI_CURRENT => 'Back to current',
+		SITE_WIKI_VIEW => 'Home',
 	    ]],
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
