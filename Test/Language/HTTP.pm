@@ -649,7 +649,7 @@ sub submit_form {
 	_create_form_request(
 	    $self, uc($form->{method}),
 	    $self->absolute_uri($form->{action} || $self->unsafe_get_uri),
-            _format_form($form, $submit_button, $form_fields)));
+            _format_form($self, $form, $submit_button, $form_fields)));
     _assert_form_response($self, $expected_content_type);
     return;
 }
@@ -1043,7 +1043,7 @@ sub _fixup_pattern_protected {
 }
 
 sub _format_form {
-    my($form, $submit, $form_fields) = @_;
+    my($self, $form, $submit, $form_fields) = @_;
     # Returns URL encoded form.  Undefined fields are not submitted.
     # Note the special case handling for checkboxes may need to be extended
     # for other controls.
@@ -1055,7 +1055,8 @@ sub _format_form {
 	$match->{$f}++;
         # Radio or Select: Allow the use of the option label instead of value
 	my($value) = $f->{options}
-            ? _lookup_option_value($f->{options}, $v)
+            ? _lookup_option_value(
+		$f->{options}, _fixup_pattern_protected($self, $v))
             : $v;
         _validate_text_field($f, $v)
             if $f->{type} eq 'text';
