@@ -1,0 +1,35 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ShellUtil();
+foreach my $x (
+    [qw(demo MEMBER)],
+    [qw(root ADMINISTRATOR)],
+) {
+    my($u, $r) = @$x;
+    foreach my $x (1..3) {
+	ShellUtil_RealmAdmin()->main(
+	    -realm => "realm_user_util$x", -user => $u, 'leave_user');
+    }
+    ShellUtil_RealmAdmin()->main(
+	qw(-realm realm_user_util1 -user), $u, join_user => $r);
+}
+ShellUtil_RealmAdmin()->main(
+    qw(-realm realm_user_util3 -user demo join_user MAIL_RECIPIENT),
+);
+ShellUtil_RealmAdmin()->main(
+    qw(-realm realm_user_util3 -user root join_user WITHDRAWN),
+);
+[
+    [qw(-user demo audit_user)] => qr{DIE},
+    [qw(-realm fourem -user user audit_user)] => qr{DIE},
+    [qw(-realm fourem -user demo audit_user)] => [],
+    [qw(-realm realm_user_util1 audit_all_users)] => <<'EOF',
+demo:
+realm_user_util2: +MAIL_RECIPIENT +MEMBER
+realm_user_util3: -MAIL_RECIPIENT
+root:
+realm_user_util2: +ADMINISTRATOR +FILE_WRITER +MAIL_RECIPIENT +MEMBER
+realm_user_util3: +ADMINISTRATOR +FILE_WRITER +MAIL_RECIPIENT +MEMBER -WITHDRAWN
+EOF
+    [qw(-realm realm_user_util1 audit_all_users)] => [],
+];
