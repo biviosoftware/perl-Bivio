@@ -264,6 +264,12 @@ sub follow_link {
     return $res;
 }
 
+sub follow_link_in_mail {
+    my($self) = shift;
+    $self->visit_uri($self->verify_local_mail(@_) =~ /(http:.+\?.+)/m);
+    return;
+}
+
 sub follow_link_in_table {
     my($self) = shift;
     # Finds the row identified by I<find_value> in column I<find_heading> of
