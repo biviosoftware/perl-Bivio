@@ -827,7 +827,7 @@ sub info_site_admin {
 	    160
 	    ANY_GROUP
 	    ADMIN_READ&FEATURE_SITE_ADMIN
-	    Model.AdmUserList->execute_load_page
+	    Model.SiteAdminUserList->execute_load_page
 	    View.SiteAdmin->user_list
 	)],
 	[qw(
@@ -849,7 +849,24 @@ sub info_site_admin {
 	    next=SITE_ROOT
 	    su_task=SITE_ADMIN_USER_LIST
 	)],
-#163-169
+	[qw(
+	    SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
+	    163
+	    ANY_GROUP
+	    ADMIN_READ&FEATURE_SITE_ADMIN
+	    Model.UnapprovedApplicantList->execute_load_page
+	    View.SiteAdmin->unapproved_applicant_list
+	)],
+	[qw(
+	    SITE_ADMIN_UNAPPROVED_APPLICANT_FORM
+	    164
+	    ANY_GROUP
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN
+	    Model.UnapprovedApplicantForm
+	    View.SiteAdmin->unapproved_applicant_form
+	    next=SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
+	)],
+#165-169
     ];
 }
 
