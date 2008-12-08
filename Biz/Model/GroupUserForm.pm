@@ -8,15 +8,17 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FM) = b_use('Type.FormMode');
 my($_AUX) = [qw(file_writer mail_recipient)];
 my($_R) = b_use('Auth.Role');
+my($_F) = b_use('UI.Facade');
 
-sub SELECT_ROLES {
-    return [map($_R->$_(), qw(UNKNOWN GUEST MEMBER ADMINISTRATOR))];
+sub USER_LIST_CLASS {
+    return 'GroupUserList';
 }
 
 sub execute_empty {
     my($self) = @_;
 #TODO: Create version for site-user forum
-    my($main, $aux) = $self->req('Model.GroupUserList')->roles_by_category;
+    my($main, $aux) = $self->req('Model.' . $self->USER_LIST_CLASS)
+	->roles_by_category;
     $self->internal_put_field('RealmUser.role' => $main->[0]);
     foreach my $f (@$_AUX) {
 	$self->internal_put_field($f =>
@@ -28,10 +30,10 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     my($ru) = $self->new_other('RealmUser');
-    my($gul) = $self->req('Model.GroupUserList');
-    my($uid) = $gul->get('RealmUser.user_id');
+    my($ul) = $self->req('Model.' . $self->USER_LIST_CLASS);
+    my($uid) = $ul->get('RealmUser.user_id');
     my($rid) = $self->req('auth_id');
-    my($main_old) = $gul->roles_by_category;
+    my($main_old) = $ul->roles_by_category;
     my($main) = $self->get('RealmUser.role');
     unless ($main_old eq $main) {
 # This only deletes this realm
@@ -67,6 +69,9 @@ sub execute_ok {
 	    role => $main->from_any($f),
 	});
     }
+    $self->req->with_user($uid, sub {
+        b_use('ShellUtil.RealmUser')->new->audit_user;
+    });
     return;
 }
 
@@ -90,9 +95,18 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    $_FM->setup_by_list_this($self->new_other('GroupUserList'), 'RealmOwner');
-    $self->new_other('RoleSelectList')->load_from_array($self->SELECT_ROLES);
+    $_FM->setup_by_list_this(
+	$self->new_other($self->USER_LIST_CLASS), 'RealmOwner');
+    $self->new_other('RoleSelectList')
+	->load_from_array($self->internal_select_roles);
     return shift->SUPER::internal_pre_execute(@_);
+}
+
+sub internal_select_roles {
+    my($self) = @_;
+    return $_F->get_from_source($self)->auth_realm_is_site($self->req)
+	? [qw(USER MEMBER ADMINISTRATOR)]
+	: [qw(UNKNOWN GUEST MEMBER ADMINISTRATOR)];
 }
 
 1;
