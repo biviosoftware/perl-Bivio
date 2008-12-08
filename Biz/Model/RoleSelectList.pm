@@ -24,8 +24,10 @@ sub internal_load_rows {
     return [map(
 	+{
 	    'RealmUser.role' => $_,
-	    display => $_T->get_value(
-		'RoleSelectList.display_name.' . $_->get_name, $self->req),
+	    display => $_T->get_value_for_auth_realm(
+		'RoleSelectList.display_name.' . $_->get_name,
+		$self->req,
+	    ),
 	},
 	@{$query->get('values_array')},
     )];
