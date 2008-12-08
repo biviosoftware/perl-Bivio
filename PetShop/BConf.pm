@@ -18,6 +18,9 @@ sub dev_overrides {
 sub merge_overrides {
     my($proto) = @_;
     return Bivio::IO::Config->merge_list({
+	'Bivio::Biz::Model::UserRegisterForm' => {
+	    unapproved_applicant => 1,
+	},
 	'Bivio::Ext::DBI' => {
 	    database => 'pet',
 	    user => 'petuser',
@@ -64,6 +67,31 @@ sub merge_overrides {
 	    default => 'PetShop',
 	    http_suffix => 'bivio.biz',
 	    mail_host => 'bivio.biz',
+	},
+	'Bivio::Util::RealmUser' => {
+	    audit_map => [
+		site => [
+		    USER => [
+		    ],
+		    MEMBER => [
+			[[qw(site-help site-contact)] => [qw(MEMBER MAIL_RECIPIENT FILE_WRITER)]],
+		    ],
+		    ADMINISTRATOR => [
+			'+MEMBER',
+			[[qw(site-help site-contact)] => [qw(ADMINISTRATOR)]],
+		    ],
+		],
+		realm_user_util1 => [
+		    MEMBER => [
+			[realm_user_util2 => [qw(MEMBER MAIL_RECIPIENT)]],
+		    ],
+		    ADMINISTRATOR => [
+			'+MEMBER',
+			[realm_user_util2 => [qw(ADMINISTRATOR FILE_WRITER)]],
+			[realm_user_util3 => [qw(MEMBER MAIL_RECIPIENT ADMINISTRATOR FILE_WRITER)]],
+		    ],
+		],
+	    ],
 	},
     },
     $proto->default_merge_overrides({
