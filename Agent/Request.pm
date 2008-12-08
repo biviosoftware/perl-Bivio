@@ -188,6 +188,7 @@ my($_D) = b_use('Bivio.Die');
 my($_DC) = b_use('Bivio.DieCode');
 my($_DT) = b_use('Type.DateTime');
 my($_FCT) = b_use('FacadeComponent.Task');
+my($_FCC) = b_use('FacadeComponent.Constant');
 my($_FM) = b_use('Biz.FormModel');
 my($_HTML) = b_use('Bivio.HTML');
 my($_Q) = b_use('AgentHTTP.Query');
@@ -775,6 +776,14 @@ sub is_production {
 	: $_CFG->{is_production};
 }
 
+sub is_site_admin {
+    my($self) = @_;
+    return $self->match_user_realms({
+	'RealmUser.realm_id' => $_FCC->get_value('site_realm_id', $self),
+	roles => $_ROLE->ADMINISTRATOR,
+    });
+}
+
 sub is_substitute_user {
     # Returns true if the user is a substituted user.
     return shift->unsafe_get('super_user_id') ? 1 : 0;
@@ -818,12 +827,20 @@ sub map_user_realms {
 			keys(%$filter)
 		        == grep({
 			    my($fv) = $filter->{$_};
-			    my($xv) = $x->{$_};
-			    ref($fv) eq 'ARRAY'
-				? grep($xv eq $_, @$fv) : $xv eq $fv;
+			    grep({
+				my($xv) = $_;
+				ref($fv) eq 'ARRAY' ? grep($xv eq $_, @$fv)
+				    : $xv eq $fv;
+			    } ref($x->{$_}) eq 'ARRAY' ? @{$x->{$_}} : $x->{$_})
+				? 1 : 0;
 			} keys(%$filter));
 		} values(%{$self->get('user_realms')}))))];
     return [map($op->($_), @$atomic_copy)];
+}
+
+sub match_user_realms {
+    my($self) = shift;
+    return @{$self->map_user_realms(sub {1}, @_)} ? 1 : 0;
 }
 
 sub new {
@@ -935,6 +952,7 @@ sub set_realm {
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
     my($new_roles) = _get_roles($self, $realm_id);
+    $self->delete_all_by_regexp(qr{^auth_realm\.});
     $self->put_durable(
 	auth_realm => $new_realm,
 	auth_id => $realm_id,
@@ -982,6 +1000,7 @@ sub set_user {
     }
     b_die($user, ': not a RealmOwner')
         if defined($user) && !$user->isa('Bivio::Biz::Model');
+    $self->delete_all_by_regexp(qr{^auth_user\.});
     $self->put_durable(
 	auth_user => $user,
 	auth_user_id => $user ? $user->get('realm_id') : undef,
