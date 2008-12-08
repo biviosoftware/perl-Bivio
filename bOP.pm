@@ -26,11 +26,20 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.15  2008/12/02 22:56:58  dobbs
+  * Bivio::Biz::Model::ForumUserAddForm
+    use Bivio::Base
+  * Bivio::Biz::Model::GroupUserList
+    fix realmname before looking up
+  * Bivio::Delegate::TaskId
+    canceling from FORUM_BLOG_CREATE lands on FORUM_BLOG_LIST (was
+    throwing a server error)
+
   Revision 7.14  2008/12/02 04:15:43  dobbs
   * Bivio::Biz::Model::CRMThread
     replies to existing threads are now bound to the existing thread even
