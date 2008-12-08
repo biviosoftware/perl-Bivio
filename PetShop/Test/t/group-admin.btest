@@ -5,4 +5,10 @@ home_page();
 login_as('root');
 visit_uri('/fourem/users');
 follow_link_in_table('first', 'first', 'root', 'privileges', 'admin');
-
+verify_text('for Root User');
+verify_form({
+    level => 'Admin',
+    editor => 1,
+    subscribed => 1,
+});
+#TODO: Expand test with new forum.  Need "add user" via HUI
