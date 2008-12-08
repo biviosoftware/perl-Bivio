@@ -148,8 +148,9 @@ __PACKAGE__->new({
 	[my_site_redirect_map => [
 	    [qw(GENERAL ADMINISTRATOR ADM_SUBSTITUTE_USER)],
 	    [qw(guest ADMINISTRATOR USER_PASSWORD)],
-	    [qw(USER ADMINISTRATOR USER_ACCOUNT_EDIT)],
+ 	    [qw(USER ADMINISTRATOR USER_ACCOUNT_EDIT)],
 	]],
+	[threepartpage_want_ForumDropDown => 1],
     ],
     Text => [
 	[bunit_simple => 'simple text'],
