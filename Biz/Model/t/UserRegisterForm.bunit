@@ -1,12 +1,15 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-FormModel();
-req()->initialize_fully('USER_CREATE');
+FormModel({
+    # Need to do this, because exists in PetShop/Model, too
+    class_name => class('Model.UserRegisterForm'),
+});
 my($new) = email(random_string());
 my($exists) = ShellUtil_SQL()->DEMO_EMAIL();
 [
+    req_state({task => 'USER_CREATE'}),
     [{
-        'Email.email' => $new
+        'Email.email' => $new,
     }] => [{
 	'Model.Email' => {
 	    email => $new,
