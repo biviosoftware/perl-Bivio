@@ -11,26 +11,30 @@ sub internal_xhtml_adorned {
     my($self) = shift;
     my(@res) = $self->SUPER::internal_xhtml_adorned(@_);
     view_unsafe_put(
-	xhtml_dock_left => If(
-	    ['auth_realm', 'type', '->eq_forum'],
-	    TaskMenu([
-		'FORUM_FILE',
-		'FORUM_MAIL_THREAD_ROOT_LIST',
-		'FORUM_CALENDAR',
-		'FORUM_CRM_THREAD_ROOT_LIST',
-		'SITE_ADMIN_USER_LIST',
-		'FORUM_WIKI_VIEW',
-	    ]),
-	    Link(
-		vs_text('title.FORUM_WIKI_VIEW'),
-		[['->req'], '->format_uri', {
-		    task_id => 'FORUM_WIKI_VIEW',
-		    query => undef,
-		    path_info => undef,
-		    realm => 'fourem',
-		}],
-	    ),
-	),
+	xhtml_dock_left => TaskMenu([
+	    'SITE_WIKI_VIEW',
+	    'FORUM_CALENDAR',
+	    'FORUM_FILE',
+	    'FORUM_MAIL_THREAD_ROOT_LIST',
+	    'FORUM_CRM_THREAD_ROOT_LIST',
+	    'GROUP_USER_LIST',
+	    'FORUM_WIKI_VIEW',
+	    If(['->is_site_admin'],
+	       DropDown(
+		   String('Admin'),
+		   DIV_dd_menu(TaskMenu([
+		       map(+{
+			   task_id => $_,
+			   realm => vs_constant('site_admin_realm_name'),
+		       }, qw(
+			   SITE_ADMIN_USER_LIST
+			   SITE_ADMIN_SUBSTITUTE_USER
+			   SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
+		       )),
+		   ]), {id => 'admin_drop_down'}),
+	       ),
+	   ),
+	]),
     );
     return @res;
 }
