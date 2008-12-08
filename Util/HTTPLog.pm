@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::HTTPLog;
 use strict;
@@ -360,6 +360,26 @@ sub _report {
     $fields->{res} .= Bivio::IO::Alert->format_args(@args);
     return;
 }
+
+# use Bivio::Test::Request;
+# my($req) = Bivio::Test::Request->initialize_fully;
+# my($e) = Bivio::Biz::Model->new($req, 'Email');
+# my($unknown) = {};
+# while (<>) {
+#     s{^[^:]+:www.\w+.com }{};
+#     s{\bli-(\d+)\b}{_email($1)}e || next;
+#     print;
+# }
+
+# sub _email {
+#     my($id) = @_;
+#     return $e->get('email')
+#         if $e->unauth_load({realm_id => $id});
+#     print(STDERR "$id: unknown\n")
+#         unless $unknown->{$id}++;
+#     return $id;
+# }
+
 
 =head1 COPYRIGHT
 
