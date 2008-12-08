@@ -1,14 +1,50 @@
-# Copyright (c) 2008 Arastra, Inc.  All Rights Reserved.
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-test_setup('PetShop');
+test_setup('PetShop', 'groupware');
 home_page();
-visit_uri('/pub/eg1');
 follow_link('register');
 submit_form({
+    name => 'My Name',
     email => generate_local_email('demo'),
 });
 verify_text('already in the database');
 verify_form({
     email => generate_local_email('demo'),
 });
-#TODO: regular workflow
+go_back();
+my($r) = random_string();
+submit_form({
+    name => "$r User",
+    email => my $u = generate_local_email($r),
+});
+follow_link_in_mail($u);
+submit_form({
+    '^new' => default_password(),
+    enter => default_password(),
+});
+verify_no_text('forum');
+login_as('root');
+follow_link('applicants');
+follow_link_in_table('name', 'email', $u, 'privileges', 'requested');
+submit_form({
+    level => 'user',
+});
+follow_link('^users');
+follow_link_in_table('name', 'email', $u, 'privileges', 'user');
+my($form) = get_uri();
+submit_form({
+    level => 'staff',
+});
+login_as($u);
+follow_link('site-contact');
+verify_link('tickets');
+verify_no_link('applicants');
+login_as('root');
+visit_uri($form);
+submit_form({
+    level => 'admin',
+});
+login_as($u);
+follow_link('site-contact');
+verify_link('tickets');
+verify_link('applicants');
