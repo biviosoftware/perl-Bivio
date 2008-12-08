@@ -6,6 +6,11 @@ use Bivio::Base 'Bivio.Delegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub get_application_specific_list {
+    my($self) = @_;
+    return grep($_->as_int > 19, $self->get_non_zero_list);
+}
+
 sub get_delegate_info {
     return [
         UNKNOWN => 0,
