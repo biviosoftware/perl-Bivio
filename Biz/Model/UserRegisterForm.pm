@@ -3,7 +3,6 @@
 package Bivio::Biz::Model::UserRegisterForm;
 use strict;
 use Bivio::Base 'Model.UserCreateForm';
-use Bivio::Biz::Random;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_BR) = __PACKAGE__->use('Biz.Random');
@@ -11,6 +10,11 @@ my($_UPQ) = __PACKAGE__->use('Action.UserPasswordQuery');
 my($_A) = __PACKAGE__->use('Action.Acknowledgement');
 my($_UPQF) = __PACKAGE__->use('Model.UserPasswordQueryForm');
 my($_UNKNOWN) = __PACKAGE__->use('Bivio.TypeError')->UNKNOWN;
+my($_C) = b_use('FacadeComponent.Constant');
+my($_R) = b_use('Auth.Role');
+b_use('IO.Config')->register(my $_CFG = {
+    unapproved_applicant => 0,
+});
 
 sub execute_ok {
     my($self, ) = @_;
@@ -23,11 +27,22 @@ sub execute_ok {
 	uri => $_UPQ->format_uri($req),
     );
     $self->put_on_request(1);
+    $self->new_other('RealmUser')->create({
+	realm_id => $_C->get_value('site_realm_id', $req),
+	user_id => $self->get('User.user_id'),
+	role => $_R->UNAPPROVED_APPLICANT,
+    }) if $_CFG->{unapproved_applicant};
     return {
 	method => 'server_redirect',
 	task_id => 'next',
 	query => undef,
     };
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub internal_create_models {
