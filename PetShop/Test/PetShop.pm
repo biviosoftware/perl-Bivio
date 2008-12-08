@@ -81,10 +81,13 @@ sub create_forum {
 
 sub do_logout {
     my($self) = @_;
-    return $self->follow_link('Sign-out')
-	if $self->text_exists('Sign-out');
-    return $self->follow_link('Logout')
-	if $self->text_exists(qr{>Logout<}i);
+    if ($self->text_exists('Sign-out')) {
+	$self->follow_link('Sign-out');
+    }
+    elsif ($self->text_exists(qr{>Logout<}i)) {
+	$self->follow_link('Logout');
+    }
+    $self->groupware_check;
     return;
 }
 
@@ -98,16 +101,41 @@ sub fixup_files_uri {
     return;
 }
 
+sub groupware_check {
+    my($self) = @_;
+    $self->home_page
+	if $self->unsafe_get('groupware_mode');
+    return;
+}
+
+sub handle_setup {
+    my($self, $mode) = @_;
+    shift->SUPER::handle_setup(@_);
+    $self->put(groupware_mode => ($mode || '') eq 'groupware');
+    return;
+}
+
+sub home_page {
+    my($self) = shift;
+    return $self->SUPER::home_page(@_)
+	unless $self->unsafe_get('groupware_mode');
+    $self->SUPER::home_page(@_)
+	unless $self->unsafe_get_uri;
+    $self->visit_uri('/bp');
+    return;
+}
+
 sub login_as {
     my($self, $user, $password) = @_;
     # Logs in as I<user> and I<password>.
     $self->do_logout();
-    $self->follow_link('Sign-in');
+    $self->follow_link($self->text_exists('Sign-in') ? 'Sign-in' : 'login');
     $self->submit_form(submit => {
         'Email:' => $user,
 	'Password:' => defined($password) ? $password : $_SQL->PASSWORD,
     });
-    $self->verify_text('Sign-out');
+    $self->verify_link(qr{Sign-out|logout}i);
+    $self->groupware_check;
     return;
 }
 
