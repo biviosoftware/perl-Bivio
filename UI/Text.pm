@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Text;
 use strict;
@@ -168,6 +168,17 @@ sub get_value {
 	ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef);
     my($v) = $self->unsafe_get_value(@tag_part);
     return defined($v) ? $v : $self->get_error(\@tag_part)->{value};
+}
+
+sub get_value_for_auth_realm {
+    my($self, @tag_part) = @_;
+    my($req) = pop(@tag_part);
+    my($r) = $req->get('auth_realm');
+    if ($r->has_owner) {
+	(my $n = $r->get('owner_name')) =~ s/\W/_/g;
+	unshift(@tag_part, 'realm_' . $n);
+    }
+    return $self->get_value(@tag_part, $req);
 }
 
 sub get_widget_value {
