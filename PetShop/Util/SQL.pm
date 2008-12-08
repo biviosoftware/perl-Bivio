@@ -13,6 +13,7 @@ my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_R) = __PACKAGE__->use('Auth.Role');
 my($_AR) = __PACKAGE__->use('Auth.Realm');
 my($_S) = __PACKAGE__->use('Type.String');
+my($_F) = b_use('IO.File');
 
 sub BTEST_ADMIN {
     return 'btest_admin';
@@ -164,6 +165,7 @@ sub initialize_test_data {
     _init_default_tuple($self);
     _init_mail($self);
     _init_crm($self);
+    _init_realm_user_util($self);
     return;
 }
 
@@ -611,6 +613,10 @@ EOF
 	$self->FOUREM,
     ) {
 	$req->set_realm($realm);
+	$_F->do_in_dir($realm => sub {
+	    $self->new_other('RealmFile')->import_tree('/');
+	    return;
+	}) if -d $realm;
 	foreach my $mode (qw(public private)) {
 	    my($p) = $mode eq 'public' ? 1 : 0;
 	    foreach my $fv (
@@ -683,6 +689,20 @@ sub _init_mail {
     my($self) = @_;
     _top_level_forum(
 	$self, $self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    return;
+}
+
+sub _init_realm_user_util {
+    my($self) = @_;
+    foreach my $x (1..3) {
+	$self->model('Club')->create_realm(
+	    {},
+	    {
+		name => "realm_user_util$x",
+		display_name => "Realm User Util $x",
+	    },
+	);
+    }
     return;
 }
 
