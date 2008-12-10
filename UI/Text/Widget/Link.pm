@@ -2,94 +2,39 @@
 # $Id$
 package Bivio::UI::Text::Widget::Link;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::Die;
-
-# C<Bivio::UI::Text::Widget::Link> implements a text http: link.
-#
-#
-#
-# value : any (required)
-#
-# Value to use for the uri.  If I<value> is a valid enum name or is an actual
-# TaskId instance, I<value> will be treated as a task.  Otherwise, I<value> will
-# be treated as a literal uri.  If value is in all capital letters, then it is
-# treated as a task id, and a widget value for format_stateless_uri() will be
-# used.
-#
-# If I<value> is an array_ref, it will be dereferenced and passed to
-# C<$source-E<gt>get_widget_value> to get the uri to use.
+use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IDI) = __PACKAGE__->instance_data_index;
+my($_W) = b_use('UI.Widget');
+my($_TI) = b_use('Agent.TaskId');
+
+sub NEW_ARGS {
+    return [qw(value)];
+}
 
 sub initialize {
-    # (self) : undef
-    # Partially initializes by copying attributes to fields.
-    # It is fully initialized after first render.
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{value};
-
-    $fields->{value} = _initialize_value($self);
-    return $self->SUPER::initialize();
-}
-
-sub internal_new_args {
-    # (proto, proto, any) : hash_ref
-    # Implements positional argument parsing for L<new|"new">.
-    my(undef, $value, $attributes) = @_;
-    return '"value" must be defined' unless defined($value);
-    return {
-	value => $value,
-	($attributes ? %$attributes : ()),
-    };
-}
-
-sub new {
-    # (proto, any, hash_ref) : Widget.Link
-    # (proto, hash_ref) : Widget.Link
-    # Creates a C<Link> widget with attributes I<value>.
-    # And optionally, set extra I<attributes>.
-    #
-    #
-    # If I<attributes> supplied, creates with attribute (name, value) pairs.
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
+    $self->put(value => _initialize_value($self));
+    return shift->SUPER::initialize(@_);
 }
 
 sub render {
-    # (self, any, string_ref) : undef
-    # Render the absolute URI.
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
-    my($v) = $self->render_value('value', $fields->{value}, $source);
-    # Insert http: prefix, if not already there.
-    $$buffer .= $source->get_request->format_http_prefix
-	unless $$v =~ /^\w+:/;
-    $$buffer .= $$v;
+    my($v) = $self->render_attr('value', $source);
+    $$buffer .= $self->req->format_http({
+	uri => $$v,
+	carry_query => 0,
+	carry_path_info => 0,
+    });
     return;
 }
 
 sub _initialize_value {
-    # (self) : any
-    # Returns the value as initialized.
-    # 
-    # TODO: Share this code with HTML::Link
     my($self) = @_;
-    my($value) = $self->initialize_attr('value');
-    if (ref($value)) {
-	return $value if ref($value) eq 'ARRAY';
-	$self->die('value', undef, 'unknown type for value: ', $value)
-		unless ref($value) eq 'Bivio::Agent::TaskId';
-	return [['->get_request'], '->format_stateless_uri',
-	    Bivio::Agent::TaskId->$value()];
-    }
-    return [['->get_request'], '->format_stateless_uri',
-	Bivio::Agent::TaskId->$value()]
-	    if Bivio::Agent::TaskId->is_valid_name($value);
-    return $value;
+    my($v) = $self->initialize_attr('value');
+    return [['->req'], '->format_stateless_uri', $_TI->from_any($v)]
+	if $_TI->is_blessed($v) || $_TI->is_valid_name($v);
+    return $v;
 }
 
 1;
