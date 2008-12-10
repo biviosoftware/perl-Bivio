@@ -220,6 +220,8 @@ sub as_string {
 
 sub call_main {
     my($proto, $view_name, $req) = @_;
+    b_die('req: missing argument')
+	unless $req;
     # Return the result of calling execute on the widget rendered by view_main
     my($result);
     my($self) = _get_instance($proto, $view_name, $req);
