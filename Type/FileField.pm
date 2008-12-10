@@ -56,6 +56,14 @@ sub get_width {
     return $_T->get_width;
 }
 
+#TODO: Make an object with hashlooks working in deprecated mode
+# sub new {
+#     my($self) = shift->SUPER::new(@_);
+#     $self->[$_IDI] = {
+#     };
+#     return $self;
+# }
+
 sub to_literal {
     my(undef, $value) = @_;
     return ref($value) eq 'HASH' && defined($value->{filename})

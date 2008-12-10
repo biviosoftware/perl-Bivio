@@ -180,6 +180,7 @@ sub build {
 	    my($specout, $base, $fullname) = _create_rpm_spec(
 		$self, $specin, $output, $pwd);
 	    my($rpm_command) = "rpmbuild -b$rpm_stage $specout";
+#TODO: build srcrpm, too
 	    if ($self->get('noexecute')) {
 		_would_run("cd $tmp; $rpm_command", $output);
 		next;
@@ -357,6 +358,7 @@ sub install {
 	push(@$command, _create_uri($package));
     }
 
+#TODO: download srcrpm and build/install
     _umask('install_umask');
     return _do_in_tmp($self, 0, sub {
 	my($tmp, $output) = @_;

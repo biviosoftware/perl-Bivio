@@ -3,6 +3,8 @@
 package Bivio::Biz::Model::RealmUserAddForm;
 use strict;
 use Bivio::Base 'Model.UserRegisterForm';
+#TODO: Problably should not subclass UserRegisterForm, but should call
+#      UserCreateForm to create the user
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

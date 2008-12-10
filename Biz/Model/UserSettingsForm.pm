@@ -3,11 +3,14 @@
 package Bivio::Biz::Model::UserSettingsForm;
 use strict;
 use Bivio::Base 'Model.UserPasswordForm';
+#TODO: List subscriptions to all groups to which user belongs
+#      and can have subscriptions modified.  This may be tricky to find.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PASSWORD_FIELDS) = [qw(old_password new_password confirm_new_password)];
 my($_NAME_FIELDS) = [map("User.${_}_name", qw(first middle last))];
 
+#TODO: remove this.  It should be Type.PageSize->get_default
 sub DEFAULT_USER_PAGE_SIZE {
     return 15;
 }
