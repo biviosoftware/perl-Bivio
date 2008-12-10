@@ -285,10 +285,10 @@ sub initialize_by_facade {
 
 sub internal_set_parent {
     my($self, $parent_name) = @_;
-    # Sets the parent.
     # COUPLING: We catch recursion, because it maintains the list
-    # of all views.  "parent" is a special word used by Collection::Attributes.
-    # We define both to keep consistency in the "view_*" attribute space.
+    # of all views.  "parent" is understood by Collection.Attributes for
+    # ancestral_get.   We define both to keep consistency in the "view_*"
+    # attribute space.
     my($parent) = _get_instance($self, $parent_name);
     $self->put(view_parent => $parent, parent => $parent);
     return;
