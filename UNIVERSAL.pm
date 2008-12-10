@@ -308,6 +308,8 @@ sub name_parameters {
         $named = {%$named};
     }
     else {
+#TODO: Use ?syntax for optional params
+#TODO: Consider combining with SheelUtil->name_arguments
 	Bivio::Die->die($argv, ': too many params passed to ', (caller(1))[3])
 	    unless @$argv <= @$names;
 	my(@x) = @$names;
