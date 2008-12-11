@@ -7,15 +7,18 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_D) = __PACKAGE__->use('Type.Date');
-my($_F) = __PACKAGE__->use('IO.File');
-my($_FN) = __PACKAGE__->use('Type.ForumName');
+my($_C) = b_use('SQL.Connection');
+my($_D) = b_use('Type.Date');
+my($_F) = b_use('IO.File');
+my($_FN) = b_use('Type.ForumName');
+my($_SF) = b_use('ShellUtil.SiteForum');
+my($_UIF) = b_use('UI.Facade');
 my($_AWSTATS) = '/usr/local/awstats/wwwroot/cgi-bin/awstats.pl';
 my($_BUILD_PAGES) = '/usr/local/awstats/tools/awstats_buildstaticpages.pl';
 my($_LOG_MERGER) = '/usr/local/awstats/tools/logresolvemerge.pl';
 my($_ICON_DIR) = '/usr/local/awstats/wwwroot/icon/';
-my($_V3) = __PACKAGE__->use('IO.Config')->if_version(3);
-Bivio::IO::Config->register(my $_CFG = {
+my($_V3) = b_use('IO.Config')->if_version(3);
+b_use('IO.Config')->register(my $_CFG = {
     log_base => '/var/log',
 });
 
@@ -80,7 +83,7 @@ sub init_report_forum {
 	   'RealmOwner.name' => $name,
 	});
         $_F->do_in_dir($_ICON_DIR, sub {
-            $self->new_other('Bivio::Util::RealmFile')->import_tree('icon');
+            $self->new_other('RealmFile')->import_tree('icon');
 	});
 	return;
     });
@@ -89,10 +92,9 @@ sub init_report_forum {
 
 sub _create_report {
     my($self, $date, $file_command) = @_;
-    my($root) = $self->use('Bivio::UI::Facade')->get_default
-        ->get('local_file_prefix');
+    my($root) = $_UIF->get_default->get('local_file_prefix');
     $file_command =~ s/<uri>/$root/
-	|| Bivio::Die->die('invalid file command: ', $file_command);
+	|| b_die('invalid file command: ', $file_command);
     my($static_config) = $self->internal_data_section;
     my($data_dir) = $_F->mkdir_p($self->use('IO.Log')
 	->file_name('HTTPStats/data', $self->req));
@@ -120,7 +122,7 @@ EOF
 	    `$_BUILD_PAGES -config=$domain --configdir=. -lang=en -dir . -diricons="icon" -month=$month -year=$year`;
 	    unlink($conf_file);
 	    _organize_files($self, $domain, $date);
-	    $self->new_other('Bivio::Util::RealmFile')->import_tree('/');
+	    $self->new_other('RealmFile')->import_tree('/');
 	});
 	$_F->rm_rf($tmp_dir);
     }
@@ -135,8 +137,7 @@ sub _get_domains_from_most_recent_log {
 	    ($facade->get('http_host') => {
 		map(($_ => $facade->get($_)), qw(uri is_default)),
 	    });
-	} (map(Bivio::UI::Facade->get_instance($_),
-	    @{$self->use('Bivio::UI::Facade')->get_all_classes}))),
+	} (map($_UIF->get_instance($_), @{$_UIF->get_all_classes}))),
     };
 
     # forum search order:
@@ -145,25 +146,24 @@ sub _get_domains_from_most_recent_log {
     #  site-reports (for default facade only)
     my($domains) = [];
     my($prev_log) = _previous_days_log($self);
-
-    foreach my $domain (`gunzip -c @{[$_CFG->{log_base}]}/@{[$root]}/$prev_log | grep -o -P '^(\\S+)' | sort | uniq`) {
+    foreach my $domain (`gunzip -c @{[$_CFG->{log_base}]}/@{[$root]}/$prev_log | grep -o -P '^(\\S+)' | sort -u`) {
 	chomp($domain);
-	next unless $domain =~ /\./;
+	next
+	    unless $domain =~ /\./;
 	my($facade) = $facade_info->{$domain};
-
-	foreach my $name ($_FN->join($domain, 'reports'),
-	    $facade
-	        ? ($_FN->join($facade->{uri}, qw(site reports)),
-		    $facade->{is_default}
-		        ? $_FN->join(qw(site reports))
-			: ())
-	        : ()) {
-	    next unless _is_forum($self, $name);
+	foreach my $name ($_SF->REPORTS_REALM,
+	    $facade ? (
+		$_FN->join($facade->{uri}, $_SF->REPORTS_REALM),
+		$facade->{is_default} ? $_SF->REPORTS_REALM : (),
+	    ) : (),
+	) {
+	    next
+		unless _is_forum($self, $name);
 	    push(@$domains, [$domain, $name]);
 	    last;
 	}
     }
-    Bivio::IO::Alert->warn('no forums found for domains')
+    b_warn('no forums found for domains')
 	unless @$domains;
     return $domains;
 }
@@ -187,18 +187,17 @@ sub _organize_files {
 
     foreach my $file (<*.html>) {
 	$file =~ /^awstats\.\Q$domain\E(\.)?(.*)\.html$/
-	    || Bivio::Die->die('unexpected file name: ', $file);
+	    || b_die('unexpected file name: ', $file);
 	my($name) = $2;
-	my($buf) = Bivio::IO::File->read($file);
+	my($buf) = $_F->read($file);
 
 	if ($name) {
 	    $$buf =~ s,(icon/),../../$1,g;
-	    Bivio::IO::File->write('detail/' . $d . '/' . $name . '.html',
-		$buf);
+	    $_F->write('detail/' . $d . '/' . $name . '.html', $buf);
 	}
 	else {
 	    $$buf =~ s,awstats\.\Q$domain\E\.(\w+)\.html,detail/$d/$1.html,g;
-	    Bivio::IO::File->write($d . '.html', $buf);
+	    $_F->write($d . '.html', $buf);
 	}
 	unlink($file);
     }
@@ -207,7 +206,7 @@ sub _organize_files {
 
 sub _parse_args {
     my($self, $date) = @_;
-    $self->usage_error('requires Bivio::IO::Config version 3 or greater')
+    $self->usage_error('requires BConf version 3 or greater')
 	unless $_V3;
     $self->initialize_fully;
     return ($self, $date
@@ -224,7 +223,7 @@ sub _previous_days_log {
 sub _user_email {
     my($self) = @_;
     my($res) = '';
-    $self->use('Bivio::SQL::Connection')->do_execute(sub {
+    $_C->do_execute(sub {
         my($row) = @_;
 	$res .= join("\t", @$row) . "\n";
     }, <<'EOF', [$self->use('Type.Location')->get_default->as_sql_param]);
