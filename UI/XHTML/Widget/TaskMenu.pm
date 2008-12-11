@@ -18,6 +18,7 @@ my($_PARAMS) = [
 my($_W) = b_use('UI.Widget');
 my($_T) = b_use('XHTMLWidget.Tag');
 my($_L) = b_use('XHTMLWidget.Link');
+my($_A) = b_use('IO.Alert');
 
 sub NEW_ARGS {
     return [qw(task_map ?class)];
@@ -65,6 +66,9 @@ sub initialize {
 		    } : $_],
 	    );
 	    if ($cfg->{task_id}) {
+#TODO: xlink is lower case and task_id is upper case
+		$_A->warn_deprecated('positional task_id must be uppercase')
+		    if !ref($cfg->{task_id}) && $cfg->{task_id} =~ /[a-z]/;
 		$cfg->{task_id}
 		    = Bivio::Agent::TaskId->from_any($cfg->{task_id});
 		$cfg->{label} ||= $cfg->{task_id}->get_name;
