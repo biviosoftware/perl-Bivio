@@ -782,7 +782,6 @@ sub _get_heading {
 	} : (),
     ) if $sort_fields && @$sort_fields;
     $heading->put(
-	column_nowrap => 1,
 	column_align => $cell->get_or_default(
 	    'heading_align',
 	    $self->get_or_default('heading_align', 'S'),
