@@ -26,11 +26,61 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.16  2008/12/08 05:41:04  nagler
+  * Bivio::Agent::Request
+    added is_site_admin and match_user_realms
+    attributes that begin with 'auth_realm.' and 'auth_user.' are deleted
+    when set_realm and set_user are called, respectively.  This allows
+    easy caching bound to auth_realm and auth_user state.
+  * Bivio::Biz::Model::GroupUserForm
+    SELECT_ROLES => internal_select_roles; roles conditional on auth_realm_is_site
+    ShellUtil.RealmUser->audit_user is called on execute ok
+  * Bivio::Biz::Model::GroupUserList
+    use FacadeComponent.Text->get_value_for_auth_realm
+  * Bivio::Biz::Model::RoleSelectList
+    use FacadeComponent.Text->get_value_for_auth_realm
+  * Bivio::Biz::Model::UserCreateForm
+    default want_bulletin to true
+  * Bivio::Biz::Model::UserRegisterForm
+    Added config parameter unapproved_applicant to allow for
+    unapproved_applicant workflow
+  * Bivio::Delegate::Role
+    added get_application_specific_list
+  * Bivio::Delegate::TaskId
+    SITE_ADMIN_USER_LIST uses SiteAdminUserList
+    Fixed UNAPPROVED_APPLICANT workflow
+  * Bivio::IO::Zip
+    iterate_members() passes contents as string ref now
+  * Bivio::PetShop::BConf
+    added config for ShellUtil.RealmUser tests
+  * Bivio::PetShop::Facade::PetShop
+    show ForumDropDown
+    support for unapproved_applicant workflow
+  * Bivio::PetShop::Test::PetShop
+    added groupware mode support, which eases testing for the bOP
+    groupware code
+  * Bivio::PetShop::Util::SQL
+    added support for ShellUtil.RealmUser testign
+  * Bivio::PetShop::View::Base
+    made menu more flexible; added dropdown for admin tasks
+  * Bivio::ShellUtil
+    usage_error should always end with an "\n"
+  * Bivio::Test::Language::HTTP
+    added follow_link_in_mail
+    select options are now patterns
+  * Bivio::UI::FacadeBase
+    name the atom feeds .atom
+    FORUM_CALENDAR_EVENT_LIST_RSS is now called .atom too (.rss still supported)
+    added auth_realm_is_site
+    added support for UNAPPROVED_APPLICANT
+  * Bivio::UI::View::SiteAdmin
+    unapproved_applicant_form; fix bug in user_list
+
   Revision 7.15  2008/12/02 22:56:58  dobbs
   * Bivio::Biz::Model::ForumUserAddForm
     use Bivio::Base
