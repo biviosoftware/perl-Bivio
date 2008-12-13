@@ -18,6 +18,9 @@ sub MAIL_RECEIVE_PREFIX {
     return '_mail_receive_';
 }
 
+#TODO: use ForumName->join to create these.  Also, names should not
+#      be used publicly.  They are only for init.  Always use vs_constant
+#      to get the names.
 sub SITE_CONTACT_REALM_NAME {
     return 'site-contact';
 }
@@ -27,13 +30,27 @@ sub SITE_REALM_NAME {
 }
 
 sub SITE_ADMIN_REALM_NAME {
-    return shift->SITE_REALM_NAME;
+    return 'site-admin';
+}
+
+sub SITE_REPORTS {
+    return 'site-reports';
 }
 
 sub auth_realm_is_site {
     my($self, $req) = @_;
     my($r) = $req->get('auth_realm');
     return $r->has_owner && $self->is_site_realm_name($r->get('owner_name'));
+}
+
+sub auth_realm_is_site_admin {
+    my($self, $req) = @_;
+    my($r) = $req->get('auth_realm');
+    return $r->has_owner
+	&& $_RN->is_equal(
+	    $r->get('owner_name'),
+	    $self->get('Constant')->get_value('site_admin_realm_name'),
+	);
 }
 
 sub internal_dav_tasks {
@@ -187,7 +204,7 @@ sub _cfg_base {
 	    }],
 	    [my_site_redirect_map => []],
 	    [ThreePartPage_want_UserState => 1],
-	    [threepartpage_want_ForumDropDown => 0],
+	    [ThreePartPage_want_ForumDropDown => 0],
 	],
  	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
@@ -593,13 +610,13 @@ sub _cfg_group_admin {
 	    [GROUP_USER_FORM => '?/edit-user'],
 	],
 	Text => [
-	    [realm_site => [
+	    [realm_owner_site_admin => [
 		 [qw(GroupUserList.privileges_name RoleSelectList.display_name)] => [
 		    UNKNOWN => 'No Access',
-		    GUEST => 'Contractor',
-		    MEMBER => 'Staff',
+		    GUEST => 'Site Contractor',
+		    MEMBER => 'Site Staff',
 		    FILE_WRITER => 'Site Editor',
-		    ACCOUNTANT => 'Manager',
+		    ACCOUNTANT => 'Site Manager',
 		    ADMINISTRATOR => 'Site Admin',
 		],
 	    ]],
@@ -843,11 +860,34 @@ sub _cfg_site_admin {
 		display_name => 'Name',
 		privileges => 'Privileges',
 	    ]],
+	    [UnapprovedApplicantForm => [
+		mail_subject => [
+		    UNAPPROVED_APPLICANT => '',
+		    default => 'Registration Confirmed',
+		],
+		mail_body => [
+		    default => <<'EOF',
+You have been granted access to our site.  If you have any questions,
+you may contact support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
+EOF
+		],
+		'RealmUser.role' => 'Access Level',
+		file_writer => 'Write access to files (Editor)',
+		mail_recipient => 'Receive mail sent to group (Subscribed)',
+	    ]],
+
 	    [title => [
 		SITE_ADMIN_USER_LIST => 'All Users',
 		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
+	    ]],
+	    [prose => [
+		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
+		SiteAdminDropDown_label => 'Admin',
 	    ]],
 	],
     };
