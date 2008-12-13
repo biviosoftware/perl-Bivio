@@ -26,6 +26,21 @@ sub unapproved_applicant_form {
     ]));
 }
 
+sub unapproved_applicant_form_mail {
+    return shift->internal_put_base_attr(
+	from => Mailbox(
+	    vs_text('support_email'),
+	    vs_text('support_name'),
+	),
+	to => Mailbox(
+	    ['Model.UnapprovedApplicantList', 'Email.email'],
+	    ['Model.UnapprovedApplicantList', 'RealmOwner.display_name'],
+	),
+	subject => Prose(['Model.UnapprovedApplicantForm', 'mail_subject']),
+	body => Prose(['Model.UnapprovedApplicantForm', 'mail_body']),
+    );
+}
+
 sub unapproved_applicant_list {
     my($self, $extra_columns) = @_;
     vs_user_email_list(
