@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Util::TestUser;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -14,14 +14,19 @@ sub USAGE {
     return <<'EOF';
 usage: b-test-user [options] command [args..]
 commands
+  create user_or_email [password] -- creates the test user
   init -- test users (adm, etc.)
   leave_and_delete -- remove user from all realms and delete
 EOF
 }
 
+sub create {
+    return shift->new_other('SQL')->create_test_user(@_);
+}
+
 sub init {
     my($self) = @_;
-    $self->initialize_ui->with_realm(undef, sub {
+    $self->initialize_fully->with_realm(undef, sub {
 	$self->req->with_user($self->ADM => sub {
 	    $self->new_other('SiteForum')->make_admin;
 	});
@@ -32,13 +37,12 @@ sub init {
 
 sub init_adm {
     my($self) = @_;
-    return $self->initialize_ui->with_realm(undef, sub {
+    return $self->initialize_fully->with_realm(undef, sub {
         if ($self->model('RealmOwner')->unauth_load({name => $self->ADM})) {
 	    $self->req->set_user($self->ADM);
 	}
 	else {
-	    $self->req->set_user(
-		$self->new_other('SQL')->create_test_user($self->ADM));
+	    $self->req->set_user($self->create($self->ADM));
 	    $self->new_other('RealmRole')->make_super_user;
 	}
 	return;
