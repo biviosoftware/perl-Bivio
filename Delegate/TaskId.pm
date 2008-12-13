@@ -862,6 +862,7 @@ sub info_site_admin {
 	    164
 	    ANY_GROUP
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN
+	    Model.Lock
 	    Model.UnapprovedApplicantForm
 	    View.SiteAdmin->unapproved_applicant_form
 	    next=SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
