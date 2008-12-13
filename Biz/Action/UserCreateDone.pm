@@ -8,7 +8,13 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_V) = b_use('UI.View');
 
 sub internal_views {
-    return [qw(UserAuth->create_mail UserAuth->create_done)];
+    my(undef, $req) = @_;
+    return [
+        $req->get('Model.UserRegisterForm')
+	    ->unsafe_get('unapproved_applicant_mode')
+	    ? 'UserAuth->unapproved_applicant_mail' : (),
+	qw(UserAuth->create_mail UserAuth->create_done),
+    ];
 }
 
 sub execute {
