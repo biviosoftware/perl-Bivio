@@ -45,6 +45,7 @@ my($_BUNDLE) = [qw(
     !forum_features_tuple_motion
     !group_concat
     role_unused_11
+    site_admin_forum
 )];
 my($_AGGREGATES) = [qw(
     group_concat(text)
@@ -523,7 +524,7 @@ sub internal_upgrade_db_bundle {
     foreach my $type (@$_BUNDLE) {
 	my($sentinel) = \&{"_sentinel_$type"};
 	next
-	    if defined(&$sentinel) ? $sentinel->($self)
+	    if defined(&$sentinel) ? $sentinel->($self, $type)
 	    : ($tables->{"${type}_t"} || _default_sentinel($self, $type));
 	$self->print("Running: $type\n");
 	my($m) = "internal_upgrade_db_$type";
@@ -1443,6 +1444,41 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_site_admin_forum {
+    my($self) = @_;
+    my($f) = $self->req('Bivio::UI::Facade')->get_default;
+    $self->req->with_realm($f->SITE_REALM_NAME, sub {
+	$self->set_user_to_any_online_admin;
+	my($users) = {
+	    @{$self->model('SiteAdminUserList')->map_iterate(
+		sub {(shift->get('User.user_id') => [$_R->USER])},
+	    )},
+	    @{$self->model('GroupUserList')->map_iterate(
+		sub {return shift->get(qw(RealmUser.user_id roles))},
+	    )},
+	};
+	$self->new_other('RealmRole')->edit_categories('-feature_site_admin');
+        $self->model('ForumForm', {
+	   'RealmOwner.display_name' => 'User Admin',
+	   'RealmOwner.name' => $f->SITE_ADMIN_REALM_NAME,
+	   'Forum.want_reply_to' => 0,
+	   'public_forum_email' => 1,
+	});
+	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
+	b_info("Adding users to site-admin\n");
+	while (my($uid, $roles) = each(%$users)) {
+	    foreach my $role (@$roles) {
+		$self->model('RealmUser')->create_or_update({
+		    role => $role,
+		    user_id => $uid,
+		});
+	    }
+	}
+	return;
+    });
+    return;
+}
+
 sub internal_upgrade_db_site_forum {
     my($self) = @_;
     my($req) = $self->req;
@@ -2137,14 +2173,21 @@ sub _sentinel_permissions51 {
     return _default_sentinel($self, 'permissions51');
 }
 
-sub _sentinel_site_forum {
+sub _sentinel_site_admin_forum {
     my($self) = @_;
-    # Don't add it unless HELP_WIKI_REALM_NAME exists
+    return !b_use('Model.UserRegisterForm')->unapproved_applicant_mode_config
+	|| _sentinel_site_forum(@_);
+}
+
+sub _sentinel_site_forum {
+    my($self, $type) = @_;
     my($f) = $self->req('Bivio::UI::Facade')->get_default;
     return 1
 	unless $f->can('HELP_WIKI_REALM_NAME')
 	&& $f->HELP_WIKI_REALM_NAME eq 'site-help';
-    return $self->model('RealmOwner')->unauth_load({name => 'site'});
+    (my $forum = $type) =~ s/_forum$//;
+    $forum =~ s/_/-/g;
+    return $self->model('RealmOwner')->unauth_load({name => $forum});
 }
 
 sub _user_exists {
