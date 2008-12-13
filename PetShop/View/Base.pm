@@ -19,21 +19,7 @@ sub internal_xhtml_adorned {
 	    'FORUM_CRM_THREAD_ROOT_LIST',
 	    'GROUP_USER_LIST',
 	    'FORUM_WIKI_VIEW',
-	    If(['->is_site_admin'],
-	       DropDown(
-		   String('Admin'),
-		   DIV_dd_menu(TaskMenu([
-		       map(+{
-			   task_id => $_,
-			   realm => vs_constant('site_admin_realm_name'),
-		       }, qw(
-			   SITE_ADMIN_USER_LIST
-			   SITE_ADMIN_SUBSTITUTE_USER
-			   SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
-		       )),
-		   ]), {id => 'admin_drop_down'}),
-	       ),
-	   ),
+	    SiteAdminDropDown(),
 	]),
     );
     return @res;
