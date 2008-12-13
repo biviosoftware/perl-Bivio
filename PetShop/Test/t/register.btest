@@ -24,12 +24,15 @@ submit_form({
 });
 verify_no_text('forum');
 login_as('root');
+home_page();
 follow_link('applicants');
 follow_link_in_table('name', 'email', $u, 'privileges', 'requested');
 submit_form({
     level => 'user',
 });
+verify_local_mail($u, qr{confirmed}i);
 follow_link('^users');
+find_page_with_text(qr{\Q$u});
 follow_link_in_table('name', 'email', $u, 'privileges', 'user');
 my($form) = get_uri();
 submit_form({
