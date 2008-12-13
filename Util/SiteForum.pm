@@ -8,6 +8,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = __PACKAGE__->use('UI.Text');
 my($_F) = __PACKAGE__->use('UI.Facade');
 
+sub ADMIN_REALM {
+    return Bivio::UI::Facade->get_default->SITE_ADMIN_REALM_NAME;
+}
+
 sub CONTACT_REALM {
     return Bivio::UI::Facade->get_default->SITE_CONTACT_REALM_NAME;
 }
@@ -20,8 +24,13 @@ sub DEFAULT_MAKE_ADMIN_REALMS {
     return [shift->SITE_REALM];
 }
 
+sub REPORTS_REALM {
+    return Bivio::UI::Facade->get_default->SITE_REPORTS;
+}
+
 sub SITE_REALM {
-    return Bivio::UI::Facade->get_default->SITE_REALM_NAME;
+#TODO: Need to get this naming straight.  SITE_REALM_NAME should only 
+    return 'site';
 }
 
 sub USAGE {
@@ -42,7 +51,6 @@ sub init {
 	    'RealmOwner.name' => $self->SITE_REALM,
 	    'RealmOwner.display_name' => 'Web Site',
 	});
-	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
 	return;
     });
     $req->with_realm($self->SITE_REALM, sub {
@@ -64,18 +72,21 @@ sub init {
 	});
 	return;
     });
+    $self->req->with_realm($self->SITE_REALM, sub {
+        $self->model('ForumForm', {
+	   'RealmOwner.display_name' => 'User Admin',
+	   'RealmOwner.name' => $self->ADMIN_REALM,
+	   'Forum.want_reply_to' => 0,
+	   'public_forum_email' => 1,
+	});
+	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
+	return;
+    });
     $self->model('EmailAlias')->create({
 	incoming => $req->format_email(
 	    Bivio::UI::Text->get_value('support_email'), $req),
 	outgoing => $self->CONTACT_REALM,
     });
-    $req->with_realm(
-	$_F->get_from_request_or_self($req)->SITE_ADMIN_REALM_NAME,
-	sub {
-	    $self->new_other('RealmRole')->edit_categories('+feature_site_admin');
-	    return;
-	},
-    );
     return;
 }
 
@@ -126,6 +137,7 @@ sub realm_names {
 	$self->SITE_REALM,
 	$self->CONTACT_REALM,
 	$self->HELP_REALM,
+	$self->ADMIN_REALM,
     ];
 }
 
