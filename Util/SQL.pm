@@ -1485,7 +1485,6 @@ sub internal_upgrade_db_site_admin_forum_users {
 		});
 	    }
 	}
-	$self->new_other('Account')->audit_all_realms;
 	b_info('Account->audit_all_users');
 	return;
     });
@@ -2187,8 +2186,13 @@ sub _sentinel_permissions51 {
 }
 
 sub _sentinel_site_admin_forum {
-    my($self) = @_;
-    return _sentinel_site_forum(@_);
+    my($self, $type) = @_;
+    my($f) = $self->req('Bivio::UI::Facade')->get_default;
+    return 1
+	unless $self->model('RealmOwner')->unauth_load({name => 'site'});
+    (my $forum = $type) =~ s/_forum$//;
+    $forum =~ s/_/-/g;
+    return $self->model('RealmOwner')->unauth_load({name => $forum});
 }
 
 sub _sentinel_site_admin_forum_users {
