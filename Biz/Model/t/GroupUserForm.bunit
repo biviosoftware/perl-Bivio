@@ -9,7 +9,13 @@ FormModel();
 	query => {this => realm_id('root')},
     }),
     empty_case({
-	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+	'RealmUser.role' => sub {
+	    assert_contains([
+		map(+{'RealmUser.role' => Auth_Role($_)},
+		    qw(UNKNOWN GUEST MEMBER ADMINISTRATOR)),
+	    ], req('Model.RoleSelectList')->map_rows);
+	    return Auth_Role('ADMINISTRATOR');
+	},
 	file_writer => 1,
 	mail_recipient => 1,
     }),
