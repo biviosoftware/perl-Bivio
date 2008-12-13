@@ -30,7 +30,7 @@ sub unapproved_applicant_form_mail {
     return shift->internal_put_base_attr(
 	from => Mailbox(
 	    vs_text('support_email'),
-	    vs_text('support_name'),
+	    vs_text_as_prose('support_name'),
 	),
 	to => Mailbox(
 	    ['Model.UnapprovedApplicantList', 'Email.email'],
