@@ -46,6 +46,7 @@ my($_BUNDLE) = [qw(
     !group_concat
     role_unused_11
     site_admin_forum
+    site_admin_forum_users
 )];
 my($_AGGREGATES) = [qw(
     group_concat(text)
@@ -1449,14 +1450,6 @@ sub internal_upgrade_db_site_admin_forum {
     my($f) = $self->req('Bivio::UI::Facade')->get_default;
     $self->req->with_realm($f->SITE_REALM_NAME, sub {
 	$self->set_user_to_any_online_admin;
-	my($users) = {
-	    @{$self->model('SiteAdminUserList')->map_iterate(
-		sub {(shift->get('User.user_id') => [$_R->USER])},
-	    )},
-	    @{$self->model('GroupUserList')->map_iterate(
-		sub {return shift->get(qw(RealmUser.user_id roles))},
-	    )},
-	};
 	$self->new_other('RealmRole')->edit_categories('-feature_site_admin');
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => 'User Admin',
@@ -1465,7 +1458,25 @@ sub internal_upgrade_db_site_admin_forum {
 	   'public_forum_email' => 1,
 	});
 	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
-	b_info("Adding users to site-admin\n");
+	return;
+    });
+    return;
+}
+
+sub internal_upgrade_db_site_admin_forum_users {
+    my($self) = @_;
+    my($f) = $self->req('Bivio::UI::Facade')->get_default;
+    $self->req->with_realm($f->SITE_REALM_NAME, sub {
+	b_info("Adding users to site-admin");
+	my($users) = {
+	    @{$self->model('SiteAdminUserList')->map_iterate(
+		sub {(shift->get('User.user_id') => [$_R->USER])},
+	    )},
+	    @{$self->model('GroupUserList')->map_iterate(
+		sub {return shift->get(qw(RealmUser.user_id roles))},
+	    )},
+	};
+	$self->req->set_realm($f->SITE_ADMIN_REALM_NAME);
 	while (my($uid, $roles) = each(%$users)) {
 	    foreach my $role (@$roles) {
 		$self->model('RealmUser')->create_or_update({
@@ -1474,6 +1485,8 @@ sub internal_upgrade_db_site_admin_forum {
 		});
 	    }
 	}
+	$self->new_other('Account')->audit_all_realms;
+	b_info('Account->audit_all_users');
 	return;
     });
     return;
@@ -2175,8 +2188,12 @@ sub _sentinel_permissions51 {
 
 sub _sentinel_site_admin_forum {
     my($self) = @_;
-    return !b_use('Model.UserRegisterForm')->unapproved_applicant_mode_config
-	|| _sentinel_site_forum(@_);
+    return _sentinel_site_forum(@_);
+}
+
+sub _sentinel_site_admin_forum_users {
+    return b_use('Model.UserRegisterForm')->unapproved_applicant_mode_config
+	? 0 : 1;
 }
 
 sub _sentinel_site_forum {
