@@ -19,7 +19,7 @@ sub merge_overrides {
     my($proto) = @_;
     return Bivio::IO::Config->merge_list({
 	'Bivio::Biz::Model::UserRegisterForm' => {
-	    unapproved_applicant => 1,
+	    unapproved_applicant_mode => 1,
 	},
 	'Bivio::Ext::DBI' => {
 	    database => 'pet',
@@ -70,15 +70,15 @@ sub merge_overrides {
 	},
 	'Bivio::Util::RealmUser' => {
 	    audit_map => [
-		site => [
+		'site-admin' => [
 		    USER => [
 		    ],
 		    MEMBER => [
-			[[qw(site-help site-contact)] => [qw(MEMBER MAIL_RECIPIENT FILE_WRITER)]],
+			[[qw(site site-help site-contact)] => [qw(MEMBER MAIL_RECIPIENT FILE_WRITER)]],
 		    ],
 		    ADMINISTRATOR => [
 			'+MEMBER',
-			[[qw(site-help site-contact)] => [qw(ADMINISTRATOR)]],
+			[[qw(site site-help site-contact)] => [qw(ADMINISTRATOR)]],
 		    ],
 		],
 		realm_user_util1 => [
