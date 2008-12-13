@@ -167,18 +167,8 @@ sub get_value {
     my($self) = $proto->internal_get_self(
 	ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef);
     my($v) = $self->unsafe_get_value(@tag_part);
-    return defined($v) ? $v : $self->get_error(\@tag_part)->{value};
-}
-
-sub get_value_for_auth_realm {
-    my($self, @tag_part) = @_;
-    my($req) = pop(@tag_part);
-    my($r) = $req->get('auth_realm');
-    if ($r->has_owner) {
-	(my $n = $r->get('owner_name')) =~ s/\W/_/g;
-	unshift(@tag_part, 'realm_' . $n);
-    }
-    return $self->get_value(@tag_part, $req);
+    return defined($v) ? $v
+	: $self->get_error($self->join_tag(@tag_part))->{value};
 }
 
 sub get_widget_value {
@@ -231,7 +221,11 @@ sub internal_initialize_value {
 
 sub join_tag {
     my($proto, @tag) = @_;
-    # Returns I<tag_part>s combined as a whole.
+    my($r) = Bivio::Agent::Request->get_current;
+    if ($r and $r = $r->unsafe_get('auth_realm') and $r->has_owner) {
+	(my $n = $r->get('owner_name')) =~ s/\W/_/g;
+	unshift(@tag, 'realm_owner_' . $n);
+    }
     return int(@tag) == 1 && $tag[0] =~ /^[a-z0-9_.]+$/ ? $tag[0]
 	: join($proto->SEPARATOR, map((length($_) ? lc($_) : ()), @tag));
 }
