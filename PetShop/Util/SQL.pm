@@ -97,6 +97,10 @@ sub TUPLE_USER {
     return 'tuple_user';
 }
 
+sub SITE_ADM {
+    return 'site_adm';
+}
+
 sub USAGE {
     return shift->SUPER::USAGE . <<'EOF';
     demo_users -- lists demo user names
@@ -165,7 +169,8 @@ sub initialize_test_data {
     _init_default_tuple($self);
     _init_mail($self);
     _init_crm($self);
-    _init_realm_user_util($self);
+    _init_site_admin($self);
+    $self->new_other('RealmUser')->audit_all_users;
     return;
 }
 
@@ -692,7 +697,7 @@ sub _init_mail {
     return;
 }
 
-sub _init_realm_user_util {
+sub _init_site_admin {
     my($self) = @_;
     foreach my $x (1..3) {
 	$self->model('Club')->create_realm(
@@ -703,6 +708,14 @@ sub _init_realm_user_util {
 	    },
 	);
     }
+    my($uid) = $self->create_test_user($self->SITE_ADM);
+    $self->req->with_realm(b_use('ShellUtil.SiteForum')->ADMIN_REALM, sub {
+        $self->model(RealmUserAddForm => {
+	    administrator => 0,
+	    'User.user_id' => $uid,
+	});
+	return;
+    });
     return;
 }
 
