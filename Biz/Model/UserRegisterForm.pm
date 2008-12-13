@@ -13,7 +13,7 @@ my($_UNKNOWN) = __PACKAGE__->use('Bivio.TypeError')->UNKNOWN;
 my($_C) = b_use('FacadeComponent.Constant');
 my($_R) = b_use('Auth.Role');
 b_use('IO.Config')->register(my $_CFG = {
-    unapproved_applicant => 0,
+    unapproved_applicant_mode => 0,
 });
 
 sub execute_ok {
@@ -27,11 +27,15 @@ sub execute_ok {
 	uri => $_UPQ->format_uri($req),
     );
     $self->put_on_request(1);
-    $self->new_other('RealmUser')->create({
-	realm_id => $_C->get_value('site_realm_id', $req),
-	user_id => $self->get('User.user_id'),
-	role => $_R->UNAPPROVED_APPLICANT,
-    }) if $_CFG->{unapproved_applicant};
+    $self->req->with_realm(
+	$_C->get_value('site_admin_realm_name', $req),
+	sub {
+	    $self->new_other('GroupUserForm')->create_unapproved_applicant(
+		$self->get('User.user_id'),
+	    );
+	    return;
+	},
+    ) if $self->unsafe_get('unapproved_applicant_mode');
     return {
 	method => 'server_redirect',
 	task_id => 'next',
@@ -82,8 +86,9 @@ sub internal_initialize {
 	    },
 	    $self->field_decl([
 		[qw(uri String)],
-		[qw(password_ok Boolean)],
-	    ]),
+		'password_ok',
+		'unapproved_applicant_mode',
+	    ], 'Boolean'),
 	],
     });
 }
@@ -99,6 +104,17 @@ sub internal_post_execute {
 	task_id => 'user_exists_task',
 	query => $q,
     };
+}
+
+sub internal_pre_execute {
+    my($self) = @_;
+    $self->internal_put_field(
+	unapproved_applicant_mode => $_CFG->{unapproved_applicant_mode});
+    return shift->SUPER::internal_pre_execute(@_);
+}
+
+sub unapproved_applicant_mode_config {
+    return $_CFG->{unapproved_applicant_mode};
 }
 
 sub validate {
