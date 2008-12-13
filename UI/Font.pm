@@ -226,6 +226,9 @@ sub _initialize {
     my($self, $value, $default) = @_;
     return if $value->{html};
     my(@c) = @{$value->{config}};
+#TODO: This should be lower down so that the each name is separate, i.e
+#      [[qw(foo bar)] => []]
+#      shares color for foo and bar unless foo and bar each have a color
     if (int(@{$value->{names}}) == 1 && !grep(/^color=/, @c)) {
 	my($name) = $value->{names}->[0];
 	if ($self->get_facade->get('Color')->exists($name)) {
