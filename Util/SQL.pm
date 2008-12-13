@@ -2197,7 +2197,7 @@ sub _sentinel_site_admin_forum {
 
 sub _sentinel_site_admin_forum_users {
     return b_use('Model.UserRegisterForm')->unapproved_applicant_mode_config
-	? 0 : 1;
+	? _default_sentinel(@_) : 1;
 }
 
 sub _sentinel_site_forum {
