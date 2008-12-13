@@ -967,6 +967,16 @@ sub _assert_html {
 	$self->get_response->content_type, ': response not html');
 }
 
+sub _assert_no_prose {
+    my($content) = @_;
+    if ($$content !~ /\w+::\w+/ && $$content =~ /\b((\w+)\([^\)]*\)\;)/s) {
+	my($cmd, $func) = ($1, $2);
+	b_die($cmd, ': Prose found in response')
+	    if $func =~ /_/;
+    }
+    return $content;
+}
+
 sub _create_form_post {
     my($uri, $form, $header) = @_;
     return grep(ref($_), @$form)
@@ -1125,7 +1135,7 @@ sub _grep_msgs {
 	    my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
 	    if ($m) {
 		$matched_emails->{$m}++;
-		return [$file, $msg]
+		return [$file, _assert_no_prose($msg)]
 		    if $$msg =~ $msg_re;
 	    }
 	    last;
@@ -1141,13 +1151,20 @@ sub _html_get {
     return _assert_html($self)->get($what)->$m($key);
 }
 
+sub _html_parser {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    return Bivio::Test::HTMLParser->new(
+	_assert_no_prose($fields->{response}->content_ref));
+}
+
 sub _key_from_hash {
     my($hash, $key) = @_;
     if (ref($key)) {
 	my(@match) = sort(grep($_ =~ $key, keys(%$hash)));
 	return $match[0]
 	    if @match == 1;
-	Bivio::Die->die($key, ': name matches too many ', \@match)
+	b_die($key, ': name matches too many ', \@match)
 	    if @match > 1;
     }
     else {
@@ -1245,8 +1262,7 @@ sub _send_request {
 	$request = HTTP::Request->new(GET => $prev_uri = $self->absolute_uri($uri));
     }
     $fields->{cookies}->extract_cookies($fields->{response});
-    $fields->{html_parser} =
-	Bivio::Test::HTMLParser->new($fields->{response}->content_ref)
+    $fields->{html_parser} = _html_parser($self)
         if $fields->{response}->content_type eq 'text/html';
     $fields->{redirect_count} = $redirect_count;
     Bivio::Die->die(
