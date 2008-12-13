@@ -516,10 +516,10 @@ td.amount_cell {
   text-align: right;
   white-space: nowrap;
 }
-.dd_link {
+div.dd_link {
   Font('user_state');
 }
-.dd_menu {
+div.dd_menu {
   display: inline;
   position: absolute;
   visibility: hidden;
@@ -529,13 +529,14 @@ td.amount_cell {
   width: 15em;
   z-index: 1000;
 }
-.dock .dd_menu a,
-.dock .dd_menu .want_sep a {
+div.dd_menu a,
+div.dd_menu a.want_sep {
+  background: none;
   margin-left: 0;
   padding: 0 .2em;
   border-left: 0;
 }
-.dd_menu a {
+div.dd_menu a {
   display: block;
   padding: 0 .2em;
   Font('dd_menu');
@@ -544,7 +545,7 @@ td.amount_cell {
   text-align: left;
   font-weight: normal;
 }
-.dd_menu a:hover {
+div.dd_menu a:hover {
   Color('dd_menu_selected-background');
   Color('dd_menu_selected');
   text-decoration: none;
