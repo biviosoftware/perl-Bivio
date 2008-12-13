@@ -22,25 +22,6 @@ foreach my $r ($_R->get_non_zero_list) {
     push(@$_ROLES_ORDER, $r)
 	unless grep($r == $_, @$_ROLES_ORDER);
 }
-my($_ROLES_MAIN) = [map($_R->unsafe_from_name($_) ? $_R->$_() : (), qw(
-    ADMINISTRATOR
-    ACCOUNTANT
-    MEMBER
-    GUEST
-    WITHDRAWN
-))];
-
-sub ROLES_AUXILIARY {
-    my($proto) = @_;
-    return [grep({
-	my($x) = $_;
-	!grep($x == $_, @{$proto->ROLES_MAIN});
-    } @$proto->{ROLES_ORDER})];
-}
-
-sub ROLES_MAIN {
-    return [@{$_ROLES_MAIN}];
-}
 
 sub ROLES_ORDER {
     return [@{$_ROLES_ORDER}];
@@ -91,11 +72,22 @@ sub internal_post_load_row {
     return 1;
 }
 
+sub internal_prepare_statement {
+    my($self) = shift;
+    my($stmt) = @_;
+    $self->internal_qualify_role($stmt);
+    return $self->SUPER::internal_prepare_statement(@_);
+}
+
+sub internal_qualify_role {
+    return;
+}
+
 sub roles_by_category {
     my($self, $roles) = @_;
     $roles = {map(($_ => 1), @{$roles || $self->get('roles')})};
     my($main) = [];
-    foreach my $m (@{$self->ROLES_MAIN}) {
+    foreach my $m ($_R->get_main_list) {
 	push(@$main, $m)
 	    if delete($roles->{$m});
     }
