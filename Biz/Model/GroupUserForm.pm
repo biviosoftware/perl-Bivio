@@ -14,6 +14,29 @@ sub USER_LIST_CLASS {
     return 'GroupUserList';
 }
 
+sub change_main_role {
+    my($self, $user_id, $role) = @_;
+    my($ru) = $self->new_other('RealmUser');
+    $ru->delete_all({user_id => $user_id});
+    $ru->create({
+	realm_id => $self->req('auth_id'),
+	user_id => $user_id,
+	role => $role,
+    }) unless $role->eq_unknown;
+    _audit_user($self, $user_id);
+    return;
+}
+
+sub create_unapproved_applicant {
+    my($self, $user_id) = @_;
+    return $self->change_main_role($user_id, $_R->UNAPPROVED_APPLICANT);
+}
+
+sub delete_all_roles {
+    my($self, $user_id) = @_;
+    return $self->change_main_role($user_id, $_R->UNKNOWN);
+}
+
 sub execute_empty {
     my($self) = @_;
 #TODO: Create version for site-user forum
@@ -29,16 +52,16 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    my($ru) = $self->new_other('RealmUser');
     my($ul) = $self->req('Model.' . $self->USER_LIST_CLASS);
-    my($uid) = $ul->get('RealmUser.user_id');
+    my($uid) = $self->get('RealmUser.user_id');
     my($rid) = $self->req('auth_id');
     my($main_old) = $ul->roles_by_category;
     my($main) = $self->get('RealmUser.role');
+    my($ru) = $self->new_other('RealmUser');
     unless ($main_old eq $main) {
 # This only deletes this realm
 	$ru->delete_all({user_id => $uid});
-	return
+	return _audit_user($self, $uid)
 	    if $main->eq_unknown;
 # depending on the realm we'd deefinitely need to delete ForumUserDeleteForm
 	$ru->create({
@@ -69,10 +92,12 @@ sub execute_ok {
 	    role => $main->from_any($f),
 	});
     }
-    $self->req->with_user($uid, sub {
-        b_use('ShellUtil.RealmUser')->new->audit_user;
-    });
+    _audit_user($self, $uid);
     return;
+}
+
+sub internal_aux_fields {
+    return [@$_AUX];
 }
 
 sub internal_initialize {
@@ -90,23 +115,52 @@ sub internal_initialize {
 		'Boolean',
 	    ),
 	],
+	other => [
+	    'RealmUser.user_id',
+	],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
-    $_FM->setup_by_list_this(
-	$self->new_other($self->USER_LIST_CLASS), 'RealmOwner');
+    my($lm) = $self->new_other($self->USER_LIST_CLASS);
+    $_FM->setup_by_list_this($lm, 'RealmOwner');
+    $self->internal_put_field(
+	'RealmUser.user_id' => $lm->get('RealmUser.user_id'));
+    # SECURITY: Limit privilege escalation to the level auth_user has
+    my($roles) = $self->internal_select_roles;
+    my($auth_role) = $self->req('auth_role');
+    pop(@$roles)
+	until !@$roles || $auth_role->equals_by_name($roles->[$#$roles]);
     $self->new_other('RoleSelectList')
-	->load_from_array($self->internal_select_roles);
+	->load_from_array($roles);
     return shift->SUPER::internal_pre_execute(@_);
 }
 
 sub internal_select_roles {
     my($self) = @_;
-    return $_F->get_from_source($self)->auth_realm_is_site($self->req)
+    # From least to most privileged order
+    return $_F->get_from_source($self)->auth_realm_is_site_admin($self->req)
 	? [qw(USER MEMBER ADMINISTRATOR)]
 	: [qw(UNKNOWN GUEST MEMBER ADMINISTRATOR)];
+}
+
+sub validate {
+    my($self) = @_;
+    return
+	if $self->in_error;
+    return $self->internal_put_error('RealmUser.role' => 'NOT_FOUND')
+	unless $self->req('Model.RoleSelectList')
+	->find_row_by('RealmUser.role' => $self->get('RealmUser.role'));
+    return shift->SUPER::validate(@_);
+}
+
+sub _audit_user {
+    my($self, $uid) = @_;
+    $self->req->with_user($uid, sub {
+        b_use('ShellUtil.RealmUser')->new->audit_user;
+    });
+    return;
 }
 
 1;
