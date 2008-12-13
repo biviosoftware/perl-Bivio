@@ -362,29 +362,28 @@ sub merge_overrides {
 
 sub merge_realm_role_category_map {
     my($proto, $new) = @_;
-    # Calls $new and basic category map.
+#TODO: Needs to be generalized
+    my($guest_and_below)
+	= [qw(ANONYMOUS USER UNAPPROVED_APPLICANT WITHDRAWN GUEST)];
     return 'Bivio::Biz::Util::RealmRole' => {
 	category_map => sub {
 	    return [
 	    [
 		public_forum_email =>
-		    [[qw(ANONYMOUS USER WITHDRAWN GUEST)] => 'MAIL_SEND'],
-	    ],
-	    [
+		    [$guest_and_below => 'MAIL_SEND'],
+	    ], [
 		feature_crm =>
 		    ['*' => 'FEATURE_CRM'],
-		    [[qw(ANONYMOUS USER WITHDRAWN GUEST)] => 'MAIL_SEND'],
-	    ],
-	    [
+		    [$guest_and_below => 'MAIL_SEND'],
+	    ], [
 		feature_site_admin =>
 		    ['*' => 'FEATURE_SITE_ADMIN'],
-	    ],
-	    [
+		    [MEMBER => [qw(ADMIN_WRITE ADMIN_READ)]],
+	    ], [
 		system_user_forum_email =>
 		    [ANONYMOUS => '-MAIL_SEND'],
 		    [USER => 'MAIL_SEND'],
-	    ],
-	    [
+	    ], [
 		admin_only_forum_email =>
 		    [MEMBER => [qw(-MAIL_POST -MAIL_READ -MAIL_SEND -MAIL_WRITE)]],
 	    ],
