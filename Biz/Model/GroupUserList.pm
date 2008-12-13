@@ -26,7 +26,6 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	can_iterate => 0,
 	primary_key => [[qw(RealmUser.user_id User.user_id Email.realm_id RealmOwner.realm_id)]],
 	order_by => [
 	    @{$self->NAME_SORT_COLUMNS},
@@ -67,20 +66,17 @@ sub internal_post_load_row {
 sub internal_prepare_statement {
     my($self) = shift;
     my($stmt) = @_;
+#TODO: Move internal_prepare_statement out of AdmUserList into RoleBaseList(?)
+#      or just here.
     $self->delegate_method($_AUL, @_);
-    $self->internal_qualify_role($stmt);
     return $self->SUPER::internal_prepare_statement(@_);
-}
-
-sub internal_qualify_role {
-    return;
 }
 
 sub _privileges {
     my($self, $row) = @_;
     my($main, $aux) = $self->roles_by_category($row->{roles});
     $row->{privileges} = $_SA->new([map(
-	$_T->get_value_for_auth_realm(
+	$_T->get_value(
 	   'GroupUserList.privileges_name.' . $_->get_name,
 	    $self->req,
 	),
