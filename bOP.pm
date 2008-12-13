@@ -26,11 +26,100 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.17  2008/12/13 21:31:36  nagler
+  * Bivio::BConf
+    feature_* is the only permission in category map which should get '*'
+    as role.
+  * Bivio::Biz::Action::UserCreateDone
+    send unapproved_applicant_mail if unapproved_applicant_mode
+  * Bivio::Biz::Model::CRMThreadRootList
+    CRM status filter now includes New threads in the Open filter
+  * Bivio::Biz::Model::GroupUserForm
+    created methods to support external calling
+  * Bivio::Biz::Model::GroupUserList
+    moved internal_qualify_role to RoleBaseList
+    use realm_owner_* feature of FacadeComponent.Text
+    can_iterate is inherited
+  * Bivio::Biz::Model::RealmUserAddForm
+    todo
+  * Bivio::Biz::Model::RoleBaseList
+    UNCONFIRMED_EMAIL no longer a role
+    move internal_qualify_role from GroupUserList
+    remove export of "auxiliary" roles
+  * Bivio::Biz::Model::RoleSelectList
+    use realm_owner_* feature of FacadeComponent.Text
+  * Bivio::Biz::Model::UnapprovedApplicantForm
+    added internal_send_mail
+  * Bivio::Biz::Model::UserRegisterForm
+    added unapproved_applicant_mode support
+  * Bivio::Biz::Model::UserSettingsForm
+    todo
+  * Bivio::Delegate::Role
+    added get_main_list
+    fixed calls to not use $proto/$self, because doesn't work in delegation
+  * Bivio::Delegate::TaskId
+    added lock to unapproved_applicant_form
+  * Bivio::PetShop::BConf
+    unapproved_applicant_mode is on
+    use site-admin
+  * Bivio::PetShop::Test::PetShop
+    login_as follows register link if there
+  * Bivio::PetShop::Util::SQL
+    added site_adm and audit_all_users
+  * Bivio::PetShop::View::Base
+    added call to SiteAdminDropDown()
+  * Bivio::Test::Language::HTTP
+    follow_link_in_mail uses extract_uri_from_local_mail
+  * Bivio::Type::FileField
+    todo
+  * Bivio::UI::FacadeBase
+    added SITE_REPORTS
+    UnapprovedApplicantForm support
+  * Bivio::UI::Font
+    todo
+  * Bivio::UI::HTML::Widget::Table
+    removed header nowrap
+  * Bivio::UI::Text::Widget::Link
+    rmpod
+    supports widgets as values
+    modernized
+  * Bivio::UI::Text
+    replaced get_value_for_auth_realm with qualifier on get_value of
+    realm_owner_<owner_name>.
+  * Bivio::UI::View::CSS
+    qualified dock dd_menu better so would override dock defaults
+  * Bivio::UI::View::SiteAdmin
+    unapproved_applicant_form_mail
+  * Bivio::UI::View
+    doc
+    catching missing req argument, because error cascades
+  * Bivio::UI::XHTML::ViewShortcuts
+    use EmptyTag, not <br />
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    deprecate lowercase task_ids
+  * Bivio::UI::XHTML::Widget::WikiText::SWFObject
+    support FLV files in addition to SWF files
+  * Bivio::UNIVERSAL
+    todo
+  * Bivio::Util::HTTPStats
+    use site-reports from FacadeBase
+    modernize
+  * Bivio::Util::RealmUser
+    fixed lots of bugs
+  * Bivio::Util::Release
+    todo
+  * Bivio::Util::SQL
+    site_admin_forum upgrade
+  * Bivio::Util::SiteForum
+    added REPORTS_REALM and ADMIN_REALM
+  * Bivio::Util::TestUser
+    added create()
+
   Revision 7.16  2008/12/08 05:41:04  nagler
   * Bivio::Agent::Request
     added is_site_admin and match_user_realms
