@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::UserAuth;
 use strict;
@@ -167,6 +167,35 @@ sub settings_form {
 	'-password',
         _password_fields('UserSettingsForm'),
     ]));
+}
+
+sub unapproved_applicant_mail {
+    return shift->internal_put_base_attr(
+	from => Mailbox(
+	    ['Model.UserRegisterForm', 'Email.email'],
+	    ['Model.UserRegisterForm', 'RealmOwner.display_name'],
+	),
+	to => Mailbox(vs_constant('site_admin_realm_name')),
+	subject => Join([
+	    'Applicant: ',
+	    Mailbox(
+		['Model.UserRegisterForm', 'Email.email'],
+		['Model.UserRegisterForm', 'RealmOwner.display_name'],
+	    ),
+	]),
+	body => Prose(<<'EOF'),
+Registration request from:
+
+String(['Model.UserRegisterForm', 'RealmOwner.display_name']); String(['Model.UserRegisterForm', 'Email.email']);
+
+A list of pending applicants can be found here:
+
+Link(URI({
+    realm => vs_constant('site_admin_realm_name'),
+    task_id => 'SITE_ADMIN_UNAPPROVED_APPLICANT_LIST',
+}));
+EOF
+    );
 }
 
 sub _mail {
