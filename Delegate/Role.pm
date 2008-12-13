@@ -5,10 +5,10 @@ use strict;
 use Bivio::Base 'Bivio.Delegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R) = b_use('Auth.Role');
 
 sub get_application_specific_list {
-    my($self) = @_;
-    return grep($_->as_int > 19, $self->get_non_zero_list);
+    return grep($_->as_int > 19, $_R->get_non_zero_list);
 }
 
 sub get_delegate_info {
@@ -30,6 +30,16 @@ sub get_delegate_info {
 	UNUSED_11 => 11,
 #        LAST_RESERVED => 19,
     ];
+}
+
+sub get_main_list {
+     return map($_R->unsafe_from_name($_) ? $_R->$_() : (), qw(
+	ADMINISTRATOR
+	ACCOUNTANT
+	MEMBER
+	GUEST
+	WITHDRAWN
+    ));
 }
 
 sub is_admin {
