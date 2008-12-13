@@ -206,7 +206,7 @@ sub vs_descriptive_field {
 		 my($v) = $req->get_nested('Bivio::UI::Facade', 'Text')
 		     ->unsafe_get_value($name, 'desc');
 		 return $v ? Join([
-		     '<br />',
+		     EmptyTag('BR'),
 		     Tag(p => Prose($v), 'desc'),
 		 ]) :  '';
 	    }, $proto, $name],
