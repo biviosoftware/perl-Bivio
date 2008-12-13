@@ -266,7 +266,7 @@ sub follow_link {
 
 sub follow_link_in_mail {
     my($self) = shift;
-    $self->visit_uri($self->verify_local_mail(@_) =~ /(http:.+\?.+)/m);
+    $self->visit_uri($self->extract_uri_from_local_mail(@_));
     return;
 }
 
