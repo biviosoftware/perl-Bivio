@@ -41,50 +41,47 @@ sub audit_all_users {
 
 sub audit_user {
     my($self) = @_;
-    my($map, $realms, $uid) = _assert_audit($self);
+    my($map, $all_realms, $uid) = _assert_audit($self);
     return
 	unless $map;
     my($ru) = $self->model('RealmUser');
     my($res) = '';
     my($src_realm) = $self->req(qw(auth_realm owner_name));
-    foreach my $src_role (@{$self->req('auth_roles')}) {
-	next
-	    unless my $x = $map->{$src_role->get_name};
-	while (my($tgt_realm, $tgt_roles) = each(%$x)) {
-	    b_die($tgt_realm, ': target realm may not match controlling realm')
-		if $_RN->is_equal($tgt_realm, $src_realm);
-	    delete($realms->{$tgt_realm});
-	    my($tgt) = {
-		user_id => $uid,
-		realm_id => _realm_id($self, $tgt_realm),
-	    };
-	    my($curr_roles) = {@{$ru->map_iterate(
-		sub {(shift->get('role')->get_name => 1)},
-		'unauth_iterate_start',
-		'role',
-		$tgt,
-	    )}};
-	    my($op) = [];
-	    foreach my $tgt_role (@$tgt_roles) {
-		next
-		    if delete($curr_roles->{$tgt_role});
-		$ru->create({role => $_R->$tgt_role(), %$tgt});
-		push(@$op, "+$tgt_role");
-	    }
-	    foreach my $role (keys(%$curr_roles)) {
-		$ru->unauth_delete({role => $_R->$role(), %$tgt});
-		push(@$op, "-$role");
-	    }
-	    $res .= "$tgt_realm: @$op\n"
-		if @$op;
+    my($tgt_realms) = _tgt_realms($self, $map);
+    foreach my $tgt_realm (sort(keys(%$tgt_realms))) {
+	delete($all_realms->{$tgt_realm});
+	my($tgt) = {
+	    user_id => $uid,
+	    realm_id => _realm_id($self, $tgt_realm),
+	};
+	my($curr_roles) = {@{$ru->map_iterate(
+	    sub {(shift->get('role')->get_name => 1)},
+	    'unauth_iterate_start',
+	    'role',
+	    $tgt,
+	)}};
+	b_die($tgt_realm, ': target realm may not match controlling realm')
+	    if $_RN->is_equal($tgt_realm, $src_realm);
+	my($did) = [];
+	foreach my $tgt_role (sort(keys(%{$tgt_realms->{$tgt_realm}}))) {
+	    next
+		if delete($curr_roles->{$tgt_role});
+	    $ru->create({role => $_R->$tgt_role(), %$tgt});
+	    push(@$did, "+$tgt_role");
 	}
+	foreach my $role (sort(keys(%$curr_roles))) {
+	    $ru->unauth_delete({role => $_R->$role(), %$tgt});
+	    push(@$did, "-$role");
+	}
+	$res .= "$tgt_realm: @$did\n"
+	    if @$did;
     }
-    foreach my $realm (keys(%$realms)) {
-	my($op) = [];
+    foreach my $realm (sort(keys(%$all_realms))) {
+	my($did) = [];
 	$ru->do_iterate(
 	    sub {
 		my($it) = @_;
-		push(@$op, '-' . $it->get('role')->get_name);
+		push(@$did, '-' . $it->get('role')->get_name);
 		$it->delete;
 		return 1;
 	    },
@@ -95,8 +92,8 @@ sub audit_user {
 		realm_id => _realm_id($self, $realm),
 	    },
 	);
-	$res .= "$realm: @$op\n"
-	    if @$op;
+	$res .= "$realm: @$did\n"
+	    if @$did;
     }
     $self->req->set_user($uid);
     return $res;
@@ -132,7 +129,7 @@ sub _parse_map {
 	    my($src_realm, $cfg) = @_;
 	    b_die($src_realm, ': duplicate realm')
 		if $res->{$src_realm};
-	    $src_realm = b_use('Type.RealmName')
+	    $src_realm = b_use('Type.ForumName')
 		->from_literal_or_die($src_realm);
 	    my($map) = $res->{$src_realm} = {};
 	    $proto->map_by_two(
@@ -188,6 +185,22 @@ sub _realm_id {
         return $self->unauth_model('RealmOwner', {name => $name})
 	    ->get('realm_id');
     });
+}
+
+sub _tgt_realms {
+    my($self, $map) = @_;
+    my($res) = {};
+    foreach my $src_role (@{$self->req('auth_roles')}) {
+	next
+	    unless my $x = $map->{$src_role->get_name};
+	while (my($tgt_realm, $tgt_roles) = each(%$x)) {
+	    foreach my $r (@$tgt_roles) {
+		($res->{$tgt_realm} ||= {})->{$r} = 1;
+	    }
+
+	}
+    }
+    return $res;
 }
 
 1;
