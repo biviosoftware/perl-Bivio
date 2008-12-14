@@ -157,6 +157,7 @@ sub OPTIONS {
     # If the option begins with a unique first letter, the single
     # letter version is also supported.
     return {
+#TODO: Add option -query which sets the query on the request
 	db => ['Name', undef],
 	detach => ['Boolean', 0],
 	detach_log => ['Text', undef],
