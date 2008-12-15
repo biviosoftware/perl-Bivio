@@ -1158,7 +1158,7 @@ sub _html_parser {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return Bivio::Test::HTMLParser->new(
-	$self->assert_no_prose($fields->{response}->content_ref));
+	$self->internal_assert_no_prose($fields->{response}->content_ref));
 }
 
 sub _key_from_hash {
