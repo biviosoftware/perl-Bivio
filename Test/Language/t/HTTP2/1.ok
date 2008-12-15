@@ -1,0 +1,271 @@
+HTTP/1.1 200 OK
+Cache-Control: private
+Connection: close
+Date: Mon, 15 Dec 2008 22:01:06 GMT
+Via: 1.1 test.bivio.com
+Server: Apache/1.3.39
+Content-Length: 14297
+Content-Type: text/html
+Client-Date: Mon, 15 Dec 2008 22:01:06 GMT
+Client-Peer: 216.87.82.78:80
+Client-Response-Num: 1
+Title: Member Withdrawal - btf_club
+X-Cache: MISS from test.bivio.com
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head>
+<title>Member Withdrawal - btf_club</title>
+<style type="text/css">
+<!--
+address,blockquote,body,button,center,div,dl,input,ins,kbd,label,legend,menu,multicol,ol,p,pre,select,th,td,textarea,ul {
+ font-family : arial,sans-serif; font-size : x-small; }
+a:hover { color: #CC9900; }
+
+-->
+</style>
+<script type="text/javascript">
+<!--
+function dy_complete_date(s) {
+if (s.value.length == 0)
+return;
+c_year = new Date().getFullYear();
+slash_1 = s.value.indexOf('/');
+slash_2 = s.value.indexOf('/', slash_1 + 1);
+s_month = s.value.substring(0, slash_1);
+if (slash_2 == -1) {
+s_day = s.value.substring(slash_1 + 1, s.value.length);
+s_year = "";
+} else {
+s_day = s.value.substring(slash_1 + 1, slash_2);
+s_year = s.value.substring(slash_2 + 1, s.value.length);
+}
+var pattern = new RegExp("[0-9]?[0-9]/[0-9]?[0-9](/[0-9][0-9])?");
+if (!pattern.test(s.value)) {
+return;
+} else if (s_month.length > 2 || s_day.length > 2) {
+return;
+}
+if (slash_2 == -1) {
+s.value = s.value + '/' + c_year;
+} else if (s_year.length == 2) {
+diff = c_year - 1980;
+if (diff >= s_year) {
+s_year = '20' + s_year;
+} else {
+s_year = '19' + s_year;
+}
+s.value = s_month + '/' + s_day + '/' + s_year;
+}
+}
+function tzf(){
+if(navigator.appName.indexOf('Netscape')>=0
+&&parseFloat(navigator.appVersion)<4.0)
+return;
+var d=new Date();
+var o=d.getTimezoneOffset();
+document.write('<input name="tz" type="hidden" value="' + o + '" />');
+}
+
+// -->
+</script></head><body bgcolor="#FFFFFF" text="#000000" link="#006666" alink="#006666" vlink="#006666">
+<a name="top"></a><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+<td valign="bottom" align="left" rowspan="5" width="135"><a target="_top" href="/"><img border="0" src="/i/bivio.gif" width="135" height="56" /></a></td>
+<td width="100%" align="left" colspan="2" nowrap="1"><form action="/goto" method=GET target="_top"><img src="/i/dot.gif" border="0" height="1" width="62" /><font color="#000000"><select name="x" size=1 onchange="submit()" onblur="return options[0].selected=true"><option value="/btf_club/intro" selected>Select Site
+<option value="/my-site">My Site
+<option value="/btf_club/intro">btf_club
+<option value="/btf_taxes/intro">btf_taxes
+<option value="/btf_club/intro">----------------
+<option value="/club_cafe">Club Cafe
+<option value="/know_your_options">Know Your Options
+<option value="/portfolio_perspectives">Portfolio Perspectives
+<option value="/demo">My Demo Club
+</select></font><noscript><input type=submit value="Go"></noscript><font color="#FF6633"><b>&nbsp;Generic BTF Club&nbsp;</b></font></td></form></tr><tr>
+<td align="right" colspan="2" nowrap="1"><img src="/i/dot.gif" border="0" width="5" height="1" /></td>
+</tr><tr>
+<td bgcolor="#009999"><img border="0" src="/i/grad_g.gif" width="62" height="21" /></td>
+<td align="right" bgcolor="#009999"><a target="_top" href="/hp/member-transactions.html"><img alt="Get help using bivio" border="0" src="/i/help_off.gif" width="105" height="21" /></a><a target="_top" href="/pub/logout"><img alt="Sign off from bivio" border="0" src="/i/logout_off.gif" width="100" height="21" /></a></td>
+</tr><tr>
+<td colspan="2" bgcolor="#006666"><img border="0" height="1" src="/i/grad_1px.gif" /></td>
+</tr><tr>
+<td align="left" colspan="2" bgcolor="#FFCC33"><table border=0 cellpadding=0 cellspacing=0><tr>
+<td><img border="0" src="/i/grad_y.gif" width="62" height="21" /></td>
+<td><a target="_top" href="/btf_club/accounting/investments"><img alt="Accounts - Investments - Members - Reports - Taxes" border="0" src="/i/acct_on.gif" width="106" height="21" /></a></td>
+<td><a target="_top" href="/btf_club/admin/roster"><img alt="Info - Invites - Overview - Subscription - Roster - Tools" border="0" src="/i/admin_off.gif" width="130" height="21" /></a></td>
+<td><a target="_top" href="/btf_club/mail"><img alt="Files - Mail" border="0" src="/i/comm_off.gif" width="138" height="21" /></a></td>
+</tr>
+</table></td>
+</tr></table><table border=0 cellspacing=0 cellpadding=0><tr>
+<td><img src="/i/dot.gif" border="0" width="196" height="1" /></td>
+<td valign=top><table border=0 cellspacing=0 cellpadding=0><tr>
+<td valign=top><table border=0 cellspacing=0 cellpadding=0><tr>
+<td valign=top bgcolor="#FFCC33"><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+<td nowrap><table border=0 cellspacing=0 cellpadding=2><tr>
+<td><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+<td><a target="_top" href="/btf_club/accounting/accounts">Accounts</a></td>
+<td><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+<td><a target="_top" href="/btf_club/accounting/investments">Investments</a></td>
+<td><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+<td><a target="_top" href="/btf_club/accounting/members"><b>Members</b></a></td>
+<td><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+<td><a target="_top" href="/btf_club/accounting/reports">Reports</a></td>
+<td><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+<td><a target="_top" href="/btf_club/accounting/taxes">Taxes</a></td>
+<td><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+</tr></table></td>
+<td valign="top" bgcolor="#FFCC33"><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+</tr></table></td></tr>
+<tr><td bgcolor="#FFCC33"><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr></table></td></tr></table><table border=0 cellpadding=0 cellspacing=0 width="100%"><tr><td width="100%" valign=top><img src="/i/dot.gif" border="0" width="1" height="5" /><br>
+<table border="0" cellpadding="0" cellspacing="2" align="left">
+<tr>
+<td align="left"><img alt="notice" border="0" src="/i/error_triangle.gif" width="7" height="13" /></td>
+<td align="left">&nbsp;</td>
+<td align="left">realm-notices.btest 1309 - 1</td>
+</tr>
+<tr>
+<td align="left"><img alt="notice" border="0" src="/i/error_triangle.gif" width="7" height="13" /></td>
+<td align="left">&nbsp;</td>
+<td align="left">realm-notices.btest 1309 - 2</td>
+</tr>
+<tr>
+<td align="left"><img alt="notice" border="0" src="/i/error_triangle.gif" width="7" height="13" /></td>
+<td align="left">&nbsp;</td>
+<td align="left"><b>Missing Brokerage Information</b><br><a target="_top" href="https://test.bivio.com/btf_club/admin/account-sync/setup">Enter your AccountSync brokerage.</a></td>
+</tr>
+</table></td></tr><tr><td width="100%" valign=top>&nbsp;</td></tr><tr><td width="100%" valign=top><table border="0" cellpadding="0" cellspacing="0" width="600"><tr>
+<td><img src="/i/dot.gif" border="0" height="1" width="20" /></td>
+<td><font color="#006666"><b>Member Withdrawal</b></font><br><form method="post" target="_top" name="fn85" action="/btf_club/accounting/member/withdrawal">
+<script type="text/javascript">
+<!--
+tzf();
+// -->
+</script><input type="hidden" name="v" value="4" />
+<input type="hidden" name="c" value="aMTI_!cYnRmX2NsdWI_" />
+<input type="hidden" name="f13" value="" />
+<input type="hidden" name="f14" value="0" />
+<input type="hidden" name="f15" value="0" />
+<input type="hidden" name="f16" value="" />
+<input type="hidden" name="f17" value="" />
+
+<table border=0 cellpadding=0 cellspacing=0>
+<tr><td colspan=2>Use this form to record a member's withdrawal of cash or stock from the club.
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td align="right" width="1%" nowrap>Member: &nbsp;</td><td nowrap><select name="f5"  size="1">
+<option value="1813000001" />User, Foobert BTF
+</select><script type="text/javascript">
+<!--
+if(navigator.appName.indexOf('Netscape')<0
+|| parseFloat(navigator.appVersion) >= 5.0) {
+if (document.fn85 && document.fn85.f5) {
+document.fn85.f5.focus();
+if (document.fn85.f5.type == 'text')
+document.fn85.f5.select();
+}
+}
+
+// -->
+</script></td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2><font color="#006666"><b>Transaction Date.</b></font> The date the withdrawal is executed and funds are transferred to the member.
+</td></tr>
+<tr><td>&nbsp;</td></tr><tr><td align="right" width="1%" nowrap>Transaction Date: &nbsp;</td><td nowrap><input name="f3"  onBlur="dy_complete_date(this); document.fn85.f11.value=this.value; " type="text" size="12" maxlength="10" value="12/15/2008" /></td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2><font color="#006666"><b>Member Valuation Date.</b></font> The date on which the member's units in the club are valued. Use the
+<b>Refresh</b> button to recalculate the member's value on the date
+specified.
+</td></tr>
+<tr><td>&nbsp;</td></tr><tr><td align="right" width="1%" nowrap>Member Valuation Date: &nbsp;</td><td nowrap><input name="f1"  onBlur="dy_complete_date(this)" type="text" size="12" maxlength="10" value="" />&nbsp;&nbsp; Member Value:&nbsp; 0.00 &nbsp;<input type="submit" name="f10" value="Refresh" />&nbsp;&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2><font color="#006666"><b>Account.</b></font> The account used to fund the cash portion of the withdrawal.
+</td></tr>
+<tr><td>&nbsp;</td></tr><tr><td align="right" width="1%" nowrap>Account: &nbsp;</td><td nowrap><select name="f2" size="1">
+<option value="8019900007" />Bank, balance 0.00
+<option value="8019700007" selected="1" />Broker, balance 96,460.00
+<option value="8019800007" />Suspense, balance 0.00
+</select></td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2><font color="#006666"><b>Amount.</b></font> The total value of the withdrawal, including any fees assessed.
+</td></tr>
+<tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td nowrap><input name="f6" checked="1" type="radio" value="1">&nbsp;Full Withdrawal<br><input name="f6" type="radio" value="2">&nbsp;Partial Withdrawal: &nbsp;<input name="f0" type="text" size="10" maxlength="22" value="" /></td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2><font color="#006666"><b>Fee.</b></font> Any fee charged to the withdrawing member. You may enter a cash amount,
+or a percentage of the withdrawal value by including a '%' in the value.
+</td></tr>
+<tr><td>&nbsp;</td></tr><tr><td align="right" width="1%" nowrap>Fee: &nbsp;</td><td nowrap><input name="f8" type="text" size="15" maxlength="30" value="" /></td></tr>
+<tr><td>&nbsp;</td><td><small>Examples: 75.22, 3%</small></td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2><font color="#006666"><b>Type.</b></font> Withdrawals may be in cash, or a combination of cash and stock.
+</td></tr>
+<tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td nowrap><table border="0" cellpadding="0" cellspacing="0"><tr>
+<td><input name="f12" checked="1" type="radio" value="1">&nbsp;Cash</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td><input name="f12" type="radio" value="2">&nbsp;Stock</td>
+</tr></table></td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2><font color="#006666"><b>Transfer Valuation Date.</b></font> The transfer valuation date is used to determine the share price for
+the club's investments for a stock withdrawal. If you are creating
+a cash withdrawal, you can ignore this value.
+</td></tr>
+<tr><td>&nbsp;</td></tr><tr><td align="right" width="1%" nowrap>Transfer Valuation Date: &nbsp;</td><td nowrap><input name="f11"  onBlur="dy_complete_date(this)" type="text" size="12" maxlength="10" value="12/15/2008" /></td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td align="right" width="1%" nowrap>Remark: &nbsp;</td><td nowrap><textarea rows="5" cols="60" wrap="virtual" name="f4"></textarea></td></tr>
+<tr><td>&nbsp;</td></tr></table>
+
+<div align=center>
+<table border="0" cellpadding="0" cellspacing="0"><tr>
+<td><input type="submit" name="f9" value="  OK  " /></td>
+<td><img src="/i/dot.gif" border="0" width="10" /></td>
+<td><input type="submit" name="f7" value="Cancel" onclick="reset()" /></td>
+</tr></table>
+</div>
+</form></td>
+</tr></table></td></tr><tr><td width="100%" valign=top>&nbsp;</td></tr><tr></tr></table><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+<td width="1%">&nbsp;</td>
+</tr><tr>
+<td colspan="3" width="100%" bgcolor="#006666"><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+</tr><tr>
+<td><a target="_top" href="https://test.bivio.com/btf_club/accounting/member/withdrawal?fc=aMTI_!cYnRmX2NsdWI_"><img alt="Switch to secure mode (slower)" border="0" src="/i/unlock.gif" width="21" height="17" /></a></td>
+<td width="100%" align="center"><table border="0" cellpadding="0" cellspacing="0"><tr>
+<td><a target="_top" href="/index.html">Home</a></td>
+<td width="20">&nbsp;</td>
+<td><a target="_top" href="/f/bivio-guide.pdf">Getting Started</a></td>
+<td width="20">&nbsp;</td>
+<td><a target="_top" href="/hm/safe.html">Safe &amp; Private</a></td>
+<td width="20">&nbsp;</td>
+<td><a target="_top" href="/hm/contact.html">Contact</a></td>
+<td width="20">&nbsp;</td>
+<td><a target="_top" href="/pub/mail-support?fc=aMTkw!bMTI_!cYnRmX2NsdWI_">support@test.bivio.com</a></td>
+</tr></table></td>
+<td><a target="_top" href="#top">top</a></td>
+</tr><tr>
+<td width="1%">&nbsp;</td>
+</tr><tr>
+<td colspan="3" width="100%"><table border="0" cellpadding="0" cellspacing="0"><tr>
+<td width="100%" valign="top" align="left"><a target="_top" href="/goto?x=http%3A//www.betterinvesting.org"><img alt="BetterInvesting - National Association of Investors Corp." border="0" src="/i/betterinvesting.gif" width="253" height="48" /></a></td>
+<td align="right" nowrap="1"><small>Copyright &copy; 2008, bivio Inc. <i>All Rights Reserved.</i>
+<br>Use of this Web site constitutes acceptance of the bivio
+<a target="_top" href="/hm/user.html"><small>Terms of Service</small></a></small></td>
+</tr></table></td>
+</tr><tr>
+<td colspan="3" width="100%"><table border="0" cellpadding="0" cellspacing="0"><tr>
+<td width="50%"><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+<td align="center"><small><img src="/i/dot.gif" border="0" width="480" height="10" /><br>
+Historical data and daily updates provided by
+<a target="_top" href="http://www.csidata.com">Commodity Systems, Inc. (CSI)</a>.
+Data and information is provided for informational purposes only, and is not
+intended for trading purposes. Neither bivio nor its data or content
+providers shall be liable for any errors or delays in the content, or
+for any actions taken in reliance thereon.
+</small></td>
+<td width="50%"><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+</tr></table></td>
+</tr></table>
+<!-- total=0.161s; db=0.241s -->
+</body></html>

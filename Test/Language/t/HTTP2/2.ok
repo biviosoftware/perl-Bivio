@@ -1,0 +1,413 @@
+HTTP/1.1 200 OK
+Cache-Control: private
+Connection: close
+Date: Mon, 15 Dec 2008 22:05:22 GMT
+Via: 1.1 test.bivio.com
+Server: Apache/1.3.39
+Content-Length: 23301
+Content-Type: text/html
+Client-Date: Mon, 15 Dec 2008 22:05:22 GMT
+Client-Peer: 216.87.82.78:80
+Client-Response-Num: 1
+Title: bivio Investment Clubs - Home
+X-Cache: MISS from test.bivio.com
+X-Meta-Description: bivio provides investment club accounting and hedge fund management services, including investment partnership accounting and tax software, private and public websites and message boards, investment advice, and full-service bookkeeping.
+X-Meta-Keywords: investment clubs, investment club, investment club accounting, investment club taxes, investment partnership, hedge fund, bivio, bivio.com, online club, online investment clubs, IRS form 1065, IRS schedule k-1, partnership, partnerships, investor, tax, taxes, investing, investment, investments, stock, stock club, stock index, top holdings, advice, tutorial, tips, education, expert, finance, finances, personal finance, money, save, savings, financial, financial community, investing club, investor education, investors, investors club, valuation, common stocks, dividend, dividends, brokers, market, company, companies, mutual fund, mutual funds, fund, funds, decisions, corporation, corporations, bonds, quotes, debt, retire, retirement, Beardstown Ladies, hedge fund
+
+<html>
+<head>
+<title>bivio Investment Clubs - Home</title>
+<meta name="description" content="bivio provides investment club accounting and hedge fund management services, including investment partnership accounting and tax software, private and public websites and message boards, investment advice, and full-service bookkeeping.">
+<meta name="keywords" content="investment clubs, investment club, investment club accounting, investment club taxes, investment partnership, hedge fund, bivio, bivio.com, online club, online investment clubs, IRS form 1065, IRS schedule k-1, partnership, partnerships, investor, tax, taxes, investing, investment, investments, stock, stock club, stock index, top holdings, advice, tutorial, tips, education, expert, finance, finances, personal finance, money, save, savings, financial, financial community, investing club, investor education, investors, investors club, valuation, common stocks, dividend, dividends, brokers, market, company, companies, mutual fund, mutual funds, fund, funds, decisions, corporation, corporations, bonds, quotes, debt, retire, retirement, Beardstown Ladies, hedge fund">
+<style>
+<!-- a:hover { color: "#CC9900"; } -->
+</style>
+</head>
+<body bgcolor=white text=black link="#006666" vlink="#996600" alink="#009999" topmargin=0 leftmargin=0 marginheight=0 marginwidth=0>
+<a name=top></a>
+
+<table width="99%" cellpadding=0 cellspacing=0 border=0><tr>
+<td colspan=3><img src="/i/dot.gif" width=1 height=3 border=0></td>
+</tr><tr>
+<td width=171 align=left valign=bottom><a href="/index.html"><img src="/i/bivio_body.gif" width=173 height=81 alt="bivio - accounting, reports, taxes, and administration for your investment club" border=0></a></td>
+<td valign=top><table width="100%" height="100%" cellpadding=0 cellspacing=0 border=0><tr>
+<td colspan=2><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td colspan=2 align=right valign=top><a href="/my-club-site"><img src="/i/clubsite_off.gif" width=102 height=21 alt="Go to my Club Site" border=0></a>
+<script language="JavaScript">
+<!--
+var _imgs = new Array();
+function _img_set(n,m) {
+if (!document.images)
+return;
+var s = _imgs[n];
+if (!s)
+return;
+var i = s.lastIndexOf("off.gif");
+document.images['img_'+n].src = s.substring(0, i)+m+".gif";
+return;
+}
+function _img_load(n,u) {
+_imgs[n] = u;
+var i = u.lastIndexOf("off.gif");
+(new Image()).src = u.substring(0, i)+"on.gif";
+return;
+}
+//-->
+</script><a target="_top" onMouseOver="_img_set('0', 'on')" onMouseOut="_img_set('0', 'off')" href="/pub/logout"><img alt="Sign off from bivio" name="img_0" onLoad="_img_load(0,'/i/logout_r_off.gif')" border="0" src="/i/logout_r_off.gif" width="102" height="21" /></a></td>
+</tr><tr>
+<td colspan=2><img src="/i/dot.gif" width=1 height=12 border=0></td>
+</tr><tr>
+<td width="99%"><img src="/i/dot.gif" width=1 height=1 border=0></td>
+<td><form method=get action=http://www.google.com/custom><table width="100%"><tr><td><a href="/goto?x=http%3A//www.google.com/search"><img src="/i/google_25wht.gif" width=75 height=32 alt="Google" border=0 align=right></a></td><td><font face="arial,sans-serif" size=2><input type=hidden name=cof value="S:http://www.bivio.com;VLC:#996600;AH:left;BGC:white;LH:81;LC:#006666;L:http://www.bivio.com/i/bivio_body.gif;ALC:#009999;LW:173;T:black;AWFID:629c831e11482c63;"><input type=hidden name=domains value="bivio.com"><input type=hidden name=sitesearch value="bivio.com"><input type=text name=q size=20 maxlength=255 value=""></font></td>
+<td><input type=image src="/i/search_off.gif" width=114 height=36 alt="Search bivio" border=0 valign=bottom name="sa" value="Google Search"></td></form>
+</tr></table></td>
+</tr></table></td>
+<td width=8><img src="/i/dot.gif" width=8 height=1 border=0></td>
+</tr></table>
+
+<table width="99%" cellpadding=0 cellspacing=0 border=0><tr>
+<td width=10><img src="/i/dot.gif" width=10 height=1 border=0></td><td width="100%" bgcolor="#cfbfff"><img src="/i/dot.gif" width="100%" height=3 border=0></td><td width=8><img src="/i/dot.gif" width=8 height=1 border=0></td>
+</tr><tr>
+<td colspan=3><img src="/i/dot.gif" width=1 height=5 border=0></td>
+</tr><tr>
+<td width=10><img src="/i/dot.gif" width=10 height=1 border=0></td><td align=right><nobr><font face="arial,sans-serif" size="2"><b><font face="arial,sans-serif" size="2"><b><script type="text/javascript">
+<!--
+dt(6,2454816,79522,'DECEMBER 15, 2008');
+// -->
+</script><noscript>DECEMBER 15, 2008</noscript></b></font></b></font></nobr></td><td><img src="/i/dot.gif" width=1 height=1 border=0></td>
+</tr></table>
+
+<table width=712 cellpadding=0 cellspacing=0 border=0><tr align=left valign=top>
+
+<td width=10><img src="/i/dot.gif" width=10 height=1 border=0></td>
+
+<td width=160 valign=top><table width=160 cellspacing=0 cellpadding=0 border=0><tr>
+<td valign=top><table border="0" cellpadding="0" cellspacing="0" width="160" bgcolor="#009999"><tr>
+<td align="left" colspan="3" bgcolor="#FFCC33"><img border="0" src="/i/hd_signup.gif" width="160" height="16" /></td>
+</tr><tr>
+<td width="1"><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+<td valign="top" align="center" width="158" bgcolor="#FFCC33"><table border="0" cellpadding="0" cellspacing="0" width="158" bgcolor="#FFCC33"><tr>
+<td align="left"><img src="/i/dot.gif" border="0" width="10" height="1" /><font face="arial,sans-serif" size="2"><b>My Clubs</b></font></td>
+</tr><tr>
+<td><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr>
+<tr><td align=left><img src="/i/dot.gif" border="0" width="15" height="1" />&#149;&nbsp;<a target="_top" href="/btest_50517_test/intro"><font face="arial,sans-serif" size="2">btest_50517_-<br>&nbsp;test</font></a></td></tr>
+<tr><td align=left><img src="/i/dot.gif" border="0" width="15" height="1" />&#149;&nbsp;<a target="_top" href="/btest_64962_test/intro"><font face="arial,sans-serif" size="2">btest_64962_-<br>&nbsp;test</font></a></td></tr>
+<tr><td align=left><img src="/i/dot.gif" border="0" width="15" height="1" />&#149;&nbsp;<a target="_top" href="/btf_club/intro"><font face="arial,sans-serif" size="2">btf_club</font></a></td></tr>
+<tr><td align=left><img src="/i/dot.gif" border="0" width="15" height="1" />&#149;&nbsp;<a target="_top" href="/btf_taxes/intro"><font face="arial,sans-serif" size="2">btf_taxes</font></a></td></tr>
+<tr><td align=left><img src="/i/dot.gif" border="0" width="15" height="1" />&#149;&nbsp;<a target="_top" href="/demo"><font face="arial,sans-serif" size="2">Demo Club</font></a></td>
+</tr><tr>
+<td><img src="/i/dot.gif" border="0" width="157" height="10" /></td>
+</tr><tr>
+<td align="left"><img src="/i/dot.gif" border="0" width="10" height="1" /><a target="_top" href="/my-site"><font face="arial,sans-serif" size="2"><b>My Site</b></font></a></td>
+</tr><tr>
+<td><img src="/i/dot.gif" border="0" width="157" height="10" /></td>
+</tr><tr>
+<td align="left"><img src="/i/dot.gif" border="0" width="10" height="1" /><a target="_top" href="/pub/logout"><font face="arial,sans-serif" size="2"><b>Logout</b></font></a></td>
+</tr><tr>
+<td><img src="/i/dot.gif" border="0" width="157" height="5" /></td>
+</tr></table></td></td>
+<td width="1"><img src="/i/dot.gif" border="0" width="1" height="1" /></td>
+</tr><tr>
+<td align="left" colspan="3" bgcolor="#FFCC33"><img border="0" src="/i/ft_signup.gif" width="160" height="16" /></td>
+</tr></table></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+
+<td align=center><table width=160 cellspacing=0 cellpadding=0 border=0 bgcolor="#cfbfff"><tr>
+<td colspan=3><img src="/i/hd_home_links.gif" width=160 height=11 alt="" border=0></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=8 height=1 border=0></td>
+<td><img src="/i/menu_triangle.gif" width=13 height=15 alt="" border=0></td>
+<td><font face="verdana,arial,sans-serif" size="-1" color="#006666"><b><a href="/hm/about.html"><font color=black>About bivio</font></a></b></font></td>
+</tr><tr>
+<td colspan=3><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=8 height=1 border=0></td>
+<td><img src="/i/menu_triangle.gif" width=13 height=15 alt="" border=0></td>
+<td><font face="verdana,arial,sans-serif" size="-1" color="#006666"><b><a href="/hm/services.html"><font color=black>Our Services</font></a></b></font></td>
+</tr><tr>
+<td colspan=3><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=8 height=1 border=0></td>
+<td><img src="/i/menu_triangle.gif" width=13 height=15 alt="" border=0></td>
+<td><font face="verdana,arial,sans-serif" size="-1" color="#006666"><b><a href="/hm/tour_new/index.html"><font color=black>Take the Tour</font></a></b></font></td>
+</tr><tr>
+<td colspan=3><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=8 height=1 border=0></td>
+<td><img src="/i/menu_triangle.gif" width=13 height=15 alt="" border=0></td>
+<td><font face="verdana,arial,sans-serif" size="-1" color="#006666"><b><a href="/demo"><font color=black>Demo Club</font></a></b></font></td>
+</tr><tr>
+<td colspan=3><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=8 height=1 border=0></td>
+<td><img src="/i/menu_triangle.gif" width=13 height=15 alt="" border=0></td>
+<td><font face="verdana,arial,sans-serif" size="-1" color="#006666"><b><a href="/f/bivio-guide.pdf"><font color=black>Getting Started</font></a></b></font></td>
+</tr><tr>
+<td colspan=3><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=8 height=1 border=0></td>
+<td><img src="/i/menu_triangle.gif" width=13 height=15 alt="" border=0></td>
+<td><font face="verdana,arial,sans-serif" size="-1" color="#006666"><b><a href="/hm/whatsnew.html"><font color=black>What's New</font></a></b></font></td>
+</tr><tr>
+<td colspan=3><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=1 border=0></td>
+<td><img src="/i/menu_triangle.gif" width=13 height=15 alt="" border=0></td>
+<td><font face="verdana,arial,sans-serif" size="-1" color="#006666"><b><a href="/pub/register"><font color=black>Register</font></a></b></font></td>
+</tr><tr>
+<td colspan=3><img src="/i/ft_home_links.gif" width=160 height=11 alt="" border=0></td>
+</tr></table></td>
+</tr><tr>
+
+<td><img src="/i/dot.gif" width=1 height=12 border=0></td>
+</tr><tr>
+
+<td align=center><img src="/i/hd_services.gif" width=160 height=14 alt="" border=0></td>
+</tr><tr>
+<td align=center bgcolor="#006666"><table width=158 cellspacing=0 cellpadding=0 border=0 bgcolor=white><tr>
+<td width="100%">&nbsp;<font face="verdana,arial,sans-serif" size="-1" color="#006666"><b><a href="/hm/services.html">Our Services</a></b></font></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td align=left><font face="verdana,arial,sans-serif" size="-1" color="#006666">&nbsp;&#149;&nbsp;AccountSync&#153;</font></td>
+</tr><tr>
+<td align=right><font face="verdana,arial,sans-serif" size="-1" color="#FF0000">.....$99/year&nbsp;</font></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=4 border=0></td>
+</tr><tr>
+<td align=left><font face="verdana,arial,sans-serif" size="-1" color="#006666">&nbsp;&#149;&nbsp;IRS Taxes</font></td>
+</tr><tr>
+<td align=right><font face="verdana,arial,sans-serif" size="-1" color="#FF0000">......included&nbsp;</font></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=4 border=0></td>
+</tr><tr>
+<td align=left><font face="verdana,arial,sans-serif" size="-1" color="#006666">&nbsp;&#149;&nbsp;Support</font></td>
+</tr><tr>
+<td align=right><font face="verdana,arial,sans-serif" size="-1" color="#FF0000">......included&nbsp;</font></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=4 border=0></td>
+</tr><tr>
+<td align=left><font face="verdana,arial,sans-serif" size="-1" color="#006666">&nbsp;&#149;&nbsp;ActivePartnership&#153;</font></td>
+</tr><tr>
+<td align=right><font face="verdana,arial,sans-serif" size="-1" color="#FF0000">....$149/year&nbsp;</font></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=4 border=0></td>
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr><tr>
+<td align=center><a href="/hm/services.html"><img src="/i/learn.gif" width=113 height=25 alt="Learn more about bivio services" border=0></a></td>
+</tr></table></td>
+</tr><tr>
+<td align=center><img src="/i/ft_services.gif" width=160 height=14 alt="" border=0></td>
+</tr></table></td>
+
+<td width=12><img src="/i/dot.gif" width=12 height=1 border=0></td>
+
+<td width=260 align=center valign=top><table width=260 cellspacing=0 cellpadding=0 border=0><tr>
+<td width=260><img src="/i/dot.gif" width=260 height=10 border=0></td>
+</tr><tr>
+<td><table width="100%" cellpadding=1 cellspacing=0 border=0><tr>
+<td colspan=2>
+  
+<a href="/hm/bulletin-061221.html"><font face="arial,sans-serif" size="4">bivio and BetterInvesting form an Alliance to bring you even better software and support!</font></a>
+</td>
+
+</tr>
+</table></td>
+</tr>
+
+<tr>
+<td><img src="/i/dot.gif" width=1 height=10 border=0></td>
+</tr>
+<tr>
+<td><table width="100%" cellpadding=1 cellspacing=0 border=0><tr>
+<td colspan=2><a href="/pub/clubs"><img src="/i/club_home_pages.gif" width=206 height=42 alt="Club Home Pages" border=0 align=left></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td><td><font face="arial,sans-serif" size=1><b><big><a href="/pub/clubs">more...</a></big></b></font></td>
+</tr></table></td>
+</tr>
+
+<tr>
+<td><img src="/i/dot.gif" width=1 height=15 border=0></td>
+</tr>
+<tr>
+<td><table width="100%" cellpadding=1 cellspacing=0 border=0><tr>
+<td colspan=2><a href="/club_cafe/mail"><img src="/i/header_home_clubcafe.gif" width=262 height=69 alt="Club Cafe" border=0 align=left></a></td>
+</tr>
+
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/club_cafe/mail-msg?t=1938300003"><font face="arial,sans-serif" size="2">Re: My mouse doesn't work with bivio</font></a></td>
+</tr>
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/club_cafe/mail-msg?t=1905300003"><font face="arial,sans-serif" size="2">another test</font></a></td>
+</tr>
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/club_cafe/mail-msg?t=1664500003"><font face="arial,sans-serif" size="2">test</font></a></td>
+</tr>
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/club_cafe/mail-msg?t=1660400003"><font face="arial,sans-serif" size="2">Is this the fourth subject?</font></a></td>
+</tr>
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/club_cafe/mail-msg?t=1659900003"><font face="arial,sans-serif" size="2">Re: Can I import NAIC Club Accounting?</font></a></td>
+</tr>
+<tr>
+<td>&nbsp;</td><td><font face="arial,sans-serif" size=1><b><big><a href="/club_cafe/mail">more...</a></big></b></font></td>
+</tr></table></td>
+</tr>
+
+<tr>
+<td><img src="/i/dot.gif" width=1 height=15 border=0></td>
+</tr>
+<tr>
+<td><table width="100%" cellpadding=1 cellspacing=0 border=0><tr>
+<td colspan=2><a href="/know_your_options/mail"><img src="/i/header_home_knowyouroptions.jpg" width=220 height=76 alt="Know Your Options" border=0 align=left></a></td>
+</tr>
+
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/know_your_options/mail-msg?t=3301000003"><font face="arial,sans-serif" size="2">Sample Covered Call Writing Portfolio</font></a></td>
+</tr>
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/know_your_options/mail-msg?t=3276600003"><font face="arial,sans-serif" size="2">Writing Covered Calls: A Real World Example</font></a></td>
+</tr>
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/know_your_options/mail-msg?t=3211100003"><font face="arial,sans-serif" size="2">Introduction To Covered Call Writing</font></a></td>
+</tr>
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/know_your_options/mail-msg?t=3211000003"><font face="arial,sans-serif" size="2">test html editor</font></a></td>
+</tr>
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/know_your_options/mail-msg?t=3207700003"><font face="arial,sans-serif" size="2">Test HTML</font></a></td>
+</tr>
+<tr>
+<td>&nbsp;</td><td><font face="arial,sans-serif" size=1><b><big><a href="/know_your_options/mail">more...</a></big></b></font></td>
+</tr></table></td>
+</tr>
+
+<tr>
+<td><img src="/i/dot.gif" width=1 height=15 border=0></td>
+</tr>
+<td><font color=white><small>The <a href="/trez_talk"><font color=white>Trez Talk</font></a> investment club accounting and taxes column is still available.  <a href="/ask_candis"><font color=white>Ask Candis</font></a> covers the nuts-and-bolts of investment clubs, and is also available.</font></td>
+</tr></table></td>
+
+<td width=12><img src="/i/dot.gif" width=12 height=1 border=0></td>
+
+<td width=250 align=center valign=top><table width=250 cellspacing=0 cellpadding=0 border=0><tr align=left>
+
+<td><table cellspacing=0 cellpadding=2 border=0><tr>
+<td colspan=2><img src="/i/dot.gif" width=1 height=5 border=0></td>
+
+</tr><tr>
+<td colspan=2><table width="100%" cellpadding=1 cellspacing=0 border=0><tr>
+<td colspan=2><a href="/portfolio_perspectives/mail"><img src="/i/header_home_portfolioperspectives.jpg" width=240 height=76 alt="Portfolio Perspectives" border=0 align=left></a></td>
+</tr>
+
+<tr>
+<td valign="top" align="right">&#149;</td>
+<td align="left"><a target="_top" href="/portfolio_perspectives/mail-msg?t=3268000003"><font face="arial,sans-serif" size="2">A New Year's Investment Resolution: Diversifying Your Portfolio</font></a></td>
+</tr>
+<tr>
+<td>&nbsp;</td><td><font face="arial,sans-serif" size=1><b><big><a href="/portfolio_perspectives/mail">more...</a></big></b></font></td>
+</tr></table></td>
+
+</tr><tr>
+<td colspan=2><img src="/i/dot.gif" width=1 height=10 border=0></td>
+
+</tr><tr>
+<td colspan=2><a href="/hm/start.html"><img src="/i/header_home_start.gif" border=0 alt="Start an investment club!"></a></td>
+</tr><tr>
+<td colspan=2><img src="/i/dot.gif" width=1 height=3 border=0></td>
+</tr><tr>
+<td valign=top><img src="/i/one.gif" width=34 height=35 alt="One" border=0></td>
+<td nowrap><font face="arial,sans-serif" size=2><a href="/hm/start.html"><font size=4>Sign up</font></a><br>Register with us<br>Form a club<br>Add members</font></td>
+</tr><tr>
+<td valign=top><img src="/i/two.gif" width=34 height=35 alt="Two" border=0></td>
+<td nowrap><font face="arial,sans-serif" size=2><a href="/hm/start.html#get_legal"><font size=4>Get Legal</font></a><br>Sign a partnership agreement<br>Establish club bylaws<br>Obtain an EIN from the IRS</font></td>
+</tr><tr>
+<td valign=top><img src="/i/three.gif" width=34 height=35 alt="Three" border=0></td>
+<td nowrap><font face="arial,sans-serif" size=2><a href="/hm/start.html#start_investing"><font size=4>Start Investing</font></a><br>Open a brokerage account<br>Contribute money<br>Buy stocks</font></td>
+</table></td>
+
+</tr><tr>
+<td><img src="/i/dot.gif" width=1 height=15 border=0></td>
+
+</tr><tr>
+<td><table cellspacing=0 cellpadding=0 border=0><tr>
+<td><a href="/hm/club-index.html"><img src="/i/header_home_clubindex.gif" border=0 alt="Club Index"></a></tr>
+</tr><tr>
+<td><font face="arial,sans-serif" size=2><big>Current:</big></font> <b><font face="arial,sans-serif" size="3">6,809</font>&nbsp;&nbsp;<font face="arial,sans-serif" size="2" color="#000000">0</font></b></td>
+</tr><tr>
+<td>
+<table border="0" cellpadding="1" cellspacing="0" width="100%" align="center">
+<tr>
+<th valign="bottom" align="left" nowrap="1"><font face="arial,sans-serif" size="2"><big>Top Club Holdings</big></font></th>
+<th valign="bottom" align="center" nowrap="1"><font face="arial,sans-serif" size="2"><b>% Clubs</b></font></th>
+</tr>
+<tr><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr bgcolor="#000000"><td class="line_cell"><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr></table></td>
+</tr>
+<tr>
+<td align="left"><a target="_top" href="/club_index/accounting/investments"><font face="arial,sans-serif" size="2"><b><big>more...</big></b></font></a></td>
+</tr>
+<tr><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr bgcolor="#000000"><td class="line_cell"><img src="/i/dot.gif" border="0" width="1" height="1" /></td></tr></table></td>
+</tr><tr>
+<td colspan=2 align=left nowrap><font face="arial,sans-serif" size="2"><big>Average club portfolio: $62,850</big></font></td>
+</tr></table></td>
+</tr></table></td>
+</tr></table></td>
+
+<td width=8><img src="/i/dot.gif" width=8 height=1 border=0></td>
+</tr></table>
+<table width="99%" cellpadding=0 cellspacing=0 border=0 align=center><tr>
+<td><img src="/i/dot.gif" width=1 height=18 border=0></td>
+</tr><tr>
+<td bgcolor="#009999"><img src="/i/dot.gif" width=1 height=1 border=0></td>
+</tr></table>
+
+<table width="99%" cellpadding=0 cellspacing=0 border=0 align=center><tr>
+<td align=left width="50%"><a target="_top" href="https://test.bivio.com/index.html"><img alt="Switch to secure mode (slower)" border="0" src="/i/unlock.gif" width="21" height="17" /></a></td>
+<td align=center><table cellpadding=0 cellspacing=0 border=0><tr>
+<td colspan=11><img src="/i/dot.gif" width=1 height=1 border=0></td>
+</tr><tr>
+<td nowrap><a href="/"><font face="verdana,arial,sans-serif" size="-1">Home</font></a></td>
+<td><img src="/i/dot.gif" width=15 height=1></td>
+<td nowrap><a href="/hm/about.html"><font face="verdana,arial,sans-serif" size="-1">About bivio</font></a></td>
+<td><img src="/i/dot.gif" width=15 height=1></td>
+<td nowrap><a href="/hm/books.html"><font face="verdana,arial,sans-serif" size="-1">Books</font></a></td>
+<td><img src="/i/dot.gif" width=15 height=1></td>
+<td nowrap><a href="/f/bivio-guide.pdf"><font face="verdana,arial,sans-serif" size="-1">Getting Started</font></a></td>
+<td><img src="/i/dot.gif" width=15 height=1></td>
+<td nowrap><a href="/hm/safe.html"><font face="verdana,arial,sans-serif" size="-1">Safe &amp; Private</font></a></td>
+<td><img src="/i/dot.gif" width=15 height=1></td>
+<td nowrap><a href="/pub/register"><font face="verdana,arial,sans-serif" size="-1">Register</font></a></td>
+<td><img src="/i/dot.gif" width=15 height=1></td>
+<td nowrap><a href="/pub/login"><font face="verdana,arial,sans-serif" size="-1">Login</font></a></td>
+</tr></table></td>
+<td align=right width="50%"><a href="#top"><font face="verdana,arial,sans-serif" size="-1"><small>top</small></font></a></td>
+</tr></table>
+
+<table width="99%" cellpadding=0 cellspacing=0 border=0 align=center><tr>
+<td colspan=2>&nbsp;</td>
+</tr><tr>
+<td width="100%" align=left valign=top><a href="/goto?x=http%3A//www.betterinvesting.org"><img src="/i/betterinvesting.gif" width=253 height=48 alt="BetterInvesting - National Association of Investors Corp." border=0></a></td>
+<td align=right nowrap><font face="verdana,arial,sans-serif" size="-1" color=black><small>Copyright &copy; 1999-2008, bivio Inc. <i>All Rights Reserved.</i>&nbsp;<br> Use of this Web site constitutes acceptance of the bivio <a href="/hm/user.html">Terms of Service</a>&nbsp;</small></font><br>&nbsp;</td>
+</tr></table>
+
+<!-- total=0.080s; db=0.022s -->
+</body>
+</html>
