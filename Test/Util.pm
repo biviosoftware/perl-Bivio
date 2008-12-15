@@ -174,7 +174,11 @@ sub nightly {
 	. ($ENV{PERLLIB} ? ":$ENV{PERLLIB}" : '');
     my($die) = Bivio::Die->catch(sub {
         # CVS checkout
-        system('cvs -Q checkout ' . $_CFG->{nightly_cvs_dir});
+        (my $bop = $_CFG->{nightly_cvs_dir}) =~ s{\w+$}{Bivio};
+	# Bivio/PetShop special case
+#TODO: Move Bivio/PetShop to PetShop
+	$bop =~ s{Bivio/Bivio}{Bivio};
+        system("cvs -Q checkout '$_CFG->{nightly_cvs_dir}' '$bop'");
         $self->print("Completed CVS checkout of test files\n");
         Bivio::IO::File->chdir($_CFG->{nightly_cvs_dir});
 	$self->print("cd ".Bivio::IO::File->pwd . "\n");
