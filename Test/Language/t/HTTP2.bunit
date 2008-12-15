@@ -6,6 +6,24 @@
 	    [\('<script>pt_method();</script>')] => not_die(),
 	    [\('bla="javascript:window();"')] => not_die(),
 	    [\('Subject: vs_site_name(); support')] => DIE(),
+	    [\(<<'EOF')] => not_die(),
+<script language="JavaScript">
+<!--
+var _imgs = new Array();
+function _img_set(n,m) {
+if (!document.images)
+return;
+var s = _imgs[n];
+if (!s)
+return;
+var i = s.lastIndexOf("off.gif");
+document.images['img_'+n].src = s.substring(0, i)+m+".gif";
+return;
+}
+function _img_load(n,u) {
+</script>
+hello
+EOF
 	],
     ],
 ];
