@@ -476,6 +476,19 @@ sub http_facade {
     return $self->unsafe_get('http_facade');
 }
 
+sub internal_assert_no_prose {
+    my($self, $content) = @_;
+    my($d) = $$content;
+    $d =~ s{<script.*?>.*?</script>}{}ig;
+    $d =~ s{javascript:.*?"}{}ig;
+    if ($d !~ /\w+::\w+/ && $d =~ /\b((\w+)\([^\)]*\)\;)/s) {
+	my($cmd, $func) = ($1, $2);
+	b_die($cmd, ': Prose found in response')
+	    if $func =~ /(?:^[A-Z]|_)/
+    }
+    return $content;
+}
+
 sub is_local_email {
     my($self, $email) = @_;
     my($suffix) = $_CFG->{local_mail_host};
@@ -780,7 +793,7 @@ sub verify_local_mail {
 	# It takes a certain amount of time to hit, and on the same machine
 	# we're going to be competing for the CPU so let b-sendmail-http win
 	sleep(1);
-	$found = _grep_msgs($email, $body_re, $match);
+	$found = _grep_msgs($self, $email, $body_re, $match);
 	next if @$found < $count;
 	last unless @$found == $count && @$email == keys(%$match);
 	foreach my $f (@$found) {
@@ -967,16 +980,6 @@ sub _assert_html {
 	$self->get_response->content_type, ': response not html');
 }
 
-sub _assert_no_prose {
-    my($content) = @_;
-    if ($$content !~ /\w+::\w+/ && $$content =~ /\b((\w+)\([^\)]*\)\;)/s) {
-	my($cmd, $func) = ($1, $2);
-	b_die($cmd, ': Prose found in response')
-	    if $func =~ /_/;
-    }
-    return $content;
-}
-
 sub _create_form_post {
     my($uri, $form, $header) = @_;
     return grep(ref($_), @$form)
@@ -1118,7 +1121,7 @@ sub _get_script_line {
 }
 
 sub _grep_msgs {
-    my($emails, $msg_re, $matched_emails) = @_;
+    my($self, $emails, $msg_re, $matched_emails) = @_;
     # Returns results of grep on mail_dir files.  Only includes valid
     # mail files.
     return [_map_mail_dir(sub {
@@ -1135,7 +1138,7 @@ sub _grep_msgs {
 	    my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
 	    if ($m) {
 		$matched_emails->{$m}++;
-		return [$file, _assert_no_prose($msg)]
+		return [$file, $self->internal_assert_no_prose($msg)]
 		    if $$msg =~ $msg_re;
 	    }
 	    last;
@@ -1155,7 +1158,7 @@ sub _html_parser {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return Bivio::Test::HTMLParser->new(
-	_assert_no_prose($fields->{response}->content_ref));
+	$self->assert_no_prose($fields->{response}->content_ref));
 }
 
 sub _key_from_hash {
