@@ -479,8 +479,8 @@ sub http_facade {
 sub internal_assert_no_prose {
     my($self, $content) = @_;
     my($d) = $$content;
-    $d =~ s{<script.*?>.*?</script>}{}ig;
-    $d =~ s{javascript:.*?"}{}ig;
+    $d =~ s{<script.*?>.*?</script>}{}isg;
+    $d =~ s{javascript:.*?"}{}isg;
     if ($d !~ /\w+::\w+/ && $d =~ /\b((\w+)\([^\)]*\)\;)/s) {
 	my($cmd, $func) = ($1, $2);
 	b_die($cmd, ': Prose found in response')
