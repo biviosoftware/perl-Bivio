@@ -2,93 +2,29 @@
 # $Id$
 package Bivio::Type::PageSize;
 use strict;
-$Bivio::Type::PageSize::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+use Bivio::Base 'Bivio::Type::Integer';
 
-=head1 NAME
+# C<Bivio::Type::PageSize> is the number of lines on a page for
+# ListModel queries.  It is a user preference.
 
-Bivio::Type::PageSize - number of lines on a page for ListModel queries
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Type::PageSize;
-    Bivio::Type::PageSize->new();
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Type::Integer>
-
-=cut
-
-use Bivio::Type::Integer;
-@Bivio::Type::PageSize::ISA = ('Bivio::Type::Integer');
-
-=head1 DESCRIPTION
-
-C<Bivio::Type::PageSize> is the number of lines on a page for
-ListModel queries.  It is a user preference.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_default"></a>
-
-=head2 get_default() : int
-
-Returns 15.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_default {
+    # (self) : int
+    # Returns 15.
     return 15;
 }
 
-=for html <a name="get_max"></a>
-
-=head2 get_max() : integer
-
-Returns 500.
-
-=cut
-
 sub get_max {
+    # (self) : integer
+    # Returns 500.
     return 500;
 }
 
-=for html <a name="get_min"></a>
-
-=head2 get_min() : int
-
-Returns 5.
-
-=cut
-
 sub get_min {
+    # (self) : int
+    # Returns 5.
     return 5;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
