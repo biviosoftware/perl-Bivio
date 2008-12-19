@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type;
 use strict;
@@ -8,6 +8,11 @@ use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+# INITIALIZATION: must be explicit, because Bivio::Base does too much so
+# can't use b_use.  This package is very early on in import order.
+my($_HTML) = 'Bivio::HTML';
+my($_A) = 'Bivio::IO::Alert';
+my($_RT);
 
 sub can_be_negative {
     # : boolean
@@ -152,9 +157,9 @@ sub get_instance {
     # classes are equivalent in perl.
     my($self, $type) = @_;
     $type ||= $self;
-    $type = Bivio::IO::ClassLoader->map_require('Type', $type)
+    $type = $self->use('Type', $type)
 	unless ref($type);
-    Bivio::IO::Alert->bootstrap_die($type, ': not a Bivio::Type')
+    $_A->bootstrap_die($type, ': not a Bivio::Type')
 	unless UNIVERSAL::isa($type, 'Bivio::Type')
 	    || UNIVERSAL::isa($type, 'Bivio::Delegator');
     return $type;
@@ -230,7 +235,7 @@ sub put_on_request {
     # Puts an instance of I<self> on request.  Only works with types which are
     # instantiated.
     my($self, $req, $put_durable) = @_;
-    Bivio::IO::Alert->bootstrap_die($self, ': must be instance')
+    $_A->bootstrap_die($self, ': must be instance')
 	unless ref($self);
     my($method) = $put_durable ? 'put_durable' : 'put';
     $req->$method(
@@ -240,13 +245,32 @@ sub put_on_request {
     return $self;
 }
 
+sub row_tag_get {
+    my($rt, $proto, $model_or_id) = _row_tag(@_);
+    my($v) = $rt->get_value($model_or_id, $proto->ROW_TAG_KEY);
+    return $proto->is_specified($v) ? $v : $proto->get_default;
+}
+
+sub row_tag_replace {
+    my($rt, $proto, $model_or_id, $value) = _row_tag(@_);
+    $rt->replace_value(
+	$model_or_id,
+	$proto->ROW_TAG_KEY,
+	!$proto->is_specified($value)
+	    || $proto->is_equal($value, $proto->get_default)
+	    ? undef
+	    : $proto->to_sql_param($value),
+    );
+    return;
+}
+
 sub to_html {
     # (proto, any) : string
     # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
     # empty string.  Otherwise, escapes html and returns.
     my($self, $value) = @_;
     return '' unless defined($value);
-    return Bivio::HTML->escape($self->to_literal($value));
+    return $_HTML->escape($self->to_literal($value));
 }
 
 sub to_literal {
@@ -262,10 +286,10 @@ sub to_query {
     # (proto, any) : string
     # Returns a value that can be used as a query string.
     # Similar to L<to_uri|"to_uri">, but
-    # calls L<Bivio::HTML::escape_query|Bivio::HTML/"escape_query">
+    # calls L<$_HTML::escape_query|$_HTML/"escape_query">
     my($proto, $value) = @_;
     return '' unless defined($value);
-    return Bivio::HTML->escape_query($proto->to_literal($value));
+    return $_HTML->escape_query($proto->to_literal($value));
 }
 
 sub to_sql_param {
@@ -328,13 +352,36 @@ sub to_uri {
     # empty string.  Otherwise, escapes uri and returns.
     my($proto, $value) = @_;
     return '' unless defined($value);
-    return Bivio::HTML->escape_uri($proto->to_literal($value));
+    return $_HTML->escape_uri($proto->to_literal($value));
 }
 
 sub to_xml {
     my($self, $value) = @_;
     return !defined($value) ? ''
-	: Bivio::HTML->escape_xml($self->to_literal($value));
+	: $_HTML->escape_xml($self->to_literal($value));
+}
+
+sub _row_tag {
+    # (model, value) - uses primary id from model
+    # (id, value, req) - uses id
+    # (req, value) - uses auth_id
+    my($proto, $model_or_id_or_req) = (shift, shift);
+    my($req);
+    if (Bivio::Agent::Request->is_blessed($model_or_id_or_req)) {
+	$req = $model_or_id_or_req;
+	$model_or_id_or_req = $req->get('auth_id');
+    }
+    else {
+	$req = Bivio::Biz::Model->is_blessed($model_or_id_or_req)
+	    ? $model_or_id_or_req->req
+	    : pop(@_);
+    }
+    return (
+	Bivio::Biz::Model->new($req, 'RowTag'),
+	$proto,
+	$model_or_id_or_req,
+	@_,
+    );
 }
 
 1;
