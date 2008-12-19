@@ -35,7 +35,7 @@ sub create {
     my($display_name) = $_E->is_valid($user_or_email)
 	? $_E->get_local_part($user_or_email) : $user_or_email;
     my($uid) = $self->new_other('RealmAdmin')->create_user(
-	$self->format_test_email($user_or_email),
+	$self->format_email($user_or_email),
 	$display_name,
 	$password,
 	b_use('Type.RealmName')->clean_and_trim($display_name),
