@@ -156,16 +156,26 @@ EOF
 }
 
 sub settings_form {
-    return shift->internal_body(vs_simple_form(UserSettingsForm => [
-	'UserSettingsForm.User.first_name',
-	'UserSettingsForm.User.middle_name',
-	'UserSettingsForm.User.last_name',
-        'UserSettingsForm.page_size',
-	['UserSettingsForm.RealmOwner.name', {
-	    row_control => [qw(Model.UserSettingsForm show_name)],
+    return shift->internal_body(vs_list_form(UserSettingsListForm => [
+	"'user_password",
+	'UserSettingsListForm.User.first_name',
+	'UserSettingsListForm.User.middle_name',
+	'UserSettingsListForm.User.last_name',
+        'UserSettingsListForm.page_size',
+	['UserSettingsListForm.RealmOwner.name', {
+	    row_control => [qw(Model.UserSettingsListForm show_name)],
 	}],
-	'-password',
-        _password_fields('UserSettingsForm'),
+	{
+	    column_heading_class => 'left',
+	    column_heading => 'RealmOwner.display_name',
+	    column_widget => vs_display('UserSubscriptionList.RealmOwner.display_name'),
+	    column_use_list => 1,
+	},
+	{
+	    field => 'is_subscribed',
+	    column_data_class => 'checkbox',
+	    column_heading => 'is_subscribed',
+	},
     ]));
 }
 
