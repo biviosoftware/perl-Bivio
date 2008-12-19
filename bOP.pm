@@ -26,11 +26,21 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.19  2008/12/15 17:59:35  nagler
+  * Bivio::ShellUtil
+    todo
+  * Bivio::Test::Language::HTTP
+    _assert_no_prose => internal_assert_no_prose, and added unit test for
+    the code
+    fpc
+  * Bivio::Test::Util
+    check out bOP, too
+
   Revision 7.18  2008/12/13 22:42:44  nagler
   * Bivio::Test::Language::HTTP
     added _assert_no_prose to validate there are no Prose() elements in
