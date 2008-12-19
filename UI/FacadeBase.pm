@@ -608,6 +608,7 @@ sub _cfg_group_admin {
 	Task => [
 	    [GROUP_USER_LIST => '?/users'],
 	    [GROUP_USER_FORM => '?/edit-user'],
+	    [GROUP_USER_ADD_FORM => '?/add-user'],
 	],
 	Text => [
 	    [realm_owner_site_admin => [
@@ -634,6 +635,11 @@ sub _cfg_group_admin {
 		    UNAPPROVED_APPLICANT => 'Requested Access',
 		],
 	    ],
+	    [RealmUserAddform => [
+		'RealmOwner.display_name' => 'Full Name',
+		'RealmOwner.display_name.desc' => 'Only required for new users',
+		ok_button => 'Add',
+	    ]],
 	    [GroupUserList => [
 		display_name => 'Last, First Name',
 		privileges => 'Privileges',
@@ -644,7 +650,8 @@ sub _cfg_group_admin {
 		mail_recipient => 'Receive mail sent to group (Subscribed)',
 	    ]],
 	    [title => [
-		GROUP_USER_LIST => 'Users',
+		GROUP_USER_LIST => 'Roster',
+		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
 	    ]],
 	],
@@ -1112,11 +1119,16 @@ sub _cfg_user_auth {
 		confirm_new_password => 'Re-enter New Password',
 		ok_button => 'Update',
 	    ]],
-	    [UserSettingsForm => [
+	    [[qw(UserSettingsForm UserSettingsListForm UserSubscriptionList)] => [
                 'page_size' => 'List Size',
 		'RealmOwner.name' => 'User Id',
+		'RealmOwner.display_name' => 'Forum',
+		'is_subscribed' => 'Subscribed?',
 		'RealmOwner.name.desc' => 'Field only visible to system administrators.',
 		'separator.password' => 'Fill in to change your password; otherwise, leave blank',
+		prose => [
+		    user_password => q{Link('Click here to change your password.', 'USER_PASSWORD');},
+		],
 	    ]],
 	    [UserPasswordQueryForm => [
 		ok_button => 'Reset Password',
