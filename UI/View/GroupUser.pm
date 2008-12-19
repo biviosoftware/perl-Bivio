@@ -7,9 +7,24 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub add_form {
+    my($self) = @_;
+    $self->internal_put_base_attr(tools => TaskMenu([
+	'GROUP_USER_LIST',
+    ]));
+    return $self->internal_body(vs_simple_form(RealmUserAddForm => [
+	'RealmUserAddForm.Email.email',
+	'RealmUserAddForm.RealmOwner.display_name',
+    ]));
+}
+
 sub form {
     my($self) = @_;
-    return shift->internal_body(vs_simple_form(GroupUserForm => [
+    $self->internal_put_base_attr(tools => TaskMenu([
+	'GROUP_USER_ADD_FORM',
+	'GROUP_USER_LIST',
+    ]));
+    return $self->internal_body(vs_simple_form(GroupUserForm => [
 	['GroupUserForm.RealmUser.role', {
 	    choices => ['->req', 'Model.RoleSelectList'],
 	    list_display_field => 'display',
@@ -33,6 +48,9 @@ sub list {
 	    }],
 	    @{$extra_columns || []},
 	],
+	[TaskMenu([
+	    'GROUP_USER_ADD_FORM',
+	])],
     );
     return;
 }
