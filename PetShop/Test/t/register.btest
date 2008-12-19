@@ -31,7 +31,7 @@ submit_form({
     level => 'user',
 });
 verify_local_mail($u, qr{confirmed}i);
-follow_link('^users');
+follow_link('roster');
 find_page_with_text(qr{\Q$u});
 follow_link_in_table('name', 'email', $u, 'privileges', 'user');
 my($form) = get_uri();
