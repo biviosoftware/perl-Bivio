@@ -1,0 +1,14 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->set_realm('btest_read');
+[
+    load_all => [
+	[] => [map(+{'RealmOwner.name' => $_}, qw(
+            fourem
+            fourem-sub1
+            fourem-sub1-1
+            fourem-sub2
+	))],
+    ],
+];

@@ -1,0 +1,41 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+my($email, $name) = create_user();
+home_page();
+follow_link('settings', 'password');
+verify_form({
+    '^current' => undef,
+});
+go_back();
+# The name UserSettings also tests root's large page size
+submit_form({
+    first => my $first = lc(random_string()),
+    middle => undef,
+    last => 'Zetter',
+    size => 5,
+});
+follow_link('settings');
+verify_form({
+    first => $first,
+    middle => undef,
+    last => 'Zetter',
+    size => 5,
+});
+verify_no_text($name);
+$name = "u$name";
+login_as('root');
+follow_link('all_users', $first);
+home_page();
+follow_link('settings');
+submit_form({
+    user_id => $name,
+});
+follow_link('settings');
+verify_text(qr{[^/]$name});
+do_logout();
+login_as($name);
+follow_link('settings');
+verify_no_text(qr{[^/]$name});
+

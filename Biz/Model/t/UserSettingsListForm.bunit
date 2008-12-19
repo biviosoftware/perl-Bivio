@@ -1,0 +1,40 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel();
+[
+    req_state({
+	task => sub {
+	    req()->set_realm(req('auth_user_id'));
+	    model('UserSubscriptionList', {});
+	    return 'USER_SETTINGS_FORM';
+	},
+    }),
+    req_state_merge({user => 'crm_tech1'}),
+    [{
+        'User.last_name' => 'crm_tech1',
+	is_subscribed_1 => 1,
+	page_size => 33,
+    }] => not_die(),
+    empty_case({
+	page_size => 33,
+	is_subscribed_0 => 0,
+	is_subscribed_1 => 1,
+    }),
+    [{
+        'User.last_name' => 'crm_tech1',
+        page_size => 20,
+    }] => [{
+        'Model.RowTag' => {
+            key => 'PAGE_SIZE',
+            value => 20,
+        },
+    }],
+    req_state_merge({user => 'root'}),
+    error_case({} => {
+	page_size => 'NULL',
+        'User.first_name' => 'NULL',
+        'User.middle_name' => undef,
+        'User.last_name' => undef,
+	'RealmOwner.name' => 'NULL',
+    }),
+];

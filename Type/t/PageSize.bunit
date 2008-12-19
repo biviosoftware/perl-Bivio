@@ -1,0 +1,23 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+set_realm('btest_read');
+my($u) = req(qw(auth_realm owner));
+[
+    class() => [
+	row_tag_replace => [
+	    [$u, 3, req()] => not_die(),
+	],
+	row_tag_get => [
+	    [$u] => 3,
+	    [$u->get('realm_id'), req()] => 3,
+	    [req()] => 3,
+	],
+	row_tag_replace => [
+	    [$u] => not_die(),
+	],
+	row_tag_get => [
+	    [$u] => class()->get_default,
+	],
+    ],
+];
