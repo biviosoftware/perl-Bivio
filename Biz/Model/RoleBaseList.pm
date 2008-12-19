@@ -80,7 +80,15 @@ sub internal_prepare_statement {
 }
 
 sub internal_qualify_role {
+    my($self, $stmt) = @_;
+    my($r) = $self->internal_qualifying_roles;
+    $stmt->where($stmt->IN('RealmUser.role', $r))
+	if $r && @$r;
     return;
+}
+
+sub internal_qualifying_roles {
+    return [];
 }
 
 sub roles_by_category {
