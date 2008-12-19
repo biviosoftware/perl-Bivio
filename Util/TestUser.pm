@@ -5,23 +5,49 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_E) = b_use('Type.Email');
 
 sub ADM {
     return 'adm';
+}
+
+sub DEFAULT_PASSWORD {
+    return 'password';
 }
 
 sub USAGE {
     return <<'EOF';
 usage: b-test-user [options] command [args..]
 commands
-  create user_or_email [password] -- creates the test user
+  create user_or_email [password] -- RealmAdmin->create_user
+  format_email base -- HTTP->generate_local_email if not already an email
   init -- test users (adm, etc.)
   leave_and_delete -- remove user from all realms and delete
 EOF
 }
 
 sub create {
-    return shift->new_other('SQL')->create_test_user(@_);
+    my($self, $user_or_email, $password) = shift->name_args([
+	[qw(user_or_email String)],
+	[Password => sub {shift->DEFAULT_PASSWORD}],
+    ], \@_);
+    $self->initialize_fully;
+    my($display_name) = $_E->is_valid($user_or_email)
+	? $_E->get_local_part($user_or_email) : $user_or_email;
+    my($uid) = $self->new_other('RealmAdmin')->create_user(
+	$self->format_test_email($user_or_email),
+	$display_name,
+	$password,
+	b_use('Type.RealmName')->clean_and_trim($display_name),
+    );
+    b_use('Type.PageSize')->row_tag_replace($uid, 100, $self->req);
+    return $uid;
+}
+
+sub format_email {
+    my($self, $base) = @_;
+    return $_E->is_valid($base) ? $base
+	: (b_use('TestLanguage.HTTP')->generate_local_email($base))[0],
 }
 
 sub init {
