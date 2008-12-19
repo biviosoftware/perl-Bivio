@@ -616,8 +616,17 @@ sub info_group_admin {
 	    View.GroupUser->form
 	    next=GROUP_USER_LIST
 	)],
+	[qw(
+	    GROUP_USER_ADD_FORM
+	    202
+	    ANY_GROUP
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.RealmUserAddForm
+	    View.GroupUser->add_form
+	    next=GROUP_USER_LIST
+	)],
     ];
-#202-209 free
+#203-209 free
     return;
 }
 
@@ -1099,7 +1108,7 @@ sub info_user_auth {
 	    94
 	    USER
 	    ADMIN_READ&ADMIN_WRITE
-	    Model.UserSettingsForm
+	    Model.UserSettingsListForm
 	    View.UserAuth->settings_form
 	    next=MY_SITE
 	)],
