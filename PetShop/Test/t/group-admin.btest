@@ -1,9 +1,11 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-test_setup('PetShop');
+test_setup('PetShop', 'groupware');
 home_page();
 login_as('root');
-visit_uri('/fourem/users');
+my($forum) = create_forum();
+home_page();
+follow_link('roster');
 follow_link_in_table('first', 'first', 'root', 'privileges', 'admin');
 verify_text('for Root User');
 verify_form({
@@ -11,4 +13,16 @@ verify_form({
     editor => 1,
     subscribed => 1,
 });
-#TODO: Expand test with new forum.  Need "add user" via HUI
+follow_link('add_member');
+follow_link('roster');
+follow_link('add_member');
+my($email) = generate_local_email(random_string()),
+my($name) = random_string();
+submit_form({
+    email => $email,
+    name => $name,
+});
+follow_link('roster');
+follow_link_in_table('first', 'first', $name, 'privileges', 'member');
+#TODO: test changing privs
+#TODO: Test can't escalate privs higher than current user
