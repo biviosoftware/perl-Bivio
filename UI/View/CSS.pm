@@ -121,6 +121,9 @@ th {
 th, th>a:link, th>a:visited, th>a:active, th>a:hover {
   Font('th');
 }
+.left {
+ text-align: left;
+}
 .acknowledgement {
   margin: auto;
   text-align: center;
@@ -141,6 +144,9 @@ input.checkbox {
 }
 span.checkbox_label {
   margin: .5em;
+}
+td.checkbox {
+ text-align: center;
 }
 form .check {
   padding-left: .5em;
