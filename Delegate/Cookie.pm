@@ -137,7 +137,7 @@ sub _parse {
     _trace($cookie) if $_TRACE;
     my($values) = _parse_values($proto, $cookie);
     return {$_MODIFIED_FIELD => 1}
-        unless $values;
+        unless $values && %$values;
     if ($_CFG->{session_timeout_seconds}) {
         my($date) = $_DT->from_literal($values->{$proto->DATE_TIME_FIELD});
         if ($date
@@ -147,7 +147,10 @@ sub _parse {
 	    ) > 0
 	) {
             _trace('session timed out: ', $_DT->to_string($date)) if $_TRACE;
-            return {$proto->DATE_TIME_FIELD => $date};
+            return {
+		$_MODIFIED_FIELD => 1,
+		$proto->DATE_TIME_FIELD => $date
+	    };
         }
     }
     return $values;
