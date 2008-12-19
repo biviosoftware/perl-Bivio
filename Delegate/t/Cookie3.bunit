@@ -8,8 +8,9 @@ req()->setup_http(class())->initialize_fully;
 	    method => 'header_out',
 	    compute_params => sub {
 		my($case, $params) = @_;
-		# Bypass MODIFIED_FIELD
+		# Bypass MODIFIED_FIELD, because we to test session code
 		my($g) = $case->get('object')->internal_get;
+		delete($g->{_modified});
 		$g->{d} = !defined($params->[0]) ? undef
 		    : DateTime()->add_seconds(now(), $params->[0]);
 		config({
