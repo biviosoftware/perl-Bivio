@@ -54,8 +54,7 @@ my($_AGGREGATES) = [qw(
 my($_INITIALIZE_SENTINEL) = [grep(s/!//, @$_BUNDLE)];
 
 sub TEST_PASSWORD {
-    # Returns password for test data.
-    return 'password';
+    return b_use('ShellUtil.TestUser')->DEFAULT_PASSWORD;
 }
 
 sub USAGE {
@@ -66,7 +65,6 @@ commands:
     column_exists table column - returns 1 if column exists in table
     create_db -- initializes database (must be run from ddl directory)
     create_test_db -- destroys, creates, and initializes test database
-    create_test_user user-id [password] -- creates a test user with local email
     destroy_db -- drops all the tables, indexes, and sequences created
     drop -- drops objects which would be created by running input
     destroy_dbms -- drops the database
@@ -156,19 +154,7 @@ sub create_test_db {
 }
 
 sub create_test_user {
-    my($self, $user_or_email, $password) = shift->name_args([
-	[qw(user_or_email String)],
-	[Password => sub {shift->TEST_PASSWORD}],
-    ], \@_);
-    $self->initialize_fully;
-    my($display_name) = $_E->is_valid($user_or_email)
-	? $_E->get_local_part($user_or_email) : $user_or_email;
-    return $self->new_other('RealmAdmin')->create_user(
-	$self->format_test_email($user_or_email),
-	$display_name,
-	$password,
-	b_use('Type.RealmName')->clean_and_trim($display_name),
-    );
+    return shift->new_other('TestUser')->create(@_);
 }
 
 sub ddl_files {
@@ -283,9 +269,7 @@ sub export_db {
 }
 
 sub format_test_email {
-    my($self, $base) = @_;
-    return $_E->is_valid($base) ? $base
-	: (b_use('TestLanguage.HTTP')->generate_local_email($base))[0],
+    return shift->new_other('TestUser')->format_email(@_);
 }
 
 sub handle_config {

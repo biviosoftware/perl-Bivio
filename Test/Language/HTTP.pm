@@ -156,7 +156,7 @@ sub debug_print {
 }
 
 sub default_password {
-    return shift->use('ShellUtil.SQL')->TEST_PASSWORD;
+    return shift->use('ShellUtil.TestUser')->DEFAULT_PASSWORD;
 }
 
 sub deprecated_text_patterns {
@@ -538,11 +538,11 @@ sub poll_page {
 }
 
 sub random_integer {
-    return shift->use('Bivio::Biz::Random')->integer(@_);
+    return shift->use('Biz.Random')->integer(@_);
 }
 
 sub random_string {
-    return shift->use('Bivio::Biz::Random')->string(@_);
+    return shift->use('Biz.Random')->string(@_);
 }
 
 sub read_file {
@@ -1195,14 +1195,14 @@ sub _lookup_option_value {
 
     # Radio or Select: Allow the use of the option label
     # instead of value
-    foreach my $o (keys(%$options)) {
+    foreach my $o (_option_value_list($options)) {
         next unless ref($value) ? $o =~ $value : $o eq $value;
         _trace($o, ': mapped to ', $options->{$o}->{value}) if $_TRACE;
         return $options->{$o}->{value};
     }
 
     # otherwise verify that it is a valid submit value
-    foreach my $o (keys(%$options)) {
+    foreach my $o (_option_value_list($options)) {
         my($v) = $options->{$o}->{value};
         next unless ref($value) ? $v =~ $value : $v eq $value;
         _trace($v, ': mapped by value to label ', $o)
@@ -1220,6 +1220,12 @@ sub _map_mail_dir {
 	Bivio::Type::FileName->get_tail($_) =~ /^\d+$/ ? $op->($_) : (),
 	glob("$_CFG->{mail_dir}/*"),
     );
+}
+
+sub _option_value_list {
+    my($options) = @_;
+    # For pattern matching, must use shortest value first
+    return sort({length($a) <=> length($b) || $a cmp $b} keys(%$options));
 }
 
 sub _save_history {
@@ -1308,7 +1314,7 @@ sub _verify_form_field {
 sub _verify_form_option {
     my($control, $value) = @_;
     # Return the state of option.
-    foreach my $o (keys(%{$control->{options}})) {
+    foreach my $o (_option_value_list($control->{options})) {
 	return $o
 	    if $control->{options}->{$o}->{selected};
     }
