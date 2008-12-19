@@ -12,6 +12,10 @@ sub internal_xhtml_adorned {
     my(@res) = $self->SUPER::internal_xhtml_adorned(@_);
     view_unsafe_put(
 	xhtml_dock_left => TaskMenu([
+	    {
+		task_id => 'SITE_ROOT',
+		label => String('PetShop'),
+	    },
 	    'SITE_WIKI_VIEW',
 	    'FORUM_CALENDAR',
 	    'FORUM_FILE',
