@@ -79,6 +79,24 @@ sub create_forum {
     return ($f, "/$f", "/dav/$f");
 }
 
+sub create_user {
+    my($self) = @_;
+    $self->clear_cookies;
+    $self->home_page;
+    $self->follow_link('register');
+    my($n) = $self->random_string;
+    $self->submit_form({
+	email => my $e = $self->generate_local_email($n),
+	name => $n,
+    });
+    $self->follow_link_in_mail($e);
+    $self->submit_form({
+	'^new' => $self->default_password,
+	'^re-en' => $self->default_password,
+    });
+    return ($e, $n);
+}
+
 sub do_logout {
     my($self) = @_;
     if ($self->text_exists('Sign-out')) {
