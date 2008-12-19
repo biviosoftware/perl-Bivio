@@ -28,6 +28,8 @@ view_main(Page(
 		Link(Image('banner2', 'none'), 'MAIN'),
 		Search({}),
 		Join([
+		    Link(String('Groupware'), 'SITE_WIKI_VIEW'),
+		    ' | ',
 		    Link(String('Cart'), 'CART'),
 		    ' | ',
 		    # display varies on logged in user state
