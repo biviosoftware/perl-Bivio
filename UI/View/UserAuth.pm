@@ -176,7 +176,9 @@ sub settings_form {
 	    column_data_class => 'checkbox',
 	    column_heading => 'is_subscribed',
 	},
-    ]));
+    ], {
+	empty_list_widget => Simple(''),
+    }));
 }
 
 sub unapproved_applicant_mail {
