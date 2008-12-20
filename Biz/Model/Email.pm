@@ -53,7 +53,10 @@ sub invalidate {
     my($other) = $self->new_other('Email');
     my($i) = 0;
     $i++ while $other->unauth_load({email => $prefix . $i . $address});
-    $self->update({email => $prefix . $i . $address});
+    $self->update({
+	email => $prefix . $i . $address,
+	want_bulletin => 0,
+    });
     return;
 }
 
