@@ -26,11 +26,54 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.20  2008/12/19 23:56:11  nagler
+  * Bivio::Biz::Model::QuerySearchBaseForm
+    rmpod
+  * Bivio::Biz::Model::RoleBaseList
+    added internal_qualifying_roles
+  * Bivio::Delegate::Cookie
+    was not correctly returning an empty cookie when no cookie
+  * Bivio::Delegate::TaskId
+    added GROUP_USER_ADD_FORM
+  * Bivio::PetShop::Test::PetShop
+    added create_user
+  * Bivio::PetShop::View::Base
+    added link back to PetShop
+  * Bivio::Test::Language::HTTP
+    internal_assert_no_prose didn't handle multiline
+    ignore onblur= events
+    internal_assert_no_prose: ignore onfocus & onchange events
+    internal_assert_no_prose: ignore all "on" attributes
+    fpc
+    move email and create user methods to TestUser
+  * Bivio::Type::PageSize
+    rmpod
+    added ROW_TAG_KEY
+  * Bivio::UI::FacadeBase
+    added GROUP_USER_ADD_FORM
+    renamed Users to Roster
+  * Bivio::UI::HTML::Widget::AuxiliaryForm
+    only TouchCookie if touch_cookie is set
+    don't need touch_cookie
+  * Bivio::UI::View::CSS
+    added .left
+    and td.checkbox
+  * Bivio::UI::View::GroupUser
+    added crosslinks to tasks
+    added add_form
+  * Bivio::UI::View::UserAuth
+    UserSettingsListForm => UserSettingsListForm to allow subscriptions
+  * Bivio::Util::SQL
+    move email and create user methods to TestUser
+  * Bivio::Util::TestUser
+    move email and create user methods from SQL
+    fixed bug in create
+
   Revision 7.19  2008/12/15 17:59:35  nagler
   * Bivio::ShellUtil
     todo
