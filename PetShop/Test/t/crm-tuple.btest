@@ -32,5 +32,8 @@ submit_form('Update Fields Only' => {
     product => 'Catty Wompus',
     text => $not_seen,
 });
+submit_form(Refresh => {
+    'Any Status' => 'Any Status', # force filter to Any Status
+});
 follow_link_in_table('Last Update', 'Ticket', $ticket);
 verify_no_text($not_seen);

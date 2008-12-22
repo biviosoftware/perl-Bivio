@@ -24,6 +24,9 @@ die('no subject')
     unless $subject;
 $msg = verify_local_mail($tech1, qr{.}, 1);
 $msg =~ /^Sender: crm\@/im || die('incorrect Sender: ', $msg);
+submit_form(Refresh => {
+    'Any Status' => 'Any Status', # force filter to Any Status
+});
 follow_link_in_table('Last Update', 'Ticket', $ticket);
 verify_text("Closed Ticket #$ticket");
 my($body) = 'but wait ' . random_string();

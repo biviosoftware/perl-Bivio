@@ -15,4 +15,8 @@ __PACKAGE__->compile([
     OPEN => 4,
 ]);
 
+sub get_default {
+    return shift->OPEN;
+}
+
 1;
