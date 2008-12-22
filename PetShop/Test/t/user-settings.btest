@@ -26,7 +26,7 @@ verify_form({
 verify_no_text($name);
 $name = "u$name";
 login_as('root');
-follow_link('all_users', $first);
+follow_link('all_users', qr{^All$}, $first);
 home_page();
 follow_link('settings');
 submit_form({
