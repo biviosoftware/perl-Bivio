@@ -46,11 +46,12 @@ sub internal_initialize {
         visible => [
 	    map({
 		my($n, $t) = @$_;
+                $t = Bivio::Type->get_instance($t);
 		+{
 		    name =>  $_->[0],
 		    form_name => $_->[0],
 		    type => $_->[1],
-		    default_value => $t->isa('Bivio::Type::Enum')
+		    default_value => UNIVERSAL::isa($t, 'Bivio::Type::Enum')
 			? $t->get_default : undef,
 		    constraint => 'NONE',
 		};
