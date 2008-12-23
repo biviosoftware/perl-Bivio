@@ -243,7 +243,6 @@ sub vs_grid3 {
 	),
     ]], {
 	class => $qualifier,
-	hide_empty_cells => 1,
     });
 }
 
@@ -415,7 +414,6 @@ sub vs_simple_form {
 		} @$rows),
 	    ], {
 		class => 'simple',
-		hide_empty_cells => 1,
 	    }),
 	]),
     );
