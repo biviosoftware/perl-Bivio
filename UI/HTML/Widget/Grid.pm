@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Grid;
 use strict;
@@ -369,6 +369,7 @@ sub render {
     my($req) = $source->get_request;
     $$buffer .= $self->render_start_tag($source, '');
     my($r, $c);
+    my($hide_cells) = $self->render_simple_attr('hide_empty_cells', $source);
  ROW: foreach $r (@{$fields->{rows}}) {
 	my($row) = "<tr>\n";
 	foreach $c (@$r) {
@@ -398,14 +399,15 @@ sub render {
 		$cell = $w;
 	    }
 	    # else undefined, render nothing
-	    next if $self->unsafe_get('hide_empty_cells')
-		&& $cell =~ m{^<td[^>]*></td>$}s;
 	    $row .= $cell;
 	}
+# 	$row =~ s{<td[^>]*></td>}{}sg
+# 	    if $hide_cells;
 	$row .= '</tr>';
 
 	# If row is completely empty, don't render it.
-	$$buffer .= $row unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
+	$$buffer .= $row
+	    unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
     }
     $$buffer .= $self->render_end_tag($source, '');
     return;
