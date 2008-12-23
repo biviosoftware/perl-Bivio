@@ -59,6 +59,10 @@ my($do_by_two) = 0;
 	    class() => 0,
 	    [class()->new] => 0,
 	],
+	type => [
+	    Line => Type_Line(),
+	    [Gender => 'male'] => [Type_Gender()->MALE],
+	],
     ],
     sub {req()} => [
 	req => [
