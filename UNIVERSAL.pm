@@ -388,6 +388,12 @@ sub super_for_method {
     # DOES NOT RETURN
 }
 
+sub type {
+    my($proto, $class) = (shift, shift);
+    $class = $proto->use('Type', $class);
+    return @_ ? $class->from_literal_or_die(@_) : $class;
+}
+
 sub ureq {
     return _ureq(unsafe_get_nested => @_);
 }
