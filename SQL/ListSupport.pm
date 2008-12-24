@@ -701,15 +701,22 @@ sub _prepare_ordinal_clauses {
     # Generates the order_by and group_by clauses.
     my($attrs) = $self->internal_get;
     my($res) = '';
-    $res .= ' GROUP BY ' . join(',', map($_->{sql_name}, @{$attrs->{group_by}}))
-	if @{$attrs->{group_by}};
+    $res .= ' GROUP BY '
+	. join(
+	    ',',
+	    map($_->{type}->to_group_by_value($_->{sql_name}),
+		@{$attrs->{group_by}}),
+	)
+        if @{$attrs->{group_by}};
     my($qob);
     if (@{$attrs->{order_by}} and $qob = $query->get('order_by') and @$qob) {
 	my $max_i = $query->unsafe_get('want_only_one_order_by') ? 2 : @$qob;
         $res .= ' ORDER BY';
         for (my($i) = 0; $i < $max_i; $i += 2) {
-	    $res .= ' ' . $attrs->{columns}->{$qob->[$i]}->{sql_name}
-		. ($qob->[$i+1] ? ',' : ' desc,');
+	    my($c) = $attrs->{columns}->{$qob->[$i]};
+	    $res .= ' '
+		. $c->{type}->to_order_by_value($c->{sql_name})
+	        . ($qob->[$i+1] ? ',' : ' desc,');
 	}
 	chop($res);
     }
@@ -719,22 +726,16 @@ sub _prepare_ordinal_clauses {
 
 sub _prepare_query_values {
     my($self, $stmt, $query) = @_;
-    # Put auth_id and parent_id on statement, if they exist
-
     foreach my $col (qw(auth_id auth_user_id parent_id)) {
 	$stmt->where([$self->get($col)->{name}, [$query->get($col)]])
 	    if $self->unsafe_get($col);
     }
-
-    # put dates on stmt
     if ($self->unsafe_get('date')) {
 	my($begin_date, $interval, $end_date)
 	    = $query->get(qw(begin_date interval date));
 	unless ($end_date || $begin_date) {
-#TODO: make this a $req->warn  or fix Alert to have a hook to $req on warn
-	    Bivio::IO::Alert->warn('query has interval "',
-		$interval, '" but no date, ignoring')
-		    if $interval;
+	    b_warn($interval, ': interval but no date, ignoring; ', $query)
+		if $interval;
 	}
 	else {
 	    # Won't have both a begin_date and interval (see ListQuery)
@@ -746,7 +747,6 @@ sub _prepare_query_values {
 		    if $end_date;
 	}
     }
-    
     return;
 }
 

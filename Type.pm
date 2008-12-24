@@ -264,6 +264,10 @@ sub row_tag_replace {
     return;
 }
 
+sub to_group_by_value {
+    return shift->to_order_by_value(@_);
+}
+
 sub to_html {
     # (proto, any) : string
     # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
@@ -280,6 +284,11 @@ sub to_literal {
     # See L<from_literal|"from_literal">.
     my(undef, $value) = @_;
     return defined($value) ? $value : '';
+}
+
+sub to_order_by_value {
+    shift;
+    return shift;
 }
 
 sub to_query {
