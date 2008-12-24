@@ -139,7 +139,7 @@ sub create_test_db {
     # Destroys old database, creates new database, populates with test data.
     # Subclasses should override L<initialize_test_data|"initialize_test_data"> to
     # create the test data.
-    $self->initialize_ui;
+    $self->initialize_fully;
     my($req) = $self->get_request;
     die('cannot be run on production system')
 	if $req->is_production;
