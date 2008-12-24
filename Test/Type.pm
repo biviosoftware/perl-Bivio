@@ -6,13 +6,7 @@ use Bivio::Base 'TestUnit.Unit';
 use Bivio::TypeError;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD);
-
-sub AUTOLOAD {
-    my($func) = $AUTOLOAD =~ /(\w+)$/;
-    return if $func eq 'DESTROY';
-    return [undef, Bivio::TypeError->$func(@_)];
-}
+my($_TE) = b_use('Bivio.TypeError');
 
 sub UNDEF {
     return [undef, undef];
@@ -20,7 +14,17 @@ sub UNDEF {
 
 sub from_literal_error {
     my(undef, $type_error) = @_;
-    return [undef, Bivio::TypeError->from_any($type_error)];
+    return [undef, $_TE->from_any($type_error)];
+}
+
+sub handle_autoload {
+    my($self, $func) = @_;
+    return $_TE->unsafe_from_name($func);
+}
+
+sub handle_autoload_ok {
+    my(undef, $func) = @_;
+    return $_TE->unsafe_from_name($func);
 }
 
 sub unit {
