@@ -168,7 +168,7 @@ sub initialize_test_data {
     _init_logo($self);
     _init_default_tuple($self);
     _init_mail($self);
-    _init_crm($self);
+    $self->new_other('TestCRM')->init;
     _init_site_admin($self);
     $self->new_other('RealmUser')->audit_all_users;
     return;
@@ -194,11 +194,34 @@ sub realm_role_config {
     ];
 }
 
+sub top_level_forum {
+    my($self, $name, $admins, $users) = @_;
+    $self->req->set_realm(undef);
+    $self->model(ForumForm => {
+        'RealmOwner.display_name' => $_S->to_camel_case($name),
+	'RealmOwner.name' => $name,
+	'Forum.want_reply_to' => 1,
+    });
+    my($rid) = $self->req('auth_id');
+    $self->model('ForumUserDeleteForm', {
+	'RealmUser.realm_id' => $rid,
+	'User.user_id' => _realm_id($self, $self->ROOT),
+    });
+    foreach my $user (@$admins, @$users) {
+	$self->model('ForumUserAddForm', {
+	    'RealmUser.realm_id' => $rid,
+	    'Forum.want_reply_to' => 1,
+	    'User.user_id' => _realm_id($self, $user),
+	    administrator => grep($_ eq $_, @$admins) ? 1 : 0,
+	});
+    }
+    return;
+}
+
 sub _init_crm {
     my($self) = @_;
     foreach my $forum (qw(CRM_TUPLE_FORUM CRM_FORUM)) {
-	_top_level_forum(
-	    $self,
+	$self->top_level_forum(
 	    $self->$forum(),
 	    [$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
 	);
@@ -257,7 +280,7 @@ sub _init_crm {
 sub _init_default_tuple {
     my($self) = @_;
     my($req) = $self->req;
-    _top_level_forum($self, $self->TUPLE_FORUM, [$self->TUPLE_USER], []);
+    $self->top_level_forum($self->TUPLE_FORUM, [$self->TUPLE_USER], []);
     $self->model('TupleSlotType')->create_from_hash({
 	Status => {
 	    type_class => 'TupleSlot',
@@ -692,8 +715,8 @@ sub _init_logo {
 
 sub _init_mail {
     my($self) = @_;
-    _top_level_forum(
-	$self, $self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    $self->top_level_forum(
+	$self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
     return;
 }
 
@@ -753,30 +776,6 @@ sub _realm_id {
     my($ro) = $self->model('RealmOwner');
     return $ro->unauth_load({name => $name}) ? $ro->get('realm_id')
 	:  $self->create_test_user($name);
-}
-
-sub _top_level_forum {
-    my($self, $name, $admins, $users) = @_;
-    $self->req->set_realm(undef);
-    $self->model(ForumForm => {
-        'RealmOwner.display_name' => $_S->to_camel_case($name),
-	'RealmOwner.name' => $name,
-	'Forum.want_reply_to' => 1,
-    });
-    my($rid) = $self->req('auth_id');
-    $self->model('ForumUserDeleteForm', {
-	'RealmUser.realm_id' => $rid,
-	'User.user_id' => _realm_id($self, $self->ROOT),
-    });
-    foreach my $user (@$admins, @$users) {
-	$self->model('ForumUserAddForm', {
-	    'RealmUser.realm_id' => $rid,
-	    'Forum.want_reply_to' => 1,
-	    'User.user_id' => _realm_id($self, $user),
-	    administrator => grep($_ eq $_, @$admins) ? 1 : 0,
-	});
-    }
-    return;
 }
 
 1;
