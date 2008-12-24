@@ -20,4 +20,8 @@ sub from_sql_column {
     return $proto->date_from_parts(1, $m, $y);
 }
 
+sub to_order_by_value {
+    return shift->from_sql_value(@_);
+}
+
 1;
