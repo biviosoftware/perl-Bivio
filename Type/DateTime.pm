@@ -85,6 +85,10 @@ sub FIRST_YEAR {
     return 1800;
 }
 
+sub FROM_SQL_FORMAT {
+    shift->SQL_FORMAT;
+}
+
 sub LAST_DATE_IN_JULIAN_DAYS {
     # Returns 1/1/2199 in julian.
     return 2524593;
@@ -150,6 +154,10 @@ sub SECONDS_IN_DAY {
 sub SQL_FORMAT {
     # Returns 'J SSSSS'.
     return 'J SSSSS';
+}
+
+sub TO_SQL_FORMAT {
+    return shift->SQL_FORMAT;
 }
 
 sub UNIX_EPOCH_IN_JULIAN_DAYS {
@@ -412,9 +420,9 @@ sub from_parts_or_die {
 }
 
 sub from_sql_value {
-    my(undef, $place_holder) = @_;
+    my($proto, $place_holder) = @_;
     # Returns C<TO_CHAR(I<place_holder>, 'J SSSSS')>.
-    return 'TO_CHAR('.$place_holder.",'".SQL_FORMAT()."')";
+    return 'TO_CHAR('.$place_holder.",'".$proto->FROM_SQL_FORMAT."')";
 }
 
 sub from_unix {
@@ -836,7 +844,7 @@ sub to_parts {
 sub to_sql_value {
     my($proto, $place_holder) = @_;
     $place_holder ||= '?';
-    return qq{TO_DATE($place_holder,'@{[$proto->SQL_FORMAT]}')};
+    return qq{TO_DATE($place_holder,'@{[$proto->TO_SQL_FORMAT]}')};
 }
 
 sub to_string {
