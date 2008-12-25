@@ -57,6 +57,7 @@ sub handle_mail_post_create {
 	}) unless $tid eq $realm_mail->get('thread_root_id');
 	$self->update({
 	    %$v,
+            _user_id_for_update_mail($self, $realm_mail),
 	    _status_for_update_mail($self, $realm_mail),
 	});
 	return;
@@ -189,6 +190,15 @@ sub _status_for_update_mail {
 	&& !_is_realm_member($self, $realm_mail)
         ? (crm_thread_status => $_CTS->OPEN)
 	: ();
+}
+
+sub _user_id_for_update_mail {
+    my($self, $realm_mail) = @_;
+    my($e) = $self->new_other('Email');
+    return $e->unauth_load({
+        email => $self->type(Email => $realm_mail->get('from_email')),
+    }) ? (modified_by_user_id => $e->get('realm_id'))
+       : ();
 }
 
 1;
