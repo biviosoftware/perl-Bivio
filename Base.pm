@@ -26,6 +26,7 @@ sub import {
     );
     {
 	no strict 'refs';
+	*{$pkg . '::b_debug'} = \&b_debug;
 	*{$pkg . '::b_die'} = \&b_die;
 	*{$pkg . '::b_info'} = \&b_info;
 	*{$pkg . '::b_trace'} = \&b_trace;
@@ -33,6 +34,10 @@ sub import {
 	*{$pkg . '::b_warn'} = \&b_info;
     };
     return;
+}
+
+sub b_debug {
+    return $_A->debug($_A->calling_context, @_);
 }
 
 sub b_die {
