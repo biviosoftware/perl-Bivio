@@ -63,7 +63,7 @@ sub internal_prepare_statement {
 	    ['owner.Email.location', [$_LOCATION]],
 	]),
 	$stmt->LEFT_JOIN_ON(qw(CRMThread modified_by.Email), [
-	    ['CRMThread.owner_user_id', 'modified_by.Email.realm_id'],
+	    ['CRMThread.modified_by_user_id', 'modified_by.Email.realm_id'],
 	    ['modified_by.Email.location', [$_LOCATION]],
 	]),
 	$stmt->LEFT_JOIN_ON(qw(RealmMail TupleTag), [
