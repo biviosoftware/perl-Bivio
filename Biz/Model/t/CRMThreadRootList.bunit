@@ -2,47 +2,69 @@
 # $Id$
 ListModel();
 my($realm) = 'crm_tuple_forum';
-req()->set_realm_and_user($realm, 'crm_tech1')
-    ->initialize_fully('FORUM_CRM_FORM');
-model(CRMForm => {
-    to => EmailArray(remote_email($realm)),
-    cc => EmailArray(''),
+req()->set_realm_and_user($realm, 'demo')->initialize_fully('FORUM_CRM_FORM');
+DateTime()->set_test_now(DateTime()->add_seconds(DateTime()->now, -60));
+ShellUtil_TestCRM()->create_thread({
     subject => my $subject = random_string(),
-    body => 'x',
     'b_ticket.TupleTag.slot1' => 'Male Puppy',
     'b_ticket.TupleTag.slot2' => 'Medium',
-    attachment1 => undef,
-    attachment2 => undef,
-    action_id => -CRMThreadStatus('NEW')->as_int,
-    attachment3 => undef,
 });
-req()->put(query => {this => req(qw(Model.CRMThread thread_root_id))});
-model(CRMForm => {
-    action_id => -CRMThreadStatus('OPEN')->as_int,
-    update_only => 1,
-    body => '',
-    to => EmailArray(''),
-    cc => EmailArray(''),
-    action_id => realm_id('crm_tech1'),
+my($init_dt) = DateTime()->now;
+DateTime()->set_test_now(undef);
+req()->set_user('crm_tech1');
+ShellUtil_TestCRM()->update_thread({
+    action_id => realm_id('crm_tech2'),
     subject => $subject,
 });
-model(CRMQueryForm => {
-    x_slot2 => 'Medium',
-});
+my($mod_dt) = DateTime()->now;
 req()->set_realm($realm);
+foreach my $m (map(ureq($_), qw(Model.CRMThread Model.RealmMail))) {
+    $m->delete_from_request
+        if defined($m);
+}
+my($msg) = <<'EOF';
+To: $to
+From: $from
+Subject: $subject
+Message-Id: $message_id
+$extra_headers
+body
+EOF
+DateTime()->set_test_now(DateTime()->add_seconds(DateTime()->now, -60));
+Model_RealmMail()->create_from_rfc822(template(\(my $x = $msg), {
+    to => email('crm_tuple_forum'),
+    from => email('demo'),
+    subject => my $subject2 = random_string(),
+    message_id => '<a.2@a.a>',
+    extra_headers => '',
+}));
+my($email_init_dt) = DateTime()->now;
+DateTime()->set_test_now(undef);
+my($subject3) = req('Model.RealmMail')->get('subject');
+Model_RealmMail()->create_from_rfc822(template(\($x = $msg), {
+    from => email('crm_tech1'),
+    to => email('crm_tuple_forum'),
+    subject => $subject3,
+    message_id => '<a.2@a.a>',
+    extra_headers => '',
+}));
+my($email_mod_dt) = DateTime()->now;
 [
     load_all => [
-	[] => sub {
-	    my($count) = 0;
-	    shift->get('object')->do_rows(sub {
-	        my($it) = shift;
-		$count++
-		    if $it->get('RealmMail.subject') =~ /$subject/;
-		die() unless $it->get('TupleTag.slot2') eq 'Medium';
-		return 1;
-	    });
-	    assert_equals(1, $count);
-	    return 1;
-	},
+        [] => [{
+            'RealmMail.subject' => qr{$subject},
+            'RealmFile.modified_date_time' => $init_dt,
+            'CRMThread.modified_date_time' => $mod_dt,
+            modified_by_name => qr{crm_tech1},
+            owner_name => qr{crm_tech2},
+            'RealmMail.from_email' => qr{demo},
+        }, {
+            'RealmMail.subject' => qr{$subject2},
+            'RealmFile.modified_date_time' => $email_init_dt,
+            'CRMThread.modified_date_time' => $email_mod_dt,
+            modified_by_name => qr{crm_tech1},
+            owner_name => undef,
+            'RealmMail.from_email' => qr{demo},
+        }],
     ],
 ];
