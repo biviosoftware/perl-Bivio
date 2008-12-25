@@ -9,7 +9,7 @@ my($_DT) = b_use('Type.DateTime');
 my($_EA) = b_use('Type.EmailArray');
 my($_CTS) = b_use('Type.CRMThreadStatus');
 
-sub create_ticket_and_thread {
+sub create_thread {
     my($self, $args) = @_;
     my($req) = $self->req;
     foreach my $m (map($req->unsafe_get($_),
@@ -25,8 +25,8 @@ sub create_ticket_and_thread {
         body => b_use('Biz.Random')->string,
         attachment1 => undef,
         attachment2 => undef,
-        action_id => -$self->type(CRMThreadStatus => 'NEW')->as_int,
         attachment3 => undef,
+        action_id => -$self->type(CRMThreadStatus => 'NEW')->as_int,
         %$args,
     });
     return;
@@ -37,6 +37,30 @@ sub init {
     $self->initialize_fully;
     _init_bunit($self);
     _init_btest($self);
+    return;
+}
+
+sub update_thread {
+    my($self, $args, $thread_id) = @_;
+    my($req) = $self->req;
+    $thread_id ||= $self->req(qw(Model.CRMThread thread_root_id));
+    foreach my $m (map($req->unsafe_get($_),
+                       qw(Model.CRMThread Model.RealmMail))) {
+        $m->delete_from_request
+            if defined($m);
+    }
+    $req->put(query => {this => $thread_id});
+    $self->model(CRMForm => {
+        to => $self->type(EmailArray => $req->get('auth_realm')
+                              ->format_email),
+        cc => $self->type(EmailArray => ''),
+        body => b_use('Biz.Random')->string,
+        attachment1 => undef,
+        attachment2 => undef,
+        attachment3 => undef,
+        action_id => -$self->type(CRMThreadStatus => 'OPEN')->as_int,
+        %$args,
+    });
     return;
 }
 
@@ -122,7 +146,7 @@ sub _init_bunit {
         $t = $_DT->add_days($t, -31);
         foreach my $priority (1..3) {
             foreach my $n (1..(2**$priority - $month)) {
-                $self->create_ticket_and_thread({
+                $self->create_thread({
                     'b_ticket.TupleTag.slot1' => $priority,
                 });
             }
