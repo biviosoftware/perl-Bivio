@@ -26,11 +26,39 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.22  2008/12/25 00:54:02  dobbs
+  * Bivio::Base
+    added b_debug
+  * Bivio::Biz::Model::CRMThread
+    incoming emails now correctly update modified_by_user_id
+  * Bivio::Biz::Model::CRMThreadRootList
+    fixed bug getting email for CRMThread.modified_by_user_id
+  * Bivio::PetShop::Util::SQL
+    refactored Util.SQL, added Util.TestCRM and expanded CRM test data
+  * Bivio::SQL::ListSupport
+    added to_order_by_value and to_group_by_value hooks for Types
+  * Bivio::Test::Type
+    use handle_autoload instead of overriding AUTOLOAD
+  * Bivio::Test::Unit
+    AUTOLOAD now calls handle_autoload() if handle_autoload_ok() so
+    subclasses have a hook in AUTOLOAD without having to override it.
+  * Bivio::Type::DateTime
+    added TO_SQL_FORMAT and FROM_SQL_FORMAT
+  * Bivio::Type
+    added to_order_by_value and to_group_by_value hooks for Types
+  * Bivio::UI::XHTML::ViewShortcuts
+    removed hide_empty_cells, because didn't work, and doesn't work for
+    header when logo is put in empty cell
+  * Bivio::UNIVERSAL
+    added type()
+  * Bivio::Util::SQL
+    create_test_db now calls initialize_fully()
+
   Revision 7.21  2008/12/22 22:04:16  dobbs
   * Bivio::Biz::Model::Email
     set want_bulletin to zero on invalidate
