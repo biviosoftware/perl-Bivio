@@ -19,7 +19,7 @@ sub from_literal_error {
 
 sub handle_autoload {
     my($self, $func) = @_;
-    return $_TE->unsafe_from_name($func);
+    return [undef, $_TE->from_name($func)];
 }
 
 sub handle_autoload_ok {
