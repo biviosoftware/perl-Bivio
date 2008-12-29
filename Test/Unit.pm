@@ -75,8 +75,8 @@ sub AUTOLOAD {
     my($b) = "builtin_$func";
     return $_PROTO->can($b)
 	? $_PROTO->$b(@_)
-        : $_PROTO->can('handle_autoload_ok') && $_PROTO->handle_autoload_ok($func)
-        ? $_PROTO->handle_autoload($func, @_)
+        : $_TYPE && $_TYPE->can('handle_autoload_ok') && $_TYPE->handle_autoload_ok($func)
+        ? $_TYPE->handle_autoload($func, @_)
 	: Bivio::DieCode->is_valid_name($func) && Bivio::DieCode->can($func)
 	? Bivio::DieCode->$func()
 	: $_TYPE
