@@ -100,9 +100,6 @@ $root_prefix::BConf->merge_dir({
     'Bivio::Delegate::Cookie' => {
         tag => '$cookie_tag',
     },
-    'Societas::Agent::HTTP::Cookie' => {
-        tag => '$cookie_tag',
-    },
     'Bivio::UI::Facade' => {
         local_file_root => '/var/www/facades',
         want_local_file_cache => 1,
