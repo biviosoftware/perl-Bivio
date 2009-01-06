@@ -26,6 +26,7 @@ my($_DEFAULT_DBI_NAME);
 # Number of times we retry a single statement.
 my($_MAX_RETRIES) = 3;
 my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
+b_use('Action.PingReply')->register_handler(__PACKAGE__);
 
 sub CAN_LIMIT_AND_OFFSET {
     # The implemenation allows C<LIMIT> and C<OFFSET> clauses.
@@ -234,6 +235,10 @@ sub get_instance {
 sub handle_commit {
     shift->commit(@_);
     return;
+}
+
+sub handle_ping_reply {
+    return shift->ping_connection;
 }
 
 sub handle_rollback {
