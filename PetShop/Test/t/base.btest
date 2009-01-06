@@ -3,3 +3,5 @@
 test_setup('PetShop');
 home_page();
 visit_uri('/pub/ping');
+test_deviance('precondition');
+visit_uri('/pub/ping?View.Example=1');
