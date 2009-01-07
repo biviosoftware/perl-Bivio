@@ -47,6 +47,7 @@ my($_BUNDLE) = [qw(
     role_unused_11
     site_admin_forum
     site_admin_forum_users
+    crm_mail
 )];
 my($_AGGREGATES) = [qw(
     group_concat(text)
@@ -564,6 +565,21 @@ EOF
     $self->model('RealmOwner')
         ->init_realm_type($_RT->CALENDAR_EVENT);
     $self->new_other('RealmRole')->copy_all(forum => 'calendar_event');
+    return;
+}
+
+sub internal_upgrade_db_crm_mail {
+    my($self) = @_;
+$self->run(<<'EOF');
+ALTER TABLE crm_thread_t
+  DROP CONSTRAINT crm_thread_t6
+/
+ALTER TABLE crm_thread_t
+  ADD CONSTRAINT crm_thread_t6
+  FOREIGN KEY (thread_root_id)
+  REFERENCES realm_mail_t(realm_file_id)
+/
+EOF
     return;
 }
 
@@ -1469,7 +1485,6 @@ sub internal_upgrade_db_site_admin_forum_users {
 		});
 	    }
 	}
-	b_info('Account->audit_all_users');
 	return;
     });
     return;
