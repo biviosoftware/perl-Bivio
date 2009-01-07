@@ -47,8 +47,8 @@ my($_BUNDLE) = [qw(
     role_unused_11
     site_admin_forum
     site_admin_forum_users
-    crm_mail
 )];
+#    crm_mail
 my($_AGGREGATES) = [qw(
     group_concat(text)
 )];
