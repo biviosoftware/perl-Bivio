@@ -24,7 +24,7 @@ sub handle_autoload {
 
 sub handle_autoload_ok {
     my(undef, $func) = @_;
-    return $_TE->unsafe_from_name($func);
+    return $_TE->is_valid_name($func) && $_TE->unsafe_from_name($func);
 }
 
 sub unit {
