@@ -135,7 +135,7 @@ sub get_content {
 	return \$c
 	    unless $l;
 	$self->throw_die(INPUT_TOO_LARGE => "Content-Length too large: $l")
-	    if $l > 120_000_000;
+	    if $l > 1_000_000_000;
 	$r->read($c, $l);
 	$self->throw_die(CLIENT_ERROR =>
 	    'client interrupt or timeout while reading form-data',
