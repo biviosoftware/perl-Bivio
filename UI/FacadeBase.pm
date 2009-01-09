@@ -73,6 +73,25 @@ sub is_site_realm_name {
 	$realm_name, $self->get('Constant')->get_value('site_realm_name'));
 }
 
+sub mail_receive_task_list {
+    my($self, @tasks) = @_;
+    map({
+	my($name, $uri_suffix) = ref($_) ? @$_
+	    : ($_,
+	       lc($_ =~ /MAIL_RECEIVE_(\w+)/ ? $1
+	       : $_ =~ /_MAIL_RECEIVE$/ ? ''
+	       : b_die($_, ': invalid mail_receive task name')));
+	[$name => Bivio::Die->eval(qq{
+	     sub {shift->get_facade->mail_receive_uri('$uri_suffix')}
+	})];
+    } @tasks);
+}
+
+sub mail_receive_uri {
+    my($self, $suffix) = @_;
+    return '?/' . $self->MAIL_RECEIVE_PREFIX . $suffix;
+}
+
 sub new {
     my($proto, $config) = @_;
     return $config->{clone} ? $proto->SUPER::new($config) : $proto->SUPER::new(
@@ -671,9 +690,12 @@ sub _cfg_mail {
 	    [mail_msg_border => 0x666666],
 	],
 	Task => [
-	    [FORUM_MAIL_RECEIVE => sub {
-		 return '?/' . shift->get_facade->MAIL_RECEIVE_PREFIX;
-	    }],
+	    __PACKAGE__->mail_receive_task_list(
+		'FORUM_MAIL_RECEIVE',
+		[USER_MAIL_BOUNCE =>
+		     Bivio::Biz::Model->get_instance('RealmMailBounce')
+		         ->TASK_URI],
+	    ),
 	    $_C->if_version(
 		4 => sub {
 		    return (
@@ -685,18 +707,14 @@ sub _cfg_mail {
 		    );
 		},
 	    ),
-	    [FORUM_MAIL_REFLECTOR => undef],
+	    [GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT => undef],
 	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
+	    [FORUM_MAIL_REFLECTOR => undef],
 	    [MAIL_RECEIVE_FORWARD => undef],
 	    [MAIL_RECEIVE_IGNORE => undef],
 	    [MAIL_RECEIVE_NOT_FOUND => undef],
 	    [MAIL_RECEIVE_NO_RESOURCES => undef],
 	    [MAIL_RECEIVE_FORBIDDEN => undef],
-	    [USER_MAIL_BOUNCE => sub {
-		 return '?/' . shift->get_facade->MAIL_RECEIVE_PREFIX
-		     . Bivio::Biz::Model->get_instance('RealmMailBounce')
-			 ->TASK_URI;
-	    }],
 	],
 	Text => [
 	    ['MailReceiveDispatchForm.uri_prefix' => sub {
