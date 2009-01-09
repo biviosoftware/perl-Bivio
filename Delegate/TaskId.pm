@@ -1224,8 +1224,17 @@ sub info_wiki {
 	    Action.WikiView->execute_diff
 	    View.Wiki->versions_diff
 	)],
+	[qw(
+	    GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
+	    124
+	    ANY_GROUP
+	    MAIL_SEND&FEATURE_MAIL
+	    Action.NightlyTestOutput
+	    Action.MailReceiveStatus
+	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+        )],
     ];
-#124-129 free
+#125-129 free
 }
 
 sub info_xapian {
