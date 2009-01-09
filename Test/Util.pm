@@ -38,7 +38,7 @@ commands:
     mock_sendmail -ffrom@email.com recipient1,recipient2,... -- bypasses MTA for acceptance tests
     nightly -- runs all acceptance tests with current tests from CVS
     remote_trace [named_filters] -- turn on tracing on a server
-    task name query path_info -- executes task in context supplied returns output
+    task name query path_info facade -- executes task in context supplied returns output
     unit tests/dirs... -- runs the tests (*.t) and print cummulative results
 EOF
 }
@@ -267,7 +267,7 @@ sub remote_trace {
 }
 
 sub task {
-    my($self, $task, $query, $path_info) = @_;
+    my($self, $task, $query, $path_info, $facade) = @_;
     # Executes the task, and returns the result. See
     # L<Bivio::Test::Request->execute_task|Bivio::Test::Request->execute_task>
     # for output details.
@@ -282,7 +282,7 @@ sub task {
     return $self->get_request->execute_task($task, {
 	query => $query,
 	path_info => $path_info,
-    });
+    }, $facade || ());
 }
 
 sub unit {
