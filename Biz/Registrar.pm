@@ -11,11 +11,11 @@ sub call_fifo {
     my($self, $method, $args) = @_;
     my($q) = $self->[$_IDI];
     $args ||= [];
-    foreach my $o (@$q) {
-	$o->$method(ref($args) eq 'CODE' ? @{$args->()} : @$args)
-	    if $o->can($method);
-    }
-    return;
+    return [map(
+	!$_->can($method) ? ()
+	    : $_->$method(ref($args) eq 'CODE' ? @{$args->()} : @$args),
+	@$q,
+    )];
 }
 
 sub new {
