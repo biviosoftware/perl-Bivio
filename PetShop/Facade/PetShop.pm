@@ -110,9 +110,11 @@ __PACKAGE__->new({
 	[ORDER_COMMIT => '?/commit-order'],
 	[DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
 	[SOURCE => 'src'],
-	[USER_MAIL_RECEIVE => '?/_mail_receive_'],
-	# Only needs to be defined for testing
-	[MAIL_RECEIVE_IGNORE => '?/_mail_receive_ignore'],
+	__PACKAGE__->mail_receive_task_list(
+	    'MAIL_RECEIVE_IGNORE',
+	    'USER_MAIL_RECEIVE',
+	    'GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT',
+	),
 	[USER_ACCOUNT_CREATE_AND_PLACE_ORDER => 'my/create-account-and-order'],
 	[ORDER_HOME => '?'],
 	[WORKFLOW_CALLER => 'pub/workflow-caller'],
@@ -222,8 +224,6 @@ __PACKAGE__->new({
 	    bivio_power => 'Powered by bivio Software, Inc.',
 	    image_bunit => 'Image.bunit',
 	]],
-	# Misc Model support
-	['MailReceiveDispatchForm.uri_prefix' => '_mail_receive_'],
 	['WorkflowCallerForm.prev_task' => 'Previous Task'],
 	[test_text => 'Global'],
 	[Test_Text_Parent => [
