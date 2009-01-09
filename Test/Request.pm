@@ -54,6 +54,8 @@ sub delete_class_from_self {
 
 sub execute_task {
     my($self) = shift->initialize_fully(@_);
+#TODO: hacked - remove the list model or PropertyModel::_parse_query() fails
+    $self->req->delete('list_model');
     $self->capture_mail;
     $self->get('task')->execute($self);
     my($o) = $self->get('reply')->get_output;
@@ -99,12 +101,19 @@ sub handle_prepare_case {
 sub initialize_fully {
     my($self) = shift(@_);
     $self = $self->get_instance unless ref($self);
-    my($task_id, $req_attrs) = @_;
+    my($task_id, $req_attrs, $facade_name) = @_;
     ($req_attrs ||= {})->{task_id} = Bivio::Agent::TaskId->from_any(
 	$task_id || $self->unsafe_get('task_id') || 'SHELL_UTIL');
     Bivio::IO::ClassLoader->simple_require(
 	'Bivio::Agent::Dispatcher')->initialize;
-    $self->put(%$req_attrs)->setup_all_facades;
+    $self->put(%$req_attrs);
+
+    if ($facade_name) {
+	$self->setup_facade($facade_name);
+    }
+    else {
+	$self->setup_all_facades;
+    }
     Bivio::Die->die(
 	'facade not fully initialized; this method must be called before'
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
