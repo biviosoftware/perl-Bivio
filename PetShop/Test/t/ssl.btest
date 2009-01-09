@@ -1,0 +1,15 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+(my $uri = get_uri()) =~ s/^http/https/;
+my($ssl) = unsafe_op(visit_uri => $uri);
+home_page();
+verify_uri(qr{^http:});
+visit_uri('/fourem/wiki/PrivatePage');
+verify_uri(qr{^https:})
+    if $ssl;
+submit_form({
+    email => 'root',
+    password => 'password',
+});
