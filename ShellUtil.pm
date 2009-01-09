@@ -126,6 +126,7 @@ $_C->register(my $_CFG = {
 	daemon_log_file => $_C->REQUIRED,
     },
 });
+my($_HANDLERS) = b_use('Biz.Registrar')->new;
 
 sub OPTIONS {
     # Returns a mapping of options to bivio types and default values.
@@ -753,6 +754,7 @@ sub piped_exec {
     defined($pid) || die("fork: $!");
 #TODO: Use IO::File and $_F
     unless ($pid) {
+	$_HANDLERS->call_fifo('handle_piped_exec_child');
 	(ref($command) eq 'ARRAY'
 	    ? open(OUT, '|-', @$command)
 	    : open(OUT, "| exec $command")
@@ -850,6 +852,12 @@ sub readline_stdin {
 
 sub ref_to_string {
     return shift->use('IO.Ref')->to_string(@_);
+}
+
+sub register_handler {
+    shift;
+    $_HANDLERS->push_object(@_);
+    return;
 }
 
 sub required_main {
