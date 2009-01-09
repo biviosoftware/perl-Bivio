@@ -281,12 +281,12 @@ sub _check_autoload {
     # Returns false if ok.
     return 'test_setup() must be first function called in test script'
 	if ref($self) eq __PACKAGE__;
-    return 'language function cannot begin with test_ or handle_'
-	if $func =~ /^(?:test|handle)_/;
+    return 'language function cannot begin with test_, handle_, internal_'
+	if $func =~ /^(?:test|handle|internal)_/;
     return 'test function must be all lower case and begin with letter'
 	unless $func =~ /^[a-z][a-z0-9_]+$/;
     return 'test function must contain an underscore (_)'
-	unless $func =~ /_/;
+	unless $func =~ /_/ || Bivio::UNIVERSAL->can($func);
     return ref($self) . ' does not implement this function'
 	unless $self->can($func);
     return;
