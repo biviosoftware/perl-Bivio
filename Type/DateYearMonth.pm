@@ -14,7 +14,7 @@ sub from_sql_column {
     my($proto, $value) = @_;
     return undef
         unless defined($value);
-    my($y,$m) = $value =~ /^(\d{4})(\d{2})$/;
+    my($y, $m) = $value =~ /^(\d{4})(\d{2})$/;
     b_die($value, ': illegal database format')
         unless defined($y);
     return $proto->date_from_parts(1, $m, $y);
