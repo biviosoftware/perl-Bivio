@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Request;
 use strict;
@@ -159,14 +159,7 @@ sub run_unit {
 
 sub server_redirect {
     my($self) = _redirect_check(shift);
-    my($first) = @_;
-    my(undef, $named) = $self->internal_get_named_args(
- 	ref($first) && (ref($first) ne 'HASH' || $first->{task_id})
-	    || Bivio::Agent::TaskId->is_valid_name($first)
-	    ? [qw(task_id realm query path_info no_context require_context no_form uri carry_query carry_path_info)]
-	    : [qw(uri query no_context task_id realm path_info require_context no_form carry_query carry_path_info)],
-  	\@_,
-    );
+    my(undef, $named) = $self->internal_client_redirect_args(@_);
     Bivio::Die->die($named, ': uris not supported yet')
         if defined($named->{uri});
     $self->internal_server_redirect($named);
