@@ -195,8 +195,9 @@ sub nightly {
 }
 
 sub nightly_output_to_wiki {
-    my($self) = @_;
+    my($self, $msg) = @_;
     $self->initialize_fully;
+    $msg ||= $self->read_input;
     my($q) = {path => $_WN->to_absolute('NightlyTestOutput')};
     my($rf) = $self->model('RealmFile');
     my($curr) = "\@h1 NightlyTestOutput\n";
@@ -208,7 +209,7 @@ sub nightly_output_to_wiki {
     my($which, $date);
     my($result) = {};
     my($file) = {};
-    foreach my $line (split(/\n/, ${$self->read_input})) {
+    foreach my $line (split(/\n/, ref($msg) ? $$msg : $msg)) {
 	if ($line =~ m{^Created .*/([^/]+)/(\d+)$}is) {
 	    ($which, $date) = ($1, $self->convert_literal(DateTime => $2));
 	}
