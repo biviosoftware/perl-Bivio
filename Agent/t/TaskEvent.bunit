@@ -1,12 +1,27 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
+config({
+    'Bivio::Agent::Request' => {
+	can_secure => 1,
+    },
+});
 req()->put(query => {a => 1}, path_info => '/pi');
+my($die) = Bivio_Die()->catch(sub {Bivio_Die()->throw_quietly('FORBIDDEN')});
 [
     [{
 	task_id => 'SHELL_UTIL',
 	carry_path_info => 1,
     }, req()] => [
-	as_string => 'Bivio::Agent::TaskEvent(task_id=SHELL_UTIL,path_info=/pi,carry_path_info=1)',
+	as_string => 'TaskEvent(task_id=SHELL_UTIL,path_info=/pi,carry_path_info=1)',
+    ],
+    class() => [
+	parse_die => [
+	    [$die, Agent_Task()->get_by_id('USER_ACCOUNT_EDIT'), req()] => sub {
+		assert_equals(SERVER_REDIRECT_TASK(), $die->get('code'));
+		return 1;
+	    },
+	],
     ],
 ];
+
