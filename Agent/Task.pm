@@ -306,10 +306,15 @@ sub handle_die {
 
 sub handle_pre_auth_task {
     my(undef, $task, $req) = @_;
-    $req->client_redirect_if_not_secure
-	if $task->get('require_secure')
-	&& $req->can('client_redirect_if_not_secure');
-    return;
+    return
+	unless $req->need_to_secure_task($task);
+    return {
+	method => 'client_redirect',
+	task_id => $task->get('id'),
+	carry_path_info => 1,
+	carry_query => 1,
+	require_context => 0,
+    };
 }
 
 sub handle_pre_execute_task {
@@ -416,6 +421,10 @@ sub dep_unsafe_get_attr {
     return $self->return_scalar_or_array(map($_, $self->SUPER::unsafe_get(@_)));
 }
 
+sub internal_as_string {
+    return shift->get('id')->get_name;
+}
+
 sub unsafe_get_attr_as_id {
     my($self) = shift;
     return $self->return_scalar_or_array(
@@ -453,7 +462,7 @@ sub _call_txn_resources {
 		    return;
 		},
 	    );
-	    Bivio::IO::Alert->warn(
+	    $_A->warn(
 		$r, '->', $method, ': ', $die, '; switching to rollback');
 	    $method = 'handle_rollback';
 	}
