@@ -27,6 +27,7 @@ my($_DEFAULT_DBI_NAME);
 my($_MAX_RETRIES) = 3;
 my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
 b_use('Action.PingReply')->register_handler(__PACKAGE__);
+b_use('Bivio.ShellUtil')->register_handler(__PACKAGE__);
 
 sub CAN_LIMIT_AND_OFFSET {
     # The implemenation allows C<LIMIT> and C<OFFSET> clauses.
@@ -239,6 +240,16 @@ sub handle_commit {
 
 sub handle_ping_reply {
     return shift->ping_connection;
+}
+
+sub handle_piped_exec_child {
+    foreach my $self (values(%$_CONNECTIONS)) {
+	next
+	    unless my $fields = $self->[$_IDI];
+	$fields->{connection}->{InactiveDestroy} = 1;
+	$fields->{connection} = undef;
+    }
+    return;
 }
 
 sub handle_rollback {
