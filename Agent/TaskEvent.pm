@@ -33,21 +33,15 @@ my($_IMPLICIT_OVERRIDE) = {
     carry_path_info => 1,
 };
 
-sub as_string {
+sub internal_as_string {
     my($self) = @_;
-    return shift->SUPER::as_string(@_)
-	unless ref($self);
     my($a) = $self->get_shallow_copy;
-    return ref($self)
-	. '('
-	. join(',',
-	    map($_S->compare($a->{$_}, $_DEFAULTS->{$_}) == 0 ? ()
-		: "$_=" . (
-		    $_ eq 'task_id' ? $a->{$_}->get_name
-		    : $_R->to_short_string($a->{$_})
-		),
-		@$_PARAMS)
-	) . ')';
+    return map(
+	$_S->compare($a->{$_}, $_DEFAULTS->{$_}) == 0 ? ()
+	    : "$_=" . ($_ eq 'task_id' ? $a->{$_}->get_name
+	    : $_R->to_short_string($a->{$_})),
+	@$_PARAMS,
+    );
 }
 
 sub call_method {
@@ -92,6 +86,11 @@ sub parse_die {
     unless (b_use('UI.Task')->is_defined_for_facade($params->{task_id}, $req)) {
 	_trace('error redirect not defined in facade: ', $params)
 	    if $_TRACE;
+	return;
+    }
+    if ($req->need_to_secure_task($task->get_by_id($params->{task_id}))) {
+	$req->put_client_redirect_state($params);
+	$die->set_code($_DC->CLIENT_REDIRECT_TASK);
 	return;
     }
     $die->set_code(
