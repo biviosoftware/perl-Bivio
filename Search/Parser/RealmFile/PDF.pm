@@ -6,6 +6,7 @@ use Bivio::Base 'SearchParser.RealmFile';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SU) = b_use('Bivio.ShellUtil');
+my($_D) = b_use('Bivio.Die');
 
 sub CONTENT_TYPE_LIST {
     return 'application/pdf';
@@ -31,10 +32,10 @@ sub handle_realm_file_new_text {
 
 sub _run {
     my($parseable, $cmd) = @_;
-    my($ok) = "PDF_INFO_OK$$";
-    my($out) = $_SU->piped_exec("$cmd 2>&1 && echo $ok", undef, 1);
-    return b_warn($parseable, ': ', $cmd, ' error: ', $out)
-	if !$out || $$out =~ /^Error:/s || !($$out =~ s/$ok//);
+    my($out);
+    my($die) = $_D->catch_quietly(sub {$out = $_SU->piped_exec("$cmd 2>&1")});
+    return b_warn($cmd, ': ', $die || $out || 'no output')
+	if $die || !$out || $$out =~ /^Error:/s;
     return $$out;
 }
 
