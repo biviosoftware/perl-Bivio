@@ -34,7 +34,7 @@ sub _run {
     my($ok) = "PDF_INFO_OK$$";
     my($out) = $_SU->piped_exec("$cmd 2>&1 && echo $ok", undef, 1);
     return b_warn($parseable, ': ', $cmd, ' error: ', $out)
-	if !$out || $$out =~ /^Error:/s || $$out !~ s/$ok//;
+	if !$out || $$out =~ /^Error:/s || !($$out =~ s/$ok//);
     return $$out;
 }
 
