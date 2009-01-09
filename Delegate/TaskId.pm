@@ -824,6 +824,7 @@ sub info_otp {
 	    Model.UserOTPForm
 	    View.OTP->form
 	    next=MY_SITE
+	    require_secure=1
 	)],
 #131-139 free
     ];
@@ -1026,6 +1027,7 @@ sub info_user_auth {
 	    Action.UserPasswordQuery
 	    password_task=USER_PASSWORD
 	    NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
+	    require_secure=1
 	)],
 	# forbidden errors are probably due to missing cookies.
 	# for example, if user is resetting password from email link
@@ -1039,6 +1041,7 @@ sub info_user_auth {
 	    View.UserAuth->password
 	    next=MY_SITE
 	    FORBIDDEN=DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
+	    require_secure=1
 	)],
 	[qw(
 	    GENERAL_USER_PASSWORD_QUERY_ACK
@@ -1072,6 +1075,7 @@ sub info_user_auth {
 	    Model.UserLoginForm
 	    View.UserAuth->login
 	    next=MY_SITE
+	    require_secure=1
 	)],
 	[qw(
 	    LOGOUT
@@ -1095,6 +1099,7 @@ sub info_user_auth {
 	    reset_task=USER_PASSWORD_RESET
 	    user_exists_task=GENERAL_USER_PASSWORD_QUERY
 	    reset_next_task=GENERAL_USER_PASSWORD_QUERY_MAIL
+	    require_secure=1
 	)],
 	[qw(
 	    USER_CREATE_DONE
@@ -1224,15 +1229,15 @@ sub info_wiki {
 	    Action.WikiView->execute_diff
 	    View.Wiki->versions_diff
 	)],
-# 	[qw(
-# 	    GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
-# 	    124
-# 	    ANY_GROUP
-# 	    MAIL_SEND&FEATURE_MAIL
-# 	    Action.NightlyTestOutput
-# 	    Action.MailReceiveStatus
-# 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
-#         )],
+	[qw(
+	    GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
+	    124
+	    ANY_GROUP
+	    MAIL_SEND&FEATURE_MAIL
+	    Action.NightlyTestOutput
+	    Action.MailReceiveStatus
+	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+        )],
     ];
 #125-129 free
 }
