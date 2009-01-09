@@ -199,19 +199,50 @@ my($_T) = b_use('Agent.Task');
 my($_TI) = b_use('Agent.TaskId');
 my($_UA) = b_use('Type.UserAgent');
 my($_V7) = b_use('IO.Config')->if_version(7);
+my($_V1) = b_use('IO.Config')->if_version(1);
 Bivio::IO::Config->register(my $_CFG = {
     is_production => 0,
     can_secure => 1,
 });
 my($_CURRENT);
 
+sub CLIENT_REDIRECT_PARAMETERS {
+    # Order and names of params passed to client_redirect().
+    return [
+	qw(task_id realm query),
+	shift->EXTRA_URI_PARAM_LIST,
+	'path_info',
+    ];
+}
+
+sub EXTRA_URI_PARAM_LIST {
+    # Only useful to this class and subclasses.  Use FORMAT_URI_PARAMETERS
+    return qw(
+        no_context anchor require_context
+	uri form_in_query require_absolute no_form
+        carry_query carry_path_info _server_redirect
+    );
+}
+
 sub FORMAT_URI_PARAMETERS {
     # Order and names of params passed to format_uri().
-    return [qw(task_id query realm path_info no_context anchor require_context uri form_in_query require_absolute carry_query carry_path_info)];
+    return [
+	qw(task_id query realm path_info),
+	shift->EXTRA_URI_PARAM_LIST,
+    ];
 }
 
 sub FORM_IN_QUERY_FLAG {
     return 'form_post';
+}
+
+sub SERVER_REDIRECT_PARAMETERS {
+    # Order and names of params passed to server_redirect().
+    return [
+	qw(task_id realm query form),
+	shift->EXTRA_URI_PARAM_LIST,
+	'path_info',
+    ];
 }
 
 sub as_string {
@@ -298,17 +329,7 @@ sub clear_nondurable_state {
 }
 
 sub client_redirect {
-    my($self, $named) = shift->internal_get_named_args(
-    # Pass in parameters I<named> below.
-    #
-    #
-    # Redirects the client to the location of the specified new_task. By default,
-    # this uses L<redirect|"redirect">, but subclasses (HTTP) should override this
-    # to force a hard redirect.
-    #
-    # B<DOES NOT RETURN>.
-	[qw(task_id realm query path_info no_context require_context no_form uri carry_query carry_path_info)],
-	\@_);
+    my($self, $named) = shift->internal_client_redirect_args(@_);
     return $self->server_redirect($named);
 }
 
@@ -359,16 +380,45 @@ sub format_http {
     # Handles I<require_secure> according to rules in L<format_uri|"format_uri">.
     # Must be @_ so format_uri handles overloading properly
     my($uri) = $self->format_uri(@_);
-    return $uri =~ /^\w+:/ ? $uri : $self->format_http_prefix.$uri;
+    return $uri =~ /^\w+:/ ? $uri : $self->format_http_prefix . $uri;
 }
 
 sub format_http_insecure {
     my($self) = shift;
-    # Creates an http URI.  Forces http not https.  See L<format_uri|"format_uri"> for argument descriptions.
-    # Must be @_ so format_uri handles overloading properly
+    # Creates an http URI.  Forces http not https.
     my($uri) = $self->format_uri(@_);
-    return $uri if $uri =~ s/^https:/http:/;
+    return $uri
+	if $uri =~ s/^https:/http:/;
     return 'http://' . Bivio::UI::Facade->get_value('http_host', $self) . $uri;
+}
+
+sub format_http_toggling_secure {
+    b_die('format_uri handles toggling secure automatically')
+	if $_V1;
+    # (self) : string
+    # Formats the uri for this request, but toggles secure mode.  This
+    # is a very special and only used in one location.
+    my($self, $host) = @_;
+    my($is_secure, $r, $redirect_count, $uri, $query) = $self->get(
+	    qw(is_secure r redirect_count uri query));
+    $host ||= Bivio::UI::Facade->get_value('http_host', $self);
+
+    # This is particularly strange.  FormModel deletes the incoming
+    # query context.   If we haven't internally redirected, we use
+    # the original query string so we get the format_context.  If
+    # we redirected, don't bother with the form_context.
+#TODO: This is screwed up.  Probably best to take the current
+#      form's context and shove it on the URL.  Wouldn't hurt if not
+#      really the form_model.
+#      RJN 12/13/00 For require_secure, shouldn't grab form context,
+#      because we don't even want to pretend to process it.
+    $query = $redirect_count ? $_Q->format($query)
+	    : $r->args;
+    $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query)
+	if $query;
+    $uri =~ s{https?://[^/]+/?}{/};
+    # Go into secure if not secure and vice-versa
+    return ($is_secure ? 'http://' : 'https://'). $host . $uri;
 }
 
 sub format_http_prefix {
@@ -466,8 +516,7 @@ sub format_uri {
 	$uri = $_FCT->format_uri($named, $self);
 	my($task) = $_T->get_by_id($named->{task_id});
 	$uri = $self->format_http_prefix(1) . $uri
-	    if $task->get('require_secure') && !$self->unsafe_get('is_secure')
-		&& $self->get('can_secure');
+	    if $self->need_to_secure_task($task);
     }
     if (defined($named->{query})) {
 	$named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1
@@ -590,9 +639,22 @@ sub handle_config {
 }
 
 sub internal_clear_current {
-    # B<DO NOT CALL THIS UNLESS YOU KNOW WHAT YOU ARE DOING.>
+    # DO NOT CALL THIS UNLESS YOU KNOW WHAT YOU ARE DOING.
     $_CURRENT = undef;
     return;
+}
+
+sub internal_client_redirect_args {
+    my($self) = shift;
+    my($first) = @_;
+    return $self->internal_get_named_args(
+ 	ref($first) && (ref($first) ne 'HASH' || $first->{task_id})
+	    || Bivio::Agent::TaskId->is_valid_name($first)
+	    ? $self->CLIENT_REDIRECT_PARAMETERS
+	    : [qw(uri query no_context task_id realm path_info),
+	       $self->EXTRA_URI_PARAM_LIST],
+	\@_,
+    );
 }
 
 sub internal_copy_implicit {
@@ -614,6 +676,8 @@ sub internal_copy_implicit {
 
 sub internal_get_named_args {
     my(undef, $names, $argv) = @_;
+    b_die($argv, ': too many positional parameters')
+	if @$argv > 5;
     # Calls name_parameters in L<Bivio::UNIVERSAL|Bivio::UNIVERSAL> then
     # converts I<task_id> to a L<$_TI|$_TI>.
     my($self, $named) = shift->name_parameters(@_);
@@ -725,11 +789,11 @@ sub internal_redirect_user_realm {
 }
 
 sub internal_server_redirect {
-    my($self, $named) = shift->internal_get_named_args(
-    # Sets all values and saves form context.  See L<format_uri|"format_uri"> for the
-    # arguments.
-	[qw(task_id realm query form path_info no_context require_context no_form uri carry_query carry_path_info)],
-	\@_);
+    my($self) = shift;
+    my(undef, $named) = $self->internal_get_named_args(
+	$self->SERVER_REDIRECT_PARAMETERS,
+	\@_,
+    );
     $_FCT->assert_defined_for_facade($named->{task_id}, $self);
     my($fc) = $_FM->get_context_from_request($named, $self);
     $self->internal_redirect_realm($named->{task_id}, $named->{realm});
@@ -838,6 +902,14 @@ sub map_user_realms {
     return [map($op->($_), @$atomic_copy)];
 }
 
+sub need_to_secure_task {
+    my($self, $task) = @_;
+    return !$self->unsafe_get('is_secure')
+	&& $self->get('can_secure')
+	&& $task->get('require_secure')
+	? 1 : 0
+}
+
 sub match_user_realms {
     my($self) = shift;
     return @{$self->map_user_realms(sub {1}, @_)} ? 1 : 0;
@@ -921,13 +993,18 @@ sub redirect {
 }
 
 sub server_redirect {
-    my($task) = shift->internal_server_redirect(@_);
-    # Server_redirect the current task to the new task.
-    #
-    # See L<format_uri|"format_uri"> for args.
-    #
-    # B<DOES NOT RETURN.>
-    # clear db time
+    my($self) = shift;
+    my(undef, $named) = $self->internal_get_named_args(
+	$self->SERVER_REDIRECT_PARAMETERS,
+	\@_,
+    );
+    # Do not recurse
+    b_die($named, ': recursive redirects')
+	if $named->{_server_redirect}++;
+    if ($self->need_to_secure_task($_T->get_by_id($named->{task_id}))) {
+	return $self->client_redirect($named);
+    }
+    my($task) = $self->internal_server_redirect(@_);
     $_C->get_db_time;
     $_D->throw_quietly(
 	$_DC->SERVER_REDIRECT_TASK,
@@ -937,14 +1014,11 @@ sub server_redirect {
 }
 
 sub set_current {
-    # Sets current to I<self> and returns self.
     return shift->internal_set_current();
 }
 
 sub set_realm {
     my($self, $new_realm) = @_;
-    # Changes attributes to be authorized for I<new_realm>.  Also
-    # sets C<auth_role>.  Returns the realm.
     $new_realm = defined($new_realm)
 	? $_REALM->new($new_realm, $self)
 	: $_REALM->get_general
