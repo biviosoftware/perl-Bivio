@@ -1,0 +1,30 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+my($forum) = generate_remote_email('fourem');
+my($user) = generate_local_email('root');
+my($now) = type('DateTime')->now;
+my($now_fn) = type('DateTime')->to_file_name($now);
+send_mail($user, "nightly_test_output.$forum", {}, <<"EOF");
+Created /petshop/$now_fn
+Completed CVS checkout of test files
+cd /home/btest/petshop/$now_fn/perl/Bivio/PetShop
+export PERLLIB=/petshop/$now_fn/perl
+export BCONF=/petshop.bconf
+b-test acceptance .
+       account.btest: PASSED
+          group-admin.btest: FAILED
+basic-checkout.btest: PASSED
+          bla.btest: PASSED
+Failed tests: 
+    /petshop/$now_fn/perl/Bivio/PetShop/Test/t/group-admin.btest
+FAILED 1 (25.0%) and passed 3 (75.0%)
+EOF
+login_as('root');
+# First time, this is "edit-wiki", but doesn't matter for our purposes
+visit_uri('/fourem/wiki/NightlyTestOutput');
+poll_page(verify_text => $now_fn);
+visit_uri('/fourem/wiki/NightlyTestOutput');
+verify_text(
+    'class="FAILED">FAILED petshop ' . type('DateTime')->to_string($now));
