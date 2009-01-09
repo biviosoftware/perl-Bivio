@@ -256,12 +256,8 @@ sub get_qualified {
 
 sub get_request {
     my($self) = @_;
-    # Returns the request associated with this model.
-    # If not set, returns the current request.
-    # If neither set, throws an exception.
-    my($req) = $self->unsafe_get_request;
-    Bivio::Die->die($self, ": request not set") unless $req;
-    return $req;
+    return $self->unsafe_get_request
+	|| b_die($self, ': request not set');
 }
 
 sub has_fields {
