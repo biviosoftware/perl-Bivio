@@ -1,8 +1,8 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2001-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Delegate::TaskId;
 use strict;
-use Bivio::Base 'Bivio::Delegate::TaskId';
+use Bivio::Base 'Delegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -18,6 +18,7 @@ sub get_delegate_info {
 	    Model.UserLoginForm
 	    View.login
 	    next=CART
+            require_secure=1
 	)],
 	[qw(
 	    LOGOUT
