@@ -26,11 +26,59 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.24  2009/01/09 00:34:27  nagler
+  * Bivio::Agent::HTTP::Request
+    Increased request size limit
+    Added put_client_redirect_state and internal_client_redirect
+    Fixed up secure redirects
+    b_use
+  * Bivio::Agent::Request
+    factored out need_to_secure_task
+    Added CLIENT_REDIRECT_PARAMETERS and EXTRA_URI_PARAM_LIST and
+    SERVER_REDIRECT_PARAMETERS
+    format_http_toggling_secure is deprecated in V1 or above
+    Added internal_client_redirect_args
+  * Bivio::Agent::Task
+    call need_to_secure_task in handle_pre_auth_task and return the
+    redirect (replaces client_redirect_if_not_secure)
+  * Bivio::Agent::TaskEvent
+    formatting of as_string as internal_as_string
+    Call need_to_secure_task for rendering
+  * Bivio::Biz::Action::PingReply
+    added register_handler
+  * Bivio::Biz::Model::ForbiddenForm
+    return login_task instead of throwing a server_redirect
+  * Bivio::Biz::Model
+    fmt of get_request
+  * Bivio::Biz::Registrar
+    return result of fifo calls
+  * Bivio::Delegate::TaskId
+    rmpod
+  * Bivio::PetShop::View::Example
+    added handle_ping_reply
+  * Bivio::SQL::Connection
+    added handle_ping_reply
+    register for ShellUtil handle_piped_exec_child
+  * Bivio::Search::Parser::RealmFile::PDF
+    called piped_exec instead of backticks so conections are cleaned up properly
+  * Bivio::ShellUtil
+    added register_handler and calls to handle_piped_exec_child
+  * Bivio::Test::Type
+    handle_autoload_ok must check is_valid_name to ensure incoming is valid
+  * Bivio::Type::DateYearMonth
+    parsing in from_sql_column incorrect
+  * Bivio::Util::HTTPConf
+    removed Societas module reference
+  * Bivio::Util::LinuxConfig
+    convert ';' to ',' in _add_aliases
+  * Bivio::Util::SQL
+    removed spurious error msg
+
   Revision 7.23  2008/12/29 20:17:17  dobbs
   * Bivio::Test::Type
     correct return value for handle_autoload() to match preivous AUTOLOAD behavior
