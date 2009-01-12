@@ -26,11 +26,30 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.25  2009/01/10 01:24:30  nagler
+  * Bivio::Delegate::TaskId
+    added GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
+    require_secure on tasks with passwords
+  * Bivio::PetShop::Facade::PetShop
+    added mail_receive_task_list and mail_receive_uri to modularize
+    MailReceiveDispatchForm tasks
+    Added GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
+  * Bivio::Test::Language
+    allow _ in functions if in Bivio::UNIVERSAL
+  * Bivio::Test::Request
+    initialize_fully() now accepts facade_name
+  * Bivio::Test::Util
+    task() now accepts an optional facade name
+    nightly_output_to_wiki can take a scalar_ref as an arg
+  * Bivio::UI::FacadeBase
+    added mail_receive_task_list and mail_receive_uri to modularize
+    MailReceiveDispatchForm tasks
+
   Revision 7.24  2009/01/09 00:34:27  nagler
   * Bivio::Agent::HTTP::Request
     Increased request size limit
