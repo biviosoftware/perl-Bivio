@@ -11,6 +11,7 @@ my($_R) = b_use('IO.Ref');
 my($_S) = b_use('Type.String');
 my($_TI) = b_use('Agent.TaskId');
 my($_DC) = b_use('Bivio.DieCode');
+my($_FCT) = b_use('FacadeComponent.Task');
 my($_PARAMS) = [
     @{Bivio::Agent::Request->FORMAT_URI_PARAMETERS},
     qw(no_form method),
@@ -72,6 +73,7 @@ sub parse_die {
     my($proto, $die, $task, $req) = @_;
     my($die_code) = $die->get('code');
     my($params) = $task->unsafe_params_for_die_code($die_code);
+    _trace($task, ' ', $die, ' ', $params) if $_TRACE;
     unless (defined($params)) {
 	# Default mapped?
 	my($n) = 'DEFAULT_ERROR_REDIRECT_' . $die_code->get_name;
@@ -81,7 +83,7 @@ sub parse_die {
 	    _trace('not a mapped task: ', $die_code) if $_TRACE;
 	    return;
 	}
-	$params = _assert_params($n, $t);
+	$params = _assert_params($n, $t, $req);
     }
     unless (b_use('UI.Task')->is_defined_for_facade($params->{task_id}, $req)) {
 	_trace('error redirect not defined in facade: ', $params)
@@ -155,23 +157,28 @@ sub parse_item_result {
 	_assert_params(
 	    _item_as_string($task, $item),
 	    {%$override, %$params},
+	    $req,
 	),
 	$req,
     );
 }
 
 sub _assert_params {
-    my($cause, $params) = @_;
+    my($cause, $params, $req) = @_;
     $params = {
 	task_id => $params,
 	no_context => 0,
 	method => 'client_redirect',
     } unless ref($params) eq 'HASH';
     if ($params->{task_id}) {
-	unless (exists($params->{uri})) {
-	    $params->{task_id} = $_TI->from_any($params->{task_id});
-	    return $params;
-	}
+	b_die(
+	    $cause,
+	    ': params must have uri OR task_id but not both: ',
+	    $params,
+	) if exists($params->{uri});
+	$params->{task_id} = $_TI->from_any($params->{task_id});
+	$params->{method} = 'server_redirect'
+	    if $req && !$_FCT->has_uri($named->{task_id}, $req);
     }
     elsif ($params->{uri}) {
 	my($u) = $params->{uri};
@@ -182,10 +189,8 @@ sub _assert_params {
 	    && grep(/path_info|query/ && $params->{$_}, keys(%$params));
 	$params->{carry_query} = 0;
 	$params->{carry_path_info} = 0;
-	return $params;
     }
-    b_die($cause, ': params must have uri OR task_id but not both: ', $params);
-    # DOES NOT RETURN
+    return $params;
 }
 
 
