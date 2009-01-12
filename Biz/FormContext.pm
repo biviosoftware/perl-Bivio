@@ -245,32 +245,17 @@ sub return_redirect {
     my($req) = $model->get_request;
     my($c) = $self->internal_get;
     unless ($c->{form}) {
-	if ($which eq 'cancel' && $c->{cancel_task}) {
-	    _trace('no form, client_redirect: ', $c->{cancel_task}) if $_TRACE;
-	    # If there is no form, redirect to client so looks
-	    # better.  get_context_from_request will do the right thing
-	    # and return the stacked context.
-	    return {
-		method => 'client_redirect',
-		task_id => $c->{cancel_task},
-		realm => $c->{realm},
-		query => $c->{query},
-		path_info => $c->{path_info},
-	    }
-	}
-
-	# Next or cancel (not form)
-	_trace('no form, client_redirect: ', $c->{unwind_task},
-	    '?', $c->{query}) if $_TRACE;
-	# If there is no form, redirect to client so looks
-	# better.
-	return {
+	my($res) = {
 	    method => 'client_redirect',
-	    task_id => $c->{unwind_task},
+	    task_id => $which eq 'cancel' && $c->{cancel_task}
+		? $c->{cancel_task} : $c->{unwind_task},
 	    realm => $c->{realm},
-	    query => $c->{query},
 	    path_info => $c->{path_info},
+	    query => $c->{query},
 	};
+	_trace('no form: ', $res)
+	    if $_TRACE;
+        return $res;
     }
 
     # Do an server redirect to context, because can't do
