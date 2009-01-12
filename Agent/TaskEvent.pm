@@ -178,7 +178,7 @@ sub _assert_params {
 	) if exists($params->{uri});
 	$params->{task_id} = $_TI->from_any($params->{task_id});
 	$params->{method} = 'server_redirect'
-	    if $req && !$_FCT->has_uri($named->{task_id}, $req);
+	    if $req && !$_FCT->has_uri($params->{task_id}, $req);
     }
     elsif ($params->{uri}) {
 	my($u) = $params->{uri};
