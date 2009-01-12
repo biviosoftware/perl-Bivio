@@ -215,7 +215,8 @@ sub format_uri {
 	$uri =~ s{(.)/$}{$1};
     }
     $uri =~ s{//+}{/}g;
-    $named->{no_form} = 1;
+    $named->{no_form} = 1
+	unless exists($named->{no_form});
     return $uri . Bivio::Biz::FormModel->format_context_as_query(
 	$req->get_form_context_from_named($named),
 	$req,
