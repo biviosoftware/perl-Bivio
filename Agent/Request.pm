@@ -513,10 +513,12 @@ sub format_uri {
 	$self->internal_copy_implicit($named);
 	$named->{realm} = $self->internal_get_realm_for_task($named->{task_id})
 	    unless defined($named->{realm});
+	$named->{no_form} = 0
+	    if my $ncst = $self->need_to_secure_task(
+		$_T->get_by_id($named->{task_id}));
 	$uri = $_FCT->format_uri($named, $self);
-	my($task) = $_T->get_by_id($named->{task_id});
 	$uri = $self->format_http_prefix(1) . $uri
-	    if $self->need_to_secure_task($task);
+	    if $ncst;
     }
     if (defined($named->{query})) {
 	$named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1
