@@ -201,9 +201,13 @@ sub execute_items {
     my($self, $req, $items) = @_;
     foreach my $i (@{$items || $self->get('items')}) {
 	my($instance, $method, $args) = @$i;
+	_trace($instance, '->', $method, '(', $args, ')')
+	    if $_TRACE;
 	next
 	    unless my $params
 	    = $self->want_scalar($instance->$method(@$args, $req));
+	_trace($params)
+	    if $_TRACE;
 	next
 	    unless my $te = $_TE->parse_item_result($params, $self, $req, $i);
 	_trace($te)
