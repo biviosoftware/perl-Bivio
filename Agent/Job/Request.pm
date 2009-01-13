@@ -1,17 +1,8 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Job::Request;
 use strict;
-use Bivio::Agent::Reply;
-use Bivio::Auth::Realm;
-use Bivio::Auth::RealmType;
-use Bivio::Base 'Bivio::Agent::Request';
-use Bivio::Biz::Model;
-use Bivio::Type::DateTime;
-use Bivio::Type::UserAgent;
-
-# C<Bivio::Agent::Job::Request> sets the params appropriately.  It
-# loads a new auth_realm every time.
+use Bivio::Base 'Agent.Request';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IGNORE_REDIRECTS) = __PACKAGE__.'.ignore_redirects';
