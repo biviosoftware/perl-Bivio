@@ -218,8 +218,7 @@ sub extra_query_params {
 }
 
 sub extract_uri_from_local_mail {
-    my($self, $email) = @_;
-    my($m) = $self->verify_local_mail($email);
+    my($m) = shift->verify_local_mail(@_);
     b_die('missing uri in mail: ', $m)
 	unless $m =~ /(https?:\S+)/;
     return $1;
