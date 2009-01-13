@@ -19,4 +19,9 @@ sub get_default {
     return shift->OPEN;
 }
 
+sub get_desc_for_crmqueryform {
+    my($self) = @_;
+    return $self->eq_open ? 'Not Closed' : $self->get_short_desc;
+}
+
 1;

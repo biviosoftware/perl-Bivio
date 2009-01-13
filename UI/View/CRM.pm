@@ -68,6 +68,9 @@ sub thread_root_list {
                 %{$f->get_select_attrs($_)},
 		unknown_label => vs_text('CRMQueryForm', $_, 'unknown_label'),
                 auto_submit => 1,
+                $_ eq 'x_status' ? (
+                    enum_display => 'get_desc_for_crmqueryform',
+                ): (),
             }), qw(x_status x_owner_name)),
             ScriptOnly({
                 widget => Join([]),
