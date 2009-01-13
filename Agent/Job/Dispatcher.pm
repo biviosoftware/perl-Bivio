@@ -2,97 +2,45 @@
 # $Id$
 package Bivio::Agent::Job::Dispatcher;
 use strict;
-$Bivio::Agent::Job::Dispatcher::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::Job::Dispatcher::VERSION;
-
-=head1 NAME
-
-Bivio::Agent::Job::Dispatcher - run tasks
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Agent::Job::Dispatcher;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Agent::Dispatcher>
-
-=cut
-
-use Bivio::Agent::Dispatcher;
-@Bivio::Agent::Job::Dispatcher::ISA = ('Bivio::Agent::Dispatcher');
-
-=head1 DESCRIPTION
-
-C<Bivio::Agent::Job::Dispatcher> is used to queue tasks at the end
-of other dispatcher tasks.  There is only one queue.  It is cleared
-by L<Bivio::Agent::Task|Bivio::Agent::Task> on errors.  You may
-not queue new jobs during L<execute_queue|"execute_queue">.
-
-=cut
-
-#=IMPORTS
 use Bivio::Agent::Job::Request;
 use Bivio::Agent::TaskId;
+use Bivio::Base 'Bivio::Agent::Dispatcher';
 use Bivio::Die;
 use Bivio::IO::Alert;
 
-#=VARIABLES
+# C<Bivio::Agent::Job::Dispatcher> is used to queue tasks at the end
+# of other dispatcher tasks.  There is only one queue.  It is cleared
+# by L<Bivio::Agent::Task|Bivio::Agent::Task> on errors.  You may
+# not queue new jobs during L<execute_queue|"execute_queue">.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # Don't allow queueing while in execute.
 my($_SELF);
 my($_IN_EXECUTE) = 0;
 my(@_QUEUE);
 __PACKAGE__->initialize;
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="create_request"></a>
-
-=head2 create_request(hash_ref params) : Bivio::Agent::Request
-
-Creates and returns a request.
-
-=cut
-
 sub create_request {
+    # (self, hash_ref) : Agent.Request
+    # Creates and returns a request.
     my($self, $params) = @_;
     return Bivio::Agent::Job::Request->new($params);
 }
 
-=for html <a name="discard_queue"></a>
-
-=head2 discard_queue()
-
-Clears the queue.  May be called at any time.
-
-=cut
-
 sub discard_queue {
+    # (self) : undef
+    # Clears the queue.  May be called at any time.
     @_QUEUE = ();
     return;
 }
 
-=for html <a name="enqueue"></a>
-
-=head2 enqueue(Bivio::Agent::Request req, any task_id, hash_ref params)
-
-Enqueue I<task> with I<params>.  The I<auth_id> and and auth_user_id are
-extracted from I<req>, if they are not supplied in I<params>.  I<params> may
-not contain any models.  All models must be freshly loaded for each job.
-
-May not be called during L<execute_queue|"execute_queue">.
-
-=cut
-
 sub enqueue {
+    # (self, Agent.Request, any, hash_ref) : undef
+    # Enqueue I<task> with I<params>.  The I<auth_id> and and auth_user_id are
+    # extracted from I<req>, if they are not supplied in I<params>.  I<params> may
+    # not contain any models.  All models must be freshly loaded for each job.
+    #
+    # May not be called during L<execute_queue|"execute_queue">.
     my($self, $req, $task_id, $params) = @_;
     Bivio::Die->die('not allowed to call enqueue in execute_queue')
 	if $_IN_EXECUTE;
@@ -120,16 +68,10 @@ sub enqueue {
     return;
 }
 
-=for html <a name="execute_queue"></a>
-
-=head2 static execute_queue()
-
-Processes the queue.  Called from Mail or HTTP dispatcher after
-request completes.
-
-=cut
-
 sub execute_queue {
+    # (proto) : undef
+    # Processes the queue.  Called from Mail or HTTP dispatcher after
+    # request completes.
     die('recursive call to execute_queue') if $_IN_EXECUTE;
     $_IN_EXECUTE = 1;
 
@@ -149,41 +91,23 @@ sub execute_queue {
     return;
 }
 
-=for html <a name="handle_commit"></a>
-
-=head2 handle_commit()
-
-Commit called, do nothing.
-
-=cut
-
 sub handle_commit {
+    # (self) : undef
+    # Commit called, do nothing.
     return;
 }
 
-=for html <a name="handle_rollback"></a>
-
-=head2 handle_rollback()
-
-Rollback called, clear queue.
-
-=cut
-
 sub handle_rollback {
+    # (self) : undef
+    # Rollback called, clear queue.
     my($self) = @_;
     $self->discard_queue;
     return;
 }
 
-=for html <a name="initialize"></a>
-
-=head2 static initialize()
-
-Called on first request.
-
-=cut
-
 sub initialize {
+    # (proto) : undef
+    # Called on first request.
     my($proto) = @_;
     return if $_SELF;
     $_SELF = $proto->new;
@@ -191,28 +115,10 @@ sub initialize {
     return;
 }
 
-=for html <a name="queue_is_empty"></a>
-
-=head2 queue_is_empty() : boolean
-
-Returns true if the queue is empty.
-
-=cut
-
 sub queue_is_empty {
+    # (self) : boolean
+    # Returns true if the queue is empty.
     return @_QUEUE ? 0 : 1;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
