@@ -2,11 +2,7 @@
 # $Id$
 package Bivio::Agent::Job::Dispatcher;
 use strict;
-use Bivio::Agent::Job::Request;
-use Bivio::Agent::TaskId;
-use Bivio::Base 'Bivio::Agent::Dispatcher';
-use Bivio::Die;
-use Bivio::IO::Alert;
+use Bivio::Base 'Agent.Dispatcher';
 
 # C<Bivio::Agent::Job::Dispatcher> is used to queue tasks at the end
 # of other dispatcher tasks.  There is only one queue.  It is cleared
@@ -14,6 +10,8 @@ use Bivio::IO::Alert;
 # not queue new jobs during L<execute_queue|"execute_queue">.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R) = b_use('AgentJob.Request');
+my($_TI) = b_use('Agent.TaskId');
 # Don't allow queueing while in execute.
 my($_SELF);
 my($_IN_EXECUTE) = 0;
@@ -24,7 +22,7 @@ sub create_request {
     # (self, hash_ref) : Agent.Request
     # Creates and returns a request.
     my($self, $params) = @_;
-    return Bivio::Agent::Job::Request->new($params);
+    return $_R->new($params);
 }
 
 sub discard_queue {
@@ -52,14 +50,16 @@ sub enqueue {
     }
 
     # Validate task
-    $task_id = Bivio::Agent::TaskId->from_any($task_id);
+    $task_id = $_TI->from_any($task_id);
 
     # Extract params from request
     $params->{task_id} = $task_id;
-    $params->{auth_id} ||= $req->get('auth_id');
     my($u) = $req->get('auth_user');
     $params->{auth_user_id} ||= $u ? $u->get('realm_id') : undef;
-    $params->{'Bivio::UI::Facade'} = $req->unsafe_get('Bivio::UI::Facade');
+    foreach my $p (qw(auth_id Bivio::UI::Facade is_secure client_addr)) {
+	$params->{$p} = $req->unsafe_get($p)
+	    unless exists($params->{$p});
+    }
 
     # Enqueue and add as a txn resource (may end up calling handle_rollback
     # multiple times, but the routine is re-enterable).
