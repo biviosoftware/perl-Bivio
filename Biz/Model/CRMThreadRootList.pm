@@ -73,7 +73,7 @@ sub internal_prepare_statement {
     if (my $qf = $self->req->unsafe_get('Model.CRMQueryForm')) {
 	my($status, $owner) = $qf->unsafe_get(qw(x_status x_owner_name));
 	$stmt->where(['CRMThread.crm_thread_status', [
-            $status->eq_open ? map($status->$_, qw(OPEN NEW LOCKED)) : $status
+            $status->get_criteria_list,
         ]])
 	    if $status;
 	$stmt->where(['CRMThread.owner_user_id', [$owner]])
