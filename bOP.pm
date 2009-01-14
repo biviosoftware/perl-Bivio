@@ -26,11 +26,27 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.27  2009/01/14 00:16:34  nagler
+  * Bivio::Agent::Dispatcher
+    rmpod
+    undo prev
+  * Bivio::Agent::Job::Dispatcher
+    rmpod
+    copy is_secure and client_addr in params, unless defined
+  * Bivio::Biz::Model::CRMThreadRootList
+    included LOCKED threads with the OPEN filter -- OPEN now means "Not Closed"
+  * Bivio::Test::Language::HTTP
+    parameters for extract_uri_from_local_mail() now matches verify_local_mail()
+  * Bivio::Type::CRMThreadStatus
+    OPEN label is now "Not Closed" in the CRMQueryForm
+  * Bivio::UI::View::CRM
+    OPEN label is now "Not Closed" in the CRMQueryForm
+
   Revision 7.26  2009/01/12 22:57:21  nagler
   * Bivio::Agent::Request
     Set no_form = 0 so that form context is carried if trying to format_uri
