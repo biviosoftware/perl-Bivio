@@ -26,11 +26,24 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.26  2009/01/12 22:57:21  nagler
+  * Bivio::Agent::Request
+    Set no_form = 0 so that form context is carried if trying to format_uri
+  * Bivio::Agent::Task
+    added better tracing
+  * Bivio::Agent::TaskEvent
+    set method to server_redirect if there's no uri on the task
+    fpc
+  * Bivio::Biz::FormContext
+    simplified return_redirect
+  * Bivio::UI::Task
+    do not override no_form, if already set
+
   Revision 7.25  2009/01/10 01:24:30  nagler
   * Bivio::Delegate::TaskId
     added GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
