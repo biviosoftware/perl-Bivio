@@ -10,7 +10,7 @@ my($_SA) = b_use('Type.StringArray');
 my($_DATA);
 my($_VARS) = {
     is_production => 0,
-    can_secure => 1,
+    can_secure => 0,
     legacy_rewrite_rules => '',
     cookie_tag => undef,
     listen => undef,
