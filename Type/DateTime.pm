@@ -635,19 +635,6 @@ sub local_to_parts {
     return $proto->to_parts(_adjust_to_local($proto, $date_time));
 }
 
-sub max {
-    my($proto, $left, $right) = @_;
-    # Returns the greater of the two dates.
-    return $proto->compare($left, $right) > 0 ? $left : $right;
-}
-
-sub min {
-    my($proto, $left, $right) = @_;
-    # Returns the lesser of the two dates.
-    return $left if $proto->compare($left, $right) < 0;
-    return $right;
-}
-
 sub now {
     my($proto) = @_;
     # Returns date/time for now.

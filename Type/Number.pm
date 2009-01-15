@@ -137,22 +137,6 @@ sub get_decimals {
     die("abstract method");
 }
 
-sub max {
-    my($proto, @values) = @_;
-    return $proto->iterate_reduce(sub {
-        my($v1, $v2) = @_;
-	return $proto->compare($v1, $v2) > 0 ? $v1 : $v2;
-    }, \@values);
-}
-
-sub min {
-    my($proto, @values) = @_;
-    return $proto->iterate_reduce(sub {
-        my($v1, $v2) = @_;
-	return $proto->compare($v1, $v2) < 0 ? $v1 : $v2;
-    }, \@values);
-}
-
 sub mul {
     my($proto, $v, $v2, $decimals) = @_;
     # Multiplies two numbers and returns the result using the specified decimal
