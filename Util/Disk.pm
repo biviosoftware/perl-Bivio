@@ -70,6 +70,8 @@ sub check_raid {
 	push(@$err, grep(s/^\s*// && m{^/dev/rd/c$n} && !/Online/, split(/\n/, $$d)))
 	    if $d = _data($self, $test_data, "/proc/rd/c$n/current_status");
     }
+    # afacli needs a valid curses terminal
+    local($ENV{TERM}) = 'xterm';
     push(@$err, grep(
 	/\d+\s+Disk/ && !/Initialized/ || /Rebuild|RUN/,
 	map({
