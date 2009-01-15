@@ -28,6 +28,9 @@ my($_MAX_RETRIES) = 3;
 my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
 b_use('Action.PingReply')->register_handler(__PACKAGE__);
 b_use('Bivio.ShellUtil')->register_handler(__PACKAGE__);
+b_use('IO.Config')->register(my $_CFG = {
+    long_query_seconds => 30,
+});
 
 sub CAN_LIMIT_AND_OFFSET {
     # The implemenation allows C<LIMIT> and C<OFFSET> clauses.
@@ -121,13 +124,10 @@ sub execute {
                 return 1;
             });
         my($die_error) = $@;
-
 	my($delta) = $self->increment_db_time($start_time);
-	Bivio::IO::Alert->warn($delta, 's: query took a long time: ', $sql, $params)
-	    if $delta > 30;
+	b_warn($delta, 's: query took a long time: ', $sql, $params)
+	    if $delta > $_CFG->{long_query_seconds};
 	return $statement if $ok;
-
-	# Extract the errors
 	$err = $statement && $statement->err ? $statement->err + 0 : 0;
 	$errstr = $statement && $statement->errstr
             ? $statement->errstr : $die_error;
@@ -235,6 +235,12 @@ sub get_instance {
 
 sub handle_commit {
     shift->commit(@_);
+    return;
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
     return;
 }
 
