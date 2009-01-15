@@ -230,6 +230,22 @@ sub is_specified {
     return defined($_[1]) ? 1 : 0;
 }
 
+sub max {
+    my($proto, @values) = @_;
+    return $proto->iterate_reduce(sub {
+        my($v1, $v2) = @_;
+	return $proto->compare($v1, $v2) > 0 ? $v1 : $v2;
+    }, \@values);
+}
+
+sub min {
+    my($proto, @values) = @_;
+    return $proto->iterate_reduce(sub {
+        my($v1, $v2) = @_;
+	return $proto->compare($v1, $v2) < 0 ? $v1 : $v2;
+    }, \@values);
+}
+
 sub put_on_request {
     # (self, Agent.Request, boolean) : self
     # Puts an instance of I<self> on request.  Only works with types which are
