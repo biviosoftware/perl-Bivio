@@ -243,6 +243,10 @@ EOF
     SSLCertificateKeyFile /etc/httpd/conf/ssl.key/$key$chain
     SetEnv nokeepalive 1
     SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
+    <Location />
+	SSLRequireSSL
+	SSLOptions +StrictRequire
+    </Location>
 );
                     $httpd_vars->{ssl} ||= $x;
                     $x;
