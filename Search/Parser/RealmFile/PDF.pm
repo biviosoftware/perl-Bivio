@@ -35,7 +35,8 @@ sub _run {
     my($out);
     my($die) = $_D->catch_quietly(sub {$out = $_SU->piped_exec("$cmd 2>&1")});
     return b_warn($cmd, ': ', $die || $out || 'no output')
-	if $die || !$out || $$out =~ /^Error:/s;
+	if $die || !$out
+        || $$out =~ /^Error:/s && $$out !~ /continuing anyway/;
     return $$out;
 }
 
