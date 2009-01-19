@@ -155,13 +155,20 @@ vs_site_name(); Support
 EOF
 }
 
+sub internal_settings_form_extra_fields {
+    return [];
+}
+
 sub settings_form {
+    my($self) = @_;
+    my($extra_fields) = $self->internal_settings_form_extra_fields;
     return shift->internal_body(vs_list_form(UserSettingsListForm => [
 	"'user_password",
 	'UserSettingsListForm.User.first_name',
 	'UserSettingsListForm.User.middle_name',
 	'UserSettingsListForm.User.last_name',
         'UserSettingsListForm.page_size',
+        @$extra_fields,
 	['UserSettingsListForm.RealmOwner.name', {
 	    row_control => [qw(Model.UserSettingsListForm show_name)],
 	}],
