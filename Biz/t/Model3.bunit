@@ -1,0 +1,53 @@
+Request();
+[
+    class() => [
+        field_decl => [
+            [[qw(f1 f2)], 'String'] => [map(+{
+                name => $_,
+                type => 'String',
+                constraint => 'NONE',
+            }, qw(f1 f2))],
+            [[qw(f1 f2), [f3 => 'String']], Boolean => 'NOT_NULL'] => [map(+{
+                name => $_,
+                type => 'Boolean',
+                constraint => 'NOT_NULL',
+            }, qw(f1 f2)), {
+                name => 'f3',
+                type => 'String',
+                constraint => 'NOT_NULL',
+            }],
+            [
+                ['f1', [f2 => 'String'], [f3 => Date => 'NOT_NULL']],
+                'Boolean',
+            ] => [{
+                name => 'f1',
+                type => 'Boolean',
+                constraint => 'NONE',
+            }, {
+                name => 'f2',
+                type => 'String',
+                constraint => 'NONE',
+            }, {
+                name => 'f3',
+                type => 'Date',
+                constraint => 'NOT_NULL',
+            }],
+            [
+                primary_key => ['key'],
+                other => ['value'],
+                'String',
+            ] => [
+                primary_key => [{
+                    name => 'key',
+                    type => 'String',
+                    constraint => 'NONE',
+                }],
+                other => [{
+                    name => 'value',
+                    type => 'String',
+                    constraint => 'NONE',
+                }],
+            ],
+        ],
+    ],
+];
