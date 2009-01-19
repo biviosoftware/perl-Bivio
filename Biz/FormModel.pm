@@ -298,7 +298,9 @@ sub get_field_error_detail {
 }
 
 sub get_field_name_for_html {
-    return shift->get_field_info(shift, 'form_name');
+    my($self, $name) = @_;
+    return $self->get_field_info($name)->{form_name}
+        || b_die($name, ': is not a visible or hidden field');
 }
 
 sub get_hidden_field_values {
