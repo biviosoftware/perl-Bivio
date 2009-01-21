@@ -13,6 +13,7 @@ Bivio::IO::Config->register({
 	mirror_dest_host => Bivio::IO::Config->REQUIRED,
 	mirror_include_dirs => Bivio::IO::Config->REQUIRED,
 	mirror_dest_dir => Bivio::IO::Config->REQUIRED,
+	rsync_flags => '-azlSR --delete',
     },
 });
 my($_D) = __PACKAGE__->use('Type.Date');
@@ -101,7 +102,8 @@ sub mirror {
     my($res) = '';
     foreach my $cfg_name (@cfg_name ? @cfg_name : ('')) {
 	my($cfg) = Bivio::IO::Config->get($cfg_name);
-	my($host, $dir) = @$cfg{qw(mirror_dest_host mirror_dest_dir)};
+	my($host, $dir, $flags)
+	    = @$cfg{qw(mirror_dest_host mirror_dest_dir rsync_flags)};
 	if ($host) {
 	    $self->piped_exec_remote($host, "mkdir -p $dir");
 	    $dir = "$host:$dir";
@@ -110,10 +112,10 @@ sub mirror {
 	    $_F->mkdir_p($dir, 0700);
 	}
 	$res .= ${$self->piped_exec(
-	    "rsync -e ssh -azlSR --delete --timeout 43200"
+	    "rsync -e ssh --timeout 43200"
 	    . ($self->unsafe_get('noexecute') ? ' -n' : '')
 	    . ($_TRACE ? ' --progress' : '')
-	    . " '"
+	    . " $flags '"
 	    . join("' '", map {
 		 Bivio::Die->die($_, ': mirror_include_dirs must be absolute')
 		     unless $_ =~ m!^/!;
