@@ -26,11 +26,28 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.29  2009/01/16 18:46:25  nagler
+  * Bivio::SQL::Connection
+    made long_query_seconds configurable
+  * Bivio::Search::Parser::RealmFile::PDF
+    don't treat "continuing anyway" messages as errors
+  * Bivio::Type::DateTime
+    moved max/min to Type.pm
+  * Bivio::Type::Number
+    moved max/min to Type.pm
+  * Bivio::Type
+    moved max/min from Number.pm
+  * Bivio::Util::Disk
+    afacli needs a valid curses terminal
+  * Bivio::Util::HTTPConf
+    can_secure off by default
+    set SSLRequireSSL and Options +StrictRequire
+
   Revision 7.28  2009/01/14 18:30:22  dobbs
   * Bivio::Biz::Model::CRMThreadRootList
     make coupling to CRMThreadStatus explicit
