@@ -10,6 +10,7 @@ my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
 my($_SUFFIX) = '.bmenu';
 my($_R) = b_use('Type.Regexp');
+my($_C) = b_use('UI.Constant');
 
 sub handle_register {
     return ['b-menu'];
@@ -70,6 +71,30 @@ sub _join_regexp {
                 _has_value($re) ? $re : ());
 }
 
+sub _public {
+    my($path) = @_;
+    $path =~ s{^/}{/Public/}
+        unless $path =~ qr{^/Public};
+    return $path;
+}
+
+sub _realm_file_bmenu {
+    my($path, $args) = @_;
+    my($m) = Bivio::Biz::Model->new($args->{req}, 'RealmFile');
+    $m->unauth_load({
+        path => $path,
+        realm_id => $args->{realm_id},
+        is_public => $args->{is_public},
+    });
+    $m->unauth_load_or_die({
+        path => _public($path),
+        realm_id => $_C->get_value('site_realm_id'),
+        is_public => 1,
+    })
+        unless $m->is_loaded;
+    return $m;
+}
+
 sub _render_label {
     my($row, $args) = @_;
     my($res) = $args->{proto}->render_html({
@@ -103,11 +128,7 @@ sub _visit {
     my($value, $args) = @_;
     my($path) = $_WDN->to_absolute($value, $args->{is_public}) . $_SUFFIX;
     my($csv) = b_use('ShellUtil.CSV')->parse_records(
-	Bivio::Biz::Model->new($args->{req}, 'RealmFile')->unauth_load_or_die({
-	    path => $path,
-	    realm_id => $args->{realm_id},
-	    is_public => $args->{is_public},
-        })->get_content,
+        _realm_file_bmenu($path, $args)->get_content
     );
     return unless @$csv;
     my($line) = 2;
