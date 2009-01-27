@@ -28,6 +28,7 @@ my($_VARS) = {
     httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
     mail_hosts_txt => '/etc/httpd/conf/local-host-names.txt',
     app_names_txt => '/etc/httpd/conf/app-names.txt',
+    uris_txt => '/etc/httpd/conf/uris.txt',
     limit_request_body => 4194304,
     # Users can supply certain params here
     httpd => my $_HTTPD_VARS = {
@@ -64,8 +65,9 @@ sub generate {
     _write($vars->{httpd_init_rc}, _httpd_init_rc());
     _write(_httpd_conf($vars->{httpd}));
     _write(_logrotate($vars->{httpd}));
-    _write(_app_names_txt($vars->{httpd}));
-    _write(_mail_hosts_txt($vars->{httpd}));
+    foreach my $x (qw(app_names mail_hosts uris)) {
+	_write(_conf_txt($x, $vars->{httpd}));
+    }
     return;
 }
 
@@ -185,6 +187,7 @@ EOF
 		],
 	    );
 	    map($vars->{$_} ||= $cfg->{$_}, qw(http_suffix mail_host));
+	    _push($httpd_vars, uris => $cfg->{http_suffix});
 	    my($http) = "http://$cfg->{http_suffix}:$vars->{listen}\$1";
 	    if ($is_mail) {
 		_push($vars, mail_hosts => $cfg->{mail_host});
@@ -281,9 +284,12 @@ b_httpd_app=$app
 EOF
 }
 
-sub _app_names_txt {
-    my($vars) = @_;
-    return ($vars->{app_names_txt}, \(join("\n", @{$vars->{app_names}}, '')));
+sub _conf_txt {
+    my($which, $vars) = @_;
+    return (
+	$vars->{$which . '_txt'},
+	\(join("\n", sort(@{$vars->{$which}}), '')),
+    );
 }
 
 sub _httpd_conf {
@@ -452,11 +458,6 @@ EOF
     $v->{server_admin} ||= 'webmaster@' . $v->{host_name};
     $v->{servers} = $n * 2;
     return;
-}
-
-sub _mail_hosts_txt {
-    my($vars) = @_;
-    return ($vars->{mail_hosts_txt}, \(join("\n", @{$vars->{mail_hosts}}, '')));
 }
 
 sub _push {
