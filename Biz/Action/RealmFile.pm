@@ -64,6 +64,10 @@ sub access_is_public_only {
     return $have_realm ? $req->with_realm($realm => $op) : $op->();
 }
 
+sub assert_access {
+    return;
+}
+
 sub execute_private {
     my($proto, $req) = @_;
     return $proto->unauth_execute($req, undef, $req->get('auth_id'));
