@@ -87,6 +87,8 @@ sub do_lines {
     my($file) = _open($file_name, 'r');
     while (1) {
 	undef($!);
+	last
+	    if eof($file);
 	my $line = readline($file);
 	unless (defined($line)) {
 	    _err('readline', $file, $file_name)
@@ -124,6 +126,8 @@ sub map_lines {
     my($res) = [];
     while (1) {
 	undef($!);
+	last
+	    if eof($file);
 	my $line = readline($file);
 	unless (defined($line)) {
 	    _err('readline', $file, $file_name)
