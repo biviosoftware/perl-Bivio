@@ -1,11 +1,11 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::HTTPConf;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
-use Bivio::IO::File;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_F) = b_use('IO.File');
 my($_SA) = b_use('Type.StringArray');
 my($_DATA);
 my($_VARS) = {
@@ -45,9 +45,24 @@ sub USAGE {
     return <<'EOF';
 usage: b-http-conf [options] command [args...]
 commands:
+    do_ping [list.txt] -- pings apps in list
     generate app-name [root-prefix] -- writes config for app-name
     validate_vars vars -- validates configuration
 EOF
+}
+
+sub do_ping {
+    my($self, $list) = @_;
+    $self->get_request;
+    my($uris);
+    return $self->new_other('HTTPPing')->page(
+	map("http://$_/pub/ping",
+	    @{$_F->map_lines(
+		$list || $_VARS->{uris_txt},
+		sub {shift =~ /^([^\s#]+)/},
+	    )},
+	),
+    );
 }
 
 sub generate {
@@ -371,7 +386,7 @@ EOF
 sub _mkdir {
     my($name) = @_;
     $name =~ s,^/,,;
-    return Bivio::IO::File->mkdir_p($name);
+    return $_F->mkdir_p($name);
 }
 
 sub _httpd_init_rc {
@@ -484,7 +499,7 @@ sub _replace_vars_for_file {
 sub _write {
     my($name, $data) = @_;
     $name =~ s{^/}{};
-    Bivio::IO::File->mkdir_parent_only($name);
+    $_F->mkdir_parent_only($name);
     my($generator) = ('$Header$' =~ m{Header:\s*(.+?)\s*\$}i)[0]
 	|| __PACKAGE__;
     $$data =~ s{^(#!.+?\n|)}{$1 . <<"EOF"}es;
@@ -493,7 +508,7 @@ sub _write {
 # By: $generator
 ################################################################
 EOF
-    return Bivio::IO::File->write($name, $$data);
+    return $_F->write($name, $$data);
 }
 
 =head1 COPYRIGHT
