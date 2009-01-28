@@ -1,6 +1,6 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-test_setup('PetShop');
+test_setup('PetShop', 'groupware');
 home_page();
 visit_uri('/btest_read/public-file/file.txt');
 verify_content_type('text/plain');
@@ -18,7 +18,7 @@ visit_uri('/btest_read/file/private/image.gif');
 verify_content_type('image/gif');
 home_page();
 login_as('root');
-visit_uri('/fourem/file');
+visit_uri('/fourem/files');
 
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
     follow_link_in_table('Name', 'Name', 'realm-file-btest.txt',
@@ -39,7 +39,7 @@ submit_form(OK => {
 follow_link('realm-file-btest.txt');
 verify_text($c);
 
-visit_uri('/fourem/file');
+visit_uri('/fourem/files');
 follow_link_in_table('Name', 'Name', '/', 'Name', 'change');
 fixup_files_uri('ADD_SUBFOLDER'),
 submit_form(OK => {
@@ -58,7 +58,7 @@ submit_form(OK => {
 follow_link('Empty Folder');
 follow_link('no-longer-empty.txt');
 verify_text($c2);
-visit_uri('/fourem/file');
+visit_uri('/fourem/files');
 follow_link_in_table('Name', 'Name', 'Empty Folder', 'Name', 'change');
 fixup_files_uri('DELETE'),
 submit_form(OK => {

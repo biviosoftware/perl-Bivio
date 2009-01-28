@@ -561,7 +561,8 @@ sub _cfg_file {
 	],
 	Task => [
 	    [FORUM_EASY_FORM => "?/$_EASY_FORM_DIR/*"],
-	    [FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*', '?/files/*']],
+	    [FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
+	    [FORUM_FILE_TREE_LIST => '?/files/*'],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
 	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
@@ -601,7 +602,8 @@ sub _cfg_file {
 		ok_button => 'Compare',
 	    ]],
 	    [title => [
-		FORUM_FILE => 'Files',
+		FORUM_FILE => 'File',
+		FORUM_FILE_TREE_LIST => 'Files',
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
@@ -1352,10 +1354,7 @@ sub _cfg_wiki {
 	    TaskMenu([
 		'FORUM_BLOG_LIST',
 		'FORUM_CALENDAR',
-		{
-		    task_id => 'FORUM_FILE',
-		    control => ['->can_user_execute_task', 'FORUM_FILE_CHANGE'],
-		},
+		'FORUM_FILE_LIST',
 		'FORUM_MAIL_THREAD_ROOT_LIST',
 		'FORUM_MOTION_LIST',
 		'FORUM_TUPLE_USE_LIST',

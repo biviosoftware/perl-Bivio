@@ -10,7 +10,7 @@ submit_form(Send => {
     text => 'hello goodbye telephone',
 });
 poll_page(verify_text => $code);
-visit_uri("$uri/file");
+visit_uri("$uri/files");
 follow_link_in_table("Name", "Name", "/", "Name", "change");
 fixup_files_uri('ADD_SUBFOLDER');
 submit_form(OK => {'Name:' => "Wiki"});

@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::File;
 use strict;
@@ -42,7 +42,7 @@ sub file_change {
 			_link('Move file', 'MOVE'),
 			_link('Delete', 'DELETE'),
 			Link('Leave file locked', URI({
-			    task_id => 'FORUM_FILE',
+			    task_id => 'FORUM_FILE_TREE_LIST',
 			    query => [['Model.FileChangeForm',
 			        '->unsafe_get_context'], 'query'],
 			})),
@@ -118,7 +118,7 @@ sub version_list {
     ]));
     $self->internal_put_base_attr(tools => TaskMenu([
 	{
-	    task_id => 'FORUM_FILE',
+	    task_id => 'FORUM_FILE_TREE_LIST',
 	    label => String('back to list'),
 	},
     ]));
