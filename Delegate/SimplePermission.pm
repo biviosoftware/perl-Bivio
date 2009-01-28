@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::SimplePermission;
 use strict;
@@ -37,6 +37,7 @@ sub get_delegate_info {
 	FEATURE_CRM => [27],
 	FEATURE_MOTION => [28],
 	FEATURE_TUPLE => [29],
+	DATA_BROWSE => [30],
 	LAST_RESERVED_VALUE => [50],
     ];
 }

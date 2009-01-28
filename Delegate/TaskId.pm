@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.	All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.	All Rights Reserved.
 # $Id$
 package Bivio::Delegate::TaskId;
 use strict;
@@ -559,16 +559,26 @@ sub info_file {
 	    ANY_GROUP
 	    ANYBODY&FEATURE_FILE
 	    Action.RealmFile->access_controlled_execute
+	)],
+	[qw(
+	    FORUM_FILE_TREE_LIST
+	    170
+	    ANY_GROUP
+	    DATA_READ&DATA_BROWSE&FEATURE_FILE
+	    Action.RealmFile->access_controlled_execute
 	    Model.RealmFileTreeList->execute_load_all_with_query
 	    View.File->tree_list
 	    want_folder_fall_thru=1
 	    next=FORUM_FILE
 	)],
+# Separate tree list so permissions check d by task
+# data explore is a bit on the file?  STill need data_explore on the task
 	[qw(
 	    FORUM_FILE_VERSIONS_LIST
 	    171
 	    ANY_GROUP
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
+	    Action.RealmFile->assert_access
 	    Model.RealmFileVersionsList->execute_load_all
 	    View.File->version_list
 	)],
@@ -577,21 +587,23 @@ sub info_file {
 	    172
 	    ANY_GROUP
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
+	    Action.RealmFile->assert_access
 	    Model.Lock
 	    Model.FileChangeForm
 	    Model.RealmFolderList->execute_load_all
 	    View.File->file_change
-	    next=FORUM_FILE
+	    next=FORUM_FILE_TREE_LIST
 	)],
 	[qw(
 	    FORUM_FILE_OVERRIDE_LOCK
 	    173
 	    ANY_GROUP
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
+	    Action.RealmFile->assert_access
 	    Model.Lock
 	    Model.FileUnlockForm
 	    View.File->file_unlock
-	    next=FORUM_FILE
+	    next=FORUM_FILE_TREE_LIST
 	)],
 #174-179 free
     ];
