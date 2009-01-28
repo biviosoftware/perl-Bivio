@@ -83,9 +83,9 @@ sub internal_prepare_statement {
 
 sub is_locked {
     my($self) = @_;
-    return 0 unless $self->get('RealmFileLock.modified_date_time');
-    return $self->use('Model.RealmFileLock')
-	->is_locked($self, 'RealmFileLock.');
+    return $self->get('RealmFileLock.modified_date_time')
+        && $self->use('Model.RealmFileLock')
+        ->is_locked($self, 'RealmFileLock.') ? 1 : 0;
 }
 
 1;
