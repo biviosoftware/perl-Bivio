@@ -2,51 +2,27 @@
 # $Id$
 package Bivio::Util::HTTPPing;
 use strict;
-$Bivio::Util::HTTPPing::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::HTTPPing::VERSION;
+use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Ext::LWPUserAgent;
+use Bivio::IO::Config;
+use Bivio::IO::File;
+use Bivio::IO::Trace;
+use HTTP::Headers ();
+use HTTP::Request ();
 
-=head1 NAME
+# C<Bivio::Util::HTTPPing> pings a HTTP is running.
 
-Bivio::Util::HTTPPing - pings HTTP server is up
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::HTTPPing;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::HTTPPing::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::HTTPPing> pings a HTTP is running.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns usage.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
+Bivio::IO::Config->register(my $_CFG = {
+    host_map => {},
+    status_file => '/var/tmp/httpd.status',
+    loadavg_file => '/proc/loadavg',
+});
 
 sub USAGE {
+    # : string
+    # Returns usage.
     return <<'EOF';
 usage: b-http-ping [options] command [args...]
 commands:
@@ -56,75 +32,32 @@ commands:
 EOF
 }
 
-#=IMPORTS
-use Bivio::Ext::LWPUserAgent;
-use Bivio::IO::Config;
-use Bivio::IO::File;
-use Bivio::IO::Trace;
-use HTTP::Headers ();
-use HTTP::Request ();
-
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
-Bivio::IO::Config->register(my $_CFG = {
-    host_map => {},
-    status_file => '/var/tmp/httpd.status',
-    loadavg_file => '/proc/loadavg',
-});
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="db_status"></a>
-
-=head2 db_status()
-
-Checks for too many INSERT waiting.
-
-=cut
-
 sub db_status {
+    # (self) : undef
+    # Checks for too many INSERT waiting.
     my($self) = @_;
     my $count = grep(/INSERT waiting/, `ps ax`);
     return $count ? "$count process(es) waiting on db insert\n" : ();
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item host_map : hash_ref
-
-Name mapping for paged hosts.
-
-=item status_file : string [/var/tmp/httpd.status]
-
-Location of process_status cache.
-
-=back
-
-=cut
-
 sub handle_config {
+    # (proto, hash) : undef
+    # host_map : hash_ref
+    #
+    # Name mapping for paged hosts.
+    #
+    # status_file : string [/var/tmp/httpd.status]
+    #
+    # Location of process_status cache.
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     return;
 }
 
-=for html <a name="page"></a>
-
-=head2 page(array pages) : string_ref
-
-Request I<pages> and report any problems.
-Truncate data returned from the server at 512 bytes.
-
-=cut
-
 sub page {
+    # (self, array) : string_ref
+    # Request I<pages> and report any problems.
+    # Truncate data returned from the server at 512 bytes.
     my($self, @pages) = @_;
     $self->initialize_ui;
     my($user_agent) = Bivio::Ext::LWPUserAgent->new(1),
@@ -143,15 +76,9 @@ sub page {
     return $status;
 }
 
-=for html <a name="process_status"></a>
-
-=head2 process_status() : string
-
-Returns significant load average changes.
-
-=cut
-
 sub process_status {
+    # (self) : string
+    # Returns significant load average changes.
     my($new) = int(
 	(split(' ', ${Bivio::IO::File->read($_CFG->{loadavg_file})}))[2]);
     my($old) = Bivio::Die->eval(sub {
@@ -161,17 +88,5 @@ sub process_status {
     Bivio::IO::File->write($_CFG->{status_file}, $new);
     return $res;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
