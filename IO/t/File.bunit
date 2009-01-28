@@ -116,10 +116,12 @@ my($pwd);
 	],
 	write => [
 	    ['File/5.txt', "a1 a2\nb1 b2\n"] => not_die(),
+	    ['File/6.txt', "no newline\nat EOF"] => not_die(),
 	],
         map_lines => [
 	    ['File/5.txt'] => [['a1 a2', 'b1 b2']],
 	    ['File/5.txt', qr{\s+}] => [[[qw(a1 a2)], [qw(b1 b2)]]],
+	    ['File/6.txt'] => [['no newline', 'at EOF']],
 	],
 	rm_children => [
 	    File => DIE(),
