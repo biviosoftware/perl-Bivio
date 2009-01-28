@@ -1,16 +1,14 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::HTTPPing;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 use Bivio::Ext::LWPUserAgent;
 use Bivio::IO::Config;
 use Bivio::IO::File;
 use Bivio::IO::Trace;
 use HTTP::Headers ();
 use HTTP::Request ();
-
-# C<Bivio::Util::HTTPPing> pings a HTTP is running.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -60,7 +58,7 @@ sub page {
     # Truncate data returned from the server at 512 bytes.
     my($self, @pages) = @_;
     $self->initialize_ui;
-    my($user_agent) = Bivio::Ext::LWPUserAgent->new(1),
+    my($user_agent) = b_use('Ext.LWPUserAgent')->new(1),
     my($status) = '';
     foreach my $page (@pages) {
         my($host) = $page =~ m!^\w+://([^:/]+)!;
@@ -70,8 +68,7 @@ sub page {
         my($reply) = $user_agent->request(HTTP::Request->new('GET', $page,
             HTTP::Headers->new(Host => $host)));
         next if $reply->is_success;
-        $status .= 'PAGE: '.$page."\n".$reply->status_line."\n".
-            substr($reply->as_string, 0, 512)."\n---\n";
+        $status .= $host . ': ' . $reply->status_line . "\n";
     }
     return $status;
 }
