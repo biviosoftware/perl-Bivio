@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::SQL;
 use strict;
@@ -47,6 +47,7 @@ my($_BUNDLE) = [qw(
     role_unused_11
     site_admin_forum
     site_admin_forum_users
+    !data_browse
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -685,6 +686,23 @@ CREATE INDEX crm_thread_t16 ON crm_thread_t (
 )
 /
 EOF
+    return;
+}
+
+sub internal_upgrade_db_data_browse {
+    my($self) = @_;
+    $self->model('RealmRole')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    my($ps) = $it->get('permission_set');
+	    $_PS->set(\$ps, 'DATA_BROWSE')
+		if $_PS->is_set(\$ps, 'DATA_WRITE');
+	    $it->update({permission_set => $ps});
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+    );
     return;
 }
 
@@ -2251,6 +2269,7 @@ b-realm-role -realm GENERAL -user user edit ADMINISTRATOR - \
     +ADMIN_READ \
     +ADMIN_WRITE \
     +DATA_WRITE \
+    +DATA_BROWSE \
     +MAIL_READ \
     +MAIL_WRITE
 b-realm-role -realm GENERAL -user user edit MAIL_RECIPIENT -
@@ -2273,6 +2292,7 @@ b-realm-role -realm USER -user user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
     +DATA_READ \
+    +DATA_BROWSE \
     +DATA_WRITE
 b-realm-role -realm USER -user user edit ACCOUNTANT - \
     +MEMBER \
@@ -2304,6 +2324,7 @@ b-realm-role -realm CLUB -user user edit GUEST - \
 b-realm-role -realm CLUB -user user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
+    +DATA_BROWSE \
     +DATA_READ \
     +DATA_WRITE \
     +MAIL_POST \
