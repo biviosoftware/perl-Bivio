@@ -122,11 +122,11 @@ sub vs_text {
 }
 
 sub vs_text_as_prose {
-    my($proto, $tag) = @_;
+    my($proto, @tag) = @_;
     # Prefixes "Prose." onto I<tag> and passes to Prose widget.
-    Bivio::Die->die($tag, ': must not be reference')
-        if ref($tag);
-    return $proto->vs_call(Prose => $proto->vs_text("prose.$tag"));
+    splice(@tag, $proto->is_blessed($tag[0], 'Bivio::Agent::Request')
+               ? 1 : 0, 0, 'prose');
+    return $proto->vs_call(Prose => $proto->vs_text(@tag));
 }
 
 sub vs_use {
