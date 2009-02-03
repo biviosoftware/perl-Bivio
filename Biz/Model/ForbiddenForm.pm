@@ -16,6 +16,10 @@ sub execute_empty {
     return {
 	method => 'server_redirect',
 	task_id => 'login_task',
+# TODO: figure out why this breaks acceptance test login_as()
+# 	task_id => $req->get('user_state')->eq_just_visitor
+#             && $req->get('task')->unsafe_get('register_task')
+#             || 'login_task',
 	carry_query => 0,
 	carry_path_info => 0,
     } unless $auth_user;
@@ -52,6 +56,12 @@ sub internal_initialize {
 	    },
 	],
     });
+}
+
+sub unsafe_realm_name_from_context {
+    return undef
+        unless my $c = shift->unsafe_get_context;
+    return $c->unsafe_get_nested(qw(realm owner name));
 }
 
 1;
