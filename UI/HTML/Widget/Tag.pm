@@ -28,21 +28,21 @@ sub NEW_ARGS {
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($b) = '';
-    $self->can('render_tag_value') ? $self->render_tag_value($source, \$b)
-	: $self->render_attr('value', $source, \$b);
-    return unless length($b)
+    my($buf) = '';
+    $self->can('render_tag_value') ? $self->render_tag_value($source, \$buf)
+	: $self->render_attr('value', $source, \$buf);
+    return unless length($buf)
 	|| $self->render_simple_attr('tag_if_empty', $source);
     my($t) = lc(${$self->render_attr('tag', $source)});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
 	unless $t =~ /^[a-z]+\d*$/;
-    $b = "\n<!--\n$b\n-->\n"
-	if length($b)
+    $buf = "\n<!--\n$buf\n-->\n"
+	if length($buf)
 	&& $self->render_simple_attr('bracket_value_in_comment', $source);
-    my($a) = '';
-    $self->internal_tag_render_attrs($source, \$a);
-    $$buffer .= "<$t$a"
-	. (length($b) || !_empty($t) ? ">$b</$t>" : ' />');
+    my($v) = '';
+    $self->internal_tag_render_attrs($source, \$v);
+    $$buffer .= "<$t$v"
+	. (length($buf) || !_empty($t) ? ">$buf</$t>" : ' />');
     return;
 }
 
