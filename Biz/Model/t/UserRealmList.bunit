@@ -25,9 +25,6 @@ req()->set_realm(ShellUtil_SQL()->BTEST_READ);
 	    {
 		'RealmOwner.name' => 'fourem-sub2',
 	    },
-	    {
-		'RealmOwner.name' => 'site-admin',
-	    },
 	],
     ],
     find_row_by_type => [
