@@ -1,0 +1,23 @@
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+
+[
+    class() => [
+	from_literal => [
+	    'abc' => 'qZk+NkcGgWq6PiVxeFDCbJzQ2J0',
+	    0 => 'tlifxqsNyCzxIJnRwtQKuZToQQw',
+	    '' => '2jmj7l5rSw0yVb/vlWAYkK/YBwk',
+	    [undef] => '2jmj7l5rSw0yVb/vlWAYkK/YBwk',
+	],
+	compare => [
+	    ['qZk+NkcGgWq6PiVxeFDCbJzQ2J0', 'abc'] => [0],
+ 	    ['qZk+NkcGgWq6PiVxeFDCbJzQ2J0', 'abcd'] => [1],
+ 	    ['qZk+NkcGgWq6PiVxeFDCbJzQ2J1', 'abc'] => [1],
+ 	    [undef, undef] => [1],
+ 	    [undef, ''] => [1],
+ 	    ['', undef] => [1],
+ 	    ['2jmj7l5rSw0yVb/vlWAYkK/YBwk', ''] => [0],
+ 	    ['2jmj7l5rSw0yVb/vlWAYkK/YBwk', undef] => [1],
+	],
+    ],
+];
