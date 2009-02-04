@@ -3,14 +3,15 @@
 ListModel();
 my($realm) = 'crm_tuple_forum';
 req()->set_realm_and_user($realm, 'demo')->initialize_fully('FORUM_CRM_FORM');
-DateTime()->set_test_now(DateTime()->add_seconds(DateTime()->now, -60));
+my($now) = DateTime()->now;
+DateTime()->set_test_now(DateTime()->add_seconds($now, -60));
 ShellUtil_TestCRM()->create_thread({
     subject => my $subject = random_string(),
     'b_ticket.TupleTag.slot1' => 'Male Puppy',
     'b_ticket.TupleTag.slot2' => 'Medium',
 });
 my($init_dt) = DateTime()->now;
-DateTime()->set_test_now(undef);
+DateTime()->set_test_now($now);
 req()->set_user('crm_tech1');
 ShellUtil_TestCRM()->update_thread({
     action_id => realm_id('crm_tech2'),
@@ -30,7 +31,7 @@ Message-Id: $message_id
 $extra_headers
 body
 EOF
-DateTime()->set_test_now(DateTime()->add_seconds(DateTime()->now, -60));
+DateTime()->set_test_now(DateTime()->add_seconds($now, -60));
 Model_RealmMail()->create_from_rfc822(template(\(my $x = $msg), {
     to => email('crm_tuple_forum'),
     from => email('demo'),
@@ -39,7 +40,7 @@ Model_RealmMail()->create_from_rfc822(template(\(my $x = $msg), {
     extra_headers => '',
 }));
 my($email_init_dt) = DateTime()->now;
-DateTime()->set_test_now(undef);
+DateTime()->set_test_now($now);
 my($subject3) = req('Model.RealmMail')->get('subject');
 Model_RealmMail()->create_from_rfc822(template(\($x = $msg), {
     from => email('crm_tech1'),
