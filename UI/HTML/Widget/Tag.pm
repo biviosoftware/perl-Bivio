@@ -36,13 +36,17 @@ sub control_on_render {
     my($t) = lc(${$self->render_attr('tag', $source)});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
 	unless $t =~ /^[a-z]+\d*$/;
-    $buf = "\n<!--\n$buf\n-->\n"
-	if length($buf)
-	&& $self->render_simple_attr('bracket_value_in_comment', $source);
+    my($pre, $post)
+        = $self->render_simple_attr('bracket_value_in_comment', $source)
+        ? ("\n<!--\n", "\n-->\n")
+        : map($self->render_simple_attr($_, $source),
+              'tag_pre_value',
+              'tag_post_value',
+          );
     my($v) = '';
     $self->internal_tag_render_attrs($source, \$v);
     $$buffer .= "<$t$v"
-	. (length($buf) || !_empty($t) ? ">$buf</$t>" : ' />');
+	. (length($buf) || !_empty($t) ? ">$pre$buf$post</$t>" : ' />');
     return;
 }
 
@@ -65,7 +69,16 @@ sub initialize {
     }
     $self->unsafe_initialize_attr('value');
     $self->initialize_attr('tag');
+    $self->die(
+        'bracket_value_in_comment',
+        undef,
+        'cannot specify with either tag_pre_value or tag_post_value',
+    ) if $self->has_keys('tag_pre_value')
+        || $self->has_keys('tag_post_value')
+        and $self->has_keys('bracket_value_in_comment');
     $self->initialize_attr(bracket_value_in_comment => 0);
+    $self->unsafe_initialize_attr('tag_pre_value');
+    $self->unsafe_initialize_attr('tag_post_value');
     $self->unsafe_initialize_attr('tag_if_empty');
     return shift->SUPER::initialize(@_);
 }

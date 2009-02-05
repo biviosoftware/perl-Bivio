@@ -2,6 +2,12 @@
 # $Id$
 Widget();
 [
+    [div => 'x', {
+        tag_pre_value => 'z',
+        tag_post_value => 'y',
+    }] => '<div>zxy</div>',
+    ['style', 'foo', {bracket_value_in_comment => 1}]
+        => "<style>\n<!--\nfoo\n-->\n</style>",
     ['p', [sub {''}]] => '',
     [[sub {'br'}], ''] => '',
     br => '<br />',
