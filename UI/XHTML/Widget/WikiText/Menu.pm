@@ -16,6 +16,17 @@ sub handle_register {
     return ['b-menu'];
 }
 
+sub internal_submenu {
+    my(undef, $args, $links) = @_;
+    return TaskMenu([map(Tag(span => Link($_)), @$links)], 'b_submenu', {
+        selected_item => sub {
+            my($w, $source) = @_;
+            return ($source->ureq('uri') || '') =~
+                $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
+        },
+    });
+}
+
 sub render_html {
     my($proto, $args) = @_;
     my($class) =  delete($args->{attrs}->{class}) || 'bmenu';
@@ -28,7 +39,7 @@ sub render_html {
     my($links) = _visit($value, $args);
     return unless @$links;
     my($buf) = '';
-    TaskMenu([map(_item_widget($_, $prefix), @$links)], $class)
+    TaskMenu([map(_item_widget($proto, $args, $_, $prefix), @$links)], $class)
         ->put_and_initialize(
             parent => undef,
             selected_item => sub {
@@ -46,21 +57,14 @@ sub _has_value {
 }
 
 sub _item_widget {
-    my($row, $prefix) = @_;
+    my($proto, $args, $row, $prefix) = @_;
     my($c) = delete($row->{class});
     $row->{value} = Simple($row->{value});
     return Tag(span => Link($row), $c ? $c : ())
         unless my $links = delete($row->{links});
     my($selected_regexp) = delete($row->{selected_regexp});
-    return Tag(span => Join([
-        Link($row),
-        TaskMenu([map(Tag(span => Link($_)), @$links)], 'b_submenu', {
-            selected_item => sub {
-                my($w, $source) = @_;
-                return ($source->ureq('uri') || '') =~
-                    $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
-            },
-        }),
+    return Tag(span => Join([Link($row),
+        $proto->internal_submenu($args, $links),
     ], {selected_regexp => $selected_regexp}),  $c ? $c : ());
 }
 
