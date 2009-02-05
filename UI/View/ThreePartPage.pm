@@ -21,7 +21,7 @@ sub internal_xhtml_adorned {
 		control => view_widget_value('xhtml_rss_task'),
 		html_attrs => [qw(rel type title href)],
 		rel => 'alternate',
-		type => 'application/rss+xml',
+		type => 'application/atom+xml',
 		title => Prose(
 		    vs_text(
 			'rsslink', 'title', view_widget_value('xhtml_rss_task')),

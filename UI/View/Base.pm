@@ -162,7 +162,7 @@ sub rss {
     view_shortcuts($self->VIEW_SHORTCUTS);
     view_declare('rss_body');
     view_main(SimplePage(view_widget_value('rss_body'), {
-	content_type => 'application/xhtml+xml',
+	content_type => 'application/atom+xml',
     }));
     return;
 }
