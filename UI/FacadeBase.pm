@@ -637,7 +637,6 @@ sub _cfg_group_admin {
 		    UNKNOWN => 'No Access',
 		    GUEST => 'Site Contractor',
 		    MEMBER => 'Site Staff',
-		    FILE_WRITER => 'Site Editor',
 		    ACCOUNTANT => 'Site Manager',
 		    ADMINISTRATOR => 'Site Admin',
 		],
