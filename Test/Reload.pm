@@ -54,7 +54,9 @@ sub _do {
 }
 
 sub _modified_ddl {
-    $_DDL ||= Bivio::UI::Facade->get_default->get_local_file_name('DDL', '');
+    return []
+	unless -d
+        ($_DDL ||= Bivio::UI::Facade->get_default->get_local_file_name('DDL', ''));
     my($res) = [];
     File::Find::find({
 	no_chdir => 1,
