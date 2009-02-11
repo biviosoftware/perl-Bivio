@@ -626,12 +626,27 @@ sub _cfg_file {
 
 sub _cfg_group_admin {
     return {
+        Constant => [
+            map(['xlink_'.$_->[0] => {
+                task_id => $_->[1],
+                realm => 'site-admin',
+            }],
+                [qw(applicants SITE_ADMIN_UNAPPROVED_APPLICANT_LIST)],
+                [qw(all_users GROUP_USER_LIST)],
+                [qw(substitute_user SITE_ADMIN_SUBSTITUTE_USER)],
+            ),
+        ],
 	Task => [
 	    [GROUP_USER_LIST => '?/users'],
 	    [GROUP_USER_FORM => '?/edit-user'],
 	    [GROUP_USER_ADD_FORM => '?/add-user'],
 	],
 	Text => [
+            [xlink => [
+                applicants => 'Site Applicants',
+                all_users => 'All Users',
+                substitute_user => 'Act as User',
+            ]],
 	    [realm_owner_site_admin => [
 		 [qw(GroupUserList.privileges_name RoleSelectList.display_name)] => [
 		    UNKNOWN => 'No Access',

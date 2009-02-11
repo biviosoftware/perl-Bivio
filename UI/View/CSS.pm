@@ -388,6 +388,7 @@ div.main_top div.selector {
 }
 div.alphabetical_chooser {
   display: inline;
+  margin-right: 1em;
 }
 .task_menu .selected,
 .alphabetical_chooser .selected {

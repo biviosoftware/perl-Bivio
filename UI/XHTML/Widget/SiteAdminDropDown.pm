@@ -19,14 +19,11 @@ sub initialize {
 	    vs_text_as_prose('SiteAdminDropDown_label'),
 	    DIV_dd_menu(TaskMenu([
 		@{$self->get_or_default(extra_items => [])},
-		map(+{
-		    task_id => $_,,
-		    realm => vs_constant('site_admin_realm_name'),
-		},
-		    $_UAM ? qw(SITE_ADMIN_UNAPPROVED_APPLICANT_LIST) : (),
-		    'SITE_ADMIN_USER_LIST',
-		    'SITE_ADMIN_SUBSTITUTE_USER',
-		),
+                map(XLink($_),
+                    $_UAM ? 'applicants' : (),
+                    'all_users',
+                    'substitute_user',
+                ),
 	    ]), {id => 'admin_drop_down'}),
 	),
     );
