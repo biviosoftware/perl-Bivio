@@ -607,6 +607,20 @@ EOF
 @h1 Merry Xmas
 Ho, ho, ho!
 EOF
+    $self->model('RealmFile')->create_with_content({
+	path => '/Settings/RealmSettingsList1.csv',
+    }, \(<<'EOF'));
+Key,Value
+a,1
+b,2
+,user-default
+EOF
+    $self->model('RealmFile')->create_with_content({
+	path => '/Settings/RealmSettingsList2.csv',
+    }, \(<<'EOF'));
+Key,Value
+"a parser error
+EOF
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1',
