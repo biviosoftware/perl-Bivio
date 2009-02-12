@@ -26,11 +26,22 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.34  2009/02/11 18:59:39  dobbs
+  * Bivio::Test::Reload
+    _modified_ddl() return empty array if no DDL directory
+  * Bivio::UI::FacadeBase
+    FILE_WRITER in site-admin is just Editor, not Site Editor
+    SiteAdminDropDown widget now uses xlinks
+  * Bivio::UI::View::CSS
+    added margin after div.alphabetical_chooser
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    SiteAdminDropDown widget now uses xlinks
+
   Revision 7.33  2009/02/05 02:47:49  dobbs
   * Bivio::UI::HTML::Widget::Tag
     renamed $a -> $x and $b -> $buf
