@@ -3,7 +3,7 @@
 package Bivio::UI::HTML::Widget::Form;
 use strict;
 #TODO: Probably should subclass Tag, but cell_end_form is messy
-use Bivio::Base 'Bivio::UI::Widget::ControlBase';
+use Bivio::Base 'HTMLWidget.ControlBase';
 use Bivio::HTML;
 use Bivio::UI::HTML::ViewShortcuts;
 
@@ -133,7 +133,6 @@ sub initialize {
 	$self->put(form_name => $name);
     }
 
-    $_VS->vs_html_attrs_initialize($self, $self->unsafe_get('html_attrs'));
     $self->initialize_attr(action => [['->get_request'], '->format_uri']);
     my($a) = $self->get('action');
     $self->put(action => [['->get_request'], '->format_stateless_uri', $a])
@@ -188,15 +187,11 @@ sub control_on_render {
 #      context when you have a form to store the context in fields.
 #      Context management is hard....
     $action =~ s/[&?]fc=[^&=]+//;
-    $$buffer .= $fields->{prefix}
-	. $action
-	. '"'
-	. $_VS->vs_html_attrs_render(
-	    $self, $source, $self->unsafe_get('html_attrs'),
-	)
-	. ($model->get_info('file_fields')
-	       ? ' enctype="multipart/form-data"' : '')
-        . ">\n";
+    $$buffer .= $fields->{prefix} . $action . '"';
+    $self->SUPER::control_on_render($source, $buffer);
+    $$buffer .= ' enctype="multipart/form-data"'
+	if $model->get_info('file_fields');
+    $$buffer .= ">\n";
     if ($self->render_simple_attr('want_hidden_fields', $source)) {
 	$_VS->vs_new('TimezoneField')->render($source, $buffer)
 	    if $self->render_simple_attr('want_timezone', $source);
