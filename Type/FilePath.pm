@@ -51,6 +51,10 @@ sub REGEX {
     return qr{(.+)};
 }
 
+sub SETTINGS_FOLDER {
+    return '/Settings';
+}
+
 sub VERSION_REGEX {
     return qr{;\d+(\.\d+)?};
 }
