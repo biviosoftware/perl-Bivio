@@ -16,8 +16,9 @@ foreach my $u ('', 'root') {
 }
 visit_uri('/fourem/wiki/EasyForm_btest');
 submit_form(OK => {
-    'Input:' => "easyform$r",
+    'Input:' => my $input = "easyform$r",
 });
 verify_text('wiki completed');
+verify_local_mail(qr{support}, qr{submission.*$input}s);
 visit_uri('/fourem/file'.$form_uri);
 verify_text(qr{\n.*,$r,OK\n.*,[^,]+root\@[^,]+,root$r,OK\n.*easyform$r,OK\n}s);
