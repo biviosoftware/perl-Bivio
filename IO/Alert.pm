@@ -57,6 +57,7 @@ BEGIN {
     $_STRIP_BIT8 = 0;
 }
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_WARN_EXACTLY_ONCE) = {};
 
 #=IMPORTS
 # Should not important anything else.
@@ -357,6 +358,14 @@ sub warn_deprecated {
 	(caller($i))[2],
     );
     _trace_stack() if $_STACK_TRACE_WARN;
+    return;
+}
+
+sub warn_exactly_once {
+    my($proto) = shift;
+    my($e) = $proto->format_args(@_);
+    $proto->warn($e)
+	unless $_WARN_EXACTLY_ONCE->{$e}++;
     return;
 }
 
