@@ -130,20 +130,6 @@ my($_HANDLERS) = b_use('Biz.Registrar')->new;
 
 sub OPTIONS {
     # Returns a mapping of options to bivio types and default values.
-    # The default values are:
-    #
-    #     {
-    # 	db => ['Name', undef],
-    # 	detach => ['Boolean', 0],
-    # 	email => ['Text', undef],
-    # 	force => ['Boolean', 0],
-    # 	input => ['Line', '-'],
-    # 	live => ['Boolean', 0],
-    # 	noexecute => ['Boolean', 0],
-    # 	realm => ['Line', undef],
-    # 	user => ['Line', undef],
-    #         output => ['Line', undef],
-    #     }
     #
     # Boolean is treated specially, but all other options are parsed
     # with L<Bivio::Type::from_literal|Bivio::Type/"from_literal">.
@@ -164,7 +150,7 @@ sub OPTIONS {
 	detach_log => ['Text', undef],
 	email => ['Text', undef],
 	force => ['Boolean', 0],
-	input => ['Line', '-'],
+	input => ['FilePath', '-'],
 	live => ['Boolean', 0],
 	noexecute => ['Boolean', 0],
 	realm => ['Line', undef],
