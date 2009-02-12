@@ -22,9 +22,9 @@ sub execute {
     my($dir) = $_C->get_value('easyform_dir', $req);
     my($rf) = $_M->new($req, 'RealmFile');
     b_die($req->get('path_info'), ': invalid Forms path')
-	unless my $path
+	unless my $base
 	= $_FP->get_clean_tail($rf->parse_path($req->get('path_info')));
-    $path = $_FP->join($dir, "$path.csv");
+    my($path) = $_FP->join($dir, "$base.csv");
     my($headings) = _headings($rf, $path);
     my($form) = _form($rf);
     my($d) = ${$rf->get_content};
@@ -39,20 +39,33 @@ sub execute {
 	if $new_headings;
     $d .= ${$_CSV->to_csv_text([[map($form->{$_}, @$headings)]])};
     $rf->update_with_content({user_id => $rf->get('user_id')}, \$d);
+    my($email) = _email($rf, $base);
     $proto->new({
 	file_path => $rf->get('path'),
-	to => $rf->new_other('RowTag')->get_value('EASY_FORM_UPDATE_MAIL_TO')
-	    || $rf->new_other('EmailAlias')->format_realm_as_incoming(
-		$rf->new_other('RealmOwner')->unauth_load_or_die({
-		    realm_id => $_C->get_value('site_contact_realm_id')})),
+	to => $email,
 	hash_list => $rf->new_other('HashList')->load_from_hash(
 	    $form, $headings),
     })->put_on_request($req);
-    $_V->execute('EasyForm->update_mail', $req);
+    $_V->execute('EasyForm->update_mail', $req)
+	if $email;
     return {
 	uri => $req->get('query')->{goto},
 	query => undef,
     };
+}
+
+sub _email {
+    my($rf, $base) = @_;
+    return $rf->new_other('RealmSettingsList')->get_value(
+	'EasyForm',
+	$base,
+	sub {
+	    return $rf->new_other('EmailAlias')->format_realm_as_incoming(
+		$rf->new_other('RealmOwner')->unauth_load_or_die({
+		    realm_id => $_C->get_value('site_contact_realm_id')}),
+	    );
+	},
+    );
 }
 
 sub _form {
