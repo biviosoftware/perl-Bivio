@@ -150,7 +150,7 @@ sub OPTIONS {
 	detach_log => ['Text', undef],
 	email => ['Text', undef],
 	force => ['Boolean', 0],
-	input => ['FilePath', '-'],
+	input => ['Text', '-'],
 	live => ['Boolean', 0],
 	noexecute => ['Boolean', 0],
 	realm => ['Line', undef],
