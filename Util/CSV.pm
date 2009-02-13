@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::Util::CSV;
 use strict;
