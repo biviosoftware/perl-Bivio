@@ -10,7 +10,7 @@ use GMP::Mpf ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # also uses Bivio::TypeError dynamically
-my($_FUDGE) = _mpf('1e-20');
+my($_FUDGE) = _mpf('0.00000000000000000001');
 my($_HALF) = _mpf('0.5');
 my($_POWER) = {};
 
