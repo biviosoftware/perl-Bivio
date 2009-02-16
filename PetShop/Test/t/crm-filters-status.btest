@@ -47,7 +47,7 @@ test_ok(!$status->{Closed},
         "Not Closed status filter is including Closed threads");
 foreach my $status (qw(New Locked Open)) {
     while (get_html_parser()->get('Links')->unsafe_get($status)) {
-        follow_link($status, 'internally');
+        follow_link($status, 'Discuss Internally');
         submit_form(only => {action => 'Close'});
     }
 }

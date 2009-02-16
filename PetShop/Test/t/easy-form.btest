@@ -19,6 +19,6 @@ submit_form(OK => {
     'Input:' => my $input = "easyform$r",
 });
 verify_text('wiki completed');
-verify_local_mail(qr{support}, qr{submission.*$input}s);
+verify_local_mail(qr{support}, qr{submission.*$input}s, 2);
 visit_uri('/fourem/file'.$form_uri);
 verify_text(qr{\n.*,$r,OK\n.*,[^,]+root\@[^,]+,root$r,OK\n.*easyform$r,OK\n}s);
