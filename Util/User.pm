@@ -14,6 +14,7 @@ usage: b-user [options] command [args..]
 commands
     create_from_email email -- creates a new user, prompts for password
     realms -- returns realms of the current user
+    unsubscribe_bulletin [user_id...] -- clears want_bulletin for auth_user_id or user_ids
 EOF
 }
 
@@ -62,6 +63,24 @@ sub realms {
 	    sort(keys(%$realms)),
 	),
     );
+}
+
+sub unsubscribe_bulletin {
+    my($self, @realm_ids) = shift->name_args([['?PrimaryId']], \@_);
+    push(@realm_ids, $self->req('auth_user_id'))
+	unless @realm_ids;
+    foreach my $r (@realm_ids) {
+	$self->model('Email')->do_iterate(
+	    sub {
+		shift->update({want_bulletin => 0});
+		return 1;
+	    },
+	    'unauth_iterate_start',
+	    'location',
+	    {realm_id => $r},
+	);
+    }
+    return;
 }
 
 1;
