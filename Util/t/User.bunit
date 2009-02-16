@@ -1,0 +1,16 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ShellUtil();
+my($ids) = [map({
+    my($i) = realm_id($_);
+    unauth_model('Email', {realm_id => $i})->update({want_bulletin => 1});
+    $i;
+} qw(demo guest))];
+[
+    [unsubscribe_bulletin => @$ids] => sub {
+	foreach my $i (@$ids) {
+	    unauth_model('Email', {realm_id => $i, want_bulletin => 0});
+	}
+	return 1;
+    },
+];
