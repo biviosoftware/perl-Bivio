@@ -42,11 +42,11 @@ sub from_literal {
 	return (undef, Bivio::TypeError->HOUR) if $h > 12;
 	if ($h == 12) {
 	    # 12 a.m is really 0 o'clock
-	    $h = 0 if $am_pm eq 'a';
+	    $h = 0 if lc($am_pm) eq 'a';
 	}
 	else {
 	    # 12:\d+ p.m. is noon, not midnight
-	    $h += 12 if $am_pm eq 'p';
+	    $h += 12 if lc($am_pm) =~ 'p';
 	}
     }
     else {
