@@ -23,6 +23,12 @@ sub initialize {
     $self->initialize_attr('label');
     $self->initialize_attr(class => 'checkbox');
     $self->initialize_attr(TYPE => 'checkbox');
+
+    my($form) = $self->ancestral_get('form_class');
+    $self->put(event_handler => $_VS->vs_new('MultiCheckHandler'))
+	if $form->isa('Bivio::Biz::ListFormModel')
+	    && $form->get_instance
+		->get_field_info($self->get('field'), 'in_list');
     $self->unsafe_initialize_attr('auto_submit');
     return shift->SUPER::initialize(@_);
 }
