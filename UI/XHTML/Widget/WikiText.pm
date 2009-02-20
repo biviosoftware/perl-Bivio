@@ -348,8 +348,9 @@ sub internal_format_uri {
 	    : $uri;
     }
     $uri =~ s/^(?=javascript:)/no-wiki-/i;
-    return
-	$uri =~ m{^/+$_REALM_PLACEHOLDER(/.+)}os && $args->{realm_name}
+    $uri =~ s/#([a-z][a-z0-9_:\.-]*)$//is;
+    my($anchor) = $1 ? "#$1" : '';
+    return ($uri =~ m{^/+$_REALM_PLACEHOLDER(/.+)}os && $args->{realm_name}
         ? $_T->format_uri(
 	    {uri => "/$args->{realm_name}$1"}, $args->{req})
 	: $uri =~ m{[/:]}
@@ -360,7 +361,8 @@ sub internal_format_uri {
 	    realm => $args->{realm_name},
 	    query => undef,
 	    path_info => $uri,
-	});
+	})
+    ) . $anchor;
 }
 
 sub internal_new_args {
@@ -586,6 +588,7 @@ sub _empty_tag {
 
 sub _fix_word {
     my($word) = @_;
+    $word =~ s/#/ /;
     $word =~ s/_/ /g
 	if $word =~ /^\w+$/;
     return $word;
@@ -619,7 +622,7 @@ sub _fmt_href {
     # Any &'s were turned into &amp;
     # The trailing punctuation can't be everything, because http://a//? is a
     # legitimate URI.
-    my($s, $m, $e) = $tok =~ m#(^[^\w/]*)(.+?)([\)\]\}\>\.,:;"'`~!\|]*$)#;
+    my($s, $m, $e) = $tok =~ m{(^[^\w/]*)(.+?)([\)\]\}\>\.,:;"'`~!\|]*$)};
     return ''
 	unless defined($e);
     return Bivio::HTML->escape($s)

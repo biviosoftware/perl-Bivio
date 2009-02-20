@@ -152,6 +152,10 @@ OUT
 	    '@a href=javascript:/ x' => qq{<p class="b_prose"><a href="no-wiki-javascript:/">x</a>\n</p>},
 	    "\@a name=x" => qq{<p class="b_prose"><a name="x"></a></p>},
 	    '@a href=/ foo.org' => qq{<p class="b_prose"><a href="/">foo.org</a>\n</p>},
+	    '@a href=x#a y' => qq{<p class="b_prose"><a href="/fourem/wiki/x#a">y</a>\n</p>},
+	    '@a href=^x#a y' => qq{<p class="b_prose"><a href="/fourem/wiki/x#a">y</a>\n</p>},
+	    '^M#a' => qq{<p class="b_prose"><a href="/fourem/wiki/M#a">M a</a>\n</p>},
+
 	    <<'IN' => _chomp(<<'OUT'),
 @h3 h 3
 p1
