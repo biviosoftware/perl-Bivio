@@ -301,7 +301,7 @@ sub iterate_next_and_load_new {
 }
 
 sub iterate_start {
-    my($self, $order_by, $query) = @_;
+    my($self, $order_by, $query) = _iterate_params(@_);
     # Begins an iteration which can be used to iterate the rows for this
     # realm with L<iterate_next|"iterate_next">,
     # L<iterate_next_and_load|"iterate_next_and_load">, or
@@ -463,7 +463,7 @@ sub unauth_delete {
 }
 
 sub unauth_iterate_start {
-    my($self, $order_by, $query) = @_;
+    my($self, $order_by, $query) = _iterate_params(@_);
     # B<Do not use this method unless you are sure the user is authorized
     # to access all realms or all rows of the table.>
     #
@@ -483,8 +483,8 @@ sub unauth_iterate_start {
     return $self->internal_put_iterator(
 	$self->internal_get_sql_support->iterate_start(
 	    $self,
-	    $order_by || _default_order_by($self),
-	    $self->internal_prepare_query(_dup($query)),
+	    $order_by,
+	    $self->internal_prepare_query($query),
 	),
     );
 }
@@ -572,6 +572,14 @@ sub unsafe_load {
     #
     # B<DEPRECATED>
     return $self->unauth_load(_add_auth_id($self, $query));
+}
+
+sub unsafe_load_first {
+    my($self) = shift;
+    $self->iterate_start(@_);
+    my($ok) = $self->iterate_next_and_load;
+    $self->iterate_end;
+    return $ok ? $self : undef;
 }
 
 sub unsafe_load_parent_from_request {
@@ -670,6 +678,13 @@ sub _get_primary_keys {
         $pk_values{$pk} = $new_values->{$pk};
     }
     return $have_keys ? \%pk_values : undef;
+}
+
+sub _iterate_params {
+    my($self, $order_by, $query) = @_;
+    ($order_by, $query) = (undef, $order_by)
+	if ref($order_by) eq 'HASH';
+    return ($self, $order_by || _default_order_by($self), _dup($query));
 }
 
 sub _load {
