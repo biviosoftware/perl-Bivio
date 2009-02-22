@@ -11,5 +11,14 @@ my($id) = req('auth_id');
 	    [sub {shift->get('realm_id')}] => [[$id]],
 	    [sub {shift->get('realm_id')}, 'realm_type'] => [[$id]],
 	],
+	unsafe_load_first => [
+	    [{name => 'not-found-name'}] => [undef],
+	    [{name => 'guest'}] => [undef],
+	    [{name => 'demo'}] => sub {
+		my(undef, $actual) = @_;
+		assert_equals(realm_id('demo'), $actual->[0]->get('realm_id'));
+		return 1;
+	    },
+	],
     ],
 ];
