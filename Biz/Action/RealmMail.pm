@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::RealmMail;
 use strict;
@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_O) = __PACKAGE__->use('Mail.Outgoing');
 my($_A) = b_use('Mail.Address');
 my($_T) = b_use('Agent.Task');
+my($_WRT) = b_use('Type.WantReplyTo');
 
 sub EMPTY_SUBJECT_PREFIX {
     return '!';
@@ -27,7 +28,7 @@ sub execute_receive {
 	sender => $ea->format_realm_as_sender($email),
 	list_title => $_A->escape_comment(
 	    $req->get_nested(qw(auth_realm owner display_name))),
-	reply_to_list => $rm->new_other('Forum')->load->get('want_reply_to'),
+	reply_to_list => $_WRT->is_set_for_realm($req),
 #TODO: This should be configurable
 	keep_to_cc => 1,
 	subject_prefix => $proto->internal_subject_prefix($rm),

@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailForm;
 use strict;
@@ -14,6 +14,7 @@ my($_MRW) = b_use('Type.MailReplyWho');
 my($_ARM) = b_use('Action.RealmMail');
 my($_MA) = b_use('Mail.Address');
 my($_QUERY_WHO) = 'to';
+my($_WRT) = b_use('Type.WantReplyTo');
 
 sub VIEW_CLASS {
     return (shift->simple_package_name =~ /(.+)Form/)[0];
@@ -100,12 +101,10 @@ sub internal_format_from {
 
 sub internal_format_reply_to {
     my($self, $realm_email) = @_;
-    return $self->req(qw(auth_realm type))->eq_forum
-	&& $self->new_other('Forum')->load->get('want_reply_to')
-	? $_RFC->format_mailbox(
-	    $realm_email,
-	    $self->req(qw(auth_realm owner display_name)),
-	) : ();
+    return $_WRT->is_set_for_realm($self->req) ? $_RFC->format_mailbox(
+	$realm_email,
+	$self->req(qw(auth_realm owner display_name)),
+    ) : ();
 }
 
 sub internal_format_sender {
