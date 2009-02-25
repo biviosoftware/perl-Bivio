@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::FacadeBase;
 use strict;
