@@ -287,18 +287,6 @@ sub update {
     foreach $n (@{$attrs->{column_names}}) {
 	next if ! exists($new_values->{$n});
 	my($column) = $columns->{$n};
-	if ($column->{is_primary_key}) {
-            Bivio::IO::Alert->warn('Attempted to change primary key field: ',
-                $attrs->{table_name}, '.', $column->{name}, ': (old, new) = (',
-                $old_values, ',', $new_values, ')')
-                if exists($new_values->{$n}) && $column->{type}->compare(
-                    $new_values->{$n}, $old_values->{$n}) != 0;
-	    # Ensure primary keys aren't different, because PropertyModel
-	    # always copies new_values to old_values on success
-	    $new_values->{$n} = $old_values->{$n};
-	    # Don't update primary keys
-	    next;
-	}
 	my($old) = $old_values->{$n};
 	my($new) = $new_values->{$n};
 	# This works for BLOBs, too.  If the scalar_ref is the same,
