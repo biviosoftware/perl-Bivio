@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserCreateForm;
 use strict;
@@ -8,12 +8,38 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DN) = __PACKAGE__->use('Type.DisplayName');
 my($_A) = __PACKAGE__->use('IO.Alert');
+my($_GUEST) = b_use('Auth.Role')->GUEST;
+b_use('IO.Config')->register(my $_CFG = {
+    unapproved_applicant_mode => 0,
+});
 
 sub execute_ok {
     my($self) = @_;
     my($r) = $self->internal_create_models;
     $self->new_other('UserLoginForm')->process({realm_owner => $r})
 	unless $self->unsafe_get('without_login');
+    return;
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
+sub if_unapproved_applicant_mode {
+    my($self, $then, $else) = @_;
+    if ($_CFG->{unapproved_applicant_mode}) {
+	return $then->()
+	    unless ref($self);
+	return $self->req->with_realm(
+	    b_use('FacadeComponent.Constant')
+		->get_value('site_admin_realm_name', $self->req),
+	    $then,
+	);
+    }
+    return $else->()
+	if $else;
     return;
 }
 
@@ -71,14 +97,14 @@ sub internal_initialize {
 		constraint => 'NOT_NULL',
 	    },
 	],
-	$self->field_decl(other => [
-	    'RealmOwner.name',
-	    'User.user_id',
-	    [qw(without_login Boolean)],
-	]),
+	$self->field_decl(other => [qw(
+	    RealmOwner.name
+	    User.user_id
+	    without_login
+	    password_ok
+	)], 'Boolean'),
     });
 }
-
 
 sub parse_display_name {
     my(undef, $name) = @_;
