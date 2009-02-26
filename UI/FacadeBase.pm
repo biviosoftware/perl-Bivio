@@ -632,7 +632,7 @@ sub _cfg_group_admin {
                 realm => 'site-admin',
             }],
                 [qw(applicants SITE_ADMIN_UNAPPROVED_APPLICANT_LIST)],
-                [qw(all_users GROUP_USER_LIST)],
+                [qw(all_users SITE_ADMIN_USER_LIST)],
                 [qw(substitute_user SITE_ADMIN_SUBSTITUTE_USER)],
             ),
         ],
