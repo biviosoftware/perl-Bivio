@@ -6,13 +6,13 @@ use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_V) = b_use('UI.View');
+my($_UCF) = b_use('Model.UserCreateForm');
 
 sub internal_views {
     my(undef, $req) = @_;
     return [
-        $req->get('Model.UserRegisterForm')
-	    ->unsafe_get('unapproved_applicant_mode')
-	    ? 'UserAuth->unapproved_applicant_mail' : (),
+        $_UCF->if_unapproved_applicant_mode(
+	    sub {'UserAuth->unapproved_applicant_mail'}),
 	qw(UserAuth->create_mail UserAuth->create_done),
     ];
 }
