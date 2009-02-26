@@ -218,10 +218,7 @@ sub extra_query_params {
 }
 
 sub extract_uri_from_local_mail {
-    my($m) = shift->verify_local_mail(@_);
-    b_die('missing uri in mail: ', $m)
-	unless $m =~ /(https?:\S+)/;
-    return $1;
+    return (shift->uri_and_local_mail(@_))[0];
 }
 
 sub file_field {
@@ -709,6 +706,13 @@ sub unsafe_get_uri {
 sub unsafe_op {
     my($self, $method, @args) = @_;
     return Bivio::Die->catch_quietly(sub {$self->$method(@args)}) ? 0 : 1;
+}
+
+sub uri_and_local_mail {
+    my($m) = shift->verify_local_mail(@_);
+    b_die('missing uri in mail: ', $m)
+	unless $m =~ /(https?:\S+)/;
+    return ($1, $m);
 }
 
 sub user_agent {
