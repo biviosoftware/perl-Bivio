@@ -117,7 +117,8 @@ sub send {
     my($r, $o) = $self->unsafe_get(qw(r output));
 
     my($is_scalar) = ref($o) eq 'SCALAR';
-    die('no reply generated, missing UI item on Task')
+    die('no reply generated, missing UI item on Task: ',
+        $req->get('task_id')->get_name)
 	unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::Handle');
     my($size) = $is_scalar ? length($$o) : -s $o;
     # NOTE: The -s $o and the "stat(_)" below must be near each other
