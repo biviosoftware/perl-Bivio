@@ -6,7 +6,6 @@ use Bivio::Base 'XHTMLWidget.SiteAdminControl';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_UAM) = b_use('Model.UserRegisterForm')->unapproved_applicant_mode_config;
 
 sub NEW_ARGS {
     return [qw(?extra_items)];
@@ -20,7 +19,8 @@ sub initialize {
 	    DIV_dd_menu(TaskMenu([
 		@{$self->get_or_default(extra_items => [])},
                 map(XLink($_),
-                    $_UAM ? 'applicants' : (),
+                    b_use('Model.UserCreateForm')
+			->if_unapproved_applicant_mode(sub {'applicants'}),
                     'all_users',
                     'substitute_user',
                 ),

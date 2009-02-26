@@ -2213,8 +2213,8 @@ sub _sentinel_site_admin_forum {
 }
 
 sub _sentinel_site_admin_forum_users {
-    return b_use('Model.UserRegisterForm')->unapproved_applicant_mode_config
-	? _default_sentinel(@_) : 1;
+    return b_use('Model.UserCreateForm')->if_unapproved_applicant_mode(
+	sub {_default_sentinel(@_)}, sub {1});
 }
 
 sub _sentinel_site_forum {
