@@ -7,11 +7,10 @@ use Bivio::Base 'Model.RealmBase';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ROLES) = join(
     ',',
-    map($_->is_admin ? $_->as_sql_param : (),
-	__PACKAGE__->use('Auth.Role')->get_list),
+    map($_->is_admin ? $_->as_sql_param : (), b_use('Auth.Role')->get_list),
 );
-my($_OFFLINE) = __PACKAGE__->use('Type.RealmName')->OFFLINE_PREFIX;
-my($_C) = __PACKAGE__->use('SQL.Connection');
+my($_OFFLINE) = b_use('Type.RealmName')->OFFLINE_PREFIX;
+my($_C) = b_use('SQL.Connection');
 
 sub execute_auth_user {
     my($proto, $req) = @_;
@@ -84,15 +83,10 @@ sub is_sole_admin {
 sub unauth_delete_user {
     my($self) = @_;
     my($uid) = $self->get('user_id');
-    $self->do_iterate(
-	sub {
-	    shift->unauth_delete;
-	    return 1;
-	},
-	'unauth_iterate_start',
-	'role',
-	{user_id => $uid, realm_id => $self->get('realm_id')},
-    );
+    my($req) = $self->req;
+    my($delete) = sub {$self->new->delete_all({user_id => $uid})};
+    $req->with_realm($self->get('realm_id'), $delete);
+    $self->new_other('UserCreateForm')->if_unapproved_applicant_mode($delete);
     $self->new_other('RealmOwner')->unauth_delete_realm({realm_id => $uid});
     return;
 }
