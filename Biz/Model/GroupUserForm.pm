@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::GroupUserForm;
 use strict;
@@ -9,6 +9,11 @@ my($_FM) = b_use('Type.FormMode');
 my($_AUX) = [qw(file_writer mail_recipient)];
 my($_R) = b_use('Auth.Role');
 my($_F) = b_use('UI.Facade');
+my($_UNAPPROVED) = $_R->UNAPPROVED_APPLICANT;
+
+sub UNAPPROVED_ROLE {
+    return $_UNAPPROVED;
+}
 
 sub USER_LIST_CLASS {
     return 'GroupUserList';
@@ -29,7 +34,7 @@ sub change_main_role {
 
 sub create_unapproved_applicant {
     my($self, $user_id) = @_;
-    return $self->change_main_role($user_id, $_R->UNAPPROVED_APPLICANT);
+    return $self->change_main_role($user_id, $self->UNAPPROVED_ROLE);
 }
 
 sub delete_all_roles {
