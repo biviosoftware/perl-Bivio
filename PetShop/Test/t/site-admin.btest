@@ -3,7 +3,9 @@
 test_setup('PetShop', 'groupware');
 home_page();
 login_as('root');
-follow_link('All Users', qr{^All$}, 'User, Demo');
+follow_link('All Users', qr{^All$});
+find_page_with_text('User, Demo');
+follow_link('User, Demo');
 home_page();
 follow_link('settings');
 verify_form({
@@ -19,7 +21,9 @@ home_page();
 verify_link('login');
 login_as('root');
 follow_link('site-admin');
-follow_link('All Users', qr{^All$}, 'User, Btest_read');
+follow_link('All Users', qr{^All$});
+find_page_with_text('User, Btest_read');
+follow_link('User, Btest_read');
 home_page();
 follow_link('wiki');
 verify_no_text(qr{new page|this page}i);
