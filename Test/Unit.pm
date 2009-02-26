@@ -203,7 +203,7 @@ sub builtin_create_mail {
 sub builtin_create_user {
     my($self, $user) = @_;
     # Generate a btest, and sets realm and user to this user.  Deletes any user first.
-    my($req) = $self->builtin_req;
+    my($req) = $self->builtin_req->initialize_fully;
     Bivio::Die->eval(sub {
         $req->set_user(
 	    Bivio::Biz::Model->new('RealmOwner')->unauth_load({

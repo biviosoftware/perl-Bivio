@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub run_unit {
     my($self, $cases) = @_;
+    $self->initialize_fully;
     $self->set_realm_and_user(undef, 'demo');
     Bivio::Type->get_instance('FormMode')->CREATE->execute($self, 1);
     my($realm_id) = _create_realms(
