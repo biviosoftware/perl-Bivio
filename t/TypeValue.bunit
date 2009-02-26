@@ -1,7 +1,7 @@
 # Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
-my($_I) = __PACKAGE__->use('Type.Integer');
+my($_I) = Integer();
 [
     [$_I, 0] => [
 	equals => [
@@ -11,6 +11,9 @@ my($_I) = __PACKAGE__->use('Type.Integer');
 	    [undef] => 0,
 	],
 	as_string => 'Bivio::Type::Integer[0]',
+    ],
+    [Role(), Role('USER')] => [
+        as_string => 'Bivio::Auth::Role[User]',
     ],
 ];
 
