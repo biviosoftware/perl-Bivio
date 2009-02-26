@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserRegisterForm;
 use strict;
@@ -10,11 +10,7 @@ my($_UPQ) = __PACKAGE__->use('Action.UserPasswordQuery');
 my($_A) = __PACKAGE__->use('Action.Acknowledgement');
 my($_UPQF) = __PACKAGE__->use('Model.UserPasswordQueryForm');
 my($_UNKNOWN) = __PACKAGE__->use('Bivio.TypeError')->UNKNOWN;
-my($_C) = b_use('FacadeComponent.Constant');
 my($_R) = b_use('Auth.Role');
-b_use('IO.Config')->register(my $_CFG = {
-    unapproved_applicant_mode => 0,
-});
 
 sub execute_ok {
     my($self, ) = @_;
@@ -27,26 +23,16 @@ sub execute_ok {
 	uri => $_UPQ->format_uri($req),
     );
     $self->put_on_request(1);
-    $self->req->with_realm(
-	$_C->get_value('site_admin_realm_name', $req),
-	sub {
-	    $self->new_other('GroupUserForm')->create_unapproved_applicant(
-		$self->get('User.user_id'),
-	    );
-	    return;
-	},
-    ) if $self->unsafe_get('unapproved_applicant_mode');
+    $self->if_unapproved_applicant_mode(sub {
+	$self->new_other('GroupUserForm')->create_unapproved_applicant(
+	    $self->get('User.user_id'));
+	return;
+    });
     return {
 	method => 'server_redirect',
 	task_id => 'next',
 	query => undef,
     };
-}
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_CFG = $cfg;
-    return;
 }
 
 sub internal_create_models {
@@ -84,11 +70,7 @@ sub internal_initialize {
 		name => 'RealmOwner.password',
 		constraint => 'NONE',
 	    },
-	    $self->field_decl([
-		[qw(uri String)],
-		'password_ok',
-		'unapproved_applicant_mode',
-	    ], 'Boolean'),
+	    $self->field_decl([[qw(uri String)]]),
 	],
     });
 }
@@ -104,17 +86,6 @@ sub internal_post_execute {
 	task_id => 'user_exists_task',
 	query => $q,
     };
-}
-
-sub internal_pre_execute {
-    my($self) = @_;
-    $self->internal_put_field(
-	unapproved_applicant_mode => $_CFG->{unapproved_applicant_mode});
-    return shift->SUPER::internal_pre_execute(@_);
-}
-
-sub unapproved_applicant_mode_config {
-    return $_CFG->{unapproved_applicant_mode};
 }
 
 sub validate {
