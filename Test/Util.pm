@@ -422,7 +422,7 @@ sub _run {
 		$self->print(sprintf('%20s: ', $t), $res, "\n");
 		$out ||= '';
 		$out =~ s/^/  /mg;
-		if ($max == 1) {
+		if ($max == 1 || $self->get('verbose') && $res eq 'FAILED') {
 		    $self->print("Output:\n", $out);
 		}
 	    }
