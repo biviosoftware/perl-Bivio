@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 7.37  2009/02/20 16:38:10  moeller
+  * Bivio::Type::Number
+    don't use 1e-20 format when talking to GMP
+  * Bivio::Type::Time
+    $am_pm may be uppercase
+  * Bivio::UI::FacadeBase
+    fixed bug in dock_left_standard FORUM_FILE_TREE_LIST instead of
+    FORUM_FILE_LIST
+  * Bivio::UI::HTML::Widget::Checkbox
+    use MultiCheckHandler for ListForms
+  * Bivio::UI::XHTML::Widget::WikiText
+    test anchors (^M#a)
+
   Revision 7.36  2009/02/13 23:16:05  dobbs
   * Bivio::ShellUtil
     -input must be Text (not FilePath) because -input is sometimes a pipe
