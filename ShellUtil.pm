@@ -156,6 +156,7 @@ sub OPTIONS {
 	realm => ['Line', undef],
 	user => ['Line', undef],
         output => ['Line', undef],
+	verbose => ['Boolean', 0],
     };
 }
 
