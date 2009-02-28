@@ -55,10 +55,12 @@ sub execute {
 }
 
 sub _email {
-    my($rf, $base) = @_;
-    return $rf->new_other('RealmSettingsList')->get_value(
+    my($rf, $key) = @_;
+    return $rf->new_other('RealmSettingsList')->get_setting(
 	'EasyForm',
-	$base,
+	$key,
+	'mail',
+	'Email',
 	sub {
 	    return $rf->new_other('EmailAlias')->format_realm_as_incoming(
 		$rf->new_other('RealmOwner')->unauth_load_or_die({
