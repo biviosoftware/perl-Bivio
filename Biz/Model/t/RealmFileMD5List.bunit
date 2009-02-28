@@ -1,0 +1,20 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully->set_realm_and_user('guest', 'guest');
+[
+    load_all => [
+	[{
+	    path_info => '/private',
+	}] => [
+	    {
+		'RealmFile.path' => '/private/file.html',
+		md5 => 'TekYsCTk6d/LnZMvu99ngw',
+	    },
+	    {
+		'RealmFile.path' => '/private/image.gif',
+		md5 => '+tQBF22mDhwNKPHPSrxY9A',
+	    },
+	],
+    ],
+];
