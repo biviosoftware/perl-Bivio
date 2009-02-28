@@ -3,16 +3,23 @@
 ListModel();
 req()->set_realm('fourem');
 [
-    get_value => [
-	[qw(RealmSettingsList1 a)] => 1,
-	[qw(RealmSettingsList1 not-found)] => 'user-default',
-	[qw(NotFound a)] => [undef],
-	[qw(NotFound a 3)] => 3,
-	[qw(RealmSettingsList2 a xyz)] => 'xyz',
-	[qw(RealmSettingsList1 a)] => 1,
+    get_setting => [
+	[qw(RealmSettingsList1 alpha num Integer)] => 1,
+	[qw(RealmSettingsList1 beta letter Name)] => 'b',
+	[qw(RealmSettingsList1 beta lesson String)] => 'default-lesson',
+	[qw(RealmSettingsList1 alpha le String xyz)] => 'xyz',
+	[qw(RealmSettingsList1 not-found num Integer)] => 4242,
+	[qw(NotFound alpha num Integer)] => [undef],
+	[qw(NotFound alpha num Integer 3)] => 3,
+	[qw(NotFound alpha letter Integer), sub {return @_ ? die(@_) : 13}]
+	    => 13,
+	[qw(RealmSettingsList1 alpha letter Integer), sub {'not-' . shift}]
+	    => 'not-default-letter',
+	[qw(RealmSettingsList2 alpha num Integer 99)] => 99,
+	[qw(RealmSettingsList1 alpha num Integer)] => 1,
 	sub {
 	    req()->set_realm('btest_read');
-	    return [qw(RealmSettingsList1 a xyz)];
-	} => 'xyz',
+	    return [qw(RealmSettingsList1 alpha num Integer 99)];
+	} => 99,
     ],
 ];

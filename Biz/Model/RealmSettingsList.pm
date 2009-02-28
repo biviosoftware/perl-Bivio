@@ -7,18 +7,31 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_S) = b_use('Type.String');
-my($_DEFAULT_KEY) = undef;
 my($_FP) = b_use('Type.FilePath');
 my($_CSV) = b_use('ShellUtil.CSV');
 my($_D) = b_use('Bivio.Die');
 my($_A) = b_use('IO.Alert');
+my($_T) = b_use('Bivio.Type');
 
-sub get_value {
-    my($self, $base, $key, $default) = @_;
-    return ref($default) eq 'CODE' ? $default->($key) : $default
-	unless ($self = _base($self, $base))->find_row_by('key', $key)
-	|| $self->find_row_by('key', $_DEFAULT_KEY);
-    return $self->get('value');
+sub get_setting {
+    my($self, $base, $key, $column, $type, $default) = @_;
+    $type = $_T->get_instance($type);
+    $column = qr{\Q$column\E}is
+	unless ref($column);
+    return _default($default)
+	unless ($self = _base($self, $base, $key))->find_row_by('key', $key)
+	|| $self->find_row_by('key', $key = undef);
+    return _grep(
+	$self,
+	$column,
+	$type,
+	sub {
+	    return _default($default, @_)
+		unless defined($key)
+		&& $self->find_row_by('key', undef);
+	    return _grep($self, $column, $type, $default);
+	},
+    );
 }
 
 sub internal_initialize {
@@ -27,41 +40,73 @@ sub internal_initialize {
         version => 1,
 	$self->field_decl(
 	    primary_key => [['key', 'Line', 'NOT_NULL']],
-	    other => [['value', 'Text', 'NONE']],
+	    other => [['value', 'Hash', 'NONE']],
 	),
     });
 }
 
 sub internal_load_rows {
-    my($self) = @_;
-    my($base, $auth_id) = split(' ', $self->[$_IDI]);
+    my($self, $query) = @_;
+    my($auth_id, $base) = split(/:/, $self->[$_IDI], 2);
     my($rf) = $self->new_other('RealmFile');
     return []
 	unless $rf->unauth_load({realm_id => $auth_id, path => _path($base)});
-    return [map(+{key => $_->[0], value => $_->[1]}, @{_parse($rf)})];
+    return _parse($self, $rf);
 }
 
 sub _base {
-    my($self, $base) = @_;
-    $base .= ' ' . $self->req('auth_id');
+    my($self, $base, $key) = @_;
+    $base = $self->req('auth_id') . ":$base";
     return $self
 	if $_S->is_equal($self->[$_IDI], $base);
     $self->[$_IDI] = $base;
-    $self->load_all;
+    $self->load_all({x_key => $key});
     return $self;
 }
 
+sub _default {
+    my($default) = shift;
+    return ref($default) eq 'CODE' ? $default->(@_) : $default
+}
+
+sub _grep {
+    my($self, $pat, $type, $default) = @_;
+    my($hash) = $self->get('value');
+    my($k) = [grep($_ =~ $pat, keys(%$hash))];
+    my($e);
+    if (@$k == 1) {
+        my($v, $te) = $type->from_literal($hash->{$k->[0]});
+	return $v
+	    if defined($v);
+	$e = 'type ' . $type->simple_package_name . ' error ' . $te->get_name
+	    if $te;
+	my($x) = $default;
+	$v = $te ? $hash->{$k->[0]} : undef;
+	$default = sub {$x->($v)};
+    }
+    else {
+	$e = @$k ? 'matched multiple columns' : 'column not found';
+    }
+    $_A->warn_exactly_once($pat, ': ', $e, ' in: ', $self->[$_IDI])
+	if $e;
+    return _default($default);
+
+}
+
 sub _parse {
-    my($rf) = @_;
+    my($self, $rf) = @_;
     my($rows);
     if (my $die = $_D->catch(sub {
-        $rows = $_CSV->parse($rf->get_content);
+	my($heading) = [];
+        $rows = [map(+{
+	    key => $_->{$heading->[0]},
+	    value => $_,
+	}, @{$_CSV->parse_records($rf->get_content, undef, $heading)})];
 	return;
     })) {
 	$_A->warn_exactly_once($rf, ': ', $die);
 	return [];
     }
-    shift(@$rows);
     return $rows
 }
 
