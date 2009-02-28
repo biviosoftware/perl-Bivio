@@ -147,12 +147,14 @@ sub parse {
 }
 
 sub parse_records {
-    my($self, undef, $want_line_numbers) = @_;
+    my($self, undef, $want_line_numbers, $heading_ref) = @_;
     # Parses the CSV data, treating the first row as headings and returns
     # an array of hash_ref records.
     my($rows) = shift->parse(@_);
     return $rows unless @$rows;
     my($heading) = shift(@$rows);
+    @$heading_ref = @$heading
+	if $heading_ref;
     $heading->[0] = '_line'
 	if $want_line_numbers;
     return [
