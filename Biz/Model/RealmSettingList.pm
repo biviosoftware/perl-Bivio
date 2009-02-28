@@ -1,6 +1,6 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Biz::Model::RealmSettingsList;
+package Bivio::Biz::Model::RealmSettingList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
