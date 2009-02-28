@@ -56,7 +56,7 @@ sub execute {
 
 sub _email {
     my($rf, $key) = @_;
-    return $rf->new_other('RealmSettingsList')->get_setting(
+    return $rf->new_other('RealmSettingList')->get_setting(
 	'EasyForm',
 	$key,
 	'mail',

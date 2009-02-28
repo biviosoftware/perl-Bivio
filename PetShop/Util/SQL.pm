@@ -608,17 +608,17 @@ EOF
 Ho, ho, ho!
 EOF
     $self->model('RealmFile')->create_with_content({
-	path => '/Settings/RealmSettingsList1.csv',
+	path => '/Settings/RealmSettingList1.csv',
     }, \(<<'EOF'));
-Key,Value
-a,1
-b,2
-,user-default
+Name,Number,Letter,Lesson
+alpha,1,a,arithmetic
+beta,2,b,
+,4242,default-letter,default-lesson
 EOF
     $self->model('RealmFile')->create_with_content({
-	path => '/Settings/RealmSettingsList2.csv',
+	path => '/Settings/RealmSettingList2.csv',
     }, \(<<'EOF'));
-Key,Value
+Name,Number
 "a parser error
 EOF
     $self->model('ForumForm', {
