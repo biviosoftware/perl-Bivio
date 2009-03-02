@@ -25,7 +25,7 @@ commands:
     reset_password password -- reset a user's password
     info -- dump info on a realm
     to_id realm -- returns the id for the realm passed as an argument
-    users -- dump users in realm
+    users [role] -- dump users in realm [with a specific role]
 EOF
 }
 
