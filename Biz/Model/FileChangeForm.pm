@@ -8,6 +8,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 my($_FN) = __PACKAGE__->use('Type.FileName');
 my($_FP) = Bivio::Type->get_instance('FilePath');
+b_use('IO.Config')->register(my $_CFG = {
+    require_comment => 0,
+});
 
 sub QUERY_KEY {
     return 'mode';
@@ -122,8 +125,7 @@ sub execute_ok {
 
 sub get_fields_for_mode {
     my($self, $mode) = @_;
-#TODO: comment only required for file-locking
-    return $mode->eq_upload
+    my(@fields) = $mode->eq_upload
 	? qw(file comment)
 	: $mode->eq_text_file
 	    ? ($self->is_folder ? 'name' : (), qw(content comment))
@@ -135,6 +137,15 @@ sub get_fields_for_mode {
 			? 'folder_id'
 			# delete mode
 			: 'comment';
+    return $_CFG->{require_comment}
+	? @fields
+	: grep($_ ne 'comment', @fields);
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub internal_initialize {
@@ -152,7 +163,7 @@ sub internal_initialize {
 		[qw(rename_name FileName)],
 		[qw(folder_id RealmFile.realm_file_id)],
 		[qw(file FileField)],
-		[qw(comment RowTagValue)],
+		[qw(comment RealmFileLock.comment)],
 		[qw(content Text64K)],
 	    )),
 	],
