@@ -101,7 +101,7 @@ sub field_decl {
 	return map({
 	    $_ = [$_]
 		unless ref($_);
-	    +{
+	    ref($_) eq 'HASH' ? {%$defaults, %$_} : +{
 		%$defaults,
 		name => $_->[0],
 		$proto->list_if_value(
