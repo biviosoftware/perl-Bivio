@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Agent::Embed::Dispatcher;
 use strict;
-use base 'Bivio::Agent::Dispatcher';
+use Bivio::Base 'Agent.Dispatcher';
 use Bivio::Agent::Embed::Request;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -35,6 +35,11 @@ sub initialize {
     Bivio::Agent::Embed::Request->clear_current
         unless $prev;
     return $_SELF
+}
+
+
+sub internal_server_redirect_task {
+    return;
 }
 
 1;

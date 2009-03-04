@@ -39,6 +39,22 @@ sub initialize {
     return;
 }
 
+sub internal_server_redirect_task {
+    my($self, $curr_task, $die, $req) = @_;
+    #NOTE: Coupling with Request::internal_server_redirect.
+    #      It already has set all the state
+    my($attrs) = $die->get('attrs');
+    _trace('redirect from ', $curr_task, ' to ', $attrs->{task_id})
+	if $_TRACE;
+#TODO: add this when thoroughly debugged
+#	    $req->clear_nondurable_state;
+    if ($curr_task == $attrs->{task_id} && $curr_task->get_name =~ /ERROR/) {
+	b_warn($curr_task, ': not redirecting to identical ERROR task');
+	return;
+    }
+    return $attrs->{task_id};
+}
+
 sub process_request {
     my($self, @protocol_args) = @_;
     $_R->clear_current;
@@ -52,7 +68,8 @@ sub process_request {
 		$req = $self->create_request(@protocol_args);
 		_trace('create_request: ', $req) if $_TRACE;
 	    }
-	    $task_id = $req->get('task_id') unless $task_id;
+	    $task_id = $req->get('task_id')
+		unless $task_id;
 	    _trace('Executing: ', $task_id) if $_TRACE;
 	    my($task) = $_T->get_by_id($task_id);
 	    $req->put_durable(
@@ -67,20 +84,9 @@ sub process_request {
 	    && $die->get('code') == $_DC->SERVER_REDIRECT_TASK
 	    && $redirect_count <= $self->MAX_SERVER_REDIRECTS
 	) {
-	    #NOTE: Coupling with Request::internal_server_redirect.
-	    #      It already has set all the state
-	    my($attrs) = $die->get('attrs');
-	    _trace('redirect from ', $task_id, ' to ', $attrs->{task_id})
-		if $_TRACE;
-#TODO: add this when thoroughly debugged
-#	    $req->clear_nondurable_state;
-	    if ($task_id == $attrs->{task_id}
-	        && $task_id->get_name =~ /ERROR/
-	    ) {
-		b_warn($task_id, ': not redirecting to identical ERROR task');
-		last TRY;
-	    }
-            $task_id = $attrs->{task_id};
+	    last TRY
+		unless $task_id
+		= $self->internal_server_redirect_task($task_id, $die, $req);
 #TODO: Can we remove the line below?
 	    $req->internal_redirect_realm($task_id);
 	    redo TRY;
