@@ -184,12 +184,13 @@ sub xhtml {
     view_put(
 	xhtml_body => '',
     );
-    view_main(Director([
-	sub {shift->get_request->isa('Bivio::Agent::Embed::Request') ? 1 : 0},
-    ], {
-	1 => SimplePage(view_widget_value('xhtml_body')),
-	0 => $self->internal_xhtml_adorned,
-    }));
+    # Use Director because it is executable ("If" isn't)
+    view_main(Director(
+	[sub {shift->req->isa('Bivio::Agent::Embed::Request') ? 1 : 0}],
+	{
+	    1 => SimplePage(view_widget_value('xhtml_body')),
+	    0 => $self->internal_xhtml_adorned,
+	}));
     return;
 }
 
