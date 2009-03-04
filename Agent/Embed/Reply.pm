@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Agent::Embed::Reply;
 use strict;
@@ -11,7 +11,7 @@ sub set_output {
     my($self, $value) = @_;
     $value = $_F->read($value)
 	unless ref($value) eq 'SCALAR';
-    $self->get('parent_request')->put(ref($self) => $value);
+    $self->get('parent_request')->put(ref($self) => $self);
     return shift->SUPER::set_output(@_);
 }
 
