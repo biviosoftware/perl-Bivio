@@ -24,7 +24,7 @@ my($x) = 0;
 	    '' => [StringArray('3,1,2')],
 	],
 	sort_unique => [
-	    [] => [[qw(1 2 3)]],
+	    [] => [StringArray([qw(1 2 3)])],
 	],
 	contains => [
 	    0 => 0,

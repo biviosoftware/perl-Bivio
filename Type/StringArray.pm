@@ -157,8 +157,8 @@ sub new {
 
 sub sort_unique {
     my($self, $value) = @_;
-    $value ||= $self->as_array;
-    return [sort(keys(%{+{map(($_ => undef), @$value)}}))];
+    return $value ? [sort(keys(%{+{map(($_ => undef), @$value)}}))]
+	: $self->new($self->sort_unique($self->as_array));
 }
 
 sub to_literal {
