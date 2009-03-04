@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Reply;
 use strict;
@@ -177,20 +177,6 @@ sub set_expire_immediately {
     return;
 }
 
-sub set_http_status {
-    # (self, int) : self
-    # Sets the HTTP return code.  Use C<Bivio::Ext::ApacheConstants> values, e.g.
-    # C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
-    my($self, $status) = @_;
-    # It is error prone keeping a list up to date, so we just check
-    # a reasonable range.
-    Bivio::Die->die($status, ': unknown HTTP status')
-        unless defined($status) && $status =~ /^\d+$/
-	&& 100 <= $status && $status < 600;
-    $self->put(status => $status);
-    return $self;
-}
-
 sub set_last_modified {
     # (self, string) : undef
     # (self, int) : undef
@@ -211,12 +197,6 @@ sub set_output {
 	unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
 	    || UNIVERSAL::isa($value, 'IO::Handle');
     return shift->SUPER::set_output(@_);
-}
-
-sub unsafe_get_output {
-    # (self) : ref
-    # Returns the current output value.
-    return shift->unsafe_get('output');
 }
 
 sub _add_additional_http_headers {
