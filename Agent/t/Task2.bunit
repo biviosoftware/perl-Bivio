@@ -1,0 +1,32 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+my($t1) = class('Bivio::Agent::t::Task::T1');
+options({
+    create_object => sub {
+	my(undef, $params) = @_;
+	return class()->get_by_id(@$params);
+    },
+    compute_return => sub {
+	return [$t1->num_calls];
+    },
+    check_die_code => sub {
+	my(undef, $actual, $expect) = @_;
+	assert_equals($expect->get_name =~ /REDIRECT/ ? 2 : 1, $t1->num_calls);
+	assert_equals($expect, $actual->get('code'));
+	return 1;
+    },
+});
+[
+    map(
+	($_->[0] => [
+	    execute => [
+		[req()] => $_->[1],
+	    ],
+	]),
+ 	[PUBLIC_PING => 2],
+ 	[LOGOUT => 2],
+	[TEST_TASK2_BUNIT_1 => DIE()],
+	[TEST_TASK2_BUNIT_2 => SERVER_REDIRECT_TASK()],
+    ),
+];
