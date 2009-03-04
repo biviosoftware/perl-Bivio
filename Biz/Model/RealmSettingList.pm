@@ -13,13 +13,34 @@ my($_D) = b_use('Bivio.Die');
 my($_A) = b_use('IO.Alert');
 my($_T) = b_use('Bivio.Type');
 
+sub get_all_settings {
+    my($self, $base, $columns) = @_;
+    $self = _load($self, $base);
+    my($keys) = $self->map_rows(
+	sub {
+	    my($k) = shift->get('key');
+	    return defined($k) ? $k : ();
+	},
+    );
+    return {map(
+	($_ => $self->get_multiple_settings($base, $_, $columns)),
+	@$keys,
+    )};
+}
+
+sub get_multiple_settings {
+    my($self, $base, $key, $columns) = @_;
+    $self = _load($self, $base);
+    return {map(($_->[0] => $self->get_setting($base, $key, @$_)), @$columns)};
+}
+
 sub get_setting {
     my($self, $base, $key, $column, $type, $default) = @_;
     $type = $_T->get_instance($type);
     $column = qr{\Q$column\E}is
 	unless ref($column);
     return _default($default)
-	unless ($self = _base($self, $base, $key))->find_row_by('key', $key)
+	unless ($self = _load($self, $base))->find_row_by('key', $key)
 	|| $self->find_row_by('key', $key = undef);
     return _grep(
 	$self,
@@ -54,16 +75,6 @@ sub internal_load_rows {
     return _parse($self, $rf);
 }
 
-sub _base {
-    my($self, $base, $key) = @_;
-    $base = $self->req('auth_id') . ":$base";
-    return $self
-	if $_S->is_equal($self->[$_IDI], $base);
-    $self->[$_IDI] = $base;
-    $self->load_all({x_key => $key});
-    return $self;
-}
-
 sub _default {
     my($default) = shift;
     return ref($default) eq 'CODE' ? $default->(@_) : $default
@@ -93,13 +104,23 @@ sub _grep {
 
 }
 
+sub _load {
+    my($self, $base) = @_;
+    $base = $self->req('auth_id') . ":$base";
+    return $self
+	if $_S->is_equal($self->[$_IDI], $base);
+    $self->[$_IDI] = $base;
+    $self->load_all;
+    return $self;
+}
+
 sub _parse {
     my($self, $rf) = @_;
     my($rows);
     if (my $die = $_D->catch(sub {
 	my($heading) = [];
         $rows = [map(+{
-	    key => $_->{$heading->[0]},
+	    key => length($_->{$heading->[0]}) ? $_->{$heading->[0]} : undef,
 	    value => $_,
 	}, @{$_CSV->parse_records($rf->get_content, undef, $heading)})];
 	return;

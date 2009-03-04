@@ -3,6 +3,19 @@
 ListModel();
 req()->set_realm('fourem');
 [
+    get_multiple_settings => [
+	[RealmSettingList1 => alpha => [[qw(num Integer)], [qw(name Name)]]]
+	    => [{num => 1, name => 'alpha'}],
+    ],
+    get_all_settings => [
+	[RealmSettingList1 => [
+	    [qw(let Name)],
+	    [qw(less Line)],
+	]] => [{
+	    alpha => {let => 'a', less => 'arithmetic'},
+	    beta => {let => 'b', less => 'default-lesson'},
+	}],
+    ],
     get_setting => [
 	[qw(RealmSettingList1 alpha num Integer)] => 1,
 	[qw(RealmSettingList1 beta letter Name)] => 'b',
