@@ -8,11 +8,11 @@ req()->initialize_fully->set_realm_and_user('guest', 'guest');
 	    path_info => '/private',
 	}] => [
 	    {
-		'RealmFile.path' => '/private/file.html',
+		'RealmFile.path' => 'file.html',
 		md5 => 'TekYsCTk6d/LnZMvu99ngw',
 	    },
 	    {
-		'RealmFile.path' => '/private/image.gif',
+		'RealmFile.path' => 'image.gif',
 		md5 => '+tQBF22mDhwNKPHPSrxY9A',
 	    },
 	],
