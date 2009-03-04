@@ -18,13 +18,14 @@ sub render_html {
     my($uri) = $args->{proto}->internal_format_uri($value, $args);
     return Bivio::Die->die('invalid URI, must begin with a /')
 	unless $uri =~ s{^/+}{/};
-    return ${$proto->use('Bivio::Agent::Embed::Dispatcher')
+    return ${$proto->use('AgentEmbed.Dispatcher')
 	->call_task($args->{req}, $args->{req}->format_uri({
 	    uri => $uri,
 	    no_context => 1,
 	    query => undef,
 	    path_info => undef,
-	}))};
+	}))->get_output
+    };
 }
 
 1;
