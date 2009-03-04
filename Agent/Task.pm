@@ -130,6 +130,7 @@ my($_DC) = b_use('Bivio.DieCode');
 my($_A) = b_use('IO.Alert');
 my($_TE);
 my($_C) = b_use('IO.Config');
+our($_COMMITTED);
 
 sub TASK_ATTR_RE {
     return $_TASK_ATTR_RE;
@@ -178,21 +179,18 @@ sub put_attr_for_test {
 
 sub execute {
     my($self, $req) = @_;
+    local($_COMMITTED) = 0;
     my($next) = $self->execute_items(
 	$req,
-	[map({
-	    my($i) = $_;
-#TODO: handle_post_execute_task should be reverse
-	    ref($i) ? $i : map($_->can($i) ? [$_, $i, [$self]] : (), @$_HANDLERS);
-	}
-	'handle_pre_auth_task',
-	'handle_pre_execute_task',
-	@{$self->get('items')},
-	'handle_post_execute_task',
-    )]);
+	[map(_op($self, $_),
+	     'handle_pre_auth_task',
+	     'handle_pre_execute_task',
+	     @{$self->get('items')},
+	)],
+    );
+    _commit($self, $req);
     $next->call_method($req)
 	if $next;
-    $self->commit($req);
     $req->get('reply')->send($req);
     return;
 }
@@ -278,9 +276,11 @@ sub handle_die {
     my($die_code) = $die->get('code');
     my($req_class) = b_use('Agent.Request');
     if ($_REDIRECT_DIE_CODES->{$die_code->get_name}) {
-	# commit redirects: current task is completed
-	_trace('commit: ', $die_code) if $_TRACE;
-	$proto->commit($req_class->get_current);
+	my($req) = $req_class->get_current_or_die;
+	if (my $self = $req->unsafe_get('task')) {
+	    _trace('commit: ', $die_code) if $_TRACE;
+	    _commit($self, $req);
+	}
 	return;
     }
 
@@ -479,6 +479,16 @@ sub _call_txn_resources {
     # DOES NOT RETURN
 }
 
+sub _commit {
+    my($self, $req) = @_;
+    return
+	if $_COMMITTED++;
+    # handle_post_execute_task cannot override $next (unlike other handlers)
+    $self->execute_items($req, [_op($self, 'handle_post_execute_task')]);
+    $self->commit($req);
+    return;
+}
+
 sub _init_executables {
     my($proto, $attrs, $executables) = @_;
     # Returns the parsed and initialized executables.
@@ -581,6 +591,14 @@ sub _new {
     $attrs->{items} = $new_items;
     $self->internal_put($attrs);
     return $self->set_read_only;
+}
+
+sub _op {
+    my($self, $item) = @_;
+    return ref($item) ? $item
+	: map($_->can($item) ? [$_, $item, [$self]] : (),
+	      $item eq 'handle_post_execute_task'
+		  ? reverse(@$_HANDLERS) : @$_HANDLERS),
 }
 
 sub _parse_map_item {
