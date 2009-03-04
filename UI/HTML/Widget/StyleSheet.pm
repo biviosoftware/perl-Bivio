@@ -11,7 +11,7 @@ sub control_off_render {
     return _do(sub {
 	my($self, $source, $buffer, $value) = @_;
         $$buffer .= qq{<style type="text/css">\n<!--\n}
-	    . ${($self->use('Bivio::Agent::Embed::Dispatcher')
+	    . ${b_use('AgentEmbed.Dispatcher')
 	        ->call_task($source->get_request, $value
 	       )->get_output}
 	    . "\n-->\n</style>\n";
