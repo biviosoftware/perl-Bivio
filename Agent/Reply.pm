@@ -13,6 +13,12 @@ sub delete_output {
     return $output;
 }
 
+sub get_output {
+    my($self) = @_;
+    my($o) = shift->get('output');
+    return ref($o) eq 'SCALAR' ? $o : Bivio::IO::File->read($o);
+}
+
 sub get_output_type {
     return shift->get('output_type');
 }
@@ -33,12 +39,26 @@ sub set_header {
     return $self;
 }
 
+sub set_http_status {
+    my($self, $status) = @_;
+    # It is error prone keeping a list up to date, so we just check
+    # a reasonable range.
+    b_die($status, ': unknown HTTP status')
+        unless defined($status) && $status =~ /^\d+$/
+	&& 100 <= $status && $status < 600;
+    return $self->put(status => $status);
+}
+
 sub set_output {
     return shift->put(output => shift);
 }
 
 sub set_output_type {
     return shift->put(output_type => shift);
+}
+
+sub unsafe_get_output {
+    return shift->unsafe_get('output');
 }
 
 1;
