@@ -420,6 +420,11 @@ sub get_delegate_info {
 	undef,
 	'Your lock on this file is no longer valid, please revisit the file from the file tree',
     ],
+    NO_ACCESS => [
+	79,
+	undef,
+	'Insufficient privileges to access or modify this value',
+    ],
 ];
 }
 
