@@ -400,6 +400,18 @@ sub get_delegate_info {
 	    TEST_PERMISSION2
 	    Action.EmptyReply
 	)],
+	[qw(
+	    TEST_TASK2_BUNIT_1
+	    549
+	    GENERAL
+	    ANYBODY
+	), sub {die}],
+	[qw(
+	    TEST_TASK2_BUNIT_2
+	    550
+	    GENERAL
+	    ANYBODY
+	), sub {Bivio::Die->throw_die('SERVER_REDIRECT_TASK')}],
     ]);
 }
 
