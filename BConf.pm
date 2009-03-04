@@ -215,6 +215,7 @@ sub merge_class_loader {
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
 		    Agent => ['Bivio::Agent'],
+		    AgentEmbed => ['Bivio::Agent::Embed'],
 		    AgentHTTP => ['Bivio::Agent::HTTP'],
 		    AgentJob => ['Bivio::Agent::Job'],
 		    Auth => ['Bivio::Auth'],
