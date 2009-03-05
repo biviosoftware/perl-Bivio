@@ -91,9 +91,9 @@ sub internal_set_reply {
     my($reply) = $self->req('reply');
     $reply->set_http_status($response->code);
     $reply->set_output_type($response->header('Content-Type'));
-    my($res) = $response->content;
-    $reply->set_output(\$res);
-    return \$res;
+    my($res) = $response->content_ref;
+    $reply->set_output($res);
+    return $res;
 }
 
 sub internal_translate_location {
