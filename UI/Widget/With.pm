@@ -33,6 +33,9 @@ sub control_on_render {
 	$self->control_off_render($source, $buffer);
 	return;
     }
+    $object = b_use('Model.StringArrayList')->new($source->req)
+	->load_from_string_array($object)
+	if $object->isa('Bivio::Type::StringArray');
     unless ($object->can('do_rows')) {
 	$self->render_attr('value', $object, $buffer);
 	return;

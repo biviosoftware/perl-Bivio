@@ -4,9 +4,11 @@ Widget();
 req()->set_realm('demo');
 my($n0) = model('NumberedList')->load_page({count => 0});
 my($n2) = model('NumberedList')->load_page({count => 2});
+my($sa) = StringArray([qw(a b)]);
 [
     [['auth_realm'], ['owner_name']] => 'demo',
     [[sub {$n2}], ['index']] => '01',
     [[sub {$n0}], ['index'], {control_off_value => 'x'}] => 'x',
     [[sub {}], 'not here'] => '',
+    [[sub {$sa}], ['value']] => 'ab',
 ];
