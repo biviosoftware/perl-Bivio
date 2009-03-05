@@ -27,3 +27,21 @@ follow_link('User, Btest_read');
 home_page();
 follow_link('wiki');
 verify_no_text(qr{new page|this page}i);
+
+follow_link('Logout');
+follow_link('All Users');
+follow_link('Task Log Report');
+submit_form(Search => {
+    '_anon' => 'btest_read',
+});
+verify_table('Date/Time', [
+    ['URI', 'Last, First Name'],
+    ['/site/wiki/StartPage', 'Staff acting as User, Btest_read'],
+]);
+submit_form(Search => {
+    '_anon' => '/bp/StartPage',
+});
+verify_table('Date/Time', [
+    ['Last, First Name', 'URI'],
+    ['Staff acting as User, Btest_read', '/bp/StartPage'],
+]);
