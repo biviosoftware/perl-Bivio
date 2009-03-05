@@ -119,6 +119,8 @@ sub audit_links {
 
 sub basic_authorization {
     my($self, $user, $password) = @_;
+    return $self->delete('Authorization')
+	unless $user;
     $self->clear_cookies;
     $self->put(Authorization =>
         'Basic ' . MIME::Base64::encode(
@@ -168,6 +170,7 @@ sub deprecated_text_patterns {
 
 sub do_logout {
     my($self) = @_;
+    $self->basic_authorization;
     $self->visit_uri('/pub/logout')
 	unless $self->unsafe_op(follow_link => qr{logout}i);
     return;
