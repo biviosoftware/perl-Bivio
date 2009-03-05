@@ -48,6 +48,7 @@ my($_BUNDLE) = [qw(
     site_admin_forum
     site_admin_forum_users
     !data_browse
+    task_log
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -1520,6 +1521,47 @@ sub internal_upgrade_db_site_forum {
     return;
 }
 
+sub internal_upgrade_db_task_log {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE task_log_t (
+  task_log_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18),
+  super_user_id NUMERIC(18),
+  date_time DATE NOT NULL,
+  task_id NUMERIC(9) NOT NULL,
+  method VARCHAR(30),
+  uri VARCHAR(500) NOT NULL,
+  CONSTRAINT task_log_t1 primary key (task_log_id)
+)
+/
+ALTER TABLE task_log_t
+  ADD CONSTRAINT task_log_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX task_log_t3 ON task_log_t (
+  realm_id
+)
+/
+ALTER TABLE task_log_t
+  ADD CONSTRAINT task_log_t4
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX task_log_t5 ON task_log_t (
+  user_id
+)
+/
+CREATE SEQUENCE task_log_s
+  MINVALUE 100010
+  CACHE 1 INCREMENT BY 100000
+/
+EOF
+    return;
+}
+
 sub internal_upgrade_db_tuple {
     my($self) = @_;
     # Adds Tuple tables, etc.
@@ -2213,8 +2255,9 @@ sub _sentinel_site_admin_forum {
 }
 
 sub _sentinel_site_admin_forum_users {
+    my(@args) = @_;
     return b_use('Model.UserCreateForm')->if_unapproved_applicant_mode(
-	sub {_default_sentinel(@_)}, sub {1});
+	sub {_default_sentinel(@args)}, sub {1});
 }
 
 sub _sentinel_site_forum {
