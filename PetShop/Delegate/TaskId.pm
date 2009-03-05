@@ -293,9 +293,9 @@ sub get_delegate_info {
 	    536
 	    USER
 	    ANYBODY
-	    Action.BasicAuthorization
 	    Action.DAV
 	    next=USER_DAV_TASKS
+	    want_basic_authorization=1
 	)],
 	[qw(
 	    USER_DAV_TASKS
