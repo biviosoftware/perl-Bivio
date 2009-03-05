@@ -651,11 +651,12 @@ sub _cfg_group_admin {
         Constant => [
             map(['xlink_'.$_->[0] => {
                 task_id => $_->[1],
-                realm => 'site-admin',
+                realm => SITE_ADMIN_REALM_NAME(),
             }],
                 [qw(applicants SITE_ADMIN_UNAPPROVED_APPLICANT_LIST)],
                 [qw(all_users SITE_ADMIN_USER_LIST)],
                 [qw(substitute_user SITE_ADMIN_SUBSTITUTE_USER)],
+		[qw(task_log SITE_ADMIN_TASK_LOG)],
             ),
         ],
 	Task => [
@@ -696,6 +697,13 @@ sub _cfg_group_admin {
 		'RealmOwner.display_name' => 'Full Name',
 		'RealmOwner.display_name.desc' => 'Only required for new users',
 		ok_button => 'Add',
+	    ]],
+	    [TaskLog => [
+		date_time => 'Date/Time',
+		uri => 'URI',
+	    ]],
+	    [TaskLogList => [
+		last_first_middle => 'Last, First Name',
 	    ]],
 	    [GroupUserList => [
 		display_name => 'Last, First Name',
@@ -917,6 +925,7 @@ sub _cfg_site_admin {
 	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => => '?/admin-applicants'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => => '?/admin-assign-applicant'],
+	    [SITE_ADMIN_TASK_LOG => '?/task-log'],
 	],
 	Text => [
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
@@ -947,6 +956,7 @@ EOF
 		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
+		SITE_ADMIN_TASK_LOG => 'Task Log Report',
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
