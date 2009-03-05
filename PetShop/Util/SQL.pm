@@ -536,10 +536,7 @@ sub _init_forum {
 	'RealmOwner.name' => $self->FOUREM,
     });
     # Must agree with easy-form.btest (or test will fail)
-    $self->model('RealmFile')->create_with_content({
-	path => 'Public/EasyForm-btest.html',
-	is_public => 1,
-    }, \(<<'EOF'));
+    _realm_file_create($self, 'Public/EasyForm-btest.html', <<'EOF');
 <html>
 <body>
 <form method="POST" action="/fourem/Forms/btest?goto=/fourem/pub/EasyForm-btest-done.html">
@@ -555,20 +552,14 @@ sub _init_forum {
 </body>
 </html>
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => 'Public/EasyForm-btest-done.html',
-	is_public => 1,
-    }, \(<<'EOF'));
+    _realm_file_create($self, 'Public/EasyForm-btest-done.html', <<'EOF');
 <html>
 <body>
 completed
 </body>
 </html>
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => 'Public/Wiki/EasyForm_btest',
-	is_public => 1,
-    }, \(<<'EOF'));
+    _realm_file_create($self, 'Public/Wiki/EasyForm_btest', <<'EOF');
 @form method=POST action=/fourem/Forms/btest?goto=/fourem/Public/Wiki/EasyForm_btest_done
 @table
 @tr
@@ -586,45 +577,34 @@ EOF
 @/table
 @/form
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => 'Public/Wiki/EasyForm_btest_done',
-	is_public => 1,
-    }, \(<<'EOF'));
+    _realm_file_create($self, 'Public/Wiki/EasyForm_btest_done', <<'EOF');
 wiki completed
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => 'Forms/btest.csv',
-    }, \(<<'EOF'));
+    _realm_file_create($self, 'Forms/btest.csv', <<'EOF');
 &client_addr,&date,&email,input,ok
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => Bivio::Type->get_instance('WikiName')->to_absolute('PrivatePage'),
-    }, \(<<'EOF'));
+    _realm_file_create(
+	$self, b_use('Type.WikiName')->to_absolute('PrivatePage'), <<'EOF');
 My Example Page.
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => Bivio::Type->get_instance('BlogFileName')->to_absolute('20071225000000', 1),
-    }, \(<<'EOF'));
+    _realm_file_create(
+	$self,
+	b_use('Type.BlogFileName')->to_absolute('20071225000000', 1),
+	<<'EOF');
 @h1 Merry Xmas
 Ho, ho, ho!
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => '/Settings/RealmSettingList1.csv',
-    }, \(<<'EOF'));
+    _realm_file_create($self, '/Settings/RealmSettingList1.csv', <<'EOF');
 Name,Number,Letter,Lesson
 alpha,1,a,arithmetic
 beta,2,b,
 ,4242,default-letter,default-lesson
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => '/Settings/RealmSettingList2.csv',
-    }, \(<<'EOF'));
+    _realm_file_create($self, '/Settings/RealmSettingList2.csv', <<'EOF');
 Name,Number
 "a parser error
 EOF
-    $self->model('RealmFile')->create_with_content({
-	path => '/Settings/RealmSettingList3.csv',
-    }, \(<<'EOF'));
+    _realm_file_create($self, '/Settings/RealmSettingList3.csv', <<'EOF');
 Name,Number
 a,
 ,
@@ -674,10 +654,11 @@ EOF
 		[qw(FilePath my.css), $p, ".${realm}_my_${mode} {}"],
 		[qw(WikiName index), $p, "\@h1 Sweet Home\nGo buffaloes\n"],
 	    ) {
-		$self->model('RealmFile')->create_with_content({
-		    path => $self->use('Type.' . shift(@$fv))
+		_realm_file_create(
+		    $self,
+		    b_use('Type.' . shift(@$fv))
 			->to_absolute(splice(@$fv, 0, 2)),
-		}, \(shift(@$fv)));
+		    shift(@$fv));
 	    }
 	}
     }
@@ -703,13 +684,13 @@ EOF
 Third page
 EOF
     ) {
-	$self->model('RealmFile')->create_with_content({
-	    path => $self->use('Type.WikiName')->to_absolute($fv->[0], 1),
-	}, \($fv->[1]));
+	_realm_file_create(
+	    $self, b_use('Type.WikiName')->to_absolute($fv->[0], 1), $fv->[1]);
     }
-    $self->model('RealmFile')->create_with_content({
-	path => Bivio::Type->get_instance('WikiName')->to_absolute('Shell_Util_Help', 1),
-    }, \(<<'EOF'));
+    _realm_file_create(
+	$self,
+	b_use('Type.WikiName')->to_absolute('Shell_Util_Help', 1),
+	<<'EOF');
 Shell utility help.
 EOF
     return;
@@ -728,9 +709,7 @@ sub _init_logo {
     ) {
 	# Need different modified_date_time
 	sleep(1);
-	$self->model('RealmFile')->create_with_content({
-	    path => "/Public/logo.$x->[0]",
-	}, $x->[1]);
+	_realm_file_create($self, "/Public/logo.$x->[0]", $x->[1]);
     }
     return;
 }
@@ -756,10 +735,16 @@ remote_file_copy_bunit,/AnyFolder
 EOF
 	map(["/AnyFolder/file$_", "file$_"], 1..4),
     ) {
-	my($path, $content) = @$x;
-	$self->model('RealmFile')
-	    ->create_with_content({path => $path}, \$content);
+	_realm_file_create($self, @$x);
     }
+    $self->req->with_realm(b_use('ShellUtil.SiteForum')->ADMIN_REALM, sub {
+        return _realm_file_create(
+	    $self, '/Settings/RemoteFileCopy.csv', <<"EOF");
+Realm,Folders,User,Password,URI
+remote_file_copy_btest,/AnyFolder
+,,remote_file_copy_user,@{[$self->PASSWORD]},$uri
+EOF
+    });
     return;
 }
 
@@ -812,6 +797,13 @@ sub _init_tuple {
     });
     $self->model('TupleUse')->create_from_label('PetShopReport');
     return;
+}
+
+sub _realm_file_create {
+    my($self, $path, $content) = @_;
+    return $self->model('RealmFile')->create_with_content(
+	{path => $path},
+	ref($content) ? $content : \$content);
 }
 
 sub _realm_id {
