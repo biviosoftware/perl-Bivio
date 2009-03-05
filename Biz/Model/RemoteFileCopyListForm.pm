@@ -22,7 +22,7 @@ sub execute_empty_row {
 sub execute_ok_end {
     my($self) = @_;
     return _prepare_end($self)
-	if $self->unsafe_get('prepare');
+	unless $self->unsafe_get('prepare_ok');
     return;
 }
 
@@ -31,7 +31,7 @@ sub execute_ok_row {
     return
 	unless $self->get('want_realm');
     return _prepare($self)
-	if $self->unsafe_get('prepare');
+	unless $self->unsafe_get('prepare_ok');
     my($lm) = $self->get_list_model;
     $self->req->with_realm($lm->get('realm'), sub {
         foreach my $which (qw(delete update create)) {
@@ -67,13 +67,6 @@ sub execute_ok_row {
     return;
 }
 
-sub execute_ok_start {
-    my($self) = @_;
-    $self->throw_die('CORRUPT_FORM', {message => 'wrong button'})
-	unless grep($_, $self->unsafe_get(qw(prepare prepare_ok)));
-    return;
-}
-
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -82,7 +75,6 @@ sub internal_initialize {
 	$self->field_decl(
 	    visible => [
 		[qw(want_realm Boolean)],
-		{name => 'prepare', type => 'OKButton', in_list => 0},
 	    ],
 	    hidden => [
 		qw(to_delete to_create to_update),

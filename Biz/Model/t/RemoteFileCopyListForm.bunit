@@ -19,7 +19,6 @@ $map_path = sub {
 	want_realm_0 => 1,
     }),
     simple_case({
-	prepare => 1,
 	want_realm_0 => 1,
     }, {
 	to_delete_0 => FilePathArray([]),
@@ -48,7 +47,6 @@ $map_path = sub {
 	return;
     }),
     simple_case({
-	prepare => 1,
 	want_realm_0 => 1,
     }, {
 	want_realm_0 => 1,
