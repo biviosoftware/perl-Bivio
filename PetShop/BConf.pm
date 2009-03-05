@@ -57,6 +57,9 @@ sub merge_overrides {
 		View => ['Bivio::PetShop::View'],
 	    },
 	}),
+	'Bivio::Biz::Model::TaskLog' => {
+	    enable_log => 1,
+	},
 	'Bivio::Test::HTMLParser::Forms' => {
 	    error_color => '#993300',
 	},
