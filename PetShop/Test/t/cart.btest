@@ -22,5 +22,3 @@ test_conformance();
 follow_link('Cart');
 test_deviance('number outside of expected range');
 update_cart('Small Angelfish', 9999999999);
-
-
