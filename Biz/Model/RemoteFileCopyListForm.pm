@@ -21,18 +21,8 @@ sub execute_empty_row {
 
 sub execute_ok_end {
     my($self) = @_;
-    if ($self->unsafe_get('prepare')) {
-	unless ($self->get('need_update')) {
-	    $_A->save_label(
-		REMOTE_FILE_COPY_FORM_no_update => $self->req, my $q = {});
-	    return {
-		task => 'next',
-		query => $q,
-	    };
-	}
-	$self->internal_put_field(prepare_ok => 1);
-	$self->internal_stay_on_page;
-    }
+    return _prepare_end($self)
+	if $self->unsafe_get('prepare');
     return;
 }
 
@@ -42,6 +32,45 @@ sub execute_ok_row {
 	unless $self->get('want_realm');
     return _prepare($self)
 	if $self->unsafe_get('prepare');
+    my($lm) = $self->get_list_model;
+    $self->req->with_realm($lm->get('realm'), sub {
+        foreach my $which (qw(delete update create)) {
+	    my($fp) = $self->get("to_$which");
+	    if ($which eq 'delete') {
+		$fp->do_iterate(sub {
+	            $self->new_other('RealmFile')->delete({path => shift});
+		    return 1;
+	        });
+		next;
+	    }
+	    my($uid, $rid) = $self->req->get(qw(auth_user_id auth_id));
+	    $fp->do_iterate(sub {
+		my($path) = @_;
+		my($content, $err) = $_RFC->remote_get($path, $lm);
+		if ($err) {
+		    $self->internal_put_error_and_detail(
+			qw(want_realm SYNTAX_ERROR), $err);
+		    return 0;
+		}
+	        $self->new_other('RealmFile')->create_or_update_with_content({
+		    path => shift,
+		    user_id => $uid,
+		    realm_id => $rid,
+		}, $content);
+		return 1;
+	    });
+	    return
+		if $self->in_error;
+	}
+	return;
+    });
+    return;
+}
+
+sub execute_ok_start {
+    my($self) = @_;
+    $self->throw_die('CORRUPT_FORM', {message => 'wrong button'})
+	unless grep($_, $self->unsafe_get(qw(prepare prepare_ok)));
     return;
 }
 
@@ -107,6 +136,21 @@ sub _prepare {
 	    if $v->is_specified;
 	$self->internal_put_field($k => $v);
     }
+    return;
+}
+
+sub _prepare_end {
+    my($self) = @_;
+    unless ($self->get('need_update')) {
+	$_A->save_label(
+	    REMOTE_FILE_COPY_FORM_no_update => $self->req, my $q = {});
+	return {
+	    task => 'next',
+	    query => $q,
+	};
+    }
+    $self->internal_put_field(prepare_ok => 1);
+    $self->internal_stay_on_page;
     return;
 }
 
