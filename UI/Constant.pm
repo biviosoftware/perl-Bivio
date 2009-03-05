@@ -36,4 +36,9 @@ sub internal_initialize_value {
     return;
 }
 
+sub unsafe_get_value {
+    my($v) = shift->internal_unsafe_lc_get_value(@_);
+    return $v ? $v->{value} : undef;
+}
+
 1;
