@@ -110,7 +110,7 @@ sub _get {
 	$res = $s->http_get($uri);
 	return;
     });
-    return \($res->content)
+    return $s->extract_content($res)
 	unless $die;
     $$err .= $s->user_friendly_error_message($die) . "\n";
     return;
