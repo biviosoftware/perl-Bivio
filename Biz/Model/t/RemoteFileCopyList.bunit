@@ -1,0 +1,15 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->set_realm('remote_file_copy_bunit');
+[
+    load_all => [
+	[] => [
+	    {
+		realm => 'remote_file_copy_bunit',
+		user => 'btest_read',
+		folder => FilePathArray([qw(/AnyFolder)]),
+	    },
+	],
+    ],
+];

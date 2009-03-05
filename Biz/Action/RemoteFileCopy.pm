@@ -1,0 +1,119 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+package Bivio::Biz::Action::RemoteFileCopy;
+use strict;
+use Bivio::Base 'Action.RealmFile';
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RF) = b_use('Model.RealmFile');
+my($_D) = b_use('Bivio.Die');
+my($_VERSION) = __PACKAGE__ . '#1';
+my($_FPA) = b_use('Type.FilePathArray');
+
+sub diff_lists {
+    my($proto, $remote_file_copy_list) = @_;
+    my($realm) = $remote_file_copy_list->get('realm');
+    my($remote, $err) = $proto->remote_list($remote_file_copy_list);
+    return (undef, $err)
+	if $err;
+    my($res) = {to_create => [], to_update => [], ignore => []};
+    my($local) = $proto->local_list($remote_file_copy_list);
+    foreach my $x (values(%$remote)) {
+	my($md5, $path) = @$x;
+	my($m) = delete($local->{lc($path)});
+	push(@{$res->{
+	    !$m ? 'to_create' : $m->[0] eq $md5 ? 'ignore' : 'to_update'
+	}}, $path);
+    }
+    $res->{to_delete} = [map($_->[1], values(%$local))];
+    return {map(
+	($_ => $_FPA->new($res->{$_})->sort_unique),
+	grep(/to_/, keys(%$res)),
+    )};
+}
+
+sub execute {
+    my($proto, $req) = @_;
+    my($rf) = $_RF->new($req);
+    $rf->load({path => $rf->parse_path($req->get('path_info'))});
+    return $proto->set_output_for_get($rf)
+	unless $rf->get('is_folder');
+    $req->get('reply')->set_output_type('text/plain')
+	->set_output(_list($rf))
+	->set_cache_private;
+    return 1;
+}
+
+sub local_list {
+    my(undef, $remote_file_copy_list) = @_;
+    my($res) = {};
+    $remote_file_copy_list->get_list_model->get('folder')->do_iterate(sub {
+        my($fp) = @_;
+	$remote_file_copy_list->new_other('RealmFileMD5List')->do_iterate(
+	    sub {
+		my($p, $m) = shift->get(qw(RealmFile.path md5));
+		$res->{lc($p)} = [$m, $p];
+		return 1;
+	    },
+	    {path_info => $fp},
+	);
+    });
+    return $res;
+}
+
+sub remote_list {
+    my(undef, $remote_file_copy_list) = @_;
+    my($s) = b_use('HTML.Scraper')->new({
+	auth_user => $remote_file_copy_list->get('user'),
+	auth_password => $remote_file_copy_list->get('pass'),
+    });
+    my($uri) = $remote_file_copy_list->get('uri')
+	. $remote_file_copy_list->req->format_uri({
+	    task_id => 'REMOTE_FILE_GET',
+	    path_info => 'PATH',
+	    realm => $remote_file_copy_list->get('realm'),
+	    query => undef,
+	    no_context => 1,
+	});
+    my($res) = {};
+    my($err);
+    $remote_file_copy_list->get('folder')->do_iterate(sub {
+	my($fp) = @_;
+	my($r);
+	(my $u = $uri) =~ s/PATH$/$fp/;
+	my($die) = $_D->catch_quietly(sub {$r = $s->http_get($u)});
+	if ($die) {
+	    $err .= $u . ' -- remote get error: ' . $die->as_string . "\n";
+	    return 1;
+	}
+	$r = [split(/\n/, (split(/\n\n/, $$r, 2))[1])];
+	my($version) = shift(@$r) || '';
+	unless ($version eq $_VERSION) {
+	    $err .= $u . ' -- version mismatch (not a folder?): '
+		. substr($version, 0, 80) . "\n";
+	    return 1;
+	}
+	$res = {
+	    %$res,
+	    map({
+		my($m, $p) = split(/\s+/, $_, 2);
+		(lc($p) => [$m, $p]);
+	    } @$r),
+	};
+	return 1;
+    });
+    return ($res, $err);
+}
+
+sub _list {
+    my($rf) = @_;
+    return \(join("\n",
+        $_VERSION,
+	@{$rf->new_other('RealmFileMD5List')->map_iterate(
+	    sub {join(' ', shift->get(qw(md5 RealmFile.path)))},
+	    {path_info => $rf->get('path_lc')},
+	)},
+    ));
+}
+
+1;

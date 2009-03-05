@@ -1,0 +1,36 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel();
+[
+    req_state({
+	task => 'REMOTE_FILE_COPY_FORM',
+	user => 'btest_read',
+	realm => 'remote_file_copy_bunit',
+    }),
+    empty_case({
+	realm_0 => 'remote_file_copy_bunit',
+	want_realm_0 => 1,
+    }),
+    simple_case({
+	prepare => 1,
+	want_realm_0 => 1,
+    }, {
+	to_delete_0 => FilePathArray([]),
+	to_create_0 => FilePathArray([]),
+	to_update_0 => FilePathArray([]),
+    }),
+    req_state({
+	realm => sub {
+	    model('RealmFile', {path => '/AnyFolder/file1'})->delete;
+	    return 'remote_file_copy_bunit',
+	},
+    }),
+    simple_case({
+	prepare => 1,
+	want_realm_0 => 1,
+    }, {
+	to_delete_0 => FilePathArray([]),
+	to_create_0 => FilePathArray(['/AnyFolder/file1']),
+	to_update_0 => FilePathArray([]),
+    }),
+];
