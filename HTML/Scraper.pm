@@ -13,6 +13,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # use URI ();
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_A) = b_use('IO.Alert');
 
 sub abs_uri {
     my($self, $uri) = @_;
@@ -49,9 +50,7 @@ sub encode_form_as_query {
 
 sub extract_content {
     my(undef, $http_response) = @_;
-    # Returns content part of I<http_response>.
-    my(undef, $res) = split(/\r?\n\r?\n/, $$http_response, 2);
-    return \$res;
+    return \($http_response->content);
 }
 
 sub file_name {
@@ -133,17 +132,15 @@ sub http_request {
     $hreq->header(Authorization => 'Basic ' . MIME::Base64::encode("$u:$p"))
 	if $u;
     my($hres) = _http_request($self, $hreq);
-    my($rs) = $hres->as_string;
     # Always write the file (even on failure)
-    $self->write_file($file_name, \$rs)
+    $self->write_file($file_name, \($hres->as_string))
         if defined($file_name);
-    my($hres_string) = \$rs;
-    $self->client_error('request failed', {entity => $hres_string})
+    $self->client_error('request failed', {entity => $hres})
 	unless $hres->is_success;
     $self->put(login_ok => 1)
 	if $u;
-    _trace($hres_string) if $_TRACE;
-    return $hres_string;
+    _trace($hres) if $_TRACE;
+    return $hres;
 }
 
 sub login {
@@ -220,6 +217,27 @@ sub unescape_html {
     my($v) = Bivio::HTML->unescape(shift);
     $v =~ s/\240/ /g;
     return $v;
+}
+
+sub user_friendly_error_message {
+    my($self, $die) = @_;
+    my($a) = $die->get('attrs');
+    return join(
+	': ',
+	map({
+	    if (defined($_)) {
+		$_ = $_A->format_args($_);
+		chomp;
+	    }
+	    defined($_) ? $_ : ();
+	}
+	    $self->unsafe_get('last_uri'),
+	    $die->get('code')->get_short_desc,
+	    $a->{message},
+	    ref($a->{entity}) =~ /HTTP::Response/
+	        ? $a->{entity}->status_line : $a->{entity},
+	),
+    );
 }
 
 sub write_file {
