@@ -99,6 +99,7 @@ sub create_user {
 
 sub do_logout {
     my($self) = @_;
+    $self->basic_authorization;
     if ($self->text_exists('Sign-out')) {
 	$self->follow_link('Sign-out');
     }
