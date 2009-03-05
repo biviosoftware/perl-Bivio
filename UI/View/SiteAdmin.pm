@@ -11,19 +11,26 @@ my($_AUL) = __PACKAGE__->use('Model.AdmUserList');
 sub remote_file_copy_form {
     return shift->internal_body(vs_simple_form(RemoteFileCopyListForm => [
 	List(RemoteFileCopyListForm => [
+	    SPAN_field(
+		Join([
+		    vs_descriptive_field('RemoteFileCopyListForm.want_realm')->[0],
+		    String([['->get_list_model'], 'realm']),
+		]),
+	    ),
 	    DIV(Join([
-		SPAN_field(
-		    vs_descriptive_field(
-			'RemoteFileCopyListForm.want_realm')->[1],
-		),
-		String([['->get_list_model'], 'realm']),
-		If(
-		    ['prepare_ok'],
-		    String('not yet'),
+		If(['prepare_ok'],
+		    Join([
+			map((
+			    Prose("RemoteFileCopyListForm.$_"),
+			    If([$_, '->is_specified'],
+			       UL_none(With([$_], LI(String(['value'])))),
+			       Prose("RemoteFileCopyListForm.$_.empty")),
+			), qw(to_delete to_update to_create)),
+		    ]),
 		    UL_none(
-			With([['->get_list_model'], 'folder'], [
+			With([['->get_list_model'], 'folder'],
 			    LI(String(['value'])),
-			]),
+			),
 		    ),
 		),
 	    ])),
