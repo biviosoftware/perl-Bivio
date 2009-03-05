@@ -1,21 +1,25 @@
 # Copyright (c) 2008 bivio Software Inc.  All Rights Reserved.
 # $Id$
-test_setup('PetShop', 'groupware');
+test_setup('PetShop');
 home_page();
-my($forum) = generate_remote_email('crm_forum');
+my($name, $uri) = create_crm_forum(['crm_tech1']);
+do_logout();
+visit_uri('/bp');
+login_as('crm_tech1');
+my($email) = generate_remote_email($name);
 my($cust1) = generate_local_email('crm_cust1');
 my($tech1) = generate_local_email('crm_tech1');
-send_mail($cust1, $forum);
+send_mail($cust1, $email);
 my($ticket, $subject) = verify_local_mail($tech1, qr{.}, 1)
     =~ m{^Subject: .*#(\d+)\].*(.*)$}mi;
 die('no ticket')
     unless $ticket;
 my($to_lock, $to_open, $to_close) = map({
-    send_mail($cust1, $forum);
+    send_mail($cust1, $email);
     (verify_local_mail($tech1, qr{.}, 1) =~ m{^Subject: .*#(\d+)\]}mi)[0];
 } 1..3);
-login_as('crm_tech1');
-follow_link(qw(crm_forum tickets));
+visit_uri($uri);
+follow_link('tickets');
 foreach my $item (
     [locked => $to_lock],
     [open => $to_open],
