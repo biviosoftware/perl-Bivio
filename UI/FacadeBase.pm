@@ -204,6 +204,35 @@ sub _cfg_base {
 	    [dd_menu => ['normal']],
 	],
 	Constant => [
+	    map({
+		my($id, $name) = @$_;
+		(
+		    [$name => sub {_unsafe_call(shift->get_facade, $name)}],
+		    [$id => sub {
+			 my($f) = shift->get_facade;
+			 my($n) = _unsafe_call($f, $name);
+			 return undef
+			     unless $n;
+			 my($req) = $f->req;
+			 my($res);
+			 Bivio::Die->catch_quietly(sub {
+			     my($ro) = b_use('Model.RealmOwner')->new($req);
+			     return $res = $ro->get('realm_id')
+			         if $ro->unauth_load({name => $n});
+			     return;
+			 });
+			 return $res
+			     if $res;
+			 b_warn($n, ': realm not found');
+			 return 1;
+		    }],
+		);
+	    }
+	        [qw(help_wiki_realm_id HELP_WIKI_REALM_NAME)],
+	        [qw(site_realm_id SITE_REALM_NAME)],
+	        [qw(site_contact_realm_id SITE_CONTACT_REALM_NAME)],
+	        [qw(site_admin_realm_id SITE_ADMIN_REALM_NAME)],
+	    ),
 	    [xlink_back_to_top => {
 		uri => '',
 		anchor => 'top',
@@ -556,12 +585,6 @@ sub _cfg_file {
 	FormError => [
 	    ['FileChangeForm.RealmFile.path_lc.EXISTS' =>
 		 'A file with this name already exists.'],
-	    ['RemoteFileCopyListForm.want_realm' => [
-		NOT_FOUND => 'Local realm does not exist.',
-		PERMISSION_DENIED => 'You do not have write access to the local realm.',
-		EMPTY => 'No folders specified in RemoteFileCopy.csv for this realm',
-		SYNTAX_ERROR => q{Errors accessing remote system:BR();String([sub {b_use('UI.FormError')->field_value(shift(@_), 'detail')}]);},
-	    ]],
 	],
 	Constant => [
 	    [EasyForm_dir => $_EASY_FORM_DIR],
@@ -573,8 +596,6 @@ sub _cfg_file {
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
 	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
-	    [REMOTE_FILE_GET => '?/install-get/*'],
-	    [REMOTE_FILE_COPY_FORM => '?/install-files'],
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -610,21 +631,12 @@ sub _cfg_file {
 		right => 'Selected',
 		ok_button => 'Compare',
 	    ]],
-	    [[qw(RemoteFileCopyListForm RemoteFileCopyList)] => [
-		prose => [
-		    prologue => q{If([qw(Model.RemoteFileCopyListForm prepare_ok)], q{Copy Phase: Update local system with remote files}, q{Preparation Phase: Select realms to compare remote and local files});},
-		],
-		empty_list_prose => q{You need to create Settings/RemoteFileCopy.csv in order to perform this operation.},
-		prepare => 'Prepare',
-		ok_button => 'Copy',
-	    ]],
 	    [title => [
 		FORUM_FILE => 'File',
 		FORUM_FILE_TREE_LIST => 'Files',
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
-		REMOTE_FILE_COPY_FORM => 'Install Files',
 	    ]],
 	    [prose => [
 		'EasyForm.update_mail' => [
@@ -638,38 +650,18 @@ sub _cfg_file {
 		    tagline => 'Recent Blog Entries at vs_site_name();',
 		],
 	    ]],
-	    [acknowledgement => [
-		REMOTE_FILE_COPY_FORM => 'Local system updated.',
-		REMOTE_FILE_COPY_FORM_no_update => 'Remote and local systems are identical.  Nothing to update.',
-	    ]],
         ],
     };
 }
 
 sub _cfg_group_admin {
     return {
-        Constant => [
-            map(['xlink_'.$_->[0] => {
-                task_id => $_->[1],
-                realm => SITE_ADMIN_REALM_NAME(),
-            }],
-                [qw(applicants SITE_ADMIN_UNAPPROVED_APPLICANT_LIST)],
-                [qw(all_users SITE_ADMIN_USER_LIST)],
-                [qw(substitute_user SITE_ADMIN_SUBSTITUTE_USER)],
-		[qw(task_log SITE_ADMIN_TASK_LOG)],
-            ),
-        ],
 	Task => [
 	    [GROUP_USER_LIST => '?/users'],
 	    [GROUP_USER_FORM => '?/edit-user'],
 	    [GROUP_USER_ADD_FORM => '?/add-user'],
 	],
 	Text => [
-            [xlink => [
-                applicants => 'Site Applicants',
-                all_users => 'All Users',
-                substitute_user => 'Act as User',
-            ]],
 	    [realm_owner_site_admin => [
 		 [qw(GroupUserList.privileges_name RoleSelectList.display_name)] => [
 		    UNKNOWN => 'No Access',
@@ -699,8 +691,8 @@ sub _cfg_group_admin {
 		ok_button => 'Add',
 	    ]],
 	    [TaskLog => [
-		date_time => 'Date/Time',
-		uri => 'URI',
+		date_time => 'Date',
+		uri => 'Link',
 	    ]],
 	    [TaskLogList => [
 		last_first_middle => 'Last, First Name',
@@ -919,18 +911,76 @@ EOF
 
 sub _cfg_site_admin {
     return {
+        Constant => [
+            map({
+		my($n, $task, $control) = @$_;
+		(
+		    ["xlink_$n" => sub {+{
+			task_id => $task,
+			realm => shift->get_facade->SITE_ADMIN_REALM_NAME,
+		    }}],
+		    ["want_$n" => $control || 1],
+		);
+	    }
+                [qw(all_users SITE_ADMIN_USER_LIST)],
+                [qw(substitute_user SITE_ADMIN_SUBSTITUTE_USER)],
+		[qw(task_log SITE_ADMIN_TASK_LOG), sub {
+		     b_use('Model.TaskLog')->if_enabled(sub {'task_log'});
+		}],
+		[qw(remote_file_copy REMOTE_FILE_COPY_FORM), sub {
+		     my($fc) = @_;
+		     my($id) = $fc->unsafe_get_value('site_admin_realm_id');
+		     return $id
+			 && b_use('Model.RemoteFileCopyList')->new(
+			     $fc->get_facade->req
+			 )->unauth_if_setting_available($id) ? 1 : 0;
+		}],
+                [qw(applicants SITE_ADMIN_UNAPPROVED_APPLICANT_LIST), sub {
+		     b_use('Model.UserCreateForm')
+			 ->if_unapproved_applicant_mode(sub {'applicants'});
+		}],
+            ),
+        ],
+	FormError => [
+	    ['RemoteFileCopyListForm.want_realm' => [
+		NOT_FOUND => 'Local realm does not exist.',
+		PERMISSION_DENIED => 'You do not have write access to the local realm.',
+		EMPTY => 'No folders specified in RemoteFileCopy.csv for this realm',
+		SYNTAX_ERROR => q{Errors accessing remote system:BR();String([sub {b_use('UI.FormError')->field_value(shift(@_), 'detail')}]);},
+	    ]],
+	],
 	Task => [
+	    [REMOTE_FILE_GET => '?/install-get/*'],
+	    [REMOTE_FILE_COPY_FORM => '?/install-files'],
 	    [SITE_ADMIN_USER_LIST => '?/admin-users'],
 	    [SITE_ADMIN_SUBSTITUTE_USER => '?/admin-su'],
 	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => => '?/admin-applicants'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => => '?/admin-assign-applicant'],
-	    [SITE_ADMIN_TASK_LOG => '?/task-log'],
+	    [SITE_ADMIN_TASK_LOG => '?/admin-hits'],
 	],
 	Text => [
+            [xlink => [
+                applicants => 'Site Applicants',
+                all_users => 'All Users',
+                substitute_user => 'Act as User',
+		task_log => 'Site Hits',
+		remote_file_copy => 'Install Files',
+            ]],
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',
 		privileges => 'Privileges',
+	    ]],
+	    [[qw(RemoteFileCopyListForm RemoteFileCopyList)] => [
+		prose => [
+		    prologue => q{If([qw(Model.RemoteFileCopyListForm prepare_ok)], q{Copy Phase: Update local system with remote files}, q{Preparation Phase: Select realms to compare remote and local files});},
+		],
+		empty_list_prose => q{You need to create Settings/RemoteFileCopy.csv in order to perform this operation.},
+		to_update => 'UPDATE FIXME',
+		to_delete => 'DELETE FIXME',
+		to_create => 'CREATE FIXME',
+		ok_button => q{If([qw(Model.RemoteFileCopyListForm prepare_ok)], 'Copy', 'Prepare');},
+		want_realm => '',
 	    ]],
 	    [UnapprovedApplicantForm => [
 		mail_subject => [
@@ -952,15 +1002,20 @@ EOF
 	    ]],
 
 	    [title => [
+		REMOTE_FILE_COPY_FORM => 'Install Files',
 		SITE_ADMIN_USER_LIST => 'All Users',
 		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
-		SITE_ADMIN_TASK_LOG => 'Task Log Report',
+		SITE_ADMIN_TASK_LOG => 'Site Hits',
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
 		SiteAdminDropDown_label => 'Admin',
+	    ]],
+	    [acknowledgement => [
+		REMOTE_FILE_COPY_FORM => 'Local system updated.',
+		REMOTE_FILE_COPY_FORM_no_update => 'Remote and local systems are identical.  Nothing to update.',
 	    ]],
 	],
     };
@@ -1280,32 +1335,6 @@ sub _cfg_wiki {
 	    [SITE_WIKI_VIEW => 'bp/*'],
 	],
 	Constant => [
-	    map({
-		my($id, $name) = @$_;
-		(
-		    [$name => sub {shift->get_facade->$name()}],
-		    [$id => sub {
-			 my($f) = shift->get_facade;
-			 my($req) = $f->req;
-			 my($res);
-			 Bivio::Die->catch_quietly(sub {
-			     my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
-			     return $res = $ro->get('realm_id')
-			         if $ro->unauth_load({name => $f->$name()});
-			     return;
-			 });
-			 return $res
-			     if $res;
-			 Bivio::IO::Alert->warn($f->$name(), ': realm not found');
-			 return 1;
-		    }],
-		);
-	    }
-	        [qw(help_wiki_realm_id HELP_WIKI_REALM_NAME)],
-	        [qw(site_realm_id SITE_REALM_NAME)],
-	        [qw(site_contact_realm_id SITE_CONTACT_REALM_NAME)],
-	        [qw(site_admin_realm_id SITE_ADMIN_REALM_NAME)],
-	    ),
 	    [ThreePartPage_want_HelpWiki => 1],
 	],
 	Font => [
@@ -1458,7 +1487,7 @@ sub _cfg_xapian {
 
 sub _merge {
     my($child) = pop(@_);
-    foreach my $cfg (@_) {
+    foreach my $cfg (reverse(@_)) {
 	foreach my $k (keys(%$cfg)) {
 	    if (ref($child->{$k}) eq 'ARRAY') {
 		unshift(@{$child->{$k} ||= []}, @{$cfg->{$k}});
@@ -1469,6 +1498,11 @@ sub _merge {
 	}
     }
     return $child;
+}
+
+sub _unsafe_call {
+    my($self, $method) = @_;
+    return $self->can($method) ? $self->$method() : undef;
 }
 
 1;
