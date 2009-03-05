@@ -41,4 +41,10 @@ sub internal_load_rows {
     )];
 }
 
+sub unauth_if_setting_available {
+    my($self, $realm_id) = @_;
+    return $self->new_other('RealmSettingList')
+	->unauth_if_file_exists(RemoteFileCopy => $realm_id);
+}
+
 1;
