@@ -2,10 +2,11 @@
 # $Id$
 package Bivio::Type::StringArray;
 use strict;
-use base 'Bivio::Type';
+use Bivio::Base 'Bivio.Type';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_S) = b_use('Type.String');
 
 sub LITERAL_SEPARATOR {
     return ', ';
@@ -21,6 +22,10 @@ sub SQL_SEPARATOR {
 
 sub SQL_SEPARATOR_REGEX {
     return qr{\s*$;\s*}s;
+}
+
+sub UNDERLYING_TYPE {
+    return $_S;
 }
 
 sub WANT_SORTED {
@@ -55,8 +60,9 @@ sub compare_defined {
     my($proto, $left, $right) = @_;
     $left = _clean_copy($proto, $left);
     $right = _clean_copy($proto, $right);
+    my($underlying) = $proto->UNDERLYING_TYPE;
     foreach my $i (0 .. ($#$left < $#$right ? $#$left : $#$right)) {
-	my($x) = $left->[$i] cmp $right->[$i];
+	my($x) = $underlying->compare($left->[$i], $right->[$i]);
 	return $x
 	    if $x;
     }
@@ -137,7 +143,8 @@ sub get_width {
 }
 
 sub is_specified {
-    return @{shift->as_array} ? 1 : 0;
+    my($value) = _value(@_);
+    return @{$value->as_array} ? 1 : 0;
 }
 
 sub map_iterate {
@@ -156,9 +163,10 @@ sub new {
 }
 
 sub sort_unique {
-    my($self, $value) = @_;
-    return $value ? [sort(keys(%{+{map(($_ => undef), @$value)}}))]
-	: $self->new($self->sort_unique($self->as_array));
+    my($value) = _value(@_);
+    return ref($value) eq 'ARRAY'
+	? [sort(keys(%{+{map(($_ => undef), @$value)}}))]
+	: $value->new($value->sort_unique($value->as_array));
 }
 
 sub to_literal {
@@ -205,6 +213,11 @@ sub _clean_copy {
     Bivio::Die->die($copy, ": separator ($sep) in element")
         if grep($_ =~ $sep, @$copy);
     return $copy;
+}
+
+sub _value {
+    my($self, $value) = @_;
+    return @_ > 1 ? $value : $self;
 }
 
 1;
