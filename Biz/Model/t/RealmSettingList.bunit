@@ -29,6 +29,7 @@ req()->set_realm('fourem');
 	[qw(RealmSettingList1 alpha letter Integer), sub {'not-' . shift}]
 	    => 'not-default-letter',
 	[qw(RealmSettingList2 alpha num Integer 99)] => 99,
+	[qw(RealmSettingList3 a num Integer)] => [undef],
 	[qw(RealmSettingList1 alpha num Integer)] => 1,
 	sub {
 	    req()->set_realm('btest_read');
