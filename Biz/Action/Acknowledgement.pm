@@ -26,7 +26,7 @@ sub extract_label {
 	|| _extract($proto, $req);
 }
 
-sub handle_pre_auth_task {
+sub handle_pre_execute_task {
     my($proto, $task, $req) = @_;
     $proto->execute($req);
     return;
