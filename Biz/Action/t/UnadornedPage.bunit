@@ -14,8 +14,7 @@ Request('initialize_fully');
 	    },
 	} => [
 	    [path_info => '/pub/login'] => ['text/html', qr{Password:}i],
-#TODO: This should be NOT_FOUND(?)
-	    [path_info => '/not-found'] => ['text/html', qr{not found}i],
+	    [path_info => '/not-found'] => ['text/html', qr{error.btest page}i],
 	    [path_info => '/fourem/file/private/image.gif'] => MODEL_NOT_FOUND(),
 	    [path_info => '/fourem/users'] => FORBIDDEN(),
 	],
