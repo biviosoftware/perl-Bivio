@@ -684,6 +684,28 @@ CREATE INDEX realm_user_t8 ON realm_user_t (
 /
 
 --
+-- task_log_t
+--
+ALTER TABLE task_log_t
+  ADD CONSTRAINT task_log_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX task_log_t3 ON task_log_t (
+  realm_id
+)
+/
+ALTER TABLE task_log_t
+  ADD CONSTRAINT task_log_t4
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX task_log_t5 ON task_log_t (
+  user_id
+)
+/
+
+--
 -- tuple_t
 --
 ALTER TABLE tuple_t
@@ -960,8 +982,13 @@ CREATE SEQUENCE realm_file_lock_s
   CACHE 1 INCREMENT BY 100000
 /
 
+CREATE SEQUENCE task_log_s
+  MINVALUE 100010
+  CACHE 1 INCREMENT BY 100000
+/
+
 --
--- 100010-14 available
+-- 100011-14 available
 --
 
 CREATE SEQUENCE ec_payment_s
@@ -989,6 +1016,7 @@ sub _file_tables {
 --   It makes it much easier to manage the constraints and indices this way.
 --
 ----------------------------------------------------------------
+
 CREATE TABLE address_t (
   realm_id NUMERIC(18) NOT NULL,
   location NUMERIC(2) NOT NULL,
@@ -1205,6 +1233,19 @@ CREATE TABLE row_tag_t (
   key NUMERIC(3) NOT NULL,
   value VARCHAR(500) NOT NULL,
   CONSTRAINT row_tag_t1 primary key(primary_id, key)
+)
+/
+
+CREATE TABLE task_log_t (
+  task_log_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18),
+  super_user_id NUMERIC(18),
+  date_time DATE NOT NULL,
+  task_id NUMERIC(9) NOT NULL,
+  method VARCHAR(30),
+  uri VARCHAR(500) NOT NULL,
+  CONSTRAINT task_log_t1 primary key (task_log_id)
 )
 /
 
