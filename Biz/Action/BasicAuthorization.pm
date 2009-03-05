@@ -22,14 +22,15 @@ sub handle_pre_auth_task {
 	if $req->unsafe_get('auth_user');
     my($f) = Bivio::Biz::Model->new($req, 'UserLoginForm');
     my($r) = $req->unsafe_get('r');
+    my($auth) = $r && $r->header_in('Authorization');
     return _unauth($task, $f)
-	unless $r and my $auth = $r->header_in('Authorization');
+	unless $auth;
     $f->disable_assert_cookie;
     my($u, $p)
 	= (MIME::Base64::decode(($auth =~ /Basic\s*(\S+)/)[0] || '') || '')
 	    =~ /^([^:]+):(.*)$/;
     unless ($u) {
-	b_warn($auth, ': could not parse user');
+	b_warn($u, ': could not parse user');
 	return _unauth($task, $f);
     }
     my($su);
