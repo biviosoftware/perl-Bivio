@@ -3,7 +3,13 @@
 Request();
 [
     class() => [
-        call_task => [
+        {
+	    method => 'call_task',
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		return [$actual->[0]->get_output];
+	    },
+	} => [
 	    [req(), '/pub/login'] => qr{PetShop - Sign In},
 	],
     ],
