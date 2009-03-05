@@ -15,6 +15,10 @@ sub LITERAL_SEPARATOR_REGEX {
     return qr{\s*;\s*}s;
 }
 
+sub UNDERLYING_TYPE {
+    return $_FP;
+}
+
 sub from_literal_validator {
     shift;
     return $_FP->from_literal(@_);

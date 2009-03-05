@@ -7,6 +7,10 @@ use Bivio::Base 'Type.StringArray';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = __PACKAGE__->use('Type.Email');
 
+sub UNDERLYING_TYPE {
+    return $_E;
+}
+
 sub from_literal_validator {
     my($proto, $value) = @_;
 #TODO: Full address parsing with coments
