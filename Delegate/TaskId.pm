@@ -227,7 +227,14 @@ sub info_base {
 	    ANYBODY
 	    Action.Error
 	)],
-#191-199 free
+	[qw(
+	    UNADORNED_PAGE
+	    191
+	    GENERAL
+	    ANYBODY
+	    Action.UnadornedPage
+	)],
+#192-199 free
     ];
 }
 
@@ -462,9 +469,9 @@ sub info_dav {
 	    25
 	    GENERAL
 	    ANYBODY
-	    Action.BasicAuthorization
 	    Action.DAV
 	    next=DAV_ROOT_FORUM_LIST
+	    want_basic_authorization=1
 	)],
 	[qw(
 	    DAV_ROOT_FORUM_LIST
@@ -605,7 +612,24 @@ sub info_file {
 	    View.File->file_unlock
 	    next=FORUM_FILE_TREE_LIST
 	)],
-#174-179 free
+	[qw(
+	    REMOTE_FILE_GET
+	    174
+	    ANY_GROUP
+	    DATA_READ&DATA_BROWSE&FEATURE_FILE
+	    Action.RemoteFileCopy
+	    want_basic_authorization=1
+	)],
+	[qw(
+	    REMOTE_FILE_COPY_FORM
+	    175
+	    ANY_GROUP
+	    DATA_READ&DATA_WRITE&DATA_BROWSE&FEATURE_FILE
+	    Model.RemoteFileCopyListForm
+	    View.SiteAdmin->remote_file_copy_form
+	    next=FORUM_FILE_TREE_LIST
+	)],
+#176-179 free
     ];
 }
 

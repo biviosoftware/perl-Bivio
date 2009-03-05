@@ -259,6 +259,7 @@ sub _cfg_base {
 	    [SITE_ROOT => '*'],
 	    [TEST_BACKDOOR => ['test-backdoor', 'test_backdoor']],
 	    [USER_HOME => '?'],
+	    [UNADORNED_PAGE => 'rp/*'],
 	    [TEST_TRACE => 'test-trace/*'],
 	],
 	Text => [
@@ -554,7 +555,13 @@ sub _cfg_file {
     return {
 	FormError => [
 	    ['FileChangeForm.RealmFile.path_lc.EXISTS' =>
-		'A file with this name already exists.'],
+		 'A file with this name already exists.'],
+	    ['RemoteFileCopyListForm.want_realm' => [
+		NOT_FOUND => 'Local realm does not exist.',
+		PERMISSION_DENIED => 'You do not have write access to the local realm.',
+		EMPTY => 'No folders specified in RemoteFileCopy.csv for this realm',
+		SYNTAX_ERROR => q{Errors accessing remote system:BR();String([sub {b_use('UI.FormError')->field_value(shift(@_), 'detail')}]);},
+	    ]],
 	],
 	Constant => [
 	    [EasyForm_dir => $_EASY_FORM_DIR],
@@ -566,6 +573,8 @@ sub _cfg_file {
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
 	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
+	    [REMOTE_FILE_GET => '?/install-get/*'],
+	    [REMOTE_FILE_COPY_FORM => '?/install-files'],
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -601,12 +610,21 @@ sub _cfg_file {
 		right => 'Selected',
 		ok_button => 'Compare',
 	    ]],
+	    [[qw(RemoteFileCopyListForm RemoteFileCopyList)] => [
+		prose => [
+		    prologue => q{If([qw(Model.RemoteFileCopyListForm prepare_ok)], q{Copy Phase: Update local system with remote files}, q{Preparation Phase: Select realms to compare remote and local files});},
+		],
+		empty_list_prose => q{You need to create Settings/RemoteFileCopy.csv in order to perform this operation.},
+		prepare => 'Prepare',
+		ok_button => 'Copy',
+	    ]],
 	    [title => [
 		FORUM_FILE => 'File',
 		FORUM_FILE_TREE_LIST => 'Files',
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
+		REMOTE_FILE_COPY_FORM => 'Install Files',
 	    ]],
 	    [prose => [
 		'EasyForm.update_mail' => [
@@ -619,6 +637,10 @@ sub _cfg_file {
 		    title => 'vs_site_name(); Blog',
 		    tagline => 'Recent Blog Entries at vs_site_name();',
 		],
+	    ]],
+	    [acknowledgement => [
+		REMOTE_FILE_COPY_FORM => 'Local system updated.',
+		REMOTE_FILE_COPY_FORM_no_update => 'Remote and local systems are identical.  Nothing to update.',
 	    ]],
         ],
     };
