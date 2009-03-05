@@ -37,6 +37,29 @@ sub substitute_user_form {
     }]));
 }
 
+sub task_log {
+    return shift->internal_body(Join([
+	Form('SearchForm', Join([
+	    FormField('SearchForm.search'),
+	    FormButton('ok_button'),
+	], vs_blank_cell())),
+	vs_paged_list('TaskLogList', [
+	    'TaskLog.date_time',
+	    ['last_first_middle', {
+		column_order_by => [qw(User.last_name_sort
+	            User.first_name_sort User.middle_name_sort)],
+		column_widget => Join([
+		    If(['TaskLog.super_user_id'],
+			'Staff acting as '),
+		    MailTo(['Email.email'], ['last_first_middle']),
+		]),
+	    }],
+	    'Phone.phone',
+	    'TaskLog.uri',
+	]),
+    ]));
+}
+
 sub unapproved_applicant_form {
     my($self, $extra_columns) = @_;
     return shift->internal_body(vs_simple_form(UnapprovedApplicantForm => [
