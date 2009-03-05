@@ -9,7 +9,7 @@ my($_REQ_KEY) = __PACKAGE__ . 'state';
 my($_DT) = b_use('Type.DateTime');
 my($_Q) = b_use('AgentHTTP.Query');
 my($_ULF) = b_use('Model.UserLoginForm');
-b_use('IO.Config')->register({
+b_use('IO.Config')->register(my $_CFG = {
     enable_log => 0,
 });
 
@@ -17,6 +17,7 @@ sub handle_config {
     my(undef, $cfg) = @_;
     __PACKAGE__->use('Agent.Task')->register(__PACKAGE__)
 	if $cfg->{enable_log};
+    $_CFG = $cfg;
     return;
 }
 
@@ -48,6 +49,11 @@ sub handle_pre_execute_task {
 	date_time => $_DT->now,
     });
     return;
+}
+
+sub if_enabled {
+    my(undef, $then, $else) = @_;
+    return $_CFG->{enable_log} ? $then->() : $else ? $else->() : ();
 }
 
 sub internal_initialize {
