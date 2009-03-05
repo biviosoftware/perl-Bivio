@@ -612,24 +612,7 @@ sub info_file {
 	    View.File->file_unlock
 	    next=FORUM_FILE_TREE_LIST
 	)],
-	[qw(
-	    REMOTE_FILE_GET
-	    174
-	    ANY_GROUP
-	    DATA_READ&DATA_BROWSE&FEATURE_FILE
-	    Action.RemoteFileCopy
-	    want_basic_authorization=1
-	)],
-	[qw(
-	    REMOTE_FILE_COPY_FORM
-	    175
-	    ANY_GROUP
-	    DATA_READ&DATA_WRITE&DATA_BROWSE&FEATURE_FILE
-	    Model.RemoteFileCopyListForm
-	    View.SiteAdmin->remote_file_copy_form
-	    next=FORUM_FILE_TREE_LIST
-	)],
-#176-179 free
+#174-179 free
     ];
 }
 
@@ -923,7 +906,24 @@ sub info_site_admin {
 	    View.SiteAdmin->task_log
             next=SITE_ADMIN_TASK_LOG
 	)],
-#166-169
+	[qw(
+	    REMOTE_FILE_GET
+	    166
+	    ANY_GROUP
+	    DATA_READ&DATA_BROWSE&FEATURE_FILE
+	    Action.RemoteFileCopy
+	    want_basic_authorization=1
+	)],
+	[qw(
+	    REMOTE_FILE_COPY_FORM
+	    167
+	    ANY_GROUP
+	    DATA_READ&DATA_WRITE&DATA_BROWSE&FEATURE_FILE
+	    Model.RemoteFileCopyListForm
+	    View.SiteAdmin->remote_file_copy_form
+	    next=FORUM_FILE_TREE_LIST
+	)],
+#168-169
     ];
 }
 
