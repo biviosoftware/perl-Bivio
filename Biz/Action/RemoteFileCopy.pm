@@ -9,6 +9,7 @@ my($_RF) = b_use('Model.RealmFile');
 my($_D) = b_use('Bivio.Die');
 my($_VERSION) = __PACKAGE__ . '#1';
 my($_FPA) = b_use('Type.FilePathArray');
+my($_S) = b_use('HTML.Scraper');
 
 sub diff_lists {
     my($proto, $remote_file_copy_list) = @_;
@@ -61,32 +62,25 @@ sub local_list {
     return $res;
 }
 
+sub remote_get {
+    my($self, $path, $remote_file_copy_list) = @_;
+    my($err);
+    my($res) = _get(
+	_uri($path, $remote_file_copy_list), $remote_file_copy_list, \$err);
+    return ($res, $err);
+}
+
 sub remote_list {
     my(undef, $remote_file_copy_list) = @_;
-    my($s) = b_use('HTML.Scraper')->new({
-	auth_user => $remote_file_copy_list->get('user'),
-	auth_password => $remote_file_copy_list->get('pass'),
-    });
-    my($uri) = $remote_file_copy_list->get('uri')
-	. $remote_file_copy_list->req->format_uri({
-	    task_id => 'REMOTE_FILE_GET',
-	    path_info => 'PATH',
-	    realm => $remote_file_copy_list->get('realm'),
-	    query => undef,
-	    no_context => 1,
-	});
+    my($uri) = _uri('PATH', $remote_file_copy_list);
     my($res) = {};
     my($err);
     $remote_file_copy_list->get('folder')->do_iterate(sub {
 	my($fp) = @_;
-	my($r);
-	(my $u = $uri) =~ s/PATH$/$fp/;
-	my($die) = $_D->catch_quietly(sub {$r = $s->http_get($u)});
-	if ($die) {
-	    $err .= $u . ' -- remote get error: ' . $die->as_string . "\n";
-	    return 1;
-	}
-	$r = [split(/\n/, (split(/\n\n/, $$r, 2))[1])];
+	(my $u = $uri) =~ s/\bPATH$/$fp/;
+	return 1
+	    unless my $r = _get($u, $remote_file_copy_list, \$err);
+	$r = [split(/\n/, $$r)];
 	my($version) = shift(@$r) || '';
 	unless ($version eq $_VERSION) {
 	    $err .= $u . ' -- version mismatch (not a folder?): '
@@ -105,6 +99,23 @@ sub remote_list {
     return ($res, $err);
 }
 
+sub _get {
+    my($uri, $remote_file_copy_list, $err) = @_;
+    my($res);
+    my($s) = $_S->new({
+	auth_user => $remote_file_copy_list->get('user'),
+	auth_password => $remote_file_copy_list->get('pass'),
+    });
+    my($die) = $_D->catch_quietly(sub {
+	$res = $s->http_get($uri);
+	return;
+    });
+    return \($res->content)
+	unless $die;
+    $$err .= $s->user_friendly_error_message($die) . "\n";
+    return;
+}
+
 sub _list {
     my($rf) = @_;
     return \(join("\n",
@@ -114,6 +125,18 @@ sub _list {
 	    {path_info => $rf->get('path_lc')},
 	)},
     ));
+}
+
+sub _uri {
+    my($path, $remote_file_copy_list) = @_;
+    return $remote_file_copy_list->get('uri')
+	. $remote_file_copy_list->req->format_uri({
+	    task_id => 'REMOTE_FILE_GET',
+	    path_info => $path,
+	    realm => $remote_file_copy_list->get('realm'),
+	    query => undef,
+	    no_context => 1,
+	});
 }
 
 1;
