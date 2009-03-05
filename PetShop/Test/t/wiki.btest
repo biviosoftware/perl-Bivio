@@ -72,4 +72,8 @@ verify_text(qr{back to current}i);
 follow_link(qr{^3$});
 verify_text(qr{v3: go back to the}i);
 verify_no_text(qr{edit this page}i);
-
+login_as('guest');
+visit_uri("/rp/$f/wiki/StartPage");
+verify_link('PrivatePage');
+test_deviance(qr{forbidden}i);
+visit_uri('/rp/fourem/users');
