@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Util::SQL;
 use strict;
@@ -170,6 +170,7 @@ sub initialize_test_data {
     _init_mail($self);
     $self->new_other('TestCRM')->init;
     _init_site_admin($self);
+    _init_remote_file_copy($self);
     $self->new_other('RealmUser')->audit_all_users;
     return;
 }
@@ -621,6 +622,13 @@ EOF
 Name,Number
 "a parser error
 EOF
+    $self->model('RealmFile')->create_with_content({
+	path => '/Settings/RealmSettingList3.csv',
+    }, \(<<'EOF'));
+Name,Number
+a,
+,
+EOF
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1',
@@ -731,6 +739,27 @@ sub _init_mail {
     my($self) = @_;
     $self->top_level_forum(
 	$self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    return;
+}
+
+sub _init_remote_file_copy {
+    my($self) = @_;
+    $self->top_level_forum(
+	'remote_file_copy_bunit', [$self->BTEST_ADMIN], [$self->BTEST_READ]);
+    my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
+    $uri =~ s{(?=//[^/]+/).*}{};
+    foreach my $x (
+	['/Settings/RemoteFileCopy.csv', <<"EOF"],
+Realm,Folders,User,Password,URI
+remote_file_copy_bunit,/AnyFolder
+,,btest_read,@{[$self->PASSWORD]},$uri
+EOF
+	map(["/AnyFolder/file$_", "file$_"], 1..4),
+    ) {
+	my($path, $content) = @$x;
+	$self->model('RealmFile')
+	    ->create_with_content({path => $path}, \$content);
+    }
     return;
 }
 
