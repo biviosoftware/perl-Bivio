@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::EmptyReply;
 use strict;
@@ -7,7 +7,7 @@ use Bivio::Base 'Biz.Action';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->use('Agent.Task')->register(__PACKAGE__);
 my($_AC) = __PACKAGE__->use('Ext.ApacheConstants');
-my($_BA) = __PACKAGE__->use('Action.BasicAuthorization');
+b_use('Action.BasicAuthorization');
 
 sub execute {
     my($proto, $req, $status, $output) = @_;
@@ -42,13 +42,6 @@ sub execute_task_item {
     my($self, $error, $req) = @_;
     return $error =~ /^execute/ ? $self->$error($req)
 	: $self->execute($req, uc($error));
-}
-
-sub handle_pre_auth_task {
-    my($proto, $task, $req) = @_;
-    return $_BA->execute($req)
-	if $task->get('id')->get_name =~ /^BOT_/;
-    return;
 }
 
 1;
