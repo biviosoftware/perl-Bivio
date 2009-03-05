@@ -93,7 +93,7 @@ sub _grep {
 	    if $te;
 	my($x) = $default;
 	$v = $te ? $hash->{$k->[0]} : undef;
-	$default = sub {$x->($v)};
+	$default = sub {_default($x, $v)};
     }
     else {
 	$e = @$k ? 'matched multiple columns' : 'column not found';
