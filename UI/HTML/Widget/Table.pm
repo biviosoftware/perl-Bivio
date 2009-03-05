@@ -521,7 +521,7 @@ sub initialize {
     my($title) = $self->unsafe_get('title');
     if (defined($title)) {
 	$fields->{title} = $_VS->vs_new('String', {
-            value => "\n$title\n",
+            value => $title,
             string_font => 'table_heading',
         })->put_and_initialize(parent => $self);
     }
