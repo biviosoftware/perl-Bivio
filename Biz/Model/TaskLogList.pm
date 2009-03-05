@@ -48,18 +48,13 @@ sub internal_prepare_statement {
     return unless $self->req->unsafe_get('Model.SearchForm');
     my($search) = $self->req(qw(Model.SearchForm search));
     return unless $search;
-
-    if ($search =~ m,/,) {
-	$stmt->where($stmt->ILIKE('TaskLog.uri',
-	    '%' . lc($search) . '%'));
-    }
-    elsif ($search =~ m,\@,) {
-	$stmt->where($stmt->EQ('Email.email', [lc($search)]));
-    }
-    else {
-	$stmt->where($stmt->ILIKE('RealmOwner.display_name',
-	    '%' . lc($search) . '%'));
-    }
+    $stmt->where($stmt->ILIKE(
+	$search =~ m,/,
+	    ? 'TaskLog.uri'
+	    : $search =~ m,\@,
+	        ? 'Email.email'
+	        : 'RealmOwner.display_name',
+	'%' . $search . '%'));
     return;
 }
 
