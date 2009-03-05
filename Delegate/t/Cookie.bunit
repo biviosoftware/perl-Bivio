@@ -23,10 +23,11 @@ options({
     sub {req('r')} => [
 	header_out => sub {
 	    my($case, $return) = @_;
-	    return 0 unless
-		$return->[1] =~ m#^(TT=\S+); path=/; expires=#s;
+	    my($res) = {@$return};
+	    return 0
+		unless $res->{'Set-Cookie'} =~ m{^(TT=\S+); path=/; expires=}s;
 	    # Save for next test; only call is for "Cookie"
-	    $case->get('object')->header_in($1);
+	    req('r')->header_in(Cookie => $1);
 	    return 1;
         },
     ],
