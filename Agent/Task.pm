@@ -130,7 +130,7 @@ my($_DC) = b_use('Bivio.DieCode');
 my($_A) = b_use('IO.Alert');
 my($_TE);
 my($_C) = b_use('IO.Config');
-our($_COMMITTED);
+our($_COMMITTED) = undef;
 
 sub TASK_ATTR_RE {
     return $_TASK_ATTR_RE;
@@ -481,6 +481,8 @@ sub _call_txn_resources {
 
 sub _commit {
     my($self, $req) = @_;
+    return b_warn('$_COMMITTED is not defined')
+	unless defined($_COMMITTED);
     return
 	if $_COMMITTED++;
     # handle_post_execute_task cannot override $next (unlike other handlers)
