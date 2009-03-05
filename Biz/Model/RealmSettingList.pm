@@ -55,6 +55,14 @@ sub get_setting {
     );
 }
 
+sub unauth_if_file_exists {
+    my($self, $base, $realm_id) = @_;
+    return $self->new_other('RealmFile')->unauth_load({
+	path => _path($base),
+	realm_id => $realm_id,
+    });
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
