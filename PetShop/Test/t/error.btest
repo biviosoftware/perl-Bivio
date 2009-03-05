@@ -42,7 +42,7 @@ login_as('root');
 my($key) = 'error.btest page ' . random_string();
 send_request(PUT => $nfe, undef, <<"EOF");
 \@h1 Page Not Found
-$key
+not found: $key
 EOF
 do_logout();
 test_deviance('not found');
