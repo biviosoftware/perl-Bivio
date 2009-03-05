@@ -49,10 +49,10 @@ sub _buttons {
 		    {
 			($form->get_field_type($_)->isa($_CB)
 			     ? (attributes => 'onclick="reset()"') : ()),
-			label => vs_text(
+			label => Prose(vs_text(
 			    $form->simple_package_name,
 			    $labels->{$_} || $_,
-			),
+			)),
 			class => 'submit',
 			map(($_ => $self->ancestral_get($_)),
 			    qw(form_class form_model)),
