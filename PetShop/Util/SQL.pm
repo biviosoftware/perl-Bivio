@@ -725,6 +725,17 @@ sub _init_remote_file_copy {
     my($self) = @_;
     $self->top_level_forum(
 	'remote_file_copy_bunit', ['remote_file_copy_user']);
+    $self->top_level_forum(
+	'remote_file_copy_btest', ['remote_file_copy_user']);
+    $self->req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
+        $self->model(ForumUserAddForm => {
+	    'RealmUser.realm_id' => $self->req('auth_id'),
+	    'Forum.want_reply_to' => 1,
+	    'User.user_id' => _realm_id($self, 'remote_file_copy_user'),
+	    administrator => 1,
+	});
+	return;
+    });
     my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
     $uri =~ s{(?=//[^/]+/).*}{};
     foreach my $x (
