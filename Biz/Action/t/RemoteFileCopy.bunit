@@ -1,6 +1,8 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
+req()->set_realm('remote_file_copy_bunit');
+my($rfcl) = model('RemoteFileCopyList', {})->set_cursor_or_die(0);
 [
     class() => [
 	{
@@ -22,7 +24,7 @@ Request('initialize_fully');
 	remote_list => [
 	    sub {
 		req()->set_realm('remote_file_copy_bunit');
-		return [model('RemoteFileCopyList', {})];
+		return [$rfcl];
 	    } => [
 		{map((lc($_) => [qr{^\S+$}, $_]),
 	            map("/AnyFolder/file$_", 1..4))},
@@ -38,18 +40,21 @@ Request('initialize_fully');
 		    path => '/AnyFolder/file5',
 		    user_id => realm_id('remote_file_copy_user'),
 		}, \('file5'));
-		return [model('RemoteFileCopyList', {})];
+		return [$rfcl];
 	    } => [
 		{map((lc($_) => [qr{^\S+$}, $_]),
 	            map("/AnyFolder/file$_", 2..5))},
 	    ],
 	],
 	diff_lists => [
-	    sub {[model('RemoteFileCopyList', {})]} => [{
+	    [$rfcl] => [{
 		to_delete => FilePathArray('/AnyFolder/file5'),
 		to_create => FilePathArray('/AnyFolder/file1'),
 		to_update => FilePathArray('/AnyFolder/file2'),
 	    }],
+	],
+	remote_get => [
+	    ['/AnyFolder/file1', $rfcl] => [\('file1'), undef],
 	],
     ],
 ];
