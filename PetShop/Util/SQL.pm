@@ -745,14 +745,14 @@ sub _init_mail {
 sub _init_remote_file_copy {
     my($self) = @_;
     $self->top_level_forum(
-	'remote_file_copy_bunit', [$self->BTEST_ADMIN], [$self->BTEST_READ]);
+	'remote_file_copy_bunit', ['remote_file_copy_user']);
     my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
     $uri =~ s{(?=//[^/]+/).*}{};
     foreach my $x (
 	['/Settings/RemoteFileCopy.csv', <<"EOF"],
 Realm,Folders,User,Password,URI
 remote_file_copy_bunit,/AnyFolder
-,,btest_read,@{[$self->PASSWORD]},$uri
+,,remote_file_copy_user,@{[$self->PASSWORD]},$uri
 EOF
 	map(["/AnyFolder/file$_", "file$_"], 1..4),
     ) {
