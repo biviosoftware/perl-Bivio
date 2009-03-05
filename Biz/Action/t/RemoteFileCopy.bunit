@@ -36,7 +36,7 @@ Request('initialize_fully');
 		    ->update_with_content({}, \('changed file2'));
 		model('RealmFile')->create_with_content({
 		    path => '/AnyFolder/file5',
-		    user_id => realm_id('btest_read'),
+		    user_id => realm_id('remote_file_copy_user'),
 		}, \('file5'));
 		return [model('RemoteFileCopyList', {})];
 	    } => [

@@ -4,7 +4,7 @@ FormModel();
 [
     req_state({
 	task => 'REMOTE_FILE_COPY_FORM',
-	user => 'btest_read',
+	user => 'remote_file_copy_user',
 	realm => 'remote_file_copy_bunit',
     }),
     empty_case({
