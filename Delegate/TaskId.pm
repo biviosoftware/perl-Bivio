@@ -913,7 +913,17 @@ sub info_site_admin {
 	    View.SiteAdmin->unapproved_applicant_form
 	    next=SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
 	)],
-#165-169
+	[qw(
+	    SITE_ADMIN_TASK_LOG
+	    165
+	    ANY_GROUP
+	    ADMIN_READ&FEATURE_SITE_ADMIN&SUPER_USER_TRANSIENT
+            Model.SearchForm
+	    Model.TaskLogList->execute_load_page
+	    View.SiteAdmin->task_log
+            next=SITE_ADMIN_TASK_LOG
+	)],
+#166-169
     ];
 }
 
