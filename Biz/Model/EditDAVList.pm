@@ -48,7 +48,8 @@ sub dav_put {
 		_line_num => $num,
 		map({
 		    my($v, $e) = $types->[$_]->from_literal($l->[$_]);
-		    _e($self, $num, $l, "$cols->[$_] invalid: " . $e->get_name)
+		    _e($self, $num, $l, "$cols->[$_] invalid: " . $e->get_name
+                           . ' ' . defined($l->[$_]) ? $l->[$_] : '<undef>')
 			if $e;
 		    ($cols->[$_] => $v);
 		} 0 .. $#$cols),
