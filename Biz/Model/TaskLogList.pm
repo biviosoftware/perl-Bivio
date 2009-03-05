@@ -45,16 +45,18 @@ sub internal_post_load_row {
 
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
-    return unless $self->req->unsafe_get('Model.SearchForm');
-    my($search) = $self->req(qw(Model.SearchForm search));
-    return unless $search;
+    return
+	unless my $f = $self->ureq('Model.SearchForm');
+    return
+	unless defined(my $search = $f->unsafe_get('search'));
+    $search =~ s/\%/_/g;
     $stmt->where($stmt->ILIKE(
 	$search =~ m,/,
 	    ? 'TaskLog.uri'
 	    : $search =~ m,\@,
 	        ? 'Email.email'
 	        : 'RealmOwner.display_name',
-	'%' . $search . '%'));
+	'%' . lc($search) . '%'));
     return;
 }
 
