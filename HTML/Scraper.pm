@@ -1,39 +1,13 @@
-# Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::HTML::Scraper;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Die;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::HTML;
 use Bivio::IO::File;
 use Bivio::IO::Trace;
 use HTTP::Cookies ();
 use HTTP::Request ();
-
-# C<Bivio::HTML::Scraper> abstracts some of the API for HTML
-# scraping.
-#
-#
-#
-# cookie_jar : HTTP::Cookies
-#
-# Cookie holder between requests.
-#
-# directory : string
-#
-# The directory where the intermediate files are stored.
-#
-# last_uri : string
-#
-# URI used in last request.  Used to create Referer.
-#
-# login_ok : boolean
-#
-# Was the login successful?
-#
-# user_agent : Ext.LWPUserAgent
-#
-# The user agent being used for requests.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # use URI ();
@@ -154,13 +128,10 @@ sub http_post {
 
 sub http_request {
     my($self, $hreq, $file_name) = @_;
-    # Execute I<hreq> and return the response (including headers).  Writes the
-    # result to I<file_name>.
-    #
-    # If not successful, throws an exception.
-    #
-    # Handles up to four redirects, but then blows up.
     my($fields) = $self->[$_IDI];
+    my($u, $p) = $self->unsafe_get(qw(auth_user auth_password));
+    $hreq->header(Authorization => 'Basic ' . MIME::Base64::encode("$u:$p"))
+	if $u;
     my($hres) = _http_request($self, $hreq);
     my($rs) = $hres->as_string;
     # Always write the file (even on failure)
@@ -168,7 +139,9 @@ sub http_request {
         if defined($file_name);
     my($hres_string) = \$rs;
     $self->client_error('request failed', {entity => $hres_string})
-	    unless $hres->is_success;
+	unless $hres->is_success;
+    $self->put(login_ok => 1)
+	if $u;
     _trace($hres_string) if $_TRACE;
     return $hres_string;
 }
@@ -177,18 +150,18 @@ sub login {
     my($self) = @_;
     # Calls L<attempt_login|"attempt_login"> if not already logged in.
     # If attempt_login fails, throws an exception.
-    return $self if $self->get('login_ok');
-    $self->client_error('login failure') unless $self->attempt_login;
+    return $self
+	if $self->get('login_ok');
+    $self->client_error('login failure')
+	unless $self->attempt_login;
     $self->put(login_ok => 1);
     return $self;
 }
 
 sub new {
-    my($proto) = shift;
-    # Creates a new instance of self.
-    my($self) = $proto->SUPER::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->put(
-	user_agent => $proto->use('Ext.LWPUserAgent')->new,
+	user_agent => b_use('Ext.LWPUserAgent')->new,
 	cookie_jar => HTTP::Cookies->new,
 	login_ok => 0,
     );
@@ -201,8 +174,8 @@ sub new {
 sub parse_html {
     my($self, $content) = @_;
     my($fields) = $self->[$_IDI];
-    $fields->{html_parser} = $self->use('Ext.HTMLParser')->new($self)
-	    unless $fields->{html_parser};
+    $fields->{html_parser} = b_use('Ext.HTMLParser')->new($self)
+	unless $fields->{html_parser};
     $fields->{html_parser}->parse($$content);
     return;
 }
