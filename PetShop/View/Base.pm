@@ -22,10 +22,6 @@ sub internal_xhtml_adorned {
 	    'FORUM_MAIL_THREAD_ROOT_LIST',
 	    'FORUM_CRM_THREAD_ROOT_LIST',
 	    'GROUP_USER_LIST',
-	    {
-		task_id => 'SITE_ADMIN_TASK_LOG',
-		no_context => 1,
-	    },
 	    'FORUM_WIKI_VIEW',
 	    SiteAdminDropDown(),
 	]),
