@@ -38,7 +38,7 @@ sub handle_pre_execute_task {
     $req->put($_REQ_KEY => {
 	realm_id => $req->req('auth_id'),
 	user_id => $_ULF->unsafe_get_cookie_user_id($req),
-	super_user_id => $req->get('super_user_id'),
+	super_user_id => $req->unsafe_get('super_user_id'),
 	task_id => $req->req('task_id'),
 	method => $req->unsafe_get('r') ? $req->get('r')->method : '',
 	uri => $req->get('uri')
