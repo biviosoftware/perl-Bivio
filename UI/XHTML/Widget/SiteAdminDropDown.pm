@@ -18,12 +18,16 @@ sub initialize {
 	    vs_text_as_prose('SiteAdminDropDown_label'),
 	    DIV_dd_menu(TaskMenu([
 		@{$self->get_or_default(extra_items => [])},
-                map(XLink($_),
-                    b_use('Model.UserCreateForm')
-			->if_unapproved_applicant_mode(sub {'applicants'}),
-                    'all_users',
-                    'substitute_user',
-                ),
+                map(XLink({
+		    facade_label => $_,
+		    control => vs_constant("want_$_"),
+		}), qw(
+                    all_users
+                    substitute_user
+		    applicants
+		    task_log
+		    remote_file_copy
+                )),
 	    ]), {id => 'admin_drop_down'}),
 	),
     );
