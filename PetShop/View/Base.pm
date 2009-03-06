@@ -20,6 +20,7 @@ sub internal_xhtml_adorned {
 	    'FORUM_CALENDAR',
 	    'FORUM_FILE_TREE_LIST',
 	    'FORUM_MAIL_THREAD_ROOT_LIST',
+	    'GROUP_TASK_LOG',
 	    'FORUM_CRM_THREAD_ROOT_LIST',
 	    'GROUP_USER_LIST',
 	    'FORUM_WIKI_VIEW',

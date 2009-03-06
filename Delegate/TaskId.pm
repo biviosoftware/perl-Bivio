@@ -900,10 +900,10 @@ sub info_site_admin {
 	    SITE_ADMIN_TASK_LOG
 	    165
 	    ANY_GROUP
-	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&FEATURE_TASK_LOG
             Model.TaskLogQueryForm
-	    Model.TaskLogList->execute_load_page
-	    View.SiteAdmin->task_log
+	    Model.TaskLogList->execute_unauth_load_page
+	    View.TaskLog->list
             next=SITE_ADMIN_TASK_LOG
 	)],
 	[qw(
@@ -923,7 +923,17 @@ sub info_site_admin {
 	    View.SiteAdmin->remote_file_copy_form
 	    next=FORUM_FILE_TREE_LIST
 	)],
-#168-169
+	[qw(
+	    GROUP_TASK_LOG
+	    168
+	    ANY_GROUP
+	    ADMIN_READ&ADMIN_WRITE&
+            Model.TaskLogQueryForm
+	    Model.TaskLogList->execute_load_page
+	    View.TaskLog->list
+            next=GROUP_TASK_LOG
+	)],
+#169
     ];
 }
 
