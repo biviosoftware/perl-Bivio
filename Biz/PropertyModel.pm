@@ -397,6 +397,15 @@ sub register_child_model {
     return shift->internal_get_sql_support_no_assert->register_child_model(@_);
 }
 
+sub test_unauth_delete_all {
+    my($self, $query) = @_;
+    $self->req->assert_test;
+    return $self->internal_get_sql_support->delete_all(
+	$self->internal_prepare_query(_dup($query)),
+	$self,
+    );
+}
+
 sub unauth_create_or_update {
     my($self, $new_values) = @_;
     # Tries to load the model based on its primary key values.
