@@ -35,15 +35,17 @@ sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
     if (my $qf = $self->ureq('Model.TaskLogQueryForm')) {
 	if (defined(my $filter = $qf->unsafe_get('x_filter'))) {
-	    unless ($filter eq $qf->X_FILTER_HINT) {
+	    if ($filter =~ /\S/ && $filter ne $qf->X_FILTER_HINT) {
 		$filter =~ s/\%/_/g;
-		$stmt->where($stmt->ILIKE(
-		    $filter =~ m,/,
-			? 'TaskLog.uri'
-			: $filter =~ m,\@,
-			    ? 'Email.email'
+		$stmt->where(map(
+		    $stmt->ILIKE(
+			$_ =~ m{/} ? 'TaskLog.uri'
+			    : $_ =~ m,\@, ? 'Email.email'
 			    : 'RealmOwner.display_name',
-		    '%' . lc($filter) . '%'));
+			'%' . lc($_) . '%',
+		    ),
+		    split(' ', $filter),
+		));
 	    }
 	}
     }
