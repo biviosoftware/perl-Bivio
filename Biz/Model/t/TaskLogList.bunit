@@ -8,7 +8,7 @@ req()->set_realm_and_user(qw(task_log_bunit task_log_user));
 model('TaskLog')->handle_pre_execute_task($t, req());
 model('TaskLog')->handle_post_execute_task($t, req());
 [
-    load_all => [
+    map(($_ => [
 	[] => [{
 	    'TaskLog.uri' => '/',
 	    'TaskLog.user_id' => realm_id('task_log_user'),
@@ -17,5 +17,5 @@ model('TaskLog')->handle_post_execute_task($t, req());
 	    'Email.email' => email('task_log_user'),
 	    'Phone.phone' => undef,
 	}],
-    ],
+    ]), qw(load_all unauth_load_all)),
 ];
