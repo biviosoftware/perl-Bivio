@@ -381,6 +381,9 @@ sub merge_realm_role_category_map {
 		    ['*' => 'FEATURE_SITE_ADMIN'],
 		    [MEMBER => [qw(ADMIN_WRITE ADMIN_READ)]],
 	    ], [
+		feature_task_log =>
+		    ['*' => 'FEATURE_TASK_LOG'],
+	    ], [
 		system_user_forum_email =>
 		    [ANONYMOUS => '-MAIL_SEND'],
 		    [USER => 'MAIL_SEND'],
