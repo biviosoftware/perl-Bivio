@@ -45,26 +45,63 @@ sub substitute_user_form {
 }
 
 sub task_log {
-    return shift->internal_body(Join([
-	Form('SearchForm', Join([
-	    FormField('SearchForm.search'),
-	    FormButton('ok_button'),
-	], vs_blank_cell())),
-	vs_paged_list('TaskLogList', [
-	    'TaskLog.date_time',
-	    ['last_first_middle', {
-		column_order_by => [qw(User.last_name_sort
-	            User.first_name_sort User.middle_name_sort)],
-		column_widget => Join([
-		    If(['TaskLog.super_user_id'],
-			'Staff acting as '),
-		    MailTo(['Email.email'], ['last_first_middle']),
-		]),
-	    }],
-	    'Phone.phone',
-	    'TaskLog.uri',
-	]),
+    my($self) = @_;
+    my($f) = $self->use('Model.TaskLogQueryForm');
+    $self->internal_put_base_attr(selector => Join([
+	ECMAScript(<<"EOF"),
+function task_log_x_filter_onfocus (field) {
+    if (field.value == "@{[$f->X_FILTER_HINT]}") {
+        field.value = "";
+    }
+    field.className = "element enabled";
+    return;
+}
+EOF
+	Form($f->simple_package_name, Join([
+	    Text({
+		field => 'x_filter',
+		id => 'x_filter',
+		class => 'element disabled',
+		ONFOCUS => 'task_log_x_filter_onfocus(this)',
+		size => b_use('Type.Name')->get_width,
+		max_width => b_use('Type.Line')->get_width,
+	    }),
+	    ScriptOnly({
+		widget => Simple(''),
+		alt_widget => FormButton('ok_button')->put(label => 'Refresh'),
+	    }),
+	]), {
+	    form_method => 'get',
+	    want_timezone => 0,
+	    want_hidden_fields => 0,
+	}),
     ]));
+    return $self->internal_body(vs_paged_list('TaskLogList', [
+	['TaskLog.date_time', {
+	    column_widget => Join([
+		Join([
+		    SPAN_date(DateTime(['TaskLog.date_time'], 'DATE_TIME')),
+		    Join([
+			SPAN_super_user(
+			    String(['super_user.RealmOwner.name'])),
+			' acting as ',
+		    ], {control => ['TaskLog.super_user_id']}),
+		    SPAN_author(Join([
+			String(['RealmOwner.display_name']),
+			String(
+			    Join(['<', ['Email.email'], '>']),
+			    {escape_html => 1},
+			),
+			String(['Phone.phone']),
+		    ], {join_separator => ' '})),
+		], {join_separator => ' '}),
+		DIV_uri(String(['TaskLog.uri'])),
+	    ]),
+	}],
+    ], {
+	class => 'paged_list task_log',
+	show_headings => 0,
+    }));
 }
 
 sub unapproved_applicant_form {
