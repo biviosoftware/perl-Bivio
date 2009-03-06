@@ -320,7 +320,7 @@ sub _add_constant_values {
 	return
 	    unless my $i = $self->unsafe_get($f);
 	my($v) = $query->unsafe_get($f);
-	$row->{$i->{name}} = $converter ? $i->{type}->$converter($v) : $v;
+	$row->{$i->{name}} ||= $converter ? $i->{type}->$converter($v) : $v;
 	return;
     });
     return $row;
@@ -497,13 +497,7 @@ sub _init_column_lists {
     # case of the primary key, what we return first.  Yes, this probably
     # could be done in one giant grep, but better to get right than
     # tricky. <g>
-    foreach my $col (
-	@{$attrs->{primary_key}},
-	_map_constant_cols(sub {
-	    my($x) = $attrs->{shift(@_)};
-	    return $x ? $x : ();
-	}),
-    ) {
+    foreach my $col (@{$attrs->{primary_key}}) {
 	@sel_cols = grep($_ ne $col, @sel_cols);
     }
 
