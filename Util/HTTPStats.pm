@@ -23,8 +23,9 @@ b_use('IO.Config')->register(my $_CFG = {
 });
 
 sub USAGE {
-    return <<'EOF';
-usage: b HTTPStats [options] command [args..]
+    my($proto) = @_;
+    return <<"EOF";
+usage: bivio @{[$proto->simple_package_name]} [options] command [args..]
 commands
     daily_report [date] -- create a report using the most recent access_log
     format_access_log_stream -- read stream from STDIN reformat to STDOUT

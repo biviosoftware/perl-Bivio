@@ -9,8 +9,9 @@ my($_F) = __PACKAGE__->use('IO.File');
 my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub USAGE {
-    return <<'EOF';
-usage: b Video [options] command [args..]
+    my($proto) = @_;
+    return <<"EOF";
+usage: bivio @{[$proto->simple_package_name]} [options] command [args..]
 commands
   avchd_to_blu_ray [src_dir [dst_dir]] -- convert AVCHD file structure to Blu-Ray
   init_avchd_disk [src_tgz [dst_disk]] -- clear and init AVCHD disk on camera

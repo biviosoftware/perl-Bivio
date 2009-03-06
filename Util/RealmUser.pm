@@ -14,8 +14,9 @@ b_use('IO.Config')->register(my $_CFG = {
 });
 
 sub USAGE {
-    return <<'EOF';
-usage: bivio RealmUser [options] command [args..]
+    my($proto) = @_;
+    return <<"EOF";
+usage: bivio @{[$proto->simple_package_name]} [options] command [args..]
 commands
   audit_all_users -- checks all users in realm match configuration
   audit_user -- checks user in realm matches configuration
