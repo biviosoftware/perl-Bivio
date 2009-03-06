@@ -27,6 +27,7 @@ sub internal_initialize {
 	    [qw(TaskLog.super_user_id super_user.RealmOwner.realm_id(+))],
 #TODO: locations
 	],
+	auth_id => ['TaskLog.realm_id'],
     });
 }
 
