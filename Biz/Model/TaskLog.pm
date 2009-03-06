@@ -8,15 +8,17 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REQ_KEY) = __PACKAGE__ . 'state';
 my($_DT) = b_use('Type.DateTime');
 my($_Q) = b_use('AgentHTTP.Query');
-my($_ULF) = b_use('Model.UserLoginForm');
+my($_ULF);
 b_use('IO.Config')->register(my $_CFG = {
     enable_log => 0,
 });
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    __PACKAGE__->use('Agent.Task')->register(__PACKAGE__)
-	if $cfg->{enable_log};
+    if ($cfg->{enable_log}) {
+	b_use('Agent.Task')->register(__PACKAGE__);
+	$_ULF = b_use('Model.UserLoginForm');
+    }
     $_CFG = $cfg;
     return;
 }
@@ -32,15 +34,15 @@ sub handle_post_execute_task {
 sub handle_pre_execute_task {
     my($proto, $task, $req) = @_;
     return
-	unless grep(defined($_), $req->unsafe_get(qw(uri task_id auth_id)))
-	    == 3;
+	unless grep(defined($_), $req->unsafe_get(qw(uri auth_id))) == 2;
     my($query) = $_Q->format($req->get('query'));
     # save state before task items modify them
     $req->put($_REQ_KEY => {
 	realm_id => $req->req('auth_id'),
-	user_id => $_ULF->unsafe_get_cookie_user_id($req),
+	user_id => $_ULF->unsafe_get_cookie_user_id($req)
+	    || $req->unsafe_get('auth_user_id'),
 	super_user_id => $req->unsafe_get('super_user_id'),
-	task_id => $req->req('task_id'),
+	task_id => $task->get('id'),
 	method => $req->unsafe_get('r') ? $req->get('r')->method : '',
 	uri => $req->get('uri')
 	    . (defined($query) && length($query)
