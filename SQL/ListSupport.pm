@@ -714,7 +714,7 @@ sub _prepare_query_values {
     my($self, $stmt, $query) = @_;
     _map_constant_cols(sub {
         my($col) = @_;
-	if (defined(my $v = $query->unsafe_get($col))) {
+	if ($self->get($col) && defined(my $v = $query->unsafe_get($col))) {
 	    $stmt->where([$self->get($col)->{name}, [$v]]);
 	}
 	return;
