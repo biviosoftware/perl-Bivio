@@ -9,9 +9,10 @@ my($_DT) = b_use('Type.DateTime');
 
 sub USAGE {
     return <<'EOF';
-usage: b HTTPStats [options] command [args..]
+usage: bivio TaskLog [options] command [args..]
 commands
     import_access_log -- import access_log data from STDIN
+    test_reset -- remove all entries [test only]
 EOF
 }
 
@@ -41,6 +42,13 @@ sub import_access_log {
 	$count++;
     }
     return "imported $count records\n";
+}
+
+sub test_reset {
+    my($self) = @_;
+    $self->req->assert_test;
+    $self->model('TaskLog')->test_unauth_delete_all;
+    return;
 }
 
 sub _parse_date {
