@@ -84,7 +84,7 @@ EOF
 		    Join([
 			SPAN_super_user(
 			    String(['super_user.RealmOwner.name'])),
-			' acting as ',
+			' acting as',
 		    ], {control => ['TaskLog.super_user_id']}),
 		    SPAN_author(Join([
 			String(['RealmOwner.display_name']),
