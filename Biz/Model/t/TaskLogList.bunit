@@ -1,0 +1,21 @@
+# Copyright (c) 2009 bivio Software, Inc.g  All Rights Reserved.
+# $Id$
+ListModel();
+req()->initialize_fully;
+ShellUtil_TaskLog()->test_reset;
+my($t) = class('Agent.Task')->get_by_id('FORUM_FILE_TREE_LIST');
+req()->set_realm_and_user(qw(task_log_bunit task_log_user));
+model('TaskLog')->handle_pre_execute_task($t, req());
+model('TaskLog')->handle_post_execute_task($t, req());
+[
+    load_all => [
+	[] => [{
+	    'TaskLog.uri' => '/',
+	    'TaskLog.user_id' => realm_id('task_log_user'),
+	    'TaskLog.realm_id' => realm_id('task_log_bunit'),
+	    'TaskLog.super_user_id' => undef,
+	    'Email.email' => email('task_log_user'),
+	    'Phone.phone' => undef,
+	}],
+    ],
+];
