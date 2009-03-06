@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::ListSupport;
 use strict;
@@ -199,16 +199,11 @@ use Bivio::Type::PrimaryId;
 # I<ClubUser.user_id>, I<RealmOwner.realm_id>, and I<RealmUser.user_id>,
 # is the C<primary_key> for this ListSupport.  It is guaranteed to be
 # unique to each row of the ListSupport.
-#
-# The I<ClubUser.club_id> and its alias I<RealmUser.realm_id> must
-# be equal to the C<auth_id> of the
-# L<Bivio::Agent::Request|Bivio::Agent::Request>.  This ensures
-# data security, i.e. a user can't hack the request to get by this.
-# The user cannot set the C<auth_id>.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PRIMARY_ID_SQL_VALUE) = Bivio::Type::PrimaryId->to_sql_value('?');
 my($_DATE_SQL_VALUE) = Bivio::Type::Date->to_sql_value('?');
+my($_CONSTANT_COLS) = [qw(auth_id auth_user_id parent_id)];
 
 sub get_statement {
     my($self) = @_;
@@ -218,19 +213,10 @@ sub get_statement {
 
 sub iterate_next {
     my($self) = shift;
-    # Calls SUPER::iterate_next, and cleans adds auth_id and parent_id if
-    # appropriate.
     return 0
 	unless $self->SUPER::iterate_next(@_);
     my($model, $iterator, $row, $converter) = @_;
-    my($attrs) = $self->internal_get;
-    my($query) = $model->get_query;
-    foreach my $f ('auth_id', 'parent_id') {
-	next unless $attrs->{$f};
-	my($v) = $query->unsafe_get($f);
-	$row->{$attrs->{$f}->{name}} =
-	    $converter ? $attrs->{$f}->{type}->$converter($v) : $v;
-    }
+    _add_constant_values($self, $model->get_query, $row, $converter);
     return 1;
 }
 
@@ -326,6 +312,20 @@ sub new {
     return $self;
 }
 
+sub _add_constant_values {
+    my($self, $query, $row, $converter) = @_;
+    my($attrs) = $self->internal_get;
+    _map_constant_cols(sub {
+        my($f) = @_;
+	return
+	    unless my $i = $self->unsafe_get($f);
+	my($v) = $query->unsafe_get($f);
+	$row->{$i->{name}} = $converter ? $i->{type}->$converter($v) : $v;
+	return;
+    });
+    return $row;
+}
+
 sub _count_pages {
     my($self, $query, $from_where, $params) = @_;
     # Sets page_count and adjusts page_number.  Returns page_count.
@@ -413,8 +413,8 @@ sub _init_column_classes {
     # Initialize the column classes.
     # Returns the beginnings of the where clause
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
-	[qw(auth_id auth_user_id date parent_id primary_key order_by group_by
-            other count_distinct)]);
+	[@$_CONSTANT_COLS,
+	qw(date primary_key order_by group_by other count_distinct)]);
 
     if ($decl->{where}) {
 	my(@decl_where) = ();
@@ -433,7 +433,7 @@ sub _init_column_classes {
 	}
 	$where = join(' AND ', grep($_, $where, join(' ', @decl_where)));
     }
-    foreach my $c (qw(auth_id auth_user_id date parent_id count_distinct)) {
+    foreach my $c (@$_CONSTANT_COLS, qw(date count_distinct)) {
 	Bivio::Die->die("too many $c fields")
 	    if @{$attrs->{$c}} > 1;
 	$attrs->{$c} = $attrs->{$c}->[0];
@@ -490,7 +490,6 @@ sub _init_column_lists {
     # Order select columns alphabetically, ignoring primary_key, primary_id
     # and auth_id and any other columns with in_select turned off.
     my(@sel_cols) =
-	# Everything but primary_keys, parent_id, auth_id are in column_names
 	sort {$a->{name} cmp $b->{name}}
 	(grep($_->{in_select}, values(%{$attrs->{columns}})));
 
@@ -498,10 +497,13 @@ sub _init_column_lists {
     # case of the primary key, what we return first.  Yes, this probably
     # could be done in one giant grep, but better to get right than
     # tricky. <g>
-    foreach my $col (@{$attrs->{primary_key}},
-	    $attrs->{auth_id} ? ($attrs->{auth_id}) : (),
-	    $attrs->{auth_user_id} ? ($attrs->{auth_user_id}) : (),
-	    $attrs->{parent_id} ? ($attrs->{parent_id}) : ()) {
+    foreach my $col (
+	@{$attrs->{primary_key}},
+	_map_constant_cols(sub {
+	    my($x) = $attrs->{shift(@_)};
+	    return $x ? $x : ();
+	}),
+    ) {
 	@sel_cols = grep($_ ne $col, @sel_cols);
     }
 
@@ -543,43 +545,26 @@ sub _init_column_lists {
 
 sub _load_list {
     my($self, $query, undef, undef, undef, $die) = @_;
-    # Search the list until we find our page_number and then return count rows.
-    # If the page_number exceeds the number of rows, read the last page.
     my($sql, $params, $from_where) = _prepare_statement(@_);
     _count_pages($self, $query, $from_where, $params)
 	if $from_where && $query->unsafe_get('want_page_count');
     my($attrs) = $self->internal_get;
-    my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
-    my($count, $parent_id) = $query->get(qw(count parent_id));
+    my($count) = $query->get('count');
     my($row, $statement)
 	= _find_list_start($self, $query, $sql, $params, $die);
     return []
 	unless $row;
-
-    # Avoid pointer chasing in loop
-    my($auth_id_name) =  $attrs->{auth_id} ? $attrs->{auth_id}->{name} : undef;
-    my($parent_id_name) = $attrs->{parent_id} ? $attrs->{parent_id}->{name}
-	    : undef;
     my($select_columns) = $attrs->{select_columns};
-
-    # Save the rows from the page.  $row comes in from above
     my(@rows);
     for (;;) {
-	# Convert the row to a hash_ref
 	my($i) = 0;
-	push(@rows, {
+	push(@rows, _add_constant_values($self, $query, {
 	    (map {
 		($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
 	    } @$select_columns),
-	    # Add in auth_id and parent_id to every row for convenience
-	    ($auth_id_name ? ($auth_id_name => $auth_id) : ()),
-	    $parent_id_name ? ($parent_id_name => $parent_id) : (),
-	});
-
-	# Have we got enough?
-	last if --$count <= 0;
-
-	# If no more, return what there is
+	}));
+	last
+	    if --$count <= 0;
 	unless ($row = $statement->fetchrow_arrayref) {
 	    $statement->finish;
 	    return \@rows;
@@ -609,9 +594,8 @@ sub _load_this {
     my($attrs) = $self->internal_get;
     $die->throw_die('DIE', 'cannot load this, primary key must be in_select')
 	unless $attrs->{can_load_this};
-    my($count, $parent_id, $this) = $query->get(qw(count parent_id this));
+    my($count, $this) = $query->get(qw(count this));
     my($want_first) = $query->unsafe_get('want_first_only');
-    my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
     _trace($want_first ? 'looking for first'
 	: ('looking for this ', $attrs->{primary_key_names}, ' = ', $this))
 	if $_TRACE;
@@ -648,14 +632,11 @@ sub _load_this {
     # Found it, copy all columns of this
     _trace('found this at row #', $row_count) if $_TRACE;
     my($i) = 0;
-    my($rows) = [{
+    my($rows) = [_add_constant_values($self, $query, {
 	(map {
 	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
 	} @{$attrs->{select_columns}}),
-	# Add in auth_id to every row as constant for convenience
-	$attrs->{auth_id} ? ($attrs->{auth_id}->{name} => $auth_id) : (),
-	$attrs->{parent_id} ? ($attrs->{parent_id}->{name} => $parent_id) : (),
-    }];
+    })];
 
     # Set prev if defined
     $query->put(prev => $prev, has_prev => 1) if $prev;
@@ -678,6 +659,11 @@ sub _load_this {
     # Which page are we on?
     $query->put(page_number => _page_number($query, $row_count));
     return $rows;
+}
+
+sub _map_constant_cols {
+    my($op) = @_;
+    return map($op->($_), @$_CONSTANT_COLS);
 }
 
 sub _merge_where {
@@ -726,10 +712,13 @@ sub _prepare_ordinal_clauses {
 
 sub _prepare_query_values {
     my($self, $stmt, $query) = @_;
-    foreach my $col (qw(auth_id auth_user_id parent_id)) {
-	$stmt->where([$self->get($col)->{name}, [$query->get($col)]])
-	    if $self->unsafe_get($col);
-    }
+    _map_constant_cols(sub {
+        my($col) = @_;
+	if (defined(my $v = $query->unsafe_get($col))) {
+	    $stmt->where([$self->get($col)->{name}, [$v]]);
+	}
+	return;
+    });
     if ($self->unsafe_get('date')) {
 	my($begin_date, $interval, $end_date)
 	    = $query->get(qw(begin_date interval date));
@@ -752,9 +741,8 @@ sub _prepare_query_values {
 
 sub _prepare_statement {
     my($self, $query, $stmt, $_where, $_params, $die) = @_;
-    # Build sql.
     _trace('_where: ', $_where);
-    $stmt ||= Bivio::SQL::Statement->new();
+    $stmt ||= Bivio::SQL::Statement->new;
     _prepare_query_values($self, $stmt, $query);
     my($where, $params) = $stmt->build_for_list_support_prepare_statement(
         $self, $self->get('statement'), _merge_where($self, $_where),
