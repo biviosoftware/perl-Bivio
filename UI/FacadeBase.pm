@@ -127,7 +127,7 @@ sub _cfg_base {
 	    # CSS
 	    [body => 0],
 	    [[qw(body_background header_su)] => 0xffffff],
-	    [[qw(off footer_border_top)] => 0x999999],
+	    [[qw(off footer_border_top disabled)] => 0x999999],
 	    [even_background => 0xeeeeee],
 	    [odd_background => -1],
 	    [[qw(a_link topic nav dock)] => 0x444444],
@@ -135,7 +135,7 @@ sub _cfg_base {
 	    [a_hover => 0x888888],
 	    [acknowledgement_border => 0x0],
 	    [[qw(err warn empty_list_border form_field_err)] => 0x990000],
-	    [header_su_background => 0x00ff00],
+	    [[qw(header_su_background super_user)] => 0x00ff00],
 	    [[qw(form_desc form_sep_border msg_parts_border)] => 0x666666],
             [help_wiki_background => 0x6b9fea],
 	    [dd_menu => 0x444444],
@@ -693,6 +693,7 @@ sub _cfg_group_admin {
 	    [TaskLog => [
 		date_time => 'Date',
 		uri => 'Link',
+		'Email.email' => 'Email',
 	    ]],
 	    [TaskLogList => [
 		last_first_middle => 'Last, First Name',

@@ -581,6 +581,12 @@ span.b_rounded_box_4 {
   height: 2px;
   margin: 0 1px;
 }
+form input.disabled {
+  Color('disabled');
+}
+form input.enabled {
+  Color('body');
+}
 EOF
 }
 
@@ -723,6 +729,14 @@ sub _site_mail {
 }
 .msg_compose .textarea .label {
   vertical-align: top;
+}
+EOF
+}
+
+sub _site_site_admin {
+    return <<'EOF';
+div.task_log .super_user {
+    Color('super_user');
 }
 EOF
 }
