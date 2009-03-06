@@ -26,11 +26,108 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.39  2009/03/06 00:48:28  nagler
+  * Bivio::Agent::Dispatcher
+    factored out internal_server_redirect_task
+  * Bivio::Agent::Embed::Dispatcher
+    factored out internal_server_redirect_task
+  * Bivio::Agent::Reply
+    Added set_http_status, set_output, etc. from AgentHTTP.Reply
+  * Bivio::Agent::Task
+    handle_post_execute_task gets called for redirects now
+    added a warning so $_COMMITED doesn't get set if not in an execute() scope
+  * Bivio::BConf
+    Added AgentEmbed
+  * Bivio::Biz::Action::Acknowledgement
+    save_label should be called in handle_pre_execute_task, not
+    handle_pre_auth_task
+  * Bivio::Biz::Action::EasyForm
+    RealmSettingsList renamed get_value to get_setting
+    RealmSettingsList renamed get_value to get_setting
+  * Bivio::Biz::Action::TunnelBase
+    use response->content_ref rather than response->content to avoid data copy
+  * Bivio::Biz::Model::EditDAVList
+    include offending value in error message when dav_put() blows up on an
+    invalid column value
+  * Bivio::Biz::Model::FileChangeForm
+    added require_comment config value, false by default
+  * Bivio::Biz::Model
+    allow hash_ref in field_decl
+  * Bivio::Delegate::SimpleTypeError
+    added NO_ACCESS
+    removed NO_ACCESS
+  * Bivio::Delegate::TaskId
+    Added UNADORNED_PAGE, REMOTE_FILE_GET, REMOTE_FILE_COPY_FORM
+    added SITE_ADMIN_TASK_LOG
+    Moved REMOTE_FILE_GET & REMOTE_FILE_COPY_FORM to sys_admin
+    TaskLogQueryForm
+  * Bivio::PetShop::BConf
+    set TaskLog.enable_log config
+  * Bivio::PetShop::Delegate::TaskId
+    Task2.bunit support
+    want_basic_authorization
+  * Bivio::PetShop::Test::PetShop
+    call basic_authorization() from do_logout
+    create_forum() now accepts a hash to set forum settings
+    added create_crm_forum()
+  * Bivio::PetShop::View::Base
+    added link to SITE_ADMIN_TASK_LOG
+    fixed link from FORUM_FILE to FORUM_FILE_TREE_LIST
+    moved TaskLog to SiteAdminDropDown
+  * Bivio::SQL::DDL
+    added task_log_t
+  * Bivio::Test::Language::HTTP
+    basic_authorization clears Authorization if given no credentials
+    do_logout calls basic_authorization()
+  * Bivio::Test::Reply
+    Moved set_http_status, set_output, etc. to Agent.Reply
+  * Bivio::Test::Request
+    use new_mode of Bean so can set/get headers, etc.
+  * Bivio::Type::EmailArray
+    added UNDERLYING_TYPE
+  * Bivio::Type::StringArray
+    sort_unique returns StringArray
+    added UNDERLYING_TYPE
+    sort_unique returns instance when no $value ($self)
+  * Bivio::UI::Constant
+    added unsafe_get_value
+  * Bivio::UI::FacadeBase
+    Added UNADORNED_PAGE, REMOTE_FILE_GET, REMOTE_FILE_COPY_FORM
+    added TaskLog related labels
+    _merge now reverses components so that base gets executed first
+    tasklog formatting
+  * Bivio::UI::HTML::Widget::StyleSheet
+    AgentEmbed call_task returns AgentEmbed.Reply so get_output needs to
+    be called
+    fpc
+  * Bivio::UI::HTML::Widget::Table
+    removed newlines around table title
+  * Bivio::UI::View::Base
+    Comment xhtml() Director usage
+  * Bivio::UI::View::CSS
+    tasklog formatting
+    fpc
+  * Bivio::UI::Widget::With
+    supports StringArray
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    standards control on Xlink via want_* in Facade
+  * Bivio::UI::XHTML::Widget::StandardSubmit
+    call Prose() on label
+  * Bivio::UI::XHTML::Widget::WikiText::Embed
+    AgentEmbed call_task returns AgentEmbed.Reply so get_output needs to
+    be called
+  * Bivio::Util::CSV
+    parse_records can return the headings
+  * Bivio::Util::RealmAdmin
+    doc
+  * Bivio::Util::SQL
+    added internal_upgrade_db_task_log()
+
   Revision 7.38  2009/02/27 15:30:34  nagler
   * Bivio::Agent::HTTP::Reply
     add task name to error message when a task is missing a UI item
