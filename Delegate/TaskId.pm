@@ -900,8 +900,8 @@ sub info_site_admin {
 	    SITE_ADMIN_TASK_LOG
 	    165
 	    ANY_GROUP
-	    ADMIN_READ&FEATURE_SITE_ADMIN&SUPER_USER_TRANSIENT
-            Model.SearchForm
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN
+            Model.TaskLogQueryForm
 	    Model.TaskLogList->execute_load_page
 	    View.SiteAdmin->task_log
             next=SITE_ADMIN_TASK_LOG
