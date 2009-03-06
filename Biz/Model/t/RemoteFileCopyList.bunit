@@ -8,7 +8,7 @@ req()->set_realm('remote_file_copy_bunit');
 	    {
 		realm => 'remote_file_copy_bunit',
 		user => 'remote_file_copy_user',
-		folder => FilePathArray([qw(/AnyFolder)]),
+		folder => FilePathArray([qw(/RemoteFileCopyBunit)]),
 	    },
 	],
     ],

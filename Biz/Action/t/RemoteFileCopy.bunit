@@ -27,34 +27,34 @@ my($rfcl) = model('RemoteFileCopyList', {})->set_cursor_or_die(0);
 		return [$rfcl];
 	    } => [
 		{map((lc($_) => [qr{^\S+$}, $_]),
-	            map("/AnyFolder/file$_", 1..4))},
+	            map("/RemoteFileCopyBunit/file$_", 1..4))},
 		undef,
 	    ],
 	],
 	local_list => [
 	    sub {
-		model('RealmFile', {path => '/AnyFolder/file1'})->delete;
-		model('RealmFile', {path => '/AnyFolder/file2'})
+		model('RealmFile', {path => '/RemoteFileCopyBunit/file1'})->delete;
+		model('RealmFile', {path => '/RemoteFileCopyBunit/file2'})
 		    ->update_with_content({}, \('changed file2'));
 		model('RealmFile')->create_with_content({
-		    path => '/AnyFolder/file5',
+		    path => '/RemoteFileCopyBunit/file5',
 		    user_id => realm_id('remote_file_copy_user'),
 		}, \('file5'));
 		return [$rfcl];
 	    } => [
 		{map((lc($_) => [qr{^\S+$}, $_]),
-	            map("/AnyFolder/file$_", 2..5))},
+	            map("/RemoteFileCopyBunit/file$_", 2..5))},
 	    ],
 	],
 	diff_lists => [
 	    [$rfcl] => [{
-		to_delete => FilePathArray('/AnyFolder/file5'),
-		to_create => FilePathArray('/AnyFolder/file1'),
-		to_update => FilePathArray('/AnyFolder/file2'),
+		to_delete => FilePathArray('/RemoteFileCopyBunit/file5'),
+		to_create => FilePathArray('/RemoteFileCopyBunit/file1'),
+		to_update => FilePathArray('/RemoteFileCopyBunit/file2'),
 	    }],
 	],
 	remote_get => [
-	    ['/AnyFolder/file1', $rfcl] => [\('file1'), undef],
+	    ['/RemoteFileCopyBunit/file1', $rfcl] => [\('file1'), undef],
 	],
     ],
 ];

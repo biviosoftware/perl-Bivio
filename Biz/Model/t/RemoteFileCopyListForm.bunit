@@ -6,7 +6,7 @@ $map_path = sub {
     my($op) = shift;
     return FilePathArray([$map_path->(sub {shift}, $op, @_)])
 	unless ref($op);
-    return map($op->("/AnyFolder/file$_", $_), @_);
+    return map($op->("/RemoteFileCopyBunit/file$_", $_), @_);
 };
 [
     req_state({

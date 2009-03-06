@@ -723,38 +723,47 @@ sub _init_mail {
 
 sub _init_remote_file_copy {
     my($self) = @_;
+    my($req) = $self->req;
     $self->top_level_forum(
 	'remote_file_copy_bunit', ['remote_file_copy_user']);
     $self->top_level_forum(
 	'remote_file_copy_btest', ['remote_file_copy_user']);
-    $self->req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
+    $req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
         $self->model(ForumUserAddForm => {
-	    'RealmUser.realm_id' => $self->req('auth_id'),
+	    'RealmUser.realm_id' => $req->get('auth_id'),
 	    'Forum.want_reply_to' => 1,
 	    'User.user_id' => _realm_id($self, 'remote_file_copy_user'),
 	    administrator => 1,
 	});
 	return;
     });
-    my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
-    $uri =~ s{(?=//[^/]+/).*}{};
-    foreach my $x (
-	['/Settings/RemoteFileCopy.csv', <<"EOF"],
+    my($uri) = 'http://test.petshop.bivio.biz';
+    $req->with_realm(remote_file_copy_bunit => sub {
+	foreach my $x (
+	    ['/Settings/RemoteFileCopy.csv', <<"EOF"],
 Realm,Folders,User,Password,URI
-remote_file_copy_bunit,/AnyFolder
+remote_file_copy_bunit,/RemoteFileCopyBunit
 ,,remote_file_copy_user,@{[$self->PASSWORD]},$uri
 EOF
-	map(["/AnyFolder/file$_", "file$_"], 1..4),
-    ) {
-	_realm_file_create($self, @$x);
-    }
-    $self->req->with_realm(b_use('ShellUtil.SiteForum')->ADMIN_REALM, sub {
+	    map(["/RemoteFileCopyBunit/file$_", "file$_"], 1..4),
+	) {
+	    _realm_file_create($self, @$x);
+	}
+    });
+    $req->with_realm(b_use('ShellUtil.SiteForum')->ADMIN_REALM, sub {
         return _realm_file_create(
 	    $self, '/Settings/RemoteFileCopy.csv', <<"EOF");
 Realm,Folders,User,Password,URI
-remote_file_copy_btest,/AnyFolder
+remote_file_copy_btest,/RemoteFileCopyBtest
 ,,remote_file_copy_user,@{[$self->PASSWORD]},$uri
 EOF
+    });
+    $req->with_realm(remote_file_copy_btest => sub {
+	foreach my $x (
+	    map(["/RemoteFileCopyBtest/file$_", "file$_"], 1..4),
+	) {
+	    _realm_file_create($self, @$x);
+	}
     });
     return;
 }
