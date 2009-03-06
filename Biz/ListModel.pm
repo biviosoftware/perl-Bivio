@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListModel;
 use strict;
@@ -124,30 +124,21 @@ sub do_rows {
 
 sub empty_query {
     my($self) = @_;
-    # Returns an empty query.  Does not contain an I<auth_id>.
-    return $_LQ->new(
-	{}, $self->internal_get_sql_support, $self);
+    return $_LQ->new({}, $self->internal_get_sql_support, $self);
 }
 
 sub execute_load_all {
     my($proto, $req) = @_;
-    # Loads "all" records of this model.
-    $proto->new($req)->load_all();
+    $proto->new($req)->load_all;
     return 0;
 }
 
 sub execute_load_all_with_query {
-    my($proto, $req) = @_;
-    my($self) = $proto->new($req);
-    $self->load_all($self->parse_query_from_request->put(this => undef));
-    return 0;
+    return _execute_clear_this(qw(load_all parse_query), @_);
 }
 
 sub execute_load_page {
-    my($proto, $req) = @_;
-    my($self) = $proto->new($req);
-    $self->load_page($self->parse_query_from_request->put(this => undef));
-    return 0;
+    return _execute_clear_this(qw(load_page parse_query) => @_);
 }
 
 sub execute_load_this {
@@ -169,6 +160,14 @@ sub execute_load_this_or_first {
     my($self) = $proto->new($req);
     $self->load_this_or_first($self->parse_query_from_request());
     return 0;
+}
+
+sub execute_unauth_load_all_with_query {
+    return _execute_clear_this(qw(load_all unauth_parse_query), @_);
+}
+
+sub execute_unauth_load_page {
+    return _execute_clear_this(qw(load_page unauth_parse_query) => @_);
 }
 
 sub find_row_by {
@@ -603,18 +602,7 @@ sub iterate_start {
 
 sub load_all {
     my($self, $query) = @_;
-    # Loads "all" the records in this realm.
-    # If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
-    #
-    # B<Does not use the query from the request.>  Does force I<auth_id>,
-    # however.
-    #
-    # Returns I<self>.
-    $query = $self->parse_query($query);
-    $query->put(count => _load_all_die_count($self));
-    _unauth_load($self, $query);
-    _assert_all($self);
-    return $self;
+    return _unauth_load_all($self, $self->parse_query($query));
 }
 
 sub load_empty {
@@ -628,28 +616,7 @@ sub load_empty {
 
 sub load_page {
     my($self, $query) = @_;
-    # Loads the specified page in I<query> which must be a form
-    # acceptable to L<$_LQ|$_LQ>
-    # unless I<query> is already a ListQuery.
-    #
-    # I<this> must not be specified.
-    #
-    # I<count> will be added to I<query> only if it is a hash_ref.
-    #
-    # I<auth_id> will be put in I<query> using the value in the request.
-    #
-    # Saves the model in the request.
-    my($want_page_count) = $self->internal_get_sql_support
-	->unsafe_get('want_page_count');
-    $query = $self->parse_query($query)
-        ->put(want_page_count => defined($want_page_count)
-	    ? $want_page_count : $_CFG->{want_page_count});
-
-    $self->throw_die('CORRUPT_QUERY', {message => 'unexpected this',
-	query => $query}) if $query->unsafe_get('this');
-
-    _unauth_load($self, $query);
-    return $self;
+    return _unauth_load_page($self, $self->parse_query($query));
 }
 
 sub load_this {
@@ -750,45 +717,24 @@ sub next_row_or_die {
 
 sub parse_query {
     my($self, $query) = @_;
-    # Does the processing of I<query>.  Converts to
-    # L<$_LQ|$_LQ> which
-    # may modify I<query> if it isn't already a ListQuery.
-    #
-    # See also L<parse_query_from_request|"parse_query_from_request">.
-    #
-    # Puts I<auth_id> and I<auth_user_id> from request on query in all cases.
-    # May be called without args
-    $query = {} unless defined($query);
-
-    my($sql_support) = $self->internal_get_sql_support;
-    my($auth_id) = $sql_support->get('auth_id')
-	? $self->get_request->get('auth_id') : undef;
-    my($auth_user_id) = $sql_support->get('auth_user_id')
-	? $self->get_request->get('auth_user_id') : undef;
-    if (ref($query) eq 'HASH') {
-	$query->{auth_id} = $auth_id;
-	$query->{auth_user_id} = $auth_user_id;
-	# Let user override page count
-	return $_LQ->new($query, $sql_support, $self);
-    }
-
-    # Already a list query, put auth_id on query
-    $query->put(auth_id => $auth_id);
-    $query->put(auth_user_id => $auth_user_id);
-    return $query;
+    return $self->unauth_parse_query($query)->put(
+	map(($_ => $self->get_info($_)
+	    #SECURITY: Do not remove this check
+	    ? $self->req($_) || $self->die(FORBIDDEN => {
+		message => "$_ required",
+		entity => $query,
+	    }) : undef,
+	), qw(auth_id auth_user_id)),
+    );
 }
 
 sub parse_query_from_request {
-    my($self) = @_;
-    # Parses the query from the request.  If not set, uses default query.
-    my($query) = $self->get_request->unsafe_get('query');
-
-    # Make a copy of the query, because we modify the value.
+    my($self, $method) = @_;
+    my($query) = $self->ureq('query');
     $query = $query ? {%$query} : {};
-
-    # Clean up the query and then parse.
     $_LQ->clean_raw($query, $self->internal_get_sql_support);
-    return $self->parse_query($query);
+    $method ||= 'parse_query';
+    return $self->$method($query);
 }
 
 sub prev_row {
@@ -891,31 +837,18 @@ sub unauth_iterate_start {
 
 sub unauth_load_all {
     my($self, $query) = @_;
-    # Adds in I<count> equal to L<LOAD_ALL_SIZE|"LOAD_ALL_SIZE">.
-    #
-    # If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
-    #
-    # Returns I<self>.
-    $query ||= {};
-    if (ref($query) eq 'HASH') {
-	$query->{count} = _load_all_die_count($self);
-    }
-    else {
-	$query->put(count => _load_all_die_count($self));
-    }
-    _unauth_load($self, $query);
-    _assert_all($self);
-    return $self;
+    return _unauth_load_all($self, $self->unauth_parse_query($query));
+}
+
+sub unauth_load_page {
+    my($self) = @_;
+    return;
 }
 
 sub unauth_parse_query {
     my($self, $query) = @_;
-    # Does the processing of I<query>.  Converts to
-    # L<$_LQ|$_LQ> which
-    # may modify I<query> if it isn't already a ListQuery.
-    return UNIVERSAL::isa($query, '$_LQ') ? $query
-	: $_LQ->unauth_new(
-	    $query || {}, $self->internal_get_sql_support, $self);
+    return $_LQ->is_blessed($query) ? $query
+	: $_LQ->new($query || {}, $self->internal_get_sql_support, $self);
 }
 
 sub unsafe_load_this {
@@ -946,6 +879,16 @@ sub _assert_all {
         ' records returned: ', $self)
         if $self->get_result_set_size > $self->LOAD_ALL_SIZE;
     return;
+}
+
+sub _execute_clear_this {
+    my($load_method, $query_method, $proto, $req) = @_;
+    my($self) = $proto->new($req);
+    $query_method ||= 'parse_query';
+    $self->$load_method(
+	$self->parse_query_from_request($query_method)->put(this => undef),
+    );
+    return 0;
 }
 
 sub _format_uri_args {
@@ -1101,6 +1044,28 @@ sub _unauth_load {
     );
     # fields is invalid at this point
     return scalar(@{$self->[$_IDI]->{rows}});
+}
+
+sub _unauth_load_all {
+    my($self, $query) = @_;
+    $query = $self->unauth_parse_query($query);
+    $query->put(count => _load_all_die_count($self));
+    _unauth_load($self, $query);
+    _assert_all($self);
+    return $self;
+}
+
+sub _unauth_load_page {
+    my($self, $query) = @_;
+    my($wpc) = $self->internal_get_sql_support->unsafe_get('want_page_count');
+    $query = $query->put(
+	want_page_count => defined($wpc) ? $wpc : $_CFG->{want_page_count});
+    $self->throw_die('CORRUPT_QUERY', {
+	message => 'unexpected this',
+	query => $query,
+    }) if $query->unsafe_get('this');
+    _unauth_load($self, $query);
+    return $self;
 }
 
 sub _where_and_params {
