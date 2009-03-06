@@ -735,7 +735,7 @@ EOF
 
 sub _site_site_admin {
     return <<'EOF';
-div.task_log .super_user {
+table.task_log .super_user {
     Color('super_user');
 }
 EOF
