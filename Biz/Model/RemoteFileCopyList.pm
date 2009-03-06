@@ -31,6 +31,7 @@ sub internal_load_rows {
 	{$a->{realm} cmp $b->{realm}}
 	map({
 	    $_->{uri} =~ s{/+$}{};
+	    $_->{uri} ||= '/';
 	    $_->{folder} = $_->{folder}->sort_unique;
 	    $_;
         } values(%{
