@@ -171,6 +171,7 @@ sub initialize_test_data {
     $self->new_other('TestCRM')->init;
     _init_site_admin($self);
     _init_remote_file_copy($self);
+    _init_task_log($self);
     $self->new_other('RealmUser')->audit_all_users;
     return;
 }
@@ -787,6 +788,12 @@ sub _init_site_admin {
 	});
 	return;
     });
+    return;
+}
+
+sub _init_task_log {
+    my($self) = @_;
+    $self->top_level_forum('task_log_bunit', ['root', 'task_log_user']);
     return;
 }
 
