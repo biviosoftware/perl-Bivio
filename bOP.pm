@@ -26,11 +26,40 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.38  2009/02/27 15:30:34  nagler
+  * Bivio::Agent::HTTP::Reply
+    add task name to error message when a task is missing a UI item
+  * Bivio::Biz::Action::UserCreateDone
+    Use UserCreateForm->if_unapproved_applicant_mode
+  * Bivio::Biz::Model::RealmUser
+    unauth_delete_user: use if_unapproved_applicant_mode to delete, too
+  * Bivio::Biz::PropertyModel
+    added unsafe_load_first
+    fixed unauth_/iterate_start to allow query or order_by as first param
+  * Bivio::PetShop::BConf
+    moved unapproved_applicant_mode to UserCreateForm
+  * Bivio::SQL::PropertySupport
+    attempt to change primary key field warning is removed
+  * Bivio::ShellUtil
+    added verbose
+  * Bivio::Test::ForumUserUnit
+    initialize_fully
+  * Bivio::Test::Language::HTTP
+    added uri_and_local_mail()
+  * Bivio::Test::Unit
+    initialize_fully
+  * Bivio::Test::Util
+    output failure if -verbose
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    use if_unapproved_applicant_mode
+  * Bivio::Util::SQL
+    use if_unapproved_applicant_mode
+
   Revision 7.37  2009/02/20 16:38:10  moeller
   * Bivio::Type::Number
     don't use 1e-20 format when talking to GMP
