@@ -422,8 +422,6 @@ sub new {
     # Creates a new ListQuery.  I<auth_id> must be set in I<query> if required.
     #
     # B<I<query> will be subsumed by this module.  Do not use it again.>
-    die('missing auth_id')
-	if $support->get('auth_id') && !$attrs->{auth_id};
     foreach my $k (@_QUERY_FIELDS) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $die);
     }
@@ -694,21 +692,18 @@ sub _parse_page_number {
 
 sub _parse_parent_id {
     my($attrs, $support, $die) = @_;
-    # The 'this' value's parent_id.  If not set, will be undef
-
-    # Returns undef if no parent_id or bad parent id
     my($err);
     ($attrs->{parent_id}, $err)
-	    = _get_parent_id_type($attrs, $support)->from_literal(
-		    $attrs->{'p'} || $attrs->{parent_id});
-
-    # If the parent id is set and we aren't expecting it, will be ignored
-    return if $attrs->{parent_id};
-
-    # Otherwise, are we expecting a parent id?
-    _die($die, 'CORRUPT_QUERY',
-	 {message => 'bad or missing parent_id', type_error => $err},
-	 'parent_id') if $support->unsafe_get('parent_id');
+	= _get_parent_id_type($attrs, $support)->from_literal(
+	    $attrs->{'p'} || $attrs->{parent_id});
+    return
+	if $attrs->{parent_id};
+    #SECURITY: Do not remove this check
+    _die($die, CORRUPT_QUERY => {
+	    message => 'bad or missing parent_id',
+	    type_error => $err,
+        }, 'parent_id',
+     ) if $support->unsafe_get('parent_id');
     return;
 }
 
