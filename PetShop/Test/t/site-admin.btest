@@ -27,16 +27,3 @@ follow_link('User, Btest_read');
 home_page();
 follow_link('wiki');
 verify_no_text(qr{new page|this page}i);
-
-follow_link('Logout');
-follow_link('All Users');
-follow_link('Site Hits');
-submit_form(Refresh => {
-    '_anon' => 'btest_read',
-});
-verify_text(qr{root.*acting as.*Btest_read.*/site/wiki/StartPage}im);
-submit_form(Refresh => {
-    '_anon' => '/bp/StartPage',
-});
-verify_text(qr{root.*acting as.*Btest_read.*/bp/StartPage}im);
-
