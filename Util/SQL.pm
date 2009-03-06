@@ -17,6 +17,7 @@ my($_PI) = b_use('Type.PrimaryId');
 my($_PS) = b_use('Auth.PermissionSet');
 my($_R) = b_use('Auth.Role');
 my($_RT) = b_use('Auth.RealmType');
+my($_TI) = b_use('Agent.TaskId');
 my($_D) = b_use('Bivio.Die');
 my($_BUNDLE) = [qw(
     forum
@@ -49,6 +50,7 @@ my($_BUNDLE) = [qw(
     site_admin_forum_users
     !data_browse
     task_log
+    !feature_task_log
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -407,12 +409,14 @@ sub initialize_db {
     $self->model('RealmOwner')->init_db;
     $self->init_realm_role;
 #TODO: Needs to be after subclasses init_realm_role for new realmtypes
-    if (Bivio::Agent::TaskId->unsafe_from_name('FORUM_TUPLE_SLOT_TYPE_LIST')) {
-	$self->initialize_tuple_permissions;
-	$self->initialize_tuple_slot_types;
-    }
-    if (Bivio::Agent::TaskId->unsafe_from_name('FORUM_MOTION_LIST')) {
-	$self->initialize_motion_permissions;
+    foreach my $x (
+	[qw(FORUM_TUPLE_SLOT_TYPE_LIST initialize_tuple_permissions initialize_tuple_slot_types)],
+	[qw(GROUP_TASK_LOG initialize_task_log_permissions)],
+	[qw(FORUM_MOTION_LIST initialize_motion_permissions)],
+    ) {
+	next
+	    unless $_TI->unsafe_from_name(shift(@$x));
+	map($self->$_(), @$x);
     }
     foreach my $x (@$_INITIALIZE_SENTINEL) {
 	_default_sentinel($self, $x);
@@ -421,14 +425,11 @@ sub initialize_db {
 }
 
 sub initialize_motion_permissions {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($rr) = $self->new_other('RealmRole');
-    $_AR->do_any_group_default(sub {
-        $rr->edit_categories('+open_results_motion');
-	return 1;
-    }, $req);
-    return;
+    return _enable_group_category(shift, 'open_results_motion');
+}
+
+sub initialize_task_log_permissions {
+    return _enable_group_category(shift, 'feature_task_log');
 }
 
 sub initialize_test_data {
@@ -437,15 +438,7 @@ sub initialize_test_data {
 }
 
 sub initialize_tuple_permissions {
-    my($self) = @_;
-    # Sets up default permissions of tuples.
-    my($req) = $self->get_request;
-    my($rr) = $self->new_other('RealmRole');
-    $_AR->do_any_group_default(sub {
-        $rr->edit_categories('+feature_tuple');
-	return 1;
-    }, $req);
-    return;
+    return _enable_group_category(shift, 'feature_tuple');
 }
 
 sub initialize_tuple_slot_types {
@@ -722,6 +715,12 @@ CREATE INDEX email_alias_t2 ON email_alias_t (
 )
 /
 EOF
+    return;
+}
+
+sub internal_upgrade_db_feature_task_log {
+    my($self) = @_;
+    $self->initialize_task_log_permissions;
     return;
 }
 
@@ -2130,6 +2129,17 @@ sub _default_sentinel {
 	run_date_time => $u->get_field_type('run_date_time')->now,
     });
     return 0;
+}
+
+sub _enable_group_category {
+    my($self, $category) = @_;
+    my($req) = $self->get_request;
+    my($rr) = $self->new_other('RealmRole');
+    $_AR->do_any_group_default(sub {
+        $rr->edit_categories("+$category");
+	return 1;
+    }, $req);
+    return;
 }
 
 sub _exists {
