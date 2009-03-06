@@ -951,14 +951,19 @@ sub _cfg_site_admin {
 	    ]],
 	],
 	Task => [
-	    [REMOTE_FILE_GET => '?/install-get/*'],
-	    [REMOTE_FILE_COPY_FORM => '?/install-files'],
+	    [REMOTE_FILE_GET => '?/remote-copy-get/*'],
+	    [REMOTE_FILE_COPY_FORM => '?/remote-copy'],
 	    [SITE_ADMIN_USER_LIST => '?/admin-users'],
 	    [SITE_ADMIN_SUBSTITUTE_USER => '?/admin-su'],
 	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => => '?/admin-applicants'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => => '?/admin-assign-applicant'],
-	    [SITE_ADMIN_TASK_LOG => '?/admin-hits'],
+	    b_use('Model.TaskLog')->if_enabled(sub {
+		return (
+		    [SITE_ADMIN_TASK_LOG => '?/admin-hits'],
+		    [GROUP_TASK_LOG => '?/hits'],
+		);
+	    }),
 	],
 	Text => [
             [xlink => [
@@ -966,7 +971,7 @@ sub _cfg_site_admin {
                 all_users => 'All Users',
                 substitute_user => 'Act as User',
 		task_log => 'Site Hits',
-		remote_file_copy => 'Install Files',
+		remote_file_copy => 'Remote Copy',
             ]],
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',
@@ -1003,12 +1008,13 @@ EOF
 	    ]],
 
 	    [title => [
-		REMOTE_FILE_COPY_FORM => 'Install Files',
+		REMOTE_FILE_COPY_FORM => 'Remote Copy',
 		SITE_ADMIN_USER_LIST => 'All Users',
 		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
 		SITE_ADMIN_TASK_LOG => 'Site Hits',
+		GROUP_TASK_LOG => 'Realm Hits',
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
