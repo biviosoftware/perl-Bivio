@@ -167,7 +167,7 @@ sub execute_unauth_load_all_with_query {
 }
 
 sub execute_unauth_load_page {
-    return _execute_clear_this(qw(load_page unauth_parse_query) => @_);
+    return _execute_clear_this(qw(unauth_load_page unauth_parse_query) => @_);
 }
 
 sub find_row_by {
@@ -841,8 +841,8 @@ sub unauth_load_all {
 }
 
 sub unauth_load_page {
-    my($self) = @_;
-    return;
+    my($self, $query) = @_;
+    return _unauth_load_page($self, $self->unauth_parse_query($query));
 }
 
 sub unauth_parse_query {
