@@ -15,49 +15,38 @@ sub internal_initialize {
         primary_key => ['TaskLog.task_log_id'],
 	order_by => [
 	    'TaskLog.date_time',
-	    'User.last_name_sort',
-	    'User.first_name_sort',
-	    'User.middle_name_sort',
-	    'Email.email',
-	    'Phone.phone',
-	    'TaskLog.uri',
 	],
 	other => [
-	    [qw(TaskLog.user_id User.user_id Email.realm_id Phone.realm_id
+	    'Email.email',
+	    'RealmOwner.display_name',
+	    'Phone.phone',
+	    'super_user.RealmOwner.name',
+	    'TaskLog.uri',
+	    [qw(TaskLog.user_id Email.realm_id Phone.realm_id(+)
                 RealmOwner.realm_id)],
-	    'TaskLog.super_user_id',
-	    map('User.' . $_ . '_name', qw(last first middle)),
-	    {
-		name => 'last_first_middle',
-		constraint => 'NOT_NULL',
-		type => 'Line',
-	    },
+	    [qw(TaskLog.super_user_id super_user.RealmOwner.realm_id(+))],
+#TODO: locations
 	],
     });
 }
 
-sub internal_post_load_row {
-    my($self, $row) = @_;
-    $row->{last_first_middle} = $_U->concat_last_first_middle(
-	@{$row}{qw(User.last_name User.first_name User.middle_name)});
-    return 1;
-}
-
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
-    return
-	unless my $f = $self->ureq('Model.SearchForm');
-    return
-	unless defined(my $search = $f->unsafe_get('search'));
-    $search =~ s/\%/_/g;
-    $stmt->where($stmt->ILIKE(
-	$search =~ m,/,
-	    ? 'TaskLog.uri'
-	    : $search =~ m,\@,
-	        ? 'Email.email'
-	        : 'RealmOwner.display_name',
-	'%' . lc($search) . '%'));
-    return;
+    if (my $qf = $self->ureq('Model.TaskLogQueryForm')) {
+	if (defined(my $filter = $qf->unsafe_get('x_filter'))) {
+	    unless ($filter eq $qf->X_FILTER_HINT) {
+		$filter =~ s/\%/_/g;
+		$stmt->where($stmt->ILIKE(
+		    $filter =~ m,/,
+			? 'TaskLog.uri'
+			: $filter =~ m,\@,
+			    ? 'Email.email'
+			    : 'RealmOwner.display_name',
+		    '%' . lc($filter) . '%'));
+	    }
+	}
+    }
+    return shift->SUPER::internal_prepare_statement(@_);
 }
 
 1;
