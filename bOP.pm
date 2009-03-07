@@ -26,11 +26,39 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.41  2009/03/07 00:06:59  moeller
+  * Bivio::BConf
+    feature_task_log
+  * Bivio::Biz::Action::BasicAuthorization
+    enable with Config version 1
+  * Bivio::Biz::Model::RemoteFileCopyList
+    uri could be empty if it was /
+  * Bivio::Biz::Model::TaskLogList
+    added auth_id
+    split the filter on spaces
+    added internal_left_join_model_list()
+  * Bivio::Biz::PropertyModel
+    added test_unauth_delete_all
+  * Bivio::Delegate::SimplePermission
+    added FEATURE_TASK_LOG
+  * Bivio::Delegate::TaskId
+    added GROUP_TASK_LOG
+  * Bivio::PetShop::Util::SQL
+    task_log support
+  * Bivio::PetShop::View::Base
+    added GROUP_TASK_LOG
+  * Bivio::SQL::ListQuery
+    auth_id checked only in ListModel
+  * Bivio::UI::FacadeBase
+    removed Install Files => Remote Copy
+  * Bivio::UI::View::SiteAdmin
+    moved to TaskLog.pm
+
   Revision 7.40  2009/03/06 18:01:15  moeller
   * Bivio::Biz::Model::TaskLog
     don't import UserLoginForm unless enabled, because UserLoginForm
