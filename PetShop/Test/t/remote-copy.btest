@@ -4,16 +4,16 @@ test_setup('PetShop', 'groupware');
 home_page();
 login_as('remote_copy_user');
 unsafe_op(qw(send_request DELETE /dav/remote_copy_btest/Files/RemoteCopyBtest/file4));
+my($new) = "file$$";
 send_request(
-    qw(PUT /dav/remote_copy_btest/Files/RemoteCopyBtest/file3), undef, "$$");
-send_request(
-    qw(PUT /dav/remote_copy_btest/Files/RemoteCopyBtest/file99), undef, "$$");
+    PUT => "/dav/remote_copy_btest/Files/RemoteCopyBtest/$new", undef, random_string());
 home_page();
 follow_link(qw(remote_copy_btest files RemoteCopyBtest));
 verify_no_text('file4');
 follow_link('remote_copy$');
 submit_form(prepare => {});
-verify_text(qr{delete:.*file99.*replace:.*file3.*copy:.*file4}is);
+verify_text(qr{remote_copy_btest.*delete:.*$new.*copy:.*file4.*remote_copy_bunit.*up to date}is);
+verify_no_text(qr{\bto replace\b}i);
 submit_form(Copy => {});
 follow_link(qw(remote_copy_btest files RemoteCopyBtest));
 verify_no_text('file99');
@@ -28,4 +28,3 @@ login_as('root');
 follow_link('remote_copy');
 test_deviance(qr{not.*write access.*local realm}i);
 submit_form(prepare => {});
-
