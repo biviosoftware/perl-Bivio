@@ -981,6 +981,7 @@ sub _cfg_site_admin {
 		prose => [
 		    prologue => q{If([qw(Model.RemoteCopyListForm prepare_ok)], q{Copy Phase: Update local system with remote files}, q{Preparation Phase: Select realms to compare remote and local files});},
 		],
+		empty_realm => 'This realm is up to date.',
 		empty_list_prose => q{You need to create Settings/RemoteCopy.csv in order to perform this operation.},
 		to_update => 'Files to replace:',
 		to_delete => 'Files to delete:',
