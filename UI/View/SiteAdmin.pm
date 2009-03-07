@@ -21,7 +21,7 @@ sub remote_copy_form {
 		If(['prepare_ok'],
 		    Join([
 			map((
-			    Prose("RemoteCopyListForm.$_"),
+			    DIV(Prose(vs_text("RemoteCopyListForm.$_"))),
 			    If([$_, '->is_specified'],
 			       UL_none(With([$_], LI(String(['value'])))),
 			       Prose("RemoteCopyListForm.$_.empty")),
