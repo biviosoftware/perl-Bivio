@@ -31,6 +31,8 @@ sub control_on_render {
     my($buf) = '';
     $self->can('render_tag_value') ? $self->render_tag_value($source, \$buf)
 	: $self->render_attr('value', $source, \$buf);
+    $buf = $self->render_simple_attr(tag_empty_value => $source)
+	unless length($buf);
     return unless length($buf)
 	|| $self->render_simple_attr('tag_if_empty', $source);
     my($t) = lc(${$self->render_attr('tag', $source)});
@@ -77,7 +79,12 @@ sub initialize {
         || $self->has_keys('tag_post_value')
         and $self->has_keys('bracket_value_in_comment');
     $self->initialize_attr(bracket_value_in_comment => 0);
-    $self->unsafe_initialize_attr('tag_pre_value');
+    $self->map_invoke(unsafe_initialize_attr => [qw(
+	tag_pre_value
+	tag_post_value
+	tag_if_empty
+	tag_empty_value
+    )]);
     $self->unsafe_initialize_attr('tag_post_value');
     $self->unsafe_initialize_attr('tag_if_empty');
     return shift->SUPER::initialize(@_);
