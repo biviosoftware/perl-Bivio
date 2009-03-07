@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($proto, $req) = @_;
-    my($reply) = b_use('Bivio::Agent::Embed::Dispatcher')
+    my($reply) = b_use('AgentEmbed.Dispatcher')
 	->call_task($req, $req->format_uri({
 	    uri => $req->unsafe_get('path_info') || '/',
 	    path_info => undef,
@@ -16,8 +16,11 @@ sub execute {
 	    anchor => undef,
 	    no_context => 1,
 	}));
-    $req->get('reply')->set_output($reply->get_output)
-	->set_output_type($reply->get_output_type);
+    my($ot) = $reply->get_output_type;
+    my($o) = $reply->get_output;
+    $o = \("<html><body>$$o</body></html>")
+	if $ot eq 'text/html' && $$o !~ /<html>/i;
+    $req->get('reply')->set_output($o)->set_output_type($ot);
     return 1;
 }
 
