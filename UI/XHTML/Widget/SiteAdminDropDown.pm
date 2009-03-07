@@ -26,7 +26,7 @@ sub initialize {
                     substitute_user
 		    applicants
 		    task_log
-		    remote_file_copy
+		    remote_copy
                 )),
 	    ]), {id => 'admin_drop_down'}),
 	),
