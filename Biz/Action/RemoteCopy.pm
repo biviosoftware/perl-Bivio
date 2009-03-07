@@ -1,6 +1,6 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Biz::Action::RemoteFileCopy;
+package Bivio::Biz::Action::RemoteCopy;
 use strict;
 use Bivio::Base 'Action.RealmFile';
 
@@ -12,13 +12,13 @@ my($_FPA) = b_use('Type.FilePathArray');
 my($_S) = b_use('HTML.Scraper');
 
 sub diff_lists {
-    my($proto, $remote_file_copy_list) = @_;
-    my($realm) = $remote_file_copy_list->get('realm');
-    my($remote, $err) = $proto->remote_list($remote_file_copy_list);
+    my($proto, $remote_copy_list) = @_;
+    my($realm) = $remote_copy_list->get('realm');
+    my($remote, $err) = $proto->remote_list($remote_copy_list);
     return (undef, $err)
 	if $err;
     my($res) = {to_create => [], to_update => [], ignore => []};
-    my($local) = $proto->local_list($remote_file_copy_list);
+    my($local) = $proto->local_list($remote_copy_list);
     foreach my $x (values(%$remote)) {
 	my($md5, $path) = @$x;
 	my($m) = delete($local->{lc($path)});
@@ -46,11 +46,11 @@ sub execute {
 }
 
 sub local_list {
-    my(undef, $remote_file_copy_list) = @_;
+    my(undef, $remote_copy_list) = @_;
     my($res) = {};
-    $remote_file_copy_list->get_list_model->get('folder')->do_iterate(sub {
+    $remote_copy_list->get_list_model->get('folder')->do_iterate(sub {
         my($fp) = @_;
-	$remote_file_copy_list->new_other('RealmFileMD5List')->do_iterate(
+	$remote_copy_list->new_other('RealmFileMD5List')->do_iterate(
 	    sub {
 		my($p, $m) = shift->get(qw(RealmFile.path md5));
 		$res->{lc($p)} = [$m, $p];
@@ -63,23 +63,23 @@ sub local_list {
 }
 
 sub remote_get {
-    my($self, $path, $remote_file_copy_list) = @_;
+    my($self, $path, $remote_copy_list) = @_;
     my($err);
     my($res) = _get(
-	_uri($path, $remote_file_copy_list), $remote_file_copy_list, \$err);
+	_uri($path, $remote_copy_list), $remote_copy_list, \$err);
     return ($res, $err);
 }
 
 sub remote_list {
-    my(undef, $remote_file_copy_list) = @_;
-    my($uri) = _uri('PATH', $remote_file_copy_list);
+    my(undef, $remote_copy_list) = @_;
+    my($uri) = _uri('PATH', $remote_copy_list);
     my($res) = {};
     my($err);
-    $remote_file_copy_list->get('folder')->do_iterate(sub {
+    $remote_copy_list->get('folder')->do_iterate(sub {
 	my($fp) = @_;
 	(my $u = $uri) =~ s/\bPATH$/$fp/;
 	return 1
-	    unless my $r = _get($u, $remote_file_copy_list, \$err);
+	    unless my $r = _get($u, $remote_copy_list, \$err);
 	$r = [split(/\n/, $$r)];
 	my($version) = shift(@$r) || '';
 	unless ($version eq $_VERSION) {
@@ -100,11 +100,11 @@ sub remote_list {
 }
 
 sub _get {
-    my($uri, $remote_file_copy_list, $err) = @_;
+    my($uri, $remote_copy_list, $err) = @_;
     my($res);
     my($s) = $_S->new({
-	auth_user => $remote_file_copy_list->get('user'),
-	auth_password => $remote_file_copy_list->get('pass'),
+	auth_user => $remote_copy_list->get('user'),
+	auth_password => $remote_copy_list->get('pass'),
     });
     my($die) = $_D->catch_quietly(sub {
 	$res = $s->http_get($uri);
@@ -128,12 +128,12 @@ sub _list {
 }
 
 sub _uri {
-    my($path, $remote_file_copy_list) = @_;
-    return $remote_file_copy_list->get('uri')
-	. $remote_file_copy_list->req->format_uri({
-	    task_id => 'REMOTE_FILE_GET',
+    my($path, $remote_copy_list) = @_;
+    return $remote_copy_list->get('uri')
+	. $remote_copy_list->req->format_uri({
+	    task_id => 'REMOTE_COPY_GET',
 	    path_info => $path,
-	    realm => $remote_file_copy_list->get('realm'),
+	    realm => $remote_copy_list->get('realm'),
 	    query => undef,
 	    no_context => 1,
 	});

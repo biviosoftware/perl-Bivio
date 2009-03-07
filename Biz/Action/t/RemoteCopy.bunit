@@ -1,8 +1,8 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-req()->set_realm('remote_file_copy_bunit');
-my($rfcl) = model('RemoteFileCopyList', {})->set_cursor_or_die(0);
+req()->set_realm('remote_copy_bunit');
+my($rfcl) = model('RemoteCopyList', {})->set_cursor_or_die(0);
 [
     class() => [
 	{
@@ -23,38 +23,38 @@ my($rfcl) = model('RemoteFileCopyList', {})->set_cursor_or_die(0);
 	],
 	remote_list => [
 	    sub {
-		req()->set_realm('remote_file_copy_bunit');
+		req()->set_realm('remote_copy_bunit');
 		return [$rfcl];
 	    } => [
 		{map((lc($_) => [qr{^\S+$}, $_]),
-	            map("/RemoteFileCopyBunit/file$_", 1..4))},
+	            map("/RemoteCopyBunit/file$_", 1..4))},
 		undef,
 	    ],
 	],
 	local_list => [
 	    sub {
-		model('RealmFile', {path => '/RemoteFileCopyBunit/file1'})->delete;
-		model('RealmFile', {path => '/RemoteFileCopyBunit/file2'})
+		model('RealmFile', {path => '/RemoteCopyBunit/file1'})->delete;
+		model('RealmFile', {path => '/RemoteCopyBunit/file2'})
 		    ->update_with_content({}, \('changed file2'));
 		model('RealmFile')->create_with_content({
-		    path => '/RemoteFileCopyBunit/file5',
-		    user_id => realm_id('remote_file_copy_user'),
+		    path => '/RemoteCopyBunit/file5',
+		    user_id => realm_id('remote_copy_user'),
 		}, \('file5'));
 		return [$rfcl];
 	    } => [
 		{map((lc($_) => [qr{^\S+$}, $_]),
-	            map("/RemoteFileCopyBunit/file$_", 2..5))},
+	            map("/RemoteCopyBunit/file$_", 2..5))},
 	    ],
 	],
 	diff_lists => [
 	    [$rfcl] => [{
-		to_delete => FilePathArray('/RemoteFileCopyBunit/file5'),
-		to_create => FilePathArray('/RemoteFileCopyBunit/file1'),
-		to_update => FilePathArray('/RemoteFileCopyBunit/file2'),
+		to_delete => FilePathArray('/RemoteCopyBunit/file5'),
+		to_create => FilePathArray('/RemoteCopyBunit/file1'),
+		to_update => FilePathArray('/RemoteCopyBunit/file2'),
 	    }],
 	],
 	remote_get => [
-	    ['/RemoteFileCopyBunit/file1', $rfcl] => [\('file1'), undef],
+	    ['/RemoteCopyBunit/file1', $rfcl] => [\('file1'), undef],
 	],
     ],
 ];

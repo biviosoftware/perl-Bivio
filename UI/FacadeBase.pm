@@ -928,11 +928,11 @@ sub _cfg_site_admin {
 		[qw(task_log SITE_ADMIN_TASK_LOG), sub {
 		     b_use('Model.TaskLog')->if_enabled(sub {'task_log'});
 		}],
-		[qw(remote_file_copy REMOTE_FILE_COPY_FORM), sub {
+		[qw(remote_copy REMOTE_COPY_FORM), sub {
 		     my($fc) = @_;
 		     my($id) = $fc->unsafe_get_value('site_admin_realm_id');
 		     return $id
-			 && b_use('Model.RemoteFileCopyList')->new(
+			 && b_use('Model.RemoteCopyList')->new(
 			     $fc->get_facade->req
 			 )->unauth_if_setting_available($id) ? 1 : 0;
 		}],
@@ -943,16 +943,16 @@ sub _cfg_site_admin {
             ),
         ],
 	FormError => [
-	    ['RemoteFileCopyListForm.want_realm' => [
+	    ['RemoteCopyListForm.want_realm' => [
 		NOT_FOUND => 'Local realm does not exist.',
 		PERMISSION_DENIED => 'You do not have write access to the local realm.',
-		EMPTY => 'No folders specified in RemoteFileCopy.csv for this realm',
+		EMPTY => 'No folders specified in RemoteCopy.csv for this realm',
 		SYNTAX_ERROR => q{Errors accessing remote system:BR();String([sub {b_use('UI.FormError')->field_value(shift(@_), 'detail')}]);},
 	    ]],
 	],
 	Task => [
-	    [REMOTE_FILE_GET => '?/remote-copy-get/*'],
-	    [REMOTE_FILE_COPY_FORM => '?/remote-copy'],
+	    [REMOTE_COPY_GET => '?/remote-copy-get/*'],
+	    [REMOTE_COPY_FORM => '?/remote-copy'],
 	    [SITE_ADMIN_USER_LIST => '?/admin-users'],
 	    [SITE_ADMIN_SUBSTITUTE_USER => '?/admin-su'],
 	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
@@ -971,21 +971,21 @@ sub _cfg_site_admin {
                 all_users => 'All Users',
                 substitute_user => 'Act as User',
 		task_log => 'Site Hits',
-		remote_file_copy => 'Remote Copy',
+		remote_copy => 'Remote Copy',
             ]],
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',
 		privileges => 'Privileges',
 	    ]],
-	    [[qw(RemoteFileCopyListForm RemoteFileCopyList)] => [
+	    [[qw(RemoteCopyListForm RemoteCopyList)] => [
 		prose => [
-		    prologue => q{If([qw(Model.RemoteFileCopyListForm prepare_ok)], q{Copy Phase: Update local system with remote files}, q{Preparation Phase: Select realms to compare remote and local files});},
+		    prologue => q{If([qw(Model.RemoteCopyListForm prepare_ok)], q{Copy Phase: Update local system with remote files}, q{Preparation Phase: Select realms to compare remote and local files});},
 		],
-		empty_list_prose => q{You need to create Settings/RemoteFileCopy.csv in order to perform this operation.},
+		empty_list_prose => q{You need to create Settings/RemoteCopy.csv in order to perform this operation.},
 		to_update => 'UPDATE FIXME',
 		to_delete => 'DELETE FIXME',
 		to_create => 'CREATE FIXME',
-		ok_button => q{If([qw(Model.RemoteFileCopyListForm prepare_ok)], 'Copy', 'Prepare');},
+		ok_button => q{If([qw(Model.RemoteCopyListForm prepare_ok)], 'Copy', 'Prepare');},
 		want_realm => '',
 	    ]],
 	    [UnapprovedApplicantForm => [
@@ -1008,7 +1008,7 @@ EOF
 	    ]],
 
 	    [title => [
-		REMOTE_FILE_COPY_FORM => 'Remote Copy',
+		REMOTE_COPY_FORM => 'Remote Copy',
 		SITE_ADMIN_USER_LIST => 'All Users',
 		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
@@ -1021,8 +1021,8 @@ EOF
 		SiteAdminDropDown_label => 'Admin',
 	    ]],
 	    [acknowledgement => [
-		REMOTE_FILE_COPY_FORM => 'Local system updated.',
-		REMOTE_FILE_COPY_FORM_no_update => 'Remote and local systems are identical.  Nothing to update.',
+		REMOTE_COPY_FORM => 'Local system updated.',
+		REMOTE_COPY_FORM_no_update => 'Remote and local systems are identical.  Nothing to update.',
 	    ]],
 	],
     };

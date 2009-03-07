@@ -170,7 +170,7 @@ sub initialize_test_data {
     _init_mail($self);
     $self->new_other('TestCRM')->init;
     _init_site_admin($self);
-    _init_remote_file_copy($self);
+    _init_remote_copy($self);
     _init_task_log($self);
     $self->new_other('RealmUser')->audit_all_users;
     return;
@@ -722,46 +722,49 @@ sub _init_mail {
     return;
 }
 
-sub _init_remote_file_copy {
+sub _init_remote_copy {
     my($self) = @_;
     my($req) = $self->req;
     $self->top_level_forum(
-	'remote_file_copy_bunit', ['remote_file_copy_user']);
+	'remote_copy_bunit', ['remote_copy_user']);
     $self->top_level_forum(
-	'remote_file_copy_btest', ['remote_file_copy_user']);
+	'remote_copy_btest', ['remote_copy_user']);
     $req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
         $self->model(ForumUserAddForm => {
 	    'RealmUser.realm_id' => $req->get('auth_id'),
 	    'Forum.want_reply_to' => 1,
-	    'User.user_id' => _realm_id($self, 'remote_file_copy_user'),
+	    'User.user_id' => _realm_id($self, 'remote_copy_user'),
 	    administrator => 1,
 	});
 	return;
     });
+    # Use this to bootstrap testing or if the petshop isn't online
+    # my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
+    # $uri =~ s{(?=//[^/]+/).*}{};
     my($uri) = 'http://test.petshop.bivio.biz';
-    $req->with_realm(remote_file_copy_bunit => sub {
+    $req->with_realm(remote_copy_bunit => sub {
 	foreach my $x (
-	    ['/Settings/RemoteFileCopy.csv', <<"EOF"],
+	    ['/Settings/RemoteCopy.csv', <<"EOF"],
 Realm,Folders,User,Password,URI
-remote_file_copy_bunit,/RemoteFileCopyBunit
-,,remote_file_copy_user,@{[$self->PASSWORD]},$uri
+remote_copy_bunit,/RemoteCopyBunit
+,,remote_copy_user,@{[$self->PASSWORD]},$uri
 EOF
-	    map(["/RemoteFileCopyBunit/file$_", "file$_"], 1..4),
+	    map(["/RemoteCopyBunit/file$_", "file$_"], 1..4),
 	) {
 	    _realm_file_create($self, @$x);
 	}
     });
     $req->with_realm(b_use('ShellUtil.SiteForum')->ADMIN_REALM, sub {
         return _realm_file_create(
-	    $self, '/Settings/RemoteFileCopy.csv', <<"EOF");
+	    $self, '/Settings/RemoteCopy.csv', <<"EOF");
 Realm,Folders,User,Password,URI
-remote_file_copy_btest,/RemoteFileCopyBtest
-,,remote_file_copy_user,@{[$self->PASSWORD]},$uri
+remote_copy_btest,/RemoteCopyBtest
+,,remote_copy_user,@{[$self->PASSWORD]},$uri
 EOF
     });
-    $req->with_realm(remote_file_copy_btest => sub {
+    $req->with_realm(remote_copy_btest => sub {
 	foreach my $x (
-	    map(["/RemoteFileCopyBtest/file$_", "file$_"], 1..4),
+	    map(["/RemoteCopyBtest/file$_", "file$_"], 1..4),
 	) {
 	    _realm_file_create($self, @$x);
 	}

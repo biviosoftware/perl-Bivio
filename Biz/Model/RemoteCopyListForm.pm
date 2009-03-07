@@ -1,12 +1,12 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Biz::Model::RemoteFileCopyListForm;
+package Bivio::Biz::Model::RemoteCopyListForm;
 use strict;
 use Bivio::Base 'Biz.ListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FPA) = b_use('Type.FilePathArray');
-my($_RFC) = b_use('Action.RemoteFileCopy');
+my($_RFC) = b_use('Action.RemoteCopy');
 my($_A) = b_use('Action.Acknowledgement');
 
 sub execute_empty_row {
@@ -71,7 +71,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-        list_class => 'RemoteFileCopyList',
+        list_class => 'RemoteCopyList',
 	$self->field_decl(
 	    visible => [
 		[qw(want_realm Boolean)],
@@ -90,7 +90,7 @@ sub internal_initialize {
 
 sub internal_initialize_list {
     my($self) = @_;
-    $self->new_other('RemoteFileCopyList')->load_all;
+    $self->new_other('RemoteCopyList')->load_all;
     return shift->SUPER::internal_initialize_list(@_);
 }
 
@@ -135,7 +135,7 @@ sub _prepare_end {
     my($self) = @_;
     unless ($self->get('need_update')) {
 	$_A->save_label(
-	    REMOTE_FILE_COPY_FORM_no_update => $self->req, my $q = {});
+	    REMOTE_COPY_FORM_no_update => $self->req, my $q = {});
 	return {
 	    task => 'next',
 	    query => $q,

@@ -907,20 +907,20 @@ sub info_site_admin {
             next=SITE_ADMIN_TASK_LOG
 	)],
 	[qw(
-	    REMOTE_FILE_GET
+	    REMOTE_COPY_GET
 	    166
 	    ANY_GROUP
 	    DATA_READ&DATA_BROWSE&FEATURE_FILE
-	    Action.RemoteFileCopy
+	    Action.RemoteCopy
 	    want_basic_authorization=1
 	)],
 	[qw(
-	    REMOTE_FILE_COPY_FORM
+	    REMOTE_COPY_FORM
 	    167
 	    ANY_GROUP
 	    DATA_READ&DATA_WRITE&DATA_BROWSE&FEATURE_FILE
-	    Model.RemoteFileCopyListForm
-	    View.SiteAdmin->remote_file_copy_form
+	    Model.RemoteCopyListForm
+	    View.SiteAdmin->remote_copy_form
 	    next=FORUM_FILE_TREE_LIST
 	)],
 	[qw(

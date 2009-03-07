@@ -8,12 +8,12 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AUL) = __PACKAGE__->use('Model.AdmUserList');
 
-sub remote_file_copy_form {
-    return shift->internal_body(vs_simple_form(RemoteFileCopyListForm => [
-	List(RemoteFileCopyListForm => [
+sub remote_copy_form {
+    return shift->internal_body(vs_simple_form(RemoteCopyListForm => [
+	List(RemoteCopyListForm => [
 	    SPAN_field(
 		Join([
-		    vs_descriptive_field('RemoteFileCopyListForm.want_realm')->[0],
+		    vs_descriptive_field('RemoteCopyListForm.want_realm')->[0],
 		    String([['->get_list_model'], 'realm']),
 		]),
 	    ),
@@ -21,10 +21,10 @@ sub remote_file_copy_form {
 		If(['prepare_ok'],
 		    Join([
 			map((
-			    Prose("RemoteFileCopyListForm.$_"),
+			    Prose("RemoteCopyListForm.$_"),
 			    If([$_, '->is_specified'],
 			       UL_none(With([$_], LI(String(['value'])))),
-			       Prose("RemoteFileCopyListForm.$_.empty")),
+			       Prose("RemoteCopyListForm.$_.empty")),
 			), qw(to_delete to_update to_create)),
 		    ]),
 		    UL_none(
