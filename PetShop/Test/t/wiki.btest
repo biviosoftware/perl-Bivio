@@ -1,4 +1,4 @@
-# Copyright (c) 2005 IEEE Industry Standards and Technology Organization.  All Rights Reserved.
+# Copyright (c) 2009 bivio Software, Inc.g  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
 my($search_key) = random_string();
@@ -72,8 +72,3 @@ verify_text(qr{back to current}i);
 follow_link(qr{^3$});
 verify_text(qr{v3: go back to the}i);
 verify_no_text(qr{edit this page}i);
-login_as('guest');
-visit_uri("/rp/$f/wiki/StartPage");
-verify_link('PrivatePage');
-test_deviance(qr{forbidden}i);
-visit_uri('/rp/fourem/users');
