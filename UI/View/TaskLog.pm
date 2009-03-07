@@ -8,7 +8,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub list {
-    my($self) = @_;
+    my($self, $extra_cols) = @_;
     my($f) = $self->use('Model.TaskLogQueryForm');
     $self->internal_put_base_attr(selector => Join([
 	ECMAScript(<<"EOF"),
@@ -55,7 +55,7 @@ EOF
 			    Join(['<', ['Email.email'], '>']),
 			    {escape_html => 1},
 			),
-			String(['Phone.phone']),
+			$extra_cols ? @$extra_cols : (),
 		    ], {join_separator => ' '})),
 		], {join_separator => ' '}),
 		DIV_uri(String(['TaskLog.uri'])),
