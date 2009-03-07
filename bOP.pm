@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 7.40  2009/03/06 18:01:15  moeller
+  * Bivio::Biz::Model::TaskLog
+    don't import UserLoginForm unless enabled, because UserLoginForm
+    registers with the cookie handler
+  * Bivio::PetShop::Util::SQL
+    Fixed RemoteFileCopy tests to use different folders
+  * Bivio::SQL::PropertySupport
+    added TaskLog to unused_classes
+
   Revision 7.39  2009/03/06 00:48:28  nagler
   * Bivio::Agent::Dispatcher
     factored out internal_server_redirect_task
