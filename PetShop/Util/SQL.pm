@@ -764,6 +764,7 @@ EOF
 	    $self, '/Settings/RemoteCopy.csv', <<"EOF");
 Realm,Folders,User,Password,URI
 remote_copy_btest,/RemoteCopyBtest
+remote_copy_bunit,/RemoteCopyBunit
 ,,remote_copy_user,@{[$self->PASSWORD]},$uri
 EOF
     });
