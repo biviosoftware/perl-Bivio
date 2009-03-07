@@ -15,7 +15,6 @@ model('TaskLog')->handle_post_execute_task($t, req());
 	    'TaskLog.realm_id' => realm_id('task_log_bunit'),
 	    'TaskLog.super_user_id' => undef,
 	    'Email.email' => email('task_log_user'),
-	    'Phone.phone' => undef,
 	}],
     ]), qw(load_all unauth_load_all)),
 ];
