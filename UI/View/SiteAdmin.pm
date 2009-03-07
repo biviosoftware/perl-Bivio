@@ -19,14 +19,13 @@ sub remote_copy_form {
 	    ),
 	    DIV(Join([
 		If(['prepare_ok'],
-		    Join([
-			map((
-			    DIV(Prose(vs_text("RemoteCopyListForm.$_"))),
-			    If([$_, '->is_specified'],
-			       UL_none(With([$_], LI(String(['value'])))),
-			       Prose("RemoteCopyListForm.$_.empty")),
-			), qw(to_delete to_update to_create)),
-		    ]),
+		    UL_none(Join([
+			map(If([$_, '->is_specified'], LI(Join([
+			    Prose(vs_text("RemoteCopyListForm.$_")),
+			    UL_none(With([$_], LI(String(['value'])))),
+			]))), qw(to_delete to_update to_create)),
+		    ]), {tag_empty_value =>
+		        LI(Prose(vs_text('RemoteCopyListForm.empty_realm')))}),
 		    UL_none(
 			With([['->get_list_model'], 'folder'],
 			    LI(String(['value'])),
