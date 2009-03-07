@@ -858,6 +858,7 @@ sub info_site_admin {
 	    ADMIN_READ&FEATURE_SITE_ADMIN
 	    Model.SiteAdminUserList->execute_load_page
 	    View.SiteAdmin->user_list
+	    require_secure=1
 	)],
 	[qw(
 	    SITE_ADMIN_SUBSTITUTE_USER
@@ -867,6 +868,7 @@ sub info_site_admin {
 	    Model.SiteAdminSubstituteUserForm
 	    View.SiteAdmin->substitute_user_form
 	    next=MY_SITE
+	    require_secure=1
 	)],
 	[qw(
 	    SITE_ADMIN_SUBSTITUTE_USER_DONE
@@ -885,6 +887,7 @@ sub info_site_admin {
 	    ADMIN_READ&FEATURE_SITE_ADMIN
 	    Model.UnapprovedApplicantList->execute_load_page
 	    View.SiteAdmin->unapproved_applicant_list
+	    require_secure=1
 	)],
 	[qw(
 	    SITE_ADMIN_UNAPPROVED_APPLICANT_FORM
@@ -895,6 +898,7 @@ sub info_site_admin {
 	    Model.UnapprovedApplicantForm
 	    View.SiteAdmin->unapproved_applicant_form
 	    next=SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
+	    require_secure=1
 	)],
 	[qw(
 	    SITE_ADMIN_TASK_LOG
@@ -905,6 +909,7 @@ sub info_site_admin {
 	    Model.TaskLogList->execute_unauth_load_page
 	    View.TaskLog->list
             next=SITE_ADMIN_TASK_LOG
+	    require_secure=1
 	)],
 	[qw(
 	    REMOTE_COPY_GET
@@ -913,6 +918,7 @@ sub info_site_admin {
 	    DATA_READ&DATA_BROWSE&FEATURE_FILE
 	    Action.RemoteCopy
 	    want_basic_authorization=1
+	    require_secure=1
 	)],
 	[qw(
 	    REMOTE_COPY_FORM
@@ -922,6 +928,7 @@ sub info_site_admin {
 	    Model.RemoteCopyListForm
 	    View.SiteAdmin->remote_copy_form
 	    next=FORUM_FILE_TREE_LIST
+	    require_secure=1
 	)],
 	[qw(
 	    GROUP_TASK_LOG
@@ -932,6 +939,7 @@ sub info_site_admin {
 	    Model.TaskLogList->execute_load_page
 	    View.TaskLog->list
             next=GROUP_TASK_LOG
+	    require_secure=1
 	)],
 #169
     ];
