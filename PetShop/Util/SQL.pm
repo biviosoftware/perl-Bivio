@@ -585,6 +585,11 @@ EOF
 &client_addr,&date,&email,input,ok
 EOF
     _realm_file_create(
+	$self, b_use('Type.WikiName')->to_absolute('PublicPage', 1), <<'EOF');
+@h1 My Public Header
+My Public Page
+EOF
+    _realm_file_create(
 	$self, b_use('Type.WikiName')->to_absolute('PrivatePage'), <<'EOF');
 My Example Page.
 EOF
