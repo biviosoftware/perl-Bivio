@@ -1014,7 +1014,7 @@ EOF
 		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
 		SITE_ADMIN_TASK_LOG => 'Site Hits',
-		GROUP_TASK_LOG => 'Realm Hits',
+		GROUP_TASK_LOG => 'Hits',
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
