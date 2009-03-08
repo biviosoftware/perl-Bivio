@@ -26,11 +26,26 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.44  2009/03/07 22:20:06  nagler
+  * Bivio::Biz::Model::SearchForm
+    revert 1.2
+  * Bivio::PetShop::Util::SQL
+    must be https to petshop
+    data for remote-copy.btest
+  * Bivio::UI::FacadeBase
+    fixed RemoteCopyListForm.to_update/delete/create
+    added RemoteCopyListForm.empty_realm
+  * Bivio::UI::HTML::Widget::Tag
+    added tag_empty_value
+  * Bivio::UI::View::SiteAdmin
+    wrap to_update in prose
+    messages for empty_realm
+
   Revision 7.43  2009/03/07 14:25:07  nagler
   * Bivio::Biz::Action::UnadornedPage
     surround result with <html><body> if text/html is result
