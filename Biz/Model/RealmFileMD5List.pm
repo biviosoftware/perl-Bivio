@@ -41,9 +41,9 @@ sub internal_prepare_statement {
     $p = $_FP->join(lc($p), '%');
     $stmt->where(
 	['RealmFile.is_folder', [0]],
-	$p eq '/' ? $stmt->NOT_LIKE(
-	    'RealmFile.path_lc', $_FP->join(lc($_FP->VERSIONS_FOLDER), '%'),
-	) : $stmt->LIKE('RealmFile.path_lc', $p),
+	$stmt->NOT_LIKE(
+	    'RealmFile.path_lc', $_FP->join(lc($_FP->VERSIONS_FOLDER), '%')),
+	$stmt->LIKE('RealmFile.path_lc', $p),
     );
     return shift->SUPER::internal_prepare_statement(@_);
 }
