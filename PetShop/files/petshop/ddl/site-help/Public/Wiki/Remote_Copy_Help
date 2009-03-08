@@ -1,0 +1,40 @@
+Remote Copy involves two phases: 
+@ol
+@li 
+Preparation - Select which forums you'd like to copy, click Prepare, and
+the server will compare the remote and local copies for those forums.  This
+will take a about a minute, depending on the size of the files to copy.
+If there are no differences, Remote Copy will report that there is nothing
+to do and drop you in the files area.
+@li 
+Copy - If the remote and local systems are different, you'll see a list of
+files that need to be updated, deleted, or are new.  When you click copy,
+the copy will start, and proceed atomically, that is, either the whole copy
+proceeds, or not at all. 
+@/ol
+
+@h3 Configuration
+@a href=^/site-admin/change-file/Settings/RemoteCopy.csv
+You can modify the /Settings/RemoteCopy.csv
+@/a
+in the Files > Settings area of the site-admin realm.  The CSV must contain
+the following columns (in any order):
+@ul
+@li
+Realm - name of remote and local forum to synchronize.
+Only one entry per realm is allowed.
+@li
+Folders - List of folders (separated by semicolons ";") to compare between
+the remote and local systems for the specific realm.  You must have
+at least one folder, which may be "/" to copy the whole forum.  The
+Versions folder is never copied.  /Mail and /Settings will be copied
+so "/" should only be copied in those realms which you know you
+actually want to copy those files.
+@li User - The email or ID of the remote user to login as
+@li Password - Password on remote system for User
+@li URI - Fully qualified URI for remote system, e.g. http://petshop.bivio.biz
+@/ul
+
+Any of these values may be defaulted (except Realm) by adding a row
+in the RemoteCopy.csv with Realm blank.  The other values in this row
+are used for blank entries on the specific Realm rows.
