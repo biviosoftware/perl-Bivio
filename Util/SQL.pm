@@ -45,12 +45,13 @@ my($_BUNDLE) = [qw(
     !forum_features
     !forum_features_tuple_motion
     !group_concat
-    role_unused_11
+    !role_unused_11
     site_admin_forum
-    site_admin_forum_users
+    !site_admin_forum_users
     !data_browse
     task_log
     !feature_task_log
+    !feature_task_log2
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -89,6 +90,13 @@ commands:
     vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
     vacuum_db_continuously -- run vacuum_db as a daemon
 EOF
+}
+
+sub assert_ddl {
+    my($self) = @_;
+    $self->usage_error('must be run in ddl directory')
+	unless $_F->pwd =~ m{/ddl$};
+    return;
 }
 
 sub backup_model {
@@ -724,30 +732,23 @@ sub internal_upgrade_db_feature_task_log {
     return;
 }
 
+sub internal_upgrade_db_feature_task_log2 {
+    my($self) = @_;
+#TODO: do we want this to all groups?
+    _add_permissions_to_all_forums($self, ['FEATURE_TASK_LOG']);
+    return;
+}
+
 sub internal_upgrade_db_forum_features {
     my($self) = @_;
-    $self->model('RealmOwner')->do_iterate(
-	sub {
-	    my($it) = @_;
-	    $it->new_other('RealmRole')->add_permissions(
-		$it,
-		[$_R->get_non_zero_list],
-		[qw(
-		    FEATURE_BLOG
-		    FEATURE_CALENDAR
-		    FEATURE_DAV
-		    FEATURE_FILE
-		    FEATURE_MAIL
-		    FEATURE_WIKI
-	        )],
-	    );
-	    return 1;
-	},
-	'unauth_iterate_start',
-	'realm_id',
-	{realm_type => $_RT->FORUM},
-    );
-    return;
+    _add_permissions_to_all_forums($self, [qw(
+	FEATURE_BLOG
+	FEATURE_CALENDAR
+	FEATURE_DAV
+	FEATURE_FILE
+	FEATURE_MAIL
+	FEATURE_WIKI
+    )]);
 }
 
 sub internal_upgrade_db_forum_features_tuple_motion {
@@ -2110,9 +2111,10 @@ sub _ddl_files {
     my($self) = @_;
     # Initializes self and calls ddl_files(), checking result.
     $self->get_request;
+    $self->assert_ddl;
     my($f) = $self->ddl_files;
     # Some files should exist; Need more than just bOP
-    $self->usage('must be run in files/ddl directory')
+    $self->usage('no DDL files found')
 	unless grep(-f $_, @$f);
     # Just write the files every time
     $self->use('SQL.DDL')->write_files;
@@ -2139,6 +2141,27 @@ sub _enable_group_category {
         $rr->edit_categories("+$category");
 	return 1;
     }, $req);
+    return;
+}
+
+
+#TODO: This should be groups, but need to check RealmRole has changed
+sub _add_permissions_to_all_forums {
+    my($self, $permissions) = @_;
+    $self->model('RealmOwner')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    $it->new_other('RealmRole')->add_permissions(
+		$it,
+		[$_R->get_non_zero_list],
+		$permissions,
+	    );
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+	{realm_type => $_RT->FORUM},
+    );
     return;
 }
 
