@@ -746,7 +746,7 @@ sub _init_remote_copy {
     # Use this to bootstrap testing or if the petshop isn't online
     # my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
     # $uri =~ s{(?=//[^/]+/).*}{};
-    my($uri) = 'https://test.petshop.bivio.biz';
+    my($uri) = 'https://petshop.bivio.biz';
     $req->with_realm(remote_copy_bunit => sub {
 	foreach my $x (
 	    ['/Settings/RemoteCopy.csv', <<"EOF"],
