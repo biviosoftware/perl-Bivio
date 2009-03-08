@@ -16,5 +16,16 @@ req()->initialize_fully->set_realm_and_user('guest', 'guest');
 		md5 => '+tQBF22mDhwNKPHPSrxY9A',
 	    },
 	],
+	[{
+	    path_info => '/',
+	}] => sub {
+	    my($o) = shift->get('object');
+	    $o->do_rows(sub {
+	        assert_not_equals(
+		    qr{\Q@{[FilePath()->VERSIONS_FOLDER]}}i,
+		    shift->get('RealmFile.path'));
+	    });
+	    return 1;
+	},
     ],
 ];
