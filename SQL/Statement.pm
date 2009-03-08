@@ -145,13 +145,15 @@ sub NE {
     return _static_compare('!=', $left, $right);
 }
 
+sub NOT_ILIKE {
+    return _like('NOT ILIKE', @_);
+}
+
 sub NOT_IN {
-    # Return an NOT_IN predicate.
     return _in(' NOT', @_);
 }
 
 sub NOT_LIKE {
-    # Return a NOT_LIKE predicate.
     return _like('NOT LIKE', @_);
 }
 

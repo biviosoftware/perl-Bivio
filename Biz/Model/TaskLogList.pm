@@ -47,15 +47,15 @@ sub internal_prepare_statement {
 	if (defined(my $filter = $qf->unsafe_get('x_filter'))) {
 	    if ($filter =~ /\S/ && $filter ne $qf->X_FILTER_HINT) {
 		$filter =~ s/\%/_/g;
-		$stmt->where(map(
-		    $stmt->ILIKE(
+		$stmt->where(map({
+		    my($method) = $_ =~ s/^-// ? 'NOT_ILIKE' : 'ILIKE';
+		    $stmt->$method(
 			$_ =~ m{/} ? 'TaskLog.uri'
 			    : $_ =~ m,\@, ? 'Email.email'
 			    : 'RealmOwner.display_name',
 			'%' . lc($_) . '%',
-		    ),
-		    split(' ', $filter),
-		));
+		    );
+		} split(' ', $filter)));
 	    }
 	}
     }
