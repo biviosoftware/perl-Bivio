@@ -934,7 +934,7 @@ sub info_site_admin {
 	    GROUP_TASK_LOG
 	    168
 	    ANY_GROUP
-	    ADMIN_READ&ADMIN_WRITE&
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_TASK_LOG
             Model.TaskLogQueryForm
 	    Model.TaskLogList->execute_load_page
 	    View.TaskLog->list
