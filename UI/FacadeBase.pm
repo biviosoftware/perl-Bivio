@@ -947,7 +947,7 @@ sub _cfg_site_admin {
 		NOT_FOUND => 'Local realm does not exist.',
 		PERMISSION_DENIED => 'You do not have write access to the local realm.',
 		EMPTY => 'No folders specified in RemoteCopy.csv for this realm',
-		SYNTAX_ERROR => q{Errors accessing remote system:BR();String([sub {b_use('UI.FormError')->field_value(shift(@_), 'detail')}]);},
+		SYNTAX_ERROR => q{Errors accessing remote system:BR();String(vs_fe('detail'));},
 	    ]],
 	],
 	Task => [
