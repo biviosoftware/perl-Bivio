@@ -1,0 +1,6 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({class_name => class('Widget.Prose')});
+[
+    'BR();' => '<br />',
+];
