@@ -21,6 +21,8 @@ sub execute_empty_row {
 
 sub execute_ok_end {
     my($self) = @_;
+    return
+	if $self->in_error;
     return _prepare_end($self)
 	unless $self->unsafe_get('prepare_ok');
     return;
