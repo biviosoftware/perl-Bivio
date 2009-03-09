@@ -7,10 +7,28 @@ unsafe_op(qw(send_request DELETE /dav/remote_copy_btest/Files/RemoteCopyBtest/fi
 my($new) = "file$$";
 send_request(
     PUT => "/dav/remote_copy_btest/Files/RemoteCopyBtest/$new", undef, random_string());
+my($cfg) = sub {
+    my($uri) = shift || 'http://petshop.bivio.biz';
+    send_request(PUT =>
+        '/dav/site/site-admin/Files/Settings/RemoteCopy.csv', undef, <<"EOF");
+Realm,Folders,User,Password,URI
+remote_copy_btest,/RemoteCopyBtest
+remote_copy_bunit,/RemoteCopyBunit
+,,remote_copy_user,password,$uri
+EOF
+    go_back();
+    return;
+};
 home_page();
 follow_link(qw(remote_copy_btest files RemoteCopyBtest));
 verify_no_text('file4');
 follow_link('remote_copy$');
+$cfg->('http://no-such-host.bivio.biz');
+test_deviance(qr{\Qhttp://no-such-host});
+submit_form(prepare => {});
+test_conformance();
+go_back();
+$cfg->();
 submit_form(prepare => {});
 verify_text(qr{remote_copy_btest.*delete:.*$new.*copy:.*file4.*remote_copy_bunit.*up to date}is);
 verify_no_text(qr{\bto replace\b}i);
