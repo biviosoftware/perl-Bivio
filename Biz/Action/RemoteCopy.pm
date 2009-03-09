@@ -73,11 +73,12 @@ sub remote_get {
 sub remote_list {
     my(undef, $remote_copy_list) = @_;
     my($uri) = _uri('PATH', $remote_copy_list);
+    my($u);
     my($res) = {};
     my($err);
     $remote_copy_list->get('folder')->do_iterate(sub {
 	my($fp) = @_;
-	(my $u = $uri) =~ s/\bPATH$/$fp/;
+	($u = $uri) =~ s{/PATH$}{$fp};
 	return 1
 	    unless my $r = _get($u, $remote_copy_list, \$err);
 	$r = [split(/\n/, $$r)];
@@ -96,6 +97,8 @@ sub remote_list {
 	};
 	return 1;
     });
+    $u = "$err: $u"
+	if $u && $err;
     return ($res, $err);
 }
 
