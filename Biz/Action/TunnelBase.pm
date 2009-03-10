@@ -50,37 +50,41 @@ sub internal_host_name {
 
 sub internal_proxy_request {
     my($self, $uri) = @_;
-    my($request) = HTTP::Request->new($self->req('r')->method =>
+    my($req) = $self->req;
+    my($r) = $req->get('r');
+    my($request) = HTTP::Request->new($r->method =>
 	$self->get('site_base') . $uri
-	. ($self->req('uri') =~ m,/$, ? '/' : '')
-	. ($self->req('query') ? ('?' . scalar($self->req('r')->args)) : ''));
-    my($length) = $self->req('r')->header_in('content-length');
+	. ($req->get('uri') =~ m,/$, ? '/' : '')
+	. ($req->get('query') ? ('?' . scalar($r->args)) : ''));
+    my($length) = $r->header_in('content-length');
     _trace('length: ', $length) if $_TRACE;
-
     if ($length && $length > $_READ_SIZE) {
-	my($file) = b_use('IO.File')->temp_file($self->req);
-	my($fh) = IO::File->new($file, 'w');
-	$self->req->get_content($fh);
-	$fh->close;
-	$fh = IO::File->new($file, 'r');
+	my($file) = b_use('IO.File')->temp_file($req);
+	my($fh) = IO::File->new($file, 'r+');
+	defined(my $start = $fh->getpos) || b_die($file, ": getpos failed: $!");
+	$req->get_content($fh);
+	defined($fh->setpos($start)) || b_die($file, ": setpos failed: $!");
 	$request->content(sub {
-            my($buf) = '';
-
-	    unless ($fh->read($buf, $_READ_SIZE)) {
-		$fh->close;
-		_trace('read finished') if $_TRACE;
-		return '';
-	    }
-	    return $buf;
+            my($buf);
+	    my($res) = $fh->read($buf, $_READ_SIZE);
+	    $req->throw_die(IO_ERROR => {
+		entity => $file,
+		message => "read error: $!",
+	    }) unless defined($res);
+	    return $res ? $buf : '';
 	});
+	$req->throw_die(IO_ERROR => {
+	    entity => $file,
+	    message => "close error: $!",
+	}) unless $fh->close;
+	_trace('read finished') if $_TRACE;
     }
     else {
-	$request->content($self->req->get_content);
+	$request->content($req->get_content);
     }
-
-    my(%h) = $self->req('r')->headers_in;
+    my(%h) = $r->headers_in;
     foreach my $name (keys(%h)) {
-	$request->header($name => $self->req('r')->header_in($name));
+	$request->header($name => $r->header_in($name));
     }
     return $request;
 }
