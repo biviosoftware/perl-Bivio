@@ -5,10 +5,12 @@ use strict;
 use Bivio::Base 'Biz.Action';
 use Bivio::IO::Trace;
 use HTTP::Request ();
+use IO::File ();
 use LWP::UserAgent ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_READ_SIZE) = 4096;
 
 sub clear_cookie {
     my($proto, $req) = @_;
@@ -52,7 +54,24 @@ sub internal_proxy_request {
 	$self->get('site_base') . $uri
 	. ($self->req('uri') =~ m,/$, ? '/' : '')
 	. ($self->req('query') ? ('?' . scalar($self->req('r')->args)) : ''));
-    $request->add_content($self->req->get_content);
+    my($length) = $self->req('r')->header_in('content-length');
+
+    if ($length && $length > $_READ_SIZE) {
+	my($fh) = IO::File->new(b_use('IO.File')->temp_file($self->req), 'rw');
+	$self->req->get_content($fh);
+	$request->content_ref(sub {
+            my($buf) = '';
+
+            unless (read($fh, $buf, $_READ_SIZE)) {
+		$fh->close;
+		return '';
+	    }
+	    return $buf;
+	});
+    }
+    else {
+	$request->add_content($self->req->get_content);
+    }
 
     my(%h) = $self->req('r')->headers_in;
     foreach my $name (keys(%h)) {
@@ -71,7 +90,8 @@ sub internal_send_http_request {
     _trace($http_req->as_string) if $_TRACE;
     my($user_agent) = LWP::UserAgent->new;
     $user_agent->requests_redirectable([]);
-    my($response) = $user_agent->request($http_req);
+    my($response) = $user_agent->request($http_req,
+	$self->unsafe_get('response_file') || ());
 
     if ($die_on_failure) {
 	Bivio::Die->die('request failed: ', $response->status_line)
@@ -91,9 +111,16 @@ sub internal_set_reply {
     my($reply) = $self->req('reply');
     $reply->set_http_status($response->code);
     $reply->set_output_type($response->header('Content-Type'));
-    my($res) = $response->content_ref;
-    $reply->set_output($res);
-    return $res;
+
+    unless ($self->unsafe_get('response_file')
+	&& -f $self->get('response_file')
+	&& ! -z $self->get('response_file')) {
+	my($res) = $response->content_ref;
+	$reply->set_output($res);
+	return $res;
+    }
+    $reply->set_output(IO::File->new($self->get('response_file'), 'r'));
+    return undef;
 }
 
 sub internal_translate_location {
