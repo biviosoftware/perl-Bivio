@@ -712,6 +712,9 @@ sub _cfg_group_admin {
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
 	    ]],
+	    ['HelpWiki.title' => [
+		GROUP_USER_FORM => 'Privileges for User',
+	    ]],
 	],
     };
 }
