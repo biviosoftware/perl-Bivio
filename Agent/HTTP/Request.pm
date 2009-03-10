@@ -28,6 +28,7 @@ my($_H) = b_use('Bivio.HTML');
 my($_DT) = b_use('Type.DateTime');
 my($_T) = b_use('Agent.Task');
 my($_TI) = b_use('Agent.TaskId');
+my($_READ_SIZE) = 4096;
 
 sub client_redirect {
     my($self) = shift;
@@ -41,9 +42,9 @@ sub client_redirect {
 
 sub get_content {
     # (self) : string_ref
-    # Returns the content associated with request.  Throws INPUT_TOO_LARGE if the
-    # input is larger than a reasonable size.
-    my($self) = @_;
+    # (self, IO::File) : IO::File
+    # Returns the content associated with request.
+    my($self, $fh) = @_;
     return $self->get_if_exists_else_put(content => sub {
         my($r) = $self->get('r');
 	my($c) = '';
@@ -51,15 +52,29 @@ sub get_content {
 	_trace('Content-Length=', $l) if $_TRACE;
 	return \$c
 	    unless $l;
-	$self->throw_die(INPUT_TOO_LARGE => "Content-Length too large: $l")
-	    if $l > 1_000_000_000;
-	$r->read($c, $l);
+	my($bytes_read) = 0;
+
+	while ($bytes_read < $l) {
+	    my($buf) = '';
+	    my($remaining) = $l - $bytes_read;
+	    my($size) = $remaining < $_READ_SIZE ? $remaining : $_READ_SIZE;
+	    $r->read($buf, $size);
+	    $bytes_read += $size;
+	    $self->throw_die(CLIENT_ERROR =>
+		'timeout occurred while reading request content'
+	    ) unless defined($buf);
+
+	    if ($fh) {
+		print($fh $buf);
+	    }
+	    else {
+		$c .= $buf;
+	    }
+	}
 	$self->throw_die(CLIENT_ERROR =>
 	    'client interrupt or timeout while reading form-data',
 	) if $r->connection->aborted;
-        $self->throw_die(CLIENT_ERROR =>
-            'timeout occurred while reading request content'
-	) unless defined($c);
+	return $fh if $fh;
 	$self->throw_die(CORRUPT_QUERY =>
 	    "Content-Length ($l) >= actual length: " . length($c)
 	) if $l > length($c);
