@@ -64,13 +64,12 @@ sub init {
 sub init_adm {
     my($self) = @_;
     return $self->initialize_fully->with_realm(undef, sub {
-        if ($self->model('RealmOwner')->unauth_load({name => $self->ADM})) {
-	    $self->req->set_user($self->ADM);
-	}
-	else {
-	    $self->req->set_user($self->create($self->ADM));
-	    $self->new_other('RealmRole')->make_super_user;
-	}
+	my($req) = $self->req;
+	$self->create($self->ADM)
+	    unless $self->model('RealmOwner')->unauth_load({name => $self->ADM});
+	$req->set_user($self->ADM);
+	$self->new_other('RealmRole')->make_super_user
+	    unless $req->is_super_user;
 	return;
     });
 }
