@@ -317,6 +317,7 @@ $support = Bivio::SQL::ListSupport->new({
     ],
     group_by => [
 	[qw(TListT1_1.gender qual.TListT2.gender)],
+        'TListT1_1.auth_id',
     ],
     primary_key => [
 	'TListT1_1.gender',
