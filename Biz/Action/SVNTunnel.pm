@@ -22,6 +22,7 @@ sub execute {
 	request => $req,
 	site_base => $_CFG->{scheme} . '://' . $_CFG->{host},
 	host => $_CFG->{host},
+	response_file => b_use('IO.File')->temp_file($req),
     });
     my($http_req) = $self->internal_proxy_request($self->req('uri'));
     $http_req->header(Authorization => 'Basic ' . MIME::Base64::encode(
