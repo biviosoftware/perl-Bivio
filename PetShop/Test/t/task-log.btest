@@ -19,3 +19,10 @@ submit_form(Refresh => {
     '_anon' => 'btest_read',
 });
 verify_text(qr{root.*acting as.*Btest_read.*/bp/StartPage}im);
+login_as('task_log_user');
+follow_link('site_hits');
+submit_form(Refresh => {
+    '_anon' => 'user',
+});
+follow_link('next');
+verify_uri('x_filter=user');
