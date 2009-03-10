@@ -5,16 +5,43 @@ req()->initialize_fully;
 ShellUtil_TaskLog()->test_reset;
 my($t) = class('Agent.Task')->get_by_id('FORUM_FILE_TREE_LIST');
 req()->set_realm_and_user(qw(task_log_bunit task_log_user));
+my($now) = DateTime()->now;
+DateTime()->set_test_now($now);
 model('TaskLog')->handle_pre_execute_task($t, req());
 model('TaskLog')->handle_post_execute_task($t, req());
-[
-    map(($_ => [
-	[] => [{
+DateTime()->set_test_now(DateTime()->add_seconds($now, 1));
+req()->set_realm_and_user(qw(task_log_bunit root));
+model('TaskLog')->handle_pre_execute_task($t, req());
+model('TaskLog')->handle_post_execute_task($t, req());
+req()->initialize_fully('GROUP_TASK_LOG');
+req()->set_realm('task_log_bunit');
+options({
+    compute_params => sub {
+	my(undef, $params) = @_;
+	model(TaskLogQueryForm => {@$params});
+	return [];
+    },
+    check_return => sub {
+	my($case, undef, $expect) = @_;
+	@$expect = qw(root task_log_user)
+	    unless @$expect;
+	assert_contains([map(+{
 	    'TaskLog.uri' => '/',
-	    'TaskLog.user_id' => realm_id('task_log_user'),
+	    'TaskLog.user_id' => realm_id($_),
 	    'TaskLog.realm_id' => realm_id('task_log_bunit'),
 	    'TaskLog.super_user_id' => undef,
-	    'Email.email' => email('task_log_user'),
-	}],
-    ]), qw(load_all unauth_load_all)),
+	    'Email.email' => email($_),
+	}, @$expect)], $case->get('object')->map_rows);
+	return 1;
+    },
+});
+[
+    unauth_load_all => [
+	[] => [],
+    ],
+    load_all => [
+	[] => [],
+	[x_filter => 'task_log_user@'] => 'task_log_user',
+	[x_filter => '-task_log_user@'] => 'root',
+    ],
 ];
