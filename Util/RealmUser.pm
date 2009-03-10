@@ -8,6 +8,7 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RN) = b_use('Type.RealmName');
 my($_R) = b_use('Auth.Role');
+my($_SA) = b_use('Type.StringArray');
 my($_MAP) = {};
 b_use('IO.Config')->register(my $_CFG = {
     audit_map => [],
@@ -27,16 +28,20 @@ sub audit_all_users {
     my($self) = @_;
     return join(
 	'',
-	@{$self->model('RealmUser')->map_iterate(
-	    sub {
-		$self->req->with_user(shift->get('user_id'), sub {
-		    my($res) = $self->audit_user;
-		    return !$res ? ()
-			: ($self->req(qw(auth_user name)), ":\n$res");
-		});
-	    },
-	    'user_id',
-	)},
+	map(
+	    $self->req->with_user($_, sub {
+	        my($res) = $self->audit_user;
+		return !$res ? ()
+		    : ($self->req(qw(auth_user name)), ":\n$res");
+	    }),
+	    sort({$a->get('name') cmp $b->get('name')}
+	        map($self->unauth_model('RealmOwner', {realm_id => $_}),
+		    @{$_SA->sort_unique(
+			$self->model('RealmUser')->map_iterate(
+			    sub {shift->get('user_id')}))},
+		)
+	    ),
+	),
     );
 }
 
