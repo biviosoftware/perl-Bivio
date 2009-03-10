@@ -81,7 +81,7 @@ sub PASSWORD {
 }
 
 sub ROOT {
-    return 'root';
+    return b_use('ShellUtil.TestUser')->ADM;
 }
 
 sub ROOT_EMAIL {
@@ -114,6 +114,31 @@ sub XAPIAN_DEMO {
 
 sub XAPIAN_GUEST {
     return 'xapian_guest';
+}
+
+sub create_user_with_account {
+    my($self, $user) = @_;
+    $self->model('UserAccountForm', {
+	'User.first_name' => ucfirst($user),
+	'User.last_name' => $self->DEMO_LAST_NAME,
+	'Email.email' => $self->format_email($user),
+	'Address.street1' => '1313 Mockingbird Lane',
+	'Address.street2' => undef,
+	'Address.city' => 'Boulder',
+	'Address.state' => 'CO',
+	'Address.zip' => '80304',
+	'Address.country' => 'US',
+	'Phone.phone' => '555-1212',
+	'RealmOwner.password' => $self->PASSWORD,
+	force_create => 1,
+    });
+    # test accounts have real names, for ease of logging in
+    $self->req->get('auth_user')->update({
+	name => $user,
+	display_name => join(' ', ucfirst($user), $self->DEMO_LAST_NAME),
+    });
+    $self->print("Created user $user\n");
+    return;
 }
 
 sub ddl_files {
@@ -212,7 +237,6 @@ sub top_level_forum {
     foreach my $user (@$admins, @$users) {
 	$self->model('ForumUserAddForm', {
 	    'RealmUser.realm_id' => $rid,
-	    'Forum.want_reply_to' => 1,
 	    'User.user_id' => _realm_id($self, $user),
 	    administrator => grep($_ eq $_, @$admins) ? 1 : 0,
 	});
@@ -450,33 +474,12 @@ sub _init_demo_users {
     my($req) = $self->get_request;
     my($demo_id);
     foreach my $u (@{$self->demo_users()}) {
-	$self->print("Created user $u\n");
-	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
-	    'User.first_name' => ucfirst($u),
-	    'User.last_name' => $self->DEMO_LAST_NAME,
-	    'Email.email' => $self->format_email($u),
-	    'Address.street1' => '1313 Mockingbird Lane',
-	    'Address.street2' => undef,
-	    'Address.city' => 'Boulder',
-	    'Address.state' => 'CO',
-	    'Address.zip' => '80304',
-	    'Address.country' => 'US',
-	    'Phone.phone' => '555-1212',
-	    'RealmOwner.password' => $self->PASSWORD,
-	    force_create => 1,
-	});
-	# test accounts have real names, for ease of logging in
-	$req->get('auth_user')->update({
-	    name => $u,
-	    display_name => join(' ', ucfirst($u), $self->DEMO_LAST_NAME),
-	});
+ 	next
+ 	    if $u eq $self->ROOT;
+	$self->create_user_with_account($u);
 	my($uid) = $req->get('auth_user_id');
 	if ($u eq $self->DEMO || $u eq $self->XAPIAN_DEMO) {
 	    $demo_id = $uid;
-	}
-	elsif ($u eq $self->ROOT) {
-            $self->new_other('RealmRole')->make_super_user;
-	    $self->new_other('SiteForum')->make_admin;
 	}
 	elsif ($u eq $self->GUEST || $u eq $self->XAPIAN_GUEST) {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
@@ -737,7 +740,6 @@ sub _init_remote_copy {
     $req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
         $self->model(ForumUserAddForm => {
 	    'RealmUser.realm_id' => $req->get('auth_id'),
-	    'Forum.want_reply_to' => 1,
 	    'User.user_id' => _realm_id($self, 'remote_copy_user'),
 	    administrator => 1,
 	});
@@ -746,35 +748,33 @@ sub _init_remote_copy {
     # Use this to bootstrap testing or if the petshop isn't online
     # my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
     # $uri =~ s{(?=//[^/]+/).*}{};
-    my($uri) = 'https://petshop.bivio.biz';
-    $req->with_realm(remote_copy_bunit => sub {
-	foreach my $x (
-	    ['/Settings/RemoteCopy.csv', <<"EOF"],
+    # my($uri) = 'https://test.petshop.bivio.biz';
+    my($uri) = 'http://petshop.bivio.biz';
+    foreach my $realm (qw(remote_copy_btest remote_copy_bunit)) {
+	$req->with_realm($realm => sub {
+	    my($folder) = $realm =~ /btest/ ? 'RemoteCopyBtest'
+		: 'RemoteCopyBunit';
+	    foreach my $x (
+		map(["/$folder/file$_", "file$_"], 1..4),
+	    ) {
+		_realm_file_create($self, @$x);
+	    }
+	    return;
+	})
+    }
+    foreach my $realm (
+	b_use('ShellUtil.SiteForum')->ADMIN_REALM,
+	'remote_copy_bunit',
+    ) {
+	$req->with_realm($realm => sub {
+	    _realm_file_create($self, '/Settings/RemoteCopy.csv', <<"EOF");
 Realm,Folders,User,Password,URI
 remote_copy_bunit,/RemoteCopyBunit
 ,,remote_copy_user,@{[$self->PASSWORD]},$uri
 EOF
-	    map(["/RemoteCopyBunit/file$_", "file$_"], 1..4),
-	) {
-	    _realm_file_create($self, @$x);
-	}
-    });
-    $req->with_realm(b_use('ShellUtil.SiteForum')->ADMIN_REALM, sub {
-        return _realm_file_create(
-	    $self, '/Settings/RemoteCopy.csv', <<"EOF");
-Realm,Folders,User,Password,URI
-remote_copy_btest,/RemoteCopyBtest
-remote_copy_bunit,/RemoteCopyBunit
-,,remote_copy_user,@{[$self->PASSWORD]},$uri
-EOF
-    });
-    $req->with_realm(remote_copy_btest => sub {
-	foreach my $x (
-	    map(["/RemoteCopyBtest/file$_", "file$_"], 1..4),
-	) {
-	    _realm_file_create($self, @$x);
-	}
-    });
+	    return;
+	});
+    }
     return;
 }
 
@@ -802,7 +802,17 @@ sub _init_site_admin {
 
 sub _init_task_log {
     my($self) = @_;
+    $self->create_user_with_account('task_log_user');
     $self->top_level_forum('task_log_bunit', ['root', 'task_log_user']);
+    my($req) = $self->req;
+    $req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
+        $self->model(ForumUserAddForm => {
+	    'RealmUser.realm_id' => $req->get('auth_id'),
+	    'User.user_id' => _realm_id($self, 'task_log_user'),
+	    administrator => 1,
+	});
+	return;
+    });
     return;
 }
 
