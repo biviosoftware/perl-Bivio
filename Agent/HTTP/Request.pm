@@ -51,7 +51,7 @@ sub get_content {
 	my($expect) = $r->header_in('content-length');
 	_trace('Content-Length=', $expect) if $_TRACE;
 	return \$res
-	    unless $expect > 0;
+	    unless $expect && $expect > 0;
 	my($read) = 0;
 	while ($read < $expect) {
 	    my($buf);
