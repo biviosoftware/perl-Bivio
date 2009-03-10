@@ -170,10 +170,11 @@ sub instance_data_index {
 }
 
 sub internal_data_section {
-    my($proto) = @_;
+    my($proto, $op) = @_;
     no strict 'refs';
-    return ${$proto->use('Bivio::IO::File')->read(
-	\${$proto->package_name . '::'}{DATA})};
+    my($f) = $proto->use('Bivio::IO::File');
+    my($h) = \${$proto->package_name . '::'}{DATA};
+    return $op ? $f->do_lines($h, $op) : ${$f->read($h)};
 }
 
 sub is_blessed {
