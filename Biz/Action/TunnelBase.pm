@@ -59,25 +59,21 @@ sub internal_proxy_request {
     my($length) = $r->header_in('content-length');
     _trace('length: ', $length) if $_TRACE;
     if ($length && $length > $_READ_SIZE) {
-	my($file) = b_use('IO.File')->temp_file($req);
-	my($fh) = IO::File->new($file, 'r+');
-	defined(my $start = $fh->getpos) || b_die($file, ": getpos failed: $!");
-	$req->get_content($fh);
-	defined($fh->setpos($start)) || b_die($file, ": setpos failed: $!");
+	my($file) = b_use('IO.File')->temp_file($self->req);
+	my($fh) = IO::File->new($file, 'w');
+	$self->req->get_content($fh);
+	$fh->close;
+	$fh = IO::File->new($file, 'r');
 	$request->content(sub {
-            my($buf);
-	    my($res) = $fh->read($buf, $_READ_SIZE);
-	    $req->throw_die(IO_ERROR => {
-		entity => $file,
-		message => "read error: $!",
-	    }) unless defined($res);
-	    return $res ? $buf : '';
+	    my($buf) = '';
+
+	    unless ($fh->read($buf, $_READ_SIZE)) {
+		$fh->close;
+		_trace('read finished') if $_TRACE;
+		return '';
+	    }
+	    return $buf;
 	});
-	$req->throw_die(IO_ERROR => {
-	    entity => $file,
-	    message => "close error: $!",
-	}) unless $fh->close;
-	_trace('read finished') if $_TRACE;
     }
     else {
 	$request->content($req->get_content);
