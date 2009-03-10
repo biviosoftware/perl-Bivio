@@ -47,39 +47,44 @@ sub get_content {
     my($self, $fh) = @_;
     return $self->get_if_exists_else_put(content => sub {
         my($r) = $self->get('r');
-	my($c) = '';
-	my($l) = $r->header_in('content-length');
-	_trace('Content-Length=', $l) if $_TRACE;
-	return \$c
-	    unless $l;
-	my($bytes_read) = 0;
-
-	while ($bytes_read < $l) {
-	    my($buf) = '';
-	    my($remaining) = $l - $bytes_read;
-	    my($size) = $remaining < $_READ_SIZE ? $remaining : $_READ_SIZE;
-	    $r->read($buf, $size);
-	    $bytes_read += $size;
+	my($res) = '';
+	my($expect) = $r->header_in('content-length');
+	_trace('Content-Length=', $expect) if $_TRACE;
+	return \$res
+	    unless $expect > 0;
+	my($read) = 0;
+	while ($read < $expect) {
+	    my($buf);
+	    my($to_read) = $expect - $read;
+	    $r->read($buf, $to_read < $_READ_SIZE ? $to_read : $_READ_SIZE);
 	    $self->throw_die(CLIENT_ERROR =>
 		'timeout occurred while reading request content'
 	    ) unless defined($buf);
-
+	    unless (length($buf)) {
+		$self->warn('read returned zero length buffer, exitting loop');
+		last;
+	    }
+	    $read += length($buf);
 	    if ($fh) {
-		print($fh $buf);
+		$self->throw_die(IO_ERROR => {
+		    message => 'write failed to file',
+		    entity => "$!",
+		}) unless $fh->print($buf);
 	    }
 	    else {
-		$c .= $buf;
+		$res .= $buf;
 	    }
 	}
 	$self->throw_die(CLIENT_ERROR =>
 	    'client interrupt or timeout while reading form-data',
 	) if $r->connection->aborted;
-	return $fh if $fh;
+	return $fh
+	    if $fh;
 	$self->throw_die(CORRUPT_QUERY =>
-	    "Content-Length ($l) >= actual length: " . length($c)
-	) if $l > length($c);
-	_trace('length', length($c)) if $_TRACE;
-	return \$c;
+	    "Content-Length ($expect) >= actual length: " . length($res)
+	) if $expect > length($res);
+	_trace('length', length($res)) if $_TRACE;
+	return \$res;
     });
 }
 
