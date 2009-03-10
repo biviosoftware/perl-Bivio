@@ -55,22 +55,27 @@ sub internal_proxy_request {
 	. ($self->req('uri') =~ m,/$, ? '/' : '')
 	. ($self->req('query') ? ('?' . scalar($self->req('r')->args)) : ''));
     my($length) = $self->req('r')->header_in('content-length');
+    _trace('length: ', $length) if $_TRACE;
 
     if ($length && $length > $_READ_SIZE) {
-	my($fh) = IO::File->new(b_use('IO.File')->temp_file($self->req), 'rw');
+	my($file) = b_use('IO.File')->temp_file($self->req);
+	my($fh) = IO::File->new($file, 'w');
 	$self->req->get_content($fh);
-	$request->content_ref(sub {
+	$fh->close;
+	$fh = IO::File->new($file, 'r');
+	$request->content(sub {
             my($buf) = '';
 
-            unless (read($fh, $buf, $_READ_SIZE)) {
+	    unless ($fh->read($buf, $_READ_SIZE)) {
 		$fh->close;
+		_trace('read finished') if $_TRACE;
 		return '';
 	    }
 	    return $buf;
 	});
     }
     else {
-	$request->add_content($self->req->get_content);
+	$request->content($self->req->get_content);
     }
 
     my(%h) = $self->req('r')->headers_in;
