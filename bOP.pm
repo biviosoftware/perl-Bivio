@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -26,11 +26,24 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.46  2009/03/08 22:19:45  nagler
+  * Bivio::Biz::Model::TaskLogList
+    added NOT_ILIKE
+  * Bivio::Delegate::Role
+    remove UNUSED_11
+  * Bivio::Delegate::TaskId
+    missing FEATURE_TASK_LOG on GROUP_TASK_LOG
+  * Bivio::SQL::Statement
+    added NOT_ILIKE
+  * Bivio::Util::SQL
+    added feature_task_log2
+    mark sentinel on unused_11 and site_admin_forum_users on db create
+
   Revision 7.45  2009/03/08 12:54:03  nagler
   * Bivio::Biz::Model::RealmFileMD5List
     don't treat root specially, just an optimization
