@@ -80,7 +80,7 @@ sub get_width {
 
 sub now {
     my($proto) = @_;
-    return $proto->from_unix($proto->to_unix($proto->SUPER::now));
+    return $proto->from_datetime($proto->SUPER::now);
 }
 
 sub to_literal {
