@@ -142,7 +142,7 @@ sub local_yesterday {
 
 sub now {
     my($proto) = @_;
-    return $proto->from_unix($proto->to_unix($proto->SUPER::now));
+    return $proto->from_datetime($proto->SUPER::now);
 }
 
 sub to_file_name {
