@@ -933,11 +933,13 @@ sub _cfg_site_admin {
 		}],
 		[qw(remote_copy REMOTE_COPY_FORM), sub {
 		     my($fc) = @_;
-		     my($id) = $fc->unsafe_get_value('site_admin_realm_id');
-		     return $id
-			 && b_use('Model.RemoteCopyList')->new(
-			     $fc->get_facade->req
-			 )->unauth_if_setting_available($id) ? 1 : 0;
+		     return Bivio::Die->eval(sub {
+			 my($id) = $fc->unsafe_get_value('site_admin_realm_id');
+			 return $id
+			     && b_use('Model.RemoteCopyList')->new(
+				 $fc->get_facade->req
+			     )->unauth_if_setting_available($id) ? 1 : 0;
+		     });
 		}],
                 [qw(applicants SITE_ADMIN_UNAPPROVED_APPLICANT_LIST), sub {
 		     b_use('Model.UserCreateForm')
