@@ -1,7 +1,11 @@
 # Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 Type();
+DateTime()->set_test_now('3/1/2009 1:0:0', req());
 [
+    now => [
+	[] => '2378497 3600',
+    ],
     from_datetime => [
 	['2453740 44700'] => ['2378497 44700'],
     ],
