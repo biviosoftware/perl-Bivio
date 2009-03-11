@@ -741,6 +741,12 @@ sub timezone {
     return defined($tz) ? $tz : $_LOCAL_TIMEZONE;
 }
 
+sub to_alert {
+    my($proto, $value) = @_;
+    return sprintf(
+	'%04d/%02d/%02d %02d:%02d:%02d', reverse($proto->to_parts($value)));
+}
+
 sub to_dd_mmm_yyyy {
     my($proto, $value, $sep) = @_;
     # Returns date in DD MMM YYYY format
