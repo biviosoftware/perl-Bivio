@@ -747,6 +747,11 @@ sub to_alert {
 	'%04d/%02d/%02d %02d:%02d:%02d', reverse($proto->to_parts($value)));
 }
 
+sub to_date_parts {
+    my($proto, $value) = @_;
+    return ($proto->to_parts($value))[3,4,5];
+}
+
 sub to_dd_mmm_yyyy {
     my($proto, $value, $sep) = @_;
     # Returns date in DD MMM YYYY format
@@ -844,6 +849,11 @@ sub to_string {
     my($proto, $date_time) = @_;
     # Converts to a human readable string
     return _to_string($proto, $date_time, 'GMT');
+}
+
+sub to_time_parts {
+    my($proto, $value) = @_;
+    return ($proto->to_parts($value))[0,1,2];
 }
 
 sub to_unix {
