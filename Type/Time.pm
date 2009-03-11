@@ -93,6 +93,12 @@ sub to_literal {
     return sprintf('%02d:%02d' . ($s ? ':%02d' : ''), $h, $m, $s ? $s : ());
 }
 
+sub to_literal_dammit {
+    my($proto, $value) = @_;
+    return !$value ? ''
+	: sprintf('%02d:%02d:%02d', reverse($proto->to_time_parts($value)));
+}
+
 sub to_sql_param {
     my(undef, $param_value) = @_;
     # Returns value which is acceptable
