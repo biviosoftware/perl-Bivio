@@ -1,6 +1,6 @@
 # Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Freiker::Type::EPC;
+package Bivio::Type::EPC;
 use strict;
 use Bivio::Base 'Type.SyntacticString';
 
