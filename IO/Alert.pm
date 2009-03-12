@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Alert;
 use strict;
@@ -488,7 +488,8 @@ sub _format_string_simple {
     # (any) : string
     # Formats a single object, which may be undef.
     my($o) = @_;
-    return '<undef>' unless defined($o);
+    return '<undef>'
+	unless defined($o);
     # Don't output any errors if there is an error evaluating $o
     local($SIG{__WARN__});
     eval {$o = $o->as_string}
@@ -496,8 +497,17 @@ sub _format_string_simple {
     $o =~ s/[\200-\377]//g
 	if $_STRIP_BIT8;
     return length($o) > $_MAX_ARG_LENGTH
-		? (substr($o, 0, $_MAX_ARG_LENGTH) . '<...>')
-			: $o;
+	? (substr($o, 0, $_MAX_ARG_LENGTH) . '<...>')
+	: _format_string_with_type($o);
+}
+
+sub _format_string_with_type {
+    my($value) = @_;
+#TODO: DateTime should be an object
+    return $Bivio::Type::DateTime::VERSION
+	&& Bivio::Type::DateTime->is_valid_specified($value)
+	? Bivio::Type::DateTime->to_string($value)
+        : $value;
 }
 
 sub _log_apache {
