@@ -162,6 +162,11 @@ req()->initialize_fully;
 	    ['2452873 48900', undef] => 0,
 	    [undef, undef] => 1,
 	],
+	is_valid_specified => [
+	    '0 0' => 0,
+	    '' => 0,
+	    '2452874 05700' => 1,
+	],
 	english_month3 => [
 	    1 => 'Jan',
 	    12 => 'Dec',

@@ -613,6 +613,10 @@ sub is_time {
     return defined($value) && $value =~ /$_DATE_PREFIX/o ? 1 : 0;
 }
 
+sub is_valid_specified {
+    return defined((_from_literal(@_))[0]) ? 1 : 0;
+}
+
 sub local_end_of_today {
     # Returns the date/time for the last second in the user's "today".
     # Used to generate reports that includes the "end of business".
