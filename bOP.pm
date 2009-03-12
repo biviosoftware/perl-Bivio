@@ -26,11 +26,46 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.47  2009/03/10 23:01:41  moeller
+  * Bivio::Agent::HTTP::Request
+    get_content() now accepts an IO::File for the data,
+    read request data in chunks
+    cleaned up get_content to check errors
+  * Bivio::Biz::Action::RemoteCopy
+    added uri to remote_list err
+  * Bivio::Biz::Action::SVNTunnel
+    use a response_file for results
+  * Bivio::Biz::Action::TunnelBase
+    if content-length of request is too big, buffer it in a file and send chunks
+    buffer responses to a file as well
+    fixed content() call
+    close content file, then reopen in 'w' mode
+  * Bivio::Biz::Model::RemoteCopyListForm
+    execute_ok_end may be called in_error so need to return
+  * Bivio::Biz::Model::TaskLogList
+    put the x_filter on the query so that $list->format_uri works
+  * Bivio::PetShop::Util::SQL
+    factored out create_user_with_account
+    root is created in TestUser->init_adm so SiteForum->init_files works
+  * Bivio::PetShop::Util::TestUser
+    root is created in TestUser->init_adm so SiteForum->init_files works
+  * Bivio::UI::FacadeBase
+    fix RemoteCopyListForm.want_realm.SYNTAX_ERROR
+    added HelpWiki.title for GROUP_USER_FORM
+  * Bivio::UNIVERSAL
+    internal_data_section accepts $op to callback on lines
+  * Bivio::Util::RealmUser
+    audit_all_users was iterating over all RealmUser records instead of
+    unique users in realm.  Output needed to be sorted by name so
+    predictable for tests.
+  * Bivio::Util::TestUser
+    cleaned up init_adm so feature tests what it is doing
+
   Revision 7.46  2009/03/08 22:19:45  nagler
   * Bivio::Biz::Model::TaskLogList
     added NOT_ILIKE
