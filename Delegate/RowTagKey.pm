@@ -21,7 +21,7 @@ sub get_delegate_info {
 	CRM_SUBJECT_PREFIX => 10,
 	FACADE_CHILD_TYPE => 11,
 	TEXTAREA_WRAP_LINES => 12,
-	FREE_13 => 13,
+	TIME_ZONE => 13,
 	LAST_RESERVED_VALUE => 99,
     ];
 }
