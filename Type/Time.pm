@@ -87,7 +87,7 @@ sub to_literal {
     my($proto, $value) = @_;
     # Converts the time part which is acceptable to from_literal.  Never returns
     # undef, always a string.
-    return $proto->SUPER::to_literal(@_)
+    return shift->SUPER::to_literal(@_)
 	unless defined($value);
     my($s, $m, $h) = $proto->to_parts($value);
     return sprintf('%02d:%02d' . ($s ? ':%02d' : ''), $h, $m, $s ? $s : ());
