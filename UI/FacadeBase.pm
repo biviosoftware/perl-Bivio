@@ -699,6 +699,7 @@ sub _cfg_group_admin {
 		last_first_middle => 'Last, First Name',
 	    ]],
 	    [GroupUserList => [
+                'RealmOwner.creation_date_time' => 'Registration Date',
 		display_name => 'Last, First Name',
 		privileges => 'Privileges',
 	    ]],
@@ -981,6 +982,9 @@ sub _cfg_site_admin {
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',
 		privileges => 'Privileges',
+	    ]],
+	    [UnapprovedApplicantList => [
+                'RealmOwner.creation_date_time' => 'Registration Date',
 	    ]],
 	    [[qw(RemoteCopyListForm RemoteCopyList)] => [
 		prose => [

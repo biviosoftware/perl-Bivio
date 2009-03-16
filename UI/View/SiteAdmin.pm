@@ -75,6 +75,7 @@ sub unapproved_applicant_list {
     vs_user_email_list(
 	'UnapprovedApplicantList',
 	[
+            ['RealmOwner.creation_date_time'],
 	    [privileges => {
 		wf_list_link => {
 		    query => 'THIS_DETAIL',

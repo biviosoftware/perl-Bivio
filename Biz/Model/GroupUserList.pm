@@ -28,6 +28,7 @@ sub internal_initialize {
         version => 1,
 	primary_key => [[qw(RealmUser.user_id User.user_id Email.realm_id RealmOwner.realm_id)]],
 	order_by => [
+            'RealmOwner.creation_date_time',
 	    @{$self->NAME_SORT_COLUMNS},
 	    'Email.email',
 	],
