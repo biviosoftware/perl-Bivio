@@ -13,8 +13,7 @@ sub initialize {
     my($class) = Bivio::Biz::Model->get_instance($self->get('list_class'))
 	->simple_package_name;
     $self->put(
-	VERSION => '0.3',
-	XMLNS => 'http://purl.org/atom/ns#',
+	XMLNS => 'http://www.w3.org/2005/Atom',
 	tag => 'feed',
 	value => => Join([
 	    map(

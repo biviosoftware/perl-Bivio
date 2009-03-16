@@ -6,5 +6,5 @@ req()->initialize_fully('FORUM_BLOG_RSS');
 from_type(AccessMode => 'PUBLIC')->execute(req());
 model('BlogList')->load_page;
 [
-    ['BlogList'] => qr{^<feed version="0\.3".*title.*PetShop Blog.*tagline.*Recent.*<entry>.*<modified>}s,
+    ['BlogList'] => qr{^<feed xmlns="http://www.w3.org/2005/Atom".*title.*PetShop Blog.*tagline.*Recent.*<entry>.*<modified>}s,
 ];
