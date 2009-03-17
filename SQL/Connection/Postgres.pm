@@ -86,9 +86,9 @@ sub internal_get_error_code {
     my($self, $die_attrs) = @_;
     if ($die_attrs->{dbi_errstr} =~
 	    /Cannot insert a duplicate key into unique index (\w+)/i
-        # Postgres 7.4.1
+        # Relaxed since they seem to change it often
         || $die_attrs->{dbi_errstr} =~
-            /duplicate key violates unique constraint "(\w+)"/i) {
+            /duplicate key.*? unique .*?"(\w+)"/i) {
 	return _interpret_constraint_violation($self, $die_attrs, $1);
     }
     $die_attrs->{dbi_errstr} =~
