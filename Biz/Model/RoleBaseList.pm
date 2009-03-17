@@ -43,7 +43,7 @@ sub internal_initialize {
 		constraint => 'NONE',
 		$_V1 ? (
 		    in_select => 1,
-		    select_value => q{(SELECT group_concat(ru.role)
+		    select_value => q{(SELECT group_concat(ru.role || '')
 			FROM realm_user_t ru
 			WHERE ru.realm_id = realm_user_t.realm_id
 			AND ru.user_id = realm_user_t.user_id
