@@ -147,6 +147,11 @@ sub _assert_cipher {
     # DOES NOT RETURN
 }
 
+sub _call {
+    my($cipher, $method, @args) = @_;
+    return Bivio::Die->eval(sub {$cipher->{key}->$method(@args)});
+}
+
 sub _cbc_new {
     return Crypt::CBC->new(shift, shift->{algorithm});
 }
@@ -160,8 +165,8 @@ sub _decrypt {
     # Decrypt and make sure surrounded by magic and a time not before now
     foreach my $cipher (@{$_CFG->{cipher}}) {
         next unless ref($cipher->{key});
-        my($s) = $is_hex ? $cipher->{key}->decrypt_hex($encoded)
-            : $cipher->{key}->decrypt(
+        my($s) = $is_hex ? _call($cipher, decrypt_hex => $encoded)
+            : _call($cipher, decrypt =>
                 Bivio::MIME::Base64->http_decode($encoded) || '');
         my($magic) = $cipher->{magic};
 
