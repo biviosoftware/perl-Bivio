@@ -9,9 +9,10 @@ my($_C) = __PACKAGE__->use('IO.Config');
 my($_WIKI_DATA_FOLDER) = __PACKAGE__->use('Type.WikiDataName')->PRIVATE_FOLDER;
 my($_EASY_FORM_DIR) = 'Forms';
 my($_RN) = b_use('Type.RealmName');
+my($_FN) = b_use('Type.ForumName');
 
 sub HELP_WIKI_REALM_NAME {
-    return 'site-help';
+    return _site(shift, 'help');
 }
 
 sub MAIL_RECEIVE_PREFIX {
@@ -22,7 +23,7 @@ sub MAIL_RECEIVE_PREFIX {
 #      be used publicly.  They are only for init.  Always use vs_constant
 #      to get the names.
 sub SITE_CONTACT_REALM_NAME {
-    return 'site-contact';
+    return _site(shift, 'contact');
 }
 
 sub SITE_REALM_NAME {
@@ -30,11 +31,11 @@ sub SITE_REALM_NAME {
 }
 
 sub SITE_ADMIN_REALM_NAME {
-    return 'site-admin';
+    return _site(shift, 'admin');
 }
 
 sub SITE_REPORTS {
-    return 'site-reports';
+    return _site(shift, 'reports');
 }
 
 sub auth_realm_is_site {
@@ -1515,6 +1516,11 @@ sub _merge {
 	}
     }
     return $child;
+}
+
+sub _site {
+    my($proto, $sub_forum) = @_;
+    return $_FN->join($proto->SITE_REALM_NAME, $sub_forum);
 }
 
 sub _unsafe_call {
