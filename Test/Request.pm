@@ -228,6 +228,8 @@ sub setup_http {
 	'uri()' => ['/'],
 	'header_in()' => $header_op,
 	'header_out()' => $header_op,
+	'hostname()' => ['localhost.localdomain'],
+	'get_server_port()' => [80],
     });
     $self->put_durable(r => $r);
     Bivio::IO::Config->introduce_values({
