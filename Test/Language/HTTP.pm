@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Language::HTTP;
 use strict;
@@ -892,13 +892,10 @@ sub verify_table {
 	my($a) = _find_row($self, $table_name, $first_col, shift(@$e));
 	my($diff) = Bivio::IO::Ref->nested_differences(
 	    $e,
-	    [map({
-		$self->test_ok(
-		    exists($a->{$_}), $_, ': column not found in row: ', $a);
-		$a->{$_}->get('text');
-	    }
+	    [map($a->{_key_from_hash($a, _fixup_pattern_protected($self, $_))}
+	        ->get('text'),
 		@$cols,
-	    )]
+	    )],
 	);
 	Bivio::Die->die($diff)
 	    if $diff;
