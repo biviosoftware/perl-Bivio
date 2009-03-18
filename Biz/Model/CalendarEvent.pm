@@ -30,8 +30,6 @@ sub create_realm {
 	name => $self->id_to_uid,
 	%$realm_owner,
     }, @_);
-    $self->new_other('RealmUserAddForm')
-	->copy_admins($self->get('calendar_event_id'));
     return @res;
 }
 
@@ -56,12 +54,6 @@ sub internal_initialize {
 	    location => ['Text', 'NONE'],
 	    description => ['LongText', 'NONE'],
 	    url => ['HTTPURI', 'NONE'],
-# 	    rrule_freq
-# 		rrule_until
-# 		rrule_count
-# 	        rrule_interval
-# 		rrule_bymonth
-# 	    occurance, freq
 	},
 	auth_id => ['realm_id'],
 	other => [
