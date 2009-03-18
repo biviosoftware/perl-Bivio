@@ -99,8 +99,9 @@ sub _parse_headers {
 	entity => $buf,
     }) unless $$buf =~ s/^(.*?)\r\n\r\n//s;
     my($headers) = $1;
+    $headers =~ s/\r\n\s/ /sg;
     my($field) = {};
-    foreach my $header (split(/\r\n(?=\S)/, $headers)) {
+    foreach my $header (split(/\r\n/, $headers)) {
 	my($key, $value) = split(/:\s*/s, $header, 2);
 	$key = lc($key);
 	_trace($key, ': ', $value) if $_TRACE;
