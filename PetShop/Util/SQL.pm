@@ -747,7 +747,7 @@ sub _init_remote_copy {
     });
     # Use this to bootstrap testing or if the petshop isn't online
     # my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
-    # $uri =~ s{(?=//[^/]+/).*}{};
+    # $uri =~ s{(//[^/]+/).*}{$1};
     # my($uri) = 'https://test.petshop.bivio.biz';
     my($uri) = 'http://petshop.bivio.biz';
     foreach my $realm (qw(remote_copy_btest remote_copy_bunit)) {

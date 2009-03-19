@@ -11,7 +11,7 @@ sub from_literal {
     return (undef, undef)
 	unless defined($value) && length($value);
     return (undef, Bivio::TypeError->SYNTAX_ERROR)
-	unless $value =~ /^[+-]?(?=\d|\.\d)\d*(?:\.\d*)?(?:[Ee]([+-]?\d+))?$/;
+	unless $value =~ /^[+-]?(?:\d|\.\d)\d*(?:\.\d*)?(?:[Ee]([+-]?\d+))?$/;
     return $value + 0;
 }
 
