@@ -16,7 +16,7 @@ sub create_from_rfc822 {
     my($c) = $mr->get('message')->{content};
     my($uid) = _log($mr->get_request->get('auth_id'), $c);
     my($rfid, $email) = ($mr->get('plus_tag') || '') =~ /^(\d+)-(.+)$/;
-    if ($email && $email =~ s/(?=.*)=/@/) {
+    if ($email && $email =~ s/(.*)=/$1@/) {
 	my($rm) = $self->new_other('RealmMail');
 	if ($rm->unauth_load({realm_file_id => $rfid})) {
 	    return $self->unauth_create_or_update({
