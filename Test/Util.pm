@@ -184,7 +184,7 @@ sub nightly {
 	$self->print("cd ".Bivio::IO::File->pwd . "\n");
 	$self->print("export PERLLIB=$ENV{PERLLIB}\n");
 	$self->print("export BCONF=$ENV{BCONF}\n");
-	$self->print("b-test acceptance .\n");
+	$self->print("bivio test acceptance .\n");
         $self->print($self->acceptance('.'));
         return;
     });
@@ -254,7 +254,7 @@ sub remote_trace {
     my($self, $named) = shift->name_args(['?PerlName'], \@_);
     $self->initialize_fully;
     my($ua) = $self->use('Ext.LWPUserAgent')->new;
-    $ua->agent('b-test remote_trace');
+    $ua->agent('bivio test remote_trace');
     $ua->timeout(5);
     my($resp) = $ua->request(
 	HTTP::Request->new(

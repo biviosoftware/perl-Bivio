@@ -132,7 +132,7 @@ sub dev {
 		directory => "$files_root/log",
 	    },
 	    'Bivio::Mail::Common' => {
-		sendmail => 'b-test -input - mock_sendmail',
+		sendmail => 'bivio test -input - mock_sendmail',
 	    },
 	    'Bivio::Test::Language::HTTP' => {
 		home_page_uri => "http://$host:$http_port",
