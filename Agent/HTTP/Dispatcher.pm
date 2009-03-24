@@ -2,55 +2,22 @@
 # $Id$
 package Bivio::Agent::HTTP::Dispatcher;
 use strict;
-$Bivio::Agent::HTTP::Dispatcher::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::HTTP::Dispatcher::VERSION;
-
-=head1 NAME
-
-Bivio::Agent::HTTP::Dispatcher - dispatches Apache httpd requests
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-
-    PerlModule Bivio::Agent::HTTP::Dispatcher
-    <LocationMatch "^/(index.html|[*a-zA-Z0-9_-]{2,}($|/))">
-    SetHandler perl-script
-    PerlHandler Bivio::Agent::HTTP::Dispatcher
-    </LocationMatch>
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Agent::Dispatcher>
-
-=cut
-
-use Bivio::Agent::Dispatcher;
-@Bivio::Agent::HTTP::Dispatcher::ISA = qw(Bivio::Agent::Dispatcher);
-
-=head1 DESCRIPTION
-
-C<Bivio::Agent::HTTP::Dispatcher> is an C<Apache> C<mod_perl>
-handler.  It creates a single instance when this module is loaded.
-
-=cut
-
-#=IMPORTS
-# dynamically imports Bivio::Agent::Job::Dispatcher
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Agent::HTTP::Request;
 use Bivio::Agent::Task;
+use Bivio::Base 'Bivio::Agent::Dispatcher';
 use Bivio::DieCode;
 use Bivio::Ext::ApacheConstants;
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
+
+# C<Bivio::Agent::HTTP::Dispatcher> is an C<Apache> C<mod_perl>
+# handler.  It creates a single instance when this module is loaded.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+# dynamically imports Bivio::Agent::Job::Dispatcher
 # May not be available on some systems
 Bivio::Die->eval('
     use BSD::Resource;
@@ -64,50 +31,18 @@ Bivio::IO::Trace->register;
 my($_SELF);
 __PACKAGE__->initialize;
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::Agent::HTTP::Dispatcher
-
-Creates a new dispatcher.
-
-=cut
-
-sub new {
-    return shift->SUPER::new(@_);
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="create_request"></a>
-
-=head2 create_request(Apache::Request r) : Bivio::Agent::Request
-
-Creates and returns the request.
-
-=cut
-
 sub create_request {
+    # (self, Apache.Request) : Agent.Request
+    # Creates and returns the request.
     my($self, $r) = @_;
     return Bivio::Agent::HTTP::Request->new($r);
 }
 
-=for html <a name="handler"></a>
-
-=head2 static handler(Apache::Request r) : int
-
-Handler called by C<mod_perl>.
-
-Returns an HTTP code defined in C<Bivio::Ext::ApacheConstants>.
-
-=cut
-
 sub handler {
+    # (proto, Apache.Request) : int
+    # Handler called by C<mod_perl>.
+    #
+    # Returns an HTTP code defined in C<Bivio::Ext::ApacheConstants>.
     my($r) = @_;
     Apache->push_handlers('PerlCleanupHandler', sub {
 	my($req) = Bivio::Agent::Request->get_current;
@@ -136,15 +71,9 @@ sub handler {
     return Bivio::Agent::HTTP::Reply->die_to_http_code($die, $r);
 }
 
-=for html <a name="initialize"></a>
-
-=head2 static initialize()
-
-Creates C<$_SELF> and initializes config.
-
-=cut
-
 sub initialize {
+    # (proto) : undef
+    # Creates C<$_SELF> and initializes config.
     my($proto) = @_;
     return if $_SELF;
     $_SELF = $proto->new;
@@ -156,21 +85,10 @@ sub initialize {
     return;
 }
 
-#=PRIVATE METHODS
-
-=head1 SEE ALSO
-
-Apache::Request, mod_perl, Bivio::Agent::HTTP::Request,
-Bivio::Agent::Controller
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub new {
+    # (proto) : HTTP.Dispatcher
+    # Creates a new dispatcher.
+    return shift->SUPER::new(@_);
+}
 
 1;
