@@ -13,6 +13,36 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
+sub JAVASCRIPT_B_SUBMENU_IE6 {
+    return <<'EOF';
+function b_submenu_ie6_onload() {
+    if (document.getElementsByTagName) {
+        var divs = document.getElementsByTagName('div');
+        var H = 'hover';
+        for (var i=0; i < divs.length; i++) {
+            if (divs[i].className.indexOf('b_submenu') >= 0) {
+                var b_menu = divs[i].parentNode;
+                b_menu.onmouseout = function () {
+                    var res = [], classes = this.className.split(/\s+/);
+                    for (var i = 0, length = classes.length; i < length; i++) {
+                        if (classes[i] != H) {
+                            res.push(classes[i]);
+                        }
+                    }
+                    this.className = res.join(' ');
+                };
+                b_menu.onmouseover = function () {
+                    if (this.className.indexOf(H) < 0) {
+                        this.className += (this.className ? ' ' : '') + H;
+                    }
+                };
+            }
+        }
+    }
+}
+EOF
+}
+
 sub JAVASCRIPT_CORRECT_TABLE_LAYOUT_BUG {
     # Adds newline to html body to cause the browser to layout the table
     # again. Works around mozilla/firefox layout bug.

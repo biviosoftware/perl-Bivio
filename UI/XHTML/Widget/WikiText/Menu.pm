@@ -18,13 +18,14 @@ sub handle_register {
 
 sub internal_submenu {
     my(undef, $args, $links) = @_;
-    return TaskMenu([map(Tag(span => Link($_)), @$links)], 'b_submenu', {
+    return Join([TaskMenu([map(Tag(span => Link($_)), @$links)], 'b_submenu', {
         selected_item => sub {
             my($w, $source) = @_;
             return ($source->ureq('uri') || '') =~
                 $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
         },
-    });
+    }), And([['->req', 'Type.UserAgent'], '->eq_browser_msie_6'],
+            Script('b_submenu_ie6'))]);
 }
 
 sub render_html {
