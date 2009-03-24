@@ -1,61 +1,46 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Dispatcher;
 use strict;
-use Bivio::Agent::HTTP::Reply;
-use Bivio::Agent::HTTP::Request;
-use Bivio::Agent::Task;
-use Bivio::Base 'Bivio::Agent::Dispatcher';
-use Bivio::DieCode;
-use Bivio::Ext::ApacheConstants;
-use Bivio::IO::Alert;
-use Bivio::IO::ClassLoader;
+use Bivio::Base 'Agent.Dispatcher';
 use Bivio::IO::Trace;
-use Bivio::SQL::Connection;
-
-# C<Bivio::Agent::HTTP::Dispatcher> is an C<Apache> C<mod_perl>
-# handler.  It creates a single instance when this module is loaded.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-# dynamically imports Bivio::Agent::Job::Dispatcher
-# May not be available on some systems
-Bivio::Die->eval('
+our($_TRACE);
+my($_JD);
+my($_C) = b_use('SQL.Connection');
+my($_OK) = b_use('Ext.ApacheConstants')->OK;
+my($_REPLY) = b_use('AgentHTTP.Reply');
+my($_REQUEST) = b_use('AgentHTTP.Request');
+my($_T) = b_use('Agent.Task');
+Bivio::Die->eval(q{
     use BSD::Resource;
     setrlimit(RLIMIT_CORE, 0, 0);
-');
+});
 
-#=VARIABLES
-# No core dumps please
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
 my($_SELF);
+Bivio::IO::Trace->register;
 __PACKAGE__->initialize;
 
 sub create_request {
-    # (self, Apache.Request) : Agent.Request
-    # Creates and returns the request.
     my($self, $r) = @_;
-    return Bivio::Agent::HTTP::Request->new($r);
+    return $_REQUEST->new($r);
 }
 
 sub handler {
-    # (proto, Apache.Request) : int
-    # Handler called by C<mod_perl>.
-    #
-    # Returns an HTTP code defined in C<Bivio::Ext::ApacheConstants>.
     my($r) = @_;
     Apache->push_handlers('PerlCleanupHandler', sub {
-	my($req) = Bivio::Agent::Request->get_current;
+	my($req) = $_REQUEST->get_current;
 	if ($req) {
-	    Bivio::IO::Alert->warn(
+	    b_warn(
 		'[', $req->unsafe_get('client_addr'),
 		'] request aborted, rolling back ',
 		$req->unsafe_get('task_id'),
 	    );
-	    Bivio::Agent::Task->rollback($req);
-	    Bivio::Agent::Request->clear_current;
+	    $_T->rollback($req);
+	    $_REQUEST->clear_current;
 	}
-	return Bivio::Ext::ApacheConstants::OK();
+	return $_OK;
     });
     my($die) = $_SELF->process_request($r);
     if ($die && !$die->get('code')->equals_by_name('CLIENT_REDIRECT_TASK')) {
@@ -65,30 +50,26 @@ sub handler {
 	$r->log_reason($ip.' '.$u.' '.$die->as_string)
     }
     Apache->push_handlers('PerlCleanupHandler', sub {
-	Bivio::Agent::Job::Dispatcher->execute_queue();
-	return Bivio::Ext::ApacheConstants::OK();
-    }) unless Bivio::Agent::Job::Dispatcher->queue_is_empty();
-    return Bivio::Agent::HTTP::Reply->die_to_http_code($die, $r);
+	$_JD->execute_queue;
+	return $_OK;
+    }) unless $_JD->queue_is_empty;
+    return $_REPLY->die_to_http_code($die, $r);
 }
 
 sub initialize {
-    # (proto) : undef
-    # Creates C<$_SELF> and initializes config.
     my($proto) = @_;
-    return if $_SELF;
+    return
+	if $_SELF;
     $_SELF = $proto->new;
-    $_SELF->SUPER::initialize();
+    $_SELF->SUPER::initialize;
     # Avoids import problems
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Job::Dispatcher');
-    # clear db time
-    Bivio::SQL::Connection->get_db_time;
+    if ($_REQUEST->apache_version > 1) {
+	b_use('APR::SockAddr');
+	Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
+    }
+    $_JD = b_use('AgentJob.Dispatcher');
+    $_C->get_db_time;
     return;
-}
-
-sub new {
-    # (proto) : HTTP.Dispatcher
-    # Creates a new dispatcher.
-    return shift->SUPER::new(@_);
 }
 
 1;
