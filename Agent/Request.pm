@@ -203,6 +203,7 @@ my($_V1) = b_use('IO.Config')->if_version(1);
 Bivio::IO::Config->register(my $_CFG = {
     is_production => 0,
     can_secure => 1,
+    apache_version => 1,
 });
 my($_CURRENT);
 
@@ -243,6 +244,10 @@ sub SERVER_REDIRECT_PARAMETERS {
 	shift->EXTRA_URI_PARAM_LIST,
 	'path_info',
     ];
+}
+
+sub apache_version {
+    return $_CFG->{apache_version};
 }
 
 sub as_string {
