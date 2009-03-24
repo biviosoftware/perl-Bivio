@@ -18,7 +18,7 @@ my($_CL) = b_use('IO.ClassLoader');
 my($_DONE) = 1;
 b_use('Agent.Request')->if_apache_version(2 => sub {
     use attributes ();
-    __PACKAGE__->add_attribute_to_ref(__PACKAGE__, \&handler, 'handler');
+	Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
     $_DONE = b_use('Ext.ApacheConstants')->OK;
     return;
 });

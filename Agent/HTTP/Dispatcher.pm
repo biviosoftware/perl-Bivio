@@ -65,7 +65,8 @@ sub initialize {
     use attributes ();
     $_REQUEST->if_apache_version(2, sub {
 	b_use('APR::SockAddr');
-	$proto->add_attribute_to_ref(__PACKAGE__, \&handler, 'handler');
+	Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
+	return;
     });
     $_JD = b_use('AgentJob.Dispatcher');
     $_C->get_db_time;
