@@ -149,7 +149,7 @@ sub new {
 	reply => $_R->new($r),
 	r => $r,
 	client_addr => $r->connection->remote_ip,
-	is_secure => $ENV{HTTPS} || _is_https_port($r) ? 1 : 0,
+	is_secure => $ENV{HTTPS} || _is_https_port($proto, $r) ? 1 : 0,
     });
     Bivio::Type::UserAgent->from_header($r->header_in('user-agent') || '')
         ->put_on_request($self, 1);
@@ -213,13 +213,11 @@ sub reset_reply {
 }
 
 sub _is_https_port {
-    # (Apache) : boolean
-    # Returns true if the local port is 81.  We are using this trick between
-    # the front-end and the middle tier to indicate it is running in secure
-    # mode.
-    my($r) = @_;
-    my($port) = unpack_sockaddr_in($r->connection->local_addr());
-    return $port % 2 ? 1 : 0;
+    my($proto, $r) = @_;
+    return $proto->want_scalar($proto->if_apache_version(
+	2 => sub {$r->connection->local_addr->port},
+	sub {unpack_sockaddr_in($r->connection->local_addr)},
+    )) % 2;
 }
 
 1;

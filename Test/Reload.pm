@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Reload;
 use strict;
@@ -15,6 +15,12 @@ Bivio::IO::Alert->info('Watching: ', $_WATCH);
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 my($_DDL);
 my($_CL) = b_use('IO.ClassLoader');
+my($_DONE) = 1;
+b_use('Agent.Request')->if_apache_version(2 => sub {
+    Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
+    $_DONE = b_use('Ext.ApacheConstants')->OK;
+    return;
+});
 
 sub handler {
     if (my $modified = _modified_pm()) {
@@ -35,7 +41,7 @@ sub handler {
     }
     $req->clear_current
 	if $req;
-    return 1;
+    return $_DONE;
 }
 
 sub register_handler {
