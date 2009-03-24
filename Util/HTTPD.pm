@@ -9,7 +9,7 @@ use Bivio::IO::File;
 use Sys::Hostname ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_V2) = b_use('Bivio::Agent::Request')->if_apache_version(sub {1});
+my($_V2) = b_use('Bivio::Agent::Request')->if_apache_version(2 => sub {1});
 my($_HTTPD) = _find_file($_V2 ? qw(
     /usr/local/apache/bin/httpd2
     /usr/sbin/httpd2
@@ -118,11 +118,13 @@ sub main {
     open(OUT, ">$pwd/$conf") || die("open $conf: $!");
     my($apache_status) = $_V2 ? 'PerlResponseHandler Apache2::Status'
 	: 'PerlHandler Apache::Status';
-    my($version_config) = $_V2 ? 'Apache2::compat' : <<'EOF';
+    my($version_config) = $_V2 ? <<'2' : <<'1';
+PerlModule Apache2::compat
+2
 ResourceConfig /dev/null
 AccessConfig /dev/null
 PerlFreshRestart off
-EOF
+1
     foreach my $line (<DATA>) {
 	$line =~ s/(\$[a-z0-9_]+\b)/$1/eeg;
     }
