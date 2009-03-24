@@ -8,6 +8,7 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_JD);
+my($_SELF);
 my($_C) = b_use('SQL.Connection');
 my($_OK) = b_use('Ext.ApacheConstants')->OK;
 my($_REPLY) = b_use('AgentHTTP.Reply');
@@ -17,8 +18,6 @@ Bivio::Die->eval(q{
     use BSD::Resource;
     setrlimit(RLIMIT_CORE, 0, 0);
 });
-
-my($_SELF);
 Bivio::IO::Trace->register;
 __PACKAGE__->initialize;
 
@@ -63,10 +62,10 @@ sub initialize {
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize;
     # Avoids import problems
-    if ($_REQUEST->apache_version >= 2) {
+    $_REQUEST->if_apache_version(2, sub {
 	b_use('APR::SockAddr');
-	Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
-    }
+	$proto->add_attribute_to_ref(__PACKAGE__, \&handler, 'handler');
+    });
     $_JD = b_use('AgentJob.Dispatcher');
     $_C->get_db_time;
     return;
