@@ -63,7 +63,7 @@ sub initialize {
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize;
     # Avoids import problems
-    if ($_REQUEST->apache_version > 1) {
+    if ($_REQUEST->apache_version >= 2) {
 	b_use('APR::SockAddr');
 	Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
     }
