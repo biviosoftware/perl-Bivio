@@ -62,6 +62,7 @@ sub initialize {
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize;
     # Avoids import problems
+    use attributes ();
     $_REQUEST->if_apache_version(2, sub {
 	b_use('APR::SockAddr');
 	$proto->add_attribute_to_ref(__PACKAGE__, \&handler, 'handler');
