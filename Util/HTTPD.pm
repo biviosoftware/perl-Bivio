@@ -160,7 +160,6 @@ sub _dynamic_modules {
 	    env
 	    mime
 	    status
-	    info
 	    rewrite
 	    setenvif
             alias
@@ -169,6 +168,7 @@ sub _dynamic_modules {
             log_config:mod_log_config:mod_log_config.c
 	    perl
 	) : qw(
+	    info
 	    config_log:mod_log_config:mod_log_config.c
 	    perl:libperl
 	),
