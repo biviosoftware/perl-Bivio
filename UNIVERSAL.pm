@@ -1,10 +1,17 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UNIVERSAL;
 use strict;
+use attributes ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A, $_R, $_SA);
+
+sub add_attribute_to_ref {
+    my($proto, $ref, $attribute) = @_;
+    attributes::->import($proto->package_name, $ref, $attribute);
+    return;
+}
 
 sub as_string {
     my($self) = @_;
