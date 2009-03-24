@@ -246,8 +246,9 @@ sub SERVER_REDIRECT_PARAMETERS {
     ];
 }
 
-sub apache_version {
-    return $_CFG->{apache_version};
+sub if_apache_version {
+    my(undef, $expect, $then, $else) = @_;
+    return $_CFG->{apache_version} >= $expect ? $then->() : $else && $else->();
 }
 
 sub as_string {
