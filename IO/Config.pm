@@ -187,7 +187,7 @@ sub if_version {
 	return ref($op) eq 'CODE' ? $op->() : $op
 	    if $version >= $cond_version;
     }
-    return ref($else) ? $else->() : $else;
+    return ref($else) eq 'CODE' ? $else->() : $else;
 }
 
 sub introduce_values {
