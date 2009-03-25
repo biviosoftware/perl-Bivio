@@ -65,6 +65,7 @@ my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_FACADES_DIR) = 'facades';
 my($_FILES_LIST) = '%{build_root}/../b_release_files.list';
 my($_EXCLUDE_LIST) = '%{build_root}/../b_release_files.exclude';
+my($_R) = b_use('IO.Ref');
 Bivio::IO::Config->register(my $_CFG = {
     cvs_rpm_spec_dir => 'pkgs',
     cvs_perl_dir => 'perl',
@@ -72,6 +73,7 @@ Bivio::IO::Config->register(my $_CFG = {
     rpm_http_root => undef,
     rpm_user => Bivio::IO::Config->REQUIRED,
     rpm_group => undef,
+    rpm_arch => 'i586',
     http_realm => undef,
     http_user => undef,
     http_password => undef,
@@ -86,7 +88,6 @@ Bivio::IO::Config->register(my $_CFG = {
 	[Bivio => b => 'bivio Software, Inc.'],
     ],
 });
-my($_R) = __PACKAGE__->use('IO.Ref');
 
 sub OPTIONS {
     # build_stage : string [b]
@@ -173,7 +174,7 @@ sub build {
 	unless $rpm_stage =~ /^[pcib]$/;
     return _do_in_tmp($self, 1, sub {
 	my($tmp, $output, $pwd) = @_;
-	my($arch) = _get_rpm_arch();
+	my($arch) = $_CFG->{rpm_arch};
 	_system("ln -s . $arch", $output)
 	    unless -d $arch;
 	for my $specin (@packages) {
@@ -807,14 +808,6 @@ sub _get_proxy {
         '--httpproxy', $1,
         '--httpport', $2,
        );
-}
-
-sub _get_rpm_arch {
-    my($rc) = _read_all("rpm --showrc|");
-    # Returns the _arch value from the rpm resource definition.
-    # Defaults to 'i386' if not found.
-    grep(/^\-\d+: _arch\s+(\S+)/ && (return $1), @$rc);
-    return 'i386';
 }
 
 sub _get_update_list {
