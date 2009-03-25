@@ -177,7 +177,8 @@ sub add_users_to_group {
 	    qr/^$group:.*[:,]$user(,|$)/m,
 	];
     } @user);
-    $res .= _exec($self, 'grpconv') if $res && $> == 0;
+    $res .= _exec($self, 'grpconv')
+	if -f '/etc/gshadow' && $res && $> == 0;
     return $res;
 }
 
