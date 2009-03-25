@@ -180,7 +180,6 @@ sub build {
 	    my($specout, $base, $fullname) = _create_rpm_spec(
 		$self, $specin, $output, $pwd);
 	    my($rpm_command) = "rpmbuild -b$rpm_stage $specout";
-#TODO: build srcrpm, too
 	    if ($self->get('noexecute')) {
 		_would_run("cd $tmp; $rpm_command", $output);
 		next;
@@ -724,8 +723,6 @@ Provides: $provides
 EOF
     $buf .= "Version: $version\n"
 	unless _search('version', $base_spec);
-    $buf .= "Copyright: N/A\n"
-	unless _search('copyright', $base_spec);
     $buf .= _build_root(_search('buildroot', $base_spec));
     for my $line (@$base_spec) {
         0 while $line =~ s{^\s*_b_release_include\(([^;]+)\);}
