@@ -206,6 +206,11 @@ other.host
             'rhn_up2date_param', ['pkgSkipList', 'apache*;'] => [
 		['etc/sysconfig/rhn/up2date', 'pkgSkipList=apache\*;'],
 	    ],
+	], [
+            'sh_param', [qw(etc/any.conf commented 1 uncommented 2)] => [
+		['etc/any.conf', "commented='1'"],
+		['etc/any.conf', "uncommented='2'"],
+	    ],
 	]),
 	rename_rpmnew => [
 	    ['/etc/logrotate.conf.rpmnew'] => [

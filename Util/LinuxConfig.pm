@@ -40,6 +40,7 @@ commands:
     resolv_conf domain nameserver ... -- updates resolv.conf with name servers
     rhn_up2date_param param value ... -- update params in up2date config
     serial_console [speed] -- configure grub and init for serial port console
+    sh_param file param value ... -- updates an sh-style config file
     split_file file -- splits a file into an array, ignoring # comments
     sshd_param param value ... -- add or delete a parameter from sshd config
 EOF
@@ -433,7 +434,9 @@ sub postgres_base {
 	['#*\s*(timezone\s*=\s*)', 'UTC'],
     ) . _replace_param($self, '/var/lib/pgsql/data/pg_hba.conf',
 	['(local.*)ident sameuser', 'trust'],
-    ) . _replace_param($self, '/etc/rc.d/init.d/postgresql',
+    ) . _optional(
+	$self, '/etc/rc.d/init.d/postgresql',
+	\&_replace_param,
 	['(#\s*chkconfig:\s*)', '345 84 16'],
     );
 }
@@ -538,6 +541,14 @@ sub serial_console {
   		"terminal --timeout=1 serial\n",
   	    ],
         );
+}
+
+sub sh_param {
+    my($self, $file, @args) = @_;
+    return _edit($self, $file, map {
+	my($param, $value) = @$_;
+	["(?<=\n)\\s*#?\\s*$param\[^\n]+", "$param='$value'"],
+    } @{$self->group_args(2, \@args)});
 }
 
 sub split_file {
@@ -857,6 +868,11 @@ sub _network_config_for {
 
 sub _network_for {
     return _network_config_for(shift)->{network};
+}
+
+sub _optional {
+    my($self, $file, $op, @args) = @_;
+    return -f _prefix_file($file) ? $op->($self, $file, @args) : '';
 }
 
 sub _prefix_file {
