@@ -723,6 +723,8 @@ Provides: $provides
 EOF
     $buf .= "Version: $version\n"
 	unless _search('version', $base_spec);
+    $buf .= "License: N/A\n"
+	unless _search('license', $base_spec);
     $buf .= _build_root(_search('buildroot', $base_spec));
     for my $line (@$base_spec) {
         0 while $line =~ s{^\s*_b_release_include\(([^;]+)\);}
