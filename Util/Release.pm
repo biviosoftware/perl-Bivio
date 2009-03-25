@@ -712,6 +712,7 @@ sub _create_rpm_spec {
 	|| (Bivio::Type::FileName->get_tail($specin) =~ /(.*)\.spec$/);
     my($provides) = _search('provides', $base_spec) || $name;
     my($buf) = <<"EOF" . _perl_make();
+%define suse_check echo not calling /usr/sbin/Check
 %define _sourcedir .
 %define _topdir .
 %define _srcrpmdir .
