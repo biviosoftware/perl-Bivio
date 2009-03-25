@@ -26,11 +26,50 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.50  2009/03/24 17:53:03  dobbs
+  * Bivio::Agent::HTTP::Form
+    avoid use of ?=
+  * Bivio::BConf
+    changed b-test to bivio test
+  * Bivio::Biz::Model::CalendarEvent
+    don't add admins as RealmUser
+  * Bivio::Biz::Model::GroupUserList
+    add registration date to UnapprovedApplicantList
+  * Bivio::Biz::Model::RealmMailBounce
+    removed (?=)
+  * Bivio::Biz::Model::RoleBaseList
+    group_concat requires a string in Postgres 8.3 so force ru.role to be
+    a string
+  * Bivio::PetShop::Util::SQL
+    removed ?=
+  * Bivio::SQL::Connection::Postgres
+    relax contraint violation regexp, because pg guys seem to change it for random reasons
+    remove (?=) in certain cases
+  * Bivio::Test::Request
+    setup_http sets up get_server_port and hostname
+  * Bivio::Test::Util
+    changed b-test to bivio test
+  * Bivio::Type::GeomNumber
+    removed ?=
+  * Bivio::Type::Secret
+    protect calls with eval
+  * Bivio::UI::FacadeBase
+    add registration date to UnapprovedApplicantList
+    use SITE_REALM_NAME to generate other names
+  * Bivio::UI::HTML::Widget::Script
+    add javascript to enable dropdown menus in IE6
+  * Bivio::UI::View::SiteAdmin
+    add registration date to UnapprovedApplicantList
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    add javascript to enable dropdown menus in IE6
+  * Bivio::UI::XML::Widget::AtomFeed
+    update xmlns to match Atom 1.0 spec
+
   Revision 7.49  2009/03/13 23:01:10  moeller
   * Bivio::Biz::Model
     added tracing for put_on_request(), delete_from_request()
