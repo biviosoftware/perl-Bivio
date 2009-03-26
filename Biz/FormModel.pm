@@ -70,6 +70,7 @@ my($_T) = b_use('Agent.Task');
 my($_TE) = b_use('Bivio.TypeError');
 my($_IDI) = __PACKAGE__->instance_data_index;
 b_use('AgentHTTP.Cookie')->register(__PACKAGE__);
+my($_V1) = b_use('IO.Config')->if_version(1);
 my($_V9) = b_use('IO.Config')->if_version(9);
 
 sub CONTEXT_FIELD {
@@ -927,7 +928,8 @@ sub validate_and_execute_ok {
 	    ref($res) eq 'HASH' && exists($res->{query})
 		? ($res->{query} ||= {}) : (),
 	) unless $self->in_error || $fields->{stay_on_page};
-	return $res
+
+	return _assert_ok_result($self, $res)
 	    if $res;
 	if ($self->in_error) {
 	    _put_file_field_reset_errors($self);
@@ -1011,6 +1013,14 @@ sub _apply_type_error {
     }
     $die->throw_die() unless $got_one;
     return;
+}
+
+sub _assert_ok_result {
+    my($self, $res) = @_;
+    my($fields) = $self->[$_IDI];
+    $self->die('non-zero result and stay_on_page or error')
+	if $_V1 && ($self->in_error || $fields->{stay_on_page});
+    return $res;
 }
 
 sub _call_execute {
