@@ -308,15 +308,18 @@ td.header_right {
 }
 td.footer_left {
   width: 30%;
+  font-size: 100%;
 }
 td.footer_right {
   width: 30%;
   text-align: right;
+  font-size: 100%;
 }
 td.footer_middle {
   width: 40%;
   vertical-align: top;
   text-align: center;
+  font-size: 100%;
 }
 td.header_middle div.nav div.task_menu {
   Font('nav');
