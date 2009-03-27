@@ -1,0 +1,45 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+my($bmenu) = class('Type.WikiDataName')->to_absolute('Menu3.bmenu');
+model('RealmFile')->delete({path => $bmenu});
+model('RealmFile')->create_with_content({path => $bmenu}, \(<<'EOF'));
+Label,Link,Class,Selected Regexp
+Mmm
+Nnn
+EOF
+req()->put(path_info => 'zzz');
+my($wiki) = class('Type.WikiName')->to_absolute(req('path_info'));
+model('RealmFile')->delete({path => $wiki});
+model('RealmFile')->create_with_content({path => $wiki}, \(<<'EOF'));
+@h1 zzz
+@b-menu-source value=Menu3
+blank
+EOF
+[
+    [{
+        value => '@b-menu-source value=Menu3',
+        is_public => 0,
+    }] => sub {
+        my(undef, $actual) = @_;
+        assert_equals($actual, ["\n"]);
+        assert_contains(qr{@{[join('.*', qw(
+            class="bmenu"
+            /fourem/wiki/Mmm Mmm
+            /fourem/wiki/Nnn Nnn
+        ))]}}, req(class()->TARGET));
+        #ensure @b-menu-target works even if it renders earlier on the page
+        #than @b-menu-source (e.g. when target is in .main_left and source is
+        #in .main_middle)
+        req()->delete(class()->TARGET);
+        return 1;
+    },
+    [{
+        value => '@b-menu-target',
+        is_public => 0,
+    }] => qr{@{[join('.*', qw(
+        class="bmenu"
+        /fourem/wiki/Mmm Mmm
+        /fourem/wiki/Nnn Nnn
+    ))]}},
+];

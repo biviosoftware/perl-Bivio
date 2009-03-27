@@ -11,9 +11,15 @@ my($_WN) = b_use('Type.WikiName');
 my($_SUFFIX) = '.bmenu';
 my($_R) = b_use('Type.Regexp');
 my($_C) = b_use('UI.Constant');
+my($_RF) = b_use('Action.RealmFile');
+my($_WT) = b_use('XHTMLWidget.WikiText');
+
+sub TARGET {
+    return __PACKAGE__ . '::b-menu-target';
+}
 
 sub handle_register {
-    return ['b-menu'];
+    return ['b-menu', 'b-menu-target', 'b-menu-source'];
 }
 
 sub internal_submenu {
@@ -33,6 +39,23 @@ sub render_html {
     my($class) =  delete($args->{attrs}->{class}) || 'bmenu';
     my($value) =  delete($args->{attrs}->{value}) || $args->{value};
     my($prefix) = delete($args->{attrs}->{b_selected_label_prefix});
+    if ($args->{tag} eq 'b-menu-target') {
+        my($die) = Bivio::Die->catch_quietly(sub {
+            my($v) = $_WT->prepare_html(
+                $args->{realm_id},
+                $args->{req}->get('path_info'),
+                $args->{task_id},
+                $args->{req},
+            );
+            ($v->{value}) = grep($_ && /^\@b-menu-source/,
+                                 split(/\r?\n/, $v->{value}));
+            $v->{value} ||= '';
+            $_WT->render_html($v);
+            return;
+        });
+        #b-menu-source is now pre-rendered and therefore on the req
+        return $die ? '' : $args->{req}->get_or_default($proto->TARGET, '');
+    }
     Bivio::Die->die(
 	$args->{attrs}, ': only accepts "class", "value", and',
         ' "b_selected_label_prefix" attributes',
@@ -49,6 +72,10 @@ sub render_html {
                     $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
             },
         )->render($args->{source}, \$buf);
+    if ($args->{tag} eq 'b-menu-source') {
+        $args->{req}->put($proto->TARGET, $buf);
+        return '';
+    }
     return $buf;
 }
 
