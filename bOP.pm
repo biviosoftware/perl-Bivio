@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 7.53  2009/03/27 23:46:37  dobbs
+  * Bivio::Biz::FormModel
+    assert that execute result is not set if the form has an error
+  * Bivio::UI::View::CSS
+    added font-size: 100% for footer so font renders correctly
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    added b-menu-source and b-menu-target
+
   Revision 7.52  2009/03/26 11:52:32  nagler
   * Bivio::Util::LinuxConfig
     added sh_param
