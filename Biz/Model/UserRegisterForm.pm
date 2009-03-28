@@ -82,6 +82,7 @@ sub internal_post_execute {
 	unless ($self->get_field_error('Email.email') || $_UNKNOWN)->eq_exists;
     my($q) = $_UPQF->add_email_to_query($self->get('Email.email'));
     $_A->save_label('user_exists', $self->req, $q);
+    $self->clear_errors;
     return {
 	task_id => 'user_exists_task',
 	query => $q,
