@@ -17,6 +17,33 @@ sub PART_TASK {
     return 'FORUM_MAIL_PART';
 }
 
+sub excerpt_column {
+    return ['excerpt', {
+	column_heading => '',
+	column_widget => Join([
+	    Link(String(['RealmMail.subject']),
+		['->drilldown_uri']),
+	    DIV_msg_exerpt(String(['excerpt'])),
+	    SPAN_msg_name_and_date(Join([
+		'By ', String(['RealmOwner.display_name']),
+		' - ',
+		DateTime(['RealmFile.modified_date_time']),
+		' - ',
+	    ])),
+	    Link(Join([
+		AmountCell(['message_count'])
+		->put(decimals => 0),
+		' message',
+		If ([sub {
+			 my($source, $count) = @_;
+			 return $count > 1 ? 1 : 0;
+		     }, ['message_count']],
+		    Join(['s'])),
+	    ]), ['->drilldown_uri']),
+	]),
+    }];
+}
+
 sub form_imail {
     my($self) = @_;
     return $self->internal_put_base_attr(
@@ -165,30 +192,7 @@ sub thread_root_list {
 		}];
 	    }
 		@fields ? @fields : (
-		    ['excerpt', {
-			column_heading => '',
-			column_widget => Join([
- 			    Link(String(['RealmMail.subject']),
- 				['->drilldown_uri']),
-			    DIV_msg_exerpt(String(['excerpt'])),
-			    SPAN_msg_name_and_date(Join([
-				'By ', String(['RealmOwner.display_name']),
-				' - ',
-				DateTime(['RealmFile.modified_date_time']),
-				' - ',
-			    ])),
-			    Link(Join([
-				AmountCell(['message_count'])
-				    ->put(decimals => 0),
-				' message',
-				If([sub {
-				    my($source, $count) = @_;
-				    return $count > 1 ? 1 : 0;
-				}, ['message_count']],
-				    Join(['s'])),
-			    ]), ['->drilldown_uri']),
-			]),
-		    }],
+		    $self->excerpt_column,
 	        ),
 	    ),
 	],
