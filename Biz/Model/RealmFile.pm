@@ -303,7 +303,8 @@ sub is_searchable {
 }
 
 sub is_text_content_type {
-    return shift->get_content_type(@_) =~ m{^text/} ? 1 : 0;
+    return shift->get_content_type(@_) =~ m{^(?:text/|application/x-perl)}
+	? 1 : 0;
 }
 
 sub is_version {
