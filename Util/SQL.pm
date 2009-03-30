@@ -360,12 +360,6 @@ sub init_dbms {
 	. (defined($clone_db) ? " copied from '$clone_db'" : '');
 }
 
-sub init_project {
-    my($self) = @_;
-    $self->init_dbms();
-    $self->create_test_db();
-}
-
 sub init_realm_role {
     my($self) = @_;
     # Initializes the database with the values from
