@@ -8,10 +8,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_cancel {
     my($self) = @_;
-    # Need to clear path_info so we don't come right back to here with
-    # "auto-create" on the wiki workflow
-    $self->get_request->put(path_info => undef);
-    return 'next';
+    return {
+	task_id => 'next',
+	path_info => $self->unsafe_get('file_exists') ? _authorized_name($self)
+	    : undef,
+    };
 }
 
 sub execute_empty {
