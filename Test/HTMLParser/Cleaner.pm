@@ -17,6 +17,8 @@ sub new {
     $html =~ s/\015//g;
     $html =~ s/&nbsp;/ /g;
     $html =~ s/<\/?(?:br|p) ?\/?>/\n/ig;
+    $html =~ s/\&\#39\;/'/g;
+    $html =~ s/\&quot\;/"/g;
     $html =~ s/\&\#\d+\;/ /g;
     return $proto->SUPER::new({
 	html => $html,
