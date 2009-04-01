@@ -56,6 +56,8 @@ options({
 		 '_anon', 'type'] => 'select',
 	    ['Forms', 'Credit Card Number*:', 'visible',
 		 'Full Name on Card*:', 'type'] => 'text',
+	    ['Forms', 'Credit Card Number*:', 'visible',
+	         "Card Owner's Zip Code*:", 'type'] => 'text',
             ['Images', 'dot', 'label'] => 'dot',
             ['Images', 'dot', 'src'] => '/i/dot.gif',
             ['Images', 'dot', 'alt'] => [undef],
