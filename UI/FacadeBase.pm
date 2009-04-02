@@ -697,7 +697,8 @@ sub _cfg_group_admin {
 		'Email.email' => 'Email',
 	    ]],
 	    [TaskLogList => [
-		last_first_middle => 'Last, First Name',
+		'RealmOwner.display_name' => 'Name',
+		'super_user.RealmOwner.name' => 'Staff acting as user',
 	    ]],
 	    [GroupUserList => [
                 'RealmOwner.creation_date_time' => 'Registration Date',
@@ -968,7 +969,9 @@ sub _cfg_site_admin {
 	    b_use('Model.TaskLog')->if_enabled(sub {
 		return (
 		    [SITE_ADMIN_TASK_LOG => '?/admin-hits'],
+		    [SITE_ADMIN_TASK_LOG_CSV => '?/admin-hits.csv'],
 		    [GROUP_TASK_LOG => '?/hits'],
+		    [GROUP_TASK_LOG_CSV => '?/hits.csv'],
 		);
 	    }),
 	],
@@ -1026,6 +1029,8 @@ EOF
 		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
 		SITE_ADMIN_TASK_LOG => 'Site Hits',
 		GROUP_TASK_LOG => 'Hits',
+		SITE_ADMIN_TASK_LOG_CSV => 'Spreadsheet',
+		GROUP_TASK_LOG_CSV => 'Spreadsheet',
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
