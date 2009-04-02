@@ -39,6 +39,10 @@ EOF
 	    want_hidden_fields => 0,
 	}),
     ]));
+    view_unsafe_put(
+	xhtml_tools => Link(vs_text('title.GROUP_TASK_LOG_CSV'),
+	    ['->format_uri', [qw(task ->get_attr_as_id csv_task)]]),
+    );
     return $self->internal_body(vs_paged_list('TaskLogList', [
 	['TaskLog.date_time', {
 	    column_widget => Join([
@@ -65,6 +69,19 @@ EOF
 	class => 'paged_list task_log',
 	show_headings => 0,
     }));
+}
+
+sub list_csv {
+    my($self, $extra_cols) = @_;
+    return shift->internal_body(CSV(TaskLogList => [qw(
+        TaskLog.date_time
+	super_user.RealmOwner.name
+	RealmOwner.display_name
+	Email.email
+        TaskLog.uri
+    ),
+	$extra_cols ? @$extra_cols : (),
+    ]));
 }
 
 1;
