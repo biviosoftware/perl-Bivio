@@ -1,0 +1,63 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+options({
+    class_name => 'Model.RealmMail',
+    comparator => 'nested_contains',
+});
+req()->set_realm('crm_forum');
+my($next_num) = model('CRMThread')->internal_next_ord;
+my($first_num) = $next_num;
+my($second_num) = $first_num + 1;
+my($id) = 1;
+my($msg_id);
+my($msg) = <<'EOF';
+To: a@a.a
+From: b@b.b
+Subject: $subject
+Message-Id: $message_id
+$extra_headers
+
+body
+EOF
+[
+    [req()] => [
+	{
+	    method => 'create_from_rfc822',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->delete_all_by_regexp(qr{CRMThread|RealmMail});
+		$id++;
+		return [template(\(my $x = $msg), {
+		    subject => $params->[0],
+                    message_id => "<a.$id\@a.a>",
+                    extra_headers => $params->[1] ? $params->[1]->() : '',
+		})];
+	    },
+	    compute_return => sub {[req()]},
+	} => [
+	    problem => [{
+		'Model.CRMThread' => {
+		    crm_thread_num => $first_num,
+		},
+		'Model.RealmMail' => {
+		    message_id => sub {$msg_id = shift},
+		},
+	    }],
+	    ['new problem', sub {
+		 "In-Reply-To: <$msg_id>\n";
+	    }] => [{
+		'Model.RealmMail' => {
+		    subject => qr{#$second_num\] new problem},
+		    thread_parent_id => undef,
+		    thread_root_id => sub {
+			req(qw(Model.RealmMail realm_file_id));
+		    },
+		},
+		'Model.CRMThread' => {
+		    crm_thread_num => $second_num,
+		},
+	    }],
+	],
+    ],
+];

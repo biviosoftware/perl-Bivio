@@ -49,7 +49,7 @@ sub handle_mail_post_create {
     my($v) = {
 	subject => $proto->clean_subject($realm_mail->get('subject')),
     };
-    if (my $self = $proto->internal_get_existing_thread($req, $realm_mail)) {
+    if (my $self = $req->unsafe_get($_REQ_ATTR)) {
 	my($tid) = $self->get('thread_root_id');
 	$realm_mail->update({
 	    thread_root_id => $tid,
@@ -62,6 +62,12 @@ sub handle_mail_post_create {
 	});
 	return;
     }
+    # Just in case RealmMail bound to an old message, but the user wants a new
+    # request.
+    $realm_mail->update({
+	thread_root_id => $realm_mail->get('realm_file_id'),
+	thread_parent_id => undef,
+    });
     $proto->new($req)->create({
 	%$v,
 	thread_root_id => $realm_mail->get('thread_root_id'),
@@ -77,17 +83,6 @@ sub handle_mail_pre_create_file {
     my($self) = $proto->new($req);
     $$rfc822 =~ s{(?<=^subject:)(.*)}{_subject($self, $1)}emi;
     return;
-}
-
-sub internal_get_existing_thread {
-    my($proto, $req, $realm_mail) = @_;
-    my($self) = $req->unsafe_get($_REQ_ATTR);
-    $self ||= $proto->new($req)->load({
-        thread_root_id => $realm_mail->get('thread_root_id'),
-    })
-        if $realm_mail->get('thread_root_id')
-            ne $realm_mail->get('realm_file_id');
-    return $self; #might be undef
 }
 
 sub internal_initialize {
