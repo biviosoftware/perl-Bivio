@@ -35,7 +35,12 @@ EOF
                     extra_headers => $params->[1] ? $params->[1]->() : '',
 		})];
 	    },
-	    compute_return => sub {[req()]},
+	    compute_return => sub {[
+                req(),
+                ${model(RealmFile => {
+                    realm_file_id => req(qw(Model.RealmMail realm_file_id)),
+                })->get_content},
+            ]},
 	} => [
 	    problem => [{
 		'Model.CRMThread' => {
@@ -45,21 +50,21 @@ EOF
 		    realm_file_id => sub {$first_tid = shift},
 		    message_id => sub {$msg_id = shift},
 		},
-	    }],
+	    }, qr{Subject: .*#$first_num\] problem}],
 	    ['problem2', sub {
 		 "In-Reply-To: <$msg_id>\n";
 	    }] => [{
-		'Model.RealmMail' => {
-		    subject => qr{#$second_num\] problem2},
-		    thread_parent_id => undef,
-		    thread_root_id => sub {
-			req(qw(Model.RealmMail realm_file_id));
-		    },
-		},
-		'Model.CRMThread' => {
-		    crm_thread_num => $second_num,
-		},
-	    }],
+                'Model.RealmMail' => {
+                    subject => qr{#$second_num\] problem2},
+                    thread_parent_id => undef,
+                    thread_root_id => sub {
+                        req(qw(Model.RealmMail realm_file_id));
+                    },
+                },
+                'Model.CRMThread' => {
+                    crm_thread_num => $second_num,
+                },
+            }, qr{Subject: .*#$second_num\] problem2}],
 	    ['problem', sub {
 		 "In-Reply-To: <$msg_id>\n";
 	    }] => [{
@@ -71,7 +76,7 @@ EOF
 		'Model.CRMThread' => {
 		    crm_thread_num => $first_num,
 		},
-	    }],
+	    }, qr{Subject: .*#$first_num\] problem}],
 	],
     ],
 ];
