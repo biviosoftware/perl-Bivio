@@ -16,8 +16,9 @@ sub def_edit {
     ),
 	{
 	    field => 'TupleSlotDef.tuple_slot_type_id',
-	    choices => ['Model.TupleSlotTypeSelectList'],
+	    choices => ['Model.TupleSlotTypeList'],
 	    list_display_field => 'TupleSlotType.label',
+	    unknown_label => 'Select Type',
 	},
     ]));
 }
@@ -27,12 +28,9 @@ sub def_list {
 	TupleDef.label
 	TupleDef.moniker
     ),
-	_list_actions(TupleSlotTypeList => [{
-	   task_id => 'FORUM_TUPLE_DEF_EDIT',
-	   controls => [
-	       ['!', 'use_count'],
-	   ],
-	}]),
+	_list_actions(TupleSlotTypeList => [
+	    'FORUM_TUPLE_DEF_EDIT',
+	]),
     ]));
 }
 
@@ -44,7 +42,7 @@ sub edit {
 	return vs_simple_form(TupleSlotListForm => [
 	    !$req->unsafe_get('Model.Tuple') ? () : [
 		String(vs_text('TupleSlotListForm.Tuple.tuple_num'), {
-		    cell_class => 'label',
+		    cell_class => 'label label_ok',
 		}),
 		String([qw(Model.Tuple tuple_num)], {
 		    cell_class => 'field',
@@ -58,7 +56,7 @@ sub edit {
 		    FormFieldLabel({
 			field => $field,
 			label => String("$label:", 0),
-			cell_class => 'label',
+			cell_class => 'label label_ok',
 		    }),
 		    Join([
 			FormFieldError({
@@ -87,7 +85,7 @@ sub edit {
 		FormFieldLabel({
 		    field => 'comment',
 		    label => String('Comment:', 0),
-		    cell_class => 'label',
+		    cell_class => 'label label_ok',
 		}),
 		Join([
 		    FormFieldError({
