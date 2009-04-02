@@ -110,6 +110,11 @@ sub from_unix {
     return $j.$_TIME_SUFFIX;
 }
 
+sub get_default {
+    my($self) = @_;
+    return $self->now;
+}
+
 sub get_max {
     # Maximum date: 12/31/2199
     return $_MAX;
