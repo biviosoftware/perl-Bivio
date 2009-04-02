@@ -2,15 +2,13 @@
 # $Id$
 package Bivio::Biz::Model::TupleSlotListForm;
 use strict;
-use base 'Bivio::Biz::ListFormModel';
+use Bivio::Base 'Biz.ListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_T) = __PACKAGE__->get_instance('Tuple');
-my($_TSN) = Bivio::Type->get_instance('TupleSlotNum');
-my($_UNDEF) = undef;
-my($_EK) = __PACKAGE__->get_instance('TupleSlotChoiceSelectList')
-    ->EMPTY_KEY_VALUE;
+my($_EK) = b_use('Model.TupleSlotChoiceSelectList')->EMPTY_KEY_VALUE;
+my($_T) = b_use('Model.Tuple');
+my($_TSN) = b_use('Type.TupleSlotNum');
 
 sub execute_empty_row {
     my($self) = @_;
@@ -26,18 +24,17 @@ sub execute_empty_row {
 
 sub execute_ok_end {
     my($self) = @_;
-    my($req) = $self->get_request;
     $self->internal_put_field(slot_headers => $self->[$_IDI]->{headers});
     _validate_subject($self);
     $self->internal_put_field('RealmMail.subject' => $self->[$_IDI]->{subject});
     $self->internal_put_field('RealmMail.from_email' =>
         $self->new_other('Email')->unauth_load_or_die({
-	    realm_id => $self->get_request->get('auth_user_id'),
+	    realm_id => $self->req('auth_user_id'),
 	})->get('email'),
     );
 #TODO: Add it to db here, but not when it comes in because tuple update already
 # done -- msg already in queue?
-    $self->use('View.Tuple')->execute(edit_mail => $req);
+    $self->use('View.Tuple')->execute(edit_mail => $self->req);
     return;
 }
 
@@ -64,7 +61,7 @@ sub execute_ok_row {
 sub execute_ok_start {
     my($self) = @_;
     $self->[$_IDI] = {
-	is_update => $self->get_request->has_keys('Model.Tuple') ? 1 : 0,
+	is_update => $self->req->has_keys('Model.Tuple') ? 1 : 0,
 	headers => '',
     };
     return;
@@ -170,16 +167,14 @@ sub _put_choice_lists {
 
 sub _get_subject_prefix {
     my($self) = @_;
-    my($req) = $self->get_request;
-    return ($req->unsafe_get('Model.Tuple') || $_T)
-	->mail_subject($req->get('Model.TupleUseList')->get_model('TupleUse'));
+    return ($self->req->unsafe_get('Model.Tuple') || $_T)->mail_subject(
+	$self->req('Model.TupleUseList')->get_model('TupleUse'));
 }
 
 sub _set_subject_if_string_slot {
     # Set the subject line based on the first 'string' slot
     my($self, $lm, $v) = @_;
     my($fields) = $self->[$_IDI];
-    my($req) = $self->get_request;
     if ($lm->type_class_instance eq Bivio::Type->get_instance('TupleSlot')) {
 	$fields->{subject} = _get_subject_prefix($self)
 	    . ' - ' . $lm->type_class_instance->to_literal(
@@ -192,7 +187,7 @@ sub _set_subject_if_string_slot {
 
 sub _slot_value {
     my($self) = @_;
-    my($t) = $self->get_request->unsafe_get('Model.Tuple');
+    my($t) = $self->req->unsafe_get('Model.Tuple');
     return undef
 	unless $t && $t->is_loaded;
     my($v) = $t->get(
