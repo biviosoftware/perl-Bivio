@@ -44,10 +44,10 @@ my($integer_id) = req(qw(Model.TupleSlotTypeList TupleSlotType.tuple_slot_type_i
 	'TupleSlotDef.is_required_1' => 1,
 	empty_row_count => 2,
     }] => [{
-	'Model.TupleDef' => {
-	    label => 'td1',
-	    moniker => 'TD1',
-	},
+#	'Model.TupleDef' => {
+#	    label => 'td1',
+#	    moniker => 'TD1',
+#	},
 	'Model.TupleSlotDef' => {
 	    label => 'x2',
 	    tuple_slot_num => 2,
