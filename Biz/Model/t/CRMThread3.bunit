@@ -8,6 +8,7 @@ options({
 req()->set_realm('crm_forum');
 my($next_num) = model('CRMThread')->internal_next_ord;
 my($first_num) = $next_num;
+my($first_tid);
 my($second_num) = $first_num + 1;
 my($id) = 1;
 my($msg_id);
@@ -41,14 +42,15 @@ EOF
 		    crm_thread_num => $first_num,
 		},
 		'Model.RealmMail' => {
+		    realm_file_id => sub {$first_tid = shift},
 		    message_id => sub {$msg_id = shift},
 		},
 	    }],
-	    ['new problem', sub {
+	    ['problem2', sub {
 		 "In-Reply-To: <$msg_id>\n";
 	    }] => [{
 		'Model.RealmMail' => {
-		    subject => qr{#$second_num\] new problem},
+		    subject => qr{#$second_num\] problem2},
 		    thread_parent_id => undef,
 		    thread_root_id => sub {
 			req(qw(Model.RealmMail realm_file_id));
@@ -56,6 +58,18 @@ EOF
 		},
 		'Model.CRMThread' => {
 		    crm_thread_num => $second_num,
+		},
+	    }],
+	    ['problem', sub {
+		 "In-Reply-To: <$msg_id>\n";
+	    }] => [{
+		'Model.RealmMail' => {
+		    subject => qr{#$first_num\] problem},
+		    thread_parent_id => sub {$first_tid},
+		    thread_root_id => sub {$first_tid},
+		},
+		'Model.CRMThread' => {
+		    crm_thread_num => $first_num,
 		},
 	    }],
 	],
