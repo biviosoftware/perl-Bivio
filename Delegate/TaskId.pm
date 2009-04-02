@@ -901,19 +901,8 @@ sub info_site_admin {
 	    require_secure=1
 	)],
 	[qw(
-	    SITE_ADMIN_TASK_LOG
-	    165
-	    ANY_GROUP
-	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&FEATURE_TASK_LOG
-            Model.TaskLogQueryForm
-	    Model.TaskLogList->execute_unauth_load_page
-	    View.TaskLog->list
-            next=SITE_ADMIN_TASK_LOG
-	    require_secure=1
-	)],
-	[qw(
 	    REMOTE_COPY_GET
-	    166
+	    165
 	    ANY_GROUP
 	    DATA_READ&DATA_BROWSE&FEATURE_FILE
 	    Action.RemoteCopy
@@ -922,7 +911,7 @@ sub info_site_admin {
 	)],
 	[qw(
 	    REMOTE_COPY_FORM
-	    167
+	    166
 	    ANY_GROUP
 	    DATA_READ&DATA_WRITE&DATA_BROWSE&FEATURE_FILE
 	    Model.RemoteCopyListForm
@@ -930,18 +919,39 @@ sub info_site_admin {
 	    next=FORUM_FILE_TREE_LIST
 	    require_secure=1
 	)],
-	[qw(
-	    GROUP_TASK_LOG
-	    168
-	    ANY_GROUP
-	    ADMIN_READ&ADMIN_WRITE&FEATURE_TASK_LOG
-            Model.TaskLogQueryForm
-	    Model.TaskLogList->execute_load_page
-	    View.TaskLog->list
-            next=GROUP_TASK_LOG
-	    require_secure=1
-	)],
-#169
+#167-169,
+	map({
+	    my($def) = $_;
+	    my($csv) = [@$def];
+	    $csv->[1]++;
+	    push(@$def, 'csv_task=' . ($csv->[0] .= '_CSV'));
+	    $csv->[6] .= '_csv';
+	    ($def, $csv);
+	} (
+	    [qw(
+	        SITE_ADMIN_TASK_LOG
+	        210
+	        ANY_GROUP
+	        ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&FEATURE_TASK_LOG
+                Model.TaskLogQueryForm
+	        Model.TaskLogList->execute_unauth_load_page
+	        View.TaskLog->list
+                next=SITE_ADMIN_TASK_LOG
+	        require_secure=1
+	    )],
+	    [qw(
+	        GROUP_TASK_LOG
+	        212
+	        ANY_GROUP
+	        ADMIN_READ&ADMIN_WRITE&FEATURE_TASK_LOG
+                Model.TaskLogQueryForm
+	        Model.TaskLogList->execute_load_page
+	        View.TaskLog->list
+                next=GROUP_TASK_LOG
+	        require_secure=1
+	    )],
+	)),
+#214-219
     ];
 }
 
