@@ -1178,11 +1178,17 @@ sub _cfg_tuple {
 		'Duplicate Field label.  All fields must be distinct.'],
 	    ['TupleDefListForm.TupleSlotDef.label.NOT_FOUND' =>
 		'You must specify at least one Field.'],
+	    ['TupleDefListForm.TupleSlotDef.label.UNSPECIFIED' =>
+		'Existing fields may not be removed.'],
+	    ['TupleDefListForm.TupleSlotDef.tuple_slot_type_id.EXISTS' =>
+		'New required fields must use a Type with a default value.'],
+	    ['TupleDefListForm.TupleSlotDef.tuple_slot_type_id.SYNTAX_ERROR' =>
+		'The type does not accept the existing record data.'],
 	    ['TupleUseForm.TupleUse.tuple_def_id.EXISTS' =>
 		'This Table is in use so you cannot change the Schema.'],
 	    [[qw(Tuple TupleSlotDef TupleSlotType)] => [
 		[qw(label moniker)] => [
-		    SYNTAX_ERROR => 'Labels must be at least two characters and begin with a letter, consist of letters, numbers, dashes(-), or underscores',
+		    SYNTAX_ERROR => 'Labels must be at least two characters and begin with a letter, consist of letters, numbers, dashes<(>-), or underscores',
 		],
 	    ]],
 	],
