@@ -986,6 +986,7 @@ sub info_tuple {
 	    73
 	    ANY_GROUP
 	    TUPLE_ADMIN&FEATURE_TUPLE
+            Model.TupleSlotTypeList->execute_load_all
 	    Model.TupleDefListForm
 	    View.Tuple->def_edit
 	    next=FORUM_TUPLE_DEF_LIST
