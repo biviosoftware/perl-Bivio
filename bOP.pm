@@ -26,11 +26,20 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.54  2009/03/28 04:05:41  moeller
+  * Bivio::Biz::Model::UserRegisterForm
+    clear_errors() before redirecting to reset password task
+  * Bivio::UI::View::Mail
+    added excerpt_column()
+  * Bivio::Util::Release
+    i386 is default
+    use i586, and set i386 where appropriate
+
   Revision 7.53  2009/03/27 23:46:37  dobbs
   * Bivio::Biz::FormModel
     assert that execute result is not set if the form has an error
