@@ -11,26 +11,16 @@ sub X_FILTER_HINT {
 }
 
 sub execute_empty {
-    my($self) = shift;
-    $self->SUPER::execute_empty(@_);
+    my($self) = @_;
     $self->internal_put_field(x_filter => $self->X_FILTER_HINT)
 	unless defined($self->unsafe_get('x_filter'));
-    return;
-}
-
-sub get_list_for_field {
-    my($proto, $field) = @_;
-    return _owner_name_list($proto) if $field
-	eq 'x_owner_name';
-    return shift->SUPER::get_list_for_field(@_);
+    return shift->SUPER::execute_empty(@_);
 }
 
 sub internal_query_fields {
-    my($self) = @_;
     return [
 	[qw(x_filter Text)],
     ];
 }
-
 
 1;
