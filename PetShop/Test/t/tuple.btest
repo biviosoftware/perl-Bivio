@@ -33,6 +33,14 @@ submit_form({
 });
 follow_link('schemas');
 follow_link('add.*schema');
+test_deviance(qr{must be at least two characters}is);
+submit_form({
+    name => 'Database1',
+    prefix => 'd1',
+    qr{field.*_0$}is => 'field1?',
+    qr{type.*_0$}is => 'i1',
+});
+test_conformance();
 submit_form({
     name => 'Database1',
     prefix => 'd1',
