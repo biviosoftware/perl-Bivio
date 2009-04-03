@@ -712,7 +712,11 @@ sub set_local_time_part {
     my($proto, $date_time, $seconds, $tz) = @_;
     # Sets the time component of the date/time to I<seconds> in the user's
     # time zone.  I<timezone> may be undef iwc it defaults to I<timezone>.
-    my($date, $time) = split(' ', _adjust_to_local($proto, $date_time, $tz));
+    my($date) = split(
+	' ',
+	$proto->is_date($date_time) ? $date_time
+	    : _adjust_to_local($proto, $date_time, $tz),
+    );
     return _adjust_from_local($proto, "$date $seconds", $tz);
 }
 
