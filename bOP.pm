@@ -26,11 +26,27 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.57  2009/04/03 17:43:10  nagler
+  * Bivio::Biz::Model::CRMThread
+    fix bug where subject matches, but no number, and there references
+    pointing back to original message.  Might be a reply from Gmail which
+    tosses subject-modified message for the sender
+  * Bivio::Biz::Model::Tuple
+    be explicit about thread changes
+  * Bivio::Biz::Registrar
+    import object, if not a ref
+  * Bivio::Type::MailFileName
+    no longer includes subject
+  * Bivio::Util::HTTPD
+    apache2 fix
+  * Bivio::Util::SQL
+    RealmMail->create_from_file went away
+
   Revision 7.56  2009/04/03 16:35:53  dobbs
   * Bivio::Biz::Model::TaskLogList
     remove putting query on List.  Not sure why
