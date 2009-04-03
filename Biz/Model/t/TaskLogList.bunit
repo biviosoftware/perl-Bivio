@@ -5,11 +5,11 @@ req()->initialize_fully;
 ShellUtil_TaskLog()->test_reset;
 my($t) = class('Agent.Task')->get_by_id('FORUM_FILE_TREE_LIST');
 req()->set_realm_and_user(qw(task_log_bunit task_log_user));
-my($now) = DateTime()->now;
+my($now) = DateTime('2/15/2009 12:0:0');
 DateTime()->set_test_now($now);
 model('TaskLog')->handle_pre_execute_task($t, req());
 model('TaskLog')->handle_post_execute_task($t, req());
-DateTime()->set_test_now(DateTime()->add_seconds($now, 1));
+DateTime()->set_test_now(my $later = DateTime()->add_days($now, 30));
 req()->set_realm_and_user(qw(task_log_bunit root));
 model('TaskLog')->handle_pre_execute_task($t, req());
 model('TaskLog')->handle_post_execute_task($t, req());
@@ -24,7 +24,7 @@ options({
     check_return => sub {
 	my($case, undef, $expect) = @_;
 	@$expect = qw(root task_log_user)
-	    unless @$expect;
+	    if ($expect->[0] || '') eq 'all';
 	assert_contains([map(+{
 	    'TaskLog.uri' => '/',
 	    'TaskLog.user_id' => realm_id($_),
@@ -37,11 +37,15 @@ options({
 });
 [
     unauth_load_all => [
-	[] => [],
+	[] => 'all',
     ],
     load_all => [
-	[] => [],
+	[] => 'all',
 	[x_filter => 'task_log_user@'] => 'task_log_user',
 	[x_filter => '-task_log_user@'] => 'root',
+	[x_filter => '=' . Date()->to_string($now)] => 'task_log_user',
+	[x_filter => '>' . Date()->to_string(Date()->add_days($now, 1))] => 'root',
+	[x_filter => '=' . Date()->to_string(Date()->add_days($now, 1))] => [],
+	[x_filter => '=' . substr(Date()->to_xml($now), 0, 7)] => 'task_log_user',
     ],
 ];
