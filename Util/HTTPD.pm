@@ -71,7 +71,7 @@ sub main {
 	Bivio::IO::File->mkdir_p("$pwd/files");
 	_symlink($pwd, "$pwd/logs");
 	_symlink(_find_file($_V2 ? qw(
-            /usr/local/apache/libexec
+            /usr/local/apache2/libexec
             /usr/lib/apache2
 	) : qw(
 	    /usr/lib/apache
