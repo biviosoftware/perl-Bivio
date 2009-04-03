@@ -1099,26 +1099,6 @@ CREATE INDEX realm_mail_t11 ON realm_mail_t (
 )
 /
 EOF
-    my($mf) = $self->model('RealmFile')->MAIL_FOLDER;
-    $self->model('RealmFile')->do_iterate(
-	sub {
-	    my($it) = @_;
-	    $self->req->set_realm($it->get('realm_id'));
-	    $it->new_other('RealmFile')->do_iterate(
-		sub {
-		    my($it) = @_;
-		    $it->new_other('RealmMail')->create_from_file($it)
-			if !$it->get('is_folder')
-			&& $it->get('path') =~ m{^\Q$mf/}o;
-		    return 1;
-		},
-		'realm_file_id asc',
-	    );
-	    return 1;
-	},
-	unauth_iterate_start => 'realm_id',
-	{path => $mf},
-    );
     return;
 }
 
