@@ -26,11 +26,48 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.55  2009/04/02 21:37:22  dobbs
+  Release notes:
+  * Bivio::BConf
+    remove -MAIL_READ from admin_only_forum_email
+  * Bivio::Biz::Model::CRMThread
+    create a new case, if the thread is old, but subject didn't match
+  * Bivio::Biz::Model::RealmFile
+    application/x-perl is text
+  * Bivio::Biz::Model::TaskLogQueryForm
+    removed copied code
+  * Bivio::Biz::Model::TupleDefListForm
+    handle editing and adding new rows to an in-use schema
+  * Bivio::Biz::Model::TupleSlotListForm
+    minor refactoring
+  * Bivio::Biz::Model::WikiForm
+    fixed execute_cancel to go back to page, if it already exists
+  * Bivio::Delegate::TaskId
+    load TupleSlotTypeList for schema editing
+    added _CSV tasks for TaskLog tasks
+  * Bivio::PetShop::View::Base
+    added "Tables" top level link
+  * Bivio::Test::HTMLParser::Cleaner
+    decode &#39; and &quot;
+  * Bivio::Type::Date
+    added get_default()
+  * Bivio::UI::FacadeBase
+    added all standard tools to xhtml_dock_left_standard
+    added new tuple FormErrors
+    added TaskLog _CSV tasks
+  * Bivio::UI::View::TaskLog
+    added list_csv(), link to spreadsheet from tools
+  * Bivio::UI::View::Tuple
+    allow editing an in-use schema,
+    added label_ok to cell class
+  * Bivio::Util::SQL
+    removed init_project
+
   Revision 7.54  2009/03/28 04:05:41  moeller
   * Bivio::Biz::Model::UserRegisterForm
     clear_errors() before redirecting to reset password task
