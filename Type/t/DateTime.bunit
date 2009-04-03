@@ -26,6 +26,11 @@ req()->initialize_fully;
 	    ['2453647 0', 0] => '2453647 86399',
 	    ['2453647 82800', -60] => ['2453648 82799'],
 	    ['2453647 82799', -60] => ['2453647 82799'],
+ 	    ['2453647 79199', -60] => '2453647 82799',
+#BUG: The routine takes a DateTime, but we want to treat Date specially
+#     so we check the time part.  No way to know if this is a date or a datetime
+#     whose time part is 21:59:59
+ 	    ['2453647 79199', -180] => '2453647 75599',
 	],
  	set_local_beginning_of_day => [
  	    '2453647 7199' => '2453646 7200',
