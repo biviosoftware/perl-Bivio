@@ -1,10 +1,11 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
 my($realm) = 'crm_tuple_forum';
 req()->set_realm_and_user($realm, 'demo')->initialize_fully('FORUM_CRM_FORM');
 my($now) = DateTime()->now;
 DateTime()->set_test_now(DateTime()->add_seconds($now, -60));
+CRMThread()->test_unauth_delete_all({realm_id => req('auth_id')});
 ShellUtil_TestCRM()->create_thread({
     subject => my $subject = random_string(),
     'b_ticket.TupleTag.slot1' => 'Male Puppy',
