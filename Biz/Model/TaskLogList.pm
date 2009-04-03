@@ -10,6 +10,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	can_iterate => 1,
         primary_key => ['TaskLog.task_log_id'],
 	order_by => [
 	    'TaskLog.date_time',
@@ -53,7 +54,8 @@ sub internal_prepare_statement {
 		    $stmt->$method(
 			$_ =~ m{/} ? 'TaskLog.uri'
 			    : $_ =~ m,\@, ? 'Email.email'
-			    : 'RealmOwner.display_name',
+			        : $_ =~ /^[\d\-]+$/ ? 'TaskLog.date_time'
+			            : 'RealmOwner.display_name',
 			'%' . lc($_) . '%',
 		    );
 		} split(' ', $filter)));
