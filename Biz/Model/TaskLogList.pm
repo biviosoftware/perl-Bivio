@@ -47,10 +47,8 @@ sub internal_prepare_statement {
     if (my $qf = $self->ureq('Model.TaskLogQueryForm')) {
 	if (defined(my $filter = $qf->unsafe_get('x_filter'))) {
 	    if ($filter =~ /\S/ && $filter ne $qf->X_FILTER_HINT) {
-		my($q) = '';
 		$filter =~ s/\%/_/g;
 		$stmt->where(map({
-		    $q = "$_ ";
 		    my($method) = $_ =~ s/^-// ? 'NOT_ILIKE' : 'ILIKE';
 		    $stmt->$method(
 			$_ =~ m{/} ? 'TaskLog.uri'
@@ -59,8 +57,6 @@ sub internal_prepare_statement {
 			'%' . lc($_) . '%',
 		    );
 		} split(' ', $filter)));
-		chop($q);
-		$query->put(x_filter => $q);
 	    }
 	}
     }
