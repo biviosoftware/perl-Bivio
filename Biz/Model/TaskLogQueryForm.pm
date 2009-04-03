@@ -23,4 +23,10 @@ sub internal_query_fields {
     ];
 }
 
+sub set_filter {
+    my($self, $filter) = @_;
+    $self->internal_put_field(x_filter => $filter);
+    return;
+}
+
 1;
