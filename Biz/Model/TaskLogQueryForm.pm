@@ -7,7 +7,7 @@ use Bivio::Base 'Model.ListQueryForm';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub X_FILTER_HINT {
-    return 'Filter on name, @email, or /link';
+    return 'Filter name, >date, @email, or /link';
 }
 
 sub execute_empty {
