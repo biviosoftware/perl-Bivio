@@ -7,8 +7,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub list {
-    my($self, $extra_cols) = @_;
+sub internal_add_filter {
+    my($self) = @_;
     my($f) = $self->use('Model.TaskLogQueryForm');
     $self->internal_put_base_attr(selector => Join([
 	ECMAScript(<<"EOF"),
@@ -39,6 +39,12 @@ EOF
 	    want_hidden_fields => 0,
 	}),
     ]));
+    return;
+}
+
+sub list {
+    my($self, $extra_cols) = @_;
+    $self->internal_add_filter;
     view_unsafe_put(
 	xhtml_tools => Link(vs_text('title.GROUP_TASK_LOG_CSV'),
 	    ['->format_uri', [qw(task ->get_attr_as_id csv_task)]]),
