@@ -12,9 +12,10 @@ sub X_FILTER_HINT {
 
 sub execute_empty {
     my($self) = @_;
-    $self->internal_put_field(x_filter => $self->X_FILTER_HINT)
+    shift->SUPER::execute_empty(@_);
+    $self->set_filter($self->X_FILTER_HINT)
 	unless defined($self->unsafe_get('x_filter'));
-    return shift->SUPER::execute_empty(@_);
+    return;
 }
 
 sub internal_query_fields {
