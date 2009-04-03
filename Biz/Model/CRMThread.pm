@@ -5,17 +5,18 @@ use strict;
 use Bivio::Base 'Model.OrdinalBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-__PACKAGE__->use('Model.RealmMail')->register('Model.CRMThread');
-my($_PS) = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(
+my($_PS) = ${b_use('Auth.PermissionSet')->from_array(
     ['FEATURE_CRM'],
-)} if __PACKAGE__->use('Auth.Permission')->unsafe_from_name('FEATURE_CRM');
-my($_EMS) = __PACKAGE__->use('Type.MailSubject')->EMPTY_VALUE;
-my($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
+)} if b_use('Auth.Permission')->unsafe_from_name('FEATURE_CRM');
+my($_EMS) = b_use('Type.MailSubject')->EMPTY_VALUE;
+my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_SUBJECT_RE) = qr{\#\s*(\d+)\s*\]};
 my($_REQ_ATTR) = __PACKAGE__ . '.pre_create';
-my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_DT) = b_use('Type.DateTime');
+my($_MS) = b_use('Type.MailSubject');
+my($_I) = b_use('Mail.Incoming');
 my($_RECENT) = 60;
-my($_MS) = __PACKAGE__->use('Type.MailSubject');
+b_use('Model.RealmMail')->register('Model.CRMThread');
 
 sub ORD_FIELD {
     return 'crm_thread_num';
@@ -42,15 +43,16 @@ sub create {
 }
 
 sub handle_mail_post_create {
-    my($proto, $realm_mail, $in) = @_;
+    my($proto, $realm_mail, $in, $file) = @_;
     my($req) = $realm_mail->req;
     return
 	unless $proto->is_enabled_for_auth_realm($req);
     my($v) = {
 	subject => $proto->clean_subject($realm_mail->get('subject')),
     };
-    if (my $self = $req->unsafe_get($_REQ_ATTR)) {
-	my($tid) = $self->get('thread_root_id');
+    my($self, $tid);
+    if ($self = $req->unsafe_get($_REQ_ATTR)) {
+	$tid = $self->get('thread_root_id');
 	$realm_mail->update({
 	    thread_root_id => $tid,
 	    thread_parent_id => $tid,
@@ -81,7 +83,7 @@ sub handle_mail_pre_create_file {
     return
 	unless $proto->is_enabled_for_auth_realm($req);
     my($self) = $proto->new($req);
-    $$rfc822 =~ s{(?<=^subject:)(.*)}{_subject($self, $1)}emi;
+    $$rfc822 =~ s{(?<=^subject:)(.*)}{_create_subject($self, $1, $rfc822)}emi;
     return;
 }
 
@@ -124,11 +126,42 @@ sub update {
     return shift->SUPER::update(@_);
 }
 
+sub _create_subject {
+    my($self, $value, $rfc822) = @_;
+    my($req) = $self->req;
+    $req->delete($_REQ_ATTR);
+    my($num);
+    if ($value =~ s{.*$_SUBJECT_RE\s*}{}) {
+	$num = $1;
+	unless ($self->unsafe_load({crm_thread_num => $num})) {
+	    $self->req->warn(
+		$num, ': crm_thread_num not found, ignoring; subject=', $value);
+	    $num = undef;
+	}
+    }
+    elsif (my $l = $self->new_other('RealmMailReferenceList')
+        ->load_first_from_incoming($_I->new($rfc822))
+    ) {
+	if (_strip_subject($self, $l->get('RealmMail.subject_lc'))
+	    eq _strip_subject($self, $value)
+	    && $self->unsafe_load({
+		thread_root_id => $l->get('RealmMail.thread_root_id')})
+	) {
+	    $num = $self->get('crm_thread_num');
+	}
+    }
+    $req->put($_REQ_ATTR => $self)
+	if $self->is_loaded;
+    $value =~ s/^\s+|\s+$//g;
+    return ' '
+	. _prefix($self, $num || $self->internal_next_ord)
+	. $value;
+}
+
 sub _fixup_values {
     my($self, $values) = @_;
-    $values->{subject_lc} = $self->clean_subject(
-	$_MS->clean_and_trim($values->{subject}),
-    ) if defined($values->{subject});
+    $values->{subject_lc} = _strip_subject($self, $values->{subject})
+        if defined($values->{subject});
     return;
 }
 
@@ -142,29 +175,6 @@ sub _is_realm_member {
     my($f) = $realm_mail->get('from_email');
     return grep($f eq $_, @{$self->new_other('CRMForm')->get_realm_emails})
 	? 1 : 0;
-}
-
-sub _subject {
-    my($self, $value) = @_;
-    my($req) = $self->req;
-    $req->delete($_REQ_ATTR);
-    my($num);
-    if ($value =~ s{.*$_SUBJECT_RE\s*}{}) {
-	$num = $1;
-	if ($self->unsafe_load({crm_thread_num => $num})) {
-	    $req->put($_REQ_ATTR => $self);
-	}
-	else {
-#TODO: Fix for imports
-	    $self->req->warn(
-		$num, ': crm_thread_num not found, ignoring; subject=', $value);
-	    $num = undef;
-	}
-    }
-    $value =~ s/^\s+|\s+$//g;
-    return ' '
-	. _prefix($self, $num || $self->internal_next_ord)
-	. $value;
 }
 
 sub _prefix {
@@ -185,6 +195,10 @@ sub _status_for_update_mail {
 	&& !_is_realm_member($self, $realm_mail)
         ? (crm_thread_status => $_CTS->OPEN)
 	: ();
+}
+
+sub _strip_subject {
+    return shift->clean_subject($_MS->clean_and_trim(shift));
 }
 
 sub _user_id_for_update_mail {
