@@ -99,9 +99,12 @@ sub handle_mail_post_create {
 	    unless $state->{self}->unsafe_load(
 		{map(($_ => $state->{$_}), qw(tuple_def_id tuple_num))});
 	# Override given possible subject change
+	my($old_tid) = $state->{self}->get('thread_root_id');
 	$realm_mail->update({
-	    thread_root_id => $state->{self}->get('thread_root_id'),
-	});
+	    thread_root_id => $old_tid,
+	    thread_parent_id => $old_tid,
+	}) if $realm_mail->get('thread_root_id') ne $old_tid;
+
     }
     else {
 	# thread_root_id is this message.  Subject will be unique after
@@ -112,7 +115,11 @@ sub handle_mail_post_create {
 	})->get('tuple_num');
 	(my $s = $realm_mail->get('subject'))
 	    =~ s/(?<=$state->{moniker}\#)/$state->{tuple_num}/;
-	$realm_mail->update({subject => $s});
+	$realm_mail->update({
+	    thread_root_id => $realm_mail->get('realm_file_id'),
+	    thread_parent_id => undef,
+	    subject => $s,
+	});
 	# These headers are not identical
 	($s = $incoming->get('header'))
 	    =~ s/^(subject:.*$state->{moniker}\#)/$1$state->{tuple_num}/im;
