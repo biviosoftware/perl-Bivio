@@ -26,6 +26,8 @@ sub new {
 
 sub push_object {
     my($self, $object) = @_;
+    $object = b_use($object)
+	unless ref($object);
     my($q) = $self->[$_IDI];
     push(@$q, $object)
 	unless grep($_ eq $object, @$q);
