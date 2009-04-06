@@ -595,7 +595,7 @@ sub send_mail {
     my($req) = $self->use('Test.Request')->get_current_or_new;
     my($o) = $self->use('Mail.Outgoing')->new;
     $o->set_recipients($to_email, $req);
-    $o->set_header(To => $to_email);
+    $o->set_header(To => ref($to_email) ? join(',', @$to_email) : $to_email);
     $headers = {
 	Subject => "subj-$r",
 	$headers ? %$headers : (),
