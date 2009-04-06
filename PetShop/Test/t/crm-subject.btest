@@ -1,0 +1,45 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+my($_I) = b_use('Mail.Incoming');
+my($forum, $uri) = create_crm_forum(['crm_tech1']);
+my($support) = generate_remote_email($forum);
+my($tech) = generate_local_email('crm_tech1');
+my($customer) = generate_local_email('crm_cust1');
+my($orig) = send_mail($customer, [$support, $tech]);
+my($direct, $reflected) = map($_I->new($_), verify_local_mail($tech, undef, 2));
+my($num) = $reflected->get_subject =~ qr{ #(\d+)\]};
+
+foreach my $item (
+    [$direct->get_reply_subject, $direct->get_message_id],
+    [$direct->get_reply_subject, undef, $direct->get_message_id],
+    [$reflected->get_reply_subject, $reflected->get_message_id],
+    [" #$num] changed the subject, but not the number"],
+) {
+    my($subject, $reply_to, $references) = @$item;
+    clear_local_mail();
+    send_mail($tech, $support, {
+        Subject => $subject,
+        $reply_to ? ('In-Reply-To' => "<$reply_to>") : (),
+        $references ? (References => "<$references>") : (),
+    });
+    verify_local_mail($tech, qr{^Subject: .*#$num\]}m);
+}
+
+foreach my $item (
+    [' #'.($num+7).'] hacked subject'],
+    ['changed the subject, removed the number', $direct->get_message_id],
+    ['changed subject again', undef, $direct->get_message_id],
+    ['yet another change of subject', $reflected->get_message_id],
+) {
+    my($expect, $subject, $reply_to, $references) = @$item;
+    clear_local_mail();
+    send_mail($tech, $support, {
+        Subject => $subject,
+        $reply_to ? ('In-Reply-To' => "<$reply_to>") : (),
+        $references ? (References => "<$references>") : (),
+    });
+    $expect++;
+    verify_local_mail($tech, qr{^Subject: .*#$expect\]}m);
+}
