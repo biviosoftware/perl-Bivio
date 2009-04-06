@@ -1395,8 +1395,9 @@ sub _setup_for_main {
     my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
     my($p) = $self->use('SQL.Connection')->set_dbi_name($db);
     $fields->{prior_db} = $p unless $fields->{prior_db};
-    $self->put_request($self->use('Test.Request')->get_instance)
-        unless $self->unsafe_get('req');
+    $self->put_request(
+	$self->use('Test.Request')->get_instance->put_durable(is_secure => 1),
+    ) unless $self->unsafe_get('req');
     $self->set_realm_and_user(map(_parse_realm($self, $_), qw(realm user)));
     return;
 }
