@@ -39,7 +39,12 @@ sub initialize {
 
 
 sub internal_server_redirect_task {
-    return;
+    my(undef, $task_id, $die, $req) = @_;
+    $req->throw_die(DIE => {
+	message => 'embedded requests cannot redirect',
+	entity => $task_id,
+    });
+    # DOES NOT RETURN
 }
 
 1;
