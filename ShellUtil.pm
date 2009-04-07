@@ -448,6 +448,10 @@ sub initialize_ui {
     return $req;
 }
 
+sub is_execute {
+    return shift->unsafe_get('noexecute') ? 0 : 1;
+}
+
 sub is_loadavg_ok {
     my($line) = $_F->read('/proc/loadavg');
     # Returns TRUE if the machine load is below a configurable
