@@ -3,9 +3,6 @@
 package Bivio::Util::HTTPD;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::IO::ClassLoader;
-use Bivio::IO::Config;
-use Bivio::IO::File;
 use Sys::Hostname ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -23,12 +20,15 @@ Bivio::IO::Config->register(my $_CFG = {
     additional_locations => '',
     additional_directives => '',
 });
-my($_WLFC_ERROR) = <<'EOF';
-Could not set want_local_file_cache.  Your .bconf needs:
-    'Bivio::UI::Facade' => {
-         want_local_file_cache => 0,
-    },
+
+sub USAGE {
+    return <<'EOF';
+usage: bivio httpd [options] command [args..]
+commands
+   run -- starts httpd in foreground 
+   run_background -- starts httpd in background
 EOF
+}
 
 sub handle_config {
     my(undef, $cfg) = @_;
@@ -36,34 +36,22 @@ sub handle_config {
     return;
 }
 
-sub internal_pre_execute {
+sub internal_pre_exec {
     # Perform operations before httpd is started.
     return;
 }
 
-sub main {
-    my($self, @argv) = @_;
-    my($execute) = 1;
-    my($background) = 0;
-    my($server_name) = undef;
-    my($at_mode) = 0;
+sub run {
+    my($self, $background) = shift->name_args([[qw(background Boolean)]], \@_);
+    $self->get_request;
     my($pwd) = $self->get_project_root() . '/httpd';
 #TODO: Let ShellUtil handle options; Create a default handler for commands
     local($_);
-    while (@argv) {
-	$_ = shift(@argv);
-	/^-n/ && ($execute = 0, next);
-	/^-(?:b|bg|background)/ && ($background = 1, next);
-	/^--at/ && ($at_mode = 1, next);
-	/^-/ && &_usage("unknown option \"$_\"");
-	defined($server_name) && &_usage('too many arguments');
-	$server_name = $_;
-    }
     if ($ENV{PERLLIB}) {
 	my($httpd) = $ENV{PERLLIB} . '../external/apache/src/httpd';
 	-x $httpd && ($_HTTPD = $httpd);
     }
-    if ($execute) {
+    if ($self->is_execute) {
         -f "$pwd/httpd.pid" && (kill('TERM', `cat $pwd/httpd.pid`), sleep(5));
 	Bivio::IO::File->rm_rf($pwd);
 	Bivio::IO::File->mkdir_p($pwd);
@@ -95,9 +83,6 @@ sub main {
 
     # write custom bconf
     my($bconf_data) = Bivio::IO::File->read($ENV{'BCONF'});
-    die($_WLFC_ERROR, "\n")
-        if $at_mode && !($$bconf_data =~
-            s/(\bwant_local_file_cache)\s+=>\s+\d,/$1 => 1/);
     Bivio::IO::File->write("$pwd/httpd$$.bconf", $bconf_data);
     _symlink(
 	Bivio::IO::File->absolute_path(File::Basename::dirname($ENV{'BCONF'}))
@@ -105,16 +90,10 @@ sub main {
 	"$pwd/bconf.d",
     ) unless -l "$pwd/bconf.d";
     my($bconf) = "PerlSetEnv BCONF $pwd/httpd$$.bconf";
-
-     my($reload) = $at_mode
-         ? ''
-         : 'PerlInitHandler Bivio::Test::Reload';
-    my($hostip) = sprintf("%d.%d.%d.%d",
-            unpack('C4', (gethostbyname($hostname))[4]));
-
+    my($reload) = 'PerlInitHandler Bivio::Test::Reload';
     my($modules) = _dynamic_modules($_HTTPD);
 
-    my($conf) = $execute ? "httpd$$.conf" : "&STDOUT";
+    my($conf) = $self->is_execute ? "httpd$$.conf" : "&STDOUT";
     open(OUT, ">$pwd/$conf") || die("open $conf: $!");
     my($apache_status) = $_V2 ? 'PerlResponseHandler Apache2::Status'
 	: 'PerlHandler Apache::Status';
@@ -133,18 +112,22 @@ PerlFreshRestart off
     }
     close(OUT) || die("close $conf: $!");
     close(DATA);
-    if ($execute) {
-	print(STDERR "Starting: $_HTTPD @start_mode -d $pwd -f $pwd/$conf on port $port\n");
-	print(STDERR "tail -f stderr.log\n")
+    if ($self->is_execute) {
+	$self->print("Starting: $_HTTPD @start_mode -d $pwd -f $pwd/$conf on port $port\n");
+	$self->print("tail -f stderr.log\n")
 	    if $background;
 	Bivio::IO::File->chdir($pwd);
-	$self->internal_pre_execute();
+	$self->internal_pre_exec;
 	exec($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
 	die("$_HTTPD: $!");
     }
     else {
-	print "Would start: $_HTTPD -X -d $pwd -f $pwd/$conf\n";
+	$self->print("Would start: $_HTTPD -X -d $pwd -f $pwd/$conf\n");
     }
+}
+
+sub run_background {
+    return shift->run(1);
 }
 
 sub _dynamic_modules {
@@ -202,15 +185,6 @@ sub _symlink {
     my($file, $link) = @_;
     -l $link || CORE::symlink($file, $link)
 	|| die("symlink($file, $link): $!");
-}
-
-sub _usage {
-    my($msg) = join('', @_);
-    print STDERR <<"EOF";
-$0: $msg
-usage: $0 [--config] [-n] [-background] [server-name]
-EOF
-    exit(1);
 }
 
 1;
