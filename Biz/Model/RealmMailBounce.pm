@@ -92,11 +92,9 @@ sub _check_loop {
 
 sub _log {
     my($uid, $c) = @_;
-    my($f) = Bivio::Biz::File->absolute_path(
+    b_use('Biz.File')->write(
 	"RealmMailBounce/$uid/" . $_DT->now_as_file_name . '.eml',
-    );
-    Bivio::IO::File->mkdir_parent_only($f);
-    Bivio::IO::File->write($f, $c);
+	$c);
     return $uid;
 }
 
