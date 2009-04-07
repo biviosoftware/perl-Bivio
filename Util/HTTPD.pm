@@ -114,7 +114,7 @@ PerlFreshRestart off
     close(DATA);
     if ($self->is_execute) {
 	$self->print("Starting: $_HTTPD @start_mode -d $pwd -f $pwd/$conf on port $port\n");
-	$self->print("tail -f stderr.log\n")
+	$self->print("tail -f httpd/stderr.log\n")
 	    if $background;
 	Bivio::IO::File->chdir($pwd);
 	$self->internal_pre_exec;
