@@ -2,13 +2,13 @@
 # $Id$
 package Bivio::Biz::File;
 use strict;
-use base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
     root => Bivio::IO::Config->REQUIRED,
 });
-my($_F) = __PACKAGE__->use('IO.File');
+my($_F) = b_use('IO.File');
 
 sub handle_config {
     my(undef, $cfg) = @_;
@@ -25,6 +25,14 @@ sub destroy_db {
     my($proto) = @_;
     $_F->rm_children($_CFG->{root});
     return;
+}
+
+sub write {
+    my($proto, $base, $content) = @_;
+    my($f) = $proto->absolute_path($base);
+    $_F->mkdir_parent_only($f, 0770);
+    $_F->write($f, $content);
+    return $f;
 }
 
 1;
