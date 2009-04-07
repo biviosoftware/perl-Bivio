@@ -12,7 +12,6 @@ my($_SUFFIX) = '.bmenu';
 my($_R) = b_use('Type.Regexp');
 my($_C) = b_use('UI.Constant');
 my($_RF) = b_use('Action.RealmFile');
-my($_WT) = b_use('XHTMLWidget.WikiText');
 
 sub TARGET {
     return __PACKAGE__ . '::b-menu-target';
@@ -36,6 +35,8 @@ sub internal_submenu {
 
 sub render_html {
     my($proto, $args) = @_;
+    # load here to avoid subclass redfined error
+    my($_WT) = b_use('XHTMLWidget.WikiText');
     my($class) =  delete($args->{attrs}->{class}) || 'bmenu';
     my($value) =  delete($args->{attrs}->{value}) || $args->{value};
     my($prefix) = delete($args->{attrs}->{b_selected_label_prefix});
