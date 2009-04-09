@@ -29,7 +29,7 @@ sub USER_ID_FIELD {
 sub clean_subject {
     my(undef, $subject) = @_;
     $subject =~ s{.*$_SUBJECT_RE\s*}{};
-    $subject =~ s{\b(?:Re|Aw|Fwd?):|\[fwd\]}{}ig;
+    $subject =~ s{\b(?:Re|Aw|Fwd?)(?:\:|\b)|\[fwd\]}{}ig;
     $subject =~ s{^\s+|\s+$}{}g;
     $subject =~ s{\s+}{ }g;
     return length($subject) ? $subject : $_EMS;
@@ -198,7 +198,7 @@ sub _status_for_update_mail {
 }
 
 sub _strip_subject {
-    return shift->clean_subject($_MS->clean_and_trim(shift));
+    return $_MS->clean_and_trim(shift->clean_subject(shift));
 }
 
 sub _user_id_for_update_mail {
