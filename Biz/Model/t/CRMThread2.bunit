@@ -8,7 +8,6 @@ options({
 req()->set_realm('crm_forum');
 my($next_num) = model('CRMThread')->internal_next_ord;
 my($not_num) = $next_num + 33;
-my($msg_id);
 my($id) = 1;
 my($msg) = <<'EOF';
 To: a@a.a
@@ -47,7 +46,7 @@ EOF
 		crm_thread_status => CRMThreadStatus('NEW'),
 	    }],
 	    [LOCKED => crm_tech1 => "#$next_num] here's help"] => sub {
-                $msg_id = Bivio::Mail::Incoming
+                Bivio::Mail::Incoming
                     ->new(req('Model.RealmMail')->get_rfc822)->get_message_id;
                 return [{
                     crm_thread_num => $next_num,
@@ -73,11 +72,6 @@ EOF
                 crm_thread_num => $next_num + 1,
                 crm_thread_status => CRMThreadStatus('NEW'),
             }],
-	    [demo => 'existing thread, but no number',
-             sub{"In-Reply-To: <$msg_id>"}] => [{
-                 crm_thread_num => $next_num,
-                 crm_thread_status => CRMThreadStatus('OPEN'),
-             }],
 	],
     ],
 ];
