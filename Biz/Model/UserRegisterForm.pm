@@ -5,22 +5,31 @@ use strict;
 use Bivio::Base 'Model.UserCreateForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_BR) = __PACKAGE__->use('Biz.Random');
-my($_UPQ) = __PACKAGE__->use('Action.UserPasswordQuery');
-my($_A) = __PACKAGE__->use('Action.Acknowledgement');
-my($_UPQF) = __PACKAGE__->use('Model.UserPasswordQueryForm');
-my($_UNKNOWN) = __PACKAGE__->use('Bivio.TypeError')->UNKNOWN;
+my($_A) = b_use('Action.Acknowledgement');
+my($_BR) = b_use('Biz.Random');
 my($_R) = b_use('Auth.Role');
+my($_SF) = b_use('ShellUtil.SiteForum');
+my($_UNKNOWN) = b_use('Bivio.TypeError')->UNKNOWN;
+my($_UPQ) = b_use('Action.UserPasswordQuery');
+my($_UPQF) = b_use('Model.UserPasswordQueryForm');
+
+sub add_site_admin_user {
+    my($self, $user) = @_;
+    $self->req->with_realm($_SF->ADMIN_REALM, sub {
+        $self->new_other('GroupUserForm')->change_main_role(
+            $self->req(qw(Model.User user_id)), $_R->USER);
+    });
+    return;
+}
 
 sub execute_ok {
     my($self, ) = @_;
-    my($req) = $self->get_request;
     my($r) = $self->internal_create_models;
-    $req->set_realm($r);
+    $self->req->set_realm($r);
     return
 	if $self->unsafe_get('password_ok');
     $self->internal_put_field(
-	uri => $_UPQ->format_uri($req),
+	uri => $_UPQ->format_uri($self->req),
     );
     $self->put_on_request(1);
     $self->if_unapproved_applicant_mode(sub {
@@ -36,7 +45,7 @@ sub execute_ok {
 }
 
 sub internal_create_models {
-    my($self) = shift;
+    my($self) = @_;
     $self->internal_put_field(
 	'RealmOwner.display_name' => substr(
 	    ($self->get('Email.email') =~ /^(.*)\@/)[0] || 'x',
@@ -47,12 +56,12 @@ sub internal_create_models {
     $self->internal_put_field('RealmOwner.password' => $_BR->password)
 	unless $self->unsafe_get('RealmOwner.password')
 	&& $self->unsafe_get('password_ok');
-    return $self->SUPER::internal_create_models(@_);
+    return shift->SUPER::internal_create_models(@_);
 }
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = $self->SUPER::internal_initialize;
+    my($info) = shift->SUPER::internal_initialize(@_);
     @{$info->{visible}} = grep(
 	ref($_) && $_->{type} && $_->{type} =~ /Button/,
 	@{$info->{visible}});
