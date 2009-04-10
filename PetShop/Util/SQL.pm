@@ -244,65 +244,6 @@ sub top_level_forum {
     return;
 }
 
-sub _init_crm {
-    my($self) = @_;
-    foreach my $forum (qw(CRM_TUPLE_FORUM CRM_FORUM)) {
-	$self->top_level_forum(
-	    $self->$forum(),
-	    [$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
-	);
-	$self->req->with_realm($self->CRM_TECH(1), sub {
-	    $self->model('Email')->create({
-		location => $self->use('Type.Location')->BILL_TO,
-		email => $self->format_test_email($self->CRM_TECH(1) . 'a'),
-	    });
-	    return;
-	}) if $forum eq 'CRM_TUPLE_FORUM';
-	$self->new_other('CRM')->setup_realm;
-	if ($forum eq 'CRM_FORUM') {
-	    my($alias);
-	    foreach my $a (qw(acrm crm)) {
-		$self->model('EmailAlias')->create({
-		    incoming => $alias = $self->use('TestLanguage.HTTP')
-			    ->generate_remote_email($a),
-		    outgoing => $self->req(qw(auth_realm owner name)),
-		});
-	    }
-	    $self->model('RowTag')->create_value(
-		$self->req('auth_id'), 'CANONICAL_EMAIL_ALIAS',
-		$alias);
-	    $self->req(qw(auth_realm owner))->update({
-		display_name => 'PetShop Support',
-	    });
-	}
-	elsif ($forum eq 'CRM_TUPLE_FORUM') {
-	    $self->model('TupleSlotType')->create_from_hash({
-		Priority => {
-		    type_class => 'TupleSlot',
-		    choices => [qw(Low Medium High)],
-		    default_value => 'Low',
-		},
-	    });
-	    $self->model('RowTag')->create_value(
-		$self->req('auth_id'), 'CRM_SUBJECT_PREFIX', 'tuple');
-	    $self->model('TupleDef')->create_from_hash({
-		'b_ticket#Ticket' => [
-		    {
-			label => 'Product',
-			type => 'String',
-		    },
-		    {
-			label => 'Priority',
-			type => 'Priority',
-		    },
-		],
-	    });
-	    $self->model('TupleUse')->create_from_label('Ticket');
-	}
-    }
-    return;
-}
-
 sub _init_default_tuple {
     my($self) = @_;
     my($req) = $self->req;
