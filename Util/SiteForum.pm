@@ -6,9 +6,18 @@ use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
+my($_FN) = b_use('Type.ForumName');
 
 sub ADMIN_REALM {
     return Bivio::UI::Facade->get_default->SITE_ADMIN_REALM_NAME;
+}
+
+sub BULLETIN_REALM {
+    return 'bulletin';
+}
+
+sub BULLETIN_STAGING {
+    return $_FN->join(shift->BULLETIN_REALM, 'staging');
 }
 
 sub CONTACT_REALM {
@@ -43,6 +52,27 @@ commands
   init_realms -- creates site realms
   realm_names -- which realm names created by init
 EOF
+}
+
+sub create_bulletin_forums {
+    my($self) = @_;
+    $self->req->with_realm(undef, sub {
+        $self->model('ForumForm', {
+	   'RealmOwner.display_name' => 'Bulletins',
+	   'RealmOwner.name' => $self->BULLETIN_REALM,
+	});
+	$self->req->with_realm($self->BULLETIN_REALM, sub {
+	    $self->model('RowTag')->create_value(MAIL_SUBJECT_PREFIX => '!');
+            $self->new_other('RealmRole')
+		->edit_categories('+admin_only_forum_email');
+            $self->model('ForumForm', {
+		'RealmOwner.display_name' => 'Bulletin Staging',
+		'RealmOwner.name' => $self->BULLETIN_STAGING,
+	    });
+	});
+	return;
+    });
+    return;
 }
 
 sub init {
@@ -132,6 +162,7 @@ sub init_realms {
 	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
 	return;
     });
+    $self->create_bulletin_forums;
     $self->model('EmailAlias')->create({
 	incoming => $req->format_email(
 	    Bivio::UI::Text->get_value('support_email'), $req),
@@ -166,6 +197,8 @@ sub realm_names {
 	$self->CONTACT_REALM,
 	$self->HELP_REALM,
 	$self->ADMIN_REALM,
+	$self->BULLETIN_REALM,
+	$self->BULLETIN_STAGING,
     ];
 }
 
