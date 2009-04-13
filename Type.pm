@@ -6,6 +6,7 @@ use base 'Bivio::UI::WidgetValueSource';
 use Bivio::HTML;
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
+use Bivio::XML;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # INITIALIZATION: must be explicit, because Bivio::Base does too much so
@@ -381,9 +382,7 @@ sub to_uri {
 }
 
 sub to_xml {
-    my($self, $value) = @_;
-    return !defined($value) ? ''
-	: $_HTML->escape_xml($self->to_literal($value));
+    return Bivio::XML->escape(shift->to_literal(shift));
 }
 
 sub _row_tag {
