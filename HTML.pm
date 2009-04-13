@@ -10,7 +10,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub escape {
     my(undef, $text) = @_;
-    return scalar(HTML::Entities::encode($text));
+    my($res) = scalar(HTML::Entities::encode($text));
+    $res =~ s/'/&#39;/sg;
+    return $res;
 }
 
 sub escape_attr_value {

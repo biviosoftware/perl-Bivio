@@ -6,6 +6,9 @@ my($value) = '&lt; original/value%20 &gt;';
 my($copy) = $value;
 
 [
+    escape => [
+	"'" => '&#39;',
+    ],
     escape_query => [
 	hello => 'hello',
 	'hello+bye' => 'hello%2Bbye',
