@@ -24,6 +24,25 @@ sub escape_comment {
     return $comment;
 }
 
+sub format {
+    my($proto, $email, $comment) = @_;
+    $comment = defined($comment) ? $comment : '';
+    $comment = $proto->escape_comment($comment);
+    return $email
+	unless length($comment);
+    $comment = qq{"$comment"}
+	unless $comment =~ /^$ATOM_ONLY_PHRASE$/ios;
+    return "$comment " . $proto->format_with_brackets($email);
+
+}
+
+sub format_with_brackets {
+    my($self, $email) = @_;
+    $email = $1
+	if $email =~ /^<(.+)>$/s;
+    return "<$email>";
+}
+
 sub parse {
     # (proto, string) : array
     # 822:
