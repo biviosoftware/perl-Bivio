@@ -8,6 +8,7 @@ my($copy) = $value;
 [
     escape => [
 	"'" => '&#39;',
+	'"' => '&quot;',
     ],
     escape_query => [
 	hello => 'hello',
