@@ -45,8 +45,8 @@ sub execute_ok {
     my($id) = $req->unsafe_get_nested(qw(Model.RealmMail message_id));
     my($cc) = $self->get('cc')->as_literal;
     my($to) = $self->get('to');
-    my($from) = $self->internal_format_from;
     my($realm_email) = _realm_email($self);
+    my($from) = $self->internal_format_from($realm_email);
     my($from_email) = $_MA->parse($from);
     my($sender) = $self->internal_format_sender($realm_email);
     my($reply_to) = $self->internal_format_reply_to($realm_email);
@@ -74,7 +74,7 @@ sub execute_ok {
 	'Message-Id' => $_O->generate_message_id($req),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
-    my($im) = $_V->render($self->VIEW_CLASS . '->form_imail', $req);
+    my($im) = $self->internal_format_incoming;
     $im = $self->internal_send_to_realm($im)
 	if $removed_sender;
     $_O->new($im)
@@ -91,12 +91,17 @@ sub get_realm_emails {
 }
 
 sub internal_format_from {
-    my($self) = @_;
+    my($self, $realm_email) = @_;
     return $_RFC->format_mailbox(
 	$self->new_other('EmailAlias')
 	    ->format_realm_as_incoming($self->req('auth_user')),
 	$self->req(qw(auth_user display_name)),
     );
+}
+
+sub internal_format_incoming {
+    my($self) = @_;
+    return $_V->render($self->VIEW_CLASS . '->form_imail', $self->req);
 }
 
 sub internal_format_reply_to {
