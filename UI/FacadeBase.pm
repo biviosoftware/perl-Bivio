@@ -1358,7 +1358,7 @@ sub _cfg_wiki {
 		3 => sub {
 		    return (
 			[FORUM_WIKI_VIEW => [
-			    '?/bp/*', '?/wiki/*', '?/public-wiki/*']],
+			    '?/wiki/*', '?/public-wiki/*']],
 		    );
 		},
 		sub {
