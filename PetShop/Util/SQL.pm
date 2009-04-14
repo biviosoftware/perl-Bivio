@@ -181,6 +181,7 @@ sub initialize_db {
 
 sub initialize_test_data {
     my($self) = @_;
+    _init_site_admin($self);
     _init_demo_categories($self);
     _init_demo_products($self);
     _init_demo_items($self);
@@ -194,9 +195,9 @@ sub initialize_test_data {
     _init_default_tuple($self);
     _init_mail($self);
     $self->new_other('TestCRM')->init;
-    _init_site_admin($self);
     _init_remote_copy($self);
     _init_task_log($self);
+    _init_bulletin($self);
     $self->new_other('RealmUser')->audit_all_users;
     return;
 }
@@ -241,6 +242,18 @@ sub top_level_forum {
 	    administrator => grep($_ eq $_, @$admins) ? 1 : 0,
 	});
     }
+    return;
+}
+
+sub _init_bulletin {
+    my($self) = @_;
+    $self->model('ForumUserAddForm', {
+	'RealmUser.realm_id' => _realm_id(
+	    $self,
+	    $self->new_other('SiteForum')->BULLETIN_REALM,
+	),
+	'User.user_id' => _realm_id($self, 'bulletin_user'),
+    });
     return;
 }
 
