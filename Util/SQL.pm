@@ -52,7 +52,6 @@ my($_BUNDLE) = [qw(
     task_log
     !feature_task_log
     !feature_task_log2
-    !bulletin_staging
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -497,12 +496,6 @@ CREATE SEQUENCE bulletin_s
   CACHE 1 INCREMENT BY 100000
 /
 EOF
-    return;
-}
-
-sub internal_upgrade_bulletin_staging {
-    my($self) = @_;
-    $self->new_other('SiteForum')->create_bulletin_forums;
     return;
 }
 
