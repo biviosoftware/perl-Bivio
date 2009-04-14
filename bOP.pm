@@ -26,11 +26,24 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.58  2009/04/03 23:43:50  nagler
+  * Bivio::Biz::Model::TaskLogList
+    added can_iterate,
+    interprets [\d\-]+ as date
+    generalize date code
+  * Bivio::Biz::Model::TaskLogQueryForm
+    added set_filter()
+    fixed execute_empty() order so hint doesn't get clobbered
+  * Bivio::Type::DateTime
+    set_local_time_part handles Date properly
+  * Bivio::UI::View::TaskLog
+    moved filter field to internal_add_filter() for subclasses
+
   Revision 7.57  2009/04/03 17:43:10  nagler
   * Bivio::Biz::Model::CRMThread
     fix bug where subject matches, but no number, and there references
