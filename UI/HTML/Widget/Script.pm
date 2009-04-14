@@ -1,8 +1,8 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Script;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 
 # C<Bivio::UI::HTML::Widget::Script> is called with a script name, which
 # is rendered in the head.   Currently, only scripts that are constants,
@@ -10,7 +10,6 @@ use Bivio::Base 'Bivio::UI::Widget';
 # onload function called I<script_name>_onload.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub JAVASCRIPT_B_SUBMENU_IE6 {
@@ -39,6 +38,18 @@ function b_submenu_ie6_onload() {
             }
         }
     }
+}
+EOF
+}
+
+sub JAVASCRIPT_B_CLEAR_ON_FOCUS {
+    return <<'EOF';
+function b_clear_on_focus(field, hint) {
+    if (field.value == hint) {
+        field.value = "";
+    }
+    field.className.replace(/disabled/, "enabled");
+    return;
 }
 EOF
 }
@@ -95,8 +106,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
     if ($self->has_keys('value')) {
-	my($x) = '';
-	if ($self->unsafe_render_attr('value', $source, \$x) && $x) {
+	if (my $x = $self->render_simple_attr('value', $source)) {
 	    $x = 'JAVASCRIPT_' . uc($x);
 	    $self->die('value', $source, $x, ': no such script')
 		unless $self->can($x);
@@ -107,21 +117,31 @@ sub render {
 	return;
     }
     my($names) = $req->unsafe_get(__PACKAGE__);
-    return unless $names;
+    return
+	unless $names;
     $req->delete(__PACKAGE__);
 
     my($js) = $_VS->vs_call('JavaScript');
+    my($functions) = [map($js->strip($self->$_()), @$names)];
     $$buffer .= join(
 	"\n",
 	qq{<script type="text/javascript">\n<!--},
-	map($js->strip($self->$_()), @$names),
-	'window.onload=function(){',
-	grep(s/JAVASCRIPT_(.*)/\L$1\E_onload();/, @$names),
-	'}',
+	@$functions,
+	_onload($functions),
 	"// --></script>",
 	'',
     );
     return;
+}
+
+sub _onload {
+    my($functions) = @_;
+    my($onload) = [map(/^function\s+(\w+_onload)\s*\(/mg, @$functions)];
+    return !@$onload ? () : (
+	'window.onload=function(){',
+	@$onload,
+	'}',
+    );
 }
 
 1;
