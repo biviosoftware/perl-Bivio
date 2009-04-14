@@ -243,7 +243,16 @@ sub vs_grid3 {
 	),
     ]], {
 	class => $qualifier,
+	hide_empty_cells => 1,
     });
+}
+
+sub vs_can_group_bulletin_form {
+    return [sub {
+        my($req) = shift->req;
+        return $req->can_user_execute_task('GROUP_BULLETIN_FORM')
+	    && $req->can_user_execute_task('FORUM_MAIL_FORM');
+    }];
 }
 
 sub vs_list {
