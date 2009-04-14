@@ -222,6 +222,14 @@ sub _msg {
 				query => undef,
 				path_info => ['RealmFile.path'],
 			    },
+			    {
+				task_id => 'GROUP_BULLETIN_FORM',
+				query => {
+				    'ListQuery.this'
+					=> ['RealmMail.realm_file_id'],
+				},
+				control => vs_can_group_bulletin_form(),
+			    },
 			]),
 			{class => 'actions'},
 		    ),
