@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
+use Bivio::Base 'Collection.Attributes';
 use Bivio::Die;
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
