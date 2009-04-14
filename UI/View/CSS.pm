@@ -725,7 +725,7 @@ sub _site_mail {
 }
 .msg .actions {
   Color('even-background');
-  width: 30em;
+  width: 40em;
 }
 .msg .actions .rounded_box_body  {
   margin: 1ex 1em;
