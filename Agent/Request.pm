@@ -462,14 +462,13 @@ sub format_mailto {
 
 sub format_stateless_uri {
     my($self, $task_id) = @_;
-    # Creates a URI relative to this host/port/realm without a query string.
     return $self->format_uri({
-	task_id => $task_id,
 	query => undef,
 	realm => undef,
 	path_info => undef,
 	carry_query => 0,
 	carry_path_info => 0,
+	ref($task_id) eq 'HASH' ? %$task_id : (task_id => $task_id),
     });
 }
 
