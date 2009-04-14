@@ -240,6 +240,11 @@ sub new {
     return _new($proto, $owner, $req);
 }
 
+sub owner_name_equals {
+    my($self, $name) = @_;
+    return ($self->unsafe_get('owner_name') || '') eq $name ? 1 : 0;
+}
+
 sub _do_default {
     my($list_method, $proto, $op, $req) = @_;
     $req->with_user(user => sub {
