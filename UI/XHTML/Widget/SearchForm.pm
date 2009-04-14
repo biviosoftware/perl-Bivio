@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::SearchForm;
 use strict;
@@ -17,18 +17,26 @@ sub initialize {
 	[form_method => 'GET'],
 	[value => sub {
 	     return Join([
-		 Text({
-		     field => 'search',
-		     size => $self->get_or_default(text_size => 30),
-		 }),
-		 $self->get_or_default(image_form_button =>
-		     ImageFormButton(qw(ok_button magnifier go)),
+		 ClearOnFocus(
+		     Text({
+			 field => 'search',
+			 size => $self->get_or_default(text_size => 30),
+		     }),
+		     b_use('Model.' . $self->get('form_class'))
+			 ->CLEAR_ON_FOCUS_HINT,
 		 ),
+		 $self->get_or_default(image_form_button =>
+		     ImageFormButton(qw(ok_button magnifier go))),
 	     ]);
 	}],
 	[class => 'search'],
     ]);
     return shift->SUPER::initialize(@_);
+}
+
+sub internal_new_args {
+    # Implements positional argument parsing for L<new|"new">.
+    return shift->internal_compute_new_args([qw(value href ?class)], \@_);
 }
 
 1;
