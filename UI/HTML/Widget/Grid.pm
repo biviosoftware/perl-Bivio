@@ -142,6 +142,7 @@ use Bivio::UI::Align;
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SPACER) = '&nbsp;' x 3;
 my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
+my($_END_COL) = "</td>\n";
 
 =head1 FACTORIES
 
@@ -251,7 +252,7 @@ sub initialize {
 		_append(\@p, '>');
 	    }
 	    # Render scalars literally.
-	    push(@$r, @p, $c, $end ? "</td>\n" : '',
+	    push(@$r, @p, $c, $end ? $_END_COL : '',
 		   $form_end ? '</form>' : '');
 	}
     }
@@ -400,9 +401,9 @@ sub render {
 	    }
 	    # else undefined, render nothing
 	    $row .= $cell;
+	    $row =~ s{<td[^>]*></td>\s*$}{}
+		if $hide_cells && $cell eq $_END_COL;
 	}
- 	$row =~ s{<td[^>]*></td>}{}sg
- 	    if $hide_cells;
 	$row .= '</tr>';
 
 	# If row is completely empty, don't render it.
