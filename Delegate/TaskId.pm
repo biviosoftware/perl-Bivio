@@ -767,7 +767,24 @@ sub info_mail {
 	    ANYBODY&FEATURE_MAIL
 	    Action.RealmFile->execute_show_original
 	)],
-#145-149 free
+	[qw(
+            GROUP_BULLETIN_FORM
+            145
+            ANY_GROUP
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_MAIL&FEATURE_BULLETIN
+            Model.BulletinForm
+            View.Bulletin->form
+            next=FORUM_MAIL_THREAD_ROOT_LIST
+	    mail_reflector_task=GROUP_BULLETIN_REFLECTOR
+	)],
+	[qw(
+	    GROUP_BULLETIN_REFLECTOR
+	    146
+	    ANY_GROUP
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_MAIL&FEATURE_BULLETIN
+	    Action.RealmMail->execute_reflector
+	)],
+#147-149 free
     ];
 }
 

@@ -521,6 +521,7 @@ sub _cfg_crm {
 		closed => 'Close',
 		locked => 'Open (Locked)',
 		open => 'Open',
+		pending_customer => 'Pending Customer',
 	    ]],
 	    [CRMForm => [
 		action_id => 'Action',
@@ -760,6 +761,8 @@ sub _cfg_mail {
 	    [MAIL_RECEIVE_NOT_FOUND => undef],
 	    [MAIL_RECEIVE_NO_RESOURCES => undef],
 	    [MAIL_RECEIVE_FORBIDDEN => undef],
+	    [GROUP_BULLETIN_FORM => '?/publish-bulletin'],
+	    [GROUP_BULLETIN_REFLECTOR => undef],
 	],
 	Text => [
 	    ['MailReceiveDispatchForm.uri_prefix' => sub {
@@ -783,6 +786,12 @@ sub _cfg_mail {
 	    [MailForm => [
 		subject => 'Topic',
 		ok_button => 'Send',
+	    ]],
+	    [BulletinForm => [
+		ok_button => 'Send',
+		prose => [
+		    prologue => q{To send a test message, just change the To: list below.  To publish to this bulletin as is, click Send once.},
+		],
 	    ]],
 	    [prose => [
 		MailHeader => [
@@ -809,9 +818,11 @@ sub _cfg_mail {
 		FORUM_MAIL_FORM => q{If(['->has_keys', 'Model.RealmMailList'], 'Reply', 'New Topic');},
 		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
 		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
+		GROUP_BULLETIN_FORM => 'Publish Bulletin',
 	    ]],
 	    [acknowledgement => [
 		FORUM_MAIL_FORM => 'Your message was sent.',
+		GROUP_BULLETIN_FORM => q{The bulletin has been sent to String(['Model.BulletinForm', 'to']);.},
 	    ]],
 	],
     };
@@ -1346,7 +1357,8 @@ sub _cfg_wiki {
 	    $_C->if_version(
 		3 => sub {
 		    return (
-			[FORUM_WIKI_VIEW => ['?/wiki/*', '?/public-wiki/*']],
+			[FORUM_WIKI_VIEW => [
+			    '?/bp/*', '?/wiki/*', '?/public-wiki/*']],
 		    );
 		},
 		sub {
