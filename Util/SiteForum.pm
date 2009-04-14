@@ -48,6 +48,11 @@ commands
 EOF
 }
 
+sub add_default_staging_suffix {
+    my($self, $name) = @_;
+    return $_FN->join($name, 'staging');
+}
+
 sub init {
     my($self) = @_;
     $self->init_admin_user;
@@ -100,7 +105,7 @@ sub init_bulletin {
 	});
 	$self->model('ForumForm', {
 	    'RealmOwner.display_name' => $display_name . ' Staging',
-	    'RealmOwner.name' => $_FN->join($name, 'staging'),
+	    'RealmOwner.name' => $self->add_default_staging_suffix($name),
 	});
 	$self->new_other('RealmRole')->edit_categories('+feature_bulletin');
 	return;
