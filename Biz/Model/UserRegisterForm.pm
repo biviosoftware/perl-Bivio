@@ -7,20 +7,9 @@ use Bivio::Base 'Model.UserCreateForm';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Action.Acknowledgement');
 my($_BR) = b_use('Biz.Random');
-my($_R) = b_use('Auth.Role');
-my($_SF) = b_use('ShellUtil.SiteForum');
 my($_UNKNOWN) = b_use('Bivio.TypeError')->UNKNOWN;
 my($_UPQ) = b_use('Action.UserPasswordQuery');
 my($_UPQF) = b_use('Model.UserPasswordQueryForm');
-
-sub add_site_admin_user {
-    my($self, $user) = @_;
-    $self->req->with_realm($_SF->ADMIN_REALM, sub {
-        $self->new_other('GroupUserForm')->change_main_role(
-            $self->req(qw(Model.User user_id)), $_R->USER);
-    });
-    return;
-}
 
 sub execute_ok {
     my($self, ) = @_;
