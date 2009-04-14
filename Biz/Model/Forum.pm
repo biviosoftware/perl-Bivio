@@ -40,6 +40,13 @@ sub create_realm {
     return map($_->put_on_request, @res);
 }
 
+sub get_parent_id {
+    my($self) = @_;
+    $self->load
+	unless $self->is_loaded;
+    return $self->get('parent_realm_id');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
