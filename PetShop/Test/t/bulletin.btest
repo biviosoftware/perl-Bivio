@@ -1,0 +1,32 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+login_as('root');
+follow_link(qw(^bulletin$ mail));
+verify_no_text('new.topic');
+follow_link(qw(bulletin_staging mail new_topic));
+my($s) = random_string();
+submit_form({
+    topic => $s,
+    text => 'nothing',
+});
+verify_local_mail(generate_local_email('root'), $s, 1);
+follow_link($s, 'publish');
+submit_form({
+    to => my $e = generate_local_email('demo'),
+});
+test_equals(qr{\Q$e}, verify_local_mail(qr{.}, $s, 1));
+follow_link(qw(^bulletin$ mail));
+verify_no_link($s);
+follow_link(qw(bulletin_staging mail), $s, 'publish');
+submit_form(send => {});
+$e = generate_remote_email('bulletin');
+foreach my $msg (verify_local_mail(qr{.}, $s, 2)) {
+    my($h) = b_use('Mail.Incoming')->new($msg)->get_headers;
+    test_equals(qr{bulletins <bounce}i, $h->{from});
+    test_equals(qr{bulletin_user|root}, $h->{to});
+    test_equals(qr{\Q$e}, $h->{'reply-to'});
+}
+follow_link(qw(^bulletin$ mail), $s);
+
