@@ -152,7 +152,7 @@ sub _create_subject {
     }
     $req->put($_REQ_ATTR => $self)
 	if $self->is_loaded;
-    $value =~ s/^\s+|\s+$//g;
+    $value = $_MS->trim_literal($self->clean_subject($value));
     return ' '
 	. _prefix($self, $num || $self->internal_next_ord)
 	. $value;
