@@ -24,7 +24,7 @@ submit_form(send => {});
 $e = generate_remote_email('bulletin');
 foreach my $msg (verify_local_mail(qr{.}, $s, 2)) {
     my($h) = b_use('Mail.Incoming')->new($msg)->get_headers;
-    test_equals(qr{bulletins <bounce}i, $h->{from});
+    test_equals(qr{PetShop bulletin <bounce}i, $h->{from});
     test_equals(qr{bulletin_user|root}, $h->{to});
     test_equals(qr{\Q$e}, $h->{'reply-to'});
 }

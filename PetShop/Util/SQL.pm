@@ -247,11 +247,9 @@ sub top_level_forum {
 
 sub _init_bulletin {
     my($self) = @_;
+    $self->new_other('SiteForum')->init_bulletin('bulletin');
     $self->model('ForumUserAddForm', {
-	'RealmUser.realm_id' => _realm_id(
-	    $self,
-	    $self->new_other('SiteForum')->BULLETIN_REALM,
-	),
+	'RealmUser.realm_id' => _realm_id($self, 'bulletin'),
 	'User.user_id' => _realm_id($self, 'bulletin_user'),
     });
     return;
