@@ -390,6 +390,12 @@ sub merge_realm_role_category_map {
 	    ], [
 		admin_only_forum_email =>
 		    [MEMBER => [qw(-MAIL_POST -MAIL_SEND -MAIL_WRITE)]],
+	    ], [
+		cannot_mail =>
+		    ['*' => [qw(-MAIL_POST -MAIL_SEND -MAIL_WRITE)]],
+	    ], [
+		feature_bulletin =>
+		    ['*' => 'FEATURE_BULLETIN'],
 	    ],
             map(Bivio::Agent::TaskId->is_component_included($_) ? ([
                 "feature_$_" => ['*' => uc("feature_$_")],
