@@ -401,8 +401,8 @@ sub render {
 	    # else undefined, render nothing
 	    $row .= $cell;
 	}
-# 	$row =~ s{<td[^>]*></td>}{}sg
-# 	    if $hide_cells;
+ 	$row =~ s{<td[^>]*></td>}{}sg
+ 	    if $hide_cells;
 	$row .= '</tr>';
 
 	# If row is completely empty, don't render it.
