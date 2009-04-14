@@ -39,6 +39,7 @@ sub get_delegate_info {
 	FEATURE_TUPLE => [29],
 	DATA_BROWSE => [30],
 	FEATURE_TASK_LOG => [31],
+	FEATURE_BULLETIN => [32],
 	LAST_RESERVED_VALUE => [50],
     ];
 }
