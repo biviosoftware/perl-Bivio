@@ -9,6 +9,7 @@ my($_O) = __PACKAGE__->use('Mail.Outgoing');
 my($_A) = b_use('Mail.Address');
 my($_T) = b_use('Agent.Task');
 my($_WRT) = b_use('Type.WantReplyTo');
+my($_RFC) = b_use('Mail.RFC822');
 
 sub EMPTY_SUBJECT_PREFIX {
     return '!';
@@ -23,11 +24,8 @@ sub execute_receive {
     my($ea) = $rm->new_other('EmailAlias');
     my($email) = $ea->format_realm_as_incoming;
     my($out) = $_O->new($in)->set_headers_for_list_send({
-	list_name => $req->get_nested(qw(auth_realm owner name)),
 	list_email => $email,
 	sender => $ea->format_realm_as_sender($email),
-	list_title => $_A->escape_comment(
-	    $req->get_nested(qw(auth_realm owner display_name))),
 	reply_to_list => $_WRT->is_set_for_realm($req),
 #TODO: This should be configurable
 	keep_to_cc => 1,
@@ -53,24 +51,27 @@ sub execute_reflector {
     my($self) = $req->get($proto->package_name);
     my($out, $rfid) = $self->get(qw(outgoing realm_file_id));
     my($rmb) = Bivio::Biz::Model->new($req, 'RealmMailBounce');
-    my($want_explicit_to) = $rmb->new_other('RowTag')->get_value(
-        $req->get('auth_id'), 'MAIL_LIST_WANT_TO_USER') ? 1 : 0;
+    my($bulletin) = $rmb->new_other('RowTag')->get_value(
+        $req->get('auth_id'), 'BULLETIN_MAIL_MODE');
+    my $f = ($_A->parse($out->unsafe_get_header('From')))[1]
+	if $bulletin;
     $rmb->new_other('RealmEmailList')->get_recipients(sub {
 	my($it) = @_;
-	# ASSUMES: Bivio::Mail::Outgoing does not copy body on new().
-	# Otherwise, we could blow out the memory if the list got too
-	# large.
-	my($msg) = $out->new($out)
-	    ->set_recipients($it->get('Email.email'), $req)
-	    ->set_header(
-		'Return-Path' => $rmb->return_path(
-		    $it->get(qw(RealmUser.user_id Email.email)),
-		    $rfid,
-		));
-	$msg->set_header(To => $it->get('Email.email'))
-	    if $want_explicit_to;
-	$msg->enqueue_send($req);
-	return;
+	return Bivio::Die->catch(sub {
+	    my($rp) = $rmb->return_path(
+	        $it->get(qw(RealmUser.user_id Email.email)),
+	        $rfid,
+	    );
+	    my($msg) = $out->new($out)
+		->set_recipients($it->get('Email.email'), $req)
+		->set_header('Return-Path' =>
+		    $_RFC->format_angle_brackets($rp));
+	    if ($bulletin) {
+		$msg->set_header(To => $it->get('Email.email'));
+		$msg->set_header(From => $_RFC->format_mailbox($rp, $f));
+	    }
+            $msg->send($req);
+        });
     });
     return;
 }
