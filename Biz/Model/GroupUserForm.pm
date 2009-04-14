@@ -21,6 +21,7 @@ sub USER_LIST_CLASS {
 
 sub change_main_role {
     my($self, $user_id, $role) = @_;
+    # CANNOT use RealmUserAddForm (or subclasses) to avoid looping
     my($ru) = $self->new_other('RealmUser');
     $ru->delete_all({user_id => $user_id});
     $ru->create({
