@@ -925,10 +925,8 @@ sub validate_and_execute_ok {
 	$_A->save_label(
 	    undef,
 	    $req,
-	    ref($res) eq 'HASH' && exists($res->{query})
-		? ($res->{query} ||= {}) : (),
+	    ref($res) eq 'HASH' ? ($res->{query} ||= {}) : (),
 	) unless $self->in_error || $fields->{stay_on_page};
-
 	return _assert_ok_result($self, $res)
 	    if $res;
 	if ($self->in_error) {
