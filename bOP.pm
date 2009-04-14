@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -26,11 +26,94 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.59  2009/04/14 13:29:07  nagler
+  * Bivio::Agent::Embed::Dispatcher
+    die in internal_server_redirect_task
+  * Bivio::Agent::Request
+    format_stateless_uri takes a task_id as a hash now
+  * Bivio::Auth::Realm
+    added owner_name_equals()
+  * Bivio::BConf
+    cannot_mail & feature_bulletin
+  * Bivio::Biz::Action::RealmMail
+    renamed MAIL_LIST_WANT_TO_USER to BULLETIN_MAIL_MODE
+  * Bivio::Biz::File
+    added write()
+  * Bivio::Biz::FormModel
+    save_label in process was not working if the returned hash_ref didn't
+    have a {query}
+  * Bivio::Biz::Model::CRMThread
+    bug in _strip_subject; need to clean, then strip
+  * Bivio::Biz::Model::Forum
+    abstracted get_parent_id() in anticipation of moving parent_realm_id
+    to RealmDAG
+  * Bivio::Biz::Model::GroupUserForm
+    document change_main_role
+  * Bivio::Biz::Model::MailForm
+    factored out internal_format_incoming
+    added $realm_mail to internal_format_from
+  * Bivio::Biz::Model::RealmMailBounce
+    log file using Bivio::Biz::File->write()
+  * Bivio::Biz::Model::UserCreateForm
+    added join_site_admin_realm()
+  * Bivio::Biz::Model::UserRegisterForm
+    added add_site_admin_user()
+    moved add_site_admin_user to UserCreateForm->join_site_admin_realm
+  * Bivio::Delegate::RowTagKey
+    renamed MAIL_LIST_WANT_TO_USER to BULLETIN_MAIL_MODE
+  * Bivio::Delegate::SimplePermission
+    added FEATURE_BLOG
+  * Bivio::Delegate::TaskId
+    added GROUP_BULLETIN_FORM and GROUP_BULLETIN_REFLECTOR
+  * Bivio::HTML
+    escape() should map "'" to &#39; always
+  * Bivio::Mail::Address
+    added format and format_with_brackets
+    format already implemented as RFC822->format_mailbox
+  * Bivio::PetShop::Util::SQL
+    _init_crm previously moved to TestCRM->_init_bunit
+    added _init_bulletin()
+    move _init_site_admin() to the top of the list
+    added better name generation for display_name of bulletin
+  * Bivio::ShellUtil
+    _setup_for_main sets is_secure, since this operates locally
+    and is by definition secure.  This is important for Agent.Embed
+    added is_execute
+  * Bivio::Test::Language::HTTP
+    send_mail() now accepts multiple emails in $to_email (use an array_ref)
+  * Bivio::Type
+    Fixed escape_xml to use Bivio::XML->escape
+  * Bivio::UI::FacadeBase
+    added GROUP_BULLETIN_FORM and GROUP_BULLETIN_REFLECTOR
+    removed ?/bp/* change, because not ready for prime time
+  * Bivio::UI::HTML::Widget::Grid
+    fix hide_empty_cells
+  * Bivio::UI::View::CSS
+    widen .action in .msg
+  * Bivio::UI::View::Mail
+    added GROUP_BULLETIN_FORM to actions
+  * Bivio::UI::XHTML::ViewShortcuts
+    don't override Boolean spacing if wf_class is present
+    added hide_empty_cells to vs_grid3
+    added vs_can_group_bulletin_form
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    moved WikiText use into method to avoid subclassing problems
+  * Bivio::Util::HTTPD
+    Real ShellUtil (main is now run)
+    run_background added
+    updated stderr.log location in print()
+  * Bivio::Util::SQL
+    added internal_upgrade_bulletin_staging()
+    removed bulletin_staging ugprade
+  * Bivio::Util::SiteForum
+    added BULLETIN and BULLETIN_STAGING forums
+    added better name generation for display_name of bulletin
+
   Revision 7.58  2009/04/03 23:43:50  nagler
   * Bivio::Biz::Model::TaskLogList
     added can_iterate,
