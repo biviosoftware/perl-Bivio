@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::SearchList;
 use strict;
@@ -127,19 +127,23 @@ sub internal_post_load_row_with_model {
 	  : $_MFN->is_absolute($row->{'RealmFile.path'}) ? $req->with_realm(
 	    $row->{'RealmOwner.name'},
 	    sub {
+		my($crm) = $req->get('auth_realm')
+		    ->does_user_have_permissions(['FEATURE_CRM'], $req);
+		$realm_mail = $model->new_other('RealmMail')->load({
+		    realm_file_id => $row->{'RealmFile.realm_file_id'}});
+		my($pid) = $realm_mail->get('thread_root_id');
+		if ($crm) {
+		    my($m) = $model->new_other('CRMThread');
+		    # Remote possibility that the message isn't a CRMThread
+		    # due to switchover after realm had mail.
+		    $pid = $m->get('crm_thread_num')
+			if $m->unsafe_load({thread_root_id => $pid});
+		}
 		return {
-		    task_id => $req->get('auth_realm')
-			->does_user_have_permissions(['FEATURE_CRM'], $req)
-		        ? 'FORUM_CRM_THREAD_LIST' : 'FORUM_MAIL_THREAD_LIST',
+		    task_id => $crm ? 'FORUM_CRM_THREAD_LIST'
+			: 'FORUM_MAIL_THREAD_LIST',
 		    realm => $row->{'RealmOwner.name'},
-		    query => {
-			'ListQuery.parent_id' => (
-			    $realm_mail = $model->new_other('RealmMail')
-			    ->load({
-				realm_file_id =>
-				$row->{'RealmFile.realm_file_id'},
-			    }))->get('thread_root_id'),
-		    },
+		    query => {'ListQuery.parent_id' => $pid},
 #TODO: Integrate with View.Mail->internal_part_list (need <a name=>)
 		    anchor => $row->{'RealmFile.realm_file_id'},
 		};
@@ -172,12 +176,13 @@ sub internal_want_all_public {
 sub parse_query_from_request {
     my($self) = shift;
     my($q) = $self->SUPER::parse_query_from_request(@_);
-    return unless my $f = $self->get_request->unsafe_get('form_model');
+    return
+	unless my $f = $self->ureq('form_model');
     if (defined(my $s = $q->unsafe_get('search'))) {
 	$f->put_search_value($s);
     }
     else {
-	$q->put(search => $f->unsafe_get('search'));
+	$q->put(search => $f->get_search_value);
     }
     return $q;
 }
