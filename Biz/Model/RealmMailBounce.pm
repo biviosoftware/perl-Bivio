@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::RealmMailBounce;
 use strict;
-use base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = Bivio::Type->get_instance('DateTime');
@@ -14,7 +14,7 @@ sub TASK_URI {
 sub create_from_rfc822 {
     my($self, $mr) = @_;
     my($c) = $mr->get('message')->{content};
-    my($uid) = _log($mr->get_request->get('auth_id'), $c);
+    my($uid) = _log($mr->req('auth_id'), $c);
     my($rfid, $email) = ($mr->get('plus_tag') || '') =~ /^(\d+)-(.+)$/;
     if ($email && $email =~ s/(.*)=/$1@/) {
 	my($rm) = $self->new_other('RealmMail');
@@ -70,7 +70,7 @@ sub internal_initialize {
 sub return_path {
     my($self, $user_id, $email, $realm_file_id) = @_;
     $email =~ s/\@/=/;
-    return $self->get_request->format_email(
+    return $self->req->format_email(
 	$self->TASK_URI
         . '.'
 	. $user_id
