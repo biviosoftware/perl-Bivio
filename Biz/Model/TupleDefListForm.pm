@@ -259,7 +259,7 @@ sub _iterate_tuples {
 
     foreach my $m (qw(Tuple TupleTag)) {
 	$self->new_other($m)->do_iterate($op,
-	    'iterate_start', 'tuple_def_id', {
+	    'unauth_iterate_start', 'realm_id', {
 		tuple_def_id => $self->req(qw(Model.TupleDef tuple_def_id)),
 	    });
     }
