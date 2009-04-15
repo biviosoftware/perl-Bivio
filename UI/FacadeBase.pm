@@ -1194,8 +1194,6 @@ sub _cfg_tuple {
 		'Duplicate Field label.  All fields must be distinct.'],
 	    ['TupleDefListForm.TupleSlotDef.label.NOT_FOUND' =>
 		'You must specify at least one Field.'],
-	    ['TupleDefListForm.TupleSlotDef.label.UNSPECIFIED' =>
-		'Existing fields may not be removed.'],
 	    ['TupleDefListForm.TupleSlotDef.tuple_slot_type_id.EXISTS' =>
 		'New required fields must use a Type with a default value.'],
 	    ['TupleDefListForm.TupleSlotDef.tuple_slot_type_id.SYNTAX_ERROR' =>
