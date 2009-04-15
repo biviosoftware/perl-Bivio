@@ -71,3 +71,64 @@ foreach my $i (@$range) {
 sleep(10);
 reload_page();
 verify_text(qr{@{[join('.*', map("12/0$_/2001", @$range))]}}s);
+
+follow_link('Schemas');
+follow_link_in_table('Schema Name', 'Schema Name', 'Database1',
+    'Actions', 'Modify');
+test_deviance('must use a Type with a default value');
+submit_form(Save => {
+    field_2 => 'field3',
+    qr/required.*_2/i => 1,
+    type_2 => 'String',
+});
+test_conformance();
+submit_form(Save => {
+    field_2 => 'field3',
+    qr/required.*_2/i => 1,
+    type_2 => 'i1a',
+    field_3 => 'field4',
+    type_3 => 'String',
+    field_4 => 'field5',
+    type_4 => 'String',
+});
+
+follow_link('Tables');
+follow_link_in_table('Table Name', 'Table Name', 'Database1',
+    'Actions', 'Records');
+verify_table('Record', [
+    ['Record', 'field3'],
+    ['2', '1'],
+]);
+follow_link_in_table('Record', 'Record', '2', 'Actions', 'Modify');
+submit_form(Save => {
+    field4 => 'f4',
+    field5 => 'f5',
+    comment => 'xx',
+});
+sleep(10);
+reload_page();
+verify_table('Record', [
+    ['Record', 'field1', 'field2', 'field3', 'field4', 'field5'],
+    ['2', '1', '12/02/2001', '1', 'f4', 'f5'],
+]);
+
+follow_link('Schemas');
+follow_link_in_table('Schema Name', 'Schema Name', 'Database1',
+    'Actions', 'Modify');
+
+submit_form(Save => {
+    Field_1 => undef,
+    field_2 => undef,
+    field_4 => undef,
+});
+
+follow_link('Tables');
+follow_link_in_table('Table Name', 'Table Name', 'Database1',
+    'Actions', 'Records');
+verify_no_text('field2');
+verify_no_text('field3');
+verify_no_text('field5');
+verify_table('Record', [
+    ['Record', 'field1', 'field4'],
+    ['2', '1', 'f4'],
+]);
