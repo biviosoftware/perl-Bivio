@@ -24,7 +24,7 @@ sub execute_ok {
 
 sub get_search_value {
     my($self) = @_;
-    my($s) = self->unsafe_get('search');
+    my($s) = $self->unsafe_get('search');
     return ($s || '') eq $self->CLEAR_ON_FOCUS_HINT ? undef : $s;
 }
 
