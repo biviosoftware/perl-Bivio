@@ -419,9 +419,10 @@ td.footer_left {
 .header_right .want_sep,
 .tools span.want_sep,
 .tools div.sep {
-  background: Icon('tools_sep'); left center no-repeat;
-  padding-left: vs_add(Icon('tools_sep', 'width'), 6);px;
-  margin-left: 6px;
+  padding-left: .3em;
+  margin-left: .3em;
+  Color('form_sep-border');
+  border-left: .1em solid;
 }
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
