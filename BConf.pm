@@ -100,6 +100,20 @@ sub default_merge_overrides {
 		package_filter => '/^Bivio::UI::HTML::ViewShortcuts$/',
 	    },
 	},
+	$args->{version} < 9 ? () : (
+	    'Bivio::Biz::Model::TaskLog' => {
+		enable_log => 1,
+	    },
+	    'Bivio::SQL::PropertySupport' => {
+		unused_classes => [],
+	    },
+	    'Bivio::Biz::Model::MailReceiveDispatchForm' => {
+		ignore_dashes_in_recipient => 1,
+	    },
+	    'Bivio::Test::Language::HTTP' => {
+		deprecated_text_patterns => 0,
+	    },
+	),
     };
     return $args->{version} < 2 ? %$res : $res;
 }
