@@ -22,11 +22,12 @@ sub initialize {
 		    facade_label => $_,
 		    control => vs_constant("want_$_"),
 		}), qw(
-                    all_users
                     substitute_user
+                    all_users
+		    remote_copy
 		    applicants
 		    task_log
-		    remote_copy
+		    site_reports
                 )),
 	    ]), {id => 'admin_drop_down'}),
 	),
