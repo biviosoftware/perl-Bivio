@@ -26,11 +26,25 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.61  2009/04/15 02:55:05  nagler
+  * Bivio::Biz::Model::SearchForm
+    Added get_search_value and CLEAR_ON_FOCUS_HINT
+  * Bivio::Biz::Model::SearchList
+    fixed CRM link rendering
+  * Bivio::UI::HTML::Widget::JavaScriptString
+    NEW
+  * Bivio::UI::HTML::Widget::Script
+    added JAVASCRIPT_B_CLEAR_ON_FOCUS
+  * Bivio::UI::XHTML::Widget::ClearOnFocus
+    NEW
+  * Bivio::UI::XHTML::Widget::SearchForm
+    Added ClearOnFocus
+
   Revision 7.60  2009/04/14 22:09:38  moeller
   * Bivio::Biz::Model::CRMThread
     strip mailer noise (e.g. FWD:, RE:, etc) from Subject
