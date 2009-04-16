@@ -1,13 +1,10 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegate::SimpleWidgetFactory;
 use strict;
+use Bivio::Base 'UI.Widget';
 use Bivio::Agent::TaskId;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::Biz::Model;
 use Bivio::Biz::QueryType;
-use Bivio::Die;
-use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 use Bivio::Type::Name;
 use Bivio::Type::TextArea;
@@ -16,13 +13,10 @@ use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::ViewShortcuts;
 use Bivio::UI::Widget;
 
-# C<Bivio::Delegate::SimpleWidgetFactory> is the delegate of
-# L<Bivio::UI::HTML::WidgetFactory|Bivio::UI::HTML::WidgetFactory>.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # also dynamically imports many optional widgets for optional types
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-use vars qw($_TRACE);
+our($_TRACE);
 Bivio::IO::Trace->register;
 
 # A map of field names to default value for "decimals" attribute.
