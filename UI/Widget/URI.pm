@@ -11,6 +11,7 @@ sub initialize {
     my($h) = $self->get('format_uri_hash');
     $h->{query} ||= undef;
     $h->{path_info} ||= undef;
+    $self->initialize_attr(format_method => 'format_uri');
     while (my($k, $v) = each(%$h)) {
 	$self->initialize_value("format_uri_hash.$k", $v);
     }
@@ -25,7 +26,9 @@ sub new {
 	&& ref($format_uri_hash->{format_uri_hash}) eq 'HASH'
 	? $format_uri_hash : {};
     $attrs->{format_uri_hash} ||= $format_uri_hash;
-    $attrs->{format_method} ||= delete($attrs->{format_uri_hash}->{format_method});
+    $attrs->{format_method}
+	||= delete($attrs->{format_uri_hash}->{format_method})
+	|| 'format_uri';
     return $proto->SUPER::new($attrs);
 }
 
@@ -40,8 +43,7 @@ sub internal_new_args {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($method) = $self->render_simple_attr('format_method', $source)
-	|| 'format_uri';
+    my($method) = $self->render_simple_attr('format_method', $source);
     $$buffer .= $source->get_request->$method(
 	_render_hash(
 	    $self, 'format_uri_hash', $self->get('format_uri_hash'), $source));
