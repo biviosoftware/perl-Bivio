@@ -55,9 +55,8 @@ sub internal_prepare_statement {
     }
 
     if (my $qf = $self->ureq('Model.TaskLogQueryForm')) {
-	if (defined(my $filter = $qf->unsafe_get('x_filter'))) {
-	    $stmt->where(map(_filter($_, $stmt), split(' ', $filter)))
-		if $filter =~ /\S/ && $filter ne $qf->X_FILTER_HINT;
+	if (defined(my $filter = $qf->get_filter_value)) {
+	    $stmt->where(map(_filter($_, $stmt), split(' ', $filter)));
 	}
     }
     return shift->SUPER::internal_prepare_statement(@_);
