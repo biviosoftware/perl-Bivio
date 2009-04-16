@@ -2266,10 +2266,10 @@ sub _sentinel_site_admin_forum {
 }
 
 sub _sentinel_site_admin_forum_users {
-    my(@args) = @_;
+    my($self, @args) = @_;
     $self->initialize_fully;
     return b_use('Model.UserCreateForm')->if_unapproved_applicant_mode(
-	sub {_default_sentinel(@args)}, sub {1});
+	sub {_default_sentinel($self, @args)}, sub {1});
 }
 
 sub _sentinel_site_forum {
