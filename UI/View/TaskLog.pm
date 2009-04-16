@@ -11,24 +11,16 @@ sub internal_add_filter {
     my($self) = @_;
     my($f) = $self->use('Model.TaskLogQueryForm');
     $self->internal_put_base_attr(selector => Join([
-	ECMAScript(<<"EOF"),
-function task_log_x_filter_onfocus (field) {
-    if (field.value == "@{[$f->X_FILTER_HINT]}") {
-        field.value = "";
-    }
-    field.className = "element enabled";
-    return;
-}
-EOF
 	Form($f->simple_package_name, Join([
-	    Text({
-		field => 'x_filter',
-		id => 'x_filter',
-		class => 'element disabled',
-		ONFOCUS => 'task_log_x_filter_onfocus(this)',
-		size => b_use('Type.Name')->get_width,
-		max_width => b_use('Type.Line')->get_width,
-	    }),
+	    ClearOnFocus(
+		Text({
+		    field => 'x_filter',
+		    id => 'x_filter',
+		    size => int(b_use('Type.Line')->get_width / 2),
+		    max_width => b_use('Type.Line')->get_width,
+		}),
+		$f->CLEAR_ON_FOCUS_HINT,
+	    ),
 	    ScriptOnly({
 		widget => Simple(''),
 		alt_widget => FormButton('ok_button')->put(label => 'Refresh'),
