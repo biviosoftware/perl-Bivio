@@ -137,7 +137,7 @@ sub _cfg_base {
 	    [acknowledgement_border => 0x0],
 	    [[qw(err warn empty_list_border form_field_err)] => 0x990000],
 	    [[qw(header_su_background super_user)] => 0x00ff00],
-	    [[qw(form_desc form_sep_border msg_parts_border)] => 0x666666],
+	    [[qw(form_desc form_sep_border sep_bar msg_parts_border)] => 0x666666],
             [help_wiki_background => 0x6b9fea],
 	    [dd_menu => 0x444444],
 	    [[qw(dd_menu_selected dd_menu_background)] => 0xffffff],
@@ -208,25 +208,8 @@ sub _cfg_base {
 	    map({
 		my($id, $name) = @$_;
 		(
-		    [$name => sub {_unsafe_call(shift->get_facade, $name)}],
-		    [$id => sub {
-			 my($f) = shift->get_facade;
-			 my($n) = _unsafe_call($f, $name);
-			 return undef
-			     unless $n;
-			 my($req) = $f->req;
-			 my($res);
-			 Bivio::Die->catch_quietly(sub {
-			     my($ro) = b_use('Model.RealmOwner')->new($req);
-			     return $res = $ro->get('realm_id')
-			         if $ro->unauth_load({name => $n});
-			     return;
-			 });
-			 return $res
-			     if $res;
-			 b_warn($n, ': realm not found');
-			 return 1;
-		    }],
+		    [$name => sub {_unsafe_call(shift, $name)}],
+		    [$id => sub {_unsafe_realm_id(shift, $name)}],
 		);
 	    }
 	        [qw(help_wiki_realm_id HELP_WIKI_REALM_NAME)],
@@ -931,13 +914,14 @@ sub _cfg_site_admin {
     return {
         Constant => [
             map({
-		my($n, $task, $control) = @$_;
+		my($n, $task, $control, $realm) = @$_;
+		$realm ||= 'SITE_ADMIN_REALM_NAME';
 		(
 		    ["xlink_$n" => sub {+{
 			task_id => $task,
-			realm => shift->get_facade->SITE_ADMIN_REALM_NAME,
+			realm => shift->get_facade->$realm(),
 		    }}],
-		    ["want_$n" => $control || 1],
+		    ["want_$n" => defined($control) ? $control : 1],
 		);
 	    }
                 [qw(all_users SITE_ADMIN_USER_LIST)],
@@ -959,6 +943,17 @@ sub _cfg_site_admin {
 		     b_use('Model.UserCreateForm')
 			 ->if_unapproved_applicant_mode(sub {'applicants'});
 		}],
+		[
+		    'site_reports',
+		    'FORUM_FILE_TREE_LIST',
+		    sub {
+			return 0
+			    unless my $id
+			    = _unsafe_realm_id(shift, 'SITE_REPORTS');
+			return b_use('Auth.Realm')->is_default_id($id) ? 0 : 1;
+		    },
+		    'SITE_REPORTS',
+		],
             ),
         ],
 	FormError => [
@@ -990,6 +985,7 @@ sub _cfg_site_admin {
             [xlink => [
                 applicants => 'Site Applicants',
                 all_users => 'All Users',
+                site_reports => 'Web Stats',
                 substitute_user => 'Act as User',
 		task_log => 'Site Hits',
 		remote_copy => 'Remote Copy',
@@ -1547,8 +1543,29 @@ sub _site {
 }
 
 sub _unsafe_call {
-    my($self, $method) = @_;
+    my($fc, $method) = @_;
+    my($self) = $fc->get_facade;
     return $self->can($method) ? $self->$method() : undef;
+}
+
+sub _unsafe_realm_id {
+    my($fc, $name) = @_;
+    my($self) = $fc->get_facade;
+    my($n) = _unsafe_call($fc, $name);
+    return undef
+	unless $n;
+    my($req) = $self->req;
+    my($res);
+    Bivio::Die->catch_quietly(sub {
+        my($ro) = b_use('Model.RealmOwner')->new($req);
+	return $res = $ro->get('realm_id')
+	    if $ro->unauth_load({name => $n});
+	return;
+    });
+    return $res
+	if $res;
+    b_warn($n, ': realm not found');
+    return 1;
 }
 
 1;
