@@ -1440,6 +1440,7 @@ EOF
 
 sub internal_upgrade_db_site_admin_forum {
     my($self) = @_;
+    $self->initialize_fully;
     my($f) = $self->req('Bivio::UI::Facade')->get_default;
     $self->req->with_realm($f->SITE_REALM_NAME, sub {
 	$self->set_user_to_any_online_admin;
@@ -1458,6 +1459,7 @@ sub internal_upgrade_db_site_admin_forum {
 
 sub internal_upgrade_db_site_admin_forum_users {
     my($self) = @_;
+    $self->initialize_fully;
     my($f) = $self->req('Bivio::UI::Facade')->get_default;
     $self->req->with_realm($f->SITE_REALM_NAME, sub {
 	b_info("Adding users to site-admin");
@@ -1485,6 +1487,7 @@ sub internal_upgrade_db_site_admin_forum_users {
 
 sub internal_upgrade_db_site_forum {
     my($self) = @_;
+    $self->initialize_fully;
     my($req) = $self->req;
     $req->with_realm(undef, sub {
 	$req->with_user($self->model('RealmUser')->get_any_online_admin, sub {
@@ -2253,6 +2256,7 @@ sub _sentinel_permissions51 {
 
 sub _sentinel_site_admin_forum {
     my($self, $type) = @_;
+    $self->initialize_fully;
     my($f) = $self->req('Bivio::UI::Facade')->get_default;
     return 1
 	unless $self->model('RealmOwner')->unauth_load({name => 'site'});
@@ -2263,12 +2267,14 @@ sub _sentinel_site_admin_forum {
 
 sub _sentinel_site_admin_forum_users {
     my(@args) = @_;
+    $self->initialize_fully;
     return b_use('Model.UserCreateForm')->if_unapproved_applicant_mode(
 	sub {_default_sentinel(@args)}, sub {1});
 }
 
 sub _sentinel_site_forum {
     my($self, $type) = @_;
+    $self->initialize_fully;
     my($f) = $self->req('Bivio::UI::Facade')->get_default;
     return 1
 	unless $f->can('HELP_WIKI_REALM_NAME')
