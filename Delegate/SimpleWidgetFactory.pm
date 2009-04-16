@@ -2,42 +2,8 @@
 # $Id$
 package Bivio::Delegate::SimpleWidgetFactory;
 use strict;
-$Bivio::Delegate::SimpleWidgetFactory::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Delegate::SimpleWidgetFactory::VERSION;
-
-=head1 NAME
-
-Bivio::Delegate::SimpleWidgetFactory - creates widgets for model fields
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::WidgetFactory;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::Delegate::SimpleWidgetFactory::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::Delegate::SimpleWidgetFactory> is the delegate of
-L<Bivio::UI::HTML::WidgetFactory|Bivio::UI::HTML::WidgetFactory>.
-
-=cut
-
-#=IMPORTS
-# also dynamically imports many optional widgets for optional types
 use Bivio::Agent::TaskId;
+use Bivio::Base 'Bivio::UI::Widget';
 use Bivio::Biz::Model;
 use Bivio::Biz::QueryType;
 use Bivio::Die;
@@ -50,7 +16,11 @@ use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::ViewShortcuts;
 use Bivio::UI::Widget;
 
-#=VARIABLES
+# C<Bivio::Delegate::SimpleWidgetFactory> is the delegate of
+# L<Bivio::UI::HTML::WidgetFactory|Bivio::UI::HTML::WidgetFactory>.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+# also dynamically imports many optional widgets for optional types
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -62,25 +32,14 @@ my(%_DEFAULT_DECIMALS) = (
     units => 6,
 );
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="create"></a>
-
-=head2 static create(string field) : Bivio::UI::Widget
-
-=head2 static create(string field, hash_ref attrs) : Bivio::UI::Widget
-
-Creates a widget for the specified field. 'field' should be of the form:
-  '<model name>.<field name>'
-
-Form model properties receive editable widgets, other models receive
-display-only widgets.
-
-=cut
-
 sub create {
+    # (proto, string) : UI.Widget
+    # (proto, string, hash_ref) : UI.Widget
+    # Creates a widget for the specified field. 'field' should be of the form:
+    #   '<model name>.<field name>'
+    #
+    # Form model properties receive editable widgets, other models receive
+    # display-only widgets.
     my($proto, $field, $attrs) = @_;
     $attrs ||= {};
 
@@ -118,15 +77,9 @@ sub create {
     return $widget;
 }
 
-=for html <a name="internal_create_display"></a>
-
-=head2 static internal_create_display(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::Widget
-
-Create a display-only widget for the specified field.
-
-=cut
-
 sub internal_create_display {
+    # (proto, Biz.Model, string, Bivio.Type, hash_ref) : UI.Widget
+    # Create a display-only widget for the specified field.
     my($proto, $model, $field, $type, $attrs) = @_;
 
     if ($attrs->{wf_class}) {
@@ -155,6 +108,12 @@ sub internal_create_display {
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Dollar')) {
 	return $_VS->vs_new('DollarCell', {
+	    field => $field,
+	    %$attrs,
+	});
+    }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Integer')) {
+	return $_VS->vs_new('Integer', {
 	    field => $field,
 	    %$attrs,
 	});
@@ -248,15 +207,9 @@ sub internal_create_display {
     });
 }
 
-=for html <a name="internal_create_edit"></a>
-
-=head2 static internal_create_edit(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::Widget
-
-Create an editable widget for the specified field.
-
-=cut
-
 sub internal_create_edit {
+    # (proto, Biz.Model, string, Bivio.Type, hash_ref) : UI.Widget
+    # Create an editable widget for the specified field.
     my($proto, $model, $field, $type, $attrs) = @_;
 
     if ($attrs->{wf_class}) {
@@ -408,23 +361,17 @@ sub internal_create_edit {
     Bivio::Die->die($type, ': unsupported type');
 }
 
-#=PRIVATE METHODS
-
-# _default_size(any type) : int
-#
-# Returns the default size for text boxes.
-#
 sub _default_size {
+    # (any) : int
+    # Returns the default size for text boxes.
     my($type) = @_;
     my($w) = $type->get_width;
     return $w <= 15 ? $w : $w <= Bivio::Type::Name->get_width ? 15 : 30;
 }
 
-# _get_model_and_field_type(string field, hash_ref attrs) : (Bivio::Biz::Model, string, Bivio::Type)
-#
-# Returns a model instance, field name and type for the specified field.
-#
 sub _get_model_and_field_type {
+    # (string, hash_ref) : (Biz.Model, string, Bivio.Type)
+    # Returns a model instance, field name and type for the specified field.
     my($field, $attrs) = @_;
 
     # parse out the model (everything up to the first ".") and field names
@@ -439,15 +386,5 @@ sub _get_model_and_field_type {
 	$attrs->{wf_type} || $model->get_field_type($field_name),
     );
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
