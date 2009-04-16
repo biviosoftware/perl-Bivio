@@ -421,8 +421,8 @@ td.footer_left {
 .tools div.sep {
   padding-left: .3em;
   margin-left: .3em;
-  Color('form_sep-border');
   border-left: .1em solid;
+  Color('form_sep-border');
 }
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
