@@ -139,7 +139,7 @@ sub _onload {
     my($onload) = [map(/^function\s+(\w+_onload)\s*\(/mg, @$functions)];
     return !@$onload ? () : (
 	'window.onload=function(){',
-	@$onload,
+	map($_ . '();', @$onload),
 	'}',
     );
 }
