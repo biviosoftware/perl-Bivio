@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_add_filter {
     my($self) = @_;
-    my($f) = $self->use('Model.TaskLogQueryForm');
+    my($f) = b_use('Model.TaskLogQueryForm')->get_instance;
     $self->internal_put_base_attr(selector => Join([
 	Form($f->simple_package_name, Join([
 	    ClearOnFocus(
@@ -17,7 +17,7 @@ sub internal_add_filter {
 		    field => 'x_filter',
 		    id => 'x_filter',
 		    size => int(b_use('Type.Line')->get_width / 2),
-		    max_width => b_use('Type.Line')->get_width,
+		    max_width => $f->get_field_type('x_filter')->get_width,
 		}),
 		$f->CLEAR_ON_FOCUS_HINT,
 	    ),
