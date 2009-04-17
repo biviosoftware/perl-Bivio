@@ -4,7 +4,10 @@ ListModel();
 req()->initialize_fully->set_realm('fourem');
 [
     load_all => [
-        [] => [{
+        [{
+	    # Sort by first name
+	    order_by => '2a',
+	}] => [{
 	    privileges => StringArray([qw(Member Subscribed)]),
 	    display_name => 'User, Btest_admin',
 	}, {
