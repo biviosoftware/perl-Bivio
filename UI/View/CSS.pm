@@ -591,6 +591,16 @@ form input.disabled {
 form input.enabled {
   Color('body');
 }
+a.b_thumbnail_popup {
+  border: 1pt solid white;
+  position: relative;
+}
+a.b_thumbnail_popup:hover {
+  border: 1pt solid blue;
+}
+.b_hide {
+  display: none;
+}
 EOF
 }
 

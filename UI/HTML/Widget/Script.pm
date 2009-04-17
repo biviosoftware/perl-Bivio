@@ -22,18 +22,10 @@ function b_submenu_ie6_onload() {
             if (divs[i].className.indexOf('b_submenu') >= 0) {
                 var b_menu = divs[i].parentNode;
                 b_menu.onmouseout = function () {
-                    var res = [], classes = this.className.split(/\s+/);
-                    for (var i = 0, length = classes.length; i < length; i++) {
-                        if (classes[i] != H) {
-                            res.push(classes[i]);
-                        }
-                    }
-                    this.className = res.join(' ');
+                    b_remove_class(this, H);
                 };
                 b_menu.onmouseover = function () {
-                    if (this.className.indexOf(H) < 0) {
-                        this.className += (this.className ? ' ' : '') + H;
-                    }
+                    b_add_class(this, H);
                 };
             }
         }
@@ -50,6 +42,33 @@ function b_clear_on_focus(field, hint) {
     }
     field.className.replace(/disabled/, "enabled");
     return;
+}
+EOF
+}
+
+sub JAVASCRIPT_COMMON {
+    return <<'EOF';
+function b_remove_class (element, clazz) {
+    var res = [], classes = element.className.split(/\s+/);
+    for (var i = 0, length = classes.length; i < length; i++) {
+        if (classes[i] != clazz) {
+            res.push(classes[i]);
+        }
+    }
+    element.className = res.join(' ');
+}
+function b_add_class (element, clazz) {
+    if (element.className.indexOf(clazz) < 0) {
+        element.className += (element.className ? ' ' : '') + clazz;
+    }
+}
+function b_toggle_class (element, clazz) {
+    if (element.className.indexOf(clazz) < 0) {
+        b_add_class(element, clazz);
+    }
+    else {
+        b_remove_class(element, clazz);
+    }
 }
 EOF
 }
@@ -79,6 +98,30 @@ function first_focus_onload() {
             } catch (err) {}
             break;
         }
+    }
+}
+EOF
+}
+
+sub JAVASCRIPT_B_THUMBNAIL_POPUP {
+    return <<'EOF';
+function b_thumbnail_popup_onload() {
+    for (var i=0; i < document.links.length; i++) {
+        var A = document.links[i];
+        if (A.className.indexOf('b_thumbnail_popup') >= 0) {
+            var img = document.createElement('img');
+            img.src = A.href;
+            b_add_class(img, A.className);
+            b_add_class(img, 'b_hide');
+            b_remove_class(img, 'b_thumbnail_popup');
+            A.href = '#';
+            A.onclick = function () {
+                b_toggle_class(this.firstChild, 'b_hide');
+                return false;
+            }
+            A.insertBefore(img, A.firstChild);
+        }
+        A = null;
     }
 }
 EOF
