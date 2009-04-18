@@ -67,11 +67,11 @@ sub _filter {
     return _filter_date($stmt, $1, $word)
 	if $word =~ s/^($_DATE_OP_RE)//o;
     my($method) = $word =~ s/^-// ? 'NOT_ILIKE' : 'ILIKE';
-    if ($word =~ m{^[/\@\w]}) {
+    if ($word =~ m{[/\@]|^\w}) {
 	$word =~ s/\%/_/g;
 	return $stmt->$method(
 	    $word =~ m{/} ? 'TaskLog.uri'
-		: $word =~ m,\@, ? 'Email.email'
+		: $word =~ m{\@} ? 'Email.email'
 		    : 'RealmOwner.display_name',
 	    '%' . lc($word) . '%',
 	);
