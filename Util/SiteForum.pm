@@ -9,6 +9,7 @@ my($_F) = b_use('IO.File');
 my($_FN) = b_use('Type.ForumName');
 my($_T) = b_use('FacadeComponent.Text');
 my($_RM) = b_use('Action.RealmMail');
+my($_C) = b_use('IO.Config');
 
 sub ADMIN_REALM {
     return Bivio::UI::Facade->get_default->SITE_ADMIN_REALM_NAME;
@@ -172,6 +173,10 @@ sub init_realms {
     $self->model('EmailAlias')->create({
 	incoming => _support_email($req),
 	outgoing => $self->CONTACT_REALM,
+    });
+    $_C->if_version(3, sub {
+        $self->new_other('HTTPStats')->init_forum($self->REPORTS_REALM);
+	return;
     });
     return;
 }
