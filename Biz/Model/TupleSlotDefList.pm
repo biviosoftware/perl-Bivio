@@ -1,21 +1,21 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TupleSlotDefList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_EK) = __PACKAGE__->use('Model.TupleSlotChoiceSelectList')->EMPTY_KEY_VALUE;
-my($_TSD) = __PACKAGE__->use('Model.TupleSlotDef');
-my($_TSN) = __PACKAGE__->use('Type.TupleSlotNum');
-my($_TST) = __PACKAGE__->use('Model.TupleSlotType');
-my($_TTST) = __PACKAGE__->use('Type.TupleSlotType');
-my($_NOT_NULL) = __PACKAGE__->use('SQL.Constraint')->NOT_NULL;
+my($_EK) = b_use('Model.TupleSlotChoiceSelectList')->EMPTY_KEY_VALUE;
+my($_TSD) = b_use('Model.TupleSlotDef');
+my($_TSN) = b_use('Type.TupleSlotNum');
+my($_TST) = b_use('Model.TupleSlotType');
+my($_TTST) = b_use('Type.TupleSlotType');
+my($_NOT_NULL) = b_use('SQL.Constraint')->NOT_NULL;
 my($_NONE) = $_NOT_NULL->NONE;
 my($_MISSING) = {
     type => $_TTST->new(
 	$_TTST->DEFAULT_CLASS,
-	__PACKAGE__->use('Type.TupleSlotArray')->new([]),
+	b_use('Type.TupleSlotArray')->new([]),
     ),
     constraint => $_NONE,
 };
