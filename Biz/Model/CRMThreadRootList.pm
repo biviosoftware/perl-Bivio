@@ -5,9 +5,12 @@ use strict;
 use Bivio::Base 'Model.MailThreadRootList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_CAL) = __PACKAGE__->use('Model.CRMActionList');
-my($_LOCATION) = __PACKAGE__->use('Model.Email')->DEFAULT_LOCATION;
-my($_TSN) = __PACKAGE__->use('Type.TupleSlotNum');
+my($_IDI) = __PACKAGE__->instance_data_index;
+my($_CAL) = b_use('Model.CRMActionList');
+my($_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
+my($_TSN) = b_use('Type.TupleSlotNum');
+my($_TUPLE_TAG) = b_use('Model.CRMThread')->TUPLE_TAG_PREFIX . '.TupleTag';
+my($_TTF) = b_use('Model.TupleTagForm');
 
 sub internal_initialize {
     my($self) = @_;
@@ -18,15 +21,18 @@ sub internal_initialize {
         order_by => [qw(
 	    CRMThread.modified_date_time
 	    CRMThread.crm_thread_num
-	    CRMThread.crm_thread_status
-	    owner.Email.email
-	    modified_by.Email.email
-	    CRMThread.subject_lc
-	),
-	    @{$_TSN->map_list(sub {'TupleTag.' . shift(@_)})},
-	],
+	)],
         other_query_keys => $self->get_instance('CRMQueryForm')->filter_keys,
 	other => [
+	    @{$_TSN->map_list(sub {"$_TUPLE_TAG." . shift(@_)})},
+	    qw(
+		CRMThread.crm_thread_status
+		owner.Email.email
+		modified_by.Email.email
+		CRMThread.subject_lc
+		customer.RealmOwner.name
+		customer.RealmOwner.display_name
+	    ),
             delete($info->{primary_key})->[0],
 	    'CRMThread.subject',
 	    ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
@@ -46,6 +52,8 @@ sub internal_initialize {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
+    return 0
+	unless shift->SUPER::internal_post_load_row(@_);
     _do(sub {
         my($name, $model) = @_;
 	my($e) = $row->{"$model.email"};
@@ -66,8 +74,11 @@ sub internal_prepare_statement {
 	    ['CRMThread.modified_by_user_id', 'modified_by.Email.realm_id'],
 	    ['modified_by.Email.location', [$_LOCATION]],
 	]),
-	$stmt->LEFT_JOIN_ON(qw(RealmMail TupleTag), [
-	    ['RealmMail.thread_root_id', 'TupleTag.primary_id'],
+	$stmt->LEFT_JOIN_ON('RealmMail', "$_TUPLE_TAG", [
+	    ['RealmMail.thread_root_id', "$_TUPLE_TAG.primary_id"],
+	]),
+	$stmt->LEFT_JOIN_ON(qw(CRMThread customer.RealmOwner), [
+	    ['CRMThread.customer_realm_id', 'customer.RealmOwner.realm_id'],
 	]),
     );
     if (my $qf = $self->req->unsafe_get('Model.CRMQueryForm')) {
@@ -81,12 +92,24 @@ sub internal_prepare_statement {
 	$_TSN->map_list(sub {
 	    my($name) = @_;
 	    my($v) = $qf->unsafe_get('x_' . $name);
-	    $stmt->where(['TupleTag.' . $name, [$v]])
+	    $stmt->where(["$_TUPLE_TAG." . $name, [$v]])
 		if defined($v);
 	    return;
 	});
     }
     return shift->SUPER::internal_prepare_statement(@_);
+}
+
+sub tuple_tag_find_slot_value {
+    return shift->delegate_method($_TTF, @_);
+}
+
+sub tuple_tag_find_slot_type {
+    return shift->delegate_method($_TTF, @_);
+}
+
+sub tuple_tag_form_state {
+    return shift->[$_IDI] ||= {};
 }
 
 sub _do {
