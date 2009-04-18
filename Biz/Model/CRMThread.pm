@@ -22,6 +22,10 @@ sub ORD_FIELD {
     return 'crm_thread_num';
 }
 
+sub TUPLE_TAG_PREFIX {
+    return 'b_ticket';
+}
+
 sub USER_ID_FIELD {
     return '';
 }
@@ -62,6 +66,7 @@ sub handle_mail_post_create {
             _user_id_for_update_mail($self, $realm_mail),
 	    _status_for_update_mail($self, $realm_mail),
 	});
+#TODO: Create tuple tag?
 	return;
     }
     # Just in case RealmMail bound to an old message, but the user wants a new
@@ -152,7 +157,7 @@ sub _create_subject {
     }
     $req->put($_REQ_ATTR => $self)
 	if $self->is_loaded;
-    $value = $_MS->trim_literal($self->clean_subject($value));
+    $value =~ s/^\s+|\s+$//g;
     return ' '
 	. _prefix($self, $num || $self->internal_next_ord)
 	. $value;
