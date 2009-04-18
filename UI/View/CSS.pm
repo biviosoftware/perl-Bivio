@@ -731,6 +731,7 @@ sub _site_mail {
 }
 .msg .actions .task_menu a.want_sep {
   background: none;
+  border: none;
   padding-left: 0;
   margin-left: 2em;
 }
