@@ -44,6 +44,21 @@ sub internal_reply_list {
     return qw(all realm);
 }
 
+sub internal_thread_root_list_columns {
+    return [
+ 	'CRMThread.modified_date_time',
+ 	'modified_by_name',
+ 	'CRMThread.crm_thread_num',
+ 	'RealmFile.modified_date_time',
+ 	'RealmMail.from_email',
+ 	['CRMThread.subject', {
+ 	    order_by_names => 'CRMThread.subject_lc',
+ 	}],
+ 	'CRMThread.crm_thread_status',
+ 	'owner_name',
+    ];
+}
+
 sub send_form {
     my($self, $extra_fields, $buttons) = @_;
     Bivio::IO::Alert->warn_deprecated('use internal_crm_send_form_buttons')
@@ -60,7 +75,7 @@ sub send_form {
 }
 
 sub thread_root_list {
-    my($self) = @_;
+    my($self) = shift;
     my($f) = $self->use('Model.CRMQueryForm');
     $self->internal_put_base_attr(
         selector => Form($f->simple_package_name, Join([
@@ -82,17 +97,8 @@ sub thread_root_list {
             want_hidden_fields => 0,
         }),
     );
-    return shift->SUPER::thread_root_list(
-	'CRMThread.modified_date_time',
-	'modified_by_name',
-	'CRMThread.crm_thread_num',
-	'RealmFile.modified_date_time',
-	'RealmMail.from_email',
-	['CRMThread.subject', {
-	    order_by_names => 'CRMThread.subject_lc',
-	}],
-	'CRMThread.crm_thread_status',
-	'owner_name',
+    return $self->SUPER::thread_root_list(
+	@{$self->internal_thread_root_list_columns},
     );
 }
 
