@@ -1,8 +1,8 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::CRM;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -21,7 +21,7 @@ sub setup_realm {
     $self->model('Forum', {})->update({want_reply_to => 1});
     $self->model('RowTag')->replace_value(
 	$self->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
-	$self->use('Action.RealmMail')->EMPTY_SUBJECT_PREFIX,
+	b_use('Action.RealmMail')->EMPTY_SUBJECT_PREFIX,
     );
     return;
 }
