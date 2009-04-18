@@ -19,6 +19,10 @@ sub internal_views {
 
 sub execute {
     my($proto, $req) = @_;
+    return {
+	method => 'client_redirect',
+	task_id => 'SITE_ROOT',
+    } unless $req->unsafe_get('Model.UserRegisterForm');
     foreach my $v (@{$proto->internal_views($req)}) {
 	next unless my $res = $_V->execute($v, $req);
 	return $res;
