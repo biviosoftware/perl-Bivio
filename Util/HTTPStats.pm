@@ -7,6 +7,7 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_IOC) = b_use('IO.Config');
 my($_C) = b_use('SQL.Connection');
 my($_D) = b_use('Type.Date');
 my($_F) = b_use('IO.File');
@@ -17,7 +18,6 @@ my($_AWSTATS) = '/usr/local/awstats/wwwroot/cgi-bin/awstats.pl';
 my($_BUILD_PAGES) = '/usr/local/awstats/tools/awstats_buildstaticpages.pl';
 my($_LOG_MERGER) = '/usr/local/awstats/tools/logresolvemerge.pl';
 my($_ICON_DIR) = '/usr/local/awstats/wwwroot/icon/';
-my($_V3) = b_use('IO.Config')->if_version(3);
 b_use('IO.Config')->register(my $_CFG = {
     log_base => '/var/log',
 });
@@ -30,7 +30,7 @@ commands
     daily_report [date] -- create a report using the most recent access_log
     format_access_log_stream -- read stream from STDIN reformat to STDOUT
     import_history [date] -- import multiple access_logs
-    init_report_forum name -- create report forum and import icons
+    init_forum name -- create report forum and import icons
 EOF
 }
 
@@ -72,13 +72,12 @@ sub import_history {
     return;
 }
 
-sub init_report_forum {
-    my($self, $name) = @_;
-    $self->usage_error('missing forum name') unless $name;
-    $self->usage_error('missing user') unless $self->req('auth_user_id');
-    my($parent) = $name =~ /(.*)@{[$_FN->SEP_CHAR_REGEXP]}/;
-    $self->usage_error('target forum missing parent') unless $parent;
-    $self->req->with_realm($parent, sub {
+sub init_forum {
+    my($self, $name) = shift->name_args([qw(ForumName)], \@_);
+    $self->assert_have_user;
+    $self->usage_error($name, ': may not be top-level forum')
+	if $_FN->is_top($name);
+    $self->initialize_fully->with_realm($_FN->extract_top($name), sub {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => 'Web Site Reports',
 	   'RealmOwner.name' => $name,
@@ -207,8 +206,7 @@ sub _organize_files {
 
 sub _parse_args {
     my($self, $date) = @_;
-    $self->usage_error('requires BConf version 3 or greater')
-	unless $_V3;
+    $_IOC->assert_version(3);
     $self->initialize_fully;
     return ($self, $date
 	? $_D->from_literal_or_die($date)
