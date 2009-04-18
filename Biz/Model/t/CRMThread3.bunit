@@ -77,16 +77,26 @@ EOF
 		    crm_thread_num => $first_num,
 		},
 	    }, qr{Subject: .*#$first_num\] problem}],
-            map(([$_, sub {
-                "References: <$msg_id>\n";
-            }] => [{
+	    ['Re: problem', sub {
+		 "In-Reply-To: <$msg_id>\n";
+	    }] => [{
 		'Model.RealmMail' => {
-		    subject => qr{#$first_num\] problem},
+		    subject => qr{#$first_num\] Re: problem},
+		    thread_parent_id => sub {$first_tid},
+		    thread_root_id => sub {$first_tid},
 		},
 		'Model.CRMThread' => {
 		    crm_thread_num => $first_num,
 		},
-            }, qr{Subject: \[[^]]+ #$first_num\] problem},]),
+	    }, qr{Subject: .*#$first_num\]}],
+            map(([$_, sub {
+                "In-Reply-To: <$msg_id>\n";
+            }] => [{
+		'Model.CRMThread' => {
+		    crm_thread_num => $first_num,
+		    subject => $_ =~ /(\w+)$/,
+		},
+            }, qr{Subject: \[[^]]+ #$first_num\]}]),
                 'Re: problem',
                 'Re problem',
                 'Aw: problem',
@@ -97,7 +107,6 @@ EOF
                 'Fw problem',
                 '[fwd] problem',
                 'Fwd: RE: re: fw problem',
-                'RE: [PetShop Suport #1] problem',
             ),
 	],
     ],
