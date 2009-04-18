@@ -21,6 +21,10 @@ sub initialize {
     return shift->SUPER::initialize(@_);
 }
 
+sub internal_as_string {
+    return shift->unsafe_get('field');
+}
+
 sub internal_new_args {
     shift;
     return $_CB->internal_compute_new_args([qw(field ?class)], \@_);
