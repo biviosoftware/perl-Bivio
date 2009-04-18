@@ -87,6 +87,18 @@ sub internal_initialize {
    );
 }
 
+sub tuple_tag_find_slot_type {
+    my(undef, $delegator, $model_label) = shift->delegated_args(@_);
+    return $delegator->get_field_type(
+	_find_model_label($delegator, $model_label));
+}
+
+sub tuple_tag_find_slot_value {
+    my(undef, $delegator, $model_label) = shift->delegated_args(@_);
+    return $delegator->get(
+	_find_model_label($delegator, $model_label));
+}
+
 sub tuple_tag_form_state {
     return shift->[$_IDI] ||= {};
 }
@@ -117,6 +129,16 @@ sub tuple_tag_slot_label {
     (my $x = _field_def_value($delegator, $field, 'TupleSlotDef.label') || '')
 	=~ s/_/ /g;
     return $x;
+}
+
+sub _find_model_label {
+    my($delegator, $model_label) = @_;
+#TODO: This needs encapsulation
+    $delegator->die($model_label, ': TupleUse not found')
+	unless my $d = _defs($delegator, ($model_label =~ /^(\w+\.\w+)/)[0]);
+    $delegator->die($model_label, ': TupleDef not found')
+	unless $d->find_row_by_label(($model_label =~ /(\w+)$/)[0]);
+    return "b_ticket.TupleTag." . $_TSN->field_name($d->get('TupleSlotDef.tuple_slot_num'));
 }
 
 sub _defs {
