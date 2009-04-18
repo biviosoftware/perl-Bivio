@@ -25,8 +25,8 @@ EOF
         assert_equals($actual, ["\n"]);
         assert_contains(qr{@{[join('.*', qw(
             class="bmenu"
-            /fourem/wiki/Mmm Mmm
-            /fourem/wiki/Nnn Nnn
+            /fourem/\w+/Mmm Mmm
+            /fourem/\w+/Nnn Nnn
         ))]}}, req(class()->TARGET));
         #ensure @b-menu-target works even if it renders earlier on the page
         #than @b-menu-source (e.g. when target is in .main_left and source is
@@ -39,7 +39,7 @@ EOF
         is_public => 0,
     }] => qr{@{[join('.*', qw(
         class="bmenu"
-        /fourem/wiki/Mmm Mmm
-        /fourem/wiki/Nnn Nnn
+        /fourem/\w+/Mmm Mmm
+        /fourem/\w+/Nnn Nnn
     ))]}},
 ];

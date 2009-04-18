@@ -1,7 +1,7 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 WikiText();
-req()->put(uri => '/fourem/wiki/MyPage');
+wiki_uri_to_req('MyPage');
 my($t1) = class('Type.WikiDataName')->to_absolute('T1.bmenu');
 model('RealmFile')->delete({path => $t1});
 model('RealmFile')->create_with_content({path => $t1}, \(<<'EOF'));
@@ -19,18 +19,18 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       "/fourem/wiki/Index" Index
+       "/fourem/\w+/Index" Index
        class="want_sep" "/" Home
        class="want_sep" "/pub/login" Login
-       class="want_sep selected" "/fourem/wiki/MyPage" MyPage
-       class="pdf want_sep" "/fourem/wiki/Document" Document
-       class="want_sep selected" "/fourem/wiki/Flyer" Flyer "[^"]+icon.png"
+       class="want_sep selected" "/fourem/\w+/MyPage" MyPage
+       class="pdf want_sep" "/fourem/\w+/Document" Document
+       class="want_sep selected" "/fourem/\w+/Flyer" Flyer "[^"]+icon.png"
     ))]}},
     [{
 	value => '@b-menu value=T1',
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       "/fourem/wiki/Index" Index
+       "/fourem/\w+/Index" Index
     ))]}},
 ];

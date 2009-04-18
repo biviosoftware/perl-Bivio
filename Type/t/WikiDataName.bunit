@@ -17,7 +17,7 @@ Type();
 	    }];
 	},
     } => [
-	[undef, qw(SITE_WIKI_VIEW zz)] => '/bp/zz',
-	[qw(fourem FORUM_WIKI_VIEW zz)] => '/fourem/wiki/zz',
+	[undef, qw(SITE_WIKI_VIEW zz)] => qr{^/\w+/zz$},
+	[qw(fourem FORUM_WIKI_VIEW zz)] => qr{^/fourem/\w+/zz$},
     ],
 ];
