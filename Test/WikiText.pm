@@ -37,4 +37,13 @@ sub new_unit {
     );
 }
 
+sub wiki_uri_to_req {
+    my($self, $name) = @_;
+    return $self->builtin_req->put(uri => $self->builtin_req->format_uri({
+	realm => 'fourem',
+	task_id => 'FORUM_WIKI_VIEW',
+	path_info => $name,
+    }));
+}
+
 1;
