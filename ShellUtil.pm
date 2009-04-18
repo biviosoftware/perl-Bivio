@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::ShellUtil;
 use strict;
@@ -234,11 +234,18 @@ sub arg_list {
     return $proto->name_args($decls, $args);
 }
 
+sub assert_have_user {
+    my($self) = @_;
+    $self->usage_error('-user must be specified')
+	unless $self->req('auth_user_id');
+    return;
+}
+
 sub assert_not_general {
     my($self) = @_;
     # Ensure auth_realm is not general.
     $self->usage_error('must select a realm with -realm')
-	if $self->get_request->get('auth_realm')->is_general;
+	if $self->req('auth_realm')->is_general;
     return;
 }
 
