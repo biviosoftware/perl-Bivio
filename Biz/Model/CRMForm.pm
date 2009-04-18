@@ -6,10 +6,11 @@ use Bivio::Base 'Model.MailForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = b_use('Mail.RFC822');
-my($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
+my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_TTF) = b_use('Model.TupleTagForm');
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_TAG_ID) = 'b_ticket.CRMThread.thread_root_id';
+my($_TAG_ID) = b_use('Model.CRMThread')->TUPLE_TAG_PREFIX
+    . '.CRMThread.thread_root_id';
 
 #TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????
