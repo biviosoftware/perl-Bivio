@@ -20,8 +20,8 @@ sub execute_empty {
 
 sub get_filter_value {
     my($self) = @_;
-    return
-	defined(my $f = $self->unsafe_get('x_filter'));
+    return undef
+	unless defined(my $f = $self->unsafe_get('x_filter'));
     return $f =~ /\S/ && $f ne $self->CLEAR_ON_FOCUS_HINT ? $f : undef;
 }
 
