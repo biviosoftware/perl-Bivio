@@ -9,6 +9,7 @@ req()->set_realm_and_user(qw(crm_forum crm_tech1));
 	    +{name => qr{close}i},
 	    +{name => qr{open.*(?!locked)}i},
 	    +{name => qr{locked}i},
+	    +{name => qr{pending}i},
 	    +{name => qr{assign.*tech1}i},
 	    +{name => qr{assign.*tech2}i},
 	],
