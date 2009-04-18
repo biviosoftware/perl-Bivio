@@ -26,11 +26,39 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.62  2009/04/16 13:01:18  nagler
+  Release notes:
+  * Bivio::Biz::Model::RealmMailBounce
+    fixed base to be Bivio::Base
+    copy
+  * Bivio::Biz::Model::TupleDefListForm
+    allow deleting a schema tuple def slot, remap existing data
+    changed tuple iteration to be unauth, to catch def used across realms
+  * Bivio::Delegate::SimpleWidgetFactory
+    rmpod
+    copy and more syntax
+    Integers now route to Integer widget
+  * Bivio::UI::FacadeBase
+    removed unused FormError label
+    factored out _unsafe_realm_id()
+    Added xlink_site_reports
+  * Bivio::UI::View::CSS
+    tools are now a border
+    border color for separator
+  * Bivio::UI::Widget::URI
+    format_method can be overriden
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    site_reports added
+    alphabetized (by hand, need sortign)
+  * Bivio::Util::SQL
+    need initialize fully
+    fpc
+
   Revision 7.61  2009/04/15 02:55:05  nagler
   * Bivio::Biz::Model::SearchForm
     Added get_search_value and CLEAR_ON_FOCUS_HINT
