@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Config;
 use strict;
@@ -138,6 +138,14 @@ sub REQUIRED {
     # Returns a unique value which passed in spec (see L<get|"get">)
     # will indicate the configuration parameter is required.
     return \&REQUIRED;
+}
+
+sub assert_version {
+    my($proto, $version) = @_;
+    $proto->if_version($version, 1, sub {
+        die($version, "must be IO.Config $version or greater ");
+    });
+    return;
 }
 
 sub bconf_dir_hashes {
