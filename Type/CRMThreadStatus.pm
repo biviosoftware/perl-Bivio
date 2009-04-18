@@ -13,6 +13,7 @@ __PACKAGE__->compile([
     LOCKED => 2,
     NEW => 3,
     OPEN => 4,
+    PENDING_CUSTOMER => 5,
 ]);
 
 sub get_default {
