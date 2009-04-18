@@ -31,7 +31,7 @@ verify_form({
 });
 verify_text(qr{>$code.*hello goodbye telephone}s);
 verify_text(qr{>cool $code<.*>This is some really cool $code}s);
-verify_text("$f/wiki");
+verify_text("$f/bp");
 follow_link(qr{^$code});
 verify_link('new_topic');
 go_back(2);
