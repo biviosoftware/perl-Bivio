@@ -11,3 +11,50 @@ search_for('CORGI');
 verify_text('Female Puppy Corgi');
 search_for('dogs wales');
 verify_text('Female Puppy Corgi');
+# Test searching of realm files including files with spaces, underscores,
+# hyphens, public vs private
+follow_link('Groupware');
+submit_form({
+    _anon => 'SearchTest1'
+});
+verify_text('Search Results');
+verify_text('Test Result One');
+verify_text('Search results test page');
+submit_form({
+    _anon => 'search_test2.pdf'
+});
+verify_text('Search Results');
+verify_text('Book1');
+verify_text('Sparco Seat Base');
+submit_form({
+    _anon => 'test2'
+});
+verify_text('Sparco Seat Base');
+submit_form({
+    _anon => 'search-test3.txt'
+});
+verify_text('Search Results');
+verify_text('search-test3.txt');
+verify_text('Test Result Three');
+submit_form({
+    _anon => 'search test3'
+});
+verify_text('Test Result Three');
+submit_form({
+    _anon => 'search test 4.txt'
+});
+verify_text('Search Results');
+verify_text('search test 4.txt');
+verify_text('Test Result Four');
+# Odd cases
+submit_form({
+    _anon => 'logo.pdf'
+});
+verify_text('Search Results');
+verify_text('logo.pdf');
+verify_text('No excerpt');
+submit_form({
+    _anon => 'my.css'
+});
+verify_text('Search Results');
+verify_text('search did not match');
