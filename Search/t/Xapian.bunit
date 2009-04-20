@@ -50,6 +50,10 @@ my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})
 		commit();
 		return [{phrase => 'abcz', private_realm_ids => [$demo]}];
 	    } => [],
+ 	    ['"0.txt"', 0, 0, [$demo], undef, 1] => [0],
+ 	    ['"/xapian/0.txt"', 0, 0, [$demo], undef, 1] => [0],
+ 	    ['".txt"', 0, 0, [$demo], undef, 1] => [0, 2, 3, 4, 5, 7],
+ 	    ['"00.txt"', 0, 0, [$demo], undef, 1] => undef,
 # TODO: Test update of simple fields and content
 	],
     ],
