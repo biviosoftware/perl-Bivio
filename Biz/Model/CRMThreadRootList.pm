@@ -21,18 +21,17 @@ sub internal_initialize {
         order_by => [qw(
 	    CRMThread.modified_date_time
 	    CRMThread.crm_thread_num
-	)],
+            CRMThread.crm_thread_status
+	    owner.Email.email
+	    modified_by.Email.email
+	    CRMThread.subject_lc
+	    customer.RealmOwner.name
+	    customer.RealmOwner.display_name
+	),
+	    @{$_TSN->map_list(sub {"$_TUPLE_TAG." . shift(@_)})},
+	],
         other_query_keys => $self->get_instance('CRMQueryForm')->filter_keys,
 	other => [
-	    @{$_TSN->map_list(sub {"$_TUPLE_TAG." . shift(@_)})},
-	    qw(
-		CRMThread.crm_thread_status
-		owner.Email.email
-		modified_by.Email.email
-		CRMThread.subject_lc
-		customer.RealmOwner.name
-		customer.RealmOwner.display_name
-	    ),
             delete($info->{primary_key})->[0],
 	    'CRMThread.subject',
 	    ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
