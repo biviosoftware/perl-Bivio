@@ -192,8 +192,8 @@ sub _excerpt {
     my($p) = $_X->excerpt_model($model);
     foreach my $n (qw(excerpt title author)) {
 	my($v) = $p && $p->unsafe_get($n);
-	$row->{"result_$n"} = $v
-	    if defined($v) && length($v);
+	$row->{"result_$n"} = defined($v) && length($v)
+	    ? $v : $row->{"result_$n"} ? $row->{"result_$n"} : 'No ' . $n;
     }
     $row->{result_title} = $realm_mail->get('subject')
 	if $realm_mail;
