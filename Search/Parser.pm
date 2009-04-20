@@ -56,7 +56,8 @@ sub xapian_terms_and_postings {
 	unless my $self = $proto->new_text($model);
     return (
 	_terms($self),
-	_postings(\($self->get('title')), $self->get('text')),
+	_postings(\($self->get('path')), \($self->get('title')),
+		  $self->get('text')),
     );
 }
 
@@ -74,6 +75,7 @@ sub _do {
         return $self->put_unless_exists(@_);
     });
     return $self->put_unless_exists(
+	path => '',
 	title => '',
 	modified_date_time => sub {$_DT->now},
     );
@@ -108,7 +110,7 @@ sub _postings {
 	    map(
 		map(
 		    length($_) ? lc($_) : (),
-		    $_ =~ /^\W*((?:[A-Z]\.){2,10})\W*$/ ? $1 : split(/\W+/, $_),
+		    $_ =~ /^[\W_]*((?:[A-Z]\.){2,10})[\W_]*$/ ? $1 : split(/[\W_]+/, $_),
 		),
 		split(' ', $$_),
 	    ),
