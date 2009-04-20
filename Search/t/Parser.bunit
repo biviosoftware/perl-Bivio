@@ -42,6 +42,11 @@ EOF
 			 P => '/search-realm-file/xapian.html',
 		    )},
 		    [qw(
+			search
+			realm
+			file
+			xapian
+			html
                         a
 			short
 			title
