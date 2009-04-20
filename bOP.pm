@@ -26,11 +26,73 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.63  2009/04/18 01:06:01  nagler
+  * Bivio::BConf
+    v9: enable_log => 1, unused_classes => [], ignore_dashes_in_recipient,
+    and deprecated_text_patterns => 0
+  * Bivio::Biz::Action::UserCreateDone
+    temporary fix: redirect to site_root if no UserRegisterForm
+  * Bivio::Biz::Model::CRMForm
+    use TupleTagForm.TUPLE_TAG_PREFIX
+  * Bivio::Biz::Model::CRMThread
+    defined TUPLE_TAG_PREFIX
+  * Bivio::Biz::Model::CRMThreadRootList
+    moved most order_by fields to other
+    left join on TupleTag and customer info
+    Added tuple_tag_find_slot_value/type
+  * Bivio::Biz::Model::SearchForm
+    fpc
+  * Bivio::Biz::Model::TaskLogList
+    added CLEAR_ON_FOCUS_HINT & get_filter_value()
+    detecting which type of query word was incorrect
+  * Bivio::Biz::Model::TaskLogQueryForm
+    added CLEAR_ON_FOCUS_HINT & get_filter_value()
+    bug in get_filter_value
+  * Bivio::Biz::Model::TupleSlotDefList
+    b_use
+  * Bivio::Biz::Model::TupleSlotType
+    use Bivio::Base
+  * Bivio::Biz::Model::TupleTagForm
+    added tuple_tag_find_slot_type/value
+  * Bivio::IO::Config
+    added assert_version
+  * Bivio::PetShop::BConf
+    in Bivio.BConf
+  * Bivio::ShellUtil
+    assert_have_user
+  * Bivio::Test::WikiText
+    added wiki_uri_to_req
+  * Bivio::Type::CRMThreadStatus
+    PENDING_CUSTOMER
+  * Bivio::UI::FacadeBase
+    rename ?/bp/* is FORUM_WIKI_VIEW
+  * Bivio::UI::HTML::Widget::Script
+    fixed onload function call list
+    added support for image thumbnail popups
+  * Bivio::UI::View::CRM
+    factored out internal_thread_root_list_columns
+  * Bivio::UI::View::CSS
+    added support for image thumbnail popups
+    .msg .actions => border none
+  * Bivio::UI::View::TaskLog
+    use ClearOnFocus and increase size of box
+    increased size of x_filter field
+  * Bivio::UI::XHTML::Widget::TupleTagSlotLabel
+    added internal_as_string
+  * Bivio::UI::XHTML::Widget::TupleTagSlotValue
+    NEW
+  * Bivio::Util::CRM
+    b_use
+  * Bivio::Util::HTTPStats
+    init_report_forum => init_forum
+  * Bivio::Util::SiteForum
+    init_realms calls HTTPStats->init_forum if config v3
+
   Revision 7.62  2009/04/16 13:01:18  nagler
   Release notes:
   * Bivio::Biz::Model::RealmMailBounce
