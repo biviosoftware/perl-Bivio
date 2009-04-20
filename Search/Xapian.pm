@@ -23,7 +23,6 @@ __PACKAGE__->use('IO.Config')->register(my $_CFG = {
 my($_F) = __PACKAGE__->use('IO.File');
 my($_L) = __PACKAGE__->use('Model.Lock');
 my($_GENERAL_ID) = __PACKAGE__->use('Auth.Realm')->get_general->get('id');
-my($_MRF) = __PACKAGE__->use('Model.RealmFile');
 my($_P) = __PACKAGE__->use('Search.Parser');
 my($_A) = __PACKAGE__->use('IO.Alert');
 my($_M) = b_use('Biz.Model');
