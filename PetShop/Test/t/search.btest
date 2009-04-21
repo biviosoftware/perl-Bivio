@@ -11,8 +11,7 @@ search_for('CORGI');
 verify_text('Female Puppy Corgi');
 search_for('dogs wales');
 verify_text('Female Puppy Corgi');
-# Test searching of realm files including files with spaces, underscores,
-# hyphens, public vs private
+# Test searching of realm files
 follow_link('Groupware');
 submit_form({
     _anon => 'SearchTest1'
@@ -46,13 +45,27 @@ submit_form({
 verify_text('Search Results');
 verify_text('search test 4.txt');
 verify_text('Test Result Four');
-# Odd cases
 submit_form({
     _anon => 'logo.pdf'
 });
 verify_text('Search Results');
 verify_text('logo.pdf');
 verify_text('No excerpt');
+# Private search
+submit_form({
+    _anon => 'SearchTest5.csv'
+});
+verify_text('Search Results');
+verify_text('search did not match');
+login_as('root');
+follow_link('Groupware');
+submit_form({
+    _anon => 'SearchTest5.csv'
+});
+verify_text('Search Results');
+verify_text('SearchTest5.csv');
+verify_text('Test,Result,Five t,r,5');
+# CSS not indexed
 submit_form({
     _anon => 'my.css'
 });
