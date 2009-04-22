@@ -30,8 +30,7 @@ sub internal_new_args {
 }
 
 sub _class {
-    my($self) =
-	@_;
+    my($self) = @_;
     my($c) = $self->get('widget')->unsafe_get('class');
     return !$c ? 'disabled' : Join([$c, 'disabled'], ' ');
 }
