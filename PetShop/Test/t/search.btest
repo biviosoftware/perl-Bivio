@@ -16,24 +16,18 @@ follow_link('Groupware');
 submit_form({
     _anon => 'SearchTest1'
 });
-verify_text('Search Results');
 verify_text('Test Result One');
-verify_text('Search results test page');
 submit_form({
-    _anon => 'search_test2.pdf'
+    _anon => 'search_test2.txt'
 });
-verify_text('Search Results');
-verify_text('Book1');
-verify_text('Sparco Seat Base');
+verify_text('Test Result Two');
 submit_form({
     _anon => 'test2'
 });
-verify_text('Sparco Seat Base');
+verify_text('Test Result Two');
 submit_form({
     _anon => 'search-test3.txt'
 });
-verify_text('Search Results');
-verify_text('search-test3.txt');
 verify_text('Test Result Three');
 submit_form({
     _anon => 'search test3'
@@ -42,9 +36,8 @@ verify_text('Test Result Three');
 submit_form({
     _anon => 'search test 4.txt'
 });
-verify_text('Search Results');
-verify_text('search test 4.txt');
 verify_text('Test Result Four');
+# Odd case
 submit_form({
     _anon => 'logo.pdf'
 });
@@ -55,15 +48,12 @@ verify_text('No excerpt');
 submit_form({
     _anon => 'SearchTest5.csv'
 });
-verify_text('Search Results');
 verify_text('search did not match');
 login_as('root');
 follow_link('Groupware');
 submit_form({
     _anon => 'SearchTest5.csv'
 });
-verify_text('Search Results');
-verify_text('SearchTest5.csv');
 verify_text('Test,Result,Five t,r,5');
 # CSS not indexed
 submit_form({

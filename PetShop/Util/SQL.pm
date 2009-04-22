@@ -195,6 +195,7 @@ sub initialize_test_data {
     _init_default_tuple($self);
     _init_mail($self);
     $self->new_other('TestCRM')->init;
+    _init_search($self);
     _init_remote_copy($self);
     _init_task_log($self);
     _init_bulletin($self);
@@ -727,6 +728,34 @@ EOF
 	    return;
 	});
     }
+    return;
+}
+
+sub _init_search {
+    my($self) = @_;
+    $self->req->set_realm('site');
+    $self->req->set_user($self->ROOT);
+    _realm_file_create($self, 'Public/Wiki/SearchTest1', <<'EOF');
+@h1 Test Result One
+Hello Wiki World!
+EOF
+    _realm_file_create($self, 'Public/WikiData/search_test2.txt', <<'EOF');
+Test Result Two
+Hello Underscore World!
+EOF
+    _realm_file_create($self, 'Public/WikiData/search-test3.txt', <<'EOF');
+Test Result Three
+Hello Hyphen World!
+EOF
+    _realm_file_create($self, 'Public/WikiData/search test 4.txt', <<'EOF');
+Test Result Four
+Hello Space World!
+EOF
+    _realm_file_create($self, 'SearchTest5.csv', <<'EOF');
+Test,Result,Five
+t,r,5
+T,R,V
+EOF
     return;
 }
 
