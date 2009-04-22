@@ -6,9 +6,11 @@ use Bivio::Base 'Biz.ListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_ARM) = b_use('Action.RealmMail');
 my($_EK) = b_use('Model.TupleSlotChoiceSelectList')->EMPTY_KEY_VALUE;
 my($_T) = b_use('Model.Tuple');
 my($_TSN) = b_use('Type.TupleSlotNum');
+my($_V) = b_use('UI.View');
 
 sub execute_empty_row {
     my($self) = @_;
@@ -32,9 +34,8 @@ sub execute_ok_end {
 	    realm_id => $self->req('auth_user_id'),
 	})->get('email'),
     );
-#TODO: Add it to db here, but not when it comes in because tuple update already
-# done -- msg already in queue?
-    $self->use('View.Tuple')->execute(edit_mail => $self->req);
+    $_ARM->execute_receive($self->req,
+	$_V->render('Tuple->edit_imail', $self->req));
     return;
 }
 
