@@ -1059,6 +1059,7 @@ sub info_tuple {
 	    Model.TupleSlotListForm
 	    View.Tuple->edit
 	    next=FORUM_TUPLE_LIST
+	    mail_reflector_task=FORUM_MAIL_REFLECTOR
 	)],
 	[qw(
 	    FORUM_TUPLE_HISTORY
