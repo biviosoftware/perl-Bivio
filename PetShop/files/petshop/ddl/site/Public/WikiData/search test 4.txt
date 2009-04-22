@@ -1,3 +1,0 @@
-Test Result Four
-
-Hello World!
