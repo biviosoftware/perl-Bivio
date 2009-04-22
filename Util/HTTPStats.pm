@@ -84,7 +84,7 @@ sub init_forum {
 	});
         $_F->do_in_dir($_ICON_DIR, sub {
             $self->new_other('RealmFile')->import_tree('icon');
-	});
+	}) if -d $_ICON_DIR;
 	return;
     });
     return;
