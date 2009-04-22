@@ -22,9 +22,4 @@ sub create_tuple_def {
     return model('TupleUse')->create_from_label('UserMeta');
 }
 
-sub setup_request {
-    my(undef, $params) = @_;
-    req()->set_realm_and_user('fourem', shift(@$params));
-    return $params;
-}
 1;

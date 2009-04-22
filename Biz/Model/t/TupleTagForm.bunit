@@ -3,11 +3,14 @@
 require 'RealmOwnerForm.PL';
 FormModel({
     class_name => 'Bivio::Biz::Model::t::RealmOwnerForm',
-    setup_request => \&setup_request,
 });
 create_tuple_def();
 [
-    ['crm_tech1'] => [{
+    req_state({
+        user => 'crm_tech1',
+        realm => 'fourem',
+    }),
+    [] => [{
         'Model.RealmOwnerForm' => {
             'RealmOwner.name' => 'crm_tech1',
             'b_owner.TupleTag.slot1' => undef,
@@ -16,7 +19,7 @@ create_tuple_def();
             'b_owner.TupleTag.slot4' => undef,
         },
     }],
-    [crm_tech1 => {
+    [{
         'RealmOwner.name' => 'zcrm_tech1',
        'b_owner.TupleTag.slot2' => 'z',
     }] => [{
