@@ -34,7 +34,7 @@ sub default_merge_overrides {
     # Grab last part: Only needed by PetShop
     my($root_lc) = lc(($args->{root} =~ /(\w+)$/)[0]);
     (my $file_root = "/var/db/$root_lc") =~ s/_/-/g;
-    my($res) = {
+    my($res) = Bivio::IO::Config->merge_list({
 	'Bivio::Biz::File' => {
 	    root => $file_root,
 	},
@@ -71,8 +71,8 @@ sub default_merge_overrides {
 		[$args->{root}, $args->{prefix}, $args->{owner}],
 	    ],
 	},
-        'Bivio::Delegate::Cookie' => {
-            tag => uc($args->{prefix}),
+	'Bivio::Delegate::Cookie' => {
+	    tag => uc($args->{prefix}),
 	},
 	'Bivio::IO::Config' => {
 	    version => $args->{version},
@@ -100,6 +100,7 @@ sub default_merge_overrides {
 		package_filter => '/^Bivio::UI::HTML::ViewShortcuts$/',
 	    },
 	},
+    }, {
 	$args->{version} < 9 ? () : (
 	    'Bivio::Biz::Model::TaskLog' => {
 		enable_log => 1,
@@ -114,7 +115,7 @@ sub default_merge_overrides {
 		deprecated_text_patterns => 0,
 	    },
 	),
-    };
+    });
     return $args->{version} < 2 ? %$res : $res;
 }
 
