@@ -61,6 +61,7 @@ sub run {
 	_symlink(_find_file($_V2 ? qw(
             /usr/local/apache2/libexec
             /usr/lib/apache2
+            /usr/lib64/apache2
 	) : qw(
 	    /usr/lib/apache
 	    /usr/libexec/httpd
