@@ -3,6 +3,7 @@
 package Bivio::UI::FacadeBase;
 use strict;
 use Bivio::Base 'UI.Facade';
+use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
@@ -10,6 +11,7 @@ my($_WIKI_DATA_FOLDER) = __PACKAGE__->use('Type.WikiDataName')->PRIVATE_FOLDER;
 my($_EASY_FORM_DIR) = 'Forms';
 my($_RN) = b_use('Type.RealmName');
 my($_FN) = b_use('Type.ForumName');
+our($_TRACE);
 
 sub HELP_WIKI_REALM_NAME {
     return _site(shift, 'help');
@@ -1176,7 +1178,7 @@ sub _cfg_tuple {
 		FORUM_TUPLE_DEF_EDIT => 'Schema definition has been saved.',
 		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Type definition has been saved.',
 		FORUM_TUPLE_USE_EDIT => 'Table definition has been saved.',
-		FORUM_TUPLE_EDIT => 'An email was sent to update the record.  Please wait a few seconds and the browser will update this listing.',
+		FORUM_TUPLE_EDIT => 'The record has been saved.',
 	    ]],
 	],
 	FormError => [
@@ -1564,7 +1566,7 @@ sub _unsafe_realm_id {
     });
     return $res
 	if $res;
-    b_warn($n, ': realm not found');
+    _trace($n, ': realm not found') if $_TRACE;
     return 1;
 }
 
