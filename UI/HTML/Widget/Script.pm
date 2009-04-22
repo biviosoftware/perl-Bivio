@@ -40,7 +40,7 @@ function b_clear_on_focus(field, hint) {
     if (field.value == hint) {
         field.value = "";
     }
-    field.className.replace(/disabled/, "enabled");
+    field.className = field.className.replace(/disabled/, "enabled");
     return;
 }
 EOF
@@ -92,7 +92,10 @@ function first_focus_onload() {
         return;
     var fields = document.forms[0].elements;
     for (i=0; i < fields.length; i++) {
-        if (fields[i].type == 'text' || fields[i].type == 'textarea') {
+        if ((fields[i].type == 'text'
+            || fields[i].type == 'textarea')
+            && !fields[i].onfocus
+        ) {
             try {
                 fields[i].focus();
             } catch (err) {}
