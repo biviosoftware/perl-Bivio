@@ -79,7 +79,7 @@ sub handle_config {
     #
     # To whom should errors be sent.
     #
-    # sendmail : string [/usr/lib/sendmail -O DeliveryMode=b -i]
+    # sendmail : string [/usr/sbin/sendmail -O DeliveryMode=b -i]
     #
     # How to send mail.  Must accept a list of recipients on the
     # command line.  Arguments must be easily separated, i.e. no quoting.
