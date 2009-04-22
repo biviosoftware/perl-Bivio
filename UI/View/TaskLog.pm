@@ -51,14 +51,14 @@ sub list {
 			    String(['super_user.RealmOwner.name'])),
 			' acting as',
 		    ], {control => ['TaskLog.super_user_id']}),
-		    SPAN_author(Join([
+		    If(['TaskLog.user_id'], SPAN_author(Join([
 			String(['RealmOwner.display_name']),
 			String(
 			    Join(['<', ['Email.email'], '>']),
 			    {escape_html => 1},
 			),
 			$extra_cols ? @$extra_cols : (),
-		    ], {join_separator => ' '})),
+		    ], {join_separator => ' '}))),
 		], {join_separator => ' '}),
 		DIV_uri(String(['TaskLog.uri'])),
 	    ]),
