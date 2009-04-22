@@ -66,10 +66,7 @@ foreach my $i (@$range) {
 	field2 => "12/$i/2001",
 	comment => "update #$i",
     });
-    sleep(1);
 }
-sleep(10);
-reload_page();
 verify_text(qr{@{[join('.*', map("12/0$_/2001", @$range))]}}s);
 
 follow_link('Schemas');
@@ -105,8 +102,6 @@ submit_form(Save => {
     field5 => 'f5',
     comment => 'xx',
 });
-sleep(10);
-reload_page();
 verify_table('Record', [
     ['Record', 'field1', 'field2', 'field3', 'field4', 'field5'],
     ['2', '1', '12/02/2001', '1', 'f4', 'f5'],
