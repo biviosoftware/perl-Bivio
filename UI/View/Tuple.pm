@@ -104,13 +104,13 @@ sub edit {
     }]);
 }
 
-sub edit_mail {
-#TODO: Support up to three file attachments
-    view_put(
-	mail_to => Mailbox(['->format_email']),
-	mail_from => Mailbox(['Model.TupleSlotListForm', 'RealmMail.from_email']),
-	mail_subject => String(['Model.TupleSlotListForm', 'RealmMail.subject']),
-	mail_body => Prose(<<'EOF'),
+sub edit_imail {
+    my($self) = @_;
+    return $self->internal_put_base_attr(
+	to => Mailbox(['->format_email']),
+	from => Mailbox(['Model.TupleSlotListForm', 'RealmMail.from_email']),
+	subject => String(['Model.TupleSlotListForm', 'RealmMail.subject']),
+	body => Prose(<<'EOF'),
 String(['Model.TupleSlotListForm', 'slot_headers']);
 
 String(['Model.TupleSlotListForm', 'comment']);
