@@ -9,7 +9,7 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 my($_FN) = __PACKAGE__->use('Type.FileName');
 my($_FP) = Bivio::Type->get_instance('FilePath');
 b_use('IO.Config')->register(my $_CFG = {
-    require_comment => 0,
+    show_comment => 0,
 });
 
 sub QUERY_KEY {
@@ -137,7 +137,7 @@ sub get_fields_for_mode {
 			? 'folder_id'
 			# delete mode
 			: 'comment';
-    return $_CFG->{require_comment}
+    return $_CFG->{show_comment}
 	? @fields
 	: grep($_ ne 'comment', @fields);
 }
@@ -252,7 +252,8 @@ sub validate {
     my($self) = @_;
 
     foreach my $name ($self->get_fields_for_mode($self->get('mode'))) {
-	$self->validate_not_null($name);
+	$self->validate_not_null($name)
+	    unless $name eq 'comment';
     }
     return;
 }
