@@ -29,9 +29,7 @@ sub internal_initialize {
 	    'RealmOwner.display_name',
 	    'super_user.RealmOwner.name',
 	    'TaskLog.uri',
-	    [qw(TaskLog.user_id Email.realm_id RealmOwner.realm_id)],
-	    ['Email.location',
-		[$self->get_instance('Email')->DEFAULT_LOCATION]],
+	    'TaskLog.user_id',
 	    [qw(TaskLog.super_user_id super_user.RealmOwner.realm_id(+))],
 	],
 	other_query_keys => [qw(x_filter)],
@@ -40,7 +38,7 @@ sub internal_initialize {
 }
 
 sub internal_left_join_model_list {
-    return ();
+    return qw(Email RealmOwner);
 }
 
 sub internal_prepare_statement {
@@ -49,8 +47,10 @@ sub internal_prepare_statement {
     foreach my $model ($self->internal_left_join_model_list) {
 	$stmt->from($stmt->LEFT_JOIN_ON('TaskLog', $model, [
 	    ['TaskLog.user_id', "$model.realm_id"],
-	    ["$model.location",
-		[$self->get_instance($model)->DEFAULT_LOCATION]],
+	    b_use("Model.$model")->isa('Bivio::Biz::Model::LocationBase')
+	        ? ["$model.location",
+		    [$self->get_instance($model)->DEFAULT_LOCATION]]
+	        : (),
 	]));
     }
 
