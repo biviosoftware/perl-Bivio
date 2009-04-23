@@ -289,6 +289,10 @@ sub _tree_list {
 		_file_date(),
 	    ),
 	}],
+	['content_length', {
+	    format => 'Bytes',
+	    column_data_class => 'amount_cell',
+	}],
 	_file_owner_column(),
     ]);
 }
