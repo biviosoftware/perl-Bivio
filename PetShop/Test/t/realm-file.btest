@@ -64,3 +64,8 @@ fixup_files_uri('DELETE'),
 submit_form(OK => {
     'Comments:' => 'cleanup for next test run',
 });
+follow_link(qr/^site$/, 'Files', 'Public', 'WikiData');
+verify_table('Name', [
+    ['Name', 'Size'],
+    ['logo.pdf', '9 KB'],
+]);
