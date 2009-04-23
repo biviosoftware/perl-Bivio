@@ -62,6 +62,11 @@ sub internal_initialize {
 		type => 'FilePath',
 		constraint => 'NONE',
 	    },
+	    {
+		name => 'content_length',
+		type => 'String',
+		constraint => 'NONE',
+	    },
 	    ['Email_2.location',
 		[$self->use('Model.Email')->DEFAULT_LOCATION]],
 	],
@@ -118,6 +123,9 @@ sub internal_post_load_row {
     }
     $row->{base_name} = $row->{'RealmFile.path'} eq '/' ? '/'
 	: Bivio::Type::FileName->get_tail($row->{'RealmFile.path'});
+    $row->{content_length} = $row->{'RealmFile.is_folder'}
+	? undef
+	: $_RF->get_content_length(undef, 'RealmFile.', $row);
     return 1;
 }
 
