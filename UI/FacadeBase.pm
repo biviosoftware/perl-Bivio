@@ -603,6 +603,7 @@ sub _cfg_file {
 		leaf_node => 'leaf_file',
 		empty_list_prose => 'No files in this forum.',
 		locked_leaf_node => 'leaf_file_locked',
+		content_length => 'Size',
 	    ]],
 	    [RealmFileLock => [
 		comment => 'Comments',
