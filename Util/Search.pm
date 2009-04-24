@@ -19,9 +19,8 @@ EOF
 sub rebuild_db {
     my($self) = @_;
     my($req) = $self->get_request;
-    $self->are_you_sure('Destroy the ENTIRE Xapian database?');
+    $self->are_you_sure('Rebuild Xapian database?');
     $self->model('Lock')->acquire_general;
-    $_X->destroy_db($req);
     my($realms) = $self->model('RealmFile')->map_iterate(
 	sub {shift->get('realm_id')},
 	'unauth_iterate_start',
