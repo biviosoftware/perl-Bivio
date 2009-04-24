@@ -21,6 +21,10 @@ Bivio::Test->new('Bivio::Type')->unit([
 	    ['', ''] => 0,
 	    ['x', 'x'] => 0,
 	],
+	is_specified_literal => [
+	    [undef] => 0,
+	    '' => 1,
+	],
 	# See String.bunit for more tests
     ],
 ]);

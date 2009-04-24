@@ -231,6 +231,11 @@ sub is_specified {
     return defined($_[1]) ? 1 : 0;
 }
 
+sub is_specified_literal {
+    my($proto) = shift;
+    return $proto->is_specified(($proto->from_literal(shift))[0]);
+}
+
 sub max {
     my($proto, @values) = @_;
     return $proto->iterate_reduce(sub {
