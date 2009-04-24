@@ -23,7 +23,8 @@ sub map_list {
 }
 
 sub field_name {
-    return "slot$_[1]";
+    my(undef, $num) = @_;
+    return "slot$num";
 }
 
 sub field_name_to_num {
