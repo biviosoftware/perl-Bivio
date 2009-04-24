@@ -18,6 +18,19 @@ sub call_fifo {
     )];
 }
 
+sub do_filo {
+    my($self, $method, $args) = @_;
+    $args ||= [];
+    foreach my $h (reverse(@{$self->[$_IDI]})) {
+	next
+	    unless $h->can($method);
+	my($res) = $h->$method(ref($args) eq 'CODE' ? @{$args->()} : @$args);
+	return $res
+	    if defined($res);
+    }
+    return;
+}
+
 sub new {
     my($self) = shift->SUPER::new;
     $self->[$_IDI] = [];

@@ -7,12 +7,20 @@ my($i) = 0;
     [] => [
 	push_object => [
 	    [$o1] => not_die(),
-	    [$o2] => not_die(),
 	],
 	call_fifo => [
 	    [put => [a => 1]] => not_die(),
+	],
+	push_object => [
+	    [$o2] => not_die(),
+	],
+	call_fifo => [
 	    [put => sub {[b => ++$i]}] => not_die(),
 	    not_a_method => not_die(),
+	],
+	do_filo => [
+	    [unsafe_get => ['b']] => 2,
+	    [unsafe_get => ['a']] => 1,
 	],
     ],
     sub {$o1} => [
@@ -22,8 +30,8 @@ my($i) = 0;
 	],
     ],
     sub {$o2} => [
-	get => [
-	    a => 1,
+	unsafe_get => [
+	    a => [undef],
 	    b => 2,
 	],
     ],
