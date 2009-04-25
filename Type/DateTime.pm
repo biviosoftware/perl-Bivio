@@ -810,7 +810,10 @@ sub to_parts {
     my($date, $time) = split(/\s+/, $value);
 
     # Unix time doesn't have a "$time" component
-    return _localtime($value) unless defined($time);
+    unless (defined($time)) {
+	Bivio::IO::Alert->warn_deprecated('localtime() going away');
+	return _localtime($value);
+    }
 
     # Parse time component
     my($sec) = int($time % 60 + 0.5);
