@@ -76,7 +76,7 @@ sub initialize {
 		    _cfg($cfg, @$_URI),
 		});
 	    }
-            my($selected_cond) = ['->req', _selected_attr($self, \$i)];
+            my($selected_cond) = ['->ureq', _selected_attr($self, \$i)];
  	    my($w) = $_W->is_blessed($cfg->{xlink})
 		? $cfg->{xlink}
 		: $cfg->{xlink} ? XLink($cfg->{xlink})
