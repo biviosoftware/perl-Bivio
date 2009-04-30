@@ -101,6 +101,13 @@ sub handle_rollback {
     return;
 }
 
+sub module_version {
+    my($self) = @_;
+    return Search::Xapian::major_version() . '.'
+	. Search::Xapian::minor_version() . '.'
+	    . Search::Xapian::revision();
+}
+
 sub update_model {
     my($proto, $req) = (shift, shift);
     my($model) = @_;
@@ -142,9 +149,11 @@ sub query {
     $qp->set_stemmer($_STEMMER);
     $qp->set_stemming_strategy(Search::Xapian::STEM_ALL);
     $qp->set_default_op(Search::Xapian->OP_AND);
+    my($phrase) = $a->{phrase};
+    $phrase =~ s/_/ /g;
     my($q) = Search::Xapian::Query->new(
  	Search::Xapian->OP_AND,
- 	$qp->parse_query($a->{phrase}, $_FLAGS),
+ 	$qp->parse_query($phrase, $_FLAGS),
 	Search::Xapian::Query->new(
 	    Search::Xapian->OP_OR,
 	    map(Search::Xapian::Query->new("XREALMID:$_"),
