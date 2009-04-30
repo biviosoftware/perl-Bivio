@@ -26,11 +26,36 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.68  2009/04/23 22:57:47  moeller
+  * Bivio::Biz::Model::FileChangeForm
+    changed require_comment to show_comment, comment is now optional always
+  * Bivio::Biz::Model::RealmFileTreeList
+    added content_length field
+  * Bivio::Biz::Model::TaskLogList
+    left join TaskLog.user_id on Email.realm_id and RealmOwner.realm_id
+  * Bivio::Biz::Model::TupleSlotListForm
+    execute the tuple state from the email data immediately, not on mail receive
+  * Bivio::Delegate::TaskId
+    added mail_reflector_task to FORUM_TUPLE_EDIT task
+  * Bivio::UI::FacadeBase
+    updated tuple add/update ack,
+    changed "realm not found" from warning to trace
+    added label
+  * Bivio::UI::HTML::Widget::Script
+    clear_on_focus was not assigning new className
+    first_focus only on fields without onfocus
+  * Bivio::UI::View::File
+    added content_length columnto file tree list
+  * Bivio::UI::View::TaskLog
+    only render user info if there is a user
+  * Bivio::UI::View::Tuple
+    changed edit_mail() to edit_imail() for in-place rendering
+
   Revision 7.67  2009/04/22 17:58:49  aviggio
   * Bivio::BConf
     fpc: Need to merge two hashes in default_merge_overrides so don't
