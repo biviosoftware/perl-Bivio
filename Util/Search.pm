@@ -18,7 +18,7 @@ EOF
 }
 
 sub module_version {
-    return 'Xapian C++ core v' . $_X->version()
+    return 'Xapian C++ core v' . $_X->module_version()
 	. "\nSearch::Xapian Perl XS v" .  $Search::Xapian::VERSION;
 }
 
