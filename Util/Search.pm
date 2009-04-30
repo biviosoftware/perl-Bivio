@@ -11,10 +11,15 @@ sub USAGE {
     return <<'EOF';
 usage: b-search [options] command [args..]
 commands
+  module_version -- list versions of Xapian C++ and Perl XS libraries in use
   rebuild_db -- reload entire search database
   rebuild_realm -- reindex the current realm (does not delete index)
-  version -- returns the version of the Xapian C++ library being used
 EOF
+}
+
+sub module_version {
+    return 'Xapian C++ core v' . $_X->version()
+	. "\nSearch::Xapian Perl XS v" .  $Search::Xapian::VERSION;
 }
 
 sub rebuild_db {
@@ -64,11 +69,6 @@ sub rebuild_realm {
 	{is_folder => 0},
     );
     return;
-}
-
-sub version {
-    return 'Xapian C++ core v' . $_X->version()
-	. "\nSearch::Xapian Perl XS v" .  $Search::Xapian::VERSION;
 }
 
 1;
