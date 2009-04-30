@@ -13,12 +13,12 @@ usage: b-search [options] command [args..]
 commands
   rebuild_db -- reload entire search database
   rebuild_realm -- reindex the current realm (does not delete index)
+  version -- returns the version of the Xapian C++ library being used
 EOF
 }
 
 sub rebuild_db {
     my($self) = @_;
-    my($req) = $self->get_request;
     $self->are_you_sure('Rebuild Xapian database?');
     $self->model('Lock')->acquire_general;
     my($realms) = $self->model('RealmFile')->map_iterate(
@@ -64,6 +64,11 @@ sub rebuild_realm {
 	{is_folder => 0},
     );
     return;
+}
+
+sub version {
+    return 'Xapian C++ core v' . $_X->version()
+	. "\nSearch::Xapian Perl XS v" .  $Search::Xapian::VERSION;
 }
 
 1;
