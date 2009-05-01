@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model;
 use strict;
@@ -14,7 +14,7 @@ our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 #my(%_CLASS_INFO);
 my($_LOADED_ALL_PROPERTY_MODELS);
-my($_S) = __PACKAGE__->use('SQL.Support');
+my($_S) = b_use('SQL.Support');
 my($_SS) = b_use('SQL.Statement');
 my($_CL) = b_use('IO.ClassLoader');
 
@@ -144,6 +144,11 @@ sub format_uri_for_this_property_model {
 	$task, $mi->format_query_for_this($query), undef, undef);
 }
 
+sub from_req {
+    my($proto, $req, $class) = @_;
+    return $req->get(_class($proto, $class));
+}
+
 sub get_as {
     my($self, $field, $format) = @_;
     return $self->get_field_info($field, 'type')->$format($self->get($field));
@@ -176,9 +181,7 @@ sub get_field_constraint {
 }
 
 sub get_field_info {
-    # Returns I<attr> for I<field>.
-    return shift->[$_IDI]->{class_info}->{sql_support}
-	    ->get_column_info(@_);
+    return shift->internal_get_sql_support_no_assert->get_column_info(@_);
 }
 
 sub get_field_type {
@@ -190,10 +193,7 @@ sub get_field_type {
 }
 
 sub get_info {
-    # Returns meta information about the model.
-    #
-    # B<Do not modify references returned by this method.>
-    return shift->[$_IDI]->{class_info}->{sql_support}->get(shift);
+    return shift->internal_get_sql_support_no_assert->get(shift);
 }
 
 sub get_instance {
@@ -204,17 +204,9 @@ sub get_instance {
     # I<class> may also be an instance of a model.
     #
     # May not be called on anonymous Models without I<class> argument.
-    if (defined($class)) {
-	$class = b_use('Model', $class)
-	    unless ref($class);
-	$class = ref($class) if ref($class);
-    }
-    else {
-	$class = ref($proto) || $proto;
-    }
 #     _initialize_class_info($class) unless $_CLASS_INFO{$class};
 #     return $_CLASS_INFO{$class}->{singleton};
-    return _get_class_info($class)->{singleton};
+    return _get_class_info(_class($proto, $class))->{singleton};
 }
 
 sub get_model {
@@ -262,9 +254,7 @@ sub get_request {
 }
 
 sub has_fields {
-    # Does the model have these fields?
-    return shift->[$_IDI]->{class_info}->{sql_support}
-	    ->has_columns(@_);
+    return shift->internal_get_sql_support_no_assert->has_columns(@_);
 }
 
 sub has_iterator {
@@ -297,11 +287,7 @@ sub internal_get_sql_support_no_assert {
 }
 
 sub internal_get_statement {
-    my($self) = @_;
-    # Returns L<Bivio::SQL::Statement|Bivio::SQL::Statement> for this instance.
-    my($fields) = $self->[$_IDI];
-    $self->assert_not_singleton if $fields->{is_singleton};
-    return $fields->{class_info}->{statement};
+    return shift->assert_not_singleton->[$_IDI]->{class_info}->{statement};
 }
 
 sub internal_initialize {
@@ -587,6 +573,15 @@ sub _assert_class_name {
     Bivio::Die->die($class, ': must be a ', $super)
 	    unless UNIVERSAL::isa($class, $super);
     return;
+}
+
+sub _class {
+    my($proto, $class) = @_;
+    return ref($proto) || $proto
+	unless defined($class);
+    return b_use('Model', $class)
+	unless ref($class);
+    return ref($class) || $class;
 }
 
 sub _get_class_info {
