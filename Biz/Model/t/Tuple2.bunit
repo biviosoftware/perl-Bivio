@@ -1,58 +1,58 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 [
     class() => [
 	split_body => [
 	    "\n\n\nc1" => [undef, 'c1'],
 	    'x' => [undef, 'x'],
-	    'x1:y' => ['x1:y', ''],
-	    "x1:y\ny2" => ["x1:y\ny2", ''],
+	    'X1:y' => ['X1:y', ''],
+	    "X1:y\ny2" => ["X1:y\ny2", ''],
 	],
 	split_rfc822 => [
-	    [\(<<'EOF')] => ['s1: x', 'c1'],
-h1: a1
-h2: b1
+	    [\(<<'EOF')] => ['S1: x', 'c1'],
+H1: a1
+H2: b1
 
-s1: x
-
-c1
-EOF
-	    [\(<<'EOF')] => ['s1: x', ''],
-h1: a2
-h2: b2
-
-s1: x
-
-EOF
-	    [\(<<'EOF')] => [undef, 'c1'],
-h1: a3
-h2: b3
-
-
+S1: x
 
 c1
 EOF
-	    [\(<<'EOF')] => ['s1: x', ''],
-h1: a4
-h2: b4
+	    [\(<<'EOF')] => ['S1: x', ''],
+H1: a2
+H2: b2
 
-s1: x
+S1: x
+
 EOF
 	    [\(<<'EOF')] => [undef, 'c1'],
-h1: a5
-h2: b5
-s1: x5
+H1: a3
+H2: b3
+
+
+
+c1
+EOF
+	    [\(<<'EOF')] => ['S1: x', ''],
+H1: a4
+H2: b4
+
+S1: x
+EOF
+	    [\(<<'EOF')] => [undef, 'c1'],
+H1: a5
+H2: b5
+S1: x5
 
 c1
 EOF
 	    [\(<<'EOF')] => [undef, ''],
-h1: a6
-h2: b6
-s1: x6
+H1: a6
+H2: b6
+S1: x6
 c1
 EOF
 	    [\(<<'EOF')] => [undef, ''],
-s1: x7
+S1: x7
 EOF
 	],
     ],

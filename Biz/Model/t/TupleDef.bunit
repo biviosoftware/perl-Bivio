@@ -1,11 +1,11 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 PropertyModel();
 req()->set_realm_and_user(qw(demo demo));
 [
     create_from_hash => [
 	[{'td1#TupleDef1' => [{
-	    label => 's1',
+	    label => 'S1',
 	    type => 'Date',
 	}]}] => [{
 	    'Model.TupleDef' => {
@@ -13,7 +13,7 @@ req()->set_realm_and_user(qw(demo demo));
 		label => 'TupleDef1',
 	    },
 	    'Model.TupleSlotDef' => {
-		label => 's1',
+		label => 'S1',
 		tuple_slot_type_id =>
 		    model(TupleSlotTypeList => {})->label_to_id('Date'),
 	    },

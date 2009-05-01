@@ -3,7 +3,7 @@
 require './TupleListForm.PL';
 model('TupleSlotType')->delete_all;
 model('TupleSlotType')->create_from_hash({
-    exist1 => {
+    Exist1 => {
 	type_class => 'Integer',
 	choices => [-1, -2, -3],
 	default_value => -2,
@@ -18,7 +18,7 @@ my($string) = model('TupleSlotType')->DEFAULT_CLASS;
 	    0 .. class()->ROW_INCREMENT - 1),
     }),
     simple_case($exists_id, {
-	'TupleSlotType.label' => 'exist1',
+	'TupleSlotType.label' => 'Exist1',
 	'TupleSlotType.type_class' => 'Integer',
 	'TupleSlotType.default_value' => -2,
 	choice_0 => -1,
@@ -31,20 +31,20 @@ my($string) = model('TupleSlotType')->DEFAULT_CLASS;
 	    3 .. 3 + class()->ROW_INCREMENT - 1),
     }),
     [{
-	'TupleSlotType.label' => 'tstl1',
+	'TupleSlotType.label' => 'Tstl1',
 	'TupleSlotType.type_class' => $string,
 	'TupleSlotType.default_value' => '',
 	empty_row_count => 0,
     }] => [{
 	'Model.TupleSlotType' => {
-	    label => 'tstl1',
+	    label => 'Tstl1',
 	    type_class => 'String',
 	    choices => class('Type.TupleSlotArray')->new([]),
 	    default_value => undef,
 	},
     }],
     error_case({
-	'TupleSlotType.label' => 'tstl2',
+	'TupleSlotType.label' => 'Tstl2',
 	'TupleSlotType.type_class' => $string,
 	'TupleSlotType.default_value' => 1,
 	choice_0 => 1,
@@ -54,7 +54,7 @@ my($string) = model('TupleSlotType')->DEFAULT_CLASS;
 	choice_1 => 'EXISTS',
     }),
     error_case({
-	'TupleSlotType.label' => 'tstl2',
+	'TupleSlotType.label' => 'Tstl2',
 	'TupleSlotType.type_class' => $string,
 	'TupleSlotType.default_value' => 3,
 	choice_0 => 1,

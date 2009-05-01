@@ -5,7 +5,7 @@ req()->set_realm_and_user(qw(demo demo));
 my($tsa) = class('Type.TupleSlotArray');
 [
     create_from_hash => [
-	[{tst1 => {
+	[{TST1 => {
 	    type_class => 'Integer',
 	    choices => undef,
 	    default_value => 3,
@@ -20,7 +20,7 @@ my($tsa) = class('Type.TupleSlotArray');
 	[''] => [undef, undef],
     ],
     create_from_hash => [
-	[{tst2 => {
+	[{TST2 => {
 	    type_class => 'Integer',
 	    choices => [1, 2],
 	}}] => [{
@@ -32,7 +32,7 @@ my($tsa) = class('Type.TupleSlotArray');
 	3 => [undef, Bivio::TypeError->NOT_FOUND],
     ],
     create_from_hash => [
-	[{tst3 => {
+	[{TST3 => {
 	    type_class => 'Date',
 	    choices => "9/1/2006$;10/1/2006",
 	}}] => [{
@@ -45,18 +45,18 @@ my($tsa) = class('Type.TupleSlotArray');
 	'9/2' => [undef, Bivio::TypeError->DATE],
     ],
     create_from_hash => [
-	[{tst4 => {
+	[{Tst4 => {
 	    choices => [qw(1 x)],
 	}}] => DB_CONSTRAINT(),
-	[{tst5 => {
+	[{Tst5 => {
 	    type_class => 'Integer',
 	    choices => [qw(1 x)],
 	}}] => DB_CONSTRAINT(),
-	[{tst6 => {
+	[{Tst6 => {
 	    type_class => 'Integer',
 	    default_value => 'x',
 	}}] => DB_CONSTRAINT(),
-	[{tst7 => {
+	[{Tst7 => {
 	    type_class => 'Integer',
 	    choices => [1, 2],
 	    default_value => '3',

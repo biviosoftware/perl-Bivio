@@ -15,7 +15,7 @@ my($data) = [
 foreach my $item (@$data) {
     my($user, @values) = @$item;
     my($i) = 1;
-    create_tuple($user => {map(('b_owner.TupleTag.slot'.$i++ => $_), @values)});
+    create_tuple($user => {map(('owner.TupleTag.slot'.$i++ => $_), @values)});
 }
 [
     req_state({
@@ -27,15 +27,15 @@ foreach my $item (@$data) {
     }),
     empty_case({
         'TupleDef.label' => 'UserMeta',
-        'TupleDef.moniker' => 'b_owner',
-        'TupleSlotDef.label_0' => 'b_optional',
-        'TupleSlotDef.label_1' => 'b_required',
-        'TupleSlotDef.label_2' => 'b_integer',
-        'TupleSlotDef.label_3' => 'b_string',
+        'TupleDef.moniker' => 'owner',
+        'TupleSlotDef.label_0' => 'Optional',
+        'TupleSlotDef.label_1' => 'Required',
+        'TupleSlotDef.label_2' => 'Integer',
+        'TupleSlotDef.label_3' => 'String',
     }),
     [{
         'TupleDef.label' => 'UserMeta',
-        'TupleDef.moniker' => 'b_owner',
+        'TupleDef.moniker' => 'owner',
         'TupleSlotDef.label_0' => '',
         'TupleSlotDef.tuple_slot_type_id_0' => $strid,
         empty_row_count => 0,

@@ -10,7 +10,7 @@ model('Tuple')->delete_all;
 	[\(<<'EOF')]
 From: a@a.a
 Message-ID: <1@a.a>
-Subject: PSR#
+Subject: psr#
 
 Author: b@b.b
 
@@ -23,13 +23,13 @@ EOF
 		slot2 => 's1',
 	    },
 	    'Model.RealmMail' => {
-		subject => 'PSR#1',
+		subject => 'psr#1',
 	    },
 	}],
 	[\(<<'EOF')]
 From: a@a.a
 Message-ID: <2@a.a>
-Subject: PSR#1
+Subject: psr#1
 
 Status: s2
 
@@ -45,7 +45,7 @@ EOF
 	[\(<<'EOF')]
 From: a@a.a
 Message-ID: <2@a.a>
-Subject: PSR#1
+Subject: psr#1
 
 Status:
 
@@ -61,7 +61,7 @@ EOF
 	[\(<<'EOF')]
 From: a@a.a
 Message-ID: <2@a.a>
-Subject: PSR#1
+Subject: psr#1
 
 Author:
 Status: s3

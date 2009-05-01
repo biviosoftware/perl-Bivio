@@ -1,16 +1,25 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->set_realm(qw(fourem root));
+req()->set_realm_and_user(qw(fourem btest_read));
+req()->initialize_fully('FORUM_TUPLE_EDIT');
 my($tdid) = model(TupleUseList => {auth_id => req('auth_id')})
-    ->moniker_to_id('PSR');
+    ->moniker_to_id('psr');
 model('Tuple')->delete_all;
 foreach my $x (0..3) {
-    model('Tuple')->create({
-	tuple_def_id => $tdid,
-	slot1 => "a$x\@a.a",
-	slot2 => "s$x",
+#TODO: This is yucky code.  Need to encapsulate
+    req()->clear_nondurable_state;
+    my($tslf) = model('TupleSlotListForm');
+    req()->put(query => {parent_id => $tdid});
+    $tslf->process({
+	%{$tslf->get_fields_for_primary_keys},
+	slot_0 => "a$x\@a.a",
+	slot_1 => "s$x",
+	comment => 'anything',
     });
+    if (my $l = req()->unsafe_get('Model.Lock')) {
+	$l->release;
+    }
 }
 [
     load_all => [

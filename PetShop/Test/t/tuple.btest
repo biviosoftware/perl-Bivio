@@ -1,21 +1,21 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
 my($forum, $uri) = create_forum();
 visit_uri("$uri/db-types");
 follow_link('add.*type');
 submit_form(Save => {
-    name => 'i1',
+    name => 'I1',
     class => 'Integer',
     default => 1,
     qr{pick.*_0}i => 1,
     qr{pick.*_1}i => 2,
 });
-follow_link_in_table('Type Name', 'Type Name', 'i1', 'Actions', 'Modify');
+follow_link_in_table('Type Name', 'Type Name', 'I1', 'Actions', 'Modify');
 submit_form(Save => {
-    name => 'i1a',
+    name => 'I1a',
 });
-follow_link_in_table('Type Name', 'Type Name', 'i1a', 'Actions', 'Modify');
+follow_link_in_table('Type Name', 'Type Name', 'I1a', 'Actions', 'Modify');
 test_deviance(qr{default value.*pick list}is);
 submit_form({
     default => 3,
@@ -29,7 +29,7 @@ test_conformance();
 follow_link('types');
 follow_link('add.*type');
 submit_form({
-    name => 'i1',
+    name => 'I1',
 });
 follow_link('schemas');
 follow_link('add.*schema');
@@ -37,17 +37,17 @@ test_deviance(qr{must be at least two characters}is);
 submit_form({
     name => 'Database1',
     prefix => 'd1',
-    qr{field.*_0$}is => 'field1?',
-    qr{type.*_0$}is => 'i1',
+    qr{Field.*_0$}is => 'Field1?',
+    qr{type.*_0$}is => 'I1',
 });
 test_conformance();
 submit_form({
     name => 'Database1',
     prefix => 'd1',
-    qr{field.*_0$}is => 'field1',
-    qr{type.*_0$}is => 'i1',
+    qr{Field.*_0$}is => 'Field1',
+    qr{type.*_0$}is => 'I1',
     qr{required.*_0$}is => 0,
-    qr{field.*_1$}is => 'field2',
+    qr{Field.*_1$}is => 'Field2',
     qr{type.*_1$}is => 'Date',
     qr{required.*_1$}is => 1,
 });
@@ -62,8 +62,8 @@ my($range) = [1 .. 5];
 foreach my $i (@$range) {
     go_back() if $i > 1;
     submit_form({
-	field1 => 1,
-	field2 => "12/$i/2001",
+	'Field1:' => 1,
+	'Field2:' => "12/$i/2001",
 	comment => "update #$i",
     });
 }
@@ -74,18 +74,18 @@ follow_link_in_table('Schema Name', 'Schema Name', 'Database1',
     'Actions', 'Modify');
 test_deviance('must use a Type with a default value');
 submit_form(Save => {
-    field_2 => 'field3',
+    Field_2 => 'Field3',
     qr/required.*_2/i => 1,
     type_2 => 'String',
 });
 test_conformance();
 submit_form(Save => {
-    field_2 => 'field3',
+    Field_2 => 'Field3',
     qr/required.*_2/i => 1,
-    type_2 => 'i1a',
-    field_3 => 'field4',
+    type_2 => 'I1a',
+    Field_3 => 'Field4',
     type_3 => 'String',
-    field_4 => 'field5',
+    Field_4 => 'Field5',
     type_4 => 'String',
 });
 
@@ -93,17 +93,17 @@ follow_link('Tables');
 follow_link_in_table('Table Name', 'Table Name', 'Database1',
     'Actions', 'Records');
 verify_table('Record', [
-    ['Record', 'field3'],
+    ['Record', 'Field3'],
     ['2', '1'],
 ]);
 follow_link_in_table('Record', 'Record', '2', 'Actions', 'Modify');
 submit_form(Save => {
-    field4 => 'f4',
-    field5 => 'f5',
+    'Field4:' => 'f4',
+    'Field5:' => 'f5',
     comment => 'xx',
 });
 verify_table('Record', [
-    ['Record', 'field1', 'field2', 'field3', 'field4', 'field5'],
+    ['Record', 'Field1', 'Field2', 'Field3', 'Field4', 'Field5'],
     ['2', '1', '12/02/2001', '1', 'f4', 'f5'],
 ]);
 
@@ -113,17 +113,17 @@ follow_link_in_table('Schema Name', 'Schema Name', 'Database1',
 
 submit_form(Save => {
     Field_1 => undef,
-    field_2 => undef,
-    field_4 => undef,
+    Field_2 => undef,
+    Field_4 => undef,
 });
 
 follow_link('Tables');
 follow_link_in_table('Table Name', 'Table Name', 'Database1',
     'Actions', 'Records');
-verify_no_text('field2');
-verify_no_text('field3');
-verify_no_text('field5');
+verify_no_text('Field2');
+verify_no_text('Field3');
+verify_no_text('Field5');
 verify_table('Record', [
-    ['Record', 'field1', 'field4'],
+    ['Record', 'Field1', 'Field4'],
     ['2', '1', 'f4'],
 ]);

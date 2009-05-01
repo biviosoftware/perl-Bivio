@@ -17,26 +17,26 @@ model('TupleUse')->delete_all;
     }),
     [{
 	'TupleUse.tuple_def_id' => $psr,
-	'TupleUse.moniker' => 'PSR1',
+	'TupleUse.moniker' => 'psr1',
     }] => [{
 	'Model.TupleUse' => {
 	    realm_id => req('auth_id'),
 	    tuple_def_id => $psr,
-	    moniker => 'PSR1',
+	    moniker => 'psr1',
 	    label => 'PetShopReport',
 	},
     }],
     simple_case($psr => {
 	'TupleUse.tuple_def_id' => $psr,
-	'TupleUse.moniker' => 'PSR1',
+	'TupleUse.moniker' => 'psr1',
 	'TupleUse.label' => 'PetShopReport',
     }),
     [$psr, {
 	'TupleUse.tuple_def_id' => $psr,
-	'TupleUse.moniker' => 'PSR2',
+	'TupleUse.moniker' => 'psr2',
     }] => [{
 	'Model.TupleUse' => {
-	    moniker => 'PSR2',
+	    moniker => 'psr2',
 	},
     }],
 ];

@@ -11,7 +11,7 @@ model('TupleUse')->delete_all;
 		tuple_def_id => model('TupleDefList', {})
 		    ->find_row_by_label('PetShopReport')
 		    ->get('TupleDef.tuple_def_id'),
-		moniker => 'PSR',
+		moniker => 'psr',
 		label => 'PetShopReport',
 		realm_id => req()->get('auth_id'),
 	    },
