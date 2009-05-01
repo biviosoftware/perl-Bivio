@@ -10,13 +10,13 @@ sub create_tuple {
 sub create_tuple_def {
     req()->set_realm_and_user('fourem', 'root');
     model('TupleDef')->create_from_hash({
-        'b_owner#UserMeta' => [
+        'owner#UserMeta' => [
             map(+{
                 label => $_,
-                type => (/integer/ ? 'Integer' : 'String'),
-                /required/ ? (is_required => 1) : (),
+                type => ($_ eq 'Integer' ? 'Integer' : 'String'),
+                $_ eq 'Required' ? (is_required => 1) : (),
             },
-                qw(b_optional b_required b_integer b_string)),
+                qw(Optional Required Integer String)),
         ],
     });
     return model('TupleUse')->create_from_label('UserMeta');
