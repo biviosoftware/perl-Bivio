@@ -41,11 +41,11 @@ options({
     ],
     load_all => [
 	[] => 'all',
-	[x_filter => 'task_log_user@'] => 'task_log_user',
-	[x_filter => '-task_log_user@'] => 'root',
-	[x_filter => '=' . Date()->to_string($now)] => 'task_log_user',
-	[x_filter => '>' . Date()->to_string(Date()->add_days($now, 1))] => 'root',
-	[x_filter => '=' . Date()->to_string(Date()->add_days($now, 1))] => [],
-	[x_filter => '=' . substr(Date()->to_xml($now), 0, 7)] => 'task_log_user',
+	[b_filter => 'task_log_user@'] => 'task_log_user',
+	[b_filter => '-task_log_user@'] => 'root',
+	[b_filter => '=' . Date()->to_string($now)] => 'task_log_user',
+	[b_filter => '>' . Date()->to_string(Date()->add_days($now, 1))] => 'root',
+	[b_filter => '=' . Date()->to_string(Date()->add_days($now, 1))] => [],
+	[b_filter => '=' . substr(Date()->to_xml($now), 0, 7)] => 'task_log_user',
     ],
 ];
