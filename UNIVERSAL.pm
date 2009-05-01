@@ -57,6 +57,12 @@ sub clone {
     );
 }
 
+sub code_ref_for_method {
+    my($proto, $method) = @_;
+    return ($proto->code_ref_for_subroutine($method))[0]
+	|| ($proto->unsafe_super_for_method($method))[0];
+}
+
 sub code_ref_for_subroutine {
     my($proto, $name) = @_;
     do {
@@ -68,7 +74,7 @@ sub code_ref_for_subroutine {
 		if defined(*n{CODE});
 	}
     };
-    return;
+    return undef;
 }
 
 sub delegate_method {
@@ -121,13 +127,13 @@ sub equals {
 }
 
 sub grep_methods {
-    my($proto, $to_match) = @_;
-    no strict 'refs';
-    return ($_SA ||= $proto->use('Type.StringArray'))->sort_unique([
-	map($_ =~ $to_match ? defined($+) ? $+ : $_ : (),
-	    map(keys(%{*{$_ . '::'}}),
-	        $proto->package_name,
-		@{$proto->inheritance_ancestors}))]);
+    my($proto) = shift;
+    return _grep_sub($proto, $proto->inheritance_ancestors, @_);
+}
+
+sub grep_subroutines {
+    my($proto) = shift;
+    return _grep_sub($proto, undef, @_);
 }
 
 sub inheritance_ancestors {
@@ -354,10 +360,17 @@ sub package_name {
 }
 
 sub package_version {
-    {
-	no strict 'refs';
-	return ${\${shift->package_name . '::VERSION'}};
-    };
+    no strict 'refs';
+    return ${\${shift->package_name . '::VERSION'}};
+}
+
+sub replace_subroutine {
+    my($proto, $method, $code_ref) = @_;
+    no strict 'refs';
+    local($^W);
+    # $proto->package_name does not work during import of Bivio::Base
+    *{(ref($proto) || $proto) . '::' . $method} = $code_ref;
+    return;
 }
 
 sub req {
@@ -379,20 +392,26 @@ sub simple_package_name {
 
 sub super_for_method {
     my($proto, $method) = @_;
-    $method ||= $proto->my_caller;
-    foreach my $a (@{$proto->inheritance_ancestors}) {
-	if (my $sub = $a->code_ref_for_subroutine($method)) {
-	    return ($sub, $a);
-	}
-    }
-    Bivio::Die->die($method, ': not implemented by SUPER of ', $proto->package_name);
-    # DOES NOT RETURN
+    my(@res) = shift->unsafe_super_for_method(@_);
+    return @res ? @res : Bivio::Die->die(
+	$method, ': not implemented by SUPER of ', $proto->package_name);
 }
 
 sub type {
     my($proto, $class) = (shift, shift);
     $class = $proto->use('Type', $class);
     return @_ ? $class->from_literal_or_die(@_) : $class;
+}
+
+sub unsafe_super_for_method {
+    my($proto, $method) = @_;
+    $method ||= $proto->my_caller;
+    foreach my $a (@{$proto->inheritance_ancestors}) {
+	if (my $sub = $a->code_ref_for_subroutine($method)) {
+	    return ($sub, $a);
+	}
+    }
+    return;
 }
 
 sub ureq {
@@ -407,6 +426,17 @@ sub use {
 sub want_scalar {
     shift;
     return shift;
+}
+
+sub _grep_sub {
+    my($proto, $ancestors, $to_match) = @_;
+    no strict 'refs';
+    return ($_SA ||= $proto->use('Type.StringArray'))->sort_unique([
+	map($_ =~ $to_match ? defined($+) ? $+ : $_ : (),
+	    map(keys(%{*{$_ . '::'}}),
+	        $proto->package_name,
+		$ancestors ? @$ancestors : ())),
+    ]);
 }
 
 sub _ureq {
