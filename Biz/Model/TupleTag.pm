@@ -5,7 +5,7 @@ use strict;
 use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TSN) = __PACKAGE__->use('Type.TupleSlotNum');
+my($_TSN) = b_use('Type.TupleSlotNum');
 
 sub LIST_FIELDS {
     return $_TSN->map_list(sub {'Tuple.' . shift(@_)});
