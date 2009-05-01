@@ -113,7 +113,7 @@ sub initialize {
     elsif ($fields->{is_widget} = $self->is_blessed(
 	$fields->{value}, 'Bivio::UI::Widget')
     ) {
-	$fields->{value}->put_and_initialize(parent => $self);
+	$fields->{value}->initialize_with_parent($self);
     }
     Bivio::IO::Alert->warn('is_widget and has formatter')
             if $fields->{is_widget} && $fields->{format};
@@ -171,7 +171,7 @@ sub render {
 	# Result may be a widget!
 	if (ref($v) && UNIVERSAL::isa($v, 'Bivio::UI::Widget')) {
 	    $self->initialize_value($v);
-	    $v->put_and_initialize(parent => $self);
+	    $v->initialize_with_parent($self);
 	    $v->render($source, \$b);
 	    # Note the special treatment of non-default true.
 	    $b = _escape($fields, $b) if $fields->{escape} == 1;

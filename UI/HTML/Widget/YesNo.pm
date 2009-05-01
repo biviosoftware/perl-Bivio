@@ -17,7 +17,7 @@ sub initialize {
     foreach my $name (qw(yes no)) {
 	$fields->{$name.'_widget'} = Bivio::UI::HTML::Widget::String->new(
 	    ucfirst($name), 'radio'
-	)->put_and_initialize(parent => $self);
+	)->initialize_with_parent($self);
     }
     return;
 }

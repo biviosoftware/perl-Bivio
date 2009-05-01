@@ -35,7 +35,7 @@ sub new_unit {
 	    @{$args->{new_params} ? $args->{new_params}->(@_) : $params},
 	);
 	return !Bivio::UI::Widget->is_blessed($object) ? $object
-	    : $object->put_and_initialize(parent => undef);
+	    : $object->initialize_with_parent(undef);
     };
     $args->{compute_return} ||= sub {
 	my($case, $actual) = splice(@_, 0, 2);

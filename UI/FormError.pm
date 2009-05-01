@@ -35,7 +35,7 @@ sub to_html {
 	    sub {
 	        $proto->use('Bivio::UI::ViewShortcuts')
 		    ->vs_call('Prose', $v)
-		    ->put_and_initialize(parent => undef)
+		    ->initialize_with_parent(undef)
 		    ->render($source, \$buf);
 		return;
             },

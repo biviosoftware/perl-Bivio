@@ -111,7 +111,7 @@ sub _init_label {
     # Returns the label value.  Initializing appropriately.
     $label = $_VS->vs_new('String', $label, $font, {hard_spaces => 1})
 	unless UNIVERSAL::isa($label, 'Bivio::UI::Widget');
-    return $label->put_and_initialize(parent => $self);
+    return $label->initialize_with_parent($self);
 }
 
 sub _realm_name {

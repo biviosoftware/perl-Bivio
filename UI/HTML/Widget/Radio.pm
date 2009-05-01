@@ -166,7 +166,7 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
 #TODO: Probably should just wrap in a String widget.
-    $self->get('label')->put_and_initialize(parent => $self)
+    $self->get('label')->initialize_with_parent($self)
 	if UNIVERSAL::isa($self->get('label'), 'Bivio::UI::Widget');
     return $self->SUPER::initialize;
 }

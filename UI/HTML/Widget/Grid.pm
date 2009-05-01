@@ -204,7 +204,7 @@ sub initialize {
 	    }
 	    elsif (ref($c)) {
 		# May set attributes on itself
-		$c->put_and_initialize(parent => $self);
+		$c->initialize_with_parent($self);
 		my($expand2, $align, $colspan, $rowspan, $width, $height,
 		       $width_as_html, $height_as_html)
 			= $c->unsafe_get(qw(cell_expand
