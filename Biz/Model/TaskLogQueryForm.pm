@@ -14,26 +14,26 @@ sub execute_empty {
     my($self) = @_;
     shift->SUPER::execute_empty(@_);
     $self->set_filter($self->CLEAR_ON_FOCUS_HINT)
-	unless defined($self->unsafe_get('x_filter'));
+	unless defined($self->unsafe_get('b_filter'));
     return;
 }
 
 sub get_filter_value {
     my($self) = @_;
     return undef
-	unless defined(my $f = $self->unsafe_get('x_filter'));
+	unless defined(my $f = $self->unsafe_get('b_filter'));
     return $f =~ /\S/ && $f ne $self->CLEAR_ON_FOCUS_HINT ? $f : undef;
 }
 
 sub internal_query_fields {
     return [
-	[qw(x_filter Text)],
+	[qw(b_filter Text)],
     ];
 }
 
 sub set_filter {
     my($self, $filter) = @_;
-    $self->internal_put_field(x_filter => $filter);
+    $self->internal_put_field(b_filter => $filter);
     return;
 }
 

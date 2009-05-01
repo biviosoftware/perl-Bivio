@@ -32,7 +32,7 @@ sub internal_initialize {
 	    'TaskLog.user_id',
 	    [qw(TaskLog.super_user_id super_user.RealmOwner.realm_id(+))],
 	],
-	other_query_keys => [qw(x_filter)],
+	other_query_keys => [qw(b_filter)],
 	auth_id => ['TaskLog.realm_id'],
     });
 }
