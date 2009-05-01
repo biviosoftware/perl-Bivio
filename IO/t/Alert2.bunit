@@ -29,7 +29,7 @@ options({
 		sub => qr{__ANON__},
 	    },
 	    {
-		package => 'Bivio::Die',
+		package => 'Bivio::Test',
 		sub => qr{\(eval\)},
 	    },
 	],
