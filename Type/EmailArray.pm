@@ -11,12 +11,6 @@ sub UNDERLYING_TYPE {
     return $_E;
 }
 
-sub from_literal_validator {
-    my($proto, $value) = @_;
-#TODO: Full address parsing with coments
-    return $_E->from_literal($value);
-}
-
 sub get_width {
     return 1000;
 }
