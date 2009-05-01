@@ -1,0 +1,12 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+my($sub) = sub {(caller)[0]};
+[
+    class() => [
+	eval => [
+	    [sub {(caller)[0]}] => 'Bivio::Test',
+	    ['(caller)[0]'] => 'Bivio::Test',
+	    [sub {$sub->()}] => 'Bivio::Test::Unit',
+	],
+    ],
+];

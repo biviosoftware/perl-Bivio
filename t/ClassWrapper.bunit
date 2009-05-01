@@ -1,0 +1,36 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+my($one) = 1;
+[
+    class() => [
+	wrap_methods => [
+	    [class('Bivio::t::ClassWrapper::T1') => {a1 => 1}, {
+		one => sub {
+		    my($self, $args) = @_;
+		    $one += $args->[1];
+		    return $self->call_method($args);
+		},
+		new_method => sub {
+		    my($self, $args) = @_;
+		    assert_equals(undef, $self->get('code_ref'));
+		    assert_equals(1, $self->get('a1'));
+		    return $self->get('method');
+		},
+		simple_package_name => sub {
+		    my($self, $args) = @_;
+		    return 'bunit ' . $self->call_method($args);
+		},
+	    }] => not_die(),
+	],
+    ],
+    sub {'Bivio::t::ClassWrapper::T1'} => [
+	one => [
+	    3 => sub {
+		assert_equals($one, 4);
+		return 1;
+	    },
+	],
+	new_method => 'new_method',
+	simple_package_name => 'bunit T1',
+     ],
+];
