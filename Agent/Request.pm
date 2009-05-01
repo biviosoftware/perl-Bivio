@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved
 # $Id$
 package Bivio::Agent::Request;
 use strict;
@@ -183,12 +183,13 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # initialized by Bivio::Agent::Dispatcher
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_A) = b_use('IO.Alert');
 my($_C) = b_use('SQL.Connection');
 my($_D) = b_use('Bivio.Die');
 my($_DC) = b_use('Bivio.DieCode');
 my($_DT) = b_use('Type.DateTime');
-my($_FCT) = b_use('FacadeComponent.Task');
 my($_FCC) = b_use('FacadeComponent.Constant');
+my($_FCT) = b_use('FacadeComponent.Task');
 my($_FM) = b_use('Biz.FormModel');
 my($_HTML) = b_use('Bivio.HTML');
 my($_Q) = b_use('AgentHTTP.Query');
@@ -198,8 +199,8 @@ my($_RT) = b_use('Auth.RealmType');
 my($_T) = b_use('Agent.Task');
 my($_TI) = b_use('Agent.TaskId');
 my($_UA) = b_use('Type.UserAgent');
-my($_V7) = b_use('IO.Config')->if_version(7);
 my($_V1) = b_use('IO.Config')->if_version(1);
+my($_V7) = b_use('IO.Config')->if_version(7);
 Bivio::IO::Config->register(my $_CFG = {
     is_production => 0,
     can_secure => 1,
@@ -257,7 +258,7 @@ sub as_string {
     # returned: task, user, referer, uri, query, and form.
     my($r) = $self->unsafe_get('r');
     my($t) = $self->unsafe_get('task_id');
-    return 'Request['.Bivio::IO::Alert->format_args(
+    return 'Request['.$_A->format_args(
 	    'task=', $t ? $t->get_name : undef,
 	    ' user=', $self->unsafe_get_nested(qw(auth_user name))
 		|| $r && $r->connection->user,
@@ -828,7 +829,7 @@ sub internal_set_current {
     # Called by subclasses when Request initialized.  Returns self.
     b_die($self, ': must be reference')
 	unless ref($self);
-    Bivio::IO::Alert->warn('replacing request:', $self->get_current)
+    b_warn('replacing request:', $self->get_current)
         if $self->get_current;
     return $_CURRENT = $self;
 }
@@ -961,6 +962,17 @@ sub push_txn_resource {
     return;
 }
 
+sub put {
+    my($self, @args) = @_;
+    while (@args) {
+	my($x) = shift(@args);
+	shift(@args);
+	$_A->warn_deprecated($x, ': use realm_cache')
+	    if $x =~ /^auth_(realm|user)\./s;
+    }
+    return shift->SUPER::put(@_);
+}
+
 sub put_durable {
     my($self) = shift;
     # Puts durable attributes on the request.  A durable attribute survives
@@ -987,6 +999,15 @@ sub put_durable_server_redirect_state {
 	form_context => $self->get_form_context_from_named($named),
     );
     return;
+}
+
+sub realm_cache {
+    my($self, $key, $compute) = @_;
+    # Key includes caller's package and line for uniquenes
+    return $self->get_if_exists_else_put(
+	join('#', 'realm_cache', $self->get('auth_id'), (caller)[0,2], @$key),
+	$compute,
+    );
 }
 
 sub redirect {
@@ -1033,6 +1054,7 @@ sub set_realm {
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
     my($new_roles) = _get_roles($self, $realm_id);
+#TODO: remove after realm_cache proven
     $self->delete_all_by_regexp(qr{^auth_realm\.});
     $self->put_durable(
 	auth_realm => $new_realm,
@@ -1081,6 +1103,7 @@ sub set_user {
     }
     b_die($user, ': not a RealmOwner')
         if defined($user) && !$user->isa('Bivio::Biz::Model');
+#TODO: remove after realm_cache proven
     $self->delete_all_by_regexp(qr{^auth_user\.});
     $self->put_durable(
 	auth_user => $user,
@@ -1137,7 +1160,7 @@ sub warn {
     my($self) = shift;
     # Writes a warning and follows with the request context (task, user,
     # uri,q uery, form).
-    return Bivio::IO::Alert->warn(@_, ' ', $self)
+    return b_warn(@_, ' ', $self)
 }
 
 sub with_realm {
