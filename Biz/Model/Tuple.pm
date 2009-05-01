@@ -6,13 +6,13 @@ use Bivio::Base 'Model.OrdinalBase';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-__PACKAGE__->use('Model.RealmMail')->register('Model.Tuple');
-my($_LABEL_RE)
-    = qr{^\s*(@{[Bivio::Type->get_instance('TupleLabel')->REGEX]}):\s*}om;
+b_use('Model.RealmMail')->register('Model.Tuple');
+my($_SLOT_RE)
+    = qr{^\s*(@{[b_use('Type.TupleSlotLabel')->REGEX]}):\s*}om;
 our($_TRACE);
-my($_TSN) = __PACKAGE__->use('Type.TupleSlotNum');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_MP) = __PACKAGE__->use('Ext.MIMEParser');
+my($_TSN) = b_use('Type.TupleSlotNum');
+my($_DT) = b_use('Type.DateTime');
+my($_MP) = b_use('Ext.MIMEParser');
 
 sub LIST_FIELDS {
     return $_TSN->map_list(sub {'Tuple.' . shift(@_)});
@@ -132,7 +132,7 @@ sub handle_mail_post_create {
 sub split_body {
     my(undef, $body) = @_;
     return (undef, _strip($body))
-	unless $body =~ s/^(.*?)($_LABEL_RE)//s;
+	unless $body =~ s/^(.*?)($_SLOT_RE)//s;
     my($c1) = $1 || '';
     my($slots, $c2) = split(/\n\n/, $2 . $body, 2);
     return (_strip($slots), _strip($c1 . (defined($c2) ? $c2 : '')));
@@ -193,8 +193,8 @@ sub _mail_err {
 
 sub _parse_slots {
     my($body) = @_;
-    $$body =~ s/^.*?(?=$_LABEL_RE)//s;
-    my($slots) = [split($_LABEL_RE, (split(/\n\n/, $$body, 2))[0] || '')];
+    $$body =~ s/^.*?(?=$_SLOT_RE)//s;
+    my($slots) = [split($_SLOT_RE, (split(/\n\n/, $$body, 2))[0] || '')];
     return
 	unless @$slots > 1;
     shift(@$slots);
