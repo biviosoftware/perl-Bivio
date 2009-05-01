@@ -229,9 +229,9 @@ sub get_list_class {
 }
 
 sub get_list_model {
-    # Returns the instance of the list model associated with this instance
-    # of the list model.
-    return shift->[$_IDI]->{list_model};
+    my($self) = @_;
+    return $self->[$_IDI]->{list_model}
+	|| $self->get_list_class->get_instance;
 }
 
 sub get_query {
