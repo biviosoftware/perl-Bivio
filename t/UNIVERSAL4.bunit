@@ -6,10 +6,22 @@ options({
 	return class($params->[0]);
     },
 });
+my($s1) = class('Bivio::t::UNIVERSAL::Super1')->code_ref_for_subroutine('s1');
 [
     'Bivio::t::UNIVERSAL::Super2' => [
 	code_ref_for_subroutine => [
-	    s1 => [],
+	    s1 => [undef],
+	],
+	code_ref_for_method => [
+	    s1 => [$s1],
+	    no_such_method => [],
+	],
+	super_for_method => [
+	    s1 => [$s1, 'Bivio::t::UNIVERSAL::Super1'],
+	    no_such_method => DIE(),
+	],
+	unsafe_super_for_method => [
+	    no_such_method => [],
 	],
     ],
     'Bivio::t::UNIVERSAL::Super3' => [
