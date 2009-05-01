@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Trace;
 use strict;
@@ -29,6 +29,29 @@ use base 'Bivio::UNIVERSAL';
 # L<get_package_filter|"get_package_filter"> is defined and
 # L<get_call_filter|"get_call_filter"> is undefined,
 # L<get_call_filter|"get_call_filter"> will be treated as always true.
+#
+# $_TRACE
+#
+# is defined if tracing is turned on in the calling package.
+# It is common place to use it as the qualifier to any trace statement,
+# since it is faster than calling the subroutine if tracing is off
+# in the calling package.
+#
+# _trace()
+#
+# is the routine to define a trace point.
+#
+#
+# These values will be modified dynamically as tracing is turned on/off
+# programmatically.
+#
+# Use C<_trace()> for defining trace_points.  To avoid argument computation, we
+# always use the form:
+#
+#     _trace(bla, bla, bla, bla) if $_TRACE;
+#
+# You will need to experiment with which trace points are expensive, but
+# the C<if $_TRACE> predicate is one of the fastest statements in perl.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(@_REGISTERED, $_CALL_FILTER, $_PKG_FILTER, $_PKG_SUB, $_PRINTER);
@@ -112,39 +135,17 @@ sub handle_config {
     return;
 }
 
-sub import {
-    # (self) : undef
-    # Registers the calling package for tracing.  This will create two entities in
-    # the calling package:
-    #
-    #
-    # $_TRACE
-    #
-    # is defined if tracing is turned on in the calling package.
-    # It is common place to use it as the qualifier to any trace statement,
-    # since it is faster than calling the subroutine if tracing is off
-    # in the calling package.
-    #
-    # _trace()
-    #
-    # is the routine to define a trace point.
-    #
-    #
-    # These values will be modified dynamically as tracing is turned on/off
-    # programmatically.
-    #
-    # Use C<_trace()> for defining trace_points.  To avoid argument computation, we
-    # always use the form:
-    #
-    #     _trace(bla, bla, bla, bla) if $_TRACE;
-    #
-    # You will need to experiment with which trace points are expensive, but
-    # the C<if $_TRACE> predicate is one of the fastest statements in perl.
-    my($pkg) = caller();
-    push(@_REGISTERED, $pkg)
-	unless grep($pkg eq $_, @_REGISTERED);
+sub handle_class_loader_require {
+    my($proto, $pkg) = @_;
+    return
+	if grep($pkg eq $_, @_REGISTERED);
+    push(@_REGISTERED, $pkg);
     _define_pkg_symbols($pkg, $Bivio::IO::Trace::_CALL_SUB, $_PKG_SUB);
     return;
+}
+
+sub import {
+    return __PACKAGE__->handle_class_loader_require((caller)[0]);
 }
 
 sub print {
@@ -305,11 +306,9 @@ sub _define_pkg_symbols {
 	        # caller(1) can return an empty array, hence '|| undef'
 		. '((caller), (caller(1))[$[+3] || undef, \@_)}';
     }
-    # Look Ma! No evals!!
-    no strict qw(refs);
+    no strict 'refs';
     *{$pkg.'::_TRACE'} = \$trace;
-    # Suppress 'Subroutine %s redefined' warning
-    local($^W) = 0;
+    local($^W);
     *{$pkg.'::_trace'} = $sub;
     return;
 }
