@@ -14,7 +14,6 @@ print "ok 1\n";
 
 ######################### End of black magic.
 
-
 package Bivio::IO::Trace::T;
 
 use Bivio::IO::Trace;
