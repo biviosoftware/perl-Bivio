@@ -147,7 +147,7 @@ sub query {
     my($db) = Search::Xapian::Database->new($_CFG->{db_path});
     my($qp) = Search::Xapian::QueryParser->new;
     $qp->set_stemmer($_STEMMER);
-    $qp->set_stemming_strategy(Search::Xapian::STEM_ALL);
+    $qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
     $qp->set_default_op(Search::Xapian->OP_AND);
     my($phrase) = $a->{phrase};
     $phrase =~ s/_/ /g;
