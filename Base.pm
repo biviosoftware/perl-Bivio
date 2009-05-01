@@ -1,19 +1,17 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Base;
 use strict;
 use base 'Bivio::UNIVERSAL';
-use Bivio::IO::ClassLoader;
 use Bivio::Die;
+use Bivio::IO::Alert;
+use Bivio::IO::ClassLoader;
+use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_A) = __PACKAGE__->use('IO.Alert');
-my($_D) = __PACKAGE__->use('Bivio.Die');
-my($_T) = __PACKAGE__->use('IO.Trace');
-my($_CL) = __PACKAGE__->use('IO.ClassLoader');
 
 sub import {
-    my($first, $map_or_class) = @_;
+    my(undef, $map_or_class) = @_;
     Bivio::Die->die('must specify class or map on "use Bivio::Base" line')
         unless $map_or_class;
     my($pkg) = (caller(0))[0];
@@ -25,39 +23,36 @@ sub import {
 	) . "';1",
     );
     {
-	no strict 'refs';
-	*{$pkg . '::b_debug'} = \&b_debug;
-	*{$pkg . '::b_die'} = \&b_die;
-	*{$pkg . '::b_info'} = \&b_info;
-	*{$pkg . '::b_trace'} = \&b_trace;
-	*{$pkg . '::b_use'} = \&b_use;
-	*{$pkg . '::b_warn'} = \&b_info;
+	foreach my $n (qw(b_debug b_die b_info b_trace b_use b_warn)) {
+	    # Special case call because $pkg has yet to initialize
+	    Bivio::UNIVERSAL::replace_subroutine($pkg, $n, \&{$n});
+	}
     };
     return;
 }
 
 sub b_debug {
-    return $_A->debug($_A->calling_context, @_);
+    return Bivio::IO::Alert->debug(Bivio::IO::Alert->calling_context, @_);
 }
 
 sub b_die {
-    return $_D->throw_or_die($_A->calling_context, @_);
+    return Bivio::Die->throw_or_die(Bivio::IO::Alert->calling_context, @_);
 }
 
 sub b_info {
-    return $_A->info($_A->calling_context, @_);
+    return Bivio::IO::Alert->info(Bivio::IO::Alert->calling_context, @_);
 }
 
 sub b_trace {
-    return $_T->set_named_filters(@_);
+    return Bivio::IO::Trace->set_named_filters(@_);
 }
 
 sub b_use {
-    return $_CL->map_require(@_);
+    return Bivio::IO::ClassLoader->map_require(@_);
 }
 
 sub b_warn {
-    return $_A->warn($_A->calling_context, @_);
+    return Bivio::IO::Alert->warn(Bivio::IO::Alert->calling_context, @_);
 }
 
 1;
