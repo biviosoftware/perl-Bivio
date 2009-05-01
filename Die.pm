@@ -425,9 +425,14 @@ sub _eval {
     my($code) = @_;
     local($_);
     # Don't put in newline, because would change line numbering
-    return ref($code) eq 'CODE' ? eval {$code->();} : eval (
-	'package ' . _caller()->[0] . '; ' . (ref($code) ? $$code : $code)
-    );
+    my($caller) = _caller()->[0];
+    unless (ref($code) eq 'CODE') {
+	my($c) = ref($code) ? $$code : $code;
+	$c =~ s/\n__END__\n.*//s;
+	return
+	    unless $code = eval(qq{package $caller; sub {$c}});
+    }
+    return eval(qq{package $caller; \$code->();});
 }
 
 sub _handle_die {
