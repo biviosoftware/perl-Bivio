@@ -2,5 +2,11 @@
 # $Id$
 ShellUtil();
 [
-    rebuild_db => undef,
+    module_version => qr{Xapian.*Search::Xapian}s,
+    rebuild_db => not_die(),
+# Realm must be specified
+    rebuild_realm => DIE(),
+    [qw(-realm general rebuild_realm)]  => not_die(),
+#DEPRECATED: use the RealmType name to load default Realms
+    [qw(-realm 1 rebuild_realm)]  => not_die(),
 ];
