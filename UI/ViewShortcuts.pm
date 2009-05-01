@@ -84,7 +84,7 @@ sub vs_realm_type {
 sub vs_render_widget {
     my(undef, $widget, $source) = @_;
     my($b) = '';
-    $widget->put_and_initialize(parent => undef)->render($source, \$b);
+    $widget->initialize_and_render($source, \$b);
     return $b;
 }
 
