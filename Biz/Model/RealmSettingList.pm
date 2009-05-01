@@ -12,6 +12,14 @@ my($_CSV) = b_use('ShellUtil.CSV');
 my($_D) = b_use('Bivio.Die');
 my($_A) = b_use('IO.Alert');
 my($_T) = b_use('Bivio.Type');
+my($_EMPTY) = '<undef>';
+
+sub as_string {
+    my($self) = @_;
+    return shift->SUPER::as_string(@_)
+	unless ref($self) && $self->[$_IDI];
+    return $self->simple_package_name . "($self->[$_IDI])";
+}
 
 sub get_all_settings {
     my($self, $base, $columns) = @_;
@@ -83,6 +91,12 @@ sub internal_load_rows {
     return _parse($self, $rf);
 }
 
+sub setting_error {
+    my($self, @msg) = @_;
+    $_A->warn_exactly_once($self, ': ', @msg);
+    return;
+}
+
 sub _default {
     my($default) = shift;
     return ref($default) eq 'CODE' ? $default->(@_) : $default
@@ -94,7 +108,10 @@ sub _grep {
     my($k) = [grep($_ =~ $pat, keys(%$hash))];
     my($e);
     if (@$k == 1) {
-        my($v, $te) = $type->from_literal($hash->{$k->[0]});
+	my($literal) = $hash->{$k->[0]};
+	return ($type->from_literal($literal))[0]
+	    if ($literal || '') eq $_EMPTY;
+        my($v, $te) = $type->from_literal($literal);
 	return $v
 	    if defined($v);
 	$e = 'type ' . $type->simple_package_name . ' error ' . $te->get_name
@@ -106,7 +123,7 @@ sub _grep {
     else {
 	$e = @$k ? 'matched multiple columns' : 'column not found';
     }
-    $_A->warn_exactly_once($pat, ': ', $e, ' in: ', $self->[$_IDI])
+    $self->setting_error($pat, ': ', $e)
 	if $e;
     return _default($default);
 
@@ -133,7 +150,7 @@ sub _parse {
 	}, @{$_CSV->parse_records($rf->get_content, undef, $heading)})];
 	return;
     })) {
-	$_A->warn_exactly_once($rf, ': ', $die);
+	$self->setting_error($rf, ': ', $die);
 	return [];
     }
     return $rows
