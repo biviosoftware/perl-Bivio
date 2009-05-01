@@ -6,8 +6,9 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_T) = __PACKAGE__->use('MIME.Type');
-my($_MF) = __PACKAGE__->use('Model.MailForm');
+my($_T) = b_use('MIME.Type');
+my($_MF) = b_use('Model.MailForm');
+my($_M) = b_use('Biz.Model');
 
 sub DEFAULT_COLS {
     return 80;
@@ -15,33 +16,6 @@ sub DEFAULT_COLS {
 
 sub PART_TASK {
     return 'FORUM_MAIL_PART';
-}
-
-sub excerpt_column {
-    return ['excerpt', {
-	column_heading => '',
-	column_widget => Join([
-	    Link(String(['RealmMail.subject']),
-		['->drilldown_uri']),
-	    DIV_msg_exerpt(String(['excerpt'])),
-	    SPAN_msg_name_and_date(Join([
-		'By ', String(['RealmOwner.display_name']),
-		' - ',
-		DateTime(['RealmFile.modified_date_time']),
-		' - ',
-	    ])),
-	    Link(Join([
-		AmountCell(['message_count'])
-		->put(decimals => 0),
-		' message',
-		If ([sub {
-			 my($source, $count) = @_;
-			 return $count > 1 ? 1 : 0;
-		     }, ['message_count']],
-		    Join(['s'])),
-	    ]), ['->drilldown_uri']),
-	]),
-    }];
 }
 
 sub form_imail {
@@ -76,6 +50,12 @@ sub form_imail {
 	    }),
 	}, [_name($self, 'Model.XxForm')]],
     );
+}
+
+sub internal_form_model {
+    my($self, $req) = @_;
+    my($m) = $_M->get_instance(_name($self, 'XxForm'));
+    return $req ? $m->from_req($req) : $m;
 }
 
 sub internal_name {
@@ -138,6 +118,68 @@ sub internal_subject_body_attachments {
     );
 }
 
+sub internal_send_form {
+    my($self, $extra_fields, $buttons) = @_;
+    $buttons ||= vs_simple_form_submit();
+    return DIV_msg_compose(Join([
+	vs_simple_form(_name($self, 'XxForm') => [
+	    @{$extra_fields || [$buttons]},
+	    map([_name($self, "XxForm.$_"), {
+		cols => $self->DEFAULT_COLS,
+		    rows => 1,
+		    row_class => 'textarea',
+		}], qw(to cc)),
+		$self->internal_subject_body_attachments,
+		$buttons,
+	    ]),
+	If([_name($self, 'Model.XxForm'), '->is_reply'], _msg($self, 1)),
+    ]));
+}
+
+
+sub internal_thread_root_list {
+    my($self, $columns) = @_;
+    return vs_paged_list(
+	_name($self, 'XxThreadRootList'),
+	$columns || $self->internal_thread_root_list_columns,
+	{no_pager => 1},
+    );
+}
+
+sub internal_thread_root_list_columns {
+    return [
+	['excerpt', {
+	    column_heading => '',
+	    column_widget => Join([
+		Link(String(['RealmMail.subject']),
+		    ['->drilldown_uri']),
+		DIV_msg_exerpt(String(['excerpt'])),
+		SPAN_msg_name_and_date(Join([
+		    'By ', String(['RealmOwner.display_name']),
+		    ' - ',
+		    DateTime(['RealmFile.modified_date_time']),
+		    ' - ',
+		])),
+		Link(Join([
+		    AmountCell(['message_count'])
+		    ->put(decimals => 0),
+		    ' message',
+		    If ([sub {
+			     my($source, $count) = @_;
+			     return $count > 1 ? 1 : 0;
+			 }, ['message_count']],
+			Join(['s'])),
+		]), ['->drilldown_uri']),
+	    ]),
+	}],
+    ];
+}
+
+sub internal_want_link_for_list {
+    my($self, $field) = @_;
+    return $field =~ /date_time|_num\b|subject/ ? 1 : 0;
+}
+
 sub pre_compile {
     my($self) = shift;
     my(@res) = $self->SUPER::pre_compile(@_);
@@ -149,23 +191,8 @@ sub pre_compile {
 }
 
 sub send_form {
-    my($self, $extra_fields, $buttons) = @_;
-    $buttons ||= vs_simple_form_submit();
-    return $self->internal_body(
-	DIV_msg_compose(Join([
-	    vs_simple_form(_name($self, 'XxForm') => [
-		@{$extra_fields || [$buttons]},
-		map([_name($self, "XxForm.$_"), {
-		    cols => $self->DEFAULT_COLS,
-		    rows => 1,
-		    row_class => 'textarea',
-		}], qw(to cc)),
-		$self->internal_subject_body_attachments,
-		$buttons,
-	    ]),
-	    If([_name($self, 'Model.XxForm'), '->is_reply'], _msg($self, 1)),
-	])),
-    );
+    my($self) = shift;
+    return $self->internal_body($self->internal_send_form(@_));
 }
 
 sub thread_list {
@@ -175,28 +202,9 @@ sub thread_list {
 }
 
 sub thread_root_list {
-    my($self, @fields) = @_;
-    return $self->internal_body(vs_paged_list(
-	_name($self, 'XxThreadRootList') => [
-	    map({
-		my($field, $attrs) = ref($_) ? @$_ : $_;
-		$attrs ||= {};
-		[$field => {
-		    column_widget => Link(
-			$field =~ /email/ ? String([$field])
-			    : vs_display(
-				_name($self, 'XxThreadRootList') . ".$field"),
-			['->drilldown_uri'],
-		    ),
-		    %$attrs,
-		}];
-	    }
-		@fields ? @fields : (
-		    $self->excerpt_column,
-	        ),
-	    ),
-	],
-    ));
+    my($self) = @_;
+    vs_put_pager(_name($self, 'XxThreadRootList'));
+    return $self->internal_body($self->internal_thread_root_list);
 }
 
 sub _msg {
