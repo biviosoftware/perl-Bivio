@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::FacadeComponent;
 use strict;
@@ -25,9 +25,12 @@ use Bivio::Base 'UI.WidgetValueSource';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_HANDLERS) = b_use('Biz.Registrar')->new;
 Bivio::IO::Config->register(my $_CFG = {
     die_on_error => 0,
 });
+
+
 sub UNDEF_CONFIG {
     # The configuration to be used when a value can't be found.  A
     # warning will be output and the value created by this configuration
@@ -101,20 +104,12 @@ sub get_from_source {
 
 sub group {
     my($self, $names, $value) = @_;
-    # Creates a new group.  The I<name>s must be unique.  The I<value>
-    # is defined by the subclass.  If it is a ref, ownership of I<value> is
-    # taken by this module.
     _assert_writable($self);
-    my($map) = $self->[$_IDI]->{map};
     $names = ref($names) ? $names : [$names];
-
-    # Initialize the value
     $value = {config => $value, names => $names};
     _initialize_value($self, $value);
-
-    # Map the names
     foreach my $name (@$names) {
-	_assign($self, $map, $name, $value);
+	_assign($self, $name, $value);
     }
     return;
 }
@@ -182,37 +177,21 @@ sub internal_get_self {
 
 sub internal_get_value {
     my($proto, $name, $req_or_facade) = @_;
-    # Returns the value of for I<name>.  If not found, writes a
-    # warning and returns the value configured by
-    # L<UNDEF_CONFIG|"UNDEF_CONFIG">.  Adds invalid names to the
-    # map (same group as undef_value), so that we only get one error.
-    #
-    # If called statically, it expects to find $proto as an
-    # attribute of I<req_or_facade>.
     my($self) = $proto->internal_get_self($req_or_facade);
-    my($fields) = $self->[$_IDI];
-
-    # Return undef_value if passed in undef.  Shouldn't happen...
     return $self->get_error($self, ': passed undef as value to get')
-	    unless defined($name);
-
-    # Look up case-sensitively
-    my($map) = $fields->{map};
-    return $map->{$name} if $map->{$name};
-
-    # Try lower
-    $name = lc($name);
-    return $map->{$name} if $map->{$name};
-
-    # Add to the map as undef and return
-    return $map->{$name} = $self->get_error($name);
+	unless defined($name);
+    return $self->internal_unsafe_lc_get_value($name)
+	|| _assign($self, $name, $self->get_error($name));
 }
 
 sub internal_unsafe_lc_get_value {
     my($self, $name) = @_;
-    # Looks up the name simply.  If not found, returns undef.
-    # I<name> is assumed to be already downcased.
-    return $self->[$_IDI]->{map}->{$name};
+    my($res) = $self->[$_IDI]->{map}->{lc($name)};
+    return $_HANDLERS->do_filo(
+	handle_internal_unsafe_lc_get_value => sub {
+	    return [$self, $name, $res];
+	},
+    ) || $res;
 }
 
 sub new {
@@ -252,6 +231,12 @@ sub new_static {
     return $self;
 }
 
+sub register_handler {
+    shift;
+    $_HANDLERS->push_object(@_);
+    return;
+}
+
 sub regroup {
     # Takes existing I<names> and re-associates with I<new_value>.
     # All names must exist.
@@ -274,7 +259,8 @@ sub _assert_writable {
 }
 
 sub _assign {
-    my($self, $map, $name, $value) = @_;
+    my($self, $name, $value) = @_;
+    my($map) = $self->[$_IDI]->{map};
     # Assigns $value to $name in $map.  Does syntax checking.
     $name = lc($name);
     if ($map->{$name}) {
@@ -283,8 +269,7 @@ sub _assign {
 	@$n = grep($name ne $_, @$n);
     }
     $self->assert_name($name);
-    $map->{$name} = $value;
-    return;
+    return $map->{$name} = $value;
 }
 
 sub _error {
