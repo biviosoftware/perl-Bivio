@@ -227,7 +227,7 @@ sub join_tag {
 	unshift(@tag, 'realm_owner_' . $n);
     }
     return int(@tag) == 1 && $tag[0] =~ /^[a-z0-9_.]+$/ ? $tag[0]
-	: join($proto->SEPARATOR, map((length($_) ? lc($_) : ()), @tag));
+	: join($proto->SEPARATOR, map((length($_) ? $_ : ()), @tag));
 }
 
 sub unsafe_get_value {
@@ -254,7 +254,7 @@ sub unsafe_get_value {
 sub unsafe_get_widget_value_by_name {
     my($self, $tag) = @_;
     # Returns the text value identified by the fully-qualified I<tag> if defined.
-    my($v) = $self->internal_unsafe_lc_get_value(lc($tag));
+    my($v) = $self->internal_unsafe_lc_get_value($tag);
     return $v ? ($v->{value}, 1) : (undef, 0);
 }
 

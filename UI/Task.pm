@@ -104,7 +104,7 @@ sub UNDEF_URI {
 
 sub assert_defined_for_facade {
     my($proto, $task, $req_or_facade) = @_;
-    my($v) = $proto->internal_get_value(lc($task->get_name), $req_or_facade);
+    my($v) = $proto->internal_get_value($task->get_name, $req_or_facade);
     b_die('NOT_FOUND', {
 	entity => $task,
 	message => 'no such task in facade',
@@ -466,7 +466,7 @@ sub _has {
     return defined(
 	($proto->internal_get_self($req_or_facade)
 	    ->internal_unsafe_lc_get_value(
-		lc(ref($task_id) ? $task_id->get_name : $task_id))
+		ref($task_id) ? $task_id->get_name : $task_id)
 	|| {})->{$which}
     ) ? 1 : 0;
 }
