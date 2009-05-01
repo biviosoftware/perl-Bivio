@@ -50,5 +50,18 @@ options({comparator => 'nested_contains'});
 	    'RealmOwner' => 0,
 	    'Bivio::Biz::Model::RealmOwner' => 0,
 	],
+	parse_qualified_field => [
+	    '' => [undef],
+	    'a' => [undef],
+	    'qual.RealmOwner.name' => [{
+		prefix => 'qual',
+		model => 'RealmOwner',
+		field => 'name',
+	    }],
+	],
+ 	extract_qualified_prefix => [
+	    'aa.bb.cc' => 'aa',
+ 	    'bb.cc' => DIE(),
+ 	],
     ],
 ];
