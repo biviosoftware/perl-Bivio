@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::StringArray;
 use strict;
@@ -7,6 +7,11 @@ use Bivio::Base 'Bivio.Type';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_S) = b_use('Type.String');
+
+sub ANY_SEPARATOR_REGEX {
+    my($proto) = @_;
+    return qr{@{[$proto->LITERAL_SEPARATOR_REGEX]}|@{[$proto->SQL_SEPARATOR_REGEX]}};
+}
 
 sub LITERAL_SEPARATOR {
     return ', ';
@@ -46,6 +51,10 @@ sub as_html {
     return $self->to_html($self);
 }
 
+sub as_list {
+    return @{shift->[$_IDI]};
+}
+
 sub as_literal {
     my($self) = @_;
     return $self->to_literal($self);
@@ -67,6 +76,12 @@ sub compare_defined {
 	    if $x;
     }
     return @$left <=> @$right;
+}
+
+sub intersect {
+    my($self, $that) = @_;
+    $that = $self->from_literal_or_die($that, 1);
+    return $self->new([grep($that->contains($_), @{$self->as_array})]);
 }
 
 sub contains {
@@ -95,8 +110,6 @@ sub equals {
 sub exclude {
     my($self, $value) = @_;
     my($exclude) = $self->from_literal_or_die($value, 1);
-    return $self
-	unless $exclude;
     return $self->new([grep(!$exclude->contains($_), @{$self->as_array})]);
 }
 
@@ -109,16 +122,9 @@ sub from_literal {
     $value = $proto->from_literal_stripper($value);
     return ($proto->new([]), undef)
 	unless length($value);
-    my($sep) = $proto->SQL_SEPARATOR_REGEX;
-    $sep = $proto->LITERAL_SEPARATOR_REGEX
-	unless $value =~ $sep;
-    my($error);
-    my($values) = [map({
-	my($v, $e) = $proto->from_literal_validator($_);
-	$error ||= $e;
-	$v;
-    } split($sep, $value))];
-    return $error ? (undef, $error) : ($proto->new($values), undef);
+    my($values, $error)
+	= _parse($proto, [split($proto->ANY_SEPARATOR_REGEX, $value)]);
+    return $error ? (undef, $error) : (_new($proto, $values), undef);
 }
 
 sub from_literal_stripper {
@@ -128,7 +134,7 @@ sub from_literal_stripper {
 }
 
 sub from_literal_validator {
-    return $_[1];
+    return shift->UNDERLYING_TYPE->from_literal(@_);
 }
 
 sub from_sql_column {
@@ -156,10 +162,7 @@ sub new {
     my($proto, $value) = @_;
     return $proto->from_literal_or_die($value)
 	unless ref($value);
-    my($self) = shift->SUPER::new;
-    $self->[$_IDI] = ref($value) eq 'ARRAY'
-	? _clean_copy($proto, $value) : $value->as_array;
-    return $self;
+    return _new($proto, _clean_copy($proto, $value));
 }
 
 sub sort_unique {
@@ -173,7 +176,7 @@ sub to_literal {
     my($proto, $value) = @_;
     return join(
 	$proto->LITERAL_SEPARATOR,
-	@{_clean_copy($proto, $value, $proto->LITERAL_SEPARATOR_REGEX)});
+	@{_clean_copy($proto, $value)});
 }
 
 sub to_sql_param {
@@ -191,28 +194,43 @@ sub to_string {
 }
 
 sub _clean_copy {
-    my($proto, $value, $sep) = @_;
-    $sep ||= $proto->SQL_SEPARATOR_REGEX;
+    my($proto, $value) = @_;
     return []
 	unless defined($value);
-    my($copy);
-    if (ref($value) eq 'ARRAY') {
-	$copy = [map({
-	    $_ =~ s/^\s+|\s+$//gs
-		if defined($_);
-	    defined($_) && length($_) ? $_ : '';
-	} @$value)];
-	pop(@$copy)
-	    while @$copy && !length($copy->[$#$copy]);
-	$copy = [sort(@$copy)]
-	    if $proto->WANT_SORTED;
+    if (__PACKAGE__->is_blessed($value)) {
+	return $value->as_array
+	    if ref($value) eq ref($proto);
+	$value = $value->as_array;
     }
-    else {
-	$copy = $value->as_array;
-    }
-    Bivio::Die->die($copy, ": separator ($sep) in element")
-        if grep($_ =~ $sep, @$copy);
+    my($copy, $error) = _parse($proto, $value);
+    b_die($value, ": invalid literal: ", $error)
+	if $error;
     return $copy;
+}
+
+sub _new {
+    my($self) = shift->SUPER::new;
+    $self->[$_IDI] = shift;
+    return $self;
+}
+
+sub _parse {
+    my($proto, $value) = @_;
+    my($error);
+    my($sep) = $proto->ANY_SEPARATOR_REGEX;
+    $value = [map({
+	my($v, $e) = $proto->from_literal_validator($_);
+	$error ||= $e;
+	b_die($v, ": separator ($sep) in element")
+	    if ($v || '') =~ $sep;
+	defined($v) && length($v) ? $v : '';
+    } @$value)];
+    pop(@$value)
+	while @$value && !length($value->[$#$value]);
+    return (
+	$proto->WANT_SORTED ? [sort($proto->compare($a, $b), @$value)] : $value,
+	$error,
+    );
 }
 
 sub _value {
