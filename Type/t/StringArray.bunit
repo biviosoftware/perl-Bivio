@@ -21,7 +21,7 @@ options({
  	[class()->new([])] => [[], undef],
 	'0' => [[qw(0)], undef],
 	' a,b ' => [[qw(a b)], undef],
-	"a,b$;c" => [['a,b', 'c'], undef],
+	"a,b$;c" => [['a', 'b', 'c'], undef],
 	[[qw(a b)]] => [[qw(a b)], undef],
 	[class()->new([qw(a b)])] => [[qw(a b)], undef],
     ],
