@@ -14,10 +14,10 @@ sub internal_add_filter {
 	Form($f->simple_package_name, Join([
 	    ClearOnFocus(
 		Text({
-		    field => 'x_filter',
-		    id => 'x_filter',
+		    field => 'b_filter',
+		    id => 'b_filter',
 		    size => int(b_use('Type.Line')->get_width / 2),
-		    max_width => $f->get_field_type('x_filter')->get_width,
+		    max_width => $f->get_field_type('b_filter')->get_width,
 		}),
 		$f->CLEAR_ON_FOCUS_HINT,
 	    ),
