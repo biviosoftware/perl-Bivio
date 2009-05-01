@@ -236,6 +236,7 @@ sub merge_class_loader {
 		    Auth => ['Bivio::Auth'],
 		    Bivio => ['Bivio'],
 		    Collection => ['Bivio::Collection'],
+		    ClassWrapper => ['Bivio::ClassWrapper'],
 		    Delegate => ['Bivio::Delegate'],
 		    Biz => ['Bivio::Biz'],
 		    Ext => ['Bivio::Ext'],
