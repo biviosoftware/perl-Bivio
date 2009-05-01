@@ -56,9 +56,10 @@ sub delete_user {
     my($self) = @_;
     # Deletes current user.
     my($req) = $self->get_request;
-    my($email) = Bivio::Biz::Model->new($req, 'Email')
-	->unauth_load_or_die({realm_id => $req->get('auth_user_id')});
-    $self->are_you_sure("delete user " . $email->get('email'));
+    my($n) = Bivio::Biz::Model->new($req, 'Email');
+    $n = $n->unauth_load({realm_id => $req->get('auth_user_id')})
+	? $n->get('email') : $self->req(qw(auth_user name));
+    $self->are_you_sure("delete user $n");
     $req->set_realm($req->get('auth_user'));
     $req->get('auth_user')->cascade_delete;
     $req->set_user(undef);
