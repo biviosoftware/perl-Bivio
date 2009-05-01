@@ -428,7 +428,6 @@ sub _eval {
     my($caller) = _caller()->[0];
     unless (ref($code) eq 'CODE') {
 	my($c) = ref($code) ? $$code : $code;
-	$c =~ s/\n__END__\n.*//s;
 	return
 	    unless $code = eval(qq{package $caller; sub {$c}});
     }
