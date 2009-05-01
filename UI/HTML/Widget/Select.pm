@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Select;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 use Bivio::HTML;
 use Bivio::Type::Enum;
 
@@ -136,14 +136,16 @@ sub accepts_attribute {
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
+    next
+	if $self->[$_IDI];
+    my($fields) = $self->[$_IDI] = {};
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
     $fields->{enum_sort} = _enum_sort($self);
 
     my($choices) = $self->get('choices');
-    if (ref($choices) eq 'ARRAY') {
+    if (ref($choices) eq 'ARRAY' || _is_provider($choices)) {
 	# load it dynamically during render
 	$fields->{choices} = $choices;
     }
@@ -171,14 +173,6 @@ sub initialize {
     return;
 }
 
-sub new {
-    # (proto, hash_ref) : Widget.Text
-    # Creates a new Select widget.
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
 sub render {
     # (self, any, Text_ref) : undef
     # Render the input field.  First render is special, because we need
@@ -201,10 +195,11 @@ sub render {
 	if $self->get_or_default('disabled', 0);
     $$buffer .= ' onchange="submit()"' if $fields->{auto_submit};
     $$buffer .= ">\n";
-
     my($items) = $fields->{choices}
-	    ? _load_items($self, $req->get_widget_value(@{$fields->{choices}}))
-	    : $fields->{items};
+	? _is_provider($fields->{choices})
+	? _load_items_from_provider($fields->{choices}, $source)
+	: _load_items($self, $req->get_widget_value(@{$fields->{choices}}))
+	: $fields->{items};
     my($field_value) = $form->get_field_type($field)->to_html(
 	$form->get($field));
     my($editable) = $form->is_field_editable($field)
@@ -255,6 +250,13 @@ sub _enum_sort_by_int {
     return -1 if $left->as_int == 0;
     return 1 if $right->as_int == 0;
     return $left->as_int <=> $right->as_int;
+}
+
+sub _is_provider {
+    my($choices) = @_;
+    return $choices
+	&& UNIVERSAL::isa($choices, 'Bivio::UNIVERSAL')
+	&& $choices->can('provide_select_choices');
 }
 
 sub _load_items {
@@ -358,9 +360,19 @@ sub _load_items_from_list {
     return $list->map_rows(sub {
 	$control && !$list->get($control) ? () : (
 	    $id_type->to_html($list->get($id_name)),
+	    # See get_as above
 	    ${$self->render_attr('list_display_field', $list)},
 	);
     });
+}
+
+sub _load_items_from_provider {
+    my($choices, $source) = @_;
+    return [map(
+	($_, $_),
+        map($choices->to_html($_),
+	    @{$choices->provide_select_choices($source)}),
+    )];
 }
 
 sub _load_items_from_string_array {
