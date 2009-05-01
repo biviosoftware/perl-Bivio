@@ -138,6 +138,8 @@ use Bivio::IO::ClassLoader;
 # L<Bivio::Collection::Attributes::ancestral_get|Bivio::Collection::Attributes/"ancestral_get">.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_A) = b_use('IO.Alert');
+my($_V1) = b_use('IO.Config')->if_version(1);
 
 sub accepts_attribute {
     # Does the widget accept this attribute?
@@ -184,42 +186,44 @@ sub handle_die {
 sub initialize {
     # Initializes the widgets internal structures.  Widgets should cache static
     # attributes.  A Widget's initialize should be callable more than once.
-    #
-    # Parses the attributes into an internal format which may result in the
-    # creation of new widgets.  Attributes should not be modified by the
-    # caller after initialization unless they are explicitly labeled
-    # I<dynamic>.
-    #
     # By default, does nothing.
+    #
+    # Since 2009, may be called in a "dynamic" context iwc there will be a
+    # $source argument.  For most widgets, this is irrelevant as they cache
+    # nothing, but for widgets with complex source values (HTMLWidget.Table)
+    # this allows the widget to use dynamic objects as the entity to initialize
+    # its values with.
     return;
 }
 
+sub initialize_and_render {
+    my($self) = shift;
+    my($source) = @_;
+    return $self->initialize_with_parent(undef, $source)->render(@_);
+}
+
 sub initialize_attr {
-    my($self, $attr_name, $default_value) = @_;
-    # Calls L<unsafe_initialize_attr|"unsafe_initialize_attr">.
-    # Dies if I<attr_name> doesn't exist or is C<undef> and there is no
-    # I<default_value>.
-    #
-    # Returns attribute value.
+    my($self, $attr_name, $default_value, $source) = @_;
     $self->put_unless_exists($attr_name => $default_value)
 	if defined($default_value);
-    my($res) = $self->unsafe_initialize_attr($attr_name);
+    my($res) = $self->unsafe_initialize_attr($attr_name, $source);
     $self->die($attr_name, undef, 'attribute must be defined')
 	unless defined($res);
     return $res;
 }
 
 sub initialize_value {
-    my($self, $attr_name, $value) = @_;
-    # Initializes an attribute I<value>.  If I<value> is a widget, will
-    # put I<parent> on I<value> to be I<self>.
-    #
-    # I<attr_name> is used only for debugging.
-    #
-    # Returns value.
+    my($self, $attr_name, $value, $source) = @_;
     return $value
 	unless __PACKAGE__->is_blessed($value);
-    return $value->put_and_initialize(parent => $self);
+    return $value->initialize_with_parent($self, $source);
+}
+
+sub initialize_with_parent {
+    my($self, $parent, $source) = @_;
+    $self->put(parent => $parent)->initialize($source)
+	unless $self->has_keys('parent');
+    return $self;
 }
 
 sub internal_as_string {
@@ -294,24 +298,6 @@ sub obsolete_attr {
     return;
 }
 
-sub put_and_initialize {
-    my($self) = shift;
-    # Puts the attributes and initializes.  Typically used in the form:
-    #
-    #     $fields->{my_child} = $self->get('some_widget')->put_and_initialize(
-    #            parent => $self,
-    #     );
-    #
-    # Returns I<self>.
-    $self->put(@_);
-    # Protects against multiple initializations
-    $self->put_unless_exists(_initialized => sub {
-        $self->initialize;
-	return 1;
-    });
-    return $self;
-}
-
 sub render_attr {
     my($self, $attr_name, $source, $buffer) = @_;
     # Calls L<unsafe_render_attr|"unsafe_render_attr">.
@@ -378,12 +364,9 @@ sub resolve_form_model {
 }
 
 sub unsafe_initialize_attr {
-    my($self, $attr_name) = @_;
-    # Calls L<initialize_value|"initialize_value"> on I<attr_name>'s value.
-    # Calls I<unsafe_get> to initialize the attribute.
-    #
-    # Returns value which may be C<undef>.
-    return $self->initialize_value($attr_name, $self->unsafe_get($attr_name));
+    my($self, $attr_name, $source) = @_;
+    return $self->initialize_value(
+	$attr_name, $self->unsafe_get($attr_name), $source);
 }
 
 sub unsafe_render_attr {
@@ -396,30 +379,13 @@ sub unsafe_render_attr {
 
 sub unsafe_render_value {
     my($proto, $attr_name, $value, $source, $buffer) = @_;
-    # Evaluates I<value>.  If is a constant, simply appends to I<buffer>.  If it
-    # is a widget value (array_ref), calls I<source>C<-E<gt>get_widget_value>, to get
-    # the value.  If the resultant value or original value is a
-    # L<Bivio::UI::Widget|Bivio::UI::Widget>, calls put_and_initialize and render
-    # on the widget.
-    #
-    # The result is appended to I<buffer>.  If the value or widget value is C<undef>,
-    # returns false and I<buffer> is unmodified.  I<buffer> should be a reference
-    # to a defined value, so that widgets can call C<length> and other functions
-    # with it.
-    #
-    # I<attr_name> is used for debugging only.
-    #
-    # Dies if value is or widget value results in a reference which is not a
-    # Widget.
     return 0
 	unless defined($value);
     $value = $proto->unsafe_resolve_widget_value($value, $source);
     return 0
 	unless defined($value);
     if (__PACKAGE__->is_blessed($value)) {
-	$value->put_and_initialize(parent => undef)
-	    unless $value->has_keys('parent');
-	$value->render($source, $buffer);
+	$value->initialize_and_render($source, $buffer);
     }
 # removed until all director widgets are fixed up
 #    elsif (ref($value) && UNIVERSAL::can($value, 'as_string')) {
