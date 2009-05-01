@@ -26,4 +26,4 @@ submit_form(Refresh => {
     '_anon' => 'user',
 });
 follow_link('next');
-verify_uri('x_filter=user');
+verify_uri('b_filter=user');
