@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::ClassLoader;
 use strict;
@@ -81,18 +81,14 @@ sub delete_require {
     my(undef, $pkg) = @_;
     # Clears the state of I<pkg> (which must be a fully qualified class)
     # so that it can be reloaded.
-
-    delete($_SIMPLE_CLASS->{$pkg});
+    _pre_delete_require($pkg);
     while (my($k, $v) = each(%$_MAP_CLASS)) {
 	delete($_MAP_CLASS->{$k})
 	    if $v eq $pkg;
     }
     delete($INC{_file($pkg)});
-
-    # clear entries in package hash
     no strict 'refs';
-    *{"${pkg}::"} = {};
-
+    undef(*{"${pkg}::"});
     return;
 }
 
@@ -217,7 +213,7 @@ sub unsafe_map_require {
 	unless defined($map_name);
     _trace('cached map_class=', $map_class)
 	if $_TRACE && $_MAP_CLASS->{$map_class};
-    return $_MAP_CLASS->{$map_class}
+    return _post_require($_MAP_CLASS->{$map_class})
 	if $_MAP_CLASS->{$map_class};
     _trace('map_class=', $map_class)
 	if $_TRACE;
@@ -268,6 +264,17 @@ sub _file {
     return $pkg;
 }
 
+sub _importing_pkg {
+    foreach my $x (2..20) {
+	last
+	    unless my $pkg = (caller($x))[0];
+	return $pkg
+	    unless $pkg
+	    =~ /^(?:Bivio::Die|Bivio::Base|Bivio::UNIVERSAL|Bivio::IO::ClassLoader)$/;
+    }
+    return 'main';
+}
+
 sub _map_args {
     my($proto, $map_name, $class_name) = @_;
     return ($class_name || $map_name) =~ /^(\w+::)+\w+$/
@@ -305,15 +312,35 @@ sub _map_path_list {
     return @{$_CFG->{maps}->{$name} || _die($name, ': no such map')};
 }
 
+sub _pre_delete_require {
+    my($pkg) = @_;
+    return
+	unless my $importers = delete($_SIMPLE_CLASS->{$pkg});
+    $pkg->handle_class_loader_delete_require($importers)
+	if defined(&{"${pkg}::handle_class_loader_delete_require"});
+    return;
+}
+
+sub _post_require {
+    my($pkg) = @_;
+    $_SIMPLE_CLASS->{$pkg} ||= {};
+    if (defined(&{"${pkg}::handle_class_loader_require"})) {
+	my($ip) = _importing_pkg();
+	$pkg->handle_class_loader_require($ip)
+	    unless $_SIMPLE_CLASS->{$pkg}->{$ip}++;
+    }
+    return $pkg;
+}
+
 sub _require {
     my($proto, $pkg, $die_if_not_found) = @_;
-    return $pkg
+    return _post_require($pkg)
 	if UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL') || $_SIMPLE_CLASS->{$pkg};
     _die($pkg, ': invalid class name')
 	unless $pkg =~ /^(\w+::)*\w+$/;
     my($file) = _file($pkg);
     foreach my $i (@INC) {
-	return _require_eval($proto, $pkg)
+	return _post_require(_require_eval($proto, $pkg))
 	    if -r "$i/$file";
     }
     _die(NOT_FOUND => {
@@ -329,11 +356,10 @@ sub _require_eval {
     local($_);
     my($code) = <<"EOF";
     {
+        package @{[_importing_pkg()]};
 	local(\$_);
-	# require can't be in "strict refs" mode
-	no strict 'refs';
-	# Must be a "bareword" for require so perl does '::' substitution
         require $pkg;
+        1;
     }
 EOF
     # Using \$code keeps the stack trace clean
@@ -345,8 +371,7 @@ EOF
 	$die->throw;
 	# DOES NOT RETURN
     }
-    _trace($pkg) if $_TRACE;
-    $_SIMPLE_CLASS->{$pkg}++;
+    _trace(_importing_pkg(), ' requires ', $pkg) if $_TRACE;
     return $pkg;
 }
 
