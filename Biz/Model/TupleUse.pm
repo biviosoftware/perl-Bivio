@@ -28,7 +28,7 @@ sub internal_initialize {
 	    tuple_def_id => ['TupleDef.tuple_def_id', 'PRIMARY_KEY'],
 	    realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    label => ['TupleLabel', 'NOT_NULL'],
-	    moniker => ['TupleLabel', 'NOT_NULL'],
+	    moniker => ['TupleMoniker', 'NOT_NULL'],
         },
     });
 }
