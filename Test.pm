@@ -359,6 +359,10 @@ sub unit {
 	: $self->new->unit($tests);
 }
 
+sub unsafe_current_self {
+    return $_SELF;
+}
+
 sub _add_option {
     my($state, $in, $option) = @_;
     # Sets $option in $state to value in $in.  Returns false if
@@ -680,8 +684,10 @@ sub _eval_custom {
     if ($which =~ /params/ && ref($res) ne 'ARRAY') {
 	$$err = 'an array_ref';
     }
-    elsif ($which =~ /object/ && !(UNIVERSAL::isa($res, 'UNIVERSAL')
-       || ($res || '') == __PACKAGE__->IGNORE_RETURN)) {
+    elsif ($which =~ /object/
+        && !(UNIVERSAL::isa($res, 'UNIVERSAL')
+            || ($res || '') eq __PACKAGE__->IGNORE_RETURN)
+    ) {
 	$$err = 'a subclass of UNIVERSAL (forgot to "use"?)';
     }
     elsif ($which eq 'compute_return' && ref($res) ne 'ARRAY') {
