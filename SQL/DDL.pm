@@ -1254,7 +1254,7 @@ CREATE TABLE tuple_t (
   tuple_def_id NUMERIC(18) NOT NULL,
   tuple_num NUMERIC(9) NOT NULL,
   modified_date_time DATE NOT NULL,
-  thread_root_id NUMERIC(18),
+  thread_root_id NUMERIC(18) NOT NULL,
   slot1 VARCHAR(500),
   slot2 VARCHAR(500),
   slot3 VARCHAR(500),
