@@ -1,8 +1,8 @@
-# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::Support;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
+use Bivio::Base 'Collection.Attributes';
 use Bivio::Die;
 use Bivio::HTML;
 use Bivio::IO::ClassLoader;
@@ -76,9 +76,13 @@ use Bivio::Type;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_LQ) = __PACKAGE__->use('SQL.ListQuery');
-my($_C) = __PACKAGE__->use('SQL.Constraint');
-my($_QUAL_PREFIX) = qr{^(?s-i:([a-z][a-z0-9_]+)\.)};
+my($_LQ) = b_use('SQL.ListQuery');
+my($_C) = b_use('SQL.Constraint');
+my($_QP) = qr{[a-z][a-z0-9_]+};
+my($_QUAL_PREFIX) = qr{^($_QP)\.}os;
+# Make minimal assumptions about what this looks like so that
+# Model.TupleTag can use for fields or slots
+my($_QUAL_FIELD) = qr{^($_QP)\.(\w+)\.(@{[b_use('Type.TupleSlotLabel')->VALID_CHAR_REGEX]}+)$}os;
 my($_QUAL_SUFFIX) = qr{(_\d+)$}s;
 
 sub clone {
@@ -86,12 +90,17 @@ sub clone {
     return shift;
 }
 
+sub extract_model_prefix {
+    my($proto, $column) = @_;
+    return $column =~ m{^(.+)\.\w+$} ? $1 : undef;
+}
+
 sub extract_qualified_prefix {
     my($proto, $field) = @_;
-    my($prefix) = $field =~ $_QUAL_PREFIX;
-    Bivio::Die->die($field, ': must be a qualified column with prefix')
-        unless $prefix;
-    return $prefix;
+    return (
+	$proto->parse_qualified_field($field)
+        || b_die($field, ': must be a qualified column with prefix')
+    )->{prefix};
 }
 
 sub get_column_constraint {
@@ -392,6 +401,13 @@ sub parse_model_name {
 	model_from_sql => $sql eq $table ? $sql : "$table $sql",
 	model_sql => $sql,
     };
+}
+
+sub parse_qualified_field {
+    my(undef, $name) = @_;
+    my($res) = [($name || '') =~ $_QUAL_FIELD];
+    return !@$res ? undef
+	: {map(($_ => shift(@$res)), qw(prefix model field))};
 }
 
 sub _add_to_class {
