@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Table;
 use strict;
@@ -306,20 +306,18 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # The widget which will be used to render the column. By default the column
 # widget is based on the column's field type.
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
-my($_WF) = __PACKAGE__->use('Bivio::UI::HTML::WidgetFactory');
-my($_A) = __PACKAGE__->use('UI.Align');
-my($_C) = __PACKAGE__->use('UI.Color');
-my($_TRC) = __PACKAGE__->use('UI.TableRowClass');
+my($_VS) = b_use('UIHTML.ViewShortcuts');
+my($_WF) = b_use('UIHTML.WidgetFactory');
+my($_A) = b_use('UI.Align');
+my($_C) = b_use('UI.Color');
+my($_TRC) = b_use('UI.TableRowClass');
 my($_INFINITY_ROWS) = 0x7fffffff;
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_M) = b_use('Biz.Model');
+my($_IOA) = b_use('IO.Alert');
 
 sub create_cell {
-    # (self, Biz.Model, string, hash_ref) : UI.Widget
-    # Returns the widget for the specified cell. The model is used for
-    # column metadata which may be used to construct a widget.
     my($self, $model, $col, $attrs) = @_;
-
     my($cell);
     my($need_error_widget) = 0;
     # see if widget is already provided
@@ -338,21 +336,20 @@ sub create_cell {
     }
     else {
 	my($use_list) = 0;
-
-	# if the source is a ListFormModel, use editable fields
 	if (UNIVERSAL::isa($model, 'Bivio::Biz::ListFormModel')) {
 	    $use_list = 1;
-	    # We allow editing of all but primary keys
-	    if ($model->has_fields($col) && $model->get_field_constraint($col)
-		    != Bivio::SQL::Constraint->PRIMARY_KEY) {
+	    if ($model->has_fields($col)
+	        && !$model->get_field_constraint($col)->eq_primary_key
+	    ) {
 		$need_error_widget = 1;
 		$use_list = 0;
 	    }
 	}
-	$model = $model->get_instance($model->get_list_class)
-		if $use_list;
+	$model = $model->get_list_model
+	    if $use_list;
 	my($type) = $model->get_field_type($col);
-	$cell = $_WF->create(ref($model).'.'.$col, $attrs);
+	$cell = $_WF->create(
+	    $model->simple_package_name . '.' . $col, $attrs);
 	unless ($cell->has_keys('column_summarize')) {
 	    $cell->put(column_summarize =>
 		UNIVERSAL::isa($type,'Bivio::Type::Number')
@@ -372,8 +369,7 @@ sub create_cell {
 	    values => [
 		$_VS->vs_new('FormFieldError', {
 		    field => $col,
-		    label => $_VS->vs_text(
-			    $model->simple_package_name, $col),
+		    label => $_VS->vs_text($model->simple_package_name, $col),
 		}),
 		$cell,
 	    ],
@@ -458,30 +454,24 @@ sub get_render_state {
 }
 
 sub initialize {
-    # (self) : undef
-    # Initializes static information.
-    my($self) = @_;
+    my($self, $source) = @_;
     my($fields) = $self->[$_IDI];
     return if $fields->{headings};
-
-    # Make sure the class is loaded
-    my($list) = Bivio::Biz::Model->get_instance($self->get('list_class'));
-    $self->put(source_name => ref($list))
-	    unless $self->has_keys('source_name');
-
-    # Puts table_cell as the default font.
-    $self->put(string_font => 'table_cell')
-	    unless defined($self->unsafe_get('string_font'));
-
+    my($list) = $_M->get_instance($self->get('list_class'));
+    $self->put(source_name => $list->package_name)
+	unless $self->has_keys('source_name');
+    if ($source) {
+	my($n) = $self->get('source_name');
+	$list = ref($n) ? $source->get_widget_value(@$n)
+	    : $source->req->get($n);
+    }
+    $self->put_unless_defined(string_font => 'table_cell');
     my($columns) = $self->get('columns');
     my($lm) = $list;
-    if ($list->isa('Bivio::Biz::ListFormModel')) {
-        $lm = $list->get_info('list_class')->get_instance;
-    }
+    $lm = $list->get_list_model
+	if $list->isa('Bivio::Biz::ListFormModel');
     my($sort_cols) = $lm->get_info('order_by_names');
     my($want_sorting) = $self->get_or_default('want_sorting', 1);
-
-    # Create widgets for each heading, column, and summary
     my($cells) = [];
     my($headings) = [];
     my($summary_cells) = [];
@@ -523,7 +513,7 @@ sub initialize {
 	$fields->{title} = $_VS->vs_new('String', {
             value => $title,
             string_font => 'table_heading',
-        })->put_and_initialize(parent => $self);
+        })->initialize_with_parent($self);
     }
 
     # heading separator and summary
@@ -531,7 +521,7 @@ sub initialize {
 	$fields->{$w . '_separator'} = $_VS->vs_new('LineCell', {
 	    height => 1,
 	    color => 'table_separator',
-	})->put_and_initialize(parent => $self);
+	})->initialize_with_parent($self);
     }
     $self->unsafe_initialize_attr('empty_list_widget');
     $self->unsafe_initialize_attr('before_row');
