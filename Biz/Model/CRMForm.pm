@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::CRMForm;
 use strict;
@@ -7,16 +7,20 @@ use Bivio::Base 'Model.MailForm';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = b_use('Mail.RFC822');
 my($_CTS) = b_use('Type.CRMThreadStatus');
-my($_TTF) = b_use('Model.TupleTagForm');
-my($_IDI) = __PACKAGE__->instance_data_index;
-my($_TAG_ID) = b_use('Model.CRMThread')->TUPLE_TAG_PREFIX
-    . '.CRMThread.thread_root_id';
+my($_CT) = b_use('Model.CRMThread');
+my($_TAG_ID) = 'CRMThread.thread_root_id';
+b_use('ClassWrapper.TupleTag')->wrap_methods(
+    __PACKAGE__, __PACKAGE__->TUPLE_TAG_INFO);
 
 #TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
-sub TUPLE_TAG_IDS {
-    return [$_TAG_ID];
+
+sub TUPLE_TAG_INFO {
+    return {
+	moniker => $_CT->TUPLE_TAG_PREFIX,
+	primary_id_field => $_TAG_ID,
+    };
 }
 
 sub execute_cancel {
@@ -44,7 +48,6 @@ sub execute_empty {
 	$self->internal_put_field(action_id =>
             shift->status_to_id_in_list($self->internal_empty_status_when_new));
     });
-    $self->delegate_method($_TTF, @_);
     return;
 }
 
@@ -68,12 +71,7 @@ sub execute_ok {
     });
     $self->internal_put_field(
 	$_TAG_ID => $ct->get('thread_root_id'));
-    $self->delegate_method($_TTF, @_);
     return $res;
-}
-
-sub get_field_info {
-    return shift->delegate_method($_TTF, @_);
 }
 
 sub internal_empty_status_when_exists {
@@ -109,25 +107,18 @@ sub internal_format_subject {
 
 sub internal_initialize {
     my($self) = @_;
-    return $self->delegate_method(
-	$_TTF,
-	$self->merge_initialize_info($self->SUPER::internal_initialize, {
-	    version => 1,
-	    visible => [
-		{
-		    name => 'action_id',
-		    type => 'CRMActionId',
-		    constraint => 'NONE',
-		},
-		{
-		    name => 'update_only',
-		    type => 'OKButton',
-		    constraint => 'NONE',
-		},
-	    ],
-	    other => $self->TUPLE_TAG_IDS,
-	}),
-    );
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+	version => 1,
+	visible => [
+	    $self->field_decl([
+		[qw(action_id CRMActionId)],
+		[qw(update_only OKButton)],
+	    ]),
+	],
+	other => [
+	    $_TAG_ID,
+	],
+    });
 }
 
 sub internal_pre_execute {
@@ -139,26 +130,6 @@ sub internal_pre_execute {
     }
     $self->new_other('CRMActionList')->load_all;
     return @res;
-}
-
-sub tuple_tag_form_state {
-    return shift->[$_IDI] ||= {};
-}
-
-sub tuple_tag_map_slots {
-    return shift->delegate_method($_TTF, @_);
-}
-
-sub tuple_tag_slot_choice_select_list {
-    return shift->delegate_method($_TTF, @_);
-}
-
-sub tuple_tag_slot_has_choices {
-    return shift->delegate_method($_TTF, @_);
-}
-
-sub tuple_tag_slot_label {
-    return shift->delegate_method($_TTF, @_);
 }
 
 sub validate {

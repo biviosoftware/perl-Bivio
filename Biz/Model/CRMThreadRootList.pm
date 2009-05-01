@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::CRMThreadRootList;
 use strict;
@@ -9,8 +9,13 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CAL) = b_use('Model.CRMActionList');
 my($_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
 my($_TSN) = b_use('Type.TupleSlotNum');
-my($_TUPLE_TAG) = b_use('Model.CRMThread')->TUPLE_TAG_PREFIX . '.TupleTag';
-my($_TTF) = b_use('Model.TupleTagForm');
+my($_CRMQF) = b_use('Model.CRMQueryForm');
+b_use('ClassWrapper.TupleTag')->wrap_methods(
+    __PACKAGE__, b_use('Model.CRMForm')->TUPLE_TAG_INFO);
+
+sub LIST_QUERY_FORM_CLASS {
+    return $_CRMQF;
+}
 
 sub internal_initialize {
     my($self) = @_;
@@ -27,10 +32,9 @@ sub internal_initialize {
 	    CRMThread.subject_lc
 	    customer.RealmOwner.name
 	    customer.RealmOwner.display_name
-	),
-	    @{$_TSN->map_list(sub {"$_TUPLE_TAG." . shift(@_)})},
-	],
-        other_query_keys => $self->get_instance('CRMQueryForm')->filter_keys,
+	)],
+        other_query_keys => $self->get_instance(
+	    $self->LIST_QUERY_FORM_CLASS)->filter_keys,
 	other => [
             delete($info->{primary_key})->[0],
 	    'CRMThread.subject',
@@ -73,42 +77,20 @@ sub internal_prepare_statement {
 	    ['CRMThread.modified_by_user_id', 'modified_by.Email.realm_id'],
 	    ['modified_by.Email.location', [$_LOCATION]],
 	]),
-	$stmt->LEFT_JOIN_ON('RealmMail', "$_TUPLE_TAG", [
-	    ['RealmMail.thread_root_id', "$_TUPLE_TAG.primary_id"],
-	]),
 	$stmt->LEFT_JOIN_ON(qw(CRMThread customer.RealmOwner), [
 	    ['CRMThread.customer_realm_id', 'customer.RealmOwner.realm_id'],
 	]),
     );
-    if (my $qf = $self->req->unsafe_get('Model.CRMQueryForm')) {
-	my($status, $owner) = $qf->unsafe_get(qw(x_status x_owner_name));
+    if (my $qf = $self->req->unsafe_get($self->LIST_QUERY_FORM_CLASS)) {
+	my($status, $owner) = $qf->unsafe_get(qw(b_status b_owner_name));
 	$stmt->where(['CRMThread.crm_thread_status', [
             $status->get_criteria_list,
         ]])
 	    if $status;
 	$stmt->where(['CRMThread.owner_user_id', [$owner]])
 	    if $owner;
-	$_TSN->map_list(sub {
-	    my($name) = @_;
-	    my($v) = $qf->unsafe_get('x_' . $name);
-	    $stmt->where(["$_TUPLE_TAG." . $name, [$v]])
-		if defined($v);
-	    return;
-	});
     }
     return shift->SUPER::internal_prepare_statement(@_);
-}
-
-sub tuple_tag_find_slot_value {
-    return shift->delegate_method($_TTF, @_);
-}
-
-sub tuple_tag_find_slot_type {
-    return shift->delegate_method($_TTF, @_);
-}
-
-sub tuple_tag_form_state {
-    return shift->[$_IDI] ||= {};
 }
 
 sub _do {
