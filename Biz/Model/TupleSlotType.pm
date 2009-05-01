@@ -42,7 +42,7 @@ sub internal_initialize {
         table_name => 'tuple_slot_type_t',
 	columns => {
 	    tuple_slot_type_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    label => ['TupleLabel', 'NOT_NULL'],
+	    label => ['TupleSlotLabel', 'NOT_NULL'],
 	    type_class => ['SimpleClassName', 'NOT_NULL'],
 	    choices => ['TupleSlotArray', 'NONE'],
 	    default_value => ['TupleSlot', 'NONE'],

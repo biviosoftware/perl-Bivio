@@ -5,7 +5,6 @@ use strict;
 use base 'Bivio::Biz::Model::RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TL) = Bivio::Type->get_instance('TupleLabel');
 my($_TST) = __PACKAGE__->get_instance('TupleSlotType');
 
 sub LIST_FIELDS {
@@ -44,7 +43,7 @@ sub internal_initialize {
 	columns => {
 	    tuple_def_id => ['Tuple.tuple_def_id', 'PRIMARY_KEY'],
 	    tuple_slot_num => ['TupleSlotNum', 'PRIMARY_KEY'],
-	    label => ['TupleLabel', 'NOT_NULL'],
+	    label => ['TupleSlotLabel', 'NOT_NULL'],
 	    tuple_slot_type_id => ['TupleSlotType.tuple_slot_type_id', 'NOT_NULL'],
 	    is_required => ['Boolean', 'NOT_NULL'],
         },
