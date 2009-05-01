@@ -65,14 +65,12 @@ sub render_html {
     return unless @$links;
     my($buf) = '';
     TaskMenu([map(_item_widget($proto, $args, $_, $prefix), @$links)], $class)
-        ->put_and_initialize(
-            parent => undef,
-            selected_item => sub {
+	->put(selected_item => sub {
                 my($w, $source) = @_;
                 return ($source->ureq('uri') || '') =~
                     $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
             },
-        )->render($args->{source}, \$buf);
+        )->initialize_and_render($args->{source}, \$buf);
     if ($args->{tag} eq 'b-menu-source') {
         $args->{req}->put($proto->TARGET, $buf);
         return '';
