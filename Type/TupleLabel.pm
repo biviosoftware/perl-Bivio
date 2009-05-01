@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::TupleLabel;
 use strict;
-use base 'Bivio::Type::SyntacticString';
+use Bivio::Base 'Type.SyntacticString';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
