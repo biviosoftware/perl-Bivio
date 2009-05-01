@@ -1,16 +1,9 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-my($tdid);
+my($tdid, $tn);
 FormModel({
     setup_request => sub {
 	my($case) = @_;
-	my($p) = $case->get('params');
-	my($tn) = model('Tuple')->create({
-	    tuple_def_id => $tdid,
-	    slot1 => 'a@a.a',
-	    slot2 => @$p ? shift(@$p) : 's1',
-	})->get('tuple_num')
-	    if !@$p || !ref($p->[0]);
 	req()->put(query => {
 	    parent_id => $tdid,
 	    $tn ? (this => $tn) : (),
@@ -19,62 +12,73 @@ FormModel({
     },
 });
 req()->set_realm_and_user(qw(fourem btest_read));
+req()->initialize_fully('FORUM_TUPLE_EDIT');
 $tdid = model(TupleUseList => {auth_id => req('auth_id')})
-    ->moniker_to_id('PSR');
+    ->moniker_to_id('psr');
 model('Tuple')->delete_all;
 [
     [{
 	comment => 'hello1',
-        slot_0 => 'a@a.a',
+        slot_0 => 'a1@a.a',
     }] => [{
 	'Model.TupleSlotListForm' => {
-	    slot_headers => "Author: a\@a.a\nStatus: s1\n",
+	    slot_headers => "Author: a1\@a.a\nStatus: s1\n",
 	    'RealmMail.from_email' => email('btest_read'),
-	    'RealmMail.subject' => 'PSR# - s1',
+	    'RealmMail.subject' => 'psr# - s1',
+	},
+	'Model.Tuple' => {
+	    tuple_num => sub {$tn = 1},
+ 	    slot1 => 'a1@a.a',
+ 	    slot2 => 's1',
+ 	},
+	'Model.RealmMail' => {
+	    subject => sub {
+		qr{psr#1 - s1};
+	    },
 	},
     }],
-    # Next two are empty_cases; see setup_request above
-    simple_case(s1 => {
-	slot_0 => 'a@a.a',
+    empty_case({
+	slot_0 => 'a1@a.a',
 	slot_1 => 's1',
 	comment => undef,
     }),
-    simple_case('' => {
-	slot_0 => 'a@a.a',
-	slot_1 => '',
+    inline_case(sub {$tn = undef}),
+    [{
+	slot_0 => 'a2@a.a',
+	slot_1 => 's2',
+	comment => 'comment one',
+    }] => [{
+	'Model.Tuple' => {
+	    tuple_num => sub {$tn = 2},
+ 	    slot1 => 'a2@a.a',
+ 	    slot2 => 's2',
+ 	},
+	'Model.RealmMail' => {
+	    subject => qr{psr#2 - s2},
+	},
+    }],
+    empty_case({
+	slot_0 => 'a2@a.a',
+	slot_1 => 's2',
 	comment => undef,
     }),
-    [s1 => {
-	comment => 'hello2',
-	slot_0 => 'a@a.a',
-	slot_1 => 's2',
-    }] => [{
-	'Model.TupleSlotListForm' => {
-	    slot_headers => "Status: s2\n",
-	    'RealmMail.from_email' => email('btest_read'),
-	    'RealmMail.subject' => 'PSR#3 - s2',
-	 },
-    }],
-    [s2 => {
+    [{
 	comment => 'hello3',
-	slot_0 => 'b@a.a',
+	slot_0 => 'a3@a.a',
 	slot_1 => '',
     }] => [{
 	'Model.TupleSlotListForm' => {
-	    slot_headers => "Author: b\@a.a\nStatus: \n",
+	    slot_headers => "Author: a3\@a.a\nStatus: \n",
 	    'RealmMail.from_email' => email('btest_read'),
-	    'RealmMail.subject' => 'PSR#4 - ',
+	    'RealmMail.subject' => 'psr#2 - ',
 	 },
-    }],
-    [s3 => {
-	comment => 'hello4',
-	slot_0 => 'c@a.a',
-	slot_1 => 's0',
-    }] => [{
-	'Model.TupleSlotListForm' => {
-	    slot_headers => "Author: c\@a.a\nStatus: s0\n",
-	    'RealmMail.from_email' => email('btest_read'),
-	    'RealmMail.subject' => 'PSR#5 - s0',
-	 },
+	'Model.Tuple' => {
+	    tuple_num => 2,
+ 	    slot1 => 'a3@a.a',
+ 	    slot2 => undef,
+ 	},
+	'Model.RealmMail' => {
+	    subject => 'psr#2 -',
+	},
     }],
 ];
