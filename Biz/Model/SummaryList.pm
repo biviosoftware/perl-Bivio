@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::SummaryList;
 use strict;
@@ -39,13 +39,6 @@ sub get_cursor {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return $fields->{loaded} ? -1 : 0;
-}
-
-sub get_list_model {
-    # (self) : self
-    # Returns itself, the list model.
-    my($self) = @_;
-    return $self;
 }
 
 sub get_request {
