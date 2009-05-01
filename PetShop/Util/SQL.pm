@@ -810,7 +810,7 @@ sub _init_tuple {
 	},
     });
     $self->model('TupleDef')->create_from_hash({
-	'PSR#PetShopReport' => [
+	'psr#PetShopReport' => [
 	    {
 		label => 'Author',
 		type => 'Email',
