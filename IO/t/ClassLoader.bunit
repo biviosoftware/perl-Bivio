@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 config({
     'Bivio::IO::ClassLoader' => {
@@ -13,6 +13,16 @@ config({
 	},
      },
 });
+my($importers) = sub {
+    my($num) = @_;
+    return sub {
+	assert_equals(
+	    [map('Bivio::Test', 1..$num)],
+	    Bivio::IO::t::ClassLoader::Valid->get_importers,
+	);
+	return 1;
+    } => 1,
+};
 [
     class() => [
 	is_map_configured => [
@@ -27,6 +37,7 @@ config({
 	unsafe_simple_require => [
 	    'Bivio::IO::t::ClassLoader::Valid' => 'Bivio::IO::t::ClassLoader::Valid',
 	],
+	$importers->(1),
  	map((
   	    simple_require => [
   	        @$_,
@@ -48,6 +59,7 @@ config({
 	    was_required => [
 		'Bivio::IO::t::ClassLoader::Valid' => 1,
 	    ],
+	    $importers->(1),
 	    delete_require => [
 		'Bivio::IO::t::ClassLoader::Valid' => undef,
 	    ],
@@ -78,5 +90,6 @@ config({
 	    ['ClassLoaderBunit', 'Bivio::IO::t::ClassLoader::After::Valid'] =>
 		 qr{find package after},
 	],
+	$importers->(1),
     ],
 ];
