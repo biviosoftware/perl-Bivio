@@ -6,6 +6,10 @@ use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub NEW_ARGS {
+    return [qw(value)];
+}
+
 sub execute {
     my($self, $req) = @_;
     # DOES NOT CONFORM TO Task executable
@@ -16,16 +20,6 @@ sub execute {
 
 sub initialize {
     return shift->initialize_attr('value');
-}
-
-sub internal_new_args {
-    my(undef, $value, $attributes) = @_;
-    return '"value" must be defined'
-	unless defined($value);
-    return {
-	value => $value,
-	($attributes ? %$attributes : ()),
-    };
 }
 
 sub render {

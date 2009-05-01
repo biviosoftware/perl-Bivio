@@ -7,6 +7,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub NEW_ARGS {
+    return [qw(model fields)];
+}
+
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(value => sub {
@@ -15,15 +19,6 @@ sub initialize {
 	])),
     });
     return shift->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    my(undef, $model, $fields, $attrs) = @_;
-    return {
-	model => $model,
-	fields => $fields,
-	$attrs ? %$attrs : (),
-    };
 }
 
 1;
