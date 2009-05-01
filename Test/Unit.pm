@@ -533,6 +533,8 @@ sub _call_class {
 
 sub _called_in_closure {
     my($proto) = @_;
+    return 0
+	unless $proto->unsafe_current_self;
     foreach my $i (3..5) {
 	my($sub) = (caller($i))[3];
 	return 1
