@@ -11,7 +11,7 @@ die('no ticket')
     unless $ticket;
 login_as('crm_tech1');
 visit_uri('/crm_forum/tickets');
-follow_link_in_table('Last Update', 'Subject', $msg->unsafe_get_header('Subject'), 'Status', 'New');
+follow_link_in_table('Ticket', 'Subject', $msg->unsafe_get_header('Subject'), 'Status', 'New');
 follow_link('answer');
 verify_text("Locked Ticket #$ticket");
 verify_text(qr{Cc:.*\Q$cust1}s);
@@ -27,7 +27,7 @@ $msg =~ /^Sender: crm\@/im || die('incorrect Sender: ', $msg);
 submit_form(Refresh => {
     'Any Status' => 'Any Status', # force filter to Any Status
 });
-follow_link_in_table('Last Update', 'Ticket', $ticket);
+follow_link_in_table('Ticket', 'Ticket', $ticket);
 verify_text("Closed Ticket #$ticket");
 my($body) = 'but wait ' . random_string();
 $msg = send_mail($cust1, $forum, {Subject => $subject}, $body);

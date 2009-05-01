@@ -23,7 +23,7 @@ submit_form(Send => {
     priority => 'High',
     text => 'Solution here',
 });
-follow_link_in_table('Last Update', 'Ticket', $ticket);
+follow_link_in_table('Ticket', 'Ticket', $ticket);
 verify_text("Open Ticket #$ticket");
 follow_link('answer_1');
 my($not_seen) = random_string();
@@ -35,5 +35,5 @@ submit_form('Update Fields Only' => {
 submit_form(Refresh => {
     'Any Status' => 'Any Status', # force filter to Any Status
 });
-follow_link_in_table('Last Update', 'Ticket', $ticket);
+follow_link_in_table('Ticket', 'Ticket', $ticket);
 verify_no_text($not_seen);

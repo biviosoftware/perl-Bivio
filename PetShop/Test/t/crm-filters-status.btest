@@ -32,13 +32,13 @@ foreach my $item (
 submit_form(refresh => {
     status => 'new',
 });
-do_table_rows('Last Update', sub {test_equals(qr{new}i, shift->{Status})});
+do_table_rows('Ticket', sub {test_equals(qr{new}i, shift->{Status})});
 submit_form(refresh => {
     status => 'not_closed',
 });
 my($status) = {};
 verify_no_text('list is empty');
-do_table_rows('Last Update', sub {
+do_table_rows('Ticket', sub {
     $status->{shift->{Status}->as_string}++;
     return 1;
 });
