@@ -5,7 +5,6 @@ use strict;
 use base 'Bivio::Biz::Model::RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TL) = Bivio::Type->get_instance('TupleLabel');
 
 sub create_from_hash {
     my($self, $defs, $tstl) = @_;
@@ -28,7 +27,7 @@ sub internal_initialize {
 	columns => {
 	    tuple_def_id => ['PrimaryId', 'PRIMARY_KEY'],
 	    label => ['TupleLabel', 'NOT_NULL'],
-	    moniker => ['TupleLabel', 'NOT_NULL'],
+	    moniker => ['TupleMoniker', 'NOT_NULL'],
         },
     });
 }
