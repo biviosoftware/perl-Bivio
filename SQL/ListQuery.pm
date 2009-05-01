@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::ListQuery;
 use strict;
@@ -227,12 +227,12 @@ sub clean_raw {
     # Returns I<query>.
     $_A->warn_deprecated('must pass ListSupport')
 	unless $support;
-    my($oqk) = $support && $support->unsafe_get('other_query_keys');
+    my($oqk) = _other_query_keys($support);
     foreach my $k (keys(%$query)) {
 	delete($query->{$k})
 	    unless $_QUERY_TO_FIELDS{$k}
 		|| $_ATTR_TO_CHAR{$k}
-		|| $oqk && grep($k eq $_, @$oqk);
+		|| $oqk && grep($k =~ $_, @$oqk);
     }
     return $query;
 }
@@ -503,9 +503,12 @@ sub _format_uri {
 	if defined($attrs->{date});
     $res .= 'i=' . $_DI->to_query($attrs->{interval}) . '&'
 	if defined($attrs->{interval});
-    foreach my $k (@{$support->unsafe_get('other_query_keys') || []}) {
-	$res .= $k . "=" . $_S->to_query($attrs->{$k}) . '&'
-	    if defined($attrs->{$k});
+    if (my $oqk = _other_query_keys($support)) {
+	foreach my $k (grep(!$_ATTR_TO_CHAR{$_}, sort(keys(%$attrs)))) {
+	    $res .= $k . "=" . $_S->to_query($attrs->{$k}) . '&'
+		if defined($attrs->{$k})
+		&& grep($k =~ $_, @$oqk);
+	}
     }
     chop($res);
     return $res;
@@ -550,6 +553,14 @@ sub _new {
 	 $attrs->{interval},
      ) if $attrs->{interval} && $attrs->{begin_date};
     return $proto->SUPER::new($attrs);
+}
+
+sub _other_query_keys {
+    my($support) = @_;
+    return
+	unless $support
+	and my $res = $support->unsafe_get('other_query_keys');
+    return [map(ref($_) ? $_ : qr{^$_$}s, @$res)];
 }
 
 sub _parse_begin_date {
