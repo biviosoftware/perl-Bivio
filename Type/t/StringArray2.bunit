@@ -35,6 +35,10 @@ my($x) = 0;
 	    2 => [StringArray('3,1')],
 	    4 => [StringArray('3,1,2')],
 	],
+	intersect => [
+	    [[1, 2, 4]] => [StringArray([1, 2])],
+	    [[4]] => [StringArray([])],
+	],
     ],
     [[]] => [
 	is_specified => 0,
