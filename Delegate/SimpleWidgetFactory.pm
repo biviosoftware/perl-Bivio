@@ -231,6 +231,17 @@ sub internal_create_edit {
 	});
     }
 
+    if ($type->can('provide_select_choices')) {
+	# Don't have larger than a 2x3 Grid
+	return $_VS->vs_new('Select', {
+	    field => $field,
+	    choices => $type,
+	    unknown_label => $_VS->vs_text(
+		$model->simple_package_name, $field, 'select_unknown_label'),
+	    %$attrs,
+	});
+    }
+
     if (UNIVERSAL::isa($type, 'Bivio::Type::Time')) {
 	return $_VS->vs_new('Text', {
 	    field => $field,
@@ -271,6 +282,14 @@ sub internal_create_edit {
 	    field => $field,
 	    rows => 2,
 	    cols => Bivio::Type::TextArea->LINE_WIDTH,
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::TupleSlot')) {
+	return $_VS->vs_new('Text', {
+	    field => $field,
+	    size => 30,
 	    %$attrs,
 	});
     }
