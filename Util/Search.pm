@@ -48,9 +48,11 @@ sub rebuild_db {
 
 sub rebuild_realm {
     my($self) = @_;
+    $self->usage_error('realm must be specified')
+	unless $self->unsafe_get('realm');
     my($req) = $self->initialize_fully;
     my($i) = 0;
-    Bivio::IO::Alert->info($self->req(qw(auth_realm owner name)));
+    b_info($self->req(qw(auth_realm owner name)));
     $self->model('RealmFile')->do_iterate(
 	sub {
 	    my($it) = @_;
@@ -58,7 +60,7 @@ sub rebuild_realm {
 		$self->commit_or_rollback;
 		Bivio::IO::Alert->reset_warn_counter;
 		$it->new_other('Lock')->acquire_general;
-		Bivio::IO::Alert->info(
+		b_info(
 		    'file#', $i, ': ', $it->get('realm_file_id'),
 		) if $i > 1;
 	    }
