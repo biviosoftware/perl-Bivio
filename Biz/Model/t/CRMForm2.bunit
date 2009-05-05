@@ -41,4 +41,22 @@ req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1))
 	'b_ticket.TupleTag.slot1' => 'Male Puppy',
 	'b_ticket.TupleTag.slot2' => 'Medium',
     }),
+    inline_case(sub {
+        $ctid = undef;
+	return;
+    }),
+    [{
+	to => [remote_email('crm_tuple_forum')],
+	cc => [''],
+	subject => 'x',
+	body => 'x',
+	'b_ticket.TupleTag.Priority' => undef,
+	'b_ticket.TupleTag.Product' => undef,
+	action_id => -CRMThreadStatus('NEW')->as_int,
+    }] => [{
+	'Model.TupleTag' => {
+	    slot1 => undef,
+	    slot2 => undef,
+	},
+    }],
 ];
