@@ -52,6 +52,7 @@ my($_BUNDLE) = [qw(
     task_log
     !feature_task_log
     !feature_task_log2
+    !tuple_thread_root_id_not_null
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -1548,7 +1549,7 @@ CREATE TABLE tuple_t (
   tuple_def_id NUMERIC(18) NOT NULL,
   tuple_num NUMERIC(9) NOT NULL,
   modified_date_time DATE NOT NULL,
-  thread_root_id NUMERIC(18),
+  thread_root_id NUMERIC(18) NOT NULL,
   slot1 VARCHAR(500),
   slot2 VARCHAR(500),
   slot3 VARCHAR(500),
@@ -1874,6 +1875,16 @@ CREATE INDEX tuple_tag_t8 on tuple_tag_t (
   realm_id,
   tuple_def_id
 )
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_tuple_thread_root_id_not_null {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE tuple_t
+    ALTER COLUMN thread_root_id SET NOT NULL
 /
 EOF
     return;
