@@ -50,7 +50,11 @@ sub update_thread {
             if defined($m);
     }
     $req->put(query => {this => $thread_id});
+    my($m) = $self->model('CRMForm');
+    $m->process;
+    my($x) = $m->get_shallow_copy;
     $self->model(CRMForm => {
+	map(($_ => $x->{$_}), grep(defined($_), keys(%$x))),
         to => $self->type(EmailArray => $req->get('auth_realm')
                               ->format_email),
         cc => $self->type(EmailArray => ''),
@@ -118,6 +122,12 @@ sub _init_btest {
 		],
 	    });
 	    $self->model('TupleUse')->create_from_label('Ticket');
+	    $self->realm_file_create('/Settings/TupleTag.csv', <<'EOF');
+Model,b_ticket
+CRMThreadRootList,Priority
+CRMForm,
+,Product;Priority;
+EOF
 	}
     }
     return;

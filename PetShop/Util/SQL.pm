@@ -214,6 +214,13 @@ EOF
     return;
 }
 
+sub realm_file_create {
+    my($self, $path, $content) = @_;
+    return $self->model('RealmFile')->create_with_content(
+	{path => $path},
+	ref($content) ? $content : \$content);
+}
+
 sub realm_role_config {
     my($self) = @_;
     # Add test realm roles
@@ -493,7 +500,7 @@ sub _init_forum {
 	'RealmOwner.name' => $self->FOUREM,
     });
     # Must agree with easy-form.btest (or test will fail)
-    _realm_file_create($self, 'Public/EasyForm-btest.html', <<'EOF');
+    $self->realm_file_create('Public/EasyForm-btest.html', <<'EOF');
 <html>
 <body>
 <form method="POST" action="/fourem/Forms/btest?goto=/fourem/pub/EasyForm-btest-done.html">
@@ -509,14 +516,14 @@ sub _init_forum {
 </body>
 </html>
 EOF
-    _realm_file_create($self, 'Public/EasyForm-btest-done.html', <<'EOF');
+    $self->realm_file_create('Public/EasyForm-btest-done.html', <<'EOF');
 <html>
 <body>
 completed
 </body>
 </html>
 EOF
-    _realm_file_create($self, 'Public/Wiki/EasyForm_btest', <<'EOF');
+    $self->realm_file_create('Public/Wiki/EasyForm_btest', <<'EOF');
 @form method=POST action=/fourem/Forms/btest?goto=/fourem/Public/Wiki/EasyForm_btest_done
 @table
 @tr
@@ -534,39 +541,38 @@ EOF
 @/table
 @/form
 EOF
-    _realm_file_create($self, 'Public/Wiki/EasyForm_btest_done', <<'EOF');
+    $self->realm_file_create('Public/Wiki/EasyForm_btest_done', <<'EOF');
 wiki completed
 EOF
-    _realm_file_create($self, 'Forms/btest.csv', <<'EOF');
+    $self->realm_file_create('Forms/btest.csv', <<'EOF');
 &client_addr,&date,&email,input,ok
 EOF
-    _realm_file_create(
-	$self, b_use('Type.WikiName')->to_absolute('PublicPage', 1), <<'EOF');
+    
+	$self->realm_file_create(b_use('Type.WikiName')->to_absolute('PublicPage', 1), <<'EOF');
 @h1 My Public Header
 My Public Page
 EOF
-    _realm_file_create(
-	$self, b_use('Type.WikiName')->to_absolute('PrivatePage'), <<'EOF');
+    
+	$self->realm_file_create(b_use('Type.WikiName')->to_absolute('PrivatePage'), <<'EOF');
 My Example Page.
 EOF
-    _realm_file_create(
-	$self,
-	b_use('Type.BlogFileName')->to_absolute('20071225000000', 1),
+    
+	$self->realm_file_create(	b_use('Type.BlogFileName')->to_absolute('20071225000000', 1),
 	<<'EOF');
 @h1 Merry Xmas
 Ho, ho, ho!
 EOF
-    _realm_file_create($self, '/Settings/RealmSettingList1.csv', <<'EOF');
-Name,Number,Letter,Lesson
-alpha,1,a,arithmetic
+    $self->realm_file_create('/Settings/RealmSettingList1.csv', <<'EOF');
+Name,Number,Letter,Lesson,Other
+alpha,1,a,arithmetic,<undef>
 beta,2,b,
-,4242,default-letter,default-lesson
+,4242,default-letter,default-lesson,default-other
 EOF
-    _realm_file_create($self, '/Settings/RealmSettingList2.csv', <<'EOF');
+    $self->realm_file_create('/Settings/RealmSettingList2.csv', <<'EOF');
 Name,Number
 "a parser error
 EOF
-    _realm_file_create($self, '/Settings/RealmSettingList3.csv', <<'EOF');
+    $self->realm_file_create('/Settings/RealmSettingList3.csv', <<'EOF');
 Name,Number
 a,
 ,
@@ -616,9 +622,8 @@ EOF
 		[qw(FilePath my.css), $p, ".${realm}_my_${mode} {}"],
 		[qw(WikiName index), $p, "\@h1 Sweet Home\nGo buffaloes\n"],
 	    ) {
-		_realm_file_create(
-		    $self,
-		    b_use('Type.' . shift(@$fv))
+		
+		    $self->realm_file_create(		    b_use('Type.' . shift(@$fv))
 			->to_absolute(splice(@$fv, 0, 2)),
 		    shift(@$fv));
 	    }
@@ -646,12 +651,11 @@ EOF
 Third page
 EOF
     ) {
-	_realm_file_create(
-	    $self, b_use('Type.WikiName')->to_absolute($fv->[0], 1), $fv->[1]);
+	
+	    $self->realm_file_create(b_use('Type.WikiName')->to_absolute($fv->[0], 1), $fv->[1]);
     }
-    _realm_file_create(
-	$self,
-	b_use('Type.WikiName')->to_absolute('Shell_Util_Help', 1),
+    
+	$self->realm_file_create(	b_use('Type.WikiName')->to_absolute('Shell_Util_Help', 1),
 	<<'EOF');
 Shell utility help.
 EOF
@@ -671,7 +675,7 @@ sub _init_logo {
     ) {
 	# Need different modified_date_time
 	sleep(1);
-	_realm_file_create($self, "/Public/logo.$x->[0]", $x->[1]);
+	$self->realm_file_create("/Public/logo.$x->[0]", $x->[1]);
     }
     return;
 }
@@ -710,7 +714,7 @@ sub _init_remote_copy {
 	    foreach my $x (
 		map(["/$folder/file$_", "file$_"], 1..4),
 	    ) {
-		_realm_file_create($self, @$x);
+		$self->realm_file_create(@$x);
 	    }
 	    return;
 	})
@@ -720,7 +724,7 @@ sub _init_remote_copy {
 	'remote_copy_bunit',
     ) {
 	$req->with_realm($realm => sub {
-	    _realm_file_create($self, '/Settings/RemoteCopy.csv', <<"EOF");
+	    $self->realm_file_create('/Settings/RemoteCopy.csv', <<"EOF");
 Realm,Folders,User,Password,URI
 remote_copy_bunit,/RemoteCopyBunit
 ,,remote_copy_user,@{[$self->PASSWORD]},$uri
@@ -735,23 +739,23 @@ sub _init_search {
     my($self) = @_;
     $self->req->set_realm('site');
     $self->req->set_user($self->ROOT);
-    _realm_file_create($self, 'Public/Wiki/SearchTest1', <<'EOF');
+    $self->realm_file_create('Public/Wiki/SearchTest1', <<'EOF');
 @h1 Test Result One
 Hello Wiki World!
 EOF
-    _realm_file_create($self, 'Public/WikiData/search_test2.txt', <<'EOF');
+    $self->realm_file_create('Public/WikiData/search_test2.txt', <<'EOF');
 Test Result Two
 Hello Underscore World!
 EOF
-    _realm_file_create($self, 'Public/WikiData/search-test3.txt', <<'EOF');
+    $self->realm_file_create('Public/WikiData/search-test3.txt', <<'EOF');
 Test Result Three
 Hello Hyphen World!
 EOF
-    _realm_file_create($self, 'Public/WikiData/search test 4.txt', <<'EOF');
+    $self->realm_file_create('Public/WikiData/search test 4.txt', <<'EOF');
 Test Result Four
 Hello Space World!
 EOF
-    _realm_file_create($self, 'SearchTest5.csv', <<'EOF');
+    $self->realm_file_create('SearchTest5.csv', <<'EOF');
 Test,Result,Five
 t,r,5
 T,R,V
@@ -823,14 +827,22 @@ sub _init_tuple {
 	],
     });
     $self->model('TupleUse')->create_from_label('PetShopReport');
+    $self->model('TupleDef')->create_from_hash({
+        'tuple_bunit1#TupleBunit1' => [
+            map(+{
+                label => $_,
+                type => ($_ eq 'Integer' ? 'Integer' : 'String'),
+                $_ eq 'Required' ? (is_required => 1) : (),
+            },
+                qw(Optional Required Integer String)),
+        ],
+    });
+    $self->realm_file_create('/Settings/TupleTag.csv', <<'EOF');
+Model,tuple_bunit1
+T1Form,Optional;Required;Integer;String
+EOF
+    $self->model('TupleUse')->create_from_label('TupleBunit1');
     return;
-}
-
-sub _realm_file_create {
-    my($self, $path, $content) = @_;
-    return $self->model('RealmFile')->create_with_content(
-	{path => $path},
-	ref($content) ? $content : \$content);
 }
 
 sub _realm_id {
