@@ -590,7 +590,7 @@ sub main {
         # Setup DBI connection to access a probably non-default database
         $self->setup();
     }
-    my($p) = $0;
+    my($p) = $0 || '';
     $p =~ s!.*/!!;
     $p =~ s!\.\w+$!!;
     $self->put(program => $p);
