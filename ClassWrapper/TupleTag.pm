@@ -17,6 +17,7 @@ my($_TSL);
 my($_TSLA);
 my($_TSN);
 my($_TST);
+my($_NO_LABELS);
 my($_CLASSES) = {};
 
 sub handle_class_loader_delete_require {
@@ -35,23 +36,34 @@ sub wrap_methods {
 	if $_CLASSES->{$wrap_pkg}++;
     my($bc) = $wrap_pkg->isa('Bivio::Biz::ListFormModel')
 	? b_die($wrap_pkg, ': ListFormModel not supported')
-	: (grep($wrap_pkg->isa("Bivio::Biz::$_"), qw(FormModel ListModel)))[0]
+	: (grep($wrap_pkg->isa("Bivio::Biz::$_"),
+		qw(FormModel ListModel PropertyModel)))[0]
 	|| b_die($wrap_pkg, ': unsupported base class');
-    $info->{is_list_model} = $bc eq 'ListModel' ? 1 : 0;
-    $info->{primary_id_model}
-	= $_S->extract_model_prefix($info->{primary_id_field})
-	|| b_die(
-	    $info->{primary_id_field}, ': primary_id_field must specify model');
-    $proto->SUPER::wrap_methods($wrap_pkg, $info, {
-	map({
-	    my($n) = $_;
-	    ($n =~ ($info->{is_list_model}
-	        ? qr{^execute} : qr{^internal_prepare}))
-		? () : ($n => \&{"_wrap_$n"});
-	    }
-	    @{$proto->grep_subroutines(qr{^_wrap_(.+)})},
-	),
-    });
+    if ($info->{is_list_model} = $bc eq 'ListModel' ? 1 : 0) {
+	$info->{primary_id_model}
+	    = $_S->extract_model_prefix($info->{primary_id_field})
+	    || b_die($info->{primary_id_field},
+		': primary_id_field must specify model');
+    }
+    $proto->SUPER::wrap_methods(
+	$wrap_pkg,
+	$info,
+	$bc eq 'PropertyModel' ? {
+	    create => \&_wrap_create,
+	} : {
+	    map({
+		my($n) = $_;
+		($n =~ ($info->{is_list_model}
+		    ? qr{^execute} : qr{^internal_prepare}))
+		    ? () : ($n => \&{"_wrap_$n"});
+		}
+		grep(
+		    $_ !~ /^create$/,
+		    @{$proto->grep_subroutines(qr{^_wrap_(.+)})},
+		),
+	    ),
+	},
+    );
     return;
 }
 
@@ -70,6 +82,11 @@ sub _cache {
 #    To test with caching off
 #    return $compute->()
     return $key->[0]->req->realm_cache([(caller)[2], @$key], $compute);
+}
+
+sub _def_id {
+    my($defs) = @_;
+    return $defs->get_query->get('parent_id');
 }
 
 sub _defs {
@@ -133,27 +150,26 @@ sub _field_info {
 sub _labels {
     my($self, $wp, $tsdl) = @_;
     return _cache([$wp], sub {
-	my($all) = $_TSLA->new(
-	    $tsdl->map_rows(sub {shift->get('TupleSlotDef.label')}));
 	my($rsl) = $wp->new_other('RealmSettingList');
 	my($labels) = $rsl->get_setting(
-	    'TupleTagBase',
+	    'TupleTag',
 	    $wp->simple_package_name,
 	    my $moniker = $self->get('moniker'),
 	    'TupleSlotLabelArray',
-	    $all,
+	    $_NO_LABELS,
 	);
-	return $all eq $labels ? $labels->as_array
-	    : $labels->map_iterate(sub {
-		my($check) = @_;
-		my($res) = @{$all->map_iterate(sub {
-		    my($label) = @_;
-		    return lc($check) eq lc($label) ? $label : ();
-		})};
-		$rsl->setting_error($check, ": no such label in ", $moniker)
-		    unless $res;
-		return $res;
-	    });
+	my($all) = $_TSLA->new(
+	    $tsdl->map_rows(sub {shift->get('TupleSlotDef.label')}));
+	return $labels->map_iterate(sub {
+	    my($check) = @_;
+	    my($res) = @{$all->map_iterate(sub {
+		my($label) = @_;
+		return lc($check) eq lc($label) ? $label : ();
+	    })};
+	    $rsl->setting_error($check, ": no such label in ", $moniker)
+		unless $res;
+	    return $res;
+	});
     });
 }
 
@@ -172,6 +188,7 @@ sub _init {
     $_TSLA = b_use('Type.TupleSlotLabelArray');
     $_TSN = b_use('Type.TupleSlotNum');
     $_TST = b_use('Type.TupleSlotType');
+    $_NO_LABELS = $_TSLA->new([]);
     b_use('UI.FacadeComponent')->register_handler(__PACKAGE__);
     return;
 }
@@ -194,7 +211,7 @@ sub _load_properties {
     return 0
 	unless $tt->unsafe_load({
 	    primary_id => $pif,
-	    tuple_def_id => _defs($self, $wp)->get_query->get('parent_id'),
+	    tuple_def_id => _def_id(_defs($self, $wp)),
 	});
     foreach my $f (@$fields) {
 	my($i) = _field_info($self, $wp, $f);
@@ -241,10 +258,21 @@ sub _update_properties {
     my($fields) = _field_check($self, $wp, []);
     my($v) = {
 	primary_id => $wp->get($self->get('primary_id_field')),
-	tuple_def_id => $d->get_query->get('parent_id'),
+	tuple_def_id => _def_id($d),
+	# Need this for "just created" check
+	realm_id => $self->req('auth_id'),
     };
-    my($tt) = $wp->new_other('TupleTag');
-    my($exists) = $tt->unsafe_load($v);
+    my($tt, $exists);
+    # If the TupleTag was just created (see _wrap_create), we need to not
+    # override default values with undef
+    if ($tt = $wp->ureq('Model.TupleTag')) {
+	$tt = undef
+	    unless grep($tt->get($_) eq $v->{$_}, keys(%$v)) == keys(%$v);
+    }
+    unless ($tt) {
+	$tt = $wp->new_other('TupleTag');
+	$exists = $tt->unsafe_load($v);
+    }
     foreach my $f (@$fields) {
 	my($i) = _field_info($self, $wp, $f);
 #TODO: Need to type check the values!!!
@@ -262,8 +290,27 @@ sub _update_properties {
 	    unless exists($v->{$n});
 	return 1;
     });
-    $tt->create($v);
+    my($method) = $tt->is_loaded ? 'update' : 'create';
+    $tt->$method($v);
     return;
+}
+
+sub _wrap_create {
+    my($self, $args) = @_;
+    my($wp) = $self->call_method($args);
+    if (my $d = _defs($self, $wp)) {
+	# See _update_properties for special case
+	$wp->new_other('TupleTag')->create({
+	    primary_id => $wp->get($self->get('primary_id_field')),
+	    tuple_def_id => _def_id($d),
+	    @{$d->map_rows(sub {
+	        my($it) = @_;
+		return ($it->field_from_num
+		    => $it->get('TupleSlotType.default_value'));
+	    })},
+	});
+    }
+    return $wp;
 }
 
 sub _wrap_execute_empty {
