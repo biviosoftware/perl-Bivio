@@ -48,7 +48,7 @@ sub internal_thread_root_list_columns {
 		['->drilldown_uri'],
 	    ),
 	}],
-	$model->tuple_tag_field_check('b_ticket.TupleTag.Priority'),
+	$model->tuple_tag_field_check,
  	['RealmMail.from_email', {
 	    column_widget => String(['RealmMail.from_email']),
 	}],
