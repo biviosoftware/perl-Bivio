@@ -126,6 +126,8 @@ sub debug {
     #
     # B<Not meant for production code.>
     shift->info(@_);
+    shift(@_)
+	if _has_calling_context(\@_);
     return wantarray ? @_ : $_[0];
 }
 
@@ -386,7 +388,7 @@ sub _call_format {
     return $simply ? $proto->format_args(@$msg)
 	: _format(
 	    $proto,
-	    @{(__PACKAGE__->is_blessed($msg->[0]) ? shift(@$msg)
+	    @{(_has_calling_context($msg) ? shift(@$msg)
 		  : $proto->calling_context(__PACKAGE__)
 	    )->[$_IDI]->[0]}{qw(package file line sub)},
 	    $msg,
@@ -508,6 +510,11 @@ sub _format_string_with_type {
 	&& Bivio::Type::DateTime->is_valid_specified($value)
 	? Bivio::Type::DateTime->to_string($value)
         : $value;
+}
+
+sub _has_calling_context {
+    my($msg) = @_;
+    return __PACKAGE__->is_blessed($msg->[0]);
 }
 
 sub _log_apache {
