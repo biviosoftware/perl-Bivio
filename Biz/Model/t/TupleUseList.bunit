@@ -16,9 +16,13 @@ req()->set_realm_and_user(qw(fourem root));
 	    'TupleUse.moniker' => 'psr',
 	    'TupleUse.label' => 'PetShopReport',
 	    tuple_count => 0,
+	}, {
+	    'TupleUse.moniker' => 'tuple_bunit1',
+	    'TupleUse.label' => 'TupleBunit1',
+	    tuple_count => 0,
 	}],
     ],
     monikers => [
-	[] => [[qw(psr)]],
+	[] => [[qw(psr tuple_bunit1)]],
     ],
 ];
