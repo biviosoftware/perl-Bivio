@@ -69,4 +69,11 @@ my($email_mod_dt) = DateTime()->now;
             'RealmMail.from_email' => qr{demo},
         }],
     ],
+    set_cursor_or_die => [
+	0 => not_die(),
+    ],
+    get => [
+	'b_ticket.TupleTag.Priority' => 'Medium',
+	'b_ticket.TupleTag.Product' => qr{DIE.*not found},
+    ],
 ];
