@@ -109,11 +109,11 @@ sub _grep {
     my($e);
     if (@$k == 1) {
 	my($literal) = $hash->{$k->[0]};
-	return ($type->from_literal($literal))[0]
+	return ($type->from_literal(''))[0]
 	    if ($literal || '') eq $_EMPTY;
         my($v, $te) = $type->from_literal($literal);
 	return $v
-	    if defined($v);
+	    if $type->is_specified($v);
 	$e = 'type ' . $type->simple_package_name . ' error ' . $te->get_name
 	    if $te;
 	my($x) = $default;
