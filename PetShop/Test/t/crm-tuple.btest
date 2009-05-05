@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
 home_page();
@@ -26,14 +26,15 @@ submit_form(Send => {
 follow_link_in_table('Ticket', 'Ticket', $ticket);
 verify_text("Open Ticket #$ticket");
 follow_link('answer_1');
-my($not_seen) = random_string();
+my($product) = random_string();
+#TODO: Test that including "text" with Update Only results in error
 submit_form('Update Fields Only' => {
     priority => 'Medium',
-    product => 'Catty Wompus',
-    text => $not_seen,
+    product => $product,
 });
 submit_form(Refresh => {
-    'Any Status' => 'Any Status', # force filter to Any Status
+    'Any Status' => 'Any Status',
 });
+verify_no_text($product);
 follow_link_in_table('Ticket', 'Ticket', $ticket);
-verify_no_text($not_seen);
+verify_no_text($product);
