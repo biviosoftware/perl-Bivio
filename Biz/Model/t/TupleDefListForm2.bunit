@@ -1,55 +1,61 @@
 # Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
 # $Id$
-require 'RealmOwnerForm.PL';
 FormModel();
-my($defid) = create_tuple_def();
+req()->set_realm_and_user('fourem');
+my($def_id) = model('TupleUse', {moniker => 'tuple_bunit1'})->get('tuple_def_id');
 my($strid, $intid) = map(unauth_model(TupleSlotType => {
     realm_id => 1,
     label => $_,
 })->get('tuple_slot_type_id'), qw(String Integer));
-my($data) = [
-    [qw(crm_tech1 oneopt onereq 1 one)],
-    [qw(mail_user1 twoopt tworeq 2 two)],
-    [qw(tuple_user threeopt threereq 3 three)],
-];
-foreach my $item (@$data) {
-    my($user, @values) = @$item;
-    my($i) = 1;
-    create_tuple($user => {map(('owner.TupleTag.slot'.$i++ => $_), @values)});
+my($data) = {
+    map({
+	my($x) = $_;
+	(shift(@$x) => {map(("tuple_bunit1.TupleTag.slot$_" => shift(@$x)), 1..4)});
+    }
+	[qw(crm_tech1 oneopt onereq 1 one)],
+	[qw(mail_user1 twoopt tworeq 2 two)],
+	[qw(tuple_user threeopt threereq 3 three)],
+    ),
+};
+while (my($user, $v) = each(%$data)) {
+    req()->with_user($user => sub {
+        class('Bivio::Biz::Model::t::Tuple::T1Form')->execute(req(), $v);
+    });
 }
 [
     req_state({
         user => 'root',
         realm => 'fourem',
         query => {
-            this => $defid->get('tuple_def_id'),
+            this => $def_id,
         }
     }),
     empty_case({
-        'TupleDef.label' => 'UserMeta',
-        'TupleDef.moniker' => 'owner',
+        'TupleDef.label' => 'TupleBunit1',
+        'TupleDef.moniker' => 'tuple_bunit1',
         'TupleSlotDef.label_0' => 'Optional',
         'TupleSlotDef.label_1' => 'Required',
         'TupleSlotDef.label_2' => 'Integer',
         'TupleSlotDef.label_3' => 'String',
     }),
     [{
-        'TupleDef.label' => 'UserMeta',
-        'TupleDef.moniker' => 'owner',
+        'TupleDef.label' => 'TupleBunit1',
+        'TupleDef.moniker' => 'tuple_bunit1',
         'TupleSlotDef.label_0' => '',
         'TupleSlotDef.tuple_slot_type_id_0' => $strid,
         empty_row_count => 0,
     }] => sub {
-        # verify deleted slot causes following slots to shift up
-        foreach my $item (@$data) {
-            my($user, @values) = @$item;
-            my($i) = 1;
-            assert_contains({
-                map(('slot'.$i++ => $_), @values[1..3]),
-            }, model(TupleTag => {
-                tuple_def_id => $defid->get('tuple_def_id'),
-                primary_id => realm_id($user),
-            }));
+	while (my($user, $v) = each(%$data)) {
+            assert_contains(
+		{map({
+		    my($new_key) = (/slot(d+)$/) - 1;
+		    $new_key > 0 ? ("slot$new_key" => $v->{$_}) : ();
+		} sort(keys(%$v)))},
+		model(TupleTag => {
+		    tuple_def_id => $def_id,
+		    primary_id => realm_id($user),
+		})->get_shallow_copy,
+	    );
         }
         return 1;
     },
