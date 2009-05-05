@@ -17,6 +17,11 @@ my($_MS) = b_use('Type.MailSubject');
 my($_I) = b_use('Mail.Incoming');
 my($_RECENT) = 60;
 b_use('Model.RealmMail')->register('Model.CRMThread');
+#TODO: Share with CRMForm & CRMThreadRootList
+b_use('ClassWrapper.TupleTag')->wrap_methods(__PACKAGE__,  {
+    moniker => __PACKAGE__->TUPLE_TAG_PREFIX,
+    primary_id_field => 'thread_root_id',
+});
 
 sub ORD_FIELD {
     return 'crm_thread_num';
