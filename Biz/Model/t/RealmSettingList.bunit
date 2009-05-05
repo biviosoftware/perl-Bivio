@@ -20,6 +20,10 @@ req()->set_realm('fourem');
 	[qw(RealmSettingList1 alpha num Integer)] => 1,
 	[qw(RealmSettingList1 beta letter Name)] => 'b',
 	[qw(RealmSettingList1 beta lesson String)] => 'default-lesson',
+	[qw(RealmSettingList1 beta lesson StringArray)]
+	    => [StringArray('default-lesson')],
+	[qw(RealmSettingList1 alpha other StringArray)] => [StringArray('')],
+	[qw(RealmSettingList1 beta other StringArray)] => [StringArray('default-other')],
 	[qw(RealmSettingList1 alpha le String xyz)] => 'xyz',
 	[qw(RealmSettingList1 not-found num Integer)] => 4242,
 	[qw(NotFound alpha num Integer)] => [undef],
