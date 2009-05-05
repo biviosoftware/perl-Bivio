@@ -503,7 +503,8 @@ sub setup_request {
 	    last if $self = $_URI_MAP{$uri};
 	}
 	unless ($self) {
-	    Bivio::IO::Alert->warn($uri_or_domain, ': unknown facade uri');
+	    Bivio::IO::Alert->warn_exactly_once(
+		$uri_or_domain, ': unknown facade uri');
 	    # Avoid repeated errors
 	    $self = $_URI_MAP{$uri_or_domain} = $_CLASS_MAP{$_CFG->{default}};
 	}
