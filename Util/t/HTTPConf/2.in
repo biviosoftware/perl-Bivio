@@ -1,8 +1,10 @@
 {
     server_admin => 'default@default.com',
     ssl_mdc => 1,
+    limit_request_body => 0,
     httpd => {
         host_name => 'proxy.com',
+	limit_request_body => 0,
     },
     a3 => {
         is_production => 1,
