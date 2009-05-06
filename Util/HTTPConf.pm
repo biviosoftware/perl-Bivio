@@ -29,7 +29,7 @@ my($_VARS) = {
     mail_hosts_txt => '/etc/httpd/conf/local-host-names.txt',
     app_names_txt => '/etc/httpd/conf/app-names.txt',
     uris_txt => '/etc/httpd/conf/uris.txt',
-    limit_request_body => 4194304,
+    limit_request_body => 50_000_000,
     # Users can supply certain params here
     httpd => my $_HTTPD_VARS = {
 	app => 'httpd',
@@ -102,7 +102,7 @@ sub validate_vars {
 	}
 	$vars->{$app}->{app} = $app;
     }
-    return $vars
+    return $vars;
 }
 
 sub _app_bconf {
