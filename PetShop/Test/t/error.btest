@@ -39,27 +39,3 @@ visit_uri('/not-found-uri');
 test_conformance();
 follow_link('personal_page');
 login_as('root');
-my($key) = 'error.btest page ' . random_string();
-send_request(PUT => $nfe, undef, <<"EOF");
-\@h1 Page Not Found
-not found: $key
-EOF
-do_logout();
-test_deviance('not found');
-visit_uri('/fourem/file/NoFileHere');
-test_conformance();
-test_equals(404, get_response()->code());
-verify_text($key);
-test_deviance('not found');
-visit_uri('/not-found-uri');
-test_conformance();
-test_equals(404, get_response()->code());
-verify_text($key);
-my($u) = get_uri();
-test_deviance('internal server error');
-visit_uri('/pub/products?p=INVALID-PRODUCT');
-test_conformance();
-verify_no_text('Web Site');
-verify_text($u);
-verify_text('previous page');
-

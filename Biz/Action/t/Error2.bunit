@@ -1,0 +1,31 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+options({
+    compute_return => sub {
+        return [req('reply')->get('status', 'output')];
+    },
+    compute_params => sub {
+        req()->put(
+            task_id => Agent_TaskId('DEFAULT_ERROR_REDIRECT_' . $_[1]->[0]),
+        );
+        return [req()];
+    },
+});
+req()->with_realm_and_user('site', 'root', sub {
+    model('RealmFile')->create_with_content({
+        path => "/Public/Wiki/ForbiddenError",
+    }, \('@p maybe if you say please'));
+    model('RealmFile')->create_with_content({
+        path => "/Public/Wiki/NotFoundError",
+    }, \('@p think weapons of mass destruction'));
+});
+[
+    class() => [
+        execute => [
+            FORBIDDEN => [403, qr{say please}i],
+            NOT_FOUND => [404, qr{destruction}i],
+            MODEL_NOT_FOUND => [404, qr{destruction}i],
+        ],
+    ],
+];
