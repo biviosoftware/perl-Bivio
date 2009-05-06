@@ -17,7 +17,6 @@ my($_TSL);
 my($_TSLA);
 my($_TSN);
 my($_TST);
-my($_NO_LABELS);
 my($_CLASSES) = {};
 
 sub handle_class_loader_delete_require {
@@ -151,15 +150,15 @@ sub _labels {
     my($self, $wp, $tsdl) = @_;
     return _cache([$wp], sub {
 	my($rsl) = $wp->new_other('RealmSettingList');
+	my($all) = $_TSLA->new(
+	    $tsdl->map_rows(sub {shift->get('TupleSlotDef.label')}));
 	my($labels) = $rsl->get_setting(
 	    'TupleTag',
 	    $wp->simple_package_name,
 	    my $moniker = $self->get('moniker'),
 	    'TupleSlotLabelArray',
-	    $_NO_LABELS,
+	    $all,
 	);
-	my($all) = $_TSLA->new(
-	    $tsdl->map_rows(sub {shift->get('TupleSlotDef.label')}));
 	return $labels->map_iterate(sub {
 	    my($check) = @_;
 	    my($res) = @{$all->map_iterate(sub {
@@ -188,7 +187,6 @@ sub _init {
     $_TSLA = b_use('Type.TupleSlotLabelArray');
     $_TSN = b_use('Type.TupleSlotNum');
     $_TST = b_use('Type.TupleSlotType');
-    $_NO_LABELS = $_TSLA->new([]);
     b_use('UI.FacadeComponent')->register_handler(__PACKAGE__);
     return;
 }
