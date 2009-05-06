@@ -88,18 +88,18 @@ sub JAVASCRIPT_FIRST_FOCUS {
     # Forces focus to first text input field, if there is one.
     return <<'EOF';
 function first_focus_onload() {
-    if (document.forms.length == 0)
-        return;
-    var fields = document.forms[0].elements;
-    for (i=0; i < fields.length; i++) {
-        if ((fields[i].type == 'text'
-            || fields[i].type == 'textarea')
-            && !fields[i].onfocus
-        ) {
-            try {
-                fields[i].focus();
-            } catch (err) {}
-            break;
+    for (var i = 0; i < document.forms.length; i++) {
+        var fields = document.forms[i].elements;
+        for (var j = 0; j < fields.length; j++) {
+            if ((fields[j].type == 'text'
+                || fields[j].type == 'textarea')
+                && !fields[j].onfocus
+            ) {
+                try {
+                    fields[j].focus();
+                } catch (err) {}
+                return;
+            }
         }
     }
 }
