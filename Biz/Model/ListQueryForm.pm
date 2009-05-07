@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ListQueryForm;
 use strict;
@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub filter_keys {
     my($self) = @_;
-    return [map($_->[0], @{$self->internal_query_fields})];
+    return [qr{^b_\w+$}];
 }
 
 sub get_list_for_field {
