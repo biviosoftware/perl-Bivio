@@ -3,16 +3,17 @@
 package Bivio::Biz::Model::MailReceiveDispatchForm;
 use strict;
 use Bivio::Base 'Model.MailReceiveBaseForm';
-use Bivio::Ext::MIMEParser;
-use Bivio::IO::Trace;
-use Bivio::Mail::Address;
-use Bivio::UI::Task;
+b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_E) = Bivio::Type->get_instance('Email');
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_MAX_COMPARE_SIZE) = 1000;
+my($_A) = b_use('Mail.Address');
+my($_DT) = b_use('Type.DateTime');
+my($_E) = b_use('Type.Email');
+my($_MP) = b_use('Ext.MIMEParser');
+my($_TASK) = b_use('FacadeComponent.Task');
+my($_TEXT) = b_use('FacadeComponent.Text');
+my($_MAX_COMPARE_SIZE) = 10000;
 Bivio::IO::Config->register(my $_CFG = {
     ignore_dashes_in_recipient => Bivio::IO::Config->if_version(
 	5 => sub {1},
@@ -32,7 +33,7 @@ sub execute_ok {
     #
     # op then maps to a URI:
     #
-    #    Bivio::UI::Text->get_value('MailReceiveDispatchForm.uri_prefix') . $op
+    #    Text->get_value('MailReceiveDispatchForm.uri_prefix') . $op
     #
     # I<op> must contain only \w and dashes (-).
     my($req) = $self->req;
@@ -50,7 +51,7 @@ sub execute_ok {
     } if $redirect;
     $self->internal_set_realm($realm);
     my($copy) = ${$self->get('message')->{content}};
-    my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
+    my($parser) = $_MP->parse_data(\$copy);
     $self->internal_put_field(mime_parser => $parser);
     $self->internal_put_field(task_id => _task($self, $op));
     $self->internal_put_field(plus_tag => $plus_tag);
@@ -79,7 +80,7 @@ sub execute_ok {
 	    $self->internal_put_field(task_id => 'USER_MAIL_BOUNCE');
 	}
 	else {
-	    Bivio::IO::Alert->warn(
+	    b_warn(
 		$self->get('from_email'),
 		': ignoring duplicate message from unknown user',
 	    );
@@ -234,17 +235,16 @@ sub _email_alias {
     my($req) = $self->req;
     my($realm, $op, $plus_tag, $domain) = $self->parse_recipient;
     Bivio::UI::Facade->setup_request($domain, $req);
-    my($ea) = $self->new_other('EmailAlias');
     return (undef, $realm, $op, $plus_tag)
 	unless $req->get('task')->unsafe_get_redirect('email_alias_task', $req)
-	&& $ea->unsafe_load({incoming => $self->get('recipient')});
-    my($n) = $ea->get('outgoing');
-    if ($n =~ /\@/) {
-	_trace($self->get('recipient'), ' => ', $n) if $_TRACE;
-	$self->internal_put_field(recipient => $n);
+	and (my $new = $self->new_other('EmailAlias')
+	    ->incoming_to_outgoing($self->get('recipient')));
+    if ($_E->is_valid($new)) {
+	_trace($self->get('recipient'), ' => ', $new) if $_TRACE;
+	$self->internal_put_field(recipient => $new);
 	return 'email_alias_task';
     }
-    $self->internal_put_field(recipient => "$n\@$domain");
+    $self->internal_put_field(recipient => $_E->join_parts($new, $domain));
     return (undef, $self->parse_recipient);
 }
 
@@ -259,7 +259,7 @@ sub _forwarding_loop {
 
 sub _from_email {
     my($from) = @_;
-    ($from) = $from && Bivio::Mail::Address->parse($from);
+    ($from) = $from && $_A->parse($from);
     return $from && lc($from);
 }
 
@@ -291,8 +291,8 @@ sub _task {
 	entity => $op,
         message => 'operation is invalid',
     }) unless $op =~ /^[-\w]*$/;
-    return Bivio::UI::Task->unsafe_get_from_uri(
-	Bivio::UI::Text->get_value('MailReceiveDispatchForm.uri_prefix',
+    return $_TASK->unsafe_get_from_uri(
+	$_TEXT->get_value('MailReceiveDispatchForm.uri_prefix',
 				   $req) . $op,
 	$req->get('auth_realm')->get('type'),
 	$req
