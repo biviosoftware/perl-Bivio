@@ -26,11 +26,47 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.72  2009/05/07 02:51:01  nagler
+  * Bivio::Biz::FormModel
+    added get_visible_field_names
+  * Bivio::Biz::Model::CRMQueryForm
+    use ClassWrapper.TupleTag
+  * Bivio::Biz::Model::ListQueryForm
+    use patterns, not explicit names
+  * Bivio::ClassWrapper::TupleTag
+    if no settings file entry is found, default to all values
+    get working with CRMQueryForm
+  * Bivio::Delegate::SimpleWidgetFactory
+    reverse unknown_label so can be defaulted
+  * Bivio::PetShop::Util::TestCRM
+    use get_visible_field_names
+  * Bivio::ShellUtil
+    main() $0 may be undef if called directly, default to ''
+  * Bivio::Type::TupleSlotNum
+    added is_field_name
+  * Bivio::UI::FacadeBase
+    fields of ListQueryForm are not unknown_label, just ordinary labels
+  * Bivio::UI::HTML::ViewShortcuts
+    added vs_unknown_label
+  * Bivio::UI::HTML::Widget::Script
+    first_focus_onload() now iterates across all forms
+  * Bivio::UI::HTML::Widget::Table
+    added ClassWrapper.TupleTag support by getting canonical name
+    from column
+  * Bivio::UI::View::CRM
+    get CRMQueryForm working
+  * Bivio::UI::View::CSS
+    pager div sep is now 1px
+  * Bivio::UI::XHTML::ViewShortcuts
+    allow wf_type to override
+  * Bivio::Util::HTTPConf
+    default request body 50_000_000
+
   Revision 7.71  2009/05/05 00:50:23  nagler
   * Bivio::Agent::Request
     added realm_cache
