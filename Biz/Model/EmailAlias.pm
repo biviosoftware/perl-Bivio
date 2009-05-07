@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_E) = b_use('Type.Email');
 
 sub internal_initialize {
     my($self) = @_;
@@ -13,7 +14,7 @@ sub internal_initialize {
         table_name => 'email_alias_t',
 	as_string_fields => [qw(incoming)],
         columns => {
-            incoming => ['Email', 'PRIMARY_KEY'],
+            incoming => ['EmailAliasIncoming', 'PRIMARY_KEY'],
 	    outgoing => ['EmailAliasOutgoing', 'NOT_NULL'],
         },
     });
@@ -50,6 +51,18 @@ sub get_all_emails {
 	        ->get('email')
 	    : $realm_owner->format_email,
     ];
+}
+
+sub incoming_to_outgoing {
+    my($self, $recipient) = @_;
+#TODO: Deal with plussed recipients
+#TODO: Allow @foo => joe@bar  joe@foo => @bar (joe@bar)
+    return $self->get('outgoing')
+	if $self->unsafe_load({incoming => $recipient});
+    my($local, $domain) = $_E->split_parts($recipient);
+    return $local . $self->get('outgoing')
+	if $self->unsafe_load({incoming => '@' . $domain});
+    return;
 }
 
 1;
