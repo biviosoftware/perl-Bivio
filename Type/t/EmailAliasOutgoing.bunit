@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
 [
@@ -6,8 +6,9 @@ Type();
         from_literal => [
 	    '' => [undef, undef],
 	    [undef] => [undef, undef],
-	    'any-realm' => 'any-realm',
+	    'any-realm' => ['any-realm', undef],
 	    'a@a.a' => ['a@a.a', undef],
+	    '@a.a' => ['@a.a', undef],
 	    'not a realm' => EMAIL_ALIAS_OUTGOING(),
 	],
     ],
