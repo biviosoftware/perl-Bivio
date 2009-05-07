@@ -35,10 +35,12 @@ sub wrap_methods {
 	if $_CLASSES->{$wrap_pkg}++;
     my($bc) = $wrap_pkg->isa('Bivio::Biz::ListFormModel')
 	? b_die($wrap_pkg, ': ListFormModel not supported')
+	: $wrap_pkg->isa('Bivio::Biz::Model::ListQueryForm')
+	? 'ListQueryForm'
 	: (grep($wrap_pkg->isa("Bivio::Biz::$_"),
 		qw(FormModel ListModel PropertyModel)))[0]
 	|| b_die($wrap_pkg, ': unsupported base class');
-    if ($info->{is_list_model} = $bc eq 'ListModel' ? 1 : 0) {
+    if ($bc eq 'ListModel') {
 	$info->{primary_id_model}
 	    = $_S->extract_model_prefix($info->{primary_id_field})
 	    || b_die($info->{primary_id_field},
@@ -48,19 +50,15 @@ sub wrap_methods {
 	$wrap_pkg,
 	$info,
 	$bc eq 'PropertyModel' ? {
-	    create => \&_wrap_create,
+	    create => \&_wrap_propertymodel_x_create,
 	} : {
 	    map({
-		my($n) = $_;
-		($n =~ ($info->{is_list_model}
-		    ? qr{^execute} : qr{^internal_prepare}))
-		    ? () : ($n => \&{"_wrap_$n"});
-		}
-		grep(
-		    $_ !~ /^create$/,
-		    @{$proto->grep_subroutines(qr{^_wrap_(.+)})},
-		),
-	    ),
+		my($re) = $_;
+		map({
+		    (my $x = $_) =~ s/.*_x_//;
+		    ($x => \&{$_});
+		} @{$proto->grep_subroutines($re)}),
+	    } qr{^_wrap_x_}, qr{^_wrap_.*$bc.*_x_}i),
 	},
     );
     return;
@@ -110,20 +108,31 @@ sub _field_check {
 	my($fields) = [map(_prefix($moniker, $_), @$labels)];
 	return $fields
 	    unless @$check;
-	return $_SA->new($check)->intersect($fields)->as_array;
+	my($d) = _defs($self, $wp);
+	return $_SA->new([
+	    map({
+		_parse_slot($_) ? $d->find_row_by_field_name($_)
+		    ? _prefix($moniker, $d->get('TupleSlotDef.label'))
+		    : ()
+		    : $_;
+	    } @$check),
+	])->intersect($fields)->as_array;
     });
 }
 
 sub _field_info {
-    my($self, $wp, $field) = @_;
+    my($self, $wp, $field, $no_die) = @_;
 #TODO: Needs to work with explicit ListField field values TupleTag.slot1_1
     return _cache([$wp, $field], sub {
 	return undef
-	    unless my $parsed = _parse_field($field);
-	b_die($field, ': field not found')
-	    unless @{_field_check($self, $wp, [$field])};
+	    unless $wp->is_instance;
+	return undef
+	    unless my $parsed = _parse_field($field) || _parse_slot($field);
+	return $no_die ? 1 : b_die($field, ': field not found')
+	    unless my $f = _field_check($self, $wp, [$field])->[0];
+	$parsed = _parse_field($field = $f)
+	    if $_TSN->is_field_name($field);
 	my($d) = _defs($self, $wp);
-	$parsed ||= _parse_field($field);
 	b_die($field, ': field not found in defs??')
 	    unless $d->find_row_by_label($parsed->{field});
 	my($t) = $d->type_class_instance;
@@ -135,13 +144,21 @@ sub _field_info {
 	    tuple_tag_slot_field => $_TSN->field_name($sn),
 	    tuple_tag_slot_field_qualified => $sfq,
 	    tuple_tag_slot_num => $sn,
-	    name => $field,
+	    tuple_tag_label => $parsed->{$field},
+#	    name => $field,
+	    name => $sfq,
 	    constraint => $d->get('TupleSlotDef.is_required')
 		? $_NOT_NULL : $_NONE,
 	    sort_order =>  $_LQ->get_sort_order_for_type($t),
 	    type => $c->is_specified ? $_TCL->new($c->as_array) : $t,
 	    default_value => $d->get('TupleSlotType.default_value'),
-	    form_name => $wp->get_field_info($sfq)->{form_name},
+	    $wp->isa('Bivio::Biz::FormModel') ? (
+		form_name => $wp->isa('Bivio::Biz::Model::ListQueryForm')
+		    ? lc("b_$parsed->{field}")
+			: $wp->internal_get_sql_support_no_assert
+			->get_column_info($sfq, 'form_name'),
+	    ) : (),
+	    in_order_by => 1,
 	};
     });
 }
@@ -220,11 +237,14 @@ sub _load_properties {
 }
 
 sub _map_keys {
-    my($self, $args) = @_;
+    my($no_die, $self, $args) = @_;
     my($wp) = shift(@$args);
     return $self->call_method([$wp, map({
-	my($info) = _field_info($self, $wp, $_);
-	$info ? $info->{tuple_tag_slot_field_qualified} : $_;
+	my($info) = _field_info($self, $wp, $_, $no_die);
+	$info ? ref($info)
+	    ? $info->{tuple_tag_slot_field_qualified}
+	    : "not to be found <$_>"
+	    : $_;
     } @$args)]);
 }
 
@@ -238,16 +258,20 @@ sub _parse_field {
     return $n;
 }
 
+sub _parse_slot {
+    my($field) = @_;
+    return undef
+	unless my $n = $_FS->parse_qualified_field($field);
+    return undef
+	unless $n->{model} eq 'TupleTag'
+	&& $_TSN->is_field_name($n->{field});
+    return $n;
+}
+
 sub _prefix {
     my($moniker, $field) = @_;
     return $field ? "$moniker.TupleTag.$field" : "$moniker.TupleTag";
 }
-
-# sub _wrap_filter_keys {
-#     my() = @_;
-#     QuerySearchBaseForm
-#     return;
-# }
 
 sub _update_properties {
     my($self, $wp) = @_;
@@ -273,7 +297,6 @@ sub _update_properties {
     }
     foreach my $f (@$fields) {
 	my($i) = _field_info($self, $wp, $f);
-#TODO: Need to type check the values!!!
 	$v->{$i->{tuple_tag_slot_field}}
 	    = $wp->unsafe_get($i->{tuple_tag_slot_field_qualified});
     }
@@ -293,7 +316,86 @@ sub _update_properties {
     return;
 }
 
-sub _wrap_create {
+sub _wrap_formmodel_x_execute_empty {
+    my($self, $args) = @_;
+    my($wp) = $args->[0];
+    my($res) = $self->call_method($args);
+    my($fields) = _field_check($self, $wp, []);
+    _load_defaults($self, $wp, $fields)
+	unless !@$fields || _load_properties($self, $wp, $fields);
+    return $res;
+}
+
+sub _wrap_formmodel_x_execute_ok {
+    my($self, $args) = @_;
+    my($wp) = $args->[0];
+    my($res) = $self->call_method($args);
+    # Always update in case the record doesn't exist
+    _update_properties($self, $wp);
+    return $res;
+}
+
+sub _wrap_formmodel_listqueryform_x_internal_initialize {
+    my($self, $args) = @_;
+    my($wp) = $args->[0];
+    my($info) = $self->call_method($args);
+    my($moniker) = $self->get('moniker');
+    push(@{$info->{visible} ||= []},
+	 @{$_TSN->map_list(sub {+{
+	     name => _prefix($moniker, shift(@_)),
+	     type => $_TST,
+	 }})},
+    );
+    return $info;
+}
+
+sub _wrap_listmodel_x_internal_initialize {
+    my($self, $args) = @_;
+    my($wp) = $args->[0];
+    my($info) = $self->call_method($args);
+    my($moniker) = $self->get('moniker');
+    push(@{$info->{order_by} ||= []},
+	 @{$_TSN->map_list(sub {_prefix($moniker, shift(@_))})},
+    );
+    return $info;
+}
+
+sub _wrap_listmodel_x_internal_prepare_statement {
+    my($self, $args) = @_;
+    my($wp, $stmt) = @$args;
+    my($pif, $pim, $moniker)
+	= $self->get(qw(primary_id_field primary_id_model moniker));
+    $stmt->from(
+	$stmt->LEFT_JOIN_ON($pim, , _prefix($moniker), [
+	    [$pif, _prefix($moniker, 'primary_id')],
+	]),
+    );
+    if ($wp->can('LIST_QUERY_FORM_CLASS')
+	and my $qf = $wp->ureq($wp->LIST_QUERY_FORM_CLASS)
+    ) {
+	foreach my $field ($qf->tuple_tag_field_check) {
+	    if (defined(my $v = $qf->unsafe_get($field))) {
+		$stmt->where([$qf->get_field_info($field, 'name'), [$v]])
+		    if defined($v);
+	    }
+	}
+    }
+    return $self->call_method($args);
+}
+
+sub _wrap_listqueryform_x_get_select_attrs {
+    my($self, $args) = @_;
+    my($wp, $field) = @$args;
+    return $self->call_method($args)
+	unless my $info = _field_info($self, $wp, $field);
+    return {
+	field => $info->{name},
+	choices => $info->{type},
+	unknown_label => $info->{tuple_tag_label},
+    };
+}
+
+sub _wrap_propertymodel_x_create {
     my($self, $args) = @_;
     my($wp) = $self->call_method($args);
     if (my $d = _defs($self, $wp)) {
@@ -311,30 +413,11 @@ sub _wrap_create {
     return $wp;
 }
 
-sub _wrap_execute_empty {
-    my($self, $args) = @_;
-    my($wp) = $args->[0];
-    my($res) = $self->call_method($args);
-    my($fields) = _field_check($self, $wp, []);
-    _load_defaults($self, $wp, $fields)
-	unless !@$fields || _load_properties($self, $wp, $fields);
-    return $res;
+sub _wrap_x_get {
+    return _map_keys(0, @_);
 }
 
-sub _wrap_execute_ok {
-    my($self, $args) = @_;
-    my($wp) = $args->[0];
-    my($res) = $self->call_method($args);
-    # Always update in case the record doesn't exist
-    _update_properties($self, $wp);
-    return $res;
-}
-
-sub _wrap_get {
-    return _map_keys(@_);
-}
-
-sub _wrap_get_field_info {
+sub _wrap_x_get_field_info {
     my($self, $args) = @_;
     my($wp, $field, $which) = @$args;
     return $self->call_method($args)
@@ -342,100 +425,43 @@ sub _wrap_get_field_info {
     return $which ? $info->{$which} : $info;
 }
 
-# sub _wrap_get_info {
-#     # visible_field_names  for QuerySearchBaseForm
-#     return;
-# }
-
-# sub _wrap_get_select_attrs {
-#     QuerySearchBaseForm for fields that match
-#     return;
-# }
-
-sub _wrap_has_fields {
-    return _map_keys(@_);
+sub _wrap_x_has_fields {
+    return _map_keys(1, @_);
 }
 
-sub _wrap_has_keys {
-    return _map_keys(@_);
+sub _wrap_x_has_keys {
+    return _map_keys(1, @_);
 }
 
-sub _wrap_internal_initialize {
-    my($self, $args) = @_;
-    my($wp) = $args->[0];
-    my($info) = $self->call_method($args);
-    my($moniker) = $self->get('moniker');
-    if ($self->get('is_list_model')) {
-	push(@{$info->{order_by} ||= []},
-	     @{$_TSN->map_list(sub {_prefix($moniker, shift(@_))})},
-	);
-    }
-    else {
-	push(@{$info->{visible} ||= []},
-	     @{$_TSN->map_list(sub {+{
-		 name => _prefix($moniker, shift(@_)),
-		 type => $_TST,
-	     }})},
-	);
-    }
-    return $info;
-}
-
-sub _wrap_internal_prepare_statement {
-    my($self, $args) = @_;
-    my($wp, $stmt) = @$args;
-    my($pif, $pim, $moniker)
-	= $self->get(qw(primary_id_field primary_id_model moniker));
-    $stmt->from(
-	$stmt->LEFT_JOIN_ON($pim, , _prefix($moniker), [
-	    [$pif, _prefix($moniker, 'primary_id')],
-	]),
-    );
-#     if ($wp->can('LIST_QUERY_FORM_CLASS')
-# 	and my $qf = $wp->ureq($wp->LIST_QUERY_FORM_CLASS)) {
-# 	$_TSN->map_list(sub {
-# 	    my($name) = @_;
-# 	    my($v) = $qf->unsafe_get('tt_' . $name);
-# 	    $stmt->where(["$_TUPLE_TAG." . $name, [$v]])
-# 		if defined($v);
-# 	    return;
-# 	});
-    return $self->call_method($args);
-}
-
-sub _wrap_tuple_tag_field_check {
+sub _wrap_x_tuple_tag_field_check {
     my($self, $args) = @_;
     return @{_field_check($self, shift(@$args), $args)};
 }
 
-sub _wrap_unsafe_get {
-    return _map_keys(@_);
+sub _wrap_x_unsafe_get {
+    return _map_keys(1, @_);
+}
+
+sub _wrap_x_get_info {
+    my($self, $args) = @_;
+    my($wp, $which) = @$args;
+    my($res) = $self->call_method($args);
+    return $res
+	unless ($which || '') =~ /_names$/ && $wp->is_instance;
+    return [map({
+	my($info) = _field_info($self, $wp, $_, 1);
+	$info ? ref($info) ? $info->{tuple_tag_slot_field_qualified} : () : $_;
+    } @$res)];
+}
+
+sub _wrap_x_get_keys {
+    my($self, $args) = @_;
+    my($wp) = @$args;
+    my($res) = $self->call_method($args);
+    return [map({
+	my($info) = _field_info($self, $wp, $_, 1);
+	$info ? ref($info) ? $info->{tuple_tag_slot_field_qualified} : () : $_;
+    } @$res)];
 }
 
 1;
-
-__END__
-
-QuerySearchBaseForm only works with GET. Cannot parse incoming form.
-Always an Aux form anyway.  Special type of form: GetForm?
-
-sub _tuple_value_list {
-    my($proto, $field) = @_;
-    $field =~ s/^tt_//;
-    my($slot) = 'TupleTag.' . $field;
-    return Bivio::Biz::ListModel->new_anonymous({
-        primary_key => [$slot],
-	want_select_distinct => 1,
-	other => [
-	    [qw(CRMThread.thread_root_id TupleTag.primary_id)],
-	    map(+{
-		name => $_,
-		in_select => 0,
-	    }, qw(CRMThread.crm_thread_num TupleTag.tuple_def_id
-                CRMThread.thread_root_id)),
-	],
-        order_by => [$slot],
-	auth_id => ['CRMThread.realm_id'],
-    })->load_all;
-}
-
