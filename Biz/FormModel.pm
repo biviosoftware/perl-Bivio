@@ -343,6 +343,10 @@ sub get_stay_on_page {
     return shift->[$_IDI]->{stay_on_page} ? 1 : 0;
 }
 
+sub get_visible_field_names {
+    return shift->internal_get_visible_field_names;
+}
+
 sub get_visible_non_button_names {
     my($self) = @_;
     return [sort(
