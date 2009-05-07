@@ -26,11 +26,185 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.71  2009/05/05 00:50:23  nagler
+  * Bivio::Agent::Request
+    added realm_cache
+    look for auth_user/auth_realm. in put and deprecate.  Switch to realm_cache
+  * Bivio::BConf
+    ClassWrapper
+  * Bivio::Base
+    removed __PACKAGE__->use, because causing circularities
+  * Bivio::Biz::FormModel
+    copy values when process called directly
+  * Bivio::Biz::ListFormModel
+    get_list_model returns singleton instance if no dynamic instance
+  * Bivio::Biz::Model::CRMForm
+    use ClassWraper.TupleTag
+  * Bivio::Biz::Model::CRMQueryForm
+    removed TupleTagForm (temporarily)
+  * Bivio::Biz::Model::CRMThread
+    register with ClassWrapper.TupleTag
+  * Bivio::Biz::Model::CRMThreadRootList
+    use ClassWraper.TupleTag
+  * Bivio::Biz::Model::RealmSettingList
+    added as_string and setting_error
+    deal with unspecified values correctly
+    Fix <undef> code
+  * Bivio::Biz::Model::SummaryList
+    removed get_list_model
+  * Bivio::Biz::Model::TaskLogList
+    x_filter => b_filter
+  * Bivio::Biz::Model::TaskLogQueryForm
+    x_filter => b_filter
+  * Bivio::Biz::Model::Tuple
+    slot labels are now their own type
+  * Bivio::Biz::Model::TupleDef
+    use TupleMoniker
+  * Bivio::Biz::Model::TupleSlotDef
+    use Type.TupleSlotLabel
+  * Bivio::Biz::Model::TupleSlotType
+    use Type.TupleSlotLabel
+  * Bivio::Biz::Model::TupleTag
+    fmt
+  * Bivio::Biz::Model::TupleTagForm
+    removed
+  * Bivio::Biz::Model::TupleUse
+    use Type.TupleMoniker
+  * Bivio::Biz::Model::t::RealmOwnerForm
+    removed
+  * Bivio/Biz/Model/t/Tuple
+    NEW
+  * Bivio::Biz::Model
+    Added from_req()
+    Removed more direct accesses to sql support, instead use existing routines
+  * Bivio/ClassWrapper
+    NEW
+  * Bivio::ClassWrapper
+    NEW
+  * Bivio::Delegate::SimpleWidgetFactory
+    added provide_select_choices and TupleSlotType
+  * Bivio::Die
+    eval now gets package right for subs and code
+    don't strip __END__ in _eval()
+  * Bivio::IO::Alert
+    fixed debug() when called with context
+  * Bivio::IO::ClassLoader
+    delete_require was broken (need to delete the hash_ref entry, not
+    replace with {})
+    set the _importing_pkg() properly
+    Added handle_class_loader_delete_require and handle_class_loader_require
+  * Bivio::IO::Trace
+    use handle_class_loader_require (import() calls this)
+  * Bivio::IO::t::ClassLoader::Valid
+    get handle_class_loader_require
+  * Bivio::PetShop::Util::SQL
+    slot labels begin upcase; monikers all lower
+    data for tuple tests
+    export realm_file_create
+  * Bivio::PetShop::Util::TestCRM
+    data for tuple tests
+    export realm_file_create
+  * Bivio::SQL::DDL
+    added NOT_NULL to tuple_t.thread_root_id
+  * Bivio::SQL::ListQuery
+    other_query_keys can now be a pattern
+  * Bivio::SQL::Support
+    added extract_model_prefix & parse_qualified_field
+  * Bivio::Search::Xapian
+    must have parens
+  * Bivio::Test::Unit
+    fixed _called_in_closure to check where it is in the initialization
+    before searching the stack
+  * Bivio::Test::Widget
+    put_and_initialize => initialize_with_parent
+  * Bivio::Test
+    added unsafe_current_self
+  * Bivio::Type::EmailArray
+    from_literal_validator isn't needed, because now calls UNDERLYING_TYPE->from_literal
+  * Bivio::Type::FilePathArray
+    from_literal_validator isn't needed, because now calls
+    UNDERLYING_TYPE->from_literal
+    subclasses SemicolonStringArray
+  * Bivio::Type::SemicolonStringArray
+    NEW
+  * Bivio::Type::StringArray
+    added interesect(), ANY_SEPARATOR_REGEX (from_literal uses),
+    _clean_copy now works more intelligently, added as_list
+  * Bivio::Type::TupleChoiceList
+    NEW
+  * Bivio::Type::TupleLabel
+    fmt
+  * Bivio::Type::TupleMoniker
+    NEW
+  * Bivio::Type::TupleSlotLabel
+    NEW
+  * Bivio::Type::TupleSlotLabelArray
+    NEW
+  * Bivio::UI::Facade
+    change "unknown facade uri" message to warn_exactly_once
+  * Bivio::UI::FacadeBase
+    x_* => b_*
+  * Bivio::UI::FacadeComponent
+    added handler for handle_internal_unsafe_lc_get_value
+  * Bivio::UI::FormError
+    put_and_initialize => initialize_with_parent
+  * Bivio::UI::HTML::Widget::Grid
+    put_and_initialize => initialize_with_parent
+  * Bivio::UI::HTML::Widget::ListActions
+    put_and_initialize => initialize_with_parent
+  * Bivio::UI::HTML::Widget::Radio
+    put_and_initialize => initialize_with_parent
+  * Bivio::UI::HTML::Widget::Select
+    added provide_select_choices
+  * Bivio::UI::HTML::Widget::String
+    put_and_initialize => initialize_with_parent
+  * Bivio::UI::HTML::Widget::Table
+    put_and_initialize => initialize_with_parent
+    Can be initialized in a dynamic context iwc ListModel will come from
+    source_name.
+  * Bivio::UI::HTML::Widget::YesNo
+    put_and_initialize => initialize_with_parent
+  * Bivio::UI::Task
+    internal_unsafe_lc_get_value does the downcasing
+  * Bivio::UI::Text
+    internal_unsafe_lc_get_value does the downcasing
+  * Bivio::UI::View::CRM
+    refactoring to support dynamic fields (internal_thread_root_list_columns)
+    return list of all fields
+  * Bivio::UI::View::Mail
+    refactoring to support dynamic fields (internal_thread_root_list_columns)
+  * Bivio::UI::View::TaskLog
+    x_filter => b_filter
+  * Bivio::UI::ViewLanguage
+    put_and_initialize => initialize_with_parent
+  * Bivio::UI::ViewShortcuts
+    put_and_initialize->render => initialize_and_render
+  * Bivio::UI::Widget::Simple
+    use NEW_ARGS
+  * Bivio::UI::Widget
+    added initialize_with_parent and initialize_and_render
+    removed put_and_initialize
+    initialize called with $source, if available
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    put_and_initialize->render => initialize_and_render
+  * Bivio::UI::XML::Widget::JoinTagField
+    use NEW_ARGS
+  * Bivio::UNIVERSAL
+    added code_ref_for_method, unsafe_super_for_method, replace_subroutine
+  * Bivio::Util::RealmAdmin
+    delete_user allowed if now email
+  * Bivio::Util::SQL
+    Tuple.thread_root_id  is NOT NULL
+  * Bivio::Util::Search
+    add usage_error to rebuild_realm
+  * Bivio/t/ClassWrapper
+    NEW
+
   Revision 7.70  2009/04/30 22:46:19  aviggio
   * Bivio::Util::Search
     call Search.Xapian->module_version
