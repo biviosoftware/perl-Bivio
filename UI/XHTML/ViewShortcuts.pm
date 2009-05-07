@@ -187,13 +187,13 @@ sub vs_descriptive_field {
     my($name, $attrs) = ref($field) ? @$field : $field;
     $attrs ||= {};
     $name =~ /^(\w+)\.(.+)/;
-    my($label, $input) = UNIVERSAL::isa(
-	Bivio::Biz::Model->get_instance($1)->get_field_type($2),
-	'Bivio::Type::Boolean',
-    ) && ! $attrs->{wf_class} ? (
-	undef,
-	FormField($name, $attrs),
-    ) : $proto->vs_form_field($name, $attrs);
+    my($label, $input) = !$attrs->{wf_type}
+	&& !$attrs->{wf_class}
+	&& Bivio::Biz::Model->get_instance($1)->get_field_type($2)
+	    ->isa('Bivio::Type::Boolean') ? (
+	    undef,
+	    FormField($name, $attrs),
+	) : $proto->vs_form_field($name, $attrs);
     return [
 	$label ? ($label->put(cell_class => 'label label_ok')) : (),
 	Join([
