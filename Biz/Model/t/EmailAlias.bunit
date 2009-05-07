@@ -16,4 +16,10 @@ req()->initialize_fully;
 	crm_forum => remote_email('crm'),
 	crm_tuple_forum => remote_email('crm_tuple_forum'),
     ],
+    incoming_to_outgoing => [
+	email('demo-alias') => 'demo',
+	email('random-alias') => 'random@example.com',
+	$$ . '@in.bunit' => $$ . '@out.bunit',
+	'nomatch@foo.com' => [],
+    ],
 ];
