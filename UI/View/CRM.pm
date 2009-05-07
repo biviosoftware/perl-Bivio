@@ -22,7 +22,7 @@ sub internal_crm_send_form_buttons {
 }
 
 sub internal_crm_send_form_extra_fields {
-    my(undef, $model) = @_;
+    my($self, $model) = @_;
     my($m) = $model->simple_package_name;
     return [
 	["$m.action_id", {
@@ -31,9 +31,7 @@ sub internal_crm_send_form_extra_fields {
 	    choices => ['->req', 'Model.CRMActionList'],
 	    list_id_field => 'id',
 	}],
-	map(["$m.$_", {
-	    wf_type => $model->get_field_type($_),
-	}], $model->tuple_tag_field_check),
+	$self->internal_tuple_tag_form_fields($model),
     ];
 }
 
@@ -76,6 +74,13 @@ sub internal_thread_root_list_columns {
  	'CRMThread.modified_date_time',
  	'modified_by_name',
     ];
+}
+
+sub internal_tuple_tag_form_fields {
+    my($self, $model) = @_;
+    return map([$model->simple_package_name . ".$_", {
+	wf_type => $model->get_field_type($_),
+    }], $model->tuple_tag_field_check);
 }
 
 sub send_form {
