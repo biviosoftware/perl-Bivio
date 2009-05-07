@@ -10,4 +10,9 @@ Type();
     field_name => [
 	2 => 'slot2',
     ],
+    is_field_name => [
+	slot2 => 1,
+	'Foo.slot2' => 1,
+	slot => 0,
+    ],
 ];

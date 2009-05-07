@@ -35,4 +35,9 @@ sub field_name_to_num {
     return $i;
 }
 
+sub is_field_name {
+    my(undef, $name) = @_;
+    return $name =~ /(?:^|\.)slot\d+$/ ? 1 : 0;
+}
+
 1;
