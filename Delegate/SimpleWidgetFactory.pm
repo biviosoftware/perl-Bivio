@@ -236,8 +236,7 @@ sub internal_create_edit {
 	return $_VS->vs_new('Select', {
 	    field => $field,
 	    choices => $type,
-	    unknown_label => $_VS->vs_text(
-		$model->simple_package_name, $field, 'select_unknown_label'),
+	    unknown_label => $_VS->vs_unknown_label($model, $field),
 	    %$attrs,
 	});
     }
