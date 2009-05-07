@@ -477,11 +477,15 @@ sub _init_email_alias {
 	[qw(fourem-alias fourem)],
 	[qw(random-alias random@example.com)],
     ) {
-	Bivio::Biz::Model->new($req, 'EmailAlias')->create({
+	$self->model('EmailAlias')->create({
 	    incoming => $self->format_test_email($x->[0]),
 	    outgoing => $x->[1],
 	});
     }
+    $self->model('EmailAlias')->create({
+	incoming => '@in.bunit',
+	outgoing => '@out.bunit',
+    });
     return;
 }
 
