@@ -526,6 +526,15 @@ sub vs_ts {
     return $proto->vs_new('String', $proto->vs_text(@_));
 }
 
+sub vs_unknown_label {
+    my($proto, $model, $field) = @_;
+    return $proto->vs_text(
+	ref($model) || $model =~ /::/ ? $model->simple_package_name : $model,
+	$field,
+	'unknown_label',
+    );
+}
+
 sub vs_xhtml {
     # (proto, any) : boolean
     # Returns true if rendering in xhtml.
