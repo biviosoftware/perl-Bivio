@@ -480,8 +480,10 @@ sub initialize {
 	my($attrs);
 	if (ref($col) eq 'ARRAY') {
 	    ($col, $attrs) = @$col;
-	    $attrs->{field} = $col unless $attrs->{field};
-	    $col = $attrs->{field} unless $col;
+	    $attrs->{field} = $col
+		unless $attrs->{field};
+	    $col = $attrs->{field}
+		unless $col;
 	}
 	elsif (ref($col) eq 'HASH') {
 	    $attrs = $col;
@@ -490,6 +492,9 @@ sub initialize {
 	else {
 	    $attrs = {field => $col};
 	}
+	# ClassWrapper.TupleTag support
+	$col = $attrs->{field} = $lm->get_field_info($col, 'name')
+	    if $col && $lm->has_fields($col);
 	my($cell) = $self->create_cell($list, $col, $attrs);
 	push(@$cells, $cell);
 	my($want_column_sorted) = defined($cell->unsafe_get('want_sorting'))
@@ -744,7 +749,9 @@ sub _get_heading {
     my($heading) = $cell->get_or_default('column_heading', $col);
     $heading = $_VS->vs_new(
 	'String',
-	length($heading) ? $_VS->vs_new('Prose', $_VS->vs_text($list->simple_package_name, $heading))
+	length($heading)
+	    ? $_VS->vs_new(
+		'Prose', $_VS->vs_text($list->simple_package_name, $heading))
 	    : $heading,
 	$cell->get_or_default(
 	    'heading_font',
