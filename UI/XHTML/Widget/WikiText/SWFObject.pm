@@ -24,15 +24,15 @@ sub render_html {
     Bivio::Die->die(
         $args->{attrs}, qq(: requires "data" or "file" and both "width" and "height" attributes)
     ) if grep(!defined($_), $data, $width, $height, $id);
-    #convert $params to javascript object litteral
-    my($params) = ($preview || $file) ? ${b_use('IO.Ref')->to_string({
+    #convert $flashvars to javascript object litteral
+    my($flashvars) = ($preview || $file) ? ${b_use('IO.Ref')->to_string({
         $preview ? (image => $preview) : (),
         $file ? (file => $file) : (),
     }, 1, 0)} : 'false';
-    $params =~ s/=>/:/g;
+    $flashvars =~ s/=>/:/g;
     #http://code.google.com/p/swfobject/wiki/documentation
     my($script) = <<"EOF";
-swfobject.embedSWF("$data", "$id", "$width", "$height", "9.0.0", false, $params);
+swfobject.embedSWF("$data", "$id", "$width", "$height", "9.0.0", false, $flashvars, {allowfullscreen:'true'});
 </script>
 <div id="$id">
     <p>This content requires JavaScript enabled and the Flash Player.</p>
