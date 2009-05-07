@@ -68,6 +68,11 @@ sub is_valid {
     return defined($email) && $email =~ /^$_ATOM_ONLY_ADDR$/os ? 1 : 0;
 }
 
+sub join_parts {
+    my($proto, $local, $domain) = @_;
+    return $proto->from_literal_or_die(join('@', $local, $domain));
+}
+
 sub split_parts {
     my(undef, $value) = @_;
     return $value && $value =~ /^(.+?)\@(.+)$/ ? ($1, $2) : (undef, undef);
