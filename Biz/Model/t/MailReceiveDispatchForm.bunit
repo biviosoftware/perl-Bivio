@@ -62,6 +62,8 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 		=> [qw(demo fourem FORUM_MAIL_RECEIVE)],
 	    ['demo', email('random-alias')]
 		=> [undef, undef, qw(email_alias_task random@example.com)],
+	    [qw(demo any@in.bunit)]
+		=> [undef, undef, qw(email_alias_task any@out.bunit)],
 	],
 	{
 	    method => 'parse_recipient',
