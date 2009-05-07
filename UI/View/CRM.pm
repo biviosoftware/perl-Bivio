@@ -31,7 +31,9 @@ sub internal_crm_send_form_extra_fields {
 	    choices => ['->req', 'Model.CRMActionList'],
 	    list_id_field => 'id',
 	}],
-	map("$m.$_", $model->tuple_tag_field_check),
+	map(["$m.$_", {
+	    wf_type => $model->get_field_type($_),
+	}], $model->tuple_tag_field_check),
     ];
 }
 
@@ -48,7 +50,11 @@ sub internal_thread_root_list_columns {
 		['->drilldown_uri'],
 	    ),
 	}],
-	$model->tuple_tag_field_check,
+	# WidgetFactory uses singleton to find type so we have to do it here
+	map([$_, {
+	    wf_type => $model->get_field_type($_),
+	    column_heading => String(vs_text($model->simple_package_name, $_)),
+	}], $model->tuple_tag_field_check),
  	['RealmMail.from_email', {
 	    column_widget => String(['RealmMail.from_email']),
 	}],
@@ -94,16 +100,16 @@ sub thread_root_list {
 		Join([
 		    map(
 			Select({
-#get_select_attrs should return everything
 			    %{$f->get_select_attrs($_)},
-			    unknown_label =>
-				vs_text('CRMQueryForm', $_, 'unknown_label'),
+			    unknown_label => vs_text('CRMQueryForm', $_),
 			    auto_submit => 1,
 			    $_ eq 'b_status' ? (
 				enum_display => 'get_desc_for_query_form',
 			    ): (),
 			}),
-#TODO: tuple_tag_field_check for CRMQueryForm
+			grep($f->get_field_type($_)->isa(
+			    'Bivio::Type::TupleChoiceList'),
+			     $f->tuple_tag_field_check),
 			qw(b_status b_owner_name),
 		    ),
 		    ScriptOnly({
