@@ -52,11 +52,10 @@ sub update_thread {
     $req->put(query => {this => $thread_id});
     my($m) = $self->model('CRMForm');
     $m->process;
-    my($x) = $m->get_shallow_copy;
+    my($x) = $m->get_visible_field_names;
     $self->model(CRMForm => {
-	map(($_ => $x->{$_}), grep(defined($_), keys(%$x))),
-        to => $self->type(EmailArray => $req->get('auth_realm')
-                              ->format_email),
+	map(($_ => $m->unsafe_get($_)), @$x),
+        to => $self->type(EmailArray => $req->get('auth_realm')->format_email),
         cc => $self->type(EmailArray => ''),
         body => b_use('Biz.Random')->string,
         attachment1 => undef,
@@ -122,6 +121,9 @@ sub _init_btest {
 		],
 	    });
 	    $self->model('TupleUse')->create_from_label('Ticket');
+	    # Left out on purpose.  Good test for UI checking for Select()
+	    # See View.CRM->thread_root_list
+	    # CRMQueryForm,Priority
 	    $self->realm_file_create('/Settings/TupleTag.csv', <<'EOF');
 Model,b_ticket
 CRMThreadRootList,Priority
