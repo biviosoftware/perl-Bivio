@@ -12,6 +12,7 @@ my($_MY_LC) = lc($_FP->to_absolute(
     __PACKAGE__->use('Type.RealmName')->SPECIAL_PLACEHOLDER . '.css'));
 my($_SITE_LC) = lc($_FP->to_public($_MY_LC));
 my($_WIKI_LC) = lc(__PACKAGE__->use('Type.WikiName')->to_absolute('base.css'));
+my($_IE6_LC) = lc($_FP->to_public($_FP->to_absolute('myie6.css')));
 
 sub get_content {
     return $_RF->get_content(shift, 'RealmFile.');
@@ -53,6 +54,12 @@ sub internal_prepare_statement {
 		$stmt->EQ('RealmFile.path_lc', [$_SITE_LC]),
 		$stmt->EQ('RealmFile.realm_id', [$site_id]),
 	    ),
+            $req->get('Type.UserAgent')
+                ->equals_by_name(qw(BROWSER_MSIE_5 BROWSER_MSIE_6)) ?
+                    $stmt->AND(
+                        $stmt->EQ('RealmFile.path_lc', [$_IE6_LC]),
+                        $stmt->EQ('RealmFile.realm_id', [$site_id]),
+                    ) : (),
 	    $general ? () : (
 		_auth_path($stmt, $auth_id, $public, $_MY_LC),
 		$tid->get_name !~ /^(?:HELP|FORUM_WIKI_VIEW)$/ ? ()

@@ -12,6 +12,9 @@ my($site) = unauth_model('RealmOwner', {name => 'site'})->get('realm_id');
 	    req()->set_realm(shift(@$params));
 	    req()->set_user(shift(@$params));
 	    req()->initialize_fully(shift(@$params) || 'SHELL_UTIL');
+            my($browser) = shift(@$params);
+            class('Type.UserAgent')->$browser->execute(req())
+                if $browser;
 	    return [];
 	},
 	comparator => 'nested_contains',
@@ -49,8 +52,9 @@ my($site) = unauth_model('RealmOwner', {name => 'site'})->get('realm_id');
 	    [$fourem, '/public/my.css'],
 	    [$fourem, '/public/wiki/base.css'],
 	],
-	[qw(fourem root HELP)] => [
+	[qw(fourem root HELP BROWSER_MSIE_5)] => [
 	    [$site, '/public/my.css'],
+            [$site, '/public/myie6.css'],
 	    [$fourem, '/public/my.css'],
 	    [$fourem, '/public/wiki/base.css'],
 	    [$fourem, '/my.css'],
