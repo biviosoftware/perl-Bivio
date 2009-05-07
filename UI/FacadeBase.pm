@@ -294,7 +294,7 @@ sub _cfg_base {
 	    ]],
 	    [ok_button => '   OK   '],
 	    [cancel_button => ' Cancel '],
-	    [select_unknown_label => 'Select Value'],
+	    [unknown_label => 'Select Value'],
 	    [[qw(Email.email login email)] => 'Email'],
 	    [password => 'Password'],
 	    [confirm_password => 'Re-enter Password'],
@@ -489,8 +489,8 @@ sub _cfg_crm {
 	],
 	Text => [
 	    [CRMQueryForm => [
-		'b_status.unknown_label' => 'Any Status',
-		'b_owner_name.unknown_label' => 'Any Owner',
+		b_status => 'Any Status',
+		b_owner_name => 'Any Owner',
 	    ]],
 	    [CRMThreadRootList => [
 		'CRMThread.subject' => 'Subject',
