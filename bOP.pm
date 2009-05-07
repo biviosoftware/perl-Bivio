@@ -26,11 +26,30 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.73  2009/05/07 20:39:51  nagler
+  * Bivio::Biz::Model::EmailAlias
+    type of incoming is now EmailAliasIncoming
+    Added incoming_to_outgoing
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    use EmailAlias->incoming_to_outgoing
+  * Bivio::Biz::Model::RealmCSSList
+    can now put ie6 specific CSS in site/Public/myie6.css
+  * Bivio::PetShop::Util::SQL
+    added domain alias data
+  * Bivio::Type::Email
+    added join_parts
+  * Bivio::Type::EmailAliasIncoming
+    NEW
+  * Bivio::Type::EmailAliasOutgoing
+    allow @domain.com domain aliases
+  * Bivio::UI::FacadeBase
+    added EmailAlias.incoming.SYNTAX_ERROR
+
   Revision 7.72  2009/05/07 02:51:01  nagler
   * Bivio::Biz::FormModel
     added get_visible_field_names
