@@ -151,7 +151,9 @@ sub _field_info {
 		? $_NOT_NULL : $_NONE,
 	    sort_order =>  $_LQ->get_sort_order_for_type($t),
 	    type => $c->is_specified ? $_TCL->new($c->as_array) : $t,
-	    default_value => $d->get('TupleSlotType.default_value'),
+	    $wp->isa('Bivio::Biz::Model::QuerySearchBaseForm')
+	        ? ()
+	        : (default_value => $d->get('TupleSlotType.default_value')),
 	    $wp->isa('Bivio::Biz::FormModel') ? (
 		form_name => $wp->isa('Bivio::Biz::Model::ListQueryForm')
 		    ? lc("b_$parsed->{field}")
