@@ -317,7 +317,7 @@ sub _find_line_number {
     my($die, $script_name) = @_;
     # Find the line number of error in the test script.
     return unless my($stack) = $die->get('stack');
-    my($line) = $stack =~ /.* at \(eval \d+\) line (\d+)\s+eval '/s;
+    my($line) = $stack =~ /.* at \(eval \d+\) line (\d+)\s+Bivio::Test::Language::__ANON__/s;
     substr($die->get('attrs')->{message}, 0, 0) = "$script_name, line $line: "
 	if $line;
     return;
