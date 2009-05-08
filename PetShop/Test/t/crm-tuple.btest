@@ -1,6 +1,6 @@
 # Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-test_setup('PetShop');
+test_setup('PetShop', 'groupware');
 home_page();
 my($forum) = generate_remote_email('crm_tuple_forum');
 my($cust1) = generate_local_email('crm_cust1');
@@ -10,7 +10,7 @@ my($ticket) = verify_local_mail($tech1, qr{.}, 1) =~ m{#(\d+)\]}i;
 die('no ticket')
     unless $ticket;
 login_as('crm_tech1');
-visit_uri('/crm_tuple_forum/tickets');
+follow_link('crm_tuple_forum', 'Tickets');
 follow_link($msg->unsafe_get_header('Subject'));
 follow_link('answer');
 verify_text("Locked Ticket #$ticket");
