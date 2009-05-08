@@ -145,15 +145,12 @@ sub _field_info {
 	    tuple_tag_slot_field_qualified => $sfq,
 	    tuple_tag_slot_num => $sn,
 	    tuple_tag_label => $parsed->{$field},
-#	    name => $field,
+	    tuple_tag_default_value => $d->get('TupleSlotType.default_value'),
 	    name => $sfq,
 	    constraint => $d->get('TupleSlotDef.is_required')
 		? $_NOT_NULL : $_NONE,
 	    sort_order =>  $_LQ->get_sort_order_for_type($t),
 	    type => $c->is_specified ? $_TCL->new($c->as_array) : $t,
-	    $wp->isa('Bivio::Biz::Model::QuerySearchBaseForm')
-	        ? ()
-	        : (default_value => $d->get('TupleSlotType.default_value')),
 	    $wp->isa('Bivio::Biz::FormModel') ? (
 		form_name => $wp->isa('Bivio::Biz::Model::ListQueryForm')
 		    ? lc("b_$parsed->{field}")
@@ -215,7 +212,8 @@ sub _load_defaults {
     foreach my $f (@$fields) {
 	my($i) = _field_info($self, $wp, $f);
 	$wp->internal_put_field(
-	    $i->{tuple_tag_slot_field_qualified} => $i->{default_value});
+	    $i->{tuple_tag_slot_field_qualified}
+		=> $i->{tuple_tag_default_value});
     }
     return;
 }
