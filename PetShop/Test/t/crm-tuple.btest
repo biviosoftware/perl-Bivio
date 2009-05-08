@@ -38,3 +38,7 @@ submit_form(Refresh => {
 verify_no_text($product);
 follow_link_in_table('Ticket', 'Ticket', $ticket);
 verify_no_text($product);
+follow_link('New Ticket');
+verify_form({
+    priority => 'Low',
+});
