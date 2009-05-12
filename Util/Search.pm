@@ -56,6 +56,7 @@ sub rebuild_realm {
     $date = $_D->from_literal_or_die($date)
 	if $date;
     my($i) = 0;
+    my($j) = 0;
     b_info('Re-indexing ' . $self->req(qw(auth_realm owner name)));
     $self->model('RealmFile')->do_iterate(
 	sub {
@@ -72,15 +73,20 @@ sub rebuild_realm {
 		if $date && $_D->compare_defined(
 		    $date, $it->get('modified_date_time')) > -1;
 	    $_X->update_model($req, $it);
+	    $j++;
 	    return 1;
         },
 	'realm_file_id asc',
 	{is_folder => 0},
     );
-    return $date ? 'Re-indexed ' . $self->req(qw(auth_realm owner name))
-	       . ' files modified after ' . $_D->to_string($date)
-		   : 'Re-indexed all ' . $self->req(qw(auth_realm owner name))
-		       . ' files';
+    return $i ? ($date ? "Re-indexed $j "
+		     . $self->req(qw(auth_realm owner name))
+			 . ' files modified after ' . $_D->to_string($date)
+			     . " of $i total files"
+				 : "Re-indexed all $i "
+				     . $self->req(qw(auth_realm owner name))
+					 . ' files')
+	: 'No files to re-index';
 }
 
 1;
