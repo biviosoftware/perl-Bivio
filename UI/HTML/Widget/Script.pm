@@ -120,6 +120,12 @@ function b_thumbnail_popup_onload() {
             A.href = '#';
             A.onclick = function () {
                 b_toggle_class(this.firstChild, 'b_hide');
+                if (document.body.filters) { /* IE only */
+                    var v = document.getElementById('b_video');
+                    if (v) {
+                        b_toggle_class(v, 'b_hide');
+                    }
+                }
                 return false;
             }
             A.insertBefore(img, A.firstChild);
