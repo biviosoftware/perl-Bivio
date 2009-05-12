@@ -82,9 +82,9 @@ sub su_logout {
 	    ? $realm : undef,
     });
     _trace($realm) if $_TRACE;
-    return $realm->is_loaded
-	? $req->get('task')->unsafe_get_attr_as_id('su_task')
-	    || $_DEFAULT_TASK : 0;
+    return $realm->is_loaded && $req->unsafe_get('task')
+	? $req->get('task')->unsafe_get_attr_as_id('su_task') || $_DEFAULT_TASK
+	: 0;
 }
 
 sub validate {
