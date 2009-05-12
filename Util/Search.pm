@@ -79,14 +79,16 @@ sub rebuild_realm {
 	'realm_file_id asc',
 	{is_folder => 0},
     );
-    return $i ? ($date ? "Re-indexed $j "
-		     . $self->req(qw(auth_realm owner name))
-			 . ' files modified after ' . $_D->to_string($date)
-			     . " of $i total files"
-				 : "Re-indexed all $i "
-				     . $self->req(qw(auth_realm owner name))
-					 . ' files')
+    my($r) = $i ? ($date ? "Re-indexed $j "
+		       . $self->req(qw(auth_realm owner name))
+			   . ' files modified after ' . $_D->to_string($date)
+			       . " of $i total files"
+				   : "Re-indexed all $i "
+				       . $self->req(qw(auth_realm owner name))
+					   . ' files')
 	: 'No files to re-index';
+    b_info($r);
+    return $r;
 }
 
 1;
