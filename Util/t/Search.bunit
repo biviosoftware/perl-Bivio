@@ -6,7 +6,8 @@ ShellUtil();
     rebuild_db => not_die(),
 # Realm must be specified
     rebuild_realm => DIE(),
-    [qw(-realm general rebuild_realm)] => qr{Re-indexed all general files}s,
+    [qw(-realm xapian_demo rebuild_realm)] => qr{Re-indexed all.*xapian_demo files}s,
+    [qw(-realm xapian_demo rebuild_realm 12/1/2009)] => qr{Re-indexed.* xapian_demo files modified after 12/01/2009}s,
 #DEPRECATED: use the RealmType name to load default Realms
-    [qw(-realm 1 rebuild_realm 12/1/2009)] => qr{Re-indexed general files modified after 12/01/2009}s,
+    [qw(-realm 1 rebuild_realm)] => qr{No files to re-index}s,
 ];
