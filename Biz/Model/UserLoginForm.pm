@@ -93,6 +93,9 @@ sub handle_cookie_in {
     $proto = Bivio::Biz::Model->get_instance('UserLoginForm');
     _set_user($proto, _load_cookie_user($proto, $cookie, $req),
 	$cookie, $req);
+    # If user is invalid, logout as super user
+    _su_logout($proto->new($req))
+	if $req->is_substitute_user && ! $req->get('auth_user');
     return;
 }
 
@@ -301,9 +304,6 @@ sub _load_cookie_user {
 	    ': user_id not found, logging out');
     }
     $cookie->delete($proto->USER_FIELD, $proto->PASSWORD_FIELD);
-    # If user is invalid, logout as super user
-    _su_logout($proto->new($req))
-	if $req->is_substitute_user;
     return undef;
 }
 
