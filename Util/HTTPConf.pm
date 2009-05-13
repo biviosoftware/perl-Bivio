@@ -166,6 +166,7 @@ EOF
     Bivio::Die->die(
 	$app, ': virtual_hosts and mail_host/http_suffix incompatible'
     ) if $vars->{virtual_hosts} && ($vars->{mail_host} || $vars->{http_suffix});
+#TODO: Deprecate non-virtual_hosts config
     $vars->{virtual_hosts} ||= [
 	$vars->{http_suffix} =~ /^(?:www\.)?\Q$vars->{mail_host}\E$/
 	    ? ('@' . $vars->{http_suffix} => $app)
