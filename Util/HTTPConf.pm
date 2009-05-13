@@ -120,6 +120,7 @@ $root_prefix::BConf->merge_dir({
     'Bivio::UI::Facade' => {
         local_file_root => '/var/www/facades',
         want_local_file_cache => 1,
+        # Only used on test systems
         http_suffix => '$http_suffix',
         mail_host => '$mail_host',
     },
