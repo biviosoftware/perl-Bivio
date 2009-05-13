@@ -5,6 +5,9 @@ req()->initialize_fully;
 ShellUtil_TaskLog()->test_reset;
 my($t) = class('Agent.Task')->get_by_id('FORUM_FILE_TREE_LIST');
 req()->set_realm_and_user(qw(task_log_bunit task_log_user));
+req()->put(query => {
+    x => 'x' x 501,
+});
 my($now) = DateTime('2/15/2009 12:0:0');
 DateTime()->set_test_now($now);
 model('TaskLog')->handle_pre_execute_task($t, req());
@@ -26,7 +29,7 @@ options({
 	@$expect = qw(root task_log_user)
 	    if ($expect->[0] || '') eq 'all';
 	assert_contains([map(+{
-	    'TaskLog.uri' => '/',
+	    'TaskLog.uri' => '/?x=' . ('x' x 496),
 	    'TaskLog.user_id' => realm_id($_),
 	    'TaskLog.realm_id' => realm_id('task_log_bunit'),
 	    'TaskLog.super_user_id' => undef,
