@@ -131,6 +131,7 @@ sub thread_root_list {
 	    ),
 	}],
     );
+    vs_put_pager('CRMThreadRootList');
     return $self->internal_body([sub {
 	return $self->internal_thread_root_list(
 	    $self->internal_thread_root_list_columns(
