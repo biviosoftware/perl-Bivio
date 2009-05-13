@@ -205,8 +205,12 @@ EOF
 	    _push($httpd_vars, uris => $cfg->{http_suffix});
 	    my($http) = "http://$cfg->{http_suffix}:$vars->{listen}\$1";
 	    if ($is_mail) {
-		_push($vars, mail_hosts => $cfg->{mail_host});
-		_push($vars, mail_receive => "$cfg->{mail_host} $http");
+		foreach my $h (
+		    $cfg->{mail_host}, @{$cfg->{mail_aliases} || []}
+		) {
+		    _push($vars, mail_hosts => $h);
+		    _push($vars, mail_receive => "$h $http");
+		}
 	    }
 	    my($seen) = {$cfg->{http_suffix} => 1};
 	    foreach my $a (
