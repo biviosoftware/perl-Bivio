@@ -5,45 +5,42 @@ use strict;
 use Bivio::Base 'XMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
+# Atom Format, RFC 4287
+# validator at http://validator.w3.org/feed/
+
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
     return if $self->unsafe_get('value');
-    my($class) = Bivio::Biz::Model->get_instance($self->get('list_class'))
+    my($class) = b_use('Model.' . $self->get('list_class'))
 	->simple_package_name;
     $self->put(
-	VERSION => '0.3',
-	XMLNS => 'http://purl.org/atom/ns#',
+	XMLNS => 'http://www.w3.org/2005/Atom',
 	tag => 'feed',
 	value => => Join([
-	    map(
-		Tag($_ => String(Prose(vs_text("rsspage.prose.$class.$_")))),
-		qw(title tagline),
-	    ),
-	    EmptyTag(link => {
-		HREF => _uri({}),
-		REL => 'alternate',
-		TYPE => 'text/html',
-	    }),
+	    _id('html_task'),
 	    If(["Model.$class", '->get_result_set_size'],
-	       Tag(modified => DateTime(
+	       Tag(updated => DateTime(
 		   [["Model.$class", '->set_cursor_or_die', 0],
 			'->get_modified_date_time'],
 	       )),
 	    ),
+	    Tag(title => String(Prose(vs_text("rsspage.prose.$class.title")))),
+	    _link(alternate => 'html_task'),
+	    _link('self'),
 	    WithModel($class => Tag(entry => Join([
+		_id('html_detail_task'),
+		Tag(published => DateTime(['->get_creation_date_time'])),
+		Tag(updated => DateTime(['->get_modified_date_time'])),
 		Tag(title => String(['title'])),
 		Tag(summary => CDATA(['->get_rss_summary'])),
-		Tag(modified => DateTime(['->get_modified_date_time'])),
-		EmptyTag(link => {
-		    HREF => _uri({
-			path_info => ['path_info'],
-			query => ['query'],
-		    }),
-		    REL => 'alternate',
-		    TYPE => 'text/html',
-		}),
+		_link(alternate => 'html_detail_task'),
+		Tag(author => Join([
+		    Tag(name => String(['RealmOwner.display_name'])),
+		    If(['->has_keys', 'Email.email'],
+			Tag(email => ['Email.email'])),
+		])),
 	    ]))),
 	]),
     );
@@ -58,15 +55,48 @@ sub internal_new_args {
     };
 }
 
+sub _id {
+    my($task_attr) = @_;
+    # see http://validator.w3.org/feed/docs/error/InvalidTAG.html for format
+    return Tag(id => Join([
+	'tag:',
+	[sub {
+	    my(undef, $host) = @_;
+	    # strip port number
+	    $host =~ s/\:\d+$//;
+	    return $host;
+	}, ['->req', qw(Bivio::UI::Facade http_host)]],
+	',1999:',
+	_uri($task_attr, {}),
+    ]));
+}
+
+sub _link {
+    my($type, $task_attr) = @_;
+    return EmptyTag(link => {
+	HREF => _uri($task_attr, {
+	    require_absolute => 1,
+	}),
+	REL => $type,
+	TYPE => $task_attr && $task_attr =~ /html/
+	    ? 'text/html'
+	    : 'application/atom+xml',
+    });
+}
 
 sub _uri {
-    my($a) = @_;
+    my($task_attr, $attrs) = @_;
     return URI({
-	require_absolute => 1,
-	task_id => [[[qw(->req task)], qw(->get_attr_as_id html_task)], '->get_name'],
-	query => undef,
-	path_info => undef,
-	%$a,
+	task_id => [$task_attr
+	    ? [[qw(->req task)], '->get_attr_as_id', $task_attr]
+	    : [qw(->req task_id)],
+	    '->get_name'],
+	$task_attr && $task_attr =~ /detail/
+	    ? (
+		path_info => ['path_info'],
+		query => ['query'],
+	    ) : (),
+	%$attrs,
     });
 }
 
