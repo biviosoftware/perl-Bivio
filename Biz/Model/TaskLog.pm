@@ -44,8 +44,8 @@ sub handle_pre_execute_task {
 	super_user_id => $req->unsafe_get('super_user_id'),
 	task_id => $task->get('id'),
 	method => $req->unsafe_get('r') ? $req->get('r')->method : '',
-	uri => $proto->get_field_type('uri')->clean_and_trim($req->get('uri')
-	    . (defined($query) && length($query)
+	uri => $proto->new($req)->get_field_type('uri')->clean_and_trim(
+	    $req->get('uri') . (defined($query) && length($query)
 		? ('?' . $query)
 		: '')),
 	date_time => $_DT->now,
