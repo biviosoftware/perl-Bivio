@@ -280,7 +280,6 @@ sub info_blog {
 			Model.BlogRecentList->execute_load_all
 			Model.BlogList->execute_load_page
 			View.Blog->list
-			html_task=FORUM_BLOG_LIST
 		    )],
 		    [qw(
 			FORUM_BLOG_RSS
@@ -290,6 +289,7 @@ sub info_blog {
 			Model.BlogList->execute_load_page
 			View.Blog->list_rss
 			html_task=FORUM_BLOG_LIST
+                        html_detail_task=FORUM_BLOG_DETAIL
 		    )],
 		);
 	    },
@@ -343,7 +343,8 @@ sub info_blog {
 			Type.AccessMode->execute_public
 			Model.BlogList->execute_load_page
 			View.Blog->list_rss
-			html_task=FORUM_PUBLIC_BLOG_DETAIL
+			html_task=FORUM_PUBLIC_BLOG_LIST
+                        html_detail_task=FORUM_PUBLIC_BLOG_DETAIL
 		    )],
 		    [qw(
 			FORUM_BLOG_RSS
@@ -353,7 +354,8 @@ sub info_blog {
 			Type.AccessMode->execute_private
 			Model.BlogList->execute_load_page
 			View.Blog->list_rss
-			html_task=FORUM_BLOG_DETAIL
+                        html_task=FORUM_BLOG_LIST
+			html_detail_task=FORUM_BLOG_DETAIL
 		    )],
 		);
 	    },
@@ -371,7 +373,8 @@ sub info_calendar {
 	    DATA_READ&FEATURE_CALENDAR
 	    Model.CalendarEventList->execute_load_page
 	    View.Calendar->event_list_rss
-	    html_task=FORUM_CALENDAR_EVENT_DETAIL
+            html_task=FORUM_CALENDAR
+	    html_detail_task=FORUM_CALENDAR_EVENT_DETAIL
 	)],
 	[qw(
 	    FORUM_CALENDAR
