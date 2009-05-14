@@ -30,7 +30,6 @@ sub event_delete {
 
 sub event_detail {
     my($self) = @_;
-    view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     view_put(
 	xhtml_title => String(['Model.CalendarEventList',
 	    'RealmOwner.display_name']),
