@@ -12,6 +12,11 @@ my($_UTC) = b_use('Type.TimeZone')->UTC;
 my($_DT) = b_use('Type.DateTime');
 my($_MC) = b_use('MIME.Calendar');
 
+
+sub get_creation_date_time {
+    return shift->get('RealmOwner.creation_date_time');
+}
+
 sub get_modified_date_time {
     return shift->get('CalendarEvent.modified_date_time');
 }
@@ -19,8 +24,8 @@ sub get_modified_date_time {
 sub get_rss_summary {
     my($self) = @_;
 #TODO: Modularize as Search.Parser
-    return $self->get('CalendarEvent.location')
-	. ' - ' . $self->get('CalendarEvent.description');
+    return join('-',
+	map($self->get("CalendarEvent.$_") || '', qw(location description)));
 }
 
 sub internal_initialize {
