@@ -9,11 +9,12 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub execute_ok {
     my($self) = @_;
-    $self->req->put(query => {
- 	ldiff => $self->get('left'),
- 	rdiff => $self->get('right'),
-    });
-    return;
+    return {
+	query => {
+	    ldiff => $self->get('left'),
+	    rdiff => $self->get('right'),
+	},
+    };
 }
 
 sub internal_initialize {
