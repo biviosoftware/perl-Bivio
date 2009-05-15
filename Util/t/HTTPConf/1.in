@@ -18,6 +18,7 @@
                 ssl_crt => 'www1.a1.com.crt',
                 ssl_chain => 'sf_issuing.crt',
                 aliases => [qw(www.a3.com a4.com)],
+		mail_aliases => ['mail.a1.com'],
             },
             'old.a6.com' => {
                 no_proxy => 1,
