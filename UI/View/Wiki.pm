@@ -133,7 +133,7 @@ sub versions_diff {
 	xhtml_tools => vs_text_as_prose('wiki_diff_tools'),
     );
     return shift->internal_body(Join([
-	Prose([qw(Action.WikiView diff)]),
+	Simple([qw(Action.WikiView diff)]),
     ]));
 }
 
