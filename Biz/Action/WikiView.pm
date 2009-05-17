@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::WikiView;
 use strict;
@@ -6,15 +6,14 @@ use Bivio::Base 'Biz.Action';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_A) = __PACKAGE__->use('IO.Alert');
-my($_ARF) = __PACKAGE__->use('Action.RealmFile');
-my($_E) = __PACKAGE__->use('Model.Email');
-my($_FN) = __PACKAGE__->use('Type.FileName');
-my($_FP) = __PACKAGE__->use('Type.FilePath');
-my($_RO) = __PACKAGE__->use('Model.RealmOwner');
-my($_WDN) = __PACKAGE__->use('Type.WikiDataName');
-my($_WN) = __PACKAGE__->use('Type.WikiName');
-my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
+my($_A) = b_use('IO.Alert');
+my($_ARF) = b_use('Action.RealmFile');
+my($_E) = b_use('Model.Email');
+my($_FP) = b_use('Type.FilePath');
+my($_RO) = b_use('Model.RealmOwner');
+my($_WDN) = b_use('Type.WikiDataName');
+my($_WN) = b_use('Type.WikiName');
+my($_WT) = b_use('XHTMLWidget.WikiText');
 my($_C) = b_use('FacadeComponent.Constant');
 
 sub execute {
@@ -123,7 +122,7 @@ sub execute_prepare_html {
     my($name) = $req->unsafe_get('path_info');
     unless ($name) {
 	# To avoid name space issues, there always needs to be a path_info
-	$req->put(path_info => $_FN->to_absolute(
+	$req->put(path_info => $_FP->to_absolute(
 	    Bivio::UI::Text->get_value('WikiView.start_page', $req)));
 	return {
 # should be able to handle realm_id and convert automatically
@@ -145,8 +144,7 @@ sub execute_prepare_html {
 	can_edit => ($name !~ /;/),
 	exists => 0,
     );
-    my($wa) = $proto->use('XHTMLWidget.WikiText')
-	->prepare_html($realm_id, $name, $task_id, $req);
+    my($wa) = $_WT->prepare_html($realm_id, $name, $task_id, $req);
     my($author) = '';
     my($author_name) = '';
     if ($req->unsafe_get_nested(qw(task want_author))) {
