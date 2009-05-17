@@ -287,6 +287,7 @@ sub _cfg_base {
 	    [view_execute_uri_prefix => 'SiteRoot->'],
 	    [favicon_uri => '/i/favicon.ico'],
 	    [form_error_title => 'Please correct the errors below:'],
+	    [wiki_validator_title => 'Validation errors:'],
 	    [none => ''],
 	    [Image_alt => [
 		dot => '',
@@ -320,6 +321,9 @@ sub _cfg_base {
 		[qw(DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND DEFAULT_ERROR_REDIRECT_NOT_FOUND)] => 'Not Found',
 		[qw(DEFAULT_ERROR_REDIRECT_FORBIDDEN FORBIDDEN)] => 'Access Denied',
 		[qw(DEFAULT_ERROR_REDIRECT)] => 'Server Error',
+	    ]],
+	    [DieCode => [
+		MODEL_NOT_FOUND => 'Not found',
 	    ]],
 	    [[qw(paged_detail paged_list)] => [
 		prev => 'Back',
