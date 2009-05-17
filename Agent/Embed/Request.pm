@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Agent::Embed::Request;
 use strict;
@@ -17,8 +17,6 @@ sub get_form {
 
 sub new {
     my(undef, $req, $full_uri, $params) = @_;
-    my($query) = $1
-	if $full_uri =~ s/\?(.*)//;
     my($self) = shift->internal_new($params || {});
     $self->put_durable(
 	@{$req->map_each(sub {
@@ -40,19 +38,9 @@ sub new {
     if (my $f = $req->unsafe_get('Bivio::UI::Facade')) {
 	$f->setup_request($self);
     }
-    my($task_id, $auth_realm, $path_info, $uri)
-	= Bivio::UI::Task->parse_uri($full_uri, $self);
-    $self->internal_set_current();
-    $query = Bivio::Agent::HTTP::Query->parse($query);
-    delete($query->{auth_id})
-	if $query;
-    return $self->put_durable(
-	uri => $uri && Bivio::HTML->escape_uri($uri),
-	query => $query,
-	path_info => $path_info,
-	task_id => $task_id,
-	form => undef,
-    )->internal_initialize($auth_realm, $self->get('auth_user'));
+    $full_uri =~ s/\?(.*)//;
+    return $self->internal_initialize_with_uri($full_uri, $1)
+	->put(form => undef);
 }
 
 1;
