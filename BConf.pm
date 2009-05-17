@@ -246,6 +246,7 @@ sub merge_class_loader {
 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
 		    IO => ['Bivio::IO'],
 		    Mail => ['Bivio::Mail'],
+		    MainErrors => ['Bivio::UI::XHTML::Widget::MainErrors'],
 		    MIME => ['Bivio::MIME'],
 		    Model => ['Bivio::Biz::Model'],
 		    Search => ['Bivio::Search'],
