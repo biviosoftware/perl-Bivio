@@ -741,6 +741,25 @@ sub internal_initialize {
     return $self;
 }
 
+sub internal_initialize_with_uri {
+    my($self, $full_uri, $query) = @_;
+    my($task_id, $auth_realm, $path_info, $uri, $initial_uri)
+	= Bivio::UI::Task->parse_uri($full_uri, $self);
+    $self->internal_set_current;
+    $query = Bivio::Agent::HTTP::Query->parse($query);
+    # SECURITY: Make sure the auth_id is NEVER set by the user.
+    delete($query->{auth_id})
+	if $query;
+    return $self->put_durable(
+	uri => $uri && Bivio::HTML->escape_uri($uri),
+	initial_uri => $initial_uri,
+	query => $query,
+	path_info => $path_info,
+	task_id => $task_id,
+    )->internal_initialize($auth_realm, $self->unsafe_get('auth_user'));
+    return;
+}
+
 sub internal_new {
     my($proto, $attributes) = @_;
     # B<Don't call unless you are a subclass.>
@@ -1139,6 +1158,13 @@ sub throw_die {
 
     $_D->throw($code, $attrs, $package, $file, $line);
     # DOES NOT RETURN
+}
+
+sub unsafe_get_from_query {
+    my($self) = shift;
+    return
+	unless my $q = $self->unsafe_get('query');
+    return $self->return_scalar_or_array(map($q->{$_}, @_));
 }
 
 sub unsafe_get_txn_resource {
