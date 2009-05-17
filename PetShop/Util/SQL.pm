@@ -626,10 +626,11 @@ EOF
 		[qw(FilePath my.css), $p, ".${realm}_my_${mode} {}"],
 		[qw(WikiName index), $p, "\@h1 Sweet Home\nGo buffaloes\n"],
 	    ) {
-		
-		    $self->realm_file_create(		    b_use('Type.' . shift(@$fv))
+		$self->realm_file_create(
+		    b_use('Type.' . shift(@$fv))
 			->to_absolute(splice(@$fv, 0, 2)),
-		    shift(@$fv));
+		    shift(@$fv),
+		);
 	    }
 	}
     }
@@ -655,11 +656,10 @@ EOF
 Third page
 EOF
     ) {
-	
-	    $self->realm_file_create(b_use('Type.WikiName')->to_absolute($fv->[0], 1), $fv->[1]);
+	$self->realm_file_create(b_use('Type.WikiName')->to_absolute($fv->[0], 1), $fv->[1]);
     }
-    
-	$self->realm_file_create(	b_use('Type.WikiName')->to_absolute('Shell_Util_Help', 1),
+    $self->realm_file_create(
+	b_use('Type.WikiName')->to_absolute('Shell_Util_Help', 1),
 	<<'EOF');
 Shell utility help.
 EOF
