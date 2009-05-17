@@ -18,6 +18,10 @@ my($_S) = b_use('SQL.Support');
 my($_SS) = b_use('SQL.Statement');
 my($_CL) = b_use('IO.ClassLoader');
 
+sub CLASSLOADER_MAP_NAME {
+    return 'Model';
+}
+
 sub as_string {
     my($self) = @_;
     my($ci) = $self->[$_IDI]->{class_info};
@@ -49,16 +53,7 @@ sub delete {
 
 sub delete_from_request {
     my($self) = @_;
-    # Deletes I<self> from request.  Reverses L<put_on_request|"put_on_request">.
-    my($req) = $self->unsafe_get_request;
-    return unless $req;
-    _trace($self) if $_TRACE;
-
-    # ref($self) for backward compatibility
-    foreach my $key ('Model.'.$self->simple_package_name, ref($self)) {
-	$req->delete($key => $self);
-    }
-    return;
+    return $self->delete_from_req($self->unsafe_get_request || return);
 }
 
 sub die {
@@ -481,19 +476,10 @@ sub put {
 
 sub put_on_request {
     my($self, $durable) = @_;
-    my($req) = $self->unsafe_get_request;
-    return $self
-	unless $req;
-    _trace($self) if $_TRACE;
-    foreach my $key ('Model.'.$self->simple_package_name, ref($self)) {
-	if ($durable) {
-	    $req->put_durable($key => $self);
-	}
-	else {
-	    $req->put($key => $self);
-	}
-    }
-    return $self;
+    return $self->put_on_req(
+	$self->unsafe_get_request || return $self,
+	$durable,
+    );
 }
 
 sub set_ephemeral {

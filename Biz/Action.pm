@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Action;
 use strict;
@@ -7,15 +7,13 @@ use Bivio::Base 'Collection.Attributes';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CLASS_TO_SINGLETON) = {};
 
+sub CLASSLOADER_MAP_NAME {
+    return 'Action';
+}
+
 sub delete_from_request {
-    # (proto, Agent.Request) : undef
-    # Deletes self from request
     my($proto, $req) = @_;
-    $req->delete(
-	'Action.' . $proto->simple_package_name,
-	ref($proto) || $proto,
-    );
-    return;
+    return $proto->delete_from_req($req);
 }
 
 sub execute {
@@ -41,15 +39,9 @@ sub get_request {
 
 sub put_on_request {
     my($self, $req, $durable) = @_;
-    b_die($self, ': must be instance')
-	unless ref($self);
     b_die($self, ': may not put singleton on request')
 	if $self->get_instance == $self;
-    my($method) = $durable ? 'put_durable' : 'put';
-    foreach my $key ('Action.' . $self->simple_package_name, ref($self)) {
-	($req || $self->req)->$method($key => $self);
-    }
-    return $self;
+    return $self->put_on_req($req, $durable);
 }
 
 1;
