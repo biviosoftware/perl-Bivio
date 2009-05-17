@@ -269,6 +269,16 @@ __PACKAGE__->new({
 	    line => 'Line',
 	    text => 'Text',
 	]],
+	[Bivio => [
+	    DieCode => [
+		DIE => 'Internal server error',
+	    ],
+	]],
+	[Type => [
+	    HTTPStatus => [
+		303 => 'BUNIT found',
+	    ],
+	]],
      ],
 });
 
