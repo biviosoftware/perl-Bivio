@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_AC) = b_use('Ext.ApacheConstants');
 
 sub delete_output {
     my($self) = @_;
@@ -21,6 +22,15 @@ sub get_output {
 
 sub get_output_type {
     return shift->get('output_type');
+}
+
+sub is_status_ok {
+    my($self) = @_;
+    # No status does mean ok
+    return 1
+	unless defined(my $s = $self->unsafe_get('status'));
+#TODO: need to share with something
+    return $s == $_AC->OK ? 1 : 0;
 }
 
 sub new {
