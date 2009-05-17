@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::Text;
 use strict;
-use Bivio::Base 'Bivio::UI::FacadeComponent';
+use Bivio::Base 'UI.FacadeComponent';
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
@@ -114,6 +114,21 @@ sub assert_name {
     $self->die($name, 'invalid name syntax')
 	unless $name =~ /^\w+(\Q@{[$self->SEPARATOR]}\E\w+)*$/;
     return;
+}
+
+sub facade_text_for_object {
+    my($proto, $object, $req) = @_;
+    my($self) = $proto->internal_get_self($req);
+#TODO: Encapsulate reverse map in ClassLoader
+    my($n) = [split(/:+/, $object->package_name)];
+    b_die($object->package_name, ': must begin with project part, e.g. Bivio::')
+	if @$n <= 1;
+    $n->[0] = 'Bivio';
+    my($v) = $self->unsafe_get_value(
+	splice(@$n, -2),
+	$object->as_facade_text_tag,
+    );
+    return defined($v) ? $v : $object->as_facade_text_default($req);
 }
 
 sub format_css {
