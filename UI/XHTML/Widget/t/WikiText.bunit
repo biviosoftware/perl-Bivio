@@ -149,7 +149,7 @@ OUT
 	    "\@a href=/ a\@\nb" => qq{<p class="b_prose"><a href="/">a</a>b\n</p>},
 	    "\@span a\@\nb\@" => qq{<p class="b_prose"><span>a</span>b</p>},
 	    '@ins-page /pub/eg1@' => 'hello, world!',
-	    '@a href=javascript:/ x' => qq{<p class="b_prose"><a href="no-wiki-javascript:/">x</a>\n</p>},
+	    '@a href=javascript:/ x' => qq{<p class="b_prose"><a href="link-error">x</a>\n</p>},
 	    "\@a name=x" => qq{<p class="b_prose"><a name="x"></a></p>},
 	    '@a href=/ foo.org' => qq{<p class="b_prose"><a href="/">foo.org</a>\n</p>},
 	    '@a href=x#a y' => qr{<p class="b_prose"><a href="/fourem/\w+/x#a">y</a>\n</p>},
