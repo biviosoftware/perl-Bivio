@@ -1,13 +1,24 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText;
 use strict;
 use Bivio::Base 'XHTMLWidget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RFC) = __PACKAGE__->use('Mail.RFC822');
-my($_REALM_PLACEHOLDER)
-    = __PACKAGE__->use('Type.RealmName')->SPECIAL_PLACEHOLDER;
+my($_A) = b_use('IO.Alert');
+my($_C) = b_use('IO.Config');
+my($_CA) = b_use('Collection.Attributes');
+my($_DT) = b_use('Type.DateTime');
+my($_FCC) = b_use('FacadeComponent.Constant');
+my($_I) = b_use('View.Inline');
+my($_RF) = b_use('Action.RealmFile');
+my($_RFC) = b_use('Mail.RFC822');
+my($_T) = b_use('FacadeComponent.Task');
+my($_TI) = b_use('Agent.TaskId');
+my($_V) = b_use('UI.View');
+my($_WDN) = b_use('Type.WikiDataName');
+my($_WN) = b_use('Type.WikiName');
+my($_REALM_PLACEHOLDER) = b_use('Type.RealmName')->SPECIAL_PLACEHOLDER;
 my($_CAMEL_CASE) = qr{((?-i:[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*))};
 my($_EMAIL) = qr{@{[$_RFC->ATOM_ONLY_ADDR]}}o;
 my($_DOMAIN) = qr{(@{[
@@ -295,23 +306,12 @@ my($_CHILDREN) = _init_children();
 my($_EMPTY) = {map((@{$_CHILDREN->{$_}} ? () : ($_ => 1)), keys(%$_CHILDREN))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*$)};
-my($_C) = b_use('IO.Config');
-my($_DT) = b_use('Type.DateTime');
-my($_FCC) = b_use('FacadeComponent.Constant');
-my($_I) = b_use('View.Inline');
-my($_MY_TAGS);
-my($_RF) = b_use('Action.RealmFile');
-my($_T) = b_use('FacadeComponent.Task');
-my($_TI) = b_use('Agent.TaskId');
-my($_V) = b_use('UI.View');
-my($_WDN) = b_use('Type.WikiDataName');
 my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id)];
-my($_WN) = b_use('Type.WikiName');
+my($_MY_TAGS);
 _require_my_tags(__PACKAGE__);
 $_C->register(my $_CFG = {
     deprecated_auto_link_mode => 0,
 });
-my($_A) = b_use('Collection.Attributes');
 my($_TT) = $_WN->TITLE_TAG =~ /(\w+)/;
 
 sub control_on_render {
@@ -340,6 +340,7 @@ sub initialize {
 
 sub internal_format_uri {
     my($proto, $uri, $args) = @_;
+    my($orig) = $uri;
     if ($uri =~ s/^\^//) {
 	$uri = $uri =~ qr{^$_EMAIL$}o
 	    ? "mailto:$uri"
@@ -347,21 +348,22 @@ sub internal_format_uri {
 	    ? 'http://' . ($uri =~ /^[^\.]+\.\w+$/s ? 'www.' : '') . $uri
 	    : $uri;
     }
-    $uri =~ s/^(?=javascript:)/no-wiki-/i;
     $uri =~ s/#([a-z][a-z0-9_:\.-]*)$//is;
     my($anchor) = $1 ? "#$1" : '';
-    return ($uri =~ m{^/+$_REALM_PLACEHOLDER(/.+)}os && $args->{realm_name}
-        ? $_T->format_uri(
-	    {uri => "/$args->{realm_name}$1"}, $args->{req})
+    return _check_uri(
+	$uri =~ m{^/+$_REALM_PLACEHOLDER(/.+)}os && $args->{realm_name}
+	? $_T->format_uri({uri => "/$args->{realm_name}$1"}, $args->{req})
 	: $uri =~ m{[/:]}
 	? $_T->format_uri({uri => $uri}, $args->{req})
-        : $uri =~ /\./ ? $_WDN->format_uri($uri, $args)
+	: $uri =~ /\./ ? $_WDN->format_uri($uri, $args)
 	: $args->{req}->format_uri({
 	    task_id => $args->{task_id},
 	    realm => $args->{realm_name},
 	    query => undef,
 	    path_info => $uri,
-	})
+	}),
+	$orig,
+	$args,
     ) . $anchor;
 }
 
@@ -371,7 +373,7 @@ sub internal_new_args {
 
 sub prepare_html {
     my($proto, $arg1, $arg2, $task_id, $req) = @_;
-    my($a) = $_A->new({});
+    my($a) = $_CA->new({});
     my($rf);
     if (ref($arg1) eq 'HASH') {
 	b_die($arg1, ': missing req')
@@ -412,6 +414,7 @@ sub prepare_html {
     $a = $a->internal_get;
     return $a
 	if defined($a->{title});
+    _validator($a);
     my($v) = \$a->{value};
     if ($$v =~ s{^(
         \@${_TT}[ \t]*\S[^\r\n]+\r?\n
@@ -467,6 +470,7 @@ sub render_html {
 	    no_auto_links => $no_auto_links,
 	};
     }
+    _validator($args);
     $args->{name} ||= '<inline>';
     $args->{source} ||= $args->{req};
     $args->{proto} = $proto;
@@ -485,6 +489,8 @@ sub render_html {
 	|| $args->{value} =~ /\^/s ? 1 : 0;
     my($state) = {
 	%$args,
+#TODO: use $args->{proto} so don't have to pass both proto & args
+	proto => $proto,
 	args => $args,
 	lines => [split(/\r?\n/, $args->{value})],
 	line_num => 0,
@@ -521,6 +527,25 @@ sub render_plain_text {
     $body =~ s{<[^>]+>}{}g;
     $body =~ s{\n+$}{}s;
     return (Bivio::HTML->unescape($body), $wa);
+}
+
+sub _check_uri {
+    my($uri, $orig, $args) = @_;
+#TODO: Consider dropping this
+    return _check_uri_err($orig, 'javascript links not allowed', $args)
+	if $uri =~ /^javascript:/i;
+    return $uri
+	if !$args->{validator_object}
+	or !(my $err = $args->{validator_object}->validate_uri(
+	    $uri,
+	    $args->{req},
+	));
+    return _check_uri_err($orig, $err, $args);
+}
+
+sub _check_uri_err {
+    _fmt_err(@_);
+    return 'link-error';
 }
 
 sub _close_implicit_tags {
@@ -595,10 +620,22 @@ sub _fix_word {
 }
 
 sub _fmt_err {
-    my($line, $err, $state) = @_;
-    $state->{req}->warn(
-	$state->{name}, ', line ', $state->{line_num}, ': ',
-	$err, ' data="', $line, '"');
+    my($object, $err, $args) = @_;
+    $args->{validator_object} ? $args->{validator_object}->validation_error({
+	entity => $args->{name},
+	line_num => $args->{line_num},
+	message => $err,
+	entity_in_error => $object,
+    }) : $args->{req}->warn(
+	$args->{name},
+	', line ',
+	$args->{line_num},
+	': ',
+	$err,
+	' data="',
+	$object,
+	'"',
+    );
     return '';
 }
 
@@ -904,6 +941,13 @@ sub _task_id {
     my($t) = $args->{req}->get('task_id');
 #TODO: This is really dicey
     return $t->get_name =~ /BLOG|WIKI|HELP/ ? $t : 'FORUM_WIKI_VIEW';
+}
+
+sub _validator {
+    my($args) = @_;
+    $args->{validator_object}
+	||= b_use('Action.WikiValidator')->unsafe_get_self($args->{req});
+    return;
 }
 
 1;
