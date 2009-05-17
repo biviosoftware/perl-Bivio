@@ -8,7 +8,7 @@ Request('setup_facade');
 	    'Test_Text_Parent.test_text' => 'Child',
 	    [qw(Test_Text_Parent test_text)] => 'Child',
 	    [qw(Test_Text_Parent test_text_only_child)] => 'Only Child',
-	    test_text_only_child => Bivio::DieCode->DIE,
+	    test_text_only_child => DIE(),
 	],
 	get_widget_value => [
 	    ['->get_value', 'test_text'] => 'Global',
@@ -23,6 +23,12 @@ Request('setup_facade');
 	    bunit_simple => '"simple text"',
 	    bunit_escape => '"\"quoted\"\\\\backslash"',
 	    bunit_newline => '"new\Aline"',
+	],
+	facade_text_for_object => [
+	    [DIE(), req()] => 'Internal server error',
+	    [Type_Gender('MALE'), req()] => 'Male',
+	    [Type_HTTPStatus()->new(303), req()] => 'BUNIT found',
+	    [Type_HTTPStatus()->new(403), req()] => 'Access forbidden',
 	],
     ],
 ];
