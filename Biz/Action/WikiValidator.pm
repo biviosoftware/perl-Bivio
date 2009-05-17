@@ -42,7 +42,7 @@ sub internal_execute {
 sub unsafe_get_self {
     my($proto, $req) = @_;
     return $req->unsafe_get($proto->as_classloader_map_name)
-	|| $req->unsafe_get_from_query($_QUERY_KEY)
+	|| $req->unsafe_from_query($_QUERY_KEY)
 	&& $req->can_user_execute_task('FORUM_WIKI_EDIT')
 	&& _new($proto, $req);
 }

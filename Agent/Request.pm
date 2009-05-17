@@ -1160,7 +1160,7 @@ sub throw_die {
     # DOES NOT RETURN
 }
 
-sub unsafe_get_from_query {
+sub unsafe_from_query {
     my($self) = shift;
     return
 	unless my $q = $self->unsafe_get('query');
