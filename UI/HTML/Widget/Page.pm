@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Page;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
@@ -103,6 +103,7 @@ my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
 Bivio::IO::Config->register({
     'show_time' => $_SHOW_TIME,
 });
+my($_HANDLERS) = b_use('Biz.Registrar')->new;
 
 sub execute {
     my($self, $req) = @_;
@@ -215,6 +216,7 @@ sub render {
     $$buffer .= ">\n$$body\n"
 	. $self->show_time_as_html($req)
 	. "</body></html>\n";
+    $_HANDLERS->do_filo(handle_page_render_end => [$source, $buffer]);
     return;
 }
 
@@ -227,6 +229,12 @@ sub internal_setup_xhtml {
     );
     $req->put(xhtml => my $xhtml = $self->render_simple_attr('xhtml', $req));
     return $xhtml;
+}
+
+sub register_handler {
+    shift;
+    $_HANDLERS->push_object(@_);
+    return;
 }
 
 sub show_time_as_html {
