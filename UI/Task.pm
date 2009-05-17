@@ -300,6 +300,13 @@ sub is_defined_for_facade {
     return _has('is_valid', @_);
 }
 
+sub is_not_found {
+    my(undef, $value) = @_;
+    return $value->{realm_type}->eq_general
+	&& $value->{task}->get_name eq 'DEFAULT_ERROR_REDIRECT_NOT_FOUND'
+        ? 1 : 0;
+}
+
 sub new {
     # Returns a new Task instance.
     return shift->SUPER::new(@_);
@@ -315,26 +322,29 @@ sub parse_uri {
     # Special case: '/' or ''
     unless (length($uri)) {
 	_trace($orig_uri,  '=> special case root') if $_TRACE;
-	$req->put_durable(initial_uri => '/');
-	return ($fields->{site_root}, $_GENERAL, '', '/');
+	return ($fields->{site_root}, $_GENERAL, '', '/', '/');
     }
 
     # Question mark is a special character
     my(@uri) = split(m{/+}, $uri);
-    return _parse_err($self, $orig_uri, $req, {
+    $uri = join('/', @uri);
+    my($initial_uri) = "/$uri";
+    return _parse_err($self, $orig_uri, $initial_uri, $req, {
 	entity => $orig_uri,
 	message => 'contains special char',
     }) if grep($_ eq $_REALM_PLACEHOLDER, @uri);
 
     # There is always something in $uri and @uri at this point
-    $uri = join('/', @uri);
     my($info);
-    $req->put_durable(initial_uri => '/'.$uri);
 
     # General realm simple map; no placeholders or path_info.
-    if ($info = _from_uri($fields, $uri, $_GENERAL_TYPE)) {
-	return (_task($self, $info, $orig_uri), $_GENERAL, '', $orig_uri);
-    }
+    return (
+	_task($self, $info, $orig_uri),
+	$_GENERAL,
+	'',
+	$orig_uri,
+	$initial_uri,
+    ) if $info = _from_uri($fields, $uri, $_GENERAL_TYPE);
 
     # Is this a general realm with path_info?  URI has at least
     # one component at this stage, so $uri[0] is defined.
@@ -344,15 +354,14 @@ sub parse_uri {
 	# RealmName values.  Therefore, we fail with
 	# not found if it matches the first component, but the task
 	# doesn't have path_info.
-	if ($info->{has_path_info}) {
-	    return (
-		_task($self, $info, $orig_uri),
-		$_GENERAL,
-		'/'.join('/', @uri[1..$#uri]),
-		$orig_uri,
-	    );
-	}
-	return _parse_err($self, $orig_uri, $req, {
+	return (
+	    _task($self, $info, $orig_uri),
+	    $_GENERAL,
+	    '/'.join('/', @uri[1..$#uri]),
+	    $orig_uri,
+	    $initial_uri,
+	) if $info->{has_path_info};
+	return _parse_err($self, $orig_uri, $initial_uri, $req, {
 	    entity => $orig_uri,
 	    orig_uri => $orig_uri,
 	    uri => $uri,
@@ -366,7 +375,13 @@ sub parse_uri {
 	# Not a realm, so try site_root
 	_trace($orig_uri, ' => site_root (no name or no USER_HOME uri')
 	    if $_TRACE;
-	return ($fields->{site_root}, $_GENERAL, '/'.$uri, $orig_uri);
+	return (
+	    $fields->{site_root},
+	    $_GENERAL,
+	    '/'.$uri,
+	    $orig_uri,
+	    $initial_uri,
+	);
     }
 
     # Try to find the uri with the realm replaced by placeholder
@@ -379,7 +394,7 @@ sub parse_uri {
 
     # Is this a valid, authorized realm with a task for this uri?
     my($o) = Bivio::Biz::Model->new($req, 'RealmOwner');
-    return _parse_err($self, $orig_uri, $req, {
+    return _parse_err($self, $orig_uri, $initial_uri, $req, {
 	entity => $name, uri => $orig_uri,
 	class => $_R,
 	message => 'no such realm',
@@ -394,6 +409,7 @@ sub parse_uri {
 	$realm,
 	'',
 	$orig_uri,
+	$initial_uri,
     ) if $info = _from_uri($fields, $uri, $rt);
     # Is this a path_info URI?  Note this may seem a bit "slow", but it
     # is a rare case and NOT_FOUND processing is much faster than normal
@@ -406,8 +422,9 @@ sub parse_uri {
 	$realm,
 	join('/', '', @uri[$path_info_index+1..$#uri]),
 	$orig_uri,
+	$initial_uri,
     ) if $info = _from_uri($fields, $uri, $rt) and $info->{has_path_info};
-    return _parse_err($self, $orig_uri, $req, {
+    return _parse_err($self, $orig_uri, $initial_uri, $req, {
 	entity => $orig_uri,
 	realm_type => $realm->get('type')->get_name,
 	orig_uri => $orig_uri,
@@ -568,8 +585,7 @@ sub _init_name {
 	unless my $rtn = $fields->{to_realm_type}->{$value->{task}->get_name};
     $value->{realm_type} = $_RT->from_any($rtn);
     $fields->{not_found} = $value
-	if $value->{realm_type}->eq_general
-	&& $value->{task}->get_name eq 'DEFAULT_ERROR_REDIRECT_NOT_FOUND';
+	if __PACKAGE__->is_not_found($value);
     return;
 }
 
@@ -647,11 +663,11 @@ sub _initialize_fields {
 }
 
 sub _parse_err {
-    my($self, $orig_uri, $req, $attrs) = @_;
+    my($self, $orig_uri, $initial_uri, $req, $attrs) = @_;
     my($fields) = $self->[$_IDI];
     $req->throw_die('NOT_FOUND', $attrs)
 	unless my $t = $fields->{not_found};
-    return ($t->{task}, $_GENERAL, '', $orig_uri);
+    return ($t->{task}, $_GENERAL, '', $orig_uri, $initial_uri);
 }
 
 sub _task {
