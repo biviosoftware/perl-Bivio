@@ -1,0 +1,24 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+req()->set_realm('site');
+[
+    class() => [
+	validate_all_in_realm => [
+	    [req()] => [[
+		map(+{
+		    entity => '/Public/Wiki/WikiValidator_NOT_OK',
+		    message => 'Not found',
+		    line_num => $_->[0],
+		    entity_in_error => $_->[1],
+		},
+		    [2, '^not-found.gif'],
+		    [3, '^Not_Found'],
+		    [4, '^/my/blog-entry/19990909090909'],
+#TODO: Test external links
+#			[5, '^http://petshop.bivio.biz/not-found'],
+		),
+	    ]],
+	],
+    ],
+];

@@ -1,0 +1,11 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+[
+    401 => [
+	as_facade_text_default => 'Authorization required',
+	as_facade_text_tag => 401,
+    ],
+    501 => [
+	as_facade_text_default => 'Server error (501)',
+    ],
+];
