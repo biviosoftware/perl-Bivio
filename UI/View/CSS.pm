@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::CSS;
 use strict;
@@ -843,6 +843,19 @@ div.wiki {
 .different {
   Color('even-background');
 }
+div.b_main_errors {
+  margin-left: 1em;
+}
+div.b_main_errors * {
+  Font('err');
+}
+.b_main_errors .b_entity {
+  margin-left: 1em;
+}
+.b_main_errors .b_item {
+  margin-left: 2em;
+}
+
 EOF
 }
 
