@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Request;
 use strict;
@@ -80,9 +80,9 @@ sub get_content {
 	) if $r->connection->aborted;
 	return $fh
 	    if $fh;
-	$self->throw_die(CORRUPT_QUERY =>
+	$self->throw_die(CLIENT_ERROR =>
 	    "Content-Length ($expect) >= actual length: " . length($res)
-	) if $expect > length($res);
+	) unless $expect == length($res);
 	_trace('length', length($res)) if $_TRACE;
 	return \$res;
     });
@@ -153,47 +153,14 @@ sub new {
     });
     Bivio::Type::UserAgent->from_header($r->header_in('user-agent') || '')
         ->put_on_request($self, 1);
-
     # Cookie parsed first, so log code works properly.
     # We must put the cookie now, because it may be used below.
     # auth_user (may) is set by cookie.
     $self->put_durable(cookie => $_C->new($self, $r));
-    my($auth_user) = $self->unsafe_get('auth_user');
-
-    # Task next, because may not be found or task may want
-    # to clear 'auth_user_id'.
-    my($uri) = $r->uri;
-    my($task_id, $auth_realm, $path_info);
-    ($task_id, $auth_realm, $path_info, $uri)
-	    = Bivio::UI::Task->parse_uri($uri, $self);
-
-    # We have a Facade, so Request is "pretty much initialized".
-    $self->internal_set_current();
-
-    # Must re-escape the URI.
-    $uri = $_H->escape_uri($uri) if $uri;
-
-    # NOTE: Syntax is weird to avoid passing $r->args in an array context
-    # which avoids parsing $r->args.
-    my($query) = $_Q->parse(scalar($r->args));
-
-    _trace($r->method, ': query=', $query, '; path_info=', $path_info)
-	    if $_TRACE;
-
-    # AUTH: Make sure the auth_id is NEVER set by the user.
-    #       We are making a presumption about how the models work.
-    #       However, it is reasonable to assume that there should never
-    #       be a query or form field called "auth_id".
-    delete($query->{auth_id}) if $query;
-
-    $self->put_durable(
-	uri => $uri,
-	query => $query,
-	path_info => $path_info,
-	task_id => $task_id,
+    return $self->internal_initialize_with_uri(
+	scalar($r->uri),
+	scalar($r->args),
     );
-    $self->internal_initialize($auth_realm, $auth_user);
-    return $self;
 }
 
 sub put_client_redirect_state {
