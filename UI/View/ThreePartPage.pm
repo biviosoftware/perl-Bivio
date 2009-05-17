@@ -98,6 +98,7 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_style => RealmCSS(),
 	xhtml_main_middle => Join([
 	    Acknowledgement(),
+	    MainErrors(),
 	    DIV_main_top(Join([
 		DIV_tools(Join([
 		    view_widget_value('xhtml_tools'),
