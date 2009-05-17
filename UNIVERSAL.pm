@@ -6,6 +6,19 @@ use strict;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A, $_R, $_SA);
 
+sub as_classloader_map_name {
+    my($self) = @_;
+    return $self->CLASSLOADER_MAP_NAME . '.' . $self->simple_package_name,
+}
+
+sub as_req_key_value_list {
+    my($self) = @_;
+    return (
+	$self->as_classloader_map_name => $self,
+	$self->package_name => $self,
+    );
+}
+
 sub as_string {
     my($self) = @_;
     return "$self"
@@ -103,6 +116,13 @@ sub delegated_args {
     ) unless ref($_[0]) && $_[0] == \&delegate_method;
     shift;
     return @_;
+}
+
+sub delete_from_req {
+    my($self, $req) = @_;
+    # Also deletes instance as string so just reuse as_req_key_value_list
+    $req->delete($self->as_req_key_value_list);
+    return;
 }
 
 sub die {
@@ -364,6 +384,15 @@ sub package_version {
     return ${\${shift->package_name . '::VERSION'}};
 }
 
+sub put_on_req {
+    my($self, $req, $durable) = @_;
+    Bivio::Die->die($self, ': self must be instance')
+	unless ref($self);
+    my($method) = $durable ? 'put_durable' : 'put';
+    ($req || $self->req)->$method($self->as_req_key_value_list);
+    return $self;
+}
+
 sub replace_subroutine {
     my($proto, $method, $code_ref) = @_;
     no strict 'refs';
@@ -401,6 +430,11 @@ sub type {
     my($proto, $class) = (shift, shift);
     $class = $proto->use('Type', $class);
     return @_ ? $class->from_literal_or_die(@_) : $class;
+}
+
+sub unsafe_self_from_req {
+    my($proto, $req) = @_;
+    return $req->unsafe_get($proto->as_classloader_map_name);
 }
 
 sub unsafe_super_for_method {
