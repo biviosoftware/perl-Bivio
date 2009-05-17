@@ -31,6 +31,14 @@ sub add_to_query {
     return $query;
 }
 
+sub as_facade_text_default {
+    return shift->get_long_desc;
+}
+
+sub as_facade_text_tag {
+    return shift->get_name;
+}
+
 sub as_int {
     my($self) = @_;
     # Returns integer value for enum value.
