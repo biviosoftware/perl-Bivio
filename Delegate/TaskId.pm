@@ -1323,7 +1323,7 @@ sub info_wiki {
 	    123
 	    ANY_GROUP
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
-	    Action.WikiView->execute_diff
+            Model.RealmFileTextDiffList->execute_load_all
 	    View.Wiki->versions_diff
 	)],
 	[qw(
