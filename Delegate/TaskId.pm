@@ -375,6 +375,7 @@ sub info_calendar {
 	    View.Calendar->event_list_rss
             html_task=FORUM_CALENDAR
 	    html_detail_task=FORUM_CALENDAR_EVENT_DETAIL
+            want_basic_authorization=1
 	)],
 	[qw(
 	    FORUM_CALENDAR
