@@ -413,6 +413,7 @@ sub _cfg_blog {
 	    ]],
 	    [BlogList => [
 		empty_list_prose => 'No entries in this blog.',
+		atom_feed_content => q{String(['->get_rss_summary']);},
 	    ]],
 	    [title => [
 		[qw(FORUM_BLOG_LIST FORUM_PUBLIC_BLOG_LIST FORUM_BLOG_RSS FORUM_PUBLIC_BLOG_RSS)]
@@ -461,6 +462,9 @@ sub _cfg_calendar {
 		location => 'Location',
 		description => 'Description',
 		url => 'URL',
+	    ]],
+	    [CalendarEventList => [
+		atom_feed_content => q{CalendarEventContent();},
 	    ]],
 	    [CalendarEventForm => [
 		'RealmOwner.display_name' => 'Event',
@@ -1386,6 +1390,10 @@ sub _cfg_wiki {
 	    [help_wiki_tools => ['95%']],
 	    [help_wiki_header => ['bold', '140%', 'uppercase']],
 	    [help_wiki_iframe_body => ['small']],
+	],
+	Color => [
+	    [same_background => 0xF2F2F2],
+	    [different_background => 0xE6E6E6],
 	],
 	Text => [
 	    ['WikiView.start_page' => 'StartPage'],
