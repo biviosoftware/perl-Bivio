@@ -213,32 +213,30 @@ sub _date_time {
 }
 
 sub _event_links {
-    return Prose([
-	sub {
-	    my($req) = shift->req;
-	    my($v) = _globals($req);
-	    my($l) = $req->get('Model.CalendarEventMonthList');
-	    $l->reset_cursor;
-	    my($str) = '';
-	    while ($l->next_row) {
-		my($start) = $_D->from_datetime($l->get('dtstart_in_tz'));
-		my($end) = $_D->from_datetime($l->get('dtend_in_tz'));
-		next unless $_D->compare($start, $v->{current}) == 0
+#TODO: bug - if event is on the first it will be lost
+# (also if event spans the month boundary, it needs to show up)
+    return Join([
+	List('CalendarEventMonthList', [
+	    If([sub {
+	        my($list) = @_;
+		my($v) = _globals($list->req);
+		my($start) = $_D->from_datetime($list->get('dtstart_in_tz'));
+		my($end) = $_D->from_datetime($list->get('dtend_in_tz'));
+		return 0 unless $_D->compare($start, $v->{current}) == 0
 		    || $_D->compare($end, $v->{current}) == 0
-			|| ($_D->compare($start, $v->{current}) == -1
-				&& $_D->compare($end, $v->{current}) == 1);
-		$str .= 'DIV_event(Link(String("'
-		    . $l->get('RealmOwner.display_name')
-		    . '"), URI({
-                        task_id => "FORUM_CALENDAR_EVENT_DETAIL",
-                        query=> {"ListQuery.this" => '
-			    . $l->get('CalendarEvent.calendar_event_id') . '
-                    }})));';
-	    }
+		    || ($_D->compare($start, $v->{current}) == -1
+			&& $_D->compare($end, $v->{current}) == 1);
+		return 1;
+	    }], DIV_event(Link(String(['RealmOwner.display_name']),
+		['->format_uri', 'THIS_DETAIL', 'FORUM_CALENDAR_EVENT_DETAIL']))),
+	]),
+	[sub {
+	    my($req) = @_;
+ 	    my($v) = _globals($req);
 	    $v->{current} = $_D->add_days($v->{current}, 1);
-	    return $str;
-	}
-    ]),
+	    return '';
+	}],
+    ]);
 }
 
 sub _globals {
