@@ -140,7 +140,7 @@ sub from_literal_validator {
 sub from_sql_column {
     my($proto, $param) = @_;
     return $proto->new([split(
-	$proto->SQL_SEPARATOR_REGEX, defined($param) ? $param : '',
+	$proto->ANY_SEPARATOR_REGEX, defined($param) ? $param : '',
     )]);
 }
 
