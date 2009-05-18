@@ -26,11 +26,27 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.76  2009/05/13 19:48:25  nagler
+  * Bivio::Biz::Model::AdmSubstituteUserForm
+    in su_logout() the task may not be set yet
+  * Bivio::Biz::Model::UserLoginForm
+    moved _su_logout() to after super_user_id is set on request
+  * Bivio::UI::HTML::Widget::Script
+    popup image now hides flash videos in IE
+  * Bivio::UI::View::CRM
+    added vs_put_pager()
+  * Bivio::Util::HTTPConf
+    added mail_aliases
+  * Bivio::Util::Search
+    Add optional date parameter
+    Count indexed files
+    Added b_info
+
   Revision 7.75  2009/05/08 20:46:22  nagler
   * Bivio::ClassWrapper::TupleTag
     don't set default_value for QuerySearchBaseForm instances
