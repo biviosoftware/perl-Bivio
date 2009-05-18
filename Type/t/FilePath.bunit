@@ -36,6 +36,15 @@ Type();
             '/abc/d.txt' => 'd.txt',
             '\\abc\\d &e' => 'd &e',
 	],
+	get_clean_tail => [
+            '/abc/d.txt' => 'd.txt',
+            '/abc/d;1.txt' => 'd-1.txt',
+	],
+	get_versionless_tail => [
+            '/abc/d.txt' => 'd.txt',
+            '/abc/d1.txt' => 'd1.txt',
+            '/abc/d;1.txt' => 'd.txt',
+	],
 	get_base => [
 	    '/a.gif' => 'a',
 	    '.gif' => '.gif',
