@@ -39,6 +39,11 @@ sub get_modified_date_time {
     return shift->get('RealmFile.modified_date_time');
 }
 
+sub get_rss_author {
+    my($self) = @_;
+    return $self->get('RealmOwner.display_name');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
