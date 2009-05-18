@@ -84,22 +84,16 @@ sub version_list {
 	},
     ]));
     return shift->internal_body(vs_list_form(RealmFileVersionsListForm => [
-	{
+	map(+{
 	    column_data_class => 'check',
-	    column_heading => 'left',
+	    column_heading => $_,
 	    column_widget => Radio({
-		field => 'left',
+		field => $_,
 		value => [['->get_list_model'], 'RealmFile.realm_file_id'],
 	    }),
-	},
-	{
-	    column_data_class => 'check',
-	    column_heading => 'right',
-	    column_widget => Radio({
-		field => 'right',
-		value => [['->get_list_model'], 'RealmFile.realm_file_id'],
-	    }),
-	},
+	    $_ eq 'compare'
+		? (control => [['->get_list_model'], '->get_cursor']) : (),
+	}, qw(selected compare)),
 	{
 	    column_widget => Link(
 		Join([
@@ -132,8 +126,15 @@ sub versions_diff {
 	xhtml_topic => vs_text_as_prose('wiki_diff_topic'),
 	xhtml_tools => vs_text_as_prose('wiki_diff_tools'),
     );
-    return shift->internal_body(Join([
-	Simple([qw(Action.WikiView diff)]),
+    return shift->internal_body(List('RealmFileTextDiffList', [
+	If(['line_info'], DIV_different(Join([
+	    '*** ',
+	    String(['line_info']),
+	    ' ***',
+	    DIV_top(String(['top'])),
+	    DIV_bottom(String(['bottom'])),
+	])),
+	    DIV_same(String(['same']))),
     ]));
 }
 
