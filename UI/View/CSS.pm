@@ -835,13 +835,24 @@ div.wiki {
   margin: 1ex 0 1ex 0;
 }
 .same, .different {
-  margin: 1ex 0 1ex 0;
+  width: 100%;
+  float: left;
+  position: relative;
 }
 .same {
-  Color('odd-background');
+  Color('same-background');
 }
 .different {
-  Color('even-background');
+  padding: 1ex 0 0 0;
+  Color('different-background');
+}
+.different .top {
+  padding: 1ex 0 1ex 0;
+  background-color: #FFFF99;
+}
+.different .bottom {
+  padding: 1ex 0 1ex 0;
+  background-color: #33FF66;
 }
 div.b_main_errors {
   margin-left: 1em;
