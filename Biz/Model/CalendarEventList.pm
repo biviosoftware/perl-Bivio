@@ -21,11 +21,9 @@ sub get_modified_date_time {
     return shift->get('CalendarEvent.modified_date_time');
 }
 
-sub get_rss_summary {
+sub get_rss_author {
     my($self) = @_;
-#TODO: Modularize as Search.Parser
-    return join('-',
-	map($self->get("CalendarEvent.$_") || '', qw(location description)));
+    return $self->req(qw(auth_realm owner display_name));
 }
 
 sub internal_initialize {
