@@ -34,10 +34,13 @@ sub initialize {
 		Tag(published => DateTime(['->get_creation_date_time'])),
 		Tag(updated => DateTime(['->get_modified_date_time'])),
 		Tag(title => String(['title'])),
-		Tag(summary => CDATA(['->get_rss_summary'])),
+		Tag(content => String(
+		    Prose(vs_text($class, 'atom_feed_content'))), {
+			TYPE => 'html',
+		    }),
 		_link(alternate => 'html_detail_task'),
 		Tag(author => Join([
-		    Tag(name => String(['RealmOwner.display_name'])),
+		    Tag(name => String(['->get_rss_author'])),
 		    If(['->has_keys', 'Email.email'],
 			Tag(email => ['Email.email'])),
 		])),
