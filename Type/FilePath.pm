@@ -141,6 +141,13 @@ sub get_tail {
     return $value;
 }
 
+sub get_versionless_tail {
+    my($proto, $value) = @_;
+    $value = $proto->get_tail($value);
+    $value =~ s{@{[$proto->VERSION_REGEX]}}{};
+    return $value;
+}
+
 sub get_width {
     return 500;
 }
