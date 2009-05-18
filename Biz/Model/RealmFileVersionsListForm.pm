@@ -7,12 +7,21 @@ use Bivio::Base 'Biz.ListFormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
+sub execute_empty_row {
+    my($self) = @_;
+    $self->internal_put_field('compare' => $self->get_list_model->get('RealmFile.realm_file_id'))
+	if $self->get_list_model->get_cursor == 1;
+    return if $self->get_list_model->get_cursor;
+    $self->internal_put_field('selected' => $self->get_list_model->get('RealmFile.realm_file_id'));
+    return;
+}
+
 sub execute_ok {
     my($self) = @_;
     return {
 	query => {
-	    ldiff => $self->get('left'),
-	    rdiff => $self->get('right'),
+	    compare => $self->get('compare'),
+	    selected => $self->get('selected'),
 	},
     };
 }
@@ -26,9 +35,9 @@ sub internal_initialize {
 	    map({
 		name => $_,
 		type => 'PrimaryId',
-		constraint => 'NONE',
+		constraint => 'NOT_NULL',
 		in_list => 0,
-	    }, qw(left right)),
+	    }, qw(compare selected)),
 	],
     });
 }
