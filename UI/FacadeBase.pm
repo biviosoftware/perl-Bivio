@@ -625,8 +625,8 @@ sub _cfg_file {
 		[qw(Email_2.email RealmOwner_2.display_name
                     Email_3.email RealmOwner_3.display_name)] => 'Who',
 		empty_list_prose => 'No files revisions.',
-		left => 'Compare',
-		right => 'Selected',
+		selected => 'Selected',
+		compare => 'Compare',
 		ok_button => 'Compare',
 	    ]],
 	    [title => [
@@ -1462,10 +1462,10 @@ sub _cfg_wiki {
 		]);},
 		wiki_view_tools => q{vs_text_as_prose('wiki_view_tools_base');},
 		wiki_diff_topic_base => q{Join([
-		        String([qw(Action.WikiView left)]),
-		        ' (-) compared to ',
-		        String([qw(Action.WikiView right)]),
-		        ' (+)',
+		        String([qw(Model.RealmFileTextDiffList ->get_selected_name)]),
+		        ' (+) compared to ',
+		        String([qw(Model.RealmFileTextDiffList ->get_compare_name)]),
+		        ' (-)',
 		    ]);
                 },
 		wiki_diff_topic => q{vs_text_as_prose('wiki_diff_topic_base');},
@@ -1473,7 +1473,7 @@ sub _cfg_wiki {
                     {
 		        task_id => 'FORUM_WIKI_VIEW',
 		        label => 'forum_wiki_current',
-    		        path_info => [qw(Action.WikiView title)],
+    		        path_info => [qw(Model.RealmFileTextDiffList ->get_versionless_name)],
 		    },
 		]);},
 		wiki_diff_tools => q{vs_text_as_prose('wiki_diff_tools_base');},
