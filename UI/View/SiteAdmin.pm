@@ -65,8 +65,8 @@ sub unapproved_applicant_form_mail {
 	    ['Model.UnapprovedApplicantList', 'Email.email'],
 	    ['Model.UnapprovedApplicantList', 'RealmOwner.display_name'],
 	),
-	subject => Prose(['Model.UnapprovedApplicantForm', 'mail_subject']),
-	body => Prose(['Model.UnapprovedApplicantForm', 'mail_body']),
+	subject => ['Model.UnapprovedApplicantForm', 'mail_subject'],
+	body => ['Model.UnapprovedApplicantForm', 'mail_body'],
     );
 }
 
