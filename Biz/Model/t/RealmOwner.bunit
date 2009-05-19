@@ -38,5 +38,13 @@ my($_RT) = __PACKAGE__->use('Auth.RealmType');
 		realm_type => $_RT->CLUB,
 	    }] => DB_ERROR(),
 	],
+	put_on_request => [
+	    [1] => undef,
+	],
+	sub {
+	    req()->clear_nondurable_state;
+	    req('Model.RealmOwner');
+	    return;
+	} => undef,
     ],
 ];
