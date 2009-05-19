@@ -62,7 +62,7 @@ sub as_literal {
 
 sub as_string {
     my($self) = @_;
-    return $self->simple_package_name . $self->to_string($self);
+    return $self->simple_package_name . '[' . $self->to_string($self) . ']';
 }
 
 sub compare_defined {
@@ -183,14 +183,6 @@ sub to_sql_param {
     my($proto, $param_value) = @_;
     my($res) = join($proto->SQL_SEPARATOR, @{_clean_copy($proto, $param_value)});
     return length($res) ? $res : undef;
-}
-
-sub to_string {
-    my($proto, $value) = @_;
-    # Different than to_literal so we can print arrays during debugging
-    return '['
-	. join($proto->LITERAL_SEPARATOR, @{_clean_copy($proto, $value)})
-	. ']';
 }
 
 sub _clean_copy {
