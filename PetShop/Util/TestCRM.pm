@@ -117,6 +117,7 @@ sub _init_btest {
 		    {
 			label => 'Priority',
 			type => 'Priority',
+			is_required => 1,
 		    },
 		],
 	    });
