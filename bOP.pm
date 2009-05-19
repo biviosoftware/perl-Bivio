@@ -26,11 +26,99 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.77  2009/05/18 21:50:39  aviggio
+  * Bivio::Agent::Embed::Request
+    moved internal_initialize_with_uri up
+  * Bivio::Agent::HTTP::Request
+    moved internal_initialize_with_uri up
+    client_error, not corrupt_query
+  * Bivio::Agent::Reply
+    added is_status_ok
+  * Bivio::Agent::Request
+    added unsafe_get_from_query & internal_initialize_with_uri
+    rename unsafe_get_from_query => unsafe_from_query
+  * Bivio::BConf
+    added MainErrors map
+  * Bivio::Biz::Action::WikiValidator
+    NEW
+  * Bivio::Biz::Action::WikiView
+    removed execute_diff
+  * Bivio::Biz::Action
+    use delete_from_req and put_on_req
+  * Bivio::Biz::Model::BlogList
+    added get_rss_author()
+  * Bivio::Biz::Model::CalendarEventList
+    added get_creation_date_time(),
+    fixed uninitialized warnings in get_rss_summary()
+    removed get_rss_summary(), added get_rss_author()
+  * Bivio::Biz::Model::RealmFileTextDiffList
+    NEW
+  * Bivio::Biz::Model::RealmFileVersionsListForm
+    return query as task event arg
+    default form state in execute_empty_row
+  * Bivio::Biz::Model::TaskLog
+    clean_and_trim() the uri
+  * Bivio::Biz::Model
+    use delete_from_req and put_on_req
+  * Bivio::Delegate::TaskId
+    updated html_task and html_detail_task for RSS tasks
+    added want_basic_authorization=1 to FORUM_CALENDAR_EVENT_LIST_RSS
+    use RealmFileTextDiffList
+  * Bivio::Type::Enum
+    added as_facade_text_default/tag
+  * Bivio::Type::FilePath
+    added get_versionless_tail
+  * Bivio::Type::HTTPStatus
+    NEW
+  * Bivio::Type::StringArray
+    from_sql_column splits on ANY_SEPARATOR_REGEX
+  * Bivio::UI::FacadeBase
+    added wiki_validator_title and DieCode.MODEL_NOT_FOUND
+    added atom_feed_content to BlogList and CalendarEventList
+    updated Wiki diff UI elements
+  * Bivio::UI::HTML::Widget::Page
+    added register_handler and do_filo to render()
+  * Bivio::UI::Task
+    added is_not_found
+    changed return of parse_uri() to include initial_uri so no side effects
+  * Bivio::UI::Text
+    added facade_text_for_object
+  * Bivio::UI::View::CSS
+    support for MainErrors
+    add styles for version diffs
+  * Bivio::UI::View::Calendar
+    removed rss link from event detail
+    refactored _event_links()
+  * Bivio::UI::View::SiteAdmin
+    put Prose() widget back on UnapprovedApplicantForm mail_subject and mail_body,
+    both values come from the facade
+  * Bivio::UI::View::ThreePartPage
+    added MainErrors
+  * Bivio::UI::View::Wiki
+    moved presentation responsibility to view
+  * Bivio/UI/XHTML/Widget/MainErrors
+    NEW
+  * Bivio::UI::XHTML::Widget::MainErrors
+    NEW
+  * Bivio::UI::XHTML::Widget::WikiText::Embed
+    added support for WikiValidator
+  * Bivio::UI::XHTML::Widget::WikiText
+    added support for WikiValidator
+  * Bivio::UI::XML::Widget::AtomFeed
+    now supports Atom spec
+    replaced summary with content from facade value,
+    now calls list for author name
+  * Bivio::UI::XML::Widget::CalendarEventContent
+    NEW
+  * Bivio::UNIVERSAL
+    added as_classloader_map_name, as_req_key_value_list, delete_from_req,
+    put_on_req, unsafe_self_from_req
+
   Revision 7.76  2009/05/13 19:48:25  nagler
   * Bivio::Biz::Model::AdmSubstituteUserForm
     in su_logout() the task may not be set yet
