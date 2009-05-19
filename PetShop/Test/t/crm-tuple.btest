@@ -18,6 +18,13 @@ verify_form({
     priority => 'Low',
     product => '',
 });
+test_deviance('You must supply a value for Priority');
+submit_form(Send => {
+    action => 'Open',
+    priority => 'Select Value',
+    text => 'Solution here',
+});
+test_conformance();
 submit_form(Send => {
     action => 'Open',
     priority => 'High',
