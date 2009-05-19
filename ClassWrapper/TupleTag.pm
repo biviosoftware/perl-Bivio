@@ -417,6 +417,10 @@ sub _wrap_x_get {
     return _map_keys(0, @_);
 }
 
+sub _wrap_x_get_field_error {
+    return _map_keys(1, @_);
+}
+
 sub _wrap_x_get_field_info {
     my($self, $args) = @_;
     my($wp, $field, $which) = @$args;
