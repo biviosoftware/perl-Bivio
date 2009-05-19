@@ -38,8 +38,8 @@ sub control_on_render {
     my($t) = lc(${$self->render_attr('tag', $source)});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
 	unless $t =~ /^[a-z]+\d*$/;
-    my($pre, $post)
-        = $self->render_simple_attr('bracket_value_in_comment', $source)
+    my($pre, $post) = $buf !~ qr{\w} ? ('', '')
+        : $self->render_simple_attr('bracket_value_in_comment', $source)
         ? ("\n<!--\n", "\n-->\n")
         : map($self->render_simple_attr($_, $source),
               'tag_pre_value',
