@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::PropertyModel;
 use strict;
-use base 'Bivio::Biz::Model';
+use Bivio::Base 'Biz.Model';
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
