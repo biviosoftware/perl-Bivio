@@ -476,10 +476,9 @@ sub put {
 
 sub put_on_request {
     my($self, $durable) = @_;
-    return $self->put_on_req(
-	$self->unsafe_get_request || return $self,
-	$durable,
-    );
+    return $self->unsafe_get_request
+	? $self->put_on_req($self->req, $durable)
+	: $self;
 }
 
 sub set_ephemeral {
