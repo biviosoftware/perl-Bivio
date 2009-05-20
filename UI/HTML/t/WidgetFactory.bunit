@@ -1,0 +1,25 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    {
+	object => sub {class()->new},
+	method_is_autoloaded => 1,
+    } => [
+	create => [
+	    'User.gender' => 'Enum(gender)',
+	    'User.birth_date' => 'String(birth_date)',
+	    'RealmOwner.name' => 'String(name)',
+	    'UserSettingsForm.RealmOwner.name' => 'Text(RealmOwner.name)',
+	    'Bivio::Biz::t::ListModel::T1List.year' => 'String(year)',
+	    'Bivio::Biz::t::ListModel::T1List.integer' => 'Integer(integer)',
+	    'Bivio::Biz::t::ListModel::T1List.amount' => 'AmountCell(amount)',
+	    'Bivio::Biz::t::ListModel::T1List.primaryid' => 'String(primaryid)',
+	    'Bivio::Biz::t::ListModel::T1List.percent' => 'PercentCell(percent)',
+	    ['User.gender', {
+		wf_class => 'String',
+	    }] => 'String(gender)',
+	],
+    ],
+];
+
