@@ -12,6 +12,14 @@ sub internal_initialize {
 	version => 1,
 	primary_key => ['RealmOwner.realm_id'],
 	can_iterate => 1,
+	other => [
+	    # used by WidgetFactory.bunit
+	    map(+{
+		name => lc($_),
+		type => $_,
+		constraint => 'NONE',
+	    }, qw(Year Integer Amount PrimaryId Percent)),
+	],
 	order_by => [
 	    'RealmOwner.name',
         ],
