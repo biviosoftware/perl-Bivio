@@ -3,11 +3,7 @@
 Widget();
 [
     [] => '',
-    ['', {SRC => 'foo.js'}] => qq{<script src="foo.js" type="text/javascript">
-<!--
-
--->
-</script>},
+    ['', {SRC => 'foo.js'}] => qq{<script src="foo.js" type="text/javascript"></script>},
     ['var foo;'] => '<script type="text/javascript">
 <!--
 var foo;

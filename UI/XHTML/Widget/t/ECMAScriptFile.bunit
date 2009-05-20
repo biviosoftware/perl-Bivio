@@ -2,9 +2,5 @@
 # $Id$
 Widget();
 [
-    ['/f/foo.js'] => qq{<script src="/f/foo.js" type="text/javascript">
-<!--
-
--->
-</script>},
+    ['/f/foo.js'] => qq{<script src="/f/foo.js" type="text/javascript"></script>},
 ];
