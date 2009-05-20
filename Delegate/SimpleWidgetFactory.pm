@@ -106,6 +106,16 @@ sub internal_create_display {
 	    %$attrs,
 	});
     }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Year')) {
+	return $_VS->vs_new('String', {
+	    field => $field,
+	    value => [$field],
+	    string_font => 'table_cell',
+	    column_align => 'right',
+	    column_data_class => 'amount_cell',
+	    %$attrs,
+	}),
+    }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Integer')) {
 	return $_VS->vs_new('Integer', {
 	    field => $field,
@@ -163,16 +173,6 @@ sub internal_create_display {
     }
 
     if (UNIVERSAL::isa($type, 'Bivio::Type::PrimaryId')) {
-	return $_VS->vs_new('String', {
-	    field => $field,
-	    value => [$field],
-	    string_font => 'table_cell',
-	    column_align => 'right',
-	    %$attrs,
-	}),
-    }
-
-    if (UNIVERSAL::isa($type, 'Bivio::Type::Year')) {
 	return $_VS->vs_new('String', {
 	    field => $field,
 	    value => [$field],
