@@ -149,7 +149,7 @@ sub update {
 sub _do {
     my($self, $method, $path, @args) = @_;
     return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFile')
-	->$method(_fix_values($self, $path, {}, $method =~ /^(delete|load)/), @args);
+	->$method(_fix_values($self, $path, {}, $method =~ /(delete|load)/), @args);
 }
 
 sub _fix_values {
