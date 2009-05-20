@@ -44,6 +44,21 @@ sub get_rss_author {
     return $self->get('RealmOwner.display_name');
 }
 
+sub get_rss_summary {
+    my($self) = @_;
+    return $_P->new_excerpt({
+	content => \($self->get('text')),
+	content_type => 'text/x-bivio-wiki',
+	name => $self->get('path_info'),
+	path => $self->get('path_info'),
+	class => 'RealmFile',
+	req => $self->req,
+	task_id => $self->req('task')->unsafe_get_attr_as_id('html_task'),
+	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
+	no_auto_links => 1,
+    })->get('excerpt');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -124,21 +139,6 @@ sub internal_prepare_statement {
 	['Email.location', [$self->get_instance('Email')->DEFAULT_LOCATION]],
     );
     return;
-}
-
-sub get_rss_summary {
-    my($self) = @_;
-    return $_P->new_excerpt({
-	content => \($self->get('text')),
-	content_type => 'text/x-bivio-wiki',
-	name => $self->get('path_info'),
-	path => $self->get('path_info'),
-	class => 'RealmFile',
-	req => $self->req,
-	task_id => $self->req('task')->unsafe_get_attr_as_id('html_task'),
-	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
-	no_auto_links => 1,
-    })->get('excerpt');
 }
 
 sub render_html {
