@@ -20,5 +20,13 @@ my($id) = req('auth_id');
 		return 1;
 	    },
 	],
+	put_on_request => [
+	    [1] => undef,
+	],
+	sub {
+	    req()->clear_nondurable_state;
+	    req('Model.RealmOwner');
+	    return;
+	} => undef,
     ],
 ];
