@@ -25,14 +25,14 @@ sub TUPLE_TAG_INFO {
 
 sub execute_cancel {
     my($self) = @_;
-    _with($self, sub {_release_lock(@_)});
+    _ifelse_req_has_crmthread($self, sub {_release_lock(@_)});
     return shift->SUPER::execute_cancel(@_);
 }
 
 sub execute_empty {
     my($self) = @_;
     shift->SUPER::execute_empty(@_);
-    _with($self, sub {
+    _ifelse_req_has_crmthread($self, sub {
         my($ct, $cal) = @_;
 	my($discuss) = $self->internal_query_who->eq_realm;
 	_acquire_lock($ct)
@@ -84,7 +84,7 @@ sub internal_empty_status_when_new {
 
 sub internal_format_from {
     my($self, @args) = @_;
-    return _with(
+    return _ifelse_req_has_crmthread(
 	$self,
 	sub {
 	    return $_RFC->format_mailbox(
@@ -144,7 +144,7 @@ sub validate {
     else {
 	shift->SUPER::validate(@_);
     }
-    _with($self, sub {
+    _ifelse_req_has_crmthread($self, sub {
         my(undef, $cal) = @_;
 	$self->internal_put_error(action_id => 'SYNTAX_ERROR')
 	    unless $self->get_field_error('action_id')
@@ -162,19 +162,19 @@ sub _acquire_lock {
     });
 }
 
-sub _release_lock {
-    return shift->update({
-	lock_user_id => undef,
-	crm_thread_status => $_CTS->OPEN,
-    });
-}
-
-sub _with {
+sub _ifelse_req_has_crmthread {
     my($self, $true, $false) = @_;
     my($cal) = $self->req('Model.CRMActionList');
     return $false && $false->($cal)
 	unless my $ct = $self->req->unsafe_get('Model.CRMThread');
     return $true->($ct, $cal);
+}
+
+sub _release_lock {
+    return shift->update({
+	lock_user_id => undef,
+	crm_thread_status => $_CTS->OPEN,
+    });
 }
 
 1;
