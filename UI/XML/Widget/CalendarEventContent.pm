@@ -8,7 +8,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
-    return [];
+    return ['list_model'];
 }
 
 sub initialize {
@@ -19,7 +19,8 @@ sub initialize {
 	value => Join([
 	    ['CalendarEvent.description'],
 	    map(Join([
-		Prose(vs_text("CalendarEventList.$_")),
+		Prose(vs_text(($self->unsafe_get('list_model')
+				   || 'CalendarEventList') . ".$_")),
 		': ',
 		$_ =~ /zone/ ? [$_, '->get_short_desc'] : [$_],
 	    ], {
