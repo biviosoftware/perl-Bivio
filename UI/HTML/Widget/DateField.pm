@@ -20,11 +20,15 @@ sub internal_input_base_render_attrs {
 }
 
 sub initialize {
-    my($self) = @_;
-    $self->initialize_attr('field');
-    $self->initialize_attr(size => $_D->get_width);
-    $self->initialize_attr(max_width => $_D->get_width);
-    $self->unsafe_initialize_attr('allow_undef');
+    my($self, $source) = @_;
+    my($f) = $self->initialize_attr('field', undef, $source);
+    $self->initialize_attr(size => $_D->get_width, $source);
+    $self->initialize_attr(max_width => $_D->get_width, $source);
+    $self->initialize_attr(allow_undef => sub {
+        return b_use('HTMLWidget.Form')
+            ->form_model_for_initialize($self, $source)
+            ->get_field_constraint($f)->eq_none;
+    }, $source);
     return shift->SUPER::initialize(@_);
 }
 
