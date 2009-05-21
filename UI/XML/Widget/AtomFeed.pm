@@ -98,6 +98,11 @@ sub _uri {
 	    ? (
 		path_info => ['path_info'],
 		query => ['query'],
+		realm => [sub {
+			     my($src) = shift;
+			     return $src->unsafe_get('realm')
+				 || $src->req(qw(auth_realm owner name));
+			  }],
 	    ) : (),
 	%$attrs,
     });
