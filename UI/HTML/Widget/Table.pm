@@ -518,7 +518,7 @@ sub initialize {
 	$fields->{title} = $_VS->vs_new('String', {
             value => $title,
             string_font => 'table_heading',
-        })->initialize_with_parent($self);
+        })->initialize_with_parent($self, $source);
     }
 
     # heading separator and summary
@@ -526,10 +526,10 @@ sub initialize {
 	$fields->{$w . '_separator'} = $_VS->vs_new('LineCell', {
 	    height => 1,
 	    color => 'table_separator',
-	})->initialize_with_parent($self);
+	})->initialize_with_parent($self, $source);
     }
-    $self->unsafe_initialize_attr('empty_list_widget');
-    $self->unsafe_initialize_attr('before_row');
+    $self->unsafe_initialize_attr('empty_list_widget', $source);
+    $self->unsafe_initialize_attr('before_row', $source);
     $_VS->vs_html_attrs_initialize(
 	$self,
 	[qw(
@@ -542,10 +542,11 @@ sub initialize {
 	    title_row_class
 	    trailing_separator_row_class
         )],
+        $source,
     );
-    $self->initialize_html_attrs(5);
+    $self->initialize_html_attrs($source);
     foreach my $widget (@{$self->unsafe_get('footer_row_widgets') || []}) {
-	$self->initialize_child_widget($widget);
+	$self->initialize_child_widget($widget, $source);
     }
     return;
 }
@@ -553,10 +554,9 @@ sub initialize {
 sub initialize_child_widget {
     # (self, UI.Widget) : undef
     # Initializes the specified widget.
-    my($self, $widget) = @_;
+    my($self, $widget, $source) = @_;
 
-    $widget->put(parent => $self);
-    $widget->initialize;
+    $widget->initialize_with_parent($self, $source);
     my($column_prefix) = '';
     _xhtml(
 	$self,
@@ -574,7 +574,9 @@ sub initialize_child_widget {
     $widget->put(column_prefix => $column_prefix);
     $_VS->vs_html_attrs_initialize(
 	$widget,
-	[qw(column_data_class column_footer_class column_heading_class)]);
+	[qw(column_data_class column_footer_class column_heading_class)],
+        $source,
+    );
     return;
 }
 

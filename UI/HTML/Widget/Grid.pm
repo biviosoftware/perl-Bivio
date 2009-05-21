@@ -179,10 +179,10 @@ Initializes static information.
 =cut
 
 sub initialize {
-    my($self) = @_;
+    my($self, $source) = @_;
     my($fields) = $self->[$_IDI];
     return if exists($fields->{rows});
-    $self->initialize_html_attrs;
+    $self->initialize_html_attrs($source);
     my($num_cols) = 0;
     my($rows, $r) = $self->get('values');
     foreach $r (@$rows) {
@@ -204,7 +204,7 @@ sub initialize {
 	    }
 	    elsif (ref($c)) {
 		# May set attributes on itself
-		$c->initialize_with_parent($self);
+		$c->initialize_with_parent($self, $source);
 		my($expand2, $align, $colspan, $rowspan, $width, $height,
 		       $width_as_html, $height_as_html)
 			= $c->unsafe_get(qw(cell_expand
@@ -213,7 +213,10 @@ sub initialize {
                                 cell_height_as_html));
 		$c->map_invoke(
 		    unsafe_initialize_attr =>
-			[qw(row_class cell_class cell_bgcolor)]);
+			[qw(row_class cell_class cell_bgcolor)],
+                        undef,
+                        [$source],
+                );
 		if ($expand2) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's

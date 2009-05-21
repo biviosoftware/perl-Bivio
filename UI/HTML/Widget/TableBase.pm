@@ -134,7 +134,7 @@ Initializes above attributes.
 =cut
 
 sub initialize_html_attrs {
-    my($self) = @_;
+    my($self, $source) = @_;
     # Grid used to use pad and space; Can't warn, because too many uses.
     foreach my $x ([pad => 'cellpadding'], [space => 'cellspacing']) {
 	next unless $self->has_keys($x->[0]);
@@ -167,7 +167,9 @@ sub initialize_html_attrs {
     $self->get_if_exists_else_put(end_tag => 1);
     $self->get_if_exists_else_put(start_tag => 1);
     $_VS->vs_html_attrs_initialize(
-	$self, [@$_HTML_ATTRS, qw(align start_tag end_tag background bgcolor)]);
+	$self, [@$_HTML_ATTRS, qw(align start_tag end_tag background bgcolor)],
+        $source,
+    );
     return;
 }
 

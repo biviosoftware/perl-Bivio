@@ -297,10 +297,12 @@ sub vs_form_field {
 }
 
 sub vs_html_attrs_initialize {
-    my($proto, $widget, $attrs) = @_;
+    my($proto, $widget, $attrs, $source) = @_;
     $widget->map_invoke(
 	'unsafe_initialize_attr',
 	$attrs || $proto->vs_html_attrs_merge,
+        undef,
+        [$source],
     );
     return;
 }

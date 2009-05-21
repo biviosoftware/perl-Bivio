@@ -53,7 +53,7 @@ sub control_on_render {
 }
 
 sub initialize {
-    my($self) = @_;
+    my($self, $source) = @_;
     my($t, $v) = $self->unsafe_get(qw(tag value));
     if (_empty($t)) {
 	if ($v and $v =~ /^[a-z0-9]+$/) {
@@ -69,8 +69,8 @@ sub initialize {
     elsif (!ref($t) && defined($v) && length($v) == 0) {
 	$self->put_unless_exists(tag_if_empty => 1);
     }
-    $self->unsafe_initialize_attr('value');
-    $self->initialize_attr('tag');
+    $self->unsafe_initialize_attr('value', $source);
+    $self->initialize_attr('tag', undef, $source);
     $self->die(
         'bracket_value_in_comment',
         undef,
@@ -78,15 +78,14 @@ sub initialize {
     ) if $self->has_keys('tag_pre_value')
         || $self->has_keys('tag_post_value')
         and $self->has_keys('bracket_value_in_comment');
-    $self->initialize_attr(bracket_value_in_comment => 0);
+    $self->initialize_attr(bracket_value_in_comment => 0, $source);
     $self->map_invoke(unsafe_initialize_attr => [qw(
 	tag_pre_value
 	tag_post_value
 	tag_if_empty
 	tag_empty_value
-    )]);
-    $self->unsafe_initialize_attr('tag_post_value');
-    $self->unsafe_initialize_attr('tag_if_empty');
+        tag_post_value
+    )], undef, [$source]);
     return shift->SUPER::initialize(@_);
 }
 

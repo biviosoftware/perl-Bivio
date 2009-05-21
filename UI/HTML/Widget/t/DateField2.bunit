@@ -1,14 +1,14 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 FieldWidget({
-    field => 'date',
+    field => 'required_date',
     parse_return_regex =>
 	qr{^<input name="HTML_NAME" type="text" size="12" maxlength="10" value="(.*?)" />$}s,
 });
 my($now) = Date()->local_today;
 my($yesterday) = Date()->add_days($now, -1);
 [
-    [{test_value => undef}] => '',
+    [{test_value => undef}] => Date()->to_html($now),
     [{test_value => $yesterday}] => test_value_as_html(),
     [{test_value => undef, allow_undef => 1}] => '',
 ];

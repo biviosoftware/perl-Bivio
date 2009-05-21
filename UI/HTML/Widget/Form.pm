@@ -88,12 +88,12 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FORM_NAME_INDEX) = 0;
 
 sub initialize {
-    my($self) = @_;
+    my($self, $source) = @_;
     # Initializes static information.
     my($fields) = $self->[$_IDI];
     return if $fields->{prefix};
-    $self->initialize_attr(want_timezone => 1);
-    $self->initialize_attr(want_hidden_fields => 1);
+    $self->initialize_attr(want_timezone => 1, $source);
+    $self->initialize_attr(want_hidden_fields => 1, $source);
 
     # Compute form_class from form_model or vice-versa
     my($class) = $self->unsafe_get('form_class');
@@ -133,7 +133,8 @@ sub initialize {
 	$self->put(form_name => $name);
     }
 
-    $self->initialize_attr(action => [['->get_request'], '->format_uri']);
+    $self->initialize_attr(
+        action => [['->get_request'], '->format_uri'], $source);
     my($a) = $self->get('action');
     $self->put(action => [['->get_request'], '->format_stateless_uri', $a])
 	if $self->is_blessed($a, 'Bivio::Agent::TaskId');
@@ -149,7 +150,7 @@ sub initialize {
     $fields->{form_end_cell} = $self->get_or_default('form_end_cell', 0);
     $fields->{value} = $self->get('value');
     $fields->{value}->put(parent => $self);
-    $fields->{value}->initialize;
+    $fields->{value}->initialize($source);
     return shift->SUPER::initialize(@_);
 }
 
@@ -203,6 +204,12 @@ sub control_on_render {
     $$buffer .= '</form>'
 	if $fields->{end_tag};
     return;
+}
+
+sub form_model_for_initialize {
+    my(undef, $widget, $source) = @_;
+    my($fc) = $widget->ancestral_get('form_class');
+    return $source ? $source->req->get($fc) : $fc->get_instance;
 }
 
 sub _render_hidden {

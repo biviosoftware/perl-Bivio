@@ -20,13 +20,13 @@ use Bivio::Base 'Widget.ControlBase';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
-    my($self) = @_;
+    my($self, $source) = @_;
     # Initializes widget state and children.
     my($name) = 0;
     foreach my $v (@{$self->get('values')}) {
-	$self->initialize_value($name++, $v);
+	$self->initialize_value($name++, $v, $source);
     }
-    $self->unsafe_initialize_attr('join_separator');
+    $self->unsafe_initialize_attr('join_separator', $source);
     return shift->SUPER::initialize(@_);
 }
 

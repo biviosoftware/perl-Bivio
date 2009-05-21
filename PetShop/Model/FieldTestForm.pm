@@ -17,6 +17,7 @@ sub internal_initialize {
 	    [qw(realm_name RealmName)],
 	    [qw(line Line)],
 	    [qw(text Text)],
+	    [qw(required_date Date NOT_NULL)],
 	], undef, 'NONE'),
     });
 }
