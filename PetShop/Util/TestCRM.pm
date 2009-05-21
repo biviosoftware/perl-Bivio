@@ -119,6 +119,10 @@ sub _init_btest {
 			type => 'Priority',
 			is_required => 1,
 		    },
+                    {
+                        label => 'Deadline',
+                        type => 'Date',
+                    },
 		],
 	    });
 	    $self->model('TupleUse')->create_from_label('Ticket');
@@ -129,7 +133,7 @@ sub _init_btest {
 Model,b_ticket
 CRMThreadRootList,Priority
 CRMForm,
-,Product;Priority;
+,Product;Priority;Deadline;
 EOF
 	}
     }

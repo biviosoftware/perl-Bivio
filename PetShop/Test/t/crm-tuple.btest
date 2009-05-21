@@ -17,6 +17,7 @@ verify_text("Locked Ticket #$ticket");
 verify_form({
     priority => 'Low',
     product => '',
+    deadline => '',
 });
 test_deviance('You must supply a value for Priority');
 submit_form(Send => {
