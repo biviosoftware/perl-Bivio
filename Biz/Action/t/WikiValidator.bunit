@@ -4,21 +4,48 @@ Request('initialize_fully');
 req()->set_realm('site');
 [
     class() => [
-	validate_all_in_realm => [
-	    [req()] => [[
+	{
+	    method => 'validate_realm',
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		return $actual->[0]->get('errors') || [];
+	    },
+	} => [
+	    [req()] => [
+		{
+		    entity => undef,
+		    message => qr{not a valid wiki}i,
+		    path => '/Public/Wiki/base.css',
+		},
 		map(+{
-		    entity => '/Public/Wiki/WikiValidator_NOT_OK',
+		    path => '/Public/Wiki/WikiValidator_NOT_OK',
 		    message => 'Not found',
 		    line_num => $_->[0],
-		    entity_in_error => $_->[1],
+		    entity => $_->[1],
 		},
-		    [2, '^not-found.gif'],
-		    [3, '^Not_Found'],
-		    [4, '^/my/blog-entry/19990909090909'],
+		    [2, '/site/bp/not-found.gif'],
+		    [3, '/site/bp/Not_Found'],
+		    [4, '/site/blog-entry/19990909090909'],
 #TODO: Test external links
 #			[5, '^http://petshop.bivio.biz/not-found'],
 		),
-	    ]],
+		{
+		    entity => undef,
+		    message => qr{not a valid wiki}i,
+		    path => '/Wiki/base.css',
+		},
+		{
+		    entity => undef,
+		    message => qr{same name}i,
+		    path => '/Wiki/index',
+		},
+		{
+		    entity => '/site/bp/NoSuchWiki',
+		    message => 'Not found',
+		    line_num => 1,
+		    path => '/Blog/200905/25123456',
+		},
+	    ],
 	],
     ],
 ];
