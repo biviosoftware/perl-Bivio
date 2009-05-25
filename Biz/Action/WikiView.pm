@@ -57,10 +57,10 @@ sub execute_not_found {
 }
 
 sub execute_prepare_html {
-    my($proto, $req, $realm_id, $task_id) = @_;
+    my($proto, $req, $realm_id, $task_id, $name) = @_;
     $realm_id ||= $req->get('auth_id');
     $task_id ||= $req->get('task_id');
-    my($name) = $req->unsafe_get('path_info');
+    $name ||= $req->unsafe_get('path_info');
     unless ($name) {
 	# To avoid name space issues, there always needs to be a path_info
 	$req->put(path_info => $_FP->to_absolute(
@@ -82,6 +82,7 @@ sub execute_prepare_html {
     }
     my($self) = $proto->new->put_on_request($req)->put(
 	name => $name,
+#TODO: Use is_versioned
 	can_edit => ($name !~ /;/),
 	exists => 0,
     );
