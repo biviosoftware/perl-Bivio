@@ -31,6 +31,65 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 7.81  2009/05/25 03:36:40  nagler
+  * Bivio::Biz::Action::Acknowledgement
+    return task int if possible; also allow label to be TaskId
+  * Bivio::Biz::Action::JobBase
+    execute takes $proto, not $self
+  * Bivio::Biz::Action::WikiValidator
+    Moved the looping over all realms to ShellUtil.Wiki
+    validate_realm working
+    added unsafe_load_error_list
+  * Bivio::Biz::Action::WikiView
+    execute_prepare_html accepts path
+  * Bivio::Biz::Action
+    puts $req on self
+  * Bivio::Biz::Model::BlogCreateForm
+    subclass WikiBaseForm so will validate
+  * Bivio::Biz::Model::BlogEditForm
+    subclass WikiBaseForm so will validate
+  * Bivio::Biz::Model::BlogList
+    copy
+    added RealmFile.path column
+  * Bivio::Biz::Model::BlogRecentList
+    b_use
+  * Bivio::Biz::Model::EventEmailSettingList
+    NEW
+  * Bivio::Biz::Model::RealmFile
+    allow path_lc values to be an array_ref (for SQL IN)
+  * Bivio::Biz::Model::WikiBaseForm
+    NEW
+  * Bivio::Biz::Model::WikiErrorList
+    NEW
+  * Bivio::Biz::Model::WikiForm
+    subclass WikiBaseForm so will validate
+  * Bivio::Biz::Model::WikiList
+    NEW
+  * Bivio::PetShop::Util::SQL
+    added /Settings/EventMail.csv
+  * Bivio::Type::DocletFileName
+    added is_ignored_value
+  * Bivio::Type::PrimaryId
+    added UNSPECIFIED_VALUE
+  * Bivio::UI::FacadeBase
+    WikiValidator.subject/title
+  * Bivio::UI::HTML::Widget::LineBreak
+    NEW
+  * Bivio::UI::Text::Widget::LineBreak
+    NEW
+  * Bivio::UI::View::Wiki
+    added validator_mail
+  * Bivio::UI::XHTML::Widget::MainErrors::WikiValidator
+    export error_list_widget
+  * Bivio::UI::XHTML::Widget::WikiText::Embed
+    call_embedded_task now handles errors
+  * Bivio::UI::XHTML::Widget::WikiText
+    added render_error
+    added path as an args/state value for better error messages
+  * Bivio::Util::Wiki
+    added validate_realm and validate_all_realms
+    validate_all_realms: sort realm_ids
+
   Revision 7.80  2009/05/21 23:21:47  aviggio
   * Bivio::Biz::Model::CRMForm
     renamed _with() to _ifelse_req_has_crmthread()
@@ -10159,7 +10218,7 @@ http://www.bivio.biz for more info.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2006 bivio Software, Inc.  All Rights reserved.
+Copyright (c) 2001-2009 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 
