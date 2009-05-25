@@ -120,6 +120,16 @@ sub calling_context {
     return $self;
 }
 
+sub calling_context_get {
+    my($self) = shift;
+    my($fields) = $self->[$_IDI]->[0];
+    return $self->return_scalar_or_array(
+	map(exists($fields->{$_}) ? $fields->{$_}
+	    : $self->bootstrap_die($_, ': not a calling_context field'),
+	    @_),
+    );
+}
+
 sub debug {
     # (proto, ...) : any
     # Calls L<info|"info">, and then returns its arguments (or first argument if !wantarray)
@@ -274,6 +284,11 @@ sub info {
     $_LOGGER->(_call_format($proto, \@args))
 	unless @args == 1 && ($args[0] || '') eq "\n";
     return;
+}
+
+sub internal_as_string {
+    my($self) = @_;
+    return [$self->calling_context_get(qw(file line))];
 }
 
 sub is_calling_context {
