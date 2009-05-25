@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::Acknowledgement;
 use strict;
@@ -6,10 +6,10 @@ use Bivio::Base 'Biz.Action';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-__PACKAGE__->use('Agent.Task')->register(__PACKAGE__);
+b_use('Agent.Task')->register(__PACKAGE__);
 our($_TRACE);
-my($_TI) = __PACKAGE__->use('Agent.TaskId');
-my($_T) = __PACKAGE__->use('FacadeComponent.Text');
+my($_TI) = b_use('Agent.TaskId');
+my($_T) = b_use('FacadeComponent.Text');
 
 sub QUERY_KEY {
     return 'ack';
@@ -39,13 +39,20 @@ sub save_label {
 	    unless $_T->get_from_source($req)->unsafe_get_widget_value_by_name(
 		"acknowledgement." . $req->get('task_id')->get_name,
 	    );
-	$label = $req->get('task_id')->as_int;
+	$label = $req->get('task_id');
     }
+    unless (ref($label)) {
+	if (my $t = $_TI->unsafe_from_name($label)) {
+	    $label = $t;
+	}
+    }
+    $label = $label->as_int
+	if ref($label);
     _trace($proto->QUERY_KEY, '=', $label) if $_TRACE;
     if (ref($query) eq 'HASH') {
 	# Don't override if already set on passed in query
 	$query->{$proto->QUERY_KEY} ||= $label;
-	return;
+	return $query;
     }
     my($x) = $req->unsafe_get('form_model');
     $x &&= $x->unsafe_get_context;

@@ -18,12 +18,21 @@ Request('initialize_fully');
     ],
     {
 	compute_params => sub {
+	    my(undef, $params, $method) = @_;
 	    class()->delete_from_request(req());
-	    return [req()];
+	    return $method =~ /save/ ? [shift(@$params), req(), @$params]
+		: [req()];
 	},
 	object => class(),
     } => [
 	save_label => undef,
 	extract_label => 'SHELL_UTIL',
+	save_label => [
+	    [Agent_TaskId()->SITE_ROOT] => sub {
+		assert_equals({ack => 2}, req('query'));
+		return 1;
+	    },
+	],
+	extract_label => 'SITE_ROOT',
     ],
 ]
