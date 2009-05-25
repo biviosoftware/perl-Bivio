@@ -1,15 +1,21 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::ViewLanguageAUTOLOAD;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
-my($_VL) = b_use('UI.ViewLanguage');
+our($_CALLING_CONTEXT);
+our($_CALLING_CONTEXT_METHOD);
+my($_A) = b_use('IO.Alert');
+my($_VL);
 
 sub AUTOLOAD {
-    return $_VL->call_method($AUTOLOAD, 'Bivio::UI::ViewLanguage', @_);
+    local($_CALLING_CONTEXT) = $_A->calling_context;
+    local($_CALLING_CONTEXT_METHOD) = $AUTOLOAD =~ /(\w+)$/;
+    $_VL ||= b_use('UI.ViewLanguage');
+    return $_VL->call_method($AUTOLOAD, $_VL, @_);
 }
 
 sub import {
@@ -17,6 +23,12 @@ sub import {
     no strict qw(refs);
     *{$pkg.'::AUTOLOAD'} = \&AUTOLOAD;
     return;
+}
+
+sub calling_context_of_new {
+    b_die($_CALLING_CONTEXT_METHOD, ': calling context disagrees with caller')
+	unless (caller)[0]->simple_package_name eq $_CALLING_CONTEXT_METHOD;
+    return $_CALLING_CONTEXT || b_die('no calling context');
 }
 
 1;
