@@ -13,7 +13,7 @@ my($_VL);
 
 sub AUTOLOAD {
     local($_CALLING_CONTEXT) = $_A->calling_context;
-    local($_CALLING_CONTEXT_METHOD) = $AUTOLOAD =~ /(\w+)$/;
+    local($_CALLING_CONTEXT_METHOD) = $AUTOLOAD;
     $_VL ||= b_use('UI.ViewLanguage');
     return $_VL->call_method($AUTOLOAD, $_VL, @_);
 }
@@ -27,8 +27,9 @@ sub import {
 
 sub unsafe_calling_context {
     return undef
-	unless (caller)[0]->simple_package_name
-        eq ($_CALLING_CONTEXT_METHOD || '');
+	unless $_CALLING_CONTEXT_METHOD
+	&& (caller)[0]->simple_package_name
+        eq ($_CALLING_CONTEXT_METHOD =~ /(\w+)$/)[0];
     return $_CALLING_CONTEXT || b_die('no calling context');
 }
 
