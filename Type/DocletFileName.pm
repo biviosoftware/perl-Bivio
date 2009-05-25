@@ -41,6 +41,11 @@ sub from_literal_stripper {
     return $_[1];
 }
 
+sub is_ignored_value {
+    my($proto, $value) = @_;
+    return defined($value) && $value =~ qr{(?:^|/)\.|(?:\.bak|\~)$}si ? 1 : 0;
+}
+
 sub is_valid {
     my($proto, $value) = @_;
     return defined($value) && $value =~ qr{^@{[$proto->REGEX]}$} ? 1 : 0;

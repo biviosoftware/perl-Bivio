@@ -5,4 +5,12 @@ Type();
     public_path_info => [
 	'/Public/foo' => '/foo',
     ],
+    is_ignored_value => [
+	'a.file' => 0,
+	'.anything' => 1,
+	'/.anything' => 1,
+	'foo.bak' => 1,
+	'foo~' => 1,
+	'.' => 1,
+    ],
 ];
