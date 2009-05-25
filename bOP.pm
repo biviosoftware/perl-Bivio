@@ -26,11 +26,45 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.80  2009/05/21 23:21:47  aviggio
+  * Bivio::Biz::Model::CRMForm
+    renamed _with() to _ifelse_req_has_crmthread()
+  * Bivio::Biz::t::ListModel::T1List
+    added "other" fields used by WidgetFactory.bunit
+  * Bivio::Delegate::SimpleWidgetFactory
+    moved Year display widget above Integer
+  * Bivio::PetShop::Model::FieldTestForm
+    allow dynamic initialization
+  * Bivio::PetShop::Util::TestCRM
+    test tuple default date value in CRMForm
+  * Bivio::UI::HTML::ViewShortcuts
+    allow dynamic initialization
+  * Bivio::UI::HTML::Widget::DateField
+    allow_undef is now true for any form field with field constraint of 'NONE'
+  * Bivio::UI::HTML::Widget::Form
+    allow dynamic initialization
+  * Bivio::UI::HTML::Widget::Grid
+    allow dynamic initialization
+  * Bivio::UI::HTML::Widget::Table
+    allow dynamic initialization
+  * Bivio::UI::HTML::Widget::TableBase
+    allow dynamic initialization
+  * Bivio::UI::HTML::Widget::Tag
+    allow dynamic initialization
+  * Bivio::UI::ViewLanguageAUTOLOAD
+    calls b_use('UI.ViewLanguage')
+  * Bivio::UI::Widget::Join
+    allow dynamic initialization
+  * Bivio::UI::XML::Widget::AtomFeed
+    allow list items to specify realm
+  * Bivio::UI::XML::Widget::CalendarEventContent
+    can specify list model
+
   Revision 7.79  2009/05/19 22:53:54  dobbs
   * Bivio::UI::HTML::Widget::Tag
     Tag no longer renders pre and post if the value is empty
