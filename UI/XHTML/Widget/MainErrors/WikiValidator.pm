@@ -9,37 +9,40 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WV) = b_use('Action.WikiValidator');
 b_use('XHTMLWidget.MainErrors')->register_handler(__PACKAGE__);
 
+sub error_list_widget {
+    return WithModel(WikiErrorList => Join([
+	Join([
+	    String(['path']),
+	    Join([
+		', line ',
+		String(['line_num']),
+	    ], {control => ['line_num']}),
+	    ': ',
+	], {control => ['path']}),
+	Join([
+	    String(['entity']),
+	    ': ',
+	], {control => ['entity']}),
+	String(['message']),
+	LineBreak(),
+    ]));
+}
+
 sub handle_render_main_errors {
     my($self) = shift;
     my($source) = @_;
     return
 	unless my $wv = $_WV->unsafe_self_from_req($source->req);
-    my($entity) = '';
-    Join([map(_item($_, \$entity, $source), @{$wv->get('errors')})])
-	->initialize_and_render(@_),
+    Join([
+	DIV_b_title(vs_text('WikiValidator.title')),
+	$self->error_list_widget,
+    ])->initialize_and_render(@_)
+	if $wv->unsafe_load_error_list;
     return;
 }
 
 sub initialize {
     return shift->SUPER::initialize(@_);
-}
-
-sub _item {
-    my($error, $entity, $source) = @_;
-    return (
-	length($$entity) ? () : DIV_b_title(vs_text('wiki_validator_title')),
-	$$entity eq $error->{entity} ? ()
-	    : DIV_b_entity(String(($$entity = $error->{entity}) . ':')),
-	DIV_b_item(String(
-	    Join([
-		$error->{line_num} ? "line $error->{line_num}: " : (),
-		$error->{message},
-		!$error->{entity_in_error} ? ()
-		    : qq{; text is "$error->{entity_in_error}"},
-	    ]),
-	    {escape_html => 1, hard_newlines => 1},
-	)),
-    );
 }
 
 1;
