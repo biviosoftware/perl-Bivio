@@ -42,7 +42,7 @@ req()->set_realm('site');
 		{
 		    entity => '/site/bp/NoSuchWiki',
 		    message => 'Not found',
-		    line_num => 1,
+		    line_num => 2,
 		    path => '/Blog/200905/25123456',
 		},
 	    ],
