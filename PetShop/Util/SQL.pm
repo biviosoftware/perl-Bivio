@@ -581,6 +581,11 @@ Name,Number
 a,
 ,
 EOF
+    $self->realm_file_create('/Settings/EventEmail.csv', <<'EOF');
+Event,Email
+M1,m1@bivio.biz
+M2/e1,m2e1@bivio.biz
+EOF
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
 	'RealmOwner.name' => $self->FOUREM . '-sub1',
