@@ -18,15 +18,16 @@ sub render_html {
     my($uri) = $args->{proto}->internal_format_uri($value, $args);
     return Bivio::Die->die('invalid URI, must begin with a /')
 	unless $uri =~ s{^/+}{/};
-    return ${b_use('Action.WikiValidator')->call_embedded_task(
-	$args->{req},
+    my($reply) = $args->{validator}->call_embedded_task(
 	$args->{req}->format_uri({
 	    uri => $uri,
 	    no_context => 1,
 	    query => undef,
 	    path_info => undef,
 	}),
-    )->get_output};
+	$args,
+    );
+    return $reply ? ${$reply->get_output} : '';
 }
 
 1;
