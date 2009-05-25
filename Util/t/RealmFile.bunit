@@ -5,15 +5,21 @@ my($content) = random_string();
 my($folder) = '/' . random_string();
 my($file) = "$folder/$content";
 req()->set_realm_and_user('fourem');
-my($archive) = "/Archived$file;1";
+my($archive_folder) = "/Archived$folder";
+my($archive_file) = "/Archived$file;1";
 [
     [-input => \$content, create => $file] => not_die(),
     [delete_deep => $folder] => sub {
 	assert_equals(0, model('RealmFile')->unsafe_load({path => $file}));
 	return 1;
     },
-    [-force => delete_deep => $archive] => sub {
-	assert_equals(0, model('RealmFile')->unsafe_load({path => $archive}));
+    [-force => delete_deep => $archive_folder] => sub {
+	assert_equals(
+	    [],
+	    model('RealmFileList')->map_iterate(
+		undef,
+		{path_info => $archive_folder}),
+	);
 	return 1;
     }
 ];
