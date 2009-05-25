@@ -1085,6 +1085,21 @@ sub set_realm {
     return $new_realm;
 }
 
+sub set_task {
+    my($self, $task_id) = @_;
+    $task_id = $_TI->from_name($task_id)
+	unless ref($task_id);
+    _trace($task_id) if $_TRACE;
+    my($task) = $_T->get_by_id($task_id);
+    $self->put_durable(
+	task_id => $task_id,
+	task => $task,
+    );
+#TODO: This coupling needs to be explicit.  Probably with a handler.
+    $self->delete(qw(list_model form_model));
+    return $task;
+}
+
 sub set_user {
     my($self, $user) = @_;
     # B<Use
