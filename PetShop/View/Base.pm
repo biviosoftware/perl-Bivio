@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::View::Base;
 use strict;
@@ -30,6 +30,10 @@ sub internal_xhtml_adorned {
 	xhtml_dock_middle => IfWiki(
 	    '/StartPage',
 	    WikiText('@h2 inline WikiText btest'),
+	    IfWiki(
+		'/WikiValidator_NOT_OK',
+		WikiText('@invalidwikitag'),
+	    ),
 	),
     );
     return @res;
