@@ -25,9 +25,10 @@ sub import {
     return;
 }
 
-sub calling_context_of_new {
-    b_die($_CALLING_CONTEXT_METHOD, ': calling context disagrees with caller')
-	unless (caller)[0]->simple_package_name eq $_CALLING_CONTEXT_METHOD;
+sub unsafe_calling_context {
+    return undef
+	unless (caller)[0]->simple_package_name
+        eq ($_CALLING_CONTEXT_METHOD || '');
     return $_CALLING_CONTEXT || b_die('no calling context');
 }
 
