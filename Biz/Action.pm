@@ -41,6 +41,7 @@ sub put_on_request {
     my($self, $req, $durable) = @_;
     b_die($self, ': may not put singleton on request')
 	if $self->get_instance == $self;
+    $self->put(req => $req);
     return $self->put_on_req($req, $durable);
 }
 
