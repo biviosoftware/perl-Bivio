@@ -1396,7 +1396,7 @@ sub _cfg_wiki {
 	],
 	Text => [
 	    [WikiValidator => [
-		title => 'Validation errors:',
+		title => 'Wiki errors:',
 		subject => q{Wiki Errors for String([qw(auth_realm owner display_name)]);},
 	    ]],
 	    ['WikiView.start_page' => 'StartPage'],
