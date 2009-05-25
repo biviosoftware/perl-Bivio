@@ -68,17 +68,9 @@ sub process_request {
 		$req = $self->create_request(@protocol_args);
 		_trace('create_request: ', $req) if $_TRACE;
 	    }
-	    $task_id = $req->get('task_id')
-		unless $task_id;
-	    _trace('Executing: ', $task_id) if $_TRACE;
-	    my($task) = $_T->get_by_id($task_id);
-	    $req->put_durable(
-		task => $task,
-		redirect_count => $redirect_count,
-	    );
-#TODO: This coupling needs to be explicit.  Probably with a handler.
-	    $req->delete(qw(list_model form_model));
-	    $task->execute($req);
+	    $req->put_durable(redirect_count => $redirect_count)
+		->set_task($task_id || $req->get('task_id'))
+		->execute($req);
 	});
 	if ($die
 	    && $die->get('code') == $_DC->SERVER_REDIRECT_TASK
