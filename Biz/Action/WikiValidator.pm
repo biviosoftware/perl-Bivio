@@ -58,8 +58,6 @@ sub return_with_validate {
 
 sub send_mail {
     my($self, $email) = @_;
-    $_M->new($self->req, 'WikiErrorList')
-	->load_from_array($self->get('errors'));
     $self->put(to_email => $email);
     b_use('UI.View')->call_main('Wiki->validator_mail', $self->req);
     return;
@@ -72,6 +70,16 @@ sub unsafe_get_self {
 	&& $req->can_user_execute_task('FORUM_WIKI_EDIT')
 	&& _new($proto, $path, $req)
         || $proto;
+}
+
+sub unsafe_load_error_list {
+    my($self) = @_;
+    return
+	unless ref($self) and my $e = $self->get('errors');
+    return
+	unless @$e;
+    return $_M->new($self->req, 'WikiErrorList')
+	->load_from_array($self->get('errors'));
 }
 
 sub validate_error {
