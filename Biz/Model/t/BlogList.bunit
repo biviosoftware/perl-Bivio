@@ -11,7 +11,7 @@ my($entry) = require 'BlogList.PL';
     ],
     load_this => [
 	map(([{this => $entry->[$_]->{path_info}}] => [$entry->[$_]]),
-	    0.. $#$entry),
+	    0 .. $#$entry),
     ],
     execute_load_this => [
 	sub {[req()->put(
