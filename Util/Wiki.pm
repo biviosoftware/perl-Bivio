@@ -1,16 +1,20 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Wiki;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
+b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 
 sub USAGE {
     return <<'EOF';
 usage: b-wiki [options] command [args..]
 commands
   from_xhtml file.html ... - converts file.html to file (wiki)
+  validate_all_realms - call validate_realm for all realms with wiki/blog files
+  validate_realm [email] - call Action.WikiValidator; send email if $email
 EOF
 }
 
@@ -33,6 +37,55 @@ sub from_xhtml {
 	Bivio::IO::File->write($out, \$wiki);
     }
     return;
+}
+
+sub validate_all_realms {
+    my($self) = @_;
+    my($req) = $self->initialize_fully;
+    my($wv) = b_use('Action.WikiValidator');
+    my($realms) = $self->model('RealmFile')->map_iterate(
+	sub {shift->get('realm_id')},
+	'unauth_iterate_start',
+	{path_lc => [map({
+	    my($type) = $_;
+	    map(lc($type->to_absolute(undef, $_)), 0, 1),
+	} $wv->TYPE_LIST)]},
+    );
+#TODO: need to know which realm is in which facade(?)
+    return [map({
+	$req->with_realm($_, sub {
+	    my($die);
+	    my($res) = Bivio::Die->catch_quietly(
+		sub {
+		    return $self->validate_realm(
+			$self->model('EventEmailSettingList')
+			    ->event_email_for_auth_realm('WikiValidator'),
+		    );
+		},
+		\$die,
+	    );
+	    $self->commit_or_rollback($die && 1);
+	    my($msg) = join(
+		': ',
+		$self->req(qw(auth_realm owner_name)),
+		$res || $die->as_string,
+	    );
+	    _trace($msg) if $_TRACE;
+	    return $msg;
+	});
+    } @$realms)];
+}
+
+sub validate_realm {
+    my($self, $email) = @_;
+    my($req) = $self->initialize_fully;
+    my($wv) = b_use('Action.WikiValidator')->validate_realm($req);
+    return 'ok'
+	unless my $errors = $wv->get('errors');
+    return $errors
+	unless $email;
+    $wv->send_mail($email);
+    return scalar(@$errors) . ' errors';
 }
 
 sub _extract_content {
