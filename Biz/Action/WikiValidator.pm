@@ -56,6 +56,8 @@ sub return_with_validate {
 
 sub send_mail {
     my($self, $email) = @_;
+    b_die('unable to load error list')
+	unless $self->unsafe_load_error_list;
     $self->put(to_email => $email);
     b_use('UI.View')->call_main('Wiki->validator_mail', $self->req);
     return;
@@ -111,10 +113,13 @@ sub validate_realm {
     my($proto, $req) = @_;
     $proto->delete_from_req($req);
     my($die);
+    my($prev_task_id) = $req->get('task_id');
+    $req->set_task('FORUM_WIKI_VIEW');
     my($self) = Bivio::Die->catch_quietly(
 	sub {_validate_realm($proto, $req)},
 	\$die,
     );
+    $req->set_task($prev_task_id);
     ($self = _new($proto, undef, $req))
 	->validate_error(undef, _die_msg($die, $req))
 	unless $self;
@@ -132,8 +137,7 @@ sub validate_uri {
 #TODO: check external links (could even check mailto: if local)
     return 1
 	if $uri =~ /^\w+:/i;
-#TODO: This is not always correct.  You can't check everything.
-#      Need to ask the task
+#TODO: Need simpler check, because not always in correct context
     return $self->call_embedded_task($uri, $wiki_state) ? 1 : 0;
 }
 
@@ -168,20 +172,17 @@ sub _validate_path {
     ) if $seen->{$p}++;
     my($req) = $self->req;
     my($die) = $_D->catch_quietly(sub {
+	$req->delete(qw(query form_model path_info));
 	if ($type =~ /Blog/) {
 	    $_M->new($req, 'BlogList')->load_this({this => [$p]});
 	    $_V->call_main('Blog->detail', $req);
 	}
 	else {
-	    $_WV->execute_prepare_html(
-		$req,
-		undef,
-		'FORUM_WIKI_VIEW',
-		$p,
-	    );
+	    $_WV->execute_prepare_html($req, undef, undef, $p);
 	    $_V->call_main('Wiki->view', $req);
 	}
     });
+    _trace($die) if $_TRACE;
     $req->get('reply')->delete_output;
     $self->validate_error(undef, _die_msg($die, $req))
 	if $die;
