@@ -26,11 +26,38 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.82  2009/05/25 18:55:07  nagler
+  * Bivio::Agent::Dispatcher
+    use req->set_task()
+  * Bivio::Agent::Request
+    added set_task()
+  * Bivio::Biz::Action::WikiValidator
+    added a cache for URIs, preventing accidental recursion
+    do not pass $self to call_embedded_task, b/c don't want to recurse
+    various fixes, including set_task to FORUM_WIKI_EDIT
+  * Bivio::Biz::Model::BlogList
+    set line_num to 1
+  * Bivio::IO::Alert
+    added calling_context_get
+    added internal_as_string
+  * Bivio::PetShop::View::Base
+    test inline WikiText
+    added @invalidwikitag
+  * Bivio::UI::FacadeBase
+    Validation errors => Wiki errors
+  * Bivio::UI::ViewLanguageAUTOLOAD
+    added calling_context_of_new for better errors messages (WikiText)
+    calling_context_of_new => unsafe_calling_context
+  * Bivio::UI::XHTML::Widget::WikiText
+    added calling_context support
+    put_unless_exists with sub {}
+    calling_context_of_new => unsafe_calling_context
+
   Revision 7.81  2009/05/25 03:36:40  nagler
   * Bivio::Biz::Action::Acknowledgement
     return task int if possible; also allow label to be TaskId
