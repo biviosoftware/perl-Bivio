@@ -287,7 +287,6 @@ sub _cfg_base {
 	    [view_execute_uri_prefix => 'SiteRoot->'],
 	    [favicon_uri => '/i/favicon.ico'],
 	    [form_error_title => 'Please correct the errors below:'],
-	    [wiki_validator_title => 'Validation errors:'],
 	    [none => ''],
 	    [Image_alt => [
 		dot => '',
@@ -1396,6 +1395,10 @@ sub _cfg_wiki {
 	    [different_background => 0xE6E6E6],
 	],
 	Text => [
+	    [WikiValidator => [
+		title => 'Validation errors:',
+		subject => q{Wiki Errors for String([qw(auth_realm owner display_name)]);},
+	    ]],
 	    ['WikiView.start_page' => 'StartPage'],
 	    [WikiForm => [
 		'RealmFile.path_lc' => 'Title',
