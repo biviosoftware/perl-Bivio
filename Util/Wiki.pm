@@ -43,16 +43,18 @@ sub validate_all_realms {
     my($self) = @_;
     my($req) = $self->initialize_fully;
     my($wv) = b_use('Action.WikiValidator');
-    my($realms) = $self->model('RealmFile')->map_iterate(
-	sub {shift->get('realm_id')},
-	'unauth_iterate_start',
-	{path_lc => [map({
-	    my($type) = $_;
-	    map(lc($type->to_absolute(undef, $_)), 0, 1),
-	} $wv->TYPE_LIST)]},
+    my($realms) = b_use('Type.StringArray')->sort_unique(
+	$self->model('RealmFile')->map_iterate(
+	    sub {shift->get('realm_id')},
+	    'unauth_iterate_start',
+	    {path_lc => [map({
+		my($type) = $_;
+		map(lc($type->to_absolute(undef, $_)), 0, 1),
+	    } $wv->TYPE_LIST)]},
+	),
     );
 #TODO: need to know which realm is in which facade(?)
-    return [map({
+    return [sort(map({
 	$req->with_realm($_, sub {
 	    my($die);
 	    my($res) = Bivio::Die->catch_quietly(
@@ -73,7 +75,7 @@ sub validate_all_realms {
 	    _trace($msg) if $_TRACE;
 	    return $msg;
 	});
-    } @$realms)];
+    } @$realms))];
 }
 
 sub validate_realm {
