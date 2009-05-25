@@ -3,9 +3,9 @@
 package Bivio::Biz::Action::WikiValidator;
 use strict;
 use Bivio::Base 'Biz.Action';
+b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-b_use('IO.Trace');
 our($_TRACE);
 my($_D) = b_use('Bivio.Die');
 my($_FP) = b_use('Type.FilePath');
@@ -33,13 +33,11 @@ sub call_embedded_task {
     my($req) = $wiki_state->{req};
     my($self) = ref($proto) ? $proto : $proto->unsafe_self_from_req($req);
     my($die);
-    my($reply) = $_D->catch_quietly(sub {
-	return b_use('AgentEmbed.Dispatcher')->call_task(
-	    $req,
-	    $uri,
-	    $self ? {$self->as_req_key_value_list} : (),
-	);
-    }, \$die);
+    _trace($wiki_state->{path}, ': ', $uri) if $_TRACE;
+    my($reply) = $_D->catch_quietly(
+	sub {return b_use('AgentEmbed.Dispatcher')->call_task($req, $uri)},
+	\$die,
+    );
     return $self->validate_error($uri, _die_msg($die, $req), $wiki_state)
 	unless $reply;
     $self->validate_error(
@@ -129,9 +127,13 @@ sub validate_uri {
     my($self, $uri, $wiki_state) = @_;
     return 1
 	unless ref($self);
+    return 1
+	if $self->get('uri_cache')->{$uri}++;
 #TODO: check external links (could even check mailto: if local)
     return 1
 	if $uri =~ /^\w+:/i;
+#TODO: This is not always correct.  You can't check everything.
+#      Need to ask the task
     return $self->call_embedded_task($uri, $wiki_state) ? 1 : 0;
 }
 
@@ -144,6 +146,7 @@ sub _new {
     my($proto, $path, $req) = @_;
     return $proto->new({
 	path => $path,
+	uri_cache => {},
 	errors => [],
     })->put_on_request($req);
 }
