@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Action::WikiValidator;
 use strict;
-use Bivio::Base 'Action.JobBase';
+use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
@@ -11,120 +11,194 @@ my($_D) = b_use('Bivio.Die');
 my($_FP) = b_use('Type.FilePath');
 my($_HS) = b_use('Type.HTTPStatus');
 my($_RF) = b_use('Model.RealmFile');
-my($_T) = b_use('FacadeComponent.Text');
+my($_FCT) = b_use('FacadeComponent.Text');
 my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
 my($_M) = b_use('Biz.Model');
 my($_QUERY_KEY) = 'validate';
+my($_T) = b_use('Agent.Task');
+my($_V) = b_use('UI.View');
+my($_WV) = b_use('Action.WikiView');
+my($_A) = b_use('IO.Alert');
+my($_TYPES) = [map(b_use("Type.$_"), qw(WikiName BlogFileName))];
+my($_ER) = b_use('Action.EmptyReply');
+my($_AA) = b_use('Action.Acknowledgement');
+
+sub TYPE_LIST {
+    return @$_TYPES;
+}
 
 sub call_embedded_task {
-    my($proto, $req, $uri) = @_;
+    my($proto, $uri, $wiki_state) = @_;
+    my($req) = $wiki_state->{req};
     my($self) = ref($proto) ? $proto : $proto->unsafe_self_from_req($req);
-    return b_use('AgentEmbed.Dispatcher')->call_task(
-	$req,
+    my($die);
+    my($reply) = $_D->catch_quietly(sub {
+	return b_use('AgentEmbed.Dispatcher')->call_task(
+	    $req,
+	    $uri,
+	    $self ? {$self->as_req_key_value_list} : (),
+	);
+    }, \$die);
+    return $self->validate_error($uri, _die_msg($die, $req), $wiki_state)
+	unless $reply;
+    $self->validate_error(
 	$uri,
-	$self ? {$self->as_req_key_value_list} : (),
-    );
+	$_FCT->facade_text_for_object($_HS->new($reply->get('status')), $req),
+	$wiki_state,
+    ) unless $reply->is_status_ok;
+    return $reply;
 }
 
-sub do_errors {
-    my($self) = @_;
-    return;
+sub return_with_validate {
+    my($self, $task_return) = @_;
+    ($task_return->{query} ||= {})->{$_QUERY_KEY} = 1;
+    return $task_return;
 }
 
-sub internal_execute {
-    my($self) = @_;
-    # Runs for all realms
-    # -- need to know which realm is in which facade
+sub send_mail {
+    my($self, $email) = @_;
+    $_M->new($self->req, 'WikiErrorList')
+	->load_from_array($self->get('errors'));
+    $self->put(to_email => $email);
+    b_use('UI.View')->call_main('Wiki->validator_mail', $self->req);
     return;
 }
 
 sub unsafe_get_self {
-    my($proto, $req) = @_;
+    my($proto, $path, $req) = @_;
     return $req->unsafe_get($proto->as_classloader_map_name)
 	|| $req->unsafe_from_query($_QUERY_KEY)
 	&& $req->can_user_execute_task('FORUM_WIKI_EDIT')
-	&& _new($proto, $req);
+	&& _new($proto, $path, $req)
+        || $proto;
 }
 
-sub validate_all_in_realm {
+sub validate_error {
+    my($self, $entity, $message, $wiki_state) = @_;
+    my($err) = {
+	entity => $entity,
+	message => $message,
+    };
+    if ($wiki_state) {
+	$err->{path} = $wiki_state->{path};
+	$err->{line_num} = $wiki_state->{line_num},
+    }
+    if (ref($self)) {
+	$err->{path} ||= $self->unsafe_get('path');
+	push(@{$self->get('errors')}, $err);
+	return;
+    }
+    $wiki_state->{req}->warn(
+	$err->{path} ? (
+	    $err->{path},
+	    $err->{line_num} ? (', line ', $err->{line_num}) : (),
+	    ': ',
+	) : (),
+	$entity ? ($entity, ': ') : (),
+	$message,
+    );
+    return;
+}
+
+sub validate_realm {
     my($proto, $req) = @_;
-    my($errors) = [];
+    $proto->delete_from_req($req);
+    my($die);
+    my($self) = Bivio::Die->catch_quietly(
+	sub {_validate_realm($proto, $req)},
+	\$die,
+    );
+    ($self = _new($proto, undef, $req))
+	->validate_error(undef, _die_msg($die, $req))
+	unless $self;
+    $self->put(errors => undef)
+	unless @{$self->get('errors')};
+    return $self
+}
+
+sub validate_uri {
+    my($self, $uri, $wiki_state) = @_;
+    return 1
+	unless ref($self);
+#TODO: check external links (could even check mailto: if local)
+    return 1
+	if $uri =~ /^\w+:/i;
+    return $self->call_embedded_task($uri, $wiki_state) ? 1 : 0;
+}
+
+sub _die_msg {
+    my($die, $req) = @_;
+    return $_FCT->facade_text_for_object($die->get('code'), $req);
+}
+
+sub _new {
+    my($proto, $path, $req) = @_;
+    return $proto->new({
+	path => $path,
+	errors => [],
+    })->put_on_request($req);
+}
+
+sub _validate_path {
+    my($self, $type, $seen) = @_;
+    $_A->reset_warn_counter;
+    my($path) = $self->get('path');
+    my($p, $e) = $type =~ /Blog/ ? $type->from_literal($path)
+	: $_FP->get_tail($path);
+    unless ($type->is_valid($p)) {
+	$self->validate_error(undef, 'Not a valid Wiki or Blog name')
+	    unless $type->is_ignored_value($path);
+	return;
+    }
+    $self->validate_error(
+	undef,
+	'Same name exists in Public and private areas',
+    ) if $seen->{$p}++;
+    my($req) = $self->req;
+    my($die) = $_D->catch_quietly(sub {
+	if ($type =~ /Blog/) {
+	    $_M->new($req, 'BlogList')->load_this({this => [$p]});
+	    $_V->call_main('Blog->detail', $req);
+	}
+	else {
+	    $_WV->execute_prepare_html(
+		$req,
+		undef,
+		'FORUM_WIKI_VIEW',
+		$p,
+	    );
+	    $_V->call_main('Wiki->view', $req);
+	}
+    });
+    $req->get('reply')->delete_output;
+    $self->validate_error(undef, _die_msg($die, $req))
+	if $die;
+    return;
+}
+
+sub _validate_realm {
+    my($proto, $req) = @_;
+    my($self) = _new($proto, undef, $req);
     $req->with_user(
 	$_M->new($req, 'RealmUser')->unsafe_get_any_online_admin,
 	sub {
-	    foreach my $type (qw(WikiName BlogFileName)) {
-		foreach my $public (0, 1) {
-		    push(@$errors,
-		        @{$_M->new($req, 'RealmFileList')->map_iterate(
-			    sub {_execute($proto, shift)},
-			    {path_info => b_use("Type.$type")
-				 ->to_absolute(undef, $public)},
-			)},
-		    );
+	    $_M->new($req, 'BlogRecentList')->load_all;
+	    foreach my $type (@$_TYPES) {
+		my($seen) = {};
+		my($paths) = $_M
+		    ->new($req, $type =~ /Blog/ ? 'BlogList' : 'WikiList')
+		    ->map_iterate(sub {shift->get('RealmFile.path')});
+		foreach my $path (@$paths) {
+		    $self->put(path => $path);
+		    _validate_path($self, $type, $seen);
 		}
 	    }
 	    return;
         },
     );
-    return $errors;
-}
-
-sub validate_uri {
-    my($self, $uri, $req) = @_;
-#TODO: check external links (could even check mailto: if local)
-    return
-	if $uri =~ /^\w+:/i;
-    my($die);
-    my($reply) = Bivio::Die->catch_quietly(
-	sub {$self->call_embedded_task($req, $uri)},
-	\$die,
-    );
-    return
-	if $reply && $reply->is_status_ok;
-    return $_T->facade_text_for_object(
-	$die ? $die->get('code') : $_HS->new($reply->get('status')),
-	$req,
-    );
-}
-
-sub validation_error {
-    my($self, $args) = @_;
-    push(@{$self->get('errors')}, $args);
-    return;
-}
-
-sub _execute {
-    my($proto, $rfl) = @_;
-    my($req) = $rfl->req;
-    my($self) = _new($proto, $req);
-    if (my $die = $_D->catch_quietly(sub {
-        # ASSUME: invalid names are not important
-	return
-	    unless $_WN->is_valid(
-		$_FP->get_tail($rfl->get('RealmFile.path')));
-#TODO: Need to execute the task (not embedded) to get the menus
-	# Avoid circular import
-        b_use('XHTMLWidget.WikiText')->render_html({
-	    value => ${$rfl->get_content},
-	    name => $rfl->get('RealmFile.path'),
-	    req => $req,
-	    map(($_ => $rfl->get("RealmFile.$_")), qw(is_public realm_id)),
-	});
-	return;
-    })) {
-	_trace($rfl->get('RealmFile.path'), ': ', $die) if $_TRACE;
-	$self->validation_error({
-	    entity => $rfl->get('RealmFile.path'),
-	    message => $_T->facade_text_for_object($die->get('code')),
-	});
-    }
-    return @{$self->get('errors')};
-}
-
-sub _new {
-    my($proto, $req) = @_;
-    return $proto->new({errors => []})->put_on_request($req);
+    return $self;
 }
 
 1;
+
