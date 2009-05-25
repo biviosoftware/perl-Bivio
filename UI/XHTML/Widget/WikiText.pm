@@ -315,14 +315,26 @@ $_C->register(my $_CFG = {
 });
 my($_TT) = $_WN->TITLE_TAG =~ /(\w+)/;
 
+sub NEW_ARGS {
+    return [qw(value ?class)];
+}
+
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->req;
-    $$buffer .= $self->render_html({
+    my($a) = {
 	source => $source,
 	req => $req,
 	map(($_ => $self->render_simple_attr($_, $source)), @$_WIDGET_ATTRS),
-    });
+    };
+    if (my $cc = $self->unsafe_get('calling_context')) {
+	$a->{line_num} = $cc->calling_context_get('line') - 1;
+	$a->{path} = $cc->calling_context_get('file');
+    }
+    else {
+	$a->{path} = $a->{value};
+    }
+    $$buffer .= $self->render_html($a);
     # Don't call SUPER; we don't want html_attrs
     return;
 }
@@ -368,8 +380,13 @@ sub internal_format_uri {
     ) . $anchor;
 }
 
-sub internal_new_args {
-    return shift->internal_compute_new_args([qw(value ?class)], \@_);
+sub new {
+    my($self) = shift->SUPER::new(@_);
+    $self->put_unless_exists(
+	calling_context =>
+	    Bivio::UI::ViewLanguageAUTOLOAD->calling_context_of_new,
+    );
+    return $self;
 }
 
 sub prepare_html {
@@ -423,7 +440,7 @@ sub prepare_html {
         | \@$_TT.*?\r?\n\@/$_TT\s*?\r?\n
     )}{}isox) {
 	my($x) = $1;
-	$a->{line_num} = 1;
+	$a->{line_num} ||= 1;
 	my($t) = $proto->render_html({%$a, value => $x})
 	    =~ m{^<$_TT>(.*)</$_TT>$}so;
 	if (defined($t)) {
