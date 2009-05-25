@@ -18,6 +18,7 @@ my($_TI) = b_use('Agent.TaskId');
 my($_V) = b_use('UI.View');
 my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
+my($_WV);
 my($_REALM_PLACEHOLDER) = b_use('Type.RealmName')->SPECIAL_PLACEHOLDER;
 my($_CAMEL_CASE) = qr{((?-i:[A-Z][A-Z0-9]*[a-z][a-z0-9]*[A-Z][A-za-z0-9]*))};
 my($_EMAIL) = qr{@{[$_RFC->ATOM_ONLY_ADDR]}}o;
@@ -401,12 +402,13 @@ sub prepare_html {
 	value => ${$rf->get_content},
 	req => $req = $rf->req,
 	name => $_WN->from_absolute($rf->get('path')),
+	path => $rf->get('path'),
     ) if $rf;
     $req ||= $a->get('req');
     $a->put_unless_exists(
 	is_public => 0,
 	modified_date_time => $_DT->now,
-	name => '',
+	name => '<inline>',
 	realm_id => $req->get('auth_id'),
 	user_id => $req->get('auth_user_id'),
 	proto => $proto,
@@ -421,6 +423,7 @@ sub prepare_html {
         | \@$_TT.*?\r?\n\@/$_TT\s*?\r?\n
     )}{}isox) {
 	my($x) = $1;
+	$a->{line_num} = 1;
 	my($t) = $proto->render_html({%$a, value => $x})
 	    =~ m{^<$_TT>(.*)</$_TT>$}so;
 	if (defined($t)) {
@@ -428,8 +431,7 @@ sub prepare_html {
 	    $a->{title} = $t;
 	}
 	else {
-	    Bivio::IO::Alert->warn(
-		$x, ': not a header pattern; page=', $a->{name});
+	    $proto->render_error($x, 'not a header pattern', $a);
 	    substr($$v, 0, 0) = $x;
 	}
     }
@@ -456,6 +458,12 @@ sub register_tag {
     return;
 }
 
+sub render_error {
+    my(undef, $object, $err, $state) = @_;
+    $state->{validator}->validate_error($object, $err, $state);
+    return '';
+}
+
 sub render_html {
     my($proto, $args) = @_;
     unless (ref($args) eq 'HASH') {
@@ -472,12 +480,14 @@ sub render_html {
     }
     _validator($args);
     $args->{name} ||= '<inline>';
+    $args->{path} ||= $args->{name};
     $args->{source} ||= $args->{req};
     $args->{proto} = $proto;
     $args->{no_auto_links} ||= !$_CFG->{deprecated_auto_link_mode};
     $args->{task_id} = _task_id($args)
 	unless ref($args->{task_id});
     $args->{realm_id} ||= $args->{req}->get('auth_id');
+    $args->{line_num} ||= 0;
     unless ($args->{realm_name}) {
 	my($ro) = Bivio::Biz::Model->new($args->{req}, 'RealmOwner');
 	$args->{realm_name} = $ro->get('name')
@@ -493,7 +503,6 @@ sub render_html {
 	proto => $proto,
 	args => $args,
 	lines => [split(/\r?\n/, $args->{value})],
-	line_num => 0,
 	tags => [],
 	attrs => [],
 	html => '',
@@ -532,20 +541,12 @@ sub render_plain_text {
 sub _check_uri {
     my($uri, $orig, $args) = @_;
 #TODO: Consider dropping this
-    return _check_uri_err($orig, 'javascript links not allowed', $args)
-	if $uri =~ /^javascript:/i;
-    return $uri
-	if !$args->{validator_object}
-	or !(my $err = $args->{validator_object}->validate_uri(
-	    $uri,
-	    $args->{req},
-	));
-    return _check_uri_err($orig, $err, $args);
-}
-
-sub _check_uri_err {
-    _fmt_err(@_);
-    return 'link-error';
+    if ($uri =~ /^javascript:/i) {
+	_fmt_err($orig, 'javascript links not allowed', $args);
+	return 'link-error';
+    }
+    $args->{validator}->validate_uri($uri, $args);
+    return $uri;
 }
 
 sub _close_implicit_tags {
@@ -620,23 +621,8 @@ sub _fix_word {
 }
 
 sub _fmt_err {
-    my($object, $err, $args) = @_;
-    $args->{validator_object} ? $args->{validator_object}->validation_error({
-	entity => $args->{name},
-	line_num => $args->{line_num},
-	message => $err,
-	entity_in_error => $object,
-    }) : $args->{req}->warn(
-	$args->{name},
-	', line ',
-	$args->{line_num},
-	': ',
-	$err,
-	' data="',
-	$object,
-	'"',
-    );
-    return '';
+    my(undef, undef, $args) = @_;
+    return $args->{proto}->render_error(@_);
 }
 
 sub _fmt_href {
@@ -945,9 +931,9 @@ sub _task_id {
 
 sub _validator {
     my($args) = @_;
-    $args->{validator_object}
-	||= b_use('Action.WikiValidator')->unsafe_get_self($args->{req});
-    return;
+#TODO: This should be encapsulated in validator
+    return $args->{validator} ||= ($_WV ||= b_use('Action.WikiValidator'))
+	->unsafe_get_self($args->{path}, $args->{req});
 }
 
 1;
