@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::PrimaryId;
 use strict;
@@ -23,6 +23,10 @@ use Bivio::Base 'Type.Number';
 # the PrimaryId.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+
+sub UNSPECIFIED_VALUE {
+    return 0;
+}
 
 sub can_be_negative {
     return 0;
