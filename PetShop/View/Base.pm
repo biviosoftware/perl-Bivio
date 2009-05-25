@@ -27,6 +27,10 @@ sub internal_xhtml_adorned {
 	    'FORUM_TUPLE_USE_LIST',
 	    SiteAdminDropDown(),
 	]),
+	xhtml_dock_middle => IfWiki(
+	    '/StartPage',
+	    WikiText('@h2 inline WikiText btest'),
+	),
     );
     return @res;
 }
