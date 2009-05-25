@@ -241,6 +241,8 @@ sub internal_prepare_query {
     foreach my $k (keys(%{_child_attrs($query)})) {
 	delete($query->{$k});
     }
+    return shift->SUPER::internal_prepare_query(@_)
+	if ref($query->{path_lc});
     # Only load by path_lc, and convert from_literal (which is idempotent)
     if (exists($query->{path})) {
 	my($p) = delete($query->{path});
