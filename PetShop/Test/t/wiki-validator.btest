@@ -1,0 +1,27 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+verify_text('inline WikiText btest');
+visit_uri('/site/bp/WikiValidator_OK?validate=1');
+verify_no_text(qr{wiki error}i);
+visit_uri('/site/bp/WikiValidator_NOT_OK?validate=1');
+verify_no_text(qr{wiki error}i);
+login_as('root');
+home_page();
+verify_text('inline WikiText btest');
+visit_uri('/site/bp/WikiValidator_OK?validate=1');
+verify_no_text(qr{wiki error}i);
+visit_uri('/site/bp/WikiValidator_NOT_OK?validate=1');
+verify_text(qr{wiki error.*Bivio/PetShop/View/Base.pm, line \d+: invalidwikitag:}is);
+my($e) = generate_local_email('root');
+do_test_backdoor(Wiki => "-realm site validate_realm $e");
+my($msg) = verify_local_mail($e, qr{wiki error}i);
+b_die("server error:\n", $msg)
+    if $msg =~ /server.error/i;
+my($unknown) = [grep(
+    !/base.css: Not a valid|: Not found|: Same name/i,
+    split(/\s*\n+\s*/i, ($msg =~ /\n\n(.*)/)[0]),
+)];
+b_die("unknown error: ", $unknown)
+    if @$unknown;
