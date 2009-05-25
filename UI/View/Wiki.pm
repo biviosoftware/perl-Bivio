@@ -53,7 +53,6 @@ window.onload=function(){
 }
 </script>
 EOF
-
 	    HelpWiki(1),
 	]),
 	body_class => 'help_wiki_iframe_body',
@@ -71,6 +70,18 @@ EOF
 
 sub site_view {
     return shift->view(@_);
+}
+
+sub validator_mail {
+    return shift->internal_put_base_attr(
+	from => Mailbox(
+	    vs_text('support_email'),
+	    vs_text_as_prose('support_name'),
+	),
+	to => Mailbox([qw(Action.WikiValidator to_email)]),
+	subject => Prose(vs_text('WikiValidator.subject')),
+	body => b_use('MainErrors.WikiValidator')->error_list_widget(),
+    );
 }
 
 sub version_list {
