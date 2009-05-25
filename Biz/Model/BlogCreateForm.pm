@@ -1,13 +1,13 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::BlogCreateForm;
 use strict;
-use base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Model.WikiBaseForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_BFN) = Bivio::Type->get_instance('BlogFileName');
-my($_BC) = Bivio::Type->get_instance('BlogContent');
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_BFN) = b_use('Type.BlogFileName');
+my($_BC) = b_use('Type.BlogContent');
+my($_DT) = b_use('Type.DateTime');
 
 sub execute_ok {
     my($self) = @_;
@@ -25,9 +25,9 @@ sub execute_ok {
 	    $rf->create_with_content(
 		$v, $_BC->join($self->get(qw(title body))));
 	    $self->get_request->put();
-	    return {
+	    return $self->return_with_validate({
 		path_info => $bfn,
-	    };
+	    });
 	}
 	$bfn = undef;
 	$now = $_DT->add_seconds($now, 1);

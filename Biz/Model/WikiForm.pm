@@ -1,8 +1,8 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::WikiForm;
 use strict;
-use base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Model.WikiBaseForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -42,9 +42,9 @@ sub execute_ok {
 	path => $new,
 	is_public => $p,
     }, \$c);
-    return {
+    return $self->return_with_validate({
 	path_info => $self->get('RealmFile.path_lc'),
-    };
+    })
 }
 
 sub internal_initialize {
