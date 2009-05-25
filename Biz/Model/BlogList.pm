@@ -77,6 +77,7 @@ sub internal_initialize {
 	order_by => [qw(
 	    path_info
 	    RealmFile.modified_date_time
+            RealmFile.path
 	)],
 	other => [qw(
 	    RealmFile.is_public
@@ -148,7 +149,7 @@ sub render_html {
 	name => $self->get('path_info'),
 	req => $self->get_request,
 	task_id => undef,
-	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
+	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id path)),
 	no_auto_links => 1,
     });
 }
