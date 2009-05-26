@@ -71,6 +71,12 @@ my($to) = EmailArray([remote_email('crm')]);
 	'Model.CRMThread' => {
 	    owner_user_id => req('auth_user_id'),
 	    crm_thread_status => CRMThreadStatus('OPEN'),
+	    thread_root_id => sub {
+		return $ctid = req(qw(Model.CRMThread thread_root_id));
+	    },
 	},
     }],
+    empty_case({
+        action_id => req('auth_user_id'),
+    }),
 ];

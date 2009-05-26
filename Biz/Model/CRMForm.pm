@@ -39,10 +39,8 @@ sub execute_empty {
 	    unless $discuss;
 	$self->internal_put_field(
 	    subject => $ct->clean_subject($self->get('subject')),
-	    action_id => $cal->status_to_id_in_list(
-		$discuss ? $ct->get('crm_thread_status')
-                    : $self->internal_empty_status_when_exists,
-	    ));
+	    action_id => _action_id_for_owner_and_status(
+                $self, $ct, $cal, $discuss));
 	return;
     }, sub {
 	$self->internal_put_field(action_id =>
@@ -160,6 +158,14 @@ sub _acquire_lock {
 	lock_user_id => $ct->req('auth_user_id'),
 	crm_thread_status => $_CTS->LOCKED,
     });
+}
+
+sub _action_id_for_owner_and_status {
+    my($self, $ct, $cal, $discuss) = @_;
+    return $discuss ? $self->ureq(qw(Model.CRMThread owner_user_id))
+        || $cal->status_to_id_in_list($ct->get('crm_thread_status'))
+            : $cal->status_to_id_in_list(
+                $self->internal_empty_status_when_exists);
 }
 
 sub _ifelse_req_has_crmthread {
