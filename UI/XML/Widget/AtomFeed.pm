@@ -39,11 +39,9 @@ sub initialize {
 			TYPE => 'html',
 		    }),
 		_link(alternate => 'html_detail_task'),
-		Tag(author => Join([
+		Tag(author =>
 		    Tag(name => String(['->get_rss_author'])),
-		    If(['->has_keys', 'Email.email'],
-			Tag(email => ['Email.email'])),
-		])),
+		),
 	    ]))),
 	]),
     );
