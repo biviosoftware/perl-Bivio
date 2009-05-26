@@ -19,3 +19,4 @@ submit_form({
     anon => "body2 $search_key",
 });
 verify_text("body2 $search_key");
+visit_uri("$uri.atom");
