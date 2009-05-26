@@ -84,8 +84,10 @@ sub unsafe_load_error_list {
 
 sub validate_error {
     my($self, $entity, $message, $wiki_state) = @_;
-    b_warn($message, ': removed Perl junk: ', $1)
-	if $message =~ s/(\w+(?:\:\:|\-\>)\w+.*)//;
+    if ($message =~ s/(\w+(?:\:\:|\-\>)\w+.*)//) {
+	b_warn($message, ': removed Perl junk: ', $1);
+	$message ||= 'internal server error';
+    }
     my($err) = {
 	entity => $entity,
 	message => $message,
