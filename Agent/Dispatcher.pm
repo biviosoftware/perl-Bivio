@@ -69,7 +69,7 @@ sub process_request {
 		_trace('create_request: ', $req) if $_TRACE;
 	    }
 	    $req->put_durable(redirect_count => $redirect_count)
-		->set_task($task_id || $req->get('task_id'))
+		->set_task($task_id ||= $req->get('task_id'))
 		->execute($req);
 	});
 	if ($die
