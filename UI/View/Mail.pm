@@ -109,7 +109,7 @@ sub internal_subject_body_attachments {
 	    size => $self->DEFAULT_COLS + 2,
 	}],
 	[_name($self, 'XxForm.body'), {
-	    rows => 24,
+	    rows => 8,
 	    cols => $self->DEFAULT_COLS,
 	    row_class => 'textarea',
 	}],
@@ -123,7 +123,8 @@ sub internal_send_form {
     $buttons ||= vs_simple_form_submit();
     return DIV_msg_compose(Join([
 	vs_simple_form(_name($self, 'XxForm') => [
-	    @{$extra_fields || [$buttons]},
+            $buttons,
+	    @{$extra_fields || []},
 	    map([_name($self, "XxForm.$_"), {
 		cols => $self->DEFAULT_COLS,
 		    rows => 1,
