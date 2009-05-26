@@ -792,6 +792,7 @@ sub internal_redirect_realm {
     my($fields) = $self->[$_IDI];
     my($task) = $_T->get_by_id($new_task);
     if ($new_realm) {
+	$new_realm = _load_realm($self, $new_realm);
 	$task->assert_realm_type($new_realm->get('type'));
     }
     else {
@@ -1066,10 +1067,7 @@ sub set_current {
 
 sub set_realm {
     my($self, $new_realm) = @_;
-    $new_realm = defined($new_realm)
-	? $_REALM->new($new_realm, $self)
-	: $_REALM->get_general
-	unless Bivio::Auth::Realm->is_blessed($new_realm);
+    $new_realm = _load_realm($self, $new_realm);
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
     my($new_roles) = _get_roles($self, $realm_id);
@@ -1261,6 +1259,14 @@ sub _get_roles {
 
     # User has no special privileges in realm
     return [$_ROLE->USER];
+}
+
+sub _load_realm {
+    my($self, $new_realm) = @_;
+    return $_REALM->is_blessed($new_realm) ? $new_realm
+	: defined($new_realm)
+	? $_REALM->new($new_realm, $self)
+	: $_REALM->get_general
 }
 
 sub _with {
