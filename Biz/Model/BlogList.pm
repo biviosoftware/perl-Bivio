@@ -41,7 +41,7 @@ sub get_modified_date_time {
 
 sub get_rss_author {
     my($self) = @_;
-    return $self->get('RealmOwner.display_name');
+    return $self->req(qw(auth_realm owner display_name));
 }
 
 sub get_rss_summary {
