@@ -26,11 +26,22 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.84  2009/05/26 17:41:06  moeller
+  * Bivio::Agent::Dispatcher
+    save current task_id in process_request()
+  * Bivio::Agent::Request
+    internal_redirect_realm must checks $new_realm
+  * Bivio::Biz::Action::WikiValidator
+    Remove perl junk from error messages on bOP
+    set message, if empty after perl junk stripping
+  * Bivio::UI::View::Mail
+    add buttons to top of form and make body's text area smaller
+
   Revision 7.83  2009/05/25 20:35:02  nagler
   * Bivio::UI::ViewLanguageAUTOLOAD
     for some reason the regular expression on $AUTOLOAD was affecting its value
