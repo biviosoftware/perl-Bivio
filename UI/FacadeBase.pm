@@ -412,7 +412,6 @@ sub _cfg_blog {
 	    ]],
 	    [BlogList => [
 		empty_list_prose => 'No entries in this blog.',
-		atom_feed_content => q{String(['->get_rss_summary']);},
 	    ]],
 	    [title => [
 		[qw(FORUM_BLOG_LIST FORUM_PUBLIC_BLOG_LIST FORUM_BLOG_RSS FORUM_PUBLIC_BLOG_RSS)]
@@ -1395,6 +1394,7 @@ sub _cfg_wiki {
 	    [different_background => 0xE6E6E6],
 	],
 	Text => [
+	    [atom_feed_content => q{String(['->get_rss_summary']);}],
 	    [WikiValidator => [
 		title => 'Wiki errors:',
 		subject => q{Wiki Errors for String([qw(auth_realm owner display_name)]);},
