@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 7.83  2009/05/25 20:35:02  nagler
+  * Bivio::UI::ViewLanguageAUTOLOAD
+    for some reason the regular expression on $AUTOLOAD was affecting its value
+
   Revision 7.82  2009/05/25 18:55:07  nagler
   * Bivio::Agent::Dispatcher
     use req->set_task()
