@@ -26,11 +26,43 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.86  2009/05/27 18:56:59  moeller
+  Release notes:
+  * Bivio::Agent::Embed::Dispatcher
+    can redirect
+  * Bivio::Agent::HTTP::Request
+    moved uri parsing in client_redirect to internal_client_redirect_args
+    delete FormContext from query if no referer (bookmark or emailed link
+    gone bad)
+  * Bivio::Agent::Request
+    internal_client_redirect_args handles uri args
+    client_redirect parses uri and server redirects if not fully-qualified
+    added referer to values put on request (non-durable)
+    Added delete_from_query
+  * Bivio::Biz::FormContext
+    use Bivio::Base
+  * Bivio::Biz::FormModel
+    encapsulate FORM_CONTEXT_QUERY_KEY
+  * Bivio::Biz::Model::TaskLogQueryForm
+    removed
+  * Bivio::Mail::Incoming
+    get_reply_subject now calls trim_literal on the subject instead of from_literal
+  * Bivio::ShellUtil
+    send_mail replaces email_file and email_message
+  * Bivio::UI::FacadeBase
+    default atom_feed_content
+  * Bivio::Util::HTTPLog
+    email_message replaced by send_file
+  * Bivio::Util::RealmFile
+    added send_file_via_mail
+  * Bivio::Util::Wiki
+    validate_all_realms: accepts email argument which overrides all EventEmail
+
   Revision 7.85  2009/05/26 20:26:29  nagler
   * Bivio::Biz::Model::BlogList
     rss_author is realm, because we don't want expose end users
