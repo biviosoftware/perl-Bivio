@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RealmFile;
 use strict;
@@ -36,6 +36,7 @@ commands:
     import_tree [folder] -- imports files in current directory into folder [/]
     list_folder folder -- lists a folder
     read path -- returns file contents
+    send_file_via_mail email subject path -- email a file as an attachment
     update path --  updates path with input
 EOF
 }
@@ -137,6 +138,12 @@ sub read {
 sub rename {
     my($self, $old, $new) = @_;
     _do($self, load => $old)->update({path => $new});
+    return;
+}
+
+sub send_file_via_mail {
+    my($self, $email, $subject, $path) = @_;
+    $self->send_mail($email, $subject || $path, _do($self, load => $path));
     return;
 }
 
