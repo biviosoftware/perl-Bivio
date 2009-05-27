@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
 # Needed for the usage_error (DIE below).  Take out for debugging
@@ -35,11 +35,12 @@ config({
 	    # MALE is the last value from get_list()
 	    [[['Gender', sub {$_G->get_list}]]] => [class(), $_G->MALE],
 	],
-	email_file => [
-	    [$email => 'any subject' => $INC{'Bivio/Test.pm'}] => undef,
-	],
-	email_message => [
-	    [$email => 'any subject' => \('hello')] => undef,
+	send_mail => [
+	    [$email => 'Scalar' => \('hello')] => undef,
+	    [$email => 'RealmFile' => RealmFile()->unauth_load_or_die(
+		realm_id => realm_id('demo'),
+		path => '/private/image.gif',
+	    )] => undef,
 	],
 	group_args => [
 	    [2, ['a', 'b', 'c', 'd']] => [[['a', 'b'], ['c', 'd']]],

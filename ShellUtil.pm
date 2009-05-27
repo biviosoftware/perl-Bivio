@@ -312,37 +312,6 @@ sub do_sh {
     return join('', map(${$self->piped_exec($_)}, @cmd));
 }
 
-sub email_file {
-    my($self, $email, $subject, $file_name) = @_;
-    # Sends I<file_name> to I<email> with I<subject>.  Content type is determined
-    # from suffix of I<file_name>.  File is always an attachment.
-    _email(
-	$self, $email, $subject,
-	sub {
-	    my($msg) = @_;
-	    $msg->set_content_type('multipart/mixed');
-	    return $msg->attach(
-		$_F->read($file_name),
-		$self->use('MIME.Type')->from_extension($file_name),
-		$file_name, -T $file_name ? 0 : 1,
-	    );
-	},
-    );
-    return;
-}
-
-sub email_message {
-    my($self, $email, $subject, $message) = @_;
-    # Sends I<message> to I<email> with I<subject>.  Sends as simple body.
-    _email(
-	$self, $email, $subject,
-	sub {
-	    return shift->set_body($message);
-	},
-    );
-    return;
-}
-
 sub finish {
     my($self, $abort) = @_;
     # Calls L<commit_or_rollback|"commit_or_rollback"> and undoes setup.
@@ -941,6 +910,36 @@ sub run_daemon {
     return;
 }
 
+sub send_mail {
+    my($self, $email, $subject, $body) = @_;
+    my($msg) = $self->use('Mail.Outgoing')->new;
+    my($req) = $self->get_request;
+    $msg->set_recipients($email, $req);
+    $msg->set_header('Subject', $subject);
+    $msg->set_header('To', $email);
+    $msg->set_from_with_user($req);
+    if (ref($body) eq 'CODE') {
+	$body->($msg);
+    }
+    elsif (b_use('Model.RealmFile')->is_blessed($body)) {
+	$msg->set_content_type('multipart/mixed');
+	$msg->attach(
+	    $body->get_content,
+	    $body->get_content_type,
+	    $body->is_text_content_type,
+	);
+    }
+    elsif (ref($body) eq 'SCALAR') {
+	$msg->set_body($body);
+    }
+    else {
+	b_die($body, ': invalid message body type');
+    }
+    $msg->send($req)
+        unless $self->unsafe_get('noexecute');
+    return;
+}
+
 sub set_realm_and_user {
     my($self, $realm, $user) = @_;
     $realm = $self->use('Auth.Realm')->get_general()
@@ -1126,20 +1125,6 @@ sub _detach_log {
 		. '.log',
 	);
     });
-}
-
-sub _email {
-    my($self, $to_email, $subject, $body) = @_;
-    my($msg) = $self->use('Mail.Outgoing')->new;
-    my($req) = $self->get_request;
-    $msg->set_recipients($to_email, $req);
-    $msg->set_header('Subject', $subject);
-    $msg->set_header('To', $to_email);
-    $msg->set_from_with_user($req);
-    $body->($msg);
-    $msg->send($req)
-        unless $self->unsafe_get('noexecute');
-    return;
 }
 
 sub _initialize {
@@ -1331,8 +1316,7 @@ sub _result_email {
 
     my($name, $type, $subject) = $self->unsafe_get(
 	    qw(result_name result_type result_subject));
-    _email(
-	$self,
+    $self->send_mail(
 	$email,
 	$subject || $name || 'Output from: '.$self->command_line(),
 	sub {
