@@ -4,4 +4,10 @@
 ^www.bivio.biz
 ^nobody@bivio.biz
 ^StartPage
-Need to be able to test / as a uri and other redirects
+^/
+^/my-site
+^/go/bp/StartPage
+
+
+
+
