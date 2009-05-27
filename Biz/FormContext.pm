@@ -1,8 +1,8 @@
-# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::FormContext;
 use strict;
-use base 'Bivio::Collection::Attributes';
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 use Bivio::MIME::Base64;
 
