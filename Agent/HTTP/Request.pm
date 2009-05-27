@@ -20,7 +20,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_C) = b_use('AgentHTTP.Cookie');
 my($_F) = b_use('AgentHTTP.Form');
-my($_Q) = b_use('AgentHTTP.Query');
 my($_R) = b_use('AgentHTTP.Reply');
 my($_D) = b_use('Bivio.Die');
 my($_DC) = b_use('Bivio.DieCode');
@@ -28,6 +27,7 @@ my($_H) = b_use('Bivio.HTML');
 my($_DT) = b_use('Type.DateTime');
 my($_T) = b_use('Agent.Task');
 my($_TI) = b_use('Agent.TaskId');
+my($_FCT) = b_use('FacadeComponent.Task');
 my($_READ_SIZE) = 4096;
 
 sub client_redirect {
@@ -101,24 +101,11 @@ sub get_form {
 sub internal_client_redirect {
     # NOTE: Use cient_redirect unless you know what you are doing
     my($self, $named) = shift->internal_client_redirect_args(@_);
-    if (defined($named->{uri})) {
-	# NOTE: This form never had implicit query/path_info copying
-	foreach my $a (qw(query path_info)) {
-	    $named->{$a} = undef
-		unless exists($named->{$a}) || exists($named->{"carry_$a"});
-	}
-	$self->internal_copy_implicit($named);
-	$named->{query} = $_Q->format($named->{query})
-	    if ref($named->{query});
-	$named->{uri} =~ s/\?/\?$named->{query}&/
-	    || ($named->{uri} .= '?'.$named->{query})
-	    if defined($named->{query}) && length($named->{query});
-    }
-    else {
+    unless (defined($named->{uri})) {
 	# use previous query if not specified, maintains state across pages
 	$self->internal_copy_implicit($named);
 	return $named
-	    unless Bivio::UI::Task->has_uri($named->{task_id}, $self);
+	    unless $_FCT->has_uri($named->{task_id}, $self);
         _trace(
 	    'current: ', $self->get('task_id'), ', new: ', $named->{task_id}
 	) if $_TRACE && !$named->{realm};
