@@ -3,7 +3,7 @@
 test_setup('PetShop');
 my($f, $uri) = create_forum();
 visit_uri("$uri/mail");
-follow_link('new');
+follow_link('new_topic');
 my($code) = random_string(16, ['a' .. 'z']);
 submit_form(Send => {
     topic => $code,
