@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::HTTPLog;
 use strict;
@@ -280,7 +280,7 @@ sub _parse_errors_complete {
     my($fields) = $self->[$_IDI];
     $fields->{fh}->close;
     my($pr) = join('', @{$fields->{pager_res}});
-    $self->email_message($_CFG->{pager_email}, 'critical http errors', \$pr)
+    $self->send_mail($_CFG->{pager_email}, 'critical http errors', \$pr)
 	if $pr && $_CFG->{pager_email};
     return \$fields->{res};
 }
