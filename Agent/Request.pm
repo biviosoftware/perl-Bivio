@@ -337,6 +337,18 @@ sub clear_nondurable_state {
 
 sub client_redirect {
     my($self, $named) = shift->internal_client_redirect_args(@_);
+    if ($named->{uri}) {
+	b_die($named->{uri}, ': cannot redirect to an http URI')
+	    if $named->{uri} =~ /^\w+:/;
+	$named->{uri} =~ s/\?(.*)//;
+	$named->{query} = $_Q->parse($1);
+	my($task_id, $auth_realm, $path_info)
+	    = $_FCT->parse_uri($named->{uri}, $self);
+	$named->{task_id} = $task_id;
+	$named->{realm} = $auth_realm->unsafe_get('owner_name');
+	$named->{path_info} = $path_info;
+	delete($named->{uri});
+    }
     return $self->server_redirect($named);
 }
 
@@ -655,7 +667,7 @@ sub internal_clear_current {
 sub internal_client_redirect_args {
     my($self) = shift;
     my($first) = @_;
-    return $self->internal_get_named_args(
+    my(undef, $named) = $self->internal_get_named_args(
  	ref($first) && (ref($first) ne 'HASH' || $first->{task_id})
 	    || Bivio::Agent::TaskId->is_valid_name($first)
 	    ? $self->CLIENT_REDIRECT_PARAMETERS
@@ -663,6 +675,21 @@ sub internal_client_redirect_args {
 	       $self->EXTRA_URI_PARAM_LIST],
 	\@_,
     );
+    if (defined($named->{uri})) {
+	# NOTE: This form never had implicit query/path_info copying
+	foreach my $a (qw(query path_info)) {
+	    $named->{$a} = undef
+		unless exists($named->{$a}) || exists($named->{"carry_$a"});
+	}
+	$self->internal_copy_implicit($named);
+	$named->{query} = $_Q->format($named->{query})
+	    if ref($named->{query});
+	$named->{uri} =~ s/\?/\?$named->{query}&/
+	    || ($named->{uri} .= '?'.$named->{query})
+	    if defined($named->{query}) && length($named->{query});
+	delete($named->{query});
+    }
+    return ($self, $named);
 }
 
 sub internal_copy_implicit {
@@ -744,9 +771,9 @@ sub internal_initialize {
 sub internal_initialize_with_uri {
     my($self, $full_uri, $query) = @_;
     my($task_id, $auth_realm, $path_info, $uri, $initial_uri)
-	= Bivio::UI::Task->parse_uri($full_uri, $self);
+	= $_FCT->parse_uri($full_uri, $self);
     $self->internal_set_current;
-    $query = Bivio::Agent::HTTP::Query->parse($query);
+    $query = $_Q->parse($query);
     # SECURITY: Make sure the auth_id is NEVER set by the user.
     delete($query->{auth_id})
 	if $query;
