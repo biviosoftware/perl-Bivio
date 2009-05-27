@@ -77,6 +77,10 @@ sub CONTEXT_FIELD {
     return 'c';
 }
 
+sub FORM_CONTEXT_QUERY_KEY {
+    return 'fc';
+}
+
 sub GLOBAL_ERROR_FIELD {
     return '_';
 }
@@ -192,11 +196,14 @@ sub execute_unwind {
 }
 
 sub format_context_as_query {
-    my(undef, $fc, $req) = @_;
+    my($proto, $fc, $req) = @_;
     # B<Only to be called by Bivio::UI::Task.>
     #
     # Takes context (which may be null), and formats as query string.
-    return $fc ? '?fc=' . $_HTML->escape_query($fc->as_literal($req)) : '';
+    return $fc ? '?'
+	 . $proto->FORM_CONTEXT_QUERY_KEY
+	 . '='
+	 . $_HTML->escape_query($fc->as_literal($req)) : '';
 }
 
 sub get_context_from_request {
@@ -760,15 +767,11 @@ sub process {
     my($input) = $req->get_form();
     # Parse context from the query string, if any
     my($query) = $req->unsafe_get('query');
-    if ($query && $query->{fc}) {
+    if ($query
+        and my $fc = $req->delete_from_query($self->FORM_CONTEXT_QUERY_KEY)
+    ) {
 	# If there is an incoming context, must be syntactically valid.
-	$fields->{context} = $_FC->new_from_literal(
-	    $self, $query->{fc});
-	# We don't want it to appear in any more URIs now that we can
-	# store it in a form.
-	delete($query->{fc});
-	$req->put(query => undef)
-	    unless %$query;
+	$fields->{context} = $_FC->new_from_literal($self, $fc);
 	_trace('context: ', $fields->{context}) if $_TRACE;
     }
 
