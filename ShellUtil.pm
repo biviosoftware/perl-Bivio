@@ -106,14 +106,15 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Map of class to Attributes which contains result of _parse_options()
 my(%_DEFAULT_OPTIONS);
-my($_A) = __PACKAGE__->use('IO.Alert');
-my($_C) = __PACKAGE__->use('IO.Config');
-my($_CA) = __PACKAGE__->use('Collection.Attributes');
-my($_DIE) = __PACKAGE__->use('Bivio.Die');
-my($_F) = __PACKAGE__->use('IO.File');
-my($_L) = __PACKAGE__->use('IO.Log');
-my($_TE) = __PACKAGE__->use('Bivio.TypeError');
-my($_CL) = __PACKAGE__->use('IO.ClassLoader');
+my($_A) = b_use('IO.Alert');
+my($_C) = b_use('IO.Config');
+my($_CA) = b_use('Collection.Attributes');
+my($_DIE) = b_use('Bivio.Die');
+my($_F) = b_use('IO.File');
+my($_L) = b_use('IO.Log');
+my($_TE) = b_use('Bivio.TypeError');
+my($_CL) = b_use('IO.ClassLoader');
+my($_FP) = b_use('Type.FilePath');
 my($_MAP_NAME) = 'ShellUtil';
 $_C->register(my $_CFG = {
     lock_directory => '/tmp',
@@ -272,7 +273,7 @@ sub commit_or_rollback {
     my($self, $abort) = @_;
     my($method) = $self->unsafe_get('noexecute') || $abort
 	? 'rollback' : 'commit';
-    $self->use('Agent.Task')->$method($self->req);
+    b_use('Agent.Task')->$method($self->req);
     return;
 }
 
@@ -318,7 +319,7 @@ sub finish {
     my($fields) = $self->[$_IDI];
     $self->commit_or_rollback($abort);
     $self->get_request->process_cleanup;
-    $self->use('SQL.Connection')->set_dbi_name($fields->{prior_db})
+    b_use('SQL.Connection')->set_dbi_name($fields->{prior_db})
 	if $fields->{prior_db};
     return;
 }
@@ -327,7 +328,7 @@ sub get_request {
     my($self) = @_;
     return $self->unsafe_get('req') || $self->setup->get('req')
 	if ref($self);
-    my($req) = $self->use('Agent.Request')->get_current;
+    my($req) = b_use('Agent.Request')->get_current;
     $_DIE->die('no request') unless $req;
     return $req;
 }
@@ -413,13 +414,13 @@ sub initialize_ui {
     # tasks for execution.
     my($req) = $self->get_request;
     if ($req->can('setup_all_facades')) {
-        $self->use('Agent.Dispatcher')->initialize(!$fully);
+        b_use('Agent.Dispatcher')->initialize(!$fully);
         $req->setup_all_facades
             if $fully;
     }
-    $self->use('UI.Facade')->setup_request(undef, $req);
+    b_use('UI.Facade')->setup_request(undef, $req);
     $req->put_durable(
-	task => $self->use('Agent.Task')->get_by_id($req->get('task_id')))
+	task => b_use('Agent.Task')->get_by_id($req->get('task_id')))
 	if $req->unsafe_get('task_id');
     return $req;
 }
@@ -525,7 +526,7 @@ sub lock_realm {
     $_DIE->die("can't lock general realm")
 	    if $req->get('auth_realm')->get('type')
 		    == Bivio::Auth::RealmType->GENERAL();
-    $self->use('Model.Lock')->execute_unless_acquired($req);
+    b_use('Model.Lock')->execute_unless_acquired($req);
     return;
 }
 
@@ -871,7 +872,7 @@ sub run_daemon {
         if $cfg->{daemon_log_file};
     _check_cfg($cfg, $cfg_name);
     my($children) = {};
-    my($ref) = $self->use('IO.Ref');
+    my($ref) = b_use('IO.Ref');
     while (1) {
 	my($max_duplicates) = $cfg->{daemon_max_children};
 	while (keys(%$children) < $cfg->{daemon_max_children}) {
@@ -912,7 +913,7 @@ sub run_daemon {
 
 sub send_mail {
     my($self, $email, $subject, $body) = @_;
-    my($msg) = $self->use('Mail.Outgoing')->new;
+    my($msg) = b_use('Mail.Outgoing')->new;
     my($req) = $self->get_request;
     $msg->set_recipients($email, $req);
     $msg->set_header('Subject', $subject);
@@ -923,11 +924,11 @@ sub send_mail {
     }
     elsif (b_use('Model.RealmFile')->is_blessed($body)) {
 	$msg->set_content_type('multipart/mixed');
-	$msg->attach(
-	    $body->get_content,
-	    $body->get_content_type,
-	    $body->is_text_content_type,
-	);
+	$msg->attach({
+	    content => $body->get_content,
+	    content_type => $body->get_content_type,
+	    filename => $_FP->get_tail($body->get('path')),
+	});
     }
     elsif (ref($body) eq 'SCALAR') {
 	$msg->set_body($body);
@@ -942,7 +943,7 @@ sub send_mail {
 
 sub set_realm_and_user {
     my($self, $realm, $user) = @_;
-    $realm = $self->use('Auth.Realm')->get_general()
+    $realm = b_use('Auth.Realm')->get_general()
 	unless defined($realm);
     my($req) = $self->get_request;
     $req->set_realm($realm);
@@ -1079,7 +1080,7 @@ sub _compile_options {
 	    unless $k =~ /^[a-z]\w+$/i;
 	my($first) = substr($k, 0, 1);
 	my($type, $default) = @{$options->{$k}};
-	my($opt) = [$k, $self->use(Type => $type)];
+	my($opt) = [$k, b_use(Type => $type)];
 	$opt->[2] = _parse_option_value($self, $opt, $default);
 	$map->{$first} = exists($map->{$first}) ? 0 : $opt;
 	$map->{$k} = $opt;
@@ -1119,7 +1120,7 @@ sub _detach_log {
     my($self) = @_;
     return $self->get_if_exists_else_put(detach_log => sub {
         return $_F->absolute_path(
-	    $self->use('Type.DateTime')->local_now_as_file_name
+	    b_use('Type.DateTime')->local_now_as_file_name
 		. '-'
 		. $self->get('program')
 		. '.log',
@@ -1144,7 +1145,7 @@ sub _lock_files {
     my($name) = @_;
     # Returns the $name converted to (lock_dir, lock_pid)
     # Strip illegal chars
-    $name =~ s{@{[__PACKAGE__->use('Type.FileName')->ILLEGAL_CHAR_REGEXP]}+}{}g;
+    $name =~ s{@{[b_use('Type.FileName')->ILLEGAL_CHAR_REGEXP]}+}{}g;
     my($d) = File::Spec->catdir($_CFG->{lock_directory}, "$name.lockdir");
     return ($d, File::Spec->catfile($d, 'pid'));
 }
@@ -1177,7 +1178,7 @@ sub _method_ok {
 sub _model {
     my($self, $name, $query) = @_;
     # Instantiates I<model> and loads/processes I<query> if supplied.
-    my($m) = $self->use('Model', $name)->new($self->get_request);
+    my($m) = b_use('Model', $name)->new($self->get_request);
     return $m
 	unless $query;
     my($is_unauth) = $self->my_caller =~ /unauth/;
@@ -1219,7 +1220,7 @@ sub _monitor_daemon_children {
 sub _other {
     my($self, $class) = @_;
     my($die);
-    return $_DIE->catch_quietly(sub {$self->use($_MAP_NAME => $class)}, \$die)
+    return $_DIE->catch_quietly(sub {b_use($_MAP_NAME => $class)}, \$die)
 	|| $_DIE->die($class, ": $_MAP_NAME not found or syntax error: ", $die);
 }
 
@@ -1366,7 +1367,7 @@ sub _setup_for_call {
     # Called from within a program.  Request must be setup already or dies.
     # Doesn't allow certain attributes.  Sets user and realm only if passed
     # explicitly.
-    my($req) = $self->use('Agent.Request')->get_current;
+    my($req) = b_use('Agent.Request')->get_current;
     $_DIE->die(ref($self), ": called without first creating a request")
 	unless $req;
     $self->put_request($req);
@@ -1388,10 +1389,10 @@ sub _setup_for_main {
     # Sets realm/user.
     my($fields) = $self->[$_IDI];
     my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
-    my($p) = $self->use('SQL.Connection')->set_dbi_name($db);
+    my($p) = b_use('SQL.Connection')->set_dbi_name($db);
     $fields->{prior_db} = $p unless $fields->{prior_db};
     $self->put_request(
-	$self->use('Test.Request')->get_instance->put_durable(is_secure => 1),
+	b_use('Test.Request')->get_instance->put_durable(is_secure => 1),
     ) unless $self->unsafe_get('req');
     $self->set_realm_and_user(map(_parse_realm($self, $_), qw(realm user)));
     return;
@@ -1407,7 +1408,7 @@ sub _start_daemon_child {
     # Starts child process, appending to log.  Returns pid.
     # Force a reconnect for both child and parent; avoids errors in
     # logs for parent.
-    $self->use('SQL.Connection')->disconnect;
+    b_use('SQL.Connection')->disconnect;
     $_A->reset_warn_counter;
  RETRY: {
 	my($child) = fork;
