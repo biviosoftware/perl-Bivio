@@ -43,6 +43,10 @@ sub send {
     return;
 }
 
+sub set_cache_private {
+    return;
+}
+
 sub set_header {
     my($self, $name, $value) = @_;
     $self->get_if_exists_else_put('headers', {})->{$name} = $value;
