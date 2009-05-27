@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Agent::Embed::Dispatcher;
 use strict;
@@ -35,16 +35,6 @@ sub initialize {
     Bivio::Agent::Embed::Request->clear_current
         unless $prev;
     return $_SELF
-}
-
-
-sub internal_server_redirect_task {
-    my(undef, $task_id, $die, $req) = @_;
-    $req->throw_die(DIE => {
-	message => 'embedded requests cannot redirect',
-	entity => $task_id,
-    });
-    # DOES NOT RETURN
 }
 
 1;
