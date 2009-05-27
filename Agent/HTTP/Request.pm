@@ -19,15 +19,16 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # needed for is_https_port()
 our($_TRACE);
 my($_C) = b_use('AgentHTTP.Cookie');
-my($_F) = b_use('AgentHTTP.Form');
-my($_R) = b_use('AgentHTTP.Reply');
 my($_D) = b_use('Bivio.Die');
 my($_DC) = b_use('Bivio.DieCode');
-my($_H) = b_use('Bivio.HTML');
 my($_DT) = b_use('Type.DateTime');
+my($_F) = b_use('AgentHTTP.Form');
+my($_FCT) = b_use('FacadeComponent.Task');
+my($_FM) = b_use('Biz.FormModel');
+my($_H) = b_use('Bivio.HTML');
+my($_R) = b_use('AgentHTTP.Reply');
 my($_T) = b_use('Agent.Task');
 my($_TI) = b_use('Agent.TaskId');
-my($_FCT) = b_use('FacadeComponent.Task');
 my($_READ_SIZE) = 4096;
 
 sub client_redirect {
@@ -144,10 +145,14 @@ sub new {
     # We must put the cookie now, because it may be used below.
     # auth_user (may) is set by cookie.
     $self->put_durable(cookie => $_C->new($self, $r));
-    return $self->internal_initialize_with_uri(
+    $self->put(referer => my $referer = $r->header_in('Referer'));
+    $self->internal_initialize_with_uri(
 	scalar($r->uri),
 	scalar($r->args),
     );
+    $self->delete_from_query($_FM->FORM_CONTEXT_QUERY_KEY)
+	unless $referer;
+    return $self;
 }
 
 sub put_client_redirect_state {
