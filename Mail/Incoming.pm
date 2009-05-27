@@ -150,9 +150,9 @@ sub get_reply_email_arrays {
 
 sub get_reply_subject {
     my($self) = @_;
-    my($s) = ($_MS->from_literal(_get_field($self, 'subject:')))[0]
+    my($s) = ($_MS->trim_literal(_get_field($self, 'subject:')))[0]
 	|| $_MS->EMPTY_VALUE;
-    return ($s =~ /\bRe:/ ? '' : 'Re: ') . $s;
+    return 'Re: ' . $s;
 }
 
 sub get_reply_to {
