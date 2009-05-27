@@ -13,7 +13,7 @@ sub USAGE {
 usage: b-wiki [options] command [args..]
 commands
   from_xhtml file.html ... - converts file.html to file (wiki)
-  validate_all_realms - call validate_realm for all realms with wiki/blog files
+  validate_all_realms [email] - call validate_realm for all realms with wiki/blog files
   validate_realm [email] - call Action.WikiValidator; send email if $email
 EOF
 }
@@ -40,7 +40,7 @@ sub from_xhtml {
 }
 
 sub validate_all_realms {
-    my($self) = @_;
+    my($self, $email) = @_;
     my($req) = $self->initialize_fully;
     my($wv) = b_use('Action.WikiValidator');
     my($realms) = b_use('Type.StringArray')->sort_unique(
@@ -60,7 +60,7 @@ sub validate_all_realms {
 	    my($res) = Bivio::Die->catch_quietly(
 		sub {
 		    return $self->validate_realm(
-			$self->model('EventEmailSettingList')
+			$email || $self->model('EventEmailSettingList')
 			    ->event_email_for_auth_realm('WikiValidator'),
 		    );
 		},
