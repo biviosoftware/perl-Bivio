@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -26,11 +26,19 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.85  2009/05/26 20:26:29  nagler
+  * Bivio::Biz::Model::BlogList
+    rss_author is realm, because we don't want expose end users
+  * Bivio::Biz::Model::CRMForm
+    default action_id is now set to the assigned owner (if the ticket is assigned)
+  * Bivio::UI::XML::Widget::AtomFeed
+    don't display emails in RSS feeds, becasue they are public
+
   Revision 7.84  2009/05/26 17:41:06  moeller
   * Bivio::Agent::Dispatcher
     save current task_id in process_request()
