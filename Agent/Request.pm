@@ -267,7 +267,7 @@ sub as_string {
 		|| ($self->unsafe_get('auth_realm')
                     ? $self->get_nested(qw(auth_realm type))->get_name
                     : undef)),
-	    ' referer=', $r ? $r->header_in('Referer') : undef,
+	    ' referer=', $self->unsafe_get('referer'),
 	    ' uri=', $self->unsafe_get('uri'),
 	    ' query=', $self->unsafe_get('query'),
 	    ' form=', _form_for_warning($self),
@@ -355,6 +355,16 @@ sub client_redirect {
 sub clone {
     # We don't clone the request object, because it is a singleton.
     return shift;
+}
+
+sub delete_from_query {
+    my($self, $key) = @_;
+    return undef
+	unless my $q = $self->unsafe_get('query');
+    my($res) = delete($q->{$key});
+    $self->put(query => undef)
+	unless %$q;
+    return $res;
 }
 
 sub elapsed_time {
@@ -784,7 +794,6 @@ sub internal_initialize_with_uri {
 	path_info => $path_info,
 	task_id => $task_id,
     )->internal_initialize($auth_realm, $self->unsafe_get('auth_user'));
-    return;
 }
 
 sub internal_new {
