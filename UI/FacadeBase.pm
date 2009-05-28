@@ -710,6 +710,9 @@ sub _cfg_group_admin {
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
 	    ]],
+	    [clear_on_focus_hint => [
+		GROUP_USER_LIST => 'Filter name or @email',
+	    ]],
 	    ['HelpWiki.title' => [
 		GROUP_USER_FORM => 'Privileges for User',
 	    ]],
@@ -1049,6 +1052,10 @@ EOF
 		GROUP_TASK_LOG => 'Hits',
 		SITE_ADMIN_TASK_LOG_CSV => 'Spreadsheet',
 		GROUP_TASK_LOG_CSV => 'Spreadsheet',
+	    ]],
+	    [clear_on_focus_hint => [
+		map(($_ => 'Filter name, >date, @email, or /link'),
+		    qw(SITE_ADMIN_TASK_LOG GROUP_TASK_LOG)),
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
