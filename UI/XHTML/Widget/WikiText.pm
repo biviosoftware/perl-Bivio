@@ -380,6 +380,20 @@ sub internal_format_uri {
     ) . $anchor;
 }
 
+sub unsafe_load_realm_file {
+    my($proto, $path, $args) = @_;
+    my($die_code);
+    my($rf) = $_RF->access_controlled_load(
+	$args->{realm_id},
+	$path,
+	$args->{req},
+	\$die_code,
+    );
+    _fmt_err($path, $die_code, $args)
+	unless $rf;
+    return $rf;
+}
+
 sub new {
     my($self) = shift->SUPER::new(@_);
     $self->put_unless_exists(
@@ -448,7 +462,7 @@ sub prepare_html {
 	    $a->{title} = $t;
 	}
 	else {
-	    $proto->render_error($x, 'not a header pattern', $a);
+	    _fmt_err($x, 'not a header pattern', $a);
 	    substr($$v, 0, 0) = $x;
 	}
     }
