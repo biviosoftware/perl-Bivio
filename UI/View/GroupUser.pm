@@ -37,6 +37,16 @@ sub form {
 
 sub list {
     my($self, $extra_columns) = @_;
+    $self->internal_put_base_attr(selector =>
+	vs_filter_query_form('GroupUserQueryForm', [
+	    Select({
+		choices => b_use('Model.GroupUserQueryForm'),
+		field => 'b_privilege',
+		unknown_label => 'Any Privilege',
+		auto_submit => 1,
+	    }),
+	]),
+    );
     vs_user_email_list(
 	'GroupUserList',
 	[
