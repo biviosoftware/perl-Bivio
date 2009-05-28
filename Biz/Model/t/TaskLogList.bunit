@@ -21,7 +21,7 @@ req()->set_realm('task_log_bunit');
 options({
     compute_params => sub {
 	my(undef, $params) = @_;
-	model(TaskLogQueryForm => {@$params});
+	model(FilterQueryForm => {@$params});
 	return [];
     },
     check_return => sub {
