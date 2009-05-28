@@ -30,6 +30,18 @@ req()->set_realm('site');
 #			[5, '^http://petshop.bivio.biz/not-found'],
 		),
 		{
+		    entity => '/site/bp/NotFoundLabel',
+		    message => 'Not found',
+		    path => '/Public/WikiData/NOT_OK.bmenu',
+		    line_num => 2,
+		},
+		{
+		    entity => '/site/bp/NotFoundLink',
+		    message => 'Not found',
+		    path => '/Public/WikiData/NOT_OK.bmenu',
+		    line_num => 3,
+		},
+		{
 		    entity => undef,
 		    message => qr{not a valid wiki}i,
 		    path => '/Wiki/base.css',

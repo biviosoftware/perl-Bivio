@@ -7,3 +7,5 @@
 ^/
 ^/my-site
 ^/go/bp/StartPage
+
+@b-menu value=OK

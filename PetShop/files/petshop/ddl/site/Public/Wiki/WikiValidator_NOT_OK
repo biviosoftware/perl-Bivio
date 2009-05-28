@@ -6,3 +6,5 @@
 
 Can't test embed, because search indexing fails and causes db create error
    b-embed value=^Not_Found
+
+@b-menu value=NOT_OK
