@@ -196,11 +196,12 @@ EOF
 sub _page_exists {
     my($source) = @_;
     my($req) = $source->req;
+    my($die_code);
     return $_RF->access_controlled_load(
 	vs_constant($req, 'help_wiki_realm_id'),
 	$_WN->to_absolute(_page_name($source)),
 	$source->req,
-	1,
+	\$die_code,
     );
 }
 
