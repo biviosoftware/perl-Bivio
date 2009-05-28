@@ -5,10 +5,10 @@ use strict;
 use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FP) = __PACKAGE__->use('Type.FilePath');
-my($_DATA_READ)
-    = ${__PACKAGE__->use('Auth.PermissionSet')->from_array(['DATA_READ'])};
-my($_RF) = __PACKAGE__->use('Model.RealmFile');
+my($_FP) = b_use('Type.FilePath');
+my($_DATA_READ) = ${b_use('Auth.PermissionSet')->from_array(['DATA_READ'])};
+my($_RF) = b_use('Model.RealmFile');
+my($_DC) = b_use('Bivio.DieCode');
 
 sub access_controlled_execute {
     my($proto, $req) = @_;
@@ -21,7 +21,7 @@ sub access_controlled_execute {
 }
 
 sub access_controlled_load {
-    my($proto, $realm_id, $path, $req, $no_die) = @_;
+    my($proto, $realm_id, $path, $req, $die_code) = @_;
     my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
     foreach my $is_public (1, 0) {
 	last if $rf->unauth_load({
@@ -49,7 +49,8 @@ sub access_controlled_load {
     $rf->throw_die($e => {
 	entity => $req->get('path_info'),
 	realm_id => $req->get('auth_id'),
-    }) unless $no_die;
+    }) unless $die_code;
+    $$die_code = $_DC->from_name($e);
     return undef;
 }
 
