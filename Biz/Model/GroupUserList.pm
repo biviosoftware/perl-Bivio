@@ -6,8 +6,8 @@ use Bivio::Base 'Model.RoleBaseList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AUL) = b_use('Model.AdmUserList');
-my($_SA) = b_use('Type.StringArray');
 my($_R) = b_use('Auth.Role');
+my($_SA) = b_use('Type.StringArray');
 my($_T) = b_use('FacadeComponent.Text');
 
 sub LOAD_ALL_SEARCH_STRING {
@@ -51,6 +51,7 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	],
+	other_query_keys => [qw(b_filter b_privilege)],
 	auth_id => ['RealmUser.realm_id'],
     });
 }
@@ -64,12 +65,36 @@ sub internal_post_load_row {
     return $self->delegate_method($_AUL, @_);
 }
 
+sub internal_pre_load {
+    my($self) = @_;
+    return '' unless my $qf = $self->ureq('Model.GroupUserQueryForm');
+    return '' unless my $role = $qf->get_privilege_role;
+    return <<"EOF";
+        EXISTS (
+            SELECT ru.role
+            FROM realm_user_t ru
+            WHERE ru.realm_id = realm_user_t.realm_id
+            AND ru.user_id = realm_user_t.user_id
+            AND ru.role = @{[$role->as_sql_param]}
+        )
+EOF
+}
+
 sub internal_prepare_statement {
     my($self) = shift;
     my($stmt) = @_;
 #TODO: Move internal_prepare_statement out of AdmUserList into RoleBaseList(?)
 #      or just here.
     $self->delegate_method($_AUL, @_);
+
+    if (my $qf = $self->ureq('Model.GroupUserQueryForm')) {
+	$qf->filter_statement($stmt, {
+	    match_fields => [
+		qr/\@/ => 'Email.email',
+		qr/^\w/ => 'RealmOwner.display_name',
+	    ],
+	});
+    }
     return $self->SUPER::internal_prepare_statement(@_);
 }
 
