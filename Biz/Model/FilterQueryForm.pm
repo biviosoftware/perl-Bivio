@@ -31,15 +31,28 @@ sub execute_empty {
 
 sub filter_statement {
     my($self, $stmt, $args) = @_;
-    return unless defined(my $filter = _get_filter_value($self));
+    return unless defined(my $filter = $self->get_filter_value);
     $stmt->where(map(_filter($_, $stmt, $args), split(' ', $filter)));
     return;
+}
+
+sub get_filter_value {
+    my($self) = @_;
+    return undef
+	unless defined(my $f = $self->unsafe_get('b_filter'));
+    return $f =~ /\S/ && $f ne $self->clear_on_focus_hint ? $f : undef;
 }
 
 sub internal_query_fields {
     return [
 	[qw(b_filter Text)],
     ];
+}
+
+sub set_filter {
+    my($self, $filter) = @_;
+    $self->internal_put_field(b_filter => $filter);
+    return;
 }
 
 sub _filter {
@@ -98,13 +111,6 @@ sub _filter_date_parse {
     return $op eq 'EQ' ? ([qw(GTE LTE)], [$date, $date])
 	: $op eq 'LTE' ? ([undef, $op], [undef, $date])
 	: ([$op, undef], [$date, undef]);
-}
-
-sub _get_filter_value {
-    my($self) = @_;
-    return undef
-	unless defined(my $f = $self->unsafe_get('b_filter'));
-    return $f =~ /\S/ && $f ne $self->clear_on_focus_hint ? $f : undef;
 }
 
 1;
