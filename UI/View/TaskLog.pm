@@ -9,28 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_add_filter {
     my($self) = @_;
-    my($f) = b_use('Model.TaskLogQueryForm')->get_instance;
-    $self->internal_put_base_attr(selector => Join([
-	Form($f->simple_package_name, Join([
-	    ClearOnFocus(
-		Text({
-		    field => 'b_filter',
-		    id => 'b_filter',
-		    size => int(b_use('Type.Line')->get_width / 2),
-		    max_width => $f->get_field_type('b_filter')->get_width,
-		}),
-		$f->CLEAR_ON_FOCUS_HINT,
-	    ),
-	    ScriptOnly({
-		widget => Simple(''),
-		alt_widget => FormButton('ok_button')->put(label => 'Refresh'),
-	    }),
-	]), {
-	    form_method => 'get',
-	    want_timezone => 0,
-	    want_hidden_fields => 0,
-	}),
-    ]));
+    $self->internal_put_base_attr(selector => vs_filter_query_form());
     return;
 }
 
