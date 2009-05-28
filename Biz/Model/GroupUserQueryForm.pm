@@ -9,7 +9,7 @@ my($_T) = b_use('FacadeComponent.Text');
 
 sub get_privilege_role {
     my($self) = @_;
-    return _role_map($self)->{$self->get('b_privilege') || ''};
+    return _role_map($self)->{$self->unsafe_get('b_privilege') || ''};
 }
 
 sub internal_query_fields {
