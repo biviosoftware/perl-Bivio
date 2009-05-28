@@ -627,8 +627,10 @@ sub info_group_admin {
 	    200
 	    ANY_GROUP
 	    ADMIN_READ
+            Model.GroupUserQueryForm
 	    Model.GroupUserList->execute_load_page
 	    View.GroupUser->list
+            next=GROUP_USER_LIST
 	)],
 	[qw(
 	    GROUP_USER_FORM
@@ -954,7 +956,7 @@ sub info_site_admin {
 	        210
 	        ANY_GROUP
 	        ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&FEATURE_TASK_LOG
-                Model.TaskLogQueryForm
+                Model.FilterQueryForm
 	        Model.TaskLogList->execute_unauth_load_page
 	        View.TaskLog->list
                 next=SITE_ADMIN_TASK_LOG
@@ -965,7 +967,7 @@ sub info_site_admin {
 	        212
 	        ANY_GROUP
 	        ADMIN_READ&ADMIN_WRITE&FEATURE_TASK_LOG
-                Model.TaskLogQueryForm
+                Model.FilterQueryForm
 	        Model.TaskLogList->execute_load_page
 	        View.TaskLog->list
                 next=GROUP_TASK_LOG
