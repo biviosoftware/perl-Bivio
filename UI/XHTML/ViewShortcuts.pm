@@ -255,6 +255,25 @@ sub vs_can_group_bulletin_form {
     }];
 }
 
+sub vs_filter_query_form {
+    my($proto, $form, $extra_columns) = @_;
+    # no NoScript() needed because Enter works without javascript
+    return Form($form || 'FilterQueryForm', Join([
+	ClearOnFocus(Text({
+	    field => 'b_filter',
+	    id => 'b_filter',
+	    size => int(b_use('Type.Line')->get_width / 2),
+	}),
+	    ['Model.' . ($form || 'FilterQueryForm'),
+		'->clear_on_focus_hint']),
+	@{$extra_columns || []},
+    ]), {
+	form_method => 'get',
+	want_timezone => 0,
+	want_hidden_fields => 0,
+    });
+}
+
 sub vs_list {
     my($proto, $model, $columns, $attrs) = @_;
     return Table(
