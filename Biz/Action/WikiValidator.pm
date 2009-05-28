@@ -23,6 +23,7 @@ my($_A) = b_use('IO.Alert');
 my($_TYPES) = [map(b_use("Type.$_"), qw(WikiName BlogFileName))];
 my($_ER) = b_use('Action.EmptyReply');
 my($_AA) = b_use('Action.Acknowledgement');
+my($_R) = b_use('Agent.Request');
 
 sub TYPE_LIST {
     return @$_TYPES;
@@ -38,13 +39,10 @@ sub call_embedded_task {
 	sub {return b_use('AgentEmbed.Dispatcher')->call_task($req, $uri)},
 	\$die,
     );
-    return $self->validate_error($uri, _die_msg($die, $req), $wiki_state)
+    return $self->validate_error($uri, $die, $wiki_state)
 	unless $reply;
-    $self->validate_error(
-	$uri,
-	$_FCT->facade_text_for_object($_HS->new($reply->get('status')), $req),
-	$wiki_state,
-    ) unless $reply->is_status_ok;
+    $self->validate_error($uri, $_HS->new($reply->get('status')), $wiki_state)
+	unless $reply->is_status_ok;
     return $reply;
 }
 
@@ -84,6 +82,10 @@ sub unsafe_load_error_list {
 
 sub validate_error {
     my($self, $entity, $message, $wiki_state) = @_;
+    $message = $_FCT->facade_text_for_object(
+	$_D->is_blessed($message) ? $message->get('code') : $message,
+	$wiki_state->{req} || $self->req
+    ) if ref($message);
     if ($message =~ s/(\w+(?:\:\:|\-\>)\w+.*)//) {
 	b_warn($message, ': removed Perl junk: ', $1);
 	$message ||= 'internal server error';
@@ -96,17 +98,16 @@ sub validate_error {
 	$err->{path} = $wiki_state->{path};
 	$err->{line_num} = $wiki_state->{line_num},
     }
+    $err->{path} ||= $self->unsafe_get('path');
+    _trace($err) if $_TRACE;
     if (ref($self)) {
-	$err->{path} ||= $self->unsafe_get('path');
 	push(@{$self->get('errors')}, $err);
 	return;
     }
     $wiki_state->{req}->warn(
-	$err->{path} ? (
-	    $err->{path},
-	    $err->{line_num} ? (', line ', $err->{line_num}) : (),
-	    ': ',
-	) : (),
+	$err->{path},
+	$err->{line_num} ? (', line ', $err->{line_num}) : (),
+	': ',
 	$entity ? ($entity, ': ') : (),
 	$message,
     );
@@ -124,8 +125,7 @@ sub validate_realm {
 	\$die,
     );
     $req->set_task($prev_task_id);
-    ($self = _new($proto, undef, $req))
-	->validate_error(undef, _die_msg($die, $req))
+    ($self = _new($proto, undef, $req))->validate_error(undef, $die)
 	unless $self;
     $self->put(errors => undef)
 	unless @{$self->get('errors')};
@@ -143,11 +143,6 @@ sub validate_uri {
 	if $uri =~ /^\w+:/i;
 #TODO: Need simpler check, because not always in correct context
     return $self->call_embedded_task($uri, $wiki_state) ? 1 : 0;
-}
-
-sub _die_msg {
-    my($die, $req) = @_;
-    return $_FCT->facade_text_for_object($die->get('code'), $req);
 }
 
 sub _new {
@@ -188,7 +183,7 @@ sub _validate_path {
     });
     _trace($die) if $_TRACE;
     $req->get('reply')->delete_output;
-    $self->validate_error(undef, _die_msg($die, $req))
+    $self->validate_error(undef, $die)
 	if $die;
     return;
 }
