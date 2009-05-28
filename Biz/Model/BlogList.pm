@@ -41,7 +41,9 @@ sub get_modified_date_time {
 
 sub get_rss_author {
     my($self) = @_;
-    return $self->req(qw(auth_realm owner display_name));
+    return $self->new_other('RealmOwner')->unauth_load_by_id_or_name_or_die(
+        $self->get('RealmFile.realm_id'),
+    )->get('display_name');
 }
 
 sub get_rss_summary {
@@ -64,7 +66,6 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	can_iterate => 1,
-        auth_id => 'RealmFile.realm_id',
         primary_key => [{
 	    name => 'path_info',
 	    type => 'BlogFileName',
@@ -80,6 +81,7 @@ sub internal_initialize {
             RealmFile.path
 	)],
 	other => [qw(
+            RealmFile.realm_id
 	    RealmFile.is_public
 	    RealmFile.realm_file_id
         ),
@@ -126,6 +128,7 @@ sub internal_prepare_statement {
 	: $_ARF->access_is_public_only($self->req);
     $stmt->where(
 	$stmt->AND(
+            $stmt->IN('RealmFile.realm_id', [$self->internal_realm_list]),
 	    $stmt->OR(
 		map(
 		    $stmt->LIKE(
@@ -140,6 +143,10 @@ sub internal_prepare_statement {
 	['Email.location', [$self->get_instance('Email')->DEFAULT_LOCATION]],
     );
     return;
+}
+
+sub internal_realm_list {
+    return shift->req('auth_id');
 }
 
 sub render_html {
