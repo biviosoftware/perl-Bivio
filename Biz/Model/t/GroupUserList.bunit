@@ -1,7 +1,8 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->initialize_fully->set_realm('fourem');
+req()->set_realm_and_user('fourem');
+req()->initialize_fully('GROUP_USER_LIST');
 [
     load_all => [
         [{
@@ -30,5 +31,27 @@ req()->initialize_fully->set_realm('fourem');
 	    [Auth_Role('ADMINISTRATOR'), Auth_Role('GUEST')],
 	    [Auth_Role('FILE_WRITER')],
 	],
+    ],
+    sub {
+	model(GroupUserQueryForm => {
+	    b_privilege => 'Admin',
+	});
+    } => undef,
+    load_all => [
+	[] => [{
+	    privileges => StringArray([qw(Admin Editor Subscribed)]),
+	    display_name => 'User, Root',
+        }],
+    ],
+    sub {
+	model(GroupUserQueryForm => {
+	    b_filter => 'read@',
+	});
+    } => undef,
+    load_all => [
+	[] => [{
+	    privileges => StringArray([qw(Member Subscribed)]),
+            display_name => 'User, Btest_read',
+	}],
     ],
 ];
