@@ -257,7 +257,6 @@ sub vs_can_group_bulletin_form {
 
 sub vs_filter_query_form {
     my($proto, $form, $extra_columns) = @_;
-    # no NoScript() needed because Enter works without javascript
     return Form($form || 'FilterQueryForm', Join([
 	ClearOnFocus(Text({
 	    field => 'b_filter',
@@ -267,6 +266,10 @@ sub vs_filter_query_form {
 	    ['Model.' . ($form || 'FilterQueryForm'),
 		'->clear_on_focus_hint']),
 	@{$extra_columns || []},
+	ScriptOnly({
+	    widget => Simple(''),
+	    alt_widget => FormButton('ok_button')->put(label => 'Refresh'),
+	}),
     ]), {
 	form_method => 'get',
 	want_timezone => 0,
