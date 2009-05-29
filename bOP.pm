@@ -26,11 +26,52 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.88  2009/05/28 23:53:01  dobbs
+  * Bivio::Biz::Action::RealmFile
+    access_controlled_load accepts ref for $die_code so can get error on
+    failure; $no_die is no longer valid interface
+  * Bivio::Biz::Action::WikiValidator
+    encapsulate object to text conversion in validate_error
+  * Bivio::Biz::Model::BlogList
+    added internal_realm_list().  BlogList can now be subclassed to
+    aggregate blog entries from multiple realms.
+    get_rss_author() now gets the RealmOwner.display_name from the realm
+    containing the blog folder (RealmFile.realm_id).
+  * Bivio::Biz::Model::FilterQueryForm
+    NEW
+  * Bivio::Biz::Model::GroupUserList
+    filters list using GroupUserQueryForm
+  * Bivio::Biz::Model::GroupUserQueryForm
+    NEW
+  * Bivio::Biz::Model::TaskLogList
+    moved filter code into FilterQueryForm
+  * Bivio::Biz::Model::TaskLogQueryForm
+    removed
+  * Bivio::Delegate::TaskId
+    changed TaskLogQueryForm to FilterQueryForm
+  * Bivio::DieCode
+    rm pod, made long descriptions more user-friendly
+  * Bivio::UI::FacadeBase
+    added clear_on_focus_hint Text
+  * Bivio::UI::View::GroupUser
+    added selector for list()
+  * Bivio::UI::View::TaskLog
+    now uses vs_filter_query_form()
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_filter_query_form()
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    access_controlled_load API changed
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    encapsulate opening file in WikiText
+    Produce appropriate errors
+  * Bivio::UI::XHTML::Widget::WikiText
+    added unsafe_load_realm_file
+
   Revision 7.87  2009/05/27 22:02:11  nagler
   * Bivio::Agent::Reply
     set_cache_private doesn't need to get set
