@@ -16,6 +16,7 @@ req()->set_realm('site');
 		    entity => undef,
 		    message => qr{not a valid wiki}i,
 		    path => '/Public/Wiki/base.css',
+		    line_num => undef,
 		},
 		map(+{
 		    path => '/Public/Wiki/WikiValidator_NOT_OK',
@@ -45,11 +46,13 @@ req()->set_realm('site');
 		    entity => undef,
 		    message => qr{not a valid wiki}i,
 		    path => '/Wiki/base.css',
+		    line_num => undef,
 		},
 		{
 		    entity => undef,
 		    message => qr{same name}i,
 		    path => '/Wiki/index',
+		    line_num => undef,
 		},
 		{
 		    entity => '/site/bp/NoSuchWiki',
