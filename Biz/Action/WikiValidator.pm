@@ -82,12 +82,13 @@ sub unsafe_load_error_list {
 
 sub validate_error {
     my($self, $entity, $message, $wiki_state) = @_;
+    my($req) = $wiki_state->{req} || $self->req;
     $message = $_FCT->facade_text_for_object(
-	$_D->is_blessed($message) ? $message->get('code') : $message,
-	$wiki_state->{req} || $self->req
+	$_D->is_blessed($message) ? $message->get('code') : $message, $req,
     ) if ref($message);
     if ($message =~ s/(\w+(?:\:\:|\-\>)\w+.*)//) {
-	b_warn($message, ': removed Perl junk: ', $1);
+	b_warn($message, ': removed Perl junk: ', $1, '; ', $req);
+	$_A->print_stack;
 	$message ||= 'internal server error';
     }
     my($err) = {
@@ -104,12 +105,14 @@ sub validate_error {
 	push(@{$self->get('errors')}, $err);
 	return;
     }
-    $wiki_state->{req}->warn(
+    b_warn(
 	$err->{path},
 	$err->{line_num} ? (', line ', $err->{line_num}) : (),
 	': ',
 	$entity ? ($entity, ': ') : (),
 	$message,
+	'; ',
+	$req
     );
     return;
 }
