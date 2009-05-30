@@ -8,9 +8,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
-my($_SUFFIX) = '.bmenu';
 my($_R) = b_use('Type.Regexp');
-my($_C) = b_use('UI.Constant');
+my($_C) = b_use('FacadeComponent.Constant');
+my($_S) = b_use('Type.String');
+my($_SUFFIX) = '.bmenu';
 
 sub TARGET {
     return __PACKAGE__ . '::b-menu-target';
@@ -61,8 +62,8 @@ sub render_html {
         ' "b_selected_label_prefix" attributes',
     ) if %{$args->{attrs}};
     my($links) = _parse_csv($value, $args);
-    return
-	unless @$links;
+    return ''
+	unless $links && @$links;
     my($buf) = '';
     TaskMenu([map(_item_widget($proto, $args, $_, $prefix), @$links)], $class)
 	->put(selected_item => sub {
@@ -120,6 +121,10 @@ sub _parse_csv {
 sub _parse_csv_row {
     my($row, $args) = @_;
     $args->{line_num}++;
+    foreach my $k (keys(%$row)) {
+	$row->{$k} =~ s/^\s+|\s+$//s
+	    if _has_value($row->{$k});
+    }
     if (_has_value($row->{Link}) && $row->{Link} =~ s/\Q$_SUFFIX\E$//oi) {
 	my($links) = _parse_csv($row->{Link}, $args);
 	return {
@@ -132,6 +137,7 @@ sub _parse_csv_row {
 	};
     }
     elsif (_has_value($row->{Label})) {
+#TODO: Encapsulate in WikiText
 	_set_missing_link_from_label($row);
 	my($href) = $args->{proto}->internal_format_uri($row->{Link}, $args);
 	return {
@@ -161,6 +167,10 @@ sub _render_label {
         value => $row->{Label},
     });
     $res =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
+    # Need to strip the <a>, because page won't render otherwise
+    $args->{proto}->render_error(
+	$row->{Label}, 'Label contains ^ or embedded link', $args,
+    ) if $res =~ s{<a[^>]+>(.*?)</a>}{$1}s;
     chomp($res);
     return Simple($res);
 }
