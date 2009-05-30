@@ -11,7 +11,7 @@ Home,/
 Login,/pub/login
 MyPage,^MyPage
 Document,^Document,pdf
-Flyer ^icon.png,^Flyer,,mypage
+  ^Flyer ^icon.png,^Flyer,,mypage
 EOF
 [
     [{
@@ -24,7 +24,7 @@ EOF
        class="want_sep" "/pub/login" Login
        class="want_sep selected" "/fourem/\w+/MyPage" MyPage
        class="pdf want_sep" "/fourem/\w+/Document" Document
-       class="want_sep selected" "/fourem/\w+/Flyer" Flyer "[^"]+icon.png"
+       class="want_sep selected"><a href="/fourem/\w+/Flyer">Flyer.<img "[^"]+icon.png"
     ))]}},
     [{
 	value => '@b-menu value=T1',
