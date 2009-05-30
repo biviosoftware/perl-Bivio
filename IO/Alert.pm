@@ -306,6 +306,17 @@ sub print_literally {
     return;
 }
 
+sub print_stack {
+    # () : undef
+    # Calls &$_LOGGER with stack trace as returned by Carp::longmess.
+#TODO: reaching inside Carp isn't great.  Also copying code from &warn
+#     is not pretty either.
+    # Doesn't trim stack trace, so may be really long.  Have an
+    # absolute limit?
+    &$_LOGGER(Carp::longmess(''));
+    return;
+}
+
 sub reset_warn_counter {
     # (self) : undef
     # Resets the internal warn counter to max_warnings.
@@ -374,7 +385,7 @@ sub warn_deprecated {
 	':',
 	(caller($i))[2],
     );
-    _trace_stack() if $_STACK_TRACE_WARN;
+    $proto->print_stack() if $_STACK_TRACE_WARN;
     return;
 }
 
@@ -575,17 +586,6 @@ sub _timestamp {
            $hour, $min, $sec);
 }
 
-sub _trace_stack {
-    # () : undef
-    # Calls &$_LOGGER with stack trace as returned by Carp::longmess.
-#TODO: reaching inside Carp isn't great.  Also copying code from &warn
-#     is not pretty either.
-    # Doesn't trim stack trace, so may be really long.  Have an
-    # absolute limit?
-    &$_LOGGER(Carp::longmess(''));
-    return;
-}
-
 sub _warn_handler {
     # (string) : undef
     # Handler for $SIG{__WARN__}.  Reformats message.  May output stack trace
@@ -593,8 +593,8 @@ sub _warn_handler {
     my($msg) = @_;
     # Trim perl's message format (not enough info)
     $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
-    Bivio::IO::Alert->warn($msg);
-    _trace_stack() if $_STACK_TRACE_WARN;
+    __PACKAGE__->warn($msg);
+    __PACKAGE__->print_stack() if $_STACK_TRACE_WARN;
     return;
 }
 
