@@ -5,6 +5,13 @@ Type();
     public_path_info => [
 	'/Public/foo' => '/foo',
     ],
+    is_absolute => [
+	'/.anything' => 1,
+	'/a/b/c.file' => 1,
+	'/a.file' => 1,
+	'a.file' => 0,
+	'foo' => 0,
+    ],
     is_ignored_value => [
 	'a.file' => 0,
 	'.anything' => 1,
