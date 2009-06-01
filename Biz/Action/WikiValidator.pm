@@ -174,7 +174,11 @@ sub _validate_path {
     ) if $seen->{$p}++;
     my($req) = $self->req;
     my($die) = $_D->catch_quietly(sub {
-	$req->delete(qw(query form_model path_info));
+	$req->put(
+	    query => undef,
+	    path_info => undef,
+	)->delete('form_model');
+
 	if ($type =~ /Blog/) {
 	    $_M->new($req, 'BlogList')->load_this({this => [$p]});
 	    $_V->call_main('Blog->detail', $req);
