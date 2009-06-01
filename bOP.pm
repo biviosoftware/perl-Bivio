@@ -26,11 +26,24 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.90  2009/05/30 16:02:44  nagler
+  * Bivio::Biz::Action::WikiValidator
+    print_stack when removing perl junk
+    added req to end of warnings
+  * Bivio::IO::Alert
+    added print_stack()
+  * Bivio::Test::WikiText
+    fmt
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    remove <a> from labels, because can't have <a> with <a>, report error.
+    (silently) strip leading/trailing spaces on all cells
+    return '' when no links
+
   Revision 7.89  2009/05/29 00:15:25  dobbs
   * Bivio::Biz::Model::FilterQueryForm
     added get/set filter back
