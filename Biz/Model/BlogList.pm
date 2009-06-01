@@ -66,6 +66,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	can_iterate => 1,
+        auth_id => 'RealmFile.realm_id',
         primary_key => [{
 	    name => 'path_info',
 	    type => 'BlogFileName',
@@ -81,7 +82,6 @@ sub internal_initialize {
             RealmFile.path
 	)],
 	other => [qw(
-            RealmFile.realm_id
 	    RealmFile.is_public
 	    RealmFile.realm_file_id
         ),
@@ -128,7 +128,6 @@ sub internal_prepare_statement {
 	: $_ARF->access_is_public_only($self->req);
     $stmt->where(
 	$stmt->AND(
-            $stmt->IN('RealmFile.realm_id', [$self->internal_realm_list]),
 	    $stmt->OR(
 		map(
 		    $stmt->LIKE(
@@ -143,10 +142,6 @@ sub internal_prepare_statement {
 	['Email.location', [$self->get_instance('Email')->DEFAULT_LOCATION]],
     );
     return;
-}
-
-sub internal_realm_list {
-    return shift->req('auth_id');
 }
 
 sub render_html {
