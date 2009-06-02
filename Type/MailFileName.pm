@@ -14,7 +14,7 @@ sub PRIVATE_FOLDER {
 }
 
 sub REGEX {
-    return qr{(@{[shift->join('\d{4}-\d{2}', '[^/]*\d{14}-\d{3,5}.eml')]})}i;
+    return qr{(@{[shift->join('\d{4}-\d{2}', '(?:[^/]*\d{14}-\d{3,5}|[^/]+ \d{17}).eml')]})}i;
 }
 
 sub to_unique_absolute {
