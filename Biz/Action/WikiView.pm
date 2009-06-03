@@ -8,13 +8,15 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 my($_ARF) = b_use('Action.RealmFile');
+my($_C) = b_use('FacadeComponent.Constant');
 my($_E) = b_use('Model.Email');
 my($_FP) = b_use('Type.FilePath');
+my($_MRF) = b_use('Model.RealmFile');
 my($_RO) = b_use('Model.RealmOwner');
 my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
 my($_WT) = b_use('XHTMLWidget.WikiText');
-my($_C) = b_use('FacadeComponent.Constant');
+my($_NOT_FOUND) = b_use('Bivio.DieCode')->NOT_FOUND;
 
 sub execute {
     my($proto) = shift;
@@ -79,6 +81,19 @@ sub execute_prepare_html {
     # '/edit-wiki/WikiData/bogus.txt?ack=FORUM_WIKI_NOT_FOUND' -- is this a bug?
 	$req->put(path_info => $_WDN->to_absolute($name));
 	return $_ARF->access_controlled_execute($req);
+#TODO: Test this thoroughly with all apps
+# 	my($die_code);
+# 	my($rf) = $proto->unsafe_load_wiki_data(
+# 	    $req->get('auth_id'),
+# 	    $_MRF->parse_path($req->get('path_info')),
+# 	    $req,
+# 	    \$die_code,
+# 	);
+# 	$req->throw_die($die_code || 'DIE' => {
+# 	    entity => $req->get('path_info'),
+# 	    realm_id => $req->get('auth_id'),
+# 	}) unless $rf;
+# 	return $_ARF->set_output_for_get($rf);
     }
     my($self) = $proto->new->put_on_request($req)->put(
 	name => $name,
@@ -119,6 +134,26 @@ sub get {
 
 sub render_html {
     return $_WT->render_html(shift->get('wiki_args'));
+}
+
+sub unsafe_load_wiki_data {
+    my($self) = shift;
+    if (my $res = $_ARF->access_controlled_load(@_)) {
+	return $res;
+    }
+    my($realm_id, $path, $req, $die_code) = @_;
+    my($sid) = $_C->get_value('site_realm_id');
+    return
+	if $sid eq $realm_id;
+    my($rf) = $_MRF->new($req);
+    return $rf
+	if $rf->unauth_load({
+	    realm_id => $sid,
+	    path => $_FP->to_public($path),
+	    is_public => 1,
+	});
+    $$die_code ||= $_NOT_FOUND;
+    return undef;
 }
 
 sub _is_start_page {
