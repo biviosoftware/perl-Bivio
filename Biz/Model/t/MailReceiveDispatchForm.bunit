@@ -14,7 +14,8 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 		my($case, $params) = @_;
 		req()->set_realm(undef);
 		req()->set_user(undef);
-		my($from, $recipient) = @$params;
+		my($from, $recipient, $header) = @$params;
+		$header ||= '';
 		$recipient = $recipient . '@bivio.biz'
 		    unless $recipient =~ /\@/;
 		$from = email($from)
@@ -24,7 +25,7 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 		    client_addr => '1.2.3.4',
 		    message => {
 			name => '',
-			content => \(qq{From: $from\n\n}),
+			content => \(qq{From: $from$header\n\n}),
 		    },
 		}];
 	    },
@@ -64,6 +65,14 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 		=> [undef, undef, qw(email_alias_task random@example.com)],
 	    [qw(demo any@in.bunit)]
 		=> [undef, undef, qw(email_alias_task any@out.bunit)],
+	    [qw(demo demo), "\nX-Bivio-Forwarded: 3"]
+		=> [qw(demo demo USER_MAIL_RECEIVE)],
+	    [qw(demo demo), "\nX-Bivio-Forwarded: 4"]
+		=> [undef, undef, 'ignore_task'],
+	    [qw(demo demo), "\nX-Spam-Flag: N"]
+		=> [qw(demo demo USER_MAIL_RECEIVE)],
+	    [qw(demo demo), "\nX-Spam-Flag: Y"]
+		=> [undef, undef, 'ignore_task'],
 	],
 	{
 	    method => 'parse_recipient',

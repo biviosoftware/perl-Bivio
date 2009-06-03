@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailReceiveDispatchForm;
 use strict;
@@ -9,16 +9,19 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_A) = b_use('Mail.Address');
 my($_DT) = b_use('Type.DateTime');
+my($_F) = b_use('Biz.File');
 my($_E) = b_use('Type.Email');
-my($_MP) = b_use('Ext.MIMEParser');
+my($_I) = b_use('Mail.Incoming');
+my($_RI) = b_use('Agent.RequestId');
 my($_TASK) = b_use('FacadeComponent.Task');
 my($_TEXT) = b_use('FacadeComponent.Text');
-my($_MAX_COMPARE_SIZE) = 10000;
+my($_FP) = b_use('Type.FilePath');
 Bivio::IO::Config->register(my $_CFG = {
     ignore_dashes_in_recipient => Bivio::IO::Config->if_version(
 	5 => sub {1},
 	sub {0},
     ),
+    filter_spam => 0,
 });
 my($_ONE_HOUR_SECONDS) = 3600;
 
@@ -41,52 +44,31 @@ sub execute_ok {
     $req->put_durable(client_addr => $self->get('client_addr'));
     $self->put_on_request(1);
     my($redirect, $realm, $op, $plus_tag) = _email_alias($self);
-    $redirect = _ignore_email($self)
-	unless $redirect;
-    _trace($redirect) if $_TRACE;
-    return {
-	method => 'server_redirect',
-	task_id => $redirect,
-	query => undef,
-    } if $redirect;
+    return _redirect($redirect)
+	if $redirect;
+    my($mi) = $_I->new($self->get('message')->{content});
+    $self->internal_put_field(
+	mail_incoming => $mi,
+	plus_tag => $plus_tag,
+    );
+    return _redirect('ignore_task')
+	if _ignore($self, \&_ignore_email, \&_ignore_forwarded, \&_ignore_spam);
     $self->internal_set_realm($realm);
-    my($copy) = ${$self->get('message')->{content}};
-    my($parser) = $_MP->parse_data(\$copy);
-    $self->internal_put_field(mime_parser => $parser);
-    $self->internal_put_field(task_id => _task($self, $op));
-    $self->internal_put_field(plus_tag => $plus_tag);
-#TODO: Use Mail.Incoming
-    $self->internal_put_field(from_email => _from_email(
-	$parser->head->get('from') || $parser->head->get('apparently-from')));
+    return _redirect('ignore_task')
+	if _ignore($self, \&_ignore_duplicate);
+    $self->internal_put_field(
+	task_id => _task($self, $op),
+	from_email => ($mi->get_from)[0],
+    );
     _trace($self->get('from_email'), ' ', $self->get('task_id')) if $_TRACE;
     $self->throw_die('FORBIDDEN', {
 	entity => $realm,
-        message => 'message missing from email',
+        message => 'message missing "From"',
     }) unless $self->get('from_email');
     $self->new_other('UserLoginForm')->process({
 	login => $self->internal_get_login,
 	via_mta => 1,
     });
-    if (my $rfid = _detect_mail_loop($self)) {
-	if ($req->unsafe_get('auth_user')) {
-	    my($rmb) = $self->new_other('RealmMailBounce');
-	    $self->internal_put_field(recipient => $rmb->return_path(
-		$req->get('auth_user')->get('realm_id'),
-		$self->get('from_email'),
-		$rfid,
-	    ));
-	    my($bn, $bo, $bp, $bd) = $self->parse_recipient;
-	    $self->internal_put_field(plus_tag => $bp);
-	    $self->internal_put_field(task_id => 'USER_MAIL_BOUNCE');
-	}
-	else {
-	    b_warn(
-		$self->get('from_email'),
-		': ignoring duplicate message from unknown user',
-	    );
-	    $self->internal_put_field(task_id => _ignore_task($self, 1));
-	}
-    }
     return {
 	method => 'server_redirect',
 	task_id => $self->get('task_id'),
@@ -119,8 +101,8 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	other => [
 	    {
-		name => 'mime_parser',
-		type => 'String',
+		name => 'mail_incoming',
+		type => $_I,
 		constraint => 'NONE',
 	    },
 	    {
@@ -191,45 +173,6 @@ sub parse_recipient {
     return ($name, $op, $plus_tag, $domain);
 }
 
-sub _body {
-    my($content) = @_;
-    if ((my $start = index($$content, "\n\n")) > 0) {
-	$start += 2;
-	if ((my $len = length($$content) - $start) > 0) {
-	    $len = $_MAX_COMPARE_SIZE
-		if $len > $_MAX_COMPARE_SIZE;
-	    return substr($$content, $start, $len);
-	}
-    }
-    Bivio::IO::Alert->warn(
-	(/Message-Id:\s*(\S+)/)[0],
-	': message contains empty body or is not valid RFC822',
-    );
-    return $content . '';
-}
-
-sub _detect_mail_loop {
-    my($self) = @_;
-    my($rml) = $self->new_other('RealmMailList');
-    if ($rml->unsafe_load_this_or_first) {
-	my($rf) = $rml->get_model('RealmFile');
-	return 0
-	    if $_DT->compare($_DT->add_seconds($rf->get('modified_date_time'),
-					       $_ONE_HOUR_SECONDS),
-			     $_DT->now) == -1;
-	my($rfid) = $rf->get('realm_file_id');
-	my($last_body) = _body($rf->get_content);
-	my($body) = _body($self->get('message')->{content});
-	if ($body && $last_body && $body eq $last_body) {
-	    Bivio::IO::Alert->warn('Mail loop detected for realm_file_id '
-				       . $rfid . ":\n",
-				   ${$self->get('message')->{content}});
-	    return $rfid
-	}
-    }
-    return 0;
-}
-
 sub _email_alias {
     my($self) = @_;
     my($req) = $self->req;
@@ -237,8 +180,8 @@ sub _email_alias {
     Bivio::UI::Facade->setup_request($domain, $req);
     return (undef, $realm, $op, $plus_tag)
 	unless $req->get('task')->unsafe_get_redirect('email_alias_task', $req)
-	and (my $new = $self->new_other('EmailAlias')
-	    ->incoming_to_outgoing($self->get('recipient')));
+	and my $new = $self->new_other('EmailAlias')
+	->incoming_to_outgoing($self->get('recipient'));
     if ($_E->is_valid($new)) {
 	_trace($self->get('recipient'), ' => ', $new) if $_TRACE;
 	$self->internal_put_field(recipient => $new);
@@ -248,39 +191,82 @@ sub _email_alias {
     return (undef, $self->parse_recipient);
 }
 
-sub _forwarding_loop {
-    my($self) = @_;
-    ${$self->get('message')->{content}} =~ /X-Bivio-Forwarded:\s*(\d*)/s;
-    Bivio::IO::Alert->warn("Forwarding threshold exceeded, message ignored:\n",
-			   ${$self->get('message')->{content}})
-	    if $1 && $1 > 3;
-    return $1 ? $1 > 3 : 0;
-}
-
 sub _from_email {
     my($from) = @_;
     ($from) = $from && $_A->parse($from);
     return $from && lc($from);
 }
 
-sub _get_body {
-    my($self) = @_;
-    ${$self->get('message')->{content}} =~ /\n\n(.*)$/s;
-    return $1;
+sub _ignore {
+    my($self, @ops) = @_;
+    foreach my $op (@ops) {
+	next
+	    unless my $which = $op->($self);
+	$_F->write(
+	    $_FP->join(
+		'MailReceiveDispatchForm',
+		$which,
+		$_RI->current($self->req) . '.eml',
+	    ),
+	    $self->get('message')->{content},
+	);
+	return 1;
+    }
+    return 0;
 }
+
+sub _ignore_duplicate {
+    my($self) = @_;
+    my($rml) = $self->new_other('RealmMailList');
+    return undef
+	unless $rml->unsafe_load_this_or_first
+	&& _ignore_duplicate_threshold(
+	    $rml->get('RealmFile.modified_date_time'));
+#TODO: Should decode body
+    return $_I->new($rml->get_rfc822)->get_body
+	eq $self->get('mail_incoming')->get_body
+        ? 'duplicate' : undef;
+}
+
+sub _ignore_duplicate_threshold {
+    my($prev) = @_;
+    return $_DT->compare(
+	$_DT->add_seconds($prev, $_ONE_HOUR_SECONDS),
+	$_DT->now,
+    ) > 0;
+}
+
 
 sub _ignore_email {
     my($self) = @_;
-    return _ignore_task($self,
-			$_E->is_ignore($self->get('recipient'))
-			    || _forwarding_loop($self));
+    return undef
+	unless $_E->is_ignore($self->get('recipient'));
+    return 'ignore-mail';
 }
 
-sub _ignore_task {
-    my($self, $ignore_email) = @_;
-    return $self->req->get('task')
-	->unsafe_get_redirect('ignore_task', $self->req) && $ignore_email
-	    ? 'ignore_task' : undef;
+sub _ignore_forwarded {
+    my($self) = @_;
+#TODO: Couple with Mail.Common
+    return $self->get('mail_incoming')->get('header')
+	=~ /^X-Bivio-Forwarded:\s*(\d*)/im
+	&& $1 > 3 ? 'too-many-forwards' : undef;
+}
+
+sub _ignore_spam {
+    my($self) = @_;
+    return $_CFG->{filter_spam}
+	&& $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s*Y/im
+	? 'spam' : undef;
+}
+
+sub _redirect {
+    my($task) = @_;
+    _trace($task) if $_TRACE;
+    return {
+	method => 'server_redirect',
+	task_id => $task,
+	query => undef,
+    };
 }
 
 sub _task {
@@ -292,8 +278,7 @@ sub _task {
         message => 'operation is invalid',
     }) unless $op =~ /^[-\w]*$/;
     return $_TASK->unsafe_get_from_uri(
-	$_TEXT->get_value('MailReceiveDispatchForm.uri_prefix',
-				   $req) . $op,
+	$_TEXT->get_value('MailReceiveDispatchForm.uri_prefix', $req) . $op,
 	$req->get('auth_realm')->get('type'),
 	$req
     ) || $self->throw_die('NOT_FOUND', {
