@@ -21,6 +21,9 @@ sub merge_overrides {
 	'Bivio::Biz::Model::UserCreateForm' => {
 	    unapproved_applicant_mode => 1,
 	},
+	'Bivio::Biz::Model::MailReceiveDispatchForm' => {
+	    filter_spam => 1,
+	},
 	'Bivio::Ext::DBI' => {
 	    database => 'pet',
 	    user => 'petuser',
