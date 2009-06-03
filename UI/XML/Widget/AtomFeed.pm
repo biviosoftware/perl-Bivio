@@ -59,6 +59,7 @@ sub internal_new_args {
 sub _id {
     my($task_attr) = @_;
     # see http://validator.w3.org/feed/docs/error/InvalidTAG.html for format
+    # avoid duplicates http://validator.w3.org/feed/docs/error/DuplicateIds.html
     return Tag(id => Join([
 	'tag:',
 	[sub {
