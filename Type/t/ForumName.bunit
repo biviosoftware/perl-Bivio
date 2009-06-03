@@ -14,11 +14,13 @@ Type();
 	],
 	extract_top => [
 	    'abc-def' => 'abc',
+	    'abc-def-ghi' => 'abc',
 	    '0def' => undef,
 	],
 	extract_rest => [
 	    'abc' => undef,
 	    'abc-def' => 'def',
+	    'abc-def-ghi' => 'def-ghi',
 	],
 	is_top => [
 	    'abc-def' => 0,
@@ -27,6 +29,11 @@ Type();
 	join => [
 	    abc => 'abc',
 	    [qw(abc def)] => 'abc-def',
+	    [qw(abc def ghi)] => 'abc-def-ghi',
+	],
+	split => [
+	    'abc' => [qw(abc)],
+	    'abc-def-ghi' => [qw(abc def ghi)],
 	],
     ],
 ];
