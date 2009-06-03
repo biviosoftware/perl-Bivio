@@ -4,7 +4,7 @@ WikiText();
 my($reset_menu) = sub {
     my($r, $p, $c) = @_;
     req()->with_realm($r, sub {
-        my($path) = class('Type.WikiDataName')->to_absolute($p);
+        my($path) = class('Type.WikiDataName')->to_absolute($p, 1);
         model('RealmFile')->delete({path => $path});
         model('RealmFile')->create_with_content({path => $path}, \$c);
         return;
