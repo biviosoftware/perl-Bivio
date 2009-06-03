@@ -1,0 +1,15 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+login_as('root');
+visit_uri('/my-site');
+my($orig) = get_uri();
+follow_link(qr{^fourem$}, 'tables');
+test_ok(get_uri() ne $orig);
+my($to) = get_html_parser()->get_nested(qw(Links Settings))->{href};
+test_equals(qr{fc=}, $to);
+test_self()->put(referer => '');
+visit_uri($to);
+submit_form('ok');
+verify_uri($orig);
