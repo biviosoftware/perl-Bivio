@@ -380,7 +380,7 @@ sub internal_format_uri {
     ) . $anchor;
 }
 
-sub unsafe_load_realm_file {
+sub unsafe_load_wiki_data {
     my($proto, $path, $args) = @_;
     my($die_code);
     my($rf) = b_use('Action.WikiView')->unsafe_load_wiki_data(

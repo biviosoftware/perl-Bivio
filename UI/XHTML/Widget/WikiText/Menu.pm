@@ -108,7 +108,7 @@ sub _parse_csv {
     my($value, $args) = @_;
     my($path) = $_WDN->to_absolute($value, $args->{is_public}) . $_SUFFIX;
     return
-	unless my $rf = $args->{proto}->unsafe_load_realm_file($path, $args);
+	unless my $rf = $args->{proto}->unsafe_load_wiki_data($path, $args);
     my($csv) = b_use('ShellUtil.CSV')->parse_records($rf->get_content);
     $args = {%$args, path => $path, line_num => 1};
     unless (@$csv) {
