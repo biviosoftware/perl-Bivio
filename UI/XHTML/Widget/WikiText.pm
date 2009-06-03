@@ -383,7 +383,7 @@ sub internal_format_uri {
 sub unsafe_load_realm_file {
     my($proto, $path, $args) = @_;
     my($die_code);
-    my($rf) = $_RF->access_controlled_load(
+    my($rf) = b_use('Action.WikiView')->unsafe_load_wiki_data(
 	$args->{realm_id},
 	$path,
 	$args->{req},
