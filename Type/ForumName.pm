@@ -54,4 +54,9 @@ sub join {
     return join($_SEP, @parts);
 }
 
+sub split {
+    my($proto, $value) = @_;
+    return split($_SEP, $value);
+}
+
 1;
