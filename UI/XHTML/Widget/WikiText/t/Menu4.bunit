@@ -1,0 +1,52 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+my($reset_menu) = sub {
+    my($r, $p, $c) = @_;
+    req()->with_realm($r, sub {
+        my($path) = class('Type.WikiDataName')->to_absolute($p);
+        model('RealmFile')->delete({path => $path});
+        model('RealmFile')->create_with_content({path => $path}, \$c);
+        return;
+    });
+    return;
+};
+$reset_menu->(qw(site x.bmenu), <<'EOF');
+Label,Link
+Xa,/bp/Xa
+Xb,/fourem/bp/Xb
+Xc,/fourem/bp/Xc
+EOF
+$reset_menu->(qw(site y.bmenu), <<'EOF');
+Label,Link
+Ya,/bp/Ya
+Yb,/bp/Yb
+EOF
+$reset_menu->(qw(fourem y.bmenu), <<'EOF');
+Label,Link
+Ya
+Yb
+Yc
+EOF
+[
+    inline_case(sub {wiki_uri_to_req('/Xb'); 1}),
+    [{
+	value => '@b-menu value=x',
+	is_public => 0,
+    }] => qr{@{[join('.*', qw(
+       class="bmenu"
+       "/bp/Xa" Xa
+       selected "/fourem/bp/Xb" Xb
+       "/fourem/bp/Xc" Xc
+    ))]}},
+    inline_case(sub {wiki_uri_to_req('/Yb'); 1}),
+    [{
+	value => '@b-menu value=y',
+	is_public => 0,
+    }] => qr{@{[join('.*', qw(
+       class="bmenu"
+       "/fourem/\w+/Ya" Ya
+       selected "/fourem/\w+/Yb" Yb
+       "/fourem/\w+/Yc" Yc
+    ))]}},
+];
