@@ -153,13 +153,6 @@ sub _parse_csv_row {
     return;
 }
 
-sub _public {
-    my($path) = @_;
-    $path =~ s{^/}{/Public/}
-        unless $path =~ qr{^/Public};
-    return $path;
-}
-
 sub _render_label {
     my($row, $args) = @_;
     my($res) = $args->{proto}->render_html({
