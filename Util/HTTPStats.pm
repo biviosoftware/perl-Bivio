@@ -77,7 +77,9 @@ sub init_forum {
     $self->assert_have_user;
     $self->usage_error($name, ': may not be top-level forum')
 	if $_FN->is_top($name);
-    $self->initialize_fully->with_realm($_FN->extract_top($name), sub {
+    my(@parts) = $_FN->split($name);
+    pop(@parts);
+    $self->initialize_fully->with_realm($_FN->join(@parts), sub {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => 'Web Site Reports',
 	   'RealmOwner.name' => $name,
@@ -136,14 +138,11 @@ sub _get_domains_from_most_recent_log {
 	    my($facade) = $_;
 	    ($facade->get('http_host') => {
 		map(($_ => $facade->get($_)), qw(uri is_default)),
+		facade => $facade,
 	    });
 	} (map($_UIF->get_instance($_), @{$_UIF->get_all_classes}))),
     };
 
-    # forum search order:
-    #  <domain>-reports
-    #  <facade uri>-site-reports
-    #  site-reports (for default facade only)
     my($domains) = [];
     my($prev_log) = _previous_days_log($self);
     foreach my $domain (`gunzip -c @{[$_CFG->{log_base}]}/@{[$root]}/$prev_log | grep -o -P '^(\\S+)' | sort -u`) {
@@ -151,11 +150,8 @@ sub _get_domains_from_most_recent_log {
 	next
 	    unless $domain =~ /\./;
 	my($facade) = $facade_info->{$domain};
-	foreach my $name ($_SF->REPORTS_REALM,
-	    $facade ? (
-		$_FN->join($facade->{uri}, $_SF->REPORTS_REALM),
-		$facade->{is_default} ? $_SF->REPORTS_REALM : (),
-	    ) : (),
+	foreach my $name (
+	    $facade ? $facade->{facade}->REPORTS_REALM : (),
 	) {
 	    next
 		unless _is_forum($self, $name);
@@ -254,3 +250,4 @@ ShowKeywordsStats=1
 ShowMiscStats=0
 ShowHTTPErrorsStats=1
 SkipUserAgents="REGEX[.*libwww-perl.*]"
+SkipFiles="REGEX[^/_]"
