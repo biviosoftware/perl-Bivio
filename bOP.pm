@@ -26,11 +26,21 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.93  2009/06/03 03:07:52  nagler
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    refactored to structure "ignore" checks
+    added filter_spam (based on X-Spam-Flag)
+    All ignored mail goes to Biz.File folder and removed RealmMailBounce coupling
+  * Bivio::PetShop::BConf
+    filter_spam turned on
+  * Bivio::Type::MailFileName
+    support older RealmFile paths
+
   Revision 7.92  2009/06/01 22:13:05  moeller
   * Bivio::Biz::Action::WikiValidator
     set query and path_info to undef when clearing request
