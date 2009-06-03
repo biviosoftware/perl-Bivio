@@ -1,0 +1,9 @@
+# Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
+# $Id$
+ShellUtil();
+my($f) = random_string();
+[
+    [qw(init_forum site-reports-fail)] => DIE(),
+    [qw(-user root init_forum), "notfound-reports"] => MODEL_NOT_FOUND(),
+    [qw(-user root init_forum), "site-reports-$f"] => not_die(),
+];
