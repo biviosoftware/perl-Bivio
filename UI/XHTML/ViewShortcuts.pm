@@ -256,9 +256,9 @@ sub vs_can_group_bulletin_form {
 }
 
 sub vs_filter_query_form {
-    my($proto, $form, $extra_columns) = @_;
-    return Form($form || 'FilterQueryForm', Join([
-	ClearOnFocus(Text({
+    my($proto, $form, $extra_columns, $attrs) = @_;
+    return Form($form || 'FilterQueryForm', Grid([[
+	$attrs->{text} || ClearOnFocus(Text({
 	    field => 'b_filter',
 	    id => 'b_filter',
 	    size => int(b_use('Type.Line')->get_width / 2),
@@ -270,7 +270,7 @@ sub vs_filter_query_form {
 	    widget => Simple(''),
 	    alt_widget => FormButton('ok_button')->put(label => 'Refresh'),
 	}),
-    ]), {
+    ]]), {
 	form_method => 'get',
 	want_timezone => 0,
 	want_hidden_fields => 0,
