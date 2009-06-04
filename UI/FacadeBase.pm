@@ -36,7 +36,7 @@ sub SITE_ADMIN_REALM_NAME {
     return _site(shift, 'admin');
 }
 
-sub SITE_REPORTS {
+sub SITE_REPORTS_REALM_NAME {
     return _site(shift, 'reports');
 }
 
