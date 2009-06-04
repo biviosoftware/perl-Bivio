@@ -1,0 +1,4 @@
+Subject: $spam_subject
+X-Spam-Flag: N
+
+Test message with for bivio spam filtering that should NOT be filtered out.
