@@ -261,7 +261,7 @@ sub merge_class_loader {
 			    $_ =~ /^(Mail|CSS|XML)$/ ? 'Bivio::UI::Text::Widget' : (),
 			    'Bivio::UI::Widget',
 			]),
-			'', qw(CSS HTML XHTML Mail Text XML)),
+			'', qw(CSS HTML XHTML Mail Text XML JavaScript)),
 		    ShellUtil => ['Bivio::Util', 'Bivio::Biz::Util'],
 		    SQL => ['Bivio::SQL'],
 		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
