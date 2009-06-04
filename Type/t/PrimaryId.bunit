@@ -3,6 +3,9 @@
 Type();
 class('Biz.ListModel');
 [
+    from_literal => [
+	0 => 0,
+    ],
     to_parts => [
 	'100001' => [{
 	    version => 0,
