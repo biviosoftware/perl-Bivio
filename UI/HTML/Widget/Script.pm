@@ -46,6 +46,173 @@ function b_clear_on_focus(field, hint) {
 EOF
 }
 
+sub JAVASCRIPT_B_COMBO_BOX {
+    return <<'EOF';
+(function (){
+
+window.bivio = window.bivio || {};
+window.bivio.combobox = window.bivio.combobox || {};
+var selected = null;
+var active_timer;
+var key_codes = {
+  TAB: 9,
+  ENTER: 13,
+  ESCAPE: 27,
+  UP_ARROW: 38,
+  DOWN_ARROW: 40
+};
+
+window.bivio.combobox.key_down = function(key, field, init_values) {
+    if (! field.drop_down)
+        init_drop_down(field, init_values);
+    field.key_code = key;
+
+    if (key == key_codes.TAB)
+        field.clear_list();
+    else if (key == key_codes.UP_ARROW || key == key_codes.DOWN_ARROW) {
+        select_next_item(key == key_codes.UP_ARROW, field);
+        set_timeout(field, 300);
+    }
+    if (field.drop_down.style.visibility == 'visible')
+        return key == key_codes.ENTER ? false : true;
+    return true;
+}
+
+window.bivio.combobox.key_up = function(key, field) {
+    if (active_timer)
+        window.clearTimeout(active_timer);
+    if (! field.drop_down)
+        return true;
+
+    if (key == key_codes.ENTER) {
+        save_selected(field);
+        return true;
+    }
+    else if (key == key_codes.UP_ARROW || key == key_codes.DOWN_ARROW)
+	return true;
+    field.clear_list();
+
+    if (key == key_codes.ESCAPE) {
+        if (field.typed_value)
+            field.value = field.typed_value;
+	return true;
+    }
+    populate_search(field);
+
+    var drop_down = field.drop_down;
+    if (drop_down.childNodes.length > 0) {
+
+        if (drop_down.childNodes.length == 1
+            && field.value == drop_down.childNodes[0].real_value) {
+            return true;
+        }
+        drop_down.style.visibility = 'visible';
+        document.onclick = function() {
+            field.clear_list();
+        }
+    }
+    return true;
+}
+
+function init_drop_down(field, init_values) {
+    var drop_down = document.getElementById(init_values.dd_name);
+
+    drop_down.style.width = field.clientWidth + 'px';
+    field.drop_down = drop_down;
+    field.auto_submit = init_values.auto_submit;
+    field.drop_down_values = init_values.dd_values;
+    field.clear_list = function() {
+        set_selected(null);
+        var drop_down = this.drop_down;
+        if (! drop_down)
+            return;
+        while (drop_down.firstChild)
+	    drop_down.removeChild(drop_down.firstChild);
+        if (drop_down.style.visibility == 'visible')
+            drop_down.style.visibility = 'hidden';
+    }
+    field.clear_list();
+}
+
+function populate_search(field) {
+    var search = field.value;
+    field.typed_value = search;
+    if (! search.length)
+	return true;
+
+    for (var i = 0; i < field.drop_down_values.length; i++) {
+	var v = field.drop_down_values[i];
+        if (! v) continue;
+
+        if (search.length == 1) {
+            if (v.toLowerCase().indexOf(search.toLowerCase()) != 0)
+                continue;
+        }
+	else if (v.toLowerCase().indexOf(search.toLowerCase()) < 0)
+	    continue;
+	var d = document.createElement("div");
+	d.style.cursor = 'default';
+	d.onmouseover = function(e) {
+	    set_selected(this);
+	};
+	d.onclick = function() {
+	    save_selected(field);
+	}
+	d.innerHTML = v;
+	d.real_value = v;
+	field.drop_down.appendChild(d);
+    }
+}
+
+function save_selected(field) {
+    if (selected) {
+        field.value = selected.real_value;
+        field.typed_value = field.value;
+    }
+    field.clear_list();
+    if (field.auto_submit)
+        field.form.submit();
+}
+
+function select_next_item(prev, field) {
+    var n;
+    var drop_down = field.drop_down;
+    if (! drop_down)
+        return;
+    if (selected)
+	n = prev ? selected.previousSibling : selected.nextSibling;
+    else if (prev)
+        return;
+    else
+	n = drop_down.firstChild;
+    if (n) {
+	set_selected(n);
+	field.value = n.real_value;
+    }
+    return;
+}
+
+function set_selected(item) {
+    if (item)
+        b_add_class(item, 'cb_selected');
+    if (selected)
+        b_remove_class(selected, 'cb_selected');
+    selected = item;
+}
+
+function set_timeout(field, count) {
+    if (active_timer)
+        window.clearTimeout(active_timer);
+    active_timer = window.setTimeout(function() {
+        set_timeout(field, 150);
+        select_next_item(field.key_code == key_codes.UP_ARROW, field);
+    }, count);
+}
+
+})();
+EOF
+}
+
 sub JAVASCRIPT_COMMON {
     return <<'EOF';
 function b_remove_class (element, clazz) {
