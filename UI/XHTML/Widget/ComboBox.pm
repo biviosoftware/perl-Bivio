@@ -13,12 +13,12 @@ sub initialize {
     my($var_name) = 'window.bivio.combobox.list_' . $self->get('list_class');
     return if $self->unsafe_get('list');
     $self->initialize_attr(list => Join([
-	"$var_name = [\n",
+	"$var_name = [",
 	List($self->get('list_class'), [
 	    b_use('JavaScriptWidget.QuotedValue')
 	        ->new([$self->get('list_display_field')]),
-	]),
-	"\n];\n",
+	    ])->put(row_separator => ','),
+	"];\n",
     ]));
     $self->initialize_attr(size => 50);
     my($text) = Text($self->get('field'), {
