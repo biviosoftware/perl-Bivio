@@ -45,13 +45,14 @@ sub from_literal {
     # Make sure is at least one digit long, non-zero, and unsigned.
     $proto->internal_from_literal_warning
         unless wantarray;
-    return undef unless defined($value) && $value =~ /\S/;
-    # Get rid of all blanks to be nice to user
+    return undef
+	unless defined($value) && $value =~ /\S/;
     $value =~ s/\s+//g;
+    return $value
+	if $value =~ /^0$/;
     $value =~ s/^0+//g;
-    # Make sure is a digit.  Can't do more, because we allow
-    # "special" primary ids
-    return $value if $value =~ /^\d+$/;
+    return $value
+	if $value =~ /^\d+$/;
     return (undef, Bivio::TypeError->PRIMARY_ID);
 }
 
@@ -83,9 +84,10 @@ sub get_width {
 }
 
 sub is_specified {
-    my(undef, $value) = @_;
+    my($proto, $value) = @_;
     return defined($value) && $value =~ /\d/
 	&& $value ne Bivio::Biz::ListModel->EMPTY_KEY_VALUE
+	&& $value ne $proto->UNSPECIFIED_VALUE
 	? 1 : 0;
 }
 
@@ -96,43 +98,31 @@ sub is_valid {
 
 sub to_html {
     my($self, $value) = @_;
-    # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
-    # empty string.  Otherwise, returns as is--always valid html.
     return defined($value) ? $value : '';
 }
 
 sub to_literal {
     my(undef, $value) = @_;
-    # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
-    # empty string.  Otherwise, returns as is--always valid literal.
     return defined($value) ? $value : '';
 }
 
 sub to_parts {
-    # Returns the primary_id decomposed into parts: number, site, version, type
     return shift->unsafe_to_parts(@_) || Bivio::Die->die($_[0], ': bad value');
 }
 
 sub to_query {
     my($self, $value) = @_;
-    # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
-    # empty string.  Otherwise, returns as is--always valid query.
     return defined($value) ? $value : '';
 }
 
 sub to_uri {
     my($self, $value) = @_;
-    # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
-    # empty string.  Otherwise, returns as is--always valid uri.
     return defined($value) ? $value : '';
 }
 
 sub unsafe_to_parts {
     my(undef, $value) = @_;
-    # Returns the primary_id decomposed into parts: number, site, version, type
-    # Returns undef if invalid.
     return ($value || '') =~ /^(\d+)(\d)(\d{2})(\d{2})$/ ? {
-	# Convert all but number, because number may be larger than range
 	number => $1,
 	version => $3 + 0,
 	site => $2 + 0,
