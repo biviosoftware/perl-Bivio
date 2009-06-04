@@ -561,6 +561,11 @@ div.dd_menu a:hover {
   Color('dd_menu_selected');
   text-decoration: none;
 }
+div.cb_selected {
+  Color('dd_menu_selected-background');
+  Color('dd_menu_selected');
+  text-decoration: none;
+}
 .b_rounded_box_1,
 .b_rounded_box_2,
 .b_rounded_box_3,
