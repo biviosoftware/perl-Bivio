@@ -13,7 +13,7 @@ sub initialize {
     $self->put(value => [sub {
         my(undef, $value) = @_;
  	$value =~ s/"/\\"/g;
- 	return "\"$value\",\n";
+ 	return "\"$value\"";
     }, $self->get('value')]);
     return shift->SUPER::initialize(@_);
 }
