@@ -28,7 +28,7 @@ sub DEFAULT_MAKE_ADMIN_REALMS {
 }
 
 sub REPORTS_REALM {
-    return Bivio::UI::Facade->get_default->SITE_REPORTS;
+    return Bivio::UI::Facade->get_default->SITE_REPORTS_REALM_NAME;
 }
 
 sub SITE_REALM {
