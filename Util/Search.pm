@@ -1,12 +1,12 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Search;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_X) = __PACKAGE__->use('Search.Xapian');
-my($_D) = __PACKAGE__->use('Type.Date');
+my($_X) = b_use('Search.Xapian');
+my($_D) = b_use('Type.Date');
 
 sub USAGE {
     return <<'EOF';
@@ -27,6 +27,7 @@ sub rebuild_db {
     my($self, $d) = @_;
     $self->are_you_sure('Rebuild Xapian database?');
     $self->model('Lock')->acquire_general;
+    $_X->destroy_db($req);
     my($realms) = $self->model('RealmFile')->map_iterate(
 	sub {shift->get('realm_id')},
 	'unauth_iterate_start',
