@@ -26,11 +26,36 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 7.96  2009/06/04 20:25:53  aviggio
+  * Bivio::BConf
+    added JavaScript widget map
+  * Bivio::UI::FacadeBase
+    rename SITE_REPORTS_REALM_NAME for consistency, update use
+  * Bivio::UI::HTML::Widget::Script
+    added JAVASCRIPT_B_COMBO_BOX()
+  * Bivio/UI/JavaScript
+    NEW
+  * Bivio::UI::View::CSS
+    added div.cb_selected for ComboBox
+  * Bivio::UI::XHTML::ViewShortcuts
+    added more options to vs_filter_query_form()
+  * Bivio::UI::XHTML::Widget::ComboBox
+    use class for selected color,
+    don't eat enter if dropdown is hidden
+    add constants for keycodes,
+    when typing in field, save value, restore on escape,
+    move static javascript to Script,
+    put list values in window.bivio.combobox.list_<list_class>,
+    move quoted value to Bivio::UI::Javascript::Widget::QuotedValue,
+    add auto_submit,
+    added hint_name
+    cleaned up list value formatting
+
   Revision 7.95  2009/06/03 23:23:17  aviggio
   * Bivio::Type::ForumName
     added split
