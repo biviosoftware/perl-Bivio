@@ -37,4 +37,18 @@ FormModel();
         'User.last_name' => undef,
 	'RealmOwner.name' => 'NULL',
     }),
+    sub {
+	b_use('Model.UserLoginForm')->substitute_user(
+	    unauth_model('RealmOwner', {
+		name => 'crm_tech1',
+	    }), req());
+    } => undef,
+    error_case({} => {
+	page_size => 'NULL',
+        'User.first_name' => 'NULL',
+        'User.middle_name' => undef,
+        'User.last_name' => undef,
+	'RealmOwner.name' => 'NULL',
+	'Email.email' => 'NULL',
+    }),
 ];
