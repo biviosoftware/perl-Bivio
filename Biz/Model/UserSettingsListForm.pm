@@ -17,9 +17,9 @@ sub execute_empty_row {
 
 sub execute_empty_start {
     my($self) = @_;
-    foreach my $m (qw(RealmOwner User)) {
-        my($model) = $self->new_other($m)->load;
-	$self->load_from_model_properties($model);
+
+    foreach my $m (qw(RealmOwner User Email)) {
+	$self->load_from_model_properties($self->new_other($m)->load);
     }
     $self->internal_put_field(
 	page_size => $_PS->row_tag_get(
@@ -52,10 +52,10 @@ sub execute_ok_start {
     if ($self->unsafe_get('show_name')) {
 	$ro->update($self->get_model_properties('RealmOwner'));
     }
-#TODO: Is this needed?  Was there from UserSettingsForm
-#     else {
-# 	$self->internal_clear_error('RealmOwner.name')
-#     }
+    if ($self->unsafe_get('show_email')) {
+	$self->new_other('Email')->load->update(
+	    $self->get_model_properties('Email'));
+    }
     return;
 }
 
@@ -68,6 +68,7 @@ sub internal_initialize {
 	visible => [
 	    @$_NAME_FIELDS,
 	    'RealmOwner.name',
+	    'Email.email',
             {
                 name => 'page_size',
                 type => 'PageSize',
@@ -81,11 +82,11 @@ sub internal_initialize {
 	    },
 	],
 	other => [
-	    {
-		name => 'show_name',
+	    map(+{
+		name => "show_$_",
 		type => 'Boolean',
 		constraint => 'NOT_NULL',
-	    },
+	    }, qw(name email)),
 	    'RealmOwner.realm_id',
 	],
     });
@@ -100,6 +101,7 @@ sub internal_pre_execute {
     my($req) = $self->req;
     $self->internal_put_field(
 	show_name => $req->is_substitute_user || $req->is_super_user ? 1 : 0);
+    $self->internal_put_field(show_email => $req->is_substitute_user);
     return shift->SUPER::internal_pre_execute(@_);
 }
 
@@ -109,6 +111,8 @@ sub validate_start {
 	unless _is_name_set($self);
     $self->internal_clear_error('RealmOwner.name')
 	unless $self->get('show_name');
+    $self->internal_clear_error('Email.email')
+	unless $self->get('show_email');
     return;
 }
 
