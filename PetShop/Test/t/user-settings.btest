@@ -24,11 +24,15 @@ verify_form({
     size => 5,
 });
 verify_no_text($name);
+verify_no_text($email);
 $name = "u$name";
 login_as('root');
 follow_link('all_users', qr{^All$}, $first);
 home_page();
 follow_link('settings');
+verify_form({
+    email => $email,
+});
 submit_form({
     user_id => $name,
 });
