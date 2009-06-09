@@ -172,6 +172,9 @@ sub settings_form {
 	['UserSettingsListForm.RealmOwner.name', {
 	    row_control => [qw(Model.UserSettingsListForm show_name)],
 	}],
+	['UserSettingsListForm.Email.email', {
+	    row_control => [qw(Model.UserSettingsListForm show_email)],
+	}],
 	{
 	    column_heading_class => 'left',
 	    column_heading => 'RealmOwner.display_name',
