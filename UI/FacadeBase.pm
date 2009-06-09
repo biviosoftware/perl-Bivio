@@ -1246,7 +1246,7 @@ sub _cfg_user_auth {
 	    [user_state => ['120%', 'nowrap']],
 	],
 	FormError => [
-	    ['UserSettingsForm.User.first_name.NULL' => 'You must supply at least one of First, Middle, or Last Names.'],
+	    ['UserSettingsListForm.User.first_name.NULL' => 'You must supply at least one of First, Middle, or Last Names.'],
 	    [[qw(ContextlessUserLoginForm UserLoginForm)] => [
 		'RealmOwner.password.PASSWORD_MISMATCH' => 
 		 q{The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".},
@@ -1285,18 +1285,19 @@ sub _cfg_user_auth {
 		    epilogue => q{P(XLink('login_no_context'));},
 		],
 	    ]],
-	    [[qw(UserPasswordForm UserSettingsForm)] => [
+	    [UserPasswordForm => [
 		old_password => 'Current Password',
 		new_password => 'New Password',
 		confirm_new_password => 'Re-enter New Password',
 		ok_button => 'Update',
 	    ]],
-	    [[qw(UserSettingsForm UserSettingsListForm UserSubscriptionList)] => [
+	    [[qw(UserSettingsListForm UserSubscriptionList)] => [
                 'page_size' => 'List Size',
 		'RealmOwner.name' => 'User Id',
 		'RealmOwner.display_name' => 'Forum',
 		'is_subscribed' => 'Subscribed?',
-		'RealmOwner.name.desc' => 'Field only visible to system administrators.',
+		map(("$_.desc" => 'Field only visible to system administrators.'),
+		    qw(RealmOwner.name Email.email)),
 		'separator.password' => 'Fill in to change your password; otherwise, leave blank',
 		prose => [
 		    user_password => q{Link('Click here to change your password.', 'USER_PASSWORD');},
