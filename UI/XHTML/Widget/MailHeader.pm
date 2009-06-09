@@ -15,7 +15,8 @@ sub initialize {
 	    DIV_header(
 		Join([
 		    SPAN_label(vs_text_as_prose("MailHeader.$_")),
-		    SPAN_value(String(['->get_header', $_])),
+		    SPAN_value(vs_call($_ eq 'date' ? 'DateTime' : 'String',
+			['->get_header', $_])),
 		]),
 		{
 		    control => [
