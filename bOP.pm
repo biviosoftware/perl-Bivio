@@ -26,11 +26,20 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.0  2009/06/05 23:21:42  nagler
+  * Bivio::Type::PrimaryId
+    can_be_zero is still false, but from_literal allows 0 as value.
+    is_specified will return false for 0.  However, we need a value which
+    is not a PrimaryId that SQL.Statement can accept to mean "do not match
+    anything" (see Model.WikiList)
+  * Bivio::Util::Search
+    test problem of realm without any data
+
   Revision 7.96  2009/06/04 20:25:53  aviggio
   * Bivio::BConf
     added JavaScript widget map
