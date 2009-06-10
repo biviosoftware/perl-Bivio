@@ -46,7 +46,7 @@ my($send_mail) = sub {
     my($h) = $headers->(@_);
     %$vars = (%$vars, %$h);
     my($head, $body) = test_template($template) =~ /^(.*?\n)\n(.*)/s;
-    %$h = (%$h, split(/[:\n]/, $head));
+    %$h = (%$h, split(/\: |\n/, $head));
     my($msg) = send_mail(
 	map($h->{$_} =~ /([^<]+\@[^>]+)/, qw(From To)), $h, $body);
     return $msg;
@@ -155,7 +155,7 @@ $check_for_loop->();
     %$vars,
     spam_subject => random_string(),
 );
-($msg, $subject) = $send_and_verify_mail->(qw(spam2.eml user1 forum));
+($msg, $subject) = $send_and_verify_mail->(qw(ham.eml user1 forum));
 login_as('mail_user1');
 visit_uri('/mail_forum/mail');
 follow_link($subject);
@@ -164,7 +164,7 @@ verify_text(escape_html($subject));
     %$vars,
     spam_subject => random_string(),
 );
-$msg = $send_mail->(qw(spam1.eml user1 forum));
+$msg = $send_mail->(qw(spam.eml user1 forum));
 ($subject = $msg->unsafe_get_header('Subject')) =~ s/Re: //;
 test_deviance();
 verify_local_mail(qr{.}, qr{.});
