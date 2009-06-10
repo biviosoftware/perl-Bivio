@@ -666,12 +666,13 @@ sub merge_initialize_info {
     }
     # Sort so works with testing
     foreach my $v (sort {$a->{name} cmp $b->{name}} values(%$names)) {
+	my($n);
 	push(
 	    @{$child->{delete($v->{_class})} ||= []},
 	    $v->{_aliases} ? [
-		delete($v->{name}),
+		$n = delete($v->{name}),
 		@{delete($v->{_aliases})},
-		%$v ? b_die('cannot equivalence a hash') : (),
+		%$v ? b_die($n, ': cannot equivalence a hash: ', $v) : (),
 	    ] : keys(%$v) == 1 ? $v->{name} : $v,
 	);
     }
