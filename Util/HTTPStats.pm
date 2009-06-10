@@ -7,13 +7,13 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_IOC) = b_use('IO.Config');
 my($_C) = b_use('SQL.Connection');
 my($_D) = b_use('Type.Date');
 my($_F) = b_use('IO.File');
 my($_FN) = b_use('Type.ForumName');
 my($_SF) = b_use('ShellUtil.SiteForum');
 my($_UIF) = b_use('UI.Facade');
+my($_V3) = b_use('IO.Config')->if_version(3);
 my($_AWSTATS) = '/usr/local/awstats/wwwroot/cgi-bin/awstats.pl';
 my($_BUILD_PAGES) = '/usr/local/awstats/tools/awstats_buildstaticpages.pl';
 my($_LOG_MERGER) = '/usr/local/awstats/tools/logresolvemerge.pl';
@@ -36,6 +36,7 @@ EOF
 
 sub daily_report {
     my($self, $date) = _parse_args(@_);
+    return unless $_V3;
     _create_report($self, $date,
 	"gunzip -c @{[$_CFG->{log_base}]}/<uri>/"
 	. _previous_days_log($self));
@@ -66,6 +67,7 @@ sub handle_config {
 
 sub import_history {
     my($self, $date) = _parse_args(@_);
+    return unless $_V3;
     # only works if the cached awstats after date have been deleted
     _create_report($self, $date,
 	"$_LOG_MERGER @{[$_CFG->{log_base}]}/<uri>/*-access_log.gz");
@@ -74,6 +76,7 @@ sub import_history {
 
 sub init_forum {
     my($self, $name) = shift->name_args([qw(ForumName)], \@_);
+    return unless $_V3;
     $self->assert_have_user;
     $self->usage_error($name, ': may not be top-level forum')
 	if $_FN->is_top($name);
@@ -204,7 +207,6 @@ sub _organize_files {
 
 sub _parse_args {
     my($self, $date) = @_;
-    $_IOC->assert_version(3);
     $self->initialize_fully;
     return ($self, $date
 	? $_D->from_literal_or_die($date)
@@ -213,8 +215,15 @@ sub _parse_args {
 
 sub _previous_days_log {
     my($self) = @_;
-    return $_D->to_file_name($_D->add_days($_D->local_today, -1))
-	. '*-access_log.gz';
+
+    for my $delta (0 .. 1) {
+	my($d) = $_D->to_file_name($_D->add_days($_D->local_today, - $delta));
+
+	foreach my $f ("$d-access_log.gz", "access_log-$d.gz") {
+	    return $f if -e $f;
+	}
+    }
+    b_die('previous day log not found');
 }
 
 sub _user_email {
