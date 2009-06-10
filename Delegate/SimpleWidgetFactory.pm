@@ -36,38 +36,35 @@ sub create {
     # display-only widgets.
     my($proto, $field, $attrs) = @_;
     $attrs ||= {};
-
     my($model, $field_name, $field_type)
 	= _get_model_and_field_type($field, $attrs);
-    my($widget);
-    if (! $attrs->{wf_want_display}
-	    && UNIVERSAL::isa($model, 'Bivio::Biz::FormModel')) {
-	$widget = $proto->internal_create_edit($model, $field_name,
-            $field_type, $attrs);
-    }
-    else {
+    my($widget) = $attrs->{wf_widget};
+    return $widget || $proto->internal_create_edit(
+	$model, $field_name, $field_type, $attrs
+    ) if !$attrs->{wf_want_display}
+	&& UNIVERSAL::isa($model, 'Bivio::Biz::FormModel');
 #TODO: This is broken in the case of $attrs->{value} existing.  Hack for now
-	$widget = $proto->internal_create_display($model, $field_name,
-            $field_type, $attrs);
-	my(%attrs_copy) = %$attrs;
-	delete($attrs_copy{value});
-	# Wrap the resultant widget in a link?
-	my($wll) = $widget->unsafe_get('wf_list_link');
-	$wll = {task => $wll, query => 'THIS_DETAIL'}
-	    if defined($wll) && !ref($wll);
-	$widget = $_VS->vs_new('Link', {
-	    href => ['->format_uri',
-		Bivio::Biz::QueryType->from_any($wll->{query}),
-		$wll->{task} ? (Bivio::Agent::TaskId->from_any($wll->{task}))
-		: $wll->{uri} ? $wll->{uri} : (),
-	    ],
-	    value => $widget,
-	    control_off_value => $widget,
-            ($wll->{task} ? (control => $wll->{task}) : ()),
-	    %$wll,
-	    %attrs_copy,
-	}) if $wll;
-    }
+    $widget = $proto->internal_create_display(
+	$model, $field_name, $field_type, $attrs,
+    ) unless $widget;
+    my(%attrs_copy) = %$attrs;
+    delete($attrs_copy{value});
+    # Wrap the resultant widget in a link?
+    my($wll) = $widget->unsafe_get('wf_list_link');
+    $wll = {task => $wll, query => 'THIS_DETAIL'}
+	if defined($wll) && !ref($wll);
+    $widget = $_VS->vs_new('Link', {
+	href => ['->format_uri',
+	    Bivio::Biz::QueryType->from_any($wll->{query}),
+	    $wll->{task} ? (Bivio::Agent::TaskId->from_any($wll->{task}))
+	    : $wll->{uri} ? $wll->{uri} : (),
+	],
+	value => $widget,
+	control_off_value => $widget,
+	($wll->{task} ? (control => $wll->{task}) : ()),
+	%$wll,
+	%attrs_copy,
+    }) if $wll;
     return $widget;
 }
 
