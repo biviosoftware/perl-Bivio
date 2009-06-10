@@ -26,11 +26,25 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.1  2009/06/10 16:40:27  moeller
+  * Bivio::Biz::Model::UserSettingsForm
+    removed
+  * Bivio::Biz::Model::UserSettingsListForm
+    allow substitute user to edit the email
+  * Bivio::Type::UserAgent
+    added BROWSER_MSIE_8
+  * Bivio::UI::FacadeBase
+    removed UserSettingsForm
+  * Bivio::UI::View::UserAuth
+    added email editing for substitute user
+  * Bivio::UI::XHTML::Widget::MailHeader
+    render date values using DateTime widget
+
   Revision 8.0  2009/06/05 23:21:42  nagler
   * Bivio::Type::PrimaryId
     can_be_zero is still false, but from_literal allows 0 as value.
