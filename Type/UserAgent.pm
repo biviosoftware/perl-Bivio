@@ -18,6 +18,7 @@ __PACKAGE__->compile([
     BROWSER_FIREFOX_1 => [8],
     BROWSER_MOZILLA_1 => [9],
     BROWSER_MSIE_7 => [10],
+    BROWSER_MSIE_8 => [11],
 ]);
 
 sub execute {
@@ -36,7 +37,7 @@ sub from_header {
     # Internet Explorer
     if ($ua =~ /\bMSIE (\d+)/) {
         return $proto->BROWSER_HTML3
-            if $1 < 5 || $1 > 7;
+            if $1 < 5 || $1 > 8;
         return $proto->from_name('BROWSER_MSIE_' . $1);
     }
 
@@ -91,7 +92,8 @@ sub is_css_compatible {
     # Returns true if the browser can handle css.
     my($self) = @_;
     return $self->equals_by_name(qw(BROWSER_HTML4 BROWSER_MSIE_5
-        BROWSER_MSIE_6 BROWSER_MSIE_7 BROWSER_FIREFOX_1 BROWSER_MOZILLA_1));
+        BROWSER_MSIE_6 BROWSER_MSIE_7 BROWSER_MSIE_8 BROWSER_FIREFOX_1
+        BROWSER_MOZILLA_1));
 }
 
 1;
