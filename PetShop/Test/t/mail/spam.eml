@@ -1,19 +1,12 @@
 Return-Path: <petalism_1990@s1712.fsnet.co.uk>
 Delivered-To: qinzdd@www.aristanetworks.com
 Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.247])
-	by app7.bivio.biz (Postfix) with ESMTP id 5249A1C31017
-	for <qinzdd@www.aristanetworks.com>; Wed, 10 Jun 2009 11:42:19 -0600 (MDT)
 Received: by rv-out-0708.google.com with SMTP id l33sf433571rvb.52
-        for <qinzdd@www.aristanetworks.com>; Wed, 10 Jun 2009 10:42:10 -0700 (PDT)
 Received: by 10.141.179.13 with SMTP id g13mr1462563rvp.30.1244655730892;
-        Wed, 10 Jun 2009 10:42:10 -0700 (PDT)
 Received: by 10.141.179.13 with SMTP id g13mr1462552rvp.30.1244655730462;
-        Wed, 10 Jun 2009 10:42:10 -0700 (PDT)
 Received: from ?213.29.246.215? ([213.29.246.215])
-        by mx.google.com with ESMTP id g31si20955032rvb.33.2009.06.10.10.42.06;
-        Wed, 10 Jun 2009 10:42:10 -0700 (PDT)
-Received-SPF: softfail (google.com: best guess record for domain of transitioning petalism_1990@s1712.fsnet.co.uk does not designate 213.29.246.215 as permitted sender) client-ip=213.29.246.215;
-Authentication-Results: mx.google.com; spf=softfail (google.com: best guess record for domain of transitioning petalism_1990@s1712.fsnet.co.uk does not designate 213.29.246.215 as permitted sender) smtp.mail=petalism_1990@s1712.fsnet.co.uk
+Received-SPF: softfail (google.com best guess record for domain of transitioning petalism_1990@s1712.fsnet.co.uk does not designate 213.29.246.215 as permitted sender) client-ip=213.29.246.215;
+Authentication-Results: mx.google.com; spf=softfail (google.com best guess record for domain of transitioning petalism_1990@s1712.fsnet.co.uk does not designate 213.29.246.215 as permitted sender) smtp.mail=petalism_1990@s1712.fsnet.co.uk
 Date: Wed, 10 Jun 2009 10:42:10 -0700 (PDT)
 Message-Id: <4a2ff072.1f538c0a.6239.ffffd914SMTPIN_ADDED@mx.google.com>
 From: "heung TRepagnier" <petalism_1990@s1712.fsnet.co.uk>
