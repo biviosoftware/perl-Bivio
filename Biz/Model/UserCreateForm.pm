@@ -98,12 +98,14 @@ sub internal_initialize {
 		constraint => 'NOT_NULL',
 	    },
 	],
-	$self->field_decl(other => [qw(
-	    RealmOwner.name
-	    User.user_id
-	    without_login
-	    password_ok
-	)], 'Boolean'),
+	other => [
+	    'RealmOwner.name',
+	    'User.user_id',
+	    $self->field_decl([qw(
+		without_login
+		password_ok
+	    )], 'Boolean'),
+	],
     });
 }
 
