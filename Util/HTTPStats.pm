@@ -151,7 +151,9 @@ sub _get_domains_from_most_recent_log {
 	    unless $domain =~ /\./;
 	my($facade) = $facade_info->{$domain};
 	foreach my $name (
-	    $facade ? $facade->{facade}->SITE_REPORTS_REALM_NAME : (),
+	    $facade && $facade->{facade}->can('SITE_REPORTS_REALM_NAME')
+	        ? $facade->{facade}->SITE_REPORTS_REALM_NAME
+	        : (),
 	) {
 	    next
 		unless _is_forum($self, $name);
