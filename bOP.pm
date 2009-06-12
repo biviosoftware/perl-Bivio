@@ -26,11 +26,22 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.2  2009/06/10 22:47:15  moeller
+  * Bivio::Biz::FormModel
+    better error message on 'cannot equivalence a hash'
+  * Bivio::Biz::Model::UserCreateForm
+    don't put qualified fields inside a field_decl
+  * Bivio::Delegate::SimpleWidgetFactory
+    added wf_widget
+  * Bivio::Util::HTTPStats
+    only create report if facade has SITE_REPORTS_REALM_NAME
+    check todays date for previous log file, don't die if < v3
+
   Revision 8.1  2009/06/10 16:40:27  moeller
   * Bivio::Biz::Model::UserSettingsForm
     removed
