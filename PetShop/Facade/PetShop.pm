@@ -155,6 +155,12 @@ __PACKAGE__->new({
 	[threepartpage_want_ForumDropDown => 1],
     ],
     Text => [
+	[support_email => sub {
+	     return b_use('Agent.Request')->is_production
+                 ? 'support@petshop.bivio.biz'
+                 : b_use('Bivio::Test::Language::HTTP')
+                     ->generate_local_email('support');
+	}],
 	[bunit_simple => 'simple text'],
 	[bunit_escape => '"quoted"\backslash'],
 	[bunit_newline => "new\nline"],
