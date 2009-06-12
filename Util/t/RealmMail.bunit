@@ -1,14 +1,79 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Request();
+Request('initialize_fully');
 set_realm('fourem');
 my($domain) = 'Util.RealmMail.bunit';
+my($data) = [
+    ['2008-05-12', 'plain subject', 'text/plain', 'plain body'],
+    ['2007-06-15', 'html subject', 'text/html', <<'EOF'],
+<body><div>html body</div></body>
+EOF
+    ['2007-03-23', 'attached subject', 'text/plain', 'attached body', {
+        name => 'attach-item-1.txt',
+        content => 'attachment item 1 body',
+    }],
+];
+my($_IOF) = b_use('IO.File');
+my($_FP) = b_use('Type.FilePath');
+my($_LFT) = b_use('UI.LocalFileType');
+my($_UIF) = b_use('Bivio::UI::Facade')->get_instance;
+foreach my $item (@$data) {
+    my($date, $subject, $type, $body, @files) = @$item;
+    my($bulletin) = model('Bulletin')->create({
+        date_time => Date($date),
+        body => $body,
+        body_content_type => $type,
+        subject => $subject,
+    });
+    next unless @files;
+    foreach my $file (@files) {
+        my($fullname) = $_UIF->get_local_file_name($_LFT->REALM_DATA,
+            $_FP->join('bulletin',
+                       $bulletin->get('bulletin_id'), $file->{name}));
+        $_IOF->mkdir_parent_only($fullname, 02770);
+        $_IOF->write($fullname, \($file->{content}));
+    }
+}
 [
+    inline_case(sub {
+        model('RealmMail')->test_unauth_delete_all({});
+    }),
+    {
+        object => class(),
+        compute_return => sub {
+            return model(MailThreadRootList => {})->map_rows(sub {
+                my($msg) = @_;
+                return [
+                    $msg->get(qw(RealmMail.subject
+                                 RealmFile.modified_date_time)),
+                    $msg->get_mail_part_list->map_rows(sub {
+                        return shift->get_header('Content-Disposition') || ();
+                    }),
+                ];
+            });
+        },
+    } => [
+        import_bulletins => [
+            [] => [
+                ['plain subject', Date('2008-05-12'), []],
+                ['html subject', Date('2007-06-15'), []],
+                ['attached subject', Date('2007-03-23'), [
+                    'inline',
+                    qr{attach-item-1.txt},
+                ]],
+            ],
+        ],
+    ],
+    inline_case(sub {
+        model('RealmMail')->test_unauth_delete_all({});
+        model('Bulletin')->test_unauth_delete_all({});
+        commit();
+    }),
     {
 	object => class(),
 	compute_return => sub {
 	    return [scalar(@{
-		Bivio::Biz::Model->new(req(), 'RealmMail')->map_iterate(
+                model('RealmMail')->map_iterate(
 		    sub {
 			shift->get('message_id') =~ /$domain/ ? 1 : ();
 		    },

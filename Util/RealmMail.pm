@@ -6,6 +6,11 @@ use base 'Bivio::ShellUtil';
 use Bivio::Mail::Incoming;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_FCT) = __PACKAGE__->use('FacadeComponent.Text');
+my($_O) = __PACKAGE__->use('Mail.Outgoing');
+my($_IOF) = __PACKAGE__->use('IO.File');
+my($_FP) = __PACKAGE__->use('Type.FilePath');
+my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub USAGE {
     return <<'EOF';
@@ -14,6 +19,7 @@ commands
   delete_message_id message_id ... -- Message-ID: based removal of threads/msgs
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
   import_mbox -- imports mbox input file containing
+  import_bulletins -- imports old Bulletins into forum mail files
 EOF
 }
 
@@ -28,22 +34,49 @@ sub delete_message_id {
     return;
 }
 
+sub import_bulletins {
+    my($self) = @_;
+    my($rm) = $self->use('Model.RealmMail')->new($self->req);
+    my($t) = 0;
+    my($n) = 0;
+    $self->model('Bulletin')->do_iterate(
+        sub {
+            my($b) = @_;
+            my($msg) = $_O->new;
+            $msg->set_header(Subject => $b->get('subject'));
+            $msg->set_header(Date => $_DT->rfc822($b->get('date_time')));
+            $msg->add_missing_headers($self->req,
+                $_FCT->get_value('support_email', $self->req));
+            if ($b->has_attachments) {
+                $msg->set_content_type('multipart/mixed');
+                $msg->attach(\($b->get('body')), $b->get('body_content_type'));
+                foreach my $fullname (@{$b->get_attachment_file_names}) {
+                    $msg->attach($_IOF->read($fullname),
+                                 $self->use('Model.RealmFile')
+                                     ->get_content_type_for_path($fullname),
+                                 $_FP->get_tail($fullname));
+                }
+            }
+            else {
+                $msg->set_body($b->get('body'));
+                $msg->set_content_type($b->get('body_content_type'));
+            }
+            _create_from_rfc822($self, $rm, $msg->as_string, \$t, \$n);
+            return 1;
+        },
+        'unauth_iterate_start',
+        {},
+    );
+    return "Imported $n of $t Messages\n";
+}
+
 sub import_mbox {
     my($self) = @_;
     my($rm) = Bivio::Biz::Model->new($self->get_request, 'RealmMail');
     my($t) = 0;
     my($n) = 0;
     foreach my $m (split(/(?<=\n)From [^\n]+\n/, ${$self->read_input})) {
-        my($die) = Bivio::Die->catch(
-            sub {
-                $t++;
-                $rm->create_from_rfc822(\$m);
-                Bivio::IO::Alert->info("imported $t");
-                $n++;
-            });
-        Bivio::IO::Alert->info("skipped $t\n", $die, \$m)
-            if $die;
-        $self->commit_or_rollback;
+        _create_from_rfc822($self, $rm, $m, \$t, \$n);
     }
     return "Imported $n of $t Messages\n";
 }
@@ -62,6 +95,21 @@ sub import_rfc822 {
 	$self->commit_or_rollback
 	    if ++$i % 100 == 0;
     }
+    return;
+}
+
+sub _create_from_rfc822 {
+    my($self, $rm, $m, $t, $n) = @_;
+    my($die) = Bivio::Die->catch(
+        sub {
+            $$t++;
+            $rm->create_from_rfc822(\$m);
+            Bivio::IO::Alert->info("imported $$t");
+            $$n++;
+        });
+    Bivio::IO::Alert->info("skipped $$t\n", $die, \$m)
+            if $die;
+    $self->commit_or_rollback;
     return;
 }
 
