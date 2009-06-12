@@ -67,6 +67,8 @@ foreach my $item (@$data) {
     inline_case(sub {
         model('RealmMail')->test_unauth_delete_all({});
         model('Bulletin')->test_unauth_delete_all({});
+        b_use('IO.File')->rm_children(
+            $_UIF->get_local_file_name($_LFT->REALM_DATA, 'bulletin'));
         commit();
     }),
     {

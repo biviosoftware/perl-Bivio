@@ -7,10 +7,12 @@ use Bivio::Mail::Incoming;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FCT) = __PACKAGE__->use('FacadeComponent.Text');
+my($_F) = __PACKAGE__->use('FacadeComponent.Facade');
 my($_O) = __PACKAGE__->use('Mail.Outgoing');
 my($_IOF) = __PACKAGE__->use('IO.File');
 my($_FP) = __PACKAGE__->use('Type.FilePath');
 my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_E) = __PACKAGE__->use('Type.Email');
 
 sub USAGE {
     return <<'EOF';
@@ -36,7 +38,8 @@ sub delete_message_id {
 
 sub import_bulletins {
     my($self) = @_;
-    my($rm) = $self->use('Model.RealmMail')->new($self->req);
+    my($req) = $self->initialize_fully;
+    my($rm) = $self->use('Model.RealmMail')->new($req);
     my($t) = 0;
     my($n) = 0;
     $self->model('Bulletin')->do_iterate(
@@ -45,8 +48,11 @@ sub import_bulletins {
             my($msg) = $_O->new;
             $msg->set_header(Subject => $b->get('subject'));
             $msg->set_header(Date => $_DT->rfc822($b->get('date_time')));
-            $msg->add_missing_headers($self->req,
-                $_FCT->get_value('support_email', $self->req));
+            my($email) = $_FCT->get_value('support_email', $req);
+            $email = $_E->is_valid($email)
+                ? $email
+                : $_E->join_parts($email, $_F->get_value('mail_host', $req));
+            $msg->add_missing_headers($req, $email);
             if ($b->has_attachments) {
                 $msg->set_content_type('multipart/mixed');
                 $msg->attach(\($b->get('body')), $b->get('body_content_type'));
