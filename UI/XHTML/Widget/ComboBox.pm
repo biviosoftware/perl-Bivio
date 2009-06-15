@@ -24,7 +24,7 @@ sub initialize {
     my($text) = Text($self->get('field'), {
 	ONKEYDOWN => Join([
 	    'return window.bivio.combobox.key_down(event.keyCode, this, {',
-	        'dd_name: "', _drop_down_id(), '",',
+	        'dd_name: "', _drop_down_id($self), '",',
 	        $self->unsafe_get('auto_submit')
 	            ? 'auto_submit: true,' : (),
 	        'dd_values: ', $var_name, '})',
@@ -42,7 +42,7 @@ sub initialize {
 	BR(),
 	Tag(div => Simple(' '), {
 	    CLASS => 'dd_menu',
-	    ID => _drop_down_id(),
+	    ID => _drop_down_id($self),
 	}),
     ]);
     return shift->SUPER::initialize(@_);
@@ -57,14 +57,16 @@ sub render {
 }
 
 sub _drop_down_id {
+    my($self) = @_;
     return [sub {
-        my($source) = @_;
-	my($id) = 'combobox_drop_down';
+        my($source, $field) = @_;
+	$field =~ s/\W//g;
+	my($id) = 'combobox_drop_down_' . $field;
 	if ($source->can('get_list_model')) {
 	    $id .= '_' . $source->get_list_model->get_cursor;
 	}
 	return $id;
-    }];
+    }, $self->get('field')];
 }
 
 1;
