@@ -26,11 +26,15 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.3  2009/06/12 15:36:23  dobbs
+  * Bivio::Util::RealmMail
+    added import_bulletins
+
   Revision 8.2  2009/06/10 22:47:15  moeller
   * Bivio::Biz::FormModel
     better error message on 'cannot equivalence a hash'
