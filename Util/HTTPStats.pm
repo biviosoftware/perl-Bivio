@@ -215,15 +215,7 @@ sub _parse_args {
 
 sub _previous_days_log {
     my($self) = @_;
-
-    for my $delta (0 .. 1) {
-	my($d) = $_D->to_file_name($_D->add_days($_D->local_today, - $delta));
-
-	foreach my $f ("$d-access_log.gz", "access_log-$d.gz") {
-	    return $f if -e $f;
-	}
-    }
-    b_die('previous day log not found');
+    return $_D->to_file_name($_D->local_today) . '*-access_log.gz';
 }
 
 sub _user_email {
