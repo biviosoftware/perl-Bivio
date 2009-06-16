@@ -1,12 +1,13 @@
-# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::LinuxConfig;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::IO::Trace;
+use Bivio::Base 'Bivio.ShellUtil';
+b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-Bivio::IO::Config->register(my $_CFG = {
+our($_TRACE);
+b_use('IO.Config')->register(my $_CFG = {
     root_prefix => '',
     networks => {},
 });
@@ -238,7 +239,7 @@ sub delete_file {
 	unless -e $file;
     return ($self->unsafe_get('noexecute')
 	? 'Would have '
-	: (unlink($file) || Bivio::Die->die("unlink($file): $!"))
+	: (unlink($file) || b_die("unlink($file): $!"))
     ) . "Deleted: $file\n";
 }
 
@@ -532,7 +533,8 @@ sub serial_console {
 	    ["(?=\n\tinitrd)", " console=ttyS0,$speed",
 		'console=ttyS0,'
 	    ],
-	    ['console=ttyS0,\d+', "console=ttyS0,$speed"],
+	    ['console=ttyS0,\d+', "console=ttyS0,$speed",
+	         "console=ttyS0,$speed"],
 	    ["\ntimeout=\\d+\n", "\ntimeout=5\n"],
 	    ["(?<=\ntimeout=5\n)", "serial --unit=0 --speed=$speed\n",
 		"serial --unit=0 --speed=",
@@ -606,11 +608,11 @@ sub _assert_dns_configured_for {
 
 sub _assert_interface_and_domain {
     my($self, $interface_and_domain) = @_;
-    Bivio::Die->die('must specify interface and domain -- remember to use quotes')
+    b_die('must specify interface and domain -- remember to use quotes')
 	    unless defined($interface_and_domain)
 		&& $interface_and_domain =~ / /;
     my($device, $domain) = split(" ", $interface_and_domain, 2);
-    Bivio::Die->die('failed to parse interface and domain.  Did you use quotes?  (e.g. "eth0 some.example.com")')
+    b_die('failed to parse interface and domain.  Did you use quotes?  (e.g. "eth0 some.example.com")')
 	    unless defined($device) && defined($domain) && $domain !~ / /;
     return $device, $domain;
 }
@@ -645,8 +647,8 @@ sub _base_domain {
 
 sub _bits2netmask {
     my($self, $bits) = @_;
-    Bivio::Die->die("$bits is not between 24 and 30")
-	    unless defined($bits) && $bits >= 24 && $bits <= 30;
+    b_die("$bits is not between 24 and 30")
+	unless defined($bits) && $bits >= 24 && $bits <= 30;
     return sprintf('255.255.255.%d', (1<<8) - (1<<(32-$bits)));
 }
 
@@ -673,7 +675,7 @@ sub _device {
 
 sub _dig {
     my($hostname) = @_;
-    Bivio::Die->die('missing hostname')
+    b_die('missing hostname')
 	 unless defined($hostname);
     # TODO: this is a HACK. caching in the config is bad form, but this is run
     # from the command line and won't be hanging around in memory for very
@@ -706,19 +708,21 @@ sub _edit {
 	    $got++ if $where->($data);
 	    next;
 	}
-	$search = qr/\Q$value/s unless defined($search);
+	$search = $value =~ /\n/ ? qr{\Q$value}s : qr{^\s*\Q$value}m
+	    unless defined($search);
 #TODO: Replace when perl bug is fixed.
 	my($x) = "$search";
 	next if $$data =~ /$x/;
 	if ($where eq '$') {
 	    # Special case for append_lines
-	    Bivio::Die->die("$value: bad value") if ref($value);
+	    b_die("$value: bad value")
+		if ref($value);
 	    $$data .= $value;
 	}
 	else {
 	    $where = qr/$where/s unless ref($where);
 	    $$data =~ s/$where/ref($value) ? $value->() : $value/eg
-	        or Bivio::Die->die($file, ": didn't find /$where/\n");
+	        or b_die($file, ": didn't find /$where/\n");
 	}
 	$got++;
     }
