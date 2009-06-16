@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 use Bivio::Test;
@@ -189,6 +189,10 @@ other.host
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [
 		['etc/ssh/sshd_config', "\nPermitRootLogin no(?!yes)"],
 		['etc/ssh/sshd_config', "\nVerifyReverseMapping yes(?!no)"],
+	    ],
+	], [
+	    'sshd_param', ['PermitRootLogin', 'without-password'] => [
+		['etc/ssh/sshd_config', "\nPermitRootLogin without-password"],
 	    ],
 	], [
 	    'add_users_to_group', [qw(root root larry)] => [
