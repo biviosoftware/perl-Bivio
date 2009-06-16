@@ -34,6 +34,8 @@ SyslogFacility AUTHPRIV
 # Authentication:
 
 #LoginGraceTime 600
+# LinuxConfig.bunit case: PermitRootLogin no
+# LinuxConfig.bunit case: PermitRootLogin without-password
 #PermitRootLogin yes
 #StrictModes yes
 
