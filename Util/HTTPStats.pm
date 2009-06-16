@@ -1,8 +1,8 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::HTTPStats;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -36,7 +36,8 @@ EOF
 
 sub daily_report {
     my($self, $date) = _parse_args(@_);
-    return unless $_V3;
+    return
+	unless _v3();
     _create_report($self, $date,
 	"gunzip -c @{[$_CFG->{log_base}]}/<uri>/"
 	. _previous_days_log($self));
@@ -67,7 +68,8 @@ sub handle_config {
 
 sub import_history {
     my($self, $date) = _parse_args(@_);
-    return unless $_V3;
+    return
+	unless _v3();
     # only works if the cached awstats after date have been deleted
     _create_report($self, $date,
 	"$_LOG_MERGER @{[$_CFG->{log_base}]}/<uri>/*-access_log.gz");
@@ -76,7 +78,8 @@ sub import_history {
 
 sub init_forum {
     my($self, $name) = shift->name_args([qw(ForumName)], \@_);
-    return unless $_V3;
+    return
+	unless _v3();
     $self->assert_have_user;
     $self->usage_error($name, ': may not be top-level forum')
 	if $_FN->is_top($name);
@@ -164,8 +167,7 @@ sub _get_domains_from_most_recent_log {
 	    last;
 	}
     }
-    b_warn('no forums found for domains')
-	unless @$domains;
+    _trace($domains) if $_TRACE;
     return $domains;
 }
 
@@ -231,6 +233,13 @@ sub _user_email {
 	ORDER BY realm_id
 EOF
     return \$res;
+}
+
+sub _v3 {
+    return 1
+	if $_V3;
+    _trace('not config version 3') if $_TRACE;
+    return 0;
 }
 
 1;
