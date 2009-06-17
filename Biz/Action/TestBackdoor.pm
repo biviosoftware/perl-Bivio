@@ -8,11 +8,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($proto, $req) = @_;
-    # Little bit o' extra sanity
-    Bivio::Die->die('cannot be executed in production mode')
-        unless $req->is_test;
+    $req->assert_test;
     my($q) = $req->get('query');
-
     if (my $m = delete($q->{form_model})) {
 	$m = Bivio::Biz::Model->get_instance($m);
 	$m->execute($req, {
