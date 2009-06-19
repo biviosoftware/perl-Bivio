@@ -307,7 +307,7 @@ my($_CHILDREN) = _init_children();
 my($_EMPTY) = {map((@{$_CHILDREN->{$_}} ? () : ($_ => 1)), keys(%$_CHILDREN))};
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 my($_HREF) = qr{^(\W*(?:\w+://\w.+|/\w.+|$_IMG|$_EMAIL|$_DOMAIN|$_CAMEL_CASE)\W*$)};
-my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id)];
+my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id is_public)];
 my($_MY_TAGS);
 _require_my_tags(__PACKAGE__);
 $_C->register(my $_CFG = {
