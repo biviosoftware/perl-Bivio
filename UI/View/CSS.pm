@@ -590,6 +590,42 @@ span.b_rounded_box_4 {
   height: 2px;
   margin: 0 1px;
 }
+.b_round_1,
+.b_round_2,
+.b_round_3,
+.b_round_4,
+.b_round_5,
+.b_round_6,
+.b_round_7,
+.b_round_8,
+.b_round_9,
+.b_round_10,
+.b_round_11,
+.b_round_12,
+.b_round_13,
+.b_round_14 {
+  display: block;
+  height: 1px;
+  font-size: 1px;
+  overflow: hidden;
+}
+.b_round_1 {margin: 0 1px;}
+.b_round_2 {margin: 0 2px;}
+.b_round_3 {margin: 0 3px;}
+.b_round_4 {margin: 0 4px;}
+.b_round_5 {margin: 0 5px;}
+.b_round_6 {margin: 0 6px;}
+.b_round_7 {margin: 0 7px;}
+.b_round_8 {margin: 0 8px;}
+.b_round_9 {margin: 0 9px;}
+.b_round_10 {margin: 0 10px;}
+.b_round_11 {margin: 0 11px;}
+.b_round_12 {margin: 0 12px;}
+.b_round_13 {margin: 0 13px;}
+.b_round_14 {margin: 0 14px;}
+.b_round_15 {margin: 0 15px;}
+
+
 form input.disabled {
   Color('disabled');
 }

@@ -3,4 +3,5 @@
 Widget();
 [
     x => qr{<div class="b_rounded_box"><span class="b_rounded_box_body b_rounded_box_1"></span>.*2.*3.*4.*div.*rounded_box_body.*x.*4.*3.*2.*1},
+    [4, 'x'] => qr{<div>.*b_round_2.*b_round_1.*x.*b_round_1.*b_round_2},
 ];
