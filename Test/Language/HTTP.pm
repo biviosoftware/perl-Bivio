@@ -936,6 +936,7 @@ sub visit_uri {
     my($self, $uri) = @_;
     # Loads the page using the specified URI.
     _trace($uri) if $_TRACE;
+#TODO: No referer when we are visiting
     _send_request($self, HTTP::Request->new(GET => $self->absolute_uri($uri)));
     return;
 }
