@@ -597,6 +597,7 @@ sub handle_pre_execute_task {
     my($proto, undef, $req) = @_;
     $proto->set_test_now(
 	delete(($req->unsafe_get('query') || {})->{date_time_test_now}),
+        $req,
     ) if !defined($_IS_TEST) || $_IS_TEST;
     return;
 }
