@@ -26,7 +26,11 @@ sub handle_config {
 sub handle_post_execute_task {
     my($proto, $task, $req) = @_;
     # create model in post execute so it survies a form error rollback
-    $proto->new($req)->create($req->get($_REQ_KEY))
+    # set date_time in post execute so acceptance test can set_test_now
+    $proto->new($req)->create({
+        %{$req->get($_REQ_KEY)},
+	date_time => $_DT->now,
+    })
 	if $req->unsafe_get($_REQ_KEY);
     return;
 }
@@ -48,7 +52,6 @@ sub handle_pre_execute_task {
 	    $req->get('uri') . (defined($query) && length($query)
 		? ('?' . $query)
 		: '')),
-	date_time => $_DT->now,
     });
     return;
 }
