@@ -63,7 +63,7 @@ sub get_empty {
 
 sub get_enum_type {
     # Returns the enumerated type this set uses.
-    die('abstract method');
+    b_die('abstract method');
 }
 
 sub get_max {
@@ -82,7 +82,7 @@ sub get_min {
 
 sub get_width {
     # Must return width of database CHAR field.
-    die('abstract method');
+    b_die('abstract method');
 }
 
 sub initialize {
@@ -91,10 +91,10 @@ sub initialize {
     my($class) = ref($proto) || $proto;
     return if $_INFO{$class};
     my($enum) = $proto->get_enum_type;
-    Bivio::Die->die($enum, ': not an enum')
-		unless UNIVERSAL::isa($enum, 'Bivio::Type::Enum');
-    Bivio::Die->die($enum, ": can't be an EnumSet, because can be negative")
-		if $enum->can_be_negative;
+    b_die($enum, ': not an enum')
+	unless UNIVERSAL::isa($enum, 'Bivio::Type::Enum');
+    b_die($enum, ": can't be an EnumSet, because can be negative")
+	if $enum->can_be_negative;
     my($length) = $enum->get_max->as_int + 1;
     my($min) = '';
     vec($min, $length - 1, 1) = 0;
@@ -109,7 +109,7 @@ sub initialize {
 
     # Pad appropriately, because the enum may be smaller than the enumset.
     my($width) = 2 * $proto->get_width;
-    Bivio::Die->die($enum, ": EnumSet ($width) is narrower than Enum (",
+    b_die($enum, ": EnumSet ($width) is narrower than Enum (",
 	length($max), ")",
     ) if $width - length($max) < 0;
     foreach my $m ('min', 'max') {
@@ -171,11 +171,12 @@ sub to_sql_param {
     # of the bit vector.
     # Note: Two characters are required _per_ byte.
     return undef unless defined($value) && length($value);
+    b_die('value must be non ref') if ref($value);
     my($res) = unpack('h*', $value);
     my($width) = 2 * $proto->get_width;
     # Exact match means field is correct.
     return $res if length($res) == $width;
-    die('field too long') if length($res) > $width;
+    b_die('field too long') if length($res) > $width;
     # Pad with zeroes
     $res .= '0' x ($width - length($res));
     return $res;
