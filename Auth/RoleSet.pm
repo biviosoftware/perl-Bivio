@@ -2,82 +2,18 @@
 # $Id$
 package Bivio::Auth::RoleSet;
 use strict;
-$Bivio::Auth::RoleSet::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Auth::RoleSet::VERSION;
+use Bivio::Base 'Type.EnumSet';
 
-=head1 NAME
-
-Bivio::Auth::RoleSet - role set for configuration forms
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Auth::RoleSet;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Type::EnumSet>
-
-=cut
-
-use Bivio::Type::EnumSet;
-@Bivio::Auth::RoleSet::ISA = ('Bivio::Type::EnumSet');
-
-=head1 DESCRIPTION
-
-C<Bivio::Auth::RoleSet> holds a set of valid roles, e.g. used by
-L<Bivio::Biz::Model::RealmUser|Bivio::Biz::Model::RealmUser>.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R) = b_use('Auth.Role');
 __PACKAGE__->initialize;
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_enum_type"></a>
-
-=head2 get_enum_type() : Bivio::Type::Enum
-
-Returns L<Bivio::Auth::Role|Bivio::Auth::Role>.
-
-=cut
-
 sub get_enum_type {
-    return 'Bivio::Auth::Role';
+    return $_R;
 }
-
-=for html <a name="get_width"></a>
-
-=head2 get_width() : int
-
-Returns 10.
-
-=cut
 
 sub get_width {
-    return 10;
+    return 15;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
