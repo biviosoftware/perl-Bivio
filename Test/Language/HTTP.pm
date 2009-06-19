@@ -258,7 +258,7 @@ sub follow_link {
     my($self, @links) = @_;
     my($res);
     foreach my $link (@links) {
-	$res = $self->visit_uri(_html_get($self, Links => $link)->{href});
+	$res = $self->visit_uri($self->get_uri_for_link($link));
     }
     return $res;
 }
@@ -365,6 +365,10 @@ sub get_table_row {
 sub get_uri {
     # Returns the uri for the current page.  Blows up if no current uri.
     return shift->unsafe_get_uri || Bivio::Die->die('no current uri');
+}
+
+sub get_uri_for_link {
+    return _html_get(shift, Links => shift)->{href};
 }
 
 sub go_back {
