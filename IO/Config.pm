@@ -68,8 +68,8 @@ eval(q{
 # This modules observes the lone B<--> convention, i.e.
 # parsing stops if a B<--> is encountered in the command line arguments.
 #
-# HACK: Since it is fairly common, the option I<--TRACE> is translated
-# to I<--Bivio::IO::Trace.package_filter> for brevity.
+# HACK: Since it is fairly common, the option I<--trace> is translated
+# to I<--Bivio::IO::Trace.filter> for brevity.
 #
 # NOTE: I<Module> and I<param> must contain only word characters (except
 # for C<::> and C<.> separators) for this syntax to work.
@@ -90,19 +90,13 @@ eval(q{
 # note is Bivio::IO::Config.bconf_file, if you are trying to debug where your
 # configuration is coming from.  Here's how to pass it from the command line:
 #
-#     my-program --Bivio::IO::Config.trace=1
+#     my-program --trace=config
 #
 # May also be set in the config file itself.
-#
-#
-#
 #
 # $BCONF
 #
 # Name of configuration file if not running setuid or setgid.
-#
-#
-#
 #
 # /etc/bivio.bconf
 #
