@@ -116,6 +116,10 @@ sub XAPIAN_GUEST {
     return 'xapian_guest';
 }
 
+sub XAPIAN_WITHDRAWN {
+    return 'xapian_withdrawn';
+}
+
 sub create_user_with_account {
     my($self, $user) = @_;
     $self->model('UserAccountForm', {
@@ -161,7 +165,7 @@ sub demo_users {
     my($self) = @_;
     return [
         map($self->$_(),
-	    qw(DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST MULTI_ROLE_USER
+	    qw(DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST XAPIAN_WITHDRAWN MULTI_ROLE_USER
 	       BTEST_ADMIN BTEST_READ OTP),
 	    $self->get_request->is_production ? () : 'ROOT',
 	),
@@ -446,6 +450,13 @@ sub _init_demo_users {
                 realm_id => $demo_id || die('DEMO must come before GUEST'),
                 user_id => $uid,
                 role => $_R->GUEST,
+            });
+	}
+	elsif ($u eq $self->XAPIAN_WITHDRAWN) {
+            Bivio::Biz::Model->new($req, 'RealmUser')->create({
+                realm_id => $demo_id || die('DEMO must come before GUEST'),
+                user_id => $uid,
+                role => $_R->WITHDRAWN,
             });
 	}
 	elsif ($u eq $self->MULTI_ROLE_USER) {
