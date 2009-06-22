@@ -26,6 +26,7 @@ my($_REALM_OWNER_FIELDS) = [qw(
     realm_type
 )];
 my($_FP) = b_use('Type.FilePath');
+my($_R) = b_use('Auth.Realm');
 
 sub internal_initialize {
     my($self) = @_;
@@ -161,8 +162,16 @@ sub internal_post_load_row_with_model {
 
 sub internal_private_realm_ids {
     my($self, $query) = @_;
-    return $self->get_request->map_user_realms(
-	sub {shift->{'RealmUser.realm_id'}});
+    my($req) = $self->req;
+    return $req->map_user_realms(
+	sub {
+	    my($rid) = shift->{'RealmUser.realm_id'};
+#TODO-SECURITY: This needs to be more selective
+	    return $_R->new($rid, $req)
+		->does_user_have_permissions(['DATA_READ'], $req)
+		? $rid : ();
+	},
+    );
 }
 
 sub internal_public_realm_ids {
