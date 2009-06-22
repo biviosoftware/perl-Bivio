@@ -2,39 +2,53 @@
 # $Id$
 Request('initialize_fully');
 my($files) = require('../../../Search/t/xapian.PL');
-req()->set_realm('xapian_demo');
 Bivio::Type->get_instance('AccessMode')->execute_private(req());
+my($cases) = sub {
+    my($page, $ids, $prev, $next) = @_;
+    return (
+	({
+	    method => 'load_page',
+	    check_return => sub {
+		my($case, $actual, $expect) = @_;
+		$case->actual_return([sort(@{
+		    $case->get('object')
+			->map_rows(sub {shift->get('primary_id')})
+		    })]);
+		return [sort(map($files->[$_], @$expect))];
+	    },
+	} => [
+	    [$page ? {
+		page_number => $page,
+		count => 2,
+		search => 'albeit',
+	    } : ()] => $ids,
+	],
+	get_query => sub {
+	    my($case, $actual) = @_;
+	    $case->actual_return([$actual->[0]->get(qw(has_prev has_next))]);
+	    return [$prev, $next];
+	}),
+    );
+};
 [
+    inline_case(sub {
+        req()->set_realm_and_user(qw(xapian_demo xapian_guest));
+    }),
     [req()] => [
-	map({
-	    my($page, $ids, $prev, $next) = @$_;
-	    ({
-		method => 'load_page',
-		check_return => sub {
-		    my($case, $actual, $expect) = @_;
-		    $case->actual_return([sort(@{
-			$case->get('object')
-			    ->map_rows(sub {shift->get('primary_id')})
-			})]);
-		    return [sort(map($files->[$_], @$expect))];
-		},
-	    } => [
-		[$page ? {
-		    page_number => $page,
-		    count => 2,
-		    search => 'albeit',
-		} : ()] => $ids,
-	    ],
-	    get_query => sub {
-		my($case, $actual) = @_;
-		$case->actual_return([$actual->[0]->get(qw(has_prev has_next))]);
-		return [$prev, $next];
-	    });
-	}
+	map($cases->(@$_),
 	    [0, [], 0, 0],
 	    [1, [0, 5], 0, 1],
 	    [2, [1, 2], 1, 1],
 	    [3, [3, 4], 1, 0],
+	),
+    ],
+    inline_case(sub {
+        req()->set_user(qw(xapian_withdrawn));
+    }),
+    [req()] => [
+	map($cases->(@$_),
+	    [0, [], 0, 0],
+	    [1, [5], 0, 0],
 	),
     ],
 ];
