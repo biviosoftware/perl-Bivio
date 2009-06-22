@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,28 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.5  2009/06/19 00:22:14  dobbs
+  * Bivio::Biz::Action::TestBackdoor
+    assert_test
+  * Bivio::Biz::Model::TaskLog
+    set date_time in post execute so acceptance test can set_test_now
+  * Bivio::Test::Language::HTTP
+    added get_uri_for_link()
+  * Bivio::Type::DateTime
+    fixed handle_pre_execute_task() to call set_test_now() with a request
+  * Bivio::UI::View::CSS
+    XHTMLWidget.RoundedBox will now accept a radius (in pixels) for the rounded corners
+  * Bivio::UI::XHTML::Widget::RoundedBox
+    XHTMLWidget.RoundedBox will now accept a radius (in pixels) for the rounded corners
+  * Bivio::UI::XHTML::Widget::WikiText
+    now accepts is_public
+  * Bivio::Util::HTTPStats
+    changed the no dmains found warning to a trace; can know say
+    --trace=httpstats to get all errors
+  * Bivio::Util::LinuxConfig
+    _edit() defaults $search so that $value begins the line unless
+    contains a \n iwc does what it did before (q{\Q$value}s)
+
   Revision 8.4  2009/06/15 20:51:52  moeller
   * Bivio::UI::XHTML::Widget::ComboBox
     the drop down element is now named using the field name, allowing
