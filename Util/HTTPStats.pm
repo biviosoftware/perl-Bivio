@@ -244,11 +244,15 @@ sub _v3 {
 
 1;
 
+#XXX: How about URLWithQuery directives? Defaults to ignoring query in URIs so
+# you end up with more unique Pages-URL, but requires less memory to process
+
 __DATA__
 LogFormat="%virtualname %host %other - %logname %time1 %methodurl %code %bytesd %refererquot %uaquot"
 LoadPlugin="userinfo"
 DNSLookup=1
 LoadPlugin="hashfiles"
+NotPageList="css js class gif jpg jpeg png bmp ico swf rss atom ics"
 ShowDomainsStats=PHB
 ShowHostsStats=PHBL
 ShowAuthenticatedUsers=PHBL
@@ -261,5 +265,6 @@ ShowKeyphrasesStats=1
 ShowKeywordsStats=1
 ShowMiscStats=0
 ShowHTTPErrorsStats=1
+SkipFiles="REGEX[^\/_]"
 SkipUserAgents="REGEX[.*libwww-perl.*]"
-SkipFiles="REGEX[^/_]"
+ValidHTTPCodes="200 201 207 302 304"
