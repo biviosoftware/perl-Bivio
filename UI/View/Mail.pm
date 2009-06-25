@@ -165,11 +165,13 @@ sub internal_thread_root_list_columns {
 		    AmountCell(['message_count'])
 		    ->put(decimals => 0),
 		    ' message',
-		    If ([sub {
-			     my($source, $count) = @_;
+		    If(
+			[sub {
+			     my(undef, $count) = @_;
 			     return $count > 1 ? 1 : 0;
-			 }, ['message_count']],
-			Join(['s'])),
+			}, ['message_count']],
+			Simple('s'),
+		    ),
 		]), ['->drilldown_uri']),
 	    ]),
 	}],
