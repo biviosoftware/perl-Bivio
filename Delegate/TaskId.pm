@@ -442,6 +442,7 @@ sub info_crm {
 	    Model.CRMThreadRootList->execute_load_page
 	    View.CRM->thread_root_list
 	    thread_task=FORUM_CRM_THREAD_LIST
+	    update_task=FORUM_CRM_FORM
 	    next=FORUM_CRM_THREAD_ROOT_LIST
 	)],
 	[qw(
@@ -740,6 +741,7 @@ sub info_mail {
 	    Model.MailThreadRootList->execute_load_page
 	    View.Mail->thread_root_list
 	    thread_task=FORUM_MAIL_THREAD_LIST
+	    update_task=FORUM_MAIL_FORM
 	)],
 	[qw(
 	    FORUM_MAIL_THREAD_LIST
