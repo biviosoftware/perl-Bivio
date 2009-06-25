@@ -38,6 +38,14 @@ sub internal_format_incoming {
     return \($o->as_string);
 }
 
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+        require_context => 0,
+    });
+}
+
 sub internal_return_value {
     return {
 	method => 'server_redirect',
