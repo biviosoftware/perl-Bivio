@@ -125,6 +125,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	require_context => 1,
         visible => [
  	    {
  		name => 'to',
@@ -196,10 +197,7 @@ sub internal_query_who {
 }
 
 sub internal_return_value {
-    return {
-	task_id => 'next',
-	query => undef,
-    };
+    return;
 }
 
 sub internal_send_to_realm {
@@ -232,9 +230,10 @@ sub map_attachments {
 }
 
 sub reply_query {
-    my(undef, $who) = @_;
+    my(undef, $who, $model) = @_;
     return {
-	'ListQuery.this' => ['RealmMail.realm_file_id'],
+	'ListQuery.this' => $model ? $model->get('RealmMail.realm_file_id')
+	    : ['RealmMail.realm_file_id'],
 	$_QUERY_WHO => lc($_MRW->from_any($who)->as_uri),
     };
 }
