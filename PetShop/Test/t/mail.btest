@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
 home_page();
@@ -100,6 +100,7 @@ submit_form(Send => {
 });
 verify_local_mail(qr{.}, qr{.}, 2);
 reload_page();
+follow_link('mail');
 follow_link($reply_subject);
 follow_link('author');
 verify_text('initial message');
@@ -117,6 +118,7 @@ submit_form(Send => {
 });
 verify_text('was sent');
 verify_local_mail(qr{.}, qr{.}, 2);
+follow_link('mail');
 follow_link($reply_subject);
 verify_text('reply text');
 # Test handling of autoreply messages, verifying that repeat messages from a

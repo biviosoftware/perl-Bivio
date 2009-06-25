@@ -31,22 +31,17 @@ submit_form(Send => {
     priority => 'High',
     text => 'Solution here',
 });
+follow_link('tickets');
 follow_link_in_table('Ticket', 'Ticket', $ticket);
 verify_text("Open Ticket #$ticket");
-follow_link('answer_1');
 my($product) = random_string();
 #TODO: Test that including "text" with Update Only results in error
 submit_form('Update Fields Only' => {
     priority => 'Medium',
     product => $product,
 });
+follow_link('tickets');
 submit_form(Refresh => {
     'Any Status' => 'Any Status',
 });
 verify_no_text($product);
-follow_link_in_table('Ticket', 'Ticket', $ticket);
-verify_no_text($product);
-follow_link('New Ticket');
-verify_form({
-    priority => 'Low',
-});

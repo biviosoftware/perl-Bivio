@@ -42,12 +42,7 @@ sub internal_reply_list {
 sub internal_thread_root_list_columns {
     my($self, $model) = @_;
     return [
-	['CRMThread.crm_thread_num', {
-	    column_widget => Link(
-		String(['CRMThread.crm_thread_num']),
-		['->drilldown_uri'],
-	    ),
-	}],
+	_update_uri_column(qw(CRMThread.crm_thread_num String)),
 	# WidgetFactory uses singleton to find type so we have to do it here
 	map([$_, {
 	    wf_type => $model->get_field_type($_),
@@ -56,13 +51,8 @@ sub internal_thread_root_list_columns {
  	['RealmMail.from_email', {
 	    column_widget => String(['RealmMail.from_email']),
 	}],
-	['CRMThread.crm_thread_status', {
-	    column_widget => Link(
-		Enum(['CRMThread.crm_thread_status']),
-		['->drilldown_uri'],
-	    ),
-	}],
-	'owner_name',
+	_update_uri_column(qw(CRMThread.crm_thread_status Enum)),
+	_update_uri_column(qw(owner_name String)),
 #TODO: Put this in second row with colspan below all this other stuff
  	['CRMThread.subject', {
  	    order_by_names => 'CRMThread.subject_lc',
@@ -139,6 +129,13 @@ sub thread_root_list {
 	    ),
 	);
     }])
+}
+
+sub _update_uri_column {
+    my($field, $widget) = @_;
+    return [$field, {
+	column_widget => Link(vs_call($widget, [$field]), ['->update_uri']),
+    }];
 }
 
 1;
