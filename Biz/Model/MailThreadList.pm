@@ -1,11 +1,11 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailThreadList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RM) = __PACKAGE__->use('Model.RealmMail');
+my($_RM) = b_use('Model.RealmMail');
 
 sub DATE_SORT_ORDER {
     return 1;
