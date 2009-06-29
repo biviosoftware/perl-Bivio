@@ -535,10 +535,7 @@ sub vs_tuple_use_list_as_task_menu_list {
 sub vs_user_email_list {
     my($proto, $model, $other_cols, $other_tools) = @_;
     view_put(
-	xhtml_tools => Join([
-	    $proto->vs_alphabetical_chooser($model),
-	    @{$other_tools || []},
-	]),
+        $other_tools ? (xhtml_tools => Join([@$other_tools])) : (),
 	xhtml_body => $proto->vs_paged_list(
 	    $model => [
 		[display_name => {
