@@ -28,7 +28,7 @@ $msg =~ /^Sender: crm\@/im || die('incorrect Sender: ', $msg);
 submit_form(Refresh => {
     'Any Status' => 'Any Status', # force filter to Any Status
 });
-follow_link_in_table('Ticket', 'Ticket', $ticket);
+follow_link_in_table('Ticket', 'Subject', ($subject =~ /.*#\d+\]\s*(.+)/)[0]);
 verify_text("Closed Ticket #$ticket");
 my($body) = 'but wait ' . random_string();
 $msg = send_mail($cust1, $forum, {Subject => $subject}, $body);
