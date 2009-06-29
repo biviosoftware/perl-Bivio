@@ -93,7 +93,7 @@ sub user_list {
     my($self, $extra_columns) = @_;
     vs_user_email_list('SiteAdminUserList', [
 	@{$extra_columns || []},
-    ]);
+    ], [vs_alphabetical_chooser('SiteAdminUserList')]);
     return;
 }
 
