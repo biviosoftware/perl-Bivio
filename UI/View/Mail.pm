@@ -242,7 +242,7 @@ sub _msg {
 				control => vs_can_group_bulletin_form(),
 			    },
 			]),
-			{class => 'actions'},
+			'actions',
 		    ),
 		]),
 	    ),
