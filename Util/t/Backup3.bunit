@@ -1,0 +1,82 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+my($now) = DateTime('20080301123456');
+DateTime()->set_test_now($now, req());
+my($today) = DateTime()->now;
+my($days) = [map(Date()->to_file_name(Date()->add_days($today, $_)), 0 .. 5)];
+my($tmp) = IO_File()->absolute_path('Backup3');
+system("chmod -R a+rxw $tmp 2>/dev/null; rm -rf $tmp");
+Bivio::IO::File->mkdir_p($tmp);
+foreach my $day (@$days) {
+    foreach my $log (
+	map("$tmp/$_",
+	    "d1/${day}131313/f1",
+	    "d2/$day/f1",
+	    "d3/$day.gz",
+	    "d3/${day}010101.gz",
+	),
+    ) {
+	IO_File()->mkdir_parent_only($log);
+	system("dd if=/dev/zero of=$log bs=1024 count=1 > /dev/null 2>&1");
+    }
+}
+[
+    class() => [
+	compress_and_trim_log_dirs => [
+	    [$tmp => (@$days - 1) - 1] => sub {
+		assert_equals(undef, -e "$tmp/d1/20080301131313");
+ 		assert_equals(undef, -e "$tmp/d1/20080301131313.tgz");
+ 		assert_equals(undef, -e "$tmp/d1/$days->[$#$days - 1]131313");
+ 		assert_equals(1, -e "$tmp/d1/$days->[$#$days - 1]131313.tgz");
+ 		assert_equals(1, -e "$tmp/d1/$days->[$#$days]131313");
+		return [join(
+		    '',
+		    'Compressed:',
+		    map(" $tmp/$_",
+			map("d1/${_}131313", @$days[0..$#$days - 1]),
+			map("d2/${_}", @$days[0..$#$days - 1]),
+		    ),
+		    "\n",
+		    'Deleted:',
+		    map(" $tmp/$_.tgz",
+			map("d1/${_}131313", @$days[0]),
+			map("d2/${_}", @$days[0]),
+		    ),
+		    "\n",
+		)];
+	    },
+	],
+	compress_and_trim_log_dirs => [
+	    [$tmp => (@$days - 1) - 2] => join(
+		'',
+		'Compressed:',
+		"\n",
+		'Deleted:',
+		map(" $tmp/$_.tgz",
+		    map("d1/${_}131313", @$days[1]),
+		    map("d2/${_}", @$days[1]),
+		),
+		"\n",
+	    ),
+	],
+# 	archive_logs => [
+# 	    [$tmp, $tmp2] => sub {
+# 		my($expect) = [];
+# 		foreach my $d (@$days[2..$#$days - 1]) {
+# 		    foreach my $dir (sort(
+# 			"d1/${d}131313.tgz",
+# 			"d2/${d}.tgz",
+# 			"d3/${d}.gz",
+# 			"d3/${d}010101.gz",
+# 		    )) {
+# 			assert_equals(1, -e "$tmp2/2008/$dir");
+# 			push(@$expect, $dir);
+# 		    }
+# 		}
+# 		return [$expect];
+# 	    },
+# 	    [$tmp, $tmp2] => [],
+# 	],
+    ],
+];
