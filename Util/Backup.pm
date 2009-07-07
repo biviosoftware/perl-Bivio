@@ -8,31 +8,45 @@ use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-Bivio::IO::Config->register({
+use File::Find ();
+my($_D) = b_use('Type.Date');
+my($_DT) = b_use('Type.DateTime');
+my($_F) = b_use('IO.File');
+Bivio::IO::Config->register(my $_CFG = {
     Bivio::IO::Config->NAMED => {
 	mirror_dest_host => Bivio::IO::Config->REQUIRED,
 	mirror_include_dirs => Bivio::IO::Config->REQUIRED,
 	mirror_dest_dir => Bivio::IO::Config->REQUIRED,
 	rsync_flags => '-azlSR --delete',
     },
+    min_kb => 0x40000,
 });
-my($_D) = __PACKAGE__->use('Type.Date');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_F) = __PACKAGE__->use('IO.File');
 
 sub USAGE {
     return <<'EOF';
 usage: b-backup [options] command [args...]
 commands:
-    archive_mirror_link root date [min_kb] -- tar "link" to "weekly" or "archive"
+    archive_logs mirror_dir archive_dir -- copy non-existent
+    archive_mirror_link root date -- tar "link" to "weekly" or "archive"
+    compress_log_dirs root [max_days] -- tars and gzips log dirs
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
+    remote_archive root date host dev -- copies dirs to remote system
     trim_directories dir max -- returns directories to trim
 EOF
 }
 
+sub archive_logs {
+    my($self, $root, $date) = shift->name_args(
+	[[qw(mirror_dir String)], [qw(archive_dir String)]],
+	\@_,
+    );
+    my($res) = [];
+    return @$res ? $res : ();
+}
+
 sub archive_mirror_link {
-    my($self, $root, $date, $min_kb) = shift->name_args(
-	['String', 'Date', '?Integer'],
+    my($self, $root, $date) = shift->name_args(
+	['String', 'Date'],
 	\@_,
     );
     $date = $_D->to_file_name($date);
@@ -40,7 +54,6 @@ sub archive_mirror_link {
     my($link) = "$root/mirror/link/$date";
     $self->usage_error($link, ': does not exist')
 	unless -d $link;
-    $min_kb ||= 0x40000;
     return
 	unless my $archive = _which_archive($self, $root, $date);
     $_F->mkdir_p($archive, 0700);
@@ -54,7 +67,7 @@ sub archive_mirror_link {
 		my($n, $d) = split(/\s+/, $line, 2);
 		chomp($d);
 		last
-		    if @$dirs && $n < $min_kb;
+		    if @$dirs && $n < $_CFG->{min_kb};
 		push(@$dirs, $d);
 	    }
 	    # Directories with same size may come out in any order
@@ -75,21 +88,65 @@ sub archive_mirror_link {
     return $archive;
 }
 
+sub compress_and_trim_log_dirs {
+    my($self, $root_dir, $num_keep) = shift->name_args(
+	['String', [qw(num_keep Integer 30)]],
+	\@_,
+    );
+    $self->req;
+    my($dirs) = {};
+    File::Find::find({
+	no_chdir => 1,
+	follow => 1,
+	wanted => sub {
+	    return
+		unless -d $_
+		&& $_ =~ m{(.+)/(\d{8}(?:\d{6})?)$};
+	    push(@{$dirs->{$1} ||= []}, $2);
+            $File::Find::prune = 1;
+	    return;
+	},
+    }, $root_dir);
+    my($res) = 'Compressed:';
+    foreach my $dir (sort(keys(%$dirs))) {
+	my($sort) = [sort(@{$dirs->{$dir}})];
+	pop(@$sort);
+	foreach my $d (map("$dir/$_", @$sort)) {
+	    $self->piped_exec("tar czf '$d.tgz' '$d' 2>&1 && chmod -w '$d.tgz'");
+	    $res .= " $d";
+	    Bivio::IO::File->rm_rf($d);
+	}
+    }
+    $res .= "\n";
+    $dirs = {};
+    File::Find::find({
+	no_chdir => 1,
+	follow => 1,
+	wanted => sub {
+	    return
+		unless -f $_
+		&& $_ =~ m{(.+)/(\d{8}(?:\d{6})?\.tgz)$};
+	    push(@{$dirs->{$1} ||= []}, $2);
+            $File::Find::prune = 1;
+	    return;
+	},
+    }, $root_dir);
+    $res .= 'Deleted:';
+    foreach my $dir (sort(keys(%$dirs))) {
+	my($sort) = [sort(@{$dirs->{$dir}})];
+	splice(@$sort, -$num_keep);
+	foreach my $d (map("$dir/$_", @$sort)) {
+	    $res .= " $d";
+	    unlink($d) || b_die("unlink($d): $!");
+	}
+    }
+    $res .= "\n";
+    return $res;
+}
+
 sub handle_config {
-    # All configuration may be named.
-    #
-    #
-    # mirror_dest_dir : string (required)
-    #
-    # Directory on I<mirror_dest_dir> to copy files.
-    #
-    # mirror_dest_host : string (required)
-    #
-    # Host to mirror to.
-    #
-    # mirror_include_dirs : array_ref (required)
-    #
-    # List of directories to mirror.  Must be absolute.
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
     return;
 }
 
@@ -127,12 +184,76 @@ sub mirror {
     return \$res;
 }
 
+sub remote_archive {
+    my($self, $root, $date, $host, $dev) = shift->name_args(
+	['String', 'Date', 'String', 'String'],
+	\@_,
+    );
+    $date = $_D->to_file_name($date);
+    $root = $_F->absolute_path($root);
+    my($link) = "$root/mirror/link/$date";
+    $self->usage_error($link, ': does not exist')
+	unless -d $link;
+    my($mount) = "$root/remote_archive";
+    my($archive) = "$mount/$date";
+    $self->piped_exec_remote($host, "umount $dev", undef, 1);
+    $self->piped_exec_remote($host, "umount $mount", undef, 1);
+    $self->piped_exec_remote($host, "mke2fs -b 4096 -m 0 -N 4194304 -O dir_index -O sparse_super $dev", "y\n");
+    $self->piped_exec_remote($host, "mkdir -p $mount");
+    $self->piped_exec_remote($host, "mount $dev $mount");
+    foreach my $other ("$root/weekly", "$root/archive") {
+	next
+	    unless -d (my $src = "$other/$date");
+	$self->piped_exec("rsync -a -e ssh --timeout 43200 $src $host:$mount");
+	$mount = undef;
+	last;
+    }
+    $_F->do_in_dir($link, sub {
+	foreach my $top (glob('*')) {
+	    my($dirs) = [];
+	    my($du) = IO::File->new;
+	    Bivio::die->die($top, ": du failed: $!")
+		unless $du->open("du -k '$top' | sort -nr |");
+	    while (defined(my $line = readline($du))) {
+		my($n, $d) = split(/\s+/, $line, 2);
+		chomp($d);
+		last
+		    if @$dirs && $n < $_CFG->{min_kb};
+		push(@$dirs, $d);
+	    }
+	    # Directories with same size may come out in any order
+	    $dirs = [sort(@$dirs)];
+	    $du->close;
+	    while (my $src = shift(@$dirs)) {
+		my($dst) = "$archive/$src.tgz";
+		# remote shell requires this to be practical
+		$dst =~ s/[\'\"\s]+/_/g;
+		$self->piped_exec_remote(
+		    $host,
+		    "mkdir -p '" .  File::Basename::dirname($dst) . "'",
+		);
+		$self->piped_exec(
+		    "tar czfX - - '$src' | "
+		    . "ssh $host dd of='$dst' bs=1000",
+		    \(join("\n", @$dirs)),
+		);
+	    }
+	}
+	return;
+    }) if $mount;
+    $self->piped_exec_remote($host, "chmod -R -w $archive; umount $dev");
+    return $archive;
+}
+
 sub trim_directories {
-    my($self, $root, $num) = shift->name_args(['String', 'Integer'], \@_);
+    my($self, $root, $num_keep) = shift->name_args([
+	[qw(root String)],
+	[qw(num_keep Integer)],
+    ], \@_);
     my($dirs) = [reverse(sort(glob("$root/20" . ('[0-9]' x 6))))];
     return
-	if @$dirs <= $num;
-    $dirs = [reverse(splice(@$dirs, $num))];
+	if @$dirs <= $num_keep;
+    $dirs = [reverse(splice(@$dirs, $num_keep))];
     foreach my $d (@$dirs) {
 	system('chmod', '-R', 'ug+w', $d);
 	Bivio::IO::Alert->warn($d, ': unable to delete')
