@@ -90,7 +90,7 @@ my($auth_uid) = sub {
 	update => [
 	    [$old_mtime] => $commit,
 	],
-	delete_deep => [
+	unauth_delete_deep => [
 	    [$a->('/')] => sub {commit(); return [5]},
 	],
 	load => [
@@ -216,7 +216,7 @@ my($auth_uid) = sub {
 	load => [
 	    map(([$a->("/d1-update/$_")] => not_die()), qw(f1 d2 d2/d3 d2/f3), ''),
 	],
-	copy_deep => [
+	unauth_copy_deep => [
 	    [$a->('/d1-copy')] => $commit,
 	],
 	load => [
@@ -228,7 +228,7 @@ my($auth_uid) = sub {
 	get_content => [
 	    [] => [\('f3')],
 	],
-	copy_deep => [
+	unauth_copy_deep => [
 	    [$a->('f3-copy')] => $commit,
 	],
 	load => [
@@ -237,22 +237,22 @@ my($auth_uid) = sub {
 	get_content => [
 	    [] => [\('f3')],
 	],
-	copy_deep => [
+	unauth_copy_deep => [
 	    [$a->('f3-copy')] => $commit,
 	],
-#TODO: Without explicit load of new copy, delete_deep actually deletes the
+#TODO: Without explicit load of new copy, unauth_delete_deep actually deletes the
 # versioned copy
 	load => [
 	    [$a->('f3-copy')] => not_die(),
 	],
-	delete_deep => $commit,
+	unauth_delete_deep => $commit,
 	load => [
 	    [$a->('f3-copy')] => MODEL_NOT_FOUND(),
 	],
 	load => [
 	    [$a->('d1-copy')] => not_die(),
 	],
-	delete_deep => $commit,
+	unauth_delete_deep => $commit,
 	load => [
 	    map(([$a->("/d1-copy/$_")] => MODEL_NOT_FOUND()),
 		'', qw(f1 d2 d2/d3 d2/f3)),
@@ -302,14 +302,14 @@ my($auth_uid) = sub {
 	delete => [
 	    [] => FORBIDDEN(),
 	],
-	delete_deep => [
+	unauth_delete_deep => [
 	    [$a->('ro1/d2', undef, 1)] => $commit,
 	],
 	load => [
 	    [$a->('ro1/d2/f3')] => MODEL_NOT_FOUND(),
 	    [$a->('ro1')] => not_die(),
 	],
-	copy_deep => [
+	unauth_copy_deep => [
 	    [$a->('d1')] => $commit,
 	    [$a->('ro2', 1)] => $commit,
 	],
@@ -328,7 +328,7 @@ my($auth_uid) = sub {
 	    ) : ()),
 	    qw(d1 d1/f1 ro2 ro2/f1),
 	),
-	delete_deep => [
+	unauth_delete_deep => [
 	    [$a->('d1')] => $commit,
 	    [$a->('ro2/f1')] => FORBIDDEN(),
 	    [$a->('ro2', undef, 1)] => $commit,
@@ -348,7 +348,7 @@ my($auth_uid) = sub {
 	load => [
 	    [$a->('ro1-update')] => not_die(),
 	],
-	delete_deep => FORBIDDEN(),
+	unauth_delete_deep => FORBIDDEN(),
 	load => [
 	    [$a->('ro1-update')] => not_die(),
 	],
@@ -367,7 +367,7 @@ my($auth_uid) = sub {
 	load => [
 	    [$a->('ro1-update')] => not_die(),
 	],
-	delete_deep => not_die(),
+	unauth_delete_deep => not_die(),
 	# Verifying user_id set correctly with different users
 	$user->('demo'),
         create_with_content => [
@@ -424,7 +424,7 @@ my($auth_uid) = sub {
 	    is_public => 1,
 	],
 	is_public => 1,
-	delete_deep => not_die(),
+	unauth_delete_deep => not_die(),
 	load => [
 	    [{path => '/Public'}] => MODEL_NOT_FOUND(),
 	],
