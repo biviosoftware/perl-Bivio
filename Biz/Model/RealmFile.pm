@@ -91,6 +91,13 @@ sub delete_all {
     my($req) = $self->get_request;
     my($realm);
     if ($query && $query->{realm_id}) {
+        Bivio::IO::Alert->warn_deprecated(
+            'ignoring specified realm_id (',
+            $query->{realm_id},
+            ') because it does not match auth_id (',
+            $req->get('auth_id'),
+            ').  Using the auth_id instead.',
+        ) if $query->{realm_id} != $req->get('auth_id');
  	$realm = $req->get('auth_realm');
  	delete($query->{realm_id});
     }
