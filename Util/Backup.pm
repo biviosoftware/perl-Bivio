@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Backup;
 use strict;
@@ -134,6 +134,8 @@ sub compress_and_trim_log_dirs {
     $res .= 'Deleted:';
     foreach my $dir (sort(keys(%$dirs))) {
 	my($sort) = [sort(@{$dirs->{$dir}})];
+	next
+	    unless @$sort > $num_keep;
 	splice(@$sort, -$num_keep);
 	foreach my $d (map("$dir/$_", @$sort)) {
 	    $res .= " $d";
