@@ -26,11 +26,45 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.7  2009/07/07 14:17:03  nagler
+  * Bivio::Biz::Model::BulletinForm
+    no context
+  * Bivio::Biz::Model::MailForm
+    require context, and don't return "next"
+  * Bivio::Biz::Model::MailThreadList
+    use
+  * Bivio::Biz::Model::MailThreadRootList
+    added update_uri
+  * Bivio::Biz::Model::SearchList
+    internal_private_realm_ids was returning all realms, when it should
+    only have been returning the list of realms to which the user has
+    DATA_READ access
+  * Bivio::Delegate::TaskId
+    added update_task for mailform tasks
+  * Bivio::PetShop::Util::SQL
+    added xapian_withdrawn to test user with no permissions in realm
+  * Bivio::UI::View::CRM
+    drilldown changed so that everything but subject goes right to form
+  * Bivio::UI::View::Mail
+    fmt
+    fixed css class on RoundedBox
+  * Bivio::UI::View::SiteAdmin
+    put alphabetical_chooser() in user_list() 'cos it's still needed here
+  * Bivio::UI::XHTML::ViewShortcuts
+    removed alphabetical_chooser from vs_user_email_list()
+  * Bivio::Util::Backup
+    added remote_archive and compress_and_trim_log_dirs
+    archive_logs not working yet
+  * Bivio::Util::HTTPStats
+    override NotPageList adding .rss .atom .ics
+    override ValidHTTPCodes adding 201 207 302
+    correct SkipFiles regex
+
   Revision 8.6  2009/06/22 17:46:07  moeller
   * Bivio::Auth::RoleSet
     increased width to 15, rm pod
