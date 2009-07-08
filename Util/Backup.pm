@@ -11,7 +11,9 @@ our($_TRACE);
 use File::Find ();
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
+my($_DATE_RE) = qr{(.+)/(\d{8}(?:\d{6})?)};
 my($_F) = b_use('IO.File');
+my($_LINK) = 'link';
 Bivio::IO::Config->register(my $_CFG = {
     Bivio::IO::Config->NAMED => {
 	mirror_dest_host => Bivio::IO::Config->REQUIRED,
@@ -26,7 +28,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-backup [options] command [args...]
 commands:
-    archive_logs mirror_dir archive_dir -- copy non-existent
+    archive_logs mirror_dir archive_dir -- copy gz files in /var/log
     archive_mirror_link root date -- tar "link" to "weekly" or "archive"
     compress_log_dirs root [max_days] -- tars and gzips log dirs
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
@@ -36,12 +38,29 @@ EOF
 }
 
 sub archive_logs {
-    my($self, $root, $date) = shift->name_args(
+    my($self, $mirror_dir, $archive_dir) = shift->name_args(
 	[[qw(mirror_dir String)], [qw(archive_dir String)]],
 	\@_,
     );
     my($res) = [];
-    return @$res ? $res : ();
+    File::Find::find({
+	no_chdir => 1,
+	follow => 0,
+	wanted => sub {
+	    return
+		unless $_ =~ /$_DATE_RE.*gz$/ && -f $_;
+	    my($year) = $2 =~ /^(\d{4})/;
+	    (my $tgt = $_) =~ s{^\Q$mirror_dir\E}{$archive_dir/$year};
+	    return
+		if -f $tgt;
+	    $_F->mkdir_parent_only($tgt);
+	    $self->piped_exec("cp -p '$_' '$tgt'");
+	    $_F->chmod(0400, $tgt);
+	    push(@$res, $tgt);
+	    return;
+	},
+    }, glob("$mirror_dir/*.*/var/log"));
+    return @$res ? [sort(@$res)] : ();
 }
 
 sub archive_mirror_link {
@@ -51,7 +70,7 @@ sub archive_mirror_link {
     );
     $date = $_D->to_file_name($date);
     $root = $_F->absolute_path($root);
-    my($link) = "$root/mirror/link/$date";
+    my($link) = "$root/mirror/$_LINK/$date";
     $self->usage_error($link, ': does not exist')
 	unless -d $link;
     return
@@ -97,11 +116,11 @@ sub compress_and_trim_log_dirs {
     my($dirs) = {};
     File::Find::find({
 	no_chdir => 1,
-	follow => 1,
+	follow => 0,
 	wanted => sub {
 	    return
 		unless -d $_
-		&& $_ =~ m{(.+)/(\d{8}(?:\d{6})?)$};
+		&& $_ =~ qr{$_DATE_RE$}o;
 	    push(@{$dirs->{$1} ||= []}, $2);
             $File::Find::prune = 1;
 	    return;
@@ -121,7 +140,7 @@ sub compress_and_trim_log_dirs {
     $dirs = {};
     File::Find::find({
 	no_chdir => 1,
-	follow => 1,
+	follow => 0,
 	wanted => sub {
 	    return
 		unless -f $_
@@ -193,7 +212,7 @@ sub remote_archive {
     );
     $date = $_D->to_file_name($date);
     $root = $_F->absolute_path($root);
-    my($link) = "$root/mirror/link/$date";
+    my($link) = "$root/mirror/$_LINK/$date";
     $self->usage_error($link, ': does not exist')
 	unless -d $link;
     my($mount) = "$root/remote_archive";
