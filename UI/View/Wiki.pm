@@ -72,6 +72,18 @@ sub site_view {
     return shift->view(@_);
 }
 
+sub validator_all_mail {
+    return shift->internal_put_base_attr(
+	from => Mailbox(
+	    vs_text('support_email'),
+	    vs_text_as_prose('support_name'),
+	),
+	to => Mailbox([qw(Action.WikiValidator to_email)]),
+	subject => Prose(vs_text('WikiValidator.subject')),
+	body => [qw(Action.WikiValidator all_txt)],
+    );
+}
+
 sub validator_mail {
     return shift->internal_put_base_attr(
 	from => Mailbox(
@@ -82,6 +94,16 @@ sub validator_mail {
 	subject => Prose(vs_text('WikiValidator.subject')),
 	body => b_use('MainErrors.WikiValidator')->error_list_widget(),
     );
+}
+
+sub validator_txt {
+    my($self) = @_;
+    view_class_map('TextWidget');
+    view_shortcuts($self->VIEW_SHORTCUTS);
+    view_main(SimplePage({
+	content_type => 'text/plain',
+	value => b_use('MainErrors.WikiValidator')->error_list_widget,
+    }));
 }
 
 sub version_list {
