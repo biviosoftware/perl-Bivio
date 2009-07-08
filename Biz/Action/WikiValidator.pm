@@ -46,10 +46,27 @@ sub call_embedded_task {
     return $reply;
 }
 
+sub error_txt {
+    my($self) = @_;
+    b_die('unable to load error list')
+	unless $self->unsafe_load_error_list;
+    return b_use('UI.View')->render('Wiki->validator_txt', $self->req);
+}
+
 sub return_with_validate {
     my($self, $task_return) = @_;
     ($task_return->{query} ||= {})->{$_QUERY_KEY} = 1;
     return $task_return;
+}
+
+sub send_all_mail {
+    my($self, $email, $all_txt) = @_;
+    $self->put(
+	to_email => $email,
+	all_txt => $all_txt,
+    );
+    b_use('UI.View')->call_main('Wiki->validator_all_mail', $self->req);
+    return;
 }
 
 sub send_mail {
