@@ -1404,7 +1404,7 @@ sub _cfg_wiki {
 	    [atom_feed_content => q{String(['->get_rss_summary']);}],
 	    [WikiValidator => [
 		title => 'Wiki errors:',
-		subject => q{Wiki Errors for String([qw(auth_realm owner display_name)]);},
+		subject => q{Wiki Errors},
 	    ]],
 	    ['WikiView.start_page' => 'StartPage'],
 	    [WikiForm => [
