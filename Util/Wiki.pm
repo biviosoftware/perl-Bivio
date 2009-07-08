@@ -54,40 +54,46 @@ sub validate_all_realms {
 	),
     );
 #TODO: need to know which realm is in which facade(?)
-    return [sort(map({
+    my($all_txt);
+    my($all_res) = [sort(map({
 	$req->with_realm($_, sub {
 	    my($die);
 	    my($res) = Bivio::Die->catch_quietly(
-		sub {
-		    return $self->validate_realm(
-			$email || $self->model('EventEmailSettingList')
-			    ->event_email_for_auth_realm('WikiValidator'),
-		    );
-		},
+		sub {$self->validate_realm},
 		\$die,
 	    );
 	    $self->commit_or_rollback($die && 1);
+	    my($name) = $self->req(qw(auth_realm owner_name));
 	    my($msg) = join(
 		': ',
 		$self->req(qw(auth_realm owner_name)),
-		$res || $die->as_string,
+		$res && $res->[1] || $die->as_string,
 	    );
+	    if ($res->[0]) {
+		$all_txt .= "Errors in $name:\n";
+		my($e) = ${$res->[0]};
+		$e =~ s/^/  /mg;
+		$all_txt .= $e . "\n";
+	    }
 	    _trace($msg) if $_TRACE;
 	    return $msg;
 	});
     } @$realms))];
+    b_use('Action.WikiValidator')->new->put_on_request
+	->send_all_mail($email, $all_txt);
+    return $all_res;
 }
 
 sub validate_realm {
-    my($self, $email) = @_;
+    my($self) = @_;
     my($req) = $self->initialize_fully;
     my($wv) = b_use('Action.WikiValidator')->validate_realm($req);
-    return 'ok'
+    return [undef, 'ok']
 	unless my $errors = $wv->get('errors');
-    return $errors
-	unless $email;
-    $wv->send_mail($email);
-    return scalar(@$errors) . ' errors';
+    return [
+	$wv->error_txt,
+	scalar(@$errors) . ' errors',
+    ];
 }
 
 sub _extract_content {
