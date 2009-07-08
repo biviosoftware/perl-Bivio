@@ -15,12 +15,12 @@ verify_no_text(qr{wiki error}i);
 visit_uri('/site/bp/WikiValidator_NOT_OK?validate=1');
 verify_text(qr{wiki error.*Bivio/PetShop/View/Base.pm, line \d+: invalidwikitag:}is);
 my($e) = generate_local_email('root');
-do_test_backdoor(Wiki => "-realm site validate_realm $e");
+do_test_backdoor(Wiki => "validate_all_realms $e");
 my($msg) = verify_local_mail($e, qr{wiki error}i);
 b_die("server error:\n", $msg)
     if $msg =~ /server.error/i;
 my($unknown) = [grep(
-    !/base.css: Not a valid|: Not found|: Same name/i,
+    !/base.css: Not a valid|: Not found|: Same name|Errors in site:/i,
     split(/\s*\n+\s*/i, ($msg =~ /\n\n(.*)/)[0]),
 )];
 b_die("unknown error: ", $unknown)
