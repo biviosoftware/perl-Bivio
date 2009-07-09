@@ -1,6 +1,11 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
+config({
+    class() => {
+	min_kb => 100,
+    },
+});
 my($now) = Date('20080301');
 my($days) = [map(Date()->to_file_name(Date()->add_days($now, $_)), 0 .. 40)];
 my($tmp) = 'Backup2';
@@ -35,7 +40,7 @@ foreach my $day (@$days) {
 	    method => 'archive_mirror_link',
 	    compute_params => sub {
 		my(undef, $params) = @_;
-		return [$tmp, $params->[0], 100];
+		return [$tmp, $params->[0]];
 	    },
 	    check_return => sub {
 		my($date) = shift->get('params')->[1];
