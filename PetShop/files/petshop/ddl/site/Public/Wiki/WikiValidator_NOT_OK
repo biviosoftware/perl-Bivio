@@ -3,6 +3,7 @@
 ^Not_Found
 ^/my/blog-entry/19990909090909
 ^http://petshop.bivio.biz/not-found
+^ignore-this-error
 
 Can't test embed, because search indexing fails and causes db create error
    b-embed value=^Not_Found
