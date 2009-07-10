@@ -17,6 +17,10 @@ my($_MAX) = $_DT->LAST_DATE_IN_JULIAN_DAYS().$_TIME_SUFFIX;
 #TODO: Assumes we are in the US.
 my($_NOW_SLOP) = 9 * 60 * 60;
 
+sub REGEX_FILE_NAME {
+    return qr{(\d{4})(\d{2})(\d{2})};
+}
+
 sub can_be_zero {
     # Returns false.
     return 0;
