@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Agent::Embed::Request;
 use strict;
-use base 'Bivio::Agent::Request';
+use Bivio::Base 'Agent.Request';
 use Bivio::Agent::Embed::Reply;
 use Bivio::Agent::HTTP::Query;
 use Bivio::HTML;
@@ -39,8 +39,11 @@ sub new {
 	$f->setup_request($self);
     }
     $full_uri =~ s/\?(.*)//;
-    return $self->internal_initialize_with_uri($full_uri, $1)
-	->put(form => undef);
+    my($query) = $1;
+    return $self->internal_initialize_with_uri(
+	Bivio::HTML->unescape($full_uri),
+	$query,
+    )->put(form => undef);
 }
 
 1;
