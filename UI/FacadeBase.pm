@@ -218,6 +218,7 @@ sub _cfg_base {
 	        [qw(site_realm_id SITE_REALM_NAME)],
 	        [qw(site_contact_realm_id SITE_CONTACT_REALM_NAME)],
 	        [qw(site_admin_realm_id SITE_ADMIN_REALM_NAME)],
+		[qw(site_reports_realm_id SITE_REPORTS_REALM_NAME)],
 	    ),
 	    [xlink_back_to_top => {
 		uri => '',
