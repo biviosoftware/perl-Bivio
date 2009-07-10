@@ -79,11 +79,11 @@ sub send_mail {
 }
 
 sub unsafe_get_self {
-    my($proto, $path, $req) = @_;
+    my($proto, $path, $realm_id, $req) = @_;
     return $req->unsafe_get($proto->as_classloader_map_name)
 	|| $req->unsafe_from_query($_QUERY_KEY)
 	&& $req->can_user_execute_task('FORUM_WIKI_EDIT')
-	&& _new($proto, $path, $req)
+	&& _new($proto, $path, $realm_id, $req)
         || $proto;
 }
 
@@ -118,19 +118,22 @@ sub validate_error {
     }
     $err->{path} ||= $self->unsafe_get('path');
     _trace($err) if $_TRACE;
-    if (ref($self)) {
-	push(@{$self->get('errors')}, $err);
-	return;
-    }
-    b_warn(
-	$err->{path},
+    my($msg) = join(
+	'',
+	$err->{path} ? $err->{path} : (),
 	$err->{line_num} ? (', line ', $err->{line_num}) : (),
 	': ',
 	$entity ? ($entity, ': ') : (),
 	$message,
-	'; ',
-	$req
     );
+    if (ref($self)) {
+	my($re) = $self->get('ignore_regexp');
+	return
+	    if $re && $msg =~ $re;
+	push(@{$self->get('errors')}, $err);
+	return;
+    }
+    b_warn($msg, '; ', $req);
     return;
 }
 
@@ -145,7 +148,7 @@ sub validate_realm {
 	\$die,
     );
     $req->set_task($prev_task_id);
-    ($self = _new($proto, undef, $req))->validate_error(undef, $die)
+    ($self = _new($proto, undef, undef, $req))->validate_error(undef, $die)
 	unless $self;
     $self->put(errors => undef)
 	unless @{$self->get('errors')};
@@ -165,12 +168,24 @@ sub validate_uri {
     return $self->call_embedded_task($uri, $wiki_state) ? 1 : 0;
 }
 
+sub _ignore_regexp {
+    my($realm_id, $req) = @_;
+    return !$realm_id || $realm_id eq $req->get('auth_id')
+	? $_M->new($req, 'WikiValidatorSettingList')
+	    ->regexp_for_auth_realm
+        : $req->with_realm($realm_id, sub {
+	    return $_M->new($req, 'WikiValidatorSettingList')
+	        ->regexp_for_auth_realm;
+	});
+}
+
 sub _new {
-    my($proto, $path, $req) = @_;
+    my($proto, $path, $realm_id, $req) = @_;
     return $proto->new({
 	path => $path,
 	uri_cache => {},
 	errors => [],
+	ignore_regexp => _ignore_regexp($realm_id, $req),
     })->put_on_request($req);
 }
 
@@ -214,7 +229,7 @@ sub _validate_path {
 
 sub _validate_realm {
     my($proto, $req) = @_;
-    my($self) = _new($proto, undef, $req);
+    my($self) = _new($proto, undef, undef, $req);
     $req->with_user(
 	$_M->new($req, 'RealmUser')->unsafe_get_any_online_admin,
 	sub {
