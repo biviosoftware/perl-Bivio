@@ -80,7 +80,10 @@ sub validate_all_realms {
 	});
     } @$realms))];
     b_use('Action.WikiValidator')->new->put_on_request
-	->send_all_mail($email, $all_txt);
+	->send_all_mail(
+	    $self->req(qw(auth_realm owner))->format_email,
+	    $all_txt,
+	);
     return $all_res;
 }
 

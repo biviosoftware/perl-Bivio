@@ -8,7 +8,7 @@ ShellUtil();
 	assert_equals(qr{Not a valid.*/Wiki/index}is, $actual->[0]);
 	return 1;
     },
-    ['validate_all_realms', email('site-reports')] => qr{
+    [qw(-r site-reports validate_all_realms)] => qr{
         fourem:.\d+.errors
 	.*
         site-help:.2.errors
