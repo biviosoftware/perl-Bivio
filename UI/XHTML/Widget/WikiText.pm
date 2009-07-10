@@ -964,7 +964,7 @@ sub _validator {
     my($args) = @_;
 #TODO: This should be encapsulated in validator
     return $args->{validator} ||= ($_WV ||= b_use('Action.WikiValidator'))
-	->unsafe_get_self($args->{path}, $args->{req});
+	->unsafe_get_self($args->{path}, $args->{realm_id}, $args->{req});
 }
 
 1;
