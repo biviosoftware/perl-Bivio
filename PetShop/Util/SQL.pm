@@ -475,6 +475,8 @@ sub _init_demo_users {
 	    $self->new_other('OTP')->reset_user;
 	}
     }
+    $self->create_test_user(
+	b_use('TestLanguage.HTTP')->generate_remote_email('support'));
     $self->create_test_user('invalidated_user');
     $req->get('auth_user')->invalidate_password;
     return;
@@ -562,16 +564,13 @@ EOF
     $self->realm_file_create('Forms/btest.csv', <<'EOF');
 &client_addr,&date,&email,input,ok
 EOF
-    
 	$self->realm_file_create(b_use('Type.WikiName')->to_absolute('PublicPage', 1), <<'EOF');
 @h1 My Public Header
 My Public Page
 EOF
-    
 	$self->realm_file_create(b_use('Type.WikiName')->to_absolute('PrivatePage'), <<'EOF');
 My Example Page.
 EOF
-    
 	$self->realm_file_create(	b_use('Type.BlogFileName')->to_absolute('20071225000000', 1),
 	<<'EOF');
 @h1 Merry Xmas
@@ -591,11 +590,6 @@ EOF
 Name,Number
 a,
 ,
-EOF
-    $self->realm_file_create('/Settings/EventEmail.csv', <<'EOF');
-Event,Email
-M1,m1@bivio.biz
-M2/e1,m2e1@bivio.biz
 EOF
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
@@ -752,6 +746,20 @@ EOF
 	    return;
 	});
     }
+    $req->with_realm(b_use('ShellUtil.SiteForum')->REPORTS_REALM => sub {
+        $self->realm_file_create('/Settings/WikiValidator.csv', <<"EOF");
+Realm,Ignore Regexp
+site,ignore-this-error
+EOF
+	$self->model('ForumUserAddForm', {
+	    'RealmUser.realm_id' => $req->get('auth_id'),
+	    'User.user_id' => _realm_id(
+		$self,
+		b_use('TestLanguage.HTTP')->generate_remote_email('support'),
+	    ),
+	});
+	return;
+    });
     return;
 }
 
@@ -868,7 +876,8 @@ EOF
 sub _realm_id {
     my($self, $name) = @_;
     my($ro) = $self->model('RealmOwner');
-    return $ro->unauth_load({name => $name}) ? $ro->get('realm_id')
+    return $ro->unauth_load_by_email_id_or_name($name)
+	? $ro->get('realm_id')
 	:  $self->create_test_user($name);
 }
 
