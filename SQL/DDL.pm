@@ -43,7 +43,6 @@ sub _file_constraints {
 ----------------------------------------------------------------
 -- Non-PRIMARY KEY Constraints
 ----------------------------------------------------------------
-
 --
 -- address_t
 --
@@ -686,19 +685,9 @@ CREATE INDEX realm_user_t8 ON realm_user_t (
 --
 -- task_log_t
 --
-ALTER TABLE task_log_t
-  ADD CONSTRAINT task_log_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
 CREATE INDEX task_log_t3 ON task_log_t (
   realm_id
 )
-/
-ALTER TABLE task_log_t
-  ADD CONSTRAINT task_log_t4
-  FOREIGN KEY (user_id)
-  REFERENCES user_t(user_id)
 /
 CREATE INDEX task_log_t5 ON task_log_t (
   user_id
