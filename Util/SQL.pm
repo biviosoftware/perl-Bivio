@@ -53,6 +53,7 @@ my($_BUNDLE) = [qw(
     !feature_task_log
     !feature_task_log2
     !tuple_thread_root_id_not_null
+    !task_log_remove_foreign_keys
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -496,6 +497,17 @@ CREATE SEQUENCE bulletin_s
   MINVALUE 100016
   CACHE 1 INCREMENT BY 100000
 /
+EOF
+    return;
+}
+
+sub internal_upgrade_db_task_log_remove_foreign_keys {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE task_log_t DROP CONSTRAINT task_log_t2
+/    
+ALTER TABLE task_log_t DROP CONSTRAINT task_log_t4
+/    
 EOF
     return;
 }
