@@ -76,7 +76,9 @@ sub internal_fixup_sql {
 sub internal_get_blob_type {
     # (self) : hash_ref
     # Returns the bind_param() value for a BLOB.
-    return DBI::SQL_BINARY();
+    return {
+	pg_type => DBD::Pg::PG_BYTEA(),
+    };
 }
 
 sub internal_get_error_code {
