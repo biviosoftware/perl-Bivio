@@ -60,20 +60,13 @@ foreach my $day (@$days) {
 		)];
 	    },
 	    [$mirror => (@$days - 1) - 2] => join(
-		'',
-		'Compressed:',
-		"\n",
-		join(
-		    ' ',
-		    'Deleted:',
-		    sort(grep(
-			!m{/d3.tgz$},
-			map("$_.tgz",
-			map(@$_, @$log_dirs[1])),
-		    )),
-		),
-		"\n",
-	    ),
+		' ',
+		'Deleted:',
+		sort(grep(
+		    !m{/d3.tgz$},
+		    map("$_.tgz", map(@$_, @$log_dirs[1])),
+		)),
+	    ) . "\n",
 	],
 	archive_logs => [
 	    [$mirror, $archive] => sub {
