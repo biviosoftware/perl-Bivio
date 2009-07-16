@@ -1,14 +1,28 @@
 # Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
-
+use Encode ();
 my($value) = '&lt; original/value%20 &gt;';
 my($copy) = $value;
 
 [
     escape => [
 	"'" => '&#39;',
-	'"' => '&quot;',
+	'"' => '&#x22;',
+        #http://www.dwheeler.com/essays/quotes-in-html.html
+        #http://www.alistapart.com/articles/emen/
+        '“' => '&#x201C;',
+        '”' => '&#x201D;',
+        '‘' => '&#x2018;',
+        '’' => '&#x2019;',
+        '—' => '&#x2014;', #em dash
+        '–' => '&#x2013;', #en dash
+        '™' => '&#x2122;',
+        '®' => '&#xAE;',
+        '©' => '&#xA9;',
+        '§' => '&#xA7;',
+        'ö' => '&#xF6;',
+        "\x{201C}" => '&#x201C;',
     ],
     escape_query => [
 	hello => 'hello',
@@ -31,6 +45,19 @@ my($copy) = $value;
 	'&amp;&gt;&lt;&quot;' => q{&><"},
 	'&copy;' => "\x{00A9}",
 	'&trade;' => "\x{2122}",
+        '&#x201C;' => "\x{201C}",
+        map(($_->[0], Encode::decode_utf8($_->[1])),
+            ['&#x201C;' => '“'],
+            ['&#x201D;' => '”'],
+            ['&#x2018;' => '‘'],
+            ['&#x2019;' => '’'],
+            ['&#x2014;' => '—'], #em dash
+            ['&#x2013;' => '–'], #en dash
+            ['&#x2122;' => '™'],
+            ['&#xAE;' => '®'],
+            ['&#xA9;' => '©'],
+            ['&#xA7;' => '§'],
+        ),
     ],
     parse_www_form_urlencoded => [
 	[undef] => [{}],

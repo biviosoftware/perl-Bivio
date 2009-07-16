@@ -1,0 +1,26 @@
+# Copyright (c) 2009 bivio Software, Inc.g  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+my($f, $uri) = create_forum();
+visit_uri("$uri/blog");
+follow_link(qr{new blog entry}i);
+submit_form({
+    title => "Gödel called this “incomplete”",
+    anon => <<'EOF',
+We’re “scare quotes” — what’s The Right Thing™ under §1.2.3 C.R.S?  O’Reilly says ‘alpha geeks’ use single quotes.  At least 2–3 long-handled wrenches and 3’ 6” 
+© 2009 bivio Software, Inc.
+EOF
+});
+verify_text('G&#xF6;del called this &#x201C;incomplete&#x201D;');
+verify_text('We&#x2019;re &#x201C;scare quotes&#x201D;');
+follow_link('edit');
+verify_text('G&#xF6;del called this &#x201C;incomplete&#x201D;');
+verify_text('We&#x2019;re &#x201C;scare quotes&#x201D;');
+submit_form({
+    public => 1,
+});
+follow_link('Back to list');
+verify_text(qr{<link[^>]*alternate[^>]*"$uri/blog.atom"});
+visit_uri("$uri/blog.atom");
+verify_text(qr{^<\?xml version="1\.0" encoding="utf-8"\?>.*G&#xF6;del called this &#x201C;incomplete&#x201D;.*&#x2018;alpha geeks&#x2019; use single quotes}s);

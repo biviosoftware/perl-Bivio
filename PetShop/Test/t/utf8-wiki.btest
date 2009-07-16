@@ -1,0 +1,17 @@
+# Copyright (c) 2009 bivio Software, Inc.g  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+my($f, $uri) = create_forum();
+visit_uri($uri = "$uri/wiki");
+submit_form({
+    public => 1,
+    title => "no special characters here",
+    anon => <<'EOF',
+We’re “scare quotes” — what’s The Right Thing™ under §1.2.3 C.R.S?  O’Reilly says ‘alpha geeks’ use single quotes.  At least 2–3 long-handled wrenches and 3’ 6” 
+© 2009 bivio Software, Inc.
+EOF
+});
+verify_text('We&#x2019;re &#x201C;scare quotes&#x201D;');
+follow_link('edit');
+verify_text('We&#x2019;re &#x201C;scare quotes&#x201D;');
