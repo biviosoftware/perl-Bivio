@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -26,11 +26,40 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.9  2009/07/10 00:28:08  nagler
+  * Bivio::Agent::Embed::Request
+    need to unescape uri before calling internal_initialize_with_uri
+  * Bivio::Biz::Action::WikiValidator
+    Added error_txt and send_all_mail
+    unsafe_get_self takes realm_id
+    added ignore regexp per realm (defined in site-reports)
+  * Bivio::Biz::Model::RealmFile
+    added warning if given realm_id doesn't match the auth_id on the request
+  * Bivio::Biz::Model::WikiValidatorSettingList
+    NEW
+  * Bivio::PetShop::Util::SQL
+    added WikiValidatorSettingList
+  * Bivio::Type::Date
+    REGEX_FILE_NAME
+  * Bivio::UI::FacadeBase
+    changed subject
+    site_reports_realm_id
+  * Bivio::UI::View::Wiki
+    added validator_all_mail and validator_txt
+  * Bivio::UI::XHTML::Widget::WikiText
+    pass realm_id to unsafe_get_self
+  * Bivio::Util::Backup
+    added archive_logs
+  * Bivio::Util::Wiki
+    validate_realm returns errors and count; no longer sends email
+    validate_all_realms sends one email
+    validate_all_realms now takes a -realm, not email
+
   Revision 8.8  2009/07/07 21:07:34  nagler
   * Bivio::Util::Backup
     need check on num_keep
