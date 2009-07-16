@@ -6,5 +6,5 @@ req()->initialize_fully('FORUM_CALENDAR_EVENT_LIST_RSS');
 from_type(AccessMode => 'PRIVATE')->execute(req());
 model('CalendarEventList')->load_page;
 [
-    ['CalendarEventList'] => qr{^<feed xmlns="http://www.w3.org/2005/Atom".*<title>PetShop Calendar</title>.*<link .* rel="alternate" type="text/html" /><link .* rel="self" type="application/atom\+xml" />.*</feed>}s,
+    ['CalendarEventList'] => qr{^<\?xml version="1.0" encoding="utf-8"\?>\n<feed xmlns="http://www.w3.org/2005/Atom".*<title>PetShop Calendar</title>.*<link .* rel="alternate" type="text/html" /><link .* rel="self" type="application/atom\+xml" />.*</feed>}s,
 ];

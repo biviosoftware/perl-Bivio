@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XML::Widget::AtomFeed;
 use strict;
-use Bivio::Base 'XMLWidget.Tag';
+use Bivio::Base 'XMLWidget.XMLDocument';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # Atom Format, RFC 4287
@@ -16,6 +16,7 @@ sub initialize {
     my($class) = b_use('Model.' . $self->get('list_class'))
 	->simple_package_name;
     $self->put(
+        value => Tag({
 	XMLNS => 'http://www.w3.org/2005/Atom',
 	tag => 'feed',
 	value => => Join([
@@ -44,6 +45,7 @@ sub initialize {
 		),
 	    ]))),
 	]),
+        }),
     );
     return shift->SUPER::initialize(@_);
 }

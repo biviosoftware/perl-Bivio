@@ -1,0 +1,8 @@
+# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({view_class_map => 'XMLWidget'});
+[
+    [''] => qq(<?xml version="1.0" encoding="utf-8"?>\n),
+    ['x'] => qq(<?xml version="1.0" encoding="utf-8"?>\nx),
+    ['x', '1.1', 'ISO-8859-1'] => qq(<?xml version="1.1" encoding="ISO-8859-1"?>\nx),
+];
