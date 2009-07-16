@@ -105,7 +105,7 @@ sub new {
     # Creates a new Reply type which uses the specified Apache::Request for
     # output operations.
     return shift->SUPER::new->put(
-	output_type => 'text/html',
+	output_type => 'text/html; charset="utf-8"',
 	r => shift,
     );
 }
@@ -120,7 +120,7 @@ sub send {
     die('no reply generated, missing UI item on Task: ',
         $req->get('task_id')->get_name)
 	unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::Handle');
-    my($size) = $is_scalar ? length($$o) : -s $o;
+    my($size) = $is_scalar ? do {use bytes; length($$o)} : -s $o;
     # NOTE: The -s $o and the "stat(_)" below must be near each other
     if ($is_scalar) {
 	# Don't allow caching of dynamically generated replies, because
@@ -197,6 +197,15 @@ sub set_output {
 	unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
 	    || UNIVERSAL::isa($value, 'IO::Handle');
     return shift->SUPER::set_output(@_);
+}
+
+sub set_output_type {
+    my($self, $type) = @_;
+    unless ($type =~ /charset/) {
+        $type .= '; charset="utf-8"';
+        $type =~ s/;;+/;/;
+    }
+    return shift->SUPER::set_output_type($type);
 }
 
 sub _add_additional_http_headers {

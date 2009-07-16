@@ -1,0 +1,16 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    sub{class()->new({})} => [
+        get_output_type => 'text/html; charset="utf-8"',
+        set_output_type => [
+            ['text/plain'] => undef,
+        ],
+        get_output_type => 'text/plain; charset="utf-8"',
+        set_output_type => [
+            ['text/html; charset="ISO-8859-1"'] => undef,
+        ],
+        get_output_type => 'text/html; charset="ISO-8859-1"',
+    ],
+];
