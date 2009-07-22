@@ -258,7 +258,7 @@ sub remote_archive {
 		);
 		$self->piped_exec(
 		    "tar czfX - - '$src' | "
-		    . "ssh $host dd of='$dst' bs=1000",
+		    . "ssh $host dd of='$dst' bs=1000 > /dev/null",
 		    \(join("\n", @$dirs)),
 		);
 	    }
