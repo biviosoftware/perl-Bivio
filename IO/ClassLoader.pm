@@ -64,6 +64,26 @@ sub after_in_map {
     # DOES NOT RETURN
 }
 
+sub call_autoload {
+    my($proto, $autoload, $args, $no_match) = @_;
+    my($func) = $autoload;
+    $func =~ s/.*:://;
+    return
+	if $func eq 'DESTROY';
+    my($map, $class)
+	= $func =~ /^(?:^|::)([A-Z][a-zA-Z]+)_([A-Z][A-Za-z0-9]+)$/;
+    return $no_match ? $no_match->($func, $args)
+	: b_die($func, ': method not found')
+	unless $map;
+    b_die($func, ': no such mapped class')
+	unless $proto->is_map_configured($map)
+	and $class = $proto->unsafe_map_require($map, $class);
+    return $class
+	unless @$args;
+    my($method) = $class->can('handle_autoload') ? 'handle_autoload' : 'new';
+    return @$args ? $class->$method(@$args) : $class;
+}
+
 sub delegate_require {
     my($proto, $class) = @_;
     # Returns the delegate for the specified class.
@@ -193,6 +213,12 @@ sub simple_require {
     # arguments.
     my(@res) = map(_require($proto, $_, 1), @package);
     return wantarray ? @res : $res[0];
+}
+
+sub split_method_with_underscore {
+    my($self) = @_;
+    
+    return;
 }
 
 sub unsafe_map_require {
