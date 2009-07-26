@@ -1,0 +1,13 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+config({
+    'Bivio::IO::ClassLoader' => {
+	maps => {
+	    ShellUtil => ['Bivio::Util::t::Shell', 'Bivio::Util', 'Bivio::Biz::Util'],
+	},
+    },
+});
+ShellUtil();
+[
+    [qw(-input Shell/t1.pl batch)] => not_die(),
+];
