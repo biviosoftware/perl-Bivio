@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type;
 use strict;
@@ -194,6 +194,10 @@ sub get_width {
     # this value.  If a number cannot be negative, then will
     # not include a character for a sign.
     die('abstract method');
+}
+
+sub handle_autoload {
+    return shift->from_literal_or_die(@_);
 }
 
 sub internal_from_literal_warning {
