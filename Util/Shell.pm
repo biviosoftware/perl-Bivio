@@ -28,7 +28,7 @@ sub AUTOLOAD {
 	    }
 	    b_die('call a ShellUtil class first, e.g. RealmAdmin();')
 		unless $_UTIL;
-	    return $_UTIL->main($func, @_);
+	    return $_UTIL->main($func, @$args);
 	},
     );
 }
