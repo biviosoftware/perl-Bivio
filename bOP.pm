@@ -26,11 +26,21 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.10  2009/07/16 19:02:28  nagler
+  * Bivio::SQL::Connection::Postgres
+    fixed blob type
+  * Bivio::SQL::DDL
+    removed task_log foreign keys
+  * Bivio::Util::Backup
+    remove empty messages from compress_and_trim_log_dirs
+  * Bivio::Util::SQL
+    add upgrade to remove task log foreign keys
+
   Revision 8.9  2009/07/10 00:28:08  nagler
   * Bivio::Agent::Embed::Request
     need to unescape uri before calling internal_initialize_with_uri
