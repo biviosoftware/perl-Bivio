@@ -2,10 +2,11 @@
 # $Id$
 package Bivio::Util::Shell;
 use strict;
-use base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD, $_UTIL);
+my($_CL) = b_use('IO.ClassLoader');
 
 sub USAGE {
     return <<'EOF';
@@ -16,16 +17,20 @@ EOF
 }
 
 sub AUTOLOAD {
-    my($func) = $AUTOLOAD;
-    $func =~ s/.*:://;
-    return if $func eq 'DESTROY';
-    if ($func =~ /^[A-Z]/) {
-	$_UTIL = Bivio::IO::ClassLoader->map_require('ShellUtil', $func);
-	return @_ ? $_UTIL->main(@_) : $_UTIL;
-    }
-    die('you need to call a ShellUtil class first, e.g. RealmAdmin();')
-	unless $_UTIL;
-    return $_UTIL->main($func, @_);
+    return $_CL->call_autoload(
+	$AUTOLOAD,
+	\@_,
+	sub {
+	    my($func, $args) = @_;
+	    if ($func =~ /^[A-Z]/) {
+		$_UTIL = b_use('ShellUtil', $func);
+		return @$args ? $_UTIL->main(@$args) : $_UTIL;
+	    }
+	    b_die('call a ShellUtil class first, e.g. RealmAdmin();')
+		unless $_UTIL;
+	    return $_UTIL->main($func, @_);
+	},
+    );
 }
 
 sub batch {
