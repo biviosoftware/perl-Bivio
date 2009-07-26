@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Type;
 use strict;
@@ -17,12 +17,12 @@ sub from_literal_error {
     return [undef, $_TE->from_any($type_error)];
 }
 
-sub handle_autoload {
+sub handle_test_unit_autoload {
     my($self, $func) = @_;
     return [undef, $_TE->from_name($func)];
 }
 
-sub handle_autoload_ok {
+sub handle_test_unit_autoload_ok {
     my(undef, $func) = @_;
     return $_TE->is_valid_name($func) && $_TE->unsafe_from_name($func);
 }

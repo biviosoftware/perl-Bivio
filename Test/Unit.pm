@@ -75,8 +75,9 @@ sub AUTOLOAD {
     my($b) = "builtin_$func";
     return $_PROTO->can($b)
 	? $_PROTO->$b(@_)
-        : $_TYPE && $_TYPE->can('handle_autoload_ok') && $_TYPE->handle_autoload_ok($func)
-        ? $_TYPE->handle_autoload($func, @_)
+        : $_TYPE && $_TYPE->can('handle_test_unit_autoload_ok')
+	    && $_TYPE->handle_test_unit_autoload_ok($func)
+        ? $_TYPE->handle_test_unit_autoload($func, \@_)
 	: Bivio::DieCode->is_valid_name($func) && Bivio::DieCode->can($func)
 	? Bivio::DieCode->$func()
 	: $_TYPE
@@ -515,6 +516,7 @@ sub _call_class {
 	$map = $m;
 	last;
     }
+#TODO: Need to merge with ClassLoader->call_autoload
     unless ($class) {
 	($map, $class) = $func =~ /^([A-Z][a-zA-Z]+)_([A-Z][A-Za-z0-9]+)$/;
 	Bivio::Die->die(
