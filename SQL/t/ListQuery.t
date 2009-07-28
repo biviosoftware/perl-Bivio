@@ -85,4 +85,16 @@ Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
 	    [{auth_id => 1, count => 1}] => [{count => 1}],
 	],
     ],
+    [
+	{
+	    d => '12/12/2001 1:0:0',
+	    p => '10001',
+	},
+	$_SUPPORT1,
+	'Bivio::Die',
+    ] => [
+	format_uri_for_this_as_parent => [
+	    [$_SUPPORT1, ['20001']] => 'p=20001&d=2452256%203600',
+	],
+    ],
 ]);
