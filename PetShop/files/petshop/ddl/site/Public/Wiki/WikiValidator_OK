@@ -7,5 +7,6 @@
 ^/
 ^/my-site
 ^/go/bp/StartPage
+@img src="/bp/spaces in name.gif"
 
 @b-menu value=OK
