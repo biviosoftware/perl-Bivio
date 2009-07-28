@@ -163,12 +163,11 @@ sub _user_id {
 	return $e->get('realm_id')
 	    if $e->field_equals(email => $f);
     }
-    $e = $self->new_other('Email');
-    return $e->get('realm_id')
-	if $e->unauth_load({email => $f});
-    return $self->req('auth_user_id')
-	|| $self->new_other('RealmUser')
-	->get_any_online_admin->get('realm_id'),
+    my($user_id) = $in->get_from_user_id($self->req);
+    return $user_id
+	? $user_id
+	: $self->req('auth_user_id') || $self->new_other('RealmUser')
+	    ->get_any_online_admin->get('realm_id');
 }
 
 1;
