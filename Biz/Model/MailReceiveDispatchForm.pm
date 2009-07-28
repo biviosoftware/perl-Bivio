@@ -66,7 +66,7 @@ sub execute_ok {
         message => 'message missing "From"',
     }) unless $self->get('from_email');
     $self->new_other('UserLoginForm')->process({
-	login => $self->internal_get_login,
+	login => $self->internal_get_login($mi),
 	via_mta => 1,
     });
     return {
@@ -83,17 +83,8 @@ sub handle_config {
 }
 
 sub internal_get_login {
-    my($self) = @_;
-    # Returns the value to be passed to I<UserLoginForm.login> before the server
-    # redirect in L<execute_ok|"execute_ok">.  All other fields are initialized
-    # at time of call.  May return C<undef> (no login).
-    # We must load the email explicitly, because we won't want the
-    # general check in UserLoginForm which strips the domain and
-    # checks the login.  Also, we need to handle the case where
-    # the user doesn't exist.
-    my($email) = $self->new_other('Email');
-    return $email->unauth_load({email => $self->get('from_email')})
-	? $email->get('realm_id') : undef;
+    my($self, $in) = @_;
+    return $in->get_from_user_id($self->req);
 }
 
 sub internal_initialize {
