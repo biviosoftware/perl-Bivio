@@ -24,6 +24,7 @@ sub internal_xhtml_adorned {
 	    'FORUM_CRM_THREAD_ROOT_LIST',
 	    'GROUP_USER_LIST',
 	    'FORUM_WIKI_VIEW',
+	    'FORUM_BLOG_LIST',
 	    'FORUM_TUPLE_USE_LIST',
 	    SiteAdminDropDown(),
 	]),
