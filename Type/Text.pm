@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::Text;
 use strict;
-use Bivio::Base 'Type.String';
+use Bivio::Base 'Type.Line';
 use Bivio::TypeError;
 
 # C<Bivio::Type::Text> defines a complex text string to be stored
