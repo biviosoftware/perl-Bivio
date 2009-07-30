@@ -635,12 +635,9 @@ sub _close_top {
 
 sub _empty_tag {
     my($tag, $attrs_string, $line, $nl, $state) = @_;
-    return "<$tag$attrs_string"
-	. ' />'
-	. (length($line)
-	       ? "<!--IGNORED-TAG-VALUE=" . Bivio::HTML->escape($line) . '-->'
-	       : "")
-	. "$nl";
+    _fmt_err($line, 'empty tags are not allowed to have a value', $state)
+	if length($line);
+    return "<$tag$attrs_string />$nl";
 }
 
 sub _fix_word {
