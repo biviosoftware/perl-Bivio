@@ -126,18 +126,16 @@ sub compress_and_trim_log_dirs {
 	    return;
 	},
     }, $root_dir);
-    my($res) = '';
+    my($compressed) = '';
     foreach my $dir (sort(keys(%$dirs))) {
 	my($sort) = [sort(@{$dirs->{$dir}})];
 	pop(@$sort);
 	foreach my $d (map("$dir/$_", @$sort)) {
 	    $self->piped_exec("tar czf '$d.tgz' '$d' 2>&1 && chmod -w '$d.tgz'");
-	    $res .= ($res ? '' : 'Compressed:') . " $d";
+	    $compressed .= " $d";
 	    Bivio::IO::File->rm_rf($d);
 	}
     }
-    $res .= "\n"
-	if $res;
     $dirs = {};
     File::Find::find({
 	no_chdir => 1,
@@ -151,21 +149,19 @@ sub compress_and_trim_log_dirs {
 	    return;
 	},
     }, $root_dir);
-    $res .= 'Deleted:';
+    my($deleted) = '';
     foreach my $dir (sort(keys(%$dirs))) {
 	my($sort) = [sort(@{$dirs->{$dir}})];
 	next
 	    unless @$sort > $num_keep;
 	splice(@$sort, -$num_keep);
 	foreach my $d (map("$dir/$_", @$sort)) {
-	    $res .= ($res ? '' : 'Deleted:') . " $d";
+	    $deleted .= " $d";
 	    unlink($d) || b_die("unlink($d): $!");
 	}
     }
-    return
-	unless $res;
-    chomp($res);
-    return "$res\n";
+    return ($compressed && "Compressed:$compressed\n")
+	. ($deleted && "Deleted:$deleted\n")
 }
 
 sub handle_config {
