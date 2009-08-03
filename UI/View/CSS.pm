@@ -515,11 +515,6 @@ p {
 .byline2 {
   white-space: nowrap;
 }
-p.prose,
-p.b_prose {
-  text-indent: 2em;
-  margin: 1ex 0 1ex 0;
-}
 td.item {
   text-align: left;
 }
