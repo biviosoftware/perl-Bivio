@@ -8,7 +8,7 @@ my($days) = [map(Date()->to_file_name(Date()->add_days($today, $_)), 0 .. 5)];
 my($logs) = [];
 my($log_dirs) = [];
 my($tmp) = IO_File()->absolute_path('Backup3');
-system("chmod -R a+rxw $tmp 2>/dev/null; rm -rf $tmp");
+system("chmod -R u+rxw $tmp 2>/dev/null; rm -rf $tmp");
 my($mirror) = "$tmp/mirror";
 my($archive) = "$tmp/archive";
 foreach my $day (@$days) {
