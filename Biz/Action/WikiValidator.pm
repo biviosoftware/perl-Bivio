@@ -32,7 +32,8 @@ sub TYPE_LIST {
 sub call_embedded_task {
     my($proto, $uri, $wiki_state) = @_;
     my($req) = $wiki_state->{req};
-    my($self) = ref($proto) ? $proto : $proto->unsafe_self_from_req($req);
+    my($self) = ref($proto) ? $proto : $proto->unsafe_self_from_req($req)
+	|| $proto;
     my($die);
     _trace($wiki_state->{path}, ': ', $uri) if $_TRACE;
     my($reply) = $_D->catch_quietly(
