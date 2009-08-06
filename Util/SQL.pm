@@ -134,7 +134,7 @@ sub column_exists {
 
 sub create_db {
     my($self) = @_;
-    # Initializes database.  Must be un from from C<files/ddl> directory,
+    # Initializes database.  Must be run from C<files/ddl> directory,
     # which contains C<*-tables.sql>, C<*-constraints.sql>, etc.
     #
     # See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
@@ -152,8 +152,8 @@ sub create_db {
 sub create_test_db {
     my($self) = @_;
     # Destroys old database, creates new database, populates with test data.
-    # Subclasses should override L<initialize_test_data|"initialize_test_data"> to
-    # create the test data.
+    # Subclasses should override L<initialize_test_data|"initialize_test_data">
+    # to create the test data.
     $self->initialize_fully;
     my($req) = $self->get_request;
     die('cannot be run on production system')
