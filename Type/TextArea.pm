@@ -19,6 +19,8 @@ sub from_literal {
     my($proto, $value, $line_width) = @_;
     $proto->internal_from_literal_warning
         unless wantarray;
+    return (undef, undef)
+ 	unless defined($value) && length($value);
     # careful to see if Preferences model is present before accessing
     my($pref, $req);
     return $proto->wrap_lines($value, $line_width || $proto->LINE_WIDTH)
@@ -27,14 +29,13 @@ sub from_literal {
 	and Bivio::Auth::Support
 	    ->unsafe_get_user_pref('TEXTAREA_WRAP_LINES', $req, \$pref)
         and $pref;
-    my($v, $e) = $proto->SUPER::from_literal($value);
-    return ($v, $e)
-	unless $v;
-    $v =~ s/\r\n|\n\r|\r/\n/sg;
-    $v =~ s/^\s+$//mg;
-    $v =~ s/^\n+|\n+$//sg;
-    $v =~ s/\n{3,}/\n/sg;
-    return $v =~ /\S/ ? $v . "\n" : (undef, undef);
+    return (undef, Bivio::TypeError->TOO_LONG)
+ 	if length($value) > $proto->get_width;
+    $value =~ s/\r\n|\n\r|\r/\n/sg;
+    $value =~ s/^\s+$//mg;
+    $value =~ s/^\n+|\n+$//sg;
+    $value =~ s/\n{3,}/\n/sg;
+    return $value =~ /\S/ ? $value . "\n" : (undef, undef);
 }
 
 sub get_width {
