@@ -226,10 +226,14 @@ sub vs_empty_list_prose {
 
 sub vs_form_error_title {
     my($proto, $form) = @_;
-    return DIV_err_title(
-	String(vs_text('form_error_title')),
-	{control => [['->get_request'], "Model.$form", '->in_error']},
-    );
+    return Join([
+	DIV_err_title(String(vs_text('form_error_title')), {
+	    control => [['->req'], "Model.$form", '->in_error'],
+	}),
+	DIV_err_title(String(vs_text('form_stale_data_title')), {
+	    control => [['->req'], "Model.$form", '->has_stale_data'],
+	}),
+    ]);
 }
 
 sub vs_grid3 {
