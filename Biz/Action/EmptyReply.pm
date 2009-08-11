@@ -14,6 +14,8 @@ sub execute {
     $status ||= 'HTTP_OK';
     $status = 'NOT_FOUND'
 	if $status =~ /NOT_FOUND/;
+    $status = 'SERVER_ERROR'
+	if $status eq 'UPDATE_COLLISION';
     my($reply) = $req->get('reply')->set_http_status($_AC->$status());
     return
 	if $reply->unsafe_get_output;
