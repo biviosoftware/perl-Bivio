@@ -263,6 +263,7 @@ sub _cfg_base {
 	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
  	    [DEFAULT_ERROR_REDIRECT_NOT_FOUND => undef],
  	    [DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND => undef],
+ 	    [DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION => undef],
 	    [FAVICON_ICO => 'favicon.ico'],
 	    [FORBIDDEN => undef],
 	    [PUBLIC_PING => 'pub/ping'],
@@ -288,6 +289,7 @@ sub _cfg_base {
 	    [view_execute_uri_prefix => 'SiteRoot->'],
 	    [favicon_uri => '/i/favicon.ico'],
 	    [form_error_title => 'Please correct the errors below:'],
+	    [form_stale_data_title => 'The page contents were modified by another request. Please resubmit the form with new data.'],
 	    [none => ''],
 	    [Image_alt => [
 		dot => '',
@@ -321,6 +323,7 @@ sub _cfg_base {
 		[qw(DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND DEFAULT_ERROR_REDIRECT_NOT_FOUND)] => 'Not Found',
 		[qw(DEFAULT_ERROR_REDIRECT_FORBIDDEN FORBIDDEN)] => 'Access Denied',
 		[qw(DEFAULT_ERROR_REDIRECT)] => 'Server Error',
+		[qw(DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION)] => 'Invalid Data',
 	    ]],
 	    [DieCode => [
 		MODEL_NOT_FOUND => 'Not found',
@@ -338,6 +341,7 @@ sub _cfg_base {
 		    [qw(not_found model_not_found)] => q{The page requested was not found or is not a functioning properly.},
 		    server_error => q{The server encountered an error.  The webmaster has been notified.},
 		    forbidden => q{You do not have permission to access this page.},
+		    update_collision => q{Your request cannot be fulfilled because the submitted data is no longer valid.},
 		],
 		@{__PACKAGE__->map_by_two(sub {
 		    my($k, $v) = @_;
