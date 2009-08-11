@@ -234,7 +234,14 @@ sub info_base {
 	    ANYBODY
 	    Action.UnadornedPage
 	)],
-#192-199 free
+	[qw(
+	    DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION
+	    192
+	    GENERAL
+	    ANYBODY
+	    Action.Error
+	)],
+#193-199 free
     ];
 }
 
