@@ -381,6 +381,12 @@ sub has_context_field {
     return $model ? $model->get_instance->has_fields($name) : 0
 }
 
+sub has_stale_data {
+    my($self) = @_;
+    return $self->req
+	->unsafe_get($self->simple_package_name . '.has_stale_data') || 0;
+}
+
 sub in_error {
     # Returns true if any of the form fields are in error.
     return shift->get_errors ? 1 : 0;
@@ -1163,7 +1169,6 @@ sub _parse_cols {
     foreach my $n (@{$self->$method()}) {
 	$n =~ s/^(.*)\.x\=/$1/;
 	my($fn) = $self->get_field_name_for_html($n);
-
 	# Handle complex form fields.  Avoid copies of huge data, so
 	# don't assign to temporary until kind (complex/simple) is known.
 	if (ref($form->{$fn}) eq 'HASH') {
@@ -1246,6 +1251,8 @@ sub _parse_cols {
 		'Error in hidden value(s), refreshing: ',
 		{field => $n, actual => $form->{$fn}, error => $err},
 	    );
+	    $self->req->put_durable(
+		$self->simple_package_name . '.has_stale_data' => 1);
 	    return _redirect_same($self);
 	}
 	else {
