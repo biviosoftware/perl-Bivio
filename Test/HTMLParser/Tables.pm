@@ -202,7 +202,8 @@ sub _end_td {
     my($self) = @_;
     # Adds the text from column to current row
     my($fields) = $self->[$_IDI];
-    return unless $fields->{table};
+    return unless $fields->{table}
+	&& @{$fields->{table}->{rows}};
     _save_cell($self, $fields,
 	$fields->{table}->{rows}->[$#{$fields->{table}->{rows}}]);
     return;
