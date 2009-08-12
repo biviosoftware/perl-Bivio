@@ -26,11 +26,34 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.13  2009/08/06 20:12:21  nagler
+  * Bivio::Agent::HTTP::Reply
+    remove charset change
+  * Bivio::Biz::Model::GroupUserList
+    remove creation_date_time from order_by, belonged in UnapprovedApplicantList
+  * Bivio::Biz::Model::UnapprovedApplicantList
+    order by creation_date_time
+  * Bivio::PetShop::View::Base
+    added blog to dock left menu
+  * Bivio::Type::Line
+    rmpod
+  * Bivio::Type::Text64K
+    rmpod
+  * Bivio::Type::Text
+    rmpod
+    Type.Text now subclasses Type.Line -- leading and trailing whitespace will now be trimmed
+  * Bivio::UI::View::CSS
+    duplicate styles removed
+  * Bivio::UI::XHTML::Widget::WikiText
+    IGNORED-TAG-VALUE removed now that errors are displayed by validate
+  * Bivio::Util::Backup
+    prevent output when no files
+
   Revision 8.12  2009/07/28 22:48:56  moeller
   * Bivio::Biz::Model::MailReceiveDispatchForm
     now calls Incoming->get_from_user_id()
