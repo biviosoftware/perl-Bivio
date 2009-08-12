@@ -10,8 +10,8 @@ view_put(menu_heading => 'Shopping Cart:');
 
 view_put(menu_content => If(
     ['Model.CartItemList', '->get_result_set_size'],
-    Form('CartItemListForm', Grid([
-	[
+    vs_simple_form('CartItemListForm', [
+	Grid([[
 	    Table('CartItemListForm', [
 		['remove', {
 		    column_widget => ImageFormButton({
@@ -52,16 +52,14 @@ view_put(menu_content => If(
 		field => 'update_cart',
 		alt => 'Update',
 	    }),
-	], [
-	    vs_blank_cell(),
-	], [
-	    ImageFormButton({
-		image => 'checkout',
-		field => 'ok_button',
-		alt => 'Proceed to Checkout',
-	    }),
-	],
-    ])),
+	]]),
+	vs_blank_cell(),
+	ImageFormButton({
+	    image => 'checkout',
+	    field => 'ok_button',
+	    alt => 'Proceed to Checkout',
+	}),
+    ], 1),
 
     # Else
     String('Your shopping cart is empty.', 'page_text'),
