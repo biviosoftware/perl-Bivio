@@ -1059,7 +1059,8 @@ EOF
 	    ]],
 	    [clear_on_focus_hint => [
 		map(($_ => 'Filter name, >date, @email, or /link'),
-		    qw(SITE_ADMIN_TASK_LOG GROUP_TASK_LOG)),
+		    map(($_, $_ . '_CSV'),
+			qw(SITE_ADMIN_TASK_LOG GROUP_TASK_LOG))),
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
