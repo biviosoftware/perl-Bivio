@@ -1,0 +1,25 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+follow_link(qw(Birds Finch));
+submit_form('add_to_cart_0');
+follow_link(qw(Cats Manx));
+submit_form('add_to_cart_0');
+
+for (1 .. 3) {
+    go_back();
+}
+submit_form('checkout');
+#TODO: really should be a test_deviance()
+verify_text('page contents were modified by another request');
+
+follow_link('Cart');
+submit_form(update_cart => {
+    quantity_0 => 0,
+});
+go_back();
+test_deviance();
+submit_form('checkout');
+test_conformance();
+verify_text('Invalid Data');
