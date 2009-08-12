@@ -27,3 +27,4 @@ submit_form(Refresh => {
 });
 follow_link('next');
 verify_uri('b_filter=user');
+follow_link('Spreadsheet');
