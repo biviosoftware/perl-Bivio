@@ -2,61 +2,18 @@
 # $Id$
 package Bivio::PetShop::ViewShortcuts;
 use strict;
-$Bivio::PetShop::ViewShortcuts::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::ViewShortcuts::VERSION;
-
-=head1 NAME
-
-Bivio::PetShop::ViewShortcuts - view convenience methods
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::ViewShortcuts;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::HTML::ViewShortcuts>
-
-=cut
-
-use Bivio::UI::HTML::ViewShortcuts;
-@Bivio::PetShop::ViewShortcuts::ISA = ('Bivio::UI::HTML::ViewShortcuts');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::ViewShortcuts>
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UI::XHTML::ViewShortcuts';
 use Bivio::Agent::TaskId;
 use Bivio::Biz::QueryType;
 use Bivio::PetShop::Type::Category;
 use Bivio::UI::HTML::Widget::FormField;
 
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="vs_address_fields"></a>
-
-=head2 static vs_address_fields(string form_name) : array
-
-=head2 static vs_address_fields(string form_name, string address_suffix) : array
-
-Returns the address fields.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub vs_address_fields {
+    # (proto, string) : array
+    # (proto, string, string) : array
+    # Returns the address fields.
     my($proto, $form_name, $address_suffix) = @_;
     my($address) = $form_name . '.Address' . ($address_suffix || '');
 
@@ -83,15 +40,9 @@ sub vs_address_fields {
        );
 }
 
-=for html <a name="vs_items_form"></a>
-
-=head2 static vs_items_form(string form_name) : Bivio::UI::Widget
-
-Returns the items form with or without Search names.
-
-=cut
-
 sub vs_items_form {
+    # (proto, string) : UI.Widget
+    # Returns the items form with or without Search names.
     my($proto, $form_name) = @_;
     return $proto->vs_new('Form', $form_name,
 	 $proto->vs_new('Table', $form_name, [
@@ -121,16 +72,10 @@ sub vs_items_form {
     );
 }
 
-=for html <a name="vs_paging_table"></a>
-
-=head2 static vs_paging_table(Bivio::UI::Widget widget) : Bivio::UI::Widget
-
-Returns a widget which includes paging links.  I<table_args> are passed
-directly to Table widget.
-
-=cut
-
 sub vs_paging_table {
+    # (proto, UI.Widget) : UI.Widget
+    # Returns a widget which includes paging links.  I<table_args> are passed
+    # directly to Table widget.
     my($proto, $model, $widget) = @_;
     return $proto->vs_new('Grid', [[
 	_page_links($proto, $model),
@@ -141,17 +86,11 @@ sub vs_paging_table {
     ]]);
 }
 
-=for html <a name="vs_product_uri"></a>
-
-=head2 static vs_product_uri(any category) : href
-
-Creates a widget value which returns a URI which points to the I<PRODUCT> task
-for I<category>.  See
-L<Bivio::PetShop::Type::Category|Bivio::PetShop::Type::Category>.
-
-=cut
-
 sub vs_product_uri {
+    # (proto, any) : href
+    # Creates a widget value which returns a URI which points to the I<PRODUCT> task
+    # for I<category>.  See
+    # L<Bivio::PetShop::Type::Category|Bivio::PetShop::Type::Category>.
     my($proto, $category) = @_;
     return [
 	# format_uri only works on the request
@@ -164,13 +103,9 @@ sub vs_product_uri {
 	}, undef, undef];
 }
 
-#=PRIVATE METHODS
-
-# _page_link(proto, string model, string direction) : Bivio::UI::Widget
-#
-# Returns a paging link for the specified direction.
-#
 sub _page_link {
+    # (proto, string, string) : UI.Widget
+    # Returns a paging link for the specified direction.
     my($proto, $model, $direction) = @_;
     $model = "Model.$model";
     my($type) = uc($direction).'_LIST';
@@ -181,26 +116,14 @@ sub _page_link {
 	});
 }
 
-# _page_links(proto, string model) : array
-#
-# Returns a next/prev links.
-#
 sub _page_links {
+    # (proto, string) : array
+    # Returns a next/prev links.
     my($proto, $model) = @_;
     return (
 	_page_link($proto, $model, 'prev'),
 	_page_link($proto, $model, 'next')->put(cell_align => 'E'),
     );
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
