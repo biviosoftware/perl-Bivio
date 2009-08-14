@@ -59,8 +59,8 @@ Line 3 same
 Line 4 same
 Line 5 is diffX
 RIGHT
-*** EXPECTED
---- ACTUAL
+--- EXPECTED
++++ ACTUAL
 *** 2,2d2 ***
 - Second Line is off
 + Second Line is on

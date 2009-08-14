@@ -205,7 +205,7 @@ sub _diff_res {
 	my($diff) = Algorithm::Diff->new(
 	    map([split(/(?<=\n)/, $_)], $left , $right),
 	);
-	$res = "*** EXPECTED$res\n--- ACTUAL\n";
+	$res = "--- EXPECTED$res\n+++ ACTUAL\n";
 	$diff->Base(1);
 	while ($diff->Next) {
 	    next if $diff->Same;
@@ -223,6 +223,8 @@ sub _diff_res {
 		my($s) = $_ ? '+' : '-';
 		join('', map("$s $_", $diff->Items($_ + 1)));
 	    } 0, 1);
+	    $top .= "\n"
+		unless $top =~ /\n$/s;
 	    $res .= $top . ($top && $bot ? $sep : '') . $bot;
 	}
     }
