@@ -142,7 +142,7 @@ sub unsafe_load_wiki_data {
 	return $res;
     }
     my($realm_id, $path, $req, $die_code) = @_;
-    my($sid) = $_C->get_value('site_realm_id');
+    my($sid) = $_C->get_value('site_realm_id', $req);
     return
 	if $sid eq $realm_id;
     my($rf) = $_MRF->new($req);
