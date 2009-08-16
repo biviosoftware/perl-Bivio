@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Task;
 use strict;
@@ -192,8 +192,8 @@ sub format_uri {
 	    unless defined($named->{realm});
 	my($ro);
 	if (ref($named->{realm})) {
-	    # If the realm doesn't have an owner, there's a bug somewhere
-	    $ro = $named->{realm}->get('owner_name');
+	    $ro = $named->{realm}->unsafe_get('owner_name')
+		|| b_die($task_name, ': task requires named realm');
 	}
 	else {
 	    return _get_error(
