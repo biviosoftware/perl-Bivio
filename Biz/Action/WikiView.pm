@@ -77,8 +77,6 @@ sub execute_prepare_html {
     }
     $name =~ s{^/+}{};
     unless ($_WN->is_valid($name)) {
-    #XXX: URIs like '/wiki/bogus.txt' redirect to a error page with URI like
-    # '/edit-wiki/WikiData/bogus.txt?ack=FORUM_WIKI_NOT_FOUND' -- is this a bug?
 	$req->put(path_info => $_WDN->to_absolute($name));
 	return $_ARF->access_controlled_execute($req);
 #TODO: Test this thoroughly with all apps
