@@ -244,7 +244,7 @@ sub _v3 {
 
 1;
 
-#XXX: How about URLWithQuery directives? Defaults to ignoring query in URIs so
+#TODO: How about URLWithQuery directives? Defaults to ignoring query in URIs so
 # you end up with more unique Pages-URL, but requires less memory to process
 
 __DATA__
