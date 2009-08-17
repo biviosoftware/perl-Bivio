@@ -948,7 +948,7 @@ sub _append_query {
     return $u
 	unless defined($q);
     my($uri) = URI->new($u);
-    $uri->query_form($uri->query_form, @$q);  # XXX
+    $uri->query_form($uri->query_form, @$q);
     return $uri->canonical->as_string;
 }
 
