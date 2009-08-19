@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::Lock;
 use strict;
@@ -27,7 +27,7 @@ sub acquire {
 		if ref($a) && ref($a->{type_error})
 		    && $a->{type_error}->equals_by_name('EXISTS');
 	}
-	$die->throw_die();
+	$die->throw_die;
 	# DOES NOT RETURN
     }
     _trace($self) if $_TRACE;

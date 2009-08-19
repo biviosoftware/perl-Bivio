@@ -1,15 +1,14 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::PropertySupport;
 use strict;
-use base 'Bivio::SQL::Support';
+use Bivio::Base 'SQL.Support';
 use Bivio::Die;
 use Bivio::HTML;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::PrimaryId;
-use Carp ();
 
 # C<Bivio::SQL::PropertySupport> is SQL transaction support for
 # L<Bivio::Biz::PropertyModel>s. PropertyModel life-cycle methods are
@@ -217,8 +216,8 @@ sub new {
         unless $save_count == int(keys(%{$attrs->{columns}}));
 
     # auth_id must be at most one column.  Turn into that column or undef.
-    Carp::croak('too many auth_id fields')
-		if int(@{$attrs->{auth_id}}) > 1;
+    die('too many auth_id fields')
+	if int(@{$attrs->{auth_id}}) > 1;
     $attrs->{auth_id} = $attrs->{auth_id}->[0];
     $attrs->{primary_key_types} = [map {$_->{type}} @{$attrs->{primary_key}}];
 
