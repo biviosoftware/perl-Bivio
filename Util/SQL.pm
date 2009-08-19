@@ -81,7 +81,6 @@ commands:
     import_db file -- imports database (ditto)
     import_tables_only file -- imports tables and sequences only
     init_dbms [clone_db] -- execute createuser and createdb optionally copying clone_db (only works for pg right now)
-    parse_trace_output [string] -- converts arg or input to executable sql
     reinitialize_constraints -- creates constraints
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     restore_dbms_dump file-dump -- restore a "raw" dump
@@ -1900,26 +1899,6 @@ ALTER TABLE tuple_t
 /
 EOF
     return;
-}
-
-sub parse_trace_output {
-    my($self, $name) =  shift->name_args(['?String'], \@_);
-    return join(
-	"\n",
-        map({
-	    my($s, $p) = $_ =~ /trace_sql:\d+ (.+;) params.*\[(.*)\]/;
-	    if ($p) {
-		$p = [split(/,/, $p)];
-		$s =~ s{\?}{
-                    my($x) = shift(@$p);
-		    $x = "'$x'"
-			if $x =~ /\D/;
-		    $x;
-                }exg;
-	    }
-	    $s ? $s : ();
-	} split(/\n/, $name || ${$self->read_input})),
-    );
 }
 
 sub realm_role_config {
