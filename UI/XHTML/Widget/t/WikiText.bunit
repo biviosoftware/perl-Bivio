@@ -39,6 +39,7 @@ OUT
 	    '_emphasis_' => qq{<p class="b_prose"><em>emphasis</em>\n</p>},
 	    'a *bold* _emphasis_ mix' => qq{<p class="b_prose">a <strong>bold</strong> <em>emphasis</em> mix\n</p>},
 	    'MixedCase' => qr{<p class="b_prose"><a href="/fourem/\w+/MixedCase">MixedCase</a>\n</p>},
+	    'MixedUpCase' => qr{<p class="b_prose"><a href="/fourem/\w+/MixedUpCase">MixedUpCase</a>\n</p>},
 	    '^^ MixedCase' => qq{<p class="b_prose">^ MixedCase\n</p>},
 	    '^^MixedCase' => qq{<p class="b_prose">^MixedCase\n</p>},
 	    '^M' => qr{<p class="b_prose"><a href="/fourem/\w+/M">M</a>\n</p>},
