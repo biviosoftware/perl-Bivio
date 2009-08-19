@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::Connection;
 use strict;
@@ -20,6 +20,7 @@ use Bivio::Type::DateTime;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_A) = b_use('IO.Alert');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CONNECTIONS) = {};
 my($_DEFAULT_DBI_NAME);
@@ -157,7 +158,7 @@ sub execute {
 	# Shouldn't really get here, so put in the logs.
 	Bivio::IO::Alert->warn('retrying:  ',
 		$errstr, '; die=', $die, '; sql=', $sql,
-		'; params=', @{_prep_params_for_io($params)},
+		'; params=', $params,
 		'; retries=', $retries) if $retries == 1;
 
 	_trace('retry after sleep=', $sleep) if $_TRACE;
@@ -559,27 +560,27 @@ sub _map_execute {
     return $res;
 }
 
-sub _prep_params_for_io {
-    my($params) = @_;
-    # Returns an array which can be passed to Bivio::IO.
-    my(@args);
-    my($sep) = ' [';
-    my($p);
-    foreach $p (ref($params) ? @$params : ()) {
-	push(@args, $sep, $p);
-	$sep = ',';
-    }
-    @args && push(@args, ']');
-    # Let trace deal with string truncation and undef
-    return \@args;
-}
-
 sub _trace_sql {
     my($sql, $params) = @_;
-    # Traces the specified sql statement with parameters.
-    # Let trace deal with string truncation and undef
-    _trace($sql, '; params=', @{_prep_params_for_io($params)});
+    map($sql
+	=~ s{\?}{
+	    !defined($_) ? 'NULL'
+		: ref($_) ? '<blob>'
+		: $_ =~ /\D/ ? _trace_sql_quote($_)
+		: $_;
+	}e,
+	@$params,
+    );
+    _trace($sql);
     return;
+}
+
+sub _trace_sql_quote {
+    my($v) = @_;
+    $v = $_A->format_args($v);
+    chomp($v);
+    $v =~ s/'/''/sg;
+    return qq{'$v'};
 }
 
 sub _verify_instance {
