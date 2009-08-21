@@ -1,0 +1,7 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ShellUtil();
+[
+    [qw(-realm fourem list)] => qr{^RealmRole\(\);\nRealmRole\(qw\(-r fourem edit ANONYMOUS -}s,
+    [qw(-realm fourem list USER)] => qr{^RealmRole\(\);\nRealmRole\(qw\(-r fourem edit USER -\n    \+ANYBODY\n    \+ANY_USER}s,
+];
