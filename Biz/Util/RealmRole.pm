@@ -363,7 +363,7 @@ sub _list_one {
     ] unless $fields->{all_permissions};
 
     my($rr) = $self->model('RealmRole');
-    my($res) = '';
+    my($res) = "RealmRole();\n";
     my($prev_ps, $prev_role);
     my($realm_id, $realm_name) = $realm->unsafe_get(qw(id owner_name));
     $realm_name = $realm->get('type')->get_name unless $realm_name;
@@ -372,7 +372,7 @@ sub _list_one {
 	    next;
 	}
 	# Always clear the set before adding in values
-	$res .= $0." -r $realm_name edit ".$role->get_name;
+	$res .= "RealmRole(qw(-r $realm_name edit " . $role->get_name;
 	my($ps) = $rr->get('permission_set');
 	if ($ps eq $_PS->get_max) {
 	    $res .= ' +';
@@ -383,15 +383,15 @@ sub _list_one {
 	    # just add the role to the output.
 	    my($s) = $ps;
 	    if (defined($prev_ps) && ($prev_ps & $ps) eq $prev_ps) {
-		$res .= " \\\n    +$prev_role";
+		$res .= "\n    +$prev_role";
 		$s &= ~$prev_ps;
 	    }
 	    foreach my $p (@{$fields->{all_permissions}}) {
-		$res .= " \\\n    +".$p->get_name
+		$res .= "\n    +".$p->get_name
 			if vec($s, $p->as_int, 1);
 	    }
 	}
-	$res .= "\n";
+	$res .= "\n));\n";
 	$prev_role = $role->get_name;
 	$prev_ps = $ps;
     }
