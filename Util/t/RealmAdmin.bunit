@@ -5,4 +5,20 @@ ShellUtil();
     [qw(-realm general users)] => qr{^multi_role_user.*\nroot\b}s,
     [qw(-realm general users administrator)] => qr{^root\b}s,
     [qw(to_id demo)] => unauth_model(RealmOwner => {name => 'demo'})->get('realm_id'),
+    [qw(-realm site-reports -user crm_tech1 leave_user)] => not_die(),
+    [qw(-realm site-reports users)] => sub {
+	my(undef, $actual) = @_;
+	assert_not_equals(qr{crm_tech1}, $actual->[0]);
+	return 1;
+    },
+    [qw(-realm site-reports -user crm_tech1 join_user member)] => not_die(),
+    [qw(-realm site-reports users)] => qr{crm_tech1},
+    [qw(-realm site-reports -user crm_tech1 join_user member)] => not_die(),
+    [qw(-realm site-reports -user crm_tech1 leave_user)] => not_die(),
+    [qw(-realm site-reports users)] => sub {
+	my(undef, $actual) = @_;
+	assert_not_equals(qr{crm_tech1}, $actual->[0]);
+	return 1;
+    },
 ];
+

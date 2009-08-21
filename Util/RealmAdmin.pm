@@ -118,11 +118,13 @@ sub join_user {
     my($self, @roles) = shift->name_args([['Auth.Role']], \@_);
     my($req) = $self->req;
     foreach my $role (@roles) {
-	$self->model('RealmUser')->create({
+	my($v) = {
 	    realm_id => $req->get('auth_id'),
 	    user_id => $req->get('auth_user_id'),
 	    role => $role,
-	});
+	};
+	$self->model('RealmUser')->create($v)
+	    unless $self->model('RealmUser')->unauth_load($v);
     }
     return;
 }
