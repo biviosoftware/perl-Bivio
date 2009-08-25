@@ -1,23 +1,19 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::YearWindow;
 use strict;
 use Bivio::Base 'Type.Enum';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_D) = __PACKAGE__->use('Type.Date');
-my($_NOW) = $_D->get_part($_D->now, 'year');
+__PACKAGE__->compile(0, 9);
 
-# 10 year window from current year forward, ex. (Y2004 => [2004, 2004])
-__PACKAGE__->compile(__PACKAGE__->year_range_config(0, 9));
-
-sub year_range_config {
-    my($proto, $start, $end) = @_;
-    return [
-	map({
-	    ("Y$_" => [$_, $_]),
-	} ($_NOW + $start .. $_NOW + $end)),
-    ];
+sub compile {
+    my($proto) = shift;
+    my($now) = b_use('Type.DateTime')->now_as_year;
+    my($start, $end) = map($_ < 100 ? $now + $_ : $_, @_);
+    return $proto->SUPER::compile([
+	map(("Y$_" => [$_, $_]), $start .. $end),
+    ]);
 }
 
 1;
