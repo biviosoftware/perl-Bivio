@@ -288,3 +288,18 @@ application/vnd.openxmlformats-officedocument.presentationml.slideshow:ppsx:Offi
 application/vnd.openxmlformats-officedocument.presentationml.template:potx:Office 2007 Presentation Template
 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:xlsx:Office 2007 Spreadsheet
 application/vnd.openxmlformats-officedocument.spreadsheetml.template:xltx:Office 2007 Spreadsheet Template
+application/vnd.oasis.opendocument.text:odt:OpenDocument Text
+application/vnd.oasis.opendocument.text-template:ott:OpenDocument Text Template
+application/vnd.oasis.opendocument.text-web:oth:HTML Document Template
+application/vnd.oasis.opendocument.text-master:odm:OpenDocument Master Document
+application/vnd.oasis.opendocument.graphics:odg:OpenDocument Drawing
+application/vnd.oasis.opendocument.graphics-template:otg:OpenDocument Drawing Template
+application/vnd.oasis.opendocument.presentation:odp:OpenDocument Presentation
+application/vnd.oasis.opendocument.presentation-template:otp:OpenDocument Presentation Template
+application/vnd.oasis.opendocument.spreadsheet:ods:OpenDocument Spreadsheet
+application/vnd.oasis.opendocument.spreadsheet-template:ots:OpenDocument Spreadsheet Template
+application/vnd.oasis.opendocument.chart:odc:OpenDocument Chart
+application/vnd.oasis.opendocument.formula:odf:OpenDocument Formula
+application/vnd.oasis.opendocument.database:odb:OpenDocument Database
+application/vnd.oasis.opendocument.image:odi:OpenDocument Image
+application/vnd.openofficeorg.extension:oxt:OpenOffice.org extension
