@@ -144,9 +144,6 @@ sub compile {
     my($can_be_zero) = 0;
     while (my($name, $d) = each(%$info_copy)) {
 	Bivio::IO::Alert->bootstrap_die(
-	    $pkg, '::', $name, ': is a reserved word'
-	) if $pkg->can($name);
-	Bivio::IO::Alert->bootstrap_die(
 	    $pkg, '::', $name, ': does not point to an array',
 	) unless ref($d) eq 'ARRAY';
 	$d->[1] = $pkg->format_short_desc($name)
