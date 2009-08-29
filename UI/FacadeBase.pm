@@ -325,6 +325,7 @@ sub _cfg_base {
 		[qw(DEFAULT_ERROR_REDIRECT)] => 'Server Error',
 		[qw(DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION)] => 'Invalid Data',
 	    ]],
+	    [SHELL_UTIL => ''],
 	    [DieCode => [
 		MODEL_NOT_FOUND => 'Not found',
 	    ]],
