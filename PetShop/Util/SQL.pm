@@ -673,6 +673,12 @@ EOF
 	<<'EOF');
 Shell utility help.
 EOF
+    $req->with_realm('site', sub {
+        $self->realm_file_create('Public/WikiData/spaces in name.gif',
+	    <<'EOF');
+dummy image file
+EOF
+    });
     return;
 }
 
