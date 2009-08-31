@@ -26,11 +26,34 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.14  2009/08/12 23:18:37  moeller
+  * Bivio::Biz::Action::EmptyReply
+    map UPDATE_COLLISION to SERVER_ERROR
+  * Bivio::Biz::FormModel
+    added has_stale_data(), set when hidden values have validation errors
+  * Bivio::Biz::Model::Lock
+    changed error from UPDATE_COLLISION to DB_ERROR for better detection,
+    minor refactoring
+  * Bivio::Delegate::TaskId
+    added DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION
+  * Bivio::PetShop::ViewShortcuts
+    rm pod, now uses XHTML.ViewShortcuts
+  * Bivio::Test::HTMLParser::Tables
+    guard against -1 array insert
+  * Bivio::Type::TextArea
+    don't call super from_literal which trims leading/trailing whitespace
+  * Bivio::UI::FacadeBase
+    added DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION task and text
+    added form_stale_data_title text
+    added missing label for task log spreadsheets
+  * Bivio::UI::XHTML::ViewShortcuts
+    added stale form data section to vs_form_error_title()
+
   Revision 8.13  2009/08/06 20:12:21  nagler
   * Bivio::Agent::HTTP::Reply
     remove charset change
