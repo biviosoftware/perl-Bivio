@@ -26,11 +26,52 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.15  2009/08/31 00:12:47  nagler
+  * Bivio::Biz::Action::WikiView
+    missing $req on call to UI.Constant->get_value
+    remove comment
+  * Bivio::Biz::Model::Lock
+    fmt
+  * Bivio::Biz::Util::RealmRole
+    change output format of list so useable as a Shell->batch
+  * Bivio::IO::Ref
+    added newline to diff between actual and expected
+    Label --- EXPECT +++ ACTUAL so matches the '+' and '-'.  '***' and
+    '---' was counterintuitive.
+  * Bivio::MIME::Type
+    added OpenOffice (oasis) types
+  * Bivio::SQL::Connection
+    remove _prep_params_for_io
+    Produce trace statements which are directly executable
+  * Bivio::SQL::PropertySupport
+    fmt
+  * Bivio::Test::Language::HTTP
+    removed comment
+  * Bivio::Type::Enum
+    remove restrction on subclassing
+  * Bivio::Type::YearWindow
+    added ability to have offsets or absolute years
+    Can be subclassed
+    compile_short_desc: allow subclasses to override short_desc
+  * Bivio::UI::FacadeBase
+    SHELL_UTIL has a Text entry
+  * Bivio::UI::Task
+    improve error message when no realm for a uri, but should have one
+  * Bivio::Util::Backup
+    write dd 2> /dev/null
+  * Bivio::Util::HTTPStats
+    correct comment
+  * Bivio::Util::RealmAdmin
+    join_user doesn't blow up if role already exists
+  * Bivio::Util::SQL
+    remove parse_trace_output; unnecessary b/c SQL.Connection produces
+    executable output
+
   Revision 8.14  2009/08/12 23:18:37  moeller
   * Bivio::Biz::Action::EmptyReply
     map UPDATE_COLLISION to SERVER_ERROR
