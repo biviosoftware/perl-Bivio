@@ -23,7 +23,19 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    return _redirect($self, {
+    return _redirect($self, $self->get_current_query_for_list);
+}
+
+sub execute_other {
+    my($self) = shift;
+    return _redirect($self)
+        if $self->unsafe_get('reset_button');
+    return $self->SUPER::execute_other(@_);
+}
+
+sub get_current_query_for_list {
+    my($self) = @_;
+    return {
         map({
             my($v) = $self->unsafe_get($_);
             my($t) = $self->get_field_info($_, 'type');
@@ -32,14 +44,7 @@ sub execute_ok {
             !$self->OMIT_DEFAULT_VALUES_FROM_QUERY || !$t->is_equal($dv, $v)
 	        ? ($name => $t->to_literal($v)) : ();
         } @{_get_visible_fields($self)}),
-    });
-}
-
-sub execute_other {
-    my($self) = shift;
-    return _redirect($self)
-        if $self->unsafe_get('reset_button');
-    return $self->SUPER::execute_other(@_);
+    };
 }
 
 sub internal_initialize {
