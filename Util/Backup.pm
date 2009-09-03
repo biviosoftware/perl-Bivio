@@ -81,7 +81,7 @@ sub archive_mirror_link {
 	    my($dirs) = [];
 	    my($du) = IO::File->new;
 	    Bivio::die->die($top, ": du failed: $!")
-	        unless $du->open("du -k '$top' | sort -nr |");
+	        unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
 	    while (defined(my $line = readline($du))) {
 		my($n, $d) = split(/\s+/, $line, 2);
 		chomp($d);
@@ -93,7 +93,7 @@ sub archive_mirror_link {
 	    $dirs = [sort(@$dirs)];
 	    $du->close;
 	    while (my $src = shift(@$dirs)) {
-		my($dst) = "$archive/$src.tgz";
+		my($dst) = _safe_path("$archive/$src.tgz");
 		$_F->mkdir_parent_only($dst, 0700);
 		$self->piped_exec(
 		    ['tar', 'czfX', $dst, '-', $src],
@@ -233,7 +233,7 @@ sub remote_archive {
 	    my($dirs) = [];
 	    my($du) = IO::File->new;
 	    Bivio::die->die($top, ": du failed: $!")
-		unless $du->open("du -k '$top' | sort -nr |");
+		unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
 	    while (defined(my $line = readline($du))) {
 		my($n, $d) = split(/\s+/, $line, 2);
 		chomp($d);
@@ -245,15 +245,13 @@ sub remote_archive {
 	    $dirs = [sort(@$dirs)];
 	    $du->close;
 	    while (my $src = shift(@$dirs)) {
-		my($dst) = "$archive/$src.tgz";
-		# remote shell requires this to be practical
-		$dst =~ s/[\'\"\s]+/_/g;
+		my($dst) = _safe_path("$archive/$src.tgz");
 		$self->piped_exec_remote(
 		    $host,
 		    "mkdir -p '" .  File::Basename::dirname($dst) . "'",
 		);
 		$self->piped_exec(
-		    "tar czfX - - '$src' | "
+		    "tar czfX - - @{[_quote($src)]} | "
 		    . "ssh $host dd of='$dst' bs=1000 2> /dev/null",
 		    \(join("\n", @$dirs)),
 		);
@@ -280,6 +278,18 @@ sub trim_directories {
             unless system('rm', '-rf', $d) == 0;
     }
     return 'Removed: ' . join(' ', @$dirs);
+}
+
+sub _quote {
+    my($path) = @_;
+    $path =~ s/'/'"'"'/g;
+    return "'$path'";
+}
+
+sub _safe_path {
+    my($path) = @_;
+    $path =~ s{[^-\w\./=,]+}{_}g;
+    return $path;
 }
 
 sub _which_archive {
