@@ -6,9 +6,9 @@ foreach my $x (
     [qw(root ADMINISTRATOR MEMBER)],
 ) {
     my($u) = shift(@$x);
-    foreach my $x (1..3) {
+    foreach my $n (1..3) {
 	ShellUtil_RealmAdmin()->main(
-	    -realm => "realm_user_util$x", -user => $u, 'leave_user');
+	    -realm => "realm_user_util$n", -user => $u, 'leave_user');
     }
     ShellUtil_RealmAdmin()->main(
 	qw(-realm realm_user_util1 -user), $u, join_user => @$x);
