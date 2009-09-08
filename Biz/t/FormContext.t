@@ -21,7 +21,7 @@ Bivio::Test->new({
 		path_info => undef,
 		unwind_task => Bivio::Agent::TaskId->SITE_ROOT,
 	        cancel_task => Bivio::Agent::TaskId->SITE_ROOT,
-		realm => Bivio::Auth::Realm->get_general,
+		realm => undef,
 	    }],
         ],
     ],
