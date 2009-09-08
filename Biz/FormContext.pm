@@ -150,10 +150,7 @@ sub new_empty {
 	unwind_task => $task->get_attr_as_id('next'),
 	cancel_task => $task->get_attr_as_id('cancel'),
 	form_model => $task->get('form_model'),
-
-	# We can assume that the realm is the same.
-	realm => $realm,
-
+	realm => undef,
 	# The following is unknown.  We don't know where we came from,
 	# we only know where we are.
 	query => undef,
