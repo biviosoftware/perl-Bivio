@@ -1,7 +1,6 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
-
 [
     [qw(-realm site validate_realm)] => sub {
 	my(undef, $actual) = @_;

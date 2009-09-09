@@ -1,0 +1,160 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    class() => [
+	_insert_carets => [
+#	    '@a href=//www.test.com Test Web' => '@a href=//www.test.com Test Web',
+#	    '@a href=http://www.test.com Test Web' => '@a href=http://www.test.com Test Web',
+#	    '@a href=mailto:foo@bar' => '@a href=mailto:foo@bar',
+#	    '@img src=test.jpg' => '@img src=test.jpg',
+	    'SomeLink' => '^SomeLink',
+	    '^HardLink' => '^HardLink',
+	    'automatic@email.com' => '^automatic@email.com',
+	    'first.last@email.com' => '^first.last@email.com',
+	    '123@email.com' => '^123@email.com',
+	    '.wierd@email.com' => '.^wierd@email.com',  #TODO???
+	    '^explicit@email.com' => '^explicit@email.com',
+	    'test.com' => '^test.com',
+	    '^ok.com' => '^ok.com',
+	    'www.test.com/path1/pathA' => '^www.test.com/path1/pathA',
+	    'http://www.test.com' => '^http://www.test.com',
+	    'test.jpg' => '^test.jpg',
+	    '/public/test.jpg' => '^/public/test.jpg',
+	    '/public/test.kqh' => '/public/test.kqh',
+	    '^ok.gif' => '^ok.gif',
+	    '=NoLink=' => '=NoLink=',
+	    '=NotAllLinks=' => '=NotAllLinks=',
+	    '=NotAllLinksHere=' => '=NotAllLinksHere=',
+	    <<'END_IN' => <<'END_EXPECT',
+Lorem ipsum SomeLink
+=NoLink=
+Here is a =ProductName=
+email@test.com
+Some other email2@test.com
+StartPage
+www.test.com ipsum
+Ipso facto https://secure.com/super/secret
+END_IN
+Lorem ipsum ^SomeLink
+=NoLink=
+Here is a =ProductName=
+^email@test.com
+Some other ^email2@test.com
+^StartPage
+^www.test.com ipsum
+Ipso facto ^https://secure.com/super/secret
+END_EXPECT
+	],
+	_remove_equals_equals => [
+	    '=NoLink=' => 'NoLink',
+	    '=No=Link' => '=No=Link',
+	    <<'END_IN' => <<'END_EXPECT',
+=CamelCase= words are =NotAlwaysLinks=
+1 == 1.0
+END_IN
+CamelCase words are NotAlwaysLinks
+1 == 1.0
+END_EXPECT
+	],
+	_remove_leading_caret => [
+	    '^' => undef,
+	    '^SomeLink' => '^SomeLink',
+	    'S^ome^Link' => 'S^ome^Link',
+	    <<'END_IN' => <<'END_EXPECT',
+^
+^SomeLink
+Some words and 10^2 numbers
+END_IN
+^SomeLink
+Some words and 10^2 numbers
+END_EXPECT
+	    <<'END_IN' => <<'END_EXPECT',
+ ^ Lorem ipsum
+^SomeOtherLink
+END_IN
+Lorem ipsum
+^SomeOtherLink
+END_EXPECT
+	    <<'END_IN' => <<'END_EXPECT',
+
+^ Ipso facto
+^SomeRareLink
+END_IN
+Ipso facto
+^SomeRareLink
+END_EXPECT
+	],
+	_update_b_tags => [
+	    '@ins-page /site/recent-blog' => '@b-embed value=/site/recent-blog',
+	    '@b-embed /site/recent-blog' => '@b-embed value=/site/recent-blog',
+	    '@b-embed value=/site/recent-blog'
+		=> '@b-embed value=/site/recent-blog',
+	    '@b-menu ProductsLeft' => '@b-menu value=ProductsLeft',
+	    '@b-widget ride_count_all' => '@b-widget value=ride_count_all',
+	    '@b-widget value=contact@' => '@b-widget value=contact@',
+	    '@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265'
+		=> '@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265',
+	    '@b-menu-source statutes' => '@b-menu-source value=statutes',
+	    '@b-menu-source value=statutes' => '@b-menu-source value=statutes',
+	    <<'END_IN' => <<'END_EXPECT',
+Lorem ipsum
+@ins-page /site/recent-blog
+Praesent gravida
+@b-embed /pub/contact
+Nulla faucibus
+@b-menu ProductsLeft
+Praesent mollis
+@b-widget contact
+Phasellus nec
+@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265
+END_IN
+Lorem ipsum
+@b-embed value=/site/recent-blog
+Praesent gravida
+@b-embed value=/pub/contact
+Nulla faucibus
+@b-menu value=ProductsLeft
+Praesent mollis
+@b-widget value=contact
+Phasellus nec
+@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265
+END_EXPECT
+	],
+	_upgrade_content => [
+	    <<'END_IN' => <<'END_EXPECT',
+ ^
+Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
+^SomeOldLink
+ProductNameOne
+END_IN
+Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
+^SomeOldLink
+ProductNameOne
+END_EXPECT
+	    <<'END_IN' => <<'END_EXPECT',
+Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
+SomeOldLink
+ProductNameOne
+=ProductNameTwo=
+@b-widget ride_count_all
+email@test.com
+Some other email2@test.com
+StartPage
+www.test.com ipsum
+Ipso facto https://secure.com/super/secret
+END_IN
+Lorem ipsum dolor sit amet, ^ConSectetur adipiscing elit.
+^SomeOldLink
+^ProductNameOne
+ProductNameTwo
+@b-widget value=ride_count_all
+^email@test.com
+Some other ^email2@test.com
+^StartPage
+^www.test.com ipsum
+Ipso facto ^https://secure.com/super/secret
+END_EXPECT
+	],
+    ],
+];
