@@ -786,7 +786,8 @@ sub _unload {
     # Always returns false.
     $self->internal_clear_model_cache;
     $self->internal_put({});
-    $self->delete_from_request if $delete_from_request;
+    $self->delete_from_request
+	if $delete_from_request && ! $self->is_ephemeral;
     return 0;
 }
 
