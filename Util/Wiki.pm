@@ -38,12 +38,11 @@ sub convert_links {
 	return 1
 	    if $it->get('is_folder')
 		|| $it->get('path_lc') =~ /\Q$_VF\E/i
-			|| ($it->get('path_lc') !~ /\Q$_WF\E/i
-				&& $it->get('path_lc') !~ /\Q$_BF\E/i);
+			|| ($it->get('path_lc') !~ /\Q$_WF\/\E/i
+				&& $it->get('path_lc') !~ /\Q$_BF\E\//i);
 	$self->print("***\nCHECKING: " . $it->get('path') . "\n");
 	my($content) = ${$it->get_content};
 	$content = _upgrade_content($self, $content);
- 	b_debug($content);
 	if (${$it->get_content} ne $content) {
 	    my($die) = Bivio::Die->catch(
 		sub {
