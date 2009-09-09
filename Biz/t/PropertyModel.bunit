@@ -20,13 +20,39 @@ my($id) = req('auth_id');
 		return 1;
 	    },
 	],
+	is_ephemeral => 0,
 	put_on_request => [
 	    [1] => undef,
 	],
 	sub {
 	    req()->clear_nondurable_state;
-	    req('Model.RealmOwner');
-	    return;
-	} => undef,
+	    return req(qw(Model.RealmOwner name));
+	} => 'demo',
+    ],
+    sub {model('RealmOwner')->set_ephemeral} => [
+	map_iterate => [
+	    [undef, 'unauth_iterate_start', 'name', {
+		name => 'guest',
+	    }] => expect_contains([{name => 'guest'}]),
+	],
+	sub {
+	    return req(qw(Model.RealmOwner name));
+	} => 'demo',
+    ],
+    sub {model('RealmOwner')->set_ephemeral} => [
+	unauth_load_or_die => [
+	    [{
+		name => 'guest',
+	    }] => undef,
+	],
+	is_ephemeral => 1,
+	sub {
+	    return req(qw(Model.RealmOwner name));
+	} => 'demo',
+	put_on_request => undef,
+	sub {
+	    return req(qw(Model.RealmOwner name));
+	} => 'guest',
+	is_ephemeral => 0,
     ],
 ];
