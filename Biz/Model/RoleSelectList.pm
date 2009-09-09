@@ -35,6 +35,8 @@ sub internal_load_rows {
 
 sub load_from_array {
     my($self, $values) = @_;
+    unshift(@$values, 'UNKNOWN')
+        unless grep(/UNKNOWN/, @$values);
     return shift->load_all({
 	values_array => [map($_R->from_any($_), @$values)],
     });

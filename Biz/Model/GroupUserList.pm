@@ -97,6 +97,14 @@ sub internal_prepare_statement {
     return $self->SUPER::internal_prepare_statement(@_);
 }
 
+sub internal_qualifying_roles {
+    my($self) = @_;
+    my($m) = $self->ureq('Model.GroupUserQueryForm');
+    return $m && $m->get_privilege_role && $m->get_privilege_role->eq_withdrawn
+        ? shift->SUPER::internal_qualifying_roles(@_)
+        : [grep(! $_->eq_withdrawn, @{$self->ROLES_ORDER})];
+}
+
 sub _privileges {
     my($self, $row) = @_;
     my($main, $aux) = $self->roles_by_category($row->{roles});

@@ -3,6 +3,18 @@
 ListModel();
 req()->set_realm_and_user('fourem');
 req()->initialize_fully('GROUP_USER_LIST');
+model('RealmUserAddForm', {
+    'Email.email' => email('delete'),
+    'RealmOwner.display_name' => 'Bunit_deleted User',
+    'RealmOwner.password' => 'password',
+});
+foreach my $args (
+    [qw(leave_user)],
+    [qw(join_user WITHDRAWN)],
+) {
+    b_use('ShellUtil.RealmAdmin')->main(
+        qw(-r fourem -u), email('delete'), @$args);
+}
 [
     load_all => [
         [{
@@ -32,26 +44,25 @@ req()->initialize_fully('GROUP_USER_LIST');
 	    [Auth_Role('FILE_WRITER')],
 	],
     ],
-    sub {
-	model(GroupUserQueryForm => {
-	    b_privilege => 'Admin',
-	});
-    } => undef,
-    load_all => [
-	[] => [{
+    {
+        method => 'load_all',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            model(GroupUserQueryForm => {@$params});
+            return [];
+        }
+    } => [
+        [b_privilege => 'Admin'] => [{
 	    privileges => StringArray([qw(Admin Editor Subscribed)]),
 	    display_name => 'User, Root',
         }],
-    ],
-    sub {
-	model(GroupUserQueryForm => {
-	    b_filter => 'read@',
-	});
-    } => undef,
-    load_all => [
-	[] => [{
+        [b_filter => 'read@'] => [{
 	    privileges => StringArray([qw(Member Subscribed)]),
             display_name => 'User, Btest_read',
 	}],
-    ],
+        [b_privilege => 'Former Member'] => [{
+	    privileges => StringArray(['Former Member']),
+            display_name => 'User, Bunit_deleted',
+	}],
+    ]
 ];

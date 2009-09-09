@@ -5,6 +5,9 @@ req()->initialize_fully;
 [
     load_from_array => [
 	[[qw(administrator mail_recipient)]] => [{
+	    'RealmUser.role' => Auth_Role('UNKNOWN'),
+	    display => 'No Access',
+        }, {
 	    'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
 	    display => 'Admin',
 	}, {

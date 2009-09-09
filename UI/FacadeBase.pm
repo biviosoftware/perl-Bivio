@@ -666,7 +666,7 @@ sub _cfg_group_admin {
 	Text => [
 	    [realm_owner_site_admin => [
 		 [qw(GroupUserList.privileges_name RoleSelectList.display_name)] => [
-		    UNKNOWN => 'No Access',
+		    UNKNOWN => 'Select Privileges',
 		    GUEST => 'Site Contractor',
 		    MEMBER => 'Site Staff',
 		    ACCOUNTANT => 'Site Manager',

@@ -147,7 +147,7 @@ sub internal_select_roles {
     my($self) = @_;
     # From least to most privileged order
     return $_F->get_from_source($self)->auth_realm_is_site_admin($self->req)
-	? [qw(USER MEMBER ADMINISTRATOR)]
+	? [qw(WITHDRAWN USER MEMBER ADMINISTRATOR)]
 	: [qw(UNKNOWN GUEST MEMBER ADMINISTRATOR)];
 }
 
