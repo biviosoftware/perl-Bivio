@@ -1,0 +1,93 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+options({
+    class_name => 'Bivio::Biz::Model::RealmFile',
+});
+#TODO: create test forum?
+req()->set_realm_and_user('fourem', 'root');
+model('RealmFile')->create_with_content({
+    path => my($f0) = '/'.random_string(),
+}, \(<<'EOF'));
+LoremIpsum
+Not a wiki doc
+EOF
+model('RealmFile')->create_with_content({
+    path => my($f1) = '/Wiki/'.random_string(),
+}, \(<<'EOF'));
+Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
+SomeOldLink
+ProductNameOne
+=ProductNameTwo=
+EOF
+model('RealmFile')->create_with_content({
+    path => my($f2) = '/Public/Wiki/'.random_string(),
+}, \(<<'EOF'));
+@b-widget ride_count_all
+email@test.com
+Some other email2@test.com
+StartPage
+www.test.com ipsum
+Ipso facto https://secure.com/super/secret
+EOF
+model('RealmFile')->create_with_content({
+    path => my($f3) = '/Public/Blog/200905/'.random_string(),
+}, \(<<'EOF'));
+@h1 Blog Article Title
+StartPage
+email@test.com
+EOF
+model('RealmFile')->create_with_content({
+    path => my($f4) = '/Blogs/'.random_string(),
+}, \(<<'EOF'));
+@h1 Bogus Blog Title
+StartPage2
+email2@test.com
+EOF
+ShellUtil_Wiki()->main(qw(-r fourem convert_links));
+[
+    sub {
+	return model(class());
+    } => [
+	{
+	    method => 'load',
+	    compute_return => sub {
+		my($case) = @_;
+		return [${$case->get('object')->get_content}];
+	    },
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [{path => $params->[0]}];
+	    },
+	} => [
+	    $f0 => <<'EOF',
+LoremIpsum
+Not a wiki doc
+EOF
+	    $f1 => <<'EOF',
+Lorem ipsum dolor sit amet, ^ConSectetur adipiscing elit.
+^SomeOldLink
+^ProductNameOne
+ProductNameTwo
+EOF
+	    $f2 => <<'EOF',
+@b-widget value=ride_count_all
+^email@test.com
+Some other ^email2@test.com
+^StartPage
+^www.test.com ipsum
+Ipso facto ^https://secure.com/super/secret
+EOF
+	    $f3 => <<'EOF',
+@h1 Blog Article Title
+^StartPage
+^email@test.com
+EOF
+	    $f4 => <<'EOF',
+@h1 Bogus Blog Title
+StartPage2
+email2@test.com
+EOF
+	],
+    ],
+];
