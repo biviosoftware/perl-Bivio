@@ -111,11 +111,16 @@ sub _insert_carets {
     my(undef, $content) = @_;
     return $content
 	if $content =~ /[\^]/;
-    $content =~ s/($_IMG|$_EMAIL|((https?:\/\/)?$_DOMAIN(\/\w*)*))/^$1/mg;
-#TODO: Tries to handle @a/@img cases
-#    $content =~ s/(?<!=)($_IMG|((mailto:)$_EMAIL)|((https?:\/\/)$_DOMAIN(\/\w+)*))/^$1/mg;
-    $content =~ s/(?<![=a-z0-9])($_CAMEL_CASE)(?![=])/^$1/mg;
-    return $content;
+    open(CONTENT, "<", \$content);
+    my($res) = '';
+    while (my $line = <CONTENT>) {
+	unless ($line =~ /^\@/) {
+	    $line =~ s/($_IMG|$_EMAIL|((https?:\/\/)?$_DOMAIN(\/\w*)*))/^$1/g;
+	    $line =~ s/(?<![=a-z0-9])($_CAMEL_CASE)(?![=])/^$1/g;
+	}
+	$res .= $line;
+    }
+    return $res;
 }
 
 sub _remove_equals_equals {

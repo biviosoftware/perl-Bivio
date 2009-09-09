@@ -4,10 +4,10 @@ Request();
 [
     class() => [
 	_insert_carets => [
-#	    '@a href=//www.test.com Test Web' => '@a href=//www.test.com Test Web',
-#	    '@a href=http://www.test.com Test Web' => '@a href=http://www.test.com Test Web',
-#	    '@a href=mailto:foo@bar' => '@a href=mailto:foo@bar',
-#	    '@img src=test.jpg' => '@img src=test.jpg',
+	    '@a href=//www.test.com Test Web' => '@a href=//www.test.com Test Web',
+	    '@a href=http://www.test.com Test Web' => '@a href=http://www.test.com Test Web',
+	    '@a href=mailto:foo@bar' => '@a href=mailto:foo@bar',
+	    '@img src=test.jpg' => '@img src=test.jpg',
 	    'SomeLink' => '^SomeLink',
 	    '^HardLink' => '^HardLink',
 	    'automatic@email.com' => '^automatic@email.com',
