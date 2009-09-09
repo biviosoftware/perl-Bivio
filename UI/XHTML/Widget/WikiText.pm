@@ -315,6 +315,22 @@ $_C->register(my $_CFG = {
 });
 my($_TT) = $_WN->TITLE_TAG =~ /(\w+)/;
 
+sub CAMEL_CASE_REGEX {
+    return $_CAMEL_CASE;
+}
+
+sub DOMAIN_REGEX {
+    return $_DOMAIN;
+}
+
+sub EMAIL_REGEX {
+    return $_EMAIL;
+}
+
+sub IMG_REGEX {
+    return $_IMG;
+}
+
 sub NEW_ARGS {
     return [qw(value ?class)];
 }
