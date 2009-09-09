@@ -332,7 +332,7 @@ sub internal_put_iterator {
 
 sub is_ephemeral {
     my($self) = @_;    
-    return exists($self->[$_IDI]->{ephmeral});
+    return $self->[$_IDI]->{ephemeral} ? 1 : 0;
 }
 
 sub is_instance {
@@ -476,15 +476,15 @@ sub put {
 
 sub put_on_request {
     my($self, $durable) = @_;
+    $self->[$_IDI]->{ephemeral} = 0;
     return $self->unsafe_get_request
 	? $self->put_on_req($self->req, $durable)
 	: $self;
 }
 
 sub set_ephemeral {
-    # (self) : self
     my($self) = @_;
-    $self->[$_IDI]->{ephmeral} = 1;
+    $self->[$_IDI]->{ephemeral} = 1;
     return $self;
 }
 
