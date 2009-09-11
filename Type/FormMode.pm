@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::FormMode;
 use strict;
-use base 'Bivio::Type::Enum';
+use Bivio::Base 'Type.Enum';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
