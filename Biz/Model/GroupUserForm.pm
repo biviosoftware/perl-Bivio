@@ -89,6 +89,8 @@ sub execute_ok {
 #TODO: when transitioning from unapproved to other state, send email
 #      except unknown.  Have code in place to transition, but the views
 #      can be empty.
+#TODO: shouldn't this be using self->internal_aux_fields instead of accessing
+#      $_AUX directly?
     foreach my $f (@$_AUX) {
 	my($method) = $self->unsafe_get($f) ? 'unauth_create_or_update'
 	    : 'delete';
@@ -116,6 +118,8 @@ sub internal_initialize {
 		name => 'RealmUser.role',
 		constraint => 'NOT_NULL',
 	    },
+#TODO: shouldn't this be using self->internal_aux_fields instead of accessing
+#      $_AUX directly?
 	    $self->field_decl(
 		[@{$_AUX}],
 		'Boolean',
