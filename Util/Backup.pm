@@ -221,13 +221,15 @@ sub remote_archive {
     $self->piped_exec_remote($host, "mke2fs -b 4096 -m 0 -N 4194304 -O dir_index -O sparse_super $dev", "y\n");
     $self->piped_exec_remote($host, "mkdir -p $mount");
     $self->piped_exec_remote($host, "mount $dev $mount");
+    my($done);
     foreach my $other ("$root/weekly", "$root/archive") {
 	next
 	    unless -d (my $src = "$other/$date");
 	$self->piped_exec("rsync -a -e ssh --timeout 43200 $src $host:$mount");
-	$mount = undef;
+	$done = 1;
 	last;
     }
+    my($link_size) = split(' ', `du -s $link`);
     $_F->do_in_dir($link, sub {
 	foreach my $top (glob('*')) {
 	    my($dirs) = [];
@@ -258,8 +260,14 @@ sub remote_archive {
 	    }
 	}
 	return;
-    }) if $mount;
+    }) unless $done;
+    my($archive_size) = split(
+	' ',
+	${$self->piped_exec_remote($host, "du -s $archive")},
+    );
     $self->piped_exec_remote($host, "chmod -R -w $archive; umount $dev");
+    b_warn("ERROR: $archive size ($archive_size) << ($link_size) $link size")
+	if $archive_size / $link_size < 0.25;
     return $archive;
 }
 
