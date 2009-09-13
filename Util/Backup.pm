@@ -248,15 +248,19 @@ sub remote_archive {
 	    $du->close;
 	    while (my $src = shift(@$dirs)) {
 		my($dst) = _safe_path("$archive/$src.tgz");
-		$self->piped_exec_remote(
-		    $host,
-		    "mkdir -p '" .  File::Basename::dirname($dst) . "'",
-		);
-		$self->piped_exec(
-		    "tar czfX - - @{[_quote($src)]} | "
-		    . "ssh $host dd of='$dst' bs=1000 2> /dev/null",
-		    \(join("\n", @$dirs)),
-		);
+		my($die) = Bivio::Die->catch(sub {
+		    $self->piped_exec_remote(
+			$host,
+			"mkdir -p '" .  File::Basename::dirname($dst) . "'",
+		    );
+		    $self->piped_exec(
+			"tar czfX - - @{[_quote($src)]} | "
+			. "ssh $host dd of='$dst' bs=1000 2> /dev/null",
+			\(join("\n", @$dirs)),
+		    );
+		});
+		b_warn($dst, ': ', $die)
+		    if $die;
 	    }
 	}
 	return;
