@@ -93,7 +93,7 @@ sub internal_qualifying_roles {
 
 sub roles_by_category {
     my($self, $roles) = @_;
-    $roles = {map(($_ => 1), @{$roles || $self->get('roles')})};
+    $roles = {map(($_ => 1), @{$roles || $self->get('roles') || []})};
     my($main) = [];
     foreach my $m ($_R->get_main_list) {
 	push(@$main, $m)
