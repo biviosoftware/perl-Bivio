@@ -17,6 +17,8 @@ Request();
 	    '^explicit@email.com' => '^explicit@email.com',
 	    'test.com' => '^test.com',
 	    '^ok.com' => '^ok.com',
+	    '^&quot;' => '^&quot;',
+	    '@&quot;' => '@&quot;',
 	    'www.test.com/path1/pathA' => '^www.test.com/path1/pathA',
 	    'http://www.test.com' => '^http://www.test.com',
 	    'test.jpg' => '^test.jpg',
@@ -85,6 +87,20 @@ Ipso facto
 ^SomeRareLink
 END_EXPECT
 	],
+	_update_caret_ampersand => [
+	    '^&quot;' => '@&quot;',
+	    '^&nbsp;' => '@&nbsp;',
+	    '^SomeWikiPage' => '^SomeWikiPage',
+	    <<'END_IN' => <<'END_EXPECT',
+^ & *
+^&#174;
+^&quot;^&quot;
+END_IN
+^ & *
+@&#174;
+@&quot;@&quot;
+END_EXPECT
+	],
 	_update_b_tags => [
 	    '@ins-page /site/recent-blog' => '@b-embed value=/site/recent-blog',
 	    '@b-embed /site/recent-blog' => '@b-embed value=/site/recent-blog',
@@ -126,10 +142,12 @@ END_EXPECT
  ^
 Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
 ^SomeOldLink
+^&#174;^&quot;
 ProductNameOne
 END_IN
 Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
 ^SomeOldLink
+@&#174;@&quot;
 ProductNameOne
 END_EXPECT
 	    <<'END_IN' => <<'END_EXPECT',
