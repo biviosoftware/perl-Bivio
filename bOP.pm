@@ -26,11 +26,28 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.19  2009/09/10 15:31:45  moeller
+  * Bivio::Biz::Model::GroupUserForm
+  * Bivio::Biz::Model::GroupUserList
+  * Bivio::Biz::Model::RoleSelectList
+    exclude WITHDRAWN users in GroupUserList unless privilege filter is
+    explicitly set to WITHDRAWN
+  * Bivio::Biz::Model
+    put_on_request() clears ephemeral state
+  * Bivio::Biz::PropertyModel
+    _unload() doesn't call delete_from_request() for ephemeral models
+  * Bivio::UI::XHTML::Widget::WikiText
+    export regexes
+  * Bivio::Util::Wiki
+    add convert_links and convert_titles
+    don't insert carets for wiki tag lines
+    convert_links wiki and blog path checks
+
   Revision 8.18  2009/09/09 15:55:05  moeller
   * Bivio::Biz::FormContext
     removed assumption that realm is the current realm in new_empty(),
