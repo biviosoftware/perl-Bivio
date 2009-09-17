@@ -55,6 +55,7 @@ sub list {
 		    query => 'THIS_DETAIL',
 		    task => 'GROUP_USER_FORM',
 		},
+                control => ['is_not_withdrawn'],
 	    }],
 	    @{$extra_columns || []},
 	],

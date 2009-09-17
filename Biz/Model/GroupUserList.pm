@@ -49,6 +49,11 @@ sub internal_initialize {
 		type => 'StringArray',
 		constraint => 'NONE',
 	    },
+            {
+                name => 'is_not_withdrawn',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
 	],
 	other_query_keys => [qw(b_filter b_privilege)],
 	auth_id => ['RealmUser.realm_id'],
@@ -108,11 +113,15 @@ sub internal_qualifying_roles {
 sub _privileges {
     my($self, $row) = @_;
     my($main, $aux) = $self->roles_by_category($row->{roles});
-    $row->{privileges} = $_SA->new([map(
+    $row->{is_not_withdrawn} = 1;
+    $row->{privileges} = $_SA->new([map({
+        $row->{is_not_withdrawn} = 0
+            if $_->eq_withdrawn;
 	$_T->get_value(
 	   'GroupUserList.privileges_name.' . $_->get_name,
 	    $self->req,
-	),
+	);
+    }
 	@$main ? $main->[0] : (),
 	@$aux,
     )]);

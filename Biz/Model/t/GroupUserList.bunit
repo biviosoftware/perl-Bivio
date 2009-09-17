@@ -22,12 +22,15 @@ foreach my $args (
 	    order_by => '2a',
 	}] => [{
 	    privileges => StringArray([qw(Member Subscribed)]),
+            is_not_withdrawn => 1,
 	    display_name => 'User, Btest_admin',
 	}, {
 	    privileges => StringArray([qw(Member Subscribed)]),
+            is_not_withdrawn => 1,
             display_name => 'User, Btest_read',
         }, {
 	    privileges => StringArray([qw(Admin Editor Subscribed)]),
+            is_not_withdrawn => 1,
             display_name => 'User, Root',
 	}],
     ],
@@ -62,6 +65,7 @@ foreach my $args (
 	}],
         [b_privilege => 'Former Member'] => [{
 	    privileges => StringArray(['Former Member']),
+            is_not_withdrawn => 0,
             display_name => 'User, Bunit_deleted',
 	}],
     ]
