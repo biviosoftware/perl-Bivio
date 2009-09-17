@@ -44,33 +44,40 @@ model('RealmFile')->create_with_content({
 StartPage2
 email2@test.com
 EOF
-ShellUtil_Wiki()->main(qw(-r fourem convert_links));
 [
-    sub {
-	return model(class());
-    } => [
-	{
-	    method => 'load',
-	    compute_return => sub {
-		my($case) = @_;
-		return [${$case->get('object')->get_content}];
-	    },
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		return [{path => $params->[0]}];
-	    },
+    map((
+	inline_case(
+	    sub {
+		ShellUtil_Wiki()->main(qw(-r fourem convert_links));
+		return 1;
+	    }
+	),
+	sub {
+	    return model(class());
 	} => [
-	    $f0 => <<'EOF',
+	    {
+		method => 'load',
+		compute_return => sub {
+		    my($case) = @_;
+		    return [${$case->get('object')->get_content}];
+		},
+		compute_params => sub {
+		    my(undef, $params) = @_;
+		    return [{path => $params->[0]}];
+		},
+	    } => [
+		#	    <<'END_IN' => <<'END_EXPECT',
+		$f0 => <<'EOF',
 LoremIpsum
 Not a wiki doc
 EOF
-	    $f1 => <<'EOF',
+		$f1 => <<'EOF',
 Lorem ipsum dolor sit amet, ^ConSectetur adipiscing elit.
 ^SomeOldLink
 ^ProductNameOne
 ProductNameTwo
 EOF
-	    $f2 => <<'EOF',
+		$f2 => <<'EOF',
 @b-widget value=ride_count_all
 ^email@test.com
 Some other ^email2@test.com
@@ -78,16 +85,17 @@ Some other ^email2@test.com
 ^www.test.com ipsum
 Ipso facto ^https://secure.com/super/secret
 EOF
-	    $f3 => <<'EOF',
+		$f3 => <<'EOF',
 @h1 Blog Article Title
 ^StartPage
 ^email@test.com
 EOF
-	    $f4 => <<'EOF',
+		$f4 => <<'EOF',
 @h1 Bogus Blog Title
 StartPage2
 email2@test.com
 EOF
+	    ],
 	],
-    ],
+    ), (1..3)),
 ];
